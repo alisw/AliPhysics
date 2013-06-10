@@ -120,7 +120,7 @@ protected:
       << "void Extract()\n"
       << "{\n"
       << "  gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/corrs/ExtractMCCorr.C\");\n"
-      << "  ExtractMCCorr(\"forward_mccorr.root\",0,0,0);\n"
+      << "  ExtractMCCorr(\"forward_mccorr.root\");\n"
       << "}\n"
       << "// EOF" << std::endl;
     f.close();

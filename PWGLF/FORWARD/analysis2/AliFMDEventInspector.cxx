@@ -57,6 +57,8 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHCent(0),
     fHCentVsQual(0),
     fHStatus(0),
+    fHVtxStatus(0),
+    fHTrgStatus(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
@@ -75,9 +77,10 @@ AliFMDEventInspector::AliFMDEventInspector()
   fCollWords(),
   fBgWords(),
   fCentMethod("V0M"),
-  fminCent(-1.0),
-  fmaxCent(-1.0),
-  fUsepA2012Vertex(false)	  		
+  fMinCent(-1.0),
+  fMaxCent(-1.0),
+  fUsepA2012Vertex(false),
+  fRunNumber(0)
 {
   // 
   // Constructor 
@@ -99,6 +102,8 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHCent(0),
     fHCentVsQual(0),
     fHStatus(0),
+    fHVtxStatus(0),
+    fHTrgStatus(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
@@ -117,9 +122,10 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   fCollWords(),
   fBgWords(),
   fCentMethod("V0M"),
-  fminCent(-1.0),
-  fmaxCent(-1.0),
- fUsepA2012Vertex(false)	  	
+  fMinCent(-1.0),
+  fMaxCent(-1.0),
+  fUsepA2012Vertex(false),
+  fRunNumber(0)
 {
   // 
   // Constructor 
@@ -144,6 +150,8 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHCent(o.fHCent),
     fHCentVsQual(o.fHCentVsQual),
     fHStatus(o.fHStatus),
+    fHVtxStatus(o.fHVtxStatus),
+    fHTrgStatus(o.fHTrgStatus),
     fLowFluxCut(o.fLowFluxCut),
     fMaxVzErr(o.fMaxVzErr),
     fList(o.fList),
@@ -162,9 +170,11 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
   fCollWords(),
   fBgWords(),
   fCentMethod(o.fCentMethod),
-  fminCent(o.fminCent),
-  fmaxCent(o.fmaxCent),
-  fUsepA2012Vertex(o.fUsepA2012Vertex)  	
+  fMinCent(o.fMinCent),
+  fMaxCent(o.fMaxCent),
+  fUsepA2012Vertex(o.fUsepA2012Vertex),
+  fRunNumber(o.fRunNumber)
+  	
 {
   // 
   // Copy constructor 
@@ -211,6 +221,8 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHCent             = o.fHCent;
   fHCentVsQual       = o.fHCentVsQual;
   fHStatus           = o.fHStatus;
+  fHVtxStatus        = o.fHVtxStatus;
+  fHTrgStatus        = o.fHTrgStatus;
   fLowFluxCut        = o.fLowFluxCut;
   fMaxVzErr          = o.fMaxVzErr;
   fDebug             = o.fDebug;
@@ -228,9 +240,10 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fUseDisplacedVertices  = o.fUseDisplacedVertices;
   fDisplacedVertex       = o.fDisplacedVertex;
   fCentMethod            = o.fCentMethod;
-  fminCent		 = o.fminCent;
-  fmaxCent		 = o.fmaxCent; 
-  fUsepA2012Vertex       =o.fUsepA2012Vertex;
+  fMinCent		 = o.fMinCent;
+  fMaxCent		 = o.fMaxCent; 
+  fUsepA2012Vertex       = o.fUsepA2012Vertex;
+  fRunNumber             = o.fRunNumber;
 
   if (fList) { 
     fList->SetName(GetName());
@@ -243,6 +256,8 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
     if (fHCent)        fList->Add(fHCent);
     if (fHCentVsQual)  fList->Add(fHCentVsQual);
     if (fHStatus)      fList->Add(fHStatus);
+    if (fHVtxStatus)   fList->Add(fHVtxStatus);
+    if (fHTrgStatus)   fList->Add(fHTrgStatus);
   }
   return *this;
 }
@@ -268,6 +283,27 @@ AliFMDEventInspector::SetCentralityMethod(ECentMethod m)
   case kZEMvsZDC:	fCentMethod = "ZEMvsZDC"; break; // ZDC		     
   default:              fCentMethod = "V0M"; break;
   }
+}
+
+//____________________________________________________________________
+void 
+AliFMDEventInspector::SetMinCentrality(Double_t minCent)
+{
+  AliWarning("\n"
+	     "*******************************************************\n"
+	     "* Setting centrality cuts in this stage is deprecated *\n"
+	     "*******************************************************");
+  fMinCent = minCent;
+}
+//____________________________________________________________________
+void 
+AliFMDEventInspector::SetMaxCentrality(Double_t maxCent)
+{
+  AliWarning("\n"
+	     "*******************************************************\n"
+	     "* Setting centrality cuts in this stage is deprecated *\n"
+	     "*******************************************************");
+  fMaxCent = maxCent;
 }
 
 //____________________________________________________________________
@@ -406,12 +442,22 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   // fBgWords.ls();
   
   
-  // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
-  // ----- 92 number --------- ---- 1 ---
-  TArrayD limits(93);
-  for (Int_t i = 0; i < 92; i++) limits[i] = -1.5 + i;
-  limits[92] = 100.5;
-
+  TArrayD limits;
+  if ((fMinCent < 0 && fMaxCent < 0) || fMaxCent <= fMinCent) {
+    // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
+    // ----- 92 number --------- ---- 1 ---
+    limits.Set(93);
+    for (Int_t i = 0; i < 92; i++) limits[i] = -1.5 + i;
+    limits[92] = 100.5;
+  }
+  else {
+    Int_t n = fMaxCent-fMinCent+2;
+    limits.Set(n);
+    for (Int_t i = 0; i < n; i++) { 
+      limits[i] = fMinCent + i - .5;
+    }
+  }
+      
   fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
   
   fCentAxis  = new TAxis(limits.GetSize()-1, limits.GetArray());
@@ -483,6 +529,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
 		     kE      +1,
 		     kPileUp +1,
 		     kMCNSD  +1,
+		     kSatellite+1,
 		     kOffline+1 };
   const char* binLbl[] = { "INEL",	 
 			   "INEL>0",
@@ -495,6 +542,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
 			   "E",	 
 			   "Pileup",
 			   "NSD_{MC}", 
+			   "Satellite",
 			   "Offline" };
   for (Int_t i = 0; i < kOffline+1; i++) {
     fHTriggers->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
@@ -549,23 +597,63 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   fList->Add(fHCentVsQual);
 
   fHStatus = new TH1I("status", "Status", 7, 1, 8);
-  fHStatus->SetFillColor(kRed+1);
+  fHStatus->SetFillColor(kBlue+1);
   fHStatus->SetFillStyle(3001);
   fHStatus->SetStats(0);
   fHStatus->SetDirectory(0);
-  fHStatus->GetXaxis()->SetBinLabel(1, "OK");
-  fHStatus->GetXaxis()->SetBinLabel(2, "No event");
-  fHStatus->GetXaxis()->SetBinLabel(3, "No triggers");
-  fHStatus->GetXaxis()->SetBinLabel(4, "No SPD");
-  fHStatus->GetXaxis()->SetBinLabel(5, "No FMD");
-  fHStatus->GetXaxis()->SetBinLabel(6, "No vertex");
-  fHStatus->GetXaxis()->SetBinLabel(7, "Bad vertex");
+  TAxis* xAxis = fHStatus->GetXaxis();
+  xAxis->SetBinLabel(1, "OK");
+  xAxis->SetBinLabel(2, "No event");
+  xAxis->SetBinLabel(3, "No triggers");
+  xAxis->SetBinLabel(4, "No SPD");
+  xAxis->SetBinLabel(5, "No FMD");
+  xAxis->SetBinLabel(6, "No vertex");
+  xAxis->SetBinLabel(7, "Bad vertex");
   fList->Add(fHStatus);
+
+  fHVtxStatus = new TH1I("vtxStatus","Vertex Status",
+			 kNotVtxZ,kVtxOK,kNotVtxZ+1);
+  fHVtxStatus->SetFillColor(kGreen+1);
+  fHVtxStatus->SetFillStyle(3001);
+  fHVtxStatus->SetStats(0);
+  fHVtxStatus->SetDirectory(0);
+  xAxis = fHVtxStatus->GetXaxis();
+  xAxis->SetBinLabel(kVtxOK,      "OK");
+  xAxis->SetBinLabel(kNoVtx,      "None/bad status");
+  xAxis->SetBinLabel(kNoSPDVtx,   "No SPD/bad status");
+  xAxis->SetBinLabel(kFewContrib, "N_{contrib} <= 0");
+  xAxis->SetBinLabel(kUncertain,  Form("#delta z > %4.2f", fMaxVzErr));
+  xAxis->SetBinLabel(kNotVtxZ,    "Not Z vertexer");
+  fList->Add(fHVtxStatus);
+
+  fHTrgStatus = new TH1I("trgStatus", "Trigger Status", 
+			 kOther, kNoTrgWords, kOther+1);
+  fHTrgStatus->SetFillColor(kMagenta+1);
+  fHTrgStatus->SetFillStyle(3001);
+  fHTrgStatus->SetStats(0);
+  fHTrgStatus->SetDirectory(0);
+  xAxis = fHTrgStatus->GetXaxis();
+  xAxis->SetBinLabel(kNoTrgWords,	"No words");
+  xAxis->SetBinLabel(kPP2760Fast,	"FAST in pp@#sqrt{s}=2.76TeV"); 
+  xAxis->SetBinLabel(kMUON,		"Muon trigger");
+  xAxis->SetBinLabel(kTriggered,	"Triggered");
+  xAxis->SetBinLabel(kMinBias,		"CINT1 (V0A||V0C||FASTOR)");
+  xAxis->SetBinLabel(kMinBiasNoSPD,	"CINT5 (V0A||V0C)");
+  xAxis->SetBinLabel(kV0AndTrg,		"CINT7 (V0A&&V0C)");
+  xAxis->SetBinLabel(kHighMult,		"N>>0");
+  xAxis->SetBinLabel(kCentral,	        "Central"); 
+  xAxis->SetBinLabel(kSemiCentral,	"Semi-central"); 
+  xAxis->SetBinLabel(kDiffractive,	"Diffractive");
+  xAxis->SetBinLabel(kUser,	        "User");
+  xAxis->SetBinLabel(kOther,	        "Other");
+  fList->Add(fHTrgStatus);
+
+  if (fUseDisplacedVertices) fDisplacedVertex.SetupForData(fList);
 }
 
 //____________________________________________________________________
 void
-AliFMDEventInspector::StoreInformation(Int_t runNo)
+AliFMDEventInspector::StoreInformation()
 {
   // Write TNamed objects to output list containing information about
   // the running conditions 
@@ -576,12 +664,13 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   fList->Add(AliForwardUtil::MakeParameter("sys", fCollisionSystem));
   fList->Add(AliForwardUtil::MakeParameter("sNN", fEnergy));
   fList->Add(AliForwardUtil::MakeParameter("field", fField));
-  fList->Add(AliForwardUtil::MakeParameter("runNo", runNo));
+  fList->Add(AliForwardUtil::MakeParameter("runNo", fRunNumber));
   fList->Add(AliForwardUtil::MakeParameter("lowFlux", fLowFluxCut));
   fList->Add(AliForwardUtil::MakeParameter("fpVtx",fUseFirstPhysicsVertex));
   fList->Add(AliForwardUtil::MakeParameter("v0and",fUseV0AND));
   fList->Add(AliForwardUtil::MakeParameter("nPileUp", fMinPileupContrib));
   fList->Add(AliForwardUtil::MakeParameter("dPileup", fMinPileupDistance));
+  fList->Add(AliForwardUtil::MakeParameter("satellite", fUseDisplacedVertices));
   fList->Add(AliForwardUtil::MakeParameter("alirootRev", 
 					   AliForwardUtil::AliROOTRevision()));
   fList->Add(AliForwardUtil::MakeParameter("alirootBranch", 
@@ -686,10 +775,8 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
   // --- check centrality cut
  
-  if(fminCent>-0.0001&&cent<fminCent)
-	return  kNoEvent; 
-  if(fmaxCent>-0.0001&&cent>fmaxCent)
-	 return  kNoEvent; 
+  if(fMinCent > -0.0001 && cent < fMinCent) return  kNoEvent; 
+  if(fMaxCent > -0.0001 && cent > fMaxCent) return  kNoEvent; 
   fHCent->Fill(cent);
   if (qual == 0) fHCentVsQual->Fill(0., cent);
   else { 
@@ -744,23 +831,18 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent& esd,
   //
   DGUARD(fDebug,2,"Read the centrality in AliFMDEventInspector");
 
-  if(fUseDisplacedVertices) {
-    Double_t zvtx = fDisplacedVertex.GetVertexZ();
-    qual          = 1;
-    if(TMath::Abs(zvtx) < 999) {
-      cent = fDisplacedVertex.GetCentralityPercentile();
-      qual = 0;
-    }
-    return true;
-  }
-  
   cent = -1;
-  qual = 0;
+  qual = 1;
   AliCentrality* centObj = const_cast<AliESDEvent&>(esd).GetCentrality();
-  if (!centObj)  return true;
+  if (centObj) {
+    cent = centObj->GetCentralityPercentile(fCentMethod);  
+    qual = centObj->GetQuality();
+  }
 
-  cent = centObj->GetCentralityPercentile(fCentMethod);  
-  qual = centObj->GetQuality();
+  if (qual > 0 && fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
+    cent = fDisplacedVertex.GetCentralityPercentile();
+    qual = 0;
+  }
 
   return true;
 }
@@ -813,24 +895,48 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   }
 
   // Check if this is a collision candidate (MB)
-  // Note, that we should use the value cached in the input 
-  // handler rather than calling IsCollisionCandiate directly 
-  // on the AliPhysicsSelection obejct.  If we called the latter
-  // then the AliPhysicsSelection object would overcount by a 
-  // factor of 2! :-(
-  Bool_t  offline  = ih->IsEventSelected();
-  Bool_t  fastonly = (ih->IsEventSelected() & AliVEvent::kFastOnly);
+  ///
+  // Historic remark: Note, that we should use the value cached in the
+  //   input handler rather than calling IsCollisionCandiate directly
+  //   on the AliPhysicsSelection obejct.  If we called the latter
+  //   then the AliPhysicsSelection object would overcount by a factor
+  //   of 2! :-(
+  UInt_t  trgMask  = ih->IsEventSelected();
+  Bool_t  offline  = trgMask;
+  Bool_t  fastonly = (trgMask & AliVEvent::kFastOnly);
   TString trigStr  = esd.GetFiredTriggerClasses();
 
+  if (trigStr.IsNull()) fHTrgStatus->Fill(kNoTrgWords);
   if (fHWords) fHWords->Fill(trigStr.Data(), 1);
   
   if(fUseDisplacedVertices) {
     DMSG(fDebug,3,"Using displaced vertex stuff");
-    if (TMath::Abs(fDisplacedVertex.GetVertexZ()) >= 999) offline = false;
+    // if (TMath::Abs(fDisplacedVertex.GetVertexZ()) >= 999) offline = false;
+    if (fDisplacedVertex.IsSatellite()) 
+      triggers |= AliAODForwardMult::kSatellite;
   }
   
-  if (CheckFastPartition(fastonly))     offline = false;
-  if (offline && CheckCosmics(trigStr)) offline = false;
+  if (CheckFastPartition(fastonly)) {
+    fHTrgStatus->Fill(kPP2760Fast);
+    offline = false;
+  }
+  
+  if (offline && CheckCosmics(trigStr)) {
+    fHTrgStatus->Fill(kMUON);
+    offline = false;
+  }
+  if (offline) fHTrgStatus->Fill(kTriggered);
+  Int_t f = 0;
+  if (trgMask & AliVEvent::kMB)          f += fHTrgStatus->Fill(kMinBias);
+  if (trgMask & AliVEvent::kCINT5)       f += fHTrgStatus->Fill(kMinBiasNoSPD);
+  if (trgMask & AliVEvent::kINT7)        f += fHTrgStatus->Fill(kV0AndTrg);
+  if (trgMask & AliVEvent::kHighMult)    f += fHTrgStatus->Fill(kHighMult);
+  if (trgMask & AliVEvent::kCentral)     f += fHTrgStatus->Fill(kCentral);
+  if (trgMask & AliVEvent::kSemiCentral) f += fHTrgStatus->Fill(kSemiCentral);
+  if (trgMask & AliVEvent::kDG5)         f += fHTrgStatus->Fill(kDiffractive);
+  if (trgMask & AliVEvent::kUserDefined) f += fHTrgStatus->Fill(kUser);
+  if (f <= 0) fHTrgStatus->Fill(kOther);
+  
   // if (!CheckpAExtraV0(esd))             offline = false;
 
   DMSG(fDebug,2,"Event is %striggered by off-line", offline ? "" : "NOT ");
@@ -838,12 +944,6 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   if (offline) {
     triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
-    if (!fHTriggers) { 
-      AliWarning("Histogram of triggers not defined - has init been called");
-      return false;
-    }
-    // fHTriggers->Fill(kOffline+0.5);
-    
     CheckINELGT0(esd, nClusters, triggers);
   }
   
@@ -853,45 +953,29 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   // if (CheckPileup(esd, triggers)) fHTriggers->Fill(kPileUp+.5);
   // if (CheckEmpty(trigStr, triggers)) fHTriggers->Fill(kEmpty+.5);
 
-  CheckWords(esd, triggers);
+  CheckWords(esd, triggers); 
 
-#if 0
-  // Now check - if we have a collision - for offline triggers and
-  // fill histogram.
-  if (triggers & AliAODForwardMult::kB) {
-    fHTriggers->Fill(kB+.5);
-    if (triggers & AliAODForwardMult::kInel) 
-      fHTriggers->Fill(kInel+.5);
-    
-    if (triggers & AliAODForwardMult::kInelGt0)
-      fHTriggers->Fill(kInelGt0+.5);
-    
-    if (triggers & AliAODForwardMult::kNSD)
-      fHTriggers->Fill(kNSD+.5);
-
-    if (triggers & AliAODForwardMult::kV0AND)
-      fHTriggers->Fill(kV0AND+.5);
-  }
-  if (triggers & AliAODForwardMult::kA) fHTriggers->Fill(kA+.5);
-  if (triggers & AliAODForwardMult::kC) fHTriggers->Fill(kC+.5);
-  if (triggers & AliAODForwardMult::kE) fHTriggers->Fill(kE+.5);
-#endif
 #define TEST_TRIG_BIN(RET,BIN,TRIGGERS) \
   do { switch (BIN) { \
-    case kInel:    RET = triggers & AliAODForwardMult::kInel;    break; \
-    case kInelGt0: RET = triggers & AliAODForwardMult::kInelGt0; break; \
-    case kNSD:     RET = triggers & AliAODForwardMult::kNSD;     break; \
-    case kV0AND:   RET = triggers & AliAODForwardMult::kV0AND;   break; \
-    case kEmpty:   RET = triggers & AliAODForwardMult::kEmpty;   break; \
-    case kA:       RET = triggers & AliAODForwardMult::kA;       break; \
-    case kB:       RET = triggers & AliAODForwardMult::kB;       break; \
-    case kC:       RET = triggers & AliAODForwardMult::kC;       break; \
-    case kE:       RET = triggers & AliAODForwardMult::kE;       break; \
-    case kPileUp:  RET = triggers & AliAODForwardMult::kPileUp;  break; \
-    case kMCNSD:   RET = triggers & AliAODForwardMult::kMCNSD;   break; \
-    case kOffline: RET = triggers & AliAODForwardMult::kOffline; break; \
-    default:       RET = false; } } while(false)
+    case kInel:     RET = triggers & AliAODForwardMult::kInel;      break; \
+    case kInelGt0:  RET = triggers & AliAODForwardMult::kInelGt0;   break; \
+    case kNSD:      RET = triggers & AliAODForwardMult::kNSD;       break; \
+    case kV0AND:    RET = triggers & AliAODForwardMult::kV0AND;     break; \
+    case kEmpty:    RET = triggers & AliAODForwardMult::kEmpty;     break; \
+    case kA:        RET = triggers & AliAODForwardMult::kA;         break; \
+    case kB:        RET = triggers & AliAODForwardMult::kB;         break; \
+    case kC:        RET = triggers & AliAODForwardMult::kC;         break; \
+    case kE:        RET = triggers & AliAODForwardMult::kE;         break; \
+    case kPileUp:   RET = triggers & AliAODForwardMult::kPileUp;    break; \
+    case kMCNSD:    RET = triggers & AliAODForwardMult::kMCNSD;     break; \
+    case kSatellite:RET = triggers & AliAODForwardMult::kSatellite; break; \
+    case kOffline:  RET = triggers & AliAODForwardMult::kOffline;   break; \
+    default:        RET = false; } } while(false)
       
+  if (!fHTriggers) { 
+    AliWarning("Histogram of triggers not defined - has init been called");
+    return false;
+  }
   
   for (Int_t i = 0; i < kOffline+1; i++) { 
     Bool_t hasX = false;
@@ -1071,25 +1155,26 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent& esd, TVector3& ip)
   DGUARD(fDebug,2,"Read the vertex in AliFMDEventInspector");
   ip.SetXYZ(1024, 1024, 0);
   
-  if(fUseDisplacedVertices) {
-    Double_t zvtx = fDisplacedVertex.GetVertexZ();
-      
-    if(TMath::Abs(zvtx) < 999) {
-      ip.SetZ(zvtx);
-      return true;
-    }
-    return false;
+  EVtxStatus s = kNoVtx;
+  if (fUseFirstPhysicsVertex) 
+    s = CheckPWGUDVertex(esd, ip);
+  else if (fUsepA2012Vertex) 
+    s = CheckpA2012Vertex(esd,ip);	
+  else 
+    s = CheckVertex(esd, ip);
+  
+  if (s != kVtxOK && fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
+    s = kVtxOK;
+    ip.SetZ(fDisplacedVertex.GetVertexZ());
   }
 
-  if(fUseFirstPhysicsVertex) return CheckPWGUDVertex(esd, ip);
-  
-  if(fUsepA2012Vertex) return CheckpA2012Vertex(esd,ip);	
-  
-  return CheckVertex(esd, ip);
+  fHVtxStatus->Fill(s);
+
+  return s == kVtxOK;
 }
 
 //____________________________________________________________________
-Bool_t
+AliFMDEventInspector::EVtxStatus
 AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd, 
 				       TVector3& ip)  const
 {
@@ -1098,13 +1183,13 @@ AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd,
   if (!vertex  || !vertex->GetStatus()) {
     DMSG(fDebug,2,"No primary vertex (%p) or bad status %d", 
 	 vertex, (vertex ? vertex->GetStatus() : -1));
-    return false;
+    return kNoVtx;
   }
   const AliESDVertex* vertexSPD = esd.GetPrimaryVertexSPD();
   if (!vertexSPD || !vertexSPD->GetStatus()) {
     DMSG(fDebug,2,"No primary SPD vertex (%p) or bad status %d", 
 	 vertexSPD, (vertexSPD ? vertexSPD->GetStatus() : -1));
-    return false;
+    return kNoSPDVtx;
   }
     
   // if vertex is from SPD vertexZ, require more stringent cuts 
@@ -1114,7 +1199,7 @@ AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd,
       DMSG(fDebug,2,"Dispersion %f > %f or resolution %f > %f",
 	   vertex->GetDispersion(), fMaxVzErr,
 	   vertex->GetZRes(), 1.25 * fMaxVzErr);
-      return false;
+      return kUncertain;
     }
   }
   ip.SetZ(vertex->GetZ());
@@ -1123,31 +1208,32 @@ AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd,
     ip.SetX(vertex->GetX());
     ip.SetY(vertex->GetY());
   }
-  return true;
+  return kVtxOK;
 }
-//
-Bool_t AliFMDEventInspector::CheckpA2012Vertex(const AliESDEvent& esd, 
-				       TVector3& ip)  const
+//____________________________________________________________________
+AliFMDEventInspector::EVtxStatus
+AliFMDEventInspector::CheckpA2012Vertex(const AliESDEvent& esd, 
+					TVector3& ip)  const
 {      
-      const AliESDVertex *vertex = esd.GetPrimaryVertexSPD();
-      Bool_t fVtxOK = kFALSE;
-      if (vertex->GetNContributors()>0) 
-      {
-           TString vtxTyp = vertex->GetTitle();
-           if ( !vtxTyp.Contains("vertexer: Z") || (vertex->GetDispersion()<0.04 && vertex->GetZRes()<0.25))
-	   {	 
-		fVtxOK = kTRUE;
-		ip.SetX(vertex->GetX());
-		ip.SetY(vertex->GetY());
-		ip.SetZ(vertex->GetZ());		
-	   }	
-      }
-   return fVtxOK;	
-      	
+  const AliESDVertex *vertex = esd.GetPrimaryVertexSPD();
+  if (!vertex) return kNoSPDVtx;
+  if (vertex->GetNContributors() <= 0) return kFewContrib;
+  
+  TString vtxTyp = vertex->GetTitle();
+  if (vtxTyp.Contains("vertexer: Z")) return kNotVtxZ;
+
+  if (vertex->GetDispersion() >= 0.04 || vertex->GetZRes()>=0.25) 
+    return kUncertain;
+
+  ip.SetX(vertex->GetX());
+  ip.SetY(vertex->GetY());
+  ip.SetZ(vertex->GetZ());		
+
+  return kVtxOK;
 }
 
 //____________________________________________________________________
-Bool_t
+AliFMDEventInspector::EVtxStatus
 AliFMDEventInspector::CheckVertex(const AliESDEvent& esd, 
 				  TVector3& ip) const
 {
@@ -1157,21 +1243,24 @@ AliFMDEventInspector::CheckVertex(const AliESDEvent& esd,
   if (!vertex) { 
     if (fDebug > 2) {
       AliWarning("No SPD vertex found in ESD"); }
-    return false;
+    return kNoSPDVtx;
   }
     
+  // #if 0 // Check disabled - seem to kill a lot of PbPb events
   // Check that enough tracklets contributed 
   if(vertex->GetNContributors() <= 0) {
     DMSG(fDebug,2,"Number of contributors to vertex is %d<=0",
 	 vertex->GetNContributors());
     ip.SetZ(0);
-    return false;
+    return kFewContrib;
   } 
+  // #endif
+
   // Check that the uncertainty isn't too large 
   if (vertex->GetZRes() > fMaxVzErr) { 
     DMSG(fDebug,2,"Uncertaintity in Z of vertex is too large %f > %f", 
 	 vertex->GetZRes(), fMaxVzErr);
-    return false;
+    return kUncertain;
   }
     
   // Get the z coordiante 
@@ -1183,7 +1272,7 @@ AliFMDEventInspector::CheckVertex(const AliESDEvent& esd,
     ip.SetX(vertexXY->GetX());
     ip.SetY(vertexXY->GetY());
   }
-  return true;
+  return kVtxOK;
 }
 
 //____________________________________________________________________
@@ -1211,8 +1300,8 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   fEnergy          = AliForwardUtil::ParseCenterOfMassEnergy(fCollisionSystem, 
 							     cms);
   fField           = AliForwardUtil::ParseMagneticField(fld);
-
-  StoreInformation(esd->GetRunNumber());
+  fRunNumber       = esd->GetRunNumber();
+  StoreInformation();
   if (fCollisionSystem   == AliForwardUtil::kUnknown) { 
     AliWarningF("Unknown collision system: %s - please check", sys);
     return false;

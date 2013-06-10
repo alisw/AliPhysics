@@ -66,9 +66,10 @@ protected:
     // --- Check if this is MC ---------------------------------------
     Bool_t mc   = mgr->GetMCtruthEventHandler() != 0;
     Bool_t cent = fOptions.Has("cent");
+    Int_t  verb = fOptions.AsInt("verbose");
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskFMDELoss.C(%d,%d)", mc, cent));
+    gROOT->Macro(Form("AddTaskFMDELoss.C(%d,%d,%d)", mc, cent, verb));
   }
   /** 
    * Create entrality selection if enabled 

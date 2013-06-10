@@ -349,16 +349,22 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
  *
  * @ingroup pwglf_forward_trains_helper
  */
-Bool_t WaitForJobs(TArrayI& jobs, TObjArray* stages, Int_t delay)
+Bool_t WaitForJobs(TArrayI&   jobs, 
+		   TObjArray* stages, 
+		   Int_t      delay,
+		   Bool_t     batch)
 {
   Bool_t stopped = false;
   TFileHandler h(0, 0x1);
+  UInt_t start = 0;
   do { 
     Bool_t allDone = true;
     TDatime t;
     Printf("--- %4d/%02d/%02d %02d:%02d:%02d [Press enter to pause] ---", 
 	   t.GetYear(), t.GetMonth(), t.GetDay(), 
 	   t.GetHour(), t.GetMinute(), t.GetSecond());
+    UInt_t now = t.Convert(true);
+    if (start <= 0) start = now;
 
     TObjArray states;
     GetJobStates(jobs, states);
@@ -385,24 +391,37 @@ Bool_t WaitForJobs(TArrayI& jobs, TObjArray* stages, Int_t delay)
       Printf(" %d(%s)=%s", job, stages->At(i)->GetName(), state.Data());
       
     }
+    // Try to refresh token every 6th hour
+    if ((now - start) / 60 / 60 > 6) { 
+      // Reset the start time 
+      start = now;
+      Printf("=== Refreshing AliEn token");
+      gSystem->Exec("alien-token-init");
+      Printf("=== Done refreshing AliEn token");
+    }
+
     if (allDone) break;
     if (missing >= total) {
       Error("GetJobStates", "Info on all jobs missing");
       break;
     }
-    if (gSystem->Select(&h, 1000*delay)) {
-      // Got input on std::cin 
-      std::string l;
-      std::getline(std::cin, l);
-      std::cout << "Do you want to terminate now [yN]? " << std::flush;
-      std::getline(std::cin, l);
-      if (l[0] == 'y' || l[0] == 'Y') { 
-	stopped = true;
-	break;
+    if (!batch) {
+      if (gSystem->Select(&h, 1000*delay)) {
+	// Got input on std::cin 
+	std::string l;
+	std::getline(std::cin, l);
+	std::cout << "Do you want to terminate now [yN]? " << std::flush;
+	std::getline(std::cin, l);
+	if (l[0] == 'y' || l[0] == 'Y') { 
+	  stopped = true;
+	  break;
+	}
       }
     }
+    else 
+      gSystem->Sleep(1000*delay);
 
-    // gSystem->Sleep(1000*delay);
+    // 
   } while (true);
 
   return true;
@@ -415,7 +434,7 @@ Bool_t WaitForJobs(TArrayI& jobs, TObjArray* stages, Int_t delay)
  *
  * @ingroup pwglf_forward_trains_helper
  */
-void GridWatch(const TString& name, UShort_t delay=5*60)
+void GridWatch(const TString& name, Bool_t batch=false, UShort_t delay=5*60)
 {
   gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   TGrid::Connect("alien:///");
@@ -434,7 +453,7 @@ void GridWatch(const TString& name, UShort_t delay=5*60)
 
   if (!(CheckTokens(name, "jobid", true) && 
 	CheckTokens(name, "stage", true))) 
-    WaitForJobs(jobs, stages, delay);
+    WaitForJobs(jobs, stages, delay, batch);
 
   delete jobIDs;
   delete stages;
@@ -458,7 +477,7 @@ void GridWatch(const TString& name, UShort_t delay=5*60)
       return;
     }
 
-    WaitForJobs(jobs, stages, delay);
+    WaitForJobs(jobs, stages, delay, batch);
     
     Bool_t allFinal = true;
     for (Int_t i = 0; i < jobs.GetSize(); i++) {

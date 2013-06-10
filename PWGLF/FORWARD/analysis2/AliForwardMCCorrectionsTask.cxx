@@ -410,15 +410,15 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
 				     cent, nClusters);
 
   Bool_t isAccepted = true;
-  if(fCalculateafterESDeventcuts)
-  {
-  	 if (retESD & AliFMDEventInspector::kNoEvent)    isAccepted = false; // return;
-  	 if (retESD & AliFMDEventInspector::kNoTriggers) isAccepted = false; // return;
-	 if (retESD & AliFMDEventInspector::kNoVertex) isAccepted = false;
-	 if (retESD  & AliFMDEventInspector::kNoFMD)     isAccepted = false;  
-         if (!isAccepted) return; 
-	//returns if there is not event , does not pass phys selection , has no veretx and lack of FMD data.
-	// with good veretx outside z range it will continue
+  if(fCalculateafterESDeventcuts) {
+    if (retESD & AliFMDEventInspector::kNoEvent)    isAccepted = false; 
+    if (retESD & AliFMDEventInspector::kNoTriggers) isAccepted = false; 
+    if (retESD & AliFMDEventInspector::kNoVertex)   isAccepted = false;
+    if (retESD & AliFMDEventInspector::kNoFMD)      isAccepted = false;  
+    if (!isAccepted) return; 
+    // returns if there is not event , does not pass phys selection ,
+    // has no veretx and lack of FMD data.
+    // with good veretx outside z range it will continue
   }		
 
 

@@ -18,7 +18,6 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliAODForwardMult.h"
-#include "AliForwardCorrectionManager.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
@@ -156,13 +155,8 @@ AliFMDEnergyFitterTask::SetupForData()
   // 
   //
   DGUARD(fDebug,1,"Initialize subs of AliFMDEnergyFitterTask");
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  UShort_t sys = fEventInspector.GetCollisionSystem();
-  UShort_t sNN = fEventInspector.GetEnergy();
-  Short_t  fld = fEventInspector.GetField();
-  fcm.Init(sys, sNN, fld, 0);
-  TAxis eAxis(0,0,0);
-  TAxis vAxis(10,-10,10);
+  TAxis eAxis(0,0,0); // Default only 
+  TAxis vAxis(10,-10,10); // Default only 
   fEnergyFitter.SetupForData(eAxis);
   fEventInspector.SetupForData(vAxis);
 

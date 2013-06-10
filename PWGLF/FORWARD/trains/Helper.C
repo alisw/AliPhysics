@@ -325,8 +325,8 @@ struct Helper
       gSystem->Load("libProof");
       gSystem->Load("libProofPlayer");
     }
-    // Always recompile and with debug symbols 
-    gROOT->LoadMacro(Form("%s.C++g",cl.Data()));
+    // (Always) recompile and with debug symbols 
+    gROOT->LoadMacro(Form("%s.C+g",cl.Data()));
     Long_t ptr = gROOT->ProcessLine(Form("new %s(\"%s\", %d);", 
 					 cl.Data(), url.GetUrl(), verbose));
     if (verbose < 3) gSystem->RedirectOutput(0);

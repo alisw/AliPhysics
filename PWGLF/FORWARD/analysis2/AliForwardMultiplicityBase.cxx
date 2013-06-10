@@ -15,6 +15,7 @@
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardCorrectionManager.h"
 #include "AliForwardUtil.h"
+#include "AliFMDCorrELossFit.h"
 #include "AliLog.h"
 #include "AliAODHandler.h"
 #include "AliInputEventHandler.h"
@@ -38,7 +39,14 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
   : AliAnalysisTaskSE(name), 
     fEnableLowFlux(false), 
     fFirstEvent(true),
-    fCorrManager(0)	
+    fStorePerRing(false),
+    fList(0),
+    fHData(0),
+    fHistos(),
+    fAODFMD(false),
+    fAODEP(false),
+  fRingSums(),
+    fCorrManager(0)
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
   // Set our persistent pointer 
@@ -46,6 +54,9 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
     "AliESDFMD.,SPDVertex.,PrimaryVertex.";
+
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
@@ -57,7 +68,32 @@ AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
   fEnableLowFlux = o.fEnableLowFlux;
   fFirstEvent    = o.fFirstEvent;
   fCorrManager   = o.fCorrManager;
+  fHData             = o.fHData;
+  fHistos            = o.fHistos;
+  fAODFMD            = o.fAODFMD;
+  fAODEP             = o.fAODEP;
+  fRingSums          = o.fRingSums;
+  fList              = o.fList;
+  fStorePerRing      = o.fStorePerRing;
   return *this;
+}
+
+//____________________________________________________________________
+void
+AliForwardMultiplicityBase::SetDebug(Int_t dbg)
+{
+  // 
+  // Set debug level 
+  // 
+  // Parameters:
+  //    dbg debug level
+  //
+  GetEventInspector()	.SetDebug(dbg);
+  GetSharingFilter()	.SetDebug(dbg);
+  GetDensityCalculator().SetDebug(dbg);
+  GetCorrections()	.SetDebug(dbg);
+  GetHistCollector()	.SetDebug(dbg);
+  GetEventPlaneFinder()	.SetDebug(dbg);
 }
 //____________________________________________________________________
 Bool_t 
@@ -69,7 +105,10 @@ AliForwardMultiplicityBase::Configure(const char* macro)
     macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
     gROOT->SetMacroPath(macroPath);
   }
-  const char* config = gSystem->Which(gROOT->GetMacroPath(), macro);
+  TString mac(macro);
+  if (mac.EqualTo("-default-")) 
+    mac = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/ForwardAODConfig.C";
+  const char* config = gSystem->Which(gROOT->GetMacroPath(), mac.Data());
   if (!config) {
     AliWarningF("%s not found in %s", macro, gROOT->GetMacroPath());
     return false;
@@ -80,6 +119,121 @@ AliForwardMultiplicityBase::Configure(const char* macro)
   delete config;
  
  return true;
+}
+
+//____________________________________________________________________
+void
+AliForwardMultiplicityBase::UserCreateOutputObjects()
+{
+  // 
+  // Create output objects 
+  // 
+  //
+  DGUARD(fDebug,1,"Create user ouput");
+  fList = new TList;
+  fList->SetOwner();
+  
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler*      ah = 
+    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
+  //if (!ah) AliFatal("No AOD output handler set in analysis manager");
+  if (ah)  CreateBranches(ah);
+   
+  GetEventInspector()	.CreateOutputObjects(fList);
+  GetSharingFilter()	.CreateOutputObjects(fList);
+  GetDensityCalculator().CreateOutputObjects(fList);
+  GetCorrections()	.CreateOutputObjects(fList);
+  GetHistCollector()	.CreateOutputObjects(fList);
+  GetEventPlaneFinder()	.CreateOutputObjects(fList);
+
+  PostData(1, fList);
+}
+//____________________________________________________________________
+void
+AliForwardMultiplicityBase::CreateBranches(AliAODHandler* ah)
+{
+  TObject* obj = &fAODFMD;
+  ah->AddBranch("AliAODForwardMult", &obj);
+  TObject* epobj = &fAODEP;
+  ah->AddBranch("AliAODForwardEP", &epobj);
+
+  TAxis tmp(1, 0, 1);
+  fHistos.Init(tmp);
+
+  if (!fStorePerRing) return;
+  
+  AliWarning("Per-ring histograms in AOD\n"
+	     "*********************************************************\n"
+	     "* For each event 5 additional 2D histogram are stored   *\n"
+	     "* in separate branches of the AODs.  This will increase *\n"
+	     "* the size of the AODs - proceed with caution           *\n"
+	     "*********************************************************");
+  TObject* hists[] = { fHistos.fFMD1i, 
+		       fHistos.fFMD2i, fHistos.fFMD2o, 
+		       fHistos.fFMD3i, fHistos.fFMD3o };
+  for (Int_t i = 0; i < 5; i++) { 
+    ah->AddBranch("TH2D", &(hists[i]));
+  }
+}
+
+//____________________________________________________________________
+Bool_t
+AliForwardMultiplicityBase::SetupForData()
+{
+  // 
+  // Initialise the sub objects and stuff.  Called on first event 
+  // 
+  //
+  DGUARD(fDebug,1,"Initialize sub-algorithms");
+  const TAxis* pe = 0;
+  const TAxis* pv = 0;
+
+  Bool_t  mc  = this->IsA()->InheritsFrom("AliForwardMCMultiplicityTask");
+  Bool_t  sat = false; // GetEventInspector().IsUseDisplacedVertices(); 
+  if (!ReadCorrections(pe,pv,mc,sat)) return false;
+  
+  InitMembers(pe,pv);
+
+  GetEventInspector()	.SetupForData(*pv);
+  GetSharingFilter()	.SetupForData(*pe);
+  GetDensityCalculator().SetupForData(*pe);
+  GetCorrections()	.SetupForData(*pe);
+  GetHistCollector()	.SetupForData(*pv,*pe);
+  GetEventPlaneFinder()	.SetupForData(*pe);
+  
+  this->Print("R");
+  return true;
+}
+
+//____________________________________________________________________
+void
+AliForwardMultiplicityBase::InitMembers(const TAxis* pe, const TAxis* /*pv*/)
+{
+  fHistos.ReInit(*pe);
+  fAODFMD.Init(*pe);
+  fAODEP.Init(*pe);
+  fRingSums.Init(*pe);
+
+  fHData = static_cast<TH2D*>(fAODFMD.GetHistogram().Clone("d2Ndetadphi"));
+  fHData->SetStats(0);
+  fHData->SetDirectory(0);
+  fList->Add(fHData);
+
+  TList* rings = new TList;
+  rings->SetName("ringSums");
+  rings->SetOwner();
+  fList->Add(rings);
+
+  rings->Add(fRingSums.Get(1, 'I'));
+  rings->Add(fRingSums.Get(2, 'I'));
+  rings->Add(fRingSums.Get(2, 'O'));
+  rings->Add(fRingSums.Get(3, 'I'));
+  rings->Add(fRingSums.Get(3, 'O'));
+  fRingSums.Get(1, 'I')->SetMarkerColor(AliForwardUtil::RingColor(1, 'I'));
+  fRingSums.Get(2, 'I')->SetMarkerColor(AliForwardUtil::RingColor(2, 'I'));
+  fRingSums.Get(2, 'O')->SetMarkerColor(AliForwardUtil::RingColor(2, 'O'));
+  fRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
+  fRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 }
 
 //____________________________________________________________________
@@ -102,10 +256,16 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
   // Check that we have the energy loss fits, needed by 
   //   AliFMDSharingFilter 
   //   AliFMDDensityCalculator 
-  if (what & AliForwardCorrectionManager::kELossFits && !fcm.GetELossFit()) { 
-    AliFatal(Form("No energy loss fits"));
-    return false;
+  if (what & AliForwardCorrectionManager::kELossFits) {
+    if (!fcm.GetELossFit()) { 
+      AliFatal(Form("No energy loss fits"));
+      return false;      
+    }
+    // Force this here so we select the proper quality 
+    const AliFMDCorrELossFit* fits = fcm.GetELossFit();
+    fits->CacheBins(GetDensityCalculator().GetMinQuality());
   }
+  
   // Check that we have the double hit correction - (optionally) used by 
   //  AliFMDDensityCalculator 
   if (what & AliForwardCorrectionManager::kDoubleHit && !fcm.GetDoubleHit()) {
@@ -147,7 +307,8 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
 Bool_t
 AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe, 
 					    const TAxis*& pv, 
-					    Bool_t        mc)
+					    Bool_t        mc,
+					    Bool_t        sat)
 {
   //
   // Read corrections
@@ -166,11 +327,14 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
   DGUARD(fDebug,1,"Read corrections 0x%x", what);
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  if (!fcm.Init(GetEventInspector().GetCollisionSystem(),
+  if (!fcm.Init(GetEventInspector().GetRunNumber(),
+		GetEventInspector().GetCollisionSystem(),
 		GetEventInspector().GetEnergy(),
 		GetEventInspector().GetField(),
 		mc,
-		what)) { 
+		sat,
+		what,
+		false)) { 
     AliWarning("Failed to read in some corrections, making task zombie");
     return false;
   }
@@ -251,6 +415,49 @@ AliForwardMultiplicityBase::MarkEventForStore() const
   if (ah)    	
 	ah->SetFillAOD(kTRUE);
 
+}
+
+//____________________________________________________________________
+void
+AliForwardMultiplicityBase::Terminate(Option_t*)
+{
+  // 
+  // End of job
+  // 
+  // Parameters:
+  //    option Not used 
+  //
+  DGUARD(fDebug,1,"Processing the merged results");
+
+  TList* list = dynamic_cast<TList*>(GetOutputData(1));
+  if (!list) {
+    AliError(Form("No output list defined (%p)", GetOutputData(1)));
+    if (GetOutputData(1)) GetOutputData(1)->Print();
+    return;
+  }
+
+  TList* output = new TList;
+  output->SetName(Form("%sResults", GetName()));
+  output->SetOwner();
+
+  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
+  MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
+
+  EstimatedNdeta(list, output);
+
+  GetSharingFilter()	.Terminate(list,output,Int_t(nTr));
+  GetDensityCalculator().Terminate(list,output,Int_t(nTrVtx));
+  GetCorrections()	.Terminate(list,output,Int_t(nTrVtx));
+
+  PostData(2, output);
+}
+
+//____________________________________________________________________
+void
+AliForwardMultiplicityBase::EstimatedNdeta(const TList* input, 
+					   TList*       output) const
+{
+  MakeRingdNdeta(input, "ringSums", output, "ringResults");
 }
 
 //____________________________________________________________________
@@ -464,12 +671,14 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   std::cout << ClassName() << ": " << GetName() << "\n" 
 	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no") 
 	    << "\n"
+	    << "  Store per-ring hists:   " << (fStorePerRing ? "yes" : "no")
+	    << "\n"
 	    << "  Off-line trigger mask:  0x" 
 	    << std::hex     << std::setfill('0') 
 	    << std::setw (8) << fOfflineTriggerMask 
 	    << std::dec     << std::setfill (' ') << std::endl;
   gROOT->IncreaseDirLevel();
-  if (fCorrManager) fCorrManager->Print();
+  if (fCorrManager) fCorrManager->Print(option);
   else  
     std::cout << "  Correction manager not set yet" << std::endl;
   GetEventInspector()   .Print(option);

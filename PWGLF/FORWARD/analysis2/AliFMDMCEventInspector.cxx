@@ -248,14 +248,14 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
 }
 
 //____________________________________________________________________
-void AliFMDMCEventInspector::StoreInformation(Int_t runNo)
+void AliFMDMCEventInspector::StoreInformation()
 {
   // Store information about running conditions in the output list 
   if (!fList) return;
-  AliFMDEventInspector::StoreInformation(runNo);
-  TParameter<bool>* mc = new TParameter<bool>("mc",true); // , fProduction.Data());
-  mc->SetUniqueID(1);
-  fList->Add(mc);
+  AliFMDEventInspector::StoreInformation();
+  Bool_t mc = true;
+  fList->Add(AliForwardUtil::MakeParameter("mc", mc));
+  // , fProduction.Data());
 }
 
 namespace

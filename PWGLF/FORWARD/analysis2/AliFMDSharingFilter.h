@@ -55,7 +55,10 @@ class AliFMDFloatMap;
 class AliFMDSharingFilter : public TNamed
 {
 public: 
-  /** Status of a strip */
+  /** 
+   * Status of a strip 
+   * @deprecated Not used
+   */
   enum Status { 
     /** Nothing yet */
     kNone             = 1, 
@@ -146,6 +149,13 @@ public:
    * 
    */
   void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
+  /** 
+   * Set whether to consider invalid multiplicities as null (or empty)
+   * signal. 
+   * 
+   * @param flag If true, count invalids as empty
+   */
+  void SetInvalidIsEmpty(Bool_t flag) { fInvalidIsEmpty = flag; }
   
   /** 
    * Filter the input AliESDFMD object
@@ -221,8 +231,25 @@ public:
    * @param c Cuts object
    */  
   void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
-
+  /** 
+   * Add a dead strip
+   * 
+   * @param d  Detector
+   * @param r  Ring 
+   * @param s  Sector 
+   * @param t  Strip
+   */
   void AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t);
+  /** 
+   * Add a dead region in a detector ring
+   * 
+   * @param d   Detector
+   * @param r   Ring
+   * @param s1  First sector (inclusive)
+   * @param s2  Last sector (inclusive)
+   * @param t1  First strip (inclusive)
+   * @param t2  Last strip (inclusive)
+   */
   void AddDeadRegion(UShort_t d, Char_t r, UShort_t s1, UShort_t s2, 
 		     UShort_t t1, UShort_t t2);
 protected:
@@ -263,17 +290,17 @@ protected:
     /** 
      * Clear this object
      */
-    void Clear(const Option_t* ="") { fNHits = 0; } 
+    // void Clear(const Option_t* ="") { fNHits = 0; } 
     /** 
      * Increase number of hits 
      * 
      */
-    void Incr() { fNHits++; } 
+    // void Incr() { fNHits++; } 
     /** 
      * Finish off 
      * 
      */
-    void Finish(); 
+    // void Finish(); 
     /** 
      * Make output 
      * 
@@ -293,15 +320,15 @@ protected:
     TH1D*     fDouble;       // Distribution of 2 signals after filter
     TH1D*     fTriple;       // Distribution of 3 signals after filter
     TH2D*     fSinglePerStrip;       // Distribution of 1 signal per strip
-    TH1D*     fDistanceBefore; //Distance between signals before sharing
-    TH1D*     fDistanceAfter; //Distance between signals after sharing    
+    // TH1D*     fDistanceBefore; //Distance between signals before sharing
+    // TH1D*     fDistanceAfter; //Distance between signals after sharing    
     TH2D*     fBeforeAfter;  // Correlation of before and after 
     TH2D*     fNeighborsBefore; // Correlation of neighbors 
     TH2D*     fNeighborsAfter; // Correlation of neighbors 
     TH2D*     fSum;          // Summed signal 
-    TH1D*     fHits;         // Distribution of hit strips. 
-    Int_t     fNHits;        // Number of hit strips per event
-    ClassDef(RingHistos,2);
+    // TH1D*     fHits;         // Distribution of hit strips. 
+    // Int_t     fNHits;        // Number of hit strips per event
+    ClassDef(RingHistos,3);
   };
   /** 
    * Get the ring histogram container 
@@ -436,10 +463,10 @@ protected:
   TList    fRingHistos;    // List of histogram containers
   // Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
-  TH2*     fSummed;        // Operations histogram 
+  // TH2*     fSummed;        // Operations histogram 
   TH2*     fHighCuts;      // High cuts used
   TH2*     fLowCuts;       // High cuts used
-  AliFMDFloatMap* fOper;   // Operation done per strip 
+  // AliFMDFloatMap* fOper;   // Operation done per strip 
   Int_t    fDebug;         // Debug level 
   Bool_t   fZeroSharedHitsBelowThreshold; //Whether to zero shared strip below cut
   AliFMDMultCuts fLCuts;    //Cuts object for low cuts
@@ -448,7 +475,9 @@ protected:
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
   Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
   TArrayI  fExtraDead;      // List of extra dead channels
-  ClassDef(AliFMDSharingFilter,6); //
+  Bool_t   fInvalidIsEmpty;  // Consider kInvalidMult as zero 
+
+  ClassDef(AliFMDSharingFilter,8); //
 };
 
 #endif

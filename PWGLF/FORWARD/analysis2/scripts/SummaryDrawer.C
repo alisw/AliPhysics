@@ -13,6 +13,7 @@
 #  include <THStack.h>
 #  include <TH1.h>
 #  include <TH2.h>
+#  include <TH3.h>
 #  include <TParameter.h>
 #  include <TCanvas.h>
 #  include <TList.h>
@@ -28,10 +29,12 @@
 #  include <TProfile.h>
 #  include <TGaxis.h>
 #  include <TPad.h>
+#  include <TRegexp.h>
 # else
 class THStack;
 class TH1;
 class TH2;
+class TH3;
 class TCollection;
 class TCanvas;
 class TVirtualPad;
@@ -40,7 +43,10 @@ class TLatex;
 class TAxis;
 # endif
 
-
+/**
+ * Base class for summary drawers
+ * 
+ */
 class SummaryDrawer 
 {
 public:
@@ -53,7 +59,8 @@ public:
       fParVal(0),
       fPause(false),
       fLandscape(false), 
-      fRingMap(0)
+      fRingMap(0), 
+      fPDF(true)
   {
     fRingMap = new TVirtualPad*[6];
     fRingMap[0] = 0;
@@ -157,14 +164,15 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static void GetParameter(const TCollection*  c, 
-			   const TString&      name, 
-			   UShort_t&           value,
-			   Bool_t              verb=true)
+  static Bool_t GetParameter(const TCollection*  c, 
+			     const TString&      name, 
+			     UShort_t&           value,
+			     Bool_t              verb=true)
   {
     TObject* o = GetObject(c, name, verb);
-    if (!o) return;
+    if (!o) return false;
     value = o->GetUniqueID();
+    return true;
   }
   //_____________________________________________________________________
   /** 
@@ -175,15 +183,16 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static void GetParameter(const TCollection*  c, 
-			   const TString&      name, 
-			   Int_t&              value,
-			   Bool_t              verb=true)
+  static Bool_t GetParameter(const TCollection*  c, 
+			     const TString&      name, 
+			     Int_t&              value,
+			     Bool_t              verb=true)
 
   {
     TObject* o = GetObject(c, name, verb);
-    if (!o) return;
+    if (!o) return false;
     value = o->GetUniqueID();
+    return true;
   }
   //_____________________________________________________________________
   /** 
@@ -194,17 +203,18 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static void GetParameter(const TCollection*  c, 
-			   const TString&      name, 
-			   Double_t&           value,
-			   Bool_t              verb=true)
-
+  static Bool_t GetParameter(const TCollection*  c, 
+			     const TString&      name, 
+			     Double_t&           value,
+			     Bool_t              verb=true)
+    
   {
     TObject* o = GetObject(c, name, verb);
-    if (!o) return;
+    if (!o) return false;
     UInt_t  i = o->GetUniqueID();
     Float_t v = *reinterpret_cast<Float_t*>(&i);
     value = v;
+    return true;
   }
   //_____________________________________________________________________
   /** 
@@ -215,14 +225,15 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static void GetParameter(const TCollection*  c, 
+  static Bool_t GetParameter(const TCollection*  c, 
 			   const TString&      name, 
 			   Bool_t&             value,
 			   Bool_t              verb=true)
   {
     TObject* o = GetObject(c, name, verb);
-    if (!o) return;
+    if (!o) return false;
     value = o->GetUniqueID();
+    return true;
   }
   //____________________________________________________________________
   /** 
@@ -306,6 +317,31 @@ protected:
   
     // --- Return the collection -------------------------------------
     return static_cast<TH2*>(o);
+  }
+  //____________________________________________________________________
+  /** 
+   * Get a 2D histogram from a collection
+   * 
+   * @param parent Parent collection 
+   * @param name   Name of histogram 
+   * @param verb   If true and not found, complain
+   * 
+   * @return pointer or null
+   */
+  static TH3* GetH3(const TCollection* parent, 
+		    const TString&     name, 
+		    Bool_t             verb=true)
+  {
+    // Info("GetH2", "Getting 2D histogram of %s from %p", name.Data(), c);
+    // --- Find the object -------------------------------------------
+    TObject* o = GetObject(parent, name, verb);
+    if (!o) return 0;
+
+    // --- Check the type of object ----------------------------------
+    if (!CheckType(o, TH3::Class(), parent->GetName())) return 0;
+  
+    // --- Return the collection -------------------------------------
+    return static_cast<TH3*>(o);
   }
   //__________________________________________________________________
   /** 
@@ -409,10 +445,13 @@ protected:
    *
    * @return Created canvas 
    */
-  void CreateCanvas(const TString& pname, Bool_t landscape=false)
+  void CreateCanvas(const TString& pname, 
+		    Bool_t landscape=false, 
+		    Bool_t pdf=true)
   {
     // Info("CreateCanvas", "Creating canvas");
     fLandscape = landscape;
+    fPDF       = pdf;
     Int_t height = 1000;
     Int_t width  = height / TMath::Sqrt(2);
     if (fLandscape) {
@@ -424,8 +463,9 @@ protected:
     fCanvas->SetFillColor(0);
     fCanvas->SetBorderSize(0);
     fCanvas->SetBorderMode(0);
-    fCanvas->Print(Form("%s[", pname.Data()), 
-		   Form("pdf %s", fLandscape ? "Landscape" : ""));
+    if (fPDF) 
+      fCanvas->Print(Form("%s[", pname.Data()), 
+		     Form("pdf %s", fLandscape ? "Landscape" : ""));
     fCanvas->SetLeftMargin(.1);
     fCanvas->SetRightMargin(.05);
     fCanvas->SetBottomMargin(.1);
@@ -495,8 +535,12 @@ protected:
   {
     // Info("CloseCanvas", "Closing canvas");
     // ClearCanvas();
-    fCanvas->Print(Form("%s]", fCanvas->GetTitle()),
-		   Form("pdf %s", fLandscape ? "Landscape" : ""));
+    if (fPDF && fCanvas)
+      fCanvas->Print(Form("%s]", fCanvas->GetTitle()),
+		     Form("pdf %s", fLandscape ? "Landscape" : ""));
+    if (fCanvas)
+      fCanvas->Close();
+    fCanvas = 0;
   }
 
   //__________________________________________________________________
@@ -520,13 +564,15 @@ protected:
     fCanvas->Update();
     fCanvas->cd();
 
-    gSystem->RedirectOutput("/dev/null");
-    fCanvas->Print(fCanvas->GetTitle(), tit);
-    gSystem->RedirectOutput(0);
-  
-    Pause();
+    if (fPDF) {
+      gSystem->RedirectOutput("/dev/null");
+      fCanvas->Print(fCanvas->GetTitle(), tit);
+      gSystem->RedirectOutput(0);
 
-    ClearCanvas();
+      Pause();
+
+      ClearCanvas();
+    }
   }
   //__________________________________________________________________
   /** 
@@ -596,15 +642,15 @@ protected:
     TString o(opts);
     if (o.Contains("colz", TString::kIgnoreCase)) 
       p->SetRightMargin(0.15);
+    if (!h) {
+      Warning("DrawInPad", "Nothing to draw in pad # %s", p->GetName());
+      return;
+    }
     if (o.Contains("text", TString::kIgnoreCase)) {
       TH1* hh = static_cast<TH1*>(h);
       hh->SetMaximum(1.1*hh->GetMaximum());
       hh->SetMarkerSize(2);
       o.Append("30");
-    }
-    if (!h) {
-      // Warning("DrawInPad", "Nothing to draw in pad # %s", p->GetName());
-      return;
     }
     h->Draw(o);
     
@@ -914,6 +960,7 @@ protected:
   Bool_t   fPause;   // Whether to pause after drawing a canvas
   Bool_t   fLandscape; // Landscape or Portrait orientation
   TVirtualPad** fRingMap;
+  Bool_t   fPDF;
 };
 #endif
 

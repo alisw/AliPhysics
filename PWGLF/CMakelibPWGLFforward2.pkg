@@ -34,19 +34,41 @@ if((DEFINED ALIROOT_SVN_BRANCH))
 endif((DEFINED ALIROOT_SVN_BRANCH))
 
 set ( SRCS   
+  # ZDC tasks
+  FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
+  FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.cxx
+  FORWARD/GEO/AliAnalysisTaskZDCpAcalib.cxx
+  # AOD objects
   FORWARD/analysis2/AliAODCentralMult.cxx
   FORWARD/analysis2/AliAODForwardEP.cxx
   FORWARD/analysis2/AliAODForwardMult.cxx
-  FORWARD/analysis2/AliBasedNdetaTask.cxx
-  FORWARD/analysis2/AliBaseMCTrackDensity.cxx
+  # Interface to OADB backed by a TTree 
+  FORWARD/analysis2/AliOADBForward.cxx
+  # Correction managers 
+  FORWARD/analysis2/AliCorrectionManagerBase.cxx 
+  FORWARD/analysis2/AliForwardCorrectionManager.cxx
+  FORWARD/analysis2/AliCentralCorrectionManager.cxx
+  # Central (SPD) code 
   FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
   FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
   FORWARD/analysis2/AliCentraldNdetaTask.cxx
   FORWARD/analysis2/AliCentralMCCorrectionsTask.cxx
   FORWARD/analysis2/AliCentralMCMultiplicityTask.cxx
   FORWARD/analysis2/AliCentralMultiplicityTask.cxx
+  FORWARD/analysis2/AliSPDMCTrackDensity.cxx
+  # Aux tasks and code 
   FORWARD/analysis2/AliCopyHeaderTask.cxx
+  FORWARD/analysis2/AliBasedNdetaTask.cxx
+  FORWARD/analysis2/AliBaseMCTrackDensity.cxx
+  FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
   FORWARD/analysis2/AliDisplacedVertexSelection.cxx
+  FORWARD/analysis2/AliPoissonCalculator.cxx
+  FORWARD/analysis2/AliMCAuxHandler.cxx
+  # Forward Aux
+  FORWARD/analysis2/AliForwardFlowWeights.cxx
+  FORWARD/analysis2/AliForwardUtil.cxx
+  FORWARD/analysis2/AliFMDMultCuts.cxx
+  # FMD corrections
   FORWARD/analysis2/AliFMDCorrAcceptance.cxx
   FORWARD/analysis2/AliFMDCorrDoubleHit.cxx
   FORWARD/analysis2/AliFMDCorrector.cxx 
@@ -54,40 +76,32 @@ set ( SRCS
   FORWARD/analysis2/AliFMDCorrMergingEfficiency.cxx
   FORWARD/analysis2/AliFMDCorrSecondaryMap.cxx 
   FORWARD/analysis2/AliFMDCorrVertexBias.cxx
+  # FMD algortithmns 
   FORWARD/analysis2/AliFMDDensityCalculator.cxx
   FORWARD/analysis2/AliFMDEnergyFitter.cxx
-  FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
   FORWARD/analysis2/AliFMDEventInspector.cxx
   FORWARD/analysis2/AliFMDEventPlaneFinder.cxx
-  FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliFMDHistCollector.cxx
+  FORWARD/analysis2/AliFMDSharingFilter.cxx
+  # FMD MC algorithms
   FORWARD/analysis2/AliFMDMCCorrector.cxx
   FORWARD/analysis2/AliFMDMCDensityCalculator.cxx
   FORWARD/analysis2/AliFMDMCEventInspector.cxx
   FORWARD/analysis2/AliFMDMCSharingFilter.cxx
   FORWARD/analysis2/AliFMDMCTrackDensity.cxx
-  FORWARD/analysis2/AliFMDMultCuts.cxx
-  FORWARD/analysis2/AliFMDSharingFilter.cxx
-  FORWARD/analysis2/AliForwardCorrectionManager.cxx
+  # Forward tasks 
+  FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
+  FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliForwarddNdetaTask.cxx
   FORWARD/analysis2/AliForwardFlowTaskQC.cxx
-  FORWARD/analysis2/AliForwardFlowWeights.cxx
   FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
   FORWARD/analysis2/AliForwardMCFlowTaskQC.cxx
   FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
   FORWARD/analysis2/AliForwardMultiplicityBase.cxx
   FORWARD/analysis2/AliForwardMultiplicityTask.cxx
   FORWARD/analysis2/AliForwardQATask.cxx
-  FORWARD/analysis2/AliForwardUtil.cxx
-  FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
-  FORWARD/analysis2/AliMCAuxHandler.cxx
-  FORWARD/analysis2/AliPoissonCalculator.cxx
-  FORWARD/analysis2/AliSPDMCTrackDensity.cxx
-  FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
-  FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.cxx
-  FORWARD/GEO/AliAnalysisTaskZDCpAcalib.cxx
-  FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
   FORWARD/analysis2/AliForwardCreateResponseMatrices.cxx
+  FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
   FORWARD/photons/AliAnalysisTaskPMD.cxx
   FORWARD/photons/AliAnalysisTaskPMD.h
   FORWARD/photons/AliAnalysisTaskPMDSim.cxx
@@ -101,15 +115,20 @@ set ( EINCLUDE
   ANALYSIS 
   PWGLF/FORWARD/analysis2  
   PWGLF/FORWARD/GEO 
+  FORWARD/analysis2  
+  FORWARD/GEO 
   PWG0 
   STEER/ESD 
   STEER/STEERBase)
 
 set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
              FORWARD/analysis2/AliAODCentralMult.h 
+	     FORWARD/analysis2/AliOADBForward.h
              FORWARD/analysis2/AliForwardUtil.h  
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
+	     FORWARD/analysis2/AliForwardCorrectionManager.h
+	     FORWARD/analysis2/AliCorrectionManagerBase.h
 	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h
 	     FORWARD/GEO/AliAnalysisTaskZDCpAcalib.h
 	     FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.h)

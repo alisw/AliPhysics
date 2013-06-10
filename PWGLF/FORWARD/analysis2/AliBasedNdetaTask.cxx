@@ -423,31 +423,33 @@ AliBasedNdetaTask::UserExec(Option_t *)
   if(!ApplyEmpiricalCorrection(forward,data))
  	return;
 
+#if 0
+  // Code disabled - breaks execution 
   Int_t notemptybins=0;
   Double_t sum=0.0;	
   for (Int_t ix=1;ix<=data->GetXaxis()->GetNbins();ix++)
-  {
-	Double_t sumy=0.0;					
-  	for(Int_t iy=1;iy<=data->GetYaxis()->GetNbins();iy++)
+    {
+      Double_t sumy=0.0;					
+      for(Int_t iy=1;iy<=data->GetYaxis()->GetNbins();iy++)
 	{
-		if(data->GetBinContent(ix,iy)>0.0)
-		{
-			sumy+=data->GetBinContent(ix,iy);
-			notemptybins++;
-		}
+	  if(data->GetBinContent(ix,iy)>0.0)
+	    {
+	      sumy+=data->GetBinContent(ix,iy);
+	      notemptybins++;
+	    }
 		
 	} 	
-	sum+=sumy;	
-  }
+      sum+=sumy;	
+    }
 
- if(notemptybins>0)		
-{
-  sum=sum/((Double_t)notemptybins);
-} 
-else
-  sum=-1.0;		
-   fmeabsignalvscentr->Fill(sum,cent);		
-	
+  if(notemptybins>0)		
+    {
+      sum=sum/((Double_t)notemptybins);
+    } 
+  else
+    sum=-1.0;		
+  fmeabsignalvscentr->Fill(sum,cent);		
+#endif	
 
   Bool_t isZero = ((fNormalizationScheme & kZeroBin) &&
 		   !forward->IsTriggerBits(AliAODForwardMult::kNClusterGt0));
@@ -2016,37 +2018,36 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // if (!IsAllBin()) return;
 
 }
-//_________________________________________________________________________________________________
-Bool_t AliBasedNdetaTask::ApplyEmpiricalCorrection(const AliAODForwardMult* aod,TH2D* data)
+//____________________________________________________________________
+Bool_t 
+AliBasedNdetaTask::ApplyEmpiricalCorrection(const AliAODForwardMult* aod,
+					    TH2D* data)
 {
-	if (!fglobalempiricalcorrection)
-		return true;
-	Float_t zvertex=aod->GetIpZ();
-	Int_t binzvertex=fglobalempiricalcorrection->GetXaxis()->FindBin(zvertex);
-	if(binzvertex<1||binzvertex>fglobalempiricalcorrection->GetNbinsX())
-		return false;
-	for (int i=1;i<=data->GetNbinsX();i++)
-	{
-		Int_t bincorrection=fglobalempiricalcorrection->GetYaxis()->FindBin(data->GetXaxis()->GetBinCenter(i));
-		if(bincorrection<1||bincorrection>fglobalempiricalcorrection->GetNbinsY())
-			return false;
-		Float_t correction=fglobalempiricalcorrection->GetBinContent(binzvertex,bincorrection);
-		if(correction<0.001)
-		{
-			data->SetBinContent(i,0,0);
-			data->SetBinContent(i,data->GetNbinsY()+1,0);
-
-		}	
-		for(int j=1;j<=data->GetNbinsY();j++)
-		{
-			if (data->GetBinContent(i,j)>0.0)
-			{
-				data->SetBinContent(i,j,data->GetBinContent(i,j)*correction);
-				data->SetBinError(i,j,data->GetBinError(i,j)*correction);
-			}	
-		}
-	}
-	return true;
+  if (!fglobalempiricalcorrection || !data)
+    return true;
+  Float_t zvertex=aod->GetIpZ();
+  Int_t binzvertex=fglobalempiricalcorrection->GetXaxis()->FindBin(zvertex);
+  if(binzvertex<1||binzvertex>fglobalempiricalcorrection->GetNbinsX())
+    return false;
+  for (int i=1;i<=data->GetNbinsX();i++) {
+    Int_t bincorrection=fglobalempiricalcorrection->GetYaxis()
+      ->FindBin(data->GetXaxis()->GetBinCenter(i));
+    if(bincorrection<1||bincorrection>fglobalempiricalcorrection->GetNbinsY())
+      return false;
+    Float_t correction=fglobalempiricalcorrection
+      ->GetBinContent(binzvertex,bincorrection);
+    if(correction<0.001) {
+      data->SetBinContent(i,0,0);
+      data->SetBinContent(i,data->GetNbinsY()+1,0);
+    }	
+    for(int j=1;j<=data->GetNbinsY();j++) {
+      if (data->GetBinContent(i,j)>0.0) {
+	data->SetBinContent(i,j,data->GetBinContent(i,j)*correction);
+	data->SetBinError(i,j,data->GetBinError(i,j)*correction);
+      }	
+    }
+  }
+  return true;
 }
 
 //

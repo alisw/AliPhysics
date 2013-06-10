@@ -27,7 +27,7 @@ class TString;
  */
 struct AvailableSoftware
 {
-  static Bool_t Check(TString& aliroot, TString& root)
+  static Bool_t Check(TString& aliroot, TString& root, Bool_t debug=false)
   {
     // Figure out what to do.  
     // If mode == 0, then do nothing. 
@@ -35,17 +35,40 @@ struct AvailableSoftware
     // If bit 1 is set in mode (0x2), select last AliROOT/ROOT version 
     // If bit 2 is set in mode (0x4), select ROOT corresponding to AliROOT
     UShort_t mode = 0; 
-
+    
+    Bool_t show = (aliroot.Contains("list", TString::kIgnoreCase) ||
+		   root.Contains(   "list", TString::kIgnoreCase));
+    Bool_t last = (aliroot.Contains("last", TString::kIgnoreCase) || 
+		   aliroot.Contains("newest", TString::kIgnoreCase));
+    Bool_t nots = (aliroot.Contains("nonspecial", TString::kIgnoreCase) ||
+		   aliroot.Contains("regular",    TString::kIgnoreCase) ||
+		   aliroot.Contains("standard",   TString::kIgnoreCase));
+    Bool_t rele = (aliroot.Contains("release",    TString::kIgnoreCase));
+    Bool_t anat = (aliroot.Contains("analysis",   TString::kIgnoreCase));
+    
     TString c("wget -q http://alimonitor.cern.ch/packages/ -O - | "
-	      "sed -n -e '/<tr/,/<\\/tr>/ p' | "
-	      "sed -n '/<a.*VO_ALICE@AliRoot::/,/VO_ALICE@ROOT::/ p' | "
-	      "sed -n -e 's/.*VO_ALICE@AliRoot::\\([-0-9a-zA-Z]*\\).*/%\\1%/p' "
-	      "  -e 's/.*VO_ALICE@ROOT::\\([-0-9a-zA-Z]*\\).*/\\1@/p' | "
-	      "tr -d '\\n' | tr '@' '\\n' | tr '%' '\\t' ");
+	      "sed -n -e '/<tr/,/<\\/tr>/ p' | ");
+    if (rele || anat || nots) {
+      c.Append("sed -n '/<a.*VO_ALICE@AliRoot::v[0-9]\\{1,\\}-[0-9]\\{1,\\}-");
+      if (rele)
+	c.Append("Rev-[0-9]\\{1,\\}");
+      else if (anat) 
+	c.Append("[0-9]\\{1,\\}-AN");
+      else if (nots) 
+	c.Append("\\([0-9]\\{1,\\}\\|Rev\\)-\\(AN\\|[0-9]\\{1,\\}\\)");
+      c.Append("/,/VO_ALICE@ROOT::/ p' | ");
+    }
+    else 
+      c.Append("sed -n '/<a.*VO_ALICE@AliRoot::/,/VO_ALICE@ROOT::/ p' | ");
+    
+    c.Append("sed -n -e 's/.*VO_ALICE@AliRoot::\\([-0-9a-zA-Z]*\\).*/%\\1%/p' "
+	     "  -e 's/.*VO_ALICE@ROOT::\\([-0-9a-zA-Z]*\\).*/\\1@/p' | "
+	     "tr -d '\\n' | tr '@' '\\n' | tr '%' '\\t' ");
+    
+    if (debug) 
+      Printf("Command: %s", c.Data());
 
-    if (aliroot.EqualTo("list", TString::kIgnoreCase) ||
-	root.EqualTo("list", TString::kIgnoreCase) || 
-	aliroot.IsNull()) {
+    if (show || aliroot.IsNull()) {
       Warning("AvaliableSoftware::Check", "No AliROOT/ROOT version specified, "
 	      "available packages are:\n" 
 	      "\tAliROOT \tROOT:");
@@ -53,7 +76,7 @@ struct AvailableSoftware
       return false;
     }
 
-    if (aliroot.EqualTo("last", TString::kIgnoreCase)) 
+    if (last) 
       mode |= 0x2;
     else if (!aliroot.IsNull()) 
       mode |= 0x4; 
@@ -61,6 +84,7 @@ struct AvailableSoftware
     // Nothing to do 
     if (mode == 0) return true; 
     
+    if (debug) Printf("Mode=0x%02x", mode);
 
     TString    values = gSystem->GetFromPipe(c);
     TObjArray* tokens = values.Tokenize(" \t\n");
@@ -97,6 +121,29 @@ struct AvailableSoftware
 	    aliroot.Data());
     delete tokens; 
     return false;
+  }
+  static void Test(const TString& ali, const TString& roo=TString())
+  {
+    TString aliroot(Form("list,%s",ali.Data()));
+    TString root(roo);
+    Printf("Checking with AliROOT=%s ROOT=%s", ali.Data(), roo.Data());
+    AvailableSoftware::Check(aliroot, root);
+
+    aliroot = Form("last,%s",ali.Data());
+    AvailableSoftware::Check(aliroot, root);
+    Printf("Got AliROOT=%s ROOT=%s", aliroot.Data(), root.Data());
+  }
+    
+  static void Test()
+  {
+    Printf("All available");
+    AvailableSoftware::Test("");
+    Printf("All regular");
+    AvailableSoftware::Test("regular");
+    Printf("All releases");
+    AvailableSoftware::Test("release");
+    Printf("All analysis tags");
+    AvailableSoftware::Test("analysis");
   }
 };
 #endif

@@ -6,6 +6,13 @@
 #include <TBrowser.h>
 #include <TH2D.h>
 #include <AliLog.h>
+#include <AliForwardUtil.h>
+#include <TPad.h>
+#include <TCanvas.h>
+#include <TLatex.h>
+#include <TMath.h>
+#include <THStack.h>
+#include <TROOT.h>
 #include <iostream>
 
 //____________________________________________________________________
@@ -436,7 +443,194 @@ AliFMDCorrAcceptance::Print(Option_t* option) const
   fRingArray.Print(option);
   fVertexAxis.Print(option);
 }
-    
+//____________________________________________________________________
+void
+AliFMDCorrAcceptance::ls(Option_t* option) const
+{
+  // 
+  // Print this object 
+  // 
+  // Parameters:
+  //    option 
+  //  
+  TObject::ls(option);
+  gROOT->IncreaseDirLevel();
+  fVertexAxis.ls(option);
+  fRingArray.ls(option);
+  gROOT->DecreaseDirLevel();
+}
+
+#if 0
+namespace {
+  void ClearCanvas(TVirtualPad* c)
+  {
+    c->SetLeftMargin(.1);
+    c->SetRightMargin(.05);
+    c->SetBottomMargin(.1);
+    c->SetTopMargin(.05);
+    c->Clear();
+  }
+}
+
+//____________________________________________________________________
+void
+AliFMDCorrAcceptance::SaveAs(const Char_t* filename, Option_t* option) const
+{
+  // 
+  // Override to allow saving to a PDF 
+  // 
+  TString fileName(filename);
+  if (!fileName.EndsWith(".pdf")) {
+    TObject::SaveAs(fileName, option);
+    return;
+  }
+  
+  TVirtualPad* c = new TCanvas(filename, GetTitle(), 800/TMath::Sqrt(2), 800);
+  c->SetFillColor(0);
+  c->SetBorderSize(0);
+  c->SetBorderMode(0);
+  c->Print(Form("%s[", filename));
+
+  //__________________________________________________________________
+  // Create a title page 
+  TLatex* ll = new TLatex(.5,.8, filename);
+  ll->SetTextAlign(22);
+  ll->SetTextSize(0.03);
+  ll->SetNDC();
+  ll->Draw();
+
+  TLatex* l = new TLatex(.5,.8, filename);
+  l->SetNDC();
+  l->SetTextSize(0.03);
+  l->SetTextFont(132);
+  l->SetTextAlign(12);
+  l->DrawLatex(0.2, 0.70, "Acceptance due to dead channels");
+  l->SetTextAlign(22);
+  l->DrawLatex(0.5, 0.60, "c_{v,r}(#eta,#phi)=#frac{"
+	       "#sum active strips#in(#eta,#phi)}{"
+	       "#sum strips#in(#eta,#phi)}");
+  
+  c->Print(filename, "Title:Title page");
+  
+  //__________________________________________________________________
+  // Draw all corrections
+  const TAxis& vtxAxis = GetVertexAxis();
+  Int_t        nVtx    = vtxAxis.GetNbins();
+
+  // --- Loop over detectors -----------------------------------------
+  for (UShort_t d = 1; d <= 3; d++) {
+    UShort_t     nQ = (d == 1 ? 1 : 2);
+    for (UShort_t q = 0; q < nQ; q++) { 
+      Char_t r = (q == 0 ? 'I' : 'O');
+
+      ClearCanvas(c);
+      c->Divide(2, (nVtx+1)/2);
+      for (UShort_t v=1; v <= nVtx; v++) { 
+	TVirtualPad* p = c->cd(v);
+	p->SetFillColor(kWhite);
+      
+	TH2* h2 = GetCorrection(d, r, v);
+	if (!h2) { 
+	  Warning("DrawCorrAcc", "No correction for r=%c, v=%d", r, v);
+	  continue;
+	}
+	h2->Draw(option);
+      }
+      c->Print(filename, Form("Title:FMD%d%c", d, r));
+    }
+  }
+  if (HasOverflow()){
+    const_cast<AliFMDCorrAcceptance*>(this)->Draw(Form("%s phi", option));
+    c->Print(filename, "Title:Phi Acceptance");
+  }
+  const_cast<AliFMDCorrAcceptance*>(this)->Draw(option);
+  c->Print(filename, "Title:Summary");
+  c->Print(Form("%s]", filename));
+}
+//____________________________________________________________________
+void
+AliFMDCorrAcceptance::Draw(Option_t* option)
+{
+  //
+  // Draw this object 
+  // 
+  // Parameters: 
+  //   option 
+  // 
+  TString opt(option);
+  opt.ToLower();
+  Bool_t over = opt.Contains("phi");
+  opt.ReplaceAll("phi", "");
+
+  TVirtualPad* c = gPad;
+  if (!c) c = new TCanvas(GetName(), GetTitle());
+  
+  const TAxis& vtxAxis = fVertexAxis;
+  Int_t        nVtx    = vtxAxis.GetNbins();
+  Int_t        ipad    = 0;
+  c->SetLeftMargin(.1);
+  c->SetRightMargin(.05);
+  c->SetBottomMargin(.1);
+  c->SetTopMargin(.05);
+  c->Clear();
+  c->Divide((nVtx+2)/3, 3, 0, 0);
+
+  // Draw all corrections
+  for (UShort_t v = 1; v <= nVtx; v++) { 
+    ipad++;
+    if (ipad == 1 || ipad == 12) ipad++;
+
+    TVirtualPad* p = c->cd(ipad);
+    p->SetFillColor(kWhite);
+        
+    THStack* stack = new THStack(Form("vtx%02d", v),
+				 Form("%+5.1f<v_{z}<%+5.1f",
+				      vtxAxis.GetBinLowEdge(v),
+				      vtxAxis.GetBinUpEdge(v)));
+    for (UShort_t d = 1; d <= 3; d++) {
+      UShort_t     nQ = (d == 1 ? 1 : 2);
+      for (UShort_t q = 0; q < nQ; q++) { 
+	Char_t r = (q == 0 ? 'I' : 'O');
+	
+	if (over) { 
+	  TH1* hp = GetPhiAcceptance(d, r, v);
+	  if (!hp) { 
+	    Error("", "No phi acceptance at v=%d", v-1);
+	    continue;
+	  }
+	  hp->SetDirectory(0);
+	  hp->SetMarkerColor(AliForwardUtil::RingColor(d, r));
+	  hp->SetLineColor(AliForwardUtil::RingColor(d, r));
+	  hp->SetFillColor(AliForwardUtil::RingColor(d, r));
+	  hp->SetFillStyle(3001);
+	  // Info("", "Adding phi acceptance plot %d", int(hp->GetEntries()));
+	  stack->Add(hp);
+	  continue;
+	}
+	  
+	TH2* h1 = GetCorrection(d, r, v);
+	if (!h1) { 
+	  Warning("Draw", "No correction for r=%c, v=%d", r, v);
+	  continue;
+	}
+	Int_t nY = h1->GetNbinsY();
+	TH1* hh = h1->ProjectionX(Form("FMD%d%c", d, r), 1, nY);
+	hh->Scale(1. / nY);
+	hh->SetDirectory(0);
+	hh->SetMarkerColor(AliForwardUtil::RingColor(d, r));
+	hh->SetLineColor(AliForwardUtil::RingColor(d, r));
+	hh->SetFillColor(AliForwardUtil::RingColor(d, r));
+	hh->SetFillStyle(3004);
+
+	stack->Add(hh);
+      }
+    }
+    stack->SetMaximum(1.2);
+    stack->Draw(Form("nostack %s", opt.Data()));
+  }
+}
+#endif
+
 //____________________________________________________________________
 //
 // EOF

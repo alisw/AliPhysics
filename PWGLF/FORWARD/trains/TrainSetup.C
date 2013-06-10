@@ -79,12 +79,24 @@ struct TrainSetup
     fOptions.Add("branches", "Load only requested branches", false);
     fEscapedName = EscapeName(fName, "");
   }
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
   TrainSetup(const TrainSetup& o) 
     : fName(o.fName), 
       fEscapedName(o.fEscapedName), 
       fOptions(o.fOptions), 
       fHelper(o.fHelper)
   {}
+  /** 
+   * Assignment operator
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object
+   */
   TrainSetup& operator=(const TrainSetup& o) 
   {
     if (&o == this) return *this;
@@ -229,6 +241,12 @@ struct TrainSetup
     }
     return true;
   }
+  /** 
+   * Print timer information
+   * 
+   * @param timer The timer
+   * @param where Where this was called from 
+   */
   void PrintTimer(TStopwatch& timer, const char* where)
   {
     timer.Stop();
@@ -238,7 +256,11 @@ struct TrainSetup
     if (t < 0) t = 0;
     Info(where, "took %4d:%02d:%06.3f", h, m, t);
   }
-    
+  /** 
+   * Run this train 
+   * 
+   * @return true on success 
+   */    
   Bool_t Run()
   {
     TString cwd = gSystem->WorkingDirectory();
@@ -372,7 +394,7 @@ struct TrainSetup
 
       gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"w\");");
       Int_t error = 0;
-      Int_t r1 = gROOT->LoadMacro(Form("%s.C++g", cls.Data()), &error);
+      Int_t r1 = gROOT->LoadMacro(Form("%s.C+g", cls.Data()), &error);
       gROOT->ProcessLine("gSystem->RedirectOutput(0);");
       if (r1 < 0 || error) 
 	throw TString::Format("Failed to load setup %s: %d - see build.log", 
