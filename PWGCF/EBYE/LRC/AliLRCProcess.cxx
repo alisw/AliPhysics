@@ -29,9 +29,6 @@
 #include "TString.h"
 #include "TMath.h"
 //#include "TClonesArray.h"
-using std::cout;
-using std::endl;
-using std::cerr;
 
 //#include <AliPID.h> //for particle mass only
 ClassImp(AliLRCProcess)
@@ -95,6 +92,8 @@ AliLRCProcess::AliLRCProcess():fIsEventOpend(kFALSE), fIsOnline(kFALSE), fDispla
 {
     //fWhichParticleToProcess = kLRCany;  //default - all particle types
     //fPidFillCondition = kLRCpidIgnored;
+    SetCorrespondanceWithAliROOTpid();
+    ZeroPidArrays();
 }
 
 AliLRCProcess::AliLRCProcess(Double_t _StartForwardETA,Double_t _EndForwardETA,Double_t _StartBakwardETA,Double_t _EndBakwardETA ): fIsEventOpend(kFALSE), fIsOnline(kFALSE), fDisplayInitOnDemandWarning(kTRUE)
@@ -154,6 +153,10 @@ AliLRCProcess::AliLRCProcess(Double_t _StartForwardETA,Double_t _EndForwardETA,D
     SetHistMultRange( 0, 0, 100 );
     SetForwardWindowPhi( 0, 2*TMath::Pi() );
     SetBackwardWindowPhi( 0, 2*TMath::Pi() );
+
+    SetCorrespondanceWithAliROOTpid();
+    ZeroPidArrays();
+
     
 
 }
@@ -197,6 +200,7 @@ Bool_t AliLRCProcess::InitDataMembers()
         gArrayMemberNames[ en_arr_labels_NN_Nb       ] = "NN_Nb"            ;
         gArrayMemberNames[ en_arr_labels_NN_N2_f     ] = "NN_N2_f"          ;
         gArrayMemberNames[ en_arr_labels_NN_Nf_Nb    ] = "NN_Nf_Nb"         ;
+        gArrayMemberNames[ en_arr_labels_NN_N2_b     ] = "NN_N2_b"          ;
 
         gArrayMemberNames[ en_arr_labels_PtN_Nevents ] = "PtN_Nevents"      ;
         gArrayMemberNames[ en_arr_labels_PtN_Nf      ] = "PtN_Nf"           ;
@@ -314,11 +318,7 @@ Bool_t AliLRCProcess::InitDataMembers()
     //new cloud implementation
     //const int lSparseDim = en_sparse_total;
     //const int nSparseBins = 1000;
-    fCorrespondanceWithAliROOTpid[kSparsePIDany] = kSparsePIDany;
-    fCorrespondanceWithAliROOTpid[kSparsePIDdefined] = -1000;
-    fCorrespondanceWithAliROOTpid[kSparsePIDpion] = 2;
-    fCorrespondanceWithAliROOTpid[kSparsePIDkaon] = 3;
-    fCorrespondanceWithAliROOTpid[kSparsePIDproton] = 4;
+
 
     /* from AliROOT //deprecated!
         enum EParticleType {
@@ -833,21 +833,7 @@ void AliLRCProcess::StartEvent()
     fNchFwMinus = 0;
     fNchBwMinus = 0;
     
-    //added 23.03
-    for ( int pid = 0; pid < kSparsePIDtotal; pid++ )
-    {
-        fNchFwPID[pid] = 0;
-        fNchFwPlusPID[pid] = 0;
-        fNchFwMinusPID[pid] = 0;
-        fSumPtFwPID[pid] = 0;
-        fSumEtFwPID[pid] = 0;
-        
-        fNchBwPID[pid] = 0;
-        fNchBwPlusPID[pid] = 0;
-        fNchBwMinusPID[pid] = 0;
-        fSumPtBwPID[pid] = 0;
-        fSumEtBwPID[pid] = 0;
-    }
+    ZeroPidArrays();
     
     //fNchFwPtPt = 0;
 
@@ -1158,12 +1144,12 @@ void AliLRCProcess::FinishEvent(Bool_t kDontCount)
 
     if ( fUseAccumulatingHist )
     {
-
         fArrAccumulatedValues->Fill( en_arr_labels_NN_Nevents,   1                  );
         fArrAccumulatedValues->Fill( en_arr_labels_NN_Nf     ,   fNchFw             );
         fArrAccumulatedValues->Fill( en_arr_labels_NN_Nb     ,   fNchBw             );
         fArrAccumulatedValues->Fill( en_arr_labels_NN_N2_f   ,   fNchFw*fNchFw      );
         fArrAccumulatedValues->Fill( en_arr_labels_NN_Nf_Nb  ,   fNchFw*fNchBw      );
+        fArrAccumulatedValues->Fill( en_arr_labels_NN_N2_b   ,   fNchBw*fNchBw      );
     }
 
     if( fNchBw != 0 )
@@ -1344,4 +1330,32 @@ Bool_t AliLRCProcess::IsPhiInRange( Double_t phi, Double_t phiBoundMin, Double_t
         return kTRUE;
 
     return kFALSE; //phi not in range
+}
+
+void AliLRCProcess::SetCorrespondanceWithAliROOTpid()
+{
+    fCorrespondanceWithAliROOTpid[kSparsePIDany] = kSparsePIDany;
+    fCorrespondanceWithAliROOTpid[kSparsePIDdefined] = -1000;
+    fCorrespondanceWithAliROOTpid[kSparsePIDpion] = 2;
+    fCorrespondanceWithAliROOTpid[kSparsePIDkaon] = 3;
+    fCorrespondanceWithAliROOTpid[kSparsePIDproton] = 4;
+}
+
+void AliLRCProcess::ZeroPidArrays()
+{
+    //added 23.03
+    for ( int pid = 0; pid < kSparsePIDtotal; pid++ )
+    {
+        fNchFwPID[pid] = 0;
+        fNchFwPlusPID[pid] = 0;
+        fNchFwMinusPID[pid] = 0;
+        fSumPtFwPID[pid] = 0;
+        fSumEtFwPID[pid] = 0;
+
+        fNchBwPID[pid] = 0;
+        fNchBwPlusPID[pid] = 0;
+        fNchBwMinusPID[pid] = 0;
+        fSumPtBwPID[pid] = 0;
+        fSumEtBwPID[pid] = 0;
+    }
 }
