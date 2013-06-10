@@ -1557,11 +1557,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
   fHistPileUp->Fill(pileup);
 
   if(fPileUpCut){
-    // if (TMath::Abs(pileup[0]-pileup[1]) > 5) {
-    //   AliDebug(2,"Does not pass the centrality correlation cut");
-    //   return;
-    // }
-    if(multTPC < (-40.7+1.49*multGlob) && multTPC > (55.0+1.79*multGlob)){
+    if (TMath::Abs(pileup[0]-pileup[1]) > 5) {
+      AliDebug(2,"Does not pass the centrality correlation cut");
+      return;
+    }
+    if(multTPC < (-40.7+1.49*multGlob) || multTPC > (55.0+1.79*multGlob)){
       AliDebug(2,"Does not pass the multiplicity correlation cut");
       return;
     }
