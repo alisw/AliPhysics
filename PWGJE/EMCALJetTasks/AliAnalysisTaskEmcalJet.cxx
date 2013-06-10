@@ -139,10 +139,10 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
   if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
     return kFALSE;
 
-  if (jet->Pt() <= fJetPtCut) 
+  if (jet->Pt() < fJetPtCut) 
     return kFALSE;
  
-  if (jet->Area() <= fJetAreaCut) 
+  if (jet->Area() < fJetAreaCut) 
     return kFALSE;
 
   if (jet->AreaEmc()<fAreaEmcCut)
