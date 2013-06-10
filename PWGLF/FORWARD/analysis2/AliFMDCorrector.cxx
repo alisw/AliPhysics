@@ -8,7 +8,7 @@
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
-// #include "AliFMDCorrDoubleHit.h"
+#include "AliFMDCorrSecondaryMap.h"
 #include "AliFMDCorrVertexBias.h"
 #include "AliFMDCorrMergingEfficiency.h"
 #include "AliFMDCorrAcceptance.h"

@@ -12,6 +12,7 @@
 #define ALIDISPLACEDVERTEXSELECTION_H
 #include <TObject.h>
 class AliESDEvent;
+class TH1;
 
 /** 
  * Selection of events from satellite interactions 
@@ -45,7 +46,7 @@ public:
    * @param l     List to add output to
    * @param name  Name of the list 
    */
-  void CreateOutputObjects(TList* l, const char* name=0) const;
+  void SetupForData(TList* l, const char* name=0);
   /** 
    * Print information 
    * 
@@ -60,6 +61,12 @@ public:
    * @return true on success
    */
   Bool_t Process(const AliESDEvent* esd);
+  /**
+   * Check if this event is marked as a satellite interaction 
+   *
+   * @return true if the found vertex isn't invalid
+   */
+  Bool_t IsSatellite() const { return fVertexZ != kInvalidVtxZ; }
   /** 
    * Get the interaction point Z-coordinate from ZDC timing. 
    * 
@@ -92,10 +99,16 @@ public:
   Double_t CalculateDisplacedVertexCent(const AliESDEvent* esd) const;
   
 protected:
-  Double_t fVertexZ; // Interaction point Z-coordinate
-  Double_t fCent;    // Centrality percentile
+  enum { 
+    kMaxK        = 10,
+    kInvalidVtxZ = 9999
+  };
+  Double_t fVertexZ;  // Interaction point Z-coordinate
+  Double_t fCent;     // Centrality percentile
+  TH1*     fHVertexZ; // Histogram of vertices 
+  TH1*     fHCent;    // Histogram of centrality 
   
-  ClassDef(AliDisplacedVertexSelection,2); // Satelitte collisions 
+  ClassDef(AliDisplacedVertexSelection,3); // Satelitte collisions 
 };
 
 #endif

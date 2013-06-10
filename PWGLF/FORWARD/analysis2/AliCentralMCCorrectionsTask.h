@@ -16,12 +16,12 @@
 #include <AliAnalysisTaskSE.h>
 #include "AliFMDMCEventInspector.h"
 #include "AliSPDMCTrackDensity.h"
-#include <TH1I.h>
 class AliCentralCorrSecondaryMap;
 class AliCentralCorrAcceptance;
 class AliESDEvent;
 class TH2D;
 class TH1D;
+class TH1I;
 class TList;
 
 

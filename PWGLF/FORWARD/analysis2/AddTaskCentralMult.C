@@ -25,6 +25,7 @@
  */
 AliAnalysisTask* 
 AddTaskCentralMult(Bool_t      mc=false, 
+		   ULong_t     runNo=0,
 		   UShort_t    sys=0, 
 		   UShort_t    sNN=0, 
 		   Short_t     field=0, 
@@ -49,15 +50,13 @@ AddTaskCentralMult(Bool_t      mc=false,
   mgr->AddTask(task);
 
   // --- Set optional corrections path -------------------------------
-  AliCentralMultiplicityTask::Manager& cm = task->GetManager();
-  if (corrs && corrs[0] != '\0') { 
-    cm->SetAcceptancePath(Form("%s/CentralAcceptance", corrs));
-    cm->SetSecMapPath(Form("%s/CentralSecMap", corrs));
-  }
+  AliCentralCorrectionManager& cm = 
+    AliCentralCorrectionManager::Instance();
+  if (corrs && corrs[0] != '\0') cm.SetPrefix(corrs); 
 
   // --- Prime the corrections ---------------------------------------
   if(sys>0 && sNN > 0) {
-    cm.Init(sys, sNN, field);
+    cm.Init(runNo, sys, sNN, field);
     if (!cm.HasSecondaryCorrection()) 
       Fatal("AddTaskCentralMult", "No secondary correction defined!");
     if (!cm.HasAcceptanceCorrection()) 

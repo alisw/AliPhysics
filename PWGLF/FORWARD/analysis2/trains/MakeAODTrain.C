@@ -29,6 +29,7 @@ public:
   MakeAODTrain(const  TString& name) 
     : TrainSetup(name)
   {
+    fOptions.Add("run",   "NUMBER",  "Run number for corrs", 0);
     fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", "");
     fOptions.Add("snn",   "ENERGY",  "Center of mass energy in GeV", "");
     fOptions.Add("field", "STRENGTH","L3 field strength in kG", "");
@@ -72,6 +73,7 @@ protected:
     gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Get options -----------------------------------------------
+    ULong_t  run = fOptions.AsInt("run", 0);
     UShort_t sys = fOptions.AsInt("sys", 0);
     UShort_t sNN = fOptions.AsInt("snn", 0);
     UShort_t fld = fOptions.AsInt("field", 0);
@@ -80,19 +82,23 @@ protected:
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,\"%s\",\"%s\")", 
-		      mc, sys, sNN, fld, fwdConfig.Data(), cor.Data()));
+    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
+		      mc, run, sys, sNN, fld, fwdConfig.Data(), cor.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
 
     // --- Add the task ----------------------------------------------
     TString cenConfig = fOptions.Get("central-config");
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,\"%s\",\"%s\")", 
-		      mc, sys, sNN, fld, cenConfig.Data(), cor.Data()));
+    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
+		      mc, run, sys, sNN, fld, cenConfig.Data(), cor.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
 
     // --- Add MC particle task --------------------------------------
     if (mc) gROOT->Macro("AddTaskMCParticleFilter.C");
 
+    if (!cor.IsNull()) {
+      fHelper->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
+      fHelper->LoadAux(Form("%s/spd_corrections.root",cor.Data()), true);
+    }
   }
   //__________________________________________________________________
   /** 

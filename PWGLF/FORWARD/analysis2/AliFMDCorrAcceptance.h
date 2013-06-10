@@ -184,6 +184,9 @@ public:
    * @param option 
    */  
   void Print(Option_t* option="R") const; //*MENU*
+  void ls(Option_t* option="") const; //*MENU*
+  // void Draw(Option_t* option="");
+  // void SaveAs(const Char_t* filename, Option_t* option="colz") const;
   /* @} */
 protected:
   /** 

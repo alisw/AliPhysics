@@ -8,7 +8,7 @@
  * 
  */
 //____________________________________________________________________
-void DrawAODSummary(const char* fname="forward.root", UShort_t what=0x7F)
+void DrawAODSummary(const char* fname="forward.root", UShort_t what=0x27F)
 {
   gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts",
 			   gROOT->GetMacroPath()));

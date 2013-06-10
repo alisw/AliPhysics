@@ -14,12 +14,13 @@
 # Then, one needs to run this script in set-up mode e.g., 
 # 
 #   $0 --what=setup  \
-#       --name=LHC10h --sys=pbpb --snn=2760 --field=5 \
+#       --name=LHC10h \
 #       --real-dir=/alice/data/2010/LHC10h \
 #       --real-pattern=ESDs/pass2/*/AliESDs.root \
 #       --mc-dir=/alice/sim/LHC10h11 \
 #       --mc-pattern=*/AliESDs.root \
-#       --runs=LHC10.list --par
+#       --runs=LHC10.list \
+#       --par
 # 
 # Note, all the settings are written to the file .config in the
 # current directory, so you do not need to give the parameters at
@@ -30,7 +31,9 @@
 # 
 #   $0 --what=corrs 
 # 
-# and then monitor output on MonAlisa.  When enough has finished, execute 
+# and wait for the jobs to finish and terminate.  If 'watching' is
+# turned off, one can also monitor output on MonAlisa, and then when
+# enough has finished, execute
 # 
 #   $0 --what=corrs --step=terminate 
 # 
@@ -43,7 +46,9 @@
 # 
 #   $0 --what=aods 
 # 
-# and then monitor output on MonAlisa.  When enough has finished, execute 
+# and wait for the jobs to finish and terminate.  If 'watching' is
+# turned off, one can also monitor output on MonAlisa, and then when
+# enough has finished, execute
 # 
 #   $0 --what=aods --step=terminate 
 # 
@@ -56,7 +61,9 @@
 # 
 #   $0 --what=dndetas
 # 
-# and then monitor output on MonAlisa.  When enough has finished, execute 
+# and wait for the jobs to finish and terminate.  If 'watching' is
+# turned off, one can also monitor output on MonAlisa, and then when
+# enough has finished, execute
 # 
 #   $0 --what=dndetas --step=terminate 
 # 
@@ -79,7 +86,7 @@ dotconf=.config
 here=${PWD}
 par=0
 noact=0
-aliroot="&aliroot=v5-03-75pATF-AN"
+# aliroot="&aliroot=v5-03-75pATF-AN"
 # root="root=v5-34-02-1"
 fwd_dir=$ALICE_ROOT/PWGLF/FORWARD/analysis2
 
@@ -109,6 +116,7 @@ Options:
   -P,--mc-pattern=PATTERN   Glob pattern to match when searching ($mc_pat)
   -s,--step=STEP            Run stage ($step)
   -w,--what=TRAINS          What to do 
+  -W,--watch                Watch for job status and terminate automatically
   -a,--par                  Use par files ($par)
   -M,--man                  Show the manual  
   -N,--noact                Show what will be done 
@@ -155,8 +163,7 @@ EOF
 accGen()
 {
     local run=$1 
-    script ${fwd_dir}/corrs/ExtractAcceptance.C \
-	"${run},${sys},${snn},${field}"
+    script ${fwd_dir}/corrs/ExtractAcceptance.C "${run}"
 }
 
 # --- Extract corrections --------------------------------------------
@@ -167,7 +174,10 @@ terminate()
 # --- Extract corrections --------------------------------------------
 download()
 {
-    test -f .download && return 0 
+    if test -f .download ; then 
+	echo "Already downloaded in `basename $PWD`"
+	return 0 
+    fi
     script Download.C 
     touch .download
 }
@@ -178,28 +188,49 @@ extract()
     script Extract.C 
     touch .extract
 }
+# --- Extract corrections --------------------------------------------
+extract_up()
+{
+    if test -f .extract ; then 
+	echo "Aldready extracted in `basename $PWD`" 
+	return 0;
+    fi 
+    echo "= Extracting"
+    script ../Extract.C > /dev/null 2>&1
+    touch .extract
+}
 # --- Upload a file --------------------------------------------------
 upload()
 {
-    test -f .upload && return 0 
-    script Upload.C \"file://${here}/${name}_corrs_${now}\"
+    if test -f .upload ; then 
+	echo "Already uploaded in `basename $PWD`"
+	return 0 
+    fi
+    echo "= Uploading"
+    script Upload.C \"file://${here}/${name}_corrs_${now}/\" >/dev/null 2>&1
     touch .upload 
 }
 # --- Extract and upload ---------------------------------------------
 extract_upload()
 {
-    echo "Download, extract, and uploade in `basename $PWD`"
+    echo "=== Download, extract, and uploade in `basename $PWD` ==="
     download
     for i in *.zip ; do 
 	if test ! -f $i ; then continue ; fi 
-	echo "Extracting and uploading from $i"
 	if test $noact -gt 0 ; then continue ; fi
-	rm -rf tmp
-	(mkdir -p tmp && \
-	    cd tmp && \ 
-	    unzip ../$i && \
-		script ../Extract.C "" "" && 
-	    upload)
+	local d=`basename $i .zip` 
+	if test ! -d $d ; then 
+	    mkdir $d 
+	fi
+	cd $d 
+	if test ! -f .zip ; then 
+	    echo "= Unpacking ../$i"
+	    unzip ../$i > /dev/null 2>&1
+	    touch .zip 
+	fi
+	extract_up 
+	upload
+	cd ..
     done
 }
 
@@ -235,7 +266,7 @@ EOF`
 # --- Run set-ups ----------------------------------------------------
 setup()
 {
-    run_for_acc=`cat $runs | awk '{FS=" \n\t"}{printf "%d", $1}' | head -n 1` 
+    run_for_acc=`grep -v ^# $runs | awk '{FS=" \n\t"}{printf "%d\n", $1}' | head -n 1` 
     if test x$run_for_acc = "x" || test $run_for_acc -lt 1; then 
 	echo "No run for acceptance correction specified" > /dev/stderr 
 	exit 1
@@ -244,8 +275,8 @@ setup()
    now=`date '+%Y%m%d_%H%M'` 
    outputs
 
-    # Write settings to a file, which we later can source 
-    cat > ${dotconf} <<EOF
+   # Write settings to a file, which we later can source 
+   cat > ${dotconf} <<EOF
 name="$name"
 runs=${runs}
 sys=$sys
@@ -263,6 +294,26 @@ EOF
 
     if test $noact -lt 1 ; then 
 	mkdir -p ${name}_acc_${now}
+	mkdir -p ${name}_corrs_${now}
+	rm -f last_${name}_acc last_${name}_corrs
+	ln -sf ${name}_acc_${now} last_${name}_acc
+	ln -sf ${name}_corrs_${now} last_${name}_corrs
+	cat <<-EOF > ${name}_corrs_${now}/Browse.C
+ 	TObject* Browse()
+	{
+	  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+	  if (!gROOT->GetClass("AliOADBForward"))
+	    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+	  gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGui.C++g", fwd));
+	  
+	  AliOADBForward* db = new AliOADBForward;
+	  db->Open("fmd_corrections.root", "*");
+	  
+	  ForwardOADBGui(db);
+
+	  return db;
+	}
+	EOF
     fi
     echo "Make acceptance corrections" 
     (cd ${name}_acc_${now} && \
@@ -296,18 +347,18 @@ check()
        echo "No name specified" > /dev/stderr 
        exit 1
    fi
-   if test "x$sys" = "x" ; then 
-       echo "No collision system specified" > /dev/stderr 
-       exit 1
-   fi
-   if test "x$snn" = "x" ; then 
-       echo "No center of mass energy specified" > /dev/stderr 
-       exit 1
-   fi
-   if test "x$field" = "x" ; then 
-       echo "No L3 field setting specified" > /dev/stderr 
-       exit 1
-   fi
+   # if test "x$sys" = "x" ; then 
+   #     echo "No collision system specified" > /dev/stderr 
+   #     exit 1
+   # fi
+   # if test "x$snn" = "x" ; then 
+   #     echo "No center of mass energy specified" > /dev/stderr 
+   #     exit 1
+   # fi
+   # if test "x$field" = "x" ; then 
+   #     echo "No L3 field setting specified" > /dev/stderr 
+   #     exit 1
+   # fi
    if test "x$real_dir" = "x" ; then 
        echo "No real data directory specified" > /dev/stderr 
        exit 1
@@ -328,13 +379,13 @@ check()
        echo "No date/time specified" > /dev/stderr 
        exit 1
    fi
-   case $sys in 
-       pp|p-p)            sys=1 ;; 
-       pbpb|pb-pb|aa|a-a) sys=2 ;; 
-       ppb|p-pb|pa|p-a)   sys=3 ;;
-       1|2|3)                   ;; 
-       *) echo "$0: Unknown system: $sys" ; exit 1 ;;
-   esac
+   # case $sys in 
+   #     pp|p-p)            sys=1 ;; 
+   #     pbpb|pb-pb|aa|a-a) sys=2 ;; 
+   #     ppb|p-pb|pa|p-a)   sys=3 ;;
+   #     1|2|3)                   ;; 
+   #     *) echo "$0: Unknown system: $sys" ; exit 1 ;;
+   # esac
 
    cat <<EOF
 Name:			$name
@@ -363,111 +414,114 @@ allAboard()
     cl=
     nme=${name}_${type}
     tree=esdTree
-    opts=""
-    uopt=""
+    opts="--batch"
+    uopt="&merge=50&split=50"
     mc=0
     dir=$real_dir
     pat=$real_pat
 
     case $type in 
-	mc*) mc=1 ;; 
+	mc*) 
+	    mc=1  
+	    # Default dirs are production dirs 
+	    dir=$mc_dir
+	    pat=$mc_pat
+	    ;;
 	*) ;;
     esac
     case $type in 
 	*corr)  cl=MakeMCCorrTrain ; mc=1 ;;
 	*eloss) cl=MakeFMDELossTrain ;;  
 	*aod)   cl=MakeAODTrain 
-	    opts="--corr=../${name}_corrs_${now} --sys=${sys} --snn=${snn} --field=${field}"
+	    opts="${opts} --corr=. --cent"
+	    # opts="--corr=${name}_corrs_${now} --cent"
+	    # if test $sys -gt 0 && test $snn -gt 0 ; then 
+	    # 	opts="$opts --sys=${sys} --snn=${snn} --field=${field}"
+	    # fi
 	    ;;
 	*dndeta) cl=MakedNdetaTrain 
 	    tree=aodTree 
-	    uopt="&concat"
-	    opts="${opts}"
-	    ;;
-	*) echo "$0: Unknown type of train: $type" > /dev/stderr ; exit 1 ;;
-    esac
-    case $type in 
-	*corr|*eloss|*aod)
-	    if test $mc -gt 0; then 
-		uopt="${uopt}&mc"
-		dir=$mc_dir
-		pat=$mc_pat
-	    fi
-	    ;;
-	*dndeta)
+	    uopt="${uopt}&concat"
+	    opts="${opts} --cent"
+	    # Modify for input dir for our files
 	    dir=$my_real_dir
 	    pat="*/AliAOD.root"
 	    if test $mc -gt 0 ; then 
-		uopt="${uopt}&mc"
 		dir=$my_mc_dir
 	    fi
 	    ;;
+	*) echo "$0: Unknown type of train: $type" > /dev/stderr ; exit 1 ;;
     esac
-    case $type in 
-	*aod|*dndeta) 
-	    if test $sys -gt 1 ; then opts="${opts} --cent" ; fi ;; 
-	*)
-	    ;;
-    esac
+    if test $mc -gt 0; then 
+	uopt="${uopt}&mc"
+    fi
     if test $par -gt 0 ; then 
 	uopt="${uopt}&par"
     fi
     url="alien://${dir}?run=${runs}&pattern=${pat}${uopt}${aliroot}${root}#${tree}"
     opts="${opts} --include=$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains"
-    opts="${opts} --date=${now} --class=$cl --name=$nme"
+    opts="${opts} --date=${now} --class=$cl --name=$nme --verbose=2"
     
     echo "Running train: runTrain2 ${opts} --url=${url} $@" 
     if test $noact -gt 0 ; then return ; fi
 
     runTrain ${opts} --overwrite --url=${url} $@ 
 
-    cat <<EOF
-Check https://alimonitor.cern.ch/users/jobs.jsp for progress 
-
-Remember to do 
-
-  (cd ${nme}_${now} && aliroot -l -b -q Terminate.C)
-
-until the final merge stage, and then do 
-
-  (cd ${nme}_${now} && aliroot -l -b -q Download.C) 
-
-to get the results. 
-EOF
-    case $type in 
-	*corr|*esd) 
-	    cat <<EOF
-Then, do 
-
-  (cd ${nme}_${now} && aliroot -l -b -q Extract.C)
-  (cd ${nme}_${now} && aliroot -l -b -q 'Upload.C("local://${here}/${name}_corrs_${now}")')
-
-to upload the results to our local corrections store. 
-EOF
-	    ;; 
-	*aod)
-	    cat <<EOF
-Then, do 
- 
-  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawAODSummary.C)
-
-to get a PDF of the diagnostics histograms
-EOF
-	    ;;
-	*dndeta)
-	    cat <<EOF
-Then, do 
- 
-  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawdNdetaSummary.C)
-
-to get a PDF of the diagnostics histograms, and 
-
-  (cd ${nme}_${now} && aliroot -l Draw.C)
-
-to get the final plot. 
-EOF
-	    ;;
-    esac
+    if test $watch -lt 1 ; then 
+	cat <<-EOF
+	Check https://alimonitor.cern.ch/users/jobs.jsp for progress 
+	
+	Remember to do 
+	
+	  (cd ${nme}_${now} && aliroot -l -b -q Terminate.C)
+	
+	until the final merge stage, and then do 
+		
+	  (cd ${nme}_${now} && aliroot -l -b -q Download.C) 
+	
+	to get the results. 
+	EOF
+	
+	case $type in 
+	    *corr|*esd) 
+		cat <<-EOF
+	Then, do 
+	
+	  (cd ${nme}_${now} && aliroot -l -b -q Extract.C)
+	  (cd ${nme}_${now} && aliroot -l -b -q 'Upload.C("local://${here}/${nam	e}_corrs_${now}")')
+	
+	to upload the results to our local corrections store. 
+	EOF
+		;; 
+	    *aod)
+		cat <<-EOF
+	Then, do 
+	 
+	  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawAODSummary.C)
+	
+	to get a PDF of the diagnostics histograms
+	EOF
+		;;
+	    *dndeta)
+		cat <<-EOF
+	Then, do 
+	 
+	  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawdNdetaSummary.C)
+	
+	to get a PDF of the diagnostics histograms, and 
+	
+	  (cd ${nme}_${now} && aliroot -l Draw.C)
+	
+	to get the final plot. 
+	EOF
+		;;
+	esac
+    else 
+	echo "Now waiting for jobs to finish"
+	(cd ${nme}_${now} && \
+	    nice aliroot -l -b -x -q Watch.C\(1\) 2>&1 | \
+	    tee watch.log > /dev/null &)
+    fi
 }
 
 
@@ -490,6 +544,9 @@ corrs_upload()
     (cd ${name}_mccorr_${now}  && extract_upload)
     (cd ${name}_mceloss_${now} && extract_upload)
     (cd ${name}_eloss_${now}   && extract_upload)
+    rm -f fmd_corrections.root spd_corrections.root 
+    ln -s ${name}_corrs_${now}/fmd_corrections.root .
+    ln -s ${name}_corrs_${now}/spd_corrections.root .
 }
 corrs_draw()
 {
@@ -549,6 +606,7 @@ fi
 # --- Process command line -------------------------------------------
 what=
 step=
+watch=1
 while test $# -gt 0 ; do
     arg=$1 
     opt=
@@ -577,7 +635,8 @@ while test $# -gt 0 ; do
 	-P|--mc-pattern)   mc_pat=$opt   ;; 
 	-w|--what)         what=`echo $opt | tr '[A-Z]' '[a-z]'`  ;; 
 	-s|--step)         step=`echo $opt | tr '[A-Z]' '[a-z]'`  ;; 
-	-N|--noact)        noact=1       ;;
+	-W|--watch)        let watch=\!$watch ;;
+	-N|--noact)        noact=1            ;;
 	-a|--par)          par=1         ;;
 	-h|--help)         usage         ; exit 0 ;; 
 	-H|--manual)       manual        ; exit 0 ;;

@@ -107,31 +107,33 @@ public:
    */
   enum { 
     /** In-elastic collision */
-    kInel     = 0x001, 
+    kInel        = 0x0001, 
     /** In-elastic collision with at least one SPD tracklet */
-    kInelGt0  = 0x002, 
+    kInelGt0     = 0x0002, 
     /** Non-single diffractive collision */
-    kNSD      = 0x004, 
+    kNSD         = 0x0004, 
     /** Empty bunch crossing */
-    kEmpty    = 0x008, 
+    kEmpty       = 0x0008, 
     /** A-side trigger */
-    kA        = 0x010, 
+    kA           = 0x0010, 
     /** B(arrel) trigger */
-    kB        = 0x020, 
+    kB           = 0x0020, 
     /** C-side trigger */
-    kC        = 0x080,  
+    kC           = 0x0080,  
     /** Empty trigger */
-    kE        = 0x100,
+    kE           = 0x0100,
     /** pileup from SPD */
-    kPileUp   = 0x200,    
+    kPileUp      = 0x0200,    
     /** true NSD from MC */
-    kMCNSD    = 0x400,    
+    kMCNSD       = 0x0400,    
     /** Offline MB triggered */
-    kOffline  = 0x800,
+    kOffline     = 0x0800,
     /** At least one SPD cluster */ 
     kNClusterGt0 = 0x1000,
     /** V0-AND trigger */
-    kV0AND       = 0x2000
+    kV0AND       = 0x2000, 
+    /** Satellite event */
+    kSatellite   = 0x4000
   };
   /** 
    * Bin numbers in trigger histograms 
@@ -146,6 +148,7 @@ public:
     kBinB, 
     kBinC, 
     kBinE,
+    kBinSatellite,
     kBinPileUp, 
     kBinMCNSD,
     kBinOffline,

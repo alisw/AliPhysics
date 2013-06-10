@@ -16,7 +16,6 @@
  */
 #include "AliCentralMultiplicityTask.h"
 #include "AliSPDMCTrackDensity.h"
-//class AliForwardCorrectionManager;
 class AliESDEvent;
 class AliMCEvent;
 
@@ -108,6 +107,12 @@ public:
   AliSPDMCTrackDensity& GetTrackDensity() { return fTrackDensity; }
 
 protected: 
+  /** 
+   * Find our eta limits
+   * 
+   */
+  virtual void FindEtaLimits();
+
   AliSPDMCTrackDensity   fTrackDensity;     // Calculate N_ch,incl
 					    // from MC
   AliAODCentralMult      fAODMCCentral;     // Output object

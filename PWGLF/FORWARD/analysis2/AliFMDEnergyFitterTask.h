@@ -17,7 +17,6 @@
 #include "AliFMDEventInspector.h"
 #include "AliFMDEnergyFitter.h"
 #include <AliESDFMD.h>
-#include <TH1I.h>
 class AliESDEvent;
 class TH2D;
 class TList;

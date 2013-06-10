@@ -204,6 +204,7 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   if ((mask & kE)           != 0x0) AppendAnd(trg, "E");
   if ((mask & kMCNSD)       != 0x0) AppendAnd(trg, "MCNSD");
   if ((mask & kNClusterGt0) != 0x0) AppendAnd(trg, "NCluster>0");
+  if ((mask & kSatellite)   != 0x0) AppendAnd(trg, "Satellite");
   return trg.Data();
 }
   
@@ -246,6 +247,7 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask)
   ret->GetXaxis()->SetBinLabel(kBinNSD,         "Coll. & NSD");
   ret->GetXaxis()->SetBinLabel(kBinV0AND,       "Coll. & V0AND");
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
+  ret->GetXaxis()->SetBinLabel(kBinSatellite,   "Satellite");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
   ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
   ret->GetXaxis()->SetBinLabel(kBinNClusterGt0, "w/N_{cluster}>1");
@@ -273,15 +275,16 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     s.Strip(TString::kBoth, ' ');
     s.ToUpper();
     if      (s.IsNull()) continue;
-    if      (s.CompareTo("INEL")  == 0) trgMask |= AliAODForwardMult::kInel;
-    else if (s.CompareTo("INEL>0")== 0) trgMask |= AliAODForwardMult::kInelGt0;
-    else if (s.CompareTo("NSD")   == 0) trgMask |= AliAODForwardMult::kNSD;
-    else if (s.CompareTo("V0AND") == 0) trgMask |= AliAODForwardMult::kV0AND;
-    else if (s.CompareTo("MCNSD") == 0) trgMask |= AliAODForwardMult::kMCNSD;
-    else if (s.CompareTo("B")     == 0) trgMask |= AliAODForwardMult::kB;
-    else if (s.CompareTo("A")     == 0) trgMask |= AliAODForwardMult::kA;
-    else if (s.CompareTo("C")     == 0) trgMask |= AliAODForwardMult::kC;
-    else if (s.CompareTo("E")     == 0) trgMask |= AliAODForwardMult::kE;
+    if      (s.CompareTo("INEL")  == 0) trgMask |=AliAODForwardMult::kInel;
+    else if (s.CompareTo("INEL>0")== 0) trgMask |=AliAODForwardMult::kInelGt0;
+    else if (s.CompareTo("NSD")   == 0) trgMask |=AliAODForwardMult::kNSD;
+    else if (s.CompareTo("V0AND") == 0) trgMask |=AliAODForwardMult::kV0AND;
+    else if (s.CompareTo("MCNSD") == 0) trgMask |=AliAODForwardMult::kMCNSD;
+    else if (s.CompareTo("B")     == 0) trgMask |=AliAODForwardMult::kB;
+    else if (s.CompareTo("A")     == 0) trgMask |=AliAODForwardMult::kA;
+    else if (s.CompareTo("C")     == 0) trgMask |=AliAODForwardMult::kC;
+    else if (s.CompareTo("SAT")   == 0) trgMask |=AliAODForwardMult::kSatellite;
+    else if (s.CompareTo("E")     == 0) trgMask |=AliAODForwardMult::kE;
     else if (s.CompareTo("NCLUSTER>0") == 0) 
       trgMask |= AliAODForwardMult::kNClusterGt0;
     else 
@@ -340,6 +343,7 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (IsTriggerBits(kMCNSD))          hist->AddBinContent(kBinMCNSD);
     if (IsTriggerBits(kOffline))        hist->AddBinContent(kBinOffline);
     if (IsTriggerBits(kNClusterGt0))    hist->AddBinContent(kBinNClusterGt0);
+    if (IsTriggerBits(kSatellite))      hist->AddBinContent(kBinSatellite);
     if (IsTriggerBits(triggerMask) && !IsTriggerBits(kB|tmp))
       Warning("CheckEvent", "event: 0x%x, mask: 0x%x, tmp: 0x%x, tmp|b: 0x%x",
 	     fTriggers, triggerMask, tmp, tmp|kB);

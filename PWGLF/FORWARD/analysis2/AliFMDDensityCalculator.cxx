@@ -50,7 +50,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fDebug(0),
     fCuts(),
     fRecalculateEta(false),
-    fRecalculatePhi(false)
+    fRecalculatePhi(false),
+    fMinQuality(10)
 {
   // 
   // Constructor 
@@ -82,7 +83,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fDebug(0),
     fCuts(),
     fRecalculateEta(false),
-    fRecalculatePhi(false)
+    fRecalculatePhi(false),
+    fMinQuality(10)
 {
   // 
   // Constructor 
@@ -150,7 +152,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fDebug(o.fDebug),
     fCuts(o.fCuts),
     fRecalculateEta(o.fRecalculateEta),
-    fRecalculatePhi(o.fRecalculatePhi)
+    fRecalculatePhi(o.fRecalculatePhi),
+    fMinQuality(o.fMinQuality)
 {
   // 
   // Copy constructor 
@@ -209,6 +212,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fCuts               = o.fCuts;
   fRecalculateEta     = o.fRecalculateEta;
   fRecalculatePhi     = o.fRecalculatePhi;
+  fMinQuality         = o.fMinQuality;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -355,10 +359,10 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  // --- Check this strip ------------------------------------
 	  rh->fTotal->Fill(eta);
 	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
-	    // Do not count invalid stuff
-	    // rh->fPoisson.Fill(t , s, false);
-	    rh->fEvsN->Fill(mult,-1);
-	    rh->fEvsM->Fill(mult,-1);
+	    // Do not count invalid stuff 
+	    rh->fELoss->Fill(-1);
+	    // rh->fEvsN->Fill(mult,-1);
+	    // rh->fEvsM->Fill(mult,-1);
 	    continue;
 	  }
 	  // --- Automatic calculation of acceptance -----------------
@@ -382,15 +386,15 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Double_t n   = 0;
 	  if (cut > 0 && mult > cut) n = NParticles(mult,d,r,eta,lowFlux);
 	  rh->fELoss->Fill(mult);
-	  rh->fEvsN->Fill(mult,n);
-	  rh->fEtaVsN->Fill(eta, n);
+	  // rh->fEvsN->Fill(mult,n);
+	  // rh->fEtaVsN->Fill(eta, n);
 	  
 	  // --- Calculate correction if needed ----------------------
 	  Double_t c = Correction(d,r,t,eta,lowFlux);
 	  fCorrections->Fill(c);
 	  if (c > 0) n /= c;
-	  rh->fEvsM->Fill(mult,n);
-	  rh->fEtaVsM->Fill(eta, n);
+	  // rh->fEvsM->Fill(mult,n);
+	  // rh->fEtaVsM->Fill(eta, n);
 	  rh->fCorr->Fill(eta, c);
 
 	  // --- Accumulate Poisson statistics -----------------------
@@ -496,12 +500,14 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   DGUARD(fDebug, 10, "Find maximum weight in FMD density calculator");
   if(!cor) return -1; 
 
-  AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
+  AliFMDCorrELossFit::ELossFit* fit = cor->FindFit(d,r,iEta, -1);
   if (!fit) { 
     // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
     return -1;
   }
-  return TMath::Min(Int_t(fMaxParticles), fit->FindMaxWeight());
+  return fit->FindMaxWeight(2*AliFMDCorrELossFit::ELossFit::fgMaxRelError, 
+			    AliFMDCorrELossFit::ELossFit::fgLeastWeight, 
+			    fMaxParticles);
 }
   
 //_____________________________________________________________________
@@ -513,7 +519,8 @@ AliFMDDensityCalculator::CacheMaxWeights(const TAxis& axis)
   // 
   DGUARD(fDebug, 2, "Cache maximum weights in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
-  AliFMDCorrELossFit*           cor = fcm.GetELossFit();
+  const AliFMDCorrELossFit*     cor = fcm.GetELossFit();
+  cor->CacheBins(fMinQuality);
 
   TAxis eta(axis.GetNbins(),
 	    axis.GetXmin(),
@@ -658,9 +665,10 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
   if (lowFlux) return 1;
   
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
-  AliFMDCorrELossFit::ELossFit* fit = fcm.GetELossFit()->FindFit(d,r,eta);
+  AliFMDCorrELossFit::ELossFit* fit = fcm.GetELossFit()->FindFit(d,r,eta, -1);
   if (!fit) { 
-    AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
+    AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f qual=%d", 
+		    d, r, eta, fMinQuality));
     return 0;
   }
   
@@ -989,10 +997,10 @@ AliFMDDensityCalculator::Print(Option_t* option) const
 AliFMDDensityCalculator::RingHistos::RingHistos()
   : AliForwardUtil::RingHistos(),
     fList(0),
-    fEvsN(0), 
-    fEvsM(0), 
-    fEtaVsN(0),
-    fEtaVsM(0),
+    // fEvsN(0), 
+    // fEvsM(0), 
+    // fEtaVsN(0),
+    // fEtaVsM(0),
     fCorr(0),
     fDensity(0),
     fELossVsPoisson(0),
@@ -1016,10 +1024,10 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
 AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   : AliForwardUtil::RingHistos(d,r),
     fList(0),
-    fEvsN(0), 
-    fEvsM(0),
-    fEtaVsN(0),
-    fEtaVsM(0),
+    // fEvsN(0), 
+    // fEvsM(0),
+    // fEtaVsN(0),
+    // fEtaVsM(0),
     fCorr(0),
     fDensity(0),
     fELossVsPoisson(0),
@@ -1041,6 +1049,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   //    d detector
   //    r ring 
   //
+#if 0
   fEvsN = new TH2D("elossVsNnocorr", 
 		   "#Delta E/#Delta E_{mip} vs uncorrected inclusive N_{ch}",
 		   250, -.5, 24.5, 251, -1.5, 24.5);
@@ -1066,7 +1075,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fEtaVsM->SetTitle("Average inclusive N_{ch} vs #eta (corrected)");
   fEtaVsM->SetYTitle("#LT N_{ch,incl}#GT (corrected)");
   fEtaVsM->SetDirectory(0);
-
+#endif
 
   fCorr = new TProfile("corr", "Average correction", 200, -4, 6);
   fCorr->SetXTitle("#eta");
@@ -1103,7 +1112,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDiffELossPoisson->Sumw2();
 			       
   fELoss = new TH1D("eloss", "#Delta/#Delta_{mip} in all strips", 
-		    600, 0, 15);
+		    640, -1, 15);
   fELoss->SetXTitle("#Delta/#Delta_{mip} (selected)");
   fELoss->SetYTitle("P(#Delta/#Delta_{mip})");
   fELoss->SetFillColor(Color()-2);
@@ -1138,10 +1147,10 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
 AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
   : AliForwardUtil::RingHistos(o),
     fList(o.fList), 
-    fEvsN(o.fEvsN), 
-    fEvsM(o.fEvsM),
-    fEtaVsN(o.fEtaVsN),
-    fEtaVsM(o.fEtaVsM),
+    // fEvsN(o.fEvsN), 
+    // fEvsM(o.fEvsM),
+    // fEtaVsN(o.fEtaVsN),
+    // fEtaVsM(o.fEtaVsM),
     fCorr(o.fCorr),
     fDensity(o.fDensity),
     fELossVsPoisson(o.fELossVsPoisson),
@@ -1180,10 +1189,10 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   if (&o == this) return *this; 
   AliForwardUtil::RingHistos::operator=(o);
   
-  if (fEvsN)             delete fEvsN;
-  if (fEvsM)             delete fEvsM;
-  if (fEtaVsN)           delete fEtaVsN;
-  if (fEtaVsM)           delete fEtaVsM;
+  // if (fEvsN)             delete fEvsN;
+  // if (fEvsM)             delete fEvsM;
+  // if (fEtaVsN)           delete fEtaVsN;
+  // if (fEtaVsM)           delete fEtaVsM;
   if (fCorr)             delete fCorr;
   if (fDensity)          delete fDensity;
   if (fELossVsPoisson)   delete fELossVsPoisson;
@@ -1194,10 +1203,10 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   if (fPhiBefore)        delete fPhiBefore;
   if (fPhiAfter)         delete fPhiAfter;
 
-  fEvsN             = static_cast<TH2D*>(o.fEvsN->Clone());
-  fEvsM             = static_cast<TH2D*>(o.fEvsM->Clone());
-  fEtaVsN           = static_cast<TProfile*>(o.fEtaVsN->Clone());
-  fEtaVsM           = static_cast<TProfile*>(o.fEtaVsM->Clone());
+  // fEvsN             = static_cast<TH2D*>(o.fEvsN->Clone());
+  // fEvsM             = static_cast<TH2D*>(o.fEvsM->Clone());
+  // fEtaVsN           = static_cast<TProfile*>(o.fEtaVsN->Clone());
+  // fEtaVsM           = static_cast<TProfile*>(o.fEtaVsM->Clone());
   fCorr             = static_cast<TProfile*>(o.fCorr->Clone());
   fDensity          = static_cast<TH2D*>(o.fDensity->Clone());
   fELossVsPoisson   = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
@@ -1259,10 +1268,10 @@ AliFMDDensityCalculator::RingHistos::CreateOutputObjects(TList* dir)
   //    dir Where to put it 
   //
   TList* d = DefineOutputList(dir);
-  d->Add(fEvsN);
-  d->Add(fEvsM);
-  d->Add(fEtaVsN);
-  d->Add(fEtaVsM);
+  // d->Add(fEvsN);
+  // d->Add(fEvsM);
+  // d->Add(fEtaVsN);
+  // d->Add(fEtaVsM);
   d->Add(fCorr);
   d->Add(fDensity);
   d->Add(fELossVsPoisson);

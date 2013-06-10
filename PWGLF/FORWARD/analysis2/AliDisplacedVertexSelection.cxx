@@ -1,6 +1,7 @@
 #include "AliDisplacedVertexSelection.h"
 #include <iostream>
 #include <TROOT.h>
+#include <TH1D.h>
 #include "AliESDEvent.h"
 #include "AliESDZDC.h"
 ClassImp(AliDisplacedVertexSelection)
@@ -11,15 +12,19 @@ ClassImp(AliDisplacedVertexSelection)
 //____________________________________________________________________
 AliDisplacedVertexSelection::AliDisplacedVertexSelection()
   : TObject(), 
-    fVertexZ(9999), 
-    fCent(100)
+    fVertexZ(kInvalidVtxZ), 
+    fCent(100), 
+    fHVertexZ(0),
+    fHCent(0)
 {
 }
 //____________________________________________________________________
 AliDisplacedVertexSelection::AliDisplacedVertexSelection(const AliDisplacedVertexSelection& o)
   : TObject(o), 
-    fVertexZ(9999), 
-    fCent(100)
+    fVertexZ(kInvalidVtxZ), 
+    fCent(100), 
+    fHVertexZ(0),
+    fHCent(0)
 {
 }
 //____________________________________________________________________
@@ -32,8 +37,37 @@ AliDisplacedVertexSelection::operator=(const AliDisplacedVertexSelection& o)
 
 //____________________________________________________________________
 void
-AliDisplacedVertexSelection::CreateOutputObjects(TList* /*l*/, const char* /* name*/) const
+AliDisplacedVertexSelection::SetupForData(TList* l, 
+					  const char* /* name*/)
 {
+  TList* out = new TList;
+  out->SetName("displacedVertex");
+  out->SetOwner();
+  l->Add(out);
+
+  Double_t dVz   = 37.5;
+  Double_t vzMin = (-kMaxK-.5) * dVz;
+  Double_t vzMax = (+kMaxK+.5) * dVz;
+
+  fHVertexZ = new TH1D("vertexZ", "Interaction point Z", 
+		       2*kMaxK+1, vzMin, vzMax);
+  fHVertexZ->SetXTitle("IP_{z} [cm]");
+  fHVertexZ->SetYTitle("events");
+  fHVertexZ->SetDirectory(0);
+  fHVertexZ->SetFillColor(kRed+1);
+  fHVertexZ->SetFillStyle(3001);
+  out->Add(fHVertexZ);
+
+  Int_t    nCent   = 6;
+  Double_t bCent[] = { 0, 5, 10, 20, 30, 40, 100 };
+  fHCent = new TH1D("cent", "Centrality", nCent, bCent);
+  fHCent->SetXTitle("Centrality [%]");
+  fHCent->SetYTitle("events");
+  fHCent->SetDirectory(0);
+  fHCent->SetFillColor(kBlue+1);
+  fHCent->SetFillStyle(3001);
+  out->Add(fHCent);
+
 }
   
 //____________________________________________________________________
@@ -53,7 +87,7 @@ AliDisplacedVertexSelection::Print(Option_t*) const
 Bool_t
 AliDisplacedVertexSelection::Process(const AliESDEvent* esd)
 {
-  fVertexZ = 9999; // Default vertex value 
+  fVertexZ = kInvalidVtxZ; // Default vertex value 
   fCent    = 100;  // Default centrality value 
 
   // Some constants 
@@ -126,22 +160,28 @@ AliDisplacedVertexSelection::Process(const AliESDEvent* esd)
 
   // --- Find the vertex ---------------------------------------------
   if(deltaTdc!=0. || sumTdc!=0.) {
-    for (Int_t k = -10; k <= 10; ++k) {
+    Double_t fillVz = kInvalidVtxZ;
+    for (Int_t k = -kMaxK; k <= kMaxK; ++k) {
       Float_t zsat  = 2.55F * k;
       Float_t delta = (k == 0 ? kZDCsigmaDelta : kZDCsigmaDeltaSat);
       Float_t sum   = (k == 0 ? kZDCsigmaSum   : kZDCsigmaSumSat);
       Float_t dT    = deltaTdc - kZDCrefDelta - zsat;
       Float_t sT    = sumTdc  - kZDCrefSum - zsat;
       Float_t check = dT * dT / delta / delta + sT * sT / sum  / sum;
-      if (check > 1.0 || k == 0) continue; 
+      if (check > 1.0) continue;
+      if (k == 0) { 
+	fillVz = 0;
+	continue;
+      }
       
       // Set the vertex 
       fVertexZ = 37.5 * k;
       
       // Correct zem energy 
-      if(currentDipo>0 && currentL3>0) zemEn /= kZEMcorrPlusPlus[k+10];
-      if(currentDipo<0 && currentL3<0) zemEn /= kZEMcorrMoinsMoins[k+10];
+      if(currentDipo>0 && currentL3>0) zemEn /= kZEMcorrPlusPlus[k+kMaxK];
+      if(currentDipo<0 && currentL3<0) zemEn /= kZEMcorrMoinsMoins[k+kMaxK];
     }
+    if (fillVz != kInvalidVtxZ) fHVertexZ->Fill(fillVz);
   }
 
   // --- Calculate the centrality ------------------------------------
@@ -181,6 +221,7 @@ AliDisplacedVertexSelection::Process(const AliESDEvent* esd)
     Float_t zdcCent = (TMath::ATan(slope) - c4) / c5;
     if (zdcCent >= 0) fCent = zdcCent;
   }
+  fHCent->Fill(fCent);
 
   return true;
 }

@@ -13,7 +13,9 @@
 //   
 // Corrections used 
 #include "AliCentralMCMultiplicityTask.h"
-#include "AliForwardCorrectionManager.h"
+#include "AliCentralCorrectionManager.h"
+#include "AliCentralCorrAcceptance.h"
+#include "AliCentralCorrSecondaryMap.h"
 #include "AliForwardUtil.h"
 #include "AliLog.h"
 #include "AliAODHandler.h"
@@ -99,17 +101,20 @@ void AliCentralMCMultiplicityTask::UserCreateOutputObjects()
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah)
- {	 
-	AliFatal("No AOD output handler set in analysis manager");
+  if (ah) {	 
+    // AliFatal("No AOD output handler set in analysis manager");
   
-  
-  	TObject* obj = &fAODMCCentral;
-  	ah->AddBranch("AliAODCentralMult", &obj);
-
+    TObject* obj = &fAODMCCentral;
+    ah->AddBranch("AliAODCentralMult", &obj);
   }
   fTrackDensity.CreateOutputObjects(fList);
 
+}
+//____________________________________________________________________
+void AliCentralMCMultiplicityTask::FindEtaLimits()
+{
+  AliCentralMultiplicityTask::FindEtaLimits();
+  fAODMCCentral.Init(*(fAODCentral.GetHistogram().GetXaxis()));  
 }
 //____________________________________________________________________
 void AliCentralMCMultiplicityTask::UserExec(Option_t* option) 
@@ -122,30 +127,34 @@ void AliCentralMCMultiplicityTask::UserExec(Option_t* option)
   //  
   DGUARD(fDebug,1,"Process event in AliCentralMCMultiplicityTask");
   fAODMCCentral.Clear("");
+
   // Call base class 
   AliCentralMultiplicityTask::UserExec(option);
-fAODMCCentral.Init(*(fAODCentral.GetHistogram().GetXaxis()));
+
   // check if we need this event 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah)
-{  
-  //  AliFatal("No AOD output handler set in analysis manager");
-
-  // if base class did not want this event, then neither to we 
-  if (!ah->GetFillAOD() || fIvz <= 0) return;
- } 
+  if (ah) {  
+    //  AliFatal("No AOD output handler set in analysis manager");    
+    // if base class did not want this event, then neither to we 
+    if (!ah->GetFillAOD() || fIvz <= 0) return;
+  } 
   const AliMCEvent*  mcEvent = MCEvent();
   if (!mcEvent) return;
   TH2D&              hist    = fAODMCCentral.GetHistogram();
 
-  Double_t vz = GetManager().GetSecMap()->GetVertexAxis().GetBinCenter(fIvz);
+  AliCentralCorrectionManager& ccm = 
+    AliCentralCorrectionManager::Instance();
+
+  Double_t vz = ccm.GetSecondaryMap()->GetVertexAxis().GetBinCenter(fIvz);
+    // GetManager().GetSecMap()->GetVertexAxis().GetBinCenter(fIvz);
 
   fTrackDensity.Calculate(*mcEvent, vz, hist, NULL);
-
-  CorrectData(hist, fIvz);
-
+  
+  VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(fIvz));
+  if (!bin) return;
+  bin->Correct(hist, fUseSecondary, fUseAcceptance, false);
 }
 
 //____________________________________________________________________
