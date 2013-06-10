@@ -589,10 +589,13 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   
-  if(fReader->IsExoticEvent()) fhNExoticEvents->Fill(0) ;
+  if(fReader->IsExoticEvent())
+    fhNExoticEvents->Fill(0) ;
+  //if(fReader->IsExoticEvent()) printf("Maker: EXOTIC Cluster trigger\n");
   
-  fhPileUpClusterTrigger->Fill(fReader->IsPileUpClusterTriggeredEvent());
-  //printf("Maker: Cluster trigger BC = %d\n",fReader->IsPileUpClusterTriggeredEvent());
+  if(fReader->IsPileUpClusterTriggeredEvent() != -10000)
+    fhPileUpClusterTrigger->Fill(fReader->IsPileUpClusterTriggeredEvent());
+  //if(!ok)printf("Maker: Cluster trigger BC = %d\n",fReader->IsPileUpClusterTriggeredEvent());
 
   if(!ok)
   {    
