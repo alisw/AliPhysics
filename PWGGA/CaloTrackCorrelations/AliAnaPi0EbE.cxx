@@ -188,8 +188,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   
   for(Int_t i = 0; i < 13; i++)
   {
-    fhEtaPhiTriggerEMCALBC[i] = 0 ;
-    fhTimeTriggerEMCALBC  [i] = 0 ;
+    fhEtaPhiTriggerEMCALBC       [i] = 0 ;
+    fhTimeTriggerEMCALBC         [i] = 0 ;
+    fhTimeTriggerEMCALBCPileUpSPD[i] = 0 ;
   }
   
   //Initialize parameters
