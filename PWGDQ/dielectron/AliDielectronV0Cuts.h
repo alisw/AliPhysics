@@ -70,7 +70,7 @@ private:
   AliDielectronV0Cuts(const AliDielectronV0Cuts &c);
   AliDielectronV0Cuts &operator=(const AliDielectronV0Cuts &c);
 
-  ClassDef(AliDielectronV0Cuts,1)
+  ClassDef(AliDielectronV0Cuts,2)          // cut class for V0 candidates
 };
 
 #endif
