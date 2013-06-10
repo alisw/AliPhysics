@@ -952,9 +952,9 @@ Bool_t AliJetResponseMaker::AcceptJet(AliEmcalJet *jet) const
 {   
   // Return true if jet is accepted.
 
-  if (jet->Pt() <= fJetPtCut)
+  if (jet->Pt() < fJetPtCut)
     return kFALSE;
-  if (jet->Area() <= fJetAreaCut)
+  if (jet->Area() < fJetAreaCut)
     return kFALSE;
 
   return kTRUE;
