@@ -26,7 +26,18 @@ It implements the PID cut class AliDielectronPID and the standard AliDielectronV
 the configuration of leg respective pair cuts. These pair cuts are applied on the KFparticle
 build by the legs.
 
-example configuration:
+Some QA cuts for the tracks are applied before the V0 pair is build. These cuts are:
+AliDielectronVarCuts dauQAcuts1;
+dauQAcuts1.AddCut(AliDielectronVarManager::kPt,            0.05, 100.0);
+dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,    0.9);
+dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      50.0,  160.0);
+dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.0,    4.0);
+AliDielectronTrackCuts dauQAcuts2;
+dauQAcuts2.SetRequireTPCRefit(kTRUE);
+
+
+
+Example configuration:
 
   AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("IsGamma","IsGamma");
 
@@ -140,7 +151,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   // rest booleans
   fV0TrackArr.ResetAllBits();
 
-  // basic quality cut, at least one of the V0 daughters has to fullfill
+  // basic quality cut, /*at least one*/ both of the V0 daughters has to fullfill
   AliDielectronVarCuts dauQAcuts1;
   dauQAcuts1.AddCut(AliDielectronVarManager::kPt,            0.05, 100.0);
   dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,    0.9);
