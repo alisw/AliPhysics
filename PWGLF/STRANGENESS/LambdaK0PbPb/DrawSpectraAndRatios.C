@@ -96,7 +96,8 @@ const Double_t sysRatio=0.05;//Efficiency systematics for the L/K ratio
 
 Double_t fd(Double_t x) {
   //Effective FD correction
-  return 0.1619 + 0.05295*x - 0.01749*x*x + 0.001425*x*x*x - 3.446e-05*x*x*x*x;
+//return 0.1619 + 0.05295*x - 0.01749*x*x + 0.001425*x*x*x - 3.446e-05*x*x*x*x;
+  return 0.2199 + 0.03226*x - 0.01739*x*x + 0.001790*x*x*x - 5.679e-05*x*x*x*x;
 }
 
 void FeedDown(TH1 *spe) {
