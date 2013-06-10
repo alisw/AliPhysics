@@ -71,6 +71,7 @@ enum array_labels
     en_arr_labels_NN_Nb,
     en_arr_labels_NN_N2_f,
     en_arr_labels_NN_Nf_Nb,
+    en_arr_labels_NN_N2_b,
 
     en_arr_labels_PtN_Nevents,
     en_arr_labels_PtN_Nf,
@@ -153,6 +154,10 @@ public:
     virtual void SetUseSparse( Bool_t flag )            { fUseSparse             = flag;  }
     virtual void SetUseAccumulatingHist( Bool_t flag )  { fUseAccumulatingHist   = flag;  }
     inline Bool_t IsPhiInRange( Double_t phi, Double_t phiBoundMin, Double_t phiBoundMax );
+
+    void SetCorrespondanceWithAliROOTpid();
+    void ZeroPidArrays();
+
 
 private:
 

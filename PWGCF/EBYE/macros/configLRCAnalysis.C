@@ -437,13 +437,13 @@ void tuneEtaPhiWindows( AliAnalysisTaskLRC* taskLRC
 
                 taskLRC->AddLRCProcess( new AliLRCProcess(winEtaEnd,winEtaBegin,winEtaBegin0,winEtaEnd0));
             }
-            else if ( ridgeStudy == 51 ) //expanding windows study - win pair position more presice, close eta
+            else if ( ridgeStudy == 51 ) //expanding windows study - win pair position more precise, close eta
             {
                 //cout << "study win pair position" << endl;
                 double shiftEta = etaId * 0.2;
                 taskLRC->AddLRCProcess( new AliLRCProcess( -0.8 + shiftEta,-0.6+ shiftEta, -0.6 + shiftEta, -0.4 + shiftEta ));
             }
-            else if ( ridgeStudy == 52 ) //expanding windows study - win pair position more presice, wide gap
+            else if ( ridgeStudy == 52 ) //expanding windows study - win pair position more precise, wide gap
             {
                 //cout << "study win pair position" << endl;
                 double shiftEta = etaId * 0.2;
