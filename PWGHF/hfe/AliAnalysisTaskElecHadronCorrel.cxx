@@ -138,6 +138,7 @@ ClassImp(AliehDPhiBasicParticle)
   ,fTriggerMB(kTRUE) 
   ,fTPCNClsHad(80)  
   ,fAssoEleITSref(kTRUE)  
+  ,fAssoElecTPCNCls(80)  
   ,fNonHFE(0)  
   ,fPoolMgr(0x0)  
     ,fNoEvents(0)
@@ -462,6 +463,7 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fTriggerMB(kTRUE) 
   ,fTPCNClsHad(80)  
   ,fAssoEleITSref(kTRUE)  
+  ,fAssoElecTPCNCls(80)  
   ,fNonHFE(0)  
   ,fPoolMgr(0x0)    
     ,fNoEvents(0)
@@ -1883,7 +1885,7 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVT
   fTrackCuts1->SetEtaRange(-0.9,0.9);
   fTrackCuts1->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts1->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts1->SetMinNClustersTPC(80);
+  fTrackCuts1->SetMinNClustersTPC(fAssoElecTPCNCls);
   fTrackCuts1->SetMaxDCAToVertexZ(3.2);
   fTrackCuts1->SetMaxDCAToVertexXY(2.4);
   fTrackCuts1->SetDCAToVertex2D(kTRUE);
@@ -1905,7 +1907,7 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliVT
       AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
       if(!atrackAsso) continue;
       if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-      if(atrackAsso->GetTPCNcls() < 80) continue;
+      if(atrackAsso->GetTPCNcls() < fAssoElecTPCNCls) continue;
       if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
 
       if(fAssoEleITSref){

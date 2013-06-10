@@ -18,6 +18,7 @@ AliAnalysisTaskElecHadronCorrel *AddTaskHFEElecHadronCorrlPbPb(Bool_t EventTrigS
                                                                Int_t TPCNClsEle = 100,
                                                                Int_t TPCNClsHad = 80,
                                                                Bool_t AssoEleITSref=kTRUE,
+                                                               Int_t AssoElecTPCNCls=80,
                                                                TString ContNameExt = "Central", 
                                                                TString TaskName = "hfeCorrl"
                                                                )
@@ -48,7 +49,7 @@ AliAnalysisTaskElecHadronCorrel *AddTaskHFEElecHadronCorrlPbPb(Bool_t EventTrigS
 
   //analysis task 
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecHadronCorrelPbPb.C");
-  AliAnalysisTaskElecHadronCorrel *taskHFEeh = ConfigHFEElecHadronCorrelPbPb(MCthere,EventTrigSelMB,TrigSelCen,CentrMin,CentMax,TPCNsigMinE,TPCNsigMaxE,TPCNsigMinH,TPCNsigMaxH,SSM02Min,SSM02Max,SSM20Min,SSM20Max,Disp,EovPMin,EovPMax,InvM,CentralityMet, TPCNClsEle, TPCNClsHad, AssoEleITSref,TaskName);
+  AliAnalysisTaskElecHadronCorrel *taskHFEeh = ConfigHFEElecHadronCorrelPbPb(MCthere,EventTrigSelMB,TrigSelCen,CentrMin,CentMax,TPCNsigMinE,TPCNsigMaxE,TPCNsigMinH,TPCNsigMaxH,SSM02Min,SSM02Max,SSM20Min,SSM20Max,Disp,EovPMin,EovPMax,InvM,CentralityMet, TPCNClsEle, TPCNClsHad, AssoEleITSref,AssoElecTPCNCls,TaskName);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeCalPbPbeh";
