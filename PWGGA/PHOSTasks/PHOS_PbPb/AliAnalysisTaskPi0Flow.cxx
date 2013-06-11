@@ -180,8 +180,8 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   //========QA histograms=======
 
   //Event selection
-  fOutputContainer->Add(new TH2F("hSelEvents","Event selection", 12,0.,13.,nRuns,0.,float(nRuns))) ;
-  fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", 12,0.,12.)) ;
+  fOutputContainer->Add(new TH2F("hSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1), nRuns,0.,float(nRuns))) ;
+  fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1))) ;
 
   //vertex distribution
   fOutputContainer->Add(new TH2F("hZvertex","Z vertex position", 50,-25.,25.,nRuns,0.,float(nRuns))) ;
@@ -389,7 +389,7 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
     SetFlatteningData();
   }
   LogProgress(1);
-  LogSelection(0, fInternalRunNumber);
+  LogSelection(kTotal, fInternalRunNumber);
 
 
   // Step 2: Vertex
@@ -445,8 +445,9 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   if( ! fCaloPhotonsPHOS->GetEntriesFast() )
     return;
   else
-    LogSelection(6, fInternalRunNumber);
+    LogSelection(kHasPHOSClusters, fInternalRunNumber);
 
+  LogSelection(kTotalSelected, fInternalRunNumber);
 
   // Step 9: Consider pi0 (photon/cluster) pairs.
   this->ConsiderPi0s();
@@ -2549,11 +2550,11 @@ Bool_t AliAnalysisTaskPi0Flow::RejectEventVertex()
 {
   if( ! fEvent->GetPrimaryVertex() )
     return true; // reject
-  LogSelection(1, fInternalRunNumber);
+  LogSelection(kHasVertex, fInternalRunNumber);
 
   if ( TMath::Abs(fVertexVector.z()) > fMaxAbsVertexZ )
     return true; // reject
-  LogSelection(2, fInternalRunNumber);
+  LogSelection(kHasAbsVertex, fInternalRunNumber);
 
   if( kLHC13 == fPeriod ) {//pPb vertex and pileup cut
     const bool vertexSelected = GetAnalysisUtils()->IsVertexSelected2013pA(fEvent);
@@ -2588,7 +2589,7 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
 {
   if( ! fEvent->GetCentrality() )
     return true; // reject
-  LogSelection(3, fInternalRunNumber);
+  LogSelection(kHasCentrality, fInternalRunNumber);
 
 //   if( fCentralityV0M <= 0. || fCentralityV0M>80. )
 //     return true; // reject
@@ -2599,14 +2600,14 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
   }
-  LogSelection(4, fInternalRunNumber);
+  LogSelection(kCentUnderUpperBinUpperEdge, fInternalRunNumber);
 
   if( fCentralityV0M < fCentEdges[0] ) {
     if( fDebug )
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
   }
-  LogSelection(5, fInternalRunNumber);
+  LogSelection(kCentOverLowerBinLowerEdge, fInternalRunNumber);
 
   return false;
 }

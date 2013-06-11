@@ -33,6 +33,7 @@ class AliAnalysisUtils;
 class AliAnalysisTaskPi0Flow : public AliAnalysisTaskSE {
 public:
     enum Period { kUndefinedPeriod, kLHC10h, kLHC11h, kLHC13 };
+    enum EventSelection { kTotal, kHasVertex, kHasAbsVertex, kHasCentrality, kCentUnderUpperBinUpperEdge, kCentOverLowerBinLowerEdge, kHasPHOSClusters, kTotalSelected };
 
 public:
     AliAnalysisTaskPi0Flow(const char *name = "AliAnalysisTaskPi0Flow", Period period = kUndefinedPeriod);
