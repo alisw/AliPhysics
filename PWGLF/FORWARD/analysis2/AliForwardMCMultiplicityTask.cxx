@@ -340,6 +340,13 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
     AliWarning("MC Histogram collector failed");
     return;
   }
+  // Copy underflow bins to overflow bins - always full phi coverage 
+  TH2&  hMC  = fAODFMD.GetHistogram();
+  Int_t nEta = hMC.GetNbinsX();
+  Int_t nY   = hMC.GetNbinsY();
+  for (Int_t iEta = 1; iEta <= nEta; iEta++) {
+    hMC.SetBinContent(iEta, nY+1, hMC.GetBinContent(iEta, 0));
+  }
 
   if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
     fHData->Add(&(fAODFMD.GetHistogram()));
