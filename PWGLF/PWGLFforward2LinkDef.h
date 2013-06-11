@@ -72,6 +72,7 @@
 #pragma link C++ class AliCopyHeaderTask+;
 #pragma link C++ class AliBasedNdetaTask+;
 #pragma link C++ class AliBasedNdetaTask::CentralityBin+;
+#pragma link C++ class AliBasedNdetaTask::Sum+;
 #pragma link C++ class AliBaseMCTrackDensity+;
 #pragma link C++ class AliMCTruthdNdetaTask+;
 #pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
@@ -133,10 +134,6 @@
 #pragma link C++ class AliForwardCreateResponseMatrices::Bin+;
 #pragma link C++ class AliForwardMultiplicityDistribution+;
 #pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
-
-
-
-
 
 #else
 # error Not for compilation 

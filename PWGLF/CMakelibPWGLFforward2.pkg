@@ -103,9 +103,7 @@ set ( SRCS
   FORWARD/analysis2/AliForwardCreateResponseMatrices.cxx
   FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
   FORWARD/photons/AliAnalysisTaskPMD.cxx
-  FORWARD/photons/AliAnalysisTaskPMD.h
   FORWARD/photons/AliAnalysisTaskPMDSim.cxx
-  FORWARD/photons/AliAnalysisTaskPMDSim.h
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
