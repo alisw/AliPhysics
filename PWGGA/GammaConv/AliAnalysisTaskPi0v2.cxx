@@ -164,14 +164,22 @@ AliAnalysisTaskPi0v2::~AliAnalysisTaskPi0v2(){
 	fConversionSelection=NULL;
     }
 
+    if(fEP){
+	delete fEP;
+	fEP=NULL;
+    }
+
     if (fPeriod.CompareTo("LHC11h")==0){
 	for(Int_t i = 0; i < 4; i++) {
 	    if(fPhiDist[i]){
 		delete fPhiDist[i];
-		fPhiDist[i] = 0;
+		fPhiDist[i] = NULL;
 	    }
 	}
-	if(fHruns) delete fHruns;
+	if(fHruns){
+	    delete fHruns;
+	    fHruns=NULL;
+	}
     }
 }
 
