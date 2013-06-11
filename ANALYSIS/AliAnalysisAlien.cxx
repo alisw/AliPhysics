@@ -138,9 +138,10 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fPackages(0),
                   fModules(0),
                   fProofParam(),
-  fDropToShell(true),
-  fGridJobIDs(""),
-  fGridStages("")
+                  fDropToShell(true),
+                  fGridJobIDs(""),
+                  fGridStages(""),
+                  fFriendLibs("")
 {
 // Dummy ctor.
    SetDefaults();
@@ -216,7 +217,8 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fProofParam(),
                   fDropToShell(true),
                   fGridJobIDs(""),
-                  fGridStages("")
+                  fGridStages(""),
+                  fFriendLibs("")
 {
 // Default ctor.
    SetDefaults();
@@ -292,7 +294,8 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fProofParam(),
                   fDropToShell(other.fDropToShell),
                   fGridJobIDs(other.fGridJobIDs),
-                  fGridStages(other.fGridStages)
+                  fGridStages(other.fGridStages),
+                  fFriendLibs(other.fFriendLibs)
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
@@ -407,6 +410,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fDropToShell             = other.fDropToShell;
       fGridJobIDs              = other.fGridJobIDs;
       fGridStages              = other.fGridStages;
+      fFriendLibs              = other.fFriendLibs;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -662,6 +666,7 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
          return kFALSE;
       }
       if (!LoadModule(mod)) return kFALSE;
+      if (!LoadFriendLibs()) return kFALSE;
    } else if (!LoadModules()) return kFALSE;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr->InitAnalysis()) return kFALSE;
@@ -724,8 +729,36 @@ Bool_t AliAnalysisAlien::LoadModules()
       mod = (AliAnalysisTaskCfg*)fModules->At(imod);
       if (!LoadModule(mod)) return kFALSE;
    }
-   return kTRUE;
+   // Load additional friend libraries
+   return LoadFriendLibs();
 }      
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::LoadFriendLibs() const
+{
+// Load libraries required for reading friends.
+   if (fFriendLibs.Length()) {
+      TObjArray *list = 0;
+      TString lib;
+      if (fFriendLibs.Contains(",")) list  = fFriendLibs.Tokenize(",");
+      else                           list  = fFriendLibs.Tokenize(" ");
+      for (Int_t ilib=0; ilib<list->GetEntriesFast(); ilib++) {
+         lib = list->At(ilib)->GetName();
+         lib.ReplaceAll(".so","");
+         lib.ReplaceAll(" ","");
+         if (lib.BeginsWith("lib")) lib.Remove(0, 3);
+         lib.Prepend("lib");
+         Int_t loaded = strlen(gSystem->GetLibraries(lib,"",kFALSE));
+         if (!loaded) loaded = gSystem->Load(lib);
+         if (loaded < 0) {
+            Error("LoadModules", "Cannot load library for friends %s", lib.Data());
+            return kFALSE;
+         }
+      }
+      delete list;
+   }
+   return kTRUE;
+}   
 
 //______________________________________________________________________________
 void AliAnalysisAlien::SetRunPrefix(const char *prefix)
@@ -2549,6 +2582,18 @@ void AliAnalysisAlien::SetDefaults()
 }   
 
 //______________________________________________________________________________
+void AliAnalysisAlien::SetFriendChainName(const char *name, const char *libnames)
+{
+   // Set file name for the chain of friends and optionally additional libs to be loaded.
+   // Libs should be separated by blancs.
+   fFriendChainName = name;
+   fFriendLibs = libnames;
+   if (!fFriendLibs.Contains(".so")) {
+      Fatal("SetFriendChainName()", "You should provide explicit library names (with extension)");
+   }
+}
+
+//______________________________________________________________________________
 void AliAnalysisAlien::SetRootVersionForProof(const char *version)
 {
 // Obsolete method. Use SetROOTVersion instead
@@ -3228,7 +3273,12 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:OADB:ANALYSISalice";
          // Parse the extra libs for .so
          if (fAdditionalLibs.Length()) {
-            TObjArray *list = fAdditionalLibs.Tokenize(" ");
+            TString additionalLibs = fAdditionalLibs;
+            additionalLibs.Strip();
+            if (additionalLibs.Length() && fFriendLibs.Length())
+               additionalLibs += " ";
+            additionalLibs += fFriendLibs;
+            TObjArray *list = additionalLibs.Tokenize(" ");
             TIter next(list);
             TObjString *str;
             while((str=(TObjString*)next())) {
@@ -3254,10 +3304,10 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             }
             if (list) delete list;            
          }
-        if (!extraLibs.IsNull()) {
-          Info("StartAnalysis", "Adding extra libs: %s",extraLibs.Data());
-          optionsList.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
-        }
+         if (!extraLibs.IsNull()) {
+           Info("StartAnalysis", "Adding extra libs: %s",extraLibs.Data());
+           optionsList.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
+         }
          // Check extra includes
          if (!fIncludePath.IsNull()) {
             TString includePath = fIncludePath;
@@ -4007,7 +4057,12 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
-         TObjArray *list = fAdditionalLibs.Tokenize(" ");
+         TString additionalLibs = fAdditionalLibs;
+         additionalLibs.Strip();
+         if (additionalLibs.Length() && fFriendLibs.Length())
+            additionalLibs += " ";
+         additionalLibs += fFriendLibs;
+         TObjArray *list = additionalLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {
@@ -4357,7 +4412,12 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
-         TObjArray *list = fAdditionalLibs.Tokenize(" ");
+         TString additionalLibs = fAdditionalLibs;
+         additionalLibs.Strip();
+         if (additionalLibs.Length() && fFriendLibs.Length())
+            additionalLibs += " ";
+         additionalLibs += fFriendLibs;
+         TObjArray *list = additionalLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {
