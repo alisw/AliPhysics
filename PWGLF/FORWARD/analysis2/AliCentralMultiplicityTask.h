@@ -157,13 +157,18 @@ protected:
    * @param hist    Histogram to fill
    * @param spdmult SPD multiplicity object
    */
-  virtual void ProcessESD(TH2D& hist, const AliMultiplicity* spdmult) const;
+  virtual void ProcessESD(TH2D& hist, 
+			  const AliMultiplicity* spdmult) const;
   /** 
    * Find our eta limits
    * 
    */
   virtual void FindEtaLimits();
-
+  /**
+   * A vertex bin. 
+   *
+   * Used to store and apply corrections and fiducial cuts
+   */
   struct VtxBin : public TObject
   {
     VtxBin(Int_t iVz=0, Double_t minIpZ=0, Double_t maxIpZ=0);
