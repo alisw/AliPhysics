@@ -30,12 +30,12 @@ public:
     : TrainSetup(name)
   {
     fOptions.Add("run",   "NUMBER",  "Run number for corrs", 0);
-    fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", "");
-    fOptions.Add("snn",   "ENERGY",  "Center of mass energy in GeV", "");
-    fOptions.Add("field", "STRENGTH","L3 field strength in kG", "");
+    fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", 0);
+    fOptions.Add("snn",   "ENERGY",  "Center of mass energy in GeV", 0);
+    fOptions.Add("field", "STRENGTH","L3 field strength in kG", 0);
     fOptions.Add("forward-config", "FILE", "Forward configuration", 
 		 "ForwardAODConfig.C");
-    fOptions.Add("central-config", "FILE", "Forward configuration", 
+    fOptions.Add("central-config", "FILE", "Central configuration", 
 		 "CentralAODConfig.C");
     fOptions.Add("cent",  "Use centrality");
     fOptions.Add("tpc-ep", "Use TPC event plane");
@@ -167,7 +167,7 @@ protected:
 
     if (!fHelper) { 
       Warning("MakeAODTrain::SaveSetup", 
-	      "Cannot make dNdeta.C script with helper");
+	      "Cannot make dNdeta.C script without helper");
       return;
     }
     
