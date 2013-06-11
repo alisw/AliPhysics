@@ -245,17 +245,24 @@ AliTenderSupply(name)
 AliEMCALTenderSupply::~AliEMCALTenderSupply()
 {
   //Destructor
-  
+
+  if (!AliAnalysisManager::GetAnalysisManager())  return;  
+
   if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
   {
     delete fEMCALRecoUtils;
     delete fRecParam;
     delete fUnfolder;
+    
     if (!fClusterizer) 
     {
-      fDigitsArr->Clear("C");
-      delete fDigitsArr; 
-    } else 
+      if (fDigitsArr) 
+      { 
+     	fDigitsArr->Clear("C");
+      	delete fDigitsArr; 
+      }
+    } 
+    else 
     {
       delete fClusterizer;
       fDigitsArr = 0;
