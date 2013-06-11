@@ -471,6 +471,7 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   // Double_t vMin    = vtxAxis->GetBinLowEdge(vtxbin);
   // Double_t vMax    = vtxAxis->GetBinUpEdge(vtxbin);
   VtxBin*  bin     = GetVtxBin(vtxbin);
+  if (!bin) return false;
   Bool_t   ret     = bin->Collect(hists, sums, out, fSumRings, cent, 
 				  fMergeMethod, fSkipFMDRings,
 				  fByCent);
