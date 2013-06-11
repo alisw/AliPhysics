@@ -2,6 +2,8 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TGrid.h>
+#include <TStyle.h>
+#include <TRandom.h>
 #include <TFile.h>
 #include <TF1.h>
 #include <TH1F.h>
@@ -11,6 +13,8 @@
 #include <TMath.h>
 #include <TGraphErrors.h>
 #include <TString.h>
+#include "TFitResult.h"
+#include "THashList.h"
 #include "Riostream.h"
 #include "stdio.h"
 using namespace std;
@@ -50,9 +54,9 @@ Double_t bgP2     (Double_t *x, Double_t *par);
 // Global variabes
 const Int_t kNEventsBin = 4;
 const Int_t kNCents = 1;
-const Int_t kNPID = 8+4;
+const Int_t kNPID = 8+6;
 const char* kPIDNames[kNPID] = {"All", "Allwou", "Disp", "Disp2", "Dispwou", "CPV", "CPV2", "Both",
-				"Allcore", "Dispcore", "CPVcore", "Bothcore"};
+				"Allcore", "Dispcore", "CPVcore", "Bothcore", "Both2core", "Disp2core"};
 const char* fullMergeFileName = "AnalysisResults.root";
 
 Int_t runIndex;
@@ -118,15 +122,15 @@ void ExtractQA(const TString runFile="runFile.txt",
     printf("root file is %s, run # = %d\n",rootFileName,runNumber);
     // char *runNum = strtok(rootFileName+35,".");
     rootFile = TFile::Open(rootFileName,"read");
-    listHist = (TList*)rootFile->Get("PHOSPi0Flow_kCentral/PHOSPi0Flow_kCentralCoutput1");
+    listHist = (TList*)rootFile->Get("PHOSPi0Flow_kMB/PHOSPi0Flow_kMBCoutput1");
 
     run[runIndex]            = runIndex+1;
-    // QAFillEventSelection();
-    // QAFillOccupancy();
-    // QAFillClusters();
+    QAFillEventSelection();
+    QAFillOccupancy();
+    QAFillClusters();
     QAFillRP();
-    // QAFillTracks();
-    // QAFillNPi0();
+    QAFillTracks();
+    QAFillNPi0();
 
     listHist->Clear();
     rootFile->Close();
@@ -137,12 +141,12 @@ void ExtractQA(const TString runFile="runFile.txt",
 
 
   TFile *fileQA = TFile::Open(outputFileName.Data(), "recreate");
-  // QAWriteEventSelection();
-  // QAWriteOccupancy();
-  // QAWriteClusters();
+  QAWriteEventSelection();
+  QAWriteOccupancy();
+  QAWriteClusters();
   QAWriteRP();
-  // QAWriteTracks();
-  // QAWriteNPi0();
+  QAWriteTracks();
+  QAWriteNPi0();
   fileQA         ->Close();
 
 }
@@ -215,7 +219,8 @@ void QAFillClusters()
 
   for(int cent = 0; cent < kNCents; ++cent) {
     for(int ipid = 0; ipid < kNPID; ++ipid) {
-      TH1* hPhot = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
+      TObject* obj = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
+      TH1* hPhot = dynamic_cast<TH1*> ( obj );
 
       hPhot->SetAxisRange(0., 100.);
       double nPhot = hPhot->Integral() /nEvents4;
@@ -247,7 +252,7 @@ void QAFillRP()
 
   //int nEvents = hev->GetBinContent(kNEventsBin);
 
-  TH1D* phiRP1[nRPD][2] = {0};
+  TH1D* phiRP1[nRPD][2] = {{0}};
   phiRP1[V0A][0] = phiRPV0A->ProjectionX();
   phiRP1[V0C][0] = phiRPV0C->ProjectionX();
   phiRP1[TPC][0] = phiRP->ProjectionX();
@@ -404,7 +409,7 @@ void QAFillNPi0()
   int error = mrp;
   if( error % 1000) {
     Printf(" -> fit of fitM to hReMiRatio failed with error code %d", error % 1000);
-    continue;
+    return;
   }
   else if( error )
     Printf("Warning: failure of 'improve result' of fit of fitM to hReMiRatio");
@@ -427,7 +432,7 @@ void QAFillNPi0()
   mrp = hPi0SubBG->Fit(fitG,"Q","",rangeMin,rangeMax);
   if( (error=mrp) ) {
     Printf(" -> fit of fitG to hPi0SubBG failed with error code %d, skipping", error );
-    continue;
+    return;
   }
   hPi0SubBG->SetAxisRange(rangeMin, rangeMax);
   hPi0SubBG->DrawCopy();
@@ -559,7 +564,8 @@ void QAWriteClusters()
   TString name, title;
   for(int cent=0; cent<kNCents; ++cent) {
     for(int ipid = 0; ipid < kNPID; ++ipid) {
-      TH1* hPhot = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
+      TObject* obj = listHist->FindObject( Form("hPhot%s_cen%d", kPIDNames[ipid], cent) );
+      TH1* hPhot = dynamic_cast<TH1*> (obj);
       name = Form("grNPhot%s_cen%d", kPIDNames[ipid], cent);
       title = Form("#LTN_{clusters}^{%s}#GT, c.bin=%d", kPIDNames[ipid], cent);
       AddWriteTH1F(name, title, nPhotPID[cent][ipid], enPhotPID[cent][ipid]);
@@ -776,7 +782,6 @@ const TF1* GetPeriodRPFit(const char* histName)
   func->SetParLimits(3, -TMath::Pi(), TMath::Pi());
   func->SetParNames("s_{0}", "s_{1}", "#omega", "#psi");
   hist->GetXaxis()->SetTitle("#phi");
-  int error = 0;
   TCanvas* canv = new TCanvas(name.Data());
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1);
@@ -810,7 +815,7 @@ void AddNoise(TH1D* hist, double noise)
   for(int bin=1; bin<=nBins; ++bin) {
     hist->SetBinContent( bin, hist->GetBinContent(bin) + gRandom->Gaus(0, noise) );
     double err = hist->GetBinError(bin);
-    hist->SetBinError( bin, TMath::Sqrt( err**2 + noise**2 ) );
+    hist->SetBinError( bin, TMath::Sqrt( err*err + noise*noise ) );
   }
 }
 
