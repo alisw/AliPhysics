@@ -84,6 +84,8 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fPeriod(period),
   fMaxAbsVertexZ(10.),
   fManualV0EPCalc(false),
+  fTOFCutWideEnabled(false),
+  fTOFCutWide(100.e-9),
   fOutputContainer(0x0),
   fNonLinCorr(0),
   fEvent(0x0),
@@ -265,12 +267,14 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hPi0M33","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
   // Histograms for different centralities
-  const int kNPID = 16;
-  const char* pidNames[kNPID] = {"All", "Allcore", "Allwou", "Disp", "Disp2", "Dispcore",  "Disp2core", "Dispwou", "CPV", "CPVcore", "CPV2", "CPV2core", "Both", "Bothcore", "Both2", "Both2core"};
+  const int kNPID = 17;
+  const char* pidNames[kNPID] = {"All", "Allcore", "Allwou", "Disp", "Disp2", "Dispcore",  "Disp2core", "Dispwou", "CPV", "CPVcore", "CPV2", "CPV2core", "Both", "Bothcore", "Both2", "Both2core", "AllWideTOF"};
   char key[55];
   TString name, title;
   for(Int_t cent=0; cent < fCentEdges.GetSize()-1; cent++){
     for(Int_t ipid=0; ipid < kNPID; ipid++){
+      if( !fTOFCutWideEnabled && TString(pidNames[ipid]).EqualTo("AllWideTOF") ) continue;
+
       name = Form("hPhot%s_cen%i", pidNames[ipid], cent );
       title = Form("%s clusters", pidNames[ipid]);
       fOutputContainer->Add(new TH1F(name.Data(), title.Data(), nPtPhot,0.,ptPhotMax));
@@ -743,6 +747,9 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     //    ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
     ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolde
 
+    // Time of Flight (TOF)
+    Double_t tof = clu->GetTOF();
+    ph->SetTOFBit( TMath::Abs(tof) < 100.e-9 );
   }
   FillHistogram("hCenPHOS",fCentralityV0M, fCaloPhotonsPHOS->GetEntriesFast()) ;
 }
@@ -877,6 +884,13 @@ void AliAnalysisTaskPi0Flow::FillSelectedClusterHistograms()
 	FillHistogram(Form("hPhotBoth2core_cen%d",fCentBin),ptcore) ;
       }
     }
+    if( fTOFCutWideEnabled && ph1->IsTOFOK()) {
+      FillHistogram(Form("hPhotAllWideTOF_cen%d",fCentBin),pt) ;
+      FillHistogram(Form("hPhotPhiV0AAllWideTOF_cen%d",fCentBin),pt,dphiA) ;
+      FillHistogram(Form("hPhotPhiV0CAllWideTOF_cen%d",fCentBin),pt,dphiC) ;
+      if(fHaveTPCRP)
+	FillHistogram(Form("hPhotPhiTPCAllWideTOF_cen%d",fCentBin),pt,dphiT) ;
+    }
   }
 }
 //_____________________________________________________________________________
@@ -924,6 +938,7 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
 
 
       FillHistogram(Form("hPi0All_cen%d",fCentBin),m,pt) ;
+      if( fTOFCutWideEnabled && ph1->IsTOFOK() ) FillHistogram(Form("hPi0AllWideTOF_cen%d",fCentBin),m,pt) ;
       FillHistogram(Form("hPi0Allcore_cen%d",fCentBin),mcore,ptcore) ;
       if(ph1->IsntUnfolded() && ph2->IsntUnfolded()){
         FillHistogram(Form("hPi0Allwou_cen%d",fCentBin),m,pt) ;
@@ -934,7 +949,9 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
       }
 
       FillHistogram(Form("hSingleAll_cen%d",fCentBin),m,pt1) ;
+      if( fTOFCutWideEnabled && ph1->IsTOFOK() ) FillHistogram(Form("hSingleAllWideTOF_cen%d",fCentBin),m,pt1) ;
       FillHistogram(Form("hSingleAll_cen%d",fCentBin),m,pt2) ;
+      if( fTOFCutWideEnabled && ph2->IsTOFOK() ) FillHistogram(Form("hSingleAllWideTOF_cen%d",fCentBin),m,pt2) ;
       FillHistogram(Form("hSingleAllcore_cen%d",fCentBin),mcore,ptcore1) ;
       FillHistogram(Form("hSingleAllcore_cen%d",fCentBin),mcore,ptcore2) ;
       if(ph1->IsntUnfolded())
@@ -1184,6 +1201,7 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0sMix()
 	  FillHistogram(Form("hMiMassPtTPCAllcore_cen%d",fCentBin),mcore, ptcore, dphiT) ;
 
 	FillHistogram(Form("hMiPi0All_cen%d",fCentBin),m,pt) ;
+	if( fTOFCutWideEnabled && ph1->IsTOFOK() && ph2->IsTOFOK()) FillHistogram(Form("hMiPi0AllWideTOF_cen%d",fCentBin),m,pt) ;
 	FillHistogram(Form("hMiPi0Allcore_cen%d",fCentBin),mcore,ptcore) ;
 	if(ph1->IsntUnfolded() && ph2->IsntUnfolded()){
 	  FillHistogram(Form("hMiPi0Allwou_cen%d",fCentBin),m,pt) ;
@@ -1193,8 +1211,10 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0sMix()
             FillHistogram(Form("hMiMassPtTPCAllwou_cen%d",fCentBin),m,pt,dphiT) ;
 	}
 
-        FillHistogram(Form("hMiSingleAll_cen%d",fCentBin),m,pt1) ;
+	FillHistogram(Form("hMiSingleAll_cen%d",fCentBin),m,pt1) ;
+        if( fTOFCutWideEnabled && ph1->IsTOFOK()) FillHistogram(Form("hMiSingleAllWideTOF_cen%d",fCentBin),m,pt1) ;
         FillHistogram(Form("hMiSingleAll_cen%d",fCentBin),m,pt2) ;
+	if( fTOFCutWideEnabled && ph2->IsTOFOK()) FillHistogram(Form("hMiSingleAllWideTOF_cen%d",fCentBin),m,pt2) ;
         FillHistogram(Form("hMiSingleAllcore_cen%d",fCentBin),mcore,ptcore1) ;
         FillHistogram(Form("hMiSingleAllcore_cen%d",fCentBin),mcore,ptcore2) ;
         if(ph1->IsntUnfolded())

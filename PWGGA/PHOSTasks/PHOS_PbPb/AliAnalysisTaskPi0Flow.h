@@ -44,6 +44,7 @@ public:
     /* virtual void   Terminate(Option_t *); */
 
     void SetPeriod(Period period) { fPeriod = period;}
+    void EnableSetTOFCutWide(Bool_t enable = kTRUE, Double_t TOFCutWide = 100.e-9){fTOFCutWideEnabled=enable; fTOFCutWide=TOFCutWide;}
     
     void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed);
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
@@ -169,6 +170,8 @@ protected:
     Float_t fMaxAbsVertexZ; // in cm
     Bool_t fManualV0EPCalc;
     Bool_t fModuleEnabled[kNMod]; //[kNMod]
+    Bool_t fTOFCutWideEnabled;
+    Double_t fTOFCutWide;
 
 
     TList * fOutputContainer;        //final histogram container
