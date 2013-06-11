@@ -87,9 +87,12 @@ AliMCTruthdNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
     return 0;
   }
   TH2D* ret = static_cast<TH2D*>(obj);
-  // Need to fill underflow bin with 1's 
-  for (Int_t i = 1; i <= ret->GetNbinsX(); i++)  
-    ret->SetBinContent(i, 0, 1);
+  Int_t nY  = ret->GetNbinsY();
+  // Need to fill under-/overflow bin with 1's 
+  for (Int_t i = 1; i <= ret->GetNbinsX(); i++)  {
+    ret->SetBinContent(i, 0,    1);
+    ret->SetBinContent(i, nY+1, 1);
+  }
   return ret;
 }
 
