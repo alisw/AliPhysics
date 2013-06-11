@@ -1,7 +1,7 @@
 AliPHOSTenderTask* AddAODPHOSTender(const char* taskName = "PHOSTenderTask",
 				    const char* tenderName = "PHOStender",
 				    const char* options = "",
-				    Int_t pass = -1
+				    Int_t pass = 1
 )
 {
   //Add a task with PHOS tender which works with AOD to the analysis train
