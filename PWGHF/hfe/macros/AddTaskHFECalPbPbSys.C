@@ -39,7 +39,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   
 
   //MB trigger
-  AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,asspTCut,MassCal,angleCut);
+  AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,asspTCut,angleCut);
   mgr->AddTask(hfetaskMB);
   hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
   TString containerName4 = mgr->GetCommonFileName();
