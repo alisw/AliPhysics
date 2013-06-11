@@ -1,3 +1,6 @@
+
+#ifndef __CINT__
+#include "AliOADBForward.h"
 #include <TGListBox.h>
 #include <TGNumberEntry.h>
 #include <TGTextEntry.h>
@@ -17,9 +20,7 @@
 #include <TDatime.h>
 #include <TParameter.h>
 #include <TPaveText.h>
-#include "/opt/alice/aliroot/inst/include/AliOADBForward.h"
 
-#ifndef __CINT__
 namespace {
   void 
   ForwardOADBGUIErrorHandler(Int_t lvl, Bool_t doAbort, 
@@ -39,19 +40,22 @@ namespace {
   }
 }
 #else 
-// class AliOADBForward;
-// class TGHorizontalFrame;
-// class TGTextButton;
-// class TGTextEntry;
-// class TGVerticalFrame;
-// class TGLabel;
-// class TGComboBox;
-// class TGMainFrame;
-// class TGListView;
-// class TGLVContainer;
-// class TGHButtonGroup;
-// class TGLayoutHints;
-// class TGNumberEntry;
+class AliOADBForward;
+class AliOADBForward::Entry;
+class TGFrame;
+class TGLVEntry;
+class TGHorizontalFrame;
+class TGTextButton;
+class TGTextEntry;
+class TGVerticalFrame;
+class TGLabel;
+class TGComboBox;
+class TGMainFrame;
+class TGListView;
+class TGLVContainer;
+class TGHButtonGroup;
+class TGLayoutHints;
+class TGNumberEntry;
 #endif
 
 struct ForwardOADBGUI
@@ -505,25 +509,25 @@ struct ForwardOADBGUI
 			    (summarize ? "Summarize" : "Draw"), 
 			    o->ClassName(), o));
   }
-  void MakeFileName(TString& out) const
-  {
-    if (!fEntry) return;
+			    void MakeFileName(TString& out) const
+			    {
+			      if (!fEntry) return;
 
-    SelectedTable(out);
-    if (out.IsNull()) return;
+			      SelectedTable(out);
+			      if (out.IsNull()) return;
 
-    out.Append(Form("_run%09lu", fEntry->fRunNo));
-    out.Append(Form("_%s", (fEntry->fSys == 1 ? "pp" : 
-			    fEntry->fSys == 2 ? "PbPb" :
-			    fEntry->fSys == 3 ? "pPb" : "XX")));
-    out.Append(Form("_%04huGeV", fEntry->fSNN));
-    out.Append(Form("_%c%hukG", fEntry->fField >= 0 ? 'p' : 'm', 
-		    TMath::Abs(fEntry->fField)));
-    out.Append(Form("_%s", fEntry->fMC ? "mc" : "real"));
-    out.Append(Form("_%s", fEntry->fSatellite ? "sat" : "nom"));
-    out.Append(".pdf");
-  }
-  TObject* HandleQuery()
+			      out.Append(Form("_run%09lu", fEntry->fRunNo));
+			      out.Append(Form("_%s", (fEntry->fSys == 1 ? "pp" : 
+						      fEntry->fSys == 2 ? "PbPb" :
+						      fEntry->fSys == 3 ? "pPb" : "XX")));
+			      out.Append(Form("_%04huGeV", fEntry->fSNN));
+			      out.Append(Form("_%c%hukG", fEntry->fField >= 0 ? 'p' : 'm', 
+					      TMath::Abs(fEntry->fField)));
+			      out.Append(Form("_%s", fEntry->fMC ? "mc" : "real"));
+			      out.Append(Form("_%s", fEntry->fSatellite ? "sat" : "nom"));
+			      out.Append(".pdf");
+			    }
+			    TObject* HandleQuery()
   {
     ULong_t  run   = fRunInput.GetHexNumber();
     Short_t  mode  = fRunMode.GetSelected();
@@ -625,13 +629,21 @@ struct ForwardOADBGUI
   // TCanvas*          fEntryCanvas;
 };
 
+
 TGMainFrame* ForwardOADBGui(AliOADBForward* db=0)
 {
+  const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+  // if (!gROOT->GetClass("AliOADBForward")) 
+  gSystem->Load("libGui");
+  gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  
+  // gSystem->AddIncludePath(Form("-I%s", fwd));
+  // gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGUI.C", fwd));
+
   ForwardOADBGUI* gui = new ForwardOADBGUI();
   if (db) gui->UseDB(db);
   return gui->GetMain();
 }
-
   
 //
 // EOF
