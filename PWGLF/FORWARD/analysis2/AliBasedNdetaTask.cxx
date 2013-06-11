@@ -28,19 +28,19 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCorrEmpty(true), 
     fUseROOTProj(false),
     fTriggerEff(1),
-  fTriggerEff0(1),
-    fShapeCorr(0),
-    fListOfCentralities(0),
+    fTriggerEff0(1),
+  fShapeCorr(0),
+  fListOfCentralities(0),
     fSNNString(0),
     fSysString(0),
     fCent(0),
     fCentAxis(0),
-    fNormalizationScheme(kFull), 
+  fNormalizationScheme(kFull), 
     fSchemeString(0), 
     fTriggerString(0),
     fFinalMCCorrFile(""),
     fglobalempiricalcorrection(0),
-   fmeabsignalvscentr(0)	
+  fmeabsignalvscentr(0)	
 {
   // 
   // Constructor
@@ -119,7 +119,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fTriggerString(o.fTriggerString),
     fFinalMCCorrFile(o.fFinalMCCorrFile),
     fglobalempiricalcorrection(o.fglobalempiricalcorrection),
-	   fmeabsignalvscentr(o.fmeabsignalvscentr)		
+  fmeabsignalvscentr(o.fmeabsignalvscentr)		
 {
   DGUARD(fDebug, 3,"Copy CTOR of AliBasedNdetaTask");
 }
@@ -935,11 +935,26 @@ AliBasedNdetaTask::Print(Option_t*) const
   // 
   // Print information 
   // 
+  TString trigString("none");
+  TString schemeString("none");
+  TString sysString("unknown");
+  TString sNNString("unknown");
+  if (fTriggerString) 
+    trigString = AliAODForwardMult::GetTriggerString(fTriggerString->
+						     GetUniqueID());
+  if (fSchemeString) 
+    schemeString = NormalizationSchemeString(fSchemeString->GetUniqueID());
+  if (fSysString) 
+    sysString = AliForwardUtil::CollisionSystemString(fSysString->
+						      GetUniqueID());
+  if (fSNNString) 
+    sNNString = AliForwardUtil::CenterOfMassEnergyString(fSNNString->
+							 GetUniqueID());
+  
+
   std::cout << this->ClassName() << ": " << this->GetName() << "\n"
 	    << std::boolalpha 
-	    << " Trigger:                    " << (fTriggerString ? 
-						   fTriggerString->GetTitle() :
-						   "none") << "\n"
+	    << " Trigger:                    " << trigString << "\n"
 	    << " Vertex range:               [" << fVtxMin << ":" 
 	    << fVtxMax << "]\n"
 	    << " Rebin factor:               " << fRebin << "\n" 
@@ -947,20 +962,14 @@ AliBasedNdetaTask::Print(Option_t*) const
 	    << " Symmertrice:                " << fSymmetrice << "\n"
 	    << " Use TH2::ProjectionX:       " << fUseROOTProj << "\n"
 	    << " Correct for empty:          " << fCorrEmpty << "\n"
-	    << " Normalization scheme:       " << (fSchemeString ? 
-						   fSchemeString->GetTitle() : 
-					     "none") <<"\n"
+	    << " Normalization scheme:       " << schemeString <<"\n"
 	    << " Trigger efficiency:         " << fTriggerEff << "\n" 
 	    << " Bin-0 Trigger efficiency:   " << fTriggerEff0 << "\n" 
 	    << " Shape correction:           " << (fShapeCorr ? 
 						   fShapeCorr->GetName() : 
 						   "none") << "\n"
-	    << " sqrt(s_NN):                 " << (fSNNString ? 
-						   fSNNString->GetTitle() : 
-						   "unknown") << "\n"
-	    << " Collision system:           " << (fSysString ? 
-						   fSysString->GetTitle() : 
-						   "unknown") << "\n"
+	    << " sqrt(s_NN):                 " << sNNString << "\n"
+	    << " Collision system:           " << sysString << "\n"
 	    << " Centrality bins:            " << (fCentAxis ? "" : "none");
   if (fCentAxis) { 
     Int_t           nBins = fCentAxis->GetNbins();
@@ -1216,6 +1225,7 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
 {
   DGUARD(fDebug,2,"Calculating final summed histogram %s", fSum->GetName());
 
+  // The return value `ret' is not scaled in anyway
   TH2D* ret      = static_cast<TH2D*>(fSum->Clone(fSum->GetName()));
   ret->SetDirectory(0);
   ret->Reset();
@@ -1238,6 +1248,8 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   output->Add(out);
 
   // Now make copies, normalize them, and store in output list 
+  // Note, these are the only ones normalized here
+  // These are mainly for diagnostics 
   TH2D* sumCopy  = static_cast<TH2D*>(fSum->Clone("sum"));
   TH2D* sum0Copy = static_cast<TH2D*>(fSum0->Clone("sum0"));
   TH2D* retCopy  = static_cast<TH2D*>(ret->Clone("sumAll"));
@@ -1253,27 +1265,41 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   TH1D* norm    = ProjectX(fSum,  "norm",    o, o, rootProj, corrEmpty, false);
   TH1D* norm0   = ProjectX(fSum0, "norm0",   o, o, rootProj, corrEmpty, false);
   TH1D* normAll = ProjectX(ret,   "normAll", o, o, rootProj, corrEmpty, false);
+  norm->SetTitle("#eta coverage - >0-bin");
+  norm0->SetTitle("#eta coverage - 0-bin");
+  normAll->SetTitle("#eta coverage");
   norm->SetDirectory(0);
   norm0->SetDirectory(0);
   normAll->SetDirectory(0);
   
-  ScaleToCoverage(sumCopy, norm);
-  ScaleToCoverage(sum0Copy, norm0);
-  ScaleToCoverage(retCopy, normAll);
-
   TH1D* sumCopyPx  = ProjectX(sumCopy,  "average",    1, nY,rootProj,corrEmpty);
   TH1D* sum0CopyPx = ProjectX(sum0Copy, "average0",   1, nY,rootProj,corrEmpty);
   TH1D* retCopyPx  = ProjectX(retCopy,  "averageAll", 1, nY,rootProj,corrEmpty);
+  sumCopyPx->SetTitle(Form("#sum_{i}^{N_{#phi}}%s", sumCopy->GetTitle()));
+  sum0CopyPx->SetTitle(Form("#sum_{i}^{N_{#phi}}%s", sum0Copy->GetTitle()));
+  retCopyPx->SetTitle(Form("#sum_{i}^{N_{#phi}}%s", retCopy->GetTitle()));
   sumCopyPx->SetDirectory(0);
   sum0CopyPx->SetDirectory(0);
   retCopyPx->SetDirectory(0);
 
-  TH1D* phi    = ProjectX(fSum,  "phi",    nY+1, nY+1,rootProj,corrEmpty);
-  TH1D* phi0   = ProjectX(fSum0, "phi0",   nY+1, nY+1,rootProj,corrEmpty);
-  TH1D* phiAll = ProjectX(ret,   "phiAll", nY+1, nY+1,rootProj,corrEmpty);
+  TH1D* phi    = ProjectX(fSum,  "phi",    nY+1, nY+1,rootProj,corrEmpty,false);
+  TH1D* phi0   = ProjectX(fSum0, "phi0",   nY+1, nY+1,rootProj,corrEmpty,false);
+  TH1D* phiAll = ProjectX(ret,   "phiAll", nY+1, nY+1,rootProj,corrEmpty,false);
+  phi->SetTitle("#phi acceptance from dead strips - >0-bin");
+  phi0->SetTitle("#phi acceptance from dead strips - 0-bin");
+  phiAll->SetTitle("#phi acceptance from dead strips");
   phi->SetDirectory(0);
   phi0->SetDirectory(0);
   phiAll->SetDirectory(0);
+
+  const TH1D* cov    = (corrEmpty ? norm    : phi);
+  const TH1D* cov0   = (corrEmpty ? norm0   : phi0);
+  const TH1D* covAll = (corrEmpty ? normAll : phiAll);
+
+  // Here, we scale to the coverage (or phi acceptance)
+  ScaleToCoverage(sumCopy,  cov);
+  ScaleToCoverage(sum0Copy, cov0);
+  ScaleToCoverage(retCopy,  covAll);
 
   // Scale our 1D histograms
   sumCopyPx->Scale(1., "width");
@@ -1287,6 +1313,11 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   norm->Scale(n > 0   ? 1. / n  : 1);
   norm0->Scale(n0 > 0 ? 1. / n0 : 1);
   normAll->Scale(ntotal > 0 ? 1. / ntotal : 1);
+
+  // Scale the normalization - they should be 1 at the maximum
+  phi->Scale(n > 0   ? 1. / n  : 1);
+  phi0->Scale(n0 > 0 ? 1. / n0 : 1);
+  phiAll->Scale(ntotal > 0 ? 1. / ntotal : 1);
 
   out->Add(sumCopy);
   out->Add(sum0Copy);
@@ -1608,8 +1639,8 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   //    trigEff From MC
   //    ntotal  On return, contains the number of events. 
   //
-  DGUARD(fDebug,1,"Normalize centrality bin %s with %s", 
-	 GetName(), t.GetName());
+  DGUARD(fDebug,1,"Normalize centrality bin %s [%3d-%3d%%] with %s", 
+	 GetName(), fLow, fHigh, t.GetName());
   Double_t nAll        = t.GetBinContent(AliAODForwardMult::kBinAll);
   Double_t nB          = t.GetBinContent(AliAODForwardMult::kBinB);
   Double_t nA          = t.GetBinContent(AliAODForwardMult::kBinA);
