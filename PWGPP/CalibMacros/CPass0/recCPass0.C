@@ -22,6 +22,12 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
     //rec.SetFromCDBSnapshot("OCDB.root");
     rec.SetCDBSnapshotMode("OCDB.root");
   }
+
+  if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
+    gROOT->LoadMacro("localOCDBaccessConfig.C");
+    localOCDBaccessConfig();
+  }
+
   // All friends
   rec.SetFractionFriends(1.0);
 
