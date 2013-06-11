@@ -10,7 +10,7 @@ class AliESDEvent;
 class AliESDPmdTrack;
 class AliESDVertex;
 
-#include "AliAnalysisTaskSE.h"
+#include <AliAnalysisTaskSE.h>
 
 class AliAnalysisTaskPMD : public AliAnalysisTaskSE {
  public:
