@@ -543,6 +543,8 @@ protected:
     TH2D* CalcSum(TList* o, Double_t& ntotal,
 		  Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
 		  Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
+
+    ClassDef(Sum,1); // Summed histograms
   };
     
   //==================================================================
