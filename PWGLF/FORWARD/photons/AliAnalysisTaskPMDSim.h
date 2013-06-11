@@ -14,7 +14,7 @@ class AliHeader;
 class AliGenEventHeader;
 class TParticle;
 
-#include "AliAnalysisTaskSE.h"
+#include <AliAnalysisTaskSE.h>
 
 class AliAnalysisTaskPMDSim : public AliAnalysisTaskSE {
  public:
