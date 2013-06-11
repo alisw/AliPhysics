@@ -82,6 +82,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fCentNMixed(10),
   fNEMRPBins(9),
   fPeriod(period),
+  fInternalTriggerSelection(kNoSelection),
   fMaxAbsVertexZ(10.),
   fManualV0EPCalc(false),
   fTOFCutWideEnabled(false),
@@ -396,7 +397,13 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   LogSelection(kTotal, fInternalRunNumber);
 
 
-  // Step 2: Vertex
+  // Step 2: Internal Trigger Selection
+  if( RejectTriggerMaskSelection() ) {
+    PostData(1, fOutputContainer);
+    return; // Reject!
+  }
+  
+  // Step 3: Vertex
   // fVertex, fVertexVector, fVtxBin
   SetVertex();
   if( RejectEventVertex() ) {
@@ -2540,6 +2547,42 @@ void AliAnalysisTaskPi0Flow::SetPHOSCalibData()
     fPHOSCalibData = new AliPHOSCalibData();
   }
 }
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPi0Flow::RejectTriggerMaskSelection()
+{
+  Bool_t reject = true;
+
+  Bool_t isMB = (fEvent->GetTriggerMask() & (ULong64_t(1)<<1));
+  Bool_t isCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<4));
+  Bool_t isSemiCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<7));
+
+  if ( kNoSelection == fInternalTriggerSelection )
+    reject = false; // accept event.
+
+  else if( kCentralInclusive == fInternalTriggerSelection
+    && isCentral ) reject = false; // accept event.
+  else if( kCentralExclusive == fInternalTriggerSelection
+    && isCentral && !isSemiCentral && !isMB ) reject = false; // accept event.
+
+  else if( kSemiCentralInclusive == fInternalTriggerSelection
+    && isSemiCentral ) reject = false; // accept event
+  else if( kSemiCentralExclusive == fInternalTriggerSelection
+    && isSemiCentral && !isCentral && !isMB ) reject = false; // accept event.
+
+  else if( kMBInclusive == fInternalTriggerSelection
+    && isMB ) reject = false; // accept event.
+  else if( kMBExclusive == fInternalTriggerSelection
+    && isMB && !isCentral && !isSemiCentral ) reject = false; // accept event.
+
+  if( reject )
+    return reject;
+  else {
+    LogSelection(kInternalTriggerMaskSelection, fInternalRunNumber);
+    return false;
+  }
+}
+
 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetVertex()
