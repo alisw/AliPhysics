@@ -380,9 +380,10 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
 
   TH2D& aodHist = fAODCentral.GetHistogram();
 
-  ProcessESD(aodHist, spdmult);
   VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(ivz));
   if (!bin) return;
+
+  ProcessESD(aodHist, spdmult);
   bin->Correct(aodHist, fUseSecondary, fUseAcceptance);
   
   PostData(1,fList);
@@ -692,11 +693,12 @@ AliCentralMultiplicityTask::VtxBin::Correct(TH2D&  aodHist,
 	aodHist.SetBinError(ix,iy, 0); 
 	continue; 
       }
-      if (useAcceptance) continue; 
+      if (!useAcceptance) continue; 
 
       // Acceptance correction 
-      if (accCor   < 0.000001) accCor = 1;
-      Float_t aodNew   = aodValue / accCor ;
+      Float_t accTmp = accCor;
+      if (accTmp   < 0.000001) accTmp = 1;
+      Float_t aodNew   = aodValue / accTmp ;
       aodHist.SetBinContent(ix,iy, aodNew);
       aodHist.SetBinError(ix,iy,aodErr);
       // - Test - 
@@ -707,7 +709,7 @@ AliCentralMultiplicityTask::VtxBin::Correct(TH2D&  aodHist,
     //Filling underflow bin if we eta bin is in range
     if (fiducial) {
       aodHist.SetBinContent(ix,0, 1.);
-      aodHist.SetBinContent(ix,nY+1, 1.);
+      aodHist.SetBinContent(ix,nY+1, accCor);
     }
   } // for (ix)
   if (sum && fHits) fHits->Add(&aodHist);
