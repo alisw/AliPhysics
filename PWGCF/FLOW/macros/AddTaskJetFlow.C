@@ -16,6 +16,7 @@ void AddTaskJetFlow( TString name       = "name",
                      Float_t MaxPOIPt   = 150,
                      Float_t CCBinsInPt = 100,
                      Bool_t VParticle   = kFALSE,
+                     TArrayD* ptArray   = 0x0,
                      Int_t year         = -1,
                      Bool_t testFlow    = kFALSE,
                      Bool_t SP          = kFALSE,
@@ -43,11 +44,17 @@ void AddTaskJetFlow( TString name       = "name",
         printf(" > Setup default centrality binning with %i bins \n ", cent->GetSize());
     }
     // create the cut objects
-    AliFlowTrackCuts* CutsRP_VZERO = new AliFlowTrackCuts("CutsRP_VZERO");
-    CutsRP_VZERO = CutsRP_VZERO->GetStandardVZEROOnlyTrackCuts();
-    AliFlowTrackCuts* CutsRP_TPC = new AliFlowTrackCuts("CutsRP_TPC");
-    CutsRP_TPC = CutsRP_TPC->GetStandardTPCStandaloneTrackCuts();
-    CutsRP_TPC->SetAODfilterBit(1);
+    AliFlowTrackCuts* CutsRP_VZERO(0x0);
+    if(SP) {
+        CutsRP_VZERO = new AliFlowTrackCuts("CutsRP_VZERO");
+        CutsRP_VZERO = CutsRP_VZERO->GetStandardVZEROOnlyTrackCuts();
+    }
+    AliFlowTrackCuts* CutsRP_TPC(0x0);
+    if(QC) {
+       CutsRP_TPC = new AliFlowTrackCuts("CutsRP_TPC");
+       CutsRP_TPC = CutsRP_TPC->GetStandardTPCStandaloneTrackCuts();
+       CutsRP_TPC->SetAODfilterBit(1);
+    }
 
     // add the tasks in a loop, one task for each centrality bin
     for(Int_t i(0); i < cent->GetSize()-1; i++) {
@@ -61,7 +68,7 @@ void AddTaskJetFlow( TString name       = "name",
             tracks);
         task->SetCCMaxPt(MaxPOIPt);
         task->SetCCBinsInPt(CCBinsInPt);
-        task->SetDoVParticleAnalysis(VParticle);
+        if(ptArray) task->SetDoTestFlowAnalysis(kTRUE, ptArray);
         task->SetDoTestFlowAnalysis(testFlow);
         task->SetExplicitOutlierCut(year);
         task->SetMinMaxPOIPt(MinPOIPt, MaxPOIPt);
@@ -78,10 +85,16 @@ void AddTaskJetFlow( TString name       = "name",
         mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
         mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_histograms", tempName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
         // connect flow anaysis task
-        AliAnalysisDataContainer *flowEvent_VZERO = mgr->CreateContainer(Form("flowEvent_VZERO_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
-        mgr->ConnectOutput(task, 2, flowEvent_VZERO);
-        AliAnalysisDataContainer *flowEvent_TPC = mgr->CreateContainer(Form("flowEvent_TPC_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
-        mgr->ConnectOutput(task, 3, flowEvent_TPC);
+        Bool_t slotTwoFilled(kFALSE);
+        if(SP) {
+            AliAnalysisDataContainer *flowEvent_VZERO = mgr->CreateContainer(Form("flowEvent_VZERO_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
+            mgr->ConnectOutput(task, 2, flowEvent_VZERO);
+            slotTwoFilled = kTRUE;
+        }
+        if(QC) {
+            AliAnalysisDataContainer *flowEvent_TPC = mgr->CreateContainer(Form("flowEvent_TPC_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
+            (slotTwoFilled) ? mgr->ConnectOutput(task, 3, flowEvent_TPC) : mgr->ConnectOutput(task, 2, flowEvent_TPC);
+        }
         if(SP) TaskJetFlow::AddSPmethod(Form("SPVZERO_A_%s", tempName.Data()), "Qa", 2, flowEvent_VZERO);
         if(SP) TaskJetFlow::AddSPmethod(Form("SPVZERO_B_%s", tempName.Data()), "Qb", 2, flowEvent_VZERO);
         if(QC) TaskJetFlow::AddQCmethod(Form("QC_%s", tempName.Data()), 2, flowEvent_TPC);
