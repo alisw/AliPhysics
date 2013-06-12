@@ -26,11 +26,12 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   TString dataSetLabel("LHC11h");
 
   TString strTrackCuts(trackCuts);
+  strTrackCuts.ToLower();
 
-  if (strTrackCuts.Contains("Hybrid")) {
+  if (strTrackCuts.Contains("hybrid")) {
     cutsType = kHybrid;
   }
-  else if (strTrackCuts.Contains("TpcOnly")) {
+  else if (strTrackCuts.Contains("tpconly")) {
     cutsType = kTpcOnly;
     cutsLabel = "TPC only constrained tracks";
   }
@@ -38,30 +39,45 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     ::Warning("AddTaskEmcalEsdTpcTrack", "Cuts type not recognized, will assume Hybrid");
   }
 
-  if (strTrackCuts.Contains("LHC10h")) {
+  if (strTrackCuts.Contains("lhc10h")) {
     dataSet = kLHC10h;
   }
-  else if (strTrackCuts.Contains("LHC11a") || strTrackCuts.Contains("LHC12a15a")) {
+  else if (strTrackCuts.Contains("lhc11a") || strTrackCuts.Contains("lhc12a15a")) {
     dataSet = kLHC11a;
     dataSetLabel = "LHC11a";
   }
-  else if (strTrackCuts.Contains("LHC11c")) {
+  else if (strTrackCuts.Contains("lhc11c")) {
     dataSet = kLHC11c;
     dataSetLabel = "LHC11c";
   }
-  else if (strTrackCuts.Contains("LHC11d")) {
+  else if (strTrackCuts.Contains("lhc11d")) {
     dataSet = kLHC11d;
     dataSetLabel = "LHC11d";
   }
-  else if (strTrackCuts.Contains("LHC11h") || strTrackCuts.Contains("LHC12a15e"))
+  else if (strTrackCuts.Contains("lhc11h") || strTrackCuts.Contains("lhc12a15e"))
   {
     dataSet = kLHC11h;
     dataSetLabel = "LHC11h";
   }
-  else if (strTrackCuts.Contains("LHC12g"))
+  else if (strTrackCuts.Contains("lhc12g"))
   {
     dataSet = kLHC11h;
     dataSetLabel = "LHC12g";
+  }
+  else if (strTrackCuts.Contains("lhc13b"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC13b";
+  }
+  else if (strTrackCuts.Contains("lhc13c"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC13c";
+  }
+  else if (strTrackCuts.Contains("lhc12a15f"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC12a15f";
   }
   else {
     ::Warning("AddTaskEmcalEsdTpcTrack", "Dataset not recognized, will assume LHC11h");
