@@ -32,20 +32,6 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   TString period(periodstr);
   TString clusterColName(usedClusters);
   TString particleColName(usedMCParticles);
-  TString hybridperiod("");
-
-  if (period.BeginsWith("lhc13") || period.BeginsWith("lhc12g") || 
-      period.BeginsWith("lhc11h") || period.BeginsWith("lhc12a15a") || period.BeginsWith("lhc12a15f"))
-    hybridperiod = "LHC11h";
-  else if (period.BeginsWith("lhc11a"))
-    hybridperiod = "LHC11a";
-  else {
-    ::Error("AddTaskEmcalJetPreparation","###################################################");
-    ::Error("AddTaskEmcalJetPreparation","Run period in AddTaskJetPreparation.C not recognized! You have to specify it for the used period, if you need jets!");
-    ::Error("AddTaskEmcalJetPreparation","###################################################");
-    return 0;
-  }    
-
   TString dType(dataType);
 
   if ((dType == "AOD") && (clusterColName == "CaloClusters"))
@@ -58,7 +44,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
     if (dType == "ESD")
     {
       inputTracks = "HybridTracks";
-      TString trackCuts(Form("Hybrid_%s", hybridperiod.Data()));
+      TString trackCuts(Form("Hybrid_%s", period.Data()));
       // Hybrid tracks maker for ESD
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
       AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(inputTracks.Data(),trackCuts.Data());
