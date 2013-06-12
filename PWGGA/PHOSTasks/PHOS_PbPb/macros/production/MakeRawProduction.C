@@ -311,10 +311,13 @@ namespace RawProduction {
       TH1D * hPi0ProjMix= hPi0Mix->ProjectionX(Form("pt%03i_hPi0Mix",ptBin), imin, imax) ;
       hPi0ProjMix->Sumw2();
 
-      const Int_t pi0Entries = hPi0Proj->Integral(hPi0Proj->FindBin(lowerMass), hPi0Proj->FindBin(upperMass));
-      const Int_t mixEntries = hPi0ProjMix->Integral(hPi0Proj->FindBin(lowerMass), hPi0Proj->FindBin(upperMass));
+      const Double_t pi0Entries = hPi0Proj->Integral(hPi0Proj->FindBin(lowerMass), hPi0Proj->FindBin(upperMass));
+      const Double_t mixEntries = hPi0ProjMix->Integral(hPi0Proj->FindBin(lowerMass), hPi0Proj->FindBin(upperMass));
       if( pi0Entries >0)  {
 	hMixRawRatio->SetBinContent(ptBin, mixEntries/pi0Entries);
+	//printf(" %f, %f ", mixEntries/pi0Entries/pi0Entries ,mixEntries*mixEntries/pi0Entries/pi0Entries/pi0Entries );
+	//printf("statistics in bin is %i, mixed %i, ", pi0Entries, mixEntries);
+
 	hMixRawRatio->SetBinError(ptBin, TMath::Sqrt(mixEntries/pi0Entries/pi0Entries + mixEntries*mixEntries/pi0Entries/pi0Entries/pi0Entries));
       }
       printf("statistics in bin is %i, mixed %i, ", pi0Entries, mixEntries);
@@ -1076,7 +1079,7 @@ namespace RawProduction {
     TH1 * histMerged = (TH1*) hist0->Clone(mergeHistName);
 
     Printf(cname);
-    for(int cent=fromCentIndex+1; cent < toCentIndex; ++cent) {
+    for(int cent=fromCentIndex+1; cent <= toCentIndex; ++cent) {
       sprintf(cname, "%s_cen%i", name.Data(), cent);
       Printf(cname);
       TH1* nextHist = input.GetHistogram(cname);
