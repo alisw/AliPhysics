@@ -74,8 +74,8 @@ AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
-    DefineOutput(2, AliFlowEventSimple::Class());
-    DefineOutput(3, AliFlowEventSimple::Class());
+    if(fCutsRP_VZERO || fCutsRP_TPC)    DefineOutput(2, AliFlowEventSimple::Class());
+    if(fCutsRP_VZERO && fCutsRP_TPC)    DefineOutput(3, AliFlowEventSimple::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::~AliAnalysisTaskJetFlow()
@@ -97,12 +97,14 @@ void AliAnalysisTaskJetFlow::LocalInit()
 {
     // executed once
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    fCutsEvent = new AliFlowEventCuts();
-    fCutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); 
-    fCutsNull = new AliFlowTrackCuts("CutsNull");
-    fCutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
-    fCutsNull->SetEtaRange(+1, -1);
-    fCutsNull->SetPtRange(+1, -1);
+    if(fCutsRP_VZERO || fCutsRP_TPC) {
+        fCutsEvent = new AliFlowEventCuts();
+        fCutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); 
+        fCutsNull = new AliFlowTrackCuts("CutsNull");
+        fCutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
+        fCutsNull->SetEtaRange(+1, -1);
+        fCutsNull->SetPtRange(+1, -1);
+    }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
@@ -151,20 +153,27 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
     fOutputList->Add(fCentralitySelection);
     PostData(1, fOutputList);
     // create the flow event and configure the static cc object
-
-    (fVParticleAnalysis) ? fFlowEvent_VZERO = new AliFlowEvent(10000) : fFlowEvent_VZERO = new AliFlowEvent(100);
-    PostData(2, fFlowEvent_VZERO);
-    fFlowEvent_TPC = new AliFlowEvent(10000);
-    PostData(3, fFlowEvent_TPC);
-    AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
-    cc->SetPtMax(fCCMaxPt+fPtBump);
-    cc->SetNbinsPt(fCCBinsInPt);
-    if(fMinimizeDiffBins) { // minimize differential bins to reduce the risk of numerical instability
-        cc->SetNbinsMult(1);    // only reduces output size
-        cc->SetNbinsPhi(1);     // only reduces output size
-        cc->SetNbinsEta(1);     // reduces instability
-        cc->SetNbinsQ(1);       // only reduces output size
-        cc->SetNbinsMass(1);    // reduces instability but should be one in any case ...
+    Bool_t slotTwoFilled(kFALSE);
+    if(fCutsRP_VZERO) {
+        (fVParticleAnalysis) ? fFlowEvent_VZERO = new AliFlowEvent(10000) : fFlowEvent_VZERO = new AliFlowEvent(100);
+        PostData(2, fFlowEvent_VZERO);
+        slotTwoFilled = kTRUE;
+    }
+    if(fCutsRP_TPC) {
+        fFlowEvent_TPC = new AliFlowEvent(10000);
+        (slotTwoFilled) ? PostData(3, fFlowEvent_TPC) : PostData(2, fFlowEvent_TPC);
+    }
+    if(fFlowEvent_VZERO || fFlowEvent_TPC) {
+        AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
+        cc->SetPtMax(fCCMaxPt+fPtBump);
+        cc->SetNbinsPt(fCCBinsInPt);
+        if(fMinimizeDiffBins) { // minimize differential bins to reduce the risk of numerical instability
+            cc->SetNbinsMult(1);    // only reduces output size
+            cc->SetNbinsPhi(1);     // only reduces output size
+            cc->SetNbinsEta(1);     // reduces instability
+            cc->SetNbinsQ(1);       // only reduces output size
+            cc->SetNbinsMass(1);    // reduces instability but should be one in any case ...
+        }
     }
 }
 //_____________________________________________________________________________
@@ -172,7 +181,7 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
 {
     // user exec
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(!InputEvent() || !fCutsNull || !fCutsRP_TPC || !fCutsRP_VZERO) return; // coverity (and sanity)
+    if(!InputEvent()) return; // coverity (and sanity)
     if(!fInitialized) { 
         if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
         else if(dynamic_cast<AliESDEvent*>(InputEvent())) fDataType = kESD;
@@ -190,66 +199,79 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
             return;
         }
         // prepare the track selection for RP's and the flow event
-        fCutsRP_VZERO->SetEvent(InputEvent(), MCEvent());
-        fCutsRP_TPC->SetEvent(InputEvent(), MCEvent());
-        fCutsNull->SetEvent(InputEvent(), MCEvent());
-        fFlowEvent_VZERO->ClearFast();
-        fFlowEvent_TPC->ClearFast();
+        if(fFlowEvent_VZERO) {
+            fCutsNull->SetEvent(InputEvent(), MCEvent());
+            fCutsRP_VZERO->SetEvent(InputEvent(), MCEvent());
+            fFlowEvent_VZERO->ClearFast();
+            fFlowEvent_VZERO->Fill(fCutsRP_VZERO, fCutsNull);
+            fFlowEvent_VZERO->SetReferenceMultiplicity(fCutsEvent->RefMult(InputEvent(), MCEvent()));
+        }
+        if(fFlowEvent_TPC) {
+            fCutsNull->SetEvent(InputEvent(), MCEvent());
+            fCutsRP_TPC->SetEvent(InputEvent(), MCEvent());
+            fFlowEvent_TPC->ClearFast();
+            fFlowEvent_TPC->Fill(fCutsRP_TPC, fCutsNull);
+            fFlowEvent_TPC->SetReferenceMultiplicity(fCutsEvent->RefMult(InputEvent(), MCEvent()));
+        }
         // the event is filled with rp's only, poi's will be added manually
-        fFlowEvent_VZERO->Fill(fCutsRP_VZERO, fCutsNull);
-        fFlowEvent_TPC->Fill(fCutsRP_TPC, fCutsNull);
-        fFlowEvent_VZERO->SetReferenceMultiplicity(fCutsEvent->RefMult(InputEvent(), MCEvent()));
-        fFlowEvent_TPC->SetReferenceMultiplicity(fCutsEvent->RefMult(InputEvent(), MCEvent()));
         // loop over jets and inject them as POI's
-        if(fVParticleAnalysis) {
-            for(Int_t i(0); i < iPois; i++) {
-                AliVParticle* poi = static_cast<AliVParticle*>(pois->At(i));
-                if(poi) {
-                    if(poi->Pt() + fPtBump <= fPOIPtMin || poi->Pt() > fPOIPtMax) {
-                        fHistAnalysisSummary->SetBinContent(4, 1);
-                        continue;
+        if(fFlowEvent_VZERO || fFlowEvent_TPC) {
+            if(fVParticleAnalysis) {
+                for(Int_t i(0); i < iPois; i++) {
+                    AliVParticle* poi = static_cast<AliVParticle*>(pois->At(i));
+                    if(poi) {
+                        if(poi->Pt() + fPtBump <= fPOIPtMin || poi->Pt() > fPOIPtMax) {
+                            fHistAnalysisSummary->SetBinContent(4, 1);
+                            continue;
+                        }
+                        nAcceptedJets++;
+                        // AliFlowTracks are created on the stack 
+                        AliFlowTrack flowTrack = AliFlowTrack(poi);
+                        flowTrack.SetPt(poi->Pt() + fPtBump);
+                        flowTrack.SetForPOISelection(kTRUE);
+                        flowTrack.SetForRPSelection(kFALSE);
+                        if(fFlowEvent_TPC)      fFlowEvent_TPC->InsertTrack(&flowTrack);
+                        if(fFlowEvent_VZERO)    fFlowEvent_VZERO->InsertTrack(&flowTrack);
                     }
-                    nAcceptedJets++;
-                    // AliFlowTracks are created on the stack 
-                    AliFlowTrack flowTrack = AliFlowTrack(poi);
-                    flowTrack.SetPt(poi->Pt() + fPtBump);
-                    flowTrack.SetForPOISelection(kTRUE);
-                    flowTrack.SetForRPSelection(kFALSE);
-                    fFlowEvent_TPC->InsertTrack(&flowTrack);
-                    fFlowEvent_VZERO->InsertTrack(&flowTrack);
                 }
-            }
-        } else {
-            for(Int_t i(0); i < iPois; i++) {
-                AliEmcalJet* poi = static_cast<AliEmcalJet*>(pois->At(i));
-                if(poi) {
-                    if(poi->PtSub() + fPtBump <= fPOIPtMin || poi->PtSub() > fPOIPtMax) {
-                        fHistAnalysisSummary->SetBinContent(4, 1);
-                        continue;
+            } else {
+                for(Int_t i(0); i < iPois; i++) {
+                    AliEmcalJet* poi = static_cast<AliEmcalJet*>(pois->At(i));
+                    if(poi) {
+                        if(poi->PtSub() + fPtBump <= fPOIPtMin || poi->PtSub() > fPOIPtMax) {
+                            fHistAnalysisSummary->SetBinContent(4, 1);
+                            continue;
+                        }
+                        nAcceptedJets++;
+                        AliFlowTrack flowTrack = AliFlowTrack(poi);
+                        flowTrack.SetPt(poi->PtSub() + fPtBump);
+                        flowTrack.SetForPOISelection(kTRUE);
+                        flowTrack.SetForRPSelection(kFALSE);
+                        if(fFlowEvent_TPC)      fFlowEvent_TPC->InsertTrack(&flowTrack);
+                        if(fFlowEvent_VZERO)    fFlowEvent_VZERO->InsertTrack(&flowTrack);
                     }
-                    nAcceptedJets++;
-                    AliFlowTrack flowTrack = AliFlowTrack(poi);
-                    flowTrack.SetPt(poi->PtSub() + fPtBump);
-                    flowTrack.SetForPOISelection(kTRUE);
-                    flowTrack.SetForRPSelection(kFALSE);
-                    fFlowEvent_TPC->InsertTrack(&flowTrack);
-                    fFlowEvent_VZERO->InsertTrack(&flowTrack);
                 }
             }
         }
+        else if(fDebug > 0 ) printf(" Failed to find TClones Jet array while using name %s \n ", fJetsName.Data());
+        if((fFlowEvent_VZERO || fFlowEvent_TPC) && nAcceptedJets < 1) {
+            if(fDebug > 0) printf(" > No accepted jets in event ! < " );
+            return;
+        }
+        if(fFlowEvent_TPC)      fFlowEvent_TPC->TagSubeventsInEta(-10, 0, 0, 10);
+        if(fFlowEvent_VZERO)    fFlowEvent_VZERO->TagSubeventsInEta(-10, 0, 0, 10);
     }
-    else if(fDebug > 0 ) printf(" Failed to find TClones Jet array while using name %s \n ", fJetsName.Data());
-    if(nAcceptedJets < 1) {
-        if(fDebug > 0) printf(" > No accepted jets in event ! < " );
-        return;
-    }
-    fFlowEvent_TPC->TagSubeventsInEta(-10, 0, 0, 10);
-    fFlowEvent_VZERO->TagSubeventsInEta(-10, 0, 0, 10);
     if(fDoTestFlowAnalysis) DoTestFlowAnalysis();
     fCentralitySelection->Fill(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
     PostData(1, fOutputList);
-    PostData(2, fFlowEvent_VZERO);
-    PostData(3, fFlowEvent_TPC);
+    Bool_t slotTwoFilled(kFALSE);
+    if(fFlowEvent_VZERO) {
+        PostData(2, fFlowEvent_VZERO);
+        slotTwoFilled = kTRUE;
+    }
+    if(fFlowEvent_TPC) {
+        (slotTwoFilled) ? PostData(3, fFlowEvent_TPC) : PostData(2, fFlowEvent_TPC);
+    }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskJetFlow::PassesCuts(AliVEvent* event)
