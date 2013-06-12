@@ -1,12 +1,19 @@
-AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString kTracksName = "PicoTracks", 
-							   TString kClusName = "caloClusterCorr",
-							   Double_t R = 0.4, 
-							   Double_t ptminTrack = 0.15, 
-							   Double_t etminClus = 0.3, 
-							   Int_t rhoType = 0,
-							   UInt_t type = AliAnalysisTaskEmcal::kEMCAL,
-							   TString trigClass = "",
-							   TString kEmcalCellsName = "") {
+AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksName         = "PicoTracks", 
+							   TString     kClusName           = "caloClusterCorr",
+							   Double_t    R                   = 0.4, 
+							   Double_t    ptminTrack          = 0.15, 
+							   Double_t    etminClus           = 0.3, 
+							   Int_t       rhoType             = 0,
+							   UInt_t      type                = AliAnalysisTaskEmcal::kEMCAL,
+							   TString     trigClass           = "",
+							   TString     kEmcalCellsName     = "",
+							   const char *CentEst             = "V0A",
+							   Int_t       pSel                = AliVEvent::kINT7
+							   ) {
+
+  enum AlgoType {kKT, kANTIKT};
+  enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
+
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -25,48 +32,95 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString kTracksName =
       return NULL;
     }
 
+  // #### Add necessary jet finder tasks
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
-  
- TString strJetsFull = "";
- TString strJetsCh = "";
- TString wagonName = Form("DiJetR%03d%spT%04d%sET%04dRhoType%d",(int)(100*R),kTracksName.Data(),(int)(1000.*ptminTrack),kClusName.Data(),(int)(1000.*etminClus),rhoType);
+  AliEmcalJetTask* jetFinderTask1;
+  AliEmcalJetTask* jetFinderTask2;
+  if(kClusName.IsNull()) {  //particle level jets
+    jetFinderTask1 = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
+    jetFinderTask2 = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  }
+  else if(kTracksName.IsNull()) { //neutral/calo jets
+    jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kNEUTRALJETS, ptminTrack, etminClus);
+    jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
+  }
+  else { //full jets
+    jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
+    jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  }
 
- if(kClusName.IsNull()) {  //particle level jets
-   strJetsFull = Form("Jet_AKTFullR%03d_%s_pT%04d",(int)(100*R),kTracksName.Data(),(int)(1000.*ptminTrack));
-   strJetsCh = Form("Jet_AKTChargedR%03d_%s_pT%04d",(int)(100*R),kTracksName.Data(),(int)(1000.*ptminTrack));
-   wagonName = Form("JetTriggerQAR%03d%spT%04dRhoType%dTrigClass%s",(int)(100*R),kTracksName.Data(),(int)(1000.*ptminTrack),rhoType,trigClass.Data());
- }
- else if(kTracksName.IsNull()) { //neutral/calo jets
-   strJetsFull = Form("Jet_AKTNeutralR%03d_%s_pT%04d_%s_ET%04d",(int)(100*R),"PicoTracks",(int)(1000.*ptminTrack),kClusName.Data(),(int)(1000.*etminClus));
-   strJetsCh = Form("Jet_AKTFullR%03d_%s_pT%04d_%s_ET%04d",(int)(100*R),"PicoTracks",(int)(1000.*ptminTrack),"caloClustersCorr",(int)(1000.*etminClus));
-   wagonName = Form("JetTriggerQANeutralR%03d%sET%04dRhoType%dTrigClass%s",(int)(100*R),kClusName.Data(),(int)(1000.*etminClus),rhoType,trigClass.Data());
- }
- else { //full jets
-   strJetsFull = Form("Jet_AKTFullR%03d_%s_pT%04d_%s_ET%04d",(int)(100*R),kTracksName.Data(),(int)(1000.*ptminTrack),kClusName.Data(),(int)(1000.*etminClus));
-   strJetsCh = Form("Jet_AKTChargedR%03d_%s_pT%04d_%s_ET%04d",(int)(100*R),kTracksName.Data(),(int)(1000.*ptminTrack),"caloClustersCorr",(int)(1000.*etminClus));
-   wagonName = Form("JetTriggerQAR%03d%spT%04d%sET%04dRhoType%dTrigClass%s",(int)(100*R),kTracksName.Data(),(int)(1000.*ptminTrack),kClusName.Data(),(int)(1000.*etminClus),rhoType,trigClass.Data());
- }
+  TString strJets1 = jetFinderTask1->GetName();
+  TString strJets2 = jetFinderTask2->GetName();
 
+  // Add kt jet finder and rho task in case we want background subtraction
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+  AliEmcalJetTask *jetFinderKt;
+  AliEmcalJetTask *jetFinderAKt;
+  AliAnalysisTaskRhoSparse *rhoTask;
+  if(rhoType==1) {
+    jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+    jetFinderKt->SetMinJetPt(0.);
+    jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+    TF1 *fScale = new TF1("fScale","1.42",0.,100.);
+    rhoTask = AddTaskRhoSparse(
+			       jetFinderKt->GetName(),
+			       jetFinderAKt->GetName(),
+			       kTracksName,
+			       kClusName,
+			       Form("RhoSparseR%03d",(int)(100*R)),
+			       R,
+			       AliAnalysisTaskEmcal::kTPC,
+			       0.01,
+			       0.15,
+			       0,
+			       fScale,
+			       0,
+			       kTRUE,
+			       Form("RhoSparseR%03d",(int)(100*R)),
+			       kTRUE
+			       );
+    rhoTask->SetCentralityEstimator(CentEst);
+    
+  }
+
+  TString wagonName = Form("TriggerQA_%s_%s_TC%s",strJets1.Data(),strJets2.Data(),trigClass.Data());
+
+  //Configure TriggerQA task
   AliAnalysisTaskEmcalJetTriggerQA *task = new AliAnalysisTaskEmcalJetTriggerQA(wagonName);
   task->SetTracksName(kTracksName.Data());
   task->SetClusName(kClusName.Data());
-  task->SetJetsName(strJetsFull.Data());
-  task->SetJetsChName(strJetsCh.Data());
+  task->SetJetsName(strJets1.Data());
   task->SetJetRadius(R);
   task->SetJetPtCut(0.15);
-  task->SetPercAreaCut(0.557);
+  task->SetPercAreaCut(0.6);
   task->SetTrackPtCut(ptminTrack);
   task->SetClusPtCut(etminClus);
   task->SetAnaType(type);
   task->SetTriggerClass(trigClass.Data());
   task->SetCaloCellsName(kEmcalCellsName.Data());
 
-  if(rhoType==1) {
-    task->SetRhoName("RhoSparse_Scaled");
-    task->SetRhoChName("RhoSparse");
+  task->SetJetsName2(strJets2.Data());
+  if(strJets2.Contains("Charged")) {
+    task->SetMinEtaJets2(-0.9+R);
+    task->SetMaxEtaJets2(0.9-R);
+    task->SetMinPhiJets2(-10.);
+    task->SetMaxPhiJets2(10.);
+  }
+  else {
+    task->SetMinEtaJets2(-0.7+R);
+    task->SetMaxEtaJets2(0.7-R);
+    task->SetMinPhiJets2(1.4+R);
+    task->SetMaxPhiJets2(TMath::Pi()-R);
   }
 
-  task->SelectCollisionCandidates();
+  if(rhoType==1) {
+    task->SetRhoName(taskRho->GetRhoScaledName());
+    task->SetRhoChName(taskRho->GetRhoName());
+  }
+  task->SetCentralityEstimator(CentEst);
+
+  task->SelectCollisionCandidates(pSel);
 
   mgr->AddTask(task);
 
