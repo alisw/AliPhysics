@@ -93,9 +93,13 @@ fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
-fRemoveExoticEvents(kFALSE), fRemoveTriggerOutBCEvents(kFALSE),
-fTriggerPatchExoticRejection(1), fTriggerEventThreshold(3.),
-fIsExoticEvent(kFALSE),      fIsTriggerEventOutBC(0),         fForceExoticRejection(kFALSE),
+//Trigger rejection
+fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
+fTriggerPatchTimeWindow(),   fTriggerEventThreshold(0),
+fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
+fIsExoticEvent(0),           fIsBadCellEvent(0),
+fIsTriggerMatch(0),
+
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
@@ -541,10 +545,14 @@ void AliCaloTrackReader::InitParameters()
     fTrackBCEventCut[i] = 0;
   }
   
+  // Trigger match-rejection
   fTriggerPatchTimeWindow[0] = 8;
   fTriggerPatchTimeWindow[1] = 9;
   
-  fIsTriggerEventOutBC = -10000 ;
+  fTriggerClusterBC      = -10000 ;
+  fTriggerEventThreshold =  2.;
+  fTriggerClusterIndex   = -1;
+  fTriggerClusterId      = -1;
 
 }
 
@@ -680,9 +688,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber         = iEntry;
-  fIsTriggerEventOutBC = -10000 ;
-  fIsExoticEvent       = kFALSE ;
-
+  fTriggerClusterIndex = -1;
+  fTriggerClusterId    = -1;
+  fIsTriggerMatch      = kFALSE;
+  fTriggerClusterBC    = -10000;
+  fIsExoticEvent       = kFALSE;
+  fIsBadCellEvent      = kFALSE;
+  
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
   {
@@ -893,15 +905,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
   }
   
-  
-  //Get Patches that triggered
-  TArrayI patches = GetL0TriggerPatches();
-  
   //----------------------------------------------------------------------
   // Do not count events that where likely triggered by an exotic cluster
   // or out BC cluster
   //----------------------------------------------------------------------
-  
+
+  //Get Patches that triggered
+  TArrayI patches = GetL0TriggerPatches();
+/*
   if(fRemoveExoticEvents)
   {
     RejectExoticEvents(patches);
@@ -913,15 +924,27 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   }
   
   RejectTriggeredEventsByPileUp(patches);
-  //printf("AliCaloTrackReader::FillInputEvent(), Trigger BC = %d\n",fIsTriggerEventOutBC);
+  //printf("AliCaloTrackReader::FillInputEvent(), Trigger BC = %d\n",fTriggerClusterBC);
   
   if(fRemoveTriggerOutBCEvents)
   {
-    if(fIsTriggerEventOutBC != 0 && fIsTriggerEventOutBC != 6)
+    if(fTriggerClusterBC != 0 && fTriggerClusterBC != 6)
     {
       //printf("\t REJECT, bad trigger cluster BC\n");
       return kFALSE;
     }
+  }
+*/
+ 
+  MatchTriggerCluster(patches);
+  
+  if(fRemoveBadTriggerEvents)
+  {
+    printf("ACCEPT triggered event? - exotic? %d - bad cell %d - BC %d  - Matched %d\n",fIsExoticEvent,fIsBadCellEvent,fTriggerClusterBC,fIsTriggerMatch);
+    if     (fIsExoticEvent)         return kFALSE;
+    else if(fIsBadCellEvent)        return kFALSE;
+    else if(fTriggerClusterBC == 0) return kFALSE;
+    printf("\t *** YES\n");
   }
   
   patches.Reset();
@@ -942,7 +965,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   {
     if(fVertexBC!=0 && fVertexBC!=AliVTrack::kTOFBCNA) return kFALSE ;
   }
-    
+  
   if(fFillEMCALCells)
     FillInputEMCALCells();
   
@@ -1866,7 +1889,7 @@ TArrayI AliCaloTrackReader::GetL0TriggerPatches()
 }
 
 
-
+/*
 //___________________________________________________________
 void  AliCaloTrackReader::RejectExoticEvents(TArrayI patches)
 {
@@ -2004,7 +2027,9 @@ void  AliCaloTrackReader::RejectExoticEvents(TArrayI patches)
   }// exotic and trigger patch event flag
   
 }
+*/
 
+/*
 //______________________________________________________________________
 void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
 {
@@ -2012,7 +2037,7 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
   
   if(!GetFiredTriggerClasses().Contains("EMC") && !fForceExoticRejection)
   {
-    fIsTriggerEventOutBC = 0;
+    fTriggerClusterBC = 0;
     return;
   }
     
@@ -2092,26 +2117,26 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
     Double_t tofclusterUS = TMath::Abs(tofcluster);
     if ( ( nOutBC > 0 ) && ( nOfHighECl == 0 ) )
     {
-      if     (tofclusterUS < 75 ) fIsTriggerEventOutBC = 1 ;
-      else if(tofclusterUS < 125) fIsTriggerEventOutBC = 2 ;
-      else if(tofclusterUS < 175) fIsTriggerEventOutBC = 3 ;
-      else if(tofclusterUS < 225) fIsTriggerEventOutBC = 4 ;
-      else if(tofclusterUS < 275) fIsTriggerEventOutBC = 5 ;
-      else                        fIsTriggerEventOutBC = 6 ;
+      if     (tofclusterUS < 75 ) fTriggerClusterBC = 1 ;
+      else if(tofclusterUS < 125) fTriggerClusterBC = 2 ;
+      else if(tofclusterUS < 175) fTriggerClusterBC = 3 ;
+      else if(tofclusterUS < 225) fTriggerClusterBC = 4 ;
+      else if(tofclusterUS < 275) fTriggerClusterBC = 5 ;
+      else                        fTriggerClusterBC = 6 ;
       
-      if(tofcluster < 0) fIsTriggerEventOutBC*=-1;
+      if(tofcluster < 0) fTriggerClusterBC*=-1;
 
     }
     else if(( nOutBC == 0 ) && ( nOfHighECl == 0 ) )
     {
-      fIsTriggerEventOutBC = 7 ;
+      fTriggerClusterBC = 7 ;
     }
     else
     {
-      fIsTriggerEventOutBC = 0;
+      fTriggerClusterBC = 0;
     }
 
-    //printf("*** Simple: Trigger tag BC %d, tof %2.2f, E %2.2f\n",fIsTriggerEventOutBC, tofcluster, eBCN);
+    //printf("*** Simple: Trigger tag BC %d, tof %2.2f, E %2.2f\n",fTriggerClusterBC, tofcluster, eBCN);
 
   }
   //Check if there is any trigger patch that has an associated exotic cluster
@@ -2195,26 +2220,202 @@ void  AliCaloTrackReader::RejectTriggeredEventsByPileUp(TArrayI patches)
     
     if     (tofcluster == 1000)
     {
-      if(ok) fIsTriggerEventOutBC = 6 ; // no trigger match but high energy cluster with time at BC=0
-      else   fIsTriggerEventOutBC = 7 ; // no trigger match and no likely good cluster
+      if(ok) fTriggerClusterBC = 6 ; // no trigger match but high energy cluster with time at BC=0
+      else   fTriggerClusterBC = 7 ; // no trigger match and no likely good cluster
     }
-    else if(tofclusterUS < 25 ) fIsTriggerEventOutBC = 0 ;
-    else if(tofclusterUS < 75 ) fIsTriggerEventOutBC = 1 ;
-    else if(tofclusterUS < 125) fIsTriggerEventOutBC = 2 ;
-    else if(tofclusterUS < 175) fIsTriggerEventOutBC = 3 ;
-    else if(tofclusterUS < 225) fIsTriggerEventOutBC = 4 ;
-    else                        fIsTriggerEventOutBC = 5 ;
+    else if(tofclusterUS < 25 ) fTriggerClusterBC = 0 ;
+    else if(tofclusterUS < 75 ) fTriggerClusterBC = 1 ;
+    else if(tofclusterUS < 125) fTriggerClusterBC = 2 ;
+    else if(tofclusterUS < 175) fTriggerClusterBC = 3 ;
+    else if(tofclusterUS < 225) fTriggerClusterBC = 4 ;
+    else                        fTriggerClusterBC = 5 ;
     
     //printf(" selected tof %f\n",tofcluster);
     
-    if(tofcluster < 0) fIsTriggerEventOutBC*=-1;
+    if(tofcluster < 0) fTriggerClusterBC*=-1;
     
-    //if(fIsTriggerEventOutBC != 0) printf("*** Patches: Trigger out of BC %d, tof %2.2f, E %2.2f\n",fIsTriggerEventOutBC,tofcluster,eBCN);
+    //if(fTriggerClusterBC != 0) printf("*** Patches: Trigger out of BC %d, tof %2.2f, E %2.2f\n",fTriggerClusterBC,tofcluster,eBCN);
     
-    //if(fIsTriggerEventOutBC==7) printf("*** No trigger match, high energy cluster? %d\n",ok2);
-    //if(fIsTriggerEventOutBC==6) printf("*** No trigger match, but high energy cluster in BC0\n");
+    //if(fTriggerClusterBC==7) printf("*** No trigger match, high energy cluster? %d\n",ok2);
+    //if(fTriggerClusterBC==6) printf("*** No trigger match, but high energy cluster in BC0\n");
     
   }// exotic and trigger patch event flag
+  
+}
+*/
+
+//______________________________________________________________________
+void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
+{
+  // Finds the cluster that triggered
+  
+  // Init info from previous event
+  fTriggerClusterIndex = -1;
+  fTriggerClusterId    = -1;
+  fIsTriggerMatch      = kFALSE;
+  fTriggerClusterBC    = -10000;
+  fIsExoticEvent       = kFALSE;
+  fIsBadCellEvent      = kFALSE;
+  
+  // Do only analysis for triggered events
+  if(!GetFiredTriggerClasses().Contains("EMC"))
+  {
+    fTriggerClusterBC    = 0;
+    return;
+  }
+  
+  //Recover the list of clusters
+  TClonesArray * clusterList = 0;
+  if      (fInputEvent->FindListObject(fEMCALClustersListName))
+  {
+    clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
+  }
+  else if(fOutputEvent)
+  {
+    clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
+  }
+  
+  // Get number of clusters and of trigger patches
+  Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
+  if(clusterList) nclusters = clusterList->GetEntriesFast();
+
+  Int_t nPatch = patches.GetSize();
+  
+  
+  //Init some variables used in the cluster loop
+  Float_t tofPatchMax = 100000;
+  Float_t ePatchMax   =-1;
+  
+  Float_t tofMax      = 100000;
+  Float_t eMax        =-1;
+  
+  Int_t   clusMax     =-1;
+  Int_t   idclusMax   =-1;
+  Bool_t  badMax      = kFALSE;
+  Bool_t  exoMax      = kFALSE;
+  
+  Int_t   nOfHighECl  = 0 ;
+
+  // Loop on the clusters, check if there is any that falls into one of the patches
+  for (Int_t iclus =  0; iclus <  nclusters; iclus++)
+  {
+    AliVCluster * clus = 0;
+    if(clusterList) clus = (AliVCluster*) clusterList->At(iclus);
+    else            clus = fInputEvent->GetCaloCluster(iclus);
+    
+    if ( !clus )                continue ;
+    
+    if ( !IsEMCALCluster(clus)) continue ;
+      
+    if ( clus->E() < 1 )        continue ;
+    
+    Bool_t bad    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),
+                                                                                   clus->GetCellsAbsId(),clus->GetNCells());
+    
+    Bool_t exotic = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCluster(clus, fInputEvent->GetEMCALCells());
+    
+    Float_t  energy = clus->E();
+    Int_t    idclus = clus->GetID();
+    
+    Float_t frac   = -1;
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
+    
+    Double_t tof   = clus->GetTOF();
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
+      GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+    tof *=1.e9;
+    
+    //printf("cluster %d, ID %d, E %2.2f, tof %2.2f, AbsId max %d, exotic %d, bad %d\n",iclus,idclus, energy,tof,absIdMax, exotic, bad);
+
+    // Find the highest energy cluster, avobe trigger threshold
+    // in the event in case no match to trigger is found
+    if( energy > eMax )// && energy > fTriggerEventThreshold )
+    {
+      tofMax    = tof;
+      eMax      = energy;
+      badMax    = bad;
+      exoMax    = exotic;
+      clusMax   = iclus;
+      idclusMax = idclus;
+    }
+    
+    // count the good clusters in the event avobe the trigger threshold
+    // to check the exotic events 
+    if(!bad && !exotic)// && energy > fTriggerEventThreshold)
+      nOfHighECl++;
+    
+    // Find match to trigger
+    if(fTriggerPatchClusterMatch)
+    {
+      for(Int_t iabsId =0; iabsId < nPatch; iabsId++)
+      {
+        Int_t absIDCell[4];
+        GetCaloUtils()->GetEMCALGeometry()->GetCellIndexFromFastORIndex(patches.At(iabsId), absIDCell);
+        //if(tof > 75 ) printf("E %2.2f TOF %2.2f Trigger patch %d, cells : %d, %d, %d, %d\n",
+        //                     clus->E(),tof,patches.At(iabsId), absIDCell[0],absIDCell[1],absIDCell[2],absIDCell[3]);
+        
+        for(Int_t ipatch = 0; ipatch < 4; ipatch++)
+        {
+          if(absIdMax == absIDCell[ipatch])
+          {
+            //printf("*** Patches : absId %d, E %2.1f, tof %f \n",absIdMax,clus->E(), tof);
+            if(energy > ePatchMax)
+            {
+              tofPatchMax          = tof;
+              ePatchMax            = energy;
+              fIsBadCellEvent      = bad;
+              fIsExoticEvent       = exotic;
+              fTriggerClusterIndex = iclus;
+              fTriggerClusterId    = idclus;
+              fIsTriggerMatch      = kTRUE;
+            }
+          }
+        }// cell patch loop
+      }// trigger patch loop
+    } // Do trigger patch matching
+    
+  }// Cluster loop
+
+  // If there was no match, assign as trigger
+  // the highest energy cluster in the event
+  if(!fIsTriggerMatch)
+  {
+    tofPatchMax          = tofMax;
+    ePatchMax            = eMax;
+    fIsBadCellEvent      = badMax;
+    fIsExoticEvent       = exoMax;
+    fTriggerClusterIndex = clusMax;
+    fTriggerClusterId    = idclusMax;
+  }
+  
+  Double_t tofPatchMaxUS = TMath::Abs(tofPatchMax);
+    
+  if     (tofPatchMaxUS < 25 ) fTriggerClusterBC = 0 ;
+  else if(tofPatchMaxUS < 75 ) fTriggerClusterBC = 1 ;
+  else if(tofPatchMaxUS < 125) fTriggerClusterBC = 2 ;
+  else if(tofPatchMaxUS < 175) fTriggerClusterBC = 3 ;
+  else if(tofPatchMaxUS < 225) fTriggerClusterBC = 4 ;
+  else if(tofPatchMaxUS < 275) fTriggerClusterBC = 5 ;
+  else
+  {
+    //printf("AliCaloTrackReader::MatchTriggerCluster() - Large BC - tof %2.3f - Index %d\n",tofPatchMaxUS,fTriggerClusterIndex);
+    if(fTriggerClusterIndex >= 0) fTriggerClusterBC = 6 ;
+    else
+    {
+      fTriggerClusterIndex = -2;
+      fTriggerClusterId    = -2;
+    }
+  }
+  
+  if(tofPatchMax < 0) fTriggerClusterBC*=-1;
+  
+//  printf("AliCaloTrackReader::MatchTriggerCluster(TArrayI patches) - Trigger cluster: index %d, ID %d, E = %2.2f, tof = %2.2f (BC = %d), bad cell? %d, exotic? %d, patch match? %d, n High E cluster %d\n",
+//         fTriggerClusterIndex, fTriggerClusterId,ePatchMax, tofPatchMax,
+//         fTriggerClusterBC, fIsBadCellEvent,fIsExoticEvent, fIsTriggerMatch, nOfHighECl);
+//  
+//  if(!fIsTriggerMatch)  printf("\t highest energy cluster:  index %d, ID %d, E = %2.2f, tof = %2.2f, bad cell? %d, exotic? %d\n",clusMax, idclusMax, eMax,tofMax, badMax,exoMax);
+  
+  if(fIsBadCellEvent) fIsExoticEvent = kFALSE;
   
 }
 

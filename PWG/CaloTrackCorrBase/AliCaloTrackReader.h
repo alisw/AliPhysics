@@ -236,7 +236,7 @@ public:
   Bool_t           IsFastClusterAccepted()           const { return fAcceptFastCluster       ; }   
   
   void             SwitchOnLEDEventsRemoval()              { fRemoveLEDEvents       = kTRUE  ; }
-  void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; } 
+  void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; }
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
   
@@ -247,28 +247,31 @@ public:
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
+  
   TArrayI          GetL0TriggerPatches();
-  void             RejectExoticEvents(TArrayI patches);
-  Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }
-  void             SwitchOffExoticEventsRemoval()          { fRemoveExoticEvents    = kFALSE ; }
-  void             SwitchOnExoticEventsRemoval(Bool_t all = kFALSE)
-                                                           { fRemoveExoticEvents    = kTRUE  ;
-                                                             fForceExoticRejection  = all    ; }
+  // void            RejectExoticEvents(TArrayI patches);
+  //void             RejectTriggeredEventsByPileUp(TArrayI patches);
+  void             MatchTriggerCluster(TArrayI patches);
+
+  Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }  
+  Bool_t           IsBadCellTriggerEvent()                 { return fIsBadCellEvent          ; }
+  Bool_t           IsTriggerMatched()                      { return fIsTriggerMatch          ; }
+  Int_t            GetTriggerClusterBC()                   { return fTriggerClusterBC        ; }
+  Int_t            GetTriggerClusterIndex()                { return fTriggerClusterIndex     ; }
+  Int_t            GetTriggerClusterId()                   { return fTriggerClusterId        ; }
   
-  Int_t            IsPileUpClusterTriggeredEvent()         { return fIsTriggerEventOutBC     ; }
-  void             SwitchOffTriggerOutBCEventsRemoval()    { fRemoveTriggerOutBCEvents = kFALSE ; }
-  void             SwitchOnTriggerOutBCEventsRemoval()     { fRemoveTriggerOutBCEvents = kTRUE  ; }
-  
-  void             RejectTriggeredEventsByPileUp(TArrayI patches);
-  
-  void             SetEventTriggerThreshold(Float_t tr)    { fTriggerEventThreshold       = tr     ; }
-  
-  void             SwitchOffExoticEventsFromTriggerPatch() { fTriggerPatchExoticRejection = kFALSE ; }
-  void             SwitchOnExoticEventsFromTriggerPatch()  { fTriggerPatchExoticRejection = kTRUE  ; }
+  Float_t          GetEventTriggerThreshold()              { return fTriggerEventThreshold   ; }
+  void             SetEventTriggerThreshold(Float_t tr)    { fTriggerEventThreshold   = tr   ; }
 
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
+  void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
+  void             SwitchOnBadTriggerEventsRemoval()       { fRemoveBadTriggerEvents   = kTRUE  ; }
+
+  void             SwitchOffTriggerPatchMatching()         { fTriggerPatchClusterMatch = kFALSE ; }
+  void             SwitchOnTriggerPatchMatching()          { fTriggerPatchClusterMatch = kTRUE  ; }
+
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
   void             SetMixEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAnyINT) 
                                                            { fMixEventTriggerMask = evtTrig  ; }
@@ -615,14 +618,16 @@ public:
   Bool_t           fAcceptFastCluster;           // Accept events from fast cluster, exclude these events for LHC11a
   Bool_t           fRemoveLEDEvents;             // Remove events where LED was wrongly firing - EMCAL LHC11a
   
-  Bool_t           fRemoveExoticEvents;          // Remove events triggered by exotic cluster
-  Bool_t           fRemoveTriggerOutBCEvents;    // Remove events triggered by pile-up cluster
-  Bool_t           fTriggerPatchExoticRejection; // Search for the trigger patch and check if associated cluster was the trigger
+  Bool_t           fRemoveBadTriggerEvents;      // Remove triggered events because trigger was exotic, bad, or out of BC
+  Bool_t           fTriggerPatchClusterMatch;    // Search for the trigger patch and check if associated cluster was the trigger
   Int_t            fTriggerPatchTimeWindow[2];   // Trigger patch selection window
-  Float_t          fTriggerEventThreshold;       // Threshold to look for triggered events 
-  Bool_t           fIsExoticEvent;               // Exotic event flag
-  Int_t            fIsTriggerEventOutBC;         // Event triggered by pile-up in BC
-  Bool_t           fForceExoticRejection;        // Reject events triggered by exotic only on EMC triggered events, except in MC to study false rejections
+  Float_t          fTriggerEventThreshold;       // Threshold to look for triggered events
+  Int_t            fTriggerClusterBC;            // Event triggered by a cluster in BC -5 0 to 5
+  Int_t            fTriggerClusterIndex;         // Index in clusters array of trigger cluster
+  Int_t            fTriggerClusterId;            // Id of trigger cluster (cluster->GetID())
+  Bool_t           fIsExoticEvent;               // Exotic trigger event flag
+  Bool_t           fIsBadCellEvent;              // Bad cell triggered event flag
+  Int_t            fIsTriggerMatch;              // Could not match the event to a trigger patch
   
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
@@ -667,7 +672,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,53)
+  ClassDef(AliCaloTrackReader,54)
   
 } ;
 

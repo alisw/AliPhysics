@@ -156,10 +156,48 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiEMCALBC1  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
   TH2F * fhEtaPhiEMCALBCN  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
 
-  TH2F * fhEtaPhiTriggerEMCALBC[13] ;     //! Pseudorapidity vs Phi of clusters for E > 0.5
-  TH2F * fhTimeTriggerEMCALBC  [13] ;     //! Time distribution of clusters, when trigger is in a given BC
-  TH2F * fhTimeTriggerEMCALBCPileUpSPD[13]; //! Time distribution of clusters, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F * fhEtaPhiTriggerEMCALBC[11] ;     //! Pseudorapidity vs Phi of clusters for E > 2
+  TH2F * fhTimeTriggerEMCALBC  [11] ;     //! Time distribution of clusters, when trigger is in a given BC
+  TH2F * fhTimeTriggerEMCALBCPileUpSPD[11]; //! Time distribution of clusters, when trigger is in a given BC, tagged as pile-up SPD
 
+  TH2F * fhEtaPhiTriggerEMCALBCUM[11] ;     //! Pseudorapidity vs Phi of clusters for E > 2, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUM  [11] ;     //! Time distribution of clusters, when trigger is in a given BC, not matched to trigger
+  
+  TH2F * fhEtaPhiTriggerEMCALBCCluster  [11] ; //! Pseudorapidity vs Phi of trigger clusters
+  TH2F * fhTimeTriggerEMCALBCCluster    [11] ; //! Time distribution of clusters, when trigger cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMCluster[11] ; //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMCluster  [11] ; //! Time distribution of highest energy cluster in event, when trigger is in a given BC, not
+  
+  TH2F * fhEtaPhiTriggerEMCALBCClusterOverTh     ; //! Pseudorapidity vs Phi of trigger clusters, over nominal threshold
+  TH2F * fhEtaPhiTriggerEMCALBCUMClusterOverTh   ; //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger, over nominal threshold
+  TH2F * fhEtaPhiTriggerEMCALBCClusterBelowTh1   ; //! Pseudorapidity vs Phi of trigger clusters, 1 GeV below nominal threshold
+  TH2F * fhEtaPhiTriggerEMCALBCUMClusterBelowTh1 ; //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger, 2 GeV below nominal threshold
+  TH2F * fhEtaPhiTriggerEMCALBCClusterBelowTh2   ; //! Pseudorapidity vs Phi of trigger clusters, 1 GeV below nominal threshold
+  TH2F * fhEtaPhiTriggerEMCALBCUMClusterBelowTh2 ; //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger, 2 GeV below nominal threshold
+
+  TH2F * fhEtaPhiTriggerEMCALBCExotic   ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCExotic     ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMExotic ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMExotic   ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+
+  TH2F * fhEtaPhiTriggerEMCALBCBad      ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCBad        ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMBad    ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMBad      ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  
+  TH2F * fhEtaPhiTriggerEMCALBCExoticCluster   ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCExoticCluster     ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMExoticCluster ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMExoticCluster   ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  
+  TH2F * fhEtaPhiTriggerEMCALBCBadCluster      ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCBadCluster        ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMBadCluster    ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMBadCluster      ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+
+  TH2F * fhEtaPhiNoTrigger ;             //! Pseudorapidity vs Phi of highest E exotic cluster  in event, no trigger at all
+  TH2F * fhTimeNoTrigger   ;             //! Time distribution of highest energy exotic cluster in event, no trigger at all
+  
   TH1F * fhEPhoton    ;                  //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                  //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ;                  //! Azimuthal angle of identified  photon vs transerse momentum 
@@ -169,9 +207,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiPhotonEMCALBC0  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
   TH2F * fhEtaPhiPhotonEMCALBC1  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
   TH2F * fhEtaPhiPhotonEMCALBCN  ;       //! Pseudorapidity vs Phi of identified  photon for E > 0.5
-  TH2F * fhEtaPhiPhotonTriggerEMCALBC[13]; //! Pseudorapidity vs Phi of photons for E > 0.5
-  TH2F * fhTimePhotonTriggerEMCALBC  [13]; //! Time distribution of photons, when trigger is in a given BC
-  TH2F * fhTimePhotonTriggerEMCALBCPileUpSPD[13] ; //! Time distribution of photons, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F * fhEtaPhiPhotonTriggerEMCALBC[11]; //! Pseudorapidity vs Phi of photons for E > 0.5
+  TH2F * fhTimePhotonTriggerEMCALBC  [11]; //! Time distribution of photons, when trigger is in a given BC
+  TH2F * fhTimePhotonTriggerEMCALBCPileUpSPD[11] ; //! Time distribution of photons, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F * fhEtaPhiPhotonTriggerEMCALBCUM[11]; //! Pseudorapidity vs Phi of photons for E > 2, not matched to trigger
+  TH2F * fhTimePhotonTriggerEMCALBCUM  [11]; //! Time distribution of photons, when trigger is in a given BC, not matched to trigger
+
   TH2F * fhPtCentralityPhoton    ;       //! centrality  vs photon pT
   TH2F * fhPtEventPlanePhoton    ;       //! event plane vs photon pT
   
@@ -338,7 +379,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,30)
+  ClassDef(AliAnaPhoton,31)
 
 } ;
  

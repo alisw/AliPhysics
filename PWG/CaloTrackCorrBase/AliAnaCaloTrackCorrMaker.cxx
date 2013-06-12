@@ -50,6 +50,7 @@ fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList), 
 fScaleFactor(-1),
 fhNEvents(0),                 fhNExoticEvents(0),
+fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
 fhZVertex(0),                 
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
@@ -60,7 +61,8 @@ fhEMCalBCEvent(0),            fhEMCalBCEventCut(0),
 fhTrackBCEvent(0),            fhTrackBCEventCut(0),
 fhPrimaryVertexBC(0),         fhTimeStampFraction(0),
 fhNPileUpVertSPD(0),          fhNPileUpVertTracks(0),
-fhPileUpClusterTrigger(0)
+fhClusterTriggerBC(0),        fhClusterTriggerBCExotic(0),        fhClusterTriggerBCBad(0),
+fhClusterTriggerBCUnMatch(0), fhClusterTriggerBCExoticUnMatch(0), fhClusterTriggerBCBadUnMatch(0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
@@ -80,6 +82,7 @@ fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
 fhNEvents(maker.fhNEvents),
 fhNExoticEvents(maker.fhNExoticEvents),
+fhNEventsNoTriggerFound(maker.fhNEventsNoTriggerFound),
 fhNPileUpEvents(maker.fhNPileUpEvents),
 fhNPileUpEventsTriggerBC0(maker.fhNPileUpEventsTriggerBC0),
 fhZVertex(maker.fhZVertex),
@@ -98,7 +101,12 @@ fhPrimaryVertexBC(maker.fhPrimaryVertexBC),
 fhTimeStampFraction(maker.fhTimeStampFraction),
 fhNPileUpVertSPD(maker.fhNPileUpVertSPD),
 fhNPileUpVertTracks(maker.fhNPileUpVertTracks),
-fhPileUpClusterTrigger(maker.fhPileUpClusterTrigger)
+fhClusterTriggerBC(maker.fhClusterTriggerBC),
+fhClusterTriggerBCExotic(maker.fhClusterTriggerBCExotic),
+fhClusterTriggerBCBad(maker.fhClusterTriggerBCBad),
+fhClusterTriggerBCUnMatch(maker.fhClusterTriggerBCUnMatch),
+fhClusterTriggerBCExoticUnMatch(maker.fhClusterTriggerBCExoticUnMatch),
+fhClusterTriggerBCBadUnMatch(maker.fhClusterTriggerBCBadUnMatch)
 {
   // cpy ctor
 }
@@ -195,8 +203,10 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
     fhNPileUpEvents->Fill(7.5);
   
-  if(fReader->IsPileUpClusterTriggeredEvent() == 0 ||
-     fReader->IsPileUpClusterTriggeredEvent() == 6   )
+  Int_t triggerBC = fReader->GetTriggerClusterBC() ;
+  if( triggerBC == 0            &&
+     !fReader->IsExoticEvent()  &&
+     !fReader->IsBadCellTriggerEvent())
   {
     if( fReader->IsPileUpFromSPD())
       fhNPileUpEventsTriggerBC0->Fill(0.5);
@@ -309,15 +319,60 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
   fhNExoticEvents->SetYTitle("# exotic events");
   fOutputContainer->Add(fhNExoticEvents);
+
+  fhNEventsNoTriggerFound      = new TH1F("hNEventsNoTriggerFound",   "Number of analyzed events triggered but no trigger found"     , 1 , 0 , 1  ) ;
+  fhNEventsNoTriggerFound->SetYTitle("# exotic events");
+  fOutputContainer->Add(fhNEventsNoTriggerFound);
   
-  fhPileUpClusterTrigger      = new TH1F("hNPileUpClusterTriggerEvents",   "Number of analyzed events triggered by a cluster in a BC"     , 13 , -5 , 8  ) ;
-  fhPileUpClusterTrigger->SetYTitle("# events");
-  //fhPileUpClusterTrigger->SetXTitle("# BC");
+  fhClusterTriggerBC              = new TH1F("hClusterTriggerBC",
+                                             "Number of analyzed events triggered by a cluster in a given BC",
+                                             11 , -5 , 5  ) ;
+  fhClusterTriggerBC->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
-    fhPileUpClusterTrigger->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
-  fhPileUpClusterTrigger->GetXaxis()->SetBinLabel(12 ,"No Match,High E, BC0");
-  fhPileUpClusterTrigger->GetXaxis()->SetBinLabel(13 ,"No Match");
-  fOutputContainer->Add(fhPileUpClusterTrigger);
+    fhClusterTriggerBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
+  fOutputContainer->Add(fhClusterTriggerBC);
+  
+  fhClusterTriggerBCExotic        = new TH1F("hClusterTriggerBCExotic",
+                                             "Number of analyzed events triggered by a exotic cluster in a given BC",
+                                             11 , -5 , 5  ) ;
+  fhClusterTriggerBCExotic->SetYTitle("# events");
+  for(Int_t i = 1; i < 12; i++)
+    fhClusterTriggerBCExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
+  fOutputContainer->Add(fhClusterTriggerBCExotic);
+  
+  fhClusterTriggerBCBad           = new TH1F("hClusterTriggerBCBad",
+                                             "Number of analyzed events triggered by a bad cluster in a given BC",
+                                             11 , -5 , 5  ) ;
+  fhClusterTriggerBCBad->SetYTitle("# events");
+  for(Int_t i = 1; i < 12; i++)
+    fhClusterTriggerBCBad->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
+  fOutputContainer->Add(fhClusterTriggerBCBad);
+  
+  
+  fhClusterTriggerBCUnMatch       = new TH1F("hClusterTriggerBCUnMatch",
+                                             "Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC",
+                                             11 , -5 , 5  ) ;
+  fhClusterTriggerBCUnMatch->SetYTitle("# events");
+  for(Int_t i = 1; i < 12; i++)
+    fhClusterTriggerBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
+  fOutputContainer->Add(fhClusterTriggerBCUnMatch);
+  
+  fhClusterTriggerBCExoticUnMatch = new TH1F("hClusterTriggerBCExoticUnMatch",
+                                             "Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC",
+                                             11 , -5 , 5  ) ;
+  fhClusterTriggerBCExoticUnMatch->SetYTitle("# events");
+  for(Int_t i = 1; i < 12; i++)
+    fhClusterTriggerBCExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
+  fOutputContainer->Add(fhClusterTriggerBCExoticUnMatch);
+  
+  fhClusterTriggerBCBadUnMatch    = new TH1F("hClusterTriggerBCBadUnMatch",
+                                             "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
+                                             11 , -5 , 5  ) ;
+  fhClusterTriggerBCBadUnMatch->SetYTitle("# events");
+  for(Int_t i = 1; i < 12; i++)
+    fhClusterTriggerBCBadUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-6));
+  fOutputContainer->Add(fhClusterTriggerBCBadUnMatch);
+
   
   fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
   fhNPileUpEvents->SetYTitle("# events");
@@ -589,13 +644,40 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   
-  if(fReader->IsExoticEvent())
-    fhNExoticEvents->Fill(0) ;
+  Int_t  triggerBC   = fReader->GetTriggerClusterBC() ;
+  Bool_t exotic      = fReader->IsExoticEvent();
+  Bool_t badCell     = fReader->IsBadCellTriggerEvent();
+  Bool_t triggerMatch= fReader->IsTriggerMatched();
+  Bool_t triggerBCOK = kTRUE;
+  Int_t  triggerId   = fReader->GetTriggerClusterId() ;
+  if(triggerId < 0)
+  {
+    //printf("Trigger id %d\n",triggerId);
+    if(triggerId == -2)fhNEventsNoTriggerFound->Fill(0);
+    triggerBCOK = kFALSE;
+  }
+  
+  if(exotic) fhNExoticEvents->Fill(0) ;
   //if(fReader->IsExoticEvent()) printf("Maker: EXOTIC Cluster trigger\n");
   
-  if(fReader->IsPileUpClusterTriggeredEvent() != -10000)
-    fhPileUpClusterTrigger->Fill(fReader->IsPileUpClusterTriggeredEvent());
-  //if(!ok)printf("Maker: Cluster trigger BC = %d\n",fReader->IsPileUpClusterTriggeredEvent());
+  if(triggerBCOK)
+  {
+    if(triggerMatch)
+    {
+      if     (!exotic && !badCell) fhClusterTriggerBC      ->Fill(triggerBC);
+      else if(exotic)              fhClusterTriggerBCExotic->Fill(triggerBC);
+      else if(badCell)             fhClusterTriggerBCBad   ->Fill(triggerBC);
+      
+    }
+    else
+    {
+      if     (!exotic && !badCell) fhClusterTriggerBCUnMatch      ->Fill(triggerBC);
+      else if(exotic)              fhClusterTriggerBCExoticUnMatch->Fill(triggerBC);
+      else if(badCell)             fhClusterTriggerBCBadUnMatch   ->Fill(triggerBC);
+    }
+  }
+  
+  if(!ok && triggerBC > -9999) printf("Maker: Cluster trigger BC = %d\n",triggerBC);
 
   if(!ok)
   {    
