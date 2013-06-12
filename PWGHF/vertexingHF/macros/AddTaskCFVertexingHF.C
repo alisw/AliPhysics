@@ -574,8 +574,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetFillFromGenerated(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetDecayChannel(2);
+	task->SetUseFlatPtWeight(useFlatPtWeight);
 	task->SetUseWeight(useWeight);
-	task->SetUseFlatPtWeight(useFlatPtWeight); 
 	task->SetUseZWeight(useZWeight);
 	task->SetSign(isSign);
 	task->SetCentralitySelection(kFALSE);
