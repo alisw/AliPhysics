@@ -162,9 +162,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEtaPhiEMCALBC1  ;       //! Pseudorapidity vs Phi of clusters 
   TH2F         * fhEtaPhiEMCALBCN  ;       //! Pseudorapidity vs Phi of clusters 
 
-  TH2F         * fhEtaPhiTriggerEMCALBC[13]  ;    //! Pseudorapidity vs Phi of pi0 for E > 0.5
-  TH2F         * fhTimeTriggerEMCALBC  [13]  ;    //! Time distribution of pi0, when trigger is in a given BC
-  TH2F         * fhTimeTriggerEMCALBCPileUpSPD[13] ; //! Time distribution of pi0, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F         * fhEtaPhiTriggerEMCALBC[11]  ;    //! Pseudorapidity vs Phi of pi0 for E > 2
+  TH2F         * fhTimeTriggerEMCALBC  [11]  ;    //! Time distribution of pi0, when trigger is in a given BC
+  TH2F         * fhTimeTriggerEMCALBCPileUpSPD[11] ; //! Time distribution of pi0, when trigger is in a given BC, tagged as pile-up SPD
+  TH2F         * fhEtaPhiTriggerEMCALBCUM[11]  ;  //! Pseudorapidity vs Phi of pi0 for E > 2, not matched to trigger
+  TH2F         * fhTimeTriggerEMCALBCUM[11]  ;    //! Time distribution of pi0, when trigger is in a given BC, not matched to trigger
 
   TH2F         * fhPtCentrality ;          //! centrality  vs pi0/eta pT
   TH2F         * fhPtEventPlane ;          //! event plane vs pi0/eta pT
@@ -322,7 +324,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,26)
+  ClassDef(AliAnaPi0EbE,27)
 } ;
 
 
