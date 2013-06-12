@@ -28,6 +28,9 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   void                   SetInEventSigmaRho(Double_t s)                        { fInEventSigmaRho      = s    ;                   }
   void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a    ;                   }
 
+  const TString&         GetRhoName() const                                    { return fRhoName;                                 }
+  const TString&         GetRhoScaledName() const                              { return fRhoScaledName;                           } 
+
  protected:
   void                   ExecOnce();
   Bool_t                 Run();

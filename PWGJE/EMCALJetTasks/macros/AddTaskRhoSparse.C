@@ -46,6 +46,11 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
     name += "EMCAL";
   else if (type == AliAnalysisTaskEmcal::kUser) 
     name += "USER";
+
+  AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
+  if (mgrTask)
+    return mgrTask;
+
   AliAnalysisTaskRhoSparse *rhotask = new AliAnalysisTaskRhoSparse(name, histo);
   rhotask->SetHistoBins(1000,-0.1,9.9);
   rhotask->SetAnaType(type);

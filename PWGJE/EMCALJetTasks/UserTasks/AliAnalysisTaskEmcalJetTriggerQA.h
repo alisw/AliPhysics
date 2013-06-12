@@ -30,16 +30,19 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Bool_t                      SelectEvent();              //decides if event is used for analysis
   void                        FindTriggerPatch();
 
-  Bool_t                      AcceptChargedJet(const AliEmcalJet *jet) const;
+  Bool_t                      AcceptJet2(const AliEmcalJet *jet) const;
 
   //Setters
   void SetDebug(Int_t d)                    { fDebug = d;}
   void SetTriggerClass(const char *n)       { fTriggerClass = n; }
   void SetNFastorPatch(Int_t i)             { fNFastOR = i;}
  
-  void SetJetsChName(const char *n)         { fJetsNameCh = n; }
+  void SetJetsName2(const char *n)          { fJetsName2 = n; }
   void SetRhoChName(const char *n)          { fRhoChName = n; }
-  void SetChargedJetEtaMax(Double_t e)      { fEtaMaxChJet = e;}
+  void SetMinEtaJets2(Double_t p)           { fEtaMinJet2 = p;}
+  void SetMaxEtaJets2(Double_t p)           { fEtaMaxJet2 = p;}
+  void SetMinPhiJets2(Double_t p)           { fPhiMinJet2 = p;}
+  void SetMaxPhiJets2(Double_t p)           { fPhiMaxJet2 = p;}
 
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
   Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
@@ -56,12 +59,13 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Bool_t            fDebug;                 //  debug level
   Bool_t            fUseAnaUtils;           //  used for LHC13* data
   AliAnalysisUtils *fAnalysisUtils;         //! vertex selection
-  TString           fJetsNameCh;            //  name of charged jet collection
-  TClonesArray     *fJetsCh;                //! list with charged jets
-  Double_t          fEtaMaxChJet;           //  max eta of jet axis, charged jets
-  Double_t          fPhiMinChJet;           //  min phi of jet axis, charged jets
-  Double_t          fPhiMaxChJet;           //  max phi of jet axis, charged jets
-  Double_t          fMaxTrackPtChJet;       //  maximum track pT in jet
+  TString           fJetsName2;             //  name of charged jet collection
+  TClonesArray     *fJets2;                 //! list with charged jets
+  Double_t          fEtaMinJet2;            //  min eta of jet axis, jets in 2nd branch
+  Double_t          fEtaMaxJet2;            //  max eta of jet axis, jets in 2nd branch
+  Double_t          fPhiMinJet2;            //  min phi of jet axis, jets in 2nd branch
+  Double_t          fPhiMaxJet2;            //  max phi of jet axis, jets in 2nd branch
+  Double_t          fMaxTrackPtJet2;        //  maximum track pT in jet
 
   TString           fRhoChName;             //  name of charged rho branch
   AliRhoParameter  *fRhoCh;                 //! event rho charged
