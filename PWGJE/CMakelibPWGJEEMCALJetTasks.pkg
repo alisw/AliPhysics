@@ -28,7 +28,9 @@
 set ( SRCS 
  EMCALJetTasks/AliAnalysisTaskDeltaPt.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJet.cxx
+ EMCALJetTasks/AliAnalysisTaskEmcalJetDev.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJetSample.cxx
+ EMCALJetTasks/AliAnalysisTaskEmcalJetSampleDev.cxx
  EMCALJetTasks/AliAnalysisTaskRho.cxx
  EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
  EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
@@ -39,6 +41,7 @@ set ( SRCS
  EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliHadCorrTask.cxx
  EMCALJetTasks/AliJetConstituentTagCopier.cxx
+ EMCALJetTasks/AliJetContainer.cxx
  EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromPYTHIATask.cxx
