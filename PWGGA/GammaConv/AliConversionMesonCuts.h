@@ -14,6 +14,7 @@
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
+#include "AliAODMCParticle.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -74,7 +75,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   // Cut Selection
   Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0.);
   Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
-  Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedAODMC(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
   Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
   void PrintCuts();
 
@@ -82,7 +84,6 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
   TList *GetCutHistograms(){return fHistograms;}
   void SmearParticle(AliAODConversionPhoton * photon);
-  
   ///Cut functions
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
@@ -146,11 +147,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   TH1F *hMesonCuts; // bookkeeping for meson cuts
   TH1F *hMesonBGCuts; // bookkeeping for meson bg cuts
 
-
 private:
 
 
-  ClassDef(AliConversionMesonCuts,3)
+  ClassDef(AliConversionMesonCuts,4)
 };
 
 

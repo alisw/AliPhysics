@@ -73,6 +73,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
     fCreateAOD(kFALSE),
     fDeltaAODBranchName("GammaConv"),
     fDeltaAODFilename("AliAODGammaConversion.root"),
+    fCheckAODConsistenty(kFALSE),
     fEventIsSelected(kFALSE),
     fPeriodName("")
 {
@@ -138,7 +139,6 @@ void AliV0ReaderV1::Init()
     if(fConversionCuts==NULL){
 	if(fConversionCuts==NULL)AliError("No Cut Selection initialized");
     }
-
     if(fCreateAOD){kUseAODConversionPhoton=kTRUE;}
 
     if(fConversionGammas != NULL){
@@ -314,10 +314,36 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
 
 	    if(fCurrentMotherKFCandidate){
 
+               //Bool_t aodV0Found = kFALSE;
+               if(AODEvent() && fCheckAODConsistenty){
+                  // for(Int_t i = 0; i<AODEvent()->GetNumberOfV0s();i++){
+                  //    AliAODv0 *currebtAODV0 = AODEvent()->GetV0(i);
+                  //    cout<<currebtAODV0->GetID()<<endl;
+                  //    if(currebtAODV0->GetID() == currentV0Index)
+                  //       aodV0Found = kTRUE;
+                  // }
+                  // if(!aodV0Found)
+                  //    AliError(Form("AODV0 not Found belonging to ESDV0 %i",currentV0Index));
+                  
+                  
+                  if(!(fConversionCuts->GetTrack(AODEvent(),fCurrentMotherKFCandidate->GetTrackLabelPositive())) || !(fConversionCuts->GetTrack(AODEvent(),fCurrentMotherKFCandidate->GetTrackLabelNegative()))){
+                     fConversionGammas->Delete(); // Reset Gamma Array
+                     AliError(Form("AOD Tracks not found for current ESD V0!!! V0 index %i, posESDtrack %i negESDtrack %i, Run Number: %i, Period Number: %i, NTracks: ESD %i AOD %i",
+                                   currentV0Index,
+                                   fCurrentMotherKFCandidate->GetTrackLabelPositive(),fCurrentMotherKFCandidate->GetTrackLabelNegative(),
+                                   fInputEvent->GetRunNumber(),fInputEvent->GetPeriodNumber(),
+                                   fInputEvent->GetNumberOfTracks(),AODEvent()->GetNumberOfTracks()));
+                     return kTRUE;
+                  }
+               }
 		// Add Gamma to the TClonesArray
 
 		if(kUseAODConversionPhoton){
 		    new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(fCurrentMotherKFCandidate);
+				AliAODConversionPhoton * currentConversionPhoton = (AliAODConversionPhoton*)(fConversionGammas->At(fConversionGammas->GetEntriesFast()-1));
+				currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
+				currentConversionPhoton->SetMassToZero();
+				
 		}
 		else{
 		    new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
@@ -385,11 +411,11 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     // Reconstruct Gamma
 
     if(fUseConstructGamma){
-	fCurrentMotherKF = new AliKFConversionPhoton();
-	fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+			fCurrentMotherKF = new AliKFConversionPhoton();
+			fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
     }else{
-	fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
-	fCurrentMotherKF->SetMassConstraint(0,0);
+			fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+			fCurrentMotherKF->SetMassConstraint(0,0.0001);
     }
 
     // Set Track Labels

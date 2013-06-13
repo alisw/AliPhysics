@@ -55,6 +55,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kRejectSharedElecGamma,
         kBackgroundScheme,
         kNumberOfRotations,
+        kptCut,
+        kDCACut,
+        kmassCut,
 	kNCuts
   };
 
@@ -126,6 +129,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetITSClusterCut(Int_t clsITSCut);
   Bool_t SetTPCClusterCut(Int_t clsTPCCut);
   Bool_t SetEtaCut(Int_t etaCut);
+  Bool_t SetPtCut(Int_t ptCut);
+  Bool_t SetDCACut(Int_t dcaCut);
+  void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
   Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
   Bool_t SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut);
   Bool_t SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut);
@@ -134,6 +140,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetRejectSharedElecGamma(Int_t RCut);
   Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
   Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
+  Bool_t SetMassCut(Int_t massCut);
   
   // Request Flags
 
@@ -144,6 +151,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   UseTrackMultiplicity(){ return fUseTrackMultiplicityForBG;}
   Int_t    GetBKGMethod(){ return fBKGMethod; }
   Int_t    NumberOfRotationEvents(){return fnumberOfRotationEventsForBG;}
+  Bool_t   DoMassCut(){return  fDoMassCut;}
+  Double_t GetMassCut(){return fMassCut;}
   
 
   
@@ -154,6 +163,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   AliESDtrackCuts *fesdTrackCuts;
 
   Double_t fEtaCut; //eta cutç
+  Double_t fEtaShift;
+  Bool_t   fDoEtaCut;
+  Double_t fPtCut;
   Double_t fRadiusCut; // radius cut
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
@@ -191,6 +203,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   fUseTrackMultiplicityForBG; // use multiplicity
   Int_t    fBKGMethod;
   Int_t    fnumberOfRotationEventsForBG;
+  Bool_t   fDoMassCut;
+  Double_t fMassCut;
 
 
   // Histograms
@@ -205,6 +219,11 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH2F *hTPCdEdxSignalafter; //TPC dEdx signal  after
   TH2F *hTOFbefore; // TOF after cuts
   TH2F *hTOFafter; // TOF after cuts
+  TH1F *hTrackDCAxybefore;
+  TH1F *hTrackDCAxyafter;
+  TH1F *hTrackDCAzbefore;
+  TH1F *hTrackDCAzafter;
+  
   
 
 private:
