@@ -1,5 +1,3 @@
-// Made to run over the trigger and associated tracks.
-
 AliAnalysisTaskCompareAODTrackCuts* AddTaskCompareAODTrackCuts_DiHadronPIDEff(
 	Double_t MinCentrality = 5.,
 	Double_t MaxCentrality = 0.,
@@ -32,7 +30,7 @@ AliAnalysisTaskCompareAODTrackCuts* AddTaskCompareAODTrackCuts_DiHadronPIDEff(
     // Creating the analysis task.
     AliAnalysisTaskCompareAODTrackCuts* EfficiencyTask = new AliAnalysisTaskCompareAODTrackCuts(containerName);
     EfficiencyTask->SetVerbose(kFALSE);
-    EfficiencyTask->SetMC(IsMC);
+    EfficiencyTask->SetMC(isMC);
     EfficiencyTask->SetCalculateTOFMismatch(kTRUE,0);
 
         // Configure and add Event Cuts.

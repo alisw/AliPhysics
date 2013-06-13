@@ -50,6 +50,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID():
 	fMinRefMult(0),
 	fTestTrigger(kFALSE),
 	fTestCentrality(kFALSE),
+	fTestContributorsOrSPDVertex(kFALSE),
 	fTestVertexZ(kFALSE),
 	fTestMinRefMult(kFALSE),
 	fSelectedEventQAHistos(0x0),
@@ -85,6 +86,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const char* name):
 	fMinRefMult(0),	
 	fTestTrigger(kFALSE),
 	fTestCentrality(kFALSE),
+	fTestContributorsOrSPDVertex(kFALSE),
 	fTestVertexZ(kFALSE),
 	fTestMinRefMult(kFALSE),	
 	fSelectedEventQAHistos(0x0),
@@ -297,6 +299,14 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
     Double_t vtxz = CurrentPrimaryVertex->GetZ();
 	if (fTestVertexZ) {
     	if (TMath::Abs(vtxz) > fMaxVertexZ) select = kFALSE; 
+	}
+
+	// Test number of contributors. (very loose cut...)
+	if (fTestContributorsOrSPDVertex) {
+		Int_t nContributors = CurrentPrimaryVertex->GetNContributors();
+		if (nContributors < 1) {
+			if (CurrentPrimaryVertex->GetType() != AliAODVertex::kMainSPD ) {select = kFALSE;}
+		}  
 	}
 
 	// Get the event header.
