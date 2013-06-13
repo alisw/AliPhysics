@@ -136,6 +136,12 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "1120003042092370023700000"; mesonCutArray[ 1] = "01522045009"; // 10-20%
       cutarray[ 2] = "1240003042092370023700000"; mesonCutArray[ 2] = "01522045009"; // 20-40%
       cutarray[ 3] = "1090003042092370023700000"; mesonCutArray[ 3] = "01522045009"; // 0-90%
+   } else if(trainConfig === 9){ // Different trigger conditions
+      cutarray[ 0] = "3010001042092970023220000"; mesonCutArray[ 0] = "01522045009"; // 0-5%
+      cutarray[ 1] = "3014001042092970023220000"; mesonCutArray[ 1] = "01522045009"; // 0-5% kMB
+      cutarray[ 2] = "3015001042092970023220000"; mesonCutArray[ 2] = "01522045009"; // 0-5% kSemiCentral
+      cutarray[ 3] = "3016001042092970023220000"; mesonCutArray[ 3] = "01522045009"; // 0-5% kCentral
+      
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -176,7 +182,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
          if (i==0) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_0010", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_0010");
          if (i==1) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE,fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_1020", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_1020");
          if (i==2) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_2040", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_2040");
-      }
+      } else if (trainConfig == 9){
+         analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_0005", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_0005");
+         if (i == 1) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kMB, "AliVEvent::kMB" );
+         if (i == 2) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kSemiCentral,"AliVEvent::kSemiCentral" );
+         if (i == 3) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kCentral,"AliVEvent::kCentral" );
+         
+      } 
       analysisCuts[i] = new AliConversionCuts();
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       ConvCutList->Add(analysisCuts[i]);

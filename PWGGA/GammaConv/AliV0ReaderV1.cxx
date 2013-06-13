@@ -217,6 +217,10 @@ void AliV0ReaderV1::UserExec(Option_t *option){
 
     // User Exec
     fEventIsSelected=ProcessEvent(fInputEvent,fMCEvent);
+
+    // AOD Output
+    FillAODOutput();
+
 }
 
 //________________________________________________________________________
@@ -248,9 +252,6 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
     if(fInputEvent->IsA()==AliAODEvent::Class()){
 	GetAODConversionGammas();
     }
-
-    // AOD Output
-    FillAODOutput();
 
     return kTRUE;
 }
