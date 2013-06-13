@@ -98,15 +98,10 @@ void AliAnalysisTaskLongRangeCorrelations::UserCreateOutputObjects() {
 			    fnBinsCent,fxMinCent,fxMaxCent, 2, -0.5, 1.5));
   fOutputList->Add(new TH2D("histQAVertexZ", ";vertex-z (cm);selected;",
 			    800, -40., 40., 2, -0.5, 1.5));
-  {
-    // per event: vertexZ * centrality * tracks * trackSel
-    const Int_t    bins[2] = { 10000,  10000  };
-    const Double_t xMin[2] = {     0.,     0. };
-    const Double_t xMax[2] = { 10000., 10000. };
-    fOutputList->Add(new THnSparseD("histQAMultiplicity",
-				    ";tracks;accepted tracks;",
-				    2, bins, xMin, xMax));
-  }
+  fOutputList->Add(new TH1D("histQAMultiplicityBeforeCuts",
+			    ";tracks", 10000, 0, 10000));
+  fOutputList->Add(new TH1D("histQAMultiplicityAfterCuts",
+			    ";selected tracks", 10000, 0, 10000));
   fOutputList->Add(new TH3D("histQACentPt", ";charge;centrality V0M(%);p_{T} (GeV/c)",
 			    2, -0.5, 1.5, fnBinsCent, fxMinCent, fxMaxCent, fnBinsPt, fxMinPt, fxMaxPt));
   fOutputList->Add(new TH3D("histQAPhiEta", ";charge;#phi (rad);#eta",
@@ -199,10 +194,8 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
 
   // event is accepted
   TObjArray* tracksMain(GetAcceptedTracks(pAOD, centrality));
-  {
-    const Double_t x[2] = { pAOD->GetNumberOfTracks(), tracksMain->GetEntriesFast() };
-    Fill("histQAMultiplicity", x);
-  }
+  Fill("histQAMultiplicityBeforeCuts", pAOD->GetNumberOfTracks());
+  Fill("histQAMultiplicityAfterCuts", tracksMain->GetEntriesFast());
   
   if (fRunMixing) {  
     AliEventPool* pEventPool(fPoolMgr->GetEventPool(centrality, pAOD->GetPrimaryVertex()->GetZ()));
