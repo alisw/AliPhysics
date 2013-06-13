@@ -175,26 +175,36 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiTriggerEMCALBCClusterBelowTh2   ; //! Pseudorapidity vs Phi of trigger clusters, 1 GeV below nominal threshold
   TH2F * fhEtaPhiTriggerEMCALBCUMClusterBelowTh2 ; //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger, 2 GeV below nominal threshold
 
-  TH2F * fhEtaPhiTriggerEMCALBCExotic   ; //! Pseudorapidity vs Phi of trigger exotic clusters
-  TH2F * fhTimeTriggerEMCALBCExotic     ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
-  TH2F * fhEtaPhiTriggerEMCALBCUMExotic ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMExotic   ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  TH2F * fhEtaPhiTriggerEMCALBCExotic     ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCExotic       ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMExotic     ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMExotic     ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
 
-  TH2F * fhEtaPhiTriggerEMCALBCBad      ; //! Pseudorapidity vs Phi of trigger exotic clusters
-  TH2F * fhTimeTriggerEMCALBCBad        ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
-  TH2F * fhEtaPhiTriggerEMCALBCUMBad    ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMBad      ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  TH2F * fhEtaPhiTriggerEMCALBCBad        ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCBad          ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMBad      ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMBad        ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
   
-  TH2F * fhEtaPhiTriggerEMCALBCExoticCluster   ; //! Pseudorapidity vs Phi of trigger exotic clusters
-  TH2F * fhTimeTriggerEMCALBCExoticCluster     ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
-  TH2F * fhEtaPhiTriggerEMCALBCUMExoticCluster ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMExoticCluster   ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  TH2F * fhEtaPhiTriggerEMCALBCBadExotic  ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCBadExotic    ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMBadExotic; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMBadExotic  ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
   
-  TH2F * fhEtaPhiTriggerEMCALBCBadCluster      ; //! Pseudorapidity vs Phi of trigger exotic clusters
-  TH2F * fhTimeTriggerEMCALBCBadCluster        ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
-  TH2F * fhEtaPhiTriggerEMCALBCUMBadCluster    ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMBadCluster      ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  TH2F * fhEtaPhiTriggerEMCALBCExoticCluster     ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCExoticCluster       ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMExoticCluster   ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMExoticCluster     ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  
+  TH2F * fhEtaPhiTriggerEMCALBCBadCluster        ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCBadCluster          ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMBadCluster      ; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMBadCluster        ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
 
+  TH2F * fhEtaPhiTriggerEMCALBCBadExoticCluster  ; //! Pseudorapidity vs Phi of trigger exotic clusters
+  TH2F * fhTimeTriggerEMCALBCBadExoticCluster    ; //! Time distribution of clusters, when trigger exotic cluster is in a given BC
+  TH2F * fhEtaPhiTriggerEMCALBCUMBadExoticCluster; //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMBadExoticCluster  ; //! Time distribution of highest energy exotic cluster in event, when trigger is in a given BC, not
+  
   TH2F * fhEtaPhiNoTrigger ;             //! Pseudorapidity vs Phi of highest E exotic cluster  in event, no trigger at all
   TH2F * fhTimeNoTrigger   ;             //! Time distribution of highest energy exotic cluster in event, no trigger at all
   
