@@ -76,6 +76,7 @@ set (SRCS
     hfe/AliAnalysisTaskElecHadronCorrel.cxx
     hfe/AliAnalysisTaskFlowTPCEMCalEP.cxx
     hfe/AliAnalysisTaskHFECal.cxx 
+    hfe/AliAnalysisTaskEMCalHFEpA.cxx 
     hfe/AliHFEdebugTreeTask.cxx
     hfe/AliHFEVZEROEventPlane.cxx
     hfe/AliAnalysisTaskFlowTPCTOFEPSP.cxx
