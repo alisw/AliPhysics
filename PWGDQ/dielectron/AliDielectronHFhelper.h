@@ -36,6 +36,9 @@ public:
   void UnsetRangeUser(const char* varname, Bool_t leg=kFALSE);
   void UnsetRangeUser(AliDielectronVarManager::ValueTypes type, Bool_t leg=kFALSE);
 
+  // getter functions
+  Int_t GetNSteps() const {return fMainArr->GetEntries(); }
+
   TObjArray* CollectHistos(AliDielectronVarManager::ValueTypes varx,
 			   AliDielectronVarManager::ValueTypes vary=AliDielectronVarManager::kNMaxValues,
 			   AliDielectronVarManager::ValueTypes varz=AliDielectronVarManager::kNMaxValues)

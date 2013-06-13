@@ -110,8 +110,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TOF_signal",             "TOF signal",                                         "(ps)"},
   {"TOF_beta",               "TOF #beta",                                          "(#it{c})"},
   {"TOF_PIDbit",             "TOF PID bit",                                        ""},
-  {"TOF_mismProb",           "TOF mismatch probability",                               ""},
-  
+  {"TOF_mismProb",           "TOF mismatch probability"                            ""},
+
+  {"TPC_nSigma_ElectronsRaw","n#sigma_{e}^{TPC} (raw)",                            ""},
   {"TPC_nSigma_Electrons",   "n#sigma_{e}^{TPC}",                                  ""},
   {"TPC_nSigma_Pions",       "n#sigma_{#pi}^{TPC}",                                ""},
   {"TPC_nSigma_Muons",       "n#sigma_{#mu}^{TPC}",                                ""},

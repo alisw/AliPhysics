@@ -161,6 +161,7 @@ public:
     kTOFPIDBit,              // TOF PID bit (1:set, 0:TOF not available)a
     kTOFmismProb, 	         // and mismatchPorbability as explain in TOF-twiki
 	
+    kTPCnSigmaEleRaw,        // raw number of sigmas to the dE/dx electron line in the TPC
     kTPCnSigmaEle,           // number of sigmas to the dE/dx electron line in the TPC
     kTPCnSigmaPio,           // number of sigmas to the dE/dx pion line in the TPC
     kTPCnSigmaMuo,           // number of sigmas to the dE/dx muon line in the TPC
@@ -699,7 +700,9 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   // nsigma to Electron band
   // TODO: for the moment we set the bethe bloch parameters manually
   //       this should be changed in future!
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
   values[AliDielectronVarManager::kTPCnSigmaEle]=(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCorrVal()-AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
+
   values[AliDielectronVarManager::kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
   values[AliDielectronVarManager::kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
   values[AliDielectronVarManager::kTPCnSigmaKao]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
@@ -813,6 +816,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTOFsignal]=0;
   //values[AliDielectronVarManager::kTOFbeta]=0;
 
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]=0;
   values[AliDielectronVarManager::kTPCnSigmaEle]=0;
   values[AliDielectronVarManager::kTPCnSigmaPio]=0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]=0;
@@ -853,7 +857,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     
     values[AliDielectronVarManager::kPIn]=mom;
     values[AliDielectronVarManager::kTPCsignal]=pid->GetTPCsignal();
-
+    values[AliDielectronVarManager::kTPCnSigmaEleRaw]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
     values[AliDielectronVarManager::kTPCnSigmaEle]=tpcNsigmaEle;
     values[AliDielectronVarManager::kTPCnSigmaPio]=tpcNsigmaPio;
     values[AliDielectronVarManager::kTPCnSigmaMuo]=tpcNsigmaMuo;
@@ -983,6 +987,7 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kTPCsignal]     = 0;
   values[AliDielectronVarManager::kTOFsignal]     = 0;
   values[AliDielectronVarManager::kTOFbeta]       = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
@@ -1051,6 +1056,7 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
@@ -1151,6 +1157,7 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
@@ -1527,6 +1534,7 @@ inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *part
   values[AliDielectronVarManager::kTPCsignal]     = 0;
   values[AliDielectronVarManager::kTOFsignal]     = 0;
   values[AliDielectronVarManager::kTOFbeta]       = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
