@@ -365,6 +365,8 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
   //  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",10);
 
   AliDebug(1,Form("Will refit inward %d tracks",fNTracksESD));
+  //  Bool_t uselogMS = AliExternalTrackParam::GetUseLogTermMS();
+  //  AliExternalTrackParam::SetUseLogTermMS(kTRUE);
   //
   for (int itr=0;itr<fNTracksESD;itr++) {
     fCurrESDtrack = esdEv->GetTrack(itr);
@@ -391,6 +393,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
       AliDebug(2,Form("Refit Failed for track %d |ESDtrack#%d (MClb:%d)",itr,fCurrESDtrack->GetID(),fCurrESDtrMClb));
     }
   }    
+  //  AliExternalTrackParam::SetUseLogTermMS(uselogMS);
   //
   AliInfo(Form("%d ITSrefit in %d ITSout in %d ITSin tracks for %d tried TPC seeds out of %d ESD tracks\n",
 	       fCountITSrefit,fCountITSout,fCountITSin,fCountProlongationTrials,fNTracksESD));
@@ -1324,15 +1327,26 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
     // set fakes cluster info
     {
       UShort_t clfake = 0;
+      Int_t    clSplit = 0;
       AliITSUSeed* sd = win;
+      int ip=0;
       do {
-	if (sd->IsFake()) clfake |= 0x1<<sd->GetLayerID();
+	int lr, clID = sd->GetLrCluster(lr);
+	if (sd->IsFake()) clfake |= 0x1<<lr;
+	if (clID>=0) {
+	  esdTr->SetITSModuleIndex(ip++, sd->GetLrClusterID());
+	  AliITSUClusterPix *cl = (AliITSUClusterPix*)fITS->GetLayerActive(lr)->GetCluster(clID);
+#ifdef  _ITSU_TUNING_MODE_
+	  if (cl->IsSplit()) clSplit |= 0x1<<lr;
+#endif
+	}
       } while ((sd=(AliITSUSeed*)sd->GetParent()));
       //
       // RS: Temporary set special flag for tracks from the afterburner
       if (fCurrPassID>0) clfake |= 0x1<<7;
       //
       esdTr->SetITSSharedMap(clfake);
+      esdTr->SetITSModuleIndex(10,clSplit);
     }
     // TEMPORARY: store iteration id
     esdTr->SetITSModuleIndex(11,fCurrPassID);
@@ -1393,7 +1407,7 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Int
   int iclLr[2],nclLr;
   nclFit = 0;
   //
-  int lrStop1 = lrStop+1;
+  int lrStop1 = lrStop+dir;
   for (int ilr=lrStart;ilr!=lrStop1;ilr+=dir) {
     AliITSURecoLayer* lr = fITS->GetLayer(ilr);
     if ( dir*(rCurr-lr->GetR(dir))>0) continue; // this layer is already passed
