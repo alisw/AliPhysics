@@ -68,8 +68,7 @@ void AddTaskJetFlow( TString name       = "name",
             tracks);
         task->SetCCMaxPt(MaxPOIPt);
         task->SetCCBinsInPt(CCBinsInPt);
-        if(ptArray) task->SetDoTestFlowAnalysis(kTRUE, ptArray);
-        task->SetDoTestFlowAnalysis(testFlow);
+        (ptArray) ? task->SetDoTestFlowAnalysis(kTRUE, ptArray) : task->SetDoTestFlowAnalysis(testFlow);
         task->SetExplicitOutlierCut(year);
         task->SetMinMaxPOIPt(MinPOIPt, MaxPOIPt);
         (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
