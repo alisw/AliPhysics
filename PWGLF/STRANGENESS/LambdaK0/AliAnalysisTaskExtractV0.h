@@ -85,8 +85,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
 //---------------------------------------------------------------------------------------
   
-  void SetExtraDCAHeavyToPrimVertex ( Float_t lExtra ){ fExtraDCAHeavyToPrimVertex = lExtra; }
-  void SetExtraDCALightToPrimVertex ( Float_t lExtra ){ fExtraDCALightToPrimVertex = lExtra; }
+  void SetTPCdEdxSelection ( Bool_t lTPCdEdxSelection = kTRUE ) { fTPCdEdxSelection = lTPCdEdxSelection; }
   
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -118,8 +117,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
   //Extra selections
-  Float_t fExtraDCAHeavyToPrimVertex;
-  Float_t fExtraDCALightToPrimVertex;
+  Bool_t fTPCdEdxSelection; //Configuration to apply extra TPC dE/dx selection for better filling of tree
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!
@@ -252,9 +250,6 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	TH1F    *fHistPVyAnalysis;     					        //! multiplicity distribution
 	TH1F    *fHistPVzAnalysis;     					        //! multiplicity distribution
 	TH1F    *fHistSwappedV0Counter;     					        //! Swapped V0 Counter
-  
-  TH2F    *f2dHistdEdxPos; //!
-  TH2F    *f2dHistdEdxNeg; //!
   
    AliAnalysisTaskExtractV0(const AliAnalysisTaskExtractV0&);            // not implemented
    AliAnalysisTaskExtractV0& operator=(const AliAnalysisTaskExtractV0&); // not implemented
