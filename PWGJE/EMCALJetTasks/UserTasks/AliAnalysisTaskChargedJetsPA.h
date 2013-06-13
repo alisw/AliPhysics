@@ -37,6 +37,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetAnalyzeBackground(Bool_t val) {fAnalyzeBackground = val;}
   void        SetAnalyzeDeprecatedBackgrounds(Bool_t val) {fAnalyzeDeprecatedBackgrounds = val;}
   void        SetAnalyzePythia(Bool_t val) {fAnalyzePythia = val;}
+  void        SetAnalyzePartialEvents(Int_t nParts, Int_t index) {fPartialAnalysisNParts = nParts; fPartialAnalysisIndex = index;}
   void        SetUseVertexCut (Bool_t val) {fUseVertexCut = val;}
   void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;}
 
@@ -64,7 +65,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        GetSignalJets();
   Int_t       GetLeadingJets(TClonesArray* jetArray, Int_t* jetIDArray, Bool_t isSignalJets);
   Double_t    GetCorrectedJetPt(AliEmcalJet* jet, Double_t background);
-  Double_t    GetDeltaPt(Double_t rho, Bool_t leadingJetExclusion = kFALSE);
+  Double_t    GetDeltaPt(Double_t rho, Double_t leadingJetExclusionProbability = 0);
 
   void        GetKTBackgroundDensityAll(Int_t numberExcludeLeadingJets, Double_t& rhoPbPb, Double_t& rhoPbPbWithGhosts, Double_t& rhoCMS, Double_t& rhoImprovedCMS, Double_t& rhoMean, Double_t& rhoTrackLike);
   void        GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoImprovedCMS);
@@ -130,6 +131,9 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Bool_t              fIsKinematics;          // trigger if data is kinematics only (for naming reasons)
   Bool_t              fUseVertexCut;          // trigger if vertex cut should be done
   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
+  Int_t               fPartialAnalysisNParts; // take only every Nth event
+  Int_t               fPartialAnalysisIndex;  // using e.g. only every 5th event, this specifies which one
+  
 
   // ########## SOURCE INFORMATION
   TClonesArray*       fJetArray;              //! object containing the jets
@@ -179,7 +183,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   TList*              fHistList;              // Histogram list
   Int_t               fHistCount;             // Histogram count
   Bool_t              fIsDEBUG;               // Debug trigger
-
+  ULong_t             fEventCounter;          // Internal event counter
   AliAnalysisTaskChargedJetsPA(const AliAnalysisTaskChargedJetsPA&);
   AliAnalysisTaskChargedJetsPA& operator=(const AliAnalysisTaskChargedJetsPA&);
 
