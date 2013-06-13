@@ -47,7 +47,7 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
   else if (type == AliAnalysisTaskEmcal::kUser) 
     name += "USER";
 
-  AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
+  AliAnalysisTaskRhoSparse* mgrTask = mgr->GetTask(name.Data());
   if (mgrTask)
     return mgrTask;
 

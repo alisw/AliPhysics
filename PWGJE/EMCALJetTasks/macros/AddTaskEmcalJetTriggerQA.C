@@ -115,8 +115,8 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   }
 
   if(rhoType==1) {
-    task->SetRhoName(taskRho->GetRhoScaledName());
-    task->SetRhoChName(taskRho->GetRhoName());
+    task->SetRhoName(rhoTask->GetRhoScaledName());
+    task->SetRhoChName(rhoTask->GetRhoName());
   }
   task->SetCentralityEstimator(CentEst);
 
