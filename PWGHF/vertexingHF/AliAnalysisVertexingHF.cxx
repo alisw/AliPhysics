@@ -709,7 +709,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	if(fInputAOD) {
 	  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
 	  if(trackVV0)  trackV0 = new AliNeutralTrackParam(trackVV0);
-	  trackV0->Print();
 	} else {  
 	  Double_t xyz[3], pxpypz[3];
 	  esdV0->XvYvZv(xyz);
@@ -718,8 +717,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
 	}
 
-	trackV0->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	if(trackV0->GetSigmaY2()<0. || trackV0->GetSigmaZ2()<0.) continue; // this is insipired by the AliITStrackV2::Invariant() checks
 
 	// Fill in the object array to create the cascade
 	twoTrackArrayCasc->AddAt(postrack1,0);
@@ -2730,10 +2727,6 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
       Bool_t useTPC=kTRUE;
       if(fUseTOFPID){
 	Double_t nsigmatofPi= fPidResponse->NumberOfSigmasTOF(esdt,AliPID::kPion);
-	printf("nsigmatofPi %f\n",nsigmatofPi);
-	if ((esdt->GetStatus()&AliVTrack::kTOFout)) printf("TOFout\n");
-	//if ((esdt->GetStatus()&AliVTrack::kTIME)==0) printf("nokTIME\n");
-
 	if(nsigmatofPi>-990. && (nsigmatofPi<-fnSigmaTOFPionLow || nsigmatofPi>fnSigmaTOFPionHi)){
 	  CLRBIT(seleFlags[nSeleTrks],kBitPionCompat);
 	}
@@ -2753,7 +2746,6 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
 	  CLRBIT(seleFlags[nSeleTrks],kBitPionCompat);
 	}
 	Double_t nsigmatpcK= fPidResponse->NumberOfSigmasTPC(esdt,AliPID::kKaon);
-	//printf("nsigmatpcK %f\n",nsigmatpcK);
 	if(nsigmatpcK>-990. && (nsigmatpcK<-fnSigmaTPCKaonLow || nsigmatpcK>fnSigmaTPCKaonHi)){
 	  CLRBIT(seleFlags[nSeleTrks],kBitKaonCompat);
 	}
