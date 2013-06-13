@@ -282,12 +282,22 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
 
   // loop over all pair types or sources
   for(Int_t i=0; i<cloneArr->GetEntriesFast(); i++) {
-    if(!cloneArr->At(i)) continue;
+    if(!cloneArr->At(i))                             continue;
+    if(!((TObjArray*)cloneArr->At(i))->GetEntries()) continue;
+    TString stepName = cloneArr->At(i)->GetName();
 
     // find histogram of interest from array of objects
     TObjArray *arr = (TObjArray*) GetObject(cloneArr->At(i)->GetName(),cloneArr);
     if(arr) {
       collection->AddAt(arr->FindObject(key.Data()), i);
+      
+      // modify the key name
+      stepName.ReplaceAll("(","");
+      stepName.ReplaceAll(")","");
+      stepName.ReplaceAll(": ","");
+      stepName.ReplaceAll(" ","_");
+      stepName.ReplaceAll("Signal","");
+      ((TH1*)collection->At(i))->SetName(Form("%s_%s",key.Data(),stepName.Data()));
     }
 
   }
@@ -510,10 +520,10 @@ void AliDielectronHFhelper::Print(const Option_t* /*option*/) const
   Int_t stepLast=0;
   AliInfo(Form(" Number of filled steps:  %d",fMainArr->GetEntries()));
   for(Int_t istep=0; istep<fMainArr->GetEntriesFast(); istep++) {
-    if(fMainArr->At(istep)) {
-      AliInfo(Form(" step %d: %s",istep,fMainArr->At(istep)->GetName()));
-      stepLast=istep;
-    }
+    if(!fMainArr->At(istep))                             continue;
+    if(!((TObjArray*)fMainArr->At(istep))->GetEntries()) continue;
+    AliInfo(Form(" step %d: %s",istep,fMainArr->At(istep)->GetName()));
+    stepLast=istep;
   }
 
   AliInfo(Form(" Number of objects:    %d",
