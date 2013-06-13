@@ -53,7 +53,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
   //task->SetMixingArraysLength(10);
   task->SelectCollisionCandidates(offlineTriggerMask);
   task->SetInternalTriggerSelection(internalTriggerSelection);
-  task->EnableSetTOFCutWide();
+  task->EnableTOFCut(true, 100.e-9, true);
   
   if( TString(options).Contains("11h") )
     task->SetPeriod( AliAnalysisTaskPi0Flow::kLHC11h );
