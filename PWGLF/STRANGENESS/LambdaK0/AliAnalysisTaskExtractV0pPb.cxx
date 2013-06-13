@@ -471,6 +471,9 @@ void AliAnalysisTaskExtractV0pPb::UserExec(Option_t *)
   fHistCentralityVtxZ -> Fill ( fTreeVariableCentrality );  
   lMagneticField = lESDevent->GetMagneticField( );
 
+  //Fill Event Tree: Analysis Selection Level
+  fTreeEvents->Fill(); 
+
 //------------------------------------------------
 // MAIN LAMBDA LOOP STARTS HERE
 //------------------------------------------------
