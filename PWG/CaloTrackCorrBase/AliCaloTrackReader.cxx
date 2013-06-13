@@ -2415,7 +2415,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
 //  
 //  if(!fIsTriggerMatch)  printf("\t highest energy cluster:  index %d, ID %d, E = %2.2f, tof = %2.2f, bad cell? %d, exotic? %d\n",clusMax, idclusMax, eMax,tofMax, badMax,exoMax);
   
-  if(fIsBadCellEvent) fIsExoticEvent = kFALSE;
+  //if(fIsBadCellEvent) fIsExoticEvent = kFALSE;
   
 }
 

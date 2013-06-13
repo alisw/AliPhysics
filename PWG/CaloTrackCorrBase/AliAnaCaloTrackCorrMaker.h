@@ -118,9 +118,11 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhClusterTriggerBC;       //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCExotic; //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCBad;    //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadExotic;     //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCUnMatch;       //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCExoticUnMatch; //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCBadUnMatch;    //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadExoticUnMatch;//! number of events triggered, depending on BC of the cluster
 
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
