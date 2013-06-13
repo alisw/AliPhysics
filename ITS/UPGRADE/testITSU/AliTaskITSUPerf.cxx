@@ -83,9 +83,11 @@ typedef struct {
   Bool_t  rcbl;
   Char_t  nClITS;
   Char_t  nClTPC;
+  Char_t  nClITSMC;
   Char_t  mcCl[7];
   Char_t  rcCl[7];
   Char_t  fcCl[7];
+  Char_t  charge;
   Float_t ptMC;
   Float_t etaMC;
   Float_t pt;
@@ -97,6 +99,7 @@ typedef struct {
   Float_t phi;
   Int_t   pdg;
   Int_t   lbl;
+  Int_t   spl;
 } trInfo_t;
 
 trInfo_t trackInfo;
@@ -213,9 +216,11 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
   fTree->Branch("rcbl",&trackInfo.rcbl,"rcbl/O");
   fTree->Branch("nClITS",&trackInfo.nClITS,"nClITS/b");
   fTree->Branch("nClTPC",&trackInfo.nClTPC,"nClTPC/b");
+  fTree->Branch("nClITSMC",&trackInfo.nClITSMC,"nClITSMC/b");
   fTree->Branch("mcCl",&trackInfo.mcCl,"mcCl[7]/b");
   fTree->Branch("rcCl",&trackInfo.rcCl,"rcCl[7]/b");
   fTree->Branch("fcCl",&trackInfo.fcCl,"fcCl[7]/b");
+  fTree->Branch("charge",&trackInfo.charge,"charge/B");
   fTree->Branch("ptMC",  &trackInfo.ptMC,"ptMC/F");
   fTree->Branch("etaMC", &trackInfo.etaMC,"etaMC/F");
   fTree->Branch("pt",  &trackInfo.pt,"pt/F");
@@ -227,6 +232,7 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
   fTree->Branch("phi",  &trackInfo.phi,"phi/F");
   fTree->Branch("pdf",  &trackInfo.pdg,"pdg/I");
   fTree->Branch("lbl",  &trackInfo.lbl,"lbl/I");
+  fTree->Branch("spl",  &trackInfo.spl,"spl/I");
   fOutput->Add(fTree);
   //
   fTPCCut = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -478,8 +484,10 @@ void AliTaskITSUPerf::CheckTracks()
       trackInfo.nClTPC = trc->GetNcls(1);
       trackInfo.ptMC = ptMC;
       trackInfo.etaMC = etaMC;
+      trackInfo.charge = trc->Charge();
       trackInfo.pt = trc->Pt();
-      trackInfo.et = trc->Eta();
+      trackInfo.eta = trc->Eta();
+      trackInfo.spl = trc->GetITSModuleIndex(10);
       trackInfo.phi = part->Phi();    
       trackInfo.pdg = part->PdgCode();
       trackInfo.dcaR = dcaRZ[0];
@@ -487,8 +495,10 @@ void AliTaskITSUPerf::CheckTracks()
       trackInfo.dcaRE = TMath::Sqrt(trc->GetSigmaY2());
       trackInfo.dcaZE = TMath::Sqrt(trc->GetSigmaZ2());
       //
+      trackInfo.nClITSMC = 0;
       for (int il=0;il<7;il++) {
-	trackInfo.mcCl[il] = mcStatus&(0x1<<(il+kITSHitBits)) != 0;
+	trackInfo.mcCl[il] = (mcStatus & (0x1<<(il+kITSHitBits))) != 0;
+	if (trackInfo.mcCl[il]) trackInfo.nClITSMC++;
 	trackInfo.rcCl[il] = trc->HasPointOnITSLayer(il);
 	trackInfo.fcCl[il] = trc->HasSharedPointOnITSLayer(il);
       }
@@ -536,9 +546,9 @@ void AliTaskITSUPerf::CheckTracks()
       }
       //
       if ( (mcStatus&BIT(kMCPrimBit)) ) {
-	if (dump1 && nClITS==6) {
-	  printf("#%4d Pt:%5.2f Eta:%5.2f |",itr,ptMC,etaMC);
-	  for (int k=0;k<32;k++) printf("%d", (mcStatus&(0x1<<k)) ? 1:0);
+	if (dump1 && TMath::Abs(ptMC-0.5)<0.1) {
+	  printf("#%4d Pt:%5.2f Eta:%5.2f | ",itr,ptMC,etaMC);
+	  for (int k=0;k<7;k++) printf("(%d/%d)", (mcStatus&(0x1<<k)) ? 1:0, trc->HasPointOnITSLayer(k));
 	  printf("| %+5d %+5d %+5d |%3d %d -> %d\n",labMC,labMCTPC,labMCITS,nClTPC,nClITS,mcLabType);
 	}
 	// compare MC vs reco track params
