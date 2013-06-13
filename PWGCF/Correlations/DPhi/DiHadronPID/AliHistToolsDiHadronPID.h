@@ -37,7 +37,7 @@ public:
 	// Histogram Visualization.
 	static TCanvas* CreateSpectraComparison(const char* name, const char* title, const TH1F* h1, const TH1F* h2, const Int_t markerstyle = 8, const Bool_t logy = kTRUE);
 
-private:
+//private:
 	static Double_t* CreateAxis(const Int_t nbins, const Double_t min, const Double_t max);
 
 };

@@ -83,6 +83,7 @@ public:
 	Int_t GetID() const {return fID;}
 	Int_t GetLabel() const {return fLabel;}
 	Short_t Charge() const {return fCharge;}
+	Int_t GetNclsTPC() const {return fNclsTPC;}
 
 	Double_t GetZAtDCA() const {return fDCAz;}
 	Double_t GetXYAtDCA() const {return fDCAxy;}
@@ -193,6 +194,7 @@ private:
 	Int_t 				fLabel;				// Track Label.
 
 	Short_t				fCharge;			// Charge (is a Char_t in AliAODTrack)
+	Int_t				fNclsTPC;			// Number of clusters in TPC.
 	
 // DCA Info.
 	Double_t			fDCAz;				// z at DCA.
