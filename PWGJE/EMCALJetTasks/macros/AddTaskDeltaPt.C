@@ -24,7 +24,7 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskSAJF", "No analysis manager to connect to.");
+    ::Error("AddTaskDeltaPt", "No analysis manager to connect to.");
     return NULL;
   }  
   
@@ -32,7 +32,7 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   //==============================================================================
   if (!mgr->GetInputEventHandler())
   {
-    ::Error("AddTaskSAJF", "This task requires an input event handler");
+    ::Error("AddTaskDeltaPt", "This task requires an input event handler");
     return NULL;
   }
   
