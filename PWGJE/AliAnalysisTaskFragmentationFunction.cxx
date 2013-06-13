@@ -1934,16 +1934,16 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
       if(ii==3)strTitJS = "_JetPt60to80";
       if(ii==4)strTitJS = "_JetPt80to100";
       
-      fProDelRPtSum[ii]            = new TProfile(Form("AvgPtSumDelR%s",strTitJS.Data()),Form("AvgPtSumDelR%s",strTitJS.Data()),100,0,1,0,250);
+      fProDelRPtSum[ii]            = new TProfile(Form("AvgPtSumDelR%s",strTitJS.Data()),Form("AvgPtSumDelR%s",strTitJS.Data()),50,0,1,0,250);
       if(genJets && genTracks) 
-	fProDelRPtSumGen[ii]       = new TProfile(Form("AvgPtSumDelRGen%s",strTitJS.Data()),Form("AvgPtSumDelRGen%s",strTitJS.Data()),100,0,1,0,250);
+	fProDelRPtSumGen[ii]       = new TProfile(Form("AvgPtSumDelRGen%s",strTitJS.Data()),Form("AvgPtSumDelRGen%s",strTitJS.Data()),50,0,1,0,250);
       if(fBckgMode) 
-	fProDelRPtSumBgrPerp2[ii]  = new TProfile(Form("AvgPtSumDelRBgrPerp2%s",strTitJS.Data()),Form("AvgPtSumDelRBgrPerp2%s",strTitJS.Data()),100,0,1,0,250);
+	fProDelRPtSumBgrPerp2[ii]  = new TProfile(Form("AvgPtSumDelRBgrPerp2%s",strTitJS.Data()),Form("AvgPtSumDelRBgrPerp2%s",strTitJS.Data()),50,0,1,0,250);
       if(fEffMode){
-	fProDelRPtSumRecPrim[ii]   = new TProfile(Form("AvgPtSumDelRRecPrim%s",strTitJS.Data()),Form("AvgPtSumDelRRecPrim%s",strTitJS.Data()),100,0,1,0,250);
-	fProDelRPtSumRecSecNS[ii]  = new TProfile(Form("AvgPtSumDelRRecSecNS%s",strTitJS.Data()),Form("AvgPtSumDelRRecSecNS%s",strTitJS.Data()),100,0,1,0,250);
-	fProDelRPtSumRecSecS[ii]   = new TProfile(Form("AvgPtSumDelRRecSecS%s",strTitJS.Data()),Form("AvgPtSumDelRRecSecS%s",strTitJS.Data()),100,0,1,0,250);
-	fProDelRPtSumRecSecSsc[ii] = new TProfile(Form("AvgPtSumDelRRecSecSsc%s",strTitJS.Data()),Form("AvgPtSumDelRRecSecSsc%s",strTitJS.Data()),100,0,1,0,250);
+	fProDelRPtSumRecPrim[ii]   = new TProfile(Form("AvgPtSumDelRRecPrim%s",strTitJS.Data()),Form("AvgPtSumDelRRecPrim%s",strTitJS.Data()),50,0,1,0,250);
+	fProDelRPtSumRecSecNS[ii]  = new TProfile(Form("AvgPtSumDelRRecSecNS%s",strTitJS.Data()),Form("AvgPtSumDelRRecSecNS%s",strTitJS.Data()),50,0,1,0,250);
+	fProDelRPtSumRecSecS[ii]   = new TProfile(Form("AvgPtSumDelRRecSecS%s",strTitJS.Data()),Form("AvgPtSumDelRRecSecS%s",strTitJS.Data()),50,0,1,0,250);
+	fProDelRPtSumRecSecSsc[ii] = new TProfile(Form("AvgPtSumDelRRecSecSsc%s",strTitJS.Data()),Form("AvgPtSumDelRRecSecSsc%s",strTitJS.Data()),50,0,1,0,250);
       }
     }
     
@@ -4592,8 +4592,6 @@ void  AliAnalysisTaskFragmentationFunction::FillJetShape(AliAODJet* jet, TList* 
   Int_t nJetTracks = list->GetEntries();
   
   Float_t PtSumA[kNbinsR]     = {0.0};
-  Float_t PtWeightsA[kNbinsR] = {0.0};
-  Float_t nTracksA[kNbinsR]   = {0.0};
   
   Float_t *delRA     = new Float_t[nJetTracks];
   Float_t *trackPtA  = new Float_t[nJetTracks];
@@ -4640,9 +4638,9 @@ void  AliAnalysisTaskFragmentationFunction::FillJetShape(AliAODJet* jet, TList* 
       Float_t xlow = kBinWidthR*(ibin-1);
       Float_t xup  = kBinWidthR*ibin;
       if(xlow <= dR && dR < xup){
-	PtSumA[ibin-1]     += track->Pt();
-	PtWeightsA[ibin-1] += weight; 
-	nTracksA[ibin-1]   += 1; 
+
+	if(scaleStrangeness) PtSumA[ibin-1]     += track->Pt()*weight;
+	else                 PtSumA[ibin-1]     += track->Pt();
       }
     }
   } // track loop
@@ -4661,11 +4659,8 @@ void  AliAnalysisTaskFragmentationFunction::FillJetShape(AliAODJet* jet, TList* 
       if(k==4){jetPtMin=80.0;jetPtMax=100.0;}
       if(jetPt>jetPtMin && jetPt<jetPtMax){
 	
-	if(scaleStrangeness){
-	  if(nTracksA[ibin]) hProDelRPtSum[k]->Fill(fR,PtSumA[ibin],PtWeightsA[ibin]/nTracksA[ibin]);
-	  else               hProDelRPtSum[k]->Fill(fR,PtSumA[ibin],0);
-	}
-	else                 hProDelRPtSum[k]->Fill(fR,PtSumA[ibin]);
+        hProDelRPtSum[k]->Fill(fR,PtSumA[ibin]);
+	
       }
     }
   }
