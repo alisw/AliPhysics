@@ -88,9 +88,9 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
 
  private:
 
-  Double32_t fSigmaVert; // track dispersion around the secondary vertex
-  Double32_t fDist12toPrim; //distance prim vert - 2 opposite sign track vertex 
-  Double32_t fDist23toPrim; //distance prim vert - 2 opposite sign track vertex
+  Double_t fSigmaVert; // track dispersion around the secondary vertex
+  Double_t fDist12toPrim; //distance prim vert - 2 opposite sign track vertex 
+  Double_t fDist23toPrim; //distance prim vert - 2 opposite sign track vertex
 
 
 
