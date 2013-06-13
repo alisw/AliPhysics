@@ -835,7 +835,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       } else {
 	centfired = fAOD->GetFiredTriggerClasses();
       }
-      if(!centfired.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || !centfired.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || !centfired.Contains("CSEMI_R1-B-NOPF-ALLNOTRD"))
+      if(!centfired.Contains("CVLN_B2-B-NOPF-ALLNOTRD") && !centfired.Contains("CVLN_R1-B-NOPF-ALLNOTRD") && !centfired.Contains("CSEMI_R1-B-NOPF-ALLNOTRD"))
 	return;
     }
   }
