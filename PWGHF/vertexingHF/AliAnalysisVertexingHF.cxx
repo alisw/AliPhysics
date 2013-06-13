@@ -708,7 +708,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	AliNeutralTrackParam *trackV0=NULL;
 	if(fInputAOD) {
 	  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
-	  if(trackVV0) trackV0 = new AliNeutralTrackParam(trackVV0);
+	  if(trackVV0)  trackV0 = new AliNeutralTrackParam(trackVV0);
+	  trackV0->Print();
 	} else {  
 	  Double_t xyz[3], pxpypz[3];
 	  esdV0->XvYvZv(xyz);
@@ -716,6 +717,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
 	  trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
 	}
+
+	trackV0->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	if(trackV0->GetSigmaY2()<0. || trackV0->GetSigmaZ2()<0.) continue; // this is insipired by the AliITStrackV2::Invariant() checks
+
 	// Fill in the object array to create the cascade
 	twoTrackArrayCasc->AddAt(postrack1,0);
 	twoTrackArrayCasc->AddAt(trackV0,1);
@@ -877,7 +882,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  //printf("--->  %d %d %d %d %d\n",vertexp1n1->GetNDaughters(),iTrkP1,iTrkN1,postrack1->Charge(),negtrack1->Charge());
 	  // create a track from the D0
 	  AliNeutralTrackParam *trackD0 = new AliNeutralTrackParam(io2Prong);
-
+	  
 	  // LOOP ON TRACKS THAT PASSED THE SOFT PION CUTS
 	  for(iTrkSoftPi=0; iTrkSoftPi<nSeleTrks; iTrkSoftPi++) {
 
@@ -2725,6 +2730,10 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
       Bool_t useTPC=kTRUE;
       if(fUseTOFPID){
 	Double_t nsigmatofPi= fPidResponse->NumberOfSigmasTOF(esdt,AliPID::kPion);
+	printf("nsigmatofPi %f\n",nsigmatofPi);
+	if ((esdt->GetStatus()&AliVTrack::kTOFout)) printf("TOFout\n");
+	//if ((esdt->GetStatus()&AliVTrack::kTIME)==0) printf("nokTIME\n");
+
 	if(nsigmatofPi>-990. && (nsigmatofPi<-fnSigmaTOFPionLow || nsigmatofPi>fnSigmaTOFPionHi)){
 	  CLRBIT(seleFlags[nSeleTrks],kBitPionCompat);
 	}
@@ -2744,6 +2753,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
 	  CLRBIT(seleFlags[nSeleTrks],kBitPionCompat);
 	}
 	Double_t nsigmatpcK= fPidResponse->NumberOfSigmasTPC(esdt,AliPID::kKaon);
+	//printf("nsigmatpcK %f\n",nsigmatpcK);
 	if(nsigmatpcK>-990. && (nsigmatpcK<-fnSigmaTPCKaonLow || nsigmatpcK>fnSigmaTPCKaonHi)){
 	  CLRBIT(seleFlags[nSeleTrks],kBitKaonCompat);
 	}
