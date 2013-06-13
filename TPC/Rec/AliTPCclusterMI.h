@@ -48,7 +48,7 @@ public:
   void SetInfo(AliTPCclusterInfo * info);
   //
   AliTPCclusterMI*  MakeCluster(AliTrackPoint* point);
-  AliTrackPoint*    MakePoint(AliTPCclusterMI* cluster);
+  AliTrackPoint*    MakePoint();
 
 private:
   AliTPCclusterInfo * fInfo;  // pointer to the cluster debug info

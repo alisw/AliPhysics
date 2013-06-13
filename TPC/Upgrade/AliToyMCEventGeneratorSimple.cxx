@@ -3,6 +3,7 @@
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TF1.h>
+#include <TStopwatch.h>
 
 #include "AliToyMCEvent.h"
 
@@ -15,6 +16,7 @@ AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple()
   :AliToyMCEventGenerator()
   ,fVertexMean(0.)
   ,fVertexSigma(7.)
+  ,fNtracks(20)
 {
   //
   
@@ -24,6 +26,7 @@ AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple(const AliToyMCEventGe
   :AliToyMCEventGenerator(gen)
   ,fVertexMean(gen.fVertexMean)
   ,fVertexSigma(gen.fVertexSigma)
+  ,fNtracks(gen.fNtracks)
 {
 }
 //________________________________________________________________
@@ -58,9 +61,10 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time) {
   TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass,mass),0.4,10);
   fpt.SetParameters(7.24,0.120);
   fpt.SetNpx(10000);
-  Int_t nTracks = 400; //TODO: draw from experim dist 
+//   Int_t nTracks = 400; //TODO: draw from experim dist
+//   Int_t nTracks = 20; //TODO: draw from experim dist
   
-  for(Int_t iTrack=0; iTrack<nTracks; iTrack++){
+  for(Int_t iTrack=0; iTrack<fNtracks; iTrack++){
     Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
     Double_t eta = gRandom->Uniform(-etaCuts, etaCuts);
     Double_t pt = fpt.GetRandom(); // momentum for f1
@@ -89,7 +93,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time) {
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/)
+void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -97,17 +101,21 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/)
 
   if (!ConnectOutputFile()) return;
 
+  fNtracks=ntracks;
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./50e3; //50kHz equally spaced
-  
+  TStopwatch s;
   for (Int_t ievent=0; ievent<nevents; ++ievent){
+    printf("Generating event %3d (%.3g)\n",ievent,eventTime);
     fEvent = Generate(eventTime);
     FillTree();
     delete fEvent;
     fEvent=0x0;
     eventTime+=eventSpacing;
   }
-
+  s.Stop();
+  s.Print();
+  
   CloseOutputFile();
 }
 

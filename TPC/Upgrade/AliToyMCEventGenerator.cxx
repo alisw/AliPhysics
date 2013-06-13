@@ -4,6 +4,7 @@
 #include <TRandom.h>
 #include <TH2F.h>
 #include <TGeoGlobalMagField.h>
+#include <TSpline.h>
 
 #include <AliLog.h>
 #include <AliTPCROC.h>
@@ -15,6 +16,7 @@
 #include <AliTPCcalibDB.h>
 #include <AliTPCclusterMI.h>
 #include <AliTPCSpaceCharge3D.h>
+#include <AliTPCROC.h>
 
 #include "AliToyMCEvent.h"
 #include "AliToyMCTrack.h"
@@ -33,12 +35,14 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fOutFile(0x0)
   ,fOutTree(0x0)
 {
+  TFile f("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root");
+  fSpaceCharge=(AliTPCSpaceCharge3D*)f.Get("map");
   //TODO: Add method to set custom space charge file
-  fSpaceCharge = new AliTPCSpaceCharge3D();
-  fSpaceCharge->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz.root");
-  fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
+//   fSpaceCharge = new AliTPCSpaceCharge3D();
+//   fSpaceCharge->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz.root");
+//   fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
   //fSpaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
-  fSpaceCharge->InitSpaceCharge3DDistortion();
+//   fSpaceCharge->InitSpaceCharge3DDistortion();
 //   fSpaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
 //   fSpaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
   //!!! This should be handled by the CongiOCDB macro
@@ -69,9 +73,8 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
 AliToyMCEventGenerator::~AliToyMCEventGenerator() 
 {
   delete fSpaceCharge;
-  //!!! Is fTPCParam not owned by the CDB manager?
-  delete fTPCParam;
 }
+
 //________________________________________________________________
 Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
 {
@@ -79,199 +82,290 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   //
   //
 
-  //!!! Should this complete function not be moved to AliToyMCTrack, and directly called from the constructor
-  //    or setter of the track parameters?
-
   if(!fTPCParam) {
     fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
     fTPCParam->ReadGeoMatrices();
-    std::cout << "init tpc param" << std::endl;
   }
-  const Int_t kNRows=AliTPCROC::Instance()->GetNRows(0)+AliTPCROC::Instance()->GetNRows(36);
-  // const Double_t kRTPC0  =AliTPCROC::Instance()->GetPadRowRadii(0,0);
-  // const Double_t kRTPC1  =AliTPCROC::Instance()->GetPadRowRadii(36,AliTPCROC::Instance()->GetNRows(36)-1);
-  const Double_t kMaxSnp = 0.85;  
-  const Double_t kSigmaY=0.1; 
-  const Double_t kSigmaZ=0.1;
-  //!!! why divide by 1000000? This will be in cm/us then. But I guess everything should be in sec;
-  //   const Double_t kDriftVel = fTPCParam->GetDriftV()/1000000;
-  const Double_t kDriftVel = fTPCParam->GetDriftV();
-  const Double_t kMaxZ0=fTPCParam->GetZLength();
-  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-    
-  const Double_t iFCRadius=  83.5; //radius constants found in AliTPCCorrection.cxx 
-  const Double_t oFCRadius= 254.5;
+
+  // make it big enough to hold all points
+  // store real number of generated points in the unique id
+  const Int_t nMaxPoints=3000;
+  AliTrackPointArray pointArray0(nMaxPoints);  //undistorted
+  AliTrackPointArray pointArray1(nMaxPoints);  //distorted
+
+  //Create space point of undistorted and distorted clusters along the propagated track trajectory
+  CreateSpacePoints(trackIn,pointArray0,pointArray1);
+  //Convert the space points into clusters in the local frame
+  //for undistorted and distorted clusters using the same function
+  ConvertTrackPointsToLocalClusters(pointArray0,trackIn,t0,0);
+  ConvertTrackPointsToLocalClusters(pointArray1,trackIn,t0,1);
+  
+  return 1;
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
+                                               AliTrackPointArray &arrUdist,
+                                               AliTrackPointArray &arrDist)
+{
+  //
+  // sample the track from the inner to the outer wall of the TPC
+  // a graph is filled in local coordinates for later
+  //
+  
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMaxZ0  = fTPCParam->GetZLength();
+  const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
+  const Double_t iFCRadius =  83.5; //radius constants found in AliTPCCorrection.cxx
+  const Double_t oFCRadius = 254.5;
   
   AliToyMCTrack track(trackIn);
-  const Int_t nMaxPoints = kNRows+50;
-  AliTrackPointArray pointArray0(nMaxPoints);
-  AliTrackPointArray pointArray1(nMaxPoints);
-  Double_t xyz[3];
-
+  //!!! TODO: make this adjustable perhaps
+  const Double_t stepSize=0.1;
+  Double_t xyz[3]  = {0.,0.,0.};
+  Float_t  xyzf[3] = {0.,0.,0.};
+  
   //!!! when does the propagation not work, how often does it happen?
   if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp)) {
     AliError(Form("Propagation to IFC: %.2f failed\n",iFCRadius));
-    return kFALSE;
+    return;
   }
-
-  Int_t npoints=0;
-  Float_t covPoint[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};  //covariance at the local frame
-
-
-  //Simulate track from inner field cage radius to outer and save points along trajectory
-  Int_t nMinPoints = 40;
-  //!!! changed to loop over pad rows
-  //      an increment of 1cm only might loose pad rows in IROC: 4x7.5 mm2
-  //      or we change this to a smaller increment
-  //    Do we need this initial creation of space points at all? can't we
-  //      simply loop over all rows, crate the clusters in the center of the row,
-  //      distort them and fill the distorted clusters
   
-  //for (Double_t radius=iFCRadius; radius<oFCRadius; radius++){
-  for (Int_t irow=0; irow<159; ++irow ){
-    const Int_t isec    = irow<63?0:36;
-    const Int_t isecrow = irow<63?irow:irow-63;
-    Double_t radius = fTPCParam->GetPadRowRadii(isec,isecrow);
-
+  Int_t npoints=0;
+  
+  for (Double_t radius=iFCRadius; radius<oFCRadius; radius+=stepSize){
+    
     //!!! changed from return 0 to continue -> Please check
-    if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,5,kTRUE,kMaxSnp)) {
-      AliError(Form("Propagation to %d: %.2f failed\n",irow,radius));
+    if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,1,kTRUE,kMaxSnp)) {
+      AliError(Form("Propagation to %.2f failed\n",radius));
       continue;
     }
     track.GetXYZ(xyz);
-
+    
     //!!! Why is this smeared
     xyz[0]+=gRandom->Gaus(0,0.000005);
     xyz[1]+=gRandom->Gaus(0,0.000005);
     xyz[2]+=gRandom->Gaus(0,0.000005);
-
+    
+    xyzf[0]=Float_t(xyz[0]);
+    xyzf[1]=Float_t(xyz[1]);
+    xyzf[2]=Float_t(xyz[2]);
+    
     if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
-    //!!! for future we might want to incude space points outside the active area
-    //      since due to the distotions they might get inside
-    //      in this case it will of course make sense to make a dense
-    //      space point creation first and afterwards calculate the cluster
-    //      but then we need to treat cluster and distorted cluster symmetrically (see below)
-    if (TMath::Abs(track.GetX())<iFCRadius) continue;
-    if (TMath::Abs(track.GetX())>oFCRadius) continue;
-
-    AliTrackPoint pIn0;                               // space point          
-    AliTrackPoint pIn1;
-    Int_t sector= (xyz[2]>0)? 0:18;
-    pointArray0.GetPoint(pIn0,npoints);
-    pointArray1.GetPoint(pIn1,npoints);
-    Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
+    //       if (TMath::Abs(track.GetX())<iFCRadius) continue;
+    //       if (TMath::Abs(track.GetX())>oFCRadius) continue;
+    
+    
+    AliTrackPoint pUdist;                               // undistorted space point
+    AliTrackPoint pDist;                                // distorted space point
+    // Set undistorted point
+    SetPoint(xyzf,pUdist);
+    arrUdist.AddPoint(npoints, &pUdist);
+    Int_t sector=pUdist.GetVolumeID();    
+    // abuse volume ID for the sector number
+    pUdist.SetVolumeID(sector);
+    
+    // set distorted point
     Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
     fSpaceCharge->DistortPoint(distPoint, sector);
-    pIn0.SetXYZ(xyz[0], xyz[1],xyz[2]);
-    pIn1.SetXYZ(distPoint[0], distPoint[1],distPoint[2]);
-    track.Rotate(alpha);
-    AliTrackPoint prot0 = pIn0.Rotate(alpha);   // rotate to the local frame - non distoted  point
-    AliTrackPoint prot1 = pIn1.Rotate(alpha);   // rotate to the local frame -     distorted point
-    prot0.SetXYZ(prot0.GetX(),prot0.GetY(), prot0.GetZ(),covPoint);
-    prot1.SetXYZ(prot1.GetX(),prot1.GetY(), prot1.GetZ(),covPoint);
-    pIn0=prot0.Rotate(-alpha);                       // rotate back to global frame
-    pIn1=prot1.Rotate(-alpha);                       // rotate back to global frame
-    pointArray0.AddPoint(npoints, &pIn0);      
-    pointArray1.AddPoint(npoints, &pIn1);
-    npoints++;
-    if (npoints>=nMaxPoints) break;
+    SetPoint(distPoint, pDist);
+    arrDist.AddPoint(npoints, &pDist);
+    // abuse volume ID for the sector number
+    sector=pDist.GetVolumeID();
+    pDist.SetVolumeID(sector);
+    
+    ++npoints;
   }
-
-  if (npoints<nMinPoints) return 0;
-
-  //save space points and make clusters of distorted points
-
-  //!!! Here both, clusters and distorted clusters should be in the center of the pad row
-  //      So in case the distorted clusters are calculated as the COG of all space points
-  //      in a row, the same should be done for the undistorted clusters! There should
-  //      only be one cluster per track per row
-  Int_t lastRow = 0;
-  Int_t pntsInCurrentRow = 0;
-  Double_t xt=0, yt=0, zt=0;
-  for(Int_t iPoint = 0; iPoint<npoints; iPoint++){
-
-    //undistorted cluster, currently we assume one space point per pad row, see comments above
-    AliTPCclusterMI *tempCl = trackIn.AddSpacePoint(AliTPCclusterMI());
-
-    const Float_t *xArr = pointArray0.GetX();
-    const Float_t *yArr = pointArray0.GetY();
-    const Float_t *zArr = pointArray0.GetZ();
-
-    tempCl->SetX(xArr[iPoint]);
-    tempCl->SetY(yArr[iPoint]);
-    tempCl->SetZ(zArr[iPoint]);
-    
-    Float_t xyzUC[3] = {xArr[iPoint],yArr[iPoint],zArr[iPoint]};
-    Int_t indexUC[3] = {0};
-    
-    Float_t padRowUC = fTPCParam->GetPadRow(xyzUC,indexUC);
-    Int_t   sectorUC = indexUC[1];
-
-    // use pad row = 255 if outside active area
-    if(padRowUC < 0 || (sectorUC < 36 && padRowUC >62) || (sectorUC > 35 &&padRowUC > 95) ) padRowUC=255; //outside sensitive area
-
-    tempCl->SetPad(xyzUC[1]);
-    tempCl->SetRow(padRowUC);
-    tempCl->SetDetector(sectorUC);
-    tempCl->SetTimeBin(t0 + (kMaxZ0-TMath::Abs(tempCl->GetZ()))/kDriftVel); // set time as t0  + drift time from dist z
-
-    // Distorted cluster
-    const Float_t *xArrDist = pointArray1.GetX();
-    const Float_t *yArrDist = pointArray1.GetY();
-    const Float_t *zArrDist = pointArray1.GetZ();
-    
-    Float_t xyz2[3] = {xArrDist[iPoint],yArrDist[iPoint],zArrDist[iPoint]};
-    Int_t index[3] = {0};
-
-    Float_t padRow = fTPCParam->GetPadRow(xyz2,index);
-    Int_t sector = index[1];
-
-    if(padRow < 0 || (sector < 36 && padRow>62) || (sector > 35 &&padRow > 95) ) continue; //outside sensitive area
-
-    //!!! could it be that the last row is missed?
-    //    assume row=95 and there is only 1 space point then this part will not be reached I think
-    if(lastRow!=padRow) {
-      
-
-      //make and save distorted cluster
-      if(pntsInCurrentRow>0){
-	xt/=pntsInCurrentRow;
-	yt/=pntsInCurrentRow;
-	zt/=pntsInCurrentRow;
-	AliTPCclusterMI *tempDistCl = trackIn.AddDistortedSpacePoint(AliTPCclusterMI());
-	tempDistCl->SetX(xt);
-	tempDistCl->SetY(yt);
-	tempDistCl->SetZ(zt);
-	Float_t clxyz[3] = {xt,yt,zt};
-	Int_t clindex[3] = {0};
-	Int_t clRow = fTPCParam->GetPadRow(clxyz,clindex);
-// 	Int_t nPads = fTPCParam->GetNPads(clindex[1], clRow);
-// 	Int_t pad = TMath::Nint(clxyz[1] + nPads/2); //taken from AliTPC.cxx
-        //!!! pad should be fractional
-// 	tempDistCl->SetPad(pad);
-        tempDistCl->SetPad(clxyz[1]);
-        tempDistCl->SetRow(clRow);
-	tempDistCl->SetDetector(clindex[1]);
-	tempDistCl->SetTimeBin(t0 + (kMaxZ0-TMath::Abs(zt))/kDriftVel); // set time as t0  + drift time from dist z coordinate to pad plane
-      }
-      xt = 0;
-      yt = 0;
-      zt = 0;
-      pntsInCurrentRow = 0;
-    }
-
-    xt+=xArrDist[iPoint];
-    yt+=yArrDist[iPoint];
-    zt+=zArrDist[iPoint];
-    pntsInCurrentRow++;
-    lastRow = padRow;
-  }
- 
-  return 1;
-
   
+  arrUdist.SetUniqueID(npoints);
+  arrDist.SetUniqueID(npoints);
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::SetPoint(Float_t xyz[3], AliTrackPoint &point)
+{
+  //
+  // make AliTrackPoint out of AliTPCclusterMI
+  //
+  
+  //covariance at the local frame
+  //assume 1mm distortion in y and z
+  Int_t i[3]={0,0,0};
+  const Double_t kSigmaY=0.1;
+  const Double_t kSigmaZ=0.1;
+  Float_t cov[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};
+  
+  const Float_t alpha = -TMath::ATan2(xyz[1],xyz[0]);
+  const Float_t sin   = TMath::Sin(alpha), cos = TMath::Cos(alpha);
+  
+  Float_t newcov[6];
+  newcov[0] = cov[0]*cos*cos           + 2*cov[1]*sin*cos         + cov[3]*sin*sin;
+  newcov[1] = cov[1]*(cos*cos-sin*sin) + (cov[3]-cov[0])*sin*cos;
+  newcov[2] = cov[2]*cos               + cov[4]*sin;
+  newcov[3] = cov[0]*sin*sin           - 2*cov[1]*sin*cos          +  cov[3]*cos*cos;
+  newcov[4] = cov[4]*cos               - cov[2]*sin;
+  newcov[5] = cov[5];
+  
+  // voluem ID to add later ....
+  point.SetXYZ(xyz);
+  point.SetCov(newcov);
+  point.SetVolumeID(fTPCParam->Transform0to1(xyz,i));
+
+  // TODO: Add sampled dE/dx  (use SetCharge)
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::ConvertTrackPointsToLocalClusters(AliTrackPointArray &arrPoints,
+                                                               AliToyMCTrack &tr, Double_t t0, Int_t type)
+{
+  //
+  //
+  //
+
+
+  const Int_t npoints=Int_t(arrPoints.GetUniqueID());
+  Int_t secOld=-1;
+
+  // create an array for graphs which are used for local interpolation
+  // we need a new graph if the sector changed since then the local frame will also change
+  TObjArray arrGraphsXY(72);
+  arrGraphsXY.SetOwner();
+  TObjArray arrGraphsXZ(72);
+  arrGraphsXZ.SetOwner();
+  AliTrackPoint p;
+  //create initial graph
+  TGraph *grXY=0x0;
+  TGraph *grXZ=0x0;
+  //row -> sector mapping
+  Int_t rowMap[159];
+  for (Int_t irow=0; irow<159; ++irow) rowMap[irow]=-1;
+
+  // 1. Step
+  // Make from the list of global space points graphs in the local frame
+  // one graph per sector is needed
+  for (Int_t ipoint=0; ipoint<npoints; ++ipoint){
+    arrPoints.GetPoint(p,ipoint);
+    Float_t xyz[3] = {p.GetX(),p.GetY(),p.GetZ()};
+    Int_t index[3] = {0,0,0};
+    Int_t row = fTPCParam->GetPadRow(xyz,index);
+    // rotate space point to local frame
+    // the angle is given by the VolumeID which was set in CrateSpacePoints
+    const Int_t sec=p.GetVolumeID();
+    if (row<0 || (sec<36 && row>62) || row>95 ) continue;
+    Double_t angle=((sec%18)*20.+10.)/TMath::RadToDeg();
+    AliTrackPoint pRot=p.Rotate(angle);
+    const Int_t secrow=row+(sec>35)*63;
+    if (rowMap[secrow]==-1) rowMap[secrow]=sec;
+    // check if we need a new graph (sector change)
+    if (secOld!=sec){
+      grXY=new TGraph;
+      grXZ=new TGraph;
+      arrGraphsXY.AddAt(grXY,sec);
+      arrGraphsXZ.AddAt(grXZ,sec);
+    }
+    
+    //add coordinates in local frame for later interpolation
+    grXY->SetPoint(grXY->GetN(), pRot.GetX(), pRot.GetY());
+    grXZ->SetPoint(grXZ->GetN(), pRot.GetX(), pRot.GetZ());
+    secOld=sec;
+  }
+
+  // 2. Step
+  // create in the center of each row a space point by using the graph to interpolate
+  // the the center of the row. This is done in xy and xz
+  TSpline3 *splXY=0x0;
+  TSpline3 *splXZ=0x0;
+  AliTPCclusterMI tempCl;
+  secOld=-1;
+  for (Int_t irow=0; irow<159; ++irow ){
+    const Int_t sec     = rowMap[irow];
+    if (sec==-1) continue;
+    const Int_t secrow = irow<63?irow:irow-63;
+    Double_t localX = fTPCParam->GetPadRowRadii(sec,secrow);
+    // get graph for the current row
+    if (sec!=secOld){
+      delete splXY;
+      splXY=0x0;
+      delete splXZ;
+      splXZ=0x0;
+      
+      grXY=(TGraph*)arrGraphsXY.At(sec);
+      grXZ=(TGraph*)arrGraphsXZ.At(sec);
+      if (!grXY) continue;
+
+      splXY=new TSpline3("splXY",grXY);
+      splXZ=new TSpline3("splXZ",grXZ);
+    }
+    secOld=sec;
+
+    // check we are in an active area
+    if (splXY->FindX(localX)<1 || splXZ->FindX(localX)<1) continue;
+    
+    //get interpolated value at the center for the pad row
+    //  using splines
+    const Double_t localY=splXY->Eval(localX/*,0x0,"S"*/);
+    const Double_t localZ=splXZ->Eval(localX/*,0x0,"S"*/);
+    Float_t xyz[3]={localX,localY,localZ};
+
+    if (!SetupCluster(tempCl,xyz,sec,t0)) continue;
+    
+    if (type==0) tr.AddSpacePoint(tempCl);
+    else tr.AddDistortedSpacePoint(tempCl);
+//     printf("SetupCluster %3d: (%.2f, %.2f, %.2f), %d, %.2f\n",irow,xyz[0],xyz[1],xyz[2],sec,t0);
+  }
+
+  delete splXY;
+  splXY=0x0;
+  delete splXZ;
+  splXZ=0x0;
   
 }
+
+//________________________________________________________________
+Bool_t AliToyMCEventGenerator::SetupCluster(AliTPCclusterMI &tempCl, Float_t xyz[3], Int_t sec, Double_t t0)
+{
+  //
+  //
+  //
+
+  const Double_t kSigmaY   = 0.1;
+  const Double_t kSigmaZ   = 0.1;
+  const Double_t kMaxZ0    = fTPCParam->GetZLength();
+  //TODO: Get this from the OCDB at some point?
+  const Double_t kDriftVel = fTPCParam->GetDriftV();
+  
+  tempCl.SetX(xyz[0]);
+  tempCl.SetY(xyz[1]);
+  tempCl.SetZ(xyz[2]);
+  
+  tempCl.SetSigmaY2(kSigmaY*kSigmaY);
+  tempCl.SetSigmaZ2(kSigmaZ*kSigmaZ);
+
+  // transform from the local coordinates to the coordinates expressed in pad coordinates
+  Int_t index[3] = {0,sec,0};
+  fTPCParam->Transform2to3(xyz,index);
+  fTPCParam->Transform3to4(xyz,index);
+  fTPCParam->Transform4to8(xyz,index);
+
+  const Int_t   row   = index[2];
+  const Int_t   nPads = fTPCParam->GetNPads(sec, row);
+  // pad is fractional, but it needs to be shifted from the center
+  // to the edge of the row
+  const Float_t pad   = xyz[1] + nPads/2;
+
+  tempCl.SetRow(row);
+  tempCl.SetPad(pad);
+  Float_t timeBin=Float_t(t0 + (kMaxZ0-TMath::Abs(tempCl.GetZ()))/kDriftVel);
+  tempCl.SetTimeBin(timeBin); // set time as t0  + drift time from dist z
+  tempCl.SetDetector(sec);
+
+  //check if we are in the active area
+  if (pad<0 || pad>=nPads) return kFALSE;
+
+  return kTRUE;
+}
+
 //________________________________________________________________
 Bool_t AliToyMCEventGenerator::ConnectOutputFile()
 {
