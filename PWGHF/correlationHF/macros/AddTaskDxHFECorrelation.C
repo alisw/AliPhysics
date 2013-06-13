@@ -120,6 +120,9 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    bUseMC=kTRUE;
 	    taskOptions+=" mc";
 	  }
+	  if(argument.BeginsWith("elreco")){
+	    taskOptions+=" "+argument;
+	  }
 	  if(argument.BeginsWith("tpcclusters=")){
 	    argument.ReplaceAll("tpcclusters=", "");
 	    NrTPCclusters=argument.Atoi();
@@ -139,6 +142,12 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	      argument.BeginsWith("Pb-Pb")) {
 	    system=1;
 	    taskOptions+=" system=Pb-Pb";
+	  }
+	  if (argument.BeginsWith("pPb") ||
+	      argument.BeginsWith("p-Pb") ||
+	      argument.BeginsWith("system=2")) {
+	    system=2;
+	    //	    taskOptions+=" system=p-Pb";
 	  }
 	  if (argument.BeginsWith("fillD0scheme=")){
 	    taskOptions+=" "+argument;
@@ -259,46 +268,72 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   // TODO: we might want to move this to separate functions if more data
   // sets are going to be handled
+
+  //p-p
   if (system==0) {
   RDHFD0toKpi->SetStandardCutsPP2010();
-  } else {
-  // TODO: think about p-Pb
-  RDHFD0toKpi->SetStandardCutsPbPb2011();
-
-  // For centrality 0-10%, add centrality flattening
-  //NB! NEED FOR THE MOMENT THE FILE!
-  TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
-  TCanvas *c=fFlat->Get("cintegral");
-  TH1F *hfl=(TH1F*)c->FindObject("hint");
-  RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
-  //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
-
-  RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
-  RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
   }
+
+  //Pb-Pb
+  else if (system==1) {
+    // TODO: think about p-Pb
+    RDHFD0toKpi->SetStandardCutsPbPb2011();
+    
+    // For centrality 0-10%, add centrality flattening
+    //NB! NEED FOR THE MOMENT THE FILE!
+    TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
+    TCanvas *c=fFlat->Get("cintegral");
+    TH1F *hfl=(TH1F*)c->FindObject("hint");
+    RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
+    //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    
+    RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
+    RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
+  }
+
+  //p-Pb
+  else if (system==2) {  
+    RDHFD0toKpi->SetStandardCutsPP2010();
+    RDHFD0toKpi->SetTriggerMask(AliVEvent::kINT7); //pPb
+    RDHFD0toKpi->SetTriggerClass(""); //pPb
+  }
+  else {
+    //warning, no system set
+  }
+  
 
   ///______________________________________________________________________
   /// Cuts for HFE
   TString hfeCutsName;
-  if (system==0) hfeCutsName="HFE Standard Cuts";
-  else hfeCutsName="HFE Cuts PbPb";
+  if (system==0){
+    hfeCutsName="HFE Standard Cuts";
+  }
+
+  if (system==1){
+    hfeCutsName="HFE Cuts PbPb";
+  }
+
+  if (system==2){
+    hfeCutsName="HFE Cuts pPb";
+  }
+  
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF", hfeCutsName);
   hfecuts->CreateStandardCuts();
-
+  
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersTPC(NrTPCclusters);	//Default = 80
   hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
   hfecuts->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
-	
+  
   ///ITS
   hfecuts->SetCutITSpixel(ITSreq);        	//Cut on SPD
   //hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 	//Cut on SDD
   //hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetMinNClustersITS(NrITSclusters); //Default = 4
-	
+  
   ///TOF
   hfecuts->SetTOFPIDStep(kTRUE);
-		
+  
   ///Additional Cuts
   hfecuts->SetPtRange(0.30, 10.5);
   hfecuts->SetMaxImpactParam(1.,2.);
@@ -351,7 +386,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   if (poolConfigFile.IsNull()) {
     // load the default configuration from below if no file is specified
     if (system==0) poolConfiguration=createDefaultPoolConfig();
-    else poolConfiguration=createPbPbPoolConfig();
+    else if (system==1) poolConfiguration=createPbPbPoolConfig();
+    else if (system==2) poolConfiguration=createDefaultPoolConfig();
   } else {
     // load configuration from file, and abort if something goes wrong
     TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
