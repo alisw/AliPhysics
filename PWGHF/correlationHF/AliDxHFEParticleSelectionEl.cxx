@@ -218,25 +218,56 @@ int AliDxHFEParticleSelectionEl::Init()
 
 THnSparse* AliDxHFEParticleSelectionEl::DefineTHnSparse()
 {
+
   //
   // Defines the THnSparse. For now, only calls CreatControlTHnSparse
   // TODO: Add also invariant mass? here and in correlation, to do cut afterwards..
 
   // here is the only place to change the dimension
-  const int thnSize = 3;
-  InitTHnSparseArray(thnSize);
   const double Pi=TMath::Pi();
   TString name;
+  THnSparse* thn=NULL;
   name.Form("%s info", GetName());
 
-  //                                 0    1       2
-  // 	 	                     Pt   Phi    Eta
-  int         thnBins [thnSize] = { 1000,  200, 500};
-  double      thnMin  [thnSize] = {    0,    0, -1.};
-  double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
-  const char* thnNames[thnSize] = { "Pt","Phi","Eta"};
+  if(fStoreCutStepInfo){
+    const int thnSizeExt =4;
 
-  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
+    InitTHnSparseArray(thnSizeExt);
+
+    // TODO: Redo binning of distributions more?
+    //     		               0    1      2   
+    // 	 	                       Pt   Phi   Eta 
+    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,   kNCutLabels-1};
+    double thnMinExt [thnSizeExt] = {   0,    0, -1.,   kRecKineITSTPC-0.5 };
+    double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,   kSelected-0.5};
+    const char* thnNamesExt[thnSizeExt]={
+      "Pt",
+      "Phi",
+      "Eta", 
+      "Last survived cut step"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,thnSizeExt,thnBinsExt,thnMinExt,thnMaxExt,thnNamesExt);
+  }
+  else{
+
+    const int thnSize =3;
+    InitTHnSparseArray(thnSize);
+
+    // TODO: Redo binning of distributions more?
+    //     		       0    1      2    
+    // 	 	               Pt   Phi   Eta   
+    int    thnBins[thnSize] = { 100,  100, 100 };
+    double thnMin [thnSize] = {   0,    0, -1. };
+    double thnMax [thnSize] = {  10, 2*Pi,  1. };
+    const char* thnNames[thnSize]={
+      "Pt",
+      "Phi",
+      "Eta", 
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
+
+  }
+  return thn;
 }
 
 int AliDxHFEParticleSelectionEl::InitControlObjects()
@@ -326,14 +357,21 @@ int AliDxHFEParticleSelectionEl::FillParticleProperties(AliVParticle* p, Double_
   if (!data) return -EINVAL;
   AliAODTrack *track=(AliAODTrack*)p;
   if (!track) return -ENODATA;
+
   int i=0;
   if (dimension!=GetDimTHnSparse()) {
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
+  memset(data, 0, dimension*sizeof(data[0]));
   data[i++]=track->Pt();
   data[i++]=track->Phi();
   data[i++]=track->Eta();
+  if (i<dimension) {
+    if(fStoreCutStepInfo) data[i]=GetLastSurvivedCutsStep();
+    i++; // take out of conditionals to be save
+  }
+
   return i;
 }
 
