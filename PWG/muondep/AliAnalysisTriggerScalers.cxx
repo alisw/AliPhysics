@@ -112,18 +112,6 @@ namespace {
     return 0;
   }
   
-  
-  //______________________________________________________________________________
-  Double_t Mu(Double_t L0B, Double_t Nb)
-  {
-    /// L0B = trigger rate before any veto
-    /// Nb = number of crossing bunches
-    
-    Double_t p0 = 1-L0B/(Nb*11245.0); // proba to get *no* collision per bunch crossing
-    
-    return -TMath::Log(p0);
-  }
-  
   //______________________________________________________________________________
   TCanvas* NewCanvas(const char* name)
   {
@@ -211,14 +199,14 @@ Bool_t AliAnalysisTriggerScalers::CheckRecord(const AliTriggerScalersRecord& rec
 
 
 //______________________________________________________________________________
-void AliAnalysisTriggerScalers::DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label)
+void AliAnalysisTriggerScalers::DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label, Int_t color)
 {
   // Draw a yellow box to indicate a run range
   
   AliDebugClass(1,Form("RUN1 %09d RUN2 %09d YMIN %e YMAX %e %s",
                        run1,run2,ymin,ymax,label));
   TBox* b = new TBox(run1*1.0,ymin,run2*1.0,ymax);
-  b->SetFillColor(5);
+  b->SetFillColor(color);
   b->Draw();
   TText* text = new TText((run1+run2)/2.0,ymin + (ymax-ymin)*0.85,label);
   text->SetTextSize(0.025);
@@ -229,7 +217,7 @@ void AliAnalysisTriggerScalers::DrawFill(Int_t run1, Int_t run2, double ymin, do
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTriggerScalers::DrawFills(Double_t ymin, Double_t ymax)
+void AliAnalysisTriggerScalers::DrawFills(Double_t ymin, Double_t ymax, Int_t color)
 {
   /// Draw the fill ranges corresponding to the list of runs
   /// Note that this method will scan the OCDB to get the run -> fill number relationship,
@@ -247,8 +235,28 @@ void AliAnalysisTriggerScalers::DrawFills(Double_t ymin, Double_t ymax)
     const std::pair<int,int>& p = it->second;
     TString fillnumber;
     fillnumber.Form("%d",it->first);
-    DrawFill(p.first,p.second,ymin,ymax,fillnumber.Data());
+    DrawFill(p.first,p.second,ymin,ymax,fillnumber.Data(),color);
   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTriggerScalers::DrawPeriods(Double_t ymin, Double_t ymax, Int_t color)
+{
+  /// Draw the period ranges corresponding to the list of runs
+  /// Note that this method will scan the OCDB to get the run -> fill number relationship,
+  /// so it's better in this case to use a local copy of the OCDB if you have one. Otherwise
+  /// it will be long.
+
+  std::map<std::string, std::pair<int,int> > periods;
+  
+  GetLHCPeriodBoundaries(periods);
+  
+  for ( std::map<std::string, std::pair<int,int> >::const_iterator it = periods.begin(); it != periods.end(); ++it )
+  {
+    const std::pair<int,int>& p = it->second;
+    DrawFill(p.first,p.second,ymin,ymax,it->first.c_str(),color);
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -321,6 +329,7 @@ TObject* AliAnalysisTriggerScalers::GetOCDBObject(const char* path, Int_t runNum
   
   if ( !AliCDBManager::Instance()->IsDefaultStorageSet() )
   {
+    AliInfo(Form("Setting OCDB default storage to %s",fOCDBPath.Data()));
     AliCDBManager::Instance()->SetDefaultStorage(fOCDBPath.Data());
   }
   
@@ -528,6 +537,66 @@ AliAnalysisTriggerScalers::GetPauseAndConfigCorrection(Int_t runNumber, const ch
 }
 
 //______________________________________________________________________________
+void AliAnalysisTriggerScalers::GetPileUpFactor(Int_t runNumber, const char* triggerClassName,
+                                                Double_t purity,
+                                                Double_t& value, Double_t& error)
+{
+  /// Get the mean pile-up correction factor for the given run
+
+  value = error = 0.0;
+
+  if (purity<=0.0)
+  {
+    AliError(Form("Cannot work with purity=%f for trigger %s in run %d. Should be strictly positive",purity,triggerClassName,runNumber));
+    return;             
+  }
+  
+  AliTriggerRunScalers* trs = static_cast<AliTriggerRunScalers*>(GetOCDBObject("GRP/CTP/Scalers",runNumber));
+  const TObjArray* scalers = trs->GetScalersRecords();
+  const AliTriggerScalersRecord* begin = (AliTriggerScalersRecord*)(scalers->First());
+  const AliTriggerScalersRecord* end = (AliTriggerScalersRecord*)(scalers->Last());
+  
+  time_t duration = TMath::Nint((end->GetTimeStamp()->GetBunchCross() - begin->GetTimeStamp()->GetBunchCross())*AliTimeStamp::fNanosecPerBC*1E-9);
+  
+  if (!duration)
+  {
+    AliError(Form("Got zero duration for run %d",runNumber));
+    return;
+  }
+  
+  AliAnalysisTriggerScalerItem* item = GetTriggerScaler(runNumber,"L0B",triggerClassName);
+  if (!item)
+  {
+    AliError(Form("Could not get L0B for trigger %s in run %d",triggerClassName,runNumber));
+    return;
+  }
+  
+  AliLHCData* lhc = static_cast<AliLHCData*>(GetOCDBObject("GRP/GRP/LHCData",runNumber));
+  
+  Int_t nbcx = NumberOfInteractingBunches(*lhc,runNumber);
+  
+  if ( nbcx<=0.0 )
+  {
+    AliError(Form("Cannot work with nbcx=%d for trigger %s in run %d. Should be strictly positive",nbcx,triggerClassName,runNumber));
+    return;
+  }
+  
+  Double_t itemValue = purity*item->Value();
+  
+  if (itemValue<=0.0)
+  {
+    AliError(Form("Cannot work with value=%f for trigger %s in run %d. Should be strictly positive",itemValue,triggerClassName,runNumber));
+    return;
+  }
+
+  Double_t mu = Mu(itemValue/duration,nbcx);
+  
+  value = mu/(1.0-TMath::Exp(-mu));
+  
+  error = 0.0; // FIXME
+}
+
+//______________________________________________________________________________
 AliAnalysisTriggerScalerItem* 
 AliAnalysisTriggerScalers::GetTriggerScaler(Int_t runNumber, const char* level, const char* triggerClassName)
 {
@@ -704,7 +773,7 @@ AliAnalysisTriggerScalers::IntegratedLuminosityGraph(Int_t runNumber, const char
     return 0x0;
   }
 
-  Int_t nbcx = NumberOfInteractingBunches(*lhc);
+  Int_t nbcx = NumberOfInteractingBunches(*lhc,runNumber);
   
   if (nbcx <= 0 && ShouldCorrectForPileUp())
   {
@@ -1156,7 +1225,18 @@ TGraph* AliAnalysisTriggerScalers::MakeGraph(const std::vector<int>& vx,
 }
 
 //______________________________________________________________________________
-Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lhc) const
+Double_t AliAnalysisTriggerScalers::Mu(Double_t L0B, Double_t Nb)
+{
+  /// L0B = trigger rate before any veto
+  /// Nb = number of crossing bunches
+  
+  Double_t p0 = 1-L0B/(Nb*11245.0); // proba to get *no* collision per bunch crossing
+  
+  return -TMath::Log(p0);
+}
+
+//______________________________________________________________________________
+Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lhc, Int_t runNumber) const
 {
   /// Extract the number of colliding bunches from the LHC data
   
@@ -1188,11 +1268,29 @@ Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lh
     if ( valm->GetValue(i) <= 0 ) ++nIBM2;
   }
 
+  if (!numberOfInteractingBunches)
+  {
+    return 0;
+  }
+
   if ( numberOfInteractingBunches != numberOfInteractingBunchesMeasured ||
        numberOfInteractingBunches != nIBM2 )
   {
-    AliWarning(Form("Got some different number of interacting bunches here ! NumberOfInteractingBunches=%3d NumberOfInteractingBunchesMeasured=%3d NIBM2=%3d",
-                  numberOfInteractingBunches,numberOfInteractingBunchesMeasured,nIBM2));
+    Int_t delta = TMath::Max(numberOfInteractingBunches - numberOfInteractingBunchesMeasured,numberOfInteractingBunches-nIBM2);
+    
+    if ( 1.0*TMath::Abs(delta)/numberOfInteractingBunches > 0.05 ) // more than 5% difference
+    {
+      AliWarning(Form("Got some different number of interacting bunches for fill %d run %d ! NumberOfInteractingBunches=%3d NumberOfInteractingBunchesMeasured=%3d NIBM2=%3d. Will use %d",
+                    lhc.GetFillNumber(),runNumber,
+                      numberOfInteractingBunches,numberOfInteractingBunchesMeasured,nIBM2,numberOfInteractingBunches));
+    }
+    else
+    {
+      AliDebug(1,Form("Got some different number of interacting bunches for fill %d run %d ! NumberOfInteractingBunches=%3d NumberOfInteractingBunchesMeasured=%3d NIBM2=%3d. Will use %d",
+                      lhc.GetFillNumber(),runNumber,
+                      numberOfInteractingBunches,numberOfInteractingBunchesMeasured,nIBM2,numberOfInteractingBunches));
+      
+    }
   }
   
   return numberOfInteractingBunches;
@@ -1347,7 +1445,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
     
     GetCTPObjects(runNumber,tc,trs,lhc);
     
-    Int_t numberOfInteractingBunches = NumberOfInteractingBunches(*lhc);
+    Int_t numberOfInteractingBunches = NumberOfInteractingBunches(*lhc,runNumber);
     
     const TObjArray* scalers = trs->GetScalersRecords();
     
@@ -1453,6 +1551,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         }
         else if ( swhat.Contains("MU") )
         {
+          if (timelapse==0) continue;
           value = Mu(l0b/timelapse,numberOfInteractingBunches);
           error = 0.0; // FIXME
         }
@@ -1697,7 +1796,12 @@ void AliAnalysisTriggerScalers::ReadIntegers(const char* filename,
 {
   /// Read integers from filename, where integers are either
   /// separated by "," or by return carriage
-    std::ifstream in(gSystem->ExpandPathName(filename));
+  
+  if ( gSystem->AccessPathName(filename)==kTRUE ) 
+  {
+    return;
+  }
+  std::ifstream in(gSystem->ExpandPathName(filename));
   int i;
   
   std::set<int> runset;
@@ -1814,6 +1918,17 @@ void AliAnalysisTriggerScalers::SetRunList(const char* runlist)
   else
   {
     ReadIntegers(runlist,fRunList);
+    if (fRunList.empty())
+    {
+      if ( TString(runlist).IsDigit() )
+      {
+        SetRunList(TString(runlist).Atoi());
+      }
+      else
+      {
+        AliError("Could not set run list !");
+      }
+    }
   }
 }
 
