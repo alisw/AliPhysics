@@ -115,15 +115,25 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhTimeStampFraction; //! event fraction depending on Time Stamp, only if activated on reader
   TH1F *   fhNPileUpVertSPD;    //! number of pile-up vertices from SPD
   TH1F *   fhNPileUpVertTracks; //! number of pile-up vertices from tracks
-  TH1F *   fhClusterTriggerBC;       //! number of events triggered, depending on BC of the cluster
-  TH1F *   fhClusterTriggerBCExotic; //! number of events triggered, depending on BC of the cluster
-  TH1F *   fhClusterTriggerBCBad;    //! number of events triggered, depending on BC of the cluster
-  TH1F *   fhClusterTriggerBCBadExotic;     //! number of events triggered, depending on BC of the cluster
-  TH1F *   fhClusterTriggerBCUnMatch;       //! number of events triggered, depending on BC of the cluster
-  TH1F *   fhClusterTriggerBCExoticUnMatch; //! number of events triggered, depending on BC of the cluster
-  TH1F *   fhClusterTriggerBCBadUnMatch;    //! number of events triggered, depending on BC of the cluster
-  TH1F *   fhClusterTriggerBCBadExoticUnMatch;//! number of events triggered, depending on BC of the cluster
+  
+  TH1F *   fhClusterTriggerBC;                       //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCExotic;                 //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadCell;                //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadCellExotic;          //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadCluster;             //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadClusterExotic;       //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCUnMatch;                //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCExoticUnMatch;          //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadCellUnMatch;         //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadCellExoticUnMatch;   //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadClusterUnMatch;      //! number of events triggered, depending on BC of the cluster
+  TH1F *   fhClusterTriggerBCBadClusterExoticUnMatch;//! number of events triggered, depending on BC of the cluster
 
+  TH2F *   fhClusterTriggerBCEventBC;        // correlate the found BC in the trigger and the event BC
+  TH2F *   fhClusterTriggerBCEventBCUnMatch; // correlate the found BC in the trigger and the event BC, when there was no match with the trigger BC
+  TH2F *   fhClusterTriggerBCExoticEventBC;        // correlate the found BC in the exotic trigger and the event BC
+  TH2F *   fhClusterTriggerBCExoticEventBCUnMatch; // correlate the found BC in the exotic trigger and the event BC, when there was no match with the trigger BC
+  
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
   ClassDef(AliAnaCaloTrackCorrMaker,18)

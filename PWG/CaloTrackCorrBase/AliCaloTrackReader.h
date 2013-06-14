@@ -255,6 +255,7 @@ public:
 
   Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }  
   Bool_t           IsBadCellTriggerEvent()                 { return fIsBadCellEvent          ; }
+  Bool_t           IsBadMaxCellTriggerEvent()              { return fIsBadMaxCellEvent       ; }
   Bool_t           IsTriggerMatched()                      { return fIsTriggerMatch          ; }
   Int_t            GetTriggerClusterBC()                   { return fTriggerClusterBC        ; }
   Int_t            GetTriggerClusterIndex()                { return fTriggerClusterIndex     ; }
@@ -626,7 +627,8 @@ public:
   Int_t            fTriggerClusterIndex;         // Index in clusters array of trigger cluster
   Int_t            fTriggerClusterId;            // Id of trigger cluster (cluster->GetID())
   Bool_t           fIsExoticEvent;               // Exotic trigger event flag
-  Bool_t           fIsBadCellEvent;              // Bad cell triggered event flag
+  Bool_t           fIsBadCellEvent;              // Bad cell triggered event flag, any cell in cluster is bad
+  Bool_t           fIsBadMaxCellEvent;           // Bad cell triggered event flag, only max energy cell is bad
   Int_t            fIsTriggerMatch;              // Could not match the event to a trigger patch
   
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
@@ -672,7 +674,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,54)
+  ClassDef(AliCaloTrackReader,55)
   
 } ;
 
