@@ -143,11 +143,12 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    system=1;
 	    taskOptions+=" system=Pb-Pb";
 	  }
-	  if (argument.BeginsWith("pPb") ||
+	  if (argument.BeginsWith("system=p-Pb") ||
+	      argument.BeginsWith("pPb") ||
 	      argument.BeginsWith("p-Pb") ||
 	      argument.BeginsWith("system=2")) {
 	    system=2;
-	    //	    taskOptions+=" system=p-Pb";
+	    taskOptions+=" system=p-Pb";
 	  }
 	  if (argument.BeginsWith("fillD0scheme=")){
 	    taskOptions+=" "+argument;
