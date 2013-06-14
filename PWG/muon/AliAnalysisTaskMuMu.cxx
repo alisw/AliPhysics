@@ -376,7 +376,7 @@ void AliAnalysisTaskMuMu::ComputeTrackMask(const AliVParticle& track, Int_t trac
   // Compute the track mask
   UInt_t m(kAll);
   
-  UInt_t selectionMask = fMuonTrackCuts ? fMuonTrackCuts->GetSelectionMask(&track) : 0;
+  UInt_t selectionMask = MuonTrackCuts()->GetSelectionMask(&track);
   
   if ( ( selectionMask & AliMuonTrackCuts::kMuThetaAbs ) == AliMuonTrackCuts::kMuThetaAbs ) m |= kRabs;
   
@@ -684,7 +684,7 @@ void AliAnalysisTaskMuMu::EAComputeTrackMasks()
   // compute the track masks for the event
   
   fPrecomputedTrackMasks.Reset();
-  Int_t n = EAGetNumberOfMuonTracks();
+  Int_t n = AliAnalysisMuonUtility::GetNTracks(Event()); //EAGetNumberOfMuonTracks();
   fPrecomputedTrackMasks.Set(n);
   
   for ( Int_t i = 0; i < n; ++i )
@@ -708,6 +708,30 @@ Int_t AliAnalysisTaskMuMu::EAGetNumberOfMuonTracks() const
   }
   
   return ntracks;
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskMuMu::EAGetNumberOfSelectMuonTracks() const
+{
+  // Get the number of "very good" muon tracks :
+  // Rabs + DCA + pT > 1.5 Gev/C
+  // must be called after EAComputeTrackMasks
+  
+  Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(Event());
+
+  UInt_t check = kAll | kMatched | kRabs | kDCA | kEta | kPt1dot5;
+  
+  Int_t nGood(0);
+  
+  for ( Int_t i = 0; i < nTracks; ++i )
+  {
+    UInt_t m = GetTrackMask(i);
+    if ( ( m & check ) == check )
+    {
+      ++nGood;
+    }
+  }  
+  return nGood;
 }
 
 //_____________________________________________________________________________
@@ -1389,9 +1413,9 @@ void AliAnalysisTaskMuMu::FillHistos(const char* physics, const char* triggerCla
     fBinArray = fBinning->CreateBinObjArray("psi","y vs pt,integrated,pt,y,phi","");
   }
   
-  Int_t nMuonTracks = AliAnalysisMuonUtility::GetNTracks(Event());
+  Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(Event());
   
-  for (Int_t i = 0; i < nMuonTracks; ++i) 
+  for (Int_t i = 0; i < nTracks; ++i)
   {
     AliVParticle* tracki = AliAnalysisMuonUtility::GetTrack(i,Event());
     
@@ -1402,7 +1426,7 @@ void AliAnalysisTaskMuMu::FillHistos(const char* physics, const char* triggerCla
     TLorentzVector pi(tracki->Px(),tracki->Py(),tracki->Pz(),
                       TMath::Sqrt(MuonMass2()+tracki->P()*tracki->P()));
     
-    for (Int_t j = i+1; j < nMuonTracks; ++j) 
+    for (Int_t j = i+1; j < nTracks; ++j)
     {
       AliVParticle* trackj = AliAnalysisMuonUtility::GetTrack(j,Event());
       
@@ -1582,7 +1606,7 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask() const
   kEventSD2 = events with 0SD2 input present (was for PbPb 2010)
   kEventMSL = events with 0MSL input present
   kEventNOPILEUP = events with the T0 pile-up flag not present
-   
+  kEventREJECTED = events not physics selected
    */
   
 //  AliCodeTimerAuto("",0);
@@ -1591,7 +1615,14 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask() const
 
   UInt_t m(AliAnalysisTaskMuMu::kEventAll);
 
-  if ( eMask & AliMuonEventCuts::kPhysicsSelected ) m |= AliAnalysisTaskMuMu::kEventPS;
+  if ( eMask & AliMuonEventCuts::kPhysicsSelected )
+  {
+    m |= AliAnalysisTaskMuMu::kEventPS;
+  }
+  else
+  {
+    m |= AliAnalysisTaskMuMu::kEventREJECTED;
+  }
   
   UInt_t trigger = AliAnalysisMuonUtility::GetL0TriggerInputs(Event());
   
@@ -1692,7 +1723,7 @@ UInt_t AliAnalysisTaskMuMu::GetEventMask() const
     m |= AliAnalysisTaskMuMu::kEventNOTZEROPILEUP;
   }
   
-  int nmu = EAGetNumberOfMuonTracks();
+  int nmu = EAGetNumberOfSelectMuonTracks();
 
   if ( nmu >=1 )
   {
@@ -2015,23 +2046,7 @@ void AliAnalysisTaskMuMu::NotifyRun()
   
   AliDebug(1,Form("Run %09d File %s",fCurrentRunNumber,CurrentFileName()));
  
-  if (!fMuonTrackCuts)
-  {
-    fMuonTrackCuts = new AliMuonTrackCuts;
-      
-    fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
-    
-    fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuEta |
-                                  AliMuonTrackCuts::kMuThetaAbs |
-                                  AliMuonTrackCuts::kMuPdca |
-                                  AliMuonTrackCuts::kMuMatchApt |
-                                  AliMuonTrackCuts::kMuMatchLpt |
-                                  AliMuonTrackCuts::kMuMatchHpt |
-                                  AliMuonTrackCuts::kMuTrackChiSquare);    
-  }
-  
-  fMuonTrackCuts->SetRun(fInputHandler);
-  
+  MuonTrackCuts()->SetRun(fInputHandler);
 }
 
 //_____________________________________________________________________________
@@ -2179,6 +2194,11 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   
   fHasMC = (MCEvent()!=0x0);
 
+  if ( HasMC() )
+  {
+    MuonTrackCuts()->SetIsMC();
+  }
+  
   TString firedTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(Event()));
 
   TString centrality(DefaultCentralityName());
@@ -2317,4 +2337,33 @@ void AliAnalysisTaskMuMu::UserCreateOutputObjects()
   PostData(1,fHistogramCollection);
   PostData(2,fEventCounters);
   PostData(3,fBinning);
+}
+
+//_____________________________________________________________________________
+AliMuonTrackCuts* AliAnalysisTaskMuMu::MuonTrackCuts()
+{
+  if (!fMuonTrackCuts)
+  {
+    fMuonTrackCuts = new AliMuonTrackCuts;
+    
+    fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
+    
+    fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuEta |
+                                  AliMuonTrackCuts::kMuThetaAbs |
+                                  AliMuonTrackCuts::kMuPdca |
+                                  AliMuonTrackCuts::kMuMatchApt |
+                                  AliMuonTrackCuts::kMuMatchLpt |
+                                  AliMuonTrackCuts::kMuMatchHpt |
+                                  AliMuonTrackCuts::kMuTrackChiSquare);
+    
+  }
+
+  return fMuonTrackCuts;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskMuMu::SetMuonTrackCuts(const AliMuonTrackCuts& trackCuts)
+{
+  delete fMuonTrackCuts;
+  fMuonTrackCuts = static_cast<AliMuonTrackCuts*>(trackCuts.Clone());
 }
