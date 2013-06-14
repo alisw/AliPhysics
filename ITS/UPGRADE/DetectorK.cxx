@@ -103,6 +103,8 @@ DetectorK::DetectorK()
     fMaxRadiusSlowDet(10.),
     fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
+    fMaxSeedRadius(50000),
+    fptScale(10.),
     fdNdEtaCent(2300)
 {
   //
@@ -126,6 +128,8 @@ DetectorK::DetectorK(char *name, char *title)
     fMaxRadiusSlowDet(10.),
     fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
+    fMaxSeedRadius(50000),
+    fptScale(10.),
     fdNdEtaCent(2300)
 {
   //
@@ -384,7 +388,7 @@ void DetectorK::PrintLayout() {
   printf("Detector %s: \"%s\"\n",GetName(),GetTitle());
   
   if (fLayers.GetEntries()>0) 
-    printf("  Name \t\t r [cm] \t  X0 \t  phi & z res [um]\n");
+    printf("  Name \t\t r [cm] \t  X0 \t  phi & z res [um] layerEff \n");
 
   CylLayerK *tmp = 0;
   for (Int_t i = 0; i<fLayers.GetEntries(); i++) {
@@ -401,9 +405,15 @@ void DetectorK::PrintLayout() {
     else
       printf("%3.0f   ",tmp->phiRes*10000);
     if (tmp->zRes==RIDICULOUS) 
-      printf("  -\n");
+      printf("  -");
     else
-      printf("%3.0f\n",tmp->zRes*10000);
+      printf("%3.0f",tmp->zRes*10000);
+
+    if (tmp->zRes==RIDICULOUS) 
+      printf("\t  -\n");
+    else 
+      printf("\t%0.2f\n",tmp->eff);
+    
   }
 }
 
@@ -457,7 +467,8 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
 
 
   AddLayer((char*)"IFC",   77.8,0.01367); // Inner Field cage
-  
+  AddLayer((char*)"OFC",   254.0,0.01367); // Outer Field cage
+
   // % Radiation Lengths ... Average per TPC row  (i.e. total/159 )
   Float_t radLPerRow = 0.000036;
   
@@ -726,73 +737,14 @@ Double_t DetectorK::D0IntegratedEfficiency( Double_t pt, Double_t corrEfficiency
 }
 
 
-void DetectorK::SolveDOFminusOneAverage() {
-  // 
-  // Short study to address "# layers-1 efficiencies"
-  // saves the means in the according arrays
-  // Note: Obviously, does not work for the Telescope equation 
-  //
-  
-  Double_t fMomentumResM[kNptBins], fResolutionRPhiM[kNptBins], fResolutionZM[kNptBins]; 
-  Double_t efficiencyM[3][kNptBins];
-  for (Int_t i=0; i<kNptBins; i++) {
-    fMomentumResM[i] = 0;   // Momentum resolution
-    fResolutionRPhiM[i] = 0;   // Resolution in R
-    fResolutionZM[i] = 0; // Resolution in Z
-    for (Int_t part=0; part<3; part++) 
-      efficiencyM[part][i] = 0; // efficiencies
-  }
 
-  // loop over active layers in ITS (remove 1 by 1)
-  Int_t nITSLayers = 0;
-  CylLayerK *layer =0;
-  for (Int_t j=0; j<(fLayers.GetEntries()-1); j++) { 
-    layer = (CylLayerK*)fLayers.At(j);
-    TString name(layer->GetName());
-    if (name.Contains("tpc")) continue;
-    if (!(layer->isDead))  {
-
-      nITSLayers++; 
-      printf("Kill Layer %s\n",name.Data());
-      Double_t rRes = GetResolution((char*)name.Data(),0);
-      Double_t zRes = GetResolution((char*)name.Data(),1);
-      KillLayer((char*)name.Data());
-      //   PrintLayout();
-      SolveViaBilloir(1,0); 
-
-      // produce sum for the mean calculation
-      for (Int_t i=0; i<kNptBins; i++) {
-	fMomentumResM[i] += fMomentumRes[i];   // Momentum resolution
-	fResolutionRPhiM[i] += fResolutionRPhi[i];   // Resolution in R
-	fResolutionZM[i] += fResolutionZ[i]; // Resolution in Z
-	for (Int_t part=0; part<3; part++) 
-	  efficiencyM[part][i] += fEfficiency[part][i]; // efficiencies
-      }
-
-      // "Restore" layer ...
-      SetResolution((char*)name.Data(),rRes,zRes); 
-      
-    }
-  }
-  
-  // save means in "std. Arrays"
-  for (Int_t i=0; i<kNptBins; i++) {
-    fMomentumRes[i] = fMomentumResM[i]/nITSLayers;   // Momentum resolution
-    fResolutionRPhi[i] = fResolutionRPhiM[i]/nITSLayers;   // Resolution in R
-    fResolutionZ[i] = fResolutionZM[i]/nITSLayers; // Resolution in Z
-    for (Int_t part=0; part<3; part++) 
-      fEfficiency[part][i] = efficiencyM[part][i]/nITSLayers; // efficiencies
-  }
-
-
-}
-
-void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t meanPt) {
+void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t meanPt, char* detLayer) {
   //
   // Solves the current geometry with the Billoir technique 
   // ( see P. Billoir, Nucl. Instr. and Meth. 225 (1984), p. 352. )
   // ABOVE IS OBSOLETE -> NOW, its uses the Aliroot Kalman technique
   //
+
 
   static AliExternalTrackParam probTr;   // track to propagate
   probTr.SetUseLogTermMS(kTRUE);
@@ -836,7 +788,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   Int_t nLayer = fNumberOfActiveITSLayers;
   Int_t base = 3; // null, fake, correct
 
-  Int_t komb = TMath::Power(base,nLayer);
+  Int_t komb = (Int_t) TMath::Power(base,nLayer);
 
   TMatrixD probLay(base,fNumberOfActiveITSLayers);
   TMatrixD probKomb(komb,nLayer);
@@ -846,6 +798,21 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       probKomb(num,nLayer-1-l)=(num%pow)/((Int_t)TMath::Power(base,l));
     }
   }
+
+  TString detLayerStr(detLayer);
+  CylLayerK *theLayer = (CylLayerK*) fLayers.FindObject(detLayer);
+  if (!theLayer && detLayerStr.IsNull()!=1){
+    printf("Error: Layer with the name \"%s\" not found -> no detailed infos possible\n",detLayer);
+    return;
+  }
+  for (Int_t i=0; i<fLayers.GetEntries();i++) {
+    CylLayerK *l = (CylLayerK*) fLayers.At(i);
+    if (detLayerStr.CompareTo(l->GetName())==0) { // is the same
+      kDetLayer=i;
+      break;
+    }
+  }
+  
 
   for ( Int_t massloop = mStart ; massloop < 3 ; massloop++ )  { 
     
@@ -859,10 +826,10 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
       // Starting values based on radius of outermost layer ... log10 steps to ~20 GeV
       Double_t bigRad = last->radius/2 ;	// min. pt which the algorithm below could handle
-      //if (bigRad<61) bigRad=61; // -> min pt around 100 MeV for Bz=0.5T (don't overdo it ... ;-) )
-      fTransMomenta[i] =  ( 0.3*bigRad*TMath::Abs(fBField)*1e-2 ) - 0.08 + TMath::Power(10,2.3*i/nPt) / 10.0 ; 
+      //   if (bigRad<61) bigRad=61; // -> min pt around 100 MeV for Bz=0.5T (don't overdo it ... ;-) )
+      fTransMomenta[i] =  ( 0.3*bigRad*TMath::Abs(fBField)*1e-2 ) - 0.08 - (1./fptScale-0.1) + TMath::Power(10,2.3*i/nPt) / fptScale ; 
       if (!allPt) { // just 3 points around meanPt
-	fTransMomenta[i] = meanPt-0.01+(Double_t)(i)*0.01;
+	fTransMomenta[i] = meanPt-0.001+(Double_t)(i)*0.001;
       }
   
       // New from here ................
@@ -888,12 +855,8 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       //
       // put tiny errors to propagate to the outer radius
       trCov[kY2] = trCov[kZ2] = trCov[kSnp2] = trCov[kTgl2] = trCov[kPtI2] = 1e-9;
-      double xR = 0;
-      if (!GetXatLabR(&probTr, last->radius ,xR,bGauss,1)) {
-	printf("Track with pt=%f cannot reach radius %f\n",pt,last->radius);
-	continue;
-      }
-      probTr.PropagateTo(xR, bGauss);        // bring track to outer layer
+      if (!PropagateToR(&probTr,last->radius,bGauss,1)) continue;
+      //if (!probTr.PropagateTo(last->radius,bGauss)) continue;
       // reset cov.matrix
       const double kLargeErr2Coord = 50*50;
       const double kLargeErr2Dir = 0.6*0.6;
@@ -921,20 +884,18 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	  break;
 	}
       }
-    
+      //      probTr.Print();
       for (Int_t j=lastActiveLayer; j--;) {  // Layer loop
 
 	layer = (CylLayerK*)fLayers.At(j);
+
+	if (layer->radius>fMaxSeedRadius) continue; // no seeding beyond this radius 
+
 	TString name(layer->GetName());
 	Bool_t isVertex = name.Contains("vertex");
 	//
-	if (!GetXatLabR(&probTr, layer->radius ,xR,bGauss)) { 
-	  printf("Track with pt=%f cannot reach radius %f. This should not happen here\n",pt,layer->radius);
-	  probTr.Print();
-	  exit(1);
-	}
-	probTr.PropagateTo(xR, bGauss);        // propagate to this layer
-	//
+	if (!PropagateToR(&probTr,layer->radius,bGauss,-1)) exit(1);
+	//	if (!probTr.PropagateTo(last->radius,bGauss)) exit(1);	//
 	// rotate to frame with X axis normal to the surface
 	if (!isVertex) {
 	  double pos[3];
@@ -942,8 +903,9 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	  double phi = TMath::ATan2(pos[1],pos[0]);
 	  if ( TMath::Abs(TMath::Abs(phi)-TMath::Pi()/2)<1e-3) phi = 0;//TMath::Sign(TMath::Pi()/2 - 1e-3,phi);
 	  if (!probTr.Rotate(phi)) {
-	    printf("Failed to rotate to the frame (phi:%+.3f)of layer at %.2f at XYZ: %+.3f %+.3f %+.3f\n",
-		   phi,layer->radius,pos[0],pos[1],pos[2]);
+	    printf("Failed to rotate to the frame (phi:%+.3f)of layer at %.2f at XYZ: %+.3f %+.3f %+.3f (pt=%+.3f)\n",
+		   phi,layer->radius,pos[0],pos[1],pos[2],pt);
+	    
 	    probTr.Print();
 	    exit(1);
 	  }
@@ -961,6 +923,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	double meas[2] = {probTr.GetY(),probTr.GetZ()};
 	double measErr2[3] = {layer->phiRes*layer->phiRes,0,layer->zRes*layer->zRes};
 	//
+
 	if (!probTr.Update(meas,measErr2)) {
 	  printf("Failed to update the track by measurement {%.3f,%3f} err {%.3e %.3e %.3e}\n",
 		 meas[0],meas[1], measErr2[0],measErr2[1],measErr2[2]);
@@ -983,7 +946,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       // Convert the Convariance matrix parameters into physical quantities
       // The results are propogated to the previous point but *do not* include the measurement at that point.
       //      deltaPoverP          =  TMath::Sqrt(probTr.GetSigma1Pt2())/probTr.Get1P();  // Absolute magnitude so ignore charge
-      deltaPoverP          =  TMath::Sqrt(probTr.GetSigma1Pt2())/probTr.Get1P();  
+      deltaPoverP          =  TMath::Sqrt(probTr.GetSigma1Pt2())/TMath::Abs(probTr.GetSigned1Pt());
       fMomentumRes[i]      =  100.* TMath::Abs( deltaPoverP );                    // results in percent
       fResolutionRPhi[i]   =  TMath::Sqrt( probTr.GetSigmaY2() ) * 1.e4;          // result in microns
       fResolutionZ[i]      =  TMath::Sqrt( probTr.GetSigmaZ2() ) * 1.e4;          // result in microns
@@ -1052,7 +1015,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 		printf("        -  \n");
 	    }
 
-	    if (!name.Contains("tpc"))   fEfficiency[massloop][i] *= layerEfficiency;
+	    if (!name.Contains("tpc") && !name.Contains("trd"))   fEfficiency[massloop][i] *= layerEfficiency;
 	    
 	    
 	}
@@ -1072,14 +1035,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	*/
       }
       if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) {
-	if (fNumberOfActiveLayers >=15) printOnce = 0 ;
+	if (fNumberOfActiveLayers >=1500) printOnce = 0 ;
 	printf("\n")  ;
       }
       
 
 
 
-      if (fNumberOfActiveLayers <15 ) {
+      if (fNumberOfActiveLayers <1500 ) {
 
 
 
@@ -1139,13 +1102,8 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
 	  TString name(layer->GetName());
 	  Bool_t isVertex = name.Contains("vertex");
-	  //
-	  if (!GetXatLabR(&probTr, layer->radius ,xR,bGauss)) { 
-	    printf("Track with pt=%f cannot reach radius %f. This should not happen here\n",pt,layer->radius);
-	    probTr.Print();
-	    exit(1);
-	  }
-	  probTr.PropagateTo(xR, bGauss);        // propagate to this layer
+	  if (!PropagateToR(&probTr, layer->radius,bGauss,1)) exit(1);
+	  //if (!probTr.PropagateTo(last->radius,bGauss))  exit(1);
 	  if (!isVertex) {
 	    // rotate to frame with X axis normal to the surface
 	    double pos[3];
@@ -1153,8 +1111,9 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	    double phi = TMath::ATan2(pos[1],pos[0]);
 	    if ( TMath::Abs(TMath::Abs(phi)-TMath::Pi()/2)<1e-3) phi = 0;//TMath::Sign(TMath::Pi()/2 - 1e-3,phi);
 	    if (!probTr.Rotate(phi)) {
-	      printf("Failed to rotate to the frame (phi:%+.3f)of layer at %.2f at XYZ: %+.3f %+.3f %+.3f\n",
-		     phi,layer->radius,pos[0],pos[1],pos[2]);
+	      printf("Failed to rotate to the frame (phi:%+.3f)of layer at %.2f at XYZ: %+.3f %+.3f %+.3f (pt=%+.3f)\n",
+		     phi,layer->radius,pos[0],pos[1],pos[2],pt);
+	      
 	      probTr.Print();
 	      exit(1);
 	    }
@@ -1201,12 +1160,15 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	fResolutionZ[i]     =  TMath::Sqrt( mIstar(1,1) ) * 1.e6            ;  // result in microns
 	//      equivalent[i]  =  TMath::Sqrt(fResolutionRPhi[i]*fResolutionZ[i])           ;  // Equivalent circular radius
         */
-  	
+	
+	//	deltaPoverP          =  TMath::Sqrt(probTr.GetSigma1Pt2())/TMath::Abs(probTr.GetSigned1Pt());
+	//	fMomentumRes[i]      =  100.* TMath::Abs( deltaPoverP );                    // results in percent
+  
 	// Weighted combination of the forward and backward estimates
 	if (!doLikeAliRoot) {
 	  for (Int_t j=(fLayers.GetEntries()-1); j>=0; j--) {  
-	    fDetPointRes[j][i] = 1/(1/detPointResForw[j][i] + 1/fDetPointRes[j][i]); 
-	    fDetPointZRes[j][i] = 1/(1/detPointZResForw[j][i] + 1/fDetPointZRes[j][i]); 
+	    fDetPointRes[j][i] = detPointResForw[j][i]*fDetPointRes[j][i]/TMath::Sqrt((detPointResForw[j][i]*detPointResForw[j][i]) + (fDetPointRes[j][i]*fDetPointRes[j][i])); 
+	    fDetPointZRes[j][i] = detPointZResForw[j][i]*fDetPointZRes[j][i]/TMath::Sqrt((detPointZResForw[j][i]*detPointZResForw[j][i]) + (fDetPointZRes[j][i]*fDetPointZRes[j][i])); 
 	  }
 	}
 	// Set Detector-Efficiency Storage area to unity
@@ -1227,13 +1189,12 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	  Bool_t isDead = layer->isDead;
 	
 
+	  Double_t layerEfficiency = 0;
 	  if ( (!isDead && radLength >0) )  { 
 	    Double_t rphiError  =  TMath::Sqrt( fDetPointRes[j][i] * fDetPointRes [j][i] + 
 						phiRes * phiRes ) * 100.  ; // work in cm
 	    Double_t zError     =  TMath::Sqrt( fDetPointZRes[j][i] * fDetPointZRes[j][i] +
 						zRes * zRes ) * 100.  ; // work in cm
-	    
-	    Double_t layerEfficiency = 0;
 	    if ( EfficiencySearchFlag == 0 )
 	      layerEfficiency =  ProbGoodHit( radius*100, rphiError , zError  ) ;
 	    else if ( EfficiencySearchFlag == 1 )
@@ -1264,8 +1225,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 		printf("        -  \n");
 	    }
 
-	    if (!name.Contains("tpc")) fEfficiency[massloop][i] *= layerEfficiency;
-	    
+	    if (massloop==2 && j==kDetLayer) 	{ // copy layer specific performances
+	      fEfficProlongLay[i] = layerEfficiency;
+	    }
+
+	    if (!name.Contains("tpc") && !name.Contains("trd"))   fEfficiency[massloop][i] *= layerEfficiency;
+
+
+
 	  }
 	  if (fAtLeastCorr != -1) {
 	    // Calculate probabilities from Kombinatorics tree ...
@@ -1279,12 +1246,22 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	  printf("\n")  ;
 	}
       }      
-    } // mass loop
-  } // pt loop
+
+      if (massloop==2) 	{ // copy layer specific performances
+	fResolutionRPhiLay[i] = fDetPointRes[kDetLayer][i];
+	fResolutionZLay[i] = fDetPointZRes[kDetLayer][i];
+      }
+      
+    } // pt loop
+    
+
+
+  } // mass loop
 
   probTr.SetUseLogTermMS(kFALSE); // Reset of MS term usage to avoid problems since its static
 
-
+  
+ 
 }
 
 
@@ -1303,8 +1280,8 @@ TGraph * DetectorK::GetGraphMomentumResolution(Int_t color, Int_t linewidth) {
   graph->GetYaxis()->SetTitle("Momentum Resolution (%)") ;
   graph->GetYaxis()->CenterTitle();
 
-  graph->SetMaximum(20) ;
-  graph->SetMinimum(0.1) ;
+  graph->SetMaximum(20);
+  graph->SetMinimum(0.1);
   graph->SetLineColor(color);
   graph->SetMarkerColor(color);
   graph->SetLineWidth(linewidth);
@@ -1347,6 +1324,56 @@ TGraph * DetectorK::GetGraphPointingResolution(Int_t axis, Int_t color, Int_t li
   return graph;
 
 }
+
+TGraph * DetectorK::GetGraphLayerInfo(Int_t plot, Int_t color, Int_t linewidth) {
+ 
+  // Returns the pointing resolution
+  // plot = 0 ... rphi pointing resolution
+  // plot = 1 ... z pointing resolution
+  // plot = 2 ... prolongation efficiency (outwards)
+  //
+
+   
+  Double_t fDet[kNptBins]; 
+  for ( Int_t i = 0 ; i < kNptBins ; i++ ) { // pt loop
+    if (plot==0) 
+      fDet[i] = fResolutionRPhiLay[i]*1e6; // in microns
+    else if (plot==1)
+      fDet[i] = fResolutionZLay[i]*1e6;    // in microns
+    else 
+      fDet[i] = fEfficProlongLay[i]*100;   // in percent
+  }
+ 
+  CylLayerK *l = (CylLayerK*) fLayers.At(kDetLayer);
+  TGraph * graph =  0;
+  graph =  new TGraph ( kNptBins, fTransMomenta, fDet ) ;
+  if (plot==0) {
+    graph->SetTitle(Form("R-#phi Pointing Resolution onto layer \"%s\"",(char*)l->GetName()) );
+    graph->GetYaxis()->SetTitle("R-#phi Pointing Resolution (#mum)") ;
+  } else if (plot==1){
+    graph->SetTitle(Form("Z Pointing Resolution onto layer \"%s\"",(char*)l->GetName()) ) ;
+    graph->GetYaxis()->SetTitle("Z Pointing Resolution (#mum)") ;
+  } else {
+    graph->SetTitle(Form("Prolongation efficiency onto layer \"%s\"",(char*)l->GetName()) ) ;
+    graph->GetYaxis()->SetTitle("Prolongation efficiency (%)") ;
+    graph->SetMinimum(0);
+    graph->SetMaximum(100);
+  }
+  
+  graph->GetXaxis()->SetTitle("Transverse Momentum (GeV/c)") ;
+  graph->GetXaxis()->CenterTitle();
+  graph->GetXaxis()->SetNoExponent(1) ;
+  graph->GetXaxis()->SetMoreLogLabels(1) ;
+  graph->GetYaxis()->CenterTitle();
+  
+  graph->SetLineWidth(linewidth);
+  graph->SetLineColor(color);
+  graph->SetMarkerColor(color);
+  
+  return graph;
+
+}
+
 
 
 TGraph * DetectorK::GetGraphPointingResolutionTeleEqu(Int_t axis,Int_t color, Int_t linewidth) {
@@ -1748,11 +1775,11 @@ void DetectorK::MakeAliceAllNew(Bool_t flagTPC,Bool_t flagMon) {
   }
   
   AddLayer((char*)"ddd1",  2.2 ,  x0, resRPhi, resZ); 
-  AddLayer((char*)"ddd2",  3.8 ,  x0, resRPhi, resZ); 
-  AddLayer((char*)"ddd3",  6.8 ,  x0, resRPhi, resZ); 
-  AddLayer((char*)"ddd4", 12.4 ,  x0, resRPhi, resZ); 
-  AddLayer((char*)"ddd5", 23.5 ,  x0, resRPhi, resZ); 
-  AddLayer((char*)"ddd6", 39.6 ,  x0, resRPhi, resZ); 
+  AddLayer((char*)"ddd2",  2.8 ,  x0, resRPhi, resZ); 
+  AddLayer((char*)"ddd3",  3.6 ,  x0, resRPhi, resZ); 
+  AddLayer((char*)"ddd4", 20.0 ,  x0, resRPhi, resZ); 
+  AddLayer((char*)"ddd5", 22.0 ,  x0, resRPhi, resZ); 
+  AddLayer((char*)"ddd6", 41.0 ,  x0, resRPhi, resZ); 
   AddLayer((char*)"ddd7", 43.0 ,  x0, resRPhi, resZ); 
  
   if (flagTPC) {
@@ -1906,7 +1933,7 @@ void DetectorK::MakeStandardPlots(Bool_t add, Int_t color, Int_t linewidth,Bool_
 }
 
 
-Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, Double_t bz, Int_t dir) const
+Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, Double_t bz, Int_t dir)
 {
   // Get local X of the track position estimated at the radius lab radius r. 
   // The track curvature is accounted exactly
@@ -1986,7 +2013,7 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
     double x0 = fx - sn*tR;
     double y0 = fy + cs*tR;
     double r0 = TMath::Sqrt(x0*x0+y0*y0);
-    //    printf("Xc:%+e Yc:%+e\n",x0,y0);
+    //    printf("Xc:%+e Yc:%+e tR:%e r0:%e\n",x0,y0,tR,r0);
     //
     if (r0<=kAlmost0) return kFALSE;            // the track is concentric to circle
     tR = TMath::Abs(tR);
@@ -2068,7 +2095,7 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
     if (flCorr>=fkAtLeastCorr && flFake==0) { // at least correct but zero fake
       Double_t probEffLayer = 1;
       for (Int_t l=0; l<nLayer; l++) {
-	probEffLayer *=  tProbLay(tProbKomb(num,l),l);
+	probEffLayer *=  tProbLay((Int_t)tProbKomb(num,l),l);
 	//	cout<<a(num,l)<<" ";
       }
       //      cout<<endl;
@@ -2078,7 +2105,7 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
     if (flFake>=fAtLeastFake) {
       Double_t probFakeLayer = 1;
       for (Int_t l=0; l<nLayer; l++) {
-	probFakeLayer *=  tProbLay(tProbKomb(num,l),l);
+	probFakeLayer *=  tProbLay((Int_t)tProbKomb(num,l),l);
 	//	cout<<a(num,l)<<" ";
       }
       //      cout<<endl;
@@ -2090,4 +2117,32 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
   probs[0] = probEff; probs[1] = probFake;
   return probs;
 
+}
+
+//____________________________________
+Bool_t DetectorK::PropagateToR(AliExternalTrackParam* trc, double r, double b, int dir) 
+{
+  // go to radius R
+  //
+  double xR = 0;
+  double rr = r*r;
+  int iter = 0;
+  const double kTiny = 1e-6;
+  while(1) {
+    if (!GetXatLabR(trc, r ,xR, b, dir)) {
+      printf("Track with pt=%f cannot reach radius %f\n",trc->Pt(),r);
+      trc->Print();
+      return kFALSE;
+    }
+    if (!trc->PropagateTo(xR, b)) {printf("Failed to propagate to X=%f for R=%f\n",xR,r); trc->Print(); return kFALSE;}
+    double rcurr2 = xR*xR + trc->GetY()*trc->GetY();
+    if (TMath::Abs(rcurr2-rr)<kTiny || rr<kTiny) return kTRUE;
+    //
+    // two radii correspond to this X...
+    double pos[3]; trc->GetXYZ(pos);
+    double phi = TMath::ATan2(pos[1],pos[0]); //TMath::ASin( trc->GetSnp() );
+    if (!trc->Rotate(phi)) {printf("Failed to rotate to %f to propagate to R=%f\n",phi,r); trc->Print(); return kFALSE;}
+    if (++iter>8) {printf("Failed to propagate to R=%f after %d steps\n",r,iter); trc->Print(); return kFALSE;}
+  } 
+  return kTRUE;
 }
