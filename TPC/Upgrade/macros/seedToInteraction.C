@@ -54,13 +54,14 @@ void seedToInteraction(Bool_t bPlotOnly = kTRUE, Int_t maxPoints = -1, TString i
     // Loop over all events
     //
     Int_t nEvents = tree->GetEntriesFast();
-    nEvents=1;//for testing only
+    //nEvents=1;//for testing only
     cout<<"Process "<<nEvents<<" events..."<<endl;
     
     Int_t nTracks = 0; // number of tracks per event
     Int_t nSP     = 0; // number of space points per track
     Int_t nDSP    = 0; // number of distorted space points per track
-    Double_t t0   = 0.;
+    Double_t t0   = 0.;// real time 0
+    Double_t tDrift = 0.0000943;// full dift time = 94.3 us
     
     AliToyMCTrack         *mcTrack              = NULL;
     AliExternalTrackParam *recTrack             = NULL;
@@ -92,13 +93,13 @@ void seedToInteraction(Bool_t bPlotOnly = kTRUE, Int_t maxPoints = -1, TString i
 	for(Int_t iSP = 0; iSP < nSP; iSP++){
 	  AliTPCclusterMI *point = (AliTPCclusterMI *)(mcTrack->GetSpacePoint(iSP))->Clone();
 	  point->SetZ(point->GetTimeBin());
-	  pointArray.AddPoint(iSP, point->MakePoint(point) );     
+	  pointArray.AddPoint(iSP, point->MakePoint() );     
 	}
 	
 	for(Int_t iDSP = 0; iDSP < nDSP; iDSP++){	
 	  AliTPCclusterMI *pointDist = (AliTPCclusterMI *)(mcTrack->GetDistortedSpacePoint(iDSP))->Clone();
 	  pointDist->SetZ(pointDist->GetTimeBin());
-	  pointArrayDist.AddPoint(iDSP, pointDist->MakePoint(pointDist) );      
+	  pointArrayDist.AddPoint(iDSP, pointDist->MakePoint() );      
 	}
 
 	// for(Int_t iDSP = 0; iDSP < nDSP; iDSP++){	
@@ -147,11 +148,11 @@ void seedToInteraction(Bool_t bPlotOnly = kTRUE, Int_t maxPoints = -1, TString i
 	// only for good tracks
 	if(recTrack->GetY() > -50 && recTrack->GetY() < 50){
 	  hT0Ideal->Fill(recTrack->GetZ());
-	  hT0DiffIdeal->Fill(recTrack->GetZ()-t0);
+	  hT0DiffIdeal->Fill(recTrack->GetZ()-t0-tDrift);
 	}
 	if(recTrackDist->GetY() > -50 && recTrackDist->GetY() < 50){
 	  hT0Dist->Fill(recTrackDist->GetZ());
-	  hT0DiffDist->Fill(recTrackDist->GetZ()-t0);
+	  hT0DiffDist->Fill(recTrackDist->GetZ()-t0-tDrift);
 	}
       }
     }
@@ -164,6 +165,10 @@ void seedToInteraction(Bool_t bPlotOnly = kTRUE, Int_t maxPoints = -1, TString i
     hT0Dist->Write();
     hT0DistCorr->Write();
     hT0DistCorrFull->Write();
+    hT0DiffIdeal->Write();
+    hT0DiffDist->Write();
+    hT0DiffDistCorr->Write();
+    hT0DiffDistCorrFull->Write();
     fOut->Close();
     
     delete pcstream;
@@ -246,6 +251,10 @@ void seedToInteraction(Bool_t bPlotOnly = kTRUE, Int_t maxPoints = -1, TString i
   TH1F  *hT0Dist         = (TH1F*)f->Get("hT0Dist");
   TH1F  *hT0DistCorr     = (TH1F*)f->Get("hT0DistCorr");
   TH1F  *hT0DistCorrFull = (TH1F*)f->Get("hT0DistCorrFull");
+  TH1F  *hT0DiffIdeal        = (TH1F*)f->Get("hT0DiffIdeal");
+  TH1F  *hT0DiffDist         = (TH1F*)f->Get("hT0DiffDist");
+  TH1F  *hT0DiffDistCorr     = (TH1F*)f->Get("hT0DiffDistCorr");
+  TH1F  *hT0DiffDistCorrFull = (TH1F*)f->Get("hT0DiffDistCorrFull");
 
   // track (5 parameters)
   TCanvas *canvasT0 = new TCanvas("canvasT0","canvasT0",1200,900);
@@ -267,6 +276,20 @@ void seedToInteraction(Bool_t bPlotOnly = kTRUE, Int_t maxPoints = -1, TString i
   hT0DistCorrFull->SetMarkerColor(2);
   hT0DistCorrFull->SetLineColor(2);
   hT0DistCorrFull->DrawCopy("same");
+
+  canvasT0->cd(2);
+  hT0DiffIdeal->SetMarkerColor(1);
+  hT0DiffIdeal->SetLineColor(1);
+  hT0DiffIdeal->DrawCopy();
+  hT0DiffDist->SetMarkerColor(2);
+  hT0DiffDist->SetLineColor(2);
+  hT0DiffDist->DrawCopy("same");
+  hT0DiffDistCorr->SetMarkerColor(2);
+  hT0DiffDistCorr->SetLineColor(2);
+  hT0DiffDistCorr->DrawCopy("same");
+  hT0DiffDistCorrFull->SetMarkerColor(2);
+  hT0DiffDistCorrFull->SetLineColor(2);
+  hT0DiffDistCorrFull->DrawCopy("same");
 
   if(maxPoints > 0){
     canvasT0->SaveAs(Form("seedToInteraction_T0_%dSP.eps",maxPoints));

@@ -47,9 +47,11 @@ void testRec(Int_t nmaxEv=-1)
     for (Int_t itr=0; itr<ev->GetNumberOfTracks(); ++itr){
       printf("==============  Processing Track %6d\n",itr);
       Float_t t0event=ev->GetT0();
+      Float_t z0event=ev->GetZ();
       (*fStreamer) << "Tracks" <<
         "iev="    << iev <<
         "t0="     <<  t0event <<
+        "z0="     <<  z0event <<
         "itrack=" << itr;
         
       AliToyMCTrack *tr=ev->GetTrack(itr);
