@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
- // last change: 2011-04-04 by M.Knichel
+ // last change: 2013-06-13 by M.Knichel
 
 #include "AliESDtrackCuts.h"  
 #include "AlidNdPtEventCuts.h"
@@ -30,7 +30,9 @@ AlidNdPt::AlidNdPt(): TNamed()
 , fdNdPtEventCuts(0)
 , fdNdPtAcceptanceCuts(0)
 , fdNdPtRecAcceptanceCuts(0)
+, fMultAcceptanceCuts(0)
 , fEsdTrackCuts(0)
+, fMultTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
 , fTrigger(AliTriggerAnalysis::kMB1) 
@@ -50,7 +52,9 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fdNdPtEventCuts(0)
 , fdNdPtAcceptanceCuts(0)
 , fdNdPtRecAcceptanceCuts(0)
+, fMultAcceptanceCuts(0)
 , fEsdTrackCuts(0)
+, fMultTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
 , fTrigger(AliTriggerAnalysis::kMB1) 
@@ -69,7 +73,9 @@ AlidNdPt::AlidNdPt(const AlidNdPt&): TNamed()
 , fdNdPtEventCuts(0)
 , fdNdPtAcceptanceCuts(0)
 , fdNdPtRecAcceptanceCuts(0)
+, fMultAcceptanceCuts(0)
 , fEsdTrackCuts(0)
+, fMultTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
 , fTrigger(AliTriggerAnalysis::kMB1) 
@@ -95,8 +101,10 @@ AlidNdPt::~AlidNdPt() {
   // destructor
   if(fdNdPtEventCuts) delete fdNdPtEventCuts; fdNdPtEventCuts=NULL; 
   if(fdNdPtAcceptanceCuts) delete fdNdPtAcceptanceCuts; fdNdPtAcceptanceCuts=NULL;
+  if(fMultAcceptanceCuts) delete fMultAcceptanceCuts; fMultAcceptanceCuts=NULL;
   if(fdNdPtRecAcceptanceCuts) delete fdNdPtRecAcceptanceCuts; fdNdPtRecAcceptanceCuts=NULL;  
   if(fEsdTrackCuts) delete fEsdTrackCuts; fEsdTrackCuts=NULL;
+  if(fMultTrackCuts) delete fMultTrackCuts; fMultTrackCuts=NULL;
   if(fPhysicsSelection) delete fPhysicsSelection; fPhysicsSelection=NULL;
   if(fdNdPtBackgroundCuts) delete fdNdPtBackgroundCuts; fdNdPtBackgroundCuts=NULL;
 }

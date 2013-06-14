@@ -5,7 +5,7 @@
 // Abstract class for dNdPt analysis. All dNdPt components should derive from it.   
 // 
 // Author: J.Otwinowski 03/11/2008 
-// last change: 2011-04-04 by M.Knichel
+// last change: 2011-06-13 by M.Knichel
 //------------------------------------------------------------------------------
 
 class AliESDEvent; 
@@ -46,9 +46,11 @@ public:
 
   //
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
-  void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fdNdPtAcceptanceCuts = cuts; }
+  void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fdNdPtAcceptanceCuts = cuts; }  
   void SetRecAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts) { fdNdPtRecAcceptanceCuts = cuts; }
+  void SetMultAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts){ fMultAcceptanceCuts = cuts; }  
   void SetTrackCuts(AliESDtrackCuts* const cuts)                { fEsdTrackCuts = cuts; }
+  void SetMultTrackCuts(AliESDtrackCuts* const cuts)            { fMultTrackCuts = cuts; }
   void SetUseMCInfo(const Bool_t info)                          { fUseMCInfo = info; }
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
@@ -59,8 +61,10 @@ public:
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
-  AlidNdPtAcceptanceCuts* GetRecAcceptanceCuts() const          { return fdNdPtRecAcceptanceCuts; }  
+  AlidNdPtAcceptanceCuts* GetMultAcceptanceCuts() const         { return (fMultAcceptanceCuts) ? fMultAcceptanceCuts : fdNdPtAcceptanceCuts; }
+  AlidNdPtAcceptanceCuts* GetRecAcceptanceCuts() const          { return fdNdPtRecAcceptanceCuts; }    
   AliESDtrackCuts* GetTrackCuts() const                         { return fEsdTrackCuts; }
+  AliESDtrackCuts* GetMultTrackCuts() const                     { return (fMultTrackCuts) ? fMultTrackCuts: fEsdTrackCuts; }  
   Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
@@ -91,7 +95,9 @@ private:
   AlidNdPtEventCuts      *fdNdPtEventCuts;      // event cuts
   AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; // acceptance cuts  
   AlidNdPtAcceptanceCuts *fdNdPtRecAcceptanceCuts; // additional recontruction acceptance cuts (not used for MC truth)
+  AlidNdPtAcceptanceCuts *fMultAcceptanceCuts; // acceptance cuts for multiplicity estimator
   AliESDtrackCuts *fEsdTrackCuts;               // esd track cuts
+  AliESDtrackCuts *fMultTrackCuts;               // esd track cuts for multiplicity estimator
 
   Bool_t fUseMCInfo;                            // use MC information
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
@@ -107,7 +113,7 @@ private:
 
   UInt_t fTriggerMask;    // trigger mask
 
-  ClassDef(AlidNdPt,5);
+  ClassDef(AlidNdPt,6);
 };
 
 #endif
