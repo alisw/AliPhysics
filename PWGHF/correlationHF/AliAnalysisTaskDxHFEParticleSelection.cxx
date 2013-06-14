@@ -161,8 +161,13 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
     AliRDHFCutsD0toKpi* cuts=new AliRDHFCutsD0toKpi();
     cuts->SetStandardCutsPP2010();
     fCutsD0=cuts;
+    if (fSystem==2)
+      {
+	cuts->SetTriggerMask(AliVEvent::kINT7); //pPb
+	cuts->SetTriggerClass(""); //pPb  
+      }
   }
-
+  
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fElectrons failed with error %d", iResult));
   }

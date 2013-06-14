@@ -266,6 +266,7 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       argument.ReplaceAll("system=", "");
       if (argument.CompareTo("pp")==0) fSystem=0;
       else if (argument.CompareTo("Pb-Pb")==0) fSystem=1;
+      else if (argument.CompareTo("p-Pb")==0) fSystem=0; //Temporary set to the same as pp. Should be fixed. -Pil
       else {
 	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
 	// TODO: check what makes sense

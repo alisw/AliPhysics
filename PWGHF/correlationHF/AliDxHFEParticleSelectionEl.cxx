@@ -456,7 +456,7 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
 
 int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* pEvent)
 {
-  /// select El candidates
+  // select El candidates
   if(!pEvent){
     AliError("No event information");
     return 0;
@@ -536,7 +536,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   if(fStoreCutStepInfo) fSurvivedCutStep=kRecPrim;
   if(fFinalCutStep==kRecPrim) {AliDebug(2,"Returns after kRecPrim"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
 
-  // HFEcuts: ITS layers cuts
+   // HFEcuts: ITS layers cuts
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) {
     AliDebug(4,"Cut: kStepHFEcutsITS");
     ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsITS);
@@ -572,7 +572,6 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   ((TH1D*)fHistoList->FindObject("fTPCnClSingleTrackCuts"))->Fill(track->GetTPCNcls());
 
   if(fFinalCutStep==kHFEcutsTPC) {AliDebug(2,"Returns after track cuts"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-
 
   //--------PID selection-----------------------
   AliHFEpidObject hfetrack;
