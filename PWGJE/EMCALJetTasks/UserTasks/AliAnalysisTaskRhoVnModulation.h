@@ -96,6 +96,10 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
         void                    SetSetPtSub(Bool_t s)                           {fSetPtSub = s; }
         void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
+        // local cuts
+        void                    SetLocalJetMinMaxEta(Float_t min, Float_t max)  {fLocalJetMinEta = min; fLocalJetMaxEta = max;}
+        void                    SetLocalJetMinMaxEta(Float_t R)                 {fLocalJetMinEta = - 0.9 + R; fLocalJetMaxEta = 0.9 - R; }
+        void                    SetLocalJetMinMaxPhi(Float_t min, Float_t max)  {fLocalJetMinPhi = min; fLocalJetMaxEta = max;}
         // 'trivial' helper calculations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
@@ -125,6 +129,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    FillDeltaPhiHistograms(Double_t vzero[2][2], Double_t* tpc) const;
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
+        void                    FillAnalysisSummaryHistogram() const;
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
         void                    SetOutputList(TList* l) {fOutputList = l;}
@@ -156,6 +161,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         const char*             fNameJetClones;         //! collection of tclones array with jets
         const char*             fNamePicoTrackClones;   //! collection of tclones with pico tracks
         const char*             fNameRho;               //! name of rho
+        // additional jet cuts (most are inherited)
+        Float_t                 fLocalJetMinEta;        // local eta cut for jets
+        Float_t                 fLocalJetMaxEta;        // local eta cut for jets
+        Float_t                 fLocalJetMinPhi;        // local phi cut for jets
+        Float_t                 fLocalJetMaxPhi;        // local phi cut for jets
         // event cuts
         Float_t                 fAbsVertexZ;            // cut on zvertex
         // general qa histograms
@@ -250,7 +260,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 9);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 10);
 };
 
 #endif

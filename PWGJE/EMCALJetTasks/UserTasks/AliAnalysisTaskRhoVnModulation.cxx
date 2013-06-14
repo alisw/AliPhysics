@@ -61,7 +61,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -112,7 +112,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(0.4), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fNAcceptedTracks(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV3(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -187,6 +187,9 @@ Bool_t AliAnalysisTaskRhoVnModulation::InitializeAnalysis()
 {
     // initialize the anaysis
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    if(fRandomConeRadius <= 0) fRandomConeRadius = fJetRadius;
+    if(fLocalJetMinEta > -10 && fLocalJetMaxEta > -10) SetJetEtaLimits(fLocalJetMinEta, fLocalJetMaxEta);
+    if(fLocalJetMinPhi > -10 && fLocalJetMaxPhi > -10) SetJetPhiLimits(fLocalJetMinPhi, fLocalJetMaxPhi);
     if(fMinDisanceRCtoLJ==0) fMinDisanceRCtoLJ = .5*fJetRadius;
     if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
     else if(dynamic_cast<AliESDEvent*>(InputEvent())) fDataType = kESD;
@@ -222,6 +225,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::InitializeAnalysis()
         case kGrid : { fFitModulationOptions += "N0"; } break;
         default : break;
     }
+    FillAnalysisSummaryHistogram();
     return kTRUE;
 }
 //_____________________________________________________________________________
@@ -390,97 +394,6 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fOutputList->Add(fProfV2);
     fOutputList->Add(fProfV3);
 
-    // analysis summary histrogram, saves all relevant analysis settigns
-    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 44, -0.5, 44.5);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(1, "fJetRadius"); 
-    fHistAnalysisSummary->SetBinContent(1, fJetRadius);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fPtBiasJetTrack");
-    fHistAnalysisSummary->SetBinContent(2, fPtBiasJetTrack);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(3, "fPtBiasJetClus");
-    fHistAnalysisSummary->SetBinContent(3, fPtBiasJetClus);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(4, "fJetPtCut");
-    fHistAnalysisSummary->SetBinContent(4, fJetPtCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(5, "fJetAreaCut");
-    fHistAnalysisSummary->SetBinContent(5, fJetAreaCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(6, "fPercAreaCut");
-    fHistAnalysisSummary->SetBinContent(6, fPercAreaCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(7, "fAreaEmcCut");
-    fHistAnalysisSummary->SetBinContent(7, fAreaEmcCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(8, "fJetMinEta");
-    fHistAnalysisSummary->SetBinContent(8, fJetMinEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(9, "fJetMaxEta");
-    fHistAnalysisSummary->SetBinContent(9, fJetMaxEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(10, "fJetMinPhi");
-    fHistAnalysisSummary->SetBinContent(10, fJetMinPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(11, "fJetMaxPhi");
-    fHistAnalysisSummary->SetBinContent(11, fJetMaxPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(12, "fMaxClusterPt");
-    fHistAnalysisSummary->SetBinContent(12, fMaxClusterPt);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(13, "fMaxTrackPt");
-    fHistAnalysisSummary->SetBinContent(13, fMaxTrackPt);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(14, "fLeadingHadronType");
-    fHistAnalysisSummary->SetBinContent(14, fLeadingHadronType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(15, "fAnaType");
-    fHistAnalysisSummary->SetBinContent(15, fAnaType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(16, "fForceBeamType");
-    fHistAnalysisSummary->SetBinContent(16, fForceBeamType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(17, "fMinCent");
-    fHistAnalysisSummary->SetBinContent(17, fMinCent);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(18, "fMaxCent");
-    fHistAnalysisSummary->SetBinContent(18, fMaxCent);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(19, "fMinVz");
-    fHistAnalysisSummary->SetBinContent(19, fMinVz);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(20, "fMaxVz");
-    fHistAnalysisSummary->SetBinContent(20, fMaxVz);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(21, "fOffTrigger");
-    fHistAnalysisSummary->SetBinContent(21, fOffTrigger);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(22, "fClusPtCut");
-    fHistAnalysisSummary->SetBinContent(22, fClusPtCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(23, "fTrackPtCut");
-    fHistAnalysisSummary->SetBinContent(23, fTrackPtCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(24, "fTrackMinEta");
-    fHistAnalysisSummary->SetBinContent(24, fTrackMinEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(25, "fTrackMaxEta");
-    fHistAnalysisSummary->SetBinContent(25, fTrackMaxEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(26, "fTrackMinPhi");
-    fHistAnalysisSummary->SetBinContent(26, fTrackMinPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(27, "fTrackMaxPhi");
-    fHistAnalysisSummary->SetBinContent(27, fTrackMaxPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(28, "fClusTimeCutLow");
-    fHistAnalysisSummary->SetBinContent(28, fClusTimeCutLow);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(29, "fClusTimeCutUp");
-    fHistAnalysisSummary->SetBinContent(29, fClusTimeCutUp);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(30, "fMinPtTrackInEmcal");
-    fHistAnalysisSummary->SetBinContent(30, fMinPtTrackInEmcal);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(31, "fEventPlaneVsEmcal");
-    fHistAnalysisSummary->SetBinContent(31, fEventPlaneVsEmcal);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(32, "fMinEventPlane");
-    fHistAnalysisSummary->SetBinContent(32, fMaxEventPlane);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(33, "fRandomConeRadius");
-    fHistAnalysisSummary->SetBinContent(33, fRandomConeRadius);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(34, "fitModulationType");
-    fHistAnalysisSummary->SetBinContent(34, (int)fFitModulationType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(35, "runModeType");
-    fHistAnalysisSummary->SetBinContent(35, (int)fRunModeType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(36, "data type");
-    fHistAnalysisSummary->SetBinContent(36, (int)fDataType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(37, "iterator");
-    fHistAnalysisSummary->SetBinContent(37, 1.);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(38, "fMinPvalue");
-    fHistAnalysisSummary->SetBinContent(38, fMinPvalue);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(39, "fMaxPvalue");
-    fHistAnalysisSummary->SetBinContent(39, fMaxPvalue);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(40, "fExcludeLeadingJetsFromFit");
-    fHistAnalysisSummary->SetBinContent(40, fExcludeLeadingJetsFromFit);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(41, "fRebinSwapHistoOnTheFly");
-    fHistAnalysisSummary->SetBinContent(41, (int)fRebinSwapHistoOnTheFly);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(42, "fUsePtWeight");
-    fHistAnalysisSummary->SetBinContent(42, (int)fUsePtWeight);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(43, "fMinLeadingHadronPt");
-    fHistAnalysisSummary->SetBinContent(43, fMinLeadingHadronPt);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(44, "fExplicitOutlierCut");
-    fHistAnalysisSummary->SetBinContent(44, fExplicitOutlierCut);
-
     if(fFillQAHistograms) {
         fHistRunnumbersEta = new TH2F("fHistRunnumbersEta", "fHistRunnumbersEta", 100, -.5, 99.5, 100, -1.1, 1.1);
         fHistRunnumbersEta->Sumw2();
@@ -489,7 +402,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         fHistRunnumbersPhi->Sumw2();
         fOutputList->Add(fHistRunnumbersPhi);
     }
-
+    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 48, -0.5, 48.5);
     fHistSwap = new TH1F("fHistSwap", "fHistSwap", 20, 0, TMath::TwoPi());
     if(fUsePtWeight) fHistSwap->Sumw2();
 
@@ -1167,6 +1080,108 @@ void AliAnalysisTaskRhoVnModulation::FillQAHistograms(AliVEvent* vevent)
     for(fMappedRunNumber = 0; fMappedRunNumber < 64; fMappedRunNumber++) {
         if(runs[fMappedRunNumber]==runNumber) break;
     }
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskRhoVnModulation::FillAnalysisSummaryHistogram() const
+{
+    // fill the analysis summary histrogram, saves all relevant analysis settigns
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(1, "fJetRadius"); 
+    fHistAnalysisSummary->SetBinContent(1, fJetRadius);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fPtBiasJetTrack");
+    fHistAnalysisSummary->SetBinContent(2, fPtBiasJetTrack);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(3, "fPtBiasJetClus");
+    fHistAnalysisSummary->SetBinContent(3, fPtBiasJetClus);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(4, "fJetPtCut");
+    fHistAnalysisSummary->SetBinContent(4, fJetPtCut);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(5, "fJetAreaCut");
+    fHistAnalysisSummary->SetBinContent(5, fJetAreaCut);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(6, "fPercAreaCut");
+    fHistAnalysisSummary->SetBinContent(6, fPercAreaCut);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(7, "fAreaEmcCut");
+    fHistAnalysisSummary->SetBinContent(7, fAreaEmcCut);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(8, "fJetMinEta");
+    fHistAnalysisSummary->SetBinContent(8, fJetMinEta);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(9, "fJetMaxEta");
+    fHistAnalysisSummary->SetBinContent(9, fJetMaxEta);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(10, "fJetMinPhi");
+    fHistAnalysisSummary->SetBinContent(10, fJetMinPhi);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(11, "fJetMaxPhi");
+    fHistAnalysisSummary->SetBinContent(11, fJetMaxPhi);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(12, "fMaxClusterPt");
+    fHistAnalysisSummary->SetBinContent(12, fMaxClusterPt);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(13, "fMaxTrackPt");
+    fHistAnalysisSummary->SetBinContent(13, fMaxTrackPt);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(14, "fLeadingHadronType");
+    fHistAnalysisSummary->SetBinContent(14, fLeadingHadronType);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(15, "fAnaType");
+    fHistAnalysisSummary->SetBinContent(15, fAnaType);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(16, "fForceBeamType");
+    fHistAnalysisSummary->SetBinContent(16, fForceBeamType);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(17, "fMinCent");
+    fHistAnalysisSummary->SetBinContent(17, fMinCent);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(18, "fMaxCent");
+    fHistAnalysisSummary->SetBinContent(18, fMaxCent);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(19, "fMinVz");
+    fHistAnalysisSummary->SetBinContent(19, fMinVz);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(20, "fMaxVz");
+    fHistAnalysisSummary->SetBinContent(20, fMaxVz);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(21, "fOffTrigger");
+    fHistAnalysisSummary->SetBinContent(21, fOffTrigger);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(22, "fClusPtCut");
+    fHistAnalysisSummary->SetBinContent(22, fClusPtCut);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(23, "fTrackPtCut");
+    fHistAnalysisSummary->SetBinContent(23, fTrackPtCut);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(24, "fTrackMinEta");
+    fHistAnalysisSummary->SetBinContent(24, fTrackMinEta);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(25, "fTrackMaxEta");
+    fHistAnalysisSummary->SetBinContent(25, fTrackMaxEta);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(26, "fTrackMinPhi");
+    fHistAnalysisSummary->SetBinContent(26, fTrackMinPhi);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(27, "fTrackMaxPhi");
+    fHistAnalysisSummary->SetBinContent(27, fTrackMaxPhi);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(28, "fClusTimeCutLow");
+    fHistAnalysisSummary->SetBinContent(28, fClusTimeCutLow);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(29, "fClusTimeCutUp");
+    fHistAnalysisSummary->SetBinContent(29, fClusTimeCutUp);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(30, "fMinPtTrackInEmcal");
+    fHistAnalysisSummary->SetBinContent(30, fMinPtTrackInEmcal);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(31, "fEventPlaneVsEmcal");
+    fHistAnalysisSummary->SetBinContent(31, fEventPlaneVsEmcal);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(32, "fMinEventPlane");
+    fHistAnalysisSummary->SetBinContent(32, fMaxEventPlane);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(33, "fRandomConeRadius");
+    fHistAnalysisSummary->SetBinContent(33, fRandomConeRadius);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(34, "fitModulationType");
+    fHistAnalysisSummary->SetBinContent(34, (int)fFitModulationType);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(35, "runModeType");
+    fHistAnalysisSummary->SetBinContent(35, (int)fRunModeType);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(36, "data type");
+    fHistAnalysisSummary->SetBinContent(36, (int)fDataType);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(37, "iterator");
+    fHistAnalysisSummary->SetBinContent(37, 1.);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(38, "fMinPvalue");
+    fHistAnalysisSummary->SetBinContent(38, fMinPvalue);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(39, "fMaxPvalue");
+    fHistAnalysisSummary->SetBinContent(39, fMaxPvalue);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(40, "fExcludeLeadingJetsFromFit");
+    fHistAnalysisSummary->SetBinContent(40, fExcludeLeadingJetsFromFit);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(41, "fRebinSwapHistoOnTheFly");
+    fHistAnalysisSummary->SetBinContent(41, (int)fRebinSwapHistoOnTheFly);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(42, "fUsePtWeight");
+    fHistAnalysisSummary->SetBinContent(42, (int)fUsePtWeight);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(43, "fMinLeadingHadronPt");
+    fHistAnalysisSummary->SetBinContent(43, fMinLeadingHadronPt);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(44, "fExplicitOutlierCut");
+    fHistAnalysisSummary->SetBinContent(44, fExplicitOutlierCut);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(45, "fLocalJetMinEta");
+    fHistAnalysisSummary->SetBinContent(45,fLocalJetMinEta );
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(46, "fLocalJetMaxEta");
+    fHistAnalysisSummary->SetBinContent(46, fLocalJetMaxEta);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(47, "fLocalJetMinPhi");
+    fHistAnalysisSummary->SetBinContent(47, fLocalJetMinPhi);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(48, "fLocalJetMaxPhi");
+    fHistAnalysisSummary->SetBinContent(48, fLocalJetMaxPhi);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::Terminate(Option_t *)
