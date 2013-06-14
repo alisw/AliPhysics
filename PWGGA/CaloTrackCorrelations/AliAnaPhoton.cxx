@@ -86,6 +86,8 @@ AliAnaPhoton::AliAnaPhoton() :
     fhEtaPhiTriggerEMCALBCUMBadCluster(0),       fhTimeTriggerEMCALBCUMBadCluster(0),
     fhEtaPhiTriggerEMCALBCBadExoticCluster(0),   fhTimeTriggerEMCALBCBadExoticCluster(0),
     fhEtaPhiTriggerEMCALBCUMBadExoticCluster(0), fhTimeTriggerEMCALBCUMBadExoticCluster(0),
+    fhTimeTriggerEMCALBCBadMaxCell(0),           fhTimeTriggerEMCALBCUMBadMaxCell(0),
+    fhTimeTriggerEMCALBCBadMaxCellExotic(0),     fhTimeTriggerEMCALBCUMBadMaxCellExotic(0),
     fhEtaPhiNoTrigger(0),                        fhTimeNoTrigger(0),
 
     fhEPhoton(0),                 fhPtPhoton(0),
@@ -292,9 +294,10 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
       else                        fhEtaPhiEMCALBCN->Fill(etacluster, phicluster);
     }
     
-    Int_t bc = GetReader()->GetTriggerClusterBC();
-    Int_t id = GetReader()->GetTriggerClusterId();
-    
+    Int_t  bc     = GetReader()->GetTriggerClusterBC();
+    Int_t  id     = GetReader()->GetTriggerClusterId();
+    Bool_t badMax = GetReader()->IsBadMaxCellTriggerEvent();
+
     if(id==-2)
     {
       //printf("AliAnaPhoton::ClusterSelected() - No trigger found bc=%d\n",bc);
@@ -356,23 +359,14 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
         {
           if(ecluster > 2) fhEtaPhiTriggerEMCALBCBadExotic->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCBadExotic->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCBadExoticCluster->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCBadExoticCluster  ->Fill(ecluster, tofcluster);
-          }
+          if(badMax)  fhTimeTriggerEMCALBCBadMaxCellExotic->Fill(ecluster, tofcluster);
         }
         else
         {
           if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBadExotic->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCUMBadExotic->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCUMBadExoticCluster->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCUMBadExoticCluster  ->Fill(ecluster, tofcluster);
-          }
+          if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCellExotic->Fill(ecluster, tofcluster);
+
         }
       }// Bad and exotic cluster trigger
       else if(GetReader()->IsBadCellTriggerEvent() )
@@ -381,23 +375,13 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
         {
           if(ecluster > 2) fhEtaPhiTriggerEMCALBCBad->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCBad->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCBadCluster->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCBadCluster  ->Fill(ecluster, tofcluster);
-          }
+          if(badMax)  fhTimeTriggerEMCALBCBadMaxCell->Fill(ecluster, tofcluster);
         }
         else
         {
           if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBad->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCUMBad->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCUMBadCluster->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCUMBadCluster  ->Fill(ecluster, tofcluster);
-          }
+          if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCell->Fill(ecluster, tofcluster);
         }
       }// Bad cluster trigger
       else if(GetReader()->IsExoticEvent() )
@@ -406,29 +390,17 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
         {
           if(ecluster > 2) fhEtaPhiTriggerEMCALBCExotic->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCExotic->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCExoticCluster->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCExoticCluster  ->Fill(ecluster, tofcluster);
-          }
         }
         else
         {
           if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMExotic->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCUMExotic->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCUMExoticCluster->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCUMExoticCluster  ->Fill(ecluster, tofcluster);
-          }
         }
       }
     }
     else if(TMath::Abs(bc) >= 6)
       printf("AliAnaPhoton::ClusterSelected() - Trigger BC not expected = %d\n",bc);
-  
+    
   }
   
   //.......................................
@@ -2009,6 +1981,39 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhTimeTriggerEMCALBCUMBadExoticCluster->SetYTitle("time (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBCUMBadExoticCluster);
     
+    fhTimeTriggerEMCALBCBadMaxCell = new TH2F
+    ("hTimeTriggerBadMaxCell",
+     "cluster time vs E of clusters, Trigger BadMaxCell",
+     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBCBadMaxCell->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCBadMaxCell->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCell);
+
+    fhTimeTriggerEMCALBCUMBadMaxCell = new TH2F
+    ("hTimeTriggerBadMaxCell_UnMatch",
+     "cluster time vs E of clusters, unmatched trigger BadMaxCell",
+     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBCUMBadMaxCell->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCUMBadMaxCell->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCell);
+    
+    
+    fhTimeTriggerEMCALBCBadMaxCellExotic = new TH2F
+    ("hTimeTriggerBadMaxCellExotic",
+     "cluster time vs E of clusters, Trigger BadMaxCell&Exotic",
+     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBCBadMaxCellExotic->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCBadMaxCellExotic->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCellExotic);
+    
+    fhTimeTriggerEMCALBCUMBadMaxCellExotic = new TH2F
+    ("hTimeTriggerBadMaxCellExotic_UnMatch",
+     "cluster time vs E of clusters, unmatched trigger BadMaxCell&Exotic",
+     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCellExotic);
+
     fhTimeNoTrigger = new TH2F
     ("hTimeNoTrigger",
      "events with no foundable trigger, time vs e of clusters",
@@ -3161,7 +3166,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }// Fill SS MC histograms
     
   }//Histos with MC
-      
+  
   return outputContainer ;
   
 }
@@ -3269,9 +3274,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   }
   
   // Fill some trigger related histograms
-  Int_t   idTrig = GetReader()->GetTriggerClusterIndex();
-  Float_t exotic = GetReader()->IsExoticEvent();
-  Float_t bad    = GetReader()->IsBadCellTriggerEvent();
+  Int_t  idTrig = GetReader()->GetTriggerClusterIndex();
+  Bool_t exotic = GetReader()->IsExoticEvent();
+  Bool_t bad    = GetReader()->IsBadCellTriggerEvent();
 
   if( fFillEMCALBCHistograms && fCalorimeter=="EMCAL" &&
       ( bad || exotic )  && idTrig >= 0)
@@ -3304,7 +3309,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if( phiclusterBad < 0 ) phiclusterBad+=TMath::TwoPi();
     Float_t tofclusterBad = badClusTrig->GetTOF()*1.e9;
     Float_t eclusterBad   = badClusTrig->E();
-    
 
     if( bad && exotic )
     {

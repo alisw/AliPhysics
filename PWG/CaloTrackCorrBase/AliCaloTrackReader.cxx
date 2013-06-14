@@ -97,7 +97,7 @@ fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerEventThreshold(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
-fIsExoticEvent(0),           fIsBadCellEvent(0),
+fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
 fIsTriggerMatch(0),
 
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
@@ -694,6 +694,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   fTriggerClusterBC    = -10000;
   fIsExoticEvent       = kFALSE;
   fIsBadCellEvent      = kFALSE;
+  fIsBadMaxCellEvent   = kFALSE;
   
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
@@ -940,11 +941,12 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   
   if(fRemoveBadTriggerEvents)
   {
-    printf("ACCEPT triggered event? - exotic? %d - bad cell %d - BC %d  - Matched %d\n",fIsExoticEvent,fIsBadCellEvent,fTriggerClusterBC,fIsTriggerMatch);
+    //printf("ACCEPT triggered event? - exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
+    //       fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
     if     (fIsExoticEvent)         return kFALSE;
     else if(fIsBadCellEvent)        return kFALSE;
     else if(fTriggerClusterBC == 0) return kFALSE;
-    printf("\t *** YES\n");
+    //printf("\t *** YES\n");
   }
   
   patches.Reset();
@@ -2256,11 +2258,12 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   fTriggerClusterBC    = -10000;
   fIsExoticEvent       = kFALSE;
   fIsBadCellEvent      = kFALSE;
+  fIsBadMaxCellEvent   = kFALSE;
   
   // Do only analysis for triggered events
   if(!GetFiredTriggerClasses().Contains("EMC"))
   {
-    fTriggerClusterBC    = 0;
+    fTriggerClusterBC = 0;
     return;
   }
   
@@ -2276,12 +2279,13 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   }
   
   // Get number of clusters and of trigger patches
-  Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
-  if(clusterList) nclusters = clusterList->GetEntriesFast();
+  Int_t   nclusters   = fInputEvent->GetNumberOfCaloClusters();
+  if(clusterList)
+         nclusters    = clusterList->GetEntriesFast();
 
-  Int_t nPatch = patches.GetSize();
-  
-  
+  Int_t   nPatch      = patches.GetSize();
+  Float_t exoDiffTime = GetCaloUtils()->GetEMCALRecoUtils()->GetExoticCellDiffTimeCut();
+
   //Init some variables used in the cluster loop
   Float_t tofPatchMax = 100000;
   Float_t ePatchMax   =-1;
@@ -2291,7 +2295,8 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
   Int_t   clusMax     =-1;
   Int_t   idclusMax   =-1;
-  Bool_t  badMax      = kFALSE;
+  Bool_t  badClMax    = kFALSE;
+  Bool_t  badCeMax    = kFALSE;
   Bool_t  exoMax      = kFALSE;
   
   Int_t   nOfHighECl  = 0 ;
@@ -2309,23 +2314,40 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
       
     if ( clus->E() < 1 )        continue ;
     
-    Bool_t bad    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),
+    Float_t  frac       = -1;
+    Int_t    absIdMax   = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
+    
+    Bool_t   badCluster = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),
                                                                                    clus->GetCellsAbsId(),clus->GetNCells());
+    UShort_t cellMax[]  = {absIdMax};
+    Bool_t   badCell    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),cellMax,1);
     
-    Bool_t exotic = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCluster(clus, fInputEvent->GetEMCALCells());
+    // if cell is bad, it can happen that time calibration is not available,
+    // when calculating if it is exotic, this can make it to be exotic by default
+    // open it temporarily for this cluster
+    if(badCell)
+     GetCaloUtils()->GetEMCALRecoUtils()->SetExoticCellDiffTimeCut(10000000);
     
-    Float_t  energy = clus->E();
-    Int_t    idclus = clus->GetID();
+    Bool_t   exotic     = GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCluster(clus, fInputEvent->GetEMCALCells());
     
-    Float_t frac   = -1;
-    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
+    // Set back the time cut on exotics
+    if(badCell)
+      GetCaloUtils()->GetEMCALRecoUtils()->SetExoticCellDiffTimeCut(exoDiffTime);
     
-    Double_t tof   = clus->GetTOF();
+    // Energy threshold for exotic Ecross typically at 4 GeV,
+    // for lower energy, check that there are more than 1 cell in the cluster
+    if(!exotic && clus->GetNCells() < 2) exotic = kTRUE;
+    
+    Float_t  energy     = clus->E();
+    Int_t    idclus     = clus->GetID();
+    
+    Double_t tof        = clus->GetTOF();
     if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
     tof *=1.e9;
     
-    //printf("cluster %d, ID %d, E %2.2f, tof %2.2f, AbsId max %d, exotic %d, bad %d\n",iclus,idclus, energy,tof,absIdMax, exotic, bad);
+//    printf("cluster %d, ID %d, E %2.2f, tof %2.2f, AbsId max %d, exotic %d, bad Cluster %d, bad Cell %d\n",
+//           iclus,idclus, energy,tof,absIdMax, exotic, badCluster,badCell);
 
     // Find the highest energy cluster, avobe trigger threshold
     // in the event in case no match to trigger is found
@@ -2333,7 +2355,8 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     {
       tofMax    = tof;
       eMax      = energy;
-      badMax    = bad;
+      badClMax  = badCluster;
+      badCeMax  = badCell;
       exoMax    = exotic;
       clusMax   = iclus;
       idclusMax = idclus;
@@ -2341,7 +2364,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     
     // count the good clusters in the event avobe the trigger threshold
     // to check the exotic events 
-    if(!bad && !exotic)// && energy > fTriggerEventThreshold)
+    if(!badCluster && !exotic)// && energy > fTriggerEventThreshold)
       nOfHighECl++;
     
     // Find match to trigger
@@ -2363,7 +2386,8 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
             {
               tofPatchMax          = tof;
               ePatchMax            = energy;
-              fIsBadCellEvent      = bad;
+              fIsBadCellEvent      = badCluster;
+              fIsBadMaxCellEvent   = badCell;
               fIsExoticEvent       = exotic;
               fTriggerClusterIndex = iclus;
               fTriggerClusterId    = idclus;
@@ -2382,7 +2406,8 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   {
     tofPatchMax          = tofMax;
     ePatchMax            = eMax;
-    fIsBadCellEvent      = badMax;
+    fIsBadCellEvent      = badClMax;
+    fIsBadMaxCellEvent   = badCeMax;
     fIsExoticEvent       = exoMax;
     fTriggerClusterIndex = clusMax;
     fTriggerClusterId    = idclusMax;
@@ -2409,14 +2434,12 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
   if(tofPatchMax < 0) fTriggerClusterBC*=-1;
   
-//  printf("AliCaloTrackReader::MatchTriggerCluster(TArrayI patches) - Trigger cluster: index %d, ID %d, E = %2.2f, tof = %2.2f (BC = %d), bad cell? %d, exotic? %d, patch match? %d, n High E cluster %d\n",
+//  printf("AliCaloTrackReader::MatchTriggerCluster(TArrayI patches) - Trigger cluster: index %d, ID %d, E = %2.2f, tof = %2.2f (BC = %d), bad cluster? %d, bad cell? %d, exotic? %d, patch match? %d, n High E cluster %d\n",
 //         fTriggerClusterIndex, fTriggerClusterId,ePatchMax, tofPatchMax,
-//         fTriggerClusterBC, fIsBadCellEvent,fIsExoticEvent, fIsTriggerMatch, nOfHighECl);
+//         fTriggerClusterBC, fIsBadCellEvent,fIsBadMaxCellEvent,fIsExoticEvent, fIsTriggerMatch, nOfHighECl);
 //  
-//  if(!fIsTriggerMatch)  printf("\t highest energy cluster:  index %d, ID %d, E = %2.2f, tof = %2.2f, bad cell? %d, exotic? %d\n",clusMax, idclusMax, eMax,tofMax, badMax,exoMax);
-  
-  //if(fIsBadCellEvent) fIsExoticEvent = kFALSE;
-  
+//  if(!fIsTriggerMatch)  printf("\t highest energy cluster:  index %d, ID %d, E = %2.2f, tof = %2.2f, bad cluster? %d, bad cell? %d, exotic? %d\n",clusMax, idclusMax, eMax,tofMax, badClMax, badCeMax,exoMax);
+      
 }
 
 //__________________________________________
