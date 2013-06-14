@@ -95,8 +95,11 @@ int AddTaskDxHFE()
   //================================================================
   //  D0e (ME) with cuts 
  
-    taskOptions=filename+" name=DxHFE extraname=ITS3kAnyCorr itsclusters=3 itsreq=kAny particle=electron p-Pb";
-
+  ///////////////////////////
+  //AddTaskDxHFECorrelation//
+  ///////////////////////////
+  taskOptions=filename+" name=DxHFE extraname=ITS3kAnyCorr itsclusters=3 itsreq=kAny particle=electron p-Pb";
+  
   if(gDirectory) gDirectory->Clear();
   if(gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", taskOptions.Data()));
 
@@ -110,6 +113,10 @@ int AddTaskDxHFE()
 
   if(!AddTaskDxHFECorrelation(taskOptions.Data()))
     return 0;
+  
+  /////////////////////////////////
+  //AddTaskDxHFEParticleSelection//
+  /////////////////////////////////
   
   taskOptions=filename+" name=DxHFE extraname=ITS3kAny itsclusters=3 itsreq=kAny particle=electron storelastcutstep p-Pb";
 
