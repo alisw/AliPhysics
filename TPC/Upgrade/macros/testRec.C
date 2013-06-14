@@ -13,6 +13,11 @@ AliTPCParam *fTPCParam=AliTPCcalibDB::Instance()->GetParameters();
 AliTPCSpaceCharge3D *fSpaceCharge=0x0;
 TTreeSRedirector *fStreamer=0x0;
 
+Int_t fEvent=-1;
+Int_t fTrack=-1;
+Float_t fT0event=-1;
+Float_t fZevent=-1;
+
 void testRec(Int_t nmaxEv=-1)
 {
   //
@@ -44,16 +49,17 @@ void testRec(Int_t nmaxEv=-1)
   
   for (Int_t iev=0; iev<maxev; ++iev){
     t->GetEvent(iev);
+    fEvent=iev;
     for (Int_t itr=0; itr<ev->GetNumberOfTracks(); ++itr){
       printf("==============  Processing Track %6d\n",itr);
-      Float_t t0event=ev->GetT0();
-      Float_t z0event=ev->GetZ();
-      (*fStreamer) << "Tracks" <<
-        "iev="    << iev <<
-        "t0="     <<  t0event <<
-        "z0="     <<  z0event <<
-        "itrack=" << itr;
-        
+      fTrack=itr;
+      fT0event = ev->GetT0();
+      fZevent  = ev->GetZ();
+
+      //Float_t &tVtx, Float_t &x, AliToyMCTrack *tr,
+      //  Int_t clsType=0, Int_t seedRow=140, Int_t seedDist=10, Int_t correctionType=0
+      // correctionType: 0 none, 1 center, 2 mean tan,
+      //                 3 full from seed (iterative), 4 ideal (real z-Position)
       AliToyMCTrack *tr=ev->GetTrack(itr);
       tr->SetUniqueID(itr);
       Float_t tVtx0=0;
@@ -61,18 +67,26 @@ void testRec(Int_t nmaxEv=-1)
       Int_t ret0=GetTimeAtVertex(tVtx0,xmin,tr);
       hX->Fill(xmin);
       Float_t tVtx1=0;
-      Int_t ret1=0; //GetTimeAtVertex(tVtx1,tr,1);
+      Int_t ret1=GetTimeAtVertex(tVtx1,xmin,tr,1);
+      //fully distorted
+      GetTimeAtVertex(tVtx1,xmin,tr,1); // seeding at the outside
+      GetTimeAtVertex(tVtx1,xmin,tr,1,70); // seeding in the center
+      GetTimeAtVertex(tVtx1,xmin,tr,1,0); // seeding at the inside
+      //correction at tpc center
+      GetTimeAtVertex(tVtx1,xmin,tr,1,140, 10, 1);
+      //correction with mean tan theta
+      GetTimeAtVertex(tVtx1,xmin,tr,1,140, 10, 2);
       
       hcount0->Fill(ret0);
       hcount1->Fill(ret1);
       if (ret0==0) {
         h0->Fill(tVtx0);
       }
-      
+
       if (ret1==0) {
         h1->Fill(tVtx1);
       }
-      printf("TVtx: %f, %f\n",tVtx0,0);
+//       printf("TVtx: %f, %f\n",tVtx0,0);
     }
   }
 
@@ -102,7 +116,8 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   // clsType:    0 undistorted; 1 distorted
   // seedRow:    seeding row
   // seedDist:   distance of seeding points
-  // correctionType: 0 none, 1 center, 2 full from seed (iterative), 3 ideal (real z-Position)
+  // correctionType: 0 none, 1 center, 2 mean tan,
+  //                 3 full from seed (iterative), 4 ideal (real z-Position)
   //
 
   // seed point informaion
@@ -130,7 +145,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
     if (row>=nextSeedRow || icl==ncls-1){
       seedCluster[seed]=cl;
       SetTrackPointFromCluster(cl, seedPoint[seed]);
-      printf("\nSeed point %d: %d, %d, %.2f, %.2f, %.2f, %.2f, %.2f\n",seed, cl->GetDetector(), row, seedPoint[seed].GetX(),seedPoint[seed].GetY(),seedPoint[seed].GetZ(), seedPoint[seed].GetAngle(), ((cl->GetDetector()%18)*20.+10.)/180.*TMath::Pi());
+//       printf("\nSeed point %d: %d, %d, %.2f, %.2f, %.2f, %.2f, %.2f\n",seed, cl->GetDetector(), row, seedPoint[seed].GetX(),seedPoint[seed].GetY(),seedPoint[seed].GetZ(), seedPoint[seed].GetAngle(), ((cl->GetDetector()%18)*20.+10.)/180.*TMath::Pi());
       ++seed;
       nextSeedRow+=seedDist;
 
@@ -149,16 +164,20 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   for (Int_t iseed=0; iseed<3; ++iseed) {
     Float_t xyz[3]={0,0,0};
     seedPoint[iseed].GetXYZ(xyz);
+    
+    Int_t sector=seedCluster[iseed]->GetDetector();
+    Int_t sign=1-2*((sector/18)%2);
+    
     if (clsType && correctionType) {
       if (correctionType==1) xyz[2]=125.;
-      if (correctionType==3) xyz[2]=seedCluster->GetZ();
+      if (correctionType==2) xyz[2]=TMath::Tan(45./2.*TMath::DegToRad())*xyz[1]*sign;
+//       if (correctionType==3) xyz[2]=125.;
+      if (correctionType==4) xyz[2]=seedCluster->GetZ();
 
       if (!fSpaceCharge)   InitSpaceCharge();
       fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
     }
 
-    Int_t sector=seedCluster[iseed]->GetDetector();
-    Int_t sign=1-2*((sector/18)%2);
     //set different sign for c-Side
     xyz[2]=seedCluster[iseed]->GetTimeBin()/* * sign*/;
     seedPoint[iseed].SetXYZ(xyz);
@@ -172,7 +191,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   AliExternalTrackParam *track = 0x0;
   track = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
   track->ResetCovariance(10);
-  printf("Track: %.2f, %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha(),track->Phi());
+//   printf("Track: %.2f, %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha(),track->Phi());
   AliExternalTrackParam pInit(*track);
 
   // NOTE:
@@ -184,29 +203,37 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
     printf("Could not propagate track to 0, %.2f, %.2f, %.2f\n",track->GetX(),track->GetAlpha(),track->Pt());
     return 2;
   }
-  printf("Track2: %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha());
+//   printf("Track2: %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha());
 
   // simple linear fit
   TGraph gr;
   for (Int_t i=0; i<3; ++i)
     gr.SetPoint(gr.GetN(),seedPoint[i].GetX(),seedPoint[i].GetZ());
-  gr.Print();
+//   gr.Print();
   TF1 fpol1("fpol1","pol1");
   gr.Fit(&fpol1,"QN");
   Float_t fitT0=fpol1.Eval(0);
-  fpol1.Print();
+//   fpol1.Print();
   AliExternalTrackParam pOrig(*tr);
   (*fStreamer) << "Tracks" <<
-    "track.=" << tr    <<
-    "seed.="  << track <<
-    "seedI.=" << &pInit <<
-    "seedcl0.="  << seedCluster[0] <<
-    "seedcl1.="  << seedCluster[1] <<
-    "seedcl2.="  << seedCluster[2] <<
-    "seedp0.="  << &seedPoint[0] <<
-    "seedp1.="  << &seedPoint[1] <<
-    "seedp2.="  << &seedPoint[2] <<
-    "fitT0="  << fitT0 <<
+    "iev="      << fEvent <<
+    "t0="       << fT0event <<
+    "z0="       << fZevent <<
+    "itrack="   << fTrack <<
+    "clsType="  << clsType <<
+    "seedRow="  << seedRow <<
+    "seedDist=" << seedDist <<
+    "corrType=" << correctionType <<
+    "track.="   << tr    <<
+    "seed.="    << track <<
+    "seedI.="   << &pInit <<
+//     "seedcl0.=" << seedCluster[0] <<
+//     "seedcl1.=" << seedCluster[1] <<
+//     "seedcl2.=" << seedCluster[2] <<
+//     "seedp0.="  << &seedPoint[0] <<
+//     "seedp1.="  << &seedPoint[1] <<
+//     "seedp2.="  << &seedPoint[2] <<
+    "fitT0="    << fitT0 <<
     "\n";
   
   tVtx=track->GetZ();
@@ -241,9 +268,9 @@ void SetTrackPointFromCluster(AliTPCclusterMI *cl, AliTrackPoint &p ) {
   p=*tp;
   delete tp;
 //   cl->Print();
-  p.Print();
+//   p.Print();
   p.SetVolumeID(cl->GetDetector());
-  p.Rotate(p.GetAngle()).Print();
+//   p.Rotate(p.GetAngle()).Print();
 }
 
 //____________________________________________________________________________
@@ -272,11 +299,14 @@ void InitSpaceCharge()
   //
   // Init the space charge map
   //
-  fSpaceCharge = new AliTPCSpaceCharge3D();
-  fSpaceCharge->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz.root");
-  fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
-  //fSpaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
-  fSpaceCharge->InitSpaceCharge3DDistortion();
+  TFile f("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root");
+  fSpaceCharge=(AliTPCSpaceCharge3D*)f.Get("map");
+  
+//   fSpaceCharge = new AliTPCSpaceCharge3D();
+//   fSpaceCharge->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps10_50kHz.root");
+//   fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
+// //   fSpaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
+//   fSpaceCharge->InitSpaceCharge3DDistortion();
   
 }
 
