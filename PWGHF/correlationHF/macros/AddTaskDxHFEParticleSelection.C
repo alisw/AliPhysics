@@ -117,6 +117,14 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    taskOptions+=" system=Pb-Pb";
 	    cout << "Use PbPb" << endl;
 	  }
+	  if (argument.BeginsWith("system=p-Pb") ||
+	      argument.BeginsWith("pPb") ||
+	      argument.BeginsWith("p-Pb") ||
+	      argument.BeginsWith("system=2")) {
+	    system=2;
+	    taskOptions+=" system=p-Pb";
+	  }
+
 	  if(argument.BeginsWith("tpcclusters=")){
 	    argument.ReplaceAll("tpcclusters=", "");
 	    NrTPCclusters=argument.Atoi();
@@ -210,7 +218,8 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   if (system==0) {
     RDHFD0toKpi->SetStandardCutsPP2010();
-  } else {
+  } 
+  else if (system==1) {
     // TODO: think about p-Pb
     RDHFD0toKpi->SetStandardCutsPbPb2011();
 
@@ -224,6 +233,14 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 
     RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
     RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
+  }
+  else if (system==2) {
+    RDHFD0toKpi->SetStandardCutsPP2010();
+    RDHFD0toKpi->SetTriggerMask(AliVEvent::kINT7); //pPb
+    RDHFD0toKpi->SetTriggerClass(""); //pPb  
+}
+  else {
+    //warning, no system set
   }
 
   ///______________________________________________________________________
