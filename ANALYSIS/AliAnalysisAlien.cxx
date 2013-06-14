@@ -4113,7 +4113,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   plugin->SetFileForTestMode(\"" << fFileForTestMode << "\");" << endl;
          out << "   plugin->SetNtestFiles(" << fNtestFiles << ");" << endl;
          if (!fFriendChainName.IsNull()) 
-            out << "   plugin->SetFriendChainName(\"" << fFriendChainName << "\");" << endl;
+            out << "   plugin->SetFriendChainName(\"" << fFriendChainName << "\",\"" << fFriendLibs << "\");" << endl;
          if (IsUseMCchain())
             out << "   plugin->SetUseMCchain();" << endl;
          out << "   mgr->SetGridHandler(plugin);" << endl;
