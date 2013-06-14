@@ -85,7 +85,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(kFALSE),
 fUseTPCMultiplicityCorrection(kFALSE),
 fTRDPIDResponseObject(NULL),
-fTOFtail(1.1),
+fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
@@ -148,7 +148,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
 fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
 fTRDPIDResponseObject(NULL),
-fTOFtail(1.1),
+fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
@@ -203,7 +203,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fUseTPCMultiplicityCorrection=other.fUseTPCMultiplicityCorrection;
     fTRDPIDResponseObject=NULL;
     fEMCALPIDParams=NULL;
-    fTOFtail=1.1;
+    fTOFtail=0.9;
     fTOFPIDParams=NULL;
     fHMPIDPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
@@ -2170,7 +2170,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   const EDetPidStatus pidStatus=GetTOFPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
 
-  const Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
+  const Double_t meanCorrFactor = 0.07/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
   
   for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);

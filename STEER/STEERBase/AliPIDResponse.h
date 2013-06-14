@@ -157,7 +157,7 @@ public:
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
   
   // TOF setting
-  void SetTOFtail(Float_t tail=1.1){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
+  void SetTOFtail(Float_t tail=0.9){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
   virtual Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const {return t->GetTPCsignal();};

@@ -42,11 +42,11 @@ AliTOFPIDResponse::AliTOFPIDResponse():
   fPar[3] = 40.0;
 
   if(!fTOFtailResponse){
-    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.01818",-1000,1000);
+    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
     fTOFtailResponse->SetParameter(0,1);
-    fTOFtailResponse->SetParameter(1,-25);
+    fTOFtailResponse->SetParameter(1,-26);
     fTOFtailResponse->SetParameter(2,1);
-    fTOFtailResponse->SetParameter(3,1.1);
+    fTOFtailResponse->SetParameter(3,0.89);
     fTOFtailResponse->SetNpx(10000);
   }
     
@@ -72,6 +72,15 @@ AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
   fPar[1] = 0.008;
   fPar[2] = 0.002;
   fPar[3] = 40.0;
+
+  if(!fTOFtailResponse){
+    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
+    fTOFtailResponse->SetParameter(0,1);
+    fTOFtailResponse->SetParameter(1,-26);
+    fTOFtailResponse->SetParameter(2,1);
+    fTOFtailResponse->SetParameter(3,0.89);
+    fTOFtailResponse->SetNpx(10000);
+  }
 
   // Reset T0 info
   ResetT0info();
