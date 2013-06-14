@@ -2588,7 +2588,7 @@ void AliAnalysisAlien::SetFriendChainName(const char *name, const char *libnames
    // Libs should be separated by blancs.
    fFriendChainName = name;
    fFriendLibs = libnames;
-   if (!fFriendLibs.Contains(".so")) {
+   if (fFriendLibs.Length() && !fFriendLibs.Contains(".so")) {
       Fatal("SetFriendChainName()", "You should provide explicit library names (with extension)");
    }
 }
