@@ -154,10 +154,13 @@ fhEtaPhiFracPtSumIso(),           fhEtaPhiFracPtSumDecayIso(),
 // Cluster control histograms
 fhTrackMatchedDEta(),             fhTrackMatchedDPhi(),           fhTrackMatchedDEtaDPhi(),
 fhdEdx(),                         fhEOverP(),                     fhTrackMatchedMCParticle(),
-fhELambda0() ,                    fhELambda1(),                   fhELambda0SSBkg(),
-fhELambda0TRD(),                  fhELambda1TRD(),
-fhELambda0MCPhoton(),             fhELambda0MCPi0(),              fhELambda0MCPi0Decay(),
+fhELambda0() ,                    fhPtLambda0() ,
+fhELambda1(),                     fhELambda0SSBkg(),
+fhELambda0TRD(),                  fhPtLambda0TRD(),               fhELambda1TRD(),
+fhELambda0MCPhoton(),             fhPtLambda0MCPhotonPrompt(),    fhPtLambda0MCPhotonFrag(),
+fhELambda0MCPi0(),                fhELambda0MCPi0Decay(),
 fhELambda0MCEtaDecay(),           fhELambda0MCOtherDecay(),       fhELambda0MCHadron(),
+                  
 // Number of local maxima in cluster
 fhNLocMax(),
 fhELambda0LocMax1(),              fhELambda1LocMax1(),
@@ -253,8 +256,8 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     
     fhELambda0MCPhoton  [i] = 0 ;           fhELambda0MCPi0       [i] = 0 ;       fhELambda0MCPi0Decay[i] = 0 ;
     fhELambda0MCEtaDecay[i] = 0 ;           fhELambda0MCOtherDecay[i] = 0 ;       fhELambda0MCHadron  [i] = 0 ;
-
-    
+    fhPtLambda0        [i] = 0 ;            fhPtLambda0TRD     [i] = 0 ;  
+    fhPtLambda0MCPhotonPrompt  [i] = 0 ;    fhPtLambda0MCPhotonFrag  [i] = 0 ; 
     // Number of local maxima in cluster
     fhNLocMax        [i] = 0 ;
     fhELambda0LocMax1[i] = 0 ;              fhELambda1LocMax1[i] = 0 ;
@@ -1157,20 +1160,31 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   if     (fCalorimeter == "EMCAL") clusters = GetEMCALClusters();
   else if(fCalorimeter == "PHOS" ) clusters = GetPHOSClusters();
   
+  Float_t energy = pCandidate->E();
+  Float_t pt     = pCandidate->Pt();
+  
   if(clusters)
   {
     AliVCluster *cluster = FindCluster(clusters,clusterID,iclus); 
-    Float_t energy = cluster->E();
     
     if(fFillSSHisto)
     {
-      fhELambda0[isolated]->Fill(energy, cluster->GetM02() );  
-      fhELambda1[isolated]->Fill(energy, cluster->GetM20() );  
+      fhELambda0 [isolated]->Fill(energy, cluster->GetM02() );
+      fhPtLambda0[isolated]->Fill(pt,     cluster->GetM02() ); 
+      fhELambda1 [isolated]->Fill(energy, cluster->GetM20() );
       
       if(IsDataMC())
       {
-        if     (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||        
-                GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation)) fhELambda0MCPhoton    [isolated]->Fill(energy, cluster->GetM02());
+        if     (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||
+                GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation))
+        {
+          fhELambda0MCPhoton    [isolated]->Fill(energy, cluster->GetM02());
+          
+          if      (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt))
+            fhPtLambda0MCPhotonPrompt  [isolated]->Fill(pt, cluster->GetM02());
+          else if (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation))
+            fhPtLambda0MCPhotonFrag    [isolated]->Fill(pt, cluster->GetM02());
+        }
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))           fhELambda0MCPi0       [isolated]->Fill(energy, cluster->GetM02());
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      fhELambda0MCPi0Decay  [isolated]->Fill(energy, cluster->GetM02());
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      fhELambda0MCEtaDecay  [isolated]->Fill(energy, cluster->GetM02());
@@ -1183,8 +1197,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       
       if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5) // TO DO: CHANGE FOR 2012
       {
-        fhELambda0TRD[isolated]->Fill(energy, cluster->GetM02() );  
-        fhELambda1TRD[isolated]->Fill(energy, cluster->GetM20() );  
+        fhELambda0TRD [isolated]->Fill(energy, cluster->GetM02() );
+        fhPtLambda0TRD[isolated]->Fill(pt    , cluster->GetM02() ); 
+        fhELambda1TRD [isolated]->Fill(energy, cluster->GetM20() );
       }
       
       fhNLocMax[isolated]->Fill(energy,nMaxima);
@@ -2290,9 +2305,31 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhELambda0[iso]->SetYTitle("#lambda_{0}^{2}");
         fhELambda0[iso]->SetXTitle("E (GeV)");
         outputContainer->Add(fhELambda0[iso]) ;
+
+        fhPtLambda0[iso]  = new TH2F
+        (Form("hPtLambda0%s",hName[iso].Data()),
+         Form("%s cluster : p_{T} vs #lambda_{0}",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhPtLambda0[iso]->SetYTitle("#lambda_{0}^{2}");
+        fhPtLambda0[iso]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhPtLambda0[iso]) ;
         
         if(IsDataMC())
         {
+          fhPtLambda0MCPhotonPrompt[iso]  = new TH2F
+          (Form("hPtLambda0%s_MCPhotonPrompt",hName[iso].Data()),
+           Form("%s cluster : Pt vs #lambda_{0}: Origin is prompt photon",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhPtLambda0MCPhotonPrompt[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLambda0MCPhotonPrompt[iso]->SetXTitle("Pt (GeV/c)");
+          outputContainer->Add(fhPtLambda0MCPhotonPrompt[iso]) ; 
+
+          fhPtLambda0MCPhotonFrag[iso]  = new TH2F
+          (Form("hPtLambda0%s_MCPhotonFrag",hName[iso].Data()),
+           Form("%s cluster : Pt vs #lambda_{0}: Origin is fragmentation photon",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhPtLambda0MCPhotonFrag[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLambda0MCPhotonFrag[iso]->SetXTitle("Pt (GeV/c)");
+          outputContainer->Add(fhPtLambda0MCPhotonFrag[iso]) ; 
+
+
           fhELambda0MCPhoton[iso]  = new TH2F
           (Form("hELambda0%s_MCPhoton",hName[iso].Data()),
            Form("%s cluster : E vs #lambda_{0}: Origin is final state photon",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
@@ -2344,7 +2381,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhELambda1[iso]) ;
         
         if(fCalorimeter=="EMCAL")
-        {
+        {     
+
+          fhPtLambda0TRD[iso]  = new TH2F
+          (Form("hPtLambda0TRD%s",hName[iso].Data()),
+           Form("%s cluster: p_{T} vs #lambda_{0}, SM behind TRD",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhPtLambda0TRD[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLambda0TRD[iso]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhPtLambda0TRD[iso]) ;
+
           fhELambda0TRD[iso]  = new TH2F
           (Form("hELambda0TRD%s",hName[iso].Data()),
            Form("%s cluster: E vs #lambda_{0}, SM behind TRD",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
