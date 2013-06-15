@@ -776,7 +776,10 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVClu
     
   }// cell loop
   
-  clusterFraction = (eTot-eMax)/eTot; //Do not use cluster energy in case it was corrected for non linearity.
+  if(eTot > 0.1)
+    clusterFraction = (eTot-eMax)/eTot; //Do not use cluster energy in case it was corrected for non linearity.
+  else 
+    clusterFraction =1.;
   
   return absId;
   
