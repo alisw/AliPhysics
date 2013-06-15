@@ -99,7 +99,13 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhNEventsNoTriggerFound; //! number of events where whaetever was done, no trigger is found
   TH1F *   fhNPileUpEvents;     //! N events pasing pile up cut
   TH1F *   fhNPileUpEventsTriggerBC0; //! N events pasing pile up cut
-  TH1F *   fhZVertex;           //! Vertex of accepted event
+  TH1F *   fhXVertex;           //! X Vertex distribution of accepted event
+  TH1F *   fhYVertex;           //! Y Vertex distribution of accepted event
+  TH1F *   fhZVertex;           //! Z Vertex distribution of accepted event
+  TH1F *   fhXVertexExotic;     //! X Vertex distribution of exotic event
+  TH1F *   fhYVertexExotic;     //! Y Vertex distribution of exotic event
+  TH1F *   fhZVertexExotic;     //! Z Vertex distribution of exotic event
+  
   TH1F *   fhPileUpClusterMult; //! N clusters with high time
   TH1F *   fhPileUpClusterMultAndSPDPileUp; //! N clusters with high time in events tagged as pile-up by SPD
   TH1F *   fhTrackMult;         //! Number of tracks per event histogram
@@ -136,7 +142,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,18)
+  ClassDef(AliAnaCaloTrackCorrMaker,19)
 } ;
  
 

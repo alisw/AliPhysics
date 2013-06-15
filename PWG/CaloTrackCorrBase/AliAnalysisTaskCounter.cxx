@@ -532,7 +532,9 @@ Bool_t AliAnalysisTaskCounter::Notify()
     return kFALSE;
   }
   
-  PythiaInfoFromFile(fCurrFileName,xsection,trials);
+  Bool_t ok = PythiaInfoFromFile(fCurrFileName,xsection,trials);
+  
+  if(!ok) return kFALSE;
   
   fh1Xsec->Fill("<#sigma>",xsection);
   

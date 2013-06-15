@@ -52,7 +52,8 @@ fScaleFactor(-1),
 fhNEvents(0),                 fhNExoticEvents(0),
 fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
-fhZVertex(0),                 
+fhXVertex(0),                 fhYVertex(0),                       fhZVertex(0),
+fhXVertexExotic(0),           fhYVertexExotic(0),                 fhZVertexExotic(0),
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
@@ -92,7 +93,12 @@ fhNExoticEvents(maker.fhNExoticEvents),
 fhNEventsNoTriggerFound(maker.fhNEventsNoTriggerFound),
 fhNPileUpEvents(maker.fhNPileUpEvents),
 fhNPileUpEventsTriggerBC0(maker.fhNPileUpEventsTriggerBC0),
+fhXVertex(maker.fhXVertex),
+fhYVertex(maker.fhYVertex),
 fhZVertex(maker.fhZVertex),
+fhXVertexExotic(maker.fhXVertexExotic),
+fhYVertexExotic(maker.fhYVertexExotic),
+fhZVertexExotic(maker.fhZVertexExotic),
 fhPileUpClusterMult(maker.fhPileUpClusterMult),
 fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
@@ -262,6 +268,8 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   
   Double_t v[3];
   event->GetPrimaryVertex()->GetXYZ(v) ;
+  fhXVertex->Fill(v[0]);
+  fhYVertex->Fill(v[1]);
   fhZVertex->Fill(v[2]);
   
   Int_t bc = fReader->GetVertexBC();
@@ -553,9 +561,29 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhEMCalBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
   fOutputContainer->Add(fhEMCalBCEventCut);
   
+  fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -4 , 4  ) ;
+  fhXVertex->SetXTitle("v_{x} (cm)");
+  fOutputContainer->Add(fhXVertex);
+  
+  fhYVertex      = new TH1F("hYVertex", " Y vertex distribution"   , 200 , -4 , 4  ) ;
+  fhYVertex->SetXTitle("v_{y} (cm)");
+  fOutputContainer->Add(fhYVertex);
+  
   fhZVertex      = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
+  
+  fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+  fhXVertexExotic->SetXTitle("v_{x} (cm)");
+  fOutputContainer->Add(fhXVertexExotic);
+  
+  fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+  fhYVertexExotic->SetXTitle("v_{y} (cm)");
+  fOutputContainer->Add(fhYVertexExotic);
+  
+  fhZVertexExotic      = new TH1F("hZVertexExotic", " Z vertex distribution in exotic events"   , 200 , -50 , 50  ) ;
+  fhZVertexExotic->SetXTitle("v_{z} (cm)");
+  fOutputContainer->Add(fhZVertexExotic);
   
   fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
   fhTrackMult->SetXTitle("# tracks");
@@ -780,7 +808,15 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
     triggerBCOK = kFALSE;
   }
   
-  if(exotic) fhNExoticEvents->Fill(0) ;
+  if(exotic)
+  {
+    fhNExoticEvents->Fill(0) ;
+    Double_t v[3];
+    fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
+    fhXVertexExotic->Fill(v[0]);
+    fhYVertexExotic->Fill(v[1]);
+    fhZVertexExotic->Fill(v[2]);
+  }
   //if(fReader->IsExoticEvent()) printf("Maker: EXOTIC Cluster trigger\n");
   
   if(triggerBCOK)
