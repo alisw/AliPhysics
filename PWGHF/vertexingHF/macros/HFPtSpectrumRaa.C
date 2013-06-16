@@ -50,7 +50,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-enum centrality{ kpp, k07half, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
 enum energy{ k276, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
@@ -148,6 +148,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Tab = 0.0690; TabSyst = 0.0062;
   }
 
+  // pPb Glauber (A. Toia)
+  // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
+  else if( cc == kpPb0100 ){
+    tab = 0.098334; tabUnc = 0.0070679;
+  }
 
   //
   // Reading the pp file 
@@ -231,6 +236,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     cout << " Systematics not yet implemented " << endl;
     return;
   }
+  //
+  if ( cc == kpPb0100 ){ 
+    systematics->SetCollisionType(0); 
+    cout <<endl<<" Beware pPb systematics not yet implemented, using pp at 7 TeV !! "<<endl<<endl; 
+  }
+  //
   systematicsAB->Init(decay);
 
   //
