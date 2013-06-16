@@ -30,14 +30,14 @@ class TH3F;
 class TList;
 class TString;
 
-const int    kN1 = 9; 
-const float  kPtBinV0[kN1+1] = {1.75,2.0,2.25,2.5,2.75,3.0,4.0,5.0,7.0,10.0};
+const int    kN1 = 8; 
+const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
 
 const int    kNVtxZ = 10; 
 const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
 
-const int    kNCent  = 9;
-const double kBinCent[kNCent+1] = {0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
+const int    kNCent  = 6;
+const double kBinCent[kNCent+1] = {0.0,5.0,10.0,20.0,40.0,60.0,90.0};
 
 class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
