@@ -38,7 +38,7 @@
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
 //
 
-enum centrality{ kpp7, kpp276, k07half, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 
@@ -113,6 +113,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     tab = 0.419; tabUnc = 0.033;
   } else if ( cc == k80100 ){
     tab = 0.0690; tabUnc = 0.0062;
+  }
+
+  // pPb Glauber (A. Toia)
+  // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
+  else if( cc == kpPb0100 ){
+    tab = 0.098334; tabUnc = 0.0070679;
   }
   tab *= 1e-9; // to pass from mb^{-1} to pb^{-1}
   tabUnc *= 1e-9;
@@ -348,6 +354,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       return;
     }
   } else { systematics->SetCollisionType(0); }
+  //
+  if ( cc == kpPb0100 ){ 
+    systematics->SetCollisionType(0); 
+    cout <<endl<<" Beware pPb systematics not yet implemented, using pp at 7 TeV !!"<<endl<<endl; 
+  }
+  //
   systematics->Init(decay);
   spectra->ComputeSystUncertainties(systematics,combineFeedDown);
 
