@@ -73,6 +73,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
         void                    SetIntegratedFlow(TH1F* i, TH1F* j)             {fUserSuppliedV2 = i;
                                                                                  fUserSuppliedV3 = j; }
+        void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
+                                                                                 fUserSuppliedR3 = r3; }
         void                    SetNameJetClones(const char* name)              {fNameJetClones = name; }
         void                    SetNamePicoTrackClones(const char* name)        {fNamePicoTrackClones = name; }
         void                    SetNameRho(const char* name)                    {fNameRho = name; }
@@ -144,6 +146,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10)
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
+        TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
+        TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
         // members
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         fitModulationType       fFitModulationType;     // fit modulation type
@@ -260,7 +264,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 10);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 11);
 };
 
 #endif
