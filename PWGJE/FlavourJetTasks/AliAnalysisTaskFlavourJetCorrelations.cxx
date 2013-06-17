@@ -47,6 +47,12 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 
+#include <vector>
+#include <iostream>
+using std::vector;
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskFlavourJetCorrelations)
 
 //__________________________________________________________________________
