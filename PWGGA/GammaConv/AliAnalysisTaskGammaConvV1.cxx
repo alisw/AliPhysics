@@ -112,6 +112,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
    hMCK0sPtY(NULL),
    hESDTrueMotherInvMassPt(NULL),
    hESDTruePrimaryMotherInvMassPt(NULL),
+   hESDTruePrimaryMotherW0WeightingInvMassPt(NULL),
+   pESDTruePrimaryMotherWeightsInvMassPt(NULL),
    hESDTruePrimaryPi0MCPtResolPt(NULL),
    hESDTruePrimaryEtaMCPtResolPt(NULL),
    sESDTruePrimaryMotherInvMassPtY(NULL),
@@ -220,6 +222,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
    hMCK0sPtY(NULL),
    hESDTrueMotherInvMassPt(NULL),
    hESDTruePrimaryMotherInvMassPt(NULL),
+   hESDTruePrimaryMotherW0WeightingInvMassPt(NULL),
+   pESDTruePrimaryMotherWeightsInvMassPt(NULL),
    hESDTruePrimaryPi0MCPtResolPt(NULL),
    hESDTruePrimaryEtaMCPtResolPt(NULL),
    sESDTruePrimaryMotherInvMassPtY(NULL),
@@ -515,6 +519,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
 
          hESDTrueMotherInvMassPt = new TH2F*[fnCuts];
          hESDTruePrimaryMotherInvMassPt = new TH2F*[fnCuts];
+         hESDTruePrimaryMotherW0WeightingInvMassPt = new TH2F*[fnCuts];
+         pESDTruePrimaryMotherWeightsInvMassPt = new TProfile2D*[fnCuts];
          hESDTrueSecondaryMotherInvMassPt = new TH2F*[fnCuts];
          hESDTrueSecondaryMotherFromK0sInvMassPt = new TH2F*[fnCuts];
          hESDTrueSecondaryMotherFromEtaInvMassPt = new TH2F*[fnCuts];
@@ -670,6 +676,14 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
                = new TH2F("ESD_TruePrimaryMother_InvMass_Pt", "ESD_TruePrimaryMother_InvMass_Pt", 800,0,0.8,250,0,25);
             hESDTruePrimaryMotherInvMassPt[iCut]->Sumw2();
             fTrueList[iCut]->Add(hESDTruePrimaryMotherInvMassPt[iCut]);
+            hESDTruePrimaryMotherW0WeightingInvMassPt[iCut]
+               = new TH2F("ESD_TruePrimaryMotherW0Weights_InvMass_Pt", "ESD_TruePrimaryMotherW0Weights_InvMass_Pt", 800,0,0.8,250,0,25);
+            hESDTruePrimaryMotherW0WeightingInvMassPt[iCut]->Sumw2();
+            fTrueList[iCut]->Add(hESDTruePrimaryMotherW0WeightingInvMassPt[iCut]);
+            pESDTruePrimaryMotherWeightsInvMassPt[iCut]
+               = new TProfile2D("ESD_TruePrimaryMotherWeights_InvMass_Pt", "ESD_TruePrimaryMotherWeights_InvMass_Pt", 800,0,0.8,250,0,25);
+            pESDTruePrimaryMotherWeightsInvMassPt[iCut]->Sumw2();
+            fTrueList[iCut]->Add(pESDTruePrimaryMotherWeightsInvMassPt[iCut]);
             hESDTrueSecondaryMotherInvMassPt[iCut]
                = new TH2F("ESD_TrueSecondaryMother_InvMass_Pt", "ESD_TrueSecondaryMother_InvMass_Pt", 800,0,0.8,250,0,25);
             hESDTrueSecondaryMotherInvMassPt[iCut]->Sumw2();
@@ -738,12 +752,6 @@ Bool_t AliAnalysisTaskGammaConvV1::Notify()
 {
    for(Int_t iCut = 0; iCut<fnCuts;iCut++){
      if(!((AliConversionCuts*)fCutArray->At(iCut))->GetDoEtaShift()){ 
-       if (((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift() != 0.){
-          ((AliConversionCuts*)fCutArray->At(iCut))->SetEtaShift(0.);
-          printf("Error: Gamma Conversion Task %s :: Eta Shift not requested but set to %f, reset to 0. \n\n",
-                (((AliConversionCuts*)fCutArray->At(iCut))->GetCutNumber()).Data(),((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift());
-       }   
-       
        hEtaShift[iCut]->Fill(0.,0.);
        continue; // No Eta Shift requested, continue
      }
@@ -1525,7 +1533,8 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
                   }
                }
                hESDTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
-
+               hESDTruePrimaryMotherW0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+               pESDTruePrimaryMotherWeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
                if (fDoMesonQA){
                   Double_t sparesFill[3] = {Pi0Candidate->M(),Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()};
                   sESDTruePrimaryMotherInvMassPtY[fiCut]->Fill(sparesFill,1);

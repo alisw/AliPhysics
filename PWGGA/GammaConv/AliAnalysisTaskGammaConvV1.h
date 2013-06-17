@@ -9,6 +9,7 @@
 #include "AliConversionAODBGHandlerRP.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
+#include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
 
@@ -123,6 +124,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH2F **hMCK0sPtY;
    TH2F **hESDTrueMotherInvMassPt;
    TH2F **hESDTruePrimaryMotherInvMassPt;
+   TH2F **hESDTruePrimaryMotherW0WeightingInvMassPt;
+   TProfile2D **pESDTruePrimaryMotherWeightsInvMassPt;
    TH2F **hESDTruePrimaryPi0MCPtResolPt;
    TH2F **hESDTruePrimaryEtaMCPtResolPt;
    THnSparseF **sESDTruePrimaryMotherInvMassPtY;
