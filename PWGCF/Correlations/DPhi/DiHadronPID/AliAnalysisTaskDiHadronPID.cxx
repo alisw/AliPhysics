@@ -195,10 +195,13 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 
 	// --- BEGIN: Initialization on the worker nodes ---
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
+	if (!manager) {AliFatal("Could not obtain analysis manager.");}	
 	AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*> (manager->GetInputEventHandler());
+	if (!inputHandler) {AliFatal("Could not obtain input handler.");}	
 
 	// Getting the pointer to the PID response object.
 	fPIDResponse = inputHandler->GetPIDResponse();	
+	if (!fPIDResponse) {AliFatal("Could not obtain PID response.");}
 
 	// For now we don't bin in multiplicity for pp.
 	TArrayD* centralityBins = 0x0;
@@ -291,7 +294,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 			for (Int_t iBinPt = 1; iBinPt < (fTOFPtAxis->GetNbins() + 1); iBinPt++) {
 
 				Int_t iPtClass = fTrackCutsAssociated->GetPtClass(iBinPt);
-				if (iPtClass == -1) {AliFatal("Not valid pT class.");}
+				if (iPtClass == -1) {AliFatal("Not valid pT class."); continue;}
 
 				Int_t NBinsTOF = fTrackCutsAssociated->GetNTOFbins(iPtClass,iSpecies);
 				Double_t TOFmin = fTrackCutsAssociated->GetTOFmin(iPtClass,iSpecies);
