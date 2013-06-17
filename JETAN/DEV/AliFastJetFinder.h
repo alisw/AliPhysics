@@ -17,10 +17,19 @@
 //---------------------------------------------------------------------
 
 // FastJet classes 
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
+#ifndef __CINT__
+# include "fastjet/PseudoJet.hh"
+# include "fastjet/ClusterSequenceArea.hh"
+# include "fastjet/AreaDefinition.hh"
+# include "fastjet/JetDefinition.hh"
+#else
+namespace fastjet {
+  class PseudoJet;
+  class ClusterSequenceArea;
+  class AreaDefinition;
+  class JetDefinition;
+}
+#endif
 
 #include "AliJetFinder.h"
 

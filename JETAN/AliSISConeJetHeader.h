@@ -10,10 +10,11 @@
 // Author: swensy.jangal@ires.in2p3.fr
 //---------------------------------------------------------------------
  
-
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/JetDefinition.hh"
+#ifndef __CINT__
+# include "fastjet/AreaDefinition.hh"
+# include "fastjet/ClusterSequenceArea.hh"
+# include "fastjet/JetDefinition.hh"
+#endif
 #include "AliJetHeader.h"
  
 class AliSISConeJetHeader : public AliJetHeader
