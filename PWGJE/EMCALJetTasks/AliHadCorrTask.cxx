@@ -133,11 +133,11 @@ AliHadCorrTask::~AliHadCorrTask()
 }
 
 //________________________________________________________________________
-Int_t AliHadCorrTask::GetMomBin(Double_t p) const
+UInt_t AliHadCorrTask::GetMomBin(Double_t p) const
 {
   // Get momenum bin.
 
-  Int_t pbin=-1;
+  UInt_t pbin=0;
   if (p<0.5) 
     pbin=0;
   else if (p>=0.5 && p<1.0) 
@@ -597,7 +597,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
 
     Double_t mom       = track->P();
-    Int_t    mombin    = GetMomBin(mom); 
+    UInt_t   mombin    = GetMomBin(mom); 
     Int_t    centbinch = fCentBin;
     if (track->Charge()<0) 
       centbinch += fNcentBins;
@@ -635,7 +635,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
       totalTrkP += track->P();
 
       if (fCreateHisto) {
-        if (fHadCorr > 1 && mombin > -1) {
+        if (fHadCorr > 1) {
           fHistMatchdRvsEP[fCentBin]->Fill(dR, energyclus / mom);
         }
       }
@@ -747,7 +747,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   Double_t dPhiMin    = 1e9;
   AliPicoTrack::GetEtaPhiDiff(track, cluster, dPhiMin, dEtaMin);
 
-  Int_t mombin = GetMomBin(mom);
+  UInt_t mombin = GetMomBin(mom);
   Int_t centbinch = fCentBin;
   if (track->Charge()<0) 
     centbinch += fNcentBins;
