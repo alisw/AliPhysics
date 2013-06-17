@@ -12,9 +12,17 @@
 // Author: Rafael.Diaz.Valdes@cern.ch
 //---------------------------------------------------------------------
  
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
-
+#ifndef __CINT__
+# include "fastjet/AreaDefinition.hh"
+# include "fastjet/JetDefinition.hh"
+#else
+namespace fastjet {
+  class JetAlgorithm;
+  class Strategy;
+  class RecombinationScheme;
+  class AreaType;
+}
+#endif
 #include "AliJetHeader.h"
 
 class AliFastJetHeaderV1 : public AliJetHeader

@@ -14,14 +14,23 @@
 //---------------------------------------------------------------------
 
 //FastJet classes 
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
+#ifndef __CINT__
+# include "fastjet/PseudoJet.hh"
+# include "fastjet/ClusterSequenceArea.hh"
+# include "fastjet/AreaDefinition.hh"
+# include "fastjet/JetDefinition.hh"
 // get info on how fastjet was configured
-#include "fastjet/config.h"
-#ifdef ENABLE_PLUGIN_SISCONE
-#include "fastjet/SISConePlugin.hh"
+# include "fastjet/config.h"
+# ifdef ENABLE_PLUGIN_SISCONE
+#  include "fastjet/SISConePlugin.hh"
+# endif
+#else
+namespace fastjet {
+class PseudoJet;
+class ClusterSequenceArea;
+class AreaDefinition;
+class JetDefinition;
+}
 #endif
 
 

@@ -18,7 +18,13 @@
 #include <TObject.h>
 
 // FastJet classes 
-#include "fastjet/PseudoJet.hh"
+#ifndef __CINT__
+# include "fastjet/PseudoJet.hh"
+#else
+namespace fastjet {
+  class PseudoJet;
+}
+#endif
 
 #include <vector> 
 

@@ -11,8 +11,14 @@
 // Finder Header Class 
 // Author: swensy.jangal@ires.in2p3.fr
 //---------------------------------------------------------------------
- 
+#ifndef __CINT__ 
 #include "fastjet/JetDefinition.hh"
+#else
+namespace fastjet {
+  class Strategy;
+  class RecombinationScheme;
+}
+#endif
 #include "AliJetHeader.h"
  
 class AliSISConeJetHeader : public AliJetHeader

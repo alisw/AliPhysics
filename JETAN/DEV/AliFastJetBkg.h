@@ -15,7 +15,11 @@
 // 2011 :
 // renamed from AliJetBkg to AliFastJetBkg as this class uses only FASTJET based algos        
 //---------------------------------------------------------------------
-
+#ifdef __CINT__
+namespace fastjet {
+  class PsuedoJet;
+}
+#endif
 class TString;
 class AliFastJetInput;
 
