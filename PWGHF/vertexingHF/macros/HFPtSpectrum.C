@@ -58,10 +58,10 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   // Set the meson and decay
   // (only D0 -> K pi, D+--> K pi pi & D* --> D0 pi & D+s -->KKpi implemented here)
-  Bool_t isD0Kpi = true;
+  Bool_t isD0Kpi = false;
   Bool_t isDplusKpipi = false;
   Bool_t isDstarD0pi = false;
-  Bool_t isDsKKpi = false;
+  Bool_t isDsKKpi = true;
   Bool_t isLctopKpi = false;
   if (isD0Kpi && isDplusKpipi && isDstarD0pi && isDsKKpi) {
     cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
@@ -202,9 +202,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //
   //
   TFile * efffile = new TFile(efffilename,"read");
-  hDirectEffpt = (TH1D*)efffile->Get("hDirectEffpt");
+  hDirectEffpt = (TH1D*)efffile->Get("hEffD");
   hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
-  hFeedDownEffpt = (TH1D*)efffile->Get("hFeedDownEffpt");
+  hFeedDownEffpt = (TH1D*)efffile->Get("hEffB");
   hFeedDownEffpt->SetNameTitle("hFeedDownEffpt","feed-down acc x eff");
   //
   //
@@ -331,7 +331,13 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   AliHFSystErr *systematics = new AliHFSystErr();
   if( cc==kpp276 ) {
     systematics->SetIsLowEnergy(true);
-  } else if( cc!=kpp7 )  {
+  }
+  else if ( cc == kpPb0100 ){ 
+    systematics->SetCollisionType(0); 
+    cout <<endl<<" Beware pPb systematics not yet implemented, using pp at 7 TeV !!"<<endl<<endl; 
+  }
+  //
+  else if( cc!=kpp7 )  {
     systematics->SetCollisionType(1);
     if ( cc == k07half ) systematics->SetCentrality("07half");
     else if ( cc == k010 )  systematics->SetCentrality("010");
@@ -354,11 +360,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       return;
     }
   } else { systematics->SetCollisionType(0); }
-  //
-  if ( cc == kpPb0100 ){ 
-    systematics->SetCollisionType(0); 
-    cout <<endl<<" Beware pPb systematics not yet implemented, using pp at 7 TeV !!"<<endl<<endl; 
-  }
   //
   systematics->Init(decay);
   spectra->ComputeSystUncertainties(systematics,combineFeedDown);
@@ -681,7 +682,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
  
   // Draw the PbPb Eloss hypothesis histograms
   if(PbPbEloss){
-    AliHFPtSpectrum *CalcBins;
+    AliHFPtSpectrum *CalcBins=NULL;
     gStyle->SetPalette(1);
     TCanvas *canvasfcRcb = new TCanvas("canvasfcRcb","fc vs pt vs Rcb");
     //    histofcRcb->Draw("cont4z");
