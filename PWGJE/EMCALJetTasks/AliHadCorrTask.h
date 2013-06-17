@@ -35,7 +35,7 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   void                   DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches);
   void                   DoTrackLoop();
   Double_t               GetEtaSigma(Int_t pbin)                   const;
-  Int_t                  GetMomBin(Double_t pt)                    const;
+  UInt_t                 GetMomBin(Double_t pt)                    const;
   Double_t               GetPhiMean(Int_t pbin, Int_t centbin)     const;
   Double_t               GetPhiSigma(Int_t pbin, Int_t centbin)    const;
   Bool_t                 Run()                                          ;
