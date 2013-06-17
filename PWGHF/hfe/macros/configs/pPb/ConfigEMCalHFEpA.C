@@ -32,7 +32,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	hfecuts->SetMinRatioTPCclusters(0.6);						                    //Number of clusters (Found/Findable)
 	
 	//ITS
-	//hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);				//Require at least one cluster on SPD
+	hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);				//Require at least one cluster on SPD
 	hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);				            //Require at least one cluster on SPD
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
@@ -49,6 +49,11 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	hfecuts->SetVertexRange(10.);													//
 	//hfecuts->SetProductionVertex(0,0.3,0,0.3);									//
 ///_______________________________________________________________________________________________________________
+	// new cuts for event selection
+	
+	//hfecuts->SetUseCorrelationVertex();
+	//hfecuts->SetSPDVtxResolutionCut();
+	//hfecuts->SetpApileupCut();
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
@@ -71,7 +76,14 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	//if(isEMCal) task->SetEtaCut(-0.6,0.6);
 	//else task->SetEtaCut(-0.9,0.9);
 	
-	task->SetEtaCut(-0.6,0.6);
+	
+	if(configIndex==12) task->SetEtaCut(-0.5,0.5);
+	else if (configIndex==13) task->SetEtaCut(-0.4,0.4);
+	else if (configIndex==14) task->SetEtaCut(-0.3,0.3);
+	else if (configIndex==15) task->SetEtaCut(-0.2,0.2);
+	else if (configIndex==16) task->SetEtaCut(-0.6,0);
+	else if (configIndex==17) task->SetEtaCut(0,0.6);
+	else task->SetEtaCut(-0.6,0.6);
 	
 	if (configIndex==7) task->SetEoverPCut(0.85,1.2);
 	else if (configIndex==8) task->SetEoverPCut(0.75,1.25);

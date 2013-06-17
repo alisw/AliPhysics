@@ -906,21 +906,17 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	}
 	else
 	{
-		/// (has to be checked)
 		
-		const AliESDVertex *trkVtx = fESD->GetPrimaryVertex();
-		Float_t zvtx = trkVtx->GetZ();
-		fZvtx = zvtx;
-		if(TMath::Abs(zvtx) > 10) return;
 		
-		//Double_t NTracks = fESD->GetNumberOfTracks();
-		
-		/*const AliVVertex* trkVtx = fVevent->GetPrimaryVertex();
+			
+		/// ESD
+		const AliESDVertex* trkVtx = fESD->GetPrimaryVertex();
 		if(!trkVtx || trkVtx->GetNContributors()<=0) return;
 		TString vtxTtl = trkVtx->GetTitle();
 		if(!vtxTtl.Contains("VertexerTracks")) return;
 		Float_t zvtx = trkVtx->GetZ();
-		const AliVVertex* spdVtx = fVevent->GetPrimaryVertexSPD();
+		
+		const AliESDVertex* spdVtx = fESD->GetPrimaryVertexSPD();
 		if(spdVtx->GetNContributors()<=0) return;
 		TString vtxTyp = spdVtx->GetTitle();
 		Double_t cov[6]={0};
@@ -928,7 +924,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		Double_t zRes = TMath::Sqrt(cov[5]);
 		if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
 		if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-		if(TMath::Abs(zvtx) > 10) return;*/
+		if(TMath::Abs(zvtx) > 10) return;
 	}
 
 //______________________________________________________________________	
