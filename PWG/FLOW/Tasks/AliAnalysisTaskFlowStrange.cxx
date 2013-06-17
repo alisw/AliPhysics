@@ -107,6 +107,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fVZEsave(kFALSE),
   fVZEload(NULL),
   fVZEResponse(NULL),
+  fVZEmb(kFALSE),
   fVZEQA(NULL),
   fPsi2(0.0),
   fMassBins(0),
@@ -204,6 +205,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fVZEsave(kFALSE),
   fVZEload(NULL),
   fVZEResponse(NULL),
+  fVZEmb(kFALSE),
   fVZEQA(NULL),
   fPsi2(0.0),
   fMassBins(0),
@@ -1296,8 +1298,13 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
   Double_t extW[64];
   for(int i=0;i!=64;++i) extW[i]=1;
   if((!fVZEsave)&&(fVZEResponse)) {
-    Int_t ybinmin = fVZEResponse->GetYaxis()->FindBin(fCentPerMin+1e-6);
-    Int_t ybinmax = fVZEResponse->GetYaxis()->FindBin(fCentPerMax-1e-6);
+    Double_t minC = fCentPerMin, maxC = fCentPerMax;
+    if(fVZEmb) {
+      minC = 0;
+      maxC = 80;
+    }
+    Int_t ybinmin = fVZEResponse->GetYaxis()->FindBin(minC+1e-6);
+    Int_t ybinmax = fVZEResponse->GetYaxis()->FindBin(maxC-1e-6);
     for(int i=0;i!=64;++i) extW[i] = fVZEResponse->Integral(i+1,i+1,ybinmin,ybinmax);
     Double_t ring[8];
     for(int j=0; j!=8; ++j) {

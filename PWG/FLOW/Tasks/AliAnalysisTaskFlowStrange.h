@@ -66,7 +66,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
 
   void SetWhichPsi(Int_t val) {fWhichPsi=val;}
   void SetStoreVZEResponse(Bool_t val) {fVZEsave=val;}
-  void LoadVZEResponse(TList *val) {fVZEload=val;}
+  void LoadVZEResponse(TList *val, Bool_t val2=kFALSE) {fVZEload=val;fVZEmb=val2;}
   
   void SetRFPFilterBit(Int_t val) {fRFPFilterBit=val;}
   void SetRFPMinPt(Double_t val) {fRFPminPt=val;}
@@ -207,6 +207,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Bool_t  fVZEsave; // make vze response
   TList  *fVZEload; // adress to calibration file
   TH2D   *fVZEResponse; // vze response vs centrality class
+  Bool_t  fVZEmb;   // integrate response (linearity)
   TList  *fVZEQA;   // adress to qalist
   Double_t fPsi2;   // best estimation of Psi2
 
