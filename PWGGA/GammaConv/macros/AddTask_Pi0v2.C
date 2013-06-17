@@ -65,7 +65,7 @@ cutarray[21] = "1080001042192970023220000"; mesoncutarray[21] = "01522045000";
 cutarray[22] = "1080001042092970023220000"; mesoncutarray[22] = "01022085000";
 cutarray[23] = "1080001042092970023220000"; mesoncutarray[23] = "01022005000";
 
-AliAnalysisTask *AddTask_Pi0v2(Bool_t IsHeavyIon=kTRUE,Bool_t doSys=kTRUE){
+AliAnalysisTask *AddTask_Pi0v2(Int_t harmonic=2,Bool_t IsHeavyIon=kTRUE,Bool_t doSys=kTRUE){
 
     // standard with task
     printf("========================================================================================\n");
@@ -102,7 +102,7 @@ AliAnalysisTask *AddTask_Pi0v2(Bool_t IsHeavyIon=kTRUE,Bool_t doSys=kTRUE){
     else{
 	fV0ReaderCut = "0000000002084001001500000";
     }
-    fV0Reader=new AliV0ReaderV1("PhotonPi0v2");
+    fV0Reader=new AliV0ReaderV1(Form("PhotonPi0v%d",harmonic));
     mgr->AddTask(fV0Reader);
     ConfigV0Reader(fV0Reader,fV0ReaderCut.Data(),IsHeavyIon);
     mgr->ConnectInput(fV0Reader,  0, mgr->GetCommonInputContainer());
@@ -112,12 +112,9 @@ AliAnalysisTask *AddTask_Pi0v2(Bool_t IsHeavyIon=kTRUE,Bool_t doSys=kTRUE){
 
     //========= Add task to the ANALYSIS manager =====
 
-    AliAnalysisTaskPi0v2 *task = new AliAnalysisTaskPi0v2("dlohnerTask_Pi0v2");
-    if(doSys)SetupPi0v2(task,IsHeavyIon,isMC,"dlohner_Pi0v2",numberOfCuts);
-    else SetupPi0v2(task,IsHeavyIon,isMC,"dlohner_Pi0v2",1);
-    AliAnalysisTaskPi0v2 *task = new AliAnalysisTaskPi0v2("dlohnerTask_Pi0v3",3);
-    if(doSys)SetupPi0v2(task,IsHeavyIon,isMC,"dlohner_Pi0v3",numberOfCuts);
-    else SetupPi0v2(task,IsHeavyIon,isMC,"dlohner_Pi0v3",1);
+    AliAnalysisTaskPi0v2 *task = new AliAnalysisTaskPi0v2(Form("dlohnerTask_Pi0v%d",harmonic),harmonic);
+    if(doSys)SetupPi0v2(task,IsHeavyIon,isMC,Form("dlohner_Pi0v%d",harmonic),numberOfCuts);
+    else SetupPi0v2(task,IsHeavyIon,isMC,Form("dlohner_Pi0v%d",harmonic),1);
 
     return task;
 }
