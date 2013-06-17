@@ -47,7 +47,7 @@ AliFunctionsDiHadronPID::~AliFunctionsDiHadronPID()
 	// Destructor.
 
 } 
-
+/*
 // -----------------------------------------------------------------------
 Double_t AliFunctionsDiHadronPID::Gaussian1D(const Double_t *x, const Double_t *par) {
 
@@ -61,7 +61,7 @@ Double_t AliFunctionsDiHadronPID::Gaussian1D(const Double_t *x, const Double_t *
 	return (norm*gaussian);
 
 }
-
+*/
 // -----------------------------------------------------------------------
 Double_t AliFunctionsDiHadronPID::Gaussian1D(const Double_t xx, const Double_t integral, const Double_t mu, const Double_t sigma, const Double_t binwidth) {
 
@@ -72,7 +72,7 @@ Double_t AliFunctionsDiHadronPID::Gaussian1D(const Double_t xx, const Double_t i
 	return (norm*gaussian);
 
 }
-
+/*
 // -----------------------------------------------------------------------
 Double_t AliFunctionsDiHadronPID::Gaussian1DTail(const Double_t *x,const  Double_t *par) {
 
@@ -99,7 +99,7 @@ Double_t AliFunctionsDiHadronPID::Gaussian1DTail(const Double_t *x,const  Double
 	else return funcright;
 
 }
-
+*/
 // -----------------------------------------------------------------------
 Double_t AliFunctionsDiHadronPID::Gaussian1DTail(const Double_t xx, const Double_t integral, const Double_t mu, const Double_t sigma, const Double_t tail, const Double_t binwidth) {
 
@@ -175,7 +175,7 @@ Double_t AliFunctionsDiHadronPID::Gaussian2DTailXY(const Double_t xx, const Doub
 	return integral * GaussianTailX * GaussianTailY;
 
 }
-
+/*
 // -----------------------------------------------------------------------
 Double_t AliFunctionsDiHadronPID::Exponent(const Double_t *x, const Double_t *par) {
 
@@ -203,7 +203,7 @@ Double_t AliFunctionsDiHadronPID::SimpleTOFfitWithTail(const Double_t *x, const 
 	return (Gaussian1D(x,&par[0]) + Exponent(x,&par[4]));
 
 }
-
+*/
 // -----------------------------------------------------------------------
 //  PENALTY FUNCTIONS
 // -----------------------------------------------------------------------

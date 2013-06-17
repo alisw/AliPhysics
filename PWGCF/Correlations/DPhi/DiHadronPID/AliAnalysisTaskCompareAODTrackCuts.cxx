@@ -71,10 +71,9 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts():
 	fEventCuts(0x0),
 	fTrackCuts(0x0),
 	fInclusiveTimes(0x0),
-	fExternalTOFfile(0x0),
-	fInclusiveTimesIn(0x0),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
+	fLvsEtaProjections(0x0),
 	fCurrentAODEvent(0x0),
 	fCurrentAODTrack(0x0),
 	fCurrentDiHadronPIDTrack(0x0),
@@ -83,10 +82,6 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts():
 {
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	// Default Constructor.
-	for (Int_t ii = 0; ii<200; ii++) {fLvsEtaProj[ii] = 0x0;}
-	for (Int_t ii = 0; ii<100; ii++) {fInclusiveTimesInProj[ii] = 0x0;}
 
 }
 
@@ -102,10 +97,9 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts(const cha
 	fEventCuts(0x0),
 	fTrackCuts(0x0),
 	fInclusiveTimes(0x0),
-	fExternalTOFfile(0x0),
-	fInclusiveTimesIn(0x0),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
+	fLvsEtaProjections(0x0),
 	fCurrentAODEvent(0x0),
 	fCurrentAODTrack(0x0),
 	fCurrentDiHadronPIDTrack(0x0),
@@ -118,9 +112,6 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts(const cha
 	// Named Constructor. 
 	fTrackCuts = new TObjArray();
 	fTrackCuts->SetName("fTrackCuts");
-
-	for (Int_t ii = 0; ii<200; ii++) {fLvsEtaProj[ii] = 0x0;}
-	for (Int_t ii = 0; ii<100; ii++) {fInclusiveTimesInProj[ii] = 0x0;}
 
 	DefineInput(0,TChain::Class());
 	DefineOutput(1, TList::Class());
@@ -141,10 +132,13 @@ void AliAnalysisTaskCompareAODTrackCuts::UserCreateOutputObjects() {
 
 	// Getting a pointer to the analysis manager and input handler.
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
+	if (!manager) {AliFatal("Could not obtain analysis manager.");}
 	AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*> (manager->GetInputEventHandler());
-	
+	if (!inputHandler) {AliFatal("Could not obtain input handler.");}	
+
 	// Getting the pointer to the PID response object.
 	fPIDResponse = inputHandler->GetPIDResponse();
+	if (!fPIDResponse) {AliFatal("Could not obtain PID response.");}
 
 	// Create the output list.
 	fOutputList = new TList();
@@ -368,111 +362,105 @@ void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 } 
 
 // -----------------------------------------------------------------------
-Bool_t AliAnalysisTaskCompareAODTrackCuts::LoadExternalMismatchHistos(Int_t mismatchmethod) {
+Bool_t AliAnalysisTaskCompareAODTrackCuts::LoadExternalMismatchHistos(Int_t /*mismatchmethod*/) {
+
+	//
+	// Attempting to load a root file containing information needed
+	// to generate random TOF hits.
+ 	//
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
-	// Inputted histograms are loaded and projected properly.
-	if ((mismatchmethod < 0)||(mismatchmethod > 1)) {return 0;}
-
-	if (mismatchmethod == 0) {
-
-		AliInfo(Form("Loading histograms in file TOFmismatchHistos.root..."));
-
-		//fExternalTOFfile = TFile::Open("TOFmismatchHistos.root");
-		fExternalTOFfile = new TFile("TOFmismatchHistos.root","read");
-		fLvsEta = (TH2F*)fExternalTOFfile->Get("hLvsEta");
-		fT0Fill = (TH1F*)fExternalTOFfile->Get("hNewT0Fill");
-
-		// Make projections on the L axis.
-		for (Int_t ii = 0; ii < fLvsEta->GetNbinsX(); ii++) {
-
-			fLvsEtaProj[ii] = (TH1F*)fLvsEta->ProjectionY(Form("fLvsEtaProj_%i",ii),ii+1,ii+1);
-			fLvsEtaProj[ii]->SetDirectory(0);
-
-		}
-
+	// Opening external TOF file.
+	if (fDebug > 0) cout<<"Trying to open TOFmismatchHistos.root ..."<<endl;
+	TFile* fin = 0x0;
+	fin = TFile::Open("alien:///alice/cern.ch/user/m/mveldhoe/rootfiles/TOFmismatchHistos.root");
+	if (!fin) {
+		AliWarning("Couln't open TOFmismatchHistos, will not calculate mismatches...");
+		fCalculateTOFMismatch = kFALSE;
+		return kFALSE;
 	}
 
-	if (mismatchmethod == 1) {
+	// Check if the required histograms are present.
+	TH1F* tmp1 = (TH1F*)fin->Get("hNewT0Fill");
+	if (!tmp1) {
+		AliWarning("Couln't find hNewT0Fill, will not calculate mismatches...");
+		fCalculateTOFMismatch = kFALSE;
+		return kFALSE;	
+	}
+	TH2F* tmp2 = (TH2F*)fin->Get("hLvsEta");
+	if (!tmp2) {
+		AliWarning("Couln't find hLvsEta, will not calculate mismatches...");
+		fCalculateTOFMismatch = kFALSE;
+		return kFALSE;	
+	}	
 
-		AliInfo(Form("Loading histograms in file InclusiveTimes.root..."));
+	// Make a deep copy of the files in the histogram.
+	fT0Fill = (TH1F*)tmp1->Clone("fT0Fill");
+	fLvsEta = (TH2F*)tmp2->Clone("fLvsEta");
 
-		//fExternalTOFfile = TFile::Open("InclusiveTimes.root");
-		fExternalTOFfile = new TFile("InclusiveTimes.root","read");
-		fInclusiveTimesIn = (TH2F*)fExternalTOFfile->Get("fInclusiveTimesIn");
+	// Close the external file.
+	AliInfo("Closing external file.");
+	fin->Close();
 
-		// Make projections on the time axis.
-		for (Int_t ii = 0; ii < fInclusiveTimesIn->GetNbinsX(); ii++) {
+	// Creating a TObjArray for LvsEta projections.
+	const Int_t nbinseta = fLvsEta->GetNbinsX();
+	fLvsEtaProjections = new TObjArray(nbinseta);
+	fLvsEtaProjections->SetOwner(kTRUE);
 
-			fInclusiveTimesInProj[ii] = (TH1F*)fInclusiveTimesIn->ProjectionY(Form("fInclusiveTimesInProj_%i",ii),ii+1,ii+1);
-			fInclusiveTimesInProj[ii]->SetDirectory(0);
-
-		}
+	// Making the projections needed (excluding underflow/ overflow).
+	for (Int_t iEtaBin = 1; iEtaBin < (nbinseta + 1); iEtaBin++) {
+		TH1F* tmp = (TH1F*)fLvsEta->ProjectionY(Form("LvsEtaProjection_%i",iEtaBin),iEtaBin,iEtaBin);
+		tmp->SetDirectory(0);
+		fLvsEtaProjections->AddAt(tmp,iEtaBin - 1);
 	}
 
-	return 0;
+	return kTRUE;
 
 }
 
 // -----------------------------------------------------------------------
-Bool_t AliAnalysisTaskCompareAODTrackCuts::UnLoadExternalMismatchHistos() {
+Double_t AliAnalysisTaskCompareAODTrackCuts::GenerateRandomHit(Int_t /* method */, Double_t eta) {
+
+	//
+	// Returns a random TOF time.
+	//
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
-	AliInfo("Unloading external histo's");
-
-	for (Int_t ii = 0; ii < 100; ii++){
-		if (fLvsEtaProj[ii]) {
-			delete fLvsEtaProj[ii]; 
-			fLvsEtaProj[ii] = 0x0;
-		}
-	} 
-	for (Int_t ii = 0; ii < 200; ii++) {
-		if (fInclusiveTimesInProj[ii]) {
-			delete fInclusiveTimesInProj[ii]; 
-			fInclusiveTimesInProj[ii] = 0x0;
-			}
-		}
-
-	if (fExternalTOFfile) {fExternalTOFfile->Close();}
-	
-	return 0;
-
-}
-
-// -----------------------------------------------------------------------
-Double_t AliAnalysisTaskCompareAODTrackCuts::GenerateRandomHit(Int_t mismatchmethod, Double_t eta) {
-
-	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
-	if ((mismatchmethod < 0)||(mismatchmethod > 1)) {return -1.e21;}
-	if (TMath::Abs(eta) > 0.8) {return -1.e21;}
-
+	// Default (error) value:
 	Double_t rndhittime = -1.e21;
 
-	// Method as in Roberto's code.
-	if (mismatchmethod == 0) {
-
-		Int_t etabin = (Int_t)((eta+1.)*100.);
-
-		Double_t currentRndLength = fLvsEtaProj[etabin]->GetRandom(); // in cm.
-
-		Double_t currentRndTime = currentRndLength / (TMath::C() * 1.e2 / 1.e12);
-		Double_t t0fill = -1.26416e+04;
-
-		rndhittime = fT0Fill->GetRandom() - t0fill + currentRndTime;
-
+	// TOF mismatch flag is not turned on.
+	if (!fCalculateTOFMismatch) {
+		AliFatal("Called GenerateRandomHit() method, but flag fCalculateTOFMismatch not set.");
+		return rndhittime;
 	}
 
-	// Using length inclusive time distributions.
-	if (fMismatchMethod == 1) {
-		
-		Double_t abseta = TMath::Abs(eta);
-		Int_t etabin = (Int_t)(abseta*100.);
-		rndhittime = fInclusiveTimesInProj[etabin]->GetRandom();
-		
+	// TOF doesn't extend much further than 0.8.
+	if (TMath::Abs(eta) > 0.8) {
+		if (fDebug) {AliInfo("Tried to get a random hit for a track with eta > 0.8.");}
+		return rndhittime;
 	}
+
+	// Finding the bin of the eta.
+	TAxis* etaAxis = fLvsEta->GetXaxis();
+	Int_t etaBin = etaAxis->FindBin(eta);
+	if (etaBin == 0 || (etaBin == etaAxis->GetNbins() + 1)) {return rndhittime;}
+
+	const TH1F* lengthDistribution = (const TH1F*)fLvsEtaProjections->At(etaBin - 1);
+
+	if (!lengthDistribution) {
+		AliFatal("length Distribution not found.");
+		return rndhittime;
+	}
+
+	Double_t currentRndLength = lengthDistribution->GetRandom(); // in cm.
+
+	// Similar to Roberto's code.
+	Double_t currentRndTime = currentRndLength / (TMath::C() * 1.e2 / 1.e12);
+	Double_t t0fill = -1.26416e+04;
+	rndhittime = fT0Fill->GetRandom() - t0fill + currentRndTime;
 
 	return rndhittime;
 
@@ -483,7 +471,14 @@ void AliAnalysisTaskCompareAODTrackCuts::Terminate(Option_t*) {
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
-	if (fCalculateTOFMismatch) UnLoadExternalMismatchHistos();
+	if (fCalculateTOFMismatch) {
+		delete fT0Fill;
+		fT0Fill = 0x0;
+		delete fLvsEta;
+		fLvsEta = 0x0;
+		delete fLvsEtaProjections;
+		fLvsEtaProjections = 0x0;
+	}
 
 }
 

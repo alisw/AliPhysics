@@ -22,9 +22,8 @@ public:
 	virtual void Terminate(Option_t*);	
 
 // Mismatch related functions.
-	Bool_t LoadExternalMismatchHistos(Int_t mismatchmethod);			// For each mismatch method, external histo's are needed.
-	Bool_t UnLoadExternalMismatchHistos();
-	Double_t GenerateRandomHit(Int_t mismatchmethod, Double_t eta);		// Generates a random time for a certain eta.
+	Bool_t LoadExternalMismatchHistos(Int_t /*mismatchmethod*/);			// For each mismatch method, external histo's are needed.
+	Double_t GenerateRandomHit(Int_t /*mismatchmethod*/, Double_t eta);		// Generates a random time for a certain eta.
 
 // Run over MC or not.
 	void SetMC(Bool_t isMC = kTRUE) {fIsMC = isMC;} 
@@ -82,13 +81,10 @@ private:
 	// Inclusive track times.
 	TH2F* 							fInclusiveTimes;			//!
 
-	// Histograms and files to be loaded for the mismatch calculation.			
-	TFile* 							fExternalTOFfile;			//!
-	TH2F*							fInclusiveTimesIn;			//!
-	TH1F*							fInclusiveTimesInProj[100];	//!
-	TH1F*							fT0Fill;					//!
-	TH2F*							fLvsEta;					//!
-	TH1F*							fLvsEtaProj[200];			//!
+	// TOF mismatch stuff.
+	TH1F*							fT0Fill;					//
+	TH2F*							fLvsEta;					//
+	TObjArray*						fLvsEtaProjections;			//	
 
 
 	// Event and Track related objects.

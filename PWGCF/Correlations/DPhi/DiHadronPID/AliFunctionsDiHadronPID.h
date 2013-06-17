@@ -61,12 +61,13 @@ public:
 		const Double_t tailx, const Double_t taily, const Double_t binwidthx = 1., const Double_t binwidthy = 1.);
 
 	// FUNCTIONS THAT ARE NOT BEING USED ANYMORE.
+/*
 	static Double_t Gaussian1D(const Double_t *x, const Double_t *par);
 	static Double_t Gaussian1DTail(const Double_t *x, const Double_t *par);	
 	static Double_t Exponent(const Double_t *x, const Double_t *par);
 	static Double_t SimpleTOFfit(const Double_t *x, const Double_t *par);
 	static Double_t SimpleTOFfitWithTail(const Double_t *x, const Double_t *par);
-
+*/
 	// Penalty Functions.
 	static Double_t PolyPenalty(const Double_t xx, const Double_t center, const Double_t flatwidth, const Int_t polyorder);
 	static TCanvas* TestPolyPenalty(const Double_t range = 3., const Double_t center = 1., const Double_t flatwidth = 1., const Int_t polyorder = 3);
@@ -74,6 +75,14 @@ public:
 	// PID Expected signal functions.
 	static Double_t TOFExpTime(const Double_t pT, const Double_t eta, const Double_t mass);
 	static Double_t TPCExpdEdX(const Double_t pT, const Double_t eta, const Double_t mass);
+
+	// Standard Functions.
+	static Double_t Exponent(Double_t xx, Int_t sign, Double_t p0, Double_t p1) {return (sign*TMath::Exp(p0 + xx*p1));}
+	static Double_t Poly1(Double_t xx, Double_t p0, Double_t p1) {return (p0 + p1*xx);}
+	static Double_t Poly2(Double_t xx, Double_t p0, Double_t p1, Double_t p2) {return (p0 + p1*xx + p2*xx*xx);}
+	static Double_t Poly3(Double_t xx, Double_t p0, Double_t p1, Double_t p2, Double_t p3) {return (p0 + p1*xx + p2*xx*xx + p3*xx*xx*xx);}
+	static Double_t Poly4(Double_t xx, Double_t p0, Double_t p1, Double_t p2, Double_t p3, Double_t p4) {return (p0 + p1*xx + p2*xx*xx + p3*xx*xx*xx + p4*xx*xx*xx*xx);}
+	static Double_t Poly5(Double_t xx, Double_t p0, Double_t p1, Double_t p2, Double_t p3, Double_t p4, Double_t p5) {return (p0 + p1*xx + p2*xx*xx + p3*xx*xx*xx + p4*xx*xx*xx*xx + p5*xx*xx*xx*xx*xx);}				
 
 };
 
