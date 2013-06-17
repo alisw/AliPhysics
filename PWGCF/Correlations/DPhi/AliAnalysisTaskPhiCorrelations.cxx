@@ -142,6 +142,7 @@ fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
 fRejectCentralityOutliers(kFALSE),
+fRejectZeroTrackEvents(kFALSE),
 fRemoveWeakDecays(kFALSE),
 fRemoveDuplicates(kFALSE),
 fSkipFastCluster(kFALSE),
@@ -409,6 +410,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
   settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
+  settingsTree->Branch("fRejectZeroTrackEvents", &fRejectZeroTrackEvents,"RejectZeroTrackEvents/O");
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
   settingsTree->Branch("fRemoveDuplicates", &fRemoveDuplicates,"RemoveDuplicates/O");
   settingsTree->Branch("fSkipFastCluster", &fSkipFastCluster,"SkipFastCluster/O");
@@ -1016,6 +1018,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (reject)
   {
     AliInfo(Form("Rejecting event due to centrality vs tracks correlation: %f %d", centrality, tracks->GetEntriesFast()));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    delete tracks;
+    return;
+  }
+  
+  if (fRejectZeroTrackEvents && tracks->GetEntriesFast() == 0)
+  {
+    AliInfo(Form("Rejecting event because it has no tracks: %f %d", centrality, tracks->GetEntriesFast()));
     fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
     delete tracks;
     return;
