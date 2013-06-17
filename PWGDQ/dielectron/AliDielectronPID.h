@@ -117,8 +117,8 @@ private:
   static Double_t fgCorrdEdx;     //!dEdx correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
-  static TF1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
-  static TF1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
+  static TF1    *fgFunCntrdCorr;  //!function for correction of electron sigma (centroid)
+  static TF1    *fgFunWdthCorr;   //!function for correction of electron sigma (width)
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
   static Double_t GetPIDCorr(const AliVTrack *track, TF1 *fun);
