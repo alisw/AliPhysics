@@ -752,6 +752,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   
   Bool_t checkPIDInfo[2]={kTRUE,kTRUE};
   Double_t sigma_tmp[3]={fPidHF->GetSigma(0),fPidHF->GetSigma(1),fPidHF->GetSigma(2)};
+  Bool_t isTOFused=fPidHF->GetTOF(),isCompat=fPidHF->GetCompat();
   for(Int_t daught=0;daught<2;daught++){
     //Loop con prongs
     AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught);
@@ -774,11 +775,11 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
       }else{
 	fPidHF->SetTOF(kFALSE);
 	combinedPID[daught][1]=fPidHF->MakeRawPid(aodtrack,2);
-	fPidHF->SetTOF(kTRUE);
-	fPidHF->SetCompat(kTRUE);
+	if(isTOFused)fPidHF->SetTOF(kTRUE);
+	if(isCompat)fPidHF->SetCompat(kTRUE);
       }
     }
-
+  
     if(combinedPID[daught][0]<=-1&&combinedPID[daught][1]<=-1){ // if not a K- and not a pi- both D0 and D0bar excluded
       isD0D0barPID[0]=0;
       isD0D0barPID[1]=0;
