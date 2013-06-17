@@ -1615,7 +1615,7 @@ Double_t AliGenMUONlib::PtUpsilonPP7000(const Double_t *px, const Double_t */*du
 Double_t AliGenMUONlib::PtUpsilonPP8000(const Double_t *px, const Double_t */*dummy*/)
 {
 // Upsilon pT
-// pp 7 TeV
+// pp 8 TeV
 //
   return PtUpsilonPPdummy(*px,8000);
 }
@@ -3893,8 +3893,6 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiPP7000;
 	} else if (sname == "pp 8") {
 	    func=PtJpsiPP8000;
-	} else if (sname == "pp 8") {
-	    func=PtJpsiPP8000;
 	} else if (sname == "pp 2.76") {
 	    func=PtJpsiPP2760;
 	} else if (sname == "pp 4.4") {
@@ -4012,6 +4010,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonPP;
 	} else if (sname == "pp 7") {
 	    func=PtUpsilonPP7000;
+       } else if (sname == "pp 8") {
+           func=PtUpsilonPP8000;
 	} else if (sname == "pp 2.76") {
 	    func=PtUpsilonPP2760;
 	} else if (sname == "pp 4.4") {
