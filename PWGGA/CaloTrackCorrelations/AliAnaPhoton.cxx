@@ -3281,11 +3281,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   if( fFillEMCALBCHistograms && fCalorimeter=="EMCAL" &&
       ( bad || exotic )  && idTrig >= 0)
   {
-//    printf("Index %d, Id %d,  bad %d, exo %d\n",
-//           GetReader()->GetTriggerClusterIndex(),
-//           GetReader()->GetTriggerClusterId(),
-//           GetReader()->IsBadCellTriggerEvent(),
-//           GetReader()->IsExoticEvent() );
+    //    printf("Index %d, Id %d,  bad %d, exo %d\n",
+    //           GetReader()->GetTriggerClusterIndex(),
+    //           GetReader()->GetTriggerClusterId(),
+    //           GetReader()->IsBadCellTriggerEvent(),
+    //           GetReader()->IsExoticEvent() );
     
     TClonesArray * clusterList = 0;
     TString  clusterListName   = GetReader()->GetEMCALClusterListName();
@@ -3297,59 +3297,62 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     AliVCluster  *  badClusTrig = 0;
     if(clusterList) badClusTrig = (AliVCluster*) clusterList->At(idTrig);
     else            badClusTrig = GetReader()->GetInputEvent()->GetCaloCluster(idTrig);
-
-    if(!badClusTrig) printf("AliAnaPhoton::MakeAnalysisFillAOD() - No cluster (bad-exotic trigger) found with requested index %d \n",idTrig);
     
-    TLorentzVector momBadClus;
- 
-    badClusTrig->GetMomentum(momBadClus,GetVertex(0));
-  
-    Float_t etaclusterBad = momBadClus.Eta();
-    Float_t phiclusterBad = momBadClus.Phi();
-    if( phiclusterBad < 0 ) phiclusterBad+=TMath::TwoPi();
-    Float_t tofclusterBad = badClusTrig->GetTOF()*1.e9;
-    Float_t eclusterBad   = badClusTrig->E();
-
-    if( bad && exotic )
+    if(!badClusTrig)
+      printf("AliAnaPhoton::MakeAnalysisFillAOD() - No cluster (bad-exotic trigger) found with requested index %d \n",idTrig);
+    else
     {
-      if(GetReader()->IsTriggerMatched())
+      TLorentzVector momBadClus;
+      
+      badClusTrig->GetMomentum(momBadClus,GetVertex(0));
+      
+      Float_t etaclusterBad = momBadClus.Eta();
+      Float_t phiclusterBad = momBadClus.Phi();
+      if( phiclusterBad < 0 ) phiclusterBad+=TMath::TwoPi();
+      Float_t tofclusterBad = badClusTrig->GetTOF()*1.e9;
+      Float_t eclusterBad   = badClusTrig->E();
+      
+      if( bad && exotic )
       {
-        fhEtaPhiTriggerEMCALBCBadExoticCluster->Fill(etaclusterBad, phiclusterBad);
-        fhTimeTriggerEMCALBCBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad);
+        if(GetReader()->IsTriggerMatched())
+        {
+          fhEtaPhiTriggerEMCALBCBadExoticCluster->Fill(etaclusterBad, phiclusterBad);
+          fhTimeTriggerEMCALBCBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad);
+        }
+        else
+        {
+          fhEtaPhiTriggerEMCALBCUMBadExoticCluster->Fill(etaclusterBad, phiclusterBad);
+          fhTimeTriggerEMCALBCUMBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad);
+        }
       }
-      else
+      else if( bad && !exotic )
       {
-        fhEtaPhiTriggerEMCALBCUMBadExoticCluster->Fill(etaclusterBad, phiclusterBad);
-        fhTimeTriggerEMCALBCUMBadExoticCluster  ->Fill(eclusterBad,   tofclusterBad);
-      }
-    }
-    else if( bad && !exotic )
-    {
-      if(GetReader()->IsTriggerMatched())
+        if(GetReader()->IsTriggerMatched())
+        {
+          fhEtaPhiTriggerEMCALBCBadCluster->Fill(etaclusterBad, phiclusterBad);
+          fhTimeTriggerEMCALBCBadCluster  ->Fill(eclusterBad,   tofclusterBad);
+        }
+        else
+        {
+          fhEtaPhiTriggerEMCALBCUMBadCluster->Fill(etaclusterBad, phiclusterBad);
+          fhTimeTriggerEMCALBCUMBadCluster  ->Fill(eclusterBad,   tofclusterBad);
+        }
+      }// Bad cluster trigger
+      else if( !bad && exotic )
       {
-        fhEtaPhiTriggerEMCALBCBadCluster->Fill(etaclusterBad, phiclusterBad);
-        fhTimeTriggerEMCALBCBadCluster  ->Fill(eclusterBad,   tofclusterBad);
+        if(GetReader()->IsTriggerMatched())
+        {
+          fhEtaPhiTriggerEMCALBCExoticCluster->Fill(etaclusterBad, phiclusterBad);
+          fhTimeTriggerEMCALBCExoticCluster  ->Fill(eclusterBad, tofclusterBad);
+        }
+        else
+        {
+          fhEtaPhiTriggerEMCALBCUMExoticCluster->Fill(etaclusterBad, phiclusterBad);
+          fhTimeTriggerEMCALBCUMExoticCluster  ->Fill(eclusterBad, tofclusterBad);
+        }
       }
-      else
-      {
-        fhEtaPhiTriggerEMCALBCUMBadCluster->Fill(etaclusterBad, phiclusterBad);
-        fhTimeTriggerEMCALBCUMBadCluster  ->Fill(eclusterBad,   tofclusterBad);
-      }
-    }// Bad cluster trigger
-    else if( !bad && exotic )
-    {
-      if(GetReader()->IsTriggerMatched())
-      {
-        fhEtaPhiTriggerEMCALBCExoticCluster->Fill(etaclusterBad, phiclusterBad);
-        fhTimeTriggerEMCALBCExoticCluster  ->Fill(eclusterBad, tofclusterBad);
-      }
-      else
-      {
-        fhEtaPhiTriggerEMCALBCUMExoticCluster->Fill(etaclusterBad, phiclusterBad);
-        fhTimeTriggerEMCALBCUMExoticCluster  ->Fill(eclusterBad, tofclusterBad);
-      }
-    }
-  }
+    }// cluster exists
+  } // study bad/exotic trigger BC
   
   //Init arrays, variables, get number of clusters
   TLorentzVector mom, mom2 ;
