@@ -66,6 +66,7 @@ AliAnalysisTaskSE(),
   fBinLimsCorr(),
   fPtThreshLow(),
   fPtThreshUp(), 
+  fD0Eff(),
   fEvents(0),
   fAlreadyFilled(kFALSE),
   fOutputMass(0),
@@ -102,6 +103,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fBinLimsCorr(),
   fPtThreshLow(),
   fPtThreshUp(),
+  fD0Eff(),
   fEvents(0),
   fAlreadyFilled(kFALSE),
   fOutputMass(0),
@@ -156,6 +158,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fBinLimsCorr(source.fBinLimsCorr),
   fPtThreshLow(source.fPtThreshLow),
   fPtThreshUp(source.fPtThreshUp),
+  fD0Eff(source.fD0Eff),
   fEvents(source.fEvents),
   fAlreadyFilled(source.fAlreadyFilled),
   fOutputMass(source.fOutputMass),
@@ -236,6 +239,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fBinLimsCorr = orig.fBinLimsCorr;
   fPtThreshLow = orig.fPtThreshLow;
   fPtThreshUp = orig.fPtThreshUp;
+  fD0Eff = orig.fD0Eff;
   fEvents = orig.fEvents;
   fAlreadyFilled = orig.fAlreadyFilled;
   fOutputMass = orig.fOutputMass;
@@ -296,9 +300,9 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys);
   fCorrelatorKc = new AliHFCorrelator("CorrelatorKc",fCutsTracks,fSys);
   fCorrelatorK0 = new AliHFCorrelator("CorrelatorK0",fCutsTracks,fSys);
-  fCorrelatorTr->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);// set the Delta Phi Interval you want (in this case -0.5Pi to 1.5 Pi)
-  fCorrelatorKc->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);
-  fCorrelatorK0->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);
+  fCorrelatorTr->SetDeltaPhiInterval(-TMath::Pi()/2+TMath::Pi()/32.,3*TMath::Pi()/2+TMath::Pi()/32.);// set the Delta Phi Interval you want 
+  fCorrelatorKc->SetDeltaPhiInterval(-TMath::Pi()/2+TMath::Pi()/32.,3*TMath::Pi()/2+TMath::Pi()/32.);
+  fCorrelatorK0->SetDeltaPhiInterval(-TMath::Pi()/2+TMath::Pi()/32.,3*TMath::Pi()/2+TMath::Pi()/32.);
   fCorrelatorTr->SetEventMixing(fMixing);// sets the analysis on a single event (kFALSE) or mixed events (kTRUE)
   fCorrelatorKc->SetEventMixing(fMixing);
   fCorrelatorK0->SetEventMixing(fMixing);
@@ -335,40 +339,61 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   fOutputStudy->SetOwner();
   fOutputStudy->SetName("MCstudyplots");
 
-  TString nameMass=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ";
+  TString nameMass=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassWg=" ",nameSgnWg=" ", nameBkgWg=" ", nameRflWg=" ";
 
   for(Int_t i=0;i<fCutsD0->GetNPtBins();i++){
 
     nameMass="histMass_";
     nameMass+=i;
+    nameMassWg="histMass_WeigD0Eff_";
+    nameMassWg+=i;
     nameSgn="histSgn_";
     nameSgn+=i;
+    nameSgnWg="histSgn_WeigD0Eff_";
+    nameSgnWg+=i;
     nameBkg="histBkg_";
     nameBkg+=i;
+    nameBkgWg="histBkg_WeigD0Eff_";
+    nameBkgWg+=i;
     nameRfl="histRfl_";
     nameRfl+=i;
+    nameRflWg="histRfl_WeigD0Eff_";
+    nameRflWg+=i;
 
     //histograms of invariant mass distributions
 
     //MC signal
     if(fReadMC){
       TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",120,1.5648,2.1648);
+      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "D^{0} invariant mass - MC; M [GeV] - weight 1/D0eff; Entries",120,1.5648,2.1648);
       tmpSt->Sumw2();
+      tmpStWg->Sumw2();
 
       //Reflection: histo filled with D0Mass which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
       TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",120,1.5648,2.1648);
+      TH1F* tmpRtWg = new TH1F(nameRflWg.Data(), "Reflected signal invariant mass - MC - weight 1/D0eff; M [GeV]; Entries",120,1.5648,2.1648);
       TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",120,1.5648,2.1648);
+      TH1F* tmpBtWg = new TH1F(nameBkgWg.Data(), "Background invariant mass - MC - weight 1/D0eff; M [GeV]; Entries",120,1.5648,2.1648);
       tmpBt->Sumw2();
+      tmpBtWg->Sumw2();
       tmpRt->Sumw2();
+      tmpRtWg->Sumw2();
       fOutputMass->Add(tmpSt);
+      fOutputMass->Add(tmpStWg);
       fOutputMass->Add(tmpRt);
+      fOutputMass->Add(tmpRtWg);
       fOutputMass->Add(tmpBt);
+      fOutputMass->Add(tmpBtWg);
     }
 
     //mass
     TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",120,1.5648,2.1648);
     tmpMt->Sumw2();
     fOutputMass->Add(tmpMt);
+    //mass weighted by 1/D0eff
+    TH1F* tmpMtwg = new TH1F(nameMassWg.Data(),"D^{0} invariant mass - weight 1/D0eff; M [GeV]; Entries",120,1.5648,2.1648);
+    tmpMtwg->Sumw2();
+    fOutputMass->Add(tmpMtwg);
   }
 
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
@@ -614,7 +639,9 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
     for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
- 
+
+      if(d->Pt()<2.) continue; //to save time and merging memory...
+
       if(d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
   	fNentries->Fill(2);
   	continue; //skip the D0 from Dstar  
@@ -762,20 +789,36 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+          fillthis="histSgn_WeigD0Eff_";
+          fillthis+=ptbin;
+          Double_t effD0 = fD0Eff.at(ptbin);
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
 	} else{ //it was a D0bar
 	  fillthis="histRfl_";
 	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+ 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+          fillthis="histRfl_WeigD0Eff_";
+          fillthis+=ptbin;
+          Double_t effD0 = fD0Eff.at(ptbin);
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
 	}
       } else {//background
 	fillthis="histBkg_";
 	fillthis+=ptbin;
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+        fillthis="histBkg_WeigD0Eff_";
+        fillthis+=ptbin;
+        Double_t effD0 = fD0Eff.at(ptbin);
+        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       }
     }else{
       fillthis="histMass_";
       fillthis+=ptbin;
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+      fillthis="histMass_WeigD0Eff_";
+      fillthis+=ptbin;
+      Double_t effD0 = fD0Eff.at(ptbin);
+      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
     }
      
   }
@@ -790,20 +833,36 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+          fillthis="histSgn_WeigD0Eff_";
+          fillthis+=ptbin;
+          Double_t effD0 = fD0Eff.at(ptbin);
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
 	} else{
 	  fillthis="histRfl_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+          fillthis="histRfl_WeigD0Eff_";
+          fillthis+=ptbin;
+          Double_t effD0 = fD0Eff.at(ptbin);
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
 	}
       } else {//background or LS
 	fillthis="histBkg_";
 	fillthis+=ptbin;
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+        fillthis="histBkg_WeigD0Eff_";
+        fillthis+=ptbin;
+        Double_t effD0 = fD0Eff.at(ptbin);
+        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
       }
     }else{
       fillthis="histMass_";
       fillthis+=ptbin;
       ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar);
+      fillthis="histMass_WeigD0Eff_";
+      fillthis+=ptbin;
+      Double_t effD0 = fD0Eff.at(ptbin);
+      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
     }
   }
 
@@ -906,13 +965,13 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   //These for limits in THnSparse (one per bin, same limits). 
   //Vars: DeltaPhi, InvMass, PtTrack, Displacement, DeltaEta
   Int_t nBinsPhi[5] = {32,150,6,3,16};
-  Double_t binMinPhi[5] = {-TMath::Pi()/2,1.6,0.,0.,-1.6};  //is the minimum for all the bins
-  Double_t binMaxPhi[5] = {3*TMath::Pi()/2,2.2,3.0,3.,1.6};  //is the maximum for all the bins
+  Double_t binMinPhi[5] = {-TMath::Pi()/2.+TMath::Pi()/32.,1.6,0.,0.,-1.6};  //is the minimum for all the bins
+  Double_t binMaxPhi[5] = {3*TMath::Pi()/2.+TMath::Pi()/32.,2.2,3.0,3.,1.6};  //is the maximum for all the bins
 
   //Vars: DeltaPhi, InvMass, DeltaEta
   Int_t nBinsMix[3] = {32,150,16};
-  Double_t binMinMix[3] = {-TMath::Pi()/2,1.6,-1.6};  //is the minimum for all the bins
-  Double_t binMaxMix[3] = {3*TMath::Pi()/2,2.2,1.6};  //is the maximum for all the bins
+  Double_t binMinMix[3] = {-TMath::Pi()/2.+TMath::Pi()/32.,1.6,-1.6};  //is the minimum for all the bins
+  Double_t binMaxMix[3] = {3*TMath::Pi()/2.+TMath::Pi()/32.,2.2,1.6};  //is the maximum for all the bins
 
   for(Int_t i=0;i<fNPtBinsCorr;i++){
 
@@ -1465,21 +1524,23 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       AliReducedParticle* track = fCorrelatorTr->GetAssociatedParticle();
 
       if(!fMixing) {      
-	/*if(!track->CheckSoftPi()) { //removal of soft pions
+	if(!track->CheckSoftPi()) { //removal of soft pions
           if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0);
           if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0bar);
           continue;
         } else { //not a soft pion
           if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0);
           if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar);
-        }*/
+        }
         Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
         if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1]) continue; //discards daughters of candidate
       }
       if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
 
-      Double_t eff = track->GetWeight(); //extract track efficiency
-
+      Double_t effTr = track->GetWeight(); //extract track efficiency
+      Double_t effD0 = fD0Eff.at(ptbin); 
+      Double_t eff = effTr*effD0;
+ 
       FillSparsePlots(mcArray,mInv,origD0,PDGD0,track,ptbin,kTrack,1./eff); //fills for charged tracks, weight = 1./eff
 
       if(!fMixing) N_Charg++;
@@ -2108,6 +2169,10 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "PtBin tresh. tracks up----\n";
   for (int i=0; i<fNPtBinsCorr; i++) {
     cout << fPtThreshUp.at(i) << "; ";
+  }
+  cout << "D0 efficiencies:----\n";
+  for (int i=0; i<fNPtBinsCorr; i++) {
+    cout << fD0Eff.at(i) << "; ";
   }
   cout << "\n--------------------------\n";
   cout << "D0 Eta cut for Correl = "<<fEtaForCorrel<<"\n";

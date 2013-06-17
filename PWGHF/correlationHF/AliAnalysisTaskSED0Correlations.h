@@ -71,6 +71,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetPtBinsLimsCorr(Float_t* ptlims) {for(int i=0;i<=fNPtBinsCorr;i++) {fBinLimsCorr.push_back((Double_t)ptlims[i]);}}
   void SetPtTreshLow(Double_t* pttreshlow) {for(int i=0;i<fNPtBinsCorr;i++) {fPtThreshLow.push_back(pttreshlow[i]);}}
   void SetPtTreshUp(Double_t* pttreshup) {for(int i=0;i<fNPtBinsCorr;i++) {fPtThreshUp.push_back(pttreshup[i]);}}
+  void SetD0Efficiency(Double_t* effD0) {for(int i=0;i<fNPtBinsCorr;i++) {fD0Eff.push_back(effD0[i]);}}
+
   void PrintBinsAndLimits();
   Int_t PtBinCorr(Double_t pt) const;
   void SetEvMixing(Bool_t mix) {fMixing=mix;}
@@ -98,6 +100,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
   std::vector<Double_t>  fPtThreshLow;        // pT treshold of hadrons - low
   std::vector<Double_t>  fPtThreshUp;         // pT treshold of hadrons - up
+  std::vector<Double_t>  fD0Eff;              // D0 efficiencies
 
   Int_t     fEvents;		  	// EventCounter
   Bool_t    fAlreadyFilled;	  	// D0 in an event already analyzed (for track distribution plots)
@@ -124,7 +127,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t    fIsRejectSDDClusters; 	// flag to reject events with SDD clusters
   Bool_t    fFillGlobal;          	// flag to fill global plots (in loops on tracks and V0 for each event)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,2); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Correlations,3); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif
