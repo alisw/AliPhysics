@@ -30,8 +30,11 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
   void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max;  }
   void                   SetPtSpectrum(TH1 *f)                 { fPtSpectrum   = f;    }
-  void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",250,f->GetXmin(),f->GetXmax()); 
+  void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",1000,f->GetXmin(),f->GetXmax()); 
                                                                  fPtSpectrum->Add(f); }
+  void                   SetDensitySpectrum(TH1 *f)            { fDensitySpectrum = f;    }
+  void                   SetDensitySpectrum(TF1 *f)            { fDensitySpectrum = new TH1F("densitypectrum","densitypectrum",1000,f->GetXmin(),f->GetXmax()); 
+                                                                 fDensitySpectrum->Add(f); }
 
   void                   SetMC(Bool_t a)                       { fIsMC         = a   ; }
 
@@ -93,7 +96,8 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fNCells;                 // how many cells are being processed
   Int_t                  fNTracks;                // how many tracks are being processed
   Int_t                  fMarkMC;                 // which MC label is to be used (default=100)
-  TH1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
+  TH1                   *fPtSpectrum;             // pt spectrum to extract random pt values
+  TH1                   *fDensitySpectrum;        // particle density spectrum to extract random density values
   Bool_t                 fQAhistos;               // draw QA histograms
   Bool_t                 fIsInit;                 //!=true if initialized
   AliEMCALGeometry      *fGeom;                   //!pointer to EMCal geometry
@@ -117,6 +121,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 8) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 9) // Jet modelling task
 };
 #endif

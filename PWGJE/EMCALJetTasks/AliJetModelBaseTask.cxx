@@ -55,6 +55,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fNTracks(0),
   fMarkMC(99999),
   fPtSpectrum(0),
+  fDensitySpectrum(0),
   fQAhistos(kFALSE),
   fIsInit(0),
   fGeom(0),
@@ -106,6 +107,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fNTracks(1),
   fMarkMC(99999),
   fPtSpectrum(0),
+  fDensitySpectrum(0),
   fQAhistos(drawqa),
   fIsInit(0),
   fGeom(0),
@@ -181,6 +183,12 @@ void AliJetModelBaseTask::UserExec(Option_t *)
       fOutClusters->Delete();
     if (fOutMCParticles)
       fOutMCParticles->Delete();
+  }
+
+  if (fDensitySpectrum) {
+    fNTracks = fDensitySpectrum->GetRandom();
+    fNCells = fDensitySpectrum->GetRandom();
+    fNClusters = fDensitySpectrum->GetRandom();
   }
   
   // Clear map
@@ -265,7 +273,7 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     }
   }
 
-  if (fNTracks > 0 && !fTracksName.IsNull()) {
+  if (!fTracksName.IsNull()) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
       AliWarning(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
@@ -297,7 +305,7 @@ Bool_t AliJetModelBaseTask::ExecOnce()
     }
   }
 
-  if (fNClusters > 0 && !fCaloName.IsNull()) {
+  if (!fCaloName.IsNull()) {
     fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
  
     if (!fClusters) {
