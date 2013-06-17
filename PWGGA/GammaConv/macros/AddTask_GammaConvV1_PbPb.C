@@ -169,7 +169,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       } else if (trainConfig == 3){  
         if (i==0) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_0020", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_0020");
         if (i==1) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_0040", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_0040");
-        if (i==2) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_4080", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_4080");i
+        if (i==2) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_4080", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_4080");
         if (i==3) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_0080", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_0080");
       } else if (trainConfig == 4){     
          if (i==0) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kTRUE, fileNameInputForWeighting, "Pi0_Hijing_PbPb_2760GeV_0010", "", "K0s_RatioDataToMC_Hijing_PbPb_2760GeV_0010");
