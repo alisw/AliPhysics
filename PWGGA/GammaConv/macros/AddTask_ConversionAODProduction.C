@@ -43,7 +43,7 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
     fV0Reader->SetCreateAODs(kTRUE);
     fV0Reader->SetUseOwnXYZCalculation(kTRUE);
     fV0Reader->SetUseAODConversionPhoton(kTRUE);
-    fV0Reader->CheckAODConsistency();
+//     fV0Reader->CheckAODConsistency();
 
     AliV0ReaderV1 *fV0ReaderB=new AliV0ReaderV1("ConvGammaAODProductionB");
     fV0ReaderB->SetCreateAODs(kTRUE);
