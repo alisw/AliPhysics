@@ -1,4 +1,4 @@
-AliAnalysisTask AddTaskEMCalHFEpA(
+AliAnalysisTask *AddTaskEMCalHFEpA(
 
 			Bool_t 	isMC 			= kFALSE, 
 			Int_t 	triggerIndex 	= 0, 
@@ -26,7 +26,6 @@ AliAnalysisTask AddTaskEMCalHFEpA(
 	//Config Task
 	//gROOT->LoadMacro("ConfigEMCalHFEpA.C");
         gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
-	//AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal, EMCalThreshould, period);//test (period)
 	AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal, EMCalThreshould);
 	
 	//_______________________
@@ -43,11 +42,13 @@ AliAnalysisTask AddTaskEMCalHFEpA(
 	
 	mgr->AddTask(task);
 	
-	//Create containers for input/output
-	
 	TString containerName = mgr->GetCommonFileName();
 	containerName += ":HFE_EMCal_pPb_cris";
+	containerName += Form("_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex,EMCalThreshould);
 	
+
+	
+	//Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_RpPb_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
 

@@ -1532,6 +1532,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     // vertex 
     AliKFVertex primV(*pVtx);
     primV += recg;
+    primV -= ge1;
+    primV -= ge2;
     recg.SetProductionVertex(primV);
     
     // check chi2
