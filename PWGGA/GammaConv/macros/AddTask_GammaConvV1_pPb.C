@@ -43,6 +43,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
    //=========  Set Cutnumber for V0Reader ================================
    TString cutnumber = "8000000060084001001500000"; 
    Bool_t doEtaShift = kFALSE;
+   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
    if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
       AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
@@ -71,10 +72,6 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 
       AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
-      //================================================
-      //              data containers for V0Reader
-      //================================================
-      AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
       //connect input V0Reader
       mgr->AddTask(fV0ReaderV1);
       mgr->ConnectInput(fV0ReaderV1,0,cinput);
@@ -83,8 +80,6 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 
    //================================================
    //========= Add task to the ANALYSIS manager =====
-   //================================================
-   //              data containers
    //================================================
    //            find input container
    AliAnalysisTaskGammaConvV1 *task=NULL;
@@ -98,7 +93,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
    TString *mesonCutArray = new TString[numberOfCuts];
    Bool_t doEtaShiftIndCuts = kFALSE;
    TString stringShift = "";
-   if(trainConfig === 1){ 
+   if(trainConfig == 1){ 
       // Shifting in pPb direction
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
@@ -198,7 +193,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 
    //connect containers
    AliAnalysisDataContainer *coutput =
-      mgr->CreateContainer("GammaConvV1", TList::Class(),
+      mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
                            AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
 
    mgr->AddTask(task);

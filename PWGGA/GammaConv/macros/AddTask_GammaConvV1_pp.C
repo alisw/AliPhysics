@@ -1,7 +1,7 @@
 void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC 
                               Bool_t enableQAMesonTask = kFALSE, //enable QA in AliAnalysisTaskGammaConvV1
-                              Bool_t enableQAPhotonTask = kFALSE // enable additional QA task
+                              Bool_t enableQAPhotonTask = kFALSE, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root" // path to file for weigting input
                            ) {
 
@@ -42,6 +42,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
    
    //=========  Set Cutnumber for V0Reader ================================
    TString cutnumber = "0000000002084000002200000"; 
+   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
    if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
@@ -70,10 +71,6 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
 
       AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
-      //================================================
-      //              data containers for V0Reader
-      //================================================
-      AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
       //connect input V0Reader
       mgr->AddTask(fV0ReaderV1);
       mgr->ConnectInput(fV0ReaderV1,0,cinput);
@@ -82,9 +79,6 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
 
    //================================================
    //========= Add task to the ANALYSIS manager =====
-   //================================================
-   //              data containers
-   //================================================
    //            find input container
    AliAnalysisTaskGammaConvV1 *task=NULL;
    task= new AliAnalysisTaskGammaConvV1(Form("GammaConvV1_%i",trainConfig));
@@ -96,7 +90,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
    TString *cutarray = new TString[numberOfCuts];
    TString *mesonCutArray = new TString[numberOfCuts];
 
-   if(trainConfig === 1){
+   if(trainConfig == 1){
       cutarray[ 0] = "0000012002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
       cutarray[ 1] = "0001012002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
       cutarray[ 2] = "0000012002093260003800000"; mesonCutArray[2] = "01631031009"; //standard cut Gamma pp 2-76TeV , only boxes
@@ -151,7 +145,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
 
    //connect containers
    AliAnalysisDataContainer *coutput =
-      mgr->CreateContainer("GammaConvV1", TList::Class(),
+      mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
                            AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
 
    mgr->AddTask(task);
