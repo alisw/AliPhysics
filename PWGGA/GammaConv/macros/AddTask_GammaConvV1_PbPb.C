@@ -42,7 +42,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    
    //=========  Set Cutnumber for V0Reader ================================
    TString cutnumber = "1000000000084001001500000"; 
-   
+   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
    if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
       AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
@@ -70,10 +70,6 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 
       AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
-      //================================================
-      //              data containers for V0Reader
-      //================================================
-      AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
       //connect input V0Reader
       mgr->AddTask(fV0ReaderV1);
       mgr->ConnectInput(fV0ReaderV1,0,cinput);
@@ -83,9 +79,6 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    //================================================
    //========= Add task to the ANALYSIS manager =====
    //================================================
-   //              data containers
-   //================================================
-   //            find input container
    AliAnalysisTaskGammaConvV1 *task=NULL;
    task= new AliAnalysisTaskGammaConvV1(Form("GammaConvV1_%i",trainConfig));
    task->SetIsHeavyIon(1);
@@ -96,7 +89,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    TString *cutarray = new TString[numberOfCuts];
    TString *mesonCutArray = new TString[numberOfCuts];
 
-   if(trainConfig === 1){ // Standard neutral pion cuts
+   if(trainConfig == 1){ // Standard neutral pion cuts
       cutarray[ 0] = "3010001042092970023220000"; mesonCutArray[ 0] = "01522045009"; // 0-5%
       cutarray[ 1] = "3120001042092970023220000"; mesonCutArray[ 1] = "01522045009"; // 5-10%
       cutarray[ 2] = "1010001042092970023220000"; mesonCutArray[ 2] = "01522045009"; // 0-10%
@@ -210,7 +203,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 
    //connect containers
    AliAnalysisDataContainer *coutput =
-      mgr->CreateContainer("GammaConvV1", TList::Class(),
+      mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
                            AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
 
    mgr->AddTask(task);
