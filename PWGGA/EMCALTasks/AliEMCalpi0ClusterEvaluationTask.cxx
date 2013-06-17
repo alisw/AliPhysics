@@ -110,26 +110,29 @@ ClassImp(AliEMCalpi0ClusterEvaluationTask)
 AliEMCalpi0ClusterEvaluationTask::AliEMCalpi0ClusterEvaluationTask(const char *name) :
 AliAnalysisTaskSE(name),
 
-fEvent(0),      kAllMB(kFALSE),     isMB(0),     isAnyINT(0),
-isCentral(0),   isSemiCentral(0),   isEga(0),    ega0(0),
-ega1(0),        ega2(0),            ega3(0),     ega4(0),
-ega5(0),        ega6(0),            ega7(0),     ega8(0),
-ega9(0),        mb0(0),             mb1(0),      mb2(0),
-mb3(0),         mb4(0),             mb5(0),      mb6(0),
-mb7(0),         mb8(0),             mb9(0),      allmb0(0),
-allmb1(0),      allmb2(0),          allmb3(0),   allmb4(0),
-allmb5(0),      allmb6(0),          allmb7(0),   allmb8(0),
-allmb9(0),      cent0(0),           cent1(0),    cent2(0),
-cent3(0),       cent4(0),           cent5(0),    cent6(0),
-cent7(0),       cent8(0),           cent9(0),    semicent0(0),
-semicent1(0),   semicent2(0),       semicent3(0),semicent4(0),
-semicent5(0),   semicent6(0),       semicent7(0),semicent8(0),
-semicent9(0),   kAllMBmx(0),        isMBmx(0),   isAnyINTmx(0),
-isCentralmx(0), isSemiCentralmx(0), isEgamx(0),  all(0),
-allmb(0),       mb(0),              central(0),  semicentral(0),
-ega(0),         crossEnergy(0),
+fEvent(0),
+ega0(0),      ega1(0),      ega2(0),      ega3(0),       ega4(0),
+ega5(0),      ega6(0),      ega7(0),      ega8(0),       ega9(0),
+mb0(0),       mb1(0),       mb2(0),       mb3(0),        mb4(0),
+mb5(0),       mb6(0),       mb7(0),       mb8(0),        mb9(0),
+allmb0(0),    allmb1(0),    allmb2(0),    allmb3(0),     allmb4(0),
+allmb5(0),    allmb6(0),    allmb7(0),    allmb8(0),     allmb9(0),
+cent0(0),     cent1(0),     cent2(0),     cent3(0),      cent4(0),
+cent5(0),     cent6(0),     cent7(0),     cent8(0),      cent9(0),
+semicent0(0), semicent1(0), semicent2(0), semicent3(0),  semicent4(0),
+semicent5(0), semicent6(0), semicent7(0), semicent8(0),  semicent9(0),
+all(0),       allmb(0),      mb(0),       central(0),   semicentral(0),
+ega(0),
 
+kAllMB(0),  isPileup(0),   isMB(0),        isAnyINT(0),       isCentral(0),  isSemiCentral(0), isEga(0),
+isMBmx(0),  isAnyINTmx(0), isCentralmx(0), isSemiCentralmx(0), isEgamx(0),  kAllMBmx(0),
+trigger(0), CentralityVZERO(0), CentralitySPD(0), runNumber(0), selectionMask(0),
+vX(0),     vY(0),  vZ(0),
 
+Ecluster(0),NCellscluster(0),M20cluster(0), M02cluster(0),NCluscluster(0),isEMCALcluster(0),
+dispersioncluster(0),chi2cluster(0),distBadChannelcluster(0),phicluster(0),etacluster(0),
+ptcluster(0), crossEnergy(0),
+piE(0), piphi(0), pieta(0), ptpi(0), pipx(0), pipy(0), pipz(0), asympi(0), masspi(0),
 fHistList(0)
 {
 
@@ -361,7 +364,7 @@ void AliEMCalpi0ClusterEvaluationTask::UserExec( Option_t* )
         Double_t Emax   = GetMaxCellEnergy( c, id);
 
         AliVCaloCells     *Cells       =  event->GetEMCALCells();
-        AliEMCALGeometry  *geom        =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+       // AliEMCALGeometry  *geom        =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
         AliEMCALRecoUtils RecoUtils;
         Int_t bc;
         if(esd)  bc = esd->GetBunchCrossNumber();
@@ -392,7 +395,7 @@ void AliEMCalpi0ClusterEvaluationTask::UserExec( Option_t* )
             }
 
 
-    ULong64_t triggerMask  = event->GetTriggerMask();
+   // ULong64_t triggerMask  = event->GetTriggerMask();
 
     ////verification triggered classes that fired.
 
@@ -519,7 +522,7 @@ if(aod){
 
         TVector3 pos;
         pos -= vertex_position;
-        Double_t r1 = pos.Mag();
+        //Double_t r1 = pos.Mag();
 
         //Fill the pool with all clusters
         Int_t nGoodClusters = 0;
@@ -572,7 +575,7 @@ if(aod){
                 if (c2->E()<2) continue;
                 if(c2->GetM02()>0.5) continue;
                 if (c2->GetDistanceToBadChannel()<2) continue;
-                Float_t en2 = c2->E();
+               // Float_t en2 = c2->E();
 
                 TLorentzVector pjj;
                 c2->GetMomentum(pjj, vertex_position);
@@ -663,7 +666,7 @@ Double_t AliEMCalpi0ClusterEvaluationTask ::GetMaxCellEnergy(const AliVCluster *
 
 
 
-    AliEMCALGeometry  *fGeom        =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+   // AliEMCALGeometry  *fGeom        =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 
     id = -1;
 
@@ -698,10 +701,10 @@ void AliEMCalpi0ClusterEvaluationTask::FillMixed( const TLorentzVector& p1, cons
     const UInt_t eventSelectionMask( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() );
     AliESDEvent* esd     = dynamic_cast<AliESDEvent*>(InputEvent());
     AliAODEvent* aod     =dynamic_cast< AliAODEvent*>(InputEvent());
-    AliVEvent  * event   = InputEvent();
+    //AliVEvent  * event   = InputEvent();
 
 
-    ULong64_t triggerMask = event->GetTriggerMask();
+   // ULong64_t triggerMask = event->GetTriggerMask();
 
     isMBmx         = (eventSelectionMask&AliVEvent::kMB);
     isAnyINTmx      = (eventSelectionMask&AliVEvent::kAnyINT);
