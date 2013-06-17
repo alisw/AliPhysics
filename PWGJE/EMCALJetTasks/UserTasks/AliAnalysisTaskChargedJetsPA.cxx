@@ -44,7 +44,7 @@
 #include "AliRhoParameter.h"
 
 #include "AliAnalysisTaskChargedJetsPA.h"
-
+using std::min;
 //TODO: Not accessing the particles when using MC
 //TODO: FillHistogram can be done better with virtual TH1(?)
 ClassImp(AliAnalysisTaskChargedJetsPA)
