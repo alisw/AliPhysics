@@ -1503,8 +1503,8 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Int
       AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
       AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
       if (!tmpTr.Rotate(sens->GetPhiTF())) {
-	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 #ifdef _ITSU_DEBUG_
+	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 	AliDebug(2,Form("Failed on rotate to %f | ESDtrack#%d (MClb:%d)",sens->GetPhiTF(),trESD->GetID(),trESD->GetTPCLabel()));
 #endif
 	return -1;
