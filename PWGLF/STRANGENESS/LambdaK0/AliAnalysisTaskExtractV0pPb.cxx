@@ -216,7 +216,7 @@ AliAnalysisTaskExtractV0pPb::~AliAnalysisTaskExtractV0pPb()
    }
    if (fTreeEvents){
       delete fTreeEvents;
-      fTree = 0x0;
+      fTreeEvents = 0x0;
    }
 }
 
