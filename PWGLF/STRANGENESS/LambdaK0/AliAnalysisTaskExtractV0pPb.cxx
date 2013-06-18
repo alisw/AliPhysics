@@ -268,7 +268,7 @@ void AliAnalysisTaskExtractV0pPb::UserCreateOutputObjects()
 //------------------------------------------------
 
    fTreeEvents = new TTree("fTreeEvents","Events");
-/*01*/	fTree->Branch("fTreeEventsCentrality",&fTreeEventsCentrality,"fTreeEventsCentrality/F");
+/*01*/	fTreeEvents->Branch("fTreeEventsCentrality",&fTreeEventsCentrality,"fTreeEventsCentrality/F");
 
 //------------------------------------------------
 // Particle Identification Setup
