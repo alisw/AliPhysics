@@ -20,7 +20,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   cdb->SetDefaultStorage(cdbURI);
   AliITSUTrackCond* trcond = 0;
   int nLr = 7;
-  
+  //  
   TObjArray *recoParamArray = new TObjArray();
   //
   {
@@ -35,6 +35,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   }
   //
   const Bool_t kAllowDiagCl = kFALSE;
+  const Bool_t kUseLUT[3] = {kTRUE,kTRUE,kFALSE}; // use TGeo mat.queries only for RefitInward
   //
   // tuned for 20x20 pixels with x/x0= 0.3,0.3,0.3,0.5,0.5,0.5,0.5%
   // long tracks
@@ -89,6 +90,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
+    for (int i=AliITSURecoParam::kNTrackingPhases;i--;) itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
@@ -156,6 +158,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
+    for (int i=AliITSURecoParam::kNTrackingPhases;i--;) itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();

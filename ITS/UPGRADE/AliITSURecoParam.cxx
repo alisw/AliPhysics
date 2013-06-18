@@ -40,7 +40,8 @@ const Double_t AliITSURecoParam::fgkTPCITSWallRMin                = 50.;
 const Double_t AliITSURecoParam::fgkTPCITSWallRMax                = 80.;
 const Double_t AliITSURecoParam::fgkTPCITSWallZSpanH              = 250.;
 const Double_t AliITSURecoParam::fgkTPCITSWallMaxStep             = 6.;
-
+//
+const Bool_t   AliITSURecoParam::fgkUseMatLUT[kNTrackingPhases] = {kFALSE,kFALSE,kFALSE};
 
 //
 //_____________________________________________________________________________
@@ -65,6 +66,7 @@ AliITSURecoParam::AliITSURecoParam()
   // def c-tor
   SetName("ITS");
   SetTitle("ITS");
+  for (int i=kNTrackingPhases;i--;) fUseMatLUT[i] = fgkUseMatLUT[i];
 }
 
 //_____________________________________________________________________________
@@ -195,6 +197,8 @@ void AliITSURecoParam::Print(Option_t *) const
   printf("%-30s\t%f\n","fMaxDZForProlongation",fMaxDZForProlongation);
   printf("%-30s\t%f\n","fMinPtForProlongation",fMinPtForProlongation);
   //
+  printf("Use material LUT at steps: "); 
+  for (int i=0;i<kNTrackingPhases;i++) printf("%d : %s |",i,GetUseMatLUT(i) ? "ON":"OFF"); printf("\n");
   printf("TPC-ITS wall: %.3f<R<%.3f DZ/2=%.3f MaxStep=%.3f\n",
 	 fTPCITSWallRMin,fTPCITSWallRMax,fTPCITSWallZSpanH,fTPCITSWallMaxStep);
   //
