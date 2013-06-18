@@ -5,6 +5,7 @@ Int_t AliToyMCEvent::evCounter = 0;
 
 AliToyMCEvent::AliToyMCEvent()
   :TObject()
+  ,fEventNumber(0)
   ,fT0(-1.)
   ,fX(-1000.)
   ,fY(-1000.)

@@ -15,6 +15,20 @@ class AliToyMCEvent;
 
 class AliToyMCEventGenerator : public TObject {
  public:
+   enum EGasType {
+     kNeCO2_9010=0
+  };
+
+  enum EEpsilon {
+    kEps5=0,
+    kEps10,
+    kEps20
+  };
+
+  enum ECollRate {
+    k50kHz = 0
+  };
+  
   AliToyMCEventGenerator();
   AliToyMCEventGenerator(const AliToyMCEventGenerator &gen);
   virtual ~AliToyMCEventGenerator();
@@ -32,6 +46,9 @@ class AliToyMCEventGenerator : public TObject {
   void SetOutputFileName(const char* file) { fOutputFileName=file; }
   const char* GetOutputFileName()    const { return fOutputFileName.Data(); }
 
+  void SetSpaceCharge(EEpsilon epsilon, EGasType gasType=kNeCO2_9010, ECollRate collRate=k50kHz);
+  void SetSpaceChargeFile(const char* file) { fSpaceChargeFile=file; }
+  
   Int_t GetSector(Float_t xyz[3]);
   
  protected:
@@ -41,12 +58,15 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t ConnectOutputFile();
   Bool_t CloseOutputFile();
   void FillTree();
+
+  void InitSpaceCharge();
   
  private:
   AliToyMCEventGenerator& operator= (const AliToyMCEventGenerator& );
    
   AliTPCSpaceCharge3D *fSpaceCharge;
 
+  TString fSpaceChargeFile;
   TString fOutputFileName;
   TFile   *fOutFile;
   TTree   *fOutTree;

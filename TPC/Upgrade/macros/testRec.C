@@ -1,7 +1,7 @@
 Int_t GetTimeAtVertex(Float_t &tVtx, Float_t &x, AliToyMCTrack *tr, Int_t clsType=0, Int_t seedRow=140, Int_t seedDist=10, Int_t correctionType=0);
 void SetTrackPointFromCluster(AliTPCclusterMI *cl, AliTrackPoint &p);
 void ClusterToSpacePoint(AliTPCclusterMI *cl, Float_t xyz[3]);
-void InitSpaceCharge();
+void InitSpaceCharge(TTree *t=0x0);
 /*
 
 root.exe -l $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C}
@@ -29,6 +29,8 @@ void testRec(Int_t nmaxEv=-1)
   AliToyMCEvent *ev=0x0;
   t->SetBranchAddress("event",&ev);
 
+  InitSpaceCharge(t);
+  
   gSystem->Exec("rm debug.root");
   if (!fStreamer) fStreamer=new TTreeSRedirector("debug.root");
   
@@ -174,7 +176,6 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
 //       if (correctionType==3) xyz[2]=125.;
       if (correctionType==4) xyz[2]=seedCluster->GetZ();
 
-      if (!fSpaceCharge)   InitSpaceCharge();
       fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
     }
 
@@ -294,12 +295,26 @@ void ClusterToSpacePoint(AliTPCclusterMI *cl, Float_t xyz[3])
 }
 
 //____________________________________________________________________________
-void InitSpaceCharge()
+void InitSpaceCharge(TTree *t)
 {
   //
   // Init the space charge map
   //
-  TFile f("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root");
+
+  TString filename="$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root";
+  if (t) {
+    TList *l=t->GetUserInfo();
+    for (Int_t i=0; i<l->GetEntries(); ++i) {
+      TString s(l->At(i)->GetName());
+      if (s.Contains("SC_")) {
+        filename=s;
+        break;
+      }
+    }
+  }
+
+  printf("Initialising the space charge map using the file: '%s'\n",filename.Data());
+  TFile f(filename.Data());
   fSpaceCharge=(AliTPCSpaceCharge3D*)f.Get("map");
   
 //   fSpaceCharge = new AliTPCSpaceCharge3D();

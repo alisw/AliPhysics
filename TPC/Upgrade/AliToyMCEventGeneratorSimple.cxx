@@ -48,8 +48,12 @@ void AliToyMCEventGeneratorSimple::SetParameters(Double_t vertexMean, Double_t v
   fVertexSigma = vertexSigma;
 }
 //________________________________________________________________
-AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time) {
-
+AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
+{
+  //
+  //
+  //
+  
   AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetT0(time);
   retEvent->SetX(0);
@@ -100,7 +104,9 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
   //
 
   if (!ConnectOutputFile()) return;
-
+  //initialise the space charge. Should be done after the tree was set up
+  InitSpaceCharge();
+  
   fNtracks=ntracks;
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./50e3; //50kHz equally spaced

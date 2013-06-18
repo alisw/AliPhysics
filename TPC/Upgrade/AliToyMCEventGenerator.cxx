@@ -5,6 +5,7 @@
 #include <TH2F.h>
 #include <TGeoGlobalMagField.h>
 #include <TSpline.h>
+#include <TObjString.h>
 
 #include <AliLog.h>
 #include <AliTPCROC.h>
@@ -31,31 +32,13 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fTPCParam(0x0)
   ,fEvent(0x0)
   ,fSpaceCharge(0x0)
+  ,fSpaceChargeFile("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root")
   ,fOutputFileName("toyMC.root")
   ,fOutFile(0x0)
   ,fOutTree(0x0)
 {
-  TFile f("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root");
-  fSpaceCharge=(AliTPCSpaceCharge3D*)f.Get("map");
-  //TODO: Add method to set custom space charge file
-//   fSpaceCharge = new AliTPCSpaceCharge3D();
-//   fSpaceCharge->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz.root");
-//   fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
-  //fSpaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
-//   fSpaceCharge->InitSpaceCharge3DDistortion();
-//   fSpaceCharge->CreateHistoSCinZR(0.,50,50)->Draw("surf1");
-//   fSpaceCharge->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
-  //!!! This should be handled by the CongiOCDB macro
-  // const char* ocdb="local://$ALICE_ROOT/OCDB/";
-  // AliCDBManager::Instance()->SetDefaultStorage(ocdb);
-  // AliCDBManager::Instance()->SetRun(0);   
-  // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
-  // AliGeomManager::LoadGeometry("");
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
-  //std::cout<<"----------->"<<fTPCParam<<std::endl;
   fTPCParam->ReadGeoMatrices();
-  //std::cout<<"----------->"<<fTPCParam<<std::endl;
-
 }
 //________________________________________________________________
 AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen)
@@ -63,6 +46,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fTPCParam(gen.fTPCParam)
   ,fEvent(0x0)
   ,fSpaceCharge(gen.fSpaceCharge)
+  ,fSpaceChargeFile(gen.fSpaceChargeFile)
   ,fOutputFileName(gen.fOutputFileName)
   ,fOutFile(0x0)
   ,fOutTree(0x0)
@@ -409,3 +393,52 @@ void AliToyMCEventGenerator::FillTree()
   if (fOutTree) fOutTree->Fill();
 }
 
+//________________________________________________________________
+void AliToyMCEventGenerator::SetSpaceCharge(EEpsilon epsilon, EGasType gasType/*=kNeCO2_9010*/, ECollRate collRate/*=k50kHz*/)
+{
+  //
+  // Set the space charge conditions
+  //
+  fSpaceChargeFile="$ALICE_ROOT/TPC/Calib/maps/SC";
+  switch (gasType) {
+    case kNeCO2_9010:
+      fSpaceChargeFile.Append("_NeCO2");
+      break;
+  }
+  switch (epsilon) {
+    case kEps5:
+      fSpaceChargeFile.Append("_eps5");
+      break;
+    case kEps10:
+      fSpaceChargeFile.Append("_eps10");
+      break;
+    case kEps20:
+      fSpaceChargeFile.Append("_eps20");
+      break;
+  }
+  switch (collRate) {
+    case k50kHz:
+      fSpaceChargeFile.Append("_50kHz");
+      break;
+  }
+  fSpaceChargeFile.Append("_precal.root");
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::InitSpaceCharge()
+{
+  //
+  // init the space charge conditions
+  // this should be called after the tree was connected
+  //
+
+  AliInfo(Form("Using space charge map file: '%s'",fSpaceChargeFile.Data()));
+  
+  TFile f(fSpaceChargeFile.Data());
+  fSpaceCharge=(AliTPCSpaceCharge3D*)f.Get("map");
+
+  if (fOutTree){
+    AliInfo("Attaching space charge map file name to the tree");
+    fOutTree->GetUserInfo()->Add(new TObjString(fSpaceChargeFile.Data()));
+  }
+}
