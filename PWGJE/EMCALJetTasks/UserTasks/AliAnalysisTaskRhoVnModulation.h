@@ -23,7 +23,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
 {
     public:
          // enumerators
-        enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kUser, kFourierSeries, kIntegratedFlow }; // fit type
+        enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
         enum detectorType       { kTPC, kVZEROA, kVZEROC};    // detector that was used
@@ -102,11 +102,20 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetLocalJetMinMaxEta(Float_t min, Float_t max)  {fLocalJetMinEta = min; fLocalJetMaxEta = max;}
         void                    SetLocalJetMinMaxEta(Float_t R)                 {fLocalJetMinEta = - 0.9 + R; fLocalJetMaxEta = 0.9 - R; }
         void                    SetLocalJetMinMaxPhi(Float_t min, Float_t max)  {fLocalJetMinPhi = min; fLocalJetMaxEta = max;}
-        // 'trivial' helper calculations
+        void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)  {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
+        // numerical evaluations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
         void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* tpc) const;
         void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0, Bool_t randomize = 0) const;
+        Double_t                CalculateQC2(Int_t harm);
+        Double_t                CalculateQC4(Int_t harm);
+        // helper calculations for the q-cumulant analysis
+        void                    QCnQnk(Int_t n, Int_t k, Double_t &reQ, Double_t &imQ);
+        Double_t                QCnS(Int_t i, Int_t j);
+        Double_t                QCnM();
+        Double_t                QCnM11();
+        Double_t                QCnM1111();
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection
@@ -150,6 +159,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
         // members
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
+        Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
         fitModulationType       fFitModulationType;     // fit modulation type
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
         detectorType            fDetectorType;          // type of detector used for modulation fit
@@ -170,6 +180,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Float_t                 fLocalJetMaxEta;        // local eta cut for jets
         Float_t                 fLocalJetMinPhi;        // local phi cut for jets
         Float_t                 fLocalJetMaxPhi;        // local phi cut for jets
+        Float_t                 fSoftTrackMinPt;        // min pt for soft tracks
+        Float_t                 fSoftTrackMaxPt;        // max pt for soft tracks
         // event cuts
         Float_t                 fAbsVertexZ;            // cut on zvertex
         // general qa histograms
@@ -197,8 +209,10 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   fHistAnalysisSummary;   //! analysis summary
         TH1F*                   fHistSwap;              //! swap histogram
         TProfile*               fProfV2;                //! extracted v2
+        TProfile*               fProfV2Cumulant;        //! v2 cumulant
         TProfile*               fProfV2Resolution[10];  //! resolution parameters for v2
         TProfile*               fProfV3;                //! extracted v3
+        TProfile*               fProfV3Cumulant;        //! v3 cumulant
         TProfile*               fProfV3Resolution[10];  //! resolution parameters for v3
         // qa histograms for accepted pico tracks
         TH1F*                   fHistPicoTrackPt[10];    //! pt of all charged tracks
@@ -264,7 +278,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 11);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 12);
 };
 
 #endif
