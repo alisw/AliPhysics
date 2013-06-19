@@ -157,6 +157,20 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
 
   // check we really have 3 seeds
   if (seed!=3) {
+
+    // debug output for failed seeding
+    (*fStreamer) << "TracksFailSeed" <<
+      "iev="      << fEvent <<
+      "t0="       << fT0event <<
+      "z0="       << fZevent <<
+      "itrack="   << fTrack <<
+      "clsType="  << clsType <<
+      "seedRow="  << seedRow <<
+      "seedDist=" << seedDist <<
+      "corrType=" << correctionType <<
+      "track.="   << tr    <<
+      "\n";
+    
     printf("Seeding failed for parameters %d, %d\n",seedRow,seedDist, seed);
     return 1;
   }
@@ -179,12 +193,15 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
       fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
     }
 
-    // set different sign for c-Side (default)
-    xyz[2]=seedCluster[iseed]->GetTimeBin() * sign;
-    // correct with track z (only for testing)
-    //xyz[2]=seedCluster[iseed]->GetTimeBin() + sign * tr->GetZ()/(fTPCParam->GetDriftV());
-    // no correction (old)
-    //xyz[2]=seedCluster[iseed]->GetTimeBin();
+    // set different sign for c-Side (only for testing: makes half of the times negative)
+    // xyz[2]=seedCluster[iseed]->GetTimeBin() * sign;
+    
+    // correct with track z (only for testing: not possible in exp?)
+    // xyz[2]=seedCluster[iseed]->GetTimeBin() + sign * tr->GetZ()/(fTPCParam->GetDriftV());
+    
+    // no correction (default)
+    xyz[2]=seedCluster[iseed]->GetTimeBin();
+    
     seedPoint[iseed].SetXYZ(xyz);
   }
 
