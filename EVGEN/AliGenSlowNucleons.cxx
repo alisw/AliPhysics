@@ -30,9 +30,11 @@
 #include <TH1F.h>
 #include <TF1.h>
 #include <TCanvas.h>
+#include <TParticle.h>
 
 #include "AliConst.h"
 #include "AliCollisionGeometry.h"
+#include "AliStack.h"
 #include "AliGenSlowNucleons.h"
 #include "AliSlowNucleonModel.h"
 
@@ -214,6 +216,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-2);
 	KeepTrack(nt);
+	GetStack()->Particle(nt)->SetUniqueID(kGrayProcess);
     }
 //
 //  Gray neutrons
@@ -226,6 +229,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-2);
 	KeepTrack(nt);
+	GetStack()->Particle(nt)->SetUniqueID(kGrayProcess);
     }
 //
 //  Black protons
@@ -237,6 +241,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
+	GetStack()->Particle(nt)->SetUniqueID(kBlackProcess);
     }
 //
 //  Black neutrons
@@ -248,6 +253,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
+	GetStack()->Particle(nt)->SetUniqueID(kBlackProcess);
     }
 }
 

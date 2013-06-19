@@ -92,6 +92,8 @@ public:
     //
     AliSlowNucleonModel* fSlowNucleonModel; // The slow nucleon model
 
+    enum {kGrayProcess = 200, kBlackProcess = 300};
+
  private:
     AliGenSlowNucleons(const AliGenSlowNucleons &sn);
     AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
