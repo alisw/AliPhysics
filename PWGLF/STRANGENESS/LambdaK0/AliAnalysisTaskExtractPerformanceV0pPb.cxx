@@ -90,6 +90,8 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskExtractPerformanceV0pPb.h"
+#include "AliHeader.h"
+#include "AliGenDPMjetEventHeader.h"
 
 using std::cout;
 using std::endl;
@@ -98,6 +100,7 @@ ClassImp(AliAnalysisTaskExtractPerformanceV0pPb)
 
 AliAnalysisTaskExtractPerformanceV0pPb::AliAnalysisTaskExtractPerformanceV0pPb()
   : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fTreeEvents(0), fPIDResponse(0),
+  fDiffractiveOnly(kFALSE),
 
 //------------------------------------------------
 // Tree Variables 
@@ -183,6 +186,8 @@ AliAnalysisTaskExtractPerformanceV0pPb::AliAnalysisTaskExtractPerformanceV0pPb()
 
 AliAnalysisTaskExtractPerformanceV0pPb::AliAnalysisTaskExtractPerformanceV0pPb(const char *name) 
   : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fTreeEvents(0), fPIDResponse(0), 
+  fDiffractiveOnly(kFALSE),
+
 //------------------------------------------------
 // Tree Variables 
 
@@ -549,6 +554,21 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
    if(!mcHeader) return;
    mcHeader->PrimaryVertex(mcPrimaryVtx);
         
+  Int_t nPart = 0; 
+
+  //Code Snippet from Alexander for looking at diffractive Events from DPMJet
+  if(fDiffractiveOnly){
+    AliHeader * header = lMCevent->Header();
+    AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(header->GenEventHeader());
+    if (dpmHeader) nPart = dpmHeader->ProjectileParticipants() + dpmHeader->TargetParticipants();
+    //
+    Int_t nsdiffrac1 = 0;
+    Int_t nsdiffrac2 = 0;
+    Int_t nddiffrac  = 0;
+    if (dpmHeader) dpmHeader->GetNDiffractive(nsdiffrac1, nsdiffrac2, nddiffrac);
+    if (nsdiffrac1 + nsdiffrac2 == nPart) return;
+  }
+
 //------------------------------------------------
 // Multiplicity Information Acquistion
 //------------------------------------------------
