@@ -1390,6 +1390,51 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   if (fMixedEvent) 
     vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
   
+  if(fRecalculateClusters)
+  {
+    //Recalibrate the cluster energy
+    if(GetCaloUtils()->IsRecalibrationOn())
+    {
+      Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
+      
+      clus->SetE(energy);
+      //printf("Recalibrated Energy %f\n",clus->E());
+      
+      GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
+      GetCaloUtils()->RecalculateClusterPID(clus);
+      
+    } // recalculate E
+    
+    //Recalculate distance to bad channels, if new list of bad channels provided
+    GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
+    
+    //Recalculate cluster position
+    if(GetCaloUtils()->IsRecalculationOfClusterPositionOn())
+    {
+      GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus);
+      //clus->GetPosition(pos);
+      //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
+    }
+    
+    // Recalculate TOF
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
+    {
+      Double_t tof      = clus->GetTOF();
+      Float_t  frac     =-1;
+      Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
+      
+      if(fDataType==AliCaloTrackReader::kESD)
+      {
+        tof = fEMCALCells->GetCellTime(absIdMax);
+      }
+      
+      GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+      
+      clus->SetTOF(tof);
+      
+    }// Time recalibration
+  }
+  
   //Reject clusters with bad channels, close to borders and exotic;
   if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells(),fInputEvent->GetBunchCrossNumber())) return;
   
@@ -1414,51 +1459,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   //Float_t pos[3];
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
-  
-  if(fRecalculateClusters)
-  {
-    //Recalibrate the cluster energy 
-    if(GetCaloUtils()->IsRecalibrationOn())
-    {
-      Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
-      
-      clus->SetE(energy);
-      //printf("Recalibrated Energy %f\n",clus->E());  
-      
-      GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
-      GetCaloUtils()->RecalculateClusterPID(clus);
-      
-    } // recalculate E
-    
-    //Recalculate distance to bad channels, if new list of bad channels provided
-    GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
-    
-    //Recalculate cluster position
-    if(GetCaloUtils()->IsRecalculationOfClusterPositionOn())
-    {
-      GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus); 
-      //clus->GetPosition(pos);
-      //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
-    }
-    
-    // Recalculate TOF
-    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) 
-    {
-      Double_t tof      = clus->GetTOF();
-      Float_t  frac     =-1;
-      Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
-      
-      if(fDataType==AliCaloTrackReader::kESD)
-      { 
-        tof = fEMCALCells->GetCellTime(absIdMax);
-      }
-      
-      GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
-      
-      clus->SetTOF(tof);
-      
-    }// Time recalibration    
-  }
   
   //Correct non linearity
   if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn())
@@ -2439,7 +2439,6 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
 //         fTriggerClusterBC, fIsBadCellEvent,fIsBadMaxCellEvent,fIsExoticEvent, fIsTriggerMatch, nOfHighECl);
 //  
 //  if(!fIsTriggerMatch)  printf("\t highest energy cluster:  index %d, ID %d, E = %2.2f, tof = %2.2f, bad cluster? %d, bad cell? %d, exotic? %d\n",clusMax, idclusMax, eMax,tofMax, badClMax, badCeMax,exoMax);
-      
 }
 
 //__________________________________________
