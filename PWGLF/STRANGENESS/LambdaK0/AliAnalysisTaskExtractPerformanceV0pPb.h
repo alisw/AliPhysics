@@ -54,6 +54,8 @@ class AliAnalysisTaskExtractPerformanceV0pPb : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
  
+  void SetDiffractiveOnly ( Bool_t lDiffractiveOnly = kTRUE ) { fDiffractiveOnly = lDiffractiveOnly; }
+
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
         // your data member object is created on the worker nodes and streaming is not needed.
@@ -65,6 +67,7 @@ class AliAnalysisTaskExtractPerformanceV0pPb : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;     // PID response object
 
   //Objects Controlling Task Behaviour 
+  Bool_t fDiffractiveOnly; //Only look at diffractive generated events
 
 //===========================================================================================
 //   Variables for Tree, V0s
