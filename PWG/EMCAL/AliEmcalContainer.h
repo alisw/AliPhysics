@@ -23,7 +23,7 @@ class AliEmcalContainer : public TNamed {
   void SetArrayName(const char *n)                 {fClArrayName = n;}
   TClonesArray               *GetArray()           {return fClArray;}
   Int_t                       GetNEntries() const  {return fClArray->GetEntriesFast();}
-  TString                     GetArrayName()       {return fClArrayName;}
+  const TString&              GetArrayName() const {return fClArrayName;}
 
  protected:
   void SetArray(AliVEvent *event, const char *clname=0);

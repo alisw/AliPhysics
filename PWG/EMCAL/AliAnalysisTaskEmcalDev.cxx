@@ -380,7 +380,8 @@ void AliAnalysisTaskEmcalDev::ExecOnce()
     AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
     cont->SetClusterArray(InputEvent());
   }
-  fCaloClusters = GetClusterArray(0);
+  if(fClusterCollArray.GetEntriesFast()>0)
+    fCaloClusters = GetClusterArray(0);
   if(!fCaloClusters && fClusterCollArray.GetEntriesFast()>0) {
     AliError(Form("%s: Could not retrieve first cluster branch!", GetName()));
     return;
@@ -585,13 +586,19 @@ Bool_t AliAnalysisTaskEmcalDev::RetrieveEventObjects()
     AliCentrality *aliCent = InputEvent()->GetCentrality();
     if (aliCent) {
       fCent = aliCent->GetCentralityPercentile(fCentEst.Data()); 
-      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
-      else if (fCent >= 10 && fCent <   30) fCentBin = 1;
-      else if (fCent >= 30 && fCent <   50) fCentBin = 2;
-      else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
+      if(fNcentBins==4) {
+	if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+	else if (fCent >= 10 && fCent <   30) fCentBin = 1;
+	else if (fCent >= 30 && fCent <   50) fCentBin = 2;
+	else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
+	else {
+	  AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+	  fCentBin = 3;
+	}
+      }
       else {
-	AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
-	fCentBin = 3;
+	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
+	fCentBin = TMath::Nint(fCent/centWidth);
       }
     } else {
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
@@ -619,6 +626,9 @@ void AliAnalysisTaskEmcalDev::AddParticleContainer(const char *n) {
   // Add particle container
   // will be called in AddTask macro
 
+  TString tmp = TString(n);
+  if(tmp.IsNull()) return;
+
   AliParticleContainer *cont = 0x0;
   cont = new AliParticleContainer();
   cont->SetArrayName(n);
@@ -633,6 +643,9 @@ void AliAnalysisTaskEmcalDev::AddClusterContainer(const char *n) {
 
   // Add cluster container
   // will be called in AddTask macro
+
+  TString tmp = TString(n);
+  if(tmp.IsNull()) return;
 
   AliClusterContainer *cont = 0x0;
   cont = new AliClusterContainer();
