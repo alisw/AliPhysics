@@ -566,7 +566,7 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
     Int_t nsdiffrac2 = 0;
     Int_t nddiffrac  = 0;
     if (dpmHeader) dpmHeader->GetNDiffractive(nsdiffrac1, nsdiffrac2, nddiffrac);
-    if (nsdiffrac1 + nsdiffrac2 == nPart) return;
+    if (nsdiffrac1 + nsdiffrac2 != nPart) return;
   }
 
 //------------------------------------------------
