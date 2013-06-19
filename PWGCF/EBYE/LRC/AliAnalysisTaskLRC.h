@@ -122,6 +122,7 @@ public:
     void SetEtaRegionForTests( Double_t etaRegionForTests ) {  fEtaRegionForTests = etaRegionForTests; }
     Double_t GetEtaRegionForTests() {  return fEtaRegionForTests; }
 
+    void SetMultCutInEtaRegion( Double_t multCutInEtaRegion ) {  fMultCutInEtaRegion = multCutInEtaRegion; }
     Double_t GetMultCutInEtaRegion() {  return fMultCutInEtaRegion; }
 
     inline void FixAngleInTwoPi( Double_t &lPhi )
