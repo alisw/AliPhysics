@@ -135,6 +135,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   //assumes sorted clusters
   for (Int_t icl=0;icl<ncls;++icl) {
     AliTPCclusterMI *cl=tr->GetSpacePoint(icl);
+    if (clsType==1) cl=tr->GetDistortedSpacePoint(icl);
     if (!cl) continue;
     // use row in sector
     const UChar_t row=cl->GetRow() + 63*(cl->GetDetector()>35);
@@ -327,4 +328,76 @@ void InitSpaceCharge(TTree *t)
 
 //____________________________________________________________________________
 
+
+AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Bool_t clsType=0)
+{
+  //
+  // clsType: 0=undistorted clusters; 1: distorted clusters
+  //
+
+  AliTPCROC * roc = AliTPCROC::Instance();
+  const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
+  const Double_t kRTPC0  =roc->GetPadRowRadii(0,0);
+  const Double_t kRTPC1  =roc->GetPadRowRadii(36,roc->GetNRows(36)-1);
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kSigmaY=0.1;
+  const Double_t kSigmaZ=0.1;
+  const Double_t kMaxR=500;
+  const Double_t kMaxZ=500;
+  
+  const Double_t kMaxZ0=220;
+  const Double_t kZcut=3;
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+
+  Int_t ncls=(clsType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
+
+  Int_t dir = -1;
+  Double_t refX = 0.;
+  
+  // get points for the seed
+  Int_t seed=0;
+  AliTrackPoint    seedPoint[3];
+  for (Int_t ipoint=ncls-1; ipoint>=ncls-3; --ipoint){
+    AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
+    if (clsType==1) cl=tr->GetDistortedSpacePoint(ipoint);
+    SetTrackPointFromCluster(cl, seedPoint[seed++]);
+  }
+  
+  AliExternalTrackParam *track = 0x0;
+  track = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
+  track->ResetCovariance(10);
+  
+  // loop over all other points and add to the track
+  for (Int_t ipoint=ncls-4; ipoint>=0; --ipoint){
+    AliTrackPoint pIn;
+    AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
+    if (clsType==1) cl=tr->GetDistortedSpacePoint(ipoint);
+    SetTrackPointFromCluster(cl, pIn);
+    Double_t xyz[3];
+    AliTrackPoint prot = pIn.Rotate(tr->GetAlpha());   // rotate to the local frame - non distoted  point
+    if (TMath::Abs(prot.GetX())<kRTPC0) continue;
+    if (TMath::Abs(prot.GetX())>kRTPC1) continue;
+    //
+    if (!AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp)) break;
+    if (TMath::Abs(track->GetZ())>kMaxZ) break;
+    if (TMath::Abs(track->GetX())>kMaxR) break;
+    if (dir>0 && track->GetX()>refX) continue;
+    if (dir<0 && track->GetX()<refX) continue;
+    if (TMath::Abs(track->GetZ())<kZcut)continue;
+    track->GetXYZ(xyz);  //track also propagated to the same reference radius
+    //
+    Double_t pointPos[2]={0,0};
+    Double_t pointCov[3]={0,0,0};
+    pointPos[0]=prot.GetY();//local y
+    pointPos[1]=prot.GetZ();//local z
+    pointCov[0]=prot.GetCov()[3];//simay^2
+    pointCov[1]=prot.GetCov()[4];//sigmayz
+    pointCov[2]=prot.GetCov()[5];//sigmaz^2
+    if (!track->Update(pointPos,pointCov)) break;
+  }
+  AliTrackerBase::PropagateTrackTo(track,refX,kMass,5.,kTRUE,kMaxSnp);
+  AliTrackerBase::PropagateTrackTo(track,refX,kMass,1.,kTRUE,kMaxSnp);
+  
+  return track;
+}
 

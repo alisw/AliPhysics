@@ -36,6 +36,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fOutputFileName("toyMC.root")
   ,fOutFile(0x0)
   ,fOutTree(0x0)
+  ,fUseStepCorrection(kFALSE)
 {
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   fTPCParam->ReadGeoMatrices();
@@ -50,6 +51,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fOutputFileName(gen.fOutputFileName)
   ,fOutFile(0x0)
   ,fOutTree(0x0)
+  ,fUseStepCorrection(gen.fUseStepCorrection)
 {
   //
 }
@@ -147,17 +149,20 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
     SetPoint(xyzf,pUdist);
     arrUdist.AddPoint(npoints, &pUdist);
     Int_t sector=pUdist.GetVolumeID();    
-    // abuse volume ID for the sector number
-    pUdist.SetVolumeID(sector);
     
     // set distorted point
     Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
-    fSpaceCharge->DistortPoint(distPoint, sector);
+    Float_t dxyz[3]={0.,0.,0.};
+    if (!fUseStepCorrection){
+      fSpaceCharge->DistortPoint(distPoint, sector);
+    } else {
+      fSpaceCharge->GetCorrectionIntegralDz(distPoint,sector,dxyz,5);
+      distPoint[0]-=dxyz[0];
+      distPoint[1]-=dxyz[1];
+      distPoint[2]-=dxyz[2];
+    }
     SetPoint(distPoint, pDist);
     arrDist.AddPoint(npoints, &pDist);
-    // abuse volume ID for the sector number
-    sector=pDist.GetVolumeID();
-    pDist.SetVolumeID(sector);
     
     ++npoints;
   }
@@ -194,6 +199,7 @@ void AliToyMCEventGenerator::SetPoint(Float_t xyz[3], AliTrackPoint &point)
   // voluem ID to add later ....
   point.SetXYZ(xyz);
   point.SetCov(newcov);
+  // abuse volume ID for the sector number
   point.SetVolumeID(fTPCParam->Transform0to1(xyz,i));
 
   // TODO: Add sampled dE/dx  (use SetCharge)

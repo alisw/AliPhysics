@@ -50,6 +50,11 @@ class AliToyMCEventGenerator : public TObject {
   void SetSpaceChargeFile(const char* file) { fSpaceChargeFile=file; }
   
   Int_t GetSector(Float_t xyz[3]);
+
+  void InitSpaceCharge();
+
+  void SetStepCorrection(Bool_t step=kTRUE) { fUseStepCorrection=step; }
+  Bool_t GetStepCorrection() const { return fUseStepCorrection; }
   
  protected:
   AliTPCParam *fTPCParam;
@@ -59,7 +64,6 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t CloseOutputFile();
   void FillTree();
 
-  void InitSpaceCharge();
   
  private:
   AliToyMCEventGenerator& operator= (const AliToyMCEventGenerator& );
@@ -70,6 +74,8 @@ class AliToyMCEventGenerator : public TObject {
   TString fOutputFileName;
   TFile   *fOutFile;
   TTree   *fOutTree;
+
+  Bool_t fUseStepCorrection;
   
   ClassDef(AliToyMCEventGenerator, 1)
      
