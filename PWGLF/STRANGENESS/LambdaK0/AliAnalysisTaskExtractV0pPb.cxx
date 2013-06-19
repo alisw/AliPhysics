@@ -372,8 +372,7 @@ void AliAnalysisTaskExtractV0pPb::UserExec(Option_t *)
 
 
    //Set variable for filling tree afterwards!
-   //---> pp case......: GetReferenceMultiplicity
-   //---> Pb-Pb case...: Centrality by V0M
+   //---> Always V0A
   fTreeVariableCentrality = lMultiplicity;
   fTreeEventsCentrality = lMultiplicity;
  
