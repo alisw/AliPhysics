@@ -68,10 +68,9 @@ void testRec(Int_t nmaxEv=-1)
       Float_t xmin=0;
       Int_t ret0=GetTimeAtVertex(tVtx0,xmin,tr);
       hX->Fill(xmin);
-      Float_t tVtx1=0;
-      Int_t ret1=GetTimeAtVertex(tVtx1,xmin,tr,1);
       //fully distorted
-      GetTimeAtVertex(tVtx1,xmin,tr,1); // seeding at the outside
+      Float_t tVtx1=0;
+      Int_t ret1=GetTimeAtVertex(tVtx1,xmin,tr,1);// seeding at the outside
       GetTimeAtVertex(tVtx1,xmin,tr,1,70); // seeding in the center
       GetTimeAtVertex(tVtx1,xmin,tr,1,0); // seeding at the inside
       //correction at tpc center
@@ -175,13 +174,17 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
       if (correctionType==1) xyz[2]=125.;
       if (correctionType==2) xyz[2]=TMath::Tan(45./2.*TMath::DegToRad())*xyz[1]*sign;
 //       if (correctionType==3) xyz[2]=125.;
-      if (correctionType==4) xyz[2]=seedCluster->GetZ();
+      if (correctionType==4) xyz[2]=seedCluster[iseed]->GetZ();
 
       fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
     }
 
-    //set different sign for c-Side
-    xyz[2]=seedCluster[iseed]->GetTimeBin()/* * sign*/;
+    // set different sign for c-Side (default)
+    xyz[2]=seedCluster[iseed]->GetTimeBin() * sign;
+    // correct with track z (only for testing)
+    //xyz[2]=seedCluster[iseed]->GetTimeBin() + sign * tr->GetZ()/(fTPCParam->GetDriftV());
+    // no correction (old)
+    //xyz[2]=seedCluster[iseed]->GetTimeBin();
     seedPoint[iseed].SetXYZ(xyz);
   }
 
