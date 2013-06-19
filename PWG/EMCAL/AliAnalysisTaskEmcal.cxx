@@ -607,13 +607,19 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     AliCentrality *aliCent = InputEvent()->GetCentrality();
     if (aliCent) {
       fCent = aliCent->GetCentralityPercentile(fCentEst.Data()); 
-      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
-      else if (fCent >= 10 && fCent <   30) fCentBin = 1;
-      else if (fCent >= 30 && fCent <   50) fCentBin = 2;
-      else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
+      if(fNcentBins==4) {
+	if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+	else if (fCent >= 10 && fCent <   30) fCentBin = 1;
+	else if (fCent >= 30 && fCent <   50) fCentBin = 2;
+	else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
+	else {
+	  AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+	  fCentBin = 3;
+	}
+      }
       else {
-	AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
-	fCentBin = 3;
+	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
+	fCentBin = TMath::FloorNint(fCent/centWidth);
       }
     } else {
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));

@@ -40,7 +40,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        UserExec(Option_t *option);
   void                        UserCreateOutputObjects();
 
-  void                        SetAnaType(EmcalAnaType type)                         { fAnaType           = type ;                         ; }
+  void                        SetAnaType(EmcalAnaType type)                         { fAnaType           = type                           ; }
+  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }                             
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
   void                        SetClusName(const char *n)                            { fCaloName          = n                              ; }
   void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
