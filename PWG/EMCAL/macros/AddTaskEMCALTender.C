@@ -50,7 +50,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
-  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalibClusPos, nonLinearCorr, remExotic, 
+  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExotic, 
 							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
 							      cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut);
   if (pass) 
