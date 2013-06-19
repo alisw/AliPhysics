@@ -35,6 +35,8 @@
 #include "AliConst.h"
 #include "AliCollisionGeometry.h"
 #include "AliStack.h"
+#include "AliRun.h"
+#include "AliMC.h"
 #include "AliGenSlowNucleons.h"
 #include "AliSlowNucleonModel.h"
 
@@ -216,7 +218,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-2);
 	KeepTrack(nt);
-	GetStack()->Particle(nt)->SetUniqueID(kGrayProcess);
+	SetProcessID(nt,kGrayProcess);
     }
 //
 //  Gray neutrons
@@ -229,7 +231,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-2);
 	KeepTrack(nt);
-	GetStack()->Particle(nt)->SetUniqueID(kGrayProcess);
+	SetProcessID(nt,kGrayProcess);
     }
 //
 //  Black protons
@@ -241,7 +243,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
-	GetStack()->Particle(nt)->SetUniqueID(kBlackProcess);
+	SetProcessID(nt,kBlackProcess);
     }
 //
 //  Black neutrons
@@ -253,7 +255,7 @@ void AliGenSlowNucleons::Generate()
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 time, kPNoProcess, nt, 1.,-1);
 	KeepTrack(nt);
-	GetStack()->Particle(nt)->SetUniqueID(kBlackProcess);
+	SetProcessID(nt,kBlackProcess);
     }
 }
 
@@ -429,3 +431,13 @@ void  AliGenSlowNucleons::AddAngle(Double_t theta1, Double_t phi1,
   angleSum[1] = fisum;
 }  
 
+//_____________________________________________________________________________
+void AliGenSlowNucleons::SetProcessID(Int_t nt, UInt_t process)
+{
+  // Tag the particle as
+  // gray or black
+  if (fStack)
+    fStack->Particle(nt)->SetUniqueID(process);
+  else 
+    gAlice->GetMCApp()->Particle(nt)->SetUniqueID(process);
+}

@@ -63,6 +63,7 @@ public:
     void     BeamCrossDivergence(Int_t iwhat, Float_t *pLab);;
     void     AddAngle(Double_t theta1, Double_t phi1, Double_t theta2,
   	        	Double_t phi2, Double_t *angle);
+    void     SetProcessID(Int_t nt, UInt_t process);
  protected:
     Float_t  fCMS;             // Center of mass energy
     Double_t fMomentum;        // Target nucleus momentum
