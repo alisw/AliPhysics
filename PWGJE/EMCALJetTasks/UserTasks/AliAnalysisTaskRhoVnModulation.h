@@ -98,6 +98,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
         void                    SetSetPtSub(Bool_t s)                           {fSetPtSub = s; }
         void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
+        // getters - these are used as well by AliAnalyisTaskJetFlow, so be careful when changing them
+        TString                 GetJetsName() const                             {return fJetsName; }
+        TString                 GetTracksName() const                           {return fTracksName; }
+        TArrayI*                GetCentralityClasses() const                    {return fCentralityClasses;}
+        void                    ExecMe()                                        {ExecOnce();}
         // local cuts
         void                    SetLocalJetMinMaxEta(Float_t min, Float_t max)  {fLocalJetMinEta = min; fLocalJetMaxEta = max;}
         void                    SetLocalJetMinMaxEta(Float_t R)                 {fLocalJetMinEta = - 0.9 + R; fLocalJetMaxEta = 0.9 - R; }
