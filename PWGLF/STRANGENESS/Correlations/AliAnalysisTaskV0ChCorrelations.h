@@ -32,13 +32,14 @@ public:
    virtual ~AliAnalysisTaskV0ChCorrelations();
 
    // Setting the global variables
-   void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
-   void SetDcaDToPV(Float_t DcaDToPV = 0.5) {fDcaDToPV = DcaDToPV;}
-   void SetDcaV0D(Float_t DcaV0D = 0.1) {fDcaV0D = DcaV0D;}
+   void SetDcaDToPV(Float_t DcaDToPV = 0.1) {fDcaDToPV = DcaDToPV;}
+   void SetDcaV0D(Float_t DcaV0D = 1.0) {fDcaV0D = DcaV0D;}
+   void SetWithChCh(Bool_t WithChCh = kFALSE) {fWithChCh = WithChCh;}
 
    // Getting the global variables
    Float_t GetDcaDToPV() { return fDcaDToPV; }
    Float_t GetDcaV0D() { return fDcaV0D; }
+   Bool_t GetWithChCh() { return fWithChCh; }
 
    virtual void     UserCreateOutputObjects();
    virtual void     UserExec(Option_t *option);
@@ -53,13 +54,13 @@ private:
    AliAnalysisTaskV0ChCorrelations(const AliAnalysisTaskV0ChCorrelations&);            //not implemented
    AliAnalysisTaskV0ChCorrelations& operator=(const AliAnalysisTaskV0ChCorrelations&); //not implemented 
 
-   Bool_t 		   fAnalysisMC; // enable MC study
    Bool_t          fFillMixed;  // enable event mixing (default: ON)
    Int_t           fMixingTracks;      // size of track buffer for event mixing
    AliEventPoolManager*          fPoolMgr;         //! event pool manager
 
    Float_t         fDcaDToPV;   // DCA of the daughter to primary vertex
    Float_t         fDcaV0D;     // DCA between daughters
+   Bool_t 		   fWithChCh;   // Also do ChCh correlations - for the cross-check
 
    TList           *fOutput;        // Output list
    AliPIDResponse  *fPIDResponse;   // PID response
@@ -75,14 +76,9 @@ private:
    THnSparseF	   *fHistdPhidEtaMix;   // dPhi vs. dEta, mixed events
    THnSparseF	   *fHistTrigSib;   // pt of trigger particles, same event
    THnSparseF	   *fHistTrigMix;   // pt of trigger particles involved in mixing
+   THnSparseF	   *fHistNTrigSib;   // count of trigger particles, same event
 
-   THnSparseF      *fHistMCPtCentTrig;   // pt vs. centrality of MC trigger particles
-   THnSparseF      *fHistRCPtCentTrig;   // pt vs. centrality of reconstructed trigger particles
-   TH2D	           *fHistMCPtCentAs;   // pt vs. centrality of MC associated particles
-   TH2D	           *fHistRCPtCentAs;   // pt vs. centrality of reconstructed associated particles
-   
    TH1D			   *fHistTemp;   // temporary histogram for debugging
-   TH1D			   *fHistTemp2;   // temporary histogram for debugging
 
    ClassDef(AliAnalysisTaskV0ChCorrelations, 1); // class for V0Ch correlation analysis
 };
@@ -135,7 +131,7 @@ class AliV0ChBasicParticle : public AliVParticle
     Float_t fEta;      // eta
     Float_t fPhi;      // phi
     Float_t fpT;       // pT
-    Short_t fCandidate;   // V0 candidate: 1 - K0sig, 2 - Lamsig, 3 - Alamsig, 4 - K0bg, 5 - Lambg, 6 - Alambg
+    Short_t fCandidate;   // V0 candidate: 1 - K0sig, 2 - Lamsig, 3 - Alamsig, 4 - K0bg, 5 - Lambg, 6 - Alambg, 7 - Charged
 
     ClassDef( AliV0ChBasicParticle, 1); // class required for event mixing
 };
