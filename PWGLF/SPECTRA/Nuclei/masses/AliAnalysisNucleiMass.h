@@ -42,20 +42,24 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetNsigmaTPCCut(Float_t NsigmaTpcCut) {NsigmaTPCCut=NsigmaTpcCut;}
   void SetisSignalCheck(Bool_t IsSignalCheck) {isSignalCheck=IsSignalCheck;}
   void SetMomBin(Int_t iMomBin) {MomType=iMomBin;}
+  void SetAbsEtaLimit(Double_t *etaLimit) {EtaLimit[0]=etaLimit[0];EtaLimit[1]=etaLimit[1];}
+  
 
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
   AliAnalysisNucleiMass& operator=(const AliAnalysisNucleiMass &source);
     
-  TFile *fmism;                      //! For load the mism time distr
-  TH1F *hmism;                       //! The mism time distr
+  TFile *fmism;                     //! For load the mism time distr
+  TH1F *hmism;                      //! The mism time distr
     
-  TFile *fchDist;                     //! Load the tof chan dist from IP
-  TH1D *hChDist;                     //! The tof chan dist from IP
+  TFile *fchDist;                   //! Load the tof chan dist from IP
+  TH1D *hChDist;                    //! The tof chan dist from IP
   
-  static const Int_t nbin = 152;     // number of pt bins
+  static const Int_t nbin = 46;     // number of pt bins
 
-  Int_t MomType;                    //type of momentum bins in analysis (7 are all ON): (Flag: 001(1)->pT 010(2)->p 100(3)->pTPC)
+  Double_t EtaLimit[2];                 // Eta windows in analysis
+
+  Int_t MomType;                    // type of momentum bins in analysis (7 are all ON): (Flag: 001(1)->pT 010(2)->p 100(3)->pTPC)
 
   Bool_t fMC;                       // if MC
 
@@ -94,6 +98,8 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   TH1F *hNevent[2];                    //! analyzed Event counter
   
   TH1F *hZvertex[2];                   //! z-vertex distribution
+
+  TH1F *hEtaDistribution[2];              //! Eta distribution of the tracks
 
   TH2F *fdEdxVSp[2][3];                //! dedx vs p plots
 
