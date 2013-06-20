@@ -231,6 +231,7 @@ public:
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}
   UShort_t GetTPCsignalN() const {return fTPCsignalN;}
   Double_t GetTPCmomentum() const {return fIp?fIp->GetP():GetP();}
+  Double_t GetTPCTgl()      const {return fIp?fIp->GetTgl():GetTgl();}
   Double_t GetTPCchi2() const {return fTPCchi2;}
   Double_t GetTPCchi2Iter1() const {return fTPCchi2Iter1;}
   UShort_t GetTPCclusters(Int_t *idx) const;
