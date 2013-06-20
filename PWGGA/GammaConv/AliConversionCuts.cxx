@@ -686,7 +686,7 @@ Bool_t AliConversionCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMC
    }
 
    // Event Trigger
-   if(!IsTriggerSelected()){
+   if(!IsTriggerSelected(fInputEvent)){
       if(hV0EventCuts)hV0EventCuts->Fill(cutindex);
       fEventQuality = 3;
       return kFALSE;
@@ -1073,15 +1073,15 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
       return kFALSE;
    }
 
-   // dEdx Cuts
-   if(!dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
-      FillPhotonCutIndex(kdEdxCuts);
-      return kFALSE;
-   }
-
    // Track Cuts
    if(!TracksAreSelected(negTrack, posTrack)){
       FillPhotonCutIndex(kTrackCuts);
+      return kFALSE;
+   }
+
+   // dEdx Cuts
+   if(!dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
+      FillPhotonCutIndex(kdEdxCuts);
       return kFALSE;
    }
 
@@ -1456,26 +1456,21 @@ AliVTrack *AliConversionCuts::GetTrack(AliVEvent * event, Int_t label){
 
    } else {
       AliVTrack * track = 0x0;
-      for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
-         track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
-         if(track){
-            if(track->GetID() == label) {
-               return track;
-            }
-         }
+      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+         track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
+         return track;
       }
-      for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
-         track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
-         if(track){
-            if(track->GetID()<0){
-               if( (abs(track->GetID())-1)  == label) {
+      else{      
+         for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
+            track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
+            if(track){
+               if(track->GetID() == label) {
                   return track;
                }
             }
          }
       }
    }
-
    //AliDebug(5,(Form("track not found %d %d",label,event->GetNumberOfTracks()));
    return NULL;
 }
@@ -3011,14 +3006,14 @@ Int_t AliConversionCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 
 ///________________________________________________________________________
 
-Bool_t AliConversionCuts::IsTriggerSelected()
+Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
 {
 
    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
    UInt_t isSelected = AliVEvent::kAny;
    if (fInputHandler==NULL) return kFALSE;
-   if( fInputHandler->GetEventSelection()) {
+   if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
       if (!fTriggerSelectedManually){
          if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
          else {
@@ -3429,7 +3424,7 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
 //_________________________________________________________________________
 Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Bool_t isHeavyIon){
 
-   if ( !IsTriggerSelected() )
+   if ( !IsTriggerSelected(InputEvent) )
       return 3;
    
    if(isHeavyIon && !(IsCentralitySelected(InputEvent,MCEvent)))

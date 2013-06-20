@@ -70,7 +70,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
    fTrueMotherRapList(NULL),
    fMCList(NULL),
    fHeaderNameList(NULL),
-   fTriggerNameList(NULL),
    fOutputContainer(0),
    fReaderGammas(NULL),
    fGammaCandidates(NULL),
@@ -86,6 +85,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
    hESDMotherBackInvMassPt(NULL),
    sESDMotherBackInvMassPtZM(NULL),
    hESDMotherInvMassEalpha(NULL),
+   hMCHeaders(NULL),
    hMCAllGammaPt(NULL),
    hMCDecayGammaPi0Pt(NULL),
    hMCDecayGammaRhoPt(NULL),
@@ -148,6 +148,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
    fUnsmearedE(NULL),
    fMCStackPos(NULL),
    fMCStackNeg(NULL),
+   fESDArrayPos(NULL),
+   fESDArrayNeg(NULL),
    fnCuts(0),
    fiCut(0),
    fNumberOfESDTracks(0),
@@ -180,7 +182,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
    fTrueMotherRapList(NULL),
    fMCList(NULL),
    fHeaderNameList(NULL),
-   fTriggerNameList(NULL),
    fOutputContainer(0),
    fReaderGammas(NULL),
    fGammaCandidates(NULL),
@@ -196,6 +197,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
    hESDMotherBackInvMassPt(NULL),
    sESDMotherBackInvMassPtZM(NULL),
    hESDMotherInvMassEalpha(NULL),
+   hMCHeaders(NULL),
    hMCAllGammaPt(NULL),
    hMCDecayGammaPi0Pt(NULL),
    hMCDecayGammaRhoPt(NULL),
@@ -258,6 +260,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
    fUnsmearedE(NULL),
    fMCStackPos(NULL),
    fMCStackNeg(NULL),
+   fESDArrayPos(NULL),
+   fESDArrayNeg(NULL),
    fnCuts(0),
    fiCut(0),
    fNumberOfESDTracks(0),
@@ -379,7 +383,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
    fESDList = new TList*[fnCuts];
    fBackList = new TList*[fnCuts];
    fMotherList = new TList*[fnCuts];
-   fTriggerNameList = new TList*[fnCuts];
    hNEvents = new TH1I*[fnCuts];
    hNGoodESDTracks = new TH1I*[fnCuts];
    hNGammaCandidates = new TH1I*[fnCuts];
@@ -423,7 +426,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
       hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-      hNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
+      if (((AliConversionCuts*)fCutArray->At(iCut))->IsSpecialTrigger() == 4 ){
+         TString TriggerNames = "Not Trigger: ";
+         TriggerNames = TriggerNames+ ( (AliConversionCuts*)fCutArray->At(iCut))->GetSpecialTriggerName();
+         hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
+      } else {
+         hNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
+      }
       hNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
       hNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
       hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
@@ -479,7 +488,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
       fTrueList = new TList*[fnCuts];
       // Selected Header List
       fHeaderNameList = new TList*[fnCuts];
-      
+      hMCHeaders = new TH1I*[fnCuts];
       hMCAllGammaPt = new TH1F*[fnCuts];
       hMCDecayGammaPi0Pt = new TH1F*[fnCuts];
       hMCDecayGammaRhoPt = new TH1F*[fnCuts];
@@ -550,7 +559,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
          fMCList[iCut]->SetName(Form("%s_%s MC histograms",cutstring.Data(),cutstringMeson.Data()));
          fMCList[iCut]->SetOwner(kTRUE);
          fCutFolder[iCut]->Add(fMCList[iCut]);
-
+         hMCHeaders[iCut] = new TH1I("MC_Headers","MC_Headers",20,0,20);
+         fMCList[iCut]->Add(hMCHeaders[iCut]);
          hMCAllGammaPt[iCut] = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",250,0,25);
          fMCList[iCut]->Add(hMCAllGammaPt[iCut]);
          hMCDecayGammaPi0Pt[iCut] = new TH1F("MC_DecayGammaPi0_Pt","MC_DecayGammaPi0_Pt",250,0,25);
@@ -800,9 +810,10 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
    // ------------------- BeginEvent ----------------------------
 
-   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())
+   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
       RelabelAODPhotonCandidates(kTRUE);    // In case of AODMC relabeling MC
-
+      fV0Reader->RelabelAODs(kTRUE);
+   }
    for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       fiCut = iCut;
 
@@ -839,7 +850,17 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
                                                                                   ((AliConversionCuts*)fCutArray->At(iCut))->GetAcceptedHeader(),
                                                                                   fInputEvent);
             }
+
+            for(Int_t i = 0;i<(((AliConversionCuts*)fCutArray->At(iCut))->GetAcceptedHeader())->GetEntries();i++){
+               TString nameBin= hMCHeaders[iCut]->GetXaxis()->GetBinLabel(i+1);
+               if (nameBin.CompareTo("")== 0){
+                  TString nameHeader = ((TObjString*)((TList*)((AliConversionCuts*)fCutArray->At(iCut))
+                                                            ->GetAcceptedHeader())->At(i))->GetString();
+                  hMCHeaders[iCut]->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
+               }
+            }
          }
+
       }
       if(fMCEvent){
          if(fInputEvent->IsA()==AliESDEvent::Class())
@@ -894,9 +915,11 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       fGammaCandidates->Clear(); // delete this cuts good gammas
    }
 
-   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())
+   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
       RelabelAODPhotonCandidates(kFALSE); // Back to ESDMC Label
-   
+      fV0Reader->RelabelAODs(kFALSE);
+   }
+
    PostData(1, fOutputContainer);
 }
 //________________________________________________________________________
@@ -1988,6 +2011,8 @@ void AliAnalysisTaskGammaConvV1::RelabelAODPhotonCandidates(Bool_t mode){
    if(mode){
       fMCStackPos = new Int_t[fReaderGammas->GetEntries()];
       fMCStackNeg = new Int_t[fReaderGammas->GetEntries()];
+      fESDArrayPos = new Int_t[fReaderGammas->GetEntries()];
+      fESDArrayNeg = new Int_t[fReaderGammas->GetEntries()];
    }
    
    for(Int_t iGamma = 0;iGamma<fReaderGammas->GetEntries();iGamma++){
@@ -1996,11 +2021,14 @@ void AliAnalysisTaskGammaConvV1::RelabelAODPhotonCandidates(Bool_t mode){
       if(!mode){// Back to ESD Labels
          PhotonCandidate->SetMCLabelPositive(fMCStackPos[iGamma]);
          PhotonCandidate->SetMCLabelNegative(fMCStackNeg[iGamma]);
-         //PhotonCandidate->IsAODMCLabel(kFALSE);
+         PhotonCandidate->SetLabelPositive(fESDArrayPos[iGamma]);
+         PhotonCandidate->SetLabelNegative(fESDArrayNeg[iGamma]);
          continue;
       }
       fMCStackPos[iGamma] =  PhotonCandidate->GetMCLabelPositive();
       fMCStackNeg[iGamma] =  PhotonCandidate->GetMCLabelNegative();
+      fESDArrayPos[iGamma] = PhotonCandidate->GetTrackLabelPositive();
+      fESDArrayNeg[iGamma] = PhotonCandidate->GetTrackLabelNegative();
 
       Bool_t AODLabelPos = kFALSE;
       Bool_t AODLabelNeg = kFALSE;
@@ -2010,86 +2038,37 @@ void AliAnalysisTaskGammaConvV1::RelabelAODPhotonCandidates(Bool_t mode){
          if(!AODLabelPos){
             if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
                PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+               PhotonCandidate->SetLabelPositive(i);
                AODLabelPos = kTRUE;
             }
          }
          if(!AODLabelNeg){
             if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
                PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+               PhotonCandidate->SetLabelNegative(i);
                AODLabelNeg = kTRUE;
             }
          }
          if(AODLabelNeg && AODLabelPos){
             break;
          }
-      } // Both ESD Tracks have AOD Tracks with Positive IDs
+      }
       if(!AODLabelPos || !AODLabelNeg){
-         for(Int_t i = 0; i<fInputEvent->GetNumberOfTracks();i++){
-            AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
-            if(tempDaughter->GetID()<0){
-               if(!AODLabelPos){
-                  if( (abs(tempDaughter->GetID())-1) == PhotonCandidate->GetTrackLabelPositive()){
-                     PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
-                     AODLabelPos = kTRUE;
-                  }
-               }
-               if(!AODLabelNeg){
-                  if( (abs(tempDaughter->GetID())-1) == PhotonCandidate->GetTrackLabelNegative()){
-                     PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
-                     AODLabelNeg = kTRUE;
-                  }
-               }
-            }
-            if(AODLabelNeg && AODLabelPos){
-               break;
-            }
-         }
-         if(!AODLabelPos || !AODLabelNeg){
-            cout<<"WARNING!!! AOD TRACKS NOT FOUND FOR"<<endl;
-         }
+         cout<<"WARNING!!! AOD TRACKS NOT FOUND FOR"<<endl;
       }
    }
+   
    
    if(!mode){
       delete[] fMCStackPos;
       delete[] fMCStackNeg;
+      delete[] fESDArrayPos;
+      delete[] fESDArrayNeg;
    }
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::Terminate(const Option_t *)
 {
-
-   // Not Executed by GRID on SubJobLevel
-   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-      if(!((AliConversionCuts*)fCutArray->At(iCut))) continue;
-      if(((AliConversionCuts*)fCutArray->At(iCut))->GetSignalRejection() == 2 && fMCEvent){
-         fHeaderNameList[iCut] = new TList();
-         TString HeaderNames = "Header:";
-         for(Int_t i = 0;i<(((AliConversionCuts*)fCutArray->At(iCut))->GetAcceptedHeader())->GetEntries();i++){
-            HeaderNames = HeaderNames+"_"+ ((TObjString*)((TList*) ( (AliConversionCuts*)fCutArray->At(iCut))
-                                                          ->GetAcceptedHeader())->At(i))->GetString();
-         }
-         fHeaderNameList[iCut]->SetName(HeaderNames);
-         fHeaderNameList[iCut]->SetOwner(kTRUE);
-         fCutFolder[iCut]->Add(fHeaderNameList[iCut]);
-      }
-      else if(((AliConversionCuts*)fCutArray->At(iCut))->GetSignalRejection() == 0 &&
-              (((AliConversionCuts*)fCutArray->At(iCut))->GetFoundHeader()) && fMCEvent){
-         fHeaderNameList[iCut] = new TList();
-         TString HeaderNames = (((AliConversionCuts*)fCutArray->At(iCut))->GetFoundHeader())[0];
-         fHeaderNameList[iCut]->SetName(HeaderNames);
-         fHeaderNameList[iCut]->SetOwner(kTRUE);
-         fCutFolder[iCut]->Add(fHeaderNameList[iCut]);
-      }
-      if (((AliConversionCuts*)fCutArray->At(iCut))->IsSpecialTrigger() == 4 ){
-         fTriggerNameList[iCut] = new TList();
-         TString TriggerNames = "Trigger: ";
-         TriggerNames = TriggerNames+ ( (AliConversionCuts*)fCutArray->At(iCut))->GetSpecialTriggerName();
-         fTriggerNameList[iCut]->SetName(TriggerNames);
-         fTriggerNameList[iCut]->SetOwner(kTRUE);
-         fCutFolder[iCut]->Add(fTriggerNameList[iCut]);
-      }   
-   }
 
    //fOutputContainer->Print(); // Will crash on GRID
 }

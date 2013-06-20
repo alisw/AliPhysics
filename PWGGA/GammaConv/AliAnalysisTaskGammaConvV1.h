@@ -82,7 +82,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TList **fTrueMotherRapList;
    TList **fMCList;
    TList **fHeaderNameList;
-   TList **fTriggerNameList;
    TList *fOutputContainer;
    TClonesArray *fReaderGammas;
    TList *fGammaCandidates;
@@ -98,6 +97,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH2F **hESDMotherBackInvMassPt;
    THnSparseF **sESDMotherBackInvMassPtZM;
    TH2F **hESDMotherInvMassEalpha;
+   TH1I **hMCHeaders;
    TH1F **hMCAllGammaPt;
    TH1F **hMCDecayGammaPi0Pt;
    TH1F **hMCDecayGammaRhoPt;
@@ -161,6 +161,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    Double_t *fUnsmearedE;  //[fnGammaCandidates]
    Int_t *fMCStackPos;     //[fnGammaCandidates]
    Int_t *fMCStackNeg;     //[fnGammaCandidates]
+   Int_t *fESDArrayPos;    //[fnGammaCandidates]
+   Int_t *fESDArrayNeg;    //[fnGammaCandidates]
    Int_t fnCuts;
    Int_t fiCut;
    Int_t fNumberOfESDTracks;
