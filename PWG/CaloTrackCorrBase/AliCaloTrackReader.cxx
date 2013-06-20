@@ -668,10 +668,10 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   
   if(fComparePtHardAndClusterPt)
-	  printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
+    printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
   
   if(fComparePtHardAndClusterPt)
-	  printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
+    printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
   
   printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
@@ -699,14 +699,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
   {
-	  if(fDebug >= 0) printf("AliCaloTrackReader::FillInputEvent() - Input event not available, skip event analysis\n");
-	  return kFALSE;
+    if(fDebug >= 0) printf("AliCaloTrackReader::FillInputEvent() - Input event not available, skip event analysis\n");
+    return kFALSE;
   }
   
   //Select events only fired by a certain trigger configuration if it is provided
   Int_t eventType = 0;
   if(fInputEvent->GetHeader())
-	  eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
+    eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
   
   if (GetFiredTriggerClasses().Contains("FAST")  && !GetFiredTriggerClasses().Contains("ALL") && !fAcceptFastCluster) 
   {
@@ -1957,7 +1957,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     
     if ( !IsEMCALCluster(clus)) continue ;
       
-		//Skip clusters with too low energy to be triggering
+    //Skip clusters with too low energy to be triggering
     if ( clus->E() < fTriggerEventThreshold / 2. ) continue ;
     
     Float_t  frac       = -1;
@@ -2061,7 +2061,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
   Double_t tofPatchMaxUS = TMath::Abs(tofPatchMax);
     
-  if     (tofPatchMaxUS < 25 ) fTriggerClusterBC = 0 ;
+  if     (tofPatchMaxUS < 28 ) fTriggerClusterBC = 0 ;
   else if(tofPatchMaxUS < 75 ) fTriggerClusterBC = 1 ;
   else if(tofPatchMaxUS < 125) fTriggerClusterBC = 2 ;
   else if(tofPatchMaxUS < 175) fTriggerClusterBC = 3 ;

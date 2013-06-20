@@ -183,20 +183,20 @@ void    AliAnaCaloTrackCorrMaker::AddAnalysis(TObject* ana, Int_t n)
 TList * AliAnaCaloTrackCorrMaker::FillAndGetAODBranchList()
 { 
 	
-	// Get any new output AOD branches from analysis and put them in a list
-	// The list is filled in the maker, and new branch passed to the analysis frame
-	// AliAnalysisTaskCaloTrackCorrelation
+  // Get any new output AOD branches from analysis and put them in a list
+  // The list is filled in the maker, and new branch passed to the analysis frame
+  // AliAnalysisTaskCaloTrackCorrelation
   
-	TList *aodBranchList = fReader->GetAODBranchList() ;
+  TList *aodBranchList = fReader->GetAODBranchList() ;
   
-	for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
-  {
-		AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-		if(ana->NewOutputAOD()) aodBranchList->Add(ana->GetCreateOutputAODBranch());
-	}
-	
-	return aodBranchList ;
-	
+  for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
+    {
+      AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+      if(ana->NewOutputAOD()) aodBranchList->Add(ana->GetCreateOutputAODBranch());
+    }
+  
+  return aodBranchList ;
+  
 }
 
 //_________________________________________________________
@@ -312,18 +312,18 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 { 
   
-	// Get the list of the cuts used for the analysis
-	// The list is filled in the maker, called by the task in LocalInit() and posted there
+  // Get the list of the cuts used for the analysis
+  // The list is filled in the maker, called by the task in LocalInit() and posted there
   
-	for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
-  {
-		AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-		TObjString * objstring = ana->GetAnalysisCuts();
-    
-		if(objstring)fCuts->Add(objstring);
-	}
+  for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
+    {
+      AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+      TObjString * objstring = ana->GetAnalysisCuts();
+      
+      if(objstring)fCuts->Add(objstring);
+    }
   
-	return fCuts ;
+  return fCuts ;
   
 }
 
@@ -736,18 +736,18 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
   printf("Number of analysis tasks   =     %d\n", fAnalysisContainer->GetEntries()) ;
   
   if(!strcmp("all",opt))
-  {
-	  printf("Print analysis Tasks settings :\n") ;
-	  for(Int_t iana = 0; iana<fAnalysisContainer->GetEntries(); iana++)
     {
-		  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana))->Print("");
-	  }
-    
-	  printf("Print analysis Reader settings :\n") ;
-	  fReader->Print("");
-	  printf("Print analysis Calorimeter Utils settings :\n") ;
-	  fCaloUtils->Print("");
-    
+      printf("Print analysis Tasks settings :\n") ;
+      for(Int_t iana = 0; iana<fAnalysisContainer->GetEntries(); iana++)
+       {
+         ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana))->Print("");
+       }
+      
+      printf("Print analysis Reader settings :\n") ;
+      fReader->Print("");
+      printf("Print analysis Calorimeter Utils settings :\n") ;
+      fCaloUtils->Print("");
+      
   }
   
 } 
@@ -759,20 +759,20 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   //Process analysis for this event
   
   if(fMakeHisto && !fOutputContainer)
-  {
-    printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Histograms not initialized\n");
-    abort();
-  }
-	
-  if(fAnaDebug >= 0 )
-  {
-		printf("***  AliAnaCaloTrackCorrMaker::ProcessEvent() Event %d   ***  \n",iEntry);
-	  if(fAnaDebug > 1 ) 
     {
-		  printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Current File Name : %s\n", currentFileName);
-		  //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
-	  }
-  }
+      printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Histograms not initialized\n");
+      abort();
+    }
+  
+  if(fAnaDebug >= 0 )
+    {
+      printf("***  AliAnaCaloTrackCorrMaker::ProcessEvent() Event %d   ***  \n",iEntry);
+      if(fAnaDebug > 1 ) 
+       {
+         printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Current File Name : %s\n", currentFileName);
+         //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
+       }
+    }
   
   //Each event needs an empty branch
   TList * aodList = fReader->GetAODBranchList();
@@ -788,7 +788,6 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   
   //Set the AODB calibration, bad channels etc. parameters at least once
   fCaloUtils->AccessOADB(fReader->GetInputEvent());	
-
   
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
@@ -865,9 +864,9 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   
   if(!ok)
   {    
-	  if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
+    if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
     fReader->ResetLists();
-	  return ;
+    return ;
   }
   
   //Magic line to write events to file
@@ -941,17 +940,17 @@ void AliAnaCaloTrackCorrMaker::Terminate(TList * outputList)
   
   if (!outputList) 
   {
-	  Error("Terminate", "No output list");
-	  return;
+    Error("Terminate", "No output list");
+    return;
   }
-	  
+  
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
-  {
-    
-    AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    if(ana->MakePlotsOn())ana->Terminate(outputList);
-    
-  }//Loop on analysis defined
+    {
+      
+      AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+      if(ana->MakePlotsOn())ana->Terminate(outputList);
+      
+    }//Loop on analysis defined
   
 }
 
