@@ -1,4 +1,4 @@
-AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut,Bool_t MassCal,Double_t asspTCut,Double_t angleCut){
+AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut,Bool_t MassCal,Double_t asspTCut,Double_t angleCut,Double_t MassCut){
   //
   // HFE standard task configuration
   //
@@ -23,8 +23,9 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   task->SetHFECuts(hfecuts);
   task->SetMassConstraint(MassConst);
   task->SetMassWidthCut(MassWidthCut);
-  Double_t masscut = 0.05;
-  if(!MassConst)masscut = 0.1;
+  //Double_t masscut = 0.05;
+  //if(!MassConst)masscut = 0.1;
+  Double_t masscut = MassCut;
   task->SetInvariantMassCut(masscut);
   task->SetOpeningAngleCut(angleCut);
   task->SetMimpTassCut(asspTCut);
