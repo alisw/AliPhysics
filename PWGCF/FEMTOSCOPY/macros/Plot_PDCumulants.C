@@ -50,7 +50,7 @@ double MRCShift=1.0;// 1.0=full Momentum Resolution Correction. 1.1 for 10% syst
 //
 bool IncludeMJcorrection=kTRUE;// linear Mini-Jet correction for denominator of r3?
 bool SaveToFile_def=kFALSE;// Save outputs to file?
-int SourceType=1;// 0=Gaussian, 1=Therminator, 2=Lorentzian (keep at 1 for default)
+int SourceType=0;// 0=Therminator, 1=Gaussian (keep at 0 for default)
 bool ConstantFSI=kFALSE;// Constant FSI's for each kt bin?
 bool GofP=kFALSE;// Include momentum dependence of coherent fraction?
 bool ChargeConstraint=kFALSE;// Include Charge Constraint for coherent states?
@@ -106,7 +106,7 @@ TH1D *CoulCorr2OS;
 //static double Lednicky_qinv[74];
 //static double Lednicky_CoulStrong[74];
 
-void ReadCoulCorrections(int, int, int, int);
+void ReadCoulCorrections(int, int, int);
 void ReadCoulCorrections_Omega0();
 //void ReadLednickyFile(int);
 void ReadMomResFile(int, double);
@@ -272,7 +272,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   ThreeFrac = pow(TwoFrac,3/2.);
   
   
-  if(SourceType==0 && RValue > 8) {cout<<"Radius value too large!!!"<<endl; return;}
+  if(SourceType==1 && RValue > 8) {cout<<"Radius value too large!!!"<<endl; return;}
 
   cout<<"Mbin = "<<Mbin<<"   Kt = "<<Ktbin<<"   R input = "<<RValue<<"   lambda input = "<<TwoFrac<<endl;
   
@@ -349,7 +349,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     return;
   }
 
-  ReadCoulCorrections(SourceType, RValue, bValue, KtbinFSI);
+  ReadCoulCorrections(RValue, bValue, KtbinFSI);
   //ReadLednickyFile(RValue);
   ReadMomResFile(RValueMomRes, TwoFracMomRes);
   ReadCoulCorrections_Omega0();
@@ -1536,7 +1536,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   int SCBin=0;
   
   //
-  ReadCoulCorrections(SourceType, RValue, bValue, 10);// switch to full kt range, 10.
+  ReadCoulCorrections(RValue, bValue, 10);// switch to full kt range, 10.
   //ReadCoulCorrections(0, 5, 2, 10);// Change to Gaussian R=5 fm calculation (STAR method testing)
   TH1D *GenSignalExpected_num=new TH1D("GenSignalExpected_num","",20,0,0.2);
   TH1D *GenSignalExpected_den=new TH1D("GenSignalExpected_den","",20,0,0.2);
@@ -2074,8 +2074,8 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   */
 
 
-  /*
-  TPad *pad1 = new TPad("pad1","pad1",0.0,0.0,1.,1.);
+  
+  /*TPad *pad1 = new TPad("pad1","pad1",0.0,0.0,1.,1.);
   gPad->SetGridx(0);
   gPad->SetGridy(0);
   gPad->SetTickx();
@@ -2618,37 +2618,29 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 
 }
 
-void ReadCoulCorrections(int ST, int RVal, int bVal, int kt){
+void ReadCoulCorrections(int RVal, int bVal, int kt){
   ///////////////////////
   
   TString *fname;
-  if(FileSetting!=6) fname = new TString("KFile.root");
-  if(FileSetting==6) fname = new TString("KFile_Gauss.root");
+  if(FileSetting!=6 && SourceType==0) fname = new TString("KFile.root");
+  else fname = new TString("KFile_Gauss.root");
   
   TFile *File=new TFile(fname->Data(),"READ");
-  if(ST==0){// Gaussian
-    if(RVal < 3 || RVal > 10) cout<<"Coulomb Correlation Gaussian radius outside of range!!!!!!!!!!!!!!!!"<<endl;
-    TH2D *tempG_ss = (TH2D*)File->Get("K2ssG");
-    CoulCorr2SS = (TH1D*)tempG_ss->ProjectionY("CoulCorr2SS",RVal-2, RVal-2);
-    TH2D *tempG_os = (TH2D*)File->Get("K2osG");
-    CoulCorr2OS = (TH1D*)tempG_os->ProjectionY("CoulCorr2OS",RVal-2, RVal-2);
+  if(bVal!=2 && bVal!=3 && bVal!=5 && bVal!=7 && bVal!=8 && bVal!=9) cout<<"Therminator bVal not acceptable in 2-particle Coulomb read"<<endl;
+  
+  if(kt==10){// kt integrated
+    TH2D *tempT_ss = (TH2D*)File->Get("K2ssT");
+    TH2D *tempT_os = (TH2D*)File->Get("K2osT");
+    CoulCorr2SS = (TH1D*)tempT_ss->ProjectionY("CoulCorr2SS",bBin, bBin);
+    CoulCorr2OS = (TH1D*)tempT_os->ProjectionY("CoulCorr2OS",bBin, bBin);
+  }else{
+    if(kt < 1 || kt > 6) cout<<"kt bin out of range in 2-particle Coulomb read"<<endl;
+    TH3D *tempT3_ss = (TH3D*)File->Get("K2ssT_kt");
+    TH3D *tempT3_os = (TH3D*)File->Get("K2osT_kt");
+    CoulCorr2SS = (TH1D*)tempT3_ss->ProjectionZ("CoulCorr2SS",bBin, bBin, kt,kt);
+    CoulCorr2OS = (TH1D*)tempT3_os->ProjectionZ("CoulCorr2OS",bBin, bBin, kt,kt);
   }
-  if(ST==1){//Therminator
-    if(bVal!=2 && bVal!=3 && bVal!=5 && bVal!=7 && bVal!=8 && bVal!=9) cout<<"Therminator bVal not acceptable in 2-particle Coulomb read"<<endl;
-    
-    if(kt==10){// kt integrated
-      TH2D *tempT_ss = (TH2D*)File->Get("K2ssT");
-      TH2D *tempT_os = (TH2D*)File->Get("K2osT");
-      CoulCorr2SS = (TH1D*)tempT_ss->ProjectionY("CoulCorr2SS",bBin, bBin);
-      CoulCorr2OS = (TH1D*)tempT_os->ProjectionY("CoulCorr2OS",bBin, bBin);
-    }else{
-      if(kt < 1 || kt > 6) cout<<"kt bin out of range in 2-particle Coulomb read"<<endl;
-      TH3D *tempT3_ss = (TH3D*)File->Get("K2ssT_kt");
-      TH3D *tempT3_os = (TH3D*)File->Get("K2osT_kt");
-      CoulCorr2SS = (TH1D*)tempT3_ss->ProjectionZ("CoulCorr2SS",bBin, bBin, kt,kt);
-      CoulCorr2OS = (TH1D*)tempT3_os->ProjectionZ("CoulCorr2OS",bBin, bBin, kt,kt);
-    }
-  }
+  
   CoulCorr2SS->SetDirectory(0);
   CoulCorr2OS->SetDirectory(0);
   File->Close(); 
@@ -3157,8 +3149,8 @@ void ReadCoulCorrections_Omega0(){
   // read in 3d 3-particle coulomb correlations = K3
   
   TFile *coulfile;
-  if(FileSetting!=6) coulfile = new TFile("KFile.root","READ");
-  if(FileSetting==6) coulfile = new TFile("KFile_Gauss.root","READ");
+  if(FileSetting!=6 && SourceType==0) coulfile = new TFile("KFile.root","READ");
+  else coulfile = new TFile("KFile_Gauss.root","READ");
   
   TString *name=new TString("K3ss_");
   *name += bBin-1;
