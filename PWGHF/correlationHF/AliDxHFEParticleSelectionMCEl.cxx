@@ -159,9 +159,9 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
     // TODO: Redo binning of distributions more?
     //     		       0    1      2     3     
     // 	 	               Pt   Phi   Eta   mother 
-    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,    15, kNCutLabels };
-    double thnMinExt [thnSizeExt] = {   0,    0, -1.,  -1.5, kRecKineITSTPC };
-    double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,  13.5, kSelected };
+    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,    15, kNCutLabels-1 };
+    double thnMinExt [thnSizeExt] = {   0,    0, -1.,  -1.5, kRecKineITSTPC-0.5};
+    double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,  13.5, kSelected-0.5};
     const char* thnNamesExt[thnSizeExt]={
       "Pt",
       "Phi",
