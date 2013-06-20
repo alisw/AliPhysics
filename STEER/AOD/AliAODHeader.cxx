@@ -64,7 +64,6 @@ AliAODHeader::AliAODHeader() :
   fOfflineTrigger(0),
   fESDFileName(""),
   fEventNumberESDFile(-1),
-  fNumberESDTracks(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
@@ -128,7 +127,6 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOfflineTrigger(0),
   fESDFileName(""),
   fEventNumberESDFile(-1),
-  fNumberESDTracks(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
@@ -212,7 +210,6 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOfflineTrigger(0),
   fESDFileName(""),
   fEventNumberESDFile(-1),
-  fNumberESDTracks(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
@@ -282,7 +279,6 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fOfflineTrigger(hdr.fOfflineTrigger),
   fESDFileName(hdr.fESDFileName),
   fEventNumberESDFile(hdr.fEventNumberESDFile),
-  fNumberESDTracks(hdr.fNumberESDTracks),
   fL0TriggerInputs(hdr.fL0TriggerInputs),
   fL1TriggerInputs(hdr.fL1TriggerInputs),
   fL2TriggerInputs(hdr.fL2TriggerInputs),
@@ -361,7 +357,6 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fOfflineTrigger   = hdr.fOfflineTrigger;
     fESDFileName      = hdr.fESDFileName;
     fEventNumberESDFile = hdr.fEventNumberESDFile;
-    fNumberESDTracks    = hdr.fNumberESDTracks;
     fL0TriggerInputs    = hdr.fL0TriggerInputs;
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;

@@ -61,7 +61,6 @@ class AliAODHeader : public AliVHeader {
 
   Int_t     GetRunNumber()          const { return fRunNumber;}
   Int_t     GetEventNumberESDFile() const { return fEventNumberESDFile;}
-  Int_t     GetNumberOfESDTracks()    const { return fNumberESDTracks;}
   UShort_t  GetBunchCrossNumber()   const { return fBunchCrossNumber; }
   UInt_t    GetOrbitNumber()        const { return fOrbitNumber; }
   UInt_t    GetPeriodNumber()       const { return fPeriodNumber; }
@@ -111,7 +110,6 @@ class AliAODHeader : public AliVHeader {
   
   void SetRunNumber(Int_t nRun)                { fRunNumber = nRun; }
   void SetEventNumberESDFile(Int_t n)          { fEventNumberESDFile=n; }
-  void SetNumberOfESDTracks(Int_t n)           { fNumberESDTracks=n; }
   void SetBunchCrossNumber(UShort_t nBx)       { fBunchCrossNumber = nBx; }
   void SetOrbitNumber(UInt_t nOr)              { fOrbitNumber = nOr; }
   void SetPeriodNumber(UInt_t nPer)            { fPeriodNumber = nPer; }
@@ -241,7 +239,6 @@ class AliAODHeader : public AliVHeader {
   UInt_t      fOfflineTrigger;      // fired offline triggers for this event
   TString     fESDFileName;         // ESD file name to which this event belongs
   Int_t       fEventNumberESDFile;  // Event number in ESD file
-  Int_t       fNumberESDTracks;     // Number of tracks in origingal ESD event
   UInt_t      fL0TriggerInputs;     // L0 Trigger Inputs (mask)
   UInt_t      fL1TriggerInputs;     // L1 Trigger Inputs (mask)
   UShort_t    fL2TriggerInputs;     // L2 Trigger Inputs (mask)
@@ -253,7 +250,7 @@ class AliAODHeader : public AliVHeader {
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 23);
+  ClassDef(AliAODHeader, 22);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

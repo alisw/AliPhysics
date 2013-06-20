@@ -661,8 +661,6 @@ void AliPIDResponse::SetRecoInfo()
     fLHCperiod="LHC10H";
     fMCperiodTPC="LHC10H8";
     if (reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11A10";
-    // exception for 13d2 and later
-    if (fCurrentAliRootRev >= 62714) fMCperiodTPC="LHC13D2";
     fBeamType="PBPB";
   }
   else if (fRun>=139847&&fRun<=146974) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
@@ -1276,11 +1274,10 @@ void AliPIDResponse::SetTPCParametrisation()
   //
   // Setup multiplicity correction
   //
-  if (fUseTPCMultiplicityCorrection && !(fBeamType.CompareTo("PP") == 0)) {
+  if (fUseTPCMultiplicityCorrection && (fBeamType.CompareTo("PBPB") == 0 || fBeamType.CompareTo("AA") == 0)) {
     AliInfo("Multiplicity correction enabled!");
     
     //TODO After testing, load parameters from outside       
-    /*TODO now correction for MC
     if (period.Contains("LHC11A10"))  {//LHC11A10A
       AliInfo("Using multiplicity correction parameters for 11a10!");
       fTPCResponse.SetParameterMultiplicityCorrection(0, 6.90133e-06);
@@ -1297,42 +1294,6 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 1.37023e-02);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -6.36337e-01);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.13479e-02);
-    }
-    else*/ if (period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D") || period.Contains("LHC13E") || 
-             period.Contains("LHC13F"))  {// 2013 pPb data taking
-      AliInfo("Using multiplicity correction parameters for 13b.pass2!");
-      
-      fTPCResponse.SetParameterMultiplicityCorrection(0, -5.906e-06);
-      fTPCResponse.SetParameterMultiplicityCorrection(1, -5.064e-04);
-      fTPCResponse.SetParameterMultiplicityCorrection(2, -3.521e-02);
-      fTPCResponse.SetParameterMultiplicityCorrection(3, 2.469e-02);
-      fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
-      
-      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -5.32e-06);
-      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 1.177e-05);
-      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
-      
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, 0.);
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 0.);
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, 0.);
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 0.);
-      
-      /* Not too bad, but far from perfect in the details
-      fTPCResponse.SetParameterMultiplicityCorrection(0, -6.27187e-06);
-      fTPCResponse.SetParameterMultiplicityCorrection(1, -4.60649e-04);
-      fTPCResponse.SetParameterMultiplicityCorrection(2, -4.26450e-02);
-      fTPCResponse.SetParameterMultiplicityCorrection(3, 2.40590e-02);
-      fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
-      
-      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -5.338e-06);
-      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 1.220e-05);
-      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
-      
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, 7.89237e-05);
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, -1.30662e-02);
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, 8.91548e-01);
-      fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.47931e-02);
-      */
     }
     else if (period.Contains("LHC10H") && recopass == 2) {    
       AliInfo("Using multiplicity correction parameters for 10h.pass2!");
@@ -1366,7 +1327,7 @@ void AliPIDResponse::SetTPCParametrisation()
     // the multiplicity correction is explicitely enabled in such expert calls.
     
     AliInfo(Form("Multiplicity correction %sdisabled (%s)!", fUseTPCMultiplicityCorrection ? "automatically " : "",
-                 fUseTPCMultiplicityCorrection ? "pp collisions" : "requested by user"));
+                 fUseTPCMultiplicityCorrection ? "no PbPb or AA" : "requested by user"));
     
     fUseTPCMultiplicityCorrection = kFALSE;
     fTPCResponse.ResetMultiplicityCorrectionFunctions();

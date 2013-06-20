@@ -35,7 +35,6 @@ AliAODPid::AliAODPid():
     fTPCsignal(0),
     fTPCsignalN(0),
     fTPCmomentum(0),
-    fTPCTgl(0),
     fTRDnSlices(0),
     fTRDntls(0),
     fTRDslices(0x0),
@@ -71,7 +70,6 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTPCsignal(pid.fTPCsignal),
   fTPCsignalN(pid.fTPCsignalN),
   fTPCmomentum(pid.fTPCmomentum),
-  fTPCTgl(pid.fTPCTgl),
   fTRDnSlices(pid.fTRDnSlices),
   fTRDntls(pid.fTRDntls),
   fTRDslices(0x0),
@@ -109,7 +107,6 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     fTPCsignal   = pid.fTPCsignal;
     fTPCsignalN  = pid.fTPCsignalN;
     fTPCmomentum = pid.fTPCmomentum;
-    fTPCTgl      = pid.fTPCTgl;
 
     fTRDsignal = pid.fTRDsignal;
     if(fTRDnSlices != pid.fTRDnSlices) {
