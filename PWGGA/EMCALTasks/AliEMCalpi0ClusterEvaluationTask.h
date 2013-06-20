@@ -126,7 +126,7 @@ class AliEMCalpi0ClusterEvaluationTask : public AliAnalysisTaskSE
     Bool_t    isEMCALcluster;
     Float_t   dispersioncluster;
     Float_t   chi2cluster;
-    Int_t     distBadChannelcluster;
+    Double_t     distBadChannelcluster;
     Float_t   phicluster;
     Float_t   etacluster;
     Float_t   ptcluster;

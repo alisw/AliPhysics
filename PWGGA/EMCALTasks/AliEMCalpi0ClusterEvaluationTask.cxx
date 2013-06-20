@@ -331,7 +331,7 @@ void AliEMCalpi0ClusterEvaluationTask::UserExec( Option_t* )
 
     // increase event number
     AliInfo( Form( "event: %i", fEvent++ ) );
-
+    fTriggers->SetBinContent(7,   fEvent);
     // ESD Filter analysis task executed for each event
 
     AliESDEvent* esd    = dynamic_cast<AliESDEvent*>(InputEvent());
