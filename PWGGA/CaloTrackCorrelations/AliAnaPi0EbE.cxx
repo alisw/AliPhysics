@@ -105,7 +105,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhTimeENoCut(0),                    fhTimeESPD(0),           fhTimeESPDMulti(0),
     fhTimeNPileUpVertSPD(0),            fhTimeNPileUpVertTrack(0),
     fhTimeNPileUpVertContributors(0),
-    fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
+    fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
+    fhPtNPileUpSPDVtx(0),               fhPtNPileUpTrkVtx(0),
+    fhPtNPileUpSPDVtxTimeCut(0),        fhPtNPileUpTrkVtxTimeCut(0)	
 {
   //default ctor
   
@@ -202,8 +204,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   
 }
 
-//_______________________________________________________________________________
-void AliAnaPi0EbE::FillPileUpHistograms(const Float_t energy, const Float_t time) 
+//_________________________________________________________________________________________________
+void AliAnaPi0EbE::FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time) 
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
@@ -221,31 +223,40 @@ void AliAnaPi0EbE::FillPileUpHistograms(const Float_t energy, const Float_t time
   AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
   
   // N pile up vertices
-  Int_t nVerticesSPD    = -1;
-  Int_t nVerticesTracks = -1;
+  Int_t nVtxSPD = -1;
+  Int_t nVtxTrk = -1;
   
   if      (esdEv)
   {
-    nVerticesSPD    = esdEv->GetNumberOfPileupVerticesSPD();
-    nVerticesTracks = esdEv->GetNumberOfPileupVerticesTracks();
+    nVtxSPD = esdEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = esdEv->GetNumberOfPileupVerticesTracks();
     
   }//ESD
   else if (aodEv)
   {
-    nVerticesSPD    = aodEv->GetNumberOfPileupVerticesSPD();
-    nVerticesTracks = aodEv->GetNumberOfPileupVerticesTracks();
+    nVtxSPD = aodEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = aodEv->GetNumberOfPileupVerticesTracks();
   }//AOD
   
-  fhTimeNPileUpVertSPD  ->Fill(time,nVerticesSPD);
-  fhTimeNPileUpVertTrack->Fill(time,nVerticesTracks);
+  fhTimeNPileUpVertSPD  ->Fill(time,nVtxSPD);
+  fhTimeNPileUpVertTrack->Fill(time,nVtxTrk);
   
+	fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);	
+	fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
+	
+	if(TMath::Abs(time) < 25)
+	{ 
+		fhPtNPileUpSPDVtxTimeCut->Fill(pt,nVtxSPD);	
+		fhPtNPileUpTrkVtxTimeCut->Fill(pt,nVtxTrk);	
+	}	
+	
   //printf("Is SPD %d, Is SPD Multi %d, n spd %d, n track %d\n", 
-  //       GetReader()->IsPileUpFromSPD(),event->IsPileupFromSPDInMultBins(),nVerticesSPD,nVerticesTracks);
+  //       GetReader()->IsPileUpFromSPD(),event->IsPileupFromSPDInMultBins(),nVtxSPD,nVtxTracks);
   
   Int_t ncont = -1;
   Float_t z1 = -1, z2 = -1;
   Float_t diamZ = -1;
-  for(Int_t iVert=0; iVert<nVerticesSPD;iVert++)
+  for(Int_t iVert=0; iVert<nVtxSPD;iVert++)
   {
     if      (esdEv)
     {
@@ -1780,7 +1791,30 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance Z (cm) ");
     fhTimePileUpMainVertexZDiamond->SetXTitle("time (ns)");
     outputContainer->Add(fhTimePileUpMainVertexZDiamond);  
-    
+		
+		fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex", 
+																	 nptbins,ptmin,ptmax,20,0,20); 
+		fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
+		fhPtNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+		outputContainer->Add(fhPtNPileUpSPDVtx);
+	  
+		fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex", 
+																	 nptbins,ptmin,ptmax, 20,0,20 ); 
+		fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
+		fhPtNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+		outputContainer->Add(fhPtNPileUpTrkVtx);  
+		
+		fhPtNPileUpSPDVtxTimeCut  = new TH2F ("hPt_NPileUpVertSPD_TimeCut","pT of cluster vs N pile-up SPD vertex, |tof| < 25 ns", 
+																	 nptbins,ptmin,ptmax,20,0,20); 
+		fhPtNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
+		fhPtNPileUpSPDVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+		outputContainer->Add(fhPtNPileUpSPDVtxTimeCut);
+	  
+		fhPtNPileUpTrkVtxTimeCut  = new TH2F ("hPt_NPileUpVertTracks_TimeCut","pT of cluster vs N pile-up Tracks vertex, |tof| < 25 ns", 
+																					nptbins,ptmin,ptmax, 20,0,20 ); 
+		fhPtNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
+		fhPtNPileUpTrkVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+		outputContainer->Add(fhPtNPileUpTrkVtxTimeCut); 
   }
   
   //Keep neutral meson selection histograms if requiered
@@ -2129,7 +2163,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
-        FillPileUpHistograms(mom.E(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9) /2);        
+        FillPileUpHistograms(mom.E(),mom.Pt(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9) /2);        
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
@@ -2273,7 +2307,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
-        if(cluster)FillPileUpHistograms(mom.E(),cluster->GetTOF()*1e9);
+        if(cluster)FillPileUpHistograms(mom.E(),mom.Pt(),cluster->GetTOF()*1e9);
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
@@ -2508,7 +2542,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       
       fhMCSelectedMassPt     [mcIndex]->Fill(mom.Pt(),mass);
       fhMCSelectedMassSplitPt[mcIndex]->Fill(ptSplit,mass);
-
     }
     
     //-----------------------
@@ -2544,7 +2577,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Double_t tofcluster   = calo->GetTOF()*1e9;
     Double_t tofclusterUS = TMath::Abs(tofcluster);
 
-    FillPileUpHistograms(calo->E(),tofcluster);
+    FillPileUpHistograms(calo->E(),aodpi0.Pt(),tofcluster);
  
     Int_t id = GetReader()->GetTriggerClusterId();
     if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL" && id >=0 )

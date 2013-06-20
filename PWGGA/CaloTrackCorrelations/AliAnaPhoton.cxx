@@ -132,8 +132,11 @@ AliAnaPhoton::AliAnaPhoton() :
     fhClusterMultSPDPileUp(),             fhClusterMultNoPileUp(),
     fhEtaPhiBC0(0),  fhEtaPhiBCPlus(0),   fhEtaPhiBCMinus(0),
     fhEtaPhiBC0PileUpSPD(0),
-    fhEtaPhiBCPlusPileUpSPD(0),
-    fhEtaPhiBCMinusPileUpSPD(0)
+    fhEtaPhiBCPlusPileUpSPD(0),           fhEtaPhiBCMinusPileUpSPD(0),
+	  fhPtNPileUpSPDVtx(0),                 fhPtNPileUpTrkVtx(0),
+    fhPtNPileUpSPDVtxTimeCut(0),          fhPtNPileUpTrkVtxTimeCut(0),	
+    fhPtPhotonNPileUpSPDVtx(0),           fhPtPhotonNPileUpTrkVtx(0),
+    fhPtPhotonNPileUpSPDVtxTimeCut(0),    fhPtPhotonNPileUpTrkVtxTimeCut(0)		
  {
   //default ctor
   
@@ -932,29 +935,82 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 }
 
 //___________________________________________________________________
-void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters) 
+void AliAnaPhoton::FillPileUpHistogramsPerEvent() 
 {
   // Fill some histograms per event to understand pile-up
   // Open the time cut in the reader to be more meaningful
   
   if(!fFillPileUpHistograms) return;
-    
-  // Loop on clusters, get the maximum energy cluster as reference
-  Int_t nclusters = clusters->GetEntriesFast();
+		
+  AliVEvent * event = GetReader()->GetInputEvent();
+	
+  AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
+  AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
+	
+  // N pile up vertices
+  Int_t nVtxSPD = -1;
+  Int_t nVtxTrk = -1;
+  TLorentzVector mom;
+	
+  if      (esdEv)
+  {
+		nVtxSPD = esdEv->GetNumberOfPileupVerticesSPD();
+		nVtxTrk = esdEv->GetNumberOfPileupVerticesTracks();
+  }//ESD
+  else if (aodEv)
+  {
+		nVtxSPD = aodEv->GetNumberOfPileupVerticesSPD();
+		nVtxTrk = aodEv->GetNumberOfPileupVerticesTracks();
+  }//AOD	
+	
+	
+	// Get the appropriate list of clusters 
+	TClonesArray * clusterList = 0;
+	TString  clusterListName   = GetReader()->GetEMCALClusterListName();
+	if     (event->FindListObject(clusterListName))
+		clusterList = dynamic_cast<TClonesArray*> (event->FindListObject(clusterListName));
+	else if(GetReader()->GetOutputEvent())
+		clusterList = dynamic_cast<TClonesArray*> (GetReader()->GetOutputEvent()->FindListObject(clusterListName));
+	
+	// Loop on clusters, get the maximum energy cluster as reference
+  Int_t nclusters = 0; 
+	if(clusterList) nclusters = clusterList->GetEntriesFast();
+	else            nclusters = event->GetNumberOfCaloClusters();
+	
   Int_t   idMax = 0; 
   Float_t  eMax = 0;
-  Float_t  tMax = 0;
+  Float_t  tMax = 0;	
   for(Int_t iclus = 0; iclus < nclusters ; iclus++)
   {
-	  AliVCluster * clus =  (AliVCluster*) (clusters->At(iclus));	
-    if(clus->E() > eMax && TMath::Abs(clus->GetTOF()*1e9) < 20)
+		AliVCluster * clus = 0;
+		if(clusterList) clus = (AliVCluster*) (clusterList->At(iclus));	
+    else            clus = GetReader()->GetInputEvent()->GetCaloCluster(iclus);
+		
+		if(!clus)            continue;
+		
+		if(!clus->IsEMCAL()) continue;
+		
+		Float_t tof = clus->GetTOF()*1e9;
+		if(clus->E() > eMax && TMath::Abs(tof) < 25)
     {
       eMax  = clus->E();
-      tMax  = clus->GetTOF()*1e9;
+			tMax  = tof;
       idMax = iclus;
     }
+	  
+		clus->GetMomentum(mom,GetVertex(0));
+		Float_t pt = mom.Pt();
+	  
+		fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);	
+		fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
+	
+		if(TMath::Abs(tof) < 25)
+		{ 
+			fhPtNPileUpSPDVtxTimeCut->Fill(pt,nVtxSPD);	
+			fhPtNPileUpTrkVtxTimeCut->Fill(pt,nVtxTrk);	
+		}
   }
-
+	
   if(eMax < 5) return;
   
   // Loop again on clusters to compare this max cluster t and the rest of the clusters, if E > 0.3
@@ -965,13 +1021,19 @@ void AliAnaPhoton::FillPileUpHistogramsPerEvent(TObjArray * clusters)
 
   for(Int_t iclus = 0; iclus < nclusters ; iclus++)
   {
-	  AliVCluster * clus =  (AliVCluster*) (clusters->At(iclus));	
+		AliVCluster * clus = 0;
+		if(clusterList) clus = (AliVCluster*) (clusterList->At(iclus));	
+    else            clus = GetReader()->GetInputEvent()->GetCaloCluster(iclus);
+		
+		if(!clus)            continue;
+		
+		if(!clus->IsEMCAL()) continue;
     
     if(clus->E() < 0.3 || iclus==idMax) continue;
     
     Float_t tdiff = TMath::Abs(tMax-clus->GetTOF()*1e9);
     n++;
-    if(tdiff < 20) nOK++;
+    if(tdiff < 25) nOK++;
     else
     {
       n20++;
@@ -1025,31 +1087,40 @@ void AliAnaPhoton::FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time
   AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
   
   // N pile up vertices
-  Int_t nVerticesSPD    = -1;
-  Int_t nVerticesTracks = -1;
+  Int_t nVtxSPD = -1;
+  Int_t nVtxTrk = -1;
   
   if      (esdEv)
   {
-    nVerticesSPD    = esdEv->GetNumberOfPileupVerticesSPD();
-    nVerticesTracks = esdEv->GetNumberOfPileupVerticesTracks();
+    nVtxSPD = esdEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = esdEv->GetNumberOfPileupVerticesTracks();
 
   }//ESD
   else if (aodEv)
   {
-    nVerticesSPD    = aodEv->GetNumberOfPileupVerticesSPD();
-    nVerticesTracks = aodEv->GetNumberOfPileupVerticesTracks();
+    nVtxSPD = aodEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = aodEv->GetNumberOfPileupVerticesTracks();
   }//AOD
   
-  fhTimeNPileUpVertSPD  ->Fill(time,nVerticesSPD);
-  fhTimeNPileUpVertTrack->Fill(time,nVerticesTracks);
+  fhTimeNPileUpVertSPD  ->Fill(time,nVtxSPD);
+  fhTimeNPileUpVertTrack->Fill(time,nVtxTrk);
   
+  fhPtPhotonNPileUpSPDVtx->Fill(pt,nVtxSPD);	
+  fhPtPhotonNPileUpTrkVtx->Fill(pt,nVtxTrk);
+	
+  if(TMath::Abs(time) < 25)
+  { 
+	 fhPtPhotonNPileUpSPDVtxTimeCut->Fill(pt,nVtxSPD);	
+	 fhPtPhotonNPileUpTrkVtxTimeCut->Fill(pt,nVtxTrk);	
+  }
+	
   //printf("Is SPD %d, Is SPD Multi %d, n spd %d, n track %d\n", 
-  //       GetReader()->IsPileUpFromSPD(),event->IsPileupFromSPDInMultBins(),nVerticesSPD,nVerticesTracks);
+  //       GetReader()->IsPileUpFromSPD(),event->IsPileupFromSPDInMultBins(),nVtxSPD,nVtxTrk);
   
   Int_t ncont = -1;
   Float_t z1 = -1, z2 = -1;
   Float_t diamZ = -1;
-  for(Int_t iVert=0; iVert<nVerticesSPD;iVert++)
+  for(Int_t iVert=0; iVert<nVtxSPD;iVert++)
   {
     if      (esdEv)
     {
@@ -2741,12 +2812,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhTimeESPDMulti->SetYTitle("time (ns)");
     outputContainer->Add(fhTimeESPDMulti);  
     
-    fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
+    fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,20,0,20); 
     fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
     fhTimeNPileUpVertSPD->SetXTitle("time (ns)");
     outputContainer->Add(fhTimeNPileUpVertSPD);
     
-    fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 50,0,50 ); 
+    fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 20,0,20 ); 
     fhTimeNPileUpVertTrack->SetYTitle("# vertex ");
     fhTimeNPileUpVertTrack->SetXTitle("time (ns)");
     outputContainer->Add(fhTimeNPileUpVertTrack);  
@@ -2785,6 +2856,54 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhClusterMultNoPileUp[i]) ;         
     }
     
+	fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex", 
+								   nptbins,ptmin,ptmax,20,0,20); 
+	fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
+	fhPtNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtNPileUpSPDVtx);
+	  
+	fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex", 
+								   nptbins,ptmin,ptmax, 20,0,20 ); 
+	fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
+	fhPtNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtNPileUpTrkVtx);  
+
+	fhPtNPileUpSPDVtxTimeCut  = new TH2F ("hPt_NPileUpVertSPD_TimeCut","pT of cluster vs N pile-up SPD vertex, |tof| < 25 ns", 
+								   nptbins,ptmin,ptmax,20,0,20); 
+	fhPtNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
+	fhPtNPileUpSPDVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtNPileUpSPDVtxTimeCut);
+	  
+	fhPtNPileUpTrkVtxTimeCut  = new TH2F ("hPt_NPileUpVertTracks_TimeCut","pT of cluster vs N pile-up Tracks vertex, |tof| < 25 ns", 
+										  nptbins,ptmin,ptmax, 20,0,20 ); 
+	fhPtNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
+	fhPtNPileUpTrkVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtNPileUpTrkVtxTimeCut);  
+	  
+	fhPtPhotonNPileUpSPDVtx  = new TH2F ("hPtPhoton_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex", 
+									 nptbins,ptmin,ptmax,20,0,20); 
+	fhPtPhotonNPileUpSPDVtx->SetYTitle("# vertex ");
+	fhPtPhotonNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtPhotonNPileUpSPDVtx);
+	  
+	fhPtPhotonNPileUpTrkVtx  = new TH2F ("hPtPhoton_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex", 
+									 nptbins,ptmin,ptmax, 20,0,20 ); 
+	fhPtPhotonNPileUpTrkVtx->SetYTitle("# vertex ");
+	fhPtPhotonNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtPhotonNPileUpTrkVtx);  
+	  
+	fhPtPhotonNPileUpSPDVtxTimeCut  = new TH2F ("hPtPhoton_NPileUpVertSPD_TimeCut","pT of cluster vs N pile-up SPD vertex, |tof| < 25 ns", 
+									 nptbins,ptmin,ptmax,20,0,20); 
+	fhPtPhotonNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
+	fhPtPhotonNPileUpSPDVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtPhotonNPileUpSPDVtxTimeCut);
+	  
+	fhPtPhotonNPileUpTrkVtxTimeCut  = new TH2F ("hPtPhoton_NPileUpVertTracks_TimeCut","pT of cluster vs N pile-up Tracks vertex, |tof| < 25 ns", 
+											nptbins,ptmin,ptmax, 20,0,20 ); 
+	fhPtPhotonNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
+	fhPtPhotonNPileUpTrkVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+	outputContainer->Add(fhPtPhotonNPileUpTrkVtxTimeCut);  
+	  
   }
   
   if(IsDataMC())
@@ -3241,7 +3360,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     return;
   }
   
-  FillPileUpHistogramsPerEvent(pl); 
+  FillPileUpHistogramsPerEvent(); 
   
   // Loop on raw clusters before filtering in the reader and fill control histogram
   if((GetReader()->GetEMCALClusterListName()=="" && fCalorimeter=="EMCAL") || fCalorimeter=="PHOS")
