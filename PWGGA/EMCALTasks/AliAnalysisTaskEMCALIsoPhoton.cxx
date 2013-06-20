@@ -24,9 +24,13 @@
 #include "AliESDUtils.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
 #include "AliV0vertexer.h"
 #include "AliVCluster.h"
 
@@ -39,10 +43,12 @@ ClassImp(AliAnalysisTaskEMCALIsoPhoton)
 //________________________________________________________________________
 AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() : 
   AliAnalysisTaskSE(), 
-  fCaloClusters(0),
+  fESDClusters(0),
+  fAODClusters(0),
   fSelPrimTracks(0),
   fTracks(0),
-  fEMCalCells(0),
+  fESDCells(0),
+  fAODCells(0),
   fPrTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
@@ -62,6 +68,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fDirPhoPt(0),
   fHigherPtCone(0),
   fESD(0),
+  fAOD(0),
   fMCEvent(0),
   fStack(0),
   fOutputList(0),
@@ -93,10 +100,12 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
 //________________________________________________________________________
 AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) : 
   AliAnalysisTaskSE(name), 
-  fCaloClusters(0),
+  fESDClusters(0),
+  fAODClusters(0),
   fSelPrimTracks(0),
   fTracks(0),
-  fEMCalCells(0),
+  fESDCells(0),
+  fAODCells(0),
   fPrTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
@@ -116,6 +125,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fDirPhoPt(0),
   fHigherPtCone(0),
   fESD(0),
+  fAOD(0),
   fMCEvent(0),
   fStack(0),
   fOutputList(0),
@@ -156,7 +166,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 {
   // Create histograms, called once.
     
-  fCaloClusters = new TRefArray();
+  fESDClusters = new TObjArray();
   fSelPrimTracks = new TObjArray();
 
   
@@ -249,7 +259,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-
+  fESDClusters = 0;
+  fESDCells = 0;
+  fAODClusters = 0;
+  fAODCells = 0;
   // event trigger selection
   Bool_t isSelected = 0;
   if(fPeriod.Contains("11a")){
@@ -286,20 +299,27 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     if(!filename.Contains(fPathStrOpt.Data()))
       return;
   }
-  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fESD) {
-    printf("ERROR: fESD not available\n");
+  AliVEvent *event = (AliVEvent*)InputEvent();
+  if (!event) {
+    printf("ERROR: event not available\n");
     return;
   }
+  fESD = dynamic_cast<AliESDEvent*>(event);
+  fAOD = dynamic_cast<AliAODEvent*>(event);
   
   fEvtSel->Fill(0);
   if(fDebug)
-    printf("fESD is ok\n");
+    printf("event is ok\n");
   
-  AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
+  AliVVertex *pv = (AliVVertex*)event->GetPrimaryVertex();
+  Bool_t pvStatus = kTRUE;
+  if(fESD){
+    AliESDVertex *esdv = (AliESDVertex*)fESD->GetPrimaryVertex();
+    pvStatus = esdv->GetStatus();
+  }
   if(!pv)
     return;
-  if(!pv->GetStatus())
+  if(!pvStatus)
     fRecoPV->Fill(0);
   else
     fRecoPV->Fill(1);
@@ -310,10 +330,15 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("passed vertex cut\n");
 
   fEvtSel->Fill(1);
+  if(fESD)
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
+  if(fAOD)
+    fTracks = dynamic_cast<TClonesArray*>(fAOD->GetTracks());
 
-  fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
   if(!fTracks){
     AliError("Track array in event is NULL!");
+    if(fDebug)
+      printf("returning due to not finding tracks!\n");
     return;
   }
   // Track loop to fill a pT spectrum
@@ -321,29 +346,56 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   for (Int_t iTracks = 0;  iTracks < Ntracks; ++iTracks) {
     //  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     //AliESDtrack* track = (AliESDtrack*)fESD->GetTrack(iTracks);
-    AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
+    AliVTrack *track = (AliVTrack*)fTracks->At(iTracks);
     if (!track)
       continue;
-    if (fPrTrCuts && fPrTrCuts->IsSelected(track)){
+    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(track);
+    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
+    if (esdTrack && fPrTrCuts && fPrTrCuts->IsSelected(track)){
       fSelPrimTracks->Add(track);
       //printf("pt,eta,phi:%1.1f,%1.1f,%1.1f \n",track->Pt(),track->Eta(), track->Phi());
     }
+    else if(aodTrack)
+      fSelPrimTracks->Add(track);
   }
 
   if(!fIsTrain){
     for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
       if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
         break;
-      fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
+      /*if(fESD)
+	  fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
+	  else*/
+	if(event->GetEMCALMatrix(mod))
+	    fGeom->SetMisalMatrix(event->GetEMCALMatrix(mod), mod);
     }
   }
-  AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
-  fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5); 
+  if(fESD){
+    AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
+    fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5); 
+    if(fDebug)
+      printf("ESD Track mult= %d\n",fTrackMult);
+  }
+  else if(fAOD){
+    fTrackMult = Ntracks;
+    if(fDebug)
+      printf("AOD Track mult= %d\n",fTrackMult);
+  }
   fTrMultDist->Fill(fTrackMult);
 
-  fESD->GetEMCALClusters(fCaloClusters);
-  fEMCalCells = fESD->GetEMCALCells();
-  
+  if(fESD){
+    TList *l = fESD->GetList();
+    fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
+    fESDCells = fESD->GetEMCALCells();
+    if(fDebug)
+      printf("ESD cluster mult= %d\n",fESDClusters->GetEntriesFast());
+  }
+  else if(fAOD){
+    fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
+    fAODCells = fAOD->GetEMCALCells();
+    if(fDebug)
+      printf("AOD cluster mult= %d\n",fAODClusters->GetEntriesFast());
+  }
     
 
   fMCEvent = MCEvent();
@@ -365,8 +417,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
-
-  fCaloClusters->Clear();
+  /*if(fESD)
+    fESDClusters->Clear();*/
   fSelPrimTracks->Clear();
   fNClusForDirPho = 0;
 
@@ -376,11 +428,25 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
 {
+  if(fDebug)
+    printf("Inside FillClusHists()....\n");
   // Fill cluster histograms.
+  TObjArray *clusters = fESDClusters;
 
-  if(!fCaloClusters)
+  if (!clusters){
+    clusters = fAODClusters;
+    if(fDebug)
+      printf("ESD clusters empty...");
+  }
+  if (!clusters){
+    if(fDebug)
+      printf("  and AOD clusters as well!!!\n"); 
     return;
-  const Int_t nclus = fCaloClusters->GetEntries();
+  }
+  if(fDebug)
+    printf("\n");
+
+  const Int_t nclus = clusters->GetEntries();
   if(nclus==0)
     return;
   if(fDebug)
@@ -390,7 +456,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
   Double_t ptmc=-1;
   for(Int_t ic=0;ic<nclus;ic++){
     maxE=0;
-    AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(fCaloClusters->At(ic));
+    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(ic));
     if(!c)
       continue;
     if(!c->IsEMCAL())
@@ -459,7 +525,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     outputValues[8] = c->GetTrackDz();
     outputValues[9] = clsVec.Eta();
     outputValues[10] = clsVec.Phi();
-    outputValues[11] = fEMCalCells->GetCellTime(id);
+    if(fESDCells)
+      outputValues[11] = fESDCells->GetCellTime(id);
+    else if(fAODCells)
+      outputValues[11] = fAODCells->GetCellTime(id);
     outputValues[12] = fTrackMult;
     outputValues[13] = ptmc;
     fHnOutput->Fill(outputValues);
@@ -475,24 +544,27 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
 void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t &iso, Float_t &phiband, Float_t &core)
 {
   // Get cell isolation.
-
-  if(!fEMCalCells)
+  AliVCaloCells *cells = fESDCells;
+  if (!cells)
+    cells = fAODCells;
+  if (!cells)
     return;
-  const Int_t ncells = fEMCalCells->GetNumberOfCells();
+
+  const Int_t ncells = cells->GetNumberOfCells();
   Float_t totiso=0;
   Float_t totband=0;
   Float_t totcore=0;
   Float_t etacl = vec.Eta();
   Float_t phicl = vec.Phi();
   Float_t thetacl = vec.Theta();
-  Float_t maxtcl = fEMCalCells->GetCellTime(maxid);
+  Float_t maxtcl = cells->GetCellTime(maxid);
   if(phicl<0)
     phicl+=TMath::TwoPi();
   Int_t absid = -1;
   Float_t eta=-1, phi=-1;  
   for(int icell=0;icell<ncells;icell++){
-    absid = TMath::Abs(fEMCalCells->GetCellNumber(icell));
-    Float_t celltime = fEMCalCells->GetCellTime(absid);
+    absid = TMath::Abs(cells->GetCellNumber(icell));
+    Float_t celltime = cells->GetCellTime(absid);
     //if(TMath::Abs(celltime)>2e-8 && (!fIsMc))
     if(TMath::Abs(celltime-maxtcl)>2e-8 )
       continue;
@@ -502,7 +574,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     Float_t dphi = TMath::Abs(phi-phicl);
     Float_t deta = TMath::Abs(eta-etacl);
     Float_t R = TMath::Sqrt(deta*deta + dphi*dphi);
-    Float_t etcell = fEMCalCells->GetCellAmplitude(absid)*TMath::Sin(thetacl);
+    Float_t etcell = cells->GetCellAmplitude(absid)*TMath::Sin(thetacl);
     if(R<fIsoConeR){
       totiso += etcell;
       if(R<0.04)
@@ -513,7 +585,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	continue;
       if(deta<fIsoConeR)
 	continue;
-      totband += fEMCalCells->GetCellAmplitude(absid)*TMath::Sin(thetacl);
+      totband += cells->GetCellAmplitude(absid)*TMath::Sin(thetacl);
     }
   }
   iso = totiso;
@@ -571,7 +643,9 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetCrossEnergy(const AliVCluster *cluste
   // Calculate the energy of cross cells around the leading cell.
 
   AliVCaloCells *cells = 0;
-  cells = fESD->GetEMCALCells();
+  cells = fESDCells;
+  if (!cells)
+    cells = fAODCells;
   if (!cells)
     return 0;
 
@@ -620,8 +694,10 @@ Double_t AliAnalysisTaskEMCALIsoPhoton ::GetMaxCellEnergy(const AliVCluster *clu
   id = -1;
 
   AliVCaloCells *cells = 0;
-  cells = fESD->GetEMCALCells();
+  cells = fESDCells;
   if (!cells)
+    cells = fAODCells;
+  if(!cells)
     return 0;
 
   Double_t maxe = 0;
