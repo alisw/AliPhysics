@@ -448,6 +448,7 @@ public:
     return (fTrkPileupVertices?fTrkPileupVertices->GetEntriesFast():0);
   }
   Int_t GetNumberOfTracks()     const {return fTracks?fTracks->GetEntriesFast():0;}
+  Int_t GetNumberOfESDTracks()  const { return GetNumberOfTracks(); }
   Int_t GetNumberOfHLTConfMapTracks()     const {return 0;} 
   // fHLTConfMapTracks->GetEntriesFast();}
   Int_t GetNumberOfHLTHoughTracks()     const {return  0;  }

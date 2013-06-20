@@ -194,6 +194,8 @@ public:
   virtual Int_t GetNumberOfTrdTracks() const { return 0; }
   virtual AliVTrdTrack* GetTrdTrack(Int_t /* iTrack */) const { return 0x0; }
 
+  virtual Int_t     GetNumberOfESDTracks()  const { return 0; }
+
   ClassDef(AliVEvent,2)  // base class for AliEvent data
 };
 #endif 
