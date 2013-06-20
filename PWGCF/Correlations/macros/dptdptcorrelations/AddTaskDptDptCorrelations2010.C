@@ -86,8 +86,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
   double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
-  double etaMin                 = -1.0;
-  double etaMax                 =  1.0;
+  double etaMin                 = -0.8;
+  double etaMax                 =  0.8;
   double dcaZMin                = -3.0;
   double dcaZMax                =  3.0;
   double dcaXYMin               = -2.4;
