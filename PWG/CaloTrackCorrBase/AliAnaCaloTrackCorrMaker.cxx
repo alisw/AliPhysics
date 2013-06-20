@@ -359,8 +359,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhClusterTriggerBCEventBC      = new TH2F("hClusterTriggerBCEventBC", "Found trigger BC and  Event BC",
                                             nbin , minbin ,maxbin,4,0, 4) ;
   fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
-  for(Int_t i = 1; i < 5; i++)
-    fhClusterTriggerBCEventBC->GetYaxis()->SetBinLabel(i ,Form("BC/4=%d",i));
+  for(Int_t i = 0; i < 4; i++)
+    fhClusterTriggerBCEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
     fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
@@ -369,8 +369,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   fhClusterTriggerBCExoticEventBC      = new TH2F("hClusterTriggerBCExoticEventBC", "Found exotic trigger BC and  Event BC",
                                                   nbin , minbin ,maxbin,4,1, 4) ;
-  for(Int_t i = 1; i < 5; i++)
-    fhClusterTriggerBCExoticEventBC->GetYaxis()->SetBinLabel(i ,Form("BC/4=%d",i));
+  for(Int_t i = 0; i < 4; i++)
+    fhClusterTriggerBCExoticEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
     fhClusterTriggerBCExoticEventBC->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCExoticEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
@@ -379,8 +379,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 
   fhClusterTriggerBCEventBCUnMatch      = new TH2F("hClusterTriggerBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
                                                    nbin , minbin ,maxbin,4,1, 4) ;
-  for(Int_t i = 1; i < 5; i++)
-    fhClusterTriggerBCEventBCUnMatch->GetYaxis()->SetBinLabel(i ,Form("BC/4=%d",i));
+  for(Int_t i = 0; i < 4; i++)
+    fhClusterTriggerBCEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
     fhClusterTriggerBCEventBCUnMatch->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
@@ -389,8 +389,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   fhClusterTriggerBCExoticEventBCUnMatch      = new TH2F("hClusterTriggerExoticBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
                                                          nbin , minbin ,maxbin,4,1, 4) ;
-  for(Int_t i = 1; i < 5; i++)
-    fhClusterTriggerBCExoticEventBCUnMatch->GetYaxis()->SetBinLabel(i ,Form("BC/4=%d",i));
+  for(Int_t i = 0; i < 4; i++)
+    fhClusterTriggerBCExoticEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
     fhClusterTriggerBCExoticEventBCUnMatch->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCExoticEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
