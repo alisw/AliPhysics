@@ -208,7 +208,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Double_t GetCentrality(AliVEvent *event);
   Int_t GetNumberOfContributorsVtx(AliVEvent *event);
   Bool_t VertexZCut(AliVEvent *fInputEvent);
-  Bool_t IsTriggerSelected();
+  Bool_t IsTriggerSelected(AliVEvent *fInputEvent);
   Bool_t HasV0AND(){return fHasV0AND;}
   Bool_t IsSDDFired(){return fIsSDDFired;}
   Int_t IsSpecialTrigger(){return fSpecialTrigger;}

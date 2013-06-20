@@ -75,11 +75,11 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
     // connect input V0Reader
-    fV0Reader->SelectCollisionCandidates(AliVEvent::kAny);
+    //fV0Reader->SelectCollisionCandidates(AliVEvent::kAny);
     mgr->AddTask(fV0Reader);
     mgr->ConnectInput (fV0Reader,0,cinput);
 
-    fV0ReaderB->SelectCollisionCandidates(AliVEvent::kAny);
+    //fV0ReaderB->SelectCollisionCandidates(AliVEvent::kAny);
     mgr->AddTask(fV0ReaderB);
     mgr->ConnectInput (fV0ReaderB,0,cinput);
 

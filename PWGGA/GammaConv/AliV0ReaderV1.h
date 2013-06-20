@@ -60,7 +60,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   void SetCreateAODs(Bool_t k=kTRUE){fCreateAOD=k;}
   void SetDeltaAODFilename(TString s){fDeltaAODFilename=s;}
   void SetDeltaAODBranchName(TString string) { fDeltaAODBranchName = string;AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));}
-  void CheckAODConsistency(){fCheckAODConsistenty=kTRUE;}
+  void RelabelAODs(Bool_t relabel=kTRUE){fRelabelAODs=relabel;}
+  Bool_t AreAODsRelabeled(){return fRelabelAODs;}
+  void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
   TString GetPeriodName(){return fPeriodName;}
   
 protected:
@@ -94,7 +96,7 @@ protected:
     Bool_t fCreateAOD; // set flag for AOD creation
     TString     fDeltaAODBranchName;// File where Gamma Conv AOD is located, if not in default AOD
     TString fDeltaAODFilename; // set filename for delta/satellite aod
-    Bool_t fCheckAODConsistenty;
+    Bool_t fRelabelAODs; //
     Bool_t fEventIsSelected;
     TString fPeriodName;
     
