@@ -138,6 +138,9 @@ void AliPHOSTenderSupply::InitTender()
           else 
 	    if(fname.Contains("pass3")) 
   	      fRecoPass=3;
+            else 
+	      if(fname.Contains("pass4")) 
+  	        fRecoPass=4;
       }
     }
     if(fRecoPass<0){
@@ -305,6 +308,9 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetEmcCpvDistance(r);    
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
       clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
+      DistanceToBadChannel(mod,&locPos,minDist);
+      clu->SetDistanceToBadChannel(minDist) ;
 
     }
   }
@@ -354,9 +360,9 @@ void AliPHOSTenderSupply::ProcessEvent()
       //correct distance to track
       Double_t dx=clu->GetTrackDx() ;
       Double_t dz=clu->GetTrackDz() ;
+      TVector3 locPos;
+      fPHOSGeo->Global2Local(locPos,global,mod) ;
       if(dx!=-999.){ //there is matched track
-        TVector3 locPos;
-        fPHOSGeo->Global2Local(locPos,global,mod) ;
         dx+=locPos.X()-locPosOld.X() ;
         dz+=locPos.Z()-locPosOld.Z() ;      
         clu->SetTrackDistance(dx,dz);
@@ -375,6 +381,9 @@ void AliPHOSTenderSupply::ProcessEvent()
      
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
       clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
+      DistanceToBadChannel(mod,&locPos,minDist);
+      clu->SetDistanceToBadChannel(minDist) ;
     }
   }
 
@@ -786,3 +795,29 @@ Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isH
   return tof ;
   
 }
+//________________________________________________________________________
+void AliPHOSTenderSupply::DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist){
+  //Check if distance to bad channel was reduced
+  Int_t range = minDist/2.2 +1 ; //Distance at which bad channels should be serached
+  
+  Int_t relid[4]={0,0,0,0} ;
+  fPHOSGeo->RelPosToRelId(mod, locPos->X(), locPos->Z(), relid) ; 
+  Int_t xmin=TMath::Max(1,relid[2]-range) ;
+  Int_t xmax=TMath::Min(64,relid[2]+range) ;
+  Int_t zmin=TMath::Max(1,relid[3]-range) ;
+  Int_t zmax=TMath::Min(56,relid[3]+range) ;
+  
+  Float_t x=0.,z=0.;
+  for(Int_t ix=xmin;ix<=xmax;ix++){
+    for(Int_t iz=zmin;iz<=zmax;iz++){
+      if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0){ //Bad channel
+        Int_t relidBC[4]={mod,0,ix,iz} ;
+        fPHOSGeo->RelPosInModule(relidBC,x,z); 
+        Double_t dist = TMath::Sqrt((x-locPos->X())*(x-locPos->X()) + (z-locPos->Z())*(z-locPos->Z()));
+        if(dist<minDist) minDist = dist;
+      }
+    }  
+  }
+  
+}
+

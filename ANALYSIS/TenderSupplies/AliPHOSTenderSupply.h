@@ -57,6 +57,8 @@ protected:
   void   EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t &m20) ;
   Double_t EvalTOF(AliVCluster * clu,AliVCaloCells * cells); 
   Double_t CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG); 
+  void DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist) ;
+
  
 private:
 
