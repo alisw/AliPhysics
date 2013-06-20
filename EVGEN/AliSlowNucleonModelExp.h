@@ -24,10 +24,15 @@ class AliSlowNucleonModelExp : public AliSlowNucleonModel
 					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
     virtual void GetNumberOfSlowNucleons2(AliCollisionGeometry* geo,
 					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
+    // 1st model
     virtual void SetParameters(Float_t alpha1, Float_t alpha2);
     virtual void SetSaturation(Bool_t saturation) {fApplySaturation = saturation;}
     virtual void SetSaturationParams(Int_t ngray=15, Int_t nblack=28) 
     		{fnGraySaturation=ngray; fnBlackSaturation=nblack;}
+    // 2nd model
+    virtual void SetLCPparam(Float_t al) {fLCPparam=al;}
+    virtual void SetNslowParams(Float_t a, Float_t b, Float_t c) 
+                {fSlownparam[0]=a; fSlownparam[1]=b; fSlownparam[2]=c;}
     
  protected:
     Float_t  fP;          // Number of protons  in the target 
@@ -37,8 +42,13 @@ class AliSlowNucleonModelExp : public AliSlowNucleonModel
     Bool_t   fApplySaturation;  // If true apply satoration to N_black vs. N_gray
     Int_t    fnGraySaturation;  // N_gray value for N_black saturation
     Int_t    fnBlackSaturation; // N_black saturation value
+    //
+    // Adding parameters for 2nd model that can be tuned during config
+    Float_t  fLCPparam;		// parameter to calculate LCP from <Nslow p>
+    Float_t  fSlownparam[3];	// parameters to calculate <Nslow n> from LCP
     
-  ClassDef(AliSlowNucleonModelExp,2) // Gray Particle Model (Experiment inspired)
+    
+  ClassDef(AliSlowNucleonModelExp,3) // Gray Particle Model (Experiment inspired)
 };
 #endif
 
