@@ -35,7 +35,7 @@ class AliToyMCEventGenerator : public TObject {
 
   virtual AliToyMCEvent* Generate(Double_t time) = 0;
 
-  Bool_t DistortTrack(AliToyMCTrack &trackIn, Double_t t0);
+  Bool_t DistortTrack(AliToyMCTrack &trackIn, Double_t t0=0);
   void CreateSpacePoints(AliToyMCTrack &trackIn,
                         AliTrackPointArray &arrUdist,
                         AliTrackPointArray &arrDist);

@@ -18,21 +18,36 @@ Int_t fTrack=-1;
 Float_t fT0event=-1;
 Float_t fZevent=-1;
 
-void testRec(Int_t nmaxEv=-1)
+void testRec(const char* filename="toyMC.root", Int_t nmaxEv=-1)
 {
   //
   //
   //
 
-  TFile f("toyMC.root");
+  TFile f(filename);
+  if (!f.IsOpen() || f.IsZombie()) {
+    printf("ERROR: couldn't open the file '%s'\n", filename);
+    return;
+  }
+  
   TTree *t=(TTree*)f.Get("toyMCtree");
+  if (!t) {
+    printf("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", filename);
+    return;
+  }
+  
   AliToyMCEvent *ev=0x0;
   t->SetBranchAddress("event",&ev);
 
+  // read spacecharge from the Userinfo ot the tree
   InitSpaceCharge(t);
   
-  gSystem->Exec("rm debug.root");
-  if (!fStreamer) fStreamer=new TTreeSRedirector("debug.root");
+  TString debugName=filename;
+  debugName.ReplaceAll(".root","");
+  debugName.Append(".debug.root");
+  
+  gSystem->Exec(Form("rm %s", debugName.Data()));
+  if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
   
   gROOT->cd();
 
@@ -77,6 +92,8 @@ void testRec(Int_t nmaxEv=-1)
       GetTimeAtVertex(tVtx1,xmin,tr,1,140, 10, 1);
       //correction with mean tan theta
       GetTimeAtVertex(tVtx1,xmin,tr,1,140, 10, 2);
+      //correction with ideal z
+      GetTimeAtVertex(tVtx1,xmin,tr,1,140, 10, 4);
       
       hcount0->Fill(ret0);
       hcount1->Fill(ret1);
@@ -223,7 +240,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   AliTrackerBase::PropagateTrackTo(track,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
   if (TMath::Abs(track->GetX())>3) {
     printf("Could not propagate track to 0, %.2f, %.2f, %.2f\n",track->GetX(),track->GetAlpha(),track->Pt());
-    return 2;
+//     return 2;
   }
 //   printf("Track2: %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha());
 
@@ -349,12 +366,16 @@ void InitSpaceCharge(TTree *t)
 //____________________________________________________________________________
 
 
-AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Bool_t clsType=0)
+AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t corrType=0)
 {
   //
-  // clsType: 0=undistorted clusters; 1: distorted clusters
+  // clsType:  0=undistorted clusters; 1: distorted clusters
+  // corrType: 0=none; 1: ideal
   //
 
+  // no correction for undistorted clusters
+  if (clsType==0) corrType=0;
+  
   AliTPCROC * roc = AliTPCROC::Instance();
   const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
   const Double_t kRTPC0  =roc->GetPadRowRadii(0,0);
@@ -380,7 +401,16 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Bool_t clsType=0)
   for (Int_t ipoint=ncls-1; ipoint>=ncls-3; --ipoint){
     AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
     if (clsType==1) cl=tr->GetDistortedSpacePoint(ipoint);
-    SetTrackPointFromCluster(cl, seedPoint[seed++]);
+
+    SetTrackPointFromCluster(cl, seedPoint[seed]);
+    
+    if (corrType==1){
+      Float_t xyz[3]={0,0,0};
+      seedPoint[seed].GetXYZ(xyz);
+      fSpaceCharge->CorrectPoint(xyz, cl->GetDetector());
+      seedPoint[seed].SetXYZ(xyz);
+    }
+    ++seed;
   }
   
   AliExternalTrackParam *track = 0x0;
@@ -393,18 +423,41 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Bool_t clsType=0)
     AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
     if (clsType==1) cl=tr->GetDistortedSpacePoint(ipoint);
     SetTrackPointFromCluster(cl, pIn);
-    Double_t xyz[3];
-    AliTrackPoint prot = pIn.Rotate(tr->GetAlpha());   // rotate to the local frame - non distoted  point
+    if (corrType==1){
+      Float_t xyz[3]={0,0,0};
+      pIn.GetXYZ(xyz);
+      fSpaceCharge->CorrectPoint(xyz, cl->GetDetector());
+      pIn.SetXYZ(xyz);
+    }
+    // rotate the cluster to the local detector frame
+    track->Rotate(((cl->GetDetector()%18)*20+10)*TMath::DegToRad());
+    AliTrackPoint prot = pIn.Rotate(track->GetAlpha());   // rotate to the local frame - non distoted  point
     if (TMath::Abs(prot.GetX())<kRTPC0) continue;
     if (TMath::Abs(prot.GetX())>kRTPC1) continue;
     //
-    if (!AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp)) break;
+    Int_t ret=0;
+    ret=AliTrackerBase::PropagateTrackTo2(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+//     ret=AliTrackerBase::PropagateTrackTo2(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
+    if (ret<0) {
+      (*fStreamer) << "np" <<
+      "iev="    << fEvent <<
+      "itr="    << fTrack <<
+      "track.=" << tr     <<
+      "seed.="  << track  <<
+      "\n";
+      printf("Could not propagate track: %d\n",ret);
+      break;
+    }
+    printf("\n=========\n%d:\n",ipoint);
+    printf("%.2f, %.2f, %.2f - %d, %d, %.2f, %.2g\n",cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetDetector(),cl->GetRow(),cl->GetPad(),cl->GetTimeBin());
+    printf("%.2f, %.2f, %.2f - %.2f\n", prot.GetX(),prot.GetY(),prot.GetZ(), prot.GetAngle());
+    printf("%.2f, %.2f, %.2f - %.2f\n", track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha());
+    
     if (TMath::Abs(track->GetZ())>kMaxZ) break;
     if (TMath::Abs(track->GetX())>kMaxR) break;
     if (dir>0 && track->GetX()>refX) continue;
     if (dir<0 && track->GetX()<refX) continue;
     if (TMath::Abs(track->GetZ())<kZcut)continue;
-    track->GetXYZ(xyz);  //track also propagated to the same reference radius
     //
     Double_t pointPos[2]={0,0};
     Double_t pointCov[3]={0,0,0};
@@ -413,11 +466,79 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Bool_t clsType=0)
     pointCov[0]=prot.GetCov()[3];//simay^2
     pointCov[1]=prot.GetCov()[4];//sigmayz
     pointCov[2]=prot.GetCov()[5];//sigmaz^2
-    if (!track->Update(pointPos,pointCov)) break;
+    if (!track->Update(pointPos,pointCov)) {printf("no update\n"); break;}
   }
-  AliTrackerBase::PropagateTrackTo(track,refX,kMass,5.,kTRUE,kMaxSnp);
-  AliTrackerBase::PropagateTrackTo(track,refX,kMass,1.,kTRUE,kMaxSnp);
+  AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+  ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+//   AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp);
+//   ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp);
+  printf("Propagation to 0 stopped at %.2f with %d\n",track->GetX(),ret);
   
   return track;
+}
+
+//____________________________________________________________________________
+void testResolution(const char* filename, Int_t nmaxEv=-1)
+{
+  TFile f(filename);
+  if (!f.IsOpen() || f.IsZombie()) {
+    printf("ERROR: couldn't open the file '%s'\n", filename);
+    return;
+  }
+  
+  TTree *t=(TTree*)f.Get("toyMCtree");
+  if (!t) {
+    printf("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", filename);
+    return;
+  }
+  
+  AliToyMCEvent *ev=0x0;
+  t->SetBranchAddress("event",&ev);
+
+  TString debugName=filename;
+  debugName.ReplaceAll(".root","");
+  debugName.Append(".testRes.root");
+  
+  gSystem->Exec(Form("rm %s", debugName.Data()));
+  if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
+  
+  gROOT->cd();
+  
+  // read spacecharge from the Userinfo ot the tree
+  InitSpaceCharge(t);
+
+  Int_t maxev=t->GetEntries();
+  if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
+  
+  for (Int_t iev=0; iev<maxev; ++iev){
+    t->GetEvent(iev);
+    fEvent=iev;
+    printf("========== Processing event %3d =============\n",iev);
+    for (Int_t itr=0; itr<ev->GetNumberOfTracks(); ++itr){
+      fTrack=itr;
+      printf("   ======= Processing track %3d ==========\n",itr);
+      AliToyMCTrack *tr=ev->GetTrack(itr);
+      AliExternalTrackParam tOrig(*tr);
+      AliExternalTrackParam *tIdeal    = GetFullTrack(tr);
+//       AliExternalTrackParam *tDist     = GetFullTrack(tr,1);
+//       AliExternalTrackParam *tDistCorr = GetFullTrack(tr,1,1);
+
+      (*fStreamer) << "res" <<
+      "iev="        << iev <<
+      "itr="        << itr <<
+      "tOrig.="     << &tOrig <<
+      "tIdeal.="    << tIdeal <<
+//       "tDist.="     << tDist  <<
+//       "tDistCorr.=" << tDistCorr <<
+      "\n";
+    
+      delete tIdeal;
+//       delete tDist;
+//       delete tDistCorr;
+    }
+  }
+
+  delete fStreamer;
+  fStreamer=0x0;
 }
 
