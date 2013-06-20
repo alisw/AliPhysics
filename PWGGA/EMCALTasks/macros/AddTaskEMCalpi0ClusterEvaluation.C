@@ -79,12 +79,6 @@ void AddTaskEMCalpi0ClusterEvaluation( UInt_t triggerMaskPbPb = AliVEvent::kEMCE
    }
 
   TString type = analysisManager->GetInputEventHandler()->GetDataType();
-  AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");
-  EMCALSupply->SetDebugLevel(2);
-
-  AliEMCALRecParam *params = new AliEMCALRecParam();
-  params->SetClusteringThreshold(0.3); // 100 MeV
-
 
   AliAnalysisDataContainer *cinput1  = analysisManager->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = analysisManager->CreateContainer("MassHistos", TList::Class(), AliAnalysisManager::kOutputContainer, "AllMBLHC11h.root");
@@ -95,8 +89,6 @@ void AddTaskEMCalpi0ClusterEvaluation( UInt_t triggerMaskPbPb = AliVEvent::kEMCE
     // create task
     AliEMCalpi0ClusterEvaluationTask*clusterEvaluation = new AliEMCalpi0ClusterEvaluationTask( "clusterEvaluation" );
     clusterEvaluation->SelectCollisionCandidates(triggerMaskPbPb);
-
-
 
     // add task to manager
     analysisManager->AddTask(clusterEvaluation);
