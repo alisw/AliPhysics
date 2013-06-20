@@ -43,6 +43,8 @@ public:
       kTPCpidKstarPPB2011,
       kTOFpidKstarPPB2011,
       kTPCTOFpidKstarPPB2011,
+      kTPCpidTOFvetoKStarPPB2011, //TPC pid with TOF veto
+      kTPCpidMatchPPB2011, //Match with nsigma = fNsigmaTPC
       kNDaughterCuts
    };
 
