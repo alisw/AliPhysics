@@ -316,7 +316,8 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fkEMCEJE",fkEMCEJE,"fkEMCEJE[fItrk]/I");
   fTreeV0->Branch("fkEMCEGA",fkEMCEGA,"fkEMCEGA[fItrk]/I");
 
-  fTreeV0->Branch("fCentrality",fCentrality,"fCentrality[fItrk]/I");
+  fTreeV0->Branch("fCentralityClass10",fCentralityClass10,"fCentralityClass10[fItrk]/I");
+  fTreeV0->Branch("fCentralityPercentile",fCentralityPercentile,"fCentralityPercentile[fItrk]/I");
   fTreeV0->Branch("fMultiplicity",fMultiplicity,"fMultipicity[fItrk]/I");
   fTreeV0->Branch("fRefMultiplicity",fRefMultiplicity,"fRefMultipicity[fItrk]/I");
 
@@ -679,7 +680,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fkEMCEJE[fItrk]          = -1;
    fkEMCEGA[fItrk]          = -1;
 
-   fCentrality[fItrk]       = -1;
+   fCentralityClass10[fItrk]  = -1;
+   fCentralityPercentile[fItrk]  = -1;
    fMultiplicity[fItrk]     = -1;
    fRefMultiplicity[fItrk]     = -1;
 
@@ -1265,7 +1267,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  fkEMCEJE[fItrk]          = fTriggerFired[3];
 	  fkEMCEGA[fItrk]          = fTriggerFired[4];
 
-	  fCentrality[fItrk]       = centralityClass10;
+	  fCentralityClass10[fItrk]= centralityClass10;
+          fCentralityPercentile[fItrk]= centralityPercentile;
 	  fMultiplicity[fItrk]     = nTrackMultiplicity;
           fRefMultiplicity[fItrk]  = refMultTpc;
 	  
