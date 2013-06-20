@@ -30,4 +30,5 @@
 #pragma link C++ class LRCParticle;
 #pragma link C++ class AliAnalysisTaskMuonHadronCorrelations+;
 #pragma link C++ class AliAnalysisTaskDiMuonCorrelations+;
+#pragma link C++ class AliAnalysisTaskContMC+;
 #endif
