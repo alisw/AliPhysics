@@ -1491,8 +1491,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     Int_t vtxTyp=0;
     if(vertex->GetNContributors()<=0) vtxTyp=-1;
     TString title=vertex->GetTitle();
-    if(title.Contains("Z")) vtxTyp=3;
-    if(title.Contains("3D")) vtxTyp=2;    
+    if(title.Contains("Z")) vtxTyp=2;
+    if(title.Contains("3D")) vtxTyp=1;    
     ((TH1F*)fOutputEvSelection->FindObject("hxvtx"))->Fill(xvtx);
     ((TH1F*)fOutputEvSelection->FindObject("hyvtx"))->Fill(yvtx);
     ((TH1F*)fOutputEvSelection->FindObject("hzvtx"))->Fill(zvtx);
