@@ -1,5 +1,5 @@
 
-void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
+void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE, UInt_t triggerMaskpPb = AliVEvent::kINT7 ){
 
    gSystem->Load("libCore.so");  
    gSystem->Load("libTree.so");
@@ -76,7 +76,7 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       fCuts= new AliConversionCuts(cutnumber.Data(),cutnumber.Data());
       if(fCuts->InitializeCutsFromCutString(cutnumber.Data())){
          if (IsHeavyIon==2){
-            fCuts->SelectCollisionCandidates(AliVEvent::kINT7);
+            fCuts->SelectCollisionCandidates(triggerMaskpPb);
             fCuts->DoEtaShift(doEtaShift);
          }
          fV0ReaderV1->SetConversionCuts(fCuts);
@@ -110,22 +110,28 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    task->SetIsHeavyIon(IsHeavyIon);
    // Cut Numbers to use in Analysis
    Int_t numberOfCuts = 2;
-   if(trainConfig.Contains("PbPb")) numberOfCuts = 3;
-   else if(trainConfig.Contains("pPb")) numberOfCuts = 4;
+   if(trainConfig.Contains("PbPb")) numberOfCuts = 7;
+   else if(trainConfig.Contains("pPb")) numberOfCuts = 5;
    else numberOfCuts = 3;
 
    TString *cutarray = new TString[numberOfCuts];
    TString *mesonCutArray = new TString[numberOfCuts];
 
    if(trainConfig.Contains("PbPb")){
-      cutarray[ 0] = "1010001042092970023220000"; mesonCutArray[ 0] = "01522045000"; // Standard cut 0-10
-      cutarray[ 1] = "3120001042092970023220000"; mesonCutArray[ 1] = "01522045000"; // Standard cut 5-10
-      cutarray[ 2] = "1120001042092970023220000"; mesonCutArray[ 2] = "01522045000"; // Standard cut 10-20
+      cutarray[ 0] = "3010001042092970023220000"; mesonCutArray[ 0] = "01522045000";
+      cutarray[ 1] = "1010001042092970023220000"; mesonCutArray[ 1] = "01522045000";
+      cutarray[ 2] = "3120001042092970023220000"; mesonCutArray[ 2] = "01522045000";
+      cutarray[ 3] = "1120001042092970023220000"; mesonCutArray[ 3] = "01522045000";
+      cutarray[ 4] = "1240001042092970023220000"; mesonCutArray[ 4] = "01522045000";
+      cutarray[ 5] = "1460001042092970023220000"; mesonCutArray[ 5] = "01522065000";
+      cutarray[ 6] = "1680001042092970023220000"; mesonCutArray[ 6] = "01522065000";
    } else if(trainConfig.Contains("pPb")){ //pA needs thighter rapidity cut y < 0.5
-     cutarray[ 0] = "8020000082093172023290000"; mesonCutArray[0] = "01629045000";  //standard cut Pi0 Pb 00-20 shifted Eta 0.4
-     cutarray[ 1] = "8240000082093172023290000"; mesonCutArray[1] = "01629045000";  //standard cut Pi0 Pb 20-40 shifted Eta 0.4
-     cutarray[ 2] = "8460000082093172023290000"; mesonCutArray[2] = "01629045000";  //standard cut Pi0 Pb 40-60 shifted Eta 0.4
-     cutarray[ 3] = "8600000082093172023290000"; mesonCutArray[3] = "01629045000";  //standard cut Pi0 Pb 60-100 shifted Eta 0.4
+      cutarray[ 0] = "8000000082093172023290000"; mesonCutArray[ 0] = "01629045000"; //shifted Pbp
+      cutarray[ 1] = "8020000082093172023290000"; mesonCutArray[ 1] = "01629045000";
+      cutarray[ 2] = "8240000082093172023290000"; mesonCutArray[ 2] = "01629045000";
+      cutarray[ 3] = "8460000082093172023290000"; mesonCutArray[ 3] = "01629045000";
+      cutarray[ 4] = "8600000082093172023290000"; mesonCutArray[ 4] = "01629045000";
+
    } else {
       cutarray[ 0] = "0000012002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
       cutarray[ 1] = "0001012002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
@@ -157,8 +163,8 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
       analysisCuts[i] = new AliConversionCuts();
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (trainConfig.Contains("pPb")){
-         analysisCuts[i]->SelectCollisionCandidates(AliVEvent::kINT7);
-         if (i<4){
+         analysisCuts[i]->SelectCollisionCandidates(triggerMaskpPb);
+         if (i<5){
             analysisCuts[i]->DoEtaShift(kTRUE);
             analysisCuts[i]->SetEtaShift("Pbp");
          }
@@ -177,8 +183,8 @@ void AddTask_GammaConvV1(TString trainConfig = "pp",   Bool_t isMC	= kFALSE){
    task->SetMesonCutList(numberOfCuts,MesonCutList);
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
-//    if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
-//    if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
+   if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
+   if (trainConfig.Contains("pPb") || trainConfig.Contains("pp") )task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
 
    //connect containers
    AliAnalysisDataContainer *coutput =

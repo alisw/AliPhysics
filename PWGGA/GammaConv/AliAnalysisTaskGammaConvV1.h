@@ -9,6 +9,7 @@
 #include "AliConversionAODBGHandlerRP.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
+#include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
 
@@ -32,6 +33,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
          fIsHeavyIon = 0;    
       }
    }
+
+   void SetIsMC(Bool_t isMC){fIsMC=isMC;}
    void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
    void SetDoMesonQA(Bool_t flag){fDoMesonQA = flag;}
    void SetDoPhotonQA(Bool_t flag){fDoPhotonQA = flag;}
@@ -40,8 +43,12 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    void CalculateBackground();
    void CalculateBackgroundRP();
    void ProcessMCParticles();
+   void ProcessAODMCParticles();
+   void RelabelAODPhotonCandidates(Bool_t mode);
    void ProcessTruePhotonCandidates( AliAODConversionPhoton* TruePhotonCandidate);
+   void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
    void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+   void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
    void RotateParticle(AliAODConversionPhoton *gamma);
    void SetConversionCutList(Int_t nCuts, TList *CutArray){
       fnCuts = nCuts;
@@ -54,7 +61,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
    // BG HandlerSettings
    void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
-   void CountESDTracks();
+   void CountTracks();
+   void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[]);
    void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
    void UpdateEventByEventData();
 
@@ -74,6 +82,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TList **fTrueMotherRapList;
    TList **fMCList;
    TList **fHeaderNameList;
+   TList **fTriggerNameList;
    TList *fOutputContainer;
    TClonesArray *fReaderGammas;
    TList *fGammaCandidates;
@@ -104,13 +113,19 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hMCConvGammaRSR;
    TH1F **hMCConvGammaRSEta;
    TH1F **hMCPi0Pt;
+   TH1F **hMCPi0WOWeightPt;
    TH1F **hMCEtaPt;
    TH1F **hMCPi0InAccPt;
    TH1F **hMCEtaInAccPt;
    TH2F **hMCPi0PtY;
    TH2F **hMCEtaPtY;
+   TH1F **hMCK0sPt;
+   TH1F **hMCK0sWOWeightPt;
+   TH2F **hMCK0sPtY;
    TH2F **hESDTrueMotherInvMassPt;
    TH2F **hESDTruePrimaryMotherInvMassPt;
+   TH2F **hESDTruePrimaryMotherW0WeightingInvMassPt;
+   TProfile2D **pESDTruePrimaryMotherWeightsInvMassPt;
    TH2F **hESDTruePrimaryPi0MCPtResolPt;
    TH2F **hESDTruePrimaryEtaMCPtResolPt;
    THnSparseF **sESDTruePrimaryMotherInvMassPtY;
@@ -136,6 +151,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1I **hNGoodESDTracks;
    TH1I **hNGammaCandidates;
    TH1I **hNV0Tracks;
+   TH1F **hEtaShift;
    
    TRandom3 fRandom;
    Int_t fnGammaCandidates;
@@ -143,6 +159,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    Double_t *fUnsmearedPy; //[fnGammaCandidates]
    Double_t *fUnsmearedPz; //[fnGammaCandidates]
    Double_t *fUnsmearedE;  //[fnGammaCandidates]
+   Int_t *fMCStackPos;     //[fnGammaCandidates]
+   Int_t *fMCStackNeg;     //[fnGammaCandidates]
    Int_t fnCuts;
    Int_t fiCut;
    Int_t fNumberOfESDTracks;
@@ -152,6 +170,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    Bool_t fDoMesonQA;
    Bool_t fDoPhotonQA;
    Bool_t fIsFromMBHeader;
+   Bool_t fIsMC;
 
 private:
 
@@ -159,7 +178,7 @@ private:
    AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
 
 
-   ClassDef(AliAnalysisTaskGammaConvV1, 4);
+   ClassDef(AliAnalysisTaskGammaConvV1, 7);
 };
 
 #endif
