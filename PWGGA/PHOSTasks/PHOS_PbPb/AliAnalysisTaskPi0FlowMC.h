@@ -4,7 +4,7 @@
 // Inclusion of AliPHOSHijingEfficiency,
 // by Dmitri Peressounko, 05.02.2013
 // Authors: Henrik Qvigstad, Dmitri Peressounko
-// Date   : 05.04.2013
+// Date   : 20.06.2013
 /* $Id$ */
 
 
@@ -43,8 +43,8 @@ protected: // member variables:
   
   void FillMCHist();
   
-  Double_t PrimaryWeight(Int_t primary);
-  Double_t PrimaryParticleWeight(TParticle * particle);
+  virtual Double_t PrimaryWeight(Int_t primary);
+  virtual Double_t PrimaryParticleWeight(TParticle * particle);
   void FillSecondaries() ;
   Int_t FindPrimary(AliVCluster* clu,  Bool_t& sure);
   Int_t FindCommonParent(Int_t iPart, Int_t jPart) ;
