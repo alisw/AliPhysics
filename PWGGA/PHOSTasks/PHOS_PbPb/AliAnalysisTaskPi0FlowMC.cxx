@@ -948,7 +948,7 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
     Double_t weight = PrimaryParticleWeight(particle) ;  
     snprintf(hkey,55,"hMC_all_%s_cen%d",partName,fCentBin) ;
     FillHistogram(hkey,pt,weight) ;
-    if(TMath::Abs(particle->Y())<0.12){
+    if(TMath::Abs(particle->Y())<1.){
       snprintf(hkey,55,"hMC_unitEta_%s_cen%d",partName,fCentBin) ;
       FillHistogram(hkey,pt,weight) ;
     }
