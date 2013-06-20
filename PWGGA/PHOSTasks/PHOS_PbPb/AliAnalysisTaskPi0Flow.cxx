@@ -440,7 +440,7 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
 
   // Step 6: MC
-  //  ProcessMC() ;
+  this->ProcessMC() ;
   LogProgress(6);
 
 
@@ -469,9 +469,6 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   this->ConsiderPi0sMix();
   LogProgress(10);
   
-  // Step 11: MC
-  this->ProcessMC();
-
   // Step 12: Update lists
   UpdateLists();
   LogProgress(11);
