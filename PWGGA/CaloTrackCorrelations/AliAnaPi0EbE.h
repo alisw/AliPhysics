@@ -46,7 +46,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
-  void           FillPileUpHistograms(const Float_t energy, const Float_t time) ;
+  void           FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time) ;
   
   void           FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag);
   
@@ -321,10 +321,15 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhTimePileUpMainVertexZDistance; //! time of cluster vs difference of z main vertex and pile-up vertex 
   TH2F         * fhTimePileUpMainVertexZDiamond;  //! time of cluster vs difference of z diamond and pile-up vertex 
   
+  TH2F         * fhPtNPileUpSPDVtx;	              //! cluster pt vs number of spd pile-up vertices
+  TH2F         * fhPtNPileUpTrkVtx;               //! cluster pt vs number of track pile-up vertices
+  TH2F         * fhPtNPileUpSPDVtxTimeCut;	      //! cluster pt vs number of spd pile-up vertices, time cut +-25 ns
+  TH2F         * fhPtNPileUpTrkVtxTimeCut;        //! cluster pt vs number of track pile-up vertices, time cut +- 25 ns 		
+	
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,27)
+  ClassDef(AliAnaPi0EbE,28)
 } ;
 
 

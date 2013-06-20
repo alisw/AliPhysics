@@ -69,7 +69,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
   void         FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time) ;
-  void         FillPileUpHistogramsPerEvent(TObjArray * clusters) ;
+  void         FillPileUpHistogramsPerEvent() ;
 
   void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms  = kTRUE  ; }
   void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms  = kFALSE ; }    
@@ -391,10 +391,20 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiBCPlusPileUpSPD;               //! eta/phi of clusters in BC>0, SPD pile-up
   TH2F * fhEtaPhiBCMinusPileUpSPD;              //! eta/phi of clusters in BC<0, SPD pile-up
 
+  TH2F * fhPtNPileUpSPDVtx;	                    //! cluster pt vs number of spd pile-up vertices
+  TH2F * fhPtNPileUpTrkVtx;                     //! cluster pt vs number of track pile-up vertices
+  TH2F * fhPtNPileUpSPDVtxTimeCut;	            //! cluster pt vs number of spd pile-up vertices, time cut +-25 ns
+  TH2F * fhPtNPileUpTrkVtxTimeCut;              //! cluster pt vs number of track pile-up vertices, time cut +- 25 ns 	
+
+  TH2F * fhPtPhotonNPileUpSPDVtx;	            //! photon pt vs number of spd pile-up vertices
+  TH2F * fhPtPhotonNPileUpTrkVtx;               //! photon pt vs number of track pile-up vertices
+  TH2F * fhPtPhotonNPileUpSPDVtxTimeCut;        //! photon pt vs number of spd pile-up vertices, time cut +-25 ns
+  TH2F * fhPtPhotonNPileUpTrkVtxTimeCut;        //! photon pt vs number of track pile-up vertices, time cut +- 25 ns 		
+	
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,31)
+  ClassDef(AliAnaPhoton,32)
 
 } ;
  
