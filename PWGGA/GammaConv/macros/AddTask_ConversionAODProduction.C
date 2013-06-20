@@ -49,7 +49,7 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
     fV0ReaderB->SetCreateAODs(kTRUE);
     fV0ReaderB->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderB->SetUseAODConversionPhoton(kTRUE);
-    fV0ReaderB->CheckAODConsistency();
+//     fV0ReaderB->CheckAODConsistency();
 
     // Set AnalysisCut Number
     AliConversionCuts *fCuts= new AliConversionCuts(analysiscut.Data(),analysiscut.Data());
