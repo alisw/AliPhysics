@@ -37,12 +37,16 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   kTOF(0),
   iBconf(0),
   isSignalCheck(kTRUE),
-  //NsigmaTPCCut(2.0),
-  //MomType(7),
+  NsigmaTPCCut(2.0),
+  MomType(1),
   fAOD(NULL),
   fESD(NULL),
   fEvent(NULL),
-  fPIDResponse(NULL)
+  fPIDResponse(NULL),
+  fmism(NULL),
+  hmism(NULL),
+  fchDist(NULL),
+  hChDist(NULL)
 /*fBetaTofVSp(NULL),
   fCentrality(NULL),
   hNevent(NULL),
@@ -70,12 +74,16 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass(const char *name):
   kTOF(0),
   iBconf(0),
   isSignalCheck(kTRUE),
-  //NsigmaTPCCut(2.0),
-  //MomType(7),
+  NsigmaTPCCut(2.0),
+  MomType(1),
   fAOD(NULL), 
   fESD(NULL),
   fEvent(NULL),
-  fPIDResponse(NULL)
+  fPIDResponse(NULL),
+  fmism(NULL),
+  hmism(NULL),
+  fchDist(NULL),
+  hChDist(NULL)
   /*fBetaTofVSp(NULL),
   fCentrality(NULL),
   hNevent(NULL),
@@ -114,6 +122,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     hNeventSelected[iB] = new TH1F("hNevent_Selected","Centrality(selected)",20,0,100);
 
     hZvertex[iB] = new TH1F("hZvertex","Vertex distribution of selected events; z vertex (cm)",240,-30,30);
+
+    hEtaDistribution[iB] = new TH1F("hEtaDistribution","Eta distribution of the tracks; |#eta|",11,-0.1,1.0);
     
     hTOFSignalPion[iB] = new TH1F("hTOFSignalPion","TOF signal 0.9<p_{T}<1.0; t-t_{exp}^{#pi} (ps)",1500,-1500,1500);
    
@@ -276,13 +286,13 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     
       fBetaTofVSp[iB] = new TH2F("fBetaTofVSp","#beta_{TOF} vs p; p(GeV/c); #beta_{TOF}",1,0,5,1,0.4,1.05);
       
-      fM2vsP_NoTpcCut[iB][0] = new TH2F("fM2vsP_NoTpcCut","M_{TOF}^{2} vs p; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
-      fM2vsP_NoTpcCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive","M_{TOF}^{2} vs p Pos Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
-      fM2vsP_NoTpcCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative","M_{TOF}^{2} vs p Neg Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+      fM2vsP_NoTpcCut[iB][0] = new TH2F("fM2vsP_NoTpcCut","M_{TOF}^{2} vs p; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,8);//1250,...,80
+      fM2vsP_NoTpcCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive","M_{TOF}^{2} vs p Pos Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,8);
+      fM2vsP_NoTpcCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative","M_{TOF}^{2} vs p Neg Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,8);
       
-      fM2vsP_NoTpcCut_DCAxyCut[iB][0] = new TH2F("fM2vsP_NoTpcCut_DCAxycut","M_{TOF}^{2} vs p with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
-      fM2vsP_NoTpcCut_DCAxyCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive_DCAxycut","M_{TOF}^{2} vs p Pos Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
-      fM2vsP_NoTpcCut_DCAxyCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative_DCAxycut","M_{TOF}^{2} vs p Neg Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1250,0,10,80,0,8);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][0] = new TH2F("fM2vsP_NoTpcCut_DCAxycut","M_{TOF}^{2} vs p with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,8);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive_DCAxycut","M_{TOF}^{2} vs p Pos Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,8);
+      fM2vsP_NoTpcCut_DCAxyCut[iB][2] = new TH2F("fM2vsP_NoTpcCut_Negative_DCAxycut","M_{TOF}^{2} vs p Neg Part with DCAxy cut; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,8);
 
       /*fM2vsP_NoTpcCut[iB][0] = new TH2F("fM2vsP_NoTpcCut","M_{TOF}^{2} vs p; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);
       fM2vsP_NoTpcCut[iB][1] = new TH2F("fM2vsP_NoTpcCut_Positive","M_{TOF}^{2} vs p Pos Part; M_{TOF}^{2}/Z^{2} (GeV^{2}/c^{4}); p/|Z| (GeV/c)",1,0,10,1,0,10);
@@ -342,33 +352,33 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
      
 	for (Int_t i=0;i<18;i++) fM2vsP_DCAxyCut[iB][i] = new TH2F(name_par_MvsP_DCAxyCut[i],name_title_MvsP_DCAxyCut[i],1,0,10,1,0,10);*/
       
-      for (Int_t i=0;i<18;i++) fM2vsP[iB][i] = new TH2F(name_par_MvsP[i],name_title_MvsP[i],1250,0,10,80,0,8);
+      for (Int_t i=0;i<18;i++) fM2vsP[iB][i] = new TH2F(name_par_MvsP[i],name_title_MvsP[i],1000,0,6,60,0,6);//1250,0,10,80,0,8
       
-      for (Int_t i=0;i<18;i++) fM2vsP_DCAxyCut[iB][i] = new TH2F(name_par_MvsP_DCAxyCut[i],name_title_MvsP_DCAxyCut[i],1250,0,10,80,0,8);
+      for (Int_t i=0;i<18;i++) fM2vsP_DCAxyCut[iB][i] = new TH2F(name_par_MvsP_DCAxyCut[i],name_title_MvsP_DCAxyCut[i],1000,0,6,60,0,6);//1250,0,10,80,0,8
 
     }
 
     Float_t binPt[nbin+1];
     for(Int_t i=0;i<nbin+1;i++) {
-      binPt[i]=0.700+i*0.025;
+      binPt[i]=0.4+0.1*i;
     }
         
     Char_t par_name_nbin[nbin][30];
     
     for(Int_t j=0;j<nbin;j++) {
-      snprintf(par_name_nbin[j],30,"%.3f<Pt<%.3f",binPt[j],binPt[j+1]);
+      snprintf(par_name_nbin[j],30,"%.1f<Pt<%.1f",binPt[j],binPt[j+1]);
     }
     
     Char_t par_name_nbin_pbin[nbin][30];
     
     for(Int_t j=0;j<nbin;j++) {
-      snprintf(par_name_nbin_pbin[j],30,"%.3f<P<%.3f",binPt[j],binPt[j+1]);
+      snprintf(par_name_nbin_pbin[j],30,"%.1f<P<%.1f",binPt[j],binPt[j+1]);
     }
     
     Char_t par_name_nbin_pTpcbin[nbin][30];
     
     for(Int_t j=0;j<nbin;j++) {
-      snprintf(par_name_nbin_pTpcbin[j],30,"%.3f<PTpc<%.3f",binPt[j],binPt[j+1]);
+      snprintf(par_name_nbin_pTpcbin[j],30,"%.1f<PTpc<%.1f",binPt[j],binPt[j+1]);
     }
     
     Char_t nameDCAxy[3][18][nbin][120];
@@ -460,14 +470,16 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     for(Int_t iBinMom=0;iBinMom<3;iBinMom++) {
       for(Int_t j=0;j<nbin;j++) {
-	hM2BkgMism[iB][iBinMom][j]=new TH1D(nameM2BkgMism[iBinMom][j],titleM2BkgMism[iBinMom][j],5000,0,10);//125 bins
+	hM2BkgMism[iB][iBinMom][j]=new TH1D(nameM2BkgMism[iBinMom][j],titleM2BkgMism[iBinMom][j],500,0,6);//125 bins
 	hM2BkgMism[iB][iBinMom][j]->GetXaxis()->CenterTitle();
       }
     }
     
-    const Int_t BinM2pT[9]={1,1,600,400,500,500,1000,400,600};
+    const Int_t BinM2pT[9]={1,1,600,250,500,500,1000,400,600};
     const Float_t RangeM2min[9]={0.0,0.0,-0.1,0.0,0.0,0.0,0.0,0.0,0.0};
-    const Float_t RangeM2max[9]={1.0,1.0,0.5,1.0,4.0,6.0,12.0,4.0,6.0};
+    const Float_t RangeM2max[9]={1.0,1.0,0.5,2.0,4.0,6.0,12.0,4.0,6.0};
+    
+    
 
     for(Int_t iSp=0;iSp<9;iSp++) {
       for(Int_t j=0;j<nbin;j++) {
@@ -491,6 +503,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     fList1[iB]->Add(hNeventSelected[iB]);
     fList1[iB]->Add(hNevent[iB]);
     fList1[iB]->Add(hZvertex[iB]);
+    fList1[iB]->Add(hEtaDistribution[iB]);
     fList1[iB]->Add(hTOFSignalPion[iB]);
     for(Int_t iS=0;iS<18;iS++) fList1[iB]->Add(fNsigmaTPCvsP_kTOFtrue[iB][iS]);
     
@@ -505,13 +518,19 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     for(Int_t i=0;i<15;i++) fList1[iB]->Add(fM2vsZwithTPC[iB][i]);
     
     for(Int_t i=0;i<3;i++) fList1[iB]->Add(fM2vsP_NoTpcCut[iB][i]);
-    for(Int_t i=0;i<18;i++) fList1[iB]->Add(fM2vsP[iB][i]);
-    
+    for(Int_t i=3;i<6;i++) {//for(Int_t i=0;i<18;i++)
+      fList1[iB]->Add(fM2vsP[iB][i]);
+      fList1[iB]->Add(fM2vsP[iB][i+9]);//via-^
+    }
+
     for(Int_t i=0;i<3;i++) fList1[iB]->Add(fM2vsP_NoTpcCut_DCAxyCut[iB][i]);
-    for(Int_t i=0;i<18;i++) fList1[iB]->Add(fM2vsP_DCAxyCut[iB][i]);
-    
+    for(Int_t i=3;i<6;i++) {//for(Int_t i=0;i<18;i++)
+      fList1[iB]->Add(fM2vsP_DCAxyCut[iB][i]);
+      fList1[iB]->Add(fM2vsP_DCAxyCut[iB][i+9]);//via-^
+    }    
+
     if(MomType & 1) {
-      for(Int_t iSp=2;iSp<9;iSp++) {
+      for(Int_t iSp=3;iSp<6;iSp++) {//for(Int_t iSp=2;iSp<9;iSp++)
 	for(Int_t j=0;j<nbin;j++) {
 	  fList1[iB]->Add(hDCAxy[iB][iSp][j]);
 	  fList1[iB]->Add(hDCAz[iB][iSp][j]);
@@ -525,7 +544,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       }
     }
     if(MomType & 2) {
-      for(Int_t iSp=2;iSp<9;iSp++) {
+      for(Int_t iSp=3;iSp<6;iSp++) {//for(Int_t iSp=2;iSp<9;iSp++)
 	for(Int_t j=0;j<nbin;j++) {
 	  fList1[iB]->Add(hDCAxy_pbin[iB][iSp][j]);
 	  fList1[iB]->Add(hDCAz_pbin[iB][iSp][j]);
@@ -539,7 +558,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       }
     }
     if(MomType & 4) {
-      for(Int_t iSp=2;iSp<9;iSp++) {
+      for(Int_t iSp=3;iSp<6;iSp++) {//for(Int_t iSp=2;iSp<9;iSp++)
 	for(Int_t j=0;j<nbin;j++) {
 	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][iSp][j]);
 	  fList1[iB]->Add(hDCAz_pTpcbin[iB][iSp][j]);
@@ -645,17 +664,24 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
        	Int_t NTpcCls=track->GetTPCNcls();
 	if(NTpcCls>NminTPCcluster) kTPC=kTRUE;
 	else kTPC=kFALSE;
-
-	if ((TMath::Abs(track->Eta()) > 0.8) || (track->Pt() < 0.2) || !trkFlag || !kTPC){
-	  continue;
-	}
 	
+	Float_t etaAbs = TMath::Abs(track->Eta());
+		
+	//if(etaAbs<EtaLimit[0] && etaAbs>EtaLimit[1]) continue;
+      
+	if(etaAbs<EtaLimit[0]) continue;
+	if(etaAbs>EtaLimit[1]) continue;
+
+	if ((track->Pt() < 0.2) || !trkFlag || !kTPC){
+	  continue;
+	}	
+
 	Double_t b[2] = {-99., -99.};
 	Double_t bCov[3] = {-99., -99., -99.};
 	if (!track->PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov))
 	  continue;
 	
-	Float_t etaAbs = TMath::Abs(track->Eta());
+	//Float_t etaAbs = TMath::Abs(track->Eta());
 	Float_t charge = (Float_t)track->Charge();
 	Float_t p = track->P();
 	Float_t pt = track->Pt();
@@ -669,6 +695,8 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	Float_t DCAxy = b[0];
 	Float_t DCAz = b[1];
 	
+	hEtaDistribution[iBconf]->Fill(etaAbs);
+
 	if(TMath::Abs(DCAz)>DCAzCUT)//CUT ON DCAz
 	  continue;
 	
@@ -723,7 +751,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 
 	Float_t binPt[nbin+1];
 	for(Int_t i=0;i<nbin+1;i++) {
-	  binPt[i]=0.700+i*0.025;
+	  binPt[i]=0.4+i*0.1;
 	}
 	
 	//M2 background distribution from mismatch (START):
