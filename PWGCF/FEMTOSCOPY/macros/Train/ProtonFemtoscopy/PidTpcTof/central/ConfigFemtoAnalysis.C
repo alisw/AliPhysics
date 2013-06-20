@@ -381,9 +381,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
               // cAvgSeptpc[aniter] = new AliFemtoAvgSepCorrFctn(Form("cAvgSep%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),4*nbinssh,0.0,200);
               // anetaphitpc[aniter]->AddCorrFctn(cAvgSeptpc[aniter]);
 
-              // cqinvinnertpc[aniter] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%d", chrgs[ichg], imult),nbinssh,0.0,shqmax);
-              // cqinvinnertpc[aniter]->SetRadius(1.2);
-              // anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[aniter]);
+              cqinvinnertpc[aniter] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%d", chrgs[ichg], imult),nbinssh,0.0,shqmax);
+              cqinvinnertpc[aniter]->SetRadius(1.2);
+              anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[aniter]);
 
 
               if (runktdep) {
