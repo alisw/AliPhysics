@@ -308,27 +308,33 @@ TFile *f = TFile::Open("badchannels.root", "READ");
 }
 
 
-Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const TParticle& part) const
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const TParticle& part)
 {
+  float myphi = part.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
   return TMath::Abs(part.Eta()) < fCuts->GetGeometryPhosEtaAccCut() 
-	  && part.Phi() < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
-	  && part.Phi() > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
+    && myphi < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }
 
-Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliVTrack& track) const
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliVTrack& track)
 {
-  return TMath::Abs(track.Eta()) < fCuts->GetGeometryPhosEtaAccCut() &&
-           track.Phi() > fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180. &&
-           track.Phi() < fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
+  float myphi = track.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
+  return TMath::Abs(track.Eta()) < fCuts->GetGeometryPhosEtaAccCut()
+    && myphi < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }
 
 
-Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliESDCaloCluster& cluster) const
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliESDCaloCluster& cluster)
 {
   Float_t pos[3];
   cluster.GetPosition(pos);
   TVector3 cp(pos);
-  return TMath::Abs(cp.Eta()) < fCuts->GetGeometryEmcalEtaAccCut()
-    && cp.Phi() < fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180.
-    && cp.Phi() > fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.;
+  float myphi = cp.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
+  return TMath::Abs(cp.Eta()) < fCuts->GetGeometryPhosEtaAccCut()
+    && myphi < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }

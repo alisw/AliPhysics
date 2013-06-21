@@ -42,6 +42,8 @@ public:
     
     // Return CaloClusters for the detector
     virtual TRefArray* GetClusters() { return 0; }
+
+    virtual Float_t ShiftAngle(Float_t phi);//Always returns an angle in radians between -pi<phi<pi
     
     // Return true if cluster has energy > cut
     virtual Bool_t PassMinEnergyCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
@@ -68,13 +70,13 @@ public:
     Int_t GetPrimary(const Int_t partIdx, AliStack &stack) const;
     
     // Cut on geometrical acceptance 
-    virtual Bool_t CutGeometricalAcceptance(const TParticle &/*part*/) const { return true; }
+    virtual Bool_t CutGeometricalAcceptance(const TParticle &/*part*/) { return true; }
     
     // Cut on geometrical acceptance 
-    virtual Bool_t CutGeometricalAcceptance(const AliVTrack &/*part*/) const { return true; }
+    virtual Bool_t CutGeometricalAcceptance(const AliVTrack &/*part*/) { return true; }
     
     // Cut on geometrical acceptance 
-    virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster &/*part*/) const { return true; }
+    virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster &/*part*/) { return true; }
     
     // From secondary vertex?
     virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;

@@ -115,3 +115,14 @@ Bool_t AliAnalysisEtSelector::SuspeciousDecayInChain(const UInt_t suspectMotherP
   }
   return SuspeciousDecayInChain(suspectMotherPdg, suspectDaughterPdg, *mother, stack);
 }
+
+Float_t AliAnalysisEtSelector::ShiftAngle(Float_t phi){//Always returns an angle in radians between -pi<phi<pi
+  float myphi = phi;
+  while(myphi>TMath::Pi()){//angle is too high, decrease the angle
+    myphi = myphi - 2*TMath::Pi();
+  }
+  while(myphi<-TMath::Pi()){//angle is too low, increase the angle
+    myphi = myphi + 2*TMath::Pi();
+  }
+  return myphi;
+}

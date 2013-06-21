@@ -44,8 +44,8 @@ public:
         return *fSecondaryContr;
     }
 
-    TH2F TrackMatchingEfficiency() const {
-      return *fRecoEff;
+    TH2F *TrackMatchingEfficiency() const {
+      return fRecoEff;
     }
     
     Double_t ChargedContr(int mult) const {
