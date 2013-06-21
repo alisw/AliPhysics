@@ -12,8 +12,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                            Bool_t useCentralityTask=kFALSE, /*obsolete*/
                                            Bool_t enableTPCOnlyAODTracks=kFALSE,
                                            Bool_t disableCascades=kFALSE,
-                                           Bool_t disableKinks=kFALSE, Int_t runFlag = 1100,
-					   Int_t  muonMCMode = 2)
+                                           Bool_t disableKinks=kFALSE, 
+                                           Int_t runFlag = 1100,
+                                           Int_t  muonMCMode = 2, 
+                                           Bool_t useV0Filter=kTRUE)
 {
   // Creates a filter task and adds it to the analysis manager.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -87,17 +89,19 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    }
 
    // Filter with cuts on V0s
-   AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
-   esdV0Cuts->SetMinRadius(0.2);
-   esdV0Cuts->SetMaxRadius(200);
-   esdV0Cuts->SetMinDcaPosToVertex(0.05);
-   esdV0Cuts->SetMinDcaNegToVertex(0.05);
-   esdV0Cuts->SetMaxDcaV0Daughters(1.5);
-   esdV0Cuts->SetMinCosinePointingAngle(0.99);
-   AliAnalysisFilter* v0Filter = new AliAnalysisFilter("v0Filter");
-   v0Filter->AddCuts(esdV0Cuts);
+   if (useV0Filter) {
+     AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
+     esdV0Cuts->SetMinRadius(0.2);
+     esdV0Cuts->SetMaxRadius(200);
+     esdV0Cuts->SetMinDcaPosToVertex(0.05);
+     esdV0Cuts->SetMinDcaNegToVertex(0.05);
+     esdV0Cuts->SetMaxDcaV0Daughters(1.5);
+     esdV0Cuts->SetMinCosinePointingAngle(0.99);
+     AliAnalysisFilter* v0Filter = new AliAnalysisFilter("v0Filter");
+     v0Filter->AddCuts(esdV0Cuts);
 
-   esdfilter->SetV0Filter(v0Filter);
+     esdfilter->SetV0Filter(v0Filter);
+   }  
 
    // Enable writing of Muon AODs
    esdmuonfilter->SetWriteMuonAOD(writeMuonAOD);
