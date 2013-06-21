@@ -245,10 +245,14 @@ public:
   TString          GetFiredTriggerClasses() ;               
   
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
-  void             SetEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAny) 
+  void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
-  
-  TArrayI          GetL0TriggerPatches();
+	Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
+  void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
+  void             SwitchOffEventTriggerAtSE()             { fEventTriggerAtSE      = kFALSE ; }
+		
+	
+  TArrayI          GetTriggerPatches();
   // void            RejectExoticEvents(TArrayI patches);
   //void             RejectTriggeredEventsByPileUp(TArrayI patches);
   void             MatchTriggerCluster(TArrayI patches);
@@ -276,11 +280,20 @@ public:
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
   void             SetMixEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAnyINT) 
                                                            { fMixEventTriggerMask = evtTrig  ; }
-  
-  Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
-  void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
-  void             SwitchOffEventTriggerAtSE()             { fEventTriggerAtSE      = kFALSE ; }
-  
+	void             SetEventTriggerBit();
+	Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
+	Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
+	Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
+	Bool_t           IsEventEMCALL0()                  const { return fEventTrigEMCALL0        ; }
+	Bool_t           IsEventEMCALL1Gamma1()            const { return fEventTrigEMCALL1Gamma1  ; }
+	Bool_t           IsEventEMCALL1Gamma2()            const { return fEventTrigEMCALL1Gamma2  ; }
+	Bool_t           IsEventEMCALL1Jet1()              const { return fEventTrigEMCALL1Jet1    ; }
+	Bool_t           IsEventEMCALL1Jet2()              const { return fEventTrigEMCALL1Jet2    ; }
+	Bool_t           IsEventEMCALL1Gamma()             const { return (fEventTrigEMCALL1Gamma1 || fEventTrigEMCALL1Gamma2) ; }
+  Bool_t           IsEventEMCALL1Jet()               const { return (fEventTrigEMCALL1Jet1   || fEventTrigEMCALL1Jet2  ) ; }
+	Bool_t           IsEventEMCALL1()                  const { return (IsEventEMCALL1Gamma()   || IsEventEMCALL1Jet()    ) ; }
+	
+	
   void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
   void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
   Bool_t           IsEventSelectionDone()            const { return fDoEventSelection        ; }
@@ -301,6 +314,7 @@ public:
   void             SwitchOffRejectNoTrackEvents()          { fDoRejectNoTrackEvents = kFALSE ; }
   Bool_t           IsEventWithNoTrackRejectionDone() const { return fDoRejectNoTrackEvents   ; }
   
+
   //Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -387,7 +401,7 @@ public:
   Bool_t           IsCaloFilterPatchOn()             const { 
                     if(fDataType == kAOD) { return fCaloFilterPatch ; } 
                     else                  { return kFALSE           ; }                     }
-  	
+	
   //-------------------------------
   //Vertex methods
   //-------------------------------
@@ -522,97 +536,110 @@ public:
 
   
  protected:
-  Int_t	           fEventNumber;            // Event number
-  Int_t            fDataType ;              // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
-  Int_t            fDebug;                  // Debugging level
-  AliFiducialCut * fFiducialCut;            // Acceptance cuts
-  Bool_t           fCheckFidCut ;           // Do analysis for clusters in defined region         
+  Int_t	           fEventNumber;               // Event number
+  Int_t            fDataType ;                 // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
+  Int_t            fDebug;                     // Debugging level
+  AliFiducialCut * fFiducialCut;               // Acceptance cuts
+  Bool_t           fCheckFidCut ;              // Do analysis for clusters in defined region         
 
-  Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
-  Float_t          fPtHardAndJetPtFactor;   // Factor between ptHard and jet pT to reject/accept event.
+  Bool_t           fComparePtHardAndJetPt;     // In MonteCarlo, jet events, reject fake events with wrong jet energy.
+  Float_t          fPtHardAndJetPtFactor;      // Factor between ptHard and jet pT to reject/accept event.
 
-  Bool_t           fComparePtHardAndClusterPt;  // In MonteCarlo, jet events, reject events with too large cluster energy
-  Float_t          fPtHardAndClusterPtFactor;   // Factor between ptHard and cluster pT to reject/accept event.
+  Bool_t           fComparePtHardAndClusterPt; // In MonteCarlo, jet events, reject events with too large cluster energy
+  Float_t          fPtHardAndClusterPtFactor;  // Factor between ptHard and cluster pT to reject/accept event.
   
-  Float_t          fCTSPtMin;               // pT Threshold on charged particles 
-  Float_t          fEMCALPtMin;             // pT Threshold on emcal clusters
-  Float_t          fPHOSPtMin;              // pT Threshold on phos clusters
-  Float_t          fCTSPtMax;               // pT Threshold on charged particles 
-  Float_t          fEMCALPtMax;             // pT Threshold on emcal clusters
-  Float_t          fPHOSPtMax;              // pT Threshold on phos clusters
-  Bool_t           fUseEMCALTimeCut;        // Do time cut selection
-  Bool_t           fUseParamTimeCut;        // Use simple or parametrized time cut
-  Bool_t           fUseTrackTimeCut;        // Do time cut selection
-  Double_t         fEMCALTimeCutMin;        // Remove clusters/cells with time smaller than this value, in ns
-  Double_t         fEMCALTimeCutMax;        // Remove clusters/cells with time larger than this value, in ns
-  Float_t          fEMCALParamTimeCutMin[4];// Remove clusters/cells with time smaller than parametrized value, in ns
-  Double_t         fEMCALParamTimeCutMax[4];// Remove clusters/cells with time larger than parametrized value, in ns
-  Double_t         fTrackTimeCutMin;        // Remove tracks with time smaller than this value, in ns
-  Double_t         fTrackTimeCutMax;        // Remove tracks with time larger than this value, in ns
-  Bool_t           fUseTrackDCACut;         // Do DCA selection
-  Double_t         fTrackDCACut[3];         // Remove tracks with DCA larger than cut, parameters of function stored here
+  Float_t          fCTSPtMin;                  // pT Threshold on charged particles 
+  Float_t          fEMCALPtMin;                // pT Threshold on emcal clusters
+  Float_t          fPHOSPtMin;                 // pT Threshold on phos clusters
+  Float_t          fCTSPtMax;                  // pT Threshold on charged particles 
+  Float_t          fEMCALPtMax;                // pT Threshold on emcal clusters
+  Float_t          fPHOSPtMax;                 // pT Threshold on phos clusters
+  Bool_t           fUseEMCALTimeCut;           // Do time cut selection
+  Bool_t           fUseParamTimeCut;           // Use simple or parametrized time cut
+  Bool_t           fUseTrackTimeCut;           // Do time cut selection
+  Double_t         fEMCALTimeCutMin;           // Remove clusters/cells with time smaller than this value, in ns
+  Double_t         fEMCALTimeCutMax;           // Remove clusters/cells with time larger than this value, in ns
+  Float_t          fEMCALParamTimeCutMin[4];   // Remove clusters/cells with time smaller than parametrized value, in ns
+  Double_t         fEMCALParamTimeCutMax[4];   // Remove clusters/cells with time larger than parametrized value, in ns
+  Double_t         fTrackTimeCutMin;           // Remove tracks with time smaller than this value, in ns
+  Double_t         fTrackTimeCutMax;           // Remove tracks with time larger than this value, in ns
+  Bool_t           fUseTrackDCACut;            // Do DCA selection
+  Double_t         fTrackDCACut[3];            // Remove tracks with DCA larger than cut, parameters of function stored here
 
-  TList          * fAODBranchList ;         //-> List with AOD branches created and needed in analysis
-  TObjArray      * fCTSTracks ;             //-> temporal array with tracks
-  TObjArray      * fEMCALClusters ;         //-> temporal array with EMCAL CaloClusters
-  TObjArray      * fPHOSClusters ;          //-> temporal array with PHOS  CaloClusters
-  AliVCaloCells  * fEMCALCells ;            //! temporal array with EMCAL CaloCells
-  AliVCaloCells  * fPHOSCells ;             //! temporal array with PHOS  CaloCells
+  TList          * fAODBranchList ;            //-> List with AOD branches created and needed in analysis
+  TObjArray      * fCTSTracks ;                //-> temporal array with tracks
+  TObjArray      * fEMCALClusters ;            //-> temporal array with EMCAL CaloClusters
+  TObjArray      * fPHOSClusters ;             //-> temporal array with PHOS  CaloClusters
+  AliVCaloCells  * fEMCALCells ;               //! temporal array with EMCAL CaloCells
+  AliVCaloCells  * fPHOSCells ;                //! temporal array with PHOS  CaloCells
 
-  AliVEvent      * fInputEvent;             //! pointer to esd or aod input
-  AliAODEvent    * fOutputEvent;            //! pointer to aod output
-  AliMCEvent     * fMC;                     //! Monte Carlo Event Handler  
+  AliVEvent      * fInputEvent;                //! pointer to esd or aod input
+  AliAODEvent    * fOutputEvent;               //! pointer to aod output
+  AliMCEvent     * fMC;                        //! Monte Carlo Event Handler  
 
-  Bool_t           fFillCTS;                // use data from CTS
-  Bool_t           fFillEMCAL;              // use data from EMCAL
-  Bool_t           fFillPHOS;               // use data from PHOS
-  Bool_t           fFillEMCALCells;         // use data from EMCAL
-  Bool_t           fFillPHOSCells;          // use data from PHOS
-  Bool_t           fRecalculateClusters;    // Correct clusters, recalculate them if recalibration parameters is given
-  Bool_t           fSelectEmbeddedClusters; // Use only simulated clusters that come from embedding.
+  Bool_t           fFillCTS;                   // use data from CTS
+  Bool_t           fFillEMCAL;                 // use data from EMCAL
+  Bool_t           fFillPHOS;                  // use data from PHOS
+  Bool_t           fFillEMCALCells;            // use data from EMCAL
+  Bool_t           fFillPHOSCells;             // use data from PHOS
+  Bool_t           fRecalculateClusters;       // Correct clusters, recalculate them if recalibration parameters is given
+  Bool_t           fSelectEmbeddedClusters;    // Use only simulated clusters that come from embedding.
   
-  ULong_t          fTrackStatus        ;    // Track selection bit, select tracks refitted in TPC, ITS ...
-  ULong_t          fTrackFilterMask    ;    // Track selection bit, for AODs (any difference with track status?)
-  AliESDtrackCuts *fESDtrackCuts       ;    // Track cut
-  AliESDtrackCuts *fESDtrackComplementaryCuts;    // Track cut, complementary cuts for hybrids
-  Bool_t           fConstrainTrack     ;    // Constrain Track to vertex
-  Bool_t           fSelectHybridTracks ;    // Select CTS tracks of type hybrid (only for AODs)
-  Bool_t           fSelectSPDHitTracks ;    // Ensure that track hits SPD layers
-  Int_t            fTrackMult          ;    // Track multiplicity
-  Float_t          fTrackMultEtaCut    ;    // Track multiplicity eta cut
-  Bool_t           fReadStack          ;    // Access kine information from stack
-  Bool_t	         fReadAODMCParticles ;    // Access kine information from filtered AOD MC particles
+  ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
+  ULong_t          fTrackFilterMask    ;       // Track selection bit, for AODs (any difference with track status?)
+  AliESDtrackCuts *fESDtrackCuts       ;       // Track cut
+  AliESDtrackCuts *fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
+  Bool_t           fConstrainTrack     ;       // Constrain Track to vertex
+  Bool_t           fSelectHybridTracks ;       // Select CTS tracks of type hybrid (only for AODs)
+  Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
+  Int_t            fTrackMult          ;       // Track multiplicity
+  Float_t          fTrackMultEtaCut    ;       // Track multiplicity eta cut
+  Bool_t           fReadStack          ;       // Access kine information from stack
+  Bool_t	         fReadAODMCParticles ;       // Access kine information from filtered AOD MC particles
 	
-  TString          fDeltaAODFileName   ;    // Delta AOD file name
-  TString          fFiredTriggerClassName;  // Name of trigger event type used to do the analysis
+  TString          fDeltaAODFileName   ;       // Delta AOD file name
+  TString          fFiredTriggerClassName;     // Name of trigger event type used to do the analysis
 
-  UInt_t           fEventTriggerMask ;      // select this triggerered event
-  UInt_t           fMixEventTriggerMask ;   // select this triggerered event for mixing, tipically kMB or kAnyINT
-  Bool_t           fEventTriggerAtSE;       // select triggered event at SE base task or here
+	// Trigger bit
+  UInt_t           fEventTriggerMask ;         // select this triggerered event
+  UInt_t           fMixEventTriggerMask ;      // select this triggerered event for mixing, tipically kMB or kAnyINT
+  Bool_t           fEventTriggerAtSE;          // select triggered event at SE base task or here
   
-  Bool_t           fAnaLED;                 // Analyze LED data only.
-
-  TString          fTaskName;               // Name of task that executes the analysis
+	Bool_t           fEventTrigMinBias ;         // Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kAnyInt
+	Bool_t           fEventTrigCentral ;         // Event is AliVEvent::kCentral on its name,  it should correspond to PbPb
+	Bool_t           fEventTrigSemiCentral ;     // Event is AliVEvent::kSemiCentral on its name,  it should correspond to PbPb 
+	Bool_t           fEventTrigEMCALL0 ;         // Event is EMCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1
+	Bool_t           fEventTrigEMCALL1Gamma1 ;   // Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA
+	Bool_t           fEventTrigEMCALL1Gamma2 ;   // Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA  
+	Bool_t           fEventTrigEMCALL1Jet1 ;     // Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA
+	Bool_t           fEventTrigEMCALL1Jet2 ;     // Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA  
 	
-  AliCalorimeterUtils * fCaloUtils ;        //  Pointer to CalorimeterUtils
+	Int_t            fBitEGA;                    // Trigger bit on VCaloTrigger for EGA
+	Int_t            fBitEJE;                    // Trigger bit on VCaloTrigger for EJE
+	
+  Bool_t           fAnaLED;                    // Analyze LED data only.
 
-  AliMixedEvent  * fMixedEvent  ;           //! mixed event object. This class is not the owner
-  Int_t            fNMixedEvent ;           // number of events in mixed event buffer
-  Double_t      ** fVertex      ;           //! vertex array 3 dim for each mixed event buffer
-  
-  TList **         fListMixedTracksEvents ; //! Container for tracks stored for different events, used in case of own mixing, set in analysis class
-  TList **         fListMixedCaloEvents;    //! Container for photon stored for different events, used in case of own mixing, set in analysis class
-  Int_t            fLastMixedTracksEvent  ; //  Temporary container with the last event added to the mixing list for tracks
-  Int_t            fLastMixedCaloEvent ;    //  Temporary container with the last event added to the mixing list for photons
-  
-  Bool_t           fWriteOutputDeltaAOD;    // Write the created delta AOD objects into file  
-	Bool_t           fOldAOD;                 // Old AODs, before revision 4.20
-  
-  Int_t            fV0ADC[2]    ;           // Integrated V0 signal
-  Int_t            fV0Mul[2]    ;           // Integrated V0 Multiplicity
+  TString          fTaskName;                  // Name of task that executes the analysis
+	
+  AliCalorimeterUtils * fCaloUtils ;           //  Pointer to CalorimeterUtils
 
-  Bool_t           fCaloFilterPatch;        // CaloFilter patch
-  TString          fEMCALClustersListName;  // Alternative list of clusters produced elsewhere and not from InputEvent
+  AliMixedEvent  * fMixedEvent  ;              //! mixed event object. This class is not the owner
+  Int_t            fNMixedEvent ;              // number of events in mixed event buffer
+  Double_t      ** fVertex      ;              //! vertex array 3 dim for each mixed event buffer
+  
+  TList **         fListMixedTracksEvents ;    //! Container for tracks stored for different events, used in case of own mixing, set in analysis class
+  TList **         fListMixedCaloEvents;       //! Container for photon stored for different events, used in case of own mixing, set in analysis class
+  Int_t            fLastMixedTracksEvent  ;    //  Temporary container with the last event added to the mixing list for tracks
+  Int_t            fLastMixedCaloEvent ;       //  Temporary container with the last event added to the mixing list for photons
+  
+  Bool_t           fWriteOutputDeltaAOD;       // Write the created delta AOD objects into file  
+	Bool_t           fOldAOD;                    // Old AODs, before revision 4.20
+  
+  Int_t            fV0ADC[2]    ;              // Integrated V0 signal
+  Int_t            fV0Mul[2]    ;              // Integrated V0 Multiplicity
+
+  Bool_t           fCaloFilterPatch;           // CaloFilter patch
+  TString          fEMCALClustersListName;     // Alternative list of clusters produced elsewhere and not from InputEvent
   
   // Event selection
   Float_t          fZvtxCut ;	                   // Cut on vertex position
@@ -662,19 +689,19 @@ public:
   Bool_t           fRecalculateVertexBC;         // Recalculate vertex BC from tracks pointing to vertex
   
   //Centrality/Event plane
-  TString          fCentralityClass;        // Name of selected centrality class     
-  Int_t            fCentralityOpt;          // Option for the returned value of the centrality, possible options 5, 10, 100
-  Int_t            fCentralityBin[2];       // Minimum and maximum value of the centrality for the analysis
-  TString          fEventPlaneMethod;       // Name of event plane method, by default "Q"
+  TString          fCentralityClass;            // Name of selected centrality class     
+  Int_t            fCentralityOpt;              // Option for the returned value of the centrality, possible options 5, 10, 100
+  Int_t            fCentralityBin[2];           // Minimum and maximum value of the centrality for the analysis
+  TString          fEventPlaneMethod;           // Name of event plane method, by default "Q"
   
-  Bool_t           fImportGeometryFromFile; // Import geometry settings in geometry.root file
-  TString          fImportGeometryFilePath; // path fo geometry.root file
+  Bool_t           fImportGeometryFromFile;     // Import geometry settings in geometry.root file
+  TString          fImportGeometryFilePath;     // path fo geometry.root file
 
-  
+	
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,55)
+  ClassDef(AliCaloTrackReader,56)
   
 } ;
 
