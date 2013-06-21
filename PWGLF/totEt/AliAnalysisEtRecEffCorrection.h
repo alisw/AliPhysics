@@ -44,8 +44,8 @@ public:
     }
 
 
-    TH2F ReconstructionEfficiency() const {
-      return *fRecoEff;
+    TH2F *ReconstructionEfficiency() const {
+      return fRecoEff;
     }
     Double_t ReconstructionEfficiency(float energy, int cent) const;
 
