@@ -42,6 +42,7 @@ set ( SRCS
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractV0pPb.cxx
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractV0AOD.cxx
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
+  STRANGENESS/LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
   STRANGENESS/Cascades/AliAnalysisTaskExtractCascade.cxx
   STRANGENESS/Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
