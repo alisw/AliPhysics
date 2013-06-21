@@ -95,7 +95,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDplustoKpipi->SetPtBins(nptbins,ptlimits);
   cutsDplustoKpipi->SetCuts(14,cutsArrayDplustoKpipi);
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
-  cutsDplustoKpipi->SetMinPtCandidate(1000.); // D+ off to save spave
+  cutsDplustoKpipi->SetMinPtCandidate(1.);
   vHF->SetCutsDplustoKpipi(cutsDplustoKpipi);
   AliRDHFCutsDstoKKpi *cutsDstoKKpi = new AliRDHFCutsDstoKKpi("CutsDstoKKpi");
   cutsDstoKKpi->SetStandardCutsPbPb2010();
