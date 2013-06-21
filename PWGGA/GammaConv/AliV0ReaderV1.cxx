@@ -73,7 +73,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
     fCreateAOD(kFALSE),
     fDeltaAODBranchName("GammaConv"),
     fDeltaAODFilename("AliAODGammaConversion.root"),
-    fCheckAODConsistenty(kFALSE),
+    fRelabelAODs(kFALSE),
     fEventIsSelected(kFALSE),
     fPeriodName("")
 {
@@ -314,29 +314,6 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
 	    fCurrentMotherKFCandidate=ReconstructV0(fCurrentV0,currentV0Index);
 
 	    if(fCurrentMotherKFCandidate){
-
-               //Bool_t aodV0Found = kFALSE;
-               if(AODEvent() && fCheckAODConsistenty){
-                  // for(Int_t i = 0; i<AODEvent()->GetNumberOfV0s();i++){
-                  //    AliAODv0 *currebtAODV0 = AODEvent()->GetV0(i);
-                  //    cout<<currebtAODV0->GetID()<<endl;
-                  //    if(currebtAODV0->GetID() == currentV0Index)
-                  //       aodV0Found = kTRUE;
-                  // }
-                  // if(!aodV0Found)
-                  //    AliError(Form("AODV0 not Found belonging to ESDV0 %i",currentV0Index));
-                  
-                  
-                  if(!(fConversionCuts->GetTrack(AODEvent(),fCurrentMotherKFCandidate->GetTrackLabelPositive())) || !(fConversionCuts->GetTrack(AODEvent(),fCurrentMotherKFCandidate->GetTrackLabelNegative()))){
-                     fConversionGammas->Delete(); // Reset Gamma Array
-                     AliError(Form("AOD Tracks not found for current ESD V0!!! V0 index %i, posESDtrack %i negESDtrack %i, Run Number: %i, Period Number: %i, NTracks: ESD %i AOD %i",
-                                   currentV0Index,
-                                   fCurrentMotherKFCandidate->GetTrackLabelPositive(),fCurrentMotherKFCandidate->GetTrackLabelNegative(),
-                                   fInputEvent->GetRunNumber(),fInputEvent->GetPeriodNumber(),
-                                   fInputEvent->GetNumberOfTracks(),AODEvent()->GetNumberOfTracks()));
-                     return kTRUE;
-                  }
-               }
 		// Add Gamma to the TClonesArray
 
 		if(kUseAODConversionPhoton){
@@ -758,6 +735,7 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
            for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
               gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
               if(gamma){
+                 if(fRelabelAODs)RelabelAODPhotonCandidates(gamma);
                  if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
                     new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
               }
@@ -785,6 +763,41 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
 	}
     }
 }
+//________________________________________________________________________
+void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
+
+   // Relabeling For AOD Event
+   // ESDiD -> AODiD
+   // MCLabel -> AODMCLabel
+   Bool_t AODLabelPos = kFALSE;
+   Bool_t AODLabelNeg = kFALSE;
+      
+   for(Int_t i = 0; i<fInputEvent->GetNumberOfTracks();i++){
+      AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
+      if(!AODLabelPos){
+         if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
+            PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+            PhotonCandidate->SetLabelPositive(i);
+            AODLabelPos = kTRUE;
+         }
+      }
+      if(!AODLabelNeg){
+         if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
+            PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+            PhotonCandidate->SetLabelNegative(i);
+            AODLabelNeg = kTRUE;
+         }
+      }
+      if(AODLabelNeg && AODLabelPos){
+         return;
+      }
+   }
+   if(!AODLabelPos || !AODLabelNeg){
+      AliError(Form("NO AOD Daughters Found Pos: %i %i Neg: %i %i",AODLabelPos,PhotonCandidate->GetTrackLabelPositive(),AODLabelNeg,PhotonCandidate->GetTrackLabelNegative()));
+   }
+   
+}
+
 //________________________________________________________________________
 void AliV0ReaderV1::Terminate(Option_t *)
 {
