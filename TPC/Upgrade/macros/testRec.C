@@ -46,7 +46,7 @@ void testRec(const char* filename="toyMC.root", Int_t nmaxEv=-1)
   debugName.ReplaceAll(".root","");
   debugName.Append(".debug.root");
   
-  gSystem->Exec(Form("rm %s", debugName.Data()));
+  gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
   if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
   
   gROOT->cd();
@@ -440,10 +440,12 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
 //     ret=AliTrackerBase::PropagateTrackTo2(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
     if (ret<0) {
       (*fStreamer) << "np" <<
-      "iev="    << fEvent <<
-      "itr="    << fTrack <<
-      "track.=" << tr     <<
-      "seed.="  << track  <<
+      "iev="      << fEvent <<
+      "itr="      << fTrack <<
+      "track.="   << tr     <<
+      "seed.="    << track  <<
+      "clsType="  << clsType <<
+      "corrType=" << corrType <<
       "\n";
       printf("Could not propagate track: %d\n",ret);
       break;
@@ -473,7 +475,7 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
 //   AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp);
 //   ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp);
   printf("Propagation to 0 stopped at %.2f with %d\n",track->GetX(),ret);
-  
+  track->Rotate(tr->GetAlpha());
   return track;
 }
 
@@ -499,7 +501,7 @@ void testResolution(const char* filename, Int_t nmaxEv=-1)
   debugName.ReplaceAll(".root","");
   debugName.Append(".testRes.root");
   
-  gSystem->Exec(Form("rm %s", debugName.Data()));
+  gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
   if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
   
   gROOT->cd();
