@@ -550,7 +550,7 @@ void AliITSU::Hits2Digits()
   //
   for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
     rl->GetEvent(iEvent);
-    if (!fLoader->TreeS()) fLoader->MakeTree("S");
+    if (!fLoader->TreeD()) fLoader->MakeTree("D");
     MakeBranch("D");
     SetTreeAddress();
     Hits2Digits(iEvent,0," "," ");
