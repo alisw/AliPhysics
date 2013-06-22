@@ -1513,8 +1513,8 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Int
       double xClus = sens->GetXTF()+clus->GetX();
       if (!transportedToLayer) {
 	if (ilr!=lrStart && !TransportToLayerX(&tmpTr,lrStart,ilr,xClus)) {
-	  AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 #ifdef _ITSU_DEBUG_
+	  AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 	  AliDebug(2,Form("Failed to transport %d -> %d | ESDtrack#%d (MClb:%d)\n",lrStart,ilr,trESD->GetID(),trESD->GetTPCLabel()));
 #endif
 	  return -1; // go to the entrance to the layer
@@ -1530,8 +1530,8 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Int
 #endif
       //
       if (!PropagateSeed(&tmpTr,xClus,fCurrMass)) {
-	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 #ifdef _ITSU_DEBUG_
+	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 	AliDebug(2,Form("Failed on propagate to %f (dir=%d) | ESDtrack#%d (MClb:%d)",xClus,dir,trESD->GetID(),trESD->GetTPCLabel()));
 #endif
 	return -1;
@@ -1560,8 +1560,8 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Int
 #endif  
       //      
       if ( !tmpTr.Update(p,cov) ) {
-	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 #ifdef _ITSU_DEBUG_
+	AliESDtrack* trESD = fCurrHyp->GetESDTrack();
 	AliDebug(2,Form("Failed on Update | ESDtrack#%d (MClb:%d)",trESD->GetID(),trESD->GetTPCLabel()));
 #endif
 	return -1;
