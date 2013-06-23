@@ -64,7 +64,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
-  static const Int_t fEDbins   = 1;
+  static const Int_t fEDbins   = 2;
   static const Int_t fCentBins = 10;// 0-50%
   static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
 
