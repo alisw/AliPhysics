@@ -39,7 +39,7 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   void                SetJetsName(const char *n)                   { fJetsName       = n; AddJetContainer(n); }
   virtual void                SetRhoName(const char *n, Int_t c = 0);
 
-  void                        AddJetContainer(const char *n, TString defaultCutType = "");
+  void                        AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
   void                        RemoveJetContainer(Int_t i)          { fJetCollArray.RemoveAt(i);} 
 
   AliJetContainer            *GetJetContainer(Int_t i)                const;

@@ -41,20 +41,68 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fRandCaloClusters(0),
   fEmbeddedClusterNIds(0),
   fEmbeddedTrackNIds(0),
-  fHistRCPhiEta(0),
+  fHistRCPhiEta(0), 
+  fHistRCPt(0),
+  fHistRCPtExLJ(0),
+  fHistRCPtExPartialLJ(0), 
+  fHistRCPtRand(0),
+  fHistRhoVSRCPt(0),
+  fHistDeltaPtRC(0),
+  fHistDeltaPtRCExLJ(0),
+  fHistDeltaPtRCExPartialLJ(0),
+  fHistDeltaPtRCRand(0),
+  fHistEmbNotFoundPt(0),
+  fHistEmbNotFoundPhiEta(0),
+  fHistEmbRejectedJetsPhiEta(0),
+  fHistEmbRejectedJetsPtArea(0),
+  fHistEmbJetsPtArea(0),
+  fHistEmbJetsCorrPtArea(0),
+  fHistEmbPartPtvsJetPt(0),
+  fHistEmbPartPtvsJetCorrPt(0),
+  fHistJetPtvsJetCorrPt(0),
+  fHistDistLeadPart2JetAxis(0),
+  fHistEmbBkgArea(0),
+  fHistRhoVSEmbBkg(0),
+  fHistDeltaPtEmbArea(0),
   fHistRCPtExLJVSDPhiLJ(0),
+  fHistRCPtExPartialLJVSDPhiLJ(0),
   fHistEmbJetsPhiEta(0),
   fHistLeadPartPhiEta(0)
 {
   // Default constructor.
 
-  for (Int_t i = 0; i < 4; i++) {
+  fHistRCPt = new TH1*[fNcentBins];
+  fHistRCPtExLJ = new TH1*[fNcentBins];
+  fHistRCPtExPartialLJ = new TH1*[fNcentBins];
+  fHistRCPtRand = new TH1*[fNcentBins];
+  fHistRhoVSRCPt = new TH2*[fNcentBins];
+  fHistDeltaPtRC = new TH1*[fNcentBins];
+  fHistDeltaPtRCExLJ = new TH1*[fNcentBins];
+  fHistDeltaPtRCExPartialLJ = new TH1*[fNcentBins];
+  fHistDeltaPtRCRand = new TH1*[fNcentBins];
+  fHistEmbNotFoundPt = new TH1*[fNcentBins];
+  fHistEmbNotFoundPhiEta = new TH2*[fNcentBins];
+  fHistEmbRejectedJetsPhiEta = new TH2*[fNcentBins];
+  fHistEmbRejectedJetsPtArea = new TH1*[fNcentBins];
+  fHistEmbJetsPtArea = new TH3*[fNcentBins];
+  fHistEmbJetsCorrPtArea = new TH3*[fNcentBins];
+  fHistEmbPartPtvsJetPt = new TH2*[fNcentBins];
+  fHistEmbPartPtvsJetCorrPt = new TH2*[fNcentBins];
+  fHistJetPtvsJetCorrPt = new TH2*[fNcentBins];
+  fHistDistLeadPart2JetAxis = new TH1*[fNcentBins];
+  fHistEmbBkgArea = new TH2*[fNcentBins];
+  fHistRhoVSEmbBkg = new TH2*[fNcentBins];
+  fHistDeltaPtEmbArea = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
     fHistRCPt[i] = 0;
     fHistRCPtExLJ[i] = 0;
-    fHistRCPtRand[i] = 0; 
+    fHistRCPtExPartialLJ[i] = 0;
+    fHistRCPtRand[i] = 0;
     fHistRhoVSRCPt[i] = 0;
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
+    fHistDeltaPtRCExPartialLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
     fHistEmbRejectedJetsPhiEta[i] = 0;
     fHistEmbRejectedJetsPtArea[i] = 0;
@@ -95,20 +143,68 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fRandCaloClusters(0),
   fEmbeddedClusterNIds(0),
   fEmbeddedTrackNIds(0),
-  fHistRCPhiEta(0),
+  fHistRCPhiEta(0), 
+  fHistRCPt(0),
+  fHistRCPtExLJ(0),
+  fHistRCPtExPartialLJ(0), 
+  fHistRCPtRand(0),
+  fHistRhoVSRCPt(0),
+  fHistDeltaPtRC(0),
+  fHistDeltaPtRCExLJ(0),
+  fHistDeltaPtRCExPartialLJ(0),
+  fHistDeltaPtRCRand(0),
+  fHistEmbNotFoundPt(0),
+  fHistEmbNotFoundPhiEta(0),
+  fHistEmbRejectedJetsPhiEta(0),
+  fHistEmbRejectedJetsPtArea(0),
+  fHistEmbJetsPtArea(0),
+  fHistEmbJetsCorrPtArea(0),
+  fHistEmbPartPtvsJetPt(0),
+  fHistEmbPartPtvsJetCorrPt(0),
+  fHistJetPtvsJetCorrPt(0),
+  fHistDistLeadPart2JetAxis(0),
+  fHistEmbBkgArea(0),
+  fHistRhoVSEmbBkg(0),
+  fHistDeltaPtEmbArea(0),
   fHistRCPtExLJVSDPhiLJ(0),
+  fHistRCPtExPartialLJVSDPhiLJ(0),
   fHistEmbJetsPhiEta(0),
   fHistLeadPartPhiEta(0)
 {
   // Standard constructor.
 
-  for (Int_t i = 0; i < 4; i++) {
+  fHistRCPt = new TH1*[fNcentBins];
+  fHistRCPtExLJ = new TH1*[fNcentBins];
+  fHistRCPtExPartialLJ = new TH1*[fNcentBins];
+  fHistRCPtRand = new TH1*[fNcentBins];
+  fHistRhoVSRCPt = new TH2*[fNcentBins];
+  fHistDeltaPtRC = new TH1*[fNcentBins];
+  fHistDeltaPtRCExLJ = new TH1*[fNcentBins];
+  fHistDeltaPtRCExPartialLJ = new TH1*[fNcentBins];
+  fHistDeltaPtRCRand = new TH1*[fNcentBins];
+  fHistEmbRejectedJetsPhiEta = new TH2*[fNcentBins];
+  fHistEmbNotFoundPt = new TH1*[fNcentBins];
+  fHistEmbNotFoundPhiEta = new TH2*[fNcentBins];
+  fHistEmbRejectedJetsPtArea = new TH1*[fNcentBins];
+  fHistEmbJetsPtArea = new TH3*[fNcentBins];
+  fHistEmbJetsCorrPtArea = new TH3*[fNcentBins];
+  fHistEmbPartPtvsJetPt = new TH2*[fNcentBins];
+  fHistEmbPartPtvsJetCorrPt = new TH2*[fNcentBins];
+  fHistJetPtvsJetCorrPt = new TH2*[fNcentBins];
+  fHistDistLeadPart2JetAxis = new TH1*[fNcentBins];
+  fHistEmbBkgArea = new TH2*[fNcentBins];
+  fHistRhoVSEmbBkg = new TH2*[fNcentBins];
+  fHistDeltaPtEmbArea = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
     fHistRCPt[i] = 0;
     fHistRCPtExLJ[i] = 0;
-    fHistRCPtRand[i] = 0; 
+    fHistRCPtExPartialLJ[i] = 0;
+    fHistRCPtRand[i] = 0;
     fHistRhoVSRCPt[i] = 0;
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
+    fHistDeltaPtRCExPartialLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
     fHistEmbRejectedJetsPhiEta[i] = 0;
     fHistEmbRejectedJetsPtArea[i] = 0;
@@ -155,6 +251,11 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistRCPtExLJVSDPhiLJ->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
       fHistRCPtExLJVSDPhiLJ->GetYaxis()->SetTitle("#Delta#phi");
       fOutput->Add(fHistRCPtExLJVSDPhiLJ);
+
+      fHistRCPtExPartialLJVSDPhiLJ = new TH2F("fHistRCPtExPartialLJVSDPhiLJ","fHistRCPtExPartialLJVSDPhiLJ", fNbins, fMinBinPt, fMaxBinPt, 128, -1.6, 4.8);
+      fHistRCPtExPartialLJVSDPhiLJ->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fHistRCPtExPartialLJVSDPhiLJ->GetYaxis()->SetTitle("#Delta#phi");
+      fOutput->Add(fHistRCPtExPartialLJVSDPhiLJ);
     }
   }
 
@@ -216,6 +317,20 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 	fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
 	fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
 	fOutput->Add(fHistDeltaPtRCExLJ[i]);
+
+        histname = "fHistRCPtExPartialLJ_";
+        histname += i;
+        fHistRCPtExPartialLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
+        fHistRCPtExPartialLJ[i]->GetXaxis()->SetTitle("#it{p}_{T}^{RC} (GeV/#it{c})");
+        fHistRCPtExPartialLJ[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistRCPtExPartialLJ[i]);
+
+        histname = "fHistDeltaPtRCExPartialLJ_";
+        histname += i;
+        fHistDeltaPtRCExPartialLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+        fHistDeltaPtRCExPartialLJ[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
+        fHistDeltaPtRCExPartialLJ[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistDeltaPtRCExPartialLJ[i]);
       }
     }
 
@@ -397,6 +512,27 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
 	  fHistRCPtExLJ[fCentBin]->Fill(RCpt);
 	  fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
 	}
+
+        //partial exclusion
+        if(fBeamType == kpA) {
+
+          RCpt = 0;
+          RCeta = 0;
+          RCphi = 0;
+          GetRandomCone(RCpt, RCeta, RCphi, jet,0,0,kTRUE);
+
+          if (RCpt > 0) {
+            if (jet) {
+              Float_t dphi = RCphi - jet->Phi();
+              if (dphi > 4.8) dphi -= TMath::Pi() * 2;
+              if (dphi < -1.6) dphi += TMath::Pi() * 2;
+              fHistRCPtExPartialLJVSDPhiLJ->Fill(RCpt, dphi);
+            }
+            fHistRCPtExPartialLJ[fCentBin]->Fill(RCpt);
+            fHistDeltaPtRCExPartialLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+          }
+	}
+
       }
     }
   }
@@ -638,7 +774,8 @@ AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Int_t i)
 
 //________________________________________________________________________
 void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &phi,
-					AliEmcalJet *jet, TClonesArray* tracks, TClonesArray* clusters) const
+					   AliEmcalJet *jet, TClonesArray* tracks, TClonesArray* clusters,
+					   Bool_t bPartialExclusion) const
 {
   // Get rigid cone.
 
@@ -673,12 +810,29 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
   
   Float_t dLJ = 0;
   Int_t repeats = 0;
+  Bool_t reject = kTRUE;
   do {
     eta = gRandom->Rndm() * (maxEta - minEta) + minEta;
     phi = gRandom->Rndm() * (maxPhi - minPhi) + minPhi;
     dLJ = TMath::Sqrt((LJeta - eta) * (LJeta - eta) + (LJphi - phi) * (LJphi - phi));
+
+    if(bPartialExclusion) {
+      reject = kFALSE;
+
+      TRandom3 rnd;
+      rnd.SetSeed(0);
+
+      Double_t ncoll = GetNColl();
+
+      Double_t prob = 0.;
+      if(ncoll>0)
+        prob = 1./ncoll;
+
+      if(rnd.Rndm()<=prob) reject = kTRUE; //reject cone
+    }
+
     repeats++;
-  } while (dLJ < fMinRC2LJ && repeats < 999);
+  } while (dLJ < fMinRC2LJ && repeats < 999 && reject);
 
   if (repeats == 999) {
     AliWarning(Form("%s: Could not get random cone!", GetName()));
@@ -824,6 +978,36 @@ void AliAnalysisTaskDeltaPt::ExecOnce()
     fMinRC2LJ = maxDist;
   }
 }
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskDeltaPt::GetNColl() const {
+  // Get NColl - returns value of corresponding bin
+  // only works for pA
+  // values taken from V0A slicing https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Tables_with_centrality_bins_from
+
+  if(fBeamType == kpA) {
+
+    const Int_t nNCollBins = 7;
+
+    Double_t centMin[nNCollBins] = {0.,5.,10.,20.,40.,60.,80.};
+    Double_t centMax[nNCollBins] = {5.,10.,20.,40.,60.,80.,100.};
+
+    Double_t nColl[nNCollBins] = {14.7,13.,11.7,9.38,6.49,3.96,1.52};
+
+    for(Int_t i = 0; i<nNCollBins; i++) {
+      if(fCent>=centMin[i] && fCent<centMax[i])
+	return nColl[i];
+    }
+
+    return -1.;
+  }
+  else {
+    AliWarning(Form("%s: Only works for pA analysis. Returning -1",GetName()));
+    return -1.;
+  }
+
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskDeltaPt::Terminate(Option_t *) 

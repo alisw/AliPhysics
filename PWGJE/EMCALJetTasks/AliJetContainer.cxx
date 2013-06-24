@@ -42,7 +42,8 @@ AliJetContainer::AliJetContainer():
   fNLeadingJets(1),
   fJetBitMap(0),
   fRho(0),
-  fGeom(0)
+  fGeom(0),
+  fRunNumber(0)
 {
   // Default constructor.
 
@@ -69,7 +70,8 @@ AliJetContainer::AliJetContainer(const char *name):
   fNLeadingJets(1),
   fJetBitMap(0),
   fRho(0),
-  fGeom(0)
+  fGeom(0),
+  fRunNumber(0)
 {
   // Standard constructor.
 
@@ -86,14 +88,18 @@ void AliJetContainer::SetJetArray(AliVEvent *event)
 {
   // Set jet array
 
-  //  SetArray(event, fClArrayName.GetName(), "AliEmcalJet");
   SetArray(event, "AliEmcalJet");
 
-  if(fJetAcceptanceType==kTPC)
+  if(fJetAcceptanceType==kTPC) {
+    AliDebug(2,Form("%s: set TPC acceptance cuts",GetName()));
     SetJetEtaPhiTPC();
-  else if(fJetAcceptanceType==kEMCAL)
+  }
+  else if(fJetAcceptanceType==kEMCAL) {
+    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
     SetJetEtaPhiEMCAL();
+ }
 }
+
 
 //________________________________________________________________________
 void AliJetContainer::SetEMCALGeometry() {
@@ -222,10 +228,15 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
   if(!fGeom) SetEMCALGeometry();
   if(fGeom) {
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
-    SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+
+    if(fRunNumber>=177295 && fRunNumber<=197470) //small SM masked in 2012 and 2013
+      SetJetPhiLimits(1.4+fJetRadius,TMath::Pi()-fJetRadius);
+    else
+      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+
   }
   else {
-    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings");
+    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
     SetJetEtaLimits(-0.7+fJetRadius,0.7-fJetRadius);
     SetJetPhiLimits(1.4+fJetRadius,TMath::Pi()-fJetRadius);
   }
@@ -235,9 +246,9 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
 //________________________________________________________________________
 void AliJetContainer::SetJetEtaPhiTPC()
 {
-  //Set default cuts for full jets
+  //Set default cuts for charged jets
 
-  SetJetEtaLimits(-0.5, 0.5);
+  SetJetEtaLimits(-0.9+fJetRadius, 0.9-fJetRadius);
   SetJetPhiLimits(-10, 10);
 
 }
