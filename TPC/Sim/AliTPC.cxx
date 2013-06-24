@@ -75,9 +75,11 @@
 #include "AliTPCDDLRawData.h"
 #include "AliLog.h"
 #include "AliTPCcalibDB.h"
+#include "AliTPCRecoParam.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCExB.h"
+#include "AliTPCCorrection.h"
 #include "AliCTPTimeParams.h"
 #include "AliRawReader.h"
 #include "AliTPCRawStreamV3.h"
@@ -2003,8 +2005,11 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   //        Global coordinate frame:
   //          1. Skip electrons if attached  
   //          2. ExB effect in drift volume
-  //             a.) Simulation   calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
-  //             b.) Reconstruction -  calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+  //             a.) Simulation   calib->GetExB()->CorrectInverse(dxyz0,dxyz1); (applied on the el. level)
+  //             b.) Reconstruction -  calib->GetExB()->Correct(dxyz0,dxyz1);   (applied on the space point)
+  //             changed to the full distrotion (not only due to the ExB)
+  //             aNew.)  correction->DistortPoint(distPoint, sector);
+  //             bNew.)  correction->CorrectPoint(distPoint, sector);
   //          3. Generation of gas gain (Random - Exponential distribution) 
   //          4. TransportElectron function (diffusion)
   //
@@ -2019,12 +2024,30 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   // Origin: Marian Ivanov,  marian.ivanov@cern.ch
   //-----------------------------------------------------------------
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
-  if (gAlice){ // Set correctly the magnetic field in the ExB calculation
-    if (!calib->GetExB()){
-      AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField()); 
-      if (field) {
-	calib->SetExBField(field);
+
+  AliTPCCorrection * correctionDist = calib->GetTPCComposedCorrection();  
+
+  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
+
+//  AliWarning(Form("Flag for ExB correction \t%d",tpcrecoparam->GetUseExBCorrection())); 
+//  AliWarning(Form("Flag for Composed correction \t%d",calib->GetRecoParam()->GetUseComposedCorrection()));
+
+  if (tpcrecoparam->GetUseExBCorrection()) {
+    if (gAlice){ // Set correctly the magnetic field in the ExB calculation
+      if (!calib->GetExB()){
+        AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField()); 
+        if (field) {
+	  calib->SetExBField(field);
+        }
       }
+    }
+  } else if (tpcrecoparam->GetUseComposedCorrection()) {
+    AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField(); 
+    Double_t bzpos[3]={0,0,0};
+    if (!correctionDist) correctionDist = calib->GetTPCComposedCorrection(field->GetBz(bzpos));
+
+    if (!correctionDist){
+      AliFatal("Correction map does not exist. Check the OCDB or your setup");
     }
   }
 
@@ -2149,21 +2172,32 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	//
 	// ExB effect
 	//
-	Double_t dxyz0[3],dxyz1[3];
-	dxyz0[0]=tpcHit->X();
-	dxyz0[1]=tpcHit->Y();
-	dxyz0[2]=tpcHit->Z(); 	
-	if (calib->GetExB()){
-	  calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
-	}else{
-	  AliError("Not valid ExB calibration");
-	  dxyz1[0]=tpcHit->X();
-	  dxyz1[1]=tpcHit->Y();
-	  dxyz1[2]=tpcHit->Z(); 	
-	}
-	xyz[0]=dxyz1[0];
-	xyz[1]=dxyz1[1];
-	xyz[2]=dxyz1[2]; 	
+        if (tpcrecoparam->GetUseExBCorrection()) {
+	  Double_t dxyz0[3],dxyz1[3];
+	  dxyz0[0]=tpcHit->X();
+	  dxyz0[1]=tpcHit->Y();
+	  dxyz0[2]=tpcHit->Z(); 	
+	  if (calib->GetExB()){
+	    calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+	  }else{
+	    AliError("Not valid ExB calibration");
+	    dxyz1[0]=tpcHit->X();
+	    dxyz1[1]=tpcHit->Y();
+	    dxyz1[2]=tpcHit->Z(); 	
+	  }
+	  xyz[0]=dxyz1[0];
+	  xyz[1]=dxyz1[1];
+	  xyz[2]=dxyz1[2]; 	
+        } else if (tpcrecoparam->GetUseComposedCorrection()) {
+        //      Use combined correction/distortion  class AliTPCCorrection
+          if (correctionDist){
+            Float_t distPoint[3]={tpcHit->X(),tpcHit->Y(), tpcHit->Z()};
+            correctionDist->DistortPoint(distPoint, isec);
+            xyz[0]=distPoint[0];
+            xyz[1]=distPoint[1];
+            xyz[2]=distPoint[2];
+           }      
+        }
 	//
 	//
 	//
@@ -2182,41 +2216,43 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	// xyz[1] - pad coordinate
 	// xyz[2] - is in now time bin coordinate system
 	Float_t correction =0;
-	if (calib->GetPadTime0()){
-	  if (!calib->GetPadTime0()->GetCalROC(isec)) continue;	  
-	  Int_t npads = fTPCParam->GetNPads(isec,padrow);
-	  //	  Int_t pad  = TMath::Nint(xyz[1]+fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]))*0.5);
-	  // pad numbering from -npads/2 .. npads/2-1
-	  Int_t pad  = TMath::Nint(xyz[1]+npads/2);
-	  if (pad<0) pad=0;
-	  if (pad>=npads) pad=npads-1;
-	  correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(padrow,pad);
-	  //	  printf("%d\t%d\t%d\t%f\n",isec,padrow,pad,correction);
-	  if (fDebugStreamer){
-	    (*fDebugStreamer)<<"Time0"<<
-	      "isec="<<isec<<
-	      "padrow="<<padrow<<
-	      "pad="<<pad<<
-	      "x0="<<xyz[0]<<
-	      "x1="<<xyz[1]<<
-	      "x2="<<xyz[2]<<
-	      "hit.="<<tpcHit<<
-	      "cor="<<correction<<
-	      "\n";
+	if (tpcrecoparam->GetUseExBCorrection()) {
+          if (calib->GetPadTime0()){
+	    if (!calib->GetPadTime0()->GetCalROC(isec)) continue;	  
+	    Int_t npads = fTPCParam->GetNPads(isec,padrow);
+	    //	  Int_t pad  = TMath::Nint(xyz[1]+fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]))*0.5);
+	    // pad numbering from -npads/2 .. npads/2-1
+	    Int_t pad  = TMath::Nint(xyz[1]+npads/2);
+	    if (pad<0) pad=0;
+	    if (pad>=npads) pad=npads-1;
+	    correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(padrow,pad);
+	    //	  printf("%d\t%d\t%d\t%f\n",isec,padrow,pad,correction);
+	    if (fDebugStreamer){
+	      (*fDebugStreamer)<<"Time0"<<
+	        "isec="<<isec<<
+	        "padrow="<<padrow<<
+	        "pad="<<pad<<
+	        "x0="<<xyz[0]<<
+	        "x1="<<xyz[1]<<
+	        "x2="<<xyz[2]<<
+	        "hit.="<<tpcHit<<
+	        "cor="<<correction<<
+	        "\n";
+	    }
 	  }
-	}
+        }
         if (AliTPCcalibDB::Instance()->IsTrgL0()){  
-         // Modification 14.03
-         // distinguish between the L0 and L1 trigger as it is done in the reconstruction
-         // by defualt we assume L1 trigger is used - make a correction in case of  L0
-         AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
-         if (ctp){
-           //for TPC standalone runs no ctp info
-           Double_t delay = ctp->GetDelayL1L0()*0.000000025;
-           xyz[2]+=delay/fTPCParam->GetTSample();  // adding the delay (in the AliTPCTramsform opposite sign)
-         }
-       }
-	xyz[2]+=correction;
+          // Modification 14.03
+          // distinguish between the L0 and L1 trigger as it is done in the reconstruction
+          // by defualt we assume L1 trigger is used - make a correction in case of  L0
+          AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+          if (ctp){
+            //for TPC standalone runs no ctp info
+            Double_t delay = ctp->GetDelayL1L0()*0.000000025;
+            xyz[2]+=delay/fTPCParam->GetTSample();  // adding the delay (in the AliTPCTramsform opposite sign)
+          }
+        }
+	if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
 	xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
 	//
 	// Electron track time (for pileup simulation)
