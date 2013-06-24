@@ -42,7 +42,7 @@ AliAnalysisTask *AddTask_mwinn_JPsiMCcontrol(){
   //add dielectron analysis with different cuts to the task
   cout << "!!!!!!!!!!!! nDie = " << nDie << endl;
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi2eeMC(i);
+    AliDielectron *jpsi=ConfigJpsi_mw_pPb_MC(i);
     if (!jpsi) continue;
     task->AddDielectron(jpsi);
 //    printf("add: %s\n",jpsi->GetName());
