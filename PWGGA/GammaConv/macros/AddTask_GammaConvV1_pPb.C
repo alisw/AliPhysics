@@ -87,7 +87,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
    task->SetIsHeavyIon(2);
    task->SetIsMC(isMC);
    // Cut Numbers to use in Analysis
-   Int_t numberOfCuts = 6;
+   Int_t numberOfCuts = 5;
 
    TString *cutarray = new TString[numberOfCuts];
    TString *mesonCutArray = new TString[numberOfCuts];
@@ -97,47 +97,36 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       // Shifting in pPb direction
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
-      cutarray[ 0] = "8000000082093172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb 00-100 Midrapidity
-      cutarray[ 1] = "8020000082093172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb 00-20 Midrapidity
-      cutarray[ 2] = "8240000082093172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb 20-40 Midrapidity
-      cutarray[ 3] = "8460000082093172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb 40-60 Midrapidity
-      cutarray[ 4] = "8600000082093172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb 60-100 Midrapidity
-      cutarray[ 5] = "8000000082093172003290000"; mesonCutArray[ 5] = "01620045000";  //standard cut Pi0 pPb0-100 Midrapidity open y cut
+      cutarray[ 0] = "8000000080093172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 1] = "8000000081093172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 2] = "8000000083093172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 3] = "8000000084093172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 4] = "8000000085093172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb RCut Changed      
    } else if (trainConfig == 2) { 
-      // no shifting
-      cutarray[ 0] = "8000000072093172003290000"; mesonCutArray[ 0] = "01627045000";  //standard cut Pi0 pPb 00-100 Fwd (PHOS) rapidity
-      cutarray[ 1] = "8020000072093172003290000"; mesonCutArray[ 1] = "01627045000";  //standard cut Pi0 pPb 00-20 Fwd (PHOS) rapidity
-      cutarray[ 2] = "8240000072093172003290000"; mesonCutArray[ 2] = "01627045000";  //standard cut Pi0 pPb 20-40 Fwd (PHOS) rapidity
-      cutarray[ 3] = "8460000072093172003290000"; mesonCutArray[ 3] = "01627045000";  //standard cut Pi0 pPb 40-60 Fwd (PHOS) rapidity
-      cutarray[ 4] = "8600000072093172003290000"; mesonCutArray[ 4] = "01627045000";  //standard cut Pi0 pPb 60-100 Fwd (PHOS) rapidity
-      cutarray[ 5] = "8000000072093172003290000"; mesonCutArray[ 5] = "01620045000";  //standard cut Pi0 pPb 00-100 Fwd (PHOS) rapidity open y cut
+      doEtaShiftIndCuts = kTRUE;
+      stringShift = "pPb";
+      cutarray[ 0] = "8000000082193172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 1] = "8000000082293172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 2] = "8000000082493172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 3] = "8000000082693172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 4] = "8000000082793172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
    } else if (trainConfig == 3) { 
-      // no shifting
-      cutarray[ 0] = "8000000002093172003290000"; mesonCutArray[ 0] = "01621045000";  //standard cut Pi0 pPb 00-100 Full Eta Range 
-      cutarray[ 1] = "8020000002093172003290000"; mesonCutArray[ 1] = "01621045000";  //standard cut Pi0 pPb 00-20 Full Eta Range 
-      cutarray[ 2] = "8240000002093172003290000"; mesonCutArray[ 2] = "01621045000";  //standard cut Pi0 pPb 20-40 Full Eta Range 
-      cutarray[ 3] = "8460000002093172003290000"; mesonCutArray[ 3] = "01621045000";  //standard cut Pi0 pPb 40-60 Full Eta Range 
-      cutarray[ 4] = "8600000002093172003290000"; mesonCutArray[ 4] = "01621045000";  //standard cut Pi0 pPb 60-100 Full Eta Range 
-      cutarray[ 5] = "8000000002093172003290000"; mesonCutArray[ 5] = "01620045000";  //standard cut Pi0 pPb 00-100 Full Eta Range open y cut
+      doEtaShiftIndCuts = kTRUE;
+      stringShift = "pPb";
+      cutarray[ 0] = "8000000082090172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb dedx electron Cut changed
+      cutarray[ 1] = "8000000082091172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 2] = "8000000082092172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 3] = "8000000082094172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 4] = "8000000082095172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
 
    } else if (trainConfig == 4) { 
-      // shifting in Pbp direction
       doEtaShiftIndCuts = kTRUE;
-      stringShift = "Pbp";
-      cutarray[ 0] = "8000000082093172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb 00-100 Pbp shift
-      cutarray[ 1] = "8020000082093172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb 00-20 Pbp shift
-      cutarray[ 2] = "8240000082093172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb 20-40 Pbp shift
-      cutarray[ 3] = "8460000082093172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb 40-60 Pbp shift
-      cutarray[ 4] = "8600000082093172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb 60-100 Pbp shift
-      cutarray[ 5] = "8000000082093172003290000"; mesonCutArray[ 5] = "01620045000";  //standard cut Pi0 pPb0-100 Pbp shift open y cut
-   } else if (trainConfig == 5) { 
-      // Special trigger setup
-      cutarray[ 0] = "8000000002093172003290000"; mesonCutArray[ 0] = "01620045000";  //standard cut Pi0 pPb open eta and y cut
-      cutarray[ 1] = "8004000002093172003290000"; mesonCutArray[ 1] = "01620045000";  //Special trigger kTRD
-      cutarray[ 2] = "8005000002093172003290000"; mesonCutArray[ 2] = "01620045000";  //Special trigger kPHI7
-      cutarray[ 3] = "8006000002093172003290000"; mesonCutArray[ 3] = "01620045000"; // Special trigger kEMCEJE
-      cutarray[ 4] = "8007000002093172003290000"; mesonCutArray[ 4] = "01620045000"; // Special trigger kEMCEGA
-      cutarray[ 5] = "8008000002093172003290000"; mesonCutArray[ 5] = "01620045000"; // Special trigger kHighMult
+      stringShift = "pPb";
+      cutarray[ 0] = "8000000082093162003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 1] = "8000000082093102003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 2] = "8000000082093174003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 3] = "8000000082093173003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 4] = "8000000082093572003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -167,13 +156,6 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
          analysisCuts[i]->SetEtaShift(stringShift);
       }
       
-      if (trainConfig == 5) { 
-         if (i == 1) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kTRD, "AliVEvent::kTRD" );
-         if (i == 2) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kPHI7,"AliVEvent::kPHI7" );
-         if (i == 3) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kEMCEJE,"AliVEvent::kEMCEJE" );
-         if (i == 4) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kEMCEGA,"AliVEvent::kEMCEGA" );
-         if (i == 5) analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kHighMult,"AliVEvent::kHighMult" );
-      }
       ConvCutList->Add(analysisCuts[i]);
          
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
