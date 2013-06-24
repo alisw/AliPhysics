@@ -619,6 +619,14 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     return;
   }
 
+  if(aodEvent->GetTriggerMask()==0 && 
+     (runnumber>=195344 && runnumber<=195677)){
+    AliDebug(3,"Event rejected because of null trigger mask");
+    delete[] containerInput;
+    delete[] containerInputMC;
+    return;
+  }
+
   AliESDtrackCuts** trackCuts = new AliESDtrackCuts*[cfVtxHF->GetNProngs()];
   if (fDecayChannel == 21){
     // for the D*, setting the third element of the array of the track cuts to those for the soft pion
