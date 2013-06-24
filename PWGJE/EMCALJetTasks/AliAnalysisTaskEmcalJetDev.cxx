@@ -2,7 +2,7 @@
 //
 // Emcal jet analysis base task.
 //
-// Author: S.Aiola
+// Author: S.Aiola, M. Verweij
 
 #include "AliAnalysisTaskEmcalJetDev.h"
 
@@ -153,14 +153,14 @@ void AliAnalysisTaskEmcalJetDev::ExecOnce()
 
   for(Int_t i =0; i<fJetCollArray.GetEntriesFast(); i++) {
     AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
-    cont->SetJetArray(InputEvent());
+    cont->SetRunNumber(InputEvent()->GetRunNumber());
     cont->SetEMCALGeometry();
+    cont->SetJetArray(InputEvent());
     cont->LoadRho(InputEvent());
   }
 
   //Get Jets, cuts and rho for first jet container
   AliJetContainer *cont = GetJetContainer(0);
-  // fJetsName = cont->GetArrayName();
   if (fAnaType == kTPC) {
     cont->SetJetAcceptanceType(AliJetContainer::kTPC);
     cont->SetJetEtaPhiTPC();
@@ -320,14 +320,18 @@ Bool_t AliAnalysisTaskEmcalJetDev::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TString defaultCutType) {
+void AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius) {
 
   // Add particle container
   // will be called in AddTask macro
 
+  TString tmp = TString(n);
+  if(tmp.IsNull()) return;
+
   AliJetContainer *cont = 0x0;
   cont = new AliJetContainer();
   cont->SetArrayName(n);
+  cont->SetJetRadius(jetRadius);
 
   if(!defaultCutType.IsNull()) {
     if(defaultCutType.EqualTo("TPC"))

@@ -52,6 +52,7 @@ class AliJetContainer : public AliEmcalContainer {
 
   void                        SetJetEtaPhiEMCAL() ;
   void                        SetJetEtaPhiTPC()   ;
+  void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
 
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
   void                        SetJetPhiLimits(Float_t min, Float_t max)            { fJetMinPhi = min, fJetMaxPhi = max ; }
@@ -81,6 +82,7 @@ class AliJetContainer : public AliEmcalContainer {
   Double_t                    GetRhoVal()                           const    {return fRho->GetVal();}
   const TString&              GetRhoName()                          const    {return fRhoName;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
+  Float_t                     GetJetRadius()                        const    {return fJetRadius;}
 
  protected:
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
@@ -104,6 +106,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliRhoParameter            *fRho;                  //!event rho for these jets
 
   AliEMCALGeometry           *fGeom;                 //!emcal geometry
+  Int_t                       fRunNumber;            //  run number
 
  private:
   AliJetContainer(const AliJetContainer& obj); // copy constructor

@@ -200,8 +200,15 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
     SetJetPhiLimits(-10, 10);
   } 
   else if (fAnaType == kEMCAL && fGeom) {
+
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
-    SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+
+    Int_t runno = InputEvent()->GetRunNumber();
+    if(runno>=177295 && runno<=197470) //small SM masked in 2012 and 2013
+      SetJetPhiLimits(1.4 + fJetRadius, TMath::Pi() - fJetRadius);
+    else 
+      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+    
   }
 
   if (!fRhoName.IsNull() && !fRho) {
