@@ -541,7 +541,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
         centralityPercentile = esdCentrality->GetCentralityPercentile("V0M"); // centrality percentile determined with V0                
 	//cout << "************************************EventSpecie " << fESDevent->GetEventSpecie() << " centrality "<< centrality << endl;
 	if(!fMCtrue){
-	  if (centralityClass10 < 0. || centralityClass10 > 8. ) return; //select only events with centralities between 0 and 80 %
+	  if (centralityPercentile < 0. || centralityPercentile > 80. ) return; //select only events with centralities between 0 and 80 %
 	}
       }
 
@@ -585,7 +585,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     //centrality selection
    AliCentrality *aodCentrality = fAODevent->GetCentrality();
    centralityClass10 = aodCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
-   if (centralityClass10 < 0 || centralityClass10 > 8) return; //select only events with centralities between 0 and 80 %
+   centralityPercentile = aodCentrality->GetCentralityPercentile("V0M");
+   if (centralityPercentile < 0. || centralityPercentile > 80.) return; //select only events with centralities between 0 and 80 %
     
    // count number of events
    fHistCentralityClass10->Fill(centralityClass10);
