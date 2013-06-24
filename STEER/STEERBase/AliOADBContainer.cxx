@@ -53,6 +53,8 @@ AliOADBContainer::AliOADBContainer(const char* name) :
   fEntries(0)
 {
   // Constructor
+  if (fArray)       delete fArray;
+  if (fDefaultList) delete fDefaultList;
 }
 
 
