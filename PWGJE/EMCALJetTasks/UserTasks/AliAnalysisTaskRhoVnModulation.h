@@ -70,7 +70,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         // setters - analysis setup
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
+        void                    SetReduceBinsXYByFactor(Int_t x, Int_t y)       {fReduceBinsXByFactor = x;
+                                                                                 fReduceBinsYByFactor = y;}
         void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
+        void                    SetPtBinsHybrids(TArrayD* p)                    {fPtBinsHybrids = p;}
+        void                    SetPtBinsJets(TArrayD* p)                       {fPtBinsJets = p;}
         void                    SetIntegratedFlow(TH1F* i, TH1F* j)             {fUserSuppliedV2 = i;
                                                                                  fUserSuppliedV3 = j; }
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
@@ -102,6 +106,10 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TString                 GetJetsName() const                             {return fJetsName; }
         TString                 GetTracksName() const                           {return fTracksName; }
         TArrayI*                GetCentralityClasses() const                    {return fCentralityClasses;}
+        TArrayD*                GetPtBinsHybrids() const                        {return fPtBinsHybrids; }
+        TArrayD*                GetPtBinsJets() const                           {return fPtBinsJets; }
+        TProfile*               GetResolutionParameters(Int_t h, Int_t c) const {return (h==2) ? fProfV2Resolution[c] : fProfV3Resolution[c];}
+        TList*                  GetOutputList() const                           {return fOutputList;}
         void                    ExecMe()                                        {ExecOnce();}
         // local cuts
         void                    SetLocalJetMinMaxEta(Float_t min, Float_t max)  {fLocalJetMinEta = min; fLocalJetMaxEta = max;}
@@ -115,15 +123,18 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0, Bool_t randomize = 0) const;
         Double_t                CalculateQC2(Int_t harm);
         Double_t                CalculateQC4(Int_t harm);
-        // helper calculations for the q-cumulant analysis
+        // helper calculations for the q-cumulant analysis, also used by AliAnalyisTaskJetFlow
         void                    QCnQnk(Int_t n, Int_t k, Double_t &reQ, Double_t &imQ);
+        void                    QCnDiffentialFlowVectors(
+            TClonesArray* pois, TArrayD* ptBins, Bool_t vpart, Double_t* repn, Double_t* impn, 
+            Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n);
         Double_t                QCnS(Int_t i, Int_t j);
         Double_t                QCnM();
         Double_t                QCnM11();
         Double_t                QCnM1111();
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
-        // event and track selection
+        // event and track selection, also used by AliAnalyisTaskJetFlow
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             if(!track) return kFALSE;
             return (track->Pt() < fTrackPtCut || track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) ? kFALSE : kTRUE; }
@@ -140,7 +151,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    FillCorrectedClusterHistograms() const;
         void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* tpc) const;
         void                    FillRhoHistograms() const;
-        void                    FillDeltaPtHistograms(Double_t psi2, Double_t psi3) const; 
+        void                    FillDeltaPtHistograms(Double_t vzero[2][2], Double_t* tpc) const; 
         void                    FillJetHistograms(Double_t vzero[2][2], Double_t* psi) const;
         void                    FillDeltaPhiHistograms(Double_t vzero[2][2], Double_t* tpc) const;
         void                    FillQAHistograms(AliVTrack* vtrack) const;
@@ -157,7 +168,11 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
         Bool_t                  fInitialized;           //! is the analysis initialized?
         Bool_t                  fFillQAHistograms;      // fill qa histograms
+        Int_t                   fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this integer
+        Int_t                   fReduceBinsYByFactor;   // reduce the bins on y-axis of histo's by this integer
         TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10)
+        TArrayD*                fPtBinsHybrids;         //-> pt bins for hybrid track vn anaysis
+        TArrayD*                fPtBinsJets;            //-> pt bins for jet vn analysis
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
@@ -249,13 +264,21 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistRCPhiEta[10];              //! random cone eta and phi
         TH2F*                   fHistRhoVsRCPt[10];             //! rho * A vs rcpt
         TH1F*                   fHistRCPt[10];                  //! rcpt
-        TH2F*                   fHistDeltaPtDeltaPhi2[10];      //! dpt vs dphi
-        TH2F*                   fHistDeltaPtDeltaPhi3[10];      //! dpt vs dphi
+        TH2F*                   fHistDeltaPtDeltaPhi2TPC[10];   //! dpt vs dphi tpc
+        TH2F*                   fHistDeltaPtDeltaPhi2V0A[10];   //! dpt vs dphi vzeroa
+        TH2F*                   fHistDeltaPtDeltaPhi2V0C[10];   //! dpt vs dphi vzeroc
+        TH2F*                   fHistDeltaPtDeltaPhi3TPC[10];   //! dpt vs dphi tpc
+        TH2F*                   fHistDeltaPtDeltaPhi3V0A[10];   //! dpt vs dphi vzeroa
+        TH2F*                   fHistDeltaPtDeltaPhi3V0C[10];   //! dpt vs dphi vzeroc
         TH2F*                   fHistRCPhiEtaExLJ[10];          //! random cone eta and phi, excl leading jet
         TH2F*                   fHistRhoVsRCPtExLJ[10];         //! rho * A vs rcpt, excl leading jet
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi2ExLJ[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi3ExLJ[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi2ExLJTPC[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi2ExLJV0A[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi2ExLJV0C[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi3ExLJTPC[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi3ExLJV0A[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi3ExLJV0C[10];  //! dpt vs dphi, excl leading jet
         /* TH2F*                   fHistRCPhiEtaRand[10];          //! random cone eta and phi, randomized */
         /* TH2F*                   fHistRhoVsRCPtRand[10];         //! rho * A vs rcpt, randomized */
         /* TH1F*                   fHistRCPtRand[10];              //! rcpt, randomized */ 
@@ -283,7 +306,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 12);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 13);
 };
 
 #endif
