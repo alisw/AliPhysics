@@ -1237,6 +1237,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nSelTracksTPCITS=0;
   Int_t nSelTracksTPCITS1SPD=0;
 
+  if(fReadMC) {
+    if(aod->GetTriggerMask()==0 && 
+       (runNumber>=195344 && runNumber<=195677)){
+      AliDebug(3,"Event rejected because of null trigger mask");
+      delete [] pdgdaughters;
+      return;
+    }
+  }
+
   for (Int_t k=0;k<nAODtracks;k++){
     AliAODTrack* track=aod->GetTrack(k);
     if(track->GetID()<0) continue;
