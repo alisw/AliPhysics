@@ -66,7 +66,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
-  fh3PatchEnergyEtaPhiCenter(0)
+  fh3PatchEnergyEtaPhiCenter(0),
+  fh2CellEnergyVsTime(0)
 {
   // Default constructor.
 
@@ -113,7 +114,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
-  fh3PatchEnergyEtaPhiCenter(0)
+  fh3PatchEnergyEtaPhiCenter(0),
+  fh2CellEnergyVsTime(0)
 {
   // Standard constructor.
 
@@ -452,7 +454,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh2PtLeadJet1VsLeadJet2 = new TH2F("fh2PtLeadJet1VsLeadJet2","fh2PtLeadJet1VsLeadJet2;#it{p}_{T}^{jet 1};#it{p}_{T}^{jet 2}",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
   fOutput->Add(fh2PtLeadJet1VsLeadJet2);
 
-  fh3EEtaPhiCluster = new TH3F("fh3EEtaPhiCluster","fh3EEtaPhiCluster;E_{clus};#eta,#phi",nBinsECluster,minECluster,maxECluster,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  fh3EEtaPhiCluster = new TH3F("fh3EEtaPhiCluster","fh3EEtaPhiCluster;E_{clus};#eta;#phi",nBinsECluster,minECluster,maxECluster,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
   fOutput->Add(fh3EEtaPhiCluster);
 
   fh3PtLeadJet1VsPatchEnergy = new TH3F("fh3PtLeadJet1VsPatchEnergy","fh3PtLeadJet1VsPatchEnergy;#it{p}_{T}^{jet 1};Amplitude_{patch};trig type",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,2,-0.5,1.5);
@@ -462,6 +464,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fh3PatchEnergyEtaPhiCenter = new TH3F("fh3PatchEnergyEtaPhiCenter","fh3PatchEnergyEtaPhiCenter;E_{patch};#eta;#phi",nBinsPt,minPt,maxPt,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
   fOutput->Add(fh3PatchEnergyEtaPhiCenter);
+
+  fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",100,0.,100.,700,-400,1000);
+  fOutput->Add(fh2CellEnergyVsTime);
 
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -514,6 +519,21 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       //Fill eta,phi,E of clusters here
       fh3EEtaPhiCluster->Fill(lp.E(),lp.Eta(),lp.Phi());
     }
+  }
+
+  if(fCaloCells) {
+    const Short_t nCells   = fCaloCells->GetNumberOfCells();
+
+    for(Int_t iCell=0; iCell<nCells; ++iCell) {
+      Short_t cellId = fCaloCells->GetCellNumber(iCell);
+      Double_t cellE = fCaloCells->GetCellAmplitude(cellId);
+      Double_t cellT = fCaloCells->GetCellTime(cellId);
+
+      AliDebug(2,Form("cell energy = %f  time = %f",cellE,cellT*1e9));
+      fh2CellEnergyVsTime->Fill(cellE,cellT*1e9);
+    
+    }
+
   }
 
   Double_t ptLeadJet1 = 0.;

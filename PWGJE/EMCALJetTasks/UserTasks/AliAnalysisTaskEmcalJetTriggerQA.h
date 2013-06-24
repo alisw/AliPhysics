@@ -96,7 +96,7 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH3F  *fh3PtLeadJet1VsPatchEnergy;        //! leading jet energy vs leading patch energy vs jet trigger (J1/J2)
   TH3F  *fh3PtLeadJet2VsPatchEnergy;        //! leading jet energy vs leading patch energy vs jet trigger (J1/J2)
   TH3F  *fh3PatchEnergyEtaPhiCenter;        //! patch energy vs eta, phi at center of patch
-
+  TH2F  *fh2CellEnergyVsTime;               //! emcal cell energy vs time
 
 
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
