@@ -38,19 +38,19 @@ class AliEmcalJetFinder : public TNamed
     void                          SetManualIndex(Int_t val)       {fInputVectorIndex = val;}
   private:
     // General properties
-    AliFJWrapper*                 fFastjetWrapper;
-    Int_t                         fInputVectorIndex;
-    Int_t                         fJetCount;
-    std::vector<AliEmcalJet*>     fJetArray;
+    AliFJWrapper*                 fFastjetWrapper;                // Interface object to fastjet
+    Int_t                         fInputVectorIndex;              // Current index of input vectors (by default: count of vectors)
+    Int_t                         fJetCount;                      // Found jets within the given acceptances
+    std::vector<AliEmcalJet*>     fJetArray;                      // Internal array for the jets
     // Settings for fastjet
-    Double_t                      fGhostArea;
-    Double_t                      fRadius;
-    Int_t                         fJetAlgorithm;
-    Double_t                      fTrackMaxEta;
+    Double_t                      fGhostArea;                     // setting for ghost area in FJ
+    Double_t                      fRadius;                        // Radius parameter
+    Int_t                         fJetAlgorithm;                  // var for algorithm (0=antikt, 1=kt)
+    Double_t                      fTrackMaxEta;                   // cut for |track-eta| < fTrackMaxEta
     // Jet cuts
-    Double_t                      fJetMaxEta;
-    Double_t                      fJetMinPt;
-    Double_t                      fJetMinArea;
+    Double_t                      fJetMaxEta;                     // cut for |jet-eta| < fJetMaxEta
+    Double_t                      fJetMinPt;                      // cut for  jet-pT > fJetMinPt
+    Double_t                      fJetMinArea;                    // cut for  jet-area > fJetMinArea 
 
     ClassDef(AliEmcalJetFinder, 1); // Lightweight fastjet implementation outside analysis tasks
 };
