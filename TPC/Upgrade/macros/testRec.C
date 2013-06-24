@@ -230,7 +230,16 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   AliExternalTrackParam *track = 0x0;
   track = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
   track->ResetCovariance(10);
-//   printf("Track: %.2f, %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha(),track->Phi());
+
+  printf("orig:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+         tr->GetParameter()[0],tr->GetParameter()[1],tr->GetParameter()[2],
+         tr->GetParameter()[3],tr->GetParameter()[4],tr->GetAlpha());
+  
+  printf("seed:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+         track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+         track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
+  
+  //   printf("Track: %.2f, %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha(),track->Phi());
   AliExternalTrackParam pInit(*track);
 
   // NOTE:
@@ -366,7 +375,7 @@ void InitSpaceCharge(TTree *t)
 //____________________________________________________________________________
 
 
-AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t corrType=0)
+AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t corrType=0, Bool_t useMaterial=kFALSE)
 {
   //
   // clsType:  0=undistorted clusters; 1: distorted clusters
@@ -410,13 +419,23 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
       fSpaceCharge->CorrectPoint(xyz, cl->GetDetector());
       seedPoint[seed].SetXYZ(xyz);
     }
+    seedPoint[seed].Print();
     ++seed;
   }
   
   AliExternalTrackParam *track = 0x0;
-  track = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
+  track = AliTrackerBase::MakeSeed(seedPoint[2], seedPoint[1], seedPoint[0]);
   track->ResetCovariance(10);
+
+//   printf("============================================\n");
+//   printf("orig:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//          tr->GetParameter()[0],tr->GetParameter()[1],tr->GetParameter()[2],
+//          tr->GetParameter()[3],tr->GetParameter()[4],tr->GetAlpha());
   
+//   printf("seed:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//          track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+//          track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
+
   // loop over all other points and add to the track
   for (Int_t ipoint=ncls-4; ipoint>=0; --ipoint){
     AliTrackPoint pIn;
@@ -436,8 +455,14 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
     if (TMath::Abs(prot.GetX())>kRTPC1) continue;
     //
     Int_t ret=0;
-    ret=AliTrackerBase::PropagateTrackTo2(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
-//     ret=AliTrackerBase::PropagateTrackTo2(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
+//     printf("before: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//            track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+//            track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
+    if (useMaterial) ret=AliTrackerBase::PropagateTrackTo2(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
+    else ret=AliTrackerBase::PropagateTrackTo2(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+//     printf("after: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//            track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+//            track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
     if (ret<0) {
       (*fStreamer) << "np" <<
       "iev="      << fEvent <<
@@ -450,10 +475,10 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
       printf("Could not propagate track: %d\n",ret);
       break;
     }
-    printf("\n=========\n%d:\n",ipoint);
-    printf("%.2f, %.2f, %.2f - %d, %d, %.2f, %.2g\n",cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetDetector(),cl->GetRow(),cl->GetPad(),cl->GetTimeBin());
-    printf("%.2f, %.2f, %.2f - %.2f\n", prot.GetX(),prot.GetY(),prot.GetZ(), prot.GetAngle());
-    printf("%.2f, %.2f, %.2f - %.2f\n", track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha());
+//     printf("\n=========\n%d:\n",ipoint);
+//     printf("%.2f, %.2f, %.2f - %d, %d, %.2f, %.2g\n",cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetDetector(),cl->GetRow(),cl->GetPad(),cl->GetTimeBin());
+//     printf("%.2f, %.2f, %.2f - %.2f\n", prot.GetX(),prot.GetY(),prot.GetZ(), prot.GetAngle());
+//     printf("%.2f, %.2f, %.2f - %.2f\n", track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha());
     
     if (TMath::Abs(track->GetZ())>kMaxZ) break;
     if (TMath::Abs(track->GetX())>kMaxR) break;
@@ -470,17 +495,26 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
     pointCov[2]=prot.GetCov()[5];//sigmaz^2
     if (!track->Update(pointPos,pointCov)) {printf("no update\n"); break;}
   }
-  AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
-  ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
-//   AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp);
-//   ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp);
+//   printf(">>> before2: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//          track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+//          track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
+  if (useMaterial) AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp);
+  else AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+//   printf(">>> after2: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//          track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+//          track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
+  if (useMaterial) ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp);
+  else ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+//   printf(">>> after2.2: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//          track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+//          track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
   printf("Propagation to 0 stopped at %.2f with %d\n",track->GetX(),ret);
   track->Rotate(tr->GetAlpha());
   return track;
 }
 
 //____________________________________________________________________________
-void testResolution(const char* filename, Int_t nmaxEv=-1)
+void testResolution(const char* filename, Int_t nmaxEv=-1, Bool_t useMaterial=kFALSE)
 {
   TFile f(filename);
   if (!f.IsOpen() || f.IsZombie()) {
@@ -499,6 +533,8 @@ void testResolution(const char* filename, Int_t nmaxEv=-1)
 
   TString debugName=filename;
   debugName.ReplaceAll(".root","");
+  if (useMaterial) debugName.Append(".Mat");
+  else debugName.Append(".noMat");
   debugName.Append(".testRes.root");
   
   gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
@@ -521,22 +557,22 @@ void testResolution(const char* filename, Int_t nmaxEv=-1)
       printf("   ======= Processing track %3d ==========\n",itr);
       AliToyMCTrack *tr=ev->GetTrack(itr);
       AliExternalTrackParam tOrig(*tr);
-      AliExternalTrackParam *tIdeal    = GetFullTrack(tr);
-//       AliExternalTrackParam *tDist     = GetFullTrack(tr,1);
-//       AliExternalTrackParam *tDistCorr = GetFullTrack(tr,1,1);
+      AliExternalTrackParam *tIdeal    = GetFullTrack(tr,0,0,useMaterial);
+      AliExternalTrackParam *tDist     = GetFullTrack(tr,1);
+      AliExternalTrackParam *tDistCorr = GetFullTrack(tr,1,1);
 
       (*fStreamer) << "res" <<
       "iev="        << iev <<
       "itr="        << itr <<
       "tOrig.="     << &tOrig <<
       "tIdeal.="    << tIdeal <<
-//       "tDist.="     << tDist  <<
-//       "tDistCorr.=" << tDistCorr <<
+      "tDist.="     << tDist  <<
+      "tDistCorr.=" << tDistCorr <<
       "\n";
     
       delete tIdeal;
-//       delete tDist;
-//       delete tDistCorr;
+      delete tDist;
+      delete tDistCorr;
     }
   }
 
