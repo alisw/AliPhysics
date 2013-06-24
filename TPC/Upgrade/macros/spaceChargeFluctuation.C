@@ -2,7 +2,7 @@
   .x ~/rootlogon.C
   .L $ALICE_ROOT/TPC/Upgrade/macros/spaceChargeFluctuation.C+ 
 //  GenerateMapRaw("/hera/alice/local/filtered/alice/data/2010/LHC10e/000129527/raw/merged_highpt_1.root","output.root", 50);
-  GenerateMapRawIons( "/hera/alice/local/filtered/alice/data/2010/LHC10e/000129527/raw/merged_highpt_1.root","output.root", 25);
+  GenerateMapRawIons( kFALSE, "/hera/alice/local/filtered/alice/data/2010/LHC10e/000129527/raw/merged_highpt_1.root","output.root", 25);
   
  */
 #include "TMath.h"
@@ -30,15 +30,18 @@
 #include "AliXRDPROOFtoolkit.h"
 #include "TLegend.h"
 #include "TCut.h"
+#include "TGraphErrors.h"
+#include "TStatToolkit.h"
 
 
 TH1 * GenerateMapRawIons(Int_t useGain,const char *fileName="raw.root", const char *outputName="histo.root", Int_t maxEvents=25);
-
+void DoMerge();
 
 void spaceChargeFluctuation(Int_t mode=0, Int_t arg0=0){
   //
   //
   if (mode==0) GenerateMapRawIons(arg0);  
+  if (mode==1) DoMerge();  
 }
 
 void spaceChargeFluctuationMC(Int_t nframes){
@@ -97,6 +100,7 @@ TH1 * GenerateMapRawIons(Int_t useGainMap, const char *fileName, const char *out
   // Generate 3D maps of the space charge for the rad data maps
   // different threshold considered
   // Paramaters:
+  //    useGainMap    - switch usage of the gain map
   //    fileName      - name of input raw file
   //    outputName    - name of output file with the space charge histograms 
   //    maxEvents     - grouping of the events
@@ -182,7 +186,7 @@ TH1 * GenerateMapRawIons(Int_t useGainMap, const char *fileName, const char *out
   // 
 
   while (reader->NextEvent()) {
-    Double_t shiftZ= gRandom->Rndm()*250;
+    Double_t shiftZ= gRandom->Rndm()*250.;
     //
     if(evtnr>=maxEvents) {
       chunkNr++;
@@ -296,7 +300,7 @@ TH1 * GenerateMapRawIons(Int_t useGainMap, const char *fileName, const char *out
 }
 
 
-void AnalyzeMaps(){
+void AnalyzeMaps1D(){
   //
   // Analyze space charge maps stored as shitograms in trees
   //
@@ -356,69 +360,159 @@ void AnalyzeMaps(){
   //
 }
 
-void MakeFluctuationStudy(Int_t nevents){
+void DoMerge(){
   //
   //
   //
-  TFile *  fhisto = new TFile("histo.root","update");
+  TFile *  fhisto = new TFile("histo.root","recreate");
+  TTree * tree = 0;
+  TChain *chain = AliXRDPROOFtoolkit::MakeChainRandom("histo.list","histo",0,50,1);
+  tree = chain->CopyTree("1");
+  tree->Write("histo");
+  delte fhist0;
+}
+
+
+
+void MakeFluctuationStudy3D(Int_t nhistos, Int_t nevents, Int_t niter){
+  //
+  //
+  // 
+  // Fix z binning before creating of official plot (PbPb  data)
+  // 
+  // 1. Make a summary integral   3D/2D/1D maps
+  // 2. Create several maps with niter events  - Poisson flucturation in n
+  // 3. Store results 3D maps in the tree (and also as histogram)  current and mean
+  // 
+  TTreeSRedirector * pcstream  = new TTreeSRedirector("histo.root", "update");
+  TFile *  fhisto = pcstream->GetFile();
+  
   TTree * tree = (TTree*)fhisto->Get("histo");
-  tree->SetCacheSize(1000000000);
+  tree->SetCacheSize(10000000000);
 
   TH1D * his1DROC=0,    * his1DROCSum=0,  * his1DROCN=0;
   TH1D * his1DDrift=0,  * his1DDriftSum=0, * his1DDriftN=0 ;
   TH2D * his2DROC=0,    * his2DROCSum=0,  * his2DROCN=0;
+  TH2D * his2DRZROC=0,    * his2DRZROCSum=0,  * his2DRZROCN=0;
   TH2D * his2DDrift=0,  * his2DDriftSum=0, * his2DDriftN=0;  
+  TH2D * his2DRZDrift=0,  * his2DRZDriftSum=0, * his2DRZDriftN=0;  
   TH3D * his3DROC=0,    * his3DROCSum=0,  * his3DROCN=0;
   TH3D * his3DDrift=0,  * his3DDriftSum=0, * his3DDriftN=0;
   //
-  Int_t  nhistos = tree->GetEntries();
+  if (nhistos<0 || nhistos> tree->GetEntries()) nhistos = tree->GetEntries();
+  Int_t  eventsPerChunk=0;
   tree->SetBranchAddress("hist1D_2.",&his1DDrift);
   tree->SetBranchAddress("hist1DROC_2.",&his1DROC);
   tree->SetBranchAddress("hist2D_2.",&his2DDrift);
+  tree->SetBranchAddress("hist2DRZ_2.",&his2DRZDrift);
   tree->SetBranchAddress("hist2DROC_2.",&his2DROC);
   tree->SetBranchAddress("hist3D_2.",&his3DDrift);
   tree->SetBranchAddress("hist3DROC_2.",&his3DROC);
+  tree->SetBranchAddress("hist2DRZROC_2.",&his2DRZROC);
+  tree->SetBranchAddress("events",&eventsPerChunk);
+  // 
+  // 1. Make a summary integral   3D/2D/1D maps
   //
-
+  Int_t neventsAll=0;
   for (Int_t i=0; i<nhistos; i++){
     tree->GetEntry(i);
     if (i%25==0) printf("%d\n",i);
     if (his1DROCSum==0)     his1DROCSum=new TH1D(*his1DROC);
     if (his1DDriftSum==0)   his1DDriftSum=new TH1D(*his1DDrift);
     if (his2DROCSum==0)     his2DROCSum=new TH2D(*his2DROC);
+    if (his2DRZROCSum==0)     his2DRZROCSum=new TH2D(*his2DRZROC);
     if (his2DDriftSum==0)   his2DDriftSum=new TH2D(*his2DDrift);
+    if (his2DRZDriftSum==0)   his2DRZDriftSum=new TH2D(*his2DRZDrift);
     if (his3DROCSum==0)     his3DROCSum=new TH3D(*his3DROC);
     if (his3DDriftSum==0)   his3DDriftSum=new TH3D(*his3DDrift);
     his1DROCSum->Add(his1DROC);
     his1DDriftSum->Add(his1DDrift);
     his2DROCSum->Add(his2DROC);
+    his2DRZROCSum->Add(his2DRZROC);
     his2DDriftSum->Add(his2DDrift);
+    his2DRZDriftSum->Add(his2DRZDrift);
     his3DROCSum->Add(his3DROC);
     his3DDriftSum->Add(his3DDrift);
+    neventsAll+=eventsPerChunk;
   }
   //
-  Int_t nchunks=gRandom->Poisson(nevents)/25.;  // chunks with n=25 events
-  //for (Int_t iter=0; iter<niter; iter++){
-  Int_t ilast=gRandom->Rndm()*nhistos;
-  for (Int_t i=0; i<nchunks; i++){
-    //    ilast+=gRandom->Rndm()
-    tree->GetEntry(gRandom->Rndm()*nhistos);
-    if (i%25==0) printf("%d\n",i);
-    if (his1DROCN==0)     his1DROCN=new TH1D(*his1DROC);
-    if (his1DDriftN==0)   his1DDriftN=new TH1D(*his1DDrift);
-    if (his2DROCN==0)     his2DROCN=new TH2D(*his2DROC);
-    if (his2DDriftN==0)   his2DDriftN=new TH2D(*his2DDrift);
-    if (his3DROCN==0)     his3DROCN=new TH3D(*his3DROC);
-    if (his3DDriftN==0)   his3DDriftN=new TH3D(*his3DDrift);
-    his1DROCN->Add(his1DROC);
-    his1DDriftN->Add(his1DDrift);
-    his2DROCN->Add(his2DROC);
-    his2DDriftN->Add(his2DDrift);
-    his3DROCN->Add(his3DROC);
-    his3DDriftN->Add(his3DDrift);
+  // 2. Create several maps with niter events  - Poisson flucturation in n
+  //
+  for (Int_t iter=0; iter<niter; iter++){
+    printf("Itteration=\t%d\n",iter);
+    Int_t ilast=gRandom->Rndm()*nhistos;
+    Int_t nchunks=gRandom->Poisson(nevents)/eventsPerChunk;  // chunks with n typically 25 events
+    for (Int_t i=0; i<nchunks; i++){
+      //    ilast+=gRandom->Rndm()
+      tree->GetEntry(gRandom->Rndm()*nhistos);
+      if (i%10==0) printf("%d\t%d\n",iter, i);
+      if (his1DROCN==0)     his1DROCN=new TH1D(*his1DROC);
+      if (his1DDriftN==0)   his1DDriftN=new TH1D(*his1DDrift);
+      if (his2DROCN==0)     his2DROCN=new TH2D(*his2DROC);
+      if (his2DDriftN==0)   his2DDriftN=new TH2D(*his2DDrift);
+      if (his2DRZROCN==0)     his2DRZROCN=new TH2D(*his2DRZROC);
+      if (his2DRZDriftN==0)   his2DRZDriftN=new TH2D(*his2DRZDrift);
+      if (his3DROCN==0)     his3DROCN=new TH3D(*his3DROC);
+      if (his3DDriftN==0)   his3DDriftN=new TH3D(*his3DDrift);
+      his1DROCN->Add(his1DROC);
+      his1DDriftN->Add(his1DDrift);
+      his2DROCN->Add(his2DROC);
+      his2DRZDriftN->Add(his2DRZDrift);
+      his2DRZROCN->Add(his2DRZROC);
+      his2DDriftN->Add(his2DDrift);
+      his3DROCN->Add(his3DROC);
+      his3DDriftN->Add(his3DDrift);      
+    } 
+    //
+    // 3. Store results 3D maps in the tree (and also as histogram)  current and mea
+    //    
+    Int_t eventsUsed=  nchunks*eventsPerChunk;
+    (*pcstream)<<"fluctuation"<<
+      "neventsAll="<<neventsAll<<   // total number of event to define mean
+      "nmean="<<nevents<<         // mean number of events used
+      "eventsUsed="<<eventsUsed<<         // number of chunks used for one fluct. study
+      //
+      // 1,2,3D histogram per group and total
+      "his1DROCN.="<<his1DROCN<<
+      "his1DROCSum.="<<his1DROCSum<<
+      "his1DDriftN.="<<his1DDriftN<<
+      "his1DDriftSum.="<<his1DDriftSum<<
+      "his2DROCN.="<<his2DROCN<<
+      "his2DROCSum.="<<his2DROCSum<<
+      "his2DDriftN.="<<his2DDriftN<<
+      "his2DDriftSum.="<<his2DDriftSum<<
+      "his2DRZROCN.="<<his2DRZROCN<<
+      "his2DRZROCSum.="<<his2DRZROCSum<<
+      "his2DRZDriftN.="<<his2DRZDriftN<<
+      "his2DRZDriftSum.="<<his2DRZDriftSum<<
+      "his3DROCN.="<<his3DROCN<<
+      "his3DROCSum.="<<his3DROCSum<<      
+      "his3DDriftN.="<<his3DDriftN<<      
+      "his3DDriftSum.="<<his3DDriftSum<<      
+      "\n";      
+    pcstream->GetFile()->mkdir(Form("Fluc%d",iter));
+    pcstream->GetFile()->cd(Form("Fluc%d",iter));
+    his2DRZROCN->Write("his2DRZROCN");
+    his2DRZROCSum->Write("his2DRZROCSum");
+    his2DRZDriftN->Write("his2DRZDriftN");
+    his2DRZDriftSum->Write("his2DRZDriftSum");
+    //
+    his3DROCN->Write("his3DROCN");
+    his3DROCSum->Write("his3DROCSum");
+    his3DDriftN->Write("his3DDriftN");
+    his3DDriftSum->Write("his3DDriftSum");
+
+    his1DROCN->Reset();
+    his1DDriftN->Reset();
+    his2DROCN->Reset();
+    his2DRZDriftN->Reset();
+    his2DRZROCN->Reset();
+    his2DDriftN->Reset();
+    his3DROCN->Reset();
+    his3DDriftN->Reset();    
   }
-  his1DROCN->Divide(his1DROCSum);
-  his1DROCN->Divide(his1DROCSum);
+
+  delete pcstream;
 
 
   //
@@ -434,9 +528,17 @@ void MakeFluctuationStudy(Int_t nevents){
 
 void DrawDCARPhiTrendTime(){
   //
-  // macros to draw the DCA correlation with the luminosity (estimated from the occupancy)
+  // Macros to draw the DCA correlation with the luminosity (estimated from the occupancy)
   //
+  // A side and c side  0 differnt behaviour -
+  // A side - space charge effect
+  // C side - space charge effect+ FC charging: 
+  //   Variables  to query from the QA/calibration DB - tree: 
+  //   QA.TPC.CPass1.dcar_posA_0   -dca rphi in cm - offset
+  //   Calib.TPC.occQA.Sum()       - luminosity is estimated using the mean occupancy per run
+  //     
   TFile *fdb = TFile::Open("outAll.root");
+  if (!fdb)  fdb = TFile::Open("http://www-alice.gsi.de/TPC/CPassMonitor/outAll.root"); 
   TTree * tree = (TTree*)fdb->Get("joinAll");
   tree->SetCacheSize(100000000);
   tree->SetMarkerStyle(25);
@@ -459,13 +561,18 @@ void DrawDCARPhiTrendTime(){
   legend->AddEntry(grA,"A side","p");
   legend->AddEntry(grC,"C side","p");
   legend->Draw();
-  //
 }
 
 
 
 void DrawOpenGate(){
   //
+  //  Make nice plot to demonstrate the space charge effect in run with the open gating grid
+  //  For the moment the inmput is harwired - the CPass0 calibration data used
+  //  Make nice drawing (with axis labels):
+  //  To fix (longer term)
+  //     the distortion map to be recalculated - using gaussian fit (currently we use mean)
+  //     the histogram should be extended
   TFile f("/hera/alice/alien/alice/data/2013/LHC13g/000197470/cpass0/OCDB/root_archive.zip#meanITSVertex.root");
   TFile fref("/hera/alice/alien/alice/data/2013/LHC13g/000197584/cpass0/OCDB/root_archive.zip#meanITSVertex.root");
   //
@@ -481,6 +588,10 @@ void DrawOpenGate(){
   TTree * treeVertexdyRef=(TTree*)fref.Get("Vertexdy");
   treeVertexdy->AddFriend(treeVertexdyRef,"R");
   treeVertexdy->SetMarkerStyle(25);
+
+  //  treeITSdy->Draw("mean-R.mean:sector:abs(theta)","entries>50&&abs(snp)<0.1&&theta<0","colz")
   
+  treeITSdy->Draw("mean-R.mean:sector:abs(theta)","entries>50&&abs(snp)<0.1&&theta>0","colz");
+
 
 }
