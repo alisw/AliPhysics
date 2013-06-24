@@ -15,7 +15,7 @@ class AliAnalysisTaskContMC : public AliAnalysisTaskSE
  public:
   
   // constructors
- AliAnalysisTaskContMC() : AliAnalysisTaskSE(), fAOD(0), fNSigmaPID(0),fIsMC(0)
+ AliAnalysisTaskContMC() : AliAnalysisTaskSE(), fAOD(0), fNSigmaPID(0), fIsMC(0), fOutput(0), fHistID(0)
     {}
   AliAnalysisTaskContMC(const char *name);
   virtual ~AliAnalysisTaskContMC() {}

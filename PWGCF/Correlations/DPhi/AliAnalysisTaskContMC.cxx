@@ -50,7 +50,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskContMC) 
 
 //________________________________________________________________________
-AliAnalysisTaskContMC::AliAnalysisTaskContMC(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fNSigmaPID(0),fIsMC(0),fOutput(0)
+AliAnalysisTaskContMC::AliAnalysisTaskContMC(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fNSigmaPID(0), fIsMC(0), fOutput(0), fHistID(0)
 {
   // Default constructor
   
