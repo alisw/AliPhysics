@@ -4,9 +4,6 @@
 //
 // Authors: R.Haake
 
-#ifndef ALIEMCALJETFINDER_CXX
-#define ALIEMCALJETFINDER_CXX
-
 #include "AliFJWrapper.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalJetFinder.h"
@@ -134,4 +131,3 @@ void AliEmcalJetFinder::FillEtaHistogram(TH1* histogram)
     histogram->Fill(fJetArray[i]->Eta());
   }
 }
-#endif
