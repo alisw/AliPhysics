@@ -87,7 +87,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
    task->SetIsHeavyIon(2);
    task->SetIsMC(isMC);
    // Cut Numbers to use in Analysis
-   Int_t numberOfCuts = 5;
+   Int_t numberOfCuts = 6;
 
    TString *cutarray = new TString[numberOfCuts];
    TString *mesonCutArray = new TString[numberOfCuts];
@@ -101,7 +101,8 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       cutarray[ 1] = "8000000081093172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb RCut Changed
       cutarray[ 2] = "8000000083093172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb RCut Changed
       cutarray[ 3] = "8000000084093172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb RCut Changed
-      cutarray[ 4] = "8000000085093172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb RCut Changed      
+      cutarray[ 4] = "8000000085093172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 5] = "8000000086093172003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb RCut Changed
    } else if (trainConfig == 2) { 
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
@@ -110,6 +111,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       cutarray[ 2] = "8000000082493172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
       cutarray[ 3] = "8000000082693172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
       cutarray[ 4] = "8000000082793172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 5] = "8000000082593172003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
    } else if (trainConfig == 3) { 
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
@@ -118,6 +120,8 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       cutarray[ 2] = "8000000082092172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
       cutarray[ 3] = "8000000082094172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
       cutarray[ 4] = "8000000082095172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 5] = "8000000082096172003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
+
 
    } else if (trainConfig == 4) { 
       doEtaShiftIndCuts = kTRUE;
@@ -127,6 +131,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       cutarray[ 2] = "8000000082093174003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
       cutarray[ 3] = "8000000082093173003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
       cutarray[ 4] = "8000000082093572003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 5] = "8000000082093072003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
