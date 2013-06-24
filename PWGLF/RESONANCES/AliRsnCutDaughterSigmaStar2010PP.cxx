@@ -21,7 +21,8 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
    fCutQuality(Form("%sQuality", name)),
    fPIDCut(3.0),
    fMinTPCcluster(70),
-   fDCARptFormula("")
+   //fDCARptFormula("0.0182+0.0350/pt^1.01")
+   fDCARmax(0.05)
 {
 //
 // Constructor
@@ -30,7 +31,8 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
 
    fCutQuality.SetPtRange(0.15, 1E+20);
    fCutQuality.SetEtaRange(-0.8, 0.8);
-   fCutQuality.SetDCARPtFormula(fDCARptFormula);
+   fCutQuality.SetDCARmax(fDCARmax);
+   //fCutQuality.SetDCARPtFormula(fDCARptFormula);
    fCutQuality.SetDCAZmax(2.0);
    fCutQuality.SetSPDminNClusters(1);
    fCutQuality.SetITSminNClusters(0);

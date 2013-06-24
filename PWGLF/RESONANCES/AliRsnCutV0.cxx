@@ -40,7 +40,6 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fMaxDaughtersDCA(0.5),
    fMinTPCcluster(70),
    fMaxRapidity(0.8),
-   fDCARptFormula(""),
    fPID(pid),
    fPID2(pid2),
    fPIDCutProton(0),
@@ -68,7 +67,6 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
    fMinTPCcluster(copy.fMinTPCcluster),
    fMaxRapidity(copy.fMaxRapidity),
-   fDCARptFormula(copy.fDCARptFormula),   
    fPID(copy.fPID),
    fPID2(copy.fPID2),
    fPIDCutProton(copy.fPIDCutProton),
@@ -84,8 +82,6 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
 //
    fCutQuality.SetPtRange(0.15, 1E+20);
    fCutQuality.SetEtaRange(-0.8, 0.8);
-   fCutQuality.SetDCARPtFormula(fDCARptFormula);
-   fCutQuality.SetDCAZmax(2.0);
    fCutQuality.SetSPDminNClusters(1);
    fCutQuality.SetITSminNClusters(0);
    fCutQuality.SetITSmaxChi2(1E+20);
@@ -113,7 +109,6 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
    fMinTPCcluster = copy.fMinTPCcluster;
    fMaxRapidity = copy.fMaxRapidity;
-   fDCARptFormula = copy.fDCARptFormula;
    fCutQuality = copy.fCutQuality;
    fPID = copy.fPID;
    fPID2 = copy.fPID2;
