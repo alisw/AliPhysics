@@ -141,7 +141,8 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fDropToShell(true),
                   fGridJobIDs(""),
                   fGridStages(""),
-                  fFriendLibs("")
+                  fFriendLibs(""),
+                  fTreeName()
 {
 // Dummy ctor.
    SetDefaults();
@@ -218,7 +219,8 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fDropToShell(true),
                   fGridJobIDs(""),
                   fGridStages(""),
-                  fFriendLibs("")
+                  fFriendLibs(""),
+                  fTreeName()
 {
 // Default ctor.
    SetDefaults();
@@ -295,7 +297,8 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fDropToShell(other.fDropToShell),
                   fGridJobIDs(other.fGridJobIDs),
                   fGridStages(other.fGridStages),
-                  fFriendLibs(other.fFriendLibs)
+                  fFriendLibs(other.fFriendLibs),
+                  fTreeName(other.fTreeName)
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
@@ -411,6 +414,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fGridJobIDs              = other.fGridJobIDs;
       fGridStages              = other.fGridStages;
       fFriendLibs              = other.fFriendLibs;
+      fTreeName                = other.fTreeName;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -1202,6 +1206,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    // Compose the 'find' command arguments
    TString format;
    TString command;
+   TString delimiter = pattern;
+   delimiter.Strip();
+   if (delimiter.Contains(" ")) delimiter = "";
+   else delimiter = " ";
    TString options = "-x collection ";
    if (TestBit(AliAnalysisGrid::kTest)) options += Form("-l %d ", fNtestFiles);
    else options += Form("-l %d ", gMaxEntries);  // Protection for the find command
@@ -1221,7 +1229,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       if (!DirectoryExists(path)) {
          Error("CreateDataset", "Path to data directory %s not valid",fGridDataDir.Data());
          return kFALSE;
-      }   
+      } 
 //      CdWork();
       if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
       else file = Form("%s.xml", gSystem->BaseName(path));
@@ -1232,7 +1240,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             command = "find ";
             command += Form("%s -o %d ",options.Data(), nstart);
             command += path;
-            command += " ";
+            command += delimiter;
             command += pattern;
             command += conditions;
             printf("command: %s\n", command.Data());
@@ -1308,7 +1316,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       while ((os=(TObjString*)next())) {
          nstart = 0;
          stage = 0;
-         path = Form("%s/%s/ ", fGridDataDir.Data(), os->GetString().Data());
+         path = Form("%s/%s/", fGridDataDir.Data(), os->GetString().Data());
          if (!DirectoryExists(path)) continue;
 //         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
@@ -1321,6 +1329,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                command = "find ";
                command +=  Form("%s -o %d ",options.Data(), nstart);
                command += path;
+               command += delimiter;
                command += pattern;
                command += conditions;
                TGridResult *res = gGrid->Command(command);
@@ -1436,7 +1445,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    } else {
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         format = Form("%%s/%s ", fRunPrefix.Data());
+         format = Form("%%s/%s/", fRunPrefix.Data());
          nstart = 0;
          stage = 0;
          path = Form(format.Data(), fGridDataDir.Data(), irun);
@@ -1460,6 +1469,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                command = "find ";
                command +=  Form("%s -o %d ",options.Data(), nstart);
                command += path;
+               command += delimiter;
                command += pattern;
                command += conditions;
                TGridResult *res = gGrid->Command(command);
@@ -2461,7 +2471,7 @@ void AliAnalysisAlien::Print(Option_t *) const
             \n*****       To disable, use: plugin->SetOverwriteMode(kFALSE);\n");
    }
    printf("=   Copy files to grid: __________________________ %s\n", (IsUseCopy())?"YES":"NO");
-   printf("=   Check if files can be copied to grid: ________ %s\n", (IsCheckCopy())?"YES":"NO");
+   printf("=   Check if files can be copied to grid: ________ %s\n", (IsCheckCopy())?"YES":"NO:Print");
    printf("=   Production mode:______________________________ %d\n", fProductionMode);
    printf("=   Version of API requested: ____________________ %s\n", fAPIVersion.Data());
    printf("=   Version of ROOT requested: ___________________ %s\n", fROOTVersion.Data());
@@ -2470,8 +2480,17 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   User running the plugin: _____________________ %s\n", fUser.Data());
    printf("=   Grid workdir relative to user $HOME: _________ %s\n", fGridWorkingDir.Data());
    printf("=   Grid output directory relative to workdir: ___ %s\n", fGridOutputDir.Data());
-   printf("=   Data base directory path requested: __________ %s\n", fGridDataDir.Data());
-   printf("=   Data search pattern: _________________________ %s\n", fDataPattern.Data());
+   TString basedatadir = fGridDataDir;
+   TString pattern = fDataPattern;
+   pattern.Strip();
+   Int_t ind = pattern.Index(" ");
+   if (ind>=0) {
+      basedatadir += "/%run%/";
+      basedatadir += pattern(0, ind);
+      pattern = pattern(ind+1, pattern.Length());
+   }   
+   printf("=   Data base directory path requested: __________ %s\n", basedatadir.Data());
+   printf("=   Data search pattern: _________________________ %s\n", pattern.Data());
    printf("=   Input data format: ___________________________ %s\n", fInputFormat.Data());
    if (fRunNumbers.Length()) 
    printf("=   Run numbers to be processed: _________________ %s\n", fRunNumbers.Data());
@@ -4159,9 +4178,13 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          if (IsUseMCchain()) {
             out << "   TString treename = \"TE\";" << endl;
          } else {   
-            out << "   TString treename = type;" << endl;
-            out << "   treename.ToLower();" << endl;
-            out << "   treename += \"Tree\";" << endl;
+            if (!fTreeName.IsNull()) {
+               out << "   TString treename = \"" << fTreeName << "\";" << endl;
+            } else {   
+               out << "   TString treename = type;" << endl;
+               out << "   treename.ToLower();" << endl;
+               out << "   treename += \"Tree\";" << endl;
+            }   
          }   
          out << "   printf(\"***************************************\\n\");" << endl;
          out << "   printf(\"    Getting chain of trees %s\\n\", treename.Data());" << endl;

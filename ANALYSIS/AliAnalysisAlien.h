@@ -96,6 +96,7 @@ public:
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
    virtual void        SetOverwriteMode(Bool_t on=kTRUE)                 {fOverwriteMode = on ? 1 : 0;}
    virtual void        SetDropToShell(Bool_t drop=true)                  {fDropToShell = drop;}
+   virtual void        SetTreeName(const char *name)                     {fTreeName = name;}
 
    TGridJDL           *GetGridJDL() const {return fGridJDL;}
    TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
@@ -242,7 +243,8 @@ private:
    TString          fGridJobIDs;      // List of last committed jobs
    TString          fGridStages;      // List of last committed jobs
    TString          fFriendLibs;      // List of libs (separated by blacs) needed for friends processing
+   TString          fTreeName;        // Name of the tree to be analyzed
 
-   ClassDef(AliAnalysisAlien, 24)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 25)   // Class providing some AliEn utilities
 };
 #endif
