@@ -377,11 +377,15 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	    }
 
 	  }
-      else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
-        if ( IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi())) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
-             // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
-            )
+    else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
+      if ( IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) // && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi())) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
+           // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
+        )
 	      imost = 4;
+	  }
+    else if (fMostProbable == 5) { // no-protons
+      if ( !IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+	      imost = 5;
 	  }
 
 	}
