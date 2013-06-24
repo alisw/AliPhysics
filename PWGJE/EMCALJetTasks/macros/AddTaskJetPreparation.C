@@ -77,7 +77,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   hCorr->SelectCollisionCandidates(pSel);
   if (isEmcalTrain) {
     if (doHistos)
-      RequestMemory(hCorr,250*1024);
+      RequestMemory(hCorr,500*1024);
   }
 
   // Produce MC particles
