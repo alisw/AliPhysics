@@ -62,6 +62,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
+  void SetLeastProbableProton();
   void SetNoMostProbable();
   void SetPIDMethod(ReadPIDMethodType newMethod);
   void SetNsigmaTPCTOF(Bool_t);
@@ -165,6 +166,7 @@ inline void AliFemtoESDTrackCut::SetminITScls(const int& minITScls){fminITScls=m
 inline void AliFemtoESDTrackCut::SetMostProbablePion() { fMostProbable = 2; }
 inline void AliFemtoESDTrackCut::SetMostProbableKaon() { fMostProbable = 3; }
 inline void AliFemtoESDTrackCut::SetMostProbableProton() { fMostProbable = 4; }
+inline void AliFemtoESDTrackCut::SetLeastProbableProton() { fMostProbable = 5; }
 inline void AliFemtoESDTrackCut::SetNoMostProbable() { fMostProbable = 0; }
 inline void AliFemtoESDTrackCut::SetMaxITSChiNdof(const float& maxchi) { fMaxITSchiNdof = maxchi; }
 inline void AliFemtoESDTrackCut::SetMaxTPCChiNdof(const float& maxchi) { fMaxTPCchiNdof = maxchi; }
