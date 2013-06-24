@@ -42,7 +42,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useWeight=kFALSE)
 //AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -538,7 +538,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsDplustoKpipi);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetDecayChannel(31);
-	task->SetUseWeight(kFALSE);
+	task->SetUseWeight(useWeight);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetSign(isSign);
 	task->SetCentralitySelection(kFALSE);
@@ -682,4 +682,3 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 
 	return task;
 }
-
