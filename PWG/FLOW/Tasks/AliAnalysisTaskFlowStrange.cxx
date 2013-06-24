@@ -84,6 +84,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fVZEevent(NULL),
   fCandidates(NULL),
   fList(NULL),
+  fRunNumber(-1),
   fDebug(0),
   fQAlevel(0),
   fReadESD(kFALSE),
@@ -91,6 +92,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fAvoidExec(kFALSE),
   fSkipSelection(kFALSE),
   fSkipFlow(kFALSE),
+  fSkipDHcorr(kTRUE),
   fUseFP(kFALSE),
   fRunOnpA(kFALSE),
   fRunOnpp(kFALSE),
@@ -182,6 +184,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fVZEevent(NULL),
   fCandidates(NULL),
   fList(NULL),
+  fRunNumber(-1),
   fDebug(0),
   fQAlevel(0),
   fReadESD(kFALSE),
@@ -189,6 +192,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fAvoidExec(kFALSE),
   fSkipSelection(kFALSE),
   fSkipFlow(kFALSE),
+  fSkipDHcorr(kTRUE),
   fUseFP(kFALSE),
   fRunOnpA(kFALSE),
   fRunOnpp(kFALSE),
@@ -328,12 +332,13 @@ void AliAnalysisTaskFlowStrange::AddQAEvents() {
   TList *tQAEvents=new TList();
   tQAEvents->SetName("Event");
   tQAEvents->SetOwner();
-  tH1D = new TH1D("Events","Number of Events",5,0,5); tQAEvents->Add(tH1D);
+  tH1D = new TH1D("Events","Number of Events",6,0,6); tQAEvents->Add(tH1D);
   tH1D->GetXaxis()->SetBinLabel(1,"exec");
   tH1D->GetXaxis()->SetBinLabel(2,"userexec");
   tH1D->GetXaxis()->SetBinLabel(3,"reached");
   tH1D->GetXaxis()->SetBinLabel(4,"selected");
   tH1D->GetXaxis()->SetBinLabel(5,"rejectedByLowQw");
+  tH1D->GetXaxis()->SetBinLabel(6,"rejectedByErrorLoadVZEcal");
   tProfile = new TProfile("Configuration","Configuration",20,0,20); tQAEvents->Add(tProfile);
   tProfile->Fill( 0.5,fCentPerMin,1); tProfile->GetXaxis()->SetBinLabel( 1,"fCentPerMin");
   tProfile->Fill( 1.5,fCentPerMax,1); tProfile->GetXaxis()->SetBinLabel( 2,"fCentPerMax");
@@ -408,6 +413,7 @@ void AliAnalysisTaskFlowStrange::AddQACandidates() {
   TList *tList;
   TH1D *tH1D;
   TH2D *tH2D;
+  TH3D *tH3D;
 
   //reconstruction
   if(fReadESD) {
@@ -422,6 +428,12 @@ void AliAnalysisTaskFlowStrange::AddQACandidates() {
   tList=new TList(); tList->SetName("RecSel"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
   //daughters
   tList=new TList(); tList->SetName("TrkDau"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
+  if(!fSkipDHcorr) {
+    //corr
+    tList=new TList(); tList->SetName("DHCORR"); tList->SetOwner(); 
+    tH3D = new TH3D("DPHI","DPHI;dPT;dPHI;dETA", 20, -1, +1, 120, -TMath::TwoPi(), TMath::TwoPi(), 16, -1.6, +1.6 ); tList->Add(tH3D);
+    fList->Add(tList);
+  }
   if(fQAlevel>1) {
     // IN-OUT
     tList=new TList(); tList->SetName("RecAllIP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
@@ -462,10 +474,20 @@ void AliAnalysisTaskFlowStrange::UserExec(Option_t *option) {
   AliAnalysisTaskFlowStrange::MyUserExec(option);
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::NotifyRun() {
-  if(fQAlevel>5) AddVZEQA();
+void AliAnalysisTaskFlowStrange::MyNotifyRun() {
+  if(fQAlevel>5 && !fReadESD) AddVZEQA();
   if(fVZEsave) AddVZEROResponse();
-  if(fVZEload) LoadVZEROResponse();
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::CalibrateEvent() {
+  if(fVZEsave) SaveVZEROResponse();
+  if(fQAlevel>5 && !fReadESD) SaveVZEROQA(); // 2BIMPROVED
+  Bool_t okay=kTRUE;
+  if(fVZEload) {
+    LoadVZEROResponse();
+    if(!fVZEResponse) okay = kFALSE;
+  }
+  return okay;
 }
 //=======================================================================
 Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent *tESD) {
@@ -616,28 +638,36 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
   fCandidates->SetLast(-1);
   AliESDEvent *tESD=dynamic_cast<AliESDEvent*>(InputEvent());
   AliAODEvent *tAOD=dynamic_cast<AliAODEvent*>(InputEvent());
+  Int_t thisRun = fRunNumber;
   //=>check event
   Bool_t acceptEvent=kFALSE;
   if(fReadESD) {
-    if(!tESD) return;
+    if(!tESD) {Publish(); return;}
     acceptEvent = fRunOnpp?kFALSE:fRunOnpA?kFALSE:AcceptAAEvent(tESD);
+    thisRun = tESD->GetRunNumber();
   } else {
-    if(!tAOD) return;
+    if(!tAOD) {Publish(); return;}
     acceptEvent = fRunOnpp?AcceptPPEvent(tAOD):fRunOnpA?AcceptPAEvent(tAOD):AcceptAAEvent(tAOD);
+    thisRun = tAOD->GetRunNumber();
+  }
+  if(thisRun!=fRunNumber) {
+    fRunNumber = thisRun;
+    MyNotifyRun();
+  }
+  if( !CalibrateEvent() ) {
+    ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(5);
+    Publish(); return;
   }
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(2);
   //=>does the event clear?
-  if(!acceptEvent) return;
+  if(!acceptEvent) {Publish(); return;}
   if(!fSkipFlow) {
     MakeQVectors();
     if(fPsi2<-0.1) {
       ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(4);
+      Publish();
       return;
     }
-  }
-  SaveVZEROResponse();
-  if(fQAlevel>5 && !fReadESD) {
-    SaveVZEROQA();
   }
   //=>great, lets do our stuff!
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(3);
@@ -649,12 +679,19 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
       if(fSpecie<10) ReadFromAODv0(tAOD);
       else ChargeParticles(tAOD);
     }
-    if(fUseFP) AddCandidates();
+    if(fUseFP) {
+      if(!fSkipDHcorr) MakeDHcorr();
+      AddCandidates();
+    }
     //=>flow
     //=>done
   }
   tTime.Stop();
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("RealTime"))->Fill( TMath::Log( tTime.RealTime() ) );
+  Publish();
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::Publish() {
   PostData(1,fList);
   if(fUseFP) {
     PostData(2,fTPCevent);
@@ -1762,42 +1799,31 @@ Bool_t AliAnalysisTaskFlowStrange::PassesFilterBit(AliESDtrack *track) {
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::LoadVZEROResponse() {
-  if(fVZEsave) return;
-  AliVEvent *event = InputEvent();
-  if(!event) return;
-  Int_t thisrun = event->GetRunNumber();
   if(fVZEResponse) {
     TString run = fVZEResponse->GetTitle();
-    if( run.Atoi() == thisrun ) return;
+    if( run.Atoi() == fRunNumber ) return;
     fVZEResponse = NULL;
   }
   //==>loading
-  fVZEResponse = dynamic_cast<TH2D*> (fVZEload->FindObject( Form("%d",thisrun) ));
-  printf("New VZE calibration: run %d -> Entries %.0f\n",thisrun,fVZEResponse->GetEntries());
+  fVZEResponse = dynamic_cast<TH2D*> (fVZEload->FindObject( Form("%d",fRunNumber) ));
+  printf("New VZE calibration: run %d -> Entries %.0f\n",fRunNumber,fVZEResponse->GetEntries());
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddVZEQA() {
-  AliVEvent *event = InputEvent();
-  if(!event) return;
-  Int_t thisrun = event->GetRunNumber();
-
   fVZEQA = new TList();
-  fVZEQA->SetName( Form("VZEQA%d",thisrun) );
+  fVZEQA->SetName( Form("VZEQA%d",fRunNumber) );
   fVZEQA->SetOwner();
   if(fQAlevel>0) {
     TProfile2D *prof = new TProfile2D("LINP","LINP;VZEcell;VZEmult;SPDtrkl", 64,0,64,500,0,700,0,10000); fVZEQA->Add( prof );
     prof = new TProfile2D("MULP","MULP;VZEcell;CENTR;VZEmult", 64,0,64,100,0,100,0,10000); fVZEQA->Add( prof );
     TH3D *tH3D = new TH3D("EQU","EQU;VZEeqmult;VZEmult",100,0,700,100,0,700,64,0,64); fVZEQA->Add( tH3D );
-    //tH3D = new TH3D("LIN","LIN;SPDtrkl;VZEmult;VZEcell",2000,0,2000,200,0,700,64,0,64); fVZEQA->Add( tH3D );
   }
   fList->Add(fVZEQA);
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::SaveVZEROQA() {
-  if(!fVZEQA) return;
   AliAODEvent *event = dynamic_cast<AliAODEvent*> (InputEvent());
   AliVVZERO *vzero = event->GetVZEROData();
-  //AliAODHeader *header = event->GetHeader();
   AliAODTracklets *tracklets = event->GetTracklets();
   if(!event) return;
   if(!vzero) return;
@@ -1810,7 +1836,6 @@ void AliAnalysisTaskFlowStrange::SaveVZEROQA() {
     eqmult = event->GetVZEROEqMultiplicity(id);
     ((TProfile2D*) fVZEQA->FindObject( "LINP" ))->Fill(id,mult,trkl,1);
     ((TProfile2D*) fVZEQA->FindObject( "MULP" ))->Fill(id,fThisCent,mult,1);
-    //((TH3D*) fVZEQA->FindObject("LIN"))->Fill(trkl,mult,id);
     ((TH3D*) fVZEQA->FindObject("EQU"))->Fill(eqmult,mult,id);
   }
 }
@@ -1873,4 +1898,25 @@ Int_t AliAnalysisTaskFlowStrange::RefMultGlobal() {
   }
   return found;
 }
-
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeDHcorr() {
+  // Adds DH corr
+  for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
+    AliFlowCandidateTrack *cand = static_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
+    if(!cand) continue;
+    for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
+      AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
+      if(!iRP) continue;
+      if(!iRP->InRPSelection()) continue;
+      if(cand->GetID() == iRP->GetID()) continue; //avoid autocorr
+      for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) //if it is a decay
+        if(cand->GetIDDaughter(iDau) == iRP->GetID()) continue;
+      //corr
+      Double_t dDPHI = iRP->Phi() - cand->Phi();
+      Double_t dDETA = iRP->Eta() - cand->Eta();
+      Double_t dDPT  = iRP->Pt()  - cand->Pt();
+      ((TH3D*)((TList*)fList->FindObject("DHCORR"))->FindObject("DPHI"))->Fill( dDPT, dDPHI, dDETA );
+      //end of corr
+    }
+  }
+}

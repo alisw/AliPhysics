@@ -41,7 +41,6 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   virtual void Exec(Option_t*);
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
-  virtual void NotifyRun();
 
   void MyUserExec(Option_t *);
   void SetDebug(Int_t val=1) {fDebug = val;}
@@ -105,6 +104,10 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void AddQAEvents();
   void AddQACandidates();
 
+  void MyNotifyRun();
+  Bool_t CalibrateEvent();
+  void Publish();
+  
   void AddEventSpy();
   Bool_t AcceptAAEvent(AliESDEvent *tESD);
   Bool_t AcceptAAEvent(AliAODEvent *tAOD);
@@ -127,6 +130,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Bool_t PassesRFPTPCCuts(AliESDtrack *myTrack, Double_t aodChi2NDF=0, Float_t aodipxy=0, Float_t aodipz=0);
   void MakeQVectors();
 
+  void MakeDHcorr();
   void AddCandidates();
   void ReadEventPlanesFromAOD(AliAODEvent *tAOD);
 
@@ -180,6 +184,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   TObjArray      *fCandidates;  // array of selected candidates
   TList          *fList;        // stores the final list of output histograms
 
+  Int_t fRunNumber; // current run number
+
   Int_t fDebug;   // debug level
   Int_t fQAlevel; // QA plots
 
@@ -188,6 +194,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Bool_t fAvoidExec;     // avoids Exec
   Bool_t fSkipSelection; // skip decay finder
   Bool_t fSkipFlow;      // skip flow-wise code
+  Bool_t fSkipDHcorr;    // skip dhcorr code
   Bool_t fUseFP;         // flow package?
   Bool_t fRunOnpA;       // make task compatible with pA event selection
   Bool_t fRunOnpp;       // make task compatible with pp event selection
