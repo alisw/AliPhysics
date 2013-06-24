@@ -5,23 +5,26 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
-class AliFlowTrackCuts;
+class AliAnalysisTaskRhoVnModulation;
 
-void AddTaskJetFlow( TString name       = "name",
-                     TString jets       = "jets",
-                     TString tracks     = "tracks",
-                     Float_t ptbump     = 0,
-                     TArrayI* cent      = 0x0,
-                     Float_t MinPOIPt   = 0.15,
-                     Float_t MaxPOIPt   = 150,
-                     Float_t CCBinsInPt = 100,
-                     Bool_t VParticle   = kFALSE,
-                     TArrayD* ptArray   = 0x0,
-                     Int_t year         = -1,
-                     Bool_t testFlow    = kFALSE,
-                     Bool_t SP          = kFALSE,
-                     Bool_t QC          = kFALSE,
-                     Bool_t debug       = kFALSE  )
+// AddTask macro for the jet flow analysis task
+// this task uses an instance AliAnalysisTaskRhoVnModulation
+// as a 'master' object for analysis flags and track and event cuts
+
+AliAnalysisTaskRhoVnModulation* AddTaskJetFlow( 
+        TString name                       = "name",
+        AliAnalysisTaskRhoVnModulation* t  = 0x0,
+        Float_t CCMinPt                    = 1,
+        Float_t CCMaxPt                    = 150,
+        Float_t CCBinsInPt                 = 100,
+        Bool_t VParticle                   = kFALSE,
+        TArrayD* ptArray                   = 0x0,
+        Bool_t VZEROEP                     = kTRUE,
+        Bool_t QC2                         = kTRUE,
+        Bool_t QC4                         = kFALSE,
+        Bool_t FlowPackageSP               = kFALSE,
+        Bool_t FlowPackageQC               = kTRUE,
+        Bool_t debug                       = kFALSE  )
 {
     // first check the environment (common to all tasks)
     if(debug) printf("\n\n  >> AddTaskJetFlow <<\n");
@@ -37,67 +40,53 @@ void AddTaskJetFlow( TString name       = "name",
         if(debug) cout << " Fatal error: no imput event handler found!" << endl;
         return 0x0;
     }
+    AliAnalysisTaskRhoVnModulation* rhoTask = t; 
     // check the centrality setup
-    if(!cent) {
-        Int_t c[] = {0, 10, 30, 50, 70, 90};
-        cent = new TArrayI(sizeof(c)/sizeof(c[0]), c);
-        printf(" > Setup default centrality binning with %i bins \n ", cent->GetSize());
-    }
-    // create the cut objects
-    AliFlowTrackCuts* CutsRP_VZERO(0x0);
-    if(SP) {
-        CutsRP_VZERO = new AliFlowTrackCuts("CutsRP_VZERO");
-        CutsRP_VZERO = CutsRP_VZERO->GetStandardVZEROOnlyTrackCuts();
-    }
-    AliFlowTrackCuts* CutsRP_TPC(0x0);
-    if(QC) {
-       CutsRP_TPC = new AliFlowTrackCuts("CutsRP_TPC");
-       CutsRP_TPC = CutsRP_TPC->GetStandardTPCStandaloneTrackCuts();
-       CutsRP_TPC->SetAODfilterBit(1);
-    }
-
+    TArrayI* cent(rhoTask->GetCentralityClasses());
     // add the tasks in a loop, one task for each centrality bin
     for(Int_t i(0); i < cent->GetSize()-1; i++) {
         TString tempName(Form("%s_%i_%i", name.Data(), cent->At(i), cent->At(i+1)));
         // create the task
         AliAnalysisTaskJetFlow* task = new AliAnalysisTaskJetFlow(
             tempName.Data(),
-            CutsRP_TPC,
-            CutsRP_VZERO,
-            jets,
-            tracks);
-        task->SetCCMaxPt(MaxPOIPt);
+            rhoTask,
+            VParticle,
+            VZEROEP,
+            QC2,
+            QC4,
+            FlowPackageSP,
+            FlowPackageQC);
+        task->SetCCMinPt(CCMinPt);
+        task->SetCCMaxPt(CCMaxPt);
         task->SetCCBinsInPt(CCBinsInPt);
-        (ptArray) ? task->SetDoTestFlowAnalysis(kTRUE, ptArray) : task->SetDoTestFlowAnalysis(testFlow);
-        task->SetExplicitOutlierCut(year);
-        task->SetMinMaxPOIPt(MinPOIPt, MaxPOIPt);
+        task->SetPtBins(ptArray);       // if passed as NULL default a sane default is provided
         (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
         if(!task) {
              if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
              return 0x0;
         }
-        else printf(" > added task with name %s and jet collection %s < \n", tempName.Data(), jets.Data());
+        else printf(" > added task with name %s and jet collection %s < \n", tempName.Data(), rhoTask->GetJetsName().Data());
         // pass specific objects and settigns to the task
         task->SetMinMaxCentrality(cent->At(i), cent->At(1+i));
-        task->SetPtBump(ptbump);
         mgr->AddTask(task);
         mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
         mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_histograms", tempName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
         // connect flow anaysis task
         Bool_t slotTwoFilled(kFALSE);
-        if(SP) {
+        if(FlowPackageSP) {
             AliAnalysisDataContainer *flowEvent_VZERO = mgr->CreateContainer(Form("flowEvent_VZERO_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
             mgr->ConnectOutput(task, 2, flowEvent_VZERO);
             slotTwoFilled = kTRUE;
         }
-        if(QC) {
+        if(FlowPackageQC) {
             AliAnalysisDataContainer *flowEvent_TPC = mgr->CreateContainer(Form("flowEvent_TPC_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
             (slotTwoFilled) ? mgr->ConnectOutput(task, 3, flowEvent_TPC) : mgr->ConnectOutput(task, 2, flowEvent_TPC);
         }
-        if(SP) TaskJetFlow::AddSPmethod(Form("SPVZERO_A_%s", tempName.Data()), "Qa", 2, flowEvent_VZERO);
-        if(SP) TaskJetFlow::AddSPmethod(Form("SPVZERO_B_%s", tempName.Data()), "Qb", 2, flowEvent_VZERO);
-        if(QC) TaskJetFlow::AddQCmethod(Form("QC_%s", tempName.Data()), 2, flowEvent_TPC);
+        if(FlowPackageSP) TaskJetFlow::AddSPmethod(Form("SPVZERO_A_%s", tempName.Data()), "Qa", 2, flowEvent_VZERO);
+        if(FlowPackageSP) TaskJetFlow::AddSPmethod(Form("SPVZERO_B_%s", tempName.Data()), "Qb", 2, flowEvent_VZERO);
+        if(FlowPackageQC) TaskJetFlow::AddQCmethod(Form("QC_%s", tempName.Data()), 2, flowEvent_TPC);
     }
+    return rhoTask;
 }
 //_____________________________________________________________________________
 namespace TaskJetFlow{ // use unique namespace to avoid problems in TRAIN analysis

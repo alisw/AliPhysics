@@ -13,10 +13,12 @@
 class TString;
 class TList;
 class TArrayD;
+class TClonesArray;
 class AliFlowTrackCuts;
 class AliFlowEventCuts;
 class AliFlowEvent;
 class TH1;
+class AliAnalysisTaskRhoVnModulation;
 
 class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
 {
@@ -26,85 +28,88 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         // constructors, destructor
                                 AliAnalysisTaskJetFlow();
                                 AliAnalysisTaskJetFlow(
-                                        const char *name,
-                                        AliFlowTrackCuts* rpCutsTPC,
-                                        AliFlowTrackCuts* rpCutsVZERO,
-                                        TString jetName,
-                                        TString picoName);
+                                        const char* name,
+                                        AliAnalysisTaskRhoVnModulation* rhoTask, 
+                                        Bool_t VPart,           // use jets or tracks as pois
+                                        Bool_t VZEROEP,         // do vzero ep method
+                                        Bool_t QC2,             // do qc2 method
+                                        Bool_t QC4,             // do simple qc4 method FIXME not implemented yet
+                                        Bool_t FlowPackageSP,   // call flow package vzero scalar product
+                                        Bool_t FlowPackageQC    // call flow package nth order q-cumulants
+                                        );
         virtual                 ~AliAnalysisTaskJetFlow();
         // virtual methods
-        virtual void            LocalInit();
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
         // setters
-        void                    SetExplicitOutlierCut(Int_t c)          {fExplicitOutlierCut = c;}
         void                    SetDebugMode(Int_t d)                   {fDebug         = d;}
-        void                    SetPtBump(Float_t b)                    {fPtBump        = b;}
+        void                    SetCCMinPt(Float_t m)                   {fCCMinPt       = m;}
         void                    SetCCMaxPt(Float_t m)                   {fCCMaxPt       = m;}
         void                    SetCCBinsInPt(Int_t b)                  {fCCBinsInPt    = b;}
         void                    SetMinMaxCentrality(Float_t min, Float_t max)   {fCentralityMin = min; fCentralityMax = max; }
-        void                    SetMinMaxPOIPt(Float_t min, Float_t max)        {fPOIPtMin = min; fPOIPtMax = max; }        
-        void                    SetDoVParticleAnalysis(Bool_t d)        {fVParticleAnalysis = d; }
         void                    SetMinimizeDiffBins(Bool_t b)           {fMinimizeDiffBins = b; }
-        void                    SetDoTestFlowAnalysis(Bool_t t, TArrayD* pt = 0x0)
-                {fDoTestFlowAnalysis = t; 
-                 fPtBins = pt;  }
+        void                    SetPtBins(TArrayD* pt)                  {fPtBins = pt; }
         void                    SetDoMultWeight(Bool_t m)               {fDoMultWeight = m; }
+        void                    SetDoPtWeight(Bool_t p)                 {fDoPtWeight = p; }
+        // cuts
+        Bool_t                  PassesCuts();
         // analysis details
-        Bool_t                  PassesCuts(AliVEvent* event);
-        Bool_t                  PassesCuts(Int_t year); 
-        void                    DoTestFlowAnalysis();
-        /* inline */    Double_t PhaseShift(Double_t x) const {  
-            while (x>=TMath::TwoPi())x-=TMath::TwoPi();
-            while (x<0.)x+=TMath::TwoPi();
-            return x; }
-        /* inline */    Double_t PhaseShift(Double_t x, Double_t n) const {
-            x = PhaseShift(x);
-            if(TMath::Nint(n)==2) while (x>TMath::Pi()) x-=TMath::Pi();
-            if(TMath::Nint(n)==3) {
-                if(x>2.*TMath::TwoPi()/n) x = TMath::TwoPi() - x;
-                if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
-            }
-            return x; }
+        void                    DoVZEROFlowAnalysis();
+        void                    DoQC2FlowAnalysis();
+        void                    DoQC4FlowAnalysis();
+        Bool_t                  DoFlowPackageFlowAnalysis();
+        // q-cumulant helper calculations TODO move to AliAnlaysisTaskRhoVnModulation for consistency
+        void                    QCnDiffentialFlowVectors(Double_t* repn, Double_t* impn, Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n);
+
     private:
 
         // analysis flags and task setup specifics
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
-        Int_t                   fExplicitOutlierCut;    // cut on multiplicity ourliers explicitely (slow)
         TString                 fJetsName;              // name of jet list
         TString                 fTracksName;            // name of track list
+        TClonesArray*           fPois;                  //! array with pois
         TList*                  fOutputList;            //! output list
         dataType                fDataType;              //! data type
         Bool_t                  fVParticleAnalysis;     // do the analysis on vparticles instead of jets
         Bool_t                  fMinimizeDiffBins;      // minimize variables (for low statistics)
-        Bool_t                  fDoTestFlowAnalysis;    // do a quick and dirty crude flow estimate
+        Bool_t                  fDoVZEROFlowAnalysis;   // do vzero flow analysis
+        Bool_t                  fDoQC2FlowAnalysis;     // do qc2 flow analysis
+        Bool_t                  fDoQC4FlowAnalysis;     // do qc4 flow analysis
         Bool_t                  fDoMultWeight;          // weight events with multiplicity
+        Bool_t                  fDoPtWeight;            // introduce pt weighting for rp's and poi's
         Bool_t                  fInitialized;           //! check if the analysis is initialized
         // members
-        Float_t                 fPtBump;                // track pt += ptbump
+        Bool_t                  fUsePtWeight;           // use pt weights for the qc analysis
+        Float_t                 fCCMinPt;               // min pt for flow analysis(common constants)
         Float_t                 fCCMaxPt;               // max pt for flow analysis (common constants)
-        Float_t                 fCCBinsInPt;            // bins in pt for flow analysis (common constants)
+        Int_t                   fCCBinsInPt;            // bins in pt for flow analysis (common constants)
         Float_t                 fCentralityMin;         // minimium centrality
         Float_t                 fCentralityMax;         // maximum centrality
-        Float_t                 fPOIPtMin;              // minimum pt for poi's
-        Float_t                 fPOIPtMax;              // maximum pt for poi's
-        TArrayD*                fPtBins;                // pt bins for flow analysis
+        TArrayD*                fPtBins;                // custom pt bins for flow analysis
         // cut objects
-        AliFlowTrackCuts*       fCutsRP_TPC;            // rp cuts for tpc
         AliFlowTrackCuts*       fCutsRP_VZERO;          // rp cuts for fzero
         AliFlowTrackCuts*       fCutsNull;              // empty cuts
         AliFlowEventCuts*       fCutsEvent;             // event cuts
         // containers, setup
         AliFlowEvent*           fFlowEvent_TPC;         //! container for flow analysis
         AliFlowEvent*           fFlowEvent_VZERO;       //! container for flow analysis
+        AliAnalysisTaskRhoVnModulation* fRhoVn;         // common cuts and settings master object, see class header
         // histograms
         TH1F*                   fHistAnalysisSummary;   //! analysis summary
         TH1F*                   fCentralitySelection;   //! centrality selection
+        // for event plane flow analysis
         TH1F*                   fVZEROAEP;              //! VZEROA EP
         TH1F*                   fVZEROCEP;              //! VZEROC EP
         TProfile*               fv2VZEROA;              //! v2 from VZEROA
         TProfile*               fv2VZEROC;              //! v2 from VZEROC
+        // for qc flow analysis
+        TProfile*               fRefCumulants;          //! (weighted) reference cumulant
+        TProfile*               fDiffCumlantsV2;        //! (weighted) differential cumulant
+        TProfile*               fDiffCumlantsV3;        //! (weighted) differential cumulant
+        TH1F*                   fQC2v2;                 //! final qc2 result
+        TH1F*                   fQC2v3;                 //! final qc2 result
+        // additional histograms
         TProfile*               fTempA;                 //! internal bookkeeping
         TProfile*               fTempC;                 //! internal bookkeeping
 
