@@ -134,11 +134,11 @@ void AliAnalysisTaskCompareAODTrackCuts::UserCreateOutputObjects() {
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
 	if (!manager) {AliFatal("Could not obtain analysis manager.");}
 	AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*> (manager->GetInputEventHandler());
-	if (!inputHandler) {AliFatal("Could not obtain input handler.");}	
+	if (!inputHandler) {AliFatal("Could not obtain input handler."); return;}	
 
 	// Getting the pointer to the PID response object.
 	fPIDResponse = inputHandler->GetPIDResponse();
-	if (!fPIDResponse) {AliFatal("Could not obtain PID response.");}
+	if (!fPIDResponse) {AliFatal("Could not obtain PID response."); return;}
 
 	// Create the output list.
 	fOutputList = new TList();
