@@ -33,17 +33,18 @@ Bool_t ConfigSigmaStar
    // -- Define track cuts -------------------------------------------------------------------------
    //
 
-   TString s = ""; s+=trackDCAcut; s+="*(0.0026+0.0050/pt^1.01)";
+   //TString s = ""; s+=trackDCAcut; s+="*(0.0026+0.0050/pt^1.01)";
 
-   const char *formula = s;
-
+   //const char *formula = s;
+   
    // integrated pion cut
    AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForSigmaStar", AliPID::kPion);
    cutPi->SetPIDCut(piPIDCut);
    cutPi->SetMinTPCcluster(NTPCcluster);
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
    cutQuality->SetAODTestFilterBit(aodFilterBit);	         
-   cutQuality->SetDCARPtFormula(formula);	         
+   //cutQuality->SetDCARPtFormula(formula);	         
+   cutQuality->SetDCARmax(trackDCAcut);	         
     
    // cut set
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForSigmaStar", AliRsnTarget::kDaughter);
@@ -56,7 +57,6 @@ Bool_t ConfigSigmaStar
    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterLambda");
    
    esdTrackCuts->SetAcceptKinkDaughters(0); // 0 = kFalse
-   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
    esdTrackCuts->SetRequireTPCRefit();
@@ -70,7 +70,6 @@ Bool_t ConfigSigmaStar
    cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
    cutLambda->SetMinTPCcluster(NTPCcluster);
    cutLambda->SetMaxRapidity(0.8);
-   cutLambda->SetDCARPtFormula(formula);
    cutLambda->SetAODTestFilterBit(aodFilterBit);
    cutLambda->SetPIDCutProton(pPIDCut);
    cutLambda->SetPIDCutPion(piPIDCut);
@@ -92,7 +91,6 @@ Bool_t ConfigSigmaStar
    cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
    cutAntiLambda->SetMinTPCcluster(NTPCcluster);
    cutAntiLambda->SetMaxRapidity(0.8);
-   cutAntiLambda->SetDCARPtFormula(formula);
    cutAntiLambda->SetAODTestFilterBit(aodFilterBit);
    cutAntiLambda->SetPIDCutProton(pPIDCut);
    cutAntiLambda->SetPIDCutPion(piPIDCut);

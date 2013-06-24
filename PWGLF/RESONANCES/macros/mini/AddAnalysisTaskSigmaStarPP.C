@@ -49,7 +49,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    } 
 
    // create the task and configure 
-   TString taskName = Form("SigmaStar%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.2f_%.1f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA);
+   TString taskName = Form("SigmaStar%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.2f_%.1f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA);
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
@@ -137,7 +137,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPP
    //  outputFileName += ":Rsn";
    Printf("AddAnalysisTaskSigmaStarPP - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%d_%.1f_%.1f_%.1f_%.2f_%.1f_%.2f_%.1f",outNameSuffix.Data(),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA), 
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%d_%.1f_%.1f_%.2f_%.2f_%.1f_%.2f_%.1f",outNameSuffix.Data(),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA), 
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer, 
 							   outputFileName);
