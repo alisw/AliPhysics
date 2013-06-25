@@ -25,6 +25,7 @@
 
 #include "AliDCSSensor.h"
 #include "TDatime.h"
+#include "TCanvas.h"
 ClassImp(AliDCSSensor)
 
 const Double_t kSecInHour = 3600.; // seconds in one hour
@@ -79,20 +80,37 @@ AliDCSSensor& AliDCSSensor::operator=(const AliDCSSensor& source){
 }
 
 
-void AliDCSSensor::Print(const Option_t* option="") const{
+void AliDCSSensor::Print(const Option_t* option) const{
   //
-  //
+  // print function
   //  
   TString opt = option; opt.ToLower();
   printf("%s:%s\n",GetTitle(), GetName());
-  printf("%s\n",fStringID.GetTitle());
-  if (!fSensors) return;
-  Int_t nsensors=fSensors->GetEntries();
-  for (Int_t i=0; i<nsensors; i++){
-    printf("Sensor Nr%d\n",i);
-    if (fSensors->At(i)) fSensors->At(i)->Print(option);
-  }
+  printf("%s\n",fStringID.Data());
+
 }
+
+void AliDCSSensor::Draw(const Option_t* option) const{
+  //
+  // draw function - to viusalize sensor
+  // Unfortuantelly - it  make a memory leak as function Draw does not return the object pointer
+  //
+  TCanvas * canvas = new TCanvas(fStringID.Data(), fStringID.Data()); 
+  if (fGraph){
+    // transform points to time in s
+    Int_t npoints = fGraph->GetN();
+    for (Int_t i=0; i<npoints; i++){
+      fGraph->GetX()[i]=fGraph->GetX()[i]*3600+fStartTime;
+    }
+    fGraph->Draw(option);
+    return;
+  }
+  TGraph * graph = MakeGraph(100);  // memory leak - we can not modify the content - const method
+  graph->Draw(option);              // 
+  //
+}
+
+
 
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(UInt_t timeSec)

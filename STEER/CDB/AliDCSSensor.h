@@ -36,6 +36,7 @@ public:
   virtual ~AliDCSSensor(){}
   AliDCSSensor& operator=(const AliDCSSensor& source);
   virtual void Print(const Option_t* option="") const;
+  virtual void Draw(const Option_t* option="") const;
   
   Int_t       GetId()     const {return fId;     }
   Int_t       GetIdDCS()  const {return fIdDCS;     }
