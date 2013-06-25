@@ -37,6 +37,7 @@
 #include <TGeoMatrix.h>
 #include <TString.h>
 #include <TObjArray.h>
+#include "AliITSUAux.h"
 
 class TGeoPNEntry;
 class TDatime;
@@ -113,6 +114,7 @@ class AliITSUGeomTGeo : public TObject {
 
   static const char* GetITSVolPattern()                                 {return fgkITSVolName;}
   static const char* GetITSLayerPattern()                               {return fgkITSLrName;}
+  static const char* GetITSWrapVolPattern()                             {return fgkITSWrapVolName;}
   static const char* GetITSLadderPattern()                              {return fgkITSLadName;}
   static const char* GetITSModulePattern()                              {return fgkITSModName;}
   static const char* GetITSSensorPattern()                              {return fgkITSSensName;}
@@ -140,7 +142,7 @@ class AliITSUGeomTGeo : public TObject {
   Int_t        ExtractNumberOfDetectors(Int_t lay)                const;
   Int_t        ExtractNumberOfLadders(Int_t lay)                  const;
   Int_t        ExtractLayerDetType(Int_t lay)                     const;
-  Int_t        ExtractNumberOfLayers()                            const;
+  Int_t        ExtractNumberOfLayers();
   void         BuildITS(Bool_t loadSegm);
   //
  protected:
@@ -153,6 +155,7 @@ class AliITSUGeomTGeo : public TObject {
   Int_t *fLrDetType;           //[fNLayers] Array of layer detector types
   Int_t *fNDetectors;          //[fNLayers] Array of the number of detector/ladder(layer)
   Int_t *fLastModIndex;        //[fNLayers] max ID of the detctor in the layer
+  Char_t fLr2Wrapper[AliITSUAux::kMaxLayers]; // layer -> wrapper correspondence
   //
   TObjArray* fMatSens;         // Sensor's matrices pointers in the geometry
   TObjArray* fMatT2L;          // Tracking to Local matrices pointers in the geometry
@@ -163,6 +166,7 @@ class AliITSUGeomTGeo : public TObject {
   static const char*  fgkITSLadName;             // ITS Ladder name 
   static const char*  fgkITSModName;             // ITS Module name 
   static const char*  fgkITSSensName;            // ITS Sensor name 
+  static const char*  fgkITSWrapVolName;         // ITS Wrapper volume name 
   static const char*  fgkITSDetTypeName[kNDetTypes]; // ITS upg detType Names
   //
   static TString      fgITSsegmFileName;         // file name for segmentations

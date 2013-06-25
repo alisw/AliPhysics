@@ -40,7 +40,7 @@ class AliITSUv0 : public AliITSU {
   AliITSUv0();
   AliITSUv0(const char *title, const Int_t nlay);
   virtual       ~AliITSUv0() ;
-  
+  virtual void   SetNWrapVolumes(Int_t n);
   virtual void   AddAlignableVolumes() const;
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
@@ -54,6 +54,7 @@ class AliITSUv0 : public AliITSU {
 				    Double_t &width, Double_t &tilt,
 				    Double_t &lthick, Double_t &mthick,
 				    UInt_t &dettype) const;
+  virtual void   DefineWrapVolume(Int_t id, Double_t rmin,Double_t rmax, Double_t zspan);
   virtual void   Init(); 
   virtual Bool_t IsLayerTurbo(Int_t nlay);
   virtual Int_t  IsVersion()                 const { return 20;}  // vUpgrade ? do we need this
@@ -71,6 +72,10 @@ class AliITSUv0 : public AliITSU {
   TGeoVolume* CreateWrapperVolume(const Int_t nLay);
 
   //
+  Int_t     fNWrapVol;       // number of wrapper volumes
+  Double_t* fWrapRMin;       // min radius of wrapper volume
+  Double_t* fWrapRMax;       // max radius of wrapper volume
+  Double_t* fWrapZSpan;      // Z span of wrapper volume
   Bool_t   *fLayTurbo;       // True for "turbo" layers
   Double_t *fLayPhi0;        // Vector of layer's 1st ladder phi in lab
   Double_t *fLayRadii;       // Vector of layer radii

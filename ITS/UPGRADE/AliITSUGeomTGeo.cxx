@@ -50,6 +50,7 @@ const char* AliITSUGeomTGeo::fgkITSLrName  = "ITSULayer";
 const char* AliITSUGeomTGeo::fgkITSLadName = "ITSULadder";
 const char* AliITSUGeomTGeo::fgkITSModName = "ITSUModule";
 const char* AliITSUGeomTGeo::fgkITSSensName ="ITSUSensor";
+const char* AliITSUGeomTGeo::fgkITSWrapVolName = "ITSUWrapVol";
 const char* AliITSUGeomTGeo::fgkITSDetTypeName[AliITSUGeomTGeo::kNDetTypes] = {"Pix"};
 //
 TString     AliITSUGeomTGeo::fgITSsegmFileName = "itsSegmentations.root";
@@ -68,6 +69,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build, Bool_t loadSegm)
   ,fSegm(0)
 {
   // default c-tor
+  for (int i=AliITSUAux::kMaxLayers;i--;) fLr2Wrapper[i] = -1;
   if (build) BuildITS(loadSegm);
 }
 
@@ -124,6 +126,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
       }
     }
   }
+  for (int i=AliITSUAux::kMaxLayers;i--;) fLr2Wrapper[i] = src.fLr2Wrapper[i];
 }
 
 //______________________________________________________________________
@@ -477,7 +480,7 @@ TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
   // for a given module 'index' by quering the TGeoManager
   static TGeoHMatrix matTmp;
   const TString kPathBase = Form("/ALIC_1/%s_2/",AliITSUGeomTGeo::GetITSVolPattern());
-  const TString kNames = Form("%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
+  const TString kNames = Form("%%s%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
 			      ,AliITSUGeomTGeo::GetITSLayerPattern()
 			      ,AliITSUGeomTGeo::GetITSLadderPattern()
 			      ,AliITSUGeomTGeo::GetITSModulePattern()
@@ -486,7 +489,9 @@ TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
   Int_t lay,ladd,detInLad;
   GetModuleId(index,lay,ladd,detInLad);
   //
-  path.Form(kNames.Data(),kPathBase.Data(),lay,lay,ladd,lay,detInLad,lay,1);
+  int wrID = fLr2Wrapper[lay];
+  path.Form(kNames.Data(),kPathBase.Data(),wrID>=0 ? Form("%s%d_1/",GetITSWrapVolPattern(),wrID) : "",
+	    lay,lay,ladd,lay,detInLad,lay,1);
   gGeoManager->PushPath();
   if (!gGeoManager->cd(path.Data())) {
     gGeoManager->PopPath();
@@ -561,7 +566,7 @@ void AliITSUGeomTGeo::BuildITS(Bool_t loadSegm)
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::ExtractNumberOfLayers() const
+Int_t AliITSUGeomTGeo::ExtractNumberOfLayers()
 {
   // Determines the number of layers in the Upgrade Geometry
   //
@@ -571,8 +576,25 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLayers() const
   if (!itsV) AliFatal(Form("ITS volume %s is not in the geometry",fgkITSVolName));
   //
   // Loop on all ITSV nodes, count Layer volumes by checking names
-  Int_t nNodes = itsV->GetNodes()->GetEntries();
-  for (Int_t j=0; j<nNodes; j++) if (strstr(itsV->GetNodes()->At(j)->GetName(),fgkITSLrName)) numberOfLayers++;
+  // Build on the fly layer - wrapper correspondence
+  TObjArray* nodes = itsV->GetNodes();
+  Int_t nNodes = nodes->GetEntriesFast();
+  //
+  int nWrp = 0;
+  for (Int_t j=0; j<nNodes; j++) {
+    TGeoNode* nd = (TGeoNode*)nodes->At(j);
+    const char* name = nd->GetName();
+    if      (strstr(name,fgkITSLrName)) numberOfLayers++;
+    else if (strstr(name,fgkITSWrapVolName)) { // this is a wrapper volume, may cointain layers
+      TObjArray* nodesW = nd->GetNodes();
+      int nNodesW = nodesW->GetEntriesFast();
+      for (Int_t jw=0; jw<nNodesW; jw++) {
+	TGeoNode* ndW = (TGeoNode*)nodesW->At(jw);
+	if (strstr(ndW->GetName(),fgkITSLrName)) fLr2Wrapper[numberOfLayers++] = nWrp;
+      }
+      nWrp++;
+    }
+  }
   //  
   return numberOfLayers;
 }
@@ -657,8 +679,8 @@ void AliITSUGeomTGeo::Print(Option_t *) const
   printf("Geometry version %d, NLayers:%d NModules:%d\n",fVersion,fNLayers,fNModules);
   if (fVersion==kITSVNA) return;
   for (int i=0;i<fNLayers;i++) {
-    printf("Lr%2d\tNLadd:%2d\tNDet:%2d\tDetType:%3d\tMod#:%4d:%4d\n",
-	   i,fNLadders[i],fNDetectors[i],fLrDetType[i],GetFirstModIndex(i),GetLastModIndex(i));
+    printf("Lr%2d\tNLadd:%2d\tNDet:%2d\tDetType:%3d\tMod#:%4d:%4d\tWrapVol:%d\n",
+	   i,fNLadders[i],fNDetectors[i],fLrDetType[i],GetFirstModIndex(i),GetLastModIndex(i),fLr2Wrapper[i]);
   }
 }
 

@@ -61,7 +61,11 @@ ClassImp(AliITSUv0)
 
 //______________________________________________________________________
 AliITSUv0::AliITSUv0()
-:  fLayTurbo(0)
+:  fNWrapVol(0)
+  ,fWrapRMin(0)
+  ,fWrapRMax(0)
+  ,fWrapZSpan(0)
+  ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
   ,fLayZLength(0)
@@ -88,6 +92,10 @@ AliITSUv0::AliITSUv0()
 //______________________________________________________________________
 AliITSUv0::AliITSUv0(const char *title,const Int_t nlay)
   :AliITSU(title,nlay)
+  ,fNWrapVol(0)
+  ,fWrapRMin(0)
+  ,fWrapRMax(0)
+  ,fWrapZSpan(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
@@ -168,7 +176,9 @@ AliITSUv0::~AliITSUv0() {
   delete [] fDetTypeID;
   delete [] fBuildLevel;
   delete [] fUpGeom;
-
+  delete [] fWrapRMin;
+  delete [] fWrapRMax;
+  delete [] fWrapZSpan;
 }
 
 //______________________________________________________________________
@@ -230,6 +240,30 @@ void AliITSUv0::AddAlignableVolumes() const{
 }
 
 //______________________________________________________________________
+void AliITSUv0::SetNWrapVolumes(Int_t n)
+{
+  // book arrays for wrapper volumes
+  if (fNWrapVol) AliFatal(Form("%d wrapper volumes already defined",fNWrapVol));
+  if (n<1) return;
+  fNWrapVol = n;
+  fWrapRMin = new Double_t[fNWrapVol];
+  fWrapRMax = new Double_t[fNWrapVol];
+  fWrapZSpan= new Double_t[fNWrapVol];
+  for (int i=fNWrapVol;i--;) fWrapRMin[i]=fWrapRMax[i]=fWrapZSpan[i]=-1;
+  //
+}
+
+//______________________________________________________________________
+void AliITSUv0::DefineWrapVolume(Int_t id, Double_t rmin,Double_t rmax, Double_t zspan)
+{
+  // set parameters of id-th wrapper volume
+  if (id>=fNWrapVol||id<0) AliFatal(Form("id=%d of wrapper volume is not in 0-%d range",id,fNWrapVol-1));
+  fWrapRMin[id] = rmin;
+  fWrapRMax[id] = rmax;
+  fWrapZSpan[id] = zspan;
+}
+
+//______________________________________________________________________
 void AliITSUv0::CreateGeometry() {
 
   // Create the geometry and insert it in the mother volume ITSV
@@ -269,28 +303,19 @@ void AliITSUv0::CreateGeometry() {
   } // for (Int_t j=0; j<fNLayers; j++)
 
   // Create the wrapper volumes
-  TGeoVolume *wrap123=0, *wrap45=0, *wrap67=0;
-  if (fNLayers <= 3) {
-    wrap123 = CreateWrapperVolume(fNLayers);
-    vITSV->AddNode(wrap123, 1, 0);
+  TGeoVolume **wrapVols = 0;
+  if (fNWrapVol) {
+    wrapVols = new TGeoVolume*[fNWrapVol];
+    for (int id=0;id<fNWrapVol;id++) {
+      wrapVols[id] = CreateWrapperVolume(id);
+      vITSV->AddNode(wrapVols[id], 1, 0);
+    }
   }
-  else if (fNLayers <= 5) {
-    wrap123 = CreateWrapperVolume(3);
-    wrap45  = CreateWrapperVolume(fNLayers);
-    vITSV->AddNode(wrap123, 1, 0);
-    vITSV->AddNode(wrap45 , 1, 0);
-  }
-  else {
-    wrap123 = CreateWrapperVolume(3);
-    wrap45  = CreateWrapperVolume(5);
-    wrap67  = CreateWrapperVolume(fNLayers);
-    vITSV->AddNode(wrap123, 1, 0);
-    vITSV->AddNode(wrap45 , 1, 0);
-    vITSV->AddNode(wrap67 , 1, 0);
-  }
-
+  //
   // Now create the actual geometry
   for (Int_t j=0; j<fNLayers; j++) {
+    TGeoVolume* dest = vITSV;
+    //
     if (fLayTurbo[j]) {
       fUpGeom[j] = new AliITSUv0Layer(j,kTRUE,kFALSE);
       fUpGeom[j]->SetLadderWidth(fLadWidth[j]);
@@ -310,13 +335,19 @@ void AliITSUv0::CreateGeometry() {
     //
     if (fLadThick[j] != 0) fUpGeom[j]->SetLadderThick(fLadThick[j]);
     if (fDetThick[j] != 0) fUpGeom[j]->SetSensorThick(fDetThick[j]);
-    if (j <= 2)
-      fUpGeom[j]->CreateLayer(wrap123);
-    if (j == 3 || j == 4)
-      fUpGeom[j]->CreateLayer(wrap45);
-    if (j > 4)
-      fUpGeom[j]->CreateLayer(wrap67);
+    //
+    for (int iw=0;iw<fNWrapVol;iw++) {
+      if (fLayRadii[j]>fWrapRMin[iw] && fLayRadii[j]<fWrapRMax[iw]) {
+	AliInfo(Form("Will embed layer %d in wrapper volume %d",j,iw));
+	if (fLayZLength[j]>=fWrapZSpan[iw]) AliFatal(Form("ZSpan %.3f of wrapper volume %d is less than ZSpan %.3f of layer %d",
+							  fWrapZSpan[iw],iw,fLayZLength[j],j));
+	dest = wrapVols[iw];
+	break;
+      }
+    }
+    fUpGeom[j]->CreateLayer(dest);
   }
+  delete wrapVols; // delete pointer only, not the volumes
   //
 }
 
@@ -571,68 +602,23 @@ void AliITSUv0::GetLayerParameters(Int_t nlay, Double_t &phi0,
 }
 
 //______________________________________________________________________
-TGeoVolume* AliITSUv0::CreateWrapperVolume(const Int_t nLay)
+TGeoVolume* AliITSUv0::CreateWrapperVolume(Int_t id)
 {
-  //     Creates an air-filled wrapper cylindrical volume for ladders
+  //     Creates an air-filled wrapper cylindrical volume 
   // Inputs:
-  //          nLay : the max layer number
+  //          volume id
   // Outputs:
   //          the wrapper volume
-  // Return:
-  //   none.
 
-  Double_t rMin=0., rMax=0., zLen=0.;
-
-  // 0.98 and 1.02 accounts for a 2% tollerance
-
-  if (nLay <= 3) {
-    rMin = fLayRadii[0];
-    if (fLayTurbo[0])
-      rMin *= fLadWidth[0]*TMath::Sin(fLadTilt[0]*TMath::DegToRad());
-    rMin *= 0.98;
-
-    rMax = fLayRadii[nLay-1];
-    rMax += 0.5; // gosh, we're hardcoding! let's say it's a temporary fix...
-    rMax *= 1.02;
-
-    zLen = 1.02*fLayZLength[nLay-1];
-  }
-
-  if (nLay == 4 || nLay == 5) {
-    rMin = fLayRadii[3];
-    if (fLayTurbo[3])
-      rMin *= fLadWidth[3]*TMath::Sin(fLadTilt[3]*TMath::DegToRad());
-    rMin *= 0.98;
-
-    rMax = fLayRadii[nLay-1];
-    rMax += 0.5; // gosh, we're hardcoding! let's say it's a temporary fix...
-    rMax *= 1.02;
-
-    zLen = 1.02*fLayZLength[nLay-1];
-  }
-
-  if (nLay > 5) {
-    rMin = fLayRadii[5];
-    if (fLayTurbo[5])
-      rMin -= fLadWidth[5]*TMath::Sin(fLadTilt[5]*TMath::DegToRad());
-    rMin *= 0.98;
-
-    rMax = fLayRadii[nLay-1];
-    rMax += 0.5; // gosh, we're hardcoding! let's say it's a temporary fix...
-    rMax *= 1.02;
-
-    zLen = 1.02*fLayZLength[nLay-1];
-  }
-
-  if (zLen == 0) return 0; // No valid nLay, so no volume can be created
-
+  if (fWrapRMin[id]<0 || fWrapRMax[id]<0 || fWrapZSpan[id]<0) AliFatal(Form("Wrapper volume %d was requested but not defined",id));
   // Now create the actual shape and volume
-  TGeoTube *tube = new TGeoTube(rMin, rMax, zLen);
+  //
+  TGeoTube *tube = new TGeoTube(fWrapRMin[id], fWrapRMax[id], fWrapZSpan[id]/2.);
 
   TGeoMedium *medAir = gGeoManager->GetMedium("ITS_AIR$");
 
-  char volnam[15];
-  snprintf(volnam, 14, "LayerWrapper%d", nLay);
+  char volnam[30];
+  snprintf(volnam, 29, "%s%d", AliITSUGeomTGeo::GetITSWrapVolPattern(),id);
 
   TGeoVolume *wrapper = new TGeoVolume(volnam, tube, medAir);
 
