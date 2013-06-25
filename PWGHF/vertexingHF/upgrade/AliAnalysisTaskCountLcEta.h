@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskCountLcEta_H
-#define AliAnalysisTaskCountLcEta_H
+#ifndef ALIANALYSISTASKCOUNTLCETA_H
+#define ALIANALYSISTASKCOUNTLCETA_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -17,7 +17,10 @@
 //#                                                   #
 //#####################################################
 
+class TParticle;
 class TString;
+class TList;
+class TH1F;
 class TLoretzVector;
 class AliESDEvent;
 class AliAODEvent;
@@ -81,7 +84,8 @@ class AliAnalysisTaskCountLcEta : public AliAnalysisTaskSE {
   TString* fCutNames; //[fNcuts] names of the cuts variables
   Double_t fLooserPtTrack; // pt cut
   Double_t fInvMassCut;   // inv mass cut
-  ClassDef(AliAnalysisTaskCountLcEta, 1); // class to study Lc acceptance vs eta
+
+  ClassDef(AliAnalysisTaskCountLcEta,1); // class to study Lc acceptance vs eta
 };
 
 #endif
