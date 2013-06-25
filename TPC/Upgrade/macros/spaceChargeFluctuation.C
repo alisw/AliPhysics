@@ -592,6 +592,40 @@ void DrawOpenGate(){
   //  treeITSdy->Draw("mean-R.mean:sector:abs(theta)","entries>50&&abs(snp)<0.1&&theta<0","colz")
   
   treeITSdy->Draw("mean-R.mean:sector:abs(theta)","entries>50&&abs(snp)<0.1&&theta>0","colz");
+}
 
+
+void DrawCurrent(const char * ocdb="/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Calib/HighVoltage", Int_t run0, Int_t run1){
+  //
+  //
+  //
+  /*
+    const char * ocdb="/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Calib/HighVoltage";
+    Int_t run0=197460;
+    Int_t run1=197480;
+  */
+  const Int_t knpoints=100000;
+  TVectorD vecTime(knpoints);
+  TVectorD vecI(knpoints);
+  Int_t npoints=0;
+  for (Int_t irun=run0; irun<run1; irun++){
+    TFile * f = TFile::Open(Form("%s/Run%d_%d_v1_s0.root",ocdb,irun,irun));
+    if (!f) continue;
+    AliCDBEntry *       entry = (AliCDBEntry *)f->Get("AliCDBEntry");    
+    if (!entry) continue; 
+    AliDCSSensorArray * array = (AliDCSSensorArray *)entry->GetObject();
+    if (!array) continue;
+    AliDCSSensor * sensor = array->GetSensor("TPC_VHV_D_I_MON");
+    //sensor->Draw(Form("%d",irun));     
+    TGraph *graph = sensor->GetGraph();
+    for (Int_t ipoint=0; ipoint<graph->GetN(); ipoint++){
+      vecTime[npoints]=sensor->GetStartTime()+graph->GetX()[ipoint]*3600;
+      vecI[npoints]=graph->GetY()[ipoint];
+      npoints++;
+    }
+  }
+  TGraph * graph  = new TGraph(npoints, vecTime.GetMatrixArray(), vecI.GetMatrixArray());
+  graph->Draw("alp");
+  
 
 }
