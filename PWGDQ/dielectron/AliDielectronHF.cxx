@@ -104,6 +104,8 @@ AliDielectronHF::~AliDielectronHF()
   // Default Destructor
   //
   fAxes.Delete();
+  fRefObj.Delete();
+  fArrPairType.Delete();
 }
 
 //_____________________________________________________________________________
@@ -585,7 +587,7 @@ Bool_t AliDielectronHF::IsPairTypeSelected(Int_t itype)
   Bool_t selected = kFALSE;
 
   // fill all
-  if(fPairType==kAll) return kTRUE;
+  if(fPairType==kAll) selected=kTRUE;
 
   switch(itype) {
   case AliDielectron::kEv1PP: 
