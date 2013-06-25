@@ -1638,7 +1638,7 @@ std::set<int> AliAnalysisMuMuFnorm::RunNumbers() const
 //_____________________________________________________________________________
 void AliAnalysisMuMuFnorm::ScalerFnorm(Double_t& value, Double_t& error,
                                        Double_t L0bREF, Double_t purityREF, Double_t purityREFerror,
-                                       Double_t L0bMB, Double_t purityMB, double_t purityMBerror,
+                                       Double_t L0bMB, Double_t purityMB, Double_t purityMBerror,
                                        Double_t pileUpFactor, Double_t pileUpFactorError)
 {
   /// Compute the MB to CMUL ratio and its associated error
