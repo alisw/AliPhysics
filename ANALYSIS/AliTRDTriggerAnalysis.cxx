@@ -22,8 +22,8 @@
 
 #include "AliLog.h"
 #include "AliVTrack.h"
-#include "AliESDEvent.h"
-#include "AliESDTrdTrack.h"
+#include "AliVEvent.h"
+#include "AliVTrdTrack.h"
 
 #include "AliTRDTriggerAnalysis.h"
 
@@ -54,30 +54,30 @@ AliTRDTriggerAnalysis::~AliTRDTriggerAnalysis()
   // dtor
 }
 
-Bool_t AliTRDTriggerAnalysis::CalcTriggers(const AliESDEvent *esdEvent)
+Bool_t AliTRDTriggerAnalysis::CalcTriggers(const AliVEvent *event)
 {
   // evaluate the TRD trigger conditions,
   // so far HCO, HSE, HQU, HJT, HEE
 
   ResetTriggers();
 
-  if (!esdEvent) {
-    AliErrorClass("ESD event pointer is null");
+  if (!event) {
+    AliErrorClass("event pointer is null");
     return kFALSE;
   }
 
-  TString trgClasses = esdEvent->GetFiredTriggerClasses();
-  // UInt_t  trgInputs  = esdEvent->GetHeader()->GetL1TriggerInputs();
+  TString trgClasses = event->GetFiredTriggerClasses();
+  // UInt_t  trgInputs  = event->GetHeader()->GetL1TriggerInputs();
 
   Int_t nTracks[90]      = { 0 }; // stack-wise counted number of tracks above pt threshold
 
-  Int_t nTrdTracks = esdEvent->GetNumberOfTrdTracks();
+  Int_t nTrdTracks = event->GetNumberOfTrdTracks();
 
   if (nTrdTracks > 0)
     Fire(kHCO);
 
   for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
-    AliESDTrdTrack *trdTrack = esdEvent->GetTrdTrack(iTrack);
+    AliVTrdTrack *trdTrack = event->GetTrdTrack(iTrack);
     if (!trdTrack)
       continue;
 
