@@ -95,6 +95,8 @@ const char* AliDielectron::fgkPairClassNames[11] = {
 //________________________________________________________________
 AliDielectron::AliDielectron() :
   TNamed("AliDielectron","AliDielectron"),
+  fCutQA(kFALSE),
+  fQAmonitor(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -136,6 +138,8 @@ AliDielectron::AliDielectron() :
 //________________________________________________________________
 AliDielectron::AliDielectron(const char* name, const char* title) :
   TNamed(name,title),
+  fCutQA(kFALSE),
+  fQAmonitor(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -180,6 +184,7 @@ AliDielectron::~AliDielectron()
   //
   // Default destructor
   //
+  if (fQAmonitor) delete fQAmonitor;
   if (fHistoArray) delete fHistoArray;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
@@ -219,7 +224,15 @@ void AliDielectron::Init()
     fHistoArray->SetSignalsMC(fSignalsMC);
     fHistoArray->Init();
   }
-} 
+
+  if (fCutQA) {
+    fQAmonitor = new AliDielectronCutQA(Form("QAcuts_%s",GetName()),"QAcuts");
+    fQAmonitor->AddTrackFilter(&fTrackFilter);
+    fQAmonitor->AddPairFilter(&fPairFilter);
+    fQAmonitor->AddEventFilter(&fEventFilter);
+    fQAmonitor->Init();
+  }
+}
 
 //________________________________________________________________
 void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
@@ -251,6 +264,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   //in case we have MC load the MC event and process the MC particles
+  // why do not apply the event cuts first ????
   if (AliDielectronMC::Instance()->ConnectMCEvent()){
     ProcessMC(ev1);
   }
@@ -266,8 +280,11 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   UInt_t selectedMask=(1<<fEventFilter.GetCuts()->GetEntries())-1;
 
   //apply event cuts
-    if ((ev1&&fEventFilter.IsSelected(ev1)!=selectedMask) ||
-        (ev2&&fEventFilter.IsSelected(ev2)!=selectedMask)) return;
+  UInt_t cutmask = fEventFilter.IsSelected(ev1);
+  if(fCutQA) fQAmonitor->FillAll(ev1);
+  if(fCutQA) fQAmonitor->Fill(cutmask,ev1);
+  if ((ev1&&cutmask!=selectedMask) ||
+      (ev2&&fEventFilter.IsSelected(ev2)!=selectedMask)) return;
 
   //fill track arrays for the first event
   if (ev1){
@@ -613,12 +630,19 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
     AliVParticle *particle=ev->GetTrack(itrack);
 
     //apply track cuts
-    if (fTrackFilter.IsSelected(particle)!=selectedMask) continue;
+    UInt_t cutmask=fTrackFilter.IsSelected(particle);
+    //fill cut QA
+    if(fCutQA) fQAmonitor->FillAll(particle);
+    if(fCutQA) fQAmonitor->Fill(cutmask,particle);
+
+    if (cutmask!=selectedMask) continue;
 
     //fill selected particle into the corresponding track arrays
     Short_t charge=particle->Charge();
     if (charge>0)      fTracks[eventNr*2].Add(particle);
     else if (charge<0) fTracks[eventNr*2+1].Add(particle);
+
+  
   }
 }
 
@@ -1095,6 +1119,11 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       if (fCfManagerPair) fCfManagerPair->Fill(cutMask,candidate);
       //histogram array for the pair
       if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
+      // cut qa
+      if(pairIndex==AliDielectron::kEv1PM && fCutQA) {
+	fQAmonitor->FillAll(candidate);
+	fQAmonitor->Fill(cutMask,candidate);
+      }
 
       //apply cut
       if (cutMask!=selectedMask) continue;

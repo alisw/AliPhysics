@@ -56,6 +56,7 @@ set ( SRCS
       dielectron/AliDielectronTrackRotator.cxx
       dielectron/AliDielectronPID.cxx
       dielectron/AliDielectronCutGroup.cxx
+      dielectron/AliDielectronCutQA.cxx
       dielectron/AliDielectronEventCuts.cxx
       dielectron/AliDielectronHelper.cxx
       dielectron/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
