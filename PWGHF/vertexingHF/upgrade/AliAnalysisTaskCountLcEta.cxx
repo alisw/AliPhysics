@@ -117,6 +117,20 @@ AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(): AliAnalysisTaskSE()
 
 }
 
+//________________________________________________________________________
+AliAnalysisTaskCountLcEta::~AliAnalysisTaskCountLcEta()
+{
+  // Destructor
+
+  if(fESD) { delete fESD; fESD=0; }
+  if(fAOD) { delete fAOD; fAOD=0; }
+  if(fhNevt) { delete fhNevt; fhNevt=0; }
+  if(fCuts) { delete [] fCuts; fCuts=0; }
+  if(fCutNames) { delete [] fCutNames; fCutNames=0; }
+  if(fOutList) { delete fOutList; fOutList=0; }
+
+
+}
 //__________________________________________________________________
 void AliAnalysisTaskCountLcEta::UserCreateOutputObjects() {
   // Create histograms. Called once
