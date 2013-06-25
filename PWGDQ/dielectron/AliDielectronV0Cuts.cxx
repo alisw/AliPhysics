@@ -225,6 +225,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   }
   else if(ev->IsA() == AliAODEvent::Class()) {
     const AliAODEvent *aodEv = static_cast<const AliAODEvent*>(ev);
+    if(!aodEv->GetV0s()) return; // protection for nano AODs
 
     // loop over vertices
     for (Int_t ivertex=0; ivertex<aodEv->GetNumberOfV0s(); ++ivertex){

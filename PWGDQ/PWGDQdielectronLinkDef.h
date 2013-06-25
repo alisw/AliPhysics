@@ -36,6 +36,7 @@
 #pragma link C++ class AliDielectronTrackRotator+;
 #pragma link C++ class AliDielectronPID+;
 #pragma link C++ class AliDielectronCutGroup+;
+#pragma link C++ class AliDielectronCutQA+;
 #pragma link C++ class AliDielectronEventCuts+;
 #pragma link C++ class AliDielectronHelper+;
 #pragma link C++ class AliDielectronBtoJPSItoEleCDFfitFCN+;

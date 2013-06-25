@@ -111,6 +111,9 @@ AliAnalysisTaskMultiDielectron::~AliAnalysisTaskMultiDielectron()
   fListHistos.SetOwner(kFALSE);
   fListCF.SetOwner(kFALSE);
   
+  // try to reduce memory issues
+  if(fEventStat)       { delete fEventStat;       fEventStat=0; }
+  if(fTriggerAnalysis) { delete fTriggerAnalysis; fTriggerAnalysis=0; }
 }
 //_________________________________________________________________________________
 void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
@@ -129,9 +132,10 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
   AliDielectron *die=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
     die->Init();
-    if (die->GetHistogramList()) fListHistos.Add(const_cast<THashList*>(die->GetHistogramList()));
-    if (die->GetHistogramArray()) fListHistos.Add(const_cast<TObjArray*>(die->GetHistogramArray()));
-    if (die->GetCFManagerPair()) fListCF.Add(const_cast<AliCFContainer*>(die->GetCFManagerPair()->GetContainer()));
+    if (die->GetHistogramList())    fListHistos.Add(const_cast<THashList*>(die->GetHistogramList()));
+    if (die->GetHistogramArray())   fListHistos.Add(const_cast<TObjArray*>(die->GetHistogramArray()));
+    if (die->GetQAHistArray())      fListHistos.Add(const_cast<TObjArray*>(die->GetQAHistArray()));
+    if (die->GetCFManagerPair())    fListCF.Add(const_cast<AliCFContainer*>(die->GetCFManagerPair()->GetContainer()));
   }
 
   Int_t cuts=fListDielectron.GetEntries();
