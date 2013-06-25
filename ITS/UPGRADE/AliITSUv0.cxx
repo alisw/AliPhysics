@@ -36,6 +36,7 @@
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoVolume.h>
+#include <TGeoTube.h>
 #include <TGeoXtru.h>
 #include <TLorentzVector.h>
 #include <TString.h>
@@ -267,6 +268,27 @@ void AliITSUv0::CreateGeometry() {
 
   } // for (Int_t j=0; j<fNLayers; j++)
 
+  // Create the wrapper volumes
+  TGeoVolume *wrap123=0, *wrap45=0, *wrap67=0;
+  if (fNLayers <= 3) {
+    wrap123 = CreateWrapperVolume(fNLayers);
+    vITSV->AddNode(wrap123, 1, 0);
+  }
+  else if (fNLayers <= 5) {
+    wrap123 = CreateWrapperVolume(3);
+    wrap45  = CreateWrapperVolume(fNLayers);
+    vITSV->AddNode(wrap123, 1, 0);
+    vITSV->AddNode(wrap45 , 1, 0);
+  }
+  else {
+    wrap123 = CreateWrapperVolume(3);
+    wrap45  = CreateWrapperVolume(5);
+    wrap67  = CreateWrapperVolume(fNLayers);
+    vITSV->AddNode(wrap123, 1, 0);
+    vITSV->AddNode(wrap45 , 1, 0);
+    vITSV->AddNode(wrap67 , 1, 0);
+  }
+
   // Now create the actual geometry
   for (Int_t j=0; j<fNLayers; j++) {
     if (fLayTurbo[j]) {
@@ -288,7 +310,12 @@ void AliITSUv0::CreateGeometry() {
     //
     if (fLadThick[j] != 0) fUpGeom[j]->SetLadderThick(fLadThick[j]);
     if (fDetThick[j] != 0) fUpGeom[j]->SetSensorThick(fDetThick[j]);
-    fUpGeom[j]->CreateLayer(vITSV);
+    if (j <= 2)
+      fUpGeom[j]->CreateLayer(wrap123);
+    if (j == 3 || j == 4)
+      fUpGeom[j]->CreateLayer(wrap45);
+    if (j > 4)
+      fUpGeom[j]->CreateLayer(wrap67);
   }
   //
 }
@@ -541,6 +568,75 @@ void AliITSUv0::GetLayerParameters(Int_t nlay, Double_t &phi0,
   lthick = fLadThick[nlay];
   dthick = fDetThick[nlay];
   dettype= fDetTypeID[nlay];
+}
+
+//______________________________________________________________________
+TGeoVolume* AliITSUv0::CreateWrapperVolume(const Int_t nLay)
+{
+  //     Creates an air-filled wrapper cylindrical volume for ladders
+  // Inputs:
+  //          nLay : the max layer number
+  // Outputs:
+  //          the wrapper volume
+  // Return:
+  //   none.
+
+  Double_t rMin=0., rMax=0., zLen=0.;
+
+  // 0.98 and 1.02 accounts for a 2% tollerance
+
+  if (nLay <= 3) {
+    rMin = fLayRadii[0];
+    if (fLayTurbo[0])
+      rMin *= fLadWidth[0]*TMath::Sin(fLadTilt[0]*TMath::DegToRad());
+    rMin *= 0.98;
+
+    rMax = fLayRadii[nLay-1];
+    rMax += 0.5; // gosh, we're hardcoding! let's say it's a temporary fix...
+    rMax *= 1.02;
+
+    zLen = 1.02*fLayZLength[nLay-1];
+  }
+
+  if (nLay == 4 || nLay == 5) {
+    rMin = fLayRadii[3];
+    if (fLayTurbo[3])
+      rMin *= fLadWidth[3]*TMath::Sin(fLadTilt[3]*TMath::DegToRad());
+    rMin *= 0.98;
+
+    rMax = fLayRadii[nLay-1];
+    rMax += 0.5; // gosh, we're hardcoding! let's say it's a temporary fix...
+    rMax *= 1.02;
+
+    zLen = 1.02*fLayZLength[nLay-1];
+  }
+
+  if (nLay > 5) {
+    rMin = fLayRadii[5];
+    if (fLayTurbo[5])
+      rMin -= fLadWidth[5]*TMath::Sin(fLadTilt[5]*TMath::DegToRad());
+    rMin *= 0.98;
+
+    rMax = fLayRadii[nLay-1];
+    rMax += 0.5; // gosh, we're hardcoding! let's say it's a temporary fix...
+    rMax *= 1.02;
+
+    zLen = 1.02*fLayZLength[nLay-1];
+  }
+
+  if (zLen == 0) return 0; // No valid nLay, so no volume can be created
+
+  // Now create the actual shape and volume
+  TGeoTube *tube = new TGeoTube(rMin, rMax, zLen);
+
+  TGeoMedium *medAir = gGeoManager->GetMedium("ITS_AIR$");
+
+  char volnam[15];
+  snprintf(volnam, 14, "LayerWrapper%d", nLay);
+
+  TGeoVolume *wrapper = new TGeoVolume(volnam, tube, medAir);
+
+  return wrapper;
 }
 
 //______________________________________________________________________

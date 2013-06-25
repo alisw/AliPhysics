@@ -67,6 +67,9 @@ class AliITSUv0 : public AliITSU {
  private:
   AliITSUv0(const AliITSUv0 &source); // copy constructor
   AliITSUv0& operator=(const AliITSUv0 &source); // assignment operator
+
+  TGeoVolume* CreateWrapperVolume(const Int_t nLay);
+
   //
   Bool_t   *fLayTurbo;       // True for "turbo" layers
   Double_t *fLayPhi0;        // Vector of layer's 1st ladder phi in lab
