@@ -78,10 +78,26 @@ AliDCSSensor& AliDCSSensor::operator=(const AliDCSSensor& source){
   return *this;
 }
 
+
+void AliDCSSensor::Print(const Option_t* option="") const{
+  //
+  //
+  //  
+  TString opt = option; opt.ToLower();
+  printf("%s:%s\n",GetTitle(), GetName());
+  printf("%s\n",fStringID.GetTitle());
+  if (!fSensors) return;
+  Int_t nsensors=fSensors->GetEntries();
+  for (Int_t i=0; i<nsensors; i++){
+    printf("Sensor Nr%d\n",i);
+    if (fSensors->At(i)) fSensors->At(i)->Print(option);
+  }
+}
+
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(UInt_t timeSec)
 {
- //
+ // 
  // Get DCS value for actual sensor
  //  timeSec given as offset from start-of-map measured in seconds
  //  *NOTE* In the current TPC setup, start-of-map is defined as the 

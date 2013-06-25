@@ -189,6 +189,15 @@ AliDCSSensorArray &AliDCSSensorArray::operator=(const AliDCSSensorArray &c)
   return *this;
 }
 
+void AliDCSSensorArray::Print(const Option_t* option="") const{
+  //
+  // print function overwriten
+  //
+  TString opt = option; opt.ToLower();
+  printf("%s:%s\n",GetTitle(), GetName());
+  printf("%s\n",fStringID.GetTitle());
+}
+
 //____________________________________________________________________________
 
 void AliDCSSensorArray::SetGraph(TMap *map)
