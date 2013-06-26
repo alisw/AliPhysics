@@ -11,7 +11,8 @@ class AliToyMCEvent : public TObject {
   AliToyMCEvent(const AliToyMCEvent &event);
   virtual ~AliToyMCEvent() {}
   AliToyMCEvent& operator = (const AliToyMCEvent &event);
-  
+
+  static void SetInitialEventCounter(Int_t iev) { fgEvCounter=iev; }
 
   AliToyMCTrack* AddTrack(const AliToyMCTrack &track);
 
@@ -30,7 +31,7 @@ class AliToyMCEvent : public TObject {
   Float_t GetZ()             const {return fZ;            }
   
  private:
-  static Int_t evCounter;
+  static Int_t fgEvCounter;
     
   UInt_t fEventNumber;
     

@@ -53,8 +53,11 @@ class AliToyMCEventGenerator : public TObject {
 
   void InitSpaceCharge();
 
-  void SetStepCorrection(Bool_t step=kTRUE) { fUseStepCorrection=step; }
-  Bool_t GetStepCorrection() const { return fUseStepCorrection; }
+  void SetStepCorrection(Bool_t step=kTRUE) { fUseStepCorrection=step;   }
+  Bool_t GetStepCorrection() const          { return fUseStepCorrection; }
+
+  void SetUseMaterialBudget(Bool_t use) { fUseMaterialBudget=use;    }
+  Bool_t GetUseMaterialBudget() const   { return fUseMaterialBudget; }
   
  protected:
   AliTPCParam *fTPCParam;
@@ -76,6 +79,7 @@ class AliToyMCEventGenerator : public TObject {
   TTree   *fOutTree;
 
   Bool_t fUseStepCorrection;
+  Bool_t fUseMaterialBudget;
   
   ClassDef(AliToyMCEventGenerator, 1)
      

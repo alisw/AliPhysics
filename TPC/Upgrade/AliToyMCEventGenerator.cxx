@@ -37,6 +37,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fOutFile(0x0)
   ,fOutTree(0x0)
   ,fUseStepCorrection(kFALSE)
+  ,fUseMaterialBudget(kFALSE)
 {
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   fTPCParam->ReadGeoMatrices();
@@ -52,6 +53,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fOutFile(0x0)
   ,fOutTree(0x0)
   ,fUseStepCorrection(gen.fUseStepCorrection)
+  ,fUseMaterialBudget(gen.fUseMaterialBudget)
 {
   //
 }
@@ -113,7 +115,7 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
   Float_t  xyzf[3] = {0.,0.,0.};
   
   //!!! when does the propagation not work, how often does it happen?
-  if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp)) {
+  if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
     AliError(Form("Propagation to IFC: %.2f failed\n",iFCRadius));
     return;
   }
@@ -123,7 +125,7 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
   for (Double_t radius=iFCRadius; radius<oFCRadius; radius+=stepSize){
     
     //!!! changed from return 0 to continue -> Please check
-    if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,1,kTRUE,kMaxSnp)) {
+    if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
       AliError(Form("Propagation to %.2f failed\n",radius));
       continue;
     }
@@ -310,6 +312,7 @@ void AliToyMCEventGenerator::ConvertTrackPointsToLocalClusters(AliTrackPointArra
     Float_t xyz[3]={localX,localY,localZ};
 
     if (!SetupCluster(tempCl,xyz,sec,t0)) continue;
+    tempCl.SetLabel(tr.GetUniqueID(), 0);
     
     if (type==0) tr.AddSpacePoint(tempCl);
     else tr.AddDistortedSpacePoint(tempCl);

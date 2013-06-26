@@ -178,8 +178,7 @@ AliTrackPoint* AliTPCclusterMI::MakePoint() {
   // make AliTrackPoint out of AliTPCclusterMI
   //
 
-  AliTrackPoint* point = NULL;  
-  point = new AliTrackPoint();
+  AliTrackPoint* point = new AliTrackPoint();
   Float_t xyz[3]={0.};
   Float_t cov[6]={0.};
   GetGlobalXYZ(xyz);

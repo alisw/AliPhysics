@@ -1,7 +1,7 @@
 #include "AliToyMCEvent.h"
 
 ClassImp(AliToyMCEvent);
-Int_t AliToyMCEvent::evCounter = 0;
+Int_t AliToyMCEvent::fgEvCounter = 0;
 
 AliToyMCEvent::AliToyMCEvent()
   :TObject()
@@ -12,8 +12,8 @@ AliToyMCEvent::AliToyMCEvent()
   ,fZ(-1000.)
   ,fTracks("AliToyMCTrack")
 {
-  fEventNumber = evCounter;
-  evCounter++;
+  fEventNumber = fgEvCounter;
+  fgEvCounter++;
 }
 
 //____________________________________________________

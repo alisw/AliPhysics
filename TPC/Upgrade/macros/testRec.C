@@ -1,6 +1,30 @@
-Int_t GetTimeAtVertex(Float_t &tVtx, Float_t &x, AliToyMCTrack *tr, Int_t clsType=0, Int_t seedRow=140, Int_t seedDist=10, Int_t correctionType=0);
-void SetTrackPointFromCluster(AliTPCclusterMI *cl, AliTrackPoint &p);
-void ClusterToSpacePoint(AliTPCclusterMI *cl, Float_t xyz[3]);
+// #ifndef __CINT__
+#include "TCanvas.h"
+#include "TDatabasePDG.h"
+#include "TF1.h"
+#include "TGraph.h"
+#include "TH1.h"
+#include "TString.h"
+#include "TTree.h"
+#include "TTreeStream.h"
+#include "TSystem.h"
+#include "TROOT.h"
+
+#include "AliTPCcalibDB.h"
+#include "AliToyMCEvent.h"
+#include "AliToyMCTrack.h"
+#include "AliTPCclusterMI.h"
+#include "AliTPCParam.h"
+#include "AliTPCROC.h"
+#include "AliTPCSpaceCharge3D.h"
+#include "AliTrackerBase.h"
+#include "AliTrackPointArray.h"
+// #endif
+
+
+Float_t GetTimeAtVertex(Float_t &tVtx, Float_t &x, const AliToyMCTrack *tr, Int_t clsType=0, Int_t seedRow=140, Int_t seedDist=10, Int_t correctionType=0);
+void SetTrackPointFromCluster(const AliTPCclusterMI *cl, AliTrackPoint &p);
+void ClusterToSpacePoint(const AliTPCclusterMI *cl, Float_t xyz[3]);
 void InitSpaceCharge(TTree *t=0x0);
 /*
 
@@ -9,7 +33,7 @@ root.exe -l $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C}
 
 */
 
-AliTPCParam *fTPCParam=AliTPCcalibDB::Instance()->GetParameters();
+AliTPCParam *fTPCParam=0x0;
 AliTPCSpaceCharge3D *fSpaceCharge=0x0;
 TTreeSRedirector *fStreamer=0x0;
 
@@ -24,6 +48,7 @@ void testRec(const char* filename="toyMC.root", Int_t nmaxEv=-1)
   //
   //
 
+  fTPCParam=AliTPCcalibDB::Instance()->GetParameters();
   TFile f(filename);
   if (!f.IsOpen() || f.IsZombie()) {
     printf("ERROR: couldn't open the file '%s'\n", filename);
@@ -52,8 +77,8 @@ void testRec(const char* filename="toyMC.root", Int_t nmaxEv=-1)
   gROOT->cd();
 
 //   const Double_t kDriftVel = fTPCParam->GetDriftV()/1000000;
-  const Double_t kDriftVel = fTPCParam->GetDriftV();
-  const Double_t kMaxZ0=fTPCParam->GetZLength();
+//   const Double_t kDriftVel = fTPCParam->GetDriftV();
+//   const Double_t kMaxZ0=fTPCParam->GetZLength();
 
   TH1F *h0=new TH1F("h0","h0",1000,0,0);
   TH1F *hX=new TH1F("hX","hX",1000,0,0);
@@ -77,8 +102,7 @@ void testRec(const char* filename="toyMC.root", Int_t nmaxEv=-1)
       //  Int_t clsType=0, Int_t seedRow=140, Int_t seedDist=10, Int_t correctionType=0
       // correctionType: 0 none, 1 center, 2 mean tan,
       //                 3 full from seed (iterative), 4 ideal (real z-Position)
-      AliToyMCTrack *tr=ev->GetTrack(itr);
-      tr->SetUniqueID(itr);
+      const AliToyMCTrack *tr=ev->GetTrack(itr);
       Float_t tVtx0=0;
       Float_t xmin=0;
       Int_t ret0=GetTimeAtVertex(tVtx0,xmin,tr);
@@ -128,7 +152,7 @@ void testRec(const char* filename="toyMC.root", Int_t nmaxEv=-1)
 }
 
 //____________________________________________________________________________
-Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t clsType, Int_t seedRow, Int_t seedDist, Int_t correctionType)
+Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, const AliToyMCTrack *tr, Int_t clsType, Int_t seedRow, Int_t seedDist, Int_t correctionType)
 {
   //
   // clsType:    0 undistorted; 1 distorted
@@ -140,7 +164,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
 
   // seed point informaion
   AliTrackPoint    seedPoint[3];
-  AliTPCclusterMI *seedCluster[3]={0x0,0x0,0x0};
+  const AliTPCclusterMI *seedCluster[3]={0x0,0x0,0x0};
 
   // number of clusters to loop over
   const Int_t ncls=(clsType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
@@ -150,7 +174,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
 
   //assumes sorted clusters
   for (Int_t icl=0;icl<ncls;++icl) {
-    AliTPCclusterMI *cl=tr->GetSpacePoint(icl);
+    const AliTPCclusterMI *cl=tr->GetSpacePoint(icl);
     if (clsType==1) cl=tr->GetDistortedSpacePoint(icl);
     if (!cl) continue;
     // use row in sector
@@ -173,8 +197,9 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   }
 
   // check we really have 3 seeds
-  if (seed!=3) {
+  if (seed!=3 && xDummy>-900.) {
 
+    AliToyMCTrack *nctr = const_cast<AliToyMCTrack*>(tr);
     // debug output for failed seeding
     (*fStreamer) << "TracksFailSeed" <<
       "iev="      << fEvent <<
@@ -185,26 +210,36 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
       "seedRow="  << seedRow <<
       "seedDist=" << seedDist <<
       "corrType=" << correctionType <<
-      "track.="   << tr    <<
+      "track.="   << nctr    <<
       "\n";
     
-    printf("Seeding failed for parameters %d, %d\n",seedRow,seedDist, seed);
+    printf("Seeding failed for parameters %d, %d\n",seedRow,seedDist);
     return 1;
   }
-  
+
+  Float_t tVtx_opt3=0;
+  if (correctionType==3) {
+    Float_t xDummy=-999.;
+    GetTimeAtVertex(tVtx_opt3,xDummy, tr, clsType, seedRow, seedDist, 2);
+  }
   // do cluster correction and 
   // assign the cluster abs time as z component to all seeds
   for (Int_t iseed=0; iseed<3; ++iseed) {
     Float_t xyz[3]={0,0,0};
     seedPoint[iseed].GetXYZ(xyz);
+    Float_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
     
     Int_t sector=seedCluster[iseed]->GetDetector();
     Int_t sign=1-2*((sector/18)%2);
     
     if (clsType && correctionType) {
       if (correctionType==1) xyz[2]=125.;
-      if (correctionType==2) xyz[2]=TMath::Tan(45./2.*TMath::DegToRad())*xyz[1]*sign;
-//       if (correctionType==3) xyz[2]=125.;
+      //!!! TODO: is this the correct association?
+      if (correctionType==2) xyz[2]=TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
+      if (correctionType==3) {
+        xyz[2]=(seedCluster[iseed]->GetTimeBin()-tVtx_opt3)*kDriftVel;
+        
+      }
       if (correctionType==4) xyz[2]=seedCluster[iseed]->GetZ();
 
       fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
@@ -231,13 +266,13 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   track = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
   track->ResetCovariance(10);
 
-  printf("orig:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
-         tr->GetParameter()[0],tr->GetParameter()[1],tr->GetParameter()[2],
-         tr->GetParameter()[3],tr->GetParameter()[4],tr->GetAlpha());
+//   printf("orig:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//          tr->GetParameter()[0],tr->GetParameter()[1],tr->GetParameter()[2],
+//          tr->GetParameter()[3],tr->GetParameter()[4],tr->GetAlpha());
   
-  printf("seed:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
-         track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
-         track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
+//   printf("seed:  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+//          track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
+//          track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
   
   //   printf("Track: %.2f, %.2f, %.2f, %.2f, %.2f\n",track->GetX(),track->GetY(),track->GetZ(), track->GetAlpha(),track->Phi());
   AliExternalTrackParam pInit(*track);
@@ -263,26 +298,30 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
   Float_t fitT0=fpol1.Eval(0);
 //   fpol1.Print();
   AliExternalTrackParam pOrig(*tr);
-  (*fStreamer) << "Tracks" <<
-    "iev="      << fEvent <<
-    "t0="       << fT0event <<
-    "z0="       << fZevent <<
-    "itrack="   << fTrack <<
-    "clsType="  << clsType <<
-    "seedRow="  << seedRow <<
-    "seedDist=" << seedDist <<
-    "corrType=" << correctionType <<
-    "track.="   << tr    <<
-    "seed.="    << track <<
-    "seedI.="   << &pInit <<
-//     "seedcl0.=" << seedCluster[0] <<
-//     "seedcl1.=" << seedCluster[1] <<
-//     "seedcl2.=" << seedCluster[2] <<
-//     "seedp0.="  << &seedPoint[0] <<
-//     "seedp1.="  << &seedPoint[1] <<
-//     "seedp2.="  << &seedPoint[2] <<
-    "fitT0="    << fitT0 <<
-    "\n";
+  AliToyMCTrack *nctr = const_cast<AliToyMCTrack*>(tr);
+
+  if (xDummy>-900.){
+    (*fStreamer) << "Tracks" <<
+      "iev="      << fEvent <<
+      "t0="       << fT0event <<
+      "z0="       << fZevent <<
+      "itrack="   << fTrack <<
+      "clsType="  << clsType <<
+      "seedRow="  << seedRow <<
+      "seedDist=" << seedDist <<
+      "corrType=" << correctionType <<
+      "track.="   << nctr    <<
+      "seed.="    << track <<
+      "seedI.="   << &pInit <<
+  //     "seedcl0.=" << seedCluster[0] <<
+  //     "seedcl1.=" << seedCluster[1] <<
+  //     "seedcl2.=" << seedCluster[2] <<
+  //     "seedp0.="  << &seedPoint[0] <<
+  //     "seedp1.="  << &seedPoint[1] <<
+  //     "seedp2.="  << &seedPoint[2] <<
+      "fitT0="    << fitT0 <<
+      "\n";
+  }
   
   tVtx=track->GetZ();
   x=track->GetX();
@@ -291,7 +330,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, AliToyMCTrack *tr, Int_t cls
 }
 
 //____________________________________________________________________________
-void SetTrackPointFromCluster(AliTPCclusterMI *cl, AliTrackPoint &p ) {
+void SetTrackPointFromCluster(const AliTPCclusterMI *cl, AliTrackPoint &p ) {
   //
   // make AliTrackPoint out of AliTPCclusterMI
   //
@@ -312,7 +351,7 @@ void SetTrackPointFromCluster(AliTPCclusterMI *cl, AliTrackPoint &p ) {
   // voluem ID to add later ....
 //   p.SetXYZ(xyz);
 //   p.SetCov(cov);
-  AliTrackPoint *tp=cl->MakePoint();
+  AliTrackPoint *tp=const_cast<AliTPCclusterMI*>(cl)->MakePoint();
   p=*tp;
   delete tp;
 //   cl->Print();
@@ -322,7 +361,7 @@ void SetTrackPointFromCluster(AliTPCclusterMI *cl, AliTrackPoint &p ) {
 }
 
 //____________________________________________________________________________
-void ClusterToSpacePoint(AliTPCclusterMI *cl, Float_t xyz[3])
+void ClusterToSpacePoint(const AliTPCclusterMI *cl, Float_t xyz[3])
 {
   //
   // convert the cluster to a space point in global coordinates
@@ -373,9 +412,7 @@ void InitSpaceCharge(TTree *t)
 }
 
 //____________________________________________________________________________
-
-
-AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t corrType=0, Bool_t useMaterial=kFALSE)
+AliExternalTrackParam* GetFullTrack(const AliToyMCTrack *tr, Int_t clsType=0, Int_t corrType=0, Bool_t useMaterial=kFALSE)
 {
   //
   // clsType:  0=undistorted clusters; 1: distorted clusters
@@ -386,29 +423,29 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
   if (clsType==0) corrType=0;
   
   AliTPCROC * roc = AliTPCROC::Instance();
-  const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
+//   const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
   const Double_t kRTPC0  =roc->GetPadRowRadii(0,0);
   const Double_t kRTPC1  =roc->GetPadRowRadii(36,roc->GetNRows(36)-1);
   const Double_t kMaxSnp = 0.85;
-  const Double_t kSigmaY=0.1;
-  const Double_t kSigmaZ=0.1;
+//   const Double_t kSigmaY=0.1;
+//   const Double_t kSigmaZ=0.1;
   const Double_t kMaxR=500;
   const Double_t kMaxZ=500;
   
-  const Double_t kMaxZ0=220;
+//   const Double_t kMaxZ0=220;
   const Double_t kZcut=3;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
 
   Int_t ncls=(clsType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
 
   Int_t dir = -1;
-  Double_t refX = 0.;
+  Double_t refX = tr->GetX();
   
   // get points for the seed
   Int_t seed=0;
   AliTrackPoint    seedPoint[3];
   for (Int_t ipoint=ncls-1; ipoint>=ncls-3; --ipoint){
-    AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
+    const AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
     if (clsType==1) cl=tr->GetDistortedSpacePoint(ipoint);
 
     SetTrackPointFromCluster(cl, seedPoint[seed]);
@@ -419,12 +456,11 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
       fSpaceCharge->CorrectPoint(xyz, cl->GetDetector());
       seedPoint[seed].SetXYZ(xyz);
     }
-    seedPoint[seed].Print();
+//     seedPoint[seed].Print();
     ++seed;
   }
   
-  AliExternalTrackParam *track = 0x0;
-  track = AliTrackerBase::MakeSeed(seedPoint[2], seedPoint[1], seedPoint[0]);
+  AliExternalTrackParam *track = AliTrackerBase::MakeSeed(seedPoint[2], seedPoint[1], seedPoint[0]);
   track->ResetCovariance(10);
 
 //   printf("============================================\n");
@@ -439,7 +475,7 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
   // loop over all other points and add to the track
   for (Int_t ipoint=ncls-4; ipoint>=0; --ipoint){
     AliTrackPoint pIn;
-    AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
+    const AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
     if (clsType==1) cl=tr->GetDistortedSpacePoint(ipoint);
     SetTrackPointFromCluster(cl, pIn);
     if (corrType==1){
@@ -463,14 +499,16 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
 //     printf("after: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
 //            track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
 //            track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
+    AliToyMCTrack *nctr = const_cast<AliToyMCTrack*>(tr);
     if (ret<0) {
       (*fStreamer) << "np" <<
       "iev="      << fEvent <<
       "itr="      << fTrack <<
-      "track.="   << tr     <<
+      "track.="   << nctr     <<
       "seed.="    << track  <<
       "clsType="  << clsType <<
       "corrType=" << corrType <<
+      "ret="      << ret <<
       "\n";
       printf("Could not propagate track: %d\n",ret);
       break;
@@ -503,19 +541,23 @@ AliExternalTrackParam* GetFullTrack(AliToyMCTrack *tr, Int_t clsType=0, Int_t co
 //   printf(">>> after2: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
 //          track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
 //          track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
-  if (useMaterial) ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp);
-  else ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+  track->Rotate(tr->GetAlpha());
+  Int_t ret=0;
+  if (useMaterial) ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp);
+  else ret=AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
 //   printf(">>> after2.2: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
 //          track->GetParameter()[0],track->GetParameter()[1],track->GetParameter()[2],
 //          track->GetParameter()[3],track->GetParameter()[4],track->GetAlpha());
   printf("Propagation to 0 stopped at %.2f with %d\n",track->GetX(),ret);
-  track->Rotate(tr->GetAlpha());
+  // once more propagate to refX
+  // try without material budget correction
   return track;
 }
 
 //____________________________________________________________________________
 void testResolution(const char* filename, Int_t nmaxEv=-1, Bool_t useMaterial=kFALSE)
 {
+  fTPCParam=AliTPCcalibDB::Instance()->GetParameters();
   TFile f(filename);
   if (!f.IsOpen() || f.IsZombie()) {
     printf("ERROR: couldn't open the file '%s'\n", filename);
@@ -555,11 +597,11 @@ void testResolution(const char* filename, Int_t nmaxEv=-1, Bool_t useMaterial=kF
     for (Int_t itr=0; itr<ev->GetNumberOfTracks(); ++itr){
       fTrack=itr;
       printf("   ======= Processing track %3d ==========\n",itr);
-      AliToyMCTrack *tr=ev->GetTrack(itr);
+      const AliToyMCTrack *tr=ev->GetTrack(itr);
       AliExternalTrackParam tOrig(*tr);
       AliExternalTrackParam *tIdeal    = GetFullTrack(tr,0,0,useMaterial);
-      AliExternalTrackParam *tDist     = GetFullTrack(tr,1);
-      AliExternalTrackParam *tDistCorr = GetFullTrack(tr,1,1);
+      AliExternalTrackParam *tDist     = GetFullTrack(tr,1,0,useMaterial);
+      AliExternalTrackParam *tDistCorr = GetFullTrack(tr,1,1,useMaterial);
 
       (*fStreamer) << "res" <<
       "iev="        << iev <<

@@ -12,5 +12,6 @@
 #pragma link C++ class AliToyMCEvent+;
 #pragma link C++ class AliToyMCEventGenerator+;
 #pragma link C++ class AliToyMCEventGeneratorSimple+;
+#pragma link C++ class AliToyMCReconstruction+;
 
 #endif
