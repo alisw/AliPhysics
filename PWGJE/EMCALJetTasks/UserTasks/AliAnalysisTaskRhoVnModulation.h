@@ -24,6 +24,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
+        enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
         enum detectorType       { kTPC, kVZEROA, kVZEROC};    // detector that was used
@@ -72,6 +73,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
         void                    SetReduceBinsXYByFactor(Int_t x, Int_t y)       {fReduceBinsXByFactor = x;
                                                                                  fReduceBinsYByFactor = y;}
+        void                    SetNoEventWeightsForQC(Bool_t e)                {fNoEventWeightsForQC = e;}
         void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
         void                    SetPtBinsHybrids(TArrayD* p)                    {fPtBinsHybrids = p;}
         void                    SetPtBinsJets(TArrayD* p)                       {fPtBinsJets = p;}
@@ -87,6 +89,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
                                                                                  fFitModulation = fit; }
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
+        void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
         void                    SetModulationFitOptions(TString opt)            {fFitModulationOptions = opt; }
         void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
         void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
@@ -111,6 +114,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TProfile*               GetResolutionParameters(Int_t h, Int_t c) const {return (h==2) ? fProfV2Resolution[c] : fProfV3Resolution[c];}
         TList*                  GetOutputList() const                           {return fOutputList;}
         void                    ExecMe()                                        {ExecOnce();}
+        AliAnalysisTaskRhoVnModulation* ReturnMe()                              {return this;}
         // local cuts
         void                    SetLocalJetMinMaxEta(Float_t min, Float_t max)  {fLocalJetMinEta = min; fLocalJetMaxEta = max;}
         void                    SetLocalJetMinMaxEta(Float_t R)                 {fLocalJetMinEta = - 0.9 + R; fLocalJetMaxEta = 0.9 - R; }
@@ -132,6 +136,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Double_t                QCnM();
         Double_t                QCnM11();
         Double_t                QCnM1111();
+        Bool_t                  QCnRecovery(Double_t psi2, Double_t psi3);
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection, also used by AliAnalyisTaskJetFlow
@@ -163,6 +168,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   GetResolutionFromOuptutFile(detectorType detector, Int_t h = 2, TArrayD* c = 0x0);
         TH1F*                   CorrectForResolutionDiff(TH1F* v, detectorType detector, TArrayD* cen, Int_t c, Int_t h = 2);
         TH1F*                   CorrectForResolutionInt(TH1F* v, detectorType detector, TArrayD* cen, Int_t h = 2);
+        TH1F*                   GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h);
     private:
         // analysis flags and settings
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
@@ -170,6 +176,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Bool_t                  fFillQAHistograms;      // fill qa histograms
         Int_t                   fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this integer
         Int_t                   fReduceBinsYByFactor;   // reduce the bins on y-axis of histo's by this integer
+        Bool_t                  fNoEventWeightsForQC;   // don't store event weights for qc analysis
         TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10)
         TArrayD*                fPtBinsHybrids;         //-> pt bins for hybrid track vn anaysis
         TArrayD*                fPtBinsJets;            //-> pt bins for jet vn analysis
@@ -181,6 +188,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
         fitModulationType       fFitModulationType;     // fit modulation type
+        qcRecovery              fQCRecovery;            // recovery type for e-by-e qc method
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
         detectorType            fDetectorType;          // type of detector used for modulation fit
         TString                 fFitModulationOptions;  // fit options for modulation fit
@@ -236,6 +244,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TProfile*               fProfV3Resolution[10];  //! resolution parameters for v3
         // qa histograms for accepted pico tracks
         TH1F*                   fHistPicoTrackPt[10];    //! pt of all charged tracks
+        TH1F*                   fHistPicoTrackMult[10];  //! multiplicity of accepted pico tracks
         TH2F*                   fHistPicoCat1[10];       //! pico tracks spd hit and refit
         TH2F*                   fHistPicoCat2[10];       //! pico tracks wo spd hit w refit, constrained
         TH2F*                   fHistPicoCat3[10];       //! pico tracks wo spd hit wo refit, constrained
@@ -306,7 +315,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 13);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 14);
 };
 
 #endif
