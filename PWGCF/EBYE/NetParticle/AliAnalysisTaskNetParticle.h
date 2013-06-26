@@ -21,6 +21,7 @@
 #include "AliAnalysisNetParticleEffCont.h"
 #include "AliAnalysisNetParticleDCA.h"
 #include "AliAnalysisNetParticleDistribution.h"
+#include "AliAnalysisNetParticleQA.h"
 
 class AliESDEvent;
 class AliESDInputHandler;
@@ -121,17 +122,6 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
 
   /*
    * ---------------------------------------------------------------------------------
-   *                           Helper Methods - private
-   * ---------------------------------------------------------------------------------
-   */
-  /** Create QA histograms */
-  void CreateQAHists();
-
-  /**  Process ESD tracks and fill QA histograms */
-  void FillQAHists();
-
-  /*
-   * ---------------------------------------------------------------------------------
    *                             Members - private
    * ---------------------------------------------------------------------------------
    */
@@ -140,6 +130,7 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   AliAnalysisNetParticleEffCont      *fEffCont; //! Efficiency and Contamination class
   AliAnalysisNetParticleDCA          *fDCA;     //! DCA class
   AliAnalysisNetParticleDistribution *fDist;    //! Distributions class
+  AliAnalysisNetParticleQA           *fQA;    //! QA class
 
   // --- OutLists ----------------------------------------------------------
 
@@ -179,10 +170,6 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   AliMCEvent         *fMCEvent;                 //! Ptr to MC event
   AliStack           *fMCStack;                 //! Ptr to MC stack
 
-  // -----------------------------------------------------------------------
-
-  THnSparseF         *fHnQA;                    //! THnSparseF : tracks for QA
-  
   // -----------------------------------------------------------------------
 
   Float_t             fEtaMax;                  //  Max, absolut eta 

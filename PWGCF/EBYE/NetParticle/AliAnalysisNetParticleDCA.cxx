@@ -7,8 +7,9 @@
 #include "AliESDInputHandler.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
-
 #include "AliESDtrackCuts.h"
+
+#include "AliAODInputHandler.h"
 
 #include "AliAnalysisNetParticleDCA.h"
 
@@ -61,7 +62,7 @@ AliAnalysisNetParticleDCA::~AliAnalysisNetParticleDCA() {
  */
 
 //________________________________________________________________________
-void AliAnalysisNetParticleDCA::Initialize(AliESDtrackCuts *cuts, AliESDtrackCuts *cutsBkg, AliAnalysisNetParticleHelper* helper) {
+void AliAnalysisNetParticleDCA::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts *cuts, AliESDtrackCuts *cutsBkg) {
 
   // -- Get Helper
   // ---------------
@@ -97,7 +98,7 @@ void AliAnalysisNetParticleDCA::Initialize(AliESDtrackCuts *cuts, AliESDtrackCut
  */
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleDCA::SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent) {
+Int_t AliAnalysisNetParticleDCA::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler */*aodHandler*/, AliMCEvent *mcEvent) {
   // -- Setup event
 
   // -- Reset of event
