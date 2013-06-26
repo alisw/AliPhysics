@@ -114,12 +114,12 @@ Double_t AliTrackFitterKalman::GetPredictedChi2(const AliTrackPoint *p) const {
   // Calculate the predicted chi2 increment.
   //
 
-  Float_t txyz[3]={GetParam()[0],GetParam()[1],GetParam()[2]};
+  Float_t txyz[3]={static_cast<Float_t>(GetParam()[0]),static_cast<Float_t>(GetParam()[1]),static_cast<Float_t>(GetParam()[2])};
   TMatrixDSym &cv=*fCov;
   Float_t tcov[6]={
-    cv(0,0),cv(1,0),cv(2,0),
-            cv(1,1),cv(2,1),
-                    cv(2,2)
+    static_cast<Float_t>(cv(0,0)),static_cast<Float_t>(cv(1,0)),static_cast<Float_t>(cv(2,0)),
+            static_cast<Float_t>(cv(1,1)),static_cast<Float_t>(cv(2,1)),
+                    static_cast<Float_t>(cv(2,2))
   };
   AliTrackPoint tp(txyz,tcov,p->GetVolumeID());
 
@@ -291,9 +291,9 @@ Bool_t AliTrackFitterKalman::GetPCA(const AliTrackPoint &p, AliTrackPoint &i) co
 
 
   Float_t cov[6]={
-    iC(0,0), iC(0,1), iC(0,2),
-             iC(1,1), iC(1,2),
-                      iC(2,2)
+    static_cast<Float_t>(iC(0,0)), static_cast<Float_t>(iC(0,1)), static_cast<Float_t>(iC(0,2)),
+             static_cast<Float_t>(iC(1,1)), static_cast<Float_t>(iC(1,2)),
+                      static_cast<Float_t>(iC(2,2))
   };
   i.SetXYZ(ti(0,0),ti(1,0),ti(2,0),cov);
   UShort_t id=p.GetVolumeID();
