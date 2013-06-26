@@ -7,6 +7,8 @@
 //                                                                           //
 // Class to set HMPID reconstruction parameters (normal, HTA, UserCut ...    //
 //                                                                           //
+//                                                                           //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliDetectorRecoParam.h"
@@ -15,15 +17,15 @@ class AliHMPIDRecoParam : public AliDetectorRecoParam
 {
  public: 
   
-  AliHMPIDRecoParam();                                                                  //ctor
-  AliHMPIDRecoParam(const AliHMPIDRecoParam &p);                                        //copy ctor 
-  AliHMPIDRecoParam& operator=(const AliHMPIDRecoParam &p);                             // ass. op.
-  virtual ~AliHMPIDRecoParam();                                                         //dtor
+  AliHMPIDRecoParam();                                                                                           //ctor
+  AliHMPIDRecoParam(const AliHMPIDRecoParam &p);                                                               //copy ctor 
+  AliHMPIDRecoParam& operator=(const AliHMPIDRecoParam &p);                                                    // ass. op.
+  virtual ~AliHMPIDRecoParam();                                                                                  //dtor
 
   
-  static AliHMPIDRecoParam *GetLowFluxParam();                                          // reco params for low flux env.
-  static AliHMPIDRecoParam *GetHighFluxParam();                                         // reco params for high flux env. 
-  static AliHMPIDRecoParam *GetCosmicParam();                                           // reco params for cosmic  
+  static AliHMPIDRecoParam *GetLowFluxParam();                                                                   // reco params for low flux env.
+  static AliHMPIDRecoParam *GetHighFluxParam();                                                                  // reco params for high flux env. 
+  static AliHMPIDRecoParam *GetCosmicParam();                                                                    // reco params for cosmic  
     
   Bool_t   GetHmpRecoMode(            )        const            { return fHmpRecoMode;          }                  //kTRUE = normal tracking reco, kFALSE = HTA     
   void     SetHmpRecoMode(Bool_t recoMode)                       { fHmpRecoMode=recoMode;        }                 //kTRUE = normal tracking reco, kFALSE = HTA   

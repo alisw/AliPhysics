@@ -8,7 +8,7 @@
 #include <AliReconstructor.h>        //base class
 #include "AliHMPIDTracker.h"         //CreateTracker()
 #include "AliHMPIDDigit.h"           //Dig2Clu(), UseDig()
-#include "AliHMPIDRecoParamV1.h"
+#include "AliHMPIDRecoParam.h"
 #include <TMatrixF.h>                //UseDig()
 #include <TClonesArray.h>            //UseDig()
 #include <TObjArray.h>               //SigConv()
@@ -38,7 +38,7 @@ public:
   static        void           FormClu (AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pPadMap);//cluster formation recursive algorithm
   static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
   inline Bool_t                IsDigSurvive(Int_t *pUserCut, AliHMPIDDigit *pDig                                         )const;//check for sigma cut
-  static const AliHMPIDRecoParamV1* GetRecoParam() { return dynamic_cast<const AliHMPIDRecoParamV1*>(AliReconstructor::GetRecoParam(5)); }  //5 is the HMPID detector code
+  static const AliHMPIDRecoParam* GetRecoParam() { return dynamic_cast<const AliHMPIDRecoParam*>(AliReconstructor::GetRecoParam(5)); }  //5 is the HMPID detector code
  
   protected:
   TObjArray *fDaqSig;                  // container for the pad pedestal sigmas

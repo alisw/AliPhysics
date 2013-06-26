@@ -552,12 +552,12 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("ANALYSISalice", mode, kTRUE);
             success &= LoadLibrary("CORRFW", mode, kTRUE);
          } else {   
-            success &= LoadLibrary("libSTEERBase.so", mode);
-            success &= LoadLibrary("libESD.so", mode);
-            success &= LoadLibrary("libAOD.so", mode);
-            success &= LoadLibrary("libANALYSIS.so", mode);
-            success &= LoadLibrary("libANALYSISalice.so", mode);
-            success &= LoadLibrary("libCORRFW.so", mode);
+            success &= LoadLibrary("libSTEERBase.so",     mode, kTRUE);
+            success &= LoadLibrary("libESD.so",           mode, kTRUE);
+            success &= LoadLibrary("libAOD.so",           mode, kTRUE);
+            success &= LoadLibrary("libANALYSIS.so",      mode, kTRUE);
+            success &= LoadLibrary("libANALYSISalice.so", mode, kTRUE);
+            success &= LoadLibrary("libCORRFW.so",        mode, kTRUE);
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
          }
          break;

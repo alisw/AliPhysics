@@ -4,7 +4,7 @@
 #include "AliHMPIDParam.h"       //GetTrackPoint(),PropagateBack()
 #include "AliHMPIDPid.h"         //Recon(),reconHTA()
 #include "AliHMPIDRecon.h"       //Recon()
-#include "AliHMPIDRecoParamV1.h"   //Recon()
+#include "AliHMPIDRecoParam.h"   //Recon()
 #include "AliHMPIDReconstructor.h"//Recon()
 #include "AliHMPIDReconHTA.h"    //ReconHTA()
 #include <AliLog.h>              //Recon()  

@@ -59,7 +59,6 @@ AliHMPIDRecoParam& AliHMPIDRecoParam::operator=(const AliHMPIDRecoParam &p)
 {
 //
 // assign. operator
-//
   if(this!=&p){
     AliDetectorRecoParam::operator=(p);
     this->fHmpRecoMode= p.fHmpRecoMode;
@@ -82,7 +81,7 @@ AliHMPIDRecoParam *AliHMPIDRecoParam::GetLowFluxParam(){
   //
   // Set HMPID Reco Params for Low Flux environment
   //
-  AliHMPIDRecoParam *hmpParam = new AliHMPIDRecoParam;
+  AliHMPIDRecoParamV1 *hmpParam = new AliHMPIDRecoParamV1;
   hmpParam->fHmpRecoMode = kTRUE;                                                     //kTRUE = normal reco. kFLASE = HTA
   hmpParam->fHmpUserCut[0] = 3;                                                       //HMPID Module 0 User DAQ Sigma cut
   hmpParam->fHmpUserCut[1] = 3;                                                       //HMPID Module 1 User DAQ Sigma cut
@@ -149,8 +148,8 @@ void AliHMPIDRecoParam::PrintParameters() const
   //
   // Printing of the used HMPID reconstruction parameters
   //
-   AliInfo(Form("%s",AliHMPIDRecoParam::GetName()));
-   AliInfo(Form("IsDefault: %d",AliHMPIDRecoParam::IsDefault()));
+   AliInfo(Form("%s",AliHMPIDRecoParamV1::GetName()));
+   AliInfo(Form("IsDefault: %d",AliHMPIDRecoParamV1::IsDefault()));
    AliInfo(Form(" Running HMPID Reco: %d (1=Standard, 0=HTA)",fHmpRecoMode));
    AliInfo(Form(" Is track matching distance fixed (1) or momentum dependent (0): %d",fHmpFixedDistCut));
    AliInfo(Form(" HMPID track matching distance cut: %.3lf",fHmpTrackMatchingDist));

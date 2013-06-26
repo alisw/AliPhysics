@@ -28,7 +28,7 @@
 #include <AliRawReader.h>          //Reconstruct() for raw digits
 #include <AliLog.h>                //
 #include "AliHMPIDRawStream.h"     //ConvertDigits()
-#include "AliHMPIDRecoParamV1.h"   //ctor
+#include "AliHMPIDRecoParam.h"     //ctor
 
 ClassImp(AliHMPIDReconstructor)
 
@@ -129,14 +129,14 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
    if(AliHMPIDReconstructor::GetRecoParam()) {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       pUserCut[iCh] = AliHMPIDReconstructor::GetRecoParam()->GetHmpUserCut(iCh);
-      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParamV1) for chamber %i -> %i ",iCh,pUserCut[iCh]));
+      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParam) for chamber %i -> %i ",iCh,pUserCut[iCh]));
     }
   }
   else {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       pUserCut[iCh] = 4;                                                                             // minimal requirement for sigma cut
       AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,pUserCut[iCh]));
-      AliDebug(1,Form("Cannot get AliHMPIDRecoParamV1!"));
+      AliDebug(1,Form("Cannot get AliHMPIDRecoParam!"));
       }
     }  
   
@@ -173,14 +173,14 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
    if(AliHMPIDReconstructor::GetRecoParam()) {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       pUserCut[iCh] = AliHMPIDReconstructor::GetRecoParam()->GetHmpUserCut(iCh);
-      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParamV1) for chamber %i -> %i ",iCh,pUserCut[iCh]));
+      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParam) for chamber %i -> %i ",iCh,pUserCut[iCh]));
     }
   }
   else {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       pUserCut[iCh] = 4;                                                                             // minimal requirement for sigma cut
       AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,pUserCut[iCh]));
-      AliDebug(1,Form("Cannot get AliHMPIDRecoParamV1!"));
+      AliDebug(1,Form("Cannot get AliHMPIDRecoParam!"));
       }
     }  
       
