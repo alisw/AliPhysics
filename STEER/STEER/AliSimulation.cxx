@@ -1303,6 +1303,8 @@ Bool_t AliSimulation::RunGeneratorOnly()
   runLoader->WriteHeader("OVERWRITE");
   generator->Write();
   runLoader->Write();
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
