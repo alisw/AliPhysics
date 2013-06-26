@@ -61,7 +61,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(1), fReduceBinsYByFactor(1), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+    fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(1), fReduceBinsYByFactor(1), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(kGrid), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -120,11 +120,12 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(1), fReduceBinsYByFactor(1), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.),  fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+  fDebug(0), fInitialized(0), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(1), fReduceBinsYByFactor(1), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("Q"), fRunModeType(type), fDataType(kESD), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.),  fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kFALSE), fSetPtSub(kFALSE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
         fHistPicoTrackPt[i] = 0;
+        fHistPicoTrackMult[i] = 0;
         fHistPicoCat1[i] = 0;
         fHistPicoCat2[i] = 0;
         fHistPicoCat3[i] = 0;
@@ -299,6 +300,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     // pico track kinematics
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) { 
         fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 50, i);
+        fHistPicoTrackMult[i] =        BookTH1F("fHistPicoTrackMult", "multiplicity", 100, 0, 5000, i);
         if(fFillQAHistograms) {
             fHistPicoCat1[i] =             BookTH2F("fHistPicoCat1", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
             fHistPicoCat2[i] =             BookTH2F("fHistPicoCat2", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
@@ -497,7 +499,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
     }
     switch (fFitModulationType) { // do the fits
         case kNoFit : { fFitModulation->FixParameter(0, RhoVal()); } break;
-        case kV2 : {
+        case kV2 : {    // only v2
             if(CorrectRho(psi2, psi3)) {
                 fProfV2->Fill(fCent, fFitModulation->GetParameter(3));
                 if(fUserSuppliedR2) {
@@ -507,7 +509,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
                 CalculateEventPlaneResolution(vzero, tpc);
             }
         } break;
-        case kV3 : {
+        case kV3 : {    // only v3
             if(CorrectRho(psi2, psi3)) {
                 if(fUserSuppliedR3) {
                     Double_t r(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
@@ -517,54 +519,42 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
                 CalculateEventPlaneResolution(vzero, tpc);
             }
         } break;
-        case kQC2 : {
-            Bool_t QC2(CorrectRho(psi2, psi3));
-            if(fUserSuppliedR2 && fUserSuppliedR3) {
-                // note for the qc method, resolution is REVERSED to go back to v2obs
-                Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
-                Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
-                if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)*r2);
-                if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)*r3);
-            }
-            if (fUsePtWeight) { // use weighted weights
-                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3), QCnM11());
-                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7), QCnM11());
-                if(QC2) {        // how to deal with negative results from the cumulants ?
-                    fProfV2->Fill(fCent, TMath::Power(fFitModulation->GetParameter(3),0.5), QCnM11());
-                    fProfV3->Fill(fCent, TMath::Power(fFitModulation->GetParameter(7),0.5), QCnM11()); 
+        case kQC2 : {   // qc2 analysis
+            if(CorrectRho(psi2, psi3)) {
+                if(fUserSuppliedR2 && fUserSuppliedR3) {
+                    // note for the qc method, resolution is REVERSED to go back to v2obs
+                    Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
+                    Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
+                    if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)*r2);
+                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)*r3);
                 }
-            } else {
-                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3), QCnM()*(QCnM()-1));
-                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7), QCnM()*(QCnM()-1));
-                if(QC2) {
-                    fProfV2->Fill(fCent, TMath::Power(fFitModulation->GetParameter(3),0.5), QCnM()*(QCnM()-1));
-                    fProfV3->Fill(fCent, TMath::Power(fFitModulation->GetParameter(7),0.5), QCnM()*(QCnM()-1));
+                if (fUsePtWeight) { // use weighted weights
+                    Double_t dQCnM11 = (fNoEventWeightsForQC) ? 1. : QCnM11();
+                    fProfV2->Fill(fCent, fFitModulation->GetParameter(3), dQCnM11);
+                    fProfV3->Fill(fCent, fFitModulation->GetParameter(7), dQCnM11); 
+                } else {
+                    Double_t dQCnM = (fNoEventWeightsForQC) ? 2. : QCnM();
+                    fProfV2->Fill(fCent, fFitModulation->GetParameter(3), dQCnM*(dQCnM-1));
+                    fProfV3->Fill(fCent, fFitModulation->GetParameter(7), dQCnM*(dQCnM-1));
                 }
+                CalculateEventPlaneResolution(vzero, tpc);
             }
-            CalculateEventPlaneResolution(vzero, tpc);
         } break;
         case kQC4 : {
-            Bool_t QC4(CorrectRho(psi2, psi3));
-            if(fUserSuppliedR2 && fUserSuppliedR3) {
-                // note for the qc method, resolution is REVERSED to go back to v2obs
-                Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
-                Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
-                if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)*r2);
-                if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)*r3);
-            }
-            if (fUsePtWeight) { // use weighted weights
-                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3)/*, QCnM1111()*/);
-                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7)/*, QCnM1111()*/);
-                if(QC4) {        // how to deal with negative values of cumulants ?
+            if(CorrectRho(psi2, psi3)) {
+                if(fUserSuppliedR2 && fUserSuppliedR3) {
+                    // note for the qc method, resolution is REVERSED to go back to v2obs   
+                    Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
+                    Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
+                    if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)*r2);
+                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)*r3);
+                }
+                if (fUsePtWeight) { // use weighted weights
                     fProfV2->Fill(fCent, TMath::Power(fFitModulation->GetParameter(3),0.5)/*, QCnM1111()*/);
                     fProfV3->Fill(fCent, TMath::Power(fFitModulation->GetParameter(7),0.5)/*, QCnM1111()*/); 
-                }
-            } else {
-                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3)/*, QCnM()*(QCnM()-1)*(QCnM()-2)*(QCnM()-3)*/);
-                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7)/*,  QCnM()*(QCnM()-1)*(QCnM()-2)*(QCnM()-3)*/);
-                if(QC4) {
-                    fProfV2->Fill(fCent, TMath::Power(fFitModulation->GetParameter(3),0.25)/*, QCnM()*(QCnM()-1)*(QCnM()-2)*(QCnM()-3)*/);
-                    fProfV3->Fill(fCent, TMath::Power(fFitModulation->GetParameter(7),0.25)/*, QCnM()*(QCnM()-1)*(QCnM()-2)*(QCnM()-3)*/);
+                } else {
+                    fProfV2->Fill(fCent, TMath::Power(fFitModulation->GetParameter(3),0.5)/*, QCnM()*(QCnM()-1)*(QCnM()-2)*(QCnM()-3)*/);
+                    fProfV3->Fill(fCent, TMath::Power(fFitModulation->GetParameter(7),0.5)/*, QCnM()*(QCnM()-1)*(QCnM()-2)*(QCnM()-3)*/);
                 }
             }
             CalculateEventPlaneResolution(vzero, tpc);
@@ -878,6 +868,46 @@ Double_t AliAnalysisTaskRhoVnModulation::QCnM1111() {
     return (QCnS(4,1)-6*QCnS(1,2)*QCnS(2,1)+8*QCnS(1,3)*QCnS(1,1)+3*QCnS(2,2)-6*QCnS(1,4));
 }
 //_____________________________________________________________________________
+Bool_t AliAnalysisTaskRhoVnModulation::QCnRecovery(Double_t psi2, Double_t psi3) {
+    // decides how to deal with the situation where c2 or c3 is negative 
+    // returns kTRUE depending on whether or not a modulated rho is used for the jet background
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    if(TMath::AreEqualAbs(fFitModulation->GetParameter(3), .0, 1e-10) && TMath::AreEqualAbs(fFitModulation->GetParameter(7), .0,1e-10)) {
+        fFitModulation->SetParameter(7, 0);
+        fFitModulation->SetParameter(3, 0);
+        fFitModulation->SetParameter(0, RhoVal());
+        return kTRUE;   // v2 and v3 have physical null values
+    }
+    switch (fQCRecovery) {
+        case kFixedRho : {      // roll back to the original rho
+           fFitModulation->SetParameter(7, 0);
+           fFitModulation->SetParameter(3, 0);
+           fFitModulation->SetParameter(0, RhoVal());
+           return kFALSE;       // rho is forced to be fixed
+        }
+        case kNegativeVn : {
+           Double_t c2(fFitModulation->GetParameter(3));
+           Double_t c3(fFitModulation->GetParameter(7));
+           if( c2 < 0 ) c2 = -1.*TMath::Sqrt(-1.*c2);
+           if( c3 < 0 ) c3 = -1.*TMath::Sqrt(-1.*c3);
+           fFitModulation->SetParameter(3, c2);
+           fFitModulation->SetParameter(7, c3);
+           return kTRUE;        // is this a physical quantity ?
+        }
+        case kTryFit : {
+           fitModulationType tempType(fFitModulationType);  // store temporarily
+           fFitModulationType = kCombined;
+           fFitModulation->SetParameter(7, 0);
+           fFitModulation->SetParameter(3, 0);
+           Bool_t pass(CorrectRho(psi2, psi3));         // do the fit and all quality checks
+           fFitModulationType = tempType;               // roll back for next event
+           return pass;
+        }
+        default : return kFALSE;
+    }
+    return kFALSE;
+}
+//_____________________________________________________________________________
 Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3) 
 {
     // get rho' -> rho(phi)
@@ -886,6 +916,9 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     //      in case of cumulants, both cumulants and vn values are stored. in both cases, v2 and v3
     //      are expected. a check is performed to see if rho has no negative local minimum
     //      for full description, see Phys. Rev. C 83, 044913
+    //      since the cn distribution has negative values, vn = sqrt(cn) can be imaginary sometimes
+    //      in this case one can either roll back to the 'original' rixed rho, do a fit for vn or take use
+    //      vn = - sqrt(|cn|) 
     //  [2] fitting a fourier expansion to the de/dphi distribution
     //      the fit can be done with either v2, v3 or a combination.
     //      in all cases, a cut can be made on the p-value of the chi-squared value of the fit
@@ -895,28 +928,55 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
         case kQC2 : {
             fFitModulation->FixParameter(4, psi2); 
             fFitModulation->FixParameter(6, psi3);
-            fFitModulation->FixParameter(3, CalculateQC2(2));
+            fFitModulation->FixParameter(3, CalculateQC2(2));   // set here with cn, vn = sqrt(cn)
             fFitModulation->FixParameter(7, CalculateQC2(3));
-            if(fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) < 0) { 
+            // first fill the histos of the raw cumulant distribution
+            if (fUsePtWeight) { // use weighted weights
+                Double_t dQCnM11 = (fNoEventWeightsForQC) ? 1. : QCnM11();
+                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3), dQCnM11);
+                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7), dQCnM11);
+            } else {
+                Double_t dQCnM = (fNoEventWeightsForQC) ? 2. : QCnM();
+                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3), dQCnM*(dQCnM-1));
+                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7), dQCnM*(dQCnM-1));
+            }
+            // then see if one of the cn value is larger than zero and vn is readily available
+            if(fFitModulation->GetParameter(3) > 0 && fFitModulation->GetParameter(7) > 0) {
+                fFitModulation->FixParameter(3, TMath::Sqrt(fFitModulation->GetParameter(3)));
+                fFitModulation->FixParameter(7, TMath::Sqrt(fFitModulation->GetParameter(7)));
+            } else if (!QCnRecovery(psi2, psi3)) return kFALSE;  // try to recover the cumulant, this will set v2 and v3
+            if(fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) < 0) {  // general check 
                 fFitModulation->SetParameter(7, 0);
                 fFitModulation->SetParameter(3, 0);
                 fFitModulation->SetParameter(0, RhoVal());
                 return kFALSE;
             }
-            return (fFitModulation->GetParameter(3) > 0 && fFitModulation->GetParameter(7) > 0) ? kTRUE : kFALSE;
+            return kTRUE;
         } break;
         case kQC4 : {
             fFitModulation->FixParameter(4, psi2); 
             fFitModulation->FixParameter(6, psi3);
-            fFitModulation->FixParameter(3, CalculateQC4(2));
+            fFitModulation->FixParameter(3, CalculateQC4(2));   // set here with cn, vn = sqrt(cn)
             fFitModulation->FixParameter(7, CalculateQC4(3));
-            if(fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) < 0) { 
+            // first fill the histos of the raw cumulant distribution
+            if (fUsePtWeight) { // use weighted weights
+                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3)/*, QCnM1111()*/);
+                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7)/*, QCnM1111()*/);
+            } else {
+                fProfV2Cumulant->Fill(fCent, fFitModulation->GetParameter(3)/*, QCnM1111()*/);
+                fProfV3Cumulant->Fill(fCent, fFitModulation->GetParameter(7)/*, QCnM1111()*/);
+            }
+            // then see if one of the cn value is larger than zero and vn is readily available
+            if(fFitModulation->GetParameter(3) > 0 && fFitModulation->GetParameter(7) > 0) {
+                fFitModulation->FixParameter(3, TMath::Sqrt(fFitModulation->GetParameter(3)));
+                fFitModulation->FixParameter(7, TMath::Sqrt(fFitModulation->GetParameter(7)));
+            } else if (!QCnRecovery(psi2, psi3)) return kFALSE;  // try to recover the cumulant, this will set v2 and v3
+            if(fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) < 0) {  // general check 
                 fFitModulation->SetParameter(7, 0);
                 fFitModulation->SetParameter(3, 0);
                 fFitModulation->SetParameter(0, RhoVal());
                 return kFALSE;
             }
-            return (fFitModulation->GetParameter(3) > 0 && fFitModulation->GetParameter(7) > 0) ? kTRUE : kFALSE;
         } break;
         case kIntegratedFlow : {
             // use v2 and v3 values from an earlier iteration over the data
@@ -992,7 +1052,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
         case kV3 : { 
             fFitModulation->FixParameter(4, psi3); 
         } break;
-        case kCombined : { 
+        case kCombined : {
             fFitModulation->FixParameter(4, psi2); 
             fFitModulation->FixParameter(6, psi3);
         } break;
@@ -1019,9 +1079,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     _tempSwap.Fit(fFitModulation, fFitModulationOptions.Data(), "", 0, TMath::TwoPi());
     // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
     Double_t CDF(1.-ChiSquareCDF(fFitModulation->GetNDF(), fFitModulation->GetChisquare()));
-//    Double_t PDF(ChiSquarePDF(fFitModulation->GetNDF(), fFitModulation->GetChisquare()));
     fHistPvalueCDF->Fill(CDF);
-//    fHistPvaluePDF->Fill(PDF);
     if(CDF > fMinPvalue && CDF < fMaxPvalue && ( fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) > 0)) { // fit quality
         // for LOCAL didactic purposes, save the  best and the worst fits
         // this routine can produce a lot of output histograms (it's not memory 'safe') and will not work on GRID 
@@ -1164,13 +1222,15 @@ void AliAnalysisTaskRhoVnModulation::FillTrackHistograms() const
 {
     // fill track histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    Int_t iTracks(fTracks->GetEntriesFast());
+    Int_t iTracks(fTracks->GetEntriesFast()), iAcceptedTracks(0);
     for(Int_t i(0); i < iTracks; i++) {
         AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(i));
         if(!PassesCuts(track)) continue;
+        iAcceptedTracks++;
         fHistPicoTrackPt[fInCentralitySelection]->Fill(track->Pt());
         if(fFillQAHistograms) FillQAHistograms(track);
     }
+    fHistPicoTrackMult[fInCentralitySelection]->Fill(iAcceptedTracks);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::FillClusterHistograms() const
@@ -1560,4 +1620,24 @@ TH1F* AliAnalysisTaskRhoVnModulation::CorrectForResolutionInt(TH1F* v, detectorT
     TH1F* r(GetResolutionFromOuptutFile(det, h, cen));
     return (v->Divide(v, r)) ? v : 0x0;
 }
+//_____________________________________________________________________________
+TH1F* AliAnalysisTaskRhoVnModulation::GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h)
+{
+    // get differential QC
+    Double_t r(refCumulants->GetBinContent(h-1)); // v2 reference flow
+    if(r > 0) r = TMath::Sqrt(r);
+    TH1F* qc = new TH1F(Form("QC2v%i", h), Form("QC2v%i", h), ptBins->GetSize()-1, ptBins->GetArray());
+    Double_t a(0), b(0), c(0);  // dummy variables
+    for(Int_t i(0); i < ptBins->GetSize(); i++) {
+        if(r > 0) {
+            a = diffCumlants->GetBinContent(1+i);
+            b = diffCumlants->GetBinError(1+i);
+            c = a/r;
+            qc->SetBinContent(1+i, c);
+            (a <= 0 || b <= 0) ? qc->SetBinError(1+i, b) : qc->SetBinError(1+i, TMath::Sqrt(c*c*b*b/(a*a)));
+        }
+    }
+    return qc;
+}
+
 //_____________________________________________________________________________
