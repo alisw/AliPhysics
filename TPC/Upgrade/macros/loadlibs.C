@@ -7,7 +7,7 @@ void loadlibs(const char *dir=".")
   gSystem->AddIncludePath("-I$ROOTSYS/include");
    Bool_t hasAR=!TString(gSystem->Getenv("ALICE_ROOT")).IsNull();
   // if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/RAW");
-  if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TPC/Base -I$ALICE_ROOT/TPC/Rec -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER/STEERBase/ -I$ALICE_ROOT/STEER/ESD/");
+   /*if (hasAR)*/ gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TPC/Base -I$ALICE_ROOT/TPC/Rec -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER/STEERBase/ -I$ALICE_ROOT/STEER/ESD/ -I$ALICE_ROOT/HLT/BASE/");
 
   gSystem->Load("libCore");
   gSystem->Load("libPhysics");
@@ -20,13 +20,14 @@ void loadlibs(const char *dir=".")
   gSystem->Load("libNet");
   gSystem->Load("libTree");
   gSystem->Load("libProof");
-
   gSystem->Load("libSTEERBase");
+  gSystem->Load("libAOD");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libSTEER");
   gSystem->Load("libSTAT");
 
@@ -65,7 +66,7 @@ void loadlibs(const char *dir=".")
   //gROOT->LoadMacro(Form("%s/AliToyMCEvent.cxx+g",dir));
  // gROOT->LoadMacro(Form("%s/AliToyMCEventGenerator.cxx+g",dir));
  // gROOT->LoadMacro(Form("%s/AliToyMCEventGeneratorSimple.cxx+g",dir));
-  //  gROOT->LoadMacro(Form("%s/ToyMCDrawer.cxx+g",dir));
+  //  gROOT->LoadMacro(Form("%s/AliToyMCDrawer.cxx+g",dir));
   // disp->SetDrawer(drawer);
-  
+  //  gROOT->LoadMacro(Form("%s/AliToyMCEventGeneratorESD.cxx+g",dir));
 }
