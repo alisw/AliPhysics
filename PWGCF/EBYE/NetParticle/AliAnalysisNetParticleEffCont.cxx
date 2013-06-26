@@ -80,15 +80,20 @@ AliAnalysisNetParticleEffCont::~AliAnalysisNetParticleEffCont() {
  */
 
 //________________________________________________________________________
-void AliAnalysisNetParticleEffCont::Initialize(AliESDtrackCuts *cuts , AliAnalysisNetParticleHelper* helper, Int_t trackCutBit) {
+void AliAnalysisNetParticleEffCont::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts *cuts, Int_t trackCutBit) {
+  // -- Initialize
+  
+  // -- Get Helper
+  // ---------------
+  fHelper           = helper;
 
   // -- ESD track cuts
   // -------------------
   fESDTrackCuts     = cuts;
 
-  // -- Get Helper
-  // ---------------
-  fHelper           = helper;
+  // -- AOD track filter bit
+  // -------------------------
+  fAODtrackCutBit = trackCutBit;
 
   // -- Get particle species / pdgCode
   // -------------------------
@@ -99,10 +104,6 @@ void AliAnalysisNetParticleEffCont::Initialize(AliESDtrackCuts *cuts , AliAnalys
   fLabelsRec        = new Int_t*[2];
   for (Int_t ii = 0; ii < 2 ; ++ii)
     fLabelsRec[ii] = NULL;
-
-  // -- AOD track filter bit
-  // -------------------------
-  fAODtrackCutBit = trackCutBit;
 
   // -- Create THnSparse Histograms
   // --------------------------------
@@ -336,6 +337,14 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
   // Check every accepted track if correctly identified
   //  otherwise check for contamination
 
+  // -- Get ranges for AOD particles
+  Float_t etaRange[2];
+  fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
+
+  Float_t ptRange[2];
+  fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
+
+  // -- Track Loop
   for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
     
     AliVTrack *track = (fESD) ? static_cast<AliVTrack*>(fESD->GetTrack(idxTrack)) : static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
@@ -357,6 +366,10 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
 	continue;
       }
       if (!trackAOD->TestFilterBit(fAODtrackCutBit))
+	continue;
+
+      // -- Check if in pT and eta range (is done in ESDTrackCuts for ESDs)
+      if(!(track->Pt() > ptRange[0] && track->Pt() <= ptRange[1] && TMath::Abs(track->Eta()) <= etaRange[1]))
 	continue;
     }
 
