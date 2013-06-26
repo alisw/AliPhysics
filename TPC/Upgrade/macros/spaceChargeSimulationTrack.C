@@ -196,7 +196,7 @@ void DrawFuncions(){
 }
 
 
-void spaceChargeSimulationTrack(){
+void spaceChargeSimulationTrack(Double_t refX){
   //
   // 1. Initialzation form space charge maps
   //
@@ -245,7 +245,7 @@ void spaceChargeSimulationTrack(){
     Double_t vertex[3]={0,0,0};
     Double_t cv[21]={0};
     AliExternalTrackParam *t= new AliExternalTrackParam(vertex, pxyz, cv, sign);   
-    Double_t refX=1.;
+    //    Double_t refX=1.;
     Int_t dir=-1;
     AliExternalTrackParam *td =  spaceCharge->FitDistortedTrack(*t, refX, dir,  pcstream);
   }  
