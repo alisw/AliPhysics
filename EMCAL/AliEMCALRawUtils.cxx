@@ -29,6 +29,7 @@
 //*-- Author: Marco van Leeuwen (LBL)
 //*-- Major refactoring by Per Thomas Hille
 
+//#include "AliCDBManager.h"
 #include "AliEMCALRawUtils.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -300,9 +301,14 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   
   Float_t bcTimePhaseCorr = 0; // for BC-based L1 phase correction
   Int_t bcMod4 = (reader->GetBCID() % 4); // LHC uses 40 MHz, EMCal uses 10 MHz clock
-  if (bcMod4==0 || bcMod4==1) { 
+	
+  //AliCDBManager* man = AliCDBManager::Instance();
+  //Int_t runNumber = man->GetRun();
+	
+ Int_t runNumber = reader->GetRunNumber();
+
+  if ((runNumber >130850 ) && (bcMod4==0 || bcMod4==1)) 
     bcTimePhaseCorr = -1e-7; // subtract 100 ns for certain BC values
-  } 
 
   while (in.NextDDL()) 
     {
