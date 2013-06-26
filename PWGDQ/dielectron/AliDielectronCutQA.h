@@ -25,7 +25,7 @@ class TCollection;
 class AliDielectronCutQA : public TNamed {
   
 public:
-  enum { kTrack=0, kPair, kEvent, kNtypes };
+  enum { kEvent=0, kTrack, kPair, kNtypes };
 
   AliDielectronCutQA();
   AliDielectronCutQA(const char*name, const char* title);
@@ -36,7 +36,7 @@ public:
   //
   void Init();
   void AddTrackFilter(     AliAnalysisFilter *trkFilter);
-  /* void AddPrePairFilter(   AliAnalysisFilter *prePairFilter); */
+  /*  void AddPrePairFilter(   AliAnalysisFilter *prePairFilter);*/
   /* void AddPrePairLegFilter(AliAnalysisFilter *prePairLegFilter); */
   void AddPairFilter(      AliAnalysisFilter *pairFilter);
   void AddEventFilter(     AliAnalysisFilter *eventFilter);
