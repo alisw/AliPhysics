@@ -16,6 +16,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const Bool_t   trackclus          = kTRUE,
   const Bool_t   doHistos           = kFALSE,
   const Bool_t   makePicoTracks     = kTRUE,
+  const Bool_t   makeTrigger        = kTRUE,
   const Bool_t   isEmcalTrain       = kFALSE
 )
 {
@@ -36,6 +37,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   if ((dType == "AOD") && (clusterColName == "CaloClusters"))
     clusterColName = "caloClusters";
+  if ((dType == "ESD") && (clusterColName == "caloClusters"))
+    clusterColName = "CaloClusters";
 
   if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
   {
@@ -66,15 +69,24 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(usedTracks,clusterColName.Data(),"EmcalTracks","EmcalClusters");
   emcalParts->SelectCollisionCandidates(pSel);
 
+  // Trigger maker
+  if (makeTrigger) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
+    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers");
+    emcalTriggers->SelectCollisionCandidates(pSel);
+  }
+
   // Relate tracks and clusters
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher("EmcalTracks","EmcalClusters",0.1);
   emcalClus->SelectCollisionCandidates(pSel);
   if (isEmcalTrain)
     RequestMemory(emcalClus,100*1024);
+
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskHadCorr.C"); 
   AliHadCorrTask *hCorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",outClusName,hadcorr,minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
+
   if (isEmcalTrain) {
     if (doHistos)
       RequestMemory(hCorr,500*1024);
