@@ -76,6 +76,8 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         Bool_t                  fDoVZEROFlowAnalysis;   // do vzero flow analysis
         Bool_t                  fDoQC2FlowAnalysis;     // do qc2 flow analysis
         Bool_t                  fDoQC4FlowAnalysis;     // do qc4 flow analysis
+        Bool_t                  fDoQCFPAnalysis;        // do qc fp analysis
+        Bool_t                  fDoSPFPAnalysis;        // do sp fp analyis
         Bool_t                  fDoMultWeight;          // weight events with multiplicity
         Bool_t                  fDoPtWeight;            // introduce pt weighting for rp's and poi's
         Bool_t                  fInitialized;           //! check if the analysis is initialized
@@ -88,9 +90,9 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         Float_t                 fCentralityMax;         // maximum centrality
         TArrayD*                fPtBins;                // custom pt bins for flow analysis
         // cut objects
-        AliFlowTrackCuts*       fCutsRP_VZERO;          // rp cuts for fzero
-        AliFlowTrackCuts*       fCutsNull;              // empty cuts
-        AliFlowEventCuts*       fCutsEvent;             // event cuts
+        AliFlowTrackCuts*       fCutsRP_VZERO;          //! rp cuts for fzero
+        AliFlowTrackCuts*       fCutsNull;              //! empty cuts
+        AliFlowEventCuts*       fCutsEvent;             //! event cuts
         // containers, setup
         AliFlowEvent*           fFlowEvent_TPC;         //! container for flow analysis
         AliFlowEvent*           fFlowEvent_VZERO;       //! container for flow analysis

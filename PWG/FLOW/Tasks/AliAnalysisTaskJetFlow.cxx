@@ -65,7 +65,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(kTRUE), fDoQC2FlowAnalysis(kTRUE), fDoQC4FlowAnalysis(kFALSE), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
+    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(kTRUE), fDoQC2FlowAnalysis(kTRUE), fDoQC4FlowAnalysis(kFALSE), fDoQCFPAnalysis(kFALSE), fDoSPFPAnalysis(kFALSE), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
 { /* default constructor for ROOT IO */ }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
@@ -78,27 +78,13 @@ AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
         Bool_t FlowPackageSP,
         Bool_t FlowPackageQC  
         ) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
+    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoQCFPAnalysis(FlowPackageQC), fDoSPFPAnalysis(FlowPackageSP), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     fJetsName = rhoTask->GetJetsName();
     fTracksName = rhoTask->GetTracksName(); 
-    if(FlowPackageSP || FlowPackageQC) {
-        fCutsEvent = new AliFlowEventCuts();
-        fCutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); 
-        fCutsNull = new AliFlowTrackCuts("CutsNull");
-        fCutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
-        fCutsNull->SetEtaRange(+1, -1);
-        fCutsNull->SetPtRange(+1, -1);
-        fCutsRP_VZERO = new AliFlowTrackCuts();
-        fCutsRP_VZERO = fCutsRP_VZERO->GetStandardVZEROOnlyTrackCuts();
-        if(FlowPackageSP) {
-            (fVParticleAnalysis) ? fFlowEvent_VZERO = new AliFlowEvent(10000) : fFlowEvent_VZERO = new AliFlowEvent(100);
-        }
-        fFlowEvent_TPC = new AliFlowEvent(10000);
-    }
     if(FlowPackageSP || FlowPackageQC)    DefineOutput(2, AliFlowEventSimple::Class());
     if(FlowPackageSP && FlowPackageQC)    DefineOutput(3, AliFlowEventSimple::Class());
 }
@@ -121,6 +107,21 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
 {
     // create output objects
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    // create the cut objects
+    if(fDoSPFPAnalysis || fDoQCFPAnalysis) {
+        fCutsEvent = new AliFlowEventCuts();
+        fCutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); 
+        fCutsNull = new AliFlowTrackCuts("CutsNull");
+        fCutsNull->SetParamType(AliFlowTrackCuts::kGlobal);
+        fCutsNull->SetEtaRange(+1, -1);
+        fCutsNull->SetPtRange(+1, -1);
+        fCutsRP_VZERO = new AliFlowTrackCuts();
+        fCutsRP_VZERO = fCutsRP_VZERO->GetStandardVZEROOnlyTrackCuts();
+        if(fDoSPFPAnalysis) {
+            (fVParticleAnalysis) ? fFlowEvent_VZERO = new AliFlowEvent(10000) : fFlowEvent_VZERO = new AliFlowEvent(100);
+        }
+        fFlowEvent_TPC = new AliFlowEvent(10000);
+    }
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
     // histograms
@@ -132,7 +133,7 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(3, "fCentralityMax");
     fHistAnalysisSummary->SetBinContent(3, fCentralityMax);
     fOutputList->Add(fHistAnalysisSummary);
-    if(fVParticleAnalysis) { // FIXME inherits from flow package now
+    if(fVParticleAnalysis && ! fPtBins) { // FIXME inherits from flow package now
         Double_t pt[fCCBinsInPt+1];
         Double_t width = (fCCMaxPt - fCCMinPt ) / (float)fCCBinsInPt;
         for(Int_t i(0); i < fCCBinsInPt+1; i++) pt[i] = fCCMinPt+width*i;
@@ -163,11 +164,11 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
         fRefCumulants->GetXaxis()->SetBinLabel(1, "c_{2}[2]");
         fRefCumulants->GetXaxis()->SetBinLabel(2, "c_{3}[2]");
         fOutputList->Add(fRefCumulants);
-        fDiffCumlantsV2 = new TProfile("Differential cumulants", "Differential cumulants", fPtBins->GetSize()-1, fPtBins->GetArray());
+        fDiffCumlantsV2 = new TProfile("Differential cumulants v2", "Differential cumulants v2", fPtBins->GetSize()-1, fPtBins->GetArray());
         fDiffCumlantsV2->GetXaxis()->SetTitle("Pt [GeV/c]");
         fDiffCumlantsV2->GetYaxis()->SetTitle("v_{2}[2]");
         fOutputList->Add(fDiffCumlantsV2);
-        fDiffCumlantsV3 = new TProfile("Differential v3", "Differential v3", fPtBins->GetSize()-1, fPtBins->GetArray());
+        fDiffCumlantsV3 = new TProfile("Differential cumulants v3", "Differential cumulants v3", fPtBins->GetSize()-1, fPtBins->GetArray());
         fDiffCumlantsV3->GetXaxis()->SetTitle("Pt [GeV/c]");
         fDiffCumlantsV3->GetYaxis()->SetTitle("v_{3}[2]");
         fOutputList->Add(fDiffCumlantsV3);
@@ -225,18 +226,15 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
     if(fDoQC2FlowAnalysis)              DoQC2FlowAnalysis();
     if(fDoQC4FlowAnalysis)              DoQC4FlowAnalysis();
     Bool_t post(0x0);   // post only when analysis succeeded
-    if(fFlowEvent_TPC || fFlowEvent_VZERO) post = DoFlowPackageFlowAnalysis();
+    if(fFlowEvent_TPC || fFlowEvent_VZERO) DoFlowPackageFlowAnalysis();
     // push the output for the different analyses to file
     PostData(1, fOutputList);
-    if(post) {
-        post = kFALSE;   // reuse bool
-        if(fFlowEvent_VZERO) {
-            PostData(2, fFlowEvent_VZERO);
-            post = kTRUE;
-        }
-        if(fFlowEvent_TPC) {
-            (post) ? PostData(3, fFlowEvent_TPC) : PostData(2, fFlowEvent_TPC);
-        }
+    if(fFlowEvent_VZERO) {
+        PostData(2, fFlowEvent_VZERO);
+        post = kTRUE;
+    }
+    if(fFlowEvent_TPC) { 
+        (post) ? PostData(3, fFlowEvent_TPC) : PostData(2, fFlowEvent_TPC);
     }
 }
 //_____________________________________________________________________________
@@ -450,27 +448,5 @@ void AliAnalysisTaskJetFlow::Terminate(Option_t *)
 {
     // terminate
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    // get a rough estimate of differential cumulants
-    Double_t rv2(fRefCumulants->GetBinContent(1)); // v2 reference flow
-    Double_t rv3(fRefCumulants->GetBinContent(2)); // v3 reference flow
-    if(rv2 > 0) rv2 = TMath::Sqrt(rv2);
-    if(rv3 > 0) rv3 = TMath::Sqrt(rv3);
-    Double_t a(0), b(0), c(0);  // dummy variables
-    for(Int_t i(0); i < fPtBins->GetSize(); i++) {
-        if(rv2 > 0) {
-            a = fDiffCumlantsV2->GetBinContent(1+i);
-            b = fDiffCumlantsV2->GetBinError(1+i);
-            c = a/rv2;
-            fQC2v2->SetBinContent(1+i, c);
-            (a <= 0 || b <= 0) ? fQC2v2->SetBinError(1+i, b) : fQC2v2->SetBinError(1+i, TMath::Sqrt(c*c*b*b/(a*a)));
-        }
-        if(rv3 > 0) {
-            a = fDiffCumlantsV3->GetBinContent(1+i);
-            b = fDiffCumlantsV3->GetBinError(1+i);
-            c = a/rv2;
-            fQC2v3->SetBinContent(1+i, c);
-            (a <= 0 || b <= 0) ? fQC2v3->SetBinError(1+i, b) : fQC2v3->SetBinError(1+i, TMath::Sqrt(c*c*b*b/(a*a)));
-        }
-    }
 }
 //_____________________________________________________________________________
