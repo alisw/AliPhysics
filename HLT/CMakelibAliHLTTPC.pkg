@@ -32,6 +32,7 @@ set ( CLASS_HDRS
     transform/AliHLTTPCSpline2D3D.h
     transform/AliHLTTPCFastTransform.h
     AliHLTTPCClusterTransformation.h
+    AliHLTTPCClusterTransformationComponent.h
     AliHLTTPCAgent.h
     AliHLTTPCMemHandler.h
     AliHLTTPCFileHandler.h
@@ -116,6 +117,7 @@ set ( CLASS_HDRS
     HWCFemulator/AliHLTTPCHWCFConsistencyControlComponent.h
     HWCFemulator/AliHLTTPCHWClusterMerger.h
     HWCFemulator/AliHLTTPCHWClusterMergerV1.h
+    AliHLTTPCHWClusterDecoderComponent.h
 )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
