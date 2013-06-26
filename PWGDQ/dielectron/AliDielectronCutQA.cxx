@@ -231,10 +231,10 @@ UInt_t AliDielectronCutQA::GetObjIndex(TObject *obj)
   //
   // return the corresponding idex
   //
-
+  //  printf("INFO: object type is a %s \n", obj->IsA()->GetName());
+  if(obj->InheritsFrom(AliDielectronPair::Class())) return kPair;
   if(obj->InheritsFrom(AliVTrack::Class())        ) return kTrack;
   if(obj->InheritsFrom(AliVParticle::Class())     ) return kTrack;
-  if(obj->InheritsFrom(AliDielectronPair::Class())) return kPair;
   if(obj->InheritsFrom(AliVEvent::Class())        ) return kEvent;
   printf("FATAL: object type %s not yet supported, please let the author know\n", obj->IsA()->GetName());
   return -1;
