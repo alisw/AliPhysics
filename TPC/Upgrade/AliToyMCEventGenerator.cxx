@@ -284,8 +284,19 @@ void AliToyMCEventGenerator::ConvertTrackPointsToLocalClusters(AliTrackPointArra
       grXZ=(TGraph*)arrGraphsXZ.At(sec);
       if (!grXY) continue;
 
-      splXY=new TSpline3("splXY",grXY);
-      splXZ=new TSpline3("splXZ",grXZ);
+      if(grXY->GetN()>1 && grXZ->GetN()>1) { //causes segmentation violation if N==1
+       	splXY=new TSpline3("splXY",grXY);
+	splXZ=new TSpline3("splXZ",grXZ);
+      }
+      else {
+	//TODO: make a cluster also in the sector w only one space point?
+	continue;
+	// Double_t tempX=0., tempY = 0., tempZ = 0.;
+	
+	// grXY->GetPoint(0,tempX,localY);
+	// grXZ->GetPoint(0,tempX,localZ);
+      }
+
     }
     secOld=sec;
 
