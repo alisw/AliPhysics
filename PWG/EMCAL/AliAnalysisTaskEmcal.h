@@ -14,6 +14,7 @@ class AliVParticle;
 class AliVCaloCells;
 class TH1F;
 class AliEMCALGeometry;
+class AliVCaloTrigger;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -45,6 +46,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
   void                        SetClusName(const char *n)                            { fCaloName          = n                              ; }
   void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
+  void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetClusPtCut(Double_t cut)                            { fClusPtCut         = cut                            ; }
   void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow    = min  ; fClusTimeCutUp = max    ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
@@ -91,6 +93,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TString                     fTracksName;                 // name of track collection
   TString                     fCaloName;                   // name of calo cluster collection
   TString                     fCaloCellsName;              // name of calo cell collection
+  TString                     fCaloTriggersName;           // name of calo triggers collection
   Double_t                    fMinCent;                    // min centrality for event selection
   Double_t                    fMaxCent;                    // max centrality for event selection
   Double_t                    fMinVz;                      // min vertex for event selection
@@ -124,6 +127,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
   AliVCaloCells              *fCaloCells;                  //!cells
+  AliVCaloTrigger            *fCaloTriggers;               //!calo triggers
   Double_t                    fCent;                       //!event centrality
   Int_t                       fCentBin;                    //!event centrality bin
   Double_t                    fEPV0;                       //!event plane V0
@@ -142,6 +146,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 14) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 15) // EMCAL base analysis task
 };
 #endif

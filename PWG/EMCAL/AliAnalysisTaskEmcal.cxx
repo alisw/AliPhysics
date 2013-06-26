@@ -24,6 +24,7 @@
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
+#include "AliVCaloTrigger.h"
 
 ClassImp(AliAnalysisTaskEmcal)
 
@@ -38,6 +39,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTracksName(),
   fCaloName(),
   fCaloCellsName(),
+  fCaloTriggersName(),
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
@@ -71,6 +73,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTracks(0),
   fCaloClusters(0),
   fCaloCells(0),
+  fCaloTriggers(0),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -101,6 +104,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTracksName(),
   fCaloName(),
   fCaloCellsName(),
+  fCaloTriggersName(),
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
@@ -134,6 +138,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTracks(0),
   fCaloClusters(0),
   fCaloCells(0),
+  fCaloTriggers(0),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -413,6 +418,14 @@ void AliAnalysisTaskEmcal::ExecOnce()
     fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
     if (!fCaloCells) {
       AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data())); 
+      return;
+    }
+  }
+
+  if (!fCaloTriggersName.IsNull() && !fCaloTriggers) {
+    fCaloTriggers =  dynamic_cast<AliVCaloTrigger*>(InputEvent()->FindListObject(fCaloTriggersName));
+    if (!fCaloTriggers) {
+      AliError(Form("%s: Could not retrieve calo triggers %s!", GetName(), fCaloTriggersName.Data())); 
       return;
     }
   }
