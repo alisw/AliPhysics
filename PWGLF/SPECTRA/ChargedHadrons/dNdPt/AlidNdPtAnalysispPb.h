@@ -6,7 +6,7 @@
 // based on AlidNdPtAnalysis class
 // 
 // Author: J.Otwinowski 04/11/2008 
-// last change: 2013-06-13 by M.Knichel, J.Gronefeld
+// last change: 2013-06-19 by M.Knichel
 //------------------------------------------------------------------------------
 
 class iostream;
@@ -25,6 +25,7 @@ class AliESD;
 class AliESDfriend;
 class AliESDfriendTrack;
 class AlidNdPtHelper;
+class AliAnalysisUtils;
 
 #include "AlidNdPt.h"
 #include "TObjString.h"
@@ -183,6 +184,10 @@ public :
   //rapidity shift getter+setter
   void SetRapidityShift(Double_t yShift) { fRapidityShift = yShift;}
   Double_t GetRapidityShift() { return fRapidityShift; }
+  
+  void Set2013pA(Bool_t is2013 = kTRUE) { fIs2013pA = is2013; }
+  Double_t Get2013pA() { return fIs2013pA; }  
+
 
 private:
 
@@ -345,16 +350,18 @@ private:
   Double_t *fBinsZv;     //[fZvNedges]
   
   Double_t fRapidityShift; //y shift CMS vs. LAB
+  AliAnalysisUtils* fUtils;
+  Bool_t fIs2013pA; 
   
   Bool_t fIsInit;
-  
+    
   // generic function to change binning
   Bool_t CanChangeBins();
 
   AlidNdPtAnalysispPb(const AlidNdPtAnalysispPb&); // not implemented
   AlidNdPtAnalysispPb& operator=(const AlidNdPtAnalysispPb&); // not implemented
 
-  ClassDef(AlidNdPtAnalysispPb,5);
+  ClassDef(AlidNdPtAnalysispPb,6);
 };
 
 #endif
