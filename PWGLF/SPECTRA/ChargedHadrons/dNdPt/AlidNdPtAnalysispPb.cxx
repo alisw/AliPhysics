@@ -24,7 +24,7 @@
 // - generic correction matrices
 // - control histograms
 //
-// last change: 2013-06-13 by M.Knichel, J.Gronefeld
+// last change: 2013-06-19 by M.Knichel
 //
 // meaning of different multiplicities:
 // multRec      : number of reconstructed tracks, after AcceptanceCuts and TrackCuts
@@ -57,6 +57,7 @@
 #include "AliPhysicsSelection.h"
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
@@ -188,7 +189,9 @@ ClassImp(AlidNdPtAnalysispPb)
   fBinsZv(0),
   
   fRapidityShift(-4.65409416218532379e-01),
-
+  fUtils(0),
+  fIs2013pA(kTRUE),
+  
   fIsInit(kFALSE)  
   
 {
@@ -326,6 +329,8 @@ AlidNdPtAnalysispPb::AlidNdPtAnalysispPb(Char_t* name, Char_t* title): AlidNdPt(
   fBinsZv(0),
   
   fRapidityShift(-4.65409416218532379e-01),
+  fUtils(0),
+  fIs2013pA(kTRUE),
 
   fIsInit(kFALSE)  
   
@@ -445,6 +450,9 @@ AlidNdPtAnalysispPb::~AlidNdPtAnalysispPb() {
   if (fCentralityTrackHist) delete fCentralityTrackHist; fCentralityTrackHist=0;
   if (fVCentralityEvent) delete[] fVCentralityEvent; fVCentralityEvent=0;
   if (fVCentralityTrack) delete[] fVCentralityTrack; fVCentralityTrack=0;
+  
+  if (fUtils) delete fUtils; fUtils=0;
+  
 }
 
 
@@ -1246,6 +1254,8 @@ void AlidNdPtAnalysispPb::Init()
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
   
+  fUtils = new AliAnalysisUtils();
+  
   // set init flag
   fIsInit = kTRUE;
 }
@@ -1417,7 +1427,17 @@ void AlidNdPtAnalysispPb::Process(AliESDEvent *const esdEvent, AliMCEvent *const
 
   // the previous lines have been added for same vertex as dNdEta analysis
 
-  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex; 
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex;
+  
+  Bool_t isEventSelected2013 = kTRUE;
+  
+  // selection and pileup rejection for 2013 p-A  
+  if (fIs2013pA) {
+       if (fUtils->IsFirstEventInChunk(esdEvent)) { isEventSelected2013 = kFALSE;  }
+       if (!fUtils->IsVertexSelected2013pA(esdEvent)) { isEventSelected2013 = kFALSE;  }
+       if (fUtils->IsPileUpEvent(esdEvent)) { isEventSelected2013 = kFALSE;  }
+  }
+  isEventOK = isEventOK && isEventSelected2013;
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
   
