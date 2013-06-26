@@ -29,11 +29,15 @@ AliAODTrdTrack::AliAODTrdTrack(const AliVTrdTrack &rhs) :
 {
   // constructor from abstract base class
 
+  fTracklets.SetClass("AliAODTrdTracklet", 6);
+
   // copy the contributing tracklets
   for (Int_t iTracklet = 0; iTracklet < 6; ++iTracklet) {
     const AliVTrdTracklet *trkl = rhs.GetTracklet(iTracklet);
     if (trkl)
       new (fTracklets[iTracklet]) AliAODTrdTracklet(*trkl);
+    else
+      new (fTracklets[iTracklet]) AliAODTrdTracklet();
   }
 }
 
@@ -50,11 +54,15 @@ AliAODTrdTrack::AliAODTrdTrack(const AliAODTrdTrack& rhs) :
 {
   // copy constructor
 
+  fTracklets.SetClass("AliAODTrdTracklet", 6);
+
   // copy the contributing tracklets
   for (Int_t iTracklet = 0; iTracklet < 6; ++iTracklet) {
     const AliVTrdTracklet *trkl = rhs.GetTracklet(iTracklet);
     if (trkl)
       new (fTracklets[iTracklet]) AliAODTrdTracklet(*trkl);
+    else
+      new (fTracklets[iTracklet]) AliAODTrdTracklet();
   }
 }
 
@@ -78,6 +86,8 @@ AliAODTrdTrack& AliAODTrdTrack::operator=(const AliAODTrdTrack& rhs)
     const AliVTrdTracklet *trkl = rhs.GetTracklet(iTracklet);
     if (trkl)
       new (fTracklets[iTracklet]) AliAODTrdTracklet(*trkl);
+    else
+      new (fTracklets[iTracklet]) AliAODTrdTracklet();
   }
 
   return *this;
