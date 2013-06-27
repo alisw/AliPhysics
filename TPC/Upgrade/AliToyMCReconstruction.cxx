@@ -1,6 +1,9 @@
 
 #include <TDatabasePDG.h>
 #include <TString.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TFile.h>
 
 
 #include <AliExternalTrackParam.h>
@@ -15,6 +18,7 @@
 #include <TTreeStream.h>
 
 #include "AliToyMCTrack.h"
+#include "AliToyMCEvent.h"
 
 #include "AliToyMCReconstruction.h"
 
@@ -30,6 +34,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fTime0(-1)
 , fStreamer(0x0)
 , fTree(0x0)
+, fEvent(0x0)
 , fTPCParam(0x0)
 , fSpaceCharge(0x0)
 {
@@ -47,7 +52,133 @@ AliToyMCReconstruction::~AliToyMCReconstruction()
   //
 
   delete fStreamer;
-  delete fTree;
+//   delete fTree;
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
+{
+  //
+  //
+  //
+
+  TFile f(file);
+  if (!f.IsOpen() || f.IsZombie()) {
+    printf("ERROR: couldn't open the file '%s'\n", file);
+    return;
+  }
+  
+ fTree=(TTree*)f.Get("toyMCtree");
+  if (!fTree) {
+    printf("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", file);
+    return;
+  }
+
+  fEvent=0x0;
+  fTree->SetBranchAddress("event",&fEvent);
+  
+  // read spacecharge from the Userinfo ot the tree
+  InitSpaceCharge();
+  
+  TString debugName=file;
+  debugName.ReplaceAll(".root","");
+  debugName.Append(".debug.root");
+  
+  gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
+  if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
+  
+  gROOT->cd();
+
+  static AliExternalTrackParam dummySeedT0;
+  static AliExternalTrackParam dummySeed;
+  static AliExternalTrackParam dummyTrack;
+
+  AliExternalTrackParam t0seed;
+  AliExternalTrackParam seed;
+  AliExternalTrackParam track;
+  AliExternalTrackParam tOrig;
+
+  AliExternalTrackParam *dummy;
+  
+  Int_t maxev=fTree->GetEntries();
+  if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
+  
+  for (Int_t iev=0; iev<maxev; ++iev){
+    printf("==============  Processing Event %6d =================\n",iev);
+    fTree->GetEvent(iev);
+    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
+      printf(" > ======  Processing Track %6d ========  \n",itr);
+      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+      tOrig = *tr;
+
+      
+      // set dummy 
+      t0seed    = dummySeedT0;
+      seed      = dummySeed;
+      track     = dummyTrack;
+      
+      Float_t z0=fEvent->GetZ();
+      Float_t t0=fEvent->GetT0();
+
+      Float_t vdrift=GetVDrift();
+      Float_t zLength=GetZLength(0);
+
+      // crate time0 seed, steered by fTime0 < 0
+      printf("t0 seed\n");
+      fTime0=-1.;
+      dummy = GetSeedFromTrack(tr);
+      
+      if (dummy) {
+        t0seed = *dummy;
+        delete dummy;
+
+        // crate real seed using the time 0 from the first seed
+        printf("seed\n");
+        fTime0 = t0seed.GetZ()-zLength/vdrift;
+        dummy  = GetSeedFromTrack(tr);
+        if (dummy) {
+          seed = *dummy;
+          delete dummy;
+
+          // create fitted track
+          if (fDoTrackFit){
+            printf("track\n");
+            dummy = GetFittedTrackFromSeed(tr, &seed);
+            track = *dummy;
+            delete dummy;
+          }
+        }
+      }
+
+      Int_t ctype(fCorrectionType);
+      
+      if (fStreamer) {
+        (*fStreamer) << "Tracks" <<
+        "iev="         << iev             <<
+        "z0="          << z0              <<
+        "t0="          << t0              <<
+        "t0seed="      << fTime0          <<
+        "itr="         << itr             <<
+        "clsType="     << fClusterType    <<
+        "corrType="    << ctype           <<
+        "seedRow="     << fSeedingRow     <<
+        "seedDist="    << fSeedingDist    <<
+        "vdrift="      << vdrift          <<
+        "zLength="     << zLength         <<
+        "t0seed.="     << &t0seed         <<
+        "seed.="       << &seed           <<
+        "track.="      << &track          <<
+        "tOrig.="      << &tOrig          <<
+        "\n";
+      }
+      
+      
+    }
+  }
+
+  delete fStreamer;
+  fStreamer=0x0;
+  
 }
 
 //____________________________________________________________________________________
@@ -112,6 +243,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     Int_t sign=1-2*((sector/18)%2);
     
     if ( (fClusterType == 1) && (fCorrectionType != kNoCorrection) ) {
+      printf("correction type: %d\n",(Int_t)fCorrectionType);
+      
       if ( fCorrectionType == kTPCCenter  ) xyz[2] = 125.*sign;
       //!!! TODO: is this the correct association?
       if ( fCorrectionType == kAverageEta ) xyz[2] = TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
@@ -153,7 +286,7 @@ void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl,
   //
   
   if (!cl) return;
-  //   Float_t xyz[3]={0.,0.,0.};
+    Float_t xyz[3]={0.,0.,0.};
   //   ClusterToSpacePoint(cl,xyz);
   //   cl->GetGlobalCov(cov);
   //TODO: what to do with the covariance matrix???
@@ -174,6 +307,10 @@ void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl,
   //   cl->Print();
   //   p.Print();
   p.SetVolumeID(cl->GetDetector());
+  p.GetXYZ(xyz);
+  if (fTime0>0) {
+    xyz[2]=(cl->GetTimeBin()-fTime0)*GetVDrift();
+  }
   //   p.Rotate(p.GetAngle()).Print();
 }
 
@@ -225,7 +362,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
   // loop over all other points and add to the track
-  for (Int_t ipoint=ncls; ipoint>=0; --ipoint){
+  for (Int_t ipoint=ncls-1; ipoint>=0; --ipoint){
     AliTrackPoint pIn;
     const AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
     if (fClusterType == 1) cl=tr->GetDistortedSpacePoint(ipoint);

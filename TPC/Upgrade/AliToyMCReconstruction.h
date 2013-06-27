@@ -7,6 +7,7 @@ class TTree;
 
 class TTreeSRedirector;
 class AliExternalTrackParam;
+class AliToyMCEvent;
 
 class AliToyMCReconstruction : public TObject {
 public:
@@ -20,6 +21,8 @@ public:
     kIdeal
   };
 
+  void RunReco(const char* file, Int_t nmaxEv=-1);
+  
   // reconstruction settings
   void      SetRecoSettings(Int_t clusterType, Int_t seedingRow, Int_t seedingDist, ECorrType correctionType)
                            { fClusterType=clusterType; fSeedingRow=seedingRow, fSeedingDist=seedingDist, fCorrectionType=correctionType; }
@@ -67,6 +70,7 @@ private:
   
   TTreeSRedirector *fStreamer;   // debug streamer
   TTree *fTree;                  // input tree with ToyMC info
+  AliToyMCEvent *fEvent;         // input event
 
   AliTPCParam *fTPCParam;            // tpc reco parameters
   AliTPCSpaceCharge3D *fSpaceCharge; // space charge 
