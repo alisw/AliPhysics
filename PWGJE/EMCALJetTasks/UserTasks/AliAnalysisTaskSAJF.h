@@ -20,18 +20,12 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskSAJF();
 
   void                        UserCreateOutputObjects();
-  void                        Terminate(Option_t *option);
-
-  void                        SetIsEmbedded(Bool_t i)      { fIsEmbedded        = i         ; }
 
  protected:
   Bool_t                      FillHistograms()                                              ;
   Int_t                       DoJetLoop()                                                   ;
 
-  Bool_t                      fIsEmbedded;                 // trigger, embedded signal
-
   // General histograms
-  TH1F                       *fHistEvents[4];              //!Events accepted/rejected
   TH3F                       *fHistLeadingJetPhiEta[4];    //!Leading jet phi-eta
   TH3F                       *fHistLeadingJetPtArea[4];    //!Leading jet pt spectrum vs. area
   TH3F                       *fHistLeadingJetCorrPtArea[4];//!Corrected leading jet pt spectrum vs. area

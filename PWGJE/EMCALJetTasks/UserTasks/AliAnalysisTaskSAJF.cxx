@@ -25,14 +25,12 @@ ClassImp(AliAnalysisTaskSAJF)
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
-  fIsEmbedded(kFALSE),
   fNjetsVsCent(0)
 
 {
   // Default constructor.
 
   for (Int_t i = 0; i < 4; i++) {
-    fHistEvents[i] = 0;
     fHistLeadingJetPhiEta[i] = 0;
     fHistLeadingJetPtArea[i] = 0;
     fHistLeadingJetCorrPtArea[i] = 0;
@@ -61,13 +59,11 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fIsEmbedded(kFALSE),
   fNjetsVsCent(0)
 {
   // Standard constructor.
 
   for (Int_t i = 0; i < 4; i++) {
-    fHistEvents[i] = 0;
     fHistLeadingJetPhiEta[i] = 0;
     fHistLeadingJetPtArea[i] = 0;
     fHistLeadingJetCorrPtArea[i] = 0;
@@ -108,7 +104,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
   fNjetsVsCent = new TH2F("fNjetsVsCent","fNjetsVsCent", 100, 0, 100, 150, -0.5, 149.5);
   fNjetsVsCent->GetXaxis()->SetTitle("Centrality (%)");
-  fNjetsVsCent->GetYaxis()->SetTitle("# of jets");
+  fNjetsVsCent->GetYaxis()->SetTitle("No. of jets");
   fOutput->Add(fNjetsVsCent);
 
   const Int_t nbinsZ = 12;
@@ -125,24 +121,12 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   TString histname;
 
   for (Int_t i = 0; i < 4; i++) {
-    histname = "fHistEvents_";
-    histname += i;
-    fHistEvents[i] = new TH1F(histname,histname, 6, 0, 6);
-    fHistEvents[i]->GetXaxis()->SetTitle("Event state");
-    fHistEvents[i]->GetYaxis()->SetTitle("counts");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(1, "No jets");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(2, "Max jet not found");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(3, "Rho == 0");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(4, "Max jet <= 0");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(5, "OK");
-    fOutput->Add(fHistEvents[i]);
-
     histname = "fHistLeadingJetPhiEta_";
     histname += i;
     fHistLeadingJetPhiEta[i] = new TH3F(histname.Data(), histname.Data(), 
-				 50, binsEta, 
-				 101, binsPhi, 
-				 nbinsZ, binsZ);
+					50, binsEta, 
+					101, binsPhi, 
+					nbinsZ, binsZ);
     fHistLeadingJetPhiEta[i]->GetXaxis()->SetTitle("#eta");
     fHistLeadingJetPhiEta[i]->GetYaxis()->SetTitle("#phi");
     fHistLeadingJetPhiEta[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
@@ -364,25 +348,16 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     return kFALSE;
   }
 
-  if (fJets->GetEntriesFast() < 1) { // no jets in array, skipping
-    fHistEvents[fCentBin]->Fill("No jets", 1);
+  if (fJets->GetEntriesFast() < 1) // no jets in array, skipping
     return kTRUE;
-  }
 
   static Int_t sortedJets[9999] = {-1};
   Bool_t r = GetSortedArray(sortedJets, fJets, fRhoVal);
   
-  if (!r || sortedJets[0] < 0) { // no accepted jets, skipping
-    fHistEvents[fCentBin]->Fill("No jets", 1);
+  if (!r) // no accepted jets, skipping
     return kTRUE;
-  }
 
   // OK, event accepted
-
-  if (fRhoVal == 0) 
-    fHistEvents[fCentBin]->Fill("Rho == 0", 1);
-  else
-    fHistEvents[fCentBin]->Fill("OK", 1);
 
   for (Int_t i = 0; i < fNLeadingJets && i < fJets->GetEntriesFast(); i++) {
     AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[i]));
@@ -503,10 +478,4 @@ Int_t AliAnalysisTaskSAJF::DoJetLoop()
   } //jet loop 
 
   return nAccJets;
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskSAJF::Terminate(Option_t *) 
-{
-  // Called once at the end of the analysis.
 }

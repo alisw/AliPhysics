@@ -113,36 +113,61 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  fHistRhovsCent = new TH2F("RhovsCent", "RhovsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
+  fHistRhovsCent = new TH2F("fHistRhovsCent", "fHistRhovsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
+  fHistRhovsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistRhovsCent->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
   fOutput->Add(fHistRhovsCent);
 
   if (!fTracksName.IsNull()) {
-    fHistRhovsNtrack = new TH2F("RhovsNtrack", "RhovsNtrack", 125, 0, 4000, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistRhovsNtrack = new TH2F("fHistRhovsNtrack", "fHistRhovsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistRhovsNtrack->GetXaxis()->SetTitle("No. of tracks");
+    fHistRhovsNtrack->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhovsNtrack);
   }
 
   if (!fCaloName.IsNull()) {
-    fHistRhovsNcluster = new TH2F("RhovsNcluster", "RhovsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistRhovsNcluster = new TH2F("fHistRhovsNcluster", "fHistRhovsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistRhovsNcluster->GetXaxis()->SetTitle("No. of tracks");
+    fHistRhovsNcluster->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhovsNcluster);
   }
 
   if (!fJetsName.IsNull()) {
-    fHistJetPtvsCent            = new TH2F("JetPtvsCent",           "JetPtvsCent",           101, -1,  100,   fNbins, fMinBinPt, fMaxBinPt);
-    fHistJetAreavsCent          = new TH2F("JetAreavsCent",         "JetAreavsCent",         101, -1,  100,   30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
-    fHistJetRhovsCent           = new TH2F("fHistJetRhovsCent",     "fHistJetRhovsCent",     101, -1,  100,   fNbins, fMinBinPt, fMaxBinPt*2);
-    fHistNjetvsCent             = new TH2F("NjetvsCent",            "NjetvsCent",            101, -1,  100,   150, -0.5, 149.5);
-
+    fHistJetPtvsCent = new TH2F("fHistJetPtvsCent", "fHistJetPtvsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt);
+    fHistJetPtvsCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistJetPtvsCent->GetYaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
     fOutput->Add(fHistJetPtvsCent);
+
+    fHistJetAreavsCent = new TH2F("fHistJetAreavsCent", "fHistJetAreavsCent", 101, -1, 100, 30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+    fHistJetAreavsCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistJetAreavsCent->GetYaxis()->SetTitle("Jet area");
     fOutput->Add(fHistJetAreavsCent);
+
+    fHistJetRhovsCent = new TH2F("fHistJetRhovsCent", "fHistJetRhovsCent", 101, -1, 100, fNbins, fMinBinPt, fMaxBinPt*2);
+    fHistJetRhovsCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistJetRhovsCent->GetYaxis()->SetTitle("Jet #rho (GeV/c)");
+    fOutput->Add(fHistJetRhovsCent);
+
+    fHistNjetvsCent = new TH2F("fHistNjetvsCent",  "fHistNjetvsCent", 101, -1, 100, 150, -0.5, 149.5);
+    fHistNjetvsCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistNjetvsCent->GetYaxis()->SetTitle("No. of jets");
     fOutput->Add(fHistNjetvsCent);
 
-    if (!fTracksName.IsNull()) {
-      fHistJetPtvsNtrack        = new TH2F("JetPtvsNtrack",         "JetPtvsNtrack",         125,  0,  4000,  fNbins, fMinBinPt, fMaxBinPt);
-      fHistJetAreavsNtrack      = new TH2F("JetAreavsNtrack",       "JetAreavsNtrack",       125,  0,  4000,  30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
-      fHistNjetvsNtrack         = new TH2F("NjetvsNtrack",          "rNjetvsNtrack",         125,  0,  4000,  150, -0.5, 149.5);
 
+    if (!fTracksName.IsNull()) {
+      fHistJetPtvsNtrack = new TH2F("fHistJetPtvsNtrack", "fHistJetPtvsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt);
+      fHistJetPtvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+      fHistJetPtvsNtrack->GetYaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
       fOutput->Add(fHistJetPtvsNtrack);
+
+      fHistJetAreavsNtrack = new TH2F("fHistJetAreavsNtrack", "fHistJetAreavsNtrack", 150, 0, 6000, 30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+      fHistJetAreavsNtrack->GetXaxis()->SetTitle("No. of tracks");
+      fHistJetAreavsNtrack->GetYaxis()->SetTitle("Jet area");
       fOutput->Add(fHistJetAreavsNtrack);
+
+      fHistNjetvsNtrack = new TH2F("fHistNjetvsNtrack", "fHistNjetvsNtrack", 150, 0, 6000, 150, -0.5, 149.5);
+      fHistJetAreavsNtrack->GetXaxis()->SetTitle("No. of tracks");
+      fHistJetAreavsNtrack->GetYaxis()->SetTitle("Jet area");
       fOutput->Add(fHistNjetvsNtrack);
     }
 
@@ -151,14 +176,14 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     for (Int_t i = 0; i < 4; i++) {
       name = Form("fHistJetNconstVsPt_%d",i);
       fHistJetNconstVsPt[i] = new TH2F(name, name, 150, -0.5, 149.5, fNbins, fMinBinPt, fMaxBinPt);
-      fHistJetNconstVsPt[i]->GetXaxis()->SetTitle("# of constituents");
+      fHistJetNconstVsPt[i]->GetXaxis()->SetTitle("No. of constituents");
       fHistJetNconstVsPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
       fOutput->Add(fHistJetNconstVsPt[i]);
 
-      name = Form("HistJetRhovsEta_%d",i);
+      name = Form("fHistJetRhovsEta_%d",i);
       fHistJetRhovsEta[i] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt*2, 16, -0.8, 0.8);
-      fHistJetRhovsEta[i]->GetXaxis()->SetTitle("Rho");
-      fHistJetRhovsEta[i]->GetYaxis()->SetTitle("eta");
+      fHistJetRhovsEta[i]->GetXaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
+      fHistJetRhovsEta[i]->GetYaxis()->SetTitle("#eta");
       fOutput->Add(fHistJetRhovsEta[i]);
 
       for (Int_t j = 0; j < 3; j++) {
@@ -172,34 +197,49 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
   }
   
   if (!fCompareRhoName.IsNull()) {
-    fHistDeltaRhovsCent = new TH2F("DeltaRhovsCent", "DetlaRhovsCent", 101, -1, 100, fNbins, -fMaxBinPt, fMaxBinPt);
+    fHistDeltaRhovsCent = new TH2F("fHistDeltaRhovsCent", "fHistDeltaRhovsCent", 101, -1, 100, fNbins, -fMaxBinPt, fMaxBinPt);
+    fHistDeltaRhovsCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistDeltaRhovsCent->GetYaxis()->SetTitle("#Delta#rho (GeV/c * rad^{-1})");
     fOutput->Add(fHistDeltaRhovsCent);
+
     if (!fTracksName.IsNull()) {
-      fHistDeltaRhovsNtrack = new TH2F("DeltaRhovsNtrack", "DeltaRhovsNtrack", 125, 0, 4000, fNbins, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaRhovsNtrack = new TH2F("fHistDeltaRhovsNtrack", "fHistDeltaRhovsNtrack", 150, 0, 6000, fNbins, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaRhovsNtrack->GetXaxis()->SetTitle("No. of tracks");
+      fHistDeltaRhovsNtrack->GetYaxis()->SetTitle("#Delta#rho (GeV/c * rad^{-1})");
       fOutput->Add(fHistDeltaRhovsNtrack);
     }
   }
 
   if (fScaleFunction) {
-    fHistRhoScaledvsCent = new TH2F("RhoScaledvsCent", "RhoScalevsCent", 101, -1, 100, fNbins, fMinBinPt , fMaxBinPt*2);
+    fHistRhoScaledvsCent = new TH2F("fHistRhoScaledvsCent", "fHistRhoScaledvsCent", 101, -1, 100, fNbins, fMinBinPt , fMaxBinPt*2);
+    fHistRhoScaledvsCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistRhoScaledvsCent->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhoScaledvsCent);
 
     if (!fTracksName.IsNull()) {
-      fHistRhoScaledvsNtrack = new TH2F("RhoScaledvsNtrack", "RhoScaledvsNtrack", 125, 0, 4000, fNbins, fMinBinPt, fMaxBinPt*2);
+      fHistRhoScaledvsNtrack = new TH2F("fHistRhoScaledvsNtrack", "fHistRhoScaledvsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2);
+      fHistRhoScaledvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+      fHistRhoScaledvsNtrack->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistRhoScaledvsNtrack);
     }
 
     if (!fCaloName.IsNull()) {
-      fHistRhoScaledvsNcluster = new TH2F("RhoScaledvsNcluster", "RhoScaledvsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
+      fHistRhoScaledvsNcluster = new TH2F("fHistRhoScaledvsNcluster", "fHistRhoScaledvsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
+      fHistRhoScaledvsNcluster->GetXaxis()->SetTitle("No. of clusters");
+      fHistRhoScaledvsNcluster->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistRhoScaledvsNcluster);
     }
 
     if (!fCompareRhoScaledName.IsNull()) {
-      fHistDeltaRhoScalevsCent = new TH2F("DeltaRhoScalevsCent", "DeltaRhoScalevsCent", 101, -1, 100, fNbins, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaRhoScalevsCent = new TH2F("fHistDeltaRhoScalevsCent", "fHistDeltaRhoScalevsCent", 101, -1, 100, fNbins, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaRhoScalevsCent->GetXaxis()->SetTitle("Centrality (%)");
+      fHistDeltaRhoScalevsCent->GetYaxis()->SetTitle("#Delta#rho_{scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistDeltaRhoScalevsCent);
       
       if (!fTracksName.IsNull()) {
-	fHistDeltaRhoScalevsNtrack = new TH2F("DeltaRhoScalevsNtrack", "DeltaRhoScalevsNtrack", 125, 0, 4000, fNbins, -fMaxBinPt, fMaxBinPt);
+	fHistDeltaRhoScalevsNtrack = new TH2F("fHistDeltaRhoScalevsNtrack", "fHistDeltaRhoScalevsNtrack", 150, 0, 6000, fNbins, -fMaxBinPt, fMaxBinPt);
+	fHistDeltaRhoScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
+	fHistDeltaRhoScalevsNtrack->GetYaxis()->SetTitle("#Delta#rho_{scaled} (GeV/c * rad^{-1})");
 	fOutput->Add(fHistDeltaRhoScalevsNtrack);
       }
     }
@@ -231,9 +271,9 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
   Int_t Nclusters = 0;
 
   if (fTracks)
-    Ntracks   = fTracks->GetEntriesFast();
+    Ntracks = fTracks->GetEntries();
   if (fCaloClusters)
-    Nclusters = fCaloClusters->GetEntriesFast();
+    Nclusters = fCaloClusters->GetEntries();
 
   if (fJets) {
     Int_t    Njets         = fJets->GetEntries();
