@@ -35,6 +35,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	void SetV0ANDtrigger(Bool_t flag=1) { fV0AND = flag; }
 	void SetNoFastOnlyTrigger(Bool_t flag=1) { fNoFastOnly = flag; }
+	void SetNtrkMultTrigger(Bool_t flag=1) { fNtrkMultTrigger = flag; }
 	void SetKNOmultInterval(Double_t min, Double_t max) { fMinKNOmult = min; fMaxKNOmult = max; }
 	void SetCentralityInterval(Double_t min, Double_t max) { fMinCentrality = min; fMaxCentrality = max; }
 	
@@ -121,14 +122,15 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Bool_t fHeavyIons; // analysis of heavy ions data
 	Bool_t fSimulation; // analysis of MC simulation
 	
-	Bool_t fMultTrigger; //! track multiplicity trigger flag
-	Bool_t fCentTrigger; //! centrality trigger flag
+	Bool_t fMultTriggerFired; //! track multiplicity trigger flag
+	Bool_t fCentTriggerFired; //! centrality trigger flag
 	Bool_t fTriggerFired; //! trigger flag
 	Bool_t fGoodVertex; //! good vertex flag
 	Bool_t fPileUpEvent; //! pile-up flag
 	
 	Bool_t fV0AND; // V0AND trigger flag
 	Bool_t fNoFastOnly; // No kFastOnly trigger flag
+	Bool_t fNtrkMultTrigger; // enable combined multiplicity trigger
 	Double_t fMinKNOmult; // minimum KNO track multiplicity scaling
 	Double_t fMaxKNOmult; // maximum KNO track multiplicity scaling
 	Double_t fMinCentrality; // minimum centrality for HI

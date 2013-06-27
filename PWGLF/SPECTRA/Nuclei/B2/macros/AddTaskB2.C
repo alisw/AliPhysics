@@ -30,6 +30,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
                              , Double_t maxDCAz          = 2
                              , Double_t maxEta           = 0.8
                              , Double_t maxY             = 0.5
+                             , Bool_t ntrkMultTrigger    = 0
                              , Double_t minKNOmult       = -10
                              , Double_t maxKNOmult       = 10000
                              , Bool_t   V0AND            = kFALSE
@@ -88,6 +89,8 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	task->SetMaxNSigmaITS(kMaxNSigmaITS);
 	task->SetMaxNSigmaTPC(kMaxNSigmaTPC);
 	task->SetMaxNSigmaTOF(kMaxNSigmaTOF);
+	
+	task->SetNtrkMultTrigger(ntrkMultTrigger);
 	
 	Double_t meanNtrk = V0AND ? GetNSDMeanNtrk(period, maxEta) : GetMeanNtrk(period, maxEta);
 	
