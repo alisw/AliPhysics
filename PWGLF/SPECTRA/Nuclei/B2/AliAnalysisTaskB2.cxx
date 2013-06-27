@@ -62,13 +62,14 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 , fPartCode(AliPID::kProton)
 , fHeavyIons(0)
 , fSimulation(0)
-, fMultTrigger(0)
-, fCentTrigger(0)
+, fMultTriggerFired(0)
+, fCentTriggerFired(0)
 , fTriggerFired(0)
 , fGoodVertex(0)
 , fPileUpEvent(0)
 , fV0AND(0)
 , fNoFastOnly(0)
+, fNtrkMultTrigger(0)
 , fMinKNOmult(-10)
 , fMaxKNOmult(100000)
 , fMinCentrality(0)
@@ -124,13 +125,14 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 , fPartCode(AliPID::kProton)
 , fHeavyIons(0)
 , fSimulation(0)
-, fMultTrigger(0)
-, fCentTrigger(0)
+, fMultTriggerFired(0)
+, fCentTriggerFired(0)
 , fTriggerFired(0)
 , fGoodVertex(0)
 , fPileUpEvent(0)
 , fV0AND(0)
 , fNoFastOnly(0)
+, fNtrkMultTrigger(0)
 , fMinKNOmult(-10)
 , fMaxKNOmult(100000)
 , fMinCentrality(-1)
@@ -315,12 +317,6 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		return;
 	}
 	
-	fMultTrigger  = kFALSE;
-	fCentTrigger  = kFALSE;
-	fTriggerFired = kFALSE;
-	fGoodVertex   = kFALSE;
-	fPileUpEvent  = kFALSE;
-	
 	// --------- multiplicity and centrality ------------------
 	
 	fNtrk = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, AliESDtrackCuts::kTrackletsITSTPC, fMaxEta);
@@ -331,7 +327,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Ntrk"))->Fill(fNtrk);
 	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Zmult"))->Fill(fKNOmult);
 	
-	if( (fKNOmult >= fMinKNOmult) && (fKNOmult < fMaxKNOmult) ) fMultTrigger = kTRUE;
+	fMultTriggerFired = (fNtrk > 0) && (fKNOmult >= fMinKNOmult) && (fKNOmult < fMaxKNOmult);
 	
 	if(fHeavyIons)
 	{
@@ -339,7 +335,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		
 		Float_t centrality = esdCent->GetCentralityPercentile("V0M");
 		
-		if((centrality >= fMinCentrality) && (centrality < fMaxCentrality)) fCentTrigger = kTRUE;
+		fCentTriggerFired = (centrality >= fMinCentrality) && (centrality < fMaxCentrality);
 		
 		Float_t v0ScaMult;
 		Float_t v0Mult = AliESDUtils::GetCorrV0(fESDevent,v0ScaMult);
@@ -361,18 +357,19 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	
 	if(fHeavyIons)
 	{
-		fTriggerFired = ( this->IsMB(triggerBits) && fCentTrigger );
+		fTriggerFired = ( this->IsMB(triggerBits) && fCentTriggerFired );
 	}
 	else
 	{
 		fTriggerFired = this->IsMB(triggerBits);
-		if(fNoFastOnly) fTriggerFired = ( fTriggerFired && !this->IsFastOnly(triggerBits) );
-		if(fV0AND) fTriggerFired = ( fTriggerFired && this->IsV0AND() );
-		
-		fTriggerFired = ( fTriggerFired && fMultTrigger );
+		if(fNoFastOnly)      fTriggerFired = ( fTriggerFired && !this->IsFastOnly(triggerBits) );
+		if(fV0AND)           fTriggerFired = ( fTriggerFired && this->IsV0AND() );
+		if(fNtrkMultTrigger) fTriggerFired = ( fTriggerFired && fMultTriggerFired );
 	}
 	
 	// --------------------- vertex --------------
+	
+	fGoodVertex  = kFALSE;
 	
 	const AliESDVertex* vtx = fESDevent->GetPrimaryVertex(); // best primary vertex
 	
@@ -397,7 +394,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	
 	// -------------------- pile up ------------------
 	
-	if(fESDevent->IsPileupFromSPDInMultBins()) fPileUpEvent = kTRUE;
+	fPileUpEvent = fESDevent->IsPileupFromSPDInMultBins();
 	
 	// ---------------- event stats ----------------
 	
@@ -487,8 +484,8 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		
 		// ------- multiplicity and centrality -------------
 		
-		if( fHeavyIons && !fCentTrigger) continue;
-		if(!fHeavyIons && !fMultTrigger) continue;
+		if( fHeavyIons && !fCentTriggerFired) continue;
+		if( fNtrkMultTrigger && !fMultTriggerFired) continue;
 		
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Prim_P"))->Fill(genP);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Prim_Pt"))->Fill(genPt);
