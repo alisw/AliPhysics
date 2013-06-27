@@ -97,7 +97,10 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
     Double_t vertex[3]={0,0,retEvent->GetZ()};
     Double_t cv[21]={0};
     AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
-    
+    // use unique ID for track number
+    // this will be used in DistortTrack track to set the cluster label
+    tempTrack->SetUniqueID(iTrack);
+
     Bool_t trackDist = DistortTrack(*tempTrack, time);
     if(trackDist) retEvent->AddTrack(*tempTrack);
     delete tempTrack;
@@ -164,7 +167,11 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, 
     Double_t cv[21]={0};
     Int_t sign = part->Charge();
     AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
-    
+    // use unique ID for track number
+    // this will be used in DistortTrack track to set the cluster label
+    tempTrack->SetUniqueID(iTrack);
+
+
     Bool_t trackDist = DistortTrack(*tempTrack, time);
     if(trackDist) {
       retEvent->AddTrack(*tempTrack);
