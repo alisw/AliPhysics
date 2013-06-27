@@ -161,13 +161,13 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	}
 	else
 	{
-		//neventsdata=ecutsdata->NumberOfEvents(); //number of accepted events
+		neventsdata=ecutsdata->NumberOfEvents(); //number of accepted events
 		 neventsmc=ecutsmc->NumberOfEvents();
 		neventsmcall= ecutsmc->NumberOfEvents();
 
 	}
 	GetMCTruth(MCTruth);
-	
+	cout<<neventsdata<<" Events"<<endl;
 	
 	
 	TH1F* allgen=((TH1F*)managermc->GetPtHistogram1D("hHistPtGen",1,1))->Clone();
@@ -183,7 +183,8 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	spectraall->SetTitle("recNch");
 	TH1F* contall=(TH1F*)allrecMC->Clone("contall");
 	contall->SetTitle("contall");
-	contall->Add(alleff,-1);
+	//contall->Add(alleff,-1);
+	SubHistWithFullCorr(contall,alleff);
 	alleff->Divide(alleff,allgen,1,1,"B");
 	contall->Divide(contall,allrecMC,1,1,"B");
 	
@@ -254,14 +255,17 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		
 		
 		
-		contallMC[i]->Add(eff[i],-1.0);
-		RecomputeErrors(contallMC[i]);
+		//contallMC[i]->Add(eff[i],-1.0);
+		SubHistWithFullCorr(contallMC[i],eff[i]);
+		//RecomputeErrors(contallMC[i]);
 		contallMC[i]->Sumw2(); 
 		contallMC[i]->Divide(contallMC[i],rawspectramc[i],1,1,"B");
 	
 		// contamintaion from PID but only primaries
-		contPIDpri[i]->Add(eff[i],-1.0);
-		RecomputeErrors(contPIDpri[i]);
+		//contPIDpri[i]->Add(eff[i],-1.0);
+		SubHistWithFullCorr(contPIDpri[i],eff[i]);
+
+		//RecomputeErrors(contPIDpri[i]);
 		contPIDpri[i]->Divide(contPIDpri[i],rawspectramc[i],1,1,"B");
 	
 		eff[i]->Divide(eff[i],MCTruth[i],1,1,"B");
@@ -269,8 +273,11 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		
 		contPID[i]->Sumw2();
 		rawspectramc[i]->Sumw2();
-		contPID[i]->Add(contPID[i],rawspectramc[i],-1,1);
-		RecomputeErrors(contPID[i]);
+		//contPID[i]->Add(contPID[i],rawspectramc[i],-1,1);
+		SubHistWithFullCorr(contPID[i],rawspectramc[i]);
+		contPID[i]->Scale(-1.0);
+
+		//RecomputeErrors(contPID[i]);
 		contPID[i]->ResetStats();
 		contPID[i]->Sumw2();
 		contPID[i]->Divide(contPID[i],rawspectramc[i],1,1,"B");
@@ -494,12 +501,25 @@ TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHisto
 				{
 					Double_t lowedge=histo->GetBinLowEdge(ibin);
 					Float_t cut=dcacutxy->Eval(lowedge);
-					TH1F* dcahist=(TH1F*)hman->GetDCAHistogram1D(name.Data(),lowedge,lowedge));
-					Float_t inyield=dcahist->Integral(dcahist->GetXaxis()->FindBin(-1.0*cut),dcahist->GetXaxis()->FindBin(cut));
+					TH1F* dcahist=(TH1F*)hman->GetDCAHistogram1D(name.Data(),lowedge,lowedge);
+					//Float_t inyield=dcahist->Integral(dcahist->GetXaxis()->FindBin(-1.0*cut),dcahist->GetXaxis()->FindBin(cut));
+					Float_t testyield=0.0;
+					Float_t testerror=0.0; 	
+					for (int itest=dcahist->GetXaxis()->FindBin(-1.0*cut);itest<=dcahist->GetXaxis()->FindBin(cut);itest++)
+					{
+						testyield+=dcahist->GetBinContent(itest);
+						testerror+=dcahist->GetBinError(itest)*dcahist->GetBinError(itest);
+					}
 					//cout<<"corr data "<<histo->GetBinContent(ibin)<<" "<<inyield<<" "<<dcahist->Integral()<<" "<<hnameout.Data()<<endl;
 					//cout<<"test dca "<<lowedge<<" "<<dcacutxy->Eval(lowedge)<<" "<<dcacutxy->Eval(histo->GetXaxis()->GetBinUpEdge(ibin))<<" "<<dcahist->GetBinLowEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<" "<<dcahist->GetXaxis()->GetBinUpEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<endl;
-					histo->SetBinContent(ibin,inyield);
-					histo->SetBinError(ibin,TMath::Sqrt(inyield));
+
+					//cout<<testyield<<" "<<TMath::Sqrt(testerror)<<" error2 "<<inyield<<" "<<TMath::Sqrt(inyield)<<endl;
+						
+					//histo->SetBinContent(ibin,inyield);
+					//histo->SetBinError(ibin,TMath::Sqrt(inyield));
+					histo->SetBinContent(ibin,testyield);
+					histo->SetBinError(ibin,TMath::Sqrt(testerror));
+
 				}
 			}
 			histo->Sumw2();
@@ -539,7 +559,7 @@ void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid=0x0)
 		}	
 		if(contpid)
 		{
-			if(contpid->GetBinContent(i)>0.2)
+			if(contpid->GetBinContent(i)>0.201)
 			{
 				h->SetBinContent(i,0);
 				h->SetBinError(i,0);
@@ -862,7 +882,10 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 void RecomputeErrors(TH1* h)
 {
 	for (int i=0; i<=h->GetXaxis()->GetNbins(); i++)
+	{
+		cout<<h->GetBinContent(i)<<" "<<h->GetBinError(i)<<" error "<<TMath::Sqrt(h->GetBinContent(i))<<endl;
 		h->SetBinError(i,TMath::Sqrt(h->GetBinContent(i)));
+	}
 	h->Sumw2(); 	
 }
 void SetBintoOne(TH1* h)
@@ -976,7 +999,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  const Int_t kNCharge=2;
 	  Int_t kPos=0;
 	  Int_t kNeg=1;
-          TString fnameGFProtons= "GFCorrection/correctionForCrossSection.root"
+          TString fnameGFProtons= "GFCorrection/correctionForCrossSection.root";
 	  TFile* fGFProtons = new TFile (fnameGFProtons.Data());
 	  if (!fGFProtons)
 	  { 
@@ -1135,17 +1158,25 @@ void MatchingTOFEff(TH1F** Spectra, TList* list=0x0)
 {
 	  if(TOFMatchingScalling[0]<0.0&&TOFMatchingScalling[1]<0.0)
 	  {
-		  TH1F *hMatcEffPos_data=(TH1F*)tcutsdata->GetHistoNMatchedPos();
-		  hMatcEffPos_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedPos());
+		TH1F *hMatcEffPos_data=(TH1F*)tcutsdata->GetHistoNMatchedPos();
+		  hMatcEffPos_data->Sumw2();
+		  //hMatcEffPos_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedPos());
+		  hMatcEffPos_data->Divide(hMatcEffPos_data,(TH1F*)tcutsdata->GetHistoNSelectedPos(),1,1,"B");
 		  hMatcEffPos_data->SetTitle("Matching Eff Pos - data");
 		  TH1F *hMatcEffNeg_data=(TH1F*)tcutsdata->GetHistoNMatchedNeg();
-		  hMatcEffNeg_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedNeg());
+		  hMatcEffNeg_data->Sumw2();
+		  //hMatcEffNeg_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedNeg());
+		  hMatcEffNeg_data->Divide(hMatcEffNeg_data,(TH1F*)tcutsdata->GetHistoNSelectedNeg(),1,1,"B");
 		  hMatcEffNeg_data->SetTitle("Matching Eff Neg - data");
 		  TH1F *hMatcEffPos_mc=(TH1F*)tcutsmc->GetHistoNMatchedPos();
-		  hMatcEffPos_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedPos());
+		  hMatcEffPos_mc->Sumw2();
+		  //hMatcEffPos_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedPos());
+		  hMatcEffPos_mc->Divide(hMatcEffPos_mc,(TH1F*)tcutsmc->GetHistoNSelectedPos(),1,1,"B");
 		  hMatcEffPos_mc->SetTitle("Matching Eff Pos - mc");
 		  TH1F *hMatcEffNeg_mc=(TH1F*)tcutsmc->GetHistoNMatchedNeg();
-		  hMatcEffNeg_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedNeg());
+		  hMatcEffNeg_mc->Sumw2();
+		  //hMatcEffNeg_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedNeg());
+		  hMatcEffNeg_mc->Divide(hMatcEffNeg_mc,(TH1F*)tcutsmc->GetHistoNSelectedNeg(),1,1,"B");
 		  hMatcEffNeg_mc->SetTitle("Matching Eff Neg - mc");
 
 
@@ -1166,6 +1197,7 @@ void MatchingTOFEff(TH1F** Spectra, TList* list=0x0)
 			
 		  TOFMatchingScalling[0]=pol0MatchPos_data->GetParameter(0);
 		  TOFMatchingScalling[1]=pol0MatchNeg_data->GetParameter(0);
+
 	  }
 	  //Correction spectra for matching efficiency
 	  //For the moment I'm using the inclusive correction
@@ -1412,3 +1444,17 @@ Bool_t ReadConfigFile(TString configfile)
 
 	return true;
 }
+
+void SubHistWithFullCorr(TH1F* h1, TH1F* h2, Float_t factor1=1.0, Float_t factor2=1.0)
+{
+	if(h1->GetNbinsX()!=h2->GetNbinsX())
+		return;
+	for (int i=0;i<=h1->GetNbinsX();i++)
+	{
+		Float_t tmpvalue=factor1*h1->GetBinContent(i)-factor2*h2->GetBinContent(i);
+		Float_t tmperror=TMath::Abs(factor1*factor1*h1->GetBinError(i)*h1->GetBinError(i)-factor2*factor2*h2->GetBinError(i)*h2->GetBinError(i));
+		h1->SetBinContent(i,tmpvalue);
+		h1->SetBinError(i,TMath::Sqrt(tmperror));
+	}		
+	
+}	

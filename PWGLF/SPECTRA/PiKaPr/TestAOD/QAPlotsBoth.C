@@ -77,6 +77,8 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 
 					if(neventsdata>0.0&&neventsmc>0.0)
 					{
+						nsig_data_Proj1->Sumw2();
+						nsig_mc_Proj1->Sumw2();
 						nsig_data_Proj1->Scale(1.0/neventsdata);
 					 	nsig_mc_Proj1->Scale(1.0/neventsmc);
 					}
