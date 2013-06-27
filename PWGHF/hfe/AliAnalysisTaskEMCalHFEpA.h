@@ -67,7 +67,15 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	void SetEventMixing(Bool_t EventMixingFlag) { fEventMixingFlag = EventMixingFlag;};
 	void SetNonHFEmassCut(Double_t MassCut) { fMassCut = MassCut; fMassCutFlag = kTRUE;};
 	void SetEtaCut(Double_t EtaCutMin,Double_t EtaCutMax ) { fEtaCutMin = EtaCutMin; fEtaCutMax = EtaCutMax; };
+	
+	void SetdPhidEtaCut(Double_t dPhiCut, Double_t dEtaCut ) { fdPhiCut = dPhiCut;fdEtaCut = dEtaCut ;};
+	
 	void SetEoverPCut(Double_t EoverPCutMin,Double_t EoverPCutMax ) { fEoverPCutMin = EoverPCutMin; fEoverPCutMax = EoverPCutMax; };
+	
+	void SetM02Cut(Double_t M02CutMin,Double_t M02CutMax ) { fM02CutMin = M02CutMin; fM02CutMax = M02CutMax; };
+	void SetM20Cut(Double_t M20CutMin,Double_t M20CutMax ) { fM20CutMin = M20CutMin; fM20CutMax = M20CutMax; };
+	
+	
 	void SetNonHFEangleCut(Double_t AngleCut) { fAngleCut = AngleCut; fAngleCutFlag = kTRUE;};
 	void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
 	void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
@@ -140,6 +148,11 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 //Histograms
 	TH1F				*fNevent;
 	TH1F				*fPtElec_Inc;
+
+	
+	TH1F				*fCharge_n;
+	TH1F				*fCharge_p;
+	
 	TH1F				*fPtElec_ULS;
 	TH1F				*fPtElec_LS;
 	
@@ -215,8 +228,17 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Double_t			fMassCut;
 	Double_t			fEtaCutMin;
 	Double_t			fEtaCutMax;
+	
+	Double_t			fdPhiCut;
+	Double_t			fdEtaCut;
+	
 	Double_t			fEoverPCutMin;
 	Double_t			fEoverPCutMax;
+	Double_t			fM20CutMin;
+	Double_t			fM20CutMax;
+	Double_t			fM02CutMin;
+	Double_t			fM02CutMax;
+	
 	Double_t			fAngleCut;
 	Double_t			fChi2Cut;
 	Double_t			fDCAcut;

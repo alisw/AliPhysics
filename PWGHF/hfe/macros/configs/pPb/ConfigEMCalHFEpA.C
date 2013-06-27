@@ -28,12 +28,15 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if(configIndex==3) 	hfecuts->SetMinNClustersTPC(110);			        //Minimum number of clusters on TPC
 	else hfecuts->SetMinNClustersTPC(100);							                //Minimum number of clusters on TPC
 	
-	hfecuts->SetMinNClustersTPCPID(80); 						                    //Minimum number of clusters for dE/dx
+	if(configIndex==22) hfecuts->SetMinNClustersTPCPID(70); 
+	else if (configIndex==23) hfecuts->SetMinNClustersTPCPID(80);					//Minimum number of clusters for dE/dx
+	else (configIndex==24) hfecuts->SetMinNClustersTPCPID(90);					    //Minimum number of clusters for dE/dx
+	
 	hfecuts->SetMinRatioTPCclusters(0.6);						                    //Number of clusters (Found/Findable)
 	
 	//ITS
-	hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);				//Require at least one cluster on SPD
-	hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);				            //Require at least one cluster on SPD
+	if(configIndex==25) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);			//Require at least one cluster on SPD
+	else hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);							//Require at least one cluster on SPD
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
 	
@@ -77,13 +80,20 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	//else task->SetEtaCut(-0.9,0.9);
 	
 	
-	if(configIndex==12) task->SetEtaCut(-0.5,0.5);
-	else if (configIndex==13) task->SetEtaCut(-0.4,0.4);
-	else if (configIndex==14) task->SetEtaCut(-0.3,0.3);
-	else if (configIndex==15) task->SetEtaCut(-0.2,0.2);
-	else if (configIndex==16) task->SetEtaCut(-0.6,0);
-	else if (configIndex==17) task->SetEtaCut(0,0.6);
+	if(configIndex==12) task->SetEtaCut(-0.6,-0.2);
+	else if (configIndex==13) task->SetEtaCut(-0.5,-0.1);
+	else if (configIndex==14) task->SetEtaCut(-0.4,0);
+	else if (configIndex==15) task->SetEtaCut(-0.3,0.1);
+	else if (configIndex==16) task->SetEtaCut(-0.2,0.2);
+	else if (configIndex==17) task->SetEtaCut(-0.1,0.3);
+	else if (configIndex==18) task->SetEtaCut(0,0.4);
 	else task->SetEtaCut(-0.6,0.6);
+	
+	if(configIndex==19) task->SetdPhidEtaCut(0.02,0.02);
+	else if (configIndex==20) task->SetdPhidEtaCut(0.03,0.03);
+	else if (configIndex==21) task->SetdPhidEtaCut(0.04,0.04);
+	else task->SetdPhidEtaCut(0.05,0.05);
+
 	
 	if (configIndex==7) task->SetEoverPCut(0.85,1.2);
 	else if (configIndex==8) task->SetEoverPCut(0.75,1.25);

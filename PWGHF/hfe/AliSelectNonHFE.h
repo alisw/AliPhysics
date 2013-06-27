@@ -38,6 +38,7 @@ class AliSelectNonHFE : public TNamed {
   Bool_t IsULS() const {return fIsULS;};
   void FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent);
   void SetAlgorithm(TString Algorithm) {fAlgorithm = Algorithm;};
+  void SetAdditionalCuts(Double_t PtMin, Int_t TpcNcls) {fPtMin = PtMin; fTpcNcls = TpcNcls; fHasPtCut=kTRUE; };
   void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
   void SetChi2OverNDFCut(Double_t Chi2OverNDFCut) {fChi2OverNDFCut = Chi2OverNDFCut;};
   void SetDCACut(Double_t dcaCut) {fdcaCut = dcaCut;};
@@ -73,11 +74,14 @@ class AliSelectNonHFE : public TNamed {
   Double_t 		fTPCnSigmaMax;  		//Maximum partner TPCnSigma value
   Double_t 		fMassCut;				//Maximum Invariant Mass Value for Non-HF-Electrons
   Double_t		fChi2OverNDFCut;        //Maximum value of Chi2 over NDF in the case of KF Algorithm
+  Double_t		fPtMin;					//Minimum pT value for the associated electrons
   Bool_t		fIsLS;					//Unlike signal pairs Flag
   Bool_t		fIsULS;					//like signal pairs Flag
   Bool_t		fIsAOD;					//Flag for AOD analysis
+  Bool_t		fHasPtCut;				//Flag for additional pT cut
   Int_t			fNLS;					//Number of Unlike signal pairs
   Int_t			fNULS;					//Number of like signal pairs
+  Int_t			fTpcNcls;				//Minimum Number of clusters in the TPC
   Int_t			*fLSPartner;	        //! Pointer for the LS partners index
   Int_t			*fULSPartner;	        //! Pointer for the ULS partners index
   TH1F			*fHistMass;				//! Invariant mass histogram for Unlike sign pairs
