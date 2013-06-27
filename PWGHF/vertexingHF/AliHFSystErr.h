@@ -46,11 +46,12 @@ class AliHFSystErr : public TNamed
     AliInfo(Form(" Settings for run year 20%2d",fRunNumber));
   }
   // Setting the collision type
-  //  0 is pp, 1 is PbPb
+  //  0 is pp, 1 is PbPb, 2 is pPb
   void SetCollisionType(Int_t type) { 
     fCollisionType = type; 
     if (fCollisionType==0) { AliInfo(" Settings for p-p collisions"); }
     else if(fCollisionType==1) { AliInfo(" Settings for Pb-Pb collisions"); }
+    else if(fCollisionType==2) { AliInfo(" Settings for p-Pb collisions"); }
   }
   // Setting for the centrality class
   //  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
@@ -91,7 +92,6 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2010PbPb4060CentScan();
   void InitDstartoD0pi2010PbPb6080CentScan();
 
-
  private:
 
   AliHFSystErr(const AliHFSystErr& source);
@@ -120,6 +120,11 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2011PbPb07half();
 
   void InitLctopKpi2010pp();
+
+  void InitD0toKpi2013pPb0100();
+  void InitDplustoKpipi2013pPb0100();
+  void InitDstartoD0pi2013pPb0100();
+  void InitDstoKKpi2013pPb0100();
 
 
   TH1F* ReflectHisto(TH1F *hin) const;
