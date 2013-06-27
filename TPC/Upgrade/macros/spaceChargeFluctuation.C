@@ -1,5 +1,5 @@
 /*
-  .x ~/rootlogon.C
+  .x $HOME/rootlogon.C
   .L $ALICE_ROOT/TPC/Upgrade/macros/spaceChargeFluctuation.C+ 
 //  GenerateMapRaw("/hera/alice/local/filtered/alice/data/2010/LHC10e/000129527/raw/merged_highpt_1.root","output.root", 50);
   GenerateMapRawIons( kFALSE, "/hera/alice/local/filtered/alice/data/2010/LHC10e/000129527/raw/merged_highpt_1.root","output.root", 25);
@@ -33,6 +33,9 @@
 #include "TGraphErrors.h"
 #include "TStatToolkit.h"
 
+#include "AliDCSSensor.h"
+#include "AliCDBEntry.h"
+#include "AliDCSSensorArray.h"
 
 TH1 * GenerateMapRawIons(Int_t useGain,const char *fileName="raw.root", const char *outputName="histo.root", Int_t maxEvents=25);
 void DoMerge();
@@ -237,7 +240,7 @@ TH1 * GenerateMapRawIons(Int_t useGainMap, const char *fileName, const char *out
       AliTPCCalROC * noiseROC =noise->GetCalROC(sector);
       while ( input.NextChannel() ) {
 	Int_t    row    = input.GetRow();
-	Int_t rowAbs    = row+ ((sector<36) ? 0: param->GetNRow(0));
+	//	Int_t rowAbs    = row+ ((sector<36) ? 0: param->GetNRow(0));
 	Int_t    pad    = input.GetPad();
 	Int_t    nPads   = param->GetNPads(sector,row);
 	Double_t localX  = param->GetPadRowRadii(sector,row); 
@@ -248,8 +251,8 @@ TH1 * GenerateMapRawIons(Int_t useGainMap, const char *fileName, const char *out
 	Double_t padLength=param->GetPadPitchLength(sector,row);
 	//  Double_t padWidth=param->GetPadPitchWidth(sector);
 	//  Double_t zLength=param->GetZLength();
-	Double_t deltaPhi=hisQ3D[0]->GetXaxis()->GetBinWidth(0);
-        Double_t deltaZ= hisQ3D[0]->GetZaxis()->GetBinWidth(0);
+	//	Double_t deltaPhi=hisQ3D[0]->GetXaxis()->GetBinWidth(0);
+        //Double_t deltaZ= hisQ3D[0]->GetZaxis()->GetBinWidth(0);
 	Double_t gainPad = gainROC->GetValue(row,pad); 
 	Double_t noisePad = noiseROC->GetValue(row,pad); 
 	//
@@ -369,7 +372,7 @@ void DoMerge(){
   TChain *chain = AliXRDPROOFtoolkit::MakeChainRandom("histo.list","histo",0,50,1);
   tree = chain->CopyTree("1");
   tree->Write("histo");
-  delte fhist0;
+  delete fhisto;
 }
 
 
@@ -595,7 +598,7 @@ void DrawOpenGate(){
 }
 
 
-void DrawCurrent(const char * ocdb="/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Calib/HighVoltage", Int_t run0, Int_t run1){
+void DrawCurrent(const char * ocdb="/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Calib/HighVoltage", Int_t run0=100000, Int_t run1=110000){
   //
   //
   //
