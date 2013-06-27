@@ -126,6 +126,9 @@ public:
   static const AliHLTComponentDataType& VertexDataType();
 
   // Cluster & Tracks model data
+  /** data compression descriptor*/
+  static const AliHLTComponentDataType fgkDataCompressionDescriptorDataType;          // see above
+  static const AliHLTComponentDataType& DataCompressionDescriptorDataType();
   /** cluster tracks model data type */
   static const AliHLTComponentDataType fgkClusterTracksModelDataType;          // see above
   static const AliHLTComponentDataType& ClusterTracksModelDataType();

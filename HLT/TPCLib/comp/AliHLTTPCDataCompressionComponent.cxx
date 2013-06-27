@@ -23,6 +23,7 @@
 
 #include "AliHLTTPCDataCompressionComponent.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCDataCompressionDescriptor.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCSpacePointContainer.h"
 #include "AliHLTTPCRawSpacePointContainer.h"
@@ -109,6 +110,7 @@ int AliHLTTPCDataCompressionComponent::GetOutputDataTypes(AliHLTComponentDataTyp
 {
   /// inherited from AliHLTComponent: multiple output data types of the component.
   tgtList.clear();
+  tgtList.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
@@ -169,6 +171,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   }
 
   // Process an event
+
   // Loop over all input blocks in the event
   bool bHaveMC=(GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC))!=NULL;
   if ((bHaveMC || fVerificationMode>0) && fpWrittenAssociatedClusterIds==NULL) {
@@ -189,6 +192,26 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   if (GetBenchmarkInstance()) {
     GetBenchmarkInstance()->Start(2);
+  }
+ 
+  // Write header block
+  {
+    AliHLTComponent_BlockData bd;
+    FillBlockData(bd);
+    bd.fOffset        = size;
+    bd.fSize          = sizeof(AliHLTTPCDataCompressionDescriptor);
+    bd.fDataType      = AliHLTTPCDefinitions::DataCompressionDescriptorDataType();
+    if( capacity < size + bd.fSize ){
+      iResult = -ENOMEM;
+      return iResult;
+    }    
+    AliHLTTPCDataCompressionDescriptor desc; 
+    desc.SetMergedClustersFlag(1);
+    *(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = desc;
+    outputBlocks.push_back(bd);
+    size += bd.fSize;
+    outputDataSize+=bd.fSize;
+    HLTBenchmark("header data block of size %d", bd.fSize);
   }
 
   // transformed clusters
