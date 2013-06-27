@@ -1311,6 +1311,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC12a17a(){
   fFuncWeight->SetParameter(0,4.63891e-02);
   fFuncWeight->SetParameter(1,1.51674e+01);
   fFuncWeight->SetParameter(2,4.09941e-01);
+  fUseWeight=kTRUE;
 }
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
@@ -1322,6 +1323,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
   fFuncWeight->SetParameter(0,1.43116e-02);
   fFuncWeight->SetParameter(1,4.37758e+02);
   fFuncWeight->SetParameter(2,3.08583);
+  fUseWeight=kTRUE;
 }
 //_________________________________________________________________________
 Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
