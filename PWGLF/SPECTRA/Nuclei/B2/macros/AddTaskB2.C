@@ -35,6 +35,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
                              , Bool_t   V0AND            = kFALSE
                              , const TString& ztag       = ""
                              , Double_t maxVz            = 10
+                             , const TString& binSize    = ""
                              , Double_t minCentrality    = 0
                              , Double_t maxCentrality    = 20
                              , Double_t minM2            = 2.
@@ -111,7 +112,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/CreateHistograms.C");
 	
-	AliLnHistoMap* hMap = CreateHistograms(species, simulation, maxDCAxy, maxEta, maxY, meanNtrk, heavyIons);
+	AliLnHistoMap* hMap = CreateHistograms(species, binSize, simulation, maxDCAxy, maxEta, maxY, heavyIons);
 	
 	task->SetHistogramMap(hMap);
 	
@@ -166,12 +167,13 @@ Double_t GetMeanNtrk(const TString& period, Double_t eta)
 	if(TMath::Abs(eta) > 0.51) // |eta|<0.8
 	{
 		if(period =="lhc10b")       return 9.68887; // pass3
+		if(period =="lhc10c")       return 9.66970; // pass3
 		if(period =="lhc10d")       return 9.47466; // pass2
 		if(period =="lhc10e")       return 9.55678; // pass2
 		
 		// MC
-		if(period =="lhc10f6a")            return 7.15259;
-		if(period =="lhc10e21")            return 7.69483;
+		if(period =="lhc10f6a")     return 7.15259;
+		if(period =="lhc10e21")     return 7.69483;
 	}
 	else // |eta|<0.5
 	{
@@ -214,12 +216,13 @@ Double_t GetNSDMeanNtrk(const TString& period, Double_t eta)
 	if(TMath::Abs(eta) > 0.51) // |eta|<0.8
 	{
 		if(period =="lhc10b")       return 10.0630; // pass3
+		if(period =="lhc10c")       return 10.0292; // pass3
 		if(period =="lhc10d")       return 9.77129; // pass2
 		if(period =="lhc10e")       return 9.90511; // pass2
 		
 		// MC
-		if(period =="lhc10f6a")            return 7.5087;
-		if(period =="lhc10e21")            return 7.91423;
+		if(period =="lhc10f6a")     return 7.5087;
+		if(period =="lhc10e21")     return 7.91423;
 	}
 	else // |eta|<0.5
 	{

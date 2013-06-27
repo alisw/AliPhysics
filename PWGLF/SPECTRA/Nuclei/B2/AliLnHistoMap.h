@@ -37,7 +37,15 @@ class AliLnHistoMap: public TObject
 	
 	TH1D* Add(const TString& name, Int_t nbins, Double_t xmin, Double_t xmax, const TString& title="", const TString& xlabel="", const TString& ylabel="", Bool_t logx=0);
 	
+	TH1D* Add(const TString& name, Int_t nbins, Double_t* xbins, const TString& title="", const TString& xlabel="", const TString& ylabel="");
+	
 	TH2D* Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title="", const TString& xlabel="", const TString& ylabel="", Bool_t logx=0, Bool_t logy=0);
+	
+	TH2D* Add(const TString& name, Int_t nbinsx, Double_t* xbins, Int_t nbinsy, Double_t* ybins, const TString& title="", const TString& xlabel="", const TString& ylabel="");
+	
+	TH2D* Add(const TString& name, Int_t nbinsx, Double_t* xbins, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title="", const TString& xlabel="", const TString& ylabel="");
+	
+	TH2D* Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t nbinsy, Double_t* ybins, const TString& title="", const TString& xlabel="", const TString& ylabel="");
 	
 	Bool_t SetLogXaxis(TH1* h);
 	Bool_t SetLogYaxis(TH1* h);
