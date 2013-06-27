@@ -53,6 +53,8 @@ public:
   
   void InitSpaceCharge();
 
+  static TTree* ConnectTrees(const char* files);
+  
   Double_t GetVDrift() const;
   Double_t GetZLength(Int_t roc) const;
   

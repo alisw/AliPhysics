@@ -4,7 +4,7 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TFile.h>
-
+#include <TPRegexp.h>
 
 #include <AliExternalTrackParam.h>
 #include <AliTPCcalibDB.h>
@@ -84,7 +84,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   
   TString debugName=file;
   debugName.ReplaceAll(".root","");
-  debugName.Append(Form(".%1d.%1d-%1d-%1d-%03d-%02d",
+  debugName.Append(Form(".%1d.%1d_%1d_%1d_%03d_%02d",
                         fUseMaterial,fIdealTracking,fClusterType,
                         Int_t(fCorrectionType),fSeedingRow,fSeedingDist));
   debugName.Append(".debug.root");
@@ -498,4 +498,38 @@ Double_t AliToyMCReconstruction::GetZLength(Int_t roc) const
   return fTPCParam->GetZLength(roc);
 }
 
+//____________________________________________________________________________________
+TTree* AliToyMCReconstruction::ConnectTrees (const char* files) {
+  TString s=gSystem->GetFromPipe(Form("ls %s",files));
+
+  TTree *tFirst=0x0;
+  TObjArray *arrFiles=s.Tokenize("\n");
+  
+  for (Int_t ifile=0; ifile<arrFiles->GetEntriesFast(); ++ifile){
+    TString name(arrFiles->At(ifile)->GetName());
+    
+    TPRegexp reg(".*([0-9]_[0-9]_[0-9]_[0-9]{3}_[0-9]{2}).debug.root");
+    TObjArray *arrMatch=0x0;
+    arrMatch=reg.MatchS(name);
+    
+    if (!tFirst) {
+      TFile *f=TFile::Open(name.Data());
+      if (!f) continue;
+      TTree *t=(TTree*)f->Get("Tracks");
+      if (!t) {
+        delete f;
+        continue;
+      }
+      
+      t->SetName(arrMatch->At(1)->GetName());
+      tFirst=t;
+    } else {
+      tFirst->AddFriend(Form("t%s=Tracks",arrMatch->At(1)->GetName()), name.Data());
+//       tFirst->AddFriend(Form("t%d=Tracks",ifile), name.Data());
+    }
+  }
+
+  tFirst->GetListOfFriends()->Print()
+  return tFirst;
+}
 

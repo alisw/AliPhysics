@@ -197,7 +197,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, const AliToyMCTrack *tr, Int
   }
 
   // check we really have 3 seeds
-  if (seed!=3 && xDummy>-900.) {
+  if (seed!=3  && x>-900.) {
 
     AliToyMCTrack *nctr = const_cast<AliToyMCTrack*>(tr);
     // debug output for failed seeding
@@ -236,10 +236,10 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, const AliToyMCTrack *tr, Int
       if (correctionType==1) xyz[2]=125.;
       //!!! TODO: is this the correct association?
       if (correctionType==2) xyz[2]=TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
-      if (correctionType==3) {
-        xyz[2]=(seedCluster[iseed]->GetTimeBin()-tVtx_opt3)*kDriftVel;
-        
-      }
+//       if (correctionType==3) {
+//         xyz[2]=(seedCluster[iseed]->GetTimeBin()-tVtx_opt3)*kDriftVel;
+//         
+//       }
       if (correctionType==4) xyz[2]=seedCluster[iseed]->GetZ();
 
       fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
@@ -300,7 +300,7 @@ Float_t GetTimeAtVertex(Float_t &tVtx,  Float_t &x, const AliToyMCTrack *tr, Int
   AliExternalTrackParam pOrig(*tr);
   AliToyMCTrack *nctr = const_cast<AliToyMCTrack*>(tr);
 
-  if (xDummy>-900.){
+  if (x>-900.){
     (*fStreamer) << "Tracks" <<
       "iev="      << fEvent <<
       "t0="       << fT0event <<
@@ -622,3 +622,9 @@ void testResolution(const char* filename, Int_t nmaxEv=-1, Bool_t useMaterial=kF
   fStreamer=0x0;
 }
 
+//____________________________________________________________________________
+void ConnectTrees (const char* files, TObjArray &arr) {
+  TString s=gSystem->GetFromPipe(Form("ls %s",files));
+
+  
+}
