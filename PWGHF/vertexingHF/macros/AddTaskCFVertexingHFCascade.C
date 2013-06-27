@@ -516,7 +516,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 		else {
 			task->SetWeightFunction(funcWeight);
 			Printf("User-defined Weights will be used. The function being:");
-			task->GetWeightFunction(funcWeight)->Print();
+			task->GetWeightFunction()->Print();
 		}
 	}
 
@@ -538,7 +538,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
 	if (task->GetUseWeight()) {
 		Printf("User-defined Weight function:");
-		task->GetWeightFunction(funcWeight)->Print();
+		task->GetWeightFunction()->Print();
 	}
 	else{
 		Printf("FONLL will be used for the weights");
