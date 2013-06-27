@@ -128,6 +128,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 	,fClus(0)
 	,fNevent(0)
 	,fPtElec_Inc(0)
+
+    ,fCharge_n(0)
+    ,fCharge_p(0)
+
 	,fPtElec_ULS(0)
 	,fPtElec_LS(0)
 	,fpid(0)
@@ -185,8 +189,19 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 	,fMassCut(0.1)
 	,fEtaCutMin(-0.9)
 	,fEtaCutMax(0.9)
+
+    ,fdPhiCut(0.05)
+	,fdEtaCut(0.05)
+	
+
 	,fEoverPCutMin(0.8)
 	,fEoverPCutMax(1.2)
+
+	,fM20CutMin(0.3)
+	,fM20CutMax(0.3)
+	,fM02CutMin(0.3)
+	,fM02CutMax(0.3)
+
 	,fAngleCut(999)
 	,fChi2Cut(3.5)
 	,fDCAcut(999)
@@ -291,6 +306,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 	,fClus(0)
 	,fNevent(0)
 	,fPtElec_Inc(0)
+
+    ,fCharge_n(0)
+    ,fCharge_p(0)
+
 	,fPtElec_ULS(0)
 	,fPtElec_LS(0)
 	,fpid(0)
@@ -348,8 +367,18 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 	,fMassCut(0.1)
 	,fEtaCutMin(-0.9)
 	,fEtaCutMax(0.9)
+
+	,fdPhiCut(0.05)
+	,fdEtaCut(0.05)
+
 	,fEoverPCutMin(0.8)
 	,fEoverPCutMax(1.2)
+
+	,fM20CutMin(0.3)
+	,fM20CutMax(0.3)
+	,fM02CutMin(0.3)
+	,fM02CutMax(0.3)
+
 	,fAngleCut(999)
 	,fChi2Cut(3.5)
 	,fDCAcut(999)
@@ -489,6 +518,10 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fPtElec_LS = new TH1F("fPtElec_LS","Inclusive Electrons; p_{t} (GeV/c); Count",200,0,20);
 	fPtTrigger_Inc = new TH1F("fPtTrigger_Inc","pT dist for Hadron Contamination; p_{t} (GeV/c); Count",200,0,20);
 	fTPCnsigma_pt_2D = new TH2F("fTPCnsigma_pt_2D",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+	
+	fCharge_n = new TH1F("fCharge_n","Inclusive Electrons (Negative Charge); p_{t} (GeV/c); Count",200,0,30);
+	fCharge_p = new TH1F("fCharge_p","Inclusive Positrons (Positive Charge); p_{t} (GeV/c); Count",200,0,30);
+
 
 	
 	fOutputList->Add(fPtElec_Inc);
@@ -496,6 +529,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fPtElec_LS);
 	fOutputList->Add(fPtTrigger_Inc);
 	fOutputList->Add(fTPCnsigma_pt_2D);
+	
+	fOutputList->Add(fCharge_n);
+	fOutputList->Add(fCharge_p);
 	
 	//General Histograms
 	
@@ -523,7 +559,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	  
 	  fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
-	  fEtaPhi[i]= new TH2F(Form("fEtaPhi%d",i),"#eta x #phi Clusters;#phi;#eta",200,0.,TMath::Pi(),50,-1.,1.);
+	  fEtaPhi[i]= new TH2F(Form("fEtaPhi%d",i),"#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
       fVtxZ[i]= new  TH1F(Form("fVtxZ%d",i),"VtxZ",1000, -50,50);
 	  fNTracks[i]= new  TH1F(Form("fNTracks%d",i),"NTracks",1000, 0,1000);
       fNClusters[i]= new TH1F(Form("fNClusters%d",i),"fNClusters0",200, 0,100);
@@ -606,25 +642,25 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	for(Int_t i = 0; i < 5; i++)
 	{
-	  fEoverP_tpc[i] = new TH2F(Form("fEoverP_tpc%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p )",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,0,2);
+	  fEoverP_tpc[i] = new TH2F(Form("fEoverP_tpc%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,0,2);
 	  fTPC_pt[i] = new TH1F(Form("fTPC_pt%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Count",fPtBin[i],fPtBin[i+1]),200,20,200);
 	  fTPCnsigma_pt[i] = new TH1F(Form("fTPCnsigma_pt%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Count",fPtBin[i],fPtBin[i+1]),200,-15,10);
 	 
-	  fEta[i]=new TH1F(Form("fEta%d",i), Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; dEta )",fPtBin[i],fPtBin[i+1]),100, -0.1,0.1);
-	  fPhi[i]=new TH1F(Form("fPhi%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; dPhi )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
-	  fR[i]=new TH1F(Form("fR%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; dR )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
-	  fR_EoverP[i]=new TH2F(Form("fR_EoverP%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p )",fPtBin[i],fPtBin[i+1]),100, 0,0.1,1000,0,10);
-	  fNcells[i]=new TH1F(Form("fNcells%d",i), Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p )",fPtBin[i],fPtBin[i+1]),100, 0, 30);
-	  fNcells_electrons[i]=new TH1F(Form("fNcells_electrons%d",i), Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma )",fPtBin[i],fPtBin[i+1]),100, 0, 30);
-	  fNcells_hadrons[i]=new TH1F(Form("fNcells_hadrons%d",i), Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;  Ncells; E / p )",fPtBin[i],fPtBin[i+1]),100, 0, 30);
-	  fNcells_EoverP[i]=new TH2F(Form("fNcells_EoverP%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; Ncells; E / p )",fPtBin[i],fPtBin[i+1]),1000, 0,20,100,0,30);
-	  fM02_EoverP[i]= new TH2F(Form("fM02_EoverP%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; M02; E / p )",fPtBin[i],fPtBin[i+1]),1000,0,1,100,0,2);
-	  fM20_EoverP[i]= new TH2F(Form("fM20_EoverP%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; M20; E / p )",fPtBin[i],fPtBin[i+1]),1000,0,1,100,0,2);
-	  fEoverP_ptbins[i] = new TH1F(Form("fEoverP_ptbins%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p )",fPtBin[i],fPtBin[i+1]),500,0,2);
-	  fECluster_ptbins[i]= new TH1F(Form("fECluster_ptbins%d",i), Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p )",fPtBin[i],fPtBin[i+1]),2000, 0,100);
-      fEoverP_wSSCut[i]=new TH1F(Form("fEoverP_wSSCut%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p )",fPtBin[i],fPtBin[i+1]),500,0,2);
-	  fTPCnsigma_eta_electrons[i]=new TH2F(Form("fTPCnsigma_eta_electrons%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Eta )",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
-	  fTPCnsigma_eta_hadrons[i]=new TH2F(Form("fTPCnsigma_eta_hadrons%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Eta )",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
+	  fEta[i]=new TH1F(Form("fEta%d",i), Form("%d < p_{t} < %d GeV/c;#eta; counts",fPtBin[i],fPtBin[i+1]),100, -0.1,0.1);
+	  fPhi[i]=new TH1F(Form("fPhi%d",i),Form("%d < p_{t} < %d GeV/c;#phi; counts )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
+	  fR[i]=new TH1F(Form("fR%d",i),Form("%d < p_{t} < %d GeV/c;R;counts )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
+	  fR_EoverP[i]=new TH2F(Form("fR_EoverP%d",i),Form("%d < p_{t} < %d GeV/c;R;E / p ",fPtBin[i],fPtBin[i+1]),100, 0,0.1,1000,0,10);
+	  fNcells[i]=new TH1F(Form("fNcells%d",i), Form("%d < p_{t} < %d GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
+	  fNcells_electrons[i]=new TH1F(Form("fNcells_electrons%d",i), Form("%d < p_{t} < %d GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
+	  fNcells_hadrons[i]=new TH1F(Form("fNcells_hadrons%d",i), Form("%d < p_{t} < %d GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
+	  fNcells_EoverP[i]=new TH2F(Form("fNcells_EoverP%d",i),Form("%d < p_{t} < %d GeV/c; Ncells; E / p ",fPtBin[i],fPtBin[i+1]),1000, 0,20,100,0,30);
+	  fM02_EoverP[i]= new TH2F(Form("fM02_EoverP%d",i),Form("%d < p_{t} < %d GeV/c; M02; E / p ",fPtBin[i],fPtBin[i+1]),1000,0,1,100,0,2);
+	  fM20_EoverP[i]= new TH2F(Form("fM20_EoverP%d",i),Form("%d < p_{t} < %d GeV/c; M20; E / p ",fPtBin[i],fPtBin[i+1]),1000,0,1,100,0,2);
+	  fEoverP_ptbins[i] = new TH1F(Form("fEoverP_ptbins%d",i),Form("%d < p_{t} < %d GeV/c;E / p ",fPtBin[i],fPtBin[i+1]),500,0,2);
+	  fECluster_ptbins[i]= new TH1F(Form("fECluster_ptbins%d",i), Form("%d < p_{t} < %d GeV/c;ECluster; Counts ",fPtBin[i],fPtBin[i+1]),2000, 0,100);
+      fEoverP_wSSCut[i]=new TH1F(Form("fEoverP_wSSCut%d",i),Form("%d < p_{t} < %d GeV/c;E / p ; Counts",fPtBin[i],fPtBin[i+1]),500,0,2);
+	  fTPCnsigma_eta_electrons[i]=new TH2F(Form("fTPCnsigma_eta_electrons%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Eta ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
+	  fTPCnsigma_eta_hadrons[i]=new TH2F(Form("fTPCnsigma_eta_hadrons%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Eta ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
 		
 	  fOutputList->Add(fEoverP_tpc[i]);
 	  fOutputList->Add(fTPC_pt[i]);
@@ -1140,7 +1176,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			if(fClus->IsEMCAL())
 			{
-			  if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
+			  if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 			  {
 			      fEMCflag = kTRUE;
 			      fEoverP_pt[0]->Fill(fPt,(fClus->E() / fP));
@@ -1309,7 +1345,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			if(fClus->IsEMCAL())
 			{
-			  if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
+			  if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 			  {
 			      fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
 				   
@@ -1579,7 +1615,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					}
 			  }	
 				
-			  if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
+			  if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 			  {
 			      
 				  // EtaCut 
@@ -1631,7 +1667,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				  fNcells_pt->Fill(fPt, ncells);
 				  
 				  
-				  //!//////////////////////////////////////////////////////////////////
+				  ////////////////////////////////////////////////////////////////////
 				  ///EMCal - Efficiency calculations 
 				  
 				  /// changing start here
@@ -1700,9 +1736,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					  ////////////////////////////////////////////////////////////////////
 					  ///EMCal - efficiency calculations 
 					  
+					  if(track->Charge()<0)  fCharge_n->Fill(fPt);
+					  if(track->Charge()>0)  fCharge_p->Fill(fPt);
+					 
+					  
 					  /// changing start here
 					  if(fIsMC && fIsAOD && track->GetLabel()>=0)
 					  {
+						  if(track->Charge()<0)  fCharge_n->Fill(fPt);
+						  if(track->Charge()>0)  fCharge_p->Fill(fPt);
+						  
 						  fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
 						  Int_t pdg = fMCparticle->GetPdgCode();
 						  
@@ -1728,6 +1771,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					  
 					  else if(fIsMC && track->GetLabel()>=0)//ESD
 					  {
+						  if(track->Charge()<0)  fCharge_n->Fill(fPt);
+						  if(track->Charge()>0)  fCharge_p->Fill(fPt);
+						  
 						  if(fMCstack->IsPhysicalPrimary(track->GetLabel()))
 						  {
 								Bool_t MotherFound = FindMother(track->GetLabel());
@@ -1885,9 +1931,9 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
     fPartnerCuts->SetMaxChi2PerClusterTPC(4.0);
     fPartnerCuts->SetMinNClustersTPC(80);
     fPartnerCuts->SetPtRange(0.3,1e10);
-    //fPartnerCuts->SetRequireSigmaToVertex(kTRUE);
-    //fPartnerCuts->SetMaxDCAToVertexXY(1);
-    //fPartnerCuts->SetMaxDCAToVertexZ(3);
+    fPartnerCuts->SetDCAToVertex2D(kTRUE); 
+    fPartnerCuts->SetMaxDCAToVertexXY(2.4);
+    fPartnerCuts->SetMaxDCAToVertexZ(3.2);
 	//_________________________________________________
 	
 	///#################################################################
@@ -2144,9 +2190,9 @@ void AliAnalysisTaskEMCalHFEpA::DiHadronCorrelation(AliVTrack *track, Int_t trac
     fPartnerCuts->SetMaxChi2PerClusterTPC(4.0);
     fPartnerCuts->SetMinNClustersTPC(80);
     fPartnerCuts->SetPtRange(0.3,1e10);
-    //fPartnerCuts->SetRequireSigmaToVertex(kTRUE);
-    //fPartnerCuts->SetMaxDCAToVertexXY(1);
-    //fPartnerCuts->SetMaxDCAToVertexZ(3);
+    fPartnerCuts->SetDCAToVertex2D(kTRUE); 
+    fPartnerCuts->SetMaxDCAToVertexXY(2.4);
+    fPartnerCuts->SetMaxDCAToVertexZ(3.2);
 	//_________________________________________________
 	
 	//Electron Information
