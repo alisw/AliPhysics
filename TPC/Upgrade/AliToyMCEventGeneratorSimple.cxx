@@ -8,7 +8,7 @@
 #include <AliESDtrack.h>
 #include <TFile.h>
 #include <TTree.h>
-
+#include <TRandom3.h>
 
 #include "AliToyMCEvent.h"
 
@@ -97,9 +97,6 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
     Double_t vertex[3]={0,0,retEvent->GetZ()};
     Double_t cv[21]={0};
     AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
-    // use unique ID for track number
-    // this will be used in DistortTrack track to set the cluster label
-    tempTrack->SetUniqueID(iTrack);
     
     Bool_t trackDist = DistortTrack(*tempTrack, time);
     if(trackDist) retEvent->AddTrack(*tempTrack);
@@ -110,7 +107,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulationSimple(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
+void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -138,8 +135,6 @@ void AliToyMCEventGeneratorSimple::RunSimulationSimple(const Int_t nevents/*=10*
   CloseOutputFile();
 }
 
-
-
 //________________________________________________________________
 AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, Double_t time) {
 
@@ -159,7 +154,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, 
     AliESDtrack *part = esdEvent.GetTrack(iTrack);
     if(!part) continue;
     if (!fESDCuts->AcceptTrack(/*(AliESDtrack*)*/part))continue;
-
+    if(part->Pt() < 0.3) continue; //avoid tracks that fail to propagate through entire volume
     Double_t pxyz[3];
     pxyz[0]=part->Px();
     pxyz[1]=part->Py();
@@ -173,6 +168,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, 
     Bool_t trackDist = DistortTrack(*tempTrack, time);
     if(trackDist) {
       retEvent->AddTrack(*tempTrack);
+     
       nUsedTracks++;
     }
     delete tempTrack;
@@ -213,7 +209,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
   if(nevents>esdTree->GetEntries()) nEvents = esdTree->GetEntries();
   Int_t nUsedEvents = 0;
   for (Int_t ievent=0; ievent<esdTree->GetEntries(); ++ievent){
-    printf("Generating event %3d (%.3g)\n",ievent,eventTime);
+    printf("Generating event %3d (%.3g)\n",nUsedEvents,eventTime);
     esdTree->GetEvent(ievent);
     if(esdEvent->GetNumberOfTracks()==0) {
       std::cout << " tracks == 0" << std::endl;
@@ -221,11 +217,14 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
     }
    
     fEvent = GenerateESD(*esdEvent, eventTime);
-    nUsedEvents++;
-    FillTree();
+    if(fEvent->GetNumberOfTracks() >=10) {
+      nUsedEvents++;
+      FillTree();
+      eventTime+=eventSpacing;
+    }
     delete fEvent;
     fEvent=0x0;
-    eventTime+=eventSpacing;
+    
     if(nUsedEvents>=nevents) break;
   }
   s.Stop();
@@ -234,3 +233,87 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
   CloseOutputFile();
 }
 
+//________________________________________________________________
+
+void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
+{
+  //
+  // run simple simulation with equal event spacing
+  //
+
+  //Parameters for bunc
+  const Double_t abortGap = 3e-6; //
+  const Double_t collFreq = 50e3;
+  const Double_t bSpacing = 50e-9; //bunch spacing
+  const Int_t nTrainBunches = 48;
+  const Int_t nTrains = 12;
+  const Double_t revFreq = 1.11e4; //revolution frequency
+  const Double_t collProb = collFreq/(nTrainBunches*nTrains*revFreq);
+  const Double_t trainLength = bSpacing*(nTrainBunches-1);
+  const Double_t totTrainLength = nTrains*trainLength;
+  const Double_t trainSpacing = (1./revFreq - abortGap - totTrainLength)/(nTrains-1); 
+  Bool_t equalSpacing = kFALSE;
+
+  TRandom3 *rand = new TRandom3();
+  //rand->SetSeed();
+
+  if (!ConnectOutputFile()) return;
+  //initialise the space charge. Should be done after the tree was set up
+  InitSpaceCharge();
+  
+  fNtracks=ntracks;
+  Double_t eventTime=0.;
+  const Double_t eventSpacing=1./50e3; //50kHz equally spaced
+  TStopwatch s;
+  Int_t nGeneratedEvents = 0;
+  Int_t bunchCounter = 0;
+  Int_t trainCounter = 0;
+
+  //for (Int_t ievent=0; ievent<nevents; ++ievent){
+  while (nGeneratedEvents<nevents){
+    //  std::cout <<trainCounter << " " << bunchCounter << " "<< "eventTime " << eventTime << std::endl;
+    
+    if(equalSpacing)  {
+      printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
+      fEvent = Generate(eventTime);
+      nGeneratedEvents++;
+      FillTree();
+      delete fEvent;
+      fEvent=0x0;
+      eventTime+=1./collFreq;
+    }
+    else{
+      Int_t nCollsInCrossing = rand -> Poisson(collProb);
+      for(Int_t iColl = 0; iColl<nCollsInCrossing; iColl++){
+	printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
+	fEvent = Generate(eventTime);
+	nGeneratedEvents++;
+	FillTree();
+	delete fEvent;
+	fEvent=0x0;
+
+      }
+      bunchCounter++;
+
+      if(bunchCounter>=nTrainBunches){
+	
+	trainCounter++;
+	if(trainCounter>=nTrains){
+	  eventTime+=abortGap;
+	  trainCounter=0;
+	}
+	else eventTime+=trainSpacing;
+
+	bunchCounter=0;
+      }
+      else eventTime+= bSpacing;
+      
+    }
+
+
+  }
+  s.Stop();
+  s.Print();
+  delete rand;
+  CloseOutputFile();
+}

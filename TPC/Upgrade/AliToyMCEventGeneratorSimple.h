@@ -7,6 +7,7 @@
 #include <TString.h>
 class AliToyMCEvent;
 class AliESDtrackCuts;
+class TTree;
 
 
 class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
@@ -20,7 +21,8 @@ class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
   AliToyMCEvent* GenerateESD(AliESDEvent& esdEvent, Double_t time);
   void SetParametersSimple(Double_t vertexMean, Double_t vertexSigma);
   
-  void RunSimulationSimple(const Int_t nevents=10, const Int_t ntracks=20);
+  void RunSimulation(const Int_t nevents=10, const Int_t ntracks=20);
+  void RunSimulationBunchTrain(const Int_t nevents=10, const Int_t ntracks=20);
   void RunSimulationESD(const Int_t nevents=10, const Int_t ntracks=20);
   void SetInputESD(const Char_t* filename) {fInputFileNameESD = filename;}
 
@@ -34,7 +36,8 @@ class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
 
   AliESDtrackCuts *fESDCuts;
   //AliESDEvent* fESDEvent;
-
+  //TTree* fESDTree;
+ 
   ClassDef(AliToyMCEventGeneratorSimple, 1)
 
 };
