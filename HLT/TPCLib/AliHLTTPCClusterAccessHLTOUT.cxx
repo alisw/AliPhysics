@@ -237,7 +237,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
   decoder.Clear();
   decoder.SetVerbosity(fVerbosity);
-  decoder.EnableClusterMerger();
+  //decoder.EnableClusterMerger();
 
   bool bNextBlock=false;
   // add cluster id and mc information data blocks

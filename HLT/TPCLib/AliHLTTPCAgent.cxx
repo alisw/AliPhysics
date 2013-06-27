@@ -62,6 +62,8 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCDataCompressionMonitorComponent.h"
 #include "AliHLTTPCDataCompressionFilterComponent.h"
 #include "AliHLTTPCDataPublisherComponent.h"
+#include "AliHLTTPCHWClusterDecoderComponent.h"
+#include "AliHLTTPCClusterTransformationComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -147,19 +149,32 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), arg.Data());
 	if (hwclustOutput.Length()>0) hwclustOutput+=" ";
 	hwclustOutput+=hwcfemu;
-
+	
 	TString hwcf;
 	hwcf.Form("TPC-HWCF_%02d_%d", slice, part);
 	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "-publish-raw");
 
-	if (trackerInput.Length()>0) trackerInput+=" ";
-	trackerInput+=hwcf;
-	if (dEdXInput.Length()>0) dEdXInput+=" ";
-	dEdXInput+=hwcf;
-	if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";
-	sinkHWClusterInput+=hwcf;
+	//if (trackerInput.Length()>0) trackerInput+=" ";
+	//trackerInput+=hwcf;
+	//if (dEdXInput.Length()>0) dEdXInput+=" ";
+	//dEdXInput+=hwcf;
+	//if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";
+	//sinkHWClusterInput+=hwcf;       
       }
     }
+ 
+    TString hwcfDecoder = "TPC-HWCFDecoder";
+    handler->CreateConfiguration(hwcfDecoder.Data(), "TPCHWClusterDecoder",hwclustOutput.Data(), "");
+
+    TString clusterTransformation = "TPC-ClusterTransformation";
+    handler->CreateConfiguration(clusterTransformation.Data(), "TPCClusterTransformation",hwcfDecoder.Data(), "");
+
+    if (trackerInput.Length()>0) trackerInput+=" ";
+    trackerInput+=clusterTransformation;
+    if (dEdXInput.Length()>0) dEdXInput+=" ";
+    dEdXInput+=clusterTransformation;
+    if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";
+    sinkHWClusterInput+=clusterTransformation;
 
     // tracker finder component
     // 2012-01-05 changing the configuration according to online setup
@@ -185,7 +200,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // compression component
     if (compressorInput.Length()>0) compressorInput+=" ";
-    compressorInput+=hwclustOutput;
+    //compressorInput+=hwclustOutput;
+    compressorInput+=hwcfDecoder;
 
     // special configuration to run the emulation automatically if the compressed clusters
     // of a particular partition is missing. This configuration is announced for reconstruction
@@ -351,6 +367,8 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDataCompressionMonitorComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionFilterComponent);
   pHandler->AddComponent(new AliHLTTPCDataPublisherComponent);
+  pHandler->AddComponent(new AliHLTTPCHWClusterDecoderComponent);
+  pHandler->AddComponent(new AliHLTTPCClusterTransformationComponent);
   return 0;
 }
 

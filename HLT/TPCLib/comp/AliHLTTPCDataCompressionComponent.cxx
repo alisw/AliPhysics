@@ -25,7 +25,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCSpacePointContainer.h"
-#include "AliHLTTPCHWCFSpacePointContainer.h"
+#include "AliHLTTPCRawSpacePointContainer.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTComponentBenchmark.h"
 #include "AliHLTDataDeflaterSimple.h"
@@ -94,7 +94,7 @@ void AliHLTTPCDataCompressionComponent::GetInputDataTypes( AliHLTComponentDataTy
 {
   /// inherited from AliHLTComponent: list of data types in the vector reference
   tgtList.clear();
-  tgtList.push_back(AliHLTTPCDefinitions::HWClustersDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClustersDataType());
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
 }
@@ -325,7 +325,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   // loop over raw cluster blocks, assign to tracks and write
   // unassigned clusters
-  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkHWClustersDataType);
+  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkRawClustersDataType);
        pDesc!=NULL; pDesc=GetNextInputBlock()) {
     if (pDesc->fSize<=sizeof(AliRawDataHeader)) continue;
     if (GetBenchmarkInstance()) {
@@ -798,13 +798,13 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
   unsigned spacePointContainerMode=0;
   if (fMode==kCompressionModeV1TrackModel || fMode==kCompressionModeV2TrackModel) {
     // initialize map data for cluster access in the track association loop
-    spacePointContainerMode|=AliHLTTPCHWCFSpacePointContainer::kModeCreateMap;
+    spacePointContainerMode|=AliHLTTPCRawSpacePointContainer::kModeCreateMap;
   }
   if (fMode==kCompressionModeV2 || fMode==kCompressionModeV2TrackModel) {
     // optimized storage format: differential pad and time storage
-    spacePointContainerMode|=AliHLTTPCHWCFSpacePointContainer::kModeDifferentialPadTime;
+    spacePointContainerMode|=AliHLTTPCRawSpacePointContainer::kModeDifferentialPadTime;
   }
-  std::auto_ptr<AliHLTTPCHWCFSpacePointContainer> rawInputClusters(new AliHLTTPCHWCFSpacePointContainer(spacePointContainerMode));
+  std::auto_ptr<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode));
   std::auto_ptr<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
 
   std::auto_ptr<TH1F> histoCompFactor(new TH1F("CompressionFactor",
@@ -828,7 +828,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
 
   // track grid: 36 slices, each 6 partitions with max 33 rows
   fTrackGrid=new AliHLTTrackGeometry::AliHLTTrackGrid(36, 1, 6, 1, 33, 1, 20000);
-  fSpacePointGrid=AliHLTTPCHWCFSpacePointContainer::AllocateIndexGrid();
+  fSpacePointGrid=AliHLTTPCRawSpacePointContainer::AllocateIndexGrid();
 
   if (!rawInputClusters.get() ||
       !inputClusters.get() ||
