@@ -283,6 +283,15 @@ void AliAnalysisTaskB2::SetParticleSpecies(const TString& species)
 	fPartCode = this->GetPidCode(species);
 }
 
+Double_t AliAnalysisTaskB2::GetDiffM2(Double_t beta, Double_t p, Double_t m) const
+{
+//
+// square mass difference
+//
+	Double_t expBeta2 = p*p/(p*p+m*m);
+	return p*p*(1./(beta*beta)-1./expBeta2);
+}
+
 void AliAnalysisTaskB2::Exec(Option_t* )
 {
 //
@@ -611,6 +620,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		Double_t z = 1;
 		if(fPartCode>AliPID::kTriton)  z = 2;
+		
 		// impact parameters
 		
 		Float_t dcaxy, dcaz;
@@ -636,6 +646,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		Double_t beta = 0;
 		Double_t mass = 0;
 		Double_t m2   = 0;
+		Double_t dm2  = -100;
 		
 		Double_t simPt  = 0;
 		Double_t simPhi = 0;
@@ -665,6 +676,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			beta = this->GetBeta(iTrack);
 			m2   = this->GetMassSquare(iTrack);
 			mass = TMath::Sqrt(TMath::Abs(m2));
+			dm2  = this->GetDiffM2(beta, pTOF, AliPID::ParticleMass(fPartCode));
 			
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Beta_P"))->Fill(pTOF, beta);
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Mass_P"))->Fill(pTOF, mass);
@@ -848,6 +860,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		if( this->TOFmatch(iTrack) )
 		{
 			((TH2D*)fHistoMap->Get(particle + "_PID_M2_Pt"))->Fill(pt, m2);
+			((TH2D*)fHistoMap->Get(particle + "_PID_DM2_Pt"))->Fill(pt, dm2);
 			((TH1D*)fHistoMap->Get(particle + "_PID_TOFmatch_Pt"))->Fill(pt);
 		}
 		

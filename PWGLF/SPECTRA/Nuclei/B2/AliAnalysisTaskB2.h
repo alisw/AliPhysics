@@ -111,6 +111,8 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	Int_t GetPidCode(const TString& species) const;
 	
+	Double_t GetDiffM2(Double_t beta, Double_t p, Double_t m=1.875612793) const;
+	
   private:
  
 	TString fSpecies; // particle species for the analysis
