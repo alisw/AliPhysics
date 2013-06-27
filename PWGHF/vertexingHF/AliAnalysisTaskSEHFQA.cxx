@@ -2058,7 +2058,7 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
       fRFPcuts->SetAODfilterBit(128);
     }
     if(i>1) {
-      fRFPcuts->SetParamType(AliFlowTrackCuts::kV0);
+      fRFPcuts->SetParamType(AliFlowTrackCuts::kVZERO);
       fRFPcuts->SetEtaRange(-5,+5);
       fRFPcuts->SetPhiMin(0);
       fRFPcuts->SetPhiMax(TMath::TwoPi());
