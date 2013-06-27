@@ -192,14 +192,14 @@ class AliAODHeader : public AliVHeader {
   void       SetT0spread(Int_t i, Float_t t) {
     if ((i>=0)&&(i<kT0SpreadSize)) fT0spread[i]=t;}
 
-  Int_t  FindIRIntInteractionsBXMap(Int_t difference);
+  Int_t  FindIRIntInteractionsBXMap(Int_t difference) const;
   void   SetIRInt2InteractionMap(TBits bits) { fIRInt2InteractionsMap = bits; }
   void   SetIRInt1InteractionMap(TBits bits) { fIRInt1InteractionsMap = bits; }
-  TBits  GetIRInt2InteractionMap() { return fIRInt2InteractionsMap; }
-  TBits  GetIRInt1InteractionMap() { return fIRInt1InteractionsMap; }
-  Int_t  GetIRInt2ClosestInteractionMap();
-  Int_t  GetIRInt1ClosestInteractionMap(Int_t gap = 3);
-  Int_t  GetIRInt2LastInteractionMap();
+  TBits  GetIRInt2InteractionMap() const { return fIRInt2InteractionsMap; }
+  TBits  GetIRInt1InteractionMap() const { return fIRInt1InteractionsMap; }
+  Int_t  GetIRInt2ClosestInteractionMap() const;
+  Int_t  GetIRInt1ClosestInteractionMap(Int_t gap = 3) const;
+  Int_t  GetIRInt2LastInteractionMap() const;
   
  private :
   

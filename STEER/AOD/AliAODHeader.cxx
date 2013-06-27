@@ -522,7 +522,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
 }
 
 //__________________________________________________________________________
-Int_t AliAODHeader::FindIRIntInteractionsBXMap(Int_t difference)
+Int_t AliAODHeader::FindIRIntInteractionsBXMap(Int_t difference) const
 {
   //
   // The mapping is of 181 bits, from -90 to +90
@@ -536,7 +536,7 @@ Int_t AliAODHeader::FindIRIntInteractionsBXMap(Int_t difference)
 }
 
 //__________________________________________________________________________
-Int_t AliAODHeader::GetIRInt2ClosestInteractionMap()
+Int_t AliAODHeader::GetIRInt2ClosestInteractionMap() const
 {
   //
   // Calculation of the closest interaction
@@ -566,7 +566,7 @@ Int_t AliAODHeader::GetIRInt2ClosestInteractionMap()
 }
 
 //__________________________________________________________________________
-Int_t AliAODHeader::GetIRInt1ClosestInteractionMap(Int_t gap)
+Int_t AliAODHeader::GetIRInt1ClosestInteractionMap(Int_t gap) const
 {
   //
   // Calculation of the closest interaction
@@ -598,7 +598,7 @@ Int_t AliAODHeader::GetIRInt1ClosestInteractionMap(Int_t gap)
 }
 
 //__________________________________________________________________________
-Int_t AliAODHeader::GetIRInt2LastInteractionMap()
+Int_t AliAODHeader::GetIRInt2LastInteractionMap() const
 {
   //
   // Calculation of the last interaction

@@ -480,7 +480,7 @@ TObjArray AliESDHeader::GetIRArray(Int_t int1, Int_t int2, Float_t deltaTime) co
 }
 
 //__________________________________________________________________________
-void AliESDHeader::SetIRInteractionMap()
+void AliESDHeader::SetIRInteractionMap() const
 {
   //
   // Function to compute the map of interations 
@@ -524,7 +524,7 @@ void AliESDHeader::SetIRInteractionMap()
 }
 
 //__________________________________________________________________________
-Int_t AliESDHeader::FindIRIntInteractionsBXMap(Int_t difference)
+Int_t AliESDHeader::FindIRIntInteractionsBXMap(Int_t difference) const
 {
   //
   // The mapping is of 181 bits, from -90 to +90
@@ -538,7 +538,7 @@ Int_t AliESDHeader::FindIRIntInteractionsBXMap(Int_t difference)
 }
 
 //__________________________________________________________________________
-Int_t AliESDHeader::GetIRInt2ClosestInteractionMap()
+Int_t AliESDHeader::GetIRInt2ClosestInteractionMap() const
 {
   //
   // Calculation of the closest interaction
@@ -570,7 +570,7 @@ Int_t AliESDHeader::GetIRInt2ClosestInteractionMap()
 }
 
 //__________________________________________________________________________
-Int_t AliESDHeader::GetIRInt1ClosestInteractionMap(Int_t gap)
+Int_t AliESDHeader::GetIRInt1ClosestInteractionMap(Int_t gap) const
 {
   //
   // Calculation of the closest interaction
@@ -604,7 +604,7 @@ Int_t AliESDHeader::GetIRInt1ClosestInteractionMap(Int_t gap)
 }
 
 //__________________________________________________________________________
-Int_t  AliESDHeader::GetIRInt2LastInteractionMap()
+Int_t  AliESDHeader::GetIRInt2LastInteractionMap() const
 {
   //
   // Calculation of the last interaction
