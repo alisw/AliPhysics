@@ -10,6 +10,11 @@
 #include <TList.h>
 #include <TObject.h>
 #include <TH1F.h>
+#include <TProfile.h>
+#include <TSystem.h>
+#include <TFile.h>
+#include <TChain.h>
+#include <TKey.h>
 
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -25,6 +30,9 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliVCaloTrigger.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliAODMCHeader.h"
+#include "AliMCEvent.h"
 
 ClassImp(AliAnalysisTaskEmcal)
 
@@ -66,8 +74,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusterBitMap(0),
   fMCTrackBitMap(0),
   fMCClusterBitMap(0),
-  fMinMCLabel(0),
   fIsEmbedded(kFALSE),
+  fIsPythia(kFALSE),
+  fSelectPtHardBin(-999),
+  fMinMCLabel(0),
+  fMCLabelShift(0),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -81,7 +92,17 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEPV0C(-1.0),
   fNVertCont(0),
   fBeamType(kNA),
+  fPythiaHeader(0),
+  fPtHard(0),
+  fPtHardBin(0),
+  fNTrials(0),
   fOutput(0),
+  fHistTrialsAfterSel(0),
+  fHistEventsAfterSel(0),
+  fHistTrials(0),
+  fHistXsection(0),
+  fHistEvents(0),
+  fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0)
@@ -131,8 +152,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusterBitMap(0),
   fMCTrackBitMap(0),
   fMCClusterBitMap(0),
-  fMinMCLabel(0),
   fIsEmbedded(kFALSE),
+  fIsPythia(kFALSE),
+  fSelectPtHardBin(-999),
+  fMinMCLabel(0),
+  fMCLabelShift(0),
   fNcentBins(4),
   fGeom(0),
   fTracks(0),
@@ -146,7 +170,17 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEPV0C(-1.0),
   fNVertCont(0),
   fBeamType(kNA),
+  fPythiaHeader(0),
+  fPtHard(0),
+  fPtHardBin(0),
+  fNTrials(0),
   fOutput(0),
+  fHistTrialsAfterSel(0),
+  fHistEventsAfterSel(0),
+  fHistTrials(0),
+  fHistXsection(0),
+  fHistEvents(0),
+  fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0)
@@ -185,6 +219,50 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   if (!fGeneralHistograms)
     return;
 
+  if (fIsPythia) {
+    fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", 11, 0, 11);
+    fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
+    fOutput->Add(fHistTrialsAfterSel);
+    
+    fHistEventsAfterSel = new TH1F("fHistEventsAfterSel", "fHistEventsAfterSel", 11, 0, 11);
+    fHistEventsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistEventsAfterSel->GetYaxis()->SetTitle("total events");
+    fOutput->Add(fHistEventsAfterSel);
+    
+    fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
+    fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistTrials->GetYaxis()->SetTitle("trials");
+    fOutput->Add(fHistTrials);
+
+    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 11, 0, 11);
+    fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistXsection->GetYaxis()->SetTitle("xsection");
+    fOutput->Add(fHistXsection);
+
+    fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
+    fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistEvents->GetYaxis()->SetTitle("total events");
+    fOutput->Add(fHistEvents);
+
+    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+    
+    for (Int_t i = 1; i < 12; i++) {
+      fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+      fHistEventsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+      
+      fHistTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+      fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+      fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+    }
+
+    fHistPtHard = new TH1F("fHistPtHard", "fHistPtHard", fNbins*2, fMinBinPt, fMaxBinPt*4);
+    fHistPtHard->GetXaxis()->SetTitle("p_{T,hard} (GeV/c)");
+    fHistPtHard->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistPtHard);
+  }
+
   fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 200, 0, 100);
   fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
   fHistCentrality->GetYaxis()->SetTitle("counts");
@@ -206,6 +284,12 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
+  if (fIsPythia) {
+    fHistEventsAfterSel->SetBinContent(fPtHardBin + 1, fHistEventsAfterSel->GetBinContent(fPtHardBin + 1) + 1);
+    fHistTrialsAfterSel->SetBinContent(fPtHardBin + 1, fHistTrialsAfterSel->GetBinContent(fPtHardBin + 1) + fNTrials);
+    fHistPtHard->Fill(fPtHard);
+  }
+
   fHistCentrality->Fill(fCent);
   fHistZVertex->Fill(fVertex[2]);
   fHistEventPlane->Fill(fEPV0);
@@ -358,6 +442,123 @@ Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part) const
     if (part->Pt() < fClusPtCut)
       return kFALSE;
   }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
+{
+  //
+  // Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+  // Get the pt hard bin from the file path
+  // This is to called in Notify and should provide the path to the AOD/ESD file
+  // (Partially copied from AliAnalysisHelperJetTasks)
+
+  TString file(currFile);  
+  fXsec = 0;
+  fTrials = 1;
+
+  if(file.Contains(".zip#")){
+    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  }
+  else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  Printf("%s",file.Data());
+
+  // Get the pt hard bin
+  TString strPthard(file);
+
+  strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(strPthard.Last('/'));
+  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
+  strPthard.Remove(0,strPthard.Last('/')+1);
+  if (strPthard.IsDec()) 
+    pthard = strPthard.Atoi();
+  else 
+    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
+
+  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
+  if(!fxsec){
+    // next trial fetch the histgram file
+    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+    if(!fxsec){
+	// not a severe condition but inciate that we have no information
+      return kFALSE;
+    }
+    else{
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+      if(!key){
+	fxsec->Close();
+	return kFALSE;
+      }
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if(!list){
+	fxsec->Close();
+	return kFALSE;
+      }
+      fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
+      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      fxsec->Close();
+    }
+  } // no tree pyxsec.root
+  else {
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree){
+      fxsec->Close();
+      return kFALSE;
+    }
+    UInt_t   ntrials  = 0;
+    Double_t  xsection  = 0;
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    fTrials = ntrials;
+    fXsec = xsection;
+    fxsec->Close();
+  }
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcal::UserNotify()
+{
+  if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
+    return kTRUE;
+
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  if (!tree) {
+    AliError(Form("%s - UserNotify: No current tree!",GetName()));
+    return kFALSE;
+  }
+
+  Float_t xsection = 0;
+  Float_t trials   = 0;
+  Int_t   pthard   = 0;
+
+  TFile *curfile = tree->GetCurrentFile();
+  if (!curfile) {
+    AliError(Form("%s - UserNotify: No current file!",GetName()));
+    return kFALSE;
+  }
+
+  TChain *chain = dynamic_cast<TChain*>(tree);
+  if (chain)
+    tree = chain->GetTree();
+
+  Int_t nevents = tree->GetEntriesFast();
+
+  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
+
+  fHistTrials->Fill(pthard, trials);
+  fHistXsection->Fill(pthard, xsection);
+  fHistEvents->Fill(pthard, nevents);
 
   return kTRUE;
 }
@@ -564,6 +765,8 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane)) 
     return kFALSE;
 
+  if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin) 
+    return kFALSE;
 
   return kTRUE;
 }
@@ -649,6 +852,37 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   } else {
     fCent = 99;
     fCentBin = 0;
+  }
+
+  if (fIsPythia) {
+
+    if (MCEvent()) {
+      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+      if (!fPythiaHeader) {
+	// Check if AOD
+	AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+	if (aodMCH) {
+	  for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+	    fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+	    if (fPythiaHeader) break;
+	  }
+	}
+      }
+    }
+
+    if (fPythiaHeader) {
+      fPtHard = fPythiaHeader->GetPtHard();
+    
+      const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+      const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+      for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
+	if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
+	  break;
+      }
+    
+      fNTrials = fPythiaHeader->Trials();
+    }
   }
 
   return kTRUE;

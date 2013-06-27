@@ -3,11 +3,8 @@
 
 // $Id$
 
-class AliGenPythiaEventHeader;
 class TClonesArray;
-class TH1;
 class TH2;
-class TProfile;
 class AliNamedArrayI;
 
 #include "AliEmcalJet.h"
@@ -27,7 +24,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   };
 
   void                        UserCreateOutputObjects();
-  Bool_t                      UserNotify();
 
   void                        SetJets2Name(const char *n)                                     { fJets2Name         = n         ; }
   void                        SetTracks2Name(const char *n)                                   { fTracks2Name       = n         ; }
@@ -42,16 +38,12 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMatching(MatchingType t, Double_t p1=1, Double_t p2=1)       { fMatching = t; fMatchingPar1 = p1; fMatchingPar2 = p2; }
   void                        SetPtHardBin(Int_t b)                                           { fSelectPtHardBin   = b         ; }
   void                        SetAreMCCollections(Bool_t f1, Bool_t f2)                       { fAreCollections1MC = f1; fAreCollections2MC = f2; }
-  void                        SetIsPythia(Bool_t i)                                           { fIsPythia          = i         ; }
-  void                        SetMCLabelShift(Int_t s)                                        { fMCLabelShift      = s         ; }
   void                        SetUseCellsToMatch(Bool_t i)                                    { fUseCellsToMatch   = i         ; }
   void                        SetMinJetMCPt(Float_t pt)                                       { fMinJetMCPt        = pt        ; }
   void                        SetMaxClusterPt2(Float_t b)                                     { fMaxClusterPt2     = b         ; }
   void                        SetMaxTrackPt2(Float_t b)                                       { fMaxTrackPt2       = b         ; }
 
  protected:
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
-  Bool_t                      IsEventSelected();
   Bool_t                      AcceptJet(AliEmcalJet* jet) const;
   Bool_t                      AcceptBiasJet2(AliEmcalJet *jet) const;
   void                        ExecOnce();
@@ -84,29 +76,16 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   MatchingType                fMatching;                      // matching type
   Double_t                    fMatchingPar1;                  // matching parameter for jet1-jet2 matching
   Double_t                    fMatchingPar2;                  // matching parameter for jet2-jet1 matching
-  Int_t                       fSelectPtHardBin;               // select one pt hard bin for analysis
-  Bool_t                      fIsPythia;                      // trigger, if it is a PYTHIA production
-  Int_t                       fMCLabelShift;                  // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Bool_t                      fUseCellsToMatch;               // use cells instead of clusters to match jets (slower but sometimes needed)
   Double_t                    fMinJetMCPt;                    // minimum jet MC pt
-
-  AliGenPythiaEventHeader    *fPythiaHeader;                  //!event Pythia header
-  Double_t                    fPtHard;                        //!event pt hard
-  Int_t                       fPtHardBin;                     //!event pt hard bin
-  Int_t                       fNTrials;                       //!event trials
   TClonesArray               *fTracks2;                       //!Tracks 2
   TClonesArray               *fCaloClusters2;                 //!Clusters 2
   TClonesArray               *fJets2;                         //!Jets 2
   AliRhoParameter            *fRho2;                          //!Event rho 2
   Double_t                    fRho2Val;                       //!Event rho 2 value 
   AliNamedArrayI             *fTracks2Map;                    //!MC particle map
+
   // General histograms
-  TH1                        *fHistTrialsAfterSel;                     //!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsAfterSel;                     //!total number of events per pt hard bin after selection
-  TH1                        *fHistTrials;                             //!trials from pyxsec.root
-  TProfile                   *fHistXsection;                           //!x section from pyxsec.root
-  TH1                        *fHistEvents;                             //!total number of events per pt hard bin
-  TH1                        *fHistPtHard;                             //!pt hard distribution
   TH2                        *fMCEnergy1vsEnergy2;                     //!total MC energy jet 1 vs total energy jet 2
   // Jets 1
   TH2                        *fHistJets1PhiEta;                        //!phi-eta distribution of jets 1
@@ -185,6 +164,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 18) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 19) // Jet response matrix producing task
 };
 #endif

@@ -86,6 +86,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetPtBiasJetClus(jetBiasClus);
   jetTask->SetMatching(matching, maxDistance1, maxDistance2);
   jetTask->SetVzRange(-10,10);
+  jetTask->SetIsPythia(kTRUE);
   jetTask->SetPtHardBin(ptHardBin);
   jetTask->SetCentRange(minCent,maxCent);
 
