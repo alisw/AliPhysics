@@ -132,7 +132,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   fDataId = kFALSE;
 
   int iResult=0;
-  iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
+  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
@@ -149,7 +149,7 @@ int AliHLTTPCClusterTransformationComponent::DoDeinit() {
 int AliHLTTPCClusterTransformationComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
   // see header file for class documentation
   fDataId = kFALSE;
-  return ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
+  return 0;//!! ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 }
 
 int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc, const char** argv){
@@ -356,7 +356,7 @@ void AliHLTTPCClusterTransformationComponent::GetOCDBObjectDescription( TMap* co
   
   // OCDB entries for component arguments
 
-  targetMap->Add(new TObjString(fgkOCDBEntryClusterTransformation), new TObjString("component argument for the charge threshold"));
+  //!! targetMap->Add(new TObjString(fgkOCDBEntryClusterTransformation), new TObjString("component argument for the charge threshold"));
   
   // OCDB entries to be fetched by the TAXI (access via the AliTPCcalibDB class)
   targetMap->Add(new TObjString("TPC/Calib/Parameters"),    new TObjString("unknown content"));
