@@ -19,6 +19,7 @@ class AliLnHistoMap;
 class AliLnID;
 class TParticle;
 class TList;
+class TProfile;
 
 class AliAnalysisTaskB2: public AliAnalysisTask
 {
@@ -54,6 +55,9 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	void SetSimulation(Bool_t flag = kTRUE) { fSimulation = flag; }
 	void SetHeavyIons(Bool_t flag = kTRUE) { fHeavyIons = flag; }
+	
+	void SetMomentumCorrection(Bool_t flag = kTRUE) { fMomentumCorrection = flag; }
+	void SetMomentumCorrectionProfile(TProfile* pfx) { fMoCpfx = pfx; }
 	
 	void SetHistogramMap(AliLnHistoMap* map) { fHistoMap = map; }
 	
@@ -101,6 +105,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Double_t GetPhi(const AliESDtrack* trk) const;
 	Double_t GetTheta(const AliESDtrack* trk) const;
 	Double_t GetRapidity(const AliESDtrack* trk, Int_t pid) const;
+	Double_t GetRapidity(Double_t p, Double_t pz, Int_t pid) const;
 	Double_t GetITSmomentum(const AliESDtrack* trk) const;
 	Double_t GetTOFmomentum(const AliESDtrack* trk) const;
 	Double_t GetBeta(const AliESDtrack* trk) const;
@@ -111,6 +116,8 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Int_t    GetITSnPointsPID(const AliESDtrack* trk) const;
 	
 	Int_t GetPidCode(const TString& species) const;
+	
+	Double_t GetMomentumCorrection(Double_t ptrec) const;
 	
 	Double_t GetDiffM2(Double_t beta, Double_t p, Double_t m=1.875612793) const;
 	
@@ -180,6 +187,9 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	Double_t fMinM2; // minimum m2 for TPC+TOF pid
 	Double_t fMaxM2; // maximum m2 for TPC+TOF pid
+	
+	Bool_t fMomentumCorrection; // enable momentum correction
+	TProfile* fMoCpfx; // momentum correction from simulation
 	
 	ClassDef(AliAnalysisTaskB2, 1)
 };
