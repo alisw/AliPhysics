@@ -31,7 +31,9 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fCorrectionType(kNoCorrection)
 , fDoTrackFit(kTRUE)
 , fUseMaterial(kFALSE)
+, fIdealTracking(kFALSE)
 , fTime0(-1)
+, fCreateT0seed(kFALSE)
 , fStreamer(0x0)
 , fTree(0x0)
 , fEvent(0x0)
@@ -82,6 +84,9 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   
   TString debugName=file;
   debugName.ReplaceAll(".root","");
+  debugName.Append(Form(".%1d.%1d-%1d-%1d-%03d-%02d",
+                        fUseMaterial,fIdealTracking,fClusterType,
+                        Int_t(fCorrectionType),fSeedingRow,fSeedingDist));
   debugName.Append(".debug.root");
   
   gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
@@ -123,9 +128,10 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
       Float_t vdrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
-      // crate time0 seed, steered by fTime0 < 0
+      // crate time0 seed, steered by fCreateT0seed
       printf("t0 seed\n");
       fTime0=-1.;
+      fCreateT0seed=kTRUE;
       dummy = GetSeedFromTrack(tr);
       
       if (dummy) {
@@ -133,8 +139,10 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         delete dummy;
 
         // crate real seed using the time 0 from the first seed
-        printf("seed\n");
+        // set fCreateT0seed now to false to get the seed in z coordinates
         fTime0 = t0seed.GetZ()-zLength/vdrift;
+        fCreateT0seed = kFALSE;
+        printf("seed (%.2g)\n",fTime0);
         dummy  = GetSeedFromTrack(tr);
         if (dummy) {
           seed = *dummy;
@@ -147,6 +155,12 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
             track = *dummy;
             delete dummy;
           }
+
+          // propagate seed to 0
+          const Double_t kMaxSnp = 0.85;
+          const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+//           AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+          
         }
       }
 
@@ -157,7 +171,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "iev="         << iev             <<
         "z0="          << z0              <<
         "t0="          << t0              <<
-        "t0seed="      << fTime0          <<
+        "fTime0="      << fTime0          <<
         "itr="         << itr             <<
         "clsType="     << fClusterType    <<
         "corrType="    << ctype           <<
@@ -178,7 +192,13 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 
   delete fStreamer;
   fStreamer=0x0;
+
+  delete fEvent;
+  fEvent = 0x0;
   
+  delete fTree;
+  fTree=0x0;
+  f.Close();
 }
 
 //____________________________________________________________________________________
@@ -237,25 +257,31 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   for (Int_t iseed=0; iseed<3; ++iseed) {
     Float_t xyz[3]={0,0,0};
     seedPoint[iseed].GetXYZ(xyz);
-    Float_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+    const Float_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
     
-    Int_t sector=seedCluster[iseed]->GetDetector();
-    Int_t sign=1-2*((sector/18)%2);
+    const Int_t sector=seedCluster[iseed]->GetDetector();
+    const Int_t sign=1-2*((sector/18)%2);
     
     if ( (fClusterType == 1) && (fCorrectionType != kNoCorrection) ) {
       printf("correction type: %d\n",(Int_t)fCorrectionType);
-      
-      if ( fCorrectionType == kTPCCenter  ) xyz[2] = 125.*sign;
-      //!!! TODO: is this the correct association?
-      if ( fCorrectionType == kAverageEta ) xyz[2] = TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
-      if ( fCorrectionType == kIdeal      ) xyz[2] = seedCluster[iseed]->GetZ();
 
+      // the settings below are for the T0 seed
+      // for known T0 the z position is already calculated in SetTrackPointFromCluster
+      if ( fCreateT0seed ){
+        if ( fCorrectionType == kTPCCenter  ) xyz[2] = 125.*sign;
+        //!!! TODO: is this the correct association?
+        if ( fCorrectionType == kAverageEta ) xyz[2] = TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
+      }
+      
+      if ( fCorrectionType == kIdeal      ) xyz[2] = seedCluster[iseed]->GetZ();
+      
       //!!! TODO: to be replaced with the proper correction
       fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
     }
 
-    // after the correction set the time bin as z-Position
-    xyz[2]=seedCluster[iseed]->GetTimeBin();
+    // after the correction set the time bin as z-Position in case of a T0 seed
+    if ( fCreateT0seed )
+      xyz[2]=seedCluster[iseed]->GetTimeBin();
     
     seedPoint[iseed].SetXYZ(xyz);
   }
@@ -266,7 +292,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   AliExternalTrackParam *seed = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
   seed->ResetCovariance(10);
 
-  if (fTime0<0){
+  if (fCreateT0seed){
     // if fTime0 < 0 we assume that we create a seed for the T0 estimate
     AliTrackerBase::PropagateTrackTo(seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
     if (TMath::Abs(seed->GetX())>3) {
@@ -307,10 +333,19 @@ void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl,
   //   cl->Print();
   //   p.Print();
   p.SetVolumeID(cl->GetDetector());
-  p.GetXYZ(xyz);
-  if (fTime0>0) {
-    xyz[2]=(cl->GetTimeBin()-fTime0)*GetVDrift();
+  
+  
+  if ( !fCreateT0seed && !fIdealTracking ) {
+    p.GetXYZ(xyz);
+    const Int_t sector=cl->GetDetector();
+    const Int_t sign=1-2*((sector/18)%2);
+    const Float_t zT0=( GetZLength(sector) - (cl->GetTimeBin()-fTime0)*GetVDrift() )*sign;
+    printf(" z:  %.2f  %.2f\n",xyz[2],zT0);
+    xyz[2]=zT0;
+    p.SetXYZ(xyz);
   }
+  
+  
   //   p.Rotate(p.GetAngle()).Print();
 }
 
@@ -370,6 +405,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     if (fCorrectionType != kNoCorrection){
       Float_t xyz[3]={0,0,0};
       pIn.GetXYZ(xyz);
+//       if ( fCorrectionType == kIdeal ) xyz[2] = cl->GetZ();
       fSpaceCharge->CorrectPoint(xyz, cl->GetDetector());
       pIn.SetXYZ(xyz);
     }

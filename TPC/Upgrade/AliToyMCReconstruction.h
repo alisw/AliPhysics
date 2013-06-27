@@ -39,6 +39,12 @@ public:
   void      SetCorrType(ECorrType type) { fCorrectionType = type; }
   ECorrType GetCorrectionType() const   { return fCorrectionType; }
 
+  void   SetUseMaterialBudget(Bool_t mat) { fUseMaterial = mat;   }
+  Bool_t GetUseMaterialBudget() const   { return fUseMaterial;    }
+
+  void   SetIdealTracking(Bool_t tr)    { fIdealTracking = tr;    }
+  Bool_t GetIdealTracking()  const      { return fIdealTracking;  }
+  
   void   SetTree(TTree *tree) { fTree=tree; }
   TTree* GetTree() const { return fTree; }
 
@@ -64,9 +70,11 @@ private:
   ECorrType fCorrectionType;     // type of space point correction
   Bool_t fDoTrackFit;            // do track fitting
   Bool_t fUseMaterial;           // use material budget in tracking
+  Bool_t fIdealTracking;         // use ideal coordinates for tracking
 
   // current reconstruction info
   Double_t fTime0;               // current time0 used for reconstruction
+  Bool_t   fCreateT0seed;        // if current seed is the T0 seed
   
   TTreeSRedirector *fStreamer;   // debug streamer
   TTree *fTree;                  // input tree with ToyMC info
