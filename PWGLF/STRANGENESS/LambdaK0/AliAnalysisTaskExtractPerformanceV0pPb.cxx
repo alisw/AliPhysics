@@ -178,7 +178,21 @@ AliAnalysisTaskExtractPerformanceV0pPb::AliAnalysisTaskExtractPerformanceV0pPb()
   f3dHist_Analysis_PtVsYVsV0A_XiMinus(0), 
   f3dHist_Analysis_PtVsYVsV0A_XiPlus(0), 
   f3dHist_Generated_PtVsYVsV0A_XiMinus(0), 
-  f3dHist_Generated_PtVsYVsV0A_XiPlus(0) 
+  f3dHist_Generated_PtVsYVsV0A_XiPlus(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_Lambda(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_K0Short(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_Lambda(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_K0Short(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_KPlus(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_KMinus(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_KPlus(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_KMinus(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus(0), 
+  f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus(0), 
+  f3dHist_Generated_PtVsYCMSVsV0A_XiMinus(0), 
+  f3dHist_Generated_PtVsYCMSVsV0A_XiPlus(0) 
 {
   // Dummy Constructor
 
@@ -264,7 +278,21 @@ AliAnalysisTaskExtractPerformanceV0pPb::AliAnalysisTaskExtractPerformanceV0pPb(c
   f3dHist_Analysis_PtVsYVsV0A_XiMinus(0), 
   f3dHist_Analysis_PtVsYVsV0A_XiPlus(0), 
   f3dHist_Generated_PtVsYVsV0A_XiMinus(0), 
-  f3dHist_Generated_PtVsYVsV0A_XiPlus(0)
+  f3dHist_Generated_PtVsYVsV0A_XiPlus(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_Lambda(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_K0Short(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_Lambda(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_K0Short(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_KPlus(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_KMinus(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_KPlus(0),
+  f3dHist_Generated_PtVsYCMSVsV0A_KMinus(0),
+  f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus(0), 
+  f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus(0), 
+  f3dHist_Generated_PtVsYCMSVsV0A_XiMinus(0), 
+  f3dHist_Generated_PtVsYCMSVsV0A_XiPlus(0) 
 {
    // Constructor
   // Set Loose cuts or not here...
@@ -416,9 +444,13 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserCreateOutputObjects()
    Double_t lCustomPtUpperLimit = 20; 
    Int_t lCustomNBinsMultiplicity = 100;
 
-  Int_t lCustomYNBins = 400; 
-  Double_t lCustomMinY = -1; 
-  Double_t lCustomMaxY = +1;
+  Int_t lCustomYNBins = 48; 
+  Double_t lCustomMinY = -1.2; 
+  Double_t lCustomMaxY = +1.2;
+
+//----------------------------------
+// Y in the lab
+//----------------------------------
 
 //----------------------------------
 // Generated Particle Histos
@@ -498,6 +530,90 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserCreateOutputObjects()
       fListHistV0->Add(f3dHist_Generated_PtVsYVsV0A_XiPlus);
    }
 
+
+//----------------------------------
+// Y in the CMS
+//----------------------------------
+
+//----------------------------------
+// Generated Particle Histos
+//----------------------------------
+
+//--- 3D Histo (Pt, Y, Centrality), analysis level
+
+   if(! f3dHist_Analysis_PtVsYCMSVsV0A_Lambda) {
+      f3dHist_Analysis_PtVsYCMSVsV0A_Lambda = new TH3F( "f3dHist_Analysis_PtVsYCMSVsV0A_Lambda", "Pt_{lambda} Vs Y_{#Lambda} Vs V0A Centrality; Pt_{lambda} (GeV/c); Y_{#Lambda} ; Cent", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_Lambda);
+   }
+   if(! f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda) {
+      f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda = new TH3F( "f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda", "Pt_{AntiLambda} Vs Y_{AntiLambda} Vs V0A Centrality; Pt_{AntiLambda} (GeV/c); Y_{AntiLambda} ; Cent", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda);
+   }
+   if(! f3dHist_Analysis_PtVsYCMSVsV0A_K0Short) {
+      f3dHist_Analysis_PtVsYCMSVsV0A_K0Short = new TH3F( "f3dHist_Analysis_PtVsYCMSVsV0A_K0Short", "Pt_{K0s} Vs Y_{K0s} Vs V0A Centrality; Pt_{K0s} (GeV/c); Y_{K0s} ; Cent", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_K0Short);
+   }
+
+//--- 3D Histo (Pt, Y, Centrality), generator level
+
+   if(! f3dHist_Generated_PtVsYCMSVsV0A_Lambda) {
+      f3dHist_Generated_PtVsYCMSVsV0A_Lambda = new TH3F( "f3dHist_Generated_PtVsYCMSVsV0A_Lambda", "Pt_{lambda} Vs Y_{#Lambda} Vs V0A Centrality; Pt_{lambda} (GeV/c); Y_{#Lambda} ; Cent", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Generated_PtVsYCMSVsV0A_Lambda);
+   }
+   if(! f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda) {
+      f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda = new TH3F( "f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda", "Pt_{AntiLambda} Vs Y_{AntiLambda} Vs V0A Centrality; Pt_{AntiLambda} (GeV/c); Y_{AntiLambda} ; Cent", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda);
+   }
+   if(! f3dHist_Generated_PtVsYCMSVsV0A_K0Short) {
+      f3dHist_Generated_PtVsYCMSVsV0A_K0Short = new TH3F( "f3dHist_Generated_PtVsYCMSVsV0A_K0Short", "Pt_{K0s} Vs Y_{K0s} Vs V0A Centrality; Pt_{K0s} (GeV/c); Y_{K0s} ; Cent", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Generated_PtVsYCMSVsV0A_K0Short);
+   }
+
+//--------------------------------------------------------------------------------------
+// MC Histos for charged Kaons (cross-checking purposes)
+//--------------------------------------------------------------------------------------
+//--- 3D Histo (Pt, Y, V0A Cent) for charged Kaons
+
+   if(! f3dHist_Analysis_PtVsYCMSVsV0A_KPlus) {
+      f3dHist_Analysis_PtVsYCMSVsV0A_KPlus = new TH3F( "f3dHist_Analysis_PtVsYCMSVsV0A_KPlus", "Pt_{K+} Vs Y_{K+} Vs Multiplicity; Pt_{K+} (GeV/c); Y_{K+} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_KPlus);
+   }
+   if(! f3dHist_Analysis_PtVsYCMSVsV0A_KMinus) {
+      f3dHist_Analysis_PtVsYCMSVsV0A_KMinus = new TH3F( "f3dHist_Analysis_PtVsYCMSVsV0A_KMinus", "Pt_{K-} Vs Y_{K-} Vs Multiplicity; Pt_{K-} (GeV/c); Y_{K-} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_KMinus);
+   }
+   if(! f3dHist_Generated_PtVsYCMSVsV0A_KPlus) {
+      f3dHist_Generated_PtVsYCMSVsV0A_KPlus = new TH3F( "f3dHist_Generated_PtVsYCMSVsV0A_KPlus", "Pt_{K+} Vs Y_{K+} Vs Multiplicity; Pt_{K+} (GeV/c); Y_{K+} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_KPlus);
+   }
+   if(! f3dHist_Generated_PtVsYCMSVsV0A_KMinus) {
+      f3dHist_Generated_PtVsYCMSVsV0A_KMinus = new TH3F( "f3dHist_Generated_PtVsYCMSVsV0A_KMinus", "Pt_{K-} Vs Y_{K-} Vs Multiplicity; Pt_{K-} (GeV/c); Y_{K-} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Generated_PtVsYCMSVsV0A_KMinus);
+   }
+
+//--------------------------------------------------------------------------------------
+// MC Histos for cascades (feeddown)
+//--------------------------------------------------------------------------------------
+//--- 3D Histo (Pt, Y, V0A Cent) 
+
+   if(! f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus) {
+      f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus = new TH3F( "f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus", "Pt_{XiMinus} Vs Y_{XiMinus} Vs Multiplicity; Pt_{XiMinus} (GeV/c); Y_{XiMinus} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus);
+   }
+   if(! f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus) {
+      f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus = new TH3F( "f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus", "Pt_{XiPlus} Vs Y_{XiPlus} Vs Multiplicity; Pt_{XiPlus} (GeV/c); Y_{XiPlus} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus);
+   }
+   if(! f3dHist_Generated_PtVsYCMSVsV0A_XiMinus) {
+      f3dHist_Generated_PtVsYCMSVsV0A_XiMinus = new TH3F( "f3dHist_Generated_PtVsYCMSVsV0A_XiMinus", "Pt_{XiMinus} Vs Y_{XiMinus} Vs Multiplicity; Pt_{XiMinus} (GeV/c); Y_{XiMinus} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Generated_PtVsYCMSVsV0A_XiMinus);
+   }
+   if(! f3dHist_Generated_PtVsYCMSVsV0A_XiPlus) {
+      f3dHist_Generated_PtVsYCMSVsV0A_XiPlus = new TH3F( "f3dHist_Generated_PtVsYCMSVsV0A_XiPlus", "Pt_{XiPlus} Vs Y_{XiPlus} Vs Multiplicity; Pt_{XiPlus} (GeV/c); Y_{XiPlus} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, lCustomYNBins, lCustomMinY,lCustomMaxY,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHist_Generated_PtVsYCMSVsV0A_XiPlus);
+   }
+
+
    //List of Histograms: Normal
    PostData(1, fListHistV0);
 
@@ -523,6 +639,7 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
    Double_t lTrkgPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
    Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
    Double_t lMagneticField                 = -10.;
+   Double_t lpARapidityShift = 0.465;
    
   // Connect to the InputEvent   
   // After these lines, we should have an ESD/AOD event + the number of V0s in it.
@@ -647,10 +764,12 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
          if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHist_Generated_PtVsYVsV0A_XiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_XiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+lpARapidityShift, lMultiplicity);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHist_Generated_PtVsYVsV0A_XiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_XiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+lpARapidityShift, lMultiplicity);
          }
       } 
    }
@@ -686,18 +805,23 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
 
          if( lPdgcodeCurrentPart == 3122 ){
             f3dHist_Generated_PtVsYVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == -3122 ){
             f3dHist_Generated_PtVsYVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == 310 ){
             f3dHist_Generated_PtVsYVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == 321 ){
             f3dHist_Generated_PtVsYVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == -321 ){
             f3dHist_Generated_PtVsYVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
       }
    }//End of loop on tracks
@@ -825,19 +949,24 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
       if ( lMCstack->IsPhysicalPrimary(iMc)!=kTRUE ) continue;
 
          if( lPdgcodeCurrentPart == 3122 ){
-            f3dHist_Analysis_PtVsYVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == -3122 ){
-            f3dHist_Analysis_PtVsYVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == 310 ){
-            f3dHist_Analysis_PtVsYVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == 321 ){
-            f3dHist_Analysis_PtVsYVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == -321 ){
-            f3dHist_Analysis_PtVsYVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Generated_PtVsYCMSVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
    }
 
@@ -864,10 +993,12 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
          if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){ 
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHist_Analysis_PtVsYVsV0A_XiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+lpARapidityShift, lMultiplicity);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){
             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
             f3dHist_Analysis_PtVsYVsV0A_XiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary, lMultiplicity);
+            f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+lpARapidityShift, lMultiplicity);
          }
       }
    }

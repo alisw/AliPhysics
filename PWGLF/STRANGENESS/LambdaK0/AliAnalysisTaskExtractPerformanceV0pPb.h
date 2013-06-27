@@ -169,6 +169,36 @@ class AliAnalysisTaskExtractPerformanceV0pPb : public AliAnalysisTaskSE {
 
   TH3F      *f3dHist_Generated_PtVsYVsV0A_XiMinus;      //! Generated Xi- Distrib
   TH3F      *f3dHist_Generated_PtVsYVsV0A_XiPlus;       //! Generated Xi+ Distrib
+
+//With YCMS shift... 
+
+//---> At final Analysis Event selection
+   TH3F      *f3dHist_Analysis_PtVsYCMSVsV0A_Lambda;      //! Lambda
+   TH3F      *f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda;  //! AntiLambda
+   TH3F      *f3dHist_Analysis_PtVsYCMSVsV0A_K0Short;     //! K0Short
+
+//---> At generator level (before any event selection except centrality binning)
+//     ...though note that centrality is already a selection. 
+   TH3F      *f3dHist_Generated_PtVsYCMSVsV0A_Lambda;      //! Lambda
+   TH3F      *f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda;  //! AntiLambda
+   TH3F      *f3dHist_Generated_PtVsYCMSVsV0A_K0Short;     //! K0Short
+
+//Cross-checking histograms: Charged Kaons (to compare with neutral ones at generator level) 
+  TH3F      *f3dHist_Analysis_PtVsYCMSVsV0A_KPlus;     //! Added for cross-check of any bias
+  TH3F      *f3dHist_Analysis_PtVsYCMSVsV0A_KMinus;    //! Added for cross-check of any bias
+  TH3F      *f3dHist_Generated_PtVsYCMSVsV0A_KPlus;     //! Added for cross-check of any bias
+  TH3F      *f3dHist_Generated_PtVsYCMSVsV0A_KMinus;    //! Added for cross-check of any bias
+
+//---> Needed for FeedDown Corrections
+
+//V0A Containers
+
+  TH3F      *f3dHist_Analysis_PtVsYCMSVsV0A_XiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHist_Analysis_PtVsYCMSVsV0A_XiPlus;       //! Generated Xi+ Distrib
+
+  TH3F      *f3dHist_Generated_PtVsYCMSVsV0A_XiMinus;      //! Generated Xi- Distrib
+  TH3F      *f3dHist_Generated_PtVsYCMSVsV0A_XiPlus;       //! Generated Xi+ Distrib
+
   
    AliAnalysisTaskExtractPerformanceV0pPb(const AliAnalysisTaskExtractPerformanceV0pPb&);            // not implemented
    AliAnalysisTaskExtractPerformanceV0pPb& operator=(const AliAnalysisTaskExtractPerformanceV0pPb&); // not implemented
