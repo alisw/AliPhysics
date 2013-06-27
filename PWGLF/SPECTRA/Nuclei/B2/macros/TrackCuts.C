@@ -63,10 +63,16 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trackselectio
 		AddNSigmaCuts(trkCuts, maxNSigma);
 	}
 	
-	else if(tracksel == "its_tpc_nsigma_spd")
+	else if(tracksel == "its_tpc_nsigma_spd1")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+	}
+	
+	else if(tracksel == "its_tpc_nsigma_spd")
+	{
+		AddNSigmaCuts(trkCuts, maxNSigma);
+		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
 	
 	else if(tracksel == "its_tpc_dca")
@@ -74,10 +80,16 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trackselectio
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 	}
 	
-	else if(tracksel == "its_tpc_dca_spd")
+	else if(tracksel == "its_tpc_dca_spd1")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+	}
+	
+	else if(tracksel == "its_tpc_dca_spd")
+	{
+		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
+		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
 	
 	else if(tracksel == "its_tpc_tof_nsigma")
@@ -86,11 +98,18 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trackselectio
 		task->SetTOFmatch(1);
 	}
 	
-	else if(tracksel == "its_tpc_tof_nsigma_spd")
+	else if(tracksel == "its_tpc_tof_nsigma_spd1")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 		task->SetTOFmatch(1);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+	}
+	
+	else if(tracksel == "its_tpc_tof_nsigma_spd")
+	{
+		AddNSigmaCuts(trkCuts, maxNSigma);
+		task->SetTOFmatch(1);
+		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
 	
 	else if(tracksel == "its_tpc_tof_dca")
@@ -99,11 +118,18 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trackselectio
 		task->SetTOFmatch(1);
 	}
 	
-	else if(tracksel == "its_tpc_tof_dca_spd")
+	else if(tracksel == "its_tpc_tof_dca_spd1")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 		task->SetTOFmatch(1);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+	}
+	
+	else if(tracksel == "its_tpc_tof_dca_spd")
+	{
+		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
+		task->SetTOFmatch(1);
+		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
 	
 	else if(tracksel == "std_its_tpc_2009") // pp data 2009
