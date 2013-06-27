@@ -129,7 +129,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoInit( int argc, const char** argv )
   
   fDoMerge = 1;
 
-  if (iResult>=0) iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
+  //!! if (iResult>=0) iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
 
   if (iResult>=0 && argc>0) iResult = ConfigureFromArgumentString(argc, argv);
 
@@ -151,7 +151,8 @@ int AliHLTTPCHWClusterDecoderComponent::Reconfigure(const char* /*cdbEntry*/, co
   // see header file for class documentation
 
   fDoMerge = 1;
-  int iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
+  int iResult = 0;
+  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
   if ( iResult>=0 ) iResult = InitClusterMerger();  
   return iResult;
 }
@@ -204,7 +205,7 @@ void AliHLTTPCHWClusterDecoderComponent::GetOCDBObjectDescription( TMap* const t
   
   // OCDB entries for component arguments
 
-  targetMap->Add(new TObjString(fgkOCDBEntry), new TObjString("component argument for HW cluster decoder"));  
+  //!! targetMap->Add(new TObjString(fgkOCDBEntry), new TObjString("component argument for HW cluster decoder"));  
 }
 
 
@@ -225,7 +226,8 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
   
-  UInt_t outputBlocksSize = outputBlocks.size();
+  AliHLTUInt8_t* origOutputPtr = outputPtr;
+  UInt_t origOutputBlocksSize = outputBlocks.size();
 
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
      
@@ -252,8 +254,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = size;
-      bd.fSize = iter->fSize;
-      bd.fPtr = outputPtr;
+      bd.fSize = iter->fSize;      
       bd.fSpecification = iter->fSpecification;     
       bd.fDataType = iter->fDataType;
       outputBlocks.push_back( bd );           
@@ -315,8 +316,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 	// fill into HLT output data
 	AliHLTComponentBlockData bdRawClusters;
 	FillBlockData( bdRawClusters );
-	bdRawClusters.fOffset = size;
-	bdRawClusters.fPtr = outputPtr;
+	bdRawClusters.fOffset = size;	
 	bdRawClusters.fSize = sizeof(AliHLTTPCRawClusterData)+outputRaw->fCount*sizeof(AliHLTTPCRawCluster);
 	bdRawClusters.fSpecification = iter->fSpecification;
 	bdRawClusters.fDataType = AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC;
@@ -332,14 +332,15 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 
   if( fDoMerge && fpClusterMerger ){
     fpClusterMerger->Clear();
-    for( UInt_t i=outputBlocksSize; i<outputBlocks.size(); i++){
+    fpClusterMerger->SetDataPointer(origOutputPtr);
+    for( UInt_t i=origOutputBlocksSize; i<outputBlocks.size(); i++){
       fpClusterMerger->SetDataBlock(&(outputBlocks[i]));
     }
     int nMerged = fpClusterMerger->Merge();
     fpClusterMerger->Clear();
     HLTInfo("Merged %d clusters",nMerged);   
   }
-
+ 
   fBenchmark.Stop(0);
   HLTInfo(fBenchmark.GetStatistics());
   

@@ -40,6 +40,7 @@ AliHLTTPCHWClusterMergerV1::AliHLTTPCHWClusterMergerV1()
   , fNBorders(0)
   , fMapping(0)
   , fBorders()
+  , fpData(NULL)
   , fRawClusterBlocks(NULL)
   , fMCBlocks(NULL)
 {
@@ -140,6 +141,8 @@ Int_t AliHLTTPCHWClusterMergerV1::Init()
     }
   } 
 
+  Clear();
+
   return iResult;
 }
 
@@ -153,11 +156,6 @@ Int_t AliHLTTPCHWClusterMergerV1::SetDataBlock(  AliHLTComponentBlockData *block
 
   if( !block ){    
     HLTError("Input NULL pointer to data block");
-    return -1;
-  }
-
-  if( !block->fPtr ){    
-    HLTError("fPtr pointer to data is not set in the input data block");
     return -1;
   }
   
@@ -201,6 +199,7 @@ void AliHLTTPCHWClusterMergerV1::Clear()
   //  fClusters.~vector<AliClusterRecord>();
   // new(&fClusters) vector<AliClusterRecord>;
 
+  fpData = NULL;
   for( int i=0; i<fkNSlices*fkNPatches; i++){
     fRawClusterBlocks[i] = NULL;
     fMCBlocks[i] = NULL;
@@ -215,6 +214,12 @@ int AliHLTTPCHWClusterMergerV1::Merge()
   if( !fMapping ) Init();
   if( !fMapping ) return 0;
 
+  if( !fpData ){    
+    HLTError("Pointer to input data is not set");
+    return -1;
+  }
+
+  
   int iResult = 0;
   int count = 0;
 
@@ -225,15 +230,15 @@ int AliHLTTPCHWClusterMergerV1::Merge()
     for( int iBorder=0; iBorder<fNBorders; iBorder++) fBorderClusters[iBorder].clear();
     
     for( int iPatch=0; iPatch<fkNPatches; iPatch++){
-      int iSlicePatch =  iSlice*fkNSlices+iPatch;
+      int iSlicePatch =  iSlice*fkNPatches+iPatch;
       AliHLTComponentBlockData *block = fRawClusterBlocks[iSlicePatch];
       if( !block ) continue;
-      AliHLTTPCRawClusterData* clusters= (AliHLTTPCRawClusterData*)(block->fPtr);
+      AliHLTTPCRawClusterData* clusters= (AliHLTTPCRawClusterData*)( fpData + block->fOffset);
       if(!clusters) continue;
   
       AliHLTComponentBlockData *mcblock = fMCBlocks[iSlicePatch];
       AliHLTTPCClusterMCData* mclabels = 0;
-      if( mcblock ) mclabels = (AliHLTTPCClusterMCData*)(mcblock->fPtr);
+      if( mcblock ) mclabels = (AliHLTTPCClusterMCData*)(fpData + mcblock->fOffset );
       if( mclabels && mclabels->fCount != clusters->fCount ){
 	HLTError("Slice %d, patch %d: Number of MC labels (%d) not equal to N clusters (%d)", iSlice, iPatch,  mclabels->fCount, clusters->fCount );
 	mclabels->fCount = 0;
@@ -241,7 +246,7 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 	mclabels = 0;
 	fMCBlocks[iSlicePatch] = 0;
       }
-
+      
       for( UInt_t iCluster=0; iCluster<clusters->fCount; iCluster++){
 	AliHLTTPCRawCluster &cluster = clusters->fClusters[iCluster];
 
@@ -273,11 +278,11 @@ int AliHLTTPCHWClusterMergerV1::Merge()
     } // patches
   
     
-    for( int iBorder=0; iBorder<fNBorders; iBorder+=2){
+    for( int iBorder=0; iBorder<fNBorders; iBorder+=2){      
       vector<AliBorderRecord> &border1 = fBorderClusters[iBorder];
       vector<AliBorderRecord> &border2 = fBorderClusters[iBorder+1];
       UInt_t n1 = border1.size();
-      UInt_t n2 = border2.size();
+      UInt_t n2 = border2.size();      
       if( n1==0 || n2==0 ) continue;
 
       // sort 
@@ -366,19 +371,20 @@ int AliHLTTPCHWClusterMergerV1::Merge()
       }    
     } // iBorder
     
+
     // remove merged clusters from data
 
     for( int iPatch=0; iPatch<fkNPatches; iPatch++){
-      int iSlicePatch =  iSlice*fkNSlices+iPatch;
+      int iSlicePatch =  iSlice*fkNPatches+iPatch;
       AliHLTComponentBlockData *block = fRawClusterBlocks[iSlicePatch];
       if( !block ) continue;
-      AliHLTTPCRawClusterData* clusters= (AliHLTTPCRawClusterData*)(block->fPtr);
+      AliHLTTPCRawClusterData* clusters= (AliHLTTPCRawClusterData*)(fpData + block->fOffset);
       if(!clusters) continue;
       AliHLTUInt32_t nClustersOrig = clusters->fCount;
       
       AliHLTComponentBlockData *mcblock = fMCBlocks[iSlicePatch];
       AliHLTTPCClusterMCData* mclabels = 0;
-      if( mcblock ) mclabels = (AliHLTTPCClusterMCData*)(mcblock->fPtr);
+      if( mcblock ) mclabels = (AliHLTTPCClusterMCData*)(fpData + mcblock->fOffset);
       if( mclabels && mclabels->fCount != nClustersOrig ) mclabels = 0;      
 
       clusters->fCount=0;

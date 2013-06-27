@@ -35,6 +35,8 @@ class AliHLTTPCHWClusterMergerV1 : public AliHLTLogging
 
   Int_t Init();
 
+  void SetDataPointer(  AliHLTUInt8_t *data ){ fpData=data; }
+
   Int_t SetDataBlock(  AliHLTComponentBlockData *block);
 
   /// merge clusters
@@ -91,6 +93,7 @@ class AliHLTTPCHWClusterMergerV1 : public AliHLTLogging
 
   AliHLTInt16_t *fMapping;//!
   std::vector<AliBorderParam> fBorders; //!
+  AliHLTUInt8_t *fpData;
   AliHLTComponentBlockData **fRawClusterBlocks; //!
   AliHLTComponentBlockData **fMCBlocks; //!
 };
