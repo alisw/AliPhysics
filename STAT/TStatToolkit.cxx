@@ -1565,3 +1565,60 @@ void  TStatToolkit::DrawStatusGraphs(TObjArray* oaMultGr)
     ylabel->Draw();
   }
 }
+
+
+void TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts, const char* histoname, const char* histotitle, Int_t nsigma, Float_t fraction )
+{
+  //
+  // Draw histogram from TTree with robust range
+  // Only for 1D so far!
+  // 
+  // Parameters:
+  // - histoname:  name of histogram
+  // - histotitle: title of histgram
+  // - fraction:   fraction of data to define the robust mean
+  // - nsigma:     nsigma value for range
+  //
+
+   TString drawStr(drawCommand);
+   TString cutStr(cuts);
+   Int_t dim = 1;
+
+   // TODO: more than 1D implementation!
+   // TString strVal(drawCommand);
+   // if ( strVal.Contains(":") ){
+     
+   //   // count ":", but do not take into account "::"
+   //   Int_t count = 0;
+   //   Int_t len   = strVal.Length();
+   //   const char *data  = strVal.Data();
+   //   for (Int_t n = 0; n < len; n++){     
+   //     if (data[n] == ':'){
+   // 	 if(n<len-1){
+   // 	   if(data[n+1] == ':') n++;
+   // 	   else count++;
+   // 	 }
+   //     }
+   //   }     
+   // }
+   // cout<<dim<<endl;
+
+   if(!tree) {
+     cerr<<" Tree pointer is NULL!"<<endl;
+     return;
+   }
+
+   Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff");
+   if (entries == -1) {
+     cerr<<"TTree draw returns -1"<<endl;
+     return;
+   }
+
+   Double_t mean, rms=0;
+   TStatToolkit::EvaluateUni(entries, tree->GetV1(),mean,rms, fraction*entries);
+   TH1* hOut = new TH1F(histoname, histotitle, 200, mean-nsigma*rms, mean+nsigma*rms);
+   for (Int_t i=0; i<entries; i++) hOut->Fill(tree->GetV1()[i]);
+   
+   hOut->Draw();
+
+}

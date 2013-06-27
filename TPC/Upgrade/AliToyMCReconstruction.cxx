@@ -529,7 +529,7 @@ TTree* AliToyMCReconstruction::ConnectTrees (const char* files) {
     }
   }
 
-  tFirst->GetListOfFriends()->Print()
+  tFirst->GetListOfFriends()->Print();
   return tFirst;
 }
 
