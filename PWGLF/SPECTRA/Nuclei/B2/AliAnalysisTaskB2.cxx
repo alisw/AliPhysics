@@ -49,6 +49,7 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TList.h>
+#include <TProfile.h>
 
 #include "AliLnID.h"
 #include "AliLnHistoMap.h"
@@ -109,6 +110,8 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 , fTOFmatch(0)
 , fMinM2(2.)
 , fMaxM2(6.)
+, fMomentumCorrection(0)
+, fMoCpfx(0)
 
 {
 //
@@ -172,6 +175,8 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 , fTOFmatch(0)
 , fMinM2(2.)
 , fMaxM2(6.)
+, fMomentumCorrection(0)
+, fMoCpfx(0)
 
 {
 //
@@ -274,6 +279,8 @@ AliAnalysisTaskB2::~AliAnalysisTaskB2()
 	delete fTrigAna;
 	
 	if(fIsPidOwner) delete fESDpid;
+	
+	delete fMoCpfx;
 }
 
 void AliAnalysisTaskB2::SetParticleSpecies(const TString& species)
@@ -630,6 +637,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		// momentum
 		
+		Double_t p       = iTrack->GetP()*z; // p at DCA
 		Double_t pt      = iTrack->Pt()*z; // pt at DCA
 		Double_t y       = this->GetRapidity(iTrack, fPartCode);
 		Double_t pITS    = this->GetITSmomentum(iTrack);
@@ -639,6 +647,13 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		Double_t dEdxTPC = iTrack->GetTPCsignal();
 		Int_t nPointsITS = this->GetITSnPointsPID(iTrack);
 		Int_t nPointsTPC = iTrack->GetTPCsignalN();
+		
+		if(fMomentumCorrection)
+		{
+			pt += this->GetMomentumCorrection(pt);
+			p   = TMath::Sqrt(pt*pt + iTrack->Pz()*iTrack->Pz());
+			y   = this->GetRapidity(p, iTrack->Pz(), fPartCode);
+		}
 		
 		Double_t beta = 0;
 		Double_t mass = 0;
@@ -1263,4 +1278,27 @@ Int_t AliAnalysisTaskB2::GetPidCode(const TString& species) const
 	if(name == "alpha")    return AliPID::kAlpha;
 	
 	return -1;
+}
+
+Double_t AliAnalysisTaskB2::GetMomentumCorrection(Double_t ptrec) const
+{
+//
+// momentum correction for low pt
+//
+	if(fMoCpfx == 0) return 0;
+	
+	return fMoCpfx->Interpolate(ptrec);
+}
+
+Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Int_t pid) const
+{
+//
+// Rapidity (for momentum correction)
+//
+	Double_t m  = AliPID::ParticleMass(pid);
+	Double_t e  = TMath::Sqrt(p*p + m*m);
+	
+	if(e <= pz) return 1.e+16;
+	
+	return 0.5*TMath::Log( (e+pz)/(e-pz) );
 }

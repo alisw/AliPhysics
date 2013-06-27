@@ -36,6 +36,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
                              , Bool_t   V0AND            = kFALSE
                              , const TString& ztag       = ""
                              , Double_t maxVz            = 10
+                             , Bool_t momentumCorr       = kFALSE
                              , const TString& binSize    = ""
                              , Double_t minCentrality    = 0
                              , Double_t maxCentrality    = 20
@@ -109,6 +110,17 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	if(period=="lhc11a_wsdd" || period=="lhc11a_wosdd")
 	{
 		task->SetNoFastOnlyTrigger();
+	}
+	
+	// momentum correction
+	
+	if(momentumCorr && species=="Deuteron")
+	{
+		gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/MomentumCorrection.C");
+		
+		TProfile* pfx = MomentumCorrection(species);
+		task->SetMomentumCorrectionProfile(pfx);
+		if(pfx != 0) task->SetMomentumCorrection();
 	}
 	
 	// histograms
