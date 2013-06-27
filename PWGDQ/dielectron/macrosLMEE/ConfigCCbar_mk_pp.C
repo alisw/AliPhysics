@@ -5,7 +5,7 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData=("baseMixzVert40Bins;baseMixzVert40BinsComplete;kMixLegs");
+TString namesDieleData=("baseMixzVert30Bins;kAnyLeg;kMixLegs");
 
 
 TObjArray *arrNamesDieleData=namesDieleData.Tokenize(";");
@@ -40,8 +40,8 @@ AliDielectron* ConfigCCbar_mk_pp(Int_t cutDefinition, Bool_t isAOD=kFALSE)
 
   // mixing
   AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-  mix->AddVariable(AliDielectronVarManager::kZvPrim,40,-10.,10.);
-  if(cutDefinition == 1)mix->SetMixUncomplete(kFALSE);
+  mix->AddVariable(AliDielectronVarManager::kZvPrim,30,-10.,10.);
+//  if(cutDefinition == 1)mix->SetMixUncomplete(kFALSE);
   mix->SetDepth(100);
   mix->SetMixType(AliDielectronMixingHandler::kAll);
   diele->SetMixingHandler(mix);
@@ -103,14 +103,14 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 {
   // Setup the pair cuts
   AliDielectronVarCuts *mycut = new AliDielectronVarCuts("CutEMCAL","cut for EMCal");
-  mycut->AddCut(AliDielectronVarManager::kEMCALnSigmaEle,-2.,3.);//not needed anymore
+  mycut->AddCut(AliDielectronVarManager::kEMCALnSigmaEle,-2.,3.);
   mycut->AddCut(AliDielectronVarManager::kEMCALE,3.5,100.);
 //  mycut->AddCut(AliDielectronVarManager::kEMCALEoverP,0.75,1.25);//  
 
   AliDielectronPairLegCuts *varpair=new AliDielectronPairLegCuts();
   varpair->GetLeg1Filter().AddCuts(mycut);
   varpair->GetLeg2Filter().AddCuts(mycut);
-  if(cutDefinition == 0 || cutDefinition == 1){
+  if(cutDefinition == 1){
     varpair->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
   } else if(cutDefinition == 2){
     varpair->SetCutType(AliDielectronPairLegCuts::kMixLegs);
