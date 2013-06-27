@@ -47,6 +47,7 @@ AliAnalysisTaskExtractPerformanceV0pPb *AddTaskExtractPerformanceV0pPb( const TS
    
    //This one you should merge in file-resident ways...
    coutputTree->SetSpecialOutput();
+   coutputTreeEvents->SetSpecialOutput();
 
    //Recommendation: Tree as a single output slot
    mgr->ConnectInput( taskv0extractperformance, 0, mgr->GetCommonInputContainer());
