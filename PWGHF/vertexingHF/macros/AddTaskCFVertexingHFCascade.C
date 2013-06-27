@@ -89,7 +89,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	  return 0x0;
 	}
 
-	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get(cutObjectName.Data());
+	AliRDHFCutsDStartoKpipi *cutsD0toKpi = (AliRDHFCutsDStartoKpipi*)fileCuts->Get(cutObjectName.Data());
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
