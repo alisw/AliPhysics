@@ -49,7 +49,7 @@ const Float_t multmax_80_100 = 100;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStartoKpipiCuts010.root", TString cutObjectName="DStartoKpipiCuts", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 413, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isPPData=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStartoKpipiCuts010.root", TString cutObjectName="DStartoKpipiCuts", TString suffix="suf", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 413, Char_t isSign = 2, Bool_t useWeight=kTRUE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isPPData=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -89,7 +89,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	  return 0x0;
 	}
 
-	AliRDHFCutsDStartoKpipi *cutsD0toKpi = (AliRDHFCutsDStartoKpipi*)fileCuts->Get(cutObjectName.Data());
+	AliRDHFCutsDStartoKpipi *cutsDStartoKpi = (AliRDHFCutsDStartoKpipi*)fileCuts->Get(cutObjectName.Data());
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
@@ -169,7 +169,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvarTot];
 		
-	const Int_t nbinpt = cutsD0toKpi->GetNPtBins(); // bins in pT
+	const Int_t nbinpt = cutsDStartoKpi->GetNPtBins(); // bins in pT
 	iBin[ipT]=nbinpt;
 	iBin[ipTpi]=nbinpt;
 	iBin[ipTk]=nbinpt;
@@ -177,7 +177,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	Double_t *binLimpTpi=new Double_t[iBin[ipTpi]+1];
 	Double_t *binLimpTk=new Double_t[iBin[ipTk]+1];
 	// values for bin lower bounds
-	Float_t* floatbinLimpT = cutsD0toKpi->GetPtBinLimits();
+	Float_t* floatbinLimpT = cutsDStartoKpi->GetPtBinLimits();
 	for (Int_t ibin0 = 0 ; ibin0<iBin[ipT]+1; ibin0++){
 		binLimpT[ibin0] = (Double_t)floatbinLimpT[ibin0];
 		binLimpTpi[ibin0] = (Double_t)floatbinLimpT[ibin0];
@@ -488,7 +488,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	printf("CREATE TASK\n");
 
 	// create the task
-	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsD0toKpi);
+	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsDStartoKpi);
 	task->SetConfiguration(configuration);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
@@ -516,7 +516,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 		else {
 			task->SetWeightFunction(funcWeight);
 			Printf("User-defined Weights will be used. The function being:");
-			task->GetWeightFunction()->Print();
+			task->GetWeightFunction(funcWeight)->Print();
 		}
 	}
 
@@ -531,25 +531,24 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
           }
         }
 	
-	Printf("***************** CONTAINER SETTINGS *****************");	
-	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
-	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
-	Printf("Dselection = %d",(Int_t)task->GetDselection());
-	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
-	if (task->GetUseWeight()) {
-		Printf("User-defined Weight function:");
-		task->GetWeightFunction()->Print();
-	}
-	else{
-		Printf("FONLL will be used for the weights");
-	}
-	Printf("Use Nch weight = %d",(Int_t)task->GetUseNchWeight());
-	Printf("Sign = %d",(Int_t)task->GetSign());
-	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
-	Printf("Fake selection = %d",(Int_t)task->GetFakeSelection());
-	Printf("RejectCandidateIfNotFromQuark selection = %d",(Int_t)task->GetRejectCandidateIfNotFromQuark());
-	Printf("UseMCVertex selection = %d",(Int_t)task->GetUseMCVertex());
-	Printf("***************END CONTAINER SETTINGS *****************\n");
+	Printf("***************** CONTAINER SETTINGS *****************");       
+        Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
+        Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
+        Printf("Dselection = %d",(Int_t)task->GetDselection());
+        Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
+        if (task->GetUseWeight()) {
+          if(funcWeight) Printf("User-defined Weight function");
+          else Printf("FONLL will be used for the weights");
+        }
+
+        Printf("Use Nch weight = %d",(Int_t)task->GetUseNchWeight());
+        Printf("Sign = %d",(Int_t)task->GetSign());
+        Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
+        Printf("Fake selection = %d",(Int_t)task->GetFakeSelection());
+        Printf("RejectCandidateIfNotFromQuark selection = %d",(Int_t)task->GetRejectCandidateIfNotFromQuark());
+        Printf("UseMCVertex selection = %d",(Int_t)task->GetUseMCVertex());
+        Printf("***************END CONTAINER SETTINGS *****************\n");
+
 
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
@@ -656,5 +655,3 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	return task;
 	
 }
-
-
