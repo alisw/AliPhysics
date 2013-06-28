@@ -25,6 +25,11 @@ AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple()
   ,fNtracks(20)
   ,fInputFileNameESD("")
   ,fESDCuts(0x0)
+  ,fInputIndex(0)
+  ,fESDEvent(0x0)
+  ,fESDTree(0x0)
+  ,fInputFile(0x0)
+ 
 {
   //
   
@@ -37,6 +42,11 @@ AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple(const AliToyMCEventGe
   ,fNtracks(gen.fNtracks)
   ,fInputFileNameESD(gen.fInputFileNameESD)
   ,fESDCuts(gen.fESDCuts)
+  ,fInputIndex(gen.fInputIndex)
+  ,fESDEvent(gen.fESDEvent)
+  ,fESDTree(gen.fESDTree)
+  ,fInputFile(gen.fInputFile)
+ 
 {
 }
 //________________________________________________________________
@@ -205,15 +215,17 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
   }
   InitSpaceCharge();
   AliESDEvent* esdEvent = new AliESDEvent();
-  fNtracks = ntracks;
+ 
  
   esdEvent->ReadFromTree(esdTree);
+
+   fNtracks = ntracks;
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./50e3; //50kHz equally spaced
   TStopwatch s;
-  Int_t nEvents = nevents;
+  
   fESDCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-  if(nevents>esdTree->GetEntries()) nEvents = esdTree->GetEntries();
+ 
   Int_t nUsedEvents = 0;
   for (Int_t ievent=0; ievent<esdTree->GetEntries(); ++ievent){
     printf("Generating event %3d (%.3g)\n",nUsedEvents,eventTime);
@@ -270,7 +282,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
   
   fNtracks=ntracks;
   Double_t eventTime=0.;
-  const Double_t eventSpacing=1./50e3; //50kHz equally spaced
+  //  const Double_t eventSpacing=1./50e3; //50kHz equally spaced
   TStopwatch s;
   Int_t nGeneratedEvents = 0;
   Int_t bunchCounter = 0;
@@ -323,4 +335,230 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
   s.Print();
   delete rand;
   CloseOutputFile();
+}
+
+
+
+
+
+//________________________________________________________________
+Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, const Int_t nevents) {
+
+  
+
+  if(type==0) return nevents;
+  
+  if(type==1) {
+    
+    fInputFile = new TFile(Form("%s%s",fInputFileNameESD.Data(),"#AliESDs.root"),"read");
+    if(!fInputFile->IsOpen()) {
+      std::cout << "file "<<fInputFileNameESD.Data() <<" could not be opened" << std::endl;
+      return 0;
+    }
+    fESDTree = (TTree*) fInputFile->Get("esdTree");
+    if(!fESDTree) {
+      std::cout <<"no esdTree in file " << std::endl;
+      return 0;
+    }
+    fESDEvent = new AliESDEvent();
+    fESDEvent->ReadFromTree(fESDTree);
+    fESDCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+
+    fInputIndex = 0;
+
+    return fESDTree->GetEntries();
+   }
+
+ 
+  std::cout << " no available input type (toymc, esd) specified" << std::endl;
+  return 0;
+ 
+
+}
+
+
+//________________________________________________________________
+void AliToyMCEventGeneratorSimple::RunSimulation2(const Bool_t equalspacing, const Int_t type, const Int_t nevents, const Int_t ntracks) {
+
+  //type==0 simple toy
+  //type==1 esd input
+
+  Int_t nMaxEvents = OpenInputAndGetMaxEvents(type,nevents);
+  if (!ConnectOutputFile()) return;
+  
+   InitSpaceCharge();
+
+
+
+
+  fNtracks = ntracks;
+
+  Double_t eventTime=0.;
+  TStopwatch s;
+  // const Double_t eventSpacing=1./50e3; //50kHz equally spaced
+
+  Int_t nGeneratedEvents = 0;
+  
+  for (Int_t ievent=0; ievent<nMaxEvents; ++ievent){
+    printf("Generating event %3d (%.3g)\n",ievent,eventTime);
+    
+    Int_t nColls = 0;
+    Double_t spacing = 0;
+    GetNGeneratedEventsAndSpacing(equalspacing, nColls, spacing);
+
+    for(Int_t iColl = 0; iColl<nColls; iColl++){
+      if(type==0)    fEvent = Generate(eventTime);
+      else if(type==1) fEvent = GenerateESD2(eventTime);
+      if(fEvent) {
+	FillTree();
+	delete fEvent;
+	fEvent=0x0;
+	nGeneratedEvents++;
+      }
+    }
+    eventTime+=spacing;
+    if(nGeneratedEvents >= nevents) break;
+  }
+  s.Stop();
+  s.Print();
+  
+  CloseOutputFile();
+  CloseInputFile();
+
+
+}
+//________________________________________________________________
+AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD2(Double_t time) {
+
+  //test that enough tracks will pass cuts (and that there is tracks at all)
+  Bool_t testEvent = kTRUE;
+  while(fESDTree->GetEvent(fInputIndex) && testEvent) {  
+    
+    Int_t nPassedCuts = 0;
+    for(Int_t iTrack = 0; iTrack<fESDEvent->GetNumberOfTracks(); iTrack++){
+      if(fESDCuts->AcceptTrack(fESDEvent->GetTrack(iTrack)) && (fESDEvent->GetTrack(iTrack)->Pt() < 0.3) ) nPassedCuts++;
+    }
+    if(nPassedCuts<fNtracks || (fNtracks>100 && nPassedCuts <100) ) fInputIndex++; //100 is a perhaps bit arbitrary, do we want the events were only a small number of tracks are accepted?
+    else testEvent = kFALSE;
+  }
+
+  if(fInputIndex>=fESDTree->GetEntries()) return 0;
+  
+  
+
+  AliToyMCEvent *retEvent = new AliToyMCEvent();
+  retEvent->SetT0(time);
+  retEvent->SetX(fESDEvent->GetPrimaryVertex()->GetX());
+  retEvent->SetY(fESDEvent->GetPrimaryVertex()->GetY());
+  retEvent->SetZ(fESDEvent->GetPrimaryVertex()->GetZ());
+
+
+  
+  if(!fNtracks) fNtracks =  fESDEvent->GetNumberOfTracks();
+  Int_t nUsedTracks = 0;
+  for(Int_t iTrack=0; iTrack<fESDEvent->GetNumberOfTracks(); iTrack++){
+
+    AliESDtrack *part = fESDEvent->GetTrack(iTrack);
+    if(!part) continue;
+    if (!fESDCuts->AcceptTrack(/*(AliESDtrack*)*/part))continue;
+    if(part->Pt() < 0.3) continue; //avoid tracks that fail to propagate through entire volume
+
+    Double_t pxyz[3];
+    pxyz[0]=part->Px();
+    pxyz[1]=part->Py();
+    pxyz[2]=part->Pz();
+    Double_t vertex[3]={retEvent->GetX(),retEvent->GetY(),retEvent->GetZ()};
+    Double_t cv[21]={0};
+    Int_t sign = part->Charge();
+
+    AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
+    // use unique ID for track number
+    // this will be used in DistortTrack track to set the cluster label
+    tempTrack->SetUniqueID(iTrack);
+
+
+    Bool_t trackDist = DistortTrack(*tempTrack, time);
+    if(trackDist) {
+      retEvent->AddTrack(*tempTrack);
+     
+      nUsedTracks++;
+    }
+    delete tempTrack;
+    
+    if(nUsedTracks >= fNtracks) break;
+  }
+  fInputIndex++;
+ 
+  return retEvent;
+}
+
+//________________________________________________________________
+void AliToyMCEventGeneratorSimple::GetNGeneratedEventsAndSpacing(const Bool_t equalSpacing, Int_t &ngen, Double_t &spacing)
+{
+
+  static Int_t bunchCounter = 0;
+  static Int_t trainCounter = 0;
+
+  if(equalSpacing) {
+    ngen =1;
+    spacing = 1./50e3; //50kHz equally spaced
+    return;
+  }
+  else if(!equalSpacing) {
+      //parameters for bunch train
+    const Double_t abortGap = 3e-6; //
+    const Double_t collFreq = 50e3;
+    const Double_t bSpacing = 50e-9; //bunch spacing
+    const Int_t nTrainBunches = 48;
+    const Int_t nTrains = 12;
+    const Double_t revFreq = 1.11e4; //revolution frequency
+    const Double_t collProb = collFreq/(nTrainBunches*nTrains*revFreq);
+    const Double_t trainLength = bSpacing*(nTrainBunches-1);
+    const Double_t totTrainLength = nTrains*trainLength;
+    const Double_t trainSpacing = (1./revFreq - abortGap - totTrainLength)/(nTrains-1); 
+    Double_t time = 0;
+    Int_t nCollsInCrossing = 0;
+    while(nCollsInCrossing ==0){
+      
+      
+    bunchCounter++;
+    
+    if(bunchCounter>=nTrainBunches){
+      
+      trainCounter++;
+      if(trainCounter>=nTrains){
+	time+=abortGap;
+	trainCounter=0;
+      }
+      else time+=trainSpacing;
+
+      bunchCounter=0;
+    }
+    else time+= bSpacing;
+
+
+    nCollsInCrossing = gRandom -> Poisson(collProb);
+    //std::cout << " nCollsInCrossing " << nCollsInCrossing <<  std::endl;
+    }
+    ngen = nCollsInCrossing;
+    if(nCollsInCrossing > 1)std::cout << " nCollsInCrossing " << nCollsInCrossing <<  std::endl;
+    spacing = time;
+    return;
+
+  }
+
+}
+
+//________________________________________________________________
+Bool_t AliToyMCEventGeneratorSimple::CloseInputFile()
+{
+  //
+  // close the input file
+  //
+  if (!fInputFile) return kFALSE;
+  fInputFile->Close();
+  delete fInputFile;
+  fInputFile=0x0;
+
+  return kTRUE;
 }
