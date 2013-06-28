@@ -24,6 +24,7 @@
 #include "TMath.h"
 #include "Riostream.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TH3.h"
 #include "TF1.h"
 #include "TTree.h"
@@ -1608,17 +1609,43 @@ void TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
      return;
    }
 
+   // get entries
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff");
    if (entries == -1) {
      cerr<<"TTree draw returns -1"<<endl;
      return;
    }
 
-   Double_t mean, rms=0;
-   TStatToolkit::EvaluateUni(entries, tree->GetV1(),mean,rms, fraction*entries);
-   TH1* hOut = new TH1F(histoname, histotitle, 200, mean-nsigma*rms, mean+nsigma*rms);
-   for (Int_t i=0; i<entries; i++) hOut->Fill(tree->GetV1()[i]);
-   
-   hOut->Draw();
+   // get dimension
+   if(tree->GetV1()) dim = 1;
+   if(tree->GetV2()) dim = 2;
+   if(tree->GetV3()) dim = 3;
+   if(dim > 2){
+     cerr<<"TTree has more than 2 dimensions (not yet supported)"<<endl;
+     return;
+   }
+
+   // draw robust
+   Double_t meanX, rmsX=0;
+   Double_t meanY, rmsY=0;
+   TStatToolkit::EvaluateUni(entries, tree->GetV1(),meanX,rmsX, fraction*entries);
+   if(dim==2){
+     TStatToolkit::EvaluateUni(entries, tree->GetV1(),meanY,rmsY, fraction*entries);
+     TStatToolkit::EvaluateUni(entries, tree->GetV2(),meanX,rmsX, fraction*entries);
+   }
+   TH1* hOut;
+   if(dim==1){
+     hOut = new TH1F(histoname, histotitle, 200, meanX-nsigma*rmsX, meanX+nsigma*rmsX);
+     for (Int_t i=0; i<entries; i++) hOut->Fill(tree->GetV1()[i]);
+     hOut->GetXaxis()->SetTitle(tree->GetHistogram()->GetXaxis()->GetTitle());
+     hOut->Draw();
+   }
+   else if(dim==2){
+     hOut = new TH2F(histoname, histotitle, 200, meanX-nsigma*rmsX, meanX+nsigma*rmsX,200, meanY-nsigma*rmsY, meanY+nsigma*rmsY);
+     for (Int_t i=0; i<entries; i++) hOut->Fill(tree->GetV2()[i],tree->GetV1()[i]);
+     hOut->GetXaxis()->SetTitle(tree->GetHistogram()->GetXaxis()->GetTitle());
+     hOut->GetYaxis()->SetTitle(tree->GetHistogram()->GetYaxis()->GetTitle());
+     hOut->Draw("colz");
+   }
 
 }

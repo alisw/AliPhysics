@@ -52,10 +52,7 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root"){
   TCanvas *cTrackParams = new TCanvas("cTrackParams","cTrackParams",1200,900);
   cTrackParams->Divide(3,3);
 
-
-  // output histograms
-  TH2D *hT02D[nT02D];
-  
+ 
   // legends
   TLegend *l[nT0];
 
@@ -79,10 +76,9 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root"){
   // draw T0 resolution (2D)
   for(Int_t iT02D = 0; iT02D < nT02D; iT02D ++){
 
-    hT02D[iT02D] = new TH2D(Form("hT02D%d",iT02D),Form("%s",tT02D[iT02D].Data()),200,-3,3,200,-1e-6,1e-6);
 
     cT02D->cd(iT02D+1);
-    Tracks->Draw(Form("%s>>hT02D%d",sT02D[iT02D].Data(),iT02D),Form("%s",sSel.Data()),"colz");
+    TStatToolkit::DrawHistogram(Tracks,sT02D[iT02D].Data(),sSel.Data(),Form("hT02D%d",iT0),Form("%s",tT02D[iT02D].Data()),3);
 
   }
 
