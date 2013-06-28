@@ -24,6 +24,21 @@
 #include <AliTPCcalibDB.h>
 #include <AliTPCROC.h>
 
+// Visualization class. To use
+
+//  AliToyMCDrawer* draw = new AliToyMCDrawer()
+//  draw->SetFileName("path/to/toyMC.root")
+
+//  draw->FillEventArray(Int_t centerEventNumber)
+//         or                 
+//  draw->FillEventArray(Double_t time)
+//    to display with a certain event in the center or at a certain time 
+
+//  draw->DrawEvents(Bool_t both, Bool_t before)
+//    where "both" will display events before and after the middle event and 
+//    before will show also events before (after) the middle event if true (false) 
+//    when "both" is false
+
 
 ClassImp(AliToyMCDrawer);
 
@@ -108,11 +123,18 @@ Int_t AliToyMCDrawer::FillEventArray(Double_t snapShotTime)
   fInputTree = dynamic_cast<TTree*> (inFile->Get("toyMCtree"));
   fInputTree->SetBranchAddress("event",&fEvent);
   fEventArray->Clear();
-  fCenterTime = snapShotTime;
+  
   Int_t leftSearchIndex  = Int_t(snapShotTime/2e-5);
-  if(leftSearchIndex>fInputTree->GetEntries()) leftSearchIndex = fInputTree->GetEntries()-1;
+  if(leftSearchIndex>fInputTree->GetEntries()) {
+    leftSearchIndex = fInputTree->GetEntries()-1;
+    fInputTree->GetEvent(leftSearchIndex);
+    snapShotTime = fEvent->GetT0();
+    std::cout << "input time too large, setting time to time of last event" << std::endl;
+  }
   if(leftSearchIndex<0) leftSearchIndex = 0;
   
+  //fCenterTime = snapShotTime;
+
   fInputTree->GetEvent(leftSearchIndex);
   Double_t leftTime = fEvent ->GetT0();
   Int_t firstEventIndex;
@@ -144,30 +166,36 @@ Int_t AliToyMCDrawer::FillEventArray(Double_t snapShotTime)
 	direction = -1;
       }
       rightSearchIndex+= direction;
-      fInputTree->GetEvent(rightSearchIndex);
+      if(!fInputTree->GetEvent(rightSearchIndex)) return FillEventArray(leftSearchIndex);
       rightTime = fEvent->GetT0();
-      //std::cout << "bef search " << leftTime << " " << rightTime<< " " << " " << snapShotTime << " "<< (leftTime-snapShotTime)*(rightTime-snapShotTime)  << std::endl;
+      // std::cout << "bef search " << leftTime << " " << rightTime<< " " << " " << snapShotTime << " "<< (leftTime-snapShotTime)*(rightTime-snapShotTime)  << std::endl;
+      // Int_t b;
+
       while ( (leftTime-snapShotTime)*(rightTime-snapShotTime)>0   ){
 	//		printf("searching, leftime %f, righttim %f\n",leftTime,rightTime);
 	rightSearchIndex += direction; 
 	leftSearchIndex +=direction;
 	fInputTree->GetEvent(leftSearchIndex);
 	leftTime = fEvent->GetT0();
-	fInputTree->GetEvent(rightSearchIndex);
+	if(!fInputTree->GetEvent(rightSearchIndex)) {
+	  rightSearchIndex-=direction;
+	  break;
+
+	}
 	rightTime = fEvent->GetT0();
-	//	printf("searching, leftime %f, righttim %f\n",leftTime,rightTime);
+		printf("searching, leftime %f, righttim %f\n",leftTime,rightTime);
       }
       if (direction==-1) rightSearchIndex = leftSearchIndex;
       firstEventIndex = rightSearchIndex;
 
     }
-  fInputTree->GetEvent(firstEventIndex);
+  // fInputTree->GetEvent(firstEventIndex);
   //std::cout <<"first event after sn time: " << fEvent->GetT0() << std::endl;
-  return FillEventArray(firstEventIndex);
+  return FillEventArray(firstEventIndex, snapShotTime);
   
 }
 //________________________________________________________________
-Int_t AliToyMCDrawer::FillEventArray(Int_t middleEventNbr)
+Int_t AliToyMCDrawer::FillEventArray(Int_t middleEventNbr, Double_t snapShotTime)
 {
   if(!fFileName) {
     std::cout << "no input file provided, using default (toyMC.root)" << std::endl;
@@ -179,7 +207,6 @@ Int_t AliToyMCDrawer::FillEventArray(Int_t middleEventNbr)
       fInputTree = dynamic_cast<TTree*> (inFile->Get("toyMCtree"));
       //   fInputTree->Add(fileName);
       fInputTree->SetBranchAddress("event",&fEvent);
-      if(fInputTree->GetEvent(middleEventNbr)) fCenterTime = fEvent->GetT0();
     }
   Double_t centerEventTime;
   if(fInputTree->GetEvent(middleEventNbr)) 
@@ -188,6 +215,10 @@ Int_t AliToyMCDrawer::FillEventArray(Int_t middleEventNbr)
       
     }
   else return 0;
+
+  if(snapShotTime<0) fCenterTime = centerEventTime;
+  else fCenterTime = snapShotTime;
+
   fEventArray->Clear();
   if(fInputTree->GetEvent(middleEventNbr)){
     new((*fEventArray)[fEventArray->GetEntriesFast()]) AliToyMCEvent(*fEvent);
@@ -216,14 +247,16 @@ Int_t AliToyMCDrawer::FillEventArray(Int_t middleEventNbr)
 	currentTime = fEvent->GetT0();
       }
     }
+
+    std::cout << " end fill" << std::endl;
+
     return 1;
   }
   else {
     printf("Selected event number (%d) out of range!\n",middleEventNbr);
-    return 0;
+     return 0;
   }
-  //return fEventArray;
-  inFile->Close();
+ 
 }
 //________________________________________________________________
 void AliToyMCDrawer::DrawEvents(Bool_t both, Bool_t before)
@@ -248,14 +281,14 @@ void AliToyMCDrawer::DrawEvents(Bool_t both, Bool_t before)
      Double_t currentEventTime = currentEvent->GetT0();
      
      if((1000000*currentEventTime)>((1000000*fCenterTime)+0.05   ))  {
-       printf("larger iEvent: %d, current %f, center %f\n",iEvent, currentEventTime,fCenterTime);
+       printf("larger iEvent: %d, current %f, center %f, ntracks: %d\n",iEvent, currentEventTime,fCenterTime, currentEvent->GetNumberOfTracks());
        printf("after\n");
        if ( !(both || !before)) continue;
 
      }
      if( currentEventTime<=fCenterTime)// && !(currentEventTime==fCenterTime &&both   ))
        { 
-	 printf("smaller iEvent: %d, current %f, center %f\n",iEvent, currentEventTime,fCenterTime);
+	 printf("smaller iEvent: %d, current %f, center %f, ntracks: %d\n",iEvent, currentEventTime,fCenterTime, currentEvent->GetNumberOfTracks());
 	 printf("before\n");
 	 if ( !(both || before)) continue;
        }

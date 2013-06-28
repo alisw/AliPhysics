@@ -13,6 +13,21 @@ class TPolyMarker3D;
 class AliTPCROC;
 class TClonesArray;
 
+/* Visualization class. To use */
+
+/*  AliToyMCDrawer* draw = new AliToyMCDrawer() */
+/*  draw->SetFileName("path/to/toyMC.root") */
+
+/*  draw->FillEventArray(Int_t centerEventNumber) */
+/*         or                  */
+/*  draw->FillEventArray(Double_t time) */
+/*    to display with a certain event in the center or at a certain time  */
+
+/*  draw->DrawEvents(Bool_t both, Bool_t before) */
+/*    where "both" will display events before and after the middle event and  */
+/*    before will show also events before (after) the middle event if true (false)  */
+/*    when "both" is false */
+
 class AliToyMCDrawer : public TObject {
 
 
@@ -23,7 +38,7 @@ class AliToyMCDrawer : public TObject {
 
   virtual ~AliToyMCDrawer();
   
-  Int_t FillEventArray(Int_t middleEventNbr);
+  Int_t FillEventArray(Int_t middleEventNbr, Double_t snapShotTime = -1.);
   Int_t FillEventArray(Double_t snapShotTime);
   Int_t GetNumberOfEvents()     const {return fEventArray->GetEntriesFast(); }
   
