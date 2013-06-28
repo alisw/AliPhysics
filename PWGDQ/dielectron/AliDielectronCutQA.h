@@ -58,6 +58,9 @@ private:
 
 
   UInt_t GetObjIndex(TObject *obj);    // return object index
+
+  AliDielectronCutQA(const AliDielectronCutQA &);
+  AliDielectronCutQA &operator=(const AliDielectronCutQA &);
   
   ClassDef(AliDielectronCutQA,1) //Group of cuts
 };
