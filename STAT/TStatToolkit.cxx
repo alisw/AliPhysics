@@ -1585,25 +1585,6 @@ void TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
    TString cutStr(cuts);
    Int_t dim = 1;
 
-   // TODO: more than 1D implementation!
-   // TString strVal(drawCommand);
-   // if ( strVal.Contains(":") ){
-     
-   //   // count ":", but do not take into account "::"
-   //   Int_t count = 0;
-   //   Int_t len   = strVal.Length();
-   //   const char *data  = strVal.Data();
-   //   for (Int_t n = 0; n < len; n++){     
-   //     if (data[n] == ':'){
-   // 	 if(n<len-1){
-   // 	   if(data[n+1] == ':') n++;
-   // 	   else count++;
-   // 	 }
-   //     }
-   //   }     
-   // }
-   // cout<<dim<<endl;
-
    if(!tree) {
      cerr<<" Tree pointer is NULL!"<<endl;
      return;
