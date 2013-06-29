@@ -92,6 +92,27 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2010PbPb4060CentScan();
   void InitDstartoD0pi2010PbPb6080CentScan();
 
+  void InitD0toKpi2011PbPb010CentScan();
+  void InitD0toKpi2011PbPb1020CentScan();
+  void InitD0toKpi2011PbPb2030CentScan();
+  void InitD0toKpi2011PbPb3040CentScan();
+  void InitD0toKpi2011PbPb4050CentScan();
+  void InitD0toKpi2010PbPb5080CentScan();
+
+  void InitDplustoKpipi2011PbPb010CentScan();
+  void InitDplustoKpipi2011PbPb1020CentScan();
+  void InitDplustoKpipi2011PbPb2030CentScan();
+  void InitDplustoKpipi2011PbPb3040CentScan();
+  void InitDplustoKpipi2011PbPb4050CentScan();
+  void InitDplustoKpipi2010PbPb5080CentScan();
+
+  void InitDstartoD0pi2011PbPb010CentScan();
+  void InitDstartoD0pi2011PbPb1020CentScan();
+  void InitDstartoD0pi2011PbPb2030CentScan();
+  void InitDstartoD0pi2011PbPb3040CentScan();
+  void InitDstartoD0pi2011PbPb4050CentScan();
+  void InitDstartoD0pi2010PbPb5080CentScan();
+
  private:
 
   AliHFSystErr(const AliHFSystErr& source);
