@@ -92,7 +92,7 @@ void AliHFSystErr::Init(Int_t decay){
   // Variables/histos initialization
   //
 
-  if (fRunNumber!=10 && fIsLowEnergy==false) { 
+  if ((fRunNumber!=10 || fRunNumber!=11) && fIsLowEnergy==false) { 
     AliFatal("Only settings for 2010 and the low energy runs are implemented so far");
   }
 
@@ -102,36 +102,58 @@ void AliHFSystErr::Init(Int_t decay){
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
       else InitD0toKpi2010pp();
     } else if (fCollisionType==1) {
-      if (fCentralityClass=="07half") InitD0toKpi2011PbPb07half();
-      else if (fCentralityClass=="010") InitD0toKpi2010PbPb010CentScan();
-      else if (fCentralityClass=="1020") InitD0toKpi2010PbPb1020CentScan();
-      else if (fCentralityClass=="020") InitD0toKpi2010PbPb020();
-      else if (fCentralityClass=="2040") InitD0toKpi2010PbPb2040CentScan();
-      else if (fCentralityClass=="3050InPlane") InitD0toKpi2011PbPb3050InPlane();
-      else if (fCentralityClass=="3050OutOfPlane") InitD0toKpi2011PbPb3050OutOfPlane();
-      else if (fCentralityClass=="4060") InitD0toKpi2010PbPb4060CentScan();
-      else if (fCentralityClass=="6080") InitD0toKpi2010PbPb6080CentScan();
-      else if (fCentralityClass=="4080") InitD0toKpi2010PbPb4080();
-      else AliFatal("Not yet implemented");
+      if (fRunNumber == 10){
+	if (fCentralityClass=="010") InitD0toKpi2010PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitD0toKpi2010PbPb1020CentScan();
+	else if (fCentralityClass=="020")  InitD0toKpi2010PbPb020();
+	else if (fCentralityClass=="2040") InitD0toKpi2010PbPb2040CentScan();
+	else if (fCentralityClass=="4060") InitD0toKpi2010PbPb4060CentScan();
+	else if (fCentralityClass=="6080") InitD0toKpi2010PbPb6080CentScan();
+	else if (fCentralityClass=="4080") InitD0toKpi2010PbPb4080();
+	else AliFatal("Not yet implemented");
+      }
+      if (fRunNumber == 11){
+	if (fCentralityClass=="07half") InitD0toKpi2011PbPb07half();
+	else if (fCentralityClass=="3050InPlane") InitD0toKpi2011PbPb3050InPlane();
+	else if (fCentralityClass=="3050OutOfPlane") InitD0toKpi2011PbPb3050OutOfPlane();
+	else if (fCentralityClass=="010") InitD0toKpi2011PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitD0toKpi2011PbPb1020CentScan();
+	else if (fCentralityClass=="2030") InitD0toKpi2011PbPb2030CentScan();
+	else if (fCentralityClass=="3040") InitD0toKpi2011PbPb3040CentScan();
+	else if (fCentralityClass=="4050") InitD0toKpi2011PbPb4050CentScan();
+	else if (fCentralityClass=="5080") InitD0toKpi2010PbPb5080CentScan();
+	else AliFatal("Not yet implemented");
+      }
     } else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitD0toKpi2013pPb0100();
     } //    else if (fCollisionType==2) InitD0toKpi2010ppLowEn();
     break;
-
+    
   case 2: // D+->Kpipi
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
       else InitDplustoKpipi2010pp();
     } else if (fCollisionType==1) {
-      if (fCentralityClass=="07half") InitDplustoKpipi2011PbPb07half();
-      else if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
-      else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
-      else if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
-      else if (fCentralityClass=="2040") InitDplustoKpipi2010PbPb2040CentScan();
-      else if (fCentralityClass=="4060") InitDplustoKpipi2010PbPb4060CentScan();
-      else if (fCentralityClass=="6080") InitDplustoKpipi2010PbPb6080CentScan();
-      else if (fCentralityClass=="4080") InitDplustoKpipi2010PbPb4080();
-      else AliFatal("Not yet implemented");
+      if (fRunNumber == 10){
+	if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
+	else if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
+	else if (fCentralityClass=="2040") InitDplustoKpipi2010PbPb2040CentScan();
+	else if (fCentralityClass=="4060") InitDplustoKpipi2010PbPb4060CentScan();
+	else if (fCentralityClass=="6080") InitDplustoKpipi2010PbPb6080CentScan();
+	else if (fCentralityClass=="4080") InitDplustoKpipi2010PbPb4080();
+	else AliFatal("Not yet implemented");
+      }
+      if(fRunNumber == 11){
+	if (fCentralityClass=="07half") InitDplustoKpipi2011PbPb07half();
+	else if (fCentralityClass=="010") InitDplustoKpipi2011PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDplustoKpipi2011PbPb1020CentScan();
+	else if (fCentralityClass=="2030") InitDplustoKpipi2011PbPb2030CentScan();
+	else if (fCentralityClass=="3040") InitDplustoKpipi2011PbPb3040CentScan();
+	else if (fCentralityClass=="4050") InitDplustoKpipi2011PbPb4050CentScan();
+	else if (fCentralityClass=="5080") InitDplustoKpipi2010PbPb5080CentScan();
+	else AliFatal("Not yet implemented");
+      }
     } else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitDplustoKpipi2013pPb0100();
     }
@@ -141,17 +163,29 @@ void AliHFSystErr::Init(Int_t decay){
       if(fIsLowEnergy)  InitDstartoD0pi2010ppLowEn();
       else InitDstartoD0pi2010pp();
     }else if (fCollisionType==1) {
-      if (fCentralityClass=="010") InitDstartoD0pi2010PbPb010CentScan();
-      else if (fCentralityClass=="07half") InitDstartoD0pi2011PbPb07half();
-      else if (fCentralityClass=="1020") InitDstartoD0pi2010PbPb1020CentScan();
-      else if (fCentralityClass=="020") InitDstartoD0pi2010PbPb020();
-      else if (fCentralityClass=="2040" && fIsCentScan) InitDstartoD0pi2010PbPb2040CentScan();
-      else if (fCentralityClass=="2040") InitDstartoD0pi2010PbPb2040();
-      else if (fCentralityClass=="4060") InitDstartoD0pi2010PbPb4060CentScan();
-      else if (fCentralityClass=="6080") InitDstartoD0pi2010PbPb6080CentScan();
-      else if (fCentralityClass=="4080") InitDstartoD0pi2010PbPb4080();
-      else AliFatal("Not yet implemented");
-    }else if (fCollisionType==2) { 
+      if (fRunNumber == 10){
+	if (fCentralityClass=="010") InitDstartoD0pi2010PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDstartoD0pi2010PbPb1020CentScan();
+	else if (fCentralityClass=="020") InitDstartoD0pi2010PbPb020();
+	else if (fCentralityClass=="2040" && fIsCentScan) InitDstartoD0pi2010PbPb2040CentScan();
+	else if (fCentralityClass=="2040") InitDstartoD0pi2010PbPb2040();
+	else if (fCentralityClass=="4060") InitDstartoD0pi2010PbPb4060CentScan();
+	else if (fCentralityClass=="6080") InitDstartoD0pi2010PbPb6080CentScan();
+	else if (fCentralityClass=="4080") InitDstartoD0pi2010PbPb4080();
+	else AliFatal("Not yet implemented");
+      }
+      if (fRunNumber == 11){
+	if (fCentralityClass=="07half") InitDstartoD0pi2011PbPb07half();
+	else if (fCentralityClass=="010") InitDstartoD0pi2011PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDstartoD0pi2011PbPb1020CentScan();
+	else if (fCentralityClass=="2030") InitDstartoD0pi2011PbPb2030CentScan();
+	else if (fCentralityClass=="3040") InitDstartoD0pi2011PbPb3040CentScan();
+	else if (fCentralityClass=="4050") InitDstartoD0pi2011PbPb4050CentScan();
+	else if (fCentralityClass=="5080") InitDstartoD0pi2010PbPb5080CentScan();
+	else AliFatal("Not yet implemented");
+      }
+    }
+    else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitDstartoD0pi2013pPb0100();
     }
     break;
@@ -1589,6 +1623,116 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb6080CentScan(){
   for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.10); 
   for(Int_t i=7;i<=12;i++) fMCPtShape->SetBinContent(i,0.045);
 }
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb010CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb1020CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb2030CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb3040CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb4050CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2010PbPb5080CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb010CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb1020CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb2030CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb3040CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb4050CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2010PbPb5080CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb010CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb1020CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb2030CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb3040CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb4050CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2010PbPb5080CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+
 
 
 //--------------------------------------------------------------------------
