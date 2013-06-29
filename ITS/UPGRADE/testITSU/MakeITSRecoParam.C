@@ -20,7 +20,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   cdb->SetDefaultStorage(cdbURI);
   AliITSUTrackCond* trcond = 0;
   int nLr = 7;
-  //  
+  
   TObjArray *recoParamArray = new TObjArray();
   //
   {
@@ -35,10 +35,11 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   }
   //
   const Bool_t kAllowDiagCl = kFALSE;
-  const Bool_t kUseLUT[3] = {kTRUE,kTRUE,kFALSE}; // use TGeo mat.queries only for RefitInward
   //
-  // tuned for 20x20 pixels with x/x0= 0.3,0.3,0.3,0.5,0.5,0.5,0.5%
   // long tracks
+  /*
+  // tuned for 20x20 pixels with x/x0= 0.3,0.3,0.3,0.5,0.5,0.5,0.5% CDR setup
+  //
   int   c0nBranch[7]   = {5,10,15,4,6,6,10}; // max branching for the seed on layer
   int   c0nCands[7]    = {10,20,45,20,45,15,10}; // max candidates for the TPC seed
   float c0tr2clChi2[7] = {20,25,30,40,45,45,70}; // cut on cluster to track chi2 
@@ -46,8 +47,23 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   float c0missPen[7]   = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
   float c0maxChi2SA[14] = {0.,0.,0.,0.,2.,3.,8., 10.,10.,10.,10.,10.,10.,10.};   // chi2SA vs Nclus
   float c0maxChi2Match = 10.;
+  */
   //
+  //  /*
+  // tuned for 20x20 pixels with x/x0= 0.3,0.3,0.3,0.5,0.5,0.5,0.5% TDR5 setup
+  int   c0nBranch[7] = {3,9,15,4,5,7,10}; // max branching for the seed on layer
+  int   c0nCands[7]  = {10,15,45,20,60,20,10}; // max candidates for the TPC seed
+  float c0tr2clChi2[7] = {20,25,30,40,45,45,70}; // cut on cluster to track chi2 
+  float c0gloChi2[7]   = {6,10,20,30,60,60,70}; // cut on seed global norm chi2
+  float c0missPen[7] = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
+  float c0maxChi2SA[14] = {0.,0.,0.,0.,2.5,5.,10., 20.,20.,20.,20.,20.,20.,20.};   // chi2SA vs Nclus
+  float c0maxChi2Match = 10.;
+  //  */
+
+
   // short tracks from decays
+  /*
+  // tuned for 20x20 pixels with x/x0= 0.3,0.3,0.3,0.5,0.5,0.5,0.5% CDR setup
   int   c1nBranch[7]   = {0,0,0,4,6,6,10}; // max branching for the seed on layer
   int   c1nCands[7]    = {0,0,0,20,45,15,10}; // max candidates for the TPC seed
   float c1tr2clChi2[7] = {0,0,0,20,20,20,30}; // cut on cluster to track chi2 
@@ -55,6 +71,16 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   float c1missPen[7]   = {0.,0.,0.,2.,2.,2.,2.};    // missing cluster penalty
   float c1maxChi2SA[14] = {0.,0.,0.,7.,8.,8.,8., 10.,10.,10.,10.,10.,10.,10.};  // chi2SA vs Nclus
   float c1maxChi2Match = 8.;
+  */
+
+  // short tracks from decays
+  int   c1nBranch[7]   = {0,0,0,4,6,6,10}; // max branching for the seed on layer
+  int   c1nCands[7]    = {0,0,0,5,5,5,8}; // max candidates for the TPC seed
+  float c1tr2clChi2[7] = {0,0,0,20,20,20,30}; // cut on cluster to track chi2 
+  float c1gloChi2[7]   = {0,0,0,16,40,35,30}; // cut on seed global norm chi2
+  float c1missPen[7]   = {0.,0.,0.,2.,2.,2.,2.};    // missing cluster penalty
+  float c1maxChi2SA[14] = {0.,0.,0.,5.,13.,13.,18., 10.,10.,10.,10.,10.,10.,10.};  // chi2SA vs Nclus
+  float c1maxChi2Match = 10.;
 
   //
   /*
@@ -68,16 +94,6 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   float c0maxChi2Match = 10.;
   */
 
-  /*
-  // this is for tuning only
-  int   c0nBranch[7] = {30,20,20,20,20,20,20}; // max branching for the seed on layer
-  int   c0nCands[7]  = {20,100,100,100,100,55,20}; // max candidates for the TPC seed
-  float c0tr2clChi2[7] = {40,50,60,80,80,80,80}; // cut on cluster to track chi2 
-  float c0gloChi2[7]   = {20, 30,40,60,80,80,80}; // cut on seed global norm chi2
-  float c0missPen[7] = {2.,2.,2.,2.,2.,2.,2.};    // missing cluster penalty
-  float c0maxChi2SA[14] = {0.,0.,0.,0.,12.,13.,18., 20.,20.,20.,20.,20.,20.,20.};   // chi2SA vs Nclus
-  float c0maxChi2Match = 20.;
-  */
   //
   {
     AliITSURecoParam * itsRecoParam = AliITSURecoParam::GetLowFluxParam();
@@ -90,7 +106,6 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
-    for (int i=AliITSURecoParam::kNTrackingPhases;i--;) itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
@@ -158,7 +173,6 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
-    for (int i=AliITSURecoParam::kNTrackingPhases;i--;) itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
