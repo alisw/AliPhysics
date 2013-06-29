@@ -92,7 +92,7 @@ void AliHFSystErr::Init(Int_t decay){
   // Variables/histos initialization
   //
 
-  if ((fRunNumber!=10 || fRunNumber!=11) && fIsLowEnergy==false) { 
+  if ((fRunNumber>11) && fIsLowEnergy==false) { 
     AliFatal("Only settings for 2010 and the low energy runs are implemented so far");
   }
 
@@ -101,7 +101,8 @@ void AliHFSystErr::Init(Int_t decay){
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
       else InitD0toKpi2010pp();
-    } else if (fCollisionType==1) {
+    } 
+    else if (fCollisionType==1) {
       if (fRunNumber == 10){
 	if (fCentralityClass=="010") InitD0toKpi2010PbPb010CentScan();
 	else if (fCentralityClass=="1020") InitD0toKpi2010PbPb1020CentScan();
@@ -112,7 +113,7 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="4080") InitD0toKpi2010PbPb4080();
 	else AliFatal("Not yet implemented");
       }
-      if (fRunNumber == 11){
+      else if (fRunNumber == 11){
 	if (fCentralityClass=="07half") InitD0toKpi2011PbPb07half();
 	else if (fCentralityClass=="3050InPlane") InitD0toKpi2011PbPb3050InPlane();
 	else if (fCentralityClass=="3050OutOfPlane") InitD0toKpi2011PbPb3050OutOfPlane();
@@ -124,16 +125,19 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="5080") InitD0toKpi2010PbPb5080CentScan();
 	else AliFatal("Not yet implemented");
       }
-    } else if (fCollisionType==2) { 
+    } 
+    else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitD0toKpi2013pPb0100();
-    } //    else if (fCollisionType==2) InitD0toKpi2010ppLowEn();
+    }
+    else AliFatal("Not yet implemented");
     break;
     
   case 2: // D+->Kpipi
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
       else InitDplustoKpipi2010pp();
-    } else if (fCollisionType==1) {
+    } 
+    else if (fCollisionType==1) {
       if (fRunNumber == 10){
 	if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
 	else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
@@ -154,15 +158,18 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="5080") InitDplustoKpipi2010PbPb5080CentScan();
 	else AliFatal("Not yet implemented");
       }
-    } else if (fCollisionType==2) { 
+    } 
+    else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitDplustoKpipi2013pPb0100();
-    }
+    } 
+    else AliFatal("Not yet implemented");
     break;
   case 3: // D*->D0pi
     if (fCollisionType==0) {
       if(fIsLowEnergy)  InitDstartoD0pi2010ppLowEn();
       else InitDstartoD0pi2010pp();
-    }else if (fCollisionType==1) {
+    }
+    else if (fCollisionType==1) {
       if (fRunNumber == 10){
 	if (fCentralityClass=="010") InitDstartoD0pi2010PbPb010CentScan();
 	else if (fCentralityClass=="1020") InitDstartoD0pi2010PbPb1020CentScan();
@@ -188,13 +195,15 @@ void AliHFSystErr::Init(Int_t decay){
     else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitDstartoD0pi2013pPb0100();
     }
+    else AliFatal("Not yet implemented");
     break;
   case 4: // D+s->KKpi
     if (fCollisionType==0) InitDstoKKpi2010pp();
     else if (fCollisionType==1) {
       if (fCentralityClass=="07half") InitDstoKKpi2011PbPb07half();
       else AliFatal("Not yet implemented");
-    }else if (fCollisionType==2) { 
+    }
+    else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitDstoKKpi2013pPb0100();
     }
     else AliFatal("Not yet implemented");
@@ -563,11 +572,11 @@ void AliHFSystErr::InitD0toKpi2013pPb0100(){
 // D0->Kpi syst errors. p-Pb data sample
 
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.00); // 
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.02); // 
   
   // Branching ratio 
-  fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.012); // 1.2% PDG2010
+  fBR = new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.013); // 1.2% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
@@ -575,29 +584,36 @@ void AliHFSystErr::InitD0toKpi2013pPb0100(){
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
-  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.10);  
+  fRawYield->SetBinContent(1,0.0);
+  fRawYield->SetBinContent(2,0.05);
+  for(Int_t i=3;i<=6;i++) fRawYield->SetBinContent(i,0.02);
+  for(Int_t i=7;i<=24;i++) fRawYield->SetBinContent(i,0.05);
   
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.00); 
+  fCutsEff->SetBinContent(1,0.0);
+  fCutsEff->SetBinContent(2,0.10);
+  for(Int_t i=3;i<=24;i++) fCutsEff->SetBinContent(i,0.05);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  fPIDEff->SetBinContent(1,0.0);
   fPIDEff->SetBinContent(2,0.05);
-  for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.00); 
-  for(Int_t i=12;i<=24;i++) fPIDEff->SetBinContent(i,0.05); 
+  for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.00);
+  for(Int_t i=12;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.0);
+  fMCPtShape->SetBinContent(1,0.0);
+  fMCPtShape->SetBinContent(2,0.02);
+  fMCPtShape->SetBinContent(3,0.02);
+  for(Int_t i=4;i<=8;i++) fMCPtShape->SetBinContent(i,0.0);
+  for(Int_t i=9;i<=24;i++) fMCPtShape->SetBinContent(i,0.02);
 
   // particle-antiparticle
   /*
   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
-  fPartAntipart->SetBinContent(1,1);
-  fPartAntipart->SetBinContent(2,1);
-  fPartAntipart->SetBinContent(3,0.12);
-  for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+  for(Int_t i=1;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
   */
   return;
 
