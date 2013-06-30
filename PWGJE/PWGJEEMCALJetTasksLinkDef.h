@@ -28,6 +28,7 @@
 #pragma link C++ class AliJetConstituentTagCopier+;
 #pragma link C++ class AliJetResponseMaker+;
 #pragma link C++ class AliRhoParameter+;
+#pragma link C++ class AliLocalRhoParameter+;
 #pragma link C++ class AliEmcalJetFinder+;
 
 // user tasks

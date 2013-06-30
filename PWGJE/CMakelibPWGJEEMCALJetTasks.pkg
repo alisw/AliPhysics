@@ -50,6 +50,7 @@ set ( SRCS
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
  EMCALJetTasks/AliRhoParameter.cxx
+ EMCALJetTasks/AliLocalRhoParameter.cxx
  EMCALJetTasks/AliEmcalJetFinder.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
