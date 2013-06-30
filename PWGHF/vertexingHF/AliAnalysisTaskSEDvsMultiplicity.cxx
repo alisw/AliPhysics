@@ -72,6 +72,8 @@ AliAnalysisTaskSE(),
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrUnCorrEvSel(0),
+  fHistNtrUnCorrEvWithCand(0),
+  fHistNtrUnCorrEvWithD(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -93,6 +95,7 @@ AliAnalysisTaskSE(),
   fHigherImpPar(2000.),
   fReadMC(kFALSE),
   fMCOption(0),
+  fisPPbData(kFALSE),
   fUseBit(kTRUE),
   fSubtractTrackletsFromDau(kFALSE),
   fUseNchWeight(kFALSE),
@@ -129,6 +132,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrUnCorrEvSel(0),
+  fHistNtrUnCorrEvWithCand(0),
+  fHistNtrUnCorrEvWithD(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -150,6 +155,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHigherImpPar(2000.),
   fReadMC(kFALSE),
   fMCOption(0),
+  fisPPbData(kFALSE),
   fUseBit(kTRUE),
   fSubtractTrackletsFromDau(kFALSE),
   fUseNchWeight(kFALSE),
@@ -279,12 +285,18 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   Int_t nMultBins = 200;
   Float_t firstMultBin = -0.5;
   Float_t lastMultBin = 199.5;
+  if(fisPPbData) {
+    nMultBins = 375;
+    lastMultBin = 374.5;
+  }
   if(fMultiplicityEstimator==kVZERO) {
     nMultBins = 400;
     lastMultBin = 799.5;
   }
 
   fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand", "Uncorrected Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
+  fHistNtrUnCorrEvWithD = new TH1F("hNtrUnCorrEvWithD","Uncorrected Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
   fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Corrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
   fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
@@ -307,11 +319,15 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin);
 
   fHistNtrUnCorrEvSel->Sumw2();
+  fHistNtrUnCorrEvWithCand->Sumw2();
+  fHistNtrUnCorrEvWithD->Sumw2();
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
   fHistNtrCorrEvWithD->Sumw2();
   fHistGenPrimaryParticlesInelGt0->Sumw2();
   fOutput->Add(fHistNtrUnCorrEvSel);
+  fOutput->Add(fHistNtrUnCorrEvWithCand);
+  fOutput->Add(fHistNtrUnCorrEvWithD);
   fOutput->Add(fHistNtrCorrEvSel);
   fOutput->Add(fHistNtrCorrEvWithCand);
   fOutput->Add(fHistNtrCorrEvWithD);
@@ -450,6 +466,14 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     return;
   }
 
+  if(fisPPbData && fReadMC){
+    Int_t runnumber = aod->GetRunNumber();
+    if(aod->GetTriggerMask()==0 && 
+       (runnumber>=195344 && runnumber<=195677)){
+      AliDebug(3,"Event rejected because of null trigger mask");
+      return;
+    }
+  }
 
 
   // fix for temporary bug in ESDfilter 
@@ -735,10 +759,16 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 
   fCounter->StoreCandidates(aod,nSelectedNoPID,kTRUE);
   fCounter->StoreCandidates(aod,nSelectedPID,kFALSE);
-  fHistNtrUnCorrEvSel->Fill(countTreta1,nchWeight);
-  fHistNtrCorrEvSel->Fill(countTreta1corr,nchWeight);
-  if(nSelectedPID>0) fHistNtrCorrEvWithCand->Fill(countTreta1corr,nchWeight);
-  if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countTreta1corr,nchWeight);
+  fHistNtrUnCorrEvSel->Fill(countMult,nchWeight);
+  fHistNtrCorrEvSel->Fill(countCorr,nchWeight);
+  if(nSelectedPID>0) {
+    fHistNtrUnCorrEvWithCand->Fill(countMult,nchWeight);
+    fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
+  }
+  if(nSelectedInMassPeak>0) {
+    fHistNtrUnCorrEvWithD->Fill(countMult,nchWeight);
+    fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
+  }
 
   PostData(1,fOutput); 
   PostData(2,fListCuts);
