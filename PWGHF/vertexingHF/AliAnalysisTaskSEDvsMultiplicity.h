@@ -56,6 +56,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMCOption(Int_t option=0){ fMCOption = option; }
+  void SetIsPPbData(Bool_t flag=kTRUE){ fisPPbData=flag; }
   void SetUseBit(Bool_t use=kTRUE){fUseBit=use;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
 
@@ -134,6 +135,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary) 
   
   TH1F* fHistNtrUnCorrEvSel; //! hist. of ntracklets for selected events
+  TH1F* fHistNtrUnCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
+  TH1F* fHistNtrUnCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
   TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
@@ -163,6 +166,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   Bool_t fReadMC;    //flag for access to MC
   Int_t  fMCOption;  // 0=keep all cand, 1=keep only signal, 2= keep only back
+  Bool_t fisPPbData; // flag to run on pPb data (differen histogram bining)
   Bool_t fUseBit;    // flag to use bitmask
   Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
 
@@ -177,7 +181,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,7); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,8); // D vs. mult task
 };
 
 #endif
