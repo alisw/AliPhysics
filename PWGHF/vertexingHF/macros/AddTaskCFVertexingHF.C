@@ -46,10 +46,12 @@ const Float_t multmin_50_80 = 50;
 const Float_t multmax_50_80 = 80;
 const Float_t multmin_80_100 = 80;
 const Float_t multmax_80_100 = 100;
+const Float_t multmin_100_400 = 100; // Only for pPb
+const Float_t multmax_100_400 = 400; // Only for pPb
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -138,8 +140,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinmult = 49;  //bins in multiplicity (total number)
 	const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
-	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 102
-	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 50 and 102
+	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 100
+	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 50 and 100
+	const Int_t nbinmult_100_400 = 12; // Only on pPb bins in multiplicity between 100 and 400
+	if(isPPbData) nbinmult += nbinmult_100_400;
 
 	//the sensitive variables, their indices
 
@@ -358,9 +362,17 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbinmult_80_100; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80]=(Double_t)multmin_80_100 + (multmax_80_100-multmin_80_100)/nbinmult_80_100*(Double_t)i ; 
+	if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100] != multmin_100_400)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
+	}
+
+	if(isPPbData){
+	  for(Int_t i=0; i<=nbinmult_100_400; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100]=(Double_t)multmin_100_400 + (multmax_100_400-multmin_100_400)/nbinmult_100_400*(Double_t)i ; 
+	}
 
 	if(multiplicityEstimator==AliCFTaskVertexingHF::kVZERO) {
 	  Int_t items = nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100;
+	  if(isPPbData) items = nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100+nbinmult_100_400;
 	  for(Int_t i=0; i<=items; i++) binLimmult[i]*= 68./12.;
 	}
 
@@ -601,10 +613,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	}
 
 	if(useNchWeight){
-	  TH1F *hNchPrimaries = (TH1F*)fileCuts->Get("hGenPrimaryParticlesInelGt0");
+	  TH1F *hNchPrimaries;
+	  if(isPPbData) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithCandWeight");
+	  else hNchPrimaries = (TH1F*)fileCuts->Get("hGenPrimaryParticlesInelGt0");
 	  if(hNchPrimaries) {
 	    task->SetUseNchWeight(kTRUE);
 	    task->SetMCNchHisto(hNchPrimaries);
+	    if(isPPbData) task->SetUseNchTrackletsWeight();
 	  } else {
 	    AliFatal("Histogram for multiplicity weights not found");
 	    return 0x0;
