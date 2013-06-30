@@ -16,6 +16,8 @@
 #include <AliTPCParam.h>
 #include <AliTPCROC.h>
 #include <TTreeStream.h>
+#include <AliTPCtracker.h>
+#include <AliTPCtrackerSector.h>
 
 #include "AliToyMCTrack.h"
 #include "AliToyMCEvent.h"
@@ -61,7 +63,7 @@ AliToyMCReconstruction::~AliToyMCReconstruction()
 void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 {
   //
-  //
+  // Recostruction from associated clusters
   //
 
   TFile f(file);
@@ -200,6 +202,214 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   fTree=0x0;
   f.Close();
 }
+
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
+{
+  //
+  // Reconstruction for seed from associated clusters, but array of clusters
+  //
+
+  TFile f(file);
+  if (!f.IsOpen() || f.IsZombie()) {
+    printf("ERROR: couldn't open the file '%s'\n", file);
+    return;
+  }
+  
+ fTree=(TTree*)f.Get("toyMCtree");
+  if (!fTree) {
+    printf("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", file);
+    return;
+  }
+
+  fEvent=0x0;
+  fTree->SetBranchAddress("event",&fEvent);
+  
+  // read spacecharge from the Userinfo ot the tree
+  InitSpaceCharge();
+  
+  TString debugName=file;
+  debugName.ReplaceAll(".root","");
+  debugName.Append(Form(".%1d.%1d_%1d_%1d_%03d_%02d",
+                        fUseMaterial,fIdealTracking,fClusterType,
+                        Int_t(fCorrectionType),fSeedingRow,fSeedingDist));
+  debugName.Append(".allClusters.debug.root");
+  
+  gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
+  if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
+  
+  gROOT->cd();
+
+  static AliExternalTrackParam dummySeedT0;
+  static AliExternalTrackParam dummySeed;
+  static AliExternalTrackParam dummyTrack;
+
+  AliExternalTrackParam t0seed;
+  AliExternalTrackParam seed;
+  AliExternalTrackParam track;
+  AliExternalTrackParam tOrig;
+
+  // cluster array of all sectors
+  const Int_t fkNSectorInner = fTPCParam->GetNInnerSector()/2;
+  const Int_t fkNSectorOuter = fTPCParam->GetNOuterSector()/2;
+
+  AliTPCtrackerSector *fInnerSectorArray = new AliTPCtrackerSector[fkNSectorInner];  
+  AliTPCtrackerSector *fOuterSectorArray = new AliTPCtrackerSector[fkNSectorOuter]; 
+ 
+  for (Int_t i=0; i<fkNSectorInner; ++i) fInnerSectorArray[i].Setup(fTPCParam,0);
+  for (Int_t i=0; i<fkNSectorOuter; ++i) fOuterSectorArray[i].Setup(fTPCParam,1);
+
+  Int_t count[72][96] = { {0} , {0} }; 
+      
+
+
+  AliExternalTrackParam *dummy;
+  
+  Int_t maxev=fTree->GetEntries();
+  if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
+  
+
+  // ===========================================================================================
+  // Loop 1: Fill AliTPCtrackerSector structure
+  // ===========================================================================================
+  for (Int_t iev=0; iev<maxev; ++iev){
+    printf("==============  Fill Clusters: Processing Event %6d  =================\n",iev);
+    fTree->GetEvent(iev);
+    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
+      printf(" > ======  Fill Clusters: Processing Track %6d ========  \n",itr);
+      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+
+      // number of clusters to loop over
+      const Int_t ncls=(fClusterType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
+
+      for(Int_t icl=0; icl<ncls; ++icl){
+
+	const AliTPCclusterMI *cl=tr->GetSpacePoint(icl);
+	if (fClusterType==1) cl=tr->GetDistortedSpacePoint(icl);
+	if (!cl) continue;
+
+	Int_t sec = cl->GetDetector();
+	Int_t row = cl->GetRow();
+
+	// fill arrays for inner and outer sectors (A/C side handled internally)
+	if (sec<fkNSectorInner*2){
+	  fInnerSectorArray[sec%fkNSectorInner].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);    
+	}
+	else{
+	  fOuterSectorArray[(sec-fkNSectorInner*2)%fkNSectorOuter].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);
+	}
+
+	++count[sec][row];
+      }
+    }
+  }
+
+
+  // ===========================================================================================
+  // Loop 2a: Use the full TPC tracker 
+  // TODO: how to use???
+  // ===========================================================================================
+  AliTPCtracker *tpcTracker = new AliTPCtracker;
+
+  // ===========================================================================================
+  // Loop 2b: Seeding from clusters associated to tracks
+  // TODO: Implement tracking from given seed!
+  // ===========================================================================================
+  for (Int_t iev=0; iev<maxev; ++iev){
+    printf("==============  Processing Event %6d =================\n",iev);
+    fTree->GetEvent(iev);
+    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
+      printf(" > ======  Processing Track %6d ========  \n",itr);
+      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+      tOrig = *tr;
+
+      
+      // set dummy 
+      t0seed    = dummySeedT0;
+      seed      = dummySeed;
+      track     = dummyTrack;
+      
+      Float_t z0=fEvent->GetZ();
+      Float_t t0=fEvent->GetT0();
+
+      Float_t vdrift=GetVDrift();
+      Float_t zLength=GetZLength(0);
+
+      // crate time0 seed, steered by fCreateT0seed
+      printf("t0 seed\n");
+      fTime0=-1.;
+      fCreateT0seed=kTRUE;
+      dummy = GetSeedFromTrack(tr);
+      
+      if (dummy) {
+        t0seed = *dummy;
+        delete dummy;
+
+        // crate real seed using the time 0 from the first seed
+        // set fCreateT0seed now to false to get the seed in z coordinates
+        fTime0 = t0seed.GetZ()-zLength/vdrift;
+        fCreateT0seed = kFALSE;
+        printf("seed (%.2g)\n",fTime0);
+        dummy  = GetSeedFromTrack(tr);
+	if (dummy) {
+          seed = *dummy;
+          delete dummy;
+	  
+          // create fitted track
+          if (fDoTrackFit){
+            printf("track\n");
+            dummy = GetFittedTrackFromSeedAllClusters(tr, &seed, fInnerSectorArray, fOuterSectorArray);
+            track = *dummy;
+            delete dummy;
+          }
+	  
+          // propagate seed to 0
+          const Double_t kMaxSnp = 0.85;
+          const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+	  AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+          
+        }
+      }
+      
+      Int_t ctype(fCorrectionType);
+      
+      if (fStreamer) {
+        (*fStreamer) << "Tracks" <<
+        "iev="         << iev             <<
+        "z0="          << z0              <<
+        "t0="          << t0              <<
+        "fTime0="      << fTime0          <<
+        "itr="         << itr             <<
+        "clsType="     << fClusterType    <<
+        "corrType="    << ctype           <<
+        "seedRow="     << fSeedingRow     <<
+        "seedDist="    << fSeedingDist    <<
+        "vdrift="      << vdrift          <<
+        "zLength="     << zLength         <<
+        "t0seed.="     << &t0seed         <<
+        "seed.="       << &seed           <<
+        "track.="      << &track          <<
+        "tOrig.="      << &tOrig          <<
+        "\n";
+      }
+      
+      
+    }
+  }
+
+
+  delete fStreamer;
+  fStreamer=0x0;
+
+  delete fEvent;
+  fEvent = 0x0;
+  
+  delete fTree;
+  fTree=0x0;
+  f.Close();
+}
+
 
 //____________________________________________________________________________________
 AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTrack * const tr)
@@ -447,6 +657,23 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
   
   return track;
 }
+
+
+//____________________________________________________________________________________
+AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, AliTPCtrackerSector *fInnerSectorArray, AliTPCtrackerSector *fOuterSectorArray)
+{
+  //
+  // Tracking for given seed on an array of clusters
+  //
+
+  // create track
+  AliExternalTrackParam *track = new AliExternalTrackParam(*seed);
+
+  Printf("Tracking NOT YET DONE");
+
+  return track;
+}
+
 
 //____________________________________________________________________________________
 void AliToyMCReconstruction::InitSpaceCharge()

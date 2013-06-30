@@ -7,6 +7,7 @@ class TTree;
 
 class TTreeSRedirector;
 class AliExternalTrackParam;
+class AliTPCtrackerSector;
 class AliToyMCEvent;
 
 class AliToyMCReconstruction : public TObject {
@@ -22,6 +23,7 @@ public:
   };
 
   void RunReco(const char* file, Int_t nmaxEv=-1);
+  void RunRecoAllClusters(const char* file, Int_t nmaxEv=-1);
   
   // reconstruction settings
   void      SetRecoSettings(Int_t clusterType, Int_t seedingRow, Int_t seedingDist, ECorrType correctionType)
@@ -50,6 +52,7 @@ public:
 
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr);
   AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
+  AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, AliTPCtrackerSector *fInnerSectorArray, AliTPCtrackerSector *fOuterSectorArray);
   
   void InitSpaceCharge();
 
