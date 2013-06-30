@@ -608,8 +608,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   if(fUseZWeight) fWeight *= GetZWeight(zMCVertex,runnumber);
   if(fUseNchWeight){
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
-    fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
-    AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));	
+    Int_t nTracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
+    if(!fUseTrackletsWeight) fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
+    else fWeight *= GetNchWeight(nTracklets);
+    AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
   }
 
   if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
@@ -1325,6 +1327,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
   fFuncWeight->SetParameter(2,3.08583);
   fUseWeight=kTRUE;
 }
+
 //_________________________________________________________________________
 Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
 {
@@ -1404,7 +1407,9 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
   if(nch<=0) return 0.;
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
-  return pMC>0 ? pMeas/pMC : 0.;
+  Double_t weight = pMC>0 ? pMeas/pMC : 0.;
+  if(fUseTrackletsWeight)  weight = pMC;
+  return weight;
 }
 //__________________________________________________________________________________________________
 void AliCFTaskVertexingHF::CreateMeasuredNchHisto(){

@@ -129,6 +129,8 @@ public:
 	Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
 	void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
 
+	void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; }
+	Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
 
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	UShort_t GetDselection (){return fOriginDselection;}
@@ -207,7 +209,8 @@ protected:
 	Bool_t fUseFlatPtWeight;       // flag to decide to use a flat pt shape
 	Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
 	Bool_t fUseNchWeight;         // flag to decide whether to use Ncharged weights != 1 when filling the container or not
-	Int_t fNvar;                   // number of variables for the container
+	Bool_t fUseTrackletsWeight;   // flag to decide whether to use Ncharged weights != 1 when filling the container or not
+	Int_t fNvar;                  // number of variables for the container
 	TString fPartName;    // D meson name
 	TString fDauNames;    // daughter in fin state
 	Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
@@ -230,7 +233,7 @@ protected:
 	Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
 	Bool_t fIsPPData; // flag for pp data (not checking centrality)
 
-	ClassDef(AliCFTaskVertexingHF,16); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,17); // class for HF corrections as a function of many variables
 };
 
 #endif
