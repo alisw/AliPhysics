@@ -568,8 +568,10 @@ void AliHFSystErr::InitD0toKpi2010ppLowEn() {
 }
 //_________________________________________________________________________
 void AliHFSystErr::InitD0toKpi2013pPb0100(){
-
-// D0->Kpi syst errors. p-Pb data sample
+  //
+  // D0->Kpi syst errors. p-Pb data sample
+  //
+  AliInfo(" Settings for D0 --> K pi, p-Pb collisions at 5.023 TeV"); 
 
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.02); // 
@@ -865,8 +867,9 @@ void AliHFSystErr::InitDstoKKpi2011PbPb07half() {
 
 //_________________________________________________________________________
 void AliHFSystErr::InitDstoKKpi2013pPb0100(){
-
+  //
   // Dstar syst
+  AliInfo(" Settings for Ds --> K K pi, p-Pb collisions at 5.023 TeV"); 
   
   //Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
@@ -1085,8 +1088,9 @@ void AliHFSystErr::InitDplustoKpipi2010ppLowEn() {
 
 //_________________________________________________________________________
 void AliHFSystErr::InitDplustoKpipi2013pPb0100(){
-
-// Dplus syst 
+  //
+  // Dplus syst 
+  AliInfo(" Settings for D+ --> K pi pi, p-Pb collisions at 5.023 TeV"); 
 
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.00); // 
@@ -1484,6 +1488,7 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb4080() {
 void AliHFSystErr::InitDstartoD0pi2013pPb0100(){
   // Dstar syst in pPb 2013 MB
   //
+  AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV"); 
 
   //Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
