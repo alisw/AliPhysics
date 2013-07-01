@@ -300,7 +300,7 @@ void AliAnalysisTaskFlowStrange::UserCreateOutputObjects() {
   cc->SetNbinsMult(100); cc->SetMultMin(0);   cc->SetMultMax(4000);
   cc->SetNbinsPt(200); cc->SetPtMin(0.0);   cc->SetPtMax(20.0);
   cc->SetNbinsPhi(100);  cc->SetPhiMin(0.0);  cc->SetPhiMax(TMath::TwoPi());
-  cc->SetNbinsEta(100);  cc->SetEtaMin(-0.9); cc->SetEtaMax(+0.9);
+  cc->SetNbinsEta(100);  cc->SetEtaMin(-5.0); cc->SetEtaMax(+5.0);
   cc->SetNbinsQ(100);    cc->SetQMin(0.0);    cc->SetQMax(3.0);
   cc->SetNbinsMass(fMassBins);
   cc->SetMassMin(fMinMass);
@@ -386,6 +386,7 @@ void AliAnalysisTaskFlowStrange::AddMakeQSpy() {
   if(fSkipFlow) return;
   TH1D *tH1D;
   TH2D *tH2D;
+  TProfile *tPF1;
   TList *tList=new TList();
   tList->SetName("MakeQSpy");
   tList->SetOwner();
@@ -399,6 +400,17 @@ void AliAnalysisTaskFlowStrange::AddMakeQSpy() {
   tH1D = new TH1D("VZEPSI","VZEPSI;PSI",72,0,TMath::Pi()); tList->Add( tH1D );
   tH1D = new TH1D("VZEPSIA","VZEPSIA;PSIA",72,0,TMath::Pi()); tList->Add( tH1D );
   tH1D = new TH1D("VZEPSIB","VZEPSIB;PSIB",72,0,TMath::Pi()); tList->Add( tH1D );
+  tPF1 = new TProfile("TPCQ","TPCQ",6,0.5,6.5,"s");
+  tPF1->GetXaxis()->SetBinLabel(1,"Qay"); tPF1->GetXaxis()->SetBinLabel(2,"Qax");
+  tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
+  tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
+  tList->Add( tPF1 );
+  tPF1 = new TProfile("VZEQ","VZEQ",6,0.5,6.5,"s"); tList->Add( tPF1 );
+  tPF1->GetXaxis()->SetBinLabel(1,"Qay"); tPF1->GetXaxis()->SetBinLabel(2,"Qax");
+  tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
+  tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
+  tList->Add( tPF1 );
+  
   fList->Add(tList);
   if(!fSkipFlow) {
     tList=new TList(); tList->SetName("TPCRFPall"); tList->SetOwner(); AddTPCRFPSpy(tList); fList->Add(tList);
@@ -642,11 +654,11 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
   //=>check event
   Bool_t acceptEvent=kFALSE;
   if(fReadESD) {
-    if(!tESD) {Publish(); return;}
+    if(!tESD) {ResetContainers(); Publish(); return;}
     acceptEvent = fRunOnpp?kFALSE:fRunOnpA?kFALSE:AcceptAAEvent(tESD);
     thisRun = tESD->GetRunNumber();
   } else {
-    if(!tAOD) {Publish(); return;}
+    if(!tAOD) {ResetContainers(); Publish(); return;}
     acceptEvent = fRunOnpp?AcceptPPEvent(tAOD):fRunOnpA?AcceptPAEvent(tAOD):AcceptAAEvent(tAOD);
     thisRun = tAOD->GetRunNumber();
   }
@@ -656,17 +668,16 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
   }
   if( !CalibrateEvent() ) {
     ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(5);
-    Publish(); return;
+    ResetContainers(); Publish(); return;
   }
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(2);
   //=>does the event clear?
-  if(!acceptEvent) {Publish(); return;}
+  if(!acceptEvent) {ResetContainers(); Publish(); return;}
   if(!fSkipFlow) {
     MakeQVectors();
     if(fPsi2<-0.1) {
       ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(4);
-      Publish();
-      return;
+      ResetContainers(); Publish(); return;
     }
   }
   //=>great, lets do our stuff!
@@ -1280,28 +1291,28 @@ void AliAnalysisTaskFlowStrange::MakeQVectors() {
   Double_t tpcqax, tpcqay, tpcqaw, tpcqbx, tpcqby, tpcqbw;
   //=>loading event
   MakeQVZE(InputEvent(),vzeqax,vzeqay,vzeqaw,vzeqbx,vzeqby,vzeqbw);
-  if(fReadESD) MakeQTPC(dynamic_cast<AliESDEvent*> (InputEvent()),tpcqax,tpcqay,tpcqaw,tpcqbx,tpcqby,tpcqbw);
-  else MakeQTPC(dynamic_cast<AliAODEvent*> (InputEvent()),tpcqax,tpcqay,tpcqaw,tpcqbx,tpcqby,tpcqbw);
+  MakeQTPC(InputEvent(),tpcqax,tpcqay,tpcqaw,tpcqbx,tpcqby,tpcqbw);
   //=>computing psi
-  Double_t qx, qy;
   //VZERO
-  qx=qy=0;
+  Double_t vqx, vqy;
+  vqx=vqy=0;
   Double_t psivzea,psivzeb,psivze,vzew;
   psivzea = ( TMath::Pi()+TMath::ATan2(-vzeqay,-vzeqax) )/2.0;
   psivzeb = ( TMath::Pi()+TMath::ATan2(-vzeqby,-vzeqbx) )/2.0;
-  qx = vzeqaw*vzeqax + vzeqbw*vzeqbx;
-  qy = vzeqaw*vzeqay + vzeqbw*vzeqby;
+  vqx = vzeqax + vzeqbx;
+  vqy = vzeqay + vzeqby;
   vzew = vzeqaw + vzeqbw;
-  psivze = ( TMath::Pi()+TMath::ATan2(-qy,-qx) )/2.0;
+  psivze = ( TMath::Pi()+TMath::ATan2(-vqy,-vqx) )/2.0;
   //TPC
-  qx=qy=0;
+  Double_t tqx, tqy;
+  tqx=tqy=0;
   Double_t psitpca,psitpcb,psitpc,tpcw;
   psitpca = ( TMath::Pi()+TMath::ATan2(-tpcqay,-tpcqax) )/2.0;
   psitpcb = ( TMath::Pi()+TMath::ATan2(-tpcqby,-tpcqbx) )/2.0;
-  qx = tpcqaw*tpcqax + tpcqbw*tpcqbx;
-  qy = tpcqaw*tpcqay + tpcqbw*tpcqby;
+  tqx = tpcqax + tpcqbx;
+  tqy = tpcqay + tpcqby;
   tpcw = tpcqaw + tpcqbw;
-  psitpc = ( TMath::Pi()+TMath::ATan2(-qy,-qx) )/2.0;
+  psitpc = ( TMath::Pi()+TMath::ATan2(-tqy,-tqx) )/2.0;
   //=>does the event clear?
   switch(fWhichPsi) {
   case(1): //VZERO
@@ -1323,6 +1334,21 @@ void AliAnalysisTaskFlowStrange::MakeQVectors() {
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIA"))->Fill( psitpca );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIB"))->Fill( psitpcb );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPTPC"))->Fill( tpcw );
+  //------
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 1., tpcqay/tpcqaw, tpcqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 2., tpcqax/tpcqaw, tpcqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 3., tpcqby/tpcqbw, tpcqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 4., tpcqbx/tpcqbw, tpcqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 5., tqy/tpcw, tpcw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 6., tqx/tpcw, tpcw );
+  //------
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 1., vzeqay/vzeqaw, vzeqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 2., vzeqax/vzeqaw, vzeqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 3., vzeqby/vzeqbw, vzeqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 4., vzeqbx/vzeqbw, vzeqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 5., vqy/vzew, vzew );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 6., vqx/vzew, vzew );
+
   return;
 }
 //=======================================================================
@@ -1342,13 +1368,15 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
     }
     Int_t ybinmin = fVZEResponse->GetYaxis()->FindBin(minC+1e-6);
     Int_t ybinmax = fVZEResponse->GetYaxis()->FindBin(maxC-1e-6);
-    for(int i=0;i!=64;++i) extW[i] = fVZEResponse->Integral(i+1,i+1,ybinmin,ybinmax);
+    for(int i=0;i!=64;++i) extW[i] = fVZEResponse->Integral(i+1,i+1,ybinmin,ybinmax)/(maxC-minC);
     Double_t ring[8];
     for(int j=0; j!=8; ++j) {
       ring[j]=0;
       for(int i=0;i!=8;++i) ring[j] += extW[j*8+i];
     }
-    for(int i=0;i!=64;++i) extW[i] = ring[i/8]/extW[i];
+    //for(int i=0;i!=64;++i) printf("CELL %d -> W = %f ||",i,extW[i]);
+    for(int i=0;i!=64;++i) extW[i] = ring[i/8]/extW[i]/8.0;
+    //for(int i=0;i!=64;++i) printf(" W = %f \n",extW[i]);
   }
   //=>computing
   qxa=qya=qwa=qxb=qyb=qwb=0;
@@ -1466,6 +1494,20 @@ Bool_t AliAnalysisTaskFlowStrange::PassesRFPTPCCuts(AliESDtrack *track, Double_t
   ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("ITSNCLS"))->Fill( itscls );
   ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("ITSRCHI"))->Fill( itsrchi2 );
   return kTRUE;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeQTPC(AliVEvent *tevent,
+                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
+                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+  AliESDEvent *tESD = (AliESDEvent*) (tevent);
+  AliAODEvent *tAOD = (AliAODEvent*) (tevent);
+  if(fReadESD) {
+    if(!tESD) return;
+    MakeQTPC(tESD,qxa,qya,qwa,qxb,qyb,qwb);
+  } else {
+    if(!tAOD) return;
+    MakeQTPC(tAOD,qxa,qya,qwa,qxb,qyb,qwb);
+  }
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::MakeQTPC(AliAODEvent *tAOD,
@@ -1806,7 +1848,11 @@ void AliAnalysisTaskFlowStrange::LoadVZEROResponse() {
   }
   //==>loading
   fVZEResponse = dynamic_cast<TH2D*> (fVZEload->FindObject( Form("%d",fRunNumber) ));
-  printf("New VZE calibration: run %d -> Entries %.0f\n",fRunNumber,fVZEResponse->GetEntries());
+  if(fVZEResponse) {
+    printf("New VZE calibration: run %d || %s -> Entries %.0f\n",fRunNumber, fVZEResponse->GetTitle(),fVZEResponse->GetEntries());
+  } else {
+    printf("VZE calibration: request but not found!!!\n");
+  }
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddVZEQA() {
@@ -1823,6 +1869,7 @@ void AliAnalysisTaskFlowStrange::AddVZEQA() {
 //=======================================================================
 void AliAnalysisTaskFlowStrange::SaveVZEROQA() {
   AliAODEvent *event = dynamic_cast<AliAODEvent*> (InputEvent());
+  if(!event) return;
   AliVVZERO *vzero = event->GetVZEROData();
   AliAODTracklets *tracklets = event->GetTracklets();
   if(!event) return;
@@ -1919,4 +1966,9 @@ void AliAnalysisTaskFlowStrange::MakeDHcorr() {
       //end of corr
     }
   }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::ResetContainers() {
+  fTPCevent->ClearFast();
+  fVZEevent->ClearFast();
 }
