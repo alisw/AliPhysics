@@ -81,6 +81,8 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetV0VertexerMinRadius      ( Double_t lParameter ){ fV0Sels[5] = lParameter; }
   void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
   //---------------------------------------------------------------------------------------
+  void SetDiffractiveOnly ( Bool_t lDiffractiveOnly = kTRUE ) { fDiffractiveOnly = lDiffractiveOnly; }
+
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -114,6 +116,8 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Bool_t fkDoNotCallTPCdEdx; //For running on datasets that don't have BB curves... 
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
+
+  Bool_t fDiffractiveOnly; //Only look at diffractive generated events
 
 //===========================================================================================
 //   Variables for Tree, V0s
