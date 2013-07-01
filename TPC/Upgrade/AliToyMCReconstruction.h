@@ -24,6 +24,7 @@ public:
 
   void RunReco(const char* file, Int_t nmaxEv=-1);
   void RunRecoAllClusters(const char* file, Int_t nmaxEv=-1);
+  void RunRecoAllClustersStandardTracking(const char* file, Int_t nmaxEv=-1);
   
   // reconstruction settings
   void      SetRecoSettings(Int_t clusterType, Int_t seedingRow, Int_t seedingDist, ECorrType correctionType)
@@ -52,7 +53,7 @@ public:
 
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr);
   AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
-  AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, AliTPCtrackerSector *fInnerSectorArray, AliTPCtrackerSector *fOuterSectorArray);
+  AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
   
   void InitSpaceCharge();
 
@@ -60,6 +61,9 @@ public:
   
   Double_t GetVDrift() const;
   Double_t GetZLength(Int_t roc) const;
+
+  Int_t LoadInnerSectors();
+  Int_t LoadOuterSectors();
   
 private:
   AliToyMCReconstruction(const AliToyMCReconstruction &rec);
@@ -87,6 +91,11 @@ private:
 
   AliTPCParam *fTPCParam;            // tpc reco parameters
   AliTPCSpaceCharge3D *fSpaceCharge; // space charge 
+
+   const Int_t fkNSectorInner;        //number of inner sectors
+   AliTPCtrackerSector *fInnerSectorArray;  //array of inner sectors;
+   const Int_t fkNSectorOuter;        //number of outer sectors
+   AliTPCtrackerSector *fOuterSectorArray;  //array of outer sectors;
   
   ClassDef(AliToyMCReconstruction,0)
 };
