@@ -16,6 +16,8 @@
 #include <AliTPCParam.h>
 #include <AliTPCROC.h>
 #include <TTreeStream.h>
+#include <AliTPCReconstructor.h>
+#include <AliTPCTransform.h>
 #include <AliTPCtracker.h>
 #include <AliTPCtrackerSector.h>
 
@@ -247,7 +249,7 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
 
   AliExternalTrackParam t0seed;
   AliExternalTrackParam seed;
-  AliExternalTrackParam track;
+  AliExternalTrackParam *track;
   AliExternalTrackParam tOrig;
 
   // cluster array of all sectors
@@ -285,12 +287,15 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
 
       for(Int_t icl=0; icl<ncls; ++icl){
 
-	const AliTPCclusterMI *cl=tr->GetSpacePoint(icl);
-	if (fClusterType==1) cl=tr->GetDistortedSpacePoint(icl);
+	AliTPCclusterMI *cl=const_cast<AliTPCclusterMI *>(tr->GetSpacePoint(icl));
+	if (fClusterType==1) cl=const_cast<AliTPCclusterMI *>(tr->GetDistortedSpacePoint(icl));
 	if (!cl) continue;
 
 	Int_t sec = cl->GetDetector();
 	Int_t row = cl->GetRow();
+
+	// set cluster time to cluster Z
+	cl->SetZ(cl->GetTimeBin());
 
 	// fill arrays for inner and outer sectors (A/C side handled internally)
 	if (sec<fkNSectorInner*2){
@@ -305,98 +310,133 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
     }
   }
 
-
   // ===========================================================================================
   // Loop 2a: Use the full TPC tracker 
-  // TODO: how to use???
+  // TODO: - check tracking configuration
+  //       - add clusters and original tracks to output (how?)
   // ===========================================================================================
-  AliTPCtracker *tpcTracker = new AliTPCtracker;
 
-  // ===========================================================================================
-  // Loop 2b: Seeding from clusters associated to tracks
-  // TODO: Implement tracking from given seed!
-  // ===========================================================================================
-  for (Int_t iev=0; iev<maxev; ++iev){
-    printf("==============  Processing Event %6d =================\n",iev);
-    fTree->GetEvent(iev);
-    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
-      printf(" > ======  Processing Track %6d ========  \n",itr);
-      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
-      tOrig = *tr;
+  // settings (TODO: find the correct settings)
+  AliTPCRecoParam *tpcRecoParam = new AliTPCRecoParam();
+  tpcRecoParam->SetDoKinks(kFALSE);
+  AliTPCcalibDB::Instance()->GetTransform()->SetCurrentRecoParam(tpcRecoParam);
+  //tpcRecoParam->Print();
+
+  // need AliTPCReconstructor for parameter settings in AliTPCtracker
+  AliTPCReconstructor *tpcRec   = new AliTPCReconstructor();
+  tpcRec->SetRecoParam(tpcRecoParam);
+
+  // AliTPCtracker
+  AliTPCtracker *tpcTracker = new AliTPCtracker(fTPCParam);
+  tpcTracker->SetDebug(10);
+
+  // set sector arrays
+  tpcTracker->SetTPCtrackerSectors(fInnerSectorArray,fOuterSectorArray);
+  tpcTracker->LoadInnerSectors();
+  tpcTracker->LoadOuterSectors();
+
+  // tracking
+  tpcTracker->Clusters2Tracks();
+  TObjArray *trackArray = tpcTracker->GetSeeds();
+
+   for(Int_t iTracks = 0; iTracks < trackArray->GetEntriesFast(); ++iTracks){
+     printf(" > ======  Fill Track %6d ========  \n",iTracks);
+     
+     track = (AliExternalTrackParam*)(trackArray->At(iTracks));
+   
+     if (fStreamer) {
+       (*fStreamer) << "Tracks" <<
+	 "track.="      << track          <<
+	 "\n";
+     }
+   }
+   
+
+  // // ===========================================================================================
+  // // Loop 2b: Seeding from clusters associated to tracks
+  // // TODO: Implement tracking from given seed!
+  // // ===========================================================================================
+  // for (Int_t iev=0; iev<maxev; ++iev){
+  //   printf("==============  Processing Event %6d =================\n",iev);
+  //   fTree->GetEvent(iev);
+  //   for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
+  //     printf(" > ======  Processing Track %6d ========  \n",itr);
+  //     const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+  //     tOrig = *tr;
 
       
-      // set dummy 
-      t0seed    = dummySeedT0;
-      seed      = dummySeed;
-      track     = dummyTrack;
+  //     // set dummy 
+  //     t0seed    = dummySeedT0;
+  //     seed      = dummySeed;
+  //     track     = dummyTrack;
       
-      Float_t z0=fEvent->GetZ();
-      Float_t t0=fEvent->GetT0();
+  //     Float_t z0=fEvent->GetZ();
+  //     Float_t t0=fEvent->GetT0();
 
-      Float_t vdrift=GetVDrift();
-      Float_t zLength=GetZLength(0);
+  //     Float_t vdrift=GetVDrift();
+  //     Float_t zLength=GetZLength(0);
 
-      // crate time0 seed, steered by fCreateT0seed
-      printf("t0 seed\n");
-      fTime0=-1.;
-      fCreateT0seed=kTRUE;
-      dummy = GetSeedFromTrack(tr);
+  //     // crate time0 seed, steered by fCreateT0seed
+  //     printf("t0 seed\n");
+  //     fTime0=-1.;
+  //     fCreateT0seed=kTRUE;
+  //     dummy = GetSeedFromTrack(tr);
       
-      if (dummy) {
-        t0seed = *dummy;
-        delete dummy;
+  //     if (dummy) {
+  //       t0seed = *dummy;
+  //       delete dummy;
 
-        // crate real seed using the time 0 from the first seed
-        // set fCreateT0seed now to false to get the seed in z coordinates
-        fTime0 = t0seed.GetZ()-zLength/vdrift;
-        fCreateT0seed = kFALSE;
-        printf("seed (%.2g)\n",fTime0);
-        dummy  = GetSeedFromTrack(tr);
-	if (dummy) {
-          seed = *dummy;
-          delete dummy;
+  //       // crate real seed using the time 0 from the first seed
+  //       // set fCreateT0seed now to false to get the seed in z coordinates
+  //       fTime0 = t0seed.GetZ()-zLength/vdrift;
+  //       fCreateT0seed = kFALSE;
+  //       printf("seed (%.2g)\n",fTime0);
+  //       dummy  = GetSeedFromTrack(tr);
+  // 	if (dummy) {
+  //         seed = *dummy;
+  //         delete dummy;
 	  
-          // create fitted track
-          if (fDoTrackFit){
-            printf("track\n");
-            dummy = GetFittedTrackFromSeedAllClusters(tr, &seed, fInnerSectorArray, fOuterSectorArray);
-            track = *dummy;
-            delete dummy;
-          }
+  //         // create fitted track
+  //         if (fDoTrackFit){
+  //           printf("track\n");
+  //           dummy = GetFittedTrackFromSeedAllClusters(tr, &seed, fInnerSectorArray, fOuterSectorArray);
+  //           track = *dummy;
+  //           delete dummy;
+  //         }
 	  
-          // propagate seed to 0
-          const Double_t kMaxSnp = 0.85;
-          const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-	  AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+  //         // propagate seed to 0
+  //         const Double_t kMaxSnp = 0.85;
+  //         const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  // 	  AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
           
-        }
-      }
+  //       }
+  //     }
       
-      Int_t ctype(fCorrectionType);
+      // Int_t ctype(fCorrectionType);
       
-      if (fStreamer) {
-        (*fStreamer) << "Tracks" <<
-        "iev="         << iev             <<
-        "z0="          << z0              <<
-        "t0="          << t0              <<
-        "fTime0="      << fTime0          <<
-        "itr="         << itr             <<
-        "clsType="     << fClusterType    <<
-        "corrType="    << ctype           <<
-        "seedRow="     << fSeedingRow     <<
-        "seedDist="    << fSeedingDist    <<
-        "vdrift="      << vdrift          <<
-        "zLength="     << zLength         <<
-        "t0seed.="     << &t0seed         <<
-        "seed.="       << &seed           <<
-        "track.="      << &track          <<
-        "tOrig.="      << &tOrig          <<
-        "\n";
-      }
+      // if (fStreamer) {
+      //   (*fStreamer) << "Tracks" <<
+      //   "iev="         << iev             <<
+      //   "z0="          << z0              <<
+      //   "t0="          << t0              <<
+      //   "fTime0="      << fTime0          <<
+      //   "itr="         << itr             <<
+      //   "clsType="     << fClusterType    <<
+      //   "corrType="    << ctype           <<
+      //   "seedRow="     << fSeedingRow     <<
+      //   "seedDist="    << fSeedingDist    <<
+      //   "vdrift="      << vdrift          <<
+      //   "zLength="     << zLength         <<
+      //   "t0seed.="     << &t0seed         <<
+      //   "seed.="       << &seed           <<
+      //   "track.="      << &track          <<
+      //   "tOrig.="      << &tOrig          <<
+      //   "\n";
+      // }
       
       
-    }
-  }
+  //   }
+  // }
 
 
   delete fStreamer;

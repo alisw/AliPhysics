@@ -117,6 +117,8 @@ public:
  public:
    void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
 
+   inline void SetTPCtrackerSectors(AliTPCtrackerSector *innerSec, AliTPCtrackerSector *outerSec); // set the AliTPCtrackerSector arrays from outside (toy MC)
+
    Float_t OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &sum1, Int_t &sum2);
    void  SignShared(AliTPCseed * s1, AliTPCseed * s2);
    void  SignShared(TObjArray * arr);
@@ -261,6 +263,13 @@ Double_t  AliTPCtracker::GetPadPitchLength(Int_t row) const
 {
   //
   return fPadLength[row];
+}
+
+void  AliTPCtracker::SetTPCtrackerSectors(AliTPCtrackerSector *innerSec, AliTPCtrackerSector *outerSec)
+{
+  //
+  fInnerSec = innerSec;
+  fOuterSec = outerSec;
 }
 
 
