@@ -1556,9 +1556,9 @@ void AliHFSystErr::InitDstartoD0pi2013pPb0100(){
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=3;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=4;i<=8;i++) fMCPtShape->SetBinContent(i,0.);
-  for(Int_t i=9;i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1;i<=3;i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=4;i<=6;i++) fMCPtShape->SetBinContent(i,0.);
+  for(Int_t i=7;i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
 
   // particle-antiparticle
   /*
