@@ -53,36 +53,127 @@ void spaceChargeFluctuationMC(Int_t nframes){
   //
   //
   TTreeSRedirector *pcstream = new TTreeSRedirector("spaceChargeFluctuation.root","recreate");
-  Double_t interactionRate=100000;
-  Double_t driftTime=0.1;
+  Double_t interactionRate=50000;
+  Double_t driftTime=0.1;              
+  const Double_t kB2C=-0.299792458e-3;
+  Double_t eventMean=interactionRate*driftTime;
+  Double_t trackMean=500;
+  Double_t FPOT=1.0, EEND=3000;
+  Double_t  EEXPO=0.8567;
+  const Double_t XEXPO=-EEXPO+1, YEXPO=1/XEXPO;
 
   for (Int_t iframe=0; iframe<nframes; iframe++){
+    printf("iframe=%d\n",iframe);
     Int_t nevents=gRandom->Poisson(interactionRate*driftTime);
     Int_t ntracksAll=0;
-    TVectorD vecAllPhi128(128);
-    TVectorD vecAllPhi36(36);
+    TVectorD vecTracksPhi180(180);
+    TVectorD vecTracksPhi36(36);
+    TVectorD vecEPhi180(180);
+    TVectorD vecEPhi36(36);
+    Double_t dESum=0;
     for (Int_t ievent=0; ievent<nevents; ievent++){
-      //
-      //
-      Int_t ntracks=gRandom->Exp(500)+gRandom->Exp(500); // to be taken form the distribution          
+      Int_t ntracks=gRandom->Exp(trackMean); // to be taken from the MB primary distribution      
+      Float_t RAN = gRandom->Rndm();
+      ntracks=TMath::Power((TMath::Power(FPOT,XEXPO)*(1-RAN)+TMath::Power(EEND,XEXPO)*RAN),YEXPO)/2.;
       ntracksAll+=ntracks; 
-      for (Int_t isec=0; isec<128; isec++){
-	vecAllPhi128(isec)+=ntracks*gRandom->Rndm()/128;
+      for (Int_t itrack=0; itrack<ntracks; itrack++){
+	Double_t phi  = gRandom->Rndm();
+	vecTracksPhi180(Int_t(phi*180))+=1;
+	vecTracksPhi36(Int_t(phi*36))  +=1;
+	// simplified MC to get track length including loopers
+	Double_t theta= gRandom->Rndm();
+	Double_t pt   = gRandom->Exp(0.5)+0.05;
+	Double_t crv  = TMath::Abs(5*kB2C/pt);   //GetC(b); // bz*kB2C/pt;
+	Double_t deltaPhi=0;
+	if (TMath::Abs(2*crv*(245-85)/2.) <1.) deltaPhi=TMath::ASin(crv*(245-85)/2.);
+	else 
+	  deltaPhi=TMath::Pi();
+	Double_t dE=deltaPhi/crv;
+	Double_t xloop=1;
+	if (1./crv<250) {
+	  xloop = TMath::Min(1./(TMath::Abs(theta)+0.0001),10.);
+	  if (xloop<1) xloop=1;
+	}
+	dESum+=xloop*dE;
+	if (itrack==0) (*pcstream)<<"track"<<
+	  "pt="<<pt<<
+	  "crv="<<crv<<
+	  "theta="<<theta<<
+	  "dE="<<dE<<
+	  "xloop="<<xloop<<
+	  "\n";
+	
+	vecEPhi180(Int_t(phi*180))     +=dE*xloop;
+	vecEPhi36(Int_t(phi*36))       +=dE*xloop;
       }
-      for (Int_t isec=0; isec<36; isec++){
-	vecAllPhi36(isec)+=ntracks*gRandom->Rndm()/36;
-      }
+      (*pcstream)<<"event"<<
+	"ntracks="<<ntracks<<
+	"nevents="<<nevents<<
+	"\n";
     }
     (*pcstream)<<"ntracks"<<
-      "nevents="<<nevents<<                  // number of events withing time frame
-      "ntracksAll="<<ntracksAll<<            // number of tracks within  time frame
-      "vecAllPhi36="<<&vecAllPhi36<<         // number of tracks in phi bin (36 bins)    within time frame
-      "vecAllPhi128="<<&vecAllPhi128<<       // number of tracks in phi bin (128 bins)   within time frame
+      "eventMean="<<eventMean<<
+      "trackMean="<<trackMean<<
+      "nevents="<<nevents<<                       // number of events withing time frame
+      "ntracksAll="<<ntracksAll<<                  // number of tracks within  time frame
+      "dESum="<<dESum<<                            // sum of the energy loss
+      "vecTracksPhi36.="<<&vecTracksPhi36<<         // number of tracks in phi bin (36 bins)    within time frame
+      "vecTracksPhi180.="<<&vecTracksPhi180<<       // number of tracks in phi bin (180 bins)   within time frame
+      "vecEPhi36.="<<&vecEPhi36<<         // number of tracks in phi bin (36 bins)    within time frame
+      "vecEPhi180.="<<&vecEPhi180<<       // number of tracks in phi bin (180 bins)   within time frame
       "\n";
   }
   delete pcstream;
-}
+  //
+  // Toy MC to simulate the space charge integral fluctuation
+  //
+  TFile * f = TFile::Open("spaceChargeFluctuation.root");
+  TTree * treeStat = (TTree*)f->Get("ntracks");
+  TTree * treedE = (TTree*)f->Get("track");
+  TTree * treeEv = (TTree*)f->Get("event");
+  Int_t nentries=treedE->Draw("dE*xloop","1","",1000000);
+  Double_t meandE=TMath::Mean(nentries,treedE->GetV1());
+  Double_t rmsdE=TMath::RMS(nentries,treedE->GetV1());
+  treeStat->SetAlias("meandE",Form("(%f+0)",meandE));
+  treeStat->SetAlias("rmsdE",Form("(%f+0)",rmsdE));
+  nentries=treeEv->Draw("ntracks","1","",1000000);
+  Double_t meanT=TMath::Mean(nentries,treeEv->GetV1());
+  Double_t rmsT=TMath::RMS(nentries,treeEv->GetV1());
+  treeStat->SetAlias("tracksMean",Form("(%f+0)",meanT));
+  treeStat->SetAlias("tracksRMS",Form("(%f+0)",rmsT));
+  //
+  treeStat->Draw("nevents/eventMean>>hisEv(100,0.9,1.1)","");
+  treeStat->Draw("ntracksAll/(eventMean*tracksMean)>>hisTrackAll(100,0.9,1)","","same");
+  treeStat->Draw("vecTracksPhi180.fElements/(eventMean*tracksMean/180)>>hisTrackSector(100,0.9,1)","1/180","same");
+  treeStat->Draw("vecEPhi180.fElements/(eventMean*tracksMean*meandE/180)>>hisdESector(100,0.9,1)","1/180","same");
+  //
+  //
+  //
+  treeStat->Draw("(ntracksAll/(eventMean*tracksMean)-1)/sqrt(1/eventMean+(tracksRMS/tracksMean)**2/eventMean)");  //tracks All pull
+  treeStat->Draw("(vecTracksPhi180.fElements/(eventMean*tracksMean/180.)-1)/sqrt(1/eventMean+(tracksRMS/tracksMean)**2/eventMean+180/(tracksMean*eventMean))");  //tracks spread
+  treeStat->Draw("(vecEPhi180.fElements/(eventMean*tracksMean*meandE/180)-1)/sqrt(1/eventMean+(tracksRMS/tracksMean)**2/eventMean+180/(tracksMean*eventMean)+180*(rmsdE/meandE)**2/(eventMean*tracksMean))"); //dE spread
 
+}
+void FitMultiplicity(){
+  //
+  // Fit multiplicity distribution
+  //
+  TFile *fmult=TFile::Open("mult_dist_pbpb.root");
+  TF1 f1("f1","[0]*(x+abs([2]))**(-abs([1]))",1,3000);
+  TH1* his = (TH1*) fmult->Get("mult_dist_PbPb_normalizedbywidth");
+  f1.SetParameters(his->GetEntries(),1,1);
+  his->Fit(&f1,"","",2,3000);
+  
+  Double_t FPOT=1.0, EEND=3000, EEXPO= TMath::Abs(f1.GetParameter(1));
+  EEXPO=0.8567;
+  const Double_t XEXPO=-EEXPO+1, YEXPO=1/XEXPO;
+  TH1F *hisr= new TH1F("aaa","aaa",4000,0,4000);
+  for (Int_t i=0; i<400000; i++){
+    Float_t RAN = gRandom->Rndm();
+    hisr->Fill(TMath::Power((TMath::Power(FPOT,XEXPO)*(1-RAN)+TMath::Power(EEND,XEXPO)*RAN),YEXPO));
+  }
+  
+}
 
 // void spaceChargeFluctuationDraw(){
 //   //
@@ -495,9 +586,17 @@ void MakeFluctuationStudy3D(Int_t nhistos, Int_t nevents, Int_t niter){
       "\n";      
     pcstream->GetFile()->mkdir(Form("Fluc%d",iter));
     pcstream->GetFile()->cd(Form("Fluc%d",iter));
+    //
+    his2DROCN->Write("his2DROCN");
     his2DRZROCN->Write("his2DRZROCN");
+    //
+    his2DROCSum->Write("his2DROCSum");        
     his2DRZROCSum->Write("his2DRZROCSum");
+    //
+    his2DDriftN->Write("his2DDriftN");
     his2DRZDriftN->Write("his2DRZDriftN");
+    //
+    his2DDriftSum->Write("his2DDriftSum");
     his2DRZDriftSum->Write("his2DRZDriftSum");
     //
     his3DROCN->Write("his3DROCN");
@@ -632,3 +731,93 @@ void DrawCurrent(const char * ocdb="/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC
   
 
 }
+
+
+void ConvertMaps(const char *inputfile="histo.root", const char *outputfile="SpaceCharge.root", Int_t event=0){
+  //
+  //
+  //  const char *inputfile="histo.root";  const char *outputfile="SpaceCharge.root";  Int_t event=0
+  //
+  TFile *fhistos = TFile::Open(inputfile);
+  TH2D *his2DROCN=0, *his2DROCSum=0, *his2DRZROCN=0, *his2DRZROCSum=0;
+  TTree * treeHis = (TTree*)fhistos->Get("fluctuation");
+  treeHis->SetBranchAddress("his2DROCN.",&his2DROCN);
+  treeHis->SetBranchAddress("his2DROCSum.",&his2DROCSum);
+  treeHis->SetBranchAddress("his2DRZROCN.",&his2DRZROCN);
+  treeHis->SetBranchAddress("his2DRZROCSum.",&his2DRZROCSum);
+  treeHis->GetEntry(event);
+  //
+  // Adjust the format for the AliTPCSpacecharge3D
+  //
+  TH3D *his2DROCNNew = new TH3D();
+  TH3D *his2DROCSumNew = new TH3D();
+  
+  //
+  TH2D *his2DRZROCNNorm = new TH2D(*his2DRZROCN);
+  TH2D *his2DRZROCSumNorm = new TH2D(*his2DRZROCSum);
+
+  for (Int_t i=1;i<his2DROCSum->GetXaxis()->GetNbins();i++){
+    for (Int_t j=1;j<his2DROCSum->GetYaxis()->GetNbins();j++){
+      if (his2DROCSum->GetXaxis()->GetBinCenter(j) < TMath::TwoPi()){
+his2DROCSumNew->SetBinContent(i,j,0.499,his2DROCSum->GetBinContent(j,i));
+      } else {
+his2DROCSumNew->SetBinContent(i,j,-0.499,his2DROCSum->GetBinContent(j,i));
+      }
+    }
+  }
+  //
+  // make normalization to C/cm**3 for RPHi
+  //
+  TH3D *his2DROCNNorm = new TH3D(*his2DROCNNew);
+  TH3D *his2DROCSumNorm = new TH3D(*his2DROCSumNew);
+  Double_t ePerADC = 500.;
+  Double_t dV = 0;
+  for (Int_t k=1;k<his2DROCSumNew->GetZaxis()->GetNbins();k++){
+    for (Int_t i=1;i<his2DROCSumNew->GetXaxis()->GetNbins();i++){
+      for (Int_t j=1;j<his2DROCSumNew->GetYaxis()->GetNbins();j++){
+        dV = his2DROCSumNew->GetXaxis()->GetBinCenter(i)*1e-2 * his2DROCSumNew->GetYaxis()->GetBinWidth(j) * 2.5;
+his2DROCSumNorm->SetBinContent(i,j,k,his2DROCSumNew->GetBinContent(i,j,k)*ePerADC*TMath::Qe()/dV); // Charge in C/m^3
+      }
+    }
+  }
+  //
+  //  make normalization to C/cm**3 for RZ
+  //
+  for (Int_t i=1;i<his2DRZROCSum->GetXaxis()->GetNbins();i++){
+    for (Int_t j=1;j<his2DRZROCSum->GetYaxis()->GetNbins();j++){
+      dV = his2DRZROCSum->GetXaxis()->GetBinCenter(i)*1e-2 * his2DRZROCSum->GetYaxis()->GetBinWidth(j)*1e-2 * TMath::TwoPi()*his2DRZROCSum->GetXaxis()->GetBinCenter(i)*1e-2;
+his2DRZROCSumNorm->SetBinContent(i,j,his2DRZROCSum->GetBinContent(i,j)*ePerADC*TMath::Qe()/dV); // Charge in C/m^3
+    }
+  }
+  TFile *SCFile = new TFile(outputfile,"recreate");
+  his2DROCSumNorm->Write("SpaceChargeInRPhi");
+  his2DRZROCSumNorm->Write("SpaceChargeInRZ");
+  SCFile->Close();
+
+}
+
+
+/*
+
+  TFile f("histo.root")
+  TH3* his0 = (TH3*)f.Get("Fluc0/his3DROCN")
+  TH3* his1 = (TH3*)f.Get("Fluc1/his3DROCN")
+  //
+  //
+  //
+  AliTPCSpaceCharge3D *spaceCharge0 = new AliTPCSpaceCharge3D;
+  spaceCharge0->SetInputSpaceCharge(his0,0.1);
+
+
+  spaceCharge0->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
+  spaceCharge0->InitSpaceCharge3DDistortion();
+
+
+  spaceCharge0->CreateHistoSCinZR(0.1,50,50)->Draw("surf1");
+
+  spaceCharge0->CreateHistoDRPhiinZR(0,100,100)->Draw("colz");
+
+  spaceCharge0->AddVisualCorrection(spaceCharge,1);
+
+
+*/
