@@ -457,10 +457,21 @@ void AliAnalysisTaskFlowStrange::AddQACandidates() {
   if(fReadMC) {
     tList=new TList(); tList->SetName("RecMth"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
     tH1D = new TH1D("MCOrigin", "MCOrigin;Rad2",1000,0,100); tList->Add(tH1D);
+    tH2D = new TH2D("PTRes", "PTRes;MCPt;|DAT-MC|/MC",100,0,20,50,0,1); tList->Add(tH2D);
+    tH2D = new TH2D("ETARes","ETARes;MCETA;|DAT-MC|/MC",16,0,0.8,50,0,1); tList->Add(tH2D);
+    tH2D = new TH2D("RXYRes","RXYRes;MCRXY;|DAT-MC|/MC",100,0,20,50,0,1); tList->Add(tH2D);
+    tH2D = new TH2D("DLERes","DLERes;MCDLE;|DAT-MC|/MC",100,0,20,50,0,1); tList->Add(tH2D);
+    tH2D = new TH2D("RAPRes","RAPRes;MCRAP;|DAT-MC|/MC",10,0,0.5,50,0,1); tList->Add(tH2D);
+    tH2D = new TH2D("APARes","APARes;MCAPA;|DAT-MC|/MC",24,-1.2,1.2,50,0,1); tList->Add(tH2D);
+    tH2D = new TH2D("APQRes","APQRes;MCAPQ;|DAT-MC|/MC",25,0,0.25,50,0,1); tList->Add(tH2D);
+
     tList=new TList(); tList->SetName("TrkMth"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MthFDW"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tH1D = new TH1D("MCOrigin", "MCOrigin;Rad2",1000,0,100); tList->Add(tH1D);
   }
   //stack
   if(fReadMC) {
+    tList=new TList(); tList->SetName("GenTru"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTK0sGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTLdaGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTPhiGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
@@ -852,12 +863,57 @@ void AliAnalysisTaskFlowStrange::ReadFromESD(AliESDEvent *tESD) {
 //=======================================================================
 void AliAnalysisTaskFlowStrange::ReadStack(TClonesArray* mcArray) {
   if(!mcArray) return;
-  AliAODMCParticle *myMCTrack;
+  AliAODMCParticle *myMCTrack, *iMCDau, *jMCDau;
   for(int i=0; i!=mcArray->GetEntriesFast(); ++i) {
     myMCTrack = dynamic_cast<AliAODMCParticle*>(mcArray->At( i ));
     if(!myMCTrack) continue;
+    int tPDG=310;
+    if(fSpecie>0) tPDG = 3122;
+    if( TMath::Abs(myMCTrack->PdgCode())==tPDG )
+      if( myMCTrack->GetNDaughters() == 2 ) {
+        Int_t iDau = myMCTrack->GetDaughter(0);
+        Int_t jDau = myMCTrack->GetDaughter(1);
+        AliAODMCParticle *posDau=NULL;
+        AliAODMCParticle *negDau=NULL;
+        if(iDau>0&&jDau>0) {
+          iMCDau = dynamic_cast<AliAODMCParticle*>(mcArray->At( iDau ));
+          jMCDau = dynamic_cast<AliAODMCParticle*>(mcArray->At( jDau ));
+          if(iMCDau) {
+            if(iMCDau->Charge()>0) posDau=iMCDau;
+            else negDau=iMCDau;
+          }
+          if(jMCDau) {
+            if(jMCDau->Charge()>0) posDau=jMCDau;
+            else negDau=jMCDau;
+          }
+        } //got two daughters
+        if(posDau&&negDau) {
+          Double_t dx = myMCTrack->Xv() - posDau->Xv();
+          Double_t dy = myMCTrack->Yv() - posDau->Yv();
+          Double_t dz = myMCTrack->Zv() - posDau->Zv();
+          fDecayRadXY = TMath::Sqrt( dx*dx + dy*dy );
+          TVector3 momPos(posDau->Px(),posDau->Py(),posDau->Pz());
+          TVector3 momNeg(negDau->Px(),negDau->Py(),negDau->Pz());
+          TVector3 momTot(myMCTrack->Px(),myMCTrack->Py(),myMCTrack->Pz());
+          Double_t qlpos = momPos.Dot(momTot)/momTot.Mag();
+          Double_t qlneg = momNeg.Dot(momTot)/momTot.Mag();
+          fDecayQt = momPos.Perp(momTot);
+          fDecayAlpha = 1.-2./(1.+qlpos/qlneg);
+          fDecayMass = myMCTrack->GetCalcMass();
+          Double_t energy = myMCTrack->E();
+          Double_t gamma = energy/fDecayMass;
+          fDecayDecayLength = TMath::Sqrt(dx*dx+dy*dy+dz*dz)/gamma;
+          fDecayPt = myMCTrack->Pt();
+          fDecayPhi = myMCTrack->Phi();
+          fDecayEta = myMCTrack->Eta();
+          fDecayRapidity = myMCTrack->Y();
+          fDecayDCAdaughters = 0;
+          fDecayCosinePointingAngleXY = 1;
+          fDecayProductIPXY = -1;
+          if(AcceptCandidate()) FillCandidateSpy("GenTru");
+        }
+      } // k0/lda with two daughters
     //==== BEGIN TRACK CUTS
-    if(myMCTrack->Pt()<0.2)   continue;
     if(myMCTrack->Eta()<-0.8) continue;
     if(myMCTrack->Eta()>+0.8) continue;
     //==== END TRACK CUTS
@@ -865,22 +921,23 @@ void AliAnalysisTaskFlowStrange::ReadStack(TClonesArray* mcArray) {
     case (310): //k0s
       FillMCParticleSpy( "MCTK0s", myMCTrack );
       if( myMCTrack->IsPrimary() )
-	FillMCParticleSpy( "MCTK0sGenAcc", myMCTrack );
+        FillMCParticleSpy( "MCTK0sGenAcc", myMCTrack );
       break;
     case (3122): //lda
       FillMCParticleSpy( "MCTLda", myMCTrack );
       if( myMCTrack->IsPrimary() )
-	FillMCParticleSpy( "MCTLdaGenAcc", myMCTrack );
+        FillMCParticleSpy( "MCTLdaGenAcc", myMCTrack );
       break;
     case (333): //phi
       if( myMCTrack->IsPrimary() )
-	FillMCParticleSpy( "MCTPhiGenAcc", myMCTrack );
+        FillMCParticleSpy( "MCTPhiGenAcc", myMCTrack );
       break;
     case (3312): //xi
       if( myMCTrack->IsPrimary() )
-	FillMCParticleSpy( "MCTXiGenAcc", myMCTrack );
+        FillMCParticleSpy( "MCTXiGenAcc", myMCTrack );
       break;
     }
+    
   }
 }
 //=======================================================================
@@ -1042,14 +1099,15 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
     ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("D0PD0N"))->Fill( dD0P, dD0N );
     ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
     if(!AcceptCandidate()) continue;
-    // PID for lambda::proton
-    //if( fSpecie>0 ) {
-    //  if(fDecayAlpha>0) {
-    //    if( !PassesPIDCuts(&ieT) ) continue; //positive track
-    //  } else {
-    //    if( !PassesPIDCuts(&jeT) ) continue; //negative track
-    //  }
-    //}
+    //PID for lambda::proton
+    if( fSpecie>0 )
+      if(fDecayPt<1.2) {
+        if(fDecayAlpha>0) {
+          if( !PassesPIDCuts(&ieT) ) continue; //positive track
+        } else {
+          if( !PassesPIDCuts(&jeT) ) continue; //negative track
+        }
+      }
     if(fQAlevel>1) {
       if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecSelOP");
       else FillCandidateSpy("RecSelIP");
@@ -1073,29 +1131,80 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
     //===== BEGIN OF MCMATCH                                                                                                                         
     if(mcArray) {
       bool matched = false;
+      bool feeddown = false;
       Int_t labelpos = iT->GetLabel();
       Int_t labelneg = jT->GetLabel();
       Double_t rOri=-1;
+      Double_t mcPt=-1, mcEta=-1, mcRap=-1, mcRxy=-1, mcDle=-1, mcApa=-100, mcApq=-1;
+      Double_t resPt=-1, resEta=-1, resRap=-1, resRxy=-1, resDle=-1, resApa=-1, resApq=-1;
       if( labelpos>0 && labelneg>0 ) {
         AliAODMCParticle *mcpos = (AliAODMCParticle*) mcArray->At( labelpos );
         AliAODMCParticle *mcneg = (AliAODMCParticle*) mcArray->At( labelneg );
         Int_t pdgRecPos = mcpos->GetPdgCode();
         Int_t pdgRecNeg = mcneg->GetPdgCode();
-        if( pdgRecPos==211&&pdgRecNeg==-211 ) if(mcpos->GetMother()>0) {
-          if( mcpos->GetMother()==mcneg->GetMother() ) {
-            AliAODMCParticle *mcmot = (AliAODMCParticle*) mcArray->At( mcpos->GetMother() );
-            rOri = TMath::Sqrt( mcmot->Xv()*mcmot->Xv() + mcmot->Yv()*mcmot->Yv() );
-            if( TMath::Abs(mcmot->GetPdgCode())==310) {
-              if(mcmot->GetNDaughters()==2) matched=true;
-            }
+        int pospdg=211, negpdg=211;
+        int mompdg=310, fdwpdg=333;
+        if(fSpecie>0) {
+          mompdg=3122;
+          fdwpdg=3312;
+          if(fDecayAlpha) {
+            pospdg=2212; negpdg=211;
+          } else {
+            negpdg=2212; pospdg=211;
           }
         }
-      }
+        if( TMath::Abs(pdgRecPos)==pospdg&&TMath::Abs(pdgRecNeg)==negpdg )
+          if(mcpos->GetMother()>0)
+            if( mcpos->GetMother()==mcneg->GetMother() ) {
+              AliAODMCParticle *mcmot = (AliAODMCParticle*) mcArray->At( mcpos->GetMother() );
+              rOri = TMath::Sqrt( mcmot->Xv()*mcmot->Xv() + mcmot->Yv()*mcmot->Yv() );
+              mcPt = mcmot->Pt();
+              mcEta = TMath::Abs( mcmot->Eta() );
+              mcRap = TMath::Abs( mcmot->Y() );
+              if(!TMath::AreEqualAbs(mcPt,0,1e-6))  resPt = TMath::Abs(fDecayPt - mcPt) / mcPt;
+              if(!TMath::AreEqualAbs(mcEta,0,1e-6)) resEta = TMath::Abs(fDecayEta - mcEta) / mcEta;
+              if(!TMath::AreEqualAbs(mcRap,0,1e-6)) resRap = TMath::Abs(fDecayRapidity - mcRap) / mcRap;
+              if( TMath::Abs(mcmot->GetPdgCode())==mompdg) {
+                if(mcmot->GetNDaughters()==2) {
+                  matched=true;
+                  Double_t dx = mcmot->Xv() - mcpos->Xv();
+                  Double_t dy = mcmot->Yv() - mcpos->Yv();
+                  Double_t dz = mcmot->Zv() - mcpos->Zv();
+                  Double_t mcGamma = mcmot->E() / mcmot->GetCalcMass();
+                  mcRxy = TMath::Sqrt( dx*dx + dy*dy );
+                  mcDle = TMath::Sqrt(dx*dx+dy*dy+dz*dz)/mcGamma;
+                  if(!TMath::AreEqualAbs(mcRxy,0,1e-6)) resRxy = TMath::Abs(fDecayRadXY - mcRxy) / mcRxy;
+                  if(!TMath::AreEqualAbs(mcDle,0,1e-6)) resDle = TMath::Abs(fDecayDecayLength - mcDle) / mcDle;
+                  TVector3 momPos(mcpos->Px(),mcpos->Py(),mcpos->Pz());
+                  TVector3 momNeg(mcneg->Px(),mcneg->Py(),mcneg->Pz());
+                  TVector3 momTot(mcmot->Px(),mcmot->Py(),mcmot->Pz());
+                  Double_t qlpos = momPos.Dot(momTot)/momTot.Mag();
+                  Double_t qlneg = momNeg.Dot(momTot)/momTot.Mag();
+                  mcApq = momPos.Perp(momTot);
+                  mcApa = 1.-2./(1.+qlpos/qlneg);
+                  if(!TMath::AreEqualAbs(mcApq,0,1e-6)) resApq = TMath::Abs(fDecayQt - mcApq) / mcApq;
+                  if(!TMath::AreEqualAbs(mcApa,0,1e-6)) resApa = TMath::Abs(fDecayAlpha - mcApa) / mcApa;
+                }
+                if(mcmot->GetMother()>0) {
+                  AliAODMCParticle *mcfdw = (AliAODMCParticle*) mcArray->At( mcmot->GetMother() );
+                  if( TMath::Abs(mcfdw->GetPdgCode())==fdwpdg)
+                    feeddown=true;
+                } // k0/lda have mother
+              } // mother matches k0/lda
+            } // both have same mother
+      } // match to MCparticles
       if(matched) {
         FillCandidateSpy("RecMth");
         ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("D0PD0N"))->Fill( dD0P,dD0N );
         ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
         ((TH1D*)((TList*)fList->FindObject("RecMth"))->FindObject("MCOrigin"))->Fill( rOri );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("PTRes"))->Fill( mcPt, resPt );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("ETARes"))->Fill( mcEta, resEta );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("RAPRes"))->Fill( mcRap, resRap );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("RXYRes"))->Fill( mcRxy, resRxy );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("DLERes"))->Fill( mcDle, resDle );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("APARes"))->Fill( mcApa, resApa );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("APQRes"))->Fill( mcApq, resApq );
         LoadTrack(&ieT,iT->Chi2perNDF());
         ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
         fDaughterImpactParameterXY = ip[0];
@@ -1106,6 +1215,11 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
         fDaughterImpactParameterXY = ip[0];
         fDaughterImpactParameterZ = ip[1];
         FillTrackSpy("TrkMth");
+      }
+      if(feeddown) {
+        FillCandidateSpy("MthFDW");
+        ((TH2D*)((TList*)fList->FindObject("MthFDW"))->FindObject("D0PD0N"))->Fill( dD0P,dD0N );
+        ((TH1D*)((TList*)fList->FindObject("MthFDW"))->FindObject("MCOrigin"))->Fill( rOri );
       }
     }
     //===== END OF MCMATCH
