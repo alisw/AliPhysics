@@ -320,7 +320,7 @@ void AliAnalysisTaskEmcalTriggerInfoQA::FillPatch( AliEmcalTriggerPatchInfo *pat
   fHistos[1000*(type+1)+4]->Fill( patch->GetADCAmpGeVRough() );
   fHistos[1000*(type+1)+5]->Fill( patch->GetPatchE() );
   
-  cout << "amp: " << patch->GetADCAmp() << endl;
+  //cout << "amp: " << patch->GetADCAmp() << endl;
   
   // get corner, convert from cells to trigger channels
   globCol = patch->GetEdgeCellX() / 2;
