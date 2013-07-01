@@ -587,9 +587,12 @@ void AliHFSystErr::InitD0toKpi2013pPb0100(){
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   fRawYield->SetBinContent(1,0.0);
-  fRawYield->SetBinContent(2,0.05);
-  for(Int_t i=3;i<=6;i++) fRawYield->SetBinContent(i,0.02);
-  for(Int_t i=7;i<=24;i++) fRawYield->SetBinContent(i,0.05);
+  fRawYield->SetBinContent(2,0.08);
+  fRawYield->SetBinContent(3,0.02);
+  fRawYield->SetBinContent(4,0.05);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.02);
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.08);
   
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
