@@ -10,6 +10,9 @@
 #include "AliEMCALTriggerTypes.h"
 #include "AliEmcalTriggerSetupInfo.h"
 
+class AliEMCALGeometry;
+class TArrayI;
+
 class AliEmcalTriggerPatchInfo: public TObject {
  public:
   AliEmcalTriggerPatchInfo();
@@ -30,6 +33,9 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t    GetADCAmp() const { return fADCAmp; }
   Double_t GetADCAmpGeVRough() const { return (Double_t)fADCAmp * kEMCL1ADCtoGeV; }
   Int_t    GetTriggerBits() const { return fTriggerBits; }
+  Int_t    GetEdgeCellX() const { return fEdgeCell[0]; }
+  Int_t    GetEdgeCellY() const { return fEdgeCell[1]; }
+  void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
   Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetLow))&1); }
   Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetHigh))&1); }
@@ -44,6 +50,7 @@ class AliEmcalTriggerPatchInfo: public TObject {
   void SetEdge2( TLorentzVector &v ) { fEdge2 = v; }
   void SetEdge2( TVector3 &v, Double_t e ) { SetLorentzVector( fEdge2, v, e ); }
   void SetADCAmp( Int_t a ) { fADCAmp = a; }
+  void SetEdgeCell( Int_t x, Int_t y ) { fEdgeCell[0] = x; fEdgeCell[1] = y; }
 
   void SetLorentzVector( TLorentzVector &lv, TVector3 &v, Double_t e );
 
@@ -59,7 +66,8 @@ class AliEmcalTriggerPatchInfo: public TObject {
   TLorentzVector    fEdge2;                         // min eta/ max phi edge
   Int_t             fADCAmp;                        // online ADC amplitude
   Int_t             fTriggerBits;                   //trigger bit mask
+  Int_t             fEdgeCell[2];                   // cell "bottom lower" edge (min phi, max eta)
 
-  ClassDef(AliEmcalTriggerPatchInfo, 1) // Emcal particle class
+  ClassDef(AliEmcalTriggerPatchInfo, 2) // Emcal particle class
 };
 #endif

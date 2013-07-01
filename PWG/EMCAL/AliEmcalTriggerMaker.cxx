@@ -100,6 +100,7 @@ Bool_t AliEmcalTriggerMaker::Run()
   Int_t absId, adcAmp;
   Int_t i, j, k, iMain, cmCol, cmRow, cmiCellCol, cmiCellRow;
   Int_t jetTrigger, iTriggers;
+	Int_t patchADC[48][64];
   Double_t amp, ca, eMain, cmiCol, cmiRow;
   
   TVector3 centerGeo, center1, center2, centerMass, edge1, edge2, vertex;
@@ -122,6 +123,33 @@ Bool_t AliEmcalTriggerMaker::Run()
   // must reset before usage, or the class will fail 
   fCaloTriggers->Reset();
   
+  // first run over the patch array to compose a map of 2x2 patch energies
+  // which is then needed to construct the full patch ADC energy
+  // class is not empty
+  if( fCaloTriggers->GetEntries() > 0 ){
+		
+		// zero the array
+		for( i = 0; i < 48; i++ )
+			for( j = 0; j < 64; j++ )
+				patchADC[i][j] = 0;
+		
+    // go throuth the trigger channels
+    while( fCaloTriggers->Next() ){
+      // get position in global 2x2 tower coordinates
+      // A0 left bottom (0,0)
+      fCaloTriggers->GetPosition( globCol, globRow );
+
+      // for some strange reason some ADC amps are initialized in reconstruction
+      // as -1, neglect those :\\ wth
+      fCaloTriggers->GetL1TimeSum( adcAmp );
+			if( adcAmp > -1 )
+				patchADC[globCol][globRow] = adcAmp;
+		} // patches
+	} // array not empty
+  
+  // reset for re-run
+  fCaloTriggers->Reset();
+
   // dig out common data (thresholds)
   // 0 - jet high, 1 - gamma high, 2 - jet low, 3 - gamma low
   fCaloTriggerSetupOut->SetThresholds( fCaloTriggers->GetL1Threshold( 0 ),
@@ -172,6 +200,7 @@ Bool_t AliEmcalTriggerMaker::Run()
       amp = 0;
       cmiCol = 0;
       cmiRow = 0;
+      adcAmp = 0;
       for( i = 0; i < 16; i++ ){
         for( j = 0; j < 16; j++ ){
           // get the 4 cells composing the trigger channel
@@ -184,6 +213,8 @@ Bool_t AliEmcalTriggerMaker::Run()
             cmiCol += ca*(Double_t)i;
             cmiRow += ca*(Double_t)j;
           }
+          // add the STU ADCs in the patch
+          adcAmp += patchADC[globCol+i][globRow+j];
         }
       } // 32x32 cell window
       if( amp == 0 ){
@@ -235,9 +266,6 @@ Bool_t AliEmcalTriggerMaker::Run()
       edge1 -= vertex;
       edge2 -= vertex;
     
-      // get ADC amplitude
-      fCaloTriggers->GetL1TimeSum( adcAmp );
-
       // save the trigger object
       new ((*fCaloTriggersOut)[iTriggers])AliEmcalTriggerPatchInfo();
       trigger = (AliEmcalTriggerPatchInfo*)fCaloTriggersOut->At( iTriggers );
@@ -249,6 +277,7 @@ Bool_t AliEmcalTriggerMaker::Run()
       trigger->SetEdge2( edge2, amp );
       trigger->SetADCAmp( adcAmp );
       trigger->SetTriggerBits( tBits );
+      trigger->SetEdgeCell( globCol*2, globRow*2 ); // from triggers to cells
       
       // check if more energetic than others for main patch marking
       if( eMain < amp ){
