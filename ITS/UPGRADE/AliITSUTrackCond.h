@@ -82,11 +82,12 @@ class AliITSUTrackCond : public TObject
   Char_t      fActiveLrOuter;            // outermose active layer to consider
   UShort_t    fAllowLayers;              // pattern of active layers to be checked
   Int_t       fNLayers;                  // total number of layers
+  Int_t       fMaxClus;                  // max number of clusters in track (by default, 2*fNLayers)
   Float_t     fMaxITSTPCMatchChi2;       // max chi2 for ITS/TPC matching
   Char_t*     fClSharing;                // [fNLayers] is cluster sharing allowed
   Short_t*    fMaxBranches;              // [fNLayers] max allowed branches per seed on each layer
   Short_t*    fMaxCandidates;            // [fNLayers] max allowed candidates per TPC seed on each layer
-  Float_t*    fMaxITSSAChi2;             // [fNLayers] max chi2 for ITS standalone fit (backward) vs N cl
+  Float_t*    fMaxITSSAChi2;             // [fMaxClus] max chi2 for ITS standalone fit (backward) vs N cl
   Float_t*    fMaxTr2ClChi2;             // [fNLayers] max track-to-cluster chi2
   Float_t*    fMaxChi2GloNrm;            // [fNLayers] max norm global chi2
   Float_t*    fMissPenalty;              // [fNLayers] chi2 penalty for missing hit on the layer
@@ -106,7 +107,7 @@ class AliITSUTrackCond : public TObject
   static Float_t fgkMaxMatchChi2;         // max acceptable matching chi2
   static Float_t fgkMaxITSSAChi2;         // max acceptable standalone ITS backward fit chi2
   //
-  ClassDef(AliITSUTrackCond,9)           // set of requirements on track hits pattern
+  ClassDef(AliITSUTrackCond,10)           // set of requirements on track hits pattern
 };
 
 

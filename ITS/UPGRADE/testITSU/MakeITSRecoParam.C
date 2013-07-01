@@ -35,6 +35,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   }
   //
   const Bool_t kAllowDiagCl = kFALSE;
+  const Bool_t kUseLUT[3] = {kTRUE,kTRUE,kFALSE}; // use TGeo mat.queries only for RefitInward
   //
   // long tracks
   /*
@@ -75,7 +76,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
 
   // short tracks from decays
   int   c1nBranch[7]   = {0,0,0,4,6,6,10}; // max branching for the seed on layer
-  int   c1nCands[7]    = {0,0,0,5,5,5,8}; // max candidates for the TPC seed
+  int   c1nCands[7]    = {0,0,0,7,7,7,8}; // max candidates for the TPC seed
   float c1tr2clChi2[7] = {0,0,0,20,20,20,30}; // cut on cluster to track chi2 
   float c1gloChi2[7]   = {0,0,0,16,40,35,30}; // cut on seed global norm chi2
   float c1missPen[7]   = {0.,0.,0.,2.,2.,2.,2.};    // missing cluster penalty
@@ -106,6 +107,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
+    for (int i=AliITSURecoParam::kNTrackingPhases;i--;) itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
@@ -173,6 +175,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
+    for (int i=AliITSURecoParam::kNTrackingPhases;i--;) itsRecoParam->SetUseMatLUT(i,kUseLUT[i]);
     //  
     // Add tracking conditions >>>
     trCond = new AliITSUTrackCond();
