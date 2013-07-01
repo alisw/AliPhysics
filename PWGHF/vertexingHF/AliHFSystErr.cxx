@@ -1527,14 +1527,14 @@ void AliHFSystErr::InitDstartoD0pi2013pPb0100(){
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   fRawYield->SetBinContent(1,1.0);
-  fRawYield->SetBinContent(2,0.10);
-  fRawYield->SetBinContent(3,0.05);
+  fRawYield->SetBinContent(2,0.08);
+  fRawYield->SetBinContent(3,0.02);
   fRawYield->SetBinContent(4,0.02);
-  fRawYield->SetBinContent(5,0.02);
-  fRawYield->SetBinContent(6,0.04);
+  fRawYield->SetBinContent(5,0.05);
+  fRawYield->SetBinContent(6,0.02);
   fRawYield->SetBinContent(7,0.04);
   fRawYield->SetBinContent(8,0.04);
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.04); 
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05); 
   for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.06);
   for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.06);
 
