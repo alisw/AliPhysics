@@ -370,7 +370,7 @@ void AliTPCPIDResponse::SetSigma(Float_t res0, Float_t resN2, ETPCgainScenario g
   //
   // Set the relative resolution  sigma_rel = res0 * sqrt(1+resN2/npoint)
   //
-  if ((Int_t)gainScenario>(Int_t)fgkNumberOfGainScenarios) return; //TODO: better handling!
+  if ((Int_t)gainScenario>=(Int_t)fgkNumberOfGainScenarios) return; //TODO: better handling!
   fRes0[gainScenario]=res0;
   fResN2[gainScenario]=resN2;
 }

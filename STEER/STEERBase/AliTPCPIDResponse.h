@@ -184,7 +184,7 @@ public:
   AliTPCPIDResponse::EChamberStatus TrackStatus(const AliVTrack* track, Int_t layer) const;
   Float_t MaxClusterRadius(const AliVTrack* track) const;
   Bool_t TrackApex(const AliVTrack* track, Float_t magField, Double_t position[3]) const;
-  static const char* GainScenarioName(Int_t n) {return fgkGainScenarioName[(n>fgkNumberOfdEdxSourceScenarios)?fgkNumberOfdEdxSourceScenarios+1:n];}
+  static const char* GainScenarioName(Int_t n) {return fgkGainScenarioName[(n>fgkNumberOfGainScenarios)?fgkNumberOfGainScenarios:n];}
   Int_t ResponseFunctionIndex( AliPID::EParticleType species,
                                ETPCgainScenario gainScenario ) const;
   void ResetSplines();
