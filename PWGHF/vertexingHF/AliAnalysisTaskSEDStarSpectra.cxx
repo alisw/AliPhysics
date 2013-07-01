@@ -213,6 +213,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
   }
 
   Bool_t isEvSel=fCuts->IsEventSelected(aodEvent);
+  fCEvents->Fill(3);
   if(!isEvSel) return;
 
   // Load the event
@@ -230,6 +231,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
   AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   if(!vtx1) return;
   if(vtx1->GetNContributors()<1) return;
+  fCEvents->Fill(4);
 
   if (!arrayDStartoD0pi){
     AliInfo("Could not find array of HF vertices, skipping the event");
@@ -577,9 +579,9 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
       nameBkg="histDeltaBkg";
     }
     
-    TH1F* spectrumMass = new TH1F(nameMass.Data(),"D^{*}-D^{0} invariant mass; #DeltaM [GeV/c^{2}]; Entries",200,0.1,0.2);
-    TH1F* spectrumSgn = new TH1F(nameSgn.Data(), "D^{*}-D^{0} Signal invariant mass - MC; #DeltaM [GeV/c^{2}]; Entries",200,0.1,0.2);
-    TH1F* spectrumBkg = new TH1F(nameBkg.Data(), "D^{*}-D^{0} Background invariant mass - MC; #DeltaM [GeV/c^{2}]; Entries",200,0.1,0.2);
+    TH1F* spectrumMass = new TH1F(nameMass.Data(),"D^{*}-D^{0} invariant mass; #DeltaM [GeV/c^{2}]; Entries",700,0.13,0.2);
+    TH1F* spectrumSgn = new TH1F(nameSgn.Data(), "D^{*}-D^{0} Signal invariant mass - MC; #DeltaM [GeV/c^{2}]; Entries",700,0.13,0.2);
+    TH1F* spectrumBkg = new TH1F(nameBkg.Data(), "D^{*}-D^{0} Background invariant mass - MC; #DeltaM [GeV/c^{2}]; Entries",700,0.13,0.2);
     
     nameMass="histD0Mass_";
     nameMass+=i+1;
