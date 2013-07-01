@@ -309,6 +309,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
   fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
+  fListOfHistos->Add(new TH1F("V0AMult", ";;V0A multiplicity", 2000, -.5, 1999.5));
   
   PostData(0,fListOfHistos);
   
@@ -926,6 +927,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }
+    else if (fCentralityMethod == "V0A_MANUAL")
+    {
+      // for pp, to be implemented
+      centrality = 1;
+    }
     else
     {
       if (fAOD)
@@ -1030,6 +1036,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracks;
     return;
   }
+
+  //Total multiplicity in the VZERO A detector
+  ((TH1F*) fListOfHistos->FindObject("V0AMult"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A());
   
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
