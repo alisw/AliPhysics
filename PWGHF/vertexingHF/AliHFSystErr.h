@@ -45,6 +45,7 @@ class AliHFSystErr : public TNamed
     fRunNumber = number; 
     AliInfo(Form(" Settings for run year 20%2d",fRunNumber));
   }
+  Int_t GetRunNumber() const { return fRunNumber; }
   // Setting the collision type
   //  0 is pp, 1 is PbPb, 2 is pPb
   void SetCollisionType(Int_t type) { 
@@ -53,6 +54,7 @@ class AliHFSystErr : public TNamed
     else if(fCollisionType==1) { AliInfo(" Settings for Pb-Pb collisions"); }
     else if(fCollisionType==2) { AliInfo(" Settings for p-Pb collisions"); }
   }
+  Int_t GetCollisionType() const { return fCollisionType; }
   // Setting for the centrality class
   //  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
   void SetCentrality(TString centrality) { 
