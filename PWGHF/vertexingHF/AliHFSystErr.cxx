@@ -612,8 +612,8 @@ void AliHFSystErr::InitD0toKpi2013pPb0100(){
   fMCPtShape->SetBinContent(1,0.0);
   fMCPtShape->SetBinContent(2,0.02);
   fMCPtShape->SetBinContent(3,0.02);
-  for(Int_t i=4;i<=8;i++) fMCPtShape->SetBinContent(i,0.0);
-  for(Int_t i=9;i<=24;i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=4;i<=6;i++) fMCPtShape->SetBinContent(i,0.0);
+  for(Int_t i=7;i<=24;i++) fMCPtShape->SetBinContent(i,0.02);
 
   // particle-antiparticle
   /*
