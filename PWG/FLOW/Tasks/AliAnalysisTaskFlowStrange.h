@@ -124,11 +124,13 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void ComputePsi2(AliVEvent *event);
   void AddMakeQSpy();
   void MakeQVZE(AliVEvent *event,Double_t &qxa,Double_t &qya,Double_t &qwa,Double_t &qxb,Double_t &qyb,Double_t &qwb);
+  void MakeQTPC(AliVEvent *event,Double_t &qxa,Double_t &qya,Double_t &qwa,Double_t &qxb,Double_t &qyb,Double_t &qwb);
   void MakeQTPC(AliESDEvent *event,Double_t &qxa,Double_t &qya,Double_t &qwa,Double_t &qxb,Double_t &qyb,Double_t &qwb);
   void MakeQTPC(AliAODEvent *event,Double_t &qxa,Double_t &qya,Double_t &qwa,Double_t &qxb,Double_t &qyb,Double_t &qwb);
   void AddTPCRFPSpy(TList *val);
   Bool_t PassesRFPTPCCuts(AliESDtrack *myTrack, Double_t aodChi2NDF=0, Float_t aodipxy=0, Float_t aodipz=0);
   void MakeQVectors();
+  void ResetContainers();
 
   void MakeDHcorr();
   void AddCandidates();
