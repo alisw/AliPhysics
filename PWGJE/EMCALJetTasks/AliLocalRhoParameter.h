@@ -18,6 +18,9 @@ class AliLocalRhoParameter : public AliRhoParameter {
     Double_t denom(2*r*fLocalRho->GetParameter(0));
     return  (denom <= 0.) ? GetVal() : n*(fLocalRho->Integral(phi-r, phi+r)/denom); 
   }
+  Double_t GetLocalVal(Double_t phi, Double_t r) const {
+    return GetLocalVal(phi, r, GetVal());
+  }
  private:
   TF1*     fLocalRho;      // ! rho as function of phi
 

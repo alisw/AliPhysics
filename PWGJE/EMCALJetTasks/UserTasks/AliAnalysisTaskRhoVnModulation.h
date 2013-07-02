@@ -18,6 +18,7 @@ class TF1;
 class THF1;
 class THF2;
 class TProfile;
+class AliLocalRhoParameter;
 
 class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
 {
@@ -27,7 +28,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
-        enum detectorType       { kTPC, kVZEROA, kVZEROC};    // detector that was used
+        enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
         // constructors, destructor
                                 AliAnalysisTaskRhoVnModulation();
                                 AliAnalysisTaskRhoVnModulation(const char *name, runModeType type);
@@ -57,17 +58,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
             return -999; }
         // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
         /* inline */    Double_t ChiSquareCDF(Int_t ndf, Double_t x) const { return TMath::Gamma(ndf/2., x/2.); }
-        /* inline */    Double_t RhoVal() const { return (fRho) ? fRho->GetVal(): -999.;}                 
-        /* inline */    Double_t RhoVal(Double_t phi, Double_t r, Double_t n) const {
-            if(!fFitModulation) return RhoVal(); // coverity
-            switch (fFitModulationType) {
-                case kNoFit : return RhoVal();
-                default : {
-                    Double_t denom(2*r*fFitModulation->GetParameter(0));
-                    return  (denom <= 0.) ? RhoVal() : n*(fFitModulation->Integral(phi-r, phi+r)/denom); 
-                }
-            }
-        }
         // setters - analysis setup
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
@@ -98,12 +88,12 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetRandomConeRadius(Float_t r)                  {fRandomConeRadius = r; }
         void                    SetMinLeadingHadronPt(Double_t m)               {fMinLeadingHadronPt = m; }
+        void                    SetSetPtSub(Bool_t s)                           {fSubtractJetPt = s;}
         void                    SetForceAbsVnHarmonics(Bool_t f)                {fAbsVnHarmonics = f; }
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
         void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
-        void                    SetSetPtSub(Bool_t s)                           {fSetPtSub = s; }
         void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
         // getters - these are used as well by AliAnalyisTaskJetFlow, so be careful when changing them
         TString                 GetJetsName() const                             {return fJetsName; }
@@ -113,6 +103,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TArrayD*                GetPtBinsJets() const                           {return fPtBinsJets; }
         TProfile*               GetResolutionParameters(Int_t h, Int_t c) const {return (h==2) ? fProfV2Resolution[c] : fProfV3Resolution[c];}
         TList*                  GetOutputList() const                           {return fOutputList;}
+        AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
+        Double_t                GetJetRadius() const                            {return fJetRadius;}
         void                    ExecMe()                                        {ExecOnce();}
         AliAnalysisTaskRhoVnModulation* ReturnMe()                              {return this;}
         // local cuts
@@ -123,7 +115,9 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         // numerical evaluations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
+        void                    CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
         void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* tpc) const;
+        Double_t                CalculateEventPlaneChi(Double_t resEP) const;
         void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0, Bool_t randomize = 0) const;
         Double_t                CalculateQC2(Int_t harm);
         Double_t                CalculateQC4(Int_t harm);
@@ -203,6 +197,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         const char*             fNameJetClones;         //! collection of tclones array with jets
         const char*             fNamePicoTrackClones;   //! collection of tclones with pico tracks
         const char*             fNameRho;               //! name of rho
+        AliLocalRhoParameter*   fLocalRho;              //! local rho
         // additional jet cuts (most are inherited)
         Float_t                 fLocalJetMinEta;        // local eta cut for jets
         Float_t                 fLocalJetMaxEta;        // local eta cut for jets
@@ -226,10 +221,10 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
         Bool_t                  fRebinSwapHistoOnTheFly;       // rebin swap histo on the fly
         Float_t                 fPercentageOfFits;      // save this percentage of fits
-        Bool_t                  fUseV0EventPlaneFromHeader;    // use the vzero event plane from the header
-        Bool_t                  fSetPtSub;              // store the subtracted pt in the jet
+        Bool_t                  fUseV0EventPlaneFromHeader;             // use the vzero event plane from the header
         Int_t                   fExplicitOutlierCut;    // cut on correlation of tpc and global multiplicity
         Double_t                fMinLeadingHadronPt;    // minimum pt for leading hadron
+        Bool_t                  fSubtractJetPt;         // save subtracted jet pt by calling SetPtSub
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TList*                  fOutputListGood;        //! output list for local analysis
