@@ -76,7 +76,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
 
   // short tracks from decays
   int   c1nBranch[7]   = {0,0,0,4,6,6,10}; // max branching for the seed on layer
-  int   c1nCands[7]    = {0,0,0,7,7,7,8}; // max candidates for the TPC seed
+  int   c1nCands[7]    = {0,0,0,5,5,5,8}; // max candidates for the TPC seed
   float c1tr2clChi2[7] = {0,0,0,20,20,20,30}; // cut on cluster to track chi2 
   float c1gloChi2[7]   = {0,0,0,16,40,35,30}; // cut on seed global norm chi2
   float c1missPen[7]   = {0.,0.,0.,2.,2.,2.,2.};    // missing cluster penalty
@@ -94,6 +94,15 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   float c0maxChi2SA[14] = {0.,0.,0.,0.,12.,13.,18., 20.,20.,20.,20.,20.,20.,20.};   // chi2SA vs Nclus
   float c0maxChi2Match = 10.;
   */
+  // very short tracks from decays
+  int   c2nBranch[7]   = {0,0,0,0,0,6,10}; // max branching for the seed on layer
+  int   c2nCands[7]    = {0,0,0,0,0,5,8}; // max candidates for the TPC seed
+  float c2tr2clChi2[7] = {0,0,0,0,0,15,20}; // cut on cluster to track chi2
+  float c2gloChi2[7]   = {0,0,0,0,0,15,20}; // cut on seed global norm chi2
+  float c2missPen[7]   = {0.,0.,0.,0.,0.,2.,2.};    // missing cluster penalty
+  float c2maxChi2SA[14] = {0.,5.,5.,5.,13.,13.,18., 10.,10.,10.,10.,10.,10.,10.};  // chi2SA vs Nclus, meaningless for 2 point tracks 
+  float c2maxChi2Match = 6.;
+
 
   //
   {
@@ -160,8 +169,38 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //
     trCond->Init();
     //
+    itsRecoParam->AddTrackingCondition(trCond); 
+    // Add tracking conditions <<<
+    //-----------------------------------------------------------
+    // very short tracks
+    trCond = new AliITSUTrackCond();
+    trCond->SetNLayers(nLr); 
+    //
+    trCond->ExcludeLayer(0);
+    trCond->ExcludeLayer(1);
+    trCond->ExcludeLayer(2);
+    trCond->ExcludeLayer(3);
+    trCond->ExcludeLayer(4);
+    //
+    trCond->SetMaxITSTPCMatchChi2(c2maxChi2Match);
+    //
+    // to exclude some layer use trCon->ExcludeLayer(lrID);
+    //
+    for (int i=0;i<nLr;i++) {
+      trCond->SetMaxBranches(i,c2nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
+      trCond->SetMaxCandidates(i,c2nCands[i]);   // each tpc track may have at most nCands prolongations
+      trCond->SetMaxTr2ClChi2(i,c2tr2clChi2[i]); // cut on cluster to track chi2
+      trCond->SetMaxChi2GloNrm(i,c2gloChi2[i]);  // cut on cluster to track global chi2
+      trCond->SetMissPenalty(i,c2missPen[i]);    // missing cluster penalty
+    }
+    for (int i=1;i<=2*nLr;i++) trCond->SetMaxITSSAChi2(i,c2maxChi2SA[i-1]);
+    //
+    trCond->AddNewCondition(2); // min hits
+    trCond->AddGroupPattern( kBit5|kBit6, 2);
+    //
+    trCond->Init();
+    //
     itsRecoParam->AddTrackingCondition(trCond);
-   
     // Add tracking conditions <<<
   }
   {
@@ -229,6 +268,37 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->AddTrackingCondition(trCond);
     // Add tracking conditions <<<
     //
+    //-----------------------------------------------------------
+    // very short tracks
+    trCond = new AliITSUTrackCond();
+    trCond->SetNLayers(nLr); 
+    //
+    trCond->ExcludeLayer(0);
+    trCond->ExcludeLayer(1);
+    trCond->ExcludeLayer(2);
+    trCond->ExcludeLayer(3);
+    trCond->ExcludeLayer(4);
+    //
+    trCond->SetMaxITSTPCMatchChi2(c2maxChi2Match);
+    //
+    // to exclude some layer use trCon->ExcludeLayer(lrID);
+    //
+    for (int i=0;i<nLr;i++) {
+      trCond->SetMaxBranches(i,c2nBranch[i]);    // each seed propagated to given layer can produce max nBranch branches
+      trCond->SetMaxCandidates(i,c2nCands[i]);   // each tpc track may have at most nCands prolongations
+      trCond->SetMaxTr2ClChi2(i,c2tr2clChi2[i]); // cut on cluster to track chi2
+      trCond->SetMaxChi2GloNrm(i,c2gloChi2[i]);  // cut on cluster to track global chi2
+      trCond->SetMissPenalty(i,c2missPen[i]);    // missing cluster penalty
+    }
+    for (int i=1;i<=2*nLr;i++) trCond->SetMaxITSSAChi2(i,c2maxChi2SA[i-1]);
+    //
+    trCond->AddNewCondition(2); // min hits
+    trCond->AddGroupPattern( kBit5|kBit6, 2);
+    //
+    trCond->Init();
+    //
+    itsRecoParam->AddTrackingCondition(trCond);
+    // Add tracking conditions <<<
   }
   //
   // Set the default
