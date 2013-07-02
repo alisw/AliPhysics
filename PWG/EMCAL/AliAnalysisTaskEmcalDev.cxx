@@ -593,12 +593,16 @@ Bool_t AliAnalysisTaskEmcalDev::RetrieveEventObjects()
 	else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
 	else {
 	  AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
-	  fCentBin = 3;
+	  fCentBin = fNcentBins-1;
 	}
       }
       else {
 	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
 	fCentBin = TMath::Nint(fCent/centWidth);
+	if(fCentBin>=fNcentBins) {
+	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
+	  fCentBin = fNcentBins-1;
+	}
       }
     } else {
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
