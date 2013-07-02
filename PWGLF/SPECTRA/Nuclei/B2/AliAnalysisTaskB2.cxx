@@ -231,22 +231,6 @@ void AliAnalysisTaskB2::ConnectInputData(Option_t *)
 		fESDpid = new AliESDpid();
 		fIsPidOwner = kTRUE;
 	}
-	
-	if(!fSimulation) return;
-	
-	AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*> (mgr->GetMCtruthEventHandler());
-	if (!mcH)
-	{
-		this->Error("ConnectInputData", "could not get AliMCEventHandler");
-		return;
-	}
-	
-	fMCevent = mcH->MCEvent();
-	if (!fMCevent)
-	{
-		this->Error("ConnectInputData", "could not get MC fLnEvent");
-		return;
-	}
 }
 
 void AliAnalysisTaskB2::CreateOutputObjects()
@@ -322,6 +306,17 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	{
 		this->Error("Exec", "PID not set");
 		return;
+	}
+	
+	if(fSimulation)
+	{
+		AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+		
+		if(mcH == 0) return;
+		
+		fMCevent = mcH->MCEvent();
+		
+		if(fMCevent == 0) return;
 	}
 	
 	// --------- multiplicity and centrality ------------------
