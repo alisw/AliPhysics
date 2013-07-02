@@ -766,6 +766,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
   UInt_t indexCur = 0;
   Double_t xCur, yCur, zCur = 0.;
 
+  Float_t vDrift = GetVDrift();
+
   // first propagate seed to outermost row
   AliTrackerBase::PropagateTrackTo(track,kRTPC1,kMass,5,kFALSE,kMaxSnp);
 
@@ -788,7 +790,9 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
       xCur   = track->GetX();
       yCur   = track->GetY();
       zCur   = track->GetZ();
-
+      if ( !fIdealTracking ) {
+	zCur = zCur/vDrift + fTime0; // Look at time, not at z!
+      }
       secCur = GetSector(track);
       
       // Find the nearest cluster (TODO: correct road settings!)
@@ -809,7 +813,9 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
       xCur   = track->GetX();
       yCur   = track->GetY();
       zCur   = track->GetZ();
-
+      if ( !fIdealTracking ) {
+	zCur = zCur/vDrift + fTime0; // Look at time, not at z!
+      }
       secCur = GetSector(track);
 
       // Find the nearest cluster (TODO: correct road settings!)
@@ -827,12 +833,22 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
     
     //Printf("Track point = %.2f %.2f %.2f",nearestPoint.GetX(),nearestPoint.GetY(),nearestPoint.GetZ());
 
+    // correction
+    // TODO: also correction when looking for the next cluster?
+    if (fCorrectionType != kNoCorrection){
+      Float_t xyz[3]={0,0,0};
+      nearestPoint.GetXYZ(xyz);
+      fSpaceCharge->CorrectPoint(xyz, nearestCluster->GetDetector());
+      nearestPoint.SetXYZ(xyz);
+    }
+
     // rotate the cluster to the local detector frame
     track->Rotate(((nearestCluster->GetDetector()%18)*20+10)*TMath::DegToRad());
     AliTrackPoint prot = nearestPoint.Rotate(track->GetAlpha());   // rotate to the local frame - non distoted  point
     if (TMath::Abs(prot.GetX())<kRTPC0) continue;
     if (TMath::Abs(prot.GetX())>kRTPC1) continue;
 
+    
     //Printf("Rotated Track point = %.2f %.2f %.2f",prot.GetX(),prot.GetY(),prot.GetZ());
 
     // update track with the nearest track point  
@@ -1117,9 +1133,10 @@ void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
 	Int_t sec = cl->GetDetector();
 	Int_t row = cl->GetRow();
 
-	// set cluster time to cluster Z
-	cl->SetZ(cl->GetTimeBin());
-
+	// set cluster time to cluster Z (if not ideal tracking)
+	if ( !fIdealTracking ) {
+	  cl->SetZ(cl->GetTimeBin());
+	}
 	//Printf("Fill clusters (sector %d row %d): %.2f %.2f %.2f %.2f",sec,row,cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetTimeBin());
 
 	// fill arrays for inner and outer sectors (A/C side handled internally)

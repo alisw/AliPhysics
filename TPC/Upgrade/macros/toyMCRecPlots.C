@@ -36,7 +36,7 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
 
   // special settings for all clusters reconstruction
   if(inFileName.Contains("allClusters")){
-    sSel.Append("&& nClus>-1"); // only tracks with enough clusters (not yet used)!
+    sSel.Append("&& nClus>150"); // only tracks with enough clusters (not yet used)!
     sTrackParams[nTrackParams-1] = "nClus";
     tTrackParams[nTrackParams-1] = "Number of used clusters";
   }
@@ -115,12 +115,14 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   for(Int_t iTrackParams = 0; iTrackParams < nTrackParams; iTrackParams ++){
 
     cTrackParams->cd(iTrackParams+1);
-    TStatToolkit::DrawHistogram(Tracks,sTrackParams[iTrackParams].Data(),sSel.Data(),Form("hTrackParams_%s_%d",sConfig.Data(),iTrackParams),Form("%s",tTrackParams[iTrackParams].Data()),3);
-    if(inFileName.Contains("allClusters")) TStatToolkit::DrawHistogram(Tracks,sTrackParams[iTrackParams].Data(),sSel.Data(),Form("hTrackParams_%s_%d",sConfig.Data(),iTrackParams),Form("%s",tTrackParams[iTrackParams].Data()),5);
+    if(inFileName.Contains("allClusters") && iTrackParams==nTrackParams-1) 
+      TStatToolkit::DrawHistogram(Tracks,sTrackParams[iTrackParams].Data(),sSel.Data(),Form("hTrackParams_%s_%d",sConfig.Data(),iTrackParams),Form("%s",tTrackParams[iTrackParams].Data()),5);
+    else
+      TStatToolkit::DrawHistogram(Tracks,sTrackParams[iTrackParams].Data(),sSel.Data(),Form("hTrackParams_%s_%d",sConfig.Data(),iTrackParams),Form("%s",tTrackParams[iTrackParams].Data()),3);
 
   }
 
-
+  
   // plots
   if(doPlots){
     TString outFileName = inFileName;
