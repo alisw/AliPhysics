@@ -132,9 +132,9 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
     track.GetXYZ(xyz);
     
     //!!! Why is this smeared
-    xyz[0]+=gRandom->Gaus(0,0.000005);
-    xyz[1]+=gRandom->Gaus(0,0.000005);
-    xyz[2]+=gRandom->Gaus(0,0.000005);
+//     xyz[0]+=gRandom->Gaus(0,0.000005);
+//     xyz[1]+=gRandom->Gaus(0,0.000005);
+//     xyz[2]+=gRandom->Gaus(0,0.000005);
     
     xyzf[0]=Float_t(xyz[0]);
     xyzf[1]=Float_t(xyz[1]);
@@ -286,29 +286,32 @@ void AliToyMCEventGenerator::ConvertTrackPointsToLocalClusters(AliTrackPointArra
       grXZ=(TGraph*)arrGraphsXZ.At(sec);
       if (!grXY) continue;
 
-      if(grXY->GetN()>1 && grXZ->GetN()>1) { //causes segmentation violation if N==1
-       	splXY=new TSpline3("splXY",grXY);
-	splXZ=new TSpline3("splXZ",grXZ);
-      }
-      else {
+//       if(grXY->GetN()>1 && grXZ->GetN()>1) { //causes segmentation violation if N==1
+//        	splXY=new TSpline3("splXY",grXY);
+// 	splXZ=new TSpline3("splXZ",grXZ);
+//       }
+//       else {
 	//TODO: make a cluster also in the sector w only one space point?
-	continue;
+// 	continue;
 	// Double_t tempX=0., tempY = 0., tempZ = 0.;
 	
 	// grXY->GetPoint(0,tempX,localY);
 	// grXZ->GetPoint(0,tempX,localZ);
-      }
+//       }
 
     }
     secOld=sec;
 
     // check we are in an active area
-    if (splXY->FindX(localX)<1 || splXZ->FindX(localX)<1) continue;
+//     if (splXY->FindX(localX)<1 || splXZ->FindX(localX)<1) continue;
+    if ( localX<grXY->GetX()[0] || localX>grXY->GetX()[grXY->GetN()-1] || localX<grXZ->GetX()[0] || localX>grXZ->GetX()[grXZ->GetN()-1]) continue;
     
     //get interpolated value at the center for the pad row
     //  using splines
-    const Double_t localY=splXY->Eval(localX/*,0x0,"S"*/);
-    const Double_t localZ=splXZ->Eval(localX/*,0x0,"S"*/);
+//     const Double_t localY=splXY->Eval(localX/*,0x0,"S"*/);
+//     const Double_t localZ=splXZ->Eval(localX/*,0x0,"S"*/);
+    const Double_t localY=grXY->Eval(localX/*,0x0,"S"*/);
+    const Double_t localZ=grXZ->Eval(localX/*,0x0,"S"*/);
     Float_t xyz[3]={localX,localY,localZ};
 
     if (!SetupCluster(tempCl,xyz,sec,t0)) continue;

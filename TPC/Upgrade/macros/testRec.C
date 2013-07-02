@@ -623,8 +623,15 @@ void testResolution(const char* filename, Int_t nmaxEv=-1, Bool_t useMaterial=kF
 }
 
 //____________________________________________________________________________
-void ConnectTrees (const char* files, TObjArray &arr) {
+void ConnectTrees (const char* files, TObjArray &arrTrees) {
   TString s=gSystem->GetFromPipe(Form("ls %s",files));
 
-  
+  TObjArray *arrFiles=s.Tokenize("\n");
+  for (Int_t ifile=0; ifile<arrFiles->GetEntriesFast(); ++ifile){
+    TFile f(arrFiles->At(ifile)->GetName());
+    if (!f.IsOpen() || f.IsZombie()) continue;
+    TTree *t=f.Get("Tracks");
+    if (!t) continue;
+    arrTrees.Add
+  }
 }

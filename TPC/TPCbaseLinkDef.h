@@ -112,7 +112,7 @@
                                                        //  + OROC qudarant (OROC has 4 separate pad planes) alignment 
 #pragma link C++ class AliTPCSpaceCharge+;             // Distortions due to space charge in the TPC - rotational symetric
 #pragma link C++ class AliTPCSpaceCharge3D+;           // Distortions due to space charge in the TPC - 3D calculation
-
+#pragma link C++ class AliTPCCorrectionLookupTable+;   // Lookup table created from distortions
 #pragma link C++ class AliTPCExBEffective+;            // Cover ExB effect of non-explained physical model - not used
                                                        // --- still used in CalibMacros --- move to attic if removed there
 #pragma link C++ class AliTPCExBEffectiveSector+;      // sectorwise above

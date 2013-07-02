@@ -26,6 +26,11 @@
 
 #include "AliToyMCReconstruction.h"
 
+/*
+
+
+
+*/
 
 //____________________________________________________________________________________
 AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
@@ -138,7 +143,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
       Float_t zLength=GetZLength(0);
 
       // crate time0 seed, steered by fCreateT0seed
-      printf("t0 seed\n");
+//       printf("t0 seed\n");
       fTime0=-1.;
       fCreateT0seed=kTRUE;
       dummy = GetSeedFromTrack(tr);
@@ -151,7 +156,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         // set fCreateT0seed now to false to get the seed in z coordinates
         fTime0 = t0seed.GetZ()-zLength/vdrift;
         fCreateT0seed = kFALSE;
-        printf("seed (%.2g)\n",fTime0);
+//         printf("seed (%.2g)\n",fTime0);
         dummy  = GetSeedFromTrack(tr);
         if (dummy) {
           seed = *dummy;
@@ -159,7 +164,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 
           // create fitted track
           if (fDoTrackFit){
-            printf("track\n");
+//             printf("track\n");
             dummy = GetFittedTrackFromSeed(tr, &seed);
             track = *dummy;
             delete dummy;
@@ -168,7 +173,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           // propagate seed to 0
           const Double_t kMaxSnp = 0.85;
           const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-//           AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+          AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
           
         }
       }
@@ -627,7 +632,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     const Int_t sign=1-2*((sector/18)%2);
     
     if ( (fClusterType == 1) && (fCorrectionType != kNoCorrection) ) {
-      printf("correction type: %d\n",(Int_t)fCorrectionType);
+//       printf("correction type: %d\n",(Int_t)fCorrectionType);
 
       // the settings below are for the T0 seed
       // for known T0 the z position is already calculated in SetTrackPointFromCluster
@@ -660,7 +665,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     // if fTime0 < 0 we assume that we create a seed for the T0 estimate
     AliTrackerBase::PropagateTrackTo(seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
     if (TMath::Abs(seed->GetX())>3) {
-      printf("Could not propagate track to 0, %.2f, %.2f, %.2f\n",seed->GetX(),seed->GetAlpha(),seed->Pt());
+//       printf("Could not propagate track to 0, %.2f, %.2f, %.2f\n",seed->GetX(),seed->GetAlpha(),seed->Pt());
     }
   }
   
@@ -704,7 +709,7 @@ void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl,
     const Int_t sector=cl->GetDetector();
     const Int_t sign=1-2*((sector/18)%2);
     const Float_t zT0=( GetZLength(sector) - (cl->GetTimeBin()-fTime0)*GetVDrift() )*sign;
-    printf(" z:  %.2f  %.2f\n",xyz[2],zT0);
+//     printf(" z:  %.2f  %.2f\n",xyz[2],zT0);
     xyz[2]=zT0;
     p.SetXYZ(xyz);
   }
@@ -779,9 +784,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     if (TMath::Abs(prot.GetX())<kRTPC0) continue;
     if (TMath::Abs(prot.GetX())>kRTPC1) continue;
     //
-    Bool_t res=kTRUE;
-    if (fUseMaterial) res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
-    else res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+    Bool_t res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
 
     if (!res) break;
     
@@ -800,14 +803,12 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     if (!track->Update(pointPos,pointCov)) {printf("no update\n"); break;}
   }
 
-  if (fUseMaterial) AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp);
-  else AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+  AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 
   // rotate fittet track to the frame of the original track and propagate to same reference
   track->Rotate(tr->GetAlpha());
   
-  if (fUseMaterial) AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp);
-  else AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+  AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
   
   return track;
 }
@@ -963,6 +964,10 @@ TTree* AliToyMCReconstruction::ConnectTrees (const char* files) {
     TPRegexp reg(".*([0-9]_[0-9]_[0-9]_[0-9]{3}_[0-9]{2}).debug.root");
     TObjArray *arrMatch=0x0;
     arrMatch=reg.MatchS(name);
+    TString matchName;
+    if (arrMatch && arrMatch->At(1)) matchName=arrMatch->At(1)->GetName();
+    else matchName=Form("%02d",ifile);
+    delete arrMatch;
     
     if (!tFirst) {
       TFile *f=TFile::Open(name.Data());
@@ -973,10 +978,10 @@ TTree* AliToyMCReconstruction::ConnectTrees (const char* files) {
         continue;
       }
       
-      t->SetName(arrMatch->At(1)->GetName());
+      t->SetName(matchName.Data());
       tFirst=t;
     } else {
-      tFirst->AddFriend(Form("t%s=Tracks",arrMatch->At(1)->GetName()), name.Data());
+      tFirst->AddFriend(Form("t%s=Tracks",matchName.Data()), name.Data());
 //       tFirst->AddFriend(Form("t%d=Tracks",ifile), name.Data());
     }
   }

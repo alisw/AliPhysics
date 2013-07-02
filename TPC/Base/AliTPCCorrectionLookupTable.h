@@ -1,0 +1,59 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+////////////////////////////////////////////////////////////////////////////
+// AliTPCCorrectionLookupTable class                                              //
+// Authors: Jens Wiechula                                            //
+////////////////////////////////////////////////////////////////////////////
+
+#include "AliTPCCorrection.h"
+#include <TVectorD.h>
+#include <TMatrixFfwd.h>
+
+class AliTPCCorrectionLookupTable : public AliTPCCorrection {
+
+public:
+  AliTPCCorrectionLookupTable();
+  virtual ~AliTPCCorrectionLookupTable();
+
+  
+  virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
+  virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
+
+  void CreateLookupTable(AliTPCCorrection &tpcCorr, Int_t rows=90, Int_t phiSlices=144, Int_t columns=130 );
+
+
+// private:
+
+  // sizes of lookup tables
+  Int_t     fNR;                      // number of rows (r) used for lookup table
+  Int_t     fNPhi;                 // number of phi slices used for lookup table
+  Int_t     fNZ;                   // number of columns (z) used for lookup table
+  //
+  TVectorD  fLimitsRows;                 // bin limits in row direction
+  TVectorD  fLimitsPhiSlices;            // bin limits in phi direction
+  TVectorD  fLimitsColumns;              // bin limits in z direction
+  // for distortion
+  TMatrixF **fLookUpDxDist;        //[fNPhi] Array to store electric field integral (int Er/Ez)
+  TMatrixF **fLookUpDyDist;      //[fNPhi] Array to store electric field integral (int Er/Ez)
+  TMatrixF **fLookUpDzDist;         //[fNPhi] Array to store electric field integral (int Er/Ez)
+
+  // for correction
+  TMatrixF **fLookUpDxCorr;        //[fNPhi] Array to store electric field integral (int Er/Ez)
+  TMatrixF **fLookUpDyCorr;      //[fNPhi] Array to store electric field integral (int Er/Ez)
+  TMatrixF **fLookUpDzCorr;         //[fNPhi] Array to store electric field integral (int Er/Ez)
+
+  void InitTables();
+  void ResetTables();
+  void SetupDefaultLimits();
+
+  void GetInterpolation(const Float_t x[],const Short_t roc,Float_t dx[],
+                        TMatrixF **mR, TMatrixF **mPhi, TMatrixF **mZ,
+                        Int_t type);
+
+  AliTPCCorrectionLookupTable(const AliTPCCorrectionLookupTable &corr);
+  AliTPCCorrectionLookupTable& operator= (const AliTPCCorrectionLookupTable &corr);
+  ClassDef(AliTPCCorrectionLookupTable,1);  // TPC corrections dumped into a lookup table
+};
+
+

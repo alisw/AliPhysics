@@ -13,8 +13,7 @@
 #include "AliCluster.h"
 #include "TMath.h"
 #include "AliTPCclusterInfo.h"
-
-class AliTrackPoint;
+#include <AliTrackPointArray.h>
 
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
@@ -49,6 +48,7 @@ public:
   //
   AliTPCclusterMI*  MakeCluster(AliTrackPoint* point);
   AliTrackPoint*    MakePoint();
+  void MakePoint(AliTrackPoint &point);
 
 private:
   AliTPCclusterInfo * fInfo;  // pointer to the cluster debug info

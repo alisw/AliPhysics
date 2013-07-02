@@ -27,8 +27,8 @@ public:
   void RunRecoAllClustersStandardTracking(const char* file, Int_t nmaxEv=-1);
   
   // reconstruction settings
-  void      SetRecoSettings(Int_t clusterType, Int_t seedingRow, Int_t seedingDist, ECorrType correctionType)
-                           { fClusterType=clusterType; fSeedingRow=seedingRow, fSeedingDist=seedingDist, fCorrectionType=correctionType; }
+  void      SetRecoSettings(Bool_t idealTracking, Int_t clusterType, ECorrType correctionType, Int_t seedingRow=140, Int_t seedingDist=10)
+                           { fIdealTracking=idealTracking; fClusterType=clusterType; fSeedingRow=seedingRow, fSeedingDist=seedingDist, fCorrectionType=correctionType; }
   
   void      SetClusterType(Int_t type)  { fClusterType = type;    }
   Int_t     GetClusterType()  const     { return fClusterType;    }

@@ -40,13 +40,14 @@ public:
 
   virtual void GetCorrectionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
   virtual void GetCorrectionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
-
+  
   // functions to distort a space point
           void DistortPoint (      Float_t x[],const Short_t roc);
           void DistortPointLocal(Float_t x[],const Short_t roc);
           void DistortPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
-
+  virtual void GetDistortionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
+  
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);

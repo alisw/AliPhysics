@@ -86,6 +86,7 @@ set ( SRCS
     Base/AliTPCROCVoltError3D.cxx 
     Base/AliTPCSpaceCharge.cxx 
     Base/AliTPCSpaceCharge3D.cxx 
+    Base/AliTPCCorrectionLookupTable.cxx
     Base/AliXRDPROOFtoolkit.cxx 
     Base/AliTPCExBEffective.cxx 
     Base/AliTPCExBEffectiveSector.cxx 

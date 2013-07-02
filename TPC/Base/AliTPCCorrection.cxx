@@ -353,6 +353,44 @@ void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[],const Short_t r
   
 }
 
+void AliTPCCorrection::GetDistortionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta){
+  //
+  // Integrate 3D distortion along drift lines
+  // To define the drift lines virtual function  AliTPCCorrection::GetCorrectionDz is used
+  //
+  // Input parameters:
+  //   x[]   - space point corrdinate
+  //   roc   - readout chamber identifier (important e.g to do not miss the side of detector)
+  //   delta - define the size of neighberhood
+  // Output parameter:
+  //   dx[] - array { integral(dx'/dz),  integral(dy'/dz) ,  integral(dz'/dz) }
+  
+  Float_t zroc= ((roc%36)<18) ? fgkTPCZ0:-fgkTPCZ0;
+  Double_t zdrift = TMath::Abs(x[2]-zroc);
+  Int_t    nsteps = Int_t(zdrift/delta)+1;
+  //
+  //
+  Float_t xyz[3]={x[0],x[1],x[2]};
+  Float_t dxyz[3]={x[0],x[1],x[2]};
+  Float_t sign=((roc%36)<18) ? 1.:-1.;
+  Double_t sumdz=0;
+  for (Int_t i=0;i<nsteps; i++){
+    Float_t deltaZ=delta;
+    if (xyz[2]+deltaZ>fgkTPCZ0) deltaZ=TMath::Abs(xyz[2]-fgkTPCZ0);
+    if (xyz[2]-deltaZ<-fgkTPCZ0) deltaZ=TMath::Abs(xyz[2]-fgkTPCZ0);
+    deltaZ*=sign;
+    GetCorrectionDz(xyz,roc,dxyz,delta);
+    xyz[0]-=deltaZ*dxyz[0];
+    xyz[1]-=deltaZ*dxyz[1];
+    xyz[2]-=deltaZ;           //
+    sumdz-=deltaZ*dxyz[2];
+  }
+  //
+  dx[0]=x[0]-xyz[0];
+  dx[1]=x[1]-xyz[1];
+  dx[2]=    dxyz[2];
+  
+}
 
 
 void AliTPCCorrection::Init() {

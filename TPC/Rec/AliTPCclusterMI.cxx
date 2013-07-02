@@ -189,3 +189,17 @@ AliTrackPoint* AliTPCclusterMI::MakePoint() {
 
   return point;
 }
+
+void AliTPCclusterMI::MakePoint( AliTrackPoint &point ) {
+  //
+  // make AliTrackPoint out of AliTPCclusterMI
+  //
+  
+  Float_t xyz[3]={0.};
+  Float_t cov[6]={0.};
+  GetGlobalXYZ(xyz);
+  GetGlobalCov(cov);
+  // voluem ID to add later ....
+  point.SetXYZ(xyz);
+  point.SetCov(cov);
+}
