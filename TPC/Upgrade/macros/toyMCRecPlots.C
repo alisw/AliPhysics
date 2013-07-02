@@ -34,8 +34,14 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
 
   TString sSel = "fTime0>-1"; // seeding successful
 
+  // special settings for all clusters reconstruction
+  if(inFileName.Contains("allClusters")){
+    sSel.Append("&& nClus>-1"); // only tracks with enough clusters (not yet used)!
+    sTrackParams[nTrackParams-1] = "nClus";
+    tTrackParams[nTrackParams-1] = "Number of used clusters";
+  }
   // retrieve configuration string
-  TPRegexp reg(".*([0-9]_[0-9]_[0-9]_[0-9]{3}_[0-9]{2}).debug.root");
+  TPRegexp reg(".*([0-9]_[0-9]_[0-9]_[0-9]{3}_[0-9]{2}).*debug.root");
   TObjArray *arrMatch=0x0;
   arrMatch=reg.MatchS(inFileName);
   TString sConfig = arrMatch->At(1)->GetName();
@@ -110,6 +116,7 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
 
     cTrackParams->cd(iTrackParams+1);
     TStatToolkit::DrawHistogram(Tracks,sTrackParams[iTrackParams].Data(),sSel.Data(),Form("hTrackParams_%s_%d",sConfig.Data(),iTrackParams),Form("%s",tTrackParams[iTrackParams].Data()),3);
+    if(inFileName.Contains("allClusters")) TStatToolkit::DrawHistogram(Tracks,sTrackParams[iTrackParams].Data(),sSel.Data(),Form("hTrackParams_%s_%d",sConfig.Data(),iTrackParams),Form("%s",tTrackParams[iTrackParams].Data()),5);
 
   }
 

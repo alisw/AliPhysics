@@ -265,64 +265,25 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
   AliExternalTrackParam track;
   AliExternalTrackParam tOrig;
 
-  // cluster array of all sectors
-  fInnerSectorArray = new AliTPCtrackerSector[fkNSectorInner];  
-  fOuterSectorArray = new AliTPCtrackerSector[fkNSectorOuter]; 
- 
-  for (Int_t i=0; i<fkNSectorInner; ++i) fInnerSectorArray[i].Setup(fTPCParam,0);
-  for (Int_t i=0; i<fkNSectorOuter; ++i) fOuterSectorArray[i].Setup(fTPCParam,1);
-
-  Int_t count[72][96] = { {0} , {0} }; 
-      
-
-
   AliExternalTrackParam *dummy;
   
   Int_t maxev=fTree->GetEntries();
   if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
   
-
   // ===========================================================================================
   // Loop 1: Fill AliTPCtrackerSector structure
   // ===========================================================================================
-  for (Int_t iev=0; iev<maxev; ++iev){
-    printf("==============  Fill Clusters: Processing Event %6d  =================\n",iev);
-    fTree->GetEvent(iev);
-    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
-      printf(" > ======  Fill Clusters: Processing Track %6d ========  \n",itr);
-      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+  FillSectorStructure(maxev);
 
-      // number of clusters to loop over
-      const Int_t ncls=(fClusterType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
+  // settings (TODO: find the correct settings)
+  AliTPCRecoParam *tpcRecoParam = new AliTPCRecoParam();
+  tpcRecoParam->SetDoKinks(kFALSE);
+  AliTPCcalibDB::Instance()->GetTransform()->SetCurrentRecoParam(tpcRecoParam);
+  //tpcRecoParam->Print();
 
-      for(Int_t icl=0; icl<ncls; ++icl){
-
-	AliTPCclusterMI *cl=const_cast<AliTPCclusterMI *>(tr->GetSpacePoint(icl));
-	if (fClusterType==1) cl=const_cast<AliTPCclusterMI *>(tr->GetDistortedSpacePoint(icl));
-	if (!cl) continue;
-
-	Int_t sec = cl->GetDetector();
-	Int_t row = cl->GetRow();
-
-	// set cluster time to cluster Z
-	cl->SetZ(cl->GetTimeBin());
-
-	// fill arrays for inner and outer sectors (A/C side handled internally)
-	if (sec<fkNSectorInner*2){
-	  fInnerSectorArray[sec%fkNSectorInner].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);    
-	}
-	else{
-	  fOuterSectorArray[(sec-fkNSectorInner*2)%fkNSectorOuter].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);
-	}
-
-	++count[sec][row];
-      }
-    }
-  }
-
-  // fill the arrays completely
-  LoadOuterSectors();
-  LoadInnerSectors();
+  // need AliTPCReconstructor for parameter settings in AliTPCtracker
+  AliTPCReconstructor *tpcRec   = new AliTPCReconstructor();
+  tpcRec->SetRecoParam(tpcRecoParam);
 
 
   // ===========================================================================================
@@ -349,6 +310,8 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
       Float_t vdrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
+      Int_t nClus = 0;
+
       // crate time0 seed, steered by fCreateT0seed
       printf("t0 seed\n");
       fTime0=-1.;
@@ -372,7 +335,7 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
           // create fitted track
           if (fDoTrackFit){
             printf("track\n");
-            dummy = GetFittedTrackFromSeedAllClusters(tr, &seed);
+            dummy = GetFittedTrackFromSeedAllClusters(tr, &seed,nClus);
             track = *dummy;
             delete dummy;
           }
@@ -400,6 +363,7 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
         "seedDist="    << fSeedingDist    <<
         "vdrift="      << vdrift          <<
         "zLength="     << zLength         <<
+        "nClus="       << nClus           <<
         "t0seed.="     << &t0seed         <<
         "seed.="       << &seed           <<
         "track.="      << &track          <<
@@ -461,16 +425,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
   
   gROOT->cd();
-
-  // cluster array of all sectors
-  fInnerSectorArray = new AliTPCtrackerSector[fkNSectorInner];  
-  fOuterSectorArray = new AliTPCtrackerSector[fkNSectorOuter]; 
- 
-  for (Int_t i=0; i<fkNSectorInner; ++i) fInnerSectorArray[i].Setup(fTPCParam,0);
-  for (Int_t i=0; i<fkNSectorOuter; ++i) fOuterSectorArray[i].Setup(fTPCParam,1);
-
-  Int_t count[72][96] = { {0} , {0} }; 
-      
+     
   AliExternalTrackParam *dummy;
   AliExternalTrackParam *track;
 
@@ -481,40 +436,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   // ===========================================================================================
   // Loop 1: Fill AliTPCtrackerSector structure
   // ===========================================================================================
-  for (Int_t iev=0; iev<maxev; ++iev){
-    printf("==============  Fill Clusters: Processing Event %6d  =================\n",iev);
-    fTree->GetEvent(iev);
-    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
-      printf(" > ======  Fill Clusters: Processing Track %6d ========  \n",itr);
-      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
-
-      // number of clusters to loop over
-      const Int_t ncls=(fClusterType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
-
-      for(Int_t icl=0; icl<ncls; ++icl){
-
-	AliTPCclusterMI *cl=const_cast<AliTPCclusterMI *>(tr->GetSpacePoint(icl));
-	if (fClusterType==1) cl=const_cast<AliTPCclusterMI *>(tr->GetDistortedSpacePoint(icl));
-	if (!cl) continue;
-
-	Int_t sec = cl->GetDetector();
-	Int_t row = cl->GetRow();
-
-	// set cluster time to cluster Z
-	cl->SetZ(cl->GetTimeBin());
-
-	// fill arrays for inner and outer sectors (A/C side handled internally)
-	if (sec<fkNSectorInner*2){
-	  fInnerSectorArray[sec%fkNSectorInner].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);    
-	}
-	else{
-	  fOuterSectorArray[(sec-fkNSectorInner*2)%fkNSectorOuter].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);
-	}
-
-	++count[sec][row];
-      }
-    }
-  }
+  FillSectorStructure(maxev);
 
   // ===========================================================================================
   // Loop 2: Use the full TPC tracker 
@@ -815,7 +737,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
 
 
 //____________________________________________________________________________________
-AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed)
+AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus)
 {
   //
   // Tracking for given seed on an array of clusters
@@ -828,44 +750,95 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
   
   const Double_t kRTPC0    = roc->GetPadRowRadii(0,0);
   const Double_t kRTPC1    = roc->GetPadRowRadii(36,roc->GetNRows(36)-1);
-  const Double_t kNRowsTPC = roc->GetNRows(0) + roc->GetNRows(36) - 1;
-  const Double_t kIRowsTPC = roc->GetNRows(0) - 1;
+  const Int_t kNRowsTPC    = roc->GetNRows(0) + roc->GetNRows(36) - 1;
+  const Int_t kIRowsTPC    = roc->GetNRows(0) - 1;
   const Double_t kMaxSnp   = 0.85;
   const Double_t kMaxR     = 500.;
   const Double_t kMaxZ     = 500.;
+  const Double_t roady     = 100.;
+  const Double_t roadz     = 100.;
   
   const Double_t refX = tr->GetX();
   
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
+  Int_t  secCur   = -1;
+  UInt_t indexCur = 0;
+  Double_t xCur, yCur, zCur = 0.;
 
   // first propagate seed to outermost row
   AliTrackerBase::PropagateTrackTo(track,kRTPC1,kMass,5,kFALSE,kMaxSnp);
 
   // Loop over rows and find the cluster candidates
   for( Int_t iRow = kNRowsTPC; iRow >= 0; --iRow ){
-    
+        
     // inner or outer sector
     Bool_t bInnerSector = kTRUE;
     if(iRow > kIRowsTPC) bInnerSector = kFALSE;
 
-    //AliTrackPoint prot = pIn.Rotate(track->GetAlpha());   // rotate to the local frame - non distoted  point
-
-    if(bInnerSector){
-      AliTrackerBase::PropagateTrackTo(track,roc->GetPadRowRadii(0,iRow),kMass,5,kFALSE,kMaxSnp);
-      Double_t x = track->GetX();
-      Int_t  sec = (Int_t)((track->Phi() * TMath::RadToDeg() - 10.) / 20. );
-      Printf("inner tracking here: %.2f %d %d from %.2f",x,iRow,sec,track->Phi() * TMath::RadToDeg());
-      //Printf("N1 = %d",fInnerSectorArray[sec%fkNSectorInner][iRow].GetN1());
-    }
-    else{
-      AliTrackerBase::PropagateTrackTo(track,roc->GetPadRowRadii(36,iRow-kIRowsTPC-1),kMass,5,kFALSE,kMaxSnp);
-      Double_t x = track->GetX();
-      Printf("outer tracking here: %.2f %d",x,iRow);
-    }
+    // nearest track point/cluster (to be found)
+    AliTrackPoint nearestPoint;
+    AliTPCclusterMI *nearestCluster = NULL;
   
+    // Inner Sector
+    if(bInnerSector){
+
+      // Propagate to center of pad row and extract parameters
+      AliTrackerBase::PropagateTrackTo(track,roc->GetPadRowRadii(0,iRow),kMass,5,kFALSE,kMaxSnp);
+      xCur   = track->GetX();
+      yCur   = track->GetY();
+      zCur   = track->GetZ();
+
+      secCur = GetSector(track);
+      
+      // Find the nearest cluster (TODO: correct road settings!)
+      //Printf("inner tracking here: x = %.2f, y = %.2f, z = %.2f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
+      nearestCluster = fInnerSectorArray[secCur%fkNSectorInner][iRow].FindNearest2(yCur,zCur,roady,roadz,indexCur);
+      
+      // Move to next row if now cluster found
+      if(!nearestCluster) continue;
+      //Printf("Nearest Clusters = %d (of %d) ",indexCur,fInnerSectorArray[secCur%fkNSectorInner][iRow].GetN());
+      
+    }
+
+    // Outer sector
+    else{
+
+      // Propagate to center of pad row and extract parameters
+      AliTrackerBase::PropagateTrackTo(track,roc->GetPadRowRadii(36,iRow-kIRowsTPC-1),kMass,5,kFALSE,kMaxSnp);
+      xCur   = track->GetX();
+      yCur   = track->GetY();
+      zCur   = track->GetZ();
+
+      secCur = GetSector(track);
+
+      // Find the nearest cluster (TODO: correct road settings!)
+      //Printf("outer tracking here: x = %.2f, y = %.2f, z = %.2f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
+      nearestCluster = fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].FindNearest2(yCur,zCur,roady,roadz,indexCur);
+
+      // Move to next row if now cluster found
+      if(!nearestCluster) continue;
+      //Printf("Nearest Clusters = %d (of %d)",indexCur,fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].GetN());
+
+    }
+
+    // create track point from cluster
+    SetTrackPointFromCluster(nearestCluster,nearestPoint);
+    
+    //Printf("Track point = %.2f %.2f %.2f",nearestPoint.GetX(),nearestPoint.GetY(),nearestPoint.GetZ());
+
+    // rotate the cluster to the local detector frame
+    track->Rotate(((nearestCluster->GetDetector()%18)*20+10)*TMath::DegToRad());
+    AliTrackPoint prot = nearestPoint.Rotate(track->GetAlpha());   // rotate to the local frame - non distoted  point
+    if (TMath::Abs(prot.GetX())<kRTPC0) continue;
+    if (TMath::Abs(prot.GetX())>kRTPC1) continue;
+
+    //Printf("Rotated Track point = %.2f %.2f %.2f",prot.GetX(),prot.GetY(),prot.GetZ());
+
+    // update track with the nearest track point  
     Bool_t res=kTRUE;
-    //if (fUseMaterial) res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
-    //else res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+    if (fUseMaterial) res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
+    else res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
 
     if (!res) break;
     
@@ -873,21 +846,21 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
     if (TMath::Abs(track->GetX())>kMaxR) break;
     //if (TMath::Abs(track->GetZ())<kZcut)continue;
 
+      Double_t pointPos[2]={0,0};
+      Double_t pointCov[3]={0,0,0};
+      pointPos[0]=prot.GetY();//local y
+      pointPos[1]=prot.GetZ();//local z
+      pointCov[0]=prot.GetCov()[3];//simay^2
+      pointCov[1]=prot.GetCov()[4];//sigmayz
+      pointCov[2]=prot.GetCov()[5];//sigmaz^2
+  
+      if (!track->Update(pointPos,pointCov)) {printf("no update\n");}
 
+      ++nClus;
   }
+
   
-  //
-  //     Double_t pointPos[2]={0,0};
-  //     Double_t pointCov[3]={0,0,0};
-  //     pointPos[0]=prot.GetY();//local y
-  //     pointPos[1]=prot.GetZ();//local z
-  //     pointCov[0]=prot.GetCov()[3];//simay^2
-  //     pointCov[1]=prot.GetCov()[4];//sigmayz
-  //     pointCov[2]=prot.GetCov()[5];//sigmaz^2
-  
-  //     if (!track->Update(pointPos,pointCov)) {printf("no update\n"); break;}
-  //   }
-  
+  // propagation to refX
   if (fUseMaterial) AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp);
   else AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
   
@@ -896,6 +869,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
   
   if (fUseMaterial) AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp);
   else AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+
+  Printf("We have %d clusters in this track!",nClus);
   
   return track;
 }
@@ -1082,4 +1057,101 @@ Int_t  AliToyMCReconstruction::LoadInnerSectors() {
 
     }  
   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t  AliToyMCReconstruction::GetSector(AliExternalTrackParam *track) {
+  //-----------------------------------------------------------------
+  // This function returns the sector number for a given track
+  //-----------------------------------------------------------------
+
+  Int_t sector = -1;
+
+  // get the sector number
+  // rotate point to global system (track is already global!)
+  Double_t xd[3];
+  track->GetXYZ(xd);
+  //track->Local2GlobalPosition(xd,track->GetAlpha());
+  
+  // use TPCParams to get the sector number
+  Float_t xyz[3] = {xd[0],xd[1],xd[2]};
+  Int_t   i[3]   = {0,0,0};
+  if(fTPCParam){
+    sector  = fTPCParam->Transform0to1(xyz,i);
+  }
+  
+  return sector;
+}
+
+//_____________________________________________________________________________
+void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
+  //-----------------------------------------------------------------
+  // This function fills the sector structure of AliToyMCReconstruction
+  //-----------------------------------------------------------------
+
+  // cluster array of all sectors
+  fInnerSectorArray = new AliTPCtrackerSector[fkNSectorInner];  
+  fOuterSectorArray = new AliTPCtrackerSector[fkNSectorOuter]; 
+  
+  for (Int_t i=0; i<fkNSectorInner; ++i) fInnerSectorArray[i].Setup(fTPCParam,0);
+  for (Int_t i=0; i<fkNSectorOuter; ++i) fOuterSectorArray[i].Setup(fTPCParam,1);
+  
+  Int_t count[72][96] = { {0} , {0} }; 
+  
+  for (Int_t iev=0; iev<maxev; ++iev){
+    printf("==============  Fill Clusters: Processing Event %6d  =================\n",iev);
+    fTree->GetEvent(iev);
+    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
+      printf(" > ======  Fill Clusters: Processing Track %6d ========  \n",itr);
+      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+
+      // number of clusters to loop over
+      const Int_t ncls=(fClusterType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
+
+      for(Int_t icl=0; icl<ncls; ++icl){
+
+	AliTPCclusterMI *cl=const_cast<AliTPCclusterMI *>(tr->GetSpacePoint(icl));
+	if (fClusterType==1) cl=const_cast<AliTPCclusterMI *>(tr->GetDistortedSpacePoint(icl));
+	if (!cl) continue;
+
+	Int_t sec = cl->GetDetector();
+	Int_t row = cl->GetRow();
+
+	// set cluster time to cluster Z
+	cl->SetZ(cl->GetTimeBin());
+
+	//Printf("Fill clusters (sector %d row %d): %.2f %.2f %.2f %.2f",sec,row,cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetTimeBin());
+
+	// fill arrays for inner and outer sectors (A/C side handled internally)
+	if (sec<fkNSectorInner*2){
+	  fInnerSectorArray[sec%fkNSectorInner].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);    
+	}
+	else{
+	  fOuterSectorArray[(sec-fkNSectorInner*2)%fkNSectorOuter].InsertCluster(const_cast<AliTPCclusterMI*>(cl), count[sec][row], fTPCParam);
+	}
+
+	++count[sec][row];
+      }
+    }
+  }
+
+  // fill the arrays completely
+  LoadOuterSectors();
+  LoadInnerSectors();
+
+  // // check the arrays
+  // for (Int_t i=0; i<fkNSectorInner; ++i){
+  //   for (Int_t j=0; j<fInnerSectorArray[i].GetNRows(); ++j){
+  //     if(fInnerSectorArray[i][j].GetN()>0){
+  // 	Printf("Inner: Sector %d Row %d : %d",i,j,fInnerSectorArray[i][j].GetN());
+  //     }
+  //   }
+  // }
+  // for (Int_t i=0; i<fkNSectorInner; ++i){
+  //   for (Int_t j=0; j<fOuterSectorArray[i].GetNRows(); ++j){
+  //     if(fOuterSectorArray[i][j].GetN()>0){
+  // 	Printf("Outer: Sector %d Row %d : %d",i,j,fOuterSectorArray[i][j].GetN());
+  //     }
+  //   }
+  // }
 }

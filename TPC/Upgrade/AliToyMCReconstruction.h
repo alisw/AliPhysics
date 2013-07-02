@@ -53,7 +53,7 @@ public:
 
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr);
   AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
-  AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
+  AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus);
   
   void InitSpaceCharge();
 
@@ -62,15 +62,19 @@ public:
   Double_t GetVDrift() const;
   Double_t GetZLength(Int_t roc) const;
 
-  Int_t LoadInnerSectors();
-  Int_t LoadOuterSectors();
-  
+
 private:
   AliToyMCReconstruction(const AliToyMCReconstruction &rec);
   AliToyMCReconstruction& operator= (AliToyMCReconstruction& rec);
 
   void SetTrackPointFromCluster(const AliTPCclusterMI *cl, AliTrackPoint &p);
   void ClusterToSpacePoint(const AliTPCclusterMI *cl, Float_t xyz[3]);
+
+  Int_t LoadInnerSectors();
+  Int_t LoadOuterSectors();
+  
+  Int_t GetSector(AliExternalTrackParam *track);
+  void FillSectorStructure(Int_t maxev);
   
   // reco settings
   Int_t  fSeedingRow;            // first row used for seeding
