@@ -201,6 +201,18 @@ AliForwardMultiplicityBase::SetupForData()
   GetHistCollector()	.SetupForData(*pv,*pe);
   GetEventPlaneFinder()	.SetupForData(*pe);
   
+  fAODFMD.SetBit(AliAODForwardMult::kSecondary, 
+		 GetCorrections().IsUseSecondaryMap());
+  fAODFMD.SetBit(AliAODForwardMult::kVertexBias, 
+		 GetCorrections().IsUseVertexBias());
+  fAODFMD.SetBit(AliAODForwardMult::kAcceptance, 
+		 GetCorrections().IsUseAcceptance());
+  fAODFMD.SetBit(AliAODForwardMult::kMergingEfficiency, 
+		 GetCorrections().IsUseMergingEfficiency());
+  fAODFMD.SetBit(AliAODForwardMult::kSum, 
+		 GetHistCollector().GetMergeMethod() == 
+		 AliFMDHistCollector::kSum);
+  
   this->Print("R");
   return true;
 }
@@ -513,16 +525,18 @@ AliForwardMultiplicityBase::MakeSimpledNdeta(const TList* input,
   dNdeta_->SetMarkerStyle(21);
   dNdeta_->SetDirectory(0);
 
-  norm->SetTitle("Normalization to #eta coverage");
+  norm->SetTitle("Normalization to  #eta coverage");
   norm->SetYTitle("#eta coverage");
+  norm->SetLineColor(kBlue+1);
   norm->SetMarkerColor(kBlue+1);
   norm->SetMarkerStyle(21);
   norm->SetFillColor(kBlue+1);
   norm->SetFillStyle(3005);
   norm->SetDirectory(0);
 
-  phi->SetTitle("Normalization to #phi acceptance");
+  phi->SetTitle("Normalization to  #phi acceptance");
   phi->SetYTitle("#phi acceptance");
+  phi->SetLineColor(kGreen+1);
   phi->SetMarkerColor(kGreen+1);
   phi->SetMarkerStyle(20);
   phi->SetFillColor(kGreen+1);

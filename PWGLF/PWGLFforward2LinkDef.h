@@ -134,6 +134,8 @@
 #pragma link C++ class AliForwardCreateResponseMatrices::Bin+;
 #pragma link C++ class AliForwardMultiplicityDistribution+;
 #pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
+#pragma link C++ class AliForwardMultDists+;
+#pragma link C++ class AliForwardMultDists::EtaBin+;
 
 #else
 # error Not for compilation 

@@ -648,7 +648,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(kOther,	        "Other");
   fList->Add(fHTrgStatus);
 
-  if (fUseDisplacedVertices) fDisplacedVertex.SetupForData(fList);
+  if (fUseDisplacedVertices) fDisplacedVertex.SetupForData(fList, "", false);
 }
 
 //____________________________________________________________________
@@ -730,6 +730,12 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     return kNoEvent;
   }
 
+  // --- Process satellite event information is requested ------------
+  if (fUseDisplacedVertices) { 
+    if (!fDisplacedVertex.Process(event)) 
+      AliWarning("Failed to process satellite event");
+  }
+
   // --- Read trigger information from the ESD and store in AOD object
   if (!ReadTriggers(*event, triggers, nClusters)) { 
     if (fDebug > 2) {
@@ -748,13 +754,6 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     lowFlux = testmult->GetNumberOfTracklets() < fLowFluxCut;
 
   fHType->Fill(lowFlux ? 0 : 1);
-
-  // --- Process satellite event information is requested ------------
-  if (fUseDisplacedVertices) { 
-    if (!fDisplacedVertex.Process(event)) 
-      AliWarning("Failed to process satellite event");
-  }
-  
  
   // --- Get the interaction point -----------------------------------
   Bool_t vzOk = ReadVertex(*event, ip);
@@ -1156,18 +1155,17 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent& esd, TVector3& ip)
   ip.SetXYZ(1024, 1024, 0);
   
   EVtxStatus s = kNoVtx;
-  if (fUseFirstPhysicsVertex) 
+  if (fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
+    s = kVtxOK;
+    ip.SetZ(fDisplacedVertex.GetVertexZ());
+  }
+  else if (fUseFirstPhysicsVertex) 
     s = CheckPWGUDVertex(esd, ip);
   else if (fUsepA2012Vertex) 
     s = CheckpA2012Vertex(esd,ip);	
   else 
     s = CheckVertex(esd, ip);
   
-  if (s != kVtxOK && fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
-    s = kVtxOK;
-    ip.SetZ(fDisplacedVertex.GetVertexZ());
-  }
-
   fHVtxStatus->Fill(s);
 
   return s == kVtxOK;

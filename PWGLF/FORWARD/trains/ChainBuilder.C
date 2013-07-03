@@ -11,11 +11,14 @@
 #ifndef CHAINBUILDER_C
 #define CHAINBUILDER_C
 #ifndef __CINT__
+# include <TUrl.h>
 # include <TString.h>
 # include <TChain.h>
+# include <TChainElement.h>
 # include <TSystemDirectory.h>
 # include <TSystem.h>
 # include <TFile.h>
+# include <TFileInfo.h>
 # include <TList.h>
 # include <TError.h>
 # include <TROOT.h>
@@ -28,6 +31,7 @@
 class TString;
 class TChain;
 class TSystemDirectory;
+class TUrl;
 #endif
 
 // ===================================================================
@@ -38,6 +42,14 @@ class TSystemDirectory;
  */
 struct ChainBuilder 
 {
+  enum {
+    kVerbose   =  0x1,
+    kRecursive =  0x2,
+    kMC        =  0x4,
+    kCheck     =  0x8,
+    kClean     = 0x10,
+    kScan      = 0x20
+  };
   enum { 
     kInvalid,
     kDirectory, 
@@ -46,7 +58,7 @@ struct ChainBuilder
     kROOT
   };
   //------------------------------------------------------------------
-  static UShort_t CheckSource(TString& src)
+  static UShort_t CheckSource(TString& src, UShort_t flags)
   {
     // Local copy 
     TString tmp(src);
@@ -67,14 +79,16 @@ struct ChainBuilder
 
     // --- Check if directory or file --------------------------------
     if (R_ISDIR(stat.fMode)) {
-      // Info("ChainBuilder::CheckSource", "%s is a directory", tmp.Data());
+      if (flags & kVerbose) 
+	Info("ChainBuilder::CheckSource", "%s is a directory", tmp.Data());
       return kDirectory;
     }
 
     // --- check file type -------------------------------------------
     TString type(gSystem->GetFromPipe(Form("file -b %s", src.Data())));
-    // Info("ChainBuilder::CheckSource", "file -b %s -> %s", 
-    //      tmp.Data(), type.Data());
+    if ((flags & kVerbose))
+      Info("ChainBuilder::CheckSource", "file -b %s -> %s", 
+	   tmp.Data(), type.Data());
     UShort_t ret = kInvalid;
     if      (type.Contains("ROOT"))  ret = kROOT;
     else if (type.Contains("XML"))   ret = kXML;
@@ -89,37 +103,165 @@ struct ChainBuilder
   }
   //------------------------------------------------------------------
   /** 
-   * Create the chain.  User is owner. 
+   * Create a TChain from a URL specification.
+   *
+   * The URL should have the format 
    * 
-   * @return Null in case of problems, chain otherwise 
+   * @verbatim
+   *   PROTOCOL://PATH?OPTIONS#TREENAME
+   * @endverbatim
+   *
+   * where 
+   * - @c PROTOCOL is any protocol
+   * - @c PATH is a file, top-directory, file containing a
+   *   TFileCollection, ASCII file with list of files, etc.
+   * - @c OPTIONS is a list of options, separate by @c &
+   * - @c TREENAME is the tree name 
+   *
+   * @c OPTIONS can be one or more of 
+   * - @c mc  Also check for auxiliary MC files
+   * - @c recursive When scanning directories, do so recursively
+   * - @c verbose Be verbose
+   * - @c check Check files by trying to open them 
+   * - @c clean Remove invalid files 
+   * - @c pattern=PATTERN Search pattern when scanning directories 
+   * 
+   * @param url The input url 
+   * 
+   * @return Pointer to newly allocated TChain object or null
+   */
+  static TChain* Create(const TUrl& url)
+  {
+    TString     source   = url.GetFile();
+    TString     treeName = url.GetAnchor();
+    TString     pattern  = "";
+    UShort_t    flags    = 0;
+    TString     options  = url.GetOptions();
+    TObjArray*  tokens   = options.Tokenize("&");
+    TObjString* token    = 0; 
+    TIter       next(tokens);
+    while ((token = static_cast<TObjString*>(next()))) {
+      const TString& str = token->String();
+      if (str.EqualTo("mc", TString::kIgnoreCase)) 
+	flags |= kMC;
+      else if (str.EqualTo("recursive", TString::kIgnoreCase)) 
+	flags |= kRecursive;
+      else if (str.EqualTo("verbose", TString::kIgnoreCase)) 
+	flags |= kVerbose;
+      else if (str.EqualTo("check", TString::kIgnoreCase)) 
+	flags |= kCheck;
+      else if (str.EqualTo("clean", TString::kIgnoreCase)) 
+	flags |= kClean; 
+      else if (str.EqualTo("scan", TString::kIgnoreCase)) 
+	flags |= kScan; 
+      else if (str.BeginsWith("pattern=", TString::kIgnoreCase)) { 
+	Int_t eq = str.Index("=");
+	pattern  = str(eq+1, str.Length()-eq-1);
+	pattern.ReplaceAll("@", "#");
+      }
+      else 
+	Warning("", "Option %s unknown", str.Data());
+    }
+    delete tokens;
+
+    TString tmp(source);
+    UShort_t type = CheckSource(tmp, flags);
+    
+    return Create(type, tmp, treeName, pattern, flags);
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create a chain
+   * 
+   * @param src          Source 
+   * @param treeName     Tree name 
+   * @param pattern      Pattern for scans
+   * @param mc           If true, check for MC files
+   * @param recursive    If true, scan recursively
+   * @param verbose      If true, be verbose
+   * @param checkFiles   If true, check that files can be opened
+   * @param removeFiles  If true, remove bad files 
+   * 
+   * @return Pointer to newly allocated TChain or null
    */
   static TChain* Create(const TString& src, 
 			const TString& treeName, 
 			const TString& pattern, 
 			Bool_t         mc, 
-			Bool_t         recursive)
+			Bool_t         recursive,
+			Bool_t         verbose=false,
+			Bool_t         checkFiles=false, 
+			Bool_t         removeFiles=false)
+  {
+    UShort_t flags = 0;
+    if (verbose)     flags |= kVerbose;
+    if (recursive)   flags |= kRecursive;
+    if (mc)          flags |= kMC;
+    if (checkFiles)  flags |= kCheck;
+    if (removeFiles) flags |= kClean;
+
+    TString tmp(src);
+    UShort_t type = CheckSource(tmp, flags);
+
+    return Create(type, tmp, treeName, pattern, flags);
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create a chain
+   * 
+   * @param type         Type of input
+   * @param src          Source 
+   * @param treeName     Tree name 
+   * @param pattern      Pattern for scans
+   * @param mc           If true, check for MC files
+   * @param recursive    If true, scan recursively
+   * @param verbose      If true, be verbose
+   * @param checkFiles   If true, check that files can be opened
+   * @param removeFiles  If true, remove bad files 
+   * 
+   * @return Pointer to newly allocated TChain or null
+   */
+  static TChain* Create(UShort_t       type,
+			const TString& src, 
+			const TString& treeName, 
+			const TString& pattern, 
+			Bool_t         mc, 
+			Bool_t         recursive,
+			Bool_t         verbose=false,
+			Bool_t         checkFiles=false, 
+			Bool_t         removeFiles=false)
   {
     // Info("ChainBuilder::Create", 
     // "src=%s treeName=%s pattern=%s mc=%s recursive=%s",
     // src.Data(), treeName.Data(), pattern.Data(), 
     // (mc ? "true" : "false"), (recursive ? "true" : "false"));
-    TString tmp(src);
-    UShort_t type = CheckSource(tmp);
+    // --- Create flags 
+    UShort_t flags = 0;
+    if (verbose)     flags |= kVerbose;
+    if (recursive)   flags |= kRecursive;
+    if (mc)          flags |= kMC;
+    if (checkFiles)  flags |= kCheck;
+    if (removeFiles) flags |= kClean;
 
-    return Create(type, tmp, treeName, pattern, mc, recursive);
+    return Create(type, src, treeName, pattern, flags);
   }
   //------------------------------------------------------------------
   /** 
-   * Create the chain.  User is owner. 
+   * Create a chain from the inputs
    * 
-   * @return Null in case of problems, chain otherwise 
+   * @param type        Type of input
+   * @param src         Source 
+   * @param treeName    Tree name
+   * @param pattern     Pattern for scans 
+   * @param flags       Flags 
+   * 
+   * @return Pointer to newly allocated TChain object or null
    */
   static TChain* Create(UShort_t       type, 
 			const TString& src, 
 			const TString& treeName, 
-			const TString& pattern, 
-			Bool_t         mc, 
-			Bool_t         recursive)
+			const TString& pattern,
+			UShort_t       flags)
   {
     // --- check input -----------------------------------------------
     if (type == kInvalid) {
@@ -136,27 +278,36 @@ struct ChainBuilder
     if (pat.IsNull()) {
       if      (tN.EqualTo("esdTree")) pat = "AliESD";
       else if (tN.EqualTo("aodTree")) pat = "AliAOD";
+      if ((flags & kVerbose)) Info("", "Pattern set to %s", pat.Data());
     }
-#if 0
-    Info("ChainBuilder::Create", "Type=%s, tree=%s, pattern=%s", 
-	 (type == kDirectory ? "directory" : 
-	  type == kXML       ? "XML" : 
-	  type == kAscii     ? "ASCII" : 
-	  type == kROOT      ? "ROOT" : "unknown"),
-	 tN.Data(), pat.Data());
-#endif 
+    if ((flags & kVerbose))
+      Info("ChainBuilder::Create", "Type=%s, tree=%s, pattern=%s", 
+      (type == kDirectory ? "directory" : 
+      type == kXML       ? "XML" : 
+      type == kAscii     ? "ASCII" : 
+      type == kROOT      ? "ROOT" : "unknown"),
+      tN.Data(), pat.Data());
+    
     // --- Create output ---------------------------------------------
     TChain* chain = new TChain(tN);
+
+    // --- ZIP archives ----------------------------------------------
+    TString anchor;
+    TString tmp(pat);
+    ExtractAnchor(pat, anchor);
+    if ((flags & kVerbose)) 
+      Info("", "Full pattern: '%s' filename pattern: '%s' anchor: '%s'",
+	   tmp.Data(), pat.Data(), anchor.Data());
 
     // --- execute based on type 
     Bool_t ret = true;
     switch (type) { 
-    case kROOT:      ret = CreateFromFile(chain, src); break;
+    case kROOT:      ret = CreateFromFile(chain, src, anchor, flags); break;
     case kXML:       ret = CreateFromXML(chain,  src); break;
     case kAscii:     ret = CreateFromList(chain, src); break;
     case kDirectory: ret = CreateFromDirectory(chain, src, 
-					       pat, mc, 
-					       recursive); break;
+					       pat, anchor, 
+					       flags); break;
     default:         ret = false;
     }
 
@@ -169,6 +320,61 @@ struct ChainBuilder
     return chain;
   }
   //------------------------------------------------------------------
+  static void CreateCollection(const TString& output, 
+			       const TUrl&    url)
+  {
+    TChain* chain = Create(url);
+    if (!chain) return;
+
+    CreateCollection(output, chain);
+  }
+  //------------------------------------------------------------------
+  static void CreateCollection(const TString& output, 
+			       const TChain* chain)
+  {
+    if (!chain) return;
+    
+    TFile* out = TFile::Open(output, "RECREATE");
+    
+    TFileCollection* collection = new TFileCollection(chain->GetName());
+    TObjArray*       files      = chain->GetListOfFiles();
+    TChainElement*   element    = 0;
+    TIter            next(files);
+
+
+    collection->SetDefaultTreeName(chain->GetName());
+    while ((element = static_cast<TChainElement*>(next()))) {
+      Info("", "Element: '%s' - '%s' %lld", 
+	   element->GetName(), element->GetTitle(), 
+	   element->GetEntries());
+      TFileInfo*     info = new TFileInfo(element->GetTitle());
+      TFileInfoMeta* meta = new TFileInfoMeta(Form("/%s",element->GetName()),
+					      "TTree", element->GetEntries());
+      info->AddMetaData(meta);
+      info->SetBit(TFileInfo::kStaged);
+      // info->AddUrl(Form("file://%s", element->GetTitle()));
+      collection->Add(info);
+      
+    }
+    collection->Update();
+    collection->Write();
+    // collection->Print("MFL");
+    out->Close();
+  }
+  //------------------------------------------------------------------
+  static void ExtractAnchor(TString& src, TString& anchor)
+  {
+    anchor         = "";
+    Int_t idxHash  = src.Index("#");
+    
+    if (idxHash == kNPOS) return;
+
+    TString tmp = src(0,idxHash);
+    anchor      = src(idxHash+1, src.Length()-idxHash-1);
+    src = tmp;
+  }
+
+  //------------------------------------------------------------------
   /** 
    * Create a chain consiting of a single file 
    * 
@@ -177,10 +383,14 @@ struct ChainBuilder
    * 
    * @return Chain or null
    */
-  static Bool_t CreateFromFile(TChain* chain, const TString& src)
+  static Bool_t CreateFromFile(TChain*        chain, 
+			       const TString& src, 
+			       const TString& anchor,
+			       UShort_t       flags=0)
   {
     // Info("CreateFromFile", "Making from single file %s", src.Data());
-    if (!CheckFile(src, chain)) return false;
+    
+    if (!CheckFile(src, anchor, chain, flags)) return false;
     return true;
   }
   //------------------------------------------------------------------
@@ -220,7 +430,9 @@ struct ChainBuilder
    * 
    * @return Newly allocated chain or null
    */
-  static Bool_t CreateFromList(TChain* chain, const TString& src) 
+  static Bool_t CreateFromList(TChain*        chain, 
+			       const TString& src,
+			       UShort_t       flags=0)
   {
     // Info("ChainBuilder::CreateFromList", "Creating from list");
     std::ifstream in(src.Data());
@@ -236,7 +448,9 @@ struct ChainBuilder
       TString l(line.Strip(TString::kBoth));
       if (l.IsWhitespace() || l.BeginsWith("#")) continue;
       
-      if (!CheckFile(l, chain))
+      TString anchor;
+      ExtractAnchor(l, anchor);
+      if (!CheckFile(l, anchor, chain, flags))
 	Warning("ChainBuilder::CreateFromList", 
 		"Failed to add %s to chain", l.Data());
     }
@@ -252,20 +466,28 @@ struct ChainBuilder
   static Bool_t CreateFromDirectory(TChain* chain, 
 				    const TString& src, 
 				    const TString& pattern, 
-				    Bool_t         mc, 
-				    Bool_t         recursive) 
+				    const TString& anchor,
+				    UShort_t       flags)
   {
     // Info("", "Scanning src=%s, pattern=%s, mc=%d recursive=%d", 
     //      src.Data(), pattern.Data(), mc, recursive);
     // Save current directory 
     TString savdir(gSystem->WorkingDirectory());
     TSystemDirectory d(gSystem->BaseName(src.Data()), src.Data());
-    // Info("", "Will scan %s", d.GetTitle());
-    if (!ScanDirectory(chain, &d, pattern, mc, recursive)) return false;
+    if (flags & kVerbose) Info("", "Will scan %s", d.GetTitle());
+    if (!ScanDirectory(chain, &d, pattern, anchor, flags))
+      return false;
     // Go back to the saved directory 
     gSystem->ChangeDirectory(savdir);
     
     return true;
+  }
+  static void RemoveFile(const TString& path)
+  {
+    Info("", "Removing bad file %s", path.Data());
+    gSystem->RedirectOutput("/dev/null", "w");
+    gSystem->Unlink(path);
+    gSystem->RedirectOutput(0);    
   }
   //------------------------------------------------------------------
   /** 
@@ -276,52 +498,83 @@ struct ChainBuilder
    * 
    * @return true on success, false otherwise
    */
-  static Bool_t CheckFile(const TString& path, TChain* chain)
+  static Bool_t CheckFile(const TString& path, 
+			  const TString& anchor, 
+			  TChain* chain,
+			  UShort_t flags=0)
   {
     // Info("", "Checking %s", path.Data());
+    TString fn   = path;
+    if (!anchor.IsNull()) fn.Append(TString::Format("#%s", anchor.Data()));
+
     gSystem->RedirectOutput("/dev/null", "w");
-    TFile* test = TFile::Open(path, "READ");
+    TFile*  test = TFile::Open(fn, "READ");
     gSystem->RedirectOutput(0);
     if (!test) { 
-      Warning("ChainBuilder::CheckFile", "Failed to open %s", path.Data());
+      Warning("ChainBuilder::CheckFile", "Failed to open %s", fn.Data());
+      if (flags & kClean) RemoveFile(path);
       return false;
     }
-
-    TObject* o = test->Get(chain->GetName());
-    if (!o) {
+    
+    Bool_t           ok = false;
+    TObject*         o  = test->Get(chain->GetName());
+    TTree*           t  = dynamic_cast<TTree*>(o);
+    TFileCollection* c  = dynamic_cast<TFileCollection*>(o);
+    if (t) {
+      test->Close();
+      ok = true;
+      if (flags & kMC) { 
+	const char*  auxs[] = { "galice", "Kinematics", "TrackRefs", 0 };
+	const char** aux    = auxs;
+	while ((*aux)) { 
+	  TString t1;
+	  if (anchor.IsNull()) 
+	    t1 = gSystem->ConcatFileName(gSystem->DirName(path.Data()),
+					 Form("%s.root", *aux));
+	  else 
+	    t1 = TString::Format("%s#%s.root", path.Data(), *aux);
+	  
+	  TFile* t2 = TFile::Open(t1, "READ");
+	  if (!t2) { 
+	    Error("", "Needed MC file %s not found", t1.Data());
+	    ok = false;
+	    break;
+	  }
+	  t2->Close();
+	  aux++;
+	}
+      }
+      if (ok) chain->Add(fn, kScan ? -1 : TChain::kBigNumber);
+    } else if (c) {
+      chain->AddFileInfoList(c->GetList());
+      ok = true;
+    } else {
       // Let's try to find a TFileCollection 
       TList* l = test->GetListOfKeys();
       TIter next(l);
       TKey* k = 0;
-      Bool_t ok = false;
       while ((k = static_cast<TKey*>(next()))) {
 	TString cl(k->GetClassName());
 	if (!cl.EqualTo("TFileCollection")) continue;
-	TFileCollection* fc = dynamic_cast<TFileCollection*>(k->ReadObj());
-	if (!fc) { 
+	c = dynamic_cast<TFileCollection*>(k->ReadObj());
+	if (!c) { 
 	  Warning("", "Returned collection invalid");
 	  continue;
 	}
 	// Info("", "Adding file collection");
-	chain->AddFileInfoList(fc->GetList());
+	chain->AddFileInfoList(c->GetList());
 	ok = true;
       }
-      if (ok) { 
-	test->Close();
-	return true;
-      }
-    }
-    else if (dynamic_cast<TTree*>(o)) {
       test->Close();
-      chain->Add(path);
-      return true;
     }
-    
-    Warning("ChainBuilder::CheckFile", 
-	    "The file %s does not contain the tree %s or a file collection", 
-	    path.Data(), chain->GetName());
-    
-    return false;
+
+    if (!ok) {
+      Warning("ChainBuilder::CheckFile", 
+	      "The file %s does not contain the tree %s or a file collection", 
+	      path.Data(), chain->GetName());
+      if (flags & kClean) RemoveFile(path);
+    }
+    return ok;
   }
   //------------------------------------------------------------------
   /** 
@@ -339,8 +592,8 @@ struct ChainBuilder
   static Bool_t ScanDirectory(TChain*           chain, 
 			      TSystemDirectory* dir,
 			      const TString&    pattern,
-			      Bool_t            mc,
-			      Bool_t            recursive)
+			      const TString&    anchor,
+			      UShort_t          flags)
   {
     // Assume failure 
     Bool_t ret = false;
@@ -360,9 +613,6 @@ struct ChainBuilder
 
     TList toAdd;
     toAdd.SetOwner();
-    Bool_t hasGAlice = (!(mc) ? true : false);
-    Bool_t hasKine   = (!(mc) ? true : false);
-    Bool_t hasTrRef  = (!(mc) ? true : false);
     
     // Sort list of files and check if we should add it 
     files->Sort();
@@ -372,14 +622,13 @@ struct ChainBuilder
       TString name(file->GetName());
       TString title(file->GetTitle());
       TString full(gSystem->ConcatFileName(file->GetTitle(), name.Data()));
-      // Info("", "Got file %s", full.Data());
       if (file->IsA()->InheritsFrom(TSystemDirectory::Class())) full = title;
       // Ignore special links 
       if (name == "." || name == "..") { 
 	// Info("ChainBuilder::ScanDirectory", "Ignoring %s", name.Data());
 	continue;
       }
-      // Info("", "Got file %s", full.Data());
+      if ((flags & kVerbose)) Info("", "Got file %s", full.Data());
 
       FileStat_t fs;
       if (gSystem->GetPathInfo(full.Data(), fs)) {
@@ -389,12 +638,12 @@ struct ChainBuilder
       }
       // Check if this is a directory 
       if (file->IsDirectory(full)) { 
-	// Info("", "Recursive scan of %s", full.Data());
-	if (recursive) {
+	if ((flags & kVerbose)) Info("", "Recursive scan of %s", full.Data());
+	if ((flags & kRecursive)) {
 	  // if (title[0] == '/') 
 	  TSystemDirectory* d = new TSystemDirectory(file->GetName(),
 						     full.Data());
-	  if (ScanDirectory(chain, d, pattern, mc, recursive)) 
+	  if (ScanDirectory(chain, d, pattern, anchor, flags))
 	    ret = true;
 	  delete d;
 	}
@@ -402,35 +651,23 @@ struct ChainBuilder
       }
     
       // If this is not a root file, ignore 
-      if (!name.EndsWith(".root")) {
-	// Info("ScanDirectory", "File %s does not end in .root", name.Data());
+      if (!name.EndsWith(".root") && !name.EndsWith(".zip")) {
+	if ((flags & kVerbose))
+	  Info("ScanDirectory", "File %s does not end in .root/.zip", 
+	       name.Data());
 	continue;
       }
 
       // If this file does not contain AliESDs, ignore 
       if (!name.Contains(pattern)) { 
-	// Info("ChainBuilder::ScanDirectory", "%s does not match pattern %s", 
-	//      name.Data(), pattern.Data());
-	if (mc) {
-	  if (name.CompareTo("galice.root") == 0)     hasGAlice = true;
-	  if (name.CompareTo("Kinematics.root") == 0) hasKine   = true;
-	  if (name.CompareTo("TrackRefs.root")  == 0) hasTrRef = true;
-	}
+	Info("ChainBuilder::ScanDirectory", "%s does not match pattern %s", 
+	     name.Data(), pattern.Data());
 	continue;
       }
     
       // Add 
       // Info("ChainBuilder::ScanDirectory", "Adding %s", full.Data());
       toAdd.Add(new TObjString(full));
-    }
-
-    if (mc && toAdd.GetEntries() > 0 && 
-	(!hasGAlice || !hasKine || !hasTrRef)) { 
-      Warning("ChainBuilder::ScanDirectory", 
-	      "one or more of {galice,Kinematics,TrackRefs}.root missing from "
-	      "%s, not adding anything from this directory", 
-	      dir->GetTitle());
-      toAdd.Delete();
     }
 
     TIter nextAdd(&toAdd);
@@ -440,7 +677,7 @@ struct ChainBuilder
       // Info("ChainBuilder::ScanDirectory", 
       //      "Adding %s", s->GetString().Data());
       TString fn = s->GetString();
-      if (!CheckFile(fn, chain)) continue;
+      if (!CheckFile(fn, anchor, chain, flags)) continue;
 
       added++;
     }

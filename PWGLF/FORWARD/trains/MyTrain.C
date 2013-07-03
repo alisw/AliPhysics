@@ -4,6 +4,8 @@
 class AliAnalysisManager;
 #endif
 #include "TrainSetup.C"
+#include "ParUtilities.C"
+
 class MyTrain : public TrainSetup
 {
 public:
@@ -13,10 +15,10 @@ public:
   }
   void CreateTasks(AliAnalysisManager* mgr)
   {
-    if (!ParUtilities::MakeScriptPAR(fHelper::Mode() != Helper::kLocal, 
+    if (!ParUtilities::MakeScriptPAR(fHelper->Mode() != Helper::kLocal, 
 				     "MyAnalysis.C", 
 				     "STEERBase,ESD,AOD,ANALYSIS,"
-				     "OADB,ANALYSISalice"))
+				     "OADB,ANALYSISalice", fHelper))
       Fatal("CreateTasks", "Failed to create PAR file");
     fHelper->LoadLibrary("MyAnalysis");
     
@@ -39,7 +41,7 @@ public:
     mgr->ConnectInput(t, 0, mgr->GetCommonInputContainer());
   }
   void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
-  AliVEventHandler* CreateOutputHandler(UShort_t type) { return 0; }
+  AliVEventHandler* CreateOutputHandler(UShort_t) { return 0; }
   const char* ClassName() const { return "MyTrain"; }
 };
 //

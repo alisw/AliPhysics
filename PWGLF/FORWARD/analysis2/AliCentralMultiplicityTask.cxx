@@ -48,6 +48,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
   fNTracklet(0),
     fVtxList(0),
     fStore(false),
+    fHData(0),
     fCorrManager(0)
 {
   // 
@@ -55,6 +56,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
   //   
   DGUARD(fDebug, 3,"Named CTOR of AliCentralMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 
   fCorrManager = &(AliCentralCorrectionManager::Instance());
   fBranchNames = 
@@ -77,6 +79,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fNTracklet(0),
     fVtxList(0),
     fStore(false),
+    fHData(0),
     fCorrManager(0)
 {
   // 
@@ -100,6 +103,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fNTracklet(o.fNTracklet),
     fVtxList(o.fVtxList),
     fStore(o.fStore),
+    fHData(o.fHData),
     fCorrManager(o.fCorrManager)
 {
   //
@@ -131,6 +135,7 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   fVtxList           = o.fVtxList;
   fCorrManager       = o.fCorrManager;
   fStore             = o.fStore;
+  fHData             = o.fHData;
   return *this;
 }
 //____________________________________________________________________
@@ -275,10 +280,21 @@ AliCentralMultiplicityTask::GetESDEvent()
   fNTracklet->SetDirectory(0);
   fNTracklet->Sumw2();
 
+  fList->Add(AliForwardUtil::MakeParameter("secondary",  fUseSecondary));
+  fList->Add(AliForwardUtil::MakeParameter("acceptance", fUseAcceptance));
+
+  fHData = static_cast<TH2D*>(fAODCentral.GetHistogram().Clone("d2Ndetadphi"));
+  fHData->SetStats(0);
+  fHData->SetDirectory(0);
+  fList->Add(fHData);
+
   // Initialize the inspecto 
   fInspector.SetupForData(vaxis);
   fFirstEventSeen = kTRUE;
 
+  fAODCentral.SetBit(AliAODCentralMult::kSecondary,  fUseSecondary);
+  fAODCentral.SetBit(AliAODCentralMult::kAcceptance, fUseAcceptance);
+  
   // Print some information 
   Print("R");
 
@@ -386,6 +402,9 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   ProcessESD(aodHist, spdmult);
   bin->Correct(aodHist, fUseSecondary, fUseAcceptance);
   
+  if (triggers & AliAODForwardMult::kInel) 
+    fHData->Add(&(fAODCentral.GetHistogram()));
+
   PostData(1,fList);
 }
 //____________________________________________________________________
@@ -430,7 +449,117 @@ void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/)
   //    option Not used 
   //
   DGUARD(fDebug,1,"Process merged output in AliCentralMultiplicityTask");
+
+  TList* list = dynamic_cast<TList*>(GetOutputData(1));
+  if (!list) {
+    AliError(Form("No output list defined (%p)", GetOutputData(1)));
+    if (GetOutputData(1)) GetOutputData(1)->Print();
+    return;
+  }
+  TList* output = new TList;
+  output->SetName(Form("%sResults", GetName()));
+  output->SetOwner();
+
+  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
+  MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
+  AliInfoF("\n"
+	   "\t# events w/trigger:                 %f\n"
+	   "\t# events w/trigger+vertex:          %f\n"
+	   "\t# events accepted y cuts:           %f", 
+	   nTr, nTrVtx, nAcc);
+
+  PostData(2, output);
 }
+
+//____________________________________________________________________
+Bool_t
+AliCentralMultiplicityTask::MakeSimpledNdeta(const TList* input, 
+					     TList*       output,
+					     Double_t&    nTr, 
+					     Double_t&    nTrVtx, 
+					     Double_t&    nAcc)
+{
+  // Get our histograms from the container 
+  TH1I* hEventsTr    = 0;
+  TH1I* hEventsTrVtx = 0;
+  TH1I* hEventsAcc   = 0;
+  TH1I* hTriggers    = 0;
+  if (!GetEventInspector().FetchHistograms(input, 
+					   hEventsTr, 
+					   hEventsTrVtx, 
+					   hEventsAcc,
+					   hTriggers)) { 
+    AliError(Form("Didn't get histograms from event selector "
+		  "(hEventsTr=%p,hEventsTrVtx=%p,hEventsAcc=%p,hTriggers=%p)", 
+		  hEventsTr, hEventsTrVtx, hEventsAcc, hTriggers));
+    input->ls();
+    return false;
+  }
+  nTr             = hEventsTr->Integral();
+  nTrVtx          = hEventsTrVtx->Integral();
+  nAcc            = hEventsAcc->Integral();
+  Double_t vtxEff = nTrVtx / nTr;
+  TH2D*   hData   = static_cast<TH2D*>(input->FindObject("d2Ndetadphi"));
+  if (!hData) { 
+    AliError(Form("Couldn't get our summed histogram from output "
+		  "list %s (d2Ndetadphi=%p)", input->GetName(), hData));
+    input->ls();
+    return false;
+  }
+
+  Int_t nY      = hData->GetNbinsY();
+  TH1D* dNdeta  = hData->ProjectionX("dNdeta",  1,     nY, "e");
+  TH1D* dNdeta_ = hData->ProjectionX("dNdeta_", 1,     nY, "e");
+  TH1D* norm    = hData->ProjectionX("norm",    0,     0,  "");
+  TH1D* phi     = hData->ProjectionX("phi",     nY+1,  nY+1,  "");
+  dNdeta->SetTitle("dN_{ch}/d#eta in the forward regions");
+  dNdeta->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
+  dNdeta->SetMarkerColor(kRed+1);
+  dNdeta->SetMarkerStyle(20);
+  dNdeta->SetDirectory(0);
+
+  dNdeta_->SetTitle("dN_{ch}/d#eta in the forward regions");
+  dNdeta_->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
+  dNdeta_->SetMarkerColor(kMagenta+1);
+  dNdeta_->SetMarkerStyle(21);
+  dNdeta_->SetDirectory(0);
+
+  norm->SetTitle("Normalization to  #eta coverage");
+  norm->SetYTitle("#eta coverage");
+  norm->SetLineColor(kBlue+1);
+  norm->SetMarkerColor(kBlue+1);
+  norm->SetMarkerStyle(21);
+  norm->SetFillColor(kBlue+1);
+  norm->SetFillStyle(3005);
+  norm->SetDirectory(0);
+
+  phi->SetTitle("Normalization to  #phi acceptance");
+  phi->SetYTitle("#phi acceptance");
+  phi->SetLineColor(kGreen+1);
+  phi->SetMarkerColor(kGreen+1);
+  phi->SetMarkerStyle(20);
+  phi->SetFillColor(kGreen+1);
+  phi->SetFillStyle(3004);
+  // phi->Scale(1. / nAcc);
+  phi->SetDirectory(0);
+
+  // dNdeta->Divide(norm);
+  dNdeta->Divide(phi);
+  dNdeta->SetStats(0);
+  dNdeta->Scale(vtxEff,	"width");
+
+  dNdeta_->Divide(norm);
+  dNdeta_->SetStats(0);
+  dNdeta_->Scale(vtxEff, "width");
+
+  output->Add(dNdeta);
+  output->Add(dNdeta_);
+  output->Add(norm);
+  output->Add(phi);
+
+  return true;
+}
+
 //____________________________________________________________________
 void
 AliCentralMultiplicityTask::Print(Option_t* option) const
@@ -671,7 +800,9 @@ AliCentralMultiplicityTask::VtxBin::Correct(TH2D&  aodHist,
     if (ix < fEtaMin || ix > fEtaMax) fiducial = false;
     //  Bool_t etabinSeen = kFALSE;  
 
-    Float_t accCor = fAcc->GetBinContent(ix);
+    Double_t eta    = aodHist.GetXaxis()->GetBinCenter(ix);
+    Int_t    iax    = fAcc->GetXaxis()->FindBin(eta);
+    Float_t  accCor = fAcc->GetBinContent(iax);
     // For test
     // Float_t accErr = fAcc->GetBinError(ix);
 

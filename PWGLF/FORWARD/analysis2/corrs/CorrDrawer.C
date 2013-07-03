@@ -9,11 +9,11 @@
 # include <TString.h>
 # include <TError.h>
 #else
-class SummaryDrawer;
-class TAxis;
-class AliFMDCorrAcceptance;
-class AliFMDCorrSecondaryMap;
-class AliFMDCorrELossFit;
+// class SummaryDrawer;
+// class TAxis;
+// class AliFMDCorrAcceptance;
+// class AliFMDCorrSecondaryMap;
+// class AliFMDCorrELossFit;
 #endif
 
 class CorrDrawer : public SummaryDrawer
@@ -51,11 +51,11 @@ public:
 			   ULong_t         runNo, 
 			   UShort_t        sys, 
 			   UShort_t        sNN, 
-			   UShort_t        field,
+			   Short_t         field,
 			   Bool_t          mc=false, 
 			   Bool_t          sat=false)
   {
-    out = TString::Format("%s_run%09d_%s_%04dGeV_%c%dkG_%s_%s.pdf",
+    out = TString::Format("%s_run%09lu_%s_%04dGeV_%c%dkG_%s_%s.pdf",
 			  prefix.Data(), runNo, 
 			  (sys == 1 ? "pp" : 
 			   sys == 2 ? "PbPb" : 
@@ -230,9 +230,9 @@ public:
    */
   void Summarize(const TString& what, 
 		 ULong_t        runNo, 
-		 UShort_t       sys, 
+		 const Char_t*  sys, 
 		 UShort_t       sNN, 
-		 UShort_t       field,
+		 Short_t        field,
 		 Bool_t         mc=false, 
 		 Bool_t         sat=false,
 		 Option_t*      options="",
@@ -259,7 +259,7 @@ public:
 		 ULong_t     runNo, 
 		 UShort_t    sys, 
 		 UShort_t    sNN, 
-		 UShort_t    field,
+		 Short_t     field,
 		 Bool_t      mc=false, 
 		 Bool_t      sat=false,
 		 Option_t*   options="",
@@ -289,8 +289,8 @@ public:
     
     if (!mgr.Init(runNo, sys, sNN, field, mc, sat, flag, true)) {
       Error("CorrDrawer", "Failed to initialize for flags=0x%02x"
-		"run=%lu, sys=%hu, sNN=%hu, field=%hd, mc=%d, sat=%d",
-		flags, runNo, sys, sNN, field, mc, sat);
+	    "run=%lu, sys=%hu, sNN=%hu, field=%hd, mc=%d, sat=%d",
+	    flag, runNo, sys, sNN, field, mc, sat);
       return;
     }
 
@@ -347,7 +347,7 @@ public:
    * @param o Object to draw
    * @param pdf Not used
    */
-  void Summarize(const TObject* o, Bool_t pdf) 
+  void Summarize(const TObject* o, Bool_t pdf=true) 
   {
     if (!o) return;
     Warning("CorrDrawer", "Don't know how to draw a %s object", 
@@ -360,7 +360,7 @@ public:
    * @param acc Acceptance correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  void Summarize(const AliFMDCorrAcceptance* acc, Bool_t pdf) 
+  void Summarize(const AliFMDCorrAcceptance* acc, Bool_t pdf=true) 
   { 
     CreateCanvas("acceptance.pdf", false, pdf);
     DrawIt(acc, pdf); 
@@ -373,7 +373,7 @@ public:
    * @param sec Secondary correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf) 
+  void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf=true) 
   { 
     CreateCanvas("scondarymap.pdf", false, pdf);
     DrawIt(sec, pdf); 
@@ -391,6 +391,48 @@ public:
     CreateCanvas("elossfits.pdf", false, pdf);
     DrawIt(fits, pdf); 
     if (pdf) CloseCanvas();
+  }
+
+  static void Summarize(const TString& what   = "", 
+			Bool_t         mc     = false,
+			const TString& output = "forward_eloss.root", 
+			const TString& local  = "fmd_corrections.root",
+			Option_t*      options= "")
+  {
+    Summarize(AliForwardCorrectionManager::ParseFields(what), mc, 
+	      output, local, options);
+  }
+  static void Summarize(UShort_t       what, 
+			Bool_t         mc     = false,
+			const TString& output = "forward_eloss.root", 
+			const TString& local  = "fmd_corrections.root",
+			Option_t*      options= "")
+  {
+    TFile* fout = TFile::Open(output, "READ");
+    if (!fout) { 
+      Warning("SummarizeELoss", "Energy loss task output %s not found",
+	      output.Data());
+      return;
+    }
+    TCollection* forward = GetCollection(fout, "Forward");
+    if (!forward) return;
+    
+    TCollection* eventInsp = GetCollection(forward, "fmdEventInspector");
+    if (!eventInsp) return;
+
+    UShort_t sys   = 0, sNN = 0;
+    Int_t    field = 0;
+    Int_t    runNo; 
+    Bool_t satellite;
+    if (!GetParameter(eventInsp, "sys",       sys))       return;
+    if (!GetParameter(eventInsp, "sNN",       sNN))       return;
+    if (!GetParameter(eventInsp, "field",     field))     return;
+    if (!GetParameter(eventInsp, "satellite", satellite)) return;
+    if (!GetParameter(eventInsp, "runNo",     runNo))     return;
+    
+    CorrDrawer* drawer = new CorrDrawer;
+    drawer->Run(what, runNo, sys, sNN, field, mc, satellite,
+		options, local);
   }
 protected:
   /** 
@@ -463,6 +505,7 @@ protected:
 	  TH2* h2 = corr->GetCorrection(d, r, v);
 	  if (!h2) { 
 	    Warning("DrawCorrAcc", "No correction for FMD%d%c, v=%d", d, r, v);
+	    corr->ls();
 	    continue;
 	  }
 	  
@@ -749,8 +792,7 @@ protected:
       }
       // if (same)
       DrawInPad(fBody, j+1, fit, 
-		Form("comp good values legend %s %s", 
-		     (same ? "same" : "")),
+		Form("comp good values legend %s", (same ? "same" : "")),
 		0x2);
       if (fit->GetQuality() < 8) { 
 	TLatex* ltx = new TLatex(.2, .2, "NOT USED");

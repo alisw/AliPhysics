@@ -15,6 +15,7 @@
 #include <THStack.h>
 #include <TROOT.h>
 #include <TVector3.h>
+#include <TParameter.h>
 #include <iostream>
 #include <iomanip>
 
@@ -353,18 +354,21 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Double_t oldPhi = phi;
 
 	  // --- Re-calculate eta - needed for satelittes ------------
-	  if( fRecalculateEta)  
+	  if (eta == AliESDFMD::kInvalidEta || fRecalculateEta)  
 	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,ip.Z());
 
 	  // --- Check this strip ------------------------------------
 	  rh->fTotal->Fill(eta);
-	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
+	  if (mult == AliESDFMD::kInvalidMult) { //  || mult > 20) {
 	    // Do not count invalid stuff 
 	    rh->fELoss->Fill(-1);
 	    // rh->fEvsN->Fill(mult,-1);
 	    // rh->fEvsM->Fill(mult,-1);
 	    continue;
 	  }
+	  if (mult > 20) 
+	    AliWarningF("Raw multiplicity of FMD%d%c[%02d,%03d] = %f > 20",
+			d, r, s, t, mult);
 	  // --- Automatic calculation of acceptance -----------------
 	  rh->fGood->Fill(eta);
 
@@ -381,6 +385,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  // --- Get the low multiplicity cut ------------------------
 	  Double_t cut  = 1024;
 	  if (eta != AliESDFMD::kInvalidEta) cut = GetMultCut(d, r, eta,false);
+	  else AliWarningF("Eta for FMD%d%c[%02d,%03d] is invalid: %f", 
+			   d, r, s, t, eta);
 
 	  // --- Now caluculate Nch for this strip using fits --------
 	  Double_t n   = 0;
@@ -913,6 +919,9 @@ AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
   TObject* reEt   = AliForwardUtil::MakeParameter("recalcEta", fRecalculateEta);
   TObject* rePh   = AliForwardUtil::MakeParameter("recalcPhi", fRecalculatePhi);
 
+  TParameter<int>* nFiles = new TParameter<int>("nFiles", 1);
+  nFiles->SetMergeMode('+');
+  
   // d->Add(sigma);
   d->Add(maxP);
   d->Add(method);
@@ -921,6 +930,7 @@ AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
   d->Add(phiL);
   d->Add(reEt);
   d->Add(rePh);
+  d->Add(nFiles);
   // d->Add(nxi);
   fCuts.Output(d,"lCuts");
 
@@ -1109,6 +1119,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDiffELossPoisson->SetYTitle("Frequency");
   fDiffELossPoisson->SetMarkerColor(Color());
   fDiffELossPoisson->SetFillColor(Color());
+  fDiffELossPoisson->SetFillStyle(3001);
   fDiffELossPoisson->Sumw2();
 			       
   fELoss = new TH1D("eloss", "#Delta/#Delta_{mip} in all strips", 
@@ -1136,6 +1147,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fPhiBefore->SetMarkerColor(Color());
   fPhiBefore->SetLineColor(Color());
   fPhiBefore->SetFillColor(Color());
+  fPhiBefore->SetFillStyle(3001);
   fPhiBefore->SetMarkerStyle(20);
 
   fPhiAfter = static_cast<TH1D*>(fPhiBefore->Clone("phiAfter"));

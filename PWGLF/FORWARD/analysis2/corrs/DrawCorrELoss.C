@@ -35,9 +35,38 @@ DrawCorrELoss(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
   gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
   gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
 
+  // --- Set limits on fits the energy -------------------------------
+  // Maximum relative error on parameters 
+  AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
+  // Least weight to use 
+  AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+  // Maximum value of reduced chi^2 
+  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
+
   CorrDrawer d;
   d.Summarize(AliForwardCorrectionManager::kELossFits, runNo, sys, sNN, field, 
 	      mc, sat, "", fname);
+}
+void
+DrawCorrELoss(Bool_t      mc, 
+	      const char* file="forward_eloss.root", 
+	      const char* local="fmd_corrections.root")
+{
+  const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+  gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
+  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
+
+  // --- Set limits on fits the energy -------------------------------
+  // Maximum relative error on parameters 
+  AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
+  // Least weight to use 
+  AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+  // Maximum value of reduced chi^2 
+  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
+
+  CorrDrawer::Summarize(AliForwardCorrectionManager::kELossFits, 
+			mc, file, local);
 }
 //
 // EOF

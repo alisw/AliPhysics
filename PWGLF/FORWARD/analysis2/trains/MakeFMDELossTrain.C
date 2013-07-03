@@ -97,7 +97,7 @@ protected:
   AliVEventHandler* CreateOutputHandler(UShort_t) { return 0; }
 
   //__________________________________________________________________
-  const char* ClassName() const { return "MakeFMDElossTrain"; }
+  const char* ClassName() const { return "MakeFMDELossTrain"; }
   //__________________________________________________________________
   /** 
    * Overloaded to create new Extract.C in the output 

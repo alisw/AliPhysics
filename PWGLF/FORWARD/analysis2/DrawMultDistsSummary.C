@@ -8,14 +8,14 @@
  * 
  */
 //____________________________________________________________________
-void DrawdNdetaSummary(const char* fname="forward_dndeta.root",
+void DrawMultDistsSummary(const char* fname="forward_multdists.root",
 		       UShort_t what=0xf)
 {
   gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2/scripts",
 			   gROOT->GetMacroPath()));
-  gROOT->LoadMacro("SummarydNdetaDrawer.C++g");
+  gROOT->LoadMacro("SummaryMultDistsDrawer.C++g");
   
-  SummarydNdetaDrawer d;
+  SummaryMultDistsDrawer d;
   d.Run(fname, what);
 }
 

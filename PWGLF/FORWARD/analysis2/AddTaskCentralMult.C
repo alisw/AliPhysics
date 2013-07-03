@@ -64,13 +64,18 @@ AddTaskCentralMult(Bool_t      mc=false,
   }
 
   // --- Make the output container and connect it --------------------
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
-  
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Central", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,outputfile);
+			 AliAnalysisManager::kOutputContainer,
+			 AliAnalysisManager::GetCommonFileName());
+  AliAnalysisDataContainer *output = 
+    mgr->CreateContainer("CentralResults", TList::Class(), 
+			 AliAnalysisManager::kParamContainer, 
+			 AliAnalysisManager::GetCommonFileName());
+  
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, histOut);
+  mgr->ConnectOutput(task, 2, output);
   
   return task;
 }

@@ -137,6 +137,18 @@ public:
    * @return Reference to used event inspector
    */
   const AliFMDEventInspector& GetInspector() const { return fInspector; }
+  /** 
+   * Get the event inspector
+   * 
+   * @return Reference to used event inspector
+   */
+  AliFMDEventInspector& GetEventInspector() { return fInspector; }
+  /** 
+   * Get the event inspector
+   * 
+   * @return Reference to used event inspector
+   */
+  const AliFMDEventInspector& GetEventInspector() const { return fInspector; }
 
 protected:
   /** 
@@ -196,6 +208,22 @@ protected:
   };
     
 protected: 
+  /** 
+   * Make a simple @f$\frac{dN_{ch}}{d\eta}@f$ estimate. 
+   * 
+   * @param input   Sum list
+   * @param output  Output list 
+   * @param nTr     On return, the number of events w/triggers
+   * @param nTrVtx  On return, the number of events w/triggers+vertex
+   * @param nAcc    On return, the number of accepted events 
+   * 
+   * @return true on success, false otherwise 
+   */
+  Bool_t MakeSimpledNdeta(const TList* input, 
+			  TList*       output,
+			  Double_t&    nTr, 
+			  Double_t&    nTrVtx, 
+			  Double_t&    nAcc);
   AliFMDEventInspector   fInspector;        // Inspect events 
   TList*                 fList;             // Output list
   AliAODCentralMult      fAODCentral;       // Output object
@@ -209,9 +237,10 @@ protected:
   TH1D*                  fNTracklet;        //! number of tracklets 
   TObjArray*             fVtxList;          //! Array of vertex bins
   Bool_t                 fStore;            // Store diagnostics
+  TH2D*                  fHData;            // Sum of signals 
 private:
   AliCentralCorrectionManager* fCorrManager; 
-  ClassDef(AliCentralMultiplicityTask,5)    // Forward multiplicity class
+  ClassDef(AliCentralMultiplicityTask,4)    // Forward multiplicity class
 };
 
 #endif

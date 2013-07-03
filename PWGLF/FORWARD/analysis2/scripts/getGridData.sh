@@ -186,14 +186,14 @@ get_filelist()
 {
     mess 3 "Getting file list" 
     
-    local datd=data
+    local datd=data/
     local esdd=ESDs/
     local yerd=$year/
     case x$prodpost in 
 	x_*) ;; 
 	x) ;; 
 	*)  mess 3 "Assuming simulation output"
-	    datd=sim 
+	    datd=sim/ 
 	    esdd= 
 	    yerd=
 	    ;; 

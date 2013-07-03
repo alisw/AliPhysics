@@ -289,7 +289,9 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
     if (!s) states.AddAt(s = new TObjString(""), i);
     s->SetString("MISSING");
   }
-  
+
+  // Here, we'd ideally use TGrid::Ps but that doesn't work, so we use
+  // the shell instead. 
   TString fn("gridMonitor");
   FILE* fp = gSystem->TempFileName(fn);
 
@@ -337,7 +339,26 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
   return true;
 }
 
+/** 
+ * Refersh the grid token every 6th hour
+ * 
+ * @param now 
+ * @param force 
+ */
+void RefreshToken(UInt_t now, Bool_t force=false)
+{
+  static UInt_t start = 0;
+  if (start == 0) start = now;
+  
+  // Try to refresh token every 6th hour
+  if (!force || (now - start) / 60 / 60 < 6) return;
 
+  // Reset the start time 
+  start = now;
+  Printf("=== Refreshing AliEn token");
+  gSystem->Exec("alien-token-init");
+  Printf("=== Done refreshing AliEn token");
+}
 /** 
  * Wait of jobs to finish 
  * 
@@ -356,7 +377,7 @@ Bool_t WaitForJobs(TArrayI&   jobs,
 {
   Bool_t stopped = false;
   TFileHandler h(0, 0x1);
-  UInt_t start = 0;
+  RefreshToken(0, true);
   do { 
     Bool_t allDone = true;
     TDatime t;
@@ -364,7 +385,6 @@ Bool_t WaitForJobs(TArrayI&   jobs,
 	   t.GetYear(), t.GetMonth(), t.GetDay(), 
 	   t.GetHour(), t.GetMinute(), t.GetSecond());
     UInt_t now = t.Convert(true);
-    if (start <= 0) start = now;
 
     TObjArray states;
     GetJobStates(jobs, states);
@@ -391,14 +411,7 @@ Bool_t WaitForJobs(TArrayI&   jobs,
       Printf(" %d(%s)=%s", job, stages->At(i)->GetName(), state.Data());
       
     }
-    // Try to refresh token every 6th hour
-    if ((now - start) / 60 / 60 > 6) { 
-      // Reset the start time 
-      start = now;
-      Printf("=== Refreshing AliEn token");
-      gSystem->Exec("alien-token-init");
-      Printf("=== Done refreshing AliEn token");
-    }
+    RefreshToken(now);
 
     if (allDone) break;
     if (missing >= total) {

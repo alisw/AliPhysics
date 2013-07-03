@@ -45,6 +45,7 @@ enum {
   UA5, 
   CMS, 
   ALICE, 
+  WIP,
   PYTHIA,
   INEL, 
   INELGt0, 
@@ -57,6 +58,8 @@ enum {
   CMSStyle   = 29, 
   /** Style used for ALICE published data */
   ALICEStyle = 27,
+  /** Color used for ALICE work-in-progress data */
+  WIPStyle = 33,
   /** Style used for Pythia data */
   PYTHIAStyle = 28,
   /** Color used for UA5 data */
@@ -66,7 +69,9 @@ enum {
   /** Color used for CMS data */
   CMSColor   = kGreen+1,
   /** Color used for ALICE data */
-  ALICEColor = kMagenta+1
+  ALICEColor = kMagenta+1,
+  /** Color used for ALICE work-in-progress data */
+  WIPColor = kMagenta+3
 }; 
 enum { 
   /** Marker style INEL data */
@@ -100,28 +105,31 @@ enum {
  * @ingroup pwglf_forward_otherdata
  */
 void
-SetGraphAttributes(TGraph* g, Int_t /*trig*/, Int_t exp, bool mirror,
+SetGraphAttributes(TGraph* g, Int_t trig, Int_t exp, bool mirror,
 		   const Char_t* name, const Char_t* title)
 {
   Int_t color = 0;
   switch (exp) { 
-  case UA5:    color = UA5Color;    break;
-  case CMS:    color = CMSColor;    break;
-  case ALICE:  color = ALICEColor;  break;
-  case PYTHIA: color = PYTHIAColor; break;
+  case UA5:       color = UA5Color;       break;
+  case CMS:       color = CMSColor;       break;
+  case ALICE:     color = ALICEColor;     break;
+  case WIP:       color = WIPColor;       break;
+  case PYTHIA:    color = PYTHIAColor;    break;
   }
   Int_t style = 0;
   switch (exp) { 
-  case UA5:    style = UA5Style;    break;
-  case CMS:    style = CMSStyle;    break;
-  case ALICE:  style = ALICEStyle;  break;
-  case PYTHIA: style = PYTHIAStyle; break;
+  case UA5:       style = UA5Style;        break;
+  case CMS:       style = CMSStyle;        break;
+  case ALICE:     style = ALICEStyle;      break;
+  case WIP:       style = WIPStyle;        break;
+  case PYTHIA:    style = PYTHIAStyle;     break;
   }
   Float_t size = g->GetMarkerSize();
   switch (style) {
   case 21: 
   case 25: size *= 0.8; break;
   case 27: size *= 1.4; break;
+  case 33: size *= 1.4; break;
   }
     
   if (mirror) style += MirrorOff;
@@ -725,7 +733,8 @@ TGraphAsymmErrors* AliceCentralInel900()
   }
   g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
   SetGraphAttributes(g, INEL, ALICE, false, "alice_inel", 
-		     "ALICE INEL (publ.)");
+		     "INEL - Eur.Phys.J.C68:89-108,2010"
+		     /* "ALICE INEL (publ.)" */);
 
   return g;
 }
@@ -806,7 +815,8 @@ TGraphAsymmErrors* AliceCentralInelGt900()
   g->SetPointError(14,0.1,0.1,0.0711888,0.078178);
 #endif
   SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt900", 
-		     "ALICE INEL>0 (publ.)");
+		     // "ALICE INEL>0 (publ.)"
+		     "INEL>0 - Eur.Phys.J.C68:345-354,2010");
   return g;
 }
 
@@ -883,7 +893,8 @@ TGraphAsymmErrors* AliceCentralInelGt2360()
 #endif
 
   SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt2360", 
-		     "ALICE INEL>0 (publ.)");
+		     // "ALICE INEL>0 (publ.)"
+		     "INEL>0 - Eur.Phys.J.C68:345-354,2010");
   return g;
 }
 
@@ -960,7 +971,8 @@ TGraphAsymmErrors* AliceCentralInelGt7000()
   g->SetPointError(14,0.1,0.1,0.127118,0.218551);
 #endif
   SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt7000", 
-		     "ALICE INEL>0 (publ.)");
+		     // "ALICE INEL>0 (publ.)"
+		     "INEL > 0 - Eur.Phys.J.C68:345-354,2010");
   return g;
 }
 
@@ -1008,7 +1020,9 @@ TGraphAsymmErrors* AliceCentralNsd900()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, NSD, ALICE, false, "alice_nsd", "ALICE NSD (publ.)");
+  SetGraphAttributes(g, NSD, ALICE, false, "alice_nsd", 
+		     //"ALICE NSD (publ.)"
+		     "NSD - Eur.Phys.J.C68:89-108,2010");
 
   return g;
 }
@@ -1058,7 +1072,8 @@ TGraphAsymmErrors* AliceCentralInel2360()
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
   SetGraphAttributes(g, NSD, ALICE, false, "alice_inel2360", 
-		     "ALICE INEL (publ.)");
+		     // "ALICE INEL (publ.)"
+		     "INEL - Eur.Phys.J.C68:89-108,2010");
   return g;
 }
 
@@ -1108,7 +1123,8 @@ TGraphAsymmErrors* AliceCentralNsd2360()
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
   SetGraphAttributes(g, NSD, ALICE, false, "alice_nsd2360", 
-		     "ALICE NSD (publ.)");
+		     // "ALICE NSD (publ.)"
+		     "NSD - Eur.Phys.J.C68:89-108,2010");
   return g;
 }
 
@@ -1219,8 +1235,428 @@ TGraphAsymmErrors* AliceCentralpPb5023()
   g->SetPointError(42,0.05,0.05,0.802706,0.802706);
 
 
-  SetGraphAttributes(g, INEL, ALICE, false, "alice_ppb50230", 
-		     "ALICE arXiv:1210.3615");
+  SetGraphAttributes(g, NSD, ALICE, false, "alice_ppb50230", 
+		     "NSD arXiv:1210.3615");
+  return g;
+}
+
+//____________________________________________________________________
+/** 
+ * Get the ALICE INEL data in @f$ |\eta|<1.8@f$ for pp at @f$ \sqrt{s}
+ * = 900GeV@f$ 
+ * Work in progress
+ *
+ * @return graph of data 
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInel900Work()
+{
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(18);
+  // g->SetPoint(0,-1.9,0);   g->SetPointError(0,0.1,0.1,0,0);
+  g->SetPoint(0,-1.7,3.13935);	g->SetPointError(0,0.1,0.1,0.0726186,0.0525276);
+  g->SetPoint(1,-1.5,3.15634);	g->SetPointError(1,0.1,0.1,0.0338547,0.0380273);
+  g->SetPoint(2,-1.3,3.13683);	g->SetPointError(2,0.1,0.1,0.0295176,0.0295638);
+  g->SetPoint(3,-1.1,3.10618);	g->SetPointError(3,0.1,0.1,0.0306925,0.0329387);
+  g->SetPoint(4,-0.9,3.05921);	g->SetPointError(4,0.1,0.1,0.0224684,0.025408);
+  g->SetPoint(5,-0.7,3.00303);	g->SetPointError(5,0.1,0.1,0.0389278,0.0238328);
+  g->SetPoint(6,-0.5,2.94604);	g->SetPointError(6,0.1,0.1,0.0211986,0.0322219);
+  g->SetPoint(7,-0.3,2.91507);	g->SetPointError(7,0.1,0.1,0.030029,0.0209573);
+  g->SetPoint(8,-0.1,2.88965);	g->SetPointError(8,0.1,0.1,0.0286516,0.0253694);
+  g->SetPoint(9,0.1,2.89731);   g->SetPointError(9,0.1,0.1,0.0334615,0.0192116);
+  g->SetPoint(10,0.3,2.91188); g->SetPointError(10,0.1,0.1,0.0503868,0.0249106);
+  g->SetPoint(11,0.5,2.96295);	g->SetPointError(11,0.1,0.1,0.030009,0.0284692);
+  g->SetPoint(12,0.7,3.0089);	g->SetPointError(12,0.1,0.1,0.0189095,0.026319);
+  g->SetPoint(13,0.9,3.07028); g->SetPointError(13,0.1,0.1,0.0449128,0.0307375);
+  g->SetPoint(14,1.1,3.10215); g->SetPointError(14,0.1,0.1,0.0288688,0.0263013);
+  g->SetPoint(15,1.3,3.12946);	g->SetPointError(15,0.1,0.1,0.0431495,0.026355);
+  g->SetPoint(16,1.5,3.14549); g->SetPointError(16,0.1,0.1,0.0322482,0.0336111);
+  g->SetPoint(17,1.7,3.15729);  g->SetPointError(17,0.1,0.1,0.105509,0.0523796);
+  // g->SetPoint(19,1.9,0);	g->SetPointError(19,0.1,0.1,0,0);
+
+  SetGraphAttributes(g, INEL, WIP, false, "alice_pp900work", 
+		     "ALICE INEL - work in progress");
+  return g;
+}
+
+//____________________________________________________________________
+/** 
+ * Get the ALICE NSD data in @f$ |\eta|<1.8@f$ for pp at @f$ \sqrt{s} 
+ * = 900GeV@f$  
+ * Work in progress
+ *
+ * @return graph of data 
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralNsd900Work()
+{
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(18);
+  
+  g->SetPoint(0,-1.7,3.84726);  g->SetPointError(0,0.1,0.1,0.114853,0.118974);
+  g->SetPoint(1,-1.5,3.87094);  g->SetPointError(1,0.1,0.1,0.10574,0.108613);
+  g->SetPoint(2,-1.3,3.84769);  g->SetPointError(2,0.1,0.1,0.105942,0.107644);
+  g->SetPoint(3,-1.1,3.8122);   g->SetPointError(3,0.1,0.1,0.100838,0.101818);
+  g->SetPoint(4,-0.9,3.75388);  g->SetPointError(4,0.1,0.1,0.0967073,0.0972099);
+  g->SetPoint(5,-0.7,3.68733);  g->SetPointError(5,0.1,0.1,0.0923424,0.0925662);
+  g->SetPoint(6,-0.5,3.61874);  g->SetPointError(6,0.1,0.1,0.0904027,0.090477);
+  g->SetPoint(7,-0.3,3.58091);  g->SetPointError(7,0.1,0.1,0.0875915,0.0875992);
+  g->SetPoint(8,-0.1,3.54905);  g->SetPointError(8,0.1,0.1,0.086046,0.0860293);
+  g->SetPoint(9,0.1,3.55968);   g->SetPointError(9,0.1,0.1,0.0884776,0.0884612);
+  g->SetPoint(10,0.3,3.57729); g->SetPointError(10,0.1,0.1,0.0857614,0.0857693);
+  g->SetPoint(11,0.5,3.63879); g->SetPointError(11,0.1,0.1,0.0879787,0.0880559);
+  g->SetPoint(12,0.7,3.69422); g->SetPointError(12,0.1,0.1,0.0931736,0.0933962);
+  g->SetPoint(13,0.9,3.76835); g->SetPointError(13,0.1,0.1,0.0928833,0.0934106);
+  g->SetPoint(14,1.1,3.80647);  g->SetPointError(14,0.1,0.1,0.0998124,0.100799);
+  g->SetPoint(15,1.3,3.83824);  g->SetPointError(15,0.1,0.1,0.102549,0.104298);
+  g->SetPoint(16,1.5,3.85778);  g->SetPointError(16,0.1,0.1,0.10267,0.105607);
+  g->SetPoint(17,1.7,3.87075);  g->SetPointError(17,0.1,0.1,0.114093,0.11829);
+
+  SetGraphAttributes(g, NSD, WIP, false, "alice_pp900nsdwork", 
+		     "ALICE NSD - work in progress");
+  return g;
+}
+
+//____________________________________________________________________
+/** 
+ * Get the ALICE INEL>0 data in @f$ |\eta|<1.8@f$ for pp at @f$ \sqrt{s}
+ * = 900GeV@f$ 
+ * Work in progress
+ *
+ * @return graph of data 
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInelGt900Work()
+{
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(10);
+     
+  g->SetPoint(0,-0.9,3.90755); g->SetPointError(0,0.1,0.1,0.0377085,0.0355101);
+  g->SetPoint(1,-0.7,3.8357);  g->SetPointError(1,0.1,0.1,0.0477674,0.0349303);
+  g->SetPoint(2,-0.5,3.76291); g->SetPointError(2,0.1,0.1,0.0277709,0.040401);
+  g->SetPoint(3,-0.3,3.72336); g->SetPointError(3,0.1,0.1,0.0343553,0.0250805);
+  g->SetPoint(4,-0.1,3.69098); g->SetPointError(4,0.1,0.1,0.0324842,0.0324248);
+  g->SetPoint(5,0.1,3.70076);  g->SetPointError(5,0.1,0.1,0.0390932,0.0246738);
+  g->SetPoint(6,0.3,3.71924);  g->SetPointError(6,0.1,0.1,0.0576054,0.0287106);
+  g->SetPoint(7,0.5,3.7844);   g->SetPointError(7,0.1,0.1,0.0316759,0.0295124);
+  g->SetPoint(8,0.7,3.84319);  g->SetPointError(8,0.1,0.1,0.0293134,0.0332125);
+  g->SetPoint(9,0.9,3.92163);  g->SetPointError(9,0.1,0.1,0.0558339,0.0394925);
+
+  SetGraphAttributes(g, INELGt0, WIP, false, "alice_pp900inelgtwork", 
+		     "ALICE INEL>0 - work in progress");
+  return g;
+}
+
+//____________________________________________________________________
+/**
+ * Get the ALICE INEL data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 2760GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInel2760Work()
+{
+  TGraphAsymmErrors*    g = new TGraphAsymmErrors(18);
+  g->SetPoint(0,-1.7,4.0313);  g->SetPointError(0,0.1,0.1,0.100951,0.104678);
+  g->SetPoint(1,-1.5,4.0431);  g->SetPointError(1,0.1,0.1,0.10129,0.103883);
+  g->SetPoint(2,-1.3,4.01251); g->SetPointError(2,0.1,0.1,0.10847,0.110089);
+  g->SetPoint(3,-1.1,3.96799); g->SetPointError(3,0.1,0.1,0.105543,0.106623);
+  g->SetPoint(4,-0.9,3.89669); g->SetPointError(4,0.1,0.1,0.110974,0.111625);
+  g->SetPoint(5,-0.7,3.81051); g->SetPointError(5,0.1,0.1,0.108463,0.108882);
+  g->SetPoint(6,-0.5,3.76537); g->SetPointError(6,0.1,0.1,0.105488,0.105773);
+  g->SetPoint(7,-0.3,3.69733); g->SetPointError(7,0.1,0.1,0.110156,0.11035);
+  g->SetPoint(8,-0.1,3.68148); g->SetPointError(8,0.1,0.1,0.105564,0.105733);
+  g->SetPoint(9,0.1,3.67386);  g->SetPointError(9,0.1,0.1,0.1058,0.105968);
+  g->SetPoint(10,0.3,3.69873); g->SetPointError(10,0.1,0.1,0.107167,0.107367);
+  g->SetPoint(11,0.5,3.76377); g->SetPointError(11,0.1,0.1,0.111177,0.111448);
+  g->SetPoint(12,0.7,3.81956); g->SetPointError(12,0.1,0.1,0.107198,0.107623);
+  g->SetPoint(13,0.9,3.89506); g->SetPointError(13,0.1,0.1,0.105617,0.1063);
+  g->SetPoint(14,1.1,3.95888); g->SetPointError(14,0.1,0.1,0.111316,0.112336);
+  g->SetPoint(15,1.3,4.00176); g->SetPointError(15,0.1,0.1,0.111751,0.113315);
+  g->SetPoint(16,1.5,4.03247); g->SetPointError(16,0.1,0.1,0.114383,0.116674);
+  g->SetPoint(17,1.7,4.061);   g->SetPointError(17,0.1,0.1,0.107094,0.110665);
+  
+  SetGraphAttributes(g, INEL, WIP, false,
+                     "alice_ppInel2760Work",
+                     "ALICE INEL - work in progress");
+  return g;
+}
+//____________________________________________________________________
+/**
+ * Get the ALICE NSD data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 2760GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralNsd2760Work()
+{
+  TGraphAsymmErrors*    g = new TGraphAsymmErrors(18);
+  g->SetPoint(0,-1.7,4.8704);  g->SetPointError(0,0.1,0.1,0.221293,0.224755);
+  g->SetPoint(1,-1.5,4.88859); g->SetPointError(1,0.1,0.1,0.221269,0.223478);
+  g->SetPoint(2,-1.3,4.85326); g->SetPointError(2,0.1,0.1,0.21109,0.212455);
+  g->SetPoint(3,-1.1,4.80085); g->SetPointError(3,0.1,0.1,0.21041,0.211157);
+  g->SetPoint(4,-0.9,4.71513); g->SetPointError(4,0.1,0.1,0.198361,0.198749);
+  g->SetPoint(5,-0.7,4.61153); g->SetPointError(5,0.1,0.1,0.194009,0.194176);
+  g->SetPoint(6,-0.5,4.55715); g->SetPointError(6,0.1,0.1,0.193226,0.193281);
+  g->SetPoint(7,-0.3,4.47508); g->SetPointError(7,0.1,0.1,0.182433,0.182439);
+  g->SetPoint(8,-0.1,4.45709); g->SetPointError(8,0.1,0.1,0.186518,0.186506);
+  g->SetPoint(9,0.1,4.44707);  g->SetPointError(9,0.1,0.1,0.185747,0.185735);
+  g->SetPoint(10,0.3,4.47734); g->SetPointError(10,0.1,0.1,0.185835,0.185841);
+  g->SetPoint(11,0.5,4.55477); g->SetPointError(11,0.1,0.1,0.186934,0.186991);
+  g->SetPoint(12,0.7,4.62236); g->SetPointError(12,0.1,0.1,0.196631,0.196796);
+  g->SetPoint(13,0.9,4.71277); g->SetPointError(13,0.1,0.1,0.204034,0.20441);
+  g->SetPoint(14,1.1,4.78902); g->SetPointError(14,0.1,0.1,0.20317,0.20394);
+  g->SetPoint(15,1.3,4.84008); g->SetPointError(15,0.1,0.1,0.205573,0.206967);
+  g->SetPoint(16,1.5,4.87453); g->SetPointError(16,0.1,0.1,0.206314,0.208667);
+  g->SetPoint(17,1.7,4.90614); g->SetPointError(17,0.1,0.1,0.218996,0.222545);
+  
+  SetGraphAttributes(g, NSD, WIP, false,
+                     "alice_ppNsd2760Work",
+                     "ALICE NSD - work in progress");
+  return g;
+}
+//____________________________________________________________________
+/**
+ * Get the ALICE INELGt0 data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 2760GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInelGt2760Work()
+{
+  TGraphAsymmErrors*    g = new TGraphAsymmErrors(10);
+  g->SetPoint(0,-0.9,4.96315); g->SetPointError(0,0.1,0.1,0.0439746,0.0440108);
+  g->SetPoint(1,-0.7,4.8532);  g->SetPointError(1,0.1,0.1,0.0426373,0.0600727);
+  g->SetPoint(2,-0.5,4.79582); g->SetPointError(2,0.1,0.1,0.0475367,0.0466255);
+  g->SetPoint(3,-0.3,4.70907); g->SetPointError(3,0.1,0.1,0.0313084,0.0468084);
+  g->SetPoint(4,-0.1,4.68906); g->SetPointError(4,0.1,0.1,0.0413149,0.0397909);
+  g->SetPoint(5,0.1,4.67937);  g->SetPointError(5,0.1,0.1,0.0346151,0.0450248);
+  g->SetPoint(6,0.3,4.7109);   g->SetPointError(6,0.1,0.1,0.0408403,0.0839992);
+  g->SetPoint(7,0.5,4.79359);  g->SetPointError(7,0.1,0.1,0.0324516,0.0357053);
+  g->SetPoint(8,0.7,4.86469);  g->SetPointError(8,0.1,0.1,0.0452175,0.0477304);
+  g->SetPoint(9,0.9,4.96078);  g->SetPointError(9,0.1,0.1,0.0566798,0.0804077);
+  
+  SetGraphAttributes(g, INELGt0, WIP, false,
+                     "alice_ppInelGt2760Work",
+                     "ALICE INELGt0 - work in progress");
+  return g;
+}
+
+//____________________________________________________________________
+/**
+ * Get the ALICE INEL data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 7000GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInel7000Work()
+{
+  TGraphAsymmErrors* g = new TGraphAsymmErrors(18);
+  g->SetPoint(0,-1.7,4.97541);  g->SetPointError(0,0.1,0.1,0.187526,0.162049);
+  g->SetPoint(1,-1.5,4.98161);  g->SetPointError(1,0.1,0.1,0.128353,0.149085);
+  g->SetPoint(2,-1.3,4.94853);  g->SetPointError(2,0.1,0.1,0.129841,0.144762);
+  g->SetPoint(3,-1.1,4.88924);  g->SetPointError(3,0.1,0.1,0.137866,0.157862);
+  g->SetPoint(4,-0.9,4.79998);  g->SetPointError(4,0.1,0.1,0.144492,0.158783);
+  g->SetPoint(5,-0.7,4.71399);  g->SetPointError(5,0.1,0.1,0.132703,0.156135);
+  g->SetPoint(6,-0.5,4.63098);  g->SetPointError(6,0.1,0.1,0.129938,0.147085);
+  g->SetPoint(7,-0.3,4.56815);  g->SetPointError(7,0.1,0.1,0.129424,0.145485);
+  g->SetPoint(8,-0.1,4.52372);  g->SetPointError(8,0.1,0.1,0.129049,0.145285);
+  g->SetPoint(9,0.1,4.52946);   g->SetPointError(9,0.1,0.1,0.131266,0.144285);
+  g->SetPoint(10,0.3,4.56411);  g->SetPointError(10,0.1,0.1,0.130652,0.149019);
+  g->SetPoint(11,0.5,4.63554);  g->SetPointError(11,0.1,0.1,0.133415,0.144298);
+  g->SetPoint(12,0.7,4.71592);  g->SetPointError(12,0.1,0.1,0.136436,0.151768);
+  g->SetPoint(13,0.9,4.8059);   g->SetPointError(13,0.1,0.1,0.136996,0.142551);
+  g->SetPoint(14,1.1,4.88457);  g->SetPointError(14,0.1,0.1,0.134237,0.142764);
+  g->SetPoint(15,1.3,4.92903);  g->SetPointError(15,0.1,0.1,0.131933,0.152767);
+  g->SetPoint(16,1.5,4.96487);  g->SetPointError(16,0.1,0.1,0.140214,0.147354);
+  g->SetPoint(17,1.7,4.95502);  g->SetPointError(17,0.1,0.1,0.156906,0.14759);
+  
+  SetGraphAttributes(g, INEL, WIP, false,
+                     "alice_ppInel7000Work",
+                     "ALICE INEL - work in progress");
+  return g;
+}
+//____________________________________________________________________
+/**
+ * Get the ALICE NSD data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 7000GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralNsd7000Work()
+{
+  TGraphAsymmErrors* g = new TGraphAsymmErrors(18);
+  g->SetPoint(0,-1.7,6.12747);  g->SetPointError(0,0.1,0.1,0.157334,0.164918);
+  g->SetPoint(1,-1.5,6.1353);   g->SetPointError(1,0.1,0.1,0.146834,0.152011);
+  g->SetPoint(2,-1.3,6.09648);  g->SetPointError(2,0.1,0.1,0.140067,0.143287);
+  g->SetPoint(3,-1.1,6.02552);  g->SetPointError(3,0.1,0.1,0.133435,0.135281);
+  g->SetPoint(4,-0.9,5.91705);  g->SetPointError(4,0.1,0.1,0.129449,0.130381);
+  g->SetPoint(5,-0.7,5.81246);  g->SetPointError(5,0.1,0.1,0.126477,0.126883);
+  g->SetPoint(6,-0.5,5.71104);  g->SetPointError(6,0.1,0.1,0.124521,0.124655);
+  g->SetPoint(7,-0.3,5.63422);  g->SetPointError(7,0.1,0.1,0.120116,0.12013);
+  g->SetPoint(8,-0.1,5.57977);  g->SetPointError(8,0.1,0.1,0.119286,0.119256);
+  g->SetPoint(9,0.1,5.58662);   g->SetPointError(9,0.1,0.1,0.119331,0.119301);
+  g->SetPoint(10,0.3,5.6291);   g->SetPointError(10,0.1,0.1,0.120683,0.120697);
+  g->SetPoint(11,0.5,5.7166);   g->SetPointError(11,0.1,0.1,0.122787,0.122923);
+  g->SetPoint(12,0.7,5.81463);  g->SetPointError(12,0.1,0.1,0.126293,0.1267);
+  g->SetPoint(13,0.9,5.92404);  g->SetPointError(13,0.1,0.1,0.129522,0.130456);
+  g->SetPoint(14,1.1,6.01958);  g->SetPointError(14,0.1,0.1,0.134505,0.136333);
+  g->SetPoint(15,1.3,6.07232);  g->SetPointError(15,0.1,0.1,0.140728,0.143909);
+  g->SetPoint(16,1.5,6.11596);  g->SetPointError(16,0.1,0.1,0.14756,0.15268);
+  g->SetPoint(17,1.7,6.10155);  g->SetPointError(17,0.1,0.1,0.151731,0.159518);
+  
+  SetGraphAttributes(g, NSD, WIP, false,
+                     "alice_ppNsd7000Work",
+                     "ALICE NSD - work in progress");
+  return g;
+}
+
+//____________________________________________________________________
+/**
+ * Get the ALICE INELGt0 data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 7000GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInelGt7000Work()
+{
+  TGraphAsymmErrors* g = new TGraphAsymmErrors(10);
+  g->SetPoint(0,-0.9,6.22689);  g->SetPointError(0,0.1,0.1,0.0959094,0.10395);
+  g->SetPoint(1,-0.7,6.11603);  g->SetPointError(1,0.1,0.1,0.0609242,0.0984269);
+  g->SetPoint(2,-0.5,6.00881);  g->SetPointError(2,0.1,0.1,0.0595691,0.0842045);
+  g->SetPoint(3,-0.3,5.9274);   g->SetPointError(3,0.1,0.1,0.0560837,0.0780806);
+  g->SetPoint(4,-0.1,5.86988);  g->SetPointError(4,0.1,0.1,0.0552611,0.0798584);
+  g->SetPoint(5,0.1,5.8773);    g->SetPointError(5,0.1,0.1,0.062512,0.077947);
+  g->SetPoint(6,0.3,5.92215);   g->SetPointError(6,0.1,0.1,0.0535152,0.0863595);
+  g->SetPoint(7,0.5,6.01458);   g->SetPointError(7,0.1,0.1,0.0578218,0.0745799);
+  g->SetPoint(8,0.7,6.1186);    g->SetPointError(8,0.1,0.1,0.0767397,0.0899574);
+  g->SetPoint(9,0.9,6.23468);   g->SetPointError(9,0.1,0.1,0.0786932,0.073295);
+  
+  SetGraphAttributes(g, INELGt0, WIP, false,
+                     "alice_ppInelGt7000Work",
+                     "ALICE INELGt0 - work in progress");
+  return g;
+}
+//____________________________________________________________________
+/**
+ * Get the ALICE INEL data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 8000GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInel8000Work()
+{
+  TGraphAsymmErrors*  g = new TGraphAsymmErrors(18);
+  g->SetPoint(0,-1.7,5.1333);  g->SetPointError(0,0.1,0.1,0.0613865,0.0707879);
+  g->SetPoint(1,-1.5,5.14341); g->SetPointError(1,0.1,0.1,0.117829,0.121428);
+  g->SetPoint(2,-1.3,5.13589); g->SetPointError(2,0.1,0.1,0.110807,0.113393);
+  g->SetPoint(3,-1.1,5.06167); g->SetPointError(3,0.1,0.1,0.120091,0.121635);
+  g->SetPoint(4,-0.9,4.97796); g->SetPointError(4,0.1,0.1,0.116141,0.117154);
+  g->SetPoint(5,-0.7,4.88431); g->SetPointError(5,0.1,0.1,0.11944,0.120064);
+  g->SetPoint(6,-0.5,4.81236); g->SetPointError(6,0.1,0.1,0.11049,0.110936);
+  g->SetPoint(7,-0.3,4.72239); g->SetPointError(7,0.1,0.1,0.110969,0.111284);
+  g->SetPoint(8,-0.1,4.66962); g->SetPointError(8,0.1,0.1,0.125108,0.125337);
+  g->SetPoint(9,0.1,4.69441);  g->SetPointError(9,0.1,0.1,0.113766,0.114021);
+  g->SetPoint(10,0.3,4.7335);  g->SetPointError(10,0.1,0.1,0.104531,0.104866);
+  g->SetPoint(11,0.5,4.79917); g->SetPointError(11,0.1,0.1,0.107076,0.107534);
+  g->SetPoint(12,0.7,4.88713); g->SetPointError(12,0.1,0.1,0.106124,0.106827);
+  g->SetPoint(13,0.9,4.98035); g->SetPointError(13,0.1,0.1,0.120107,0.121087);
+  g->SetPoint(14,1.1,5.05366); g->SetPointError(14,0.1,0.1,0.115795,0.11739);
+  g->SetPoint(15,1.3,5.11276); g->SetPointError(15,0.1,0.1,0.123574,0.125877);
+  g->SetPoint(16,1.5,5.16105); g->SetPointError(16,0.1,0.1,0.0979751,0.102305);
+  g->SetPoint(17,1.7,5.16477); g->SetPointError(17,0.1,0.1,0.116096,0.121392);
+  
+  SetGraphAttributes(g, INEL, WIP, false,
+                     "alice_ppInel8000Work",
+                     "ALICE INEL - work in progress");
+  return g;
+}
+
+//____________________________________________________________________
+/**
+ * Get the ALICE NSD data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 8000GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralNsd8000Work()
+{
+  TGraphAsymmErrors* g = new TGraphAsymmErrors(18);
+  g->SetPoint(0,-1.7,6.28722);  g->SetPointError(0,0.1,0.1,0.220541,0.2263);
+  g->SetPoint(1,-1.5,6.29211);  g->SetPointError(1,0.1,0.1,0.126653,0.132922);
+  g->SetPoint(2,-1.3,6.29313);  g->SetPointError(2,0.1,0.1,0.142432,0.145805);
+  g->SetPoint(3,-1.1,6.1944);   g->SetPointError(3,0.1,0.1,0.116871,0.119093);
+  g->SetPoint(4,-0.9,6.09529);  g->SetPointError(4,0.1,0.1,0.121064,0.122121);
+  g->SetPoint(5,-0.7,5.97811);  g->SetPointError(5,0.1,0.1,0.111525,0.112012);
+  g->SetPoint(6,-0.5,5.88992);  g->SetPointError(6,0.1,0.1,0.119488,0.119637);
+  g->SetPoint(7,-0.3,5.78296);  g->SetPointError(7,0.1,0.1,0.114947,0.114962);
+  g->SetPoint(8,-0.1,5.71633);  g->SetPointError(8,0.1,0.1,0.0933,0.09326);
+  g->SetPoint(9,0.1,5.74663);   g->SetPointError(9,0.1,0.1,0.109892,0.109857);
+  g->SetPoint(10,0.3,5.79472);  g->SetPointError(10,0.1,0.1,0.123704,0.123718);
+  g->SetPoint(11,0.5,5.87545);  g->SetPointError(11,0.1,0.1,0.122522,0.122667);
+  g->SetPoint(12,0.7,5.98273);  g->SetPointError(12,0.1,0.1,0.128316,0.128739);
+  g->SetPoint(13,0.9,6.09037);  g->SetPointError(13,0.1,0.1,0.114321,0.115437);
+  g->SetPoint(14,1.1,6.18105);  g->SetPointError(14,0.1,0.1,0.125412,0.127476);
+  g->SetPoint(15,1.3,6.24275);  g->SetPointError(15,0.1,0.1,0.118631,0.122597);
+  g->SetPoint(16,1.5,6.28916);  g->SetPointError(16,0.1,0.1,0.144205,0.149736);
+  g->SetPoint(17,1.7,6.28878);  g->SetPointError(17,0.1,0.1,0.134438,0.143695);
+  
+  SetGraphAttributes(g, NSD, WIP, false,
+                     "alice_ppNsd8000Work",
+                     "ALICE NSD - work in progress");
+  return g;
+}
+//____________________________________________________________________
+/**
+ * Get the ALICE INELGt0 data in @f$ |\eta|<1.8@f$ for pp
+ * at @f$ \sqrt{s} = 8000GeV@f$
+ * Work in progress
+ * 
+ * @return graph of data
+ * 
+ * @ingroup pwglf_forward_otherdata
+ */
+TGraphAsymmErrors* AliceCentralInelGt8000Work()
+{
+  TGraphAsymmErrors*  g = new TGraphAsymmErrors(10);
+  g->SetPoint(0,-0.9,6.38567);  g->SetPointError(0,0.1,0.1,0.0436571,0.0436571);
+  g->SetPoint(1,-0.7,6.26363);  g->SetPointError(1,0.1,0.1,0.0312036,0.0312036);
+  g->SetPoint(2,-0.5,6.17205);  g->SetPointError(2,0.1,0.1,0.0351509,0.0351509);
+  g->SetPoint(3,-0.3,6.05629);  g->SetPointError(3,0.1,0.1,0.0302028,0.0302028);
+  g->SetPoint(4,-0.1,5.98823);  g->SetPointError(4,0.1,0.1,0.0141541,0.0141541);
+  g->SetPoint(5,0.1,6.02043);   g->SetPointError(5,0.1,0.1,0.0256893,0.0256893);
+  g->SetPoint(6,0.3,6.07111);   g->SetPointError(6,0.1,0.1,0.0380304,0.0380304);
+  g->SetPoint(7,0.5,6.15492);   g->SetPointError(7,0.1,0.1,0.0384435,0.0384435);
+  g->SetPoint(8,0.7,6.26781);   g->SetPointError(8,0.1,0.1,0.0450579,0.0450579);
+  g->SetPoint(9,0.9,6.38491);   g->SetPointError(9,0.1,0.1,0.0396431,0.0396431);
+  
+  SetGraphAttributes(g, INELGt0, WIP, false,
+                     "alice_ppInelGt8000Work",
+                     "ALICE INELGt0 - work in progress");
   return g;
 }
   
@@ -1333,15 +1769,17 @@ GetSingle(UShort_t which,
       switch (type) { 
       case 1: // INEL 
 	switch (which) { 
-	case PYTHIA: ret = Pythia900INEL(); break;
-	case UA5:    ret = UA5Inel(false);  break;
-	case UA5+10: ret = UA5Inel(true);   break;
-	case ALICE:  ret = AliceCentralInel900(); break;
+	case PYTHIA:    ret = Pythia900INEL(); break;
+	case UA5:       ret = UA5Inel(false);  break;
+	case UA5+10:    ret = UA5Inel(true);   break;
+	case ALICE:     ret = AliceCentralInel900(); break;
+	case WIP:       ret = AliceCentralInel900Work(); break;
 	}      
 	break;
       case 2: // INEL>0
 	switch (which) { 
 	case ALICE: ret = AliceCentralInelGt900(); break;
+	case WIP:   ret = AliceCentralInelGt900Work(); break;
 	}
 	break;
       case 4:  // NSD 
@@ -1350,6 +1788,7 @@ GetSingle(UShort_t which,
 	case UA5:    ret = UA5Nsd(false);  break;
 	case UA5+10: ret = UA5Nsd(true);   break;
 	case ALICE:  ret = AliceCentralNsd900(); break;
+	case WIP:    ret = AliceCentralNsd900Work(); break;
 	case CMS:    ret = CMSNsd900();          break;
 	}
 	break;
@@ -1360,32 +1799,79 @@ GetSingle(UShort_t which,
       case 1: // INEL 
 	switch (which) { 
 	case ALICE: ret = AliceCentralInel2360(); break;
+	case WIP: ret = AliceCentralInel2760Work(); break;
 	}
 	break;
       case 2: // INEL > 0
 	switch (which) {
 	case ALICE: ret = AliceCentralInelGt2360(); break;
+	case WIP: ret = AliceCentralInelGt2760Work(); break;
 	}
 	break;
       case 4: // NSD 
 	switch (which) { 
 	case ALICE: ret = AliceCentralNsd2360(); break;
 	case CMS:   ret = CMSNsd2360(); break;
+	case WIP:   ret = AliceCentralNsd2760Work(); break;
+	}
+	break;
+      }
+    }
+    else if (TMath::Abs(energy-2760) < 10) {
+      switch (type) { 
+      case 1: // INEL 
+	switch (which) { 
+	case WIP: ret = AliceCentralInel2760Work(); break;
+	}
+	break;
+      case 2: // INEL > 0
+	switch (which) {
+	case WIP: ret = AliceCentralInelGt2760Work(); break;
+	}
+	break;
+      case 4: // NSD 
+	switch (which) { 
+	case WIP: ret = AliceCentralNsd2760Work(); break;
 	}
 	break;
       }
     }
     else if (TMath::Abs(energy-7000) < 10) {
       switch (type) { 
-      case 1: ret = 0;  break;
+      case 1: 
+	switch (which) { 
+	case WIP: ret = AliceCentralInel7000Work(); break;
+	}
+	break;
       case 2: // INEL > 0
 	switch (which) { 
 	case ALICE: ret = AliceCentralInelGt7000(); break;
+	case WIP: ret = AliceCentralInelGt7000Work(); break;
 	}
 	break;
       case 4: // NSD 
 	switch (which) { 
 	case CMS: ret = CMSNsd7000(); break;
+	case WIP: ret = AliceCentralNsd7000Work(); break;
+	}
+	break;
+      }
+    }
+    else if (TMath::Abs(energy-8000) < 10) {
+      switch (type) { 
+      case 1: 
+	switch (which) { 
+	case WIP: ret = AliceCentralInel8000Work(); break;
+	}
+	break;
+      case 2: // INEL > 0
+	switch (which) { 
+	case WIP: ret = AliceCentralInelGt8000Work(); break;
+	}
+	break;
+      case 4: // NSD 
+	switch (which) { 
+	case WIP: ret = AliceCentralNsd8000Work(); break;
 	}
 	break;
       }
@@ -1400,9 +1886,33 @@ GetSingle(UShort_t which,
     }
   }
   if (!ret) {
-    Warning("GetOne", "Nothing to get for "
-	    "which=%d, sys=%d, energy=%d, type=0x%x, centLow=%d, centHigh=%d",
-	    which, sys, energy, type, centLow, centHigh);
+    TString w;
+    switch (which) { 
+    case UA5:   w = "UA5";     break;
+    case CMS:   w = "CMS";     break;
+    case ALICE: w = "ALICE";   break;
+    case WIP:   w = "WIP";     break;
+    case PYTHIA:w = "Pyhthia"; break;
+    default: w = Form("unknown(%d)", which);
+    }
+    TString sy;
+    switch (sys) { 
+    case 1:  sy = "pp"; break;
+    case 2:  sy = "PbPb"; break;
+    case 3:  sy = "pPb"; break;
+    default: sy = Form("unknown(%d)", sys);
+    }
+    TString tr;
+    switch (type) { 
+    case 1:        tr = "INEL"; break;
+    case 2:        tr = "INEL>0"; break;
+    case 4:      tr = "NSD"; break;
+    default:       tr = Form("unknown(%d)", sys);
+    }
+    
+    Warning("GetSingle", "Nothing to get for "
+	    "which=%s, sys=%s, energy=%dGeV, type=%s, centLow=%d, centHigh=%d",
+	    w.Data(), sy.Data(), energy, tr.Data(), centLow, centHigh);
   }
 #if 0
   if (ret) {
@@ -1468,11 +1978,11 @@ GetData(UShort_t sys,
   TString en;
   TString sn;
   TString cn;
-  bool    ua5    = (which & (1 << UA5));      // 0x1
-  bool    cms    = (which & (1 << CMS));      // 0x2
-  bool    alice  = (which & (1 << ALICE));    // 0x4
-  bool    pythia = (which & (1 << PYTHIA));   // 0x8
-  
+  bool    ua5       = (which & (1 << UA5));       // 0x1
+  bool    cms       = (which & (1 << CMS));       // 0x2
+  bool    alice     = (which & (1 << ALICE));     // 0x4
+  bool    work      = (which & (1 << WIP)); // 0x8
+  bool    pythia    = (which & (1 << PYTHIA));    // 0x10
   en.Append(Form(", #sqrt{s%s}=", sys == 1 ? "" : "_{NN}"));
   if (energy < 1000) 
     en.Append(Form("%dGeV", energy));
@@ -1493,7 +2003,8 @@ GetData(UShort_t sys,
     }
     if (!(TMath::Abs(energy-900) < 10 || 
 	  TMath::Abs(energy-2360) < 10 || 
-	  TMath::Abs(energy-7000) < 10)) {
+	  TMath::Abs(energy-7000) < 10 || 
+	  TMath::Abs(energy-8000) < 10)) {
       Warning("GetData", "No other results for sys=%d, energy=%d",
 	      sys, energy);
       return 0;
@@ -1501,6 +2012,8 @@ GetData(UShort_t sys,
     
     sn = "pp";
 
+    // Substitute NSD for V0-AND
+    if (type == 0x2000) type = 0x4;
     if (type & 0x1) AppendItem(tn, '|', "INEL");
     if (type & 0x2) AppendItem(tn, '|', "INEL>0");
     if (type & 0x4) AppendItem(tn, '|', "NSD");
@@ -1514,11 +2027,13 @@ GetData(UShort_t sys,
       TGraphAsymmErrors* gCMS =(cms   ?GetSingle(CMS,   sys,energy,mask):0);
       TGraphAsymmErrors* gALI =(alice ?GetSingle(ALICE, sys,energy,mask):0);
       TGraphAsymmErrors* gPYT =(pythia?GetSingle(PYTHIA,sys,energy,mask):0);
+      TGraphAsymmErrors* gWRK =(work  ?GetSingle(WIP,   sys,energy,mask):0);
       if (gUAp) mp->Add(gUAp);
       if (gUAn) mp->Add(gUAn);
       if (gCMS) mp->Add(gCMS);
       if (gALI) mp->Add(gALI);
       if (gPYT) mp->Add(gPYT);
+      if (gWRK) mp->Add(gWRK);
       if (gUAp || gUAn) seenUA5 = true;
     }
     if (seenUA5) sn.Append("(p#bar{p})");
@@ -1579,7 +2094,7 @@ OtherData(UShort_t sys=1,
 	  UShort_t type=0x1, 
 	  UShort_t centLow=0, 
 	  UShort_t centHigh=5, 
-	  UShort_t which=0x7)
+	  UShort_t which=0xf)
 {
   TMultiGraph* mp = GetData(sys, energy, type, centLow, centHigh, which);
   if (!mp) return;
