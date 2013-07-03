@@ -26,6 +26,7 @@ AliAnalysisTaskContMC* AddTaskContMC(Bool_t mc=kFALSE){
   
   
   AliAnalysisTaskContMC *task = new AliAnalysisTaskContMC("ContMC");
+  task->SetIsMC(mc);
   mgr->AddTask(task);
   
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
