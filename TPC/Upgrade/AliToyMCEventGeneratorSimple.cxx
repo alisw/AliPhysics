@@ -71,7 +71,7 @@ AliToyMCEventGeneratorSimple& AliToyMCEventGeneratorSimple::operator = (const Al
   return *this;
 }
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename, Double_t vertexMean/*=0*/, Double_t vertexSigma/*=7.*/) {
+void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename/*="files/params.root*/, Double_t vertexMean/*=0*/, Double_t vertexSigma/*=7.*/) {
   fVertexMean = vertexMean;
   fVertexSigma = vertexSigma;
   fParamFile = new TFile(parfilename, "read");
