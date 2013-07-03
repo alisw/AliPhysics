@@ -405,7 +405,7 @@ void AliAnalysisTaskFlowStrange::AddMakeQSpy() {
   tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
   tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
   tList->Add( tPF1 );
-  tPF1 = new TProfile("VZEQ","VZEQ",6,0.5,6.5,"s"); tList->Add( tPF1 );
+  tPF1 = new TProfile("VZEQ","VZEQ",6,0.5,6.5,"s");
   tPF1->GetXaxis()->SetBinLabel(1,"Qay"); tPF1->GetXaxis()->SetBinLabel(2,"Qax");
   tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
   tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
