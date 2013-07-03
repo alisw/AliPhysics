@@ -60,7 +60,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         void                    DoQC4FlowAnalysis();
         Bool_t                  DoFlowPackageFlowAnalysis();
         // q-cumulant helper calculations TODO move to AliAnlaysisTaskRhoVnModulation for consistency
-        void                    QCnDiffentialFlowVectors(Double_t* repn, Double_t* impn, Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n);
+        void                    QCnDifferentialFlowVectors(Double_t* repn, Double_t* impn, Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n);
 
     private:
 
@@ -69,6 +69,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         TString                 fJetsName;              // name of jet list
         TString                 fTracksName;            // name of track list
         TClonesArray*           fPois;                  //! array with pois
+        TClonesArray*           fRPs;                   //! array with rps
         TList*                  fOutputList;            //! output list
         dataType                fDataType;              //! data type
         Bool_t                  fVParticleAnalysis;     // do the analysis on vparticles instead of jets
