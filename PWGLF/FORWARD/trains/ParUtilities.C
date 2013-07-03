@@ -218,6 +218,7 @@ struct ParUtilities
 	helper->LoadLibrary(dep->GetName());
       
       // AcLic and load 
+      Info("", "Loading macro %s", script.Data());
       if (gROOT->LoadMacro(Form("%s++g", script.Data())) < 0) {
 	Error("ParUtilities::MakeScriptPAR", 
 	      "Failed to build local library %s", script.Data());
@@ -261,6 +262,7 @@ struct ParUtilities
 	    templ);
       return false;
     }
+    Info("", "Building PAR in %s", templ);
 
     Bool_t retVal = false;
     try {
@@ -272,7 +274,8 @@ struct ParUtilities
       if (gSystem->MakeDirectory(Form("%s/PROOF-INF", dir.Data()))) 
 	throw TString::Format("Could not make directory %s/PROOF-INF", 
 			      base.Data());
-      
+      Info("", "Made directory %s", dir.Data());
+
       // --- Copy the script to the setup directory --------------------
       TString dest = TString::Format("%s/%s.%s", dir.Data(),
 				     base.Data(), ext.Data());
@@ -299,7 +302,9 @@ struct ParUtilities
       if (ret != 0) 
 	throw TString::Format("Failed to create PAR file %s.PAR from %s", 
 			      base.Data(), dir.Data());
-
+      
+      Info("", "Made par archive %s/%s.par - moving here", 
+	   templ, base.Data());
       // --- Move PAR file to here -------------------------------------
       ret = gSystem->Exec(Form("mv -f %s/%s.par %s.par", templ, base.Data(), 
 			       base.Data()));
@@ -626,11 +631,14 @@ struct ParUtilities
 		"Failed to open out ROOT script");
 	  return false;
 	}
+	// The SETUP script is executed in the package's directory in
+	// the package cache - not in the session directory.  Hence,
+	// we take special care to get a link to the session directory
+	// from the package cache directory
 	out << "void SETUP()\n"
 	    << "{\n"
 	    << "  TString oldDir(gSystem->WorkingDirectory());\n"
-	    << "  TSystemDirectory* dir = new TSystemDirectory(\""
-	    << name << "\",\"" << name << "\");\n"
+	    << "  TSystemDirectory* dir = new TSystemDirectory(\".\",\".\");\n"
 	    << "  TList*  files = dir->GetListOfFiles();\n"
 	    << "  if (!gSystem->ChangeDirectory(oldDir)) {\n"
 	    << "    Error(\"SETUP\", \"Failed to go back to %s\",\n"
@@ -643,17 +651,25 @@ struct ParUtilities
 	    << "    return;\n"
 	    << "  }\n"
 	    << "  files->Sort();\n"
+	    << "  TString pkgDir = gSystem->WorkingDirectory();\n"
+	    << "  TString sesDir = gProofServ->GetSessionDir();\n"
+	    << "  Info(\"\",\"Session dir: %s\",sesDir);\n"
 	    << "  TIter next(files);\n"
 	    << "  TSystemFile* file = 0;\n"
 	    << "  while ((file = static_cast<TSystemFile*>(next()))) {\n"
 	    << "    TString name(file->GetName());\n"
 	    << "    if (name == \".\" || name == \"..\") continue;\n"
 	    << "    TString title(file->GetTitle());\n"
-	    << "    TString full(gSystem->ConcatFileName(file->GetTitle(),\n"
+	    << "    TString full(gSystem->ConcatFileName(pkgDir.Data(),\n"
 	    << "                                         name.Data()));\n"
-	    << "    if (file->IsA()->InheritsFrom(TSystemDirectory::Class()))\n"
-	    << "      full = title;\n"
-	    << "    gSystem->Symlink(full, name);\n"
+	    << "    TString tgt(gSystem->ConcatFileName(sesDir.Data(),\n"
+	    << "                                        name.Data()));\n"
+	    << "    if (file->IsA()->InheritsFrom(TSystemDirectory::Class())){\n"
+	    << "      gSystem->mkdir(tgt.Data(), true);\n"
+	    << "      continue;\n"
+	    << "    }\n"
+	    << "    Info(\"\",\"Linking %s to %s\",full.Data(),tgt.Data());\n"
+	    << "    gSystem->Symlink(full, tgt);\n"
 	    << "  }\n"
 	    << "}\n"
 	    << "// EOF " << std::endl;

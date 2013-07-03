@@ -394,7 +394,7 @@ private:
    */
   AliForwardCorrectionManager* fCorrManager; // Pointer to corrections manager
 
-  ClassDef(AliForwardMultiplicityBase,3) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityBase,4) // Forward multiplicity class
 };
 
 #endif

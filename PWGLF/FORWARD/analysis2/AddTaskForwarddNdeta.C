@@ -37,7 +37,8 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
 		     Double_t    trigEff  = 1, 
 		     Double_t    trigEff0 = 1,
 		     Bool_t      corrEmpty= false,
-		     const char* mcanalysisfilename = "none")
+		     Bool_t      satVtx   = false,
+		     const char* mcanalysisfilename = "/home/hehi/alex/work/dispVtxDNdeta/mcCorrectionPos.root")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -101,6 +102,9 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
     Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
     task->SetCentralityAxis(11, bins);
   }
+  // Set satellite vertex flag
+  task->SetSatelliteVertices(satVtx);
+
   mgr->AddTask(task);
 
   // --- create containers for input/output --------------------------

@@ -596,7 +596,7 @@ protected:
   Bool_t   fUsepA2012Vertex;// flag to use pA2012 Veretx selection
   ULong_t  fRunNumber; // Current run number 
 
-  ClassDef(AliFMDEventInspector,9); // Inspect the event 
+  ClassDef(AliFMDEventInspector,10); // Inspect the event 
 };
 
 #endif

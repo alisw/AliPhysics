@@ -83,7 +83,18 @@ public:
     /** 
      * Just sum the signals 
      */
-    kSum
+    kSum,
+    /** 
+     * In overlaps, prefer inners, or if both are inners, 
+     * do the straight mean 
+     */
+    kPreferInner,
+    /** 
+     * In overlaps, prefer outers, or if both are outers (doesn't happen), 
+     * do the straight mean 
+     */
+    kPreferOuter
+
   };
   /**
    * How to obtain the fiducial cuts 
@@ -104,14 +115,14 @@ public:
    * FMD ring bits for skipping 
    */
    enum FMDRingBits { 
-     kFMD1I=0x05,
+     kFMD1I=0x01,
      kFMD1 =kFMD1I,
-     kFMD2I=0x09,
-     kFMD2O=0x0a,
+     kFMD2I=0x02,
+     kFMD2O=0x04,
      kFMD2 =kFMD2I|kFMD2O,
-     kFMD3I=0x11,
-     kFMD3O=0x12,
-     kFMD3 =kFMD2I|kFMD2O
+     kFMD3I=0x08,
+     kFMD3O=0x10,
+     kFMD3 =kFMD3I|kFMD3O
   };
   /** 
    * Constructor 
@@ -177,6 +188,7 @@ public:
    * @param m Method
    */
   void SetMergeMethod(MergeMethod m) { fMergeMethod = m; }
+  MergeMethod GetMergeMethod() const { return fMergeMethod; }
   /** 
    * Set the method for finding the fidicual area of the secondary maps 
    * 

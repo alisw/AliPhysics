@@ -9,10 +9,15 @@
 #include <TH1.h>
 #include <TParameter.h>
 #include "AliOADBForward.h"
-#include <AliForwardCorrectionManagerOADB.h>
+#include <AliForwardCorrectionManager.h>
+#include <AliCentralCorrectionManager.h>
+#include <AliCorrectionManagerBase.h>
 #else
 class AliOADBForward;
 class TSystemDirectory;
+class AliCorrectionManagerBase;
+class AliForwardCorrectionManager;
+class AliCentralCorrectionManager;
 class TFile;
 #endif
 
@@ -373,7 +378,7 @@ struct NormExtractor : public Extractor
   NormExtractor(const char* dirName, 
 		const char* corrName,
 		const char* methName)
-    : Extractor(dirName,corrName,methName),
+    : Extractor(dirName,corrName,methName,"",0),
       fFileName("")
   {
   }
@@ -493,7 +498,7 @@ struct NormExtractor : public Extractor
     }
     TH1* hist = static_cast<TH1*>(obj->Clone(tName));
     hist->SetDirectory(0);
-    hist->SetTitle(Form("Normalization for %s", ttName.Data()))
+    hist->SetTitle(Form("Normalization for %s", ttName.Data()));
     // obj->SetName(tName.Data());
 
     return Store(db, tName, hist, runNo, sys, sNN);
@@ -578,13 +583,13 @@ Extractor*
 MakeFMDExtractor(const char* dir, const char* name)
 {
   return new Extractor(dir, name, "NEAR", "fmd_corrections.root", 
-		       &(AliForwardCorrectionManagerOADB::Instance()));
+		       &(AliForwardCorrectionManager::Instance()));
 }
 Extractor*
 MakeSPDExtractor(const char* dir, const char* name)
 {
   return new Extractor(dir, name, "NEAR", "spd_corrections.root", 
-		       &(AliCentralCorrectionManagerOADB::Instance()));
+		       &(AliCentralCorrectionManager::Instance()));
 }
 
 void

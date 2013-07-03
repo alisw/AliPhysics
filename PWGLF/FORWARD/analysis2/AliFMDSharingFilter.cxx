@@ -270,6 +270,15 @@ AliFMDSharingFilter::AddDeadRegion(UShort_t d,  Char_t r,
       AddDead(d, r, s, t);
 }
 //____________________________________________________________________
+void
+AliFMDSharingFilter::AddDead(const Char_t* script)
+{
+  if (!script || script[0] == '\0') return;
+  
+  gROOT->Macro(Form("%s((AliFMDSharingFilter*)%p);", script, this));
+}
+
+//____________________________________________________________________
 Bool_t
 AliFMDSharingFilter::IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const
 {
@@ -692,7 +701,7 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
 
   // If below cut, then modify zero signal and make sure the next
   // strip is considered a candidate.
-  if (thisE < lowCut || thisE > 20) { 
+  if (thisE < lowCut || thisE > 100/*20*/) { 
     thisStatus = kNone;
     DBGL(5,Form(" %9f<%9f || %9f>20, 0'ed", thisE, lowCut, thisE));
     if (prevStatus == kCandidate) prevStatus = kNone;
@@ -950,6 +959,24 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
   TList* out = new TList;
   out->SetName(d->GetName());
   out->SetOwner();
+
+  TParameter<int>* nFiles = 
+    static_cast<TParameter<int>*>(dir->FindObject("nFiles"));
+
+  TH2* lowCuts  = static_cast<TH2*>(dir->FindObject("lowCuts"));
+  TH2* highCuts = static_cast<TH2*>(dir->FindObject("highCuts"));
+  if (lowCuts && nFiles) {
+    lowCuts->Scale(1. / nFiles->GetVal());
+    out->Add(lowCuts->Clone());
+  }
+  else 
+    AliWarning("low cuts histogram not found in input list");
+  if (highCuts && nFiles) {
+    highCuts->Scale(1. / nFiles->GetVal());
+    out->Add(highCuts->Clone());
+  }
+  else 
+    AliWarning("high cuts histogram not found in input list");
   
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -1020,6 +1047,10 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("lowSignal", 
 				       fZeroSharedHitsBelowThreshold));
   d->Add(AliForwardUtil::MakeParameter("simple", fUseSimpleMerging));
+  d->Add(AliForwardUtil::MakeParameter("sumThree", fThreeStripSharing));
+  TParameter<int>* nFiles = new TParameter<int>("nFiles", 1);
+  nFiles->SetMergeMode('+');
+  d->Add(nFiles);
   
   TObjArray* extraDead = new TObjArray;
   extraDead->SetOwner();
@@ -1064,6 +1095,7 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
 	    << fZeroSharedHitsBelowThreshold << '\n'
     	    << ind << " Use simple sharing:     " << fUseSimpleMerging << '\n'
 	    << ind << " Consider invalid null:  " << fInvalidIsEmpty << '\n'
+	    << ind << " Allow 3 strip merging:  " << fThreeStripSharing
 	    << std::noboolalpha << std::endl;
   std::cout << ind << " Low cuts: " << std::endl;
   fLCuts.Print();
@@ -1365,7 +1397,7 @@ AliFMDSharingFilter::RingHistos::CreateOutputObjects(TList* dir)
   d->Add(fNeighborsAfter);
   // d->Add(fHits);
   d->Add(fSum);
-  
+
   // Removed to avoid doubly adding the list which destroys 
   // the merging
   //dir->Add(d);

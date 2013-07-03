@@ -29,18 +29,20 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fUseROOTProj(false),
     fTriggerEff(1),
     fTriggerEff0(1),
-  fShapeCorr(0),
-  fListOfCentralities(0),
+    fShapeCorr(0),
+    fListOfCentralities(0),
     fSNNString(0),
     fSysString(0),
     fCent(0),
     fCentAxis(0),
-  fNormalizationScheme(kFull), 
+    fVtx(0),
+    fNormalizationScheme(kFull), 
     fSchemeString(0), 
     fTriggerString(0),
     fFinalMCCorrFile(""),
+    fSatelliteVertices(0),
     fglobalempiricalcorrection(0),
-  fmeabsignalvscentr(0)	
+    fmeabsignalvscentr(0)
 {
   // 
   // Constructor
@@ -69,10 +71,12 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fSysString(0),
     fCent(0),
     fCentAxis(0),
+    fVtx(0),
     fNormalizationScheme(kFull), 
     fSchemeString(0),
     fTriggerString(0),
     fFinalMCCorrFile(""),
+    fSatelliteVertices(0),
     fglobalempiricalcorrection(0),
     fmeabsignalvscentr(0)	
 {
@@ -114,10 +118,12 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fSysString(o.fSysString),
     fCent(o.fCent),
     fCentAxis(o.fCentAxis),
+    fVtx(o.fVtx),
     fNormalizationScheme(o.fNormalizationScheme), 
     fSchemeString(o.fSchemeString), 
     fTriggerString(o.fTriggerString),
     fFinalMCCorrFile(o.fFinalMCCorrFile),
+    fSatelliteVertices(o.fSatelliteVertices),
     fglobalempiricalcorrection(o.fglobalempiricalcorrection),
   fmeabsignalvscentr(o.fmeabsignalvscentr)		
 {
@@ -190,6 +196,7 @@ AliBasedNdetaTask::AddCentralityBin(UShort_t at, Short_t low, Short_t high)
 	  GetName(), low, high, at);
     return;
   }
+  bin->SetSatelliteVertices(fSatelliteVertices);
   bin->SetDebugLevel(fDebug);
   fListOfCentralities->AddAtAndExpand(bin, at);
 }
@@ -332,7 +339,6 @@ AliBasedNdetaTask::SetShapeCorrection(const TH2F* c)
   fShapeCorr = static_cast<TH2F*>(c->Clone());
   fShapeCorr->SetDirectory(0);
 }
-
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::InitializeCentBins()
@@ -370,12 +376,53 @@ AliBasedNdetaTask::UserCreateOutputObjects()
 					   AliForwardUtil::AliROOTRevision()));
   fSums->Add(AliForwardUtil::MakeParameter("alirootBranch", 
 					   AliForwardUtil::AliROOTBranch()));
-
+  fSums->Add(AliForwardUtil::MakeParameter("empirical", 
+					   fglobalempiricalcorrection != 0));
   // Centrality histogram 
   fCent = new TH1D("cent", "Centrality", 100, 0, 100);
   fCent->SetDirectory(0);
   fCent->SetXTitle(0);
   fSums->Add(fCent);
+
+  // Custom vertex axis that will include satellite vertices 
+  // Satellite vertices are at k*37.5 where k=-10,-9,...,9,10 
+  // Nominal vertices are usually in -10 to 10 and we should have 
+  // 10 bins in that range.  That gives us a total of 
+  //
+  //   10+10+10=30 bins 
+  // 
+  // or 31 bin boundaries 
+  const Int_t   nCenter = 20; // Max possible is 56
+  const Int_t   nSat    = 10;
+  const Int_t   nBins   = 2*nSat + nCenter;
+  Float_t       bins[nBins+1];
+  for (Int_t i = 0; i < nSat;i++) {
+    bins[i] = (i-nSat-.5) * 37.5;
+    // printf("bins[%2d]=%+6.2f\n", i, bins[i]);
+  }
+  for (Int_t i = nSat; i < nSat+nCenter+1; i++) {
+    bins[i] = -nCenter + (i-nSat) * 2;
+    // printf("bins[%2d]=%+6.2f\n", i, bins[i]);
+  }
+  for (Int_t i = nSat+nCenter+1; i < 2*nSat+nCenter; i++) {
+    bins[i] = (i-nSat-nCenter +.5) * 37.5;
+    // printf("bins[%2d]=%+6.2f\n", i, bins[i]);
+  }
+  bins[nBins] = (nSat + .5) * 37.5;
+        
+  fVtx           = new TH1D("vtx", "Vertex dist", nBins, bins);
+  fVtx->SetDirectory(0);
+  fVtx->SetFillColor(kRed+1);
+  fVtx->SetFillStyle(3001);
+  fVtx->SetXTitle("IP_{z} [cm]");
+  fVtx->SetYTitle("Events");
+  fSums->Add(fVtx);
+#if 0
+  TAxis* a = fVtx->GetXaxis();
+  for (Int_t i = 1; i <= nBins; i++) 
+    printf("%2d/%2d: %+6.2f - %+6.2f: %+6.2f\n", 
+	   i,nBins,a->GetBinLowEdge(i),a->GetBinUpEdge(i),a->GetBinCenter(i));
+#endif
 
   // Loop over centrality bins 
   TIter next(fListOfCentralities);
@@ -383,8 +430,12 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums, fTriggerMask);
   
-   fmeabsignalvscentr=new TH2D("meabsignalvscentr","meabsignalvscentr",400,0,20,100,0,100);
-	fSums->Add(fmeabsignalvscentr);
+  fmeabsignalvscentr=new TH2D("meanAbsSignalVsCentr",
+			      "Mean absolute signal versus centrality",
+			      400, 0, 20, 100, 0, 100);
+  fSums->Add(fmeabsignalvscentr);
+
+  Print();
   // Post data for ALL output slots >0 here, to get at least an empty
   // histogram
   PostData(1, fSums); 
@@ -405,7 +456,7 @@ AliBasedNdetaTask::UserExec(Option_t *)
   AliAODEvent* aod = AliForwardUtil::GetAODEvent(this);
   if (!aod) return;
 
-  
+
   TObject* obj = aod->FindListObject("Forward");
   if (!obj) { 
     AliWarning("No forward object found");
@@ -414,14 +465,19 @@ AliBasedNdetaTask::UserExec(Option_t *)
   AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
   
   // Fill centrality histogram 
+    
+  Double_t vtx = forward->GetIpZ();
   Float_t cent = forward->GetCentrality();
-  fCent->Fill(cent);
 
   // Get the histogram(s) 
   TH2D* data   = GetHistogram(aod, false);
   TH2D* dataMC = GetHistogram(aod, true);
-  if(!ApplyEmpiricalCorrection(forward,data))
- 	return;
+  if (!data) return;
+
+  CheckEventData(vtx, data, dataMC);
+  
+  if (!ApplyEmpiricalCorrection(forward,data))
+    return;
 
 #if 0
   // Code disabled - breaks execution 
@@ -453,13 +509,13 @@ AliBasedNdetaTask::UserExec(Option_t *)
 
   Bool_t isZero = ((fNormalizationScheme & kZeroBin) &&
 		   !forward->IsTriggerBits(AliAODForwardMult::kNClusterGt0));
-
-
+  Bool_t taken = false;
+  
   // Loop over centrality bins 
   CentralityBin* allBin = 
     static_cast<CentralityBin*>(fListOfCentralities->At(0));
-  allBin->ProcessEvent(forward, fTriggerMask, isZero, 
-		       fVtxMin, fVtxMax, data, dataMC);
+  if (allBin->ProcessEvent(forward, fTriggerMask, isZero, 
+			   fVtxMin, fVtxMax, data, dataMC)) taken = true;
   
   // Find this centrality bin 
   if (fCentAxis && fCentAxis->GetNbins() > 0) {
@@ -468,12 +524,18 @@ AliBasedNdetaTask::UserExec(Option_t *)
     if (icent >= 1 && icent <= fCentAxis->GetNbins()) 
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
     if (thisBin)
-      thisBin->ProcessEvent(forward, fTriggerMask, isZero, fVtxMin, fVtxMax, 
-			    data, dataMC);
+      if (thisBin->ProcessEvent(forward, fTriggerMask, isZero, fVtxMin, 
+				fVtxMax, data, dataMC)) taken = true;
+  }
+
+  // Fill diagnostics only if we took this event 
+  if (taken) {
+    fCent->Fill(cent);
+    fVtx->Fill(vtx);
   }
 
   // Here, we get the update 
-  if (!fSNNString) { 
+  if (!fSNNString) {
     fSNNString = AliForwardUtil::MakeParameter("sNN", forward->GetSNN());
     fSysString = AliForwardUtil::MakeParameter("sys", forward->GetSystem());
 
@@ -651,7 +713,7 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
   
   return ret;
 }
-  
+ 
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::Terminate(Option_t *) 
@@ -677,7 +739,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput = new TList;
   fOutput->SetName(Form("%s_result", GetName()));
   fOutput->SetOwner();
-  
+ 
   fSNNString     = fSums->FindObject("sNN");
   fSysString     = fSums->FindObject("sys");
   fCentAxis      = static_cast<TAxis*>(fSums->FindObject("centAxis"));
@@ -778,7 +840,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   if (dndetaMCStackRebin) fOutput->Add(dndetaMCStackRebin);
 
   // Output collision energy string 
-  if (fSNNString) { 
+  if (fSNNString) {
     UShort_t sNN = fSNNString->GetUniqueID();
     TNamed* sNNObj = new TNamed(fSNNString->GetName(),
 				AliForwardUtil::CenterOfMassEnergyString(sNN));
@@ -822,7 +884,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   vtxAxis->SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm", fVtxMin,fVtxMax));
   fOutput->Add(vtxAxis);
 
-  // Output trigger efficiency and shape correction 
+  // Output trigger efficiency and shape correction
   fOutput->Add(AliForwardUtil::MakeParameter("triggerEff", fTriggerEff));
   fOutput->Add(AliForwardUtil::MakeParameter("triggerEff0", fTriggerEff0));
   if (fShapeCorr) fOutput->Add(fShapeCorr);
@@ -971,7 +1033,7 @@ AliBasedNdetaTask::Print(Option_t*) const
 	    << " sqrt(s_NN):                 " << sNNString << "\n"
 	    << " Collision system:           " << sysString << "\n"
 	    << " Centrality bins:            " << (fCentAxis ? "" : "none");
-  if (fCentAxis) { 
+  if (fCentAxis) {
     Int_t           nBins = fCentAxis->GetNbins();
     const Double_t* bins  = fCentAxis->GetXbins()->GetArray();
     for (Int_t i = 0; i <= nBins; i++) 
@@ -1009,7 +1071,10 @@ AliBasedNdetaTask::Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges)
   TH1D* tmp = static_cast<TH1D*>(h->Clone(Form("%s_rebin%02d", 
 					       h->GetName(), rebin)));
   tmp->Rebin(rebin);
-  tmp->Reset();	
+  // Hist should be reset, as it otherwise messes with the cutEdges option
+  AliWarningGeneral("AliBasedNdetaTask::Rebin",
+		    "Temporary histogram not reset - check!");
+  // tmp->Reset(); 
   tmp->SetDirectory(0);
 
   // The new number of bins 
@@ -1022,11 +1087,12 @@ AliBasedNdetaTask::Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges)
     for(Int_t j = 1; j<=rebin;j++) {
       Int_t    bin = (i-1)*rebin + j;
       Double_t c   =  h->GetBinContent(bin);
-       if (c <= 0)
-	{
-		content = -1;
-		break;
-	} 
+      if (c <= 0)  {
+        continue; // old TODO: check
+    	//content = -1; // new
+  	//break; // also new
+      }
+      
       if (cutEdges) {
 	if (h->GetBinContent(bin+1)<=0 || 
 	    h->GetBinContent(bin-1)<=0) {
@@ -1231,7 +1297,7 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
   ret->Reset();
   Int_t n        = Int_t(fEvents->GetBinContent(1));
   Int_t n0       = Int_t(fEvents->GetBinContent(2));
-
+  
   AliInfoF("Adding histograms %s(%d) and %s(%d) with weights %f and %f resp.",
 	   fSum0->GetName(), n, fSum->GetName(), n0, 1./epsilon, 1./epsilon0);
   DMSG(fDebug,2, "Adding histograms %s and %s with weights %f and %f resp.",
@@ -1355,9 +1421,11 @@ AliBasedNdetaTask::CentralityBin::CentralityBin()
     fSum(0), 
     fSumMC(0), 
     fTriggers(0), 
+    fStatus(0),
     fLow(0), 
     fHigh(0),
-    fDoFinalMCCorrection(false), 
+    fDoFinalMCCorrection(false),
+    fSatelliteVertices(false),
     fDebug(0)
 {
   // 
@@ -1374,9 +1442,11 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
     fSum(0), 
     fSumMC(0), 
     fTriggers(0),
+    fStatus(0),
     fLow(low), 
     fHigh(high),
     fDoFinalMCCorrection(false), 
+    fSatelliteVertices(false),
     fDebug(0)
 {
   // 
@@ -1408,9 +1478,11 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const CentralityBin& o)
     fSum(o.fSum), 
     fSumMC(o.fSumMC), 
     fTriggers(o.fTriggers), 
+    fStatus(o.fStatus),
     fLow(o.fLow), 
     fHigh(o.fHigh),
-    fDoFinalMCCorrection(o.fDoFinalMCCorrection), 
+    fDoFinalMCCorrection(o.fDoFinalMCCorrection),
+    fSatelliteVertices(o.fSatelliteVertices),
     fDebug(o.fDebug)
 {
   // 
@@ -1455,9 +1527,11 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
   fSum       = o.fSum;
   fSumMC     = o.fSumMC;
   fTriggers  = o.fTriggers;
+  fStatus    = o.fStatus;
   fLow       = o.fLow;
   fHigh      = o.fHigh;
   fDoFinalMCCorrection = o.fDoFinalMCCorrection;
+  fSatelliteVertices = o.fSatelliteVertices;
 
   return *this;
 }
@@ -1503,7 +1577,12 @@ AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir, Int_t mask)
 
   fTriggers = AliAODForwardMult::MakeTriggerHistogram("triggers", mask);
   fTriggers->SetDirectory(0);
+
+  fStatus = AliAODForwardMult::MakeStatusHistogram("status");
+  fStatus->SetDirectory(0);
+
   fSums->Add(fTriggers);
+  fSums->Add(fStatus);
 }
 //____________________________________________________________________
 void
@@ -1590,12 +1669,13 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
 
   DGUARD(fDebug,2,"Check the event");
   // We do not check for centrality here - it's already done 
-  return forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, fTriggers);
+  return forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, 
+			     fTriggers, fStatus);
 }
   
   
 //____________________________________________________________________
-void
+Bool_t
 AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
 					       Int_t triggerMask, Bool_t isZero,
 					       Double_t vzMin, Double_t vzMax,
@@ -1614,12 +1694,14 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   //
   DGUARD(fDebug,1,"Process one event for %s a given centrality bin", 
 	 data ? data->GetName() : "(null)");
-  if (!CheckEvent(forward, triggerMask, vzMin, vzMax)) return;
-  if (!data) return;
+  if (!CheckEvent(forward, triggerMask, vzMin, vzMax)) return false;
+  if (!data) return false;
   if (!fSum) CreateSums(data, mc);
 
   fSum->Add(data, isZero);
   if (mc) fSumMC->Add(mc, isZero);
+
+  return true;
 }
 
 //________________________________________________________________________
@@ -1674,7 +1756,7 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
       AliInfoF("Calculating event normalisation as\n"
 	       " N = N_A * N_T / N_V = %d * %d / %d = %f (%f)",
 	       Int_t(nAccepted), Int_t(nTriggered), Int_t(nWithVertex), 
-	       ntotal, scaler);	    
+	       ntotal, scaler);    
       if (scheme & kBackground) {
 	//          1            E_V             E_V
 	//   s = --------- = ------------- = ------------ 
@@ -1753,7 +1835,6 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
     text->Append(Form("%-40s = %f\n", "eps_T",		  trigEff));
     text->Append(Form("%-40s = %f\n", rhs.Data(),         ntotal));
   }
-
   AliInfo(Form("\n"
 	       " Total of        %9d events for %s\n"
 	       "  of these       %9d have an offline trigger\n"
@@ -1841,10 +1922,22 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   DGUARD(fDebug,1,"Make centrality bin result from %s", sum->GetName());
   TH2D* copy    = static_cast<TH2D*>(sum->Clone(Form("d2Ndetadphi%s%s", 
 						     GetName(), postfix)));
+  
+  TH1D* accNorm = 0;
   Int_t nY      = sum->GetNbinsY();
+  // Hack HHD Hans test code to manually remove FMD2 dead channel (but
+  // it is on outer?)
+  // 
+  // cholm comment: The original hack has been moved to
+  // AliForwarddNdetaTask::CheckEventData - this simplifies things a
+  // great deal, and we could in principle use the new phi acceptance.
+  // 
+  // However, since we may have filtered out the dead sectors in the
+  // AOD production already, we can't be sure we can recalculate the
+  // phi acceptance correctly, so for now, we rely on fCorrEmpty being set. 
   Int_t o       = (corrEmpty ? 0 : nY+1);
-  TH1D* accNorm = ProjectX(sum, Form("norm%s%s",GetName(), postfix), o, o, 
-			   rootProj, corrEmpty, false);
+  accNorm = ProjectX(sum, Form("norm%s%s",GetName(), postfix), o, o, 
+		     rootProj, corrEmpty, false);
   accNorm->SetDirectory(0);
 
   // ---- Scale by shape correction ----------------------------------
@@ -1875,24 +1968,67 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   TH1D* dndetaMCtruth      = 0;
   TList* truthcentlist     = 0;
   
-  // Possible final correction to <MC analysis> / <MC truth>
+  // --- Possible final correction to <MC analysis> / <MC truth> -----
+  // we get the rebinned distribution for satellite to make the correction
+  TString rebinSuf(fSatelliteVertices ? "_rebin05" : "");
   if(mclist) 
     centlist = static_cast<TList*> (mclist->FindObject(GetListName()));
   if(centlist)
     dndetaMCCorrection = 
-      static_cast<TH1D*>(centlist->FindObject(Form("dndeta%s%s",
-						   GetName(), postfix)));
-  if(truthlist) 
-    truthcentlist =static_cast<TList*>(truthlist->FindObject(GetListName()));
-  if(truthcentlist)
-    dndetaMCtruth =static_cast<TH1D*>(truthcentlist->FindObject("dndetaTruth"));
-
-  if(dndetaMCCorrection && dndetaMCtruth) {
+      static_cast<TH1D*>(centlist->FindObject(Form("dndeta%s%s%s",
+						   GetName(), postfix, 
+						   rebinSuf.Data())));
+  if (truthlist) 
+    truthcentlist = 
+      static_cast<TList*>(truthlist->FindObject(GetListName()));
+  if (truthcentlist)
+    // TODO here new is "dndetaTruth"
+    dndetaMCtruth = 
+      static_cast<TH1D*>(truthcentlist->FindObject(Form("dndetaMCTruth%s",
+							rebinSuf.Data())));
+  
+  if (dndetaMCCorrection && dndetaMCtruth) {
     AliInfo("Correcting with final MC correction");
+    TString testString(dndetaMCCorrection->GetName());
+
+    // We take the measured MC dN/deta and divide with truth 
     dndetaMCCorrection->Divide(dndetaMCtruth);
     dndetaMCCorrection->SetTitle("Final MC correction");
     dndetaMCCorrection->SetName("finalMCCorr");
-    dndeta->Divide(dndetaMCCorrection);    
+    for(Int_t m = 1; m <= dndetaMCCorrection->GetNbinsX(); m++) {
+      if(dndetaMCCorrection->GetBinContent(m) < 0.5 || 
+	 dndetaMCCorrection->GetBinContent(m) > 1.75) {
+	dndetaMCCorrection->SetBinContent(m,1.);
+	dndetaMCCorrection->SetBinError(m,0.1);
+      }
+    }
+    // Applying the correction
+    if (!fSatelliteVertices)
+      // For non-satellites we took the same binning, so we do a straight 
+      // division 
+      dndeta->Divide(dndetaMCCorrection);
+    else {
+      // For satelitte events, we took coarser binned histograms, so 
+      // we need to do a bit more 
+      for(Int_t m = 1; m <= dndeta->GetNbinsX(); m++) {
+	if(dndeta->GetBinContent(m) <= 0.01 ) continue;
+	
+	Double_t eta     = dndeta->GetXaxis()->GetBinCenter(m);
+	Int_t    bin     = dndetaMCCorrection->GetXaxis()->FindBin(eta);
+	Double_t mccorr  = dndetaMCCorrection->GetBinContent(bin);
+	Double_t mcerror = dndetaMCCorrection->GetBinError(bin);
+	if (mccorr < 1e-6) {
+	  dndeta->SetBinContent(m, 0);
+	  dndeta->SetBinError(m, 0);
+	}
+	Double_t value   = dndeta->GetBinContent(m);
+	Double_t error   = dndeta->GetBinError(m);
+	Double_t sumw2   = (error   * error   * mccorr * mccorr +
+			    mcerror * mcerror * value  * value);
+	dndeta->SetBinContent(m,value/mccorr) ;
+	dndeta->SetBinError(m,TMath::Sqrt(sumw2)/mccorr/mccorr);
+      }
+    }
   }
   else 
     AliInfo("No final MC correction applied");
@@ -1908,13 +2044,55 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 			      GetName(), post.Data())); 
 
   // --- Make symmetric extensions and rebinnings --------------------
-  if (symmetrice)   fOutput->Add(Symmetrice(dndeta));
+  if (symmetrice) fOutput->Add(Symmetrice(dndeta));
   fOutput->Add(dndeta);
   fOutput->Add(accNorm);
   fOutput->Add(copy);
   fOutput->Add(Rebin(dndeta, rebin, cutEdges));
-  if (symmetrice)   fOutput->Add(Symmetrice(Rebin(dndeta, rebin, cutEdges)));
+  if (symmetrice) fOutput->Add(Symmetrice(Rebin(dndeta, rebin, cutEdges)));
   if (dndetaMCCorrection) fOutput->Add(dndetaMCCorrection);
+  
+  // HHD Test of dN/deta in phi bins add flag later?
+  // 
+  // cholm comment: We disable this for now 
+#if 0
+  for (Int_t nn=1; nn <= sum->GetNbinsY(); nn++) {
+    TH1D* dndeta_phi = ProjectX(copy, Form("dndeta%s%s_phibin%d",
+					   GetName(), postfix, nn), 
+				nn, nn, rootProj, corrEmpty);
+    dndeta_phi->SetDirectory(0);
+    // Event-level normalization 
+    dndeta_phi->Scale(TMath::Pi()/10., "width");
+     
+    if(centlist)
+      dndetaMCCorrection = 
+	static_cast<TH1D*>(centlist->FindObject(Form("dndeta%s%s_phibin%d",
+						     GetName(), postfix,nn)));
+    if(truthcentlist)
+      dndetaMCtruth 
+	= static_cast<TH1D*>(truthcentlist->FindObject("dndetaMCTruth"));
+
+    if (dndetaMCCorrection && dndetaMCtruth) {
+      AliInfo("Correcting with final MC correction");
+      TString testString(dndetaMCCorrection->GetName());
+      dndetaMCCorrection->Divide(dndetaMCtruth);
+      dndetaMCCorrection->SetTitle(Form("Final_MC_correction_phibin%d",nn));
+      dndetaMCCorrection->SetName(Form("Final_MC_correction_phibin%d",nn));
+      for(Int_t m = 1; m <= dndetaMCCorrection->GetNbinsX(); m++) {
+	if(dndetaMCCorrection->GetBinContent(m) < 0.25 || 
+	   dndetaMCCorrection->GetBinContent(m) > 1.75) {
+	  dndetaMCCorrection->SetBinContent(m,1.);
+	  dndetaMCCorrection->SetBinError(m,0.1);
+	}
+      }
+      //Applying the correction
+      dndeta_phi->Divide(dndetaMCCorrection);
+    }
+    fOutput->Add(dndeta_phi);
+    fOutput->Add(Rebin(dndeta_phi, rebin, cutEdges));
+    if(dndetaMCCorrection) fOutput->Add(dndetaMCCorrection);
+  } // End of phi
+#endif
 }  
 
 //________________________________________________________________________
@@ -1984,15 +2162,24 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   AliInfoF("Using epsilonT=%f, epsilonT0=%f for %d", 
 	   epsilonT, epsilonT0, triggerMask);
 #if 0
-  // TEMPORARY FIX
+  // These hard-coded trigger efficiencies are not used anymore, and
+  // are only left in the code for reference.  We should remove this
+  // soon.
   if (triggerMask == AliAODForwardMult::kNSD) {
     // This is a local change 
-    epsilonT = 0.96; 
+    epsilonT = 0.96; // New value since HHD code 29/08/2012, why?
+    //epsilonT = 0.92; //First paper...
+    //epsilonT = 0.954; //First paper...
+    //epsilonT = 1.03; //phojet
     AliWarning(Form("Using hard-coded NSD trigger efficiency of %f",epsilonT));
   }
   else if (triggerMask == AliAODForwardMult::kInel) {
     // This is a local change 
-    epsilonT = 0.934; 
+    epsilonT = 0.934; // New value since HHD code 29/08/2012, why?
+    // 900 GeV Inel eff from Martin
+    //epsilonT = 0.916; 
+    //epsilonT = 0.97;  //phojet
+  
     AliWarning(Form("Using hard-coded Inel trigger efficiency of %f",epsilonT));
   }
   if (scheme & kZeroBin) { 

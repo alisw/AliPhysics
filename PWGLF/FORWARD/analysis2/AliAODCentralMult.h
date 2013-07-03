@@ -38,7 +38,17 @@ class TBrowser;
 class AliAODCentralMult : public TObject
 {
 public:
-  
+  /** 
+   * User bits of these objects (bits 14-23 can be used)
+   */
+  enum {
+    /** Secondary correction maps where applied */
+    kSecondary           = (1 << 14), 
+    /** Acceptance correction was applied */
+    kAcceptance          = (1 << 16), 
+    /** Used eta dependent empirical correction - to be implemented */
+    kEmpirical           = (1 << 19)
+  };
   /** 
    * Default constructor 
    * 
@@ -92,6 +102,10 @@ public:
    * @return Always true
    */
   Bool_t IsFolder() const { return kTRUE; } // Always true 
+
+  Bool_t IsSecondaryCorrected() const { return TestBit(kSecondary); }
+  Bool_t IsAcceptanceCorrected() const { return TestBit(kAcceptance); }
+  Bool_t IsEmpiricalCorrected() const { return TestBit(kEmpirical); }
   /** 
    * Print content 
    * 
@@ -112,7 +126,7 @@ protected:
   /** Histogram of @f$d^2N_{ch}/(d\eta d\phi)@f$ for this event */
   TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event
   
-  ClassDef(AliAODCentralMult,1); // AOD forward multiplicity 
+  ClassDef(AliAODCentralMult,2); // AOD forward multiplicity 
 };
 
 #endif

@@ -102,6 +102,7 @@ set ( SRCS
   FORWARD/analysis2/AliForwardQATask.cxx
   FORWARD/analysis2/AliForwardCreateResponseMatrices.cxx
   FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
+  FORWARD/analysis2/AliForwardMultDists.cxx
   FORWARD/photons/AliAnalysisTaskPMD.cxx
   FORWARD/photons/AliAnalysisTaskPMDSim.cxx
 )
@@ -127,6 +128,9 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
 	     FORWARD/analysis2/AliForwardCorrectionManager.h
 	     FORWARD/analysis2/AliCorrectionManagerBase.h
+	     FORWARD/analysis2/AliFMDCorrAcceptance.h
+	     FORWARD/analysis2/AliFMDCorrSecondaryMap.h
+	     FORWARD/analysis2/AliFMDCorrELossFit.h
 	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h
 	     FORWARD/GEO/AliAnalysisTaskZDCpAcalib.h
 	     FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.h)
@@ -239,13 +243,16 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/AddTaskForwardFlow.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
+                FORWARD/analysis2/AddTaskForwardMultDists.C
                 FORWARD/analysis2/AddTaskForwardQA.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
 		FORWARD/analysis2/AddTaskMCTruthdNdeta.C
 		FORWARD/analysis2/AddTaskMCParticleFilter.C
 		FORWARD/analysis2/DrawdNdeta.C
 		FORWARD/analysis2/DrawdNdetaSummary.C
+		FORWARD/analysis2/DrawMCCorrSummary.C
 		FORWARD/analysis2/DrawAODSummary.C
+		FORWARD/analysis2/DrawMultDistsSummary.C
 		FORWARD/analysis2/ForwardAODConfig.C
 		FORWARD/analysis2/CentralAODConfig.C
                 FORWARD/analysis2/MakeAOD.C

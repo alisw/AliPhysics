@@ -50,222 +50,167 @@ public:
       Error("Run", "Failed to open \"%s\"", filename.Data());
       return;
     }
-
+   
 
     // --- Get top-level collection ----------------------------------
     fSums = GetCollection(file, "Forward");
     if (!fSums) return;
 
+    // --- Do the results ----------------------------------------------
+    fResults = GetCollection(file, "ForwardResults");
+    if (!fResults) fResults = fSums; // Old-style
+
     // --- Make our canvas -------------------------------------------
     TString pdfName(filename);
     pdfName.ReplaceAll(".root", ".pdf");
-    CreateCanvas(pdfName, what & 0x100);
+    CreateCanvas(pdfName, what & kLandscape);
+    DrawTitlePage(file);
 
     // --- Possibly make a chapter here ------------------------------
     if (what & kCentral && GetCollection(file, "Central")) 
       MakeChapter("Forward");
     
     // --- Set pause flag --------------------------------------------
-    fPause = what & 0x80;
+    fPause = what & kPause;
 
     // --- Do each sub-algorithm -------------------------------------
-    if (what & 0x01) DrawEventInspector();
-    if (what & 0x02) DrawSharingFilter();
-    if (what & 0x04) DrawDensityCalculator();
-    if (what & 0x08) DrawCorrector();
-    if (what & 0x10) DrawHistCollector();
+    if (what & kEventInspector)    DrawEventInspector(fSums);
+    if (what & kSharingFilter)     DrawSharingFilter();
+    if (what & kDensityCalculator) DrawDensityCalculator();
+    if (what & kCorrector)         DrawCorrector();
+    if (what & kHistCollector)     DrawHistCollector();
   
-    // --- Do the results ----------------------------------------------
-    fResults = GetCollection(file, "ForwardResults");
-    if (!fResults) fResults = fSums; // Old-style
     
-    if (what & 0x20) DrawSteps();
-    if (what & 0x40) DrawResults();
+    if (what & kSteps) DrawSteps();
+    if (what & kResults) DrawResults();
 
     // --- SPD clusters ----------------------------------------------
-    if (what & 0x200) { 
+    if (what & kCentral) { 
       // --- Get top-level collection --------------------------------
       fSums = GetCollection(file, "Central");
       if (fSums) {
 	MakeChapter("Central");
 	DrawCentral();
-	if (what & 0x01) DrawEventInspector();
-
+	if (what & kEventInspector) DrawEventInspector(fSums);
       }
+      fResults = GetCollection(file, "CentralResults");
+      if (fResults && (what & kResults)) {
+	DrawCentralResults();
+      }
+
+      if (what & kResults) DrawBoth(file);
     }
 
+    
     CloseCanvas();
   }
 protected:
   //____________________________________________________________________
-  void DrawEventInspector()
+  void DrawTitlePage(TFile* f)
   {
-    Info("DrawEventInspector", "Drawing event inspector");
-    TCollection* c = GetCollection(fSums, "fmdEventInspector");
-    if (!c) return;
-
-    Int_t sys=0, sNN=0, field=0, runNo=0, lowFlux=0, nPileUp=0;
-    Int_t aliRev=0, aliBra=0;
-    Bool_t fpVtx=false, v0and=false;
-    Double_t dPileUp=0.;
-    Double_t y = .8;
-
     fBody->cd();
 
+    TLatex* ltx = new TLatex(.5, .7, "ESD #rightarrow AOD filtering");
+    ltx->SetNDC();
+    ltx->SetTextSize(0.07);
+    ltx->SetTextAlign(22);
+    ltx->Draw();
+
+    TCollection* fwd = GetCollection(f, "Forward");
+    TCollection* cen = GetCollection(f, "Central");
+    Double_t y = .6;
+    
     Double_t save = fParName->GetTextSize();
     fParName->SetTextSize(0.03);
     fParVal->SetTextSize(0.03);
 
-    if (GetParameter(c, "sys", sys))
-      DrawParameter(y, "System", (sys == 1 ? "pp" : sys == 2 ? "PbPb" : 
-				  sys == 3 ? "pPb" : "unknown"));
-    if (GetParameter(c, "sNN", sNN)) 
-      DrawParameter(y, "#sqrt{s_{NN}}", Form("%5dGeV", sNN));
+    DrawParameter(y, "Tasks", (fwd ? "Forward" : ""));
+    DrawParameter(y, "",      (cen ? "Central" : ""));
 
-    if (GetParameter(c, "field", field))
-      DrawParameter(y, "L3 B field", Form("%+2dkG", field));
+    if (fwd) { 
+      TCollection* ei = GetCollection(fwd, "fmdEventInspector");
+      if (ei) { 
 
-    if (GetParameter(c, "runNo", runNo))
-      DrawParameter(y, "Run #", Form("%6d", runNo));
+	Int_t sys=0, sNN=0, field=0, runNo=0;
+	Bool_t mc=false;
 
-    if (GetParameter(c, "lowFlux", lowFlux))
-      DrawParameter(y, "Low flux cut", Form("%6d", lowFlux));
+	if (GetParameter(ei, "sys", sys))
+	  DrawParameter(y, "System", (sys == 1 ? "pp" : sys == 2 ? "PbPb" : 
+				      sys == 3 ? "pPb" : "unknown"));
+	if (GetParameter(ei, "sNN", sNN)) {
+	  TString tsNN = TString::Format("%dGeV", sNN);
+	  if (sNN >= 10000) 
+	    tsNN = TString::Format("%5.2f", float(sNN)/1000);
+	  else if (sNN >= 1000) 
+	    tsNN = TString::Format("%4.2f", float(sNN)/1000);
+	  DrawParameter(y, "#sqrt{s_{NN}}", tsNN);
+	}
 
-    if (GetParameter(c, "fpVtx", fpVtx))
-      DrawParameter(y, "Use PWG-UD vertex", (fpVtx ? "yes" : "no"));
+	if (GetParameter(ei, "field", field))
+	  DrawParameter(y, "L3 B field", Form("%+2dkG", field));
 
-    if (GetParameter(c, "v0and", v0and))
-      DrawParameter(y, "Use V0AND for NSD", (v0and ? "yes" : "no"));
-
-    if (GetParameter(c, "nPileUp", nPileUp))
-      DrawParameter(y, "Least # of pile-up vertex", Form("%d", nPileUp));
-      
-    if (GetParameter(c, "dPileup", dPileUp))
-      DrawParameter(y, "Least distance of pile-up vertex",
-		    Form("%fcm", dPileUp));
-
-    if (GetParameter(c, "alirootRev", aliRev) || 
-	GetParameter(c, "alirootBranch", aliBra))
-      DrawParameter(y, "AliROOT", Form("%7lu/0x%08lx", ULong_t(aliRev), 
-				       ULong_t(aliBra)));
-
-    PrintCanvas("Event Inspector");
+	if (GetParameter(ei, "runNo", runNo))
+	  DrawParameter(y, "Run #", Form("%6d", runNo));
+	
+	if (!GetParameter(ei, "mc", mc)) mc = false;
+	DrawParameter(y, "Simulation", (mc ? "yes" : "no"));	
+      }
+    }
+    PrintCanvas("Title page");
     fParName->SetTextSize(save);
     fParVal->SetTextSize(save);
-
-    fBody->Divide(2,4);
-    
-    TH1*    nEventsTr    = GetH1(c, "nEventsTr");
-    TH1*    nEventsTrVtx = GetH1(c, "nEventsTrVtx");
-    TH1*    vertex       = GetH1(c, "vertex", false);
-    Bool_t  mc           = (vertex != 0);
-    if (nEventsTr)    nEventsTr->Rebin(2);
-    if (nEventsTrVtx) nEventsTrVtx->Rebin(2);
-    if (vertex) {
-      // vertex->Rebin(2);
-      vertex->SetFillColor(kMagenta+2);
-    }
-    DrawInPad(fBody, 1, nEventsTr, "", 0x2);
-    DrawInPad(fBody, 1, vertex, "same");
-    DrawInPad(fBody, 1, nEventsTrVtx, "same"); 
-    DrawInPad(fBody, 1, GetH1(c, "nEventsAccepted"), "same", 0x10);
-
-
-    DrawInPad(fBody, 2, GetH2(c, "nEventsAcceptedXY"), "colz", 0x4);
-    DrawInPad(fBody, 3, GetH1(c, "triggers"),          "hist text");
-    if (GetH1(c, "trgStatus"))
-      DrawInPad(fBody, 4, GetH1(c, "trgStatus"),         "hist text");
-    else  // Old one 
-      DrawInPad(fBody, 4, GetH2(c, "triggerCorr"),       "colz", 0x4);
-    DrawInPad(fBody, 5, GetH1(c, "status"),            "hist text");
-    if (GetH1(c, "vtxStatus"))
-      DrawInPad(fBody, 6, GetH1(c, "vtxStatus"),         "hist text");
-    else // old 
-      DrawInPad(fBody, 6, GetH1(c, "type"),              "hist text");
-    DrawInPad(fBody, 7, GetH1(c, "cent"));
-    DrawInPad(fBody, 8, GetH2(c, "centVsQuality"), "colz", 0x4);
-
-    PrintCanvas("EventInspector - Histograms");  
-
-    if (!mc) return; // not MC 
-  
-    TH1* phiR         = GetH1(c, "phiR");
-    TH1* b            = GetH1(c, "b");
-    TH2* bVsNpart     = GetH2(c, "bVsParticipants");
-    TH2* bVsNbin      = GetH2(c, "bVsBinary");
-    TH2* bVsCent      = GetH2(c, "bVsCentrality");
-    TH2* vzComparison = GetH2(c, "vzComparison");
-    TH2* centVsNpart  = GetH2(c, "centralityVsParticipans");// Spelling!
-    TH2* centVsNbin   = GetH2(c, "centralityVsBinary");
-  
-    fBody->Divide(2,3);
-
-    DrawInPad(fBody, 1, phiR);
-    DrawInPad(fBody, 2, vzComparison, "colz", 0x4);
-    DrawInPad(fBody, 3, b);
-
-    TProfile* nPartB = bVsNpart->ProfileX("nPartB",1,-1,"s");
-    TProfile* nBinB  = bVsNbin->ProfileX("nBinB",1,-1,"s");
-    nPartB->SetMarkerColor(kBlue+2);
-    nPartB->SetMarkerStyle(20);
-    nPartB->SetLineColor(kBlue+2);
-    nPartB->SetFillColor(kBlue-10);
-    nPartB->SetFillStyle(1001);
-    nPartB->SetMarkerSize(0.7);
-    nBinB->SetMarkerColor(kRed+2);
-    nBinB->SetMarkerStyle(21);
-    nBinB->SetLineColor(kRed+2);
-    nBinB->SetFillColor(kRed-10);
-    nBinB->SetMarkerSize(0.7);
-    nBinB->SetFillStyle(1001);
-
-    DrawTwoInPad(fBody, 4, nPartB, nBinB, "e3 p", 0x10);
-
-    DrawInPad(fBody, 5, bVsCent, "colz", 0x4);
-
-    TProfile* nPartC = centVsNpart->ProfileY("nPartC",1,-1,"s");
-    TProfile* nBinC  = centVsNbin->ProfileY("nBinC",1,-1,"s");
-    nPartC->SetMarkerColor(kBlue+2);
-    nPartC->SetMarkerStyle(20);
-    nPartC->SetLineColor(kBlue+2);
-    nPartC->SetFillColor(kBlue-10);
-    nPartC->SetFillStyle(1001);
-    nPartC->SetMarkerSize(0.7);
-    nBinC->SetMarkerColor(kRed+2);
-    nBinC->SetMarkerStyle(21);
-    nBinC->SetLineColor(kRed+2);
-    nBinC->SetFillColor(kRed-10);
-    nBinC->SetMarkerSize(0.7);
-    nBinC->SetFillStyle(1001);
-
-    DrawTwoInPad(fBody, 6, nPartC, nBinC, "e3 p", 0x10);
-
-    PrintCanvas("EventInspector - Monte-Carlo");  
   }
   //____________________________________________________________________
   void DrawSharingFilter()
   {
-    Info("DrawEventInspector", "Drawing sharing filter");
+    Info("DrawSharingFilter", "Drawing sharing filter");
     TCollection* c = GetCollection(fSums, "fmdSharingFilter");
     if (!c) return;
+    TCollection* rc = GetCollection(fResults, "fmdSharingFilter");
+    if (!rc) rc = c;
 
     fBody->Divide(1, 3);
     fBody->cd(1);
   
     Double_t y = .8;
     Bool_t   angle=false, lowSignal=false, simple=false;
-  
+
     if (GetParameter(c, "angle", angle))
       DrawParameter(y, "Angle correct", (angle ? "yes" : "no")); 
     if (GetParameter(c, "lowSignal", lowSignal))
       DrawParameter(y, "Lower signal",  (lowSignal ? "yes" : "no"));
-
+    
     if (GetParameter(c, "simple", simple))
       DrawParameter(y, "Simple method", (simple ? "yes" : "no"));
+    TParameter<int>* nFiles = 
+      static_cast<TParameter<int>*>(GetObject(c, "nFiles"));
+    if (nFiles)
+      DrawParameter(y, "# files merged", Form("%d", nFiles->GetVal()));
 
+    
+    TCollection* lc = GetCollection(c, "lCuts");
+    TCollection* hc = GetCollection(c, "hCuts");
+    Int_t lm, hm;
+    if (GetParameter(lc, "method", lm)) 
+      DrawParameter(y, "Low cut method", (lm == 0 ? "fixed" : 
+					  lm == 1 ? "fraction of MPV" : 
+					  lm == 2 ? "fit range" : 
+					  lm == 3 ? "Landau width" : 
+					  "unknown"));
+    if (GetParameter(hc, "method", hm)) 
+      DrawParameter(y, "High cut method", (hm == 0 ? "fixed" : 
+					  hm == 1 ? "fraction of MPV" : 
+					  hm == 2 ? "fit range" : 
+					  hm == 3 ? "Landau width" : 
+					  "unknown"));
 
-    DrawInPad(fBody, 2, GetH2(c, "lowCuts"), "colz");
-    DrawInPad(fBody, 3, GetH2(c, "highCuts"), "colz");
+					  
+    TH2* hLow  = GetH2(c, "lowCuts");
+    TH2* hHigh = GetH2(c, "highCuts");
+    if (hLow  && nFiles) hLow->Scale(1. / nFiles->GetVal());
+    if (hHigh && nFiles) hHigh->Scale(1. / nFiles->GetVal());
+    DrawInPad(fBody, 2, hLow,  "colz");
+    DrawInPad(fBody, 3, hHigh, "colz");
   
     PrintCanvas("Sharing filter");
 
@@ -313,20 +258,7 @@ protected:
     PrintCanvas("Sharing filter - MC vs Reco");
 
     // --- MC --------------------------------------------------------
-    TCollection* mc = GetCollection(c, "mcTrackDensity", false);
-    if (!mc) return; // Not MC 
-
-    fBody->Divide(2,3);
-    DrawInPad(fBody, 1, GetH2(mc, "binFlow"),    "colz", 0x4);
-    DrawInPad(fBody, 2, GetH2(mc, "binFlowEta"), "colz", 0x4);
-    DrawInPad(fBody, 3, GetH2(mc, "binFlowPhi"), "colz", 0x4);
-    DrawInPad(fBody, 4, GetH1(mc, "nRefs"),       "",    0x2);
-    DrawInPad(fBody, 4, GetH1(mc, "clusterRefs"), "same");
-    DrawInPad(fBody, 4, GetH1(mc, "clusterSize"), "same");
-    DrawInPad(fBody, 4, GetH1(mc, "nClusters"),    "same", 0x10);
-    DrawInPad(fBody, 5, GetH2(mc, "clusterVsRefs"),"colz", 0x4);
-
-    PrintCanvas("Sharing filter - MC");  
+    DrawTrackDensity(c);
   }
 
   //____________________________________________________________________
@@ -364,7 +296,19 @@ protected:
 
     if (GetParameter(c, "recalcPhi", recalcPhi))
       DrawParameter(y, "Recalculate #phi",(recalcPhi ? "yes" : "no"),size); 
+    TParameter<int>* nFiles = 
+      static_cast<TParameter<int>*>(GetObject(c, "nFiles"));
+    if (nFiles)
+      DrawParameter(y, "# files merged", Form("%d", nFiles->GetVal()));
 
+    TCollection* lc = GetCollection(c, "lCuts");
+    Int_t lm;
+    if (GetParameter(lc, "method", lm)) 
+      DrawParameter(y, "Low cut method", (lm == 0 ? "fixed" : 
+					  lm == 1 ? "fraction of MPV" : 
+					  lm == 2 ? "fit range" : 
+					  lm == 3 ? "Landau width" : 
+					  "unknown"));
 
 
     TVirtualPad* p = fBody; // fBody->cd(2);
@@ -378,10 +322,14 @@ protected:
       accO->Scale(scale);
       accI->SetMinimum(0); 
     }
+    TH2* lCuts = GetH2(c, "lowCuts");
+    TH2* maxW  = GetH2(c, "maxWeights");
+    if (nFiles && lCuts) lCuts->Scale(1. / nFiles->GetVal());
+    if (nFiles && maxW)  maxW->Scale(1. / nFiles->GetVal());
     DrawInPad(p, 2, accI); 
-    DrawInPad(p, 2, accO, "same", 0x10); 
-    DrawInPad(p, 3, GetH2(c, "lowCuts"), "colz");
-    DrawInPad(p, 4, GetH2(c, "maxWeights"), "colz");
+    DrawInPad(p, 2, accO,  "same", 0x10); 
+    DrawInPad(p, 3, lCuts, "colz");
+    DrawInPad(p, 4, maxW,  "colz");
   
     PrintCanvas("Density calculator");
 
@@ -393,11 +341,11 @@ protected:
     
       fBody->Divide(2,3);
     
-      DrawInPad(fBody, 1, GetH2(sc, "elossVsPoisson"), "colz",   0x4);
-      DrawInPad(fBody, 2, GetH1(sc, "diffElossPoisson"), "",     0x2);
-      DrawInPad(fBody, 3, GetH1(sc, "occupancy"),        "",     0x2);
-      DrawInPad(fBody, 4, GetH1(sc, "eloss"),            "",     0x2);
-      DrawInPad(fBody, 4, GetH1(sc, "elossUsed"),        "same", 0x12);
+      DrawInPad(fBody, 1, GetH2(sc, "elossVsPoisson"),   "colz",   0x4);
+      DrawInPad(fBody, 2, GetH1(sc, "diffElossPoisson"), "HIST E", 0x2);
+      DrawInPad(fBody, 3, GetH1(sc, "occupancy"),        "",       0x2);
+      DrawInPad(fBody, 4, GetH1(sc, "eloss"),            "",       0x2);
+      DrawInPad(fBody, 4, GetH1(sc, "elossUsed"),        "same",   0x12);
       TH1* phiB = GetH1(sc, "phiBefore");
       TH1* phiA = GetH1(sc, "phiAfter");
       if (phiB && phiA) { 
@@ -876,12 +824,39 @@ protected:
     dndeta_eta->SetTitle("1/N_{ev}dN_{ch}/d#eta (#eta norm)");
     dndeta_eta->SetMarkerSize(0.7);
 
+    THStack* allPhi = new THStack("phiAcc", "#varphi Acceptance");
+    THStack* allEta = new THStack("etaCov", "#eta Coverage");
+    const char*  rings[] = { "FMD1I", "FMD2I", "FMD2O", "FMD3I", "FMD3O", 0 };
+    const char** pring   = rings;
+    
+    while ((*pring)) { 
+      TCollection* cc     = GetCollection(c, *pring);
+      TH1*         etaCov = GetH1(cc, "etaCov");
+      TH1*         phiAcc = GetH1(cc, "phiAcc");
+      TH1*         dndeta = GetH1(cc, "dndeta_phi");
+      Int_t        color  = kBlack;
+      if (dndeta)  color  = dndeta->GetMarkerColor();
+      if (etaCov) { 
+	etaCov->SetTitle(*pring);
+	etaCov->SetFillColor(color);
+	etaCov->SetLineColor(color);
+	allEta->Add(etaCov);
+      }
+      if (phiAcc) { 
+	phiAcc->SetFillColor(color);
+	phiAcc->SetLineColor(color);
+	allPhi->Add(phiAcc);
+      }
+      pring++;
+    }
     DrawInPad(fBody, 1, GetStack(c, "all"), "nostack", mcRings ? 0 : 0x10);
     DrawInPad(fBody, 2, dndeta_phi);
     DrawInPad(fBody, 2, dndeta_eta, "Same", 0x10);
-    DrawInPad(fBody, 3, GetH1(fResults, "norm"));
-    DrawInPad(fBody, 3, GetH1(fResults, "phi"), "same", 0x10);
-    DrawInPad(fBody, 4, GetH1(fSums,    "d2Ndetadphi"), "colz");
+    DrawInPad(fBody, 3, allEta, "nostack hist", 0x10);
+    DrawInPad(fBody, 3, allPhi, "nostack hist same", 0x0);
+    DrawInPad(fBody, 4, GetH1(fResults, "norm"));
+    DrawInPad(fBody, 4, GetH1(fResults, "phi"), "same", 0x10);
+    // DrawInPad(fBody, 4, GetH1(fSums,    "d2Ndetadphi"), "colz");
     DrawInPad(fBody, 1, mcRings, "nostack same", 0x10);
 
     fBody->cd(1);
@@ -899,6 +874,146 @@ protected:
     PrintCanvas("Results");
   }
 
+  //____________________________________________________________________
+  void DrawCentralResults()
+  {
+    // MakeChapter(can, "Results");
+    Info("DrawCentralResults", "Drawing central results");
+
+    fBody->Divide(1,2,0,0);
+
+    TH1* dndeta_ = GetH1(fResults, "dNdeta_");
+    TH1* dndeta  = GetH1(fResults, "dNdeta");
+    THStack* stack = new THStack("dndetas", 
+				 "d#it{N}_{ch}/d#it{#eta} - central");
+    stack->Add(dndeta_);
+    stack->Add(dndeta);
+    
+    DrawInPad(fBody, 1, stack, "nostack");
+    stack->GetHistogram()->SetXTitle("#it{#eta}");
+    stack->GetHistogram()->SetYTitle("#frac{d#it{N}_{ch}}{d#it{#eta}}");
+    fBody->cd(1);
+    TLegend* l = new TLegend(.3, .05, .7, .4);
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+    l->AddEntry(dndeta_, "Normalized to coverage",        "lp");
+    l->AddEntry(dndeta,  "Normalized to #phi acceptance", "lp");
+    l->Draw();
+
+    DrawInPad(fBody, 2, GetH1(fResults, "norm"));
+    DrawInPad(fBody, 2, GetH1(fResults, "phi"), "same", kLegend);
+
+    PrintCanvas("Central Results");
+
+  }
+  void DrawBoth(TFile* file)
+  {
+    Info("DrawBoth", "Drawing central & forward results");
+    TCollection* central = GetCollection(file, "CentralResults");
+    TCollection* forward = GetCollection(file, "ForwardResults");
+    
+    if (!central || !forward) {
+      Warning("DrawBoth", "central %p or forward %p results not found", 
+	      central, forward);
+      return;
+    }
+
+    TH1* f1 = GetH1(forward, "dNdeta_");
+    TH1* c1 = GetH1(central, "dNdeta_");
+    TH1* f2 = GetH1(forward, "dNdeta");
+    TH1* c2 = GetH1(central, "dNdeta");
+    f1->SetLineColor(kBlack);
+    f2->SetLineColor(kBlack);
+    c1->SetLineColor(kBlack);
+    c2->SetLineColor(kBlack);
+    f1->SetMarkerColor(f2->GetMarkerColor());
+    f1->SetMarkerStyle(24);
+    c1->SetMarkerStyle(24);
+    c2->SetMarkerStyle(20);
+    c2->SetMarkerColor(c1->GetMarkerColor());
+    THStack* s = new THStack("dndetas", "d#it{N}_{ch}/d#it{#eta}");
+    s->Add(f1);
+    s->Add(c1);
+    s->Add(f2);
+    s->Add(c2);
+
+    fBody->Divide(1, 2, 0, 0);
+    DrawInPad(fBody, 1, s, "nostack");
+    s->GetHistogram()->SetXTitle("#it{#eta}");
+    s->GetHistogram()->SetYTitle("#frac{d#it{N}_{ch}}{d#it{#eta}}");
+    
+    fBody->cd(1);
+    TLegend* l = new TLegend(.4, .05, .8, .4);
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+    TLegendEntry* entry = l->AddEntry("dummy", "Forward", "f");
+    entry->SetFillColor(f1->GetMarkerColor());
+    entry->SetLineColor(f1->GetMarkerColor());
+    entry->SetFillStyle(1001);
+    entry->SetLineWidth(0);
+    entry = l->AddEntry("dummy", "Central", "f");
+    entry->SetFillColor(c1->GetMarkerColor());
+    entry->SetLineColor(c1->GetMarkerColor());
+    entry->SetLineWidth(0);
+    entry->SetFillStyle(1001);
+    entry = l->AddEntry("dummy", "Normalized to coverage", "lp");
+    entry->SetMarkerStyle(f1->GetMarkerStyle());
+    entry = l->AddEntry("dummy", "Normalized to #phi acceptance", "lp");
+    entry->SetMarkerStyle(f2->GetMarkerStyle());
+    l->Draw();
+
+    TH1* f3 = GetH1(forward, "norm");
+    TH1* c3 = GetH1(central, "norm");
+    TH1* f4 = GetH1(forward, "phi");
+    TH1* c4 = GetH1(central, "phi");
+    f3->SetFillColor(f1->GetMarkerColor());
+    f4->SetFillColor(f1->GetMarkerColor());
+    c3->SetFillColor(c1->GetMarkerColor());
+    c4->SetFillColor(c1->GetMarkerColor());
+    f3->SetLineColor(f1->GetMarkerColor());
+    f4->SetLineColor(f1->GetMarkerColor());
+    c3->SetLineColor(c1->GetMarkerColor());
+    c4->SetLineColor(c1->GetMarkerColor());
+    
+    THStack* a = new THStack("norms", "Normalizations");
+    a->Add(f3);
+    a->Add(c3);
+    a->Add(f4);
+    a->Add(c4);
+    
+    a->SetMaximum(a->GetMaximum("nostack")*1.2);
+    DrawInPad(fBody, 2, a, "nostack");
+    a->GetHistogram()->SetXTitle("#it{#eta}");
+    a->GetHistogram()->SetYTitle("Normalization (coverage or acceptance)");
+    
+    fBody->cd(2);
+    l = new TLegend(.2, .94, .9, .99);
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+    l->SetNColumns(2);
+    // entry = l->AddEntry("dummy", "Forward", "f");
+    // entry->SetFillColor(f1->GetMarkerColor());
+    // entry->SetLineColor(f1->GetMarkerColor());
+    // entry->SetFillStyle(1001);
+    // entry->SetLineWidth(0);
+    // entry = l->AddEntry("dummy", "Central", "f");
+    // entry->SetFillColor(c1->GetMarkerColor());
+    // entry->SetLineColor(c1->GetMarkerColor());
+    // entry->SetLineWidth(0);
+    // entry->SetFillStyle(1001);
+    entry = l->AddEntry("dummy", "#eta Coverage", "f");
+    entry->SetFillStyle(f3->GetFillStyle());
+    entry->SetFillColor(kBlack);
+    entry = l->AddEntry("dummy", "#phi Acceptance", "f");
+    entry->SetFillStyle(f4->GetFillStyle());
+    entry->SetFillColor(kBlack);
+    l->Draw();
+
+    PrintCanvas("Both results");
+  }
   TCollection* fSums;
   TCollection* fResults;
 };

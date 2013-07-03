@@ -341,7 +341,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
     return;
   }
   // Copy underflow bins to overflow bins - always full phi coverage 
-  TH2&  hMC  = fAODFMD.GetHistogram();
+  TH2&  hMC  = fMCAODFMD.GetHistogram();
   Int_t nEta = hMC.GetNbinsX();
   Int_t nY   = hMC.GetNbinsY();
   for (Int_t iEta = 1; iEta <= nEta; iEta++) {

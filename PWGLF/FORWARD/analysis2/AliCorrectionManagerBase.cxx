@@ -14,10 +14,10 @@
 AliCorrectionManagerBase::AliCorrectionManagerBase()
   : fCorrections(),
     fIsInit(false),
-    fRun(0), 
-    fSys(0), 
-    fSNN(0), 
-    fField(999), 
+    fRun(kIgnoreValue), 
+    fSys(kIgnoreValue), 
+    fSNN(kIgnoreValue), 
+    fField(kIgnoreField), 
     fMC(false), 
     fSatellite(false), 
     fDB(0),
@@ -29,10 +29,10 @@ AliCorrectionManagerBase::AliCorrectionManagerBase()
 AliCorrectionManagerBase::AliCorrectionManagerBase(Bool_t)
   : fCorrections(16),
     fIsInit(false),
-    fRun(0), 
-    fSys(0), 
-    fSNN(0), 
-    fField(999), 
+    fRun(kIgnoreValue), 
+    fSys(kIgnoreValue), 
+    fSNN(kIgnoreValue), 
+    fField(kIgnoreField), 
     fMC(false), 
     fSatellite(false), 
     fDB(0),
@@ -521,10 +521,10 @@ AliCorrectionManagerBase::Correction::ReadIt(AliOADBForward* db,
   fObject = 0;
 
   // Massage fields according to settings 
-  if (!(fQueryFields & kRun))       run = 0;
-  if (!(fQueryFields & kSys))       sys = 0;
-  if (!(fQueryFields & kSNN))       sNN = 0;
-  if (!(fQueryFields & kField))     fld = 999;
+  if (!(fQueryFields & kRun))       run = kIgnoreValue;
+  if (!(fQueryFields & kSys))       sys = kIgnoreValue;
+  if (!(fQueryFields & kSNN))       sNN = kIgnoreValue;
+  if (!(fQueryFields & kField))     fld = kIgnoreField;
   if (!(fQueryFields & kMC))        mc  = false;
   if (!(fQueryFields & kSatellite)) sat = false;
 
@@ -604,10 +604,10 @@ AliCorrectionManagerBase::Correction::StoreIt(AliOADBForward* db,
   }
 
   // Massage fields according to settings 
-  if (!(fQueryFields & kRun))       run = 0;
-  if (!(fQueryFields & kSys))       sys = 0;
-  if (!(fQueryFields & kSNN))       sNN = 0;
-  if (!(fQueryFields & kField))     fld = 999;
+  if (!(fQueryFields & kRun))       run = kIgnoreValue;
+  if (!(fQueryFields & kSys))       sys = kIgnoreValue;
+  if (!(fQueryFields & kSNN))       sNN = kIgnoreValue;
+  if (!(fQueryFields & kField))     fld = kIgnoreField;
   if (!(fQueryFields & kMC))        mc  = false;
   if (!(fQueryFields & kSatellite)) sat = false;
   

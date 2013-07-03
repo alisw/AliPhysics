@@ -279,11 +279,10 @@ AliFMDHistCollector::CreateOutputObjects(TList* dir)
 Bool_t
 AliFMDHistCollector::CheckSkip(UShort_t d, Char_t r, UShort_t skips) 
 {
-  // UShort_t db = d << 4;
   UShort_t q  = (r == 'I' || r == 'i' ? 0 : 1);
-  UShort_t t  = (1 << (d+1)) | (1 << q);
-  // UShort_t rb = db | ((q+1));
-  
+  UShort_t c = 1 << (d-1);
+  UShort_t t = 1 << (c+q-1);
+
   return (t & skips) == t;
 }
 
@@ -376,6 +375,8 @@ AliFMDHistCollector::MergeBins(MergeMethod   m,
   rc = re = 0;
   switch (m) { 
   case kStraightMean:
+  case kPreferInner:  // We only get these two when there's an overlap
+  case kPreferOuter:  // between like rings, and we should do a straight mean 
     // calculate the average of old value (half the original), 
     // and this value, as well as the summed squared errors 
     // of the existing content (sqrt((e_1/2)^2=sqrt(e_1^2/4)=e_1/2) 
@@ -504,6 +505,8 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
   case kWeightedMean:       std::cout << "weighted mean\n"; break;
   case kLeastError:         std::cout << "least error\n"; break;
   case kSum:                std::cout << "straight sum\n"; break;
+  case kPreferInner:        std::cout << "prefer inners\n"; break;
+  case kPreferOuter:        std::cout << "prefer outers\n"; break;
   }
     
   if (!fVtxList) return;
@@ -752,14 +755,13 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 	  t->SetBinError(iEta,iPhi,0);
 	}
       }
-      for (Int_t iEta = first; iEta <= last; iEta++) {
-	// Double_t phiAcc = t->GetBinContent(iEta, nY+1);
-	// if (phiAcc > 1e-12 && phiAcc < 1)
-	//   Info("", "FMD%d%c %3d phi acceptance: %f",d,r,iEta,phiAcc);
+      // Fill under-flow bins with eta coverage 
+      for (Int_t iEta = first; iEta <= last; iEta++) 
 	t->SetBinContent(iEta,0,1);
-      }
+      
       // Add to our per-ring sum 
       o->Add(t);
+
       // If we store hit maps, update here 
       if (fHitMap) fHitMap->Get(d, r)->Add(t);
 
@@ -801,6 +803,7 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
       if (q == 1) t->RebinY(2);
 
       nY = t->GetNbinsY();
+
       // Now update profile output 
       for (Int_t iEta = first; iEta <= last; iEta++) { 
 
@@ -808,7 +811,38 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 	Int_t overlap = GetOverlap(d,r,iEta);
 
 	// Get factor 
-	Float_t fac      = (m != kSum && overlap >= 0 ? .5 : 1); 
+	MergeMethod mm  = m; // Possibly override method locally
+	Float_t     fac = 1;
+	if (m != kSum && overlap >= 0) {
+	  // Default is to average 
+	  fac = 0.5;
+	  if (m == kPreferInner) {
+	    // Current one is an outer overlapping an inner 
+	    if ((r == 'o' || r == 'O') && 
+		(overlap == 0 || overlap == 1 || overlap == 3))
+	      // Do not use this signal 
+	      fac = 0;
+	    // Current one is inner overlapping an outer
+	    else if ((r == 'i' || r == 'I') && (overlap == 2 || overlap == 4))
+	      // Prefer this one 
+	      fac = 1;
+	    else 
+	      // In case of two overlapping inners 
+	      mm = kStraightMean;
+	  }
+	  else if (m == kPreferOuter) {
+	    // Current one is an inner overlapping an outer 
+	    if ((r == 'i' || r == 'I') && (overlap == 2 || overlap == 4))
+	      // Do not use this signal 
+	      fac = 0;
+	    else if ((r == 'O' || r == 'o') && 
+		     (overlap == 0 || overlap == 1 || overlap == 3))
+	      fac = 1;
+	    else 
+	      // In case of two overlapping outers
+	      mm = kStraightMean;
+	  }
+	}
 
 	// Fill eta acceptance for this event into the phi underflow bin
 	Float_t ooc      = out.GetBinContent(iEta,0);
@@ -830,13 +864,14 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 	  Double_t ee = t->GetXaxis()->GetBinCenter(iEta);
 	  sumRings->Fill(ee, i, c);
 
-	  // If there's no signal, continue 
-	  // if (e <= 0) continue;
-	  if (c <= 0 || e <= 0)     continue;
+	  // If there's no signal or the signal was ignored because we
+	  // prefer the inners/outers, continue if (e <= 0) continue;
+	  if (fac <= 0 || c <= 0 || e <= 0)     continue;
 	  
-	  // If there's no overlapping histogram (ring), then 
-	  // fill in data and continue to the next phi bin 
-	  if (overlap < 0) { 
+	  // If there's no overlapping histogram (ring) or if we
+	  // prefer inner/outer, then fill in data and continue to the
+	  // next phi bin
+	  if (overlap < 0 || fac >= 1) { 
 	    out.SetBinContent(iEta,iPhi,c);
 	    out.SetBinError(iEta,iPhi,e);
 	    continue;
@@ -847,7 +882,7 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 	  Double_t oe = out.GetBinError(iEta,iPhi);
 
 	  Double_t rc, re;
-	  MergeBins(m, c, e, oc, oe, rc, re);
+	  MergeBins(mm, c, e, oc, oe, rc, re);
 	  out.SetBinContent(iEta,iPhi, rc);
 	  out.SetBinError(iEta,iPhi, re);
 	}

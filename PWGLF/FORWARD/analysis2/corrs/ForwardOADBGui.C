@@ -216,6 +216,8 @@ struct ForwardOADBGUI
     fListContainer->Connect("Clicked(TGFrame*,Int_t)",
 			    "ForwardOADBGUI", this, 
 			    "HandleItem(TGFrame*,Int_t)");
+    fList->SetMinWidth(400);
+    fList->SetMinHeight(200);
     fMain.AddFrame(fList, &fListHints);
     
 #ifndef __CINT__
@@ -223,8 +225,10 @@ struct ForwardOADBGUI
 #endif
     HandleEnable();
 
+    fMain.SetMinWidth(600);
+    fMain.SetMinHeight(480);
     fMain.MapSubwindows();    
-    fMain.Resize(fMain.GetDefaultSize());
+    fMain.Resize(600, 480); // fMain.GetDefaultSize());
     fMain.MapWindow();
   }
   ~ForwardOADBGUI()
@@ -501,33 +505,39 @@ struct ForwardOADBGUI
   void CorrDraw(const TObject* o, Bool_t summarize)
   {
     if (!gROOT->GetClass("CorrDrawer")) { 
-      const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+      const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+      gSystem->AddIncludePath(Form("-I$ALICE_ROOT/include -I%s -I%s/scripts",
+				   fwd, fwd));
       gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
+      // gROOT->ProcessLine(".Class SummaryDrawer");
       gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
+      // gROOT->ProcessLine(".Class SummaryDrawer");
+      // gROOT->ProcessLine(".Class CorrDrawer");
     }
+    o->Print();
     gROOT->ProcessLine(Form("CorrDrawer cd; cd.%s((const %s*)%p);",
 			    (summarize ? "Summarize" : "Draw"), 
 			    o->ClassName(), o));
   }
-			    void MakeFileName(TString& out) const
-			    {
-			      if (!fEntry) return;
-
-			      SelectedTable(out);
-			      if (out.IsNull()) return;
-
-			      out.Append(Form("_run%09lu", fEntry->fRunNo));
-			      out.Append(Form("_%s", (fEntry->fSys == 1 ? "pp" : 
-						      fEntry->fSys == 2 ? "PbPb" :
-						      fEntry->fSys == 3 ? "pPb" : "XX")));
-			      out.Append(Form("_%04huGeV", fEntry->fSNN));
-			      out.Append(Form("_%c%hukG", fEntry->fField >= 0 ? 'p' : 'm', 
-					      TMath::Abs(fEntry->fField)));
-			      out.Append(Form("_%s", fEntry->fMC ? "mc" : "real"));
-			      out.Append(Form("_%s", fEntry->fSatellite ? "sat" : "nom"));
-			      out.Append(".pdf");
-			    }
-			    TObject* HandleQuery()
+  void MakeFileName(TString& out) const
+  {
+    if (!fEntry) return;
+    
+    SelectedTable(out);
+    if (out.IsNull()) return;
+    
+    out.Append(Form("_run%09lu", fEntry->fRunNo));
+    out.Append(Form("_%s", (fEntry->fSys == 1 ? "pp" : 
+			    fEntry->fSys == 2 ? "PbPb" :
+			    fEntry->fSys == 3 ? "pPb" : "XX")));
+    out.Append(Form("_%04huGeV", fEntry->fSNN));
+    out.Append(Form("_%c%hukG", fEntry->fField >= 0 ? 'p' : 'm', 
+		    TMath::Abs(fEntry->fField)));
+    out.Append(Form("_%s", fEntry->fMC ? "mc" : "real"));
+    out.Append(Form("_%s", fEntry->fSatellite ? "sat" : "nom"));
+    out.Append(".pdf");
+  }
+  TObject* HandleQuery()
   {
     ULong_t  run   = fRunInput.GetHexNumber();
     Short_t  mode  = fRunMode.GetSelected();

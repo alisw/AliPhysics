@@ -252,6 +252,22 @@ public:
    */
   void AddDeadRegion(UShort_t d, Char_t r, UShort_t s1, UShort_t s2, 
 		     UShort_t t1, UShort_t t2);
+  /** 
+   * Add dead strips from a script.  The script is supposed to accept
+   * a pointer to this object (AliFMDSharingFilter) and then call
+   * AddDead or AddDeadRegion as needed.
+   * 
+   * @code 
+   * void deadstrips(AliFMDSharingFilter* filter)
+   * { 
+   *   filter->AddDead(...);
+   *   // ... and so on 
+   * }
+   * @endcode 
+   *
+   * @param script The script to read dead strips from. 
+   */
+  void AddDead(const Char_t* script);
 protected:
   /** 
    * Internal data structure to keep track of the histograms
