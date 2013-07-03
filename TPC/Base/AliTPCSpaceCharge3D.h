@@ -51,7 +51,7 @@ public:
 
   virtual void Print(const Option_t* option="") const;
 
-protected:
+// protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
 private:

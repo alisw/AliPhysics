@@ -46,6 +46,8 @@ public:
           void DistortPointLocal(Float_t x[],const Short_t roc);
           void DistortPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
+
+  virtual void GetDistortionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
   virtual void GetDistortionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
   
   // initialization and update functions
@@ -85,6 +87,11 @@ public:
   //
   static Double_t GetCorrXYZDz(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0,Double_t delta=5);
   static Double_t GetCorrXYZIntegrateZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0, Double_t delta=5);
+
+  static Double_t GetDistXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0);
+  //
+  static Double_t GetDistXYZDz(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0,Double_t delta=5);
+  static Double_t GetDistXYZIntegrateZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0, Double_t delta=5);
   
 
 protected:

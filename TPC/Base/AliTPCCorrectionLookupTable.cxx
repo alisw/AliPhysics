@@ -15,6 +15,7 @@
 
 #include <TMath.h>
 #include <TMatrixF.h>
+#include <TStopwatch.h>
 
 #include <AliLog.h>
 #include <AliTPCROC.h>
@@ -61,7 +62,7 @@ void AliTPCCorrectionLookupTable::GetDistortion(const Float_t x[],const Short_t 
   // Get interpolated Distortion
   //
 
-  GetInterpolation(x,roc,dx,fLookUpDxDist,fLookUpDyDist,fLookUpDzDist,1);
+  GetInterpolation(x,roc,dx,fLookUpDxDist,fLookUpDyDist,fLookUpDzDist);
 }
 
 //_________________________________________________________________________________________
@@ -69,13 +70,12 @@ void AliTPCCorrectionLookupTable::GetCorrection(const Float_t x[],const Short_t 
   //
   // Get interplolated correction
   //
-  GetInterpolation(x,roc,dx,fLookUpDxCorr,fLookUpDyCorr,fLookUpDzCorr,0);
+  GetInterpolation(x,roc,dx,fLookUpDxCorr,fLookUpDyCorr,fLookUpDzCorr);
 }
 
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::GetInterpolation(const Float_t x[],const Short_t roc,Float_t dx[],
-                                                   TMatrixF **mDx, TMatrixF **mDy, TMatrixF **mDz,
-                                                   Int_t type)
+                                                   TMatrixF **mDx, TMatrixF **mDy, TMatrixF **mDz)
 {
   //
   // Calculates the correction/distotring from a lookup table
@@ -131,7 +131,7 @@ void AliTPCCorrectionLookupTable::GetInterpolation(const Float_t x[],const Short
 }
 
 //_________________________________________________________________________________________
-void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, Int_t /*rows*//*=90*/, Int_t /*phiSlices*//*=144*/, Int_t /*columns*//*=130*/ )
+void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, Float_t stepSize/*=5.*/)
 {
   //
   //
@@ -139,7 +139,12 @@ void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, I
 
   // create distortion lookup table
 
-  const Float_t delta=5.; // 5cm
+  TStopwatch s;
+  
+  ResetTables();
+  InitTables();
+  
+  const Float_t delta=stepSize; // 5cm
   Float_t x[3]={0.,0.,0.};
   Float_t dx[3]={0.,0.,0.};
   
@@ -181,7 +186,8 @@ void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, I
     }
   }
 
-  // create correction lookup table
+  s.Stop();
+  AliInfo("Required time for lookup table creation: %.2f (%.2f) sec. real (cpu)");
 }
 
 //_________________________________________________________________________________________
