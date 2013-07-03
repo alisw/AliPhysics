@@ -75,12 +75,121 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
     fTPCParam->ReadGeoMatrices();
   }
 
+  MakeITSClusters(trackIn/*,t0*/);
+  MakeTPCClusters(trackIn, t0);
+  MakeTRDClusters(trackIn/*,t0*/);
+
+  return 1;
+}
+//________________________________________________________________
+void AliToyMCEventGenerator::MakeITSClusters(AliToyMCTrack &trackIn/*, Double_t t0*/)
+{
+  //Upgrade ITS parameters
+  const Int_t nITSLayers = 7;
+  const Double_t ITSRadii[nITSLayers] = {2.2, 2.8, 3.6, 20.0, 22.0, 41.0, 43.0};
+  const Double_t lengthITS[nITSLayers] = {22.4, 24.2, 26.8, 78.0, 83.6, 142.4, 148.6};
+
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMaxZ0  = fTPCParam->GetZLength();
+  const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
+  AliToyMCTrack track(trackIn);
+  Double_t xyz[3]  = {0.,0.,0.};
+      
+  if (!AliTrackerBase::PropagateTrackTo(&track,ITSRadii[0],kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
+    AliError(Form("Propagation to %.2f failed\n",ITSRadii[0]));
+    return;
+  }
+
+  for(Int_t iLayer = 0; iLayer<nITSLayers; iLayer++){
+
+    if (!AliTrackerBase::PropagateTrackTo(&track,ITSRadii[iLayer],kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
+      AliError(Form("Propagation to %.2f failed\n",ITSRadii[iLayer]));
+      continue;
+    }
+    track.GetXYZ(xyz);
+    
+    if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
+    if (TMath::Abs(track.GetZ())>lengthITS[iLayer]/2) continue;
+    
+    AliCluster* tempCl = new AliCluster();
+
+    tempCl->SetX(xyz[0]);
+    tempCl->SetY(xyz[1]);
+    tempCl->SetZ(xyz[2]);
+    
+    Double_t sigmaY = 0.0004;
+    Double_t sigmaZ = 0.0004;
+    
+    tempCl->SetSigmaY2(sigmaY*sigmaY);
+    tempCl->SetSigmaZ2(sigmaZ*sigmaZ);
+
+    trackIn.AddITSPoint(*tempCl);
+    
+  }
+
+}
+//________________________________________________________________
+void AliToyMCEventGenerator::MakeTRDClusters(AliToyMCTrack &trackIn/*, Double_t t0*/)
+
+{
+  //Uses current TRD parameters
+  const Int_t nTRDLayers = 6;
+  const Double_t distToMid = 3.2 + 30./2; //dist to middle of drift region (radiator + half drift region)
+  const Double_t TRDRadii[nTRDLayers] = {294.5 + distToMid, 307.1 + distToMid, 319.7 + distToMid, 332.3 + distToMid, 344.9 + distToMid, 357.5 + distToMid};
+  const Double_t lengthTRD[nTRDLayers] = {604.0, 634.0, 656.0, 686.0, 700.0, 700.0};
+  
+
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMaxZ0  = fTPCParam->GetZLength();
+  const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
+  AliToyMCTrack track(trackIn);
+  Double_t xyz[3]  = {0.,0.,0.};
+      
+  if (!AliTrackerBase::PropagateTrackTo(&track,TRDRadii[0],kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
+    AliError(Form("Propagation to %.2f failed\n",TRDRadii[0]));
+    return;
+  }
+
+  for(Int_t iLayer = 0; iLayer<nTRDLayers; iLayer++){
+
+    if (!AliTrackerBase::PropagateTrackTo(&track,TRDRadii[iLayer],kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
+      AliError(Form("Propagation to %.2f failed\n",TRDRadii[iLayer]));
+      continue;
+    }
+    track.GetXYZ(xyz);
+    
+    if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
+    if (TMath::Abs(track.GetZ())>lengthTRD[iLayer]/2) continue;
+    
+    AliCluster* tempCl = new AliCluster();
+
+    tempCl->SetX(xyz[0]);
+    tempCl->SetY(xyz[1]);
+    tempCl->SetZ(xyz[2]);
+    
+    Double_t sigmaY = 0.06;
+    Double_t sigmaZ = 0.2;
+    
+    tempCl->SetSigmaY2(sigmaY*sigmaY);
+    tempCl->SetSigmaZ2(sigmaZ*sigmaZ);
+
+    trackIn.AddTRDPoint(*tempCl);
+    
+  }
+
+}
+//________________________________________________________________
+void AliToyMCEventGenerator::MakeTPCClusters(AliToyMCTrack &trackIn, Double_t t0)
+{
+
   // make it big enough to hold all points
   // store real number of generated points in the unique id
   const Int_t nMaxPoints=3000;
   AliTrackPointArray pointArray0(nMaxPoints);  //undistorted
   AliTrackPointArray pointArray1(nMaxPoints);  //distorted
-
+  
   //Create space point of undistorted and distorted clusters along the propagated track trajectory
   CreateSpacePoints(trackIn,pointArray0,pointArray1);
   //Convert the space points into clusters in the local frame
@@ -88,9 +197,8 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   ConvertTrackPointsToLocalClusters(pointArray0,trackIn,t0,0);
   ConvertTrackPointsToLocalClusters(pointArray1,trackIn,t0,1);
   
-  return 1;
-}
 
+}
 //________________________________________________________________
 void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
                                                AliTrackPointArray &arrUdist,

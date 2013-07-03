@@ -9,7 +9,7 @@ class AliToyMCEvent;
 class AliESDtrackCuts;
 class TTree;
 class TFile;
-
+class TH1F;
 class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
  public:
   AliToyMCEventGeneratorSimple();
@@ -20,8 +20,8 @@ class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
   AliToyMCEvent* Generate(Double_t time);
   AliToyMCEvent* GenerateESD(AliESDEvent& esdEvent, Double_t time);
   AliToyMCEvent* GenerateESD2(Double_t time);
-  void SetParametersSimple(Double_t vertexMean, Double_t vertexSigma);
   
+  void SetParametersToyGen(const Char_t* parfilename, Double_t vertexMean = 0., Double_t vertexSigma = 7.);
   void RunSimulation(const Int_t nevents=10, const Int_t ntracks=20);
   void RunSimulationBunchTrain(const Int_t nevents=10, const Int_t ntracks=20);
   void RunSimulationESD(const Int_t nevents=10, const Int_t ntracks=20);
@@ -44,8 +44,11 @@ class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
   AliESDEvent* fESDEvent;
   TTree* fESDTree;
   TFile* fInputFile;
-
-
+  TH1F* fHPt;
+  TH1F* fHEta;
+  TH1I* fHMult;
+  Bool_t fHistosSet;
+  TFile* fParamFile;
 
   ClassDef(AliToyMCEventGeneratorSimple, 1)
 

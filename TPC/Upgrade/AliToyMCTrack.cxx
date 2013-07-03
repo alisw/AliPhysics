@@ -6,6 +6,8 @@ AliToyMCTrack::AliToyMCTrack()
   :AliExternalTrackParam()
   ,fSpacePoints("AliTPCclusterMI")
   ,fDistortedSpacePoints("AliTPCclusterMI")
+  ,fITSPoints("AliCluster")
+  ,fTRDPoints("AliCluster")
 {
   //default constructor
 }
@@ -14,6 +16,8 @@ AliToyMCTrack::AliToyMCTrack(const AliToyMCTrack &track)
   : AliExternalTrackParam(track)
   ,fSpacePoints(track.fSpacePoints)
   ,fDistortedSpacePoints(track.fDistortedSpacePoints)
+  ,fITSPoints(track.fITSPoints)
+  ,fTRDPoints(track.fTRDPoints)
 {
   //copy constructor
 }
@@ -33,6 +37,8 @@ AliToyMCTrack::AliToyMCTrack(Double_t x, Double_t alpha,
   :AliExternalTrackParam(x,alpha,param,covar)
   ,fSpacePoints("AliTPCclusterMI")
   ,fDistortedSpacePoints("AliTPCclusterMI")
+  ,fITSPoints("AliCluster")
+  ,fTRDPoints("AliCluster")
 {
   //create external track parameters from given arguments
 }
@@ -42,6 +48,8 @@ AliToyMCTrack::AliToyMCTrack(Double_t xyz[3],Double_t pxpypz[3],
   :AliExternalTrackParam(xyz,pxpypz,cv,sign)
   ,fSpacePoints("AliTPCclusterMI")
   ,fDistortedSpacePoints("AliTPCclusterMI")
+  ,fITSPoints("AliCluster")
+  ,fTRDPoints("AliCluster")
 {
 }
 //________________________________________________________________
@@ -53,4 +61,14 @@ AliTPCclusterMI* AliToyMCTrack::AddSpacePoint(const AliTPCclusterMI &spoint)
 AliTPCclusterMI* AliToyMCTrack::AddDistortedSpacePoint(const AliTPCclusterMI &spoint)
 {
   return new(fDistortedSpacePoints[fDistortedSpacePoints.GetEntriesFast()]) AliTPCclusterMI(spoint);
+}
+//________________________________________________________________
+AliCluster* AliToyMCTrack::AddITSPoint(const AliCluster &spoint)
+{
+   return new(fITSPoints[fITSPoints.GetEntriesFast()]) AliCluster(spoint);
+}
+//________________________________________________________________
+AliCluster* AliToyMCTrack::AddTRDPoint(const AliCluster &spoint)
+{
+  return new(fTRDPoints[fTRDPoints.GetEntriesFast()]) AliCluster(spoint);
 }

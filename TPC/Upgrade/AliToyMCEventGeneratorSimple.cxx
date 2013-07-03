@@ -29,7 +29,11 @@ AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple()
   ,fESDEvent(0x0)
   ,fESDTree(0x0)
   ,fInputFile(0x0)
- 
+  ,fHPt(0x0)
+  ,fHEta(0x0)
+  ,fHMult(0x0)
+  ,fHistosSet(kFALSE)
+  ,fParamFile(0x0)
 {
   //
   
@@ -46,7 +50,11 @@ AliToyMCEventGeneratorSimple::AliToyMCEventGeneratorSimple(const AliToyMCEventGe
   ,fESDEvent(gen.fESDEvent)
   ,fESDTree(gen.fESDTree)
   ,fInputFile(gen.fInputFile)
- 
+  ,fHPt(gen.fHPt)
+  ,fHEta(gen.fHEta)
+  ,fHMult(gen.fHMult)
+  ,fHistosSet(gen.fHistosSet)
+  ,fParamFile(0x0)
 {
 }
 //________________________________________________________________
@@ -63,9 +71,16 @@ AliToyMCEventGeneratorSimple& AliToyMCEventGeneratorSimple::operator = (const Al
   return *this;
 }
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::SetParametersSimple(Double_t vertexMean, Double_t vertexSigma) {
+void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename, Double_t vertexMean/*=0*/, Double_t vertexSigma/*=7.*/) {
   fVertexMean = vertexMean;
   fVertexSigma = vertexSigma;
+  fParamFile = new TFile(parfilename, "read");
+  fHPt = (TH1F*) fParamFile->Get("hPt");
+  fHEta = (TH1F*) fParamFile->Get("hEta"); 
+  fHMult = (TH1I*) fParamFile->Get("hMult") ;
+  fHistosSet = kTRUE;
+ 
+  
 }
 //________________________________________________________________
 AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
@@ -87,11 +102,25 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
   fpt.SetNpx(10000);
 //   Int_t nTracks = 400; //TODO: draw from experim dist
 //   Int_t nTracks = 20; //TODO: draw from experim dist
-  
-  for(Int_t iTrack=0; iTrack<fNtracks; iTrack++){
+   Int_t nTracksLocal = fNtracks;
+  if(fHistosSet) {
+    nTracksLocal = fHMult->GetRandom(); 
+    if(nTracksLocal > fNtracks) nTracksLocal = fNtracks;
+  }
+  std::cout << "Generating " << nTracksLocal << " tracks " << std::endl;
+  for(Int_t iTrack=0; iTrack<nTracksLocal; iTrack++){
     Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
-    Double_t eta = gRandom->Uniform(-etaCuts, etaCuts);
-    Double_t pt = fpt.GetRandom(); // momentum for f1
+    Double_t eta = 0.;
+    Double_t pt = 0.;
+    
+    if(fHistosSet) {//draw from histograms if set
+      eta = fHEta->GetRandom();
+      pt = fHPt->GetRandom();
+    }
+    else {
+      eta = gRandom->Uniform(-etaCuts, etaCuts);
+      pt = fpt.GetRandom(); // momentum for f1
+    }
     Short_t sign=1;
     if(gRandom->Rndm() < 0.5){
       sign =1;
@@ -225,7 +254,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
   TStopwatch s;
   
   fESDCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
- 
+  gRandom->SetSeed();
   Int_t nUsedEvents = 0;
   for (Int_t ievent=0; ievent<esdTree->GetEntries(); ++ievent){
     printf("Generating event %3d (%.3g)\n",nUsedEvents,eventTime);
@@ -367,6 +396,7 @@ Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, c
     fInputIndex = 0;
 
     return fESDTree->GetEntries();
+    gRandom->SetSeed();
    }
 
  

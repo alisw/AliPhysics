@@ -13,7 +13,7 @@
 #include <TLegend.h>
 #include <TPad.h>
 #include <AliTrackPointArray.h>
-
+#include <AliCluster.h>
 #include "AliToyMCDrawer.h"
 #include "AliToyMCEvent.h"
 #include "AliToyMCTrack.h"
@@ -397,6 +397,15 @@ void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime,
   Int_t nDistPoints = track->GetNumberOfDistSpacePoints();
   Int_t nPoints = track->GetNumberOfSpacePoints();
     
+  for(Int_t iITSPoint = 0; iITSPoint< track->GetNumberOfITSPoints();iITSPoint++){
+
+    Double_t xp = track->GetITSPoint(iITSPoint)->GetX();
+    Double_t yp = track->GetITSPoint(iITSPoint)->GetY();
+    Double_t zp = track->GetITSPoint(iITSPoint)->GetZ();
+    Double_t zDrifted =  zp+(zp/TMath::Abs(zp))*currentEventTimeRelToCentral * fDriftVel;
+    trackpoints->SetNextPoint(zDrifted,xp,yp);
+  }
+
   for(Int_t iPoint = 0; iPoint< (nDistPoints<nPoints?nPoints:nDistPoints);iPoint++){
     if(iPoint<nPoints) {
 	    
@@ -476,15 +485,25 @@ void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime,
 
 
   }
+  if(0){
+    for(Int_t iTRDPoint = 0; iTRDPoint< track->GetNumberOfTRDPoints();iTRDPoint++){
+      
+      Double_t xp = track->GetTRDPoint(iTRDPoint)->GetX();
+      Double_t yp = track->GetTRDPoint(iTRDPoint)->GetY();
+      Double_t zp = track->GetTRDPoint(iTRDPoint)->GetZ();
+      Double_t zDrifted =  zp+(zp/TMath::Abs(zp))*currentEventTimeRelToCentral * fDriftVel;
+      trackpoints->SetNextPoint(zDrifted,xp,yp);
+  }
+}
   if(1){
     if(trackpoints && trackpoints->GetN()>0) {
       //   trackpoints->SetMarkerColor(1+currentEvent->GetEventNumber()%9);
-      //trackpoints->SetMarkerStyle(7);
+      //trackpoints->SetMarkerStyle(6);
       trackpoints->Draw("same");
     }
     if(disttrackpoints && disttrackpoints->GetN()>0) {
       //  
-      
+      //disttrackpoints->SetMarkerStyle(6);
       disttrackpoints->SetMarkerColor(color);
 
       
