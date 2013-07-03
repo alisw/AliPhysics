@@ -65,7 +65,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(kTRUE), fDoQC2FlowAnalysis(kTRUE), fDoQC4FlowAnalysis(kFALSE), fDoQCFPAnalysis(kFALSE), fDoSPFPAnalysis(kFALSE), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
+    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fRPs(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(kTRUE), fDoQC2FlowAnalysis(kTRUE), fDoQC4FlowAnalysis(kFALSE), fDoQCFPAnalysis(kFALSE), fDoSPFPAnalysis(kFALSE), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
 { /* default constructor for ROOT IO */ }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
@@ -78,7 +78,7 @@ AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
         Bool_t FlowPackageSP,
         Bool_t FlowPackageQC  
         ) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoQCFPAnalysis(FlowPackageQC), fDoSPFPAnalysis(FlowPackageSP), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
+    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fRPs(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoQCFPAnalysis(FlowPackageQC), fDoSPFPAnalysis(FlowPackageSP), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -217,7 +217,8 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
         if(dynamic_cast<AliAODEvent*>(InputEvent())) fDataType = kAOD; // determine the datatype
         else if(dynamic_cast<AliESDEvent*>(InputEvent())) fDataType = kESD;
         (fVParticleAnalysis) ? fPois = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName.Data())) : fPois = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName.Data()));
-        if(!fPois) return; // couldn't get expected input data
+        fRPs = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName.Data()));
+        if(!fPois || !fRPs) return; // couldn't get expected input data
         fInitialized = kTRUE;
     }
     if(!PassesCuts()) return; // event quality cuts and centrality determination
@@ -274,7 +275,7 @@ void AliAnalysisTaskJetFlow::DoVZEROFlowAnalysis()
     } else {
         for(Int_t i(0); i < iPois; i++) {
             AliEmcalJet* poi = static_cast<AliEmcalJet*>(fPois->At(i));
-            if(poi && poi->PtSub()) {
+            if(fRhoVn->PassesCuts(poi)) {
                 if(!fDoMultWeight) {
                     fTempA->Fill(poi->PtSub(), TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2a), 2)));
                     fTempC->Fill(poi->PtSub(), TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2c), 2)));
@@ -322,14 +323,14 @@ void AliAnalysisTaskJetFlow::DoQC2FlowAnalysis()
             mq[i] = 0;
         }
         // calculate differential q-vectors and fill the profile with cumulants
-        QCnDiffentialFlowVectors(repn, impn, mp, reqn, imqn, mq, harm);
+        QCnDifferentialFlowVectors(repn, impn, mp, reqn, imqn, mq, harm);
         // FIXME differential evnet weights
         for(Int_t i(0); i < fPtBins->GetSize(); i++) {
             if(mp[i]*mQ - mq[i] <= 0 ) continue;        // avoid division by zero
             Double_t atPt(fPtBins->At(i)+0.5*(fPtBins->At(i+1)-fPtBins->At(i)));      // pt value
             Double_t diffC(((repn[i]*reQn+impn[i]*imQn)-mq[i])/(mp[i]*mQ-mq[i]));
             Double_t eventW(mp[i]*mQ-mq[i]);
-            (harm == 2 ) ? fDiffCumlantsV2->Fill(atPt, diffC /*weight*/) : fDiffCumlantsV3->Fill(atPt, diffC, eventW);
+            (harm == 2 ) ? fDiffCumlantsV2->Fill(atPt, diffC, eventW) : fDiffCumlantsV3->Fill(atPt, diffC, eventW);
         }
     } 
 }
@@ -379,24 +380,41 @@ Bool_t AliAnalysisTaskJetFlow::DoFlowPackageFlowAnalysis()
                 if(fFlowEvent_VZERO) {
                     flowTrack.SetForRPSelection(kFALSE);
                     fFlowEvent_VZERO->InsertTrack(&flowTrack);
+                    fFlowEvent_VZERO->SetNumberOfPOIs(fFlowEvent_VZERO->GetNumberOfPOIs()+1);
                 }
             }
         }
     } else {
+        // add the jets as pois
         for(Int_t i(0); i < iPois; i++) {
             AliEmcalJet* poi = static_cast<AliEmcalJet*>(fPois->At(i));
-            if(poi) {
-                if(poi->PtSub()) {
-                    fHistAnalysisSummary->SetBinContent(4, 1);
-                    continue;
-                }
+            if(fRhoVn->PassesCuts(poi)) {
                 nAcceptedJets++;
                 AliFlowTrack flowTrack = AliFlowTrack(poi);
                 flowTrack.SetPt(poi->PtSub());
                 flowTrack.SetForPOISelection(kTRUE);
                 flowTrack.SetForRPSelection(kFALSE);
-                if(fFlowEvent_TPC)      fFlowEvent_TPC->InsertTrack(&flowTrack);
-                if(fFlowEvent_VZERO)    fFlowEvent_VZERO->InsertTrack(&flowTrack);
+                if(fFlowEvent_TPC) {
+                    fFlowEvent_TPC->InsertTrack(&flowTrack);
+                    fFlowEvent_TPC->SetNumberOfPOIs(fFlowEvent_TPC->GetNumberOfPOIs()+1);
+                }
+                if(fFlowEvent_VZERO) {
+                    fFlowEvent_VZERO->InsertTrack(&flowTrack);
+                    fFlowEvent_VZERO->SetNumberOfPOIs(fFlowEvent_VZERO->GetNumberOfPOIs()+1);
+                }
+            }
+        }
+        // then add the reference section only for the TPC reference case
+        for(Int_t i(0); i < fRPs->GetEntriesFast(); i++) {
+            AliVTrack* rp = static_cast<AliVTrack*>(fRPs->At(i));
+            if(fRhoVn->PassesCuts(rp) && rp->Pt() >= .15 && rp->Pt() <= 5.) {
+                AliFlowTrack flowTrack = AliFlowTrack(rp);
+                flowTrack.SetForPOISelection(kFALSE);
+                flowTrack.SetForRPSelection(kTRUE);
+                if(fFlowEvent_TPC) {
+                    fFlowEvent_TPC->SetNumberOfRPs(fFlowEvent_TPC->GetNumberOfRPs()+1);
+                    fFlowEvent_TPC->InsertTrack(&flowTrack);
+                }
             }
         }
     }
@@ -405,7 +423,7 @@ Bool_t AliAnalysisTaskJetFlow::DoFlowPackageFlowAnalysis()
     return (nAcceptedJets < 1) ? kFALSE : kTRUE;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskJetFlow::QCnDiffentialFlowVectors(Double_t* repn, Double_t* impn, Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n) 
+void AliAnalysisTaskJetFlow::QCnDifferentialFlowVectors(Double_t* repn, Double_t* impn, Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n) 
 {
     // get (for now) unweighted differential flow vectors
     // FIXME move (part of) this code to AliAnalysisTaskRhoVnModulation
