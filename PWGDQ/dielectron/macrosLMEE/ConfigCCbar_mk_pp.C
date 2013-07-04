@@ -110,12 +110,15 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
   AliDielectronPairLegCuts *varpair=new AliDielectronPairLegCuts();
   varpair->GetLeg1Filter().AddCuts(mycut);
   varpair->GetLeg2Filter().AddCuts(mycut);
+  
   if(cutDefinition == 1){
     varpair->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
   } else if(cutDefinition == 2){
     varpair->SetCutType(AliDielectronPairLegCuts::kMixLegs);
   }
-  diele->GetPairFilter().AddCuts(varpair);
+  
+  
+  if(cutDefinition >= 1)diele->GetPairFilter().AddCuts(varpair);
 
 
 }//SetupPairCutsDieleData
