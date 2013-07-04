@@ -120,6 +120,16 @@ Bool_t AliEmcalTriggerMaker::Run()
     return kTRUE;
   }
   
+  // do not process, if sooner than 11h period
+  if( InputEvent()->GetRunNumber() < 167693 )
+    return kTRUE;
+
+  // do not process any MC, since no MC was generated with correct
+  // EMCal trigger L1 jet trigger simulation, yet
+  // productions will be enabled, once some correct once are produced
+  if( MCEvent() != 0 )
+    return kTRUE;
+  
   // must reset before usage, or the class will fail 
   fCaloTriggers->Reset();
   
