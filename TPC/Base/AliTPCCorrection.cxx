@@ -296,12 +296,31 @@ void AliTPCCorrection::GetCorrectionDz(const Float_t x[],const Short_t roc,Float
   fitz.ClearPoints();
   Int_t zmin=-2;
   Int_t zmax=0;
-  if ((roc%36)>=18) {
+  //adjust limits around CE to stay on one side
+  if ((roc%36)<18) {
+    //A-Side
+    if ((x[2]+zmin*delta)<0){
+      zmin=0;
+      zmax=2;
+      if ((x[2]-delta)>0){
+        zmin=-1;
+        zmax=1;
+      }
+    }
+  } else {
+    //C-Side
     zmin=0;
     zmax=2;
+    if ((x[2]+zmax*delta)>0){
+      zmin=-2;
+      zmax=0;
+      if ((x[2]+delta)<0){
+        zmin=-1;
+        zmax=1;
+      }
+    }
   }
-  //TODO: in principle one shuld check that x[2]+zdelta*delta does not get 'out of' bounds,
-  //      so close to the CE it doesn't change the sign, since then the corrections will be wrong ...
+
   for (Int_t xdelta=-1; xdelta<=1; xdelta++)
     for (Int_t ydelta=-1; ydelta<=1; ydelta++){
 //       for (Int_t zdelta=-1; zdelta<=1; zdelta++){
@@ -349,11 +368,29 @@ void AliTPCCorrection::GetDistortionDz(const Float_t x[],const Short_t roc,Float
   fitx.ClearPoints();
   fity.ClearPoints();
   fitz.ClearPoints();
+
+  Int_t zmin=-1;
+  Int_t zmax=1;
+  //adjust limits around CE to stay on one side
+  if ((roc%36)<18) {
+    //A-Side
+    if ((x[2]+zmin*delta)<0){
+      zmin=0;
+      zmax=2;
+    }
+  } else {
+    //C-Side
+    if ((x[2]+zmax*delta)>0){
+      zmin=-2;
+      zmax=0;
+    }
+  }
+  
   //TODO: in principle one shuld check that x[2]+zdelta*delta does not get 'out of' bounds,
   //      so close to the CE it doesn't change the sign, since then the corrections will be wrong ...
   for (Int_t xdelta=-1; xdelta<=1; xdelta++)
     for (Int_t ydelta=-1; ydelta<=1; ydelta++){
-      for (Int_t zdelta=-1; zdelta<=1; zdelta++){
+      for (Int_t zdelta=zmin; zdelta<=zmax; zdelta++){
         //TODO: what happens if x[2] is on the A-Side, but x[2]+zdelta*delta
         //      will be on the C-Side?
         //TODO: For the C-Side, does this have the correct sign?
