@@ -66,6 +66,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
         fHistPicoTrackPt[i] = 0;
+        fHistPicoTrackMult[i] = 0;
         fHistPicoCat1[i] = 0;
         fHistPicoCat2[i] = 0;
         fHistPicoCat3[i] = 0;
@@ -684,17 +685,17 @@ void AliAnalysisTaskRhoVnModulation::CalculateEventPlaneCombinedVZERO(Double_t* 
         Double_t qx2a(0), qy2a(0), qx2c(0), qy2c(0), qx3a(0), qy3a(0), qx3c(0), qy3c(0);
         InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, qx2a, qy2a);
         InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 2, qx2c, qy2c);
-        InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 3, qx3a, qx3c);
+        InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 3, qx3a, qy3a);
         InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 3, qx3c, qy3c);
-        return; // FIXME the rest of this function isn't impelmented yet (as of 01-07-2013)
-        Double_t chi2A(-1), chi2C(-1), chi3A(-1), chi3C(-1);     // get chi from the resolution
-        Double_t qx2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
-        Double_t qy2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
-        Double_t qx3(chi3A*chi3A*qx3a+chi3C*chi3C*qx3c);
-        Double_t qy3(chi3A*chi3A*qy3a+chi3C*chi3C*qy3c);
-        comb[0] = .5*TMath::ATan2(qy2, qx2);
-        comb[1] = (1./3.)*TMath::ATan2(qy3, qx3);
-    } 
+// FIXME the rest of this function isn't impelmented yet (as of 01-07-2013)
+//        Double_t chi2A(-1), chi2C(-1), chi3A(-1), chi3C(-1);     // get chi from the resolution
+//        Double_t qx2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
+//        Double_t qy2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+//        Double_t qx3(chi3A*chi3A*qx3a+chi3C*chi3C*qx3c);
+//        Double_t qy3(chi3A*chi3A*qy3a+chi3C*chi3C*qy3c);
+//        comb[0] = .5*TMath::ATan2(qy2, qx2);
+//        comb[1] = (1./3.)*TMath::ATan2(qy3, qx3);
+    }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* tpc) const
