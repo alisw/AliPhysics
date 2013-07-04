@@ -332,10 +332,10 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
 TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
 {
   TParameter<double>* ret = new TParameter<double>(name, value);
-  Float_t v = value;
-  UInt_t* tmp = reinterpret_cast<UInt_t*>(&v);
+  // Float_t v = value;
+  // UInt_t* tmp = reinterpret_cast<UInt_t*>(&v);
   ret->SetMergeMode('f');
-  ret->SetUniqueID(*tmp);
+  // ret->SetUniqueID(*tmp);
   return ret;
 }
 //_____________________________________________________________________
@@ -351,54 +351,134 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Bool_t value)
 void AliForwardUtil::GetParameter(TObject* o, UShort_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<int>* p = static_cast<TParameter<int>*>(o);
+  if (p->TestBit(BIT(17)))
+    value = p->GetVal(); 
+  else
+    value = o->GetUniqueID();
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, Int_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<int>* p = static_cast<TParameter<int>*>(o);
+  if (p->TestBit(BIT(17)))
+    value = p->GetVal(); 
+  else
+    value = o->GetUniqueID();
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, ULong_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<Long_t>* p = static_cast<TParameter<Long_t>*>(o);
+  if (p->TestBit(BIT(17)))
+    value = p->GetVal(); 
+  else
+    value = o->GetUniqueID();
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, Double_t& value)
 {
   if (!o) return;
-  UInt_t  i = o->GetUniqueID();
-  Float_t v = *reinterpret_cast<Float_t*>(&i);
-  value = v;
+  TParameter<double>* p = static_cast<TParameter<double>*>(o);
+  if (p->TestBit(BIT(17)))
+    value = p->GetVal(); // o->GetUniqueID();
+  else {
+    UInt_t  i = o->GetUniqueID();
+    Float_t v = *reinterpret_cast<Float_t*>(&i);
+    value = v;
+  }
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, Bool_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<bool>* p = static_cast<TParameter<bool>*>(o);
+  if (p->TestBit(BIT(17)))
+    value = p->GetVal(); // o->GetUniqueID();
+  else
+    value = o->GetUniqueID();
 }
   
+#if 0
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
 {
-  //Get max R of ring
-  const Double_t iMinR = 4.5213;
-  const Double_t iMaxR = 17.2;
-  const Double_t oMinR = 15.4;
-  const Double_t oMaxR = 28.0;
-  
-  Double_t   minR    = (ring == 'I' || ring == 'i') ? iMinR : oMinR;
-  Double_t   maxR    = (ring == 'I' || ring == 'i') ? iMaxR : oMaxR;
-  Double_t   nStrips = (ring == 'I' || ring == 'i') ? 512   : 256;
-  Double_t   rad     =  maxR - minR;
-  Double_t   segment = rad / nStrips;
-  Double_t   r       =  minR + segment*strip;
+  // Get max R of ring
+  // 
+  // Optimized version that has a cache 
+  static TArrayD inner;
+  static TArrayD outer; 
+  if (inner.GetSize() <= 0 || outer.GetSize() <= 0) {
+    const Double_t minR[] = {  4.5213, 15.4 };
+    const Double_t maxR[] = { 17.2,    28.0 };
+    const Int_t    nStr[] = { 512,     256  };
+    for (Int_t q = 0; q < 2; q++) { 
+      TArrayD& a = (q == 0 ? inner : outer);
+      a.Set(nStr[q]);
+
+      for (Int_t it = 0; it < nStr[q]; it++) {
+	Double_t   rad     = maxR[q] - minR[q];
+	Double_t   segment = rad / nStr[q];
+	Double_t   r       = minR[q] + segment*strip;
+	a[it]              = r;
+      }
+    }
+  }
+  if (ring == 'I' || ring == 'i') return inner.At(strip);
+  return outer.At(strip);
+}
+#else
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
+{
+  // Get max R of ring
+  // 
+  // New implementation has only one branch
+  const Double_t minR[] = {  4.5213, 15.4 };
+  const Double_t maxR[] = { 17.2,    28.0 };
+  const Int_t    nStr[] = { 512,     256  };
+
+  Int_t      q       = (ring == 'I' || ring == 'i') ? 0 : 1;  
+  Double_t   rad     = maxR[q] - minR[q];
+  Double_t   segment = rad / nStr[q];
+  Double_t   r       = minR[q] + segment*strip;
 
   return r;
 }
+#endif
 
+#if 1
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
+					 UShort_t sec, UShort_t strip, 
+					 Double_t zvtx)
+{
+  // Calculate eta from strip with vertex (redundant with
+  // AliESDFMD::Eta but support displaced vertices)
+  //
+  // Slightly more optimized version that uses less branching 
+  
+  // Get R of the strip
+  Double_t   r         = GetStripR(ring, strip);
+  Int_t      hybrid    = sec / 2;
+  Int_t      q        = (ring == 'I' || ring == 'i') ? 0 : 1;
+
+  const Double_t zs[][2] = { { 320.266, -999999 }, 
+			    {  83.666,  74.966 },
+			    { -63.066, -74.966 } };
+  if (det > 3 || zs[det-1][q] == -999999) return -999999;
+
+  Double_t z = zs[det-1][q];
+  if ((hybrid % 2) == 0) z -= .5;
+  
+  Double_t   theta = TMath::ATan2(r,z-zvtx);
+  Double_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+  
+  return eta;
+}
+#else
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
 					 UShort_t sec, UShort_t strip, 
@@ -412,6 +492,8 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
   Int_t      hybrid    = sec / 2;
   Bool_t     inner     = (ring == 'I' || ring == 'i');
   Double_t   z         = 0;
+
+
   switch (det) { 
   case 1: z = 320.266;                     break;
   case 2: z = (inner ?  83.666 :  74.966); break;
@@ -425,6 +507,7 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
   
   return eta;
 }
+#endif
 
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip, 

@@ -134,7 +134,8 @@ public:
    * 
    * @param dbg Debug level 
    */
-  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }	
+  void SetDoTiming(Bool_t enable=true) { fDoTiming = enable; }
   /** 
    * Maximum particle weight to use 
    * 
@@ -449,8 +450,11 @@ protected:
   Bool_t   fRecalculateEta;  // Whether to recalc eta and angle correction (disp vtx)
   Bool_t   fRecalculatePhi;  // Whether to correct for (X,Y) offset
   UShort_t fMinQuality;      // Least quality for fits
+  AliForwardUtil::Histos fCache;
+  Bool_t                 fDoTiming;
+  TProfile*              fHTiming;
 
-  ClassDef(AliFMDDensityCalculator,12); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,13); // Calculate Nch density 
 };
 
 #endif

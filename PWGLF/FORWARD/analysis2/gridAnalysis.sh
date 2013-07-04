@@ -1,7 +1,8 @@
 #!/bin/bash
 # 
 # BEGIN_MANUAL
-# 
+# 	Script to help do PWGLF-Forward analsysis using AliEn
+#       =====================================================
 # First, one need to figure out what to analyse.  Visit the MonAlisa
 # pages and find
 # 
@@ -44,35 +45,43 @@
 # 
 # Now we can submit our AOD generation jobs.  Do 
 # 
-#   $0 --what=aods 
+#   $0 --what=aod
 # 
 # and wait for the jobs to finish and terminate.  If 'watching' is
 # turned off, one can also monitor output on MonAlisa, and then when
 # enough has finished, execute
 # 
-#   $0 --what=aods --step=terminate 
+#   $0 --what=aod --step=terminate 
 # 
 # enough times to get the final merged result.  Next, we need to
 # download the results and we draw the summary results
 # 
-#   $0 --what aods --step=draw 
+#   $0 --what aod --step=draw 
 # 
 # Now, we should do the dN/deta analysis.  Do 
 # 
-#   $0 --what=dndetas
+#   $0 --what=dndeta
 # 
 # and wait for the jobs to finish and terminate.  If 'watching' is
 # turned off, one can also monitor output on MonAlisa, and then when
 # enough has finished, execute
 # 
-#   $0 --what=dndetas --step=terminate 
+#   $0 --what=dndeta --step=terminate 
 # 
 # enough times to get the final merged result.  Next, we need to download 
 # the results and we can draw the summary and final plot
 # 
-#   $0 --what=dndetas --step=draw 
+#   $0 --what=dndeta --step=draw 
+# 
+# When running the trains, one can pass additional options to the
+# train after the special option -- e.g., 
+#   
+#   $0 --what=aod -- --verbose=2 --branches --satellite
 # 
 # Enjoy
+# 
+# Comments, questions, bugs, flames, suggestions, etc. should be sent
+# to Christian Holm Christensen <cholm@nbi.dk>
 # 
 # END_MANUAL
 

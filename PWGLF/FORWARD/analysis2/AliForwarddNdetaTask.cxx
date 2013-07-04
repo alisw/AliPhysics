@@ -101,10 +101,12 @@ AliForwarddNdetaTask::CheckEventData(Double_t vtx,
 				     TH2*     dataMC)
 {
   // Check if this is satellite
-  if (TMath::Abs(vtx) < 37.5) return;
+  // if (!fSatelliteVertices) return;
+  Double_t aVtx = TMath::Abs(vtx);
+  if (aVtx < 37.5 || aVtx > 400) return;
 
   TH2* hists[] = { data, dataMC };
-  
+
   // In satellite vertices FMD2i is cut away manually at this point
   // for certain vertices. It could be done in the ESDs, but as of
   // this writing not for specific vertices.
@@ -127,8 +129,9 @@ AliForwarddNdetaTask::CheckEventData(Double_t vtx,
       zero = true;
     if (!zero) continue;
     
-    for (Int_t iH = 0; iH <= 2; iH++) {
+    for (Int_t iH = 0; iH < 2; iH++) {
       if (!hists[iH]) continue;
+      // if (iX > hists[iH]->GetNbinsX()+1) continue;
       // Also zero coverage and phi acceptance for this 
       for (Int_t iY = 0; iY<=hists[iH]->GetNbinsY()+1; iY++) {	  
 	hists[iH]->SetBinContent(iX, iY, 0);

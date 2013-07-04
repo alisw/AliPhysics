@@ -1,20 +1,16 @@
 #!/bin/bash
 # 
 # BEGIN_MANUAL
-# 
-# First, one need to figure out what to analyse.  Visit the MonAlisa
-# pages and find
-# 
-#   * The list of runs and put that in a file - say runs.list
-#   * The directory where the ESD files are stored 
-#     - and the pattern that will match these for all runs 
-#   * The directory where the MC ESD files are stored 
-#     - and the pattern that will match these for all runs 
+# 	Script to help do PWGLF-Forward analsysis using ProofLite
+#       =========================================================
+# First, one need to figure out what to analyse.  We assume we have
+# the ESDs from a real run in some directory - possibly in
+# sub-directories, and similar for the MC data. 
 # 
 # Then, one needs to run this script in set-up mode e.g., 
 # 
 #   $0 --what=setup  \
-#       --name=LHC10h \
+#       --name=LHC10c \
 #       --run=118560 \
 #       --real-dir=/data/alice/data/pp/lhc10c/000118560/pass3 \
 #       --real-pattern=AliESDs_*.root \
@@ -23,41 +19,64 @@
 # 
 # Note, all the settings are written to the file .config in the
 # current directory, so you do not need to give the parameters at
-# subsequent steps.  As an alternative to giving the parameters, one
-# can create the file by hand.
+# subsequent steps.  Note, you need a valid AliEn token to at this
+# point to get the acceptance corrections.  The run number specified
+# is only used for getting the acceptance correction.
+# 
+# Note, the use of the ZIP archives root_archive.zip and the sub-part
+# specification @AliESDs.root for MC data. 
 # 
 # Next, we need to generate the corrections.  Do 
 # 
-#   $0 --what=corrs 
+#   $0 --what=corr 
 # 
 # and wait for the jobs to finish and terminate. Next, we need to
 # extract and upload the corrections to our local corrections folder
 # 
-#   $0 --what=corrs --step=upload 
+#   $0 --what=corr --step=upload 
+# 
+# If you already have the corrections, you can pass the option
+# --corrections in the setup phase and skip this step.
 # 
 # Now we can submit our AOD generation jobs.  Do 
 # 
-#   $0 --what=aods 
+#   $0 --what=aod 
 # 
-# and wait for the jobs to finish and terminate.  Next, we need to
-# draw the summary results
+# and wait for the jobs to finish and terminate.  If you need to pass
+# additional options to the train, one can do so after the special
+# option -- e.g., to limit the number of events to 100000, do
 # 
-#   $0 --what aods --step=draw 
+#   $0 --what=aod -- --events=100000
+# 
+# Next, we need to draw the summary results
+# 
+#   $0 --what=aod --step=draw 
 # 
 # Now, we should do the dN/deta analysis.  Do 
 # 
-#   $0 --what=dndetas
+#   $0 --what=dndeta
 # 
-# and wait for the jobs to finish and terminate.  Next, we need to
-# draw the summary and final plot
+# and wait for the jobs to finish and terminate.  Again, additional
+# options to the train can be passed after --.  if you passed the
+# option --sys=1 in the setup phase, then this will run 3 jobs for
+# real and MC each - one for INEL, INEL>0, and NSD (V0-AND).  Next, we
+# need to draw the summary and final plot
 # 
-#   $0 --what=dndetas --step=draw 
+#   $0 --what=dndeta --step=draw 
+# 
+# To generate the P(Nch) data, do 
+# 
+#   $0 --what=multdists
+#   $0 --what=multdists --step=draw 
 # 
 # To collect all PDFs into a single directory do 
-#
+# 
 #   $0 --what=collect
-#
-# Enjoy
+# 
+# Enjoy.
+# 
+# Comments, questions, bugs, flames, suggestions, etc. should be sent
+# to Christian Holm Christensen <cholm@nbi.dk>
 # 
 # END_MANUAL
 
@@ -72,8 +91,6 @@ here=${PWD}
 par=0
 noact=0
 nwrks=0
-# aliroot="&aliroot=v5-03-75pATF-AN"
-# root="root=v5-34-02-1"
 fwd_dir=$ALICE_ROOT/PWGLF/FORWARD/analysis2
 
 real_dir=
@@ -85,6 +102,11 @@ mc_idx=
 my_real_dir=
 my_mc_dir=
 uuopts=
+# Latest: 0.91
+inel_eff=1
+# Latest: 0.94
+nsd_eff=1
+inelgt0_eff=1
 
 # === Various functions ==============================================
 # --- Usage ----------------------------------------------------------
@@ -123,9 +145,8 @@ TRAINS is one of
 and must be executed in that order.  STEP is one of 
 
   full        Run the analysis 
-  terminate   Terminate the job (may need iterations)
   upload      Upload corrections (only for TRAINS=corrs)
-  draw        Draw (partial) results (not for TRAINS=corrs)
+  draw        Draw (partial) results
 EOF
 }
 
@@ -229,6 +250,7 @@ draw()
 dndeta_draw()
 {
     local d=$1 
+    echo "=== $d ================================================"
     (cd $d && \
 	draw ${fwd_dir}/DrawdNdetaSummary.C && \
 	draw Draw.C)
@@ -277,6 +299,10 @@ my_mc_dir=${my_mc_dir}
 par=${par}
 now=${now}
 uuopts="${uuopts}"
+# Trigger efficiencies - edit here to set them 
+inel_eff=$inel_eff
+inelgt0_eff=$inelgt0_eff
+nsd_eff=$nsd_eff
 # Options
 if false ; then 
   $0 --what=setup --name="$name" --run="$run" \

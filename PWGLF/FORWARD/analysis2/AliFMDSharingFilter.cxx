@@ -42,9 +42,9 @@ ClassImp(AliFMDSharingFilter)
 ; // This is for Emacs
 #endif 
 
-#define DBG(L,M) \
+#define DBG(L,M)							\
   do { if (L>fDebug)break; std::cout << (M) << std::flush;} while(false) 
-#define DBGL(L,M) \
+#define DBGL(L,M)							\
   do { if (L>fDebug)break; std::cout << (M) << std::endl;} while(false) 
 			      
 
@@ -65,7 +65,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fUseSimpleMerging(false),
     fThreeStripSharing(true),
     fRecalculateEta(false),
-    fExtraDead(0),
+    // fExtraDead(0),
+    fXtraDead(0),
     fInvalidIsEmpty(false)
 {
   // 
@@ -90,7 +91,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fUseSimpleMerging(false),
     fThreeStripSharing(true),
     fRecalculateEta(false), 
-    fExtraDead(51200),
+    // fExtraDead(51200),
+    fXtraDead(AliFMDStripIndex::Pack(3,'O',19,511)+1),
     fInvalidIsEmpty(false)
 {
   // 
@@ -113,7 +115,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   fHCuts.SetIncludeSigma(1);
   fLCuts.SetMultCuts(.15);
 
-  fExtraDead.Reset(-1);
+  // fExtraDead.Reset(-1);
 }
 
 //____________________________________________________________________
@@ -132,7 +134,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fUseSimpleMerging(o.fUseSimpleMerging),
     fThreeStripSharing(o.fThreeStripSharing),
     fRecalculateEta(o.fRecalculateEta), 
-    fExtraDead(o.fExtraDead),
+    //fExtraDead(o.fExtraDead),
+    fXtraDead(o.fXtraDead),
     fInvalidIsEmpty(o.fInvalidIsEmpty)
 {
   // 
@@ -244,7 +247,9 @@ AliFMDSharingFilter::AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t)
   }
     
   Int_t id = AliFMDStripIndex::Pack(d, r, s, t);
-  Int_t i  = 0;
+  // Int_t i  = 0;
+  fXtraDead.SetBitNumber(id, true);
+#if 0
   for (i = 0; i < fExtraDead.GetSize(); i++) {
     Int_t j = fExtraDead.At(i);
     if (j == id) return; // Already there 
@@ -256,6 +261,7 @@ AliFMDSharingFilter::AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t)
     return;
   }
   fExtraDead[i] = id;
+#endif
 }
 //____________________________________________________________________
 void
@@ -283,6 +289,8 @@ Bool_t
 AliFMDSharingFilter::IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const
 {
   Int_t id = AliFMDStripIndex::Pack(d, r, s, t);
+  return fXtraDead.TestBitNumber(id); 
+#if 0
   for (Int_t i = 0; i < fExtraDead.GetSize(); i++) {
     Int_t j = fExtraDead.At(i);
     if (j == id) {
@@ -292,6 +300,7 @@ AliFMDSharingFilter::IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const
     if (j < 0) break; // High water mark 
   }
   return false;
+#endif
 }
 //____________________________________________________________________
 void
@@ -301,7 +310,10 @@ AliFMDSharingFilter::SetupForData(const TAxis& axis)
   DGUARD(fDebug,1, "Initialize for AliFMDSharingFilter");
   AliForwardCorrectionManager& fcm  = AliForwardCorrectionManager::Instance();
   const AliFMDCorrELossFit*    fits = fcm.GetELossFit();
- 
+
+  // Compactify the xtra dead bits 
+  fXtraDead.Compact();
+
   // Get the high cut.  The high cut is defined as the 
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
@@ -352,7 +364,7 @@ AliFMDSharingFilter::SetupForData(const TAxis& axis)
 }
 
 //____________________________________________________________________
-#define ETA2COS(ETA) \
+#define ETA2COS(ETA)						\
   TMath::Cos(2*TMath::ATan(TMath::Exp(-TMath::Abs(ETA))))
 
 Bool_t
@@ -635,18 +647,6 @@ AliFMDSharingFilter::GetLowCut(UShort_t d, Char_t r, Double_t eta) const
   // than 0, then that value is used.
   //
   return fLCuts.GetMultCut(d,r,eta,false);
-#if 0
-  if (!fCutAtFractionOfMPV && fLowCut > 0) return fLowCut;
-  
-  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
-  AliFMDCorrELossFit* fits = fcm.GetELossFit();
-  
-  if (fCutAtFractionOfMPV) {
-    AliFMDCorrELossFit::ELossFit* func = fits->GetFit(d,r,eta);
-    return fFractionOfMPV*func->GetDelta() ;
-  }  
-  return fits->GetLowCut();
-#endif
 }
 			
 //_____________________________________________________________________
@@ -662,247 +662,6 @@ AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r,
   return fHCuts.GetMultCut(d,r,eta,errors); 
 }
 
-//_____________________________________________________________________
-namespace { 
-  const char* status2String(AliFMDSharingFilter::Status s)
-  {
-    switch(s) { 
-    case AliFMDSharingFilter::kNone:            return "none     "; 
-    case AliFMDSharingFilter::kCandidate:       return "candidate"; 
-    case AliFMDSharingFilter::kMergedWithOther: return "merged   "; 
-    case AliFMDSharingFilter::kMergedInto:      return "summed   "; 
-    }
-    return "unknown  ";
-  }
-}
-
-//_____________________________________________________________________
-Double_t 
-AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
-					 Double_t prevE,
-					 Double_t nextE,
-					 Double_t eta,
-					 Bool_t   lowFlux,
-					 UShort_t d,
-					 Char_t   r,
-					 UShort_t s,
-					 UShort_t t,
-					 Status&  prevStatus, 
-					 Status&  thisStatus, 
-					 Status&  nextStatus) const
-{
-  Double_t lowCut = GetLowCut(d, r, eta);
-
-  DBG(3,Form("FMD%d%c[%2d,%3d]: this=%9f(%s), prev=%9f(%s), next=%9f(%s)", 
-	     d, r, s, t,
-	     thisE, status2String(thisStatus), 
-	     prevE, status2String(prevStatus), 
-	     nextE, status2String(nextStatus)));
-
-  // If below cut, then modify zero signal and make sure the next
-  // strip is considered a candidate.
-  if (thisE < lowCut || thisE > 100/*20*/) { 
-    thisStatus = kNone;
-    DBGL(5,Form(" %9f<%9f || %9f>20, 0'ed", thisE, lowCut, thisE));
-    if (prevStatus == kCandidate) prevStatus = kNone;
-    return 0;  
-  }
-  // It this strip was merged with the previous strip, then 
-  // make the next strip a candidate and zero the value in this strip. 
-  if (thisStatus == kMergedWithOther) { 
-    DBGL(5,Form(" Merged with other, 0'ed"));
-    return 0;
-  }
-
-  // Get the upper cut on the sharing 
-  Double_t highCut = GetHighCut(d, r, eta ,false);
-  if (highCut <= 0) {
-    thisStatus = kNone;
-    return 0;
-  }
-
-  // Only for low-flux  events 
-  if (lowFlux) { 
-    // If this is smaller than the next, and the next is larger 
-    // then the cut, mark both as candidates for sharing. 
-    // They should be be merged on the next iteration 
-    if (thisE < nextE && nextE > highCut) { 
-      thisStatus = kCandidate;
-      nextStatus = kCandidate;
-      return 0;
-    }
-  }
-  
-  // Variable to sum signal in 
-  Double_t totalE = thisE;
-
-  // If the previous signal was between the two cuts, and is still
-  // marked as a candidate , then merge it in here.
-  if (prevStatus == kCandidate && prevE > lowCut && prevE < highCut) {
-    totalE     += prevE;
-    prevStatus =  kMergedWithOther;
-    DBG(3, Form(" Prev candidate %9f<%9f<%9f->%9f", 
-		lowCut, prevE, highCut, totalE));
-  }
-
-  // If the next signal is between the two cuts, then merge it here
-  if (nextE > lowCut && nextE < highCut) { 
-    totalE     += nextE;
-    nextStatus =  kMergedWithOther;
-    DBG(3, Form(" Next %9f<%9f<%9f->%9f", lowCut, nextE, highCut,totalE));
-  }
-  
-  // If the signal is bigger than the high-cut, then return the value 
-  if (totalE > highCut) { 
-    if (totalE > thisE) 
-      thisStatus = kMergedInto;
-    else 
-      thisStatus = kNone;
-    DBGL(5, Form(" %9f>%f9 (was %9f) -> %9f %s", 
-		 totalE, highCut, thisE, totalE,status2String(thisStatus)));
-    return totalE;
-  }
-  else {
-    // This is below cut, so flag next as a candidate 
-    DBG(3, Form(" %9f<=%9f, next candidate", totalE, highCut));
-    nextStatus = kCandidate;
-  }
-  
-  // If the total signal is smaller than low cut then zero this and kill this 
-  if (totalE < lowCut)  {
-    DBGL(5, Form(" %9f<%9f (was %9f), zeroed", totalE, lowCut, thisE));
-    thisStatus = kNone;
-    return 0;
-  }
-
-  // If total signal not above high cut or lower than low cut, 
-  // mark this as a candidate for merging into the next, and zero signal 
-  DBGL(5, Form(" %9f<%9f<%9f (was %9f), zeroed, candidate", 
-		   lowCut, totalE, highCut, thisE));
-  thisStatus = kCandidate;
-  return (fZeroSharedHitsBelowThreshold ? 0 : totalE); 
-}
-	   
-//_____________________________________________________________________
-Double_t 
-AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
-					 Double_t eta,
-					 Double_t prevE,
-					 Double_t nextE,
-					 Bool_t   lowFlux,
-					 UShort_t d,
-					 Char_t   r,
-					 UShort_t /*s*/,
-					 UShort_t /*t*/,
-					 Bool_t&  usedPrev, 
-					 Bool_t&  usedThis) const
-{
-  // 
-  // The actual algorithm 
-  // 
-  // Parameters:
-  //    mult      The unfiltered signal in the strip
-  //    eta       Psuedo rapidity 
-  //    prevE     Previous strip signal (or 0)
-  //    nextE     Next strip signal (or 0) 
-  //    lowFlux   Whether this is a low flux event 
-  //    d         Detector
-  //    r         Ring 
-  //    s         Sector 
-  //    t         Strip
-  //    usedPrev  Whether the previous strip was used in sharing or not
-  //    usedThis  Wether this strip was used in sharing or not. 
-  // 
-  // Return:
-  //    The filtered signal in the strip
-  //
-
-  // IF the multiplicity is very large, or below the cut, reject it, and 
-  // flag it as candidate for sharing 
-  Double_t    lowCut = GetLowCut(d,r,eta);
-  if(mult > 12 || mult < lowCut) {
-    usedThis      = kFALSE;
-    usedPrev      = kFALSE;
-    return 0;
-  }
-
-  // If this was shared with the previous signal, return 0 and mark it as 
-  // not a candiate for sharing 
-  if(usedThis) {
-    usedThis      = kFALSE;
-    usedPrev      = kTRUE;
-    return 0.;
-  }
-
-  //analyse and perform sharing on one strip
-  
-  // Get the high cut 
-  Double_t highCut = GetHighCut(d, r, eta, false);
-  if (highCut <= 0) {
-    usedThis = kFALSE;
-    usedPrev = kTRUE;
-    return 0;
-  }
-
-  // If this signal is smaller than the next, and the next signal is smaller 
-  // than then the high cut, and it's a low-flux event, then mark this and 
-  // the next signal as candidates for sharing 
-  // 
-  // This is the test if the signal is the smaller of two possibly
-  // shared signals.   
-  if (mult  < nextE   && 
-      nextE > highCut && 
-      lowFlux) {
-    usedThis      = kFALSE;
-    usedPrev      = kFALSE;
-    return 0;
-  }
-  
-  Double_t totalE  = mult;
-  
-  // If the previous signal was larger than the low cut, and 
-  // the previous was smaller than high cut, and the previous signal 
-  // isn't marked as used, then add it's energy to this signal 
-  if (prevE > lowCut && 
-      prevE < highCut && 
-      !usedPrev) 
-    totalE += prevE;
-
-  // If the next signal is larger than the low cut, and 
-  // the next signal is smaller than the high cut, then add the next signal 
-  // to this, and marked the next signal as used 
-  if(nextE > lowCut && nextE < highCut ) {
-    totalE      += nextE;
-    usedThis =  kTRUE;
-  }
-
-  // If we're processing on non-angle corrected data, we should do the 
-  // angle correction here 
-  // if (!fCorrectAngles) 
-  //   totalE = AngleCorrect(totalE, eta);
-
-  // Fill post processing histogram
-  // if(totalE > fLowCut)
-  //   GetRingHistos(d,r)->fAfter->Fill(totalE);
-
-  // Return value 
-  Double_t mergedEnergy = 0;
-  
-  if(totalE > 0) {
-    // If we have a signal, then this is used (sharedPrev=true) and
-    // the signal is set to the result
-    mergedEnergy = totalE;
-    usedPrev     = kTRUE;
-  }
-  else {
-    // If we do not have a signal (too low), then this is not shared, 
-    // and the next strip is not shared either 
-    usedThis  = kFALSE;
-    usedPrev  = kFALSE;
-  }
-  
-  return mergedEnergy; 
-}
 //____________________________________________________________________
 Double_t
 AliFMDSharingFilter::AngleCorrect(Double_t mult, Double_t eta) const
@@ -1055,6 +814,7 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
   TObjArray* extraDead = new TObjArray;
   extraDead->SetOwner();
   extraDead->SetName("extraDead");
+#if 0
   for (Int_t i = 0; i < fExtraDead.GetSize(); i++) { 
     if (fExtraDead.At(i) < 0) break;
     UShort_t dd, s, t;
@@ -1064,6 +824,20 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
     extraDead->Add(AliForwardUtil::MakeParameter(Form("FMD%d%c[%02d,%03d]",
 						      dd, r, s, t), id));
   }
+#endif
+  fXtraDead.Compact();
+  UInt_t firstBit = fXtraDead.FirstSetBit();
+  UInt_t nBits    = fXtraDead.GetNbits();
+  for (UInt_t i = firstBit; i < nBits; i++) {
+    if (!fXtraDead.TestBitNumber(i)) continue;
+    UShort_t dd, s, t;
+    Char_t  r;
+    AliFMDStripIndex::Unpack(i, dd, r, s, t);
+    extraDead->Add(AliForwardUtil::MakeParameter(Form("FMD%d%c[%02d,%03d]",
+						      dd, r, s, t), 
+						 UShort_t(i)));
+  }
+  // d->Add(&fXtraDead);
   d->Add(extraDead);
   fLCuts.Output(d,"lCuts");
   fHCuts.Output(d,"hCuts");
@@ -1093,7 +867,7 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
 	    << ind << " Use corrected angles:   " << fCorrectAngles << '\n'
 	    << ind << " Zero below threshold:   " 
 	    << fZeroSharedHitsBelowThreshold << '\n'
-    	    << ind << " Use simple sharing:     " << fUseSimpleMerging << '\n'
+	    << ind << " Use simple sharing:     " << fUseSimpleMerging << '\n'
 	    << ind << " Consider invalid null:  " << fInvalidIsEmpty << '\n'
 	    << ind << " Allow 3 strip merging:  " << fThreeStripSharing
 	    << std::noboolalpha << std::endl;

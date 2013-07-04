@@ -21,6 +21,7 @@
 #include <TList.h>
 #include "AliForwardUtil.h"
 #include "AliFMDMultCuts.h"
+#include <TBits.h>
 class AliESDFMD;
 class TAxis;
 class TList;
@@ -372,64 +373,6 @@ protected:
 			 UShort_t s,
 			 UShort_t t) const;
   /** 
-   * The actual algorithm 
-   * 
-   * @param mult      The unfiltered signal in the strip
-   * @param eta       Psuedo rapidity 
-   * @param prevE     Previous strip signal (or 0)
-   * @param nextE     Next strip signal (or 0) 
-   * @param lowFlux   Whether this is a low flux event 
-   * @param d         Detector
-   * @param r         Ring 
-   * @param s         Sector 
-   * @param t         Strip
-   * @param usedPrev  Whether the previous strip was used in sharing or not
-   * @param usedThis  Wether this strip was used in sharing or not. 
-   * 
-   * @return The filtered signal in the strip
-   */
-  Double_t MultiplicityOfStrip(Double_t mult,
-			       Double_t eta,
-			       Double_t prevE,
-			       Double_t nextE,
-			       Bool_t   lowFlux,
-			       UShort_t d,
-			       Char_t   r,
-			       UShort_t s,
-			       UShort_t t,
-			       Bool_t&  usedPrev, 
-			       Bool_t&  usedThis) const;
-  /** 
-   * The actual algorithm 
-   * 
-   * @param thisE      This strips energy 
-   * @param prevE      Previous strip enery 
-   * @param nextE      Next strip energy 
-   * @param eta        Psuedo-rapidity
-   * @param lowFlux    Whether to use low flux settings
-   * @param d          Detector
-   * @param r          Ring 
-   * @param s          Sector 
-   * @param t          Strip
-   * @param prevStatus Previous status
-   * @param thisStatus This status 
-   * @param nextStatus Next status
-   * 
-   * @return The filtered signal in the strip
-   */
-  Double_t MultiplicityOfStrip(Double_t thisE,
-			       Double_t prevE,
-			       Double_t nextE,
-			       Double_t eta,
-			       Bool_t   lowFlux,
-			       UShort_t d,
-			       Char_t   r,
-			       UShort_t s,
-			       UShort_t t,
-			       Status&  prevStatus, 
-			       Status&  thisStatus, 
-			       Status&  nextStatus) const;
-  /** 
    * Angle correct the signal 
    * 
    * @param mult Angle Un-corrected Signal 
@@ -490,7 +433,8 @@ protected:
   Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
   Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
-  TArrayI  fExtraDead;      // List of extra dead channels
+  // TArrayI  fExtraDead;      // List of extra dead channels
+  TBits    fXtraDead;
   Bool_t   fInvalidIsEmpty;  // Consider kInvalidMult as zero 
 
   ClassDef(AliFMDSharingFilter,8); //
