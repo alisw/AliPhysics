@@ -14,6 +14,9 @@
 #pragma link C++ class AliAnalysisTaskPi0FlowMCHijing+;
 #pragma link C++ class AliPHOSTenderTask+;
 
+//PHOS_EpRatio
+#pragma link C++ class AliAnalysisTaskEpRatio+;
+
 //PHOS_PbPb_MC
 #pragma link C++ class AliPHOSHijingEfficiency+;
 

@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 #include "TObjArray.h"
 #include "TF1.h"
 #include "TH1F.h"
@@ -5,6 +20,8 @@
 #include "TH2I.h"
 #include "TH3F.h"
 #include "TParticle.h"
+#include "TList.h"
+#include "THashList.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskEpRatio.h"
@@ -34,9 +51,12 @@
 #include "AliPHOSCalibData.h"
 #include "AliOADBContainer.h"
 
-// E/p analysis task.
+// Analysis task to fill histograms with E/p ratios for electrons, positrons, muons
+// and hadrons (pions, kaons..), where E is an energy of PHOS cluster
+// and p is the momentum of it's matched track.
+
 // Authors: Boris Polishchuk,Tsubasa Okubo
-// Date   : 28.05.2009
+// Date   : 04.07.2013
 
 ClassImp(AliAnalysisTaskEpRatio)
 //________________________________________________________________________
@@ -59,7 +79,7 @@ void AliAnalysisTaskEpRatio::UserCreateOutputObjects()
   if(fOutputContainer != NULL){
     delete fOutputContainer;
   }
-  fOutputContainer = new TList();
+  fOutputContainer = new THashList();
   fOutputContainer->SetOwner();
   
   fOutputContainer->Add( new TH1F("h_CellMultEvent","PHOS Cell Multiplicity per Event",200,0,200) );
@@ -414,27 +434,9 @@ void AliAnalysisTaskEpRatio::FillHistogram(const char * key,Double_t x,Double_t 
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskEpRatio::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
-  //Fills 1D histograms with key
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
-}
-
-//_____________________________________________________________________________
 void AliAnalysisTaskEpRatio::SetGeometry()
 {
-  //Init geometry
+  //Init geometry.
   
   if(!fPHOSGeo){
     
