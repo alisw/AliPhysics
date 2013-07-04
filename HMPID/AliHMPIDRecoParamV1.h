@@ -1,5 +1,5 @@
-#ifndef ALIHMPIDRECOPARAM_H
-#define ALIHMPIDRECOPARAM_H
+#ifndef ALIHMPIDRECOPARAMV1_H
+#define ALIHMPIDRECOPARAMV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -7,25 +7,27 @@
 //                                                                           //
 // Class to set HMPID reconstruction parameters (normal, HTA, UserCut ...    //
 //                                                                           //
+// This class is introduced as a copy of teh AliHMPIDRecoParam to solve      //
+// the problem occured in v4-17-Rev-18                                       //
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliDetectorRecoParam.h"
 
-class AliHMPIDRecoParam : public AliDetectorRecoParam
+class AliHMPIDRecoParamV1 : public AliDetectorRecoParam
 {
  public: 
   
-  AliHMPIDRecoParam();                                                                                           //ctor
-  AliHMPIDRecoParam(const AliHMPIDRecoParam &p);                                                               //copy ctor 
-  AliHMPIDRecoParam& operator=(const AliHMPIDRecoParam &p);                                                    // ass. op.
-  virtual ~AliHMPIDRecoParam();                                                                                  //dtor
+  AliHMPIDRecoParamV1();                                                                                           //ctor
+  AliHMPIDRecoParamV1(const AliHMPIDRecoParamV1 &p);                                                               //copy ctor 
+  AliHMPIDRecoParamV1& operator=(const AliHMPIDRecoParamV1 &p);                                                    // ass. op.
+  virtual ~AliHMPIDRecoParamV1();                                                                                  //dtor
 
   
-  static AliHMPIDRecoParam *GetLowFluxParam();                                                                   // reco params for low flux env.
-  static AliHMPIDRecoParam *GetHighFluxParam();                                                                  // reco params for high flux env. 
-  static AliHMPIDRecoParam *GetCosmicParam();                                                                    // reco params for cosmic  
+  static AliHMPIDRecoParamV1 *GetLowFluxParam();                                                                   // reco params for low flux env.
+  static AliHMPIDRecoParamV1 *GetHighFluxParam();                                                                  // reco params for high flux env. 
+  static AliHMPIDRecoParamV1 *GetCosmicParam();                                                                    // reco params for cosmic  
     
   Bool_t   GetHmpRecoMode(            )        const            { return fHmpRecoMode;          }                  //kTRUE = normal tracking reco, kFALSE = HTA     
   void     SetHmpRecoMode(Bool_t recoMode)                       { fHmpRecoMode=recoMode;        }                 //kTRUE = normal tracking reco, kFALSE = HTA   
@@ -50,7 +52,7 @@ class AliHMPIDRecoParam : public AliDetectorRecoParam
   Double_t fHmpTrackMatchingDistParas[5];                   //Prevision for momentum dependen track matching
   
 
-  ClassDef(AliHMPIDRecoParam, 3) 
+  ClassDef(AliHMPIDRecoParamV1, 1) 
 };
 #endif
 

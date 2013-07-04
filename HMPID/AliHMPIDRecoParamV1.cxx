@@ -24,13 +24,13 @@
 //Email: domenico.dibari@ba.infn.it
 //
 #include "AliLog.h"
-#include "AliHMPIDRecoParam.h"
+#include "AliHMPIDRecoParamV1.h"
 #include "AliHMPIDParam.h"
 
-ClassImp(AliHMPIDRecoParam)
+ClassImp(AliHMPIDRecoParamV1)
 
 //_____________________________________________________________________________
-AliHMPIDRecoParam::AliHMPIDRecoParam():AliDetectorRecoParam(),   
+AliHMPIDRecoParamV1::AliHMPIDRecoParamV1():AliDetectorRecoParam(),   
   fHmpRecoMode(kTRUE),fHmpFixedDistCut(kTRUE),
   fHmpTrackMatchingDist(1.0)
 {
@@ -41,7 +41,7 @@ AliHMPIDRecoParam::AliHMPIDRecoParam():AliDetectorRecoParam(),
   for(Int_t iPol=0;iPol<5;iPol++) fHmpTrackMatchingDistParas[iPol]=0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDRecoParam::AliHMPIDRecoParam(const AliHMPIDRecoParam &p):AliDetectorRecoParam(p),   
+AliHMPIDRecoParamV1::AliHMPIDRecoParamV1(const AliHMPIDRecoParamV1 &p):AliDetectorRecoParam(p),   
     fHmpRecoMode(kTRUE),fHmpFixedDistCut(kTRUE),
     fHmpTrackMatchingDist(1.0)
 { 
@@ -55,7 +55,7 @@ AliHMPIDRecoParam::AliHMPIDRecoParam(const AliHMPIDRecoParam &p):AliDetectorReco
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDRecoParam& AliHMPIDRecoParam::operator=(const AliHMPIDRecoParam &p)
+AliHMPIDRecoParamV1& AliHMPIDRecoParamV1::operator=(const AliHMPIDRecoParamV1 &p)
 {
 //
 // assign. operator
@@ -70,18 +70,18 @@ AliHMPIDRecoParam& AliHMPIDRecoParam::operator=(const AliHMPIDRecoParam &p)
   return *this;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDRecoParam::~AliHMPIDRecoParam() 
+AliHMPIDRecoParamV1::~AliHMPIDRecoParamV1() 
 {
   //
   // dtor
   //  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDRecoParam *AliHMPIDRecoParam::GetLowFluxParam(){
+AliHMPIDRecoParamV1 *AliHMPIDRecoParamV1::GetLowFluxParam(){
   //
   // Set HMPID Reco Params for Low Flux environment
   //
-  AliHMPIDRecoParam *hmpParam = new AliHMPIDRecoParam;
+  AliHMPIDRecoParamV1 *hmpParam = new AliHMPIDRecoParamV1;
   hmpParam->fHmpRecoMode = kTRUE;                                                     //kTRUE = normal reco. kFLASE = HTA
   hmpParam->fHmpUserCut[0] = 3;                                                       //HMPID Module 0 User DAQ Sigma cut
   hmpParam->fHmpUserCut[1] = 3;                                                       //HMPID Module 1 User DAQ Sigma cut
@@ -99,11 +99,11 @@ AliHMPIDRecoParam *AliHMPIDRecoParam::GetLowFluxParam(){
     
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDRecoParam *AliHMPIDRecoParam::GetHighFluxParam(){
+AliHMPIDRecoParamV1 *AliHMPIDRecoParamV1::GetHighFluxParam(){
   //
   // Set HMPID Reco Params for Low Flux environment
   //
-  AliHMPIDRecoParam *hmpParam = new AliHMPIDRecoParam;
+  AliHMPIDRecoParamV1 *hmpParam = new AliHMPIDRecoParamV1;
   hmpParam->fHmpRecoMode = kTRUE;                                                       //kTRUE = normal reco. kFLASE = HTA
   hmpParam->fHmpUserCut[0] = 3;                                                         //HMPID Module 0 User DAQ Sigma cut
   hmpParam->fHmpUserCut[1] = 3;                                                         //HMPID Module 1 User DAQ Sigma cut
@@ -121,11 +121,11 @@ AliHMPIDRecoParam *AliHMPIDRecoParam::GetHighFluxParam(){
     
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDRecoParam *AliHMPIDRecoParam::GetCosmicParam(){
+AliHMPIDRecoParamV1 *AliHMPIDRecoParamV1::GetCosmicParam(){
   //
   // Set HMPID Reco Params for Low Flux environment
   //
-  AliHMPIDRecoParam *hmpParam = new AliHMPIDRecoParam;
+  AliHMPIDRecoParamV1 *hmpParam = new AliHMPIDRecoParamV1;
   hmpParam->fHmpRecoMode = kTRUE;                                                                   //kTRUE = normal reco. kFLASE = HTA
   hmpParam->fHmpUserCut[0] = 3;                                                                     //HMPID Module 0 User DAQ Sigma cut
   hmpParam->fHmpUserCut[1] = 3;                                                                     //HMPID Module 1 User DAQ Sigma cut
@@ -143,13 +143,13 @@ AliHMPIDRecoParam *AliHMPIDRecoParam::GetCosmicParam(){
     
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecoParam::PrintParameters() const
+void AliHMPIDRecoParamV1::PrintParameters() const
 {
   //
   // Printing of the used HMPID reconstruction parameters
   //
-   AliInfo(Form("%s",AliHMPIDRecoParam::GetName()));
-   AliInfo(Form("IsDefault: %d",AliHMPIDRecoParam::IsDefault()));
+   AliInfo(Form("%s",AliHMPIDRecoParamV1::GetName()));
+   AliInfo(Form("IsDefault: %d",AliHMPIDRecoParamV1::IsDefault()));
    AliInfo(Form(" Running HMPID Reco: %d (1=Standard, 0=HTA)",fHmpRecoMode));
    AliInfo(Form(" Is track matching distance fixed (1) or momentum dependent (0): %d",fHmpFixedDistCut));
    AliInfo(Form(" HMPID track matching distance cut: %.3lf",fHmpTrackMatchingDist));
