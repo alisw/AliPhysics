@@ -19,9 +19,20 @@ public:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
 
+  void SetupDefaultLimits();
   void CreateLookupTable(AliTPCCorrection &tpcCorr, Float_t stepSize=5.);
+  void CreateLookupTableSinglePhi(AliTPCCorrection &tpcCorr, Int_t iPhi, Float_t stepSize=5.);
 
+  void MergePhiTables(const char* files);
 
+  Int_t GetNR()   const { return fNR;   }
+  Int_t GetNPhi() const { return fNPhi; }
+  Int_t GetNZ()   const { return fNZ;   }
+
+  const TVectorD& GetLimitsR()   const { return fLimitsR; }
+  const TVectorD& GetLimitsPhi() const { return fLimitsPhi; }
+  const TVectorD& GetLimitsZ()   const { return fLimitsZ; }
+  
 private:
 
   // sizes of lookup tables
@@ -44,12 +55,17 @@ private:
   TMatrixF **fLookUpDzCorr;        //[fNPhi] Array to store electric field integral (int Er/Ez)
 
   void InitTables();
+  void InitTableArrays();
+  void InitTablesPhiBin(Int_t iPhi);
+  
   void ResetTables();
-  void SetupDefaultLimits();
-
+  void ResetLimits();
+  
   void GetInterpolation(const Float_t x[],const Short_t roc,Float_t dx[],
                         TMatrixF **mR, TMatrixF **mPhi, TMatrixF **mZ);
 
+  void CreateLookupTablePhiBin(AliTPCCorrection &tpcCorr, Int_t iPhi, Float_t stepSize);
+  
   AliTPCCorrectionLookupTable(const AliTPCCorrectionLookupTable &corr);
   AliTPCCorrectionLookupTable& operator= (const AliTPCCorrectionLookupTable &corr);
   ClassDef(AliTPCCorrectionLookupTable,1);  // TPC corrections dumped into a lookup table
