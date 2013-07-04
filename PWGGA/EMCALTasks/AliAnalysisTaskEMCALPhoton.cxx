@@ -691,8 +691,8 @@ void  AliAnalysisTaskEMCALPhoton::FillIsoTracks()
     AliESDtrack *track = static_cast<AliESDtrack*>(fSelPrimTracks->At(it));
     if(!track)
       continue;
-    if(track->Phi()<1.0 || track->Phi()>3.55)
-      continue;
+    /*if(track->Phi()<1.0 || track->Phi()>3.55)
+      continue;*/
     if(TMath::Abs(track->Eta())>1.1)
       continue;
     /*if(track->Pt()<3)
