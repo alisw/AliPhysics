@@ -1,4 +1,4 @@
-// $Id: AddTaskJetEmbeddingFromAOD.C  $
+// $Id$
 
 TObjArray* GenerateFileList(const char* list, Int_t nFiles);
 

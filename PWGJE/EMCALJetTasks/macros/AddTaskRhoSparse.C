@@ -1,4 +1,4 @@
-// $Id: AddTaskRho_pA.C 58584 2012-09-13 10:37:42Z loizides $
+// $Id$
 
 AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
    const char    *nJetsBkg    = "JetsBkg",
