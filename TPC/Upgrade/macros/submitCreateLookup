@@ -7,9 +7,9 @@
 #4: module
 
 
-# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Upgrade/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
-# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Upgrade/Calib/maps/SC_NeCO2_eps10_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
-# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Upgrade/Calib/maps/SC_NeCO2_eps20_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
+# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
+# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps10_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
+# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps20_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
 
 mapFile=$1
 outDir=$2
