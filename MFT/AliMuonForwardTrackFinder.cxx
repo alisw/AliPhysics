@@ -1413,9 +1413,9 @@ void AliMuonForwardTrackFinder::PrintParticleHistory() {
   if (fLabelMC>=0) part = fStack->Particle(fLabelMC);
 
   AliDebug(1, Form("fStack->Particle(%d) = %p", fLabelMC, part));
-  AliDebug(1, Form("fStack->Particle(%d)->GetPdgCode() = %d", fLabelMC, part->GetPdgCode()));
 
   if (part) {
+    AliDebug(1, Form("fStack->Particle(%d)->GetPdgCode() = %d", fLabelMC, part->GetPdgCode()));
     if (part->GetFirstMother() != -1) {
       TParticle *partMother = fStack->Particle(part->GetFirstMother());
       AliDebug(1, Form("fStack->Particle(%d) = %p", part->GetFirstMother(), partMother));
