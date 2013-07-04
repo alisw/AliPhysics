@@ -3,7 +3,8 @@
 //
 
 int makeSpaceChargeMap(Double_t multiplicity = 950., Double_t intRate = 5e4, Double_t eps = 10.,
-		       Double_t gasfactor = 1., string filename = "SpaceChargeMap.root") {
+		       Double_t gasfactor = 1., string filename = "SpaceChargeMap.root",
+		       Double_t radialScaling = 2., Double_t epsilonScaling = 2./3.) {
   //
   // Charge distribution is splitted into two (RZ and RPHI) in order to speed up
   // the needed calculation time. It is dumped to 
@@ -53,7 +54,7 @@ int makeSpaceChargeMap(Double_t multiplicity = 950., Double_t intRate = 5e4, Dou
       // calculation of "scaled" parameters
       Double_t a = multiplicity*intRate/76628;
       //Double_t charge = gasfactor * ( a / (rpM*rpM) * (1 - zpM/lZ) ); // charge in [C/m^3/e0], no IBF
-      Double_t charge = gasfactor * ( a / (rpM*rpM) * (1 - zpM/lZ + 2*eps/3) ); // charge in [C/m^3/e0], with IBF
+      Double_t charge = gasfactor * ( a / (TMath::Power(rpM,radialScaling)) * (1 - zpM/lZ + epsilonScaling*eps) ); // charge in [C/m^3/e0], with IBF
 
       charge = charge*fgke0;          // [C/m^3]
 
