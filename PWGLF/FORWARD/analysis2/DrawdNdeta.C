@@ -385,7 +385,8 @@ struct dNdetaDrawer
 	 "   Title on plot:                    %s\n"
 	 "   Scaling of clusters to tracklets: %s\n"
 	 "   Final MC correction file:         %s\n"
-	 "   Empirical correction file:        %s",
+	 "   Empirical correction file:        %s\n"
+	 "   Trigger efficiency:               %6.4f",
 	 (fShowRatios    ? "yes" : "no"), 
 	 (fShowLeftRight ? "yes" : "no"),
 	 (fShowRings     ? "yes" : "no"),
@@ -396,7 +397,7 @@ struct dNdetaDrawer
 	 (fForceMB       ? "yes" : "no"),
 	 fShowOthers, fRebin, (100*fFwdSysErr), (100*fCenSysErr), 
 	 fTitle.Data(), fClusterScale.Data(), fFinalMC.Data(), 
-	 fEmpirical.Data());
+	 fEmpirical.Data(), fTriggerEff);
 
     // --- Set the macro pathand load other data script --------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",

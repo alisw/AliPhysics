@@ -938,7 +938,6 @@ protected:
   ClassDef(AliBasedNdetaTask,13); // Determine charged particle density
 };
 
-inline void AliBasedNdetaTask::CheckEventData(Double_t,TH2*,TH2*) {}
 #endif
 //
 // Local Variables:

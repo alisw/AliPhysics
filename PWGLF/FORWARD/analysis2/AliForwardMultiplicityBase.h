@@ -32,6 +32,7 @@ class TH2D;
 class TList;
 class TTree;
 class TAxis;
+class TProfile;
 
 /** 
  * @defgroup pwglf_forward PWGLF Forward analysis
@@ -81,6 +82,15 @@ class TAxis;
 class AliForwardMultiplicityBase : public AliAnalysisTaskSE
 {
 public:
+  enum { 
+    kTimingEventInspector    = 1,
+    kTimingSharingFilter     = 2, 
+    kTimingDensityCalculator = 3, 
+    kTimingCorrections       = 4, 
+    kTimingHistCollector     = 5, 
+    kTimingEventPlaneFinder  = 6, 
+    kTimingTotal             = 7
+  };
   /** 
    * @{ 
    * @name Interface methods 
@@ -124,6 +134,12 @@ public:
    * @param option Not used
    */
   virtual void Print(Option_t* option="") const;
+  /** 
+   * Set whether to make a timing histogram 
+   * 
+   * @param enable 
+   */
+  virtual void SetDoTiming(Bool_t enable=true) { fDoTiming = enable; }
   /** 
    * Whether to enable low-flux code 
    * 
@@ -255,6 +271,8 @@ protected:
     fAODFMD(),
     fAODEP(),
     fRingSums(),
+    fDoTiming(false), 
+    fHTiming(0),
     fCorrManager(0)
   {}
   /** 
@@ -273,6 +291,8 @@ protected:
       fAODFMD(o.fAODFMD),
       fAODEP(o.fAODEP),
       fRingSums(o.fRingSums),
+      fDoTiming(o.fDoTiming), 
+      fHTiming(o.fHTiming),
       fCorrManager(o.fCorrManager)
   {
     DefineOutput(1, TList::Class());
@@ -384,6 +404,8 @@ protected:
   AliAODForwardMult      fAODFMD;       // Output object
   AliAODForwardEP        fAODEP;        // Output object
   AliForwardUtil::Histos fRingSums;     // Cache histograms 
+  Bool_t                 fDoTiming;     // Whether to do timing or not
+  TProfile*              fHTiming;
 private:
   /**
    * A pointer to the corrections manager.  This is here to make the

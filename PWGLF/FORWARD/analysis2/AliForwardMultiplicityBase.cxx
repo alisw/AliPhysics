@@ -30,6 +30,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TAxis.h>
+#include <TProfile.h>
 #include <THStack.h>
 #include <iostream>
 #include <iomanip>
@@ -45,7 +46,9 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fHistos(),
     fAODFMD(false),
     fAODEP(false),
-  fRingSums(),
+    fRingSums(),
+    fDoTiming(false),
+    fHTiming(0),
     fCorrManager(0)
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
@@ -75,6 +78,8 @@ AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
   fRingSums          = o.fRingSums;
   fList              = o.fList;
   fStorePerRing      = o.fStorePerRing;
+  fDoTiming          = o.fDoTiming;
+  fHTiming           = o.fHTiming;
   return *this;
 }
 
@@ -146,6 +151,35 @@ AliForwardMultiplicityBase::UserCreateOutputObjects()
   GetHistCollector()	.CreateOutputObjects(fList);
   GetEventPlaneFinder()	.CreateOutputObjects(fList);
 
+  if (fDebug > 1) fDoTiming = true;
+  if (fDoTiming) { 
+    fHTiming = new TProfile("timing", "Timing of task", 
+			    kTimingTotal, 0.5, kTimingTotal+.5);
+    fHTiming->SetDirectory(0);
+    fHTiming->SetFillColor(kRed+1);
+    fHTiming->SetFillStyle(3001);
+    fHTiming->SetMarkerStyle(20);
+    fHTiming->SetMarkerColor(kBlack);
+    fHTiming->SetLineColor(kBlack);
+    fHTiming->SetXTitle("Part");
+    fHTiming->SetYTitle("#LTt_{part}#GT [CPU]");
+    fHTiming->SetStats(0);
+    TAxis* xaxis = fHTiming->GetXaxis();
+    xaxis->SetBinLabel(kTimingEventInspector,	
+		       GetEventInspector()   .GetName());
+    xaxis->SetBinLabel(kTimingSharingFilter,	
+		       GetSharingFilter()    .GetName());
+    xaxis->SetBinLabel(kTimingDensityCalculator,	
+		       GetDensityCalculator().GetName());
+    xaxis->SetBinLabel(kTimingCorrections,	
+		       GetCorrections()      .GetName());
+    xaxis->SetBinLabel(kTimingHistCollector,	
+		       GetHistCollector()    .GetName());
+    xaxis->SetBinLabel(kTimingEventPlaneFinder,	
+		       GetEventPlaneFinder() .GetName());
+    xaxis->SetBinLabel(kTimingTotal, "Total");
+    fList->Add(fHTiming);
+  }
   PostData(1, fList);
 }
 //____________________________________________________________________
@@ -461,6 +495,15 @@ AliForwardMultiplicityBase::Terminate(Option_t*)
   GetDensityCalculator().Terminate(list,output,Int_t(nTrVtx));
   GetCorrections()	.Terminate(list,output,Int_t(nTrVtx));
 
+  TProfile* timing = static_cast<TProfile*>(list->FindObject("timing"));
+  if (timing) { 
+    TProfile* p = static_cast<TProfile*>(timing->Clone());
+    p->SetDirectory(0);
+    p->Scale(100. / p->GetBinContent(p->GetNbinsX()));
+    p->SetYTitle("#LTt_{part}#GT/#LTt_{total}#GT [%]");
+    p->SetTitle("Relative timing of task");
+    output->Add(p);
+  }
   PostData(2, output);
 }
 
@@ -690,7 +733,9 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
 	    << "  Off-line trigger mask:  0x" 
 	    << std::hex     << std::setfill('0') 
 	    << std::setw (8) << fOfflineTriggerMask 
-	    << std::dec     << std::setfill (' ') << std::endl;
+	    << std::dec     << std::setfill (' ') << "\n"
+	    << "  Make timing histogram:  " << std::boolalpha 
+	    << fDoTiming << std::noboolalpha << std::endl;
   gROOT->IncreaseDirLevel();
   if (fCorrManager) fCorrManager->Print(option);
   else  

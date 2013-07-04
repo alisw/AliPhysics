@@ -544,9 +544,17 @@ AliBasedNdetaTask::UserExec(Option_t *)
     fSums->Add(fSchemeString);
     fSums->Add(fTriggerString);
 
-    // Print();
+    // Show stuff on first event
+    Print();
   }
   PostData(1, fSums);
+}
+
+//________________________________________________________________________
+void AliBasedNdetaTask::CheckEventData(Double_t,
+				       TH2*,
+				       TH2*) 
+{
 }
 
 //________________________________________________________________________
@@ -1072,9 +1080,7 @@ AliBasedNdetaTask::Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges)
 					       h->GetName(), rebin)));
   tmp->Rebin(rebin);
   // Hist should be reset, as it otherwise messes with the cutEdges option
-  AliWarningGeneral("AliBasedNdetaTask::Rebin",
-		    "Temporary histogram not reset - check!");
-  // tmp->Reset(); 
+  tmp->Reset(); 
   tmp->SetDirectory(0);
 
   // The new number of bins 
