@@ -32,9 +32,9 @@ AliTPCCorrectionLookupTable::AliTPCCorrectionLookupTable()
 , fNR(90)
 , fNPhi(144)
 , fNZ(130)
-, fLimitsRows()
-, fLimitsPhiSlices()
-, fLimitsColumns()
+, fLimitsR()
+, fLimitsPhi()
+, fLimitsZ()
 , fLookUpDxDist(0x0)
 , fLookUpDyDist(0x0)
 , fLookUpDzDist(0x0)
@@ -112,21 +112,21 @@ void AliTPCCorrectionLookupTable::GetInterpolation(const Float_t x[],const Short
   // Get the Er and Ephi field integrals plus the integral over Z
     dx[0] = Interpolate3DTable(order, r, z, phi,
                                fNR, fNZ, fNPhi,
-                               fLimitsRows.GetMatrixArray(),
-                               fLimitsColumns.GetMatrixArray(),
-                               fLimitsPhiSlices.GetMatrixArray(),
+                               fLimitsR.GetMatrixArray(),
+                               fLimitsZ.GetMatrixArray(),
+                               fLimitsPhi.GetMatrixArray(),
                                mDx  );
     dx[1] = Interpolate3DTable(order, r, z, phi,
                                fNR, fNZ, fNPhi,
-                               fLimitsRows.GetMatrixArray(),
-                               fLimitsColumns.GetMatrixArray(),
-                               fLimitsPhiSlices.GetMatrixArray(),
+                               fLimitsR.GetMatrixArray(),
+                               fLimitsZ.GetMatrixArray(),
+                               fLimitsPhi.GetMatrixArray(),
                                mDy);
     dx[2] = Interpolate3DTable(order, r, z, phi,
                                fNR, fNZ, fNPhi,
-                               fLimitsRows.GetMatrixArray(),
-                               fLimitsColumns.GetMatrixArray(),
-                               fLimitsPhiSlices.GetMatrixArray(),
+                               fLimitsR.GetMatrixArray(),
+                               fLimitsZ.GetMatrixArray(),
+                               fLimitsPhi.GetMatrixArray(),
                                mDz   );
 }
 
@@ -149,7 +149,7 @@ void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, F
   Float_t dx[3]={0.,0.,0.};
   
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
-    Double_t phi=fLimitsPhiSlices(iPhi);
+    Double_t phi=fLimitsPhi(iPhi);
     //
     TMatrixF &mDxDist   = *fLookUpDxDist[iPhi];
     TMatrixF &mDyDist   = *fLookUpDyDist[iPhi];
@@ -160,24 +160,30 @@ void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, F
     TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
     
     for (Int_t ir=0; ir<fNR; ++ir){
-      Double_t r=fLimitsRows(ir);
+      Double_t r=fLimitsR(ir);
       x[0]=r * TMath::Cos(phi);
       x[1]=r * TMath::Sin(phi);
       
       for (Int_t iz=0; iz<fNZ; ++iz){
-        Double_t z=fLimitsColumns(iz);
+        Double_t z=fLimitsZ(iz);
         x[2]=z;
         //TODO: change hardcoded value for r>133.?
         Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
         if (r>133.) roc+=36;
         if (z<0)    roc+=18;
 
-        tpcCorr.GetDistortionIntegralDz(x,roc,dx,delta);
+        if (delta>0)
+          tpcCorr.GetDistortionIntegralDz(x,roc,dx,delta);
+        else
+          tpcCorr.GetDistortion(x,roc,dx);
         mDxDist(ir,iz)=dx[0];
         mDyDist(ir,iz)=dx[1];
         mDzDist(ir,iz)=dx[2];
-        
-        tpcCorr.GetCorrectionIntegralDz(x,roc,dx,delta);
+
+        if (delta>0)
+          tpcCorr.GetCorrectionIntegralDz(x,roc,dx,delta);
+        else
+          tpcCorr.GetCorrection(x,roc,dx);
         mDxCorr(ir,iz)=dx[0];
         mDyCorr(ir,iz)=dx[1];
         mDzCorr(ir,iz)=dx[2];
@@ -252,9 +258,9 @@ void AliTPCCorrectionLookupTable::ResetTables()
   fLookUpDyDist = 0x0;
   fLookUpDzDist    = 0x0;
 
-  fLimitsRows.ResizeTo(1);
-  fLimitsPhiSlices.ResizeTo(1);
-  fLimitsColumns.ResizeTo(1);
+  fLimitsR.ResizeTo(1);
+  fLimitsPhi.ResizeTo(1);
+  fLimitsZ.ResizeTo(1);
 }
 
 //_________________________________________________________________________________________
@@ -264,54 +270,13 @@ void AliTPCCorrectionLookupTable::SetupDefaultLimits()
   // Set default limits for tables
   //
 
-  fLimitsRows.ResizeTo(fNR);
-  fLimitsPhiSlices.ResizeTo(fNPhi);
-  fLimitsColumns.ResizeTo(fNZ);
-
-  Double_t *limRList   = fLimitsRows.GetMatrixArray();
-  Double_t *limPhiList = fLimitsPhiSlices.GetMatrixArray();
-  Double_t *limZList   = fLimitsColumns.GetMatrixArray();
-  
-  AliTPCROC * roc = AliTPCROC::Instance();
-  const Double_t rLow =  TMath::Floor(roc->GetPadRowRadii(0,0))-1; // first padRow plus some margin
-  
-  // fulcrums in R
-  limRList[0] = rLow;
-  for (Int_t i = 1; i<fNR; i++) {
-    limRList[i] = limRList[i-1] + 3.5;     // 3.5 cm spacing
-    if (limRList[i]<90 ||limRList[i]>245){
-      limRList[i] = limRList[i-1] + 0.5; // 0.5 cm spacing
-    } else if (limRList[i]<100 || limRList[i]>235){
-      limRList[i] = limRList[i-1] + 1.5;  // 1.5 cm spacing
-    } else if (limRList[i]<120 || limRList[i]>225){
-      limRList[i] = limRList[i-1] + 2.5;  // 2.5 cm spacing
-    }
-  }
-
-  // fulcrums in Z
-  limZList[0] = -249.5;
-  limZList[fNZ-1] = 249.5;
-  for (Int_t j = 1; j<fNZ/2; j++) {
-    limZList[j] = limZList[j-1];
-    if      (TMath::Abs(limZList[j])< 0.15){
-      limZList[j] = limZList[j-1] + 0.09; // 0.09 cm spacing
-    } else if(TMath::Abs(limZList[j])< 0.6){
-      limZList[j] = limZList[j-1] + 0.4; // 0.4 cm spacing
-    } else if      (TMath::Abs(limZList[j])< 2.5 || TMath::Abs(limZList[j])>248){
-      limZList[j] = limZList[j-1] + 0.5; // 0.5 cm spacing
-    } else if (TMath::Abs(limZList[j])<10 || TMath::Abs(limZList[j])>235){
-      limZList[j] = limZList[j-1] + 1.5;  // 1.5 cm spacing
-    } else if (TMath::Abs(limZList[j])<25 || TMath::Abs(limZList[j])>225){
-      limZList[j] = limZList[j-1] + 2.5;  // 2.5 cm spacing
-    } else{
-      limZList[j] = limZList[j-1] + 4;  // 4 cm spacing
-    }
-
-    limZList[fNZ-j-1] = -limZList[j];
-  }
-  
-  // fulcrums in phi
-  for (Int_t k = 0; k<fNPhi; k++)
-    limPhiList[k] = TMath::TwoPi()*k/(fNPhi-1);
-  
+  fNR   = kNR;
+  fNPhi = kNPhi;
+  fNZ   = kNZ;
+  fLimitsR.  ResizeTo(fNR);
+  fLimitsPhi.ResizeTo(fNPhi);
+  fLimitsZ.  ResizeTo(fNZ);
+  fLimitsR.  SetElements(fgkRList);
+  fLimitsPhi.SetElements(fgkPhiList);
+  fLimitsZ.  SetElements(fgkZList);
 }

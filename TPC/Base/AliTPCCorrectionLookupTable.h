@@ -25,13 +25,14 @@ public:
 private:
 
   // sizes of lookup tables
+  // TODO: Remove, since it will be stored in the TVectorD anyhow?
   Int_t     fNR;                   // number of rows (r) used for lookup table
   Int_t     fNPhi;                 // number of phi slices used for lookup table
   Int_t     fNZ;                   // number of columns (z) used for lookup table
   //
-  TVectorD  fLimitsRows;           // bin limits in row direction
-  TVectorD  fLimitsPhiSlices;      // bin limits in phi direction
-  TVectorD  fLimitsColumns;        // bin limits in z direction
+  TVectorD  fLimitsR;              // bin limits in row direction
+  TVectorD  fLimitsPhi;            // bin limits in phi direction
+  TVectorD  fLimitsZ;              // bin limits in z direction
   // for distortion
   TMatrixF **fLookUpDxDist;        //[fNPhi] Array to store electric field integral (int Er/Ez)
   TMatrixF **fLookUpDyDist;        //[fNPhi] Array to store electric field integral (int Er/Ez)
