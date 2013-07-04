@@ -1,0 +1,151 @@
+Double_t fitf(Double_t *x, Double_t *par) {
+  //5 parameters, 0: transition from f0 to f2, 1: pol0, 2-4: pol2
+  Double_t trans = par[0];
+
+  TF1 *f0 = new TF1("f0","pol0",0,trans);
+  TF1 *f2 = new TF1("f2","pol2",trans,100);
+
+  Double_t fitval = 0.;
+  if(x[0]<par[0]) 
+    fitval = par[1];
+  else
+    fitval = par[2]+x[0]*par[3]+x[0]*x[0]*par[4];
+
+  return fitval;
+
+}
+
+AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName         = "PicoTracks", 
+						   TString     kClusName           = "caloClusterCorr",
+						   Double_t    R                   = 0.4, 
+						   Double_t    ptminTrack          = 0.15, 
+						   Double_t    etminClus           = 0.3, 
+						   Int_t       rhoType             = 0,
+						   TString     trigClass           = "",
+						   const char *CentEst             = "V0A",
+						   Int_t       pSel                = AliVEvent::kINT7,
+						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching
+						   ) {
+  
+  enum AlgoType {kKT, kANTIKT};
+  enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
+
+  // #### Define manager and data container names
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskEmcalDiJet", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler())
+    {
+      ::Error("AddTaskEmcalDiJet", "This task requires an input event handler");
+      return NULL;
+    }
+
+  // #### Add necessary jet finder tasks
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+
+  AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
+  AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+
+  TString strJetsFull = jetFinderTaskFull->GetName();
+  TString strJetsCh   = jetFinderTaskCharged->GetName();
+
+  // Add kt jet finder and rho task in case we want background subtraction
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+  AliEmcalJetTask *jetFinderKt;
+  AliEmcalJetTask *jetFinderAKt;
+  AliAnalysisTaskRhoSparse *rhoTask;
+  if(rhoType==1) {
+    jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+    jetFinderKt->SetMinJetPt(0.);
+    jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+    
+    TF1 *fScale = new TF1("fScale","1.42",0.,100.);
+    /*
+    TF1 *fScale = new TF1("fit",fitf,0,100,5);
+    fScale->SetParameters(60.,1.41363e+00,7.95329e-01,1.95281e-02,-1.55196e-04);
+    */
+    rhoTask = AddTaskRhoSparse(
+			       jetFinderKt->GetName(),
+			       jetFinderAKt->GetName(),
+			       kTracksName,
+			       kClusName,
+			       Form("RhoSparseR%03d",(int)(100*R)),
+			       R,
+			       AliAnalysisTaskEmcal::kTPC,
+			       0.01,
+			       0.15,
+			       0,
+			       fScale,
+			       0,
+			       kTRUE,
+			       Form("RhoSparseR%03d",(int)(100*R)),
+			       kTRUE
+			       );
+    rhoTask->SetCentralityEstimator(CentEst);
+ 
+  }
+
+  TString wagonName = Form("DiJet_%s_%s_Rho%dTC%sMatch%d",strJetsFull.Data(),strJetsCh.Data(),rhoType,trigClass.Data(),matchFullCh);
+
+  //Configure DiJet task
+  AliAnalysisTaskEmcalDiJetAna *taskDiJet = NULL;
+  taskDiJet = new AliAnalysisTaskEmcalDiJetAna(wagonName.Data());
+ 
+  Printf("strJetsFull: %s",strJetsFull.Data());
+  Printf("strJetsCh: %s",strJetsCh.Data());
+
+  taskDiJet->AddParticleContainer(kTracksName.Data());
+  taskDiJet->AddClusterContainer(kClusName.Data());
+   
+  taskDiJet->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
+
+  taskDiJet->SetContainerFull(0);
+  taskDiJet->SetContainerCharged(1);
+  taskDiJet->AddJetContainer(strJetsFull.Data(),"EMCAL",R);
+  taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
+
+  for(Int_t i=0; i<2; i++) {
+    taskDiJet->SetPercAreaCut(0.557, 0);
+    taskDiJet->SetPercAreaCut(0.557, 1);
+  }
+
+  taskDiJet->SetRhoType(rhoType);
+  if(rhoType==1) {
+    taskDiJet->SetRhoName(rhoTask->GetRhoScaledName(),0);
+    taskDiJet->SetRhoName(rhoTask->GetRhoName(),1);
+  }
+
+  taskDiJet->SetCentralityEstimator(CentEst);
+
+  taskDiJet->SelectCollisionCandidates(pSel);
+
+  taskDiJet->SetFullChargedMatchingType(matchFullCh);
+
+  taskDiJet->SetDoChargedCharged(kTRUE);
+  taskDiJet->SetDoFullCharged(kTRUE);
+  taskDiJet->SetMatchFullCharged(kTRUE);
+
+
+  mgr->AddTask(taskDiJet);
+
+  //Connnect input
+  mgr->ConnectInput (taskDiJet, 0, mgr->GetCommonInputContainer() );
+
+  //Connect output
+  AliAnalysisDataContainer *coutput1 = 0x0;
+
+  TString containerName1 = Form("%s",wagonName.Data());
+
+  TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
+
+  coutput1 = mgr->CreateContainer(containerName1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+
+  mgr->ConnectOutput(taskDiJet,1,coutput1);
+  
+  return taskDiJet;
+}

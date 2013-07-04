@@ -1,0 +1,107 @@
+AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracksName         = "PicoTracks", 
+							     TString     kClusName           = "caloClusterCorr",
+							     TString     kMCTracksName       = "MCParticles",
+							     Double_t    R                   = 0.4, 
+							     Double_t    ptminTrack          = 0.15, 
+							     Double_t    etminClus           = 0.3, 
+							     Int_t       rhoType             = 0,
+							     TString     trigClass           = "",
+							     const char *CentEst             = "V0A",
+							     Int_t       pSel                = AliVEvent::kINT7,
+							     Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching
+							     ) {
+  
+  enum AlgoType {kKT, kANTIKT};
+  enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
+
+  // #### Define manager and data container names
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskEmcalDiJet", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler())
+    {
+      ::Error("AddTaskEmcalDiJet", "This task requires an input event handler");
+      return NULL;
+    }
+
+  // #### Add necessary jet finder tasks
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+
+  AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
+  AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+
+  AliEmcalJetTask* jetFinderTaskFullMC = AddTaskEmcalJet(kMCTracksName ,"", kANTIKT, R, kFULLJETS, kPartLevPtCut, kPartLevPtCut);
+  AliEmcalJetTask* jetFinderTaskChargedMC = AddTaskEmcalJet(kMCTracksName ,"", kANTIKT, R, kCHARGEDJETS, kPartLevPtCut, kPartLevPtCut);
+  
+
+  TString strJetsFull = jetFinderTaskFull->GetName();
+  TString strJetsCh   = jetFinderTaskCharged->GetName();
+
+  TString strJetsFullMC = jetFinderTaskFullMC->GetName();
+  TString strJetsChMC   = jetFinderTaskChargedMC->GetName();
+
+
+  TString wagonName = Form("DiJetResponse_%s_%s_Rho%dTC%sMatch%d",strJetsFull.Data(),strJetsFullMC.Data(),rhoType,trigClass.Data(),matchFullCh);
+
+  //Configure DiJet task
+  AliAnalysisTaskEmcalDiJetResponse *taskDiJet = NULL;
+  taskDiJet = new AliAnalysisTaskEmcalDiJetResponse(wagonName.Data());
+ 
+  Printf("strJetsFull: %s",strJetsFull.Data());
+  Printf("strJetsCh: %s",strJetsCh.Data());
+
+  taskDiJet->SetContainerFull(0);
+  taskDiJet->SetContainerCharged(1);
+  taskDiJet->SetContainerFullMC(2);
+  taskDiJet->SetContainerChargedMC(3);
+
+  taskDiJet->AddParticleContainer(kTracksName.Data());
+  taskDiJet->AddClusterContainer(kClusName.Data());
+   
+  taskDiJet->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
+  taskDiJet->AddJetContainer(strJetsFull.Data(),"EMCAL",R);
+  taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
+  taskDiJet->AddJetContainer(strJetsFullMC.Data(),"EMCAL",R);
+  taskDiJet->AddJetContainer(strJetsChMC.Data(),"TPC",R);
+
+  for(Int_t i=0; i<4; i++)
+    taskDiJet->SetPercAreaCut(0.557, 0);
+
+  taskDiJet->SetRhoType(rhoType);
+
+  taskDiJet->SetCentralityEstimator(CentEst);
+
+  taskDiJet->SelectCollisionCandidates(pSel);
+
+  taskDiJet->SetFullChargedMatchingType(matchFullCh);
+
+  taskDiJet->SetDoChargedCharged(kTRUE);
+  taskDiJet->SetDoFullCharged(kTRUE);
+  taskDiJet->SetMatchFullCharged(kTRUE);
+
+  taskDiJet->SetIsPythiaPtHard(kTRUE);
+
+
+  mgr->AddTask(taskDiJet);
+
+  //Connnect input
+  mgr->ConnectInput (taskDiJet, 0, mgr->GetCommonInputContainer() );
+
+  //Connect output
+  AliAnalysisDataContainer *coutput1 = 0x0;
+
+  TString containerName1 = Form("%s",wagonName.Data());
+
+  TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
+
+  coutput1 = mgr->CreateContainer(containerName1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+
+  mgr->ConnectOutput(taskDiJet,1,coutput1);
+  
+  return taskDiJet;
+}
