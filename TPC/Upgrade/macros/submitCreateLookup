@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#arguments:
+#1: map file for space charge
+#2: output directory for lookup tables
+#3: number of phi bins
+
+mapFile=$1
+outDir=$2
+phiBins=$3
+
+LOG_DIR=/hera/alice/wiechula/logs/lookup
+
+script=$(readlink -f $0)
+SCRIPTDIR=$(dirname $script)
+
+mapName=$(basename $mapFile .root)
+jobName=createLookup.$mapName
+
+outFiles=$outDir/${mapName}.[0-9][0-9][0-9].root
+outFileMerge=$outDir/${mapName}.lookup.root
+
+ARRAY=1-$phiBins
+
+qsub -wd /tmp -N $jobName -e $LOG_DIR -o $LOG_DIR -t $ARRAY $SCRIPTDIR/createLookup $mapFile $outDir
+
+qsub -wd /tmp -hold_jid $jobName -N merge.$jobName -e $LOG_DIR -o $LOG_DIR $SCRIPTDIR/mergeLookup "$outFiles" "$outFileMerge"
