@@ -234,7 +234,9 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   }
 
  
-  const Double_t scalecalc         = ((Et + ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
+  Double_t scalecalc         = -1;
+  if (ptEMCAL > 0 && Et > 0 && ptTPC > 0)
+    scalecalc         =  ((Et + ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
   const Double_t scale             = GetScaleFactor(fCent);
   Double_t scalecalcemcal          = -1;
   if (ptEMCAL > 0)
