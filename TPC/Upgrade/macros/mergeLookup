@@ -6,7 +6,7 @@
 
 filesToMerge=$1
 outFile=$2
-mod=$2
+mod=$3
 
 module use /cvmfs/alice.gsi.de/modules
 module purge
