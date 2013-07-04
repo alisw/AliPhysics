@@ -33,7 +33,7 @@ class AliJetContainer : public AliEmcalContainer {
   enum JetAcceptanceType {
     kTPC       = 0,     // TPC acceptance
     kEMCAL     = 1,     // EMCal acceptance
-    kUser      = 2,     // User defined acceptance
+    kUser      = 2      // User defined acceptance
   };
 
 
@@ -83,6 +83,10 @@ class AliJetContainer : public AliEmcalContainer {
   const TString&              GetRhoName()                          const    {return fRhoName;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
   Float_t                     GetJetRadius()                        const    {return fJetRadius;}
+  Float_t                     GetJetEtaMin()                        const    {return fJetMinEta;}
+  Float_t                     GetJetEtaMax()                        const    {return fJetMaxEta;}
+  Float_t                     GetJetPhiMin()                        const    {return fJetMinPhi;}
+  Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
 
  protected:
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
