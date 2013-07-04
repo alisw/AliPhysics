@@ -1,4 +1,4 @@
-// $Id: AddTaskEmcalJetSampleDev.C 60393 2013-01-20 10:05:07Z loizides $
+// $Id$
 
 AliAnalysisTaskEmcalJetSampleDev* AddTaskEmcalJetSampleDev(
   const char *ntracks            = "Tracks",
