@@ -598,7 +598,11 @@ Bool_t AliAnalysisTaskEmcalDev::RetrieveEventObjects()
       }
       else {
 	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
-	fCentBin = TMath::Nint(fCent/centWidth);
+	fCentBin = TMath::FloorNint(fCent/centWidth);
+	if(fCentBin>=fNcentBins) {
+	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
+	  fCentBin = fNcentBins-1;
+	}
 	if(fCentBin>=fNcentBins) {
 	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
 	  fCentBin = fNcentBins-1;

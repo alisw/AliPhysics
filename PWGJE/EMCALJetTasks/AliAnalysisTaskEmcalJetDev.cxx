@@ -475,6 +475,22 @@ TClonesArray* AliAnalysisTaskEmcalJetDev::GetJetArray(Int_t i) const {
 }
 
 //________________________________________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalJetDev::GetJetFromArray(Int_t j, Int_t c) const {
+  // Get jet j if accepted from  container c
+  // If jet not accepted return 0
+
+  AliJetContainer *cont = GetJetContainer(c);
+  if(!cont) {
+    AliError(Form("%s:Container %d not found",GetName(),c));
+    return 0;
+  }
+  AliEmcalJet *jet = cont->GetJet(j);
+
+  return jet;
+  
+}
+
+//________________________________________________________________________
 AliEmcalJet* AliAnalysisTaskEmcalJetDev::GetAcceptJetFromArray(Int_t j, Int_t c) const {
   // Get jet j if accepted from  container c
   // If jet not accepted return 0

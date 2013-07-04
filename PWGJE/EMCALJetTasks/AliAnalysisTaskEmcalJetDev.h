@@ -44,6 +44,7 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
 
   AliJetContainer            *GetJetContainer(Int_t i)                const;
   TClonesArray               *GetJetArray(Int_t i)                    const;
+  AliEmcalJet                *GetJetFromArray(Int_t j, Int_t c)       const;
   AliEmcalJet                *GetAcceptJetFromArray(Int_t j, Int_t c) const;
   Int_t                       GetNJets(Int_t i)                       const;
   Double_t                    GetRhoVal(Int_t i)                      const;
