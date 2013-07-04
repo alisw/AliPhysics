@@ -42,12 +42,12 @@ class AliSelectNonHFE;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
-
-  public:
+    
+public:
     AliAnalysisTaskFlowTPCEMCalQCSP();
     AliAnalysisTaskFlowTPCEMCalQCSP(const char *name);
     virtual ~AliAnalysisTaskFlowTPCEMCalQCSP();
-
+    
     void                                 SetEnableDebugMode() {fDebug = kTRUE; };
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
@@ -72,95 +72,94 @@ class AliAnalysisTaskFlowTPCEMCalQCSP : public AliAnalysisTaskSE {
     void                                 SetIDCuts(Double_t minTPC, Double_t maxTPC, Double_t minEovP, Double_t maxEovP, Double_t minM20, Double_t maxM20, Double_t minM02, Double_t maxM02, Double_t Dispersion);
     void                                 SetOpeningAngleflag(Bool_t opang){fOP_angle = opang;};
     void                                 SetOpeningAngleCut(Double_t opanglecut) {fOpeningAngleCut = opanglecut;};
-
-
-
-
+    
+    
+    
+    
     AliHFEpid *GetPID() const { return fPID; };
-
-  private:
-
+    
+private:
+    
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
-
+    
     Bool_t               fDebug; //! enable debug mode
-    AliAODEvent 	     *fAOD;			//AOD object
-    AliEMCALGeometry     *fGeom; 		// emcal geometry
-    TList       	   	 *fOutputList;		//output list
-    AliHFEcuts   		 *fCuts;                 //Cut Collection
-    Bool_t 			     fIdentifiedAsOutInz;    //Out Of Range in z
-    Bool_t 	   	   	     fPassTheEventCut;       //Pass The Event Cut
-    AliCFManager 	   	 *fCFM;                  //!Correction Framework Manager
-    AliHFEpid 		     *fPID;                  //PID
-    AliHFEpidQAmanager   *fPIDqa;		//! PID QA manager
+    AliAODEvent          *fAOD;                     //AOD object
+    AliEMCALGeometry     *fGeom;                // emcal geometry
+    TList                *fOutputList;          //output list
+    AliHFEcuts           *fCuts;                 //Cut Collection
+    Bool_t               fIdentifiedAsOutInz;    //Out Of Range in z
+    Bool_t               fPassTheEventCut;       //Pass The Event Cut
+    AliCFManager         *fCFM;                  //!Correction Framework Manager
+    AliHFEpid            *fPID;                  //PID
+    AliHFEpidQAmanager   *fPIDqa;               //! PID QA manager
     AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
     AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
-    AliFlowEvent         *fFlowEvent; //! flow events Inclusive e 
+    AliFlowEvent         *fFlowEvent; //! flow events Inclusive e
     const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)
     Double_t             fCentrality; // event centrality for QA
     Double_t             fCentralityMin; // lower bound of cenrality bin
     Double_t             fCentralityMax; // upper bound of centrality bin
-    Double_t	         fInvmassCut;		//invariant mass cut value
+    Double_t             fInvmassCut;           //invariant mass cut value
     Double_t             fpTCut;    //pt cut value
-    Int_t	             fTrigger;		//invariant mass cut value
+    Int_t                fTrigger;          //invariant mass cut value
     TH1F                 *fPhi; //! QA plot of azimuthal distribution of tracks used for event plane estimation
     TH1F                 *fEta; //! QA plot of eta distribution of tracks used for event plane estimation
     TH1F                 *fVZEROA; //! QA plot vzeroa multiplicity (all tracks in event)
     TH1F                 *fVZEROC; //! QA plot vzeroc multiplicity (all tracks in event)
     TH1F                 *fTPCM; //! QA plot TPC multiplicity (tracks used for event plane estimation)
-    TH1F		         *fNoEvents;		//no of events
-    TH2F		         *fTrkEovPBef;		//track E/p before HFE pid
- //   TH2F			     *fdEdxBef;		//track dEdx vs p before HFE pid
+    TH1F                 *fNoEvents;            //no of events
+    TH2F                 *fTrkEovPBef;          //track E/p before HFE pid
+    //   TH2F                           *fdEdxBef;         //track dEdx vs p before HFE pid
     TH1F                 *fInclusiveElecPt; // Inclusive elec pt
-    TH2F			     *fTPCnsigma;		//TPC n sigma vs p
-    TH2F		         *fTPCnsigmaAft;		//TPC n sigma vs p after HFE pid
+    TH2F                 *fTPCnsigma;               //TPC n sigma vs p
+    TH2F                 *fTPCnsigmaAft;                //TPC n sigma vs p after HFE pid
     TH1F                 *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F                 *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
     TH1F                 *fInvmassLS1; //LS Invmass for all rec par
     TH1F                 *fInvmassULS1;//ULS Invmass for all rec par
-    TH1F			     *fPhotoElecPt;		//photonic elec pt
-    TH1F			     *fSemiInclElecPt;	//Semi inclusive ele pt
+    TH1F                 *fPhotoElecPt;             //photonic elec pt
+    TH1F                 *fSemiInclElecPt;  //Semi inclusive ele pt
     TH1F                 *fULSElecPt; //ULS elec Pt
     TH1F                 *fLSElecPt;// LS elec pt
-    Double_t              fminTPC;  //ID cuts tpc
-    Double_t              fmaxTPC;  //ID cuts tpc
-    Double_t              fminEovP;  //ID cuts eovp
-    Double_t              fmaxEovP;//ID cuts eovp
-    Double_t              fminM20;//ID cuts SS
-    Double_t              fmaxM20;//ID cuts SS
-    Double_t              fminM02;//ID cuts SS
-    Double_t              fmaxM02;//ID cuts SS
-    Double_t              fDispersion;//ID cuts SS
+    Double_t             fminTPC;  //ID cuts tpc
+    Double_t             fmaxTPC;  //ID cuts tpc
+    Double_t             fminEovP;  //ID cuts eovp
+    Double_t             fmaxEovP;//ID cuts eovp
+    Double_t             fminM20;//ID cuts SS
+    Double_t             fmaxM20;//ID cuts SS
+    Double_t             fminM02;//ID cuts SS
+    Double_t             fmaxM02;//ID cuts SS
+    Double_t             fDispersion;//ID cuts SS
     TH2F                 *fMultCorAfterCuts; //! QA profile global and tpc multiplicity after outlier cut
     TH2F                 *fMultvsCentr; //! QA profile of centralty vs multiplicity
-	TProfile			 *fSubEventDPhiv2;
-	TH1D 		         *EPVzA;//v0aep
-	TH1D 		         *EPVzC;//v0cep
-	TH1D 		         *EPTPC;//tpcep
+    TProfile             *fSubEventDPhiv2;
+    TH1D                 *EPVzA;//v0aep
+    TH1D                 *EPVzC;//v0cep
+    TH1D                 *EPTPC;//tpcep
     THnSparseF           *fV2Phi;//! v2 analysis of EP-V0
     THnSparseD           *fSparseElectronHadron;//! Trk matching sparse for v1 clusterizer
     TH1D                 *fvertex;//huge ThNsparse
     TH2F                 *fMultCorBeforeCuts; //! QA profile global and tpc multiplicity after outlier cut
-    Bool_t                fSideBandsFlow;//flow from side bands for contamination
-    Bool_t                fPhiminusPsi;//flow from phi minus psi method
+    Bool_t               fSideBandsFlow;//flow from side bands for contamination
+    Bool_t               fPhiminusPsi;//flow from phi minus psi method
     AliFlowEvent         *fFlowEventCont; //! flow events for elect Contamination
-    Bool_t                fpurity; //for purity evaluation
+    Bool_t               fpurity; //for purity evaluation
     THnSparseD           *fSparseElectronpurity;//! Trk matching sparse for v1 clusterizer
-    TH1F			     *fOpeningAngleLS;	//opening angle for LS pairs
-    TH1F			     *fOpeningAngleULS;	//opening angle for ULS pairs
+    TH1F                 *fOpeningAngleLS;  //opening angle for LS pairs
+    TH1F                 *fOpeningAngleULS; //opening angle for ULS pairs
     AliSelectNonHFE      *fNonHFE;//new elienos stuff
-    Bool_t                fDCA;//selection PHelectron
-    Double_t 		      fOpeningAngleCut;	//openingAngle cut value
-    Bool_t                fOP_angle; //to shitch on and off the op_angle cut
-    Int_t                 fAssoTPCCluster;//asso tpc cluster
-    Bool_t                fAssoITSRefit;//asso its refit
-
+    Bool_t               fDCA;//selection PHelectron
+    Double_t             fOpeningAngleCut; //openingAngle cut value
+    Bool_t               fOP_angle; //to shitch on and off the op_angle cut
+    Int_t                fAssoTPCCluster;//asso tpc cluster
+    Bool_t               fAssoITSRefit;//asso its refit
+    
     
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
-
+    
     ClassDef(AliAnalysisTaskFlowTPCEMCalQCSP, 2); //!example of analysis
 };
 
 #endif
-
 
