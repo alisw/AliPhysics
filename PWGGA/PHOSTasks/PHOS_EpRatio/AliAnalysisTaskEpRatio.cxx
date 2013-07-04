@@ -459,3 +459,21 @@ void AliAnalysisTaskEpRatio::SetGeometry()
   } 
   
 }
+
+//_____________________________________________________________________________
+void AliAnalysisTaskEpRatio::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
+  //Fills 1D histograms with key
+  TObject * tmp = fOutputContainer->FindObject(key) ;
+  if(!tmp){
+    AliInfo(Form("can not find histogram <%s> ",key)) ;
+    return ;
+  }
+  if(tmp->IsA() == TClass::GetClass("TH2F")){
+    ((TH2F*)tmp)->Fill(x,y,z) ;
+    return ;
+  }
+  if(tmp->IsA() == TClass::GetClass("TH3F")){
+    ((TH3F*)tmp)->Fill(x,y,z) ;
+    return ;
+  }
+}
