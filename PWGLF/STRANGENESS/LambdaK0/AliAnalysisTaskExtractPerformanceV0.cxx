@@ -116,6 +116,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fkSaveAssociatedOnly (kFALSE),
   fkDoNotCallTPCdEdx( kFALSE ),
   fDiffractiveOnly(kFALSE),
+  fEtaRefMult(0.5),
 //------------------------------------------------
 // Tree Variables 
 
@@ -478,6 +479,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
   fkSaveAssociatedOnly (kFALSE),
   fkDoNotCallTPCdEdx( kFALSE ),
   fDiffractiveOnly(kFALSE),
+  fEtaRefMult (0.5),
 //------------------------------------------------
 // Tree Variables 
 
@@ -2146,7 +2148,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
     Int_t lMultiplicitySPD = -100;
   
    //testing purposes
-   if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+   if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,fEtaRefMult);
 
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
    //---> Warning: Experimental

@@ -949,24 +949,24 @@ void AliAnalysisTaskExtractPerformanceV0pPb::UserExec(Option_t *)
       if ( lMCstack->IsPhysicalPrimary(iMc)!=kTRUE ) continue;
 
          if( lPdgcodeCurrentPart == 3122 ){
-            f3dHist_Generated_PtVsYVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
-            f3dHist_Generated_PtVsYCMSVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
+            f3dHist_Analysis_PtVsYVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Analysis_PtVsYCMSVsV0A_Lambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == -3122 ){
-            f3dHist_Generated_PtVsYVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
-            f3dHist_Generated_PtVsYCMSVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
+            f3dHist_Analysis_PtVsYVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Analysis_PtVsYCMSVsV0A_AntiLambda->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == 310 ){
-            f3dHist_Generated_PtVsYVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
-            f3dHist_Generated_PtVsYCMSVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
+            f3dHist_Analysis_PtVsYVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Analysis_PtVsYCMSVsV0A_K0Short->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == 321 ){
-            f3dHist_Generated_PtVsYVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
-            f3dHist_Generated_PtVsYCMSVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
+            f3dHist_Analysis_PtVsYVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Analysis_PtVsYCMSVsV0A_KPlus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
          if( lPdgcodeCurrentPart == -321 ){
-            f3dHist_Generated_PtVsYVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
-            f3dHist_Generated_PtVsYCMSVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
+            f3dHist_Analysis_PtVsYVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+            f3dHist_Analysis_PtVsYCMSVsV0A_KMinus->Fill(lPtCurrentPart, lRapCurrentPart+lpARapidityShift, lMultiplicity);
          }
    }
 

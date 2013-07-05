@@ -82,6 +82,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
   //---------------------------------------------------------------------------------------
   void SetDiffractiveOnly ( Bool_t lDiffractiveOnly = kTRUE ) { fDiffractiveOnly = lDiffractiveOnly; }
+  void SetEtaRefMult ( Double_t lEtaRefMult = 0.5 ) { fEtaRefMult = lEtaRefMult; }
 
   
  private:
@@ -118,6 +119,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
   Bool_t fDiffractiveOnly; //Only look at diffractive generated events
+  Bool_t fEtaRefMult; // Ref Mult eta range 
 
 //===========================================================================================
 //   Variables for Tree, V0s
