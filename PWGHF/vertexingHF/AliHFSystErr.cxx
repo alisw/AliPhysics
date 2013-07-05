@@ -605,7 +605,7 @@ void AliHFSystErr::InitD0toKpi2013pPb0100(){
   fPIDEff->SetBinContent(1,0.0);
   fPIDEff->SetBinContent(2,0.05);
   for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.00);
-  for(Int_t i=12;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
