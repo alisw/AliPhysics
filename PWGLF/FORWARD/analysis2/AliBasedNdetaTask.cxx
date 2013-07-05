@@ -919,21 +919,32 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
   if(energy == 7000) snn.Form("7000");
   if(energy == 2750) snn.Form("2750"); 
   
-  if(fShapeCorr &&  (fTriggerEff != 1)) {
+  // Check if shape correction/trigger efficiency was requsted and not
+  // already set
+  Bool_t needShape = ((fNormalizationScheme & kShape) && !fShapeCorr);
+  Bool_t needEff   = ((fNormalizationScheme & kTriggerEfficiency) && 
+		      ((1 - fTriggerEff) < 1e-6) && fTriggerEff > 0);
+  if (needShape) AliInfo("Will load shape correction");
+  if (needEff)   AliInfoF("Will load trigger efficiency, was=%f, %f",
+			  fTriggerEff, fTriggerEff0);
+  if(!needShape && !needShape) {
     AliInfo("Objects already set for normalization - no action taken"); 
     return; 
   }
-  
-  TFile* fin = TFile::Open(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/"
-				"Normalization/normalizationHists_%s_%s.root",
-				type.Data(),snn.Data()));
+
+  TString fname(Form("$ALICE_ROOT/PWGLF/FORWARD/corrections/"
+		     "Normalization/normalizationHists_%s_%s.root",
+		     type.Data(),snn.Data()));
+  AliWarningF("Using old-style corrections from %s", fname.Data());
+  TFile* fin = TFile::Open(fname, "READ");
   if(!fin) {
-    AliWarning(Form("no file for normalization of %d/%d", sys, energy));
+    AliWarningF("no file for normalization of %d/%d (%s)", 
+		sys, energy, fname.Data());
     return;
   }
 
   // Shape correction
-  if ((fNormalizationScheme & kShape) && !fShapeCorr) {
+  if (needShape) {
     TString trigName("All");
     if (fTriggerMask == AliAODForwardMult::kInel || 
 	fTriggerMask == AliAODForwardMult::kNClusterGt0) 
@@ -956,42 +967,44 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
   }
 
   // Trigger efficiency
-  TString effName(Form("%sTriggerEff", 
-		       fTriggerMask == AliAODForwardMult::kInel ? "inel" :
-		       fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
-		       fTriggerMask == AliAODForwardMult::kInelGt0 ?
-		       "inelgt0" : "all"));
-
-  Double_t trigEff = 1; 
-  if (fNormalizationScheme & kTriggerEfficiency) { 
+  if (needEff) { 
+    TString effName(Form("%sTriggerEff", 
+			 fTriggerMask == AliAODForwardMult::kInel ? "inel" :
+			 fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
+			 fTriggerMask == AliAODForwardMult::kInelGt0 ?
+			 "inelgt0" : "all"));
+    Double_t trigEff = 1;
     TObject* eff = fin->Get(effName);
     if (eff) AliForwardUtil::GetParameter(eff, trigEff);
+
+    if (trigEff <= 0) 
+      AliWarningF("Retrieved trigger efficiency %s is %f<=0, ignoring", 
+		  effName.Data(), trigEff);
+    else 
+      SetTriggerEff(trigEff);
+    
+    // Trigger efficiency
+    TString eff0Name(effName);
+    eff0Name.Append("0");
+
+    Double_t trigEff0 = 1; 
+    TObject* eff0 = fin->Get(eff0Name);
+    if (eff0) AliForwardUtil::GetParameter(eff, trigEff0);
+    if (trigEff0 < 0) 
+      AliWarningF("Retrieved trigger efficiency %s is %f<0, ignoring", 
+		  eff0Name.Data(), trigEff0);
+    else 
+      SetTriggerEff0(trigEff0);
   }
-  if (fTriggerEff != 1) SetTriggerEff(trigEff);
-  if (fTriggerEff < 0)  fTriggerEff = 1;
-
-  // Trigger efficiency
-  TString eff0Name(Form("%sTriggerEff0", 
-		       fTriggerMask == AliAODForwardMult::kInel ? "inel" :
-		       fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
-		       fTriggerMask == AliAODForwardMult::kInelGt0 ?
-		       "inelgt0" : "all"));
-
-  Double_t trigEff0 = 1; 
-  if (fNormalizationScheme & kTriggerEfficiency) { 
-    TObject* eff = fin->Get(eff0Name);
-    if (eff) AliForwardUtil::GetParameter(eff, trigEff0);
-  }
-  if (fTriggerEff0 != 1) SetTriggerEff0(trigEff0);
-  if (fTriggerEff0 < 0)  fTriggerEff0 = 1;
-
+  
   // TEMPORARY FIX
   // Rescale the shape correction by the trigger efficiency 
   if (fShapeCorr) {
     AliWarning(Form("Rescaling shape correction by trigger efficiency: "
-		    "1/E_X=1/%f", trigEff));
-    fShapeCorr->Scale(1. / trigEff);
+		    "1/E_X=1/%f", fTriggerEff));
+    fShapeCorr->Scale(1. / fTriggerEff);
   }
+  if (fin) fin->Close();
 
   // Print - out
   if (fShapeCorr && fTriggerEff) AliInfo("Loaded objects for normalization.");
@@ -2165,7 +2178,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // --- Get normalization scaler ------------------------------------
   Double_t epsilonT  = trigEff;
   Double_t epsilonT0 = trigEff0;
-  AliInfoF("Using epsilonT=%f, epsilonT0=%f for %d", 
+  AliInfoF("Using epsilonT=%f, epsilonT0=%f for 0x%x", 
 	   epsilonT, epsilonT0, triggerMask);
 #if 0
   // These hard-coded trigger efficiencies are not used anymore, and

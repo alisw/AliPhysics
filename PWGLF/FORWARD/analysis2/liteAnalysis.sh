@@ -121,9 +121,9 @@ Options:
   -S,--sys=SYSTEM           Collision system ($sys)
   -E,--snn=ENERGY           Center of mass energy per nuclean pair ($snn)
   -F,--field=FIELD          L3 magnetic field ($field)
-  -d,--real-dir=ALIEN_DIR   Directory holding real data ($real_dir)
+  -d,--real-dir=DIR         Directory holding real data ($real_dir)
   -p,--real-pattern=PATTERN Glob pattern to match when searching ($real_pat)
-  -D,--mc-dir=ALIEN_DIR     Directory holding MC data ($mc_dir)
+  -D,--mc-dir=DIR           Directory holding MC data ($mc_dir)
   -P,--mc-pattern=PATTERN   Glob pattern to match when searching ($mc_pat)
   -s,--step=STEP            Run stage ($step)
   -w,--what=TRAINS          What to do 
@@ -206,6 +206,19 @@ index()
     local p=$1 ; shift 
     local m=$1 ; shift 
 
+    t=real
+    if test $m -gt 0 ; then 
+	t=MC
+    fi
+    if test "x$d" = "x" ;then 
+	echo "No input specified for index for $t data" > /dev/stderr 
+	return;
+    fi
+    if test ! -d $d || test ! -f $d ;then 
+	echo "Specified input for $t data is not a directory or file " \
+	    > /dev/stderr 
+	return;
+    fi
     if test $m -gt 0 ; then 
 	n="&mc"
     fi
@@ -352,9 +365,11 @@ EOF
    done
 
    # create index - unless there's one in the input directory - then 
-   # take that and link here 
-   if test -f ${real_dir}/index.root ; then 
-       ln -fs ${real_dir}/index.root ${real_idx} 
+   # take that and copy here 
+   # [We'd like to link only, but ChainBuilder needs to be updated for that] 
+   if test "x$real_dir" != x && test -f ${real_dir}/index.root ; then 
+       rm -f ${real_idx}
+       cp ${real_dir}/index.root ${real_idx} 
    else
        if test ! -f ${real_idx} ; then 
 	   index ${real_idx} ${real_dir} "${real_pat}" 0
@@ -362,9 +377,11 @@ EOF
    fi
 
    # create index - unless there's one in the input directory - then 
-   # take that and link here 
-   if test -f ${mc_dir}/index.root ; then 
-       ln -fs ${mc_dir}/index.root ${mc_idx}
+   # take that and copy here 
+   # [We'd like to link only, but ChainBuilder needs to be updated for that] 
+   if test "x$real_dir" != x && test -f ${mc_dir}/index.root ; then 
+       rm -f ${mc_idx}
+       cp ${mc_dir}/index.root ${mc_idx}
    else
        if test ! -f ${mc_idx} ; then 
 	   index ${mc_idx} ${mc_dir} "${mc_pat}" 0
@@ -421,7 +438,7 @@ check()
     fi
     if test "x$mc_dir" = "x" ; then 
 	echo "No MC data directory specified" > /dev/stderr 
-	exit 1
+	# exit 1
     fi
     if test "x$real_pat" = "x" ; then 
 	echo "No real data pattern specified" > /dev/stderr 
@@ -429,7 +446,7 @@ check()
     fi
     if test "x$mc_pat" = "x" ; then 
 	echo "No MC data pattern specified" > /dev/stderr 
-	exit 1
+	# exit 1
     fi
     if test "X$w" != "Xsetup" && test "x$now" = "x" ; then 
 	echo "No date/time specified" > /dev/stderr 
@@ -456,9 +473,9 @@ check()
 print_setup()
 {
     cat <<EOF
-Name:			$name
+Name:			${name}
 Run:			${run}
-Collision system:	$sys
+Collision system:	${sys}
 sqrt(s_NN):		${snn}GeV
 L3 Field:		${field}kG
 Real input directory:	${real_dir}
@@ -471,6 +488,10 @@ Use PAR files:		${par}
 Date & time:            ${now}
 Additional URL options: ${uuopts}
 Number of workers:      ${nwrks}/${ncpu}
+Trigger efficiencies:   
+  INEL:                 ${inel_eff}
+  INEL>0:               ${inelgt0_eff}
+  NSD:                  ${nsd_eff}
 EOF
 }
 
@@ -517,15 +538,15 @@ allAboard()
 	    case x$trig in 
 		xinel)    
 		    opts="$opts --scheme=trigger,event,background" 
-		    opts="$opts --trig=INEL" 
+		    opts="$opts --trig=INEL --trigEff=$inel_eff" 
 		    ;;
 		xnsd)     
 		    opts="$opts --scheme=trigger,event"
-		    opts="$opts --trig=V0AND"
+		    opts="$opts --trig=V0AND --trigEff=$nsd_eff"
 		    ;;
 		xinelgt0) 
 		    opts="$opts --scheme=trigger,event"
-		    opts="$opts --trig=INELGT0"
+		    opts="$opts --trig=INELGT0 --trigEff=$inelgt0_eff"
 		    ;;
 		x*) trig= ;;
 	    esac
@@ -550,11 +571,15 @@ allAboard()
 	    ;;
 	*) echo "$0: Unknown type of train: $type" > /dev/stderr ; exit 1 ;;
     esac
+    if test ! -f $inp ; then 
+	echo "No input for $nme, giving up" > /dev/stderr 
+	return 
+    fi
     # add centrality flag if we do not know what collision system we're 
     # looking at, or it's PbPb or pPb. 
     case $sys in 
-	0|2|3) opts="$opts --cent" ;; 
-	1)                         ;;
+	1)                     ;;
+	*) opts="$opts --cent" ;; 
     esac
     if test $mc -gt 0; then 
 	uopt="${uopt}&mc"
@@ -601,8 +626,10 @@ corrs()
 }
 corrs_upload() 
 {
-    (cd ${name}_mccorr_${now}  && extract_upload)
-    (cd ${name}_mceloss_${now} && extract_upload)
+    if test "X$mc_dir" != "X" ; then 
+	(cd ${name}_mccorr_${now}  && extract_upload)
+	(cd ${name}_mceloss_${now} && extract_upload)
+    fi
     (cd ${name}_eloss_${now}   && extract_upload)
     rm -f fmd_corrections.root spd_corrections.root 
     ln -s ${name}_corrs_${now}/fmd_corrections.root .
@@ -610,8 +637,10 @@ corrs_upload()
 }
 corrs_draw()
 {
-    (cd ${name}_mccorr_${now}  && draw ${fwd_dir}/DrawMCCorrSummary.C)
-    (cd ${name}_mceloss_${now} && draw ${fwd_dir}/corrs/DrawCorrELoss.C 1)
+    if test "X$mc_dir" != "X" ; then 
+	(cd ${name}_mccorr_${now}  && draw ${fwd_dir}/DrawMCCorrSummary.C)
+	(cd ${name}_mceloss_${now} && draw ${fwd_dir}/corrs/DrawCorrELoss.C 1)
+    fi
     (cd ${name}_eloss_${now}   && draw ${fwd_dir}/corrs/DrawCorrELoss.C 0)
 }
 # --- Run all AOD jobs -----------------------------------------------
@@ -705,7 +734,7 @@ collect()
 		corr)      files="forward_mccorr.pdf" ;; 
 		eloss)     files="corrs*.pdf" ;; 
 		aod)       files="forward.pdf" ;; 
-		dndeta*)   files="forward_dndeta.pdf dndeta*.pdf" ;; 
+		dndeta*)   files="forward_dndeta.pdf dNdeta*.pdf" ;; 
 		multdists) files="forward_multdists.pdf" ;;
 		*) echo "Unknown directory type: $d" > /dev/stder 
 		    continue 
@@ -720,7 +749,7 @@ collect()
 		    */forward_dndeta.pdf)    tgt=summary_${d}_${M}.pdf ;; 
 		    */forward_multdists.pdf) tgt=summary_${d}_${M}.pdf ;; 
 		    */corr*.pdf)             tgt=summary_${d}_${M}.pdf ;; 
-		    */dndeta*.pdf)           tgt=${d}_${M}.pdf ;;
+		    */dNdeta*.pdf)           tgt=${d}_${M}.pdf ;;
 		    *) echo "Don't know how to deal with $ff" >/dev/stderr 
 			continue
 			;;
@@ -787,6 +816,9 @@ while test $# -gt 0 ; do
 	-u|--url-opts)     uuopts="$opt" ;;
 	-h|--help)         usage         ; exit 0 ;; 
 	-H|--manual)       manual        ; exit 0 ;;
+	-i|--inel-eff)     inel_eff=$opt ;;
+	-0|--inelgt0-eff)  inelgt0_eff=$opt ;;
+	-v|--nsd-eff)      nsd_eff=$opt ;;
         --)                break ;;
 	*) echo "$0: Unknown option $arg"  ; exit 1 ;; 
     esac
