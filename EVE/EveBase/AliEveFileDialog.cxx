@@ -4,6 +4,7 @@
 #include <TG3DLine.h>
 #include <TGTextEntry.h>
 #include <TMath.h>
+#include <TSystem.h>
 
 #include <TGFileDialog.h>
 
@@ -13,8 +14,26 @@
 ClassImp(AliEveFileDialog)
 
 AliEveFileDialog::AliEveFileDialog(const TGWindow* p,const TGWindow* main, EAliEveFileDialogMode mode)
-    : TGTransientFrame(p, main, 100,50, kVerticalFrame)
-
+    : TGTransientFrame(p, main, 100,50, kVerticalFrame),
+    fESDFilesFrame(0),
+    fAdvancedOptsButton(0),
+    fAdvancedOptsFrame(0),
+    fESDfriendFilesFrame(0),
+    fAODFilesFrame(0),
+    fAODfriendFilesFrame(0),
+    fRawFilesFrame(0),
+    fUrlFrame(0),
+    fCDBFrame(0),
+    fDialogButtonsFrame(0),
+    fPathEntryESD(0),
+    fPathEntryESDfriend(0),
+    fPathEntryAOD(0),
+    fPathEntryAODfriend(0),
+    fPathEntryRawFile(0),
+    fPathEntryUrl(0),
+    fCDBPathCB(0),
+    fIsAccepted(kFALSE),
+    fMode(mode)
 {
     SetCleanup(kDeepCleanup);
 
@@ -38,18 +57,36 @@ AliEveFileDialog::AliEveFileDialog(const TGWindow* p,const TGWindow* main, EAliE
     fESDFilesFrame->AddFrame(browseButtonESD, new TGLayoutHints(kLHintsNormal, 3, 3, 3, 3));
 
     AddFrame(fESDFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
-
-    //Advanced Options Frame
-    fAdvancedOptsFrame = new TGHorizontalFrame(this, 100, 100);
-    fAdvancedOptsButton = new TGCheckButton(fAdvancedOptsFrame, "Advanced Options");
+    
+    //Advanced Options Button
+    fAdvancedOptsButton = new TGCheckButton(this, "Advanced Options");
     fAdvancedOptsButton->Connect("Toggled(Bool_t)", "AliEveFileDialog", this, "showAdvancedOpts(Bool_t)");
 
-    fAdvancedOptsFrame->AddFrame(fAdvancedOptsButton, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
+    AddFrame(fAdvancedOptsButton,new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
 
-    AddFrame(fAdvancedOptsFrame,new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
+//Advanced Options Frame
+    //ESDfriend Frame
+    fAdvancedOptsFrame = new TGGroupFrame(this, "Advanced Options");
+    
+    fESDfriendFilesFrame = new TGHorizontalFrame(fAdvancedOptsFrame, 100, 100);
+    TGLabel* esdFriendLabel = new TGLabel(fESDfriendFilesFrame, "ESDfriend File:");
+    esdFriendLabel->Resize(110, esdFriendLabel->GetDefaultHeight());
+    esdFriendLabel->SetMargins(0,0,0,0);
 
+    fPathEntryESDfriend= new TGTextEntry(fESDfriendFilesFrame);
+    fPathEntryESDfriend->Resize(250, fPathEntryESDfriend->GetDefaultHeight());
+
+    TGTextButton* browseButtonESDfriend = new TGTextButton(fESDfriendFilesFrame, "Browse...");
+    browseButtonESDfriend->Connect("Clicked()", "AliEveFileDialog", this, "onBrowseESDfriendFile()");
+
+    fESDfriendFilesFrame->AddFrame(esdFriendLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 3, 3, 3, 3));
+    fESDfriendFilesFrame->AddFrame(fPathEntryESDfriend, new TGLayoutHints(kLHintsExpandX, 3, 3, 3, 3));
+    fESDfriendFilesFrame->AddFrame(browseButtonESDfriend, new TGLayoutHints(kLHintsNormal, 3, 3, 3, 3));
+
+    fAdvancedOptsFrame->AddFrame(fESDfriendFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
+    
     // AOD Frame
-    fAODFilesFrame = new TGHorizontalFrame(this, 100, 100);
+    fAODFilesFrame = new TGHorizontalFrame(fAdvancedOptsFrame, 100, 100);
     TGLabel* aodLabel = new TGLabel(fAODFilesFrame, "AOD File:");
     aodLabel->Resize(110, aodLabel->GetDefaultHeight());
 
@@ -63,10 +100,10 @@ AliEveFileDialog::AliEveFileDialog(const TGWindow* p,const TGWindow* main, EAliE
     fAODFilesFrame->AddFrame(fPathEntryAOD, new TGLayoutHints(kLHintsExpandX, 3, 3, 3, 3));
     fAODFilesFrame->AddFrame(browseButtonAOD, new TGLayoutHints(kLHintsNormal, 3, 3, 3, 3));
 
-    AddFrame(fAODFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
+    fAdvancedOptsFrame->AddFrame(fAODFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
 
     // AODfriend Frame
-    fAODfriendFilesFrame = new TGHorizontalFrame(this, 100, 100);
+    fAODfriendFilesFrame = new TGHorizontalFrame(fAdvancedOptsFrame, 100, 100);
     TGLabel* aodFriendLabel = new TGLabel(fAODfriendFilesFrame, "AODfriend File:");
     aodFriendLabel->Resize(110, aodFriendLabel->GetDefaultHeight());
 
@@ -80,10 +117,10 @@ AliEveFileDialog::AliEveFileDialog(const TGWindow* p,const TGWindow* main, EAliE
     fAODfriendFilesFrame->AddFrame(fPathEntryAODfriend, new TGLayoutHints(kLHintsExpandX, 3, 3, 3, 3));
     fAODfriendFilesFrame->AddFrame(browseButtonAODfriend, new TGLayoutHints(kLHintsNormal, 3, 3, 3, 3));
 
-    AddFrame(fAODfriendFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
+    fAdvancedOptsFrame->AddFrame(fAODfriendFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
 
     // Raw Frame
-    fRawFilesFrame = new TGHorizontalFrame(this, 100, 100);
+    fRawFilesFrame = new TGHorizontalFrame(fAdvancedOptsFrame, 100, 100);
     TGLabel* rawLabel = new TGLabel(fRawFilesFrame, "Raw File:");
     rawLabel->Resize(110, rawLabel->GetDefaultHeight());
 
@@ -97,10 +134,11 @@ AliEveFileDialog::AliEveFileDialog(const TGWindow* p,const TGWindow* main, EAliE
     fRawFilesFrame->AddFrame(fPathEntryRawFile, new TGLayoutHints(kLHintsExpandX, 3, 3, 3, 3));
     fRawFilesFrame->AddFrame(browseButtonRawFile, new TGLayoutHints(kLHintsNormal, 3, 3, 3, 3));
 
-    AddFrame(fRawFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
+    fAdvancedOptsFrame->AddFrame(fRawFilesFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 3, 3, 3, 3));
 
+   AddFrame(fAdvancedOptsFrame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 3, 3, 3, 3) );
 
-    /****************
+   /****************
    *** Url Frame ***
    *****************/
     fUrlFrame = new TGHorizontalFrame(this, 100, 100);
@@ -180,6 +218,11 @@ const TString AliEveFileDialog::GetPathESD() const
     return TString(fPathEntryESD->GetText());
 }
 
+const TString AliEveFileDialog::GetPathESDfriend() const
+{
+    return TString(fPathEntryESDfriend->GetText());
+}
+
 const TString AliEveFileDialog::GetPathAOD() const
 {
     return TString(fPathEntryAOD->GetText());
@@ -241,6 +284,28 @@ void AliEveFileDialog::onBrowseESDFile()
     new TGFileDialog(GetParent(), GetMain(), kFDOpen, fileInfo);
 
     fPathEntryESD->SetText(fileInfo->fFilename);
+    
+    // look for the other files in the current directory
+    
+    
+
+    delete fileInfo;
+
+}
+
+void AliEveFileDialog::onBrowseESDfriendFile()
+{
+    TGFileInfo* fileInfo = new TGFileInfo;
+
+    const char* types[] = { "ALICE ESDfriends file", "*.root",
+                            "ROOT Archive", "*.zip",
+                            0, 0};
+
+    fileInfo->fFileTypes = types;
+
+    new TGFileDialog(GetParent(), GetMain(), kFDOpen, fileInfo);
+
+    fPathEntryESDfriend->SetText(fileInfo->fFilename);
 
     delete fileInfo;
 
@@ -341,16 +406,15 @@ void AliEveFileDialog::MapSubwindows()
     // Show/Hide Widgets according to the current Mode
     if(fMode==kAliEveFDLocal){
         ShowFrame(fESDFilesFrame);
+        ShowFrame(fAdvancedOptsButton);
         showAdvancedOpts(fAdvancedOptsButton->IsDown());
 
         HideFrame(fUrlFrame);
     }
     else{ // remote file
         HideFrame(fESDFilesFrame);
+        HideFrame(fAdvancedOptsButton);
         HideFrame(fAdvancedOptsFrame);
-        HideFrame(fAODFilesFrame);
-        HideFrame(fAODfriendFilesFrame);
-        HideFrame(fRawFilesFrame);
 
         ShowFrame(fUrlFrame);
     }
@@ -361,27 +425,23 @@ void AliEveFileDialog::showAdvancedOpts(Bool_t shown)
 {
     UInt_t w, h;
     if(shown){
-        ShowFrame(fAODFilesFrame);
-        ShowFrame(fAODfriendFilesFrame);
-        ShowFrame(fRawFilesFrame);
+        ShowFrame(fAdvancedOptsFrame);
+        fAdvancedOptsFrame->MapWindow();
         Layout();
 
-        h = fESDFilesFrame->GetSize().fHeight+fAdvancedOptsFrame->GetSize().fHeight+fAODFilesFrame->GetSize().fHeight;
-        h+= fAODfriendFilesFrame->GetSize().fHeight+fRawFilesFrame->GetSize().fHeight+fCDBFrame->GetSize().fHeight+fDialogButtonsFrame->GetSize().fHeight;
+        h = fESDFilesFrame->GetSize().fHeight+fAdvancedOptsFrame->GetSize().fHeight+fAdvancedOptsButton->GetSize().fHeight+fCDBFrame->GetSize().fHeight+fDialogButtonsFrame->GetSize().fHeight;
     }else{
-        HideFrame(fAODFilesFrame);
-        HideFrame(fAODfriendFilesFrame);
-        HideFrame(fRawFilesFrame);
+        HideFrame(fAdvancedOptsFrame);
+        fAdvancedOptsFrame->UnmapWindow();
         Layout();
 
-        h = fESDFilesFrame->GetSize().fHeight+fAdvancedOptsFrame->GetSize().fHeight+fCDBFrame->GetSize().fHeight+fDialogButtonsFrame->GetSize().fHeight;
+        h = fESDFilesFrame->GetSize().fHeight+fAdvancedOptsButton->GetSize().fHeight+fCDBFrame->GetSize().fHeight+fDialogButtonsFrame->GetSize().fHeight;
     }
 
     TGDimension size = GetSize();
     w = size.fWidth;
 
-
-    Resize(w,h+40);
+    Resize(w,h+30);
 
 }
 

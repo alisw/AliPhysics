@@ -50,16 +50,24 @@ class AliEveEventManager : public TEveEventManager,
 {
 public:
   static void SetESDFileName(const TString& esd);
+  static void SetESDfriendFileName(const TString& esdf);
   static void SetAODFileName(const TString& aod);
   static void AddAODfriend  (const TString& friendFileName);
   static void SetRawFileName(const TString& raw);
   static void SetCdbUri     (const TString& cdb);
+  static void SetGAliceFileName(const TString& galice);
+  
+  // set Local Directory or URL where the files are located
+  // it can also be a path to root_archive.zip
+  // assumes the filenames of ESD, AOD, etc are standard ALICE names 
+  // (AliESDs.root, AliESDfriends.root, AliAOD.root, AliAODfriend.root, galice.root,raw.root) 
+  static void SetFilesPath(const TString& path); 
+  
   static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
 				Bool_t assertAod, Bool_t assertRaw);
   static void SearchRawForCentralReconstruction();
 
-  AliEveEventManager(const TString& name="Event");
-  AliEveEventManager(const TString& name, const TString& path, Int_t ev=0);
+  AliEveEventManager(const TString& name="Event", Int_t ev=0);
   virtual ~AliEveEventManager();
 
   virtual void  Open();
@@ -81,7 +89,6 @@ public:
   TFile*        GetAODFile()         const { return fAODFile; }
   TTree*        GetAODTree()         const { return fAODTree; }
   AliAODEvent*  GetAOD()             const { return fAOD;     }
-  virtual const Text_t* GetTitle()   const { return fPath.Data(); }
   AliEveEventSelector* GetEventSelector() const { return fPEventSelector; }
   TString       GetEventInfoHorizontal() const;
   TString       GetEventInfoVertical()   const;
@@ -138,7 +145,6 @@ public:
   AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
 
 protected:
-  TString       fPath;			// URL to event-data.
   Int_t         fEventId;		// Id of current event.
 
   AliRunLoader* fRunLoader;		// Run loader.
@@ -176,7 +182,7 @@ protected:
 
   TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
-  static TString  fgGAlice;        // galice.root file
+  static TString  fgGAliceFileName;        // galice.root file
   static TString  fgESDFileName;        // Name by which to open ESD.
   static TString  fgESDfriendsFileName;
   static TString  fgAODFileName;        // Name by which to open AOD.

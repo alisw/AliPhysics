@@ -99,7 +99,7 @@ protected:
     void setupMenus();
     void setupToolbars();
 
-    void openFile(const TString &path);
+    void loadFiles();
 
 private:
     AliEveMainWindow(const AliEveMainWindow& other);// Not implemented

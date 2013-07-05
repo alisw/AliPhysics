@@ -35,6 +35,7 @@ public:
 
     //const TString GetDirectory(); // directory where the ESD resides
     const TString GetPathESD() const;
+    const TString GetPathESDfriend() const;
     const TString GetPathAOD() const;
     const TString GetPathAODfriend() const;
     const TString GetPathRaw() const;
@@ -44,6 +45,7 @@ public:
     const TString GetCDBStoragePath() const;
 
     void onBrowseESDFile();
+    void onBrowseESDfriendFile();
     void onBrowseAODFile();
     void onBrowseAODfriendFile();
     void onBrowseRawFile();
@@ -65,8 +67,10 @@ private:
     AliEveFileDialog& operator=(const AliEveFileDialog&);   // not implemented
 
     TGHorizontalFrame* fESDFilesFrame;
-    TGHorizontalFrame* fAdvancedOptsFrame;
     TGCheckButton* fAdvancedOptsButton;
+    
+    TGGroupFrame* fAdvancedOptsFrame;
+    TGHorizontalFrame* fESDfriendFilesFrame;
     TGHorizontalFrame* fAODFilesFrame;
     TGHorizontalFrame* fAODfriendFilesFrame;
     TGHorizontalFrame* fRawFilesFrame;
@@ -74,6 +78,7 @@ private:
     TGHorizontalFrame* fCDBFrame;
     TGHorizontalFrame* fDialogButtonsFrame;
     TGTextEntry* fPathEntryESD;
+    TGTextEntry* fPathEntryESDfriend;
     TGTextEntry* fPathEntryAOD;
     TGTextEntry* fPathEntryAODfriend;
     TGTextEntry* fPathEntryRawFile;

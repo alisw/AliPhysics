@@ -98,7 +98,7 @@ Bool_t AliEveEventManager::fgAssertRaw       = kFALSE;
 TString  AliEveEventManager::fgESDFileName("AliESDs.root");
 TString  AliEveEventManager::fgESDfriendsFileName("AliESDfriends.root");
 TString  AliEveEventManager::fgAODFileName("AliAOD.root");
-TString  AliEveEventManager::fgGAlice("galice.root");
+TString  AliEveEventManager::fgGAliceFileName("galice.root");
 TString  AliEveEventManager::fgRawFileName("raw.root");
 TString  AliEveEventManager::fgCdbUri;
 
@@ -151,32 +151,10 @@ void AliEveEventManager::InitInternals()
     fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
 }
 
-AliEveEventManager::AliEveEventManager(const TString& name) :
-    TEveEventManager(name),
+AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
+    TEveEventManager(name, ""),
 
-    fPath      ( ), fEventId (-1),
-    fRunLoader (0),
-    fESDFile   (0), fESDTree (0), fESD (0),
-    fESDfriend (0), fESDfriendExists(kFALSE),
-    fAODFile   (0), fAODTree (0), fAOD (0),
-    fRawReader (0), fEventInfo(),
-    fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
-    fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
-    fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
-    fExecutor    (0), fTransients(0), fTransientLists(0),
-    fPEventSelector(0),
-    fSubManagers (0),
-    fAutoLoadTimerRunning(kFALSE)
-{
-    // Default constructor.
-
-    InitInternals();
-}
-
-AliEveEventManager::AliEveEventManager(const TString& name, const TString& path, Int_t ev) :
-    TEveEventManager(name, path),
-
-    fPath   (path), fEventId(-1),
+    fEventId(-1),
     fRunLoader (0),
     fESDFile   (0), fESDTree (0), fESD (0),
     fESDfriend (0), fESDfriendExists(kFALSE),
@@ -190,7 +168,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, const TString& path,
     fSubManagers (0),
     fAutoLoadTimerRunning(kFALSE)
 {
-    // Constructor with event-directory URL and event-id.
+    // Constructor with event-id.
 
     InitInternals();
 
@@ -228,15 +206,33 @@ AliEveEventManager::~AliEveEventManager()
 void AliEveEventManager::SetESDFileName(const TString& esd)
 {
     // Set file-name for opening ESD, default "AliESDs.root".
+    if (esd.IsNull()) return;
+   
+    fgESDFileName = esd;
+    if (esd.EndsWith(".zip")) fgESDFileName.Form("%s#AliESDs.root",esd.Data());
+    
+}
 
-    if ( ! esd.IsNull()) fgESDFileName = esd;
+void AliEveEventManager::SetESDfriendFileName(const TString& esdf)
+{
+    // Set file-name for opening ESD friend, default "AliESDfriends.root".
+
+    if (esdf.IsNull()) return;
+    fgESDfriendsFileName = esdf;
+    
+    if (esdf.EndsWith(".zip")) fgESDfriendsFileName.Form("%s#AliESDfriends.root",esdf.Data());
 }
 
 void AliEveEventManager::SetAODFileName(const TString& aod)
 {
     // Set file-name for opening AOD, default "AliAOD.root".
 
-    if ( ! aod.IsNull()) fgAODFileName = aod;
+    if (aod.IsNull()) return;
+    fgAODFileName = aod;
+    
+    if (aod.EndsWith(".zip")) fgAODFileName.Form("%s#AliAOD.root",aod.Data());
+    
+    
 }
 
 void AliEveEventManager::AddAODfriend(const TString& friendFileName)
@@ -258,7 +254,9 @@ void AliEveEventManager::AddAODfriend(const TString& friendFileName)
 void AliEveEventManager::SetRawFileName(const TString& raw)
 {
     // Set file-name for opening of raw-data, default "raw.root"
-    if ( ! raw.IsNull()) fgRawFileName = raw;
+    if (raw.IsNull()) return;
+    
+    fgRawFileName = raw;
 }
 
 void AliEveEventManager::SetCdbUri(const TString& cdb)
@@ -266,6 +264,39 @@ void AliEveEventManager::SetCdbUri(const TString& cdb)
     // Set path to CDB, there is no default.
 
     if ( ! cdb.IsNull()) fgCdbUri = cdb;
+}
+
+void AliEveEventManager::SetGAliceFileName(const TString& galice)
+{
+    // Set file-name for opening gAlice, default "galice.root".
+
+    if ( galice.IsNull()) return;
+    fgGAliceFileName = galice; 
+    
+    if (galice.EndsWith(".zip")) fgGAliceFileName.Form("%s#galice.root",galice.Data());
+}
+
+void AliEveEventManager::SetFilesPath(const TString& urlPath)
+{
+   TString path = urlPath;
+    gSystem->ExpandPathName(path);
+    if (path.IsNull() || path == ".")
+    {
+        path = gSystem->WorkingDirectory();
+    }
+   
+   TString sep;
+   if(path.EndsWith(".zip")) // if given a path to root_archive.zip
+      sep= "#";
+   else if(!path.EndsWith("/"))
+      sep = "/";
+    
+    SetESDFileName( TString(Form("%s%sAliESDs.root", path.Data(), sep.Data())) );
+    SetESDfriendFileName(  TString(Form("%s%sAliESDfriends.root", path.Data(), sep.Data())) );
+    SetAODFileName(  TString(Form("%s%sAliAOD.root", path.Data(), sep.Data())) );
+    AddAODfriend(  TString(Form("%s%sAliAOD.VertexingHF.root", path.Data(), sep.Data())) );
+    SetGAliceFileName( TString(Form("%s%sgalice.root", path.Data(), sep.Data())) );
+    SetRawFileName(TString(Form("%s%sraw.root", path.Data(), sep.Data())));
 }
 
 void AliEveEventManager::SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
@@ -293,7 +324,7 @@ void AliEveEventManager::SearchRawForCentralReconstruction()
 
 void AliEveEventManager::Open()
 {
-    // Open event-data from URL specified in fPath.
+    // Open event-data from URL specified in path.
     // Attempts to create AliRunLoader() and to open ESD with ESDfriends.
     // Warning is reported if run-loader or ESD is not found.
     // Global data-members fgAssertRunLoader and fgAssertESD can be set
@@ -310,28 +341,11 @@ void AliEveEventManager::Open()
         throw (kEH + "Event-files already opened.");
     }
 
-    gSystem->ExpandPathName(fPath);
-    // The following magick is required for ESDfriends to be loaded properly
-    // from non-current directory.
-    if (fPath.IsNull() || fPath == ".")
-    {
-        fPath = gSystem->WorkingDirectory();
-    }
-    else if ( ! fPath.BeginsWith("file:/"))
-    {
-        TUrl    url(fPath, kTRUE);
-        TString protocol(url.GetProtocol());
-        if (protocol == "file" && fPath[0] != '/')
-            fPath = Form("%s/%s", gSystem->WorkingDirectory(), fPath.Data());
-    }
-
     Int_t runNo = -1;
 
     // Open ESD and ESDfriends
-
-    TString esdPath(Form("%s", fgESDFileName.Data()));
-    if (fgESDFileName.EndsWith(".zip")) esdPath.Form("%s#AliESDs.root",fgESDFileName.Data());
-    if ((fESDFile = TFile::Open(esdPath)))
+    
+    if ((fESDFile = TFile::Open(fgESDFileName)))
     {
         fESD = new AliESDEvent();
         fESDTree = (TTree*) fESDFile->Get("esdTree");
@@ -341,9 +355,7 @@ void AliEveEventManager::Open()
             // We use TFile::Open() instead of gSystem->AccessPathName
             // as it seems to work better when attachine alieve to a
             // running reconstruction process with auto-save on.
-            TString p(fgESDfriendsFileName);
-            if (fgESDfriendsFileName.EndsWith(".zip")) p.Form("%s#AliESDfriends.root",fgESDfriendsFileName.Data());
-            TFile *esdFriendFile = TFile::Open(p);
+            TFile *esdFriendFile = TFile::Open(fgESDfriendsFileName);
             if (esdFriendFile)
             {
                 if (!esdFriendFile->IsZombie())
@@ -387,7 +399,7 @@ void AliEveEventManager::Open()
     }
     else // esd not readable
     {
-        Warning(kEH, "can not read ESD file '%s'.", esdPath.Data());
+        Warning(kEH, "can not read ESD file '%s'.", fgESDFileName.Data());
     }
     if (fESDTree == 0)
     {
@@ -400,10 +412,7 @@ void AliEveEventManager::Open()
     }
 
     // Open AOD and registered friends
-
-    TString aodPath(Form("%s", fgAODFileName.Data()));
-    if (fgAODFileName.EndsWith(".zip")) aodPath.Form("%s#AliAOD.root",fgAODFileName.Data());
-    if ((fAODFile = TFile::Open(aodPath)))
+    if ( (fAODFile = TFile::Open(fgAODFileName)) )
     {
         fAOD = new AliAODEvent();
         fAODTree = (TTree*) fAODFile->Get("aodTree");
@@ -445,7 +454,7 @@ void AliEveEventManager::Open()
     }
     else // aod not readable
     {
-        Warning(kEH, "can not read AOD file '%s'.", aodPath.Data());
+        Warning(kEH, "can not read AOD file '%s'.", fgAODFileName.Data());
     }
     if (fAODTree == 0)
     {
@@ -458,25 +467,16 @@ void AliEveEventManager::Open()
     }
 
     // Open RunLoader from galice.root
-
-    TString gaPath(Form("%s", fgGAlice.Data()));
-    if (fgGAlice.EndsWith(".zip")) gaPath.Form("%s#galice.root",fgGAlice.Data());
-    // If i use open directly, we get fatal.
-    // Is AccessPathName check ok for xrootd / alien? Yes, not for http.
-    // Seems not to work for alien anymore.
-    // Fixed in ROOT on 27.10.2009, rev 30888.
-    // To revert after we move to root-5.26.
-    TFile *gafile = TFile::Open(gaPath);
+    TFile *gafile = TFile::Open(fgGAliceFileName);
     if (gafile)
     {
         gafile->Close();
         delete gafile;
-        // if (gSystem->AccessPathName(gaPath, kReadPermission) == kFALSE)
-        // {
-        fRunLoader = AliRunLoader::Open(gaPath, GetName());
+        fRunLoader = AliRunLoader::Open(fgGAliceFileName, GetName());
         if (fRunLoader)
         {
-            TString alicePath = fPath + "/";
+            TString alicePath(gSystem->DirName(fgGAliceFileName));
+            alicePath.Append("/");
             fRunLoader->SetDirName(alicePath);
 
             if (fRunLoader->LoadgAlice() != 0)
@@ -496,12 +496,13 @@ void AliEveEventManager::Open()
         }
         else // run-loader open failed
         {
-            Warning(kEH, "failed opening ALICE run-loader from '%s'.", gaPath.Data());
+            Warning(kEH, "failed opening ALICE run-loader from '%s'.", fgGAliceFileName.Data());
         }
+        
     }
     else // galice not readable
     {
-        Warning(kEH, "can not read '%s'.", gaPath.Data());
+        Warning(kEH, "can not read '%s'.", fgGAliceFileName.Data());
     }
     if (fRunLoader == 0)
     {
@@ -516,18 +517,18 @@ void AliEveEventManager::Open()
     TString rawPath;
     if (fgRawFromStandardLoc)
     {
-        if (!fPath.BeginsWith("alien:"))
+        if (!fgRawFileName.BeginsWith("alien:"))
             throw kEH + "Standard raw search requested, but the directory is not in AliEn.";
-        if (!fPath.Contains("/ESDs/"))
+        if (!fgRawFileName.Contains("/ESDs/"))
             throw kEH + "Standard raw search requested, but does not contain 'ESDs' directory.";
 
         TPMERegexp chunk("/([\\d\\.])+/?$");
-        Int_t nm = chunk.Match(fPath);
+        Int_t nm = chunk.Match(fgRawFileName);
         if (nm != 2)
             throw kEH + "Standard raw search requested, but the path does not end with chunk-id directory.";
 
         TPMERegexp esdstrip("/ESDs/.*");
-        rawPath = fPath;
+        rawPath = fgRawFileName;
         esdstrip.Substitute(rawPath, "/raw/");
         rawPath += chunk[0];
         rawPath += ".root";
@@ -536,7 +537,7 @@ void AliEveEventManager::Open()
     }
     else
     {
-        rawPath.Form("%s", fgRawFileName.Data());
+        rawPath = fgRawFileName;
     }
     // If i use open directly, raw-reader reports an error but i have
     // no way to detect it.
@@ -615,7 +616,7 @@ void AliEveEventManager::Open()
             else if (fgCdbUri == "mcfull://")
                 cdb->SetDefaultStorage("MC", "Full");
             else if (fgCdbUri == "local://") {
-                fgCdbUri = "local://$ALICE_ROOT/OCDB";
+                fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
                 cdb->SetDefaultStorage(fgCdbUri);
             } else
                 cdb->SetDefaultStorage(fgCdbUri);
@@ -628,8 +629,9 @@ void AliEveEventManager::Open()
 
         if (fgCdbUri.BeginsWith("local://"))
         {
+            TString curPath = gSystem->WorkingDirectory();
             TString grp     = "GRP/GRP/Data";
-            TString grppath = fPath + "/" + grp;
+            TString grppath = curPath + "/" + grp;
             if (gSystem->AccessPathName(grppath, kReadPermission) == kFALSE)
             {
                 if (cdb->GetSpecificStorage(grp))
@@ -640,7 +642,7 @@ void AliEveEventManager::Open()
                 {
                     Info(kEH, "Setting CDB specific-storage for GRP from event directory.");
                     TString lpath("local://");
-                    lpath += fPath;
+                    lpath += curPath;
                     cdb->SetSpecificStorage(grp, lpath);
                 }
             }
@@ -1264,16 +1266,16 @@ Bool_t AliEveEventManager::InitRecoParam()
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
 
         if (fgRecoParam->GetDetRecoParamArray(iDet)) {
-            ::Info(kEH, Form("Using custom reconstruction parameters for detector %s",fgkDetectorName[iDet]));
+            ::Info(kEH, "Using custom reconstruction parameters for detector %s",fgkDetectorName[iDet]);
             continue;
         }
 
-        ::Info(kEH, Form("Loading reconstruction parameter objects for detector %s",fgkDetectorName[iDet]));
+        ::Info(kEH, "Loading reconstruction parameter objects for detector %s",fgkDetectorName[iDet]);
 
         AliCDBPath path(fgkDetectorName[iDet],"Calib","RecoParam");
         AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
         if(!entry){
-            ::Warning(kEH, Form("Couldn't find RecoParam entry in OCDB for detector %s",fgkDetectorName[iDet]));
+            ::Warning(kEH, "Couldn't find RecoParam entry in OCDB for detector %s",fgkDetectorName[iDet]);
             isOK = kFALSE;
         }
         else {
@@ -1286,12 +1288,12 @@ Bool_t AliEveEventManager::InitRecoParam()
             else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
                 // The detector has only onse set of reco parameters
                 // Registering it in AliRecoParam
-                ::Info(kEH, Form("Single set of reconstruction parameters found for detector %s",fgkDetectorName[iDet]));
+                ::Info(kEH, "Single set of reconstruction parameters found for detector %s",fgkDetectorName[iDet]);
                 dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
                 fgRecoParam->AddDetRecoParam(iDet,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
             }
             else {
-                ::Error(kEH, Form("No valid RecoParam object found in the OCDB for detector %s",fgkDetectorName[iDet]));
+                ::Error(kEH, "No valid RecoParam object found in the OCDB for detector %s",fgkDetectorName[iDet]);
                 isOK = kFALSE;
             }
             entry->SetOwner(0);
@@ -1330,7 +1332,8 @@ AliEveEventManager* AliEveEventManager::AddDependentManager(const TString& name,
     fgCurrent = 0;
     try
     {
-        new_mgr = new AliEveEventManager(name, path, fgMaster->fEventId);
+        new_mgr = new AliEveEventManager(name, fgMaster->fEventId);
+        new_mgr->SetFilesPath(path);
         fgMaster->fSubManagers->Add(new_mgr);
     }
     catch (TEveException& exc)

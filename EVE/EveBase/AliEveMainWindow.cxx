@@ -89,7 +89,16 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
 
         fFileDialog->setMode(kAliEveFDLocal);
         fFileDialog->MapWindow();
-        if(fFileDialog->accepted()) openFile(fFileDialog->GetPathESD());
+        
+        if(fFileDialog->accepted()) {
+         AliEveEventManager::SetESDFileName(fFileDialog->GetPathESD());
+         AliEveEventManager::SetESDfriendFileName(fFileDialog->GetPathESDfriend());
+         AliEveEventManager::SetAODFileName(fFileDialog->GetPathAOD());
+         AliEveEventManager::AddAODfriend(fFileDialog->GetPathAODfriend());
+         AliEveEventManager::SetRawFileName(fFileDialog->GetPathRaw());
+         AliEveEventManager::SetCdbUri(fFileDialog->GetCDBStoragePath());
+         loadFiles();        
+        }
         break;
     }
     case MENU_FILE_OPEN_URL:
@@ -98,7 +107,39 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
 
         fFileDialog->setMode(kAliEveFDRemote);
         fFileDialog->MapWindow();
-        if(fFileDialog->accepted()) openFile(fFileDialog->GetUrl());
+        if(fFileDialog->accepted()) {
+         AliEveEventManager::SetFilesPath(fFileDialog->GetUrl());
+         AliEveEventManager::SetCdbUri(fFileDialog->GetCDBStoragePath());
+         
+         
+
+    // Open event
+    if (fFileDialog->GetUrl().BeginsWith("alien:"))
+    {
+        if (gGrid != 0)
+        {
+            Info("AliEveMainWindow::openFile", "TGrid already initializied. Skiping checks and initialization.");
+        }
+        else
+        {
+            Info("AliEveMainWindow::openFile", "AliEn requested - connecting.");
+            if (gSystem->Getenv("GSHELL_ROOT") == 0)
+            {
+                Error("AliEveMainWindow::openFile", "AliEn environment not initialized. Aborting.");
+                new TGMsgBox(gClient->GetRoot(), this, "AliEve", "AliEn environment not initialized. Aborting.", kMBIconStop);
+                return;
+            }
+            if (TGrid::Connect("alien") == 0)
+            {
+                Error("AliEveMainWindow::openFile", "TGrid::Connect() failed. Aborting.");
+                new TGMsgBox(gClient->GetRoot(), this, "AliEve", "TGrid::Connect() failed. Aborting.", kMBIconStop);
+                return;
+            }
+        }
+    }
+         
+         loadFiles();        
+        }
 
         break;
     }
@@ -142,9 +183,7 @@ void AliEveMainWindow::onMenuGoItem(UInt_t id)
 
     AliEveMultiView *mv = AliEveMultiView::Instance();
 
-    //mv->DestroyEventRPhi();
     mv->ImportEventRPhi(top);
-    //mv->DestroyEventRhoZ();
     mv->ImportEventRhoZ(top);
 
     gEve->Redraw3D(kTRUE);
@@ -279,53 +318,10 @@ void AliEveMainWindow::setupToolbars()
     //fToolBar->Connect("Clicked(Int_t)", "RCMainWindow", this, "openFile()");
 }
 
-void AliEveMainWindow::openFile(const TString& path)
+void AliEveMainWindow::loadFiles()
 {
-    Info("AliEveMainWindow::openFile",  "Trying to open the file [%s]", path.Data());
-
-    TString esdFile = fFileDialog->GetPathESD();
-    TString aodFile = fFileDialog->GetPathAOD();
-    TString aodFriendFile = fFileDialog->GetPathAODfriend();
-    TString rawFile = fFileDialog->GetPathRaw();
-    TString cdbUri = fFileDialog->GetCDBStoragePath();
-
-    Info("AliEveMainWindow::openFile", "ESD:%s AOD:%s AODfriend:%s RAW:%s CDB:%s", esdFile.Data(), aodFile.Data(), aodFriendFile.Data(), rawFile.Data(), cdbUri.Data());
-
-    TEveUtil::AssertMacro("VizDB_scan.C");
-
-    AliEveEventManager::SetESDFileName(esdFile);
-    AliEveEventManager::SetAODFileName(aodFile);
-    AliEveEventManager::AddAODfriend(aodFriendFile);
-    AliEveEventManager::SetRawFileName(rawFile);
-    AliEveEventManager::SetCdbUri(cdbUri);
-
-    // Open event
-    if (path.BeginsWith("alien:"))
-    {
-        if (gGrid != 0)
-        {
-            Info("AliEveMainWindow::openFile", "TGrid already initializied. Skiping checks and initialization.");
-        }
-        else
-        {
-            Info("AliEveMainWindow::openFile", "AliEn requested - connecting.");
-            if (gSystem->Getenv("GSHELL_ROOT") == 0)
-            {
-                Error("AliEveMainWindow::openFile", "AliEn environment not initialized. Aborting.");
-                new TGMsgBox(gClient->GetRoot(), this, "AliEve", "AliEn environment not initialized. Aborting.", kMBIconStop);
-                return;
-            }
-            if (TGrid::Connect("alien") == 0)
-            {
-                Error("AliEveMainWindow::openFile", "TGrid::Connect() failed. Aborting.");
-                new TGMsgBox(gClient->GetRoot(), this, "AliEve", "TGrid::Connect() failed. Aborting.", kMBIconStop);
-                return;
-            }
-        }
-    }
-
     TString name("Event"); // CINT has trouble with direct "Event".
-    new AliEveEventManager(name, path, 0);
+    new AliEveEventManager(name, 0);
     gEve->AddEvent(AliEveEventManager::GetMaster());
 
     TEveUtil::AssertMacro("VizDB_scan.C");

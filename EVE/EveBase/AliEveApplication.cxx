@@ -46,5 +46,4 @@ void  AliEveApplication::Init()
     // make sure logger is instantiated
     AliLog::GetRootLogger();
 
-
 }
