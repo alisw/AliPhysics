@@ -86,6 +86,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
   
   void SetTPCdEdxSelection ( Bool_t lTPCdEdxSelection = kTRUE ) { fTPCdEdxSelection = lTPCdEdxSelection; }
+  void SetEtaRefMult ( Double_t lEtaRefMult = 0.5 ) { fEtaRefMult = lEtaRefMult; }
   
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -115,9 +116,11 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
   Bool_t fkSkipTrigger; //To be used with ::SetCollisionCandidates
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
+//  Double_t fEtaRefMult; //Reference multiplicity eta
 
   //Extra selections
   Bool_t fTPCdEdxSelection; //Configuration to apply extra TPC dE/dx selection for better filling of tree
+  Double_t fEtaRefMult; //Reference multiplicity eta
 
   //Variables for Tree
 	Float_t fTreeVariableChi2V0;         //!
