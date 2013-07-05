@@ -80,6 +80,9 @@ AliTPCPIDResponse::AliTPCPIDResponse():
   //
   //  The default constructor
   //
+  
+  AliLog::SetClassDebugLevel("AliTPCPIDResponse", AliLog::kInfo); 
+  
   for (Int_t i=0; i<fgkNumberOfGainScenarios; i++) {fRes0[i]=0.07;fResN2[i]=0.0;}
   
   fCorrFuncMultiplicity = new TF1("fCorrFuncMultiplicity", 
@@ -536,6 +539,12 @@ Double_t AliTPCPIDResponse::GetExpectedSigma(const AliVTrack* track,
     return 999;
     
   //TODO Check whether it makes sense to set correctMultiplicity to kTRUE while correctEta might be kFALSE
+  
+  // If eta correction (=> new sigma parametrisation) is requested, but no sigma map is available, print error message
+  if (correctEta && !fhEtaSigmaPar1) {
+    AliError("New sigma parametrisation requested, but sigma map not initialised (usually via AliPIDResponse). Old sigma parametrisation will be used!");
+  }
+  
   // If no sigma map is available or if no eta correction is requested (sigma maps only for corrected eta!), use the old parametrisation
   if (!fhEtaSigmaPar1 || !correctEta) {  
     if (nPoints != 0) 
@@ -764,8 +773,11 @@ Double_t AliTPCPIDResponse::GetEtaCorrectionFast(const AliVTrack *track, Double_
   // Get eta correction for the given parameters.
   //
   
-  if (!fhEtaCorr)
+  if (!fhEtaCorr) {
+    // Calling this function means to request eta correction in some way. Print error message, if no map is available!
+    AliError("Eta correction requested, but map not initialised (usually via AliPIDResponse). Returning eta correction factor 1!");
     return 1.;
+  }
   
   Double_t tpcSignal = dEdxSplines;
   
@@ -871,8 +883,11 @@ Double_t AliTPCPIDResponse::GetSigmaPar1Fast(const AliVTrack *track, AliPID::EPa
   // Get parameter 1 of sigma parametrisation of TPC dEdx from the histogram for the given track.
   //
   
-  if (!fhEtaSigmaPar1)
+  if (!fhEtaSigmaPar1) {
+    // Calling this function means to request new sigma parametrisation in some way. Print error message, if no map is available!
+    AliError("New sigma parametrisation requested, but sigma map not initialised (usually via AliPIDResponse). Returning error value for sigma parameter1 = 999!");
     return 999;
+  }
   
   // The sigma maps are created with data sets that are already eta corrected and for which the 
   // splines have been re-created. Therefore, the value for the lookup needs to be the value of

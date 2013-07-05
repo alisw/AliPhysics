@@ -167,6 +167,9 @@ public:
   Int_t GetTunedOnDataMask() const {return fTuneMConDataMask;};
   void SetTunedOnDataMask(Int_t detMask) {fTuneMConDataMask = detMask;}
 
+  // Utilities
+  TString GetChecksum(const TObject* obj) const;
+    
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 

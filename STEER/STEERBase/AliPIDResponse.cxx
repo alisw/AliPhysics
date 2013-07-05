@@ -33,6 +33,8 @@
 #include <TArrayI.h>
 #include <TArrayF.h>
 #include <TLinearFitter.h>
+#include <TSystem.h>
+#include <TMD5.h>
 
 #include <AliVEvent.h>
 #include <AliVTrack.h>
@@ -985,8 +987,9 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fUseTPCEtaCorrection = kFALSE;
         }
         else {
-          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s", 
-                       refineFactorMapX, refineFactorMapY, fOADBPath.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle()));
+          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s)", 
+                       refineFactorMapX, refineFactorMapY, fOADBPath.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
+                       GetChecksum(fTPCResponse.GetEtaCorrMap()).Data()));
         }
         
         delete etaMapRefined;
@@ -1055,8 +1058,9 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fTPCResponse.SetSigmaParams(0x0, 0);
         }
         else {
-          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s", 
-                       refineFactorSigmaMapX, refineFactorSigmaMapY, fOADBPath.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle()));
+          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s, sigmaPar0 = %f)", 
+                       refineFactorSigmaMapX, refineFactorSigmaMapY, fOADBPath.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
+                       GetChecksum(fTPCResponse.GetSigmaPar1Map()).Data(), sigmaPar0));
         }
         
         delete etaSigmaPar1MapRefined;
@@ -1200,7 +1204,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunction->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunction->GetName(),
+                           GetChecksum((TSpline3*)responseFunction).Data()));
               found=kTRUE;
               break;
             }
@@ -1227,7 +1232,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunctionPion->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionPion->GetName(),
+                           GetChecksum((TSpline3*)responseFunctionPion).Data()));
               found=kTRUE;  
             }
             else if (grAll) {
@@ -1235,7 +1241,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,grAll->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,grAll->GetName(),
+                           GetChecksum((TSpline3*)grAll).Data()));
               found=kTRUE;
             }
             //else
@@ -1247,7 +1254,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunctionProton->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionProton->GetName(),
+                           GetChecksum((TSpline3*)responseFunctionProton).Data()));
               found=kTRUE;  
             }
             else if (grAll) {
@@ -1255,7 +1263,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,grAll->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,grAll->GetName(),
+                           GetChecksum((TSpline3*)grAll).Data()));
               found=kTRUE;
             }
             //else
@@ -1406,7 +1415,8 @@ void AliPIDResponse::SetTPCParametrisation()
   if (fArrPidResponseMaster)
   fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   
-  if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s",fResolutionCorrection->GetName()));
+  if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s  (MD5(corr function) = %s)",
+                                          fResolutionCorrection->GetName(), GetChecksum(fResolutionCorrection).Data()));
 
   //read in the voltage map
   TVectorF* gsm = 0x0;
@@ -2478,4 +2488,53 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetPIDStatus(EDetector detector, c
   }
   return kDetNoSignal;
   
+}
+
+//______________________________________________________________________________
+TString AliPIDResponse::GetChecksum(const TObject* obj) const
+{
+  // Return the checksum for an object obj (tested to work properly at least for histograms and TSplines).
+  
+  TString fileName = Form("tempChecksum.C"); // File name must be fixed for data type "TSpline3", since the file name will end up in the file content!
+  
+  // For parallel processing, a unique file pathname is required. Uniqueness can be guaranteed by using a unique directory name
+  UInt_t index = 0;
+  TString uniquePathName = Form("tempChecksum_%u", index);
+  
+  // To get a unique path name, increase the index until no directory
+  // of such a name exists.
+  // NOTE: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
+  while (!gSystem->AccessPathName(uniquePathName.Data()))
+    uniquePathName = Form("tempChecksum_%u", ++index);
+  
+  if (gSystem->mkdir(uniquePathName.Data()) < 0) {
+    AliError("Could not create temporary directory to store temp file for checksum determination!");
+    return "ERROR";
+  }
+  
+  TString option = "";
+  
+  // Save object as a macro, which will be deleted immediately after the checksum has been computed
+  // (does not work for desired data types if saved as *.root for some reason) - one only wants to compare the content, not
+  // the modification time etc. ...
+  if (dynamic_cast<const TH1*>(obj))
+    option = "colz"; // Histos need this option, since w/o this option, a counter is added to the filename
+  
+  
+  // SaveAs must be called with the fixed fileName only, since the first argument goes into the file content
+  // for some object types. Thus, change the directory, save the file and then go back
+  TString oldDir = gSystem->pwd();
+  gSystem->cd(uniquePathName.Data());
+  obj->SaveAs(fileName.Data(), option.Data());
+  gSystem->cd(oldDir.Data());
+  
+  // Use the file to calculate the MD5 checksum
+  TMD5* md5 = TMD5::FileChecksum(Form("%s/%s", uniquePathName.Data(), fileName.Data()));
+  TString checksum = md5->AsString();
+  
+  // Clean up
+  delete md5;
+  gSystem->Exec(Form("rm -rf %s", uniquePathName.Data()));
+  
+  return checksum;
 }
