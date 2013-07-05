@@ -176,7 +176,9 @@ protected:
 
   TList        *fSubManagers;           // Dependent event-managers, used for event embedding.
 
+  static TString  fgGAlice;        // galice.root file
   static TString  fgESDFileName;        // Name by which to open ESD.
+  static TString  fgESDfriendsFileName;
   static TString  fgAODFileName;        // Name by which to open AOD.
   static TString  fgRawFileName;        // Name by which to open raw-data file.
   static TString  fgCdbUri;		// Global URI to CDB.
