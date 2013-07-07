@@ -7,7 +7,7 @@ class TFile;
 class TTree;
 
 class AliTPCParam;
-class AliTPCSpaceCharge3D;
+class AliTPCCorrection;
 class AliTrackPointArray;
 
 class AliToyMCTrack;
@@ -27,6 +27,11 @@ class AliToyMCEventGenerator : public TObject {
 
   enum ECollRate {
     k50kHz = 0
+  };
+
+  enum ECorrection {
+    kLookup=0,
+    kSpaceChargeFile
   };
   
   AliToyMCEventGenerator();
@@ -49,8 +54,8 @@ class AliToyMCEventGenerator : public TObject {
   void SetOutputFileName(const char* file) { fOutputFileName=file; }
   const char* GetOutputFileName()    const { return fOutputFileName.Data(); }
 
-  void SetSpaceCharge(EEpsilon epsilon, EGasType gasType=kNeCO2_9010, ECollRate collRate=k50kHz);
-  void SetSpaceChargeFile(const char* file) { fSpaceChargeFile=file; }
+  void SetSpaceCharge(EEpsilon epsilon, EGasType gasType=kNeCO2_9010, ECollRate collRate=k50kHz, ECorrection corrType=kLookup);
+  void SetSpaceChargeFile(const char* file) { fCorrectionFile=file; }
   
   Int_t GetSector(Float_t xyz[3]);
 
@@ -70,13 +75,15 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t CloseOutputFile();
   void FillTree();
 
+  UInt_t fCurrentTrack;                  // unique track id within the current event generation
+
   
  private:
   AliToyMCEventGenerator& operator= (const AliToyMCEventGenerator& );
    
-  AliTPCSpaceCharge3D *fSpaceCharge;
+  AliTPCCorrection *fTPCCorrection;
 
-  TString fSpaceChargeFile;
+  TString fCorrectionFile;
   TString fOutputFileName;
   TFile   *fOutFile;
   TTree   *fOutTree;

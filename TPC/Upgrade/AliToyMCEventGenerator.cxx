@@ -31,8 +31,9 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   :TObject()
   ,fTPCParam(0x0)
   ,fEvent(0x0)
-  ,fSpaceCharge(0x0)
-  ,fSpaceChargeFile("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root")
+  ,fCurrentTrack(0)
+  ,fTPCCorrection(0x0)
+  ,fCorrectionFile("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.lookup.root")
   ,fOutputFileName("toyMC.root")
   ,fOutFile(0x0)
   ,fOutTree(0x0)
@@ -41,14 +42,16 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
 {
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   fTPCParam->ReadGeoMatrices();
+  gRandom->SetSeed();
 }
 //________________________________________________________________
 AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen)
   :TObject(gen)
   ,fTPCParam(gen.fTPCParam)
   ,fEvent(0x0)
-  ,fSpaceCharge(gen.fSpaceCharge)
-  ,fSpaceChargeFile(gen.fSpaceChargeFile)
+  ,fCurrentTrack(0)
+  ,fTPCCorrection(gen.fTPCCorrection)
+  ,fCorrectionFile(gen.fCorrectionFile)
   ,fOutputFileName(gen.fOutputFileName)
   ,fOutFile(0x0)
   ,fOutTree(0x0)
@@ -56,11 +59,12 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fUseMaterialBudget(gen.fUseMaterialBudget)
 {
   //
+  gRandom->SetSeed();
 }
 //________________________________________________________________
 AliToyMCEventGenerator::~AliToyMCEventGenerator() 
 {
-  delete fSpaceCharge;
+  delete fTPCCorrection;
 }
 
 //________________________________________________________________
@@ -264,9 +268,9 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
     Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
     Float_t dxyz[3]={0.,0.,0.};
     if (!fUseStepCorrection){
-      fSpaceCharge->DistortPoint(distPoint, sector);
+      fTPCCorrection->DistortPoint(distPoint, sector);
     } else {
-      fSpaceCharge->GetCorrectionIntegralDz(distPoint,sector,dxyz,5);
+      fTPCCorrection->GetCorrectionIntegralDz(distPoint,sector,dxyz,5);
       distPoint[0]-=dxyz[0];
       distPoint[1]-=dxyz[1];
       distPoint[2]-=dxyz[2];
@@ -525,34 +529,42 @@ void AliToyMCEventGenerator::FillTree()
 }
 
 //________________________________________________________________
-void AliToyMCEventGenerator::SetSpaceCharge(EEpsilon epsilon, EGasType gasType/*=kNeCO2_9010*/, ECollRate collRate/*=k50kHz*/)
+void AliToyMCEventGenerator::SetSpaceCharge(EEpsilon epsilon, EGasType gasType/*=kNeCO2_9010*/,
+                                            ECollRate collRate/*=k50kHz*/, ECorrection corrType/*=kLookup*/)
 {
   //
   // Set the space charge conditions
   //
-  fSpaceChargeFile="$ALICE_ROOT/TPC/Calib/maps/SC";
+  fCorrectionFile="$ALICE_ROOT/TPC/Calib/maps/SC";
   switch (gasType) {
     case kNeCO2_9010:
-      fSpaceChargeFile.Append("_NeCO2");
+      fCorrectionFile.Append("_NeCO2");
       break;
   }
   switch (epsilon) {
     case kEps5:
-      fSpaceChargeFile.Append("_eps5");
+      fCorrectionFile.Append("_eps5");
       break;
     case kEps10:
-      fSpaceChargeFile.Append("_eps10");
+      fCorrectionFile.Append("_eps10");
       break;
     case kEps20:
-      fSpaceChargeFile.Append("_eps20");
+      fCorrectionFile.Append("_eps20");
       break;
   }
   switch (collRate) {
     case k50kHz:
-      fSpaceChargeFile.Append("_50kHz");
+      fCorrectionFile.Append("_50kHz");
       break;
   }
-  fSpaceChargeFile.Append("_precal.root");
+  switch (corrType) {
+    case kLookup:
+      fCorrectionFile.Append("_precal.lookup.root");
+      break;
+    case kSpaceChargeFile:
+      fCorrectionFile.Append("_precal.root");
+      break;
+  }
 }
 
 //________________________________________________________________
@@ -563,13 +575,25 @@ void AliToyMCEventGenerator::InitSpaceCharge()
   // this should be called after the tree was connected
   //
 
-  AliInfo(Form("Using space charge map file: '%s'",fSpaceChargeFile.Data()));
+  AliInfo(Form("Using space charge map file: '%s'",fCorrectionFile.Data()));
+
+  TString corrName("map");
+
+  // allow for specifying an object name for the AliTPCCorrection in the file name
+  // separated by a ':'
+  TObjArray *arr=fCorrectionFile.Tokenize(":");
+  if (arr->GetEntriesFast()>1) {
+    fCorrectionFile=arr->At(0)->GetName();
+    corrName=arr->At(1)->GetName();
+  }
+  delete arr;
   
-  TFile f(fSpaceChargeFile.Data());
-  fSpaceCharge=(AliTPCSpaceCharge3D*)f.Get("map");
+  
+  TFile f(fCorrectionFile.Data());
+  fTPCCorrection=(AliTPCSpaceCharge3D*)f.Get("map");
 
   if (fOutTree){
     AliInfo("Attaching space charge map file name to the tree");
-    fOutTree->GetUserInfo()->Add(new TObjString(fSpaceChargeFile.Data()));
+    fOutTree->GetUserInfo()->Add(new TObjString(fCorrectionFile.Data()));
   }
 }

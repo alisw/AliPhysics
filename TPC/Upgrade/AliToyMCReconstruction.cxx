@@ -9,7 +9,7 @@
 #include <AliExternalTrackParam.h>
 #include <AliTPCcalibDB.h>
 #include <AliTPCclusterMI.h>
-#include <AliTPCSpaceCharge3D.h>
+#include <AliTPCCorrection.h>
 #include <AliTrackerBase.h>
 #include <AliTrackPointArray.h>
 #include <AliLog.h>
@@ -47,7 +47,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fTree(0x0)
 , fEvent(0x0)
 , fTPCParam(0x0)
-, fSpaceCharge(0x0)
+, fTPCCorrection(0x0)
 , fkNSectorInner(18) // hard-coded to avoid loading the parameters before
 , fInnerSectorArray(0x0)
 , fkNSectorOuter(18) // hard-coded to avoid loading the parameters before
@@ -426,7 +426,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   
   gROOT->cd();
      
-  AliExternalTrackParam *dummy;
+//   AliExternalTrackParam *dummy;
   AliExternalTrackParam *track;
 
   Int_t maxev=fTree->GetEntries();
@@ -567,7 +567,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
       if ( fCorrectionType == kIdeal      ) xyz[2] = seedCluster[iseed]->GetZ();
       
       //!!! TODO: to be replaced with the proper correction
-      fSpaceCharge->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
+      fTPCCorrection->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
     }
 
     // after the correction set the time bin as z-Position in case of a T0 seed
@@ -697,7 +697,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
       Float_t xyz[3]={0,0,0};
       pIn.GetXYZ(xyz);
 //       if ( fCorrectionType == kIdeal ) xyz[2] = cl->GetZ();
-      fSpaceCharge->CorrectPoint(xyz, cl->GetDetector());
+      fTPCCorrection->CorrectPoint(xyz, cl->GetDetector());
       pIn.SetXYZ(xyz);
     }
     // rotate the cluster to the local detector frame
@@ -838,7 +838,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
     if (fCorrectionType != kNoCorrection){
       Float_t xyz[3]={0,0,0};
       nearestPoint.GetXYZ(xyz);
-      fSpaceCharge->CorrectPoint(xyz, nearestCluster->GetDetector());
+      fTPCCorrection->CorrectPoint(xyz, nearestCluster->GetDetector());
       nearestPoint.SetXYZ(xyz);
     }
 
@@ -852,9 +852,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
     //Printf("Rotated Track point = %.2f %.2f %.2f",prot.GetX(),prot.GetY(),prot.GetZ());
 
     // update track with the nearest track point  
-    Bool_t res=kTRUE;
-    if (fUseMaterial) res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp);
-    else res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+    Bool_t res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
 
     if (!res) break;
     
@@ -877,14 +875,12 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
 
   
   // propagation to refX
-  if (fUseMaterial) AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp);
-  else AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+  AliTrackerBase::PropagateTrackTo(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
   
   // rotate fittet track to the frame of the original track and propagate to same reference
   track->Rotate(tr->GetAlpha());
   
-  if (fUseMaterial) AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp);
-  else AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
+  AliTrackerBase::PropagateTrackTo(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
 
   Printf("We have %d clusters in this track!",nClus);
   
@@ -913,13 +909,13 @@ void AliToyMCReconstruction::InitSpaceCharge()
 
   printf("Initialising the space charge map using the file: '%s'\n",filename.Data());
   TFile f(filename.Data());
-  fSpaceCharge=(AliTPCSpaceCharge3D*)f.Get("map");
+  fTPCCorrection=(AliTPCCorrection*)f.Get("map");
   
-  //   fSpaceCharge = new AliTPCSpaceCharge3D();
-  //   fSpaceCharge->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps10_50kHz.root");
-  //   fSpaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
-  // //   fSpaceCharge->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
-  //   fSpaceCharge->InitSpaceCharge3DDistortion();
+  //   fTPCCorrection = new AliTPCSpaceCharge3D();
+  //   fTPCCorrection->SetSCDataFileName("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps10_50kHz.root");
+  //   fTPCCorrection->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
+  // //   fTPCCorrection->SetOmegaTauT1T2(0.41,1,1.05); // Ar CO2
+  //   fTPCCorrection->InitSpaceCharge3DDistortion();
   
 }
 

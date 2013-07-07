@@ -9,6 +9,7 @@ class TTreeSRedirector;
 class AliExternalTrackParam;
 class AliTPCtrackerSector;
 class AliToyMCEvent;
+class AliTPCCorrection;
 
 class AliToyMCReconstruction : public TObject {
 public:
@@ -94,7 +95,7 @@ private:
   AliToyMCEvent *fEvent;         // input event
 
   AliTPCParam *fTPCParam;            // tpc reco parameters
-  AliTPCSpaceCharge3D *fSpaceCharge; // space charge 
+  AliTPCCorrection *fTPCCorrection; // space charge
 
    const Int_t fkNSectorInner;        //number of inner sectors
    AliTPCtrackerSector *fInnerSectorArray;  //array of inner sectors;

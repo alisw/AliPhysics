@@ -108,6 +108,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
     if(nTracksLocal > fNtracks) nTracksLocal = fNtracks;
   }
   std::cout << "Generating " << nTracksLocal << " tracks " << std::endl;
+
   for(Int_t iTrack=0; iTrack<nTracksLocal; iTrack++){
     Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
     Double_t eta = 0.;
@@ -138,7 +139,8 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
     AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
     // use unique ID for track number
     // this will be used in DistortTrack track to set the cluster label
-    tempTrack->SetUniqueID(iTrack);
+    // in one simulation the track id should be unique for performance studies
+    tempTrack->SetUniqueID(fCurrentTrack++);
 
     Bool_t trackDist = DistortTrack(*tempTrack, time);
     if(trackDist) retEvent->AddTrack(*tempTrack);
@@ -158,8 +160,12 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
   if (!ConnectOutputFile()) return;
   //initialise the space charge. Should be done after the tree was set up
   InitSpaceCharge();
-  
+
+  // number of tracks to simulate per interaction
   fNtracks=ntracks;
+  // within one simulation the track count should be unique for effeciency studies
+  fCurrentTrack=0;
+  
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./50e3; //50kHz equally spaced
   TStopwatch s;
@@ -208,7 +214,8 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, 
     AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
     // use unique ID for track number
     // this will be used in DistortTrack track to set the cluster label
-    tempTrack->SetUniqueID(iTrack);
+    // in one simulation the track id should be unique for performance studies
+    tempTrack->SetUniqueID(fCurrentTrack++);
 
 
     Bool_t trackDist = DistortTrack(*tempTrack, time);
@@ -248,7 +255,10 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
  
   esdEvent->ReadFromTree(esdTree);
 
-   fNtracks = ntracks;
+  fNtracks = ntracks;
+  // within one simulation the track count should be unique for effeciency studies
+  fCurrentTrack=0;
+  
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./50e3; //50kHz equally spaced
   TStopwatch s;
@@ -310,6 +320,9 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
   InitSpaceCharge();
   
   fNtracks=ntracks;
+  // within one simulation the track count should be unique for effeciency studies
+  fCurrentTrack=0;
+  
   Double_t eventTime=0.;
   //  const Double_t eventSpacing=1./50e3; //50kHz equally spaced
   TStopwatch s;
@@ -416,13 +429,13 @@ void AliToyMCEventGeneratorSimple::RunSimulation2(const Bool_t equalspacing, con
   Int_t nMaxEvents = OpenInputAndGetMaxEvents(type,nevents);
   if (!ConnectOutputFile()) return;
   
-   InitSpaceCharge();
-
-
+  InitSpaceCharge();
 
 
   fNtracks = ntracks;
-
+  // within one simulation the track count should be unique for effeciency studies
+  fCurrentTrack=0;
+  
   Double_t eventTime=0.;
   TStopwatch s;
   // const Double_t eventSpacing=1./50e3; //50kHz equally spaced
@@ -504,7 +517,8 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD2(Double_t time) {
     AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
     // use unique ID for track number
     // this will be used in DistortTrack track to set the cluster label
-    tempTrack->SetUniqueID(iTrack);
+    // in one simulation the track id should be unique for performance studies
+    tempTrack->SetUniqueID(fCurrentTrack++);
 
 
     Bool_t trackDist = DistortTrack(*tempTrack, time);
