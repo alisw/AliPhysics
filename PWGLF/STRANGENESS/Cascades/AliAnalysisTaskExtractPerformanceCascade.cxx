@@ -102,6 +102,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fpArapidityShift ( 0.465 ),
    fCentralityEstimator("V0M"),
    fkpAVertexSelection( kFALSE ),
+   fEtaRefMult ( 0.5 ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -329,6 +330,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fpArapidityShift ( 0.465 ),
    fCentralityEstimator("V0M"),
    fkpAVertexSelection( kFALSE ),
+   fEtaRefMult ( 0.5 ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -1579,7 +1581,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
    Int_t lMultiplicitySPD = -100;
 
    //testing purposes
-   if(fkIsNuclear == kFALSE) lMultiplicity =  fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+   if(fkIsNuclear == kFALSE) lMultiplicity =  fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,  fEtaRefMult );
 
   //--------- GENERATED NUMBER OF CHARGED PARTICLES
   // ---> Set Variables to Zero again
