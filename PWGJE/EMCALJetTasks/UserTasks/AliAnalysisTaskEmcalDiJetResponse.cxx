@@ -42,6 +42,8 @@ AliAnalysisTaskEmcalDiJetResponse::AliAnalysisTaskEmcalDiJetResponse() :
   fhnDiJetResponseFullCharged(0),
   fh1TriggersLostCharged(0),
   fh1TriggersLostFull(0),
+  fh3AssocLostPtDeltaPhiCharged(0),
+  fh3AssocLostPtDeltaPhiFull(0),
   fhnMatchingCharged(0),
   fhnMatchingFull(0)
 {
@@ -65,6 +67,8 @@ AliAnalysisTaskEmcalDiJetResponse::AliAnalysisTaskEmcalDiJetResponse(const char 
   fhnDiJetResponseFullCharged(0),
   fh1TriggersLostCharged(0),
   fh1TriggersLostFull(0),
+  fh3AssocLostPtDeltaPhiCharged(0),
+  fh3AssocLostPtDeltaPhiFull(0),
   fhnMatchingCharged(0),
   fhnMatchingFull(0)
 {
@@ -133,6 +137,12 @@ void AliAnalysisTaskEmcalDiJetResponse::UserCreateOutputObjects()
 
   fh1TriggersLostFull = new TH1F("fh1TriggersLostFull","fh1TriggersLostFull;p_{T,trig}^{ch}",nBinsPt,minPt,maxPt);
   fOutput->Add(fh1TriggersLostFull);
+
+  fh3AssocLostPtDeltaPhiCharged = new TH3F("fh3AssocLostPtDeltaPhiCharged","fh3AssocLostPtDeltaPhiCharged;p_{T,trig}^{ch};p_{T,assoc}^{ch};#Delta#varphi",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,nBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fOutput->Add(fh3AssocLostPtDeltaPhiCharged);
+
+  fh3AssocLostPtDeltaPhiFull = new TH3F("fh3AssocLostPtDeltaPhiFull","fh3AssocLostPtDeltaPhiFull;p_{T,trig}^{ch};p_{T,assoc}^{ch};#Delta#varphi",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,nBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fOutput->Add(fh3AssocLostPtDeltaPhiFull);
 
   const Int_t nBinsSparseMatch = 6;
   const Int_t nBinsDPhiMatch = 80;
@@ -305,8 +315,12 @@ void AliAnalysisTaskEmcalDiJetResponse::CorrelateJets(const Int_t type) {
 
       //Now check if jets are also there on detector level
       AliEmcalJet *jetAssocDet = jetAssocMC->ClosestJet();
-      if(!jetTrigDet || !jetAssocDet) {
+      if(!jetAssocDet) {
 	//dijet is lost
+      if(type==1)
+	fh3AssocLostPtDeltaPhiCharged->Fill(jetTrigPtMC,jetAssocPtMC,GetDeltaPhi(jetTrigMC,jetAssocMC));
+      if(type==2)
+	fh3AssocLostPtDeltaPhiFull->Fill(jetTrigPtMC,jetAssocPtMC,GetDeltaPhi(jetTrigMC,jetAssocMC));
 	continue;
       }
 
@@ -346,7 +360,7 @@ void AliAnalysisTaskEmcalDiJetResponse::FillMatchHistos() {
     AliEmcalJet *jetPart = jetDet->ClosestJet();
     if(!jetPart) continue;
 
-    Double_t matchVars[7] = {
+    Double_t matchVars[6] = {
       jetPart->Pt(),
       jetDet->Pt(),
       GetDeltaPhi(jetPart->Phi(),jetDet->Phi()),
@@ -365,7 +379,7 @@ void AliAnalysisTaskEmcalDiJetResponse::FillMatchHistos() {
     AliEmcalJet *jetPart = jetDet->ClosestJet();
     if(!jetPart) continue;
 
-    Double_t matchVars[7] = {
+    Double_t matchVars[6] = {
       jetPart->Pt(),
       jetDet->Pt(),
       GetDeltaPhi(jetPart->Phi(),jetDet->Phi()),

@@ -46,6 +46,8 @@ class AliAnalysisTaskEmcalDiJetResponse : public AliAnalysisTaskEmcalDiJetBase {
   TH1F             *fh1TriggersFull[2];           //! full jet triggers
   TH1F             *fh1TriggersLostCharged;       //! lost charged jet triggers
   TH1F             *fh1TriggersLostFull;          //! lost full jet triggers
+  TH3F             *fh3AssocLostPtDeltaPhiCharged;//! lost charged associated jet
+  TH3F             *fh3AssocLostPtDeltaPhiFull;   //! lost full associated jet
   THnSparse        *fhnMatchingCharged;           //! sparse comparing matched particle and detector level charged jets
   THnSparse        *fhnMatchingFull;              //! sparse comparing matched particle and detector level charged jets
 
