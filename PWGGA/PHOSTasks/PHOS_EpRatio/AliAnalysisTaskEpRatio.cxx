@@ -196,7 +196,10 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
   FillHistogram("h_NTrackEvent",kNumberOfTracks);
 
   for(Int_t iTrack=0; iTrack<kNumberOfTracks; iTrack++){
+
     AliVTrack* esdTrack = dynamic_cast<AliVTrack*> (event->GetTrack(iTrack));
+    if(!esdTrack) AliFatal(Form("iTrack %d is Not a AliVTrack!!",iTrack));
+
     FillHistogram("h_PTrackEvent",esdTrack->P() );
     FillHistogram("h_NClusTPCEvent",esdTrack->GetTPCNcls() );
   }
