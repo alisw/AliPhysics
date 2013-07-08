@@ -17,13 +17,12 @@
 # include "fastjet/PseudoJet.hh"
 #else
 namespace fastjet {
+  class PseudoJet;
   class ClusterSequenceArea;
   class AreaDefinition;
   class JetDefinition;
-  class PseudoJet;
 }
 #endif
-
 
 ////////////////
 class AliJetHeader;
@@ -64,6 +63,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetEventSelection(Bool_t b){fEventSelection = b;}
+    virtual void SetRequireITSRefit(Int_t i){fRequireITSRefit=i;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetTrackEtaWindow(Float_t f){fTrackEtaWindow = f;}
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
@@ -179,6 +179,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fTrackEtaWindow;        // eta window used for corraltion plots between rec and gen 
+    Int_t         fRequireITSRefit;       // to select hybrids with ITS refit only
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out

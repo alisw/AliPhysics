@@ -118,6 +118,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fAvgTrials(1),
   fExternalWeight(1),
   fTrackEtaWindow(0.9),    
+  fRequireITSRefit(0),
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
@@ -285,6 +286,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fAvgTrials(1),
   fExternalWeight(1),    
   fTrackEtaWindow(0.9),    
+  fRequireITSRefit(0),
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
@@ -1876,6 +1878,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	  if(fDebug>10)Printf("%s:%d Not matching filter %d/%d %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks(),fFilterMask,tr->GetFilterMap());	
 	  continue;
 	}
+        if(fRequireITSRefit==0){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
 	if(TMath::Abs(tr->Eta())>fTrackEtaWindow){
 	  if(fDebug>10)Printf("%s:%d Not matching eta %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks());	
 	  continue;
@@ -1910,6 +1913,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	else if(fFilterType == 1)bGood = trackAOD->IsHybridTPCConstrainedGlobal();
 	else if(fFilterType == 2)bGood = trackAOD->IsHybridGlobalConstrainedGlobal();
 	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
+        if(fRequireITSRefit==0){if((trackAOD->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
 	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
 	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());
