@@ -1588,7 +1588,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
-    if(!stack) return;
+    //if(!stack) return;
 
     //
     // MC info

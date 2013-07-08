@@ -1986,7 +1986,6 @@ void AliAnalysisTaskFlowStrange::SaveVZEROQA() {
   if(!event) return;
   AliVVZERO *vzero = event->GetVZEROData();
   AliAODTracklets *tracklets = event->GetTracklets();
-  if(!event) return;
   if(!vzero) return;
   if(!tracklets) return;
   Double_t mult, eqmult;
