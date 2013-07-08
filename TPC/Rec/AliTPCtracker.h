@@ -129,6 +129,12 @@ public:
 
    Bool_t IsTPCHVDipEvent(AliESDEvent const *esdEvent);
 
+   // public for ToyMC usage
+   void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE); 
+   void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
+   void SumTracks(TObjArray *arr1,TObjArray *&arr2);
+   void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
+
 private:
   Bool_t IsFindable(AliTPCseed & t);
   AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
@@ -149,10 +155,7 @@ private:
  
    void ReadSeeds(const AliESDEvent *const event, Int_t direction);  //read seeds from the event
 
-   void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
-
-   void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE);
   
 
    AliTPCseed *MakeSeed(AliTPCseed *const track, Float_t r0, Float_t r1, Float_t r2); //reseed
@@ -166,14 +169,12 @@ private:
    //Int_t LoadOuterSectors();
    void DumpClusters(Int_t iter, TObjArray *trackArray);
    void UnsignClusters();
-   void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
 
    void ParallelTracking(TObjArray *const arr, Int_t rfirst, Int_t rlast);
    void Tracking(TObjArray * arr);
    TObjArray * Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy=-1, Int_t dsec=0);
    TObjArray * Tracking();
    TObjArray * TrackingSpecial();
-   void SumTracks(TObjArray *arr1,TObjArray *&arr2);
    void PrepareForBackProlongation(const TObjArray *const arr, Float_t fac) const;
    void PrepareForProlongation(TObjArray *const arr, Float_t fac) const;
 
