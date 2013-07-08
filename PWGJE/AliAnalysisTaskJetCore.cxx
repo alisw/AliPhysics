@@ -82,6 +82,7 @@ fCentMin(0.),
 fCentMax(100.),
 fNInputTracksMin(0),
 fNInputTracksMax(-1),
+fRequireITSRefit(0),
 fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0), 
@@ -211,6 +212,7 @@ fCentMin(0.),
 fCentMax(100.),
 fNInputTracksMin(0),
 fNInputTracksMax(-1),
+fRequireITSRefit(0),
 fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0),
@@ -1155,7 +1157,8 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
       if(fFilterType == 0)bGood = true;
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
       else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();    
-     if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+      if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+      if(fRequireITSRefit==0){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
       if(bGood==false) continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
