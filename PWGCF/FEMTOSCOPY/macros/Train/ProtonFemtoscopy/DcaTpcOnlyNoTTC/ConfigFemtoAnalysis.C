@@ -269,7 +269,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                 //dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1); // 2.4 0.1
                 // dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0205, 0.035, -1.1);     //      DCA xy
                 dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01);     //      DCA xy
-                dtc1etaphitpc[aniter]->SetMaxImpactZ(0.15); // 2.0 0.1
+                dtc1etaphitpc[aniter]->SetMaxImpactZ(2.0); // 2.0 0.1
 
                 if (ichg == 2) {
                   //dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
@@ -281,7 +281,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                   //dtc2etaphitpc[aniter]->SetMaxImpactXY(0.1); // 2.4 0.1
                   // dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0205, 0.035, -1.1);     //      DCA xy
                   dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01);     //      DCA xy
-                  dtc2etaphitpc[aniter]->SetMaxImpactZ(0.15); // 2.0 0.1
+                  dtc2etaphitpc[aniter]->SetMaxImpactZ(2.0); // 2.0 0.1
                 }
 
               }
