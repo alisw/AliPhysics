@@ -2,6 +2,7 @@
 #include <TGButton.h>
 #include <TGMenu.h>
 #include <TGPicture.h>
+#include <TGSplitter.h>
 #include <TGToolBar.h>
 #include <TGMsgBox.h>
 
@@ -50,7 +51,6 @@ AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t heigh
       fEve(0),
       fFileDialog(0)
 {
-
     AliEveUtil::Init();
     fPicturePool = AliEveUtil::GetPicturePool();
    
@@ -64,6 +64,17 @@ AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t heigh
     
     setupMenus();
     setupToolbars();
+
+    TGHorizontalFrame* hf = new TGHorizontalFrame(this,200,200);
+    
+    // 3D View Frame
+    TGFrame* towerViewFrame = gEve->GetDefaultViewer()->GetGUIFrame();
+    towerViewFrame->MapWindow();
+    towerViewFrame->ReparentWindow(hf);
+    
+    hf->AddFrame(towerViewFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY , 3, 3, 3, 3));
+    
+    AddFrame(hf, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY , 3, 3, 3, 3));
 
     SetWindowName(title);
     Resize(width,height);
