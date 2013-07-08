@@ -36,34 +36,34 @@ using namespace std;
 
 AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t height)
     : TGMainFrame(gClient->GetRoot(), width, height),
+      fMenuBar(0),
+      fMenuFile(0),
+      fMenuEdit(0),
+      fMenuView(0),
+      fMenuViewToolbars(0),
+      fMenuViewSidebars(0),
+      fMenuGo(0),
+      fMenuTools(0),
+      fMenuHelp(0),
+      fToolBar(0),
+      fPicturePool(0),
       fEve(0),
       fFileDialog(0)
 {
 
     AliEveUtil::Init();
     fPicturePool = AliEveUtil::GetPicturePool();
-
-    static const TEveException kEH("AliEveMainWindow::AliEveMainWindow");
-
-    if(!fPicturePool) cout<< "Couldnt get a PicturePool"<<endl;
-
-
-    fEve = TEveManager::Create(kFALSE, "V");
+   
+    fEve = TEveManager::Create(kFALSE, "VVV");
     gEve->GetDefaultViewer()->SetElementName("3D View");
     gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_PableCompound);
     gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_PableCompound);
 
     TString evedir(Form("%s/EVE", gSystem->Getenv("ALICE_ROOT")));
     gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
-
+    
     setupMenus();
     setupToolbars();
-
-    TGFrame* viewFrame = gEve->GetDefaultViewer()->GetGUIFrame();
-    viewFrame->MapWindow();
-    viewFrame->ReparentWindow(this);
-
-    AddFrame(viewFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY , 3, 3, 3, 3));
 
     SetWindowName(title);
     Resize(width,height);
@@ -150,12 +150,12 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
     }
 }
 
-void AliEveMainWindow::onMenuEditItem(UInt_t id)
+void AliEveMainWindow::onMenuEditItem(UInt_t /*id*/)
 {
 
 }
 
-void AliEveMainWindow::onMenuViewItem(UInt_t id)
+void AliEveMainWindow::onMenuViewItem(UInt_t /*id*/)
 {
 
 }
