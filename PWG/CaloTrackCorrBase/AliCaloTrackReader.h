@@ -252,15 +252,15 @@ public:
   void             SwitchOffEventTriggerAtSE()             { fEventTriggerAtSE      = kFALSE ; }
 		
 	
-  TArrayI          GetTriggerPatches();
-  // void            RejectExoticEvents(TArrayI patches);
-  //void             RejectTriggeredEventsByPileUp(TArrayI patches);
+  TArrayI          GetTriggerPatches(Int_t tmin, Int_t tmax);
   void             MatchTriggerCluster(TArrayI patches);
 
   Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }  
   Bool_t           IsBadCellTriggerEvent()                 { return fIsBadCellEvent          ; }
   Bool_t           IsBadMaxCellTriggerEvent()              { return fIsBadMaxCellEvent       ; }
   Bool_t           IsTriggerMatched()                      { return fIsTriggerMatch          ; }
+  Bool_t           IsTriggerMatchedOpenCuts(Int_t i)       { return fIsTriggerMatchOpenCut[i]; }
+  
   Int_t            GetTriggerClusterBC()                   { return fTriggerClusterBC        ; }
   Int_t            GetTriggerClusterIndex()                { return fTriggerClusterIndex     ; }
   Int_t            GetTriggerClusterId()                   { return fTriggerClusterId        ; }
@@ -656,7 +656,9 @@ public:
   Bool_t           fIsExoticEvent;               // Exotic trigger event flag
   Bool_t           fIsBadCellEvent;              // Bad cell triggered event flag, any cell in cluster is bad
   Bool_t           fIsBadMaxCellEvent;           // Bad cell triggered event flag, only max energy cell is bad
-  Int_t            fIsTriggerMatch;              // Could not match the event to a trigger patch
+  Bool_t           fIsTriggerMatch;              // Could match the event to a trigger patch?
+  Bool_t           fIsTriggerMatchOpenCut[3];    // Could not match the event to a trigger patch?, retry opening cuts
+
   
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
@@ -701,7 +703,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,56)
+  ClassDef(AliCaloTrackReader,57)
   
 } ;
 

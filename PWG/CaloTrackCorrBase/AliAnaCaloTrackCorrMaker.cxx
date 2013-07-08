@@ -14,10 +14,10 @@
  **************************************************************************/
 
 //_____________________________________________________________________________
-// Steering class for particle (gamma, hadron) identification and correlation 
-// analysis. It is called by the task class AliAnalysisTaskCaloTrackCorrelation 
-// and it connects the input (ESD/AOD/MonteCarlo) got with AliCaloTrackReader 
-// (produces TClonesArrays of AODs (TParticles in MC case if requested)), with 
+// Steering class for particle (gamma, hadron) identification and correlation
+// analysis. It is called by the task class AliAnalysisTaskCaloTrackCorrelation
+// and it connects the input (ESD/AOD/MonteCarlo) got with AliCaloTrackReader
+// (produces TClonesArrays of AODs (TParticles in MC case if requested)), with
 // the analysis classes that derive from AliAnaCaloTrackCorrBaseClass
 //
 // -- Author: Gustavo Conesa (INFN-LNF, LPSC-Grenoble)
@@ -42,12 +42,12 @@ ClassImp(AliAnaCaloTrackCorrMaker)
 
 
 //__________________________________________________
-AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker() : 
+AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker() :
 TObject(),
 fReader(0),                   fCaloUtils(0),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
-fMakeHisto(kFALSE),           fMakeAOD(kFALSE), 
-fAnaDebug(0),                 fCuts(new TList), 
+fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
+fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
 fhNEvents(0),                 fhNExoticEvents(0),
 fhNEventsNoTriggerFound(0),
@@ -75,16 +75,22 @@ fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
   
+  for(Int_t i = 0; i < 3; i++)
+  {
+    fhClusterTriggerBCUnMatchReMatch      [0] = 0;
+    fhClusterTriggerBCExoticUnMatchReMatch[0] = 0;
+  }
+  
   //Initialize parameters, pointers and histograms
   InitParameters();
 }
 
 //________________________________________________________________________________________
-AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker(const AliAnaCaloTrackCorrMaker & maker) :   
+AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker(const AliAnaCaloTrackCorrMaker & maker) :
 TObject(),
 fReader(),   //(new AliCaloTrackReader(*maker.fReader)),
 fCaloUtils(),//(new AliCalorimeterUtils(*maker.fCaloUtils)),
-fOutputContainer(new TList()), fAnalysisContainer(new TList()), 
+fOutputContainer(new TList()), fAnalysisContainer(new TList()),
 fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
@@ -104,7 +110,7 @@ fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
-fhNMergedFiles(maker.fhNMergedFiles),          
+fhNMergedFiles(maker.fhNMergedFiles),
 fhScaleFactor(maker.fhScaleFactor),
 fhEMCalBCEvent(maker.fhEMCalBCEvent),
 fhEMCalBCEventCut(maker.fhEMCalBCEventCut),
@@ -132,25 +138,30 @@ fhClusterTriggerBCExoticEventBC(maker.fhClusterTriggerBCExoticEventBC),
 fhClusterTriggerBCExoticEventBCUnMatch(maker.fhClusterTriggerBCExoticEventBCUnMatch)
 
 {
+  for(Int_t i = 0; i < 3; i++)
+  {
+    fhClusterTriggerBCUnMatchReMatch      [i] = maker.fhClusterTriggerBCUnMatchReMatch      [i];
+    fhClusterTriggerBCExoticUnMatchReMatch[i] = maker.fhClusterTriggerBCExoticUnMatchReMatch[i];
+  }
   // cpy ctor
 }
 
 //___________________________________________________
-AliAnaCaloTrackCorrMaker::~AliAnaCaloTrackCorrMaker() 
+AliAnaCaloTrackCorrMaker::~AliAnaCaloTrackCorrMaker()
 {
   // Remove all owned pointers.
   
-  //  Do not delete it here, already done somewhere else, need to understand where.	
+  //  Do not delete it here, already done somewhere else, need to understand where.
   //  if (fOutputContainer) {
   //    fOutputContainer->Clear();
   //    delete fOutputContainer ;
-  //  }   
+  //  }
   
   if (fAnalysisContainer)
   {
     fAnalysisContainer->Delete();
     delete fAnalysisContainer ;
-  }   
+  }
   
   if (fReader)    delete fReader ;
   if (fCaloUtils) delete fCaloUtils ;
@@ -164,24 +175,24 @@ AliAnaCaloTrackCorrMaker::~AliAnaCaloTrackCorrMaker()
 }
 
 //__________________________________________________________________
-void    AliAnaCaloTrackCorrMaker::AddAnalysis(TObject* ana, Int_t n) 
+void    AliAnaCaloTrackCorrMaker::AddAnalysis(TObject* ana, Int_t n)
 {
   // Add analysis depending on AliAnaCaloTrackCorrBaseClass to list
   
   if ( fAnalysisContainer)
-  { 
-    fAnalysisContainer->AddAt(ana,n); 
+  {
+    fAnalysisContainer->AddAt(ana,n);
   }
   else
-  { 
+  {
     printf("AliAnaCaloTrackCorrMaker::AddAnalysis() - AnalysisContainer not initialized\n");
     abort();
   }
-}  
+}
 
 //_________________________________________________________
 TList * AliAnaCaloTrackCorrMaker::FillAndGetAODBranchList()
-{ 
+{
 	
   // Get any new output AOD branches from analysis and put them in a list
   // The list is filled in the maker, and new branch passed to the analysis frame
@@ -190,10 +201,10 @@ TList * AliAnaCaloTrackCorrMaker::FillAndGetAODBranchList()
   TList *aodBranchList = fReader->GetAODBranchList() ;
   
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
-    {
-      AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-      if(ana->NewOutputAOD()) aodBranchList->Add(ana->GetCreateOutputAODBranch());
-    }
+  {
+    AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+    if(ana->NewOutputAOD()) aodBranchList->Add(ana->GetCreateOutputAODBranch());
+  }
   
   return aodBranchList ;
   
@@ -252,7 +263,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   
   if(fReader->IsPileUpFromSPD())
     fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
-    
+  
   fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
   fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
   fhCentrality        ->Fill(fReader->GetEventCentrality  ());
@@ -294,34 +305,34 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   
   fhNPileUpVertSPD   ->Fill(nVerticesSPD);
   fhNPileUpVertTracks->Fill(nVerticesTracks);
-
+  
   // Time stamp
   if(fReader->IsSelectEventTimeStampOn() && esdevent)
   {
     Int_t timeStamp = esdevent->GetTimeStamp();
     Float_t timeStampFrac = 1.*(timeStamp-fReader->GetRunTimeStampMin()) /
-                               (fReader->GetRunTimeStampMax()-fReader->GetRunTimeStampMin());
+    (fReader->GetRunTimeStampMax()-fReader->GetRunTimeStampMin());
     
     //printf("stamp %d, min %d, max %d, frac %f\n", timeStamp, fReader->GetRunTimeStampMin(), fReader->GetRunTimeStampMax(), timeStampFrac);
-
+    
     fhTimeStampFraction->Fill(timeStampFrac);
   }
 }
 
 //_______________________________________________________
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
-{ 
+{
   
   // Get the list of the cuts used for the analysis
   // The list is filled in the maker, called by the task in LocalInit() and posted there
   
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
-    {
-      AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-      TObjString * objstring = ana->GetAnalysisCuts();
-      
-      if(objstring)fCuts->Add(objstring);
-    }
+  {
+    AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+    TObjString * objstring = ana->GetAnalysisCuts();
+    
+    if(objstring)fCuts->Add(objstring);
+  }
   
   return fCuts ;
   
@@ -345,7 +356,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
   fhNExoticEvents->SetYTitle("# exotic events");
   fOutputContainer->Add(fhNExoticEvents);
-
+  
   fhNEventsNoTriggerFound      = new TH1F("hNEventsNoTriggerFound",   "Number of analyzed events triggered but no trigger found"     , 1 , 0 , 1  ) ;
   fhNEventsNoTriggerFound->SetYTitle("# exotic events");
   fOutputContainer->Add(fhNEventsNoTriggerFound);
@@ -354,47 +365,47 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   Int_t   nbin   = 11;
   Float_t minbin =-5.5;
   Float_t maxbin = 5.5;
-  Int_t  labelshift = 6;  
+  Int_t  labelshift = 6;
   
   fhClusterTriggerBCEventBC      = new TH2F("hClusterTriggerBCEventBC", "Found trigger BC and  Event BC",
                                             nbin , minbin ,maxbin,4,0, 4) ;
   fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
   for(Int_t i = 0; i < 4; i++)
     fhClusterTriggerBCEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
+  fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCEventBC->SetYTitle("Event BC%4");
+  fhClusterTriggerBCEventBC->SetYTitle("Event BC%4");
   fOutputContainer->Add(fhClusterTriggerBCEventBC);
   
   fhClusterTriggerBCExoticEventBC      = new TH2F("hClusterTriggerBCExoticEventBC", "Found exotic trigger BC and  Event BC",
                                                   nbin , minbin ,maxbin,4,1, 4) ;
   for(Int_t i = 0; i < 4; i++)
     fhClusterTriggerBCExoticEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCExoticEventBC->SetXTitle("cluster trigger BC");
+  fhClusterTriggerBCExoticEventBC->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCExoticEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCExoticEventBC->SetYTitle("Event BC%4");
+  fhClusterTriggerBCExoticEventBC->SetYTitle("Event BC%4");
   fOutputContainer->Add(fhClusterTriggerBCExoticEventBC);
-
+  
   fhClusterTriggerBCEventBCUnMatch      = new TH2F("hClusterTriggerBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
                                                    nbin , minbin ,maxbin,4,1, 4) ;
   for(Int_t i = 0; i < 4; i++)
     fhClusterTriggerBCEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCEventBCUnMatch->SetXTitle("cluster trigger BC");
+  fhClusterTriggerBCEventBCUnMatch->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCEventBCUnMatch->SetYTitle("Event BC%4");
+  fhClusterTriggerBCEventBCUnMatch->SetYTitle("Event BC%4");
   fOutputContainer->Add(fhClusterTriggerBCEventBCUnMatch);
   
   fhClusterTriggerBCExoticEventBCUnMatch      = new TH2F("hClusterTriggerExoticBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
                                                          nbin , minbin ,maxbin,4,1, 4) ;
   for(Int_t i = 0; i < 4; i++)
     fhClusterTriggerBCExoticEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-    fhClusterTriggerBCExoticEventBCUnMatch->SetXTitle("cluster trigger BC");
+  fhClusterTriggerBCExoticEventBCUnMatch->SetXTitle("cluster trigger BC");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCExoticEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fhClusterTriggerBCExoticEventBCUnMatch->SetYTitle("Event BC%4");
+  fhClusterTriggerBCExoticEventBCUnMatch->SetYTitle("Event BC%4");
   fOutputContainer->Add(fhClusterTriggerBCExoticEventBCUnMatch);
   
   fhClusterTriggerBC              = new TH1F("hClusterTriggerBC",
@@ -415,25 +426,25 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   
   fhClusterTriggerBCBadCell         = new TH1F("hClusterTriggerBCBadCell",
-                                             "Number of analyzed events triggered by a bad cell in a given BC",
-                                             nbin , minbin ,maxbin) ;
- 
+                                               "Number of analyzed events triggered by a bad cell in a given BC",
+                                               nbin , minbin ,maxbin) ;
+  
   fhClusterTriggerBCBadCell->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCBadCell->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
   fOutputContainer->Add(fhClusterTriggerBCBadCell);
   
   fhClusterTriggerBCBadCellExotic    = new TH1F("hClusterTriggerBCBadCellExotic",
-                                            "Number of analyzed events triggered by a bad cell & exotic cluster in a given BC",
-                                            nbin , minbin ,maxbin) ;
+                                                "Number of analyzed events triggered by a bad cell & exotic cluster in a given BC",
+                                                nbin , minbin ,maxbin) ;
   fhClusterTriggerBCBadCellExotic->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCBadCellExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
   fOutputContainer->Add(fhClusterTriggerBCBadCellExotic);
   
   fhClusterTriggerBCBadCluster           = new TH1F("hClusterTriggerBCBadCluster",
-                                             "Number of analyzed events triggered by a bad cluster in a given BC",
-                                             nbin , minbin ,maxbin) ;
+                                                    "Number of analyzed events triggered by a bad cluster in a given BC",
+                                                    nbin , minbin ,maxbin) ;
   
   fhClusterTriggerBCBadCluster->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
@@ -442,8 +453,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   
   fhClusterTriggerBCBadClusterExotic    = new TH1F("hClusterTriggerBCBadClusterExotic",
-                                            "Number of analyzed events triggered by a bad cluster & exotic cluster in a given BC",
-                                            nbin , minbin ,maxbin) ;
+                                                   "Number of analyzed events triggered by a bad cluster & exotic cluster in a given BC",
+                                                   nbin , minbin ,maxbin) ;
   
   fhClusterTriggerBCBadClusterExotic->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
@@ -468,26 +479,26 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   
   fhClusterTriggerBCBadCellUnMatch    = new TH1F("hClusterTriggerBCBadCellUnMatch",
-                                             "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
-                                             nbin , minbin ,maxbin) ;
+                                                 "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
+                                                 nbin , minbin ,maxbin) ;
   fhClusterTriggerBCBadCellUnMatch->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCBadCellUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
   fOutputContainer->Add(fhClusterTriggerBCBadCellUnMatch);
-
+  
   
   fhClusterTriggerBCBadCellExoticUnMatch = new TH1F("hClusterTriggerBCBadCellExoticUnMatch",
-                                                "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
-                                             nbin , minbin ,maxbin) ;
+                                                    "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
+                                                    nbin , minbin ,maxbin) ;
   fhClusterTriggerBCBadCellExoticUnMatch->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCBadCellExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
   fOutputContainer->Add(fhClusterTriggerBCBadCellExoticUnMatch);
-
+  
   
   fhClusterTriggerBCBadClusterUnMatch    = new TH1F("hClusterTriggerBCBadClusterUnMatch",
-                                             "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
-                                             nbin , minbin ,maxbin) ;
+                                                    "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
+                                                    nbin , minbin ,maxbin) ;
   fhClusterTriggerBCBadClusterUnMatch->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCBadClusterUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
@@ -495,13 +506,32 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   
   fhClusterTriggerBCBadClusterExoticUnMatch = new TH1F("hClusterTriggerBCBadClusterExoticUnMatch",
-                                                "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
-                                                nbin , minbin ,maxbin) ;
+                                                       "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
+                                                       nbin , minbin ,maxbin) ;
   fhClusterTriggerBCBadClusterExoticUnMatch->SetYTitle("# events");
   for(Int_t i = 1; i < 12; i++)
     fhClusterTriggerBCBadClusterExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
   fOutputContainer->Add(fhClusterTriggerBCBadClusterExoticUnMatch);
-
+  
+  TString rematch[] = {"OpenTime","CheckNeighbours","Both"};
+  for(Int_t j = 0; j < 3; j++)
+  {
+    fhClusterTriggerBCUnMatchReMatch[j]       = new TH1F(Form("hClusterTriggerBCUnMatch_ReMatch_%s",rematch[j].Data()),
+                                                         Form("Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
+                                                         nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCUnMatchReMatch[j]->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCUnMatchReMatch[j]);
+    
+    fhClusterTriggerBCExoticUnMatchReMatch[j] = new TH1F(Form("hClusterTriggerBCExoticUnMatch_ReMatch_%s",rematch[j].Data()),
+                                                         Form("Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
+                                                         nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCExoticUnMatchReMatch[j]->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCExoticUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCExoticUnMatchReMatch[j]);
+  }
   
   fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
   fhNPileUpEvents->SetYTitle("# events");
@@ -514,7 +544,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNPileUpEvents->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
   fhNPileUpEvents->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
   fOutputContainer->Add(fhNPileUpEvents);
-
+  
   fhNPileUpEventsTriggerBC0      = new TH1F("hNPileUpEventsTriggerBC0","Number of events considered as pile-up, trigger cluster in BC=0", 8 , 0 , 8 ) ;
   fhNPileUpEventsTriggerBC0->SetYTitle("# events");
   fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(1 ,"SPD");
@@ -526,7 +556,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
   fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
   fOutputContainer->Add(fhNPileUpEventsTriggerBC0);
-
+  
   
   fhTrackBCEvent      = new TH1F("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
   fhTrackBCEvent->SetYTitle("# events");
@@ -541,12 +571,12 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   for(Int_t i = 1; i < 20; i++)
     fhTrackBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
   fOutputContainer->Add(fhTrackBCEventCut);
-
+  
   fhPrimaryVertexBC      = new TH1F("hPrimaryVertexBC", "Number of primary vertex per bunch crossing ", 41 , -20 , 20  ) ;
   fhPrimaryVertexBC->SetYTitle("# events");
   fhPrimaryVertexBC->SetXTitle("Bunch crossing");
   fOutputContainer->Add(fhPrimaryVertexBC);
-
+  
   fhEMCalBCEvent      = new TH1F("hEMCalBCEvent",   "Number of events with at least 1 cluster in a bunch crossing ", 19 , 0 , 19 ) ;
   fhEMCalBCEvent->SetYTitle("# events");
   fhEMCalBCEvent->SetXTitle("Bunch crossing");
@@ -607,7 +637,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin",100,0.,100) ;
   fhCentrality->SetXTitle("Centrality bin");
-  fOutputContainer->Add(fhCentrality) ;  
+  fOutputContainer->Add(fhCentrality) ;
   
   fhEventPlaneAngle=new TH1F("hEventPlaneAngle","Number of events in event plane",100,0.,TMath::Pi()) ;
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
@@ -629,8 +659,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     
     fhScaleFactor = new TH1F("hScaleFactor",   "Number of merged output files"     , 1 , 0 , 1  ) ;
     fhScaleFactor->SetYTitle("scale factor");
-    fhScaleFactor->SetBinContent(1,fScaleFactor); // Fill here 
-    fOutputContainer->Add(fhScaleFactor);    
+    fhScaleFactor->SetBinContent(1,fScaleFactor); // Fill here
+    fOutputContainer->Add(fhScaleFactor);
   }
   
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
@@ -649,15 +679,15 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     if(fMakeHisto) // Analysis with histograms as output on
     {
       
-      //Fill container with appropriate histograms			
-      TList * templist =  ana ->GetCreateOutputObjects(); 
+      //Fill container with appropriate histograms
+      TList * templist =  ana ->GetCreateOutputObjects();
       templist->SetOwner(kFALSE); //Owner is fOutputContainer.
       
       for(Int_t i = 0; i < templist->GetEntries(); i++)
       {
         
         //Add only  to the histogram name the name of the task
-        if(   strcmp((templist->At(i))->ClassName(),"TObjString")   ) 
+        if(   strcmp((templist->At(i))->ClassName(),"TObjString")   )
         {
           snprintf(newname,buffersize, "%s%s", (ana->GetAddedHistogramsStringToName()).Data(), (templist->At(i))->GetName());
           //printf("name %s, new name %s\n",(templist->At(i))->GetName(),newname);
@@ -681,7 +711,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 
 //___________________________________
 void AliAnaCaloTrackCorrMaker::Init()
-{  
+{
   //Init container histograms and other common variables
   // Fill the output list of histograms during the CreateOutputObjects stage.
   
@@ -712,18 +742,18 @@ void AliAnaCaloTrackCorrMaker::Init()
 
 //_____________________________________________
 void AliAnaCaloTrackCorrMaker::InitParameters()
-{	
+{
   //Init data members
   
   fMakeHisto  = kTRUE;
-  fMakeAOD    = kTRUE; 
+  fMakeAOD    = kTRUE;
   fAnaDebug   = 0; // No debugging info displayed by default
 	
 }
 
 //______________________________________________________________
 void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
-{	
+{
   //Print some relevant parameters set for the analysis
 	
   if(! opt)
@@ -736,43 +766,43 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
   printf("Number of analysis tasks   =     %d\n", fAnalysisContainer->GetEntries()) ;
   
   if(!strcmp("all",opt))
+  {
+    printf("Print analysis Tasks settings :\n") ;
+    for(Int_t iana = 0; iana<fAnalysisContainer->GetEntries(); iana++)
     {
-      printf("Print analysis Tasks settings :\n") ;
-      for(Int_t iana = 0; iana<fAnalysisContainer->GetEntries(); iana++)
-       {
-         ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana))->Print("");
-       }
-      
-      printf("Print analysis Reader settings :\n") ;
-      fReader->Print("");
-      printf("Print analysis Calorimeter Utils settings :\n") ;
-      fCaloUtils->Print("");
-      
+      ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana))->Print("");
+    }
+    
+    printf("Print analysis Reader settings :\n") ;
+    fReader->Print("");
+    printf("Print analysis Calorimeter Utils settings :\n") ;
+    fCaloUtils->Print("");
+    
   }
   
-} 
+}
 
 //_______________________________________________________________________
-void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry, 
+void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
                                             const char * currentFileName)
 {
   //Process analysis for this event
   
   if(fMakeHisto && !fOutputContainer)
-    {
-      printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Histograms not initialized\n");
-      abort();
-    }
+  {
+    printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Histograms not initialized\n");
+    abort();
+  }
   
   if(fAnaDebug >= 0 )
+  {
+    printf("***  AliAnaCaloTrackCorrMaker::ProcessEvent() Event %d   ***  \n",iEntry);
+    if(fAnaDebug > 1 )
     {
-      printf("***  AliAnaCaloTrackCorrMaker::ProcessEvent() Event %d   ***  \n",iEntry);
-      if(fAnaDebug > 1 ) 
-       {
-         printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Current File Name : %s\n", currentFileName);
-         //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
-       }
+      printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Current File Name : %s\n", currentFileName);
+      //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
     }
+  }
   
   //Each event needs an empty branch
   TList * aodList = fReader->GetAODBranchList();
@@ -784,10 +814,10 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   }
   
   //Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
-  fCaloUtils->AccessGeometry(fReader->GetInputEvent());	
+  fCaloUtils->AccessGeometry(fReader->GetInputEvent());
   
   //Set the AODB calibration, bad channels etc. parameters at least once
-  fCaloUtils->AccessOADB(fReader->GetInputEvent());	
+  fCaloUtils->AccessOADB(fReader->GetInputEvent());
   
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
@@ -799,6 +829,9 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   Bool_t triggerMatch= fReader->IsTriggerMatched();
   Bool_t triggerBCOK = kTRUE;
   Int_t  triggerId   = fReader->GetTriggerClusterId() ;
+  Bool_t reMatchOpenTime = fReader->IsTriggerMatchedOpenCuts(0);
+  Bool_t reMatchNeigbour = fReader->IsTriggerMatchedOpenCuts(1);
+  Bool_t reMatchBoth     = fReader->IsTriggerMatchedOpenCuts(2);
   
   if(triggerId < 0)
   {
@@ -844,13 +877,25 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
     }
     else
     {
-      if     (!exotic     && !badCluster) fhClusterTriggerBCUnMatch->Fill(triggerBC);
+      if     (!exotic     && !badCluster)
+      {
+        fhClusterTriggerBCUnMatch->Fill(triggerBC);
+        if(reMatchOpenTime) fhClusterTriggerBCUnMatchReMatch[0]->Fill(triggerBC);
+        if(reMatchNeigbour) fhClusterTriggerBCUnMatchReMatch[1]->Fill(triggerBC);
+        if(reMatchBoth)     fhClusterTriggerBCUnMatchReMatch[2]->Fill(triggerBC);
+      }
       else if( exotic     &&  badCluster)
       {
         fhClusterTriggerBCBadClusterExoticUnMatch->Fill(triggerBC);
         if(badCell)   fhClusterTriggerBCBadCellExoticUnMatch   ->Fill(triggerBC);
       }
-      else if( exotic     && !badCluster) fhClusterTriggerBCExoticUnMatch->Fill(triggerBC);
+      else if( exotic     && !badCluster)
+      {
+        fhClusterTriggerBCExoticUnMatch->Fill(triggerBC);
+        if(reMatchOpenTime) fhClusterTriggerBCExoticUnMatchReMatch[0]->Fill(triggerBC);
+        if(reMatchNeigbour) fhClusterTriggerBCExoticUnMatchReMatch[1]->Fill(triggerBC);
+        if(reMatchBoth)     fhClusterTriggerBCExoticUnMatchReMatch[2]->Fill(triggerBC);
+      }
       else if( badCluster && !exotic )
       {
         fhClusterTriggerBCBadClusterUnMatch->Fill(triggerBC);
@@ -863,7 +908,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   }
   
   if(!ok)
-  {    
+  {
     if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
     fReader->ResetLists();
     return ;
@@ -894,7 +939,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   Int_t nana = fAnalysisContainer->GetEntries() ;
   for(Int_t iana = 0; iana <  nana; iana++)
   {
-    AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ; 
+    AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     
     ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis
     
@@ -914,11 +959,11 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   }
 	
   fReader->ResetLists();
-
+  
   // In case of mixing analysis, non triggered events are used,
   // do not fill control histograms for a non requested triggered event
   if(!fReader->IsEventTriggerAtSEOn() && !isTrigger)
-  {    
+  {
     if(fAnaDebug > 0 ) printf("AliAnaCaloTrackMaker::ProcessEvent() - *** End analysis, MB for mixing *** \n");
     return;
   }
@@ -934,23 +979,23 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
 
 //__________________________________________________________
 void AliAnaCaloTrackCorrMaker::Terminate(TList * outputList)
-{  
+{
   //Execute Terminate of analysis
   //Do some final plots.
   
-  if (!outputList) 
+  if (!outputList)
   {
     Error("Terminate", "No output list");
     return;
   }
   
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
-    {
-      
-      AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-      if(ana->MakePlotsOn())ana->Terminate(outputList);
-      
-    }//Loop on analysis defined
+  {
+    
+    AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+    if(ana->MakePlotsOn())ana->Terminate(outputList);
+    
+  }//Loop on analysis defined
   
 }
 

@@ -325,11 +325,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhPtNPileUpTrkVtx;               //! cluster pt vs number of track pile-up vertices
   TH2F         * fhPtNPileUpSPDVtxTimeCut;	      //! cluster pt vs number of spd pile-up vertices, time cut +-25 ns
   TH2F         * fhPtNPileUpTrkVtxTimeCut;        //! cluster pt vs number of track pile-up vertices, time cut +- 25 ns 		
-	
+  TH2F         * fhPtNPileUpSPDVtxTimeCut2;	      //! cluster pt vs number of spd pile-up vertices, time cut +-75 ns
+  TH2F         * fhPtNPileUpTrkVtxTimeCut2;       //! cluster pt vs number of track pile-up vertices, time cut +- 75 ns
+  
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,28)
+  ClassDef(AliAnaPi0EbE,29)
 } ;
 
 

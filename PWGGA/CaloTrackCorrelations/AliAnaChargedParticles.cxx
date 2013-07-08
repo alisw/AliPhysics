@@ -74,7 +74,10 @@ ClassImp(AliAnaChargedParticles)
     fhEtaPhiTOFBC0PileUpSPD(0),
     fhEtaPhiTOFBCPlusPileUpSPD(0),
     fhEtaPhiTOFBCMinusPileUpSPD(0),
-    fhProductionVertexBC(0)
+    fhProductionVertexBC(0),
+    fhPtNPileUpSPDVtx(0),    fhPtNPileUpTrkVtx(0),
+    fhPtNPileUpSPDVtxBC0(0), fhPtNPileUpTrkVtxBC0(0)
+
 {
   //Default Ctor
 
@@ -627,6 +630,33 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     outputContainer->Add(fhMCRecPt);
   }
   
+  fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
+                                 nptbins,ptmin,ptmax,20,0,20);
+  fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
+  fhPtNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtNPileUpSPDVtx);
+  
+  fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
+                                 nptbins,ptmin,ptmax, 20,0,20 );
+  fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
+  fhPtNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtNPileUpTrkVtx);
+  
+  if(fFillVertexBC0Histograms)
+  {
+    fhPtNPileUpSPDVtxBC0  = new TH2F ("hPt_NPileUpVertSPD_BC0","pT of cluster vs N pile-up SPD vertex",
+                                   nptbins,ptmin,ptmax,20,0,20);
+    fhPtNPileUpSPDVtxBC0->SetYTitle("# vertex ");
+    fhPtNPileUpSPDVtxBC0->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNPileUpSPDVtxBC0);
+  
+    fhPtNPileUpTrkVtxBC0  = new TH2F ("hPt_NPileUpVertTracks_BC0","pT of cluster vs N pile-up Tracks vertex",
+                                   nptbins,ptmin,ptmax, 20,0,20 );
+    fhPtNPileUpTrkVtxBC0->SetYTitle("# vertex ");
+    fhPtNPileUpTrkVtxBC0->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNPileUpTrkVtxBC0);
+  }
+
   return outputContainer;
 
 }
@@ -684,8 +714,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
   
-  AliVEvent * event = GetReader()->GetInputEvent();
-
+  AliVEvent  * event = GetReader()->GetInputEvent();
+  AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
+  AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
+  
   Int_t vtxBC = GetReader()->GetVertexBC();
   if(!GetReader()->IsDCACutOn()) vtxBC = GetReader()->GetVertexBC(event->GetPrimaryVertex());
 
@@ -703,6 +735,23 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhProductionVertexBCPileUp[6]->Fill(vtxBC);
     }
   }
+  
+  // N pile up vertices
+  Int_t nVtxSPD = -1;
+  Int_t nVtxTrk = -1;
+  
+  if      (esdEv)
+  {
+    nVtxSPD = esdEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = esdEv->GetNumberOfPileupVerticesTracks();
+    
+  }//ESD
+  else if (aodEv)
+  {
+    nVtxSPD = aodEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = aodEv->GetNumberOfPileupVerticesTracks();
+  }//AOD
+
   
   //printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - primary vertex BC %d\n",vtxBC);
   
@@ -722,6 +771,9 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     phi = track->Phi();
 
     fhPtNoCut->Fill(pt);
+    
+    fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);
+    fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
     
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
     AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
@@ -777,6 +829,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       {
         fhPtVtxInBC0->Fill(pt);
         fhEtaPhiVtxInBC0->Fill(eta,phi);
+        
+        fhPtNPileUpSPDVtxBC0->Fill(pt,nVtxSPD);
+        fhPtNPileUpTrkVtxBC0->Fill(pt,nVtxTrk);
+        
         if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtCutDCABCOK->Fill(pt);
         
         if(dcaCons == -999)

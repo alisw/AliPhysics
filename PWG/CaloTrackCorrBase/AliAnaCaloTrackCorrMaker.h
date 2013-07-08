@@ -128,6 +128,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhClusterTriggerBCBadCellExotic;          //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCBadCluster;             //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCBadClusterExotic;       //! number of events triggered, depending on BC of the cluster
+  
   TH1F *   fhClusterTriggerBCUnMatch;                //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCExoticUnMatch;          //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCBadCellUnMatch;         //! number of events triggered, depending on BC of the cluster
@@ -135,14 +136,18 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhClusterTriggerBCBadClusterUnMatch;      //! number of events triggered, depending on BC of the cluster
   TH1F *   fhClusterTriggerBCBadClusterExoticUnMatch;//! number of events triggered, depending on BC of the cluster
 
-  TH2F *   fhClusterTriggerBCEventBC;        // correlate the found BC in the trigger and the event BC
-  TH2F *   fhClusterTriggerBCEventBCUnMatch; // correlate the found BC in the trigger and the event BC, when there was no match with the trigger BC
-  TH2F *   fhClusterTriggerBCExoticEventBC;        // correlate the found BC in the exotic trigger and the event BC
-  TH2F *   fhClusterTriggerBCExoticEventBCUnMatch; // correlate the found BC in the exotic trigger and the event BC, when there was no match with the trigger BC
+  TH1F *   fhClusterTriggerBCUnMatchReMatch[3];       //! number of events triggered, depending on BC of the cluster, not matched, open cuts and rematch
+  TH1F *   fhClusterTriggerBCExoticUnMatchReMatch[3]; //! number of events triggered by exotic, depending on BC of the clusterm not matched, open cuts and rematch
+
+  
+  TH2F *   fhClusterTriggerBCEventBC;                // correlate the found BC in the trigger and the event BC
+  TH2F *   fhClusterTriggerBCEventBCUnMatch;         // correlate the found BC in the trigger and the event BC, when there was no match with the trigger BC
+  TH2F *   fhClusterTriggerBCExoticEventBC;          // correlate the found BC in the exotic trigger and the event BC
+  TH2F *   fhClusterTriggerBCExoticEventBCUnMatch;   // correlate the found BC in the exotic trigger and the event BC, when there was no match with the trigger BC
   
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,19)
+  ClassDef(AliAnaCaloTrackCorrMaker,20)
 } ;
  
 

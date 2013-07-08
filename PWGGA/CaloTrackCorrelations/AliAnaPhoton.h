@@ -210,6 +210,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTimeTriggerEMCALBCBadMaxCellExotic    ; //! Time distribution of trigger clusters, when trigger exotic cluster with bad max cell
   TH2F * fhTimeTriggerEMCALBCUMBadMaxCellExotic  ; //! Time distribution of highest energy exotic with bad max cell cluster in event, when trigger is not found
   
+  TH2F * fhEtaPhiTriggerEMCALBCUMReMatchOpenTime ;  //! Pseudorapidity vs Phi of highest E bad cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMReMatchOpenTime   ;  //! Time distribution of highest energy bad max cell cluster in event, when trigger is not found
+  TH2F * fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh; //! Pseudorapidity vs Phi of highest E bad cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMReMatchCheckNeigh ;  //! Time distribution of highest energy bad max cell cluster in event, when trigger is not found
+  TH2F * fhEtaPhiTriggerEMCALBCUMReMatchBoth     ;  //! Pseudorapidity vs Phi of highest E bad cluster  in event, not matched to trigger
+  TH2F * fhTimeTriggerEMCALBCUMReMatchBoth       ;  //! Time distribution of highest energy bad max cell cluster in event, when trigger is not found
+  
   TH2F * fhEtaPhiNoTrigger ;             //! Pseudorapidity vs Phi of highest E exotic cluster  in event, no trigger at all
   TH2F * fhTimeNoTrigger   ;             //! Time distribution of highest energy exotic cluster in event, no trigger at all
   
@@ -394,17 +401,21 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtNPileUpSPDVtx;	                    //! cluster pt vs number of spd pile-up vertices
   TH2F * fhPtNPileUpTrkVtx;                     //! cluster pt vs number of track pile-up vertices
   TH2F * fhPtNPileUpSPDVtxTimeCut;	            //! cluster pt vs number of spd pile-up vertices, time cut +-25 ns
-  TH2F * fhPtNPileUpTrkVtxTimeCut;              //! cluster pt vs number of track pile-up vertices, time cut +- 25 ns 	
+  TH2F * fhPtNPileUpTrkVtxTimeCut;              //! cluster pt vs number of track pile-up vertices, time cut +- 25 ns
+  TH2F * fhPtNPileUpSPDVtxTimeCut2;	            //! cluster pt vs number of spd pile-up vertices, time cut +-75 ns
+  TH2F * fhPtNPileUpTrkVtxTimeCut2;             //! cluster pt vs number of track pile-up vertices, time cut +- 75 ns
 
-  TH2F * fhPtPhotonNPileUpSPDVtx;	            //! photon pt vs number of spd pile-up vertices
+  TH2F * fhPtPhotonNPileUpSPDVtx;	              //! photon pt vs number of spd pile-up vertices
   TH2F * fhPtPhotonNPileUpTrkVtx;               //! photon pt vs number of track pile-up vertices
   TH2F * fhPtPhotonNPileUpSPDVtxTimeCut;        //! photon pt vs number of spd pile-up vertices, time cut +-25 ns
-  TH2F * fhPtPhotonNPileUpTrkVtxTimeCut;        //! photon pt vs number of track pile-up vertices, time cut +- 25 ns 		
+  TH2F * fhPtPhotonNPileUpTrkVtxTimeCut;        //! photon pt vs number of track pile-up vertices, time cut +- 25 ns
+  TH2F * fhPtPhotonNPileUpSPDVtxTimeCut2;       //! photon pt vs number of spd pile-up vertices, time cut +-75 ns
+  TH2F * fhPtPhotonNPileUpTrkVtxTimeCut2;       //! photon pt vs number of track pile-up vertices, time cut +- 75 ns
 	
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,32)
+  ClassDef(AliAnaPhoton,33)
 
 } ;
  
