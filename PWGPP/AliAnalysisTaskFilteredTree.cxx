@@ -238,8 +238,8 @@ fPtResCentPtTPC = new TH3D("fPtResCentPtTPC","pt rel. resolution from cov. matri
 
   
   fOutput = new TList; 
-  fOutput->SetOwner();
   if(!fOutput) return;
+  fOutput->SetOwner();
 
   fOutput->Add(fPtResPhiPtTPC);
   fOutput->Add(fPtResPhiPtTPCc);
