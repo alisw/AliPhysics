@@ -118,7 +118,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     fastjet::AreaType            GetAreaType()          const {return fAreaType;}
     // Setters
     void SetRparam(Double_t f)                           {fRparam = f;}
-    void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}
+    void SetAlgorithm(Int_t);
     void SetStrategy(fastjet::Strategy f)                {fStrategy = f;}
     void SetRecombScheme(fastjet::RecombinationScheme f) {fRecombScheme = f;}
     void SetAreaType(fastjet::AreaType f)                {fAreaType = f;}

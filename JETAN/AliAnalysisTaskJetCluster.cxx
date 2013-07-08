@@ -2246,3 +2246,12 @@ bool AliAnalysisTaskJetCluster::IsDMeson(int pc){
 	for(int i=0;i< (int)(sizeof(bPdG)/sizeof(int));++i) if(abs(pc) == bPdG[i]) return true;
 return false;
 }
+
+void AliAnalysisTaskJetCluster::SetAlgorithm(Int_t i) {
+    fastjet::JetAlgorithm algo;
+    if(i == 0) algo = fastjet::kt_algorithm;
+    if(i == 1) algo = fastjet::cambridge_algorithm;
+    if(i == 2) algo = fastjet::antikt_algorithm;
+    fAlgorithm = algo;
+}
+
