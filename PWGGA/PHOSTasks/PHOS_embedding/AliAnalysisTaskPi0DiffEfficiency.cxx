@@ -74,7 +74,7 @@ AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency()
       for(Int_t k=0;k<11;k++)
         fPHOSEvents[i][j][k]=0 ;
   }
-    
+  for(Int_t mod=0; mod<6; mod++) fPHOSBadMap[mod]=0x0 ;
 }
 
 //________________________________________________________________________
@@ -150,6 +150,7 @@ AliAnalysisTaskSE(a),
   fPHOSGeo(0),
   fEventCounter(0)
 { // not implemented
+  for(Int_t mod=0; mod<6; mod++) fPHOSBadMap[mod]=0x0 ;
 }
 //________________________________________________________________________
 void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
