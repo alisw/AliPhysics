@@ -42,6 +42,8 @@ class AliAnalysisTaskHJetEmbed : public AliAnalysisTaskSE {
   void SetTrkPtRange(Double_t min, Double_t max)  { fMinTrkPt=min; fMaxTrkPt=max;   }
   void SetTrkPhiRange(Double_t min, Double_t max) { fMinTrkPhi=min; fMaxTrkPhi=max; }
   void SetTrkEtaRange(Double_t min, Double_t max) { fMinTrkEta=min; fMaxTrkEta=max; }
+  void SetTTRange(Double_t min, Double_t max)     { fMinTTPt=min; fMaxTTPt=max;     }
+  void SetTTtype(Int_t type)                      { fTTtype=type;                   }
   void SetRadius(Double_t rad)                    { fRadius=rad;                    }
   void SetPLJetArrName(char *s)                   { fPLJetArrName=s;                }
   void SetDLJetArrName(char *s)                   { fDLJetArrName=s;                }
@@ -57,7 +59,7 @@ protected:
   void         RunQA();
   void         RunHJet();
   void         RunMatch();
-  void         FillHJetCor(const TClonesArray *tracks, const Int_t leadingIndex, const TClonesArray *jetArray, THnSparse *hn, Bool_t isBkg = kFALSE);
+  void         FillHJetCor(const TClonesArray *tracks, const Int_t leadingIndex, const TClonesArray *jetArray, THnSparse *hTT, THnSparse *hn, Bool_t isBkg = kFALSE);
   Int_t        FindGeoMatchedJet(const AliEmcalJet* jet, const TClonesArray *jetArray, Double_t &dR);
   Int_t        FindEnergyMatchedJet(const AliEmcalJet* jet, const TClonesArray *jetArray, Double_t &dR);
   Bool_t       AcceptTrack(const AliVParticle *track);
@@ -88,6 +90,9 @@ protected:
   Double_t          fMaxTrkEta;            //
   Double_t          fMinTrkPhi;            //
   Double_t          fMaxTrkPhi;            //
+  Int_t             fTTtype;               //
+  Double_t          fMinTTPt;              //
+  Double_t          fMaxTTPt;              //
   Double_t          fRadius;               //  Jet radius
   TString           fJetArrName;           //  Name of the found jet array
   TString           fPLJetArrName;         //  Name of the embedded PYTHIA jet array on particle level
@@ -99,7 +104,8 @@ protected:
   AliRhoParameter   *fRho;                 //! Rho parameter
   Double_t          fRhoValue;             //! Value of the rho parameter
   TParameter<int>   *fPtHardBinParam;      //!Pt hard bin param
-  Int_t             fPtHardBin;            //!            
+  Int_t             fPtHardBin;            //!        
+  TRandom3          *fRandom;              //!
 
   Bool_t            fRunQA;                //  Flag to run QA
   Bool_t            fRunHJet;              //  Flag to run h+jet 
@@ -137,7 +143,7 @@ protected:
   AliAnalysisTaskHJetEmbed(const AliAnalysisTaskHJetEmbed&);            // not implemented
   AliAnalysisTaskHJetEmbed &operator=(const AliAnalysisTaskHJetEmbed&); // not implemented
 
-  ClassDef(AliAnalysisTaskHJetEmbed, 1);
+  ClassDef(AliAnalysisTaskHJetEmbed, 2);
 };
 
 #endif
