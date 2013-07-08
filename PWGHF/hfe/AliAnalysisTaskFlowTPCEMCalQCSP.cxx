@@ -337,7 +337,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         fPID->InitializePID(fAOD->GetRunNumber());
     }
     
-    // cout << "kTrigger   ==   " << fTrigger <<endl;
+   //  cout << "kTrigger   ==   " << fTrigger <<endl;
     
     if(fTrigger==0){
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) ) return;
@@ -1005,7 +1005,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
     // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
     if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
     fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-    //  cout << "--------------Centrality evaluated-------------------------"<<endl;
+      cout << "--------------Centrality evaluated-------------------------"<<endl;
     if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
     {
         fCentralityNoPass->Fill(fCentrality);
@@ -1048,10 +1048,26 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
     } //track loop
     //     printf(" mult TPC %.2f, mult Glob %.2f \n", multTPC, multGlob);
     //   if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))){  2010
+     if(fTrigger==1){
+
     if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
+     //   cout <<" Trigger ==" <<fTrigger<< endl;
+
         centralitypass = kFALSE;
         fCentralityNoPass->Fill(fCentrality);
-    }//2011
+    }//2011 Semicentral
+     }
+    if(fTrigger==0){
+
+        if(! (multTPC > (77.6 + 1.399*multGlob) && multTPC < (371.3 + 1.50*multGlob))){
+       //     cout <<" Trigger ==" <<fTrigger<< endl;
+
+            centralitypass = kFALSE;
+            fCentralityNoPass->Fill(fCentrality);
+        }//2011
+    }//2011 Central
+
+    
     fMultCorBeforeCuts->Fill(multGlob, multTPC);
     
     if(centralitypass){
