@@ -114,9 +114,9 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   fh2CentRhoScaled = new TH2F("fh2CentRhoScaled","fh2CentRhoScaled;centrality;s_{EMC}#rho_{ch}",nBinsCent,minCent,maxCent,nBinsRho,minRho,maxRho);
   fOutput->Add(fh2CentRhoScaled);
 
-  const Int_t nBinsPt = 120;
+  const Int_t nBinsPt = 150;
   Double_t minPt = -20.;
-  Double_t maxPt = 100.;
+  Double_t maxPt = 130.;
   const Int_t nBinsEta = 40;
   Double_t minEta = -1.;
   Double_t maxEta = 1.;
