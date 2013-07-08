@@ -131,7 +131,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fSelectPtHardBin;            // select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
-  Int_t                       fNcentBins;                  //!how many centrality bins
+  Int_t                       fNcentBins;                  // how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
