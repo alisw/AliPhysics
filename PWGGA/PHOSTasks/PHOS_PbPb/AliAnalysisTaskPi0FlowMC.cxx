@@ -1272,11 +1272,11 @@ void AliAnalysisTaskPi0FlowMC::FillAllHistograms(const char * particleName,AliCa
 
 
 //___________________________________________________________________________
-Double_t AliAnalysisTaskPi0FlowMC::PrimaryWeight(Int_t primary){
+Double_t AliAnalysisTaskPi0FlowMC::PrimaryWeight(Int_t /* primary */){
   return 1.;
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPi0FlowMC::PrimaryParticleWeight(TParticle * particle){
+Double_t AliAnalysisTaskPi0FlowMC::PrimaryParticleWeight(TParticle * /* particle */){
   return 1.;
 }
 
