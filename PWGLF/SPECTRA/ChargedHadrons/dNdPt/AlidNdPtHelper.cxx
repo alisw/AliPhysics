@@ -149,7 +149,8 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const Ali
 
         Double_t x[3]; t->GetXYZ(x);
         Double_t b[3]; AliTracker::GetBxByBz(x,b);
-	t->RelateToVertexTPCBxByBz(vTPC, b, kVeryBig);
+	Bool_t isOK = t->RelateToVertexTPCBxByBz(vTPC, b, kVeryBig);
+        if(!isOK) continue;
       }
       
       delete vTPC;
