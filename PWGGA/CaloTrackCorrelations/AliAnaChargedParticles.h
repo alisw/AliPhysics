@@ -38,8 +38,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillPileUpHistograms()     { fFillPileUpHistograms    = kTRUE  ; }
   void    SwitchOffFillPileUpHistograms()    { fFillPileUpHistograms    = kFALSE ; }
   
-  void    SwitchOnFillTrackBCHistograms()  { fFillVertexBC0Histograms = kTRUE  ; }
-  void    SwitchOffFillTrackBCHistograms() { fFillVertexBC0Histograms = kFALSE ; }
+  void    SwitchOnFillTrackBCHistograms()    { fFillVertexBC0Histograms = kTRUE  ; }
+  void    SwitchOffFillTrackBCHistograms()   { fFillVertexBC0Histograms = kFALSE ; }
 
   void    SwitchOnFillVertexBC0Histograms()  { fFillVertexBC0Histograms = kTRUE  ; }
   void    SwitchOffFillVertexBC0Histograms() { fFillVertexBC0Histograms = kFALSE ; }
@@ -154,11 +154,15 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtDCAVtxOutBC0PileUpNoTOFHit[3]; //! DCA (xy,z,constrained) of all tracks, vertex BC!=0, SPD pile-up, no hit in TOF
   TH2F * fhPtDCAVtxInBC0PileUpNoTOFHit[3];  //! DCA (xy,z,constrained) of all tracks, vertex BC=0, SPD pile-up, no hit in TOF
   
-  
+  TH2F * fhPtNPileUpSPDVtx;	              //! cluster pt vs number of spd pile-up vertices
+  TH2F * fhPtNPileUpTrkVtx;               //! cluster pt vs number of track pile-up vertices
+  TH2F * fhPtNPileUpSPDVtxBC0;	          //! cluster pt vs number of spd pile-up vertices, track in BC=0
+  TH2F * fhPtNPileUpTrkVtxBC0;            //! cluster pt vs number of track pile-up vertices, track in BC=0
+
   AliAnaChargedParticles(              const AliAnaChargedParticles & ch) ; // cpy ctor
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ; // cpy assignment
   
-  ClassDef(AliAnaChargedParticles,8)
+  ClassDef(AliAnaChargedParticles,9)
 
 } ;
 
