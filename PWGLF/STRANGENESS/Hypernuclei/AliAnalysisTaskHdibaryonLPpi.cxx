@@ -1284,6 +1284,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    TVector3 vecDist(dd[0]-dd1[0],dd[1]-dd1[1],dd[2]-dd1[2]);
 	    fHistMassLambdaPPi->Fill(hDibaryon.M());
 	    fHistHPointingAngle->Fill(pointingAngleH);
+	    fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
 
 	    Double_t rapidity = hDibaryon.Rapidity();
 	    if(rapidity > 1.0 || rapidity < -1.0) continue;
@@ -1355,7 +1356,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    
 	    //	    cout<<"Trigger: "<<triggertype<<endl;
 	    fHistMassH->Fill(hDibaryon.M());
-	    fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
+	    //	    fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
 	    ppK=lambdaH+posProt;
 	    fHistMassLambdaP->Fill(ppK.M());
 	  }
