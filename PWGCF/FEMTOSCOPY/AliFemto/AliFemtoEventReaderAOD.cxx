@@ -810,19 +810,19 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
 
   // ! DCA information is done in CopyPIDtoFemtoTrack()
 
-	// double impact[2];
-	// double covimpact[3];
+	double impact[2];
+	double covimpact[3];
 
-	// if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-	//   //cout << "sth went wrong with dca propagation" << endl;
-	//   tFemtoTrack->SetImpactD(-1000.0);
-	//   tFemtoTrack->SetImpactZ(-1000.0);
+	if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+	  //cout << "sth went wrong with dca propagation" << endl;
+	  tFemtoTrack->SetImpactD(-1000.0);
+	  tFemtoTrack->SetImpactZ(-1000.0);
 
-	// }
-	// else {
-	//   tFemtoTrack->SetImpactD(impact[0]);
-	//   tFemtoTrack->SetImpactZ(impact[1]+fV1[2]);
-	// }
+	}
+	else {
+	  tFemtoTrack->SetImpactD(impact[0]);
+	  tFemtoTrack->SetImpactZ(impact[1]);
+	}
 
   //   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
   //     tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv())*(tAodTrack->Xv()/TMath::Abs(tAodTrack->Xv())));
@@ -879,7 +879,6 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
 
-
   float globalPositionsAtRadii[9][3];
   float bfield = 5*fMagFieldSign;
   GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack,bfield,globalPositionsAtRadii);
@@ -895,6 +894,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
     tpcPositions[i][1] = globalPositionsAtRadii[i][1];
     tpcPositions[i][2] = globalPositionsAtRadii[i][2];
   }
+
   tFemtoTrack->SetNominalTPCEntrancePoint(tpcEntrance);
   tFemtoTrack->SetNominalTPCPoints(tpcPositions);
   tFemtoTrack->SetNominalTPCExitPoint(tpcExit);
@@ -1184,21 +1184,21 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
                                                  AliFemtoTrack *tFemtoTrack)
 {
 
-	// copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
+	// // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
 
-	double impact[2];
-	double covimpact[3];
+	// double impact[2];
+	// double covimpact[3];
 
-	if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-		//cout << "sth went wrong with dca propagation" << endl;
-		tFemtoTrack->SetImpactD(-1000.0);
-		tFemtoTrack->SetImpactZ(-1000.0);
+	// if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+	// 	//cout << "sth went wrong with dca propagation" << endl;
+	// 	tFemtoTrack->SetImpactD(-1000.0);
+	// 	tFemtoTrack->SetImpactZ(-1000.0);
 
-	}
-	else {
-		tFemtoTrack->SetImpactD(impact[0]);
-		tFemtoTrack->SetImpactZ(impact[1]);
-	}
+	// }
+	// else {
+	// 	tFemtoTrack->SetImpactD(impact[0]);
+	// 	tFemtoTrack->SetImpactZ(impact[1]);
+	// }
 
   double aodpid[10];
   tAodTrack->GetPID(aodpid);
