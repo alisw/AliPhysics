@@ -264,15 +264,6 @@ void AliAnalysisTaskLongRangeCorrelations::Terminate(Option_t* ) {
     AliFatal("NULL == fOutputList");
     return; // needed to avoid coverity warning
   }
-
-  const size_t N(fOutputList->GetEntries());
-  for (size_t i=0; i<N; ++i) {
-    if (fOutputList->At(i)->IsA() == AliTHn::Class()) {
-      AliTHn* h(dynamic_cast<AliTHn*>(fOutputList->At(i)));
-      if (NULL == h) continue;
-      h->FillParent();
-    }
-  }
 }
 
 TString AliAnalysisTaskLongRangeCorrelations::GetOutputListName() const {
