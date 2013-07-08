@@ -132,6 +132,13 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0():
   fList4->SetOwner(kTRUE); 
 
   fPID->SetNewTrackParam(); // Better tuning for TOF PID tracking effect in LHC10h
+
+  for(Int_t i=0;i < 1000;i++){
+    fPhiK0s[i] = 0.0;
+    fPtK0s[i] = 0.0;
+    fIPiPos[i] = 0;
+    fIPiNeg[i] = 0;
+  }
 }
 
 //______________________________________________________________________________
@@ -228,6 +235,13 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0(const char *name):
   fList4->SetOwner(kTRUE); 
 
   fPID->SetNewTrackParam(); // Better tuning for TOF PID tracking effect in LHC10h
+
+  for(Int_t i=0;i < 1000;i++){
+    fPhiK0s[i] = 0.0;
+    fPtK0s[i] = 0.0;
+    fIPiPos[i] = 0;
+    fIPiNeg[i] = 0;
+  }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskVnV0::~AliAnalysisTaskVnV0()
@@ -1061,7 +1075,6 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
       
       if (!aodTrack){
-	aodTrack->Delete();
 	continue;
       }
       
@@ -1192,7 +1205,6 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
 	
       if (!aodTrack){
-	aodTrack->Delete();
 	continue;
       }
       
@@ -2125,7 +2137,6 @@ void AliAnalysisTaskVnV0::SelectK0s(){
     AliAODTrack* aodTrack = fOutputAOD->GetTrack(iT);
     
     if (!aodTrack){
-      aodTrack->Delete();
       continue;
     }
     
