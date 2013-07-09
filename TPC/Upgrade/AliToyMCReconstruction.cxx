@@ -427,8 +427,12 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   
   gROOT->cd();
      
+  AliExternalTrackParam tOrig;
+  AliExternalTrackParam tSeed;
+
   AliExternalTrackParam *track;
   AliTPCseed *seed;
+  AliTPCseed *seedTmp;
   AliTPCclusterMI *cluster;
 
   Int_t maxev=fTree->GetEntries();
@@ -470,26 +474,38 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   TObjArray * arr = &arrTracks;
   TObjArray * seeds = new TObjArray;
 
-  
+  // cuts for seeding 
   Float_t cuts[4];
-  cuts[0]=0.0070;  // cuts[0]   - fP4 cut - not applied
-  cuts[1] = 1.5;  // cuts[1]   - tan(phi)  cut
-  cuts[2] = 3.;  // cuts[2]   - zvertex cut   - not applied 
-  cuts[3] = 3.;  // cuts[3]   - fP3 cut
+  cuts[0]=0.0070;  // cuts[0]   - fP4 cut
+  cuts[1] = 1.5;   // cuts[1]   - tan(phi) cut
+  cuts[2] = 3.;    // cuts[2]   - zvertex cut
+  cuts[3] = 3.;    // cuts[3]   - fP3 cut
 
-  // need to subtract inner rows for outer sector array (not done in AliTPCtracker::MakeSeeds2)
+  // rows for seeding
+  Int_t lowerRow = fSeedingRow;
+  Int_t upperRow = fSeedingRow+2*fSeedingDist;
   const AliTPCROC * roc      = AliTPCROC::Instance();
-  const Int_t kNRowsInnerTPC = roc->GetNRows(0);
-  
+  const Int_t kNRowsInnerTPC = roc->GetNRows(0); 
+  const Int_t kNRowsTPC      = kNRowsInnerTPC + roc->GetNRows(36); 
+  if(lowerRow < kNRowsInnerTPC){
+    Printf("Seeding row requested (%d) is lower than kNRowsInnerTPC --> use %d",lowerRow,kNRowsInnerTPC);
+    lowerRow = kNRowsInnerTPC;
+    upperRow = lowerRow + 20;
+  }
+  if(upperRow >= kNRowsTPC){
+    Printf("Seeding row requested (%d) is larger than kNRowsTPC --> use %d",upperRow,kNRowsTPC-1);
+    upperRow = kNRowsTPC-1;
+    lowerRow = upperRow-20;
+  }
+ 
+  // do the seeding
   for (Int_t sec=0;sec<fkNSectorOuter;sec++){
     //
-    //tpcTracker->MakeSeeds2(arr, sec,fSeedingRow-kNRowsInnerTPC+2*fSeedingDist,fSeedingRow-kNRowsInnerTPC,cuts);    
-    tpcTracker->MakeSeeds3(arr, sec,fSeedingRow+2*fSeedingDist,fSeedingRow,cuts,-1,1);
+    tpcTracker->MakeSeeds3(arr, sec,upperRow,lowerRow,cuts,-1,1);
     tpcTracker->SumTracks(seeds,arr);   
     tpcTracker->SignClusters(seeds,3.0,3.0);   
   }
   
-
   // tracking
   //tpcTracker->Clusters2Tracks();
   //tpcTracker->PropagateForward();
@@ -497,24 +513,81 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 
   Printf("After seeding we have %d tracks",seeds->GetEntriesFast());
 
-   for(Int_t iTracks = 0; iTracks < seeds->GetEntriesFast(); ++iTracks){
-     printf(" > ======  Fill Track %6d ========  \n",iTracks);
-     
-     seed = (AliTPCseed*)(seeds->At(iTracks));
+  // Loop over all input tracks and connect to found seeds
+  for (Int_t iev=0; iev<maxev; ++iev){
+    printf("==============  Fill Tracks: Processing Event %6d  =================\n",iev);
+    fTree->GetEvent(iev);
+    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
+      printf(" > ======  Fill Tracks: Processing Track %6d  ========  \n",itr);
+      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+      tOrig = *tr;
 
-     Printf("Row %d indices %d",seed->GetRow(),seed->GetNumberOfClustersIndices());
-     for(Int_t iRow = seed->GetRow(); iRow < seed->GetRow() + seed->GetNumberOfClustersIndices(); iRow++ ){
+      Float_t z0=fEvent->GetZ();
+      Float_t t0=fEvent->GetT0();
+      Float_t vdrift=GetVDrift();
+      Float_t zLength=GetZLength(0);
+
+      // find the corresponding seed
+      Int_t trackID = tr->GetUniqueID();
+      Int_t nSeeds           = 0;
+      Int_t nSeedClusters    = 0;
+      Int_t nSeedClustersTmp = 0;
+      Float_t t0seed         = 0.;
+      for(Int_t iSeeds = 0; iSeeds < seeds->GetEntriesFast(); ++iSeeds){
+	
+	seedTmp = (AliTPCseed*)(seeds->At(iSeeds));
+	nSeedClustersTmp = 0;
+	for(Int_t iRow = seedTmp->GetRow(); iRow < seedTmp->GetRow() + seedTmp->GetNumberOfClustersIndices(); iRow++ ){
        
-       cluster = seed->GetClusterFast(iRow);
-       if(cluster) Printf("%d",cluster->GetLabel(0));
-     }
-   
-     if (fStreamer) {
-       (*fStreamer) << "Tracks" <<
-	 "seed.="      << seed          <<
-	 "\n";
-     }
-   }
+	  cluster = seedTmp->GetClusterFast(iRow);
+	  if(cluster){
+	    if(cluster->GetLabel(0)==trackID){
+	      nSeedClustersTmp++;
+	    }
+	  }
+	}
+
+	// if number of corresponding clusters > 0,
+	// increase nSeeds
+	if(nSeedClustersTmp > 0){
+	  nSeeds++;
+	}
+
+	// if number of corresponding clusters bigger than current nSeedClusters,
+	// take this seed as the main one
+	if(nSeedClustersTmp > nSeedClusters){
+	  seed = seedTmp;
+	  nSeedClusters = nSeedClustersTmp;
+	}
+
+      }
+
+      tSeed = (AliExternalTrackParam)*seed;
+      Int_t ctype(fCorrectionType);
+      
+      if (fStreamer) {
+        (*fStreamer) << "Tracks" <<
+	  "iev="         << iev             <<
+	  "z0="          << z0              <<
+	  "t0="          << t0              <<
+	  "fTime0="      << fTime0          <<
+	  "itr="         << itr             <<
+	  "clsType="     << fClusterType    <<
+	  "corrType="    << ctype           <<
+	  "seedRow="     << fSeedingRow     <<
+	  "seedDist="    << fSeedingDist    <<
+	  "vdrift="      << vdrift          <<
+	  "zLength="     << zLength         <<
+	  "nSeeds="      << nSeeds          <<
+	  "nSeedClusters="<<nSeedClusters   <<
+	  //"t0seed.="     << &t0seed         <<
+	  "tSeed.="      << &tSeed           <<
+	  "tOrig.="      << &tOrig          <<
+	  "\n";
+      }
+    }
+  }
+
    
   delete fStreamer;
   fStreamer=0x0;
@@ -1185,22 +1258,22 @@ void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
   }
 
   // fill the arrays completely
-  LoadOuterSectors();
-  LoadInnerSectors();
+  // LoadOuterSectors();
+  // LoadInnerSectors();
 
-  // check the arrays
-  for (Int_t i=0; i<fkNSectorInner; ++i){
-    for (Int_t j=0; j<fInnerSectorArray[i].GetNRows(); ++j){
-      if(fInnerSectorArray[i][j].GetN()>0){
-  	Printf("Inner: Sector %d Row %d : %d",i,j,fInnerSectorArray[i][j].GetN());
-      }
-    }
-  }
-  for (Int_t i=0; i<fkNSectorInner; ++i){
-    for (Int_t j=0; j<fOuterSectorArray[i].GetNRows(); ++j){
-      if(fOuterSectorArray[i][j].GetN()>0){
-  	Printf("Outer: Sector %d Row %d : %d",i,j,fOuterSectorArray[i][j].GetN());
-      }
-    }
-  }
+  // // check the arrays
+  // for (Int_t i=0; i<fkNSectorInner; ++i){
+  //   for (Int_t j=0; j<fInnerSectorArray[i].GetNRows(); ++j){
+  //     if(fInnerSectorArray[i][j].GetN()>0){
+  // 	Printf("Inner: Sector %d Row %d : %d",i,j,fInnerSectorArray[i][j].GetN());
+  //     }
+  //   }
+  // }
+  // for (Int_t i=0; i<fkNSectorInner; ++i){
+  //   for (Int_t j=0; j<fOuterSectorArray[i].GetNRows(); ++j){
+  //     if(fOuterSectorArray[i][j].GetN()>0){
+  // 	Printf("Outer: Sector %d Row %d : %d",i,j,fOuterSectorArray[i][j].GetN());
+  //     }
+  //   }
+  // }
 }
