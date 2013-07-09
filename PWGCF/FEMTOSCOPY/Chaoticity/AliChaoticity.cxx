@@ -723,8 +723,8 @@ void AliChaoticity::ParInit()
     fQcut[0]=0.1;//pi-pi, pi-k, pi-p
     fQcut[1]=0.1;//k-k
     fQcut[2]=0.6;//the rest
-    fNormQcutLow[0] = 0.15;//0.15
-    fNormQcutHigh[0] = 0.175;//0.175
+    fNormQcutLow[0] = 1.06;// 0.15 or 1.06
+    fNormQcutHigh[0] = 1.1;// 0.175 or 1.1
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
@@ -1478,7 +1478,7 @@ void AliChaoticity::Exec(Option_t *)
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
     if(fAOD->IsPileupFromSPD()) {cout<<"PileUpEvent. Skip Event"<<endl; return;} // Reject Pile-up events
-    if(primaryVertexAOD->GetNContributors() < 1) {cout<<"Bad Vertex. Skip Event"<<endl; return;}
+    if(!fMCcase && primaryVertexAOD->GetNContributors() < 1) {cout<<"Bad Vertex. Skip Event"<<endl; return;}
    
     ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fAOD->GetNumberOfTracks());
  
@@ -1491,7 +1491,7 @@ void AliChaoticity::Exec(Option_t *)
       }
     }
     
-    
+   
        
     /////////////////////////////
     // Create Shuffled index list
@@ -1750,7 +1750,7 @@ void AliChaoticity::Exec(Option_t *)
   fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
   //////////////////////////////////////////////////
   
-  
+ 
   
   ((TH1F*)fOutputList->FindObject("fEvents1"))->Fill(fMbin+1);
   ((TProfile*)fOutputList->FindObject("fAvgMult"))->Fill(fMbin+1., pionCount);
@@ -1775,7 +1775,7 @@ void AliChaoticity::Exec(Option_t *)
     }
   }
     
-  
+ 
   
   Float_t qinv12=0, qinv13=0, qinv23=0;
   Float_t qout=0, qside=0, qlong=0;
@@ -1800,8 +1800,8 @@ void AliChaoticity::Exec(Option_t *)
   Float_t weight12CC=0, weight13CC=0, weight23CC=0;
   Float_t weightTotal=0;//, weightTotalErr=0;
   Float_t qinv12MC=0, qinv13MC=0, qinv23MC=0; 
-  Float_t Qsum1v1=0, Qsum2=0, Qsum3v1=0, Qsum1v2=0, Qsum3v2=0;
-  Float_t Qsum1v1MC=0, Qsum2MC=0, Qsum3v1MC=0, Qsum1v2MC=0, Qsum3v2MC=0;
+  //Float_t Qsum1v1=0, Qsum2=0, Qsum3v1=0, Qsum1v2=0, Qsum3v2=0;
+  //Float_t Qsum1v1MC=0, Qsum2MC=0, Qsum3v1MC=0, Qsum1v2MC=0, Qsum3v2MC=0;
   //
   AliAODMCParticle *mcParticle1=0x0;
   AliAODMCParticle *mcParticle2=0x0;
@@ -1860,7 +1860,7 @@ void AliChaoticity::Exec(Option_t *)
     // Start the pairing process
     // P11 pairing
     // 1st Particle
-    
+  
     for (Int_t i=0; i<myTracks; i++) {
          
       Int_t en2=0;
@@ -1952,7 +1952,7 @@ void AliChaoticity::Exec(Option_t *)
 	  
 	  
 	}// MCcase and pair selection
-
+	
 	// Pair Splitting/Merging cut
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
 	if(ch1 == ch2){
@@ -2174,7 +2174,7 @@ void AliChaoticity::Exec(Option_t *)
       }// j particle
     }// i particle
     
-    
+  
     
     //////////////////////////////////////////////
     // P12 pairing
@@ -2341,7 +2341,7 @@ void AliChaoticity::Exec(Option_t *)
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fEnK3->Fill(firstQMC, secondQMC, thirdQMC, WInput);
 		    }
 		    
-		    if(ch1==ch2 && ch1==ch3){
+		    /*if(ch1==ch2 && ch1==ch3){
 		      if(jj==1){
 			FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
 			FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
@@ -2388,7 +2388,7 @@ void AliChaoticity::Exec(Option_t *)
 		      }
 		      
 		    }// same charges
-		    
+		    */
 		  }// jj
 		}// MCarray check, 3rd particle
 	      }// 3rd particle
@@ -2609,7 +2609,7 @@ void AliChaoticity::Exec(Option_t *)
 
       }
     }
-    
+  
  
     ///////////////////////////////////////
     // P13 pairing (just for Norm counting of term5)
@@ -2659,7 +2659,7 @@ void AliChaoticity::Exec(Option_t *)
     }
 
 
-   
+  
     ///////////////////////////////////////
     // P23 pairing (just for Norm counting of term5)
     Int_t en1=1;
