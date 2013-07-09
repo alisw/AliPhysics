@@ -60,9 +60,49 @@ void AliGenMUONLMR::SetCMSEnergy(CMSEnergies energy){
   Double_t ptparam[7][9];
   Double_t yparam[7][9];
   Double_t nparam[7][9];
+
+  // parameters for 8 TeV generation
+  if (fCMSEnergy==kCMS8000GeV) {
+    AliInfo ("Using pp parameterization at 8 TeV\n");
+
+  // Parameters of transverse momentum spectra
+  Double_t ptparam8000[7][9] = {{1,0.427,2.52,0,0,0,0,0,0},   // pions from 7 TeV section of code
+				{1,0.58,2.57,0,0,0,0,0,0},    // kaons from 7 TeV section of code
+				{1,0.657,2.685,0,0,0,0,0,0},  // eta from PYTHIA6.4 ATLAS-CSC at 8 TeV
+				{1,1.44,3.16,0,0,0,0,0,0},    // rho+omega from 7 TeV section of code
+				{1,1.44,3.16,0,0,0,0,0,0},    // rho+omega from 7 TeV section of code
+  				{1,1.16,2.74,0,0,0,0,0,0},    // phi from 7 TeV section of code
+				{1,0.755,2.578,0,0,0,0,0,0}}; // etaPrime from PYTHIA 6.4 ATLAS-CSC at 8 TeV
+
+  // Parameters of rapidity spectra
+  Double_t yparam8000[7][9] = {{1,0.8251,3.657,0,0,0,0,0,0},  // pions from 7 TeV section of code
+			       {1,1.83,2.698,0,0,0,0,0,0},    // kaons from 7 TeV section of code
+			       {1,0.0509,3.96,0,0,0,0,0,0},   // eta from PYTHIA6.4 ATLAS-CSC at 8 TeV
+			       {1,0.0489,3.961,0,0,0,0,0,0},  // rho from PYTHIA6.4 ATLAS-CSC at 8 TeV
+			       {1,0.0650,3.966,0,0,0,0,0,0},  // omega from PYTHIA 6.4 ATLAS-CSC at 8 TeV
+			       {1,1.279,2.745,0,0,0,0,0,0},   // phi from from PYTHIA6.4 ATLAS-CSC at 8 TeV
+			       {1,0.1627,3.883,0,0,0,0,0,0}}; // eta prime from PYTHIA6.4 ATLAS-CSC at 8 TeV
+
+  // Parameters of multiplicity spectra
+  Double_t nparam8000[7][9] = {{353.582, 6.76263, 1.66979, 998.445, 9.73281, 12.6704, 175.187, 29.08, 40.2531}, //pions from 7 TeV section of code
+                               {1.e4,    0.2841, 0,0,0,0,0,0,0},     // kaons from 7 TeV section of code
+                               {2.279e4, 0.2622, 0,0,0,0,0,0,0},  // eta from PYTHIA6.4 ATLAS-CSC at 8 TeV
+                               {1.564e4, 0.1713, 0,0,0,0,0,0,0},  // rho from PYTHIA6.4 ATLAS-CSC at 8 TeV
+                               {1.662e4, 0.183,  0,0,0,0,0,0,0},   // omega from PYTHIA6.4 ATLAS-CSC at 8 TeV 
+                               {6.723e4, 1.121,  0,0,0,0,0,0,0},  // phi from PYTHIA6.4 ATLAS-CSC at 8 TeV
+                               {5.005e4, 0.6971, 0,0,0,0,0,0,0}}; // eta prime from PYTHIA6.4 ATLAS-CSC at 8 TeV
+
+    for (Int_t i=0; i<fgkNpart; i++) {
+      for (Int_t j=0; j<9; j++) {
+	ptparam[i][j] = ptparam8000[i][j];
+	yparam[i][j] = yparam8000[i][j];
+	nparam[i][j] = nparam8000[i][j];
+      }
+    }
+  }
 	
   // parameters for 7 TeV generation
-  if (fCMSEnergy==kCMS7000GeV) {
+  else if (fCMSEnergy==kCMS7000GeV) {
     AliInfo ("Using pp parameterization at 7 TeV\n");  
     Double_t ptparam7000[7][9] = {{1,0.427,2.52,0,0,0,0,0,0}, // pions from Pythia
 				  {1,0.58,2.57,0,0,0,0,0,0},  // kaons from Pythia
@@ -97,7 +137,7 @@ void AliGenMUONLMR::SetCMSEnergy(CMSEnergies energy){
       }
     }
   }  
-  if (fCMSEnergy==kCMS5020GeVpPb || fCMSEnergy==kCMS5020GeVPbp) {
+  else if (fCMSEnergy==kCMS5020GeVpPb || fCMSEnergy==kCMS5020GeVPbp) {
     AliInfo ("Using pPb parameterization at 5.02 TeV\n");  
     Double_t ptparam5020[7][9] = {{1,0.427,2.52,0,0,0,0,0,0}, // pions from Pythia at 7 TeV
 				  {1,0.58,2.57,0,0,0,0,0,0},  // kaons from Pythia at 7 TeV

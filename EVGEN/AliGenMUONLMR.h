@@ -11,7 +11,7 @@
 class AliGenMUONLMR : public AliGenMC { 
  public:
   enum parttype_t {kPionLMR, kKaonLMR, kEtaLMR, kRhoLMR, kOmegaLMR, kPhiLMR, kEtaPrimeLMR};
-  enum CMSEnergies { kCMS2760GeV, kCMS7000GeV, kCMS5020GeVpPb, kCMS5020GeVPbp, kNCMSEnergies };    
+  enum CMSEnergies { kCMS2760GeV, kCMS7000GeV, kCMS8000GeV, kCMS5020GeVpPb, kCMS5020GeVPbp, kNCMSEnergies };    
   AliGenMUONLMR(); 
   AliGenMUONLMR(AliGenMUONLMR &gen); 
   AliGenMUONLMR &operator=(const AliGenMUONLMR &gen);  
