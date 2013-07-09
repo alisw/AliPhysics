@@ -66,6 +66,7 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
     fUseSpecialOutput(kFALSE),
     fOutput(0x0),
     fCentralityTree(0x0),
+    fTrigClass(""),
     fIsEventSelected(kFALSE),
     fIsPileupFromSPD(kFALSE),
     fxVertex(0),	 
@@ -130,6 +131,7 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     fUseSpecialOutput(kFALSE),
     fOutput(0x0),
     fCentralityTree(0x0),
+    fTrigClass(""),
     fIsEventSelected(kFALSE),
     fIsPileupFromSPD(kFALSE),
     fxVertex(0),	 
@@ -296,12 +298,14 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       if(!fIsMCInput && esd->GetEventType()!=7) return; 
       
       // ***** Trigger selection
-      TString triggerClass = esd->GetFiredTriggerClasses();
-      sprintf(fTrigClass,"%s",triggerClass.Data());
+      fTrigClass = esd->GetFiredTriggerClasses();
+      //TString triggerClass = esd->GetFiredTriggerClasses();
+      //sprintf(fTrigClass,"%s",triggerClass.Data());
       
       // use response of AliPhysicsSelection
       fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);       
-      fIsPileupFromSPD = esd->IsPileupFromSPD(6,1.0);
+      fIsPileupFromSPD = esd->IsPileupFromSPD(7,0.8);
+      //fIsPileupFromSPD = esd->IsPileupFromSPDInMultBins();
 
       AliCentrality *centrality = esd->GetCentrality();
       fCentralityV0M = centrality->GetCentralityPercentile("V0M");
@@ -408,8 +412,9 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       fCentralityZPC = centrality->GetCentralityPercentile("ZPC");
       
       // ***** Trigger selection
-      TString triggerClass = aod->GetFiredTriggerClasses();
-      sprintf(fTrigClass,"%s",triggerClass.Data());
+      fTrigClass = aod->GetFiredTriggerClasses();
+      //TString triggerClass = aod->GetFiredTriggerClasses();
+      //sprintf(fTrigClass,"%s",triggerClass.Data());
       
       const AliAODVertex *vertex = aod->GetPrimaryVertexSPD();
       fxVertex = vertex->GetX();
