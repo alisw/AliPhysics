@@ -278,7 +278,7 @@ public:
   void             SwitchOnTriggerPatchMatching()          { fTriggerPatchClusterMatch = kTRUE  ; }
 
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
-  void             SetMixEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAnyINT) 
+  void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT) 
                                                            { fMixEventTriggerMask = evtTrig  ; }
 	void             SetEventTriggerBit();
 	Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
