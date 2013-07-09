@@ -27,6 +27,7 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 void visscan_init(const TString& cdburi = "",
 		  const TString& path   = ".",
+		  Bool_t showHLTESDTree=kFALSE,
 		  Bool_t showMuon = kTRUE,
 		  Bool_t showTrd = kFALSE)
 {
@@ -53,7 +54,7 @@ void visscan_init(const TString& cdburi = "",
   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
 
   TEveUtil::LoadMacro("alieve_init.C");
-  alieve_init(cdburi, path, -1);
+  alieve_init(cdburi, path, -1, showHLTESDTree);
 
   // TEveLine::SetDefaultSmooth(1);
 

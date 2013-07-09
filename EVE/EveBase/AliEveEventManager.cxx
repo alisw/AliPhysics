@@ -96,6 +96,7 @@ Bool_t AliEveEventManager::fgAssertAOD       = kFALSE;
 Bool_t AliEveEventManager::fgAssertRaw       = kFALSE;
 
 TString  AliEveEventManager::fgESDFileName("AliESDs.root");
+AliEveEventManager::EVisibleESDTrees  AliEveEventManager::fgESDvisibleTrees(AliEveEventManager::kOfflineTree);
 TString  AliEveEventManager::fgESDfriendsFileName("AliESDfriends.root");
 TString  AliEveEventManager::fgAODFileName("AliAOD.root");
 TString  AliEveEventManager::fgGAliceFileName("galice.root");
@@ -156,7 +157,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
 
     fEventId(-1),
     fRunLoader (0),
-    fESDFile   (0), fESDTree (0), fESD (0),
+    fESDFile   (0), fESDTree (0), fHLTESDTree(0), fESD (0),
     fESDfriend (0), fESDfriendExists(kFALSE),
     fAODFile   (0), fAODTree (0), fAOD (0),
     fRawReader (0), fEventInfo(),
@@ -203,14 +204,15 @@ AliEveEventManager::~AliEveEventManager()
 
 /******************************************************************************/
 
-void AliEveEventManager::SetESDFileName(const TString& esd)
+void AliEveEventManager::SetESDFileName(const TString& esd, EVisibleESDTrees shown)
 {
+    fgESDvisibleTrees = shown;
     // Set file-name for opening ESD, default "AliESDs.root".
     if (esd.IsNull()) return;
-   
+
     fgESDFileName = esd;
     if (esd.EndsWith(".zip")) fgESDFileName.Form("%s#AliESDs.root",esd.Data());
-    
+
 }
 
 void AliEveEventManager::SetESDfriendFileName(const TString& esdf)
@@ -271,25 +273,25 @@ void AliEveEventManager::SetGAliceFileName(const TString& galice)
     // Set file-name for opening gAlice, default "galice.root".
 
     if ( galice.IsNull()) return;
-    fgGAliceFileName = galice; 
+    fgGAliceFileName = galice;
     
     if (galice.EndsWith(".zip")) fgGAliceFileName.Form("%s#galice.root",galice.Data());
 }
 
 void AliEveEventManager::SetFilesPath(const TString& urlPath)
 {
-   TString path = urlPath;
+    TString path = urlPath;
     gSystem->ExpandPathName(path);
     if (path.IsNull() || path == ".")
     {
         path = gSystem->WorkingDirectory();
     }
-   
-   TString sep;
-   if(path.EndsWith(".zip")) // if given a path to root_archive.zip
-      sep= "#";
-   else if(!path.EndsWith("/"))
-      sep = "/";
+
+    TString sep;
+    if(path.EndsWith(".zip")) // if given a path to root_archive.zip
+        sep= "#";
+    else if(!path.EndsWith("/"))
+        sep = "/";
     
     SetESDFileName( TString(Form("%s%sAliESDs.root", path.Data(), sep.Data())) );
     SetESDfriendFileName(  TString(Form("%s%sAliESDfriends.root", path.Data(), sep.Data())) );
@@ -348,60 +350,32 @@ void AliEveEventManager::Open()
     if ((fESDFile = TFile::Open(fgESDFileName)))
     {
         fESD = new AliESDEvent();
-        fESDTree = (TTree*) fESDFile->Get("esdTree");
-        if (fESDTree != 0)
-        {
-            // Check if ESDfriends exists and attach the branch.
-            // We use TFile::Open() instead of gSystem->AccessPathName
-            // as it seems to work better when attachine alieve to a
-            // running reconstruction process with auto-save on.
-            TFile *esdFriendFile = TFile::Open(fgESDfriendsFileName);
-            if (esdFriendFile)
-            {
-                if (!esdFriendFile->IsZombie())
-                {
-                    esdFriendFile->Close();
-                    fESDfriendExists = kTRUE;
-                    fESDTree->SetBranchStatus ("ESDfriend*", 1);
-                }
-                delete esdFriendFile;
-            }
 
-            fESD->ReadFromTree(fESDTree);
-            if (fESDfriendExists)
-            {
-                fESDfriend = (AliESDfriend*) fESD->FindListObject("AliESDfriend");
-                Info(kEH, "found and attached ESD friend.");
-            }
-            else
-            {
-                Warning(kEH, "ESDfriend not found.");
-            }
-
-            if (fESDTree->GetEntry(0) <= 0)
-            {
-                delete fESDFile; fESDFile = 0;
-                delete fESD; fESD = 0;
-                Warning(kEH, "failed getting the first entry from esdTree.");
-            }
-            else
-            {
-                if (runNo < 0)
-                    runNo = fESD->GetESDRun()->GetRunNumber();
-            }
+        switch(fgESDvisibleTrees){
+        case AliEveEventManager::kOfflineTree :
+            fESDTree = readESDTree("esdTree", runNo);
+            break;
+        case AliEveEventManager::kHLTTree :
+            fHLTESDTree = readESDTree("HLTesdTree", runNo);
+            break;
+        default:
+            fESDTree    = readESDTree("esdTree", runNo);
+            fHLTESDTree = readESDTree("HLTesdTree", runNo);
         }
-        else // esdtree == 0
-        {
+
+        if(!fESDTree && !fHLTESDTree){
+            // both ESD trees are == 0
             delete fESDFile; fESDFile = 0;
             delete fESD; fESD = 0;
-            Warning(kEH, "failed getting the esdTree.");
         }
+
+
     }
-    else // esd not readable
+    else // esd file not readable
     {
         Warning(kEH, "can not read ESD file '%s'.", fgESDFileName.Data());
     }
-    if (fESDTree == 0)
+    if (fESDTree == 0 && fHLTESDTree==0)
     {
         if (fgAssertESD)
         {
@@ -702,14 +676,27 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
         return -1;
     }
 
-    if (fESDTree)
+    if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
         if (refreshESD)
         {
-            fESDTree->Refresh();
+            if(fESDTree) fESDTree->Refresh();
+            if(fHLTESDTree) fHLTESDTree->Refresh();
             fPEventSelector->Update();
         }
-        return fESDTree->GetEntries() - 1;
+
+        Int_t maxEventId=0;
+        switch(fgESDvisibleTrees){
+        default:
+        case AliEveEventManager::kOfflineTree :
+            maxEventId = fESDTree->GetEntries() - 1;
+            break;
+        case AliEveEventManager::kHLTTree :
+            maxEventId = fHLTESDTree->GetEntries() - 1;
+            break;
+       }
+
+        return maxEventId;
     }
     else if (fAODTree)
     {
@@ -764,13 +751,24 @@ void AliEveEventManager::GotoEvent(Int_t event)
     fHasEvent = kFALSE;
 
     Int_t maxEvent = 0;
-    if (fESDTree)
+    if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
-        if (event >= fESDTree->GetEntries())
-            fESDTree->Refresh();
-        maxEvent = fESDTree->GetEntries() - 1;
-        if (event < 0)
-            event = fESDTree->GetEntries() + event;
+        if(fESDTree){
+            if (event >= fESDTree->GetEntries())
+                fESDTree->Refresh();
+            maxEvent = fESDTree->GetEntries() - 1;
+            if (event < 0)
+                event = fESDTree->GetEntries() + event;
+        }
+
+        if(fHLTESDTree){
+            if (event >= fHLTESDTree->GetEntries())
+                fHLTESDTree->Refresh();
+            maxEvent = fHLTESDTree->GetEntries() - 1;
+            if (event < 0)
+                event = fHLTESDTree->GetEntries() + event;
+
+        }
     }
     else if (fAODTree)
     {
@@ -836,6 +834,14 @@ void AliEveEventManager::GotoEvent(Int_t event)
     if (fESDTree) {
         if (fESDTree->GetEntry(event) <= 0)
             throw (kEH + "failed getting required event from ESD.");
+
+        if (fESDfriendExists)
+            fESD->SetESDfriend(fESDfriend);
+    }
+
+    if (fHLTESDTree) {
+        if (fHLTESDTree->GetEntry(event) <= 0)
+            throw (kEH + "failed getting required event from HLT ESD.");
 
         if (fESDfriendExists)
             fESD->SetESDfriend(fESDfriend);
@@ -918,7 +924,7 @@ void AliEveEventManager::NextEvent()
         gSystem->ExitLoop();
 
     }
-    else if (fESDTree)
+    else if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
         Int_t nextevent=0;
         if (fPEventSelector->FindNext(nextevent))
@@ -947,7 +953,7 @@ void AliEveEventManager::PrevEvent()
         throw (kEH + "Event-loop is under external control.");
     }
 
-    if (fESDTree)
+    if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
         Int_t nextevent=0;
         if (fPEventSelector->FindPrev(nextevent))
@@ -976,13 +982,14 @@ void AliEveEventManager::Close()
     if (fAutoLoadTimerRunning)
         StopAutoLoadTimer();
 
-    if (fESDTree) {
+    if ((fESDTree!=0) || (fHLTESDTree!=0)) {
         delete fESD;       fESD       = 0;
         // delete fESDfriend; // friend tree is deleted with the tree
         fESDfriend = 0;
         fESDfriendExists = kFALSE;
 
-        delete fESDTree;   fESDTree = 0;
+        if(fESDTree) { delete fESDTree;   fESDTree = 0; }
+        if(fHLTESDTree) { delete fHLTESDTree;   fHLTESDTree = 0; }
         delete fESDFile;   fESDFile = 0;
     }
 
@@ -1222,7 +1229,7 @@ Bool_t AliEveEventManager::InitRecoParam()
     fgRecoParam = new AliRecoParam;
     const Int_t  kNDetectors = 14;
 
-    static const TEveException kEH("AliEveEventManager::InitRecoParam ");
+    static const TEveException kEH("AliEveEventManager::InitRecoParam");
 
     Bool_t isOK = kTRUE;
 
@@ -1307,6 +1314,58 @@ Bool_t AliEveEventManager::InitRecoParam()
     }
 
     return isOK;
+}
+
+TTree *AliEveEventManager::readESDTree(const char *treeName, int &runNo)
+{
+    if(!fESDFile && !fESD) return 0;
+
+    static const TEveException kEH("AliEveEventManager::readESDTree ");
+
+    TTree* tempTree = 0;
+
+    tempTree =(TTree*) fESDFile->Get(treeName);
+    if (tempTree != 0)
+    {
+        TFile *esdFriendFile = TFile::Open(fgESDfriendsFileName);
+        if (esdFriendFile)
+        {
+            if (!esdFriendFile->IsZombie())
+            {
+                esdFriendFile->Close();
+                fESDfriendExists = kTRUE;
+                tempTree->SetBranchStatus ("ESDfriend*", 1);
+            }
+            delete esdFriendFile;
+        }
+
+        fESD->ReadFromTree(tempTree);
+        if (fESDfriendExists)
+        {
+            fESDfriend = (AliESDfriend*) fESD->FindListObject("AliESDfriend");
+            Info(kEH, "found and attached ESD friend.");
+        }
+        else
+        {
+            Warning(kEH, "ESDfriend not found.");
+        }
+
+        if (tempTree->GetEntry(0) <= 0)
+        {
+            Warning(kEH, "failed getting the first entry from tree: %s", treeName);
+        }
+        else
+        {
+            if (runNo < 0)
+                runNo = fESD->GetESDRun()->GetRunNumber();
+        }
+    }
+    else // tree == 0
+    {
+        Warning(kEH, "failed getting the tree:%s", treeName);
+    }
+
+    return tempTree;
 }
 
 
