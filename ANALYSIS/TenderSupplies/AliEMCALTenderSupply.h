@@ -200,8 +200,9 @@ private:
   Int_t                  fNonLinearThreshold;     // non linearity threshold value for kBeamTesh non linearity function   
   Bool_t                 fReCalibCluster;         // switch for Recalibrate clusters
   Bool_t                 fUpdateCell;             // flag cell update
-  Bool_t                 fCalibrateEnergy;        // flag cell energy clibration
-  Bool_t                 fCalibrateTime;          // flag cell time clSibration
+  Bool_t                 fCalibrateEnergy;        // flag cell energy calibration
+  Bool_t                 fCalibrateTime;          // flag cell time calibration
+  Bool_t                 fCalibrateTimeParamAvailable; // Check if time calib param are available to set properly time cuts
   Bool_t                 fDoNonLinearity;         // nNon linearity correction flag
   Bool_t                 fBadCellRemove;          // zero bad cells
   Bool_t                 fRejectExoticCells;      // reject exotic cells
@@ -253,6 +254,6 @@ private:
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 15); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 16); // EMCAL tender task
 };
 #endif
