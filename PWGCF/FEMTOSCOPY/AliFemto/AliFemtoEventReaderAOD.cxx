@@ -525,16 +525,18 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     // }
 
     //counting particles to set multiplicity
-    double impact[2];
-    double covimpact[3];
-    if (aodtrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-      if(impact[0]<0.2 && TMath::Abs(impact[1]+fV1[2])<2.0)
-        //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
-	      if (aodtrack->Chi2perNDF() < 4.0)
-          if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
-            if (aodtrack->GetTPCNcls() > 70)
-              if (aodtrack->Eta() < 0.8)
-                tNormMult++;
+    if(fEstEventMult==kGlobalCount){
+      double impact[2];
+      double covimpact[3];
+      if (aodtrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+        if(impact[0]<0.2 && TMath::Abs(impact[1]+fV1[2])<2.0)
+          //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
+          if (aodtrack->Chi2perNDF() < 4.0)
+            if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
+              if (aodtrack->GetTPCNcls() > 70)
+                if (aodtrack->Eta() < 0.8)
+                  tNormMult++;
+      }
     }
 
     CopyAODtoFemtoTrack(aodtrack, trackCopy);
