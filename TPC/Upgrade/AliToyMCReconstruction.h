@@ -10,6 +10,7 @@ class AliExternalTrackParam;
 class AliTPCtrackerSector;
 class AliToyMCEvent;
 class AliTPCCorrection;
+class AliTPCseed;
 
 class AliToyMCReconstruction : public TObject {
 public:
@@ -55,7 +56,8 @@ public:
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr);
   AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
   AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus);
-  
+  AliExternalTrackParam* ClusterToTrackAssociation(const AliTPCseed *seed, Int_t trackID, Int_t &nClus);
+
   void InitSpaceCharge();
 
   static TTree* ConnectTrees(const char* files);

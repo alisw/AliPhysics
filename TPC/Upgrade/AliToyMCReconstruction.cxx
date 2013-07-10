@@ -427,13 +427,19 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   
   gROOT->cd();
      
-  AliExternalTrackParam tOrig;
-  AliExternalTrackParam tSeed;
+  static AliExternalTrackParam dummySeedT0;
+  static AliExternalTrackParam dummySeed;
+  static AliExternalTrackParam dummyTrack;
 
-  AliExternalTrackParam *track;
-  AliTPCseed *seed;
-  AliTPCseed *seedTmp;
-  AliTPCclusterMI *cluster;
+  AliExternalTrackParam t0seed;
+  AliExternalTrackParam seed;
+  AliExternalTrackParam track;
+  AliExternalTrackParam tOrig;
+
+  AliExternalTrackParam *dummy;
+  AliTPCseed            *seedBest;
+  AliTPCseed            *seedTmp;
+  AliTPCclusterMI       *cluster;
 
   Int_t maxev=fTree->GetEntries();
   if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
@@ -471,8 +477,8 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 
   // seeding
   static TObjArray arrTracks;
-  TObjArray * arr = &arrTracks;
-  TObjArray * seeds = new TObjArray;
+  TObjArray * arr    = &arrTracks;
+  TObjArray * seeds  = new TObjArray;
 
   // cuts for seeding 
   Float_t cuts[4];
@@ -505,11 +511,6 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
     tpcTracker->SumTracks(seeds,arr);   
     tpcTracker->SignClusters(seeds,3.0,3.0);   
   }
-  
-  // tracking
-  //tpcTracker->Clusters2Tracks();
-  //tpcTracker->PropagateForward();
-  //TObjArray *trackArray = tpcTracker->GetSeeds();
 
   Printf("After seeding we have %d tracks",seeds->GetEntriesFast());
 
@@ -522,17 +523,18 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       tOrig = *tr;
 
+      Int_t nClus=0;
       Float_t z0=fEvent->GetZ();
       Float_t t0=fEvent->GetT0();
       Float_t vdrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
-      // find the corresponding seed
-      Int_t trackID = tr->GetUniqueID();
+      // find the corresponding seed (and track)
+      Int_t trackID          = tr->GetUniqueID();
+      Int_t idxSeed          = 0;
       Int_t nSeeds           = 0;
       Int_t nSeedClusters    = 0;
       Int_t nSeedClustersTmp = 0;
-      Float_t t0seed         = 0.;
       for(Int_t iSeeds = 0; iSeeds < seeds->GetEntriesFast(); ++iSeeds){
 	
 	seedTmp = (AliTPCseed*)(seeds->At(iSeeds));
@@ -556,13 +558,34 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	// if number of corresponding clusters bigger than current nSeedClusters,
 	// take this seed as the main one
 	if(nSeedClustersTmp > nSeedClusters){
-	  seed = seedTmp;
+	  idxSeed  = iSeeds;
+	  seedBest = seedTmp;
 	  nSeedClusters = nSeedClustersTmp;
 	}
 
       }
 
-      tSeed = (AliExternalTrackParam)*seed;
+      // cluster to track association
+      if (nSeeds>0&&nSeedClusters>0) {
+
+	t0seed = (AliExternalTrackParam)*seedBest;
+	fTime0 = t0seed.GetZ()-zLength/vdrift;
+	printf("seed (%.2g): %d seeds with %d clusters\n",fTime0,nSeeds,nSeedClusters);
+
+	// cluster to track association for all good seeds 
+	// set fCreateT0seed to true to get the seed in time coordinates
+	fCreateT0seed = kTRUE;
+    	dummy = ClusterToTrackAssociation(seedBest,trackID,nClus); 
+	track = *dummy;
+	delete dummy;
+
+         // propagate track to 0
+	const Double_t kMaxSnp = 0.85;
+	const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+	AliTrackerBase::PropagateTrackTo(&track,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+	
+      }
+      
       Int_t ctype(fCorrectionType);
       
       if (fStreamer) {
@@ -580,8 +603,9 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	  "zLength="     << zLength         <<
 	  "nSeeds="      << nSeeds          <<
 	  "nSeedClusters="<<nSeedClusters   <<
-	  //"t0seed.="     << &t0seed         <<
-	  "tSeed.="      << &tSeed           <<
+	  "nClus="       << nClus           <<
+	  "t0seed.="     << &t0seed         <<
+	  "track.="      << &track          <<
 	  "tOrig.="      << &tOrig          <<
 	  "\n";
       }
@@ -703,6 +727,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   return seed;
   
 }
+
 
 //____________________________________________________________________________________
 void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl, AliTrackPoint &p )
@@ -990,6 +1015,135 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters
   track->Rotate(tr->GetAlpha());
   
   AliTrackerBase::PropagateTrackTo(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+  Printf("We have %d clusters in this track!",nClus);
+  
+  return track;
+}
+
+//____________________________________________________________________________________
+AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const AliTPCseed *seed, Int_t trackID, Int_t &nClus)
+{
+  //
+  // Cluster to track association for given seed on an array of clusters
+  //
+
+  // create track
+  AliExternalTrackParam *track = new AliExternalTrackParam(*seed);
+  
+  const AliTPCROC * roc = AliTPCROC::Instance();
+  
+  const Double_t kRTPC0    = roc->GetPadRowRadii(0,0);
+  const Double_t kRTPC1    = roc->GetPadRowRadii(36,roc->GetNRows(36)-1);
+  const Int_t kNRowsTPC    = roc->GetNRows(0) + roc->GetNRows(36) - 1;
+  const Int_t kIRowsTPC    = roc->GetNRows(0) - 1;
+  const Double_t kMaxSnp   = 0.85;
+  const Double_t kMaxR     = 500.;
+  const Double_t kMaxZ     = 500.;
+  const Double_t roady     = 0.1;
+  const Double_t roadz     = 0.01;
+    
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
+  Int_t  secCur   = -1;
+  UInt_t indexCur = 0;
+  Double_t xCur, yCur, zCur = 0.;
+
+  Float_t vDrift = GetVDrift();
+
+  // first propagate seed to outermost row
+  AliTrackerBase::PropagateTrackTo(track,kRTPC1,kMass,5,kFALSE,kMaxSnp);
+
+  // Loop over rows and find the cluster candidates
+  for( Int_t iRow = kNRowsTPC; iRow >= 0; --iRow ){
+        
+    // inner or outer sector
+    Bool_t bInnerSector = kTRUE;
+    if(iRow > kIRowsTPC) bInnerSector = kFALSE;
+
+    // nearest track point/cluster (to be found)
+    AliTrackPoint nearestPoint;
+    AliTPCclusterMI *nearestCluster = NULL;
+  
+    // Inner Sector
+    if(bInnerSector){
+
+      // Propagate to center of pad row and extract parameters
+      AliTrackerBase::PropagateTrackTo(track,roc->GetPadRowRadii(0,iRow),kMass,5,kFALSE,kMaxSnp);
+      xCur   = track->GetX();
+      yCur   = track->GetY();
+      zCur   = track->GetZ();
+      secCur = GetSector(track);
+      
+      // Find the nearest cluster (TODO: correct road settings!)
+      Printf("inner tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
+      nearestCluster = fInnerSectorArray[secCur%fkNSectorInner][iRow].FindNearest2(yCur,zCur,roady,roadz,indexCur);
+      
+      // Move to next row if now cluster found
+      if(!nearestCluster) continue;
+      //Printf("Nearest Clusters = %d (of %d) ",indexCur,fInnerSectorArray[secCur%fkNSectorInner][iRow].GetN());
+      
+    }
+
+    // Outer sector
+    else{
+
+      // Propagate to center of pad row and extract parameters
+      AliTrackerBase::PropagateTrackTo(track,roc->GetPadRowRadii(36,iRow-kIRowsTPC-1),kMass,5,kFALSE,kMaxSnp);
+      xCur   = track->GetX();
+      yCur   = track->GetY();
+      zCur   = track->GetZ();
+      secCur = GetSector(track);
+
+      // Find the nearest cluster (TODO: correct road settings!)
+      Printf("outer tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
+      nearestCluster = fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].FindNearest2(yCur,zCur,roady,roadz,indexCur);
+
+      // Move to next row if now cluster found
+      if(!nearestCluster) continue;
+      //Printf("Nearest Clusters = %d (of %d)",indexCur,fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].GetN());
+
+    }
+
+    // create track point from cluster
+    SetTrackPointFromCluster(nearestCluster,nearestPoint);
+
+    Printf("Track point = %.2f %.2f %.2f",nearestPoint.GetX(),nearestPoint.GetY(),nearestPoint.GetZ());
+
+    // rotate the cluster to the local detector frame
+    track->Rotate(((nearestCluster->GetDetector()%18)*20+10)*TMath::DegToRad());
+    AliTrackPoint prot = nearestPoint.Rotate(track->GetAlpha());   // rotate to the local frame - non distoted  point
+    if (TMath::Abs(prot.GetX())<kRTPC0) continue;
+    if (TMath::Abs(prot.GetX())>kRTPC1) continue;
+
+    
+    Printf("Rotated Track point = %.2f %.2f %.2f",prot.GetX(),prot.GetY(),prot.GetZ());
+
+    // update track with the nearest track point  
+    Bool_t res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+    if (!res) break;
+    
+    if (TMath::Abs(track->GetZ())>kMaxZ) break;
+    if (TMath::Abs(track->GetX())>kMaxR) break;
+    //if (TMath::Abs(track->GetZ())<kZcut)continue;
+
+      Double_t pointPos[2]={0,0};
+      Double_t pointCov[3]={0,0,0};
+      pointPos[0]=prot.GetY();//local y
+      pointPos[1]=prot.GetZ();//local z
+      pointCov[0]=prot.GetCov()[3];//simay^2
+      pointCov[1]=prot.GetCov()[4];//sigmayz
+      pointCov[2]=prot.GetCov()[5];//sigmaz^2
+  
+      if (!track->Update(pointPos,pointCov)) {printf("no update\n");}
+      
+      Printf("Cluster belongs to track = %d",nearestCluster->GetLabel(0));
+      
+      // only count as associate cluster if it belongs to correct track!
+      if(nearestCluster->GetLabel(0) == trackID)
+	++nClus;
+  }
 
   Printf("We have %d clusters in this track!",nClus);
   
