@@ -1045,7 +1045,7 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
     
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
-  Int_t  secCur   = -1;
+  Int_t  secCur, secOld   = -1;
   UInt_t indexCur = 0;
   Double_t xCur, yCur, zCur = 0.;
 
@@ -1076,8 +1076,15 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
       secCur = GetSector(track);
       
       // Find the nearest cluster (TODO: correct road settings!)
-      Printf("inner tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
+      //Printf("inner tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
       nearestCluster = fInnerSectorArray[secCur%fkNSectorInner][iRow].FindNearest2(yCur,zCur,roady,roadz,indexCur);
+
+      // Look again at -y if nothing found here and the sector changed with respect to the last found cluster
+      // Increase also the road in this case
+      if(!nearestCluster && secCur != secOld){
+      	//Printf("inner tracking here 2: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,-yCur,zCur,iRow,secCur);
+      	nearestCluster = fInnerSectorArray[secCur%fkNSectorInner][iRow].FindNearest2(-yCur,zCur,roady*100,roadz,indexCur);
+      }
       
       // Move to next row if now cluster found
       if(!nearestCluster) continue;
@@ -1096,8 +1103,16 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
       secCur = GetSector(track);
 
       // Find the nearest cluster (TODO: correct road settings!)
-      Printf("outer tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
+      //Printf("outer tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
       nearestCluster = fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].FindNearest2(yCur,zCur,roady,roadz,indexCur);
+
+      // Look again at -y if nothing found here and the sector changed with respect to the last found cluster
+      // Increase also the road in this case
+      if(!nearestCluster && secCur != secOld){
+      	//Printf("outer tracking here 2: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,-yCur,zCur,iRow,secCur);
+      	nearestCluster = fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].FindNearest2(-yCur,zCur,roady*100,roadz,indexCur);
+      }
+
 
       // Move to next row if now cluster found
       if(!nearestCluster) continue;
@@ -1108,7 +1123,7 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
     // create track point from cluster
     SetTrackPointFromCluster(nearestCluster,nearestPoint);
 
-    Printf("Track point = %.2f %.2f %.2f",nearestPoint.GetX(),nearestPoint.GetY(),nearestPoint.GetZ());
+    //Printf("Track point = %.2f %.2f %.2f",nearestPoint.GetX(),nearestPoint.GetY(),nearestPoint.GetZ());
 
     // rotate the cluster to the local detector frame
     track->Rotate(((nearestCluster->GetDetector()%18)*20+10)*TMath::DegToRad());
@@ -1117,7 +1132,7 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
     if (TMath::Abs(prot.GetX())>kRTPC1) continue;
 
     
-    Printf("Rotated Track point = %.2f %.2f %.2f",prot.GetX(),prot.GetY(),prot.GetZ());
+    //Printf("Rotated Track point = %.2f %.2f %.2f",prot.GetX(),prot.GetY(),prot.GetZ());
 
     // update track with the nearest track point  
     Bool_t res=AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
@@ -1137,8 +1152,9 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
       pointCov[2]=prot.GetCov()[5];//sigmaz^2
   
       if (!track->Update(pointPos,pointCov)) {printf("no update\n");}
+      secOld = secCur;
       
-      Printf("Cluster belongs to track = %d",nearestCluster->GetLabel(0));
+      //Printf("Cluster belongs to track = %d",nearestCluster->GetLabel(0));
       
       // only count as associate cluster if it belongs to correct track!
       if(nearestCluster->GetLabel(0) == trackID)
