@@ -141,7 +141,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   //Copy ctor
   
   for(Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
-                                   fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; } 
+                                   fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
   for(Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for(Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
 
@@ -756,6 +756,21 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
 
       break;
     }
+     
+    case kBeamTestCorrectedv2:
+    {
+      //From beam test, corrected for material between beam and EMCAL
+      //fNonLinearityParams[0] =  0.983504;
+      //fNonLinearityParams[1] =  0.210106;
+      //fNonLinearityParams[2] =  0.897274;
+      //fNonLinearityParams[3] =  0.0829064;
+      //fNonLinearityParams[4] =  152.299;
+      //fNonLinearityParams[5] =  31.5028;
+      //fNonLinearityParams[6] =  0.968;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
       
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
@@ -843,6 +858,17 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[4] =  163.282;
     fNonLinearityParams[5] =  23.6904;
     fNonLinearityParams[6] =  0.978;
+  }
+  
+  if(fNonLinearityFunction == kBeamTestCorrectedv2)
+  {
+    fNonLinearityParams[0] =  0.983504;
+    fNonLinearityParams[1] =  0.210106;
+    fNonLinearityParams[2] =  0.897274;
+    fNonLinearityParams[3] =  0.0829064;
+    fNonLinearityParams[4] =  152.299;
+    fNonLinearityParams[5] =  31.5028;
+    fNonLinearityParams[6] =  0.968;
   }
 }
 
@@ -1046,19 +1072,14 @@ void AliEMCALRecoUtils::InitParameters()
   //Non linearity
   for(Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = 0.; 
   
-  //For kBeamTestCorrected case, but default is no correction
-  fNonLinearityParams[0] =  0.99078;
-  fNonLinearityParams[1] =  0.161499;
-  fNonLinearityParams[2] =  0.655166; 
-  fNonLinearityParams[3] =  0.134101;
-  fNonLinearityParams[4] =  163.282;
-  fNonLinearityParams[5] =  23.6904;
-  fNonLinearityParams[6] =  0.978;
-  
-  //For kPi0GammaGamma case
-  //fNonLinearityParams[0] = 0.1457/0.1349766/1.038;
-  //fNonLinearityParams[1] = -0.02024/0.1349766/1.038;
-  //fNonLinearityParams[2] = 1.046;
+  //For kBeamTestCorrectedv2 case, but default is no correction
+  fNonLinearityParams[0] =  0.983504;
+  fNonLinearityParams[1] =  0.210106;
+  fNonLinearityParams[2] =  0.897274;
+  fNonLinearityParams[3] =  0.0829064;
+  fNonLinearityParams[4] =  152.299;
+  fNonLinearityParams[5] =  31.5028;
+  fNonLinearityParams[6] =  0.968;
   
   //Cluster energy smearing
   fSmearClusterEnergy   = kFALSE;
