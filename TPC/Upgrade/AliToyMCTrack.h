@@ -15,6 +15,7 @@ class AliToyMCTrack : public AliExternalTrackParam {
 	     const Double_t covar[15]);
   AliToyMCTrack(Double_t xyz[3],Double_t pxpypz[3],
 	     Double_t cv[21],Short_t sign);
+  AliToyMCTrack(const AliExternalTrackParam &param);
   AliToyMCTrack(const AliToyMCTrack &track);
   AliToyMCTrack& operator=(const AliToyMCTrack &track);
   virtual ~AliToyMCTrack() {}

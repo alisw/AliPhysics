@@ -5,12 +5,16 @@
 #include <TH3F.h>
 #include <TTree.h>
 #include <TFile.h>
-#include <TClonesArray.h>
+#include <TString.h>
+
 #include <AliTPCParam.h>
+#include <AliTPCROC.h>
+
 #include "AliToyMCEvent.h"
 #include "AliToyMCTrack.h"
+
 class TPolyMarker3D;
-class AliTPCROC;
+// class AliTPCROC;
 class TClonesArray;
 
 /* Visualization class. To use */
@@ -45,16 +49,17 @@ class AliToyMCDrawer : public TObject {
   void SetFileName(const Char_t* filename) {fFileName = filename;}
   void DrawEvent(AliToyMCEvent *currentEvent, Double_t centerTime, Int_t color);
   void DrawTrack(const AliToyMCTrack *track,  Double_t centerTime, Double_t currentEventTime, Int_t color);
+  void DrawLaserEvent(Int_t nLaserEvents=1, Int_t side=-1, Int_t rod=-1, Int_t bundle=-1, Int_t beam=-1);
   void DrawGeometry();
   void DrawEvents(Bool_t both = kFALSE, Bool_t before = kTRUE);
   //  void DrawEvents(Bool_t time = kTRUE, Bool_t both = kTRUE, Bool_t before = kTRUE);
  
   const AliToyMCEvent* GetEvent(Int_t eventnr) const {return static_cast<const AliToyMCEvent*>(fEventArray->At(eventnr));}
- private:
+private:
 
   TTree* fInputTree;
-  TFile* inFile;
-  const char* fFileName;
+  TFile* fInFile;
+  TString fFileName;
   AliToyMCEvent* fEvent;
   TClonesArray* fEventArray;
   TH3F* fDispHist;
@@ -63,12 +68,15 @@ class AliToyMCDrawer : public TObject {
   Double_t fDriftVel;
   AliTPCParam *fTPCParam;
   Double_t fMaxZ0;
-  Double_t fOFCRadius;
   Double_t fIFCRadius;
+  Double_t fOFCRadius;
   Double_t fTimeRange;
   AliTPCROC *fRoc;
   TClonesArray *fPoints;
-  TClonesArray *fDistPoints; 
+  TClonesArray *fDistPoints;
+
+  Bool_t ConnectInputTree();
+  
   ClassDef(AliToyMCDrawer, 1);
 
 };

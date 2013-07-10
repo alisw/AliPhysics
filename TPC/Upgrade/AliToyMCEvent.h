@@ -12,10 +12,17 @@ class AliToyMCEvent : public TObject {
   virtual ~AliToyMCEvent() {}
   AliToyMCEvent& operator = (const AliToyMCEvent &event);
 
+  enum EEventType {
+    kPhysics=0,
+    kLaser
+  };
+  
   static void SetInitialEventCounter(Int_t iev) { fgEvCounter=iev; }
 
   AliToyMCTrack* AddTrack(const AliToyMCTrack &track);
-
+  AliToyMCTrack* AddTrack(Double_t xyz[3],Double_t pxpypz[3],
+                          Double_t cv[21],Short_t sign);
+  
   Int_t GetNumberOfTracks() const { return fTracks.GetEntriesFast(); }
   const AliToyMCTrack* GetTrack(Int_t track) const { return static_cast<const AliToyMCTrack*>(fTracks.At(track)); }
     
@@ -29,11 +36,16 @@ class AliToyMCEvent : public TObject {
   Float_t GetX()             const {return fX;            }
   Float_t GetY()             const {return fY;            }
   Float_t GetZ()             const {return fZ;            }
+
+  void SetEventType(EEventType type) { fEventType=type; }
+  EEventType GetEventType() const    { return fEventType; }
   
  private:
   static Int_t fgEvCounter;
     
   UInt_t fEventNumber;
+
+  EEventType fEventType;
     
   Float_t fT0;
   Float_t fX;

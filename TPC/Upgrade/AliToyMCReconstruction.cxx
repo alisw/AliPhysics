@@ -127,7 +127,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
     printf("==============  Processing Event %6d =================\n",iev);
     fTree->GetEvent(iev);
     for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
-      printf(" > ======  Processing Track %6d ========  \n",itr);
+//       printf(" > ======  Processing Track %6d ========  \n",itr);
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       tOrig = *tr;
 
@@ -752,9 +752,10 @@ void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl,
   // voluem ID to add later ....
   //   p.SetXYZ(xyz);
   //   p.SetCov(cov);
-  AliTrackPoint *tp=const_cast<AliTPCclusterMI*>(cl)->MakePoint();
-  p=*tp;
-  delete tp;
+//   AliTrackPoint *tp=const_cast<AliTPCclusterMI*>(cl)->MakePoint(p);
+//   p=*tp;
+//   delete tp;
+  const_cast<AliTPCclusterMI*>(cl)->MakePoint(p);
   //   cl->Print();
   //   p.Print();
   p.SetVolumeID(cl->GetDetector());
@@ -1256,7 +1257,7 @@ TTree* AliToyMCReconstruction::ConnectTrees (const char* files) {
   return tFirst;
 }
 
-//_____________________________________________________________________________
+//____________________________________________________________________________________
 Int_t AliToyMCReconstruction::LoadOuterSectors() {
   //-----------------------------------------------------------------
   // This function fills outer TPC sectors with clusters.
@@ -1303,7 +1304,7 @@ Int_t AliToyMCReconstruction::LoadOuterSectors() {
 }
 
 
-//_____________________________________________________________________________
+//____________________________________________________________________________________
 Int_t  AliToyMCReconstruction::LoadInnerSectors() {
   //-----------------------------------------------------------------
   // This function fills inner TPC sectors with clusters.
@@ -1350,7 +1351,7 @@ Int_t  AliToyMCReconstruction::LoadInnerSectors() {
   return 0;
 }
 
-//_____________________________________________________________________________
+//____________________________________________________________________________________
 Int_t  AliToyMCReconstruction::GetSector(AliExternalTrackParam *track) {
   //-----------------------------------------------------------------
   // This function returns the sector number for a given track
@@ -1374,7 +1375,7 @@ Int_t  AliToyMCReconstruction::GetSector(AliExternalTrackParam *track) {
   return sector;
 }
 
-//_____________________________________________________________________________
+//____________________________________________________________________________________
 void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
   //-----------------------------------------------------------------
   // This function fills the sector structure of AliToyMCReconstruction
@@ -1408,10 +1409,15 @@ void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
 	Int_t sec = cl->GetDetector();
 	Int_t row = cl->GetRow();
 
+        // set Q of the cluster to 1, Q==0 does not work for the seeding
+        cl->SetQ(1);
+        
 	// set cluster time to cluster Z (if not ideal tracking)
 	if ( !fIdealTracking ) {
-	  cl->SetZ(cl->GetTimeBin());
-	}
+          // a 'valid' position in z is needed for the seeding procedure
+//           cl->SetZ(cl->GetTimeBin()*GetVDrift());
+          cl->SetZ(cl->GetTimeBin());
+        }
 	//Printf("Fill clusters (sector %d row %d): %.2f %.2f %.2f %.2f",sec,row,cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetTimeBin());
 
 	// fill arrays for inner and outer sectors (A/C side handled internally)
@@ -1446,4 +1452,35 @@ void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
   //     }
   //   }
   // }
+}
+
+//____________________________________________________________________________________
+AliToyMCTrack *AliToyMCReconstruction::ConvertTPCSeedToToyMCTrack(const AliTPCseed &seed)
+{
+  //
+  //
+  //
+
+
+  AliToyMCTrack *tToy = new AliToyMCTrack(seed);
+
+  for (Int_t icl=0; icl<159; ++icl){
+    const AliTPCclusterMI * const cl=seed.GetClusterFast(icl);
+    tToy->AddDistortedSpacePoint(*cl);
+  }
+
+  return tToy;
+}
+
+//____________________________________________________________________________________
+AliExternalTrackParam* AliToyMCReconstruction::GetRefittedTrack(const AliTPCseed &seed)
+{
+  //
+  //
+  //
+
+  AliExternalTrackParam *track=new AliExternalTrackParam;
+
+
+  return track;
 }

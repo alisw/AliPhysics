@@ -4,11 +4,13 @@
 #include <TRandom.h>
 #include <TF1.h>
 #include <TStopwatch.h>
-#include <AliESDtrackCuts.h>
-#include <AliESDtrack.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom3.h>
+
+#include <AliESDtrackCuts.h>
+#include <AliESDtrack.h>
+#include <AliTPCLaserTrack.h>
 
 #include "AliToyMCEvent.h"
 
@@ -97,9 +99,12 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 
   Double_t etaCuts=.9;
   Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-  TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass,mass),0.4,10);
-  fpt.SetParameters(7.24,0.120);
-  fpt.SetNpx(10000);
+  static TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass,mass),0.4,10);
+  if (fpt.GetParameter(0)<1){
+    printf("Set Parameters\n");
+    fpt.SetParameters(7.24,0.120);
+    fpt.SetNpx(200);
+  }
 //   Int_t nTracks = 400; //TODO: draw from experim dist
 //   Int_t nTracks = 20; //TODO: draw from experim dist
    Int_t nTracksLocal = fNtracks;
@@ -136,15 +141,12 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
     pxyz[2]=pt*TMath::Tan(theta);
     Double_t vertex[3]={0,0,retEvent->GetZ()};
     Double_t cv[21]={0};
-    AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
+    AliToyMCTrack *tempTrack = retEvent->AddTrack(vertex,pxyz,cv,sign);
     // use unique ID for track number
     // this will be used in DistortTrack track to set the cluster label
     // in one simulation the track id should be unique for performance studies
     tempTrack->SetUniqueID(fCurrentTrack++);
-
-    Bool_t trackDist = DistortTrack(*tempTrack, time);
-    if(trackDist) retEvent->AddTrack(*tempTrack);
-    delete tempTrack;
+    DistortTrack(*tempTrack, time);
   }
 
   return retEvent;
@@ -184,6 +186,37 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
 }
 
 //________________________________________________________________
+void AliToyMCEventGeneratorSimple::RunSimulationLaser(const Int_t nevents/*=1*/)
+{
+  //
+  // run simple simulation with equal event spacing
+  //
+  
+  if (!ConnectOutputFile()) return;
+  //initialise the space charge. Should be done after the tree was set up
+  InitSpaceCharge();
+  
+  // within one simulation the track count should be unique for effeciency studies
+  fCurrentTrack=0;
+  
+  Double_t eventTime=0.;
+  const Double_t eventSpacing=1./10.; //laser is running at 10Hz equally spaced
+  TStopwatch s;
+  for (Int_t ievent=0; ievent<nevents; ++ievent){
+    printf("Generating event %3d (%.3g)\n",ievent,eventTime);
+    fEvent = GenerateLaser(eventTime);
+    FillTree();
+    delete fEvent;
+    fEvent=0x0;
+    eventTime+=eventSpacing;
+  }
+  s.Stop();
+  s.Print();
+  
+  CloseOutputFile();
+}
+
+//________________________________________________________________
 AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, Double_t time) {
 
  
@@ -211,20 +244,13 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, 
     
     Double_t cv[21]={0};
     Int_t sign = part->Charge();
-    AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
+    AliToyMCTrack *tempTrack = retEvent->AddTrack(vertex,pxyz,cv,sign);
     // use unique ID for track number
     // this will be used in DistortTrack track to set the cluster label
     // in one simulation the track id should be unique for performance studies
     tempTrack->SetUniqueID(fCurrentTrack++);
-
-
-    Bool_t trackDist = DistortTrack(*tempTrack, time);
-    if(trackDist) {
-      retEvent->AddTrack(*tempTrack);
-     
-      nUsedTracks++;
-    }
-    delete tempTrack;
+    DistortTrack(*tempTrack, time);
+    nUsedTracks++;
     
     if(nUsedTracks >= fNtracks) break;
   }
@@ -514,25 +540,54 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD2(Double_t time) {
     Double_t cv[21]={0};
     Int_t sign = part->Charge();
 
-    AliToyMCTrack *tempTrack = new AliToyMCTrack(vertex,pxyz,cv,sign);
+    AliToyMCTrack *tempTrack = retEvent->AddTrack(vertex,pxyz,cv,sign);
     // use unique ID for track number
     // this will be used in DistortTrack track to set the cluster label
     // in one simulation the track id should be unique for performance studies
     tempTrack->SetUniqueID(fCurrentTrack++);
-
-
-    Bool_t trackDist = DistortTrack(*tempTrack, time);
-    if(trackDist) {
-      retEvent->AddTrack(*tempTrack);
-     
-      nUsedTracks++;
-    }
-    delete tempTrack;
+    DistortTrack(*tempTrack, time);
+    
     
     if(nUsedTracks >= fNtracks) break;
   }
   fInputIndex++;
  
+  return retEvent;
+}
+
+//________________________________________________________________
+AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
+{
+  //
+  // Generate an Event with laser tracks
+  //
+  
+  AliToyMCEvent *retEvent = new AliToyMCEvent();
+  retEvent->SetEventType(AliToyMCEvent::kLaser);
+  
+  retEvent->SetT0(time);
+  retEvent->SetX(0);
+  retEvent->SetX(0);
+  retEvent->SetZ(0);
+  
+  AliTPCLaserTrack::LoadTracks();
+  TObjArray *arr=AliTPCLaserTrack::GetTracks();
+
+  //since we have a laser track force no material budges
+  Bool_t materialBudget=GetUseMaterialBudget();
+  SetUseMaterialBudget(kFALSE);
+  SetIsLaser(kTRUE);
+  
+  for (Int_t iTrack=0; iTrack<arr->GetEntriesFast(); ++iTrack){
+    AliExternalTrackParam *track=(AliExternalTrackParam*)arr->At(iTrack);
+    AliToyMCTrack *tempTrack = retEvent->AddTrack(AliToyMCTrack(*track));
+    // for laser only TPC clusters exist
+    tempTrack->SetUniqueID(fCurrentTrack++);
+    MakeTPCClusters(*tempTrack, time);
+  }
+
+  SetIsLaser(kFALSE);
+  SetUseMaterialBudget(materialBudget);
   return retEvent;
 }
 

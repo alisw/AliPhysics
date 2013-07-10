@@ -6,6 +6,7 @@ Int_t AliToyMCEvent::fgEvCounter = 0;
 AliToyMCEvent::AliToyMCEvent()
   :TObject()
   ,fEventNumber(0)
+  ,fEventType(kPhysics)
   ,fT0(-1.)
   ,fX(-1000.)
   ,fY(-1000.)
@@ -20,6 +21,7 @@ AliToyMCEvent::AliToyMCEvent()
 AliToyMCEvent::AliToyMCEvent(const AliToyMCEvent &event)
   : TObject(event)
   ,fEventNumber(event.fEventNumber)
+  ,fEventType(event.fEventType)
   ,fT0(event.fT0)
   ,fX(event.fX)
   ,fY(event.fY)
@@ -42,5 +44,11 @@ AliToyMCEvent& AliToyMCEvent::operator = (const AliToyMCEvent &event)
 AliToyMCTrack* AliToyMCEvent::AddTrack(const AliToyMCTrack &track)
 {
   return new(fTracks[fTracks.GetEntriesFast()]) AliToyMCTrack(track);
+}
+//____________________________________________________
+AliToyMCTrack* AliToyMCEvent::AddTrack(Double_t xyz[3],Double_t pxpypz[3],
+                        Double_t cv[21],Short_t sign)
+{
+  return new(fTracks[fTracks.GetEntriesFast()]) AliToyMCTrack(xyz,pxpypz,cv,sign);
 }
 

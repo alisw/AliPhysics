@@ -20,7 +20,7 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks)
       break;
   }
 
-  outputFile.Append(Form("_%04dev_%04dtr"));
+  outputFile.Append(Form("_%04dev_%04dtr",nevents,ntracks));
   outputFile.Append(".root");
   s.SetOutputFileName(outputFile.Data());
 

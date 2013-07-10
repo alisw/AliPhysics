@@ -33,6 +33,7 @@ set ( SRCS
     Upgrade/AliToyMCEventGenerator.cxx
     Upgrade/AliToyMCEventGeneratorSimple.cxx
     Upgrade/AliToyMCReconstruction.cxx
+    Upgrade/AliToyMCDrawer.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

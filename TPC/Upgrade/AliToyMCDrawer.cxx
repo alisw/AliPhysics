@@ -1,5 +1,5 @@
 #include <iostream>
-#include <AliMagF.h>
+#include <TROOT.h>
 #include <TChain.h>
 #include <TMath.h>
 #include <TTree.h>
@@ -12,17 +12,22 @@
 #include <TAxis.h>
 #include <TLegend.h>
 #include <TPad.h>
-#include <AliTrackPointArray.h>
-#include <AliCluster.h>
-#include "AliToyMCDrawer.h"
-#include "AliToyMCEvent.h"
-#include "AliToyMCTrack.h"
+#include <TGeoGlobalMagField.h>
+
+#include <AliMagF.h>
 #include <AliCDBManager.h>
 #include <AliTPCParam.h>
 #include <AliGeomManager.h>
-#include <TGeoGlobalMagField.h>
 #include <AliTPCcalibDB.h>
-#include <AliTPCROC.h>
+#include <AliTrackPointArray.h>
+#include <AliCluster.h>
+#include <AliLog.h>
+#include <AliTPCLaserTrack.h>
+
+
+#include "AliToyMCDrawer.h"
+#include "AliToyMCEvent.h"
+#include "AliToyMCTrack.h"
 
 // Visualization class. To use
 
@@ -43,37 +48,40 @@
 ClassImp(AliToyMCDrawer);
 
 AliToyMCDrawer::AliToyMCDrawer()
- : TObject()   
- ,fInputTree(0x0)
- ,inFile(0x0)
- ,fFileName(0x0)
- ,fEvent(0x0)
- ,fEventArray(0x0)
- ,fDispHist(0x0)
- ,fCenterTime(-1.)
- ,fDriftVel(-1.)
-   
- {
+  : TObject()   
+  ,fInputTree(0x0)
+  ,fInFile(0x0)
+  ,fFileName()
+  ,fEvent(0x0)
+  ,fEventArray(0x0)
+  ,fDispHist(0x0)
+  ,fCenterTime(-1.)
+  ,fDriftVel(-1.)
+  ,fTPCParam(0x0)
+  ,fMaxZ0(0.)
+  ,fIFCRadius(83.5)
+  ,fOFCRadius(254.5)
+  ,fTimeRange(0)
+  ,fRoc(AliTPCROC::Instance())
+  ,fPoints(0x0)
+  ,fDistPoints(0x0)
+  {
    fEventArray = new TClonesArray("AliToyMCEvent");
    
    fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
    fTPCParam->ReadGeoMatrices();
-   fDriftVel = fTPCParam->GetDriftV();///1000000;
-   fMaxZ0=fTPCParam->GetZLength();
+   fDriftVel = fTPCParam->GetDriftV();
+   fMaxZ0    =fTPCParam->GetZLength();
    fTimeRange = 2*fMaxZ0/fDriftVel;
-   fIFCRadius=  83.5;
-   fOFCRadius= 254.5;   
  
-   fRoc  = AliTPCROC::Instance();
    fPoints = new TClonesArray("TPolyMarker3D");
    fDistPoints = new TClonesArray("TPolyMarker3D");
-   
  }
 //________________________________________________________________
 AliToyMCDrawer::AliToyMCDrawer(const AliToyMCDrawer &drawer)
   : TObject(drawer)
   ,fInputTree(drawer.fInputTree)
-  ,inFile(drawer.inFile)
+  ,fInFile(drawer.fInFile)
   ,fFileName(drawer.fFileName)
   ,fEvent(drawer.fEvent)
   ,fEventArray(drawer.fEventArray)
@@ -82,8 +90,8 @@ AliToyMCDrawer::AliToyMCDrawer(const AliToyMCDrawer &drawer)
   ,fDriftVel(drawer.fDriftVel)
   ,fTPCParam(drawer.fTPCParam)
   ,fMaxZ0(drawer.fMaxZ0)
-  ,fOFCRadius(drawer.fOFCRadius)
   ,fIFCRadius(drawer.fIFCRadius)
+  ,fOFCRadius(drawer.fOFCRadius)
   ,fTimeRange(drawer.fTimeRange)
   ,fRoc(drawer.fRoc)
   ,fPoints(drawer.fPoints)
@@ -107,20 +115,21 @@ AliToyMCDrawer::~AliToyMCDrawer()
   //destructor
   delete fEvent;
   delete fEventArray;
-  delete fDispHist;
   delete fPoints;
   delete fDistPoints; 
+  delete fDispHist;
 }
 //________________________________________________________________
 Int_t AliToyMCDrawer::FillEventArray(Double_t snapShotTime)
 {
-  if(!fFileName) {
+  if(fFileName.IsNull()) {
     std::cout << "no input file provided, using default (toyMC.root)" << std::endl;
     fFileName = "toyMC.root";
   }
   
-  inFile = new TFile(fFileName,"read");
-  fInputTree = dynamic_cast<TTree*> (inFile->Get("toyMCtree"));
+  fInFile = new TFile(fFileName.Data(),"read");
+  gROOT->cd();
+  fInputTree = dynamic_cast<TTree*> (fInFile->Get("toyMCtree"));
   fInputTree->SetBranchAddress("event",&fEvent);
   fEventArray->Clear();
   
@@ -197,14 +206,15 @@ Int_t AliToyMCDrawer::FillEventArray(Double_t snapShotTime)
 //________________________________________________________________
 Int_t AliToyMCDrawer::FillEventArray(Int_t middleEventNbr, Double_t snapShotTime)
 {
-  if(!fFileName) {
+  if(fFileName.IsNull()) {
     std::cout << "no input file provided, using default (toyMC.root)" << std::endl;
     fFileName = "toyMC.root";
   }
-  if(!inFile) inFile = new TFile(fFileName,"read");
+  if(!fInFile) fInFile = new TFile(fFileName.Data(),"read");
+  gROOT->cd();
   if(!fInputTree) 
     {
-      fInputTree = dynamic_cast<TTree*> (inFile->Get("toyMCtree"));
+      fInputTree = dynamic_cast<TTree*> (fInFile->Get("toyMCtree"));
       //   fInputTree->Add(fileName);
       fInputTree->SetBranchAddress("event",&fEvent);
     }
@@ -384,6 +394,48 @@ void AliToyMCDrawer::DrawEvent(AliToyMCEvent *currentEvent, Double_t centerTime,
 
 
 
+}
+
+//________________________________________________________________
+void AliToyMCDrawer::DrawLaserEvent(Int_t nLaserEvents, Int_t side, Int_t rod, Int_t bundle, Int_t beam)
+{
+  //
+  //
+  //
+
+  fPoints->Clear();
+  fDistPoints->Clear();
+  if (!ConnectInputTree()) return;
+
+  AliTPCLaserTrack::LoadTracks();
+  TObjArray *arr=AliTPCLaserTrack::GetTracks();
+  
+  DrawGeometry();
+
+  Int_t laserEvents=0;
+  for (Int_t iev=0;iev<fInputTree->GetEntries();++iev) {
+    fInputTree->GetEntry(iev);
+    if (fEvent->GetEventType()!=AliToyMCEvent::kLaser) continue;
+    if (fEvent->GetNumberOfTracks()!=arr->GetEntriesFast()) {
+      AliError(Form("Wrong number of tracks in the laser event: %d!=%d",fEvent->GetNumberOfTracks(),arr->GetEntriesFast()));
+      continue;
+    }
+
+    for (Int_t iTrack=0; iTrack<fEvent->GetNumberOfTracks();++iTrack){
+      AliTPCLaserTrack *laserTrack = (AliTPCLaserTrack*)arr->UncheckedAt(iTrack);
+      if (side  >-1 && laserTrack->GetSide()   != side   ) continue;
+      if (rod   >-1 && laserTrack->GetRod()    != rod    ) continue;
+      if (bundle>-1 && laserTrack->GetBundle() != bundle ) continue;
+      if (beam  >-1 && laserTrack->GetBeam()   != beam   ) continue;
+      const AliToyMCTrack *track = fEvent->GetTrack(iTrack);
+      DrawTrack(track,0,fEvent->GetT0(),kRed);
+    }
+
+    ++laserEvents;
+    if (laserEvents==nLaserEvents) break;
+  }
+  
+  
 }
 
 //________________________________________________________________
@@ -581,3 +633,40 @@ void AliToyMCDrawer::DrawGeometry() {
 
 }
 
+//________________________________________________________________
+Bool_t AliToyMCDrawer::ConnectInputTree()
+{
+  //
+  //
+  //
+
+  if(fFileName.IsNull()) {
+    AliError("no input file provided, using default (toyMC.root)");
+    fFileName = "toyMC.root";
+  }
+  if (fInFile && fInFile->GetName()==fFileName) return kTRUE;
+  delete fInFile;
+  fInFile=0x0;
+  delete fInputTree;
+  fInputTree=0x0;
+  
+  fInFile = new TFile(fFileName.Data(),"read");
+  if (!fInFile || !fInFile->IsOpen() || fInFile->IsZombie() ) {
+    delete fInFile;
+    return kFALSE;
+  }
+  
+  gROOT->cd();
+  
+  fInputTree = dynamic_cast<TTree*> (fInFile->Get("toyMCtree"));
+
+  if (!fInputTree){
+    AliError("Could not connect tree!\n");
+    delete fInFile;
+    fInFile=0x0;
+    return kFALSE;
+  }
+  
+  fInputTree->SetBranchAddress("event",&fEvent);
+  return kTRUE;
+}

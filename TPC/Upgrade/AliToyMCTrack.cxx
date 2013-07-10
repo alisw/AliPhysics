@@ -4,14 +4,14 @@ ClassImp(AliToyMCTrack);
 
 AliToyMCTrack::AliToyMCTrack()
   :AliExternalTrackParam()
-  ,fSpacePoints("AliTPCclusterMI")
-  ,fDistortedSpacePoints("AliTPCclusterMI")
-  ,fITSPoints("AliCluster")
-  ,fTRDPoints("AliCluster")
+  ,fSpacePoints("AliTPCclusterMI",160)
+  ,fDistortedSpacePoints("AliTPCclusterMI",160)
+  ,fITSPoints("AliCluster",7)
+  ,fTRDPoints("AliCluster",6)
 {
   //default constructor
 }
-//____________________________________________________
+//________________________________________________________________
 AliToyMCTrack::AliToyMCTrack(const AliToyMCTrack &track)
   : AliExternalTrackParam(track)
   ,fSpacePoints(track.fSpacePoints)
@@ -21,7 +21,20 @@ AliToyMCTrack::AliToyMCTrack(const AliToyMCTrack &track)
 {
   //copy constructor
 }
-//_____________________________________________________
+
+//________________________________________________________________
+AliToyMCTrack::AliToyMCTrack(const AliExternalTrackParam &param)
+  :AliExternalTrackParam(param)
+  ,fSpacePoints("AliTPCclusterMI",160)
+  ,fDistortedSpacePoints("AliTPCclusterMI",160)
+  ,fITSPoints("AliCluster",7)
+  ,fTRDPoints("AliCluster",6)
+{
+  //
+  // initialise from external track param
+  //
+}
+//________________________________________________________________
 AliToyMCTrack& AliToyMCTrack::operator = (const AliToyMCTrack &track)
 {
   //assignment operator
@@ -35,10 +48,10 @@ AliToyMCTrack::AliToyMCTrack(Double_t x, Double_t alpha,
 		       const Double_t param[5], 
 		       const Double_t covar[15])
   :AliExternalTrackParam(x,alpha,param,covar)
-  ,fSpacePoints("AliTPCclusterMI")
-  ,fDistortedSpacePoints("AliTPCclusterMI")
-  ,fITSPoints("AliCluster")
-  ,fTRDPoints("AliCluster")
+  ,fSpacePoints("AliTPCclusterMI",160)
+  ,fDistortedSpacePoints("AliTPCclusterMI",160)
+  ,fITSPoints("AliCluster",7)
+  ,fTRDPoints("AliCluster",6)
 {
   //create external track parameters from given arguments
 }
@@ -46,10 +59,10 @@ AliToyMCTrack::AliToyMCTrack(Double_t x, Double_t alpha,
 AliToyMCTrack::AliToyMCTrack(Double_t xyz[3],Double_t pxpypz[3],
 		       Double_t cv[21],Short_t sign)
   :AliExternalTrackParam(xyz,pxpypz,cv,sign)
-  ,fSpacePoints("AliTPCclusterMI")
-  ,fDistortedSpacePoints("AliTPCclusterMI")
-  ,fITSPoints("AliCluster")
-  ,fTRDPoints("AliCluster")
+  ,fSpacePoints("AliTPCclusterMI",160)
+  ,fDistortedSpacePoints("AliTPCclusterMI",160)
+  ,fITSPoints("AliCluster",7)
+  ,fTRDPoints("AliCluster",6)
 {
 }
 //________________________________________________________________

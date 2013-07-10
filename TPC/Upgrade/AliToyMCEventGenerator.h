@@ -66,6 +66,9 @@ class AliToyMCEventGenerator : public TObject {
 
   void SetUseMaterialBudget(Bool_t use) { fUseMaterialBudget=use;    }
   Bool_t GetUseMaterialBudget() const   { return fUseMaterialBudget; }
+
+  void SetIsLaser(Bool_t use) { fIsLaser=use;    }
+  Bool_t GetIsLaser() const   { return fIsLaser; }
   
  protected:
   AliTPCParam *fTPCParam;
@@ -90,6 +93,7 @@ class AliToyMCEventGenerator : public TObject {
 
   Bool_t fUseStepCorrection;
   Bool_t fUseMaterialBudget;
+  Bool_t fIsLaser;
   
   ClassDef(AliToyMCEventGenerator, 1)
      

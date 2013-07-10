@@ -125,11 +125,16 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   
   // plots
   if(doPlots){
-    TString outFileName = inFileName;
+    TString outFileName = gSystem->BaseName(inFileName.Data());
     outFileName.ReplaceAll(".root","");
     cT0->SaveAs(Form("%s_T0.eps",outFileName.Data()));
+    cZ0->SaveAs(Form("%s_Z0.eps",outFileName.Data()));
     cT02D->SaveAs(Form("%s_T02D.eps",outFileName.Data()));
     cTrackParams->SaveAs(Form("%s_TrackParams.eps",outFileName.Data()));
+    cT0->SaveAs(Form("%s_T0.png",outFileName.Data()));
+    cZ0->SaveAs(Form("%s_Z0.png",outFileName.Data()));
+    cT02D->SaveAs(Form("%s_T02D.png",outFileName.Data()));
+    cTrackParams->SaveAs(Form("%s_TrackParams.png",outFileName.Data()));
   }
 }
 

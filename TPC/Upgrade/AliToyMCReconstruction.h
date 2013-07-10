@@ -56,6 +56,10 @@ public:
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr);
   AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
   AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus);
+
+  AliToyMCTrack *ConvertTPCSeedToToyMCTrack(const AliTPCseed &seed);
+  AliExternalTrackParam* GetRefittedTrack(const AliTPCseed &seed);
+  
   AliExternalTrackParam* ClusterToTrackAssociation(const AliTPCseed *seed, Int_t trackID, Int_t &nClus);
 
   void InitSpaceCharge();

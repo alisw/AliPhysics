@@ -6,6 +6,7 @@
 #include <TGeoGlobalMagField.h>
 #include <TSpline.h>
 #include <TObjString.h>
+#include <TROOT.h>
 
 #include <AliLog.h>
 #include <AliTPCROC.h>
@@ -18,6 +19,7 @@
 #include <AliTPCclusterMI.h>
 #include <AliTPCSpaceCharge3D.h>
 #include <AliTPCROC.h>
+#include <AliExternalTrackParam.h>
 
 #include "AliToyMCEvent.h"
 #include "AliToyMCTrack.h"
@@ -39,6 +41,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fOutTree(0x0)
   ,fUseStepCorrection(kFALSE)
   ,fUseMaterialBudget(kFALSE)
+  ,fIsLaser(kTRUE)
 {
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   fTPCParam->ReadGeoMatrices();
@@ -57,6 +60,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fOutTree(0x0)
   ,fUseStepCorrection(gen.fUseStepCorrection)
   ,fUseMaterialBudget(gen.fUseMaterialBudget)
+  ,fIsLaser(gen.fIsLaser)
 {
   //
   gRandom->SetSeed();
@@ -83,7 +87,7 @@ Bool_t AliToyMCEventGenerator::DistortTrack(AliToyMCTrack &trackIn, Double_t t0)
   MakeTPCClusters(trackIn, t0);
   MakeTRDClusters(trackIn/*,t0*/);
 
-  return 1;
+  return kTRUE;
 }
 //________________________________________________________________
 void AliToyMCEventGenerator::MakeITSClusters(AliToyMCTrack &trackIn/*, Double_t t0*/)
@@ -97,7 +101,7 @@ void AliToyMCEventGenerator::MakeITSClusters(AliToyMCTrack &trackIn/*, Double_t 
   const Double_t kMaxZ0  = fTPCParam->GetZLength();
   const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
-  AliToyMCTrack track(trackIn);
+  AliExternalTrackParam track(trackIn);
   Double_t xyz[3]  = {0.,0.,0.};
       
   if (!AliTrackerBase::PropagateTrackTo(&track,ITSRadii[0],kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
@@ -116,20 +120,10 @@ void AliToyMCEventGenerator::MakeITSClusters(AliToyMCTrack &trackIn/*, Double_t 
     if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
     if (TMath::Abs(track.GetZ())>lengthITS[iLayer]/2) continue;
     
-    AliCluster* tempCl = new AliCluster();
-
-    tempCl->SetX(xyz[0]);
-    tempCl->SetY(xyz[1]);
-    tempCl->SetZ(xyz[2]);
-    
-    Double_t sigmaY = 0.0004;
-    Double_t sigmaZ = 0.0004;
-    
-    tempCl->SetSigmaY2(sigmaY*sigmaY);
-    tempCl->SetSigmaZ2(sigmaZ*sigmaZ);
-
-    trackIn.AddITSPoint(*tempCl);
-    
+    const Double_t sigmaY = 0.0004;
+    const Double_t sigmaZ = 0.0004;
+    AliCluster* tempCl = trackIn.AddITSPoint(AliCluster(1000,xyz[0],xyz[1],xyz[2],sigmaY*sigmaY,sigmaZ*sigmaZ,0));
+    tempCl->SetLabel(trackIn.GetUniqueID(), 0);
   }
 
 }
@@ -148,7 +142,7 @@ void AliToyMCEventGenerator::MakeTRDClusters(AliToyMCTrack &trackIn/*, Double_t 
   const Double_t kMaxZ0  = fTPCParam->GetZLength();
   const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
-  AliToyMCTrack track(trackIn);
+  AliExternalTrackParam track(trackIn);
   Double_t xyz[3]  = {0.,0.,0.};
       
   if (!AliTrackerBase::PropagateTrackTo(&track,TRDRadii[0],kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
@@ -167,20 +161,10 @@ void AliToyMCEventGenerator::MakeTRDClusters(AliToyMCTrack &trackIn/*, Double_t 
     if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
     if (TMath::Abs(track.GetZ())>lengthTRD[iLayer]/2) continue;
     
-    AliCluster* tempCl = new AliCluster();
-
-    tempCl->SetX(xyz[0]);
-    tempCl->SetY(xyz[1]);
-    tempCl->SetZ(xyz[2]);
-    
-    Double_t sigmaY = 0.06;
-    Double_t sigmaZ = 0.2;
-    
-    tempCl->SetSigmaY2(sigmaY*sigmaY);
-    tempCl->SetSigmaZ2(sigmaZ*sigmaZ);
-
-    trackIn.AddTRDPoint(*tempCl);
-    
+    const Double_t sigmaY = 0.06;
+    const Double_t sigmaZ = 0.2;
+    AliCluster* tempCl = trackIn.AddTRDPoint(AliCluster(1000,xyz[0],xyz[1],xyz[2],sigmaY*sigmaY,sigmaZ*sigmaZ,0));
+    tempCl->SetLabel(trackIn.GetUniqueID(), 0);
   }
 
 }
@@ -191,8 +175,8 @@ void AliToyMCEventGenerator::MakeTPCClusters(AliToyMCTrack &trackIn, Double_t t0
   // make it big enough to hold all points
   // store real number of generated points in the unique id
   const Int_t nMaxPoints=3000;
-  AliTrackPointArray pointArray0(nMaxPoints);  //undistorted
-  AliTrackPointArray pointArray1(nMaxPoints);  //distorted
+  static AliTrackPointArray pointArray0(nMaxPoints);  //undistorted
+  static AliTrackPointArray pointArray1(nMaxPoints);  //distorted
   
   //Create space point of undistorted and distorted clusters along the propagated track trajectory
   CreateSpacePoints(trackIn,pointArray0,pointArray1);
@@ -213,21 +197,22 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
   // a graph is filled in local coordinates for later
   //
   
-  const Double_t kMaxSnp = 0.85;
+  Double_t kMaxSnp = 0.85;
+  if (fIsLaser) kMaxSnp=0.99;
   const Double_t kMaxZ0  = fTPCParam->GetZLength();
   const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
   const Double_t iFCRadius =  83.5; //radius constants found in AliTPCCorrection.cxx
   const Double_t oFCRadius = 254.5;
   
-  AliToyMCTrack track(trackIn);
+  AliExternalTrackParam track(trackIn);
   //!!! TODO: make this adjustable perhaps
   const Double_t stepSize=0.1;
   Double_t xyz[3]  = {0.,0.,0.};
   Float_t  xyzf[3] = {0.,0.,0.};
   
   //!!! when does the propagation not work, how often does it happen?
-  if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
+  if (!AliTrackerBase::PropagateTrackTo(&track,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget) && !fIsLaser) {
     AliError(Form("Propagation to IFC: %.2f failed\n",iFCRadius));
     return;
   }
@@ -235,10 +220,9 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
   Int_t npoints=0;
   
   for (Double_t radius=iFCRadius; radius<oFCRadius; radius+=stepSize){
-    
     //!!! changed from return 0 to continue -> Please check
     if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterialBudget)) {
-      AliError(Form("Propagation to %.2f failed\n",radius));
+      AliError(Form("Propagation to r=%.2f (snp=%.2f) failed\n",radius,track.GetSnp()));
       continue;
     }
     track.GetXYZ(xyz);
@@ -326,7 +310,6 @@ void AliToyMCEventGenerator::ConvertTrackPointsToLocalClusters(AliTrackPointArra
   //
   //
   //
-
 
   const Int_t npoints=Int_t(arrPoints.GetUniqueID());
   Int_t secOld=-1;
@@ -428,7 +411,7 @@ void AliToyMCEventGenerator::ConvertTrackPointsToLocalClusters(AliTrackPointArra
 
     if (!SetupCluster(tempCl,xyz,sec,t0)) continue;
     tempCl.SetLabel(tr.GetUniqueID(), 0);
-    
+
     if (type==0) tr.AddSpacePoint(tempCl);
     else tr.AddDistortedSpacePoint(tempCl);
 //     printf("SetupCluster %3d: (%.2f, %.2f, %.2f), %d, %.2f\n",irow,xyz[0],xyz[1],xyz[2],sec,t0);
@@ -503,6 +486,8 @@ Bool_t AliToyMCEventGenerator::ConnectOutputFile()
   fOutTree = new TTree("toyMCtree","Tree with toyMC simulation");
   fOutTree->Branch("event","AliToyMCEvent",&fEvent);
 
+  gROOT->cd();
+
   return kTRUE;
 }
 
@@ -525,7 +510,7 @@ Bool_t AliToyMCEventGenerator::CloseOutputFile()
 void AliToyMCEventGenerator::FillTree()
 {
   // fill the tree
-  if (fOutTree) fOutTree->Fill();
+  if (fOutTree&&fEvent) fOutTree->Fill();
 }
 
 //________________________________________________________________
