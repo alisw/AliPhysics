@@ -32,6 +32,7 @@
 //#include "AliCFContainer.h"          // required dependency libCORRFW.so
 #include "TObjArray.h"
 #include "AliHFCorrelator.h"
+#include "AliHFAssociatedTrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "TH1D.h"
@@ -72,6 +73,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fCorrArray(NULL)
   , fEventType(0)
   , fTriggerParticleType(kD)
+  , fUseTrackEfficiency(kFALSE)
 {
   // default constructor
   // 
@@ -262,6 +264,11 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       fUseMC=true;
       continue;
     }
+    if (argument.BeginsWith("useTrackEff")){
+      fUseTrackEfficiency=true;
+      AliInfo("Applying track efficiency");
+      continue;
+    }
     if (argument.BeginsWith("system=")) {
       argument.ReplaceAll("system=", "");
       if (argument.CompareTo("pp")==0) fSystem=0;
@@ -393,6 +400,16 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
     AliError("working class instance fCorrelator missing");
     return -ENODEV;
   }
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(fCuts);
+  if (!cuts) {
+    if (fCuts)
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
+  AliAODEvent *AOD= (AliAODEvent*)(pEvent);
+
   fCorrelator->SetAODEvent(dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent))); 
 
   Bool_t correlatorON = fCorrelator->Initialize(); //define the pool for mixing
@@ -451,9 +468,19 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	fDeltaEta = fCorrelator->GetDeltaEta();
 	
 	AliReducedParticle *assoc = fCorrelator->GetAssociatedParticle();
+	//	Double_t efficiency = assoc->GetWeight();
+	
+	Double_t weight =1.;
+	if(fUseTrackEfficiency){
+	  AliAODVertex *vtx = AOD->GetPrimaryVertex();
+	  Double_t zvertex = vtx->GetZ(); // zvertex
+	  weight=cuts->GetTrackWeight(assoc->Pt(),assoc->Eta(),zvertex);
+	  AliDebug(2,Form("Vertex: %f  weight: &f ",zvertex, weight));
+	}
+
 
 	FillParticleProperties(ptrigger,assoc,ParticleProperties(),GetDimTHnSparse());
-	fCorrProperties->Fill(ParticleProperties());
+	fCorrProperties->Fill(ParticleProperties(),1./weight);
 
       } // loop over electron tracks in event
     } // loop over events in pool
