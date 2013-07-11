@@ -83,7 +83,10 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   void   SetReadAODData   (Bool_t flag=kTRUE) {fReadAODData=flag;}
   void   SetFilterBit  (Bool_t flag=kTRUE) {fSetFilterBit=flag;}
   void   SetFilterType (Int_t fbittype) { fbit= fbittype;}
-  void SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
+  void   SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
+  void   SetMinNClustersTPCPID(Int_t cl=0) { fMinNclsTPCPID=cl;}
+  void   SetRequireTOF(Bool_t tof=kTRUE) {fRequireTOF=tof;}
+  void   SetMinRatioTPCclusters(Double_t ratio) {fMinRatioTPCcluster=ratio;}
 
   //Getters
   ULong64_t GetTriggerMask(){ return fTriggerMask; }
@@ -109,9 +112,16 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Bool_t          fSetFilterBit ; // 
   Int_t           fbit ;   // 
 
+  Int_t           fMinNclsTPCPID;   // Number of clusters for TPC PID
+  Bool_t          fRequireTOF;      // whether or not to require TOF matching of the track
+  Double_t        fMinRatioTPCcluster; //Min ratio of TPC clusters found/findable
+
 
   //Number of events
   TH1I  *fHistEventsProcessed;     //! simple histo for monitoring the number of events processed
+  TH1F  *fElectronPt;              //! histo with final selected electron pt
+  TH1F  *fElectronPtStart;         //! histo with final selected electron pt
+
   ClassDef(AliCFSingleTrackEfficiencyTask,1);
 
 };

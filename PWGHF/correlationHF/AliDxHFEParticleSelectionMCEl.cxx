@@ -157,8 +157,8 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
     InitTHnSparseArray(thnSizeExt);
 
     // TODO: Redo binning of distributions more?
-    //     		       0    1      2     3     
-    // 	 	               Pt   Phi   Eta   mother 
+    //     		              0    1      2     3     
+    // 	 	                      Pt   Phi   Eta   mother 
     int    thnBinsExt[thnSizeExt] = { 100,  100, 100,    15, kNCutLabels-1 };
     double thnMinExt [thnSizeExt] = {   0,    0, -1.,  -1.5, kRecKineITSTPC-0.5};
     double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,  13.5, kSelected-0.5};
@@ -177,9 +177,9 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
     InitTHnSparseArray(thnSize);
 
     // TODO: Redo binning of distributions more?
-    //     		       0    1      2     3     
-    // 	 	               Pt   Phi   Eta   mother 
-    int    thnBins[thnSize] = { 100,  100, 100,    15  };
+    //     		       0       1      2     3     
+    // 	 	               Pt     Phi   Eta   mother 
+    int    thnBins[thnSize] = { 100,  50, 100,    15  };
     double thnMin [thnSize] = {   0,    0, -1.,  -1.5  };
     double thnMax [thnSize] = {  10, 2*Pi,  1.,  13.5  };
     const char* thnNames[thnSize]={
