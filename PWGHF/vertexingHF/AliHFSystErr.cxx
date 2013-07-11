@@ -1098,8 +1098,8 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100(){
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.00); // 
   
-  fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
+  fBR = new TH1F("fBR","fBR",20,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
