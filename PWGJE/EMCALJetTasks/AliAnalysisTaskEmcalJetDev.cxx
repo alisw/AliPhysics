@@ -357,6 +357,23 @@ AliJetContainer* AliAnalysisTaskEmcalJetDev::GetJetContainer(Int_t i) const{
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskEmcalJetDev::SetJetAcceptanceType(TString cutType, Int_t c) {
+  //set acceptance cuts
+  AliJetContainer *cont = GetJetContainer(c);
+
+  if(!cutType.IsNull()) {
+    if(cutType.EqualTo("TPC"))
+     cont->SetJetAcceptanceType(AliJetContainer::kTPC);
+    else if(cutType.EqualTo("EMCAL"))
+      cont->SetJetAcceptanceType(AliJetContainer::kEMCAL);
+    else
+      AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),cutType.Data()));
+  } else
+    cont->SetJetAcceptanceType(AliJetContainer::kUser);
+
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetRhoName(const char *n, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);

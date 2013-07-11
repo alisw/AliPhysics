@@ -24,7 +24,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   TString     trigClass           = "",
 						   const char *CentEst             = "V0A",
 						   Int_t       pSel                = AliVEvent::kINT7,
-						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching
+						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
+						   Double_t    ptTrackBias         = 0.
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -90,7 +91,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
  
   }
 
-  TString wagonName = Form("DiJet_%s_%s_Rho%dTC%sMatch%d",strJetsFull.Data(),strJetsCh.Data(),rhoType,trigClass.Data(),matchFullCh);
+  TString wagonName = Form("DiJet_%s_%s_Rho%dTC%sMatch%dHadTrig%d",strJetsFull.Data(),strJetsCh.Data(),rhoType,trigClass.Data(),matchFullCh,(Int_t)(ptTrackBias));
 
   //Configure DiJet task
   AliAnalysisTaskEmcalDiJetAna *taskDiJet = NULL;
@@ -110,8 +111,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
 
   for(Int_t i=0; i<2; i++) {
-    taskDiJet->SetPercAreaCut(0.557, 0);
-    taskDiJet->SetPercAreaCut(0.557, 1);
+    taskDiJet->SetPercAreaCut(0.557, i);
+    taskDiJet->SetPtBiasJetTrack(ptTrackBias,i);
   }
 
   taskDiJet->SetRhoType(rhoType);

@@ -21,6 +21,7 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   virtual ~AliAnalysisTaskEmcalJetDev();
 
   //these should all point to the jet container
+  void                SetJetAcceptanceType(TString cutType, Int_t c = 0);
   void                SetJetEtaLimits(Float_t min, Float_t max, Int_t c = 0);
   void                SetJetPhiLimits(Float_t min, Float_t max, Int_t c = 0);
   void                SetJetAreaCut(Float_t cut, Int_t c = 0);

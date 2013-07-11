@@ -49,6 +49,9 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
   fh3JetPtFullFractionDR(0)
 {
   // Default constructor.
+
+  for(Int_t i=0; i<4; i++)
+    fh3DiJetKtNEFPtAssoc[i] = 0;
   
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -68,6 +71,9 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) :
   fh3JetPtFullFractionDR(0)
 {
   // Standard constructor.
+
+  for(Int_t i=0; i<4; i++)
+    fh3DiJetKtNEFPtAssoc[i] = 0;
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -152,6 +158,19 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
 				"fhnDiJetVarsFullCharged;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality",
 				nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnDiJetVarsFullCharged);
+  }
+
+  if(fDoFullFull) {
+    fhnDiJetVarsFull = new THnSparseF("fhnDiJetVarsFull",
+				    "fhnDiJetVarsFull;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality",
+				    nBinsSparse0,nBins0,xmin0,xmax0);
+    fOutput->Add(fhnDiJetVarsFull);
+  }
+
+  for(Int_t i=0; i<4; i++) {
+    TString histoName = Form("fh3DiJetKtNEFPtAssoc_TrigBin%d",i);
+    fh3DiJetKtNEFPtAssoc[i] = new TH3F(histoName.Data(),histoName.Data(),nBinsKt,-100.,100.,100,0.,1.,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DiJetKtNEFPtAssoc[i]);
   }
 
   const Int_t nBinsSparseMatch = 7;
@@ -243,6 +262,8 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::Run()
     fRhoChVal = GetRhoVal(fContainerCharged);
   }
   
+  if(fDoFullFull)   CorrelateJets(0);
+
   // MatchFullAndChargedJets();
   if(fDoChargedCharged)   CorrelateJets(1);
 
@@ -298,7 +319,16 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateJets(const Int_t type) {
 
   for(Int_t ijt=0; ijt<nJetsTrig; ijt++) {
 
-    AliEmcalJet *jetTrig = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ijt, typet));
+    AliEmcalJet *jetTrig = NULL; 
+    if(type==0) {
+      jetTrig = static_cast<AliEmcalJet*>(GetJetFromArray(ijt, typet));
+      if(TMath::Abs(jetTrig->Eta())>0.5)
+	jetTrig = NULL;
+    }
+    else
+      jetTrig = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ijt, typet));
+
+
     if(!jetTrig)
       continue; //jet not selected
     
@@ -310,7 +340,15 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateJets(const Int_t type) {
     for(Int_t ija=0; ija<nJetsAssoc; ija++) {
       if(IsSameJet(ijt,ija,type)) continue;
 
-      AliEmcalJet *jetAssoc = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ija, typea));
+      AliEmcalJet *jetAssoc = NULL;
+      if(type==0) {
+	jetAssoc = static_cast<AliEmcalJet*>(GetJetFromArray(ija, typea));
+	if(TMath::Abs(jetAssoc->Eta())>0.5)
+	  jetAssoc = NULL;
+      }
+      else
+	jetAssoc = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ija, typea));
+
       if(!jetAssoc)
 	continue;
 	
@@ -328,9 +366,9 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateJets(const Int_t type) {
 void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, const AliEmcalJet *jet2, const Int_t mode) {
   //
   // Fill histos
-  // mode: charged+neutral = 0
-  //       charged only    = 1
-  //       full vs charged = 2
+  // mode: full vs full        = 0
+  //       charged vs charged  = 1
+  //       full vs charged     = 2
   //
 
   Int_t typet = 0;
@@ -371,6 +409,33 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
     fhnDiJetVarsCh->Fill(diJetVars);
   else if(mode==2)
     fhnDiJetVarsFullCharged->Fill(diJetVars);
+
+  if(mode==2) {
+    Int_t trigBin = GetPtTriggerBin(jetTrigPt);
+    if(trigBin>-1 && trigBin<4) {
+      Double_t dPhiMin = TMath::Pi()-0.52;
+      Double_t dPhiMax = TMath::Pi()+0.52;
+      if(deltaPhi>dPhiMin && deltaPhi<dPhiMax)
+	fh3DiJetKtNEFPtAssoc[trigBin]->Fill(kT, jet1->NEF(), jetAssocPt);
+    }
+  }
+
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalDiJetAna::GetPtTriggerBin(Double_t pt) {
+
+  Int_t binTrig = -1;
+  if(pt>=20 && pt<40)
+    binTrig = 0;
+  else if(pt>=40 && pt<60)
+    binTrig = 1;
+  else if(pt>=60 && pt<80)
+    binTrig = 2;
+  else if(pt>=80 && pt<100)
+    binTrig = 3;
+
+  return binTrig;
 
 }
 
