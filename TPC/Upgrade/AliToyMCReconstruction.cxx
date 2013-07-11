@@ -426,10 +426,6 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
   
   gROOT->cd();
-     
-  static AliExternalTrackParam dummySeedT0;
-  static AliExternalTrackParam dummySeed;
-  static AliExternalTrackParam dummyTrack;
 
   AliExternalTrackParam t0seed;
   AliExternalTrackParam seed;
@@ -508,11 +504,18 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   for (Int_t sec=0;sec<fkNSectorOuter;sec++){
     //
     tpcTracker->MakeSeeds3(arr, sec,upperRow,lowerRow,cuts,-1,1);
+
     tpcTracker->SumTracks(seeds,arr);   
     tpcTracker->SignClusters(seeds,3.0,3.0);   
   }
 
-  Printf("After seeding we have %d tracks",seeds->GetEntriesFast());
+  //Printf("After seeding we have %d tracks",seeds->GetEntriesFast());
+
+  // Standard tracking
+  tpcTracker->SetSeeds(seeds);
+  tpcTracker->PropagateForward();
+  //Printf("After trackinging we have %d tracks",seeds->GetEntriesFast());
+
 
   // Loop over all input tracks and connect to found seeds
   for (Int_t iev=0; iev<maxev; ++iev){
@@ -523,32 +526,42 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       tOrig = *tr;
 
-      Int_t nClus=0;
       Float_t z0=fEvent->GetZ();
       Float_t t0=fEvent->GetT0();
       Float_t vdrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
       // find the corresponding seed (and track)
-      Int_t trackID          = tr->GetUniqueID();
-      Int_t idxSeed          = 0;
-      Int_t nSeeds           = 0;
-      Int_t nSeedClusters    = 0;
-      Int_t nSeedClustersTmp = 0;
+      Int_t trackID            = tr->GetUniqueID();
+      Int_t nClustersMC        = tr->GetNumberOfSpacePoints();      // number of findable clusters (ideal)
+      if(fClusterType==1) 
+	    nClustersMC        = tr->GetNumberOfDistSpacePoints();  // number of findable clusters (distorted)
+      Int_t idxSeed            = 0; // index of best seed (best is with maximum number of clusters with correct ID)
+      Int_t nSeeds             = 0; // number of seeds for MC track
+      Int_t nSeedClusters      = 0; // number of clusters for best seed
+      Int_t nSeedClustersTmp   = 0; // number of clusters for current seed
+      Int_t nSeedClustersID    = 0; // number of clusters with correct ID for best seed 
+      Int_t nSeedClustersIDTmp = 0; // number of clusters with correct ID for current seed 
       for(Int_t iSeeds = 0; iSeeds < seeds->GetEntriesFast(); ++iSeeds){
 	
+	// set current seed and reset counters
 	seedTmp = (AliTPCseed*)(seeds->At(iSeeds));
-	nSeedClustersTmp = 0;
+	nSeedClustersTmp   = 0;
+	nSeedClustersIDTmp = 0;
+
+	// loop over all rows
 	for(Int_t iRow = seedTmp->GetRow(); iRow < seedTmp->GetRow() + seedTmp->GetNumberOfClustersIndices(); iRow++ ){
        
+	  // get cluster and increment counters
 	  cluster = seedTmp->GetClusterFast(iRow);
 	  if(cluster){
+	    nSeedClustersTmp++;
 	    if(cluster->GetLabel(0)==trackID){
-	      nSeedClustersTmp++;
+	      nSeedClustersIDTmp++;
 	    }
 	  }
 	}
-
+	
 	// if number of corresponding clusters > 0,
 	// increase nSeeds
 	if(nSeedClustersTmp > 0){
@@ -556,33 +569,32 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	}
 
 	// if number of corresponding clusters bigger than current nSeedClusters,
-	// take this seed as the main one
-	if(nSeedClustersTmp > nSeedClusters){
+	// take this seed as the best one
+	if(nSeedClustersIDTmp > nSeedClustersID){
 	  idxSeed  = iSeeds;
 	  seedBest = seedTmp;
-	  nSeedClusters = nSeedClustersTmp;
+	  nSeedClusters   = nSeedClustersTmp;   // number of correctly assigned clusters
+	  nSeedClustersID = nSeedClustersIDTmp; // number of all clusters
 	}
 
       }
 
-      // cluster to track association
+      // cluster to track association (commented out, when used standard tracking)
       if (nSeeds>0&&nSeedClusters>0) {
 
-	t0seed = (AliExternalTrackParam)*seedBest;
-	fTime0 = t0seed.GetZ()-zLength/vdrift;
-	printf("seed (%.2g): %d seeds with %d clusters\n",fTime0,nSeeds,nSeedClusters);
+       	t0seed = (AliExternalTrackParam)*seedBest;
+       	fTime0 = t0seed.GetZ()-zLength/vdrift;
+       	//printf("seed (%.2g): %d seeds with %d clusters\n",fTime0,nSeeds,nSeedClusters);
 
-	// cluster to track association for all good seeds 
-	// set fCreateT0seed to true to get the seed in time coordinates
-	fCreateT0seed = kTRUE;
-    	dummy = ClusterToTrackAssociation(seedBest,trackID,nClus); 
-	track = *dummy;
-	delete dummy;
-
-         // propagate track to 0
-	const Double_t kMaxSnp = 0.85;
-	const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-	AliTrackerBase::PropagateTrackTo(&track,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+	// 	// cluster to track association for all good seeds 
+	// 	// set fCreateT0seed to true to get the seed in time coordinates
+	// 	fCreateT0seed = kTRUE;
+	// 	dummy = ClusterToTrackAssociation(seedBest,trackID,nClus); 
+	
+	//// propagate track to 0
+       	//const Double_t kMaxSnp = 0.85;
+       	//const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+       	//AliTrackerBase::PropagateTrackTo(&track,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
 	
       }
       
@@ -590,23 +602,24 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       
       if (fStreamer) {
         (*fStreamer) << "Tracks" <<
-	  "iev="         << iev             <<
-	  "z0="          << z0              <<
-	  "t0="          << t0              <<
-	  "fTime0="      << fTime0          <<
-	  "itr="         << itr             <<
-	  "clsType="     << fClusterType    <<
-	  "corrType="    << ctype           <<
-	  "seedRow="     << fSeedingRow     <<
-	  "seedDist="    << fSeedingDist    <<
-	  "vdrift="      << vdrift          <<
-	  "zLength="     << zLength         <<
-	  "nSeeds="      << nSeeds          <<
-	  "nSeedClusters="<<nSeedClusters   <<
-	  "nClus="       << nClus           <<
-	  "t0seed.="     << &t0seed         <<
-	  "track.="      << &track          <<
-	  "tOrig.="      << &tOrig          <<
+	  "iev="             << iev             <<
+	  "z0="              << z0              <<
+	  "t0="              << t0              <<
+	  "fTime0="          << fTime0          <<
+	  "itr="             << itr             <<
+	  "clsType="         << fClusterType    <<
+	  "corrType="        << ctype           <<
+	  "seedRow="         << fSeedingRow     <<
+	  "seedDist="        << fSeedingDist    <<
+	  "vdrift="          << vdrift          <<
+	  "zLength="         << zLength         <<
+	  "nClustersMC="     << nClustersMC     <<
+	  "nSeeds="          << nSeeds          <<
+	  "nSeedClusters="   << nSeedClusters   <<
+	  "nSeedClustersID=" << nSeedClustersID <<
+	  "t0seed.="         << &t0seed         <<
+	  //"track.="        << &track          <<
+	  "tOrig.="          << &tOrig          <<
 	  "\n";
       }
     }
@@ -1053,7 +1066,7 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
   Float_t vDrift = GetVDrift();
 
   // first propagate seed to outermost row
-  AliTrackerBase::PropagateTrackTo(track,kRTPC1,kMass,5,kFALSE,kMaxSnp);
+  Bool_t res0=AliTrackerBase::PropagateTrackTo(track,kRTPC1,kMass,5,kFALSE,kMaxSnp);
 
   // Loop over rows and find the cluster candidates
   for( Int_t iRow = kNRowsTPC; iRow >= 0; --iRow ){
@@ -1082,7 +1095,7 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
 
       // Look again at -y if nothing found here and the sector changed with respect to the last found cluster
       // Increase also the road in this case
-      if(!nearestCluster && secCur != secOld){
+      if(!nearestCluster && secCur != secOld && secOld > -1){
       	//Printf("inner tracking here 2: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,-yCur,zCur,iRow,secCur);
       	nearestCluster = fInnerSectorArray[secCur%fkNSectorInner][iRow].FindNearest2(-yCur,zCur,roady*100,roadz,indexCur);
       }
@@ -1104,20 +1117,20 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
       secCur = GetSector(track);
 
       // Find the nearest cluster (TODO: correct road settings!)
-      //Printf("outer tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,yCur,zCur,iRow,secCur);
+      Printf("res0 = %d, outer tracking here: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",res0,xCur,yCur,zCur,iRow,secCur);
       nearestCluster = fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].FindNearest2(yCur,zCur,roady,roadz,indexCur);
 
       // Look again at -y if nothing found here and the sector changed with respect to the last found cluster
       // Increase also the road in this case
-      if(!nearestCluster && secCur != secOld){
-      	//Printf("outer tracking here 2: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,-yCur,zCur,iRow,secCur);
+      if(!nearestCluster && secCur != secOld && secOld > -1){
+      	Printf("outer tracking here 2: x = %.2f, y = %.2f, z = %.6f (Row %d Sector %d)",xCur,-yCur,zCur,iRow,secCur);
       	nearestCluster = fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].FindNearest2(-yCur,zCur,roady*100,roadz,indexCur);
       }
 
 
       // Move to next row if now cluster found
       if(!nearestCluster) continue;
-      //Printf("Nearest Clusters = %d (of %d)",indexCur,fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].GetN());
+      Printf("Nearest Clusters = %d (of %d)",indexCur,fOuterSectorArray[(secCur-fkNSectorInner*2)%fkNSectorOuter][iRow-kIRowsTPC-1].GetN());
 
     }
 

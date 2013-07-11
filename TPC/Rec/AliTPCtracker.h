@@ -72,6 +72,7 @@ public:
   Int_t RefitKink(AliTPCseed &mother, AliTPCseed &daughter, const AliESDkink &kink);
    Int_t ReadSeeds(const TFile *in);
    TObjArray * GetSeeds() const {return fSeeds;}
+   void SetSeeds(TObjArray * seeds) { fSeeds = seeds;}
    //   
    AliCluster * GetCluster(Int_t index) const {return (AliCluster*)GetClusterMI(index);}
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
