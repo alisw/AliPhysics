@@ -84,6 +84,8 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
 	
+	void SetPPanalysis(Bool_t IsPP = kTRUE) { fIsPP=IsPP; }; //0 = V0A, 1 = Other
+	
 	//Getters
 	AliHFEpid *GetPID() const {return fPID;};
 //______________________________________________________________________
@@ -130,6 +132,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	
 //For the case of AOD analysis
 	Bool_t					fIsAOD;					//flag for AOD analysis
+	Bool_t					fIsPP;					//flag for AOD analysis
 	
 //For Centrality Selection
 	AliCentrality			*fCentrality;
