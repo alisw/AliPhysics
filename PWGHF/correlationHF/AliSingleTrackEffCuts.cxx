@@ -307,25 +307,31 @@ Bool_t AliSingleTrackEffCuts::IsRecoEventSelected(TObject* obj)
  
   //  AliInfo("checking reco event");
   
-      AliVEvent *event = dynamic_cast<AliVEvent*>(obj);
-	  if (!event) return kFALSE;
+  AliVEvent *event = dynamic_cast<AliVEvent*>(obj);
+  if (!event) return kFALSE;
 	  
-	  Bool_t isSelected = kTRUE;
+  Bool_t isSelected = kTRUE;
 	  
-	  //a) Physics selection
-	  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-	  Bool_t isEvtSelected = (trigFired & fTriggerMask);
-	  if(!isEvtSelected) isSelected = kFALSE;
+  //a) Physics selection
+  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  Bool_t isEvtSelected = (trigFired & fTriggerMask);
+  if(!isEvtSelected) {
+    isSelected = kFALSE;
+  }  
+  //b) Vertex selection
+  Bool_t isVtxSelected = IsVertexSelected(event);
+  if(!isVtxSelected) isSelected = kFALSE;
+
+  Int_t cutc=3;
+  Double_t cutz=0.6;
+  if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) {
+    isSelected=kFALSE;
+  }	  
 	  
-	  //b) Vertex selection
-	  Bool_t isVtxSelected = IsVertexSelected(event);
-	  if(!isVtxSelected) isSelected = kFALSE;
+  //c) Cut on Multiplicity ?
+  //d) others cuts?
 	  
-	  
-	  //c) Cut on Multiplicity ?
-	  //d) others cuts?
-	  
-	  return isSelected;
+  return isSelected;
 
 
 }
@@ -340,7 +346,8 @@ Bool_t AliSingleTrackEffCuts::IsRecoParticleKineAcceptance(TObject *obj)
     
     AliVParticle *track = dynamic_cast<AliVParticle*>(obj);
     
-    
+    //cout <<"Eta: "<< fEtaMin <<" - " <<fEtaMax << endl;
+    //cout << "Pt: " <<fPtMin <<" - " <<fPtMax << endl;
     // Cuts on eta
     if( track->Eta() < fEtaMin || track->Eta() > fEtaMax ) isSelected = kFALSE;
     
@@ -362,50 +369,50 @@ Bool_t AliSingleTrackEffCuts::IsVertexSelected(AliVEvent *event)
 {
 
 
-          Bool_t accept = kTRUE;
-	  Bool_t isAOD = event->IsA()->InheritsFrom("AliAODEvent");
+  Bool_t accept = kTRUE;
+  Bool_t isAOD = event->IsA()->InheritsFrom("AliAODEvent");
 	  
-	  const AliVVertex *vertex = event->GetPrimaryVertex();
-	  if(!vertex){
-	    accept = kFALSE;
-	    AliInfo("no vtx");
-	    return accept;
-	  }
+  const AliVVertex *vertex = event->GetPrimaryVertex();
+  if(!vertex){
+    accept = kFALSE;
+    AliDebug(2,"no vtx");
+    return accept;
+  }
 	  
-	  // Cut on vertex type  
-	  TString title=vertex->GetTitle();
-	  //  std::cout << " vtx tittle "<< title<< std::endl;
-	  if(title.Contains("Z") && fMinVtxType>1){
-	    accept=kFALSE;
-	  } else if(title.Contains("3D") && fMinVtxType>2){
-	    accept=kFALSE;
-	  }
+  // Cut on vertex type  
+  TString title=vertex->GetTitle();
+  //  std::cout << " vtx tittle "<< title<< std::endl;
+  if(title.Contains("Z") && fMinVtxType>1){
+    accept=kFALSE;
+  } else if(title.Contains("3D") && fMinVtxType>2){
+    accept=kFALSE;
+  }
 	  
-	  // cut on minimum number of contributors
-	  if(vertex->GetNContributors()<fMinVtxContr){
-	    AliInfo(Form("too few contributors %d",vertex->GetNContributors()));
-	    accept=kFALSE;
-	  }
+  // cut on minimum number of contributors
+  if(vertex->GetNContributors()<fMinVtxContr){
+    AliDebug(2,Form("too few contributors %d",vertex->GetNContributors()));
+    accept=kFALSE;
+  }
 	  
-	  // cut on absolute |z| of the vertex
-	  if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) {
-	    AliInfo("outside the Vtx range");
-	    accept=kFALSE;
-	  } 
+  // cut on absolute |z| of the vertex
+  if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) {
+    AliDebug(2,"outside the Vtx range");
+    accept=kFALSE;
+  } 
 
-	  // cut on distance of SPD and TRK vertexes
-	  const AliVVertex *vSPD;
-	  if(isAOD) {
-	    vSPD = ((AliAODEvent*)event)->GetPrimaryVertexSPD(); 
-	  }else {    
-	    vSPD = ((AliESDEvent*)event)->GetPrimaryVertexSPD();  }
+  // cut on distance of SPD and TRK vertexes
+  const AliVVertex *vSPD;
+  if(isAOD) {
+    vSPD = ((AliAODEvent*)event)->GetPrimaryVertexSPD(); 
+  }else {    
+    vSPD = ((AliESDEvent*)event)->GetPrimaryVertexSPD();  }
 
-	  if(fCutOnZVertexSPD==1 && vSPD && vSPD->GetNContributors()>=fMinVtxContr) {
+  if(fCutOnZVertexSPD==1 && vSPD && vSPD->GetNContributors()>=fMinVtxContr) {
 	    
-	    if(TMath::Abs(vSPD->GetZ()-vertex->GetZ())>0.5) accept = kFALSE;
-	  }
+    if(TMath::Abs(vSPD->GetZ()-vertex->GetZ())>0.5) accept = kFALSE;
+  }
 	  
-	  return accept;
+  return accept;
 
 
 

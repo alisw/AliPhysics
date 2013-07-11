@@ -164,6 +164,12 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("storelastcutstep"))
 	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("usefilterbit")){
+	    taskOptions+=" "+argument;
+	  }
+	  if(argument.BeginsWith("filterbit=")){
+	    taskOptions+=" "+argument;
+	  }
 	  if(argument.BeginsWith("itsclusters=")){
 	    argument.ReplaceAll("itsclusters=", "");
 	    NrITSclusters=argument.Atoi();
@@ -247,7 +253,6 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   /// Cuts for HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF","HFE Standard Cuts");
   hfecuts->CreateStandardCuts();
-
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersTPC(NrTPCclusters);	//Default = 80
   hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
@@ -261,9 +266,10 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
     
   ///TOF
   hfecuts->SetTOFPIDStep(kTRUE);
+  hfecuts->SetEtaRange(-0.8,0.8);
 		
   ///Additional Cuts
-  hfecuts->SetPtRange(0.30, 10.5);
+  hfecuts->SetPtRange(0.3, 10);
   hfecuts->SetMaxImpactParam(1.,2.);
   hfecuts->SetVertexRange(10.);
 

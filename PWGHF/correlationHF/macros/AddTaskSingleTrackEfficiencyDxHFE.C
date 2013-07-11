@@ -1,3 +1,34 @@
+//-*- Mode: C++ -*-
+// $Id$
+
+#ifndef __CINT__
+//#include "AliESDtrackCuts.h"
+//#include "AliAnalysisCuts.h"
+//#include "AliFlowTrackSimple.h"      // added as hint for hidden library dependency to libPWGflowBase
+//#include "AliFlowCandidateTrack.h"   // added as hint for hidden library dependency to libPWGflowTasks
+//#include "AliCFContainer.h"          // added as hint for hidden library dependency to libCORRFW
+//#include "AliAODRecoDecayHF2Prong.h" // added as hint for hidden library dependency to libPWGHFvertexingHF
+#include "AliCFSingleTrackEfficiencyTask.h"
+//#include "AliSingleTrackEffCuts.h"
+#include "AliDxHFECorrelation.h"
+#incldue "AliReducedParticle.h"
+#include "AliHFCorrelator.h"
+#include "AliHFAssociatedTrackCuts.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliHFEcuts.h"
+#include "AliLog.h"
+#include "TObject.h"
+#include "TClass.h"
+#include "TDirectory.h"
+#include "TROOT.h"
+#include "AliRDHFCutsD0toKpi.h"
+#include "AliHFEextraCuts.h"
+
+using namespace std;
+#endif
+
+
 //DEFINITION OF A FEW CONSTANTS
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -27,23 +58,23 @@
 
 
 
-const Int_t    mintrackrefsTPC = 5 ;
-const Int_t    mintrackrefsITS = 4 ;
-const Int_t    mintrackrefsTOF = 0;
+const Int_t    mintrackrefsTPC = 5 ; //THIS IS ONLY FOR ESDs!!
+const Int_t    mintrackrefsITS = 4 ; //THIS IS ONLY FOR ESDs!!
+const Int_t    mintrackrefsTOF = 0; //THIS IS ONLY FOR ESDs!!
 const Int_t    mintrackrefsMUON = 0 ;
-const Int_t    minclustersTPC = 70 ;
-const Int_t    minclustersITS = 2 ;
-const Bool_t   TPCRefit = kTRUE;
-const Bool_t   ITSRefit = kFALSE;
+//const Int_t    minclustersTPC = 120 ;
+//const Int_t    minclustersITS = 2 ;
+Bool_t   TPCRefit = kTRUE;
+Bool_t   ITSRefit = kTRUE;
 const Bool_t   charge  = kTRUE ;
 const Int_t    fBit;
 
 
 // cuts
-const Double_t etamin  = -0.9 ;
-const Double_t etamax  =  0.9 ;
-const Double_t ptmin =  0.0 ;
-const Double_t ptmax =  24.0 ;
+const Double_t etamin  = -0.8 ;
+const Double_t etamax  =  0.8 ;
+const Double_t ptmin =  0.3 ;
+const Double_t ptmax =  10.0 ;
 const Double_t phimin = -2*TMath::Pi();
 const Double_t phimax = 2*TMath::Pi();
 const Double_t thetamin = 0;
@@ -64,20 +95,101 @@ const Float_t multmax_50_102 = 102;
 
 
 //  Pt Range
-Double_t ptmin_0_6   = 0.0;
-Double_t ptmax_0_6   = 6.0;
-Double_t ptmin_6_8   = 6.0;
-Double_t ptmax_6_8   = 8.0;
-Double_t ptmin_8_16  = 8.0;
-Double_t ptmax_8_16  = 16.0;
-Double_t ptmin_16_24 = 16.0;
-Double_t ptmax_16_24 = 24.0;
+Double_t ptmin_03_1   = 0.3;
+Double_t ptmax_03_1   = 1.0;
+Double_t ptmin_1_4   = 1.0;
+Double_t ptmax_1_4   = 4.0;
+Double_t ptmin_4_10  = 4.0;
+Double_t ptmax_4_10  = 10.0;
 
 
 
 
-AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAOD = 0,   TString TrackCutsfilename =  "")
+int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysisName="PWGHFCJ_TrackEff_DxHFE")
 { 
+
+  const Bool_t readAOD=kTRUE;
+  TString TrackCutsfilename =  "";
+  TString ofilename;
+  Int_t system=0;
+  TString taskOptions;
+  Int_t minclustersTPC=120; // quick fix for problem sending hfe track cut object to addtask
+  Int_t minclustersITS=4;
+  Int_t ITSreq=AliHFEextraCuts::kFirst;
+  TString extraname="";
+  Bool_t bclustersTPCPID=kTRUE;
+  Bool_t bTPCratio=kTRUE;
+  Bool_t brequireTOF=kTRUE;
+
+
+  if (configuration.IsNull() && gDirectory) {
+    const char* confObjectName="run_single_task_configuration";
+    TObject* confObject=gDirectory->FindObject(confObjectName);
+    if (confObject) {
+      configuration=confObject->GetTitle();
+    }
+  }
+  {// deprecated, but keep for formatting
+    {// deprecated, but keep for formatting
+      TObjArray* tokens=configuration.Tokenize(" ");
+      if (tokens) {
+	TIter next(tokens);
+	TObject* token;
+	while ((token=next())) {
+	  TString argument=token->GetName();
+	  if (argument.BeginsWith("file=")) {
+	    argument.ReplaceAll("file=", "");
+	    ofilename=argument;
+	  }
+	  else if (argument.BeginsWith("name=")) {
+	    argument.ReplaceAll("name=", "");
+	    analysisName=argument;
+	  }
+	  if (argument.BeginsWith("cutname=")) {
+	    argument.ReplaceAll("cutname=", "");
+	    TrackCutsfilename=argument;
+	  }
+	  if(argument.BeginsWith("tpcclusters=")){
+	    argument.ReplaceAll("tpcclusters=", "");
+	    minclustersTPC=argument.Atoi();
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting nr TPC clusters to %d",NrTPCclusters));
+	  }
+	  if (argument.BeginsWith("notTPCratio")){
+	    bTPCratio=kFALSE;	    
+	  }
+	  if (argument.BeginsWith("notrequireTOF")){
+	    brequireTOF=kFALSE;	    
+	  }
+	  if (argument.BeginsWith("notclustersTPCPID")){
+	    bclustersTPCPID=kFALSE;	    
+	  }
+	  if (argument.BeginsWith("PbPb") ||
+	      argument.BeginsWith("system=1") ||
+	      argument.BeginsWith("Pb-Pb")) {
+	    system=1;
+	    taskOptions+=" system=Pb-Pb";
+	  }
+	  if(argument.BeginsWith("extraname=")){
+	    argument.ReplaceAll("extraname=", "");
+	    extraname=argument;
+	  }
+	  if(argument.BeginsWith("itsclusters=")){
+	    argument.ReplaceAll("itsclusters=", "");
+	    minclustersITS=argument.Atoi();
+	  }
+	  if(argument.BeginsWith("itsreq=")){
+	    argument.ReplaceAll("itsreq=", "");
+	    if(argument.CompareTo("kFirst")==0) ITSreq=AliHFEextraCuts::kFirst;
+	    else if(argument.CompareTo("kAny")==0) ITSreq=AliHFEextraCuts::kAny;
+	    else if(argument.CompareTo("kNone")==0) ITSreq=AliHFEextraCuts::kNone;
+	  }
+	  
+	}	
+      }
+      delete tokens;
+    }
+  }
+
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
 
@@ -94,10 +206,10 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   
 
   //A1. Bins variation by hand for pt
-  const Int_t nbinpt_0_6  = 24 ; //bins in pt from 0 to 6 GeV
-  const Int_t nbinpt_6_8  = 4 ; //bins in pt from 6 to 8 GeV
-  const Int_t nbinpt_8_16  = 8; //bins in pt from 8 to 16 GeV
-  const Int_t nbinpt_16_24  = 1 ; //bins in pt from 16 to 24 GeV
+  const Int_t nbinpt_03_1  = 24 ; //bins in pt from 0 to 6 GeV
+  const Int_t nbinpt_1_4  = 4 ; //bins in pt from 6 to 8 GeV
+  const Int_t nbinpt_4_10  = 8; //bins in pt from 8 to 16 GeV
+  //const Int_t nbinpt_16_24  = 1 ; //bins in pt from 16 to 24 GeV
 
 
   //A2. Bins variation by hand for other variables
@@ -115,7 +227,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
 
   //arrays for the number of bins in each dimension
   Int_t iBin[nvar];
-  iBin[0]=nbinpt_0_6+nbinpt_6_8+nbinpt_8_16+nbinpt_16_24;
+  iBin[0]=nbinpt_03_1+nbinpt_1_4+nbinpt_4_10;//+nbinpt_16_24;
   iBin[1]=nbin2;
   iBin[2]=nbin3;
   iBin[3]=nbin4;
@@ -132,10 +244,10 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   //  Double_t *binLimmult=new Double_t[iBin[5]+1];
 
   // pt
-  for(Int_t i=0; i<=nbinpt_0_6; i++) binLimpT[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpt_0_6*(Double_t)i ; 
-  for(Int_t i=0; i<=nbinpt_6_8; i++) binLimpT[i+nbinpt_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpt_6_8*(Double_t)i ; 
-  for(Int_t i=0; i<=nbinpt_8_16; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpt_8_16*(Double_t)i ; 
-  for(Int_t i=0; i<=nbinpt_16_24; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8+nbinpt_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpt_16_24*(Double_t)i ; 
+  for(Int_t i=0; i<=nbinpt_03_1; i++) binLimpT[i]=(Double_t)ptmin_03_1 + (ptmax_03_1-ptmin_03_1)/nbinpt_03_1*(Double_t)i ; 
+  for(Int_t i=0; i<=nbinpt_1_4; i++) binLimpT[i+nbinpt_03_1]=(Double_t)ptmin_1_4 + (ptmax_1_4-ptmin_1_4)/nbinpt_1_4*(Double_t)i ; 
+  for(Int_t i=0; i<=nbinpt_4_10; i++) binLimpT[i+nbinpt_03_1+nbinpt_1_4]=(Double_t)ptmin_4_10 + (ptmax_4_10-ptmin_4_10)/nbinpt_4_10*(Double_t)i ; 
+  //for(Int_t i=0; i<=nbinpt_16_24; i++) binLimpT[i+nbinpt_03_1+nbinpt_1_4+nbinpt_4_10]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpt_16_24*(Double_t)i ; 
 
 
   // Other Variables
@@ -166,7 +278,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   container -> SetVarTitle(ipt,"pt");
   container -> SetVarTitle(iy, "y");
   container -> SetVarTitle(iphi,"phi");
-  container -> SetVarTitle(itheta, "theata");
+  container -> SetVarTitle(itheta, "theta");
   container -> SetVarTitle(izvtx, "Zvtx");
   // container -> SetVarTitle(imult, "Multiplicity");
 
@@ -209,16 +321,15 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   cuts->SetEtaRange(etamin,etamax);
   //cuts->SetYRange(Ymin,Ymax);
   cuts->SetIsCharged(charge);
-  cuts->SetMinVtxContr(-1);
+  cuts->SetMinVtxContr(1);
+  cuts->SetMinVtxType(3);
   cuts->SetMaxVtxZ(zvtxmax);
   cuts->SetNumberOfClusters(mintrackrefsITS,mintrackrefsTPC,mintrackrefsTOF,mintrackrefsMUON);
   cuts->SetTriggerMask(AliVEvent::kAnyINT);
   cuts->SetIsAOD(readAOD);
   
-  
 
-
- //  Track Quality cuts from HF Correlations Class (Associated Track Cuts)
+  // Track Quality cuts from HF Correlations Class (Associated Track Cuts)
   AliESDtrackCuts* QualityCuts=new AliESDtrackCuts();
   TString loadLibraries="LoadLibraries.C"; 
   gROOT->LoadMacro(loadLibraries.Data());
@@ -234,7 +345,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
     AssTrackCuts=kTRUE; 
     if(!filecuts->IsOpen()){
       cout<<"Track cut object file not found: exit"<<endl;
-      return;
+      return 0;
     }	 
   }
   
@@ -246,7 +357,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
     HFAssTrackCuts->PrintAll();
     if(!HFAssTrackCuts){
       cout<<"Specific associated track as Quality cuts is not found"<<endl;
-      return;
+      return 0;
     } 
     //QualityCuts = HFAssTrackCuts->GetESDTrackCuts(); //Invalid option
   }
@@ -257,10 +368,12 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
     QualityCuts->SetMinNClustersTPC(minclustersTPC);
     QualityCuts->SetMinNClustersITS(minclustersITS);
     QualityCuts->SetMaxChi2PerClusterTPC(4);
-    QualityCuts->SetMaxDCAToVertexZ(1);
     QualityCuts->SetMaxDCAToVertexXY(1);
+    QualityCuts->SetMaxDCAToVertexZ(2);
     QualityCuts->SetRequireTPCRefit(TPCRefit);
     QualityCuts->SetRequireITSRefit(ITSRefit);
+    QualityCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    QualityCuts->SetAcceptKinkDaughters(kFALSE);
   }
   
   
@@ -268,14 +381,19 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   printf("CREATE CF Single track task\n");
   
   AliCFSingleTrackEfficiencyTask *task = new AliCFSingleTrackEfficiencyTask("AliCFSingleTrackEfficiencyTask",QualityCuts,cuts);
-  task->SetFilterBit(kTRUE);
-  task->SetFilterType(0);
+  task->SetFilterBit(kFALSE);
+  //  task->SetFilterType(0); //0=standard TPConly tracks, 1=ITSstandalone, 2=PixelOR (necessary for e), 3=PID for electrons, 4=standardwithlooseDCA, 5=standardwithtightDCA, 6=standard with tight DCA but with requiring first SDD instead of SPD cluster tracks, 7=TPC only tracks constrained to SPD vertex 
   task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  // Specifically for electrons DxHFE:
+  if(bclustersTPCPID) task->SetMinNClustersTPCPID(80);
+  if(bTPCratio) task->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
+  if(brequireTOF) task->SetRequireTOF(kTRUE);
   task->SetCFManager(man); //here is set the CF manager
   
   
   
   // Get the pointer to the existing analysis manager via the static access method.
+
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -299,16 +417,18 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
     
   
   // ----- output data -----
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  //= AliAnalysisManager::GetCommonFileName();
   TString input1name="cchain0";
   TString output1name="ctree0", output2name="chist0", output3name="ccontainer0",output4name="clist0";
-  TString suffix="";
-  outputfile += ":PWG_PP_CFtaskSingleTrack";
-  outputfile += suffix;
-  output1name += suffix;
-  output2name += suffix;
-  output3name += suffix;
-  output4name += suffix;
+  if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
+  //  ofilename+=;
+
+  TString outputfile = ofilename+ ":PWGHFCJ_CFtaskSingleTrack";
+  outputfile += extraname;
+  output1name += extraname;
+  output2name += extraname;
+  output3name += extraname;
+  output4name += extraname;
 
 
   // ------ input data ------
@@ -337,5 +457,5 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   mgr->ConnectOutput(task,2,coutput2);
   mgr->ConnectOutput(task,3,coutput3);
   
-  return task;
+  return 1;
 }

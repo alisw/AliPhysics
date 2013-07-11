@@ -147,6 +147,8 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Double_t      fEtaCut;             // cut on eta (when storing all tracks)
   Int_t         fSurvivedCutStep;    // Last cutstep it survived
   Bool_t        fStoreCutStepInfo;   // Whether to store which cut step is the effective one
+  Bool_t        fSetFilterBit;       // Whether or not to use filter bits 
+  Int_t         fBit;                // Which bit to use
 
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
 

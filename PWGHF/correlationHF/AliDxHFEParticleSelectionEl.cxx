@@ -84,6 +84,8 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fEtaCut(0.8)
   , fSurvivedCutStep(kNotSelected)
   , fStoreCutStepInfo(kFALSE)
+  , fSetFilterBit(kFALSE)
+  , fBit(0)
 
 {
   // constructor
@@ -516,6 +518,14 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }
 
   //--------track cut selection-----------------------
+  // Filter Bit:
+  if(fSetFilterBit){
+    if (!track->TestFilterMask(BIT(fBit))){
+      AliDebug(2,Form("cut due to filter bit %d",fBit));
+      return 0;
+    }
+  }
+
   //Using AliHFECuts:
   // RecKine: ITSTPC cuts  
   if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)){
@@ -546,7 +556,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }
   if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsITS;
   if(fFinalCutStep==kHFEcutsITS) {AliDebug(2,"Returns after kHFEcutsITS "); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-  
+
   // HFE cuts: TOF PID and mismatch flag
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
     AliDebug(4,"Cut: kStepHFEcutsTOF");
@@ -768,6 +778,18 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
     if(argument.BeginsWith("useinvmasscut")){
       fUseInvMassCut=kInvMassSingleSelected;
       AliInfo("Using Invariant mass cut for single selected particle and looser cuts on partner");
+      continue;   
+    }
+    if(argument.BeginsWith("usefilterbit")){
+      fSetFilterBit=kTRUE;
+      AliInfo("Using Filter Bit");
+      continue;   
+    }
+    if(argument.BeginsWith("filterbit=")){
+      argument.ReplaceAll("filterbit=", "");
+      fBit=argument.Atoi();
+      AliInfo(Form("Using filter bit: %d",fBit));
+      fSetFilterBit=kTRUE;
       continue;   
     }
     if(argument.BeginsWith("invmasscut=")){
