@@ -84,9 +84,9 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   // TODO: Everything here needed for eventmixing? 
   // 			                        0        1     2      3      4     5       6      7    8      9
   // 			                      D0invmass  PtD0 PhiD0 PtbinD0 Pte  dphi    dEta OrigD0 origEl process
-  int         binsEventdphi[sizeEventdphi] = {   200,   1000,  100,  21,   1000, 100,     100,   10,     14,  100 };
+  int         binsEventdphi[sizeEventdphi] = {   200,    100,  100,  21,   100, 100,     100,   10,     14,  100 };
   double      minEventdphi [sizeEventdphi] = { 1.5648,     0,    0,   0,     0 , minPhi, -0.9, -1.5,   -1.5, -0.5 };
-  double      maxEventdphi [sizeEventdphi] = { 2.1648,   100, 2*pi,  20,    100, maxPhi,  0.9,  8.5,   12.5, 99.5 };
+  double      maxEventdphi [sizeEventdphi] = { 2.1648,    50, 2*pi,  20,    10, maxPhi,  0.9,  8.5,   12.5, 99.5 };
   const char* nameEventdphi[sizeEventdphi] = {
     "D0InvMass",
     "PtD0",

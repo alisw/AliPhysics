@@ -161,6 +161,7 @@ class AliDxHFECorrelation : public TNamed {
   Double_t* fCorrArray;          //! filling array for THnSparse
   Int_t fEventType;              // Event type. Only needed for MC (fix)
   Int_t fTriggerParticleType;    // Which particle to trigger on
+  Bool_t fUseTrackEfficiency;    // Whether or not to correct for single track efficiency
 
   static const char* fgkEventControlBinNames[];
 
