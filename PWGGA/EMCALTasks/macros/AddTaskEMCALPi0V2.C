@@ -11,6 +11,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   TString trigClass  = "",
   Bool_t IsPhosCali  = kFALSE,
   Bool_t IsCentFlat  = kTRUE,
+  Bool_t IsFullHist  = kFALSE,
   Int_t EvtType      = 5 
 )
 {
@@ -53,6 +54,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   taskMB->SetTrigClass(trigClass);
   taskMB->SetIsPHOSCali(IsPhosCali);
   taskMB->SetIsCentFlat(IsCentFlat);
+  taskMB->SetIsFullHist(IsFullHist);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGGA_EMCalpi0v2";
