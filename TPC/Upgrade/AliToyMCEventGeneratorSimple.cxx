@@ -576,7 +576,12 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
   //since we have a laser track force no material budges
   Bool_t materialBudget=GetUseMaterialBudget();
   SetUseMaterialBudget(kFALSE);
+
+  //the laser tracks have partially large inclination angles over the pads
+  // -> relax the propagation contraint and switch off error messages
   SetIsLaser(kTRUE);
+  Int_t debug=AliLog::GetDebugLevel("","AliToyMCEventGeneratorSimple");
+  AliLog::SetClassDebugLevel("AliToyMCEventGeneratorSimple",-3);
   
   for (Int_t iTrack=0; iTrack<arr->GetEntriesFast(); ++iTrack){
     AliExternalTrackParam *track=(AliExternalTrackParam*)arr->At(iTrack);
@@ -587,6 +592,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
   }
 
   SetIsLaser(kFALSE);
+  AliLog::SetClassDebugLevel("AliToyMCEventGeneratorSimple",debug);
   SetUseMaterialBudget(materialBudget);
   return retEvent;
 }

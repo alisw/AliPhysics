@@ -536,7 +536,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       Int_t nClustersMC        = tr->GetNumberOfSpacePoints();      // number of findable clusters (ideal)
       if(fClusterType==1) 
 	    nClustersMC        = tr->GetNumberOfDistSpacePoints();  // number of findable clusters (distorted)
-      Int_t idxSeed            = 0; // index of best seed (best is with maximum number of clusters with correct ID)
+//       Int_t idxSeed            = 0; // index of best seed (best is with maximum number of clusters with correct ID)
       Int_t nSeeds             = 0; // number of seeds for MC track
       Int_t nSeedClusters      = 0; // number of clusters for best seed
       Int_t nSeedClustersTmp   = 0; // number of clusters for current seed
@@ -571,7 +571,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	// if number of corresponding clusters bigger than current nSeedClusters,
 	// take this seed as the best one
 	if(nSeedClustersIDTmp > nSeedClustersID){
-	  idxSeed  = iSeeds;
+// 	  idxSeed  = iSeeds;
 	  seedBest = seedTmp;
 	  nSeedClusters   = nSeedClustersTmp;   // number of correctly assigned clusters
 	  nSeedClustersID = nSeedClustersIDTmp; // number of all clusters
@@ -583,7 +583,12 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       if (nSeeds>0&&nSeedClusters>0) {
 
        	t0seed = (AliExternalTrackParam)*seedBest;
-       	fTime0 = t0seed.GetZ()-zLength/vdrift;
+//        	fTime0 = t0seed.GetZ()-zLength/vdrift;
+        // get the refitted track from the seed
+        // this will also set the fTime0 from the seed extrapolation
+        dummy=GetRefittedTrack(*seedBest);
+        track=*dummy;
+        delete dummy;
        	//printf("seed (%.2g): %d seeds with %d clusters\n",fTime0,nSeeds,nSeedClusters);
 
 	// 	// cluster to track association for all good seeds 
@@ -618,7 +623,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	  "nSeedClusters="   << nSeedClusters   <<
 	  "nSeedClustersID=" << nSeedClustersID <<
 	  "t0seed.="         << &t0seed         <<
-	  //"track.="        << &track          <<
+	  "track.="          << &track          <<
 	  "tOrig.="          << &tOrig          <<
 	  "\n";
       }
@@ -1063,7 +1068,7 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
   UInt_t indexCur = 0;
   Double_t xCur, yCur, zCur = 0.;
 
-  Float_t vDrift = GetVDrift();
+//   Float_t vDrift = GetVDrift();
 
   // first propagate seed to outermost row
   Bool_t res0=AliTrackerBase::PropagateTrackTo(track,kRTPC1,kMass,5,kFALSE,kMaxSnp);
@@ -1478,8 +1483,13 @@ AliToyMCTrack *AliToyMCReconstruction::ConvertTPCSeedToToyMCTrack(const AliTPCse
   AliToyMCTrack *tToy = new AliToyMCTrack(seed);
 
   for (Int_t icl=0; icl<159; ++icl){
-    const AliTPCclusterMI * const cl=seed.GetClusterFast(icl);
-    tToy->AddDistortedSpacePoint(*cl);
+    const AliTPCclusterMI *cl=seed.GetClusterFast(icl);
+    if (!cl) continue;
+    if (fClusterType==0){
+      tToy->AddSpacePoint(*cl);
+    } else {
+      tToy->AddDistortedSpacePoint(*cl);
+    }
   }
 
   return tToy;
@@ -1492,8 +1502,32 @@ AliExternalTrackParam* AliToyMCReconstruction::GetRefittedTrack(const AliTPCseed
   //
   //
 
-  AliExternalTrackParam *track=new AliExternalTrackParam;
+  AliExternalTrackParam *track=0x0;
 
+  const Float_t vdrift=GetVDrift();
+  const Float_t zLength=GetZLength(0);
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
+  // for propagation use a copy
+  AliExternalTrackParam t0seed(seed);
+  AliTrackerBase::PropagateTrackTo(&t0seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+  fTime0 = t0seed.GetZ()-zLength/vdrift;
+  fCreateT0seed = kFALSE;
+  
+  AliToyMCTrack *toyTrack = ConvertTPCSeedToToyMCTrack(seed);
+  
+  fTime0 = t0seed.GetZ()-zLength/vdrift;
+  fCreateT0seed = kFALSE;
+  //         printf("seed (%.2g)\n",fTime0);
+  AliExternalTrackParam *dummy = GetSeedFromTrack(toyTrack);
+  if (dummy) {
+    track = GetFittedTrackFromSeed(toyTrack, dummy);
+    delete dummy;
+    // propagate seed to 0
+    AliTrackerBase::PropagateTrackTo(track,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+    
+  }
 
   return track;
 }
