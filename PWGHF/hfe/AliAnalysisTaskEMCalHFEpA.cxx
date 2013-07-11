@@ -117,6 +117,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 	,fPidResponse(0)
 	,fNonHFE(new AliSelectNonHFE())
 	,fIsAOD(kFALSE)
+	,fIsPP(kFALSE)
 	,fCentrality(0)
 	,fCentralityMin(0)
 	,fCentralityMax(100)
@@ -295,6 +296,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 	,fPidResponse(0)
 	,fNonHFE(new AliSelectNonHFE())
 	,fIsAOD(kFALSE)
+	,fIsPP(kFALSE)
 	,fCentrality(0)
 	,fCentralityMin(0)
 	,fCentralityMax(100)
@@ -1528,9 +1530,15 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 ///Here the PID cuts defined in the file "ConfigEMCalHFEpA.C" is applied
 	    Int_t pidpassed = 1;
 	    AliHFEpidObject hfetrack;
-	    hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+	    
+	    if(fIsAOD) hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+	    else hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+	    
 	    hfetrack.SetRecTrack(track);
-	    hfetrack.SetPP();	//proton-proton analysis
+	    
+	    if(fIsPP) hfetrack.SetPP();		//proton-proton analysis
+	    else hfetrack.SetPbPb();		//Heavy-ion analysis
+	    
 	    if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
 	    fpid->Fill(pidpassed);
 		
