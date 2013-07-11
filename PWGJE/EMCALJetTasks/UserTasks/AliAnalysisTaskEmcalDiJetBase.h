@@ -52,7 +52,8 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   void SetRhoType(Int_t i)                  { fRhoType = i;}
 
   void SetDoChargedCharged(Bool_t b)        { fDoChargedCharged = b;}
-  void SetDoFullCharged(Bool_t b)           { fDoFullCharged = b;}
+  void SetDoFullCharged(Bool_t b)           { fDoFullCharged    = b;}
+  void SetDoFullFull(Bool_t b)              { fDoFullFull       = b;}
 
   void SetMinSharedFraction(Double_t f)     { fMinFractionShared = f;}
 
@@ -98,6 +99,7 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
 
   Bool_t            fDoChargedCharged;          //  do charged-charged ana
   Bool_t            fDoFullCharged;             //  do full-charged ana
+  Bool_t            fDoFullFull;                //  do full-full ana
 
   Bool_t            fUseAnaUtils;               //  used for LHC13* data
   AliAnalysisUtils *fAnalysisUtils;             //! vertex selection
@@ -127,6 +129,6 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   AliAnalysisTaskEmcalDiJetBase(const AliAnalysisTaskEmcalDiJetBase&);            // not implemented
   AliAnalysisTaskEmcalDiJetBase &operator=(const AliAnalysisTaskEmcalDiJetBase&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetBase, 1) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalDiJetBase, 2) // dijet base task
 };
 #endif

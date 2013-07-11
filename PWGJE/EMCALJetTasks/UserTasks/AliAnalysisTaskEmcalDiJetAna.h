@@ -26,11 +26,11 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   void                        Terminate(Option_t *option);
 
   //Setters
-  void SetMatchFullCharged(Bool_t b)        { fDoMatchFullCharged = b;}
+  void                        SetMatchFullCharged(Bool_t b)        { fDoMatchFullCharged = b;}
 
 
   //Getters
- 
+  Int_t                       GetPtTriggerBin(Double_t pt);
 
  protected:
   Bool_t                      Run()              ;
@@ -55,10 +55,12 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   THnSparse        *fhnMatchingFullCharged;               //! sparse comparing full with matched charged jet
   TH3F             *fh3JetPtFullFractionDR;               //! full jet pt vs highest shared charged fraction vs DeltaR
 
+  TH3F             *fh3DiJetKtNEFPtAssoc[4];              //! dijet kt vs NEF vs pTassoc for 4 trigger intervals
+
 
   AliAnalysisTaskEmcalDiJetAna(const AliAnalysisTaskEmcalDiJetAna&);            // not implemented
   AliAnalysisTaskEmcalDiJetAna &operator=(const AliAnalysisTaskEmcalDiJetAna&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetAna, 1) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalDiJetAna, 2) // dijet analysis task
 };
 #endif
