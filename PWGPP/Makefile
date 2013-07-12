@@ -18,6 +18,10 @@ ifneq ($(PWGPPevchar_INCLUDE),)
    ALICEINC += -I../$(PWGPPevchar_INCLUDE) 
 endif
 
+ifneq ($(PWGPPpid_INCLUDE),)
+   ALICEINC += -I../$(PWGPPpid_INCLUDE)
+endif
+
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
