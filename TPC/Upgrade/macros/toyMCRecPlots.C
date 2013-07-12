@@ -17,6 +17,7 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   const Int_t nT02D        = 2;
   const Int_t nZ0          = 2;
   const Int_t nTrackParams = 9;
+  const Int_t nEff         = 1;
 
   Int_t col = kBlack;
 
@@ -24,22 +25,18 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   TString sT02D[nT02D] = {"fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vdrift:tOrig.fP[3]","fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vdrift:tOrig.fP[4]"};
   TString sTrackParams[nTrackParams] = {"track.fP[0]-tOrig.fP[0]","track.fP[1]-tOrig.fP[1]","track.fP[2]-tOrig.fP[2]","track.fP[3]-tOrig.fP[3]","track.fP[4]-tOrig.fP[4]","track.fAlpha-tOrig.fAlpha","track.fX/tOrig.fX","track.fP[0]/tOrig.fP[0]","track.fP[1]/tOrig.fP[1]"};
   TString sZ0[nZ0] = {"(fTime0-t0)*vdrift","(fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vdrift)*vdrift"};
+  TString sEff[nEff] = {"nSeedClustersID/nClustersMC:nSeedClusters/nClustersMC"};
 
 
   TString tT0[nT0] = {"T_{0} resolution","intrinsic T_{0} resolution"};
   TString tT02D[nT0] = {"intrinsic T_{0} resolution vs. tan#lambda","intrinsic T_{0} resolution vs. 1/p_{T}"};
   TString tTrackParams[nTrackParams] = {"local y","z","sin inclination angle","tan#lambda","1/p_{T}","#alpha","X","Y","Z"};
   TString tZ0[nZ0] = {"Z_{0} resolution","intrinsic Z_{0} resolution"};
+  TString tEff[nEff] = {"nSeedClustersID/nClustersMC:nSeedClusters/nClustersMC"};
 
 
   TString sSel = "fTime0>-1"; // seeding successful
 
-  // special settings for all clusters reconstruction
-  if(inFileName.Contains("allClusters")){
-    sSel.Append("&& nClus>150"); // only tracks with enough clusters (not yet used)!
-    sTrackParams[nTrackParams-1] = "nClus";
-    tTrackParams[nTrackParams-1] = "Number of used clusters";
-  }
   // retrieve configuration string
   TPRegexp reg(".*([0-9]_[0-9]_[0-9]_[0-9]{3}_[0-9]{2}).*debug.root");
   TObjArray *arrMatch=0x0;
@@ -72,6 +69,9 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
 
   TCanvas *cTrackParams = new TCanvas(Form("cTrackParams_%s",sConfig.Data()),Form("cTrackParams_%s",sConfig.Data()),1200,900);
   cTrackParams->Divide(3,3);
+
+  TCanvas *cEff = new TCanvas(Form("cEff_%s",sConfig.Data()),Form("cEff_%s",sConfig.Data()),1200,900);
+  //cEff->Divide(2,1);
 
  
   // legends
@@ -122,6 +122,15 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
 
   }
 
+  // draw cluster efficiency
+  for(Int_t iEff = 0; iEff < nEff; iEff ++){
+    
+    //cEff->cd(iEff+1);
+    cEff->cd();
+    TStatToolkit::DrawHistogram(Tracks,sEff[iEff].Data(),sSel.Data(),Form("hEff_%s_%d",sConfig.Data(),iEff),Form("%s",tEff[iEff].Data()),3);
+    
+
+  }
   
   // plots
   if(doPlots){
@@ -131,10 +140,14 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
     cZ0->SaveAs(Form("%s_Z0.eps",outFileName.Data()));
     cT02D->SaveAs(Form("%s_T02D.eps",outFileName.Data()));
     cTrackParams->SaveAs(Form("%s_TrackParams.eps",outFileName.Data()));
+    cEff->SaveAs(Form("%s_Eff.eps",outFileName.Data()));
+
     cT0->SaveAs(Form("%s_T0.png",outFileName.Data()));
     cZ0->SaveAs(Form("%s_Z0.png",outFileName.Data()));
     cT02D->SaveAs(Form("%s_T02D.png",outFileName.Data()));
     cTrackParams->SaveAs(Form("%s_TrackParams.png",outFileName.Data()));
+    cEff->SaveAs(Form("%s_Eff.eps",outFileName.Data()));
+
   }
 }
 

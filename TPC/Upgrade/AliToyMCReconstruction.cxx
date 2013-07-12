@@ -431,6 +431,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   AliExternalTrackParam seed;
   AliExternalTrackParam track;
   AliExternalTrackParam tOrig;
+  AliToyMCTrack tOrigToy;
 
   AliExternalTrackParam *dummy;
   AliTPCseed            *seedBest;
@@ -447,7 +448,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   FillSectorStructure(maxev);
 
   // ===========================================================================================
-  // Loop 2: Use the TPC tracker for seeding (MakeSeeds2) 
+  // Loop 2: Use the TPC tracker for seeding (MakeSeeds3) 
   // TODO: - check tracking configuration
   //       - add clusters and original tracks to output (how?)
   // ===========================================================================================
@@ -503,10 +504,11 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   // do the seeding
   for (Int_t sec=0;sec<fkNSectorOuter;sec++){
     //
-    tpcTracker->MakeSeeds3(arr, sec,upperRow,lowerRow,cuts,-1,1);
+    //tpcTracker->MakeSeeds3(arr, sec,upperRow,lowerRow,cuts,-1,1);
+    MakeSeeds(arr, sec,upperRow,lowerRow); // own function (based on TLinearFitter)
+    //tpcTracker->SumTracks(seeds,arr);   
+    //tpcTracker->SignClusters(seeds,3.0,3.0);    
 
-    tpcTracker->SumTracks(seeds,arr);   
-    tpcTracker->SignClusters(seeds,3.0,3.0);   
   }
 
   //Printf("After seeding we have %d tracks",seeds->GetEntriesFast());
@@ -525,6 +527,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       printf(" > ======  Fill Tracks: Processing Track %6d  ========  \n",itr);
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       tOrig = *tr;
+      tOrigToy = *tr;
 
       Float_t z0=fEvent->GetZ();
       Float_t t0=fEvent->GetT0();
@@ -536,7 +539,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       Int_t nClustersMC        = tr->GetNumberOfSpacePoints();      // number of findable clusters (ideal)
       if(fClusterType==1) 
 	    nClustersMC        = tr->GetNumberOfDistSpacePoints();  // number of findable clusters (distorted)
-//       Int_t idxSeed            = 0; // index of best seed (best is with maximum number of clusters with correct ID)
+      Int_t idxSeed            = 0; // index of best seed (best is with maximum number of clusters with correct ID)
       Int_t nSeeds             = 0; // number of seeds for MC track
       Int_t nSeedClusters      = 0; // number of clusters for best seed
       Int_t nSeedClustersTmp   = 0; // number of clusters for current seed
@@ -548,6 +551,8 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	seedTmp = (AliTPCseed*)(seeds->At(iSeeds));
 	nSeedClustersTmp   = 0;
 	nSeedClustersIDTmp = 0;
+
+	if(!seedTmp) continue;
 
 	// loop over all rows
 	for(Int_t iRow = seedTmp->GetRow(); iRow < seedTmp->GetRow() + seedTmp->GetNumberOfClustersIndices(); iRow++ ){
@@ -571,7 +576,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	// if number of corresponding clusters bigger than current nSeedClusters,
 	// take this seed as the best one
 	if(nSeedClustersIDTmp > nSeedClustersID){
-// 	  idxSeed  = iSeeds;
+ 	  idxSeed  = iSeeds;
 	  seedBest = seedTmp;
 	  nSeedClusters   = nSeedClustersTmp;   // number of correctly assigned clusters
 	  nSeedClustersID = nSeedClustersIDTmp; // number of all clusters
@@ -581,7 +586,6 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 
       // cluster to track association (commented out, when used standard tracking)
       if (nSeeds>0&&nSeedClusters>0) {
-
        	t0seed = (AliExternalTrackParam)*seedBest;
 //        	fTime0 = t0seed.GetZ()-zLength/vdrift;
         // get the refitted track from the seed
@@ -625,6 +629,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	  "t0seed.="         << &t0seed         <<
 	  "track.="          << &track          <<
 	  "tOrig.="          << &tOrig          <<
+	  "tOrigToy.="       << &tOrigToy       <<
 	  "\n";
       }
     }
@@ -1530,4 +1535,58 @@ AliExternalTrackParam* AliToyMCReconstruction::GetRefittedTrack(const AliTPCseed
   }
 
   return track;
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::MakeSeeds(TObjArray * arr, Int_t sec, Int_t iRow1, Int_t iRow2)
+{
+  //
+  // Create seeds between i1 and i2 (stored in arr) with TLinearFitter
+  //  
+  // sec: sector number
+  // iRow1:  upper row
+  // iRow2:  lower row
+  //
+
+  // Create Fitter
+  static TLinearFitter fitter(3,"pol2");
+
+  // Get 3 padrows (iRow1,iMiddle=(iRow1+iRow2)/2,iRow2)
+  Int_t iMiddle = (iRow1+iRow2)/2;
+  const AliTPCtrackerRow& krd = fOuterSectorArray[sec][iRow2-fInnerSectorArray->GetNRows()];   // down
+  const AliTPCtrackerRow& krm = fOuterSectorArray[sec][iMiddle-fInnerSectorArray->GetNRows()]; // middle
+  const AliTPCtrackerRow& kru = fOuterSectorArray[sec][iRow1-fInnerSectorArray->GetNRows()];   // up
+
+  // Loop over 3 cluster possibilities  
+  for (Int_t iu=0; iu < kru; iu++) {
+    for (Int_t im=0; im < krm; im++) {
+      for (Int_t id=0; id < krd; id++) {
+
+	// clear all points
+	fitter.ClearPoints();
+
+	// add all three points to fitter
+	Double_t xy[2] = {kru[iu]->GetX(),kru[iu]->GetY()};
+	Double_t z     = kru[iu]->GetZ();
+	fitter.AddPoint(xy,z);
+
+	xy[0] = krm[im]->GetX();
+	xy[1] = krm[im]->GetY();
+	z     = krm[im]->GetZ();
+	fitter.AddPoint(xy,z);
+
+	xy[0] = krd[id]->GetX();
+	xy[1] = krd[id]->GetY();
+	z     = krd[id]->GetZ();
+	fitter.AddPoint(xy,z);
+	
+	// Evaluate and get parameters
+	fitter.Eval();
+
+	// how to get the other clusters now?
+	// ... 
+	
+      }
+    }
+  }
 }

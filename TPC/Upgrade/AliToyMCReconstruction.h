@@ -11,6 +11,7 @@ class AliTPCtrackerSector;
 class AliToyMCEvent;
 class AliTPCCorrection;
 class AliTPCseed;
+class AliTPCtrackerRow;
 
 class AliToyMCReconstruction : public TObject {
 public:
@@ -60,6 +61,7 @@ public:
   AliToyMCTrack *ConvertTPCSeedToToyMCTrack(const AliTPCseed &seed);
   AliExternalTrackParam* GetRefittedTrack(const AliTPCseed &seed);
   
+  void MakeSeeds(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
   AliExternalTrackParam* ClusterToTrackAssociation(const AliTPCseed *seed, Int_t trackID, Int_t &nClus);
 
   void InitSpaceCharge();
