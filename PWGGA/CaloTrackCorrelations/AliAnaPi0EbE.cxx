@@ -96,6 +96,8 @@ fhAnglePairMCPi0(0),           fhAnglePairMCEta(0),
 fhECellClusterRatio(0),        fhECellClusterLogRatio(0),
 fhEMaxCellClusterRatio(0),     fhEMaxCellClusterLogRatio(0),
 fhTrackMatchedDEta(0),         fhTrackMatchedDPhi(0),        fhTrackMatchedDEtaDPhi(0),
+fhTrackMatchedDEtaPos(0),      fhTrackMatchedDPhiPos(0),     fhTrackMatchedDEtaDPhiPos(0),
+fhTrackMatchedDEtaNeg(0),      fhTrackMatchedDPhiNeg(0),     fhTrackMatchedDEtaDPhiNeg(0),
 fhTrackMatchedMCParticleE(0),
 fhTrackMatchedMCParticleDEta(0), fhTrackMatchedMCParticleDPhi(0),
 fhdEdx(0),                     fhEOverP(0),                 fhEOverPNoTRD(0),
@@ -436,19 +438,37 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
     }
     //printf("Pi0EbE: dPhi %f, dEta %f\n",dR,dZ);
     
+    AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
+    
+    Bool_t positive = kFALSE;
+    if(track) positive = (track->Charge()>0);
+    
     if(fhTrackMatchedDEta && TMath::Abs(dR) < 999)
     {
       fhTrackMatchedDEta->Fill(e,dZ);
       fhTrackMatchedDPhi->Fill(e,dR);
       if(e > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+      
+      if(track)
+      {
+        if(positive)
+        {
+          fhTrackMatchedDEtaPos->Fill(cluster->E(),dZ);
+          fhTrackMatchedDPhiPos->Fill(cluster->E(),dR);
+          if(cluster->E() > 0.5) fhTrackMatchedDEtaDPhiPos->Fill(dZ,dR);
+        }
+        else
+        {
+          fhTrackMatchedDEtaNeg->Fill(cluster->E(),dZ);
+          fhTrackMatchedDPhiNeg->Fill(cluster->E(),dR);
+          if(cluster->E() > 0.5) fhTrackMatchedDEtaDPhiNeg->Fill(dZ,dR);
+        }
     }
-    
+    }
     // Check dEdx and E/p of matched clusters
     
     if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
-    {
-      AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
-      
+    {      
       if(track)
       {
         Float_t dEdx = track->GetTPCsignal();
@@ -462,8 +482,6 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
       }
       //else
       //  printf("AliAnaPi0EbE::FillSelectedClusterHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
-      
-      
       
       if(IsDataMC())
       {
@@ -1130,6 +1148,56 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     outputContainer->Add(fhTrackMatchedDEta) ;
     outputContainer->Add(fhTrackMatchedDPhi) ;
     outputContainer->Add(fhTrackMatchedDEtaDPhi) ;
+
+    fhTrackMatchedDEtaPos  = new TH2F
+    ("hTrackMatchedDEtaPos",
+     "d#eta of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+    fhTrackMatchedDEtaPos->SetYTitle("d#eta");
+    fhTrackMatchedDEtaPos->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDPhiPos  = new TH2F
+    ("hTrackMatchedDPhiPos",
+     "d#phi of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+    fhTrackMatchedDPhiPos->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhiPos->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDEtaDPhiPos  = new TH2F
+    ("hTrackMatchedDEtaDPhiPos",
+     "d#eta vs d#phi of cluster-track vs cluster energy",
+     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
+    fhTrackMatchedDEtaDPhiPos->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhiPos->SetXTitle("d#eta");
+    
+    outputContainer->Add(fhTrackMatchedDEtaPos) ;
+    outputContainer->Add(fhTrackMatchedDPhiPos) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhiPos) ;
+
+    fhTrackMatchedDEtaNeg  = new TH2F
+    ("hTrackMatchedDEtaNeg",
+     "d#eta of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+    fhTrackMatchedDEtaNeg->SetYTitle("d#eta");
+    fhTrackMatchedDEtaNeg->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDPhiNeg  = new TH2F
+    ("hTrackMatchedDPhiNeg",
+     "d#phi of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+    fhTrackMatchedDPhiNeg->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhiNeg->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDEtaDPhiNeg  = new TH2F
+    ("hTrackMatchedDEtaDPhiNeg",
+     "d#eta vs d#phi of cluster-track vs cluster energy",
+     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
+    fhTrackMatchedDEtaDPhiNeg->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhiNeg->SetXTitle("d#eta");
+    
+    outputContainer->Add(fhTrackMatchedDEtaNeg) ;
+    outputContainer->Add(fhTrackMatchedDPhiNeg) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhiNeg) ;
     
     fhdEdx  = new TH2F ("hdEdx","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
     fhdEdx->SetXTitle("E (GeV)");

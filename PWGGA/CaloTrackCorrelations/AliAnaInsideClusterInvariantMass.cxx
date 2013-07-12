@@ -30,6 +30,7 @@
 #include <TClonesArray.h>
 #include <TObjString.h>
 #include <TH2F.h>
+#include <TDatabasePDG.h>
 
 // --- Analysis system --- 
 #include "AliAnaInsideClusterInvariantMass.h" 
@@ -55,13 +56,15 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fCalorimeter(""), 
   fM02MaxCut(0),    fM02MinCut(0),       
   fMinNCells(0),    fMinBadDist(0),
+  fHistoECut(0),
   fFillAngleHisto(kFALSE),
   fFillTMHisto(kFALSE),
   fFillTMResidualHisto(kFALSE),
   fFillSSExtraHisto(kFALSE),
-  fFillMCFractionHisto(kFALSE),
+  fFillMCHisto(kFALSE),
   fFillSSWeightHisto(kFALSE),
   fFillEbinHisto(0),
+  fFillMCOverlapHisto(0),
   fSSWeightN(0),              fSSECellCutN(0),
   fWSimu(0),
   fhMassM02CutNLocMax1(0),    fhMassM02CutNLocMax2(0),    fhMassM02CutNLocMaxN(0),
@@ -80,8 +83,12 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fhPi0EtaPhiNLocMax1(0),     fhPi0EtaPhiNLocMax2(0),      fhPi0EtaPhiNLocMaxN(0),
   fhEtaEtaPhiNLocMax1(0),     fhEtaEtaPhiNLocMax2(0),      fhEtaEtaPhiNLocMaxN(0),
   fhPi0EPairDiffTimeNLM1(0),  fhPi0EPairDiffTimeNLM2(0),   fhPi0EPairDiffTimeNLMN(0),
-  fhEtaEPairDiffTimeNLM1(0),  fhEtaEPairDiffTimeNLM2(0),   fhEtaEPairDiffTimeNLMN(0)
-
+  fhEtaEPairDiffTimeNLM1(0),  fhEtaEPairDiffTimeNLM2(0),   fhEtaEPairDiffTimeNLMN(0),
+  fhMCPi0HighNLMPair(0),      fhMCPi0LowNLMPair(0),
+  fhMCPi0AnyNLMPair(0),       fhMCPi0NoneNLMPair(0),
+  fhMCPi0HighNLMPairNoMCMatch(0), fhMCPi0LowNLMPairNoMCMatch(0),
+  fhMCPi0AnyNLMPairNoMCMatch(0),  fhMCPi0NoneNLMPairNoMCMatch(0),
+  fhMCEOverlapType(0),            fhMCEOverlapTypeMatch(0)
 {
   //default ctor
   
@@ -205,13 +212,55 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassSplitEFractionNLocMaxNEbin[i][jj] = 0;
     }
     
-    fhTrackMatchedDEtaNLocMax1[i] = 0; 
+    fhTrackMatchedDEtaNLocMax1[i] = 0;
     fhTrackMatchedDPhiNLocMax1[i] = 0;
     fhTrackMatchedDEtaNLocMax2[i] = 0;
     fhTrackMatchedDPhiNLocMax2[i] = 0; 
     fhTrackMatchedDEtaNLocMaxN[i] = 0; 
     fhTrackMatchedDPhiNLocMaxN[i] = 0; 
+
+    fhTrackMatchedDEtaNLocMax1Pos[i] = 0;
+    fhTrackMatchedDPhiNLocMax1Pos[i] = 0;
+    fhTrackMatchedDEtaNLocMax2Pos[i] = 0;
+    fhTrackMatchedDPhiNLocMax2Pos[i] = 0;
+    fhTrackMatchedDEtaNLocMaxNPos[i] = 0;
+    fhTrackMatchedDPhiNLocMaxNPos[i] = 0;
+
+    fhTrackMatchedDEtaNLocMax1Neg[i] = 0;
+    fhTrackMatchedDPhiNLocMax1Neg[i] = 0;
+    fhTrackMatchedDEtaNLocMax2Neg[i] = 0;
+    fhTrackMatchedDPhiNLocMax2Neg[i] = 0;
+    fhTrackMatchedDEtaNLocMaxNNeg[i] = 0;
+    fhTrackMatchedDPhiNLocMaxNNeg[i] = 0;
     
+    for(Int_t nlm = 0; nlm < 3; nlm++)
+    {
+      fhMCEM02Overlap0     [nlm][i] = 0;
+      fhMCEM02Overlap1     [nlm][i] = 0;
+      fhMCEM02OverlapN     [nlm][i] = 0;
+      fhMCEM02Overlap0Match[nlm][i] = 0;
+      fhMCEM02Overlap1Match[nlm][i] = 0;
+      fhMCEM02OverlapNMatch[nlm][i] = 0;
+      
+      fhMCEMassOverlap0     [nlm][i] = 0;
+      fhMCEMassOverlap1     [nlm][i] = 0;
+      fhMCEMassOverlapN     [nlm][i] = 0;
+      fhMCEMassOverlap0Match[nlm][i] = 0;
+      fhMCEMassOverlap1Match[nlm][i] = 0;
+      fhMCEMassOverlapNMatch[nlm][i] = 0;
+      
+      fhMCENOverlaps       [nlm][i] = 0;
+      fhMCENOverlapsMatch  [nlm][i] = 0;
+      
+      if(i > 3) continue ;
+      
+      fhMCPi0MassM02Overlap0     [nlm][i] = 0;
+      fhMCPi0MassM02Overlap1     [nlm][i] = 0;
+      fhMCPi0MassM02OverlapN     [nlm][i] = 0;
+      fhMCPi0MassM02Overlap0Match[nlm][i] = 0;
+      fhMCPi0MassM02Overlap1Match[nlm][i] = 0;
+      fhMCPi0MassM02OverlapNMatch[nlm][i] = 0;
+    }
   }
    
   for(Int_t i = 0; i < 2; i++)
@@ -258,7 +307,6 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     fhMCAsymM02NLocMaxNMCPi0Ebin[i] = 0 ;
   }
   
-  
   for(Int_t nlm = 0; nlm < 3; nlm++)
   {
     fhPi0CellE       [nlm] = 0 ;
@@ -281,6 +329,534 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   
   InitParameters();
 
+}
+
+//_______________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex)
+{
+  // Check origin NLM tower of the cluster, when MC gives merged pi0
+  
+  if(!fFillMCOverlapHisto) return;
+
+  if(!IsDataMC()) return;
+  
+  if(mcindex != kmcPi0 && mcindex != kmcPi0Conv) return;
+  
+  const UInt_t nc = cluster->GetNCells();
+  Int_t   list[nc];
+  Float_t elist[nc];
+  Int_t nMax = GetCaloUtils()->GetNumberOfLocalMaxima(cluster, GetEMCALCells(),list, elist);
+    
+  if(nMax < 2) return;
+  
+//  printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin() - Cluster E %2.2f; NLM = %d, cluster MC labels:\n",cluster->E(),nMax);
+//  
+//  for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
+//  {
+//    Bool_t ok  =kFALSE,gok = kFALSE;
+//    Int_t pdg    = -22222, status   = -1;
+//    Int_t gpdg   = -22222, gstatus  = -1;
+//    Int_t ggpdg  = -22222, ggstatus = -1;
+//    Int_t gLabel = -1, ggLabel = -1;
+//
+//    Int_t label = cluster->GetLabels()[ilab];
+//    TLorentzVector primary   =GetMCAnalysisUtils()->GetMother     (label,GetReader(),  pdg,  status, ok);
+//    TLorentzVector gprimary  =GetMCAnalysisUtils()->GetGrandMother(label,GetReader(), gpdg, gstatus,gok, gLabel,ggLabel);
+//    TLorentzVector ggprimary =GetMCAnalysisUtils()->GetMother(ggLabel  ,GetReader(),ggpdg,ggstatus,gok);
+//    printf("\t %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
+//           ilab,label,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
+//
+//  }
+//  
+//  printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin() - Cluster Cells MC labels:\n");
+//  
+  for (UInt_t icell = 0; icell < nc; icell++ )
+  {
+//    Bool_t ok  =kFALSE,gok = kFALSE;
+//    Int_t pdg    = -22222, status   = -1;
+//    Int_t gpdg   = -22222, gstatus  = -1;
+//    Int_t ggpdg  = -22222, ggstatus = -1;
+//    Int_t gLabel = -1, ggLabel = -1;
+//    
+//    Int_t absId = cluster->GetCellAbsId(icell);
+//    
+//    printf("cell abs Id %d, amplitude %f\n",absId,GetEMCALCells()->GetCellAmplitude(absId));
+//    
+//    Int_t label = GetEMCALCells()->GetCellMCLabel(absId);
+//    TLorentzVector primary   =GetMCAnalysisUtils()->GetMother     (label,GetReader(),  pdg,  status, ok);
+//    TLorentzVector gprimary  =GetMCAnalysisUtils()->GetGrandMother(label,GetReader(), gpdg, gstatus,gok, gLabel,ggLabel);
+//    TLorentzVector ggprimary =GetMCAnalysisUtils()->GetMother(ggLabel  ,GetReader(),ggpdg,ggstatus,gok);
+//    printf(" %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
+//           icell,label,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
+    
+  }
+  
+  //Find highest energy Local Maxima Towers
+  Int_t   imax  = -1;
+  Int_t   imax2 = -1;
+  Float_t emax  = -1;
+  Float_t emax2 = -1;
+  for(Int_t i = 0; i < nMax; i++)
+  {
+    //printf("i %d: AbsId %d; E %2.3f\n",i,list[i],elist[i]);
+    if(elist[i] > emax)
+    {
+      imax = i;
+      emax = elist[i];
+    }
+  }
+  //Find second highest
+  for(Int_t i = 0; i < nMax; i++)
+  {
+    if(i==imax) continue;
+    if(elist[i] > emax2)
+    {
+      imax2 = i;
+      emax2 = elist[i];
+    }
+  }
+  
+  //printf("Highest : %d and %d\n",imax,imax2);
+  
+  // Check that the highest mc label and the max cluster label are the same
+  Int_t mcLabelMax = GetEMCALCells()->GetCellMCLabel(list[imax]);
+  GetReader()->RemapMCLabelForAODs(mcLabelMax);
+  Int_t mcLabelMax2 = GetEMCALCells()->GetCellMCLabel(list[imax2]);
+  GetReader()->RemapMCLabelForAODs(mcLabelMax2);
+  
+  Int_t mcLabelclusterMax = cluster->GetLabels()[0];
+  Bool_t matchHighLMAndHighMC = kFALSE;
+  
+  if(mcLabelclusterMax==mcLabelMax)
+  {
+    matchHighLMAndHighMC = kTRUE;
+    //printf("*** MATCH cluster and LM maximum ***\n");
+  }
+  else
+  {
+     //printf("*** NO MATCH cluster and LM maximum, check second ***\n");
+    if(mcLabelclusterMax==mcLabelMax2)
+    {
+      //printf("\t *** MATCH cluster and 2nd LM maximum ***\n");
+      matchHighLMAndHighMC = kTRUE;
+    }
+    else
+    {
+      //printf("\t *** NO MATCH***\n");
+      matchHighLMAndHighMC = kFALSE;
+    }
+  }
+  
+  // Compare the common ancestors of the 2 highest energy local maxima
+  Int_t ancPDG = 0, ancStatus = -1;
+  TLorentzVector momentum; TVector3 prodVertex;
+  Int_t ancLabel = 0;
+  Bool_t high = kFALSE;
+  Bool_t low  = kFALSE;
+
+//  // print maxima origin
+//  for(Int_t i = 0; i < nMax; i++)
+//  {
+//    Int_t mcLabel1 = GetEMCALCells()->GetCellMCLabel(list[i]);
+//    GetReader()->RemapMCLabelForAODs(mcLabel1);
+//    
+//    Bool_t ok  =kFALSE,gok = kFALSE;
+//    Int_t pdg    = -22222, status   = -1;
+//    Int_t gpdg   = -22222, gstatus  = -1;
+//    Int_t ggpdg  = -22222, ggstatus = -1;
+//    Int_t gLabel = -1, ggLabel = -1;
+//    TLorentzVector primary   =GetMCAnalysisUtils()->GetMother     (mcLabel1,GetReader(),  pdg,  status, ok);
+//    TLorentzVector gprimary  =GetMCAnalysisUtils()->GetGrandMother(mcLabel1,GetReader(), gpdg, gstatus,gok, gLabel,ggLabel);
+//    TLorentzVector ggprimary =GetMCAnalysisUtils()->GetMother(ggLabel  ,GetReader(),ggpdg,ggstatus,gok);
+//    printf("Max index %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
+//           i,mcLabel1,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
+//  }
+  
+  // Compare ancestors of all local maxima
+  for(Int_t i = 0; i < nMax-1; i++)
+  {
+    Int_t mcLabel1 = GetEMCALCells()->GetCellMCLabel(list[i]);
+    GetReader()->RemapMCLabelForAODs(mcLabel1);
+ 
+    for(Int_t j = i+1; j < nMax; j++)
+    {
+      Int_t mcLabel2 = GetEMCALCells()->GetCellMCLabel(list[j]);
+      GetReader()->RemapMCLabelForAODs(mcLabel2);
+      
+      if(mcLabel1 < 0 || mcLabel2 < 0 )
+      {
+        //printf("\t i %d label %d - j %d label %d; skip!\n",i,mcLabel1,j,mcLabel2);
+        continue;
+      }
+      ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(mcLabel1,mcLabel2,
+                                                           GetReader(),ancPDG,ancStatus,momentum,prodVertex);
+      if(ancPDG==111)
+      {
+        if((i==imax && j==imax2) ||  (j==imax && i==imax2))
+          high = kTRUE;
+        else
+          low = kTRUE;
+      }
+      else if(ancPDG==22 || TMath::Abs(ancPDG)==11)
+      {
+        // If both bits are set, it could be that one of the maxima had a conversion
+        // reset the bit in this case
+        if(high && low)
+        {
+          //printf("\t Reset low bit\n");
+          low = kFALSE;
+        }
+      }
+     
+      Bool_t ok  =kFALSE;
+      Int_t pdg = -22222, status = -1;
+      TLorentzVector primary  =GetMCAnalysisUtils()->GetMother(ancLabel,GetReader(), pdg, status, ok);
+
+      //printf("\t i %d label %d - j %d label %d; ancestor label %d, PDG %d-%d; E %2.2f; high %d, any %d \n",i,mcLabel1,j,mcLabel2, ancLabel, ancPDG,pdg, primary.E(), high, low);
+
+    }
+  }
+  
+  Float_t en = cluster->E();
+  
+  //printf("Match MC? %d; high %d; low %d\n",matchHighLMAndHighMC,high,low);
+  
+  if(matchHighLMAndHighMC)
+  {
+    if     (high && !low)  fhMCPi0HighNLMPair->Fill(en,nMax);
+    else if(low  && !high) fhMCPi0LowNLMPair ->Fill(en,nMax);
+    else if(low  &&  high) fhMCPi0AnyNLMPair ->Fill(en,nMax);
+    else                   fhMCPi0NoneNLMPair->Fill(en,nMax);
+  }
+  else
+  {
+    if     (high && !low)  fhMCPi0HighNLMPairNoMCMatch->Fill(en,nMax);
+    else if(low  && !high) fhMCPi0LowNLMPairNoMCMatch ->Fill(en,nMax);
+    else if(low  &&  high) fhMCPi0AnyNLMPairNoMCMatch ->Fill(en,nMax);
+    else                   fhMCPi0NoneNLMPairNoMCMatch->Fill(en,nMax);
+  }
+}
+
+//___________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, const Bool_t matched,
+                                                           const Float_t en, const Float_t angle, const Float_t mass)
+{
+  // Fill histograms related to opening angle
+  
+  if(!fFillAngleHisto) return;
+  
+  if     (nMax==1)
+  {
+    fhAnglePairNLocMax1[matched]->Fill(en,angle);
+    if( en > fHistoECut ) fhAnglePairMassNLocMax1[matched]->Fill(mass,angle);
+  }
+  else if(nMax==2)
+  {
+    fhAnglePairNLocMax2[matched]->Fill(en,angle);
+    if( en > fHistoECut ) fhAnglePairMassNLocMax2[matched]->Fill(mass,angle);
+  }
+  else if(nMax >2)
+  {
+    fhAnglePairNLocMaxN[matched]->Fill(en,angle);
+    if( en > fHistoECut ) fhAnglePairMassNLocMaxN[matched]->Fill(mass,angle);
+  }
+  
+}
+
+//__________________________________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillEBinHistograms(const Int_t   ebin     , const Int_t   nMax, const Int_t mcindex,
+                                                          const Float_t splitFrac, const Float_t mass, const Float_t asym, const Float_t l0)
+{
+  // Fill some histograms integrating in few energy bins
+  
+  if(ebin < 0 || !fFillEbinHisto) return ;
+  
+  if     (nMax==1)
+  {
+    fhMassSplitEFractionNLocMax1Ebin[0][ebin]->Fill(splitFrac,  mass);
+    if(IsDataMC())fhMassSplitEFractionNLocMax1Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
+    
+    fhMassM02NLocMax1Ebin    [ebin]->Fill(l0  ,  mass );
+    fhMassAsyNLocMax1Ebin    [ebin]->Fill(asym,  mass );
+  }
+  else if(nMax==2)
+  {
+    fhMassSplitEFractionNLocMax2Ebin[0][ebin]->Fill(splitFrac,  mass);
+    if(IsDataMC())fhMassSplitEFractionNLocMax2Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
+    
+    fhMassM02NLocMax2Ebin    [ebin]->Fill(l0  ,  mass );
+    fhMassAsyNLocMax2Ebin    [ebin]->Fill(asym,  mass );
+  }
+  else if(nMax > 2 )
+  {
+    fhMassSplitEFractionNLocMaxNEbin[0][ebin]->Fill(splitFrac,  mass);
+    if(IsDataMC())fhMassSplitEFractionNLocMaxNEbin[mcindex][ebin]->Fill(splitFrac,  mass);
+    
+    fhMassM02NLocMaxNEbin    [ebin]->Fill(l0  ,  mass );
+    fhMassAsyNLocMaxNEbin    [ebin]->Fill(asym,  mass );
+  }
+  
+}
+
+//_____________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillMCHistograms(const Float_t en,        const Float_t e1  , const Float_t e2,
+                                                        const Int_t ebin,        const Int_t mcindex,
+                                                        const Float_t l0,        const Float_t mass,
+                                                        const Int_t nMax,        const Bool_t  matched,
+                                                        const Float_t splitFrac, const Float_t asym,
+                                                        const Float_t eprim,     const Float_t asymGen)
+{
+  // Fill histograms needing some MC input
+  
+  if(!IsDataMC() || !fFillMCHisto) return;
+  
+  Float_t efrac      = eprim/en;
+  Float_t efracSplit = 0;
+  if(e1+e2 > 0) efracSplit = eprim/(e1+e2);
+
+  //printf("e1 %2.2f, e2 %2.2f, eprim %2.2f, ereco %2.2f, esplit/ereco %2.2f, egen/ereco %2.2f, egen/esplit %2.2f\n",
+  //       e1,e2,eprim,en,splitFrac,efrac,efracSplit);
+  
+  if(ebin >= 0 && fFillEbinHisto)
+  {
+    if( !matched ) fhMCGenFracNLocMaxEbin       [mcindex][ebin]->Fill(efrac,nMax);
+    else           fhMCGenFracNLocMaxEbinMatched[mcindex][ebin]->Fill(efrac,nMax);
+  }
+
+  if     (nMax==1)
+  {
+    fhMCGenFracNLocMax1      [mcindex][matched]->Fill(en     ,  efrac );
+    fhMCGenSplitEFracNLocMax1[mcindex][matched]->Fill(en     ,  efracSplit );
+    fhMCGenEvsSplitENLocMax1 [mcindex][matched]->Fill(eprim  ,  e1+e2);
+    
+    if( en > fHistoECut )
+    {
+      fhMCGenEFracvsSplitEFracNLocMax1[mcindex][matched]->Fill(efrac,splitFrac );
+      
+      if(!matched && ebin >= 0 && fFillEbinHisto)
+      {
+        fhM02MCGenFracNLocMax1Ebin [mcindex][ebin]->Fill(efrac  ,  l0    );
+        fhMassMCGenFracNLocMax1Ebin[mcindex][ebin]->Fill(efrac  ,  mass  );
+        
+        fhMCAsymM02NLocMax1MCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
+        fhAsyMCGenRecoNLocMax1EbinPi0[ebin]->Fill(asym,  asymGen );
+      }
+    }
+  }
+  else if(nMax==2)
+  {
+    fhMCGenFracNLocMax2      [mcindex][matched]->Fill(en     ,  efrac );
+    fhMCGenSplitEFracNLocMax2[mcindex][matched]->Fill(en     ,  efracSplit );
+    fhMCGenEvsSplitENLocMax2 [mcindex][matched]->Fill(eprim  ,  e1+e2);
+    
+    if( en > fHistoECut )
+    {
+      fhMCGenEFracvsSplitEFracNLocMax2[mcindex][matched]->Fill(efrac,splitFrac );
+      
+      if(!matched && ebin >= 0 && fFillEbinHisto)
+      {
+        fhM02MCGenFracNLocMax2Ebin [mcindex][ebin]->Fill(efrac  ,  l0    );
+        fhMassMCGenFracNLocMax2Ebin[mcindex][ebin]->Fill(efrac  ,  mass  );
+        
+        fhMCAsymM02NLocMax2MCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
+        fhAsyMCGenRecoNLocMax2EbinPi0[ebin]->Fill(asym,  asymGen );
+      }
+    }
+
+  }
+  else if(nMax > 2 )
+  {
+    fhMCGenFracNLocMaxN      [mcindex][matched]->Fill(en     ,  efrac );
+    fhMCGenSplitEFracNLocMaxN[mcindex][matched]->Fill(en     ,  efracSplit );
+    fhMCGenEvsSplitENLocMaxN [mcindex][matched]->Fill(eprim  ,  e1+e2);
+    
+    if( en > fHistoECut )
+    {
+      fhMCGenEFracvsSplitEFracNLocMaxN[mcindex][matched]->Fill(efrac,splitFrac );
+      
+      if(!matched && ebin >= 0 && fFillEbinHisto)
+      {
+        fhM02MCGenFracNLocMaxNEbin [mcindex][ebin]->Fill(efrac  ,  l0    );
+        fhMassMCGenFracNLocMaxNEbin[mcindex][ebin]->Fill(efrac  ,  mass  );
+        
+        fhMCAsymM02NLocMaxNMCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
+        fhAsyMCGenRecoNLocMaxNEbinPi0[ebin]->Fill(asym,  asymGen );
+      }
+    }
+  }
+}
+
+//_________________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,      const Float_t mass, const Float_t l0,
+                                                               const Int_t   inlm,    const Int_t ebin, const Bool_t matched,
+                                                               const Int_t   mcindex, const Int_t noverlaps)
+{
+  
+  // Fill histograms for MC Overlaps
+  
+  //printf("en %f,mass %f,l0 %f,inlm %d,ebin %d,matched %d,mcindex %d,noverlaps %d \n",en,mass,l0,inlm,ebin,matched,mcindex,noverlaps);
+  
+  if(!fFillMCOverlapHisto || !IsDataMC()) return;
+  
+  //printf("AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms - NLM bin=%d, mcIndex %d, n Overlaps %d\n",inlm,mcindex,noverlaps);
+  
+  if(!matched)
+  {
+    fhMCENOverlaps[inlm][mcindex]->Fill(en,noverlaps);
+    
+    if     (noverlaps == 0)
+    {
+      fhMCEM02Overlap0[inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap0[inlm][mcindex]->Fill(en, mass);
+      if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap0[inlm][ebin]->Fill(l0,mass);
+    }
+    else if(noverlaps == 1)
+    {
+      fhMCEM02Overlap1[inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap1[inlm][mcindex]->Fill(en, mass);
+      if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap1[inlm][ebin]->Fill(l0,mass);
+    }
+    else if(noverlaps  > 1)
+    {
+      fhMCEM02OverlapN[inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlapN[inlm][mcindex]->Fill(en, mass);
+      if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapN[inlm][ebin]->Fill(l0,mass);
+    }
+    else
+      printf("AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms() - n overlaps = %d!!", noverlaps);
+  }
+  else if(fFillTMHisto)
+  {
+    fhMCENOverlapsMatch[inlm][mcindex]->Fill(en,noverlaps);
+    
+    if     (noverlaps == 0)
+    {
+      fhMCEM02Overlap0Match[inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap0Match[inlm][mcindex]->Fill(en, mass);
+      if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap0Match[inlm][ebin]->Fill(l0,mass);
+    }
+    else if(noverlaps == 1)
+    {
+      fhMCEM02Overlap1Match[inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap1Match[inlm][mcindex]->Fill(en, mass);
+      if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap1Match[inlm][ebin]->Fill(l0,mass);
+    }
+    else if(noverlaps  > 1)
+    {
+      fhMCEM02OverlapNMatch[inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlapNMatch[inlm][mcindex]->Fill(en, mass);
+      if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapNMatch[inlm][ebin]->Fill(l0,mass);
+    }
+    else
+        printf("AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms() - n overlaps in matched = %d!!", noverlaps);
+  }
+}
+
+//______________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *cluster, const Int_t nMax,
+                                                             const Bool_t  matched, const Int_t mcindex,
+                                                             const Float_t mass   , const Int_t ebin)
+{
+  // Fill optional histograms with more SS parameters
+  
+  if(!fFillSSExtraHisto) return ;
+  
+  Float_t en = cluster->E();
+  Float_t nc = cluster->GetNCells();
+  
+  // Get more Shower Shape parameters
+  Float_t ll0  = 0., ll1  = 0.;
+  Float_t disp= 0., dispEta = 0., dispPhi    = 0.;
+  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
+  
+  GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), GetReader()->GetInputEvent()->GetEMCALCells(), cluster,
+                                                                               ll0, ll1, disp, dispEta, dispPhi, sEta, sPhi, sEtaPhi);
+  
+  Float_t dispAsy = -1;
+  if(dispEta+dispPhi >0 ) dispAsy = (dispPhi-dispEta) / (dispPhi+dispEta);
+
+  
+  if     (nMax==1)
+  {
+    fhNCellNLocMax1[0][matched]->Fill(en,nc) ;
+    if(mcindex > 0 )  fhNCellNLocMax1[mcindex][matched]->Fill(en,nc) ;
+    
+    if( en > fHistoECut )
+    {
+      fhMassDispEtaNLocMax1[0][matched]->Fill(dispEta,  mass );
+      fhMassDispPhiNLocMax1[0][matched]->Fill(dispPhi,  mass );
+      fhMassDispAsyNLocMax1[0][matched]->Fill(dispAsy,  mass );
+      
+      if(IsDataMC())
+      {
+        fhMassDispEtaNLocMax1[mcindex][matched]->Fill(dispEta,  mass );
+        fhMassDispPhiNLocMax1[mcindex][matched]->Fill(dispPhi,  mass );
+        fhMassDispAsyNLocMax1[mcindex][matched]->Fill(dispAsy,  mass );
+      }
+    }
+    
+    if(!matched && ebin >= 0 && fFillEbinHisto)
+    {
+      fhMassDispEtaNLocMax1Ebin[ebin]->Fill(dispEta,  mass );
+      fhMassDispPhiNLocMax1Ebin[ebin]->Fill(dispPhi,  mass );
+      fhMassDispAsyNLocMax1Ebin[ebin]->Fill(dispAsy,  mass );
+    }
+  }
+  else if( nMax == 2  )
+  {
+    fhNCellNLocMax2[0][matched]->Fill(en,nc) ;
+    if(mcindex > 0 )  fhNCellNLocMax2[mcindex][matched]->Fill(en,nc) ;
+    
+    if( en > fHistoECut )
+    {
+      fhMassDispEtaNLocMax2[0][matched]->Fill(dispEta,  mass );
+      fhMassDispPhiNLocMax2[0][matched]->Fill(dispPhi,  mass );
+      fhMassDispAsyNLocMax2[0][matched]->Fill(dispAsy,  mass );
+      
+      if(IsDataMC())
+      {
+        fhMassDispEtaNLocMax2[mcindex][matched]->Fill(dispEta,  mass );
+        fhMassDispPhiNLocMax2[mcindex][matched]->Fill(dispPhi,  mass );
+        fhMassDispAsyNLocMax2[mcindex][matched]->Fill(dispAsy,  mass );
+      }
+    }
+    
+    if(!matched && ebin >= 0 && fFillEbinHisto)
+    {
+      fhMassDispEtaNLocMax2Ebin[ebin]->Fill(dispEta,  mass );
+      fhMassDispPhiNLocMax2Ebin[ebin]->Fill(dispPhi,  mass );
+      fhMassDispAsyNLocMax2Ebin[ebin]->Fill(dispAsy,  mass );
+    }
+    
+  }
+  else if( nMax >= 3  )
+  {
+    fhNCellNLocMaxN[0][matched]->Fill(en,nc) ;
+    if(mcindex > 0 )  fhNCellNLocMaxN[mcindex][matched]->Fill(en,nc) ;
+    
+    if( en > fHistoECut )
+    {
+      fhMassDispEtaNLocMaxN[0][matched]->Fill(dispEta,  mass );
+      fhMassDispPhiNLocMaxN[0][matched]->Fill(dispPhi,  mass );
+      fhMassDispAsyNLocMaxN[0][matched]->Fill(dispAsy,  mass );
+      
+      if(IsDataMC())
+      {
+        fhMassDispEtaNLocMaxN[mcindex][matched]->Fill(dispEta,  mass );
+        fhMassDispPhiNLocMaxN[mcindex][matched]->Fill(dispPhi,  mass );
+        fhMassDispAsyNLocMaxN[mcindex][matched]->Fill(dispAsy,  mass );
+      }
+    }
+    
+    if(!matched && ebin >= 0 && fFillEbinHisto)
+    {
+      fhMassDispEtaNLocMaxNEbin[ebin]->Fill(dispEta,  mass );
+      fhMassDispPhiNLocMaxNEbin[ebin]->Fill(dispPhi,  mass );
+      fhMassDispAsyNLocMaxNEbin[ebin]->Fill(dispAsy,  mass );
+    }
+
+  }
+  
 }
 
 //__________________________________________________________________________________________________
@@ -398,6 +974,78 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   }// EMCAL
 }
 
+//________________________________________________________________________________________
+void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster * cluster,
+                                                                    const Int_t nMax,
+                                                                    const Int_t mcindex)
+{
+  // Fill histograms related to track matching
+  
+  if(!fFillTMResidualHisto) return;
+  
+  Float_t dZ  = cluster->GetTrackDz();
+  Float_t dR  = cluster->GetTrackDx();
+  Float_t en  = cluster->E();
+  
+  if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+  {
+    dR = 2000., dZ = 2000.;
+    GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+  }
+  
+  //printf("Pi0EbE: dPhi %f, dEta %f\n",dR,dZ);
+  
+  if(TMath::Abs(dR) < 999)
+  {
+    if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1[0]->Fill(en,dR); }
+    else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2[0]->Fill(en,dR); }
+    else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxN[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxN[0]->Fill(en,dR); }
+    
+    if(IsDataMC())
+    {
+      if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1[mcindex]->Fill(en,dR); }
+      else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2[mcindex]->Fill(en,dR); }
+      else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxN[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxN[mcindex]->Fill(en,dR); }
+    }
+    
+    AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
+    
+    Bool_t positive = kFALSE;
+    if(track) positive = (track->Charge()>0);
+
+    if(track)
+    {
+      if(positive)
+      {
+        if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1Pos[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1Pos[0]->Fill(en,dR); }
+        else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Pos[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Pos[0]->Fill(en,dR); }
+        else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxNPos[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxNPos[0]->Fill(en,dR); }
+        
+        if(IsDataMC())
+        {
+          if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1Pos[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1Pos[mcindex]->Fill(en,dR); }
+          else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Pos[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Pos[mcindex]->Fill(en,dR); }
+          else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxNPos[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxNPos[mcindex]->Fill(en,dR); }
+        }
+      }
+      else
+      {
+        if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1Neg[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1Neg[0]->Fill(en,dR); }
+        else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Neg[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Neg[0]->Fill(en,dR); }
+        else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxNNeg[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxNNeg[0]->Fill(en,dR); }
+        
+        if(IsDataMC())
+        {
+          if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1Neg[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1Neg[mcindex]->Fill(en,dR); }
+          else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Neg[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Neg[mcindex]->Fill(en,dR); }
+          else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxNNeg[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxNNeg[mcindex]->Fill(en,dR); }
+        }
+      }
+      
+    }// track exists
+    
+  }
+}
 
 //_______________________________________________________________
 TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
@@ -764,7 +1412,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhSplitEFractionNLocMaxN[i][j]) ; 
       
       
-      if(i > 0 && fFillMCFractionHisto) // skip first entry in array, general case not filled
+      if(i > 0 && fFillMCHisto) // skip first entry in array, general case not filled
       {
         fhMCGenFracNLocMax1[i][j]     = new TH2F(Form("hMCGenFracNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                                  Form("#lambda_{0}^{2} vs E for N max  = 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
@@ -1176,7 +1824,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhMassSplitEFractionNLocMaxNEbin[i][j]->SetXTitle("(E_{split1}+E_{split2})/E_{cluster}");
         outputContainer->Add(fhMassSplitEFractionNLocMaxNEbin[i][j]) ;
         
-        if(i>0 && fFillMCFractionHisto) // skip first entry in array, general case not filled
+        if(i>0 && fFillMCHisto) // skip first entry in array, general case not filled
         {
           fhMCGenFracNLocMaxEbin[i][j]  = new TH2F(Form("hMCGenFracNLocMax%sEbin%d",pname[i].Data(),j),
                                                    Form("NLM vs E, %s, E bin %d",ptype[i].Data(),j),
@@ -1324,7 +1972,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhMassAsyNLocMaxNEbin[i]) ;
       
       
-      if(IsDataMC())
+      if(IsDataMC() && fFillMCHisto)
       {
         fhMCAsymM02NLocMax1MCPi0Ebin[i]  = new TH2F(Form("hMCAsymM02NLocMax1MCPi0Ebin%d",i),
                                                     Form("Asymmetry of MC #pi^{0} vs #lambda_{0}^{2}, NLM=1, E bin %d",i),
@@ -1438,7 +2086,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     }
   }
     
-  if(IsDataMC() && fFillMCFractionHisto)
+  if(IsDataMC() && fFillMCHisto)
   {
     fhMCGenSplitEFracAfterCutsNLocMax1MCPi0     = new TH2F("hMCGenSplitEFracAfterCutsNLocMax1MCPi0",
                                                            "E_{gen} / (E_{1 split}+E_{2 split}) vs E for N max  = 1 MC Pi0, after M02 and Asym cut",
@@ -1540,7 +2188,110 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhTrackMatchedDPhiNLocMaxN[i]->SetXTitle("E_{cluster} (GeV)");
       
       outputContainer->Add(fhTrackMatchedDEtaNLocMaxN[i]) ; 
-      outputContainer->Add(fhTrackMatchedDPhiNLocMaxN[i]) ;    
+      outputContainer->Add(fhTrackMatchedDPhiNLocMaxN[i]) ;
+      
+      fhTrackMatchedDEtaNLocMax1Pos[i]  = new TH2F
+      (Form("hTrackMatchedDEtaNLocMax1Pos%s",pname[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, 1 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhTrackMatchedDEtaNLocMax1Pos[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaNLocMax1Pos[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiNLocMax1Pos[i]  = new TH2F
+      (Form("hTrackMatchedDPhiNLocMax1Pos%s",pname[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, 1 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDPhiNLocMax1Pos[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiNLocMax1Pos[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaNLocMax1Pos[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNLocMax1Pos[i]) ;
+      
+      fhTrackMatchedDEtaNLocMax2Pos[i]  = new TH2F
+      (Form("hTrackMatchedDEtaNLocMax2Pos%s",pname[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, 2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhTrackMatchedDEtaNLocMax2Pos[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaNLocMax2Pos[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiNLocMax2Pos[i]  = new TH2F
+      (Form("hTrackMatchedDPhiNLocMax2Pos%s",pname[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, 2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDPhiNLocMax2Pos[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiNLocMax2Pos[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaNLocMax2Pos[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNLocMax2Pos[i]) ;
+      
+      fhTrackMatchedDEtaNLocMaxNPos[i]  = new TH2F
+      (Form("hTrackMatchedDEtaNLocMaxNPos%s",pname[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, N>2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhTrackMatchedDEtaNLocMaxNPos[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaNLocMaxNPos[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiNLocMaxNPos[i]  = new TH2F
+      (Form("hTrackMatchedDPhiNLocMaxNPos%s",pname[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, N>2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDPhiNLocMaxNPos[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiNLocMaxNPos[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaNLocMaxNPos[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNLocMaxNPos[i]) ;
+      
+      fhTrackMatchedDEtaNLocMax1Neg[i]  = new TH2F
+      (Form("hTrackMatchedDEtaNLocMax1Neg%s",pname[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, 1 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhTrackMatchedDEtaNLocMax1Neg[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaNLocMax1Neg[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiNLocMax1Neg[i]  = new TH2F
+      (Form("hTrackMatchedDPhiNLocMax1Neg%s",pname[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, 1 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDPhiNLocMax1Neg[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiNLocMax1Neg[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaNLocMax1Neg[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNLocMax1Neg[i]) ;
+      
+      fhTrackMatchedDEtaNLocMax2Neg[i]  = new TH2F
+      (Form("hTrackMatchedDEtaNLocMax2Neg%s",pname[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, 2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhTrackMatchedDEtaNLocMax2Neg[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaNLocMax2Neg[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiNLocMax2Neg[i]  = new TH2F
+      (Form("hTrackMatchedDPhiNLocMax2Neg%s",pname[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, 2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDPhiNLocMax2Neg[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiNLocMax2Neg[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaNLocMax2Neg[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNLocMax2Neg[i]) ;
+      
+      fhTrackMatchedDEtaNLocMaxNNeg[i]  = new TH2F
+      (Form("hTrackMatchedDEtaNLocMaxNNeg%s",pname[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, N>2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhTrackMatchedDEtaNLocMaxNNeg[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaNLocMaxNNeg[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhiNLocMaxNNeg[i]  = new TH2F
+      (Form("hTrackMatchedDPhiNLocMaxNNeg%s",pname[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, N>2 Local Maxima, %s",ptype[i].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDPhiNLocMaxNNeg[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiNLocMaxNNeg[i]->SetXTitle("E_{cluster} (GeV)");
+      
+      outputContainer->Add(fhTrackMatchedDEtaNLocMaxNNeg[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNLocMaxNNeg[i]) ;
+      
     }
   }
   
@@ -1673,9 +2424,10 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   fhEtaEtaPhiNLocMaxN->SetXTitle("#eta");
   outputContainer->Add(fhEtaEtaPhiNLocMaxN) ;
   
+  TString snlm[] = {"1","2","N"};
+
   if(fFillSSWeightHisto)
   {
-    TString snlm[] = {"1","2","N"};
     for(Int_t nlm = 0; nlm < 3; nlm++)
     {
       fhPi0CellE[nlm]  = new TH2F(Form("hPi0CellENLocMax%s",snlm[nlm].Data()),
@@ -1791,13 +2543,365 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   fhEtaEPairDiffTimeNLMN->SetYTitle("#Delta t (ns)");
   outputContainer->Add(fhEtaEPairDiffTimeNLMN);
   
+  
+  if(IsDataMC() && fFillMCOverlapHisto)
+  {
+    for(Int_t i = 1; i < n; i++)
+    {
+      for(Int_t j = 0; j < 3; j++)
+      {
+        fhMCENOverlaps[j][i]     = new TH2F(Form("hMCENOverlapsNLocMax%s%s",snlm[j].Data(),pname[i].Data()),
+                                            Form("# overlaps vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                            nptbins,ptmin,ptmax,10,0,10);
+        fhMCENOverlaps[j][i]   ->SetYTitle("# overlaps");
+        fhMCENOverlaps[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCENOverlaps[j][i]) ;
+        
+        fhMCEM02Overlap0[j][i]     = new TH2F(Form("hMCEM02Overlap0NLocMax%s%s",snlm[j].Data(),pname[i].Data()),
+                                              Form("Overlap 0, #lambda_{0}^{2} vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhMCEM02Overlap0[j][i]   ->SetYTitle("#lambda_{0}^{2}");
+        fhMCEM02Overlap0[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEM02Overlap0[j][i]) ;
+        
+        fhMCEM02Overlap1[j][i]     = new TH2F(Form("hMCEM02Overlap1NLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                              Form("Overlap 1, #lambda_{0}^{2} vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhMCEM02Overlap1[j][i]   ->SetYTitle("#lambda_{0}^{2}");
+        fhMCEM02Overlap1[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEM02Overlap1[j][i]) ;
+        
+        fhMCEM02OverlapN[j][i]     = new TH2F(Form("hMCEM02OverlapNNLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                              Form("Overlap N, #lambda_{0}^{2} vs E for NLM=%s %s",snlm[j].Data(),ptype[i].Data()),
+                                              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhMCEM02OverlapN[j][i]   ->SetYTitle("#lambda_{0}^{2}");
+        fhMCEM02OverlapN[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEM02OverlapN[j][i]) ;
+        
+        fhMCEMassOverlap0[j][i]     = new TH2F(Form("hMCEMassOverlap0NLocMax%s%s",snlm[j].Data(),pname[i].Data()),
+                                               Form("Overlap 0, Mass vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                               nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMCEMassOverlap0[j][i]   ->SetYTitle("Mass (GeV/c^{2}");
+        fhMCEMassOverlap0[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEMassOverlap0[j][i]) ;
+        
+        fhMCEMassOverlap1[j][i]     = new TH2F(Form("hMCEMassOverlap1NLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                               Form("Overalap 1, Mass vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                               nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMCEMassOverlap1[j][i]   ->SetYTitle("Mass (GeV/c^{2}");
+        fhMCEMassOverlap1[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEMassOverlap1[j][i]) ;
+        
+        fhMCEMassOverlapN[j][i]     = new TH2F(Form("hMCEMassOverlapNNLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                               Form("Overlap N, Mass vs E for NLM=%s %s",snlm[j].Data(),ptype[i].Data()),
+                                               nptbins,ptmin,ptmax,mbins,mmin,mmax);
+        fhMCEMassOverlapN[j][i]   ->SetYTitle("Mass (GeV/c^{2})");
+        fhMCEMassOverlapN[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEMassOverlapN[j][i]) ;
+        
+        
+        if(i < 5)
+        {
+          fhMCPi0MassM02Overlap0[j][i-1]  = new TH2F(Form("hMCPi0MassM02Overlap0NLocMax%sEbin%d",snlm[j].Data(),i-1),
+                                                   Form("Overlap 0, Mass vs #lambda_{0}^{2}, NLM=%s, E bin %d",snlm[j].Data(),i-1),
+                                                   ssbins,ssmin,ssmax,mbins,mmin,mmax);
+          fhMCPi0MassM02Overlap0[j][i-1]->SetYTitle("M (GeV/c^{2})");
+          fhMCPi0MassM02Overlap0[j][i-1]->SetXTitle("#lambda_{0}^{2}");
+          outputContainer->Add(fhMCPi0MassM02Overlap0[j][i-1]) ;
+          
+          fhMCPi0MassM02Overlap1[j][i-1]  = new TH2F(Form("hMCPi0MassM02Overlap1NLocMax%sEbin%d",snlm[j].Data(),i-1),
+                                                   Form("Overlap 1, Mass vs #lambda_{0}^{2}, NLM=%s, E bin %d",snlm[j].Data(),i-1),
+                                                   ssbins,ssmin,ssmax,mbins,mmin,mmax);
+          fhMCPi0MassM02Overlap1[j][i-1]->SetYTitle("M (GeV/c^{2})");
+          fhMCPi0MassM02Overlap1[j][i-1]->SetXTitle("#lambda_{0}^{2}");
+          outputContainer->Add(fhMCPi0MassM02Overlap1[j][i-1]) ;
+          
+          fhMCPi0MassM02OverlapN[j][i-1]  = new TH2F(Form("hMCPi0MassM02OverlapNNLocMax%sEbin%d",snlm[j].Data(),i-1),
+                                                   Form("Overlap N, Mass vs #lambda_{0}^{2}, NLM=%s, E bin %d",snlm[j].Data(),i-1),
+                                                   ssbins,ssmin,ssmax,mbins,mmin,mmax);
+          fhMCPi0MassM02OverlapN[j][i-1]->SetYTitle("M (GeV/c^{2})");
+          fhMCPi0MassM02OverlapN[j][i-1]->SetXTitle("#lambda_{0}^{2}");
+          outputContainer->Add(fhMCPi0MassM02OverlapN[j][i-1]) ;
+        }
+        
+        if(fFillTMHisto)
+        {
+          fhMCENOverlapsMatch[j][i]     = new TH2F(Form("hMCENOverlapsNLocMax%s%sMatched",snlm[j].Data(),pname[i].Data()),
+                                                   Form("# overlaps vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                                   nptbins,ptmin,ptmax,10,0,10);
+          fhMCENOverlapsMatch[j][i]   ->SetYTitle("# overlaps");
+          fhMCENOverlapsMatch[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCENOverlapsMatch[j][i]) ;
+          
+          fhMCEM02Overlap0Match[j][i]     = new TH2F(Form("hMCEM02Overlap0NLocMax%s%sMatched",snlm[j].Data(),pname[i].Data()),
+                                                     Form("#lambda_{0}^{2} vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhMCEM02Overlap0Match[j][i]   ->SetYTitle("#lambda_{0}^{2}");
+          fhMCEM02Overlap0Match[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCEM02Overlap0Match[j][i]) ;
+          
+          fhMCEM02Overlap1Match[j][i]     = new TH2F(Form("hMCEM02Overlap1NLocMax%s%sMatched",snlm[j].Data(), pname[i].Data()),
+                                                     Form("#lambda_{0}^{2} vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhMCEM02Overlap1Match[j][i]   ->SetYTitle("#lambda_{0}^{2}");
+          fhMCEM02Overlap1Match[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCEM02Overlap1Match[j][i]) ;
+          
+          fhMCEM02OverlapNMatch[j][i]     = new TH2F(Form("hMCEM02OverlapNNLocMax%s%sMatched",snlm[j].Data(), pname[i].Data()),
+                                                     Form("#lambda_{0}^{2} vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhMCEM02OverlapNMatch[j][i]   ->SetYTitle("#lambda_{0}^{2}");
+          fhMCEM02OverlapNMatch[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCEM02OverlapNMatch[j][i]) ;
+          
+          fhMCEMassOverlap0Match[j][i]     = new TH2F(Form("hMCEMassOverlap0NLocMax%s%sMatched",snlm[j].Data(),pname[i].Data()),
+                                                      Form("Mass vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                      nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMCEMassOverlap0Match[j][i]   ->SetYTitle("Mass (GeV/c^{2}");
+          fhMCEMassOverlap0Match[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCEMassOverlap0Match[j][i]) ;
+          
+          fhMCEMassOverlap1Match[j][i]     = new TH2F(Form("hMCEMassOverlap1NLocMax%s%sMatched",snlm[j].Data(), pname[i].Data()),
+                                                      Form("Mass vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                      nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMCEMassOverlap1Match[j][i]   ->SetYTitle("Mass (GeV/c^{2}");
+          fhMCEMassOverlap1Match[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCEMassOverlap1Match[j][i]) ;
+          
+          fhMCEMassOverlapNMatch[j][i]     = new TH2F(Form("hMCEMassOverlapNNLocMax%s%sMatched",snlm[j].Data(), pname[i].Data()),
+                                                      Form("Mass vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                      nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMCEMassOverlapNMatch[j][i]   ->SetYTitle("Mass (GeV/c^{2}");
+          fhMCEMassOverlapNMatch[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCEMassOverlapNMatch[j][i]) ;
+          
+          if(i < 5)
+          {
+            fhMCPi0MassM02Overlap0Match[j][i-1]  = new TH2F(Form("hMCPi0MassM02Overlap0NLocMax%sEbin%dMatched",snlm[j].Data(),i-1),
+                                                     Form("Overlap 0, Mass vs #lambda_{0}^{2}, NLM=%s, E bin %d, Track Matched",snlm[j].Data(),i-1),
+                                                     ssbins,ssmin,ssmax,mbins,mmin,mmax);
+            fhMCPi0MassM02Overlap0Match[j][i-1]->SetYTitle("M (GeV/c^{2})");
+            fhMCPi0MassM02Overlap0Match[j][i-1]->SetXTitle("#lambda_{0}^{2}");
+            outputContainer->Add(fhMCPi0MassM02Overlap0Match[j][i-1]) ;
+            
+            fhMCPi0MassM02Overlap1Match[j][i-1]  = new TH2F(Form("hMCPi0MassM02Overlap1NLocMax%sEbin%dMatched",snlm[j].Data(),i-1),
+                                                     Form("Overlap 1, Mass vs #lambda_{0}^{2}, NLM=%s, E bin %d, Track Matched",snlm[j].Data(),i-1),
+                                                     ssbins,ssmin,ssmax,mbins,mmin,mmax);
+            fhMCPi0MassM02Overlap1Match[j][i-1]->SetYTitle("M (GeV/c^{2})");
+            fhMCPi0MassM02Overlap1Match[j][i-1]->SetXTitle("#lambda_{0}^{2}");
+            outputContainer->Add(fhMCPi0MassM02Overlap1Match[j][i-1]) ;
+            
+            fhMCPi0MassM02OverlapNMatch[j][i-1]  = new TH2F(Form("hMCPi0MassM02OverlapNNLocMax%sEbin%dMatched",snlm[j].Data(),i-1),
+                                                     Form("Overlap N, Mass vs #lambda_{0}^{2}, NLM=%s, E bin %d, Track Matched",snlm[j].Data(),i-1),
+                                                     ssbins,ssmin,ssmax,mbins,mmin,mmax);
+            fhMCPi0MassM02OverlapNMatch[j][i-1]->SetYTitle("M (GeV/c^{2})");
+            fhMCPi0MassM02OverlapNMatch[j][i-1]->SetXTitle("#lambda_{0}^{2}");
+            outputContainer->Add(fhMCPi0MassM02OverlapNMatch[j][i-1]) ;
+            
+          }
+          
+        }
+      }
+    }
+    
+    fhMCPi0HighNLMPair    = new TH2F("hMCPi0HighNLMPair","NLM vs E for merged pi0 cluster, high energy NLM pair are decays",
+                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0HighNLMPair   ->SetYTitle("N maxima");
+    fhMCPi0HighNLMPair   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0HighNLMPair) ;
+    
+    fhMCPi0LowNLMPair     = new TH2F("hMCPi0LowNLMPair","NLM vs E for merged pi0 cluster, lower energy NLM pair are decays",
+                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0LowNLMPair   ->SetYTitle("N maxima");
+    fhMCPi0LowNLMPair   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0LowNLMPair) ;
+    
+    fhMCPi0AnyNLMPair     = new TH2F("hMCPi0AnyNLMPair","NLM vs E for merged pi0 cluster, both high and other energy NLM pair are decays",
+                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0AnyNLMPair   ->SetYTitle("N maxima");
+    fhMCPi0AnyNLMPair   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0AnyNLMPair) ;
+    
+    fhMCPi0NoneNLMPair     = new TH2F("hMCPi0NoneNLMPair","NLM vs E for merged pi0 cluster, no NLM pair are decays",
+                                      nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0NoneNLMPair   ->SetYTitle("N maxima");
+    fhMCPi0NoneNLMPair   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0NoneNLMPair) ;
+
+    
+    fhMCPi0HighNLMPairNoMCMatch    = new TH2F("hMCPi0HighNLMPairNoMCMatch","NLM vs E for merged pi0 cluster, high energy NLM pair are decays",
+                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0HighNLMPairNoMCMatch   ->SetYTitle("N maxima");
+    fhMCPi0HighNLMPairNoMCMatch   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0HighNLMPairNoMCMatch) ;
+    
+    fhMCPi0LowNLMPairNoMCMatch     = new TH2F("hMCPi0LowNLMPairNoMCMatch","NLM vs E for merged pi0 cluster, lower energy NLM pair are decays",
+                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0LowNLMPairNoMCMatch   ->SetYTitle("N maxima");
+    fhMCPi0LowNLMPairNoMCMatch   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0LowNLMPairNoMCMatch) ;
+    
+    fhMCPi0AnyNLMPairNoMCMatch     = new TH2F("hMCPi0AnyNLMPairNoMCMatch","NLM vs E for merged pi0 cluster, both high and other energy NLM pair are decays",
+                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0AnyNLMPairNoMCMatch   ->SetYTitle("N maxima");
+    fhMCPi0AnyNLMPairNoMCMatch   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0AnyNLMPairNoMCMatch) ;
+    
+    fhMCPi0NoneNLMPairNoMCMatch     = new TH2F("hMCPi0NoneNLMPairNoMCMatch","NLM vs E for merged pi0 cluster, no NLM pair are decays",
+                                      nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0NoneNLMPairNoMCMatch   ->SetYTitle("N maxima");
+    fhMCPi0NoneNLMPairNoMCMatch   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0NoneNLMPairNoMCMatch) ;
+
+    
+    fhMCEOverlapType = new TH2F("hMCEOverlapType","Kind of overlap particle, neutral clusters",
+                                nptbins,ptmin,ptmax,5,0,5);
+    //fhMCEOverlapType   ->SetYTitle("Overlap Type");
+    fhMCEOverlapType->GetYaxis()->SetBinLabel(1 ,"#gamma");
+    fhMCEOverlapType->GetYaxis()->SetBinLabel(2 ,"e^{#pm}");
+    fhMCEOverlapType->GetYaxis()->SetBinLabel(3 ,"hadron^{#pm}");
+    fhMCEOverlapType->GetYaxis()->SetBinLabel(4 ,"hadron^{0}");
+    fhMCEOverlapType->GetYaxis()->SetBinLabel(5 ,"??");
+    fhMCEOverlapType   ->SetXTitle("Cluster E (GeV)");
+    outputContainer->Add(fhMCEOverlapType) ;
+
+    fhMCEOverlapTypeMatch = new TH2F("hMCEOverlapTypeMatched","Kind of overlap particle, charged clusters",
+                                nptbins,ptmin,ptmax,5,0,5);
+    //fhMCEOverlapTypeMatch   ->SetYTitle("Overlap Type");
+    fhMCEOverlapTypeMatch->GetYaxis()->SetBinLabel(1 ,"#gamma");
+    fhMCEOverlapTypeMatch->GetYaxis()->SetBinLabel(2 ,"e^{#pm}");
+    fhMCEOverlapTypeMatch->GetYaxis()->SetBinLabel(3 ,"hadron^{#pm}");
+    fhMCEOverlapTypeMatch->GetYaxis()->SetBinLabel(4 ,"hadron^{0}");
+    fhMCEOverlapTypeMatch->GetYaxis()->SetBinLabel(5 ,"??");
+    fhMCEOverlapTypeMatch->SetXTitle("Cluster E (GeV)");
+    outputContainer->Add(fhMCEOverlapTypeMatch) ;
+
+  }// MC analysis, check overlaps
+  
   return outputContainer ;
+  
+}
+
+//_____________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster, Int_t & mcindex)
+{
+  
+  // Assign mc index depending on MC bit set, to be used in histograms arrays
+  
+  if(!IsDataMC()) return;
+  
+  Int_t tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader());
+  
+  if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
+           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;
+  else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )      mcindex = kmcPi0Conv;
+  else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  )      mcindex = kmcEta;
+  else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
+           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPhoton;
+  else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
+            GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcConversion;
+  else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))   mcindex = kmcElectron;
+  else                                                                                mcindex = kmcHadron;
+  
+}
+
+
+//______________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex, const Bool_t matched,
+                                                        Float_t & eprim, Float_t & asymGen, Int_t & noverlaps )
+{
+  // Check origin of the candidates, get primary kinematics if overlapped meson decay
+  
+  if(!IsDataMC()) return ;
+  
+  Bool_t ok      = kFALSE;
+  Int_t  mcLabel = cluster->GetLabel();
+  
+  TLorentzVector primary = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
+  eprim = primary.E();
+  
+  if(mcindex == kmcPi0 || mcindex == kmcEta || mcindex == kmcPi0Conv)
+  {
+    if(mcindex == kmcPi0 || mcindex == kmcPi0Conv)
+    {
+      asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,111,GetReader(),ok));
+      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok);
+      if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
+    }
+    else
+    {
+      asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,221,GetReader(),ok));
+      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok);
+      if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
+    }
+  }
+  
+  if(!fFillMCOverlapHisto) return;
+  
+  // Compare the primary depositing more energy with the rest,
+  // if no photon/electron (conversion) or neutral meson as comon ancestor, consider it as other particle contributing
+  Int_t ancPDG = 0, ancStatus = -1;
+  TLorentzVector momentum; TVector3 prodVertex;
+  Int_t ancLabel = 0;
+  noverlaps = 0;
+  for (UInt_t ilab = 1; ilab < cluster->GetNLabels(); ilab++ )
+  {
+    ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab],
+                                                         GetReader(),ancPDG,ancStatus,momentum,prodVertex);
+    
+    if(ancPDG!=22 && TMath::Abs(ancPDG)!=11 && ancPDG!=111 && ancPDG!=221)
+    {
+      noverlaps++;
+      
+      // What is the origin of the overlap?
+      Bool_t  mOK = 0,      gOK = 0;
+      Int_t   mpdg = -999999,  gpdg = -1;
+      Int_t   mstatus = -1, gstatus = -1;
+      Int_t gLabel = -1, ggLabel = -1;
+      TLorentzVector mother      = GetMCAnalysisUtils()->GetMother     (cluster->GetLabels()[ilab],GetReader(),mpdg,mstatus,mOK);
+      TLorentzVector grandmother = GetMCAnalysisUtils()->GetGrandMother(cluster->GetLabels()[ilab],GetReader(),gpdg,gstatus,gOK, gLabel,ggLabel);
+      
+      //printf("Overlap!, mother pdg %d; grand mother pdg %d",mpdg,gpdg);
+      
+      if( ( mpdg == 22 || TMath::Abs(mpdg==11) ) &&
+          ( gpdg == 22 || TMath::Abs(gpdg==11) ) &&
+            gLabel >=0 )
+      {
+        Int_t label = gLabel;
+        while( ( gpdg == 22 || TMath::Abs(gpdg==11) ) && gLabel >=0 )
+        {
+          mpdg=gpdg;
+          grandmother = GetMCAnalysisUtils()->GetGrandMother(label,GetReader(),gpdg,gstatus,ok, gLabel,ggLabel);
+          label=gLabel;
+        }
+      }
+         
+      //printf("; Final PDG %d\n",mpdg);
+      Float_t histobin = -1;
+      if     (mpdg==22)      histobin = 0.5;
+      else if(TMath::Abs(mpdg)==11) histobin = 1.5;
+      else if(mpdg==-999999) histobin = 4.5;
+      else {
+        Double_t charge = TDatabasePDG::Instance()->GetParticle(mpdg)->Charge();
+        if(TMath::Abs(charge) > 0 ) histobin = 2.5;
+        else                        histobin = 3.5;
+        //printf("charge %f\n",charge);
+      }
+      
+      //printf("pdg = %d, histobin %2.1f\n",mpdg,histobin);
+      if(histobin > 0)
+      {
+        if(matched)fhMCEOverlapType     ->Fill(cluster->E(),histobin);
+        else       fhMCEOverlapTypeMatch->Fill(cluster->E(),histobin);
+      }
+    }
+  }
   
 }
 
 //___________________________________________
 void AliAnaInsideClusterInvariantMass::Init()
-{ 
+{
   //Init
   //Do some checks
   if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
@@ -1834,6 +2938,8 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   fMinNCells   = 4 ;
   fMinBadDist  = 2 ;
   
+  fHistoECut   = 8 ;
+  
   fSSWeightN   = 5;
   fSSWeight[0] = 4.6;  fSSWeight[1] = 4.7; fSSWeight[2] = 4.8; fSSWeight[3] = 4.9; fSSWeight[4] = 5.0;
   fSSWeight[5] = 5.1;  fSSWeight[6] = 5.2; fSSWeight[7] = 5.3; fSSWeight[8] = 5.4; fSSWeight[9] = 5.5;
@@ -1865,8 +2971,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     cells = GetEMCALCells();
   }
   
-  const Float_t ecut = 8.; // Fixed cut for some histograms
-  
   if(!pl || !cells) 
   {
     Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
@@ -1879,17 +2983,25 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   {
     AliVCluster * cluster = (AliVCluster*) (pl->At(icluster));	
 
-    Bool_t  matched   = IsTrackMatched(cluster,GetReader()->GetInputEvent());
-    if(!fFillTMHisto && matched) continue ;
+    //-------------------------------------------
+    // Get cluster parameters, do some rejection
+    //-------------------------------------------
     
-    // Study clusters with large shape parameter
     Float_t en = cluster->E();
     Float_t l0 = cluster->GetM02();
     Int_t   nc = cluster->GetNCells();
     Float_t bd = cluster->GetDistanceToBadChannel() ; 
     
     //If too small or big E or low number of cells, or close to a bad channel skip it
+    
     if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells || bd < fMinBadDist) continue ;
+    
+    // Track-cluster matching
+    
+    Bool_t  matched   = IsTrackMatched(cluster,GetReader()->GetInputEvent());
+    if(!fFillTMHisto && matched) continue ;
+
+    // Get cluster angles
     
     TLorentzVector lv;
     cluster->GetMomentum(lv, GetVertex(0));
@@ -1900,22 +3012,13 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
     //       en,GetMinEnergy(), GetMaxEnergy(), nc, fMinNCells, bd, fMinBadDist);
     
-    // Get more Shower Shape parameters
-    Float_t ll0  = 0., ll1  = 0.;
-    Float_t disp= 0., dispEta = 0., dispPhi    = 0.; 
-    Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;  
-   
-    GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), GetReader()->GetInputEvent()->GetEMCALCells(), cluster,
-                                                                                 ll0, ll1, disp, dispEta, dispPhi, sEta, sPhi, sEtaPhi);
-    
-    Float_t dispAsy = -1;
-    if(dispEta+dispPhi >0 ) dispAsy = (dispPhi-dispEta) / (dispPhi+dispEta);
+    // Get PID, N local maximum, *** split cluster ***
     
     Int_t    nMax = 0;
     Double_t mass = 0., angle = 0.;
     TLorentzVector    l1, l2;
     Int_t    absId1 = -1; Int_t absId2 = -1;
-
+    
     Int_t pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(cluster,cells,GetCaloUtils(),
                                                                                GetVertex(0), nMax, mass, angle,
                                                                                l1,l2,absId1,absId2);
@@ -1926,6 +3029,16 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       
       return;
     }
+    
+    // Set some index for array histograms
+    
+    Int_t inlm = -1;
+    if     (nMax == 1) inlm = 0;
+    else if(nMax == 2) inlm = 1;
+    else if(nMax >  2) inlm = 2;
+    else printf("Wrong N local maximum -> %d, n cells in cluster %d \n",nMax,nc);
+
+    // Get sub-cluster parameters
     
     Float_t e1 = l1.Energy();
     Float_t e2 = l2.Energy();
@@ -1944,316 +3057,125 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
     Float_t asym = -10;
     if(e1+e2>0) asym = (e1-e2)/(e1+e2);
-        
+    
+    //
+    
+    Int_t ebin = -1;
+    if(en > 8  && en <= 12) ebin = 0;
+    if(en > 12 && en <= 16) ebin = 1;
+    if(en > 16 && en <= 20) ebin = 2;
+    if(en > 20)             ebin = 3;
+    
+    // MC indexes
+    
+    Int_t mcindex   = -1;
+    //Int_t mcLabel   = cluster->GetLabel();
+    GetMCIndex(cluster,mcindex);
+
+    // MC primary kine, generation fractions
+    
+    Float_t eprim   = -1;
+    Float_t asymGen = -2;
+    Int_t noverlaps =  0;
+    GetMCPrimaryKine(cluster,mcindex,matched,eprim,asymGen,noverlaps);
+    
+    //
+    
+    // For cluster with MC pi0 and more than 1 maxima
+    CheckLocalMaximaMCOrigin(cluster, mcindex);
+    
+    //----------------
+    // Fill histograms
+    //----------------
+    
     fhNLocMax[0][matched]->Fill(en,nMax);
+    if(IsDataMC())
+      fhNLocMax[mcindex][matched]->Fill(en,nMax);
     
-    Int_t inlm = -1;
-    if     (nMax == 1) inlm = 0;
-    else if(nMax == 2) inlm = 1;
-    else if(nMax > 2 ) inlm = 2;
-    
-    if     ( nMax == 1  ) 
+    if     ( nMax == 1  )
     { 
       fhM02NLocMax1[0][matched]->Fill(en,l0) ; 
-      fhSplitEFractionNLocMax1[0][matched]->Fill(en,splitFrac) ; 
-      if(en > ecut)
+      fhSplitEFractionNLocMax1[0][matched]->Fill(en,splitFrac) ;
+      
+      if(IsDataMC())
       {
+        fhM02NLocMax1[mcindex][matched]->Fill(en,l0) ;
+        fhSplitEFractionNLocMax1[mcindex][matched]->Fill(en,splitFrac) ;
+      }
+
+      if(en > fHistoECut)
+      {
+        fhMassM02NLocMax1[0][matched]->Fill(l0, mass);
+        if( IsDataMC() ) fhMassM02NLocMax1[mcindex][matched]->Fill(l0, mass);
+
         fhSplitEFractionvsAsyNLocMax1[matched]->Fill(asym,splitFrac) ;
         if(!matched)fhClusterEtaPhiNLocMax1->Fill(eta,phi);
       }
-      if(fFillSSExtraHisto) fhNCellNLocMax1[0][matched]->Fill(en,nc) ; 
+      
+
     }
     else if( nMax == 2  ) 
     { 
       fhM02NLocMax2[0][matched]->Fill(en,l0) ; 
-      fhSplitEFractionNLocMax2[0][matched]->Fill(en,splitFrac) ; 
-      if(en > ecut)
+      fhSplitEFractionNLocMax2[0][matched]->Fill(en,splitFrac) ;
+      
+      if(IsDataMC())
       {
+        fhM02NLocMax2[mcindex][matched]->Fill(en,l0) ;
+        fhSplitEFractionNLocMax2[mcindex][matched]->Fill(en,splitFrac) ;
+      }
+      
+      if(en > fHistoECut)
+      {
+        fhMassM02NLocMax2[0][matched]->Fill(l0,  mass );
+        if( IsDataMC() ) fhMassM02NLocMax2[mcindex][matched]->Fill(l0,mass);
+        
         fhSplitEFractionvsAsyNLocMax2[matched]->Fill(asym,splitFrac) ;
         if(!matched)fhClusterEtaPhiNLocMax2->Fill(eta,phi);
       }
-      if(fFillSSExtraHisto) fhNCellNLocMax2[0][matched]->Fill(en,nc) ; }
-    else if( nMax >= 3  ) 
+    }
+    else if( nMax >= 3  )
     { 
       fhM02NLocMaxN[0][matched]->Fill(en,l0) ; 
-      fhSplitEFractionNLocMaxN[0][matched]->Fill(en,splitFrac) ; 
-      if(en > ecut)
+      fhSplitEFractionNLocMaxN[0][matched]->Fill(en,splitFrac) ;
+      
+      if(IsDataMC())
       {
+        fhM02NLocMaxN[mcindex][matched]->Fill(en,l0) ;
+        fhSplitEFractionNLocMaxN[mcindex][matched]->Fill(en,splitFrac) ;
+      }
+      
+      if(en > fHistoECut)
+      {
+        
+        fhMassM02NLocMaxN[0][matched]->Fill(l0,mass);
+        if( IsDataMC() ) fhMassM02NLocMaxN[mcindex][matched]->Fill(l0,mass);
+        
         fhSplitEFractionvsAsyNLocMaxN[matched]->Fill(asym,splitFrac) ;
         if(!matched)fhClusterEtaPhiNLocMaxN->Fill(eta,phi);
       }
-      if(fFillSSExtraHisto) fhNCellNLocMaxN[0][matched]->Fill(en,nc) ;
-    }
-    else printf("N max smaller than 1 -> %d \n",nMax);
-    
-    
-    Float_t dZ  = cluster->GetTrackDz();
-    Float_t dR  = cluster->GetTrackDx();
-    
-    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-    {
-      dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-    }    
-    //printf("Pi0EbE: dPhi %f, dEta %f\n",dR,dZ);
-    
-    if(TMath::Abs(dR) < 999 && fFillTMResidualHisto)
-    {
-      if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1[0]->Fill(en,dR); }
-      else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2[0]->Fill(en,dR); }
-      else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxN[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxN[0]->Fill(en,dR); }
     }
     
-    // Play with the MC stack if available
-    // Check origin of the candidates
-    Int_t mcindex   = -1;
-    Float_t eprim   =  0;
-    Float_t asymGen = -2; 
-    Int_t mcLabel   = cluster->GetLabel();
-    if(IsDataMC())
-    {
-      Int_t tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader());
-            
-      if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
-               !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )      mcindex = kmcPi0Conv;
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  )      mcindex = kmcEta;
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
-               !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPhoton;
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
-                GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcConversion;
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))   mcindex = kmcElectron;
-      else                                                                                mcindex = kmcHadron;
-
-      fhNLocMax[mcindex][matched]->Fill(en,nMax);
-            
-      if     (nMax == 1 ) { fhM02NLocMax1[mcindex][matched]->Fill(en,l0) ; fhSplitEFractionNLocMax1[mcindex][matched]->Fill(en,splitFrac) ; if(fFillSSExtraHisto) fhNCellNLocMax1[mcindex][matched]->Fill(en,nc) ; }
-      else if(nMax == 2 ) { fhM02NLocMax2[mcindex][matched]->Fill(en,l0) ; fhSplitEFractionNLocMax2[mcindex][matched]->Fill(en,splitFrac) ; if(fFillSSExtraHisto) fhNCellNLocMax2[mcindex][matched]->Fill(en,nc) ; }
-      else if(nMax >= 3 ) { fhM02NLocMaxN[mcindex][matched]->Fill(en,l0) ; fhSplitEFractionNLocMaxN[mcindex][matched]->Fill(en,splitFrac) ; if(fFillSSExtraHisto) fhNCellNLocMaxN[mcindex][matched]->Fill(en,nc) ; }
-      
-      if(TMath::Abs(dR) < 999 && fFillTMResidualHisto)
-      {
-        if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1[mcindex]->Fill(en,dR); }
-        else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2[mcindex]->Fill(en,dR); }
-        else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxN[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxN[mcindex]->Fill(en,dR); }
-      }
-      
-      Bool_t ok = kFALSE;
-      TLorentzVector primary = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
-      eprim = primary.E();
-      
-      if(mcindex == kmcPi0 || mcindex == kmcEta)
-      {
-        if(mcindex == kmcPi0) 
-        {
-          asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,111,GetReader(),ok));
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok); 
-          if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
-        }
-        else 
-        {
-          asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,221,GetReader(),ok));
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok); 
-          if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
-        }
-      }
-    } 
+    //
     
-    Float_t efrac      = eprim/en;
-    Float_t efracSplit = 0;
-    if(e1+e2 > 0) efracSplit = eprim/(e1+e2);
-
-    //printf("e1 %2.2f, e2 %2.2f, eprim %2.2f, ereco %2.2f, esplit/ereco %2.2f, egen/ereco %2.2f, egen/esplit %2.2f\n",
-    //       e1,e2,eprim,en,splitFrac,efrac,efracSplit);
+    FillTrackMatchingHistograms(cluster,nMax,mcindex);
     
-    Int_t ebin = -1;
-    if(en > 8  && en <= 12) ebin = 0; 
-    if(en > 12 && en <= 16) ebin = 1;
-    if(en > 16 && en <= 20) ebin = 2;
-    if(en > 20)             ebin = 3; 
+    //
+      
+    FillSSExtraHistograms(cluster, nMax, matched,mcindex,mass,ebin)  ;
     
-    if(fFillEbinHisto && ebin >= 0 && IsDataMC() && fFillMCFractionHisto)
-    {
-      if( !matched ) fhMCGenFracNLocMaxEbin       [mcindex][ebin]->Fill(efrac,nMax);
-      else           fhMCGenFracNLocMaxEbinMatched[mcindex][ebin]->Fill(efrac,nMax);
-    }
+    //
     
-    if     (nMax==1) 
-    { 
-      if( en > ecut ) 
-      {      
-        fhMassM02NLocMax1    [0][matched]->Fill(l0     ,  mass ); 
-        if(fFillSSExtraHisto)
-        {
-          fhMassDispEtaNLocMax1[0][matched]->Fill(dispEta,  mass ); 
-          fhMassDispPhiNLocMax1[0][matched]->Fill(dispPhi,  mass ); 
-          fhMassDispAsyNLocMax1[0][matched]->Fill(dispAsy,  mass );
-        }
-        
-        if(IsDataMC()) 
-        {
-          fhMassM02NLocMax1          [mcindex][matched]->Fill(l0     ,  mass  ); 
-          if(fFillMCFractionHisto)
-          {
-            fhMCGenFracNLocMax1        [mcindex][matched]->Fill(en     ,  efrac ); 
-            fhMCGenSplitEFracNLocMax1  [mcindex][matched]->Fill(en     ,  efracSplit ); 
-            fhMCGenEvsSplitENLocMax1   [mcindex][matched]->Fill(eprim  ,  e1+e2); 
-            fhMCGenEFracvsSplitEFracNLocMax1[mcindex][matched]->Fill(efrac,splitFrac ); 
-          }
-          
-          if(!matched && ebin >= 0 && fFillEbinHisto)
-          {
-            if(fFillMCFractionHisto)
-            {
-              fhM02MCGenFracNLocMax1Ebin [mcindex][ebin]->Fill(efrac  ,  l0    ); 
-              fhMassMCGenFracNLocMax1Ebin[mcindex][ebin]->Fill(efrac  ,  mass  ); 
-            }
-            fhMCAsymM02NLocMax1MCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
-            fhAsyMCGenRecoNLocMax1EbinPi0[ebin]->Fill(asym,  asymGen );
-          }
-          
-          if(fFillSSExtraHisto)
-          {
-            fhMassDispEtaNLocMax1[mcindex][matched]->Fill(dispEta,  mass ); 
-            fhMassDispPhiNLocMax1[mcindex][matched]->Fill(dispPhi,  mass ); 
-            fhMassDispAsyNLocMax1[mcindex][matched]->Fill(dispAsy,  mass ); 
-          }
-        }
-      }
-      
-      if(!matched && ebin >= 0 && fFillEbinHisto)
-      {
-        fhMassSplitEFractionNLocMax1Ebin[0][ebin]->Fill(splitFrac,  mass);
-        if(IsDataMC())fhMassSplitEFractionNLocMax1Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
+    FillMCHistograms(en,e1,e2,ebin,mcindex,l0,mass,
+                     nMax,matched,splitFrac, asym, eprim,asymGen);
+    
+    //
+    
+    FillMCOverlapHistograms(en,mass,l0,inlm,ebin,matched,mcindex,noverlaps);
 
-        fhMassM02NLocMax1Ebin    [ebin]->Fill(l0  ,  mass );
-        fhMassAsyNLocMax1Ebin    [ebin]->Fill(asym,  mass );
-        
-        if(fFillSSExtraHisto)
-        {
-          fhMassDispEtaNLocMax1Ebin[ebin]->Fill(dispEta,  mass );
-          fhMassDispPhiNLocMax1Ebin[ebin]->Fill(dispPhi,  mass );
-          fhMassDispAsyNLocMax1Ebin[ebin]->Fill(dispAsy,  mass );
-        }
-      }
-    }  
-    else if(nMax==2) 
-    {
-      if( en > ecut ) 
-      {      
-        fhMassM02NLocMax2    [0][matched]->Fill(l0     ,  mass ); 
-        if(fFillSSExtraHisto)
-        {
-          fhMassDispEtaNLocMax2[0][matched]->Fill(dispEta,  mass ); 
-          fhMassDispPhiNLocMax2[0][matched]->Fill(dispPhi,  mass ); 
-          fhMassDispAsyNLocMax2[0][matched]->Fill(dispAsy,  mass ); 
-        }
-        
-        if(IsDataMC()) 
-        {
-          fhMassM02NLocMax2        [mcindex][matched]->Fill(l0     ,  mass ); 
-          if(fFillMCFractionHisto)
-          {
-            fhMCGenFracNLocMax2      [mcindex][matched]->Fill(en     ,  efrac ); 
-            fhMCGenSplitEFracNLocMax2[mcindex][matched]->Fill(en     ,  efracSplit ); 
-            fhMCGenEvsSplitENLocMax2 [mcindex][matched]->Fill(eprim  ,  e1+e2); 
-            fhMCGenEFracvsSplitEFracNLocMax2[mcindex][matched]->Fill(efrac,splitFrac ); 
-          }
-          
-          if(!matched && ebin >= 0 && fFillEbinHisto )
-          {
-            if(fFillMCFractionHisto)
-            {
-              fhM02MCGenFracNLocMax2Ebin [mcindex][ebin]->Fill(efrac  ,  l0    ); 
-              fhMassMCGenFracNLocMax2Ebin[mcindex][ebin]->Fill(efrac  ,  mass  ); 
-            }
-            fhMCAsymM02NLocMax2MCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
-            fhAsyMCGenRecoNLocMax2EbinPi0[ebin]->Fill(asym,  asymGen );
-          }
-          
-          if(fFillSSExtraHisto)
-          {
-            fhMassDispEtaNLocMax2[mcindex][matched]->Fill(dispEta,  mass ); 
-            fhMassDispPhiNLocMax2[mcindex][matched]->Fill(dispPhi,  mass ); 
-            fhMassDispAsyNLocMax2[mcindex][matched]->Fill(dispAsy,  mass ); 
-          }
-        }
-      }
-      
-      if(!matched && ebin >= 0 && fFillEbinHisto)
-      {
-        fhMassSplitEFractionNLocMax2Ebin[0][ebin]->Fill(splitFrac,  mass);
-        if(IsDataMC())fhMassSplitEFractionNLocMax2Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
-
-        fhMassM02NLocMax2Ebin    [ebin]->Fill(l0  ,  mass );
-        fhMassAsyNLocMax2Ebin    [ebin]->Fill(asym,  mass );
-        
-        if(fFillSSExtraHisto)
-        {
-          fhMassDispEtaNLocMax2Ebin[ebin]->Fill(dispEta,  mass );
-          fhMassDispPhiNLocMax2Ebin[ebin]->Fill(dispPhi,  mass );
-          fhMassDispAsyNLocMax2Ebin[ebin]->Fill(dispAsy,  mass );
-        }
-      }   
-    }
-    else if(nMax > 2 ) 
-    {
-      if( en > ecut ) 
-      {      
-        fhMassM02NLocMaxN    [0][matched]->Fill(l0     ,  mass ); 
-        if(fFillSSExtraHisto)
-        {
-          fhMassDispEtaNLocMaxN[0][matched]->Fill(dispEta,  mass ); 
-          fhMassDispPhiNLocMaxN[0][matched]->Fill(dispPhi,  mass ); 
-          fhMassDispAsyNLocMaxN[0][matched]->Fill(dispAsy,  mass ); 
-        }
-        
-        if(IsDataMC()) 
-        {
-          fhMassM02NLocMaxN        [mcindex][matched]->Fill(l0     ,  mass ); 
-          if(fFillMCFractionHisto)
-          {
-            fhMCGenFracNLocMaxN      [mcindex][matched]->Fill(en     ,  efrac ); 
-            fhMCGenSplitEFracNLocMaxN[mcindex][matched]->Fill(en     ,  efracSplit ); 
-            fhMCGenEvsSplitENLocMaxN [mcindex][matched]->Fill(eprim  ,  e1+e2); 
-            fhMCGenEFracvsSplitEFracNLocMaxN[mcindex][matched]->Fill(efrac,  splitFrac ); 
-          }
-          
-          if(!matched && ebin >= 0 && fFillEbinHisto)
-          {
-            if(fFillMCFractionHisto)
-            {
-              fhM02MCGenFracNLocMaxNEbin [mcindex][ebin]->Fill(efrac  ,  l0     ); 
-              fhMassMCGenFracNLocMaxNEbin[mcindex][ebin]->Fill(efrac  ,  mass   ); 
-            }
-            fhMCAsymM02NLocMaxNMCPi0Ebin [ebin]->Fill(l0  ,  asymGen );
-            fhAsyMCGenRecoNLocMaxNEbinPi0[ebin]->Fill(asym,  asymGen );
-          }
-          if(fFillSSExtraHisto)
-          {
-            fhMassDispEtaNLocMaxN[mcindex][matched]->Fill(dispEta,  mass ); 
-            fhMassDispPhiNLocMaxN[mcindex][matched]->Fill(dispPhi,  mass ); 
-            fhMassDispAsyNLocMaxN[mcindex][matched]->Fill(dispAsy,  mass ); 
-          }
-        }
-      }
-      
-      if(!matched && ebin >= 0 && fFillEbinHisto)
-      {
-        fhMassSplitEFractionNLocMaxNEbin[0][ebin]->Fill(splitFrac,  mass);
-        if(IsDataMC())fhMassSplitEFractionNLocMaxNEbin[mcindex][ebin]->Fill(splitFrac,  mass);
-
-        fhMassM02NLocMaxNEbin    [ebin]->Fill(l0  ,  mass );
-        fhMassAsyNLocMaxNEbin    [ebin]->Fill(asym,  mass );
-        
-        if(fFillSSExtraHisto)
-        {
-          fhMassDispEtaNLocMaxNEbin[ebin]->Fill(dispEta,  mass );
-          fhMassDispPhiNLocMaxNEbin[ebin]->Fill(dispPhi,  mass );
-          fhMassDispAsyNLocMaxNEbin[ebin]->Fill(dispAsy,  mass );
-        }
-      }
-    }
+    //
+    
+    if(!matched) FillEBinHistograms(ebin,nMax,mcindex,splitFrac,mass,asym,l0);
     
     //---------------------------------------------------------------------
     // From here only if M02 is large but not too large, fill histograms 
@@ -2261,8 +3183,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     if( l0 < fM02MinCut || l0 > fM02MaxCut ) continue ;
     
+    FillAngleHistograms(matched,nMax,en,angle,mass);
+    
     Bool_t m02OK = GetCaloPID()->IsInPi0M02Range(en,l0,nMax);
     Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
+    
+    Float_t efrac      = eprim/en;
+    Float_t efracSplit = 0;
+    if(e1+e2 > 0) efracSplit = eprim/(e1+e2);
     
     Float_t cent = GetEventCentrality();
     Float_t evp  = GetEventPlaneAngle();
@@ -2273,8 +3201,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     Float_t splitFracMin = GetCaloPID()->GetSplitEnergyFractionMinimum(inlm) ;
     
     if     (nMax==1) 
-    { 
-      fhMassNLocMax1[0][matched]->Fill(en,mass ); 
+    {
+      fhMassNLocMax1[0][matched]->Fill(en,mass );
       fhAsymNLocMax1[0][matched]->Fill(en,asym );
       
       // Effect of cuts in mass histograms
@@ -2294,42 +3222,43 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhSplitEFractionAfterCutsNLocMax1[0][matched]->Fill(en,splitFrac);
         if(splitFrac > splitFracMin) fhMassAfterCutsNLocMax1[0][matched]->Fill(en,mass);
         
-        if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
+        if(!matched && IsDataMC() && fFillMCHisto && mcindex==kmcPi0)
         {
-          
           fhMCGenFracAfterCutsNLocMax1MCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMax1MCPi0->Fill(en   ,  efracSplit);
         }
       }
       
-      if(fFillAngleHisto) 
-      {
-        fhAnglePairNLocMax1[matched]->Fill(en,angle);
-      if( en > ecut ) 
-        fhAnglePairMassNLocMax1[matched]->Fill(mass,angle);
-      }
             
-      if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax1[0][matched]->Fill(en,l0); fhMassConNLocMax1[0][matched]->Fill(en,mass);  fhAsyConNLocMax1[0][matched]->Fill(en,asym); }
+      if     (pidTag==AliCaloPID::kPhoton)
+      { fhM02ConNLocMax1 [0][matched]->Fill(en,l0);
+        fhMassConNLocMax1[0][matched]->Fill(en,mass);
+        fhAsyConNLocMax1 [0][matched]->Fill(en,asym);
+      }
       else if(pidTag==AliCaloPID::kPi0   )
       {
-        fhM02Pi0NLocMax1[0][matched]->Fill(en,l0); fhMassPi0NLocMax1[0][matched]->Fill(en,mass);  fhAsyPi0NLocMax1[0][matched]->Fill(en,asym);
+        fhM02Pi0NLocMax1[0][matched]->Fill(en,l0);
+        fhMassPi0NLocMax1[0][matched]->Fill(en,mass);
+        fhAsyPi0NLocMax1[0][matched]->Fill(en,asym);
         fhCentralityPi0NLocMax1[0][matched]->Fill(en,cent) ;
         if(!matched)
         {
           fhEventPlanePi0NLocMax1->Fill(en,evp) ;
-          if(en > ecut)fhPi0EtaPhiNLocMax1->Fill(eta,phi);
+          if(en > fHistoECut)fhPi0EtaPhiNLocMax1->Fill(eta,phi);
           FillSSWeightHistograms(cluster, 0, absId1, absId2);
           fhPi0EPairDiffTimeNLM1->Fill(e1+e2,t12diff);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
       {
-        fhM02EtaNLocMax1[0][matched]->Fill(en,l0); fhMassEtaNLocMax1[0][matched]->Fill(en,mass);  fhAsyEtaNLocMax1[0][matched]->Fill(en,asym);
+        fhM02EtaNLocMax1 [0][matched]->Fill(en,l0);
+        fhMassEtaNLocMax1[0][matched]->Fill(en,mass);
+        fhAsyEtaNLocMax1 [0][matched]->Fill(en,asym);
         fhCentralityEtaNLocMax1[0][matched]->Fill(en,cent) ;
         if(!matched)
         {
           fhEventPlaneEtaNLocMax1->Fill(en,evp) ;
-          if(en > ecut)fhEtaEtaPhiNLocMax1->Fill(eta,phi);
+          if(en > fHistoECut)fhEtaEtaPhiNLocMax1->Fill(eta,phi);
           fhEtaEPairDiffTimeNLM1->Fill(e1+e2,t12diff);
         }
       }
@@ -2356,42 +3285,44 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhSplitEFractionAfterCutsNLocMax2[0][matched]->Fill(en,splitFrac);
         if(splitFrac >splitFracMin) fhMassAfterCutsNLocMax2[0][matched]->Fill(en,mass);
         
-        if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
+        if(!matched && IsDataMC() && fFillMCHisto && mcindex==kmcPi0)
         {
           
           fhMCGenFracAfterCutsNLocMax2MCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMax2MCPi0->Fill(en   ,  efracSplit);
         }
       }
-      
-      if(fFillAngleHisto) 
+            
+      if     (pidTag==AliCaloPID::kPhoton)
       {
-        fhAnglePairNLocMax2[matched]->Fill(en,angle);
-        if( en > ecut ) 
-          fhAnglePairMassNLocMax2[matched]->Fill(mass,angle);
+        fhM02ConNLocMax2 [0][matched]->Fill(en,l0);
+        fhMassConNLocMax2[0][matched]->Fill(en,mass);
+        fhAsyConNLocMax2 [0][matched]->Fill(en,asym);
       }
-      
-      if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMax2[0][matched]->Fill(en,l0); fhMassConNLocMax2[0][matched]->Fill(en,mass);  fhAsyConNLocMax2[0][matched]->Fill(en,asym); }
       else if(pidTag==AliCaloPID::kPi0   )
       {
-        fhM02Pi0NLocMax2[0][matched]->Fill(en,l0); fhMassPi0NLocMax2[0][matched]->Fill(en,mass);  fhAsyPi0NLocMax2[0][matched]->Fill(en,asym);
+        fhM02Pi0NLocMax2 [0][matched]->Fill(en,l0);
+        fhMassPi0NLocMax2[0][matched]->Fill(en,mass);
+        fhAsyPi0NLocMax2 [0][matched]->Fill(en,asym);
         fhCentralityPi0NLocMax2[0][matched]->Fill(en,cent) ;
         if(!matched)
         {
           fhEventPlanePi0NLocMax2->Fill(en,evp) ;
-          if(en > ecut)fhPi0EtaPhiNLocMax2->Fill(eta,phi);
+          if(en > fHistoECut)fhPi0EtaPhiNLocMax2->Fill(eta,phi);
           FillSSWeightHistograms(cluster, 1, absId1, absId2);
           fhPi0EPairDiffTimeNLM2->Fill(e1+e2,t12diff);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
       {
-        fhM02EtaNLocMax2[0][matched]->Fill(en,l0); fhMassEtaNLocMax2[0][matched]->Fill(en,mass);  fhAsyEtaNLocMax2[0][matched]->Fill(en,asym);
+        fhM02EtaNLocMax2 [0][matched]->Fill(en,l0);
+        fhMassEtaNLocMax2[0][matched]->Fill(en,mass);
+        fhAsyEtaNLocMax2 [0][matched]->Fill(en,asym);
         fhCentralityEtaNLocMax2[0][matched]->Fill(en,cent) ;
         if(!matched)
         {
           fhEventPlaneEtaNLocMax2->Fill(en,evp) ;
-          if(en > ecut)fhEtaEtaPhiNLocMax2->Fill(eta,phi);
+          if(en > fHistoECut)fhEtaEtaPhiNLocMax2->Fill(eta,phi);
           fhEtaEPairDiffTimeNLM2->Fill(e1+e2,t12diff);
         }
       }
@@ -2418,7 +3349,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhSplitEFractionAfterCutsNLocMaxN[0][matched]->Fill(en,splitFrac);
         if(splitFrac > splitFracMin) fhMassAfterCutsNLocMaxN[0][matched]->Fill(en,mass);
         
-        if(!matched && IsDataMC() && fFillMCFractionHisto && mcindex==kmcPi0)
+        if(!matched && IsDataMC() && fFillMCHisto && mcindex==kmcPi0)
         {
           
           fhMCGenFracAfterCutsNLocMaxNMCPi0      ->Fill(en   ,  efrac     );
@@ -2426,40 +3357,39 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         }
       }
       
-      if(fFillAngleHisto)
+      if     (pidTag==AliCaloPID::kPhoton)
       {
-        fhAnglePairNLocMaxN[matched]->Fill(en,angle);
-        if( en > ecut ) 
-          fhAnglePairMassNLocMaxN[matched]->Fill(mass,angle);
-      }
-            
-      if     (pidTag==AliCaloPID::kPhoton) { fhM02ConNLocMaxN[0][matched]->Fill(en,l0); fhMassConNLocMaxN[0][matched]->Fill(en,mass);  fhAsyConNLocMaxN[0][matched]->Fill(en,asym); }
+        fhM02ConNLocMaxN [0][matched]->Fill(en,l0);
+        fhMassConNLocMaxN[0][matched]->Fill(en,mass);
+        fhAsyConNLocMaxN [0][matched]->Fill(en,asym); }
       else if(pidTag==AliCaloPID::kPi0   )
       {
-        fhM02Pi0NLocMaxN[0][matched]->Fill(en,l0); fhMassPi0NLocMaxN[0][matched]->Fill(en,mass);  fhAsyPi0NLocMaxN[0][matched]->Fill(en,asym);
+        fhM02Pi0NLocMaxN [0][matched]->Fill(en,l0);
+        fhMassPi0NLocMaxN[0][matched]->Fill(en,mass);
+        fhAsyPi0NLocMaxN [0][matched]->Fill(en,asym);
         fhCentralityPi0NLocMaxN[0][matched]->Fill(en,cent) ;
         if(!matched)
         {
           fhEventPlanePi0NLocMaxN->Fill(en,evp) ;
-          if(en > ecut)fhPi0EtaPhiNLocMaxN->Fill(eta,phi);
+          if(en > fHistoECut)fhPi0EtaPhiNLocMaxN->Fill(eta,phi);
           FillSSWeightHistograms(cluster, 2,  absId1, absId2);
           fhPi0EPairDiffTimeNLMN->Fill(e1+e2,t12diff);
         }
       }
       else if(pidTag==AliCaloPID::kEta)
       {
-        fhM02EtaNLocMaxN[0][matched]->Fill(en,l0); fhMassEtaNLocMaxN[0][matched]->Fill(en,mass);  fhAsyEtaNLocMaxN[0][matched]->Fill(en,asym);
+        fhM02EtaNLocMaxN [0][matched]->Fill(en,l0);
+        fhMassEtaNLocMaxN[0][matched]->Fill(en,mass);
+        fhAsyEtaNLocMaxN [0][matched]->Fill(en,asym);
         fhCentralityEtaNLocMaxN[0][matched]->Fill(en,cent) ;
         if(!matched)
         {
           fhEventPlaneEtaNLocMaxN->Fill(en,evp) ;
-          if(en > ecut)fhEtaEtaPhiNLocMaxN->Fill(eta,phi);
+          if(en > fHistoECut)fhEtaEtaPhiNLocMaxN->Fill(eta,phi);
           fhEtaEPairDiffTimeNLMN->Fill(e1+e2,t12diff);
         }
       }
-      
     }
-    
     
     if(IsDataMC())
     {

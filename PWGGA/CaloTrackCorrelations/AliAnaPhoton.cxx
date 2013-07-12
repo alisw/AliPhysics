@@ -65,7 +65,7 @@ fNOriginHistograms(8),        fNPrimaryHistograms(4),
 fFillPileUpHistograms(0),     fFillEMCALBCHistograms(0),
 // Histograms
 fhNCellsE(0),                 fhCellsE(0),   // Control histograms
-fhMaxCellDiffClusterE(0),     fhTimeE(0),    // Control histograms
+fhMaxCellDiffClusterE(0),     fhTimePt(0),   // Control histograms
 fhEtaPhi(0),                  fhEtaPhiEMCALBC0(0),
 fhEtaPhiEMCALBC1(0),          fhEtaPhiEMCALBCN(0),
 fhEtaPhiTriggerEMCALBCClusterOverTh(0),
@@ -128,7 +128,8 @@ fhEmbedPhotonELambda0MostlyBkg(0),    fhEmbedPhotonELambda0FullBkg(0),
 fhEmbedPi0ELambda0FullSignal(0),      fhEmbedPi0ELambda0MostlySignal(0),
 fhEmbedPi0ELambda0MostlyBkg(0),       fhEmbedPi0ELambda0FullBkg(0),
 // PileUp
-fhTimeENoCut(0),                      fhTimeESPD(0),        fhTimeESPDMulti(0),
+fhTimePtNoCut(0),                     fhTimePtSPD(0),
+fhTimePtPhotonNoCut(0),               fhTimePtPhotonSPD(0),
 fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
 fhTimePileUpMainVertexZDistance(0),   fhTimePileUpMainVertexZDiamond(0),
@@ -269,7 +270,7 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0)
   
 }
 
-//_____________________________________________________________________________________________________
+//_________________________________________________________________________________________
 Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int_t nMaxima)
 {
   //Select clusters if they pass different cuts
@@ -281,8 +282,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   Float_t phicluster = mom.Phi();
   if(phicluster<0) phicluster+=TMath::TwoPi();
   Float_t tofcluster   = calo->GetTOF()*1.e9;
-  Float_t tofclusterUS = TMath::Abs(tofcluster);
   
+  Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
   
   if(GetDebug() > 2)
     printf("AliAnaPhoton::ClusterSelected() - Current Event %d; Before selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
@@ -293,140 +294,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   
   if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster);
   
-  if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL")
-  {
-    if(ecluster > 2)
-    {
-      if      (tofclusterUS < 25) fhEtaPhiEMCALBC0->Fill(etacluster, phicluster);
-      else if (tofclusterUS < 75) fhEtaPhiEMCALBC1->Fill(etacluster, phicluster);
-      else                        fhEtaPhiEMCALBCN->Fill(etacluster, phicluster);
-    }
-    
-    Int_t  bc     = GetReader()->GetTriggerClusterBC();
-    Int_t  id     = GetReader()->GetTriggerClusterId();
-    Bool_t badMax = GetReader()->IsBadMaxCellTriggerEvent();
-    
-    if(id==-2)
-    {
-      //printf("AliAnaPhoton::ClusterSelected() - No trigger found bc=%d\n",bc);
-      fhEtaPhiNoTrigger->Fill(etacluster, phicluster);
-      fhTimeNoTrigger  ->Fill(ecluster, tofcluster);
-    }
-    else if(TMath::Abs(bc) < 6)
-    {
-      if(!GetReader()->IsBadCellTriggerEvent() && !GetReader()->IsExoticEvent() )
-      {
-        if(GetReader()->IsTriggerMatched())
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBC[bc+5]->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBC[bc+5]->Fill(ecluster, tofcluster);
-          if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[bc+5]->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCCluster[bc+5]->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCCluster[bc+5]  ->Fill(ecluster, tofcluster);
-            
-            if(bc==0)
-            {
-              Float_t threshold = GetReader()->GetEventTriggerThreshold() ;
-              if(ecluster > threshold)
-                fhEtaPhiTriggerEMCALBCClusterOverTh->Fill(etacluster, phicluster);
-              else if(ecluster > threshold-1)
-                fhEtaPhiTriggerEMCALBCClusterBelowTh1->Fill(etacluster, phicluster);
-              else
-                fhEtaPhiTriggerEMCALBCClusterBelowTh2->Fill(etacluster, phicluster);
-            }
-          }
-        }
-        else
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBCUM[bc+5]->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCUM[bc+5]->Fill(ecluster, tofcluster);
-          
-          if(calo->GetID() ==  GetReader()->GetTriggerClusterId())
-          {
-            fhEtaPhiTriggerEMCALBCUMCluster[bc+5]->Fill(etacluster, phicluster);
-            fhTimeTriggerEMCALBCUMCluster[bc+5]  ->Fill(ecluster, tofcluster);
-            if(bc==0)
-            {
-              Float_t threshold = GetReader()->GetEventTriggerThreshold() ;
-              if(ecluster > threshold)
-                fhEtaPhiTriggerEMCALBCUMClusterOverTh->Fill(etacluster, phicluster);
-              else if(ecluster > threshold-1)
-                fhEtaPhiTriggerEMCALBCUMClusterBelowTh1->Fill(etacluster, phicluster);
-              else
-                fhEtaPhiTriggerEMCALBCUMClusterBelowTh2->Fill(etacluster, phicluster);
-              
-              if(GetReader()->IsTriggerMatchedOpenCuts(0))
-              {
-                fhEtaPhiTriggerEMCALBCUMReMatchOpenTime->Fill(etacluster, phicluster);
-                fhTimeTriggerEMCALBCUMReMatchOpenTime  ->Fill(ecluster, tofcluster);
-              }
-              if(GetReader()->IsTriggerMatchedOpenCuts(1))
-              {
-                fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh->Fill(etacluster, phicluster);
-                fhTimeTriggerEMCALBCUMReMatchCheckNeigh  ->Fill(ecluster, tofcluster);
-              }
-              if(GetReader()->IsTriggerMatchedOpenCuts(2))
-              {
-                fhEtaPhiTriggerEMCALBCUMReMatchBoth->Fill(etacluster, phicluster);
-                fhTimeTriggerEMCALBCUMReMatchBoth  ->Fill(ecluster, tofcluster);
-              }
-              
-            }
-          }
-        }
-      }// neither bad nor exotic
-      else if(GetReader()->IsBadCellTriggerEvent() && GetReader()->IsExoticEvent())
-      {
-        if(GetReader()->IsTriggerMatched())
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBCBadExotic->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCBadExotic->Fill(ecluster, tofcluster);
-          if(badMax)  fhTimeTriggerEMCALBCBadMaxCellExotic->Fill(ecluster, tofcluster);
-        }
-        else
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBadExotic->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCUMBadExotic->Fill(ecluster, tofcluster);
-          if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCellExotic->Fill(ecluster, tofcluster);
-          
-        }
-      }// Bad and exotic cluster trigger
-      else if(GetReader()->IsBadCellTriggerEvent() )
-      {
-        if(GetReader()->IsTriggerMatched())
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBCBad->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCBad->Fill(ecluster, tofcluster);
-          if(badMax)  fhTimeTriggerEMCALBCBadMaxCell->Fill(ecluster, tofcluster);
-        }
-        else
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBad->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCUMBad->Fill(ecluster, tofcluster);
-          if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCell->Fill(ecluster, tofcluster);
-        }
-      }// Bad cluster trigger
-      else if(GetReader()->IsExoticEvent() )
-      {
-        if(GetReader()->IsTriggerMatched())
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBCExotic->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCExotic->Fill(ecluster, tofcluster);
-        }
-        else
-        {
-          if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMExotic->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCUMExotic->Fill(ecluster, tofcluster);
-        }
-      }
-    }
-    else if(TMath::Abs(bc) >= 6)
-      printf("AliAnaPhoton::ClusterSelected() - Trigger BC not expected = %d\n",bc);
-    
-  }
+  FillEMCALTriggerClusterBCHistograms(calo->GetID(),ecluster,tofcluster,etacluster,phicluster);
   
   //.......................................
   //If too small or big energy, skip it
@@ -436,133 +304,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   
   fhClusterCuts[2]->Fill(ecluster);
   
-  if(fFillPileUpHistograms)
-  {
-    // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
-    AliVCaloCells* cells = 0;
-    if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
-    else                        cells = GetPHOSCells();
-    
-    Float_t maxCellFraction = 0.;
-    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
-    
-    Double_t tmax  = cells->GetCellTime(absIdMax);
-    GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
-    tmax*=1.e9;
-    
-    Bool_t okPhoton = kFALSE;
-    if( GetCaloPID()->GetIdentifiedParticleType(calo)== AliCaloPID::kPhoton) okPhoton = kTRUE;
-    
-    Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
-    Float_t clusterLongTimeE = 0;
-    Float_t clusterOKTimeE   = 0;
-    //Loop on cells inside cluster
-    for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
-    {
-      Int_t absId  = calo->GetCellsAbsId()[ipos];
-      //if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
-      if(cells->GetCellAmplitude(absIdMax) > 0.1)
-      {
-        Double_t time  = cells->GetCellTime(absId);
-        Float_t  amp   = cells->GetCellAmplitude(absId);
-        Int_t    bc    = GetReader()->GetInputEvent()->GetBunchCrossNumber();
-        GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,amp,time,cells);
-        time*=1e9;
-        
-        Float_t diff = (tmax-time);
-        
-        if(GetReader()->IsInTimeWindow(time,amp)) clusterOKTimeE   += amp;
-        else                                      clusterLongTimeE += amp;
-        
-        if(GetReader()->IsPileUpFromSPD())
-        {
-          fhClusterTimeDiffPileUp[0]->Fill(ecluster, diff);
-          if(!matched)
-          {
-            fhClusterTimeDiffChargedPileUp[0]->Fill(ecluster, diff);
-            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[0]->Fill(ecluster, diff);
-          }
-        }
-        
-        if(GetReader()->IsPileUpFromEMCal())
-        {
-          fhClusterTimeDiffPileUp[1]->Fill(ecluster, diff);
-          if(!matched)
-          {
-            fhClusterTimeDiffChargedPileUp[1]->Fill(ecluster, diff);
-            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[1]->Fill(ecluster, diff);
-          }
-        }
-        
-        if(GetReader()->IsPileUpFromSPDOrEMCal())
-        {
-          fhClusterTimeDiffPileUp[2]->Fill(ecluster, diff);
-          if(!matched)
-          {
-            fhClusterTimeDiffChargedPileUp[2]->Fill(ecluster, diff);
-            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[2]->Fill(ecluster, diff);
-          }
-        }
-        
-        if(GetReader()->IsPileUpFromSPDAndEMCal())
-        {
-          fhClusterTimeDiffPileUp[3]->Fill(ecluster, diff);
-          if(!matched)
-          {
-            fhClusterTimeDiffChargedPileUp[3]->Fill(ecluster, diff);
-            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[3]->Fill(ecluster, diff);
-          }
-        }
-        
-        if(GetReader()->IsPileUpFromSPDAndNotEMCal())
-        {
-          fhClusterTimeDiffPileUp[4]->Fill(ecluster, diff);
-          if(!matched)
-          {
-            fhClusterTimeDiffChargedPileUp[4]->Fill(ecluster, diff);
-            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[4]->Fill(ecluster, diff);
-          }
-        }
-        
-        if(GetReader()->IsPileUpFromEMCalAndNotSPD())
-        {
-          fhClusterTimeDiffPileUp[5]->Fill(ecluster, diff);
-          if(!matched)
-          {
-            fhClusterTimeDiffChargedPileUp[5]->Fill(ecluster, diff);
-            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[5]->Fill(ecluster, diff);
-          }
-        }
-        
-        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
-        {
-          fhClusterTimeDiffPileUp[6]->Fill(ecluster, diff);
-          if(!matched)
-          {
-            fhClusterTimeDiffChargedPileUp[6]->Fill(ecluster, diff);
-            if(okPhoton)  fhClusterTimeDiffPhotonPileUp[6]->Fill(ecluster, diff);
-          }
-        }
-      }// Not max
-    }//loop
-    
-    Float_t frac = 0;
-    if(clusterLongTimeE+clusterOKTimeE > 0.001)
-      frac = clusterLongTimeE/(clusterLongTimeE+clusterOKTimeE);
-    //printf("E long %f, E OK %f, Fraction large time %f, E %f\n",clusterLongTimeE,clusterOKTimeE,frac,ecluster);
-    
-    if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[0]->Fill(ecluster,frac);}
-    if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[1]->Fill(ecluster,frac);}
-    if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[2]->Fill(ecluster,frac);}
-    if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[3]->Fill(ecluster,frac);}
-    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[4]->Fill(ecluster,frac);}
-    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[5]->Fill(ecluster,frac);}
-    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[6]->Fill(ecluster,frac);}
-    
-    if(tmax > -25 && tmax < 25) {fhEtaPhiBC0    ->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD    ->Fill(mom.Eta(),mom.Phi()); }
-    else if (tmax > 25)         {fhEtaPhiBCPlus ->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCPlusPileUpSPD ->Fill(mom.Eta(),mom.Phi()); }
-    else if (tmax <-25)         {fhEtaPhiBCMinus->Fill(mom.Eta(),mom.Phi()); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCMinusPileUpSPD->Fill(mom.Eta(),mom.Phi()); }
-  }
+  FillClusterPileUpHistograms(calo,matched,ecluster,ptcluster,etacluster,phicluster,l0cluster);
   
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
@@ -605,7 +347,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   
   if(fRejectTrackMatch)
   {
-    if(IsTrackMatched(calo,GetReader()->GetInputEvent()))
+    if(matched)
     {
       if(GetDebug() > 2) printf("\t Reject track-matched clusters\n");
       return kFALSE ;
@@ -956,7 +698,287 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   }	// read AOD MC
 }
 
-//___________________________________________________________________
+//__________________________________________________________________________________________________________________________
+void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, const Float_t ecluster, const Float_t tofcluster,
+                                                        const Float_t etacluster, const Float_t phicluster)
+
+{
+  // Fill trigger related histograms
+  
+  if(!fFillEMCALBCHistograms || fCalorimeter!="EMCAL") return ;
+  
+  Float_t tofclusterUS = TMath::Abs(tofcluster);
+  
+  if(ecluster > 2)
+  {
+    if      (tofclusterUS < 25) fhEtaPhiEMCALBC0->Fill(etacluster, phicluster);
+    else if (tofclusterUS < 75) fhEtaPhiEMCALBC1->Fill(etacluster, phicluster);
+    else                        fhEtaPhiEMCALBCN->Fill(etacluster, phicluster);
+  }
+  
+  Int_t  bc     = GetReader()->GetTriggerClusterBC();
+  Int_t  id     = GetReader()->GetTriggerClusterId();
+  Bool_t badMax = GetReader()->IsBadMaxCellTriggerEvent();
+  
+  if(id==-2)
+  {
+    //printf("AliAnaPhoton::ClusterSelected() - No trigger found bc=%d\n",bc);
+    fhEtaPhiNoTrigger->Fill(etacluster, phicluster);
+    fhTimeNoTrigger  ->Fill(ecluster, tofcluster);
+  }
+  else if(TMath::Abs(bc) < 6)
+  {
+    if(!GetReader()->IsBadCellTriggerEvent() && !GetReader()->IsExoticEvent() )
+    {
+      if(GetReader()->IsTriggerMatched())
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBC[bc+5]->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBC[bc+5]->Fill(ecluster, tofcluster);
+        if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[bc+5]->Fill(ecluster, tofcluster);
+        
+        if(idcalo ==  GetReader()->GetTriggerClusterId())
+        {
+          fhEtaPhiTriggerEMCALBCCluster[bc+5]->Fill(etacluster, phicluster);
+          fhTimeTriggerEMCALBCCluster[bc+5]  ->Fill(ecluster, tofcluster);
+          
+          if(bc==0)
+          {
+            Float_t threshold = GetReader()->GetEventTriggerThreshold() ;
+            if(ecluster > threshold)
+              fhEtaPhiTriggerEMCALBCClusterOverTh->Fill(etacluster, phicluster);
+            else if(ecluster > threshold-1)
+              fhEtaPhiTriggerEMCALBCClusterBelowTh1->Fill(etacluster, phicluster);
+            else
+              fhEtaPhiTriggerEMCALBCClusterBelowTh2->Fill(etacluster, phicluster);
+          }
+        }
+      }
+      else
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUM[bc+5]->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUM[bc+5]->Fill(ecluster, tofcluster);
+        
+        if(idcalo ==  GetReader()->GetTriggerClusterId())
+        {
+          fhEtaPhiTriggerEMCALBCUMCluster[bc+5]->Fill(etacluster, phicluster);
+          fhTimeTriggerEMCALBCUMCluster[bc+5]  ->Fill(ecluster, tofcluster);
+          if(bc==0)
+          {
+            Float_t threshold = GetReader()->GetEventTriggerThreshold() ;
+            if(ecluster > threshold)
+              fhEtaPhiTriggerEMCALBCUMClusterOverTh->Fill(etacluster, phicluster);
+            else if(ecluster > threshold-1)
+              fhEtaPhiTriggerEMCALBCUMClusterBelowTh1->Fill(etacluster, phicluster);
+            else
+              fhEtaPhiTriggerEMCALBCUMClusterBelowTh2->Fill(etacluster, phicluster);
+            
+            if(GetReader()->IsTriggerMatchedOpenCuts(0))
+            {
+              fhEtaPhiTriggerEMCALBCUMReMatchOpenTime->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchOpenTime  ->Fill(ecluster, tofcluster);
+            }
+            if(GetReader()->IsTriggerMatchedOpenCuts(1))
+            {
+              fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchCheckNeigh  ->Fill(ecluster, tofcluster);
+            }
+            if(GetReader()->IsTriggerMatchedOpenCuts(2))
+            {
+              fhEtaPhiTriggerEMCALBCUMReMatchBoth->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchBoth  ->Fill(ecluster, tofcluster);
+            }
+            
+          }
+        }
+      }
+    }// neither bad nor exotic
+    else if(GetReader()->IsBadCellTriggerEvent() && GetReader()->IsExoticEvent())
+    {
+      if(GetReader()->IsTriggerMatched())
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCBadExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCBadExotic->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCBadMaxCellExotic->Fill(ecluster, tofcluster);
+      }
+      else
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBadExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUMBadExotic->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCellExotic->Fill(ecluster, tofcluster);
+        
+      }
+    }// Bad and exotic cluster trigger
+    else if(GetReader()->IsBadCellTriggerEvent() )
+    {
+      if(GetReader()->IsTriggerMatched())
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCBad->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCBad->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCBadMaxCell->Fill(ecluster, tofcluster);
+      }
+      else
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMBad->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUMBad->Fill(ecluster, tofcluster);
+        if(badMax)  fhTimeTriggerEMCALBCUMBadMaxCell->Fill(ecluster, tofcluster);
+      }
+    }// Bad cluster trigger
+    else if(GetReader()->IsExoticEvent() )
+    {
+      if(GetReader()->IsTriggerMatched())
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCExotic->Fill(ecluster, tofcluster);
+      }
+      else
+      {
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUMExotic->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUMExotic->Fill(ecluster, tofcluster);
+      }
+    }
+  }
+  else if(TMath::Abs(bc) >= 6)
+    printf("AliAnaPhoton::ClusterSelected() - Trigger BC not expected = %d\n",bc);
+  
+}
+
+//______________________________________________________________________________________________
+void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const Bool_t matched,
+                                                const Float_t ecluster,   const Float_t ptcluster,
+                                                const Float_t etacluster, const Float_t phicluster,
+                                                const Float_t l0cluster)
+{
+  // Fill some histograms related to pile up before any cluster cut is applied
+  
+  if(!fFillPileUpHistograms) return ;
+  
+  // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
+  AliVCaloCells* cells = 0;
+  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+  else                        cells = GetPHOSCells();
+  
+  Float_t maxCellFraction = 0.;
+  Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
+  
+  Double_t tmax  = cells->GetCellTime(absIdMax);
+  GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+  tmax*=1.e9;
+  
+  Bool_t okPhoton = kFALSE;
+  if( GetCaloPID()->GetIdentifiedParticleType(calo)== AliCaloPID::kPhoton) okPhoton = kTRUE;
+  
+  Float_t clusterLongTimePt = 0;
+  Float_t clusterOKTimePt   = 0;
+  
+  //Loop on cells inside cluster
+  for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
+  {
+    Int_t absId  = calo->GetCellsAbsId()[ipos];
+    //if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
+    if(cells->GetCellAmplitude(absIdMax) > 0.1)
+    {
+      Double_t time  = cells->GetCellTime(absId);
+      Float_t  amp   = cells->GetCellAmplitude(absId);
+      Int_t    bc    = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+      GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,amp,time,cells);
+      time*=1e9;
+      
+      Float_t diff = (tmax-time);
+      
+      if(GetReader()->IsInTimeWindow(time,amp)) clusterOKTimePt   += amp;
+      else                                      clusterLongTimePt += amp;
+      
+      if(GetReader()->IsPileUpFromSPD())
+      {
+        fhClusterTimeDiffPileUp[0]->Fill(ecluster, diff);
+        if(!matched)
+        {
+          fhClusterTimeDiffChargedPileUp[0]->Fill(ecluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[0]->Fill(ecluster, diff);
+        }
+      }
+      
+      if(GetReader()->IsPileUpFromEMCal())
+      {
+        fhClusterTimeDiffPileUp[1]->Fill(ecluster, diff);
+        if(!matched)
+        {
+          fhClusterTimeDiffChargedPileUp[1]->Fill(ecluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[1]->Fill(ecluster, diff);
+        }
+      }
+      
+      if(GetReader()->IsPileUpFromSPDOrEMCal())
+      {
+        fhClusterTimeDiffPileUp[2]->Fill(ecluster, diff);
+        if(!matched)
+        {
+          fhClusterTimeDiffChargedPileUp[2]->Fill(ecluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[2]->Fill(ecluster, diff);
+        }
+      }
+      
+      if(GetReader()->IsPileUpFromSPDAndEMCal())
+      {
+        fhClusterTimeDiffPileUp[3]->Fill(ecluster, diff);
+        if(!matched)
+        {
+          fhClusterTimeDiffChargedPileUp[3]->Fill(ecluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[3]->Fill(ecluster, diff);
+        }
+      }
+      
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())
+      {
+        fhClusterTimeDiffPileUp[4]->Fill(ecluster, diff);
+        if(!matched)
+        {
+          fhClusterTimeDiffChargedPileUp[4]->Fill(ecluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[4]->Fill(ecluster, diff);
+        }
+      }
+      
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())
+      {
+        fhClusterTimeDiffPileUp[5]->Fill(ecluster, diff);
+        if(!matched)
+        {
+          fhClusterTimeDiffChargedPileUp[5]->Fill(ecluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[5]->Fill(ecluster, diff);
+        }
+      }
+      
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
+      {
+        fhClusterTimeDiffPileUp[6]->Fill(ecluster, diff);
+        if(!matched)
+        {
+          fhClusterTimeDiffChargedPileUp[6]->Fill(ecluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[6]->Fill(ecluster, diff);
+        }
+      }
+    }// Not max
+  }//loop
+  
+  Float_t frac = 0;
+  if(clusterLongTimePt+clusterOKTimePt > 0.001)
+    frac = clusterLongTimePt/(clusterLongTimePt+clusterOKTimePt);
+  //printf("E long %f, E OK %f, Fraction large time %f, E %f\n",clusterLongTimePt,clusterOKTimePt,frac,ecluster);
+  
+  if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[0]->Fill(ecluster,frac);}
+  if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[1]->Fill(ecluster,frac);}
+  if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[2]->Fill(ecluster,frac);}
+  if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[3]->Fill(ecluster,frac);}
+  if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[4]->Fill(ecluster,frac);}
+  if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[5]->Fill(ecluster,frac);}
+  if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[6]->Fill(ecluster,frac);}
+  
+  if(tmax > -25 && tmax < 25) {fhEtaPhiBC0    ->Fill(etacluster,phicluster); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD    ->Fill(etacluster,phicluster); }
+  else if (tmax > 25)         {fhEtaPhiBCPlus ->Fill(etacluster,phicluster); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCPlusPileUpSPD ->Fill(etacluster,phicluster); }
+  else if (tmax <-25)         {fhEtaPhiBCMinus->Fill(etacluster,phicluster); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCMinusPileUpSPD->Fill(etacluster,phicluster); }
+}
+
+//_______________________________________________
 void AliAnaPhoton::FillPileUpHistogramsPerEvent()
 {
   // Fill some histograms per event to understand pile-up
@@ -1013,7 +1035,7 @@ void AliAnaPhoton::FillPileUpHistogramsPerEvent()
 		if(!clus->IsEMCAL()) continue;
 		
 		Float_t tof = clus->GetTOF()*1e9;
-		if(clus->E() > eMax && TMath::Abs(tof) < 25)
+		if(clus->E() > eMax && TMath::Abs(tof) < 30)
     {
       eMax  = clus->E();
 			tMax  = tof;
@@ -1026,18 +1048,21 @@ void AliAnaPhoton::FillPileUpHistogramsPerEvent()
 		fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);
 		fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
     
-		if(TMath::Abs(tof) < 25)
+		if(TMath::Abs(tof) < 30)
 		{
 			fhPtNPileUpSPDVtxTimeCut->Fill(pt,nVtxSPD);
 			fhPtNPileUpTrkVtxTimeCut->Fill(pt,nVtxTrk);
 		}
     
-    if(tof < 75 && tof > -25)
+    if(tof < 75 && tof > -30)
     {
       fhPtNPileUpSPDVtxTimeCut2->Fill(pt,nVtxSPD);
       fhPtNPileUpTrkVtxTimeCut2->Fill(pt,nVtxTrk);
     }
     
+    fhTimePtNoCut->Fill(pt,tof);
+    if(GetReader()->IsPileUpFromSPD()) fhTimePtSPD->Fill(pt,tof);
+
   }
 	
   if(eMax < 5) return;
@@ -1106,9 +1131,8 @@ void AliAnaPhoton::FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time
   if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPhotonPileUp[5]->Fill(pt);
   if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPhotonPileUp[6]->Fill(pt);
   
-  fhTimeENoCut->Fill(energy,time);
-  if(GetReader()->IsPileUpFromSPD())     fhTimeESPD     ->Fill(energy,time);
-  if(event->IsPileupFromSPDInMultBins()) fhTimeESPDMulti->Fill(energy,time);
+  fhTimePtPhotonNoCut->Fill(pt,time);
+  if(GetReader()->IsPileUpFromSPD()) fhTimePtPhotonSPD->Fill(pt,time);
   
   if(energy < 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
   
@@ -1373,7 +1397,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
         TLorentzVector momentum; TVector3 prodVertex;
         Int_t ancLabel = 0;
         Int_t noverlaps = 1;
-        for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
+        for (UInt_t ilab = 1; ilab < cluster->GetNLabels(); ilab++ )
         {
           ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab],
                                                                GetReader(),ancPDG,ancStatus,momentum,prodVertex);
@@ -1531,12 +1555,32 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
   }
   
+  AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
+  
+  Bool_t positive = kFALSE;
+  if(track) positive = (track->Charge()>0);
+  
   if(fhTrackMatchedDEta[cut] && TMath::Abs(dR) < 999)
   {
     fhTrackMatchedDEta[cut]->Fill(cluster->E(),dZ);
     fhTrackMatchedDPhi[cut]->Fill(cluster->E(),dR);
-    
     if(cluster->E() > 0.5) fhTrackMatchedDEtaDPhi[cut]->Fill(dZ,dR);
+
+    if(track)
+    {
+      if(positive)
+      {
+        fhTrackMatchedDEtaPos[cut]->Fill(cluster->E(),dZ);
+        fhTrackMatchedDPhiPos[cut]->Fill(cluster->E(),dR);
+        if(cluster->E() > 0.5) fhTrackMatchedDEtaDPhiPos[cut]->Fill(dZ,dR);
+      }
+      else
+      {
+        fhTrackMatchedDEtaNeg[cut]->Fill(cluster->E(),dZ);
+        fhTrackMatchedDPhiNeg[cut]->Fill(cluster->E(),dR);
+        if(cluster->E() > 0.5) fhTrackMatchedDEtaDPhiNeg[cut]->Fill(dZ,dR);
+      }
+    }
     
     Int_t nSMod = GetModuleNumber(cluster);
     
@@ -1547,15 +1591,11 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     }
     
     // Check dEdx and E/p of matched clusters
-    
+
     if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
     {
-      
-      AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
-      
       if(track)
       {
-        
         Float_t dEdx   = track->GetTPCsignal();
         Float_t eOverp = cluster->E()/track->P();
         
@@ -1715,10 +1755,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhCellsE->SetYTitle("E_{cell} (GeV)");
   outputContainer->Add(fhCellsE);
   
-  fhTimeE  = new TH2F ("hTimeE","time of cluster vs E of clusters", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-  fhTimeE->SetXTitle("E (GeV)");
-  fhTimeE->SetYTitle("time (ns)");
-  outputContainer->Add(fhTimeE);
+  fhTimePt  = new TH2F ("hTimePt","time of cluster vs pT of clusters", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+  fhTimePt->SetXTitle("p_{T} (GeV/c)");
+  fhTimePt->SetYTitle("time (ns)");
+  outputContainer->Add(fhTimePt);
   
   fhMaxCellDiffClusterE  = new TH2F ("hMaxCellDiffClusterE","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
                                      nptbins,ptmin,ptmax, 500,0,1.);
@@ -2512,271 +2552,193 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if(fFillTMHisto)
   {
-    fhTrackMatchedDEta[0]  = new TH2F
-    ("hTrackMatchedDEtaNoCut",
-     "d#eta of cluster-track vs cluster energy, no photon cuts",
-     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-    fhTrackMatchedDEta[0]->SetYTitle("d#eta");
-    fhTrackMatchedDEta[0]->SetXTitle("E_{cluster} (GeV)");
+    TString cutTM [] = {"NoCut",""};
     
-    fhTrackMatchedDPhi[0]  = new TH2F
-    ("hTrackMatchedDPhiNoCut",
-     "d#phi of cluster-track vs cluster energy, no photon cuts",
-     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDPhi[0]->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDPhi[0]->SetXTitle("E_{cluster} (GeV)");
-    
-    fhTrackMatchedDEtaDPhi[0]  = new TH2F
-    ("hTrackMatchedDEtaDPhiNoCut",
-     "d#eta vs d#phi of cluster-track vs cluster energy, no photon cuts",
-     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDEtaDPhi[0]->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDEtaDPhi[0]->SetXTitle("d#eta");
-    
-    fhdEdx[0]  = new TH2F ("hdEdxNoCut","matched track <dE/dx> vs cluster E, no photon cuts ",
-                           nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
-    fhdEdx[0]->SetXTitle("E (GeV)");
-    fhdEdx[0]->SetYTitle("<dE/dx>");
-    
-    fhEOverP[0]  = new TH2F ("hEOverPNoCut","matched track E/p vs cluster E, no photon cuts ",
-                             nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-    fhEOverP[0]->SetXTitle("E (GeV)");
-    fhEOverP[0]->SetYTitle("E/p");
-    
-    outputContainer->Add(fhTrackMatchedDEta[0]) ;
-    outputContainer->Add(fhTrackMatchedDPhi[0]) ;
-    outputContainer->Add(fhTrackMatchedDEtaDPhi[0]) ;
-    outputContainer->Add(fhdEdx[0]);
-    outputContainer->Add(fhEOverP[0]);
-    
-    fhTrackMatchedDEta[1]  = new TH2F
-    ("hTrackMatchedDEta",
-     "d#eta of cluster-track vs cluster energy, no photon cuts",
-     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-    fhTrackMatchedDEta[1]->SetYTitle("d#eta");
-    fhTrackMatchedDEta[1]->SetXTitle("E_{cluster} (GeV)");
-    
-    fhTrackMatchedDPhi[1]  = new TH2F
-    ("hTrackMatchedDPhi",
-     "d#phi of cluster-track vs cluster energy, no photon cuts",
-     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDPhi[1]->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDPhi[1]->SetXTitle("E_{cluster} (GeV)");
-    
-    fhTrackMatchedDEtaDPhi[1]  = new TH2F
-    ("hTrackMatchedDEtaDPhi",
-     "d#eta vs d#phi of cluster-track vs cluster energy, no photon cuts",
-     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDEtaDPhi[1]->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDEtaDPhi[1]->SetXTitle("d#eta");
-    
-    fhdEdx[1]  = new TH2F ("hdEdx","matched track <dE/dx> vs cluster E ",
-                           nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
-    fhdEdx[1]->SetXTitle("E (GeV)");
-    fhdEdx[1]->SetYTitle("<dE/dx>");
-    
-    fhEOverP[1]  = new TH2F ("hEOverP","matched track E/p vs cluster E ",
-                             nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-    fhEOverP[1]->SetXTitle("E (GeV)");
-    fhEOverP[1]->SetYTitle("E/p");
-    
-    outputContainer->Add(fhTrackMatchedDEta[1]) ;
-    outputContainer->Add(fhTrackMatchedDPhi[1]) ;
-    outputContainer->Add(fhTrackMatchedDEtaDPhi[1]) ;
-    outputContainer->Add(fhdEdx[1]);
-    outputContainer->Add(fhEOverP[1]);
-    
-    if(fCalorimeter=="EMCAL")
+    for(Int_t i = 0; i < 2; i++)
     {
-      fhTrackMatchedDEtaTRD[0]  = new TH2F
-      ("hTrackMatchedDEtaTRDNoCut",
-       "d#eta of cluster-track vs cluster energy, SM behind TRD, no photon cuts",
+      fhTrackMatchedDEta[i]  = new TH2F
+      (Form("hTrackMatchedDEta%s",cutTM[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaTRD[0]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaTRD[0]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEta[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEta[i]->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiTRD[0]  = new TH2F
-      ("hTrackMatchedDPhiTRDNoCut",
-       "d#phi of cluster-track vs cluster energy, SM behing TRD, no photon cuts",
+      fhTrackMatchedDPhi[i]  = new TH2F
+      (Form("hTrackMatchedDPhi%s",cutTM[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiTRD[0]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiTRD[0]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhi[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhi[i]->SetXTitle("E_{cluster} (GeV)");
       
-      fhEOverPTRD[0]  = new TH2F ("hEOverPTRDNoCut","matched track E/p vs cluster E, behind TRD, no photon cuts ",
-                                  nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-      fhEOverPTRD[0]->SetXTitle("E (GeV)");
-      fhEOverPTRD[0]->SetYTitle("E/p");
+      fhTrackMatchedDEtaDPhi[i]  = new TH2F
+      (Form("hTrackMatchedDEtaDPhi%s",cutTM[i].Data()),
+       Form("d#eta vs d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
+       nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDEtaDPhi[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDEtaDPhi[i]->SetXTitle("d#eta");
       
-      outputContainer->Add(fhTrackMatchedDEtaTRD[0]) ;
-      outputContainer->Add(fhTrackMatchedDPhiTRD[0]) ;
-      outputContainer->Add(fhEOverPTRD[0]);
-      
-      fhTrackMatchedDEtaTRD[1]  = new TH2F
-      ("hTrackMatchedDEtaTRD",
-       "d#eta of cluster-track vs cluster energy, SM behind TRD",
+      fhTrackMatchedDEtaPos[i]  = new TH2F
+      (Form("hTrackMatchedDEtaPos%s",cutTM[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaTRD[1]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaTRD[1]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaPos[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaPos[i]->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiTRD[1]  = new TH2F
-      ("hTrackMatchedDPhiTRD",
-       "d#phi of cluster-track vs cluster energy, SM behing TRD",
+      fhTrackMatchedDPhiPos[i]  = new TH2F
+      (Form("hTrackMatchedDPhiPos%s",cutTM[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiTRD[1]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiTRD[1]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhiPos[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiPos[i]->SetXTitle("E_{cluster} (GeV)");
       
-      fhEOverPTRD[1]  = new TH2F ("hEOverPTRD","matched track E/p vs cluster E, behind TRD ",
-                                  nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-      fhEOverPTRD[1]->SetXTitle("E (GeV)");
-      fhEOverPTRD[1]->SetYTitle("E/p");
+      fhTrackMatchedDEtaDPhiPos[i]  = new TH2F
+      (Form("hTrackMatchedDEtaDPhiPos%s",cutTM[i].Data()),
+       Form("d#eta vs d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
+       nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDEtaDPhiPos[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDEtaDPhiPos[i]->SetXTitle("d#eta");
       
-      outputContainer->Add(fhTrackMatchedDEtaTRD[1]) ;
-      outputContainer->Add(fhTrackMatchedDPhiTRD[1]) ;
-      outputContainer->Add(fhEOverPTRD[1]);
-      
-    }
-    
-    if(IsDataMC())
-    {
-      fhTrackMatchedDEtaMCNoOverlap[0]  = new TH2F
-      ("hTrackMatchedDEtaMCNoOverlapNoCut",
-       "d#eta of cluster-track vs cluster energy, no other MC particles overlap",
+      fhTrackMatchedDEtaNeg[i]  = new TH2F
+      (Form("hTrackMatchedDEtaNeg%s",cutTM[i].Data()),
+       Form("d#eta of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaMCNoOverlap[0]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCNoOverlap[0]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaNeg[i]->SetYTitle("d#eta");
+      fhTrackMatchedDEtaNeg[i]->SetXTitle("E_{cluster} (GeV)");
       
-      fhTrackMatchedDPhiMCNoOverlap[0]  = new TH2F
-      ("hTrackMatchedDPhiMCNoOverlapNoCut",
-       "d#phi of cluster-track vs cluster energy, no other MC particles overlap",
+      fhTrackMatchedDPhiNeg[i]  = new TH2F
+      (Form("hTrackMatchedDPhiNeg%s",cutTM[i].Data()),
+       Form("d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiMCNoOverlap[0]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCNoOverlap[0]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhiNeg[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhiNeg[i]->SetXTitle("E_{cluster} (GeV)");
       
-      outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap[0]) ;
-      outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap[0]) ;
+      fhTrackMatchedDEtaDPhiNeg[i]  = new TH2F
+      (Form("hTrackMatchedDEtaDPhiNeg%s",cutTM[i].Data()),
+       Form("d#eta vs d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
+       nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
+      fhTrackMatchedDEtaDPhiNeg[i]->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDEtaDPhiNeg[i]->SetXTitle("d#eta");
       
-      fhTrackMatchedDEtaMCNoOverlap[1]  = new TH2F
-      ("hTrackMatchedDEtaMCNoOverlap",
-       "d#eta of cluster-track vs cluster energy, no other MC particles overlap",
-       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaMCNoOverlap[1]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCNoOverlap[1]->SetXTitle("E_{cluster} (GeV)");
+      fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <dE/dx> vs cluster E, %s",cutTM[i].Data()),
+                             nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
+      fhdEdx[i]->SetXTitle("E (GeV)");
+      fhdEdx[i]->SetYTitle("<dE/dx>");
       
-      fhTrackMatchedDPhiMCNoOverlap[1]  = new TH2F
-      ("hTrackMatchedDPhiMCNoOverlap",
-       "d#phi of cluster-track vs cluster energy, no other MC particles overlap",
-       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiMCNoOverlap[1]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCNoOverlap[1]->SetXTitle("E_{cluster} (GeV)");
+      fhEOverP[i]  = new TH2F (Form("hEOverP%s",cutTM[i].Data()),Form("matched track E/p vs cluster E, %s",cutTM[i].Data()),
+                               nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+      fhEOverP[i]->SetXTitle("E (GeV)");
+      fhEOverP[i]->SetYTitle("E/p");
       
-      outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap[1]) ;
-      outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap[1]) ;
+      outputContainer->Add(fhTrackMatchedDEta[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhi[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaDPhi[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaPos[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiPos[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaDPhiPos[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaNeg[i]) ;
+      outputContainer->Add(fhTrackMatchedDPhiNeg[i]) ;
+      outputContainer->Add(fhTrackMatchedDEtaDPhiNeg[i]) ;
+      outputContainer->Add(fhdEdx[i]);
+      outputContainer->Add(fhEOverP[i]);
       
-      fhTrackMatchedDEtaMCOverlap[0]  = new TH2F
-      ("hTrackMatchedDEtaMCOverlapNoCut",
-       "d#eta of cluster-track vs cluster energy, several MC particles overlap",
-       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaMCOverlap[0]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCOverlap[0]->SetXTitle("E_{cluster} (GeV)");
+      if(fCalorimeter=="EMCAL")
+      {
+        fhTrackMatchedDEtaTRD[i]  = new TH2F
+        (Form("hTrackMatchedDEtaTRD%s",cutTM[i].Data()),
+         Form("d#eta of cluster-track vs cluster energy, SM behind TRD, %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+        fhTrackMatchedDEtaTRD[i]->SetYTitle("d#eta");
+        fhTrackMatchedDEtaTRD[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        fhTrackMatchedDPhiTRD[i]  = new TH2F
+        (Form("hTrackMatchedDPhiTRD%s",cutTM[i].Data()),
+         Form("d#phi of cluster-track vs cluster energy, SM behing TRD, %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+        fhTrackMatchedDPhiTRD[i]->SetYTitle("d#phi (rad)");
+        fhTrackMatchedDPhiTRD[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        fhEOverPTRD[i]  = new TH2F
+        (Form("hEOverPTRD%s",cutTM[i].Data()),
+         Form("matched track E/p vs cluster E, behind TRD, %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+        fhEOverPTRD[i]->SetXTitle("E (GeV)");
+        fhEOverPTRD[i]->SetYTitle("E/p");
+        
+        outputContainer->Add(fhTrackMatchedDEtaTRD[i]) ;
+        outputContainer->Add(fhTrackMatchedDPhiTRD[i]) ;
+        outputContainer->Add(fhEOverPTRD[i]);
+      }
       
-      fhTrackMatchedDPhiMCOverlap[0]  = new TH2F
-      ("hTrackMatchedDPhiMCOverlapNoCut",
-       "d#phi of cluster-track vs cluster energy, several MC particles overlap",
-       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiMCOverlap[0]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCOverlap[0]->SetXTitle("E_{cluster} (GeV)");
-      
-      outputContainer->Add(fhTrackMatchedDEtaMCOverlap[0]) ;
-      outputContainer->Add(fhTrackMatchedDPhiMCOverlap[0]) ;
-      
-      fhTrackMatchedDEtaMCOverlap[1]  = new TH2F
-      ("hTrackMatchedDEtaMCOverlap",
-       "d#eta of cluster-track vs cluster energy, several MC particles overlap",
-       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaMCOverlap[1]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCOverlap[1]->SetXTitle("E_{cluster} (GeV)");
-      
-      fhTrackMatchedDPhiMCOverlap[1]  = new TH2F
-      ("hTrackMatchedDPhiMCOverlap",
-       "d#phi of cluster-track vs cluster energy, several MC particles overlap",
-       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiMCOverlap[1]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCOverlap[1]->SetXTitle("E_{cluster} (GeV)");
-      
-      outputContainer->Add(fhTrackMatchedDEtaMCOverlap[1]) ;
-      outputContainer->Add(fhTrackMatchedDPhiMCOverlap[1]) ;
-      
-      fhTrackMatchedDEtaMCConversion[0]  = new TH2F
-      ("hTrackMatchedDEtaMCConversionNoCut",
-       "d#eta of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
-       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaMCConversion[0]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCConversion[0]->SetXTitle("E_{cluster} (GeV)");
-      
-      fhTrackMatchedDPhiMCConversion[0]  = new TH2F
-      ("hTrackMatchedDPhiMCConversionNoCut",
-       "d#phi of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
-       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiMCConversion[0]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCConversion[0]->SetXTitle("E_{cluster} (GeV)");
-      
-      outputContainer->Add(fhTrackMatchedDEtaMCConversion[0]) ;
-      outputContainer->Add(fhTrackMatchedDPhiMCConversion[0]) ;
-      
-      
-      fhTrackMatchedDEtaMCConversion[1]  = new TH2F
-      ("hTrackMatchedDEtaMCConversion",
-       "d#eta of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
-       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-      fhTrackMatchedDEtaMCConversion[1]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaMCConversion[1]->SetXTitle("E_{cluster} (GeV)");
-      
-      fhTrackMatchedDPhiMCConversion[1]  = new TH2F
-      ("hTrackMatchedDPhiMCConversion",
-       "d#phi of cluster-track vs cluster energy, no other MC particles overlap appart from conversions",
-       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-      fhTrackMatchedDPhiMCConversion[1]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiMCConversion[1]->SetXTitle("E_{cluster} (GeV)");
-      
-      outputContainer->Add(fhTrackMatchedDEtaMCConversion[1]) ;
-      outputContainer->Add(fhTrackMatchedDPhiMCConversion[1]) ;
-      
-      
-      fhTrackMatchedMCParticle[0]  = new TH2F
-      ("hTrackMatchedMCParticleNoCut",
-       "Origin of particle vs energy",
-       nptbins,ptmin,ptmax,8,0,8);
-      fhTrackMatchedMCParticle[0]->SetXTitle("E (GeV)");
-      //fhTrackMatchedMCParticle[0]->SetYTitle("Particle type");
-      
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(1 ,"Photon");
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(2 ,"Electron");
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(4 ,"Rest");
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
-      fhTrackMatchedMCParticle[0]->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
-      
-      fhTrackMatchedMCParticle[1]  = new TH2F
-      ("hTrackMatchedMCParticle",
-       "Origin of particle vs energy",
-       nptbins,ptmin,ptmax,8,0,8);
-      fhTrackMatchedMCParticle[1]->SetXTitle("E (GeV)");
-      //fhTrackMatchedMCParticle[1]->SetYTitle("Particle type");
-      
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(1 ,"Photon");
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(2 ,"Electron");
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(4 ,"Rest");
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
-      fhTrackMatchedMCParticle[1]->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
-      
-      outputContainer->Add(fhTrackMatchedMCParticle[0]);
-      outputContainer->Add(fhTrackMatchedMCParticle[1]);
-      
+      if(IsDataMC())
+      {
+        fhTrackMatchedDEtaMCNoOverlap[i]  = new TH2F
+        (Form("hTrackMatchedDEtaMCNoOverlap%s",cutTM[i].Data()),
+         Form("d#eta of cluster-track vs cluster energy, no other MC particles overlap %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+        fhTrackMatchedDEtaMCNoOverlap[i]->SetYTitle("d#eta");
+        fhTrackMatchedDEtaMCNoOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        fhTrackMatchedDPhiMCNoOverlap[i]  = new TH2F
+        (Form("hTrackMatchedDPhiMCNoOverlap%s",cutTM[i].Data()),
+         Form("d#phi of cluster-track vs cluster energy, no other MC particles overlap %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+        fhTrackMatchedDPhiMCNoOverlap[i]->SetYTitle("d#phi (rad)");
+        fhTrackMatchedDPhiMCNoOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap[i]) ;
+        outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap[i]) ;
+        fhTrackMatchedDEtaMCOverlap[i]  = new TH2F
+        (Form("hTrackMatchedDEtaMCOverlap%s",cutTM[i].Data()),
+         Form("d#eta of cluster-track vs cluster energy, several MC particles overlap %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+        fhTrackMatchedDEtaMCOverlap[i]->SetYTitle("d#eta");
+        fhTrackMatchedDEtaMCOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        fhTrackMatchedDPhiMCOverlap[i]  = new TH2F
+        (Form("hTrackMatchedDPhiMCOverlap%s",cutTM[i].Data()),
+         Form("d#phi of cluster-track vs cluster energy, several MC particles overlap %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+        fhTrackMatchedDPhiMCOverlap[i]->SetYTitle("d#phi (rad)");
+        fhTrackMatchedDPhiMCOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        outputContainer->Add(fhTrackMatchedDEtaMCOverlap[i]) ;
+        outputContainer->Add(fhTrackMatchedDPhiMCOverlap[i]) ;
+        
+        fhTrackMatchedDEtaMCConversion[i]  = new TH2F
+        (Form("hTrackMatchedDEtaMCConversion%s",cutTM[i].Data()),
+         Form("d#eta of cluster-track vs cluster energy, no other MC particles overlap appart from conversions %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+        fhTrackMatchedDEtaMCConversion[i]->SetYTitle("d#eta");
+        fhTrackMatchedDEtaMCConversion[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        fhTrackMatchedDPhiMCConversion[i]  = new TH2F
+        (Form("hTrackMatchedDPhiMCConversion%s",cutTM[i].Data()),
+         Form("d#phi of cluster-track vs cluster energy, no other MC particles overlap appart from conversions %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+        fhTrackMatchedDPhiMCConversion[i]->SetYTitle("d#phi (rad)");
+        fhTrackMatchedDPhiMCConversion[i]->SetXTitle("E_{cluster} (GeV)");
+        
+        outputContainer->Add(fhTrackMatchedDEtaMCConversion[i]) ;
+        outputContainer->Add(fhTrackMatchedDPhiMCConversion[i]) ;
+        
+        fhTrackMatchedMCParticle[i]  = new TH2F
+        (Form("hTrackMatchedMCParticle%s",cutTM[i].Data()),
+         Form("Origin of particle vs energy %s",cutTM[i].Data()),
+         nptbins,ptmin,ptmax,8,0,8);
+        fhTrackMatchedMCParticle[i]->SetXTitle("E (GeV)");
+        //fhTrackMatchedMCParticle[i]->SetYTitle("Particle type");
+        
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(1 ,"Photon");
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(2 ,"Electron");
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(4 ,"Rest");
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+        fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+        
+        outputContainer->Add(fhTrackMatchedMCParticle[i]);
+      }
     }
   }
   
@@ -2876,21 +2838,26 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhiBCMinusPileUpSPD->SetYTitle("#phi (rad)");
     outputContainer->Add(fhEtaPhiBCMinusPileUpSPD);
     
-    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeENoCut->SetXTitle("E (GeV)");
-    fhTimeENoCut->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeENoCut);
+    fhTimePtNoCut  = new TH2F ("hTimePt_NoCut","time of cluster vs pT of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePtNoCut->SetXTitle("p_{T} (GeV/c)");
+    fhTimePtNoCut->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePtNoCut);
     
-    fhTimeESPD  = new TH2F ("hTimeE_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeESPD->SetXTitle("E (GeV)");
-    fhTimeESPD->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeESPD);
+    fhTimePtSPD  = new TH2F ("hTimePt_SPD","time of cluster vs pT of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePtSPD->SetXTitle("p_{T} (GeV/c)");
+    fhTimePtSPD->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePtSPD);
     
-    fhTimeESPDMulti  = new TH2F ("hTimeE_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeESPDMulti->SetXTitle("E (GeV)");
-    fhTimeESPDMulti->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeESPDMulti);
+    fhTimePtPhotonNoCut  = new TH2F ("hTimePtPhoton_NoCut","time of photon cluster vs pT of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePtPhotonNoCut->SetXTitle("p_{T} (GeV/c)");
+    fhTimePtPhotonNoCut->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePtPhotonNoCut);
     
+    fhTimePtPhotonSPD  = new TH2F ("hTimePtPhoton_SPD","time of  photon cluster vs pT of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePtPhotonSPD->SetXTitle("p_{T} (GeV/c)");
+    fhTimePtPhotonSPD->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePtPhotonSPD);
+        
     fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,20,0,20);
     fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
     fhTimeNPileUpVertSPD->SetXTitle("time (ns)");
@@ -3829,9 +3796,9 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
       
       // Control histograms
-      fhMaxCellDiffClusterE->Fill(ph->E(),maxCellFraction);
-      fhNCellsE            ->Fill(ph->E(),cluster->GetNCells());
-      fhTimeE              ->Fill(ph->E(),cluster->GetTOF()*1.e9);
+      fhMaxCellDiffClusterE->Fill(ph->E() ,maxCellFraction);
+      fhNCellsE            ->Fill(ph->E() ,cluster->GetNCells());
+      fhTimePt             ->Fill(ph->Pt(),cluster->GetTOF()*1.e9);
       if(cells)
       {
         for(Int_t icell = 0; icell <  cluster->GetNCells(); icell++)
