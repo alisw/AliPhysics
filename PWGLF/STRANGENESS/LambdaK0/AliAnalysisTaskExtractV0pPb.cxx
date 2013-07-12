@@ -100,6 +100,7 @@ AliAnalysisTaskExtractV0pPb::AliAnalysisTaskExtractV0pPb()
 	fTreeVariableDcaV0ToPrimVertex(0),
 	fTreeVariableDcaPosToPrimVertex(0),
 	fTreeVariableDcaNegToPrimVertex(0),
+  fTreeVariableDCAV0ToPrimVertex(0),
 	fTreeVariableV0CosineOfPointingAngle(0),
 	fTreeVariableV0Radius(0),
 	fTreeVariablePt(0),
@@ -153,6 +154,7 @@ AliAnalysisTaskExtractV0pPb::AliAnalysisTaskExtractV0pPb(const char *name)
 	fTreeVariableDcaV0ToPrimVertex(0),
 	fTreeVariableDcaPosToPrimVertex(0),
 	fTreeVariableDcaNegToPrimVertex(0),
+  fTreeVariableDCAV0ToPrimVertex(0),
 	fTreeVariableV0CosineOfPointingAngle(0),
 	fTreeVariableV0Radius(0),
 	fTreeVariablePt(0),
@@ -247,6 +249,7 @@ void AliAnalysisTaskExtractV0pPb::UserCreateOutputObjects()
 /* 9*/	fTree->Branch("fTreeVariableInvMassK0s",&fTreeVariableInvMassK0s,"fTreeVariableInvMassK0s/F");
 /*10*/	fTree->Branch("fTreeVariableInvMassLambda",&fTreeVariableInvMassLambda,"fTreeVariableInvMassLambda/F");
 /*11*/	fTree->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
+/*12*/	fTree->Branch("fTreeVariableDCAV0ToPrimVertex",&fTreeVariableDCAV0ToPrimVertex,"fTreeVariableDCAV0ToPrimVertex/F");
 /*12*/	fTree->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F");
 /*13*/	fTree->Branch("fTreeVariableAlphaV0",&fTreeVariableAlphaV0,"fTreeVariableAlphaV0/F");
 /*14*/	fTree->Branch("fTreeVariablePtArmV0",&fTreeVariablePtArmV0,"fTreeVariablePtArmV0/F");
@@ -588,6 +591,7 @@ void AliAnalysisTaskExtractV0pPb::UserExec(Option_t *)
       lDcaV0Daughters = v0->GetDcaV0Daughters();
       lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
       lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
+      fTreeVariableDCAV0ToPrimVertex=lV0CosineOfPointingAngle;
       fTreeVariableV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
 
       // Getting invariant mass infos directly from ESD
