@@ -529,8 +529,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
     }
   }
   
-  Int_t pdg1 = -1;
-  Int_t pdg2 = -1;
+//   Int_t pdg1 = -1;
+//   Int_t pdg2 = -1;
 
 
   // start analysis K0s
@@ -569,7 +569,7 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
     if(mcArray){
       Int_t labelK = TMath::Abs(KpTrack->GetLabel());
       AliAODMCParticle *mcp1 = (AliAODMCParticle*)mcArray->At(labelK);
-      pdg1 = TMath::Abs(mcp1->GetPdgCode());
+//       pdg1 = TMath::Abs(mcp1->GetPdgCode());
     }
 
     fPidKp = Int_t(probP[2]*100);
@@ -677,7 +677,7 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
       if(mcArray){
 	Int_t labelK = TMath::Abs(KnTrack->GetLabel());
 	AliAODMCParticle *mcp2 = (AliAODMCParticle*)mcArray->At(labelK);
-	pdg2 = TMath::Abs(mcp2->GetPdgCode());
+// 	pdg2 = TMath::Abs(mcp2->GetPdgCode());
      }
 
       fPidKn = Int_t(probN[2]*100);
