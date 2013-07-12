@@ -127,6 +127,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
 	fTreeVariableDcaV0ToPrimVertex(0),
 	fTreeVariableDcaPosToPrimVertex(0),
 	fTreeVariableDcaNegToPrimVertex(0),
+  fTreeVariableDCAV0ToPrimVertex(0),
 	fTreeVariableV0CosineOfPointingAngle(0),
 	fTreeVariableV0Radius(0),
 	fTreeVariablePt(0),
@@ -490,6 +491,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
 	fTreeVariableDcaV0ToPrimVertex(0),
 	fTreeVariableDcaPosToPrimVertex(0),
 	fTreeVariableDcaNegToPrimVertex(0),
+  fTreeVariableDCAV0ToPrimVertex(0),
 	fTreeVariableV0CosineOfPointingAngle(0),
 	fTreeVariableV0Radius(0),
 	fTreeVariablePt(0),
@@ -905,7 +907,9 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 /*24*/   fTree->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative,"fTreeVariablePIDNegative/I");
 /*25*/   fTree->Branch("fTreeVariablePIDMother",&fTreeVariablePIDMother,"fTreeVariablePIDMother/I");
 /*26*/   fTree->Branch("fTreeVariablePtXiMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
-/*27*/   fTree->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F");
+/*27*/   fTree->Branch("fTreeVariableDCAV0ToPrimVertex",&fTreeVariableDCAV0ToPrimVertex,"fTreeVariableDCAV0ToPrimVertex/F"); //  fTreeVariableDCAV0ToPrimVertex(0),
+/*27*/   fTree->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F"); //  fTreeVariableDCAV0ToPrimVertex(0),
+
 //-----------MULTIPLICITY-INFO--------------------
 /*28*/   fTree->Branch("fTreeVariableMultiplicity",&fTreeVariableMultiplicity,"fTreeVariableMultiplicity/I");
 /*28*/   fTree->Branch("fTreeVariableMultiplicityMC",&fTreeVariableMultiplicityMC,"fTreeVariableMultiplicityMC/I");
@@ -2912,6 +2916,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       lDcaV0Daughters = v0->GetDcaV0Daughters();
       lDcaV0ToPrimVertex = v0->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
       lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
+      fTreeVariableDCAV0ToPrimVertex = lDcaV0ToPrimVertex;
       fTreeVariableV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
 
       // Getting invariant mass infos directly from ESD
