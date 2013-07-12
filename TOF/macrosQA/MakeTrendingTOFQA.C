@@ -1,5 +1,7 @@
 /*
-fbellini@cern.ch, last update on 09/01/2012
+fbellini@cern.ch, last update on 12/07/2013
+- added average multi vs. run number trending plot
+Previous history - january 2012:
 - added flag for displaying reduced n. of trending plots
 - now producing tree run by run
 - new method to produce trending plots from list of trees
@@ -113,12 +115,13 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	Double_t avT0C=0.,peakT0C=0., spreadT0C=0.,peakT0CErr=0., spreadT0CErr=0.;
 	Double_t avT0AC=0.,peakT0AC=0., spreadT0AC=0.,peakT0ACErr=0., spreadT0ACErr=0.;
 	Double_t avT0res=0.,peakT0res=0., spreadT0res=0.,peakT0resErr=0., spreadT0resErr=0.;
-	Int_t avMulti=0;
+	Float_t avMulti=0;
 	Float_t fractionEventsWHits=0.0;
 	Double_t goodChannelRatio=0.0;
    
 	TTree * ttree = (TTree*) fin->CloneTree();
 	ttree->SetBranchAddress("run",&runNumber);
+	ttree->SetBranchAddress("avMulti",&avMulti);
 	ttree->SetBranchAddress("goodChannelsRatio",&goodChannelRatio);   
 	ttree->SetBranchAddress("avTime",&avTime); //mean time
 	ttree->SetBranchAddress("peakTime",&peakTime); //main peak time after fit
@@ -184,6 +187,11 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	Int_t nRuns=ttree->GetEntries();
 	TList lista;
    
+	TH1F * hAvMulti=new TH1F("hAvMulti","Average multiplicity of matched tracks <N_{TOF}>;; <N_{TOF}>", nRuns,0., nRuns);//, 600, 0. , 600.);
+	hAvMulti->SetDrawOption("E1");
+	hAvMulti->SetMarkerStyle(20);
+	hAvMulti->SetMarkerColor(kBlue);
+	
 	TH1F * hAvDiffTimeVsRun=new TH1F("hAvDiffTimeVsRun","Mean t-t_{exp} (no fit);run;<t^{TOF}-t_{exp,#pi}> (ps)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hAvDiffTimeVsRun->SetDrawOption("E1");
 	hAvDiffTimeVsRun->SetMarkerStyle(20);
@@ -266,7 +274,7 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","t0_fill spread;;t0_spread (ps)",nRuns,0., nRuns);
 	
 	
-
+	lista.Add(hAvMulti);
 	lista.Add(hAvDiffTimeVsRun);
 	lista.Add(hPeakDiffTimeVsRun);
 	lista.Add(hSpreadDiffTimeVsRun);
@@ -296,6 +304,9 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
     
 		sprintf(runlabel,"%i",runNumber);
     
+		hAvMulti->SetBinContent(irun+1, avMulti);
+		hAvMulti->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
 		hAvDiffTimeVsRun->SetBinContent(irun+1, avDiffTime);
 		hAvDiffTimeVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
@@ -381,7 +392,6 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 
 		hT0fillResVsRun->SetBinContent(irun+1,avT0fillRes);
 		hT0fillResVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
-
 	}
   
 	char  outfilename[200];
@@ -390,15 +400,15 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	fout->cd();
 	lista.Write();
 	fout->Close();
-
+	
 	TString plotDir(Form("PlotsTrending"));
 	gSystem->Exec(Form("mkdir %s",plotDir.Data()));
-
+	
 	TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,750,550);
 	hPeakDiffTimeVsRun->GetYaxis()->SetRangeUser(-50.,50.);
 	hPeakDiffTimeVsRun->Draw();
 	cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.png",plotDir.Data()));
-
+	
 	TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,750,550);
 	hSpreadDiffTimeVsRun->GetYaxis()->SetRangeUser(200.,400.);
 	hSpreadDiffTimeVsRun->Draw();
@@ -518,14 +528,14 @@ Int_t MakePostQAtree(Int_t runNumber, Bool_t isMC=kFALSE, char * postFileName="p
 	Double_t avT0res=-9999.,peakT0res=-9999., spreadT0res=-9999.,peakT0resErr=-9999., spreadT0resErr=-9999.;
 	Double_t avT0fillRes=-9999.;
 
-	Int_t avMulti=0;
+	Float_t avMulti=0;
 	Float_t fractionEventsWHits=-9999.;
 	/*number of good (HW ok && efficient && !noisy) TOF channels from OCDB*/
 	Double_t goodChannelRatio=0.0;
 
 	TTree * ttree=new TTree("trendTree","tree of trending variables");
 	ttree->Branch("run",&runNumber,"run/I");
-	ttree->Branch("avMulti",&avMulti,"avMulti/I");
+	ttree->Branch("avMulti",&avMulti,"avMulti/F");
 	ttree->Branch("fractionEventsWHits",&fractionEventsWHits,"fractionEventsWHits/F");
 	ttree->Branch("goodChannelsRatio",&goodChannelRatio,"goodChannelRatio/D");
 	ttree->Branch("avTime",&avTime,"avTime/D"); //mean time
