@@ -49,6 +49,8 @@ fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
+fFillDataControlHisto(kTRUE),
+// Control histograms
 fhNEvents(0),                 fhNExoticEvents(0),
 fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
@@ -94,6 +96,7 @@ fOutputContainer(new TList()), fAnalysisContainer(new TList()),
 fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
+fFillDataControlHisto(maker.fFillDataControlHisto),
 fhNEvents(maker.fhNEvents),
 fhNExoticEvents(maker.fhNExoticEvents),
 fhNEventsNoTriggerFound(maker.fhNEventsNoTriggerFound),
@@ -210,7 +213,7 @@ TList * AliAnaCaloTrackCorrMaker::FillAndGetAODBranchList()
   
 }
 
-//_________________________________________________________
+//____________________________________________________
 void AliAnaCaloTrackCorrMaker::FillControlHistograms()
 {
   // Event control histograms
@@ -221,103 +224,199 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   
   fhNEvents        ->Fill(0); // Number of events analyzed
   
-  if( fReader->IsPileUpFromSPD())
-    fhNPileUpEvents->Fill(0.5);
-  //if( event->IsPileupFromSPDInMultBins())
-  //  fhNPileUpEvents->Fill(1.5);
-  if( fReader->IsPileUpFromEMCal())
-    fhNPileUpEvents->Fill(2.5);
-  if( fReader->IsPileUpFromSPDOrEMCal() )
-    fhNPileUpEvents->Fill(3.5);
-  if( fReader->IsPileUpFromSPDAndEMCal() )
-    fhNPileUpEvents->Fill(4.5);
-  if( fReader->IsPileUpFromSPDAndNotEMCal() )
-    fhNPileUpEvents->Fill(5.5);
-  if( fReader->IsPileUpFromEMCalAndNotSPD() )
-    fhNPileUpEvents->Fill(6.5);
-  if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
-    fhNPileUpEvents->Fill(7.5);
-  
-  Int_t triggerBC = fReader->GetTriggerClusterBC() ;
-  if( triggerBC == 0            &&
-     !fReader->IsExoticEvent()  &&
-     !fReader->IsBadCellTriggerEvent())
-  {
-    if( fReader->IsPileUpFromSPD())
-      fhNPileUpEventsTriggerBC0->Fill(0.5);
-    //if( event->IsPileupFromSPDInMultBins())
-    //  fhNPileUpEventsTriggerBC0->Fill(1.5);
-    if( fReader->IsPileUpFromEMCal())
-      fhNPileUpEventsTriggerBC0->Fill(2.5);
-    if( fReader->IsPileUpFromSPDOrEMCal() )
-      fhNPileUpEventsTriggerBC0->Fill(3.5);
-    if( fReader->IsPileUpFromSPDAndEMCal() )
-      fhNPileUpEventsTriggerBC0->Fill(4.5);
-    if( fReader->IsPileUpFromSPDAndNotEMCal() )
-      fhNPileUpEventsTriggerBC0->Fill(5.5);
-    if( fReader->IsPileUpFromEMCalAndNotSPD() )
-      fhNPileUpEventsTriggerBC0->Fill(6.5);
-    if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
-      fhNPileUpEventsTriggerBC0->Fill(7.5);
-  }
-  
-  if(fReader->IsPileUpFromSPD())
-    fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
-  
-  fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
-  fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
-  fhCentrality        ->Fill(fReader->GetEventCentrality  ());
-  fhEventPlaneAngle   ->Fill(fReader->GetEventPlaneAngle  ());
-  
-  for(Int_t i = 0; i < 19; i++)
-  {
-    if(fReader->GetTrackEventBC(i))   fhTrackBCEvent   ->Fill(i);
-    if(fReader->GetTrackEventBCcut(i))fhTrackBCEventCut->Fill(i);
-    if(fReader->GetEMCalEventBC(i))   fhEMCalBCEvent   ->Fill(i);
-    if(fReader->GetEMCalEventBCcut(i))fhEMCalBCEventCut->Fill(i);
-  }
-  
   Double_t v[3];
   event->GetPrimaryVertex()->GetXYZ(v) ;
   fhXVertex->Fill(v[0]);
   fhYVertex->Fill(v[1]);
   fhZVertex->Fill(v[2]);
   
-  Int_t bc = fReader->GetVertexBC();
-  if(bc!=AliVTrack::kTOFBCNA)fhPrimaryVertexBC->Fill(bc);
+  fhTrackMult         ->Fill(fReader->GetTrackMultiplicity());
+  fhCentrality        ->Fill(fReader->GetEventCentrality  ());
+  fhEventPlaneAngle   ->Fill(fReader->GetEventPlaneAngle  ());
   
-  
-  // N pile up vertices
-  Int_t nVerticesSPD    = -1;
-  Int_t nVerticesTracks = -1;
-  
-  if      (esdevent)
+  if(fFillDataControlHisto)
   {
-    nVerticesSPD    = esdevent->GetNumberOfPileupVerticesSPD();
-    nVerticesTracks = esdevent->GetNumberOfPileupVerticesTracks();
+    if( fReader->IsPileUpFromSPD())
+      fhNPileUpEvents->Fill(0.5);
+    //if( event->IsPileupFromSPDInMultBins())
+    //  fhNPileUpEvents->Fill(1.5);
+    if( fReader->IsPileUpFromEMCal())
+      fhNPileUpEvents->Fill(2.5);
+    if( fReader->IsPileUpFromSPDOrEMCal() )
+      fhNPileUpEvents->Fill(3.5);
+    if( fReader->IsPileUpFromSPDAndEMCal() )
+      fhNPileUpEvents->Fill(4.5);
+    if( fReader->IsPileUpFromSPDAndNotEMCal() )
+      fhNPileUpEvents->Fill(5.5);
+    if( fReader->IsPileUpFromEMCalAndNotSPD() )
+      fhNPileUpEvents->Fill(6.5);
+    if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
+      fhNPileUpEvents->Fill(7.5);
     
-  }//ESD
-  else if (aodevent)
-  {
-    nVerticesSPD    = aodevent->GetNumberOfPileupVerticesSPD();
-    nVerticesTracks = aodevent->GetNumberOfPileupVerticesTracks();
-  }//AOD
-  
-  fhNPileUpVertSPD   ->Fill(nVerticesSPD);
-  fhNPileUpVertTracks->Fill(nVerticesTracks);
-  
-  // Time stamp
-  if(fReader->IsSelectEventTimeStampOn() && esdevent)
-  {
-    Int_t timeStamp = esdevent->GetTimeStamp();
-    Float_t timeStampFrac = 1.*(timeStamp-fReader->GetRunTimeStampMin()) /
-    (fReader->GetRunTimeStampMax()-fReader->GetRunTimeStampMin());
+    Int_t triggerBC = fReader->GetTriggerClusterBC() ;
+    if( triggerBC == 0            &&
+       !fReader->IsExoticEvent()  &&
+       !fReader->IsBadCellTriggerEvent())
+    {
+      if( fReader->IsPileUpFromSPD())
+        fhNPileUpEventsTriggerBC0->Fill(0.5);
+      //if( event->IsPileupFromSPDInMultBins())
+      //  fhNPileUpEventsTriggerBC0->Fill(1.5);
+      if( fReader->IsPileUpFromEMCal())
+        fhNPileUpEventsTriggerBC0->Fill(2.5);
+      if( fReader->IsPileUpFromSPDOrEMCal() )
+        fhNPileUpEventsTriggerBC0->Fill(3.5);
+      if( fReader->IsPileUpFromSPDAndEMCal() )
+        fhNPileUpEventsTriggerBC0->Fill(4.5);
+      if( fReader->IsPileUpFromSPDAndNotEMCal() )
+        fhNPileUpEventsTriggerBC0->Fill(5.5);
+      if( fReader->IsPileUpFromEMCalAndNotSPD() )
+        fhNPileUpEventsTriggerBC0->Fill(6.5);
+      if( fReader->IsPileUpFromNotSPDAndNotEMCal() )
+        fhNPileUpEventsTriggerBC0->Fill(7.5);
+    }
     
-    //printf("stamp %d, min %d, max %d, frac %f\n", timeStamp, fReader->GetRunTimeStampMin(), fReader->GetRunTimeStampMax(), timeStampFrac);
+    if(fReader->IsPileUpFromSPD())
+      fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
     
-    fhTimeStampFraction->Fill(timeStampFrac);
+    fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
+    
+    for(Int_t i = 0; i < 19; i++)
+    {
+      if(fReader->GetTrackEventBC(i))   fhTrackBCEvent   ->Fill(i);
+      if(fReader->GetTrackEventBCcut(i))fhTrackBCEventCut->Fill(i);
+      if(fReader->GetEMCalEventBC(i))   fhEMCalBCEvent   ->Fill(i);
+      if(fReader->GetEMCalEventBCcut(i))fhEMCalBCEventCut->Fill(i);
+    }
+    
+    Int_t bc = fReader->GetVertexBC();
+    if(bc!=AliVTrack::kTOFBCNA)fhPrimaryVertexBC->Fill(bc);
+    
+    
+    // N pile up vertices
+    Int_t nVerticesSPD    = -1;
+    Int_t nVerticesTracks = -1;
+    
+    if      (esdevent)
+    {
+      nVerticesSPD    = esdevent->GetNumberOfPileupVerticesSPD();
+      nVerticesTracks = esdevent->GetNumberOfPileupVerticesTracks();
+      
+    }//ESD
+    else if (aodevent)
+    {
+      nVerticesSPD    = aodevent->GetNumberOfPileupVerticesSPD();
+      nVerticesTracks = aodevent->GetNumberOfPileupVerticesTracks();
+    }//AOD
+    
+    fhNPileUpVertSPD   ->Fill(nVerticesSPD);
+    fhNPileUpVertTracks->Fill(nVerticesTracks);
+    
+    // Time stamp
+    if(fReader->IsSelectEventTimeStampOn() && esdevent)
+    {
+      Int_t timeStamp = esdevent->GetTimeStamp();
+      Float_t timeStampFrac = 1.*(timeStamp-fReader->GetRunTimeStampMin()) /
+      (fReader->GetRunTimeStampMax()-fReader->GetRunTimeStampMin());
+      
+      //printf("stamp %d, min %d, max %d, frac %f\n", timeStamp, fReader->GetRunTimeStampMin(), fReader->GetRunTimeStampMax(), timeStampFrac);
+      
+      fhTimeStampFraction->Fill(timeStampFrac);
+    }
   }
 }
+
+//___________________________________________________________
+void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
+{
+  if(!fFillDataControlHisto) return;
+  
+  Int_t  triggerBC   = fReader->GetTriggerClusterBC() ;
+  Bool_t exotic      = fReader->IsExoticEvent();
+  Bool_t badCluster  = fReader->IsBadCellTriggerEvent();
+  Bool_t badCell     = fReader->IsBadMaxCellTriggerEvent();
+  Bool_t triggerMatch= fReader->IsTriggerMatched();
+  Bool_t triggerBCOK = kTRUE;
+  Int_t  triggerId   = fReader->GetTriggerClusterId() ;
+  Bool_t reMatchOpenTime = fReader->IsTriggerMatchedOpenCuts(0);
+  Bool_t reMatchNeigbour = fReader->IsTriggerMatchedOpenCuts(1);
+  Bool_t reMatchBoth     = fReader->IsTriggerMatchedOpenCuts(2);
+  
+  if(triggerId < 0)
+  {
+    //printf("Trigger id %d\n",triggerId);
+    if(triggerId == -2)fhNEventsNoTriggerFound->Fill(0);
+    triggerBCOK = kFALSE;
+  }
+  
+  if(exotic)
+  {
+    fhNExoticEvents->Fill(0) ;
+    Double_t v[3];
+    fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
+    fhXVertexExotic->Fill(v[0]);
+    fhYVertexExotic->Fill(v[1]);
+    fhZVertexExotic->Fill(v[2]);
+  }
+  //if(fReader->IsExoticEvent()) printf("Maker: EXOTIC Cluster trigger\n");
+  
+  if(!triggerBCOK) return;
+  
+  Int_t eventBC = fReader->GetInputEvent()->GetBunchCrossNumber();
+  if(eventBC%4 < 0 || eventBC%4 > 3 )
+    printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - STRANGE: Trigger BC %d - Event BC %d, modulo4 %d \n",triggerBC,eventBC,eventBC%4);
+  
+  if(triggerMatch)
+  {
+    if     (!exotic     && !badCluster) fhClusterTriggerBC->Fill(triggerBC);
+    else if( exotic     &&  badCluster)
+    {
+      fhClusterTriggerBCBadClusterExotic->Fill(triggerBC);
+      if(badCell) fhClusterTriggerBCBadCellExotic->Fill(triggerBC);
+    }
+    else if( exotic     && !badCluster) fhClusterTriggerBCExotic->Fill(triggerBC);
+    else if( badCluster && !exotic    )
+    {
+      fhClusterTriggerBCBadCluster ->Fill(triggerBC);
+      if(badCell) fhClusterTriggerBCBadCell->Fill(triggerBC);
+    }
+    
+    if(!exotic) fhClusterTriggerBCEventBC      ->Fill(triggerBC,eventBC%4);
+    else        fhClusterTriggerBCExoticEventBC->Fill(triggerBC,eventBC%4);
+  }
+  else
+  {
+    if     (!exotic     && !badCluster)
+    {
+      fhClusterTriggerBCUnMatch->Fill(triggerBC);
+      if(reMatchOpenTime) fhClusterTriggerBCUnMatchReMatch[0]->Fill(triggerBC);
+      if(reMatchNeigbour) fhClusterTriggerBCUnMatchReMatch[1]->Fill(triggerBC);
+      if(reMatchBoth)     fhClusterTriggerBCUnMatchReMatch[2]->Fill(triggerBC);
+    }
+    else if( exotic     &&  badCluster)
+    {
+      fhClusterTriggerBCBadClusterExoticUnMatch->Fill(triggerBC);
+      if(badCell)   fhClusterTriggerBCBadCellExoticUnMatch   ->Fill(triggerBC);
+    }
+    else if( exotic     && !badCluster)
+    {
+      fhClusterTriggerBCExoticUnMatch->Fill(triggerBC);
+      if(reMatchOpenTime) fhClusterTriggerBCExoticUnMatchReMatch[0]->Fill(triggerBC);
+      if(reMatchNeigbour) fhClusterTriggerBCExoticUnMatchReMatch[1]->Fill(triggerBC);
+      if(reMatchBoth)     fhClusterTriggerBCExoticUnMatchReMatch[2]->Fill(triggerBC);
+    }
+    else if( badCluster && !exotic )
+    {
+      fhClusterTriggerBCBadClusterUnMatch->Fill(triggerBC);
+      if(badCell)fhClusterTriggerBCBadCellUnMatch->Fill(triggerBC);
+    }
+    
+    if(!exotic) fhClusterTriggerBCEventBCUnMatch      ->Fill(triggerBC,eventBC%4);
+    else        fhClusterTriggerBCExoticEventBCUnMatch->Fill(triggerBC,eventBC%4);
+  }
+  
+}
+
 
 //_______________________________________________________
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
@@ -353,244 +452,6 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
   
-  fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
-  fhNExoticEvents->SetYTitle("# exotic events");
-  fOutputContainer->Add(fhNExoticEvents);
-  
-  fhNEventsNoTriggerFound      = new TH1F("hNEventsNoTriggerFound",   "Number of analyzed events triggered but no trigger found"     , 1 , 0 , 1  ) ;
-  fhNEventsNoTriggerFound->SetYTitle("# exotic events");
-  fOutputContainer->Add(fhNEventsNoTriggerFound);
-  
-  
-  Int_t   nbin   = 11;
-  Float_t minbin =-5.5;
-  Float_t maxbin = 5.5;
-  Int_t  labelshift = 6;
-  
-  fhClusterTriggerBCEventBC      = new TH2F("hClusterTriggerBCEventBC", "Found trigger BC and  Event BC",
-                                            nbin , minbin ,maxbin,4,0, 4) ;
-  fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
-  for(Int_t i = 0; i < 4; i++)
-    fhClusterTriggerBCEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-  fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fhClusterTriggerBCEventBC->SetYTitle("Event BC%4");
-  fOutputContainer->Add(fhClusterTriggerBCEventBC);
-  
-  fhClusterTriggerBCExoticEventBC      = new TH2F("hClusterTriggerBCExoticEventBC", "Found exotic trigger BC and  Event BC",
-                                                  nbin , minbin ,maxbin,4,1, 4) ;
-  for(Int_t i = 0; i < 4; i++)
-    fhClusterTriggerBCExoticEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-  fhClusterTriggerBCExoticEventBC->SetXTitle("cluster trigger BC");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCExoticEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fhClusterTriggerBCExoticEventBC->SetYTitle("Event BC%4");
-  fOutputContainer->Add(fhClusterTriggerBCExoticEventBC);
-  
-  fhClusterTriggerBCEventBCUnMatch      = new TH2F("hClusterTriggerBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
-                                                   nbin , minbin ,maxbin,4,1, 4) ;
-  for(Int_t i = 0; i < 4; i++)
-    fhClusterTriggerBCEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-  fhClusterTriggerBCEventBCUnMatch->SetXTitle("cluster trigger BC");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fhClusterTriggerBCEventBCUnMatch->SetYTitle("Event BC%4");
-  fOutputContainer->Add(fhClusterTriggerBCEventBCUnMatch);
-  
-  fhClusterTriggerBCExoticEventBCUnMatch      = new TH2F("hClusterTriggerExoticBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
-                                                         nbin , minbin ,maxbin,4,1, 4) ;
-  for(Int_t i = 0; i < 4; i++)
-    fhClusterTriggerBCExoticEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
-  fhClusterTriggerBCExoticEventBCUnMatch->SetXTitle("cluster trigger BC");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCExoticEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fhClusterTriggerBCExoticEventBCUnMatch->SetYTitle("Event BC%4");
-  fOutputContainer->Add(fhClusterTriggerBCExoticEventBCUnMatch);
-  
-  fhClusterTriggerBC              = new TH1F("hClusterTriggerBC",
-                                             "Number of analyzed events triggered by a cluster in a given BC",
-                                             nbin , minbin ,maxbin) ;
-  fhClusterTriggerBC->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBC);
-  
-  fhClusterTriggerBCExotic        = new TH1F("hClusterTriggerBCExotic",
-                                             "Number of analyzed events triggered by a exotic cluster in a given BC",
-                                             nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCExotic->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCExotic);
-  
-  
-  fhClusterTriggerBCBadCell         = new TH1F("hClusterTriggerBCBadCell",
-                                               "Number of analyzed events triggered by a bad cell in a given BC",
-                                               nbin , minbin ,maxbin) ;
-  
-  fhClusterTriggerBCBadCell->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadCell->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadCell);
-  
-  fhClusterTriggerBCBadCellExotic    = new TH1F("hClusterTriggerBCBadCellExotic",
-                                                "Number of analyzed events triggered by a bad cell & exotic cluster in a given BC",
-                                                nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCBadCellExotic->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadCellExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadCellExotic);
-  
-  fhClusterTriggerBCBadCluster           = new TH1F("hClusterTriggerBCBadCluster",
-                                                    "Number of analyzed events triggered by a bad cluster in a given BC",
-                                                    nbin , minbin ,maxbin) ;
-  
-  fhClusterTriggerBCBadCluster->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadCluster->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadCluster);
-  
-  
-  fhClusterTriggerBCBadClusterExotic    = new TH1F("hClusterTriggerBCBadClusterExotic",
-                                                   "Number of analyzed events triggered by a bad cluster & exotic cluster in a given BC",
-                                                   nbin , minbin ,maxbin) ;
-  
-  fhClusterTriggerBCBadClusterExotic->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadClusterExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadClusterExotic);
-  
-  fhClusterTriggerBCUnMatch       = new TH1F("hClusterTriggerBCUnMatch",
-                                             "Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC",
-                                             nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCUnMatch->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCUnMatch);
-  
-  fhClusterTriggerBCExoticUnMatch = new TH1F("hClusterTriggerBCExoticUnMatch",
-                                             "Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC",
-                                             nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCExoticUnMatch->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCExoticUnMatch);
-  
-  
-  fhClusterTriggerBCBadCellUnMatch    = new TH1F("hClusterTriggerBCBadCellUnMatch",
-                                                 "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
-                                                 nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCBadCellUnMatch->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadCellUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadCellUnMatch);
-  
-  
-  fhClusterTriggerBCBadCellExoticUnMatch = new TH1F("hClusterTriggerBCBadCellExoticUnMatch",
-                                                    "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
-                                                    nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCBadCellExoticUnMatch->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadCellExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadCellExoticUnMatch);
-  
-  
-  fhClusterTriggerBCBadClusterUnMatch    = new TH1F("hClusterTriggerBCBadClusterUnMatch",
-                                                    "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
-                                                    nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCBadClusterUnMatch->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadClusterUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadClusterUnMatch);
-  
-  
-  fhClusterTriggerBCBadClusterExoticUnMatch = new TH1F("hClusterTriggerBCBadClusterExoticUnMatch",
-                                                       "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
-                                                       nbin , minbin ,maxbin) ;
-  fhClusterTriggerBCBadClusterExoticUnMatch->SetYTitle("# events");
-  for(Int_t i = 1; i < 12; i++)
-    fhClusterTriggerBCBadClusterExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-  fOutputContainer->Add(fhClusterTriggerBCBadClusterExoticUnMatch);
-  
-  TString rematch[] = {"OpenTime","CheckNeighbours","Both"};
-  for(Int_t j = 0; j < 3; j++)
-  {
-    fhClusterTriggerBCUnMatchReMatch[j]       = new TH1F(Form("hClusterTriggerBCUnMatch_ReMatch_%s",rematch[j].Data()),
-                                                         Form("Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
-                                                         nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCUnMatchReMatch[j]->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCUnMatchReMatch[j]);
-    
-    fhClusterTriggerBCExoticUnMatchReMatch[j] = new TH1F(Form("hClusterTriggerBCExoticUnMatch_ReMatch_%s",rematch[j].Data()),
-                                                         Form("Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
-                                                         nbin , minbin ,maxbin) ;
-    fhClusterTriggerBCExoticUnMatchReMatch[j]->SetYTitle("# events");
-    for(Int_t i = 1; i < 12; i++)
-      fhClusterTriggerBCExoticUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
-    fOutputContainer->Add(fhClusterTriggerBCExoticUnMatchReMatch[j]);
-  }
-  
-  fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
-  fhNPileUpEvents->SetYTitle("# events");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(1 ,"SPD");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(3 ,"EMCal");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(4 ,"EMCal || SPD");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(5 ,"EMCal && SPD");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(6 ,"!EMCal && SPD");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
-  fhNPileUpEvents->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
-  fOutputContainer->Add(fhNPileUpEvents);
-  
-  fhNPileUpEventsTriggerBC0      = new TH1F("hNPileUpEventsTriggerBC0","Number of events considered as pile-up, trigger cluster in BC=0", 8 , 0 , 8 ) ;
-  fhNPileUpEventsTriggerBC0->SetYTitle("# events");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(1 ,"SPD");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(3 ,"EMCal");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(4 ,"EMCal || SPD");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(5 ,"EMCal && SPD");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(6 ,"!EMCal && SPD");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
-  fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
-  fOutputContainer->Add(fhNPileUpEventsTriggerBC0);
-  
-  
-  fhTrackBCEvent      = new TH1F("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
-  fhTrackBCEvent->SetYTitle("# events");
-  fhTrackBCEvent->SetXTitle("Bunch crossing");
-  for(Int_t i = 1; i < 20; i++)
-    fhTrackBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
-  fOutputContainer->Add(fhTrackBCEvent);
-  
-  fhTrackBCEventCut      = new TH1F("hTrackBCEventCut",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
-  fhTrackBCEventCut->SetYTitle("# events");
-  fhTrackBCEventCut->SetXTitle("Bunch crossing");
-  for(Int_t i = 1; i < 20; i++)
-    fhTrackBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
-  fOutputContainer->Add(fhTrackBCEventCut);
-  
-  fhPrimaryVertexBC      = new TH1F("hPrimaryVertexBC", "Number of primary vertex per bunch crossing ", 41 , -20 , 20  ) ;
-  fhPrimaryVertexBC->SetYTitle("# events");
-  fhPrimaryVertexBC->SetXTitle("Bunch crossing");
-  fOutputContainer->Add(fhPrimaryVertexBC);
-  
-  fhEMCalBCEvent      = new TH1F("hEMCalBCEvent",   "Number of events with at least 1 cluster in a bunch crossing ", 19 , 0 , 19 ) ;
-  fhEMCalBCEvent->SetYTitle("# events");
-  fhEMCalBCEvent->SetXTitle("Bunch crossing");
-  for(Int_t i = 1; i < 20; i++)
-    fhEMCalBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
-  fOutputContainer->Add(fhEMCalBCEvent);
-  
-  fhEMCalBCEventCut      = new TH1F("hEMCalBCEventCut",   "Number of events with at least 1 cluster in a bunch crossing", 19 , 0 , 19 ) ;
-  fhEMCalBCEventCut->SetYTitle("# events");
-  fhEMCalBCEventCut->SetXTitle("Bunch crossing");
-  for(Int_t i = 1; i < 20; i++)
-    fhEMCalBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
-  fOutputContainer->Add(fhEMCalBCEventCut);
-  
   fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -4 , 4  ) ;
   fhXVertex->SetXTitle("v_{x} (cm)");
   fOutputContainer->Add(fhXVertex);
@@ -602,39 +463,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhZVertex      = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
-  
-  fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
-  fhXVertexExotic->SetXTitle("v_{x} (cm)");
-  fOutputContainer->Add(fhXVertexExotic);
-  
-  fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
-  fhYVertexExotic->SetXTitle("v_{y} (cm)");
-  fOutputContainer->Add(fhYVertexExotic);
-  
-  fhZVertexExotic      = new TH1F("hZVertexExotic", " Z vertex distribution in exotic events"   , 200 , -50 , 50  ) ;
-  fhZVertexExotic->SetXTitle("v_{z} (cm)");
-  fOutputContainer->Add(fhZVertexExotic);
-  
-  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
-  fhTrackMult->SetXTitle("# tracks");
-  fOutputContainer->Add(fhTrackMult);
-  
-  fhPileUpClusterMult    = new TH1F("hPileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100  ) ;
-  fhPileUpClusterMult->SetXTitle("# clusters");
-  fOutputContainer->Add(fhPileUpClusterMult);
-  
-  fhPileUpClusterMultAndSPDPileUp = new TH1F("hPileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 ) ;
-  fhPileUpClusterMultAndSPDPileUp->SetXTitle("# clusters");
-  fOutputContainer->Add(fhPileUpClusterMultAndSPDPileUp);
-  
-  fhNPileUpVertSPD  = new TH1F ("hNPileUpVertSPD","N pile-up SPD vertex", 50,0,50);
-  fhNPileUpVertSPD->SetYTitle("# vertex ");
-  fOutputContainer->Add(fhNPileUpVertSPD);
-  
-  fhNPileUpVertTracks  = new TH1F ("hNPileUpVertTracks","N pile-up Tracks vertex", 50,0,50);
-  fhNPileUpVertTracks->SetYTitle("# vertex ");
-  fOutputContainer->Add(fhNPileUpVertTracks);
-  
+
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin",100,0.,100) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;
@@ -642,12 +471,285 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhEventPlaneAngle=new TH1F("hEventPlaneAngle","Number of events in event plane",100,0.,TMath::Pi()) ;
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
-  
-  if(fReader->IsSelectEventTimeStampOn())
+
+  fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events"   , 2000 , 0 , 2000  ) ;
+  fhTrackMult->SetXTitle("# tracks");
+  fOutputContainer->Add(fhTrackMult);
+
+  if(fFillDataControlHisto)
   {
-    fhTimeStampFraction = new TH1F("hTimeStampFraction","Fraction of events within a given time stamp range",150, -1, 2) ;
-    fhTimeStampFraction->SetXTitle("fraction");
-    fOutputContainer->Add(fhTimeStampFraction) ;
+    fhNExoticEvents      = new TH1F("hNExoticEvents",   "Number of analyzed events triggered by exotic cluster"     , 1 , 0 , 1  ) ;
+    fhNExoticEvents->SetYTitle("# exotic events");
+    fOutputContainer->Add(fhNExoticEvents);
+    
+    fhNEventsNoTriggerFound      = new TH1F("hNEventsNoTriggerFound",   "Number of analyzed events triggered but no trigger found"     , 1 , 0 , 1  ) ;
+    fhNEventsNoTriggerFound->SetYTitle("# exotic events");
+    fOutputContainer->Add(fhNEventsNoTriggerFound);
+    
+    
+    Int_t   nbin   = 11;
+    Float_t minbin =-5.5;
+    Float_t maxbin = 5.5;
+    Int_t  labelshift = 6;
+    
+    fhClusterTriggerBCEventBC      = new TH2F("hClusterTriggerBCEventBC", "Found trigger BC and  Event BC",
+                                              nbin , minbin ,maxbin,4,0, 4) ;
+    fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
+    for(Int_t i = 0; i < 4; i++)
+      fhClusterTriggerBCEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+    fhClusterTriggerBCEventBC->SetXTitle("cluster trigger BC");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fhClusterTriggerBCEventBC->SetYTitle("Event BC%4");
+    fOutputContainer->Add(fhClusterTriggerBCEventBC);
+    
+    fhClusterTriggerBCExoticEventBC      = new TH2F("hClusterTriggerBCExoticEventBC", "Found exotic trigger BC and  Event BC",
+                                                    nbin , minbin ,maxbin,4,1, 4) ;
+    for(Int_t i = 0; i < 4; i++)
+      fhClusterTriggerBCExoticEventBC->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+    fhClusterTriggerBCExoticEventBC->SetXTitle("cluster trigger BC");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCExoticEventBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fhClusterTriggerBCExoticEventBC->SetYTitle("Event BC%4");
+    fOutputContainer->Add(fhClusterTriggerBCExoticEventBC);
+    
+    fhClusterTriggerBCEventBCUnMatch      = new TH2F("hClusterTriggerBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
+                                                     nbin , minbin ,maxbin,4,1, 4) ;
+    for(Int_t i = 0; i < 4; i++)
+      fhClusterTriggerBCEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+    fhClusterTriggerBCEventBCUnMatch->SetXTitle("cluster trigger BC");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fhClusterTriggerBCEventBCUnMatch->SetYTitle("Event BC%4");
+    fOutputContainer->Add(fhClusterTriggerBCEventBCUnMatch);
+    
+    fhClusterTriggerBCExoticEventBCUnMatch      = new TH2F("hClusterTriggerExoticBCEventBCUnMatch", "Found unmatched trigger BC and  Event BC",
+                                                           nbin , minbin ,maxbin,4,1, 4) ;
+    for(Int_t i = 0; i < 4; i++)
+      fhClusterTriggerBCExoticEventBCUnMatch->GetYaxis()->SetBinLabel(i+1 ,Form("BC/4=%d",i));
+    fhClusterTriggerBCExoticEventBCUnMatch->SetXTitle("cluster trigger BC");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCExoticEventBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fhClusterTriggerBCExoticEventBCUnMatch->SetYTitle("Event BC%4");
+    fOutputContainer->Add(fhClusterTriggerBCExoticEventBCUnMatch);
+    
+    fhClusterTriggerBC              = new TH1F("hClusterTriggerBC",
+                                               "Number of analyzed events triggered by a cluster in a given BC",
+                                               nbin , minbin ,maxbin) ;
+    fhClusterTriggerBC->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBC->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBC);
+    
+    fhClusterTriggerBCExotic        = new TH1F("hClusterTriggerBCExotic",
+                                               "Number of analyzed events triggered by a exotic cluster in a given BC",
+                                               nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCExotic->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCExotic);
+    
+    
+    fhClusterTriggerBCBadCell         = new TH1F("hClusterTriggerBCBadCell",
+                                                 "Number of analyzed events triggered by a bad cell in a given BC",
+                                                 nbin , minbin ,maxbin) ;
+    
+    fhClusterTriggerBCBadCell->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadCell->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadCell);
+    
+    fhClusterTriggerBCBadCellExotic    = new TH1F("hClusterTriggerBCBadCellExotic",
+                                                  "Number of analyzed events triggered by a bad cell & exotic cluster in a given BC",
+                                                  nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCBadCellExotic->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadCellExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadCellExotic);
+    
+    fhClusterTriggerBCBadCluster           = new TH1F("hClusterTriggerBCBadCluster",
+                                                      "Number of analyzed events triggered by a bad cluster in a given BC",
+                                                      nbin , minbin ,maxbin) ;
+    
+    fhClusterTriggerBCBadCluster->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadCluster->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadCluster);
+    
+    
+    fhClusterTriggerBCBadClusterExotic    = new TH1F("hClusterTriggerBCBadClusterExotic",
+                                                     "Number of analyzed events triggered by a bad cluster & exotic cluster in a given BC",
+                                                     nbin , minbin ,maxbin) ;
+    
+    fhClusterTriggerBCBadClusterExotic->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadClusterExotic->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadClusterExotic);
+    
+    fhClusterTriggerBCUnMatch       = new TH1F("hClusterTriggerBCUnMatch",
+                                               "Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC",
+                                               nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCUnMatch->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCUnMatch);
+    
+    fhClusterTriggerBCExoticUnMatch = new TH1F("hClusterTriggerBCExoticUnMatch",
+                                               "Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC",
+                                               nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCExoticUnMatch->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCExoticUnMatch);
+    
+    
+    fhClusterTriggerBCBadCellUnMatch    = new TH1F("hClusterTriggerBCBadCellUnMatch",
+                                                   "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
+                                                   nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCBadCellUnMatch->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadCellUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadCellUnMatch);
+    
+    
+    fhClusterTriggerBCBadCellExoticUnMatch = new TH1F("hClusterTriggerBCBadCellExoticUnMatch",
+                                                      "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
+                                                      nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCBadCellExoticUnMatch->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadCellExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadCellExoticUnMatch);
+    
+    
+    fhClusterTriggerBCBadClusterUnMatch    = new TH1F("hClusterTriggerBCBadClusterUnMatch",
+                                                      "Number of analyzed events triggered by a bad cluster  (no trigger patch match) in a given BC",
+                                                      nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCBadClusterUnMatch->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadClusterUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadClusterUnMatch);
+    
+    
+    fhClusterTriggerBCBadClusterExoticUnMatch = new TH1F("hClusterTriggerBCBadClusterExoticUnMatch",
+                                                         "Number of analyzed events triggered by a bad&exotic cluster  (no trigger patch match) in a given BC",
+                                                         nbin , minbin ,maxbin) ;
+    fhClusterTriggerBCBadClusterExoticUnMatch->SetYTitle("# events");
+    for(Int_t i = 1; i < 12; i++)
+      fhClusterTriggerBCBadClusterExoticUnMatch->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+    fOutputContainer->Add(fhClusterTriggerBCBadClusterExoticUnMatch);
+    
+    TString rematch[] = {"OpenTime","CheckNeighbours","Both"};
+    for(Int_t j = 0; j < 3; j++)
+    {
+      fhClusterTriggerBCUnMatchReMatch[j]       = new TH1F(Form("hClusterTriggerBCUnMatch_ReMatch_%s",rematch[j].Data()),
+                                                           Form("Number of analyzed events triggered by a cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
+                                                           nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCUnMatchReMatch[j]->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCUnMatchReMatch[j]);
+      
+      fhClusterTriggerBCExoticUnMatchReMatch[j] = new TH1F(Form("hClusterTriggerBCExoticUnMatch_ReMatch_%s",rematch[j].Data()),
+                                                           Form("Number of analyzed events triggered by a exotic cluster (no trigger patch match) in a given BC, re-match %s",rematch[j].Data()),
+                                                           nbin , minbin ,maxbin) ;
+      fhClusterTriggerBCExoticUnMatchReMatch[j]->SetYTitle("# events");
+      for(Int_t i = 1; i < 12; i++)
+        fhClusterTriggerBCExoticUnMatchReMatch[j]->GetXaxis()->SetBinLabel(i ,Form("BC%d",i-labelshift));
+      fOutputContainer->Add(fhClusterTriggerBCExoticUnMatchReMatch[j]);
+    }
+    
+    fhNPileUpEvents      = new TH1F("hNPileUpEvents",   "Number of events considered as pile-up", 8 , 0 , 8 ) ;
+    fhNPileUpEvents->SetYTitle("# events");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(1 ,"SPD");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(3 ,"EMCal");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(4 ,"EMCal || SPD");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(5 ,"EMCal && SPD");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(6 ,"!EMCal && SPD");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
+    fhNPileUpEvents->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
+    fOutputContainer->Add(fhNPileUpEvents);
+    
+    fhNPileUpEventsTriggerBC0      = new TH1F("hNPileUpEventsTriggerBC0","Number of events considered as pile-up, trigger cluster in BC=0", 8 , 0 , 8 ) ;
+    fhNPileUpEventsTriggerBC0->SetYTitle("# events");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(1 ,"SPD");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(2 ,"Multi SPD");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(3 ,"EMCal");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(4 ,"EMCal || SPD");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(5 ,"EMCal && SPD");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(6 ,"!EMCal && SPD");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(7 ,"EMCal && !SPD");
+    fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
+    fOutputContainer->Add(fhNPileUpEventsTriggerBC0);
+    
+    
+    fhTrackBCEvent      = new TH1F("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+    fhTrackBCEvent->SetYTitle("# events");
+    fhTrackBCEvent->SetXTitle("Bunch crossing");
+    for(Int_t i = 1; i < 20; i++)
+      fhTrackBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+    fOutputContainer->Add(fhTrackBCEvent);
+    
+    fhTrackBCEventCut      = new TH1F("hTrackBCEventCut",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+    fhTrackBCEventCut->SetYTitle("# events");
+    fhTrackBCEventCut->SetXTitle("Bunch crossing");
+    for(Int_t i = 1; i < 20; i++)
+      fhTrackBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+    fOutputContainer->Add(fhTrackBCEventCut);
+    
+    fhPrimaryVertexBC      = new TH1F("hPrimaryVertexBC", "Number of primary vertex per bunch crossing ", 41 , -20 , 20  ) ;
+    fhPrimaryVertexBC->SetYTitle("# events");
+    fhPrimaryVertexBC->SetXTitle("Bunch crossing");
+    fOutputContainer->Add(fhPrimaryVertexBC);
+    
+    fhEMCalBCEvent      = new TH1F("hEMCalBCEvent",   "Number of events with at least 1 cluster in a bunch crossing ", 19 , 0 , 19 ) ;
+    fhEMCalBCEvent->SetYTitle("# events");
+    fhEMCalBCEvent->SetXTitle("Bunch crossing");
+    for(Int_t i = 1; i < 20; i++)
+      fhEMCalBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+    fOutputContainer->Add(fhEMCalBCEvent);
+    
+    fhEMCalBCEventCut      = new TH1F("hEMCalBCEventCut",   "Number of events with at least 1 cluster in a bunch crossing", 19 , 0 , 19 ) ;
+    fhEMCalBCEventCut->SetYTitle("# events");
+    fhEMCalBCEventCut->SetXTitle("Bunch crossing");
+    for(Int_t i = 1; i < 20; i++)
+      fhEMCalBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+    fOutputContainer->Add(fhEMCalBCEventCut);
+    
+    fhXVertexExotic      = new TH1F("hXVertexExotic", " X vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+    fhXVertexExotic->SetXTitle("v_{x} (cm)");
+    fOutputContainer->Add(fhXVertexExotic);
+    
+    fhYVertexExotic      = new TH1F("hYVertexExotic", " Y vertex distribution in exotic events"   , 200 , -4 , 4  ) ;
+    fhYVertexExotic->SetXTitle("v_{y} (cm)");
+    fOutputContainer->Add(fhYVertexExotic);
+    
+    fhZVertexExotic      = new TH1F("hZVertexExotic", " Z vertex distribution in exotic events"   , 200 , -50 , 50  ) ;
+    fhZVertexExotic->SetXTitle("v_{z} (cm)");
+    fOutputContainer->Add(fhZVertexExotic);
+    
+    fhPileUpClusterMult    = new TH1F("hPileUpClusterMult", "Number of clusters per event with large time (|t| > 20 ns)" , 100 , 0 , 100  ) ;
+    fhPileUpClusterMult->SetXTitle("# clusters");
+    fOutputContainer->Add(fhPileUpClusterMult);
+    
+    fhPileUpClusterMultAndSPDPileUp = new TH1F("hPileUpClusterMultAndSPDPileUp", "Number of clusters per event with large time (|t| > 20 ns, events tagged as pile-up by SPD)" , 100 , 0 , 100 ) ;
+    fhPileUpClusterMultAndSPDPileUp->SetXTitle("# clusters");
+    fOutputContainer->Add(fhPileUpClusterMultAndSPDPileUp);
+    
+    fhNPileUpVertSPD  = new TH1F ("hNPileUpVertSPD","N pile-up SPD vertex", 50,0,50);
+    fhNPileUpVertSPD->SetYTitle("# vertex ");
+    fOutputContainer->Add(fhNPileUpVertSPD);
+    
+    fhNPileUpVertTracks  = new TH1F ("hNPileUpVertTracks","N pile-up Tracks vertex", 50,0,50);
+    fhNPileUpVertTracks->SetYTitle("# vertex ");
+    fOutputContainer->Add(fhNPileUpVertTracks);
+    
+    if(fReader->IsSelectEventTimeStampOn())
+    {
+      fhTimeStampFraction = new TH1F("hTimeStampFraction","Fraction of events within a given time stamp range",150, -1, 2) ;
+      fhTimeStampFraction->SetXTitle("fraction");
+      fOutputContainer->Add(fhTimeStampFraction) ;
+    }
   }
   
   if(fScaleFactor > 0)
@@ -822,90 +924,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   
-  Int_t  triggerBC   = fReader->GetTriggerClusterBC() ;
-  Bool_t exotic      = fReader->IsExoticEvent();
-  Bool_t badCluster  = fReader->IsBadCellTriggerEvent();
-  Bool_t badCell     = fReader->IsBadMaxCellTriggerEvent();
-  Bool_t triggerMatch= fReader->IsTriggerMatched();
-  Bool_t triggerBCOK = kTRUE;
-  Int_t  triggerId   = fReader->GetTriggerClusterId() ;
-  Bool_t reMatchOpenTime = fReader->IsTriggerMatchedOpenCuts(0);
-  Bool_t reMatchNeigbour = fReader->IsTriggerMatchedOpenCuts(1);
-  Bool_t reMatchBoth     = fReader->IsTriggerMatchedOpenCuts(2);
-  
-  if(triggerId < 0)
-  {
-    //printf("Trigger id %d\n",triggerId);
-    if(triggerId == -2)fhNEventsNoTriggerFound->Fill(0);
-    triggerBCOK = kFALSE;
-  }
-  
-  if(exotic)
-  {
-    fhNExoticEvents->Fill(0) ;
-    Double_t v[3];
-    fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
-    fhXVertexExotic->Fill(v[0]);
-    fhYVertexExotic->Fill(v[1]);
-    fhZVertexExotic->Fill(v[2]);
-  }
-  //if(fReader->IsExoticEvent()) printf("Maker: EXOTIC Cluster trigger\n");
-  
-  if(triggerBCOK)
-  {
-    Int_t eventBC = fReader->GetInputEvent()->GetBunchCrossNumber();
-    if(eventBC%4 < 0 || eventBC%4 > 3 )
-      printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - STRANGE: Trigger BC %d - Event BC %d, modulo4 %d \n",triggerBC,eventBC,eventBC%4);
-    
-    if(triggerMatch)
-    {
-      if     (!exotic     && !badCluster) fhClusterTriggerBC->Fill(triggerBC);
-      else if( exotic     &&  badCluster)
-      {
-        fhClusterTriggerBCBadClusterExotic->Fill(triggerBC);
-        if(badCell) fhClusterTriggerBCBadCellExotic->Fill(triggerBC);
-      }
-      else if( exotic     && !badCluster) fhClusterTriggerBCExotic->Fill(triggerBC);
-      else if( badCluster && !exotic    )
-      {
-        fhClusterTriggerBCBadCluster ->Fill(triggerBC);
-        if(badCell) fhClusterTriggerBCBadCell->Fill(triggerBC);
-      }
-      
-      if(!exotic) fhClusterTriggerBCEventBC      ->Fill(triggerBC,eventBC%4);
-      else        fhClusterTriggerBCExoticEventBC->Fill(triggerBC,eventBC%4);
-    }
-    else
-    {
-      if     (!exotic     && !badCluster)
-      {
-        fhClusterTriggerBCUnMatch->Fill(triggerBC);
-        if(reMatchOpenTime) fhClusterTriggerBCUnMatchReMatch[0]->Fill(triggerBC);
-        if(reMatchNeigbour) fhClusterTriggerBCUnMatchReMatch[1]->Fill(triggerBC);
-        if(reMatchBoth)     fhClusterTriggerBCUnMatchReMatch[2]->Fill(triggerBC);
-      }
-      else if( exotic     &&  badCluster)
-      {
-        fhClusterTriggerBCBadClusterExoticUnMatch->Fill(triggerBC);
-        if(badCell)   fhClusterTriggerBCBadCellExoticUnMatch   ->Fill(triggerBC);
-      }
-      else if( exotic     && !badCluster)
-      {
-        fhClusterTriggerBCExoticUnMatch->Fill(triggerBC);
-        if(reMatchOpenTime) fhClusterTriggerBCExoticUnMatchReMatch[0]->Fill(triggerBC);
-        if(reMatchNeigbour) fhClusterTriggerBCExoticUnMatchReMatch[1]->Fill(triggerBC);
-        if(reMatchBoth)     fhClusterTriggerBCExoticUnMatchReMatch[2]->Fill(triggerBC);
-      }
-      else if( badCluster && !exotic )
-      {
-        fhClusterTriggerBCBadClusterUnMatch->Fill(triggerBC);
-        if(badCell)fhClusterTriggerBCBadCellUnMatch->Fill(triggerBC);
-      }
-      
-      if(!exotic) fhClusterTriggerBCEventBCUnMatch      ->Fill(triggerBC,eventBC%4);
-      else        fhClusterTriggerBCExoticEventBCUnMatch->Fill(triggerBC,eventBC%4);
-    }
-  }
+  FillTriggerControlHistograms();
   
   if(!ok)
   {
