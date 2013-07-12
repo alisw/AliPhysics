@@ -287,6 +287,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhTrackMatchedDEta     ;  //! Eta distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDPhi     ;  //! Phi distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDEtaDPhi ;  //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F         * fhTrackMatchedDEtaPos  ;  //! Eta distance between track and cluster vs cluster E
+  TH2F         * fhTrackMatchedDPhiPos  ;  //! Phi distance between track and cluster vs cluster E
+  TH2F         * fhTrackMatchedDEtaDPhiPos ; //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F         * fhTrackMatchedDEtaNeg  ;  //! Eta distance between track and cluster vs cluster E
+  TH2F         * fhTrackMatchedDPhiNeg  ;  //! Phi distance between track and cluster vs cluster E
+  TH2F         * fhTrackMatchedDEtaDPhiNeg ; //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  
   TH2F         * fhTrackMatchedMCParticleE;    //! Trace origin of matched particle, energy
   TH2F         * fhTrackMatchedMCParticleDEta; //! Trace origin of matched particle, eta residual
   TH2F         * fhTrackMatchedMCParticleDPhi; //! Trace origin of matched particle, phi residual
@@ -331,7 +338,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,29)
+  ClassDef(AliAnaPi0EbE,30)
 } ;
 
 

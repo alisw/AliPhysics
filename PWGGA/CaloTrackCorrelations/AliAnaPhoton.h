@@ -55,6 +55,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
 
+  void         FillEMCALTriggerClusterBCHistograms(const Int_t idcalo,       const Float_t ecluster,   const Float_t tofcluster,
+                                                   const Float_t etacluster, const Float_t phicluster);
+  
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
@@ -68,6 +71,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
+  void         FillClusterPileUpHistograms(AliVCluster * calo,       const Bool_t matched,
+                                           const Float_t ecluster,   const Float_t ptcluster,
+                                           const Float_t etacluster, const Float_t phicluster,
+                                           const Float_t l0cluster);
+  
   void         FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time) ;
   void         FillPileUpHistogramsPerEvent() ;
 
@@ -149,7 +157,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
   TH2F * fhCellsE;                       //! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;          //! Fraction of energy carried by cell with maximum energy
-  TH2F * fhTimeE;                        //! time of cluster vs E
+  TH2F * fhTimePt;                       //! time of photon cluster vs pt
   
   TH2F * fhEtaPhi  ;                     //! Pseudorapidity vs Phi of clusters for E > 0.5
   TH2F * fhEtaPhiEMCALBC0  ;             //! Pseudorapidity vs Phi of clusters for E > 0.5
@@ -354,7 +362,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   // Track Matching
   TH2F * fhTrackMatchedDEta[2]           ;      //! Eta distance between track and cluster vs cluster E, after and before photon cuts
   TH2F * fhTrackMatchedDPhi[2]           ;      //! Phi distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhi[2]       ;      //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhi[2]       ;      //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+  
+  TH2F * fhTrackMatchedDEtaPos[2]        ;      //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiPos[2]        ;      //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiPos[2]    ;      //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+  
+  TH2F * fhTrackMatchedDEtaNeg[2]        ;      //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F * fhTrackMatchedDPhiNeg[2]        ;      //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F * fhTrackMatchedDEtaDPhiNeg[2]    ;      //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before photon cuts
   
   TH2F * fhTrackMatchedDEtaTRD[2]        ;      //! Eta distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   TH2F * fhTrackMatchedDPhiTRD[2]        ;      //! Phi distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
@@ -381,9 +397,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhClusterTimeDiffChargedPileUp[7];     //! E vs Time difference inside cluster for track matched clusters
   TH2F * fhClusterTimeDiffPhotonPileUp[7];      //! E vs Time difference inside cluster for selected photons
   TH2F * fhClusterEFracLongTimePileUp[7];       //! E vs fraction of cluster energy from cells with large time
-  TH2F * fhTimeENoCut;                          //! time of cluster vs E, no cut
-  TH2F * fhTimeESPD;                            //! time of cluster vs E, IsSPDPileUp
-  TH2F * fhTimeESPDMulti;                       //! time of cluster vs E, IsSPDPileUpMulti
+  TH2F * fhTimePtNoCut;                         //! time of cluster vs Pt, no cut
+  TH2F * fhTimePtSPD;                           //! time of cluster vs Pt, IsSPDPileUp
+  TH2F * fhTimePtPhotonNoCut;                   //! time of photon cluster vs Pt, no cut
+  TH2F * fhTimePtPhotonSPD;                     //! time of photon cluster vs Pt, IsSPDPileUp
   TH2F * fhTimeNPileUpVertSPD;                  //! time of cluster vs n pile-up vertices from SPD
   TH2F * fhTimeNPileUpVertTrack;                //! time of cluster vs n pile-up vertices from Tracks
   TH2F * fhTimeNPileUpVertContributors;         //! time of cluster vs n pile-up vertex from SPD contributors
@@ -415,7 +432,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,33)
+  ClassDef(AliAnaPhoton,34)
 
 } ;
  
