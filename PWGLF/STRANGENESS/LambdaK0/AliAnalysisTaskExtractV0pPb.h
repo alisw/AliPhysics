@@ -85,6 +85,7 @@ class AliAnalysisTaskExtractV0pPb : public AliAnalysisTaskSE {
 	Float_t fTreeVariableDcaV0ToPrimVertex; //!
 	Float_t fTreeVariableDcaPosToPrimVertex; //!
 	Float_t fTreeVariableDcaNegToPrimVertex; //!
+	Float_t fTreeVariableDCAV0ToPrimVertex; //!
 	Float_t fTreeVariableV0CosineOfPointingAngle; //!
 	Float_t fTreeVariableV0Radius; //!
 	Float_t fTreeVariablePt; //!
@@ -134,3 +135,4 @@ class AliAnalysisTaskExtractV0pPb : public AliAnalysisTaskSE {
 };
 
 #endif
+
