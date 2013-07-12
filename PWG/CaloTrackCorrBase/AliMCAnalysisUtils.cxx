@@ -1290,6 +1290,86 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int
   return grandmom;
 }
 
+//____________________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetGrandMother(const Int_t label, const AliCaloTrackReader* reader,
+                                                  Int_t & pdg, Int_t & status, Bool_t & ok,
+                                                  Int_t & grandMomLabel, Int_t & greatMomLabel)
+{
+  //Return the kinematics of the particle that generated the signal
+  
+  TLorentzVector grandmom(0,0,0,0);
+  
+  if(reader->ReadStack())
+  {
+    if(!reader->GetStack())
+    {
+      if (fDebug >=0)
+        printf("AliMCAnalysisUtils::GetMotherWithPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+      
+      ok = kFALSE;
+      return grandmom;
+    }
+    
+    if(label >= 0 && label < reader->GetStack()->GetNtrack())
+    {
+      TParticle * momP = reader->GetStack()->Particle(label);
+      
+      grandMomLabel = momP->GetFirstMother();
+      
+      TParticle * grandmomP = 0x0;
+      
+      if (grandMomLabel >=0 )
+      {
+        grandmomP   = reader->GetStack()->Particle(grandMomLabel);
+        pdg    = grandmomP->GetPdgCode();
+        status = grandmomP->GetStatusCode();
+       
+        grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->Energy());
+        greatMomLabel =  grandmomP->GetFirstMother();
+
+      }
+    }
+  }
+  else if(reader->ReadAODMCParticles())
+  {
+    TClonesArray* mcparticles = reader->GetAODMCParticles();
+    if(!mcparticles)
+    {
+      if(fDebug >= 0)
+        printf("AliMCAnalysisUtils::GetMotherWithPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+      
+      ok=kFALSE;
+      return grandmom;
+    }
+    
+    Int_t nprimaries = mcparticles->GetEntriesFast();
+    if(label >= 0 && label < nprimaries)
+    {
+      AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
+      
+      grandMomLabel = momP->GetMother();
+      
+      AliAODMCParticle * grandmomP = 0x0;
+      
+      if(grandMomLabel >=0 )
+      {
+        grandmomP   = (AliAODMCParticle *) mcparticles->At(grandMomLabel);
+        pdg    = grandmomP->GetPdgCode();
+        status = grandmomP->GetStatus();
+      
+        grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
+        greatMomLabel =  grandmomP->GetMother();
+        
+      }
+    }
+  }
+  
+  ok = kTRUE;
+  
+  return grandmom;
+}
+
+
 //_____________________________________________________________________________________
 Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader, Bool_t & ok) 
 {

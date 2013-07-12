@@ -36,8 +36,12 @@ class AliAnaCaloTrackCorrMaker : public TObject {
 
   void    FillControlHistograms();
   
+  void    FillTriggerControlHistograms();
+  
   TList * GetListOfAnalysisContainers() { return fAnalysisContainer ; }
+  
   TList * GetListOfAnalysisCuts();
+  
   TList * GetOutputContainer() ;
   
   TList * FillAndGetAODBranchList();
@@ -53,7 +57,10 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   void    SwitchOnAODsMaker()           { fMakeAOD = kTRUE    ; }
   void    SwitchOffAODsMaker()          { fMakeAOD = kFALSE   ; }
   	
+  void    SwitchOnDataControlHistograms()  { fFillDataControlHisto = kTRUE  ; }
+  void    SwitchOffDataControlHistograms() { fFillDataControlHisto = kFALSE ; }
 
+  
   AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
                                                                         return fReader    ; }
   void                  SetReader(AliCaloTrackReader * reader)        { fReader = reader  ; }
@@ -76,7 +83,6 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   void    ProcessEvent(const Int_t iEntry, const char * currentFileName) ;
   
   void    Terminate(TList * outputList);
-
   
  private:
   
@@ -92,7 +98,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Int_t    fAnaDebug;           //  Debugging info.
   TList *  fCuts ;	            //! List with analysis cuts
   Double_t fScaleFactor ;       //  Scaling factor needed for normalization
-
+  Bool_t   fFillDataControlHisto;//! Fill histograms only interesting with data
+  
   // Control histograms
   TH1F *   fhNEvents;           //! Number of events counter histogram
   TH1F *   fhNExoticEvents;     //! Number of events triggered by exotic, counter histogram
@@ -147,7 +154,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,20)
+  ClassDef(AliAnaCaloTrackCorrMaker,21)
 } ;
  
 

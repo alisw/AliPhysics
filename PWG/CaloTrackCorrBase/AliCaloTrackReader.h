@@ -73,14 +73,16 @@ public:
   void            SetTaskName(TString name)                { fTaskName = name              ; }
     
   //---------------------------------------
-  //Input/output event setters and getters
+  // Input/output event setters and getters
   //---------------------------------------
+  
   virtual void    SetInputEvent(AliVEvent* const input) ;
   virtual void    SetOutputEvent(AliAODEvent* const aod)   { fOutputEvent = aod            ; }
   virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc             ; }
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
   // Delta AODs
+  
   virtual TList * GetAODBranchList()                 const { return fAODBranchList         ; }
   void            SetDeltaAODFileName(TString name )       { fDeltaAODFileName = name      ; }
   TString         GetDeltaAODFileName()              const { return fDeltaAODFileName      ; }
@@ -89,10 +91,11 @@ public:
   Bool_t          WriteDeltaAODToFile()              const { return fWriteOutputDeltaAOD   ; } 
   
   //------------------------------------------------------------
-  //Clusters/Tracks arrays filtering/filling methods and switchs 
+  // Clusters/Tracks arrays filtering/filling methods and switchs 
   //------------------------------------------------------------
   
-  //Minimum pt setters and getters 
+  // Minimum pt setters and getters
+  
   Float_t          GetEMCALPtMin()                   const { return fEMCALPtMin            ; }
   Float_t          GetPHOSPtMin()                    const { return fPHOSPtMin             ; }
   Float_t          GetCTSPtMin()                     const { return fCTSPtMin              ; }
@@ -119,6 +122,7 @@ public:
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
   
   // Track DCA cut
+  
   Bool_t           AcceptDCA(const Float_t pt, const Float_t dca);
   Double_t         GetTrackDCACut(Int_t i)           const { if(i >= 0 && i < 3 ) return fTrackDCACut[i] ;
                                                              else return -999              ; }
@@ -130,7 +134,7 @@ public:
   void             SwitchOffUseTrackDCACut()               { fUseTrackDCACut = kFALSE      ; }
   Bool_t           IsDCACutOn()                      const { return fUseTrackDCACut        ; }
   
-  //Time cut
+  // Time cut
   
   Double_t         GetTrackTimeCutMin()              const { return fTrackTimeCutMin       ; }
   Double_t         GetTrackTimeCutMax()              const { return fTrackTimeCutMax       ; }
@@ -158,7 +162,8 @@ public:
   void             SwitchOnUseParametrizedTimeCut()        { fUseParamTimeCut = kTRUE      ; }
   void             SwitchOffUseParametrizedTimeCut()       { fUseParamTimeCut = kFALSE     ; }
 
-  // Fidutial cuts  
+  // Fidutial cuts
+  
   virtual AliFiducialCut * GetFiducialCut()                { 
                     if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
                     return  fFiducialCut                                                   ; }
@@ -169,13 +174,17 @@ public:
   virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
   
   // Cluster origin
+  
   Bool_t           IsEMCALCluster(AliVCluster *clus) const;
   Bool_t           IsPHOSCluster (AliVCluster *clus) const;
-  //Patch for cluster origin for Old AODs implementation
+  
+  // Patch for cluster origin for Old AODs implementation
+  
   void             SwitchOnOldAODs()                       { fOldAOD = kTRUE               ; }
   void             SwitchOffOldAODs()                      { fOldAOD = kFALSE              ; }
   
   // Cluster/track/cells switchs
+  
   Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
   void             SwitchOnCTS()                           { fFillCTS = kTRUE              ; }
   void             SwitchOffCTS()                          { fFillCTS = kFALSE             ; }
@@ -205,6 +214,7 @@ public:
   void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
   
   // Filling/ filtering / detector information access methods
+  
   virtual Bool_t   FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
   virtual void     FillInputCTS() ;
   virtual void     FillInputEMCAL() ;
@@ -220,7 +230,8 @@ public:
   void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name  ; }
   TString          GetEMCALClusterListName()         const { return fEMCALClustersListName  ; }
 
-  // Arrayes with clusters/track/cells access method
+  // Arrays with clusters/track/cells access method
+  
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks              ; }
   virtual TObjArray*     GetEMCALClusters()          const { return fEMCALClusters          ; }
   virtual TObjArray*     GetPHOSClusters()           const { return fPHOSClusters           ; }
@@ -315,7 +326,7 @@ public:
   Bool_t           IsEventWithNoTrackRejectionDone() const { return fDoRejectNoTrackEvents   ; }
   
 
-  //Time Stamp
+  // Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
   Double_t         GetRunTimeStampMax()              const { return fTimeStampRunMax         ; }
@@ -365,6 +376,7 @@ public:
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
   // Track selection
+  
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
   void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }		
 
@@ -403,8 +415,9 @@ public:
                     else                  { return kFALSE           ; }                     }
 	
   //-------------------------------
-  //Vertex methods
+  // Vertex methods
   //-------------------------------
+
   virtual void      GetVertex(Double_t v[3])         const ;
   virtual Double_t* GetVertex(const Int_t evtIndex)  const { return fVertex[evtIndex]            ; }
   virtual void      GetVertex(Double_t vertex[3],    const Int_t evtIndex) const ;
@@ -416,7 +429,8 @@ public:
   //--------------------------
   // Centrality / Event Plane
   //--------------------------
-  virtual AliCentrality* GetCentrality()             const { if(fDataType!=kMC) return fInputEvent->GetCentrality() ; 
+
+  virtual AliCentrality* GetCentrality()             const { if(fDataType!=kMC) return fInputEvent->GetCentrality() ;
                                                              else               return 0x0       ; } 
   virtual void     SetCentralityClass(TString name)        { fCentralityClass   = name           ; }
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
@@ -465,6 +479,7 @@ public:
   //-------------------------------------
   // Other methods
   //-------------------------------------
+  
   AliCalorimeterUtils * GetCaloUtils()               const { return fCaloUtils                   ; }
   void             SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils       ; }  
   
@@ -473,18 +488,20 @@ public:
   void    SetImportGeometryFromFile(Bool_t import, 
                                     TString path = "")     { 
                                                              fImportGeometryFromFile = import    ; 
-                                                             fImportGeometryFilePath = path      ; }      
+                                                             fImportGeometryFilePath = path      ; }
   
   //------------------------------------------------
   // MC analysis specific methods
   //-------------------------------------------------
   
-  //Kinematics and galice.root available 
+  // Kinematics and galice.root available
+  
   virtual AliStack*          GetStack()              const ;
   virtual AliHeader*         GetHeader()             const ;
   virtual AliGenEventHeader* GetGenEventHeader()     const ;
   
-  //Filtered kinematics in AOD	
+  // Filtered kinematics in AOD
+  
   virtual TClonesArray*     GetAODMCParticles()      const ;
   virtual AliAODMCHeader*   GetAODMCHeader   ()      const ;
   
@@ -502,7 +519,10 @@ public:
   Bool_t           ReadStack()                       const { return fReadStack             ; }
   Bool_t           ReadAODMCParticles()              const { return fReadAODMCParticles    ; }
 	
-  //Select generated events, depending on comparison of pT hard and jets.
+  void             RemapMCLabelForAODs(Int_t &label);
+  
+  // Select generated events, depending on comparison of pT hard and jets
+  
   virtual Bool_t   ComparePtHardAndJetPt() ;
   virtual Bool_t   IsPtHardAndJetPtComparisonSet()       const { return  fComparePtHardAndJetPt   ; }
   virtual void     SetPtHardAndJetPtComparison(Bool_t compare) { fComparePtHardAndJetPt = compare ; }	
@@ -516,7 +536,7 @@ public:
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
   
   
-  //MC reader methods, declared there to allow compilation, they are only used in the MC reader:
+  // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
   virtual void AddChargedParticlesArray(TArrayI & /*array*/) { ; } 
