@@ -45,6 +45,7 @@
 #include "AliVCaloCells.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliAODMCParticle.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -564,6 +565,43 @@ void AliCaloTrackReader::InitParameters()
   
 }
 
+//___________________________________________________________________
+Bool_t AliCaloTrackReader::IsEMCALCluster(AliVCluster* cluster) const
+{
+  // Check if it is a cluster from EMCAL. For old AODs cluster type has
+  // different number and need to patch here
+  
+  if(fDataType==kAOD && fOldAOD)
+  {
+    if (cluster->GetType() == 2) return kTRUE;
+    else                         return kFALSE;
+  }
+  else
+  {
+    return cluster->IsEMCAL();
+  }
+  
+}
+
+//___________________________________________________________________
+Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const
+{
+  //Check if it is a cluster from PHOS.For old AODs cluster type has
+  // different number and need to patch here
+  
+  if(fDataType==kAOD && fOldAOD)
+  {
+    Int_t type = cluster->GetType();
+    if (type == 0 || type == 1) return kTRUE;
+    else                        return kFALSE;
+  }
+  else
+  {
+    return cluster->IsPHOS();
+  }
+  
+}
+
 //___________________________________________________________
 Bool_t AliCaloTrackReader::IsInTimeWindow(const Double_t tof, const Float_t energy) const
 {
@@ -641,52 +679,6 @@ Bool_t AliCaloTrackReader::IsPileUpFromNotSPDAndNotEMCal() const
   // Check if event not from pile-up determined neither by SPD nor by EMCal
   if( !IsPileUpFromSPD() && !IsPileUpFromEMCal()) return kTRUE ;
   else                                            return kFALSE;
-}
-
-//________________________________________________________
-void AliCaloTrackReader::Print(const Option_t * opt) const
-{
-  
-  //Print some relevant parameters set for the analysis
-  if(! opt)
-    return;
-  
-  printf("***** Print: %s %s ******\n",    GetName(), GetTitle() ) ;
-  printf("Task name      : %s\n",          fTaskName.Data()) ;
-  printf("Data type      : %d\n",          fDataType) ;
-  printf("CTS Min pT     : %2.1f GeV/c\n", fCTSPtMin) ;
-  printf("EMCAL Min pT   : %2.1f GeV/c\n", fEMCALPtMin) ;
-  printf("PHOS Min pT    : %2.1f GeV/c\n", fPHOSPtMin) ;
-  printf("CTS Max pT     : %2.1f GeV/c\n", fCTSPtMax) ;
-  printf("EMCAL Max pT   : %2.1f GeV/c\n", fEMCALPtMax) ;
-  printf("PHOS Max pT    : %2.1f GeV/c\n", fPHOSPtMax) ;
-  printf("EMCAL Time Cut: %3.1f < TOF  < %3.1f\n", fEMCALTimeCutMin, fEMCALTimeCutMax);
-  printf("Use CTS         =     %d\n",     fFillCTS) ;
-  printf("Use EMCAL       =     %d\n",     fFillEMCAL) ;
-  printf("Use PHOS        =     %d\n",     fFillPHOS) ;
-  printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
-  printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
-  printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("AODs Track filter mask  =  %d or hybrid %d, SPD hit %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks,fSelectSPDHitTracks) ;
-  printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
-  printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
-  printf("Recalculate Clusters = %d\n",    fRecalculateClusters) ;
-  
-  printf("Use Triggers selected in SE base class %d; If not what trigger Mask? %d; Trigger max for mixed %d \n",
-         fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
-  
-  if(fComparePtHardAndClusterPt)
-    printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
-  
-  if(fComparePtHardAndClusterPt)
-    printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
-  
-  printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
-  printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
-  printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
-  
-  printf("    \n") ;
-  
 }
 
 //_________________________________________________________________________
@@ -999,48 +991,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   
   
   return kTRUE ;
-}
-
-//___________________________________
-void AliCaloTrackReader::ResetLists()
-{
-  //  Reset lists, called by the analysis maker
-  
-  if(fCTSTracks)       fCTSTracks     -> Clear();
-  if(fEMCALClusters)   fEMCALClusters -> Clear("C");
-  if(fPHOSClusters)    fPHOSClusters  -> Clear("C");
-  
-  fV0ADC[0] = 0;   fV0ADC[1] = 0;
-  fV0Mul[0] = 0;   fV0Mul[1] = 0;
-  
-}
-
-//____________________________________________________________
-void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
-{
-  fInputEvent  = input;
-  fMixedEvent = dynamic_cast<AliMixedEvent*>(GetInputEvent()) ;
-  if (fMixedEvent)
-    fNMixedEvent = fMixedEvent->GetNumberOfEvents() ;
-  
-  //Delete previous vertex
-  if(fVertex)
-  {
-    for (Int_t i = 0; i < fNMixedEvent; i++)
-    {
-      delete [] fVertex[i] ;
-    }
-    delete [] fVertex ;
-  }
-  
-  fVertex = new Double_t*[fNMixedEvent] ;
-  for (Int_t i = 0; i < fNMixedEvent; i++)
-  {
-    fVertex[i] = new Double_t[3] ;
-    fVertex[i][0] = 0.0 ;
-    fVertex[i][1] = 0.0 ;
-    fVertex[i][2] = 0.0 ;
-  }
 }
 
 //__________________________________________________
@@ -1772,42 +1722,6 @@ void AliCaloTrackReader::FillInputVZERO()
 }
 
 
-//___________________________________________________________________
-Bool_t AliCaloTrackReader::IsEMCALCluster(AliVCluster* cluster) const
-{
-  // Check if it is a cluster from EMCAL. For old AODs cluster type has
-  // different number and need to patch here
-  
-  if(fDataType==kAOD && fOldAOD)
-  {
-    if (cluster->GetType() == 2) return kTRUE;
-    else                         return kFALSE;
-  }
-  else
-  {
-    return cluster->IsEMCAL();
-  }
-  
-}
-
-//___________________________________________________________________
-Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const
-{
-  //Check if it is a cluster from PHOS.For old AODs cluster type has
-  // different number and need to patch here
-  
-  if(fDataType==kAOD && fOldAOD)
-  {
-    Int_t type = cluster->GetType();
-    if (type == 0 || type == 1) return kTRUE;
-    else                        return kFALSE;
-  }
-  else
-  {
-    return cluster->IsPHOS();
-  }
-  
-}
 
 //________________________________________________
 Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
@@ -2242,6 +2156,52 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
 }
 
+//________________________________________________________
+void AliCaloTrackReader::Print(const Option_t * opt) const
+{
+  
+  //Print some relevant parameters set for the analysis
+  if(! opt)
+    return;
+  
+  printf("***** Print: %s %s ******\n",    GetName(), GetTitle() ) ;
+  printf("Task name      : %s\n",          fTaskName.Data()) ;
+  printf("Data type      : %d\n",          fDataType) ;
+  printf("CTS Min pT     : %2.1f GeV/c\n", fCTSPtMin) ;
+  printf("EMCAL Min pT   : %2.1f GeV/c\n", fEMCALPtMin) ;
+  printf("PHOS Min pT    : %2.1f GeV/c\n", fPHOSPtMin) ;
+  printf("CTS Max pT     : %2.1f GeV/c\n", fCTSPtMax) ;
+  printf("EMCAL Max pT   : %2.1f GeV/c\n", fEMCALPtMax) ;
+  printf("PHOS Max pT    : %2.1f GeV/c\n", fPHOSPtMax) ;
+  printf("EMCAL Time Cut: %3.1f < TOF  < %3.1f\n", fEMCALTimeCutMin, fEMCALTimeCutMax);
+  printf("Use CTS         =     %d\n",     fFillCTS) ;
+  printf("Use EMCAL       =     %d\n",     fFillEMCAL) ;
+  printf("Use PHOS        =     %d\n",     fFillPHOS) ;
+  printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
+  printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
+  printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
+  printf("AODs Track filter mask  =  %d or hybrid %d, SPD hit %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks,fSelectSPDHitTracks) ;
+  printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
+  printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
+  printf("Recalculate Clusters = %d\n",    fRecalculateClusters) ;
+  
+  printf("Use Triggers selected in SE base class %d; If not what trigger Mask? %d; Trigger max for mixed %d \n",
+         fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
+  
+  if(fComparePtHardAndClusterPt)
+    printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
+  
+  if(fComparePtHardAndClusterPt)
+    printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
+  
+  printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
+  printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
+  printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
+  
+  printf("    \n") ;
+  
+}
+
 //__________________________________________
 Bool_t  AliCaloTrackReader::RejectLEDEvents()
 {
@@ -2269,6 +2229,64 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
   }
   
   return kFALSE;
+  
+}
+
+//_________________________________________________________
+void AliCaloTrackReader::RemapMCLabelForAODs(Int_t & label)
+{
+  // MC label for Cells not remapped after ESD filtering, do it here.
+  
+  if(label < 0) return ;
+  
+  AliAODEvent  * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
+  if(!evt) return ;
+  
+  TClonesArray * arr = dynamic_cast<TClonesArray*>(evt->FindListObject("mcparticles")) ;
+  if(!arr) return ;
+  
+  if(label < arr->GetEntriesFast())
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(label));
+    if(!particle) return ;
+    
+    if(label == particle->Label()) return ; // label already OK
+    //else printf("AliCaloTrackReader::RemapMCLabelForAODs() - Label  %d - AOD stack %d \n",label, particle->Label());
+  }
+  //else printf("AliCaloTrackReader::RemapMCLabelForAODs() - Label  %d > AOD labels %d \n",label, arr->GetEntriesFast());
+  
+  // loop on the particles list and check if there is one with the same label
+  for(Int_t ind = 0; ind < arr->GetEntriesFast(); ind++ )
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(ind));
+    if(!particle) continue ;
+    
+    if(label == particle->Label())
+    {
+      label = ind;
+      //printf("AliAnalysisTaskEMCALClusterize::RemapMCLabelForAODs() - New Label Index  %d \n",label);
+      return;
+    }
+  }
+  
+  label = -1;
+  
+  //printf("AliCaloTrackReader::RemapMCLabelForAODs() - Label not found set to -1 \n");
+  
+}
+
+
+//___________________________________
+void AliCaloTrackReader::ResetLists()
+{
+  //  Reset lists, called by the analysis maker
+  
+  if(fCTSTracks)       fCTSTracks     -> Clear();
+  if(fEMCALClusters)   fEMCALClusters -> Clear("C");
+  if(fPHOSClusters)    fPHOSClusters  -> Clear("C");
+  
+  fV0ADC[0] = 0;   fV0ADC[1] = 0;
+  fV0Mul[0] = 0;   fV0Mul[1] = 0;
   
 }
 
@@ -2419,6 +2437,33 @@ void AliCaloTrackReader::SetEventTriggerBit()
   
 }
 
+//____________________________________________________________
+void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
+{
+  fInputEvent  = input;
+  fMixedEvent = dynamic_cast<AliMixedEvent*>(GetInputEvent()) ;
+  if (fMixedEvent)
+    fNMixedEvent = fMixedEvent->GetNumberOfEvents() ;
+  
+  //Delete previous vertex
+  if(fVertex)
+  {
+    for (Int_t i = 0; i < fNMixedEvent; i++)
+    {
+      delete [] fVertex[i] ;
+    }
+    delete [] fVertex ;
+  }
+  
+  fVertex = new Double_t*[fNMixedEvent] ;
+  for (Int_t i = 0; i < fNMixedEvent; i++)
+  {
+    fVertex[i] = new Double_t[3] ;
+    fVertex[i][0] = 0.0 ;
+    fVertex[i][1] = 0.0 ;
+    fVertex[i][2] = 0.0 ;
+  }
+}
 
 //____________________________________________________________
 void  AliCaloTrackReader::SetTrackCuts(AliESDtrackCuts * cuts)
