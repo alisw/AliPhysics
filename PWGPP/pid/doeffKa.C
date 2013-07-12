@@ -1,0 +1,525 @@
+TObject* fContPid1;
+TObject* fContPid2;
+const Int_t nBinPid = 14; // pt,eta, ptPip, ptPin, PPip, PPin, TOF3sigmaPip, TOF3sigmaPin, isPhiTrue, nsigmaPip, nsigmaPin
+// 0.985 < mass < 1.045 (60) and 0 < centrality < 100 (10)
+Int_t binPid[nBinPid] = {1/*ptPhi*/,8/*EtaPi*/,20/*pt+*/,20/*pt-*/,5/*P+*/,1/*P-*/,2/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,4/*Nsigma-*/,1/*DeltaPhi+*/,1/*DeltaPhi-*/,1/*Psi*/};
+Float_t xmin[nBinPid] = {1,-0.8,0.3,0.3,0,0,-0.5,-0.5,-0.5,0,0,-TMath::Pi(),-TMath::Pi(),-TMath::Pi()/2};
+Float_t xmax[nBinPid] = {5,0.8,4.3,4.3,1,1,1.5,1.5,1.5,7.5,7.5,TMath::Pi(),TMath::Pi(),TMath::Pi()/2};
+
+TF1 *fsign;
+TF1 *fall;
+TF1 *fback;
+
+Int_t ifunc=0;
+
+Float_t fitmin = 0.99;
+Float_t fitmax = 1.045;
+
+Int_t cmin = 1;
+Int_t cmax = 8;
+
+Float_t weightS = -1.;
+
+Int_t rebinsize = 4;
+
+Int_t parplotted = 2;
+
+Bool_t isMC = kFALSE; // don't change this (is set automatically)
+Bool_t selectTrue = kTRUE; // put it to true to remove background (only for MC)
+Bool_t keepTrue = kFALSE; // put it to false to fit only background (only for MC)
+
+Bool_t kGoodMatch = kFALSE; // to check good matching
+
+Bool_t kSigma2vs3 = kFALSE; // to check good matching
+
+Bool_t require5sigma = kFALSE; // don't touch this flag
+
+Bool_t bayesVsigma = kFALSE; // only to do checks
+
+Bool_t kTOFmatch = kFALSE; // for combined PID requires TOF matching
+
+Bool_t kOverAll = kFALSE;
+
+Bool_t kLoaded=kFALSE;
+LoadLib(){
+  weightS = -1.;
+
+  if(! kLoaded){
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libPhysics.so");
+    gSystem->Load("libTree.so");
+    gSystem->Load("libMinuit.so");
+    gSystem->Load("libSTEERBase.so");
+    gSystem->Load("libANALYSIS.so");
+    gSystem->Load("libAOD.so");
+    gSystem->Load("libESD.so");
+    gSystem->Load("libANALYSIS.so");
+    gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libCORRFW.so");
+    gSystem->Load("libNetx.so");
+    gSystem->Load("libPWGPPpid.so");
+
+    TFile *f = new TFile("AnalysisResults.root");
+    f->ls();
+    TList *l = (TList *) f->Get("contPhiBayes1");
+    l->ls();
+    fContPid1 = (AliPIDperfContainer *) l->At(0);
+    fContPid2 = (AliPIDperfContainer *) l->At(1);
+  }
+  kLoaded = kTRUE;
+
+  // check if MC
+  Float_t x[] = {xmin[0]+0.001,xmin[1]+0.001,xmin[2]+0.001,xmin[3]+0.001,xmin[4]+0.001,xmin[5]+0.001,xmin[6]+0.001,xmin[7]+0.001,1/*trueMC*/,xmin[9],xmin[10]};
+  Float_t x2[] = {xmax[0],xmax[1],xmax[2],xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],xmax[8],xmax[9],xmax[10]};
+
+  AliPIDperfContainer *tmp = fContPid1;
+  TH1D *h = tmp->GetQA(0, x, x2)->ProjectionX("checkMC");
+
+  if(h->GetEntries()) isMC = kTRUE;
+  else isMC=kFALSE;
+
+  if(!isMC){
+    selectTrue = kFALSE;
+    keepTrue = kTRUE;
+  }
+  else{
+    printf("MC truth found!!!!!!\nIt is MC!!!!!!");
+  }
+
+  fsign = new TF1("fsign","[0]*TMath::Voigt(x-[1],[3],[2])*(x>0.987)*(x > 1.005 && x < 1.035 || [4])",fitmin,fitmax);
+  fback = new TF1("fback","([0]*sqrt(x-0.987) + [1]*(x-0.987) + [2]*sqrt(x-0.987)*(x-0.987) +[3]*(x-0.987)*(x-0.987)+[4]*(x-0.987)*(x-0.987)*sqrt(x-0.987))*(x>0.987)",fitmin,fitmax);
+  fall = new TF1("fall","([0]*TMath::Voigt(x-[1],[3],[2])*(x > 1.005 && x < 1.035 || [9]) + [4]*sqrt(x-0.987) + [5]*(x-0.987) + [6]*sqrt(x-0.987)*(x-0.987) +[7]*(x-0.987)*(x-0.987)+[8]*(x-0.987)*(x-0.987)*sqrt(x-0.987))*(x>0.987)",0.987,1.05);
+
+  if(isMC){
+    fsign->SetParameter(4,0);
+    fall->FixParameter(9,0);
+  }
+  else{
+    fsign->SetParameter(4,1);
+    fall->FixParameter(9,1);
+  }
+
+  fsign->SetLineColor(2);
+  fback->SetLineColor(4);
+
+  if(kSigma2vs3){
+    kGoodMatch=kFALSE;
+    kOverAll = 0;
+  }
+
+  if(bayesVsigma){
+    kOverAll = 0;
+    kGoodMatch=kFALSE;
+    kSigma2vs3=kFALSE;
+    kTOFmatch=kTRUE;
+    weightS = -0.7;
+  }
+}
+
+doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
+  LoadLib();
+
+  Int_t nptbin = binPid[2];
+  Float_t minptbin = xmin[2];
+  Float_t maxptbin = xmax[2];
+
+  if(pos == 0){
+    nptbin = binPid[3];
+    minptbin = xmin[3];
+    maxptbin = xmax[3];
+  }
+
+  if(prob > 0.1999){
+    kGoodMatch = kFALSE;
+    kSigma2vs3 = kFALSE;
+    if(! kOverAll) require5sigma = kTRUE;
+    if(!isMC) weightS = -0.95;
+  }
+
+  TCanvas *c = new TCanvas();
+  c->Divide((nptbin+1)/2,2);
+  TH2F *hh.*hh2;
+  TH1D *h,*h2;
+  char name[100];
+  Float_t b[50][3];
+
+  Double_t xx[50],yy[50];
+  Double_t exx[50],eyy[50];
+
+  for(Int_t i=0;i < nptbin;i++){
+    c->cd(i+1)->SetLogy();
+    Float_t ptmin = minptbin+(maxptbin-minptbin)/nptbin*(i);
+    Float_t ptmax = minptbin+(maxptbin-minptbin)/nptbin*(i+1);
+
+    xx[i] = (ptmin+ptmax)/2;
+    exx[i] = (-ptmin+ptmax)/2;
+
+    Float_t pp=0.1;
+    if(prob < 0.2) pp = 0.;
+    if(pos) hh=GetHistoKap(ptmin,ptmax,pp,0.0,etaminkp,etamaxkp);
+    else hh=GetHistoKan(ptmin,ptmax,pp,0.0);
+    sprintf(name,"TOF matched: %f < p_{T} < %f GeV/#it{c}",ptmin,ptmax);
+    hh->SetTitle(name);
+    sprintf(name,"hNoPid%i",i);
+    
+    pp=prob;
+    if(prob < 0.2) pp = 0.1;
+    if(pos) hh2=GetHistoKap(ptmin,ptmax,pp,0.0,etaminkp,etamaxkp);
+    else hh2=GetHistoKan(ptmin,ptmax,pp,0.0);
+    AddHisto(hh,hh2,weightS);
+
+    h = hh->ProjectionX(name,cmin,cmax);
+    h->RebinX(rebinsize);
+    h->Draw("ERR");
+    h->SetMarkerStyle(24);
+    b[i][0]=-1;
+    Int_t ntrial = 0;
+    Float_t chi2 = 10000;
+    while(ntrial < 10 && (chi2 > 20 + 1000*selectTrue)){
+      fit(h,b[i],"WW","",xx[i]);
+      c1->Update();
+//       getchar();
+      fit(h,b[i],"","",xx[i]);
+      ntrial++;
+      chi2 = b[i][2];
+      printf("chi2 = %f\n",chi2);
+      c1->Update();
+//       getchar();
+      
+    }
+
+    yy[i] = fall->GetParameter(parplotted);
+    eyy[i] = fall->GetParError(parplotted);
+  }
+
+  TGraphErrors *gpar = new TGraphErrors(nptbin,xx,yy,exx,eyy);
+  c->cd(8);
+  gpar->Draw("AP");
+  gpar->SetMarkerStyle(20);
+
+  TCanvas *c2 = new TCanvas();
+  c2->Divide((nptbin+1)/2,2);
+  Float_t b2[50][3];
+
+  for(Int_t i=0;i < nptbin;i++){
+    c2->cd(i+1);
+    Float_t ptmin = minptbin+(maxptbin-minptbin)/nptbin*(i);
+    Float_t ptmax = minptbin+(maxptbin-minptbin)/nptbin*(i+1);
+
+    Float_t pp=prob;
+    if(prob < 0.2) pp = 0.1;
+    if(pos) hh=GetHistoKap(ptmin,ptmax,pp,0.0,etaminkp,etamaxkp);
+    else hh=GetHistoKan(ptmin,ptmax,pp,0.0);
+    sprintf(name,"P_{TOF} > 0.8: %f < p_{T} < %f GeV/#it{c}",ptmin,ptmax);
+    hh->SetTitle(name);
+    sprintf(name,"hPid60_%i",i);
+    h = hh->ProjectionX(name,cmin,cmax);
+    h->RebinX(rebinsize);
+    h->Draw("ERR");
+    h->SetMarkerStyle(24);
+    b2[i][0]=-1;
+    Int_t ntrial = 0;
+    Float_t chi2 = 10000;
+    while(ntrial < 40 && (chi2 > 20 + 1000*selectTrue)){
+      fit(h,b2[i],"WW","");
+      fit(h,b2[i],"","");
+      ntrial++;
+      chi2 = b2[i][2];
+      printf("chi2 = %f\n",chi2);
+    }
+    yy[i] = fall->GetParameter(parplotted);
+    eyy[i] = fall->GetParError(parplotted);
+
+  }
+
+  TGraphErrors *gpar2 = new TGraphErrors(nptbin,xx,yy,exx,eyy);
+  c2->cd(8);
+  gpar2->Draw("AP");
+  gpar2->SetMarkerStyle(20);
+  
+  Double_t xpt[50],expt[50],eff[50],efferr[50];
+  for(Int_t i=0;i<nptbin;i++){
+    printf("%f +/- %f -  %f +/- %f\n",b[i][0],b[i][1],b2[i][0],b2[i][1]);
+
+    Float_t ptmin = minptbin+(maxptbin-minptbin)/nptbin*(i);
+    Float_t ptmax = minptbin+(maxptbin-minptbin)/nptbin*(i+1);
+
+    xpt[i] = (ptmin+ptmax)/2;
+    expt[i] = (-ptmin+ptmax)/2;
+    eff[i] = b2[i][0]/(b[i][0]-b2[i][0]*weightS);
+
+    b[i][0] = b[i][0]-b2[i][0]*weightS;
+
+    efferr[i] = TMath::Sqrt(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+
+    if(TMath::Abs(efferr[i]) > 1)efferr[i]=1;
+  }
+  new TCanvas();
+  TGraphErrors *geff = new TGraphErrors(nptbin,xpt,eff,expt,efferr);
+  geff->Draw("AP");
+
+  char flag[100];
+  sprintf(flag,"");
+
+  if(isMC){
+    if(selectTrue) sprintf(flag,"true");
+    else if(!keepTrue) sprintf(flag,"back");
+  }
+
+  char flag2[100];
+  sprintf(flag2,"");
+
+  char etarange[100];
+  sprintf(etarange,"_%.1f-%.1f_",etaminkp,etamaxkp);
+
+  if(kGoodMatch)
+    sprintf(flag2,"GM");
+
+  if(bayesVsigma)
+    sprintf(flag2,"BayesVsSigma");
+
+  if(kSigma2vs3)
+    sprintf(flag2,"Sigma2vs3");
+
+  if(kOverAll)
+    sprintf(flag2,"OverAll");
+
+  if(pos){
+    if(prob >=0.2) sprintf(name,"kaonPos%sP%iEff%i_%i%s%s.root",etarange,Int_t(prob*100),(cmin-1)*10,cmax*10,flag,flag2);
+    else sprintf(name,"kaonPos%sMatchEff%i_%i%s%s.root",etarange,(cmin-1)*10,cmax*10,flag,flag2);
+  }
+  else{
+    if(prob >=0.2) sprintf(name,"kaonNeg%sP%iEff%i_%i%s%s.root",etarange,Int_t(prob*100),(cmin-1)*10,cmax*10,flag,flag2);
+    else sprintf(name,"kaonNeg%sMatchEff%i_%i%s%s.root",etarange,(cmin-1)*10,cmax*10,flag,flag2);
+  }
+
+  TFile *fout = new TFile(name,"RECREATE");
+  geff->Write();
+  fout->Close();
+
+
+  TF1 *ff = new TF1("ff","[0] - [1]*TMath::Exp([2]*x)",0,3);
+  ff->SetParameter(0,0.67);
+  ff->SetParameter(1,1.14383e+00);
+  ff->SetParameter(2,-2.29910);
+  ff->SetLineColor(4);
+  ff->SetLineColor(2);
+  ff->Draw("SAME");
+
+  TF1 *ff2 = new TF1("ff2","[0] - [1]*TMath::Exp([2]*x)",0,3);
+  ff2->SetParameter(0,0.67);
+  ff2->SetParameter(1,9.23126e-01);
+  ff2->SetParameter(2,-1.851);
+  ff2->SetLineColor(4);
+  ff2->Draw("SAME");
+}
+
+TH2F *GetHistoKap(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
+
+  Float_t x[] = {xmin[0]+0.001,etaminkp+0.001,pt+0.001,xmin[3]+0.001,pMinkp+0.001,pMinkn+0.001,(pMinkp>0.09)+0.001,kTOFmatch+0.001,selectTrue,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
+  Float_t x2[] = {xmax[0],etamaxkp-0.001,ptM-0.001,xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],keepTrue,xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
+
+  if(kGoodMatch){
+    x[6] = 1.0001;
+    if(pMinkp > 0)
+      x2[9] = 4.9;
+      
+  }
+
+  if(kTOFmatch){
+    x[6] = 1.0001;
+  }
+
+  if(kSigma2vs3){
+    x[6] = 1.0001;
+    x2[9] = 3;
+    if(pMinkp > 0)
+      x2[9] = 2;
+  }
+
+  if(bayesVsigma){
+    if(pMinkp > 0){
+      x[4] = 0.2001;
+      x2[9] = 5;
+    }
+    else{
+      x2[9] = 3;
+    }
+
+    
+  }
+
+  if(require5sigma) x2[9] = 4.9;
+
+  AliPIDperfContainer *tmp = fContPid1;
+
+  TH2F *h = tmp->GetQA(0, x, x2);
+
+  h->GetXaxis()->SetTitle("M_{#phi} (GeV/#it{c}^{2})");
+  h->GetYaxis()->SetTitle("centrality [%]");
+
+  return h;
+}
+
+TH2F *GetHistoKan(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
+
+  Float_t x[] = {xmin[0]+0.001,etaminkp+0.001,xmin[2]+0.001,pt+0.001,pMinkp+0.001,pMinkn+0.001,kTOFmatch+0.001,(pMinkn>0.09)+0.001,selectTrue,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
+  Float_t x2[] = {xmax[0],etamaxkp-0.001,xmax[2],ptM-0.001,xmax[4],xmax[5],xmax[6],xmax[7],keepTrue,xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
+
+  if(kGoodMatch){
+    x[7] = 1.0001;
+    if(pMinkn > 0)
+      x2[10] = 4.9;
+      
+  }
+
+  if(kTOFmatch){
+    x[7] = 1.0001;
+  }
+
+  if(kSigma2vs3){
+    x[7] = 1.0001;
+    x2[10] = 3;
+    if(pMinkn > 0)
+      x2[10] = 2;
+  }
+ 
+ if(bayesVsigma){
+    if(pMinkn > 0){
+      x[5] = 0.2001;
+      x2[10] = 5;
+    }
+    else{
+      x2[10] = 3;
+    }    
+  }
+
+  if(require5sigma) x2[10] = 4.9;
+
+  AliPIDperfContainer *tmp = fContPid2;
+
+  TH2F *h = tmp->GetQA(0, x, x2);
+
+  h->GetXaxis()->SetTitle("M_{#phi} (GeV/#it{c}^{2})");
+  h->GetYaxis()->SetTitle("centrality [%]");
+
+  return h;
+}
+
+
+fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="",Float_t pt=1.5){
+  if(h->GetEntries() < 1){
+    if(a){
+      a[0]=0.01;
+      a[1]=1;
+    }
+    return;
+  }
+
+
+ fall->SetParameter(0,100);
+ fall->SetParameter(0,1.01898 + 2.4e-04*pt);
+ fall->SetParameter(2,0.0044);
+ fall->SetParameter(3,0.0015);
+
+ fall->SetParLimits(0,-100,100000);
+ fall->SetParLimits(1,1.01898 + 2.4e-04*pt-1e-03,1.01898 + 2.4e-04*pt+1e-03);
+ fall->SetParLimits(2,0.0005,0.006);
+ fall->SetParLimits(3,0.001,0.0017);
+
+ fall->FixParameter(1,1.01884 + 2.9891e-04*pt);
+ fall->FixParameter(2,0.0044);
+ fall->FixParameter(3,7.57574e-04 + 3.85408e-04*pt);
+
+ fall->ReleaseParameter(4);
+ fall->ReleaseParameter(5);
+ fall->ReleaseParameter(6);
+ fall->ReleaseParameter(7);
+ fall->ReleaseParameter(8);
+
+
+ if(!kGoodMatch && !kSigma2vs3){
+   if(pt > 1.5){
+     fall->FixParameter(7,0);   
+     fall->FixParameter(8,0);   
+   }
+   if(pt > 1.7){
+     fall->FixParameter(6,0);   
+   }
+ }
+
+ if(selectTrue){
+   fall->FixParameter(4,0);
+   fall->FixParameter(5,0);
+   fall->FixParameter(6,0);
+   fall->FixParameter(7,0);
+   fall->FixParameter(8,0);
+ }
+
+ char name[100];
+ TF1 *ftmp=fall;
+
+ TF1 *ftmp2=new TF1(*fsign);
+ sprintf(name,"fsign%i",ifunc);
+ ftmp2->SetName(name);
+
+ TF1 *ftmp3=new TF1(*fback);
+ sprintf(name,"ftmp3%i",ifunc);
+ ftmp3->SetName(name);
+
+ ifunc++;
+
+ h->Fit(ftmp,opt,opt2,fitmin,fitmax);
+ h->Draw("ERR");
+
+ ftmp2->SetParameter(0,ftmp->GetParameter(0));
+ ftmp2->SetParameter(1,ftmp->GetParameter(1));
+ ftmp2->SetParameter(2,ftmp->GetParameter(2));
+ ftmp2->SetParameter(3,ftmp->GetParameter(3));
+ ftmp2->Draw("SAME");
+ ftmp3->SetParameter(0,ftmp->GetParameter(4));
+ ftmp3->SetParameter(1,ftmp->GetParameter(5));
+ ftmp3->SetParameter(2,ftmp->GetParameter(6));
+ ftmp3->SetParameter(3,ftmp->GetParameter(7));
+ ftmp3->SetParameter(4,ftmp->GetParameter(8));
+ ftmp3->Draw("SAME");
+
+ Float_t mean = ftmp->GetParameter(1);
+ Float_t sigma = 0.0044;//TMath::Abs(ftmp->GetParameter(2));
+
+ Float_t signI = ftmp2->Integral(mean-10*sigma,mean+10*sigma)/h->GetBinWidth(1);
+ Float_t backI = ftmp3->Integral(mean-3*sigma,mean+3*sigma)/h->GetBinWidth(1);
+
+ Float_t errI = TMath::Sqrt(ftmp->GetParError(0)*ftmp->GetParError(0)/(0.001+ftmp->GetParameter(0))/(0.001+ftmp->GetParameter(0)));
+
+ printf("signal(5 sigma) = %f +/- %f(fit) +/- %f(stat)\n",signI,errI*signI,TMath::Sqrt(signI));
+ printf("backgr(3sigma) = %f\n",backI);
+ printf("significance(3 sigma) = %f\n",signI/sqrt(signI+backI));
+
+ if(a){
+   a[0]=signI;
+   a[1]=signI*errI*signI*errI + signI;
+   a[1] = TMath::Sqrt(a[1]);
+   if(ftmp->GetNDF()) a[2] = ftmp->GetChisquare()/ftmp->GetNDF();
+
+
+   if(selectTrue){
+     a[0] = h->GetEntries();
+     a[1] = TMath::Sqrt(a[0]);
+   }
+ }
+}
+
+AddHisto(TH2F *h1,TH2F *h2,Float_t w){
+  Int_t nbinx = h1->GetNbinsX();
+  Int_t nbiny = h1->GetNbinsY();
+
+  for(Int_t i=1;i<=nbinx;i++){
+    for(Int_t j=1;j<=nbiny;j++){
+      Float_t val = h1->GetBinContent(i,j) + h2->GetBinContent(i,j)*w;
+      Float_t err = TMath::Min(TMath::Sqrt(val),val);
+      h1->SetBinContent(i,j,val);
+      h1->SetBinError(i,j,err);
+    }
+  }
+}
