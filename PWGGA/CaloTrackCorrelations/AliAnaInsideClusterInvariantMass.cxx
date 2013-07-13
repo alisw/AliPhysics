@@ -346,9 +346,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   Int_t   list[nc];
   Float_t elist[nc];
   Int_t nMax = GetCaloUtils()->GetNumberOfLocalMaxima(cluster, GetEMCALCells(),list, elist);
-    
-  if(nMax < 2) return;
-  
+      
 //  printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin() - Cluster E %2.2f; NLM = %d, cluster MC labels:\n",cluster->E(),nMax);
 //  
 //  for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
@@ -370,8 +368,8 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //  
 //  printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin() - Cluster Cells MC labels:\n");
 //  
-  for (UInt_t icell = 0; icell < nc; icell++ )
-  {
+//  for (UInt_t icell = 0; icell < nc; icell++ )
+//  {
 //    Bool_t ok  =kFALSE,gok = kFALSE;
 //    Int_t pdg    = -22222, status   = -1;
 //    Int_t gpdg   = -22222, gstatus  = -1;
@@ -389,6 +387,16 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //    printf(" %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
 //           icell,label,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
     
+//  }
+  
+  //If only one maxima, consider all the towers in the cluster
+  if(nMax==1)
+  {
+      for (UInt_t icell = 0; icell < nc; icell++ )
+      {
+        list [icell] = cluster->GetCellAbsId(icell);
+        elist[icell] = GetEMCALCells()->GetCellAmplitude(list[icell]);
+      }
   }
   
   //Find highest energy Local Maxima Towers
@@ -409,6 +417,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   for(Int_t i = 0; i < nMax; i++)
   {
     if(i==imax) continue;
+    
     if(elist[i] > emax2)
     {
       imax2 = i;
@@ -473,12 +482,14 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //  }
   
   // Compare ancestors of all local maxima
-  for(Int_t i = 0; i < nMax-1; i++)
+  Int_t nmaxima = nMax;
+  if(nMax==1) nmaxima = nc ;
+  for(Int_t i = 0; i < nmaxima-1; i++)
   {
     Int_t mcLabel1 = GetEMCALCells()->GetCellMCLabel(list[i]);
     GetReader()->RemapMCLabelForAODs(mcLabel1);
  
-    for(Int_t j = i+1; j < nMax; j++)
+    for(Int_t j = i+1; j < nmaxima; j++)
     {
       Int_t mcLabel2 = GetEMCALCells()->GetCellMCLabel(list[j]);
       GetReader()->RemapMCLabelForAODs(mcLabel2);
@@ -519,7 +530,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   Float_t en = cluster->E();
   
-  //printf("Match MC? %d; high %d; low %d\n",matchHighLMAndHighMC,high,low);
+  //printf("nMax %d; Match MC? %d; high %d; low %d\n",nMax,matchHighLMAndHighMC,high,low);
   
   if(matchHighLMAndHighMC)
   {
@@ -981,7 +992,7 @@ void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster 
 {
   // Fill histograms related to track matching
   
-  if(!fFillTMResidualHisto) return;
+  if(!fFillTMResidualHisto || !fFillTMHisto) return;
   
   Float_t dZ  = cluster->GetTrackDz();
   Float_t dR  = cluster->GetTrackDx();
@@ -3178,7 +3189,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if(!matched) FillEBinHistograms(ebin,nMax,mcindex,splitFrac,mass,asym,l0);
     
     //---------------------------------------------------------------------
-    // From here only if M02 is large but not too large, fill histograms 
+    // From here only if M02 is large but not too large
+    // or more strict cuts, fill histograms
     //---------------------------------------------------------------------
     
     if( l0 < fM02MinCut || l0 > fM02MaxCut ) continue ;
@@ -3229,9 +3241,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         }
       }
       
-            
       if     (pidTag==AliCaloPID::kPhoton)
-      { fhM02ConNLocMax1 [0][matched]->Fill(en,l0);
+      {
+        fhM02ConNLocMax1 [0][matched]->Fill(en,l0);
         fhMassConNLocMax1[0][matched]->Fill(en,mass);
         fhAsyConNLocMax1 [0][matched]->Fill(en,asym);
       }
@@ -3241,6 +3253,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassPi0NLocMax1[0][matched]->Fill(en,mass);
         fhAsyPi0NLocMax1[0][matched]->Fill(en,asym);
         fhCentralityPi0NLocMax1[0][matched]->Fill(en,cent) ;
+        
         if(!matched)
         {
           fhEventPlanePi0NLocMax1->Fill(en,evp) ;
@@ -3255,6 +3268,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassEtaNLocMax1[0][matched]->Fill(en,mass);
         fhAsyEtaNLocMax1 [0][matched]->Fill(en,asym);
         fhCentralityEtaNLocMax1[0][matched]->Fill(en,cent) ;
+        
         if(!matched)
         {
           fhEventPlaneEtaNLocMax1->Fill(en,evp) ;
@@ -3270,6 +3284,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       fhAsymNLocMax2[0][matched]->Fill(en,asym );
       
       // Effect of cuts in mass histograms
+      
       if(!matched)
       {
         if(m02OK)
@@ -3305,6 +3320,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassPi0NLocMax2[0][matched]->Fill(en,mass);
         fhAsyPi0NLocMax2 [0][matched]->Fill(en,asym);
         fhCentralityPi0NLocMax2[0][matched]->Fill(en,cent) ;
+        
         if(!matched)
         {
           fhEventPlanePi0NLocMax2->Fill(en,evp) ;
@@ -3319,6 +3335,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassEtaNLocMax2[0][matched]->Fill(en,mass);
         fhAsyEtaNLocMax2 [0][matched]->Fill(en,asym);
         fhCentralityEtaNLocMax2[0][matched]->Fill(en,cent) ;
+        
         if(!matched)
         {
           fhEventPlaneEtaNLocMax2->Fill(en,evp) ;
@@ -3351,7 +3368,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         
         if(!matched && IsDataMC() && fFillMCHisto && mcindex==kmcPi0)
         {
-          
           fhMCGenFracAfterCutsNLocMaxNMCPi0      ->Fill(en   ,  efrac     );
           fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0->Fill(en   ,  efracSplit);
         }
@@ -3361,13 +3377,15 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       {
         fhM02ConNLocMaxN [0][matched]->Fill(en,l0);
         fhMassConNLocMaxN[0][matched]->Fill(en,mass);
-        fhAsyConNLocMaxN [0][matched]->Fill(en,asym); }
+        fhAsyConNLocMaxN [0][matched]->Fill(en,asym);
+      }
       else if(pidTag==AliCaloPID::kPi0   )
       {
         fhM02Pi0NLocMaxN [0][matched]->Fill(en,l0);
         fhMassPi0NLocMaxN[0][matched]->Fill(en,mass);
         fhAsyPi0NLocMaxN [0][matched]->Fill(en,asym);
         fhCentralityPi0NLocMaxN[0][matched]->Fill(en,cent) ;
+        
         if(!matched)
         {
           fhEventPlanePi0NLocMaxN->Fill(en,evp) ;
@@ -3382,6 +3400,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         fhMassEtaNLocMaxN[0][matched]->Fill(en,mass);
         fhAsyEtaNLocMaxN [0][matched]->Fill(en,asym);
         fhCentralityEtaNLocMaxN[0][matched]->Fill(en,cent) ;
+        
         if(!matched)
         {
           fhEventPlaneEtaNLocMaxN->Fill(en,evp) ;
