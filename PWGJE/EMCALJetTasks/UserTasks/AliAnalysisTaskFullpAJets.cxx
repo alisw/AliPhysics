@@ -59,8 +59,16 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fpTPCEventMult(0),
     fpRhoScale(0),
 
+    fpJetEtaProfile(0),
+    fpJetAbsEtaProfile(0),
+    fpChargedJetRProfile(0),
+    fpJetRProfile(0),
+
     fpTrackPtProfile(0),
     fpClusterPtProfile(0),
+
+    fpChargedJetEDProfile(0),
+    fpJetEDProfile(0),
 
     fTPCRawJets(0),
     fEMCalRawJets(0),
@@ -146,6 +154,12 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fEMCalJetThreshold(5),
     fVertexWindow(10),
     fVertexMaxR(1),
+    fTrackName(0),
+    fClusName(0),
+    fkTChargedName(0),
+    fAkTChargedName(0),
+    fkTFullName(0),
+    fAkTFullName(0),
     fOrgTracks(0),
     fOrgClusters(0),
     fmyAKTFullJets(0),
@@ -193,8 +207,16 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fpTPCEventMult(0),
     fpRhoScale(0),
 
+    fpJetEtaProfile(0),
+    fpJetAbsEtaProfile(0),
+    fpChargedJetRProfile(0),
+    fpJetRProfile(0),
+
     fpTrackPtProfile(0),
     fpClusterPtProfile(0),
+
+    fpChargedJetEDProfile(0),
+    fpJetEDProfile(0),
 
     fTPCRawJets(0),
     fEMCalRawJets(0),
@@ -280,6 +302,12 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fEMCalJetThreshold(5),
     fVertexWindow(10),
     fVertexMaxR(1),
+    fTrackName(0),
+    fClusName(0),
+    fkTChargedName(0),
+    fAkTChargedName(0),
+    fkTFullName(0),
+    fAkTFullName(0),
     fOrgTracks(0),
     fOrgClusters(0),
     fmyAKTFullJets(0),
@@ -658,30 +686,20 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
 
 void AliAnalysisTaskFullpAJets::UserExecOnce()
 {
-    // Get the event tracks from PicoTracks
-    TString track_name="PicoTracks";
-    fOrgTracks = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(track_name));
+    // Get the event tracks
+    fOrgTracks = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fTrackName));
     
-    // Get the event caloclusters from CaloClustersCorr
-    TString cluster_name="caloClustersCorr";
-    //TString cluster_name="EmcalClusters";
-    fOrgClusters = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(cluster_name));
+    // Get the event caloclusters
+    fOrgClusters = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fClusName));
     
     // Get charged jets
-    TString jet_algorithm=Form("Jet_AKTChargedR0%d0_PicoTracks_pT0150",fRJET);
-    fmyAKTChargedJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(jet_algorithm));
-
-    jet_algorithm=Form("Jet_KTChargedR0%d0_PicoTracks_pT0150",fRJET);
-    fmyKTChargedJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(jet_algorithm));
+    fmyKTChargedJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fkTChargedName));
+    fmyAKTChargedJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fAkTChargedName));
 
     // Get the full jets
-    jet_algorithm=Form("Jet_AKTFullR0%d0_PicoTracks_pT0150_caloClustersCorr_ET0300",fRJET);
-    fmyAKTFullJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(jet_algorithm));
-    
-    jet_algorithm=Form("Jet_KTFullR0%d0_PicoTracks_pT0150_caloClustersCorr_ET0300",fRJET);
-    fmyKTFullJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(jet_algorithm));
-    
-    jet_algorithm="";
+    fmyKTFullJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fkTFullName));
+    fmyAKTFullJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fAkTFullName));
+
     fIsInitialized=kTRUE;
 }
 //________________________________________________________________________
@@ -747,16 +765,14 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     fhCentrality->Fill(fEventCentrality);
     
     TrackCuts();
-    /*
     // Reject any event that doesn't have any tracks, i.e. TPC is off
     if (fnTracks<1)
     {
         AliWarning("No PicoTracks, Rejecting Event");
         return;
     }
-    */
+    
     ClusterCuts();
-    /*
     if (fnClusters<1)
     {
         AliInfo("No Corrected CaloClusters, using only charged jets");
@@ -781,7 +797,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         PostData(1, fOutput);
         return;
     }
-    */
+    
     TrackHisto();
     ClusterHisto();
     
@@ -2995,13 +3011,45 @@ Double_t AliAnalysisTaskFullpAJets::MedianRhokT(Double_t *pTkTEntries, Double_t 
 
 // AlipAJetData Class Member Defs
 // Constructors
-AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData()
+AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData() :
+
+    fName(0),
+    fIsJetsFull(0),
+    fnTotal(0),
+    fnJets(0),
+    fnJetsSC(0),
+    fJetR(0),
+    fSignalPt(0),
+    fAreaCutFrac(0.6),
+    fPtMaxIndex(0),
+    fPtMax(0),
+    fPtSubLeadingIndex(0),
+    fPtSubLeading(0),
+    fJetsIndex(0),
+    fJetsSCIndex(0),
+    fIsJetInArray(0)
 {
     fnTotal=0;
     // Dummy constructor ALWAYS needed for I/O.
 }
 
-AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t isFull, Int_t nEntries)
+AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t isFull, Int_t nEntries) :
+
+    fName(0),
+    fIsJetsFull(0),
+    fnTotal(0),
+    fnJets(0),
+    fnJetsSC(0),
+    fJetR(0),
+    fSignalPt(0),
+    fAreaCutFrac(0.6),
+    fPtMaxIndex(0),
+    fPtMax(0),
+    fPtSubLeadingIndex(0),
+    fPtSubLeading(0),
+    fJetsIndex(0),
+    fJetsSCIndex(0),
+    fIsJetInArray(0)
 {
     SetName(name);
     SetIsJetsFull(isFull);
@@ -3010,7 +3058,7 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t i
     SetSubLeading(0,-9.99E+099);
     SetSignalCut(0);
     SetAreaCutFraction(0.6);
-    SetJetR(0.4);
+    SetJetR(fJetR);
 }
 
 // Destructor
@@ -3202,12 +3250,114 @@ Bool_t AliAnalysisTaskFullpAJets::AlipAJetData::GetIsJetInArray(Int_t At)
 
 // AlipAJetHistos Class Member Defs
 // Constructors
-AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos()
+AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
+
+    fOutput(0),
+
+    fh020Rho(0),
+    fh80100Rho(0),
+    fhRho(0),
+    fhRhoCen(0),
+    fh020BSPt(0),
+    fh80100BSPt(0),
+    fhBSPt(0),
+    fhBSPtCen(0),
+    fh020BSPtSignal(0),
+    fh80100BSPtSignal(0),
+    fhBSPtSignal(0),
+    fhBSPtCenSignal(0),
+    fh020DeltaPt(0),
+    fh80100DeltaPt(0),
+    fhDeltaPt(0),
+    fhDeltaPtCen(0),
+    fh020DeltaPtSignal(0),
+    fh80100DeltaPtSignal(0),
+    fhDeltaPtSignal(0),
+    fhDeltaPtCenSignal(0),
+    fh020BckgFlucPt(0),
+    fh80100BckgFlucPt(0),
+    fhBckgFlucPt(0),
+    fhBckgFlucPtCen(0),
+
+    fpRho(0),
+    fpLJetRho(0),
+
+    fName(0),
+    fCentralityTag(0),
+    fCentralityBins(0),
+    fCentralityLow(0),
+    fCentralityUp(0),
+    fPtBins(0),
+    fPtLow(0),
+    fPtUp(0),
+    fRhoPtBins(0),
+    fRhoPtLow(0),
+    fRhoPtUp(0),
+    fDeltaPtBins(0),
+    fDeltaPtLow(0),
+    fDeltaPtUp(0),
+    fBckgFlucPtBins(0),
+    fBckgFlucPtLow(0),
+    fBckgFlucPtUp(0),
+    fLJetPtBins(0),
+    fLJetPtLow(0),
+    fLJetPtUp(0)
 {
     // Dummy constructor ALWAYS needed for I/O.
 }
 
-AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name)
+AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
+
+    fOutput(0),
+
+    fh020Rho(0),
+    fh80100Rho(0),
+    fhRho(0),
+    fhRhoCen(0),
+    fh020BSPt(0),
+    fh80100BSPt(0),
+    fhBSPt(0),
+    fhBSPtCen(0),
+    fh020BSPtSignal(0),
+    fh80100BSPtSignal(0),
+    fhBSPtSignal(0),
+    fhBSPtCenSignal(0),
+    fh020DeltaPt(0),
+    fh80100DeltaPt(0),
+    fhDeltaPt(0),
+    fhDeltaPtCen(0),
+    fh020DeltaPtSignal(0),
+    fh80100DeltaPtSignal(0),
+    fhDeltaPtSignal(0),
+    fhDeltaPtCenSignal(0),
+    fh020BckgFlucPt(0),
+    fh80100BckgFlucPt(0),
+    fhBckgFlucPt(0),
+    fhBckgFlucPtCen(0),
+
+    fpRho(0),
+    fpLJetRho(0),
+
+    fName(0),
+    fCentralityTag(0),
+    fCentralityBins(0),
+    fCentralityLow(0),
+    fCentralityUp(0),
+    fPtBins(0),
+    fPtLow(0),
+    fPtUp(0),
+    fRhoPtBins(0),
+    fRhoPtLow(0),
+    fRhoPtUp(0),
+    fDeltaPtBins(0),
+    fDeltaPtLow(0),
+    fDeltaPtUp(0),
+    fBckgFlucPtBins(0),
+    fBckgFlucPtLow(0),
+    fBckgFlucPtUp(0),
+    fLJetPtBins(0),
+    fLJetPtLow(0),
+    fLJetPtUp(0)
 {
     SetName(name);
     SetCentralityTag("V0A");
@@ -3221,7 +3371,58 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name)
     Init();
 }
 
-AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, const char *centag)
+AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, const char *centag) :
+
+    fOutput(0),
+
+    fh020Rho(0),
+    fh80100Rho(0),
+    fhRho(0),
+    fhRhoCen(0),
+    fh020BSPt(0),
+    fh80100BSPt(0),
+    fhBSPt(0),
+    fhBSPtCen(0),
+    fh020BSPtSignal(0),
+    fh80100BSPtSignal(0),
+    fhBSPtSignal(0),
+    fhBSPtCenSignal(0),
+    fh020DeltaPt(0),
+    fh80100DeltaPt(0),
+    fhDeltaPt(0),
+    fhDeltaPtCen(0),
+    fh020DeltaPtSignal(0),
+    fh80100DeltaPtSignal(0),
+    fhDeltaPtSignal(0),
+    fhDeltaPtCenSignal(0),
+    fh020BckgFlucPt(0),
+    fh80100BckgFlucPt(0),
+    fhBckgFlucPt(0),
+    fhBckgFlucPtCen(0),
+
+    fpRho(0),
+    fpLJetRho(0),
+
+    fName(0),
+    fCentralityTag(0),
+    fCentralityBins(0),
+    fCentralityLow(0),
+    fCentralityUp(0),
+    fPtBins(0),
+    fPtLow(0),
+    fPtUp(0),
+    fRhoPtBins(0),
+    fRhoPtLow(0),
+    fRhoPtUp(0),
+    fDeltaPtBins(0),
+    fDeltaPtLow(0),
+    fDeltaPtUp(0),
+    fBckgFlucPtBins(0),
+    fBckgFlucPtLow(0),
+    fBckgFlucPtUp(0),
+    fLJetPtBins(0),
+    fLJetPtLow(0),
+    fLJetPtUp(0)
 {
     SetName(name);
     SetCentralityTag(centag);
