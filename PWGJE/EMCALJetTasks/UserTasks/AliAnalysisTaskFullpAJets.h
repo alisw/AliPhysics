@@ -1,6 +1,7 @@
 #ifndef AliAnalysisTaskFullpAJets_H
 #define AliAnalysisTaskFullpAJets_H
 
+class TString;
 class TH1D;
 class TH2D;
 class TH3D;
@@ -281,16 +282,43 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     {
         fClusterMinPt = pT;
     }
-    /*
-    inline Double_t GetScaleFactor()
+    
+    // Used to set Tracks collection name
+    inline void SetTrackName(TString name)
     {
-        if (fRhoCharged>0)
-        {
-            return fRhoFull/fRhoCharged;
-        }
-        return -1;
+        fTrackName = name;
     };
-    */
+    
+    // Used to set Clusters collection name
+    inline void SetClusterName(TString name)
+    {
+        fClusName = name;
+    };
+
+    // Used to set kT Charged Jet collection name
+    inline void SetkTChargedJetName(TString name)
+    {
+        fkTChargedName = name;
+    };
+
+    // Used to set anti-kT Charged Jet collection name
+    inline void SetAkTChargedJetName(TString name)
+    {
+        fAkTChargedName = name;
+    };
+
+    // Used to set kT Full Jet collection name
+    inline void SetkTFullJetName(TString name)
+    {
+        fkTFullName = name;
+    };
+    
+    // Used to set anti-kT Full Jet collection name
+    inline void SetAkTFullJetName(TString name)
+    {
+        fAkTFullName = name;
+    };
+
     private:
     TList *fOutput; // Output list
     
@@ -428,6 +456,16 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fvertex[3];
     Double_t fVertexWindow;
     Double_t fVertexMaxR;
+    
+    // Tracks and Clusters string names
+    TString fTrackName;
+    TString fClusName;
+    
+    // Jet Finder string names
+    TString fkTChargedName;
+    TString fAkTChargedName;
+    TString fkTFullName;
+    TString fAkTFullName;
     
     // Dynamic Array variables
     TClonesArray *fOrgTracks; //!
