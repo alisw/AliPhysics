@@ -723,8 +723,8 @@ void AliChaoticity::ParInit()
     fQcut[0]=0.1;//pi-pi, pi-k, pi-p
     fQcut[1]=0.1;//k-k
     fQcut[2]=0.6;//the rest
-    fNormQcutLow[0] = 1.06;// 0.15 or 1.06
-    fNormQcutHigh[0] = 1.1;// 0.175 or 1.1
+    fNormQcutLow[0] = 0.15;// 0.15 or 1.06
+    fNormQcutHigh[0] = 0.175;// 0.175 or 1.1
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
