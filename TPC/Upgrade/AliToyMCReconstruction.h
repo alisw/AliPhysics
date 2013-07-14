@@ -2,6 +2,8 @@
 #define AliToyMCReconstruction_H
 
 #include <TObject.h>
+#include <TClonesArray.h>
+#include <TExMap.h>
 
 class TTree;
 
@@ -12,6 +14,7 @@ class AliToyMCEvent;
 class AliTPCCorrection;
 class AliTPCseed;
 class AliTPCtrackerRow;
+class AliRieman;
 
 class AliToyMCReconstruction : public TObject {
 public:
@@ -61,7 +64,17 @@ public:
   AliToyMCTrack *ConvertTPCSeedToToyMCTrack(const AliTPCseed &seed);
   AliExternalTrackParam* GetRefittedTrack(const AliTPCseed &seed);
   
+  AliTPCclusterMI* FindMiddleCluster(const AliTPCclusterMI *clInner, const AliTPCclusterMI *clOuter,
+                                     Double_t roady, Double_t roadz,
+                                     AliRieman &seedFit);
+
+  void AddMiddleClusters(AliTPCseed *seed,
+                         const AliTPCclusterMI *clInner, const AliTPCclusterMI *clOuter,
+                         Double_t roady, Double_t roadz,
+                         Int_t &nTotalClusters, AliRieman &seedFit);
+  void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
   void MakeSeeds(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
+
   AliExternalTrackParam* ClusterToTrackAssociation(const AliTPCseed *seed, Int_t trackID, Int_t &nClus);
 
   void InitSpaceCharge();
@@ -71,8 +84,12 @@ public:
   Double_t GetVDrift() const;
   Double_t GetZLength(Int_t roc) const;
 
+  void InitStreamer(const char* addName, Int_t level);
 
-private:
+  void ConnectInputFile(const char* file);
+  void Cleanup();
+  
+// private:
   AliToyMCReconstruction(const AliToyMCReconstruction &rec);
   AliToyMCReconstruction& operator= (AliToyMCReconstruction& rec);
 
@@ -84,6 +101,9 @@ private:
   
   Int_t GetSector(AliExternalTrackParam *track);
   void FillSectorStructure(Int_t maxev);
+  void FillSectorStructureAC(Int_t maxev);
+
+  void SetupTrackMaps();
   
   // reco settings
   Int_t  fSeedingRow;            // first row used for seeding
@@ -99,6 +119,7 @@ private:
   Bool_t   fCreateT0seed;        // if current seed is the T0 seed
   
   TTreeSRedirector *fStreamer;   // debug streamer
+  TFile *fInputFile;             // input file
   TTree *fTree;                  // input tree with ToyMC info
   AliToyMCEvent *fEvent;         // input event
 
@@ -106,10 +127,17 @@ private:
   AliTPCCorrection *fTPCCorrection; // space charge
 
    const Int_t fkNSectorInner;        //number of inner sectors
-   AliTPCtrackerSector *fInnerSectorArray;  //array of inner sectors;
+   AliTPCtrackerSector *fInnerSectorArray;  //array of inner sectors
    const Int_t fkNSectorOuter;        //number of outer sectors
-   AliTPCtrackerSector *fOuterSectorArray;  //array of outer sectors;
-  
+   AliTPCtrackerSector *fOuterSectorArray;  //array of outer sectors
+
+   TClonesArray fAllClusters;     //Array keeping all clusters for free seeding
+
+   TExMap fMapTrackEvent;          // map global track number -> event number
+   TExMap fMapTrackTrackInEvent;   // map global track number -> track in event
+
+   Bool_t fIsAC;                     // if we are tracking with sector arrays running from 0-36 rather than 0-18
+   
   ClassDef(AliToyMCReconstruction,0)
 };
 

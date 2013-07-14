@@ -21,6 +21,7 @@
 #include <AliTPCseed.h>
 #include <AliTPCtracker.h>
 #include <AliTPCtrackerSector.h>
+#include <AliRieman.h>
 
 #include "AliToyMCTrack.h"
 #include "AliToyMCEvent.h"
@@ -45,6 +46,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fTime0(-1)
 , fCreateT0seed(kFALSE)
 , fStreamer(0x0)
+, fInputFile(0x0)
 , fTree(0x0)
 , fEvent(0x0)
 , fTPCParam(0x0)
@@ -53,6 +55,10 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fInnerSectorArray(0x0)
 , fkNSectorOuter(18) // hard-coded to avoid loading the parameters before
 , fOuterSectorArray(0x0)
+, fAllClusters("AliTPCclusterMI",10000)
+, fMapTrackEvent(10000)
+, fMapTrackTrackInEvent(10000)
+, fIsAC(kFALSE)
 {
   //
   //  ctor
@@ -68,8 +74,7 @@ AliToyMCReconstruction::~AliToyMCReconstruction()
   //  dtor
   //
 
-  delete fStreamer;
-//   delete fTree;
+  Cleanup();
 }
 
 //____________________________________________________________________________________
@@ -79,20 +84,8 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   // Recostruction from associated clusters
   //
 
-  TFile f(file);
-  if (!f.IsOpen() || f.IsZombie()) {
-    printf("ERROR: couldn't open the file '%s'\n", file);
-    return;
-  }
-  
- fTree=(TTree*)f.Get("toyMCtree");
-  if (!fTree) {
-    printf("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", file);
-    return;
-  }
-
-  fEvent=0x0;
-  fTree->SetBranchAddress("event",&fEvent);
+  ConnectInputFile(file);
+  if (!fTree) return;
   
   // read spacecharge from the Userinfo ot the tree
   InitSpaceCharge();
@@ -140,7 +133,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
       Float_t z0=fEvent->GetZ();
       Float_t t0=fEvent->GetT0();
 
-      Float_t vdrift=GetVDrift();
+      Float_t vDrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
       // crate time0 seed, steered by fCreateT0seed
@@ -155,7 +148,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 
         // crate real seed using the time 0 from the first seed
         // set fCreateT0seed now to false to get the seed in z coordinates
-        fTime0 = t0seed.GetZ()-zLength/vdrift;
+        fTime0 = t0seed.GetZ()-zLength/vDrift;
         fCreateT0seed = kFALSE;
 //         printf("seed (%.2g)\n",fTime0);
         dummy  = GetSeedFromTrack(tr);
@@ -192,7 +185,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "corrType="    << ctype           <<
         "seedRow="     << fSeedingRow     <<
         "seedDist="    << fSeedingDist    <<
-        "vdrift="      << vdrift          <<
+        "vDrift="      << vDrift          <<
         "zLength="     << zLength         <<
         "t0seed.="     << &t0seed         <<
         "seed.="       << &seed           <<
@@ -205,15 +198,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
     }
   }
 
-  delete fStreamer;
-  fStreamer=0x0;
-
-  delete fEvent;
-  fEvent = 0x0;
-  
-  delete fTree;
-  fTree=0x0;
-  f.Close();
+  Cleanup();
 }
 
 
@@ -308,7 +293,7 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
       Float_t z0=fEvent->GetZ();
       Float_t t0=fEvent->GetT0();
 
-      Float_t vdrift=GetVDrift();
+      Float_t vDrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
       Int_t nClus = 0;
@@ -325,7 +310,7 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
 
         // crate real seed using the time 0 from the first seed
         // set fCreateT0seed now to false to get the seed in z coordinates
-        fTime0 = t0seed.GetZ()-zLength/vdrift;
+        fTime0 = t0seed.GetZ()-zLength/vDrift;
         fCreateT0seed = kFALSE;
         printf("seed (%.2g)\n",fTime0);
         dummy  = GetSeedFromTrack(tr);
@@ -348,7 +333,7 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
           
         }
       }
-      
+
       Int_t ctype(fCorrectionType);
       
       if (fStreamer) {
@@ -362,7 +347,7 @@ void AliToyMCReconstruction::RunRecoAllClusters(const char* file, Int_t nmaxEv)
         "corrType="    << ctype           <<
         "seedRow="     << fSeedingRow     <<
         "seedDist="    << fSeedingDist    <<
-        "vdrift="      << vdrift          <<
+        "vDrift="      << vDrift          <<
         "zLength="     << zLength         <<
         "nClus="       << nClus           <<
         "t0seed.="     << &t0seed         <<
@@ -478,11 +463,11 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   TObjArray * seeds  = new TObjArray;
 
   // cuts for seeding 
-  Float_t cuts[4];
-  cuts[0]=0.0070;  // cuts[0]   - fP4 cut
-  cuts[1] = 1.5;   // cuts[1]   - tan(phi) cut
-  cuts[2] = 3.;    // cuts[2]   - zvertex cut
-  cuts[3] = 3.;    // cuts[3]   - fP3 cut
+//   Float_t cuts[4];
+//   cuts[0]=0.0070;  // cuts[0]   - fP4 cut
+//   cuts[1] = 1.5;   // cuts[1]   - tan(phi) cut
+//   cuts[2] = 3.;    // cuts[2]   - zvertex cut
+//   cuts[3] = 3.;    // cuts[3]   - fP3 cut
 
   // rows for seeding
   Int_t lowerRow = fSeedingRow;
@@ -505,19 +490,20 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   for (Int_t sec=0;sec<fkNSectorOuter;sec++){
     //
     //tpcTracker->MakeSeeds3(arr, sec,upperRow,lowerRow,cuts,-1,1);
-    MakeSeeds(arr, sec,upperRow,lowerRow); // own function (based on TLinearFitter)
+//     MakeSeeds(arr, sec,upperRow,lowerRow); // own function (based on TLinearFitter)
+    MakeSeeds2(arr, sec,upperRow,lowerRow); // own function (based on TLinearFitter)
     //tpcTracker->SumTracks(seeds,arr);   
     //tpcTracker->SignClusters(seeds,3.0,3.0);    
 
   }
 
-  //Printf("After seeding we have %d tracks",seeds->GetEntriesFast());
+  Printf("After seeding we have %d tracks",seeds->GetEntriesFast());
 
   // Standard tracking
   tpcTracker->SetSeeds(seeds);
   tpcTracker->PropagateForward();
-  //Printf("After trackinging we have %d tracks",seeds->GetEntriesFast());
-
+  Printf("After trackinging we have %d tracks",seeds->GetEntriesFast());
+return;
 
   // Loop over all input tracks and connect to found seeds
   for (Int_t iev=0; iev<maxev; ++iev){
@@ -531,7 +517,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 
       Float_t z0=fEvent->GetZ();
       Float_t t0=fEvent->GetT0();
-      Float_t vdrift=GetVDrift();
+      Float_t vDrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
       // find the corresponding seed (and track)
@@ -539,7 +525,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       Int_t nClustersMC        = tr->GetNumberOfSpacePoints();      // number of findable clusters (ideal)
       if(fClusterType==1) 
 	    nClustersMC        = tr->GetNumberOfDistSpacePoints();  // number of findable clusters (distorted)
-      Int_t idxSeed            = 0; // index of best seed (best is with maximum number of clusters with correct ID)
+//       Int_t idxSeed            = 0; // index of best seed (best is with maximum number of clusters with correct ID)
       Int_t nSeeds             = 0; // number of seeds for MC track
       Int_t nSeedClusters      = 0; // number of clusters for best seed
       Int_t nSeedClustersTmp   = 0; // number of clusters for current seed
@@ -576,7 +562,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	// if number of corresponding clusters bigger than current nSeedClusters,
 	// take this seed as the best one
 	if(nSeedClustersIDTmp > nSeedClustersID){
- 	  idxSeed  = iSeeds;
+//  	  idxSeed  = iSeeds;
 	  seedBest = seedTmp;
 	  nSeedClusters   = nSeedClustersTmp;   // number of correctly assigned clusters
 	  nSeedClustersID = nSeedClustersIDTmp; // number of all clusters
@@ -587,7 +573,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
       // cluster to track association (commented out, when used standard tracking)
       if (nSeeds>0&&nSeedClusters>0) {
        	t0seed = (AliExternalTrackParam)*seedBest;
-//        	fTime0 = t0seed.GetZ()-zLength/vdrift;
+//        	fTime0 = t0seed.GetZ()-zLength/vDrift;
         // get the refitted track from the seed
         // this will also set the fTime0 from the seed extrapolation
         dummy=GetRefittedTrack(*seedBest);
@@ -620,7 +606,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
 	  "corrType="        << ctype           <<
 	  "seedRow="         << fSeedingRow     <<
 	  "seedDist="        << fSeedingDist    <<
-	  "vdrift="          << vdrift          <<
+	  "vDrift="          << vDrift          <<
 	  "zLength="         << zLength         <<
 	  "nClustersMC="     << nClustersMC     <<
 	  "nSeeds="          << nSeeds          <<
@@ -1478,6 +1464,85 @@ void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
 }
 
 //____________________________________________________________________________________
+void  AliToyMCReconstruction::FillSectorStructureAC(Int_t maxev) {
+  //-----------------------------------------------------------------
+  // This function fills the sector structure of AliToyMCReconstruction
+  //-----------------------------------------------------------------
+
+  /*
+   my god is the AliTPCtrackerSector stuff complicated!!!
+   Ok, so here we will not fill the fClusters1 and fClusters2 of AliTPCtrackerRow,
+   using InsertCluster of AliTPCtrackerSector, but only the fClusters via InsertCluster
+   of AliTPCtrackerRow itself which then will not be owner, but we create an array in
+   here (fAllClusters) which owns all clusters ...
+  */
+  
+  fIsAC=kTRUE;
+  // cluster array of all sectors
+  fInnerSectorArray = new AliTPCtrackerSector[2*fkNSectorInner];
+  fOuterSectorArray = new AliTPCtrackerSector[2*fkNSectorOuter];
+  
+  for (Int_t i=0; i<2*fkNSectorInner; ++i) {
+    fInnerSectorArray[i].Setup(fTPCParam,0);
+  }
+  
+  for (Int_t i=0; i<2*fkNSectorOuter; ++i) {
+    fOuterSectorArray[i].Setup(fTPCParam,1);
+  }
+  
+  Int_t count[72][96] = { {0} , {0} };
+  
+  for (Int_t iev=0; iev<maxev; ++iev){
+    printf("==============  Fill Clusters: Processing Event %6d  =================\n",iev);
+    fTree->GetEvent(iev);
+    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
+      printf(" > ======  Fill Clusters: Processing Track %6d ========  \n",itr);
+      const AliToyMCTrack *tr=fEvent->GetTrack(itr);
+      
+      // number of clusters to loop over
+      const Int_t ncls=(fClusterType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
+
+      // check if expansion of the cluster arrays is needed.
+      if (fAllClusters.GetEntriesFast()+ncls>=fAllClusters.Capacity()) fAllClusters.Expand(2*fAllClusters.Capacity());
+      for(Int_t icl=0; icl<ncls; ++icl){
+        
+        AliTPCclusterMI *cl=const_cast<AliTPCclusterMI *>(tr->GetSpacePoint(icl));
+        if (fClusterType==1) cl=const_cast<AliTPCclusterMI *>(tr->GetDistortedSpacePoint(icl));
+        if (!cl) continue;
+
+        // register copy to the cluster array
+        cl = new(fAllClusters[fAllClusters.GetEntriesFast()]) AliTPCclusterMI(*cl);
+        
+        Int_t sec = cl->GetDetector();
+        Int_t row = cl->GetRow();
+        
+        // set Q of the cluster to 1, Q==0 does not work for the seeding
+        cl->SetQ(1);
+        
+        // set cluster time to cluster Z (if not ideal tracking)
+        if ( !fIdealTracking ) {
+          // a 'valid' position in z is needed for the seeding procedure
+          cl->SetZ(cl->GetTimeBin()*GetVDrift());
+//           cl->SetZ(cl->GetTimeBin());
+        }
+        //Printf("Fill clusters (sector %d row %d): %.2f %.2f %.2f %.2f",sec,row,cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetTimeBin());
+        
+        // fill arrays for inner and outer sectors (A/C side handled internally)
+        if (sec<fkNSectorInner*2){
+          fInnerSectorArray[sec][row].InsertCluster(cl, count[sec][row]);
+        }
+        else{
+          fOuterSectorArray[(sec-fkNSectorInner*2)][row].InsertCluster(cl, count[sec][row]);
+        }
+        
+        ++count[sec][row];
+      }
+    }
+  }
+  
+}
+
+//____________________________________________________________________________________
 AliToyMCTrack *AliToyMCReconstruction::ConvertTPCSeedToToyMCTrack(const AliTPCseed &seed)
 {
   //
@@ -1509,7 +1574,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetRefittedTrack(const AliTPCseed
 
   AliExternalTrackParam *track=0x0;
 
-  const Float_t vdrift=GetVDrift();
+  const Float_t vDrift=GetVDrift();
   const Float_t zLength=GetZLength(0);
   const Double_t kMaxSnp = 0.85;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
@@ -1517,12 +1582,12 @@ AliExternalTrackParam* AliToyMCReconstruction::GetRefittedTrack(const AliTPCseed
   // for propagation use a copy
   AliExternalTrackParam t0seed(seed);
   AliTrackerBase::PropagateTrackTo(&t0seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-  fTime0 = t0seed.GetZ()-zLength/vdrift;
+  fTime0 = t0seed.GetZ()-zLength/vDrift;
   fCreateT0seed = kFALSE;
   
   AliToyMCTrack *toyTrack = ConvertTPCSeedToToyMCTrack(seed);
   
-  fTime0 = t0seed.GetZ()-zLength/vdrift;
+  fTime0 = t0seed.GetZ()-zLength/vDrift;
   fCreateT0seed = kFALSE;
   //         printf("seed (%.2g)\n",fTime0);
   AliExternalTrackParam *dummy = GetSeedFromTrack(toyTrack);
@@ -1538,7 +1603,266 @@ AliExternalTrackParam* AliToyMCReconstruction::GetRefittedTrack(const AliTPCseed
 }
 
 //____________________________________________________________________________________
-void AliToyMCReconstruction::MakeSeeds(TObjArray * arr, Int_t sec, Int_t iRow1, Int_t iRow2)
+AliTPCclusterMI* AliToyMCReconstruction::FindMiddleCluster(const AliTPCclusterMI *clInner, const AliTPCclusterMI *clOuter,
+                                                           Double_t roady, Double_t roadz,
+                                                           AliRieman &seedFit)
+{
+  //
+  //
+  //
+
+  const Int_t rocInner = clInner->GetDetector();
+  const Int_t rocOuter = clOuter->GetDetector();
+
+  if ( (rocInner%18) != (rocOuter%18) ){
+    AliError("Currently only same Sector implemented");
+    return 0x0;
+  }
+
+  const Int_t innerDet=clInner->GetDetector();
+  const Int_t outerDet=clOuter->GetDetector();
+  const Int_t globalRowInner  = clInner->GetRow() +(innerDet >35)*63;
+  const Int_t globalRowOuter  = clOuter->GetRow() +(outerDet >35)*63;
+
+  Int_t iMiddle  = (globalRowInner+globalRowOuter)/2;
+  Int_t roc = innerDet;
+  if (iMiddle>62){
+    iMiddle-=63;
+    roc=outerDet;
+  }
+
+  const AliTPCtrackerRow& krMiddle = fOuterSectorArray[roc%36][iMiddle]; // middle
+  // initial guess use simple linear interpolation
+  Double_t y=(clInner->GetY()+clOuter->GetY())/2;
+  Double_t z=(clInner->GetZ()+clOuter->GetZ())/2;
+  if (seedFit.IsValid()) {
+    // update values once the fit was performed
+    y=seedFit.GetYat(krMiddle.GetX());
+    z=seedFit.GetZat(krMiddle.GetX());
+  }
+
+  AliTPCclusterMI *n=krMiddle.FindNearest(y,z,roady,roadz);
+//   if (n)
+//     printf("      Nearest cluster (%.2f, %.2f, %.2f) = m(%.2f, %.2f, %.2f : %d) i(%.2f, %.2f , %.2f : %d) o(%.2f, %.2f, %.2f : %d)\n",krMiddle.GetX(),y,z,
+//          n->GetX(), n->GetY(),n->GetZ(),n->GetLabel(0),
+//            clInner->GetX(), clInner->GetY(),clInner->GetZ(),clInner->GetLabel(0),
+//            clOuter->GetX(), clOuter->GetY(),clOuter->GetZ(),clOuter->GetLabel(0)
+//         );
+  return n;
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::AddMiddleClusters(AliTPCseed *seed,
+                                               const AliTPCclusterMI *clInner, const AliTPCclusterMI *clOuter,
+                                               Double_t roady, Double_t roadz,
+                                               Int_t &nTotalClusters, AliRieman &seedFit)
+{
+  //
+  // Iteratively add the middle clusters
+  //
+
+  // update rieman fit with every second point added
+  AliTPCclusterMI *clMiddle=FindMiddleCluster(clInner,clOuter,roady,roadz,seedFit);
+
+  // break iterative process
+  if (!clMiddle) return;
+
+  const Int_t globalRowInner  = clInner->GetRow() +(clInner->GetDetector() >35)*63;
+  const Int_t globalRowMiddle = clMiddle->GetRow()+(clMiddle->GetDetector()>35)*63;
+  const Int_t globalRowOuter  = clOuter->GetRow() +(clOuter->GetDetector() >35)*63;
+  
+  seed->SetClusterPointer(globalRowMiddle,clMiddle);
+  ++nTotalClusters;
+//   printf("    > Total clusters: %d\n",nTotalClusters);
+  seedFit.AddPoint(clMiddle->GetX(), clMiddle->GetY(), clMiddle->GetZ(),
+                   TMath::Sqrt(clMiddle->GetSigmaY2()), TMath::Sqrt(clMiddle->GetSigmaZ2()));
+
+  if (!(seedFit.GetN()%3)) {
+//     printf("      call update: %d (%d)\n",seedFit.GetN(),nTotalClusters);
+//     printf("      Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
+//            seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
+    seedFit.Update();
+  }
+  if ( seedFit.IsValid() && seedFit.GetChi2()>1000 ) return;
+  
+  // Add middle clusters towards outer radius
+  if (globalRowMiddle+1<globalRowOuter) AddMiddleClusters(seed,clMiddle,clOuter,roady,roadz,nTotalClusters,seedFit);
+
+  // Add middle clusters towards innter radius
+  if (globalRowInner+1<globalRowMiddle) AddMiddleClusters(seed,clInner,clMiddle,roady,roadz,nTotalClusters,seedFit);
+
+  return;
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowInner, Int_t iRowOuter)
+{
+  //
+  // find seeds in a sector, requires iRowInner < iRowOuter
+  // iRowXXX runs from 0-159, so over IROC and OROC
+  //
+
+  if (!fIsAC) {
+    AliError("This function requires the sector arrays filled for AC tracking");
+    return;
+  }
+  
+  // swap rows in case they are in the wrong order
+  if (iRowInner>iRowOuter) {
+    Int_t tmp=iRowInner;
+    iRowInner=iRowOuter;
+    iRowOuter=tmp;
+  }
+
+  // only for CookLabel
+  AliTPCtracker tpcTracker(fTPCParam);
+  
+  // Define the search roads:
+  // timeRoadCombinatorics - the maximum time difference used for the
+  //    combinatorics. Since we don't have a 'z-Vertex' estimate this will
+  //    reduce the combinatorics significantly when iterating on one TF
+  //    use a little more than one full drift length of the TPC to allow for
+  //    distortions
+  //
+  // timeRoad - the time difference allowed when associating the cluster
+  //    in the middle of the other two used for the initial search
+  //
+  // padRoad  - the local y difference allowed when associating the middle cluster
+  Float_t vDrift=GetVDrift();
+  Float_t zLength=GetZLength(0);
+  
+//   Double_t timeRoadCombinatorics = 270./vDrift;
+//   Double_t timeRoad = 20./vDrift;
+  Double_t timeRoadCombinatorics = 270.;
+  Double_t timeRoad = 20.;
+  Double_t  padRoad = 10.;
+
+
+  // fOuterSectorArray runs from 0-95, so from iRowXXX which runs from 0-159
+  //   the number of rows in the IROC has to be subtracted
+  const Int_t innerRows=fInnerSectorArray->GetNRows();
+  const AliTPCtrackerRow& krOuter  = fOuterSectorArray[sec][iRowOuter   - innerRows];   // down
+  const AliTPCtrackerRow& krInner  = fOuterSectorArray[sec][iRowInner   - innerRows];   // up
+
+  AliTPCseed *seed = new AliTPCseed;
+
+  const Int_t nMaxClusters=iRowOuter-iRowInner+1;
+//   Int_t nScannedClusters = 0;
+  
+  // loop over all points in the firstand last search row
+  for (Int_t iOuter=0; iOuter < krOuter; iOuter++) {
+    const AliTPCclusterMI *clOuter = krOuter[iOuter];
+    for (Int_t iInner=0; iInner < krInner; iInner++) {
+      const AliTPCclusterMI *clInner = krInner[iInner];
+// printf("\n\n Check combination %d (%d), %d (%d)\n",iOuter, iInner, clOuter->GetLabel(0), clInner->GetLabel(0));
+      // check maximum distance for combinatorics
+      if (TMath::Abs(clOuter->GetZ()-clInner->GetZ())>timeRoadCombinatorics) continue;
+// printf("  Is inside one drift\n");
+
+      // use rieman fit for seed description
+      AliRieman seedFit(159);
+      // add first two points
+      seedFit.AddPoint(clInner->GetX(), clInner->GetY(), clInner->GetZ(),
+                       TMath::Sqrt(clInner->GetSigmaY2()), TMath::Sqrt(clInner->GetSigmaZ2()));
+      seedFit.AddPoint(clOuter->GetX(), clOuter->GetY(), clOuter->GetZ(),
+                       TMath::Sqrt(clOuter->GetSigmaY2()), TMath::Sqrt(clOuter->GetSigmaZ2()));
+      
+      // Iteratively add all clusters in the respective middle
+      Int_t nFoundClusters=2;
+      AddMiddleClusters(seed,clInner,clOuter,padRoad,timeRoad,nFoundClusters,seedFit);
+//       printf("  Clusters attached: %d\n",nFoundClusters);
+      seedFit.Update();
+//       printf("  Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
+//              seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
+
+      // check for minimum number of assigned clusters and a decent chi2
+      if ( nFoundClusters<0.5*nMaxClusters || seedFit.GetChi2()>1000 ){
+        seed->Reset();
+        continue;
+      }
+//       printf("  >>> Seed accepted\n");
+      // add original outer clusters
+      const Int_t globalRowInner  = clInner->GetRow() +(clInner->GetDetector() >35)*63;
+      const Int_t globalRowOuter  = clOuter->GetRow() +(clOuter->GetDetector() >35)*63;
+      
+      seed->SetClusterPointer(globalRowInner,const_cast<AliTPCclusterMI*>(clInner));
+      seed->SetClusterPointer(globalRowOuter,const_cast<AliTPCclusterMI*>(clOuter));
+
+      // set parameters retrieved from AliRieman
+      Double_t params[5]={0};
+      Double_t covar[15]={0};
+      const Double_t alpha=TMath::DegToRad()*(clInner->GetDetector()%18*20.+10.);
+      const Double_t x=clInner->GetX();
+      seedFit.GetExternalParameters(x,params,covar);
+
+      seed->Set(x,alpha,params,covar);
+
+      // set label of the seed. At least 60% of the clusters need the correct label
+      tpcTracker.CookLabel(seed,.6);
+      
+      arr->Add(seed);
+      seed=new AliTPCseed;
+    }
+  }
+  //delete surplus seed
+  delete seed;
+  seed=0x0;
+
+  // for debugging
+  if (fStreamer && fTree) {
+    //loop over all events and tracks and try to associate the seed to the track
+
+    const Double_t kMaxSnp = 0.85;
+    const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+
+    for (Int_t iseed=0; iseed<arr->GetEntriesFast(); ++iseed){
+      seed = static_cast<AliTPCseed*>(arr->UncheckedAt(iseed));
+      AliExternalTrackParam extSeed(*seed);
+      AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+      Int_t seedLabel=seed->GetLabel();
+
+      // get original track
+      Int_t iev=fMapTrackEvent.GetValue(TMath::Abs(seedLabel));
+      Int_t itr=fMapTrackTrackInEvent.GetValue(TMath::Abs(seedLabel));
+      
+      fTree->GetEvent(iev);
+      const AliToyMCTrack *toyTrack = fEvent->GetTrack(itr);
+
+      AliExternalTrackParam extTrack(*toyTrack);
+
+      //propagate to same reference frame
+      extSeed.Rotate(extTrack.GetAlpha());
+      AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+      fTime0=extSeed.GetZ()/vDrift;
+      
+      Float_t z0=fEvent->GetZ();
+      Float_t t0=fEvent->GetT0();
+
+      Int_t ctype(fCorrectionType);
+      
+      (*fStreamer) << "Seeds" <<
+      "iev="             << iev             <<
+      "z0="              << z0              <<
+      "t0="              << t0              <<
+      "fTime0="          << fTime0          <<
+      "itr="             << itr             <<
+      "clsType="         << fClusterType    <<
+      "corrType="        << ctype           <<
+      "seedRow="         << fSeedingRow     <<
+      "seedDist="        << fSeedingDist    <<
+      "vDrift="          << vDrift          <<
+      "zLength="         << zLength         <<
+      "track.="          << &extSeed        <<
+      "tOrig.="          << &extTrack       <<
+      "seedLabel="       << seedLabel       <<
+      "\n";
+
+    }
+  }
+}
+//____________________________________________________________________________________
+void AliToyMCReconstruction::MakeSeeds(TObjArray * /*arr*/, Int_t sec, Int_t iRow1, Int_t iRow2)
 {
   //
   // Create seeds between i1 and i2 (stored in arr) with TLinearFitter
@@ -1589,4 +1913,102 @@ void AliToyMCReconstruction::MakeSeeds(TObjArray * arr, Int_t sec, Int_t iRow1, 
       }
     }
   }
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::InitStreamer(const char* /*addName*/, Int_t /*level*/)
+{
+  //
+  // initilise the debug streamer and set the logging level
+  //   use a default naming convention
+  //
+  
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::ConnectInputFile(const char* file)
+{
+  //
+  // connect the tree and event pointer from the input file
+  //
+
+  delete fInputFile;
+  fInputFile=0x0;
+  fEvent=0x0;
+  fTree=0;
+  
+  fInputFile=TFile::Open(file);
+  if (!fInputFile || !fInputFile->IsOpen() || fInputFile->IsZombie()) {
+    delete fInputFile;
+    fInputFile=0x0;
+    printf("ERROR: couldn't open the file '%s'\n", file);
+    return;
+  }
+  
+  fTree=(TTree*)fInputFile->Get("toyMCtree");
+  if (!fTree) {
+    printf("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", file);
+    return;
+  }
+  
+  fEvent=0x0;
+  fTree->SetBranchAddress("event",&fEvent);
+
+  gROOT->cd();
+  
+  SetupTrackMaps();
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::Cleanup()
+{
+  //
+  // Cleanup input data
+  //
+  
+  delete fStreamer;
+  fStreamer=0x0;
+  
+  delete fEvent;
+  fEvent = 0x0;
+  
+  delete fTree;
+  fTree=0x0;
+  
+  delete fInputFile;
+  fInputFile=0x0;
+  
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::SetupTrackMaps()
+{
+  //
+  //
+  //
+
+  fMapTrackEvent.Delete();
+  fMapTrackTrackInEvent.Delete();
+
+  if (!fTree) {
+    AliError("Tree not connected");
+    return;
+  }
+
+  for (Int_t iev=0; iev<fTree->GetEntries(); ++iev) {
+    fTree->GetEvent(iev);
+    if (!fEvent) continue;
+
+    const Int_t ntracks=fEvent->GetNumberOfTracks();
+    if (fMapTrackEvent.GetSize()+ntracks>=fMapTrackEvent.Capacity()) fMapTrackEvent.Expand(2*fMapTrackEvent.Capacity());
+    if (fMapTrackTrackInEvent.GetSize()+ntracks>=fMapTrackTrackInEvent.Capacity()) fMapTrackTrackInEvent.Expand(2*fMapTrackTrackInEvent.Capacity());
+    
+    for (Int_t itrack=0; itrack<ntracks; ++itrack){
+      Int_t label=fEvent->GetTrack(itrack)->GetUniqueID();
+
+      fMapTrackEvent.Add(label,iev);
+      fMapTrackTrackInEvent.Add(label,itrack);
+    }
+  }
+  
 }

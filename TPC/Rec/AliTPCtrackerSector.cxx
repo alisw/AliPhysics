@@ -144,7 +144,8 @@ AliTPCclusterMI * AliTPCtrackerRow::FindNearest(Double_t y, Double_t z, Double_t
   for (Int_t i=Find(z-roadz); i<fN; i++) {
       AliTPCclusterMI *c=(AliTPCclusterMI*)(fClusters[i]);
       if (c->GetZ() > z+roadz) break;
-      if ( (c->GetY()-y) >  roady ) continue;
+//       if ( (c->GetY()-y) >  roady ) continue; //JW: Why here not abs???
+      if ( TMath::Abs(c->GetY()-y) >  roady ) continue;
       Float_t distance = (c->GetZ()-z)*(c->GetZ()-z)+(c->GetY()-y)*(c->GetY()-y);
       if (maxdistance>distance) {
 	maxdistance = distance;
