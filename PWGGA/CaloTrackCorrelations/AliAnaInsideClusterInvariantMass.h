@@ -9,7 +9,7 @@
 // to identify them as pi0 or conversion
 //
 //
-//-- Author: Gustavo Conesa (LPSC-Grenoble)  
+//-- Author: Gustavo Conesa (LPSC-Grenoble)
 //_________________________________________________________________________
 
 
@@ -54,7 +54,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                                 const Float_t splitFrac, const Float_t asym,
                                 const Float_t eprim,     const Float_t asymGen);
   
-  void         FillMCOverlapHistograms(const Float_t en,      const Float_t mass, const Float_t l0,
+  void         FillMCOverlapHistograms(const Float_t en,      const Float_t mass, const Float_t l0, const Float_t splitFrac,
                                        const Int_t   nlm,     const Int_t ebin,   const Bool_t matched,
                                        const Int_t   mcindex, const Int_t noverlaps);
   
@@ -406,6 +406,13 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCEMassOverlap1Match[3][8];            //! E vs Mass for different MC origin, 1  other MC particles contributes, charged cluster
   TH2F       * fhMCEMassOverlapNMatch[3][8];            //! E vs Mass for different MC origin, N  other MC particles contributes, charged cluster
 
+  TH2F       * fhMCESplitEFracOverlap0[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCESplitEFracOverlap1[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCESplitEFracOverlapN[3][8];           //! E vs sum of splitted cluster energy / cluster energyfor different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCESplitEFracOverlap0Match[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCESplitEFracOverlap1Match[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCESplitEFracOverlapNMatch[3][8];      //! E vs sum of splitted cluster energy / cluster energyc for different MC origin, N  other MC particles contributes, charged cluster
+  
   TH2F       * fhMCPi0MassM02Overlap0[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, no other MC particles contributes, neutral cluster, 4 E bins
   TH2F       * fhMCPi0MassM02Overlap1[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, 1  other MC particles contributes, neutral cluster, 4 E bins
   TH2F       * fhMCPi0MassM02OverlapN[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, N  other MC particles contributes, neutral cluster, 4 E bins
@@ -426,6 +433,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCPi0LowNLMPairNoMCMatch;              //! E vs NLM when cluster originated in pi0 merging and a pair of local maxima except highest energy correspond to 2 photons
   TH2F       * fhMCPi0AnyNLMPairNoMCMatch;              //! E vs NLM when cluster originated in pi0 merging and a both highest energy pairs and other pairs correspond to 2 photons
   TH2F       * fhMCPi0NoneNLMPairNoMCMatch;             //! E vs NLM when cluster originated in pi0 merging and a both no NLM corresponds to the photons
+    
+  TH2F       * fhMCPi0DecayPhotonHitHighLM;             //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLM;             //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
+  TH2F       * fhMCPi0DecayPhotonHitOtherLM;            //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLM;            //! E vs NLM when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonHitNoLM;               //! E vs NLM when cluster originated in pi0 merging and MC photon decay do not hit the cell local maximas
   
   TH2F       * fhMCEOverlapType;                        //! what particles overlap with pi0, neutral clusters
   TH2F       * fhMCEOverlapTypeMatch;                   //! what particles overlap with pi0, charged clusters
