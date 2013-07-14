@@ -1128,21 +1128,101 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 }
 
 
+//________________________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetDaughter(const Int_t idaugh, const Int_t label,
+                                               const AliCaloTrackReader* reader,
+                                               Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daughlabel)
+{
+  //Return the kinematics of the particle that generated the signal, its pdg and its status and its label mother
+  
+  TLorentzVector daughter(0,0,0,0);
+  
+  if(reader->ReadStack())
+  {
+    if(!reader->GetStack())
+    {
+      if (fDebug >=0)
+        printf("AliMCAnalysisUtils::GetDaughter() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+      
+      ok=kFALSE;
+      return daughter;
+    }
+    if(label >= 0 && label < reader->GetStack()->GetNtrack())
+    {
+      TParticle * momP = reader->GetStack()->Particle(label);
+      daughlabel       = momP->GetDaughter(idaugh);
+      
+      TParticle * daughP = reader->GetStack()->Particle(daughlabel);
+      daughP->Momentum(daughter);
+      pdg    = daughP->GetPdgCode();
+      status = daughP->GetStatusCode();
+    }
+    else
+    {
+      ok = kFALSE;
+      return daughter;
+    }
+  }
+  else if(reader->ReadAODMCParticles())
+  {
+    TClonesArray* mcparticles = reader->GetAODMCParticles();
+    if(!mcparticles)
+    {
+      if(fDebug >= 0)
+        printf("AliMCAnalysisUtils::GetDaughter() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+      
+      ok=kFALSE;
+      return daughter;
+    }
+    
+    Int_t nprimaries = mcparticles->GetEntriesFast();
+    if(label >= 0 && label < nprimaries)
+    {
+      AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
+      daughlabel              = momP->GetDaughter(idaugh);
+      
+      AliAODMCParticle * daughP = (AliAODMCParticle *) mcparticles->At(daughlabel);
+      daughter.SetPxPyPzE(daughP->Px(),daughP->Py(),daughP->Pz(),daughP->E());
+      pdg    = daughP->GetPdgCode();
+      status = daughP->GetStatus();
+    }
+    else
+    {
+      ok = kFALSE;
+      return daughter;
+    }
+  }
+  
+  ok = kTRUE;
+  
+  return daughter;
+}
+
 //_______________________________________________________________________________________________
 TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader,
                                              Bool_t & ok) 
 {
   //Return the kinematics of the particle that generated the signal
   
-  Int_t pdg = -1; Int_t status = -1;
-  return GetMother(label,reader,pdg,status, ok);
+  Int_t pdg = -1; Int_t status = -1; Int_t momlabel = -1;
+  return GetMother(label,reader,pdg,status, ok,momlabel);
+}
+
+//_______________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader,
+                                             Int_t & pdg, Int_t & status, Bool_t & ok)
+{
+  //Return the kinematics of the particle that generated the signal
+  
+  Int_t momlabel = -1;
+  return GetMother(label,reader,pdg,status, ok,momlabel);
 }
 
 //_______________________________________________________________________________________________
 TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader, 
-                                             Int_t & pdg, Int_t & status, Bool_t & ok) 
+                                             Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momlabel)
 {
-  //Return the kinematics of the particle that generated the signal, its pdg and its status
+  //Return the kinematics of the particle that generated the signal, its pdg and its status and its label mother
   
   TLorentzVector mom(0,0,0,0);
   
@@ -1162,6 +1242,7 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
       momP->Momentum(mom);
       pdg    = momP->GetPdgCode();
       status = momP->GetStatusCode();
+      momlabel = momP->GetFirstMother();
     } 
     else 
     {
@@ -1188,7 +1269,8 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
       mom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
       pdg    = momP->GetPdgCode();
       status = momP->GetStatus();
-    }     
+      momlabel = momP->GetMother();
+    }
     else 
     {
       ok = kFALSE;
@@ -1200,7 +1282,6 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
   
   return mom;
 }
-
 
 //_____________________________________________________________________________________
 TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader, Bool_t & ok) 
@@ -1304,7 +1385,7 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(const Int_t label, const AliCa
     if(!reader->GetStack())
     {
       if (fDebug >=0)
-        printf("AliMCAnalysisUtils::GetMotherWithPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+        printf("AliMCAnalysisUtils::GetGrandMother() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
       
       ok = kFALSE;
       return grandmom;
@@ -1336,7 +1417,7 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(const Int_t label, const AliCa
     if(!mcparticles)
     {
       if(fDebug >= 0)
-        printf("AliMCAnalysisUtils::GetMotherWithPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+        printf("AliMCAnalysisUtils::GetGrandMother() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
       return grandmom;
@@ -1369,7 +1450,6 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(const Int_t label, const AliCa
   return grandmom;
 }
 
-
 //_____________________________________________________________________________________
 Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader, Bool_t & ok) 
 {
@@ -1382,7 +1462,7 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
     if(!reader->GetStack())
     {
       if (fDebug >=0) 
-        printf("AliMCAnalysisUtils::GetMotherWithPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+        printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
       
       ok = kFALSE;
       return asym;
@@ -1417,7 +1497,7 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
       else 
       {
         ok=kFALSE;
-        printf("AliMCAnalysisUtils::GetMotherWithPDG(ESD) - mother with PDG %d, not found! \n",pdg);
+        printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(ESD) - mother with PDG %d, not found! \n",pdg);
       }
       
       } // good label
@@ -1428,7 +1508,7 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
     if(!mcparticles) 
     {
       if(fDebug >= 0)
-        printf("AliMCAnalysisUtils::GetMotherWithPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+        printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
       return asym;
@@ -1465,7 +1545,7 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
       else 
       {
         ok=kFALSE;
-        printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d, not found! \n",pdg);
+        printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(AOD) - mother with PDG %d, not found! \n",pdg);
       }
       
     } // good label
@@ -1476,6 +1556,65 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
   return asym;
 }
 
+
+//_______________________________________________________________________________________________________
+Int_t AliMCAnalysisUtils::GetNDaughters(const Int_t label, const AliCaloTrackReader* reader, Bool_t & ok)
+{
+  // Return the the number of daughters of a given MC particle
+  
+  
+  if(reader->ReadStack())
+  {
+    if(!reader->GetStack())
+    {
+      if (fDebug >=0)
+        printf("AliMCAnalysisUtils::GetNDaughters() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+      
+      ok=kFALSE;
+      return -1;
+    }
+    if(label >= 0 && label < reader->GetStack()->GetNtrack())
+    {
+      TParticle * momP = reader->GetStack()->Particle(label);
+      ok=kTRUE;
+      return momP->GetNDaughters();
+    }
+    else
+    {
+      ok = kFALSE;
+      return -1;
+    }
+  }
+  else if(reader->ReadAODMCParticles())
+  {
+    TClonesArray* mcparticles = reader->GetAODMCParticles();
+    if(!mcparticles)
+    {
+      if(fDebug >= 0)
+        printf("AliMCAnalysisUtils::GetNDaughters() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+      
+      ok=kFALSE;
+      return -1;
+    }
+    
+    Int_t nprimaries = mcparticles->GetEntriesFast();
+    if(label >= 0 && label < nprimaries)
+    {
+      AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
+      ok = kTRUE;
+      return momP->GetNDaughters();
+    }
+    else
+    {
+      ok = kFALSE;
+      return -1;
+    }
+  }
+  
+  ok = kFALSE;
+  
+  return -1;
+}
 
 //________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
