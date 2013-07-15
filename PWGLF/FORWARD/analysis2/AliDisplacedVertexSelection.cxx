@@ -170,7 +170,7 @@ AliDisplacedVertexSelection::Print(Option_t*) const
 Float_t
 AliDisplacedVertexSelection::GetZemCorr(Int_t k, Bool_t minusminus) const
 {
-  if (-kMaxK < 0 || k > kMaxK) return 0;
+  if (-kMaxK > k || k > kMaxK) return 0;
 
   // Corrections for magnetic fields
   const Float_t kPlusPlus[21]   = { 0.6840,0.7879,0.8722,
@@ -444,7 +444,10 @@ AliDisplacedVertexSelection::Process(const AliESDEvent* esd)
   fCorrelationZemZdc->Fill(zemEn, zdcEn);
 
   // --- Check if this is an outlier event ---------------------------
-  if (CheckOutlier(ivtx, esd)) return false;
+  if (CheckOutlier(ivtx, esd)) {
+    fVertexZ = kInvalidVtxZ;
+    return false;
+  }
 
   // --- Calculate the centrality ------------------------------------
   Float_t c1, c2, c3, c4, c5;
