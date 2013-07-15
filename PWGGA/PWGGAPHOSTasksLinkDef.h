@@ -28,6 +28,9 @@
 // PHOS_PbPbQA
 #pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;
 
+// PHOS_Tagging
+#pragma link C++ class AliAnalysisTaskTaggedPhotons+;
+
 // PHOS_TriggerQA
 #pragma link C++ class AliAnalysisTaskPHOSTriggerQA+;
 

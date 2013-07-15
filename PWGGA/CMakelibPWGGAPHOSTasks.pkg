@@ -39,6 +39,7 @@ set ( SRCS
  PHOSTasks/PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
  PHOSTasks/PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
  PHOSTasks/PHOS_PbPbQA/AliAnalysisTaskPHOSPbPbQA.cxx
+ PHOSTasks/PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
  PHOSTasks/PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
  PHOSTasks/CaloCellQA/AliCaloCellsQA.cxx
  PHOSTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
