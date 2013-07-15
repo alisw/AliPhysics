@@ -84,13 +84,11 @@ AliAnalysisTaskSE(),
   fZvertexBins(0),
   fEventsToMix(0),
   fMultBins(0),
-  fMultLimits(),
   fMCcase(0),
   fAODcase(0),
   fEventCounter(0),
   fMaxDecayLength(0),
   fMassWindow(0),
-  fCovMatrix(),
   fTrueMassPr(0), 
   fTrueMassPi(0), 
   fTrueMassK(0), 
@@ -98,11 +96,39 @@ AliAnalysisTaskSE(),
   fTrueMassXi(0),
   fESDTrack4(0x0), 
   fXiTrack(0x0),
-  fCutList(0),
-  fDecayParameters(),
-  fCutValues()
-  
+  fCutList(0)
 {
+  // Default Constructor
+  for (Int_t i=0; i<21; i++){
+    fCovMatrix[i]=-99999.;
+    if (i<12) fMultLimits[i] = 0;
+  }
+  for (Int_t i=0; i<kNCuts; i++){
+    fDecayParameters[i]=0;
+    for (Int_t j=0; j<kNCutVariations; j++){
+      fCutValues[j][i]=0;
+    }
+  }
+  //
+  for (Int_t cv=0; cv<kNCutVariations; cv++){
+    CutVar[cv].fXi=0x0;
+    CutVar[cv].fXibar=0x0;
+    CutVar[cv].fXiMinusPiPlus=0x0;
+    CutVar[cv].fXiMinusPiMinus=0x0;
+    CutVar[cv].fXiPlusPiPlus=0x0;
+    CutVar[cv].fXiPlusPiMinus=0x0;
+    //    
+    CutVar[cv].fXiMinusPiPlusbkg=0x0;
+    CutVar[cv].fXiMinusPiMinusbkg=0x0;
+    CutVar[cv].fXiPlusPiPlusbkg=0x0;
+    CutVar[cv].fXiPlusPiMinusbkg=0x0;
+    //
+    CutVar[cv].fMCrecXi=0x0;
+    CutVar[cv].fMCrecXibar=0x0;
+    CutVar[cv].fMCrecXiMinusPiPlus=0x0;
+    CutVar[cv].fMCrecXiPlusPiMinus=0x0;
+  }
+
 }
 //________________________________________________________________________
 AliXiStar::AliXiStar(const char *name, Bool_t AODdecision, Bool_t MCdecision, Int_t CutListOption) 
@@ -145,6 +171,26 @@ AliXiStar::AliXiStar(const char *name, Bool_t AODdecision, Bool_t MCdecision, In
       fCutValues[j][i]=0;
     }
   }
+  //
+  for (Int_t cv=0; cv<kNCutVariations; cv++){
+    CutVar[cv].fXi=0x0;
+    CutVar[cv].fXibar=0x0;
+    CutVar[cv].fXiMinusPiPlus=0x0;
+    CutVar[cv].fXiMinusPiMinus=0x0;
+    CutVar[cv].fXiPlusPiPlus=0x0;
+    CutVar[cv].fXiPlusPiMinus=0x0;
+    //    
+    CutVar[cv].fXiMinusPiPlusbkg=0x0;
+    CutVar[cv].fXiMinusPiMinusbkg=0x0;
+    CutVar[cv].fXiPlusPiPlusbkg=0x0;
+    CutVar[cv].fXiPlusPiMinusbkg=0x0;
+    //
+    CutVar[cv].fMCrecXi=0x0;
+    CutVar[cv].fMCrecXibar=0x0;
+    CutVar[cv].fMCrecXiMinusPiPlus=0x0;
+    CutVar[cv].fMCrecXiPlusPiMinus=0x0;
+  }
+
 
   // Define output slots here 
   // Output slot #1
