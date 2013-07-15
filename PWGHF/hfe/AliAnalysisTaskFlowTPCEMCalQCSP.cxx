@@ -181,6 +181,11 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,fOP_angle(0)
 ,fAssoTPCCluster(0)
 ,fAssoITSRefit(0)
+,fMultCut(0)
+,fMultCorAfterCentrBeforeCuts(0)
+,fMultCorAfterVZTRKComp(0)
+,fCentralityBeforePileup(0)
+,fCentralityAfterVZTRK(0)
 {
     //Named constructor
     
@@ -273,6 +278,11 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fOP_angle(0)
 ,fAssoTPCCluster(0)
 ,fAssoITSRefit(0)
+,fMultCut(0)
+,fMultCorAfterCentrBeforeCuts(0)
+,fMultCorAfterVZTRKComp(0)
+,fCentralityBeforePileup(0)
+,fCentralityAfterVZTRK(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -365,16 +375,15 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5)return;
     vtxz = trkVtx->GetZ();
     if(TMath::Abs(vtxz)>10)return;
-    fvertex->Fill(vtxz);
     
     // Event cut
     if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fAOD)) return;
     if(fNOtrks<2) return;
     
-    Bool_t pass = kFALSE; //to select centrality
+    Bool_t pass = kFALSE; //to select centrality and pile up protection
     CheckCentrality(fAOD,pass);
     if(!pass)return;
-    
+    fvertex->Fill(vtxz);
     
     fNoEvents->Fill(0);
     PlotVZeroMultiplcities(fAOD);
@@ -541,7 +550,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                 pt,
                 fEovP,
                 fTPCnSigma};
-            fSparseElectronpurity->Fill(valuepurity);
+                fSparseElectronpurity->Fill(valuepurity);
         }
         //----------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------
@@ -832,7 +841,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     fPhotoElecPt = new TH1F("fPhotoElecPt", "photonic electron pt",1000,0,100);
     fOutputList->Add(fPhotoElecPt);
-    //
+    
     fSemiInclElecPt = new TH1F("fSemiInclElecPt", "Semi-inclusive electron pt",1000,0,100);
     fOutputList->Add(fSemiInclElecPt);
     
@@ -854,6 +863,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
     fOutputList->Add(fCentralityNoPass);
     
+    fCentralityBeforePileup = new TH1F("fCentralityBeforePileup", "fCentralityBeforePileup Pass", 101, -1, 100);
+    fOutputList->Add(fCentralityBeforePileup);
+     
+    fCentralityAfterVZTRK = new TH1F("fCentralityAfterVZTRK", "fCentralityAfterVZTRK Pass", 101, -1, 100);
+    fOutputList->Add(fCentralityAfterVZTRK);
+   
     fPhi = new TH1F("fPhi", "#phi distribution", 100, -.5, 7);
     fOutputList->Add(fPhi);
     
@@ -877,6 +892,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
     fOutputList->Add(fMultCorAfterCuts);
+    
+    fMultCorAfterCentrBeforeCuts = new TH2F("fMultCorAfterCentrBeforeCuts", "TPC vs Global multiplicity (After CC before cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+    fOutputList->Add(fMultCorAfterCentrBeforeCuts);
+    
+    fMultCorAfterVZTRKComp = new TH2F("fMultCorAfterVZTRKComp", "TPC vs Global multiplicity (After V0-TRK); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+    fOutputList->Add(fMultCorAfterVZTRKComp);
     
     fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 100, 0., 100, 100, 0, 3000);
     fOutputList->Add(fMultvsCentr);
@@ -937,7 +958,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     if(fpurity){
         Int_t binsvpurity[3]={   600,200, 200}; //pt, E/p,TPCnSigma
         Double_t xminvpurity[3]={0,    0, -10};
-        Double_t xmaxvpurity[3]={20,   2,  10};
+        Double_t xmaxvpurity[3]={30,   2,  10};
         fSparseElectronpurity = new THnSparseD("Electronpurity","Electronpurity",3,binsvpurity,xminvpurity,xmaxvpurity);
         fSparseElectronpurity->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
         fSparseElectronpurity->GetAxis(1)->SetTitle("EovP");
@@ -1002,30 +1023,8 @@ Bool_t AliAnalysisTaskFlowTPCEMCalQCSP::ProcessCutStep(Int_t cutStep, AliVPartic
 //_________________________________________
 void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t &centralitypass)
 {
-    // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
-    if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
-    fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-      cout << "--------------Centrality evaluated-------------------------"<<endl;
-    if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
-    {
-        fCentralityNoPass->Fill(fCentrality);
-        //    cout << "--------------Fill no pass-----"<< fCentrality <<"--------------------"<<endl;
-        centralitypass = kFALSE;
-    }else
-    {
-        //    cout << "--------------Fill pass----"<< fCentrality <<"---------------------"<<endl;
-        centralitypass = kTRUE;
-    }
-    //to remove the bias introduced by multeplicity outliers---------------------
-    Float_t centTrk = event->GetCentrality()->GetCentralityPercentile("TRK");
-    Float_t centv0 = event->GetCentrality()->GetCentralityPercentile("V0M");
-    
-    if (TMath::Abs(centv0 - centTrk) > 5.0){
-        centralitypass = kFALSE;
-        fCentralityNoPass->Fill(fCentrality);
-    }
+//============================Multiplicity TPV vs Global===============================================================================      
     const Int_t nGoodTracks = event->GetNumberOfTracks();
-    
     Float_t multTPC(0.); // tpc mult estimate
     Float_t multGlob(0.); // global multiplicity
     for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
@@ -1045,31 +1044,57 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
         if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
         if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
         multGlob++;
-    } //track loop
-    //     printf(" mult TPC %.2f, mult Glob %.2f \n", multTPC, multGlob);
-    //   if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))){  2010
-     if(fTrigger==1){
-
+    } //track loop 
+       fMultCorBeforeCuts->Fill(multGlob, multTPC);//before all cuts...even before centrality selectrion
+//============================================================================================================================    
+    // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
+    if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
+    fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
+   //   cout << "--------------Centrality evaluated-------------------------"<<endl;
+    if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
+    {
+        fCentralityNoPass->Fill(fCentrality);
+        //    cout << "--------------Fill no pass-----"<< fCentrality <<"--------------------"<<endl;
+        centralitypass = kFALSE;
+    }else
+    {
+        //    cout << "--------------Fill pass----"<< fCentrality <<"---------------------"<<endl;
+        centralitypass = kTRUE;
+    }
+    if (centralitypass){
+      fMultCorAfterCentrBeforeCuts->Fill(multGlob, multTPC);
+      fCentralityBeforePileup->Fill(fCentrality);
+      }//...after centrality selectrion
+//============================================================================================================================       
+//to remove the bias introduced by multeplicity outliers---------------------
+    Float_t centTrk = event->GetCentrality()->GetCentralityPercentile("TRK");
+    Float_t centv0 = event->GetCentrality()->GetCentralityPercentile("V0M");
+    if (TMath::Abs(centv0 - centTrk) > 5.0){
+        centralitypass = kFALSE;
+        fCentralityNoPass->Fill(fCentrality);
+    }
+    if (centralitypass){
+      fMultCorAfterVZTRKComp->Fill(multGlob, multTPC);
+      fCentralityAfterVZTRK->Fill(fCentrality);
+    }//...after centrality selectrion
+//============================================================================================================================    
+ if(fMultCut){
+    if(fTrigger==1){
     if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
      //   cout <<" Trigger ==" <<fTrigger<< endl;
-
         centralitypass = kFALSE;
         fCentralityNoPass->Fill(fCentrality);
     }//2011 Semicentral
      }
     if(fTrigger==0){
-
         if(! (multTPC > (77.6 + 1.399*multGlob) && multTPC < (371.3 + 1.50*multGlob))){
        //     cout <<" Trigger ==" <<fTrigger<< endl;
-
             centralitypass = kFALSE;
             fCentralityNoPass->Fill(fCentrality);
         }//2011
     }//2011 Central
-
-    
-    fMultCorBeforeCuts->Fill(multGlob, multTPC);
-    
+ }
+//=================================All cuts are passed==================++++==================================================    
     if(centralitypass){
         fCentralityPass->Fill(fCentrality);
         fMultCorAfterCuts->Fill(multGlob, multTPC);
