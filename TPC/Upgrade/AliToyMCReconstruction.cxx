@@ -43,6 +43,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fDoTrackFit(kTRUE)
 , fUseMaterial(kFALSE)
 , fIdealTracking(kFALSE)
+, fNmaxEvents(-1)
 , fTime0(-1)
 , fCreateT0seed(kFALSE)
 , fStreamer(0x0)
@@ -84,21 +85,10 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   // Recostruction from associated clusters
   //
 
-  ConnectInputFile(file);
+  ConnectInputFile(file, nmaxEv);
   if (!fTree) return;
-  
-  // read spacecharge from the Userinfo ot the tree
-  InitSpaceCharge();
-  
-  TString debugName=file;
-  debugName.ReplaceAll(".root","");
-  debugName.Append(Form(".%1d.%1d_%1d_%1d_%03d_%02d",
-                        fUseMaterial,fIdealTracking,fClusterType,
-                        Int_t(fCorrectionType),fSeedingRow,fSeedingDist));
-  debugName.Append(".debug.root");
-  
-  gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
-  if (!fStreamer) fStreamer=new TTreeSRedirector(debugName.Data());
+
+  InitStreamer(".debug");
   
   gROOT->cd();
 
@@ -633,6 +623,38 @@ return;
   f.Close();
 }
 
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::RunFullTracking(const char* file, Int_t nmaxEv)
+{
+  //
+  //
+  //
+
+  ConnectInputFile(file,nmaxEv);
+  if (!fTree) return;
+  
+  InitStreamer(".fullTracking");
+  
+  FillSectorStructureAC();
+
+  AliTPCReconstructor::SetStreamLevel(0);
+  
+  TObjArray seeds;
+  seeds.SetOwner();
+  const Int_t lowerRow=fSeedingRow;
+  const Int_t upperRow=fSeedingRow+2*fSeedingDist;
+
+  // seeding, currently only for outer sectors
+  for (Int_t sec=0;sec<36;sec++){
+    printf("Seeding in sector: %d\n",sec);
+    MakeSeeds2(&seeds, sec,lowerRow,upperRow);
+  }
+
+  DumpSeedInfo(&seeds,lowerRow,upperRow);
+
+  Cleanup();
+}
 
 //____________________________________________________________________________________
 AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTrack * const tr)
@@ -1464,7 +1486,7 @@ void  AliToyMCReconstruction::FillSectorStructure(Int_t maxev) {
 }
 
 //____________________________________________________________________________________
-void  AliToyMCReconstruction::FillSectorStructureAC(Int_t maxev) {
+void  AliToyMCReconstruction::FillSectorStructureAC() {
   //-----------------------------------------------------------------
   // This function fills the sector structure of AliToyMCReconstruction
   //-----------------------------------------------------------------
@@ -1492,11 +1514,11 @@ void  AliToyMCReconstruction::FillSectorStructureAC(Int_t maxev) {
   
   Int_t count[72][96] = { {0} , {0} };
   
-  for (Int_t iev=0; iev<maxev; ++iev){
+  for (Int_t iev=0; iev<fNmaxEvents; ++iev){
     printf("==============  Fill Clusters: Processing Event %6d  =================\n",iev);
     fTree->GetEvent(iev);
     for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
-      printf(" > ======  Fill Clusters: Processing Track %6d ========  \n",itr);
+//       printf(" > ======  Fill Clusters: Processing Track %6d ========  \n",itr);
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       
       // number of clusters to loop over
@@ -1714,6 +1736,9 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
     iRowOuter=tmp;
   }
 
+  if (iRowOuter>158) iRowOuter=158;
+  if (iRowInner<0)   iRowInner=0;
+
   // only for CookLabel
   AliTPCtracker tpcTracker(fTPCParam);
   
@@ -1728,8 +1753,6 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
   //    in the middle of the other two used for the initial search
   //
   // padRoad  - the local y difference allowed when associating the middle cluster
-  Float_t vDrift=GetVDrift();
-  Float_t zLength=GetZLength(0);
   
 //   Double_t timeRoadCombinatorics = 270./vDrift;
 //   Double_t timeRoad = 20./vDrift;
@@ -1752,8 +1775,10 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
   // loop over all points in the firstand last search row
   for (Int_t iOuter=0; iOuter < krOuter; iOuter++) {
     const AliTPCclusterMI *clOuter = krOuter[iOuter];
+    if (clOuter->IsUsed()) continue;
     for (Int_t iInner=0; iInner < krInner; iInner++) {
       const AliTPCclusterMI *clInner = krInner[iInner];
+      if (clInner->IsUsed()) continue;
 // printf("\n\n Check combination %d (%d), %d (%d)\n",iOuter, iInner, clOuter->GetLabel(0), clInner->GetLabel(0));
       // check maximum distance for combinatorics
       if (TMath::Abs(clOuter->GetZ()-clInner->GetZ())>timeRoadCombinatorics) continue;
@@ -1771,7 +1796,7 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
       Int_t nFoundClusters=2;
       AddMiddleClusters(seed,clInner,clOuter,padRoad,timeRoad,nFoundClusters,seedFit);
 //       printf("  Clusters attached: %d\n",nFoundClusters);
-      seedFit.Update();
+      if (nFoundClusters>2) seedFit.Update();
 //       printf("  Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
 //              seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
 
@@ -1798,7 +1823,10 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
       seed->Set(x,alpha,params,covar);
 
       // set label of the seed. At least 60% of the clusters need the correct label
-      tpcTracker.CookLabel(seed,.6);
+      CookLabel(seed,.6);
+//       printf("  - Label: %d\n",seed->GetLabel());
+      // mark clusters as being used
+      MarkClustersUsed(seed);
       
       arr->Add(seed);
       seed=new AliTPCseed;
@@ -1808,58 +1836,6 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
   delete seed;
   seed=0x0;
 
-  // for debugging
-  if (fStreamer && fTree) {
-    //loop over all events and tracks and try to associate the seed to the track
-
-    const Double_t kMaxSnp = 0.85;
-    const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-
-    for (Int_t iseed=0; iseed<arr->GetEntriesFast(); ++iseed){
-      seed = static_cast<AliTPCseed*>(arr->UncheckedAt(iseed));
-      AliExternalTrackParam extSeed(*seed);
-      AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-      Int_t seedLabel=seed->GetLabel();
-
-      // get original track
-      Int_t iev=fMapTrackEvent.GetValue(TMath::Abs(seedLabel));
-      Int_t itr=fMapTrackTrackInEvent.GetValue(TMath::Abs(seedLabel));
-      
-      fTree->GetEvent(iev);
-      const AliToyMCTrack *toyTrack = fEvent->GetTrack(itr);
-
-      AliExternalTrackParam extTrack(*toyTrack);
-
-      //propagate to same reference frame
-      extSeed.Rotate(extTrack.GetAlpha());
-      AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-
-      fTime0=extSeed.GetZ()/vDrift;
-      
-      Float_t z0=fEvent->GetZ();
-      Float_t t0=fEvent->GetT0();
-
-      Int_t ctype(fCorrectionType);
-      
-      (*fStreamer) << "Seeds" <<
-      "iev="             << iev             <<
-      "z0="              << z0              <<
-      "t0="              << t0              <<
-      "fTime0="          << fTime0          <<
-      "itr="             << itr             <<
-      "clsType="         << fClusterType    <<
-      "corrType="        << ctype           <<
-      "seedRow="         << fSeedingRow     <<
-      "seedDist="        << fSeedingDist    <<
-      "vDrift="          << vDrift          <<
-      "zLength="         << zLength         <<
-      "track.="          << &extSeed        <<
-      "tOrig.="          << &extTrack       <<
-      "seedLabel="       << seedLabel       <<
-      "\n";
-
-    }
-  }
 }
 //____________________________________________________________________________________
 void AliToyMCReconstruction::MakeSeeds(TObjArray * /*arr*/, Int_t sec, Int_t iRow1, Int_t iRow2)
@@ -1916,17 +1892,37 @@ void AliToyMCReconstruction::MakeSeeds(TObjArray * /*arr*/, Int_t sec, Int_t iRo
 }
 
 //____________________________________________________________________________________
-void AliToyMCReconstruction::InitStreamer(const char* /*addName*/, Int_t /*level*/)
+void AliToyMCReconstruction::InitStreamer(TString addName, Int_t level)
 {
   //
   // initilise the debug streamer and set the logging level
   //   use a default naming convention
   //
+
+  delete fStreamer;
+  fStreamer=0x0;
+
+  if (addName.IsNull()) addName=".dummy";
   
+  if (!fTree) return;
+
+  TString debugName=fInputFile->GetName();
+  debugName.ReplaceAll(".root","");
+  debugName.Append(Form(".%1d.%1d_%1d_%1d_%03d_%02d",
+                        fUseMaterial,fIdealTracking,fClusterType,
+                        Int_t(fCorrectionType),fSeedingRow,fSeedingDist));
+  debugName.Append(addName);
+  debugName.Append(".root");
+  
+  gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
+  fStreamer=new TTreeSRedirector(debugName.Data());
+  fStreamer->SetUniqueID(level);
+
+  gROOT->cd();
 }
 
 //____________________________________________________________________________________
-void AliToyMCReconstruction::ConnectInputFile(const char* file)
+void AliToyMCReconstruction::ConnectInputFile(const char* file, Int_t nmaxEv)
 {
   //
   // connect the tree and event pointer from the input file
@@ -1955,7 +1951,14 @@ void AliToyMCReconstruction::ConnectInputFile(const char* file)
   fTree->SetBranchAddress("event",&fEvent);
 
   gROOT->cd();
+
+  fNmaxEvents=fTree->GetEntries();
+  if (nmaxEv>-1) fNmaxEvents=TMath::Min(nmaxEv,fNmaxEvents);
   
+  // setup space charge map from Userinfo of the tree
+  InitSpaceCharge();
+
+  // setup the track maps
   SetupTrackMaps();
 }
 
@@ -1966,13 +1969,13 @@ void AliToyMCReconstruction::Cleanup()
   // Cleanup input data
   //
   
-  delete fStreamer;
+  if (fStreamer) delete fStreamer;
   fStreamer=0x0;
   
   delete fEvent;
   fEvent = 0x0;
   
-  delete fTree;
+//   delete fTree;
   fTree=0x0;
   
   delete fInputFile;
@@ -1995,7 +1998,10 @@ void AliToyMCReconstruction::SetupTrackMaps()
     return;
   }
 
-  for (Int_t iev=0; iev<fTree->GetEntries(); ++iev) {
+  Int_t nmaxEv=fTree->GetEntries();
+  if (fNmaxEvents>-1) nmaxEv=fNmaxEvents;
+  
+  for (Int_t iev=0; iev<nmaxEv; ++iev) {
     fTree->GetEvent(iev);
     if (!fEvent) continue;
 
@@ -2011,4 +2017,230 @@ void AliToyMCReconstruction::SetupTrackMaps()
     }
   }
   
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::CookLabel(AliTPCseed *seed, Double_t fraction, Int_t info[5])
+{
+  //
+  //
+  //
+
+  Int_t labels[159]={0};
+//   Long64_t posMaxLabel=-1;
+  Int_t nMaxLabel=0;  // clusters from maximum label
+  Int_t nMaxLabel2=0; // clusters from second maximum
+  Int_t nlabels=0;
+  Int_t maxLabel=-1;  // label with most clusters
+  Int_t maxLabel2=-1; // label with second most clusters
+  Int_t nclusters=0;
+  TExMap labelMap(159);
+
+  for (Int_t icl=0; icl<159; ++icl) {
+    const AliTPCclusterMI *cl=seed->GetClusterPointer(icl);
+    if (!cl) continue;
+    ++nclusters;
+    
+    const Int_t clLabel=cl->GetLabel(0);
+    // a not assinged value returns 0, so we need to add 1 and subtract it afterwards
+    Long64_t labelPos=labelMap.GetValue(clLabel);
+
+    if (!labelPos) {
+      labelPos=nlabels+1;
+      labelMap.Add(clLabel,labelPos);
+      ++nlabels;
+    }
+    --labelPos;
+
+    const Int_t nCurrentLabel=++labels[labelPos];
+    if (nCurrentLabel>nMaxLabel) {
+      nMaxLabel2=nMaxLabel;
+      nMaxLabel=nCurrentLabel;
+//       posMaxLabel=labelPos;
+      maxLabel2=maxLabel;
+      maxLabel=clLabel;
+    }
+  }
+
+  if (Double_t(nMaxLabel)/nclusters<fraction) maxLabel=-maxLabel;
+
+  seed->SetLabel(maxLabel);
+
+  if (info) {
+    info[0]=nMaxLabel;
+    info[1]=nMaxLabel2;
+    info[2]=maxLabel2;
+    info[3]=nclusters;
+    info[4]=nlabels;
+  }
+}
+
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::DumpSeedInfo(TObjArray *arr, Int_t iRowInner, Int_t iRowOuter)
+{
+
+  // for debugging
+  if (!fStreamer || !fTree) return;
+  // swap rows in case they are in the wrong order
+  if (iRowInner>iRowOuter) {
+    Int_t tmp=iRowInner;
+    iRowInner=iRowOuter;
+    iRowOuter=tmp;
+  }
+
+  AliInfo("");
+  
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  Float_t vDrift=GetVDrift();
+  Float_t zLength=GetZLength(0);
+  
+  //loop over all events and tracks and try to associate the seed to the track
+  for (Int_t iseed=0; iseed<arr->GetEntriesFast(); ++iseed){
+    AliTPCseed *seed = static_cast<AliTPCseed*>(arr->UncheckedAt(iseed));
+    Int_t seedLabel=seed->GetLabel();
+
+    // get original track
+    Int_t iev=fMapTrackEvent.GetValue(TMath::Abs(seedLabel));
+    Int_t itr=fMapTrackTrackInEvent.GetValue(TMath::Abs(seedLabel));
+
+    fTree->GetEvent(iev);
+    const AliToyMCTrack *toyTrack = fEvent->GetTrack(itr);
+
+    AliExternalTrackParam extTrack(*toyTrack);
+
+    //propagate to same reference frame
+    AliExternalTrackParam extSeed(*seed);
+    AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+    extSeed.Rotate(extTrack.GetAlpha());
+    AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+    //create propagated track
+    AliExternalTrackParam *extSeedRefit=GetRefittedTrack(*seed);
+    AliTrackerBase::PropagateTrackTo(extSeedRefit,0,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+    extSeedRefit->Rotate(extTrack.GetAlpha());
+    AliTrackerBase::PropagateTrackTo(extSeedRefit,0,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+    
+    Int_t roc=-1;
+    //
+    //count findable and found clusters in the seed
+    //
+    Int_t nClustersSeedMax=iRowOuter-iRowInner+1;
+    Int_t nClustersFindable=0;
+    Int_t nClustersSeed=0;
+
+    const Int_t ncls=(fClusterType==0)?toyTrack->GetNumberOfSpacePoints():toyTrack->GetNumberOfDistSpacePoints();
+
+    Int_t rowInner=iRowInner-(iRowInner>62)*63;
+    Int_t rowOuter=iRowOuter-(iRowOuter>62)*63;
+    //findable
+    for (Int_t icl=0; icl<ncls; ++icl) {
+      const AliTPCclusterMI *cl=(fClusterType==0)?toyTrack->GetSpacePoint(icl):toyTrack->GetDistortedSpacePoint(icl);
+      roc=cl->GetDetector();
+      Int_t row=cl->GetRow();
+      //         printf("row: %d, iRowInner: %d, iRowOuter: %d\n", row, iRowInner, iRowOuter);
+      if ( (row<rowInner) || (row>rowOuter) ) continue;
+                                                               ++nClustersFindable;
+    }
+
+    //found in seed
+    for (Int_t icl=0; icl<159; ++icl) {
+      const AliTPCclusterMI *cl=seed->GetClusterPointer(icl);
+      if (!cl) continue;
+                                                               const Int_t row=cl->GetRow();
+      if ( (row<rowInner) || (row>rowOuter) ) continue;
+                                                               ++nClustersSeed;
+    }
+
+    // convert back to time, since we made tracking in 'pseude z coordinates'
+    fTime0=extSeed.GetZ()/vDrift;
+
+    Float_t z0=fEvent->GetZ();
+    Float_t t0=fEvent->GetT0();
+
+    Int_t ctype(fCorrectionType);
+
+    Int_t info[5]={0};
+    CookLabel(seed,.6,info);
+
+    (*fStreamer) << "Seeds" <<
+    "iev="             << iev               <<
+    "iseed="           << iseed             <<
+    "z0="              << z0                <<
+    "t0="              << t0                <<
+    "fTime0="          << fTime0            <<
+    "itr="             << itr               <<
+    "clsType="         << fClusterType      <<
+    "corrType="        << ctype             <<
+    "seedRowInner="    << iRowInner         <<
+    "seedRowOuter="    << iRowOuter         <<
+    "vDrift="          << vDrift            <<
+    "zLength="         << zLength           <<
+    "track.="          << &extSeed          <<
+    "track2.="         << extSeedRefit      <<
+    "tOrig.="          << &extTrack         <<
+    "seedLabel="       << seedLabel         <<
+    "nclMax="          << nClustersSeedMax  <<
+    "nclFindable="     << nClustersFindable <<
+    "nclFound="        << nClustersSeed     <<
+    "nMaxLabel="       << info[0]           <<
+    "nMaxLabel2="      << info[1]           <<
+    "maxLabel2="       << info[2]           <<
+    "nclusters="       << info[3]           <<
+    "nlabels="         << info[4]           <<
+    "roc="             << roc               <<
+    "\n";
+
+    delete extSeedRefit;
+  }
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::MarkClustersUsed(AliTPCseed *seed)
+{
+  //
+  //
+  //
+
+  for (Int_t icl=0; icl<159; ++icl) {
+    AliTPCclusterMI *cl=seed->GetClusterPointer(icl);
+    if (cl) cl->Use();
+  }
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::DumpTracksToTree(const char* file)
+{
+  //
+  //
+  //
+  ConnectInputFile(file);
+  if (!fTree) return;
+
+  delete fStreamer;
+  fStreamer=0x0;
+  
+  TString debugName=fInputFile->GetName();
+  debugName.ReplaceAll(".root",".AllTracks.root");
+  
+  gSystem->Exec(Form("test -f %s && rm %s", debugName.Data(), debugName.Data()));
+  fStreamer=new TTreeSRedirector(debugName.Data());
+  
+  for (Int_t iev=0;iev<fNmaxEvents;++iev){
+    fTree->GetEvent(iev);
+    for (Int_t itr=0; itr<fEvent->GetNumberOfTracks();++itr){
+      AliToyMCTrack *toyTrack=const_cast<AliToyMCTrack*>(fEvent->GetTrack(itr));
+      Int_t trackID=toyTrack->GetUniqueID();
+
+      (*fStreamer) << "Tracks" <<
+      "iev="  << iev <<
+      "itr="  << itr <<
+      "trackID=" << trackID <<
+      "track.="  << toyTrack <<
+      "\n";
+      
+    }
+  }
+
+  Cleanup();
 }

@@ -166,7 +166,8 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
   // number of tracks to simulate per interaction
   fNtracks=ntracks;
   // within one simulation the track count should be unique for effeciency studies
-  fCurrentTrack=0;
+  // don't use the track ID 0 since the label -0 is not different from 0
+  fCurrentTrack=1;
   
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./50e3; //50kHz equally spaced
@@ -197,7 +198,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationLaser(const Int_t nevents/*=1*/)
   InitSpaceCharge();
   
   // within one simulation the track count should be unique for effeciency studies
-  fCurrentTrack=0;
+  fCurrentTrack=1;
   
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./10.; //laser is running at 10Hz equally spaced
@@ -283,7 +284,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
 
   fNtracks = ntracks;
   // within one simulation the track count should be unique for effeciency studies
-  fCurrentTrack=0;
+  fCurrentTrack=1;
   
   Double_t eventTime=0.;
   const Double_t eventSpacing=1./50e3; //50kHz equally spaced
@@ -318,7 +319,6 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
 }
 
 //________________________________________________________________
-
 void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
 {
   //
@@ -347,7 +347,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
   
   fNtracks=ntracks;
   // within one simulation the track count should be unique for effeciency studies
-  fCurrentTrack=0;
+  fCurrentTrack=1;
   
   Double_t eventTime=0.;
   //  const Double_t eventSpacing=1./50e3; //50kHz equally spaced
@@ -460,7 +460,7 @@ void AliToyMCEventGeneratorSimple::RunSimulation2(const Bool_t equalspacing, con
 
   fNtracks = ntracks;
   // within one simulation the track count should be unique for effeciency studies
-  fCurrentTrack=0;
+  fCurrentTrack=1;
   
   Double_t eventTime=0.;
   TStopwatch s;

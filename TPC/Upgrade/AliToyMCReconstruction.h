@@ -1,6 +1,7 @@
 #ifndef AliToyMCReconstruction_H
 #define AliToyMCReconstruction_H
 
+#include <TString.h>
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <TExMap.h>
@@ -31,9 +32,11 @@ public:
   void RunReco(const char* file, Int_t nmaxEv=-1);
   void RunRecoAllClusters(const char* file, Int_t nmaxEv=-1);
   void RunRecoAllClustersStandardTracking(const char* file, Int_t nmaxEv=-1);
+
+  void RunFullTracking(const char* file, Int_t nmaxEv=-1);
   
   // reconstruction settings
-  void      SetRecoSettings(Bool_t idealTracking, Int_t clusterType, ECorrType correctionType, Int_t seedingRow=140, Int_t seedingDist=10)
+  void      SetRecoSettings(Bool_t idealTracking, Int_t clusterType, ECorrType correctionType, Int_t seedingRow=130, Int_t seedingDist=10)
                            { fIdealTracking=idealTracking; fClusterType=clusterType; fSeedingRow=seedingRow, fSeedingDist=seedingDist, fCorrectionType=correctionType; }
   
   void      SetClusterType(Int_t type)  { fClusterType = type;    }
@@ -84,10 +87,12 @@ public:
   Double_t GetVDrift() const;
   Double_t GetZLength(Int_t roc) const;
 
-  void InitStreamer(const char* addName, Int_t level);
+  void InitStreamer(TString addName, Int_t level=1);
 
-  void ConnectInputFile(const char* file);
+  void ConnectInputFile(const char* file, Int_t nmaxEv=-1);
   void Cleanup();
+
+  void DumpTracksToTree(const char* file);
   
 // private:
   AliToyMCReconstruction(const AliToyMCReconstruction &rec);
@@ -101,9 +106,15 @@ public:
   
   Int_t GetSector(AliExternalTrackParam *track);
   void FillSectorStructure(Int_t maxev);
-  void FillSectorStructureAC(Int_t maxev);
+  void FillSectorStructureAC();
 
   void SetupTrackMaps();
+
+  void CookLabel(AliTPCseed *seed, Double_t fraction, Int_t info[5]=0);
+
+  void DumpSeedInfo(TObjArray *arr, Int_t iRowInner, Int_t iRowOuter);
+
+  void MarkClustersUsed(AliTPCseed *seed);
   
   // reco settings
   Int_t  fSeedingRow;            // first row used for seeding
@@ -113,6 +124,8 @@ public:
   Bool_t fDoTrackFit;            // do track fitting
   Bool_t fUseMaterial;           // use material budget in tracking
   Bool_t fIdealTracking;         // use ideal coordinates for tracking
+
+  Int_t  fNmaxEvents;            // maximum number of events
 
   // current reconstruction info
   Double_t fTime0;               // current time0 used for reconstruction
@@ -126,17 +139,17 @@ public:
   AliTPCParam *fTPCParam;            // tpc reco parameters
   AliTPCCorrection *fTPCCorrection; // space charge
 
-   const Int_t fkNSectorInner;        //number of inner sectors
-   AliTPCtrackerSector *fInnerSectorArray;  //array of inner sectors
-   const Int_t fkNSectorOuter;        //number of outer sectors
-   AliTPCtrackerSector *fOuterSectorArray;  //array of outer sectors
+  const Int_t fkNSectorInner;        //number of inner sectors
+  AliTPCtrackerSector *fInnerSectorArray;  //array of inner sectors
+  const Int_t fkNSectorOuter;        //number of outer sectors
+  AliTPCtrackerSector *fOuterSectorArray;  //array of outer sectors
 
-   TClonesArray fAllClusters;     //Array keeping all clusters for free seeding
+  TClonesArray fAllClusters;     //Array keeping all clusters for free seeding
 
-   TExMap fMapTrackEvent;          // map global track number -> event number
-   TExMap fMapTrackTrackInEvent;   // map global track number -> track in event
+  TExMap fMapTrackEvent;          // map global track number -> event number
+  TExMap fMapTrackTrackInEvent;   // map global track number -> track in event
 
-   Bool_t fIsAC;                     // if we are tracking with sector arrays running from 0-36 rather than 0-18
+  Bool_t fIsAC;                     // if we are tracking with sector arrays running from 0-36 rather than 0-18
    
   ClassDef(AliToyMCReconstruction,0)
 };
