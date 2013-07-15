@@ -1218,6 +1218,7 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
       else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+       if(fRequireITSRefit==0){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
       if(bGood==false) continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
