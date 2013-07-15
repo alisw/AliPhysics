@@ -17,6 +17,7 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   const Int_t nT02D        = 2;
   const Int_t nZ0          = 2;
   const Int_t nTrackParams = 9;
+  const Int_t nTrackParamsITS = 9;
   const Int_t nEff         = 1;
 
   Int_t col = kBlack;
@@ -24,6 +25,7 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   TString sT0[nT0] = {"fTime0-t0","fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift"};
   TString sT02D[nT02D] = {"fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift:tOrig.fP[3]","fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift:tOrig.fP[4]"};
   TString sTrackParams[nTrackParams] = {"track.fP[0]-tOrig.fP[0]","track.fP[1]-tOrig.fP[1]","track.fP[2]-tOrig.fP[2]","track.fP[3]-tOrig.fP[3]","track.fP[4]-tOrig.fP[4]","track.fAlpha-tOrig.fAlpha","track.fX/tOrig.fX","track.fP[0]/tOrig.fP[0]","track.fP[1]/tOrig.fP[1]"};
+  TString sTrackParamsITS[nTrackParamsITS] = {"trackITS.fP[0]-tOrigITS.fP[0]","trackITS.fP[1]-tOrigITS.fP[1]","trackITS.fP[2]-tOrigITS.fP[2]","trackITS.fP[3]-tOrigITS.fP[3]","trackITS.fP[4]-tOrigITS.fP[4]","trackITS.fAlpha-tOrigITS.fAlpha","trackITS.fX/tOrigITS.fX","trackITS.fP[0]/tOrigITS.fP[0]","trackITS.fP[1]/tOrigITS.fP[1]"};
   TString sZ0[nZ0] = {"(fTime0-t0)*vDrift","(fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift)*vDrift"};
   TString sEff[nEff] = {"nSeedClustersID/nClustersMC:nSeedClusters/nClustersMC"};
 
@@ -31,6 +33,7 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   TString tT0[nT0] = {"T_{0} resolution","intrinsic T_{0} resolution"};
   TString tT02D[nT0] = {"intrinsic T_{0} resolution vs. tan#lambda","intrinsic T_{0} resolution vs. 1/p_{T}"};
   TString tTrackParams[nTrackParams] = {"local y","z","sin inclination angle","tan#lambda","1/p_{T}","#alpha","X","Y","Z"};
+  TString tTrackParamsITS[nTrackParamsITS] = {"local y","z","sin inclination angle","tan#lambda","1/p_{T}","#alpha","X","Y","Z"};
   TString tZ0[nZ0] = {"Z_{0} resolution","intrinsic Z_{0} resolution"};
   TString tEff[nEff] = {"nSeedClustersID/nClustersMC:nSeedClusters/nClustersMC"};
 
@@ -69,6 +72,9 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
 
   TCanvas *cTrackParams = new TCanvas(Form("cTrackParams_%s",sConfig.Data()),Form("cTrackParams_%s",sConfig.Data()),1200,900);
   cTrackParams->Divide(3,3);
+
+  TCanvas *cTrackParamsITS = new TCanvas(Form("cTrackParamsITS_%s",sConfig.Data()),Form("cTrackParamsITS_%s",sConfig.Data()),1200,900);
+  cTrackParamsITS->Divide(3,3);
 
   TCanvas *cEff = new TCanvas(Form("cEff_%s",sConfig.Data()),Form("cEff_%s",sConfig.Data()),1200,900);
   //cEff->Divide(2,1);
@@ -122,14 +128,25 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
 
   }
 
-  // draw cluster efficiency
-  for(Int_t iEff = 0; iEff < nEff; iEff ++){
-    
-    //cEff->cd(iEff+1);
-    cEff->cd();
-    TStatToolkit::DrawHistogram(Tracks,sEff[iEff].Data(),sSel.Data(),Form("hEff_%s_%d",sConfig.Data(),iEff),Form("%s",tEff[iEff].Data()),3);
-    
 
+  // draw track parameters at ITS outer layer
+  for(Int_t iTrackParamsITS = 0; iTrackParamsITS < nTrackParamsITS; iTrackParamsITS ++){
+
+    cTrackParamsITS->cd(iTrackParamsITS+1);
+    TStatToolkit::DrawHistogram(Tracks,sTrackParamsITS[iTrackParamsITS].Data(),sSel.Data(),Form("hTrackParamsITS_%s_%d",sConfig.Data(),iTrackParamsITS),Form("%s",tTrackParamsITS[iTrackParamsITS].Data()),3);
+    
+  }
+
+
+  // draw cluster efficiency
+  if(inFileName.Contains("allClusters")){  
+    for(Int_t iEff = 0; iEff < nEff; iEff ++){
+      
+      //cEff->cd(iEff+1);
+      cEff->cd();
+      TStatToolkit::DrawHistogram(Tracks,sEff[iEff].Data(),sSel.Data(),Form("hEff_%s_%d",sConfig.Data(),iEff),Form("%s",tEff[iEff].Data()),3);   
+      
+    }
   }
   
   // plots
@@ -140,13 +157,17 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
     cZ0->SaveAs(Form("%s_Z0.eps",outFileName.Data()));
     cT02D->SaveAs(Form("%s_T02D.eps",outFileName.Data()));
     cTrackParams->SaveAs(Form("%s_TrackParams.eps",outFileName.Data()));
-    cEff->SaveAs(Form("%s_Eff.eps",outFileName.Data()));
+    cTrackParamsITS->SaveAs(Form("%s_TrackParamsITS.eps",outFileName.Data()));
+    if(inFileName.Contains("allClusters"))
+      cEff->SaveAs(Form("%s_Eff.eps",outFileName.Data()));
 
     cT0->SaveAs(Form("%s_T0.png",outFileName.Data()));
     cZ0->SaveAs(Form("%s_Z0.png",outFileName.Data()));
     cT02D->SaveAs(Form("%s_T02D.png",outFileName.Data()));
     cTrackParams->SaveAs(Form("%s_TrackParams.png",outFileName.Data()));
-    cEff->SaveAs(Form("%s_Eff.eps",outFileName.Data()));
+    cTrackParamsITS->SaveAs(Form("%s_TrackParamsITS.png",outFileName.Data()));
+    if(inFileName.Contains("allClusters"))
+      cEff->SaveAs(Form("%s_Eff.eps",outFileName.Data()));
 
   }
 }

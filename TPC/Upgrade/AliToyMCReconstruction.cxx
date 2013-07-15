@@ -99,7 +99,9 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   AliExternalTrackParam t0seed;
   AliExternalTrackParam seed;
   AliExternalTrackParam track;
+  AliExternalTrackParam trackITS;
   AliExternalTrackParam tOrig;
+  AliExternalTrackParam tOrigITS;
 
   AliExternalTrackParam *dummy;
   
@@ -154,11 +156,24 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
             delete dummy;
           }
 
+	  // Copy original track and fitted track
+	  // for extrapolation to ITS last layer
+	  tOrigITS = *tr;
+	  trackITS = track;
+
           // propagate seed to 0
           const Double_t kMaxSnp = 0.85;
           const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
           AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          
+
+	  // propagate original track to ITS last layer
+	  Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
+	  AliTrackerBase::PropagateTrackTo(&tOrigITS,lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+	  // rotate fitted track to the frame of the original track and propagate to same reference
+	  trackITS.Rotate(tOrigITS.GetAlpha());
+          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+	            
         }
       }
 
@@ -181,6 +196,8 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "seed.="       << &seed           <<
         "track.="      << &track          <<
         "tOrig.="      << &tOrig          <<
+        "trackITS.="   << &trackITS       <<
+        "tOrigITS.="   << &tOrigITS       <<
         "\n";
       }
       
@@ -480,8 +497,7 @@ void AliToyMCReconstruction::RunRecoAllClustersStandardTracking(const char* file
   for (Int_t sec=0;sec<fkNSectorOuter;sec++){
     //
     //tpcTracker->MakeSeeds3(arr, sec,upperRow,lowerRow,cuts,-1,1);
-//     MakeSeeds(arr, sec,upperRow,lowerRow); // own function (based on TLinearFitter)
-    MakeSeeds2(arr, sec,upperRow,lowerRow); // own function (based on TLinearFitter)
+    MakeSeeds(arr, sec,upperRow,lowerRow); // own function (based on TLinearFitter)
     //tpcTracker->SumTracks(seeds,arr);   
     //tpcTracker->SignClusters(seeds,3.0,3.0);    
 
