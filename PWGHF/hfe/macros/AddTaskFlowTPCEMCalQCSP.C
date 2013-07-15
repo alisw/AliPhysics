@@ -19,6 +19,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Double_t InvmassCut,
                                                           Double_t pTCut,
                                                           Int_t Trigger,
+						                                  Bool_t multCorrcut,
                                                           Double_t minTPC,
                                                           Double_t maxTPC,
                                                           Double_t minEovP,
@@ -30,7 +31,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Double_t Dispersion,
                                                           Int_t minTPCCluster,
                                                           AliHFEextraCuts::ITSPixel_t pixel,
-                                                          Bool_t PhotonicElectronDCA = kTRUE,
+                                                          Bool_t PhotonicElectronDCA = kFALSE,
                                                           Int_t TPCClusterforAsso = 80,
                                                           Bool_t AssoITSref = kTRUE,
                                                           Bool_t purity = kTRUE,
@@ -90,7 +91,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     taskHFE->SetOpeningAngleCut(op_angle_cut);
     taskHFE->SetAssoTPCCluster(TPCClusterforAsso);
     taskHFE->SetAssoITSRefit(AssoITSref);
-    
+    taskHFE->SetMultCorrelationCut(multCorrcut);
     //set RP cuts for flow package analysis
     cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
     if(!cutsRP) {
