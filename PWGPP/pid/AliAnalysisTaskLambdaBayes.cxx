@@ -73,7 +73,8 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes():
   fNpPos(0),
   fNpNeg(0),
   fHmismTOF(0),
-  fHchannelTOFdistr(0)
+  fHchannelTOFdistr(0),
+  fTypeCol(2)
 {
   // Default constructor (should not be used)
   fList->SetName("contLambdaBayes1");
@@ -128,7 +129,8 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes(const char *name):
   fNpPos(0),
   fNpNeg(0),
   fHmismTOF(0),
-  fHchannelTOFdistr(0)
+  fHchannelTOFdistr(0),
+  fTypeCol(2)
 {
 
   DefineOutput(1, TList::Class());
@@ -370,7 +372,7 @@ void AliAnalysisTaskLambdaBayes::UserExec(Option_t *)
 	v0Centr = centrality->GetCentralityPercentile("TRK"); 
       }
 
-      if(TMath::Abs(v0Centr - trkCentr) < 5.0 && v0Centr>0){ // consistency cut on centrality selection
+      if((TMath::Abs(v0Centr - trkCentr) < 5.0 || (fTypeCol!=2)) && v0Centr>0){ // consistency cut on centrality selection
         fCentrality = v0Centr;
 	Analyze(fOutputAOD); // Do analysis!!!!
 
@@ -411,6 +413,9 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
   Float_t addMismatchForMC = 0.005;
   if(fCentrality < 50) addMismatchForMC += 0.01;
   if(fCentrality < 20) addMismatchForMC += 0.02;
+
+  if(fTypeCol == 0) addMismatchForMC = 0.005;
+  else if(fTypeCol == 1) addMismatchForMC *= 0.5;
 
   fPsi = 0;
   /* Compute TPC EP */
@@ -567,12 +572,13 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
     if(! (TMath::Abs(nSigmaTPC) < 5)) continue;
 
     Int_t tofMatch1 = (KpTrack->GetStatus() & AliVTrack::kTOFout) && (KpTrack->GetStatus() & AliVTrack::kTIME);
-
+    /*
     if(mcArray){
       Int_t labelK = TMath::Abs(KpTrack->GetLabel());
       AliAODMCParticle *mcp1 = (AliAODMCParticle*)mcArray->At(labelK);
-//       pdg1 = TMath::Abs(mcp1->GetPdgCode());
+      pdg1 = TMath::Abs(mcp1->GetPdgCode());
     }
+    */
 
     fPidKp = Int_t(probP[4]*100);
 
@@ -673,12 +679,13 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       nSigmaComb2=5;
 
       Int_t tofMatch2 = (KnTrack->GetStatus() & AliVTrack::kTOFout) && (KnTrack->GetStatus() & AliVTrack::kTIME);
-
+      /*
       if(mcArray){
 	Int_t labelK = TMath::Abs(KnTrack->GetLabel());
 	AliAODMCParticle *mcp2 = (AliAODMCParticle*)mcArray->At(labelK);
-// 	pdg2 = TMath::Abs(mcp2->GetPdgCode());
-     }
+ 	pdg2 = TMath::Abs(mcp2->GetPdgCode());
+      }
+      */
 
       fPidKn = Int_t(probN[2]*100);
 
@@ -927,8 +934,7 @@ Int_t AliAnalysisTaskLambdaBayes::FindDaugheterIndex(AliAODTrack *trk){
 Int_t AliAnalysisTaskLambdaBayes::IsChannelValid(Float_t etaAbs){
   if(!fIsMC) return 1; // used only on MC
 
-  Int_t run = fOutputAOD->GetRunNumber();
-  if( (run>=136851&&run<=139846) || (run>=165772 && run<=170718) ){ // LHC10h or LHC11h because of TOF matching window at 3 cm
+  if( fTypeCol==2){ // LHC10h or LHC11h because of TOF matching window at 3 cm
     Int_t channel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs); 
   
     if(!(channel%20)) return 0; // 5% additional loss in MC

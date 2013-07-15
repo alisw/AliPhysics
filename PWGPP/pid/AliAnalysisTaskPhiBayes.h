@@ -47,6 +47,9 @@ class AliAnalysisTaskPhiBayes : public AliAnalysisTaskSE {
   void SetFilterBit(Int_t fb){fFilterBit=fb;};
   Int_t GetFilterBit() const {return fFilterBit;};
 
+  void SetTypeCollisions(Int_t type){fTypeCol = type;}; // 0=pp, 1=pPb, 2=PbPb
+  Int_t GetTypeCollisions() const {return fTypeCol;}; 
+
  private:
   AliAnalysisTaskPhiBayes(const AliAnalysisTaskPhiBayes &old); 
   AliAnalysisTaskPhiBayes& operator=(const AliAnalysisTaskPhiBayes &source); 
@@ -120,7 +123,9 @@ class AliAnalysisTaskPhiBayes : public AliAnalysisTaskSE {
   TH1F *fHmismTOF;         //! TOF mismatch distribution
   TH1D *fHchannelTOFdistr; //! TOF channel distance w.r.t. IP
 
-  ClassDef(AliAnalysisTaskPhiBayes, 1);    //Analysis task for bayesian (K0s)
+  Int_t fTypeCol; // type of collision system (0=pp, 1=pPb, 2=PbPb)
+
+  ClassDef(AliAnalysisTaskPhiBayes, 2);    //Analysis task for bayesian (K0s)
 };
 
 #endif

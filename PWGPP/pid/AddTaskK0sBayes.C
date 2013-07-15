@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskK0sBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filterbit=4){
+AliAnalysisTask *AddTaskK0sBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filterbit=4,Int_t typeCol=2){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -21,6 +21,7 @@ AliAnalysisTask *AddTaskK0sBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filter
   if(qa) task->SetQA();
   task->SetEtaCut(0.8);
   task->SetFilterBit(filterbit);
+  task->SetTypeCollisions(typeCol);
 
   mgr->AddTask(task);
 
