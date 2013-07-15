@@ -5,6 +5,19 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TString.h>
+#include <TGraph.h>
+#include <TGraphAsymmErrors.h>
+#include <TLegend.h>
+#include <TLegendEntry.h>
+#include <TLatex.h>
+#include <TParameter.h>
+#include <TCanvas.h>
+#include <THStack.h>
+#include <TMultiGraph.h>
+#include <TRegexp.h>
+#include <TSystem.h>
+#include "RooUnfold.h"
+#include "RooUnfoldResponse.h"
 
 /** 
  * Structure to do unfolding of multiplcity distributions 
@@ -29,26 +42,29 @@ struct Unfolder
    * Constructor
    */
   Unfolder() {}
+  virtual ~Unfolder() {}
   /** 
    * Run this code 
    * 
    * @param realFile Output file of MakeMultDistsTrain on real data
    * @param mcFile   Output file of MakeMultDistsTrain on MC data
    */
-  void Run(const Char_t* realFile="forward_multdists.root", 
-	   const Char_t* mcFile="forward_mcmultdists.root")
+  void Run(const TString& method="Bayes", 
+	   Double_t       regParam=-1e30, 
+	   const TString& realFile="forward_multdists.root", 
+	   const TString& mcFile="forward_mcmultdists.root")
   {
-    gSystem->Load("RooUnfold/libRooUnfold.so");
+    if (!gROOT->GetClass("RooUnfold")) gSystem->Load("libRooUnfold.so");
 
     // --- Open files ------------------------------------------------
     TFile* realF = TFile::Open(realFile,"READ");
     if (!realF) { 
-      Error("Run", "Couldn't open %s", realFile);
+      Error("Run", "Couldn't open %s", realFile.Data());
       return;
     }
     TFile* mcF = TFile::Open(mcFile,"READ");
     if (!mcF) { 
-      Error("Run", "Couldn't open %s", mcFile);
+      Error("Run", "Couldn't open %s", mcFile.Data());
       return;
     }
     TFile* outF = TFile::Open("forward_unfolded.root", "RECREATE");
@@ -65,17 +81,56 @@ struct Unfolder
       return;
     }
 
+    // --- Decode the method -----------------------------------------
+    struct Method { 
+      UInt_t  id;
+      TString name;
+    };
+    const Method methods[] = { {RooUnfold::kNone,    "None"},
+			       {RooUnfold::kBayes,   "Bayes"},
+			       {RooUnfold::kSVD,     "SVD"},
+			       {RooUnfold::kBinByBin,"BinByBin"},
+			       {RooUnfold::kTUnfold, "TUnfold"},
+			       {RooUnfold::kInvert,  "Invert"},
+			       {RooUnfold::kDagostini,"Dagostini"}, 
+			       {0xDeadBeef,           "unknown"} };
+    const Method* pMethod = methods;
+    while (pMethod->id != 0xDeadBeef) {
+      if (method.BeginsWith(pMethod->name, TString::kIgnoreCase)) break;
+      pMethod++;
+    }
+    if (pMethod->id == 0xDeadBeef) {
+      Error("Run", "Unknown unfolding method: %s", method.Data());
+      return;
+    }
+    TNamed* methText = new TNamed("method", pMethod->name.Data());
+    methText->SetUniqueID(pMethod->id);
+    outF->cd();
+    methText->Write();
+    
     // --- Loop over the kinds of bins we have -----------------------
     const char*  types[] = { "symmetric", "negative", "positive", "other", 0 };
     const char** ptype   = types;
+    Double_t     regParm = regParam;
     while ((*ptype)) { 
       TCollection* realType = GetCollection(realTop, *ptype);
       TCollection* mcType   = GetCollection(mcTop, *ptype);
       TDirectory*  outType  = outF->mkdir(*ptype);
-      if(realType && mcType) ScanType(realType, mcType, outType);
+      if(realType && mcType) {
+	// Restore default 
+	regParm = regParam; 
+	// regParm is possibly modified here.
+	ScanType(pMethod->id, regParm, realType, mcType, outType);
+      }
+      // Info("run", "%s gave regularisation parameter %f", *ptype, regParm);
       ptype++;
       outF->cd();
     }
+    // --- Write used regularisation parameter -----------------------
+    // We get the value that's possibly modified
+    // Info("Run", "Regularisation parameter was %f, now %f", regParam,regParm);
+    TParameter<double>* regP = new TParameter<double>("regParam", regParm);
+    regP->Write();
 
     // --- Close all files -------------------------------------------
     // outF->ls();
@@ -93,7 +148,7 @@ struct Unfolder
    * 
    * @return Pointer to object or null
    */
-  TObject* GetObject(TCollection* c, const TString& name, TClass* cl)
+  TObject* GetObject(TCollection* c, const TString& name, TClass* cl) const
   {
     TObject* o = c->FindObject(name);
     if (!o) { 
@@ -191,8 +246,6 @@ struct Unfolder
     }
     return ret;
   }
-  
-
   /** 
    * Scan type (symmetric, negative, ...) list for bins 
    * 
@@ -200,7 +253,11 @@ struct Unfolder
    * @param mc   MC list
    * @param dir  Output directory 
    */
-  void ScanType(TCollection* real, TCollection* mc, TDirectory* dir) 
+  void ScanType(UShort_t     method,
+		Double_t&    regParam,
+		TCollection* real, 
+		TCollection* mc, 
+		TDirectory*  dir) 
   {
     // --- Create container stack ------------------------------------
     TString tit(real->GetName());
@@ -237,20 +294,27 @@ struct Unfolder
     const Float_t sMarkers[] = { 1.1, 1.0, 1.2, 1.2, 1.2, 1.2, 1.0 };
     Int_t iMarker            = 0;
 
+    // --- Containers that allow us to stack the objects properly ----
+    TList* mcTruth      = new TList;
+    TList* mcMeasured   = new TList;
+    TList* realMeasured = new TList;
+    TList* mcUnfolded   = new TList;
+    TList* realUnfolded = new TList;
     // --- Loop over the contained objects ---------------------------
     static TRegexp regex("[pm][0-9]d[0-9]*_[pm][0-9]d[0-9]*");
     TIter          next(real);
     TObject*       o = 0;
     Int_t          f = 1;
+    Double_t       r = regParam;
     while ((o = next())) {
       // if not a collection, don't bother 
       if (!o->IsA()->InheritsFrom(TCollection::Class())) continue;
-     
+    
       // If it doesn't match our regular expression, don't bother 
       TString n(o->GetName());
       if (n.Index(regex) == kNPOS) { 
-	Warning("ScanType", "%s in %s doesn't match eta range regexp", 
-		n.Data(), real->GetName());
+	// Warning("ScanType", "%s in %s doesn't match eta range regexp", 
+	//         n.Data(), real->GetName());
 	continue;
       }
       // Cast object and find corresponding MC object 
@@ -263,8 +327,10 @@ struct Unfolder
       }
       TDirectory* outBin = dir->mkdir(realBin->GetName());
       
+      // Restore default
+      r = regParam;
       // Now do the unfolding 
-      THStack* bin = UnfoldEtaBin(realBin, mcBin, outBin);
+      THStack* bin = UnfoldEtaBin(method, r, realBin, mcBin, outBin);
       if (!bin) { dir->cd(); continue; }
 
       // Loop over histograms and set properties 
@@ -276,27 +342,45 @@ struct Unfolder
       TH1*    realH   = 0;
       while ((hist = static_cast<TH1*>(nextH()))) {
 	TH1* out = static_cast<TH1*>(hist->Clone());
-	if (out->GetMarkerColor() == kUnfoldedColor && 
-	    out->GetMarkerStyle() != 24) realH = out;
+	if (out->GetMarkerColor() == kUnfoldedColor) {
+          if (out->GetMarkerStyle() != 24)  {
+	    realUnfolded->Add(out);
+	    realH = out;
+	  }
+	  else 
+	    mcUnfolded->Add(out);
+	}
+	else if (out->GetMarkerColor() == kMeasuredColor) {
+	  if (out->GetMarkerStyle() != 24)  
+	    realMeasured->Add(out);
+	  else 
+	    mcMeasured->Add(out);
+	}
+	else if (out->GetMarkerColor() == kTruthColor) 
+	  mcTruth->Add(out);
+	else 
+	  Warning("", "Unknown color for %s", out->GetName());
+
 	out->SetDirectory(0);
 	out->Scale(f);
 	out->SetMarkerStyle(out->GetMarkerStyle() == 24 ? oMarker : cMarker);
 	out->SetMarkerSize(out->GetMarkerSize() * sMarker);
-	stack->Add(out, nextH.GetOption());
+	out->SetOption(nextH.GetOption());
+	// stack->Add(out, nextH.GetOption());
       }
-      TString n(bin->GetTitle());
-      n.Append(Form(" (#times%d)", f));
-      TObjString* lee = new TObjString(n);
+      TString nn(bin->GetTitle());
+      nn.Append(Form(" (#times%d)", f));
+      TObjString* lee = new TObjString(nn);
       lee->SetUniqueID(cMarker);
       l->Add(lee);
 
       // Now try to get external data and make a multigraph 
-      n = o->GetName();
-      n.ReplaceAll("p", "+");
-      n.ReplaceAll("m", "-");
-      n.ReplaceAll("d", ".");
-      n.ReplaceAll("_", " ");
-      TObjArray*  tokens = n.Tokenize(" ");
+      nn = o->GetName();
+      nn.ReplaceAll("p", "+");
+      nn.ReplaceAll("m", "-");
+      nn.ReplaceAll("d", ".");
+      nn.ReplaceAll("_", " ");
+      TObjArray*  tokens = nn.Tokenize(" ");
       TObjString* sMin   = static_cast<TObjString*>(tokens->At(0));
       TObjString* sMax   = static_cast<TObjString*>(tokens->At(1));
       Double_t    etaMin = sMin->String().Atof();
@@ -328,6 +412,25 @@ struct Unfolder
 
       dir->cd();
     }
+    regParam = r;
+    // Info("ScanType", "Regularisation parameter was %f, now %f", regParam, r);
+    TH1*  tmp = 0;
+    TIter nextMCT(mcTruth);
+    while ((tmp = static_cast<TH1*>(nextMCT()))) 
+      stack->Add(tmp, tmp->GetOption());
+    TIter nextMCM(mcMeasured);
+    while ((tmp = static_cast<TH1*>(nextMCM()))) 
+      stack->Add(tmp, tmp->GetOption());
+    TIter nextRM(realMeasured);
+    while ((tmp = static_cast<TH1*>(nextRM()))) 
+      stack->Add(tmp, tmp->GetOption());
+    TIter nextMCU(mcUnfolded);
+    while ((tmp = static_cast<TH1*>(nextMCU()))) 
+      stack->Add(tmp, tmp->GetOption());
+    TIter nextRU(realUnfolded);
+    while ((tmp = static_cast<TH1*>(nextRU()))) 
+      stack->Add(tmp, tmp->GetOption());
+    
     dir->cd();
     if (mg) mg->Write();
     if (ratios) dir->Add(ratios);
@@ -342,7 +445,11 @@ struct Unfolder
    * 
    * @return Stack of histograms on success
    */  
-  THStack* UnfoldEtaBin(TCollection* real, TCollection* mc, TDirectory* dir)
+  THStack* UnfoldEtaBin(UInt_t       method, 
+			Double_t&    regParam,
+			TCollection* real, 
+			TCollection* mc, 
+			TDirectory* dir)
   {
     TH1*  realRaw  = GetH1(real, "rawDist");
     TH1*  mcRaw    = GetH1(mc,   "rawDist");
@@ -386,19 +493,25 @@ struct Unfolder
       }
     }
 
-    RooUnfoldBayes realUnfold(&matrix, realRaw, 4);
-    realUnfold.SetVerbose(0);
-    TH1* resReal = realUnfold.Hreco();
+    Double_t regParm = regParam;
+    RooUnfold::Algorithm alg = (RooUnfold::Algorithm)method;
+    RooUnfold* realUnfold = RooUnfold::New(alg, &matrix, realRaw, regParm);
+    realUnfold->SetVerbose(0);
+    TH1* resReal = realUnfold->Hreco();
     TH1* outReal = static_cast<TH1*>(resReal->Clone("realUnfolded"));
     resReal->SetDirectory(0);
+    regParam = realUnfold->GetRegParm();
+    // Info("UnfoldEtaBin", "Used regularization parameter: %f", regParam);
     delete resReal;
+    delete realUnfold;
 
-    RooUnfoldBayes mcUnfold(&matrix, mcRaw, 4);
-    mcUnfold.SetVerbose(0);
-    TH1* resMC = mcUnfold.Hreco();
+    RooUnfold* mcUnfold = RooUnfold::New(alg, &matrix, mcRaw, regParm);
+    mcUnfold->SetVerbose(0);
+    TH1* resMC = mcUnfold->Hreco();
     TH1* outMC = static_cast<TH1*>(resMC->Clone("mcUnfolded"));
     resMC->SetDirectory(0);
     delete resMC;
+    delete mcUnfold;
 
     TH1* outRealRaw  = static_cast<TH1*>(realRaw->Clone("realRaw"));
     TH1* outMcRaw    = static_cast<TH1*>(mcRaw->Clone("mcRaw"));
@@ -487,6 +600,15 @@ struct Unfolder
       Warning("DrawType", "Failed to open file %s", fname);
       return;
     }
+    
+    TNamed* method = 0;
+    outF->GetObject("method", method);
+    TParameter<double>* regParam = 0;
+    outF->GetObject("regParam", regParam);
+    if (!method) Warning("DrawType", "Didn't find the method string");
+    if (!regParam) 
+      Warning("DrawType", "Didn't find the regularization parameter");
+    
 
     THStack* stack = 0;
     outF->GetObject(Form("/%s/all", which), stack);
@@ -505,13 +627,11 @@ struct Unfolder
 
     TMultiGraph* other = 0;
     outF->GetObject(Form("/%s/other", which), other);
-    if (!other) 
-      Warning("DrawType", "No other data found for %s", which);
+    // if (!other) Warning("DrawType", "No other data found for %s", which);
 
     THStack* ratios = 0;
     outF->GetObject(Form("/%s/ratios", which), ratios);
-    if (!ratios) 
-      Warning("DrawType", "No ratios data found for %s", which);
+    // if (!ratios) Warning("DrawType", "No ratios data found for %s", which);
 
     TCanvas* c = new TCanvas(which, Form("%s P(#it{N}_{ch})", which));
     c->SetLogy();
@@ -548,7 +668,7 @@ struct Unfolder
     TObject*      o = 0;
     TLegendEntry* e = 0;
     Int_t         d = 0;
-    while (o = next()) { 
+    while ((o = next())) { 
       e = l->AddEntry(Form("dummy%02d", d++), o->GetName(), "p");
       e->SetMarkerStyle(o->GetUniqueID());
       e->SetLineColor(kBlack);
@@ -590,18 +710,44 @@ struct Unfolder
     e->SetMarkerStyle(24);
     e->SetMarkerSize(1.3);
     e->SetMarkerColor(kBlack);
-    
     l2->Draw();
 
-  if (ratios) {
-    c = new TCanvas(Form("r%s", which), 
-			     Form("%s P(#it{N}_{ch})", which));
-    c->SetTopMargin(0.01);
-    c->SetRightMargin(0.02);
+
+    TString post;
+    if (method && regParam) {
+      TString mes = method->GetTitle();
+      if      (method->GetUniqueID() == RooUnfold::kBayes || 
+	       method->GetUniqueID() == RooUnfold::kDagostini)
+	mes.Append(Form(" (N_{iter}=%d)", int(regParam->GetVal())));
+      else if (method->GetUniqueID() == RooUnfold::kSVD) 
+	mes.Append(Form(" (k=%d)", int(regParam->GetVal())));
+      else if (method->GetUniqueID() == RooUnfold::kTUnfold) 
+	mes.Append(Form(" (#tau=%f)", regParam->GetVal()));
+      
+      TLatex* meth = new TLatex(.97, .749, mes);
+      meth->SetNDC();
+      meth->SetTextAlign(33);
+      meth->SetTextFont(42);
+      meth->SetTextSize(.03);
+      meth->Draw();
+
+      post.Form("_%s", method->GetTitle());
+      post.ToLower();
+    }
+    c->Modified();
+    c->Update();
     c->cd();
-    ratios->Draw("nostack");
-    c->BuildLegend();
-  }
+    c->SaveAs(Form("pnch_%s%s.pdf", which, post.Data()));
+
+    if (ratios) {
+      c = new TCanvas(Form("r%s", which), 
+		      Form("%s P(#it{N}_{ch})", which));
+      c->SetTopMargin(0.01);
+      c->SetRightMargin(0.02);
+      c->cd();
+      ratios->Draw("nostack");
+      c->BuildLegend();
+    }
 
     outF->cd();
   }
@@ -622,8 +768,8 @@ struct Unfolder
     case 1: g = GetALICE(eta, sNN); color = kALICEColor; break;
     }
     if (!g) {
-      Warning("GetOther", "No other data found for type=%d, eta=%f, sNN=%d", 
-	      type, eta, sNN);
+      // Warning("GetOther", "No other data found for type=%d, eta=%f, sNN=%d", 
+      //         type, eta, sNN);
       return g;
     }
     
@@ -2242,11 +2388,13 @@ struct Unfolder
   }
   ClassDef(Unfolder,1);
 };
-void UnfoldMultDists(const char* realFile="forward_multdists.root",
+void UnfoldMultDists(const char* method="Bayes", 
+		     Double_t    regParam=4,
+		     const char* realFile="forward_multdists.root",
                      const char* mcFile="forward_mcmultdists.root")
 {
   Unfolder* u = new Unfolder;
-  u->Run();
+  u->Run(method, regParam, realFile, mcFile);
   
   u->DrawAll();
 }

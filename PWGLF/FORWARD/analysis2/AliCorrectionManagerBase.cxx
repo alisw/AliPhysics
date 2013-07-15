@@ -703,7 +703,7 @@ AliCorrectionManagerBase::Correction::Print(Option_t* option) const
   
   TString opt(option);
   opt.ToUpper();
-  if (!opt.Contains("D")) return;
+  if (!opt.Contains("D") || !fObject) return;
 
   gROOT->IncreaseDirLevel();
   fObject->Print();
