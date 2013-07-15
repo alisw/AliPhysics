@@ -551,6 +551,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
     Bool_t isLambda = (KpTrack->Charge() > 0);
 
     nSigmaComb=5;
+    nSigmaTOF=5;
     fPtKp=KpTrack->Pt(),fPhiKp=KpTrack->Phi(),fEtaKp=KpTrack->Eta();
     fPidKp=0;
 
@@ -640,7 +641,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
     }
 
     // use sigmaTOF instead of sigmaComb
-    //nSigmaComb = nSigmaTOF;
+    if(tofMatch1) nSigmaComb = nSigmaTOF;
 
     if(nSigmaComb < 2) nSigmaComb = 2;
     else if(nSigmaComb < 3) nSigmaComb = 3;
@@ -663,6 +664,9 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 	continue;
       }
 
+      nSigmaComb2 = 5;
+      nSigmaTOF2 = 5;
+
       if(!(KnTrack->Pt() > 0.3 && TMath::Abs(KnTrack->Eta()) < 0.8)) continue;
 
       fPtKn=KnTrack->Pt(),fPhiKn=KnTrack->Phi(),fEtaKn=KnTrack->Eta();
@@ -676,8 +680,6 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       
       if(! (TMath::Abs(nSigmaTPC2) < 5)) continue;
       
-      nSigmaComb2=5;
-
       Int_t tofMatch2 = (KnTrack->GetStatus() & AliVTrack::kTOFout) && (KnTrack->GetStatus() & AliVTrack::kTIME);
       /*
       if(mcArray){
@@ -723,7 +725,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       }
 
       // use sigmaTOF instead of sigmaComb
-      //nSigmaComb2 = nSigmaTOF2;
+      if(tofMatch2) nSigmaComb2 = nSigmaTOF2;
 
       if(nSigmaComb2 < 2) nSigmaComb2 = 2;
       else if(nSigmaComb2 < 3) nSigmaComb2 = 3;

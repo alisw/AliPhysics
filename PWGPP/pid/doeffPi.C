@@ -38,7 +38,10 @@ Bool_t bayesVsigma = kFALSE; // only to do checks
 
 Bool_t kTOFmatch = kFALSE; // for combined PID requires TOF matching
 
-Bool_t kOverAll = kFALSE;
+Bool_t kOverAll = kTRUE;
+Bool_t kOverAllTOFmatch = kFALSE;
+Bool_t kOverAll2Sigma = kTRUE;
+
 
 Bool_t kLoaded=kFALSE;
 LoadLib(){
@@ -274,6 +277,10 @@ doeffPi(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
 
   if(kOverAll)
     sprintf(flag2,"OverAll");
+  if(kOverAllTOFmatch)
+    sprintf(flag2,"OverAllTOF");
+  if(kOverAll2Sigma)
+    sprintf(flag2,"OverAll2sigma");
 
   if(pos){
     if(prob >=0.2) sprintf(name,"pionPos%sP%iEff%i_%i%s%s.root",etarange,Int_t(prob*100),(cmin-1)*10,cmax*10,flag,flag2);
@@ -309,6 +316,22 @@ TH2F *GetHistoPip(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0
 
   Float_t x[] = {xmin[0]+0.001,etaminkp+0.001,pt+0.001,xmin[3]+0.001,pMinkp+0.001,pMinkn+0.001,(pMinkp>0.09)+0.001,kTOFmatch+0.001,selectTrue,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
   Float_t x2[] = {xmax[0],etamaxkp-0.001,ptM-0.001,xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],keepTrue,xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
+
+  if(kOverAll){
+    x[6] = 0.0001;
+    x2[9] = 5.9;
+    if(pMinkp > 0.19) x2[9] = 4.9;
+  }
+
+  if(kOverAllTOFmatch && pMinkp > 0.19){
+    x[6] = 1.0001;
+    x2[9] = 4.9;
+  }
+  
+  if(kOverAll2Sigma && pMinkp > 0.09){
+    x2[9] = 4.9;
+    x[6] = 1.0001;
+  }
 
   if(kGoodMatch){
     x[6] = 1.0001;
@@ -356,6 +379,22 @@ TH2F *GetHistoPin(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0
 
   Float_t x[] = {xmin[0]+0.001,etaminkp+0.001,xmin[2]+0.001,pt+0.001,pMinkp+0.001,pMinkn+0.001,kTOFmatch+0.001,(pMinkn>0.09)+0.001,selectTrue,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
   Float_t x2[] = {xmax[0],etamaxkp-0.001,xmax[2],ptM-0.001,xmax[4],xmax[5],xmax[6],xmax[7],keepTrue,xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
+
+  if(kOverAll){
+    x[7] = 0.0001;
+    x2[10] = 5.9;
+    if(pMinkn > 0.19) x2[10] = 4.9;
+  }
+
+  if(kOverAllTOFmatch && pMinkn > 0.19){
+    x[7] = 1.0001;
+    x2[10] = 4.9;
+  }
+
+  if(kOverAll2Sigma && pMinkn > 0.09){
+    x2[10] = 2;
+    x[7] = 1.0001;
+  }
 
   if(kGoodMatch){
     x[7] = 1.0001;

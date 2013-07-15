@@ -539,6 +539,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     
     if(!(KpTrack->Charge() > 0 && KpTrack->Pt() > 0.3  && TMath::Abs(KpTrack->Eta()) < 0.8)) continue;
 
+    nSigmaTOF=5;
     nSigmaComb=5;
     fPtKp=KpTrack->Pt(),fPhiKp=KpTrack->Phi(),fEtaKp=KpTrack->Eta();
     fPidKp=0;
@@ -628,7 +629,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     }
 
     // use sigmaTOF instead of sigmaComb
-    //nSigmaComb = nSigmaTOF;
+    if(tofMatch1) nSigmaComb = nSigmaTOF;
 
     if(nSigmaComb < 2) nSigmaComb = 2;
     else if(nSigmaComb < 3) nSigmaComb = 3;
@@ -668,6 +669,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
       
       if(! (TMath::Abs(nSigmaTPC2) < 5)) continue;
       
+      nSigmaTOF2=5;
       nSigmaComb2=5;
 
       Int_t tofMatch2 = (KnTrack->GetStatus() & AliVTrack::kTOFout) && (KnTrack->GetStatus() & AliVTrack::kTIME);
@@ -711,7 +713,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 	      Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+00;
 	      Double_t times[10];
 	      KnTrack->GetIntegratedTimes(times);
-	      nSigmaTOF = TMath::Abs(timeRandom - times[3])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[3], AliPID::kKaon);
+	      nSigmaTOF2 = TMath::Abs(timeRandom - times[3])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[3], AliPID::kKaon);
 	    }
 	  }
 
@@ -736,7 +738,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
       }
 
       // use sigmaTOF instead of sigmaComb
-      //nSigmaComb2 = nSigmaTOF2;
+      if(tofMatch2) nSigmaComb2 = nSigmaTOF2;
 
       if(nSigmaComb2 < 2) nSigmaComb2 = 2;
       else if(nSigmaComb2 < 3) nSigmaComb2 = 3;
