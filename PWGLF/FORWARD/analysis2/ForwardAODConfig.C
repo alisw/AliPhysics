@@ -45,7 +45,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   cSharingHigh.SetMultCuts(-1);
   cSharingHigh.SetNXi(0); // Was 2
   cSharingHigh.SetIncludeSigma(false);
-  cSharingHigh.SetMPVFaction(0.6); 
+  cSharingHigh.SetMPVFraction(0.6); 
   // Density cut
   AliFMDMultCuts cDensity;
   // cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);

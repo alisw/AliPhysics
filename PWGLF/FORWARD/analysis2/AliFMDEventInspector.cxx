@@ -838,7 +838,9 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent& esd,
     qual = centObj->GetQuality();
   }
 
-  if (qual > 0 && fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
+  // We overwrite with satellite events, so we can be sure to get the
+  // centrality determination from the satellite vertex selection
+  if (fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
     cent = fDisplacedVertex.GetCentralityPercentile();
     qual = 0;
   }

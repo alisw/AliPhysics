@@ -720,10 +720,10 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
   out->SetOwner();
 
   TParameter<int>* nFiles = 
-    static_cast<TParameter<int>*>(dir->FindObject("nFiles"));
+    static_cast<TParameter<int>*>(d->FindObject("nFiles"));
 
-  TH2* lowCuts  = static_cast<TH2*>(dir->FindObject("lowCuts"));
-  TH2* highCuts = static_cast<TH2*>(dir->FindObject("highCuts"));
+  TH2* lowCuts  = static_cast<TH2*>(d->FindObject("lowCuts"));
+  TH2* highCuts = static_cast<TH2*>(d->FindObject("highCuts"));
   if (lowCuts && nFiles) {
     lowCuts->Scale(1. / nFiles->GetVal());
     out->Add(lowCuts->Clone());
