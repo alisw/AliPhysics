@@ -208,7 +208,7 @@ Bool_t AliFMDBaseDA::HaveEnough(Int_t nEvents) const
   Bool_t ret = true; // Assume we have it 
   for (Int_t i = 0; i < 3; i++) { 
     if (!fSeenDetectors[i]) continue;
-    if (fNEventsPerDetector[i] <= GetRequiredEvents()) ret = false;
+    if (Int_t(fNEventsPerDetector[i]) <= GetRequiredEvents()) ret = false;
   }
   return ret;
 }
@@ -227,7 +227,7 @@ UShort_t AliFMDBaseDA::GetProgress(Int_t nEvents) const
     got   += fNEventsPerDetector[i];
     total += GetRequiredEvents();
   }
-  return UShort_t((got * 100.) / total);
+  return UShort_t(total > 0 ? (got * 100.) / total : 0);
 }
 
 //_____________________________________________________________________
@@ -296,7 +296,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
       seen[det-1]           = true;
 
       // Only fill if we do not have enough for this detector 
-      if (fNEventsPerDetector[det-1] < GetRequiredEvents()) 
+      if (Int_t(fNEventsPerDetector[det-1]) < GetRequiredEvents()) 
 	FillChannels(digit);
     }
     
