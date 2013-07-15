@@ -47,6 +47,9 @@ class AliAnalysisTaskLambdaBayes : public AliAnalysisTaskSE {
   void SetFilterBit(Int_t fb){fFilterBit=fb;};
   Int_t GetFilterBit() const {return fFilterBit;};
 
+  void SetTypeCollisions(Int_t type){fTypeCol = type;}; // 0=pp, 1=pPb, 2=PbPb
+  Int_t GetTypeCollisions() const {return fTypeCol;}; 
+
  private:
   AliAnalysisTaskLambdaBayes(const AliAnalysisTaskLambdaBayes &old); 
   AliAnalysisTaskLambdaBayes& operator=(const AliAnalysisTaskLambdaBayes &source); 
@@ -135,7 +138,9 @@ class AliAnalysisTaskLambdaBayes : public AliAnalysisTaskSE {
   TH1F *fHmismTOF; //! TOF mismatch distribution
   TH1D *fHchannelTOFdistr; //! TOF channel distance w.r.t. IP
 
-  ClassDef(AliAnalysisTaskLambdaBayes, 1);    //Analysis task for Bayesian (Lambda)
+  Int_t fTypeCol; // type of collision system (0=pp, 1=pPb, 2=PbPb)
+
+  ClassDef(AliAnalysisTaskLambdaBayes, 2);    //Analysis task for Bayesian (Lambda)
 };
 
 #endif
