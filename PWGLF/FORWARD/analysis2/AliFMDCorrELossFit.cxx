@@ -740,8 +740,8 @@ AliFMDCorrELossFit::CacheBins(UShort_t minQuality) const
       maxBin            = TMath::Max(j, maxBin);
     }
     AliInfoF("Out of %d bins, %d had fits, of which %d are good (%5.1f%%)", 
-	     offset, nFits, nGood, 100*float(nGood)/nFits);
-
+	     offset, nFits, nGood, (nFits > 0 ? 100*float(nGood)/nFits : 0));
+    
     // Now loop and set neighbors 
     realMinBin = TMath::Max(1,      realMinBin-1); // Include one more 
     realMaxBin = TMath::Min(offset, realMaxBin+1); // Include one more 

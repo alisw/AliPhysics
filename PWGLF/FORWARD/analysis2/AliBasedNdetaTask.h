@@ -501,7 +501,9 @@ protected:
      * 
      * @return Reference to this object 
      */
-    Sum& operator=(const Sum& o) {
+    Sum& operator=(const Sum& o) 
+    {
+      if (&o == this) return *this;
       SetName(o.GetName()); fSum = o.fSum; fSum0 = o.fSum0; fEvents=o.fEvents;
       return *this;
     }
