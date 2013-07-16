@@ -1,70 +1,5 @@
 \documentclass[11pt]{article}
-\renewcommand{\rmdefault}{ptm}
-\usepackage{mathptmx}
-\usepackage[margin=2cm,twoside,a4paper]{geometry}
-\usepackage{amstext}
-\usepackage{amsmath}
-\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
-\usepackage{graphicx}
-\usepackage{color}
-\usepackage{url}
-\usepackage{units}
-\usepackage{listings}
-\usepackage[colorlinks,urlcolor=black,hyperindex,%
-            linktocpage,a4paper,bookmarks=true,%
-            bookmarksopen=true,bookmarksopenlevel=2,%
-            bookmarksnumbered=true]{hyperref}
-%% \usepackage{bookmark}
-\def\AlwaysText#1{\ifmmode\relax\text{#1}\else #1\fi}
-\newcommand{\AbbrName}[1]{\AlwaysText{{\scshape #1}}}
-\newcommand{\CERN}{\AbbrName{cern}}
-\newcommand{\ALICE}{\AbbrName{alice}}
-\newcommand{\SPD}{\AbbrName{spd}}
-\newcommand{\ESD}{\AbbrName{esd}}
-\newcommand{\AOD}{\AbbrName{aod}}
-\newcommand{\INEL}{\AbbrName{inel}}
-\newcommand{\INELONE}{$\AbbrName{inel}>0$}
-\newcommand{\NSD}{\AbbrName{nsd}}
-\newcommand{\FMD}[1][]{\AbbrName{fmd\ifx|#1|\else#1\fi}}
-\newcommand{\OCDB}{\AbbrName{ocdb}}
-\newcommand{\mult}[1][]{\ensuremath N_{\text{ch}#1}}
-\newcommand{\dndetadphi}[1][]{{\ensuremath% 
-    \ifx|#1|\else\left.\fi%
-    \frac{d^2\mult{}}{d\eta\,d\varphi}%
-    \ifx|#1|\else\right|_{#1}\fi%
-}}
-\newcommand{\landau}[1]{{\ensuremath% 
-    \text{landau}\left(#1\right)}}
-\newcommand{\dndeta}[1][]{{\ensuremath% 
-    \ifx|#1|\else\left.\fi%
-    \frac{1}{N}\frac{d\mult{}}{d\eta}%
-    \ifx|#1|\else\right|_{#1}\fi%
-}}
-\newcommand{\dndphi}[1][]{{\ensuremath% 
-    \ifx|#1|\else\left.\fi%
-    \frac{1}{N}\frac{d\mult{}}{d\varphi}%
-    \ifx|#1|\else\right|_{#1}\fi%
-}}
-\newcommand{\MC}{\AlwaysText{MC}}
-\newcommand{\N}[2]{{\ensuremath N_{#1#2}}}
-\newcommand{\NV}[1][]{\N{\text{V}}{#1}}
-\newcommand{\NnotV}{\N{\not{\text{V}}}}
-\newcommand{\NT}{\N{\text{T}}{}}
-\newcommand{\NA}{\N{\text{A}}{}}
-\newcommand{\Ngood}{{\ensuremath N_{\text{good}}}}
-\newcommand{\GeV}[1]{\unit[#1]{\AlwaysText{GeV}}}
-\newcommand{\TeV}[1]{\unit[#1]{\AlwaysText{TeV}}}
-\newcommand{\cm}[1]{\unit[#1]{\AlwaysText{cm}}}
-\newcommand{\secref}[1]{Section~\ref{#1}}
-\newcommand{\figref}[1]{Figure~\ref{#1}}
-\newcommand{\etaphi}{\ensuremath(\eta,\varphi)}
-% Azimuthal acceptance
-\newcommand{\Corners}{\ensuremath A^{\varphi}_{t}} 
-% Acceptance due to dead strips
-\newcommand{\DeadCh}{\ensuremath A^{\eta}_{v,i}\etaphi} 
-\newcommand{\SecMap}{\ensuremath S_v\etaphi}
-\setlength{\parskip}{1ex}
-\setlength{\parindent}{0em}
+\usepackage{pwglfforward}
 \title{%
   {\LARGE EUROPEAN ORGANIZATION FOR NUCLEAR RESEARCH}\\%
   {\Large European Organization for Particle Physics}\\[2ex]%
@@ -74,7 +9,7 @@
         p{.25\textwidth}@{}}%
       % \vfil%
       \vfil
-      \includegraphics[keepaspectratio,width=.12\textwidth]{alice_logo_v3}%
+      \includegraphics[keepaspectratio,width=.12\textwidth]{alicelogo}%
       \vfil%
       &% 
       \vfil
@@ -107,21 +42,20 @@
 \section{Introduction}
 
 This document describes the steps performed in the analysis of the
-charged particle multiplicity in the forward pseudo--rapidity
-regions with the \FMD{} detector \cite{FWD:2004mz,cholm:2009}. The
-document also include a summary (see section \ref{prelim}) of the request for preliminary figures
-for the measurement of $\dndeta$ with SPD\cite{ruben,Aamodt:2010cz},
-VZERO\cite{maxime}, and FMD. 
+charged particle multiplicity in the forward pseudo--rapidity regions
+with the \FMD{} detector \cite{FWD:2004mz,cholm:2009}. The document
+also include a summary (see section \ref{prelim}) of the request for
+preliminary figures for the measurement of $\dndeta$ with
+SPD\cite{ruben,Aamodt:2010cz}, VZERO\cite{maxime}, and FMD.
 %  The primary detector used for this is the \FMD{}
 
-The \FMD{} is
-organised in 3 \emph{sub--detectors} \FMD{1}, \FMD{2}, and \FMD{3}, each
-consisting of 1 (\FMD{1}) or 2 (\FMD{2} and~3) \emph{rings}.
-The rings fall into two types: \emph{Inner} or \emph{outer} rings.
-Each ring is in turn  azimuthally divided into \emph{sectors}, and each
-sector is radially divided into \emph{strips}.  How many sectors,
-strips, as well as the $\eta$ coverage is given in
-\tablename~\ref{tab:fmd:overview}. 
+The \FMD{} is organised in 3 \emph{sub--detectors} \FMD{1}, \FMD{2},
+and \FMD{3}, each consisting of 1 (\FMD{1}) or 2 (\FMD{2} and~3)
+\emph{rings}.  The rings fall into two types: \emph{Inner} or
+\emph{outer} rings.  Each ring is in turn azimuthally divided into
+\emph{sectors}, and each sector is radially divided into
+\emph{strips}.  How many sectors, strips, as well as the $\eta$
+coverage is given in \tablename~\ref{tab:fmd:overview}.
 
 \begin{table}[htbp]
   \begin{center}
@@ -135,8 +69,8 @@ strips, as well as the $\eta$ coverage is given in
       \textbf{Radial} &
       $z$ &
       \multicolumn{2}{c|}{\textbf{$r$}} &
-      \multicolumn{2}{c|}{\textbf{$\eta$}} \\
-      \textbf{Ring}& 
+      \multicolumn{2}{c|}{\textbf{$\eta$}} \\ 
+      \textbf{Ring}&  
       \textbf{sectors} &
       \textbf{strips} & 
       \textbf{[cm]} &
@@ -159,7 +93,7 @@ in the reconstruction pass.  The scaling to $\Delta E_{mip}$ is done
 using calibration factors extracted in designated pulser runs.  In
 these runs, the front-end electronics is pulsed with an increasing
 known pulse size, and the conversion factor from ADC counts to $\Delta
-E_{mip}$  is determined \cite{cholm:2009}.  
+E_{mip}$ is determined \cite{cholm:2009}.
 
 The \SPD{} is used for determination of the position of the primary
 interaction point except in the case of displaced vertex analysis as
@@ -180,9 +114,7 @@ The details of each step above will be expanded upon in the
 following. 
 
 In Appendix~\ref{app:nomen} is an overview of the nomenclature used in
-this document. 
-
-
+this document.
 
 \section{Generating $\dndetadphi[i]$ event--by--event}
 \label{sec:gen_aod}
@@ -196,21 +128,22 @@ event $i$ and FMD ring $r$.
   point\footnote{`Vertex' and `primary interaction point' will be used
     interchangeably in the text, since there is no ambiguity with
     particle production vertex in this analysis.} $z$ coordinate (see
-  \secref{sec:sub:event_inspection}).  
+  \secref{sec:sub:event_inspection}).
 \item[Sharing filter] The \ESD{} object is read in and corrected for
   sharing.  The result is a new \ESD{} object (see
-  \secref{sec:sub:sharing_filter}). 
+  \secref{sec:sub:sharing_filter}).
 \item[Density calculator] The (possibly un--corrected) \ESD{} object
   is then inspected and an inclusive (primary \emph{and} secondary
   particles), per--ring charged particle density
   $\dndetadphi[incl,r,v,i]$ is made.  This calculation depends in
   general upon the interaction vertex position along the $z$ axis
   $v_z$ (see \secref{sec:sub:density_calculator}).
-\item[Corrections] The 5 (one for each FMD ring) $\dndetadphi[incl,r,v,i]$ are corrected for
-  secondary production and acceptance.  The correction for the
-  secondary particle production is highly dependent on the vertex $z$
-  coordinate.  The result is a per--ring, charged primary particle
-  density $\dndetadphi[r,v,i]$ (see \secref{sec:sub:corrector}). 
+\item[Corrections] The 5 (one for each FMD ring)
+  $\dndetadphi[incl,r,v,i]$ are corrected for secondary production and
+  acceptance.  The correction for the secondary particle production is
+  highly dependent on the vertex $z$ coordinate.  The result is a
+  per--ring, charged primary particle density $\dndetadphi[r,v,i]$
+  (see \secref{sec:sub:corrector}).
 \item[Histogram collector] Finally, the 5 $\dndetadphi[r,v,i]$ are
   summed into a single $\dndetadphi[v,i]$ histogram, taking care of
   the overlaps between the detector rings.  In principle, this
@@ -226,13 +159,14 @@ Each of these steps will be detailed in the following.
 \label{sec:sub:event_inspection}
 
 The first thing to do, is to inspect the event for triggers.  A number
-of trigger bits, like \INEL{} (Minimum Bias for Pb+Pb), \INELONE{}, \NSD{}, and so on is then
-propagated to the \AOD{} output.  
+of trigger bits, like \INEL{} (Minimum Bias for Pb+Pb), \INELONE{},
+\NSD{}, and so on is then propagated to the \AOD{} output.
 
 Just after the sharing filter (described below) but before any further
 processing, the vertex information is queried.  If there is no vertex
 information, or if the vertex $z$ coordinate is outside the
-pre--defined range, then no further processing of that event takes place. 
+pre--defined range, then no further processing of that event takes
+place.
 
 \subsubsection{Displaced Vertices}
 \label{sec:sub:sub:dispvtx}
@@ -240,6 +174,7 @@ pre--defined range, then no further processing of that event takes place.
 The analysis can be set up to run on the `displaced vertices' that
 occur during LHC Pb+Pb running. Details on the displaced vertices, and
 their selection can be found in the VZERO analysis note \cite{maxime}.
+
 \subsection{Sharing filter}
 \label{sec:sub:sharing_filter}
 
@@ -601,12 +536,16 @@ number of primaries within the $\etaphi$ bin at the collision
 point --- not at the \FMD{}.
 
 $\SecMap$ varies from $\approx 1.5$ for the most forward bins to
-$\approx 3$ for the more central bins. Figure \ref{secondaries} shows the $\dndeta$ of secondaries from various sources assessed with MC simulations to give an idea of the magnitude of the effects of secondaries. 
+$\approx 3$ for the more central bins. Figure \ref{secondaries} shows
+the $\dndeta$ of secondaries from various sources assessed with MC
+simulations to give an idea of the magnitude of the effects of
+secondaries.
 \begin{figure}[]
   \centering
   \includegraphics[keepaspectratio,width=\textwidth]{%
-    secOriginSeparate}
-  \caption{$\dndeta$ for secondaries and primaries in the FMD. The same plot for the SPD inner layer is included for comparison.}
+    secondary_origin}
+  \caption{$\dndeta$ for secondaries and primaries in the FMD. The
+    same plot for the SPD inner layer is included for comparison.}
   \label{secondaries}
 \end{figure} 
  
@@ -876,26 +815,24 @@ $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$.
 \section{Some results}
 
 %% \figurename{}s \ref{fig:1} to \ref{fig:3} shows some results.
-Figures below show some examples \cite{hhd:2009}.  Note these are not finalised
-plots. 
+Figures below show some examples \cite{hhd:2009}.  Note these are not
+finalised plots.
 \begin{figure}[]
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{%
-    results_ppdndeta}
+  \includegraphics[keepaspectratio,width=\textwidth]{results_ppdndeta}
   \caption{$\dndeta$ for pp for \INEL{} events at
     $\sqrt{s}=\GeV{900}$, $\sqrt{s}=\TeV{2.76}$, and $\sqrt{s}=\TeV{7}$
     $\cm{-10}\le v_z\le\cm{10}$, rebinned by a factor 5 \cite{hhd:2009}. 
-% Middle panel
-%    shows the ratio of ALICE data to UA5, and the bottom panel shows
-%    the ratio of the right (positive) side to the left (negative) side
-%    of the forward $\dndeta$.
-}
+    % Middle panel
+    % shows the ratio of ALICE data to UA5, and the bottom panel shows
+    % the ratio of the right (positive) side to the left (negative) side
+    % of the forward $\dndeta$.
+  }
   \label{fig:1}
 \end{figure} 
 \begin{figure}[]
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{%
-    results_PbPbdndeta}
+  \includegraphics[keepaspectratio,width=\textwidth]{results_PbPbdndeta}
   \caption{$\dndeta$ for Pb+Pb for Minimum Bias events at
     $\sqrt{s_{NN}}=\TeV{2.76}$ $\cm{-10}\le v_z\le\cm{10}$, rebinned by a
     factor 5 in 10 centrality intervals \cite{hhd:2009}. 
@@ -908,67 +845,36 @@ plots.
 \end{figure} 
 
 
-\iffalse
-\begin{figure}[hbp]
-  \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{%
-    dndeta_pp_0900GeV_INEL_m10p10cm}
-  \caption{$\dndeta$ for pp for \INEL{} events at $\sqrt{s}=\GeV{900}$,
-    $\cm{-10}\le v_z\le\cm{10}$, rebinned by a factor 5.  Middle panel
-    shows the ratio of ALICE data to UA5, and the bottom panel shows
-    the ratio of the right (positive) side to the left (negative) side
-    of the forward $\dndeta$.}
-  \label{fig:1}
-\end{figure} 
-
-
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{%
-    dndeta_0900GeV_m10-p10cm_rb05_inelgt0}
-  \caption{$\dndeta$ for pp for \INELONE{} events at
-    $\sqrt{s}=\GeV{900}$, $\cm{-10}\le v_z\le\cm{10}$, rebinned by a
-    factor 5.  Comparisons to other measurements shown where
-    applicable}
-  \label{fig:2}
-\end{figure} 
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{%
-    dndeta_0900GeV_m10-p10cm_rb05_nsd}
-  \caption{$\dndeta$ for pp for \NSD{} events at $\sqrt{s}=\GeV{900}$,
-    $\cm{-10}\le v_z\le\cm{10}$, rebinned by a factor 5.  Comparisons
-    to other measurements shown where applicable}
-  \label{fig:3}
-\end{figure} 
-\fi
 \clearpage
+
 \section{Analysis for QM 2012 and Paper} \label{prelim}
 \subsection{Analysis}
-Following the development of the displaced vertex technique for VZERO \cite{maxime} it was
-decided also to attempt such an analysis with the FMD using exactly
-the same event selection and centrality selection as the VZERO
-analysis.
 
-The analysis described in this note was used successfully
-on these special events. Three detectors contribute to this
-measurement: SPD with tracklets covering $-2<\eta<2$ \cite{ruben,Aamodt:2010cz}, VZERO covering
-$-3<\eta<-1.25$ and $1.25<\eta<5.25$, and FMD covering $-5<\eta<-1.25$
-and $1.25<\eta<5.5$. The extended coverage of the VZERO and FMD comes
-from the positions of the displaced vertices. The full pseudorapidity
-coverage of the combined measurement is $-5<\eta<5.5$. 
+Following the development of the displaced vertex technique for VZERO
+\cite{maxime} it was decided also to attempt such an analysis with the
+FMD using exactly the same event selection and centrality selection as
+the VZERO analysis.
 
-To combine the measurements the individual measurements were weighted by
-their systematic error before a weighted average was taken to form the
-final $\dndeta$. The systematic error is calculated as an average in
-quadrature with a contribution from the residual difference between
-the measurements. 
+The analysis described in this note was used successfully on these
+special events. Three detectors contribute to this measurement: SPD
+with tracklets covering $-2<\eta<2$ \cite{ruben,Aamodt:2010cz}, VZERO
+covering $-3<\eta<-1.25$ and $1.25<\eta<5.25$, and FMD covering
+$-5<\eta<-1.25$ and $1.25<\eta<5.5$. The extended coverage of the
+VZERO and FMD comes from the positions of the displaced vertices. The
+full pseudorapidity coverage of the combined measurement is
+$-5<\eta<5.5$.
+
+To combine the measurements the individual measurements were weighted
+by their systematic error before a weighted average was taken to form
+the final $\dndeta$. The systematic error is calculated as an average
+in quadrature with a contribution from the residual difference between
+the measurements.
 
 Due to the nature of the ZDCvsZEM centrality determination (see
 \cite{maxime} for details) the centrality selection of the measurement
 with SPD, VZERO, and FMD is limited to $30\%$ central collisions. The
 centrality bins considered are thus $0-5\%$, $5-10\%$, $10-20\%$, and
-$20-30\%$. 
+$20-30\%$.
 
 The selected vertices with full pseudorapidity coverage for FMD in
 this analysis are $\cm{112.5}$, $\cm{150}$, $\cm{187.5}$, $\cm{225}$,
@@ -978,49 +884,49 @@ with $|\eta| > 4$ to avoid regions in ALICE known to have issues with
 the material budget description.
 
 \subsection{Analysis Performance}
+
 This section includes some plots to assess the validity of the
 analysis. This includes comparisons between the measurements used
-(SPD, VZERO, and FMD) and
-$\dndphi$ from the FMD. 
+(SPD, VZERO, and FMD) and $\dndphi$ from the FMD.
 
-Figure \ref{coverage} shows the pseudorapidity coverage of the FMD when using FMD1
-and FMD2I as a function of vertex with displaced vertices. 
+Figure \ref{coverage} shows the pseudorapidity coverage of the FMD
+when using FMD1 and FMD2I as a function of vertex with displaced
+vertices.
 \begin{figure}[hbp]
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{coverage}
+  \includegraphics[keepaspectratio,width=\textwidth]{performance_coverage}
   \caption{Pseudorapidity coverage of the FMD as a function of vertex
     with displaced vertices.}
   \label{coverage}
 \end{figure} 
 
 Figure \ref{spdfmdvzero} shows the results of the measurements of the
-SPD, VZERO, and FMD. It is
-seen that there is good
-agreement between the three different measurements albeit residual
-differences of up to $6 \%$ remain.
+SPD, VZERO, and FMD. It is seen that there is good agreement between
+the three different measurements albeit residual differences of up to
+$6 \%$ remain.
 \begin{figure}[hbp]
    \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{spdfmdvzero}
+  \includegraphics[keepaspectratio,width=\textwidth]{performance_spdfmdvzero}
   \caption{$\dndeta$ measured with nominal vertices with the SPD and
     displaced vertices with VZERO and FMD. It is seen that there is
     good agreement between the measurements.}
   \label{spdfmdvzero}
 \end{figure} 
 
-Figure \ref{ratiofmdvzero} shows the ratios of the measurements of FMD and
-VZERO to the combined measurement and to the SPD measurement. It is
-seen that the residual differences are small and there is good
+Figure \ref{ratiofmdvzero} shows the ratios of the measurements of FMD
+and VZERO to the combined measurement and to the SPD measurement. It
+is seen that the residual differences are small and there is good
 agreement between the three different measurements.
 \begin{figure}
   \centering
   \begin{minipage}{0.5\linewidth}
-  \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{ratiofmdvzero}
+    \centering
+    \includegraphics[keepaspectratio,width=\textwidth]{performance_ratio_tocombined}
   \end{minipage}%
   \begin{minipage}{0.5\linewidth}
-  \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{ratiospdfmdvzero}
-\end{minipage}%
+    \centering
+    \includegraphics[keepaspectratio,width=\textwidth]{performance_ratio_tospd}
+  \end{minipage}%
   \caption{Left: Ratio of FMD and VZERO measurements to the combined
     $\dndeta$ measured with SPD, VZERO and FMD. Right: Ratios of FMD
     and VZERO measurement to SPD measurement in regions of
@@ -1035,78 +941,87 @@ agreement between the three different measurements.
   \label{ratiofmdvzero}
 \end{figure} 
 
-Since $\dndeta$ is an average taken over $\varphi$ it is instructive to
-consider $\dndphi$ to check that these distributions are flat as they
-should be. Figure \ref{dndphi_pos} shows examples of the $\dndphi$
-distributions for FMD1. Figure \ref{dndphi_neg} shows examples from
-FMD2 (inner ring). The two low points at $\varphi \sim 5.5$ in
-Figure \ref{dndphi_neg} are
-understood as coming from two dying chips in FMD2I. They are considered dead
-in the final analysis and corrected for. It is seen that the trends
-are quite flat within $\sim 5\%$
-as expected. The same trend is observed for all the distributions. 
+Since $\dndeta$ is an average taken over $\varphi$ it is instructive
+to consider $\dndphi$ to check that these distributions are flat as
+they should be. Figure \ref{dndphi_pos} shows examples of the
+$\dndphi$ distributions for FMD1. Figure \ref{dndphi_neg} shows
+examples from FMD2 (inner ring). The two low points at $\varphi \sim
+5.5$ in Figure \ref{dndphi_neg} are understood as coming from two
+dying chips in FMD2I. They are considered dead in the final analysis
+and corrected for. It is seen that the trends are quite flat within
+$\sim 5\%$ as expected. The same trend is observed for all the
+distributions.
+
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{dNdphi040612}
+  \includegraphics[keepaspectratio,width=\textwidth]{performance_dndphi_fmd1}
   \caption{Examples of $\dndphi$ from FMD1 (positive
     pseudorapidities). The distributions are essentially flat.}
   \label{dndphi_pos}
 \end{figure} 
+
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{dNdphi_neg_040612}
+  \includegraphics[keepaspectratio,width=\textwidth]{performance_dndphi_fmd2}
   \caption{Examples of $\dndphi$ from FMD2I (negative
     pseudorapidities). The two low points at $\varphi \sim 5.5$ are
-    understood as the result of two dying chips in FMD2I. They are considered dead
-    in the final analysis and corrected for accordingly. Apart from
-    these points, the distributions are essentially flat.}
+    understood as the result of two dying chips in FMD2I. They are
+    considered dead in the final analysis and corrected for
+    accordingly. Apart from these points, the distributions are
+    essentially flat.}
   \label{dndphi_neg}
 \end{figure} 
+
 Figure \ref{pervertex} shows the analysis performed for each
 vertex. The material budget effects for vertices $<\cm{112.5}$ are
-clearly seen. 
+clearly seen.
+
 \begin{figure}
-  %\centering
-  
-  %\begin{minipage}{\linewidth}
-  %\begin{minipage}{\columnwidth}
   \centering
-  \includegraphics[keepaspectratio,width=0.8\textwidth]{dNdeta_per_vertex160612_negfield}
-  %\end{minipage}%
-  % \begin{minipage}{\linewidth}
-  %\begin{minipage}{\columnwidth}
-  \centering
-  \includegraphics[keepaspectratio,width=0.8\textwidth]{dNdeta_per_vertex160612_posfield}
+  \includegraphics[keepaspectratio,width=0.8\textwidth]{performance_pervertex_negfield}
+  \includegraphics[keepaspectratio,width=0.8\textwidth]{performance_pervertex_posfield}
 %\end{minipage}%
-\caption{Top: Analysis per vertex for negative field data. Bottom:
-  Analysis per vertex for positive field data. In the two plots the
-  vertices where the full coverage is used are shown in blue. For the
-  red and green points there a cut is applied for the pseudorapidity
-  so that only points with $|\eta|>4$ are used in the analysis.}
+  \caption{Top: Analysis per vertex for negative field data. Bottom:
+    Analysis per vertex for positive field data. In the two plots the
+    vertices where the full coverage is used are shown in blue. For
+    the red and green points there a cut is applied for the
+    pseudorapidity so that only points with $|\eta|>4$ are used in the
+    analysis.}
 \label{pervertex}
 \end{figure} 
-Figure \ref{leftright} shows the ratio of the postive and negative pseudorapidities for the FMD. It is seen that there are discrepancies of up to $\sim 5 \%$. 
+
+Figure \ref{leftright} shows the ratio of the postive and negative
+pseudorapidities for the FMD. It is seen that there are discrepancies
+of up to $\sim 5 \%$.
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=0.7\textwidth]{disp_dndeta_ratios_leftright}
-  \caption{Ratios of the positive and negative pseudorapidities for the FMD (ratio is negative over positive). The grey band indicates the combined systematic error for FMD1I and FMD2I assuming excluding all contributions from event selection and material budget (i.e. the minimum systematic error between FMD1I and FMD2I).}  \label{leftright}
+  \includegraphics[keepaspectratio,width=0.7\textwidth]{performance_ratio_leftright}
+  \caption{Ratios of the positive and negative pseudorapidities for
+    the FMD (ratio is negative over positive). The grey band indicates
+    the combined systematic error for FMD1I and FMD2I assuming
+    excluding all contributions from event selection and material
+    budget (i.e. the minimum systematic error between FMD1I and
+    FMD2I).}  \label{leftright}
 \end{figure} 
 
 \subsection{Results}
+
 This section summarizes the final results of the analysis and includes
 the figures for approval.
 
 Figure \ref{combineddndeta} shows the combined $\dndeta$ from SPD,
 VZERO, and FMD in the full pseudorapidity range of $-5<\eta<5.5$.
+
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{combineddndeta}
-  \caption{Request for ALICE preliminary: Combined $\dndeta$ measured with SPD, VZERO and FMD. The
-    VZERO and FMD measurements are made with displaced vertices and
-    the SPD measurement is made at the nominal vertex. The fits are
-    fits to a function $f(\eta) = A\exp (\frac{\eta -a_1}{2 a_2^2}) -
-    B\exp (\frac{\eta -b_1}{2 b_{2}^2})$ i.e. a Gaussian centered on
-    $ \eta = 0$ subtracted from a similar Gaussian.}
+  \includegraphics[keepaspectratio,width=\textwidth]{results_PbPbdndeta_sat}
+  \caption{Request for ALICE preliminary: Combined $\dndeta$ measured
+    with SPD, VZERO and FMD. The VZERO and FMD measurements are made
+    with displaced vertices and the SPD measurement is made at the
+    nominal vertex. The fits are fits to a function $f(\eta) = A\exp
+    (\frac{\eta -a_1}{2 a_2^2}) - B\exp (\frac{\eta -b_1}{2 b_{2}^2})$
+    i.e. a Gaussian centered on $ \eta = 0$ subtracted from a similar
+    Gaussian.}
   \label{combineddndeta}
 \end{figure} 
 
@@ -1114,57 +1029,65 @@ Figure \ref{dndetaoverNpart} shows $dN/d\eta/(N_{part}/2)$ based on
 figure \ref{combineddndeta} and data taken from \cite{Aamodt:2010cz}.
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{dndetaoverNpart}
-  \caption{Request for ALICE preliminary: The $dN/d\eta/(N_{part}/2)$ measured with SPD, VZERO and FMD. The
-    VZERO and FMD measurements are made with displaced vertices and
-    the SPD measurement is made at the nominal vertex. The values of
-    $N_{part}$ and the measurement at $-0.5<\eta<0.5$ taken from \cite{Aamodt:2010cz}.}
+  \includegraphics[keepaspectratio,width=\textwidth]{results_PbPbnpart_sat}
+  \caption{Request for ALICE preliminary: The $dN/d\eta/(N_{part}/2)$
+    measured with SPD, VZERO and FMD. The VZERO and FMD measurements
+    are made with displaced vertices and the SPD measurement is made
+    at the nominal vertex. The values of $N_{part}$ and the
+    measurement at $-0.5<\eta<0.5$ taken from \cite{Aamodt:2010cz}.}
   \label{dndetaoverNpart}
 \end{figure} 
+
 Using figure \ref{dndetaoverNpart}, figure \ref{RatiodndetaoverNpart}
 is constructed. It shows the ratios of $dN/d\eta/(N_{part}/2)$ in the
-following $\eta$ bins:
-$0.5<\eta<1.5$, $1.5<\eta<2.5$, $2.5<\eta<3.5$, $3.5<\eta<4.5$, and
-$4.5<\eta<5.5$ to the published $dN/d\eta/(N_{part}/2)$ at $-0.5<\eta<0.5$. These
-ratios are found to be flat for all pseudorapidity intervals.
+following $\eta$ bins: $0.5<\eta<1.5$, $1.5<\eta<2.5$, $2.5<\eta<3.5$,
+$3.5<\eta<4.5$, and $4.5<\eta<5.5$ to the published
+$dN/d\eta/(N_{part}/2)$ at $-0.5<\eta<0.5$. These ratios are found to
+be flat for all pseudorapidity intervals.
+
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{RatiodndetaoverNpart}
-  \caption{Request for ALICE preliminary: Ratios of $dN/d\eta/(N_{part}/2)$ at
-    $0.5<\eta<1.5$, $1.5<\eta<2.5$, $2.5<\eta<3.5$, $3.5<\eta<4.5$, and
-    $4.5<\eta<5.5$ to the published $dN/d\eta/(N_{part}/2)$ at $-0.5<\eta<0.5$. The ratios are found to be flat for all the pseudorapidity intervals.}
+  \includegraphics[keepaspectratio,width=\textwidth]{results_PbPbnpart_ratio}
+  \caption{Request for ALICE preliminary: Ratios of
+    $dN/d\eta/(N_{part}/2)$ at $0.5<\eta<1.5$, $1.5<\eta<2.5$,
+    $2.5<\eta<3.5$, $3.5<\eta<4.5$, and $4.5<\eta<5.5$ to the
+    published $dN/d\eta/(N_{part}/2)$ at $-0.5<\eta<0.5$. The ratios
+    are found to be flat for all the pseudorapidity intervals.}
   \label{RatiodndetaoverNpart}
 \end{figure} 
+
 With the analysis presented in figure \ref{combineddndeta} it is also
 possible to study longitudinal scaling from LHC to RHIC
 energies. Figure \ref{longscaling} shows $\dndeta$ as a function of
 $y'=\eta-y_{beam}$ from Figure \ref{combineddndeta} and results from
 the BRAHMS\cite{Bearden:2001qq} and PHOBOS\cite{Alver:2010ck}
-experiments at RHIC. From the figure it is seen
-that with the wide coverage of the SPD, VZERO, and FMD measurement it
-is indeed likely that longitudinal scaling exist from RHIC to LHC
-energies.
+experiments at RHIC. From the figure it is seen that with the wide
+coverage of the SPD, VZERO, and FMD measurement it is indeed likely
+that longitudinal scaling exist from RHIC to LHC energies.
+
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{longscaling}
+  \includegraphics[keepaspectratio,width=\textwidth]{results_PbPblongscaling_sat}
   \caption{Request for ALICE preliminary: Study of Longitudinal
-    scaling. $\dndeta$ as a function of
-$y'=\eta-y_{beam}$ from Figure \ref{combineddndeta} and the BRAHMS\cite{Bearden:2001qq} and
-    PHOBOS\cite{Alver:2010ck} experiments at RHIC. The fits are the function
-from figure \ref{combineddndeta} and a straight line ending in
-$\eta=y_{beam}$. From the figure it seems likely that 
-longitudinal scaling exists from RHIC to LHC energies.}
+    scaling. $\dndeta$ as a function of $y'=\eta-y_{beam}$ from Figure
+    \ref{combineddndeta} and the BRAHMS\cite{Bearden:2001qq} and
+    PHOBOS\cite{Alver:2010ck} experiments at RHIC. The fits are the
+    function from figure \ref{combineddndeta} and a straight line
+    ending in $\eta=y_{beam}$. From the figure it seems likely that
+    longitudinal scaling exists from RHIC to LHC energies.}
   \label{longscaling}
 \end{figure} 
+
 Finally the total number of produced charged particles,
 $N_{ch}=\int^{y_{beam}}_{-y_{beam}}\dndeta d\eta$, has
 been calculated from the fits in Figure \ref{combineddndeta}. The
 obtained values of $N_{ch}$ versus $N_{part}$ are shown in figure
 \ref{totalNch}. The systematic errors on $N_{ch}$ have been assessed
 by the procedure of varying fit functions discussed in \cite{maxime}.
+
 \begin{figure}
   \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{totalNch}
+  \includegraphics[keepaspectratio,width=\textwidth]{results_PbPbtotalnch_sat}
   \caption{Request for ALICE preliminary: Total number of charged
     particles, $N_{ch}=\int^{y_{beam}}_{-y_{beam}}\dndeta d\eta$,
     obtained from the fitted function in figure
@@ -1172,118 +1095,130 @@ by the procedure of varying fit functions discussed in \cite{maxime}.
     assessed by variation of the fit function as described in \cite{maxime}.}
   \label{totalNch}
 \end{figure} 
+
 \subsection{Comparison to old Preliminary}
+
 At QM 2011 figures were approved for preliminary status and
 shown. Roughly six months later it was found that the execution of the
 FMD analysis had a flaw\footnote{A boolean variable was wrong in a
-  configuration macro for FMD.} which caused the results to be lower than what they
-should be. The top panel of Figure \ref{prelimcomparison} shows a
-comparison between the distribution in Figure \ref{combineddndeta} and
-the preliminary (ALI-PREL-2536) shown at QM 2011. The top panel shows the same
-comparison with the proper FMD distribution instead of the incorrect
-one. It is clear that the agreement observed between VZERO, SPD,
-and FMD at QM 2011 does not hold with the FMD analysis run properly
-for nominal vertices. 
+  configuration macro for FMD.} which caused the results to be lower
+than what they should be. The top panel of Figure
+\ref{prelimcomparison} shows a comparison between the distribution in
+Figure \ref{combineddndeta} and the preliminary (ALI-PREL-2536) shown
+at QM 2011. The top panel shows the same comparison with the proper
+FMD distribution instead of the incorrect one. It is clear that the
+agreement observed between VZERO, SPD, and FMD at QM 2011 does not
+hold with the FMD analysis run properly for nominal vertices.
+
 \begin{figure}
   \centering
   \begin{minipage}{0.5\linewidth}
-  \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{prelim_wrong150612}
+    \centering
+    \includegraphics[keepaspectratio,width=\textwidth]{oldprelim_wrong}
   \end{minipage}%
   \begin{minipage}{0.5\linewidth}
-  \centering
-  \includegraphics[keepaspectratio,width=\textwidth]{prelim_right150612}
-\end{minipage}%
+    \centering
+    \includegraphics[keepaspectratio,width=\textwidth]{oldprelim_right}
+  \end{minipage}%
   \caption{Left: Comparison of new combined $\dndeta$ to the data
     shown at QM 2011. Right: The same comparison with the properly run
-  FMD analysis at nominal vertices (`FMD Hits'). The difference is
-  clearly seen around $|\eta| \sim 2$.}
+    FMD analysis at nominal vertices (`FMD Hits'). The difference is
+    clearly seen around $|\eta| \sim 2$.}
   \label{prelimcomparison}
 \end{figure} 
 
 \subsection{Summary of Systematic Errors}
+
 Table \ref{combinedsyst} shows the various sources of systematic
 errors for the combined measurement of VZERO, SPD, and FMD collected
 from Table \ref{fmdsysterror}, \cite{maxime}, and
-\cite{ruben,Aamodt:2010cz}. The `common' section of the table refers to
-source of systematic errors identified as common in the different
+\cite{ruben,Aamodt:2010cz}. The `common' section of the table refers
+to source of systematic errors identified as common in the different
 measurements. These errors were evaluated for the displaced vertices
 analysis in the following way:
 \begin{itemize}
 \item Centrality errors come from variation in the parameters used in
   the scaling of the ZEM signal (see \cite{maxime}).
 \item Material budget errors were estimated by analyzing a simulation
-  and adding a weight of $0.9$ or $1.1$ to all physical processes except decays for all
-  secondary particles. This approach was used in the absence of
-  suitable ALICE simulation productions. 
+  and adding a weight of $0.9$ or $1.1$ to all physical processes
+  except decays for all secondary particles. This approach was used in
+  the absence of suitable ALICE simulation productions.
 \item $p_T$ weights were developed to assess the effect of the
   difference in $p_T$ spectra measured by ALICE and in the HIJING
-  generator. 
+  generator.
 \end{itemize}
+
 \begin{table} 
-\centering
-\begin{tabular}{|c|c|}
-\hline
-Source of Error & Magnitude   \\
-\hline
-Common   &   \\
-\hline
-Centrality  & 1-4\%    \\
-\hline
-$p_T$ weights (FMD+VZERO)  & 2\%   \\
-\hline
-%Strangeness Enhancement  & 1\%    \\
-%\hline
-Material budget(FMD+VZERO)  & 4\%    \\
-\hline
-Generator  & 2\%    \\
-\hline
-SPD   &   \\
-\hline
-Background Subtraction & 0.1\%-2\%    \\
-\hline
-Particle Mix & 1\%   \\
-\hline
-Weak Decays & 1 \%   \\
-\hline
-Extrapolation to zero $p$ & 2\%    \\
-\hline
-VZERO &   \\
-\hline
-Fluctuation between rings & 3\%   \\
-\hline
-Normalization & 3\%-4\%   \\
-\hline
-FMD  &  \\
-\hline
-Variation of Cuts    &  2\%  \\
-\hline
-Calculation of Multiplicity    &  3\%  \\
-\hline
-\end{tabular}
-\caption[Combined Systematic Errors]{The table summarizes the
-  systematic errors in the SPD\cite{ruben,Aamodt:2010cz}, VZERO\cite{maxime}, and FMD\cite{hhd:2009}.} \label{combinedsyst} 
+  \centering
+  \begin{tabular}{|c|c|}
+    \hline
+    Source of Error & Magnitude   \\
+    \hline
+    Common   &   \\
+    \hline
+    Centrality  & 1-4\%    \\
+    \hline
+    $p_T$ weights (FMD+VZERO)  & 2\%   \\
+    \hline
+    % Strangeness Enhancement  & 1\%    \\
+    % \hline
+    Material budget(FMD+VZERO)  & 4\%    \\
+    \hline
+    Generator  & 2\%    \\
+    \hline
+    SPD   &   \\
+    \hline
+    Background Subtraction & 0.1\%-2\%    \\
+    \hline
+    Particle Mix & 1\%   \\
+    \hline
+    Weak Decays & 1 \%   \\
+    \hline
+    Extrapolation to zero $p$ & 2\%    \\
+    \hline
+    VZERO &   \\
+    \hline
+    Fluctuation between rings & 3\%   \\
+    \hline
+    Normalization & 3\%-4\%   \\
+    \hline
+    FMD  &  \\
+    \hline
+    Variation of Cuts    &  2\%  \\
+    \hline
+    Calculation of Multiplicity    &  3\%  \\
+    \hline
+  \end{tabular}
+  \caption[Combined Systematic Errors]{The table summarizes the
+    systematic errors in the SPD\cite{ruben,Aamodt:2010cz},
+    VZERO\cite{maxime}, and FMD\cite{hhd:2009}.} \label{combinedsyst}  
 \end{table}
+
 The errors are obtained using variation of the quantities studied in
 MC simulations. In particular the studies of the dependence on the
 material budget are carried out with special MC simulations where the
-material density of ALICE is increased. 
+material density of ALICE is increased.
+
 \subsection{Technical Details}
+
 Here, the technical aspects of the analysis are described. The SPD
 analysis was done on run 137366, reconstruction pass 2 while the FMD
-and VZERO analysis were carried
-out on a total of 126 runs (46 with negative field and 80 with
-positive field) to obtain the necessary statistics for the displaced
-vertices. These runs were selected to be of good quality for VZERO, SPD, FMD, and
-ZDC. These data were also from pass 2 reconstruction.
+and VZERO analysis were carried out on a total of 126 runs (46 with
+negative field and 80 with positive field) to obtain the necessary
+statistics for the displaced vertices. These runs were selected to be
+of good quality for VZERO, SPD, FMD, and ZDC. These data were also
+from pass 2 reconstruction.
 
-The AliRoot version for SPD is: \textbf{v5-03-24-AN}, for VZERO: \textbf{v5-03-28-AN}, and
-for FMD: \textbf{v5-03-26-AN}. 
+The AliRoot version for SPD is: \textbf{v5-03-24-AN}, for VZERO:
+\textbf{v5-03-28-AN}, and for FMD: \textbf{v5-03-26-AN}.
 
-For the analysis of the displaced vertices presented here the production LHC12c2 was used (the simulation was done with an anchor run for each field polarity). This production includes the latest version (as of July 2012) of the ALICE geometry and alignment.
+For the analysis of the displaced vertices presented here the
+production LHC12c2 was used (the simulation was done with an anchor
+run for each field polarity). This production includes the latest
+version (as of July 2012) of the ALICE geometry and alignment.
 
 There is a twiki page for the paper using this analysis:
-\url{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWGLFGeoPbPbdNdeta}. 
+\url{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWGLFGeoPbPbdNdeta}.
 \clearpage
 %% \currentpdfbookmark{Appendices}{Appendices}
 \appendix 
@@ -1462,58 +1397,55 @@ void Analyse(int mask=AliAODForwardMult::kInel,
 \clearpage
 \currentpdfbookmark{References}{References}
 \begin{thebibliography}{99}
-\bibitem{FWD:2004mz} \ALICE{} Collaboration, Bearden, I.~G.\ \textit{et al}
-  \textit{ALICE technical design report on forward detectors: FMD, T0
-    and V0}, \CERN{}, 2004, CERN-LHCC-2004-025
+\bibitem{FWD:2004mz} \ALICE{} Collaboration, Bearden, I.~G.\
+  \textit{et al} \textit{ALICE technical design report on forward
+    detectors: FMD, T0 and V0}, \CERN{}, 2004, CERN-LHCC-2004-025
 \bibitem{cholm:2009} Christensen, C.~H., \textit{The ALICE Forward
     Multiplicity Detector --- From Design to Installation},
   Ph.D.~thesis, University of Copenhagen, 2009,
-  \url{http://www.nbi.dk/~cholm/}. 
-\bibitem{maxime} Guilbaud, M. \textit{et al}, \textit{Measurement of the charged-particle
-multiplicity density at forward rapidity
-with ALICE VZERO detector in central
-Pb-Pb collision at $\sqrt{s_{NN}}=\TeV{2.76}$},
-  ALICE internal note, 2012,
-  \url{https://aliceinfo.cern.ch/Notes/node/17/}. 
-\bibitem{nim:b1:16} 
+  \url{http://www.nbi.dk/~cholm/}.
+\bibitem{maxime} Guilbaud, M. \textit{et al}, \textit{Measurement of
+    the charged-particle multiplicity density at forward rapidity with
+    ALICE VZERO detector in central Pb-Pb collision at
+    $\sqrt{s_{NN}}=\TeV{2.76}$}, ALICE internal note, 2012,
+  \url{https://aliceinfo.cern.ch/Notes/node/17/}.
+\bibitem{nim:b1:16}
 %% \bibitem{Hancock:1983ry}
-  S.~Hancock, F.~James, J.~Movchet {\it et al.},
-  ``Energy Loss Distributions For Single Particles And Several
-  Particles In A Thin Silicon Absorber,'' Nucl.\ Instrum.\ Meth.\
-  \textbf{B1} (1984)  16, \url{http://cdsweb.cern.ch/record/147286/files/cer-000058451.pdf}.
+  S.~Hancock, F.~James, J.~Movchet {\it et al.}, ``Energy Loss
+  Distributions For Single Particles And Several Particles In A Thin
+  Silicon Absorber,'' Nucl.\ Instrum.\ Meth.\ \textbf{B1} (1984) 16,
+  \url{http://cdsweb.cern.ch/record/147286/files/cer-000058451.pdf}.
 \bibitem{phyrev:a28:615} 
-%% \bibitem{Hancock:1983fp}
+  %% \bibitem{Hancock:1983fp}
   S.~Hancock, F.~James, J.~Movchet {\it et al.}, ``Energy Loss And
   Energy Straggling Of Protons And Pions In The Momentum Range
   0.7-gev/c To 115-gev/c,'' Phys.\ Rev.\ \textbf{A28} (1983) 615,
-  \url{http://cdsweb.cern.ch/record/145395/files/PhysRevA.28.615.pdf}. 
-\bibitem{hhd:2009} Dalsgaard, H.~H., \textit{Pseudorapidity Densities in p+p and Pb+Pb collisions at
-      LHC measured with the ALICE experiment},
-  Ph.D.~thesis, University of Copenhagen, 2011,
-  \url{http://www.nbi.dk/~canute/thesis.pdf}. 
+  \url{http://cdsweb.cern.ch/record/145395/files/PhysRevA.28.615.pdf}.
+\bibitem{hhd:2009} Dalsgaard, H.~H., \textit{Pseudorapidity Densities
+    in p+p and Pb+Pb collisions at LHC measured with the ALICE
+    experiment}, Ph.D.~thesis, University of Copenhagen, 2011,
+  \url{http://www.nbi.dk/~canute/thesis.pdf}.
 \bibitem{ruben} Shahoyan, R. \textit{Determination of $\dndeta$ in
     Pb-Pb collision at 2.76 A TeV with SPD tracklets}, ALICE internal
   note 2012, \url{https://aliceinfo.cern.ch/Notes/node/59/}.
-\bibitem{Aamodt:2010cz}
-  K.~Aamodt {\it et al.}  [ALICE Collaboration],
+\bibitem{Aamodt:2010cz} K.~Aamodt {\it et al.}  [ALICE Collaboration],
   %``Centrality dependence of the charged-particle multiplicity
   %density at mid-rapidity in Pb-Pb collisions at sqrt(sNN) = 2.76
   %TeV,''
   Phys.\ Rev.\ Lett.\  {\bf 106} (2011) 032301
   [arXiv:1012.1657 [nucl-ex]].
   %%CITATION = ARXIV:1012.1657;%%
-\bibitem{Bearden:2001qq}
-  I.~G.~Bearden {\it et al.}  [BRAHMS Collaboration],
+\bibitem{Bearden:2001qq} I.~G.~Bearden {\it et al.}  [BRAHMS
+  Collaboration],
   %``Pseudorapidity distributions of charged particles from Au+Au
   %collisions at the maximum RHIC energy,''
-  Phys.\ Rev.\ Lett.\  {\bf 88} (2002) 202301
-  [nucl-ex/0112001].
+  Phys.\ Rev.\ Lett.\ {\bf 88} (2002) 202301 [nucl-ex/0112001].
   %%CITATION = NUCL-EX/0112001;%%
-\bibitem{Alver:2010ck}
-  B.~Alver {\it et al.}  [PHOBOS Collaboration],
-  %``Phobos results on charged particle multiplicity and pseudorapidity distributions in Au+Au, Cu+Cu, d+Au, and p+p collisions at ultra-relativistic energies,''
-  Phys.\ Rev.\ C {\bf 83} (2011) 024913
-  [arXiv:1011.1940 [nucl-ex]].
+\bibitem{Alver:2010ck} B.~Alver {\it et al.}  [PHOBOS Collaboration],
+  % ``Phobos results on charged particle multiplicity and
+  % pseudorapidity distributions in Au+Au, Cu+Cu, d+Au, and p+p
+  % collisions at ultra-relativistic energies,''
+  Phys.\ Rev.\ C {\bf 83} (2011) 024913 [arXiv:1011.1940 [nucl-ex]].
   %%CITATION = ARXIV:1011.1940;%%
 \end{thebibliography}
 \end{document}
