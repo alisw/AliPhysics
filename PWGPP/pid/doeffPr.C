@@ -13,14 +13,14 @@ TF1 *fback;
 Int_t ifunc=0;
 
 Float_t fitmin = 1.08;
-Float_t fitmax = 1.155;
+Float_t fitmax = 1.15;
 
-Int_t cmin = 1;
-Int_t cmax = 8;
+Int_t cmin = 1; // min 1
+Int_t cmax = 10; // max 10
 
 Float_t weightS = -1.;
 
-Int_t rebinsize = 2;
+Int_t rebinsize = 1;
 
 Int_t parplotted = 2;
 
@@ -38,9 +38,12 @@ Bool_t bayesVsigma = kFALSE; // only to do checks
 
 Bool_t kTOFmatch = kFALSE; // for combined PID requires TOF matching
 
-Bool_t kOverAll = kTRUE;
+Bool_t kOverAll = kFALSE;
 Bool_t kOverAllTOFmatch = kFALSE;
-Bool_t kOverAll2Sigma = kTRUE;
+Bool_t kOverAll2Sigma = kFALSE;
+
+TH2F *hmatched;
+TH2F *htracked;
 
 Bool_t kLoaded=kFALSE;
 LoadLib(){
@@ -65,8 +68,11 @@ LoadLib(){
     f->ls();
     TList *l = (TList *) f->Get("contLambdaBayes1");
     l->ls();
-    fContPid1 = (AliPIDperfContainer *) l->At(0);
-    fContPid2 = (AliPIDperfContainer *) l->At(1);
+    fContPid1 = (AliPIDperfContainer *) l->FindObject("contPID");
+    fContPid2 = (AliPIDperfContainer *) l->FindObject("contPID2");
+    TList *l2 = (TList *) f->Get("contLambdaBayes2");
+    hmatched = (TH2F *) l2->FindObject("hMatchPr"); 
+    htracked = (TH2F *) l2->FindObject("hTrackingPr"); 
   }
   kLoaded = kTRUE;
 
@@ -111,7 +117,17 @@ LoadLib(){
 
 doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
   LoadLib();
+  TH1D *hm = hmatched->ProjectionX("matchingPrEff",cmin,cmax);
+  TH1D *ht = htracked->ProjectionX("tracking",cmin,cmax);
 
+  hm->GetYaxis()->SetTitle("TOF matching eff.");
+  hm->SetTitle("Using probability as weights");
+
+  hm->Sumw2();
+  ht->Sumw2();
+
+  hm->Divide(hm,ht,1,1,"B");
+ 
   Int_t nptbin = binPid[2];
   Float_t minptbin = xmin[2];
   Float_t maxptbin = xmax[2];
@@ -140,7 +156,7 @@ doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
   Double_t exx[50],eyy[50];
 
   for(Int_t i=0;i < nptbin;i++){
-    c->cd(i+1)->SetLogy();
+    c->cd(i+1);//->SetLogy();
     Float_t ptmin = minptbin+(maxptbin-minptbin)/nptbin*(i);
     Float_t ptmax = minptbin+(maxptbin-minptbin)/nptbin*(i+1);
 
@@ -168,7 +184,7 @@ doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
     b[i][0]=-1;
     Int_t ntrial = 0;
     Float_t chi2 = 10000;
-    while(ntrial < 10 && (chi2 > 20 + 1000*selectTrue)){
+    while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
       fit(h,b[i],"WW","",xx[i]);
       c1->Update();
 //       getchar();
@@ -187,7 +203,7 @@ doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
 
   TGraphErrors *gpar = new TGraphErrors(nptbin,xx,yy,exx,eyy);
   c->cd(8);
-  gpar->Draw("AP");
+//   gpar->Draw("AP");
   gpar->SetMarkerStyle(20);
 
   TCanvas *c2 = new TCanvas();
@@ -213,7 +229,7 @@ doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
     b2[i][0]=-1;
     Int_t ntrial = 0;
     Float_t chi2 = 10000;
-    while(ntrial < 40 && (chi2 > 20 + 1000*selectTrue)){
+    while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
       fit(h,b2[i],"WW","");
       fit(h,b2[i],"","");
       ntrial++;
@@ -227,7 +243,7 @@ doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
 
   TGraphErrors *gpar2 = new TGraphErrors(nptbin,xx,yy,exx,eyy);
   c2->cd(8);
-  gpar2->Draw("AP");
+//   gpar2->Draw("AP");
   gpar2->SetMarkerStyle(20);
   
   Double_t xpt[50],expt[50],eff[50],efferr[50];
@@ -262,6 +278,8 @@ doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
   char flag2[100];
   sprintf(flag2,"");
 
+  Bool_t kWriteME = kFALSE;
+
   char etarange[100];
   sprintf(etarange,"_%.1f-%.1f_",etaminkp,etamaxkp);
 
@@ -283,32 +301,23 @@ doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
 
   if(pos){
     if(prob >=0.2) sprintf(name,"protonPos%sP%iEff%i_%i%s%s.root",etarange,Int_t(prob*100),(cmin-1)*10,cmax*10,flag,flag2);
-    else sprintf(name,"protonPos%sMatchEff%i_%i%s%s.root",etarange,(cmin-1)*10,cmax*10,flag,flag2);
+    else{
+      sprintf(name,"protonPos%sMatchEff%i_%i%s%s.root",etarange,(cmin-1)*10,cmax*10,flag,flag2);
+      if(!(kOverAll || bayesVsigma || kGoodMatch || kSigma2vs3)) kWriteME = kTRUE;
+    }
   }
   else{
     if(prob >=0.2) sprintf(name,"protonNeg%sP%iEff%i_%i%s%s.root",etarange,Int_t(prob*100),(cmin-1)*10,cmax*10,flag,flag2);
     else sprintf(name,"protonNeg%sMatchEff%i_%i%s%s.root",etarange,(cmin-1)*10,cmax*10,flag,flag2);
   }
 
+  geff->SetTitle("p efficiency (from (anti)#Lambda);p_{T} (GeV/#it{c};efficiency");
   TFile *fout = new TFile(name,"RECREATE");
   geff->Write();
+  if(kWriteME) hm->Write();
   fout->Close();
 
-
-  TF1 *ff = new TF1("ff","[0] - [1]*TMath::Exp([2]*x)",0,3);
-  ff->SetParameter(0,0.67);
-  ff->SetParameter(1,1.14383e+00);
-  ff->SetParameter(2,-2.29910);
-  ff->SetLineColor(4);
-  ff->SetLineColor(2);
-  ff->Draw("SAME");
-
-  TF1 *ff2 = new TF1("ff2","[0] - [1]*TMath::Exp([2]*x)",0,3);
-  ff2->SetParameter(0,0.67);
-  ff2->SetParameter(1,9.23126e-01);
-  ff2->SetParameter(2,-1.851);
-  ff2->SetLineColor(4);
-  ff2->Draw("SAME");
+  if(kWriteME) hm->Draw("SAME");
 }
 
 TH2F *GetHistoPip(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
