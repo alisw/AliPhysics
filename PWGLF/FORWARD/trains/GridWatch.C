@@ -219,6 +219,36 @@ Bool_t ParseState(const TString& status, TString& out)
 }  
 
 /** 
+ * Do a PS on the grid 
+ * 
+ * @param tmp The file generated 
+ * 
+ * @return true on success
+ */
+Bool_t GridPs(TString& tmp)
+{
+  tmp = "gridMonitor";
+  FILE* fp = gSystem->TempFileName(tmp);
+
+#if 0
+  // Here, we'd ideally use TGrid::Ps but that doesn't work, so we use
+  // the shell instead. 
+  gSystem->RedirectOutput(fn);
+  gGrid->Command("ps -Ax");
+  gGrid->Stdout();
+  gSystem->RedirectOutput(0);
+  gGrid->Stderr();
+  fclose(fp);
+#else
+  fclose(fp);
+  
+  // Printf("Using gbbox ps -Ax >> %s", tmp.Data());
+  gSystem->Exec(Form("gbbox ps -Ax >> %s", tmp.Data()));
+#endif
+  return true;
+}
+
+/** 
  * Get the job state 
  * 
  * @param jobId Job status 
@@ -232,16 +262,8 @@ Bool_t GetJobState(Int_t jobId, TString& out)
 {
   out = "MISSING";
 
-  TString fn("gridMonitor");
-  FILE* fp = gSystem->TempFileName(fn);
-
-  gSystem->RedirectOutput(fn);
-  gGrid->Command("ps -Ax");
-  gGrid->Stdout();
-  gSystem->RedirectOutput(0);
-  gGrid->Stderr();
-
-  fclose(fp);
+  TString fn;
+  GridPs(fn);
 
   std::ifstream in(fn.Data());
 
@@ -290,18 +312,8 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
     s->SetString("MISSING");
   }
 
-  // Here, we'd ideally use TGrid::Ps but that doesn't work, so we use
-  // the shell instead. 
-  TString fn("gridMonitor");
-  FILE* fp = gSystem->TempFileName(fn);
-
-  gSystem->RedirectOutput(fn);
-  gGrid->Command("ps -Ax");
-  gGrid->Stdout();
-  gSystem->RedirectOutput(0);
-  gGrid->Stderr();
-
-  fclose(fp);
+  TString fn;
+  GridPs(fn);
 
   std::ifstream in(fn.Data());
 
@@ -339,6 +351,7 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
   return true;
 }
 
+
 /** 
  * Refersh the grid token every 6th hour
  * 
@@ -375,7 +388,7 @@ Bool_t WaitForJobs(TArrayI&   jobs,
 		   Int_t      delay,
 		   Bool_t     batch)
 {
-  Bool_t stopped = false;
+  // Bool_t stopped = false;
   TFileHandler h(0, 0x1);
   RefreshToken(0, true);
   do { 
@@ -426,7 +439,7 @@ Bool_t WaitForJobs(TArrayI&   jobs,
 	std::cout << "Do you want to terminate now [yN]? " << std::flush;
 	std::getline(std::cin, l);
 	if (l[0] == 'y' || l[0] == 'Y') { 
-	  stopped = true;
+	  // stopped = true;
 	  break;
 	}
       }
@@ -464,6 +477,7 @@ void GridWatch(const TString& name, Bool_t batch=false, UShort_t delay=5*60)
   TArrayI jobs;
   if (!ParseJobIDs(jobIDs, jobs)) return;
 
+  gSystem->Sleep(10*1000);
   if (!(CheckTokens(name, "jobid", true) && 
 	CheckTokens(name, "stage", true))) 
     WaitForJobs(jobs, stages, delay, batch);
