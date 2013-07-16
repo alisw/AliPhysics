@@ -68,6 +68,8 @@ fhNCellsE(0),                 fhCellsE(0),   // Control histograms
 fhMaxCellDiffClusterE(0),     fhTimePt(0),   // Control histograms
 fhEtaPhi(0),                  fhEtaPhiEMCALBC0(0),
 fhEtaPhiEMCALBC1(0),          fhEtaPhiEMCALBCN(0),
+fhTimeTriggerEMCALBCCluster(0),
+fhTimeTriggerEMCALBCUMCluster(0),
 fhEtaPhiTriggerEMCALBCClusterOverTh(0),
 fhEtaPhiTriggerEMCALBCUMClusterOverTh(0),
 fhEtaPhiTriggerEMCALBCClusterBelowTh1(0),
@@ -88,15 +90,23 @@ fhEtaPhiTriggerEMCALBCBadExoticCluster(0),   fhTimeTriggerEMCALBCBadExoticCluste
 fhEtaPhiTriggerEMCALBCUMBadExoticCluster(0), fhTimeTriggerEMCALBCUMBadExoticCluster(0),
 fhTimeTriggerEMCALBCBadMaxCell(0),           fhTimeTriggerEMCALBCUMBadMaxCell(0),
 fhTimeTriggerEMCALBCBadMaxCellExotic(0),     fhTimeTriggerEMCALBCUMBadMaxCellExotic(0),
-fhEtaPhiTriggerEMCALBCUMReMatchOpenTime (0), fhTimeTriggerEMCALBCUMReMatchOpenTime(0),
-fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh(0),fhTimeTriggerEMCALBCUMReMatchCheckNeigh(0),
-fhEtaPhiTriggerEMCALBCUMReMatchBoth(0),      fhTimeTriggerEMCALBCUMReMatchBoth(0),
+fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster (0), fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster(0),
+fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster(0),fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster(0),
+fhEtaPhiTriggerEMCALBCUMReMatchBothCluster(0),      fhTimeTriggerEMCALBCUMReMatchBothCluster(0),
+fhTimeTriggerEMCALBC0UMReMatchOpenTime(0),
+fhTimeTriggerEMCALBC0UMReMatchCheckNeigh(0),
+fhTimeTriggerEMCALBC0UMReMatchBoth(0),
+
 fhEtaPhiNoTrigger(0),                        fhTimeNoTrigger(0),
 
 fhEPhoton(0),                 fhPtPhoton(0),
 fhPhiPhoton(0),               fhEtaPhoton(0),
 fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
 fhEtaPhiPhotonEMCALBC0(0),    fhEtaPhiPhotonEMCALBC1(0),   fhEtaPhiPhotonEMCALBCN(0),
+fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime(0),
+fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh(0),
+fhTimePhotonTriggerEMCALBC0UMReMatchBoth(0),
+
 fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
 // Shower shape histograms
@@ -183,6 +193,7 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0)
     
     fhClusterEFracLongTimePileUp  [i] = 0;
     
+    fhClusterCellTimePileUp       [i] = 0;
     fhClusterTimeDiffPileUp       [i] = 0;
     fhClusterTimeDiffChargedPileUp[i] = 0;
     fhClusterTimeDiffPhotonPileUp [i] = 0;
@@ -227,7 +238,9 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0)
   // Track matching residuals
   for(Int_t i = 0; i < 2; i++)
   {
-    fhTrackMatchedDEta[i] = 0;                fhTrackMatchedDPhi[i] = 0;         fhTrackMatchedDEtaDPhi[i] = 0;
+    fhTrackMatchedDEta   [i] = 0;             fhTrackMatchedDPhi   [i] = 0;         fhTrackMatchedDEtaDPhi   [i] = 0;
+    fhTrackMatchedDEtaNeg[i] = 0;             fhTrackMatchedDPhiNeg[i] = 0;         fhTrackMatchedDEtaDPhiNeg[i] = 0;
+    fhTrackMatchedDEtaPos[i] = 0;             fhTrackMatchedDPhiPos[i] = 0;         fhTrackMatchedDEtaDPhiPos[i] = 0;
     fhTrackMatchedDEtaTRD[i] = 0;             fhTrackMatchedDPhiTRD[i] = 0;
     fhTrackMatchedDEtaMCOverlap[i] = 0;       fhTrackMatchedDPhiMCOverlap[i] = 0;
     fhTrackMatchedDEtaMCNoOverlap[i] = 0;     fhTrackMatchedDPhiMCNoOverlap[i] = 0;
@@ -259,10 +272,7 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0)
     fhTimeTriggerEMCALBCPileUpSPD      [i] = 0 ;
     
     fhEtaPhiTriggerEMCALBCCluster      [i] = 0 ;
-    fhTimeTriggerEMCALBCCluster        [i] = 0 ;
-    fhEtaPhiTriggerEMCALBCUMCluster    [i] = 0 ;
-    fhTimeTriggerEMCALBCUMCluster      [i] = 0 ;
-    
+    fhEtaPhiTriggerEMCALBCUMCluster    [i] = 0 ;    
   }
   
   //Initialize parameters
@@ -304,7 +314,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   
   fhClusterCuts[2]->Fill(ecluster);
   
-  FillClusterPileUpHistograms(calo,matched,ecluster,ptcluster,etacluster,phicluster,l0cluster);
+  FillClusterPileUpHistograms(calo,matched,ptcluster,etacluster,phicluster,l0cluster);
   
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
@@ -739,7 +749,7 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
         if(idcalo ==  GetReader()->GetTriggerClusterId())
         {
           fhEtaPhiTriggerEMCALBCCluster[bc+5]->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCCluster[bc+5]  ->Fill(ecluster, tofcluster);
+          fhTimeTriggerEMCALBCCluster        ->Fill(ecluster, tofcluster);
           
           if(bc==0)
           {
@@ -758,10 +768,17 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
         if(ecluster > 2) fhEtaPhiTriggerEMCALBCUM[bc+5]->Fill(etacluster, phicluster);
         fhTimeTriggerEMCALBCUM[bc+5]->Fill(ecluster, tofcluster);
         
+        if(bc==0)
+        {
+          if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeTriggerEMCALBC0UMReMatchOpenTime   ->Fill(ecluster, tofcluster);
+          if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(ecluster, tofcluster);
+          if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeTriggerEMCALBC0UMReMatchBoth       ->Fill(ecluster, tofcluster);
+        }
+        
         if(idcalo ==  GetReader()->GetTriggerClusterId())
         {
           fhEtaPhiTriggerEMCALBCUMCluster[bc+5]->Fill(etacluster, phicluster);
-          fhTimeTriggerEMCALBCUMCluster[bc+5]  ->Fill(ecluster, tofcluster);
+          fhTimeTriggerEMCALBCUMCluster->Fill(ecluster, tofcluster);
           if(bc==0)
           {
             Float_t threshold = GetReader()->GetEventTriggerThreshold() ;
@@ -774,18 +791,18 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
             
             if(GetReader()->IsTriggerMatchedOpenCuts(0))
             {
-              fhEtaPhiTriggerEMCALBCUMReMatchOpenTime->Fill(etacluster, phicluster);
-              fhTimeTriggerEMCALBCUMReMatchOpenTime  ->Fill(ecluster, tofcluster);
+              fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster  ->Fill(ecluster, tofcluster);
             }
             if(GetReader()->IsTriggerMatchedOpenCuts(1))
             {
-              fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh->Fill(etacluster, phicluster);
-              fhTimeTriggerEMCALBCUMReMatchCheckNeigh  ->Fill(ecluster, tofcluster);
+              fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster  ->Fill(ecluster, tofcluster);
             }
             if(GetReader()->IsTriggerMatchedOpenCuts(2))
             {
-              fhEtaPhiTriggerEMCALBCUMReMatchBoth->Fill(etacluster, phicluster);
-              fhTimeTriggerEMCALBCUMReMatchBoth  ->Fill(ecluster, tofcluster);
+              fhEtaPhiTriggerEMCALBCUMReMatchBothCluster->Fill(etacluster, phicluster);
+              fhTimeTriggerEMCALBCUMReMatchBothCluster  ->Fill(ecluster, tofcluster);
             }
             
           }
@@ -844,7 +861,7 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
 
 //______________________________________________________________________________________________
 void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const Bool_t matched,
-                                                const Float_t ecluster,   const Float_t ptcluster,
+                                                const Float_t ptcluster,
                                                 const Float_t etacluster, const Float_t phicluster,
                                                 const Float_t l0cluster)
 {
@@ -869,14 +886,16 @@ void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const 
   
   Float_t clusterLongTimePt = 0;
   Float_t clusterOKTimePt   = 0;
-  
-  //Loop on cells inside cluster
-  for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
+    
+  //Loop on cells inside cluster, max cell must be over 100 MeV and time in BC=0
+  if(cells->GetCellAmplitude(absIdMax) > 0.1 && TMath::Abs(tmax) < 30)
   {
-    Int_t absId  = calo->GetCellsAbsId()[ipos];
-    //if(absId!=absIdMax && cells->GetCellAmplitude(absIdMax) > 0.01)
-    if(cells->GetCellAmplitude(absIdMax) > 0.1)
+    for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
     {
+      Int_t absId  = calo->GetCellsAbsId()[ipos];
+      
+      if( absId == absIdMax ) continue ;
+      
       Double_t time  = cells->GetCellTime(absId);
       Float_t  amp   = cells->GetCellAmplitude(absId);
       Int_t    bc    = GetReader()->GetInputEvent()->GetBunchCrossNumber();
@@ -888,92 +907,104 @@ void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const 
       if(GetReader()->IsInTimeWindow(time,amp)) clusterOKTimePt   += amp;
       else                                      clusterLongTimePt += amp;
       
+      if( cells->GetCellAmplitude(absIdMax) < 0.05 ) continue ;
+      
       if(GetReader()->IsPileUpFromSPD())
       {
-        fhClusterTimeDiffPileUp[0]->Fill(ecluster, diff);
+        fhClusterCellTimePileUp[0]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[0]->Fill(ptcluster, diff);
         if(!matched)
         {
-          fhClusterTimeDiffChargedPileUp[0]->Fill(ecluster, diff);
-          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[0]->Fill(ecluster, diff);
+          fhClusterTimeDiffChargedPileUp[0]->Fill(ptcluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[0]->Fill(ptcluster, diff);
         }
       }
       
       if(GetReader()->IsPileUpFromEMCal())
       {
-        fhClusterTimeDiffPileUp[1]->Fill(ecluster, diff);
+        fhClusterCellTimePileUp[1]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[1]->Fill(ptcluster, diff);
         if(!matched)
         {
-          fhClusterTimeDiffChargedPileUp[1]->Fill(ecluster, diff);
-          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[1]->Fill(ecluster, diff);
+          fhClusterTimeDiffChargedPileUp[1]->Fill(ptcluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[1]->Fill(ptcluster, diff);
         }
       }
       
       if(GetReader()->IsPileUpFromSPDOrEMCal())
       {
-        fhClusterTimeDiffPileUp[2]->Fill(ecluster, diff);
+        fhClusterCellTimePileUp[2]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[2]->Fill(ptcluster, diff);
         if(!matched)
         {
-          fhClusterTimeDiffChargedPileUp[2]->Fill(ecluster, diff);
-          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[2]->Fill(ecluster, diff);
+          fhClusterTimeDiffChargedPileUp[2]->Fill(ptcluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[2]->Fill(ptcluster, diff);
         }
       }
       
       if(GetReader()->IsPileUpFromSPDAndEMCal())
       {
-        fhClusterTimeDiffPileUp[3]->Fill(ecluster, diff);
+        fhClusterCellTimePileUp[3]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[3]->Fill(ptcluster, diff);
         if(!matched)
         {
-          fhClusterTimeDiffChargedPileUp[3]->Fill(ecluster, diff);
-          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[3]->Fill(ecluster, diff);
+          fhClusterTimeDiffChargedPileUp[3]->Fill(ptcluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[3]->Fill(ptcluster, diff);
         }
       }
       
       if(GetReader()->IsPileUpFromSPDAndNotEMCal())
       {
-        fhClusterTimeDiffPileUp[4]->Fill(ecluster, diff);
+        fhClusterCellTimePileUp[4]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[4]->Fill(ptcluster, diff);
         if(!matched)
         {
-          fhClusterTimeDiffChargedPileUp[4]->Fill(ecluster, diff);
-          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[4]->Fill(ecluster, diff);
+          fhClusterTimeDiffChargedPileUp[4]->Fill(ptcluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[4]->Fill(ptcluster, diff);
         }
       }
       
       if(GetReader()->IsPileUpFromEMCalAndNotSPD())
       {
-        fhClusterTimeDiffPileUp[5]->Fill(ecluster, diff);
+        fhClusterCellTimePileUp[5]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[5]->Fill(ptcluster, diff);
         if(!matched)
         {
-          fhClusterTimeDiffChargedPileUp[5]->Fill(ecluster, diff);
-          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[5]->Fill(ecluster, diff);
+          fhClusterTimeDiffChargedPileUp[5]->Fill(ptcluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[5]->Fill(ptcluster, diff);
         }
       }
       
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
       {
-        fhClusterTimeDiffPileUp[6]->Fill(ecluster, diff);
+        fhClusterCellTimePileUp[6]->Fill(ptcluster, time);
+        fhClusterTimeDiffPileUp[6]->Fill(ptcluster, diff);
         if(!matched)
         {
-          fhClusterTimeDiffChargedPileUp[6]->Fill(ecluster, diff);
-          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[6]->Fill(ecluster, diff);
+          fhClusterTimeDiffChargedPileUp[6]->Fill(ptcluster, diff);
+          if(okPhoton)  fhClusterTimeDiffPhotonPileUp[6]->Fill(ptcluster, diff);
         }
       }
-    }// Not max
-  }//loop
+    }//loop
+    
+    
+    Float_t frac = 0;
+    if(clusterLongTimePt+clusterOKTimePt > 0.001)
+      frac = clusterLongTimePt/(clusterLongTimePt+clusterOKTimePt);
+    //printf("E long %f, E OK %f, Fraction large time %f, E %f\n",clusterLongTimePt,clusterOKTimePt,frac,ptcluster);
+    
+    if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ptcluster,l0cluster); fhClusterEFracLongTimePileUp[0]->Fill(ptcluster,frac);}
+    if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ptcluster,l0cluster); fhClusterEFracLongTimePileUp[1]->Fill(ptcluster,frac);}
+    if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ptcluster,l0cluster); fhClusterEFracLongTimePileUp[2]->Fill(ptcluster,frac);}
+    if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ptcluster,l0cluster); fhClusterEFracLongTimePileUp[3]->Fill(ptcluster,frac);}
+    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ptcluster,l0cluster); fhClusterEFracLongTimePileUp[4]->Fill(ptcluster,frac);}
+    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ptcluster,l0cluster); fhClusterEFracLongTimePileUp[5]->Fill(ptcluster,frac);}
+    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ptcluster,l0cluster); fhClusterEFracLongTimePileUp[6]->Fill(ptcluster,frac);}
+    
+    fhEtaPhiBC0->Fill(etacluster,phicluster);
+    if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD    ->Fill(etacluster,phicluster);
+  }
   
-  Float_t frac = 0;
-  if(clusterLongTimePt+clusterOKTimePt > 0.001)
-    frac = clusterLongTimePt/(clusterLongTimePt+clusterOKTimePt);
-  //printf("E long %f, E OK %f, Fraction large time %f, E %f\n",clusterLongTimePt,clusterOKTimePt,frac,ecluster);
-  
-  if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(ptcluster); fhLambda0PileUp[0]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[0]->Fill(ecluster,frac);}
-  if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(ptcluster); fhLambda0PileUp[1]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[1]->Fill(ecluster,frac);}
-  if(GetReader()->IsPileUpFromSPDOrEMCal())        {fhPtPileUp[2]->Fill(ptcluster); fhLambda0PileUp[2]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[2]->Fill(ecluster,frac);}
-  if(GetReader()->IsPileUpFromSPDAndEMCal())       {fhPtPileUp[3]->Fill(ptcluster); fhLambda0PileUp[3]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[3]->Fill(ecluster,frac);}
-  if(GetReader()->IsPileUpFromSPDAndNotEMCal())    {fhPtPileUp[4]->Fill(ptcluster); fhLambda0PileUp[4]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[4]->Fill(ecluster,frac);}
-  if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(ptcluster); fhLambda0PileUp[5]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[5]->Fill(ecluster,frac);}
-  if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(ptcluster); fhLambda0PileUp[6]->Fill(ecluster,l0cluster); fhClusterEFracLongTimePileUp[6]->Fill(ecluster,frac);}
-  
-  if(tmax > -25 && tmax < 25) {fhEtaPhiBC0    ->Fill(etacluster,phicluster); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBC0PileUpSPD    ->Fill(etacluster,phicluster); }
   else if (tmax > 25)         {fhEtaPhiBCPlus ->Fill(etacluster,phicluster); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCPlusPileUpSPD ->Fill(etacluster,phicluster); }
   else if (tmax <-25)         {fhEtaPhiBCMinus->Fill(etacluster,phicluster); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiBCMinusPileUpSPD->Fill(etacluster,phicluster); }
 }
@@ -1861,15 +1892,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEtaPhiTriggerEMCALBCCluster[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCCluster[i]->SetXTitle("#eta");
       outputContainer->Add(fhEtaPhiTriggerEMCALBCCluster[i]) ;
-      
-      fhTimeTriggerEMCALBCCluster[i] = new TH2F
-      (Form("hTimeTriggerEMCALBC%d_OnlyTrigger",i-5),
-       Form("trigger cluster time vs E of clusters, Trigger EMCAL-BC=%d",i-5),
-       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCCluster[i]->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCCluster[i]->SetYTitle("time (ns)");
-      outputContainer->Add(fhTimeTriggerEMCALBCCluster[i]);
-      
+            
       fhEtaPhiTriggerEMCALBCUMCluster[i] = new TH2F
       (Form("hEtaPhiTriggerEMCALBC%d_OnlyTrigger_UnMatch",i-5),
        Form("trigger cluster, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-5),
@@ -1877,15 +1900,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEtaPhiTriggerEMCALBCUMCluster[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMCluster[i]->SetXTitle("#eta");
       outputContainer->Add(fhEtaPhiTriggerEMCALBCUMCluster[i]) ;
-      
-      fhTimeTriggerEMCALBCUMCluster[i] = new TH2F
-      (Form("hTimeTriggerEMCALBC%d_OnlyTrigger_UnMatch",i-5),
-       Form("trigger cluster time vs E of clusters, unmatched trigger EMCAL-BC=%d",i-5),
-       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMCluster[i]->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMCluster[i]->SetYTitle("time (ns)");
-      outputContainer->Add(fhTimeTriggerEMCALBCUMCluster[i]);
     }
+    
+    fhTimeTriggerEMCALBCCluster = new TH2F("hTimeTriggerEMCALBC_OnlyTrigger",
+                                           "trigger cluster time vs E of clusters",
+                                           nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBCCluster->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCCluster->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCCluster);
+    
+    fhTimeTriggerEMCALBCUMCluster = new TH2F("hTimeTriggerEMCALBC_OnlyTrigger_UnMatch",
+                                             "trigger cluster time vs E of clusters, unmatched trigger",
+                                             nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBCUMCluster->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCUMCluster->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCUMCluster);
     
     fhEtaPhiTriggerEMCALBCClusterOverTh = new TH2F
     ("hEtaPhiTriggerEMCALBC0_OnlyTrigger_OverThreshold",
@@ -2177,48 +2206,70 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhEtaPhiNoTrigger) ;
     
     
-    fhEtaPhiTriggerEMCALBCUMReMatchOpenTime = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_OpenTime",
+    fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_OpenTime",
                                                        "cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch open time",
                                                        netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMReMatchOpenTime->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMReMatchOpenTime->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchOpenTime) ;
+    fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster->SetYTitle("#phi (rad)");
+    fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster) ;
     
-    fhTimeTriggerEMCALBCUMReMatchOpenTime = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_OpenTime",
+    fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_OpenTime",
                                                      "cluster time vs E of clusters, no match, rematch open time",
                                                      nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMReMatchOpenTime->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMReMatchOpenTime->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchOpenTime);
+    fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster);
     
     
-    fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_CheckNeighbours",
+    fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_CheckNeighbours",
                                                          "cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch with neighbour patches",
                                                          netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchCheckNeigh) ;
+    fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster->SetYTitle("#phi (rad)");
+    fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster) ;
     
-    fhTimeTriggerEMCALBCUMReMatchCheckNeigh = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_CheckNeighbours",
+    fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_CheckNeighbours",
                                                        "cluster time vs E of clusters, no match, rematch with neigbour parches",
                                                        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMReMatchCheckNeigh->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMReMatchCheckNeigh->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchCheckNeigh);
+    fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster);
     
-    fhEtaPhiTriggerEMCALBCUMReMatchBoth = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_Both",
+    fhEtaPhiTriggerEMCALBCUMReMatchBothCluster = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_Both",
                                                    "cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch open time and neighbour",
                                                    netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMReMatchBoth->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMReMatchBoth->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchBoth) ;
+    fhEtaPhiTriggerEMCALBCUMReMatchBothCluster->SetYTitle("#phi (rad)");
+    fhEtaPhiTriggerEMCALBCUMReMatchBothCluster->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchBothCluster) ;
     
-    fhTimeTriggerEMCALBCUMReMatchBoth = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_Both",
+    fhTimeTriggerEMCALBCUMReMatchBothCluster = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_Both",
                                                  "cluster time vs E of clusters, no match, rematch open time and neigbour",
                                                  nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMReMatchBoth->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMReMatchBoth->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchBoth);
+    fhTimeTriggerEMCALBCUMReMatchBothCluster->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBCUMReMatchBothCluster->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchBothCluster);
+    
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_OpenTime",
+                                                            "cluster time vs E of clusters, no match, rematch open time",
+                                                            nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchOpenTime);
+    
+        
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_CheckNeighbours",
+                                                              "cluster time vs E of clusters, no match, rematch with neigbour parches",
+                                                              nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchCheckNeigh);
+        
+    fhTimeTriggerEMCALBC0UMReMatchBoth = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_Both",
+                                                        "cluster time vs E of clusters, no match, rematch open time and neigbour",
+                                                        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBC0UMReMatchBoth->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchBoth->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchBoth);
     
   }
   
@@ -2311,6 +2362,29 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhTimePhotonTriggerEMCALBCUM[i]);
       
     }
+    
+    fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime = new TH2F("hTimePhotonTriggerBC0_UnMatch_ReMatch_OpenTime",
+                                                      "cluster time vs E of photons, no match, rematch open time",
+                                                      nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime->SetXTitle("E (GeV)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime);
+    
+    
+    fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh = new TH2F("hTimePhotonTriggerBC0_UnMatch_ReMatch_CheckNeighbours",
+                                                        "cluster time vs E of photons, no match, rematch with neigbour parches",
+                                                        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh->SetXTitle("E (GeV)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh);
+    
+    fhTimePhotonTriggerEMCALBC0UMReMatchBoth = new TH2F("hTimePhotonTriggerBC0_UnMatch_ReMatch_Both",
+                                                  "cluster time vs E of photons, no match, rematch open time and neigbour",
+                                                  nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePhotonTriggerEMCALBC0UMReMatchBoth->SetXTitle("E (GeV)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchBoth->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePhotonTriggerEMCALBC0UMReMatchBoth);
+
   }
   
   fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
@@ -2771,6 +2845,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhClusterEFracLongTimePileUp[i]->SetXTitle("E (GeV)");
       fhClusterEFracLongTimePileUp[i]->SetYTitle("E(large time) / E");
       outputContainer->Add(fhClusterEFracLongTimePileUp[i]);
+      
+      fhClusterCellTimePileUp[i]  = new TH2F(Form("hClusterCellTimePileUp%s",pileUpName[i].Data()),
+                                             Form("Cluster E vs cell time in cluster, %s Pile-Up event",pileUpName[i].Data()),
+                                             nptbins,ptmin,ptmax,ntimebins,timemin,timemax);
+      fhClusterCellTimePileUp[i]->SetXTitle("E (GeV)");
+      fhClusterCellTimePileUp[i]->SetYTitle("t_{cell} (ns)");
+      outputContainer->Add(fhClusterCellTimePileUp[i]);
       
       fhClusterTimeDiffPileUp[i]  = new TH2F(Form("hClusterTimeDiffPileUp%s",pileUpName[i].Data()),
                                              Form("Cluster E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
@@ -3704,6 +3785,13 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         {
           if(calo->E() > 2) fhEtaPhiPhotonTriggerEMCALBCUM[bc+5]->Fill(aodph.Eta(), phicluster);
           fhTimePhotonTriggerEMCALBCUM[bc+5]->Fill(calo->E(), calotof);
+          
+          if(bc==0)
+          {
+            if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime   ->Fill(calo->E(), calotof);
+            if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(calo->E(), calotof);
+            if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimePhotonTriggerEMCALBC0UMReMatchBoth       ->Fill(calo->E(), calotof);
+          }
         }
       }
       else if(TMath::Abs(bc) >= 6)

@@ -62,6 +62,9 @@ fhPt(0),                       fhE(0),
 fhEEta(0),                     fhEPhi(0),
 fhPtEta(0),                    fhPtPhi(0),                   fhEtaPhi(0),
 fhEtaPhiEMCALBC0(0),           fhEtaPhiEMCALBC1(0),          fhEtaPhiEMCALBCN(0),
+fhTimeTriggerEMCALBC0UMReMatchOpenTime(0),
+fhTimeTriggerEMCALBC0UMReMatchCheckNeigh(0),
+fhTimeTriggerEMCALBC0UMReMatchBoth(0),
 fhPtCentrality(),              fhPtEventPlane(0),
 fhPtReject(0),                 fhEReject(0),
 fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
@@ -104,7 +107,7 @@ fhdEdx(0),                     fhEOverP(0),                 fhEOverPNoTRD(0),
 // Number of local maxima in cluster
 fhNLocMaxE(0),                 fhNLocMaxPt(0),
 // PileUp
-fhTimeENoCut(0),                    fhTimeESPD(0),           fhTimeESPDMulti(0),
+fhTimePtNoCut(0),                    fhTimePtSPD(0),           fhTimePtSPDMulti(0),
 fhTimeNPileUpVertSPD(0),            fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
 fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
@@ -168,7 +171,7 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
     fhAsymmetryDispEta  [j] = 0;
     fhAsymmetryDispPhi  [j] = 0;
     
-    fhPtPi0PileUp       [j] = 0;
+    fhPtPileUp       [j] = 0;
   }
   
   for(Int_t i = 0; i < 3; i++)
@@ -207,8 +210,8 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
   
 }
 
-//_________________________________________________________________________________________________
-void AliAnaPi0EbE::FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time)
+//_______________________________________________________________________________________________
+void AliAnaPi0EbE::FillPileUpHistograms(const Float_t pt, const Float_t time, AliVCluster * calo)
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
@@ -216,11 +219,96 @@ void AliAnaPi0EbE::FillPileUpHistograms(const Float_t energy, const Float_t pt, 
   //printf("E %f, time %f\n",energy,time);
   AliVEvent * event = GetReader()->GetInputEvent();
   
-  fhTimeENoCut->Fill(energy,time);
-  if(GetReader()->IsPileUpFromSPD())     fhTimeESPD     ->Fill(energy,time);
-  if(event->IsPileupFromSPDInMultBins()) fhTimeESPDMulti->Fill(energy,time);
+  fhTimePtNoCut->Fill(pt,time);
+  if(GetReader()->IsPileUpFromSPD())     
   
-  if(energy < 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
+  if(GetReader()->IsPileUpFromSPD())             { fhPtPileUp[0]->Fill(pt); fhTimePtSPD     ->Fill(pt,time); }
+  if(GetReader()->IsPileUpFromEMCal())             fhPtPileUp[1]->Fill(pt);
+  if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPileUp[2]->Fill(pt);
+  if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtPileUp[3]->Fill(pt);
+  if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtPileUp[4]->Fill(pt);
+  if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPileUp[5]->Fill(pt);
+  if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPileUp[6]->Fill(pt);
+  
+  if(event->IsPileupFromSPDInMultBins()) fhTimePtSPDMulti->Fill(pt,time);
+  
+  // cells in cluster
+  
+  AliVCaloCells* cells = 0;
+  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+  else                        cells = GetPHOSCells();
+
+  Float_t maxCellFraction = 0.;
+  Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
+  
+  Double_t tmax  = cells->GetCellTime(absIdMax);
+  GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+  tmax*=1.e9;
+    
+  //Loop on cells inside cluster, max cell must be over 100 MeV and time in BC=0
+  if(cells->GetCellAmplitude(absIdMax) > 0.1 && TMath::Abs(tmax) < 30)
+  {
+    for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
+    {
+      Int_t absId  = calo->GetCellsAbsId()[ipos];
+      
+      if( absId == absIdMax ) continue ;
+      
+      Double_t timecell  = cells->GetCellTime(absId);
+      Float_t  amp       = cells->GetCellAmplitude(absId);
+      Int_t    bc        = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+      GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,amp,timecell,cells);
+      timecell*=1e9;
+      
+      Float_t diff = (tmax-timecell);
+            
+      if( cells->GetCellAmplitude(absIdMax) < 0.05 ) continue ;
+      
+      if(GetReader()->IsPileUpFromSPD())
+      {
+        fhPtCellTimePileUp[0]->Fill(pt, timecell);
+        fhPtTimeDiffPileUp[0]->Fill(pt, diff);
+       }
+      
+      if(GetReader()->IsPileUpFromEMCal())
+      {
+        fhPtCellTimePileUp[1]->Fill(pt, timecell);
+        fhPtTimeDiffPileUp[1]->Fill(pt, diff);
+      }
+      
+      if(GetReader()->IsPileUpFromSPDOrEMCal())
+      {
+        fhPtCellTimePileUp[2]->Fill(pt, timecell);
+        fhPtTimeDiffPileUp[2]->Fill(pt, diff);
+      }
+      
+      if(GetReader()->IsPileUpFromSPDAndEMCal())
+      {
+        fhPtCellTimePileUp[3]->Fill(pt, timecell);
+        fhPtTimeDiffPileUp[3]->Fill(pt, diff);
+      }
+      
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())
+      {
+        fhPtCellTimePileUp[4]->Fill(pt, timecell);
+        fhPtTimeDiffPileUp[4]->Fill(pt, diff);
+      }
+      
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())
+      {
+        fhPtCellTimePileUp[5]->Fill(pt, timecell);
+        fhPtTimeDiffPileUp[5]->Fill(pt, diff);
+      }
+      
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())
+      {
+        fhPtCellTimePileUp[6]->Fill(pt, timecell);
+        fhPtTimeDiffPileUp[6]->Fill(pt, diff);
+      }
+    }//loop
+  }
+
+  if(pt < 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
   
   AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
@@ -292,7 +380,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(const Float_t energy, const Float_t pt, 
     fhTimePileUpMainVertexZDistance->Fill(time,distZ);
     fhTimePileUpMainVertexZDiamond ->Fill(time,diamZ);
     
-  }// loop
+  }// vertex loop
 }
 
 
@@ -809,6 +897,29 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhTimeTriggerEMCALBCUM[i]);
       
     }
+    
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_OpenTime",
+                                                      "cluster time vs E of clusters, no match, rematch open time",
+                                                      nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchOpenTime);
+    
+    
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_CheckNeighbours",
+                                                        "cluster time vs E of clusters, no match, rematch with neigbour parches",
+                                                        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchCheckNeigh);
+    
+    fhTimeTriggerEMCALBC0UMReMatchBoth = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_Both",
+                                                  "cluster time vs E of clusters, no match, rematch open time and neigbour",
+                                                  nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimeTriggerEMCALBC0UMReMatchBoth->SetXTitle("E (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchBoth->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchBoth);
+    
   }
   
   fhPtCentrality  = new TH2F("hPtCentrality","centrality vs p_{T}",nptbins,ptmin,ptmax, 100,0,100);
@@ -1821,26 +1932,41 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     for(Int_t i = 0 ; i < 7 ; i++)
     {
-      fhPtPi0PileUp[i]  = new TH1F(Form("hPtPi0PileUp%s",pileUpName[i].Data()),
+      fhPtPileUp[i]  = new TH1F(Form("hPtPileUp%s",pileUpName[i].Data()),
                                    Form("Selected #pi^{0} (#eta) p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
-      fhPtPi0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPtPi0PileUp[i]);
+      fhPtPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtPileUp[i]);
+      
+      fhPtCellTimePileUp[i]  = new TH2F(Form("hPtCellTimePileUp%s",pileUpName[i].Data()),
+                                             Form("Pt vs cell time in cluster, %s Pile-Up event",pileUpName[i].Data()),
+                                             nptbins,ptmin,ptmax,ntimebins,timemin,timemax);
+      fhPtCellTimePileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtCellTimePileUp[i]->SetYTitle("t_{cell} (ns)");
+      outputContainer->Add(fhPtCellTimePileUp[i]);
+      
+      fhPtTimeDiffPileUp[i]  = new TH2F(Form("hPtTimeDiffPileUp%s",pileUpName[i].Data()),
+                                             Form("Pt vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
+                                             nptbins,ptmin,ptmax,200,-100,100);
+      fhPtTimeDiffPileUp[i]->SetXTitle("p_{T} (GeV/c");
+      fhPtTimeDiffPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
+      outputContainer->Add(fhPtTimeDiffPileUp[i]);
+
     }
     
-    fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeENoCut->SetXTitle("E (GeV)");
-    fhTimeENoCut->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeENoCut);
+    fhTimePtNoCut  = new TH2F ("hTimePt_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePtNoCut->SetXTitle("p_{T} (GeV/c)");
+    fhTimePtNoCut->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePtNoCut);
     
-    fhTimeESPD  = new TH2F ("hTimeE_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeESPD->SetXTitle("E (GeV)");
-    fhTimeESPD->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeESPD);
+    fhTimePtSPD  = new TH2F ("hTimePt_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePtSPD->SetXTitle("p_{T} (GeV/c)");
+    fhTimePtSPD->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePtSPD);
     
-    fhTimeESPDMulti  = new TH2F ("hTimeE_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeESPDMulti->SetXTitle("E (GeV)");
-    fhTimeESPDMulti->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeESPDMulti);
+    fhTimePtSPDMulti  = new TH2F ("hTimePt_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+    fhTimePtSPDMulti->SetXTitle("p_{T} (GeV/c)");
+    fhTimePtSPDMulti->SetYTitle("time (ns)");
+    outputContainer->Add(fhTimePtSPDMulti);
     
     fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50);
     fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
@@ -2251,7 +2377,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
-        FillPileUpHistograms(mom.E(),mom.Pt(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9) /2);
+        FillPileUpHistograms(mom.Pt(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9)/2,cluster1);
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
@@ -2395,7 +2521,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
-        if(cluster)FillPileUpHistograms(mom.E(),mom.Pt(),cluster->GetTOF()*1e9);
+        if(cluster) FillPileUpHistograms(mom.Pt(),cluster->GetTOF()*1e9,cluster);
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
@@ -2665,7 +2791,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Double_t tofcluster   = calo->GetTOF()*1e9;
     Double_t tofclusterUS = TMath::Abs(tofcluster);
     
-    FillPileUpHistograms(calo->E(),aodpi0.Pt(),tofcluster);
+    FillPileUpHistograms(aodpi0.Pt(),tofcluster,calo);
     
     Int_t id = GetReader()->GetTriggerClusterId();
     if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL" && id >=0 )
@@ -2693,7 +2819,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
         {
           if(calo->E() > 2) fhEtaPhiTriggerEMCALBCUM[bc+5]->Fill(aodpi0.Eta(), phicluster);
           fhTimeTriggerEMCALBCUM[bc+5]->Fill(calo->E(), tofcluster);
-        }
+          
+          if(bc==0)
+          {
+            if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeTriggerEMCALBC0UMReMatchOpenTime   ->Fill(calo->E(), tofcluster);
+            if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(calo->E(), tofcluster);
+            if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeTriggerEMCALBC0UMReMatchBoth       ->Fill(calo->E(), tofcluster);
+          }
+         }
       }
       else if(TMath::Abs(bc) >= 6)
         printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Trigger BC not expected = %d\n",bc);
@@ -2750,18 +2883,6 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     
     fhPtCentrality ->Fill(pt,cen) ;
     fhPtEventPlane ->Fill(pt,ep ) ;
-    
-    if(fFillPileUpHistograms)
-    {
-      if(GetReader()->IsPileUpFromSPD())               fhPtPi0PileUp[0]->Fill(pt);
-      if(GetReader()->IsPileUpFromEMCal())             fhPtPi0PileUp[1]->Fill(pt);
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPi0PileUp[2]->Fill(pt);
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtPi0PileUp[3]->Fill(pt);
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtPi0PileUp[4]->Fill(pt);
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtPi0PileUp[5]->Fill(pt);
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtPi0PileUp[6]->Fill(pt);
-    }
-    
     
     if(IsDataMC())
     {

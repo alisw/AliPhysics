@@ -46,7 +46,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
-  void           FillPileUpHistograms(const Float_t energy, const Float_t pt, const Float_t time) ;
+  void           FillPileUpHistograms(const Float_t pt, const Float_t time, AliVCluster * c) ;
   
   void           FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag);
   
@@ -167,6 +167,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhTimeTriggerEMCALBCPileUpSPD[11] ; //! Time distribution of pi0, when trigger is in a given BC, tagged as pile-up SPD
   TH2F         * fhEtaPhiTriggerEMCALBCUM[11]  ;  //! Pseudorapidity vs Phi of pi0 for E > 2, not matched to trigger
   TH2F         * fhTimeTriggerEMCALBCUM[11]  ;    //! Time distribution of pi0, when trigger is in a given BC, not matched to trigger
+
+  TH2F         * fhTimeTriggerEMCALBC0UMReMatchOpenTime   ; //! Time distribution of pi0s in event, when trigger is not found, rematched open time trigger
+  TH2F         * fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ; //! Time distribution of pi0s in event, when trigger is not found, rematched with neigbour patchs
+  TH2F         * fhTimeTriggerEMCALBC0UMReMatchBoth       ; //! Time distribution of pi0s in event, when trigger is not found, rematched open both
 
   TH2F         * fhPtCentrality ;          //! centrality  vs pi0/eta pT
   TH2F         * fhPtEventPlane ;          //! event plane vs pi0/eta pT
@@ -318,10 +322,12 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
 
   // Pile-up
-  TH1F         * fhPtPi0PileUp[7];                //! pT distribution of selected pi0/eta
-  TH2F         * fhTimeENoCut;                    //! time of cluster vs E, no cut
-  TH2F         * fhTimeESPD;                      //! time of cluster vs E, IsSPDPileUp
-  TH2F         * fhTimeESPDMulti;                 //! time of cluster vs E, IsSPDPileUpMulti
+  TH1F         * fhPtPileUp[7];                   //! pT distribution of selected pi0/eta
+  TH2F         * fhPtCellTimePileUp[7];           //! pT vs Time inside cluster, before any selection, not max cell
+  TH2F         * fhPtTimeDiffPileUp[7];           //! pT vs Time difference inside cluster, before any selection
+  TH2F         * fhTimePtNoCut;                   //! time of cluster vs pT, no cut
+  TH2F         * fhTimePtSPD;                     //! time of cluster vs pT, IsSPDPileUp
+  TH2F         * fhTimePtSPDMulti;                //! time of cluster vs pT, IsSPDPileUpMulti
   TH2F         * fhTimeNPileUpVertSPD;            //! time of cluster vs n pile-up vertices from SPD
   TH2F         * fhTimeNPileUpVertTrack;          //! time of cluster vs n pile-up vertices from Tracks
   TH2F         * fhTimeNPileUpVertContributors;   //! time of cluster vs n pile-up vertex from SPD contributors
@@ -338,7 +344,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,30)
+  ClassDef(AliAnaPi0EbE,31)
 } ;
 
 
