@@ -2248,10 +2248,8 @@ return false;
 }
 
 void AliAnalysisTaskJetCluster::SetAlgorithm(Int_t i) {
-    fastjet::JetAlgorithm algo;
-    if(i == 0) algo = fastjet::kt_algorithm;
-    if(i == 1) algo = fastjet::cambridge_algorithm;
-    if(i == 2) algo = fastjet::antikt_algorithm;
-    fAlgorithm = algo;
+    if(i == 0) fAlgorithm = fastjet::kt_algorithm;
+    else if(i == 1) fAlgorithm = fastjet::cambridge_algorithm;
+    else if(i == 2) fAlgorithm = fastjet::antikt_algorithm;
 }
 
