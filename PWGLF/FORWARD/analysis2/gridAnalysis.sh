@@ -593,7 +593,7 @@ allAboard()
     opts="${opts} --include=$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains"
     opts="${opts} --date=${now} --class=$cl --name=$nme --verbose=0"
     
-    echo "Running train: runTrain2 ${opts} --url=${url} $@" 
+    echo "Running train: runTrain ${opts} --url=${url} $@" 
     if test $noact -gt 0 ; then return ; fi
 
     runTrain ${opts} --overwrite --url=${url} $@ 
@@ -619,7 +619,7 @@ allAboard()
 	Then, do 
 	
 	  (cd ${nme}_${now} && aliroot -l -b -q Extract.C)
-	  (cd ${nme}_${now} && aliroot -l -b -q 'Upload.C("local://${here}/${nam	e}_corrs_${now}")')
+	  (cd ${nme}_${now} && aliroot -l -b -q 'Upload.C("local://${here}/${name}_corrs_${now}")')
 	
 	to upload the results to our local corrections store. 
 	EOF
@@ -650,8 +650,7 @@ allAboard()
     else 
 	echo "Now waiting for jobs to finish"
 	(cd ${nme}_${now} && \
-	    nice aliroot -l -b -x -q Watch.C\(1\) 2>&1 | \
-	    tee watch.log > /dev/null &)
+	    nice aliroot -l -b -x -q Watch.C\(1\) > watch.log 2>&1 &)
     fi
 }
 
