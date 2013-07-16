@@ -60,8 +60,8 @@ void AliEveEventSelector::SetSelectionString( const TString& str )
     fString = str;
     if (str == "" ) return;//on reset don't recalculate
 
-    if(pESDTree)    pESDTree->Draw( ">>listofentries", fString, "entrylist");
-    if(pHLTESDTree) pESDTree->Draw( ">>listofentries", fString, "entrylist");
+    if(pESDTree!=0)    pESDTree->Draw( ">>listofentries", fString, "entrylist");
+    if(pHLTESDTree!=0) pHLTESDTree->Draw( ">>listofentries", fString, "entrylist");
 
     fPEntryList = dynamic_cast<TEntryList*>(gDirectory->Get("listofentries"));
 }

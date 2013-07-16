@@ -680,8 +680,8 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
     {
         if (refreshESD)
         {
-            if(fESDTree) fESDTree->Refresh();
-            if(fHLTESDTree) fHLTESDTree->Refresh();
+            if(fESDTree!=0) fESDTree->Refresh();
+            if(fHLTESDTree!=0) fHLTESDTree->Refresh();
             fPEventSelector->Update();
         }
 
