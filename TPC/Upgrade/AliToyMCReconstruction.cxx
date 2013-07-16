@@ -171,8 +171,10 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 	  AliTrackerBase::PropagateTrackTo(&tOrigITS,lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 
 	  // rotate fitted track to the frame of the original track and propagate to same reference
+	  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 	  trackITS.Rotate(tOrigITS.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+	  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+
 	            
         }
       }
