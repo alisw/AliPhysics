@@ -273,7 +273,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
       break;
     }
   
-    for( int icl=0; icl<rawClusters->fCount; icl++){
+    for( UInt_t icl=0; icl<rawClusters->fCount; icl++){
       
       const AliHLTTPCRawCluster &cl = rawClusters->fClusters[icl];
 
