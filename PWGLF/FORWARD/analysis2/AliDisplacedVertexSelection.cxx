@@ -112,7 +112,7 @@ AliDisplacedVertexSelection::SetupForData(TList* l,
 
   Int_t    nSumT   = nDeltaT;
   Double_t minSumT = minDeltaT;
-  Double_t maxSumT = maxSumT;
+  Double_t maxSumT = maxDeltaT;
   fSumTdc          = new TH1D("SumTdc","#sumTDC",nSumT,minSumT,maxSumT);
   fSumTdc->SetXTitle("#sumTDC");
   fSumTdc->SetDirectory(0);
