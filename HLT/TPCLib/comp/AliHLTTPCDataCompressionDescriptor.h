@@ -20,6 +20,7 @@ class AliHLTTPCDataCompressionDescriptor
   {}
 
   AliHLTTPCDataCompressionDescriptor& operator=(const AliHLTTPCDataCompressionDescriptor& other){ 
+    if( &other == this ) return *this;
     fVersion = other.fVersion;
     fMergedClustersFlag = other.fMergedClustersFlag;
     return *this;
