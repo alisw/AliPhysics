@@ -450,15 +450,24 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   //---------------------------------------------------------
   
   // Check that the highest mc label and the max cluster label are the same
-  Int_t mcLabelMax = GetEMCALCells()->GetCellMCLabel(list[imax]);
-  GetReader()->RemapMCLabelForAODs(mcLabelMax);
-  Int_t mcLabelMax2 = GetEMCALCells()->GetCellMCLabel(list[imax2]);
-  GetReader()->RemapMCLabelForAODs(mcLabelMax2);
+  Int_t mcLabelMax = -1 ;
+  if(imax >=0 )
+  {
+    mcLabelMax = GetEMCALCells()->GetCellMCLabel(list[imax]);
+    GetReader()->RemapMCLabelForAODs(mcLabelMax);
+  }
+  
+  Int_t mcLabelMax2 = -1 ;
+  if(imax >=0 )
+  {
+    mcLabelMax2 = GetEMCALCells()->GetCellMCLabel(list[imax2]);
+    GetReader()->RemapMCLabelForAODs(mcLabelMax2);
+  }
   
   Int_t mcLabelclusterMax = cluster->GetLabels()[0];
   Bool_t matchHighLMAndHighMC = kFALSE;
   
-  if(mcLabelclusterMax==mcLabelMax)
+  if(mcLabelclusterMax == mcLabelMax && mcLabelclusterMax >= 0)
   {
     matchHighLMAndHighMC = kTRUE;
     //printf("*** MATCH cluster and LM maximum ***\n");
@@ -466,7 +475,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   else
   {
      //printf("*** NO MATCH cluster and LM maximum, check second ***\n");
-    if(mcLabelclusterMax==mcLabelMax2)
+    if(mcLabelclusterMax == mcLabelMax2 && mcLabelclusterMax >= 0)
     {
       //printf("\t *** MATCH cluster and 2nd LM maximum ***\n");
       matchHighLMAndHighMC = kTRUE;
@@ -639,8 +648,11 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   //printf("Photon1 (eta,phi)=(%f,%f); Photon2 (eta,phi)=(%f,%f);\n",eta0,phi0*TMath::RadToDeg(),eta1,phi1*TMath::RadToDeg());
   
   Bool_t matchMCHitLM = kFALSE;
-  if     (absId0==list[imax] && absId1 == list[imax2]) matchMCHitLM = kTRUE;
-  else if(absId1==list[imax] && absId0 == list[imax2]) matchMCHitLM = kTRUE;
+  if(imax >= 0 && imax2 >=0 )
+  {
+    if     (absId0 == list[imax] && absId1 == list[imax2]) matchMCHitLM = kTRUE;
+    else if(absId1 == list[imax] && absId0 == list[imax2]) matchMCHitLM = kTRUE;
+  }
   
   //Check the adjacent cells
   Bool_t adjacent = kFALSE;
@@ -651,31 +663,37 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   if(!matchMCHitLM)
   {
-    Int_t ietam0=-1; Int_t iphim0 = 0; Int_t rcum0 = 0;
-    GetModuleNumberCellIndexes(list[imax] ,fCalorimeter, ietam0, iphim0, rcum0);
-    Int_t ietam1=-1; Int_t iphim1 = 0; Int_t rcum1 = 0;
-    GetModuleNumberCellIndexes(list[imax2],fCalorimeter, ietam1, iphim1, rcum1);
+    Int_t ietam0=-1; Int_t iphim0 = 0; Int_t rcum0 = 0 ;
+    if(imax  >= 0) GetModuleNumberCellIndexes(list[imax] ,fCalorimeter, ietam0, iphim0, rcum0);
+    Int_t ietam1=-1; Int_t iphim1 = 0; Int_t rcum1 = 0 ;
+    if(imax2 >= 0) GetModuleNumberCellIndexes(list[imax2],fCalorimeter, ietam1, iphim1, rcum1);
 
     Bool_t adjacent0m0 = kFALSE;
     Bool_t adjacent1m0 = kFALSE;
     Bool_t adjacent0m1 = kFALSE;
     Bool_t adjacent1m1 = kFALSE;
     
-    if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 0 ) adjacent0m0 = kTRUE;
-    if(TMath::Abs(ieta0-ietam0) == 0 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
-    if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
+    if( iphim0>=0 && ietam0 >= 0 )
+    {
+      if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 0 ) adjacent0m0 = kTRUE;
+      if(TMath::Abs(ieta0-ietam0) == 0 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
+      if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
     
-    if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 0 ) adjacent1m0 = kTRUE;
-    if(TMath::Abs(ieta1-ietam0) == 0 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
-    if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
-   
-    if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 0 ) adjacent0m1 = kTRUE;
-    if(TMath::Abs(ieta0-ietam1) == 0 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
-    if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
+      if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 0 ) adjacent1m0 = kTRUE;
+      if(TMath::Abs(ieta1-ietam0) == 0 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
+      if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
+    }
     
-    if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 0 ) adjacent1m1 = kTRUE;
-    if(TMath::Abs(ieta1-ietam1) == 0 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
-    if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
+    if( iphim1>=0 && ietam1 >= 0 )
+    {
+      if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 0 ) adjacent0m1 = kTRUE;
+      if(TMath::Abs(ieta0-ietam1) == 0 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
+      if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
+    
+      if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 0 ) adjacent1m1 = kTRUE;
+      if(TMath::Abs(ieta1-ietam1) == 0 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
+      if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
+    }
     
     if(adjacent1m1 || adjacent1m0 || adjacent0m1 || adjacent0m0 ) adjacent = kTRUE;
     
