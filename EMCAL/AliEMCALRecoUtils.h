@@ -108,12 +108,12 @@ public:
 
   Float_t  CorrectClusterEnergyLinearity(AliVCluster* clu) ;
   
-  Float_t  GetNonLinearityParam(const Int_t i)     const { if(i < 9  && i >=0 ){ return fNonLinearityParams[i] ; }
-                                                           else      { AliInfo(Form("Index %d larger than 9 or negative, do nothing\n",i)) ;
+  Float_t  GetNonLinearityParam(const Int_t i)     const { if(i < 8  && i >=0 ){ return fNonLinearityParams[i] ; }
+                                                   else  { AliInfo(Form("Index %d larger than 7 or negative, do nothing\n",i)) ;
                                                                        return 0.                     ; } }
   void     SetNonLinearityParam(const Int_t i, const Float_t param) {
-                                                          if(i < 9 && i >=0 ){fNonLinearityParams[i] = param ; }
-                                                          else { AliInfo(Form("Index %d larger than 9 or negative, do nothing\n",i)) ; } }
+                                                          if(i < 8 && i >=0 ){ fNonLinearityParams[i] = param ; }
+                                                          else { AliInfo(Form("Index %d larger than 7 or negative, do nothing\n",i)) ; } }
   void     InitNonLinearityParam();
 
   Int_t    GetNonLinearityFunction() const               { return fNonLinearityFunction    ; }
