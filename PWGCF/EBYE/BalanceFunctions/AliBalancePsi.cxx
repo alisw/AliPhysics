@@ -1786,7 +1786,7 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       }
       else if(type=="PP"){
 	fSame  = GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    fMixed = bMixed->GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+	fMixed = bMixed->GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
       }
       else if(type=="NN"){
 	fSame  = GetCorrelationFunctionNN(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -1801,6 +1801,11 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	// then get the correlation function (divide fSame/fmixed)
 	fSame->Divide(fMixed);
 	
+	// NEW averaging:
+	// average over number of triggers in each sub-bin
+	Double_t NTrigSubBin = (Double_t)(fHistP->Project(0,1)->GetEntries());
+	fSame->Scale(NTrigSubBin);
+	
 	// for the first: clone
 	if( (iBinPsi == binPsiMin && iBinVertex == binVertexMin) || !gHist ){
 	  gHist = (TH2D*)fSame->Clone();
@@ -1813,8 +1818,20 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   }
 
   if(gHist){
+    
+    // OLD averaging:
     // average over number of bins nbinsVertex * nbinsPsi
-    gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    // gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+
+    // NEW averaging:
+    // average over number of triggers in each sub-bin
+    // first set to full range and then obtain number of all triggers 
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    Double_t NTrigAll = (Double_t)(fHistP->Project(0,1)->GetEntries());
+    gHist->Scale(1./NTrigAll);
+    
   }
   
   return gHist;
@@ -2246,9 +2263,16 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist, Bool_t 
     // ----------------------------------------------------------------------
     // ZYAM (for partially negative distributions)
     // --> we subtract always the minimum value
-    Double_t zeroYield = 0.;
-    if(kUseZYAM) zeroYield = gHist->GetMinimum();
-    
+    Double_t zeroYield    = 0.;
+    Double_t zeroYieldCur = -FLT_MAX;
+    if(kUseZYAM){
+      for(Int_t iMin = 0; iMin<8; iMin++){
+	zeroYieldCur = gHist->GetMinimum(zeroYieldCur);
+	zeroYield   += zeroYieldCur;
+      }
+      zeroYield /= 8.;
+      //zeroYield = gHist->GetMinimum();
+    }
     // ----------------------------------------------------------------------
     // first calculate the mean
 
