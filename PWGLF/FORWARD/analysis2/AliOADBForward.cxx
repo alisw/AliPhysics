@@ -139,7 +139,7 @@ AliOADBForward::Entry::GetTitle() const
 void
 AliOADBForward::Entry::Print(Option_t* /*option*/) const 
 {
-  Printf(GetTitle());
+  Printf("%s", GetTitle());
 }
 //====================================================================
 AliOADBForward::Table::Table(TTree* tree, Bool_t isNew, ERunSelectMode mode)
