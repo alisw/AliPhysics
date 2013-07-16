@@ -4,8 +4,17 @@
 #include <TError.h>
 #include "AliCorrectionManagerBase.h"
 
+/**
+ * Extract corrections from result file 
+ * 
+ */
 struct CorrExtractor 
 {
+  /** 
+   * Constructor 
+   * 
+   * @param manager Correction manager
+   */
   CorrExtractor(AliCorrectionManagerBase* manager)
     : fFile(0), 
       fTop(0), 
@@ -13,7 +22,7 @@ struct CorrExtractor
       fRunNo(0), 
       fSys(0), 
       fSNN(0), 
-      fField(0), 
+      fField(999), 
       fMC(false), 
       fSatellite(false),
       fManager(manager)
@@ -44,6 +53,13 @@ struct CorrExtractor
     }
     return static_cast<TCollection*>(o);
   }
+  /** 
+   * Find a collection in a file 
+   * 
+   * @param path Path to collection
+   * 
+   * @return Found collection or null
+   */
   TCollection* FindCollection(const TString& path)
   {
     if (path.IsNull()) return 0;
@@ -61,7 +77,14 @@ struct CorrExtractor
     return p;
     
   }
-  
+  /** 
+   * Find an object 
+   * 
+   * @param path Path to object 
+   * @param name Name of object
+   * 
+   * @return Found object or null
+   */  
   TObject* FindObject(const TString& path, 
 		      const TString& name) 
   {
@@ -81,7 +104,15 @@ struct CorrExtractor
     }
     return p->FindObject(name);
   }
-
+  /** 
+   * Initialize this extactor
+   * 
+   * @param fileName  File to extract from 
+   * @param sumFolder The summed folder 
+   * @param out       The result folder
+   * 
+   * @return true on success
+   */
   Bool_t Init(const TString&        fileName, 
 	      const TString&        sumFolder, 
 	      const TString&        out)
@@ -108,26 +139,45 @@ struct CorrExtractor
     TObject* oFld        = c->FindObject("field");
     TObject* oRun        = c->FindObject("runNo");
     TObject* oSat        = c->FindObject("satellite");
-    if (oSys) fSys       = oSys->GetUniqueID();
-    if (oSNN) fSNN       = oSNN->GetUniqueID();
-    if (oFld) fField     = oFld->GetUniqueID();
-    if (oRun) fRunNo     = oRun->GetUniqueID();
-    if (oSat) fSatellite = oSat->GetUniqueID();
+    if (oSys && fSys   <= 0)   fSys       = oSys->GetUniqueID();
+    if (oSNN && fSNN   <= 0)   fSNN       = oSNN->GetUniqueID();
+    if (oFld && fField >= 999) fField     = oFld->GetUniqueID();
+    if (oRun && fRunNo <= 0)   fRunNo     = oRun->GetUniqueID();
+    if (oSat)                  fSatellite = oSat->GetUniqueID();
 
-    if (fSys   <= 0 || fSys > 3 ||
-	fSNN   <= 0 || 
-	fRunNo <= 0) {
+    if (fSys <= 0 || fSys > 3 || fSNN <= 0 || fField >= 999 || fRunNo <= 0 ){
       Error("CorrExtractor", "Failed to get settings");
       Clear();
       return false;
     } 
     return true;
   }
+  /** 
+   * Set whether this is MC or not
+   * 
+   * @param mc If true, consider this MC 
+   */
   void SetMC(Bool_t mc=true) { fMC = mc; }
+  /** 
+   * Extract the stuff 
+   * 
+   * @param cls    Class of object
+   * @param parent Parent folder 
+   * 
+   * @return 
+   */
   Bool_t Extract(const TClass* cls, const TString& parent)
   {
     return Extract(cls->GetName(), parent);
   }
+  /** 
+   * Extract the stuff
+   * 
+   * @param objName  Object name 
+   * @param parent   Parent folder 
+   * 
+   * @return 
+   */
   Bool_t Extract(const TString& objName, 
 		 const TString& parent="") 
   {
@@ -150,7 +200,10 @@ struct CorrExtractor
 			   fSatellite, 
 			   fOut.Data());
   }
-
+  /** 
+   * Clear this extractor 
+   * 
+   */
   void Clear()
   {
     if (fFile) fFile->Close();
@@ -163,16 +216,16 @@ struct CorrExtractor
     fMC        = false;
     fSatellite = false;
   }
-  TFile*                    fFile;
-  TList*                    fTop;
-  TString                   fOut;
-  ULong_t                   fRunNo;
-  UShort_t                  fSys; 
-  UShort_t                  fSNN;
-  Short_t                   fField;
-  Bool_t                    fMC;
-  Bool_t                    fSatellite;
-  AliCorrectionManagerBase* fManager;
+  TFile*                    fFile;          // Our file
+  TList*                    fTop;           // Top list
+  TString                   fOut;           // Output 
+  ULong_t                   fRunNo;         // Run number
+  UShort_t                  fSys;           // System
+  UShort_t                  fSNN;           // Collision energy in GeV
+  Short_t                   fField;         // L3 field in kG
+  Bool_t                    fMC;            // Simulation flag
+  Bool_t                    fSatellite;     // Satellite interaction flag
+  AliCorrectionManagerBase* fManager;       // Correction manager to use 
 };
 
 //

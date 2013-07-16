@@ -43,7 +43,7 @@ namespace {
 class AliOADBForward;
 class AliOADBForward::Entry;
 class TGFrame;
-class TGLVEntry;
+class TGLVEtry;
 class TGHorizontalFrame;
 class TGTextButton;
 class TGTextEntry;
@@ -105,8 +105,8 @@ struct ForwardOADBGUI
     fPrintButton(&fCommandFrame, "Print entry"),
     fDrawButton(&fCommandFrame, "Draw entry"),
     fPDFButton(&fCommandFrame, "Summarize entry"),
-    fList(0), 
-    fListContainer(0),
+    fList(&fMain, 800, 400), 
+    fListContainer(&fList),
     fFrameHints(kLHintsExpandX, 0, 0, 2, 0),
     fLabelHints(kLHintsNoHints, 4, 2, 0, 0),
     fEntryHints(kLHintsExpandX|kLHintsExpandY, 2, 4, 0, 0),
@@ -116,6 +116,8 @@ struct ForwardOADBGUI
     fEntry(0)
   {
     fMain.Connect("CloseWindow()", "ForwardOADBGUI", this, "HandleKill()");
+    fMain.DontCallClose();
+
     fFileSelect.Connect("Clicked()", "ForwardOADBGUI", this, "HandleBrowse()");
     fOpenButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleOpen()");
     fCloseButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleClose()");
@@ -195,30 +197,30 @@ struct ForwardOADBGUI
     fSelectFrame.AddFrame(&fCommandFrame, &fFrameHints);
     fCommandFrame.SetLayoutHints(&fButtonHints);
     
-    fList          = new TGListView(&fMain, 800, 400);
-    fListContainer = new TGLVContainer(fList);
-    fListContainer->SetColHeaders("Entry", 
-				  "Run", 
-				  "System", 
-				  "sqrt(sNN)", 
-				  "L3 Field", 
-				  "Type", 
-				  "IP",
-				  "Date",
-				  "Author",
-				  "AliROOT",
-				  "Data");
-    fList->SetViewMode(kLVDetails);
-    fList->Connect("Clicked(TGLVEntry*,Int_t)", 
+    // fList          = new TGListView(&fMain, 800, 400);
+    // fListContainer = new TGLVContainer(fList);
+    fListContainer.SetColHeaders("Entry", 
+				 "Run", 
+				 "System", 
+				 "sqrt(sNN)", 
+				 "L3 Field", 
+				 "Type", 
+				 "IP",
+				 "Date",
+				 "Author",
+				 "AliROOT",
+				 "Data");
+    fList.SetViewMode(kLVDetails);
+    fList.Connect("Clicked(TGLVEntry*,Int_t)", 
 		   "ForwardOADBGUI", this, "HandleItem(TGLVEntry*,Int_t)");
-    fList->Connect("DoubleClicked(TGLVEntry*,Int_t)", 
+    fList.Connect("DoubleClicked(TGLVEntry*,Int_t)", 
 		   "ForwardOADBGUI", this, "HandleItem(TGLVEntry*,Int_t)");
-    fListContainer->Connect("Clicked(TGFrame*,Int_t)",
+    fListContainer.Connect("Clicked(TGFrame*,Int_t)",
 			    "ForwardOADBGUI", this, 
 			    "HandleItem(TGFrame*,Int_t)");
-    fList->SetMinWidth(400);
-    fList->SetMinHeight(200);
-    fMain.AddFrame(fList, &fListHints);
+    fList.SetMinWidth(400);
+    fList.SetMinHeight(200);
+    fMain.AddFrame(&fList, &fListHints);
     
 #ifndef __CINT__
     ::SetErrorHandler(ForwardOADBGUIErrorHandler);
@@ -237,7 +239,6 @@ struct ForwardOADBGUI
 #ifndef __CINT__
     ::SetErrorHandler(::DefaultErrorHandler);
 #endif
-    fMain.DontCallClose();
     Info("~ForwardOADBGUI", "Closing");
   }
   void UseDB(AliOADBForward* db)
@@ -263,10 +264,11 @@ struct ForwardOADBGUI
   }
   void HandleKill()
   {
-    fMain.DontCallClose();
+    // fMain.DontCallClose();
+    fMain.DeleteWindow();
     Printf("Starting timer");
-    TTimer* t = new TTimer(Form("delete (ForwardOADBGUI*)%p", this), 100);
-    t->Start(100, true);
+    // TTimer* t = new TTimer(Form("delete (ForwardOADBGUI*)%p", this), 100);
+    // t->Start(100, true);
   }
   void HandleDBEntry(AliOADBForward::Entry* e)
   {
@@ -275,7 +277,7 @@ struct ForwardOADBGUI
     fDrawButton.SetEnabled(en);
     fPrintButton.SetEnabled(en);
     fPDFButton.SetEnabled(en);
-
+    
     fEntry = e;
   }
   void HandleEnable()
@@ -334,7 +336,8 @@ struct ForwardOADBGUI
     fDB = new AliOADBForward();
     Info("HandleOpen", "Opening DB file %s for tables %s", 
 	 fFileText.GetText(), fTablesText.GetText());
-    if (!fDB->Open(fFileText.GetText(), fTablesText.GetText(), false, true)) { 
+    if (!fDB->Open(fFileText.GetText(), fTablesText.GetText(), 
+		   false, true, true)) { 
       Error("HandleOpen", "Failed to open database");
       delete fDB;
       fDB = 0;
@@ -346,6 +349,15 @@ struct ForwardOADBGUI
   void HandleBrowse()
   {
     TGFileInfo fi;
+    TString iniDir(gSystem->ExpandPathName("$(OADB_PATH)"));
+    if (iniDir.IsNull()) 
+      iniDir = gSystem->ExpandPathName("$(ALICE_ROOT)/OADB");
+    iniDir.Append("/PWGLF/FORWARD/CORRECTIONS/data");
+    char* ini = new char[iniDir.Length()+1];
+    for (int i = 0; i < iniDir.Length(); i++) ini[i] = iniDir[i];
+    ini[iniDir.Length()] = '\0';
+    Printf("Initial directory: %s (%s)", iniDir.Data(), ini);
+    fi.fIniDir = ini;
     new TGFileDialog(gClient->GetRoot(), &fMain, kFDOpen, &fi);
 
     TString nf = fi.fFilename; // 
@@ -355,7 +367,7 @@ struct ForwardOADBGUI
   }
   void HandleEntry(Int_t i, AliOADBForward::Entry* e) 
   {
-    TGLVEntry* lve = new TGLVEntry(fListContainer, Form("%d", i), "");
+    TGLVEntry* lve = new TGLVEntry(&fListContainer, Form("%d", i), "");
     if (i < 0) lve->SetUserData(e);
     lve->SetUniqueID(i);
     TDatime dt(e->fTimestamp);
@@ -369,7 +381,7 @@ struct ForwardOADBGUI
 		     dt.AsSQLString(),
 		     e->fAuthor, Form("%lu", e->fAliROOTRevision),
 		     (e->fData ? e->fData->GetName() : "null"));
-    fListContainer->AddItem(lve);
+    fListContainer.AddItem(lve);
   }
   void HandleList()
   {
@@ -389,9 +401,9 @@ struct ForwardOADBGUI
     }
     // HandleQuery();
     t->Print(fOptionsText.GetText());
-    if (!fListContainer) return;
+    // if (!fListContainer) return;
     
-    fListContainer->RemoveAll();
+    fListContainer.RemoveAll();
     TTree* tree = t->fTree;
     Int_t  n    = tree->GetEntries();
     for (Int_t i = 0; i < n; i++) { 
@@ -399,7 +411,7 @@ struct ForwardOADBGUI
       AliOADBForward::Entry* e = t->fEntry;
       HandleEntry(i, e);
     }
-    fList->AdjustHeaders();
+    fList.AdjustHeaders();
     fMain.Layout();
   }
   void SelectedTable(TString& ret) const
@@ -505,7 +517,7 @@ struct ForwardOADBGUI
   void CorrDraw(const TObject* o, Bool_t summarize)
   {
     if (!gROOT->GetClass("CorrDrawer")) { 
-      const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+      const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
       gSystem->AddIncludePath(Form("-I$ALICE_ROOT/include -I%s -I%s/scripts",
 				   fwd, fwd));
       gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
@@ -577,14 +589,14 @@ struct ForwardOADBGUI
     // if (drawNotPrint) e->Inspect();
     // else              e->Print(fOptionsText.GetText());
     e->Print();
-    if (fListContainer) { 
-      fListContainer->RemoveAll();
-      HandleEntry(-1, e);
-    }
+    // if (fListContainer) { 
+    fListContainer.RemoveAll();
+    HandleEntry(-1, e);
+    // }
     if (!e->fData) return 0;
     HandleDBEntry(e);
 
-    fList->AdjustHeaders();
+    fList.AdjustHeaders();
     fMain.Layout();
 
     return e->fData;
@@ -626,8 +638,8 @@ struct ForwardOADBGUI
   TGTextButton      fPrintButton;
   TGTextButton      fDrawButton;
   TGTextButton      fPDFButton;
-  TGListView*       fList;
-  TGLVContainer*    fListContainer;
+  TGListView        fList;
+  TGLVContainer     fListContainer;
   TGLayoutHints     fFrameHints;
   TGLayoutHints     fLabelHints;
   TGLayoutHints     fEntryHints; 
@@ -642,14 +654,16 @@ struct ForwardOADBGUI
 
 TGMainFrame* ForwardOADBGui(AliOADBForward* db=0)
 {
-  const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   // if (!gROOT->GetClass("AliOADBForward")) 
-  gSystem->Load("libGui");
+  // gSystem->Load("libGui");
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   
   // gSystem->AddIncludePath(Form("-I%s", fwd));
   // gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGUI.C", fwd));
 
+  new TBrowser;
+  // new TGClient();
   ForwardOADBGUI* gui = new ForwardOADBGUI();
   if (db) gui->UseDB(db);
   return gui->GetMain();

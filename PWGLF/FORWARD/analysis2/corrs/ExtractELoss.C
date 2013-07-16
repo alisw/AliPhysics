@@ -19,9 +19,14 @@
  */
 void
 ExtractELoss(const char* fname = "forward_eloss.root",
-	     Bool_t mc=false)
+	     Bool_t   mc=false, 
+	     ULong_t  runNo=0, 
+	     UShort_t sys=0,
+	     UShort_t sNN=0,
+	     Short_t  fld=999,
+	     Bool_t   sat=false)
 {
-  const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   gSystem->AddIncludePath(Form("-I%s", fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   gROOT->LoadMacro(Form("%s/corrs/CorrExtractor.C++g", fwd));
@@ -29,6 +34,11 @@ ExtractELoss(const char* fname = "forward_eloss.root",
   CorrExtractor fmdEx(&AliForwardCorrectionManager::Instance());
   if (fmdEx.Init(fname, "Forward", "fmd_corrections.root")) {
     fmdEx.SetMC(mc);
+    if (runNo > 0)   fmdEx.fRunNo     = runNo;
+    if (sys   > 0)   fmdEx.fSys       = sys;
+    if (sNN   > 0)   fmdEx.fSNN       = sNN;
+    if (fld   < 999) fmdEx.fField     = fld;
+    if (sat)         fmdEx.fSatellite = sat;
     fmdEx.Extract(AliFMDCorrELossFit::Class(),
 		  "ForwardResults/fmdEnergyFitter");
   }
