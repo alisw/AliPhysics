@@ -600,7 +600,7 @@ void  AliAnalysisTaskHJetEmbed::FillHJetCor(const TClonesArray *tracks, const In
   for(Int_t ij=0; ij<nJets; ij++)
     {
       AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(jetArray->At(ij));
-      if(!IsGoodJet(jet)) continue; // eta cut
+      if(jet==0 || !IsGoodJet(jet)) continue; // eta cut  // jet == 0 should not occur, but Coverity wants us to check...
       Double_t jetPhi = jet->Phi();
       Double_t jetPt  = jet->Pt();
       Double_t jetArea = jet->Area();
