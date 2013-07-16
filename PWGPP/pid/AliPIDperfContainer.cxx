@@ -101,6 +101,8 @@ AliPIDperfContainer::AliPIDperfContainer(const AliPIDperfContainer &old) :
     (*fXmax)[i] = (*old.fXmax)[i];
    }
 
+  SetTitleX(old.GetTitleX());
+  SetTitleY(old.GetTitleY());
 }
 
 AliPIDperfContainer& AliPIDperfContainer::operator=(const AliPIDperfContainer &old){

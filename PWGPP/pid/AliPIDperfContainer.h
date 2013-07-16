@@ -59,6 +59,8 @@ class AliPIDperfContainer : public TNamed
 
   void SetTitleX(const char *title){snprintf(fTitleX,100,"%s",title);};
   void SetTitleY(const char *title){snprintf(fTitleY,100,"%s",title);};
+  const char *GetTitleX() const {return fTitleX;};
+  const char *GetTitleY() const {return fTitleY;};
 
  private:
   TArrayI *fNbinVar;

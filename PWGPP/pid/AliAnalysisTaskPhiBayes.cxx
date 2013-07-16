@@ -87,6 +87,21 @@ AliAnalysisTaskPhiBayes::AliAnalysisTaskPhiBayes():
 
   TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
   fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+
+  for(Int_t i=0;i < nCentrBin;i++){
+    fElTOF[i] = NULL; 
+    fElTPC[i] = NULL; 
+    fPiTOF[i] = NULL; 
+    fPiTPC[i] = NULL; 
+    fKaTOF[i] = NULL; 
+    fKaTPC[i] = NULL; 
+    fPrTOF[i] = NULL; 
+    fPrTPC[i] = NULL; 
+  }
+  for(Int_t i=0;i < 4;i++){
+    hMatching[i] = NULL;
+    hTracking[i] = NULL;
+  }
 }
 
 //______________________________________________________________________________
@@ -146,6 +161,21 @@ AliAnalysisTaskPhiBayes::AliAnalysisTaskPhiBayes(const char *name):
 
   TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
   fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+
+  for(Int_t i=0;i < nCentrBin;i++){
+    fElTOF[i] = NULL; 
+    fElTPC[i] = NULL; 
+    fPiTOF[i] = NULL; 
+    fPiTPC[i] = NULL; 
+    fKaTOF[i] = NULL; 
+    fKaTPC[i] = NULL; 
+    fPrTOF[i] = NULL; 
+    fPrTPC[i] = NULL; 
+  }
+  for(Int_t i=0;i < 4;i++){
+    hMatching[i] = NULL;
+    hTracking[i] = NULL;
+  }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiBayes::~AliAnalysisTaskPhiBayes()
@@ -452,7 +482,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
 
-  Double_t probP[10],probN[10];
+  Double_t probP[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t probN[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t nSigmaTPC,nSigmaTOF=6,nSigmaTPC2,nSigmaTOF2=6,nSigmaComb,nSigmaComb2;
 
   
