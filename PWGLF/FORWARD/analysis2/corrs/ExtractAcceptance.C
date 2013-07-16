@@ -127,7 +127,7 @@ void ExtractAcceptance(Int_t   runNo=121526,
 		       Float_t vtxLow=-10, 
 		       Float_t vtxHigh=10)
 {  
-  const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   gSystem->AddIncludePath(Form("-I%s", fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
 
