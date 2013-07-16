@@ -90,6 +90,31 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes():
 
   TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
   fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+
+  for(Int_t i=0;i < nCentrBin;i++){
+    fElTOF[i] = NULL; 
+    fElTPC[i] = NULL; 
+    fPiTOF[i] = NULL; 
+    fPiTPC[i] = NULL; 
+    fKaTOF[i] = NULL; 
+    fKaTPC[i] = NULL; 
+    fPrTOF[i] = NULL; 
+    fPrTPC[i] = NULL; 
+  }
+  for(Int_t i=0;i < 4;i++){
+    hMatching[i] = NULL;
+    hTracking[i] = NULL;
+  }
+
+  for(Int_t i=0;i < 1000;i++){
+    fPhiLambda[i] = 0.0;
+    fPtLambda[i] = 0.0;
+    fIPPos[i] = 0;
+    fIPNeg[i] = 0;
+    fIpP[i] = 0;
+    fIpN[i] = 0;
+    fMassLambda[i] = 0.0;
+  }
 }
 
 //______________________________________________________________________________
@@ -152,6 +177,31 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes(const char *name):
 
   TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
   fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+
+  for(Int_t i=0;i < nCentrBin;i++){
+    fElTOF[i] = NULL; 
+    fElTPC[i] = NULL; 
+    fPiTOF[i] = NULL; 
+    fPiTPC[i] = NULL; 
+    fKaTOF[i] = NULL; 
+    fKaTPC[i] = NULL; 
+    fPrTOF[i] = NULL; 
+    fPrTPC[i] = NULL; 
+  }
+  for(Int_t i=0;i < 4;i++){
+    hMatching[i] = NULL;
+    hTracking[i] = NULL;
+  }
+
+  for(Int_t i=0;i < 1000;i++){
+    fPhiLambda[i] = 0.0;
+    fPtLambda[i] = 0.0;
+    fIPPos[i] = 0;
+    fIPNeg[i] = 0;
+    fIpP[i] = 0;
+    fIpN[i] = 0;
+    fMassLambda[i] = 0.0;
+  }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLambdaBayes::~AliAnalysisTaskLambdaBayes()
@@ -461,7 +511,9 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
 
-  Double_t probP[10],probN[10];
+
+  Double_t probP[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t probN[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t nSigmaTPC,nSigmaTOF=6,nSigmaTPC2,nSigmaTOF2=6,nSigmaComb,nSigmaComb2;
 
   
@@ -822,7 +874,9 @@ void AliAnalysisTaskLambdaBayes::SelectLambda(){
       if(pass==1) dMASS = myV0->MassLambda();
       else dMASS = myV0->MassAntiLambda();
 
-      if(TMath::Abs(dMASS-1.115)/0.005 < 8){
+      Float_t massKs = myV0->MassK0Short();
+
+      if(TMath::Abs(dMASS-1.115)/0.005 < 8 && TMath::Abs(massKs - 0.497)/0.005 > 8){
 	AliAODTrack *iT=(AliAODTrack*) myV0->GetDaughter(0); // positive
 	AliAODTrack *jT=(AliAODTrack*) myV0->GetDaughter(1); // negative
 	if(iT->Charge()<0){

@@ -90,6 +90,30 @@ AliAnalysisTaskK0sBayes::AliAnalysisTaskK0sBayes():
 
   TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
   fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+
+  for(Int_t i=0;i < nCentrBin;i++){
+    fElTOF[i] = NULL; 
+    fElTPC[i] = NULL; 
+    fPiTOF[i] = NULL; 
+    fPiTPC[i] = NULL; 
+    fKaTOF[i] = NULL; 
+    fKaTPC[i] = NULL; 
+    fPrTOF[i] = NULL; 
+    fPrTPC[i] = NULL; 
+  }
+  for(Int_t i=0;i < 4;i++){
+    hMatching[i] = NULL;
+    hTracking[i] = NULL;
+  }
+  for(Int_t i=0;i < 1000;i++){
+    fPhiK0s[i] = 0.0;
+    fPtK0s[i] = 0.0;
+    fIPiPos[i] = 0;
+    fIPiNeg[i] = 0;
+    fIpiP[i] = 0;
+    fIpiN[i] = 0;
+    fMassKs[i] = 0.0;
+  }
 }
 
 //______________________________________________________________________________
@@ -152,6 +176,30 @@ AliAnalysisTaskK0sBayes::AliAnalysisTaskK0sBayes(const char *name):
 
   TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
   fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+
+  for(Int_t i=0;i < nCentrBin;i++){
+    fElTOF[i] = NULL; 
+    fElTPC[i] = NULL; 
+    fPiTOF[i] = NULL; 
+    fPiTPC[i] = NULL; 
+    fKaTOF[i] = NULL; 
+    fKaTPC[i] = NULL; 
+    fPrTOF[i] = NULL; 
+    fPrTPC[i] = NULL; 
+  }
+  for(Int_t i=0;i < 4;i++){
+    hMatching[i] = NULL;
+    hTracking[i] = NULL;
+  }
+  for(Int_t i=0;i < 1000;i++){
+    fPhiK0s[i] = 0.0;
+    fPtK0s[i] = 0.0;
+    fIPiPos[i] = 0;
+    fIPiNeg[i] = 0;
+    fIpiP[i] = 0;
+    fIpiN[i] = 0;
+    fMassKs[i] = 0.0;
+  }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskK0sBayes::~AliAnalysisTaskK0sBayes()
@@ -461,7 +509,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
 
-  Double_t probP[10],probN[10];
+  Double_t probP[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t probN[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t nSigmaTPC,nSigmaTOF=6,nSigmaTPC2,nSigmaTOF2=6,nSigmaComb,nSigmaComb2;
 
   
@@ -854,7 +903,10 @@ void AliAnalysisTaskK0sBayes::SelectK0s(){
     Int_t pass = PassesAODCuts(myV0,fOutputAOD,0); // check for K0s
     if(pass) {
       dMASS = myV0->MassK0Short();
-      if(TMath::Abs(dMASS-0.497)/0.005 < 8){
+      Float_t massLambda = myV0->MassLambda();
+      Float_t massAntiLambda = myV0->MassAntiLambda();
+
+      if(TMath::Abs(dMASS-0.497)/0.005 < 8 && TMath::Abs(massLambda-1.115)/0.005 > 8 && TMath::Abs(massAntiLambda-1.115)/0.005 > 8){
 	AliAODTrack *iT=(AliAODTrack*) myV0->GetDaughter(0); // positive
 	AliAODTrack *jT=(AliAODTrack*) myV0->GetDaughter(1); // negative
 	if(iT->Charge()<0){
