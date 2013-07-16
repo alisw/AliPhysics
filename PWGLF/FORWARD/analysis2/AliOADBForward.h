@@ -61,7 +61,8 @@ public:
      * mode.  Currently this is set to a large number to allow
      * selection of any entry.  This should change 
      */
-    kMaxNearDistance = 1000000
+    kMaxNearDistance = 1000000,
+    kInvalidField    = 999
   };
   //=== Entry ========================================================
   /**
@@ -176,6 +177,12 @@ public:
      * @param verb 
      */
     void SetVerbose(Bool_t verb=true) { fVerbose = verb; }
+    /** 
+     * Set wheter to enable fall-back queries  
+     * 
+     * @param use If true, enable fall-back queries
+     */
+    void SetEnableFallBack(Bool_t use=true) { fFallBack = use; }
     // -----------------------------------------------------------------
     /** 
      * Get the name of the tree 
@@ -230,7 +237,7 @@ public:
 		ERunSelectMode mode   = kNear,
 		UShort_t       sys    = 0,
 		UShort_t       sNN    = 0, 
-		Short_t        fld    = 999,
+		Short_t        fld    = kInvalidField,
 		Bool_t         mc     = false,
 		Bool_t         sat    = false) const;
     /** 
@@ -274,6 +281,12 @@ public:
      *    - If this returns a single entry, return that. 
      *    - If not, then ignore the run number (if given)
      *      - If this returns a single entry, return that 
+     *      - If not, and fall-back is enabled, then 
+     *        - Ignore the collision energy (if given) 
+     *          - If this returns a single entry, return that.  
+     *          - If not, ignore all passed values 
+     *            - If this returns a single entry, return that.
+     *            - Otherwise, give up and return null
      *      - Otherwise, give up and return null
      *
      * This allow us to specify default objects for a period, and for
@@ -287,13 +300,13 @@ public:
      * 
      * @return Found entry, or null
      */
-    Entry* Get(ULong_t        run    = 0,
-	       ERunSelectMode mode   = kNear,
-	       UShort_t       sys    = 0,
-	       UShort_t       sNN    = 0, 
-	       Short_t        fld    = 0,
-	       Bool_t         mc     = false,
-	       Bool_t         sat    = false) const;
+    Entry* Get(ULong_t        run      = 0,
+	       ERunSelectMode mode     = kNear,
+	       UShort_t       sys      = 0,
+	       UShort_t       sNN      = 0, 
+	       Short_t        fld      = 0,
+	       Bool_t         mc       = false,
+	       Bool_t         sat      = false) const;
     /** 
      * Query the tree for an object.  The strategy is as follows. 
      * 
@@ -314,13 +327,13 @@ public:
      * 
      * @return Found data, or null
      */
-    TObject* GetData(ULong_t        run    = 0,
-		     ERunSelectMode mode   = kNear,
-		     UShort_t       sys    = 0,
-		     UShort_t       sNN    = 0, 
-		     Short_t        fld    = 0,
-		     Bool_t         mc     = false,
-		     Bool_t         sat    = false) const;
+    TObject* GetData(ULong_t        run      = 0,
+		     ERunSelectMode mode     = kNear,
+		     UShort_t       sys      = 0,
+		     UShort_t       sNN      = 0, 
+		     Short_t        fld      = 0,
+		     Bool_t         mc       = false,
+		     Bool_t         sat      = false) const;
     /* @} */
     /** 
      * Print the contents of the tree 
@@ -344,8 +357,8 @@ public:
     TTree*         fTree;     // Our tree
     Entry*         fEntry;    // Entry cache 
     Bool_t         fVerbose;  // To be verbose or not 
-    ERunSelectMode fMode;
-
+    ERunSelectMode fMode;     // Run query mode 
+    Bool_t         fFallBack; // Enable fall-back
 
     ClassDef(Table,1); 
   };
@@ -383,7 +396,8 @@ public:
   Bool_t Open(const TString& fileName, 
 	      const TString& tables  = "*", 
 	      Bool_t         rw      = false, 
-	      Bool_t         verb    = false);
+	      Bool_t         verb    = false,
+	      Bool_t         fallback= false);
   /** 
    * Open a file containing tables.  Note, this member function can be
    * called multiple times to open tables in different files.
@@ -401,7 +415,8 @@ public:
   Bool_t Open(TFile*         file,
 	      const TString& tables, 
 	      Bool_t         rw      = false, 
-	      Bool_t         verb    = false);
+	      Bool_t         verb    = false,
+	      Bool_t         fallback= false);
   /** 
    * Close this database 
    * 
@@ -470,13 +485,13 @@ public:
    * @return Found data, or null
    */
   TObject* GetData(const TString& table, 
-		   ULong_t        run    = 0,
-		   ERunSelectMode mode = kNear, 
-		   UShort_t       sys    = 0,
-		   UShort_t       sNN    = 0, 
-		   Short_t        fld    = 0,
-		   Bool_t         mc     = false,
-		   Bool_t         sat    = false) const;
+		   ULong_t        run      = 0,
+		   ERunSelectMode mode     = kNear, 
+		   UShort_t       sys      = 0,
+		   UShort_t       sNN      = 0, 
+		   Short_t        fld      = 0,
+		   Bool_t         mc       = false,
+		   Bool_t         sat      = false) const;
   // --- Insert ------------------------------------------------------
   /** 
    * Insert a new entry into the table 
@@ -573,11 +588,10 @@ protected:
    */
   static TString Conditions(UShort_t       sys    = 0,
 			    UShort_t       sNN    = 0, 
-			    Short_t        fld    = 999,
+			    Short_t        fld    = kInvalidField,
 			    Bool_t         mc     = false,
 			    Bool_t         sat    = false);
   TMap fTables;
-
   ClassDef(AliOADBForward,0); // PWGLF/Forward OADB interface
 
 public:

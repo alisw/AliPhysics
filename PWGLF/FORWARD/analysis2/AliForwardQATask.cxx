@@ -225,6 +225,9 @@ AliForwardQATask::ReadCorrections(const TAxis*& pe,
   what ^= AliForwardCorrectionManager::kMergingEfficiency;
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  // We allow fall-back queries so that we may proceed in case we have no 
+  // valid corrections 
+  fcm.SetEnableFallBack(true); 
   if (!fcm.Init(GetEventInspector().GetRunNumber(), 
 		GetEventInspector().GetCollisionSystem(),
 		GetEventInspector().GetEnergy(),

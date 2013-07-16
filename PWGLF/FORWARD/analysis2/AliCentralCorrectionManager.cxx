@@ -134,7 +134,7 @@ AliCentralCorrectionManager::Append(const TString& addition,
   TString dest(destination);
   if (dest.IsNull()) 
     dest = PREFIX DB_NAME;
-  return AliCorrectionManagerBase::Append(addition, destination);
+  return AliCorrectionManagerBase::Append(addition, dest);
 }
 
 //____________________________________________________________________
