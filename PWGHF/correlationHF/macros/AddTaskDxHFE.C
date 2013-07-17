@@ -98,14 +98,14 @@ int AddTaskDxHFE()
   ///////////////////////////
   //AddTaskDxHFECorrelation//
   ///////////////////////////
-  taskOptions=filename+" name=DxHFE extraname=ITS3kAnyCorr itsclusters=3 itsreq=kAny particle=electron p-Pb";
+  /*  taskOptions=filename+" name=DxHFE extraname=ITS3kAnyCorr itsclusters=3 itsreq=kAny particle=electron p-Pb";
   
   if(gDirectory) gDirectory->Clear();
   if(gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", taskOptions.Data()));
 
   if(!AddTaskDxHFECorrelation(taskOptions.Data()))
     return 0;
-
+  
   taskOptions=filename+" name=DxHFE extraname=ITS4kFIRSTCorr itsclusters=4 itsreq=kFIRST particle=electron p-Pb";
 
   if(gDirectory) gDirectory->Clear();
@@ -117,7 +117,7 @@ int AddTaskDxHFE()
   /////////////////////////////////
   //AddTaskDxHFEParticleSelection//
   /////////////////////////////////
-  
+  */
   taskOptions=filename+" name=DxHFE extraname=ITS3kAny itsclusters=3 itsreq=kAny particle=electron storelastcutstep p-Pb";
 
   if(gDirectory) gDirectory->Clear();
@@ -125,7 +125,7 @@ int AddTaskDxHFE()
 
   if(!AddTaskDxHFEParticleSelection(taskOptions.Data()))//ParticleSelection(taskOptions.Data()))
     return 0;
-
+  /*
   taskOptions=filename+" name=DxHFE extraname=ITS4kAny itsclusters=4 itsreq=kAny particle=electron storelastcutstep p-Pb";
 
   if(gDirectory) gDirectory->Clear();
@@ -149,7 +149,7 @@ int AddTaskDxHFE()
 
   if(!AddTaskDxHFEParticleSelection(taskOptions.Data()))//ParticleSelection(taskOptions.Data()))
     return 0;
-
+*/
 
   //==========================================//
   //                                          //
