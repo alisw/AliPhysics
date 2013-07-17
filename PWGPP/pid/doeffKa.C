@@ -1,3 +1,20 @@
+#include"TF1.h"
+#include"TH1D.h"
+#include"TH2F.h"
+#include"TMath.h"
+#include"TSystem.h"
+#include"TCanvas.h"
+#include"TFile.h"
+#include"TGraphErrors.h"
+#include"AliPIDperfContainer.h"
+
+int LoadLib();
+void doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
+TH2F *GetHistoKap(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
+TH2F *GetHistoKan(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
+void fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="",Float_t pt=1.5);
+void AddHisto(TH2F *h1,TH2F *h2,Float_t w);
+
 TObject* fContPid1;
 TObject* fContPid2;
 const Int_t nBinPid = 14; // pt,eta, ptPip, ptPin, PPip, PPin, TOF3sigmaPip, TOF3sigmaPin, isPhiTrue, nsigmaPip, nsigmaPin
@@ -46,7 +63,7 @@ TH2F *hmatched;
 TH2F *htracked;
 
 Bool_t kLoaded=kFALSE;
-LoadLib(){
+int LoadLib(){
   weightS = -1.;
 
   if(! kLoaded){
@@ -65,10 +82,11 @@ LoadLib(){
     gSystem->Load("libPWGPPpid.so");
 
     TFile *f = new TFile("AnalysisResults.root");
-    f->ls();
     TList *l = (TList *) f->Get("contPhiBayes1");
-    l->ls();
     TList *l2 = (TList *) f->Get("contPhiBayes2");
+
+    if(!(l && l2)) return 0;
+
     fContPid1 = (AliPIDperfContainer *) l->FindObject("contPID");
     fContPid2 = (AliPIDperfContainer *) l->FindObject("contPID2");
     hmatched = (TH2F *) l2->FindObject("hMatchKa"); 
@@ -80,7 +98,7 @@ LoadLib(){
   Float_t x[] = {xmin[0]+0.001,xmin[1]+0.001,xmin[2]+0.001,xmin[3]+0.001,xmin[4]+0.001,xmin[5]+0.001,xmin[6]+0.001,xmin[7]+0.001,1/*trueMC*/,xmin[9],xmin[10]};
   Float_t x2[] = {xmax[0],xmax[1],xmax[2],xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],xmax[8],xmax[9],xmax[10]};
 
-  AliPIDperfContainer *tmp = fContPid1;
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid1;
   TH1D *h = tmp->GetQA(0, x, x2)->ProjectionX("checkMC");
 
   if(h->GetEntries()) isMC = kTRUE;
@@ -125,9 +143,11 @@ LoadLib(){
   if(kOverAll){
     weightS = -0.7;
   }
+
+  return 1;
 }
 
-doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
+void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
   LoadLib();
   TH1D *hm = hmatched->ProjectionX("matchingKaEff",cmin,cmax);
   TH1D *ht = htracked->ProjectionX("tracking",cmin,cmax);
@@ -158,10 +178,10 @@ doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
     if(!isMC && !kOverAll) weightS = -0.95;
   }
 
-  TCanvas *c = new TCanvas();
-  c->Divide((nptbin+1)/2,2);
-  TH2F *hh.*hh2;
-  TH1D *h,*h2;
+  TCanvas *c1 = new TCanvas();
+  c1->Divide((nptbin+1)/2,2);
+  TH2F *hh,*hh2;
+  TH1D *h;
   char name[100];
   Float_t b[50][3];
 
@@ -169,7 +189,7 @@ doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
   Double_t exx[50],eyy[50];
 
   for(Int_t i=0;i < nptbin;i++){
-    c->cd(i+1);//->SetLogy();
+    c1->cd(i+1);//->SetLogy();
     Float_t ptmin = minptbin+(maxptbin-minptbin)/nptbin*(i);
     Float_t ptmax = minptbin+(maxptbin-minptbin)/nptbin*(i+1);
 
@@ -215,7 +235,7 @@ doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
   }
 
   TGraphErrors *gpar = new TGraphErrors(nptbin,xx,yy,exx,eyy);
-  c->cd(8);
+  c1->cd(8);
 //   gpar->Draw("AP");
   gpar->SetMarkerStyle(20);
 
@@ -281,7 +301,7 @@ doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
   geff->Draw("AP");
 
   char flag[100];
-  sprintf(flag,"");
+  flag[0] = '\0';
 
   if(isMC){
     if(selectTrue) sprintf(flag,"true");
@@ -289,7 +309,7 @@ doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
   }
 
   char flag2[100];
-  sprintf(flag2,"");
+  flag2[0] = '\0';
 
   Bool_t kWriteME = kFALSE;
 
@@ -333,7 +353,7 @@ doeffKa(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8)
   if(kWriteME) hm->Draw("SAME");
 }
 
-TH2F *GetHistoKap(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
+TH2F *GetHistoKap(Float_t pt,Float_t ptM,Float_t pMinkp,Float_t pMinkn,Float_t etaminkp,Float_t etamaxkp){
 
   Float_t x[] = {xmin[0]+0.001,etaminkp+0.001,pt+0.001,xmin[3]+0.001,pMinkp+0.001,pMinkn+0.001,(pMinkp>0.09)+0.001,kTOFmatch+0.001,selectTrue,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
   Float_t x2[] = {xmax[0],etamaxkp-0.001,ptM-0.001,xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],keepTrue,xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
@@ -386,7 +406,7 @@ TH2F *GetHistoKap(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0
 
   if(require5sigma) x2[9] = 4.9;
 
-  AliPIDperfContainer *tmp = fContPid1;
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid1;
 
   TH2F *h = tmp->GetQA(0, x, x2);
 
@@ -396,7 +416,7 @@ TH2F *GetHistoKap(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0
   return h;
 }
 
-TH2F *GetHistoKan(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8){
+TH2F *GetHistoKan(Float_t pt,Float_t ptM,Float_t pMinkn,Float_t pMinkp,Float_t etaminkp,Float_t etamaxkp){
 
   Float_t x[] = {xmin[0]+0.001,etaminkp+0.001,xmin[2]+0.001,pt+0.001,pMinkp+0.001,pMinkn+0.001,kTOFmatch+0.001,(pMinkn>0.09)+0.001,selectTrue,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
   Float_t x2[] = {xmax[0],etamaxkp-0.001,xmax[2],ptM-0.001,xmax[4],xmax[5],xmax[6],xmax[7],keepTrue,xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
@@ -447,7 +467,7 @@ TH2F *GetHistoKan(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0
 
   if(require5sigma) x2[10] = 4.9;
 
-  AliPIDperfContainer *tmp = fContPid2;
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid2;
 
   TH2F *h = tmp->GetQA(0, x, x2);
 
@@ -458,7 +478,7 @@ TH2F *GetHistoKan(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0
 }
 
 
-fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="",Float_t pt=1.5){
+void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
   if(h->GetEntries() < 1){
     if(a){
       a[0]=0.01;
@@ -561,13 +581,13 @@ fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="",Float_t pt=1.5){
  }
 }
 
-AddHisto(TH2F *h1,TH2F *h2,Float_t w){
+void AddHisto(TH2F *h1,TH2F *h2,Float_t w){
   Int_t nbinx = h1->GetNbinsX();
   Int_t nbiny = h1->GetNbinsY();
 
   for(Int_t i=1;i<=nbinx;i++){
     for(Int_t j=1;j<=nbiny;j++){
-      Float_t val = h1->GetBinContent(i,j) + h2->GetBinContent(i,j)*w;
+      Double_t val = h1->GetBinContent(i,j) + h2->GetBinContent(i,j)*w;
       Float_t err = TMath::Min(TMath::Sqrt(val),val);
       h1->SetBinContent(i,j,val);
       h1->SetBinError(i,j,err);
