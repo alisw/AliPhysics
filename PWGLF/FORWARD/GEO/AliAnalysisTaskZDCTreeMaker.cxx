@@ -66,7 +66,6 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
     fUseSpecialOutput(kFALSE),
     fOutput(0x0),
     fCentralityTree(0x0),
-    fTrigClass(""),
     fIsEventSelected(kFALSE),
     fIsPileupFromSPD(kFALSE),
     fxVertex(0),	 
@@ -96,6 +95,7 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
 {   
    // Default constructor
 
+  for(int i=0; i<100; i++) fTrigClass[i] = 0;
   fNClusters[0]=fNClusters[1]=0;
   for(Int_t itow=0; itow<5; itow++){
      fZNCtower[itow]=0.;  
@@ -131,7 +131,6 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     fUseSpecialOutput(kFALSE),
     fOutput(0x0),
     fCentralityTree(0x0),
-    fTrigClass(""),
     fIsEventSelected(kFALSE),
     fIsPileupFromSPD(kFALSE),
     fxVertex(0),	 
@@ -161,6 +160,8 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     
 {
   // Default constructor
+
+  for(int i=0; i<100; i++) fTrigClass[i] = 0;
   fNClusters[0]=fNClusters[1]=0;
  
   for(Int_t itow=0; itow<5; itow++){
@@ -298,14 +299,13 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       if(!fIsMCInput && esd->GetEventType()!=7) return; 
       
       // ***** Trigger selection
-      fTrigClass = esd->GetFiredTriggerClasses();
-      //TString triggerClass = esd->GetFiredTriggerClasses();
-      //sprintf(fTrigClass,"%s",triggerClass.Data());
+      TString triggerClass = esd->GetFiredTriggerClasses();
+      sprintf(fTrigClass,"%s",triggerClass.Data());
       
       // use response of AliPhysicsSelection
       fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);       
-      fIsPileupFromSPD = esd->IsPileupFromSPD(7,0.8);
-      //fIsPileupFromSPD = esd->IsPileupFromSPDInMultBins();
+      //fIsPileupFromSPD = esd->IsPileupFromSPD(6, 0.8);
+      fIsPileupFromSPD = esd->IsPileupFromSPDInMultBins();
 
       AliCentrality *centrality = esd->GetCentrality();
       fCentralityV0M = centrality->GetCentralityPercentile("V0M");
@@ -412,7 +412,7 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       fCentralityZPC = centrality->GetCentralityPercentile("ZPC");
       
       // ***** Trigger selection
-      fTrigClass = aod->GetFiredTriggerClasses();
+      //fTrigClass = aod->GetFiredTriggerClasses();
       //TString triggerClass = aod->GetFiredTriggerClasses();
       //sprintf(fTrigClass,"%s",triggerClass.Data());
       
