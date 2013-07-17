@@ -17,10 +17,10 @@
 #include "fastjet/JetDefinition.hh"
 #else
 namespace fastjet {
-  class JetAlgorithm;
-  class Strategy;
-  class RecombinationScheme;
-  class AreaType;
+  enum JetAlgorithm;
+  enum Strategy;
+  enum RecombinationScheme;
+  enum AreaType;
 }
 #endif
 

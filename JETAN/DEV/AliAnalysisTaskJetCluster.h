@@ -14,13 +14,12 @@
 # include "fastjet/ClusterSequenceArea.hh"
 # include "fastjet/AreaDefinition.hh"
 # include "fastjet/JetDefinition.hh"
-# include "fastjet/PseudoJet.hh"
 #else
 namespace fastjet {
-  class PseudoJet;
-  class ClusterSequenceArea;
-  class AreaDefinition;
-  class JetDefinition;
+  enum JetAlgorithm;
+  enum Strategy;
+  enum RecombinationScheme;
+  enum AreaType;
 }
 #endif
 
