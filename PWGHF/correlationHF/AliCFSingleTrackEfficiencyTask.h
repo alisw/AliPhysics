@@ -52,8 +52,10 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
     kStepMCAccpCut        = 2,
     kStepReconstructed    = 3,
     kStepRecoKineCuts     = 4,
-    kStepReconstructedMC  = 5,
-    kStepRecoQualityCuts  = 6,
+    kStepReconstructedFirstTrackCutsMC= 5,
+    kStepRecoFirstQualityCuts  = 6,
+    kStepReconstructedMC  = 7,
+    kStepRecoQualityCuts  = 8,
   };
 
   AliCFSingleTrackEfficiencyTask();

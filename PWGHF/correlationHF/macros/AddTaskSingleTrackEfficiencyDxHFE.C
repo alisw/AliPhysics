@@ -9,7 +9,7 @@
 //#include "AliCFContainer.h"          // added as hint for hidden library dependency to libCORRFW
 //#include "AliAODRecoDecayHF2Prong.h" // added as hint for hidden library dependency to libPWGHFvertexingHF
 #include "AliCFSingleTrackEfficiencyTask.h"
-//#include "AliSingleTrackEffCuts.h"
+#include "AliSingleTrackEffCuts.h"
 #include "AliDxHFECorrelation.h"
 #incldue "AliReducedParticle.h"
 #include "AliHFCorrelator.h"
@@ -194,7 +194,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
 
   const Int_t nvar   = 5 ; //number of variables on the grid:pt,y,phi
-  UInt_t nstep = 7 ; //number of selection steps MC
+  UInt_t nstep = 9; //number of selection steps MC
 
   const UInt_t ipt = 0;
   const UInt_t iy  = 1;
@@ -206,8 +206,8 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   
 
   //A1. Bins variation by hand for pt
-  const Int_t nbinpt_03_1  = 24 ; //bins in pt from 0 to 6 GeV
-  const Int_t nbinpt_1_4  = 4 ; //bins in pt from 6 to 8 GeV
+  const Int_t nbinpt_03_1  = 12 ; //bins in pt from 0 to 6 GeV
+  const Int_t nbinpt_1_4  = 10 ; //bins in pt from 6 to 8 GeV
   const Int_t nbinpt_4_10  = 8; //bins in pt from 8 to 16 GeV
   //const Int_t nbinpt_16_24  = 1 ; //bins in pt from 16 to 24 GeV
 
@@ -288,8 +288,10 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   container -> SetStepTitle(2, " MC Particle with Track Ref Acceptance Cuts");
   container -> SetStepTitle(3, " Total Reconstructed  Particle ");
   container -> SetStepTitle(4, " Reco Particle With Kine Acceptance Cuts");
-  container -> SetStepTitle(5, " Reco Particle to MC True pt particles ");
-  container -> SetStepTitle(6, " Reco Particle With Quality Cuts");
+  container -> SetStepTitle(5, " Reco Particle to MC True pt particles First track cuts");
+  container -> SetStepTitle(6, " Reco Particle With First Quality Cuts");
+  container -> SetStepTitle(7, " Reco Particle to MC True pt particles ");
+  container -> SetStepTitle(8, " Reco Particle With All Quality Cuts");
 
 
   // SET TLIST FOR QA HISTOS
@@ -313,6 +315,8 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   man->SetParticleCutsList(4,emptyList);//recKineList);
   man->SetParticleCutsList(5,emptyList);//fPIDCutList);
   man->SetParticleCutsList(6,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(7,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(8,emptyList);//fPIDCutList);
 
   
   // Simulated particle & event cuts

@@ -52,11 +52,14 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	 << "mc                            - Run on MC\n"
 	 << "usekine                       - To run on kinematical level \n"
 	 << "event-mixing/mixing           - Whether to also run event-mixing (NB! Use AddTaskDxHFECorrelationME.C for eventmixing)\n"
+	 << "useTrackEff                   - If you want to use tracking efficiency (need to attach efficiency maps\n"
+	 << "TrackEffName=                 - The file where the efficiency map is stored\n"
 	 << "trigger=D/D0/electron         - Which particle to trigger on \n"
 	 << "\nD0 settings: \n"
 	 << "fillD0scheme=both/D0/D0bar    - Which fillsheme to use for D0\n"
 	 << "\nelectron settings: \n"
 	 << "useinvmasscut                 - If you want to use invariant mass cut (default is 100MeV/c)\n" 
+	 << "twoselectedinvmasscut         - If you want to use invariant mass selection with stricter cut on partner\n"
 	 << "invmasscut=                   - If you want to specify a different invariant mass cut \n"
 	 << "extraname=                    - extraname for directory and list if you run several tasks at once\n"
 	 << "tpcclusters=                  - How many TPC clusters to use on single track cuts for electrons (default=120)\n"
@@ -146,6 +149,9 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    bEventMixing=kTRUE;
 	    taskOptions+=" event-mixing";
 	  }
+	  if(argument.BeginsWith("runmode=")){
+	    taskOptions+=" "+argument;
+	  }
 	  if (argument.BeginsWith("PbPb") ||
 	      argument.BeginsWith("system=1") ||
 	      argument.BeginsWith("Pb-Pb")) {
@@ -169,6 +175,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	  if (argument.CompareTo("runD0MassReference")==0){
 	    bRunD0MassReference=kTRUE;
 	  }
+	  if(argument.BeginsWith("ElSelection="))
+	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("useinvmasscut"))
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("twoselectedinvmasscut"))
