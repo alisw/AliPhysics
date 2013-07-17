@@ -37,7 +37,7 @@ Int_t cmax = 8;// max 10
 
 Float_t weightS = -1.;
 
-Int_t rebinsize = 2;
+Int_t rebinsize = 1;
 
 Int_t parplotted = 2;
 
@@ -65,6 +65,8 @@ TH2F *htracked;
 Bool_t kLoaded=kFALSE;
 int LoadLib(){
   weightS = -1.;
+
+  require5sigma = kFALSE;
 
   if(! kLoaded){
     gSystem->Load("libVMC.so");
