@@ -26,6 +26,7 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   void                        Terminate(Option_t *option);
 
   //Setters
+  void                        SetCorrelateTwoJets(Bool_t b)        { fDoTwoJets          = b;}
   void                        SetMatchFullCharged(Bool_t b)        { fDoMatchFullCharged = b;}
 
 
@@ -35,6 +36,9 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
  protected:
   Bool_t                      Run()              ;
   void                        CorrelateJets(const Int_t type);
+  void                        CorrelateTwoJets(const Int_t type);
+  AliEmcalJet                *GetAssociatedJet(const Int_t iCont, AliEmcalJet *jetTrig);
+
   Bool_t                      FillHistograms()   ;
   void                        FillDiJetHistos(const AliEmcalJet *jet1 = 0, const AliEmcalJet *jet2 = 0, const Int_t mode = 0);
   Bool_t                      RetrieveEventObjects();
@@ -43,6 +47,7 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   Int_t                       MatchFullAndChargedJets(Int_t cFull, Int_t cCharged);
 
  private:
+  Bool_t            fDoTwoJets;                           //  correlate trigger jet with leading jet in opposite hemisphere
   Bool_t            fDoMatchFullCharged;                  //  do full-charged matching histos
   TH2F             *fh2CentRhoCh;                         //! cent vs rho charged
   TH2F             *fh2CentRhoScaled;                     //! cent vs rho scaled
@@ -61,6 +66,6 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   AliAnalysisTaskEmcalDiJetAna(const AliAnalysisTaskEmcalDiJetAna&);            // not implemented
   AliAnalysisTaskEmcalDiJetAna &operator=(const AliAnalysisTaskEmcalDiJetAna&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetAna, 2) // dijet analysis task
+  ClassDef(AliAnalysisTaskEmcalDiJetAna, 3) // dijet analysis task
 };
 #endif

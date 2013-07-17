@@ -25,7 +25,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   const char *CentEst             = "V0A",
 						   Int_t       pSel                = AliVEvent::kINT7,
 						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
-						   Double_t    ptTrackBias         = 0.
+						   Double_t    ptTrackBias         = 0.,
+						   Bool_t      bDoTwoJet           = kFALSE
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -90,13 +91,20 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
     rhoTask->SetCentralityEstimator(CentEst);
  
   }
-
   TString wagonName = Form("DiJet_%s_%s_Rho%dTC%sMatch%dHadTrig%d",strJetsFull.Data(),strJetsCh.Data(),rhoType,trigClass.Data(),matchFullCh,(Int_t)(ptTrackBias));
 
   //Configure DiJet task
   AliAnalysisTaskEmcalDiJetAna *taskDiJet = NULL;
   taskDiJet = new AliAnalysisTaskEmcalDiJetAna(wagonName.Data());
  
+  taskDiJet->SetTriggerClass(trigClass.Data());
+  if(ptminTrack==0.) {
+    taskDiJet->SetIsPythiaPtHard(kTRUE);
+    taskDiJet->SetDoFullFull(kTRUE);
+  }
+  taskDiJet->SetCorrelateTwoJets(bDoTwoJet);
+
+
   Printf("strJetsFull: %s",strJetsFull.Data());
   Printf("strJetsCh: %s",strJetsCh.Data());
 

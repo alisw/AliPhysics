@@ -37,6 +37,7 @@ ClassImp(AliAnalysisTaskEmcalDiJetAna)
 //________________________________________________________________________
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() : 
   AliAnalysisTaskEmcalDiJetBase("AliAnalysisTaskEmcalDiJetAna"),
+  fDoTwoJets(kFALSE),
   fDoMatchFullCharged(kTRUE),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
@@ -59,6 +60,7 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) : 
   AliAnalysisTaskEmcalDiJetBase(name),
+  fDoTwoJets(kFALSE),
   fDoMatchFullCharged(kTRUE),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
@@ -137,11 +139,12 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   fOutput->Add(fh3PtEtaPhiJetCharged);
 
   const Int_t nBinsSparse0 = 6;
+  const Int_t  nBinsPtW     = 30;
   const Int_t nBinsDPhi     = 72;
   const Int_t nBinsKt       = 100;
   const Int_t nBinsDiJetEta = 40;
   const Int_t nBinsCentr    = 10;
-  const Int_t nBins0[nBinsSparse0] = {nBinsPt,nBinsPt,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr};
+  const Int_t nBins0[nBinsSparse0] = {nBinsPtW,nBinsPtW,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr};
   //pT1, pT2, deltaPhi, kT
   const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, -0.5*TMath::Pi(),-100.,-1.,0.};
   const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt,  1.5*TMath::Pi(), 100., 1.,100.};
@@ -262,7 +265,8 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::Run()
     fRhoChVal = GetRhoVal(fContainerCharged);
   }
   
-  if(fDoFullFull)   CorrelateJets(0);
+  if(fDoFullFull)
+    CorrelateJets(0);
 
   // MatchFullAndChargedJets();
   if(fDoChargedCharged)   CorrelateJets(1);
@@ -278,10 +282,137 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::Run()
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
+  //
+  // Correlate jets and fill histos
+  //
+
+  Int_t typet = 0;
+  Int_t typea = 0;
+  if(type==0) { //full-full
+    typet = fContainerFull;
+    typea = fContainerFull;
+  }
+  else if(type==1) { //charged-charged
+    typet = fContainerCharged;
+    typea = fContainerCharged;
+  }
+  else if(type==2) { //full-charged
+    typet = fContainerFull;
+    typea = fContainerCharged;
+  }
+  else {
+    AliWarning(Form("%s: type %d of dijet correlation not defined!",GetName(),type));
+    return;
+  }
+
+  Int_t nJetsTrig  = 0;
+  Int_t nJetsAssoc = 0;
+  if(type==0) {
+    nJetsTrig  = GetNJets(fContainerFull);
+    nJetsAssoc = nJetsTrig;
+  }
+  else if(type==1) {
+    nJetsTrig  = GetNJets(fContainerCharged);
+    nJetsAssoc = nJetsTrig;
+  }
+  else if(type==2) {
+    nJetsTrig  = GetNJets(fContainerFull);
+    nJetsAssoc = GetNJets(fContainerCharged);
+  }
+
+  for(Int_t ijt=0; ijt<nJetsTrig; ijt++) {
+
+    AliEmcalJet *jetTrig = NULL; 
+    if(type==0) {
+      jetTrig = static_cast<AliEmcalJet*>(GetJetFromArray(ijt, typet));
+      if(TMath::Abs(jetTrig->Eta())>0.5)
+	jetTrig = NULL;
+    }
+    else
+      jetTrig = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ijt, typet));
+
+
+    if(!jetTrig)
+      continue; //jet not selected
+    
+    Double_t jetTrigPt = GetJetPt(jetTrig,typet);
+
+    if(jetTrigPt<fPtMinTriggerJet)
+      continue;
+
+    AliEmcalJet *jetAssoc = GetAssociatedJet(typea,jetTrig);
+    if(!jetAssoc)
+      continue;
+
+    FillDiJetHistos(jetTrig,jetAssoc, type);
+    
+
+  }
+
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetAssociatedJet(const Int_t type, AliEmcalJet *jetTrig) {
+
+  //Get associated jet which is the leading jet in the opposite hemisphere
+
+  Int_t typea = 0;
+  if(type==0)  //full-full
+    typea = fContainerFull;
+  else if(type==1)  //charged-charged
+    typea = fContainerCharged;
+  else if(type==2)  //full-charged
+    typea = fContainerCharged;
+  
+  Int_t nJetsAssoc = GetNJets(typea);
+  Double_t ptLead = -999;
+  Int_t    iJetLead = -1;
+  for(Int_t ija=0; ija<nJetsAssoc; ija++) {
+
+    AliEmcalJet *jetAssoc = NULL;
+    if(type==0) {
+      jetAssoc = static_cast<AliEmcalJet*>(GetJetFromArray(ija, typea));
+      if(TMath::Abs(jetAssoc->Eta())>0.5)
+	jetAssoc = NULL;
+    }
+    else
+      jetAssoc = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ija, typea));
+    
+    if(!jetAssoc)
+      continue;
+   
+    Double_t dPhi = GetDeltaPhi(jetTrig,jetAssoc);
+    Double_t phiMin = 0.5*TMath::Pi();
+    Double_t phiMax = 1.5*TMath::Pi();
+    if(dPhi<phiMin || phiMax>phiMax)
+      continue;
+ 
+    Double_t jetAssocPt = GetJetPt(jetAssoc,typea);
+
+    if(jetAssocPt>ptLead) {
+      ptLead = jetAssocPt;
+      iJetLead = ija;
+    }
+    
+  }
+  
+  AliEmcalJet *jetAssocLead = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead, typea));
+
+  return jetAssocLead;
+
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEmcalDiJetAna::CorrelateJets(const Int_t type) {
   //
   // Correlate jets and fill histos
   //
+
+  if(fDoTwoJets) {
+    CorrelateTwoJets(type);
+    return;
+  }
 
   Int_t typet = 0;
   Int_t typea = 0;
