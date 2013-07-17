@@ -2247,9 +2247,3 @@ bool AliAnalysisTaskJetCluster::IsDMeson(int pc){
 return false;
 }
 
-void AliAnalysisTaskJetCluster::SetAlgorithm(Int_t i) {
-    if(i == 0) fAlgorithm = fastjet::kt_algorithm;
-    else if(i == 1) fAlgorithm = fastjet::cambridge_algorithm;
-    else if(i == 2) fAlgorithm = fastjet::antikt_algorithm;
-}
-
