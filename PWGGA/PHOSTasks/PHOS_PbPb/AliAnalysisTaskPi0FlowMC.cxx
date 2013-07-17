@@ -908,7 +908,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0sMix()
 void AliAnalysisTaskPi0FlowMC::ProcessMC()
 {
   FillMCHist();
-  FillSecondaries() ;
+  // FillSecondaries() ;
 }
 
 
