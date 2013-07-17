@@ -9,6 +9,7 @@
 #pragma link C++ class AliHelperPID+;
 #pragma link C++ class AliLatexTable+;
 #pragma link C++ class AliNamedArrayI+;
+#pragma link C++ class AliNamedString+;
 #pragma link C++ class AliPWGFunc+;
 #pragma link C++ class AliPWGHistoTools+;
 #pragma link C++ class AliTHn+;

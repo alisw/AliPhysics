@@ -455,7 +455,7 @@ void AliEmcalJetTask::FindJets()
           maxNe = cPt;
 
         if (c->GetLabel() > fMinMCLabel) // MC particle
-          mcpt += cPt * c->GetMCEnergyFraction();
+          mcpt += c->GetMCEnergyFraction() > 1e-6 ? cPt * c->GetMCEnergyFraction() : cPt;
 
         if (cPhi<0) 
           cPhi += TMath::TwoPi();

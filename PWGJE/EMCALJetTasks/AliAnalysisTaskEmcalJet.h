@@ -43,7 +43,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)                                     const;
   void                        ExecOnce()                                                                    ;
   AliRhoParameter            *GetRhoFromEvent(const char *name)                                             ;
-  Bool_t                      GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho=0)     const;
+  Int_t                       GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho=0)     const;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kFALSE)       const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kFALSE)      const;
   Bool_t                      RetrieveEventObjects()                                                        ;

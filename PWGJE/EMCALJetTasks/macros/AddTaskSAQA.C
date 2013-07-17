@@ -3,7 +3,9 @@
 AliAnalysisTaskSAQA* AddTaskSAQA(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
+  const char *ncells             = "EMCALCells",
   const char *njets              = "Jets",
+  const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
@@ -57,7 +59,9 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetTracksName(ntracks);
   qaTask->SetClusName(nclusters);
+  qaTask->SetCaloCellsName(ncells);
   qaTask->SetJetsName(njets);
+  qaTask->SetRhoName(nrho);
   qaTask->SetJetRadius(jetradius);
   qaTask->SetJetPtCut(jetptcut);
   qaTask->SetPercAreaCut(jetareacut);
