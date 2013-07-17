@@ -222,9 +222,7 @@ void AliHMPIDTaskQA::ConnectInputData(Option_t *option)
     if (!mcH) {
       AliDebug(2,Form("ERROR: Could not get MCEventHandler"));
       fUseMC = kFALSE;
-    } else
-      fMC = mcH->MCEvent();
-      if (!fMC) AliDebug(2,Form("ERROR: Could not get MCEvent"));
+    }
   }
 }
 
@@ -240,6 +238,8 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
   AliStack* pStack = 0;
   Int_t label = -1;
   if (fUseMC){
+    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    fMC = mcH->MCEvent();
     pStack = fMC->Stack();
   }
 
