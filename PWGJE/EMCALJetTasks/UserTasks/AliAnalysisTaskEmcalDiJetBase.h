@@ -44,9 +44,9 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
 
   void SetTriggerClass(const char *n)       { fTriggerClass = n; }
 
-  void SetContainerFull(Int_t c)            { fContainerFull = c;}
-  void SetContainerCharged(Int_t c)         { fContainerCharged = c;}
-  void SetContainerFullMC(Int_t c)          { fContainerFullMC = c;}
+  void SetContainerFull(Int_t c)            { fContainerFull      = c;}
+  void SetContainerCharged(Int_t c)         { fContainerCharged   = c;}
+  void SetContainerFullMC(Int_t c)          { fContainerFullMC    = c;}
   void SetContainerChargedMC(Int_t c)       { fContainerChargedMC = c;} 
 
   void SetRhoType(Int_t i)                  { fRhoType = i;}
@@ -57,7 +57,7 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
 
   void SetMinSharedFraction(Double_t f)     { fMinFractionShared = f;}
 
-  void SetIsPythiaPtHard(Bool_t b)          { fIsPythiaPtHard =b; }
+  void SetIsPythiaPtHard(Bool_t b)          { fIsPythiaPtHard = b; }
 
   void ResetMatchFlag()                     { fMatchingDone = kFALSE; }
 
