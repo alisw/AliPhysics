@@ -104,7 +104,7 @@ void AliAnalysisTaskPMD::UserExec(Option_t *)
   // Called for each event
   Float_t MipCut1 = 432;//MPV=72=> 6*MPV=432
   Float_t MipCut2 = 648;//MPV=72=> 9*MPV=648
-  Float_t etacls, theta, rdist;
+  Float_t etacls=0., theta=0., rdist=0.;
   Int_t PhotonCls = 0;//# of photon measured within 2.3 to 3.9 #eta
   Int_t PhotonCls1 = 0;//# of photon measured within 2.3 to 3.9 #eta
   Int_t PhotonClsAEtaBin[10] = {0};//# of photon measured with diff Eta bin
