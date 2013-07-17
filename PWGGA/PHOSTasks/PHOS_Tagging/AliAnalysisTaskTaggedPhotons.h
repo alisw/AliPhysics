@@ -20,7 +20,7 @@ class THashList ;
 class TH2I ;
 class AliPHOSGeometry;
 class AliAODPWG4Particle;
-class AliAODCaloCluster ;
+class AliVCluster ;
 class AliTriggerAnalysis ;
 class TParticle ;
 
@@ -60,7 +60,7 @@ protected:
   Bool_t  TestLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t  TestPID(Int_t iPID, AliAODPWG4Particle* part) ;
   Double_t PrimaryParticleWeight(TParticle * particle) ;
-  Int_t   FindPrimary(AliAODCaloCluster*, Bool_t&);
+  Int_t   FindPrimary(AliVCluster*, Bool_t&);
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
