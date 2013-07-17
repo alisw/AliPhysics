@@ -58,6 +58,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
+  ,fIsMC(kFALSE)
+  ,fMCProduction("")  
 {
 	//
 	// default ctor
@@ -77,6 +79,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
+  ,fIsMC(kFALSE)
+  ,fMCProduction("")  
 {
 	//
 	// named ctor
@@ -121,7 +125,11 @@ void AliPHOSTenderSupply::InitTender()
       }
     }   
   }
-    
+
+  //In MC always reco pass 1
+  if(fIsMC)
+    fRecoPass=1 ;
+  
   if(fRecoPass<0){ //not defined yet
     // read if from filename.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -182,18 +190,44 @@ void AliPHOSTenderSupply::InitTender()
   } 
 
   if(!fUsePrivateCalib){
-    //Init recalibration
-    //Check the pass1-pass2-pass3 reconstruction
-    AliOADBContainer calibContainer("phosRecalibration");
-    calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
-    TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
-    if(!recalib){
-      AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+    if(fIsMC){ //re/de-calibration for MC productions
+      //Init recalibration
+      AliOADBContainer calibContainer("phosRecalibration");
+      calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSMCCalibrations.root","phosRecalibration");
+      
+      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
+      if(!recalib){
+        AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+      }
+      else{
+	//Now try to find object with proper name
+	for(Int_t i=0; i<recalib->GetEntriesFast(); i++){
+	  AliPHOSCalibData * tmp = (AliPHOSCalibData*)recalib->At(i) ;
+	  if(fMCProduction.CompareTo(tmp->GetName())==0){
+            fPHOSCalibData = tmp ;
+	    break ;
+	  }
+	}
+        if(!fPHOSCalibData) {
+          AliFatal(Form("Can not find calibration for run %d, and name %s \n",runNumber, fMCProduction.Data())) ;
+        }
+      }
+      
     }
-    else{
-      fPHOSCalibData = (AliPHOSCalibData*)recalib->At(fRecoPass-1) ;
-      if(!fPHOSCalibData) {
-        AliFatal(Form("Can not find calibration for run %d, pass %d \n",runNumber, fRecoPass)) ;
+    else{ //real data
+      //Init recalibration
+      //Check the pass1-pass2-pass3 reconstruction
+      AliOADBContainer calibContainer("phosRecalibration");
+      calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
+      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
+      if(!recalib){
+        AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+      }
+      else{
+        fPHOSCalibData = (AliPHOSCalibData*)recalib->At(fRecoPass-1) ;
+        if(!fPHOSCalibData) {
+          AliFatal(Form("Can not find calibration for run %d, pass %d \n",runNumber, fRecoPass)) ;
+        }
       }
     }
   }
