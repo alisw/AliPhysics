@@ -223,7 +223,17 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 
   ///______________________________________________________________________
   /// Cuts For D0
-  AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+  //AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+  TFile *filecuts;
+  TString finname="Cutlist.root";
+  filecuts=TFile::Open(finname.Data());
+  TString finObjname="D0toKpiCutsStandard";
+  AliRDHFCutsD0toKpi* cuts=new AliRDHFCutsD0toKpi();
+  cuts = (AliRDHFCutsD0toKpi*)filecuts->Get(finObjname.Data());
+  printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile\n\n\n\n\n\n\n\n\n\n");
+  cuts->PrintAll();
+  printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile done\n\n\n\n\n\n\n\n\n\n");
+  /*
   if (system==0) {
     RDHFD0toKpi->SetStandardCutsPP2010();
   } 
@@ -250,7 +260,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   else {
     //warning, no system set
   }
-
+  */
   ///______________________________________________________________________
   /// Cuts for HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF","HFE Standard Cuts");
