@@ -60,7 +60,9 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   containerName += ":PWGGA_EMCalpi0v2";
 
   if(IsPhosCali) 
-    Input += "EPCaliON";
+    Input += "_EPON_";
+  if(IsCentFlat)
+    Input += "centOn";
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(
