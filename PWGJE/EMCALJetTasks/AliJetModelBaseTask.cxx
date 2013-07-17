@@ -11,6 +11,7 @@
 #include <TLorentzVector.h>
 #include <TRandom3.h>
 #include <TList.h>
+#include <TF2.h>
 
 #include "AliVEvent.h"
 #include "AliAODCaloCluster.h"
@@ -55,8 +56,10 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fNTracks(0),
   fMarkMC(99999),
   fPtSpectrum(0),
+  fPtPhiEvPlDistribution(0),
   fDensitySpectrum(0),
   fQAhistos(kFALSE),
+  fPsi(0),
   fIsInit(0),
   fGeom(0),
   fClusters(0),
@@ -107,8 +110,10 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fNTracks(1),
   fMarkMC(99999),
   fPtSpectrum(0),
+  fPtPhiEvPlDistribution(0),
   fDensitySpectrum(0),
   fQAhistos(drawqa),
+  fPsi(0),
   fIsInit(0),
   fGeom(0),
   fClusters(0),
@@ -186,9 +191,9 @@ void AliJetModelBaseTask::UserExec(Option_t *)
   }
 
   if (fDensitySpectrum) {
-    fNTracks = fDensitySpectrum->GetRandom();
-    fNCells = fDensitySpectrum->GetRandom();
-    fNClusters = fDensitySpectrum->GetRandom();
+    fNTracks = TMath::Nint(fDensitySpectrum->GetRandom());
+    fNCells = TMath::Nint(fDensitySpectrum->GetRandom());
+    fNClusters = TMath::Nint(fDensitySpectrum->GetRandom());
   }
   
   // Clear map
@@ -204,6 +209,9 @@ void AliJetModelBaseTask::UserExec(Option_t *)
       fCaloCells = static_cast<AliVCaloCells*>(tempCaloCells->Clone(Form("%s_old",fCaloCells->GetName())));
     }
   }
+
+  if (fPtPhiEvPlDistribution)
+    fPsi = gRandom->Rndm() * TMath::Pi();
 
   Run();
 
@@ -662,20 +670,25 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId, Int_t labe
 AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Double_t ptemc, Bool_t ise, Int_t label, Short_t charge)
 {
   // Add a track to the event.
-
-  const Int_t nTracks = fOutTracks->GetEntriesFast();
   
-  if (pt < 0) 
-    pt = GetRandomPt();
-  if (eta < -100) 
-    eta = GetRandomEta();
-  if (phi < 0) 
-    phi = GetRandomPhi();
+  if (pt < 0 && eta < -100 && phi < 0) {
+    GetRandomParticle(pt,eta,phi);
+  }
+  else {
+    if (pt < 0) 
+      pt = GetRandomPt();
+    if (eta < -100) 
+      eta = GetRandomEta();
+    if (phi < 0) 
+      phi = GetRandomPhi(pt);
+  }
 
   if (label >= 0)
     label += fMarkMC+fMCLabelShift;
   else if (label < 0)
     label -= fMarkMC+fMCLabelShift;
+  
+  const Int_t nTracks = fOutTracks->GetEntriesFast();
 
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
@@ -893,7 +906,9 @@ Double_t AliJetModelBaseTask::GetRandomPhi(Bool_t emcal)
     if (phimin < EmcalMinPhi) phimin = EmcalMinPhi;
   }
 
-  return gRandom->Rndm() * (phimax - phimin) + phimin;
+  Double_t result = gRandom->Rndm() * (phimax - phimin) + phimin;
+
+  return result;
 }
 
 //________________________________________________________________________
@@ -905,6 +920,46 @@ Double_t AliJetModelBaseTask::GetRandomPt()
     return fPtSpectrum->GetRandom();
   else
     return gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::GetRandomParticle(Double_t &pt, Double_t &eta, Double_t &phi, Bool_t emcal)
+{
+  // Get a random particle.
+  
+  eta = GetRandomEta(emcal);
+
+  if (fPtPhiEvPlDistribution) {
+    Double_t phimax = fPhiMax;
+    Double_t phimin = fPhiMin;
+    
+    if (emcal) {
+      const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+      const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+      
+      if (phimax > EmcalMaxPhi) phimax = EmcalMaxPhi;
+      if (phimax < EmcalMinPhi) phimax = EmcalMinPhi;
+      if (phimin > EmcalMaxPhi) phimin = EmcalMaxPhi;
+      if (phimin < EmcalMinPhi) phimin = EmcalMinPhi;
+    }
+    
+    if (fPtPhiEvPlDistribution->GetXmin() > phimax || fPtPhiEvPlDistribution->GetXmax() < phimin) {
+      AliWarning(Form("The hisogram %s does not overlap with the EMCal acceptance limits. It will be ignored.",fPtPhiEvPlDistribution->GetName()));
+      pt = GetRandomPt();
+      phi = GetRandomPhi(emcal);
+    }
+    else {
+      do {
+	fPtPhiEvPlDistribution->GetRandom2(pt,phi);
+	phi += fPsi;
+	if (phi > TMath::Pi() * 2) phi -= TMath::Pi() * 2;
+      } while (phi > phimax || phi < phimin);
+    }
+  }
+  else {
+    pt = GetRandomPt();
+    phi = GetRandomPhi(emcal);
+  }
 }
 
 //________________________________________________________________________

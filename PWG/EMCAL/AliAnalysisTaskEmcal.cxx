@@ -390,12 +390,16 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track) const
     }
   }
 
-  if (track->Pt() < fTrackPtCut)
+  if (track->Pt() < fTrackPtCut) {
+    AliDebug(2,Form("Track not accepted because of minimum pt cut (%f < %f).", track->Pt(), fTrackPtCut));
     return kFALSE;
+  }
 
   if (track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || 
-      track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi)
+      track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) {
+    AliDebug(2,"Track not accepted because of acceptance cut.");
     return kFALSE;
+  }
   
   return kTRUE;
 }
@@ -843,6 +847,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       }
     } else {
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      fCent = 99;
       fCentBin = 3;
     }
     AliEventplane *aliEP = InputEvent()->GetEventplane();

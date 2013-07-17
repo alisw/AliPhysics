@@ -237,7 +237,7 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho) const
+Int_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho) const
 {
   // Get the leading jets.
 
@@ -247,6 +247,8 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
     return 0;
 
   const Int_t n = array->GetEntriesFast();
+
+  Int_t nacc = 0;
 
   if (n < 1)
     return kFALSE;
@@ -267,7 +269,8 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
       if (!AcceptJet(jet))
 	continue;
       
-      pt[i] = jet->Pt() - rho * jet->Area();
+      pt[nacc] = jet->Pt() - rho * jet->Area();
+      nacc++;
     }
   }
 
@@ -287,7 +290,8 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
       if (!AcceptTrack(track))
 	continue;
       
-      pt[i] = track->Pt();
+      pt[nacc] = track->Pt();
+      nacc++;
     }
   }
 
@@ -310,16 +314,15 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
       
-      pt[i] = nPart.Pt();
+      pt[nacc] = nPart.Pt();
+      nacc++;
     }
   }
 
-  TMath::Sort(n, pt, indexes);
+  if (nacc > 0)
+    TMath::Sort(nacc, pt, indexes);
 
-  if (pt[indexes[0]] == -FLT_MAX) 
-    return 0;
-
-  return kTRUE;
+  return nacc;
 }
 
 //________________________________________________________________________

@@ -39,6 +39,7 @@
 #include "AliFJWrapper.h"
 #include "AliLog.h"
 #include "AliInputEventHandler.h"
+#include "AliNamedString.h"
 
 ClassImp(AliJetEmbeddingFromAODTask)
 
@@ -69,6 +70,9 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fJetType(0),
   fJetAlgo(1),
   fJetParticleLevel(kTRUE),
+  fParticleMinPt(0),
+  fParticleMaxPt(0),
+  fParticleSelection(0),
   fIncludeNoITS(kFALSE),
   fCutMaxFractionSharedTPCClusters(0.4),
   fUseNegativeLabels(kTRUE),
@@ -89,6 +93,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fAODCaloCells(0),
   fAODMCParticles(0),
   fCurrentAODEntry(-1),
+  fAODFilePath(0),
   fHistFileMatching(0),
   fHistAODFileError(0),
   fHistNotEmbedded(0),
@@ -134,6 +139,9 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fJetType(0),
   fJetAlgo(1),
   fJetParticleLevel(kTRUE),
+  fParticleMinPt(0),
+  fParticleMaxPt(0),
+  fParticleSelection(0),
   fIncludeNoITS(kFALSE),
   fCutMaxFractionSharedTPCClusters(0.4),
   fUseNegativeLabels(kTRUE),
@@ -154,6 +162,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fAODCaloCells(0),  
   fAODMCParticles(0),
   fCurrentAODEntry(-1),
+  fAODFilePath(0),
   fHistFileMatching(0),
   fHistAODFileError(0),
   fHistNotEmbedded(0),
@@ -249,6 +258,13 @@ Bool_t AliJetEmbeddingFromAODTask::ExecOnce()
     fEsdTreeMode = kFALSE;
   else
     fEsdTreeMode = kTRUE;
+
+  fAODFilePath = static_cast<AliNamedString*>(InputEvent()->FindListObject("AODEmbeddingFile"));
+  if (!fAODFilePath) {
+    fAODFilePath = new AliNamedString("AODEmbeddingFile", "");
+    AliDebug(3,"Adding AOD embedding file path object to the event list...");
+    InputEvent()->AddObject(fAODFilePath);
+  }
 
   return AliJetModelBaseTask::ExecOnce();
 }
@@ -394,7 +410,8 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
 
   } while (!IsAODEventSelected());
 
-  fHistRejectedEvents->Fill(attempts);
+  if (fHistRejectedEvents)
+    fHistRejectedEvents->Fill(attempts);
 
   if (!fCurrentAODTree)
     return kFALSE;
@@ -411,7 +428,7 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
     AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
 
     // Trigger selection
-    if (fTriggerMask != AliVEvent::kAny) {
+    if (fTriggerMask != 0) {
       UInt_t offlineTrigger = aodHeader->GetOfflineTrigger();
       
       if ((offlineTrigger & fTriggerMask) == 0) {
@@ -452,6 +469,12 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
       
   }
 
+  // Particle selection
+  if ((fParticleSelection == 1 && FindParticleInRange(fAODTracks)==kFALSE) ||
+      (fParticleSelection == 2 && FindParticleInRange(fAODClusters)==kFALSE) ||
+      (fParticleSelection == 3 && FindParticleInRange(fAODMCParticles)==kFALSE))
+    return kFALSE;
+
   // Jet selection
   if (fJetMinPt > 0) {
     TLorentzVector jet;
@@ -482,6 +505,39 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
 }
 
 //________________________________________________________________________
+Bool_t AliJetEmbeddingFromAODTask::FindParticleInRange(TClonesArray *array)
+{
+  if (!array) return kFALSE;
+
+  if (array->GetClass()->InheritsFrom("AliVParticle")) {
+    const Int_t nentries = array->GetEntriesFast();
+    for (Int_t i = 0; i < nentries; i++) {
+      AliVParticle *part = static_cast<AliVParticle*>(array->At(i));
+      if (!part) continue;
+      if (part->Pt() > fParticleMinPt && part->Pt() < fParticleMaxPt) return kTRUE;
+    }
+  }
+  else if (array->GetClass()->InheritsFrom("AliVCluster")) {
+    const Int_t nentries = array->GetEntriesFast();
+    for (Int_t i = 0; i < nentries; i++) {
+      AliVCluster *clus = static_cast<AliVCluster*>(array->At(i));
+      if (!clus) continue;
+      
+      TLorentzVector vect;
+      Double_t vert[3] = {0,0,0};
+      clus->GetMomentum(vect,vert);
+
+      if (vect.Pt() > fParticleMinPt && vect.Pt() < fParticleMaxPt) return kTRUE;
+    }
+  }
+  else {
+    AliWarning(Form("Unable to do event selection based on particle pT: %s class type not recognized.",array->GetClass()->GetName()));
+  }
+
+  return kFALSE;
+}
+
+//________________________________________________________________________
 void AliJetEmbeddingFromAODTask::Run() 
 {
   if (!GetNextEntry()) {
@@ -495,6 +551,8 @@ void AliJetEmbeddingFromAODTask::Run()
 
   if (fHistEmbeddingQA)
     fHistEmbeddingQA->Fill("OK", 1);
+
+  fAODFilePath->SetString(fCurrentAODFile->GetName());
 
   if (fOutMCParticles) {
 

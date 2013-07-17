@@ -8,6 +8,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THnSparse.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
@@ -25,6 +26,8 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALGeoParams.h"
 #include "AliPicoTrack.h"
+#include "AliVVZERO.h"
+#include "AliESDUtils.h"
 
 #include "AliAnalysisTaskSAQA.h"
 
@@ -36,16 +39,15 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
-  fNclusters(0),
-  fNtracks(0),
-  fNjets(0),
-  fHistTracksCent(0),
-  fHistClusCent(0),
-  fHistJetsCent(0),
-  fHistClusTracks(0),
-  fHistJetsParts(0),
-  fHistCellsCent(0),
-  fHistCellsTracks(0),
+  fCentMethod2(""),
+  fCentMethod3(""),
+  fDoV0QA(0),
+  fCent2(0),
+  fCent3(0),
+  fVZERO(0),
+  fV0ATotMult(0),
+  fV0CTotMult(0),
+  fHistEventQA(0),
   fHistTrNegativeLabels(0),
   fHistTrZeroLabels(0),
   fHistNCellsEnergy(0),
@@ -60,16 +62,18 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+    fHistTrPhiEtaZeroLab[i] = 0;
+    fHistTrPtZeroLab[i] = 0;
     fHistTrEmcPhiEta[i] = 0;
     fHistTrEmcPt[i] = 0;
     fHistTrPhiEtaNonProp[i] = 0;
+    fHistTrPtNonProp[i] = 0;
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
     fHistDeltaPtvsPt[i] = 0;
-    fHistTrPhiEtaPtZeroLab[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
-    fHistJetsPhiEtaPt[i] = 0;
+    fHistJetsPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
   }
 
@@ -82,16 +86,15 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
-  fNclusters(0),
-  fNtracks(0),
-  fNjets(0),
-  fHistTracksCent(0),
-  fHistClusCent(0),
-  fHistJetsCent(0),
-  fHistClusTracks(0),
-  fHistJetsParts(0),
-  fHistCellsCent(0),
-  fHistCellsTracks(0),
+  fCentMethod2(""),
+  fCentMethod3(""),
+  fDoV0QA(0),
+  fCent2(0),
+  fCent3(0),
+  fVZERO(0),
+  fV0ATotMult(0),
+  fV0CTotMult(0),
+  fHistEventQA(0),
   fHistTrNegativeLabels(0),
   fHistTrZeroLabels(0),
   fHistNCellsEnergy(0),
@@ -106,16 +109,18 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+    fHistTrPhiEtaZeroLab[i] = 0;
+    fHistTrPtZeroLab[i] = 0;
     fHistTrEmcPhiEta[i] = 0;
     fHistTrEmcPt[i] = 0;
     fHistTrPhiEtaNonProp[i] = 0;
+    fHistTrPtNonProp[i] = 0;
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
     fHistDeltaPtvsPt[i] = 0;
-    fHistTrPhiEtaPtZeroLab[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
-    fHistJetsPhiEtaPt[i] = 0;
+    fHistJetsPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
   }
 
@@ -148,11 +153,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fOutput->Add(fHistTrZeroLabels);
     }
 
-    fHistTracksCent = new TH2F("fHistTracksCent","Tracks vs. centrality", 100, 0, 100, fNbins, 0, 4000);
-    fHistTracksCent->GetXaxis()->SetTitle("Centrality (%)");
-    fHistTracksCent->GetYaxis()->SetTitle("No. of tracks");
-    fOutput->Add(fHistTracksCent);
-
     TString histname;
 
     Int_t nlabels = 4;
@@ -171,12 +171,18 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
       if (!fParticleLevel) {
 	if (fIsMC) {
-	  histname = Form("fHistTrPhiEtaPtZeroLab_%d",i);
-	  fHistTrPhiEtaPtZeroLab[i] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
-	  fHistTrPhiEtaPtZeroLab[i]->GetXaxis()->SetTitle("#eta");
-	  fHistTrPhiEtaPtZeroLab[i]->GetYaxis()->SetTitle("#phi");
-	  fHistTrPhiEtaPtZeroLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-	  fOutput->Add(fHistTrPhiEtaPtZeroLab[i]);
+	  histname = Form("fHistTrPhiEtaZeroLab_%d",i);
+	  fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
+	  fHistTrPhiEtaZeroLab[i]->GetXaxis()->SetTitle("#eta");
+	  fHistTrPhiEtaZeroLab[i]->GetYaxis()->SetTitle("#phi");
+	  fHistTrPhiEtaZeroLab[i]->GetZaxis()->SetTitle("counts");
+	  fOutput->Add(fHistTrPhiEtaZeroLab[i]);
+
+	  histname = Form("fHistTrPtZeroLab_%d",i);
+	  fHistTrPtZeroLab[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+	  fHistTrPtZeroLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+	  fHistTrPtZeroLab[i]->GetYaxis()->SetTitle("counts");
+	  fOutput->Add(fHistTrPtZeroLab[i]);
 	}
 	
 	histname = Form("fHistTrEmcPhiEta_%d",i);
@@ -196,6 +202,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fHistTrPhiEtaNonProp[i]->GetXaxis()->SetTitle("#eta");
 	fHistTrPhiEtaNonProp[i]->GetYaxis()->SetTitle("#phi");
 	fOutput->Add(fHistTrPhiEtaNonProp[i]);
+
+	histname = Form("fHistTrPtNonProp_%d",i);
+	fHistTrPtNonProp[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+	fHistTrPtNonProp[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+	fHistTrPtNonProp[i]->GetYaxis()->SetTitle("counts");
+	fOutput->Add(fHistTrPtNonProp[i]);
 	
 	histname = Form("fHistDeltaEtaPt_%d",i);
 	fHistDeltaEtaPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
@@ -219,26 +231,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   }
 
   if (!fCaloName.IsNull()) {
-    fHistClusCent = new TH2F("fHistClusCent","Clusters vs. centrality", 100, 0, 100, fNbins, 0, 2000);
-    fHistClusCent->GetXaxis()->SetTitle("Centrality (%)");
-    fHistClusCent->GetYaxis()->SetTitle("No. of clusters");
-    fOutput->Add(fHistClusCent);
-
-    fHistClusTracks = new TH2F("fHistClusTracks","Clusters vs. tracks", fNbins, 0, 4000, fNbins, 0, 2000);
-    fHistClusTracks->GetXaxis()->SetTitle("No. of tracks");
-    fHistClusTracks->GetYaxis()->SetTitle("No. of clusters");
-    fOutput->Add(fHistClusTracks);
-
-    fHistCellsCent = new TH2F("fHistCellsCent","Cells vs. centrality", 100, 0, 100, fNbins, 0, 6000);
-    fHistCellsCent->GetXaxis()->SetTitle("Centrality (%)");
-    fHistCellsCent->GetYaxis()->SetTitle("No. of EMCal cells");
-    fOutput->Add(fHistCellsCent);
-
-    fHistCellsTracks = new TH2F("fHistCellsTracks","Cells vs. tracks", fNbins, 0, 4000, fNbins, 0, 6000);
-    fHistCellsTracks->GetXaxis()->SetTitle("No. of tracks");
-    fHistCellsTracks->GetYaxis()->SetTitle("No. of EMCal cells");
-    fOutput->Add(fHistCellsTracks);
-
     TString histname;
 
     for (Int_t i = 0; i < fNcentBins; i++) {
@@ -301,26 +293,17 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   }
        
   if (!fJetsName.IsNull()) {
-    fHistJetsCent = new TH2F("fHistJetsCent","Jets vs. centrality", 100, 0, 100, 150, -0.5, 149.5);
-    fHistJetsCent->GetXaxis()->SetTitle("Centrality (%)");
-    fHistJetsCent->GetYaxis()->SetTitle("No. of jets");
-    fOutput->Add(fHistJetsCent);
-    
-    fHistJetsParts = new TH2F("fHistJetsParts","Jets vs. centrality", fNbins, 0, 6000, 150, -0.5, 149.5);
-    fHistJetsParts->GetXaxis()->SetTitle("No. of particles");
-    fHistJetsParts->GetYaxis()->SetTitle("No. of jets");
-    fOutput->Add(fHistJetsParts);
 
     TString histname;
 
     for (Int_t i = 0; i < fNcentBins; i++) {
-      histname = "fHistJetsPhiEtaPt_";
+      histname = "fHistJetsPhiEta_";
       histname += i;
-      fHistJetsPhiEtaPt[i] = new TH3F(histname.Data(), histname.Data(), 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01,  (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
-      fHistJetsPhiEtaPt[i]->GetXaxis()->SetTitle("#eta");
-      fHistJetsPhiEtaPt[i]->GetYaxis()->SetTitle("#phi");
-      fHistJetsPhiEtaPt[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-      fOutput->Add(fHistJetsPhiEtaPt[i]);
+      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01);
+      fHistJetsPhiEta[i]->GetXaxis()->SetTitle("#eta");
+      fHistJetsPhiEta[i]->GetYaxis()->SetTitle("#phi");
+      fHistJetsPhiEta[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetsPhiEta[i]);
 
       histname = "fHistJetsPtArea_";
       histname += i;
@@ -330,8 +313,110 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fOutput->Add(fHistJetsPtArea[i]);
     }
   }
+  
+  Int_t dim = 0;
+  TString title[10];
+  Int_t nbins[10] = {0};
+  Double_t min[10] = {0};
+  Double_t max[10] = {0};
+  
+  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+    title[dim] = "Centrality %";
+    nbins[dim] = 101;
+    min[dim] = 0;
+    max[dim] = 101;
+    dim++;
+
+    if (!fCentMethod2.IsNull()) {
+      title[dim] = Form("Centrality %s %%", fCentMethod2.Data());
+      nbins[dim] = 101;
+      min[dim] = 0;
+      max[dim] = 101;
+      dim++;
+    }
+
+    if (!fCentMethod3.IsNull()) {
+      title[dim] = Form("Centrality %s %%", fCentMethod3.Data());
+      nbins[dim] = 101;
+      min[dim] = 0;
+      max[dim] = 101;
+      dim++;
+    }
+    
+    if (fDoV0QA) {
+      title[dim] = "V0A total multiplicity";
+      nbins[dim] = 200;
+      min[dim] = 0;
+      max[dim] = 20000;
+      dim++;
+
+      title[dim] = "V0C total multiplicity";
+      nbins[dim] = 200;
+      min[dim] = 0;
+      max[dim] = 20000;
+      dim++;
+    }
+
+    if (!fRhoName.IsNull()) {
+      title[dim] = "#rho (GeV/c)";
+      nbins[dim] = fNbins*4;
+      min[dim] = 0;
+      max[dim] = 400;
+      dim++;
+    }
+  }
+
+  if (!fTracksName.IsNull()) {
+    title[dim] = "No. of tracks";
+    nbins[dim] = 6000;
+    min[dim] = -0.5;
+    max[dim] = 6000-0.5;
+    dim++;
+  }
+
+  if (!fCaloName.IsNull()) {
+    title[dim] = "No. of clusters";
+    nbins[dim] = 4000;
+    min[dim] = 0;
+    max[dim] = 4000-0.5;
+    dim++;
+  }
+
+  if (!fCaloCellsName.IsNull()) {
+    title[dim] = "No. of cells";
+    nbins[dim] = 6000;
+    min[dim] = 0;
+    max[dim] = 6000-0.5;
+    dim++;
+  }
+
+  if (!fJetsName.IsNull()) {
+    title[dim] = "No. of jets";
+    nbins[dim] = 200;
+    min[dim] = 0;
+    max[dim] = 200-0.5;
+    dim++;
+  }
+
+  fHistEventQA = new THnSparseF("fHistEventQA","fHistEventQA",dim,nbins,min,max);
+  for (Int_t i = 0; i < dim; i++)
+    fHistEventQA->GetAxis(i)->SetTitle(title[i]);
+  fOutput->Add(fHistEventQA);
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSAQA::ExecOnce()
+{
+  AliAnalysisTaskEmcalJet::ExecOnce();
+  
+  if (fDoV0QA) {
+    fVZERO = InputEvent()->GetVZEROData();
+    if (!fVZERO) {
+      AliError("AliVVZERO not available");
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -342,9 +427,22 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
-  fNclusters = 0;
-  fNtracks = 0;
-  fNjets = 0;
+  if (!fCentMethod2.IsNull() || !fCentMethod3.IsNull()) {
+    if (fBeamType == kAA || fBeamType == kpA ) {
+      AliCentrality *aliCent = InputEvent()->GetCentrality();
+      if (aliCent) {
+	if (!fCentMethod2.IsNull()) 
+	  fCent2 = aliCent->GetCentralityPercentile(fCentMethod2); 
+	if (!fCentMethod3.IsNull()) 
+	  fCent3 = aliCent->GetCentralityPercentile(fCentMethod3);
+      }
+    }
+  }
+
+  if (fVZERO) {
+    fV0ATotMult = AliESDUtils::GetCorrV0A(fVZERO->GetMTotV0A(),fVertex[2]);
+    fV0CTotMult = AliESDUtils::GetCorrV0C(fVZERO->GetMTotV0C(),fVertex[2]);
+  }
 
   return kTRUE;
 }
@@ -355,43 +453,78 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 {
   // Fill histograms.
 
-  Float_t clusSum = 0;
   Float_t trackSum = 0;
+  Float_t clusSum = 0;
+  Float_t cellSum = 0;
+  Float_t cellCutSum = 0;
 
+  Int_t ntracks = 0;
+  Int_t nclusters = 0;
+  Int_t ncells = 0;
+  Int_t njets = 0;
+    
   if (fTracks) {
-    trackSum = DoTrackLoop();
-    AliDebug(2,Form("%d tracks found in the event", fTracks->GetEntriesFast()));
-    fHistTracksCent->Fill(fCent, fNtracks);
+    ntracks = DoTrackLoop(trackSum);
+    AliDebug(2,Form("%d tracks found in the event", ntracks));
   } 
 
   if (fCaloClusters) {
-    clusSum = DoClusterLoop();
+    nclusters = DoClusterLoop(clusSum);
+    AliDebug(2,Form("%d clusters found in the event", nclusters));
 
-    fHistClusCent->Fill(fCent, fNclusters);
-    fHistClusTracks->Fill(fNtracks, fNclusters);
-
-    Float_t cellSum = 0, cellCutSum = 0;
-    
-    Int_t ncells = DoCellLoop(cellSum, cellCutSum);
-
-    if (fTracks)
-      fHistCellsTracks->Fill(fNtracks, ncells);
-
-    fHistCellsCent->Fill(fCent, ncells);
+    fHistChVSneClus->Fill(clusSum, trackSum);
+  }
+  
+  if (fCaloCells) {
+    ncells = DoCellLoop(cellSum, cellCutSum);
+    AliDebug(2,Form("%d cells found in the event", ncells));
     
     fHistChVSneCells->Fill(cellSum, trackSum);
-    fHistChVSneClus->Fill(clusSum, trackSum);
     fHistChVSneCorrCells->Fill(cellCutSum, trackSum);
   }
 
   if (fJets) {
-    DoJetLoop();
-    
-    fHistJetsCent->Fill(fCent, fNjets);
-    fHistJetsParts->Fill(fNtracks + fNclusters, fNjets);
+    njets = DoJetLoop();
+    AliDebug(2,Form("%d jets found in the event", njets));
   }
 
+  FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fRhoVal, ntracks, nclusters, ncells, njets);
+
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets)
+{
+  Double_t contents[10]={0};
+
+  for (Int_t i = 0; i < fHistEventQA->GetNdimensions(); i++) {
+    TString title(fHistEventQA->GetAxis(i)->GetTitle());
+    if (title=="Centrality %")
+      contents[i] = cent;
+    else if (title==Form("Centrality %s %%", fCentMethod2.Data()))
+      contents[i] = cent2;
+    else if (title==Form("Centrality %s %%", fCentMethod3.Data()))
+      contents[i] = cent3;
+    else if (title=="V0A total multiplicity")
+      contents[i] = v0a;
+    else if (title=="V0C total multiplicity")
+      contents[i] = v0c;
+    else if (title=="#rho (GeV/c)")
+      contents[i] = rho;
+    else if (title=="No. of tracks")
+	contents[i] = ntracks;
+    else if (title=="No. of clusters")
+      contents[i] = nclusters;
+    else if (title=="No. of cells")
+      contents[i] = ncells;
+    else if (title=="No. of jets")
+      contents[i] = njets;
+    else 
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+  }
+
+  fHistEventQA->Fill(contents);
 }
 
 //________________________________________________________________________
@@ -479,19 +612,21 @@ Double_t AliAnalysisTaskSAQA::GetFcross(AliVCluster *cluster, AliVCaloCells *cel
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAQA::DoClusterLoop()
+Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum)
 {
   // Do cluster loop.
 
   if (!fCaloClusters)
     return 0;
 
+  Int_t nAccClusters = 0;
+
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
 
-  Float_t sum = 0;
+  sum = 0;
 
   // Cluster loop
-  Int_t nclusters =  fCaloClusters->GetEntriesFast();
+  const Int_t nclusters = fCaloClusters->GetEntriesFast();
 
   for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
     AliVCluster* cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
@@ -519,23 +654,25 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
     if (fHistClusMCEnergyFraction[fCentBin])
       fHistClusMCEnergyFraction[fCentBin]->Fill(cluster->GetMCEnergyFraction());
 
-    fNclusters++;
+    nAccClusters++;
   }
 
-  return sum;
+  return nAccClusters;
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSAQA::DoTrackLoop()
+Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum)
 {
   // Do track loop.
 
   if (!fTracks)
     return 0;
 
-  Float_t sum = 0;
+  Int_t nAccTracks = 0;
 
-  Int_t ntracks = fTracks->GetEntriesFast();
+  sum = 0;
+
+  const Int_t ntracks = fTracks->GetEntriesFast();
   Int_t neg = 0;
   Int_t zero = 0;
 
@@ -551,7 +688,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (!AcceptTrack(track)) 
       continue;
 
-    fNtracks++;
+    nAccTracks++;
 
     sum += track->P();
 
@@ -562,8 +699,10 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
       fHistTrPhiEtaPt[fCentBin][3]->Fill(track->Eta(), track->Phi(), track->Pt());
       if (track->GetLabel() == 0) {
 	zero++;
-	if (fHistTrPhiEtaPtZeroLab[fCentBin])
-	  fHistTrPhiEtaPtZeroLab[fCentBin]->Fill(track->Eta(), track->Phi(), track->Pt());
+	if (fHistTrPhiEtaZeroLab[fCentBin]) {
+	  fHistTrPhiEtaZeroLab[fCentBin]->Fill(track->Eta(), track->Phi());
+	  fHistTrPtZeroLab[fCentBin]->Fill(track->Pt());
+	}
       }
 
       if (track->GetLabel() < 0)
@@ -586,8 +725,10 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (!vtrack)
       continue;
 
-    if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin])
+    if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
       fHistTrPhiEtaNonProp[fCentBin]->Fill(vtrack->Eta(), vtrack->Phi());
+      fHistTrPtNonProp[fCentBin]->Fill(vtrack->Pt());
+    }
 
     if (fHistTrEmcPhiEta[fCentBin])
       fHistTrEmcPhiEta[fCentBin]->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());   
@@ -607,16 +748,18 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
   if (fHistTrZeroLabels)
     fHistTrZeroLabels->Fill(1. * zero / ntracks);
 
-  return sum;
+  return nAccTracks;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAQA::DoJetLoop()
+Int_t AliAnalysisTaskSAQA::DoJetLoop()
 {
   // Do jet loop.
 
   if (!fJets)
-    return;
+    return 0;
+
+  Int_t nAccJets = 0;
 
   Int_t njets = fJets->GetEntriesFast();
 
@@ -632,16 +775,11 @@ void AliAnalysisTaskSAQA::DoJetLoop()
     if (!AcceptJet(jet))
       continue;
 
-    fNjets++;
+    nAccJets++;
 
-    fHistJetsPhiEtaPt[fCentBin]->Fill(jet->Eta(), jet->Phi(), jet->Pt());
+    fHistJetsPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
   }
-}
 
-
-//________________________________________________________________________
-void AliAnalysisTaskSAQA::Terminate(Option_t *) 
-{
-  // Called once at the end of the analysis.
+  return nAccJets;
 }

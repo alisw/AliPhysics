@@ -533,10 +533,10 @@ void AliHadCorrTask::DoTrackLoop()
     if (!AcceptTrack(track))
       continue;
     
-    if (track->GetTrackEtaOnEMCal() < fGeom->GetArm1EtaMin() + fEtaMatch ||
-	track->GetTrackEtaOnEMCal() > fGeom->GetArm1EtaMax() - fEtaMatch || 
-	track->GetTrackPhiOnEMCal() < fGeom->GetArm1PhiMin() * TMath::DegToRad() + fPhiMatch || 
-	track->GetTrackPhiOnEMCal() > fGeom->GetArm1PhiMax() * TMath::DegToRad() - fPhiMatch)
+    if (track->GetTrackEtaOnEMCal() < fGeom->GetArm1EtaMin() - fEtaMatch ||
+	track->GetTrackEtaOnEMCal() > fGeom->GetArm1EtaMax() + fEtaMatch || 
+	track->GetTrackPhiOnEMCal() < fGeom->GetArm1PhiMin() * TMath::DegToRad() - fPhiMatch || 
+	track->GetTrackPhiOnEMCal() > fGeom->GetArm1PhiMax() * TMath::DegToRad() + fPhiMatch)
       continue;
     
     Int_t Nclus = emctrack->GetNumberOfMatchedObj();
