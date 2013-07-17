@@ -12,7 +12,7 @@ Int_t LoadLib();
 void doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 TH2F *GetHistoPrp(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 TH2F *GetHistoPrn(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
-void fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="");
+void fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="",Float_t pt=1.5);
 void AddHisto(TH2F *h1,TH2F *h2,Float_t w);
 
 TObject* fContPid1;
@@ -66,6 +66,8 @@ Bool_t kLoaded=kFALSE;
 Int_t LoadLib(){
   weightS = -1.;
 
+  require5sigma = kFALSE;
+
   if(! kLoaded){
     gSystem->Load("libVMC.so");
     gSystem->Load("libPhysics.so");
@@ -113,9 +115,9 @@ Int_t LoadLib(){
     printf("MC truth found!!!!!!\nIt is MC!!!!!!");
   }
 
-  fsign = new TF1("fsign","[0]*TMath::Voigt(x-[1],[3],[2])",fitmin,fitmax);
+  fsign = new TF1("fsign","gaus(0) +0.5*[0]*TMath::Exp(-[3]*TMath::Abs(x-[1]))",fitmin,fitmax);
   fback = new TF1("fback","pol2",fitmin,fitmax);
-  fall = new TF1("fall","[0]*TMath::Voigt(x-[1],[3],[2]) + pol2(4)",fitmin,fitmax);
+  fall = new TF1("fall","gaus(0) +0.5*[0]*TMath::Exp(-[3]*TMath::Abs(x-[1])) + pol2(4)",fitmin,fitmax);
 
   fsign->SetLineColor(2);
   fback->SetLineColor(4);
@@ -206,10 +208,10 @@ void doeffPr(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     Int_t ntrial = 0;
     Float_t chi2 = 10000;
     while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
-      fit(h,b[i],"WW","");
+      fit(h,b[i],"WW","",xx[i]);
       c1->Update();
 //       getchar();
-      fit(h,b[i],"","");
+      fit(h,b[i],"","",xx[i]);
       ntrial++;
       chi2 = b[i][2];
       printf("chi2 = %f\n",chi2);
@@ -251,8 +253,8 @@ void doeffPr(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     Int_t ntrial = 0;
     Float_t chi2 = 10000;
     while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
-      fit(h,b2[i],"WW","");
-      fit(h,b2[i],"","");
+      fit(h,b2[i],"WW","",xx[i]);
+      fit(h,b2[i],"","",xx[i]);
       ntrial++;
       chi2 = b2[i][2];
       printf("chi2 = %f\n",chi2);
@@ -465,7 +467,7 @@ TH2F *GetHistoPrn(Float_t pt,Float_t ptM,Float_t pMinkn,Float_t pMinkp,Float_t e
   return h;
 }
 
-void fit(TH1D *h,Float_t *a,char *opt,char *opt2){
+void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
   if(h->Integral(1,h->GetNbinsX()) < 1){
     if(a){
       a[0]=0.01;
@@ -477,13 +479,13 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2){
 
  fall->SetParameter(0,100);
  fall->SetParameter(1,1.115);
- fall->SetParameter(2,0.0003);
- fall->SetParameter(3,0.001);
+ fall->SetParameter(2,2.89748e-03);
+ fall->FixParameter(3,350+600/pt);
 
  fall->SetParLimits(0,0.00001,10000);
  fall->SetParLimits(1,1.105,1.125);//1.01898 + 2.4e-04*pt-1e-03,1.01898 + 2.4e-04*pt+1e-03);
- fall->SetParLimits(2,0.00001,0.001);
- fall->SetParLimits(3,0.0005,0.01);
+ fall->SetParLimits(2,0.0005,0.0015);
+ //fall->SetParLimits(3,200,350);
 
  // fall->FixParameter(2,5E-4);
 
@@ -528,7 +530,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2){
  ftmp3->Draw("SAME");
 
  Float_t mean = ftmp->GetParameter(1);
- Float_t sigma = TMath::Abs(ftmp->GetParameter(3)) + TMath::Abs(ftmp->GetParameter(2));
+ Float_t sigma = TMath::Abs(ftmp->GetParameter(2));
 
  Float_t signI = ftmp2->Integral(mean-10*sigma,mean+10*sigma)/h->GetBinWidth(1);
  Float_t backI = ftmp3->Integral(mean-3*sigma,mean+3*sigma)/h->GetBinWidth(1);
