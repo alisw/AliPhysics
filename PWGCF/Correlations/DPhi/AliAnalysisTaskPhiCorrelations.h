@@ -47,6 +47,7 @@ class AliESDEvent;
 class AliHelperPID;
 class AliAnalysisUtils;
 class TFormula;
+class TMap;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -120,6 +121,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
    
     AliAnalysisUtils* GetAnalysisUtils() { return fAnalysisUtils; }
     void   SetAnalysisUtils(AliAnalysisUtils* utils){ fAnalysisUtils = utils; }
+   
+    TMap* GetMap() { return fMap; }
+    void   SetMap(TMap* map){ fMap = map; }
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -148,9 +152,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t		fSkipTrigger;		  // skip trigger selection
     Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
     
-    // Pointers to external UE classes
-    AliHelperPID*     fHelperPID;      // points to class containing common analysis algorithms
-    AliAnalysisUtils*     fAnalysisUtils;      // points to class containing common analysis algorithms
+    AliHelperPID*     fHelperPID;      // points to class for PID
+    AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
+    TMap*     fMap;                   // points to TMap class containing scaling factors for VZERO A signal
+ 
+   // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
@@ -210,7 +216,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 35); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 36); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
