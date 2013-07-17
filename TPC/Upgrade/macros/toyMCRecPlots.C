@@ -70,10 +70,10 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   TCanvas *cZ0 = new TCanvas(Form("cZ0_%s",sConfig.Data()),Form("cZ0_%s",sConfig.Data()),1200,500);
   cZ0->Divide(2,1);
 
-  TCanvas *cTrackParams = new TCanvas(Form("cTrackParams_%s",sConfig.Data()),Form("cTrackParams_%s",sConfig.Data()),1200,900);
+  TCanvas *cTrackParams = new TCanvas(Form("cTrackParams_%s",sConfig.Data()),Form("cTrackParams_%s",sConfig.Data()),4800,3600);
   cTrackParams->Divide(3,3);
 
-  TCanvas *cTrackParamsITS = new TCanvas(Form("cTrackParamsITS_%s",sConfig.Data()),Form("cTrackParamsITS_%s",sConfig.Data()),1200,900);
+  TCanvas *cTrackParamsITS = new TCanvas(Form("cTrackParamsITS_%s",sConfig.Data()),Form("cTrackParamsITS_%s",sConfig.Data()),4800,3600);
   cTrackParamsITS->Divide(3,3);
 
   TCanvas *cEff = new TCanvas(Form("cEff_%s",sConfig.Data()),Form("cEff_%s",sConfig.Data()),1200,900);
