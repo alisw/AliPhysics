@@ -758,15 +758,16 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
       argument.ReplaceAll("elreco=", "");
       int selectionStep=kPIDTOFTPC; //Default
       if(argument.CompareTo("alltracks")==0) selectionStep=kNoCuts;      
-      if(argument.CompareTo("afterreckineitstpc")==0) selectionStep=kRecKineITSTPC;
-      if(argument.CompareTo("afterrecprim")==0) selectionStep=kRecPrim;
-      if(argument.CompareTo("afterhfeits")==0) selectionStep=kHFEcutsITS;
-      if(argument.CompareTo("afterhfetof")==0) selectionStep=kHFEcutsTOF;
-      if(argument.CompareTo("afterhfetpc")==0) selectionStep=kHFEcutsTPC;
-      if(argument.CompareTo("aftertrackcuts")==0) selectionStep=kHFEcutsTPC;
-      if(argument.CompareTo("aftertofpid")==0) selectionStep=kPIDTOF;
-      if(argument.CompareTo("aftertpcpid")==0) selectionStep=kPIDTPC;
-      if(argument.CompareTo("afterfullpid")==0) selectionStep=kPIDTOFTPC;
+      else if(argument.CompareTo("afterreckineitstpc")==0) selectionStep=kRecKineITSTPC;
+      else if(argument.CompareTo("afterrecprim")==0) selectionStep=kRecPrim;
+      else if(argument.CompareTo("afterhfeits")==0) selectionStep=kHFEcutsITS;
+      else if(argument.CompareTo("afterhfetof")==0) selectionStep=kHFEcutsTOF;
+      else if(argument.CompareTo("afterhfetpc")==0) selectionStep=kHFEcutsTPC;
+      else if(argument.CompareTo("aftertrackcuts")==0) selectionStep=kHFEcutsTPC;
+      else if(argument.CompareTo("aftertofpid")==0) selectionStep=kPIDTOF;
+      else if(argument.CompareTo("aftertpcpid")==0) selectionStep=kPIDTPC;
+      else if(argument.CompareTo("afterfullpid")==0) selectionStep=kPIDTOFTPC;
+      else AliFatal(Form("unknown argument '%s'", argument.Data()));
       SetFinalCutStep(selectionStep); 
       continue;   
     }

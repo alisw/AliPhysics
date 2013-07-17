@@ -90,6 +90,7 @@ class AliDxHFECorrelation : public TNamed {
   //void SetPhiRange(Double_t min, Double_t max){fMinPhi=min; fMaxPhi=max;}
   // TODO: SetEventType only needed for MC. How to avoid this?
   virtual void SetEventType(int type){fEventType=type;}
+  void SetRunFullMode(bool fullmode=kTRUE){fRunFullMode=fullmode;}
 
   Bool_t GetUseMC() const {return fUseMC;}
   const TList* GetControlObjects() const {return fControlObjects;}
@@ -99,6 +100,7 @@ class AliDxHFECorrelation : public TNamed {
   Double_t GetDeltaEta() const {return fDeltaEta;}
   inline int GetDimTHnSparse() const {return fDimThn;}
   Int_t GetTriggerParticleType() const {return fTriggerParticleType;}
+  Bool_t RunFullMode() const {return fRunFullMode;}
 
   void EventMixingChecks(const AliVEvent* pEvent);
 
@@ -162,6 +164,7 @@ class AliDxHFECorrelation : public TNamed {
   Int_t fEventType;              // Event type. Only needed for MC (fix)
   Int_t fTriggerParticleType;    // Which particle to trigger on
   Bool_t fUseTrackEfficiency;    // Whether or not to correct for single track efficiency
+  Bool_t fRunFullMode;           // If run in full mode (bigger thnsparse)
 
   static const char* fgkEventControlBinNames[];
 
