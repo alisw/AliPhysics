@@ -631,15 +631,36 @@ protected:
 		 Int_t        padNo, 
 		 TObject*     h, 
 		 Option_t*    opts="",
-		 UShort_t     flags=0x0)
+		 UShort_t     flags=0x0,
+		 const char*  title="")
   {
     TVirtualPad* p = c->GetPad(padNo);
     if (!p) { 
       Warning("DrawInPad", "Pad # %d not found in %s", padNo, c->GetName());
       return;
     }
-    DrawInPad(p, h, opts, flags);
+    DrawInPad(p, h, opts, flags, title);
   }
+  virtual void DrawObjClone(TObject* o, Option_t* options, const char* title)
+  {
+    if (o->IsA()->InheritsFrom(TH1::Class())) 
+      DrawObjClone(static_cast<TH1*>(o), options, title);
+    else if (o->IsA()->InheritsFrom(THStack::Class())) 
+      DrawObjClone(static_cast<THStack*>(o), options, title);
+    else 
+      o->Draw(options);
+  }
+  virtual void DrawObjClone(THStack* o, Option_t* options, const char* title)
+  {
+    // THStack* tmp = static_cast<THStack*>(o->Clone());
+    o->Draw(options);
+    if (title && title[0] != '\0') o->GetHistogram()->SetTitle(title);
+  }
+  virtual void DrawObjClone(TH1* o, Option_t* options, const char* title)
+  {
+    TH1* tmp = o->DrawCopy(options);
+    if (title && title[0] != '\0') tmp->SetTitle(title);
+  }    
   //__________________________________________________________________
   /** 
    * Draw an object in pad 
@@ -652,7 +673,8 @@ protected:
   void DrawInPad(TVirtualPad* p, 
 		 TObject*     h, 
 		 Option_t*    opts="",
-		 UShort_t     flags=0x0)
+		 UShort_t     flags=0x0,
+		 const char*  title="")
   {
     if (!p) { 
       Warning("DrawInPad", "No pad specified");
@@ -681,7 +703,7 @@ protected:
       hh->SetMarkerSize(2);
       o.Append("30");
     }
-    h->Draw(o);
+    DrawObjClone(h, o, title);
     
     if (flags& kLegend) { 
       TLegend* l = p->BuildLegend(0.33, .67, .66, .99-p->GetTopMargin());
@@ -957,18 +979,19 @@ protected:
    * @param opts    Options
    * @param flags   Flags
    */
-  void DrawInRingPad(UShort_t  d, 
-		     Char_t    r, 
-		     TObject*  h, 
-		     Option_t* opts="",
-		     UShort_t  flags=0x0)
+  void DrawInRingPad(UShort_t    d, 
+		     Char_t      r, 
+		     TObject*    h, 
+		     Option_t*   opts="",
+		     UShort_t    flags=0x0,
+		     const char* title="")
   {
     TVirtualPad* p = RingPad(d, r);
     if (!p) {
       Warning("DrawInRingPad", "No pad found for FMD%d%c", d, r);
       return;
     }
-    DrawInPad(p, h, opts, flags);
+    DrawInPad(p, h, opts, flags, title);
   }
     
 
@@ -1009,9 +1032,9 @@ protected:
     if (GetParameter(c, "sNN", sNN)) {
       TString tsNN = TString::Format("%dGeV", sNN);
       if (sNN >= 10000) 
-	tsNN = TString::Format("%5.2f", float(sNN)/1000);
+	tsNN = TString::Format("%5.2fTeV", float(sNN)/1000);
       else if (sNN >= 1000) 
-	tsNN = TString::Format("%4.2f", float(sNN)/1000);
+	tsNN = TString::Format("%4.2fTeV", float(sNN)/1000);
       DrawParameter(y, "#sqrt{s_{NN}}", tsNN);
     }
 
@@ -1073,7 +1096,8 @@ protected:
       // vertex->Rebin(2);
       vertex->SetFillColor(kMagenta+2);
     }
-    DrawInPad(fBody, 1, nEventsTr, "", 0x2);
+    DrawInPad(fBody, 1, nEventsTr, "", 0x2, 
+	      "Events w/trigger, trigger+vertex, accepted");
     if (vertex) DrawInPad(fBody, 1, vertex, "same");
     DrawInPad(fBody, 1, nEventsTrVtx, "same"); 
     DrawInPad(fBody, 1, nEventsAcc, "same", 0x10);

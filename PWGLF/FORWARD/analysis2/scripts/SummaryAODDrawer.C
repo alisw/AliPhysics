@@ -221,9 +221,11 @@ protected:
       if (!sc) { ptr++; continue; }
     
       fBody->Divide(2,3);
-      DrawInPad(fBody, 1, GetH1(sc, "esdEloss"),       "",     0x2);
+      DrawInPad(fBody, 1, GetH1(sc, "esdEloss"),       "",     0x2,
+		"#Delta/#Delta_{mip} reconstructed and merged");
       DrawInPad(fBody, 1, GetH1(sc, "anaEloss"),       "same", 0x12);
-      DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",     0x2);
+      DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",     0x2,
+		"#Delta/#Delta_{mip} for single, double, and tripple hits");
       DrawInPad(fBody, 2, GetH1(sc, "doubleEloss"),    "same", 0x2);
       DrawInPad(fBody, 2, GetH1(sc, "tripleEloss"),    "same", 0x12);  
       DrawInPad(fBody, 3, GetH2(sc, "singlePerStrip"), "colz", 0x4);
@@ -237,7 +239,8 @@ protected:
 	nB->GetYaxis()->SetRangeUser(0,8); 
       }
       DrawInPad(fBody, 5, nB, "colz", 0x4);
-      DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", 0x4);
+      DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", 0x4,
+		"Correlation of neighbors before and after merging");
       DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   0x4);
 
       PrintCanvas(Form("Sharing filter - %s", *ptr));
@@ -344,7 +347,8 @@ protected:
       DrawInPad(fBody, 1, GetH2(sc, "elossVsPoisson"),   "colz",   0x4);
       DrawInPad(fBody, 2, GetH1(sc, "diffElossPoisson"), "HIST E", 0x2);
       DrawInPad(fBody, 3, GetH1(sc, "occupancy"),        "",       0x2);
-      DrawInPad(fBody, 4, GetH1(sc, "eloss"),            "",       0x2);
+      DrawInPad(fBody, 4, GetH1(sc, "eloss"),            "",       0x2,
+		"#Delta/#Delta_{mip} before and after cuts");
       DrawInPad(fBody, 4, GetH1(sc, "elossUsed"),        "same",   0x12);
       TH1* phiB = GetH1(sc, "phiBefore");
       TH1* phiA = GetH1(sc, "phiAfter");
@@ -521,9 +525,12 @@ protected:
     fBody->cd(1);
 
 		 
-    DrawInPad(fBody, 1, GetH2(c, "coverage"), "col", 0);
-    DrawInPad(fBody, 2, GetH2(c, "nClusterVsnTracklet"), "colz", 0x03); 
-    DrawInPad(fBody, 3, GetH2(c, "clusterPerTracklet"), "colz", 0x0); 
+    DrawInPad(fBody, 1, GetH2(c, "coverage"), "col", 0,
+	      "#eta coverage per v_{z}");
+    DrawInPad(fBody, 2, GetH2(c, "nClusterVsnTracklet"), "colz", 0x03,
+	      "Correlation of # of tracklets and clusters"); 
+    DrawInPad(fBody, 3, GetH2(c, "clusterPerTracklet"), "colz", 0x0,
+	      "# clusters per tracklet vs #eta"); 
 
     fBody->cd(1)->Modified();
     fBody->cd(2)->Modified();
@@ -643,6 +650,8 @@ protected:
     p->Modified();
     p->Update();
     p->cd();
+
+    gStyle->SetOptTitle(1);
   }
 
   //____________________________________________________________________
@@ -849,24 +858,28 @@ protected:
       }
       pring++;
     }
-    DrawInPad(fBody, 1, GetStack(c, "all"), "nostack", mcRings ? 0 : 0x10);
-    DrawInPad(fBody, 2, dndeta_phi);
+    DrawInPad(fBody, 1, GetStack(c, "all"), "nostack", mcRings ? 0 : 0x10,
+	      "Individual ring results");
+    DrawInPad(fBody, 1, mcRings, "nostack same", 0x10);
+    DrawInPad(fBody, 2, dndeta_phi, 
+	      "1/#it{N}_{ev} d#it{N}_{ch}/d#it{#eta}");
     DrawInPad(fBody, 2, dndeta_eta, "Same", 0x10);
-    DrawInPad(fBody, 3, allEta, "nostack hist", 0x10);
+    DrawInPad(fBody, 3, allEta, "nostack hist", 0x10,
+	      "#phi acceptance and #eta coverage per ring");
     DrawInPad(fBody, 3, allPhi, "nostack hist same", 0x0);
-    DrawInPad(fBody, 4, GetH1(fResults, "norm"));
+    DrawInPad(fBody, 4, GetH1(fResults, "norm"), "", 0x0, 
+	      "Total #phi acceptance and #eta coverage");
     DrawInPad(fBody, 4, GetH1(fResults, "phi"), "same", 0x10);
     // DrawInPad(fBody, 4, GetH1(fSums,    "d2Ndetadphi"), "colz");
-    DrawInPad(fBody, 1, mcRings, "nostack same", 0x10);
 
-    fBody->cd(1);
-    TLatex* l = new TLatex(.5, .2, "Ring results");
-    l->SetNDC();
-    l->SetTextAlign(21);
-    l->Draw();
+    // fBody->cd(1);
+    // TLatex* l = new TLatex(.5, .2, "Ring results");
+    // l->SetNDC();
+    // l->SetTextAlign(21);
+    // l->Draw();
 
-    fBody->cd(2);
-    l->DrawLatex(.5, .2, "1/N_{ev}dN_{ch}/d#eta");
+    // fBody->cd(2);
+    // l->DrawLatex(.5, .2, "1/N_{ev}dN_{ch}/d#eta");
 
     // fBody->cd(3);
     // l->DrawLatex(.5, .2, "1/N_{ev}dN_{ch}/d#eta (#vta norm.)");
