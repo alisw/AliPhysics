@@ -155,6 +155,8 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
 
   TH1D *hM2BkgMism[2][3][nbin];                //! M2 from mismatch background in each momentum bin
 
+  TH1F *hNminTPCcl[2];
+
   ClassDef(AliAnalysisNucleiMass, 1);
 };
 
