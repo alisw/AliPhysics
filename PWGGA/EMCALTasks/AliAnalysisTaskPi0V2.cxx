@@ -929,17 +929,17 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     if(fEPTPC != -999.)
       fEPTPC = ApplyFlattening(fEPTPC, fCentrality);  //TPC after Phos flatten
     while(fEPV0A <0.) fEPV0A+=TMath::Pi(); while(fEPV0A >TMath::Pi()) fEPV0A-=TMath::Pi();
-    if(fEPV0C <0.) fEPV0C+=TMath::Pi(); if(fEPV0C >TMath::Pi()) fEPV0C-=TMath::Pi();
-    if(fEPTPC <0.) fEPTPC+=TMath::Pi(); if(fEPTPC >TMath::Pi()) fEPTPC-=TMath::Pi();
+    while(fEPV0C <0.) fEPV0C+=TMath::Pi(); while(fEPV0C >TMath::Pi()) fEPV0C-=TMath::Pi();
+    while(fEPTPC <0.) fEPTPC+=TMath::Pi(); while(fEPTPC >TMath::Pi()) fEPTPC-=TMath::Pi();
   }
 
   if (!isPhosCali) { 
     Double_t EPV0ACor = ApplyFlattening(fEPTPC, fCentrality);
     Double_t EPV0CCor = ApplyFlattening(fEPTPC, fCentrality);
     Double_t EPTPCCor = ApplyFlattening(fEPTPC, fCentrality);
-    if(EPV0ACor <0.) EPV0ACor+=TMath::Pi(); if(EPV0ACor >TMath::Pi()) EPV0ACor-=TMath::Pi();
-    if(EPV0CCor <0.) EPV0CCor+=TMath::Pi(); if(EPV0CCor >TMath::Pi()) EPV0CCor-=TMath::Pi();
-    if(EPTPCCor <0.) EPTPCCor+=TMath::Pi(); if(EPTPCCor >TMath::Pi()) EPTPCCor-=TMath::Pi();
+    while(EPV0ACor <0.) EPV0ACor+=TMath::Pi(); while(EPV0ACor >TMath::Pi()) EPV0ACor-=TMath::Pi();
+    while(EPV0CCor <0.) EPV0CCor+=TMath::Pi(); while(EPV0CCor >TMath::Pi()) EPV0CCor-=TMath::Pi();
+    while(EPTPCCor <0.) EPTPCCor+=TMath::Pi(); while(EPTPCCor >TMath::Pi()) EPTPCCor-=TMath::Pi();
     
     if(fEPTPC != -999.)
       hEPTPCCor->Fill(fCentrality, EPTPCCor);
@@ -995,9 +995,9 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       Double_t cluPhi = p1.Phi();
       Double_t cluPt  = p1.Pt();
       Double_t difclusV0A = cluPhi-fEPV0A;
-      while(difclusV0A<0.) difclusV0A+=TMath::Pi();  while(difclusV0A>TMath::Pi()) difclusV0A-=TMath::Pi();
+      if(difclusV0A<0.) difclusV0A+=TMath::Pi();  if(difclusV0A>TMath::Pi()) difclusV0A-=TMath::Pi();
       Double_t difclusV0C = cluPhi-fEPV0C;
-      while(difclusV0C<0.) difclusV0C+=TMath::Pi();  while(difclusV0C>TMath::Pi()) difclusV0C-=TMath::Pi();
+      if(difclusV0C<0.) difclusV0C+=TMath::Pi();  if(difclusV0C>TMath::Pi()) difclusV0C-=TMath::Pi();
       hclusDif_EPV0A->Fill(fCentrality,   difclusV0A, cluPt);
       hclusDif_EPV0C->Fill(fCentrality,   difclusV0C, cluPt);
       hclusv2_EPV0A->Fill(fCentrality,   TMath::Cos(2.*difclusV0A), cluPt);
