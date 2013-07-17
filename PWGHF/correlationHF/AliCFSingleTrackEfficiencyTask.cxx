@@ -348,7 +348,12 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       // Step 7. Track that are recostructed + Quality + Kine criteria filling
       if(! fTrackCuts->IsSelected(tmptrack) )
 	selected=kFALSE;
-
+      if(selected){
+	AliDebug(2,"Reconstructed track pass first quality criteria\n");
+	fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedFirstTrackCutsMC);
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoFirstQualityCuts);
+      }else AliDebug(3,"Reconstructed track not passing first quality criteria\n");
+	   
       
       // DxHFE: Add here the extra cuts
       // 1. TPC PID clusters

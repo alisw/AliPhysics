@@ -51,6 +51,15 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   /// clear internal memory
   virtual void Clear(const char* option="");
 
+  enum{
+    kAllPassingSelection=-1,
+    kHadron=0,
+    kNonHFE=1,
+    kHFE=2,
+    kOnlyc=3,
+    kOnlyb=4,
+  };
+
  protected:
 
  private:
@@ -74,6 +83,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Bool_t fUseMCReco;                   // Run over all MC reconstructed tracks
   Int_t fSelectionStep;                // Where to stop track selection
   Bool_t          fStoreCutStepInfo;   // Whether to store which cut step is the effective one
+  Int_t fElSelection;                  // If there should be a selection on the electrons
 
 
   ClassDef(AliDxHFEParticleSelectionMCEl, 4);

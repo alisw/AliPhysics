@@ -74,6 +74,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fEventType(0)
   , fTriggerParticleType(kD)
   , fUseTrackEfficiency(kFALSE)
+  , fRunFullMode(kTRUE)
 {
   // default constructor
   // 
@@ -287,7 +288,14 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       if (argument.CompareTo("D0")==0) { fTriggerParticleType=kD; AliInfo("Trigger on D");}
       else if (argument.CompareTo("electron")==0){ fTriggerParticleType=kElectron; AliInfo("trigger on electron");}
       continue;
-    }   
+    }  
+    if(argument.BeginsWith("runmode=")){
+      argument.ReplaceAll("runmode=","");
+      cout << argument.Data() << endl;
+      if (argument.CompareTo("full")==0) {AliInfo("Run in Full mode"); SetRunFullMode(kTRUE);}
+      if (argument.CompareTo("reduced")==0) {AliInfo("Run in Reduced mode"); SetRunFullMode(kFALSE);}
+      continue;
+    }
     AliWarning(Form("unknown argument '%s'", argument.Data()));
       
   }
@@ -476,6 +484,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	  Double_t zvertex = vtx->GetZ(); // zvertex
 	  weight=cuts->GetTrackWeight(assoc->Pt(),assoc->Eta(),zvertex);
 	  AliDebug(2,Form("Vertex: %f  weight: &f ",zvertex, weight));
+	  //	  cout << "Vertex: " << zvertex << "   weight: " << weight << endl;
 	}
 
 
