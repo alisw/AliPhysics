@@ -17,7 +17,7 @@ Dependencies and responsible person (with commit rights)
 --------------------------------------------------------
 
 CaloTrackCorrelations (former PartCorrDep) depends on PWG/CaloTrackCorrBase (former PartCorrBase)
-Responsible: G. Conesa 
+Responsible: G. Conesa, C. Silvestre
 
 EMCALTasks: holds code re the EMCAL
 Responsible: G. Conesa, M. Cosentino 
