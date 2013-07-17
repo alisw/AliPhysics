@@ -24,6 +24,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TRandom.h>
+#include <TParameter.h>
 
 #include "AliAnalysisTaskPhiCorrelations.h"
 #include "AliAnalyseLeadingTrackUE.h"
@@ -56,6 +57,7 @@
 
 #include "AliHelperPID.h"
 #include "AliAnalysisUtils.h"
+#include "TMap.h"
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -96,9 +98,10 @@ fUseVtxAxis(kFALSE),
 fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
-// pointers to UE classes
 fHelperPID(0x0),
 fAnalysisUtils(0x0),
+fMap(0x0),
+// pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
 fHistosMixed(0),
@@ -302,6 +305,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // add HelperPID to list
   if (fHelperPID)
     fListOfHistos->Add(fHelperPID);
+  // add TMap to list
+  if (fMap)
+    fListOfHistos->Add(fMap);
   
   fListOfHistos->Add(new TH2F("trackletsVsV0Cent", ";L1 clusters;v0 centrality", 100, -0.5, 9999.5, 101, 0, 101));
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
@@ -309,7 +315,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
   fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
-  fListOfHistos->Add(new TH1F("V0AMult", ";;V0A multiplicity", 2000, -.5, 1999.5));
+  fListOfHistos->Add(new TH2F("V0AMult", "V0A multiplicity;V0A multiplicity;V0A multiplicity (scaled)", 1000, -.5, 999.5, 1000, -.5, 999.5));
   
   PostData(0,fListOfHistos);
   
@@ -929,6 +935,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     }
     else if (fCentralityMethod == "V0A_MANUAL")
     {
+      //Total multiplicity in the VZERO A detector
+      Float_t MV0A=inputEvent->GetVZEROData()->GetMTotV0A();
+      Float_t MV0AScaled=0.;
+      if (fMap){
+	TParameter<float>* sf=(TParameter<float>*)fMap->GetValue(Form("%d",inputEvent->GetRunNumber()));
+	if(sf)MV0AScaled=MV0A*sf->GetVal();
+      }
+      ((TH2F*) fListOfHistos->FindObject("V0AMult"))->Fill(MV0A,MV0AScaled);
+      
       // for pp, to be implemented
       centrality = 1;
     }
@@ -1037,9 +1052,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   }
 
-  //Total multiplicity in the VZERO A detector
-  ((TH1F*) fListOfHistos->FindObject("V0AMult"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A());
-  
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
   if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
