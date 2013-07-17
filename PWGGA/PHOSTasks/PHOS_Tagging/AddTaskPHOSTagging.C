@@ -1,4 +1,4 @@
-AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSPi0Flow",
+AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTagging",
 					    const char* options = "",
 					    UInt_t offlineTriggerMask = AliVEvent::kCentral,
 					    AliAnalysisTaskPi0Flow::TriggerSelection internalTriggerSelection = AliAnalysisTaskPi0Flow::kNoSelection )
@@ -27,7 +27,7 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSPi0Flo
   
   TString cname(Form("%sCoutput1", name));
   TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name));
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), THashList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
   mgr->ConnectOutput(task, 1, coutput1);
   
   return task;
