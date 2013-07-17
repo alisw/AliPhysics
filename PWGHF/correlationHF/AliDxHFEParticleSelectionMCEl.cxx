@@ -54,6 +54,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fUseMCReco(kFALSE)
   , fSelectionStep(AliDxHFEParticleSelectionEl::kNoCuts)
   , fStoreCutStepInfo(kFALSE)
+  , fElSelection(kAllPassingSelection)
 {
   // constructor
   // 
@@ -269,7 +270,10 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
   }
   fResultMC=CheckMC(p, pEvent);
   
-  if(fUseKine || fUseMCReco)
+  // Return only result of MC checks (rather than result from reconstruction) for kinematical studies, 
+  // when looking at the various selection steps (want only electrons) or when we only want to store specific
+  // sources from the reconstruction (hadrons/nonHFE/HFE/onlyc/onlyb)
+  if(fUseKine || fUseMCReco || fElSelection>kAllPassingSelection)
     return fResultMC;
 
   return iResult;
@@ -307,7 +311,9 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     // rejected by pdg
     // TODO: Move this to fMCTools???? Can this be part of the statistics in the MC class?
     fPDGnotMCElectron->Fill(fMCTools.MapPDGLabel(pdgParticle));
-    return 0;
+    // If the hadrons (and only hadrons) are going to be stored
+    if(fElSelection==kHadron) return 1;
+    else return 0;
   }
 
   int pdgMother=0;
@@ -316,6 +322,7 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
 
   // Check if first mother is counted as background
   Bool_t isNotBackground=fMCTools.RejectByPDG(pdgMother,fMotherPDGs);
+  Int_t selection=-1;
 
   if(!isNotBackground){
     // Set fOriginMother if mother is counted as background
@@ -326,6 +333,7 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     case(AliDxHFEToolsMC::kPDGgamma): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+2;break;
     case(AliDxHFEToolsMC::kPDGJpsi): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+3;break;
     }
+    selection=kNonHFE;
   }
   else{
     // If loop over Stack, also checks if First mother is a HF meson
@@ -342,8 +350,35 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
       //NotHFmother
       fPDGNotHFMother->Fill(pdgMother);
       fOriginMother=AliDxHFEToolsMC::kNrOrginMother+4;
+      selection=kNonHFE;
     }
 
+  }
+  //TODO: Implement checks on the electrons, to return only specific sources (nonHFE/HF(c, b or candb)/hadrons)
+  if(fOriginMother >= AliDxHFEToolsMC::kOriginNone && fOriginMother <= AliDxHFEToolsMC::kOriginStrange)
+    selection=kNonHFE;
+
+  if(fOriginMother == AliDxHFEToolsMC::kOriginCharm || fOriginMother == AliDxHFEToolsMC::kOriginGluonCharm)
+    selection=kOnlyc;
+
+  if(fOriginMother == AliDxHFEToolsMC::kOriginBeauty || fOriginMother == AliDxHFEToolsMC::kOriginGluonBeauty)
+    selection=kOnlyb;
+
+  if(fElSelection==kNonHFE && ( selection!= kNonHFE)){
+    AliDebug(2,Form("Particle selected as: %d, want only to select %d",selection, fElSelection));
+    return 0;
+  }
+  if(fElSelection==kHFE && (selection != kOnlyc && selection != kOnlyb)) {
+    AliDebug(2,Form("Particle selected as: %d, want only to select %d",selection, fElSelection));
+    return 0;
+  }
+  if(fElSelection==kOnlyc && selection !=kOnlyc){
+    AliDebug(2,Form("Particle selected as: %d, want only to select %d",selection, fElSelection));
+    return 0;
+  }
+  if(fElSelection==kOnlyb && selection !=kOnlyb){
+    AliDebug(2,Form("Particle selected as: %d, want only to select %d",selection, fElSelection));
+    return 0;
   }
 
   return 1;
@@ -385,25 +420,37 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       if(argument.BeginsWith("elmcreco=")){
 	argument.ReplaceAll("elmcreco=", "");
 	if(argument.CompareTo("alltracks")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kNoCuts;
-	if(argument.CompareTo("afterreckineitstpc")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRecKineITSTPC;
-	if(argument.CompareTo("afterrecprim")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRecPrim;
-	if(argument.CompareTo("afterhfeits")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsITS;
-	if(argument.CompareTo("afterhfetof")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTOF;
-	if(argument.CompareTo("afterhfetpc")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTPC;
-	if(argument.CompareTo("aftertrackcuts")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTPC;
-	if(argument.CompareTo("aftertofpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOF;
-	if(argument.CompareTo("aftertpcpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTPC;
-	if(argument.CompareTo("afterfullpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOFTPC;
+	else if(argument.CompareTo("afterreckineitstpc")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRecKineITSTPC;
+	else if(argument.CompareTo("afterrecprim")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRecPrim;
+	else if(argument.CompareTo("afterhfeits")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsITS;
+	else if(argument.CompareTo("afterhfetof")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTOF;
+	else if(argument.CompareTo("afterhfetpc")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTPC;
+	else if(argument.CompareTo("aftertrackcuts")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTPC;
+	else if(argument.CompareTo("aftertofpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOF;
+	else if(argument.CompareTo("aftertpcpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTPC;
+	else if(argument.CompareTo("afterfullpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOFTPC;
+	else AliFatal(Form("unknown argument '%s'", argument.Data()));
 
 	AliDxHFEParticleSelectionEl::SetFinalCutStep(fSelectionStep);
       }
-	continue;
+      continue;
     }
     if(argument.BeginsWith("storelastcutstep")){
       AliInfo("Stores the last cut step");
       fUseMCReco=kTRUE;
       fStoreCutStepInfo=kTRUE;
       AliDxHFEParticleSelectionEl::SetStoreLastCutStep(kTRUE);
+      continue;
+    }
+    if(argument.BeginsWith("ElSelection=")){
+      argument.ReplaceAll("ElSelection=","");
+      if(argument.CompareTo("hadron")==0){ fElSelection=kHadron;}
+      else if(argument.CompareTo("nonHFE")==0) {fElSelection=kNonHFE;}
+      else if(argument.CompareTo("HFE")==0){ fElSelection=kHFE;}
+      else if(argument.CompareTo("Onlyc")==0){ fElSelection=kOnlyc;}
+      else if(argument.CompareTo("Onlyb")==0){ fElSelection=kOnlyb;}
+      else AliFatal(Form("unknown argument '%s'", argument.Data()));
+      AliInfo(Form("Selecting only source %d",fElSelection));
       continue;
     }
     // forwarding of single argument works, unless key-option pairs separated

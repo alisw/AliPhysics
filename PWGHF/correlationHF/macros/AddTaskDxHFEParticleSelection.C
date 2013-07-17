@@ -162,6 +162,8 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("etacut"))
 	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("ElSelection="))
+	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("storelastcutstep"))
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("usefilterbit")){
