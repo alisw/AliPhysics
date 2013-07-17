@@ -37,13 +37,13 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   kTOF(0),
   iBconf(0),
   isSignalCheck(kTRUE),
-  NsigmaTPCCut(2.0),
-  MomType(1),
+//NsigmaTPCCut(2.0),
+//MomType(1),
   fAOD(NULL),
   fESD(NULL),
   fEvent(NULL),
-  fPIDResponse(NULL),
-  fmism(NULL),
+//  fPIDResponse(NULL),
+//  fmism(NULL),
   hmism(NULL),
   fchDist(NULL),
   hChDist(NULL)
@@ -52,6 +52,7 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   hNevent(NULL),
   hNeventSelected(NULL),
   hTOFSignalPion(NULL),
+  hEtaDistribution(NULL),
   hZvertex(NULL)*/
 {
    // Default constructor (should not be used)
@@ -74,13 +75,13 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass(const char *name):
   kTOF(0),
   iBconf(0),
   isSignalCheck(kTRUE),
-  NsigmaTPCCut(2.0),
-  MomType(1),
+  //  NsigmaTPCCut(2.0),
+  //MomType(1),
   fAOD(NULL), 
   fESD(NULL),
   fEvent(NULL),
-  fPIDResponse(NULL),
-  fmism(NULL),
+  //fPIDResponse(NULL),
+  //fmism(NULL),
   hmism(NULL),
   fchDist(NULL),
   hChDist(NULL)
@@ -126,6 +127,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     hEtaDistribution[iB] = new TH1F("hEtaDistribution","Eta distribution of the tracks; |#eta|",11,-0.1,1.0);
     
     hTOFSignalPion[iB] = new TH1F("hTOFSignalPion","TOF signal 0.9<p_{T}<1.0; t-t_{exp}^{#pi} (ps)",1500,-1500,1500);
+
+    hNminTPCcl[iB] = new TH1F("hNminTPCcl","hNminTPCcl",300,0,300);
    
     char namePart[9][30];
     char namePart_par_TPC[9][40];
@@ -504,6 +507,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     fList1[iB]->Add(hNevent[iB]);
     fList1[iB]->Add(hZvertex[iB]);
     fList1[iB]->Add(hEtaDistribution[iB]);
+    fList1[iB]->Add(hNminTPCcl[iB]);
     fList1[iB]->Add(hTOFSignalPion[iB]);
     for(Int_t iS=0;iS<18;iS++) fList1[iB]->Add(fNsigmaTPCvsP_kTOFtrue[iB][iS]);
     
@@ -542,6 +546,16 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	  fList1[iB]->Add(hM2CutGroundDCAxy[iB][iSp+9][j]);
 	}
       }
+      for(Int_t j=0;j<nbin;j++) {//3he
+	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7+9][j]);
+      }
     }
     if(MomType & 2) {
       for(Int_t iSp=3;iSp<6;iSp++) {//for(Int_t iSp=2;iSp<9;iSp++)
@@ -556,6 +570,16 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	  fList1[iB]->Add(hM2CutGroundDCAxy_pbin[iB][iSp+9][j]);
 	}
       }
+      for(Int_t j=0;j<nbin;j++) {//3he
+	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7+9][j]);
+      }
     }
     if(MomType & 4) {
       for(Int_t iSp=3;iSp<6;iSp++) {//for(Int_t iSp=2;iSp<9;iSp++)
@@ -569,6 +593,16 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][iSp+9][j]);
 	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][iSp+9][j]);
 	}
+      }
+      for(Int_t j=0;j<nbin;j++) {//3he
+	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7+9][j]);
       }
     }
     
@@ -675,6 +709,8 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	if ((track->Pt() < 0.2) || !trkFlag || !kTPC){
 	  continue;
 	}	
+
+	hNminTPCcl[iBconf]->Fill(NTpcCls);
 
 	Double_t b[2] = {-99., -99.};
 	Double_t bCov[3] = {-99., -99., -99.};
@@ -850,7 +886,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	      FlagPid += ((Int_t)TMath::Power(2,iS));
 	    }
 	  }
-
+	 	 
 	  if(M2>0.0) {
 	    for(Int_t iS=0;iS<9;iS++) {
 	      if(FlagPid & stdFlagPid[iS]) {
