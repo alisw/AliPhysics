@@ -124,12 +124,27 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     hZvertex[iB] = new TH1F("hZvertex","Vertex distribution of selected events; z vertex (cm)",240,-30,30);
 
-    hEtaDistribution[iB] = new TH1F("hEtaDistribution","Eta distribution of the tracks; |#eta|",11,-0.1,1.0);
-    
+    hEtaDistribution[iB][0] = new TH1F("hEtaDistribution_BeforeTRDcut","Eta distribution of the tracks_BeforeTRDcut(if there is); |#eta|",11,-0.1,1.0);
+    hEtaDistribution[iB][1] = new TH1F("hEtaDistribution_TrackAnalyzed","Eta distribution of the tracks_TrackAnalyzed; |#eta|",11,-0.1,1.0);
+
     hTOFSignalPion[iB] = new TH1F("hTOFSignalPion","TOF signal 0.9<p_{T}<1.0; t-t_{exp}^{#pi} (ps)",1500,-1500,1500);
 
     hNminTPCcl[iB] = new TH1F("hNminTPCcl","hNminTPCcl",300,0,300);
    
+    hPhi[iB][0] = new TH1F("hPhi_NoTRDCut","hPhi_NoTRDCut;#phi (rad.)",90,0,6.3);//each TRD supermodule is divided for 5 (DeltaPhi(TRD)=0.35 theoretical)
+    hPhi[iB][1] = new TH1F("hPhi_kTRDin","hPhi_kTRDin;#phi (rad.)",90,0,6.3); 
+    hPhi[iB][2] = new TH1F("hPhi_kTRDout","hPhi_kTRDout;#phi (rad.)",90,0,6.3); 
+    hPhi[iB][3] = new TH1F("hPhi_kTRDin&out","hPhi_kTRDin&out;#phi (rad.)",90,0,6.3); 
+    hPhi[iB][4] = new TH1F("hPhi_NoTRD","hPhi_NoTRD;#phi (rad.)",90,0,6.3); 
+    hPhi[iB][5] = new TH1F("hPhi_TrackAnalyzed","hPhi_TrackAnalyzed;#phi (rad.)",90,0,6.3);
+
+    fEtaPhi[iB][0] = new TH2F("fEtaPhi_NoTRDCut","fEtaPhi_NoTRDCut;|#eta|;#phi (rad.)",10,0.0,1.0,90,0,6.3);
+    fEtaPhi[iB][1] = new TH2F("fEtaPhi_kTRDin","fEtaPhi_kTRDin;|#eta|;#phi (rad.)",10,0.0,1.0,90,0,6.3); 
+    fEtaPhi[iB][2] = new TH2F("fEtaPhi_kTRDout","fEtaPhi_kTRDout;|#eta|;#phi (rad.)",10,0.0,1.0,90,0,6.3); 
+    fEtaPhi[iB][3] = new TH2F("fEtaPhi_kTRDin&out","fEtaPhi_kTRDin&out;|#eta|;#phi (rad.)",10,0.0,1.0,90,0,6.3); 
+    fEtaPhi[iB][4] = new TH2F("fEtaPhi_NoTRD","fEtaPhi_NoTRD;|#eta|;#phi (rad.)",10,0.0,1.0,90,0,6.3); 
+    fEtaPhi[iB][5] = new TH2F("fEtaPhi_TrackAnalyzed","fEtaPhi_TrackAnalyzed;|#eta|;#phi (rad.)",10,0.0,1.0,90,0,6.3);
+
     char namePart[9][30];
     char namePart_par_TPC[9][40];
     char namePart_title_TPC[9][120];
@@ -361,6 +376,30 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     }
 
+    Char_t namefEtaSpecies[18][300];
+    Char_t titlefEtaSpecies[18][300];
+    
+    for(Int_t iS=0;iS<18;iS++) {
+      sprintf(namefEtaSpecies[iS],"fEtaSpecies_kTOF_%s",name[iS]);
+      sprintf(titlefEtaSpecies[iS],"fEtaSpecies_kTOF_%s;|#eta|;p_{T} GeV/c",name[iS]);
+    }
+    
+    for(Int_t iS=0;iS<18;iS++) {
+      fEtaSpecies[iB][iS] = new TH2F(namefEtaSpecies[iS],titlefEtaSpecies[iS],10,0,1,200,0,10);
+    }
+
+    Char_t namefPhiSpecies[18][300];
+    Char_t titlefPhiSpecies[18][300];
+    
+    for(Int_t iS=0;iS<18;iS++) {
+      sprintf(namefPhiSpecies[iS],"fPhiSpecies_kTOF_%s",name[iS]);
+      sprintf(titlefPhiSpecies[iS],"fPhiSpecies_kTOF_%s;#phi (rad.);p_{T} GeV/c",name[iS]);
+    }
+    
+    for(Int_t iS=0;iS<18;iS++) {
+      fPhiSpecies[iB][iS] = new TH2F(namefPhiSpecies[iS],titlefPhiSpecies[iS],90,0,6.3,200,0,10);
+    }
+
     Float_t binPt[nbin+1];
     for(Int_t i=0;i<nbin+1;i++) {
       binPt[i]=0.4+0.1*i;
@@ -506,9 +545,14 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     fList1[iB]->Add(hNeventSelected[iB]);
     fList1[iB]->Add(hNevent[iB]);
     fList1[iB]->Add(hZvertex[iB]);
-    fList1[iB]->Add(hEtaDistribution[iB]);
     fList1[iB]->Add(hNminTPCcl[iB]);
     fList1[iB]->Add(hTOFSignalPion[iB]);
+    for(Int_t i=0;i<2;i++)fList1[iB]->Add(hEtaDistribution[iB][i]);
+    for(Int_t i=0;i<6;i++) fList1[iB]->Add(hPhi[iB][i]);
+    for(Int_t i=0;i<6;i++) fList1[iB]->Add(fEtaPhi[iB][i]);
+    for(Int_t iS=0;iS<18;iS++) fList1[iB]->Add(fEtaSpecies[iB][iS]);
+    for(Int_t iS=0;iS<18;iS++) fList1[iB]->Add(fPhiSpecies[iB][iS]);
+
     for(Int_t iS=0;iS<18;iS++) fList1[iB]->Add(fNsigmaTPCvsP_kTOFtrue[iB][iS]);
     
     for(Int_t i=0;i<3;i++) fList1[iB]->Add(fdEdxVSp[iB][i]);
@@ -709,7 +753,50 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	if ((track->Pt() < 0.2) || !trkFlag || !kTPC){
 	  continue;
 	}	
+	
+	Float_t phi= track->Phi();
+	hPhi[iBconf][0]->Fill(phi);
+	fEtaPhi[iBconf][0]->Fill(etaAbs,phi);
 
+	Int_t iTRDtemp=1;
+	if(kTRDana) {//TRD analysis
+	  if((track->GetStatus() & AliVTrack::kTRDin) && (track->GetStatus() & AliVTrack::kTRDout)) {
+	    iTRDtemp=4;//YES TRD
+	  }
+	  else if (!(track->GetStatus() & AliVTrack::kTRDin) && !(track->GetStatus() & AliVTrack::kTRDout)){
+	    iTRDtemp=2;//NO TRD
+	  }
+	}
+	else {//NO TRD analysis
+	  iTRDtemp=1;
+	}
+	
+	if(track->GetStatus() & AliVTrack::kTRDin) {
+	  hPhi[iBconf][1]->Fill(phi);
+	  fEtaPhi[iBconf][1]->Fill(etaAbs,phi);
+	}
+	
+	if(track->GetStatus() & AliVTrack::kTRDout) {
+	  hPhi[iBconf][2]->Fill(phi);
+	  fEtaPhi[iBconf][2]->Fill(etaAbs,phi);
+	}
+	if((track->GetStatus() & AliVTrack::kTRDin) && (track->GetStatus() & AliVTrack::kTRDout)) {
+	    //YES TRD
+	    hPhi[iBconf][3]->Fill(phi);
+	    fEtaPhi[iBconf][3]->Fill(etaAbs,phi);
+	}
+	else if (!(track->GetStatus() & AliVTrack::kTRDin) && !(track->GetStatus() & AliVTrack::kTRDout)){
+	    //NO TRD
+	    hPhi[iBconf][4]->Fill(phi);
+	    fEtaPhi[iBconf][4]->Fill(etaAbs,phi);
+	}	
+
+	hEtaDistribution[iBconf][0]->Fill(etaAbs);
+
+	if(!(iTRDtemp & iTRD)) {
+	  continue;
+	}
+	
 	hNminTPCcl[iBconf]->Fill(NTpcCls);
 
 	Double_t b[2] = {-99., -99.};
@@ -731,7 +818,10 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	Float_t DCAxy = b[0];
 	Float_t DCAz = b[1];
 	
-	hEtaDistribution[iBconf]->Fill(etaAbs);
+	hEtaDistribution[iBconf][1]->Fill(etaAbs);
+
+	hPhi[iBconf][5]->Fill(phi);
+	fEtaPhi[iBconf][5]->Fill(etaAbs,phi);
 
 	if(TMath::Abs(DCAz)>DCAzCUT)//CUT ON DCAz
 	  continue;
@@ -910,6 +1000,8 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	  for(Int_t iS=0;iS<9;iS++) {
 	    if(FlagPid & stdFlagPid[iS] || !kTPCcut) {
 	      if(charge>0) {
+		fEtaSpecies[iBconf][iS]->Fill(etaAbs,pt);
+		fPhiSpecies[iBconf][iS]->Fill(phi,pt);
 		fM2vsP[iBconf][iS]->Fill(M2,p);
 		if(TMath::Abs(DCAxy)<DCAxyCUT) {
 		  fM2vsP_DCAxyCut[iBconf][iS]->Fill(M2,p);
@@ -962,6 +1054,8 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	      }
 	      else {//if(charge<0)
 		fM2vsP[iBconf][iS+9]->Fill(M2,p);
+		fEtaSpecies[iBconf][iS+9]->Fill(etaAbs,pt);
+		fPhiSpecies[iBconf][iS+9]->Fill(phi,pt);
 		if(TMath::Abs(DCAxy)<DCAxyCUT) {
 		  fM2vsP_DCAxyCut[iBconf][iS+9]->Fill(M2,p);
 		}
