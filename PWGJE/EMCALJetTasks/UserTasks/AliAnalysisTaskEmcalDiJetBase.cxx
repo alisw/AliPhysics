@@ -38,6 +38,7 @@ ClassImp(AliAnalysisTaskEmcalDiJetBase)
 AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase() : 
   AliAnalysisTaskEmcalJetDev("AliAnalysisTaskEmcalDiJetBase", kTRUE),
   fDebug(kFALSE),
+  fJetCorrelationType(kCorrelateAll),
   fJetFullChargedMatchingType(kFraction),
   fTriggerClass(""),
   fContainerCharged(1),
@@ -79,6 +80,7 @@ AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase() :
 AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase(const char *name) : 
   AliAnalysisTaskEmcalJetDev(name, kTRUE),
   fDebug(kFALSE),
+  fJetCorrelationType(kCorrelateAll),
   fJetFullChargedMatchingType(kFraction),
   fTriggerClass(""),
   fContainerCharged(1),
