@@ -391,9 +391,10 @@ int AliHLTTPCHWClusterMergerV1::Merge()
       for( UInt_t  iCluster=0; iCluster<nClustersOrig; iCluster++){
 	AliHLTTPCRawCluster &cluster = clusters->fClusters[iCluster];
 	if( cluster.GetPad()<-1 ) continue; // the cluster has been merged
-	if( clusters->fCount == iCluster ) continue;
-	clusters->fClusters[clusters->fCount] = cluster;
-	if( mclabels ) mclabels->fLabels[clusters->fCount] = mclabels->fLabels[iCluster];
+	if( clusters->fCount != iCluster ){
+	  clusters->fClusters[clusters->fCount] = cluster;
+	  if( mclabels ) mclabels->fLabels[clusters->fCount] = mclabels->fLabels[iCluster];
+	}
 	clusters->fCount++;
       }
       
