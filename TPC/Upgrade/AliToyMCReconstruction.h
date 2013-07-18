@@ -60,7 +60,7 @@ public:
   void   SetTree(TTree *tree) { fTree=tree; }
   TTree* GetTree() const { return fTree; }
 
-  AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr);
+  AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr, Bool_t forceSeed=kFALSE);
   AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
   AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus);
 
@@ -75,11 +75,16 @@ public:
                          const AliTPCclusterMI *clInner, const AliTPCclusterMI *clOuter,
                          Double_t roady, Double_t roadz,
                          Int_t &nTotalClusters, AliRieman &seedFit);
-  void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
+  Int_t MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
   void MakeSeeds(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
 
+  void SetRieman(const AliTPCseed &seed, AliRieman &rieman);
+  void CopyRieman(const AliRieman &from, AliRieman &to);
+  
   AliExternalTrackParam* ClusterToTrackAssociation(const AliTPCseed *seed, Int_t trackID, Int_t &nClus);
-
+  void ClusterToTrackAssociation(AliTPCseed &seed);
+  void AssociateClusters(AliTPCseed &seed, Int_t firstRow, Int_t lastRow, Bool_t direction);
+  
   void InitSpaceCharge();
 
   static TTree* ConnectTrees(const char* files);
@@ -112,9 +117,13 @@ public:
 
   void CookLabel(AliTPCseed *seed, Double_t fraction, Int_t info[5]=0);
 
-  void DumpSeedInfo(TObjArray *arr, Int_t iRowInner, Int_t iRowOuter);
+  void DumpSeedInfo(TObjArray *arr);
+  void DumpTrackInfo(TObjArray *arr);
+  void DumpSeedInfo(const AliToyMCTrack *toyTrack, AliTPCseed *seed);
+  
 
   void MarkClustersUsed(AliTPCseed *seed);
+  void ResetClustersZtoTime(AliTPCseed *seed);
   
   // reco settings
   Int_t  fSeedingRow;            // first row used for seeding

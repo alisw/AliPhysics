@@ -660,22 +660,107 @@ void AliToyMCReconstruction::RunFullTracking(const char* file, Int_t nmaxEv)
   
   TObjArray seeds;
   seeds.SetOwner();
-  const Int_t lowerRow=fSeedingRow;
-  const Int_t upperRow=fSeedingRow+2*fSeedingDist;
-
-  // seeding, currently only for outer sectors
-  for (Int_t sec=0;sec<36;sec++){
-    printf("Seeding in sector: %d\n",sec);
-    MakeSeeds2(&seeds, sec,lowerRow,upperRow);
+  Int_t lowerRow=130;
+  Int_t upperRow=150;
+  if (lowerRow>upperRow){
+    Int_t tmp=lowerRow;
+    lowerRow=upperRow;
+    upperRow=tmp;
   }
 
-  DumpSeedInfo(&seeds,lowerRow,upperRow);
+  // seeding.
+  // NOTE: the z position is set to GetTimeBin*vDrift
+  //       therefore it is not possible to simply propagate
+  //       the track using AliTrackerBase::Propagate, since a
+  //       wrong B-Field will be assinged...
+  printf("Run Seeding in %3d - %3d\n",lowerRow,upperRow);
+  for (Int_t sec=0;sec<36;sec++){
+    printf(" in sector: %d\n",sec);
+    Int_t nAdded=MakeSeeds2(&seeds, sec,lowerRow,upperRow);
+    printf("  -> Added Seeds: %d\n",nAdded);
+    nAdded=MakeSeeds2(&seeds, sec,lowerRow-2,upperRow-2);
+    printf("  -> Added Seeds: %d\n",nAdded);
+    nAdded=MakeSeeds2(&seeds, sec,lowerRow-4,upperRow-4);
+    printf("  -> Added Seeds: %d\n",nAdded);
+  }
 
+  printf("Run Tracking in %3d - %3d\n",lowerRow,upperRow);
+  Int_t firstSeed=0;
+  for (Int_t iseed=firstSeed; iseed<seeds.GetEntriesFast();++iseed) ClusterToTrackAssociation(*(AliTPCseed*)seeds.UncheckedAt(iseed));
+  //first seed is used to not run the tracking twice on a seed
+  firstSeed=seeds.GetEntriesFast();
+//   DumpTrackInfo(&seeds);
+
+  lowerRow=110;
+  upperRow=130;
+  
+  printf("Run Seeding in %3d - %3d\n",lowerRow,upperRow);
+  for (Int_t sec=0;sec<36;sec++){
+    printf(" in sector: %d\n",sec);
+    Int_t nAdded=MakeSeeds2(&seeds, sec,lowerRow,upperRow);
+    printf("  -> Added Seeds: %d\n",nAdded);
+  }
+  printf("Run Tracking in %3d - %3d\n",lowerRow,upperRow);
+  for (Int_t iseed=firstSeed; iseed<seeds.GetEntriesFast();++iseed) ClusterToTrackAssociation(*(AliTPCseed*)seeds.UncheckedAt(iseed));
+  firstSeed=seeds.GetEntriesFast();
+  
+  //now seeding also at more central rows with shorter seeds
+  lowerRow=70;
+  upperRow=90;
+  
+  printf("Run Seeding in %3d - %3d\n",lowerRow,upperRow);
+  for (Int_t sec=0;sec<36;sec++){
+    printf(" in sector: %d\n",sec);
+    Int_t nAdded=MakeSeeds2(&seeds, sec,lowerRow,upperRow);
+    printf("  -> Added Seeds: %d\n",nAdded);
+  }
+  printf("Run Tracking in %3d - %3d\n",lowerRow,upperRow);
+  for (Int_t iseed=firstSeed; iseed<seeds.GetEntriesFast();++iseed) ClusterToTrackAssociation(*(AliTPCseed*)seeds.UncheckedAt(iseed));
+  firstSeed=seeds.GetEntriesFast();
+
+  //shorter seeds
+  upperRow-=5;
+  for (Int_t sec=0;sec<36;sec++){
+    printf(" in sector: %d\n",sec);
+    while (lowerRow>0){
+      printf("Run Seeding in %3d - %3d\n",lowerRow,upperRow);
+      Int_t nAdded=MakeSeeds2(&seeds, sec,lowerRow,upperRow);
+      printf("  -> Added Seeds: %d\n",nAdded);
+      for (Int_t iseed=firstSeed; iseed<seeds.GetEntriesFast();++iseed) ClusterToTrackAssociation(*(AliTPCseed*)seeds.UncheckedAt(iseed));
+      firstSeed=seeds.GetEntriesFast();
+      lowerRow-=5;
+      upperRow-=5;
+    }
+  }
+  
+  //track remaining
+  
+  DumpTrackInfo(&seeds);
+
+//   TObjArray seedsCentral2;
+//   lowerRow=45;
+//   upperRow=62;
+//   
+//   for (Int_t sec=0;sec<36;sec++){
+//     Int_t nAdded=MakeSeeds2(&seedsCentral2, sec,lowerRow,upperRow);
+//     printf("  -> Added Seeds: %d\n",nAdded);
+//     nAdded=MakeSeeds2(&seedsCentral2, sec,lowerRow-2,upperRow-2);
+//     printf("  -> Added Seeds: %d\n",nAdded);
+//     nAdded=MakeSeeds2(&seedsCentral2, sec,lowerRow-4,upperRow-4);
+//     printf("  -> Added Seeds: %d\n",nAdded);
+//   }
+//   for (Int_t iseed=0; iseed<seedsCentral2.GetEntriesFast();++iseed) ClusterToTrackAssociation(*(AliTPCseed*)seedsCentral2.UncheckedAt(iseed));
+//   DumpTrackInfo(&seedsCentral2);
+
+  //dump clusters
+  (*fStreamer) << "clusters" <<
+  "cl.=" << &fAllClusters << "\n";
+  
   Cleanup();
 }
 
 //____________________________________________________________________________________
-AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTrack * const tr)
+AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTrack * const tr, Bool_t forceSeed)
 {
   //
   // if we don't have a valid time0 informaion (fTime0) available yet
@@ -688,30 +773,46 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   
   // number of clusters to loop over
   const Int_t ncls=(fClusterType==0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
-  
+  if (ncls<3){
+    AliError(Form("Not enough points to create a seed: %d",ncls));
+    return 0x0;
+  }
   UChar_t nextSeedRow=fSeedingRow;
   Int_t   nseeds=0;
   
   //assumes sorted clusters
-  for (Int_t icl=0;icl<ncls;++icl) {
-    const AliTPCclusterMI *cl=tr->GetSpacePoint(icl);
-    if (fClusterType==1) cl=tr->GetDistortedSpacePoint(icl);
-    if (!cl) continue;
-    // use row in sector
-    const UChar_t row=cl->GetRow() + 63*(cl->GetDetector()>35);
-    // skip clusters without proper pad row
-    if (row>200) continue;
-    
-    //check seeding row
-    // if we are in the last row and still miss a seed we use the last row
-    //   even if the row spacing will not be equal
-    if (row>=nextSeedRow || icl==ncls-1){
+  if (forceSeed){
+    // force the seed creation, using the first, middle and last cluster
+    Int_t npoints[3]={0,ncls/2,ncls-1};
+    for (Int_t icl=0;icl<3;++icl){
+      const AliTPCclusterMI *cl=tr->GetSpacePoint(npoints[icl]);
+      if (fClusterType==1) cl=tr->GetDistortedSpacePoint(npoints[icl]);
       seedCluster[nseeds]=cl;
       SetTrackPointFromCluster(cl, seedPoint[nseeds]);
       ++nseeds;
+    }
+  }else{
+    // create seeds according to the reco settings
+    for (Int_t icl=0;icl<ncls;++icl) {
+      const AliTPCclusterMI *cl=tr->GetSpacePoint(icl);
+      if (fClusterType==1) cl=tr->GetDistortedSpacePoint(icl);
+      if (!cl) continue;
+      // use row in sector
+      const UChar_t row=cl->GetRow() + 63*(cl->GetDetector()>35);
+      // skip clusters without proper pad row
+      if (row>200) continue;
+      
+      //check seeding row
+      // if we are in the last row and still miss a seed we use the last row
+      //   even if the row spacing will not be equal
+      if (row>=nextSeedRow || icl==ncls-1){
+        seedCluster[nseeds]=cl;
+        SetTrackPointFromCluster(cl, seedPoint[nseeds]);
+      ++nseeds; 
       nextSeedRow+=fSeedingDist;
       
       if (nseeds==3) break;
+      }
     }
   }
   
@@ -1216,6 +1317,112 @@ AliExternalTrackParam* AliToyMCReconstruction::ClusterToTrackAssociation(const A
   return track;
 }
 
+//____________________________________________________________________________________
+void AliToyMCReconstruction::AssociateClusters(AliTPCseed &seed, Int_t firstRow, Int_t lastRow, Bool_t direction)
+{
+  //
+  // do cluster to track association from first to last row
+  // direction 0: outwards; 1: inwards
+  //
+
+  Double_t roady=10.;
+  Double_t roadz=10.;
+  
+  AliRieman rieman1(160);
+  AliRieman rieman2(160);
+  SetRieman(seed,rieman1);
+  CopyRieman(rieman1,rieman2);
+  
+  Int_t sec=seed.GetSector();
+  Int_t noLastPoint=0;
+  //TODO: change to inward and outwar search?
+  //      -> better handling of non consecutive points
+  if (direction){
+    firstRow*=-1;
+    lastRow*=-1;
+  }
+
+  //always from inside out
+  if (firstRow>lastRow){
+    Int_t tmp=firstRow;
+    firstRow=lastRow;
+    lastRow=tmp;
+  }
+  
+  for (Int_t row=firstRow; row<=lastRow && noLastPoint<3;++row) {
+    Int_t iRow=TMath::Abs(row);
+    const AliTPCclusterMI *cl=seed.GetClusterPointer(iRow);
+    if (cl) continue;
+    
+    const Int_t secrow = iRow<63?iRow:iRow-63;
+    
+    AliTPCtrackerSector *arrSec=(iRow<63)?fInnerSectorArray:fOuterSectorArray;
+    const AliTPCtrackerRow& kr  = arrSec[sec%36][secrow];
+    const Double_t maxy=arrSec[sec%36].GetMaxY(secrow);
+    
+    Double_t y=rieman1.GetYat(kr.GetX());
+    Double_t z=rieman1.GetZat(kr.GetX());
+    
+    if (TMath::Abs(y)>maxy) {
+      AliError("Tracking over sector boundaries not implemented, yet");
+      continue;
+    }
+    
+    AliTPCclusterMI *n=kr.FindNearest(y,z,roady,roadz);
+    if (!n || n->IsUsed()) {
+      ++noLastPoint;
+      continue;
+    }
+    // check for quality of the cluster
+    // TODO: better?
+    rieman2.AddPoint(n->GetX(), n->GetY(), n->GetZ(),
+                     TMath::Sqrt(n->GetSigmaY2()), TMath::Sqrt(n->GetSigmaZ2()));
+    rieman2.Update();
+    printf("      Riemann results: row=%d valid=%d, Chi2=%.2f (%.2f) %d (%d)",
+           iRow, rieman2.IsValid(), rieman2.GetChi2(), rieman1.GetChi2(), n->GetLabel(0),seed.GetLabel());
+    Double_t limit=2*rieman1.GetChi2();
+    if (fClusterType==0) limit=1000;
+    if (rieman2.GetChi2()>limit) {
+      CopyRieman(rieman1,rieman2);
+      ++noLastPoint;
+      printf("\n");
+      continue;
+    }
+    printf("  +++ \n");
+    
+    noLastPoint=0;
+    //use point
+    rieman1.AddPoint(n->GetX(), n->GetY(), n->GetZ(),
+                     TMath::Sqrt(n->GetSigmaY2()), TMath::Sqrt(n->GetSigmaZ2()));
+    rieman1.Update();
+    
+    seed.SetClusterPointer(iRow,n);
+    //     if (iRow<seed.GetSeed1()) seed.SetSeed1(iRow);
+    //     if (iRow>seed.GetSeed2()) seed.SetSeed2(iRow);
+    n->Use();
+    
+  }
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::ClusterToTrackAssociation(AliTPCseed &seed)
+{
+  //
+  //
+  //
+
+  printf("\n ============ \nnext Seed: %d\n",seed.GetLabel());
+  //assume seed is within one sector
+  Int_t iMiddle=(seed.GetSeed1()+seed.GetSeed2())/2;
+  //outward
+  AssociateClusters(seed,iMiddle+1,158,kFALSE);
+  //inward
+  AssociateClusters(seed,0,iMiddle,kTRUE);
+  seed.SetIsSeeding(kFALSE);
+  
+  CookLabel(&seed,.6);
+}
+
 
 //____________________________________________________________________________________
 void AliToyMCReconstruction::InitSpaceCharge()
@@ -1562,7 +1769,11 @@ void  AliToyMCReconstruction::FillSectorStructureAC() {
         // set cluster time to cluster Z (if not ideal tracking)
         if ( !fIdealTracking ) {
           // a 'valid' position in z is needed for the seeding procedure
-          cl->SetZ(cl->GetTimeBin()*GetVDrift());
+          Double_t sign=1;
+          if (((sec/18)%2)==1) sign=-1;
+          cl->SetZ(cl->GetTimeBin()*GetVDrift()*sign);
+          //mark cluster to be time*vDrift by setting the type to 1
+          cl->SetType(1);
 //           cl->SetZ(cl->GetTimeBin());
         }
         //Printf("Fill clusters (sector %d row %d): %.2f %.2f %.2f %.2f",sec,row,cl->GetX(),cl->GetY(),cl->GetZ(),cl->GetTimeBin());
@@ -1619,25 +1830,25 @@ AliExternalTrackParam* AliToyMCReconstruction::GetRefittedTrack(const AliTPCseed
   const Double_t kMaxSnp = 0.85;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
-  // for propagation use a copy
-  AliExternalTrackParam t0seed(seed);
-  AliTrackerBase::PropagateTrackTo(&t0seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-  fTime0 = t0seed.GetZ()-zLength/vDrift;
-  fCreateT0seed = kFALSE;
-  
   AliToyMCTrack *toyTrack = ConvertTPCSeedToToyMCTrack(seed);
+
+  fTime0 = 0;
   
-  fTime0 = t0seed.GetZ()-zLength/vDrift;
+  //get t0 estimate
+  fCreateT0seed = kTRUE;
+  AliExternalTrackParam *t0seed = GetSeedFromTrack(toyTrack,kTRUE);
+  if (!t0seed) return 0x0;
+  
+  fTime0 = t0seed->GetZ()-zLength/vDrift;
+  delete t0seed;
+  t0seed=0x0;
+
   fCreateT0seed = kFALSE;
-  //         printf("seed (%.2g)\n",fTime0);
-  AliExternalTrackParam *dummy = GetSeedFromTrack(toyTrack);
-  if (dummy) {
-    track = GetFittedTrackFromSeed(toyTrack, dummy);
-    delete dummy;
-    // propagate seed to 0
-    AliTrackerBase::PropagateTrackTo(track,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-    
-  }
+  AliExternalTrackParam *dummy = GetSeedFromTrack(toyTrack,kTRUE);
+  track = GetFittedTrackFromSeed(toyTrack, dummy);
+  delete dummy;
+  // propagate seed to 0
+  AliTrackerBase::PropagateTrackTo(track,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 
   return track;
 }
@@ -1664,24 +1875,36 @@ AliTPCclusterMI* AliToyMCReconstruction::FindMiddleCluster(const AliTPCclusterMI
   const Int_t globalRowInner  = clInner->GetRow() +(innerDet >35)*63;
   const Int_t globalRowOuter  = clOuter->GetRow() +(outerDet >35)*63;
 
-  Int_t iMiddle  = (globalRowInner+globalRowOuter)/2;
-  Int_t roc = innerDet;
-  if (iMiddle>62){
-    iMiddle-=63;
-    roc=outerDet;
-  }
+  AliTPCclusterMI *n=0x0;
+  
+  // allow flexibility of +- nRowsGrace Rows to find a middle cluster
+  const Int_t nRowsGrace = 0;
+  for (Int_t iter=0; iter<2*nRowsGrace+1; ++iter){
+    Int_t iMiddle  = (globalRowInner+globalRowOuter)/2;
+    iMiddle+=((iter+1)/2)*(1-2*((iter+1)%2));
 
-  const AliTPCtrackerRow& krMiddle = fOuterSectorArray[roc%36][iMiddle]; // middle
-  // initial guess use simple linear interpolation
-  Double_t y=(clInner->GetY()+clOuter->GetY())/2;
-  Double_t z=(clInner->GetZ()+clOuter->GetZ())/2;
-  if (seedFit.IsValid()) {
-    // update values once the fit was performed
-    y=seedFit.GetYat(krMiddle.GetX());
-    z=seedFit.GetZat(krMiddle.GetX());
-  }
+    Int_t localRow=iMiddle;
+    Int_t roc = innerDet;
+    if (iMiddle>62){
+      localRow-=63;
+      roc=outerDet;
+    }
 
-  AliTPCclusterMI *n=krMiddle.FindNearest(y,z,roady,roadz);
+    AliTPCtrackerSector *arrRow=(iMiddle<63)?fInnerSectorArray:fOuterSectorArray;
+    const AliTPCtrackerRow& krMiddle = arrRow[roc%36][localRow]; // middle
+    // initial guess use simple linear interpolation
+    Double_t y=(clInner->GetY()+clOuter->GetY())/2;
+    Double_t z=(clInner->GetZ()+clOuter->GetZ())/2;
+    if (seedFit.IsValid()) {
+      // update values once the fit was performed
+      y=seedFit.GetYat(krMiddle.GetX());
+      z=seedFit.GetZat(krMiddle.GetX());
+    }
+
+    n=krMiddle.FindNearest(y,z,roady,roadz);
+    if (n) break;
+  }
+  
 //   if (n)
 //     printf("      Nearest cluster (%.2f, %.2f, %.2f) = m(%.2f, %.2f, %.2f : %d) i(%.2f, %.2f , %.2f : %d) o(%.2f, %.2f, %.2f : %d)\n",krMiddle.GetX(),y,z,
 //          n->GetX(), n->GetY(),n->GetZ(),n->GetLabel(0),
@@ -1705,7 +1928,7 @@ void AliToyMCReconstruction::AddMiddleClusters(AliTPCseed *seed,
   AliTPCclusterMI *clMiddle=FindMiddleCluster(clInner,clOuter,roady,roadz,seedFit);
 
   // break iterative process
-  if (!clMiddle) return;
+  if (!clMiddle || clMiddle->IsUsed()) return;
 
   const Int_t globalRowInner  = clInner->GetRow() +(clInner->GetDetector() >35)*63;
   const Int_t globalRowMiddle = clMiddle->GetRow()+(clMiddle->GetDetector()>35)*63;
@@ -1717,10 +1940,10 @@ void AliToyMCReconstruction::AddMiddleClusters(AliTPCseed *seed,
   seedFit.AddPoint(clMiddle->GetX(), clMiddle->GetY(), clMiddle->GetZ(),
                    TMath::Sqrt(clMiddle->GetSigmaY2()), TMath::Sqrt(clMiddle->GetSigmaZ2()));
 
-  if (!(seedFit.GetN()%3)) {
-//     printf("      call update: %d (%d)\n",seedFit.GetN(),nTotalClusters);
-//     printf("      Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
-//            seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
+  if (seedFit.GetN()>3) {
+    printf("      call update: %d (%d)\n",seedFit.GetN(),nTotalClusters);
+    printf("      Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f -- %d\n",
+           seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z(), clMiddle->GetLabel(0));
     seedFit.Update();
   }
   if ( seedFit.IsValid() && seedFit.GetChi2()>1000 ) return;
@@ -1735,7 +1958,7 @@ void AliToyMCReconstruction::AddMiddleClusters(AliTPCseed *seed,
 }
 
 //____________________________________________________________________________________
-void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowInner, Int_t iRowOuter)
+Int_t AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowInner, Int_t iRowOuter)
 {
   //
   // find seeds in a sector, requires iRowInner < iRowOuter
@@ -1744,7 +1967,7 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
 
   if (!fIsAC) {
     AliError("This function requires the sector arrays filled for AC tracking");
-    return;
+    return 0;
   }
   
   // swap rows in case they are in the wrong order
@@ -1757,9 +1980,6 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
   if (iRowOuter>158) iRowOuter=158;
   if (iRowInner<0)   iRowInner=0;
 
-  // only for CookLabel
-  AliTPCtracker tpcTracker(fTPCParam);
-  
   // Define the search roads:
   // timeRoadCombinatorics - the maximum time difference used for the
   //    combinatorics. Since we don't have a 'z-Vertex' estimate this will
@@ -1775,21 +1995,26 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
 //   Double_t timeRoadCombinatorics = 270./vDrift;
 //   Double_t timeRoad = 20./vDrift;
   Double_t timeRoadCombinatorics = 270.;
-  Double_t timeRoad = 20.;
-  Double_t  padRoad = 10.;
+  Double_t timeRoad = 10.;
+  Double_t  padRoad = 5.;
 
 
   // fOuterSectorArray runs from 0-95, so from iRowXXX which runs from 0-159
   //   the number of rows in the IROC has to be subtracted
   const Int_t innerRows=fInnerSectorArray->GetNRows();
-  const AliTPCtrackerRow& krOuter  = fOuterSectorArray[sec][iRowOuter   - innerRows];   // down
-  const AliTPCtrackerRow& krInner  = fOuterSectorArray[sec][iRowInner   - innerRows];   // up
+
+  AliTPCtrackerSector *arrInnerRow=(iRowInner<63)?fInnerSectorArray:fOuterSectorArray;
+  AliTPCtrackerSector *arrOuterRow=(iRowOuter<63)?fInnerSectorArray:fOuterSectorArray;
+
+  const AliTPCtrackerRow& krInner  = arrInnerRow[sec][iRowInner - (iRowInner>62)*innerRows];   // up
+  const AliTPCtrackerRow& krOuter  = arrOuterRow[sec][iRowOuter - (iRowOuter>62)*innerRows];   // down
 
   AliTPCseed *seed = new AliTPCseed;
 
   const Int_t nMaxClusters=iRowOuter-iRowInner+1;
 //   Int_t nScannedClusters = 0;
-  
+
+  Int_t nseedAdded=0;
   // loop over all points in the firstand last search row
   for (Int_t iOuter=0; iOuter < krOuter; iOuter++) {
     const AliTPCclusterMI *clOuter = krOuter[iOuter];
@@ -1797,10 +2022,10 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
     for (Int_t iInner=0; iInner < krInner; iInner++) {
       const AliTPCclusterMI *clInner = krInner[iInner];
       if (clInner->IsUsed()) continue;
-// printf("\n\n Check combination %d (%d), %d (%d)\n",iOuter, iInner, clOuter->GetLabel(0), clInner->GetLabel(0));
+printf("\n\n Check combination %d (%d), %d (%d) -- %d (%d) -- %d\n",iOuter, iInner, clOuter->GetLabel(0), clInner->GetLabel(0),iRowOuter,iRowInner,sec);
       // check maximum distance for combinatorics
       if (TMath::Abs(clOuter->GetZ()-clInner->GetZ())>timeRoadCombinatorics) continue;
-// printf("  Is inside one drift\n");
+printf("  Is inside one drift\n");
 
       // use rieman fit for seed description
       AliRieman seedFit(159);
@@ -1813,10 +2038,10 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
       // Iteratively add all clusters in the respective middle
       Int_t nFoundClusters=2;
       AddMiddleClusters(seed,clInner,clOuter,padRoad,timeRoad,nFoundClusters,seedFit);
-//       printf("  Clusters attached: %d\n",nFoundClusters);
+      printf("  Clusters attached: %d\n",nFoundClusters);
       if (nFoundClusters>2) seedFit.Update();
-//       printf("  Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
-//              seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
+      printf("  Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
+             seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
 
       // check for minimum number of assigned clusters and a decent chi2
       if ( nFoundClusters<0.5*nMaxClusters || seedFit.GetChi2()>1000 ){
@@ -1845,15 +2070,26 @@ void AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowIn
 //       printf("  - Label: %d\n",seed->GetLabel());
       // mark clusters as being used
       MarkClustersUsed(seed);
+
+      seed->SetSeed1(iRowInner);
+      seed->SetSeed2(iRowOuter);
+      seed->SetSector(sec);
+      ++nseedAdded;
+
+      seed->SetUniqueID(arr->GetEntriesFast());
+      seed->SetIsSeeding(kTRUE);
       
       arr->Add(seed);
       seed=new AliTPCseed;
+
+      break;
     }
   }
   //delete surplus seed
   delete seed;
   seed=0x0;
 
+  return nseedAdded;
 }
 //____________________________________________________________________________________
 void AliToyMCReconstruction::MakeSeeds(TObjArray * /*arr*/, Int_t sec, Int_t iRow1, Int_t iRow2)
@@ -2095,122 +2331,252 @@ void AliToyMCReconstruction::CookLabel(AliTPCseed *seed, Double_t fraction, Int_
 
 
 //____________________________________________________________________________________
-void AliToyMCReconstruction::DumpSeedInfo(TObjArray *arr, Int_t iRowInner, Int_t iRowOuter)
+void AliToyMCReconstruction::DumpSeedInfo(TObjArray *arr)
 {
 
   // for debugging
   if (!fStreamer || !fTree) return;
   // swap rows in case they are in the wrong order
-  if (iRowInner>iRowOuter) {
-    Int_t tmp=iRowInner;
-    iRowInner=iRowOuter;
-    iRowOuter=tmp;
-  }
-
-  AliInfo("");
-  
-  const Double_t kMaxSnp = 0.85;
-  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-  Float_t vDrift=GetVDrift();
-  Float_t zLength=GetZLength(0);
+  AliInfo(Form("Number of Seeds: %d (out of %d tracks)",arr->GetEntriesFast(),fMapTrackEvent.GetSize()));
   
   //loop over all events and tracks and try to associate the seed to the track
   for (Int_t iseed=0; iseed<arr->GetEntriesFast(); ++iseed){
     AliTPCseed *seed = static_cast<AliTPCseed*>(arr->UncheckedAt(iseed));
-    Int_t seedLabel=seed->GetLabel();
 
     // get original track
+    Int_t seedLabel=seed->GetLabel();
     Int_t iev=fMapTrackEvent.GetValue(TMath::Abs(seedLabel));
     Int_t itr=fMapTrackTrackInEvent.GetValue(TMath::Abs(seedLabel));
 
     fTree->GetEvent(iev);
     const AliToyMCTrack *toyTrack = fEvent->GetTrack(itr);
 
-    AliExternalTrackParam extTrack(*toyTrack);
-
-    //propagate to same reference frame
-    AliExternalTrackParam extSeed(*seed);
-    AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-    extSeed.Rotate(extTrack.GetAlpha());
-    AliTrackerBase::PropagateTrackTo(&extSeed,0,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
-    //create propagated track
-    AliExternalTrackParam *extSeedRefit=GetRefittedTrack(*seed);
-    AliTrackerBase::PropagateTrackTo(extSeedRefit,0,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-    extSeedRefit->Rotate(extTrack.GetAlpha());
-    AliTrackerBase::PropagateTrackTo(extSeedRefit,0,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
-    
-    Int_t roc=-1;
-    //
-    //count findable and found clusters in the seed
-    //
-    Int_t nClustersSeedMax=iRowOuter-iRowInner+1;
-    Int_t nClustersFindable=0;
-    Int_t nClustersSeed=0;
-
-    const Int_t ncls=(fClusterType==0)?toyTrack->GetNumberOfSpacePoints():toyTrack->GetNumberOfDistSpacePoints();
-
-    Int_t rowInner=iRowInner-(iRowInner>62)*63;
-    Int_t rowOuter=iRowOuter-(iRowOuter>62)*63;
-    //findable
-    for (Int_t icl=0; icl<ncls; ++icl) {
-      const AliTPCclusterMI *cl=(fClusterType==0)?toyTrack->GetSpacePoint(icl):toyTrack->GetDistortedSpacePoint(icl);
-      roc=cl->GetDetector();
-      Int_t row=cl->GetRow();
-      //         printf("row: %d, iRowInner: %d, iRowOuter: %d\n", row, iRowInner, iRowOuter);
-      if ( (row<rowInner) || (row>rowOuter) ) continue;
-                                                               ++nClustersFindable;
-    }
-
-    //found in seed
-    for (Int_t icl=0; icl<159; ++icl) {
-      const AliTPCclusterMI *cl=seed->GetClusterPointer(icl);
-      if (!cl) continue;
-                                                               const Int_t row=cl->GetRow();
-      if ( (row<rowInner) || (row>rowOuter) ) continue;
-                                                               ++nClustersSeed;
-    }
-
-    // convert back to time, since we made tracking in 'pseude z coordinates'
-    fTime0=extSeed.GetZ()/vDrift;
-
-    Float_t z0=fEvent->GetZ();
-    Float_t t0=fEvent->GetT0();
-
-    Int_t ctype(fCorrectionType);
-
-    Int_t info[5]={0};
-    CookLabel(seed,.6,info);
-
-    (*fStreamer) << "Seeds" <<
-    "iev="             << iev               <<
-    "iseed="           << iseed             <<
-    "z0="              << z0                <<
-    "t0="              << t0                <<
-    "fTime0="          << fTime0            <<
-    "itr="             << itr               <<
-    "clsType="         << fClusterType      <<
-    "corrType="        << ctype             <<
-    "seedRowInner="    << iRowInner         <<
-    "seedRowOuter="    << iRowOuter         <<
-    "vDrift="          << vDrift            <<
-    "zLength="         << zLength           <<
-    "track.="          << &extSeed          <<
-    "track2.="         << extSeedRefit      <<
-    "tOrig.="          << &extTrack         <<
-    "seedLabel="       << seedLabel         <<
-    "nclMax="          << nClustersSeedMax  <<
-    "nclFindable="     << nClustersFindable <<
-    "nclFound="        << nClustersSeed     <<
-    "nMaxLabel="       << info[0]           <<
-    "nMaxLabel2="      << info[1]           <<
-    "maxLabel2="       << info[2]           <<
-    "nclusters="       << info[3]           <<
-    "nlabels="         << info[4]           <<
-    "roc="             << roc               <<
-    "\n";
-
-    delete extSeedRefit;
+    DumpSeedInfo(toyTrack,seed);
   }
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::DumpTrackInfo(TObjArray *arr)
+{
+  
+  // for debugging
+  if (!fStreamer || !fTree) return;
+  // swap rows in case they are in the wrong order
+  AliInfo(Form("Number of Seeds: %d (out of %d tracks)",arr->GetEntriesFast(),fMapTrackEvent.GetSize()));
+  
+  //loop over all events and tracks and try to associate the seed to the track
+  AliTPCseed dummySeed;
+  for (Int_t iev=0; iev<fNmaxEvents; ++iev) {
+    fTree->GetEvent(iev);
+    const Int_t ntracks=fEvent->GetNumberOfTracks();
+    for (Int_t itr=0; itr<ntracks; ++itr) {
+      const AliToyMCTrack *toyTrack = fEvent->GetTrack(itr);
+      
+      Bool_t foundSeed=kFALSE;
+      for (Int_t iseed=0; iseed<arr->GetEntriesFast(); ++iseed) {
+        AliTPCseed *seed = static_cast<AliTPCseed*>(arr->UncheckedAt(iseed));
+        const UInt_t tmpLabel=TMath::Abs(seed->GetLabel());
+        if (toyTrack->GetUniqueID()!=tmpLabel) continue;
+
+        // dump all seeds with the correct label
+        DumpSeedInfo(toyTrack,seed);
+        foundSeed=kTRUE;
+      }
+
+      if (!foundSeed) DumpSeedInfo(toyTrack,&dummySeed);
+    
+    }
+  }
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::DumpSeedInfo(const AliToyMCTrack *toyTrack, AliTPCseed *seed)
+{
+  //
+  //
+  //
+
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  Float_t vDrift=GetVDrift();
+  Float_t zLength=GetZLength(0);
+  
+  AliExternalTrackParam tOrig(*toyTrack);
+  AliExternalTrackParam tOrigITS(*toyTrack);
+  
+  // propagate original track to ITS last layer
+  Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
+  AliTrackerBase::PropagateTrackTo(&tOrigITS,lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+  
+  AliExternalTrackParam dummyParam;
+  Bool_t isDummy=kFALSE;
+  //create refitted track, this will also set the fTime0
+  AliExternalTrackParam *track=GetRefittedTrack(*seed);
+  if (!track) {
+    track=&dummyParam;
+    isDummy=kTRUE;
+  }
+  AliTrackerBase::PropagateTrackTo(track,0,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+  track->Rotate(tOrig.GetAlpha());
+  AliTrackerBase::PropagateTrackTo(track,0,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+  // rotate fitted track to the frame of the original track and propagate to same reference
+  AliExternalTrackParam trackITS(*track);
+  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+  trackITS.Rotate(tOrigITS.GetAlpha());
+  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+  
+  Int_t seedSec=seed->GetSector();
+  Int_t seedID =seed->GetUniqueID();
+  //
+  //count findable and found clusters in the seed
+  //
+  Int_t iRowInner=seed->GetSeed1();
+  Int_t iRowOuter=seed->GetSeed2();
+
+  Int_t nClustersSeedMax=iRowOuter-iRowInner+1;
+  Int_t nClustersFindable=0;
+  Int_t nClustersSeed=0;
+  
+  Int_t ncls=(fClusterType==0)?toyTrack->GetNumberOfSpacePoints():toyTrack->GetNumberOfDistSpacePoints();
+
+  Int_t rowInner=iRowInner-(iRowInner>62)*63;
+  Int_t rowOuter=iRowOuter-(iRowOuter>62)*63;
+  
+  //findable in the current seed sector
+  Int_t lastROC=-1;
+  Int_t rocMaxCl=-1;
+  Int_t nCrossedROCs=0;
+  Int_t nMaxClROC=0;
+  Int_t nclROC=0;
+  Int_t row1=-1;
+  Int_t row2=-1;
+  Int_t row1Maxcl=-1;
+  Int_t row2Maxcl=-1;
+  for (Int_t icl=0; icl<ncls; ++icl) {
+    const AliTPCclusterMI *cl=(fClusterType==0)?toyTrack->GetSpacePoint(icl):toyTrack->GetDistortedSpacePoint(icl);
+    const Int_t roc=cl->GetDetector();
+    const Int_t row=cl->GetRow();
+    const Int_t rowGlobal=row+(roc>35)*63;
+
+    AliTPCclusterMI *seedCl = seed->GetClusterPointer(rowGlobal);
+    if (seedCl) {
+      AliTPCclusterMI *clc=const_cast<AliTPCclusterMI*>(cl);
+      if (seedCl->GetDetector()==roc&&seedCl->IsUsed()) clc->Use();
+      clc->SetLabel(seedID,1);
+      
+    }
+    
+//     if (row1<0) row1=rowGlobal;
+    
+    if ( (roc%36) != (lastROC%36)) {
+      ++nCrossedROCs;
+      if (nclROC>nMaxClROC) {
+        nMaxClROC=nclROC;
+        rocMaxCl=lastROC;
+        row1Maxcl=row1;
+        row2Maxcl=row2;
+      }
+      lastROC=roc%36;
+      nclROC=0;
+      row1=rowGlobal;
+    }
+    ++nclROC;
+    row2=rowGlobal;
+
+    if ( (roc%36)!=(seedSec%36) ) continue;
+//     if ( (row<rowInner) || (row>rowOuter) ) continue;
+    ++nClustersFindable;
+    
+  }
+  
+  if (nclROC>nMaxClROC) {
+    rocMaxCl=lastROC;
+    nMaxClROC=nclROC;
+    row1Maxcl=row1;
+    row2Maxcl=row2;
+  }
+
+  Int_t firstRow=160;
+  Int_t lastRow=0;
+  Int_t nClustersInTrack=0;
+  //found in seed
+  for (Int_t icl=0; icl<159; ++icl) {
+    const AliTPCclusterMI *cl=seed->GetClusterPointer(icl);
+    if (!cl) continue;
+    ++nClustersInTrack;
+    const Int_t row=cl->GetRow();
+    const Int_t rowGlobal=row+(cl->GetDetector()>35)*63;
+    if (rowGlobal>lastRow)  lastRow=rowGlobal;
+    if (rowGlobal<firstRow) firstRow=rowGlobal;
+    if ( (row<rowInner) || (row>rowOuter) ) continue;
+    ++nClustersSeed;
+  }
+  
+  Float_t z0=fEvent->GetZ();
+  Float_t t0=fEvent->GetT0();
+  
+  Int_t ctype(fCorrectionType);
+  
+  Int_t info[5]={0};
+  CookLabel(seed,.6,info);
+  Int_t seedLabel=seed->GetLabel();
+
+  Int_t labelOrig=toyTrack->GetUniqueID();
+
+  AliToyMCTrack *tr2 = const_cast<AliToyMCTrack*>(toyTrack);
+  
+  (*fStreamer) << "Seeds" <<
+  //   "iev="             << iev               <<
+  //   "iseed="           << iseed             <<
+  //   "itr="             << itr               <<
+  "z0="             << z0                <<
+  "t0="             << t0                <<
+  "vDrift="         << vDrift            <<
+  "zLength="        << zLength           <<
+  "fTime0="         << fTime0            <<
+  "clsType="        << fClusterType      <<
+  "corrType="       << ctype             <<
+  
+  "tOrig.="         << &tOrig            <<
+  "tOrigITS.="      << &tOrigITS         <<
+
+  "to.nclFindable=" << nClustersFindable <<
+  "to.nclTot="      << ncls              <<
+  "to.label="       << labelOrig         <<
+  "to.nCrossedROCs="<< nCrossedROCs      <<
+  "to.rocMax="      << rocMaxCl          <<
+  "to.rocMaxNcl="   << nMaxClROC         <<
+  "to.row1Max="     << row1Maxcl         <<
+  "to.row2Max="     << row2Maxcl         <<
+  
+  "track.="         << track             <<
+  "trackITS.="      << &trackITS         <<
+  
+  "s.RowInner="     << iRowInner         <<
+  "s.RowOuter="     << iRowOuter         <<
+  "s.nclMax="       << nClustersSeedMax  <<
+  "s.ncl="          << nClustersSeed     <<
+  "s.ID="           << seedID            <<
+  
+  "tr.firstClRow="  << firstRow          <<
+  "tr.lastClRow="   << lastRow           <<
+  "tr.ncl="         << nClustersInTrack  <<
+  "tr.label="       << seedLabel         <<
+
+  "tr.LabelNcl="    << info[0]           <<
+  "tr.Label2Ncl="   << info[1]           <<
+  "tr.Label2="      << info[2]           <<
+  "tr.nclTot="      << info[3]           <<
+  "tr.Nlabels="     << info[4]           <<
+  
+  "tr.Sec="         << seedSec           <<
+  
+  "seed.="           << seed             <<
+  "toyTrack.="       << tr2              <<
+  "\n";
+
+  if (!isDummy) delete track;
 }
 
 //____________________________________________________________________________________
@@ -2223,6 +2589,19 @@ void AliToyMCReconstruction::MarkClustersUsed(AliTPCseed *seed)
   for (Int_t icl=0; icl<159; ++icl) {
     AliTPCclusterMI *cl=seed->GetClusterPointer(icl);
     if (cl) cl->Use();
+  }
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::ResetClustersZtoTime(AliTPCseed *seed)
+{
+  //
+  //
+  //
+  
+  for (Int_t icl=0; icl<159; ++icl) {
+    AliTPCclusterMI *cl=seed->GetClusterPointer(icl);
+    if (cl) cl->SetZ(cl->GetTimeBin());
   }
 }
 
@@ -2262,3 +2641,34 @@ void AliToyMCReconstruction::DumpTracksToTree(const char* file)
 
   Cleanup();
 }
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::SetRieman(const AliTPCseed &seed, AliRieman &rieman)
+{
+  //
+  //
+  //
+
+  rieman.Reset();
+  for (Int_t icl=0; icl<159; ++icl) {
+    const AliTPCclusterMI *cl=seed.GetClusterPointer(icl);
+    if (!cl) continue;
+    rieman.AddPoint(cl->GetX(), cl->GetY(), cl->GetZ(),
+                    TMath::Sqrt(cl->GetSigmaY2()), TMath::Sqrt(cl->GetSigmaZ2()));
+  }
+  rieman.Update();
+}
+
+//____________________________________________________________________________________
+void AliToyMCReconstruction::CopyRieman(const AliRieman &from, AliRieman &to)
+{
+  //
+  //
+  //
+
+  if (to.GetCapacity()<from.GetCapacity()) return;
+  to.Reset();
+
+  for (Int_t i=0;i<from.GetN();++i) to.AddPoint(from.GetX()[i],from.GetY()[i],from.GetZ()[i],from.GetSy()[i],from.GetSz()[i]);
+}
+
