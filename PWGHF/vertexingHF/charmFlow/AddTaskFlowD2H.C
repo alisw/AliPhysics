@@ -37,7 +37,7 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
   cutsRFPTPC->SetAODfilterBit(1);
   //  cutsRFPTPC->SetQA(kTRUE);
   AliFlowTrackCuts* cutsRFPVZE = new AliFlowTrackCuts( "GlobalRFPVZE" );
-  cutsRFPVZE->SetParamType(AliFlowTrackCuts::kV0);
+  cutsRFPVZE->SetParamType(AliFlowTrackCuts::kVZERO);
   cutsRFPVZE->SetEtaRange(-10,+10);
   cutsRFPVZE->SetPhiMin(0);
   cutsRFPVZE->SetPhiMax(TMath::TwoPi());
