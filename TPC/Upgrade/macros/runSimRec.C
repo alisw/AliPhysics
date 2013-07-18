@@ -1,10 +1,19 @@
-void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks)
+void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t rate=50)
 {
+  //rate is in kHz
 
   //simulation part
   AliToyMCEventGeneratorSimple s;
 
   TString outputFile="toyMC";
+
+  //for simtype also below
+  switch (simtype) {
+    case 0:
+      outputFile.Append(Form("_fixed_%dkHz",rate));
+      break;
+  }
+  
   switch (SCtype) {
     case 0:
       s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps5);
@@ -27,7 +36,7 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks)
   //TODO: Add other types
   switch (simtype) {
     case 0:
-      s.RunSimulation(nevents,ntracks);
+      s.RunSimulation(nevents,ntracks,rate);
       break;
   }
 
@@ -36,21 +45,21 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks)
   // rec.SetUseMaterialBudget(kTRUE)
   
   rec.SetRecoSettings(1,0,AliToyMCReconstruction::kNoCorrection);
-  rec.RunReco(outputFile.Data(),-1);
+  rec.RunFullTracking(outputFile.Data());
   
   rec.SetRecoSettings(1,1,AliToyMCReconstruction::kIdeal);
-  rec.RunReco(outputFile.Data(),-1);
+  rec.RunFullTracking(outputFile.Data());
   
   rec.SetRecoSettings(0,1,AliToyMCReconstruction::kIdeal);
-  rec.RunReco(outputFile.Data(),-1);
+  rec.RunFullTracking(outputFile.Data());
   
   rec.SetRecoSettings(0,1,AliToyMCReconstruction::kAverageEta);
-  rec.RunReco(outputFile.Data(),-1);
+  rec.RunFullTracking(outputFile.Data());
   
   rec.SetRecoSettings(0,1,AliToyMCReconstruction::kNoCorrection);
-  rec.RunReco(outputFile.Data(),-1);
+  rec.RunFullTracking(outputFile.Data());
   
   rec.SetRecoSettings(0,0,AliToyMCReconstruction::kNoCorrection);
-  rec.RunReco(outputFile.Data(),-1);
+  rec.RunFullTracking(outputFile.Data());
   
 }

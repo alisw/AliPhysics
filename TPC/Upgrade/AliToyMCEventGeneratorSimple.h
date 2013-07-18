@@ -23,7 +23,7 @@ class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
   AliToyMCEvent* GenerateLaser(Double_t time);
   
   void SetParametersToyGen(const Char_t* parfilename="$ALICE_ROOT/TPC/Upgrade/files/params.root", Double_t vertexMean = 0., Double_t vertexSigma = 7.);
-  void RunSimulation(const Int_t nevents=10, const Int_t ntracks=20);
+  void RunSimulation(const Int_t nevents=10, const Int_t ntracks=20, const Int_t rate=50);
   void RunSimulationBunchTrain(const Int_t nevents=10, const Int_t ntracks=20);
   void RunSimulationESD(const Int_t nevents=10, const Int_t ntracks=20);
   void RunSimulationLaser(const Int_t nevents=1);

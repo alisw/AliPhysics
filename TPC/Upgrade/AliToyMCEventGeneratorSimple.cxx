@@ -153,10 +153,11 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
+void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/, const Int_t rate/*=50*/)
 {
   //
   // run simple simulation with equal event spacing
+  // rate in kHz
   //
 
   if (!ConnectOutputFile()) return;
@@ -170,7 +171,7 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
   fCurrentTrack=1;
   
   Double_t eventTime=0.;
-  const Double_t eventSpacing=1./50e3; //50kHz equally spaced
+  const Double_t eventSpacing=1./rate/1e3; //50kHz equally spaced
   TStopwatch s;
   for (Int_t ievent=0; ievent<nevents; ++ievent){
     printf("Generating event %3d (%.3g)\n",ievent,eventTime);
