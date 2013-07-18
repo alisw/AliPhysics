@@ -656,8 +656,6 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 	nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kProton);
 	if(isLambda) fPrTOF[icentr]->Fill(fPtKp,nSigmaTOF);
 	
-	nSigmaTOF = TMath::Abs(nSigmaTOF);
-	
 	if(fIsMC){
 	  Float_t mismAdd = addMismatchForMC;
 	  if(KpTrack->Pt() < 1) mismAdd = addMismatchForMC/KpTrack->Pt();
@@ -677,6 +675,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 	}
 
 	if(fCentrality < 20 && KpTrack->Pt() < 1.3 && KpTrack->Pt() > 1.2)fTOFTPCsignal->Fill(nSigmaTOF,nSigmaTPC);
+        nSigmaTOF = TMath::Abs(nSigmaTOF);
 
 	if(nSigmaTOF < 2) fPidKp += 256;
 	else if(nSigmaTOF < 3) fPidKp += 512;
