@@ -26,7 +26,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   Int_t       pSel                = AliVEvent::kINT7,
 						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 						   Double_t    ptTrackBias         = 0.,
-						   Bool_t      bDoTwoJet           = kFALSE
+						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateAll
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -102,7 +102,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
     taskDiJet->SetIsPythiaPtHard(kTRUE);
     taskDiJet->SetDoFullFull(kTRUE);
   }
-  taskDiJet->SetCorrelateTwoJets(bDoTwoJet);
+  taskDiJet->SetJetCorrelationType(corrType);
 
 
   Printf("strJetsFull: %s",strJetsFull.Data());

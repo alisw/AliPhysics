@@ -24,6 +24,12 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
     kNoMatching = 3      // include autocorrelation in dijet correlation
   };
 
+  enum JetCorrelationType {
+    kCorrelateAll = 0,   // correlate all jets with all jets in event
+    kCorrelateTwo = 1,   // correlate all jets with leading jet in opposite hemisphere
+    kCorrelateLS  = 2    // correlate leading and subleading jet
+  };
+
   AliAnalysisTaskEmcalDiJetBase();
   AliAnalysisTaskEmcalDiJetBase(const char *name);
   virtual ~AliAnalysisTaskEmcalDiJetBase();
@@ -38,9 +44,11 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   Bool_t                      SelectEvent();              //decides if event is used for analysis
 
   //Setters
-  void SetDebug(Int_t d)                    { fDebug = d;}
+  void SetDebug(Int_t d)                                        { fDebug = d;}
 
-  void SetFullChargedMatchingType(JetFullChargedMatchingType m) {fJetFullChargedMatchingType = m;}
+  void SetJetCorrelationType(JetCorrelationType c)              { fJetCorrelationType = c; }
+
+  void SetFullChargedMatchingType(JetFullChargedMatchingType m) { fJetFullChargedMatchingType = m; }
 
   void SetTriggerClass(const char *n)       { fTriggerClass = n; }
 
@@ -84,9 +92,10 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   void                        SetChargedFractionIndex();
   void                        SetChargedFractionIndexMC();
 
-  Bool_t            fDebug;                     //  debug level
+  Bool_t                     fDebug;                      // debug level
+  JetCorrelationType         fJetCorrelationType;         // type of correlation between jets
   JetFullChargedMatchingType fJetFullChargedMatchingType; //matching type between full and charged jets to be used
-  TString           fTriggerClass;              // trigger class to analyze EJ1 or EJ2    
+  TString                    fTriggerClass;               // trigger class to analyze EJ1 or EJ2    
 
   Int_t             fContainerCharged;          //  number of container with charged jets DET
   Int_t             fContainerFull;             //  number of container with full jets DET
@@ -129,6 +138,6 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   AliAnalysisTaskEmcalDiJetBase(const AliAnalysisTaskEmcalDiJetBase&);            // not implemented
   AliAnalysisTaskEmcalDiJetBase &operator=(const AliAnalysisTaskEmcalDiJetBase&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetBase, 2) // dijet base task
+  ClassDef(AliAnalysisTaskEmcalDiJetBase, 3) // dijet base task
 };
 #endif

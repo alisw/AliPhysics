@@ -37,7 +37,6 @@ ClassImp(AliAnalysisTaskEmcalDiJetAna)
 //________________________________________________________________________
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() : 
   AliAnalysisTaskEmcalDiJetBase("AliAnalysisTaskEmcalDiJetAna"),
-  fDoTwoJets(kFALSE),
   fDoMatchFullCharged(kTRUE),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
@@ -60,7 +59,6 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) : 
   AliAnalysisTaskEmcalDiJetBase(name),
-  fDoTwoJets(kFALSE),
   fDoMatchFullCharged(kTRUE),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
@@ -282,6 +280,23 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::Run()
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskEmcalDiJetAna::CorrelateJets(const Int_t type) {
+  //
+  // Correlate jets and fill histos
+  //
+
+  if( fJetCorrelationType==kCorrelateAll )
+    CorrelateAllJets(type);
+  else if( fJetCorrelationType==kCorrelateTwo )
+    CorrelateTwoJets(type);
+  else if( fJetCorrelationType==kCorrelateLS )
+    CorrelateLeadingSubleadingJets(type);
+
+  return;
+
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
   //
   // Correlate jets and fill histos
@@ -341,7 +356,7 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
     if(jetTrigPt<fPtMinTriggerJet)
       continue;
 
-    AliEmcalJet *jetAssoc = GetAssociatedJet(typea,jetTrig);
+    AliEmcalJet *jetAssoc = GetLeadingAssociatedJet(typea,jetTrig);
     if(!jetAssoc)
       continue;
 
@@ -353,7 +368,52 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetAssociatedJet(const Int_t type, AliEmcalJet *jetTrig) {
+AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetLeadingJet(const Int_t type) {
+
+  //Get associated jet which is the leading jet in the opposite hemisphere
+
+  Int_t cont = 0;
+  if(type==0)  //full-full
+    cont = fContainerFull;
+  else if(type==1)  //charged-charged
+    cont = fContainerCharged;
+  else if(type==2)  //full-charged
+    cont = fContainerFull;
+
+  Int_t nJets = GetNJets(cont);
+  Double_t ptLead = -999;
+  Int_t    iJetLead = -1;
+  for(Int_t ij=0; ij<nJets; ij++) {
+
+    AliEmcalJet *jet = NULL;
+    if(type==0) {
+      jet = static_cast<AliEmcalJet*>(GetJetFromArray(ij, cont));
+      if(TMath::Abs(jet->Eta())>0.5)
+	jet = NULL;
+    }
+    else
+      jet = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ij, cont));
+
+    if(!jet)
+      continue;
+
+    Double_t jetPt = GetJetPt(jet,cont);
+
+    if(jetPt>ptLead) {
+      ptLead = jetPt;
+      iJetLead = ij;
+    }
+
+  }
+
+  AliEmcalJet *jetLead = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead, cont));
+
+  return jetLead;
+
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetLeadingAssociatedJet(const Int_t type, AliEmcalJet *jetTrig) {
 
   //Get associated jet which is the leading jet in the opposite hemisphere
 
@@ -404,15 +464,10 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetAssociatedJet(const Int_t type, Al
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalDiJetAna::CorrelateJets(const Int_t type) {
+void AliAnalysisTaskEmcalDiJetAna::CorrelateAllJets(const Int_t type) {
   //
   // Correlate jets and fill histos
   //
-
-  if(fDoTwoJets) {
-    CorrelateTwoJets(type);
-    return;
-  }
 
   Int_t typet = 0;
   Int_t typea = 0;
@@ -490,6 +545,50 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateJets(const Int_t type) {
       
     } // associate jet loop
   }//trigger jet loop
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDiJetAna::CorrelateLeadingSubleadingJets(const Int_t type) {
+  //
+  // Correlate leading jet in event with leading jet in opposite hemisphere
+  //
+
+  Int_t typet = 0;
+  Int_t typea = 0;
+  if(type==0) { //full-full
+    typet = fContainerFull;
+    typea = fContainerFull;
+  }
+  else if(type==1) { //charged-charged
+    typet = fContainerCharged;
+    typea = fContainerCharged;
+  }
+  else if(type==2) { //full-charged
+    typet = fContainerFull;
+    typea = fContainerCharged;
+  }
+  else {
+    AliWarning(Form("%s: type %d of dijet correlation not defined!",GetName(),type));
+    return;
+  }
+
+  AliEmcalJet *jetTrig = GetLeadingJet(type);
+  if(!jetTrig)
+    return;
+
+  Double_t jetTrigPt = GetJetPt(jetTrig,typet);
+
+  if(jetTrigPt<fPtMinTriggerJet)
+    return;
+  
+  AliEmcalJet *jetAssoc = GetLeadingAssociatedJet(typea,jetTrig);
+  if(!jetAssoc)
+    return;
+  
+
+  FillDiJetHistos(jetTrig,jetAssoc, type);
+  
 
 }
 
