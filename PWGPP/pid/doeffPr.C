@@ -7,6 +7,7 @@
 #include"TFile.h"
 #include"TGraphErrors.h"
 #include"AliPIDperfContainer.h"
+#include"TRandom.h"
 
 Int_t LoadLib();
 void doeffPr(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
@@ -502,6 +503,23 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
    fall->FixParameter(5,0);
    fall->FixParameter(6,0);
  }
+
+ char namenew[100];
+ sprintf(namenew,"%s_%i",h->GetName(),Int_t(gRandom->Rndm()*10000));
+ TH1D *h2 = new TH1D(*h);
+ h2->SetName(namenew);
+
+ // Float_t entries = h2->GetBinContent(h2->FindBin(0.497));
+//  printf("entries under the peak = %f, pt = %f\n",entries,pt);
+//  getchar();
+
+ if(pt > 2.5){
+   if(pt < 2.8) h2->RebinX(2);
+   else if(pt < 3) h2->RebinX(4);
+   else h2->RebinX(10);
+ }
+
+ h=h2;
 
  char name[100];
  TF1 *ftmp=fall;
