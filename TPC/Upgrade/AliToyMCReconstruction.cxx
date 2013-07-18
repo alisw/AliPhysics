@@ -719,8 +719,11 @@ void AliToyMCReconstruction::RunFullTracking(const char* file, Int_t nmaxEv)
   firstSeed=seeds.GetEntriesFast();
 
   //shorter seeds
-  upperRow-=5;
+  Int_t startUpper=upperRow-10;
+  Int_t startLower=lowerRow-5;
   for (Int_t sec=0;sec<36;sec++){
+    upperRow=startUpper;
+    lowerRow=startLower;
     printf(" in sector: %d\n",sec);
     while (lowerRow>0){
       printf("Run Seeding in %3d - %3d\n",lowerRow,upperRow);
@@ -1378,17 +1381,17 @@ void AliToyMCReconstruction::AssociateClusters(AliTPCseed &seed, Int_t firstRow,
     rieman2.AddPoint(n->GetX(), n->GetY(), n->GetZ(),
                      TMath::Sqrt(n->GetSigmaY2()), TMath::Sqrt(n->GetSigmaZ2()));
     rieman2.Update();
-    printf("      Riemann results: row=%d valid=%d, Chi2=%.2f (%.2f) %d (%d)",
-           iRow, rieman2.IsValid(), rieman2.GetChi2(), rieman1.GetChi2(), n->GetLabel(0),seed.GetLabel());
+//     printf("      Riemann results: row=%d valid=%d, Chi2=%.2f (%.2f) %d (%d)",
+//            iRow, rieman2.IsValid(), rieman2.GetChi2(), rieman1.GetChi2(), n->GetLabel(0),seed.GetLabel());
     Double_t limit=2*rieman1.GetChi2();
     if (fClusterType==0) limit=1000;
     if (rieman2.GetChi2()>limit) {
       CopyRieman(rieman1,rieman2);
       ++noLastPoint;
-      printf("\n");
+//       printf("\n");
       continue;
     }
-    printf("  +++ \n");
+//     printf("  +++ \n");
     
     noLastPoint=0;
     //use point
@@ -1411,7 +1414,7 @@ void AliToyMCReconstruction::ClusterToTrackAssociation(AliTPCseed &seed)
   //
   //
 
-  printf("\n ============ \nnext Seed: %d\n",seed.GetLabel());
+//   printf("\n ============ \nnext Seed: %d\n",seed.GetLabel());
   //assume seed is within one sector
   Int_t iMiddle=(seed.GetSeed1()+seed.GetSeed2())/2;
   //outward
@@ -1941,9 +1944,9 @@ void AliToyMCReconstruction::AddMiddleClusters(AliTPCseed *seed,
                    TMath::Sqrt(clMiddle->GetSigmaY2()), TMath::Sqrt(clMiddle->GetSigmaZ2()));
 
   if (seedFit.GetN()>3) {
-    printf("      call update: %d (%d)\n",seedFit.GetN(),nTotalClusters);
-    printf("      Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f -- %d\n",
-           seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z(), clMiddle->GetLabel(0));
+//     printf("      call update: %d (%d)\n",seedFit.GetN(),nTotalClusters);
+//     printf("      Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f -- %d\n",
+//            seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z(), clMiddle->GetLabel(0));
     seedFit.Update();
   }
   if ( seedFit.IsValid() && seedFit.GetChi2()>1000 ) return;
@@ -2022,10 +2025,10 @@ Int_t AliToyMCReconstruction::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t iRowI
     for (Int_t iInner=0; iInner < krInner; iInner++) {
       const AliTPCclusterMI *clInner = krInner[iInner];
       if (clInner->IsUsed()) continue;
-printf("\n\n Check combination %d (%d), %d (%d) -- %d (%d) -- %d\n",iOuter, iInner, clOuter->GetLabel(0), clInner->GetLabel(0),iRowOuter,iRowInner,sec);
+// printf("\n\n Check combination %d (%d), %d (%d) -- %d (%d) -- %d\n",iOuter, iInner, clOuter->GetLabel(0), clInner->GetLabel(0),iRowOuter,iRowInner,sec);
       // check maximum distance for combinatorics
       if (TMath::Abs(clOuter->GetZ()-clInner->GetZ())>timeRoadCombinatorics) continue;
-printf("  Is inside one drift\n");
+// printf("  Is inside one drift\n");
 
       // use rieman fit for seed description
       AliRieman seedFit(159);
@@ -2038,10 +2041,10 @@ printf("  Is inside one drift\n");
       // Iteratively add all clusters in the respective middle
       Int_t nFoundClusters=2;
       AddMiddleClusters(seed,clInner,clOuter,padRoad,timeRoad,nFoundClusters,seedFit);
-      printf("  Clusters attached: %d\n",nFoundClusters);
+//       printf("  Clusters attached: %d\n",nFoundClusters);
       if (nFoundClusters>2) seedFit.Update();
-      printf("  Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
-             seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
+//       printf("  Riemann results: valid=%d, Chi2=%.2f, Chi2Y=%.2f, Chi2Z=%.2f\n",
+//              seedFit.IsValid(), seedFit.GetChi2(), seedFit.GetChi2Y(), seedFit.GetChi2Z());
 
       // check for minimum number of assigned clusters and a decent chi2
       if ( nFoundClusters<0.5*nMaxClusters || seedFit.GetChi2()>1000 ){
@@ -2191,13 +2194,13 @@ void AliToyMCReconstruction::ConnectInputFile(const char* file, Int_t nmaxEv)
   if (!fInputFile || !fInputFile->IsOpen() || fInputFile->IsZombie()) {
     delete fInputFile;
     fInputFile=0x0;
-    printf("ERROR: couldn't open the file '%s'\n", file);
+    AliError(Form("ERROR: couldn't open the file '%s'\n", file));
     return;
   }
   
   fTree=(TTree*)fInputFile->Get("toyMCtree");
   if (!fTree) {
-    printf("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", file);
+    AliError(Form("ERROR: couldn't read the 'toyMCtree' from file '%s'\n", file));
     return;
   }
   
