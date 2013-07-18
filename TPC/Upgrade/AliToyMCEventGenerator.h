@@ -47,7 +47,7 @@ class AliToyMCEventGenerator : public TObject {
   void CreateSpacePoints(AliToyMCTrack &trackIn,
                         AliTrackPointArray &arrUdist,
                         AliTrackPointArray &arrDist);
-  void SetPoint(Float_t xyz[3], AliTrackPoint &point);
+  void SetPoint(Float_t xyz[3], Float_t sigmaY, Float_t sigmaZ, AliTrackPoint &point);
   void ConvertTrackPointsToLocalClusters(AliTrackPointArray &arrPoints, AliToyMCTrack &tr, Double_t t0, Int_t type);
   Bool_t SetupCluster(AliTPCclusterMI &tempCl, Float_t xyz[3], Int_t sec, Double_t t0);
   

@@ -29,6 +29,12 @@ public:
     kIdeal
   };
 
+  enum EDet {
+    kITS=0,
+    kTPC,
+    kTRD
+  };
+  
   void RunReco(const char* file, Int_t nmaxEv=-1);
   void RunRecoAllClusters(const char* file, Int_t nmaxEv=-1);
   void RunRecoAllClustersStandardTracking(const char* file, Int_t nmaxEv=-1);
@@ -61,8 +67,10 @@ public:
   TTree* GetTree() const { return fTree; }
 
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr, Bool_t forceSeed=kFALSE);
+  AliExternalTrackParam* GetSeedFromTrackIdeal(const AliToyMCTrack * const tr, EDet det );
   AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
   AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus);
+  AliExternalTrackParam* GetTrackRefit(const AliToyMCTrack * const tr, EDet det);
 
   AliToyMCTrack *ConvertTPCSeedToToyMCTrack(const AliTPCseed &seed);
   AliExternalTrackParam* GetRefittedTrack(const AliTPCseed &seed);

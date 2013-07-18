@@ -4,7 +4,9 @@
 #include <AliExternalTrackParam.h>
 #include <TClonesArray.h>
 #include <AliTPCclusterMI.h>
-#include <AliCluster.h>
+// #include <AliCluster.h>
+
+class AliTrackPoint;
 
 class AliToyMCTrack : public AliExternalTrackParam {
  
@@ -27,13 +29,16 @@ class AliToyMCTrack : public AliExternalTrackParam {
 
   const AliTPCclusterMI* GetSpacePoint(Int_t spoint) const { return static_cast<AliTPCclusterMI*> (fSpacePoints.At(spoint)); }
   const AliTPCclusterMI* GetDistortedSpacePoint(Int_t dspoint) const { return static_cast<AliTPCclusterMI*> (fDistortedSpacePoints.At(dspoint)); }
-  const AliCluster* GetITSPoint(Int_t spoint) const { return static_cast<AliCluster*> (fITSPoints.At(spoint)); }
-  const AliCluster* GetTRDPoint(Int_t spoint) const { return static_cast<AliCluster*> (fTRDPoints.At(spoint)); }
-
   AliTPCclusterMI* AddSpacePoint(const AliTPCclusterMI &spoint);
   AliTPCclusterMI* AddDistortedSpacePoint(const AliTPCclusterMI &dspoint);
-  AliCluster* AddITSPoint(const AliCluster &spoint);
-  AliCluster* AddTRDPoint(const AliCluster &spoint);
+
+  const AliTrackPoint* GetITSPoint(Int_t spoint) const { return static_cast<AliTrackPoint*> (fITSPoints.At(spoint)); }
+  const AliTrackPoint* GetTRDPoint(Int_t spoint) const { return static_cast<AliTrackPoint*> (fTRDPoints.At(spoint)); }
+  
+  AliTrackPoint* AddITSPoint(const AliTrackPoint &spoint);
+  AliTrackPoint* AddTRDPoint(const AliTrackPoint &spoint);
+
+  
  private:
 
   TClonesArray fSpacePoints;

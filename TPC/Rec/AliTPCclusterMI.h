@@ -48,8 +48,8 @@ public:
   //
   AliTPCclusterMI*  MakeCluster(AliTrackPoint* point);
   AliTrackPoint*    MakePoint();
-  void MakePoint(AliTrackPoint &point);
-
+  static void     SetGlobalTrackPoint(const AliCluster &cl, AliTrackPoint &point);
+  
 private:
   AliTPCclusterInfo * fInfo;  // pointer to the cluster debug info
   Float_t   fTimeBin;  //time bin coordinate

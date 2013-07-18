@@ -95,11 +95,14 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
   retEvent->SetT0(time);
   retEvent->SetX(0);
   retEvent->SetX(0);
-  retEvent->SetZ(gRandom->Gaus(fVertexMean,fVertexSigma));
+  Double_t vertexZ=0;
+  //limit vertex to +- 10cm
+  while ( TMath::Abs(vertexZ=gRandom->Gaus(fVertexMean,fVertexSigma))>10. );
+  retEvent->SetZ(vertexZ);
 
-  Double_t etaCuts=.9;
+  Double_t etaCuts=0.9;
   Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-  static TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass,mass),0.4,10);
+  static TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass,mass),0.3,100);
   if (fpt.GetParameter(0)<1){
     printf("Set Parameters\n");
     fpt.SetParameters(7.24,0.120);

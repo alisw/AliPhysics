@@ -97,8 +97,14 @@ void AliToyMCEventGenerator::MakeITSClusters(AliToyMCTrack &trackIn/*, Double_t 
   const Double_t ITSRadii[nITSLayers] = {2.2, 2.8, 3.6, 20.0, 22.0, 41.0, 43.0};
   const Double_t lengthITS[nITSLayers] = {22.4, 24.2, 26.8, 78.0, 83.6, 142.4, 148.6};
 
+  //resolution of the point is 10um
+  const Float_t sigmaY = 0.001;
+  const Float_t sigmaZ = 0.001;
+
+  AliTrackPoint point;
+  
   const Double_t kMaxSnp = 0.85;
-  const Double_t kMaxZ0  = fTPCParam->GetZLength();
+//   const Double_t kMaxZ0  = fTPCParam->GetZLength();
   const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
   AliExternalTrackParam track(trackIn);
@@ -115,15 +121,25 @@ void AliToyMCEventGenerator::MakeITSClusters(AliToyMCTrack &trackIn/*, Double_t 
       AliError(Form("Propagation to %.2f failed\n",ITSRadii[iLayer]));
       continue;
     }
+    // since I don't know how to extract the volumeid of the ITS layers I use the following strategy:
+    //  - rotate the track to the next integer angle
+    //  - use coordinates there and set as volumeid the integer angle
+    //  - in the reco one can then rotate the cluster to the global frame using the angle stored in the volume id
     track.GetXYZ(xyz);
     
-    if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
+//     if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
     if (TMath::Abs(track.GetZ())>lengthITS[iLayer]/2) continue;
+
+
+    // smear the ideal positions with the cluster resolution
+    xyz[1]+=gRandom->Gaus(0,sigmaY);
+    xyz[2]+=gRandom->Gaus(0,sigmaZ);
+
+    Float_t xyzf[3]={xyz[0],xyz[1],xyz[2]};
+
+    SetPoint(xyzf,sigmaY,sigmaZ,point);
     
-    const Double_t sigmaY = 0.0004;
-    const Double_t sigmaZ = 0.0004;
-    AliCluster* tempCl = trackIn.AddITSPoint(AliCluster(1000,xyz[0],xyz[1],xyz[2],sigmaY*sigmaY,sigmaZ*sigmaZ,0));
-    tempCl->SetLabel(trackIn.GetUniqueID(), 0);
+    trackIn.AddITSPoint(point)->SetUniqueID(trackIn.GetUniqueID());
   }
 
 }
@@ -137,7 +153,11 @@ void AliToyMCEventGenerator::MakeTRDClusters(AliToyMCTrack &trackIn/*, Double_t 
   const Double_t TRDRadii[nTRDLayers] = {294.5 + distToMid, 307.1 + distToMid, 319.7 + distToMid, 332.3 + distToMid, 344.9 + distToMid, 357.5 + distToMid};
   const Double_t lengthTRD[nTRDLayers] = {604.0, 634.0, 656.0, 686.0, 700.0, 700.0};
   
+  const Float_t sigmaY = 0.06;
+  const Float_t sigmaZ = 0.2;
 
+  AliTrackPoint point;
+  
   const Double_t kMaxSnp = 0.85;
   const Double_t kMaxZ0  = fTPCParam->GetZLength();
   const Double_t kMass   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
@@ -161,10 +181,16 @@ void AliToyMCEventGenerator::MakeTRDClusters(AliToyMCTrack &trackIn/*, Double_t 
     if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
     if (TMath::Abs(track.GetZ())>lengthTRD[iLayer]/2) continue;
     
-    const Double_t sigmaY = 0.06;
-    const Double_t sigmaZ = 0.2;
-    AliCluster* tempCl = trackIn.AddTRDPoint(AliCluster(1000,xyz[0],xyz[1],xyz[2],sigmaY*sigmaY,sigmaZ*sigmaZ,0));
-    tempCl->SetLabel(trackIn.GetUniqueID(), 0);
+
+    // smear the ideal positions with the cluster resolution
+    xyz[1]+=gRandom->Gaus(0,sigmaY);
+    xyz[2]+=gRandom->Gaus(0,sigmaZ);
+    
+    Float_t xyzf[3]={xyz[0],xyz[1],xyz[2]};
+
+    SetPoint(xyzf,sigmaY,sigmaZ,point);
+
+    trackIn.AddTRDPoint(point)->SetUniqueID(trackIn.GetUniqueID());
   }
 
 }
@@ -204,6 +230,9 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
   
   const Double_t iFCRadius =  83.5; //radius constants found in AliTPCCorrection.cxx
   const Double_t oFCRadius = 254.5;
+
+  const Float_t kSigmaY=0.1;
+  const Float_t kSigmaZ=0.1;
   
   AliExternalTrackParam track(trackIn);
   //!!! TODO: make this adjustable perhaps
@@ -228,9 +257,6 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
     track.GetXYZ(xyz);
     
     //!!! Why is this smeared
-//     xyz[0]+=gRandom->Gaus(0,0.000005);
-//     xyz[1]+=gRandom->Gaus(0,0.000005);
-//     xyz[2]+=gRandom->Gaus(0,0.000005);
     
     xyzf[0]=Float_t(xyz[0]);
     xyzf[1]=Float_t(xyz[1]);
@@ -244,7 +270,7 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
     AliTrackPoint pUdist;                               // undistorted space point
     AliTrackPoint pDist;                                // distorted space point
     // Set undistorted point
-    SetPoint(xyzf,pUdist);
+    SetPoint(xyzf,kSigmaY,kSigmaZ,pUdist);
     arrUdist.AddPoint(npoints, &pUdist);
     Int_t sector=pUdist.GetVolumeID();    
     
@@ -259,7 +285,7 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
       distPoint[1]-=dxyz[1];
       distPoint[2]-=dxyz[2];
     }
-    SetPoint(distPoint, pDist);
+    SetPoint(distPoint,kSigmaY,kSigmaZ,pDist);
     arrDist.AddPoint(npoints, &pDist);
     
     ++npoints;
@@ -270,7 +296,7 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
 }
 
 //________________________________________________________________
-void AliToyMCEventGenerator::SetPoint(Float_t xyz[3], AliTrackPoint &point)
+void AliToyMCEventGenerator::SetPoint(Float_t xyz[3], Float_t sigmaY, Float_t sigmaZ, AliTrackPoint &point)
 {
   //
   // make AliTrackPoint out of AliTPCclusterMI
@@ -279,9 +305,7 @@ void AliToyMCEventGenerator::SetPoint(Float_t xyz[3], AliTrackPoint &point)
   //covariance at the local frame
   //assume 1mm distortion in y and z
   Int_t i[3]={0,0,0};
-  const Double_t kSigmaY=0.1;
-  const Double_t kSigmaZ=0.1;
-  Float_t cov[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};
+  Float_t cov[6]={0,0,0, sigmaY*sigmaY,0,sigmaZ*sigmaZ};
   
   const Float_t alpha = -TMath::ATan2(xyz[1],xyz[0]);
   const Float_t sin   = TMath::Sin(alpha), cos = TMath::Cos(alpha);
@@ -431,11 +455,16 @@ Bool_t AliToyMCEventGenerator::SetupCluster(AliTPCclusterMI &tempCl, Float_t xyz
   //
   //
 
+  // intrinsic cluster resolution is 1mm
   const Double_t kSigmaY   = 0.1;
   const Double_t kSigmaZ   = 0.1;
   const Double_t kMaxZ0    = fTPCParam->GetZLength();
   //TODO: Get this from the OCDB at some point?
   const Double_t kDriftVel = fTPCParam->GetDriftV();
+
+  // smear the ideal positions with the cluster resolution
+  xyz[1]+=gRandom->Gaus(0,kSigmaY);
+  xyz[2]+=gRandom->Gaus(0,kSigmaZ);
   
   tempCl.SetX(xyz[0]);
   tempCl.SetY(xyz[1]);

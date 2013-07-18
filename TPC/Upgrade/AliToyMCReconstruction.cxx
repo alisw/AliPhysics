@@ -92,21 +92,40 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   
   gROOT->cd();
 
-  static AliExternalTrackParam dummySeedT0;
-  static AliExternalTrackParam dummySeed;
-  static AliExternalTrackParam dummyTrack;
+  static AliExternalTrackParam resetParam;
 
   AliExternalTrackParam t0seed;
   AliExternalTrackParam seed;
   AliExternalTrackParam track;
-  AliExternalTrackParam trackITS;
   AliExternalTrackParam tOrig;
-  AliExternalTrackParam tOrigITS;
 
+  // at ITS
+  AliExternalTrackParam tOrigITS;   // ideal track 
+  AliExternalTrackParam tRealITS;   // ITS track with realistic space point resolution
+  AliExternalTrackParam trackITS;   // TPC refitted track
+  
+  //between TPC inner wall and ITS
+  AliExternalTrackParam tOrigITS1;
+  AliExternalTrackParam tRealITS1;
+  AliExternalTrackParam trackITS1;
+  
+  //at TPC inner wall
+  AliExternalTrackParam tOrigITS2;
+  AliExternalTrackParam tRealITS2;
+  AliExternalTrackParam trackITS2;
+  
   AliExternalTrackParam *dummy;
   
   Int_t maxev=fTree->GetEntries();
   if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
+
+  const Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
+  const Double_t iFCRadius =  83.5; //radius constants found in AliTPCCorrection.cxx
+  const Double_t betweeTPCITS = (lastLayerITS+iFCRadius)/2.; // its track propgated to inner TPC wall
+
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
   
   for (Int_t iev=0; iev<maxev; ++iev){
     printf("==============  Processing Event %6d =================\n",iev);
@@ -115,12 +134,42 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 //       printf(" > ======  Processing Track %6d ========  \n",itr);
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       tOrig = *tr;
+      // ideal track propagated to ITS reference points
+      tOrigITS  = *tr;
+      tOrigITS1 = *tr;
+      tOrigITS2 = *tr;
+      // propagate original track to ITS comparison points
+      AliTrackerBase::PropagateTrackTo(&tOrigITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+      AliTrackerBase::PropagateTrackTo(&tOrigITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+      AliTrackerBase::PropagateTrackTo(&tOrigITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+      // realistic ITS track propagated to reference points
+      tRealITS  = resetParam;
+      tRealITS1 = resetParam;
+      tRealITS2 = resetParam;
+      dummy = GetTrackRefit(tr,kITS);
+      if (dummy){
+        tRealITS = *dummy;
+        tRealITS1 = *dummy;
+        tRealITS2 = *dummy;
+        // propagate realistic track to ITS comparison points
+        AliTrackerBase::PropagateTrackTo(&tRealITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        AliTrackerBase::PropagateTrackTo(&tRealITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        AliTrackerBase::PropagateTrackTo(&tRealITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        //
+        delete dummy;
+        dummy=0x0;
+      }
+      
 
       
-      // set dummy 
-      t0seed    = dummySeedT0;
-      seed      = dummySeed;
-      track     = dummyTrack;
+      // resetParam 
+      t0seed    = resetParam;
+      seed      = resetParam;
+      track     = resetParam;
+      trackITS  = resetParam;
+      trackITS1 = resetParam;
+      trackITS2 = resetParam;
       
       Float_t z0=fEvent->GetZ();
       Float_t t0=fEvent->GetT0();
@@ -158,23 +207,32 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 
 	  // Copy original track and fitted track
 	  // for extrapolation to ITS last layer
-	  tOrigITS = *tr;
-	  trackITS = track;
-
+	  trackITS  = track;
+          trackITS1 = track;
+          trackITS2 = track;
+          
           // propagate seed to 0
-          const Double_t kMaxSnp = 0.85;
-          const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
           AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 
-	  // propagate original track to ITS last layer
-	  Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
-	  AliTrackerBase::PropagateTrackTo(&tOrigITS,lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-
+          //
+          // ITS comparison
+          //
+          
 	  // rotate fitted track to the frame of the original track and propagate to same reference
 	  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 	  trackITS.Rotate(tOrigITS.GetAlpha());
 	  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
 
+          // rotate fitted track to the frame of the original track and propagate to same reference
+          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+          trackITS.Rotate(tOrigITS.GetAlpha());
+          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+          // rotate fitted track to the frame of the original track and propagate to same reference
+          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+          trackITS.Rotate(tOrigITS.GetAlpha());
+          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          
 	            
         }
       }
@@ -196,10 +254,19 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "zLength="     << zLength         <<
         "t0seed.="     << &t0seed         <<
         "seed.="       << &seed           <<
-        "track.="      << &track          <<
+        
         "tOrig.="      << &tOrig          <<
-        "trackITS.="   << &trackITS       <<
+        "track.="      << &track          <<
+        // ITS match
         "tOrigITS.="   << &tOrigITS       <<
+        "tOrigITS1.="  << &tOrigITS       <<
+        "tOrigITS2.="  << &tOrigITS       <<
+        "tRealITS.="   << &tRealITS       <<
+        "tRealITS1.="  << &tRealITS       <<
+        "tRealITS2.="  << &tRealITS       <<
+        "trackITS.="   << &trackITS       <<
+        "trackITS1.="  << &trackITS       <<
+        "trackITS2.="  << &trackITS       <<
         "\n";
       }
       
@@ -756,10 +823,59 @@ void AliToyMCReconstruction::RunFullTracking(const char* file, Int_t nmaxEv)
 //   DumpTrackInfo(&seedsCentral2);
 
   //dump clusters
-  (*fStreamer) << "clusters" <<
-  "cl.=" << &fAllClusters << "\n";
+//   (*fStreamer) << "clusters" <<
+//   "cl.=" << &fAllClusters << "\n";
   
   Cleanup();
+}
+
+//____________________________________________________________________________________
+AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrackIdeal(const AliToyMCTrack * const tr, EDet det )
+{
+  //
+  // crate a seed from the track points of the respective detector
+  //
+  AliTrackPoint    seedPoint[3];
+
+  Int_t npoints=0;
+  switch (det) {
+    case kITS:
+      npoints=tr->GetNumberOfITSPoints();
+      break;
+    case kTPC:
+      npoints=(fClusterType == 0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
+      break;
+    case kTRD:
+      npoints=tr->GetNumberOfTRDPoints();
+      break;
+  }
+
+  if (npoints<3) return 0x0;
+
+  Int_t pos[3]={0,npoints/2,npoints-1};
+  const AliCluster *cl=0x0;
+  
+  for (Int_t ipoint=0;ipoint<3;++ipoint){
+    Int_t cluster=pos[ipoint];
+    switch (det) {
+      case kITS:
+        seedPoint[ipoint]=(*tr->GetITSPoint(cluster));
+        break;
+      case kTPC:
+        cl=tr->GetSpacePoint(cluster);
+        if (fClusterType == 1) cl=tr->GetDistortedSpacePoint(cluster);
+        AliTPCclusterMI::SetGlobalTrackPoint(*cl,seedPoint[ipoint]);
+        break;
+      case kTRD:
+        seedPoint[ipoint]=(*tr->GetTRDPoint(cluster));
+        break;
+    }
+  }
+
+  AliExternalTrackParam *seed = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
+  seed->ResetCovariance(10);
+
+  return seed;
 }
 
 //____________________________________________________________________________________
@@ -881,6 +997,80 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   
 }
 
+//____________________________________________________________________________________
+AliExternalTrackParam* AliToyMCReconstruction::GetTrackRefit(const AliToyMCTrack * const tr, EDet det)
+{
+  //
+  // Get the ITS or TRD track refitted from the toy track
+  // type: 0=ITS; 1=TRD
+  //
+
+  AliExternalTrackParam *track=GetSeedFromTrackIdeal(tr,det);
+  if (!track) return 0x0;
+
+  const Double_t kMaxSnp = 0.85;
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  
+  Int_t npoints=0;
+  switch (det) {
+    case kITS:
+      npoints=tr->GetNumberOfITSPoints();
+      break;
+    case kTPC:
+      npoints=(fClusterType == 0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
+      break;
+    case kTRD:
+      npoints=tr->GetNumberOfTRDPoints();
+      break;
+  }
+  
+  const AliCluster *cl=0x0;
+  
+  for (Int_t ipoint=0; ipoint<npoints; ++ipoint) {
+    AliTrackPoint pIn;
+
+    switch (det) {
+      case kITS:
+        pIn=(*tr->GetITSPoint(ipoint));
+        break;
+      case kTPC:
+        cl=tr->GetSpacePoint(ipoint);
+        if (fClusterType == 1) cl=tr->GetDistortedSpacePoint(ipoint);
+        AliTPCclusterMI::SetGlobalTrackPoint(*cl,pIn);
+        break;
+      case kTRD:
+        pIn=(*tr->GetTRDPoint(ipoint));
+        break;
+    }
+
+
+    const Double_t angle=pIn.GetAngle();
+    track->Rotate(angle);
+    AliTrackPoint prot = pIn.Rotate(track->GetAlpha());   // rotate to the local frame - non distoted  point
+    
+    if (!AliTrackerBase::PropagateTrackTo(track,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial)) {
+      AliInfo(Form("Could not propagate track to x=%.2f (a=%.2f) for det %d",prot.GetX(),angle,det));
+    }
+    //
+    
+    Double_t pointPos[2]={0,0};
+    Double_t pointCov[3]={0,0,0};
+    pointPos[0]=prot.GetY();//local y
+    pointPos[1]=prot.GetZ();//local z
+    pointCov[0]=prot.GetCov()[3];//simay^2
+    pointCov[1]=prot.GetCov()[4];//sigmayz
+    pointCov[2]=prot.GetCov()[5];//sigmaz^2
+    
+    if (!track->Update(pointPos,pointCov)) {
+      AliInfo(Form("no update: det: %d",det));
+      break;
+    }
+    
+  }
+
+  return track;
+}
+
 
 //____________________________________________________________________________________
 void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl, AliTrackPoint &p )
@@ -908,7 +1098,8 @@ void AliToyMCReconstruction::SetTrackPointFromCluster(const AliTPCclusterMI *cl,
 //   AliTrackPoint *tp=const_cast<AliTPCclusterMI*>(cl)->MakePoint(p);
 //   p=*tp;
 //   delete tp;
-  const_cast<AliTPCclusterMI*>(cl)->MakePoint(p);
+//   const_cast<AliTPCclusterMI*>(cl)->MakePoint(p);
+  AliTPCclusterMI::SetGlobalTrackPoint(*cl,p);
   //   cl->Print();
   //   p.Print();
   p.SetVolumeID(cl->GetDetector());
@@ -2408,7 +2599,9 @@ void AliToyMCReconstruction::DumpSeedInfo(const AliToyMCTrack *toyTrack, AliTPCs
   AliExternalTrackParam tOrigITS(*toyTrack);
   
   // propagate original track to ITS last layer
-  Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
+//   Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
+  const Double_t iFCRadius =  83.5; //radius constants found in AliTPCCorrection.cxx
+  Double_t lastLayerITS = iFCRadius; // its track propgated to inner TPC wall
   AliTrackerBase::PropagateTrackTo(&tOrigITS,lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
   
   AliExternalTrackParam dummyParam;
