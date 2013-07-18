@@ -43,7 +43,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetisSignalCheck(Bool_t IsSignalCheck) {isSignalCheck=IsSignalCheck;}
   void SetMomBin(Int_t iMomBin) {MomType=iMomBin;}
   void SetAbsEtaLimit(Double_t *etaLimit) {EtaLimit[0]=etaLimit[0];EtaLimit[1]=etaLimit[1];}
-  
+  void SetTRDanalysis(Bool_t kTrdAnalysis=kFALSE, Int_t iTrd=1) {kTRDana=kTrdAnalysis;iTRD=iTrd;}
 
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
@@ -60,7 +60,11 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Double_t EtaLimit[2];                 // Eta windows in analysis
 
   Int_t MomType;                    // type of momentum bins in analysis (7 are all ON): (Flag: 001(1)->pT 010(2)->p 100(3)->pTPC)
-
+ 
+  Bool_t kTRDana;                    //TRD analysis: 0->No 1->Yes
+  
+  Int_t iTRD;                        //TRD: 2->No TRD, 4->Yes TRD, 1->indifferent
+ 
   Bool_t fMC;                       // if MC
 
   Float_t fCentrality[2];           // centrality bin (min and max)
@@ -99,7 +103,15 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   
   TH1F *hZvertex[2];                   //! z-vertex distribution
 
-  TH1F *hEtaDistribution[2];              //! Eta distribution of the tracks
+  TH1F *hEtaDistribution[2][2];          //! Eta distribution of the tracks
+
+  TH2F *fEtaSpecies[2][18];           //! Eta distribution of the each particle identified by the TPC
+  
+  TH1F *hPhi[2][6];                   //! Phi particle distribution
+
+  TH2F *fEtaPhi[2][6];                 //! Phi vs Eta particle distribution
+
+  TH2F *fPhiSpecies[2][18];          //! Phi vs Eta particle distribution identified by the TPC
 
   TH2F *fdEdxVSp[2][3];                //! dedx vs p plots
 
