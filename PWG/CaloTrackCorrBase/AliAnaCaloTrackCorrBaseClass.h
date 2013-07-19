@@ -120,6 +120,9 @@ public:
   virtual TObjArray*     GetEMCALClusters()                const ;
   virtual TObjArray*     GetPHOSClusters()                 const ;
   
+
+  //jets
+  virtual TClonesArray*  GetNonStandardJets()              const { return fReader->GetNonStandardJets() ;}
 	
   // Common analysis switchs 
   
