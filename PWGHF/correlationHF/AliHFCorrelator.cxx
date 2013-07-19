@@ -183,7 +183,7 @@ Bool_t AliHFCorrelator::DefineEventPool(){
 Bool_t AliHFCorrelator::Initialize(){
 	
     //  std::cout << "AliHFCorrelator::Initialize"<< std::endl;
-  AliInfo("AliHFCorrelator::Initialize") ;
+//  AliInfo("AliHFCorrelator::Initialize") ;
   if(!fAODEvent){
     AliInfo("No AOD event") ;
     return kFALSE;
@@ -191,19 +191,21 @@ Bool_t AliHFCorrelator::Initialize(){
     //std::cout << "No AOD event" << std::endl;
 	
 	AliCentrality *centralityObj = 0;
-	Int_t multiplicity = -1;
+	//Int_t multiplicity = -1;
 	Double_t MultipOrCent = -1;
 	
 	// initialize the pool for event mixing
 	if(!fsystem){ // pp
-	multiplicity = fAODEvent->GetNTracks();
-		MultipOrCent = multiplicity; // convert from Int_t to Double_t
+	//multiplicity = fAODEvent->GetNTracks();
+        MultipOrCent = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAODEvent,-1.,1.);
+	//	MultipOrCent = multiplicity; // convert from Int_t to Double_t
+     //   AliInfo(Form("Multiplicity is %f", MultipOrCent));
 	}
 	if(fsystem){ // PbPb
 		
 		centralityObj = fAODEvent->GetHeader()->GetCentralityP();
 		MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
-		AliInfo(Form("Centrality is %f", MultipOrCent));
+//		AliInfo(Form("Centrality is %f", MultipOrCent));
 	}
 	
 	AliAODVertex *vtx = fAODEvent->GetPrimaryVertex();
@@ -214,7 +216,7 @@ Bool_t AliHFCorrelator::Initialize(){
 
 	
 		if(TMath::Abs(zvertex)>=10 || MultipOrCent>poolmax || MultipOrCent < poolmin) {
-		if(!fsystem)AliInfo(Form("pp Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",zvertex,MultipOrCent));
+		if(!fsystem)AliInfo(Form("pp or pA Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",zvertex,MultipOrCent));
 		if(fsystem) AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",zvertex,MultipOrCent));
 
 			return kFALSE;
