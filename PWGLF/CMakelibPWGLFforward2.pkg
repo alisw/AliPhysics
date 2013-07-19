@@ -156,14 +156,14 @@ add_dependencies(runTrain STEERBase ESD AOD OADB ANALYSIS ANALYSISalice)
 # --------------------------------------------------------------------
 # Extra targets 
 #
-add_custom_command( OUTPUT FORWARD/doc/doc.pdf 
-                    COMMAND pdflatex doc
-		    COMMAND pdflatex doc
-		    COMMAND pdflatex doc
+add_custom_command( OUTPUT FORWARD/doc/alice-int-2012-040.pdf 
+                    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
-		    COMMAND mv doc.pdf ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/
+		    COMMAND mv alice-int-2012-040.pdf ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/
 		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc
-		    MAIN_DEPENDENCY FORWARD/doc/doc.tex)
+		    MAIN_DEPENDENCY FORWARD/doc/alice-int-2012-040.tex)
 
 add_custom_command( OUTPUT FORWARD/doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
@@ -171,7 +171,7 @@ add_custom_command( OUTPUT FORWARD/doc/html/index.html
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    DEPENDS ${SRCS} ${HDRS})
 
-add_custom_target( PWGLFforward-doc DEPENDS FORWARD/doc/doc.pdf )
+add_custom_target( PWGLFforward-doc DEPENDS FORWARD/doc/alice-int-2012-040.pdf )
 add_custom_target( PWGLFforward-doxy DEPENDS FORWARD/doc/html/index.html )
 
 add_custom_target( install-PWGLFforward2.par 
@@ -283,6 +283,8 @@ install ( DIRECTORY FORWARD/corrections/DoubleHit
 
 # Install shell script 
 install ( FILES FORWARD/analysis2/Run.sh 
+		FORWARD/analysis2/liteAnalysis.sh
+		FORWARD/analysis2/gridAnalysis.sh
 	  DESTINATION PWGLF/FORWARD/analysis2 
 	  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
                       GROUP_EXECUTE GROUP_READ
