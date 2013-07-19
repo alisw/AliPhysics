@@ -40,7 +40,7 @@
 #include "AliHFCorrelator.h"
 #include <THnSparse.h>
 #include "AliAnalysisUtils.h"
-
+#include "AliVertexingHFUtils.h"
 class TParticle ;
 class TClonesArray ;
 class AliAODMCParticle;
@@ -73,6 +73,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
   
   void DefineThNSparseForAnalysis();
   void DefineHistoForAnalysis();
+  void EnlargeDZeroMassWindow();
   
   
   // checker for event mixing
@@ -98,8 +99,8 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
   void SetDim(){fDim = 4;
     fDMesonSigmas = new Float_t[4];}
   void SetDeffMapvsPt(TH1D * map){fDeffMapvsPt = map;}
-  void SetDeffMapvsPtvsMult(TH2D * map){fDeffMapvsPtvsMult = map;}
-  void SetDeffMapvsPtvsMultvsEta(TH3D * map){fDeffMapvsPtvsMultvsEta = map;}
+  void SetDeffMapvsPtvsMult(TH2D * map){fDeffMapvsPtvsMult = (TH2D*)map;}
+  void SetDeffMapvsPtvsMultvsEta(TH2D * map){fDeffMapvsPtvsEta = map;}
   void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;}
   
   
@@ -124,12 +125,15 @@ private:
   Bool_t fReco; // use reconstruction or MC truth
   Bool_t fUseEfficiencyCorrection; // boolean variable to use or not the efficiency correction
   Bool_t fUseDmesonEfficiencyCorrection; // boolean flag for the use of Dmeson efficiency correction
+    Bool_t fUseCentrality;// boolean to switch in between centrality or multiplicity
   Int_t fPhiBins;
   Int_t fEvents; //! number of event
   Int_t fDebugLevel; //! debug level
   Int_t fDisplacement; // set 0 for no displacement cut, 1 for absolute d0, 2 for d0/sigma_d0
   Int_t fDim;//
+    Int_t fNofPtBins;
   Float_t *fDMesonSigmas;//[fDim]
+ Float_t * fD0Window;  //[fNofPtBins]
   
   
   
@@ -142,9 +146,9 @@ private:
   
   TH1D * fDeffMapvsPt; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsMult; // histo for Deff mappin
-  TH3D * fDeffMapvsPtvsMultvsEta; // histo for Deff mappin
+  TH2D * fDeffMapvsPtvsEta; // histo for Deff mappin
   
-  ClassDef(AliAnalysisTaskDStarCorrelations,4); // class for D meson correlations
+  ClassDef(AliAnalysisTaskDStarCorrelations,5); // class for D meson correlations
   
 };
 

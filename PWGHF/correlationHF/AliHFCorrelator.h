@@ -34,6 +34,7 @@
 #include "AliEventPoolManager.h"
 #include "AliVParticle.h"
 #include "AliReducedParticle.h"
+#include "AliVertexingHFUtils.h"
 
 
 class AliHFCorrelator : public TNamed

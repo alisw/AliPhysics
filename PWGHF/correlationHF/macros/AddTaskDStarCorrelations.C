@@ -6,7 +6,7 @@
 AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarCorrelations::CollSyst syst,
                                                                      Bool_t theMCon, Bool_t mixing, Bool_t UseReco = kTRUE, Bool_t fullmode = kFALSE ,Bool_t UseEffic = kFALSE, Bool_t UseDEffic = kFALSE ,
                                                                      Int_t trackselect =1, Int_t usedispl =0, Int_t nbins, Float_t DStarSigma, Float_t D0Sigma, Float_t D0SBSigmaLow, Float_t D0SBSigmaHigh, 
-                                                                     TString DStarCutsFile, TString TrackCutsFile, TString DStarEffMap, TString TrackEffMap,
+                                                                     TString DStarCutsFile, TString TrackCutsFile,
                                                                      Int_t tasknumber = 0)
 {
 
@@ -68,8 +68,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     
     cout << "DStar cut object:     " << DStarCutsFile << endl;
     cout << "Tracks cut object:    " << TrackCutsFile << endl;
-    cout << "Track Efficiency map: " << TrackEffMap << endl;
-    cout << "Dmeson Efficiency map:" << DStarEffMap << endl;
+  
     
     cout << "==========================================================" << endl;
     //gSystem->Sleep(2000);
@@ -111,86 +110,13 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
  	AliHFAssociatedTrackCuts* corrCuts=new AliHFAssociatedTrackCuts();
 	corrCuts = (AliHFAssociatedTrackCuts*)filecuts2->Get("AssociatedCuts");
 	corrCuts->SetName("AssociatedCuts");
-//	corrCuts->PrintAll();
+	corrCuts->PrintAll();
 	if(!corrCuts){
 		cout<<"Specific associated track cuts not found"<<endl;
 		return;
 	}
 	
-	
-// ******************************** OPENING THE EFFICIENCY MAPS  ************************************
-   
-    cout << "Getting Efficiency map object from file \n" << TrackEffMap.Data() << "\n "<<  endl;
-    TFile* effFile=new TFile(TrackEffMap.Data());
-    if(UseEffic && !effFile->IsOpen()){
-        cout<<"Input file not found for efficiency! Exiting..."<<endl;
-        return;
-    }
-    
-    
-    
-    TCanvas *c = (TCanvas*)effFile->Get("c");
-    if(!c) {cout << "No canvas !" << endl;}
-    TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
- 
-    
 
-    if(!h3D) {cout << "No Single track efficiency histo " << endl; ;}
-	
-    corrCuts->SetEfficiencyWeightMap(h3D);
-    
-    
-    
-    
-    
-    // ******************************** OPENING THE DMeson EFFICIENCY MAPS  ************************************
-    
-    cout << "Getting Efficiency map object from file \n" << DStarEffMap.Data() << "\n "<<  endl;
-    TFile* DeffFile=new TFile(DStarEffMap.Data());
-    
-    if(!DeffFile){
-        cout << "No D efficiencymapinput" << endl;
-        gSystem->Sleep(1000);
-    }
-    
-    if(UseDEffic && !DeffFile->IsOpen()){
-        cout<<"Input file not found for Dmeson efficiency! Exiting..."<<endl;
-        gSystem->Sleep(1000);
-        return;
-    }
-    
-    
- //    gSystem->Sleep(7000);
-    TString canvasname = "DMesonEfficiency";
-  //  if(DStarEffMap == "~/Analysis/HFCorrelations/DStarEfficiencies/DStarEfficiency_reco_genacc.root") canvasname = "c1";
-  //  else canvasname ="correctefficiency";
-    
-    TString histoname = "DMesonEffMap";
-    
-    
-   // if(DStarEffMap == "~/Analysis/HFCorrelations/DStarEfficiencies/DStarEfficiency_reco_genacc.root") histoname = "Reco_GenAcc";
-   // else histoname ="effacc";
-      
-    
-    
-    TCanvas *c1 = (TCanvas*)DeffFile->Get(canvasname.Data());
-    if (!c1) cout << "No canvas with name " << canvasname <<  endl;
-    TH1D *effMap = (TH1D*)c1->FindObject(histoname.Data());
-     if (!effMap) cout << "No map " << endl;
-  //  TH1D *effMap = (TH1D*)c1->FindObject("EffMap");
-    TH2D *effMap2d = (TH2D*)c1->FindObject("EffMap");
-  
-  //  effMap->Draw("ep");
-  //  return;
-    
-    
-    if(!c1) {cout << "No canvas for D eff" << endl; ;}
-    if(!effMap) {cout << "No histo for D eff " << endl;}
-    if(!effMap2d) {cout << "No 2D histo for D eff " << endl;}
-	
-    
-   // gSystem->Sleep(6000);
-    	
 // ******************************** SELECTING THE MC PROCESS  ************************************
 
 	TString selectMCproc = "";
@@ -220,8 +146,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	
     
    // cout << "Adding efficiency map to Assoc track cut object \n" << endl;
-    if(effMap) task->SetDeffMapvsPt(effMap);
-    if(effMap2d) task->SetDeffMapvsPtvsMult(effMap2d);
+  //  if(effMap) task->SetDeffMapvsPt(effMap);
+  //  if(effMap2d) task->SetDeffMapvsPtvsMult(effMap2d);
     
     task->SetNofPhiBins(nbins);
 	task->SetMonteCarlo(theMCon);
