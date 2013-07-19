@@ -459,11 +459,10 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
   else if(fCentrality < 80) icentr = 7;
 
   Float_t addMismatchForMC = 0.005;
-  if(fCentrality < 50) addMismatchForMC += 0.01;
+  if(fCentrality < 50) addMismatchForMC += 0.005;
   if(fCentrality < 20) addMismatchForMC += 0.02;
 
-  if(fTypeCol == 0) addMismatchForMC = 0.005;
-  else if(fTypeCol == 1) addMismatchForMC *= 0.5;
+  if(fTypeCol == 0 || fTypeCol == 1) addMismatchForMC = 0.005;
 
   fPsi = 0;
   /* Compute TPC EP */
