@@ -17,8 +17,8 @@
 #include <iostream>
 #include <iomanip>
 
-Double_t AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
-Double_t AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+Double_t AliFMDCorrELossFit::ELossFit::fgMaxRelError = .25;
+Double_t AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-7;
 Double_t AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
 
 //____________________________________________________________________
@@ -392,7 +392,7 @@ AliFMDCorrELossFit::ELossFit::Compare(const TObject* o) const
 
 //____________________________________________________________________
 void
-AliFMDCorrELossFit::ELossFit::Print(Option_t*) const
+AliFMDCorrELossFit::ELossFit::Print(Option_t* option) const
 {
   // 
   // Information to standard output 
@@ -400,6 +400,13 @@ AliFMDCorrELossFit::ELossFit::Print(Option_t*) const
   // Parameters:
   //    option Not used 
   //
+  TString o(option);
+  if (o.Contains("S", TString::kIgnoreCase)) {
+    Printf("%15s: q=%2d n=%1d chi2/nu=%6.3f",
+	   GetName(), fQuality, fN, (fNu <= 0 ? 999 : fChi2 / fNu));
+    return;
+  }
+  
   std::cout << GetName() << ":\n"
 	    << " chi^2/nu = " << fChi2 << "/" << fNu << " = " 
 	    << (fNu == 0 ? 999 : fChi2 / fNu) << "\n"
@@ -622,13 +629,21 @@ AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu,
   // 
   // Calculate the quality 
   //
+  Double_t decline = maxChi2nu;
   Int_t qual = 0;
-  if (fNu > 0 && fChi2 / fNu < maxChi2nu) qual += 4;;
+  if (fNu > 0) {
+    Double_t red = fChi2 / fNu;
+    if (red < maxChi2nu) qual += 4;
+    else {
+      Int_t q = (maxChi2nu+decline - red) / decline * 4;
+      if (q > 0) qual += q;
+    }
+  }
   if (CHECKPAR(fDelta,  fEDelta,  maxRelError)) qual++;
   if (CHECKPAR(fXi,     fEXi,     maxRelError)) qual++;
   if (CHECKPAR(fSigma,  fESigma,  maxRelError)) qual++;
   if (CHECKPAR(fSigmaN, fESigmaN, maxRelError)) qual++;
-  qual += FindMaxWeight(1.5*maxRelError, leastWeight, fN);
+  qual += FindMaxWeight(2*maxRelError, leastWeight, fN);
   fQuality = qual;
 }
 
@@ -731,6 +746,9 @@ AliFMDCorrELossFit::CacheBins(UShort_t minQuality) const
       realMaxBin = TMath::Max(j, realMaxBin);
       
       // Check the quality of the fit 
+      fit->CalculateQuality(AliFMDCorrELossFit::ELossFit::fgMaxChi2nu, 
+			    AliFMDCorrELossFit::ELossFit::fgMaxRelError, 
+			    AliFMDCorrELossFit::ELossFit::fgLeastWeight);
       if (minQuality > 0 && fit->fQuality < minQuality) continue;
       nGood++;
       

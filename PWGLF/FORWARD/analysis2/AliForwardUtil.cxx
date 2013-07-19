@@ -972,7 +972,7 @@ AliForwardUtil::ELossFitter::ELossFitter(Double_t lowCut,
 					 Double_t maxRange, 
 					 UShort_t minusBins) 
   : fLowCut(lowCut), fMaxRange(maxRange), fMinusBins(minusBins), 
-    fFitResults(0), fFunctions(0)
+    fFitResults(0), fFunctions(0), fDebug(false)
 {
   // 
   // Constructor 
@@ -1066,14 +1066,27 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   landau1->SetParameters(1,peakE,peakE/10,peakE/5,sigman);
   landau1->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
   landau1->SetNpx(500);
-  landau1->SetParLimits(kDelta, minE, fMaxRange);
-  landau1->SetParLimits(kXi,    0.00, 0.1); // Was fMaxRange - too wide
-  landau1->SetParLimits(kSigma, 1e-5, 0.1); // Was fMaxRange - too wide
+  if (peakE >= minE && peakE <= fMaxRange) {
+    // printf("Fit1: Set par limits on Delta: %f, %f\n", minE, fMaxRange);
+    landau1->SetParLimits(kDelta, minE, fMaxRange);
+  }
+  if (peakE/10 >= 0 && peakE <= 0.1) {
+    // printf("Fit1: Set par limits on xi: %f, %f\n", 0., 0.1);
+    landau1->SetParLimits(kXi,    0.00, 0.1); // Was fMaxRange - too wide
+  }
+  if (peakE/5 >= 0 && peakE/5 <= 0.1) {
+    // printf("Fit1: Set par limits on sigma: %f, %f\n", 0., 0.1);
+    landau1->SetParLimits(kSigma, 1e-5, 0.1); // Was fMaxRange - too wide
+  }
   if (sigman <= 0)  landau1->FixParameter(kSigmaN, 0);
-  else              landau1->SetParLimits(kSigmaN, 0, fMaxRange);
+  else {
+    // printf("Fit1: Set par limits on sigmaN: %f, %f\n", 0., fMaxRange);
+    landau1->SetParLimits(kSigmaN, 0, fMaxRange);
+  }
 
   // Do the fit, getting the result object 
-  ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
+  if (fDebug) 
+    ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
   TFitResultPtr r = dist->Fit(landau1, "RNQS", "", minE, maxE);
   // landau1->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*r), 0);
@@ -1141,20 +1154,38 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
 				 r->Parameter(kSigma),
 				 r->Parameter(kSigmaN),
 				 n, a.fArray, minE, maxEi);
-  landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
-  landaun->SetParLimits(kXi,     0.00, 0.1);  // was fMaxRange - too wide
-  landaun->SetParLimits(kSigma,  1e-5, 0.1);  // was fMaxRange - too wide
+  if (minE      <= r->Parameter(kDelta) &&
+      fMaxRange >= r->Parameter(kDelta)) {
+    // Protect against warning from ParameterSettings
+    // printf("FitN: Set par limits on Delta: %f, %f\n", minE, fMaxRange);
+    landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
+  }
+  if (r->Parameter(kXi) >= 0 && r->Parameter(kXi) <= 0.1) {
+    // printf("FitN: Set par limits on xi: %f, %f\n", 0., 0.1);
+    landaun->SetParLimits(kXi,     0.00, 0.1);  // was fMaxRange - too wide
+  }
+  if (r->Parameter(kSigma) >= 1e-5 && r->Parameter(kSigma) <= 0.1) {
+    // printf("FitN: Set par limits on sigma: %f, %f\n", 1e-5, 0.1);
+    landaun->SetParLimits(kSigma,  1e-5, 0.1);  // was fMaxRange - too wide
+  }
   // Check if we're using the noise sigma 
   if (sigman <= 0)  landaun->FixParameter(kSigmaN, 0);
-  else              landaun->SetParLimits(kSigmaN, 0, fMaxRange);
+  else {
+    // printf("FitN: Set par limits on sigmaN: %f, %f\n", 0., fMaxRange);
+    landaun->SetParLimits(kSigmaN, 0, fMaxRange);
+  }
 
   // Set the range and name of the scale parameters 
   for (UShort_t i = 2; i <= n; i++) {// Take parameters from last fit 
-    landaun->SetParLimits(kA+i-2, 0,1);
+    if (a[i-2] >= 0 && a[i-2] <= 1) {
+      // printf("FitN: Set par limits on a_%d: %f, %f\n", i, 0., 1.);
+      landaun->SetParLimits(kA+i-2, 0,1);
+    }
   }
 
   // Do the fit 
-  ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxEi);
+  if (fDebug) 
+    ::Info("FitNParticle", "Fitting in the range %f,%f (%d)", minE, maxEi, n);
   TFitResultPtr tr = dist->Fit(landaun, "RSQN", "", minE, maxEi);
   
   // landaun->SetRange(minE, fMaxRange);
@@ -1225,7 +1256,8 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   else              seed->SetParLimits(kSigmaN, 0, fMaxRange);
 
   // Do the fit, getting the result object 
-  ::Info("FitComposite", "Fitting seed in the range %f,%f", minE, maxE);
+  if (fDebug) 
+    ::Info("FitComposite", "Fitting seed in the range %f,%f", minE, maxE);
   /* TFitResultPtr r = */ dist->Fit(seed, "RNQS", "", minE, maxE);
 
   maxE = dist->GetXaxis()->GetXmax();
@@ -1254,7 +1286,8 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   comp->SetLineWidth(3);
   
   // Do the fit, getting the result object 
-  ::Info("FitComposite", "Fitting composite in the range %f,%f", minE, maxE);
+  if (fDebug) 
+    ::Info("FitComposite", "Fitting composite in the range %f,%f", minE, maxE);
   /* TFitResultPtr r = */ dist->Fit(comp, "RNQS", "", minE, maxE);
 
 #if 0

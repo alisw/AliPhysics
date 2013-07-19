@@ -258,7 +258,16 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   if (found & AliFMDEventInspector::kNoFMD)     return;
   if (found & AliFMDEventInspector::kNoVertex)  return;
   if (found & AliFMDEventInspector::kBadVertex) return;
+
+  // do not process pile-up, A, C, and E events 
+  if (triggers & AliAODForwardMult::kPileUp) return;
+  if (triggers & AliAODForwardMult::kA)      return;
+  if (triggers & AliAODForwardMult::kC)      return;
+  if (triggers & AliAODForwardMult::kE)      return;
   
+  // We want only the events found by off-line 
+  if (!(triggers & AliAODForwardMult::kOffline)) return;
+
   //  if(cent > 0) {
   //  if( cent < 40 || cent >50 ) return;
   //  else std::cout<<"selecting event with cent "<<cent<<std::endl;

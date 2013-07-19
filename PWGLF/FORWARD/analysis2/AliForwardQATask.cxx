@@ -399,6 +399,10 @@ AliForwardQATask::UserExec(Option_t*)
   if (found & AliFMDEventInspector::kNoFMD)      ok = false;
   if (found & AliFMDEventInspector::kNoVertex)   ok = false;
   if (triggers & AliAODForwardMult::kPileUp)     ok = false;
+  if (triggers & AliAODForwardMult::kA)          ok = false;
+  if (triggers & AliAODForwardMult::kC)          ok = false;
+  if (triggers & AliAODForwardMult::kE)          ok = false;
+  if (!(triggers & AliAODForwardMult::kOffline)) ok = false;
   if (found & AliFMDEventInspector::kBadVertex)  ok = false;
   if (!ok) { 
     DMSG(fDebug,2,"Event failed selection: %s", 

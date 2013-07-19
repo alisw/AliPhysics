@@ -25,28 +25,27 @@ ExtractMCCorr(const char* fname,
 	      Bool_t      sat=false)
 {
   const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  gSystem->AddIncludePath(Form("-I%s", fwd));
+  gSystem->AddIncludePath(Form("-I%s -I$ALICE_ROOT/include", fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   gROOT->LoadMacro(Form("%s/corrs/CorrExtractor.C++g", fwd));
   
   CorrExtractor fmdEx(&AliForwardCorrectionManager::Instance());
-  if (fmdEx.Init(fname, "ForwardCorrSums", "fmd_corrections.root")) {
-    if (runNo > 0)   fmdEx.fRunNo     = runNo;
-    if (sys   > 0)   fmdEx.fSys       = sys;
-    if (sNN   > 0)   fmdEx.fSNN       = sNN;
-    if (fld   < 999) fmdEx.fField     = fld;
-    if (sat)         fmdEx.fSatellite = sat;
+  if (runNo > 0)   fmdEx.fRunNo     = runNo;
+  if (sys   > 0)   fmdEx.fSys       = sys;
+  if (sNN   > 0)   fmdEx.fSNN       = sNN;
+  if (fld   < 999) fmdEx.fField     = fld;
+  if (sat)         fmdEx.fSatellite = sat;
+  if (fmdEx.Init(fname, "ForwardCorrSums", "fmd_corrections.root")) 
     fmdEx.Extract(AliFMDCorrSecondaryMap::Class(),
 		  "ForwardCorrResults");
-  }
 
   CorrExtractor spdEx(&AliCentralCorrectionManager::Instance());
+  if (runNo > 0)   spdEx.fRunNo     = runNo;
+  if (sys   > 0)   spdEx.fSys       = sys;
+  if (sNN   > 0)   spdEx.fSNN       = sNN;
+  if (fld   < 999) spdEx.fField     = fld;
+  if (sat)         spdEx.fSatellite = sat;
   if (spdEx.Init(fname, "CentralCorrSums", "spd_corrections.root")) {
-    if (runNo > 0)   spdEx.fRunNo     = runNo;
-    if (sys   > 0)   spdEx.fSys       = sys;
-    if (sNN   > 0)   spdEx.fSNN       = sNN;
-    if (fld   < 999) spdEx.fField     = fld;
-    if (sat)         spdEx.fSatellite = sat;
     spdEx.Extract(AliCentralCorrSecondaryMap::Class(), "CentralCorrResults");
     spdEx.Extract(AliCentralCorrAcceptance::Class(), "CentralCorrResults");
   }
