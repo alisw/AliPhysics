@@ -23,7 +23,6 @@ ClassImp(AliAnalysisTaskSAJF)
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
-  fHistEventObservables(0),
   fHistJetObservables(0)
 
 {
@@ -42,7 +41,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistEventObservables(0),
   fHistJetObservables(0)
 {
   // Standard constructor.
@@ -77,87 +75,29 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     max[dim] = 101;
     dim++;
     
-    title[dim] = "#psi_{RP} (rad)";
-    nbins[dim] = 200;
-    min[dim] = -TMath::Pi();
-    max[dim] = TMath::Pi();
+    title[dim] = "#phi_{jet} - #psi_{RP}";
+    nbins[dim] = fNbins/2;
+    min[dim] = -TMath::Pi()/2;
+    max[dim] = TMath::Pi()*5/2;
     dim++;
   }
-
-  title[dim] = "No. of jets";
-  nbins[dim] = 150;
-  min[dim] = -0.5;
-  max[dim] = 149.5;
-  dim++;
-
-  title[dim] = "p_{T,lead jet} (GeV/c)";
-  nbins[dim] = fNbins;
-  min[dim] = 0;
-  max[dim] = 250;
-  dim++;
-
-  title[dim] = "A_{lead jet}";
-  nbins[dim] = 100;
-  min[dim] = 0;
-  max[dim] = 1;
-  dim++;
-
-  if (!fRhoName.IsNull()) {
-    title[dim] = "#rho (GeV/c)";
-    nbins[dim] = fNbins;
-    min[dim] = 0;
-    max[dim] = 500;
-    dim++;
-
-    title[dim] = "p_{T,lead jet}^{corr} (GeV/c)";
-    nbins[dim] = fNbins*2;
-    min[dim] = -250;
-    max[dim] = 250;
-    dim++;
-  }
-
-  fHistEventObservables = new THnSparseD("fHistEventObservables","fHistEventObservables",dim,nbins,min,max);
-  for (Int_t i = 0; i < dim; i++)
-    fHistEventObservables->GetAxis(i)->SetTitle(title[i]);
-
-  dim = 0;
-
-  if (fForceBeamType != kpp) {
-    title[dim] = "Centrality (%)";
-    nbins[dim] = 101;
-    min[dim] = 0;
-    max[dim] = 101;
-    dim++;
-    
-    title[dim] = "#psi_{RP} (rad)";
-    nbins[dim] = 200;
-    min[dim] = -TMath::Pi();
-    max[dim] = TMath::Pi();
-    dim++;
-  }
-
-  title[dim] = "#phi_{jet} (rad)";
-  nbins[dim] = 201;
-  min[dim] = 0;
-  max[dim] = TMath::Pi()*201/100;
-  dim++;
 
   title[dim] = "#eta";
-  nbins[dim] = 200;
+  nbins[dim] = fNbins/2;
   min[dim] = -1;
   max[dim] = 1;
+  dim++;
+
+  title[dim] = "#phi_{jet} (rad)";
+  nbins[dim] = fNbins/2+1;
+  min[dim] = 0;
+  max[dim] = 2*TMath::Pi()*nbins[dim]/(nbins[dim]-1);
   dim++;
 
   title[dim] = "p_{T} (GeV/c)";
   nbins[dim] = fNbins;
   min[dim] = 0;
   max[dim] = 250;
-  dim++;
-
-  title[dim] = "A_{jet}";
-  nbins[dim] = 100;
-  min[dim] = 0;
-  max[dim] = 1;
   dim++;
 
   if (fIsEmbedded) {
@@ -176,31 +116,38 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     dim++;
   }
 
+  title[dim] = "A_{jet}";
+  nbins[dim] = fNbins/2;
+  min[dim] = 0;
+  max[dim] = 1;
+  dim++;
+
+  title[dim] = "NEF";
+  nbins[dim] = fNbins/2;
+  min[dim] = 0;
+  max[dim] = 1.25;
+  dim++;
+
+  title[dim] = "Z";
+  nbins[dim] = fNbins/2;
+  min[dim] = 0;
+  max[dim] = 1.25;
+  dim++;
+
   title[dim] = "No. of constituents";
   nbins[dim] = 250;
   min[dim] = -0.5;
   max[dim] = 249.5;
   dim++;
 
-  title[dim] = "NEF";
-  nbins[dim] = 120;
-  min[dim] = 0;
-  max[dim] = 1.2;
-  dim++;
-
-  title[dim] = "Z";
-  nbins[dim] = 120;
-  min[dim] = 0;
-  max[dim] = 1.2;
-  dim++;
-
   title[dim] = "p_{T,particle}^{leading} (GeV/c)";
-  nbins[dim] = 120;
+  nbins[dim] = fNbins/2;
   min[dim] = 0;
-  max[dim] = 120;
+  max[dim] = 125;
   dim++;
 
   fHistJetObservables = new THnSparseD("fHistJetObservables","fHistJetObservables",dim,nbins,min,max);
+  fOutput->Add(fHistJetObservables);
   for (Int_t i = 0; i < dim; i++)
     fHistJetObservables->GetAxis(i)->SetTitle(title[i]);
 
@@ -258,50 +205,24 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     return kFALSE;
   }
 
-  static Int_t sortedJets[9999] = {-1};
-  Int_t nacc = GetSortedArray(sortedJets, fJets, fRhoVal);
+  for (Int_t ij = 0; ij < fJets->GetEntriesFast(); ij++) {
 
-  Float_t corrPt = 0;
-
-  if (nacc > 0) {
-    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
-    
-    if (jet) {
-      // Don't need to do AcceptJet since it was done already in GetSortedArray
-      corrPt = jet->Pt() - fRhoVal * jet->Area();
-      
-      DoJetLoop(nacc, sortedJets);
-    } 
-    else {
-      AliError(Form("Could not receive jet %d", sortedJets[0]));
-    }
-  }
-
-  // Fill THnSparse
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskSAJF::DoJetLoop(const Int_t nacc, const Int_t* sortedJets)
-{
-  // Do the jet loop.
-
-  for (Int_t ij = 0; ij < nacc; ij++) {
-
-    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[ij]));
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
 
     if (!jet) {
       AliError(Form("Could not receive jet %d", ij));
       continue;
     }
 
-    // Don't need to do AcceptJet since it was done already in GetSortedArray
+    if (!AcceptJet(jet))
+      continue;
 
     Float_t ptLeading = GetLeadingHadronPt(jet);
     Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
 
     // Fill THnSparse
+    FillJetHisto(fCent, fEPV0, jet->Eta(), jet->Phi(), jet->Pt(), jet->MCPt(), corrPt, jet->Area(), 
+		 jet->NEF(), ptLeading/jet->Pt(), jet->GetNumberOfConstituents(), ptLeading);
 
     if (fTracks) {
       for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
@@ -329,4 +250,45 @@ void AliAnalysisTaskSAJF::DoJetLoop(const Int_t nacc, const Int_t* sortedJets)
       }
     }
   } //jet loop 
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
+				       Double_t NEF, Double_t z, Int_t n, Double_t leadingpt)
+{
+  Double_t contents[20]={0};
+
+  for (Int_t i = 0; i < fHistJetObservables->GetNdimensions(); i++) {
+    TString title(fHistJetObservables->GetAxis(i)->GetTitle());
+    if (title=="Centrality (%)")
+      contents[i] = cent;
+    else if (title=="#phi_{jet} - #psi_{RP}")
+      contents[i] = phi - ep;
+    else if (title=="#eta")
+      contents[i] = eta;
+    else if (title=="#phi_{jet} (rad)")
+      contents[i] = phi;
+    else if (title=="p_{T} (GeV/c)")
+      contents[i] = pt;
+    else if (title=="p_{T}^{MC} (GeV/c)")
+      contents[i] = MCpt;
+    else if (title=="p_{T}^{corr} (GeV/c)")
+      contents[i] = corrpt;
+    else if (title=="A_{jet}")
+      contents[i] = area;
+    else if (title=="NEF")
+      contents[i] = NEF;
+    else if (title=="Z")
+      contents[i] = z;
+    else if (title=="No. of constituents")
+      contents[i] = n;
+    else if (title=="p_{T,particle}^{leading} (GeV/c)")
+      contents[i] = leadingpt;
+    else 
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+  }
+
+  fHistJetObservables->Fill(contents);
 }

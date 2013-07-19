@@ -21,15 +21,11 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
  protected:
   Bool_t                      FillHistograms()                                              ;
-  void                        DoJetLoop(const Int_t nacc, const Int_t* sortedJets)          ;
-
-  // General histograms
-  THnSparse                  *fHistEventObservables;       //!Event-wise observables (centrality, event plane, rho, number of jets, leading jet pt, leading jet corr pt, 
-                                                           // leading jet area)
+  void                        FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
+					   Double_t NEF, Double_t z, Int_t n, Double_t leadingpt);
 
   // Inclusive jets histograms
-  THnSparse                  *fHistJetObservables;         //!Jet-wise observables (centrality, event plane, phi, eta, pt, MCPt, area, corr pt, NEF, Z, no. of constituents
-                                                           // leading hadron pt)
+  THnSparse                  *fHistJetObservables;         //!Jet-wise observables
   TH2                        *fHistTracksJetPt[4];         //!Track pt vs. jet pt
   TH2                        *fHistClustersJetPt[4];       //!Cluster pt vs. jet pt
   TH2                        *fHistTracksPtDist[4];        //!Track pt vs. distance form jet axis

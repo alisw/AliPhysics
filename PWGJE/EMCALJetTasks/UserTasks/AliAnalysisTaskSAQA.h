@@ -24,12 +24,13 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   void                        SetMC(Bool_t m)                                      { fIsMC               = m          ; }
   void                        SetAdditionalCentEst(const char* meth2, const char* meth3="") { fCentMethod2 = meth2; fCentMethod3 = meth3; }
   void                        SetDoV0QA(Int_t b)                                   { fDoV0QA             = b          ; }
+  void                        SetDoEPQA(Int_t b)                                   { fDoEPQA             = b          ; }
 
  protected:
 
   void                        ExecOnce()                                                    ;
   Bool_t                      FillHistograms()                                              ;
-  void                        FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets);
+  void                        FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets);
   Bool_t                      RetrieveEventObjects()                                        ;
   Int_t                       DoCellLoop(Float_t &sum, Float_t &sum_cut)                    ;
   Int_t                       DoTrackLoop(Float_t &sum)                                     ;
@@ -43,6 +44,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TString                     fCentMethod2;              // Centrality method 2
   TString                     fCentMethod3;              // Centrality method 3
   Int_t                       fDoV0QA;                   // Add V0 QA histograms
+  Int_t                       fDoEPQA;                   // Add event plane QA histograms
   Double_t                    fCent2;                    //!Event centrality with method 2
   Double_t                    fCent3;                    //!Event centrality with method 3
   AliVVZERO                  *fVZERO;                    //!Event V0 object
@@ -50,7 +52,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   Double_t                    fV0CTotMult;               //!Event V0C total multiplicity
  
   // General histograms
-  THnSparse                  *fHistEventQA;              //!Event-wise QA observables (cent[M], cent[A], cent[C], rho, # tracks, # clusters, # cells, # jets)
+  THnSparse                  *fHistEventQA;              //!Event-wise QA observables
 
   // Tracks
   TH1                        *fHistTrNegativeLabels;     //!Percentage of negative label tracks
@@ -64,7 +66,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH1                        *fHistTrPtNonProp[4];       //!Pt distribution of non emcal propagated tracks
   TH2                        *fHistDeltaEtaPt[4];        //!Eta-EtaProp vs. Pt
   TH2                        *fHistDeltaPhiPt[4];        //!Phi-PhiProp vs. Pt
-  TH2                        *fHistDeltaPtvsPt[4];       //!Pt-PtProp vs. Pt
+  TH3                        *fHistDeltaPtvsPtvsMass[4]; //!Pt-PtProp vs. Pt vs. mass
 
   // Clusters
   TH3                        *fHistClusPhiEtaEnergy[4];  //!Phi-Eta-Energy distribution of clusters
@@ -89,6 +91,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 19) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 20) // Quality task for Emcal analysis
 };
 #endif
