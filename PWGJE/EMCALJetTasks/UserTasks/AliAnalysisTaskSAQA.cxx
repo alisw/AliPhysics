@@ -42,6 +42,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fCentMethod2(""),
   fCentMethod3(""),
   fDoV0QA(0),
+  fDoEPQA(0),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -70,7 +71,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
     fHistTrPtNonProp[i] = 0;
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
-    fHistDeltaPtvsPt[i] = 0;
+    fHistDeltaPtvsPtvsMass[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
     fHistJetsPhiEta[i] = 0;
@@ -89,6 +90,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fCentMethod2(""),
   fCentMethod3(""),
   fDoV0QA(0),
+  fDoEPQA(0),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -117,7 +119,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
     fHistTrPtNonProp[i] = 0;
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
-    fHistDeltaPtvsPt[i] = 0;
+    fHistDeltaPtvsPtvsMass[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
     fHistJetsPhiEta[i] = 0;
@@ -221,11 +223,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fHistDeltaPhiPt[i]->GetYaxis()->SetTitle("#delta#phi");
 	fOutput->Add(fHistDeltaPhiPt[i]);
 	
-	histname = Form("fHistDeltaPtvsPt_%d",i);
-	fHistDeltaPtvsPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
-	fHistDeltaPtvsPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fHistDeltaPtvsPt[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
-	fOutput->Add(fHistDeltaPtvsPt[i]);
+	histname = Form("fHistDeltaPtvsPtvsMass_%d",i);
+	fHistDeltaPtvsPtvsMass[i] = new TH3F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2, 30, 0, 3);
+	fHistDeltaPtvsPtvsMass[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+	fHistDeltaPtvsPtvsMass[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
+	fHistDeltaPtvsPtvsMass[i]->GetZaxis()->SetTitle("mass (GeV/c^{2})");
+	fOutput->Add(fHistDeltaPtvsPtvsMass[i]);
       }
     }
   }
@@ -364,6 +367,14 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       max[dim] = 400;
       dim++;
     }
+
+    if (fDoEPQA) {
+      title[dim] = "#psi_{RP}";
+      nbins[dim] = 200;
+      min[dim] = -TMath::Pi();
+      max[dim] = TMath::Pi();
+      dim++;
+    }
   }
 
   if (!fTracksName.IsNull()) {
@@ -488,13 +499,13 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
     AliDebug(2,Form("%d jets found in the event", njets));
   }
 
-  FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fRhoVal, ntracks, nclusters, ncells, njets);
+  FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal, ntracks, nclusters, ncells, njets);
 
   return kTRUE;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets)
+void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets)
 {
   Double_t contents[10]={0};
 
@@ -510,6 +521,8 @@ void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t 
       contents[i] = v0a;
     else if (title=="V0C total multiplicity")
       contents[i] = v0c;
+    else if (title=="#psi_{RP}")
+      contents[i] = ep;
     else if (title=="#rho (GeV/c)")
       contents[i] = rho;
     else if (title=="No. of tracks")
@@ -738,8 +751,8 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum)
       fHistDeltaEtaPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
     if (fHistDeltaPhiPt[fCentBin])
       fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
-    if (fHistDeltaPtvsPt[fCentBin])
-      fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
+    if (fHistDeltaPtvsPtvsMass[fCentBin])
+      fHistDeltaPtvsPtvsMass[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal(), vtrack->M());
   }
 
   if (fHistTrNegativeLabels)
