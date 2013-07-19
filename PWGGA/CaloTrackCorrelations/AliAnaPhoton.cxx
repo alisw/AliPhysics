@@ -173,11 +173,13 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0)
     fhPtPrimMC [i] = 0;
     fhEPrimMC  [i] = 0;
     fhPhiPrimMC[i] = 0;
+    fhEtaPrimMC[i] = 0;
     fhYPrimMC  [i] = 0;
     
     fhPtPrimMCAcc [i] = 0;
     fhEPrimMCAcc  [i] = 0;
     fhPhiPrimMCAcc[i] = 0;
+    fhEtaPrimMCAcc[i] = 0;
     fhYPrimMCAcc  [i] = 0;
     
     fhDispEtaDispPhi[i] = 0;
@@ -503,13 +505,14 @@ void AliAnaPhoton::FillAcceptanceHistograms()
             fhEPrimMC  [kmcPPhoton]->Fill(photonE ) ;
             fhPtPrimMC [kmcPPhoton]->Fill(photonPt) ;
             fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
-            fhYPrimMC  [kmcPPhoton]->Fill(photonE , photonEta) ;
+            fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
           }
           if(inacceptance)
           {
             fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE ) ;
             fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt) ;
             fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi) ;
+            fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonE , photonEta) ;
             fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY) ;
           }//Accepted
           
@@ -546,13 +549,15 @@ void AliAnaPhoton::FillAcceptanceHistograms()
             fhEPrimMC  [mcIndex]->Fill(photonE ) ;
             fhPtPrimMC [mcIndex]->Fill(photonPt) ;
             fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi) ;
-            fhYPrimMC  [mcIndex]->Fill(photonE , photonEta) ;
+            fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta) ;
           }
+          
           if(inacceptance)
           {
             fhEPrimMCAcc  [mcIndex]->Fill(photonE ) ;
             fhPtPrimMCAcc [mcIndex]->Fill(photonPt) ;
             fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi) ;
+            fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta) ;
             fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY) ;
           }//Accepted
           
@@ -647,7 +652,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
             fhEPrimMC  [kmcPPhoton]->Fill(photonE ) ;
             fhPtPrimMC [kmcPPhoton]->Fill(photonPt) ;
             fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
-            fhYPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
+            fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
           }
           
           if(inacceptance)
@@ -655,6 +660,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
             fhEPrimMCAcc[kmcPPhoton]  ->Fill(photonE ) ;
             fhPtPrimMCAcc[kmcPPhoton] ->Fill(photonPt) ;
             fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi) ;
+            fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonE , photonEta) ;
             fhYPrimMCAcc[kmcPPhoton]  ->Fill(photonE , photonY) ;
           }//Accepted
           
@@ -691,13 +697,14 @@ void AliAnaPhoton::FillAcceptanceHistograms()
             fhEPrimMC  [mcIndex]->Fill(photonE ) ;
             fhPtPrimMC [mcIndex]->Fill(photonPt) ;
             fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi) ;
-            fhYPrimMC  [mcIndex]->Fill(photonE , photonEta) ;
+            fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta) ;
           }
           if(inacceptance)
           {
             fhEPrimMCAcc  [mcIndex]->Fill(photonE ) ;
             fhPtPrimMCAcc [mcIndex]->Fill(photonPt) ;
             fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi) ;
+            fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta) ;
             fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY) ;
           }//Accepted
           
@@ -3152,6 +3159,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhYPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhYPrimMC[i]) ;
       
+      fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
+                               Form("primary photon %s : #eta",pptype[i].Data()),
+                               nptbins,ptmin,ptmax,800,-8,8);
+      fhEtaPrimMC[i]->SetYTitle("#eta");
+      fhEtaPrimMC[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhEtaPrimMC[i]) ;
+      
       fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon %s : #phi ",pptype[i].Data()),
                                  nptbins,ptmin,ptmax,nphibins,phimin,phimax);
@@ -3177,6 +3191,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                                   nptbins,ptmin,ptmax,100,-1,1);
       fhYPrimMCAcc[i]->SetYTitle("Rapidity");
       fhYPrimMCAcc[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhYPrimMCAcc[i]) ;
+
+      fhEtaPrimMCAcc[i]  = new TH2F(Form("hEtaPrimAcc_MC%s",ppname[i].Data()),
+                                  Form("primary photon %s in acceptance: #eta ",pptype[i].Data()),
+                                  nptbins,ptmin,ptmax,netabins,etamin,etamax);
+      fhEtaPrimMCAcc[i]->SetYTitle("#eta");
+      fhEtaPrimMCAcc[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhYPrimMCAcc[i]) ;
       
       fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",ppname[i].Data()),

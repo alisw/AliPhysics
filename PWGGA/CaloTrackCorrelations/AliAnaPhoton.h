@@ -320,10 +320,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtPrimMC[7];                             //! Number of generated photon vs pT
   TH2F * fhPhiPrimMC[7];                            //! Phi of generted photon
   TH2F * fhYPrimMC[7];                              //! Rapidity of generated photon
+  TH2F * fhEtaPrimMC[7];                            //! Eta of generated photon
   
   TH1F * fhEPrimMCAcc[7];                           //! Number of generated photon vs energy, in calorimeter acceptance
   TH1F * fhPtPrimMCAcc[7];                          //! Number of generated photon vs pT, in calorimeter acceptance
   TH2F * fhPhiPrimMCAcc[7];                         //! Phi of generted photon, in calorimeter acceptance
+  TH2F * fhEtaPrimMCAcc[7];                         //! Phi of generted photon, in calorimeter acceptance
   TH2F * fhYPrimMCAcc[7];                           //! Rapidity of generated photon, in calorimeter acceptance
   
   // Shower Shape MC
