@@ -2,8 +2,11 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t 
 {
   //rate is in kHz
 
-  Int_t recoType=simtype/100;
-  simtype%=100;
+  Int_t recoType=simtype/10;
+  recoType%=10;
+  Int_t subRecoType=simtype/100;
+  simtype%=10;
+  
   //simulation part
   AliToyMCEventGeneratorSimple s;
 
@@ -13,6 +16,9 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t 
   switch (simtype) {
     case 0:
       outputFile.Append(Form("_fixed_%dkHz",rate));
+      break;
+    case 1:
+      outputFile.Append(Form("_train_%dkHz",rate));
       break;
   }
   
@@ -51,30 +57,30 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t 
 
   if (recoType==0){
     rec.SetRecoSettings(1,0,AliToyMCReconstruction::kNoCorrection);
-    rec.RunReco(outputFile.Data());
+    if (!subRecoType||subRecoType==1) rec.RunReco(outputFile.Data());
 
     rec.SetRecoSettings(1,1,AliToyMCReconstruction::kIdeal);
-    rec.RunReco(outputFile.Data());
+    if (!subRecoType||subRecoType==2) rec.RunReco(outputFile.Data());
 
     rec.SetRecoSettings(0,1,AliToyMCReconstruction::kIdeal);
-    rec.RunReco(outputFile.Data());
+    if (!subRecoType||subRecoType==3) rec.RunReco(outputFile.Data());
 
     rec.SetRecoSettings(0,1,AliToyMCReconstruction::kAverageEta);
-    rec.RunReco(outputFile.Data());
+    if (!subRecoType||subRecoType==4) rec.RunReco(outputFile.Data());
 
     rec.SetRecoSettings(0,1,AliToyMCReconstruction::kNoCorrection);
-    rec.RunReco(outputFile.Data());
+    if (!subRecoType||subRecoType==5) rec.RunReco(outputFile.Data());
 
     rec.SetRecoSettings(0,0,AliToyMCReconstruction::kNoCorrection);
-    rec.RunReco(outputFile.Data());
+    if (!subRecoType||subRecoType==6) rec.RunReco(outputFile.Data());
   }
 
   if (recoType==1) {
     rec.SetRecoSettings(0,1,AliToyMCReconstruction::kNoCorrection);
-    rec.RunFullTracking(outputFile.Data());
+    if (!subRecoType||subRecoType==1) rec.RunFullTracking(outputFile.Data());
     
     rec.SetRecoSettings(0,0,AliToyMCReconstruction::kNoCorrection);
-    rec.RunFullTracking(outputFile.Data());
+    if (!subRecoType||subRecoType==2) rec.RunFullTracking(outputFile.Data());
   }
   
 }
