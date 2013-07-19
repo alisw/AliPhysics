@@ -48,7 +48,7 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || runPeriod == "lhc12g") {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
     eTask->SetMC(kFALSE);
-  } else if (runPeriod == "lhc12a15e" || runPeriod == "lhc13b4" || runPeriod == "lhc12a15f") {
+  } else if (runPeriod == "lhc12a15e" || runPeriod == "lhc13b4" || runPeriod == "lhc13b4_fix" || runPeriod == "lhc12a15f") {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC12a15e, LHC13b4, and LHC12a15f
     eTask->SetMC(kTRUE);
   } else if (runPeriod == "lhc11a") {
