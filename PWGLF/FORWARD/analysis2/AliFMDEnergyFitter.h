@@ -331,14 +331,47 @@ protected:
      *
      * @return List of fits 
      */
-    TObjArray* Fit(TList* dir, 
+    TObjArray* Fit(TList*       dir, 
 		   const TAxis& eta,
 		   Double_t     lowCut, 
 		   UShort_t     nParticles,
 		   UShort_t     minEntries,
 		   UShort_t     minusBins,
 		   Double_t     relErrorCut, 
-		   Double_t     chi2nuCut) const;
+		   Double_t     chi2nuCut,
+		   Double_t     minWeight) const;
+    /** 
+     * Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
+     * maximum bin content in the range @f$ [E_{min},\infty]@f$ is
+     * found.  Then the fit range is set to the bin range 
+     * @f$ [b_{min}-\Delta b,b_{min}+2\Delta b]@f$, and a 1 
+     * particle signal is fitted to that.  The parameters of that fit 
+     * is then used as seeds for a fit of the @f$ N@f$ particle response 
+     * to the data in the range 
+     * @f$ [b_{min}-\Delta b,N(\Delta_1+\xi_1\log(N))+2N\xi@f$
+     * 
+     * @param dist        Histogram to fit 
+     * @param lowCut      Lower cut @f$ E_{min}@f$ on signal 
+     * @param nParticles  Max number @f$ N@f$ of convolved landaus to fit
+     * @param minusBins   Number of bins @f$ \Delta b@f$ from peak to 
+     *                    subtract to get the fit range 
+     * @param relErrorCut Cut applied to relative error of parameter. 
+     *                    Note, for multi-particle weights, the cut 
+     *                    is loosend by a factor of 2 
+     * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
+     *                    the reduced @f$\chi^2@f$ 
+     * 
+     * @return The best fit function 
+     */
+    AliFMDCorrELossFit::ELossFit* FitHist(TH1*     dist,
+					  UShort_t bin, 
+					  Double_t lowCut, 
+					  UShort_t nParticles,
+					  UShort_t minusBins,
+					  Double_t relErrorCut, 
+					  Double_t chi2nuCut,
+					  Double_t minWeight) const;
+#if 0
     /** 
      * Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
      * maximum bin content in the range @f$ [E_{min},\infty]@f$ is
@@ -367,7 +400,9 @@ protected:
 		 UShort_t nParticles,
 		 UShort_t minusBins,
 		 Double_t relErrorCut, 
-		 Double_t chi2nuCut) const;
+		 Double_t chi2nuCut,
+		 Double_t minWeight) const;
+#endif
     /** 
      * Find the best fits 
      * 
@@ -400,10 +435,12 @@ protected:
      * 
      * @return Best fit 
      */
-    AliFMDCorrELossFit::ELossFit* FindBestFit(const TH1* dist,
+    AliFMDCorrELossFit::ELossFit* FindBestFit(UShort_t b, 
+					      const TH1* dist,
 					      Double_t relErrorCut, 
 					      Double_t chi2nuCut,
-					      Double_t minWeightCut);
+					      Double_t minWeightCut) const;
+#if 0
     /** 
      * Check the result of the fit. Returns true if 
      * - @f$ \chi^2/\nu < \max{\chi^2/\nu}@f$
@@ -422,7 +459,9 @@ protected:
      */
     Bool_t CheckResult(TFitResult* r,
 		       Double_t    relErrorCut, 
-		       Double_t    chi2nuCut) const;
+		       Double_t    chi2nuCut,
+		       Double_t    minWeight) const;
+#endif
     /** 
      * Make an axis with increasing bins 
      * 
@@ -479,7 +518,8 @@ protected:
     TH1D*        fEmpty;        // Ring energy distribution for empty events
     TList*       fEtaEDists;    // Energy distributions per eta bin. 
     TList*       fList;
-    TClonesArray fFits;
+    mutable TObjArray    fBest;
+    mutable TClonesArray fFits;
     Int_t        fDebug;
     ClassDef(RingHistos,3);
   };

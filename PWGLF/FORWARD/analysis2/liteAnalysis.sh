@@ -34,6 +34,7 @@
 # extract and upload the corrections to our local corrections folder
 # 
 #   $0 --what=corr --step=upload 
+#   $0 --what=corr --step=draw
 # 
 # If you already have the corrections, you can pass the option
 # --corrections in the setup phase and skip this step.
@@ -57,7 +58,7 @@
 #   $0 --what=dndeta
 # 
 # and wait for the jobs to finish and terminate.  Again, additional
-# options to the train can be passed after --.  if you passed the
+# options to the train can be passed after --.  If you passed the
 # option --sys=1 in the setup phase, then this will run 3 jobs for
 # real and MC each - one for INEL, INEL>0, and NSD (V0-AND).  Next, we
 # need to draw the summary and final plot
@@ -294,37 +295,37 @@ setup()
    # Write settings to a file, which we later can source 
    dumpvar=
    if test $par -gt 0 ; then dumpvar="--par " ; fi 
-   cat > ${dotconf} <<EOF
-# Settings:
-name="$name"
-run=${run}
-sys=$sys
-snn=$snn
-field=$field
-real_dir=${real_dir}
-real_pat=${real_pat}
-real_idx=${real_idx}
-mc_dir=${mc_dir}
-mc_pat=${mc_pat}
-mc_idx=${mc_idx}
-my_real_dir=${my_real_dir}
-my_mc_dir=${my_mc_dir}
-par=${par}
-now=${now}
-uuopts="${uuopts}"
-# Trigger efficiencies - edit here to set them 
-inel_eff=$inel_eff
-inelgt0_eff=$inelgt0_eff
-nsd_eff=$nsd_eff
-# Options
-if false ; then 
-  $0 --what=setup --name="$name" --run="$run" \
-  --sys="$sys" --snn="$snn" --field="$field" \
-  --real-dir="${real_dir}" --real-pattern="${real_pat}" \
-  --mc-dir="${mc_dir}" --mc-pattern="${mc_pat}" \
-  --now=${now} --url-opts="${uuopts}" ${dumpvar}
-fi
-EOF
+   cat > ${dotconf} <<-EOF
+	# Settings:
+	name="$name"
+	run=${run}
+	sys=$sys
+	snn=$snn
+	field=$field
+	real_dir=${real_dir}
+	real_pat=${real_pat}
+	real_idx=${real_idx}
+	mc_dir=${mc_dir}
+	mc_pat=${mc_pat}
+	mc_idx=${mc_idx}
+	my_real_dir=${my_real_dir}
+	my_mc_dir=${my_mc_dir}
+	par=${par}
+	now=${now}
+	uuopts="${uuopts}"
+	# Trigger efficiencies - edit here to set them 
+	inel_eff=$inel_eff
+	inelgt0_eff=$inelgt0_eff
+	nsd_eff=$nsd_eff
+	# Options
+	if false ; then 
+	  $0 --what=setup --name="$name" --run="$run" \
+	  --sys="$sys" --snn="$snn" --field="$field" \
+	  --real-dir="${real_dir}" --real-pattern="${real_pat}" \
+	  --mc-dir="${mc_dir}" --mc-pattern="${mc_pat}" \
+	  --now=${now} --url-opts="${uuopts}" ${dumpvar}
+	fi
+	EOF
    corrdir=${name}_corrs_${now}
    if test "x$corrs" != "x" && test -d ${corrs} ; then 
        echo "Linking ${corrs} to ${corrdir}"
@@ -472,27 +473,27 @@ check()
 # --- Show the setup -------------------------------------------------
 print_setup()
 {
-    cat <<EOF
-Name:			${name}
-Run:			${run}
-Collision system:	${sys}
-sqrt(s_NN):		${snn}GeV
-L3 Field:		${field}kG
-Real input directory:	${real_dir}
-Real file pattern:	${real_pat}
-MC input directory:	${mc_dir}
-MC file pattern:	${mc_pat}
-Real output:		${my_real_dir}
-MC output directory:	${my_mc_dir}
-Use PAR files:		${par}
-Date & time:            ${now}
-Additional URL options: ${uuopts}
-Number of workers:      ${nwrks}/${ncpu}
-Trigger efficiencies:   
-  INEL:                 ${inel_eff}
-  INEL>0:               ${inelgt0_eff}
-  NSD:                  ${nsd_eff}
-EOF
+    cat <<-EOF
+	Name:			${name}
+	Run:			${run}
+	Collision system:	${sys}
+	sqrt(s_NN):		${snn}GeV
+	L3 Field:		${field}kG
+	Real input directory:	${real_dir}
+	Real file pattern:	${real_pat}
+	MC input directory:	${mc_dir}
+	MC file pattern:	${mc_pat}
+	Real output:		${my_real_dir}
+	MC output directory:	${my_mc_dir}
+	Use PAR files:		${par}
+	Date & time:            ${now}
+	Additional URL options: ${uuopts}
+	Number of workers:      ${nwrks}/${ncpu}
+	Trigger efficiencies:   
+	  INEL:                 ${inel_eff}
+	  INEL>0:               ${inelgt0_eff}
+	  NSD:                  ${nsd_eff}
+	EOF
 }
 
 # --- Run the train --------------------------------------------------

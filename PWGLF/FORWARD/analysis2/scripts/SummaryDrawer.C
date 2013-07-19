@@ -1194,11 +1194,12 @@ protected:
     DrawInPad(fBody, 1, GetH2(mc, "binFlow"),    "colz", 0x4);
     DrawInPad(fBody, 2, GetH2(mc, "binFlowEta"), "colz", 0x4);
     DrawInPad(fBody, 3, GetH2(mc, "binFlowPhi"), "colz", 0x4);
-    DrawInPad(fBody, 4, GetH1(mc, "nRefs"),       "",    0x2);
-    DrawInPad(fBody, 4, GetH1(mc, "clusterRefs"), "same");
-    DrawInPad(fBody, 4, GetH1(mc, "clusterSize"), "same");
-    DrawInPad(fBody, 4, GetH1(mc, "nClusters"),    "same", 0x10);
-    DrawInPad(fBody, 5, GetH2(mc, "clusterVsRefs"),"colz", 0x4);
+    DrawInPad(fBody, 4, GetH1(mc, "nRefs"),       "",    0x2,
+	      "# of references");
+    DrawInPad(fBody, 4, GetH1(mc, "clusterRefs",   false), "same");
+    DrawInPad(fBody, 4, GetH1(mc, "clusterSize",   false), "same");
+    DrawInPad(fBody, 4, GetH1(mc, "nClusters",     false), "same", 0x10);
+    DrawInPad(fBody, 5, GetH2(mc, "clusterVsRefs", false),"colz", 0x4);
 
     PrintCanvas("Track density");  
   }

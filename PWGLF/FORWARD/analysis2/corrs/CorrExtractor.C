@@ -206,13 +206,14 @@ struct CorrExtractor
    */
   void Clear()
   {
-    if (fFile) fFile->Close();
+    if (!fFile) return;
+    fFile->Close();
     fFile      = 0;
     fTop       = 0;
     fRunNo     = 0;
     fSys       = 0;
     fSNN       = 0;
-    fField     = 0;
+    fField     = 999;
     fMC        = false;
     fSatellite = false;
   }

@@ -42,6 +42,7 @@
 # extract and upload the corrections to our local corrections folder
 # 
 #   $0 --what=corrs --step=upload 
+#   $0 --what=corrs --step=draw
 # 
 # Now we can submit our AOD generation jobs.  Do 
 # 
@@ -68,8 +69,11 @@
 # 
 #   $0 --what=dndeta --step=terminate 
 # 
-# enough times to get the final merged result.  Next, we need to download 
-# the results and we can draw the summary and final plot
+# enough times to get the final merged result.  If you passed the
+# option --sys=1 in the setup phase, then this will run 3 jobs for
+# real and MC each - one for INEL, INEL>0, and NSD (V0-AND). Next, we
+# need to download the results and we can draw the summary and final
+# plot
 # 
 #   $0 --what=dndeta --step=draw 
 # 
@@ -171,10 +175,10 @@ script()
     local args=$1 ; shift
     echo "Will run aliroot -l -b -q $scr($args)"
     if test $noact -gt 0 ; then return ; fi
-    aliroot -l -b <<EOF
-.x $scr($args)
-.q
-EOF
+    aliroot -l -b <<-EOF
+	.x $scr($args)
+	.q
+	EOF
 }
 # --- Run acceptance generation --------------------------------------
 accGen()
@@ -254,7 +258,8 @@ extract_upload()
 # --- Draw -----------------------------------------------------------
 draw()
 {
-    local scr=$1 
+    local scr=$1  ; shift
+    # local args=$1 ; shift
     download 
     for i in *.zip ; do 
 	if test "X$i" = "X*.zip" ; then continue ; fi
@@ -264,7 +269,7 @@ draw()
 	    mkdir -p $d 
 	    unzip $i -d $d
 	fi
-	(cd $d && script $scr)
+	(cd $d && script $scr $@)
     done
 }
 dndeta_draw()
@@ -305,33 +310,33 @@ setup()
    dumpvar=
    if test $par -gt 0 ; then dumpvar="--par " ; fi 
    if test $watch -gt 0 ; then dumpvar="${dumpvar} --watch " ; fi 
-   cat > ${dotconf} <<EOF
-# Settings:
-name="$name"
-runs=${runs}
-mcruns=${mcruns}
-sys=$sys
-snn=$snn
-field=$field
-real_dir=${real_dir}
-real_pat=${real_pat}
-mc_dir=${mc_dir}
-mc_pat=${mc_pat}
-my_real_dir=${my_real_dir}
-my_mc_dir=${my_mc_dir}
-par=${par}
-now=${now}
-watch=${watch}
-uuopts="${uuopts}"
-# Options
-if false ; then 
-  $0 --what=setup --name="$name" --runs="$runs" --mcruns="$mcruns" \
-  --sys="$sys" --snn="$snn" --field="$field" \
-  --real-dir="${real_dir}" --real-pattern="${real_pat}" \
-  --mc-dir="${mc_dir}" --mc-pattern="${mc_pat}" \
-  --now=${now} --url-opts="${uuopts}" ${dumpvar}
-fi
-EOF
+   cat > ${dotconf} <<-EOF
+	# Settings:
+	name="$name"
+	runs=${runs}
+	mcruns=${mcruns}
+	sys=$sys
+	snn=$snn
+	field=$field
+	real_dir=${real_dir}
+	real_pat=${real_pat}
+	mc_dir=${mc_dir}
+	mc_pat=${mc_pat}
+	my_real_dir=${my_real_dir}
+	my_mc_dir=${my_mc_dir}
+	par=${par}
+	now=${now}
+	watch=${watch}
+	uuopts="${uuopts}"
+	# Options
+	if false ; then 
+	  $0 --what=setup --name="$name" --runs="$runs" --mcruns="$mcruns" \
+	  --sys="$sys" --snn="$snn" --field="$field" \
+	  --real-dir="${real_dir}" --real-pattern="${real_pat}" \
+	  --mc-dir="${mc_dir}" --mc-pattern="${mc_pat}" \
+	  --now=${now} --url-opts="${uuopts}" ${dumpvar}
+	fi
+	EOF
    corrdir=${name}_corrs_${now}
    if test "x$corrs" != "x" && test -d ${corrs} ; then 
        echo "Linking ${corrs} to ${corrdir}"
@@ -486,23 +491,23 @@ check()
 # --- Show the setup -------------------------------------------------
 print_setup()
 {
-    cat <<EOF
-Name:			$name
-Run file:		${runs}
-MC Run file:            ${mcruns}
-Collision system:	$sys
-sqrt(s_NN):		${snn}GeV
-L3 Field:		${field}kG
-Real input directory:	${real_dir}
-Real file pattern:	${real_pat}
-MC input directory:	${mc_dir}
-MC file pattern:	${mc_pat}
-Real output:		${my_real_dir}
-MC output directory:	${my_mc_dir}
-Use PAR files:		${par}
-Date & time:            ${now}
-Additional URL options: ${uuopts}
-EOF
+    cat <<-EOF
+	Name:			$name
+	Run file:		${runs}
+	MC Run file:            ${mcruns}
+	Collision system:	$sys
+	sqrt(s_NN):		${snn}GeV
+	L3 Field:		${field}kG
+	Real input directory:	${real_dir}
+	Real file pattern:	${real_pat}
+	MC input directory:	${mc_dir}
+	MC file pattern:	${mc_pat}
+	Real output:		${my_real_dir}
+	MC output directory:	${my_mc_dir}
+	Use PAR files:		${par}
+	Date & time:            ${now}
+	Additional URL options: ${uuopts}
+	EOF
 }
 
 # --- Run the train --------------------------------------------------
@@ -572,6 +577,16 @@ allAboard()
 		opts="$opts --mc"
 	    fi
 	    ;;
+	*multdists) 
+	    cl=MakeMultDistsTrain 
+	    tree=aodTree 
+	    # Modify for input dir for our files
+	    dir=$my_real_dir
+	    pat="*/AliAOD.root"
+	    if test $mc -gt 0 ; then 
+		dir=$my_mc_dir
+	    fi
+	    ;;
 	*) echo "$0: Unknown type of train: $type" > /dev/stderr ; exit 1 ;;
     esac
     # add centrality flag if we do not know what collision system we're 
@@ -589,7 +604,7 @@ allAboard()
     if test x$uuopts != x ; then 
 	uopt="${uopt}&${uuopts}"
     fi
-    url="alien://${dir}?run=${rl}&pattern=${pat}${uopt}${aliroot}${root}#${tree}"
+    url="alien://${dir}?run=${rl}&pattern=${pat}${uopt}#${tree}"
     opts="${opts} --include=$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains"
     opts="${opts} --date=${now} --class=$cl --name=$nme --verbose=0"
     
@@ -680,7 +695,9 @@ corrs_upload()
 }
 corrs_draw()
 {
-    echo "Draw does not make sense for Correction jobs"
+    (cd ${name}_mccorr_${now}  && draw ${fwd_dir}/DrawMCCorrSummary.C)
+    (cd ${name}_mceloss_${now} && draw ${fwd_dir}/corrs/DrawCorrELoss.C 1)
+    (cd ${name}_eloss_${now}   && draw ${fwd_dir}/corrs/DrawCorrELoss.C 0)
 }
 # --- Run all AOD jobs -----------------------------------------------
 aods()
@@ -706,23 +723,29 @@ aods_draw()
 # --- Run all dN/deta jobs -------------------------------------------
 dndetas()
 {
-    allAboard mcdndeta $@
     if test $sys -eq 1 ; then 
+	allAboard mcdndeta inel $@
+	allAboard mcdndeta nsd $@
+	allAboard mcdndeta inelgt0 $@
 	allAboard dndeta inel $@
 	allAboard dndeta nsd $@
 	allAboard dndeta inelgt0 $@
     else
-	allAboard dndeta "" $@
+	allAboard mcdndeta "" $@
+	allAboard dndeta   "" $@
     fi
 }
 dndetas_terminate() 
 {
-    (cd ${name}_mcdndeta_${now} && terminate)
     if test $sys -eq 1 ; then 
+	(cd ${name}_mcdndeta_inel_${now}    && terminate)
+	(cd ${name}_mcdndeta_nsd_${now}     && terminate)
+	(cd ${name}_mcdndeta_inelgt0_${now} && terminate)
 	(cd ${name}_dndeta_inel_${now}      && terminate)
 	(cd ${name}_dndeta_nsd_${now}       && terminate)
 	(cd ${name}_dndeta_inelgt0_${now}   && terminate)
     else
+	(cd ${name}_mcdndeta_${now} && terminate)
 	(cd ${name}_dndeta_${now}   && terminate)
     fi
 }
@@ -732,8 +755,10 @@ dndetas_upload()
 }
 dndetas_draw() 
 {
-    dndeta_draw ${name}_mcdndeta_${now}
     if test $sys -eq 1 ; then 
+	dndeta_draw ${name}_mcdndeta_inel_${now}
+	dndeta_draw ${name}_mcdndeta_nsd_${now}
+	dndeta_draw ${name}_mcdndeta_inelgt0_${now}
 	dndeta_draw ${name}_dndeta_inel_${now} 
 	dndeta_draw ${name}_dndeta_nsd_${now} 
 	dndeta_draw ${name}_dndeta_inelgt0_${now} 
@@ -742,6 +767,111 @@ dndetas_draw()
     fi
 }
 
+# --- Run all MultDists -------------------------------------------
+multdists()
+{
+    allAboard mcmultdists "" $@
+    allAboard multdists   "" $@
+}
+dndetas_terminate() 
+{
+    (cd ${name}_mcmultdists_${now} && terminate)
+    (cd ${name}_multdists_${now}   && terminate)
+}
+multdists_upload()
+{
+    echo "Upload does not make sense for P(Nch) jobs"
+}
+multdists_draw() 
+{
+    (cd ${name}_mcmultdists_${now} && draw Summarize.C)
+    (cd ${name}_multdists_${now}   && draw Summarize.C)
+}
+
+# --- Collect PDFs ---------------------------------------------------
+collect()
+{
+    out=${name}_pdfs_${now}
+    rm -rf $out
+    mkdir -p ${out}
+    dirs="corr eloss aod dndeta dndeta_inel dndeta_nsd dndeta_inelgt0 multdists"
+    for d in ${dirs} ; do 
+	for m in "" "mc" ; do 
+	    dir=${name}_${m}${d}_${now}
+	    M=
+	    case x$m in 
+		x)   M=real ;; 
+		xmc) M=simu ;;
+	    esac
+	    if test ! -d $dir ; then 
+		# echo "Directory ${dir} doesn't exist"
+		continue
+	    fi
+	    # echo "Will look in $dir"
+	    files=
+	    case $d in 
+		corr)      files="forward_mccorr.pdf" ;; 
+		eloss)     files="corrs*.pdf" ;; 
+		aod)       files="forward.pdf" ;; 
+		dndeta*)   files="forward_dndeta.pdf dNdeta*.pdf" ;; 
+		multdists) files="forward_multdists.pdf" ;;
+		*) echo "Unknown directory type: $d" > /dev/stder 
+		    continue 
+		    ;;
+	    esac
+	    for ad in $dir/root_archive_* ; do 
+		if test ! -d $ad ; then continue ; fi 
+		run=`basename $ad | sed 's/root_archive_0*//'` 
+
+		for f in $files ; do 
+		    ff=$ad/$f
+		    tgt=
+		    case $ff in 
+			*/forward_mccorr.pdf)    tgt=summary_mccorr ;; 
+			*/forward.pdf)           tgt=summary_${d}_${M} ;; 
+			*/forward_dndeta.pdf)    tgt=summary_${d}_${M} ;; 
+			*/forward_multdists.pdf) tgt=summary_${d}_${M} ;; 
+			*/corr*.pdf)             tgt=summary_${d}_${M} ;; 
+			*/dNdeta*.pdf)           tgt=${d}_${M} ;;
+			*) echo "Don't know how to deal with $ff" >/dev/stderr 
+			    continue
+			    ;;
+		    esac
+		    tgt=`printf "%s_%09d.pdf" $tgt $run` 
+		    printf "%100s -> %s\n" $ff $tgt
+		    if test ! -f $ff ; then 
+			echo "$ff not found - ignored"
+			continue
+		    fi
+		    cp $ff $out/$tgt
+		done # for f in files
+	    done # for ad in ...
+	done
+    done 
+    (cd ${out} && pdfjoin -q -o tmp.pdf \
+	--pdftitle "${name} summary ($now)" \
+	--twoside summary_*.pdf dndeta_*.pdf && \
+	pdfnup -q --nup 2x1 -o ${name}_summary_${now}.pdf tmp.pdf && \
+	rm -f tmp.pdf)
+    (cd ${out} && pdfjoin -q -o tmp.pdf \
+	--pdftitle "${name} dN/deta ($now)" \
+	--twoside dndeta_*.pdf && \
+	pdfnup -q --nup 2x1 -o ${name}_dndeta_${now}.pdf tmp.pdf && \
+	rm -f tmp.pdf)
+    echo "Made ${name}_summary_${now}.pdf and ${name}_dndeta_${now}.pdf"
+}
+collect_terminate()
+{
+    echo "Terminate does not make sense for PDF jobs"
+}
+collect_upload()
+{
+    echo "Upload does not make sense for PDF jobs"
+}
+collect_draw() 
+{
+    echo "Draw does not make sense for PDF jobs"
+}    
 # === Procedual code =================================================
 # --- Source settings if found ---------------------------------------
 if test -f $dotconf ; then 
@@ -798,11 +928,13 @@ check $what
 # --- Select what to do ----------------------------------------------
 func=
 case $what in 
-    setup)   setup ; exit 0 ;; 
-    clean)   cleanup ; exit 0 ;;
-    corr*)   func=corrs;; 
-    aod*)    func=aods ;; 
-    dndeta*) func=dndetas ;; 
+    setup)    setup ; exit 0 ;; 
+    clean)    cleanup ; exit 0 ;;
+    corr*)    func=corrs;; 
+    aod*)     func=aods ;; 
+    dndeta*)  func=dndetas ;; 
+    multdist*)func=multdists ;;
+    collect*) func=collect ;;    
     *) echo "$0: Unknown operation: $what" > /dev/stderr ; exit 1 ;;
 esac
 print_setup

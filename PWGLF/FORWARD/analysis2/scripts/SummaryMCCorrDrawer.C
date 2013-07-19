@@ -120,14 +120,14 @@ protected:
   //____________________________________________________________________
   void DrawVertexBins(Bool_t forward)
   {
-    Info("DrawVertexBins", "Drawing %s vertex bins",
-	 forward ? "Forward" : "Central");
+    // Info("DrawVertexBins", "Drawing %s vertex bins",
+    //      forward ? "Forward" : "Central");
     TH1* vtxHist = GetH1(fSums, "vtxAxis");
     if (!vtxHist) return;
     
     TAxis* vtxAxis = vtxHist->GetXaxis();
     for (Int_t i = 1; i <= vtxAxis->GetNbins(); i++) {
-      Info("", "Bin %d", i);
+      // Info("", "Bin %d", i);
       TCollection* c = GetVertexList(fSums, *vtxAxis, i);
       if (!c) continue;
       
@@ -157,8 +157,8 @@ protected:
   //____________________________________________________________________
   void DrawResults(Bool_t forward)
   {
-    Info("DrawVertexBins", "Drawing resulting %s vertex bins",
-	 forward ? "Forward" : "Central");
+    // Info("DrawVertexBins", "Drawing resulting %s vertex bins",
+    //      forward ? "Forward" : "Central");
     TH1* vtxHist = GetH1(fSums, "vtxAxis");
     if (!vtxHist) return;
     
@@ -168,25 +168,35 @@ protected:
       if (!c) continue;
 
       if (forward) {
+	THStack* all = new THStack("all", 
+				   "2^{nd} correction averaged over #phi");
 	DivideForRings(true, true);
 	for (UShort_t d = 1; d <= 3; d++) { 
 	  for (UShort_t q = 0; q < (d == 1 ? 1 : 2); q++) { 
 	    Char_t r = q == 0 ? 'I' : 'O';
-	    TVirtualPad* p = RingPad(d, r);
-	    p->cd();
-	    p->Divide(1,2,0,0);
+	    // TVirtualPad* p = RingPad(d, r);
+	    // p->cd();
+	    // p->Divide(1,2,0,0);
 	    TH2* h = GetH2(c, Form("FMD%d%c_vtxbin%03d",d,r,i));
-	    DrawInPad(p,1, h,"colz");
-	    TVirtualPad* pp = p->cd(1);
-	    TVirtualPad* ppp = p->cd(2);
-	    ppp->SetRightMargin(pp->GetRightMargin());
+	    DrawInRingPad(d,r, h,"colz");
+	    // TVirtualPad* pp = p->cd(1);
+	    // TVirtualPad* ppp = p->cd(2);
+	    // ppp->SetRightMargin(pp->GetRightMargin());
 	    TH1* hh = h->ProjectionX();
 	    hh->Scale(1./ h->GetNbinsY());
 	    hh->SetFillColor(RingColor(d,r));
+	    hh->SetLineColor(RingColor(d,r));
+	    hh->SetMarkerColor(RingColor(d,r));
 	    hh->SetFillStyle(3001);
 	    hh->SetTitle(Form("#LT%s#GT", hh->GetTitle()));
-	    DrawInPad(p,2, hh, "hist e");
+	    // DrawInPad(p,2, hh, "hist e");
+	    all->Add(hh, "hist e");
 	  }
+	  TVirtualPad* p = RingPad(0, '0');
+	  p->SetBottomMargin(0.10);
+	  p->SetLeftMargin(0.10);
+	  p->SetRightMargin(0.05);
+	  DrawInRingPad(0, 'O', all, "nostack");
 	}
       }
       else {

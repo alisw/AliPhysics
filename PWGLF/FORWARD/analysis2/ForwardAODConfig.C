@@ -143,6 +143,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetDensityCalculator().SetLumping(32,4);
   // Recalculate phi taking (x,y) offset of IP into account 
   task->GetDensityCalculator().SetRecalculatePhi(true);
+  // Least acceptable quality of ELoss fits
+  task->GetDensityCalculator().SetMinQuality(8);
   // Set whether or not to use the phi acceptance
   //   AliFMDDensityCalculator::kPhiNoCorrect
   //   AliFMDDensityCalculator::kPhiCorrectNch
@@ -196,12 +198,13 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // task->SetStorePerRing(true);
 
   // --- Set limits on fits the energy -------------------------------
+  // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
   // Maximum relative error on parameters 
-  AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
+  // AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
   // Least weight to use 
-  AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+  // AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
   // Maximum value of reduced chi^2 
-  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
+  // AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
 
   // --- Debug -------------------------------------------------------
   // Set the overall debug level (1: some output, 3: a lot of output)

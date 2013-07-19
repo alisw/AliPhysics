@@ -198,7 +198,7 @@ public:
    * 
    * @param cut Cut value 
    */
-  void SetMinQuality(UShort_t cut=8) { fMinQuality = cut; }
+  void SetMinQuality(UShort_t cut=10) { fMinQuality = cut; }
   /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower

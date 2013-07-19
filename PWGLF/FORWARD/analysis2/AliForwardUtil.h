@@ -512,6 +512,7 @@ public:
      * 
      */
     virtual ~ELossFitter();
+    void SetDebug(Bool_t debug=true) { fDebug = debug; }
     /** 
      * Clear internal arrays 
      * 
@@ -604,6 +605,7 @@ public:
     const UShort_t fMinusBins;  // Number of bins from maximum to fit 1st peak
     TObjArray fFitResults;      // Array of fit results 
     TObjArray fFunctions;       // Array of functions 
+    Bool_t    fDebug;
   };
   /* @} */
       
