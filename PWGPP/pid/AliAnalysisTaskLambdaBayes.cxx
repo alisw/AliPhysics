@@ -422,6 +422,11 @@ void AliAnalysisTaskLambdaBayes::UserExec(Option_t *)
 	v0Centr = centrality->GetCentralityPercentile("TRK"); 
       }
 
+      if(!fTypeCol){
+        v0Centr=100./(fOutputAOD->GetNumberOfTracks()/12.+1);
+        trkCentr=v0Centr;
+      }
+
       if((TMath::Abs(v0Centr - trkCentr) < 5.0 || (fTypeCol!=2)) && v0Centr>0){ // consistency cut on centrality selection
         fCentrality = v0Centr;
 	Analyze(fOutputAOD); // Do analysis!!!!
@@ -503,10 +508,10 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   AliPIDResponse *PIDResponse=inputHandler->GetPIDResponse();
 
-  PIDResponse->GetTOFResponse().SetTrackParameter(0,0.);
-  PIDResponse->GetTOFResponse().SetTrackParameter(1,0.);
-  PIDResponse->GetTOFResponse().SetTrackParameter(2,0.018);
-  PIDResponse->GetTOFResponse().SetTrackParameter(3,50.0);
+//   PIDResponse->GetTOFResponse().SetTrackParameter(0,0.);
+//   PIDResponse->GetTOFResponse().SetTrackParameter(1,0.);
+//   PIDResponse->GetTOFResponse().SetTrackParameter(2,0.018);
+//   PIDResponse->GetTOFResponse().SetTrackParameter(3,50.0);
 
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
 
@@ -612,14 +617,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
     fPIDCombined->GetPriors(KpTrack, oldpP, PIDResponse, detUsedP);
 
     
-    nSigmaTPC = PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kKaon);
-    if(isLambda)fKaTPC[icentr]->Fill(fPtKp,nSigmaTPC);
-    nSigmaTPC = PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kElectron);
-    if(isLambda) fElTPC[icentr]->Fill(fPtKp,nSigmaTPC);
-    nSigmaTPC = PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kPion);
-    if(isLambda)fPiTPC[icentr]->Fill(fPtKp,nSigmaTPC);
     nSigmaTPC = PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kProton);
-    if(isLambda) fPrTPC[icentr]->Fill(fPtKp,nSigmaTPC);
 
     if(! (TMath::Abs(nSigmaTPC) < 5)) continue;
 
@@ -646,14 +644,22 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       else{
 	if(probP[4] > probP[3] && probP[4] > probP[2] && probP[4] > probP[0]) fPidKp += 128; // max prob
 	
-	nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kElectron);
-	if(isLambda) fElTOF[icentr]->Fill(fPtKp,nSigmaTOF);
-	nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kKaon);
-	if(isLambda) fKaTOF[icentr]->Fill(fPtKp,nSigmaTOF);
-	nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kPion);
-	if(isLambda) fPiTOF[icentr]->Fill(fPtKp,nSigmaTOF);
+	if(isLambda){
+	  nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kElectron);
+	  if(TMath::Abs(PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kElectron))<1) fElTOF[icentr]->Fill(fPtKp,nSigmaTOF);
+	  if(TMath::Abs(nSigmaTOF)<1) fElTPC[icentr]->Fill(fPtKp,PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kElectron));
+	  nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kPion);
+	  if(TMath::Abs(PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kPion))<1) fPiTOF[icentr]->Fill(fPtKp,nSigmaTOF);
+	  if(TMath::Abs(nSigmaTOF)<1) fPiTPC[icentr]->Fill(fPtKp,PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kPion));
+	  nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kKaon);
+	  if(TMath::Abs(PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kKaon))<1) fKaTOF[icentr]->Fill(fPtKp,nSigmaTOF);
+	  if(TMath::Abs(nSigmaTOF)<1) fKaTPC[icentr]->Fill(fPtKp,PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kKaon));
+	}
 	nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kProton);
-	if(isLambda) fPrTOF[icentr]->Fill(fPtKp,nSigmaTOF);
+	if(isLambda){
+	  if(TMath::Abs(PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kProton))<1) fPrTOF[icentr]->Fill(fPtKp,nSigmaTOF);
+	  if(TMath::Abs(nSigmaTOF)<1) fPrTPC[icentr]->Fill(fPtKp,PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kProton));
+	}
 	
 	if(fIsMC){
 	  Float_t mismAdd = addMismatchForMC;
