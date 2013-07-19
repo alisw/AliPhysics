@@ -2,6 +2,8 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t 
 {
   //rate is in kHz
 
+  Int_t recoType=simtype/100;
+  simtype%=100;
   //simulation part
   AliToyMCEventGeneratorSimple s;
 
@@ -38,28 +40,41 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t 
     case 0:
       s.RunSimulation(nevents,ntracks,rate);
       break;
+    case 1:
+      s.RunSimulationBunchTrain(nevents,ntracks);
+      break;
   }
 
   //reconstruction part
   AliToyMCReconstruction rec;
   // rec.SetUseMaterialBudget(kTRUE)
-  
-  rec.SetRecoSettings(1,0,AliToyMCReconstruction::kNoCorrection);
-  rec.RunFullTracking(outputFile.Data());
-  
-  rec.SetRecoSettings(1,1,AliToyMCReconstruction::kIdeal);
-  rec.RunFullTracking(outputFile.Data());
-  
-  rec.SetRecoSettings(0,1,AliToyMCReconstruction::kIdeal);
-  rec.RunFullTracking(outputFile.Data());
-  
-  rec.SetRecoSettings(0,1,AliToyMCReconstruction::kAverageEta);
-  rec.RunFullTracking(outputFile.Data());
-  
-  rec.SetRecoSettings(0,1,AliToyMCReconstruction::kNoCorrection);
-  rec.RunFullTracking(outputFile.Data());
-  
-  rec.SetRecoSettings(0,0,AliToyMCReconstruction::kNoCorrection);
-  rec.RunFullTracking(outputFile.Data());
+
+  if (recoType==0){
+    rec.SetRecoSettings(1,0,AliToyMCReconstruction::kNoCorrection);
+    rec.RunReco(outputFile.Data());
+
+    rec.SetRecoSettings(1,1,AliToyMCReconstruction::kIdeal);
+    rec.RunReco(outputFile.Data());
+
+    rec.SetRecoSettings(0,1,AliToyMCReconstruction::kIdeal);
+    rec.RunReco(outputFile.Data());
+
+    rec.SetRecoSettings(0,1,AliToyMCReconstruction::kAverageEta);
+    rec.RunReco(outputFile.Data());
+
+    rec.SetRecoSettings(0,1,AliToyMCReconstruction::kNoCorrection);
+    rec.RunReco(outputFile.Data());
+
+    rec.SetRecoSettings(0,0,AliToyMCReconstruction::kNoCorrection);
+    rec.RunReco(outputFile.Data());
+  }
+
+  if (recoType==1) {
+    rec.SetRecoSettings(0,1,AliToyMCReconstruction::kNoCorrection);
+    rec.RunFullTracking(outputFile.Data());
+    
+    rec.SetRecoSettings(0,0,AliToyMCReconstruction::kNoCorrection);
+    rec.RunFullTracking(outputFile.Data());
+  }
   
 }

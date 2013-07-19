@@ -259,14 +259,16 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "track.="      << &track          <<
         // ITS match
         "tOrigITS.="   << &tOrigITS       <<
-        "tOrigITS1.="  << &tOrigITS       <<
-        "tOrigITS2.="  << &tOrigITS       <<
+        "tOrigITS1.="  << &tOrigITS1      <<
+        "tOrigITS2.="  << &tOrigITS2      <<
+        
         "tRealITS.="   << &tRealITS       <<
-        "tRealITS1.="  << &tRealITS       <<
-        "tRealITS2.="  << &tRealITS       <<
+        "tRealITS1.="  << &tRealITS1      <<
+        "tRealITS2.="  << &tRealITS2      <<
+        
         "trackITS.="   << &trackITS       <<
-        "trackITS1.="  << &trackITS       <<
-        "trackITS2.="  << &trackITS       <<
+        "trackITS1.="  << &trackITS1      <<
+        "trackITS2.="  << &trackITS2      <<
         "\n";
       }
       
