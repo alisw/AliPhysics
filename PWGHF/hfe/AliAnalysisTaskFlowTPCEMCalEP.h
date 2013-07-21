@@ -56,6 +56,9 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   
   Double_t GetCos2DeltaPhi(Double_t phiA,Double_t phiB)		const;
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
+  Double_t GetPi0weight(Double_t mcPi0pT) const;
+  Double_t GetEtaweight(Double_t mcEtapT) const;
+  
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
@@ -111,6 +114,14 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH2F			*fGammaWeight;		//! gamma weight
   TH2F			*fPi0Weight;		//! pi0 weight
   TH2F			*fEtaWeight;		//! eta weight
+  
+  TH1F			*fTot_pi0e;		//! inclusive electron
+  TH1F			*fPhot_pi0e;		//! ULS pair 
+  TH1F			*fPhotBCG_pi0e;		//! LS pair
+  TH1F			*fTot_etae;		//! inclusive electron
+  TH1F			*fPhot_etae;		//! ULS pair 
+  TH1F			*fPhotBCG_etae;		//! LS pair
+    
   AliAnalysisTaskFlowTPCEMCalEP(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
   AliAnalysisTaskFlowTPCEMCalEP& operator=(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
   
