@@ -187,6 +187,11 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         t0seed = *dummy;
         delete dummy;
 
+        // Long seed
+        dummy = GetFittedTrackFromSeed(tr,&t0seed);
+        t0seed = *dummy;
+        delete dummy;
+        
         // crate real seed using the time 0 from the first seed
         // set fCreateT0seed now to false to get the seed in z coordinates
         fTime0 = t0seed.GetZ()-zLength/vDrift;
@@ -205,9 +210,9 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
             delete dummy;
           }
 
-	  // Copy original track and fitted track
-	  // for extrapolation to ITS last layer
-	  trackITS  = track;
+          // Copy original track and fitted track
+          // for extrapolation to ITS last layer
+          trackITS  = track;
           trackITS1 = track;
           trackITS2 = track;
           
@@ -218,22 +223,20 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           // ITS comparison
           //
           
-	  // rotate fitted track to the frame of the original track and propagate to same reference
-	  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-	  trackITS.Rotate(tOrigITS.GetAlpha());
-	  AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
-
           // rotate fitted track to the frame of the original track and propagate to same reference
           AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
           trackITS.Rotate(tOrigITS.GetAlpha());
           AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
 
           // rotate fitted track to the frame of the original track and propagate to same reference
-          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          trackITS.Rotate(tOrigITS.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
-          
-	            
+          AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+          trackITS1.Rotate(tOrigITS1.GetAlpha());
+          AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+
+          // rotate fitted track to the frame of the original track and propagate to same reference
+          AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+          trackITS2.Rotate(tOrigITS2.GetAlpha());
+          AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
         }
       }
 
@@ -958,8 +961,6 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     const Int_t sign=1-2*((sector/18)%2);
     
     if ( (fClusterType == 1) && (fCorrectionType != kNoCorrection) ) {
-//       printf("correction type: %d\n",(Int_t)fCorrectionType);
-
       // the settings below are for the T0 seed
       // for known T0 the z position is already calculated in SetTrackPointFromCluster
       if ( fCreateT0seed ){
@@ -1173,14 +1174,36 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     AliTrackPoint pIn;
     const AliTPCclusterMI *cl=tr->GetSpacePoint(ipoint);
     if (fClusterType == 1) cl=tr->GetDistortedSpacePoint(ipoint);
-    SetTrackPointFromCluster(cl, pIn);
-    if (fCorrectionType != kNoCorrection){
-      Float_t xyz[3]={0,0,0};
-      pIn.GetXYZ(xyz);
-//       if ( fCorrectionType == kIdeal ) xyz[2] = cl->GetZ();
-      fTPCCorrection->CorrectPoint(xyz, cl->GetDetector());
-      pIn.SetXYZ(xyz);
+    const Int_t globalRow = cl->GetRow() +(cl->GetDetector() >35)*63;
+    if ( fCreateT0seed ){
+      if ( globalRow<fSeedingRow || globalRow>fSeedingRow+2*fSeedingDist ) continue;
     }
+    
+    SetTrackPointFromCluster(cl, pIn);
+
+    Float_t xyz[3]={0,0,0};
+    pIn.GetXYZ(xyz);
+    
+    if (fCorrectionType != kNoCorrection){
+
+      const Float_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+      const Int_t sector=cl->GetDetector();
+      const Int_t sign=1-2*((sector/18)%2);
+      
+      if ( fCreateT0seed ){
+        if ( fCorrectionType == kTPCCenter  ) xyz[2] = 125.*sign;
+        //!!! TODO: is this the correct association?
+        if ( fCorrectionType == kAverageEta ) xyz[2] = TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
+        if ( fCorrectionType == kIdeal ) xyz[2] = cl->GetZ();
+      }
+      
+      fTPCCorrection->CorrectPoint(xyz, cl->GetDetector());
+    }
+    
+    if ( fCreateT0seed )
+      xyz[2]=cl->GetTimeBin();
+    pIn.SetXYZ(xyz);
+    
     // rotate the cluster to the local detector frame
     track->Rotate(((cl->GetDetector()%18)*20+10)*TMath::DegToRad());
     AliTrackPoint prot = pIn.Rotate(track->GetAlpha());   // rotate to the local frame - non distoted  point
