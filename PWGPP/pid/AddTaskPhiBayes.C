@@ -24,6 +24,8 @@ AliAnalysisTask *AddTaskPhiBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filter
   task->SetTypeCollisions(typeCol);
 
   AliPIDmaxProb *userCut = new AliPIDmaxProb("maxProbKaon");
+  userCut->RequireTPC();
+  userCut->RequireTOF();
   task->SetPIDuserCut(userCut);
 
   mgr->AddTask(task);

@@ -10,14 +10,21 @@
 #include"TRandom.h"
 
 Int_t LoadLib();
+void doeffPiUser(Int_t pos,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 void doeffPi(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 TH2F *GetHistoPip(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 TH2F *GetHistoPin(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 void fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="",Float_t pt=1.5);
 void AddHisto(TH2F *h1,TH2F *h2,Float_t w);
+TH2F *GetHistoUser(Int_t pos=1,Float_t pt=1,Float_t ptM=1.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
+TH2F *GetHistoPiUser(Int_t pos=1,Float_t pt=1,Float_t ptM=1.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
+TH2F *GetHistoKaUser(Int_t pos=1,Float_t pt=1,Float_t ptM=1.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
+TH2F *GetHistoPrUser(Int_t pos=1,Float_t pt=1,Float_t ptM=1.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 
 TObject* fContPid1;
 TObject* fContPid2;
+TObject* fContUser1;
+TObject* fContUser2;
 const Int_t nBinPid = 14; // pt,eta, ptPip, ptPin, PPip, PPin, TOF3sigmaPip, TOF3sigmaPin, isPhiTrue, nsigmaPip, nsigmaPin
 // 0.985 < mass < 1.045 (60) and 0 < centrality < 100 (10)
 Int_t binPid[nBinPid] = {1/*ptPhi*/,8/*EtaPi*/,20/*pt+*/,20/*pt-*/,5/*P+*/,1/*P-*/,2/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,4/*Nsigma-*/,1/*DeltaPhi+*/,1/*DeltaPhi-*/,1/*Psi*/};
@@ -93,6 +100,8 @@ Int_t LoadLib(){
 
     fContPid1 = (AliPIDperfContainer *) l->FindObject("contPID");
     fContPid2 = (AliPIDperfContainer *) l->FindObject("contPID2");
+    fContUser1 = (AliPIDperfContainer *) l->FindObject("contUserPID");
+    fContUser2 = (AliPIDperfContainer *) l->FindObject("contUserPID2");
     hmatched = (TH2F *) l2->FindObject("hMatchPi"); 
     htracked = (TH2F *) l2->FindObject("hTrackingPi"); 
   }
@@ -137,6 +146,200 @@ Int_t LoadLib(){
   }
 
   return 1;
+}
+
+void doeffPiUser(Int_t pos,Float_t etaminkp,Float_t etamaxkp){
+  Int_t nptbin = binPid[2];
+  Float_t minptbin = xmin[2];
+  Float_t maxptbin = xmax[2];
+  
+  TCanvas *c1 = new TCanvas();
+  c1->Divide((nptbin+1)/2,2);
+
+  Double_t xx[50],yyPi[50],yyKa[50],yyPr[50];
+  Double_t exx[50],eyyPi[50],eyyKa[50],eyyPr[50];
+
+  TH2F *hh;
+  TH1D *h;
+
+  Float_t b[100][3];
+  Float_t bPi[100][3];
+  Float_t bKa[100][3];
+  Float_t bPr[100][3];
+
+  char name[100];
+
+  for(Int_t i=0;i < nptbin;i++){
+    c1->cd(i+1);
+    Float_t ptmin = minptbin+(maxptbin-minptbin)/nptbin*(i);
+    Float_t ptmax = minptbin+(maxptbin-minptbin)/nptbin*(i+1);
+    
+    xx[i] = (ptmin+ptmax)/2;
+    exx[i] = (-ptmin+ptmax)/2;
+    
+    hh=GetHistoUser(pos,ptmin,ptmax,etaminkp,etamaxkp);
+    sprintf(name,"all%i",i);
+    h = hh->ProjectionX(name,cmin,cmax);
+    Int_t ntrial = 0;
+    Float_t chi2 = 10000;
+    while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
+      fit(h,b[i],"WW","",xx[i]);
+      fit(h,b[i],"","",xx[i]);
+      ntrial++;
+      chi2 = b[i][2];
+    }
+    printf("%i) %f +/- %f\n",i,b[i][0],b[i][1]);
+
+    hh=GetHistoPiUser(pos,ptmin,ptmax,etaminkp,etamaxkp);
+    sprintf(name,"pi%i",i);
+    h = hh->ProjectionX(name,cmin,cmax);
+    ntrial = 0;
+    chi2 = 10000;
+    while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
+      fit(h,bPi[i],"WW","",xx[i]);
+      fit(h,bPi[i],"","",xx[i]);
+      ntrial++;
+      chi2 = bPi[i][2];
+    }
+    printf("pi) %f +/- %f\n",bPi[i][0],bPi[i][1]);
+
+    hh=GetHistoKaUser(pos,ptmin,ptmax,etaminkp,etamaxkp);
+    sprintf(name,"ka%i",i);
+    h = hh->ProjectionX(name,cmin,cmax);
+    ntrial = 0;
+    chi2 = 10000;
+    while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
+      fit(h,bKa[i],"WW","",xx[i]);
+      fit(h,bKa[i],"","",xx[i]);
+      ntrial++;
+      chi2 = bKa[i][2];
+    }
+    printf("ka) %f +/- %f\n",bKa[i][0],bKa[i][1]);
+
+    hh=GetHistoPrUser(pos,ptmin,ptmax,etaminkp,etamaxkp);
+    sprintf(name,"pr%i",i);
+    h = hh->ProjectionX(name,cmin,cmax);
+    ntrial = 0;
+    chi2 = 10000;
+    while(ntrial < 3 && (chi2 > 20 + 1000*selectTrue)){
+      fit(h,bPr[i],"WW","",xx[i]);
+      fit(h,bPr[i],"","",xx[i]);
+      ntrial++;
+      chi2 = bPr[i][2];
+    }
+    printf("pr) %f +/- %f\n",bPr[i][0],bPr[i][1]);
+
+    yyPi[i] = bPi[i][0] / b[i][0];
+    yyKa[i] = bKa[i][0] / b[i][0];
+    yyPr[i] = bPr[i][0] / b[i][0];
+
+    eyyPi[i] = bPi[i][1]/bPi[i][0]*yyPi[i];
+    eyyKa[i] = bKa[i][1]/bKa[i][0]*yyKa[i];
+    eyyPr[i] = bPr[i][1]/bPr[i][0]*yyPr[i];
+  }
+
+  /*TCanvas *c2 =*/ new TCanvas();
+  TGraphErrors *gPi = new TGraphErrors(nptbin,xx,yyPi,exx,eyyPi);
+  gPi->Draw("AP");
+  gPi->SetLineColor(4);
+  gPi->SetMarkerColor(4);
+  gPi->SetMarkerStyle(20);
+
+  TGraphErrors *gKa = new TGraphErrors(nptbin,xx,yyKa,exx,eyyKa);
+  gKa->Draw("P");
+  gKa->SetLineColor(1);
+  gKa->SetMarkerColor(1);
+  gKa->SetMarkerStyle(21);
+
+  TGraphErrors *gPr = new TGraphErrors(nptbin,xx,yyPr,exx,eyyPr);
+  gPr->Draw("P");
+  gPr->SetLineColor(2);
+  gPr->SetMarkerColor(2);
+  gPr->SetMarkerStyle(22);
+
+  if(pos) sprintf(name,"k0sUserAnalPos_%3.1f-%3.1f_%i-%i.root",etaminkp,etamaxkp,cmin,cmax);
+  else sprintf(name,"k0sUserAnalNeg_%3.1f-%3.1f_%i-%i.root",etaminkp,etamaxkp,cmin,cmax);
+
+  gPi->SetName("piSelected");
+  gKa->SetName("kaSelected");
+  gPr->SetName("prSelected");
+
+  TFile *fout = new TFile(name,"RECREATE");
+  gPi->Write();
+  gKa->Write();
+  gPr->Write();
+  fout->Close();
+}
+
+TH2F *GetHistoUser(Int_t pos,Float_t pt,Float_t ptM,Float_t etaminkp,Float_t etamaxkp){
+  //  Int_t binUser[nBinUser] = {8/*Eta*/,20/*pt*/,2/*istrue*/,4/*whatSelection*/,1/*DeltaPhi*/,1/*Psi*/};
+  Float_t x[] = {etaminkp+0.0001,pt+0.0001,isMC,0.0001,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+  Float_t x2[] = {etamaxkp-0.0001,ptM-0.0001,isMC,2.9999,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContUser1;
+  if(!pos) tmp = (AliPIDperfContainer *) fContUser2;
+
+  TH2F *h = tmp->GetQA(0, x, x2);
+
+  h->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/#it{c}^{2})");
+  h->GetYaxis()->SetTitle("centrality [%]");
+
+  return h;
+
+}
+
+
+TH2F *GetHistoPiUser(Int_t pos,Float_t pt,Float_t ptM,Float_t etaminkp,Float_t etamaxkp){
+  //  Int_t binUser[nBinUser] = {8/*Eta*/,20/*pt*/,2/*istrue*/,4/*whatSelection*/,1/*DeltaPhi*/,1/*Psi*/};
+  Float_t x[] = {etaminkp+0.0001,pt+0.0001,isMC,1.0001,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+  Float_t x2[] = {etamaxkp-0.0001,ptM-0.0001,isMC,1.0002,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContUser1;
+  if(!pos) tmp = (AliPIDperfContainer *) fContUser2;
+
+  TH2F *h = tmp->GetQA(0, x, x2);
+
+  h->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/#it{c}^{2})");
+  h->GetYaxis()->SetTitle("centrality [%]");
+
+  return h;
+
+}
+
+
+TH2F *GetHistoKaUser(Int_t pos,Float_t pt,Float_t ptM,Float_t etaminkp,Float_t etamaxkp){
+  //  Int_t binUser[nBinUser] = {8/*Eta*/,20/*pt*/,2/*istrue*/,4/*whatSelection*/,1/*DeltaPhi*/,1/*Psi*/};
+  Float_t x[] = {etaminkp+0.0001,pt+0.0001,isMC,2.0001,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+  Float_t x2[] = {etamaxkp-0.0001,ptM-0.0001,isMC,2.0002,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContUser1;
+  if(!pos) tmp = (AliPIDperfContainer *) fContUser2;
+
+  TH2F *h = tmp->GetQA(0, x, x2);
+
+  h->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/#it{c}^{2})");
+  h->GetYaxis()->SetTitle("centrality [%]");
+
+  return h;
+
+}
+
+
+TH2F *GetHistoPrUser(Int_t pos,Float_t pt,Float_t ptM,Float_t etaminkp,Float_t etamaxkp){
+  //  Int_t binUser[nBinUser] = {8/*Eta*/,20/*pt*/,2/*istrue*/,4/*whatSelection*/,1/*DeltaPhi*/,1/*Psi*/};
+  Float_t x[] = {etaminkp+0.0001,pt+0.0001,isMC,3.0001,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+  Float_t x2[] = {etamaxkp-0.0001,ptM-0.0001,isMC,3.0002,-TMath::Pi(),TMath::Pi(),-TMath::Pi()/2,TMath::Pi()/2};
+
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContUser1;
+  if(!pos) tmp = (AliPIDperfContainer *) fContUser2;
+
+  TH2F *h = tmp->GetQA(0, x, x2);
+
+  h->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/#it{c}^{2})");
+  h->GetYaxis()->SetTitle("centrality [%]");
+
+  return h;
+
 }
 
 void doeffPi(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
@@ -502,7 +705,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  TH1D *h2 = new TH1D(*h);
  h2->SetName(namenew);
 
- Float_t entries = h2->GetBinContent(h2->FindBin(0.497));
+ // Float_t entries = h2->GetBinContent(h2->FindBin(0.497));
 //  printf("entries under the peak = %f, pt = %f\n",entries,pt);
 //  getchar();
 

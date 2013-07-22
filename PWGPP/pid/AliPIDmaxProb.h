@@ -24,6 +24,9 @@ class AliPIDmaxProb : public AliPIDperfCut
 
   void SetPIDMask(Int_t mask){fMaskPID=mask;}; // set the PID mask to be used
 
+  void RequireTPC(){fTPCin=kTRUE;};
+  void RequireTOF(){fTOFin=kTRUE;};
+
   Bool_t IsSelected(AliVTrack *track,AliPID::EParticleType type) const;
 
  private:
@@ -32,6 +35,9 @@ class AliPIDmaxProb : public AliPIDperfCut
 
   AliPIDCombined *fPIDCombined;         //! PID combined object
   Int_t fMaskPID;                       // PID mask
+  Bool_t fTPCin;                        // TPC required
+  Bool_t fTOFin;                        // TOF required
+
 
   ClassDef(AliPIDmaxProb,1)             // PID cut virtual class
 };
