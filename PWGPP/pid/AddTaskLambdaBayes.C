@@ -24,6 +24,8 @@ AliAnalysisTask *AddTaskLambdaBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t fil
   task->SetTypeCollisions(typeCol);
 
   AliPIDmaxProb *userCut = new AliPIDmaxProb("maxProbProton");
+  userCut->RequireTPC();
+  userCut->RequireTOF();
   task->SetPIDuserCut(userCut);
 
   mgr->AddTask(task);

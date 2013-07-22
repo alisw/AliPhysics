@@ -8,7 +8,9 @@ ClassImp(AliPIDmaxProb);
 AliPIDmaxProb::AliPIDmaxProb(const char *name):
   AliPIDperfCut(name),
   fPIDCombined(NULL),
-  fMaskPID(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF)
+  fMaskPID(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF),
+  fTPCin(kFALSE),
+  fTOFin(kFALSE)
 {
   fPIDCombined=new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
@@ -17,7 +19,9 @@ AliPIDmaxProb::AliPIDmaxProb(const char *name):
 AliPIDmaxProb::AliPIDmaxProb():
   AliPIDperfCut("AliPIDmaxProb"),
   fPIDCombined(NULL),
-  fMaskPID(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF)
+  fMaskPID(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF),
+  fTPCin(kFALSE),
+  fTOFin(kFALSE)
 {
   fPIDCombined=new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
@@ -35,7 +39,10 @@ Bool_t AliPIDmaxProb::IsSelected(AliVTrack *track,AliPID::EParticleType type) co
 
   Double_t prob[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
 
-  /* UInt_t detUsed = */fPIDCombined->ComputeProbabilities(track, PIDResponse, prob);
+  UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, PIDResponse, prob);
+
+  if(fTPCin && !(detUsed & AliPIDResponse::kDetTPC)) return kFALSE;
+  if(fTOFin && !(detUsed & AliPIDResponse::kDetTOF)) return kFALSE;
 
   Bool_t status = kTRUE;
   for(Int_t i=0;i<nspecies;i++){

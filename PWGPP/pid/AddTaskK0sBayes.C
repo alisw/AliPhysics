@@ -25,7 +25,8 @@ AliAnalysisTask *AddTaskK0sBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filter
 
   AliPIDmaxProb *userCut = new AliPIDmaxProb("maxProbPion");
   task->SetPIDuserCut(userCut);
-
+  userCut->RequireTPC();
+  userCut->RequireTOF();
   mgr->AddTask(task);
 
   //Attach input to my tasks
