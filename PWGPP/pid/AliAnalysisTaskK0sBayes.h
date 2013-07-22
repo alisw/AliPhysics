@@ -13,6 +13,7 @@
 #include <AliAnalysisTaskSE.h>
 #include <AliAODEvent.h>
 #include "AliPIDperfContainer.h"
+#include "AliPIDperfCut.h"
 
 class TH1F;
 class TH2F;
@@ -49,6 +50,8 @@ class AliAnalysisTaskK0sBayes : public AliAnalysisTaskSE {
 
   void SetTypeCollisions(Int_t type){fTypeCol = type;}; // 0=pp, 1=pPb, 2=PbPb
   Int_t GetTypeCollisions() const {return fTypeCol;}; 
+
+  void SetPIDuserCut(AliPIDperfCut *usercut){fPIDuserCut = usercut;};
 
  private:
   AliAnalysisTaskK0sBayes(const AliAnalysisTaskK0sBayes &old); 
@@ -123,6 +126,8 @@ class AliAnalysisTaskK0sBayes : public AliAnalysisTaskSE {
   AliPIDCombined *fPIDCombined;  //! PID combined object
   AliPIDperfContainer* fContPid;      //! results for positive
   AliPIDperfContainer* fContPid2;     //! results for negative
+  AliPIDperfContainer* fContUser;     //! results for positive user cut
+  AliPIDperfContainer* fContUser2;    //! results for negative user cut
 
   Int_t fNK0s; //! number of K0s in my private selection
   Float_t fPhiK0s[1000]; //! phi of K0s in my private selection
@@ -139,8 +144,9 @@ class AliAnalysisTaskK0sBayes : public AliAnalysisTaskSE {
   TH1D *fHchannelTOFdistr; //! TOF channel distance w.r.t. IP
 
   Int_t fTypeCol; // type of collision system (0=pp, 1=pPb, 2=PbPb)
+  AliPIDperfCut *fPIDuserCut;  // pid user cut to be cheked
 
-  ClassDef(AliAnalysisTaskK0sBayes, 2);    //Analysis task for bayesian (K0s)
+  ClassDef(AliAnalysisTaskK0sBayes, 3);    //Analysis task for bayesian (K0s)
 };
 
 #endif
