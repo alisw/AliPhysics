@@ -179,10 +179,10 @@ void AliEbyEPidTaskFastGen::UserExec( Option_t * ){
   vsparseMC[11] = count[3][1];
   
 
-   Printf(" %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f",
+  /*   Printf(" %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f",
   	 vsparseMC[0], vsparseMC[1], vsparseMC[2], vsparseMC[3],
 	  vsparseMC[4],  vsparseMC[5], vsparseMC[6], vsparseMC[7], 
-	  vsparseMC[8], vsparseMC[9], vsparseMC[10], vsparseMC[11]);
+	  vsparseMC[8], vsparseMC[9], vsparseMC[10], vsparseMC[11]);*/
 
   fHistoCorrelationMC->Fill(vsparseMC);
   PostData(1, fThnList);
