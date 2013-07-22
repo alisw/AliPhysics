@@ -935,6 +935,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     }
     else if (fCentralityMethod == "V0A_MANUAL")
     {
+      // for pp
+      
       //Total multiplicity in the VZERO A detector
       Float_t MV0A=inputEvent->GetVZEROData()->GetMTotV0A();
       Float_t MV0AScaled=0.;
@@ -944,8 +946,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       }
       ((TH2F*) fListOfHistos->FindObject("V0AMult"))->Fill(MV0A,MV0AScaled);
       
-      // for pp, to be implemented
-      centrality = 1;
+      if (MV0AScaled > 0)
+	centrality = MV0AScaled;
+      else
+	centrality = -1;
     }
     else
     {
