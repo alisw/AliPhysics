@@ -33,26 +33,26 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
     if (centralityMethod == 4)
       {
 
-	nCentrality = 6;
+	/*nCentrality = 6;
         minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
         minCentrality[1] = 5.0; maxCentrality[1] = 10.;
 	minCentrality[2] = 30.; maxCentrality[2] = 40.;
         minCentrality[3] = 40.; maxCentrality[3] = 50.;
         minCentrality[4] = 70.; maxCentrality[4] = 80.;
-        minCentrality[5] = 80.; maxCentrality[5] = 90.;
-	/*
-	  nCentrality = 10;
-	  minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
-	  minCentrality[1] = 5.0; maxCentrality[1] = 10.;
-	  minCentrality[2] = 10.; maxCentrality[2] = 20.;
-	  minCentrality[3] = 20.; maxCentrality[3] = 30.;
-	  minCentrality[4] = 30.; maxCentrality[4] = 40.;
-	  minCentrality[5] = 40.; maxCentrality[5] = 50.;
-	  minCentrality[6] = 50.; maxCentrality[6] = 60.;
-	  minCentrality[7] = 60.; maxCentrality[7] = 70.;
-	  minCentrality[8] = 70.; maxCentrality[8] = 80.;
-	  minCentrality[9] = 80.; maxCentrality[9] = 90.;
-	*/
+        minCentrality[5] = 80.; maxCentrality[5] = 90.;*/
+	
+	nCentrality = 10;
+	minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
+	minCentrality[1] = 5.0; maxCentrality[1] = 10.;
+	minCentrality[2] = 10.; maxCentrality[2] = 20.;
+	minCentrality[3] = 20.; maxCentrality[3] = 30.;
+	minCentrality[4] = 30.; maxCentrality[4] = 40.;
+	minCentrality[5] = 40.; maxCentrality[5] = 50.;
+	minCentrality[6] = 50.; maxCentrality[6] = 60.;
+	minCentrality[7] = 60.; maxCentrality[7] = 70.;
+	minCentrality[8] = 70.; maxCentrality[8] = 80.;
+	minCentrality[9] = 80.; maxCentrality[9] = 90.;
+	
       }
     else
       {
@@ -179,8 +179,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       listName     =   baseName;
       taskName     =   baseName;
 
-      //inputHistogramFileName =  "/Users/prabhat/Archive/calib/PbPb276Calibration_2010.root";
-      inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
+      inputHistogramFileName =  "/Users/prabhat/MyTestforEta/PbPb276Calibration_2010.root";
+      //inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
 
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
