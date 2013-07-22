@@ -69,12 +69,15 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes():
   fPIDCombined(NULL),
   fContPid(NULL),
   fContPid2(NULL),
+  fContUser(NULL),
+  fContUser2(NULL),
   fNLambda(0),
   fNpPos(0),
   fNpNeg(0),
   fHmismTOF(0),
   fHchannelTOFdistr(0),
-  fTypeCol(2)
+  fTypeCol(2),
+  fPIDuserCut(NULL)
 {
   // Default constructor (should not be used)
   fList->SetName("contLambdaBayes1");
@@ -150,12 +153,15 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes(const char *name):
   fPIDCombined(NULL),
   fContPid(NULL),
   fContPid2(NULL),
+  fContUser(NULL),
+  fContUser2(NULL),
   fNLambda(0),
   fNpPos(0),
   fNpNeg(0),
   fHmismTOF(0),
   fHchannelTOFdistr(0),
-  fTypeCol(2)
+  fTypeCol(2),
+  fPIDuserCut(NULL)
 {
 
   DefineOutput(1, TList::Class());
@@ -307,6 +313,46 @@ void AliAnalysisTaskLambdaBayes::UserCreateOutputObjects()
 
   fList->Add(fContPid);
   fList->Add(fContPid2);
+
+  const Int_t nBinUser = 6;
+  Int_t binUser[nBinUser] = {8/*Eta*/,20/*pt*/,2/*istrue*/,4/*whatSelection*/,1/*DeltaPhi*/,1/*Psi*/};
+  fContUser = new AliPIDperfContainer("contUserPID",nBinUser,binUser);
+  fContUser->SetTitleX("M_{#Lambda}");
+  fContUser->SetTitleY("centrality (%)");
+  fContUser->SetVarName(0,"#eta");
+  fContUser->SetVarRange(0,-0.8,0.8);
+  fContUser->SetVarName(1,"p_{T}");
+  fContUser->SetVarRange(1,0.3,4.3);
+  fContUser->SetVarName(2,"isLambdaTrue");
+  fContUser->SetVarRange(2,-0.5,1.5);
+  fContUser->SetVarName(3,"whatSelected"); // 0=no, 1=pi, 2=K, 3=p
+  fContUser->SetVarRange(3,-0.5,3.5);
+  fContUser->SetVarName(4,"#Delta#phi");
+  fContUser->SetVarRange(4,-TMath::Pi(),TMath::Pi());
+  fContUser->SetVarName(5,"#Psi");
+  fContUser->SetVarRange(5,-TMath::Pi()/2,TMath::Pi()/2);
+
+  fContUser2 = new AliPIDperfContainer("contUserPID2",nBinUser,binUser);
+  fContUser2->SetTitleX("M_{#Lambda}");
+  fContUser2->SetTitleY("centrality (%)");
+  fContUser2->SetVarName(0,"#eta");
+  fContUser2->SetVarRange(0,-0.8,0.8);
+  fContUser2->SetVarName(1,"p_{T}");
+  fContUser2->SetVarRange(1,0.3,4.3);
+  fContUser2->SetVarName(2,"isLambdaTrue");
+  fContUser2->SetVarRange(2,-0.5,1.5);
+  fContUser2->SetVarName(3,"whatSelected");
+  fContUser2->SetVarRange(3,-0.5,3.5);
+  fContUser2->SetVarName(4,"#Delta#phi");
+  fContUser2->SetVarRange(4,-TMath::Pi(),TMath::Pi());
+  fContUser2->SetVarName(5,"#Psi");
+ fContUser2->SetVarRange(5,-TMath::Pi()/2,TMath::Pi()/2);
+
+  fContUser->AddSpecies("Lambda",nDETsignal,binDETsignal,nDETsignal2,binDETsignal2);
+  fContUser2->AddSpecies("Lambda2",nDETsignal,binDETsignal,nDETsignal2,binDETsignal2);
+
+  fList->Add(fContUser);
+  fList->Add(fContUser2);
 
   hMatching[0] = new TH2F("hMatchAll","TOF matched (all);p_{T} (GeV/#it{c});centrality (%)",50,0,10,nDETsignal2,0,100);
   hMatching[1] = new TH2F("hMatchPi","TOF matched (#pi);p_{T} (GeV/#it{c});centrality (%)",50,0,10,nDETsignal2,0,100);
@@ -833,6 +879,23 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       if(TMath::Abs(fEtaLambda) < 0.8 && fPtKp > 0.3 && fPtKn > 0.3){
 	if(isLambda) fContPid->Fill(0,fMassV0,fCentrality,xTOfill);
 	else fContPid2->Fill(0,fMassV0,fCentrality,xTOfill2);
+
+
+
+	if(fPIDuserCut){
+         Float_t xUser[] = {KpTrack->Eta(),fPtKp,isTrue,0,deltaphi1,fPsi};
+         
+         if(fPIDuserCut->IsSelected(KpTrack,AliPID::kPion)){ // to be filled
+           xUser[3] = 1;
+         } else if(fPIDuserCut->IsSelected(KpTrack,AliPID::kKaon)){
+           xUser[3] = 2;
+         } else if(fPIDuserCut->IsSelected(KpTrack,AliPID::kProton)){
+           xUser[3] = 3;
+         }
+         
+	 if(isLambda) fContUser->Fill(0,fMassV0,fCentrality,xUser);
+         else fContUser2->Fill(0,fMassV0,fCentrality,xUser);
+	}
       }
 
 
