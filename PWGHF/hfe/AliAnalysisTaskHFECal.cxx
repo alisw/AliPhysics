@@ -433,8 +433,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       mcphoinfo[0] = cent;
       mcphoinfo[1] = pTMC;
       mcphoinfo[2] = iHijing;
-      //if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
-      //if(fPDG==221)HETApTcheck->Fill(pTMC,iHijing);
       if(fPDG==111)Hpi0pTcheck->Fill(mcphoinfo);
       if(fPDG==221)HETApTcheck->Fill(mcphoinfo);
       if(fabs(fPDG)==411 || fabs(fPDG)==413 || fabs(fPDG)==421 || fabs(fPDG)==423 || fabs(fPDG)==431)HDpTcheck->Fill(pTMC,iHijing);
@@ -495,9 +493,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
   
   fCFM->SetRecEventInfo(fESD);
   
-  //Float_t cent = -1.;
-  //AliCentrality *centrality = fESD->GetCentrality(); 
-  //cent = centrality->GetCentralityPercentile("V0M");
   fCent->Fill(cent);
   
   //if(cent>90.) return;
@@ -522,8 +517,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          double calInfo[5];
          calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; calInfo[4] = clust->Chi2(); 
          //fEMCAccE->Fill(calInfo); 
-         //if(clustE>3.0)fEMCAccE->Fill(calInfo); 
-         //if(fqahist==1 && clustE>1.5)fEMCAccE->Fill(calInfo); 
          hEMCAccE->Fill(cent,clustE); 
          if(clustE>maxE)maxE = clustE; 
         }
@@ -722,12 +715,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     //cout << "nSigma correctoon-----" << endl;
     //cout << "org = " << fTPCnSigma << endl; 
+    /*
     if(!fmcData) // nsigma eta correction
        {
         double nSigexpCorr = NsigmaCorrection(eta,cent);
         fTPCnSigma -= nSigexpCorr;
        }
-
+    */
     //cout << "correction = " << fTPCnSigma << endl; 
 
         double ncells = -1.0;
@@ -751,13 +745,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 	        double clustE = clust->E();
                 if(clustE==maxE)MaxEmatch = kTRUE;
                 eop = clustE/fabs(mom);
-                 //cout << "eop org = "<< eop << endl;
-                if(mcLabel>-1.0)
-                  {
-                   double mceopcorr = MCEopMeanCorrection(pt,cent);
-                   eop += mceopcorr;
-                  }
-                //cout << "eop corr = " << eop << endl;
 
                 //double clustT = clust->GetTOF();
                 ncells = clust->GetNCells();
@@ -786,19 +773,25 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		if(fFlagConvinatElec)oppstatus = 2.0;
 		if(fFlagPhotonicElec && fFlagConvinatElec)oppstatus = 3.0;
 
+                //cout << "eop org = "<< eop << endl;
+                if(mcLabel>-1.0)
+                  {
+                   double mceopcorr = MCEopMeanCorrection(pt,cent);
+                   eop += mceopcorr;
+                  }
+                //cout << "eop corr = " << eop << endl;
+
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
-		  //valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nTPCclF; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
-                  //if(fqahist==1)fEleInfo->Fill(valdedx);
-                 
 
       }
     }
 
     //Get Cal info PID response
+    /*
     double eop2;
     double ss[4];
     Double_t nSigmaEop = fPID->GetPIDResponse()->NumberOfSigmasEMCAL(track,AliPID::kElectron,eop2,ss);
@@ -810,7 +803,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        valEop[2] = nSigmaEop;
        fElenSigma->Fill(valEop);
       }
-
+    */
    // ============ PID
 
     if(nITS<2.5)continue;
@@ -883,7 +876,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     
  
     //--------
-     
+    /* 
     double recopT =  SumpT(iTracks,track);
 
     if(m20>0.0 && m20<0.3)
@@ -902,6 +895,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
             }
          }
      }
+    */
 
     // MC
     // check label for electron candidiates
@@ -926,8 +920,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(mcBtoE || mcDtoE) // select B->e & D->e
          {
           fIncpTMChfe->Fill(cent,pt);    
-          //if(m20>0.0 && m20<0.3)fIncpTMCM20hfe->Fill(cent,pt);    
-          //if(m20>0.0 && m20<0.3)fIncpTMCM20hfeCheck->Fill(cent,mcpT);    
           if(m20>0.0 && m20<0.3)
             {
                 //cout << "MC label = " << mcLabel << endl;
@@ -958,18 +950,12 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                   fIncpTMCM20pho_pi0e->Fill(phoval,mcWeight);    
                   if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval,mcWeight);
                   if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
-                  //fIncpTMCM20pho_pi0e->Fill(phoval);   // v5-04-02-AN & v5-04-06-AN 
-                  //if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval);
-                  //if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval);
                  }
                if(mcOrgEta)
                  {
                   fIncpTMCM20pho_eta->Fill(phoval,mcWeight);    
                   if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval,mcWeight);
                   if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval,mcWeight);
-                  //fIncpTMCM20pho_eta->Fill(phoval);    
-                  //if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval);
-                  //if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval);
                  }
                // --- eta
               }
@@ -1449,7 +1435,6 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   fTrackCuts->SetRequireTPCRefit(kTRUE);
   fTrackCuts->SetRequireITSRefit(kTRUE);
   fTrackCuts->SetEtaRange(-0.9,0.9);
-  //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts->SetMinNClustersTPC(90);
   
