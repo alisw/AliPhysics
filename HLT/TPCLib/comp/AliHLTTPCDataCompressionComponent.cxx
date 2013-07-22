@@ -349,8 +349,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   // loop over raw cluster blocks, assign to tracks and write
   // unassigned clusters
   for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkRawClustersDataType);
-       pDesc!=NULL; pDesc=GetNextInputBlock()) {
-    if (pDesc->fSize<=sizeof(AliRawDataHeader)) continue;
+       pDesc!=NULL; pDesc=GetNextInputBlock()) {    
     if (GetBenchmarkInstance()) {
       GetBenchmarkInstance()->Start(1);
       GetBenchmarkInstance()->AddInput(pDesc->fSize);
