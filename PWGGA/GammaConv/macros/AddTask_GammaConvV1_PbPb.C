@@ -3,7 +3,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
                               Bool_t enableQAMesonTask = kFALSE, //enable QA in AliAnalysisTaskGammaConvV1
                               Bool_t enableQAPhotonTask = kFALSE, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Bool_t doWeighting = kFALSE //enable Weighting
+                              Bool_t doWeighting = kFALSE,  //enable Weighting
+                              TString cutnumberAODBranch = "1000000060084000001500000" 
                            ) {
 
    // ================= Load Librariers =================================
@@ -66,6 +67,11 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
             fV0ReaderV1->SetConversionCuts(fCuts);
             fCuts->SetFillCutHistograms("",kTRUE);
          }
+      }
+      
+      if(inputHandler->IsA()==AliAODInputHandler::Class()){
+      // AOD mode
+         fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
       }
       fV0ReaderV1->Init();
 
