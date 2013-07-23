@@ -681,7 +681,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 	    Float_t distIP = fHchannelTOFdistr->GetBinContent(channel);
 	    
 	    // generate random time
-	    Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+00;
+	    Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+01;
 	    Double_t times[10];
 	    KpTrack->GetIntegratedTimes(times);
 	    nSigmaTOF = TMath::Abs(timeRandom - times[3])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[3], AliPID::kKaon);
