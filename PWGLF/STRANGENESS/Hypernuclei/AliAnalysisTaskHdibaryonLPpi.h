@@ -139,7 +139,6 @@ private:
   TH1F        *fHistCentrality; // Centrality histogram
   TH1F        *fHistCentralityAC; // Centrality histogram after selection cuts
   TH1F        *fHistMultiplicity; // Multiplicity histogram
-  THnSparse   *fHistNdim; // THnSparse
  
   TH1F        *fHistHilf1; // Support
   TH1F        *fHistHilf2; // support
@@ -159,6 +158,7 @@ private:
   TH1F        *fHistTriggerStat;                         //! Trigger statistics
   TH1F        *fHistTriggerStatAfterEventSelection;      //! Trigger statistics
   TH3F        *fHistMassHcentMult; // Inv. mass vs. centrality vs. multiplicity
+  THnSparse   *fHistNdim; //THnSparse
 
   enum{
         kHasMC=BIT(18)
