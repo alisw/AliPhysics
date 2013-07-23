@@ -98,10 +98,13 @@ AliAODPidHF::AliAODPidHF():
 //----------------------
 AliAODPidHF::~AliAODPidHF()
 {
-      // destructor
- //   if(fPLimit) delete fPLimit;
- //   if(fnSigma)  delete fnSigma;
- //   if(fPriors)  delete fPriors;
+  // destructor
+  delete [] fPLimit;
+  delete [] fnSigma;
+  delete [] fPriors;
+  delete [] fnSigmaCompat;
+  delete fPidCombined;
+
   delete fTPCResponse;
   for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
     delete fPriorsH[ispecies];
