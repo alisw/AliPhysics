@@ -171,7 +171,7 @@ void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
 
   AliAODRecoDecayHF3Prong *dd = (AliAODRecoDecayHF3Prong*)d;
 
-    Int_t iter=-1;
+  Int_t iter=-1;
   if(fVarsForOpt[0]){
     iter++;
     vars[iter]=dd->InvMassLcpKpi();
@@ -258,14 +258,14 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   //
 
   if(!fCutsRD){
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    AliError("Cut matrice not inizialized. Exit...\n");
     return 0;
   }
   //PrintAll();
   AliAODRecoDecayHF3Prong* d=(AliAODRecoDecayHF3Prong*)obj;
 
   if(!d){
-    cout<<"AliAODRecoDecayHF3Prong null"<<endl;
+    AliError("AliAODRecoDecayHF3Prong null \n");
     return 0;
   }
 
@@ -280,27 +280,39 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
 
   if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
 
+
+  // selection on daughter tracks 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kTracks) {
+    if(!AreDaughtersSelected(d)) return 0;
+  }
+
+
+  // PID selection
   if(selectionLevel==AliRDHFCuts::kAll ||
      selectionLevel==AliRDHFCuts::kCandidate|| 
      selectionLevel==AliRDHFCuts::kPID) {
-     switch (fPIDStrategy) {
-      case kNSigma:
-       returnvaluePID = IsSelectedPID(d);
-    
+    switch (fPIDStrategy) {
+    case kNSigma:
+      returnvaluePID = IsSelectedPID(d);
       break;
-      case kCombined:
-       returnvaluePID = IsSelectedCombinedPID(d);
+    case kCombined:
+      returnvaluePID = IsSelectedCombinedPID(d);
       break;
-      case kCombinedSoft:
-       returnvaluePID = IsSelectedCombinedPIDSoft(d);
+    case kCombinedSoft:
+      returnvaluePID = IsSelectedCombinedPIDSoft(d);
       break;
-      case kNSigmaStrong:
-       returnvaluePID = IsSelectedPIDStrong(d);
-     }
-     fIsSelectedPID=returnvaluePID;
+    case kNSigmaStrong:
+      returnvaluePID = IsSelectedPIDStrong(d);
+      break;
+    }
+    fIsSelectedPID=returnvaluePID;
   }
   //  if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedCombinedPID(d);   // to test!!
   if(returnvaluePID==0) return 0;
+
+
+
 
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -310,7 +322,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     
     Int_t ptbin=PtBin(pt);
     
-    Double_t mLcpKpi,mLcpiKp;
+    Double_t mLcpKpi=0.,mLcpiKp=0.;
     Int_t okLcpKpi=1,okLcpiKp=1;
 
     Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
@@ -390,12 +402,6 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
     if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
    
-  }
-
-  // selection on daughter tracks 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
   }
 
 
@@ -687,6 +693,10 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  delete [] ptbins;
  ptbins=NULL;
 
+ delete pidObjK;
+ pidObjK=NULL;
+ delete pidObjpi;
+ pidObjpi=NULL;
  delete pidObjp;
  pidObjp=NULL;
 
@@ -710,7 +720,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  esdTrackCuts->SetEtaRange(-0.8,0.8);
  esdTrackCuts->SetMaxDCAToVertexXY(1.);
  esdTrackCuts->SetMaxDCAToVertexZ(1.);
- esdTrackCuts->SetPtRange(0.8,1.e10);
+ esdTrackCuts->SetPtRange(0.49,1.e10);
  AddTrackCuts(esdTrackCuts);
 
  const Int_t nptbins=4;
@@ -794,6 +804,10 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  delete [] ptbins;
  ptbins=NULL;
 
+ delete pidObjK;
+ pidObjK=NULL;
+ delete pidObjpi;
+ pidObjpi=NULL;
  delete pidObjp;
  pidObjp=NULL;
 
