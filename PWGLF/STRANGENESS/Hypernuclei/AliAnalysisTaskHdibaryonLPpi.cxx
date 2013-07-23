@@ -134,7 +134,6 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi() : AliAnalysisTaskSE
   fHistCentrality(0),
   fHistCentralityAC(0), 
   fHistMultiplicity(0),
-  fHistNdim(0), 
   fHistHilf1(0),
   fHistHilf2(0), 
   fHistHilf3(0),
@@ -150,7 +149,8 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi() : AliAnalysisTaskSE
   fPIDtpcESD(0),
   fHistTriggerStat(0),
   fHistTriggerStatAfterEventSelection(0), 
-  fHistMassHcentMult(0)
+  fHistMassHcentMult(0),
+  fHistNdim(0)
 {
   // DefaultConstructor
 
@@ -215,7 +215,6 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fHistCentrality(0),
   fHistCentralityAC(0), 
   fHistMultiplicity(0), 
-  fHistNdim(0), 
   fHistHilf1(0),
   fHistHilf2(0), 
   fHistHilf3(0),
@@ -231,7 +230,8 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fPIDtpcESD(0),
   fHistTriggerStat(0),
   fHistTriggerStatAfterEventSelection(0),
-  fHistMassHcentMult(0)
+  fHistMassHcentMult(0),
+  fHistNdim(0)
 
 {
   // Constructor
@@ -703,11 +703,21 @@ void AliAnalysisTaskHdibaryonLPpi::UserCreateOutputObjects()
   fHistList->Add(fHistTriggerStat);
   fHistList->Add(fHistTriggerStatAfterEventSelection);
 
-  fHistMassHcentMult =  new TH3F("fHistMassHcentMult", "Inv. Mass vs. centrality vs. Multiplicity", 100, 2.2, 2.3, 5, 0, 4, 300, 0, 6000);
-  fHistMassHcentMult->GetXaxis()->SetTitle("Invariant mass #Lambdap#pi^{-} (GeV/c^{2})"); //
+  fHistMassHcentMult =  new TH3F("fHistMassHcentMult", "Inv. Mass vs. centrality vs. multiplicity", 100, 2.2, 2.3, 5, 0, 4, 300, 0, 6000);
+  fHistMassHcentMult->GetXaxis()->SetTitle("Invariant mass #Lambdap#pi^{-} (GeV/c^{2})"); // inv. mass
   fHistMassHcentMult->GetYaxis()->SetTitle("Centrality"); // triggertype
   fHistMassHcentMult->GetZaxis()->SetTitle("Multiplicity"); // refTPC
   fHistList->Add(fHistMassHcentMult);
+
+  
+  const Double_t kz = 2*TMath::Pi();
+  Int_t binsD01[16]={  300, 200, 100, 100, 100, 100, 100, 100, 200, 200, 200, 200, 400, 200, 200, 3};
+  Double_t xminD01[16]={2.0, 1.0, 0., -1, 0., 0., 0., 0., 0., 0., 0., 0., -1, 0.,  0., 0};
+  Double_t xmaxD01[16]={2.3, 1.2, kz, 1, 1, 10, 10, 5, 5, 5, 5, 100, 1, 100,  4000, 1};
+  
+
+  fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
+  fHistList->Add(fHistNdim);
 }
 
  //________________________________________________________________________
@@ -773,11 +783,13 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
   if (TMath::Abs(vertex->GetZv()) > 10) return;
   
   Int_t centrality = -5;
-  
+  Double_t centrPerc = -5;
+
   if (fESD->GetEventSpecie() == 4) 
     { // PbPb
       AliCentrality *esdCentrality = fESD->GetCentrality();
       centrality = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+      centrPerc = esdCentrality->GetCentralityPercentile("V0M");
       if (centrality < 0. || centrality > 8.) return; //0 bis 80 %
       //  cout<<"Centrality: "<< centrality << endl;
     }
@@ -1099,6 +1111,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
     TVector3 h;
     TVector3 h1;
 
+    Int_t mcStatus=0;
+
     h.SetXYZ(-dd[0],-dd[1],-dd[2]);
 
     if (onl==1)fHistMassDPi->Fill(lInvMassLambda);
@@ -1284,7 +1298,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    TVector3 vecDist(dd[0]-dd1[0],dd[1]-dd1[1],dd[2]-dd1[2]);
 	    fHistMassLambdaPPi->Fill(hDibaryon.M());
 	    fHistHPointingAngle->Fill(pointingAngleH);
-	    fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
+
+            fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
 
 	    Double_t rapidity = hDibaryon.Rapidity();
 	    if(rapidity > 1.0 || rapidity < -1.0) continue;
@@ -1349,6 +1364,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 		    fHistHilf6->Fill(dca);
 		    fHistPtvsYAso->Fill(hDibaryon.Pt(),hDibaryon.Rapidity());
 		    fHistPtvsEtaAso->Fill(hDibaryon.Pt(),hDibaryon.Eta());
+		    mcStatus=1;
 		  }//end check for third daughter PDG
 		}//end check second daughter PDG
 	      }//end H-Dibaryon
@@ -1356,9 +1372,15 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    
 	    //	    cout<<"Trigger: "<<triggertype<<endl;
 	    fHistMassH->Fill(hDibaryon.M());
-	    //	    fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
+	    fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
 	    ppK=lambdaH+posProt;
 	    fHistMassLambdaP->Fill(ppK.M());
+
+	    //  fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
+
+	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+	    fHistNdim->Fill(vec);
+
 	  }
 	}
       }
