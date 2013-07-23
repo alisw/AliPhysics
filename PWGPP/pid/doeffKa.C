@@ -40,7 +40,7 @@ Float_t fitmin = 0.99;
 Float_t fitmax = 1.045;
 
 Int_t cmin = 1;// min 1
-Int_t cmax = 8;// max 10
+Int_t cmax = 10;// max 10
 
 Float_t weightS = -0.9;
 
@@ -807,7 +807,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
 
 
    if(selectTrue){
-     a[0] = h->GetEntries();
+     a[0] = h->Integral(1,h->GetNbinsX());
      a[1] = TMath::Sqrt(a[0]);
    }
  }
