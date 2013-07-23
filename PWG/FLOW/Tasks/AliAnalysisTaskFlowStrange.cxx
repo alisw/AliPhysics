@@ -1147,7 +1147,7 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
         if(fSpecie>0) {
           mompdg=3122;
           fdwpdg=3312;
-          if(fDecayAlpha) {
+          if(fDecayAlpha>0) {
             pospdg=2212; negpdg=211;
           } else {
             negpdg=2212; pospdg=211;
