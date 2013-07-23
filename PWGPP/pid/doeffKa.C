@@ -42,7 +42,7 @@ Float_t fitmax = 1.045;
 Int_t cmin = 1;// min 1
 Int_t cmax = 8;// max 10
 
-Float_t weightS = -1.;
+Float_t weightS = -0.9;
 
 Int_t rebinsize = 1;
 
@@ -55,6 +55,7 @@ Bool_t keepTrue = kFALSE; // put it to false to fit only background (only for MC
 Bool_t kGoodMatch = kFALSE; // to check good matching
 
 Bool_t kSigma2vs3 = kFALSE; // to check good matching
+Bool_t kSigma2vs3TPC = kFALSE; // to check good matching
 
 Bool_t require5sigma = kFALSE; // don't touch this flag
 
@@ -71,7 +72,7 @@ TH2F *htracked;
 
 Bool_t kLoaded=kFALSE;
 int LoadLib(){
-  weightS = -1.;
+  weightS = -0.9;
 
   require5sigma = kFALSE;
 
@@ -144,10 +145,16 @@ int LoadLib(){
     kOverAll = 0;
   }
 
+  if(kSigma2vs3TPC){
+    kGoodMatch=kFALSE;
+    kOverAll = 0;
+  }
+
   if(bayesVsigma){
     kOverAll = 0;
     kGoodMatch=kFALSE;
     kSigma2vs3=kFALSE;
+    kSigma2vs3TPC=kFALSE;
     kTOFmatch=kTRUE;
     weightS = -0.7;
   }
@@ -379,8 +386,9 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
   if(prob > 0.1999){
     kGoodMatch = kFALSE;
     kSigma2vs3 = kFALSE;
+    kSigma2vs3TPC=kFALSE;
     if(! kOverAll) require5sigma = kTRUE;
-    if(!isMC && !kOverAll) weightS = -0.95;
+    if(!isMC && !kOverAll) weightS = -0.9;
   }
 
   TCanvas *c1 = new TCanvas();
@@ -530,6 +538,9 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
   if(kSigma2vs3)
     sprintf(flag2,"Sigma2vs3");
 
+  if(kSigma2vs3TPC)
+    sprintf(flag2,"Sigma2vs3TPC");
+
   if(kOverAll)
     sprintf(flag2,"OverAll");
   if(kOverAllTOFmatch)
@@ -541,7 +552,7 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     if(prob >=0.2) sprintf(name,"kaonPos%sP%iEff%i_%i%s%s.root",etarange,Int_t(prob*100),(cmin-1)*10,cmax*10,flag,flag2);
     else{
       sprintf(name,"kaonPos%sMatchEff%i_%i%s%s.root",etarange,(cmin-1)*10,cmax*10,flag,flag2);
-      if(!(kOverAll || bayesVsigma || kGoodMatch || kSigma2vs3)) kWriteME = kTRUE;
+      if(!(kOverAll || bayesVsigma || kGoodMatch || kSigma2vs3 || kSigma2vs3TPC)) kWriteME = kTRUE;
     }
   }
   else{
@@ -592,6 +603,14 @@ TH2F *GetHistoKap(Float_t pt,Float_t ptM,Float_t pMinkp,Float_t pMinkn,Float_t e
 
   if(kSigma2vs3){
     x[6] = 1.0001;
+    x2[9] = 3;
+    if(pMinkp > 0)
+      x2[9] = 2;
+  }
+
+  if(kSigma2vs3TPC){
+    x[6] = 0.0001;
+    x2[6] = 0.0002;
     x2[9] = 3;
     if(pMinkp > 0)
       x2[9] = 2;
@@ -655,6 +674,14 @@ TH2F *GetHistoKan(Float_t pt,Float_t ptM,Float_t pMinkn,Float_t pMinkp,Float_t e
 
   if(kSigma2vs3){
     x[7] = 1.0001;
+    x2[10] = 3;
+    if(pMinkn > 0)
+      x2[10] = 2;
+  }
+
+  if(kSigma2vs3TPC){
+    x[7] = 0.0001;
+    x2[7] = 0.0002;
     x2[10] = 3;
     if(pMinkn > 0)
       x2[10] = 2;
