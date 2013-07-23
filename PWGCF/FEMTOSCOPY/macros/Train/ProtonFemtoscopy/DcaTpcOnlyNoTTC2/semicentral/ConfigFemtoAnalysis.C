@@ -69,7 +69,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int runepvzero[4] = {0, 0, 0, 1};
   double epvzerobins[4] = {-psi, -psi+psid, -psi+2*psid, -psi+3*psid};
 
-  int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+  int runmults[10] = {0, 0, 1, 1, 1, 1, 0, 0, 0, 0};
   int multbins[11] = {0.001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
 
   int runch[3] = {1, 1, 1};
@@ -96,7 +96,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   Reader->SetFilterBit(7);
-  Reader->SetCentralityPreSelection(0.001, 310);
+  Reader->SetCentralityPreSelection(0.001, 510);
   Reader->SetEPVZERO(kTRUE);
 
   AliFemtoManager* Manager = new AliFemtoManager();
@@ -268,7 +268,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                 dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
                 dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4); // 2.4 0.1
                 // dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0205, 0.035, -1.1);     //      DCA xy
-                // dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01);     //      DCA xy
+                //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01);     //      DCA xy
                 dtc1etaphitpc[aniter]->SetMaxImpactZ(3.2); // 2.0 0.1
 
                 if (ichg == 2) {
@@ -342,10 +342,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                 // sqpcetaphitpc[aniter]->SetMagneticFieldSign(-1); // field1 -1, field3 +1
                 // sqpcetaphitpc[aniter]->SetMinimumRadius(0.8); // biggest inefficiency for R=1.1 m (checked on small sample)
 
-                sqpcetaphitpc[aniter]->SetMinimumRadius(1.2); //0.8
-                sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
-                sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045); // 0.012 - pions, 0.017 - kaons, 0.018
-                sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.01); // 0.017 - pions, 0.015 - kaons
+                // sqpcetaphitpc[aniter]->SetMinimumRadius(1.2); //0.8
+                // sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
+                // sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045); // 0.012 - pions, 0.017 - kaons, 0.018
+                // sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.01); // 0.017 - pions, 0.015 - kaons
 
               }
 
