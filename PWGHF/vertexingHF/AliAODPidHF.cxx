@@ -99,10 +99,10 @@ AliAODPidHF::AliAODPidHF():
 AliAODPidHF::~AliAODPidHF()
 {
   // destructor
-  delete [] fPLimit;
-  delete [] fnSigma;
-  delete [] fPriors;
-  delete [] fnSigmaCompat;
+  if(fPLimit) delete [] fPLimit;
+  if(fnSigma) delete [] fnSigma;
+  if(fPriors) delete [] fPriors;
+  if(fnSigmaCompat) delete [] fnSigmaCompat;
   delete fPidCombined;
 
   delete fTPCResponse;
