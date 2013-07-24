@@ -39,8 +39,6 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   AliAnalysisTaskSE *ana = 0;
   AliAnalysisDataContainer *coutput1 = 0;
 
-  UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
-
   TString period(perstr);
   period.ToLower();
   if (period == "lhc12a15e")
