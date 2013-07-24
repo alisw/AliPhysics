@@ -114,3 +114,4 @@ eg.	make STEERbase STEERbase-static
 !IMPORTANT! - Make sure your source folder is clean. If you used the old make system to build aliroot run make clean in the source directory before you run cmake
  
 
+#fix for broken revision 63348
