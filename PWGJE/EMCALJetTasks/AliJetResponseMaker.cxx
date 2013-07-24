@@ -48,6 +48,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistoType(0),
   fDeltaPtAxis(0),
   fDeltaEtaDeltaPhiAxis(0),
+  fNEFAxis(0),
+  fZAxis(0),
   fDoJet2Histogram(0),
   fTracks2(0),
   fCaloClusters2(0),
@@ -156,6 +158,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistoType(0),
   fDeltaPtAxis(0),
   fDeltaEtaDeltaPhiAxis(0),
+  fNEFAxis(0),
+  fZAxis(0),
   fDoJet2Histogram(0),
   fTracks2(0),
   fCaloClusters2(0),
@@ -254,7 +258,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets1PhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistJets1PhiEta);
   
-  fHistJets1PtArea = new TH2F("fHistJets1PtArea", "fHistJets1PtArea", fNbins/2, 0, 1, fNbins, fMinBinPt, fMaxBinPt);
+  fHistJets1PtArea = new TH2F("fHistJets1PtArea", "fHistJets1PtArea", fNbins/2, 0, 1.5, fNbins, fMinBinPt, fMaxBinPt);
   fHistJets1PtArea->GetXaxis()->SetTitle("area");
   fHistJets1PtArea->GetYaxis()->SetTitle("p_{T,1} (GeV/c)");
   fHistJets1PtArea->GetZaxis()->SetTitle("counts");
@@ -262,7 +266,7 @@ void AliJetResponseMaker::AllocateTH2()
  
   if (!fRhoName.IsNull()) {
     fHistJets1CorrPtArea = new TH2F("fHistJets1CorrPtArea", "fHistJets1CorrPtArea", 
-				    fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets1CorrPtArea->GetXaxis()->SetTitle("area");
     fHistJets1CorrPtArea->GetYaxis()->SetTitle("p_{T,1}^{corr} (GeV/c)");
     fHistJets1CorrPtArea->GetZaxis()->SetTitle("counts");
@@ -294,7 +298,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets2PhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistJets2PhiEta);
 
-  fHistJets2PtArea = new TH2F("fHistJets2PtArea", "fHistJets2PtArea", fNbins/2, 0, 1, fNbins, fMinBinPt, fMaxBinPt);
+  fHistJets2PtArea = new TH2F("fHistJets2PtArea", "fHistJets2PtArea", fNbins/2, 0, 1.5, fNbins, fMinBinPt, fMaxBinPt);
   fHistJets2PtArea->GetXaxis()->SetTitle("area");
   fHistJets2PtArea->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
   fHistJets2PtArea->GetZaxis()->SetTitle("counts");
@@ -302,7 +306,7 @@ void AliJetResponseMaker::AllocateTH2()
 
   if (!fRho2Name.IsNull()) {
     fHistJets2CorrPtArea = new TH2F("fHistJets2CorrPtArea", "fHistJets2CorrPtArea", 
-				    fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtArea->GetXaxis()->SetTitle("area");
     fHistJets2CorrPtArea->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
     fHistJets2CorrPtArea->GetZaxis()->SetTitle("counts");
@@ -315,7 +319,7 @@ void AliJetResponseMaker::AllocateTH2()
   fOutput->Add(fHistJets2PhiEtaAcceptance);
 
   fHistJets2PtAreaAcceptance = new TH2F("fHistJets2PtAreaAcceptance", "fHistJets2PtAreaAcceptance", 
-					fNbins/2, 0, 1, fNbins, fMinBinPt, fMaxBinPt);
+					fNbins/2, 0, 1.5, fNbins, fMinBinPt, fMaxBinPt);
   fHistJets2PtAreaAcceptance->GetXaxis()->SetTitle("area");
   fHistJets2PtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
   fHistJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
@@ -323,7 +327,7 @@ void AliJetResponseMaker::AllocateTH2()
 
   if (!fRho2Name.IsNull()) {
     fHistJets2CorrPtAreaAcceptance = new TH2F("fHistJets2CorrPtAreaAcceptance", "fHistJets2CorrPtAreaAcceptance", 
-					      fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+					      fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
     fHistJets2CorrPtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
     fHistJets2CorrPtAreaAcceptance->GetZaxis()->SetTitle("counts");
@@ -460,14 +464,14 @@ void AliJetResponseMaker::AllocateTH2()
   fOutput->Add(fHistDeltaPtvsCommonEnergy2);
 
   fHistDeltaPtvsArea1 = new TH2F("fHistDeltaPtvsArea1", "fHistDeltaPtvsArea1", 
-				 fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				 fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
   fHistDeltaPtvsArea1->GetXaxis()->SetTitle("A_{jet,1}");
   fHistDeltaPtvsArea1->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
   fHistDeltaPtvsArea1->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistDeltaPtvsArea1);
 
   fHistDeltaPtvsArea2 = new TH2F("fHistDeltaPtvsArea2", "fHistDeltaPtvsArea2", 
-				 fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				 fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
   fHistDeltaPtvsArea2->GetXaxis()->SetTitle("A_{jet,2}");
   fHistDeltaPtvsArea2->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
   fHistDeltaPtvsArea2->GetZaxis()->SetTitle("counts");
@@ -547,14 +551,14 @@ void AliJetResponseMaker::AllocateTH2()
     fOutput->Add(fHistDeltaCorrPtvsCommonEnergy2);
 
     fHistDeltaCorrPtvsArea1 = new TH2F("fHistDeltaCorrPtvsArea1", "fHistDeltaCorrPtvsArea1", 
-				       fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				       fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistDeltaCorrPtvsArea1->GetXaxis()->SetTitle("A_{jet,1}");
     fHistDeltaCorrPtvsArea1->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
     fHistDeltaCorrPtvsArea1->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaCorrPtvsArea1);
     
     fHistDeltaCorrPtvsArea2 = new TH2F("fHistDeltaCorrPtvsArea2", "fHistDeltaCorrPtvsArea2", 
-				       fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				       fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistDeltaCorrPtvsArea2->GetXaxis()->SetTitle("A_{jet,2}");
     fHistDeltaCorrPtvsArea2->GetYaxis()->SetTitle("#deltap_{T}^{corr} (GeV/c)");
     fHistDeltaCorrPtvsArea2->GetZaxis()->SetTitle("counts");
@@ -634,14 +638,14 @@ void AliJetResponseMaker::AllocateTH2()
     fOutput->Add(fHistDeltaMCPtvsCommonEnergy2);
 
     fHistDeltaMCPtvsArea1 = new TH2F("fHistDeltaMCPtvsArea1", "fHistDeltaMCPtvsArea1", 
-				     fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				     fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistDeltaMCPtvsArea1->GetXaxis()->SetTitle("A_{jet,1}");
     fHistDeltaMCPtvsArea1->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fHistDeltaMCPtvsArea1->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaMCPtvsArea1);
 
     fHistDeltaMCPtvsArea2 = new TH2F("fHistDeltaMCPtvsArea2", "fHistDeltaMCPtvsArea2", 
-				     fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
+				     fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistDeltaMCPtvsArea2->GetXaxis()->SetTitle("A_{jet,2}");
     fHistDeltaMCPtvsArea2->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fHistDeltaMCPtvsArea2->GetZaxis()->SetTitle("counts");
@@ -695,7 +699,7 @@ void AliJetResponseMaker::AllocateTHnSparse()
   title[dim] = "A_{jet}";
   nbins[dim] = fNbins/4;
   min[dim] = 0;
-  max[dim] = 1;
+  max[dim] = 1.5;
   dim++;
 
   title[dim] = "NEF";
@@ -772,13 +776,13 @@ void AliJetResponseMaker::AllocateTHnSparse()
   title[dim] = "A_{jet,1}";
   nbins[dim] = fNbins/4;
   min[dim] = 0;
-  max[dim] = 1;
+  max[dim] = 1.5;
   dim++;
 
   title[dim] = "A_{jet,2}";
   nbins[dim] = fNbins/4;
   min[dim] = 0;
-  max[dim] = 1;
+  max[dim] = 1.5;
   dim++;
 
   title[dim] = "distance";
@@ -860,6 +864,34 @@ void AliJetResponseMaker::AllocateTHnSparse()
       max[dim] = 250;
       dim++;
     }
+  }
+
+  if (fNEFAxis) {
+    title[dim] = "NEF_{1}";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+
+    title[dim] = "NEF_{2}";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+  }
+
+  if (fZAxis) {
+    title[dim] = "Z_{1}";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+
+    title[dim] = "Z_{2}";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
   }
       
   fHistMatching = new THnSparseD("fHistMatching","fHistMatching",dim,nbins,min,max);
@@ -1002,7 +1034,9 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, Double_t MCPt1)
+void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, 
+					     Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
+					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t Z1, Double_t Z2)
 {
   if (fHistoType==1) {
     Double_t contents[20]={0};
@@ -1041,6 +1075,14 @@ void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_
 	contents[i] = MCPt1;
       else if (title=="#deltap_{T}^{MC}")
 	contents[i] = MCPt1-Pt2;
+      else if (title=="NEF_{1}")
+	contents[i] = NEF1;
+      else if (title=="NEF_{2}")
+	contents[i] = NEF2;
+      else if (title=="Z_{1}")
+	contents[i] = Z1;
+      else if (title=="Z_{2}")
+	contents[i] = Z2;
       else 
 	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1848,7 +1890,9 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	Double_t corrpt1 = jet2->MatchedJet()->Pt() - fRhoVal * jet2->MatchedJet()->Area();
 	Double_t corrpt2 = jet2->Pt() - fRho2Val * jet2->Area();
 
-	FillMatchingHistos(jet2->MatchedJet()->Pt(), jet2->Pt(), jet2->MatchedJet()->Eta(), jet2->Eta(), jet2->MatchedJet()->Phi(), jet2->Phi(), jet2->MatchedJet()->Area(), jet2->Area(), d, ce1, ce2, corrpt1, corrpt2, jet2->MatchedJet()->MCPt());
+	FillMatchingHistos(jet2->MatchedJet()->Pt(), jet2->Pt(), jet2->MatchedJet()->Eta(), jet2->Eta(), jet2->MatchedJet()->Phi(), jet2->Phi(), 
+			   jet2->MatchedJet()->Area(), jet2->Area(), d, ce1, ce2, corrpt1, corrpt2, jet2->MatchedJet()->MCPt(), 
+			   jet2->MatchedJet()->NEF(), jet2->NEF(), jet2->MatchedJet()->MaxPartPt()/jet2->MatchedJet()->Pt(), jet2->MaxPartPt()/jet2->Pt());
       }
     }
   }
