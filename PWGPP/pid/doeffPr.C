@@ -571,8 +571,8 @@ TH2F *GetHistoPrp(Float_t pt,Float_t ptM,Float_t pMinkp,Float_t pMinkn,Float_t e
 
   if(kOverAllTOFmatch && pMinkp > 0.19){
     x[6] = 1.0001;
-    x2[9] = 4.9;
-  }
+    x2[9] = 5.9;
+    if(pMinkp > 0.19) x2[9] = 4.9;
 
   if(kOverAll2Sigma && pMinkp > 0.09){
     x2[9] = 2;
@@ -642,7 +642,8 @@ TH2F *GetHistoPrn(Float_t pt,Float_t ptM,Float_t pMinkn,Float_t pMinkp,Float_t e
 
   if(kOverAllTOFmatch && pMinkn > 0.19){
     x[7] = 1.0001;
-    x2[10] = 4.9;
+    x2[10] = 5.9;
+    if(pMinkn > 0.19) x2[10] = 4.9;
   }
 
   if(kOverAll2Sigma && pMinkn > 0.09){
