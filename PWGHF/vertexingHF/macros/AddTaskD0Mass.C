@@ -5,7 +5,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 				       TString finDirname="Loose",
 				       TString finname="",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
 				       Bool_t FillMassPt=false, Bool_t FillImpPar=false,
-					   Bool_t DrawDetSignal=false, Bool_t PIDCheck=false)
+				       Bool_t DrawDetSignal=false, Bool_t PIDCheck=false, Bool_t FillMassY=false)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -23,7 +23,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     return NULL;
   }   
 
-  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="", inname="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="",out9name="", inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
   if(flag==0){
@@ -71,6 +71,12 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(cutOnDistr) out8name+="C"; 
     if(flagD0D0bar==1)out8name+="D0";
     if(flagD0D0bar==2)out8name+="D0bar";
+
+    // mass, y distr
+    out9name="coutputmassD0MassY";
+    if(cutOnDistr) out9name+="C"; 
+    if(flagD0D0bar==1)out9name+="D0";
+    if(flagD0D0bar==2)out9name+="D0bar";
 
 
     inname="cinputmassD0_0";
@@ -124,6 +130,12 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(flagD0D0bar==1)out8name+="D0";
     if(flagD0D0bar==2)out8name+="D0bar";
 
+    // mass, y distr
+    out9name="coutputmassD0MassYLS";
+    if(cutOnDistr) out9name+="C"; 
+    if(flagD0D0bar==1)out9name+="D0";
+    if(flagD0D0bar==2)out9name+="D0bar";
+
     
     inname="cinputmassD0_1";
     if(cutOnDistr) inname+="C"; 
@@ -139,6 +151,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   out6name += finDirname.Data();
   out7name += finDirname.Data();
   out8name += finDirname.Data();
+  out9name += finDirname.Data();
   inname += finDirname.Data();
 
    //setting my cut values
@@ -203,6 +216,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   out6name+=centr;
   out7name+=centr;
   out8name+=centr;
+  out9name+=centr;
   inname+=centr;
 
   // Aanalysis task    
@@ -221,6 +235,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 
   massD0Task->SetFillPtHistos(FillMassPt);
   massD0Task->SetFillImpactParameterHistos(FillImpPar);
+  massD0Task->SetFillYHistos(FillMassY);
   massD0Task->SetDrawDetSignal(DrawDetSignal);
   massD0Task->SetPIDCheck(PIDCheck);
   //  massD0Task->SetRejectSDDClusters(kTRUE);
@@ -242,6 +257,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   AliAnalysisDataContainer *coutputmassD06 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs pt vs impt par
   AliAnalysisDataContainer *coutputmassD07 = mgr->CreateContainer(out7name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs pt vs impt par
   AliAnalysisDataContainer *coutputmassD08 = mgr->CreateContainer(out8name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //dedx
+  AliAnalysisDataContainer *coutputmassD09 = mgr->CreateContainer(out9name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs y
   
 
   
@@ -255,6 +271,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   mgr->ConnectOutput(massD0Task,6,coutputmassD06);
   mgr->ConnectOutput(massD0Task,7,coutputmassD07);
   mgr->ConnectOutput(massD0Task,8,coutputmassD08);
+  mgr->ConnectOutput(massD0Task,9,coutputmassD09);
 
 
   return massD0Task;
