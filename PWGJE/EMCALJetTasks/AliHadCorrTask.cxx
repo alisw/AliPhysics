@@ -423,8 +423,8 @@ void AliHadCorrTask::UserCreateOutputObjects()
 
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
   fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
-  fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          fNbins, fMinBinPt, fMaxBinPt);
-  fHistEafter           = new TH1F("Eafter",           "Eafter",           fNbins, fMinBinPt, fMaxBinPt);
+  fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
+  fHistEafter           = new TH1F("Eafter",           "Eafter",           100, 0, 100);
   fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, fNbins*2, 0, 10);
   fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5,  10.5);
   fHistNClusMatchCent   = new TH2F("NClusMatchesCent", "NClusMatchesCent", 100, 0, 100, 11, -0.5,  10.5);

@@ -68,7 +68,7 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   TH1                       **fHistRCPtExPartialLJ;        //!Random cone pt, imposing min distance from leading jet with 1/ncoll probability
   TH1                       **fHistRCPtRand;               //!Random cone pt, randomized particles
   TH2                       **fHistRhoVSRCPt;              //!Area(RC) * rho vs. Pt(RC)
-  TH1                       **fHistDeltaPtRC;              //!deltaPt = Pt(RC) - A * rho
+  TH2                       **fHistDeltaPtRCvsEP;          //!deltaPt = Pt(RC) - A * rho vs. event plane
   TH1                       **fHistDeltaPtRCExLJ;          //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet
   TH1                       **fHistDeltaPtRCExPartialLJ;   //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet with 1/ncoll probability
   TH1                       **fHistDeltaPtRCRand;          //!deltaPt = Pt(RC) - A * rho, randomzied particles
@@ -86,7 +86,8 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   TH1                       **fHistDistLeadPart2JetAxis;   //!Distance between leading particle and jet axis
   TH2                       **fHistEmbBkgArea;             //!Pt(embjet) - Pt(embtrack) vs. area of embedded jets
   TH2                       **fHistRhoVSEmbBkg;            //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
-  TH2                       **fHistDeltaPtEmbArea;         //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack)
+  TH2                       **fHistDeltaPtEmbArea;         //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack) vs. Area(embjet)
+  TH2                       **fHistDeltaPtEmbvsEP;         //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack) vs. event plane
   TH2                        *fHistRCPtExLJVSDPhiLJ;       //!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet
   TH2                        *fHistRCPtExPartialLJVSDPhiLJ;//!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet with 1/ncoll probability
   TH2                        *fHistEmbJetsPhiEta;          //!Phi-Eta distribution of embedded jets<

@@ -47,7 +47,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fHistRCPtExPartialLJ(0), 
   fHistRCPtRand(0),
   fHistRhoVSRCPt(0),
-  fHistDeltaPtRC(0),
+  fHistDeltaPtRCvsEP(0),
   fHistDeltaPtRCExLJ(0),
   fHistDeltaPtRCExPartialLJ(0),
   fHistDeltaPtRCRand(0),
@@ -64,6 +64,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fHistEmbBkgArea(0),
   fHistRhoVSEmbBkg(0),
   fHistDeltaPtEmbArea(0),
+  fHistDeltaPtEmbvsEP(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistRCPtExPartialLJVSDPhiLJ(0),
   fHistEmbJetsPhiEta(0),
@@ -76,7 +77,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fHistRCPtExPartialLJ = new TH1*[fNcentBins];
   fHistRCPtRand = new TH1*[fNcentBins];
   fHistRhoVSRCPt = new TH2*[fNcentBins];
-  fHistDeltaPtRC = new TH1*[fNcentBins];
+  fHistDeltaPtRCvsEP = new TH2*[fNcentBins];
   fHistDeltaPtRCExLJ = new TH1*[fNcentBins];
   fHistDeltaPtRCExPartialLJ = new TH1*[fNcentBins];
   fHistDeltaPtRCRand = new TH1*[fNcentBins];
@@ -93,6 +94,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fHistEmbBkgArea = new TH2*[fNcentBins];
   fHistRhoVSEmbBkg = new TH2*[fNcentBins];
   fHistDeltaPtEmbArea = new TH2*[fNcentBins];
+  fHistDeltaPtEmbvsEP = new TH2*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fHistRCPt[i] = 0;
@@ -100,7 +102,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistRCPtExPartialLJ[i] = 0;
     fHistRCPtRand[i] = 0;
     fHistRhoVSRCPt[i] = 0;
-    fHistDeltaPtRC[i] = 0;
+    fHistDeltaPtRCvsEP[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCExPartialLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
@@ -117,6 +119,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
     fHistDeltaPtEmbArea[i] = 0;
+    fHistDeltaPtEmbvsEP[i] = 0;
   }
 
   memset(fEmbeddedClusterIds, -1, 999*sizeof(Int_t));
@@ -149,7 +152,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fHistRCPtExPartialLJ(0), 
   fHistRCPtRand(0),
   fHistRhoVSRCPt(0),
-  fHistDeltaPtRC(0),
+  fHistDeltaPtRCvsEP(0),
   fHistDeltaPtRCExLJ(0),
   fHistDeltaPtRCExPartialLJ(0),
   fHistDeltaPtRCRand(0),
@@ -166,6 +169,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fHistEmbBkgArea(0),
   fHistRhoVSEmbBkg(0),
   fHistDeltaPtEmbArea(0),
+  fHistDeltaPtEmbvsEP(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistRCPtExPartialLJVSDPhiLJ(0),
   fHistEmbJetsPhiEta(0),
@@ -178,7 +182,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fHistRCPtExPartialLJ = new TH1*[fNcentBins];
   fHistRCPtRand = new TH1*[fNcentBins];
   fHistRhoVSRCPt = new TH2*[fNcentBins];
-  fHistDeltaPtRC = new TH1*[fNcentBins];
+  fHistDeltaPtRCvsEP = new TH2*[fNcentBins];
   fHistDeltaPtRCExLJ = new TH1*[fNcentBins];
   fHistDeltaPtRCExPartialLJ = new TH1*[fNcentBins];
   fHistDeltaPtRCRand = new TH1*[fNcentBins];
@@ -195,6 +199,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fHistEmbBkgArea = new TH2*[fNcentBins];
   fHistRhoVSEmbBkg = new TH2*[fNcentBins];
   fHistDeltaPtEmbArea = new TH2*[fNcentBins];
+  fHistDeltaPtEmbvsEP = new TH2*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fHistRCPt[i] = 0;
@@ -202,7 +207,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistRCPtExPartialLJ[i] = 0;
     fHistRCPtRand[i] = 0;
     fHistRhoVSRCPt[i] = 0;
-    fHistDeltaPtRC[i] = 0;
+    fHistDeltaPtRCvsEP[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCExPartialLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
@@ -219,6 +224,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistEmbBkgArea[i] = 0;
     fHistRhoVSEmbBkg[i] = 0;
     fHistDeltaPtEmbArea[i] = 0;
+    fHistDeltaPtEmbvsEP[i] = 0;
   }
 
   memset(fEmbeddedClusterIds, -1, 999*sizeof(Int_t));
@@ -296,12 +302,13 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistRhoVSRCPt[i]->GetYaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
       fOutput->Add(fHistRhoVSRCPt[i]);
 
-      histname = "fHistDeltaPtRC_";
+      histname = "fHistDeltaPtRCvsEP_";
       histname += i;
-      fHistDeltaPtRC[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-      fHistDeltaPtRC[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
-      fHistDeltaPtRC[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistDeltaPtRC[i]);
+      fHistDeltaPtRCvsEP[i] = new TH2F(histname.Data(), histname.Data(), 402, -TMath::Pi()*1.01, TMath::Pi()*3.01, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtRCvsEP[i]->GetXaxis()->SetTitle("#phi_{RC} - #Psi_{EP}");
+      fHistDeltaPtRCvsEP[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
+      fHistDeltaPtRCvsEP[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistDeltaPtRCvsEP[i]);
       
       if (!fJetsName.IsNull()) {
 	histname = "fHistRCPtExLJ_";
@@ -443,10 +450,20 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       histname = "fHistDeltaPtEmbArea_";
       histname += i;
       fHistDeltaPtEmbArea[i] = new TH2F(histname.Data(), histname.Data(), 
-					50, 0, 2, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+					    50, 0, 2, fNbins * 2, -fMaxBinPt, fMaxBinPt);
       fHistDeltaPtEmbArea[i]->GetXaxis()->SetTitle("area");
       fHistDeltaPtEmbArea[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{emb} (GeV/#it{c})");
+      fHistDeltaPtEmbArea[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistDeltaPtEmbArea[i]);
+
+      histname = "fHistDeltaPtEmbvsEP_";
+      histname += i;
+      fHistDeltaPtEmbvsEP[i] = new TH2F(histname.Data(), histname.Data(), 
+					402, -TMath::Pi()*1.01, TMath::Pi()*3.01, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtEmbvsEP[i]->GetXaxis()->SetTitle("#phi_{jet} - #Psi_{EP}");
+      fHistDeltaPtEmbvsEP[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{emb} (GeV/#it{c})");
+      fHistDeltaPtEmbvsEP[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistDeltaPtEmbvsEP[i]);
     }
   }
 
@@ -484,7 +501,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
 	fHistRhoVSRCPt[fCentBin]->Fill(fRhoVal * rcArea, RCpt);
 	
 	fHistRCPt[fCentBin]->Fill(RCpt);
-	fHistDeltaPtRC[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+	fHistDeltaPtRCvsEP[fCentBin]->Fill(RCphi - fEPV0, RCpt - rcArea * fRhoVal);
       }
       
       if (fJets) {
@@ -631,6 +648,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
       fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - embJet->MCPt());
       fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
+      fHistDeltaPtEmbvsEP[fCentBin]->Fill(embJet->Phi() - fEPV0, embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
 
       embJet = NextEmbeddedJet();
     }
