@@ -3106,13 +3106,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhMCDeltaE[i]  = new TH2F (Form("hDeltaE_MC%s",pname[i].Data()),
                                  Form("MC - Reco E from %s",pname[i].Data()),
                                  nptbins,ptmin,ptmax, 200,-50,50);
-      fhMCDeltaE[i]->SetXTitle("#Delta E (GeV)");
+      fhMCDeltaE[i]->SetYTitle("#Delta E (GeV)");
+      fhMCDeltaE[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhMCDeltaE[i]);
       
       fhMCDeltaPt[i]  = new TH2F (Form("hDeltaPt_MC%s",pname[i].Data()),
                                   Form("MC - Reco p_{T} from %s",pname[i].Data()),
                                   nptbins,ptmin,ptmax, 200,-50,50);
-      fhMCDeltaPt[i]->SetXTitle("#Delta p_{T} (GeV/c)");
+      fhMCDeltaPt[i]->SetXTitle("p_{T,rec} (GeV/c)");
+      fhMCDeltaPt[i]->SetYTitle("#Delta p_{T} (GeV/c)");
       outputContainer->Add(fhMCDeltaPt[i]);
       
       fhMC2E[i]  = new TH2F (Form("h2E_MC%s",pname[i].Data()),
