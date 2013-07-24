@@ -156,10 +156,10 @@ int LoadLib(){
     kSigma2vs3=kFALSE;
     kSigma2vs3TPC=kFALSE;
     kTOFmatch=kTRUE;
-    weightS = -0.7;
+    weightS = -0.5;
   }
   if(kOverAll){
-    weightS = -0.7;
+    weightS = -0.5;
   }
 
   return 1;
@@ -576,13 +576,11 @@ TH2F *GetHistoKap(Float_t pt,Float_t ptM,Float_t pMinkp,Float_t pMinkn,Float_t e
 
   if(kOverAll){
     x[6] = 0.0001;
-    x2[9] = 5.9;
-    if(pMinkp > 0.19) x2[9] = 4.9;
+    x2[9] = 4.9;
   }
 
   if(kOverAllTOFmatch && pMinkp > 0.19){
     x[6] = 1.0001;
-    x2[9] = 4.9;
   }
 
   if(kOverAll2Sigma && pMinkp > 0.09){
@@ -647,13 +645,11 @@ TH2F *GetHistoKan(Float_t pt,Float_t ptM,Float_t pMinkn,Float_t pMinkp,Float_t e
 
  if(kOverAll){
     x[7] = 0.0001;
-    x2[10] = 5.9;
-    if(pMinkn > 0.19) x2[10] = 4.9;
+    x2[10] = 4.9;
   }
 
   if(kOverAllTOFmatch && pMinkn > 0.19){
     x[7] = 1.0001;
-    x2[10] = 4.9;
   }
 
   if(kOverAll2Sigma && pMinkn > 0.09){
