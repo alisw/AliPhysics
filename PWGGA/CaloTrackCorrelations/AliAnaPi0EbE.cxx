@@ -1946,7 +1946,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       
       fhPtTimeDiffPileUp[i]  = new TH2F(Form("hPtTimeDiffPileUp%s",pileUpName[i].Data()),
                                              Form("Pt vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
-                                             nptbins,ptmin,ptmax,200,-100,100);
+                                             nptbins,ptmin,ptmax,400,-200,200);
       fhPtTimeDiffPileUp[i]->SetXTitle("p_{T} (GeV/c");
       fhPtTimeDiffPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
       outputContainer->Add(fhPtTimeDiffPileUp[i]);
