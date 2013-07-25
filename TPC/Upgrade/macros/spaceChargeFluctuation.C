@@ -48,7 +48,11 @@
 #include "AliDCSSensorArray.h"
 #include "TStyle.h"
 #include "AliTPCSpaceCharge3D.h"
-
+#include "AliExternalTrackParam.h"
+//
+// constants
+//
+Double_t omegaTau=0.325;
 //
 // Function declaration
 //
@@ -65,14 +69,15 @@ void DoMerge();
 void AnalyzeMaps1D();  // make nice plots
 void MakeFluctuationStudy3D(Int_t nhistos, Int_t nevents, Int_t niter);
 TH3D *  NormalizeHistoQ(TH3D * hisInput, Bool_t normEpsilon);
+//
 TH3D *  PermutationHistoZ(TH3D * hisInput, Double_t deltaZ);
 TH3D *  PermutationHistoPhi(TH3D * hisInput, Double_t deltaPhi);
-TH3D *  PermutationHistoLocalPhi(TH3D * hisInput, Double_t deltaPhi);
-void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfiles);
+TH3D *  PermutationHistoLocalPhi(TH3D * hisInput, Int_t deltaPhi);
+void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfiles, Int_t sign);
 void DrawFluctuationdeltaZ(Int_t stat=0, Double_t norm=10000);
 void DrawFluctuationSector(Int_t stat=0, Double_t norm=10000);
 
-void spaceChargeFluctuation(Int_t mode=0, Float_t arg0=0, Float_t arg1=0){
+void spaceChargeFluctuation(Int_t mode=0, Float_t arg0=0, Float_t arg1=0, Float_t arg2=0){
   //
   // function called from the shell script
   //
@@ -81,11 +86,137 @@ void spaceChargeFluctuation(Int_t mode=0, Float_t arg0=0, Float_t arg1=0){
   if (mode==1) DoMerge();  
   if (mode==2) spaceChargeFluctuationToyMC(arg0,arg1);
   if (mode==3) MakeFluctuationStudy3D(10000, arg0, arg1);  
-  if (mode==4) MakeSpaceChargeFluctuationScan(arg0,arg1);
+  if (mode==4) MakeSpaceChargeFluctuationScan(arg0,arg1,arg2); // param: scale, nfiles, sign Bz
   if (mode==5) {
     DrawFluctuationdeltaZ(arg0,arg1);
     DrawFluctuationSector(arg0,arg1);
   }
+}
+void pileUpToyMC(Int_t nframes){
+  //
+  //
+  //
+  /*
+    Int)t nframes=1000;
+   */
+  TTreeSRedirector *pcstream = new TTreeSRedirector("pileup.root","recreate");
+  Double_t FPOT=1.0, EEND=3000;
+  Double_t  EEXPO=0.8567;
+  const Double_t XEXPO=-EEXPO+1, YEXPO=1/XEXPO;
+  Double_t central = 2350;
+  Double_t pmean=5;
+  TVectorD vectorT(nframes);
+  //
+  for (Int_t irate=1; irate<10; irate++){
+    printf("rate\t%d\n",irate);
+    for (Int_t iframe=0; iframe<nframes; iframe++){
+      if (iframe%100000==0)printf("iframe=%d\n",iframe);
+      Int_t ntracksAll=0;
+      Int_t nevents=gRandom->Poisson(irate);
+      Int_t ntracks=0; // to be taken from the MB primary distribution    
+      Bool_t hasCentral=0;
+      for (Int_t ievent=0; ievent<nevents; ievent++){
+	Float_t RAN = gRandom->Rndm();
+	ntracks=2*TMath::Power((TMath::Power(FPOT,XEXPO)*(1-RAN)+TMath::Power(EEND,XEXPO)*RAN),YEXPO)/2.;
+	ntracksAll+=ntracks; 
+	if (ntracks>central) hasCentral = kTRUE;
+      }    
+      (*pcstream)<<"pileupFrame"<<
+	"rate="<<irate<<
+	"nevents="<<nevents<<
+	"ntracks="<<ntracks<<
+	"ntracksAll="<<ntracksAll<<
+	"hasCentral"<<hasCentral<<
+	"\n";
+      vectorT[iframe]=ntracksAll;
+    }
+    Double_t mean   = TMath::Mean(nframes, vectorT.GetMatrixArray());
+    Double_t rms    = TMath::RMS(nframes, vectorT.GetMatrixArray());
+    Double_t median = TMath::Median(nframes, vectorT.GetMatrixArray());
+    Double_t ord90  = TMath::KOrdStat(nframes,vectorT.GetMatrixArray() , Int_t(nframes*0.90));
+    Double_t ord95  = TMath::KOrdStat(nframes,vectorT.GetMatrixArray() , Int_t(nframes*0.95));
+    Double_t ord99  = TMath::KOrdStat(nframes,vectorT.GetMatrixArray() , Int_t(nframes*0.99));
+    Double_t ord999  = TMath::KOrdStat(nframes,vectorT.GetMatrixArray() , Int_t(nframes*0.999));
+    Double_t ord9999  = TMath::KOrdStat(nframes,vectorT.GetMatrixArray() , Int_t(nframes*0.9999));
+    (*pcstream)<<"pileup"<<
+      "rate="<<irate<<
+      "mean="<<mean<<
+      "rms="<<rms<<
+      "median="<<median<<
+      "ord90="<<ord90<<
+      "ord95="<<ord95<<
+      "ord99="<<ord99<<
+      "ord999="<<ord999<<
+      "ord9999="<<ord9999<<
+      "\n";
+  }
+  delete pcstream;  
+  // Draw
+  pcstream = new TTreeSRedirector("pileup.root","update");
+  TTree * treeStat = (TTree*)(pcstream->GetFile()->Get("pileup"));
+  TTree * treeFrame = (TTree*)(pcstream->GetFile()->Get("pileupFrame"));
+  Int_t  mentries =  treeStat->Draw("ord999","1","goff");
+  Double_t maximum = TMath::MaxElement(mentries, treeStat->GetV1());
+  const char * names[6]={"mean","median","ord90","ord95","ord99","ord999"};  
+  const char * titles[6]={"Mean","Median","90 %","95 %","99 %","99.9 %"};  
+  const Int_t mcolors[6]={1,2,3,4,6,7};  
+  //
+  //
+  TF1 * f1 = new TF1("f1","[0]*x+[1]*sqrt(x)");
+  Double_t par0=0;
+  //
+  TCanvas * canvasMult = new TCanvas("canvasCumul","canvasCumul");
+  canvasMult->SetLeftMargin(0.13);
+  TLegend * legend= new TLegend(0.14,0.6,0.45,0.89, "Effective dN_{ch}/d#eta");
+  TGraphErrors *graphs[6]={0};  
+  for (Int_t igr=0; igr<6; igr++){
+    graphs[igr] = TStatToolkit::MakeGraphErrors(treeStat,Form("%s:rate",names[igr]),"1",21+(igr%5),mcolors[igr],0);
+    graphs[igr]->SetMinimum(0);
+    graphs[igr]->GetYaxis()->SetTitleOffset(1.3);
+    graphs[igr]->SetMaximum(maximum*1.1);
+    graphs[igr]->GetXaxis()->SetTitle("<N_{ev}>");
+    graphs[igr]->GetYaxis()->SetTitle("dN_{ch}/d#eta");
+    TF1 * f2 = new TF1("f2","[0]*x+[1]*sqrt(x)");
+    f2->SetLineColor(mcolors[igr]);
+    f2->SetLineWidth(0.5);
+    if (igr>0) f2->FixParameter(0,par0);
+    graphs[igr]->Fit(f2,"","");
+    if (igr==0) par0=f2->GetParameter(0);
+    if (igr==0) graphs[igr]->Draw("ap");
+    graphs[igr]->Draw("p");
+    legend->AddEntry(graphs[igr], titles[igr],"p");
+  }
+  legend->SetBorderSize(0);
+  legend->Draw();
+
+  canvasMult->SaveAs("effectiveMult.pdf");
+  canvasMult->SaveAs("effectiveMult.png");
+  gStyle->SetOptStat(0);
+  TH2F * hisMult = new TH2F("ntracksNevent","ntracksnevents",9,1,10,100,0,2*maximum);
+  {
+    treeFrame->Draw("ntracksAll:rate>>ntracksNevent","","colz");
+    hisMult->GetXaxis()->SetTitle("<N_{ev}>");
+    hisMult->GetYaxis()->SetTitle("dN_{ch}/d#eta");
+    hisMult->GetYaxis()->SetTitleOffset(1.3);
+    hisMult->Draw("colz");
+  }
+  canvasMult->SaveAs("effectiveMultColz.pdf");
+  canvasMult->SaveAs("effectiveMultColz.png");
+  //
+  //
+  //
+  TH2F * hisMult5 = new TH2F("ntracksNevent5","ntracksnEvents5",9,1,10,100,0,maximum);
+  {
+    treeFrame->Draw("ntracksAll:nevents>>ntracksNevent5","abs(rate-5)<0.5","colz");
+    hisMult5->GetXaxis()->SetTitle("N_{ev}");
+    hisMult5->GetYaxis()->SetTitle("dN_{ch}/d#eta");
+    hisMult5->GetYaxis()->SetTitleOffset(1.3);
+    hisMult5->Draw("colz");
+  }
+  canvasMult->SaveAs("effectiveMultF5.pdf");
+  canvasMult->SaveAs("effectiveMultF5.png");
+
+  delete pcstream;
 }
 
 void spaceChargeFluctuationToyMC(Int_t nframes, Double_t interactionRate){
@@ -99,7 +230,6 @@ void spaceChargeFluctuationToyMC(Int_t nframes, Double_t interactionRate){
   //
   TTreeSRedirector *pcstream = new TTreeSRedirector("spaceChargeFluctuation.root","recreate");
   Double_t driftTime=0.1;              
-  const Double_t kB2C=-0.299792458e-3;
   Double_t eventMean=interactionRate*driftTime;
   Double_t trackMean=500;
   Double_t FPOT=1.0, EEND=3000;
@@ -971,11 +1101,8 @@ void DrawCurrent(const char * ocdb="/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC
 }
 
 
-void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
+void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sign){
   //
-  // Make fluctuation scan:
-  //   Shift of z disk
-  //   Shift permuation of phi
   //
   // Input:
   //   scale           - scaling of the space charge
@@ -983,10 +1110,40 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
   //                   - =0  all chunks used
   //                     <0  subset form full statistic
   //                     >0  subset from the  limited (1000 mean) stistic
-  //                        
-  // Double_t scale=1
-  Int_t nitteration=200;
-  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("SpaceChargeFluc%d.root",nfilesMerge),"recreate");
+  // Make fluctuation scan:
+  //   1.) Shift of z disk - to show which granularity in time needed
+  //   2.) Shift in sector - to show influence of the gass gain and epsilon
+  //   3.) Smearing in phi - to define phi granularity needed
+  //   4.) Rebin z
+  //   5.) Rebin phi
+  // For given SC setups the distortion on the space point and track level characterezed
+  //    SpaceChargeFluc%d_%d.root
+  //    SpaceChargeTrackFluc%d%d.root
+  //
+  
+
+  //
+  // Some constant definition
+  //
+  Int_t nitteration=100;    // number of itteration in the lookup
+  Int_t fullNorm  =10000;  // normalization  fro the full statistic
+
+  //
+  // Init magnetic field and OCDB
+  //
+  
+  Double_t bsign= sign;
+  if (bsign>1) bsign=-1;
+  const Int_t nTracks=20000;
+  const char *ocdb="local://$ALICE_ROOT/OCDB/";
+  AliCDBManager::Instance()->SetDefaultStorage(ocdb);
+  AliCDBManager::Instance()->SetRun(0);   
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", bsign, bsign, AliMagF::k5kG));   
+  //
+  
+
+  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("SpaceChargeFluc%d_%d.root",nfilesMerge,sign),"recreate");
+  TTreeSRedirector *pcstreamTrack = new TTreeSRedirector(Form("SpaceChargeTrackFluc%d_%d.root",nfilesMerge,sign),"recreate");
   TH1D *his1DROCN=0, *his1DROCSum=0; 
   TH2D *his2DRPhiROCN=0, *his2DRPhiROCSum=0, *his2DRZROCN=0, *his2DRZROCSum=0;
   TH3D *his3DROCN=0, *his3DROCSum=0; 
@@ -1052,35 +1209,57 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
   }else{
     neventsCorr=neventsAll;
     hisInput=his3DROCSum;
+    hisInput->Scale(Double_t(fullNorm)/Double_t(neventsAll));
   }
   
   TObjArray *distortionArray = new TObjArray; 
+  TObjArray *histoArray = new TObjArray; 
   //
   // Make a reference  - ideal distortion/correction
   //
   TH3D * his3DReference =  NormalizeHistoQ(hisInput,kFALSE); // q normalized to the Q/m^3
   his3DReference->Scale(scale*0.000001/fgke0); //scale back to the C/cm^3/epsilon0
   AliTPCSpaceCharge3D *spaceChargeRef = new AliTPCSpaceCharge3D;
-  spaceChargeRef->SetOmegaTauT1T2(0.0,1,1); // Ne CO2
+  spaceChargeRef->SetOmegaTauT1T2(omegaTau*bsign,1,1); // Ne CO2
   spaceChargeRef->SetInputSpaceCharge(his3DReference, his2DRPhiROCSum,his2DRPhiROCSum,1);
   spaceChargeRef->InitSpaceCharge3DPoisson(129, 129, 144,nitteration);
-  spaceChargeRef->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
   spaceChargeRef->AddVisualCorrection(spaceChargeRef,1);
   spaceChargeRef->SetName("DistRef");
+  his3DReference->SetName("hisDistRef");
   distortionArray->AddLast(spaceChargeRef);
+  histoArray->AddLast(his3DReference);
+  //
+  // Draw histos
+  TCanvas * canvasSC = new TCanvas("canvasSCDefault","canvasSCdefault",500,400);  
+  canvasSC->SetRightMargin(0.12);
+  gStyle->SetTitleOffset(0.8,"z");
+  canvasSC->SetRightMargin(0.13);
+  spaceChargeRef->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
+  canvasSC->SaveAs(Form("canvasCreateHistoDRPhiinXY_Z10_%d_%d.pdf",nfilesMerge,sign));
+  spaceChargeRef->CreateHistoDRinXY(10,250,250)->Draw("colz");
+  canvasSC->SaveAs(Form("canvasCreateHistoDRinXY_Z10_%d_%d.pdf",nfilesMerge,sign));
+  spaceChargeRef->CreateHistoSCinZR(0.05,250,250)->Draw("colz");
+  canvasSC->SaveAs(Form("canvasCreateHistoSCinZR_Phi005_%d_%d.pdf",nfilesMerge,sign));
+  spaceChargeRef->CreateHistoSCinXY(10.,250,250)->Draw("colz");
+  canvasSC->SaveAs(Form("canvasCreateHistoSCinRPhi_Z10_%d_%d.pdf",nfilesMerge,sign));
+
+
   //
   // Make Z scan corrections
   // 
-  for (Int_t  ihis=0; ihis<=5; ihis++){ 
-    TH3 *his3DZ = PermutationHistoZ(his3DReference,25*(ihis+1));
+  if (1){
+  for (Int_t  ihis=1; ihis<=9; ihis+=2){ 
+    TH3 *his3DZ = PermutationHistoZ(his3DReference,16*(ihis));
     AliTPCSpaceCharge3D *spaceChargeZ = new AliTPCSpaceCharge3D;
-    spaceChargeZ->SetOmegaTauT1T2(0.0,1,1); // Ne CO2
+    spaceChargeZ->SetOmegaTauT1T2(omegaTau*bsign,1,1); // Ne CO2
     spaceChargeZ->SetInputSpaceCharge(his3DZ, his2DRPhiROCSum,his2DRPhiROCSum,1);
     spaceChargeZ->InitSpaceCharge3DPoisson(129, 129, 144,nitteration);
     spaceChargeZ->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
     spaceChargeZ->AddVisualCorrection(spaceChargeZ,100+ihis);    
-    spaceChargeZ->SetName(Form("DistZ_%d", 25*(ihis+1)));
+    spaceChargeZ->SetName(Form("DistZ_%d", 16*(ihis)));
+    his3DZ->SetName(Form("HisDistZ_%d", 16*(ihis)));
     distortionArray->AddLast(spaceChargeZ);
+    histoArray->AddLast(his3DZ);
   }
   //
   // Make Sector scan corrections
@@ -1088,16 +1267,67 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
   for (Int_t  ihis=1; ihis<=9; ihis+=2){ 
     TH3 *his3DSector = PermutationHistoPhi(his3DReference,TMath::Pi()*(ihis)/9.);
     AliTPCSpaceCharge3D *spaceChargeSector = new AliTPCSpaceCharge3D;
-    spaceChargeSector->SetOmegaTauT1T2(0.0,1,1); // Ne CO2
+    spaceChargeSector->SetOmegaTauT1T2(omegaTau*bsign,1,1); // Ne CO2
     spaceChargeSector->SetInputSpaceCharge(his3DSector, his2DRPhiROCSum,his2DRPhiROCSum,1);
     spaceChargeSector->InitSpaceCharge3DPoisson(129, 129, 144,nitteration);
     spaceChargeSector->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
     spaceChargeSector->AddVisualCorrection(spaceChargeSector,200+ihis);    
     spaceChargeSector->SetName(Form("DistSector_%d", ihis));
+    his3DSector->SetName(Form("DistSector_%d", ihis));
     distortionArray->AddLast(spaceChargeSector);
+    histoArray->AddLast(his3DSector);
+  } 
+  //
+  // Make Local phi scan smear  corrections
+  // 
+  for (Int_t  ihis=1; ihis<=8; ihis++){ 
+    TH3 *his3DSector = PermutationHistoLocalPhi(his3DReference,ihis);
+    AliTPCSpaceCharge3D *spaceChargeSector = new AliTPCSpaceCharge3D;
+    spaceChargeSector->SetOmegaTauT1T2(omegaTau*bsign,1,1); // Ne CO2
+    spaceChargeSector->SetInputSpaceCharge(his3DSector, his2DRPhiROCSum,his2DRPhiROCSum,1);
+    spaceChargeSector->InitSpaceCharge3DPoisson(129, 129, 144,nitteration);
+    spaceChargeSector->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
+    spaceChargeSector->AddVisualCorrection(spaceChargeSector,300+ihis);    
+    spaceChargeSector->SetName(Form("DistPhi_%d", ihis));
+    his3DSector->SetName(Form("HisDistPhi_%d", ihis));
+    distortionArray->AddLast(spaceChargeSector); 
+    histoArray->AddLast(his3DSector);
+  }
+ //  // 
+//   // Rebin Z
+//   //
+//   for (Int_t  ihis=2; ihis<=8;  ihis+=2){ 
+//     TH3 *his3DSector = his3DReference->RebinZ(ihis,Form("RebinZ_%d",ihis));
+//     AliTPCSpaceCharge3D *spaceChargeSector = new AliTPCSpaceCharge3D;
+//     spaceChargeSector->SetOmegaTauT1T2(omegaTau*bsign,1,1); // Ne CO2
+//     spaceChargeSector->SetInputSpaceCharge(his3DSector, his2DRPhiROCSum,his2DRPhiROCSum,1);
+//     spaceChargeSector->InitSpaceCharge3DPoisson(129, 129, 144,nitteration);
+//     spaceChargeSector->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
+//     spaceChargeSector->AddVisualCorrection(spaceChargeSector,300+ihis);    
+//     spaceChargeSector->SetName(Form("RebinZ_%d", ihis));
+//     his3DSector->SetName(Form("RebinZ_%d", ihis));
+//     distortionArray->AddLast(spaceChargeSector); 
+//     histoArray->AddLast(his3DSector);
+//   }
+//   //
+//   // Rebin Phi
+//   //
+//   for (Int_t  ihis=2; ihis<=5; ihis++){ 
+//     TH3 *his3DSector = his3DReference->RebinZ(ihis,Form("RebinPhi_%d",ihis));
+//     AliTPCSpaceCharge3D *spaceChargeSector = new AliTPCSpaceCharge3D;
+//     spaceChargeSector->SetOmegaTauT1T2(omegaTau*bsign,1,1); // Ne CO2
+//     spaceChargeSector->SetInputSpaceCharge(his3DSector, his2DRPhiROCSum,his2DRPhiROCSum,1);
+//     spaceChargeSector->InitSpaceCharge3DPoisson(129, 129, 144,nitteration);
+//     spaceChargeSector->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
+//     spaceChargeSector->AddVisualCorrection(spaceChargeSector,300+ihis);    
+//     spaceChargeSector->SetName(Form("RebinZ_%d", ihis));
+//     his3DSector->SetName(Form("RebinZ_%d", ihis));
+//     distortionArray->AddLast(spaceChargeSector); 
+//     histoArray->AddLast(his3DSector);
+//   }
   }
   //
-  //
+  // Space points scan
   //
   Int_t nx = his3DROCN->GetXaxis()->GetNbins();
   Int_t ny = his3DROCN->GetYaxis()->GetNbins();
@@ -1109,7 +1339,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
   // for open gate data only fraction of ions enter to drift volume
   //
   const Int_t kbins=1000;
-  Double_t deltaR[kbins], deltaZ[kbins],deltaRPhi[kbins];
+  Double_t deltaR[kbins], deltaZ[kbins],deltaRPhi[kbins], deltaQ[kbins];
   Int_t ndist = distortionArray->GetEntries();
   for (Int_t ix=1; ix<=nx; ix+=2){    // phi bin loop
     for (Int_t iy=1; iy<=ny; iy+=2){  // r bin loop
@@ -1130,6 +1360,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
 	  "nfiles="<<nfiles<<                 // number of files to define properties
 	  "nfilesMerge="<<nfilesMerge<<       // number of files to define propertiesneventsCorr
 	  "neventsCorr="<<neventsCorr<<       // number of events used to define the corection
+	  "fullNorm="<<fullNorm<<             // in case full statistic used this is the normalization coeficient
 
 	  "ix="<<ix<<     
 	  "iy="<<iy<<
@@ -1147,6 +1378,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
 	  "qSum="<<qSum;
 	for (Int_t idist=0; idist<ndist; idist++){
 	  AliTPCCorrection * corr  = (AliTPCCorrection *)distortionArray->At(idist);
+	  TH3 * his = (TH3*)histoArray->At(idist);
 	  Double_t phi0= TMath::ATan2(y,x);
 	  Int_t nsector=(z>=0) ? 0:18; 
 	  Float_t distPoint[3]={x,y,z};
@@ -1157,8 +1389,10 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
 	  deltaR[idist]    = r1-r0;
 	  deltaRPhi[idist] = (phi1-phi0)*r0;
 	  deltaZ[idist]    = distPoint[2]-z;
+	  deltaQ[idist]    = his->GetBinContent(ix,iy,iz);
 	  //
 	  (*pcstream)<<"hisDump"<<   //correct point - input point
+	    Form("%sQ=",corr->GetName())<<deltaQ[idist]<<         
 	    Form("%sDR=",corr->GetName())<<deltaR[idist]<<         
 	    Form("%sDRPhi=",corr->GetName())<<deltaRPhi[idist]<<         
 	    Form("%sDZ=",corr->GetName())<<deltaZ[idist];
@@ -1169,7 +1403,67 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge){
     }
   }
   delete pcstream;
-  //  TFile *ff = TFile::Open("SpaceCharge.root");
+  //
+  // generate track distortions
+  //
+  if (nTracks>0){
+    for(Int_t nt=1; nt<=nTracks; nt++){
+      gRandom->SetSeed(nt);
+      TObjArray trackArray(10000);
+      Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
+      Double_t eta = gRandom->Uniform(-1, 1);
+      Double_t pt = 1/(gRandom->Rndm()*5+0.00001); // momentum for f1
+      Short_t psign=1;
+      if(gRandom->Rndm() < 0.5){
+	psign =1;
+      }else{
+	psign=-1;
+      }      
+      Double_t theta = 2*TMath::ATan(TMath::Exp(-eta))-TMath::Pi()/2.;
+      Double_t pxyz[3];
+      pxyz[0]=pt*TMath::Cos(phi);
+      pxyz[1]=pt*TMath::Sin(phi);
+      pxyz[2]=pt*TMath::Tan(theta);
+      Double_t vertex[3]={0,0,0};
+      Double_t cv[21]={0};
+      AliExternalTrackParam *t= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
+      Double_t refX0=85.;
+      Double_t refX1=1.;
+      Int_t dir=-1;
+      (*pcstreamTrack)<<"trackFit"<<
+	"neventsAll="<<neventsAll<<         // total number of events used for the Q reference
+	"nfiles="<<nfiles<<                 // number of files to define properties
+	"nfilesMerge="<<nfilesMerge<<       // number of files to define propertiesneventsCorr
+	"neventsCorr="<<neventsCorr<<       // number of events used to define the corection
+	"fullNorm="<<fullNorm<<             // in case full statistic used this is the normalization coeficient
+	"itrack="<<nt<<
+	"input.="<<t;
+      for (Int_t idist=0; idist<ndist; idist++){
+	AliTPCCorrection * corr   = (AliTPCCorrection *)distortionArray->At(idist);
+	AliExternalTrackParam *ot0= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
+	AliExternalTrackParam *ot1= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
+	AliExternalTrackParam *td0 =  corr->FitDistortedTrack(*ot0, refX0, dir,  0);
+	AliExternalTrackParam *td1 =  corr->FitDistortedTrack(*ot1, refX1, dir,  0);
+	trackArray.AddLast(td0);
+	trackArray.AddLast(td1);
+	trackArray.AddLast(ot0);
+	trackArray.AddLast(ot1);
+	char name0[100], name1[1000];
+	char oname0[100], oname1[1000];
+	snprintf(name0, 100, "T_%s_0.=",corr->GetName());
+	snprintf(name1, 100, "T_%s_1.=",corr->GetName());
+	snprintf(oname0, 100, "OT_%s_0.=",corr->GetName());
+	snprintf(oname1, 100, "OT_%s_1.=",corr->GetName());
+	(*pcstreamTrack)<<"trackFit"<<
+	  name0<<td0<< 
+	  name1<<td1<< 
+	  oname0<<ot0<< 
+	  oname1<<ot1; 
+      }
+      (*pcstreamTrack)<<"trackFit"<<"\n";
+    }
+  }
+  delete pcstreamTrack;
   return;
 
 }
@@ -1207,6 +1501,9 @@ void MakePlotPoisson3D(const char *inputfile="fluctuation.root", const char *out
   spaceChargeOrig->CreateHistoDRPhiinXY(10,250,250)->Draw("colz");
   spaceChargeOrig->AddVisualCorrection(spaceChargeOrig,1);
   //
+  //AliTPCSpaceCharge3D *spaceChargeRef= spaceChargeOrig;
+
+
 
   //
   Int_t nfuns=5;
@@ -1326,6 +1623,9 @@ TH3D *  PermutationHistoZ(TH3D * hisInput, Double_t deltaZ){
   return hisOutput;
 }
 
+
+
+
 TH3D *  PermutationHistoPhi(TH3D * hisInput, Double_t deltaPhi){
   //
   // Used to estimate the effect of the imperfection of the lookup tables as function of update frequency
@@ -1359,33 +1659,37 @@ TH3D *  PermutationHistoPhi(TH3D * hisInput, Double_t deltaPhi){
 }
 
 
-TH3D *  PermutationHistoLocalPhi(TH3D * hisInput, Double_t deltaPhi){
+TH3D *  PermutationHistoLocalPhi(TH3D * hisInput, Int_t deltaPhi){
   //
   // Used to estimate the effect of the imperfection of the lookup tables as function of update frequency
+  // Use moving average of the content  instead of the content
   //
-  // Permute/rotate the conten of the histogram in phi
-  // Reshufle/shift content -  Keeping the integral the same
   // Parameters:
   //    hisInput - input 3D histogram (phi,r,z)
-  //    deltaPhi   - deltaPhi -shift of the space charge
+  //    deltaPhi   - moving average width
   TH3D * hisOutput= new TH3D(*hisInput);
   Int_t nx = hisInput->GetXaxis()->GetNbins();
   Int_t ny = hisInput->GetYaxis()->GetNbins();
   Int_t nz = hisInput->GetZaxis()->GetNbins();
+  Int_t binSector=nx/18;
   //
   //
   for (Int_t iy=1; iy<=ny; iy++){
     for (Int_t iz=1; iz<=nz; iz++){
       for (Int_t ix=1; ix<=nx; ix++){
-	Double_t phiOld = hisInput->GetXaxis()->GetBinCenter(ix);
-	Double_t phi=phiOld;
-	phi+=deltaPhi;
-	if (phi<0) phi+=TMath::TwoPi();
-	if (phi>TMath::TwoPi()) phi-=TMath::TwoPi();	
-	Double_t kx= hisInput->GetXaxis()->FindBin(phi);
-	Double_t content = hisInput->GetBinContent(ix,iy,iz);
-	hisOutput->SetBinContent(kx,iy,iz,content);
-      }
+	Double_t sumRo=0,sumW=0;
+	for (Int_t idx=-deltaPhi; idx<=deltaPhi; idx++){
+	  Int_t index=ix+idx;
+	  if (index<1) index+=nx+1;  // underflow and overflow bins
+	  if (index>nx) index-=nx+1;
+	  Double_t content = hisInput->GetBinContent(index,iy,iz);
+	  sumRo+=content;
+	  sumW++;
+	}
+	Double_t meanCont= sumRo/sumW;
+	hisOutput->SetBinContent(ix,iy,iz,meanCont);	
+	//printf("%d\t%f\n",ix,hisInput->GetBinContent(ix,iy,iz)/(hisInput->GetBinContent(ix,iy,iz)+meanCont));
+      }	
     }
   }
   return hisOutput;
@@ -1414,6 +1718,11 @@ void DrawFluctuationSector(Int_t stat, Double_t norm){
   // Draw correction - correction  at rotated sector  
   // The same set of events used
   // Int_t stat=0; Double_t norm=10000;
+  // 
+  // Notes:
+  //    1. (something wrong for the setup 2 pileups  -problem with data 24.07
+  //
+  //
   TFile *f0= TFile::Open(Form("SpaceChargeFluc%d.root",stat));
   TTree * tree0 = (TTree*)f0->Get("hisDump");
   tree0->SetCacheSize(1000000000);
@@ -1474,11 +1783,12 @@ void DrawFluctuationdeltaZ(Int_t stat, Double_t norm){
   // Draw correction - correction  shifted z  
   // The same set of events used
   //Int_t stat=0; Double_t norm=10000;
+  Int_t deltaZ=16.;
   TFile *f0= TFile::Open(Form("SpaceChargeFluc%d.root",stat));
   TTree * tree0 = 0;
   if (f0) tree0 = (TTree*)f0->Get("hisDump");
   if (!tree0){
-    tree0 = AliXRDPROOFtoolkit::MakeChainRandom("space.list","hisDump",0,10)
+    tree0 = AliXRDPROOFtoolkit::MakeChainRandom("space.list","hisDump",0,10);
   }
   tree0->SetCacheSize(1000000000);
   tree0->SetMarkerStyle(25);
@@ -1490,7 +1800,7 @@ void DrawFluctuationdeltaZ(Int_t stat, Double_t norm){
   TH2 * hisDeltaZScan[6]={0};
   TH1 * hisDeltaZScanSigma[6]={0};
   for (Int_t ihis=0; ihis<6; ihis++){
-    tree0->Draw(Form("(DistRefDR-DistZ_%dDR)*scNorm:r>>hisZ%d(50,84,245,100,-1,1)",(ihis+1)*25,(ihis+1)*25),"abs(z/r)<1","colzgoff");
+    tree0->Draw(Form("(DistRefDR-DistZ_%dDR)*scNorm:r>>hisZ%d(50,84,245,100,-1,1)",(ihis+1)*deltaZ,(ihis+1)*deltaZ),"abs(z/r)<1","colzgoff");
     hisDeltaZScan[ihis]=(TH2*)tree0->GetHistogram();
     hisDeltaZScan[ihis]->FitSlicesY(0,0,-1,0,"QNR",fitArray);
     hisDeltaZScanSigma[ihis]=(TH1*)(fitArray->At(2)->Clone());
@@ -1508,7 +1818,7 @@ void DrawFluctuationdeltaZ(Int_t stat, Double_t norm){
     hisDeltaZScan[ihis]->GetYaxis()->SetTitle("#Delta_{R} (cm)");
     hisDeltaZScan[ihis]->Draw("colz");
     TLegend * legendSec=new TLegend(0.5,0.7,0.89,0.89);
-    legendSec->AddEntry(hisDeltaZScan[ihis],Form("DeltaZ #Delta %d",(ihis+1)*25)); 
+    legendSec->AddEntry(hisDeltaZScan[ihis],Form("DeltaZ #Delta %d",(ihis+1)*deltaZ)); 
     legendSec->Draw();
   }
   canvasFlucDeltaZScan->SaveAs(Form("canvasFlucDeltaZScan%d.pdf",stat));
@@ -1525,7 +1835,7 @@ void DrawFluctuationdeltaZ(Int_t stat, Double_t norm){
     hisDeltaZScanSigma[ihis]->SetMarkerColor(1+ihis%4);
     if (ihis==0) hisDeltaZScanSigma[ihis]->Draw("");
     hisDeltaZScanSigma[ihis]->Draw("same");
-    legendDeltaZ->AddEntry(hisDeltaZScanSigma[ihis],Form("#Delta %d (cm)",(ihis+1)*25));
+    legendDeltaZ->AddEntry(hisDeltaZScanSigma[ihis],Form("#Delta %d (cm)",(ihis+1)*deltaZ));
   }
   legendDeltaZ->Draw();
   canvasFlucDeltaZScanFit->SaveAs(Form("canvasFlucDeltaZScanFit%d.pdf",stat));
@@ -1544,8 +1854,195 @@ void DrawDefault(Int_t stat){
   tree0->SetCacheSize(1000000000);
   tree0->SetMarkerStyle(25);
   tree0->SetMarkerSize(0.4);
-  TObjArray * fitArray=new TObjArray(3);
+  //  TObjArray * fitArray=new TObjArray(3);
   tree0->Draw("10000*DistRefDR/neventsCorr:r:z/r","abs(z/r)<0.9&&z>0&&rndm>0.8","colz");
+}
 
+
+
+
+void DrawTrackFluctuation(){
+  //
+  // Function to make a fluctuation figures for differnt multiplicities of pileup space charge
+  // it is assumed that the text files  
+  //
+  //
+  TObjArray arrayFit(3);
+  const char *inputList;
+  TH2F * hisCorrRef[5]={0};
+  TH2F * hisCorrNo[5]={0};
+  TH1  * hisCorrRefM[5], *hisCorrRefRMS[5];
+  TH1  * hisCorrNoM[5], *hisCorrNoRMS[5];
+  //
+  // 1. Load chains for different statistic
+  //  
+  TCut cutOut="abs(T_DistRef_0.fX-OT_DistRef_0.fX)<0.1&&T_DistRef_0.fX>1&&abs(OT_DistRef_0.fP[4])<4";
+  TCut cutOutF="abs(R.T_DistRef_0.fX-R.OT_DistRef_0.fX)<0.1&&R.T_DistRef_0.fX>1&&abs(R.OT_DistRef_0.fP[4])<4";
+  TChain * chains[5]={0};
+  TChain * chainR = AliXRDPROOFtoolkit::MakeChain("track0_1.list","trackFit",0,1000);
+  chainR->SetCacheSize(1000000000);
+  for (Int_t ichain=0; ichain<5; ichain++){
+    chains[ichain] = AliXRDPROOFtoolkit::MakeChain(Form("track%d_1.list",2*(ichain+1)),"trackFit",0,1000);
+    chains[ichain]->AddFriend(chainR,"R");
+    chains[ichain]->SetCacheSize(1000000000);
+    chains[ichain]->SetMarkerStyle(25);
+    chains[ichain]->SetMarkerSize(0.5);
+    chains[ichain]->SetAlias("meanNorm","(1+0.2*abs(neventsCorr/10000-1))"); // second order correction - renomalization of mean hardwired  
+    // to be fitted?
+  }
+  //
+  // 2. fill histograms if not available in file
+  //    
+  // 
+  TFile *ftrackFluctuation = TFile::Open("trackFluctuation.root","update");
+  for (Int_t ihis=0; ihis<5; ihis++){
+    ftrackFluctuation->cd();
+    hisCorrRef[ihis] = (TH2F*)(ftrackFluctuation->Get(Form("DeltaRPhiCorr%d",(ihis+1)*2000)));
+    hisCorrNo[ihis]  = (TH2F*)(ftrackFluctuation->Get(Form("DeltaRPhi%d",(ihis+1)*2000)));
+    if (hisCorrRef[ihis]==0) {
+      chains[ihis]->Draw("(T_DistRef_0.fP[0]/meanNorm-neventsCorr*R.T_DistRef_0.fP[0]/10000):R.OT_DistRef_0.fP[4]>>his(10,-4,4,100,-0.25,0.25)",cutOut+cutOutF+"","colzgoff");
+      hisCorrRef[ihis]=(TH2F*)(chains[ihis]->GetHistogram()->Clone());  
+      hisCorrRef[ihis]->SetName(Form("DeltaRPhiCorr%d",(ihis+1)*2000));
+      hisCorrRef[ihis]->SetTitle(Form("Corrected #Delta r#phi -  Pileup %d",(ihis+1)*2000));
+      hisCorrRef[ihis]->GetXaxis()->SetTitle("1/p_{t} (1/GeV/c)");
+      hisCorrRef[ihis]->GetYaxis()->SetTitle("#Delta_{r#phi} (cm)");
+      hisCorrRef[ihis]->Write();
+      //
+      chains[ihis]->Draw("(T_DistRef_0.fP[0]/meanNorm):R.OT_DistRef_0.fP[4]>>hisCorNo(10,-3,3,100,-4,4)",cutOut+cutOutF+"","colzgoff");
+      hisCorrNo[ihis]=(TH2F*)(chains[ihis]->GetHistogram()->Clone());  
+      hisCorrNo[ihis]->SetName(Form("DeltaRPhi%d",(ihis+1)*2000));
+      hisCorrNo[ihis]->SetTitle(Form("Delta r#phi  = Pileup %d",(ihis+1)*2000));
+      hisCorrNo[ihis]->GetXaxis()->SetTitle("1/p_{t} (1/GeV/c)");
+      hisCorrNo[ihis]->GetYaxis()->SetTitle("#Delta_{r#phi} (cm)");
+      hisCorrNo[ihis]->Write();    
+    }
+  }
+  ftrackFluctuation->Flush();
+  //
+  //
+  //
+  for (Int_t ihis=0; ihis<5; ihis++){
+    hisCorrRef[ihis]->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+    hisCorrRefM[ihis] = (TH1*)arrayFit.At(1)->Clone();
+    hisCorrRefRMS[ihis] = (TH1*)arrayFit.At(2)->Clone();
+    hisCorrRefM[ihis]->GetXaxis()->SetTitle("1/p_{t} (1/GeV/c)");
+    hisCorrRefM[ihis]->GetYaxis()->SetTitle("#Delta_{r#phi} (cm)");
+    hisCorrRefM[ihis]->SetMarkerStyle(20);
+    hisCorrRefRMS[ihis]->SetMarkerStyle(21);
+    hisCorrRefM[ihis]->SetMarkerColor(1);
+    hisCorrRefRMS[ihis]->SetMarkerColor(2);
+    hisCorrNo[ihis]->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+    hisCorrNoM[ihis] = (TH1*)arrayFit.At(1)->Clone();
+    hisCorrNoRMS[ihis] = (TH1*)arrayFit.At(2)->Clone();
+  }
+
+  //
+  TCanvas *canvasMean = new TCanvas("canvasCorrectionMean","canvasCorrectionMean",900,1000);
+  TCanvas *canvasMeanSummary = new TCanvas("canvasCorrectionMeanSummary","canvasCorrectionMeanSummary",700,600);
+
+  canvasMean->Divide(3,5);
+  gStyle->SetOptStat(0);
+  for (Int_t ihis=0; ihis<5; ihis++){
+    TLegend * legend = new TLegend(0.11,0.11,0.5,0.3,Form("Pile up %d",(ihis+1)*2000));
+    canvasMean->cd(3*ihis+1);
+    hisCorrNo[ihis]->Draw("colz"); 
+    canvasMean->cd(3*ihis+2);
+    hisCorrRef[ihis]->Draw("colz");    
+    canvasMean->cd(3*ihis+3); 
+    hisCorrRefM[ihis]->SetMaximum(0.25);
+    hisCorrRefM[ihis]->SetMinimum(-0.25);
+    hisCorrRefM[ihis]->Draw("");
+    hisCorrRefRMS[ihis]->Draw("same");
+    legend->AddEntry(hisCorrRefM[ihis],"Mean");
+    legend->AddEntry(hisCorrRefRMS[ihis],"RMS");
+    legend->Draw();
+  }
+  canvasMeanSummary->cd();
+  TLegend * legendMeanSummary = new TLegend(0.5,0.6,0.89,0.89,"Space charge correction fluctuation in r#phi"); 
+  for (Int_t ihis=4; ihis>=0; ihis--){    
+    hisCorrRefRMS[ihis]->SetMarkerColor(1+ihis);
+    hisCorrRefRMS[ihis]->SetMinimum(0);
+    hisCorrRefRMS[ihis]->GetYaxis()->SetTitle("#sigma_{r#phi} (cm)");
+    if (ihis==4) hisCorrRefRMS[ihis]->Draw("");
+    hisCorrRefRMS[ihis]->Draw("same");
+    legendMeanSummary->AddEntry(hisCorrRefRMS[ihis],Form("%d pile-up events",(ihis+1)*2000));
+  }
+  legendMeanSummary->Draw();
+
+  canvasMean->SaveAs("canvasCorrectionMean.pdf"); 
+  canvasMeanSummary->SaveAs("canvasCorrectionMeanSummary.pdf");
+  //canvasMean->Write();
+  //canvasMeanSummary->Write();
+  ftrackFluctuation->Close();
+}
+
+void DrawTrackFluctuationZ(){
+  //
+  // Draw track fucutation dz
+  //   
+  const Int_t kColors[6]={1,2,3,4,6,7};
+  const Int_t kStyle[6]={20,21,24,25,24,25};
+  TObjArray arrayFit(3);
+  TCut cutOut="abs(T_DistRef_0.fX-OT_DistRef_0.fX)<0.1&&T_DistRef_0.fX>1&&abs(OT_DistRef_0.fP[4])<4";
+  TCut cutOutF="abs(R.T_DistRef_0.fX-R.OT_DistRef_0.fX)<0.1&&R.T_DistRef_0.fX>1&&abs(R.OT_DistRef_0.fP[4])<4";
+  TChain * chains[5]={0};
+  TChain * chainR = AliXRDPROOFtoolkit::MakeChain("track0_1.list","trackFit",0,1000);
+  chainR->SetCacheSize(1000000000);
+  for (Int_t ichain=0; ichain<5; ichain++){
+    chains[ichain] = AliXRDPROOFtoolkit::MakeChain(Form("track%d_1.list",2*(ichain+1)),"trackFit",0,1000);
+    chains[ichain]->AddFriend(chainR,"R");
+    chains[ichain]->SetCacheSize(1000000000);
+    chains[ichain]->SetMarkerStyle(25);
+    chains[ichain]->SetMarkerSize(0.5);
+  }
+  //
+  // 2.) Create 2D histo or read from files
+  //
+  TObjArray * arrayHisto = new TObjArray(25);
+  TFile *ftrackFluctuationZ = TFile::Open("trackFluctuationZ.root","update");
+  for (Int_t ihis=0; ihis<5; ihis++){
+    ftrackFluctuationZ->cd();
+    for (Int_t idz=0; idz<5; idz++){
+      Int_t z= 16+idz*32;
+      TH2 *his= (TH2*)ftrackFluctuationZ->Get(Form("TrackDz%d_PileUp%d",z, (ihis+1)*2000));
+      if (!his){
+	chains[ihis]->Draw(Form("T_DistZ_%d_0.fP[0]-T_DistRef_0.fP[0]:T_DistRef_0.fP[4]>>his(10,-4,4,100,-0.25,0.25)",z),cutOut+"","colz");
+	his = (TH2*)(chains[ihis]->GetHistogram()->Clone());
+	his->SetName(Form("TrackDz%d_PileUp%d",z, (ihis+1)*2000));
+	his->Write();
+      }
+      arrayHisto->AddAtAndExpand(his,ihis*5+idz);
+    }
+  }
+  ftrackFluctuationZ->Flush();
+
+  //
+  // 3.) Make fits 
+  //
+  TCanvas *canvasDz = new TCanvas("canvasDz","canvasDz",800,800);
+  canvasDz->Divide(2,2,0,0);
+  for (Int_t ihis=3; ihis>=0; ihis--){
+    canvasDz->cd(ihis+1)->SetTicks(3);
+    TLegend * legend  = new TLegend(0.31,0.51, 0.95,0.95,Form("Distortion due time/z delay (Pileup=%d)", (ihis+1)*2000)); 
+    legend->SetBorderSize(0);
+    for (Int_t idz=3; idz>=0; idz--){
+      TH2 * his =  (TH2*)arrayHisto->At(ihis*5+idz);
+      his->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+      TH1 * hisRMS = (TH1*)arrayFit.At(2)->Clone();
+      hisRMS->SetMaximum(0.12);
+      hisRMS->SetMinimum(0);
+      hisRMS->GetXaxis()->SetTitle("1/p_{t} (GeV/c)");
+      hisRMS->GetYaxis()->SetTitle("#sigma_{r#phi}(cm)");
+      hisRMS->SetMarkerStyle(kStyle[idz]);
+      hisRMS->SetMarkerColor(kColors[idz]);
+      if (idz==3)     hisRMS->Draw();
+      legend->AddEntry(hisRMS,Form("#Delta_{z}=%d (cm)",16+idz*32));
+      hisRMS->Draw("same");
+    }
+    legend->Draw();
+  }
+  canvasDz->SaveAs("spaceChargeDeltaZScan.pdf");
 
 }
+
+
