@@ -60,6 +60,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         /* inline */    Double_t ChiSquareCDF(Int_t ndf, Double_t x) const { return TMath::Gamma(ndf/2., x/2.); }
         // setters - analysis setup
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
+        void                    SetAttachToEvent(Bool_t b)                      {fAttachToEvent = b;}
+        void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
         void                    SetReduceBinsXYByFactor(Int_t x, Int_t y)       {fReduceBinsXByFactor = x;
                                                                                  fReduceBinsYByFactor = y;}
@@ -74,6 +76,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetNameJetClones(const char* name)              {fNameJetClones = name; }
         void                    SetNamePicoTrackClones(const char* name)        {fNamePicoTrackClones = name; }
         void                    SetNameRho(const char* name)                    {fNameRho = name; }
+        void                    SetLocalRhoName(TString name)                   {fLocalRhoName = name; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit)                      {if (fFitModulation) delete fFitModulation;
                                                                                  fFitModulation = fit; }
@@ -98,6 +101,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         // getters - these are used as well by AliAnalyisTaskJetFlow, so be careful when changing them
         TString                 GetJetsName() const                             {return fJetsName; }
         TString                 GetTracksName() const                           {return fTracksName; }
+        TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
         TArrayI*                GetCentralityClasses() const                    {return fCentralityClasses;}
         TArrayD*                GetPtBinsHybrids() const                        {return fPtBinsHybrids; }
         TArrayD*                GetPtBinsJets() const                           {return fPtBinsJets; }
@@ -166,7 +170,9 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
     private:
         // analysis flags and settings
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
-        Bool_t                  fInitialized;           //! is the analysis initialized?
+        Bool_t                  fLocalInit;           //! is the analysis initialized?
+        Bool_t                  fAttachToEvent;         // attach local rho to the event
+        Bool_t                  fFillHistograms;        // fill histograms
         Bool_t                  fFillQAHistograms;      // fill qa histograms
         Int_t                   fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this integer
         Int_t                   fReduceBinsYByFactor;   // reduce the bins on y-axis of histo's by this integer
@@ -179,6 +185,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
         // members
+        TString                 fLocalRhoName;          // local rho name
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
         fitModulationType       fFitModulationType;     // fit modulation type
