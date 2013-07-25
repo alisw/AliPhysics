@@ -438,20 +438,17 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   fEMRPBin = GetRPBin(); //TODO: uncomment this, or at least deal with it
   LogProgress(5);
 
-
-  // Step 6: MC
-  this->ProcessMC() ;
+  // Step 6: QA PHOS cells
+  FillPHOSCellQAHists();
   LogProgress(6);
 
-
-  // Step 7: QA PHOS cells
-  FillPHOSCellQAHists();
-  LogProgress(7);
-
-
-  // Step 8: Event Photons (PHOS Clusters) selection
+  // Step 7: Event Photons (PHOS Clusters) selection
   this->SelectPhotonClusters();
   this->FillSelectedClusterHistograms();
+  LogProgress(7);
+
+  // Step 8: MC
+  this->ProcessMC() ;
   LogProgress(8);
 
   if( ! fCaloPhotonsPHOS->GetEntriesFast() )
