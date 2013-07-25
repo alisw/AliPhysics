@@ -32,8 +32,8 @@ const int KTBINS = 6;
 int KTINDEX;
 bool ChargeConstraint=kFALSE;
 bool LinkRadii=kFALSE;
-bool TherminatorC2=kFALSE;
-const int BOI_1=0;// centrality bin (0-9)
+bool TherminatorC2=kTRUE;
+const int BOI_1=9;// centrality bin (0-9)
 const int BOI_2=9;// centrality of second bin for C2 fit parameter plot only
 const int ParN=1;// Which C2 fit parameter to plot? 1=lambda, 2=G, 3=Rch, 4=Rcoh,
 const int ChProdBOI=0;// 0=SameCharge, 1=MixedCharge
@@ -70,6 +70,8 @@ TF1 *fitC2ss_noGEWfromTherm[KTBINS][10];
 TF1 *fitC2os_noGEWfromTherm[KTBINS][10];
 TF1 *fitC2ss_yesGEWfromTherm[KTBINS][10];
 TF1 *fitC2os_yesGEWfromTherm[KTBINS][10];
+TF1 *fitC2ss_noGEW[KTBINS][10];
+TF1 *fitC2os_noGEW[KTBINS][10];
 TH1D *K2_ss[KTBINS][10];
 TH1D *K2_os[KTBINS][10];
 TH1D *C2Therm_ss[KTBINS][10];
@@ -92,73 +94,9 @@ void Plot_plots(){
   TFile *files_2_yesG[KTBINS][10];
   TFile *files_2_noGEWfromTherm[KTBINS][10];
   TFile *files_2_yesGEWfromTherm[KTBINS][10];
+  TFile *files_2_noGEW[KTBINS][10];
   TFile *files_3[2][2][2][2][10];// SC/MC, +/-, GRS/Omega0, Therm/Gauss, MBINS
-
-  for(int cb=0; cb<10; cb++){
-    for(int ChComb=0; ChComb<2; ChComb++) {// SC or MC
-      for(int ch=0; ch<2; ch++) {// - or +
-	for(int KT3=0; KT3<2; KT3++) {// Kt3 bin
-	  TString *name3 = new TString("OutFiles/OutFile");
-	  if(ChComb==0) name3->Append("SC");
-	  else name3->Append("MC");
-	  if(ch==0) name3->Append("Neg");
-	  else name3->Append("Pos");
-	  TString *name3_Omega0=new TString(name3->Data());
-	  name3->Append("NoGEWGRS");
-	  name3_Omega0->Append("NoGEWOmega0");
-	  name3->Append("Kt3_"); name3_Omega0->Append("Kt3_"); 
-	  *name3 += KT3+1; *name3_Omega0 += KT3+1;
-	  
-	  name3->Append("_Kt10_M");
-	  name3_Omega0->Append("_Kt10_M");
-	  if(cb<10) {*name3 += cb; *name3_Omega0 += cb;}
-	  else {*name3 += 0; *name3_Omega0 += 0;}
-	  name3->Append(".root");
-	  name3_Omega0->Append(".root");
-	  files_3[ChComb][ch][0][KT3][cb] = new TFile(name3->Data(),"READ");
-	  files_3[ChComb][ch][1][KT3][cb] = new TFile(name3_Omega0->Data(),"READ");
-	}
-      }
-    }
-    for(int kt=0; kt<KTBINS; kt++){
-      
-      TString *name = new TString("OutFiles/OutFileSCPosNoG"); 
-      TString *nameEWfromTherm = new TString(name->Data()); nameEWfromTherm->Append("EWfromThermGRS");
-      name->Append("GRS");
-      name->Append("Kt3_1"); nameEWfromTherm->Append("Kt3_1");
-      name->Append("_Kt"); nameEWfromTherm->Append("_Kt");
-      *name += kt+1; *nameEWfromTherm += kt+1;
-      name->Append("_M"); nameEWfromTherm->Append("_M");
-      if(cb<10) {*name += cb; *nameEWfromTherm += cb;}
-      else {*name += 0; *nameEWfromTherm += 0;}
-      name->Append(".root"); nameEWfromTherm->Append(".root");
-      files_2_noG[kt][cb] = new TFile(name->Data(),"READ");
-      files_2_noGEWfromTherm[kt][cb] = new TFile(nameEWfromTherm->Data(),"READ");
-      //
-      
-      //
-      TString *nameYesG = new TString("OutFiles/OutFileSCPosYesG"); 
-      TString *nameYesGEWfromTherm = new TString(nameYesG->Data()); nameYesGEWfromTherm->Append("EWfromThermGRS");
-      nameYesG->Append("GRS");
-      nameYesG->Append("Kt3_1"); nameYesGEWfromTherm->Append("Kt3_1");
-      nameYesG->Append("_Kt"); nameYesGEWfromTherm->Append("_Kt");
-      *nameYesG += kt+1; *nameYesGEWfromTherm += kt+1;
-      nameYesG->Append("_M"); nameYesGEWfromTherm->Append("_M");
-      if(cb<10) {*nameYesG += cb; *nameYesGEWfromTherm += cb;}
-      else {*nameYesG += 0; *nameYesGEWfromTherm += 0;}
-      nameYesG->Append(".root"); nameYesGEWfromTherm->Append(".root");
-      files_2_yesG[kt][cb] = new TFile(nameYesG->Data(),"READ");
-      files_2_yesGEWfromTherm[kt][cb] = new TFile(nameYesGEWfromTherm->Data(),"READ");
-    }
-  }
-  
- 
-  TF1 *Unity = new TF1("Unity","1",0,100);
-  Unity->SetLineStyle(2);
-  Unity->SetLineColor(1);
-
- 
-
+  //
   double intercept1[10]={0};
   double intercept1_e[10]={0};
   double intercept2[10]={0};
@@ -184,13 +122,16 @@ void Plot_plots(){
   TH1D *ParHisto_coh[4][10];
   TH1D *ParHisto_chEWfromTherm[4][10];
   TH1D *ParHisto_cohEWfromTherm[4][10];
-  
+  TH1D *ParHisto_chEW[4][10];
+
   for(int ii=0; ii<10; ii++){
     for(int par=1; par<=4; par++){
       TString *name_ch = new TString("ParHisto_ch");
       *name_ch += ii; *name_ch += par;
       TString *name_coh = new TString("ParHisto_coh");
       *name_coh += ii; *name_coh += par;
+      TString *name_EWfromThermch = new TString("ParHisto_EWfromThermch");
+      *name_EWfromThermch += ii; *name_EWfromThermch += par;
       TString *name_EWch = new TString("ParHisto_EWch");
       *name_EWch += ii; *name_EWch += par;
       TString *name_EWcoh = new TString("ParHisto_EWcoh");
@@ -210,11 +151,16 @@ void Plot_plots(){
       ParHisto_coh[par-1][ii]->SetMarkerColor(4);
       ParHisto_coh[par-1][ii]->SetLineColor(4);
       ParHisto_coh[par-1][ii]->SetMarkerSize(1.5);
-      ParHisto_chEWfromTherm[par-1][ii] = new TH1D(name_EWch->Data(),"",10,0,1);
+      ParHisto_chEWfromTherm[par-1][ii] = new TH1D(name_EWfromThermch->Data(),"",10,0,1);
       ParHisto_chEWfromTherm[par-1][ii]->SetMarkerStyle(MStyle_ch);
       ParHisto_chEWfromTherm[par-1][ii]->SetMarkerColor(1);
       ParHisto_chEWfromTherm[par-1][ii]->SetLineColor(1);
       ParHisto_chEWfromTherm[par-1][ii]->SetMarkerSize(1.5);
+      ParHisto_chEW[par-1][ii] = new TH1D(name_EWch->Data(),"",10,0,1);
+      ParHisto_chEW[par-1][ii]->SetMarkerStyle(MStyle_coh);
+      ParHisto_chEW[par-1][ii]->SetMarkerColor(4);
+      ParHisto_chEW[par-1][ii]->SetLineColor(4);
+      ParHisto_chEW[par-1][ii]->SetMarkerSize(1.5);
       ParHisto_cohEWfromTherm[par-1][ii] = new TH1D(name_EWcoh->Data(),"",10,0,1);
       ParHisto_cohEWfromTherm[par-1][ii]->SetMarkerStyle(MStyle_coh);
       ParHisto_cohEWfromTherm[par-1][ii]->SetMarkerColor(4);
@@ -222,20 +168,49 @@ void Plot_plots(){
       ParHisto_cohEWfromTherm[par-1][ii]->SetMarkerSize(1.5);
     }
   }
-  
+  //////////////////////////////
+
+  // Start File access
   for(int cb=0; cb<10; cb++){
     for(int ChComb=0; ChComb<2; ChComb++) {// SC or MC
-      for(int Coul=0; Coul<2; Coul++){// GRS or Omega0
-	for(int ch=0; ch<2; ch++) {// - or +
-	  for(int KT3=0; KT3<2; KT3++) {// Therminator or Gaussian FSI source
+      for(int ch=0; ch<2; ch++) {// - or +
+	for(int KT3=0; KT3<2; KT3++) {// Kt3 bin
+	  TString *name3 = new TString("OutFiles/OutFile");
+	  if(ChComb==0) name3->Append("SC");
+	  else name3->Append("MC");
+	  if(ch==0) name3->Append("Neg");
+	  else name3->Append("Pos");
+	  TString *name3_Omega0=new TString(name3->Data());
+	  name3->Append("NoGEWGRS");
+	  name3_Omega0->Append("NoGEWOmega0");
+	  name3->Append("Kt3_"); name3_Omega0->Append("Kt3_"); 
+	  *name3 += KT3+1; *name3_Omega0 += KT3+1;
+	  
+	  name3->Append("_Kt10_M");
+	  name3_Omega0->Append("_Kt10_M");
+	  if(cb<10) {*name3 += cb; *name3_Omega0 += cb;}
+	  else {*name3 += 0; *name3_Omega0 += 0;}
+	  name3->Append(".root");
+	  name3_Omega0->Append(".root");
+	  files_3[ChComb][ch][0][KT3][cb] = new TFile(name3->Data(),"READ");
+	  files_3[ChComb][ch][1][KT3][cb] = new TFile(name3_Omega0->Data(),"READ");
+	  ///////////////////////////////
+	  for(int Coul=0; Coul<2; Coul++){
 	    if(ch==0) {
 	      C3[ChComb][Coul][KT3][cb]=(TH1D*)files_3[ChComb][ch][Coul][KT3][cb]->Get("C3");
+	      C3[ChComb][Coul][KT3][cb]->SetDirectory(0);
 	      c3[ChComb][Coul][KT3][cb]=(TH1D*)files_3[ChComb][ch][Coul][KT3][cb]->Get("c3");
+	      c3[ChComb][Coul][KT3][cb]->SetDirectory(0);
 	      if(ChComb==0) C3EW[Coul][KT3][cb]=(TH1D*)files_3[ChComb][ch][Coul][KT3][cb]->Get("C3_EWexpectation");
 	      if(ChComb==0) r3_Q3[Coul][KT3][cb]=(TH1D*)files_3[ChComb][ch][Coul][KT3][cb]->Get("r3_Q3");
+	      C3EW[Coul][KT3][cb]->SetDirectory(0);
+	      r3_Q3[Coul][KT3][cb]->SetDirectory(0);
+	      
 	      if(Coul==1){
 		K3[ChComb][0][KT3][cb]=(TH1D*)files_3[ChComb][ch][Coul][KT3][cb]->Get("Coul_GRiverside");
+		K3[ChComb][0][KT3][cb]->SetDirectory(0);
 		K3[ChComb][1][KT3][cb]=(TH1D*)files_3[ChComb][ch][Coul][KT3][cb]->Get("Coul_Omega0");
+		K3[ChComb][1][KT3][cb]->SetDirectory(0);
 	      }
 	    }else{
 	      TH1D *tempC3=(TH1D*)files_3[ChComb][ch][Coul][KT3][cb]->Get("C3");
@@ -280,17 +255,47 @@ void Plot_plots(){
 		  else {r3_Q3[Coul][KT3][cb]->SetMarkerStyle(22); r3_Q3[Coul][KT3][cb]->SetMarkerColor(2); r3_Q3[Coul][KT3][cb]->SetLineColor(2);}
 		}
 	      }
-	  
 	    }
-	  }// source type
-	}// + or -
-      }// Coul
-    }// ChComb
-    //
-   
-
+	    files_3[ChComb][ch][Coul][KT3][cb]->Close();
+	  }// Coul
+	}
+      }
+    }
+  
+  
     for(int kt=0; kt<KTBINS; kt++){
       
+      TString *name = new TString("OutFiles/OutFileSCPosNoG"); 
+      TString *nameEWfromTherm = new TString(name->Data()); nameEWfromTherm->Append("EWfromThermGRS");
+      TString *nameEW = new TString(name->Data()); nameEW->Append("EWGRS");
+      name->Append("GRS");
+      name->Append("Kt3_1"); nameEWfromTherm->Append("Kt3_1"); nameEW->Append("Kt3_1");
+      name->Append("_Kt"); nameEWfromTherm->Append("_Kt"); nameEW->Append("_Kt");
+      *name += kt+1; *nameEWfromTherm += kt+1; *nameEW += kt+1;
+      name->Append("_M"); nameEWfromTherm->Append("_M"); nameEW->Append("_M");
+      if(cb<10) {*name += cb; *nameEWfromTherm += cb; *nameEW += cb;}
+      else {*name += 0; *nameEWfromTherm += 0; *nameEW += 0;}
+      name->Append(".root"); nameEWfromTherm->Append(".root"); nameEW->Append(".root");
+      files_2_noG[kt][cb] = new TFile(name->Data(),"READ");
+      files_2_noGEWfromTherm[kt][cb] = new TFile(nameEWfromTherm->Data(),"READ");
+      files_2_noGEW[kt][cb] = new TFile(nameEW->Data(),"READ");
+      //
+      
+      //
+      TString *nameYesG = new TString("OutFiles/OutFileSCPosYesG"); 
+      TString *nameYesGEWfromTherm = new TString(nameYesG->Data()); nameYesGEWfromTherm->Append("EWfromThermGRS");
+      nameYesG->Append("GRS");
+      nameYesG->Append("Kt3_1"); nameYesGEWfromTherm->Append("Kt3_1");
+      nameYesG->Append("_Kt"); nameYesGEWfromTherm->Append("_Kt");
+      *nameYesG += kt+1; *nameYesGEWfromTherm += kt+1;
+      nameYesG->Append("_M"); nameYesGEWfromTherm->Append("_M");
+      if(cb<10) {*nameYesG += cb; *nameYesGEWfromTherm += cb;}
+      else {*nameYesG += 0; *nameYesGEWfromTherm += 0;}
+      nameYesG->Append(".root"); nameYesGEWfromTherm->Append(".root");
+      files_2_yesG[kt][cb] = new TFile(nameYesG->Data(),"READ");
+      files_2_yesGEWfromTherm[kt][cb] = new TFile(nameYesGEWfromTherm->Data(),"READ");
+      //////////////////////////////////////////
+
       TString *Centname = new TString("Centrality ");
       *Centname += (cb)*5;
       Centname->Append("-");
@@ -298,32 +303,34 @@ void Plot_plots(){
       Centname->Append("%");
       
       
-      C2_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_ss");
-      C2_os[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os");
-      C2_ss_MomSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_ss_Momsys");
-      C2_os_MomSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os_Momsys");
-      C2_ss_KSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_ss_Ksys");
-      C2_os_KSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os_Ksys");
-      fitC2ss_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2ss");
-      fitC2os_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2os");
-      fitC2ss_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2ss");
-      fitC2os_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2os");
-      fitC2ss_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ss");
-      fitC2os_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2os");
-      fitC2ss_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2ss");
-      fitC2os_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2os");
-      fitC2ss_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssTherm");
-      fitC2os_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osTherm");
-      fitC2ss_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssThermGaus");
-      fitC2os_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osThermGaus");
-      K2_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("K2_ss");
-      K2_os[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("K2_os");
-      C2Therm_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2Therm_ss");
-      C2Therm_os[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2Therm_os");
-      Chi2NDF_noG[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("ChiSquaredNDF");
-      Chi2NDF_noGEWfromTherm[kt][cb] = (TH1D*)files_2_noGEWfromTherm[kt][cb]->Get("ChiSquaredNDF");
-      Chi2NDF_yesG[kt][cb] = (TH1D*)files_2_yesG[kt][cb]->Get("ChiSquaredNDF");
-      Chi2NDF_yesGEWfromTherm[kt][cb] = (TH1D*)files_2_yesGEWfromTherm[kt][cb]->Get("ChiSquaredNDF");
+      C2_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_ss"); C2_ss[kt][cb]->SetDirectory(0);
+      C2_os[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os"); C2_os[kt][cb]->SetDirectory(0);
+      C2_ss_MomSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_ss_Momsys"); C2_ss_MomSys[kt][cb]->SetDirectory(0);
+      C2_os_MomSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os_Momsys"); C2_os_MomSys[kt][cb]->SetDirectory(0);
+      C2_ss_KSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_ss_Ksys"); C2_ss_KSys[kt][cb]->SetDirectory(0);
+      C2_os_KSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os_Ksys"); C2_os_KSys[kt][cb]->SetDirectory(0);
+      fitC2ss_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2ss"); //fitC2ss_noG[kt][cb]->SetDirectory(0);
+      fitC2os_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2os"); //fitC2os_noG[kt][cb]->SetDirectory(0);
+      fitC2ss_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2ss"); //fitC2ss_yesG[kt][cb]->SetDirectory(0);
+      fitC2os_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2os"); //fitC2os_yesG[kt][cb]->SetDirectory(0);
+      fitC2ss_noGEW[kt][cb] = (TF1*)files_2_noGEW[kt][cb]->Get("fitC2ss"); //fitC2ss_noGEW[kt][cb]->SetDirectory(0);
+      fitC2os_noGEW[kt][cb] = (TF1*)files_2_noGEW[kt][cb]->Get("fitC2os"); //fitC2os_noGEW[kt][cb]->SetDirectory(0);
+      fitC2ss_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ss"); //fitC2ss_noGEWfromTherm[kt][cb]->SetDirectory(0);
+      fitC2os_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2os"); //fitC2os_noGEWfromTherm[kt][cb]->SetDirectory(0);
+      fitC2ss_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2ss"); //fitC2ss_yesGEWfromTherm[kt][cb]->SetDirectory(0);
+      fitC2os_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2os"); //fitC2os_yesGEWfromTherm[kt][cb]->SetDirectory(0);
+      fitC2ss_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssTherm"); //fitC2ss_Therm[kt][cb]->SetDirectory(0);
+      fitC2os_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osTherm"); //fitC2os_Therm[kt][cb]->SetDirectory(0);
+      fitC2ss_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssThermGaus"); //fitC2ss_ThermGaus[kt][cb]->SetDirectory(0);
+      fitC2os_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osThermGaus"); //fitC2os_ThermGaus[kt][cb]->SetDirectory(0);
+      K2_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("K2_ss"); K2_ss[kt][cb]->SetDirectory(0);
+      K2_os[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("K2_os"); K2_os[kt][cb]->SetDirectory(0);
+      C2Therm_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2Therm_ss"); C2Therm_ss[kt][cb]->SetDirectory(0);
+      C2Therm_os[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2Therm_os"); C2Therm_os[kt][cb]->SetDirectory(0);
+      Chi2NDF_noG[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("ChiSquaredNDF"); Chi2NDF_noG[kt][cb]->SetDirectory(0);
+      Chi2NDF_noGEWfromTherm[kt][cb] = (TH1D*)files_2_noGEWfromTherm[kt][cb]->Get("ChiSquaredNDF"); Chi2NDF_noGEWfromTherm[kt][cb]->SetDirectory(0);
+      Chi2NDF_yesG[kt][cb] = (TH1D*)files_2_yesG[kt][cb]->Get("ChiSquaredNDF"); Chi2NDF_yesG[kt][cb]->SetDirectory(0);
+      Chi2NDF_yesGEWfromTherm[kt][cb] = (TH1D*)files_2_yesGEWfromTherm[kt][cb]->Get("ChiSquaredNDF"); Chi2NDF_yesGEWfromTherm[kt][cb]->SetDirectory(0);
       //
       for(int par=1; par<=4; par++){
 	//if(par!=4 && par!=2) 
@@ -336,11 +343,24 @@ void Plot_plots(){
 	ParHisto_chEWfromTherm[par-1][cb]->SetBinError(kt+3, fitC2ss_noGEWfromTherm[kt][cb]->GetParError(par));
 	ParHisto_cohEWfromTherm[par-1][cb]->SetBinContent(kt+3, fitC2ss_yesGEWfromTherm[kt][cb]->GetParameter(par));
 	ParHisto_cohEWfromTherm[par-1][cb]->SetBinError(kt+3, fitC2ss_yesGEWfromTherm[kt][cb]->GetParError(par));
+	ParHisto_chEW[par-1][cb]->SetBinContent(kt+3, fitC2ss_noGEW[kt][cb]->GetParameter(par));
+	ParHisto_chEW[par-1][cb]->SetBinError(kt+3, fitC2ss_noGEW[kt][cb]->GetParError(par));
       }
-    }// kt
- 
-  }// cb
+      //////////////////////////////////////
+      files_2_noG[kt][cb]->Close();
+      files_2_noGEWfromTherm[kt][cb]->Close();
+      files_2_noGEW[kt][cb]->Close();
+      files_2_yesG[kt][cb]->Close();
+      files_2_yesGEWfromTherm[kt][cb]->Close();
+    }// kt loop
+  }
   
+ 
+  TF1 *Unity = new TF1("Unity","1",0,100);
+  Unity->SetLineStyle(2);
+  Unity->SetLineColor(1);
+
+ 
  
 
   // merge C3 histogram centralities
@@ -507,7 +527,7 @@ void Plot_plots(){
   legendK3comp->AddEntry(K3sc_compOmega0,"same-charge","p");
   legendK3comp->AddEntry(K3mc_compOmega0,"mixed-charge","p");
   legendK3comp->Draw("same");
-  TLatex *RatioLabel = new TLatex(-.009,-0.01,"#Delta K_{3}/(K_{3}(#Omega_{0})-1)");// -0.011,0.04
+  TLatex *RatioLabel = new TLatex(-.009,-0.009,"#Delta K_{3}/(K_{3}(#Omega_{0})-1)");// -0.011,0.04
   RatioLabel->SetTextFont(63);
   RatioLabel->SetTextSize(PixelSizeTitle);
   RatioLabel->SetTextAngle(90);
@@ -525,7 +545,40 @@ void Plot_plots(){
   // print global fit values
 
   // kappa3 and kappa4
-  cout<<"fits with Therminator EW"<<endl;
+  cout<<"ALICE EW"<<endl;
+  cout<<"kappa3"<<endl;
+  for(int cb=0; cb<10; cb++){
+    if(cb!=0 && cb!=9) continue;
+    TString *Cname = new TString("$");
+    *Cname += cb*5; Cname->Append("-");
+    *Cname += (cb+1)*5; Cname->Append("\\%$");
+    cout<<Cname->Data()<<" & ";
+    cout.precision(2);
+    for(int kt=0; kt<KTBINS; kt++) {
+      cout<<fitC2ss_noGEW[kt][cb]->GetParameter(5)<<" ";
+      if((kt+1)!=KTBINS) cout<<"& ";
+      else cout<<" \\\\\ \\hline";
+    }
+    cout<<endl;
+  }
+  //
+  cout<<"kappa4"<<endl;
+  for(int cb=0; cb<10; cb++){
+    if(cb!=0 && cb!=9) continue;
+    TString *Cname = new TString("$");
+    *Cname += cb*5; Cname->Append("-");
+    *Cname += (cb+1)*5; Cname->Append("\\%$");
+    cout<<Cname->Data()<<" & ";
+    cout.precision(2);
+    for(int kt=0; kt<KTBINS; kt++) {
+      cout<<fitC2ss_noGEW[kt][cb]->GetParameter(6)<<" ";
+      if((kt+1)!=KTBINS) cout<<"& ";
+      else cout<<" \\\\\ \\hline";
+    }
+    cout<<endl;
+  }
+  // Therminator
+  cout<<"Therminator EW"<<endl;
   cout<<"kappa3"<<endl;
   for(int cb=0; cb<10; cb++){
     if(cb!=0 && cb!=9) continue;
@@ -558,8 +611,11 @@ void Plot_plots(){
     cout<<endl;
   }
 
+
+
+
   // Chi2/NDF
-  cout<<"Chi2/NDF"<<endl;
+  /*cout<<"Chi2/NDF"<<endl;
   cout<<"fits with Coherence"<<endl;
   for(int cb=0; cb<10; cb++){
     if(cb!=0 && cb!=9) continue;
@@ -594,7 +650,7 @@ void Plot_plots(){
     }
     cout<<endl;
   }
-
+  */
 
 
 
@@ -681,8 +737,11 @@ void Plot_plots(){
       fitC2os_noG[kt][BOI_1]->SetLineStyle(3);
       fitC2ss_noG[kt][BOI_1]->DrawCopy("same");
       fitC2os_noG[kt][BOI_1]->DrawCopy("same");
-      fitC2ss_yesG[kt][BOI_1]->DrawCopy("same");
-      fitC2os_yesG[kt][BOI_1]->DrawCopy("same");
+      fitC2ss_noGEW[kt][BOI_1]->DrawCopy("same");
+      fitC2os_noGEW[kt][BOI_1]->DrawCopy("same");
+      //fitC2ss_yesG[kt][BOI_1]->DrawCopy("same");
+      //fitC2os_yesG[kt][BOI_1]->DrawCopy("same");
+
     }else{// Therminator
       C2Therm_ss[kt][BOI_1]->DrawCopy();
       C2Therm_os[kt][BOI_1]->DrawCopy("same");
@@ -720,14 +779,16 @@ void Plot_plots(){
     if(kt==2){
       fitC2ss_noG[kt][BOI_1]->SetLineColor(1);
       fitC2ss_yesG[kt][BOI_1]->SetLineColor(1);
+      fitC2ss_noGEW[kt][BOI_1]->SetLineColor(1);
       fitC2ss_Therm[kt][BOI_1]->SetLineColor(1);
       fitC2ss_ThermGaus[kt][BOI_1]->SetLineColor(1);
       if(!TherminatorC2) {
-	legend2->AddEntry(fitC2ss_noG[kt][BOI_1],"Gauss, G=0","l");
-	legend2->AddEntry(fitC2ss_yesG[kt][BOI_1],"Gauss, G#neq0","l");
+	legend2->AddEntry(fitC2ss_noG[kt][BOI_1],"Gauss","l");
+	legend2->AddEntry(fitC2ss_noGEW[kt][BOI_1],"Edgeworth","l");
+	//legend2->AddEntry(fitC2ss_yesG[kt][BOI_1],"Gauss, G#neq0","l");
       }else {
-	legend2->AddEntry(fitC2ss_Therm[kt][BOI_1],"Ew, G=0","l");// Therminator
-	legend2->AddEntry(fitC2ss_ThermGaus[kt][BOI_1],"Gauss, G=0","l");// Therminator
+	legend2->AddEntry(fitC2ss_ThermGaus[kt][BOI_1],"Gauss","l");// Therminator
+	legend2->AddEntry(fitC2ss_Therm[kt][BOI_1],"Edgeworth","l");// Therminator
       }      
       legend2->Draw("same");
     }
@@ -738,15 +799,15 @@ void Plot_plots(){
     else if(kt==3) KtLabel = new TLatex(0.035,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.6,"0.5<k_{T}<0.6");
     else if(kt==4) KtLabel = new TLatex(0.035,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.6,"0.6<k_{T}<0.7");
     else KtLabel = new TLatex(0.035,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.6,"0.7<k_{T}<0.8");
-    KtLabel->SetTextFont(23);
-    KtLabel->SetTextSize(24);
+    KtLabel->SetTextFont(63);// 23
+    KtLabel->SetTextSize(PixelSizeSpecif);// 24
     KtLabel->Draw("same");
   }
  
   canC2->cd();
   //pad1->cd(1);
   
-
+  
   TPad *pad1_2 = new TPad("pad1_2","pad1_2",0.0,0.0,1.,1.);
   pad1_2->SetFillStyle(0);
   pad1_2->Draw();
@@ -756,23 +817,22 @@ void Plot_plots(){
   C2Label->SetTextSize(PixelSizeTitle);
   C2Label->SetTextAngle(90);
   C2Label->Draw();
-  TLatex *Q2Label = new TLatex(.7,.02,"q_{inv} (GeV/c)");// 0.05,0.9
+  TLatex *Q2Label = new TLatex(.75,.02,"q (GeV/c)");// .7,.02
   Q2Label->SetTextFont(63);
   Q2Label->SetTextSize(PixelSizeTitle);
   Q2Label->Draw();
   TBox *CoverUp = new TBox(0.545,0.05,0.57,.069);
   CoverUp->SetFillColor(10);
   CoverUp->Draw();
-
+  
 
 
 
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
   // C2 fit parameters
-  TCanvas *can2 = new TCanvas("can2", "can2",680,0,600,900);// 11,53,700,500
+  TCanvas *can2 = new TCanvas("can2", "can2",680,0,600,900);// 680,0,600,900 with G
   can2->SetHighLightColor(2);
-  //can1->Range(-0.7838115,-1.033258,0.7838115,1.033258);
   gStyle->SetOptFit(0111);
   can2->SetFillColor(10);//10
   can2->SetBorderMode(0);
@@ -791,56 +851,66 @@ void Plot_plots(){
   pad2->SetLeftMargin(0.0);
   pad2->SetRightMargin(0.0);
   pad2->SetBottomMargin(0.06);
-  pad2->Divide(1,3,0,0);
+  pad2->Divide(1,2,0,0);// 1,3,0,0 with G
   pad2->Draw();
   pad2->cd();
-  TLegend *legend3 = new TLegend(.6,.2, .9,.6,NULL,"brNDC");//.45 or .4 for x1
+  TLegend *legend3 = new TLegend(.56,.6, .96,.98,NULL,"brNDC");//.45 or .4 for x1
   legend3->SetBorderSize(1);
   legend3->SetTextSize(.06);// small .03; large .036 
   legend3->SetFillColor(0);
     
-  double LowerLimits[4]={0.63, 0.32, 5.2, 0.08};
-  double UpperLimits[4]={0.92, 0.63, 13.4, 1.28};
+  double LowerLimits[4]={0.46, 0.32, 4.8, 0.08};// 0.63, 0.32, 5.2, 0.08
+  double UpperLimits[4]={0.84, 0.63, 13.2, 1.28};// 0.92, 0.63, 13.4, 1.28
   for(int par=1; par<=3; par++){
-    pad2->cd(par);
+    //pad2->cd(par);
+    if(par!=1 && par!=3) continue;
+    if(par==1) pad2->cd(1);
+    else pad2->cd(2);
     gPad->SetRightMargin(0.03); gPad->SetLeftMargin(0.12);
-    if(par==3) gPad->SetBottomMargin(0.22);
-    ParHisto_coh[par-1][BOI_1]->SetMinimum(LowerLimits[par-1]);
-    ParHisto_coh[par-1][BOI_1]->SetMaximum(UpperLimits[par-1]);
-    ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetTitleFont(63); ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetTitleFont(63);
-    ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetLabelFont(63); ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetLabelFont(63);
+    if(par==3) gPad->SetBottomMargin(0.13);// 0.22 with G
+    // settings applied to ParHisto_coh[par-1][BOI_1] to include G.  
+    ParHisto_ch[par-1][BOI_1]->SetMinimum(LowerLimits[par-1]);
+    ParHisto_ch[par-1][BOI_1]->SetMaximum(UpperLimits[par-1]);
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleFont(63); ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleFont(63);
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelFont(63); ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetLabelFont(63);
     if(par==3){
-      ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel);
-      ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetTitleSize(PixelSizeTitle);
-      ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleSize(PixelSizeTitle);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel);
     }else{
-      ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetLabelSize(0);
-      ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetTitleSize(0);
-      ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetLabelSize(0);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(0);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleSize(0);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(0);
     }
-    ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetTitleSize(PixelSizeTitle);
-    ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetLabelSize(PixelSizeLabel);
-    ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetTitle("k_{T} (GeV/c)");
-    ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetRangeUser(0.2,0.79);
-    if(par==1) ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetTitle("#lambda");
-    if(par==2) ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetTitle("G");
-    if(par==3) ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetTitle("R_{ch} (fm)");
-    if(par==4) ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetTitle("R_{coh} (fm)");
-    ParHisto_coh[par-1][BOI_1]->GetXaxis()->SetTitleOffset(2.0);
-    ParHisto_coh[par-1][BOI_1]->GetYaxis()->SetTitleOffset(1.4);
+    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleSize(PixelSizeTitle);
+    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitle("k_{T} (GeV/c)");
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetRangeUser(0.2,0.79);
+    if(par==1) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("#lambda");
+    if(par==2) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("G");
+    if(par==3) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("R_{ch} (fm)");
+    if(par==4) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("R_{coh} (fm)");
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleOffset(1.5);// 2.0
+    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleOffset(1.4);// 1.4
     
    
     // ParN=2 (lambda), 3(G), 4(Rch), 5(Rcoh)
-    ParHisto_coh[par-1][BOI_1]->Draw();
-    ParHisto_coh[par-1][BOI_2]->Draw("same");
-
-    if(par!=2 && par!=4) {ParHisto_chEWfromTherm[par-1][BOI_1]->Draw("same"); ParHisto_chEWfromTherm[par-1][BOI_2]->Draw("same");}
+    ParHisto_ch[par-1][BOI_1]->Draw();
+    ParHisto_ch[par-1][BOI_2]->Draw("same");
+    
+    
+    if(par!=2 && par!=4) {
+      //ParHisto_chEWfromTherm[par-1][BOI_1]->Draw("same"); ParHisto_chEWfromTherm[par-1][BOI_2]->Draw("same");
+      ParHisto_chEW[par-1][BOI_1]->Draw("same"); ParHisto_chEW[par-1][BOI_2]->Draw("same");
+    }
     if(par==1){
-      legend3->AddEntry(ParHisto_chEWfromTherm[par-1][BOI_1],"E_{w}, 0-5%","p"); legend3->AddEntry(ParHisto_chEWfromTherm[par-1][BOI_2],"E_{w}, 45-50%","p");
-      legend3->AddEntry(ParHisto_coh[par-1][BOI_1],"G#neq0, 0-5%","p"); legend3->AddEntry(ParHisto_coh[par-1][BOI_2],"G#neq0, 45-50%","p");
+      //legend3->AddEntry(ParHisto_chEWfromTherm[par-1][BOI_1],"E_{w}, 0-5%","p"); legend3->AddEntry(ParHisto_chEWfromTherm[par-1][BOI_2],"E_{w}, 45-50%","p");
+      //legend3->AddEntry(ParHisto_coh[par-1][BOI_1],"G#neq0, 0-5%","p"); legend3->AddEntry(ParHisto_coh[par-1][BOI_2],"G#neq0, 45-50%","p");
+      legend3->AddEntry(ParHisto_ch[par-1][BOI_1],"Gauss, 0-5%","p"); legend3->AddEntry(ParHisto_ch[par-1][BOI_2],"Gauss, 45-50%","p");
+      legend3->AddEntry(ParHisto_chEW[par-1][BOI_1],"E_{w}, 0-5%","p"); legend3->AddEntry(ParHisto_chEW[par-1][BOI_2],"E_{w}, 45-50%","p");
     }
     
-    if(par==2) legend3->Draw("same");
+    if(par==3) legend3->Draw("same");// par==2 with G
     if(par==1){
       TLatex *Specif = new TLatex(0.35,LowerLimits[par-1]+(UpperLimits[par-1]-LowerLimits[par-1])*.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
       Specif->SetTextFont(63);
@@ -874,14 +944,14 @@ void Plot_plots(){
   pad3->Divide(1,2,0,0);
   pad3->Draw();
   pad3->cd();
-  TLegend *legend4 = new TLegend(.17,.6, .47,.8,NULL,"brNDC");//.45 or .4 for x1
+  TLegend *legend4 = new TLegend(.17,.75, .77,.95,NULL,"brNDC");//.45 or .4 for x1
   legend4->SetBorderSize(1);
   legend4->SetTextSize(.07);// small .03; large .036 
   legend4->SetFillColor(0);
  
   TH1D *C2_os_ktcompare[2][KTBINS];
   TH1D *C2Therm_os_ktcompare[2][KTBINS];
-  float MIN_ktcomp=0.65, MAX_ktcomp=1.35;
+  float MIN_ktcomp=0.92, MAX_ktcomp=2.04;// MIN_ktcomp=0.65, MAX_ktcomp=1.35
   for(int type=0; type<2; type++){
     pad3->cd(type+1);
     gPad->SetRightMargin(RightMargin); gPad->SetLeftMargin(0.12);
@@ -910,14 +980,15 @@ void Plot_plots(){
 	valueC2Therm_e += pow(FSIbase->GetBinError(qbin) * (C2Therm_os_ktcompare[type][kt]->GetBinContent(qbin)-1.)/pow((FSIbase->GetBinContent(qbin)-1.),2),2);
 	valueC2Therm_e = sqrt(valueC2Therm_e);
 	// double ratio
-	value /= valueC2Therm;
-	value_e = value_e/valueC2Therm;
+	//value /= valueC2Therm;
+	//value_e = value_e/valueC2Therm;
 	
 	//
 	C2_os_ktcompare[type][kt]->SetBinContent(qbin, value);
 	C2_os_ktcompare[type][kt]->SetBinError(qbin, value_e);
 	C2Therm_os_ktcompare[type][kt]->SetBinContent(qbin, valueC2Therm);
-	C2Therm_os_ktcompare[type][kt]->SetBinError(qbin, valueC2Therm_e);
+	if(type==0) C2Therm_os_ktcompare[type][kt]->SetBinError(qbin, valueC2Therm_e);
+	else C2Therm_os_ktcompare[type][kt]->SetBinError(qbin, C2Therm_os_ktcompare[0][kt]->GetBinError(qbin));
 	if(kt==0) {C2_os_ktcompare[type][kt]->SetBinError(qbin, 0);}
       }
       C2_os_ktcompare[type][kt]->SetBinContent(1,-10); C2Therm_os_ktcompare[type][kt]->SetBinContent(1,-10);
@@ -928,32 +999,41 @@ void Plot_plots(){
       if(kt==1) MarkerStyle=24;
       if(kt==5) MarkerStyle=21;
       C2_os_ktcompare[type][kt]->SetMarkerStyle(MarkerStyle);
-      C2Therm_os_ktcompare[type][kt]->SetMarkerStyle(MarkerStyle);
-      C2Therm_os_ktcompare[type][kt]->SetMarkerColor(1);
+      C2Therm_os_ktcompare[type][kt]->SetMarkerStyle(24);// MarkerStyle
+      C2Therm_os_ktcompare[type][kt]->SetMarkerColor(1); C2Therm_os_ktcompare[type][kt]->SetLineColor(1); 
+      C2Therm_os_ktcompare[type][kt]->SetMarkerSize(C2_os_ktcompare[type][kt]->GetMarkerSize());
       C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleOffset(20); C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleOffset(20);
       
-      if(kt!=5 && kt!=1 ) continue;
-      if(kt==1) {
+      //if(kt!=5 && kt!=1 ) continue;// old way
+      if(kt!=5) continue;
+      if(kt==5) {
 	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleFont(63); C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleFont(63);
 	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleSize(PixelSizeTitle); C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleSize(PixelSizeTitle);
-	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitle("q_{inv} (GeV/c)");
+	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitle("q (GeV/c)");
 	C2_os_ktcompare[type][kt]->GetYaxis()->SetTitle("D^{+-}_{Th}");
 	C2_os_ktcompare[type][kt]->GetXaxis()->SetLabelFont(63); C2_os_ktcompare[type][kt]->GetYaxis()->SetLabelFont(63);
 	C2_os_ktcompare[type][kt]->GetXaxis()->SetLabelSize(PixelSizeLabel); C2_os_ktcompare[type][kt]->GetYaxis()->SetLabelSize(PixelSizeLabel); 
 	
 	C2_os_ktcompare[type][kt]->DrawCopy(); 
-      }else {
-	C2_os_ktcompare[type][kt]->DrawCopy("same");
+	C2Therm_os_ktcompare[type][kt]->DrawCopy("same");
       }
-      TString *name = new TString("k_{T,");
-      *name += kt+1;
-      name->Append("}/k_{T,1}");
-      if(type==0) legend4->AddEntry(C2_os_ktcompare[type][kt],name->Data(),"p");
-            
+      //else {
+      //C2_os_ktcompare[type][kt]->DrawCopy("same");
+      //}
+      TString *ktname = new TString("k_{T,");
+      *ktname += kt+1;
+      ktname->Append("}/k_{T,1}");
+      TString *nameReal=new TString(ktname->Data());
+      nameReal->Append(", ALICE");
+      TString *nameTherm=new TString(ktname->Data());
+      nameTherm->Append(", Therminator");
+      if(type==0) {
+	legend4->AddEntry(C2_os_ktcompare[type][kt],nameReal->Data(),"p");
+	legend4->AddEntry(C2Therm_os_ktcompare[type][kt],nameTherm->Data(),"p");
+      }
     }
     
     if(type==0){
-      legend4->Draw("same");
       TLatex *Specif = new TLatex(0.025,MIN_ktcomp+(MAX_ktcomp-MIN_ktcomp)*.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
       Specif->SetTextFont(63);
       Specif->SetTextSize(PixelSizeSpecif);
@@ -963,6 +1043,8 @@ void Plot_plots(){
       Specif->Draw();
       Specif2->Draw();
     }
+    if(type==1) legend4->Draw("same");
+    
     TF1 *Unity = new TF1("Unity","1",0,100);
     Unity->SetLineStyle(2);
     Unity->Draw("same");
@@ -973,12 +1055,12 @@ void Plot_plots(){
   pad3_2->SetFillStyle(0);
   pad3_2->Draw();
   pad3_2->cd();
-  TLatex *DthLabel = new TLatex(.05,.9,"D^{+-}_{Th}");// 0.05,0.9
+  TLatex *DthLabel = new TLatex(.05,.9,"D^{+-}");// .05,.9, "D^{+-}_{Th}"
   DthLabel->SetTextFont(63);
   DthLabel->SetTextSize(PixelSizeTitle);
   DthLabel->SetTextAngle(90);
   DthLabel->Draw();
-  TLatex *qinvLabel = new TLatex(.72,.02,"q_{inv} (GeV/c)");// 0.05,0.9
+  TLatex *qinvLabel = new TLatex(.75,.02,"q (GeV/c)");// .72,.02
   qinvLabel->SetTextFont(63);
   qinvLabel->SetTextSize(PixelSizeTitle);
   qinvLabel->Draw();
@@ -1013,7 +1095,7 @@ void Plot_plots(){
   pad4->Draw();
 
 
-  TLegend *legend5 = new TLegend(.55,.6,.99,.95,NULL,"brNDC");//
+  TLegend *legend5 = new TLegend(.55,.6,.99,.99,NULL,"brNDC");//.55,.6,.99,.95
   legend5->SetBorderSize(1);
   legend5->SetTextSize(.15);// small .03; large .036 
   legend5->SetFillColor(0);
@@ -1028,18 +1110,20 @@ void Plot_plots(){
   for(int ii=0; ii<6; ii++) {
     TString *nameFit=new TString("GaussFit_");
     *nameFit += ii;
-    GaussFit[ii] = new TF1(nameFit->Data(),"1+[0]*exp(-pow([1]*x,2))",0,0.2);
-    GaussFit[ii]->SetParameter(1, 10/FmToGeV);
+    GaussFit[ii] = new TF1(nameFit->Data(),"[0]+[1]*exp(-pow([2]*x,2))",0,0.2);
+    GaussFit[ii]->SetParameter(0, 1.);
+    GaussFit[ii]->SetParameter(1, 2.);
+    GaussFit[ii]->SetParameter(2, 10./FmToGeV);
   }
   
-  TF1 *C3_SysFit=new TF1("C3_SysFit","sqrt(pow(pol3,2)+pow(0.003,2))",0,0.1);// MRC + PID
+  TF1 *C3_SysFit=new TF1("C3_SysFit","sqrt(pow(pol3,2)+pow(0.003,2))",0,0.15);// MRC + PID
   C3_SysFit->FixParameter(0, -0.01354);
   C3_SysFit->FixParameter(1, 0.2948);
   C3_SysFit->FixParameter(2, -2.237);
   C3_SysFit->FixParameter(3, 5.697);
   TH1D *C3Sys[6];// cb
   TH1D *c3Sys[6];// cb
-  TF1 *c3_Coul_SysFit=new TF1("c3_Coul_SysFit","pol1",0,0.1);
+  TF1 *c3_Coul_SysFit=new TF1("c3_Coul_SysFit","pol1",0,0.15);
   TH1D *c3Sys_Coul[6];
   float C3MAX=2.3;
   if(ChProdBOI==1) C3MAX=2.1;
@@ -1080,11 +1164,11 @@ void Plot_plots(){
     c3Sys_Coul[cb] = (TH1D*)c3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->Clone();// Coulomb choice
     c3Sys_Coul[cb]->Add(c3merged[ChProdBOI][1-int(CoulChoice)][KT3Bin][cb],-1);// Alternate Coulomb
     c3Sys_Coul[cb]->Fit(c3_Coul_SysFit,"MENQ","",0,0.1);
-    for(int ii=1; ii<=10; ii++){
+    for(int ii=1; ii<=11; ii++){
       double Q3=(ii-0.5)*0.01;
-      C3Sys[cb]->SetBinError(ii, C3_SysFit->Eval(Q3) * C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetBinContent(ii));// MRC
+      C3Sys[cb]->SetBinError(ii, C3_SysFit->Eval(Q3) * C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetBinContent(ii));// MRC + PID
       //
-      double err = pow(C3_SysFit->Eval(Q3) * c3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetBinContent(ii),2);// MRC (same function as for C3)
+      double err = pow(0.2 * C3_SysFit->Eval(Q3) * c3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetBinContent(ii),2);// MRC + PID (1/5 that of C3)
       err += pow(c3_Coul_SysFit->Eval(Q3),2);// Coulomb
       c3Sys[cb]->SetBinError(ii, sqrt(err));
     }
@@ -1116,9 +1200,9 @@ void Plot_plots(){
     if(cb==3) Specif->Draw("same");
 
     TString *KTString = new TString("");
-    if(KT3Bin==0) KTString->Append("0<K_{t,3}<0.3 (GeV/c)");
+    if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 (GeV/c)");
     else KTString->Append("0.3<K_{t,3}<1.0 (GeV/c)");
-    TLatex *Kt3Name = new TLatex(0.02,0.9+(C3MAX-0.9)*0.91,KTString->Data());
+    TLatex *Kt3Name = new TLatex(0.016,0.9+(C3MAX-0.9)*0.91,KTString->Data());
     Kt3Name->SetTextFont(63);
     Kt3Name->SetTextSize(PixelSizeSpecif);
     if(cb==1) Kt3Name->Draw("same");
@@ -1162,7 +1246,7 @@ void Plot_plots(){
   Q3Label->SetTextSize(PixelSizeTitle);
   Q3Label->Draw();
   CoverUp->Draw();
- 
+  
 
   if(ChProdBOI==1) return;
 
@@ -1232,7 +1316,7 @@ void Plot_plots(){
   pad5->Divide(2,3,0,0);
   pad5->Draw();
   
-  TLegend *legend6 = new TLegend(.25,.16, .6,.46,NULL,"brNDC");//.45 or .4 for x1
+  TLegend *legend6 = new TLegend(.18,.16, .53,.46,NULL,"brNDC");// .25,.16, .6,.46
   legend6->SetBorderSize(1);
   legend6->SetTextSize(.07);// small .03; large .036 
   legend6->SetFillColor(0);
@@ -1240,7 +1324,8 @@ void Plot_plots(){
   
   double LambdaSysPar0[6]={0.0143, 0.014, 0.01294, 0.00204, 0.001227, 0.00999};
   double LambdaSysPar1[6]={-0.857, -0.741, -0.6655, -0.3516, -0.2327, -0.3325};
-  
+  double r3MIN = 0.3;// 0.3
+  double r3MAX = 2.68;// was 2.68
   for(int cb=0; cb<6; cb++) {
     pad5->cd(cb+1);
     gPad->SetRightMargin(RightMargin);
@@ -1257,20 +1342,21 @@ void Plot_plots(){
     else {r3merged[CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelSize(.0);}
     if(cb<4) r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelSize(.0);
     r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetRangeUser(0,0.1);
-    r3merged[CoulChoice][KT3Bin][cb]->SetMinimum(0.3);//0.3
-    r3merged[CoulChoice][KT3Bin][cb]->SetMaximum(2.28);//2.28 or 3.2(Gauss with Omega0)
+    r3merged[CoulChoice][KT3Bin][cb]->SetMinimum(r3MIN);
+    r3merged[CoulChoice][KT3Bin][cb]->SetMaximum(r3MAX);
     if(cb>2 || KT3Bin==1) r3merged[CoulChoice][KT3Bin][cb]->SetBinContent(2,-100);// 10-20 MeV bin is insignificant
     r3merged[CoulChoice][KT3Bin][cb]->DrawCopy();
     ChaoticLimit->Draw("same");
 
     ///////////////
     // Systematics
-    TF1 *ResidueFit=new TF1("ResidueFit","[0]+[1]*exp(-[2]*x)",0,0.1);
+    TF1 *ResidueFit=new TF1("ResidueFit","[0]+[1]*exp(-[2]*x)",0,0.2);
     ResidueFit->SetParameter(0,1);
     ResidueFit->SetParameter(1,0.001);
     ResidueFit->SetParameter(2,1);
     ResidueFit->SetParLimits(0,.9,1.1); ResidueFit->SetParLimits(1,-.2,.2); ResidueFit->SetParLimits(2,-40,200);
-    c3merged[1][CoulChoice][KT3Bin][cb]->Fit(ResidueFit,"IMNQ","",0.01,0.1);
+    c3merged[1][CoulChoice][KT3Bin][cb]->Fit(ResidueFit,"IMNQ","",0.01,0.14);// Remove "N" to see residue fits
+    //cout<<setprecision(5)<<ResidueFit->Eval(0.08)<<endl;
     TH1D *r3MethSys = (TH1D*)r3merged[CoulChoice][KT3Bin][cb]->Clone();
     r3MethSys->SetBinContent(1,-10);
     r3MethSys->SetMarkerSize(0);
@@ -1287,7 +1373,7 @@ void Plot_plots(){
     r3Coul1->SetMarkerSize(0);
     TH1D *r3Coul2 = (TH1D*)r3merged[1-int(CoulChoice)][KT3Bin][cb]->Clone();
     
-    TF1 *r3LambdaSysFit = new TF1("r3LambdaSysFit","pol1",0,0.1);
+    TF1 *r3LambdaSysFit = new TF1("r3LambdaSysFit","pol1",0,0.15);
     r3LambdaSysFit->FixParameter(0,LambdaSysPar0[cb]);
     r3LambdaSysFit->FixParameter(1,LambdaSysPar1[cb]);
     const int Nb = 20;
@@ -1309,7 +1395,10 @@ void Plot_plots(){
     r3CoulSys->SetLineStyle(2);
     for(int bin=1; bin<=11; bin++){
       double Q3 = (bin-0.5)*0.01;
-      double SysMeth = pow(fabs((ResidueFit->Eval(Q3)-1.0)/(GaussFit[cb]->Eval(r3MethSys->GetXaxis()->GetBinCenter(bin))-1.0)),2);// mixed-charge baseline
+      double SysMeth=0;
+      if(C3merged[1][CoulChoice][KT3Bin][cb]->GetBinContent(bin)>0) {
+	SysMeth = pow(2 * (ResidueFit->Eval(Q3)-1.0 + 0.002)/(c3merged[0][CoulChoice][KT3Bin][cb]->GetBinContent(bin)-1.0),2);// mixed-charge baseline (new).  Includes 0.002 as allowed variation through lambda powers
+      }
       SysMeth += pow(r3LambdaSysFit->Eval(Q3,2)*r3merged[CoulChoice][KT3Bin][cb]->GetBinContent(bin),2);// Lambda 0.7 vs 0.6
       double SysDet = pow(0.01*r3merged[CoulChoice][KT3Bin][cb]->GetBinContent(bin),2);// MRC
       SysDet += pow(0.01*r3merged[CoulChoice][KT3Bin][cb]->GetBinContent(bin),2);// PID
@@ -1347,16 +1436,16 @@ void Plot_plots(){
     //cout<<"Quartic Chi^2/NDF = "<<QuarticFit[cb]->GetChisquare()/QuarticFit[cb]->GetNDF()<<endl;
     //cout<<"Quadratic Chi^2/NDF = "<<QuadraticFit[cb]->GetChisquare()/QuadraticFit[cb]->GetNDF()<<endl;
     
-    TLatex *Specif = new TLatex(0.005,2.1,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// ALICE specifications
+    TLatex *Specif = new TLatex(0.005,r3MIN+(r3MAX-r3MIN)*0.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// 0.005,2.1
     Specif->SetTextFont(63);
     Specif->SetTextSize(PixelSizeSpecif);
-    if(KT3Bin==0 && cb==3) Specif->Draw("same");
-    if(KT3Bin==1 && cb==0) Specif->Draw("same");
+    if(cb==3) Specif->Draw("same");
+   
     
     TString *KTString = new TString("");
-    if(KT3Bin==0) KTString->Append("0<K_{t,3}<0.3 (GeV/c)");
+    if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 (GeV/c)");
     else KTString->Append("0.3<K_{t,3}<1.0 (GeV/c)");
-    TLatex *Kt3Name = new TLatex(0.02,2.1,KTString->Data());
+    TLatex *Kt3Name = new TLatex(0.012,r3MIN+(r3MAX-r3MIN)*0.91,KTString->Data());//
     Kt3Name->SetTextFont(63);
     Kt3Name->SetTextSize(PixelSizeSpecif);
     if(cb==1) Kt3Name->Draw("same");
@@ -1390,10 +1479,10 @@ void Plot_plots(){
   r3Label->SetTextSize(0.06);
   r3Label->SetTextAngle(90);
   r3Label->Draw();
-
-  Q3Label->Draw();
   CoverUp->Draw();
-
+  Q3Label->Draw();
+  
+  
   ////////////////////////////
   // Print Quartic r3 fit values
   double I_quartic_Avg=0, I_quadratic_Avg=0;
@@ -1428,7 +1517,7 @@ void Plot_plots(){
     a_quartic_AvgErr2 += pow(a_Sys1,2) + pow(a_Sys2,2);
 
     cout.precision(3);
-    cout<<"$"<<setprecision(2)<<fixed<<CentLabel2->Data()<<"$ & $"<<QuarticFit[1][cb]->GetParameter(0)<<" \\pm "<<QuarticFit[0][cb]->GetParError(0)<<" \\pm "<<I_SysTotal<<"$ & $"<<setprecision(1)<<fixed<<QuarticFit[1][cb]->GetParameter(1)<<" \\pm "<<QuarticFit[0][cb]->GetParError(1)/SF<<" \\pm "<<a_SysTotal<<"$ \\\\ \\hline"<<endl;
+    cout<<"$"<<setprecision(2)<<fixed<<CentLabel2->Data()<<"$ & $"<<QuarticFit[1][cb]->GetParameter(0)<<" \\pm "<<QuarticFit[0][cb]->GetParError(0)<<" \\pm "<<I_SysTotal<<"$ & $"<<setprecision(1)<<fixed<<QuarticFit[1][cb]->GetParameter(1)/SF<<" \\pm "<<QuarticFit[0][cb]->GetParError(1)/SF<<" \\pm "<<a_SysTotal<<"$ \\\\ \\hline"<<endl;
   }
   I_quartic_Avg /= 6.; I_quartic_AvgErr1 = sqrt(I_quartic_AvgErr1)/6.; I_quartic_AvgErr2 = sqrt(I_quartic_AvgErr2)/6.;
   a_quartic_Avg /= 6.; a_quartic_AvgErr1 = sqrt(a_quartic_AvgErr1)/6.; a_quartic_AvgErr2 = sqrt(a_quartic_AvgErr2)/6.;
@@ -1533,9 +1622,9 @@ void Plot_plots(){
   Specif->Draw();
   Specif2->Draw();
   TString *KTString = new TString("");
-  if(KT3Bin==0) KTString->Append("0<K_{t,3}<0.3 (GeV/c)");
+  if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 (GeV/c)");
   else KTString->Append("0.3<K_{t,3}<1.0 (GeV/c)");
-  TLatex *Kt3Name = new TLatex(0.01,0.8,KTString->Data());
+  TLatex *Kt3Name = new TLatex(0.01,1.0,KTString->Data());
   Kt3Name->SetTextFont(63);
   Kt3Name->SetTextSize(PixelSizeSpecif);
   Kt3Name->Draw("same");
@@ -1623,6 +1712,7 @@ void Plot_plots(){
   legend9->AddEntry(r3LambdaVaried,"#lambda=0.6","p");
   legend9->Draw("same");
   Kt3Name->Draw("same");
+  Specif->Draw();
   Specif2->Draw();
 
   //TString *OutName=new TString("r3_M");
