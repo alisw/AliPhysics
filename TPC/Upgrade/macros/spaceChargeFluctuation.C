@@ -92,6 +92,46 @@ void spaceChargeFluctuation(Int_t mode=0, Float_t arg0=0, Float_t arg1=0, Float_
     DrawFluctuationSector(arg0,arg1);
   }
 }
+
+
+Double_t RndmdNchdY(Double_t s){
+  //
+  // dNch/deta - last 2 points inventeted (to find it somewhere ?)
+  // 
+  //  http://arxiv.org/pdf/1012.1657v2.pdf - table 1.  ALICE PbPb
+  //  Scaled according s^0.15
+  //  http://arxiv.org/pdf/1210.3615v2.pdf
+  //  This we can cite. 
+  //  Usage example::
+  /*
+    TH1F his550("his550","his550",1000,0,3000)
+    for (Int_t i=0; i<300000; i++) his550->Fill(RndmdNchdY(5.5));
+    his550->Draw();    
+    TF1 f1("f1","[0]*x^(-(0.00001+abs([1])))",1,2000)
+    f1.SetParameters(1,-1)
+    his550->Fit("f1","","",10,3000);
+    TH1F his276("his276","his276",1000,0,3000)
+    for (Int_t i=0; i<300000; i++) his276->Fill(RndmdNchdY(5.5));
+    his276->Draw();    
+
+  */
+  static TSpline3 * spline276=0;
+  if (!spline276){
+    // multplicity from archive except of the last  point was set to 0
+    Double_t mult[20]={1601,  1294,   966,  649,   426,  261,  149,  76, 35,      0.001};
+    Double_t cent[20]={2.5,   7.5,    15,   25,    35,   45,   55,   65, 75,   100.};   
+    TGraphErrors * gr = new TGraphErrors(10,cent,mult);
+    spline276 = new TSpline3("spline276",gr);
+  }
+  Double_t norm = TMath::Power((s/2.76),0.15);
+  spline276->Eval(gRandom->Rndm()*100.);
+  return  spline276->Eval(gRandom->Rndm()*100.)*norm;
+}
+
+
+
+
+
 void pileUpToyMC(Int_t nframes){
   //
   //
@@ -117,7 +157,7 @@ void pileUpToyMC(Int_t nframes){
       Bool_t hasCentral=0;
       for (Int_t ievent=0; ievent<nevents; ievent++){
 	Float_t RAN = gRandom->Rndm();
-	ntracks=2*TMath::Power((TMath::Power(FPOT,XEXPO)*(1-RAN)+TMath::Power(EEND,XEXPO)*RAN),YEXPO)/2.;
+	ntracks=RndmdNchdY(5.5);
 	ntracksAll+=ntracks; 
 	if (ntracks>central) hasCentral = kTRUE;
       }    
@@ -215,7 +255,14 @@ void pileUpToyMC(Int_t nframes){
   }
   canvasMult->SaveAs("effectiveMultF5.pdf");
   canvasMult->SaveAs("effectiveMultF5.png");
-
+  TH1F his550("his550","his550",1000,0,3000);
+  for (Int_t i=0; i<300000; i++) his550->Fill(RndmdNchdY(5.5));
+  his550->Draw();    
+  TF1 f1("f1","[0]*x^(-(0.00001+abs([1])))",1,2000);
+  f1.SetParameters(1,-1);
+  his550->GetXaxis()->SetTitle("dN_{ch}/d#eta");
+  his550->Fit("f1","","",10,3000);
+  canvasMult->SaveAs("dNchdEta55.pdf");
   delete pcstream;
 }
 
