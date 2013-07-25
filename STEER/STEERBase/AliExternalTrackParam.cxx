@@ -212,15 +212,15 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   //
   Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
   // protection:  avoid alpha being too close to 0 or +-pi/2
-  if (TMath::Abs(sn)<kSafe) {
-    if (fAlpha>0) fAlpha += fAlpha< TMath::Pi()/2. ?  kSafe : -kSafe;
-    else          fAlpha += fAlpha>-TMath::Pi()/2. ? -kSafe :  kSafe;
+  if (TMath::Abs(sn)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha< TMath::Pi()/2. ?  2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? -2*kSafe :  2*kSafe;
     cs=TMath::Cos(fAlpha);
     sn=TMath::Sin(fAlpha);
   }
-  else if (TMath::Abs(cs)<kSafe) {
-    if (fAlpha>0) fAlpha += fAlpha> TMath::Pi()/2. ? kSafe : -kSafe;
-    else          fAlpha += fAlpha>-TMath::Pi()/2. ? kSafe : -kSafe;
+  else if (TMath::Abs(cs)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha> TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
     cs=TMath::Cos(fAlpha);
     sn=TMath::Sin(fAlpha);
   }
@@ -275,14 +275,14 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   fC[0 ] = cv[0 ]+cv[2 ];  
   fC[1 ] = TMath::Sign(cv34,cv[3 ]/m00); 
   fC[2 ] = cv[5 ]; 
-  fC[3 ] = (cv[10]/m44-cv[6]/m43)/(m24/m44-m23/m43)/m00; 
+  fC[3 ] = (cv[10]*m43-cv[6]*m44)/(m24*m43-m23*m44)/m00; 
   fC[10] = (cv[6]/m00-fC[3 ]*m23)/m43; 
   fC[6 ] = (cv[15]/m00-fC[10]*m45)/m35; 
-  fC[4 ] = (cv[12]-cv[8]*m44/m43)/(m24-m23*m44/m43); 
+  fC[4 ] = (cv[12]*m43-cv[8]*m44)/(m24*m43-m23*m44); 
   fC[11] = (cv[8]-fC[4]*m23)/m43; 
   fC[7 ] = cv[17]/m35-fC[11]*m45/m35; 
-  fC[5 ] = TMath::Abs((a4-a6*a1/a3)/(a5-a6*a2/a3));
-  fC[14] = TMath::Abs(a1/a3-a2*fC[5]/a3);
+  fC[5 ] = TMath::Abs((a4*a3-a6*a1)/(a5*a3-a6*a2));
+  fC[14] = TMath::Abs((a1-a2*fC[5])/a3);
   fC[12] = (cv[9]-fC[5]*m23*m23-fC[14]*m43*m43)/m23/m43;
   Double_t b1=cv[18]-fC[12]*m23*m45-fC[14]*m43*m45;
   Double_t b2=m23*m35;
