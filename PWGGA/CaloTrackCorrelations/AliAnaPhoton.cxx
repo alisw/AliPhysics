@@ -914,7 +914,7 @@ void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const 
       if(GetReader()->IsInTimeWindow(time,amp)) clusterOKTimePt   += amp;
       else                                      clusterLongTimePt += amp;
       
-      if( cells->GetCellAmplitude(absIdMax) < 0.05 ) continue ;
+      if( cells->GetCellAmplitude(absIdMax) < 0.1 ) continue ;
       
       if(GetReader()->IsPileUpFromSPD())
       {
