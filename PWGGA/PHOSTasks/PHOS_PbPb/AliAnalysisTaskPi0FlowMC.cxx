@@ -976,6 +976,8 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
     TParticle * p = fStack->Particle(i) ;
     if(p->R()>kRCut)
       continue ;
+    if( TMath::Abs(p->Pt())<1.e-6 )
+      continue;
     if(TMath::Abs(p->Y())>0.5)
       continue ;
     Double_t w = PrimaryParticleWeight(p) ;  
