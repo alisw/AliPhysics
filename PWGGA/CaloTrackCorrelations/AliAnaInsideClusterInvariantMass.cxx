@@ -84,14 +84,21 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fhEtaEtaPhiNLocMax1(0),     fhEtaEtaPhiNLocMax2(0),      fhEtaEtaPhiNLocMaxN(0),
   fhPi0EPairDiffTimeNLM1(0),  fhPi0EPairDiffTimeNLM2(0),   fhPi0EPairDiffTimeNLMN(0),
   fhEtaEPairDiffTimeNLM1(0),  fhEtaEPairDiffTimeNLM2(0),   fhEtaEPairDiffTimeNLMN(0),
-  fhMCPi0HighNLMPair(0),      fhMCPi0LowNLMPair(0),
-  fhMCPi0AnyNLMPair(0),       fhMCPi0NoneNLMPair(0),
-  fhMCPi0HighNLMPairNoMCMatch(0),  fhMCPi0LowNLMPairNoMCMatch(0),
-  fhMCPi0AnyNLMPairNoMCMatch(0),   fhMCPi0NoneNLMPairNoMCMatch(0),
-  fhMCPi0DecayPhotonHitHighLM(0),  fhMCPi0DecayPhotonAdjHighLM(0),
-  fhMCPi0DecayPhotonHitOtherLM(0), fhMCPi0DecayPhotonAdjOtherLM(0),
-  fhMCPi0DecayPhotonHitNoLM(0),
-  fhMCEOverlapType(0),            fhMCEOverlapTypeMatch(0)
+  fhMCPi0HighNLMPair(0),                  fhMCPi0LowNLMPair(0),
+  fhMCPi0AnyNLMPair(0),                   fhMCPi0NoneNLMPair(0),
+  fhMCPi0HighNLMPairNoMCMatch(0),         fhMCPi0LowNLMPairNoMCMatch(0),
+  fhMCPi0AnyNLMPairNoMCMatch(0),          fhMCPi0NoneNLMPairNoMCMatch(0),
+  fhMCPi0HighNLMPairOverlap(0),           fhMCPi0LowNLMPairOverlap(0),
+  fhMCPi0AnyNLMPairOverlap(0),            fhMCPi0NoneNLMPairOverlap(0),
+  fhMCPi0HighNLMPairNoMCMatchOverlap(0),  fhMCPi0LowNLMPairNoMCMatchOverlap(0),
+  fhMCPi0AnyNLMPairNoMCMatchOverlap(0),   fhMCPi0NoneNLMPairNoMCMatchOverlap(0),
+  fhMCPi0DecayPhotonHitHighLM(0),         fhMCPi0DecayPhotonAdjHighLM(0),
+  fhMCPi0DecayPhotonHitOtherLM(0),        fhMCPi0DecayPhotonAdjOtherLM(0),
+  fhMCPi0DecayPhotonAdjacent(0),          fhMCPi0DecayPhotonHitNoLM(0),
+  fhMCPi0DecayPhotonHitHighLMOverlap(0),  fhMCPi0DecayPhotonAdjHighLMOverlap(0),
+  fhMCPi0DecayPhotonHitOtherLMOverlap(0), fhMCPi0DecayPhotonAdjOtherLMOverlap(0),
+  fhMCPi0DecayPhotonAdjacentOverlap(0),   fhMCPi0DecayPhotonHitNoLMOverlap(0),
+  fhMCEOverlapType(0),                    fhMCEOverlapTypeMatch(0)
 {
   //default ctor
   
@@ -342,7 +349,8 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
 }
 
 //_______________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex)
+void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* cluster,
+                                                                const Int_t mcindex, const Int_t noverlaps)
 {
   // Check origin NLM tower of the cluster, when MC gives merged pi0
   
@@ -351,64 +359,63 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   if(!IsDataMC()) return;
   
   if(mcindex != kmcPi0 && mcindex != kmcPi0Conv) return;
-  
+
   const UInt_t nc = cluster->GetNCells();
   Int_t   list[nc];
   Float_t elist[nc];
   Int_t nMax = GetCaloUtils()->GetNumberOfLocalMaxima(cluster, GetEMCALCells(),list, elist);
-      
-//  printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin() - Cluster E %2.2f; NLM = %d, cluster MC labels:\n",cluster->E(),nMax);
-//  
+  
+//  if(mcindex==kmcPi0)     printf("** Normal Pi0 **\n");
+//  if(mcindex==kmcPi0Conv) printf("** Converted Pi0 **\n");
+//  printf("** N max %d - Overlaps = %d **\n",nMax, noverlaps);
+//
+//  // Study the mothers of cluster
+//  printf("Cluster MC labels %d \n", cluster->GetNLabels());
 //  for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
 //  {
-//    Bool_t ok  =kFALSE,gok = kFALSE;
-//    Int_t pdg    = -22222, status   = -1;
-//    Int_t gpdg   = -22222, gstatus  = -1;
-//    Int_t ggpdg  = -22222, ggstatus = -1;
-//    Int_t gLabel = -1, ggLabel = -1;
-//
-//    Int_t label = cluster->GetLabels()[ilab];
-//    TLorentzVector primary   =GetMCAnalysisUtils()->GetMother     (label,GetReader(),  pdg,  status, ok);
-//    TLorentzVector gprimary  =GetMCAnalysisUtils()->GetGrandMother(label,GetReader(), gpdg, gstatus,gok, gLabel,ggLabel);
-//    TLorentzVector ggprimary =GetMCAnalysisUtils()->GetMother(ggLabel  ,GetReader(),ggpdg,ggstatus,gok);
-//    printf("\t %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
-//           ilab,label,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
-//
+//    Int_t mclabel = cluster->GetLabels()[ilab];
+//    
+//    Bool_t  mOK = 0;
+//    Int_t   mpdg = -999999;
+//    Int_t   mstatus = -1;
+//    Int_t   grandLabel = -1;
+//    TLorentzVector mother = GetMCAnalysisUtils()->GetMother(mclabel,GetReader(),mpdg,mstatus,mOK,grandLabel);
+//    
+//    printf("******** mother %d : Label %d, pdg %d; status %d, E %2.2f, Eta %2.2f, Phi %2.2f, ok %d, mother label %d\n",
+//           ilab, mclabel, mpdg, mstatus,mother.E(), mother.Eta(),mother.Phi()*TMath::RadToDeg(),mOK,grandLabel);
+//    
+//    if( ( mpdg == 22 || TMath::Abs(mpdg)==11 ) && grandLabel >=0 )
+//    {
+//      while( ( mpdg == 22 || TMath::Abs(mpdg)==11 ) && grandLabel >=0 )
+//      {
+//        Int_t newLabel = -1;
+//        TLorentzVector grandmother = GetMCAnalysisUtils()->GetMother(grandLabel,GetReader(),mpdg,mstatus,mOK,newLabel);
+//        printf("\t grandmother %d : Label %d, pdg %d; status %d, E %2.2f, Eta %2.2f, Phi %2.2f, ok %d, mother label %d\n",
+//               ilab, grandLabel, mpdg, mstatus,grandmother.E(), grandmother.Eta(), grandmother.Phi()*TMath::RadToDeg(),mOK,newLabel);
+//        grandLabel = newLabel;
+//        
+//      }
+//    }
 //  }
 //  
-//  printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin() - Cluster Cells MC labels:\n");
-//  
-//  for (UInt_t icell = 0; icell < nc; icell++ )
+//  printf("Cells in cluster %d\n",cluster->GetNCells() );
+//  for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
 //  {
-//    Bool_t ok  =kFALSE,gok = kFALSE;
-//    Int_t pdg    = -22222, status   = -1;
-//    Int_t gpdg   = -22222, gstatus  = -1;
-//    Int_t ggpdg  = -22222, ggstatus = -1;
-//    Int_t gLabel = -1, ggLabel = -1;
+//    Int_t absIdCell = cluster->GetCellAbsId(icell);
+//    Int_t mcLabel   = GetEMCALCells()->GetCellMCLabel(absIdCell);
+//    GetReader()->RemapMCLabelForAODs(mcLabel);
 //    
-//    Int_t absId = cluster->GetCellAbsId(icell);
-//    
-//    printf("cell abs Id %d, amplitude %f\n",absId,GetEMCALCells()->GetCellAmplitude(absId));
-//    
-//    Int_t label = GetEMCALCells()->GetCellMCLabel(absId);
-//    TLorentzVector primary   =GetMCAnalysisUtils()->GetMother     (label,GetReader(),  pdg,  status, ok);
-//    TLorentzVector gprimary  =GetMCAnalysisUtils()->GetGrandMother(label,GetReader(), gpdg, gstatus,gok, gLabel,ggLabel);
-//    TLorentzVector ggprimary =GetMCAnalysisUtils()->GetMother(ggLabel  ,GetReader(),ggpdg,ggstatus,gok);
-//    printf(" %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
-//           icell,label,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
-    
+//    printf(" \t cell i %d, abs %d, amp %2.3f, mclabel %d\n",icell,absIdCell,GetEMCALCells()->GetCellAmplitude(absIdCell),mcLabel);
 //  }
-  
-  //printf("en %2.3f, nc %d, nMax %d \n",cluster->E(),nc,nMax);
   
   //If only one maxima, consider all the towers in the cluster
   if(nMax==1)
   {
-      for (UInt_t icell = 0; icell < nc; icell++ )
-      {
-        list [icell] = cluster->GetCellAbsId(icell);
-        elist[icell] = GetEMCALCells()->GetCellAmplitude(list[icell]);
-      }
+    for (UInt_t icell = 0; icell < nc; icell++ )
+    {
+      list [icell] = cluster->GetCellAbsId(icell);
+      elist[icell] = GetEMCALCells()->GetCellAmplitude(list[icell]);
+    }
   }
   
   Int_t nmaxima = nMax;
@@ -434,7 +441,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
     if(i==imax) continue;
     
     //printf("j %d: AbsId %d; E %2.3f\n",i,list[i],elist[i]);
-
+    
     
     if(elist[i] > emax2)
     {
@@ -446,7 +453,9 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   //printf("Highest : %d and %d\n",imax,imax2);
   
   //---------------------------------------------------------
+  //---------------------------------------------------------
   // Compare ancestors of all local maxima at cell MC level
+  //---------------------------------------------------------
   //---------------------------------------------------------
   
   // Check that the highest mc label and the max cluster label are the same
@@ -467,22 +476,24 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   Int_t mcLabelclusterMax = cluster->GetLabels()[0];
   Bool_t matchHighLMAndHighMC = kFALSE;
   
+  //printf("MC label: LM1 %d, LM2 %d, cluster %d\n",mcLabelMax,mcLabelMax2,mcLabelclusterMax);
+  
   if(mcLabelclusterMax == mcLabelMax && mcLabelclusterMax >= 0)
   {
     matchHighLMAndHighMC = kTRUE;
-    //printf("*** MATCH cluster and LM maximum ***\n");
+    //printf("\t *** MATCH cluster and LM maximum ***\n");
   }
   else
   {
-     //printf("*** NO MATCH cluster and LM maximum, check second ***\n");
+     //printf("\t *** NO MATCH cluster and LM maximum, check second ***\n");
     if(mcLabelclusterMax == mcLabelMax2 && mcLabelclusterMax >= 0)
     {
-      //printf("\t *** MATCH cluster and 2nd LM maximum ***\n");
+      //printf("\t \t *** MATCH cluster and 2nd LM maximum ***\n");
       matchHighLMAndHighMC = kTRUE;
     }
     else
     {
-      //printf("\t *** NO MATCH***\n");
+      //printf("\t \t *** NO MATCH***\n");
       matchHighLMAndHighMC = kFALSE;
     }
   }
@@ -511,8 +522,6 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //    printf("Max index %d; mother: Label %d; PDG %d; E %2.2f - grand mother label %d; PDG %d; E %2.2f- great grand mother label %d; PDG %d; E %2.2f\n",
 //           i,mcLabel1,pdg,primary.E(), gLabel,gpdg,gprimary.E(), ggLabel,ggpdg,ggprimary.E());
 //  }
-  
-  
 
   for(Int_t i = 0; i < nmaxima-1; i++)
   {
@@ -553,7 +562,6 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       Bool_t ok  =kFALSE;
       Int_t pdg = -22222, status = -1;
       TLorentzVector primary  =GetMCAnalysisUtils()->GetMother(ancLabel,GetReader(), pdg, status, ok);
-
       //printf("\t i %d label %d - j %d label %d; ancestor label %d, PDG %d-%d; E %2.2f; high %d, any %d \n",i,mcLabel1,j,mcLabel2, ancLabel, ancPDG,pdg, primary.E(), high, low);
 
     }
@@ -563,23 +571,44 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   //printf("nMax %d; Match MC? %d; high %d; low %d\n",nMax,matchHighLMAndHighMC,high,low);
   
-  if(matchHighLMAndHighMC)
+  if(!noverlaps)
   {
-    if     (high && !low)  fhMCPi0HighNLMPair->Fill(en,nMax);
-    else if(low  && !high) fhMCPi0LowNLMPair ->Fill(en,nMax);
-    else if(low  &&  high) fhMCPi0AnyNLMPair ->Fill(en,nMax);
-    else                   fhMCPi0NoneNLMPair->Fill(en,nMax);
+    if(matchHighLMAndHighMC)
+    {
+      if     (high && !low)  fhMCPi0HighNLMPair->Fill(en,nMax);
+      else if(low  && !high) fhMCPi0LowNLMPair ->Fill(en,nMax);
+      else if(low  &&  high) fhMCPi0AnyNLMPair ->Fill(en,nMax);
+      else                   fhMCPi0NoneNLMPair->Fill(en,nMax);
+    }
+    else
+    {
+      if     (high && !low)  fhMCPi0HighNLMPairNoMCMatch->Fill(en,nMax);
+      else if(low  && !high) fhMCPi0LowNLMPairNoMCMatch ->Fill(en,nMax);
+      else if(low  &&  high) fhMCPi0AnyNLMPairNoMCMatch ->Fill(en,nMax);
+      else                   fhMCPi0NoneNLMPairNoMCMatch->Fill(en,nMax);
+    }
   }
   else
   {
-    if     (high && !low)  fhMCPi0HighNLMPairNoMCMatch->Fill(en,nMax);
-    else if(low  && !high) fhMCPi0LowNLMPairNoMCMatch ->Fill(en,nMax);
-    else if(low  &&  high) fhMCPi0AnyNLMPairNoMCMatch ->Fill(en,nMax);
-    else                   fhMCPi0NoneNLMPairNoMCMatch->Fill(en,nMax);
+    if(matchHighLMAndHighMC)
+    {
+      if     (high && !low)  fhMCPi0HighNLMPairOverlap->Fill(en,nMax);
+      else if(low  && !high) fhMCPi0LowNLMPairOverlap->Fill(en,nMax);
+      else if(low  &&  high) fhMCPi0AnyNLMPairOverlap->Fill(en,nMax);
+      else                   fhMCPi0NoneNLMPairOverlap->Fill(en,nMax);
+    }
+    else
+    {
+      if     (high && !low)  fhMCPi0HighNLMPairNoMCMatchOverlap->Fill(en,nMax);
+      else if(low  && !high) fhMCPi0LowNLMPairNoMCMatchOverlap->Fill(en,nMax);
+      else if(low  &&  high) fhMCPi0AnyNLMPairNoMCMatchOverlap->Fill(en,nMax);
+      else                   fhMCPi0NoneNLMPairNoMCMatchOverlap->Fill(en,nMax);
+    }  
   }
-  
+  //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   // Compare MC decay photon projection to cell location and Local Maxima
+  //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   
   // Get the mother pi0
@@ -629,6 +658,15 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   Float_t phi0 = photon0Kine.Phi();
   Float_t phi1 = photon1Kine.Phi();
 
+//  printf("MC pi0 label %d E  %2.2f, eta %2.2f, phi %2.2f: \n \t photon0 label %d E %2.2f, eta %2.2f, phi %2.2f \n \t photon1 label %d E %2.2f eta %2.2f, phi %2.2f\n",
+//         label , pi0Kine.E()    , pi0Kine.Eta(),pi0Kine.Phi()*TMath::RadToDeg(),
+//         label0, photon0Kine.E(),          eta0,         phi0*TMath::RadToDeg(),
+//         label1, photon1Kine.E(),          eta1,         phi1*TMath::RadToDeg());
+//  
+//  TLorentzVector momclus;
+//  cluster->GetMomentum(momclus,GetVertex(0));
+//  printf("Cluster E %2.2F eta %2.2f, phi %f\n",momclus.E(),momclus.Eta(),momclus.Phi()*TMath::RadToDeg());
+  
   if(phi0 < 0 ) phi0+=TMath::TwoPi();
   if(phi1 < 0 ) phi1+=TMath::TwoPi();
   
@@ -642,128 +680,272 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
     return;
   }
   
+  //-----------------------------------------------
   // Check that the 2 photons hit the Local Maxima
+  //-----------------------------------------------
   
-  //printf("Photons AbsId (%d,%d); Local Maxima AbsId(%d,%d)\n",absId0,absId1,list[imax],list[imax2]);
+ // printf("Photons AbsId (%d,%d); Local Maxima AbsId(%d,%d)\n",absId0,absId1,list[imax],list[imax2]);
   //printf("Photon1 (eta,phi)=(%f,%f); Photon2 (eta,phi)=(%f,%f);\n",eta0,phi0*TMath::RadToDeg(),eta1,phi1*TMath::RadToDeg());
   
-  Bool_t matchMCHitLM = kFALSE;
-  if(imax >= 0 && imax2 >=0 )
+  Bool_t match0  = kFALSE;
+  Bool_t match1  = kFALSE;
+  Int_t imatch0  = -1;
+  Int_t imatch1  = -1;
+  if(imax >= 0 && imax2 >=0 && absId0 > 0 && absId1 > 0 )
   {
-    if     (absId0 == list[imax] && absId1 == list[imax2]) matchMCHitLM = kTRUE;
-    else if(absId1 == list[imax] && absId0 == list[imax2]) matchMCHitLM = kTRUE;
+    if     (absId0 == list[imax] ) { match0 = kTRUE ; imatch0 = imax  ; }
+    else if(absId0 == list[imax2]) { match0 = kTRUE ; imatch0 = imax2 ; }
+    
+    if     (absId1 == list[imax] ) { match1 = kTRUE ; imatch1 = imax  ; }
+    else if(absId1 == list[imax2]) { match1 = kTRUE ; imatch1 = imax2 ; }
   }
   
-  //Check the adjacent cells
-  Bool_t adjacent = kFALSE;
-  Int_t ieta0=-1; Int_t iphi0 = 0; Int_t rcu0 = 0;
-  GetModuleNumberCellIndexes(absId0,fCalorimeter, ieta0, iphi0, rcu0);
-  Int_t ieta1=-1; Int_t iphi1 = 0; Int_t rcu1 = 0;
-  GetModuleNumberCellIndexes(absId1,fCalorimeter, ieta1, iphi1, rcu1);
-  
-  if(!matchMCHitLM)
-  {
-    Int_t ietam0=-1; Int_t iphim0 = 0; Int_t rcum0 = 0 ;
-    if(imax  >= 0) GetModuleNumberCellIndexes(list[imax] ,fCalorimeter, ietam0, iphim0, rcum0);
-    Int_t ietam1=-1; Int_t iphim1 = 0; Int_t rcum1 = 0 ;
-    if(imax2 >= 0) GetModuleNumberCellIndexes(list[imax2],fCalorimeter, ietam1, iphim1, rcum1);
+  //printf("primary imatch0 %d, imatch1 %d\n",imatch0,imatch1);
 
-    Bool_t adjacent0m0 = kFALSE;
-    Bool_t adjacent1m0 = kFALSE;
-    Bool_t adjacent0m1 = kFALSE;
-    Bool_t adjacent1m1 = kFALSE;
-    
-    if( iphim0>=0 && ietam0 >= 0 )
+  // If one or the 2 not matched, check with the other MC labels
+  // only in case there was a conversion
+  
+  Int_t   absId0second  = -1;
+  Int_t   absId1second  = -1;
+  Int_t   secLabel0     = -1;
+  Int_t   secLabel1     = -1;
+  Int_t   mcLabel0      = -1;
+  Int_t   mcLabel1      = -1;
+  Bool_t  secOK         = 0;
+  Int_t   secpdg        = -999999;
+  Int_t   secstatus     = -1;
+  Int_t   secgrandLabel = -1;
+
+  if(match0) { secLabel0 = label0 ; mcLabel0 = label0 ; }
+  if(match1) { secLabel1 = label1 ; mcLabel1 = label1 ; }
+  
+  if((!match0 || !match1) && mcindex == kmcPi0Conv)
+  {
+    for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
     {
-      if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 0 ) adjacent0m0 = kTRUE;
-      if(TMath::Abs(ieta0-ietam0) == 0 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
-      if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
-    
-      if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 0 ) adjacent1m0 = kTRUE;
-      if(TMath::Abs(ieta1-ietam0) == 0 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
-      if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
+      Int_t mclabel = cluster->GetLabels()[ilab];
+      
+      //printf("Check label %d - %d\n",ilab,mclabel);
+      
+      if(mclabel == label0 || mclabel == label1)
+      {
+        //printf("continue: secLabel %d, label0 %d, label1 %d\n",mclabel,label0,label1);
+        if(mclabel == label0 && secLabel0 < 0) { secLabel0 = label0 ; mcLabel0 = label0 ; }
+        if(mclabel == label1 && secLabel1 < 0) { secLabel1 = label1 ; mcLabel1 = label1 ; }
+        continue ;
+      }
+      
+      //printf("Before while: secLabel0 %d, secLabel1 %d\n",secLabel0,secLabel1);
+      
+      // match mc label and parent photon
+      Int_t tmplabel   = mclabel;
+      while((secLabel0 < 0 || secLabel1 < 0) && tmplabel > 0 )
+      {
+        TLorentzVector mother = GetMCAnalysisUtils()->GetMother(tmplabel,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+        
+        //printf("\t \t while secLabel %d, mom %d, granmom %d\n",mclabel,tmplabel,secgrandLabel);
+        
+        if((secgrandLabel == label0) || (secgrandLabel == label1 ))
+        {
+          //printf("mcMatch! grand label %d, secLabel %d\n",secgrandLabel, mclabel);
+          if(!match0 && mcLabel1 != secgrandLabel) { secLabel0 = mclabel; mcLabel0 = secgrandLabel; }
+          if(!match1 && mcLabel0 != secgrandLabel) { secLabel1 = mclabel; mcLabel1 = secgrandLabel; }
+        }
+        
+        //printf("\t GrandMother %d, secLabel0 %d, secLabel1 %d \n",secgrandLabel, secLabel0,secLabel1);
+
+        tmplabel = secgrandLabel;
+      }
     }
     
-    if( iphim1>=0 && ietam1 >= 0 )
+    // Get the position of the found secondaries mother
+    if(!match0 && secLabel0 > 0)
     {
-      if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 0 ) adjacent0m1 = kTRUE;
-      if(TMath::Abs(ieta0-ietam1) == 0 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
-      if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
-    
-      if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 0 ) adjacent1m1 = kTRUE;
-      if(TMath::Abs(ieta1-ietam1) == 0 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
-      if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
+      TLorentzVector mother = GetMCAnalysisUtils()->GetMother(secLabel0,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+      
+      Float_t eta = mother.Eta();
+      Float_t phi = mother.Phi();
+      if(phi < 0 ) phi+=TMath::TwoPi();
+      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta, phi, absId0second);
+      
+      //printf("Secondary MC0 label %d, absId %d E %2.2F eta %2.2f, phi %f\n", secLabel0,absId0second, mother.E(),mother.Eta(),mother.Phi()*TMath::RadToDeg());
+      
+      if(absId0second == list[imax] ) { match0 = kTRUE ; imatch0 = imax  ; }
+      if(absId0second == list[imax2]) { match0 = kTRUE ; imatch0 = imax2 ; }
     }
-    
-    if(adjacent1m1 || adjacent1m0 || adjacent0m1 || adjacent0m0 ) adjacent = kTRUE;
+
+    if(!match1 && secLabel1 > 0)
+    {
+      TLorentzVector mother = GetMCAnalysisUtils()->GetMother(secLabel1,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+      
+      Float_t eta = mother.Eta();
+      Float_t phi = mother.Phi();
+      if(phi < 0 ) phi+=TMath::TwoPi();
+      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta, phi, absId1second);
+      
+      //printf("Secondary MC1 label %d absId %d E %2.2F eta %2.2f, phi %f\n",secLabel1, absId1second, mother.E(),mother.Eta(),mother.Phi()*TMath::RadToDeg());
+      
+      if(absId1second == list[imax] ) { match1 = kTRUE ; imatch1 = imax  ; }
+      if(absId1second == list[imax2]) { match1 = kTRUE ; imatch1 = imax2 ; }
+    }
+
+    //printf("secondary label mc0 %d, mc1 %d, imatch0 %d, imatch1 %d\n",secLabel0,secLabel1,imatch0,imatch1);
     
   }
+    
+  //printf("imatch0 %d, imatch1 %d\n",imatch0,imatch1);
+  if( match0 && match1 )
+  {
+    //printf("a) Both Photons hit local maxima \n");
+    
+    if(!noverlaps)fhMCPi0DecayPhotonHitHighLM       ->Fill(en,nMax);
+    else          fhMCPi0DecayPhotonHitHighLMOverlap->Fill(en,nMax);
+    
+    return ;
+  }
+  
+  //printf("Any match? photon0 %d, photon1 %d\n",match0,match1);
+  //if(!match0 && !match1) printf("WARNING, LM not matched to any photon decay!\n");
+  
+  //---------------------------------------------
+  // Check the adjacent cells to the local maxima
+  //---------------------------------------------
+  
+//  Int_t ieta0=-1; Int_t iphi0 = 0; Int_t rcu0 = 0;
+//  Int_t sm0 = GetModuleNumberCellIndexes(absId0,fCalorimeter, ieta0, iphi0, rcu0);
+//  Int_t ieta1=-1; Int_t iphi1 = 0; Int_t rcu1 = 0;
+//  Int_t sm1 = GetModuleNumberCellIndexes(absId1,fCalorimeter, ieta1, iphi1, rcu1);
+//  
+//  printf("Photon1 (id,sm,eta,phi)=(%d,%d,%d,%d), Photon2 (id,sm,eta,phi)=(%d,%d,%d,%d)\n",
+//         absId0,sm0,ieta0,iphi0,absId1,sm1,ieta1,iphi1);
+//  
+//  Int_t ietam0=-1; Int_t iphim0 = 0; Int_t rcum0 = 0; Int_t smm0 = -1 ;
+//  if(imax  >= 0) smm0 = GetModuleNumberCellIndexes(list[imax] ,fCalorimeter, ietam0, iphim0, rcum0);
+//  Int_t ietam1=-1; Int_t iphim1 = 0; Int_t rcum1 = 0; Int_t smm1 = -1 ;
+//  if(imax2 >= 0) smm1 = GetModuleNumberCellIndexes(list[imax2],fCalorimeter, ietam1, iphim1, rcum1);
+//  
+//  printf("Max (id, sm,eta,phi)=(%d,%d,%d,%d), Max2 (id, sm,eta,phi)=(%d,%d,%d,%d), imatch0 %d, imatch1 %d\n",
+//         list[imax],smm0,ietam0,iphim0,list[imax2],smm1,ietam1,iphim1,imatch0,imatch1);
+  
+  if(!match0)
+  {
+    if(imatch1!=imax  && GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,list[imax])) match0 = kTRUE;
+    //printf("imax - match0? (%d-%d)=%d, (%d-%d)=%d\n",ieta0,ietam0,ieta0-ietam0, iphi0,iphim0,iphi0-iphim0);
+    if(imatch1!=imax2 && GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,list[imax2]) ) match0 = kTRUE;
+    //printf("imax2 - match0? (%d-%d)=%d, (%d-%d)=%d\n",ieta0,ietam1,ieta0-ietam1, iphi0,iphim1,iphi0-iphim1);
+  }
+  
+  if(!match1)
+  {
+    if(imatch0!=imax  && GetCaloUtils()->AreNeighbours(fCalorimeter,absId1,list[imax]) ) match1 = kTRUE;
+    //printf("imax - match1? (%d-%d)=%d, (%d-%d)=%d\n",ieta1,ietam0,ieta1-ietam0, iphi1,iphim0,iphi1-iphim0);
+  
+    if(imatch0!=imax2 && GetCaloUtils()->AreNeighbours(fCalorimeter,absId1,list[imax2])) match1 = kTRUE;
+    //printf("imax2 - match1? (%d-%d)=%d, (%d-%d)=%d\n",ieta1,ietam1,ieta1-ietam1, iphi1,iphim1,iphi1-iphim1);
+  }
+    
+  //printf("Local Maxima: adjacent0 %d,adjacent1 %d \n",match0,match1);
+  
+  if(match0 && match1)
+  {
+    //printf("b) Both Photons hit local maxima or cell adjacent or 2 cells adjacent \n");
+    
+    if(!noverlaps) fhMCPi0DecayPhotonAdjHighLM       ->Fill(en,nMax);
+    else           fhMCPi0DecayPhotonAdjHighLMOverlap->Fill(en,nMax);
+    
+    return;
+  }
+
+  
+  // Decay photon cells are adjacent?
+  
+  if( (match0 || match1) && GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,absId1) )
+  {
+    //printf("c) Both Photons hit a local maxima and in adjacent cells \n");
+    if(!noverlaps)  fhMCPi0DecayPhotonAdjacent        ->Fill(en,nMax);
+    else            fhMCPi0DecayPhotonAdjacentOverlap ->Fill(en,nMax);
+    
+    return;
+  }
+  
+  //--------------------
+  // Other Local maxima
+  //--------------------
   
   Bool_t matchMCHitOtherLM = kFALSE;
-  if(!adjacent && !matchMCHitLM)
+  if(!match1)
   {
-    for(Int_t i = 0; i < nmaxima-1; i++)
+    for(Int_t i = 0; i < nmaxima; i++)
     {
-      Int_t mcLabel1 = GetEMCALCells()->GetCellMCLabel(list[i]);
-      GetReader()->RemapMCLabelForAODs(mcLabel1);
-      
-      for(Int_t j = i+1; j < nmaxima; j++)
-      {
-        if     (absId0==list[i] && absId1 == list[j]) matchMCHitOtherLM = kTRUE;
-        else if(absId1==list[i] && absId0 == list[j]) matchMCHitOtherLM = kTRUE;
-      }
+      if(imax!=i && imax2!=i && absId1 == list[i]) { match1 = kTRUE; matchMCHitOtherLM = kTRUE; }
     }
   }
   
-  Bool_t adjacentOther = kFALSE;
-  if(!adjacent && ! matchMCHitLM && !matchMCHitOtherLM)
+  if(!match0)
   {
-    for(Int_t i = 0; i < nmaxima-1; i++)
+    for(Int_t i = 0; i < nmaxima; i++)
     {
-      Int_t mcLabel1 = GetEMCALCells()->GetCellMCLabel(list[i]);
-      GetReader()->RemapMCLabelForAODs(mcLabel1);
-      
-      for(Int_t j = i+1; j < nmaxima; j++)
-      {
-        Int_t ietam0=-1; Int_t iphim0 = 0; Int_t rcum0 = 0;
-        GetModuleNumberCellIndexes(list[i] ,fCalorimeter, ietam0, iphim0, rcum0);
-        Int_t ietam1=-1; Int_t iphim1 = 0; Int_t rcum1 = 0;
-        GetModuleNumberCellIndexes(list[j],fCalorimeter, ietam1, iphim1, rcum1);
-        
-        Bool_t adjacent0m0 = kFALSE;
-        Bool_t adjacent1m0 = kFALSE;
-        Bool_t adjacent0m1 = kFALSE;
-        Bool_t adjacent1m1 = kFALSE;
-        
-        if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 0 ) adjacent0m0 = kTRUE;
-        if(TMath::Abs(ieta0-ietam0) == 0 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
-        if(TMath::Abs(ieta0-ietam0) == 1 && TMath::Abs(iphi0-iphim0) == 1 ) adjacent0m0 = kTRUE;
-        
-        if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 0 ) adjacent1m0 = kTRUE;
-        if(TMath::Abs(ieta1-ietam0) == 0 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
-        if(TMath::Abs(ieta1-ietam0) == 1 && TMath::Abs(iphi1-iphim0) == 1 ) adjacent1m0 = kTRUE;
-        
-        if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 0 ) adjacent0m1 = kTRUE;
-        if(TMath::Abs(ieta0-ietam1) == 0 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
-        if(TMath::Abs(ieta0-ietam1) == 1 && TMath::Abs(iphi0-iphim1) == 1 ) adjacent0m1 = kTRUE;
-        
-        if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 0 ) adjacent1m1 = kTRUE;
-        if(TMath::Abs(ieta1-ietam1) == 0 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
-        if(TMath::Abs(ieta1-ietam1) == 1 && TMath::Abs(iphi1-iphim1) == 1 ) adjacent1m1 = kTRUE;
-        
-        if(adjacent1m1 || adjacent1m0 || adjacent0m1 || adjacent0m0 ) adjacentOther = kTRUE;
-        
-      }
+      if(imax!=i && imax2!=i && absId0 == list[i]) { match0 = kTRUE; matchMCHitOtherLM = kTRUE; }
     }
   }
   
-  //printf("nMax %d; Match HitHigh? %d; Hit Adj High? %d; Hit Other  %d, Hit Other Ajd %d\n",nMax,matchMCHitLM,adjacent,matchMCHitOtherLM,adjacentOther);
-
-  if     (matchMCHitLM)      fhMCPi0DecayPhotonHitHighLM ->Fill(en,nMax);
-  else if(adjacent)          fhMCPi0DecayPhotonAdjHighLM ->Fill(en,nMax);
-  else if(matchMCHitOtherLM) fhMCPi0DecayPhotonHitOtherLM->Fill(en,nMax);
-  else if(adjacentOther)     fhMCPi0DecayPhotonAdjOtherLM->Fill(en,nMax);
-  else                       fhMCPi0DecayPhotonHitNoLM   ->Fill(en,nMax);
+  if(matchMCHitOtherLM)
+  {
+    //printf("d) One Photon hits a local maxima, the other another not high \n");
+    
+    if(!noverlaps) fhMCPi0DecayPhotonHitOtherLM       ->Fill(en,nMax);
+    else           fhMCPi0DecayPhotonHitOtherLMOverlap->Fill(en,nMax);
+    
+    return ;
+  }
+  
+  // Adjacent to other maxima
+  
+  Bool_t adjacentOther1 = kFALSE;
+  if(match0)
+  {
+    for(Int_t i = 0; i < nmaxima; i++)
+    {
+      Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
+      GetModuleNumberCellIndexes(list[i] ,fCalorimeter, ieta, iphi, rcu);
+      
+      //printf(" Other Max (eta,phi)=(%d,%d)\n",ieta,iphi);
+      
+      if(GetCaloUtils()->AreNeighbours(fCalorimeter,absId1,list[i]) ) adjacentOther1 = kTRUE;
+      
+      //printf("Other Maxima: adjacentOther1 %d\n",adjacentOther1);
+    }
+  }
+  
+  Bool_t adjacentOther0 = kFALSE;
+  if(match1)
+  {
+    for(Int_t i = 0; i < nmaxima; i++)
+    {
+      Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
+      GetModuleNumberCellIndexes(list[i] ,fCalorimeter, ieta, iphi, rcu);
+      
+      //printf(" Other Max (eta,phi)=(%d,%d)\n",ieta,iphi);
+      
+      if(GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,list[i]) ) adjacentOther0 = kTRUE;
+      
+      //printf("Other Maxima: adjacentOther0 %d\n",adjacentOther0);
+    }
+  }
+  
+  if((match0 && adjacentOther1) || (match1 && adjacentOther0))
+  {
+    //printf("e) One Photon hits a local maxima, the other another not high, adjacent \n");
+    
+    if(!noverlaps) fhMCPi0DecayPhotonAdjOtherLM       ->Fill(en,nMax);
+    else           fhMCPi0DecayPhotonAdjOtherLMOverlap->Fill(en,nMax);
+    
+    return;
+  }
+  
+  //printf("f) No hit found \n");
+  if(!noverlaps) fhMCPi0DecayPhotonHitNoLM       ->Fill(en,nMax);
+  else           fhMCPi0DecayPhotonHitNoLMOverlap->Fill(en,nMax);
   
 }
 
@@ -3032,36 +3214,131 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     outputContainer->Add(fhMCPi0NoneNLMPairNoMCMatch) ;
 
     
-    fhMCPi0DecayPhotonHitHighLM    = new TH2F("hMCPi0DecayPhotonHitHighLM ","NLM vs E for merged pi0 cluster, decay photon hit High Local Maxima",
+    
+    
+    
+    fhMCPi0HighNLMPairOverlap    = new TH2F("hMCPi0HighNLMPairOverlap","NLM vs E for merged pi0 cluster, high energy NLM pair are decays",
+                                            nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0HighNLMPairOverlap   ->SetYTitle("N maxima");
+    fhMCPi0HighNLMPairOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0HighNLMPairOverlap) ;
+    
+    fhMCPi0LowNLMPairOverlap     = new TH2F("hMCPi0LowNLMPairOverlap","NLM vs E for merged pi0 cluster, lower energy NLM pair are decays",
+                                            nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0LowNLMPairOverlap   ->SetYTitle("N maxima");
+    fhMCPi0LowNLMPairOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0LowNLMPairOverlap) ;
+    
+    fhMCPi0AnyNLMPairOverlap     = new TH2F("hMCPi0AnyNLMPairOverlap","NLM vs E for merged pi0 cluster, both high and other energy NLM pair are decays",
+                                            nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0AnyNLMPairOverlap   ->SetYTitle("N maxima");
+    fhMCPi0AnyNLMPairOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0AnyNLMPairOverlap) ;
+    
+    fhMCPi0NoneNLMPairOverlap     = new TH2F("hMCPi0NoneNLMPairOverlap","NLM vs E for merged pi0 cluster, no NLM pair are decays",
+                                             nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0NoneNLMPairOverlap   ->SetYTitle("N maxima");
+    fhMCPi0NoneNLMPairOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0NoneNLMPairOverlap) ;
+    
+    fhMCPi0HighNLMPairNoMCMatchOverlap    = new TH2F("hMCPi0HighNLMPairNoMCMatchOverlap","NLM vs E for merged pi0 cluster, high energy NLM pair are decays",
+                                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0HighNLMPairNoMCMatchOverlap   ->SetYTitle("N maxima");
+    fhMCPi0HighNLMPairNoMCMatchOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0HighNLMPairNoMCMatchOverlap) ;
+    
+    fhMCPi0LowNLMPairNoMCMatchOverlap     = new TH2F("hMCPi0LowNLMPairNoMCMatchOverlap","NLM vs E for merged pi0 cluster, lower energy NLM pair are decays",
+                                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0LowNLMPairNoMCMatchOverlap   ->SetYTitle("N maxima");
+    fhMCPi0LowNLMPairNoMCMatchOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0LowNLMPairNoMCMatchOverlap) ;
+    
+    fhMCPi0AnyNLMPairNoMCMatchOverlap     = new TH2F("hMCPi0AnyNLMPairNoMCMatchOverlap","NLM vs E for merged pi0 cluster, both high and other energy NLM pair are decays",
+                                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0AnyNLMPairNoMCMatchOverlap   ->SetYTitle("N maxima");
+    fhMCPi0AnyNLMPairNoMCMatchOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0AnyNLMPairNoMCMatchOverlap) ;
+    
+    fhMCPi0NoneNLMPairNoMCMatchOverlap     = new TH2F("hMCPi0NoneNLMPairNoMCMatchOverlap","NLM vs E for merged pi0 cluster, no NLM pair are decays",
+                                                      nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0NoneNLMPairNoMCMatchOverlap   ->SetYTitle("N maxima");
+    fhMCPi0NoneNLMPairNoMCMatchOverlap   ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0NoneNLMPairNoMCMatchOverlap) ;
+
+    fhMCPi0DecayPhotonHitHighLM    = new TH2F("hMCPi0DecayPhotonHitHighLM","NLM vs E for merged pi0 cluster, decay photon hit High Local Maxima",
                                               nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
     fhMCPi0DecayPhotonHitHighLM    ->SetYTitle("N maxima");
     fhMCPi0DecayPhotonHitHighLM    ->SetXTitle("E (GeV)");
     outputContainer->Add(fhMCPi0DecayPhotonHitHighLM ) ;
     
-    fhMCPi0DecayPhotonAdjHighLM    = new TH2F("hMCPi0DecayPhotonAdjHighLM ","NLM vs E for merged pi0 cluster, decay photon hit cells adjacent to High Local Maxima",
+    fhMCPi0DecayPhotonAdjHighLM    = new TH2F("hMCPi0DecayPhotonAdjHighLM","NLM vs E for merged pi0 cluster, decay photon hit cells adjacent to High Local Maxima",
                                                                                                       nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
     fhMCPi0DecayPhotonAdjHighLM    ->SetYTitle("N maxima");
     fhMCPi0DecayPhotonAdjHighLM    ->SetXTitle("E (GeV)");
     outputContainer->Add(fhMCPi0DecayPhotonAdjHighLM ) ;
 
-    fhMCPi0DecayPhotonHitOtherLM    = new TH2F("hMCPi0DecayPhotonHitOtherLM ","NLM vs E for merged pi0 cluster, decay photon hit Other Local Maxima",
+    fhMCPi0DecayPhotonHitOtherLM    = new TH2F("hMCPi0DecayPhotonHitOtherLM","NLM vs E for merged pi0 cluster, decay photon hit Other Local Maxima",
                                               nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
     fhMCPi0DecayPhotonHitOtherLM    ->SetYTitle("N maxima");
     fhMCPi0DecayPhotonHitOtherLM    ->SetXTitle("E (GeV)");
     outputContainer->Add(fhMCPi0DecayPhotonHitOtherLM ) ;
     
-    fhMCPi0DecayPhotonAdjOtherLM    = new TH2F("hMCPi0DecayPhotonAdjOtherLM ","NLM vs E for merged pi0 cluster, decay photon hit cells adjacent to Other Local Maxima",
+    fhMCPi0DecayPhotonAdjOtherLM    = new TH2F("hMCPi0DecayPhotonAdjOtherLM","NLM vs E for merged pi0 cluster, decay photon hit cells adjacent to Other Local Maxima",
                                               nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
     fhMCPi0DecayPhotonAdjOtherLM    ->SetYTitle("N maxima");
     fhMCPi0DecayPhotonAdjOtherLM    ->SetXTitle("E (GeV)");
     outputContainer->Add(fhMCPi0DecayPhotonAdjOtherLM ) ;
 
-    fhMCPi0DecayPhotonHitNoLM    = new TH2F("hMCPi0DecayPhotonHitNoLM ","NLM vs E for merged pi0 cluster, decay photon do not hit Local Maxima",
-                                               nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonAdjacent   = new TH2F("hMCPi0DecayPhotonAdjacent","NLM vs E for merged pi0 cluster, decay photon hit adjacent cells",
+                                            nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonAdjacent    ->SetYTitle("N maxima");
+    fhMCPi0DecayPhotonAdjacent    ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0DecayPhotonAdjacent ) ;
+    
+    fhMCPi0DecayPhotonHitNoLM    = new TH2F("hMCPi0DecayPhotonHitNoLM","NLM vs E for merged pi0 cluster, decay photon do not hit Local Maxima",
+                                            nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
     fhMCPi0DecayPhotonHitNoLM    ->SetYTitle("N maxima");
     fhMCPi0DecayPhotonHitNoLM    ->SetXTitle("E (GeV)");
     outputContainer->Add(fhMCPi0DecayPhotonHitNoLM ) ;
     
+    
+    fhMCPi0DecayPhotonHitHighLMOverlap    = new TH2F("hMCPi0DecayPhotonHitHighLMOverlap","NLM vs E for merged pi0 cluster, decay photon hit High Local Maxima, there was an overlap",
+                                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonHitHighLMOverlap    ->SetYTitle("N maxima");
+    fhMCPi0DecayPhotonHitHighLMOverlap    ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0DecayPhotonHitHighLMOverlap ) ;
+    
+    fhMCPi0DecayPhotonAdjHighLMOverlap    = new TH2F("hMCPi0DecayPhotonAdjHighLMOverlap","NLM vs E for merged pi0 cluster, decay photon hit cells adjacent to High Local Maxima, there was an overlap",
+                                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonAdjHighLMOverlap    ->SetYTitle("N maxima");
+    fhMCPi0DecayPhotonAdjHighLMOverlap    ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0DecayPhotonAdjHighLMOverlap ) ;
+    
+    fhMCPi0DecayPhotonHitOtherLMOverlap    = new TH2F("hMCPi0DecayPhotonHitOtherLMOverlap","NLM vs E for merged pi0 cluster, decay photon hit Other Local Maxima, there was an overlap",
+                                                      nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonHitOtherLMOverlap    ->SetYTitle("N maxima");
+    fhMCPi0DecayPhotonHitOtherLMOverlap    ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0DecayPhotonHitOtherLMOverlap ) ;
+    
+    fhMCPi0DecayPhotonAdjOtherLMOverlap    = new TH2F("hMCPi0DecayPhotonAdjOtherLMOverlap","NLM vs E for merged pi0 cluster, decay photon hit cells adjacent to Other Local Maxima, there was an overlap",
+                                                      nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonAdjOtherLMOverlap    ->SetYTitle("N maxima");
+    fhMCPi0DecayPhotonAdjOtherLMOverlap    ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0DecayPhotonAdjOtherLMOverlap ) ;
+    
+    fhMCPi0DecayPhotonAdjacentOverlap   = new TH2F("hMCPi0DecayPhotonAdjacentOverlap","NLM vs E for merged pi0 cluster, decay photon hit adjacent cells, there was an overlap",
+                                                   nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonAdjacentOverlap    ->SetYTitle("N maxima");
+    fhMCPi0DecayPhotonAdjacentOverlap    ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0DecayPhotonAdjacentOverlap ) ;
+    
+    fhMCPi0DecayPhotonHitNoLMOverlap    = new TH2F("hMCPi0DecayPhotonHitNoLMOverlap","NLM vs E for merged pi0 cluster, decay photon do not hit Local Maxima, there was an overlap",
+                                                   nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+    fhMCPi0DecayPhotonHitNoLMOverlap    ->SetYTitle("N maxima");
+    fhMCPi0DecayPhotonHitNoLMOverlap    ->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMCPi0DecayPhotonHitNoLMOverlap ) ;
+    
+
     fhMCEOverlapType = new TH2F("hMCEOverlapType","Kind of overlap particle, neutral clusters",
                                 nptbins,ptmin,ptmax,5,0,5);
     //fhMCEOverlapType   ->SetYTitle("Overlap Type");
@@ -3070,7 +3347,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     fhMCEOverlapType->GetYaxis()->SetBinLabel(3 ,"hadron^{#pm}");
     fhMCEOverlapType->GetYaxis()->SetBinLabel(4 ,"hadron^{0}");
     fhMCEOverlapType->GetYaxis()->SetBinLabel(5 ,"??");
-    fhMCEOverlapType   ->SetXTitle("Cluster E (GeV)");
+    fhMCEOverlapType->SetXTitle("Cluster E (GeV)");
     outputContainer->Add(fhMCEOverlapType) ;
 
     fhMCEOverlapTypeMatch = new TH2F("hMCEOverlapTypeMatched","Kind of overlap particle, charged clusters",
@@ -3128,18 +3405,20 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, co
   TLorentzVector primary = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
   eprim = primary.E();
   
+  Int_t mesonLabel = -1;
+  
   if(mcindex == kmcPi0 || mcindex == kmcEta || mcindex == kmcPi0Conv)
   {
     if(mcindex == kmcPi0 || mcindex == kmcPi0Conv)
     {
       asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,111,GetReader(),ok));
-      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok);
+      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok,mesonLabel);
       if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
     }
     else
     {
       asymGen = TMath::Abs(GetMCAnalysisUtils()->GetMCDecayAsymmetryForPDG(mcLabel,221,GetReader(),ok));
-      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok);
+      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok,mesonLabel);
       if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
     }
   }
@@ -3152,58 +3431,88 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, co
   TLorentzVector momentum; TVector3 prodVertex;
   Int_t ancLabel = 0;
   noverlaps = 0;
+  
   for (UInt_t ilab = 1; ilab < cluster->GetNLabels(); ilab++ )
   {
     ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab],
                                                          GetReader(),ancPDG,ancStatus,momentum,prodVertex);
     
-    if(ancPDG!=22 && TMath::Abs(ancPDG)!=11 && ancPDG!=111 && ancPDG!=221)
+    //printf("Overlaps, i %d: Main Label %d, second label %d, ancestor: Label %d, pdg %d - tag %d \n",
+    //       ilab,cluster->GetLabels()[0],cluster->GetLabels()[ilab],ancLabel,ancPDG, mcindex);
+    
+    Bool_t overlap = kFALSE;
+    
+    //if(mcindex==kmcPi0 || mcindex==kmcPi0Conv || mcindex == kmcEta) printf("\t Meson MC : Label %d\n",mesonLabel);
+    
+    if     ( ancLabel < 0 )
     {
-      noverlaps++;
-      
-      // What is the origin of the overlap?
-      Bool_t  mOK = 0,      gOK = 0;
-      Int_t   mpdg = -999999,  gpdg = -1;
-      Int_t   mstatus = -1, gstatus = -1;
-      Int_t gLabel = -1, ggLabel = -1;
-      TLorentzVector mother      = GetMCAnalysisUtils()->GetMother     (cluster->GetLabels()[ilab],GetReader(),mpdg,mstatus,mOK);
-      TLorentzVector grandmother = GetMCAnalysisUtils()->GetGrandMother(cluster->GetLabels()[ilab],GetReader(),gpdg,gstatus,gOK, gLabel,ggLabel);
-      
-      //printf("Overlap!, mother pdg %d; grand mother pdg %d",mpdg,gpdg);
-      
-      if( ( mpdg == 22 || TMath::Abs(mpdg==11) ) &&
-          ( gpdg == 22 || TMath::Abs(gpdg==11) ) &&
-            gLabel >=0 )
+      overlap = kTRUE;
+      //printf("\t \t \t No Label = %d\n",ancLabel);
+    }
+    else if( ( ancPDG==111 || ancPDG==221 ) && (mcindex == kmcPi0 || mcindex == kmcPi0Conv || mcindex == kmcEta) && mesonLabel != ancLabel)
+    {
+      //printf("\t \t  meson Label %d, ancestor Label %d\n",mesonLabel,ancLabel);
+      overlap = kTRUE;
+    }
+    else if( ancPDG!=22 && TMath::Abs(ancPDG)!=11 && ancPDG != 111 && ancPDG != 221 )
+    {
+      //printf("\t \t \t Non EM PDG = %d\n",ancPDG);
+      overlap = kTRUE ;
+    }
+    
+    if( !overlap ) continue ;
+    
+    // We have at least one overlap
+    
+    //printf("Overlap!!!!!!!!!!!!!!\n");
+    
+    noverlaps++;
+    
+    // What is the origin of the overlap?
+    Bool_t  mOK = 0,      gOK = 0;
+    Int_t   mpdg = -999999,  gpdg = -1;
+    Int_t   mstatus = -1, gstatus = -1;
+    Int_t   gLabel = -1, ggLabel = -1;
+    TLorentzVector mother      = GetMCAnalysisUtils()->GetMother     (cluster->GetLabels()[ilab],GetReader(),mpdg,mstatus,mOK);
+    TLorentzVector grandmother = GetMCAnalysisUtils()->GetGrandMother(cluster->GetLabels()[ilab],GetReader(),gpdg,gstatus,gOK, gLabel,ggLabel);
+    
+    //printf("\t Overlap!, mother pdg %d; grand mother pdg %d",mpdg,gpdg);
+    
+    if( ( mpdg == 22 || TMath::Abs(mpdg==11) ) &&
+        ( gpdg == 22 || TMath::Abs(gpdg==11) ) &&
+       gLabel >=0 )
+    {
+      Int_t label = gLabel;
+      while( ( gpdg == 22 || TMath::Abs(gpdg==11) ) && gLabel >=0 )
       {
-        Int_t label = gLabel;
-        while( ( gpdg == 22 || TMath::Abs(gpdg==11) ) && gLabel >=0 )
-        {
-          mpdg=gpdg;
-          grandmother = GetMCAnalysisUtils()->GetGrandMother(label,GetReader(),gpdg,gstatus,ok, gLabel,ggLabel);
-          label=gLabel;
-        }
-      }
-         
-      //printf("; Final PDG %d\n",mpdg);
-      Float_t histobin = -1;
-      if     (mpdg==22)      histobin = 0.5;
-      else if(TMath::Abs(mpdg)==11) histobin = 1.5;
-      else if(mpdg==-999999) histobin = 4.5;
-      else {
-        Double_t charge = TDatabasePDG::Instance()->GetParticle(mpdg)->Charge();
-        if(TMath::Abs(charge) > 0 ) histobin = 2.5;
-        else                        histobin = 3.5;
-        //printf("charge %f\n",charge);
-      }
-      
-      //printf("pdg = %d, histobin %2.1f\n",mpdg,histobin);
-      if(histobin > 0)
-      {
-        if(matched)fhMCEOverlapType     ->Fill(cluster->E(),histobin);
-        else       fhMCEOverlapTypeMatch->Fill(cluster->E(),histobin);
+        mpdg=gpdg;
+        grandmother = GetMCAnalysisUtils()->GetGrandMother(label,GetReader(),gpdg,gstatus,ok, gLabel,ggLabel);
+        label=gLabel;
       }
     }
+    
+    //printf("; Final PDG %d\n",mpdg);
+    
+    Float_t histobin = -1;
+    if     (mpdg==22)      histobin = 0.5;
+    else if(TMath::Abs(mpdg)==11) histobin = 1.5;
+    else if(mpdg==-999999) histobin = 4.5;
+    else
+    {
+      Double_t charge = TDatabasePDG::Instance()->GetParticle(mpdg)->Charge();
+      if(TMath::Abs(charge) > 0 ) histobin = 2.5;
+      else                        histobin = 3.5;
+      //printf("charge %f\n",charge);
+    }
+    
+    //printf("\t pdg = %d, histobin %2.1f\n",mpdg,histobin);
+    if(histobin > 0)
+    {
+      if(matched)fhMCEOverlapType     ->Fill(cluster->E(),histobin);
+      else       fhMCEOverlapTypeMatch->Fill(cluster->E(),histobin);
+    }
   }
+  
   
 }
 
@@ -3392,7 +3701,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //
     
     // For cluster with MC pi0 and more than 1 maxima
-    CheckLocalMaximaMCOrigin(cluster, mcindex);
+    CheckLocalMaximaMCOrigin(cluster, mcindex,noverlaps);
     
     //----------------
     // Fill histograms

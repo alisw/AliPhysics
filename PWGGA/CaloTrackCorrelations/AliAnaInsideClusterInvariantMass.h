@@ -30,7 +30,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass() ; // default ctor
   virtual ~AliAnaInsideClusterInvariantMass() { ; } //virtual dtor
   
-  void         CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex);
+  void         CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex, const Int_t noverlaps);
   
   TObjString * GetAnalysisCuts();
   
@@ -427,19 +427,36 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCPi0LowNLMPair;                       //! E vs NLM when cluster originated in pi0 merging and a pair of local maxima except highest energy correspond to 2 photons
   TH2F       * fhMCPi0AnyNLMPair;                       //! E vs NLM when cluster originated in pi0 merging and a both highest energy pairs and other pairs correspond to 2 photons
   TH2F       * fhMCPi0NoneNLMPair;                      //! E vs NLM when cluster originated in pi0 merging and a both no NLM corresponds to the photons
-
   // No match between highest energy local maxima and highest energy MC particle 
   TH2F       * fhMCPi0HighNLMPairNoMCMatch;             //! E vs NLM when cluster originated in pi0 merging and highest energy local maxima correspond to 2 photons
   TH2F       * fhMCPi0LowNLMPairNoMCMatch;              //! E vs NLM when cluster originated in pi0 merging and a pair of local maxima except highest energy correspond to 2 photons
   TH2F       * fhMCPi0AnyNLMPairNoMCMatch;              //! E vs NLM when cluster originated in pi0 merging and a both highest energy pairs and other pairs correspond to 2 photons
   TH2F       * fhMCPi0NoneNLMPairNoMCMatch;             //! E vs NLM when cluster originated in pi0 merging and a both no NLM corresponds to the photons
-    
+
+  TH2F       * fhMCPi0HighNLMPairOverlap;              //! E vs NLM when cluster originated in pi0 merging and highest energy local maxima correspond to 2 photons, overlap
+  TH2F       * fhMCPi0LowNLMPairOverlap;               //! E vs NLM when cluster originated in pi0 merging and a pair of local maxima except highest energy correspond to 2 photons, overlap
+  TH2F       * fhMCPi0AnyNLMPairOverlap;               //! E vs NLM when cluster originated in pi0 merging and a both highest energy pairs and other pairs correspond to 2 photons, overlap
+  TH2F       * fhMCPi0NoneNLMPairOverlap;              //! E vs NLM when cluster originated in pi0 merging and a both no NLM corresponds to the photons, overlap
+  // No match between highest energy local maxima and highest energy MC particle
+  TH2F       * fhMCPi0HighNLMPairNoMCMatchOverlap;     //! E vs NLM when cluster originated in pi0 merging and highest energy local maxima correspond to 2 photons, overlap
+  TH2F       * fhMCPi0LowNLMPairNoMCMatchOverlap;      //! E vs NLM when cluster originated in pi0 merging and a pair of local maxima except highest energy correspond to 2 photons, overlap
+  TH2F       * fhMCPi0AnyNLMPairNoMCMatchOverlap;      //! E vs NLM when cluster originated in pi0 merging and a both highest energy pairs and other pairs correspond to 2 photons, overlap
+  TH2F       * fhMCPi0NoneNLMPairNoMCMatchOverlap;     //! E vs NLM when cluster originated in pi0 merging and a both no NLM corresponds to the photons, overlap
+  
   TH2F       * fhMCPi0DecayPhotonHitHighLM;             //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
   TH2F       * fhMCPi0DecayPhotonAdjHighLM;             //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
   TH2F       * fhMCPi0DecayPhotonHitOtherLM;            //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high
   TH2F       * fhMCPi0DecayPhotonAdjOtherLM;            //! E vs NLM when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjacent;              //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit adjacen cells, not 2 LM
   TH2F       * fhMCPi0DecayPhotonHitNoLM;               //! E vs NLM when cluster originated in pi0 merging and MC photon decay do not hit the cell local maximas
   
+  TH2F       * fhMCPi0DecayPhotonHitHighLMOverlap;      //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMOverlap;      //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMOverlap;     //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMOverlap;     //! E vs NLM when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjacentOverlap;       //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit adjacen cells, not 2 LM, overlap
+  TH2F       * fhMCPi0DecayPhotonHitNoLMOverlap;        //! E vs NLM when cluster originated in pi0 merging and MC photon decay do not hit the cell local maximas, overlap
+
   TH2F       * fhMCEOverlapType;                        //! what particles overlap with pi0, neutral clusters
   TH2F       * fhMCEOverlapTypeMatch;                   //! what particles overlap with pi0, charged clusters
   

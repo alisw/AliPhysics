@@ -262,7 +262,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(const Float_t pt, const Float_t time, Al
       
       Float_t diff = (tmax-timecell);
             
-      if( cells->GetCellAmplitude(absIdMax) < 0.05 ) continue ;
+      if( cells->GetCellAmplitude(absIdMax) < 0.1 ) continue ;
       
       if(GetReader()->IsPileUpFromSPD())
       {
@@ -2898,16 +2898,17 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       
       if((mcIndex==kmcPhoton || mcIndex==kmcPi0 || mcIndex==kmcEta) && fAnaType==kSSCalo)
       {
-        Float_t efracMC = 0;
-        Int_t label = pi0->GetLabel();
+        Float_t efracMC   = 0;
+        Int_t   label     = pi0->GetLabel();
+        Int_t   momlabel  = -1;
+        Bool_t  ok        = kFALSE;
         
-        Bool_t ok = kFALSE;
         TLorentzVector mom   = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
         if(!ok) continue;
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
         {
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok);
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok,momlabel);
           if(grandmom.E() > 0 && ok)
           {
             efracMC =  grandmom.E()/ener;
@@ -2917,7 +2918,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
         {
           fhMCPi0DecayPt->Fill(pt);
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok);
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader(),ok,momlabel);
           if(grandmom.E() > 0 && ok)
           {
             efracMC =  mom.E()/grandmom.E();
@@ -2926,7 +2927,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
         {
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok);
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok,momlabel);
           if(grandmom.E() > 0 && ok)
           {
             efracMC =  grandmom.E()/ener;
@@ -2936,7 +2937,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
         {
           fhMCEtaDecayPt->Fill(pt);
-          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok);
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader(),ok,momlabel);
           if(grandmom.E() > 0 && ok)
           {
             efracMC =  mom.E()/grandmom.E();
