@@ -2155,6 +2155,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if(eventbin < 0) return ;
     
     TList * evMixList=fEventsList[eventbin] ;
+    
+    if(!evMixList)
+    {
+      printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mix event list not available, bin %d \n",eventbin);
+      return;
+    }
+    
     Int_t nMixed = evMixList->GetSize() ;
     for(Int_t ii=0; ii<nMixed; ii++)
     {  
