@@ -1,7 +1,16 @@
-AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut,Bool_t MassCal,Double_t asspTCut,Double_t angleCut,Double_t MassCut){
+AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut,Bool_t MassCal,Double_t asspTCut,Double_t angleCut,Double_t MassCut, Double_t NsigCut){
   //
   // HFE standard task configuration
   //
+
+  printf("Setting in this analysis\n");
+  printf("MassConst = %d/n",MassConst); 
+  printf("MassCal = %d/n", MassCal); 
+  printf("MassWidth = %d/n",MassWidthCut); 
+  printf("asspTCut = %d/n",asspTCut); 
+  printf("angleCut = %d/n",angleCut); 
+  printf("MassCut = %d/n",MassCut); 
+  printf("NsigCut = %d/n", NsigCut); 
 
   Bool_t kAnalyseTaggedTracks = kTRUE;
   
@@ -29,6 +38,7 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   task->SetInvariantMassCut(masscut);
   task->SetOpeningAngleCut(angleCut);
   task->SetMimpTassCut(asspTCut);
+  task->SetMimNsigassCut(NsigCut); 
   task->SetMassCalMethod(MassCal);
 
   // Define PID
