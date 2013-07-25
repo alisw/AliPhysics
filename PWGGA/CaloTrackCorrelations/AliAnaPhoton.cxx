@@ -426,6 +426,8 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     {
       for(Int_t i=0 ; i<stack->GetNtrack(); i++)
       {
+        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+        
         TParticle * prim = stack->Particle(i) ;
         pdg = prim->GetPdgCode();
         //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
@@ -574,6 +576,8 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       
       for(Int_t i=0; i < nprim; i++)
       {
+        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+        
         AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
         
         pdg = prim->GetPdgCode();
@@ -3200,7 +3204,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                                   nptbins,ptmin,ptmax,netabins,etamin,etamax);
       fhEtaPrimMCAcc[i]->SetYTitle("#eta");
       fhEtaPrimMCAcc[i]->SetXTitle("E (GeV)");
-      outputContainer->Add(fhYPrimMCAcc[i]) ;
+      outputContainer->Add(fhEtaPrimMCAcc[i]) ;
       
       fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",ppname[i].Data()),
                                     Form("primary photon %s in acceptance: #phi ",pptype[i].Data()),

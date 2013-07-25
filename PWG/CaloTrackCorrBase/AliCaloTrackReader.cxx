@@ -125,7 +125,7 @@ fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCu
 fVertexBC(-200),             fRecalculateVertexBC(0),
 fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath(""),
-fAcceptOnlyHIJINGLabels(0),
+fAcceptOnlyHIJINGLabels(0),  fNMCProducedMin(0), fNMCProducedMax(0),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),fInputNonStandardJetBranchName("jets")
 {
@@ -329,30 +329,135 @@ AliHeader* AliCaloTrackReader::GetHeader() const
   }
 }
 
-//______________________________________________________________
-AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
+//____________________________________________________
+void AliCaloTrackReader::SetGeneratorMinMaxParticles()
 {
-  //Return pointer to Generated event header
+  // In case of access only to hijing particles in cocktail
+  // get the min and max labels
+  // TODO: Check when generator is not the first one ...
+  
+  fNMCProducedMin = 0;
+  fNMCProducedMax = 0;
+  
   if     (ReadStack() && fMC)
   {
-    return fMC->GenEventHeader();
+    AliGenEventHeader * eventHeader = fMC->GenEventHeader();
     
-//    AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(fMC->GenEventHeader());
-//    if(genCocktailHeader) return (AliGenEventHeader*) genCocktailHeader->GetHeaders()->At(0);
-//    else                  return fMC->GenEventHeader();
+    if(!fAcceptOnlyHIJINGLabels) return ;
+    
+    // TODO Check if it works from here ...
+    
+    AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+    
+    if(!cocktail) return ;
+    
+    TList *genHeaders = cocktail->GetHeaders();
+    
+    Int_t nGenerators = genHeaders->GetEntries();
+    //printf("N generators %d \n", nGenerators);
+    
+    for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      fNMCProducedMin = fNMCProducedMax;
+      fNMCProducedMax+= eventHeader2->NProduced();
+      
+      if(name == "Hijing") return ;
+    }
+        
   }
   else if(ReadAODMCParticles() && GetAODMCHeader())
   {
-    //printf("AliCaloTrackReader::GetGenEventHeader() - N headers %d\n",GetAODMCHeader()->GetNCocktailHeaders());
-    if( GetAODMCHeader()->GetNCocktailHeaders() > 0)
-      return GetAODMCHeader()->GetCocktailHeader(0) ;
-    else
-      return 0x0;
+    Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
+    //printf("AliCaloTrackReader::GetGenEventHeader() - N headers %d\n",nGenerators);
+    
+    if( nGenerators <= 0)        return ;
+    
+    if(!fAcceptOnlyHIJINGLabels) return ;
+    
+    for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
+      TString name = eventHeader->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader->ClassName(), name.Data(), eventHeader->GetTitle());
+      
+      fNMCProducedMin = fNMCProducedMax;
+      fNMCProducedMax+= eventHeader->NProduced();
+      
+      if(name == "Hijing") return ;
+    }
+        
+  }
+}
+
+
+//______________________________________________________________
+AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
+{
+  // Return pointer to Generated event header
+  // If requested and cocktail, search for the hijing generator
+  
+  if     (ReadStack() && fMC)
+  {
+    AliGenEventHeader * eventHeader = fMC->GenEventHeader();
+    
+    if(!fAcceptOnlyHIJINGLabels) return eventHeader ;
+    
+    // TODO Check if it works from here ...
+    
+    AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+    
+    if(!cocktail) return 0x0 ;
+    
+    TList *genHeaders = cocktail->GetHeaders();
+    
+    Int_t nGenerators = genHeaders->GetEntries();
+    //printf("N generators %d \n", nGenerators);
+    
+    for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      if(name == "Hijing") return eventHeader2 ;
+    }
+
+    return 0x0;
+    
+  }
+  else if(ReadAODMCParticles() && GetAODMCHeader())
+  {
+    Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
+    //printf("AliCaloTrackReader::GetGenEventHeader() - N headers %d\n",nGenerators);
+
+    if( nGenerators <= 0)        return 0x0;
+    
+    if(!fAcceptOnlyHIJINGLabels) return GetAODMCHeader()->GetCocktailHeader(0);
+        
+    for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
+      TString name = eventHeader->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader->ClassName(), name.Data(), eventHeader->GetTitle());
+      
+      if(name == "Hijing") return eventHeader ;
+    }
+    
+    return 0x0;
+        
   }
   else
   {
     //printf("AliCaloTrackReader::GetGenEventHeader() - MC header not available! \n");
-    return 0;
+    return 0x0;
   }
 }
 
@@ -626,62 +731,96 @@ Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const
   
 }
 
-
 //________________________________________________________________________
 Bool_t AliCaloTrackReader::IsHIJINGLabel(Int_t label)
 {
  
   // Find if cluster/track was generated by HIJING
-  // NOT FINAL INCOMPLETE
   
   AliGenHijingEventHeader*  hijingHeader =  dynamic_cast<AliGenHijingEventHeader *> (GetGenEventHeader());
   
+  //printf("header %p, label %d\n",hijingHeader,label);
+  
   if(!hijingHeader || label < 0 ) return kFALSE;
   
-  Int_t nproduced = hijingHeader->NProduced();
+  
+  //printf("pass a), N produced %d\n",nproduced);
+  
+  if(label >= fNMCProducedMin && label < fNMCProducedMax)
+  {
+    //printf(" accept!, label is smaller than produced, N %d\n",nproduced);
+
+    return kTRUE;
+  }
   
   if(ReadStack())
   {
+    if(!GetStack()) return kFALSE;
+    
     Int_t nprimaries = GetStack()->GetNtrack();
+    
     if(label > nprimaries) return kFALSE;
-
+    
     TParticle * mom = GetStack()->Particle(label);
     
     Int_t iMom = label;
     Int_t iParent = mom->GetFirstMother();
     while(iParent!=-1)
     {
+      if(iParent >= fNMCProducedMin && iParent < fNMCProducedMax)
+      {
+        //printf("\t accept, mother is %d \n",iParent)
+        return kTRUE;
+      }
+      
       iMom = iParent;
       mom = GetStack()->Particle(iMom);
       iParent = mom->GetFirstMother();
     }
     
-    if(iMom < nproduced)
-      return kTRUE;
-    else 
-      return kFALSE;
+    return kFALSE ;
+    
   } // ESD
   else
   {
     TClonesArray* mcparticles = GetAODMCParticles();
+    
+    if(!mcparticles) return kFALSE;
+    
     Int_t nprimaries = mcparticles->GetEntriesFast();
+    
     if(label > nprimaries) return kFALSE;
-
+    
+    //printf("pass b) N primaries %d \n",nprimaries);
+    
+    if(label >= fNMCProducedMin && label < fNMCProducedMax)
+    {
+      return kTRUE;
+    }
+    
+    // Find grand parent, check if produced in the good range
     AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
     
     Int_t iMom = label;
     Int_t iParent = mom->GetMother();
     while(iParent!=-1)
     {
+      if(iParent >= fNMCProducedMin && iParent < fNMCProducedMax)
+      {
+        //printf("\t accept, mother is %d, with nProduced %d \n",iParent, nproduced);
+        return kTRUE;
+      }
+      
       iMom = iParent;
       mom = (AliAODMCParticle *) mcparticles->At(iMom);
       iParent = mom->GetMother();
+
     }
     
-    if(iMom < nproduced)
-      return kTRUE;
-    else
-      return kFALSE;
+    //printf("pass c), no match found \n");
+    
+    return kFALSE ;
+    
   }//AOD
 }
 
@@ -800,17 +939,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent - Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data());
     return kFALSE;
   }
-  
-//  //REMOVE
-//  AliGenHijingEventHeader*  hijingHeader =  dynamic_cast<AliGenHijingEventHeader *> (GetGenEventHeader());
-//  
-//  if(!hijingHeader)
-//  {
-//    Int_t nproduced = hijingHeader->NProduced();
-//    printf("N produced by HIJING: %d\n",nproduced);
-//  }
-//  else printf("NOT HIJING\n");
-//  //REMOVE
   
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
@@ -1055,6 +1183,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   // it is calculated in FillCTS checking the BC of tracks
   // with DCA small (if cut applied, if open)
   fVertexBC=fInputEvent->GetPrimaryVertex()->GetBC();
+  
+  if(fAcceptOnlyHIJINGLabels) SetGeneratorMinMaxParticles();
+  
+  //printf("N min %d, N max %d\n",fNMCProducedMin,fNMCProducedMax);
   
   if(fFillCTS)
   {
@@ -1426,7 +1558,7 @@ void AliCaloTrackReader::FillInputCTS()
     
     if (fMixedEvent)  track->SetID(itrack);
     
-    //if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(track->GetLabel())) continue ;
+    if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(track->GetLabel())) continue ;
     
     fCTSTracks->Add(track);
     
@@ -1568,15 +1700,15 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   if (fMixedEvent)
     clus->SetID(iclus) ;
   
-
-//  if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel()))
-//  {
-//    printf("Accept label %d\n",clus->GetLabel());
-//    return ;
-//  }
-//  else if(fAcceptOnlyHIJINGLabels)
-//    printf("Reject label %d\n",clus->GetLabel());
+  if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel( clus->GetLabel() )) return ;
   
+//  if(fAcceptOnlyHIJINGLabels)
+//  {
+//    printf("Accept label %d?\n",clus->GetLabel());
+//
+//    if( !IsHIJINGLabel( clus->GetLabel() ) ) { printf("\t Reject label\n") ; return ; }
+//    else                                       printf("\t Accept label\n") ;
+//  }
   
   fEMCALClusters->Add(clus);
   
@@ -1769,7 +1901,7 @@ void AliCaloTrackReader::FillInputPHOS()
           clus->SetID(iclus) ;
         }
         
-        //if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel())) continue ;
+        if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel())) continue ;
         
         fPHOSClusters->Add(clus);
         
