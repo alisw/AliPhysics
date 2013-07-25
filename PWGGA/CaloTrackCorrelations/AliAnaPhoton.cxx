@@ -2862,21 +2862,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhClusterTimeDiffPileUp[i]  = new TH2F(Form("hClusterTimeDiffPileUp%s",pileUpName[i].Data()),
                                              Form("Cluster E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
-                                             nptbins,ptmin,ptmax,200,-100,100);
+                                             nptbins,ptmin,ptmax,400,-200,200);
       fhClusterTimeDiffPileUp[i]->SetXTitle("E (GeV)");
       fhClusterTimeDiffPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
       outputContainer->Add(fhClusterTimeDiffPileUp[i]);
       
       fhClusterTimeDiffChargedPileUp[i]  = new TH2F(Form("hClusterTimeDiffChargedPileUp%s",pileUpName[i].Data()),
                                                     Form("Charged clusters E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
-                                                    nptbins,ptmin,ptmax,200,-100,100);
+                                                    nptbins,ptmin,ptmax,400,-200,200);
       fhClusterTimeDiffChargedPileUp[i]->SetXTitle("E (GeV)");
       fhClusterTimeDiffChargedPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
       outputContainer->Add(fhClusterTimeDiffChargedPileUp[i]);
       
       fhClusterTimeDiffPhotonPileUp[i]  = new TH2F(Form("hClusterTimeDiffPhotonPileUp%s",pileUpName[i].Data()),
                                                    Form("Selected photon E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
-                                                   nptbins,ptmin,ptmax,200,-100,100);
+                                                   nptbins,ptmin,ptmax,400,-200,200);
       fhClusterTimeDiffPhotonPileUp[i]->SetXTitle("E (GeV)");
       fhClusterTimeDiffPhotonPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
       outputContainer->Add(fhClusterTimeDiffPhotonPileUp[i]);
