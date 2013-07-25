@@ -108,6 +108,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
   ,fMimpTassCut(0.5)
+  ,fMimNsigassCut(-3)
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
   ,fSetMassWidthCut(kFALSE)
@@ -246,6 +247,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
   ,fMimpTassCut(0.5)
+  ,fMimNsigassCut(-3)
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
   ,fSetMassWidthCut(kFALSE)
@@ -786,6 +788,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
+                  fEleInfo->Fill(valdedx);
 
       }
     }
@@ -1182,7 +1185,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t min[16] = {kMinP,  -0.5, 1.0,  -1.0,  -5.0,    0,    0,    0,  0.0, 0.0,  0.0,   0,    0, -0.5,  80, -1.5};
   Double_t max[16] = {kMaxP,   6.5, 4.0,   1.0,   4.0,  2.5, 0.05,   40,   10, 2.0, 20.0, 100,  100,  4.5, 180,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;clsF;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
-  if(fqahist==1)fOutputList->Add(fEleInfo);
+  fOutputList->Add(fEleInfo);
 
   // Make common binning
   Int_t nBinsEop[3] =  { 10, 50, 100};
@@ -1494,7 +1497,12 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 
     if(ptAsso <fMimpTassCut) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
-    if(dEdxAsso <65 || dEdxAsso>100) continue; //11a pass1
+    //if(dEdxAsso <65 || dEdxAsso>100) continue;
+    double fTPCnSigmaAss = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
+    //cout << "fTPCnSigmaAss = " << fTPCnSigmaAss << endl;
+    //cout << "fTPCnSigmaAss Cut = " << fMimNsigassCut << endl;
+    if(fTPCnSigmaAss <fMimNsigassCut || fTPCnSigmaAss>5) continue;
+    //cout << "fTPCnSigmaAss a.f. cut = " << fTPCnSigmaAss << endl;
     
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
     if(charge>0) fPDGe1 = -11;

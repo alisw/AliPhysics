@@ -52,6 +52,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
   void SetOpeningAngleCut (Double_t openingAngle) {fOpeningAngleCut = openingAngle;};
   void SetMimpTassCut (Double_t MimpTassCut) {fMimpTassCut = MimpTassCut;};
+  void SetMimNsigassCut (Double_t MimNsigassCut) {fMimNsigassCut = MimNsigassCut;};
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   void SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
   void SetMassWidthCut  	(Bool_t MassWidthCut)		{ fSetMassWidthCut	= MassWidthCut; };
@@ -92,6 +93,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
   Double_t 		fOpeningAngleCut;	//openingAngle cut value
   Double_t 		fMimpTassCut;	//openingAngle cut value
+  Double_t 		fMimNsigassCut;	//openingAngle cut value
   Double_t		fInvmassCut;		//invariant mass cut value
   Bool_t		 fSetMassConstraint;		// Set mass constraint
   Bool_t		 fSetMassWidthCut;		// Set mass constraint
