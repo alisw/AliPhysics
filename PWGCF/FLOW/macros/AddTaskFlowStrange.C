@@ -268,10 +268,11 @@ double SFT_MassBandLowEdge( int nv0, int mb ) {
     double lowEdge[14]={0.398, 0.420, 0.444, 0.468, 0.486,
                          0.490, 0.494, 0.498, 0.502, 0.506, 
                          0.524, 0.548, 0.572, 0.598};
-    //0.492, 0.502, 0.526, 0.550, 0.574, 0.598};
     break;
   default:
-    double lowEdge[10]={1.084, 1.094, 1.104, 1.114, 1.118, 1.128, 1.138, 1.148, 1.158, 1.168};
+    double lowEdge[13]={1.084, 1.094, 1.104, 1.110, 1.114,
+			1.116, 1.118, 1.122, 1.128, 1.138,
+			1.148, 1.158, 1.168};
     break;
   }
   if(nv0>10&&mb==0) return -5;
@@ -285,7 +286,7 @@ int SFT_MassBands( int nv0 ) {
     bands = 13;
     break;
   default:
-    bands = 9;
+    bands = 12;
   }
   if(nv0>10) bands=1;
   return bands;
@@ -297,7 +298,7 @@ int SFT_MassBins( int nv0 ) {
     bins=100;
     break;
   default://LAMBDA
-    bins=112;
+    bins=84;
     break;
   }
   if(nv0>10) bins=100;//CHARGED
