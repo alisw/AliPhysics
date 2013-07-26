@@ -706,14 +706,16 @@ void AliPIDResponse::SetRecoInfo()
       fMCperiodTPC="LHC13B2_FIXn1";
   }
 
-  //exception new pp MC productions from 2011
-  if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
+  //exception new pp MC productions from 2011 (11a periods have 10f6a splines!)
+  if (fBeamType=="PP" && reg.MatchB(fCurrentFile) && !fCurrentFile.Contains("LHC11a")) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
   // exception for 11f1
   if (fCurrentFile.Contains("LHC11f1")) fMCperiodTPC="LHC11F1";
   // exception for 12f1a, 12f1b and 12i3
   if (fCurrentFile.Contains("LHC12f1") || fCurrentFile.Contains("LHC12i3")) fMCperiodTPC="LHC12F1";
   // exception for 12c4
   if (fCurrentFile.Contains("LHC12c4")) fMCperiodTPC="LHC12C4";
+	// exception for 12d and 13d pp periods
+	if (fBeamType=="PP" && fCurrentAliRootRev >= 61605) fMCperiodTPC="LHC13D1";
 }
 
 //______________________________________________________________________________
