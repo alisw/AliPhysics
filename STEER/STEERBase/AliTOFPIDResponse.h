@@ -16,6 +16,8 @@
 
 class AliTOFPIDParams;
 class TF1;
+class TH1F;
+class TH1D;
 
 class AliTOFPIDResponse : public TObject {
 public:
@@ -37,7 +39,8 @@ public:
 
   Double_t GetMismatchProbability(Double_t p,Double_t mass) const;
 
-  Double_t GetTailRandomValue() const; // generate a random value to add a tail to TOF time (for MC analyses)
+  static Double_t GetTailRandomValue(); // generate a random value to add a tail to TOF time (for MC analyses)
+  static Double_t GetMismatchRandomValue(Float_t eta); // generate a random value for mismatched tracks (for MC analyses)
 
   void     SetT0event(Float_t *t0event){for(Int_t i=0;i < fNmomBins;i++) fT0event[i] = t0event[i];};
   void     SetT0resolution(Float_t *t0resolution){for(Int_t i=0;i < fNmomBins;i++) fT0resolution[i] = t0resolution[i];};
@@ -80,6 +83,8 @@ public:
   Float_t fPar[4]; // parameter for expected times resolution
 
   static TF1 *fTOFtailResponse; // function to generate a TOF tail
+  static TH1F *fHmismTOF; // TOF mismatch distribution
+  static TH1D *fHchannelTOFdistr;// TOF channel distance distribution
 
   ClassDef(AliTOFPIDResponse,5)   // TOF PID class
 };
