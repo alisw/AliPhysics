@@ -407,13 +407,6 @@ public:
   void             AnalyzeOnlyLED()                        { fAnaLED             = kTRUE  ; }
   void             AnalyzeOnlyPhysics()                    { fAnaLED             = kFALSE ; }
   
-  void             SwitchOnCaloFilterPatch()               { fCaloFilterPatch    = kTRUE  ; 
-                                                             fFillCTS            = kFALSE ; }
-  void             SwitchOffCaloFilterPatch()              { fCaloFilterPatch    = kFALSE ; }
-  Bool_t           IsCaloFilterPatchOn()             const { 
-                    if(fDataType == kAOD) { return fCaloFilterPatch ; } 
-                    else                  { return kFALSE           ; }                     }
-	
   //-------------------------------
   // Vertex methods
   //-------------------------------
@@ -674,7 +667,6 @@ public:
   Int_t            fV0ADC[2]    ;              // Integrated V0 signal
   Int_t            fV0Mul[2]    ;              // Integrated V0 Multiplicity
 
-  Bool_t           fCaloFilterPatch;           // CaloFilter patch
   TString          fEMCALClustersListName;     // Alternative list of clusters produced elsewhere and not from InputEvent
   
   // Event selection
@@ -748,7 +740,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,58)
+  ClassDef(AliCaloTrackReader,59)
   
 } ;
 
