@@ -7,10 +7,11 @@
 
 // root includes
 #include <TMath.h>
-//aliroot includes
+// aliroot includes
 #include <AliAnalysisTaskSE.h>
 // forward declarations
 class TString;
+class TObject;
 class TList;
 class TArrayD;
 class TClonesArray;
@@ -32,6 +33,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
                                         AliAnalysisTaskRhoVnModulation* rhoTask, 
                                         Bool_t VPart,           // use jets or tracks as pois
                                         Bool_t VZEROEP,         // do vzero ep method
+                                        Bool_t GQC2,            // do gapped qc2 method
                                         Bool_t QC2,             // do qc2 method
                                         Bool_t QC4,             // do simple qc4 method FIXME not implemented yet
                                         Bool_t FlowPackageSP,   // call flow package vzero scalar product
@@ -43,6 +45,8 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
         // setters
+        void                    SetJetRadius(Double_t r)                {fJetRadius     = r;}
+        void                    SetLocalRhoName(TString n)              {fLocalRhoName  = n;}
         void                    SetDebugMode(Int_t d)                   {fDebug         = d;}
         void                    SetCCMinPt(Float_t m)                   {fCCMinPt       = m;}
         void                    SetCCMaxPt(Float_t m)                   {fCCMaxPt       = m;}
@@ -56,6 +60,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         Bool_t                  PassesCuts();
         // analysis details
         void                    DoVZEROFlowAnalysis();
+        void                    DoGappedQC2Analysis();
         void                    DoQC2FlowAnalysis();
         void                    DoQC4FlowAnalysis();
         Bool_t                  DoFlowPackageFlowAnalysis();
@@ -67,14 +72,18 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         // analysis flags and task setup specifics
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
         TString                 fJetsName;              // name of jet list
+        Double_t                fJetRadius;             // jet radius
         TString                 fTracksName;            // name of track list
+        TString                 fLocalRhoName;          // name of local rho
         TClonesArray*           fPois;                  //! array with pois
         TClonesArray*           fRPs;                   //! array with rps
+        TObject*                fLocalRho;              //! local energy density
         TList*                  fOutputList;            //! output list
         dataType                fDataType;              //! data type
         Bool_t                  fVParticleAnalysis;     // do the analysis on vparticles instead of jets
         Bool_t                  fMinimizeDiffBins;      // minimize variables (for low statistics)
         Bool_t                  fDoVZEROFlowAnalysis;   // do vzero flow analysis
+        Bool_t                  fDoGappedQC2Analysis;   // do gapped qc2 analysis
         Bool_t                  fDoQC2FlowAnalysis;     // do qc2 flow analysis
         Bool_t                  fDoQC4FlowAnalysis;     // do qc4 flow analysis
         Bool_t                  fDoQCFPAnalysis;        // do qc fp analysis

@@ -55,6 +55,7 @@
 #include "AliAnalysisTaskJetFlow.h"
 // EMCAL jet framework includes
 #include <AliRhoParameter.h>
+#include <AliLocalRhoParameter.h>
 #include <AliPicoTrack.h>
 #include <AliAnalysisTaskRhoVnModulation.h>
 
@@ -65,26 +66,31 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlow)
 
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(), 
-    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fRPs(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(kTRUE), fDoQC2FlowAnalysis(kTRUE), fDoQC4FlowAnalysis(kFALSE), fDoQCFPAnalysis(kFALSE), fDoSPFPAnalysis(kFALSE), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
+    fDebug(-1), fJetsName(0), fJetRadius(0.3), fTracksName(0), fLocalRhoName(0), fPois(0x0), fRPs(0x0), fLocalRho(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(kFALSE), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(kTRUE), fDoGappedQC2Analysis(kTRUE), fDoQC2FlowAnalysis(kTRUE), fDoQC4FlowAnalysis(kFALSE), fDoQCFPAnalysis(kFALSE), fDoSPFPAnalysis(kFALSE), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(0), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
 { /* default constructor for ROOT IO */ }
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
         const char* name,
         AliAnalysisTaskRhoVnModulation* rhoTask, 
         Bool_t VPart,
-        Bool_t VZEROEP, 
+        Bool_t VZEROEP,
+        Bool_t GQC2, 
         Bool_t QC2,
         Bool_t QC4,
         Bool_t FlowPackageSP,
         Bool_t FlowPackageQC  
         ) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fTracksName(0), fPois(0x0), fRPs(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoQCFPAnalysis(FlowPackageQC), fDoSPFPAnalysis(FlowPackageSP), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
+    fDebug(-1), fJetsName(0), fJetRadius(0.3), fTracksName(0), fLocalRhoName(0), fPois(0x0), fRPs(0x0), fLocalRho(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoGappedQC2Analysis(kTRUE), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoQCFPAnalysis(FlowPackageQC), fDoSPFPAnalysis(FlowPackageSP), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     fJetsName = rhoTask->GetJetsName();
     fTracksName = rhoTask->GetTracksName(); 
+    if(GQC2 && QC2) {
+        printf(" > Warning, QC2 and gapped QC2 method are both called <\n   will only run gapped QC2 !");
+        QC2 = kFALSE;
+    }
     if(FlowPackageSP || FlowPackageQC)    DefineOutput(2, AliFlowEventSimple::Class());
     if(FlowPackageSP && FlowPackageQC)    DefineOutput(3, AliFlowEventSimple::Class());
 }
@@ -159,7 +165,7 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
         fTempA = (TProfile*)fv2VZEROA->Clone("temp_a");
         fTempC = (TProfile*)fv2VZEROC->Clone("temp_c");
     }
-    if(fDoQC2FlowAnalysis) {
+    if(fDoQC2FlowAnalysis || fDoGappedQC2Analysis) {
         fRefCumulants = new TProfile("Reference cumulants", "Reference cumulants", 2, -0.5, 1.5);
         fRefCumulants->GetXaxis()->SetBinLabel(1, "c_{2}[2]");
         fRefCumulants->GetXaxis()->SetBinLabel(2, "c_{3}[2]");
@@ -220,10 +226,15 @@ void AliAnalysisTaskJetFlow::UserExec(Option_t *)
         fRPs = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName.Data()));
         if(!fPois || !fRPs) return; // couldn't get expected input data
         fInitialized = kTRUE;
+        fLocalRho = InputEvent()->FindListObject(fLocalRhoName.Data());
+        if(!fLocalRho && !fVParticleAnalysis) {
+            AliFatal(Form("Couldn't find %s, aborting!", fLocalRhoName.Data()));
+        }
     }
     if(!PassesCuts()) return; // event quality cuts and centrality determination
     // execute the requested flow methods
     if(fDoVZEROFlowAnalysis)            DoVZEROFlowAnalysis();
+    if(fDoGappedQC2Analysis)            DoGappedQC2Analysis();
     if(fDoQC2FlowAnalysis)              DoQC2FlowAnalysis();
     if(fDoQC4FlowAnalysis)              DoQC4FlowAnalysis();
     Bool_t post(0x0);   // post only when analysis succeeded
@@ -276,12 +287,16 @@ void AliAnalysisTaskJetFlow::DoVZEROFlowAnalysis()
         for(Int_t i(0); i < iPois; i++) {
             AliEmcalJet* poi = static_cast<AliEmcalJet*>(fPois->At(i));
             if(fRhoVn->PassesCuts(poi)) {
+                AliLocalRhoParameter* localRho = static_cast<AliLocalRhoParameter*>(fLocalRho);
+                if(!localRho) break;
+                Double_t rho(localRho->GetLocalVal(poi->Phi(), fJetRadius, localRho->GetVal()));
+                Double_t pt(poi->Pt() - poi->Area() * rho);
                 if(!fDoMultWeight) {
-                    fTempA->Fill(poi->PtSub(), TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2a), 2)));
-                    fTempC->Fill(poi->PtSub(), TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2c), 2)));
+                    fTempA->Fill(pt, TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2a), 2)));
+                    fTempC->Fill(pt, TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2c), 2)));
                 } else {
-                    fv2VZEROA->Fill(poi->PtSub(), TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2a), 2)));
-                    fv2VZEROC->Fill(poi->PtSub(), TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2c), 2)));
+                    fv2VZEROA->Fill(pt, TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2a), 2)));
+                    fv2VZEROC->Fill(pt, TMath::Cos(2.*fRhoVn->PhaseShift((poi->Phi()-Q2c), 2)));
                 }
             }
         }
@@ -292,6 +307,54 @@ void AliAnalysisTaskJetFlow::DoVZEROFlowAnalysis()
             fv2VZEROC->Fill(fPtBins->At(i)+(fPtBins->At(i)+fPtBins->At(1+i))/2., fTempC->GetBinContent(i+1));
         }
     }
+}
+ //_____________________________________________________________________________
+void AliAnalysisTaskJetFlow::DoGappedQC2Analysis()
+{
+    // do q-cumulant analysis with eta gaps (avoiding autocorrelation of rps and jet constituents)
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    // first step, get lhs tpc rp's
+    fRhoVn->SetTrackEtaLimits(-0.9, -0.7);
+    // get LHS rp's multiplicity and q-vector
+    Double_t LHSreQn(0), LHSimQn(0), LHSmQ(0);
+    (fDoPtWeight) ? fRhoVn->QCnQnk(2, 1, LHSreQn, LHSimQn) : fRhoVn->QCnQnk(2, 0, LHSreQn, LHSimQn);
+    (fDoPtWeight) ? LHSmQ = fRhoVn->QCnM11() : LHSmQ = fRhoVn->QCnM();
+    // get the RHS rp's multiplicity and q-vector
+    fRhoVn->SetTrackEtaLimits(0.7, 0.9);
+    Double_t RHSreQn(0), RHSimQn(0), RHSmQ(0);
+    (fDoPtWeight) ? fRhoVn->QCnQnk(2, 1, RHSreQn, RHSimQn) : fRhoVn->QCnQnk(2, 0, RHSreQn, RHSimQn);
+    (fDoPtWeight) ? RHSmQ = fRhoVn->QCnM11() : RHSmQ = fRhoVn->QCnM();
+    // differential flow vectors
+    Double_t repn[fPtBins->GetSize()-1];      // real part of q-vector of all poi's
+    Double_t impn[fPtBins->GetSize()-1];      // im part of q-vector of all poi's
+    Double_t mp[fPtBins->GetSize()-1];        // poi multiplicity
+    Double_t reqn[fPtBins->GetSize()-1];      // real part of q-vectors of poi's labeled as rp
+    Double_t imqn[fPtBins->GetSize()-1];      // im part of q-vectors of poi's labeled as rp
+    Double_t mq[fPtBins->GetSize()-1];        // multiplicity of poi's labeled as rp
+    for(Int_t i(0); i < fPtBins->GetSize(); i++) {
+        repn[i] = 0;
+        impn[i] = 0;
+        mp[i] = 0;
+        reqn[i] = 0;
+        imqn[i] = 0;
+        mq[i] = 0;
+    }
+    // calculate differential q-vectors and fill the profile with cumulants
+    fRhoVn->SetLocalJetMinMaxEta(fJetRadius+.2);       // avoid overlap in poi and rp region 
+    QCnDifferentialFlowVectors(repn, impn, mp, reqn, imqn, mq, 2);
+    // do the calculation
+    if(RHSmQ*LHSmQ < 1) return;
+    fRefCumulants->Fill(0., (LHSreQn*RHSreQn+LHSimQn*RHSimQn)/(RHSmQ*LHSmQ), RHSmQ*LHSmQ);
+    for(Int_t i(0); i < fPtBins->GetSize(); i++) {
+        if(LHSmQ*mp[i] < 1. ) continue;        // avoid division by zero
+        Double_t atPt(fPtBins->At(i)+0.5*(fPtBins->At(i+1)-fPtBins->At(i)));      // pt value
+        Double_t diffC((repn[i]*LHSreQn+impn[i]*LHSimQn)/(LHSmQ*mp[i]));
+        Double_t eventW(mp[i]*LHSmQ);
+        fDiffCumlantsV2->Fill(atPt, diffC, eventW);
+    }
+    // last step: roll back the eta cuts of the EmcalTask
+    fRhoVn->SetTrackEtaLimits(-0.9, 0.9);
+    fRhoVn->SetLocalJetMinMaxEta(fJetRadius);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlow::DoQC2FlowAnalysis()
@@ -391,7 +454,10 @@ Bool_t AliAnalysisTaskJetFlow::DoFlowPackageFlowAnalysis()
             if(fRhoVn->PassesCuts(poi)) {
                 nAcceptedJets++;
                 AliFlowTrack flowTrack = AliFlowTrack(poi);
-                flowTrack.SetPt(poi->PtSub());
+                AliLocalRhoParameter* localRho = static_cast<AliLocalRhoParameter*>(fLocalRho);
+                if(!localRho) break;
+                Double_t rho(localRho->GetLocalVal(poi->Phi(), fJetRadius, localRho->GetVal()));
+                flowTrack.SetPt(poi->Pt() - poi->Area() * rho);
                 flowTrack.SetForPOISelection(kTRUE);
                 flowTrack.SetForRPSelection(kFALSE);
                 if(fFlowEvent_TPC) {
@@ -449,8 +515,12 @@ void AliAnalysisTaskJetFlow::QCnDifferentialFlowVectors(Double_t* repn, Double_t
         for(Int_t i(0); i < iPois; i++) {
             for(Int_t ptBin(0); ptBin < fPtBins->GetSize()-1; ptBin++) {
                 AliEmcalJet* poi = static_cast<AliEmcalJet*>(fPois->At(i));
-                if(poi && poi->PtSub() > 0) {   // note here that no cuts are needed since only accepted jets have PtSub set !    
-                    if(poi->PtSub() >= fPtBins->At(ptBin) && poi->PtSub() < fPtBins->At(ptBin+1)) {    
+                AliLocalRhoParameter* localRho = static_cast<AliLocalRhoParameter*>(fLocalRho);
+                if(!localRho) break;
+                Double_t rho(localRho->GetLocalVal(poi->Phi(), fJetRadius, localRho->GetVal()));
+                Double_t pt(poi->Pt() - poi->Area() * rho);
+                if(fRhoVn->PassesCuts(poi)) {    
+                    if(pt >= fPtBins->At(ptBin) && pt < fPtBins->At(ptBin+1)) {    
                             // fill the flow vectors assuming that all poi's are in the rp selection (true by design)  
                             repn[ptBin]+=TMath::Cos(((Double_t)n)*poi->Phi());
                             impn[ptBin]+=TMath::Sin(((Double_t)n)*poi->Phi());
