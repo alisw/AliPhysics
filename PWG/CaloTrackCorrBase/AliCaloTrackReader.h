@@ -246,6 +246,16 @@ public:
   void             RejectFastClusterEvents()               { fAcceptFastCluster     = kFALSE ; }  
   Bool_t           IsFastClusterAccepted()           const { return fAcceptFastCluster       ; }   
   
+  Bool_t           AcceptEventWithTriggerBit();
+  Bool_t           RejectEventWithTriggerBit();
+  void             SetAcceptEventsWithBit(UInt_t bit)      { Int_t n = fAcceptEventsWithBit.GetSize();
+                                                             fAcceptEventsWithBit.Set(n+1);
+                                                             fAcceptEventsWithBit.AddAt(bit,n) ; }
+  
+  void             SetRejectEventsWithBit(UInt_t bit)      { Int_t n = fRejectEventsWithBit.GetSize();
+                                                             fRejectEventsWithBit.Set(n+1);
+                                                             fRejectEventsWithBit.AddAt(bit,n) ; }
+
   void             SwitchOnLEDEventsRemoval()              { fRemoveLEDEvents       = kTRUE  ; }
   void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; }
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
@@ -732,15 +742,17 @@ public:
   Int_t            fNMCProducedMax;             // In case of cocktail, select particles in the list with label up to this value
   
   // jets
-  
   Bool_t           fFillInputNonStandardJetBranch;  // Flag to use data from non standard jets
   TClonesArray *   fNonStandardJets;                //! temporal array with jets
   TString          fInputNonStandardJetBranchName;  // Name of non standard jet branch
   
+  TArrayI          fAcceptEventsWithBit;           // Accept events if trigger bit is on
+  TArrayI          fRejectEventsWithBit;           // Reject events if trigger bit is on
+
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,59)
+  ClassDef(AliCaloTrackReader,60)
   
 } ;
 
