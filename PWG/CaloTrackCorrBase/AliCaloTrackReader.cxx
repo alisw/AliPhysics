@@ -104,7 +104,7 @@ fTaskName(""),               fCaloUtils(0x0),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
-fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
+fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
 //Trigger rejection
@@ -299,20 +299,6 @@ AliStack* AliCaloTrackReader::GetStack() const
     return 0x0 ;
   }
 }
-
-////__________________________________________________
-//TString AliCaloTrackReader::GetFiredTriggerClasses()
-//{
-//  // List of triggered classes in a TString
-//  
-//  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (GetInputEvent());
-//  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (GetInputEvent());
-//  
-//  if     (esdevent) return esdevent->GetFiredTriggerClasses();
-//  else if(aodevent) return aodevent->GetFiredTriggerClasses();
-//  else              return ""; // Mixed Event, MC event, does not have this trigger info
-//  
-//}
 
 //______________________________________________
 AliHeader* AliCaloTrackReader::GetHeader() const
@@ -1031,73 +1017,29 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   {
     if( !CheckForPrimaryVertex() )              return kFALSE;
     if( TMath::Abs(fVertex[0][0] ) < 1.e-6 &&
-       TMath::Abs(fVertex[0][1] ) < 1.e-6 &&
-       TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
+        TMath::Abs(fVertex[0][1] ) < 1.e-6 &&
+        TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
   }
   
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
   if(fDoEventSelection)
   {
-    if(!fCaloFilterPatch)
+    // Do not analyze events with pileup
+    Bool_t bPileup = IsPileUpFromSPD();
+    //IsPileupFromSPDInMultBins() // method to try
+    //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
+    if(bPileup) return kFALSE;
+    
+    if(fDoV0ANDEventSelection)
     {
-      // Do not analyze events with pileup
-      Bool_t bPileup = IsPileUpFromSPD();
-      //IsPileupFromSPDInMultBins() // method to try
-      //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
-      if(bPileup) return kFALSE;
-      
-      if(fDoV0ANDEventSelection)
-      {
-        Bool_t bV0AND = kTRUE;
-        AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
-        if(esd)
-          bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
-        //else bV0AND = //FIXME FOR AODs
-        if(!bV0AND) return kFALSE;
-      }
-    }//CaloFilter patch
-    else
-    {
-      if(fInputEvent->GetNumberOfCaloClusters() > 0)
-      {
-        AliVCluster * calo = fInputEvent->GetCaloCluster(0);
-        if(calo->GetNLabels() == 4)
-        {
-          Int_t * selection = calo->GetLabels();
-          Bool_t bPileup = selection[0];
-          if(bPileup) return kFALSE;
-          
-          Bool_t bGoodV = selection[1];
-          if(fUseEventsWithPrimaryVertex && !bGoodV) return kFALSE;
-          
-          if(fDoV0ANDEventSelection)
-          {
-            Bool_t bV0AND = selection[2];
-            if(!bV0AND) return kFALSE;
-          }
-          
-          fTrackMult = selection[3];
-          if(fTrackMult == 0) return kFALSE;
-        }
-        else
-        {
-          //First filtered AODs, track multiplicity stored there.
-          fTrackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
-          if(fTrackMult == 0) return kFALSE;
-        }
-      }//at least one cluster
-      else
-      {
-        //printf("AliCaloTrackReader::FillInputEvent() - No clusters in event\n");
-        //Remove events with  vertex (0,0,0), bad vertex reconstruction
-        if(fUseEventsWithPrimaryVertex && TMath::Abs(fVertex[0][0]) < 1.e-6 && TMath::Abs(fVertex[0][1]) < 1.e-6 && TMath::Abs(fVertex[0][2]) < 1.e-6) return kFALSE;
-        
-        //First filtered AODs, track multiplicity stored there.
-        fTrackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
-        if(fTrackMult == 0) return kFALSE;
-      }// no cluster
-    }// CaloFileter patch
+      Bool_t bV0AND = kTRUE;
+      AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
+      if(esd)
+        bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
+      //else bV0AND = //FIXME FOR AODs
+      if(!bV0AND) return kFALSE;
+    }
   }// Event selection/AliceSoft/AliRoot/trunk/PWG/CaloTrackCorrBase/AliCaloTrackReader.h
   
   //------------------------------------------------------
