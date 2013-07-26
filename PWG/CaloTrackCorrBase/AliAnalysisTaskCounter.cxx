@@ -64,8 +64,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fZVertexCut(10.), 
   fTrackMultEtaCut(0.8),
   fAvgTrials(-1),
-  fCaloFilterPatch(kFALSE),
-  fOutputContainer(0x0), 
+  fOutputContainer(0x0),
   fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
   fTriggerAnalysis (new AliTriggerAnalysis),
   fCurrFileName(0),
@@ -86,8 +85,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fZVertexCut(10.),
     fTrackMultEtaCut(0.8),
     fAvgTrials(-1),
-    fCaloFilterPatch(kFALSE),
-    fOutputContainer(0x0), 
+    fOutputContainer(0x0),
     fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
     fTriggerAnalysis (new AliTriggerAnalysis),
     fCurrFileName(0),
@@ -215,19 +213,13 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   fhNEvents->Fill(0.5);  
   
   AliVEvent * event = InputEvent();
-  if (!event) 
-  {
-    printf("AliAnalysisTaskCounter::UserExec() - ERROR: event not available \n");
-    return;
-  }
-  
   AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (event);
   
-  TString triggerclasses = "";
-  if(esdevent) triggerclasses = esdevent->GetFiredTriggerClasses();
-  if(aodevent) triggerclasses = aodevent->GetFiredTriggerClasses();
+  TString triggerclasses = event->GetFiredTriggerClasses();
 
+  //printf("Trigger class fired: %s \n",event->GetFiredTriggerClasses().Data());
+  
   if (triggerclasses.Contains("FAST") && !triggerclasses.Contains("ALL") && !fAcceptFastCluster) 
   {
     //printf("Do not count events from fast cluster, trigger name %s\n",triggerclasses.Data());
@@ -260,55 +252,22 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   }
   //else printf("Vertex out %f \n",v[2]);
   
-
   //--------------------------------------------------
-  //Tweak for calorimeter only productions
+  //Count tracks, cut on number of tracks in eta < 0.8
   //--------------------------------------------------
-  if(fCaloFilterPatch && !esdevent)
-  { 
-    if(event->GetNumberOfCaloClusters() > 0) 
-    {
-      AliVCluster * calo = event->GetCaloCluster(0);
-      if(calo->GetNLabels() == 4){
-        Int_t * selection = calo->GetLabels();
-        bPileup   = selection[0];
-        bGoodV    = selection[1]; 
-        bV0AND    = selection[2]; 
-        trackMult = selection[3];
-        //if(selection[0] || selection[1] || selection[2])
-        //printf(" pu %d, gv %d, v0 %d, track mult %d\n ", selection[0], selection[1], selection[2], selection[3]);
-        if(trackMult > 0 )  
-          bSelectTrack = kFALSE;
-      } 
-      else 
-      {
-        //First filtered AODs, track multiplicity stored there.  
-        trackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
-      }
-    }
-    else
-    {   //at least one cluster
-
-        //First filtered AODs, track multiplicity stored there.  
-        trackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
-    }
-  }
-  else 
-  {
-    //--------------------------------------------------
-    //Count tracks, cut on number of tracks in eta < 0.8
-    //--------------------------------------------------
-    Int_t nTracks   = event->GetNumberOfTracks() ;
-    for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
-    {////////////// track loop
-      AliVTrack * track = (AliVTrack*)event->GetTrack(itrack) ; // retrieve track from esd
-      
-      //Only for ESDs
-      if(esdevent && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
-      
-      //Do not count tracks out of acceptance cut
-      if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
-    }
+  Int_t nTracks   = event->GetNumberOfTracks() ;
+  for (Int_t itrack =  0; itrack <  nTracks; itrack++)
+  {////////////// track loop
+    AliVTrack * track = (AliVTrack*)event->GetTrack(itrack) ; // retrieve track from esd
+    
+    //ESDs
+    if(esdevent && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
+    
+    //AODs
+    if(aodevent && !((AliAODTrack*)track)->IsHybridGlobalConstrainedGlobal()) continue ;
+    
+    //Do not count tracks out of acceptance cut
+    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
   }
   
   //printf("AliAnalysisTaskCounter::UserExec() - Track Mult %d \n",trackMult);
@@ -326,8 +285,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //---------------------------------
   // V0AND
   //---------------------------------
-  if(esdevent && !fCaloFilterPatch) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
-  //else if(aodevent  && !fCaloFilterPatch) bV0AND = //FIXME FOR AODs
+  
+  if(esdevent) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
   
   if(bV0AND)
   {
@@ -340,9 +299,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //---------------------------------
   // Pileup
   //---------------------------------
-  if(!fCaloFilterPatch)
-    bPileup = event->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
-  //bPileup = event->IsPileupFromSPD(); 
+  bPileup = event->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
+  //bPileup = event->IsPileupFromSPD();
   
   if (!bPileup)
   {
@@ -353,7 +311,7 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //---------------------------------
   // Good vertex
   //---------------------------------
-  if(!fCaloFilterPatch) bGoodV = CheckForPrimaryVertex();
+  bGoodV = CheckForPrimaryVertex();
   
   //Remove events with  vertex (0,0,0), bad vertex reconstruction
   if(TMath::Abs(v[0]) < 1.e-6 && 
