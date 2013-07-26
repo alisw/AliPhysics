@@ -23,9 +23,7 @@ public:
   AliCaloTrackAODReader() ;            // ctor
   
   virtual ~AliCaloTrackAODReader() {;} // virtual dtor
-     
-  AliCentrality* GetCentrality() const ;  
-  
+       
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
   AliVEvent* GetOriginalInputEvent() const { return fOrgInputEvent; }
