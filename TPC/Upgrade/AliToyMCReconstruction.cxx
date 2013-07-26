@@ -945,6 +945,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     AliError(Form("Seeding failed for parameters %d, %d\n",fSeedingDist,fSeedingRow));
     return 0x0;
   }
+
+  // 
   
   // do cluster correction for fCorrectionType:
   //   0 - no correction
@@ -959,6 +961,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     
     const Int_t sector=seedCluster[iseed]->GetDetector();
     const Int_t sign=1-2*((sector/18)%2);
+
+    Float_t zBeforeCorr = xyz[2]; 
     
     if ( (fClusterType == 1) && (fCorrectionType != kNoCorrection) ) {
       // the settings below are for the T0 seed
@@ -977,7 +981,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
 
     // after the correction set the time bin as z-Position in case of a T0 seed
     if ( fCreateT0seed )
-      xyz[2]=seedCluster[iseed]->GetTimeBin();
+      xyz[2]=seedCluster[iseed]->GetTimeBin() + ( xyz[2] - zBeforeCorr )/GetVDrift();
     
     seedPoint[iseed].SetXYZ(xyz);
   }
