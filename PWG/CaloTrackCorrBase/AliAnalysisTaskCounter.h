@@ -31,11 +31,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   virtual Bool_t Notify();
 
   void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut   = eta    ; }  
-  void    SetZVertexCut(Float_t vcut)             { fZVertexCut        = vcut   ; }  
-
-  void    SwitchOnCaloFilterPatch()               { fCaloFilterPatch   = kTRUE  ; } 
-  void    SwitchOffCaloFilterPatch()              { fCaloFilterPatch   = kFALSE ; }  
-  Bool_t  IsCaloFilterPatchOn()            const  { return fCaloFilterPatch     ; }   
+  void    SetZVertexCut(Float_t vcut)             { fZVertexCut        = vcut   ; }
   
   void    AcceptFastCluster()                     { fAcceptFastCluster = kTRUE  ; } 
   void    RejectFastCluster()                     { fAcceptFastCluster = kFALSE ; }  
@@ -48,7 +44,6 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   Float_t              fZVertexCut;        // Z vertex cut  
   Float_t              fTrackMultEtaCut;   // Track multiplicity eta cut  
   Float_t              fAvgTrials;         // avg trials
-  Bool_t               fCaloFilterPatch;   // CaloFilter patch  
   TList*               fOutputContainer;   //! Histogram container  
   AliESDtrackCuts    * fESDtrackCuts;      // Track cut    
   AliTriggerAnalysis * fTriggerAnalysis;   // Trigger algorithm 
@@ -71,7 +66,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   AliAnalysisTaskCounter(           const AliAnalysisTaskCounter&); // not implemented  
   AliAnalysisTaskCounter& operator=(const AliAnalysisTaskCounter&); // not implemented
   
-  ClassDef(AliAnalysisTaskCounter, 4);
+  ClassDef(AliAnalysisTaskCounter, 5);
 
 };
 

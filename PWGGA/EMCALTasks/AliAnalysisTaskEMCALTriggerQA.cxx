@@ -34,9 +34,14 @@
 #include "AliVEvent.h"
 #include "AliCentrality.h"
 
-#include "AliESDEvent.h"
+#include "AliVEvent.h"
+//#include "AliVVZERO.h"
+#include "AliVCaloTrigger.h"
+
+//#include "AliESDEvent.h"
 #include "AliESDVZERO.h"
-#include "AliESDCaloTrigger.h"
+//#include "AliESDCaloTrigger.h"
+
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliOADBContainer.h"
@@ -335,7 +340,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents    = new TH1F("hNEvents","Number of selected events",16,0,16);
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",18,0,18);
   fhNEvents   ->SetYTitle("N events");
   fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
   fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"MB");
@@ -353,7 +358,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhNEvents   ->GetXaxis()->SetBinLabel(14,"L0 & !MB");
   fhNEvents   ->GetXaxis()->SetBinLabel(15,"L1-G & !MB");
   fhNEvents   ->GetXaxis()->SetBinLabel(16,"L1-J & !MB");
-	
+  fhNEvents   ->GetXaxis()->SetBinLabel(17,"L1-G & (Cen | Semi)");
+  fhNEvents   ->GetXaxis()->SetBinLabel(18,"L1-J & (Cen | Semi)");
+  
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmp    ->SetXTitle("Index #eta (columnns)");
@@ -383,7 +390,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhFORAmpL1J2 ->SetXTitle("Index #eta (columnns)");
   fhFORAmpL1J2 ->SetYTitle("Index #phi (rows)");
   fhFORAmpL1J2 ->SetZTitle("Amplitude");
-  
+
   
   fhL0Amp      = new TH2F("hL0Amp","FALTRO signal per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
@@ -840,12 +847,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 	
   AliVEvent* event = InputEvent();
   
-  //Remove next lines when AODs ready
-  AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(event);
-  
-  if (!esdEvent)
+  if (!event)
   {
-    AliError("Work only with ESDs, not available, exit");
+    AliError("No Event, exit");
     return;
   }
   
@@ -854,9 +858,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   if(fAccessOADB) AccessOADB(); // only once
   
   //trigger configuration
-  TString triggerclasses = esdEvent->GetFiredTriggerClasses();
+  TString triggerclasses = event->GetFiredTriggerClasses();
   
-  Int_t eventType = ((AliVHeader*)InputEvent()->GetHeader())->GetEventType();
+  Int_t eventType = ((AliVHeader*)event->GetHeader())->GetEventType();
   // physics events eventType=7, select only those
   
   if(triggerclasses=="" || eventType != 7) return;
@@ -901,24 +905,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
 	//  printf("MB : %d; L0 : %d; L1-Gam : %d; L1-Jet : %d; Central : %d; SemiCentral : %d; Trigger Names : %s \n ",
 	//       bMB,bL0,bL1G,bL1J,bCen,bSem,triggerclasses.Data());
-	
-  fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
-  fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(3 ,"Central Pb");
-  fhNEvents   ->GetXaxis()->SetBinLabel(4 ,"SemiCentral Pb");
-  fhNEvents   ->GetXaxis()->SetBinLabel(5 ,"L0");
-  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G");
-  fhNEvents   ->GetXaxis()->SetBinLabel(7 ,"L1-G2");
-  fhNEvents   ->GetXaxis()->SetBinLabel(8 ,"L1-J");
-  fhNEvents   ->GetXaxis()->SetBinLabel(9 ,"L1-J2");
-  fhNEvents   ->GetXaxis()->SetBinLabel(10 ,"L1-G & !L1-J");
-  fhNEvents   ->GetXaxis()->SetBinLabel(11 ,"L1-J & !L1-G");
-  fhNEvents   ->GetXaxis()->SetBinLabel(12 ,"L1-J & L1-G");
-  fhNEvents   ->GetXaxis()->SetBinLabel(13 ,"MB & !L1 & !L0");
-  fhNEvents   ->GetXaxis()->SetBinLabel(14,"L0 & !MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(15,"L1-G & !MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(16,"L1-J & !MB");
-	
+		
   // Fill event histo
   fhNEvents->Fill(0.5); // All physics events
   
@@ -946,6 +933,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   {
     fhNEvents->Fill(5.5);
     if(!bL1J)  fhNEvents->Fill(9.5);
+    if(bCen || bSem) fhNEvents->Fill(16.5);
   }
 	
   if( bL1G2 )fhNEvents->Fill(6.5);
@@ -955,6 +943,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   {
     fhNEvents->Fill(7.5);
     if(!bL1G)  fhNEvents->Fill(10.5);
+    if(bCen || bSem) fhNEvents->Fill(17.5);
   }
   
   if(bL1J && bL1G) fhNEvents->Fill(11.5);
@@ -1045,7 +1034,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
        //printf("L1G2 cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),emcalCellL1G2[int(posY/2)][int(posX/2)]);
       }
 			
-      if(bL1J) emcalCellL1J[int(posY/2)][int(posX/2)] += amp;
+      if(bL1J)  emcalCellL1J[int(posY/2)][int(posX/2)] += amp;
       if(bL1J2) emcalCellL1J2[int(posY/2)][int(posX/2)] += amp;
 			
       //printf("cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),emcalCell[int(posY/2)][int(posX/2)]);
@@ -1057,7 +1046,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   // Trigger analysis, fill L0, L1 arrays
   //-------------------------------------
   
-  AliESDCaloTrigger& trg= * (esdEvent->GetCaloTrigger("EMCAL"));
+  AliVCaloTrigger& trg= * (event->GetCaloTrigger("EMCAL"));
   
   Int_t    nL0Patch = 0 ;
   Int_t    nL1Patch = 0 ;
@@ -1149,39 +1138,40 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   if(totTRU > fMaxTRUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totTRU %f\n",totTRU);
   if(totSTU > fMaxSTUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totSTU %f\n",totSTU);
 	
-  //V0 analysis
-  AliESDVZERO* eventV0 = esdEvent->GetVZEROData();
-	
+  //V0 analysis, only for ESDs
+
+  AliESDVZERO* eventV0 = dynamic_cast<AliESDVZERO*> (event->GetVZEROData());
+
   Float_t v0C = 0, v0A = 0, v0TT = trg.GetL1V0(0)+trg.GetL1V0(1);
-	
-  if (eventV0)
+
+  if(eventV0)
   {
     for (Int_t i = 0; i < 32; i++)
     {
       v0C += eventV0->GetAdcV0C(i);
       v0A += eventV0->GetAdcV0A(i);
     }
+    
+    if (totSTU != 0)
+    {
+      fhV0STU->Fill(v0A+v0C,totSTU);
+      if( v0A+v0C > fMaxV0Signal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large v0A+v0C %f\n",v0A+v0C);
+    }
+    
+    if( bL1G )  fhV0[kL1GammaTrig]    ->Fill(v0A+v0C);
+    if( bL1G2 ) fhV0[kL1GammaTrig2]   ->Fill(v0A+v0C);
+    if( bL1J )  fhV0[kL1JetTrig]      ->Fill(v0A+v0C);
+    if( bL1J2 ) fhV0[kL1JetTrig2]     ->Fill(v0A+v0C);
+    if( bMB  )  fhV0[kMBTrig]         ->Fill(v0A+v0C);
+    if( bL0  )  fhV0[kL0Trig]         ->Fill(v0A+v0C);
+    if( bCen )  fhV0[kCentralTrig]    ->Fill(v0A+v0C);
+    if( bSem )  fhV0[kSemiCentralTrig]->Fill(v0A+v0C);
+    if(bL1G && !bL1J)  fhV0[kL1GammaOnlyTrig]->Fill(v0A+v0C);
+    if(bL1J && !bL1G)  fhV0[kL1JetOnlyTrig]  ->Fill(v0A+v0C);
+    
+    //if(nL0Patch!=0 || nL1Patch!=0) printf("total TRU %f, total STU %f, V0C+V0A %f; nL0 %d, nL1 %d \n",
+    //       totTRU,totSTU,v0A+v0C,nL0Patch,nL1Patch);
   }
-  
-  if (totSTU != 0) 
-  {
-    fhV0STU->Fill(v0A+v0C,totSTU);
-    if( v0A+v0C > fMaxV0Signal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large v0A+v0C %f\n",v0A+v0C);
-  }
-  
-  if( bL1G )  fhV0[kL1GammaTrig]    ->Fill(v0A+v0C);
-  if( bL1G2 ) fhV0[kL1GammaTrig2]   ->Fill(v0A+v0C);
-  if( bL1J )  fhV0[kL1JetTrig]      ->Fill(v0A+v0C);
-  if( bL1J2 ) fhV0[kL1JetTrig2]     ->Fill(v0A+v0C);
-  if( bMB  )  fhV0[kMBTrig]         ->Fill(v0A+v0C);
-  if( bL0  )  fhV0[kL0Trig]         ->Fill(v0A+v0C);
-  if( bCen )  fhV0[kCentralTrig]    ->Fill(v0A+v0C);
-  if( bSem )  fhV0[kSemiCentralTrig]->Fill(v0A+v0C);
-  if(bL1G && !bL1J)  fhV0[kL1GammaOnlyTrig]->Fill(v0A+v0C);
-  if(bL1J && !bL1G)  fhV0[kL1JetOnlyTrig]  ->Fill(v0A+v0C);
-  
-  //if(nL0Patch!=0 || nL1Patch!=0) printf("total TRU %f, total STU %f, V0C+V0A %f; nL0 %d, nL1 %d \n",
-  //       totTRU,totSTU,v0A+v0C,nL0Patch,nL1Patch);
   
   if(bL1G)
   {
@@ -1406,11 +1396,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 	
   //Get Vertex
   Double_t v[3] = {0,0,0};
-  esdEvent->GetVertex()->GetXYZ(v);
+  event->GetPrimaryVertex()->GetXYZ(v);
   
   //clusters distribution
   TRefArray* caloClus = new TRefArray();
-  esdEvent->GetEMCALClusters(caloClus);
+  event->GetEMCALClusters(caloClus);
   
   Int_t nCaloClusters = caloClus->GetEntriesFast();
   
@@ -1435,7 +1425,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
   {
-    AliESDCaloCluster *clus = (AliESDCaloCluster*) (caloClus->At(icalo));
+    AliVCluster *clus = (AliVCluster*) (caloClus->At(icalo));
     
     if(!clus->IsEMCAL()) continue;
     

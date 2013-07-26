@@ -237,7 +237,7 @@ public:
   virtual TObjArray*     GetPHOSClusters()           const { return fPHOSClusters           ; }
   virtual AliVCaloCells* GetEMCALCells()             const { return fEMCALCells             ; }
   virtual AliVCaloCells* GetPHOSCells()              const { return fPHOSCells              ; }
-   
+  
   //-------------------------------------
   // Event/track selection methods
   //-------------------------------------
@@ -253,7 +253,7 @@ public:
   
   void             SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
-  TString          GetFiredTriggerClasses() ;               
+  TString          GetFiredTriggerClasses()          const { return GetInputEvent()->GetFiredTriggerClasses() ; }
   
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
