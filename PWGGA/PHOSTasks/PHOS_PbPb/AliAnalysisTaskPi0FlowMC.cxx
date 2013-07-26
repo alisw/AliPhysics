@@ -908,7 +908,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0sMix()
 void AliAnalysisTaskPi0FlowMC::ProcessMC()
 {
   FillMCHist();
-  // FillSecondaries() ;
+  FillSecondaries() ;
 }
 
 
@@ -1380,3 +1380,4 @@ Bool_t AliAnalysisTaskPi0FlowMC::InPi0mass(Double_t m, Double_t /*pt*/){
 
  return TMath::Abs(m-0.135)<0.007*2.5 ;
 }
+
