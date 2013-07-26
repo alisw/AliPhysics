@@ -46,6 +46,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fNmaxEvents(-1)
 , fTime0(-1)
 , fCreateT0seed(kFALSE)
+, fLongT0seed(kTRUE)
 , fStreamer(0x0)
 , fInputFile(0x0)
 , fTree(0x0)
@@ -188,9 +189,11 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         delete dummy;
 
         // Long seed
-        dummy = GetFittedTrackFromSeed(tr,&t0seed);
-        t0seed = *dummy;
-        delete dummy;
+        if (fLongT0seed){
+          dummy = GetFittedTrackFromSeed(tr,&t0seed);
+          t0seed = *dummy;
+          delete dummy;
+        }
         
         // crate real seed using the time 0 from the first seed
         // set fCreateT0seed now to false to get the seed in z coordinates
@@ -974,7 +977,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
       }
       
       if ( fCorrectionType == kIdeal      ) xyz[2] = seedCluster[iseed]->GetZ();
-      
+
       //!!! TODO: to be replaced with the proper correction
       fTPCCorrection->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
     }
@@ -982,7 +985,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     // after the correction set the time bin as z-Position in case of a T0 seed
     if ( fCreateT0seed )
       xyz[2]=seedCluster[iseed]->GetTimeBin() + ( xyz[2] - zBeforeCorr )/GetVDrift();
-    
+    //  xyz[2]=seedCluster[iseed]->GetTimeBin()*sign;
+      
     seedPoint[iseed].SetXYZ(xyz);
   }
   
@@ -990,16 +994,17 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
   AliExternalTrackParam *seed = AliTrackerBase::MakeSeed(seedPoint[0], seedPoint[1], seedPoint[2]);
-  seed->ResetCovariance(10);
 
-  if (fCreateT0seed){
+  if (fCreateT0seed&&!fLongT0seed){
+    // only propagate to vertex if we don't create a long seed
     // if fTime0 < 0 we assume that we create a seed for the T0 estimate
     AliTrackerBase::PropagateTrackTo(seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
     if (TMath::Abs(seed->GetX())>3) {
 //       printf("Could not propagate track to 0, %.2f, %.2f, %.2f\n",seed->GetX(),seed->GetAlpha(),seed->Pt());
     }
   }
-  
+
+  seed->ResetCovariance(10);
   return seed;
   
 }
@@ -1187,12 +1192,14 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
 
     Float_t xyz[3]={0,0,0};
     pIn.GetXYZ(xyz);
+    Float_t zBeforeCorr = xyz[2];
+    
+    const Int_t sector=cl->GetDetector();
+    const Int_t sign=1-2*((sector/18)%2);
     
     if (fCorrectionType != kNoCorrection){
 
       const Float_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-      const Int_t sector=cl->GetDetector();
-      const Int_t sign=1-2*((sector/18)%2);
       
       if ( fCreateT0seed ){
         if ( fCorrectionType == kTPCCenter  ) xyz[2] = 125.*sign;
@@ -1205,7 +1212,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     }
     
     if ( fCreateT0seed )
-      xyz[2]=cl->GetTimeBin();
+      xyz[2]=cl->GetTimeBin() + ( xyz[2] - zBeforeCorr )/GetVDrift();
+    //       xyz[2]=cl->GetTimeBin();
     pIn.SetXYZ(xyz);
     
     // rotate the cluster to the local detector frame
@@ -1235,10 +1243,12 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
 
   AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 
-  // rotate fittet track to the frame of the original track and propagate to same reference
-  track->Rotate(tr->GetAlpha());
+  if (!fCreateT0seed){
+    // rotate fittet track to the frame of the original track and propagate to same reference
+    track->Rotate(tr->GetAlpha());
   
-  AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+    AliTrackerBase::PropagateTrackTo2(track,refX,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+  }
   
   return track;
 }
@@ -1994,7 +2004,7 @@ void  AliToyMCReconstruction::FillSectorStructureAC() {
           // a 'valid' position in z is needed for the seeding procedure
           Double_t sign=1;
           if (((sec/18)%2)==1) sign=-1;
-          cl->SetZ(cl->GetTimeBin()*GetVDrift()*sign);
+          cl->SetZ(cl->GetTimeBin()*GetVDrift());
           //mark cluster to be time*vDrift by setting the type to 1
           cl->SetType(1);
 //           cl->SetZ(cl->GetTimeBin());
@@ -2383,7 +2393,7 @@ void AliToyMCReconstruction::InitStreamer(TString addName, Int_t level)
   
   if (!fTree) return;
 
-  TString debugName=fInputFile->GetName();
+  TString debugName=gSystem->BaseName(fInputFile->GetName());
   debugName.ReplaceAll(".root","");
   debugName.Append(Form(".%1d.%1d_%1d_%1d_%03d_%02d",
                         fUseMaterial,fIdealTracking,fClusterType,
