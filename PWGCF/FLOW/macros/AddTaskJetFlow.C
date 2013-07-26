@@ -20,10 +20,13 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
         Bool_t VParticle                   = kFALSE,
         TArrayD* ptArray                   = 0x0,
         Bool_t VZEROEP                     = kTRUE,
+        Bool_t GQC2                        = kTRUE,
         Bool_t QC2                         = kTRUE,
         Bool_t QC4                         = kFALSE,
         Bool_t FlowPackageSP               = kFALSE,
         Bool_t FlowPackageQC               = kTRUE,
+        TString LocalRhoName               = "",
+        Double_t jetRadius                 = 0.3,
         Bool_t debug                       = kFALSE  )
 {
     // first check the environment (common to all tasks)
@@ -52,6 +55,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
             rhoTask,
             VParticle,
             VZEROEP,
+            GQC2,            
             QC2,
             QC4,
             FlowPackageSP,
@@ -60,6 +64,8 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
         task->SetCCMaxPt(CCMaxPt);
         task->SetCCBinsInPt(CCBinsInPt);
         task->SetPtBins(ptArray);       // if passed as NULL default a sane default is provided
+        task->SetLocalRhoName(LocalRhoName);
+        task->SetJetRadius(jetRadius);
         (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
         if(!task) {
              if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
