@@ -36,6 +36,7 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
  EMCALJetTasks/AliAnalysisTaskRhoFlow.cxx
  EMCALJetTasks/AliAnalysisTaskRhoSparse.cxx
+ EMCALJetTasks/AliAnalysisTaskLocalRho.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
