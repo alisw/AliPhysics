@@ -127,7 +127,8 @@ fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath(""),
 fAcceptOnlyHIJINGLabels(0),  fNMCProducedMin(0), fNMCProducedMax(0),
 fFillInputNonStandardJetBranch(kFALSE),
-fNonStandardJets(new TClonesArray("AliAODJet",100)),fInputNonStandardJetBranchName("jets")
+fNonStandardJets(new TClonesArray("AliAODJet",100)),fInputNonStandardJetBranchName("jets"),
+fAcceptEventsWithBit(0),     fRejectEventsWithBit(0)
 {
   //Ctor
   
@@ -190,6 +191,9 @@ AliCaloTrackReader::~AliCaloTrackReader()
     delete fNonStandardJets ;
   }
   
+  fRejectEventsWithBit.Reset();
+  fAcceptEventsWithBit.Reset();
+  
   //  Pointers not owned, done by the analysis frame
   //  if(fInputEvent)  delete fInputEvent ;
   //  if(fOutputEvent) delete fOutputEvent ;
@@ -212,6 +216,61 @@ Bool_t  AliCaloTrackReader::AcceptDCA(const Float_t pt, const Float_t dca)
     return kFALSE;
   
 }
+
+//_____________________________________________________
+Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit()
+{
+  // Accept events that pass the physics selection
+  // depending on an array of trigger bits set during the configuration
+  
+  Int_t nAccept = fAcceptEventsWithBit.GetSize();
+  
+  //printf("N accept %d\n", nAccept);
+  
+  if( nAccept <= 0 )
+    return kTRUE ; // accept the event
+  
+  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  
+  for(Int_t ibit = 0; ibit < nAccept; ibit++)
+  {
+    Bool_t accept = (trigFired & fAcceptEventsWithBit.At(ibit));
+    
+    //printf("accept %d, ibit %d, bit %d \n",accept, ibit,fAcceptEventsWithBit.At(ibit));
+    if(accept) return kTRUE ; // accept the event
+  }
+  
+  return kFALSE ; // reject the event
+  
+}
+
+//_____________________________________________________
+Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
+{
+  // Reject events that pass the physics selection
+  // depending on an array of trigger bits set during the configuration
+
+  Int_t nReject = fRejectEventsWithBit.GetSize();
+  
+  //printf("N reject %d\n", nReject);
+  
+  if( nReject <= 0 )
+    return kTRUE ; // accept the event
+  
+  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  
+  for(Int_t ibit = 0; ibit < nReject; ibit++)
+  {
+    Bool_t reject = (trigFired & fRejectEventsWithBit.At(ibit));
+    
+    //printf("reject %d, ibit %d, bit %d \n",reject, ibit,fRejectEventsWithBit.At(ibit));
+    if(reject) return kFALSE ; // reject the event
+  }
+  
+  return kTRUE ; // accept the event
+  
+}
+
 
 //________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
@@ -938,9 +997,22 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if(reject) return kFALSE;
   }// Remove LED events
   
-  //------------------------
-  // Reject pure LED events?
-  //-------------------------
+  //-------------------------------------------------------------------------------------
+  // Reject or accept events depending on the trigger bit
+  //-------------------------------------------------------------------------------------
+  
+  //printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>\n", GetFiredTriggerClasses().Data());
+  
+  Bool_t okA = AcceptEventWithTriggerBit();
+  Bool_t okR = RejectEventWithTriggerBit();
+
+  //printf("AliCaloTrackReader::FillInputEvent() - Accept event? %d, Reject event %d? \n",okA,okR);
+  
+  if(!okA || !okR) return kFALSE;
+  
+  //-----------------------------------------------------------
+  // Reject events depending on the trigger name and event type
+  //-----------------------------------------------------------
   if( fFiredTriggerClassName  !="" && !fAnaLED)
   {
     //printf("Event type %d\n",eventType);
