@@ -11,11 +11,12 @@
 // Changes by M.Knichel 15/10/2010
 //------------------------------------------------------------------------------
 
-/*
+/*AliPerformanceDEdx.cxx
  
   // after running comparison task, read the file, and get component
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/Macros/LoadMyLibs.C");
-  LoadMyLibs();
+  LoadMyLibs();cd /hera/alice/atarant/train/trunk/atarant_spectra/qa/
+
   TFile f("Output.root");
   //AliPerformanceDEdx * compObj = (AliPerformanceDEdx*)f.Get("AliPerformanceDEdx");
   AliPerformanceDEdx * compObj = (AliPerformanceDEdx*)coutput->FindObject("AliPerformanceDEdx");
@@ -260,8 +261,13 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   Double_t snp = innerParam->GetSnp();
   Double_t tgl = innerParam->GetTgl();
 
+  //fill thnspars here coud add oroc mdedium long..............Atti
+  //you should select which pad leng here 
+  // http://svnweb.cern.ch/world/wsvn/AliRoot/trunk/STEER/STEERBase/AliTPCdEdxInfo.h 
+  // fTPCsignalRegion[4];
+
   //Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nCrossedRows};
-  Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nClsF};
+  Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,Double_t(ncls),p,Double_t(TPCSignalN),nClsF};
   fDeDxHisto->Fill(vDeDxHisto); 
 
   if(!stack) return;
@@ -416,8 +422,13 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
 //_____________________________________________________________________________
 void AliPerformanceDEdx::Analyse()
 {
+  
   // Analyze comparison information and store output histograms
   // in the folder "folderDEdx"
+  //
+  //Atti h_tpc_dedx_mips_0 
+  //fai fit con range p(.32,.38) and dEdx(65- 120 or 100) e ripeti cosa fatta per pion e fai trending della media e res, poio la loro differenza
+  //fai dedx vs lamda ma for e e pion separati
   //
   TH1::AddDirectory(kFALSE);
   TH1::SetDefaultSumw2(kFALSE);
@@ -445,10 +456,10 @@ void AliPerformanceDEdx::Analyse()
   fDeDxHisto->GetAxis(4)->SetRangeUser(-0.4, 0.399);
   fDeDxHisto->GetAxis(5)->SetRangeUser(-0.9,0.89);
   fDeDxHisto->GetAxis(6)->SetRangeUser(60.,160.);
-  fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499);
+  fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499); //p
   fDeDxHisto->GetAxis(8)->SetRangeUser(60.,160.);
   
-  
+ 
   selString = "mipsres";
   AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
 
@@ -492,7 +503,6 @@ void AliPerformanceDEdx::Analyse()
     aFolderObj->Add(h1D);
   }
 
-
     // select MIPs (version from AliTPCPerfomanceSummary)
     fDeDxHisto->GetAxis(0)->SetRangeUser(35,60);
     fDeDxHisto->GetAxis(2)->SetRangeUser(-20,19.999);
@@ -503,8 +513,6 @@ void AliPerformanceDEdx::Analyse()
     fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.55);
     fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
     fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
-
-
 
     selString = "mips";
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
@@ -519,6 +527,23 @@ void AliPerformanceDEdx::Analyse()
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 5, &selString);    
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
     
+    //////////////////////////////////////// atti new start
+    // 
+    // select (version from AliTPCPerfomanceSummary) electrons                                                                                                      
+    fDeDxHisto->GetAxis(0)->SetRangeUser(70,100); //dedx for electrons
+    fDeDxHisto->GetAxis(2)->SetRangeUser(-20,19.999);
+    fDeDxHisto->GetAxis(3)->SetRangeUser(-250,249.999);
+    fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 0.99);
+    fDeDxHisto->GetAxis(5)->SetRangeUser(-1,0.99);
+    fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
+    fDeDxHisto->GetAxis(7)->SetRangeUser(0.32,0.38); //momenta for electrons
+    fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
+    fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
+
+    selString = "mipsele";
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
+    //////////////////////////////////////// atti new stop
+
     //restore cuts
     for (Int_t i=0; i<fDeDxHisto->GetNdimensions(); i++) {
       fDeDxHisto->GetAxis(i)->SetRange(1,fDeDxHisto->GetAxis(i)->GetNbins());
