@@ -20,6 +20,7 @@ class AliVCluster;
 class AliMCEvent;
 class AliStack;
 class TParticle;
+class TGeoHMatrix;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -87,7 +88,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   AliAODEvent *fAOD;      //! AOD object
   AliMCEvent  *fMCEvent;  //! MC event object
   AliStack    *fStack;    //!MC particles stack object
-
+  TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
   TList       *fOutputList; //! Output list
   //histograms for events with 1+ track pt>1
   TH1F        *fEvtSel;                    //!evt selection counter: 0=all trg, 1=pv cut 
