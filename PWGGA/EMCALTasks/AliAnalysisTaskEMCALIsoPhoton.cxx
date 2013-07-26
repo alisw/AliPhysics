@@ -33,6 +33,7 @@
 #include "AliVTrack.h"
 #include "AliV0vertexer.h"
 #include "AliVCluster.h"
+#include "AliOADBContainer.h"
 
 #include <iostream>
 using std::cout;
@@ -304,6 +305,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("ERROR: event not available\n");
     return;
   }
+  Int_t   runnumber = InputEvent()->GetRunNumber() ;
   fESD = dynamic_cast<AliESDEvent*>(event);
   fAOD = dynamic_cast<AliAODEvent*>(event);
   
@@ -359,16 +361,19 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       fSelPrimTracks->Add(track);
   }
 
-  if(!fIsTrain){
-    for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-      if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
-        break;
-      /*if(fESD)
-	  fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
-	  else*/
-	if(event->GetEMCALMatrix(mod))
-	    fGeom->SetMisalMatrix(event->GetEMCALMatrix(mod), mod);
-    }
+  AliOADBContainer emcGeoMat("AliEMCALgeo");
+  emcGeoMat.InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
+  TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+
+  for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+    if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
+      break;
+    /*if(fESD)
+      fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
+      else*/
+    // if(event->GetEMCALMatrix(mod))
+    fGeomMatrix[mod] = (TGeoHMatrix*) matEMCAL->At(mod);
+    fGeom->SetMisalMatrix(fGeomMatrix[mod] , mod);
   }
   if(fESD){
     AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
