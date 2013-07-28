@@ -1,8 +1,19 @@
+#include "TString.h"
+#include "TFile.h"
+#include "TCanvas.h"
+#include "TMath.h"
+#include "TTree.h"
+#include "TTreeStream.h"
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TStyle.h"
+#include "AliTPCCorrection.h"
+
 void makeComparisonTree(TString filename, TString addToName)
 {
   TFile fn(filename.Data());
   gROOT->cd();
-  fTPCCorrection=(AliTPCCorrection*)fn.Get("map");
+  AliTPCCorrection *fTPCCorrection=(AliTPCCorrection*)fn.Get("map");
   fn.Close();
 
   TString outFile=addToName;
@@ -84,7 +95,7 @@ void makeHistos(TString addToName) {
   fileName.Append(".root");
   TFile f(fileName.Data());
   gROOT->cd();
-  TTree *t=f.Get("t");
+  TTree *t=(TTree*)f.Get("t");
   gStyle->SetTitleX(0.18);
   gStyle->SetTitleW(1-.18-.1);
 
@@ -111,6 +122,38 @@ void makeHistos(TString addToName) {
   f.Close();
 }
 
+void makeHistosDist(TString addToName) {
+  TString fileName; //("test_");
+  fileName.Append(addToName.Data());
+  fileName.Append(".root");
+  TFile f(fileName.Data());
+  gROOT->cd();
+  TTree *t=(TTree*)f.Get("t");
+  gStyle->SetTitleX(0.18);
+  gStyle->SetTitleW(1-.18-.1);
+  
+  t->SetMarkerStyle(20);
+  t->SetMarkerSize(.8);
+  
+  TCanvas *c=0x0;
+  c=GetCanvas(addToName+"_zResDist");
+  t->Draw("zd-z:z:r","","colz");
+  c->SaveAs(Form("%s_zResDist.png",addToName.Data()));
+  //
+  c=GetCanvas(addToName+"_rResDist");
+  t->Draw("rd-r:z:r","","colz");
+  c->SaveAs(Form("%s_rResDist.png",addToName.Data()));
+  //
+  c=GetCanvas(addToName+"_phiResDist");
+  t->Draw("phid-phi:z:r","abs(phid-phi)<1","colz");
+  c->SaveAs(Form("%s_phiResDist.png",addToName.Data()));
+  //
+  c=GetCanvas(addToName+"_rphiResDist");
+  t->Draw("(phid*rd)-(phi*r):z+(r-84)/(254-84)*18:r","abs(phid-phi)<1","colz");
+  c->SaveAs(Form("%s_rphiResDist.png",addToName.Data()));
+  
+  f.Close();
+}
 
 
 void makeAllHistos() {
@@ -120,11 +163,18 @@ void makeAllHistos() {
 
 }
 
+void makeAllHistosDist() {
+  makeHistosDist("LUT_05");
+  makeHistosDist("LUT_10");
+  makeHistosDist("LUT_20");
+  
+}
+
 TCanvas *GetCanvas(TString addToName)
 {
   TString cName(addToName);
   cName.Prepend("c_");
-  TCanvas *c=gROOT->GetListOfCanvases()->FindObject(cName.Data());
+  TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject(cName.Data());
   if (!c) c=new TCanvas(cName.Data(),addToName.Data());
   c->Clear();
   c->cd();

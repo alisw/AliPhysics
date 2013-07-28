@@ -984,7 +984,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
 
     // after the correction set the time bin as z-Position in case of a T0 seed
     if ( fCreateT0seed )
-      xyz[2]=seedCluster[iseed]->GetTimeBin() + ( xyz[2] - zBeforeCorr )/GetVDrift();
+      xyz[2]=seedCluster[iseed]->GetTimeBin() + sign*( zBeforeCorr - xyz[2] )/GetVDrift();
     //  xyz[2]=seedCluster[iseed]->GetTimeBin()*sign;
       
     seedPoint[iseed].SetXYZ(xyz);
@@ -1212,7 +1212,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     }
     
     if ( fCreateT0seed )
-      xyz[2]=cl->GetTimeBin() + ( xyz[2] - zBeforeCorr )/GetVDrift();
+      xyz[2]=cl->GetTimeBin() + sign*( zBeforeCorr - xyz[2] )/GetVDrift();
     //       xyz[2]=cl->GetTimeBin();
     pIn.SetXYZ(xyz);
     
@@ -1742,7 +1742,7 @@ TTree* AliToyMCReconstruction::ConnectTrees (const char* files) {
     }
   }
 
-  tFirst->GetListOfFriends()->Print();
+  if (tFirst->GetListOfFriends()) tFirst->GetListOfFriends()->Print();
   return tFirst;
 }
 

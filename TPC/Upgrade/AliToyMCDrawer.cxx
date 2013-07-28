@@ -6,6 +6,7 @@
 #include <TFile.h>
 #include <TGraph2D.h>
 #include <TH3F.h>
+#include <TH2F.h>
 #include <TClonesArray.h>
 #include <TPolyLine3D.h>
 #include <TPolyMarker3D.h>
@@ -65,6 +66,13 @@ AliToyMCDrawer::AliToyMCDrawer()
   ,fRoc(AliTPCROC::Instance())
   ,fPoints(0x0)
   ,fDistPoints(0x0)
+  ,fProjectionType("XYT")
+  ,fTimeZmin(0.)
+  ,fTimeZmax(0.)
+  ,fGlobalXmin(0.)
+  ,fGlobalXmax(0.)
+  ,fGlobalYmin(0.)
+  ,fGlobalYmax(0.)
   {
    fEventArray = new TClonesArray("AliToyMCEvent");
    
@@ -96,7 +104,14 @@ AliToyMCDrawer::AliToyMCDrawer(const AliToyMCDrawer &drawer)
   ,fRoc(drawer.fRoc)
   ,fPoints(drawer.fPoints)
   ,fDistPoints(drawer.fDistPoints)
-{
+  ,fProjectionType("XYT")
+  ,fTimeZmin(0.)
+  ,fTimeZmax(0.)
+  ,fGlobalXmin(0.)
+  ,fGlobalXmax(0.)
+  ,fGlobalYmin(0.)
+  ,fGlobalYmax(0.)
+  {
   //
 }
 //_____________________________________________________
@@ -478,6 +493,11 @@ void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime,
       xp = prot.GetX();
       yp = prot.GetY();
 
+      Double_t ztime=zDrifted;
+      Double_t globx=xp;
+      Double_t globy=yp;
+
+//       if (fProje)
 
 	    
       if(track->GetSpacePoint(iPoint)->GetRow()!=255) {
@@ -577,60 +597,154 @@ void AliToyMCDrawer::DrawGeometry() {
   //delete fDispGraph;
   //fDispGraph = new TGraph2D();
   delete fDispHist;
- 
-  fDispHist = new TH3F("fDispHist","",100,-fMaxZ0, fMaxZ0, 100,-(fOFCRadius +10), fOFCRadius +10,100,-(fOFCRadius +10), fOFCRadius +10);
+
+  Double_t timeZmin=-fMaxZ0;
+  Double_t timeZmax= fMaxZ0;
+  Double_t globXmin=-(fOFCRadius +10);
+  Double_t globXmax=  fOFCRadius +10 ;
+  Double_t globYmin=-(fOFCRadius +10);
+  Double_t globYmax=  fOFCRadius +10 ;
+
+  const Double_t epsilon=.001;
+  
+  TString title;
+  if (fTimeZmax>fTimeZmin) {
+    timeZmin=fTimeZmin;
+    timeZmax=fTimeZmax;
+  }
+  if (fGlobalXmax>fGlobalXmin) {
+    globXmin=fGlobalXmin;
+    globXmax=fGlobalXmax;
+  }
+  if (fGlobalYmax>fGlobalYmin) {
+    globYmin=fGlobalYmin;
+    globYmax=fGlobalYmax;
+  }
+  if (fProjectionType=="XYT"){
+    fDispHist = new TH3F("fDispHist",";#it{z} [cm]; #it{x} [cm]; #it{y} [cm]",
+                         100, timeZmin-10, timeZmax+10,
+                         100, globXmin, globXmax ,
+                         100, globYmin, globYmax);
+  } else if (fProjectionType=="XT"){
+    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{x} [cm]",
+                         100, timeZmin-10, timeZmax+10,
+                         100, globXmin, globXmax);
+  } else if (fProjectionType=="YT"){
+    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{y} [cm]",
+                         100, timeZmin-10, timeZmax+10,
+                         100, globYmin, globYmax);
+  } else if (fProjectionType=="RT"){
+    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{r} [cm]",
+                         100, timeZmin-10, timeZmax+10,
+                         100, globYmin, globYmax);
+  } else {
+    AliError(Form("Display Format not known: %s",fProjectionType.Data()));
+    return;
+  }
+    
+    
+    
   //if(!fDispGraph) fDispGraph = new TGraph();
 
   //fDispGraph->Clear();
   fDispHist->SetStats(0);
-  fDispHist->GetXaxis()->SetTitle("z [cm]");
-  fDispHist->GetYaxis()->SetTitle("x [cm]");
-  fDispHist->GetZaxis()->SetTitle("y [cm]");
   fDispHist->Draw();
   gPad->SetPhi(0);
   gPad->SetTheta(0);
-  TPolyLine3D *endCap1 = new TPolyLine3D();
-  TPolyLine3D *endCap2 = new TPolyLine3D();
-  TPolyLine3D *cage[16] ={0x0};
-  TPolyLine3D *innerCage[16] ={0x0};
-  TPolyLine3D *innerEndCap1 = new TPolyLine3D();
-  TPolyLine3D *innerEndCap2 = new TPolyLine3D();
-  for(Int_t i = 0; i<16; i++){
-    
-    cage[i] = new TPolyLine3D();
-    cage[i]->SetPoint(0,-fMaxZ0,fOFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fOFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
-    cage[i]->SetPoint(1,fMaxZ0,fOFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fOFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
-    innerCage[i] = new TPolyLine3D();
-    innerCage[i]->SetPoint(0,-fMaxZ0,fIFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fIFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
-    innerCage[i]->SetPoint(1,fMaxZ0,fIFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fIFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
+  
+  TPolyLine3D *endCap1 = 0x0;
+  if (timeZmin-epsilon<-fMaxZ0)
+    endCap1=new TPolyLine3D();
+  printf("time: %p, %.2f,, %.2f, %.2f, %.2f, %d\n",endCap1,fTimeZmin,fTimeZmax,timeZmin-epsilon,fMaxZ0, timeZmin-epsilon<-fMaxZ0);
+  TPolyLine3D *endCap2 = 0x0;
+  if (timeZmax+epsilon> fMaxZ0)
+    endCap2=new TPolyLine3D();
 
-    endCap1->SetPoint(i,fMaxZ0,fOFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fOFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
-    endCap2->SetPoint(i,-fMaxZ0,fOFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fOFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
+  TPolyLine3D *outerCE = 0x0;
+  if (timeZmin<0 && timeZmax>0 )
+    outerCE=new TPolyLine3D();
+  
+  TPolyLine3D *cage[18] ={0x0};
+  
+  TPolyLine3D *innerCage[18] ={0x0};
+  
+  TPolyLine3D *innerEndCap1 = 0x0;
+  if (timeZmin-epsilon<-fMaxZ0)
+    innerEndCap1=new TPolyLine3D();
+  
+  TPolyLine3D *innerEndCap2 = 0x0;
+  if (timeZmax+epsilon> fMaxZ0)
+    innerEndCap2=new TPolyLine3D();
 
-    innerEndCap1->SetPoint(i,fMaxZ0,fIFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fIFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
-    innerEndCap2->SetPoint(i,-fMaxZ0,fIFCRadius*TMath::Cos(i*TMath::TwoPi()/16) ,fIFCRadius*TMath::Sin(i*TMath::TwoPi()/16)) ;
-    innerCage[i]->Draw("same");
-    if(!(i%2))  cage[i]->Draw("same");
+  TPolyLine3D *innerCE = 0x0;
+  if (timeZmin<0 && timeZmax>0 )
+    innerCE=new TPolyLine3D();
+  
+  Int_t iPoint=0;
+  Double_t angle    = 0.;
+  Double_t globalX  = 0.;
+  Double_t globalY  = 0.;
+  Double_t globalXi = 0.;
+  Double_t globalYi = 0.;
+  
+  for(Int_t i = 0; i<18; i++){
+    angle    = i*TMath::TwoPi()/18;
+    globalX  = fOFCRadius*TMath::Cos(angle);
+    globalY  = fOFCRadius*TMath::Sin(angle);
+    globalXi = fIFCRadius*TMath::Cos(angle);
+    globalYi = fIFCRadius*TMath::Sin(angle);
     
+    cage[iPoint] = new TPolyLine3D();
+    cage[iPoint]->SetPoint(0,timeZmin,globalX ,globalY) ;
+    cage[iPoint]->SetPoint(1, timeZmax,globalX ,globalY) ;
+    innerCage[iPoint] = new TPolyLine3D();
+    innerCage[iPoint]->SetPoint(0,timeZmin,globalXi ,globalYi) ;
+    innerCage[iPoint]->SetPoint(1, timeZmax,globalXi ,globalYi) ;
+
+    // only draw if inside range
+    if (endCap1) { endCap1->SetPoint(i,timeZmax, globalX, globalY); }
+    if (endCap2) { endCap2->SetPoint(i,timeZmin, globalX, globalY); }
+    if (outerCE) { outerCE->SetPoint(i,      0., globalX, globalY); }
+    
+    if (innerEndCap1) { innerEndCap1->SetPoint(i, timeZmax, globalXi, globalYi); }
+    if (innerEndCap2) { innerEndCap2->SetPoint(i, timeZmin, globalXi, globalYi); }
+    if (innerCE)      {      innerCE->SetPoint(i,       0., globalXi, globalYi); }
+    
+    innerCage[iPoint]->Draw("same");
+    
+    if(!(i%2))
+      cage[iPoint]->Draw("same");
+
+    ++iPoint;
   }
-  endCap1->SetPoint(16,fMaxZ0,fOFCRadius*TMath::Cos(16*TMath::TwoPi()/16) ,fOFCRadius*TMath::Sin(16*TMath::TwoPi()/16)) ;
-  endCap2->SetPoint(16,-fMaxZ0,fOFCRadius*TMath::Cos(16*TMath::TwoPi()/16) ,fOFCRadius*TMath::Sin(16*TMath::TwoPi()/16)) ;
 
-  innerEndCap1->SetPoint(16,fMaxZ0,fIFCRadius*TMath::Cos(16*TMath::TwoPi()/16) ,fIFCRadius*TMath::Sin(16*TMath::TwoPi()/16)) ;
-  innerEndCap2->SetPoint(16,-fMaxZ0,fIFCRadius*TMath::Cos(16*TMath::TwoPi()/16) ,fIFCRadius*TMath::Sin(16*TMath::TwoPi()/16)) ;
-    
-
-  //fDispGraph->SetTitle("ToyMC display");
+  //
+  // close endplate and CE polygons
+  //
+  Int_t i=18;
+  angle    = i*TMath::TwoPi()/18;
+  globalX  = fOFCRadius*TMath::Cos(angle);
+  globalY  = fOFCRadius*TMath::Sin(angle);
+  globalXi = fIFCRadius*TMath::Cos(angle);
+  globalYi = fIFCRadius*TMath::Sin(angle);
   
-  endCap1->Draw("same");
-  endCap2->Draw("same");
-
-  innerEndCap2->Draw("same");
-  innerEndCap1->Draw("same");
+  // only draw if inside range
+  if (endCap1) { endCap1->SetPoint(i, timeZmax, globalX, globalY); }
+  if (endCap2) { endCap2->SetPoint(i, timeZmin, globalX, globalY); }
+  if (outerCE) { outerCE->SetPoint(i,       0., globalX, globalY); }
   
+  if (innerEndCap1) { innerEndCap1->SetPoint(i, timeZmax, globalXi, globalYi); }
+  if (innerEndCap2) { innerEndCap2->SetPoint(i, timeZmin, globalXi, globalYi); }
+  if (innerCE)      { innerCE     ->SetPoint(i,       0., globalXi, globalYi); }
+  
+  if (endCap1) { endCap1->Draw("same"); }
+  if (endCap2) { endCap2->Draw("same"); }
+  if (outerCE) { outerCE->Draw("same"); }
 
-
-
+  if (innerEndCap1) { innerEndCap1->Draw("same"); }
+  if (innerEndCap2) { innerEndCap2->Draw("same"); }
+  if (innerCE)      { innerCE     ->Draw("same");      }
+  
 }
 
 //________________________________________________________________

@@ -53,7 +53,13 @@ class AliToyMCDrawer : public TObject {
   void DrawGeometry();
   void DrawEvents(Bool_t both = kFALSE, Bool_t before = kTRUE);
   //  void DrawEvents(Bool_t time = kTRUE, Bool_t both = kTRUE, Bool_t before = kTRUE);
- 
+
+  void SetProjectionType(const char* type) { fProjectionType=type; fProjectionType.ToUpper(); }
+  void SetRangeTimeZ  (Float_t min, Float_t max) { fTimeZmin=min; fTimeZmax=max; }
+  void SetRangeGlobalX(Float_t min, Float_t max) { fGlobalXmin=min; fGlobalXmax=max; }
+  void SetRangeGlobalR(Float_t min, Float_t max) { fGlobalXmin=min; fGlobalXmax=max; }
+  void SetRangeGlobalY(Float_t min, Float_t max) { fGlobalYmin=min; fGlobalYmax=max; }
+  
   const AliToyMCEvent* GetEvent(Int_t eventnr) const {return static_cast<const AliToyMCEvent*>(fEventArray->At(eventnr));}
 private:
 
@@ -62,7 +68,7 @@ private:
   TString fFileName;
   AliToyMCEvent* fEvent;
   TClonesArray* fEventArray;
-  TH3F* fDispHist;
+  TH1* fDispHist;
   
   Double_t fCenterTime;
   Double_t fDriftVel;
@@ -75,6 +81,14 @@ private:
   TClonesArray *fPoints;
   TClonesArray *fDistPoints;
 
+  TString         fProjectionType;                  // projection type, x,y,z,r combinations
+  Float_t         fTimeZmin;                            // Xmin (time axis)
+  Float_t         fTimeZmax;                            // Xmax (time axis)
+  Float_t         fGlobalXmin;                            // Ymin (global x)
+  Float_t         fGlobalXmax;                            // Ymax (global x)
+  Float_t         fGlobalYmin;                            // Zmin (global y)
+  Float_t         fGlobalYmax;                            // Zmax (global y)
+  
   Bool_t ConnectInputTree();
   
   ClassDef(AliToyMCDrawer, 1);

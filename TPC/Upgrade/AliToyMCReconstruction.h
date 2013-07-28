@@ -15,7 +15,11 @@ class AliToyMCEvent;
 class AliTPCCorrection;
 class AliTPCseed;
 class AliTPCtrackerRow;
+class AliToyMCTrack;
+class AliTPCclusterMI;
 class AliRieman;
+class AliTrackPoint;
+class AliTPCParam;
 
 class AliToyMCReconstruction : public TObject {
 public:
@@ -95,6 +99,9 @@ public:
   
   void InitSpaceCharge();
 
+  void SetLongT0seed(Bool_t l) { fLongT0seed=l; }
+  Bool_t GetLongT0seed() const { return fLongT0seed; }
+  
   static TTree* ConnectTrees(const char* files);
   
   Double_t GetVDrift() const;
@@ -147,6 +154,7 @@ public:
   // current reconstruction info
   Double_t fTime0;               // current time0 used for reconstruction
   Bool_t   fCreateT0seed;        // if current seed is the T0 seed
+  Bool_t   fLongT0seed;          // if we should use a t0 seed including all clusters in the seed range
   
   TTreeSRedirector *fStreamer;   // debug streamer
   TFile *fInputFile;             // input file
