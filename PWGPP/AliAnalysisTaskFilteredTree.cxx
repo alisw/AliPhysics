@@ -841,6 +841,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
   TArrayF vtxMC(3);
+  Int_t mcStackSize=0;
 
   Int_t multMCTrueTracks = 0;
   if(mcEvent)
@@ -857,6 +858,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliDebug(AliLog::kError, "Stack not available");
       return;
     }
+    mcStackSize=stack->GetNtrack();
 
     // get MC vertex
     genHeader = header->GenEventHeader();
@@ -1126,6 +1128,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         // global track
 	//
         Int_t label = TMath::Abs(track->GetLabel()); 
+        if (label >= mcStackSize) continue;
         particle = stack->Particle(label);
         if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0.)
 	{
@@ -1530,6 +1533,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
+  Int_t mcStackSize=0;
   TArrayF vtxMC(3);
 
   Int_t multMCTrueTracks = 0;
@@ -1550,6 +1554,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     AliDebug(AliLog::kError, "Stack not available");
     return;
   }
+  mcStackSize=stack->GetNtrack();
 
   // get MC vertex
   genHeader = header->GenEventHeader();
@@ -1609,7 +1614,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
 
     // loop over MC stack
-    for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
+    for (Int_t iMc = 0; iMc < mcStackSize; ++iMc) 
     {
       particle = stack->Particle(iMc);
       if (!particle)
@@ -1646,6 +1651,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
         if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
         {
           Int_t label =  TMath::Abs(track->GetLabel());
+          if (label >= mcStackSize) continue;
           if(label == iMc) {
             isRec = kTRUE;
             trackIndex = iTrack;
