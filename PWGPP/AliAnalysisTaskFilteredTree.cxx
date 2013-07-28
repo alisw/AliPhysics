@@ -1130,6 +1130,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         Int_t label = TMath::Abs(track->GetLabel()); 
         if (label >= mcStackSize) continue;
         particle = stack->Particle(label);
+        if (!particle) continue;
         if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0.)
 	{
 	  particleMother = GetMother(particle,stack);
@@ -1144,7 +1145,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	// TPC track
 	//
 	Int_t labelTPC = TMath::Abs(track->GetTPCLabel()); 
+        if (labelTPC >= mcStackSize) continue;
         particleTPC = stack->Particle(labelTPC);
+        if (!particleTPC) continue;
         if(particleTPC && particleTPC->GetPDG() && particleTPC->GetPDG()->Charge()!=0.)
 	{
 	  particleMotherTPC = GetMother(particleTPC,stack);
@@ -1161,7 +1164,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	//
         TParticle *part=0;
         TClonesArray *trefs=0;
-        Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(track->GetTPCLabel()), part, trefs);
+        Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(labelTPC), part, trefs);
 
 	if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.) 
 	{
@@ -1243,7 +1246,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	// ITS track
 	//
 	Int_t labelITS = TMath::Abs(track->GetITSLabel()); 
+        if (labelITS >= mcStackSize) continue;
         particleITS = stack->Particle(labelITS);
+        if (!particleITS) continue;
         if(particleITS && particleITS->GetPDG() && particleITS->GetPDG()->Charge()!=0.)
 	{
 	  particleMotherITS = GetMother(particleITS,stack);
@@ -2212,6 +2217,8 @@ TParticle *AliAnalysisTaskFilteredTree::GetMother(TParticle *const particle, Ali
 
   Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
   TParticle* mother = NULL; 
+  Int_t mcStackSize=stack->GetNtrack();
+  if (motherLabel>=mcStackSize) return NULL;
   mother = stack->Particle(motherLabel); 
 
 return mother;
@@ -2223,7 +2230,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack
   Bool_t isFromConversion = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2231,6 +2241,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           Int_t motherPdg = mother->GetPdgCode();
@@ -2251,7 +2262,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *
   Bool_t isFromMaterial = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2259,6 +2273,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           if(!isPrim && mech==13) { 
@@ -2277,7 +2292,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(const Int_t label, AliStac
   Bool_t isFromStrangeness = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2285,6 +2303,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(const Int_t label, AliStac
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           Int_t motherPdg = mother->GetPdgCode();
