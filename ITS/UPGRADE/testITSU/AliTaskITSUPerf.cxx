@@ -87,6 +87,7 @@ typedef struct {
   Char_t  mcCl[7];
   Char_t  rcCl[7];
   Char_t  fcCl[7];
+  Float_t qCl[7];
   Char_t  charge;
   Float_t ptMC;
   Float_t etaMC;
@@ -220,6 +221,7 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
   fTree->Branch("mcCl",&trackInfo.mcCl,"mcCl[7]/b");
   fTree->Branch("rcCl",&trackInfo.rcCl,"rcCl[7]/b");
   fTree->Branch("fcCl",&trackInfo.fcCl,"fcCl[7]/b");
+  fTree->Branch("qCl" ,&trackInfo.qCl,  "qCl[7]/F");
   fTree->Branch("charge",&trackInfo.charge,"charge/B");
   fTree->Branch("ptMC",  &trackInfo.ptMC,"ptMC/F");
   fTree->Branch("etaMC", &trackInfo.etaMC,"etaMC/F");
@@ -499,9 +501,24 @@ void AliTaskITSUPerf::CheckTracks()
       for (int il=0;il<7;il++) {
 	trackInfo.mcCl[il] = (mcStatus & (0x1<<(il+kITSHitBits))) != 0;
 	if (trackInfo.mcCl[il]) trackInfo.nClITSMC++;
-	trackInfo.rcCl[il] = trc->HasPointOnITSLayer(il);
+	trackInfo.rcCl[il] = 0; //trc->HasPointOnITSLayer(il);
+	trackInfo.qCl[il]  = 0;
 	trackInfo.fcCl[il] = trc->HasSharedPointOnITSLayer(il);
       }
+      int htc = 0,clID,lrID;
+      Int_t lrclID = 0;
+      // here we access clusters really attached to the track
+      while ( (lrclID=trc->GetITSModuleIndex(htc++))>=0 ) { // in principle, one can have >1 attached cluster/layer
+	clID = AliITSUAux::UnpackCluster(lrclID,lrID);
+	AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+	//	printf("cl%d on Lr%d id=%d: pack=%d Cl=%p Q=%d\n",htc,lrID,clID,lrclID,cl,cl ? cl->GetQ():0);
+	if (cl) {
+	  trackInfo.rcCl[lrID]++;
+	  trackInfo.qCl[lrID] += (Float_t)cl->GetQ();
+	}
+	else printf("Failed to fetch cluster: cl%d on Lr%d id=%d: pack=%d\n",htc,lrID,clID,lrclID);
+      }
+      //
       fTree->Fill();
     }
     if (reject) {
