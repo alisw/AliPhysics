@@ -124,6 +124,7 @@ void AliHLTTPCDataCompressionIDMap::FillHLTID( AliHLTUInt32_t hltID)
 
   if( fIDMap || !fInternalMemory ){
     HLTError("Internal error: FillHLTID() called before StartFilling()");
+    return;
   }
 
   UInt_t slice = (UInt_t) AliHLTTPCSpacePointData::GetSlice(hltID);
