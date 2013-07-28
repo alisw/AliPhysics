@@ -205,6 +205,7 @@ void AliHLTTPCDataCompressionIDMap::EndFilling()
     int row = (entry.fOfflineID >> 16 )&0x7F;
     int secrow = sec*nRows+row;
     if( sec>=nSec || row>=nRows ){
+      delete[] nRowClusters;
       HLTError("Wrong numeration: sector %d, row %d", sec, row);
       return;
     }
