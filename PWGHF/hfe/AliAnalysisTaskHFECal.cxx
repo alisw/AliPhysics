@@ -788,7 +788,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
-                  fEleInfo->Fill(valdedx);
+                  //fEleInfo->Fill(valdedx);
 
       }
     }
