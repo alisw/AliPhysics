@@ -167,10 +167,10 @@ fDescription(source.fDescription)
 	if(source.fAODvZeroCuts) SetAODvZeroCuts(source.fAODvZeroCuts);
 	if(source.fPidObj) SetPidHF(source.fPidObj);
 	if(source.fEffWeights) SetEfficiencyWeightMap(source.fEffWeights);
-    if(source.fTrigEffWeightsvspt) SetTriggerEffWeightMapvspt(source.fTrigEffWeightsvspt);
-    if(source.fTrigEffWeightsvsptB) SetTriggerEffWeightMapvsptB(source.fTrigEffWeightsvspt);
-    if(source.fTrigEffWeights) SetTriggerEffWeightMap(source.fTrigEffWeights);
-    if(source.fTrigEffWeightsB)SetTriggerEffWeightMapB(source.fTrigEffWeightsB);
+	if(source.fTrigEffWeightsvspt) SetTriggerEffWeightMapvspt(source.fTrigEffWeightsvspt);
+	if(source.fTrigEffWeightsvsptB) SetTriggerEffWeightMapvsptB(source.fTrigEffWeightsvsptB);
+	if(source.fTrigEffWeights) SetTriggerEffWeightMap(source.fTrigEffWeights);
+	if(source.fTrigEffWeightsB)SetTriggerEffWeightMapB(source.fTrigEffWeightsB);
    
     
 }
