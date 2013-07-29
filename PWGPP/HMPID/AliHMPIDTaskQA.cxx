@@ -239,8 +239,10 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
   Int_t label = -1;
   if (fUseMC){
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    fMC = mcH->MCEvent();
-    pStack = fMC->Stack();
+    if (mcH) {
+      fMC = mcH->MCEvent();
+      pStack = fMC->Stack();
+    }  
   }
 
   //
