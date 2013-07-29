@@ -41,12 +41,12 @@ ClassImp(AliAODPidHF)
 AliAODPidHF::AliAODPidHF():
   AliAODPid(),
   fnNSigma(5),
-  fnSigma(),
+  fnSigma(0),
   fTOFSigma(160.),
   fnPriors(5),
-  fPriors(),
+  fPriors(0),
   fnPLimit(2),
-  fPLimit(),
+  fPLimit(0),
   fAsym(kFALSE),
   fTPC(kFALSE),
   fTOF(kFALSE),
@@ -56,7 +56,7 @@ AliAODPidHF::AliAODPidHF():
   fCompat(kFALSE),
   fPCompatTOF(1.5),
   fnNSigmaCompat(2),
-  fnSigmaCompat(),
+  fnSigmaCompat(0),
   fMC(kFALSE),
   fOnePad(kFALSE),
   fMCLowEn2011(kFALSE),
@@ -98,10 +98,13 @@ AliAODPidHF::AliAODPidHF():
 //----------------------
 AliAODPidHF::~AliAODPidHF()
 {
-      // destructor
- //   if(fPLimit) delete fPLimit;
- //   if(fnSigma)  delete fnSigma;
- //   if(fPriors)  delete fPriors;
+  // destructor
+  if(fPLimit) delete [] fPLimit;
+  if(fnSigma) delete [] fnSigma;
+  if(fPriors) delete [] fPriors;
+  if(fnSigmaCompat) delete [] fnSigmaCompat;
+  delete fPidCombined;
+
   delete fTPCResponse;
   for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
     delete fPriorsH[ispecies];
