@@ -968,8 +968,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     {
       Double_t finiteBinCorrection = -1.0 / (2*fTrackEtaCut) * binWidthEta / 2 + 1;
       Printf("Finite bin correction: %f", finiteBinCorrection);
-      mixedNorm *= finiteBinCorrection;
-      mixedNormError *= finiteBinCorrection;
+      mixedNorm /= finiteBinCorrection;
+      mixedNormError /= finiteBinCorrection;
     }
     else
     {
