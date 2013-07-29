@@ -40,7 +40,7 @@ goCPass0()
   
   configFile=$5
   source $configFile
-  [[ -f ${setupAliROOTenvInCurrentShell} ]] && source $setupAliROOTenvInCurrentShell
+  [[ -f ${setupAliROOTenvInCurrentShell} && -z ${alirootEnv} ]] && source $setupAliROOTenvInCurrentShell
 
   targetDirectory=$1
   inputList=$2
@@ -110,6 +110,7 @@ goCPass0()
                "$commonOutputPath/recCPass0.C"
                "$commonOutputPath/runCalibTrain.C"
                "$commonOutputPath/localOCDBaccessConfig.C"
+               "$commonOutputPath/OCDB.root"
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/runCPass0.sh"
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/recCPass0.C" 
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/runCalibTrain.C"
@@ -166,7 +167,7 @@ goCPass1()
   
   configFile=$5
   source $configFile
-  [[ -f ${setupAliROOTenvInCurrentShell} ]] && source $setupAliROOTenvInCurrentShell
+  [[ -f ${setupAliROOTenvInCurrentShell} && -z ${alirootEnv} ]] && source $setupAliROOTenvInCurrentShell
 
   targetDirectory=$1
   inputList=$2
@@ -241,6 +242,7 @@ goCPass1()
                "$commonOutputPath/QAtrain_duo.C"
                "$commonOutputPath/localOCDBaccessConfig.C"
                "$commonOutputPath/cpass0.localOCDB.${runNumber}.tgz"
+               "$commonOutputPath/OCDB.root"
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/recCPass1.C" 
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C" 
@@ -322,7 +324,7 @@ goMergeCPass0()
   calibrationFilesToMergeExternal=$5
 
   source $configFile
-  [[ -f ${setupAliROOTenvInCurrentShell} ]] && source $setupAliROOTenvInCurrentShell
+  [[ -f ${setupAliROOTenvInCurrentShell} && -z ${alirootEnv} ]] && source $setupAliROOTenvInCurrentShell
 
   runpath=${PWD}/rundir_cpass0_Merge_${runNumber}
   [[ -z $commonOutputPath ]] && commonOutputPath=$PWD
@@ -356,12 +358,14 @@ goMergeCPass0()
   
   # copy files in case they are not already there
   filesMergeCPass0=(
+                    "$commonOutputPath/${calibrationFilesToMerge}"
+                    "$commonOutputPath/OCDB.root"
+                    "$commonOutputPath/localOCDBaccessConfig.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeOCDB.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/merge.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh"
-                    "$commonOutputPath/${calibrationFilesToMerge}"
   )
   for file in ${filesMergeCPass0[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
@@ -430,7 +434,7 @@ goMergeCPass1()
   rm -f $outputDir/*done
 
   source $configFile
-  [[ -f ${setupAliROOTenvInCurrentShell} ]] && source $setupAliROOTenvInCurrentShell
+  [[ -f ${setupAliROOTenvInCurrentShell} && -z ${alirootEnv} ]] && source $setupAliROOTenvInCurrentShell
 
   runpath=${PWD}/rundir_cpass1_Merge_${runNumber}
   [[ -z $commonOutputPath ]] && commonOutputPath=$PWD
@@ -465,13 +469,15 @@ goMergeCPass1()
   
   # copy files in case they are not already there
   filesMergeCPass1=(
+                    "$commonOutputPath/${calibrationFilesToMerge}"
+                    "$commonOutputPath/${qaFilesToMerge}"
+                    "$commonOutputPath/OCDB.root"
+                    "$commonOutputPath/localOCDBaccessConfig.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/merge.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
-                    "$commonOutputPath/${calibrationFilesToMerge}"
-                    "$commonOutputPath/${qaFilesToMerge}"
   )
   for file in ${filesMergeCPass1[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
@@ -525,7 +531,7 @@ goMergeCPass1()
   ls -ltrh
 
   #copy all to output dir
-  cp --recursive ${runpath}/* $outputDir
+  cp --recursive ${runpath}/* ${outputDir}
   rm -rf ${runpath}
 }
 
@@ -566,7 +572,7 @@ goSubmit()
   # source the config file
   # and print the configuration
   source $configFile
-  [[ -f ${setupAliROOTenvInCurrentShell} ]] && source $setupAliROOTenvInCurrentShell
+  [[ -f ${setupAliROOTenvInCurrentShell} && -z ${alirootEnv} ]] && source $setupAliROOTenvInCurrentShell
 
   self=$(readlink -f "$0")
   configPath=`dirname $self`
@@ -946,12 +952,14 @@ goMakeSummary()
     ${logFilteringScript} $commonOutputPath
   fi
 
+  awk 'BEGIN {nFiles=0;} /^calibfile/ {nFiles++;} END {print     "cpass0 produced "nFiles" calib files";}' cpass0.job*done
   awk 'BEGIN {nOK=0; nBAD=0;} /rec.*log OK/ {nOK++;} /rec.*log BAD/ {nBAD++;} END {print     "cpass0 reco:  OK: "nOK" BAD: "nBAD;}' cpass0.job*done
   awk 'BEGIN {nOK=0; nBAD=0;} /calib.*log OK/ {nOK++;} /calib.*log BAD/ {nBAD++;} END {print "cpass0 calib: OK: "nOK" BAD: "nBAD;}' cpass0.job*done
   
   awk 'BEGIN {nOK=0; nBAD=0;} /merge.*log OK/ {nOK++;} /merge.*log BAD/ {nBAD++;} END {print "cpass0 merge: OK: "nOK" BAD: "nBAD;}' merge.cpass0*done
   awk 'BEGIN {nOK=0; nBAD=0;} /ocdb.*log OK/ {nOK++;} /ocdb.*log BAD/ {nBAD++;} END {print   "cpass0 OCDB:  OK: "nOK" BAD: "nBAD;}' merge.cpass0*done
   
+  awk 'BEGIN {nFiles=0;} /^calibfile/ {nFiles++;} END {print     "cpass1 produced "nFiles" calib files";}' cpass1.job*done
   awk 'BEGIN {nOK=0; nBAD=0;} /rec.*log OK/ {nOK++;} /rec.*log BAD/ {nBAD++;} END {print     "cpass1 reco:  OK: "nOK" BAD: "nBAD;}' cpass1.job*done
   awk 'BEGIN {nOK=0; nBAD=0;} /calib.*log OK/ {nOK++;} /calib.*log BAD/ {nBAD++;} END {print "cpass1 calib: OK: "nOK" BAD: "nBAD;}' cpass1.job*done
 
@@ -995,9 +1003,19 @@ goGenerateMakeflow()
 
   commonOutputPath=${baseOutputDirectory}/${productionID}
 
+  #these files will be made a dependency - will be copied to the working dir of the jobs
+  declare -a copyFiles
+  inputFiles=(
+              "OCDB.root"
+              "localOCDBaccessConfig.C"
+  )
+  for file in ${inputFiles[*]}; do
+    [[ -f ${file} ]] && copyFiles+=("${file}")
+  done
+
+  #create the makeflow file
   declare -a arr_cpass1_final
   declare -a arr_cpass1_QA_final
-
   listOfRuns=${runNumber}
   [[ -z ${runNumber} ]] && listOfRuns=($(while read x; do guessRunNumber $x; done < ${inputFileList} | sort | uniq))
   runindex=0
@@ -1018,13 +1036,13 @@ goGenerateMakeflow()
 
       #CPass0
       arr_cpass0_outputs[$jobindex]="cpass0.job${jobindex}.run${runNumber}.done"
-      echo "${arr_cpass0_outputs[$jobindex]}: benchmark.sh ${configFile}"
+      echo "${arr_cpass0_outputs[$jobindex]}: benchmark.sh ${configFile} ${copyFiles[@]}"
       echo " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/cpass0/000${runNumber} $inputFile $nEvents $currentDefaultOCDB $configFile $runNumber $jobindex"
       echo
 
       #CPass1
       arr_cpass1_outputs[$jobindex]="cpass1.job${jobindex}.run${runNumber}.done"
-      echo "${arr_cpass1_outputs[$jobindex]} : benchmark.sh ${configFile} cpass0.localOCDB.${runNumber}.tgz"
+      echo "${arr_cpass1_outputs[$jobindex]} : benchmark.sh ${configFile} cpass0.localOCDB.${runNumber}.tgz ${copyFiles[@]}"
       echo " ${alirootEnv} ./benchmark.sh CPass1 ${commonOutputPath}/cpass1/000${runNumber} $inputFile $nEvents $currentDefaultOCDB $configFile $runNumber $jobindex"
       echo
       ((jobindex++))
@@ -1043,13 +1061,13 @@ goGenerateMakeflow()
 
     #CPass0 merging
     arr_cpass0_final[$runindex]="merge.cpass0.run${runNumber}.done"
-    echo "cpass0.localOCDB.${runNumber}.tgz ${arr_cpass0_final[$runindex]}: cpass0.calib.run${runNumber}.list benchmark.sh ${configFile}"
+    echo "cpass0.localOCDB.${runNumber}.tgz ${arr_cpass0_final[$runindex]}: cpass0.calib.run${runNumber}.list benchmark.sh ${configFile} ${copyFiles[@]}"
     echo " ${alirootEnv} ./benchmark.sh MergeCPass0 ${commonOutputPath}/cpass0/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass0.run${runNumber}.list"
     echo
 
     #CPass1 Calib/QA merging
     arr_cpass1_final[$runindex]="merge.cpass1.run${runNumber}.done"
-    echo "${arr_cpass1_final[$runindex]}: cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.list benchmark.sh ${configFile}"
+    echo "${arr_cpass1_final[$runindex]}: cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.list benchmark.sh ${configFile} ${copyFiles[@]}"
     echo " ${alirootEnv} ./benchmark.sh MergeCPass1 ${commonOutputPath}/cpass1/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.list"
     echo
     ((runindex++))
