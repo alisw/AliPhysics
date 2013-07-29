@@ -1483,40 +1483,45 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 void AliAnalysisTaskDStarCorrelations::EnlargeDZeroMassWindow(){
     
 
-	//Float_t* ptbins = fCuts->GetPtBinLimits();
+  //Float_t* ptbins = fCuts->GetPtBinLimits();
+  if(fD0Window) delete fD0Window;
+  fD0Window = new Float_t[fNofPtBins];
     
-    fD0Window = new Float_t[fNofPtBins];
+  AliInfo("Enlarging the D0 mass windows from cut object\n"); 
+  Int_t nvars = fCuts->GetNVars();
     
-    AliInfo("Enlarging the D0 mass windows from cut object\n"); 
-    Int_t nvars = fCuts->GetNVars();
-    
-    Float_t** rdcutsvalmine;
-	rdcutsvalmine=new Float_t*[nvars];
-	for(Int_t iv=0;iv<nvars;iv++){
-		rdcutsvalmine[iv]=new Float_t[fNofPtBins];
-	}
+  Float_t** rdcutsvalmine=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++){
+    rdcutsvalmine[iv]=new Float_t[fNofPtBins];
+  }
     
     
     for (Int_t k=0;k<nvars;k++){
-		for (Int_t j=0;j<fNofPtBins;j++){
+      for (Int_t j=0;j<fNofPtBins;j++){
             
-            // enlarge D0 window
-            if(k==0)	{fD0Window[j] =fCuts->GetCutValue(0,j);
-                rdcutsvalmine[k][j] = 5.* fCuts->GetCutValue(0,j);
-                cout << "the set window = " << fD0Window[j] << " for ptbin " << j << endl;}
-		    else rdcutsvalmine[k][j] =fCuts->GetCutValue(k,j);
-			
-            // set same windows
-            //rdcutsvalmine[k][j] =oldCuts->GetCutValue(k,j);
-        }
+	// enlarge D0 window
+	if(k==0)	{
+	  fD0Window[j] =fCuts->GetCutValue(0,j);
+	  rdcutsvalmine[k][j] = 5.* fCuts->GetCutValue(0,j);
+	  cout << "the set window = " << fD0Window[j] << " for ptbin " << j << endl;
 	}
-	
-	fCuts->SetCuts(nvars,fNofPtBins,rdcutsvalmine);
+	else rdcutsvalmine[k][j] =fCuts->GetCutValue(k,j);
+			
+	// set same windows
+	//rdcutsvalmine[k][j] =oldCuts->GetCutValue(k,j);
+      }
+    }
     
-   AliInfo("\n New windows set\n");     
+    fCuts->SetCuts(nvars,fNofPtBins,rdcutsvalmine);
+    
+    AliInfo("\n New windows set\n");     
     fCuts->PrintAll();
     
     
+    for(Int_t iv=0;iv<nvars;iv++){
+      delete rdcutsvalmine[iv];
+    }
+    delete [] rdcutsvalmine;
     
 }
 
