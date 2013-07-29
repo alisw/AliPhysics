@@ -63,6 +63,8 @@ AliSpectraBothTrackCuts::AliSpectraBothTrackCuts(const char *name) : TNamed(name
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0)
   
 {
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);	
   // Constructor
   fHistoCuts = new TH1I("fTrkCuts", "Track Cuts", kNTrkCuts, -0.5, kNTrkCuts - 0.5);
   for(Int_t ibin=1;ibin<=kNTrkCuts;ibin++)fHistoCuts->GetXaxis()->SetBinLabel(ibin,kBinLabel[ibin-1]);
@@ -92,8 +94,30 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
   fYCutMax       = 100000.0; // default value of y cut ~ no cut 
   fYCutMin       = -100000.0; // default value of y cut ~ no cut 
   fMinTPCcls=70; // ncls in TPC
+   TH1::AddDirectory(oldStatus);
+	
 }
+//_______________________________________________________
+AliSpectraBothTrackCuts::~AliSpectraBothTrackCuts()
+{
+	if(fHistoCuts)
+		delete fHistoCuts;
+	if(fHistoNSelectedPos)
+		delete fHistoNSelectedPos;
+	if(fHistoNSelectedNeg)
+		delete fHistoNSelectedNeg;
+	if(fHistoNMatchedPos)
+		delete fHistoNMatchedPos;
+	if(fHistoNMatchedNeg)
+		delete fHistoNMatchedNeg;
+	if(fHistoEtaPhiHighPt)
+		delete fHistoEtaPhiHighPt;
+	if(fHistoNclustersITS)
+		delete fHistoNclustersITS;
 
+
+
+}
 //_______________________________________________________
 Bool_t AliSpectraBothTrackCuts::IsSelected(AliVTrack * track,Bool_t FillHistStat)
 {

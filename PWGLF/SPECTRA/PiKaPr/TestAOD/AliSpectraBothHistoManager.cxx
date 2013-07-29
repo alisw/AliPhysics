@@ -77,7 +77,15 @@ AliSpectraBothHistoManager::AliSpectraBothHistoManager(const char *name,Int_t nr
    
   TH1::AddDirectory(oldStatus);
 }
-
+//_______________________________________________________________________________________
+AliSpectraBothHistoManager::~AliSpectraBothHistoManager()
+{
+	if (fOutputList) 
+	{ 
+    		fOutputList->Delete();
+    		delete fOutputList;
+  	}
+}
 //_______________________________________________________
 
 TH2F* AliSpectraBothHistoManager::BookPtGenHistogram(const char * name)

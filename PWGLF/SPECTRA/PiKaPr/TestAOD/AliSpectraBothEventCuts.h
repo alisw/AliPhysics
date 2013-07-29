@@ -33,7 +33,7 @@ fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),
 fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0)
 {}
   AliSpectraBothEventCuts(const char *name);
-  virtual  ~AliSpectraBothEventCuts() {}
+  virtual ~AliSpectraBothEventCuts();// {}
   
   void SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
   Bool_t GetIsMC()           const           { return fIsMC;};

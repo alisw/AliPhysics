@@ -531,7 +531,7 @@ TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHisto
 	
 void GetPtHistFromPtDCAhisto(TString hnamein, TString hnameout, AliSpectraBothHistoManager* hman,TH1F** histo,TFormula* dcacutxy)
 {
-	Float_t min[3]={0.3,0.3,0.4};
+	Float_t min[3]={0.3,0.3,0.45};
 	Float_t max[3]={1.5,1.2,2.2};
 	for(Int_t icharge=0;icharge<2;icharge++)
 	{
