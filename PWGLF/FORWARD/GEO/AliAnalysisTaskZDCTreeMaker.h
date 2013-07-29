@@ -101,7 +101,7 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   AliAnalysisTaskZDCTreeMaker& operator= (const AliAnalysisTaskZDCTreeMaker& ana);
   AliAnalysisTaskZDCTreeMaker(const AliAnalysisTaskZDCTreeMaker& c);
   //
-  ClassDef(AliAnalysisTaskZDCTreeMaker,4); 
+  ClassDef(AliAnalysisTaskZDCTreeMaker, 6); 
 
 };
 

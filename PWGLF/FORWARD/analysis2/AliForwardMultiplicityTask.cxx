@@ -26,7 +26,8 @@
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TROOT.h>
-
+#include <TStopwatch.h>
+#include <TProfile.h>
 
 //====================================================================
 AliForwardMultiplicityTask::AliForwardMultiplicityTask()
@@ -123,7 +124,10 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   // Parameters:
   //    option Not used
   //  
-
+  TStopwatch total;
+  TStopwatch individual;
+  if (fDoTiming) total.Start(true);
+  
   DGUARD(fDebug,1,"Process the input event");
   // static Int_t cnt = 0;
   // cnt++;
@@ -136,7 +140,9 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fESDFMD.Clear();
   fAODFMD.Clear();
   fAODEP.Clear();
-  
+
+  // Inspect the event
+  if (fDoTiming) individual.Start(true);
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
@@ -145,6 +151,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   UShort_t nClusters = 0;
   UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
+  if (fDoTiming) fHTiming->Fill(kTimingEventInspector, individual.CpuTime());
   
   if (found & AliFMDEventInspector::kNoEvent)    return;
   if (found & AliFMDEventInspector::kNoTriggers) return;
@@ -171,43 +178,58 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   if (!fEnableLowFlux) lowFlux = false;
 
   // Get FMD data 
-  AliESDFMD* esdFMD = esd->GetFMDData();
-  //  // Apply the sharing filter (or hit merging or clustering if you like)
+  AliESDFMD* esdFMD = esd->GetFMDData();  
+
+  // Apply the sharing filter (or hit merging or clustering if you like)
+  if (fDoTiming) individual.Start(true);
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, ip.Z())) { 
     AliWarning("Sharing filter failed!");
     return;
   }
+  if (fDoTiming) fHTiming->Fill(kTimingSharingFilter, individual.CpuTime());
   
   // Calculate the inclusive charged particle density 
+  if (fDoTiming) individual.Start(true);
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
   }
+  if (fDoTiming) fHTiming->Fill(kTimingDensityCalculator,individual.CpuTime());
 
+  // Check if we should do the event plane finder
   if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
+    if (fDoTiming) individual.Start(true);
     if (!fEventPlaneFinder.FindEventplane(esd, fAODEP, 
 					  &(fAODFMD.GetHistogram()), &fHistos))
       AliWarning("Eventplane finder failed!");
+    if (fDoTiming) fHTiming->Fill(kTimingEventPlaneFinder,individual.CpuTime());
   }
   
   // Do the secondary and other corrections. 
+  if (fDoTiming) individual.Start(true);
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");
     return;
   }
+  if (fDoTiming) fHTiming->Fill(kTimingCorrections, individual.CpuTime());
 
+  // Collect our `super' histogram 
+  if (fDoTiming) individual.Start(true);
   if (!fHistCollector.Collect(fHistos, fRingSums, 
 			      ivz, fAODFMD.GetHistogram(),
 			      fAODFMD.GetCentrality())) {
     AliWarning("Histogram collector failed");
     return;
   }
+  if (fDoTiming) fHTiming->Fill(kTimingHistCollector, individual.CpuTime());
 
   if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
     fHData->Add(&(fAODFMD.GetHistogram()));
 
   PostData(1, fList);
+
+  if (fDoTiming) fHTiming->Fill(kTimingTotal, total.CpuTime());
 }
 
 //____________________________________________________________________

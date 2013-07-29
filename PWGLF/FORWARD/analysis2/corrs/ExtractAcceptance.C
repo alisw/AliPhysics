@@ -127,7 +127,7 @@ void ExtractAcceptance(Int_t   runNo=121526,
 		       Float_t vtxLow=-10, 
 		       Float_t vtxHigh=10)
 {  
-  const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   gSystem->AddIncludePath(Form("-I%s", fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
 
@@ -157,8 +157,10 @@ void ExtractAcceptance(Int_t   runNo=121526,
   Printf("=== Setting up OCDB");
   
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(gridOnline)
-    cdb->SetDefaultStorage(Form("alien://Folder=/alice/data/%4d/OCDB", year));
+  if(gridOnline) {
+    cdb->SetDefaultStorageFromRun(runNo);
+    // cdb->SetDefaultStorage(Form("alien://Folder=/alice/data/%4d/OCDB", year));
+  }
   else
     cdb->SetDefaultStorage("local://$(ALICE_ROOT)/OCDB");
   cdb->SetRun(runNo);
@@ -309,3 +311,4 @@ void ExtractAcceptance(Int_t   runNo=121526,
 // EOF
 //
 
+  

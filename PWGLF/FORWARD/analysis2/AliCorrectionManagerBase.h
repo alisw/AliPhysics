@@ -81,7 +81,7 @@ class AliCorrectionManagerBase : public TObject
 public:
   enum EConstants { 
     kIgnoreValue = 0,
-    kIgnoreField = 999
+    kIgnoreField = 999 // Must be synced with AliOADBForward::kInvalidField
   };
   enum EFields {
     kRun       = 0x01, 
@@ -118,6 +118,12 @@ public:
    * @param prefix Prefix to use for all corrections 
    */
   virtual void SetPrefix(const TString& prefix);
+  /** 
+   * Set whether to enable fall-back queries 
+   * 
+   * @param use If true, enable fall-back queries 
+   */
+  virtual void SetEnableFallBack(Bool_t use=true) { fFallBack = use; }
   /** 
    * Store a correction 
    * 
@@ -233,7 +239,8 @@ protected:
 		  Short_t    fld, 
 		  Bool_t     mc, 
 		  Bool_t     sat,
-		  Bool_t     vrb=false);
+		  Bool_t     vrb=false,
+		  Bool_t     fbk=false);
     /** 
      * Store a correction
      * 
@@ -517,8 +524,8 @@ protected:
   Bool_t          fSatellite;   // Cached satellite interaction flat
   AliOADBForward* fDB;          //! do not store 
   Bool_t          fDebug;       // If true, do verbose queries 
-
-  ClassDef(AliCorrectionManagerBase,1);
+  Bool_t          fFallBack;    // If true, enable fall-back queries 
+  ClassDef(AliCorrectionManagerBase,2);
 };
 
 #endif

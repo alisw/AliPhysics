@@ -64,6 +64,7 @@ struct TrainSetup
   TrainSetup(const TString& name)
     : fName(name), 
       fEscapedName(name),
+      fDatimeString(""),
       fOptions(),
       fHelper(0)
   {
@@ -77,7 +78,8 @@ struct TrainSetup
     fOptions.Add("type", "ESD|AOD|USER", "Input data stype", "");
     fOptions.Add("setup", "Only do the setup", false);
     fOptions.Add("branches", "Load only requested branches", false);
-    fEscapedName = EscapeName(fName, "");
+    fDatimeString = "";
+    fEscapedName  = EscapeName(fName, fDatimeString);
   }
   /** 
    * Copy constructor 
@@ -87,6 +89,7 @@ struct TrainSetup
   TrainSetup(const TrainSetup& o) 
     : fName(o.fName), 
       fEscapedName(o.fEscapedName), 
+      fDatimeString(o.fDatimeString),
       fOptions(o.fOptions), 
       fHelper(o.fHelper)
   {}
@@ -100,10 +103,11 @@ struct TrainSetup
   TrainSetup& operator=(const TrainSetup& o) 
   {
     if (&o == this) return *this;
-    fName        = o.fName;
-    fEscapedName = o.fEscapedName;
-    fOptions     = o.fOptions;
-    fHelper      = o.fHelper;
+    fName         = o.fName;
+    fEscapedName  = o.fEscapedName;
+    fDatimeString = o.fDatimeString;
+    fOptions      = o.fOptions;
+    fHelper       = o.fHelper;
     return *this;
   }
   
@@ -147,8 +151,8 @@ struct TrainSetup
 
     // --- Rewrite the escpaed name ----------------------------------
     if (fOptions.Has("date")) { 
-      TString date = fOptions.Get("date");
-      fEscapedName = EscapeName(fName, date);
+      fDatimeString = fOptions.Get("date");
+      fEscapedName  = EscapeName(fName, fDatimeString);
     }
     
     // --- Get current directory and set-up sub-directory ------------
@@ -298,7 +302,8 @@ struct TrainSetup
       else    	  Error("Run", "%s", e.Data());
     }
     if (fOptions.Has("date")) {
-      TString escaped = EscapeName(fName, "");
+      TString tmp     = "";
+      TString escaped = EscapeName(fName, tmp);
       gSystem->Exec(Form("rm -f last_%s", escaped.Data()));
       gSystem->Exec(Form("ln -sf %s last_%s", 
 			 fEscapedName.Data(), escaped.Data()));
@@ -653,7 +658,7 @@ protected:
    * 
    * @return escaped name 
    */  
-  static TString EscapeName(const char* name, const TString& datimeStr)
+  static TString EscapeName(const char* name, TString& datimeStr)
   {
     TString escaped = name;
     char  c[] = { ' ', '/', '@', 0 };
@@ -698,12 +703,13 @@ protected:
       if (datime.GetYear() <= 1995 ||
 	  datime.GetMonth() == 0 || 
 	  datime.GetDay() == 0) return escaped;
-      escaped.Append(Form("_%04d%02d%02d_%02d%02d", 
-			  datime.GetYear(), 
-			  datime.GetMonth(), 
-			  datime.GetDay(), 
-			  datime.GetHour(), 
-			  datime.GetMinute()));
+      datimeStr = Form("%04d%02d%02d_%02d%02d", 
+		       datime.GetYear(), 
+		       datime.GetMonth(), 
+		       datime.GetDay(), 
+		       datime.GetHour(), 
+		       datime.GetMinute());
+      escaped.Append(Form("_%s", datimeStr.Data()));
     }
     return escaped;
   }    
@@ -867,6 +873,7 @@ protected:
   /* @} */
   TString      fName;
   TString      fEscapedName;
+  TString      fDatimeString;
   OptionList   fOptions;
   Helper*      fHelper;
 };

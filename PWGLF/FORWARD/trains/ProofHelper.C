@@ -149,7 +149,19 @@ struct ProofHelper : public Helper
   virtual Bool_t LoadLibrary(const TString& name, 
 			     Bool_t slaves=true)
   {
-    if (!fUsePars) {
+    Bool_t isBase = false;
+    if (!fBasePars) { 
+      if (name.EqualTo("STEERBase")      || 
+	  name.EqualTo("ESD")            || 
+	  name.EqualTo("AOD")            || 
+	  name.EqualTo("ANALYSIS")       || 
+	  name.EqualTo("OADB")           || 
+	  name.EqualTo("ANALYSISalice")  ||
+	  name.EqualTo("PWGLFforward2"))
+	isBase = true;
+    }
+	  
+    if (!fUsePars || isBase) {
       Int_t ret = gSystem->Load(MakeLibraryName(name));
       if (ret < 0) return false;
       if (slaves) fExtraLibs.Append(Form(":%s", name.Data()));

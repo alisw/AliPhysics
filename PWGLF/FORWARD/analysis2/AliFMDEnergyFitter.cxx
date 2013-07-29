@@ -2,6 +2,7 @@
 // Class to do the energy correction of FMD ESD data
 //
 #include "AliFMDEnergyFitter.h"
+#include "AliForwardUtil.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
@@ -40,9 +41,9 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
-    fMaxRelParError(.25),
-    fMaxChi2PerNDF(20), 
-    fMinWeight(1e-7),
+    fMaxRelParError(AliFMDCorrELossFit::ELossFit::fgMaxRelError),
+    fMaxChi2PerNDF(AliFMDCorrELossFit::ELossFit::fgMaxChi2nu), 
+    fMinWeight(AliFMDCorrELossFit::ELossFit::fgLeastWeight),
     fDebug(0)
 {
   // 
@@ -67,9 +68,9 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
-    fMaxRelParError(.25),
-    fMaxChi2PerNDF(20),  
-    fMinWeight(1e-7),
+    fMaxRelParError(AliFMDCorrELossFit::ELossFit::fgMaxRelError),
+    fMaxChi2PerNDF(AliFMDCorrELossFit::ELossFit::fgMaxChi2nu), 
+    fMinWeight(AliFMDCorrELossFit::ELossFit::fgLeastWeight),
     fDebug(3)
 {
   // 
@@ -372,7 +373,8 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   while ((o = static_cast<RingHistos*>(next()))) {
     TObjArray* l = o->Fit(d, fEtaAxis, fLowCut, fNParticles,
 			  fMinEntries, fFitRangeBinWidth,
-			  fMaxRelParError, fMaxChi2PerNDF);
+			  fMaxRelParError, fMaxChi2PerNDF,
+			  fMinWeight);
     if (!l) continue;
     for (Int_t i = 0; i < l->GetEntriesFast(); i++) { 
       stack[i % nStack]->Add(static_cast<TH1*>(l->At(i))); 
@@ -424,11 +426,23 @@ AliFMDEnergyFitter::CreateOutputObjects(TList* dir)
   DGUARD(fDebug, 1, "Define output in AliFMDEnergyFitter");
   TList* d = new TList;
   d->SetName(GetName());
-  d->SetOwner();
+  d->SetOwner(true);
   dir->Add(d);
   
   d->Add(&fEtaAxis);
-  d->SetOwner(true);
+  d->Add(AliForwardUtil::MakeParameter("lowCut",        fLowCut));
+  d->Add(AliForwardUtil::MakeParameter("nParticles",    fNParticles));
+  d->Add(AliForwardUtil::MakeParameter("minEntries",    fMinEntries));
+  d->Add(AliForwardUtil::MakeParameter("subtractBins",  fFitRangeBinWidth));
+  d->Add(AliForwardUtil::MakeParameter("doFits",        fDoFits));
+  d->Add(AliForwardUtil::MakeParameter("doObject",      fDoMakeObject));
+  d->Add(AliForwardUtil::MakeParameter("maxE",          fMaxE));
+  d->Add(AliForwardUtil::MakeParameter("nEbins",        fNEbins));
+  d->Add(AliForwardUtil::MakeParameter("increasingBins",fUseIncreasingBins));
+  d->Add(AliForwardUtil::MakeParameter("maxRelPerError",fMaxRelParError));
+  d->Add(AliForwardUtil::MakeParameter("maxChi2PerNDF", fMaxChi2PerNDF));
+  d->Add(AliForwardUtil::MakeParameter("minWeight",     fMinWeight));
+  
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
@@ -491,7 +505,8 @@ AliFMDEnergyFitter::RingHistos::RingHistos()
     fEmpty(0),
     fEtaEDists(0), 
     fList(0),
-    fFits("AliFMDCorrELossFit::ELossFit"),
+    fBest(0),
+    fFits("AliFMDCorrELossFit::ELossFit", 200),
     fDebug(0)
 {
   // 
@@ -507,7 +522,8 @@ AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
     fEmpty(0),
     fEtaEDists(0), 
     fList(0),
-    fFits("AliFMDCorrELossFit::ELossFit"),
+    fBest(0),
+    fFits("AliFMDCorrELossFit::ELossFit", 200),
     fDebug(0)
 {
   // 
@@ -527,7 +543,8 @@ AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
     fEmpty(o.fEmpty),
     fEtaEDists(0), 
     fList(0),
-    fFits("AliFMDCorrELossFit::ELossFit"),
+    fBest(0),
+    fFits("AliFMDCorrELossFit::ELossFit", 200),
     fDebug(0)
 {
   // 
@@ -904,7 +921,8 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
 				    UShort_t         minEntries,
 				    UShort_t         minusBins, 
 				    Double_t         relErrorCut, 
-				    Double_t         chi2nuCut) const
+				    Double_t         chi2nuCut,
+				    Double_t         minWeight) const
 {
   // 
   // Fit each histogram to up to @a nParticles particle responses.
@@ -969,6 +987,9 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
   Int_t nEmpty = 0;
   Int_t nLow   = 0;
   Int_t nFitted= 0;
+  fBest.Expand(nDists+1);
+  fBest.Clear();
+  fBest.SetOwner(false);
   for (Int_t i = 0; i < nDists; i++) { 
     TH1D* dist = static_cast<TH1D*>(dists->At(i));
     // Ignore empty histograms altoghether 
@@ -1005,10 +1026,13 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     }
 
     // Now fit 
-    TF1* res = FitHist(dist,lowCut,nParticles,minusBins,
-		       relErrorCut,chi2nuCut);
+    AliFMDCorrELossFit::ELossFit* res = FitHist(dist,i+1,lowCut,
+						nParticles,minusBins,
+						relErrorCut,chi2nuCut,
+						minWeight);
     if (!res) continue;
     nFitted++;
+    fBest.AddAt(res, i+1);
     // dist->GetListOfFunctions()->Add(res);
 
     // Store eta limits 
@@ -1016,29 +1040,29 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     high  = TMath::Max(high,i+1);
 
     // Get the reduced chi square
-    Double_t chi2 = res->GetChisquare();
-    Int_t    ndf  = res->GetNDF();
+    Double_t chi2 = res->fChi2; // GetChisquare();
+    Int_t    ndf  = res->fNu;   // GetNDF();
     
     // Store results of best fit in output histograms 
-    res->SetLineWidth(4);
+    // res->SetLineWidth(4);
     hChi2   ->SetBinContent(i+1, ndf > 0 ? chi2 / ndf : 0);
-    hC      ->SetBinContent(i+1, res->GetParameter(kC));   
-    hDelta  ->SetBinContent(i+1, res->GetParameter(kDelta)); 
-    hXi     ->SetBinContent(i+1, res->GetParameter(kXi));   
-    hSigma  ->SetBinContent(i+1, res->GetParameter(kSigma));   
-    hSigmaN ->SetBinContent(i+1, res->GetParameter(kSigmaN));   
-    hN      ->SetBinContent(i+1, res->GetParameter(kN));   
+    hC      ->SetBinContent(i+1, res->fC); // GetParameter(kC));   
+    hDelta  ->SetBinContent(i+1, res->fDelta); // GetParameter(kDelta)); 
+    hXi     ->SetBinContent(i+1, res->fXi); // GetParameter(kXi));   
+    hSigma  ->SetBinContent(i+1, res->fSigma); // GetParameter(kSigma));   
+    hSigmaN ->SetBinContent(i+1, res->fSigmaN); // GetParameter(kSigmaN));   
+    hN      ->SetBinContent(i+1, res->fN); // GetParameter(kN));   
 
-    hC     ->SetBinError(i+1, res->GetParError(kC));
-    hDelta ->SetBinError(i+1, res->GetParError(kDelta));
-    hXi    ->SetBinError(i+1, res->GetParError(kXi));
-    hSigma ->SetBinError(i+1, res->GetParError(kSigma));
-    hSigmaN->SetBinError(i+1, res->GetParError(kSigmaN));
-    hN     ->SetBinError(i+1, res->GetParError(kN));
+    hC     ->SetBinError(i+1, res->fEC); // GetParError(kC));
+    hDelta ->SetBinError(i+1, res->fEDelta); // GetParError(kDelta));
+    hXi    ->SetBinError(i+1, res->fEXi); // GetParError(kXi));
+    hSigma ->SetBinError(i+1, res->fESigma); // GetParError(kSigma));
+    hSigmaN->SetBinError(i+1, res->fESigmaN); // GetParError(kSigmaN));
+    // hN     ->SetBinError(i+1, res->fGetParError(kN));
 
     for (UShort_t j = 0; j < nParticles-1; j++) {
-      hA[j]->SetBinContent(i+1, res->GetParameter(kA+j));
-      hA[j]->SetBinError(i+1, res->GetParError(kA+j));
+      hA[j]->SetBinContent(i+1, res->fA[j]); // GetParameter(kA+j));
+      hA[j]->SetBinError(i+1, res->fEA[j]); // GetParError(kA+j));
     }
   }
   printf("%s: Out of %d histograms, %d where empty, %d had too little data,"
@@ -1065,6 +1089,7 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
   status->SetStats(0);
   pars->Add(status);
 
+#if 0
   // Fit the full-ring histogram 
   TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));
   if (total && total->GetEntries() >= minEntries) { 
@@ -1077,7 +1102,7 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     if (max > 0) total->Scale(1/max);
 
     TF1* res = FitHist(total,lowCut,nParticles,minusBins,
-		       relErrorCut,chi2nuCut);
+		       relErrorCut,chi2nuCut,minWeight);
     if (res) { 
       // Make histograms for the result of this fit 
       Double_t chi2 = res->GetChisquare();
@@ -1108,6 +1133,7 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
 			    res->GetParError(kA+j)));
     }
   }
+#endif
     
   // Clean up list of histogram.  Histograms with no entries or 
   // no functions are deleted.  We have to do this using the TObjLink 
@@ -1140,13 +1166,15 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
 }
 
 //____________________________________________________________________
-TF1*
+AliFMDCorrELossFit::ELossFit*
 AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
+					UShort_t bin, 
 					Double_t lowCut, 
 					UShort_t nParticles, 
 					UShort_t minusBins, 
 					Double_t relErrorCut, 
-					Double_t chi2nuCut) const
+					Double_t chi2nuCut,
+					Double_t minWeight) const
 {
   // 
   // Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
@@ -1180,7 +1208,84 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
   // Create a fitter object 
   AliForwardUtil::ELossFitter f(lowCut, maxRange, minusBins); 
   f.Clear();
+  f.SetDebug(fDebug > 2);
   
+  // If we are only asked to fit a single particle, return this fit, 
+  // no matter what. 
+  if (nParticles == 1) {
+    TF1* r = f.Fit1Particle(dist, 0);
+    if (!r) return 0;
+    TF1* ff = new TF1(*r);
+    dist->GetListOfFunctions()->Add(ff);
+    AliFMDCorrELossFit::ELossFit* ret = 
+      new AliFMDCorrELossFit::ELossFit(0, *ff);
+    ret->CalculateQuality(chi2nuCut, relErrorCut, minWeight);
+    return ret;
+  }
+
+  // Fit from 2 upto n particles  
+  for (Int_t i = 2; i <= nParticles; i++) f.FitNParticle(dist, i, 0);
+  // Now, we need to select the best fit 
+  Int_t nFits = f.GetFitResults().GetEntriesFast();
+  for (Int_t i = nFits-1; i >= 0; i--) { 
+    TF1* ff = static_cast<TF1*>(f.GetFunctions().At(i));
+    // ff->SetRange(0, maxRange);
+    dist->GetListOfFunctions()->Add(new TF1(*ff));
+  }
+
+  // Here, we use the real quality assesor instead of the old
+  // `CheckResult' to ensure consitency in all output.
+  AliFMDCorrELossFit::ELossFit* ret = FindBestFit(bin, 
+						  dist,
+						  relErrorCut, 
+						  chi2nuCut,
+						  minWeight);
+  return ret;
+}
+#if 0
+//____________________________________________________________________
+TF1*
+AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
+					Double_t lowCut, 
+					UShort_t nParticles, 
+					UShort_t minusBins, 
+					Double_t relErrorCut, 
+					Double_t chi2nuCut,
+					Double_t minWeight) const
+{
+  // 
+  // Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
+  // maximum bin content in the range @f$ [E_{min},\infty]@f$ is
+  // found.  Then the fit range is set to the bin range 
+  // @f$ [b_{min}-\Delta b,b_{min}+2\Delta b]@f$, and a 1 
+  // particle signal is fitted to that.  The parameters of that fit 
+  // is then used as seeds for a fit of the @f$ N@f$ particle response 
+  // to the data in the range 
+  // @f$ [b_{min}-\Delta b,N(\Delta_1+\xi_1\log(N))+2N\xi@f$
+  // 
+  // Parameters:
+  //    dist        Histogram to fit 
+  //    lowCut      Lower cut @f$ E_{min}@f$ on signal 
+  //    nParticles  Max number @f$ N@f$ of convolved landaus to fit
+  //    minusBins   Number of bins @f$ \Delta b@f$ from peak to 
+  //                    subtract to get the fit range 
+  //    relErrorCut Cut applied to relative error of parameter. 
+  //                    Note, for multi-particle weights, the cut 
+  //                    is loosend by a factor of 2 
+  //    chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
+  //                    the reduced @f$\chi^2@f$ 
+  // 
+  // Return:
+  //    The best fit function 
+  //
+  DGUARD(fDebug, 3, "Fit histogram in AliFMDEnergyFitter::RingHistos: %s",
+	 dist->GetName());
+  Double_t maxRange = 10;
+
+  // Create a fitter object 
+  AliForwardUtil::ELossFitter f(lowCut, maxRange, minusBins); 
+  f.Clear();
+  f.SetDebug(fDebug > 2);
   
   // If we are only asked to fit a single particle, return this fit, 
   // no matter what. 
@@ -1196,6 +1301,7 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
   for (Int_t i = 2; i <= nParticles; i++) f.FitNParticle(dist, i, 0);
 
 
+
   // Now, we need to select the best fit 
   Int_t nFits = f.GetFitResults().GetEntriesFast();
   TF1*  good[nFits];
@@ -1203,10 +1309,10 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
     good[i] = 0;
     TF1* ff = static_cast<TF1*>(f.GetFunctions().At(i));
     // ff->SetLineColor(Color());
-    ff->SetRange(0, maxRange);
+    // ff->SetRange(0, maxRange);
     dist->GetListOfFunctions()->Add(new TF1(*ff));
     if (CheckResult(static_cast<TFitResult*>(f.GetFitResults().At(i)),
-		    relErrorCut, chi2nuCut)) {
+		    relErrorCut, chi2nuCut, minWeight)) {
       good[i] = ff;
       ff->SetLineWidth(2);
       if (fDebug > 1) { 
@@ -1221,16 +1327,17 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
   // Find the fit with the most valid particles 
   for (Int_t i = nFits-1; i >= 0; i--) {
     if (!good[i]) continue;
-    if (fDebug > 1) {
-      AliInfo(Form("Choosing fit with n=%d %s", i+1, good[i]->GetName()));
+    if (fDebug > 0) 
+      Printf("%30s: Choosing fit with n=%d %s",
+	     dist->GetName(), i+1, good[i]->GetName());
+    if (fDebug >= 3) 
       f.GetFitResults().At(i)->Print();
-    }
     ret = good[i];
     break;
   }
   // Give a warning if we're using fall-back 
   if (ret == f.GetFunctions().At(0)) {
-    AliWarning("Choosing fall-back 1 particle fit");
+    Printf("%30s: Choosing fall-back 1 particle fit", dist->GetName());
   }
   // Copy our result and return (the functions are owned by the fitter)
   TF1* fret = new TF1(*ret);
@@ -1240,8 +1347,9 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
 //____________________________________________________________________
 Bool_t
 AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r,
-					    Double_t relErrorCut, 
-					    Double_t chi2nuCut) const
+					    Double_t    relErrorCut, 
+					    Double_t    chi2nuCut,
+					    Double_t    minWeight) const
 {
   // 
   // Check the result of the fit. Returns true if 
@@ -1266,11 +1374,12 @@ AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r,
   n.ReplaceAll("TFitResult-", "");
   Double_t chi2 = r->Chi2();
   Int_t    ndf  = r->Ndf();
+  Double_t red  = (ndf >= 0 ? chi2/ndf : 999);
   // Double_t prob = r.Prob();
   Bool_t ret = kTRUE;
   
   // Check that the reduced chi square isn't larger than cut
-  if (ndf <= 0 || chi2 / ndf > chi2nuCut) { 
+  if (red > chi2nuCut) { 
     if (fDebug > 2) {
       AliWarning(Form("%s: chi^2/ndf=%12.5f/%3d=%12.5f>%12.5f", 
 		      n.Data(), chi2, ndf, (ndf<0 ? 0 : chi2/ndf),
@@ -1307,15 +1416,18 @@ AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r,
     
     // Check that the last particle has a significant contribution 
     Double_t lastScale = r->Parameter(nPar-1);
-    if (lastScale <= 1e-7) { 
-      if (fDebug) {
-	AliWarning(Form("%s: %s=%9.6f<1e-7", 
-			n.Data(), r->ParName(nPar-1).c_str(), lastScale)); }
+    if (lastScale <= minWeight) { 
+      if (fDebug > 2) {
+	AliWarningF("%s: %s=%9.6f<%g", 
+		    n.Data(), r->ParName(nPar-1).c_str(), 
+		    lastScale, minWeight); 
+      }
       ret = kFALSE;
     }
   }
   return ret;
 }
+#endif
 
 
 //__________________________________________________________________
@@ -1323,9 +1435,9 @@ void
 AliFMDEnergyFitter::RingHistos::FindBestFits(const TList*        d, 
 					     AliFMDCorrELossFit& obj,
 					     const TAxis&        eta,     
-					     Double_t            relErrorCut, 
-					     Double_t            chi2nuCut,
-					     Double_t            minWeightCut)
+					     Double_t           ,//relErrorCut, 
+					     Double_t           ,//chi2nuCut,
+					     Double_t           )//minWeightCut)
 {
   // 
   // Find the best fits 
@@ -1362,24 +1474,29 @@ AliFMDEnergyFitter::RingHistos::FindBestFits(const TList*        d,
     // Ignore empty histograms altoghether 
     if (!dist || dist->GetEntries() <= 0) continue; 
     
-    AliFMDCorrELossFit::ELossFit* best = FindBestFit(dist,
-						     relErrorCut,
-						     chi2nuCut,  
-						     minWeightCut);
+    AliFMDCorrELossFit::ELossFit* best = 
+      static_cast<AliFMDCorrELossFit::ELossFit*>(fBest.At(b));
+      // FindBestFit(b, dist, relErrorCut, chi2nuCut, minWeightCut);
     best->fDet  = fDet; 
     best->fRing = fRing;
     best->fBin  = b; // 
+    if (fDebug > 0) {
+      printf("Bin # %3d: ", b); 
+      best->Print("s");
+    }
     // Double_t eta = fAxis->GetBinCenter(b);
-    obj.SetFit(fDet, fRing, b, new AliFMDCorrELossFit::ELossFit(*best));
+    obj.SetFit(fDet, fRing, b, best); 
+    // new AliFMDCorrELossFit::ELossFit(*best));
   }
 }
 
 //__________________________________________________________________
 AliFMDCorrELossFit::ELossFit* 
-AliFMDEnergyFitter::RingHistos::FindBestFit(const TH1* dist,
+AliFMDEnergyFitter::RingHistos::FindBestFit(UShort_t b, 
+					    const TH1* dist,
 					    Double_t relErrorCut, 
 					    Double_t chi2nuCut,
-					    Double_t minWeightCut) 
+					    Double_t minWeightCut)  const
 {
   // 
   // Find the best fit 
@@ -1401,15 +1518,33 @@ AliFMDEnergyFitter::RingHistos::FindBestFit(const TH1* dist,
   TF1*   func = 0;
   fFits.Clear();
   Int_t  i = 0;
+  if (fDebug) 
+    printf("Find best fit for %s ... ", dist->GetName());
   // Info("FindBestFit", "%s", dist->GetName());
   while ((func = static_cast<TF1*>(next()))) { 
     AliFMDCorrELossFit::ELossFit* fit = 
       new(fFits[i++]) AliFMDCorrELossFit::ELossFit(0,*func);
+    fit->fDet  = fDet;
+    fit->fRing = fRing;
+    fit->fBin  = b;
     fit->CalculateQuality(chi2nuCut, relErrorCut, minWeightCut);
+    if (fDebug > 2) 
+      Printf("%10s: %3d (chi^2/nu: %6.3f)", 
+	     func->GetName(), fit->fQuality, 
+	     (fit->fNu > 0 ? fit->fChi2 / fit->fNu : 999));
   }
-  fFits.Sort(false);
-  if (fDebug > 1) fFits.Print();
-  return static_cast<AliFMDCorrELossFit::ELossFit*>(fFits.At(0));
+  fFits.Sort();
+  if (fDebug > 1) fFits.Print("s");
+  AliFMDCorrELossFit::ELossFit* ret = 
+    static_cast<AliFMDCorrELossFit::ELossFit*>(fFits.At(i-1));
+  if (ret && fDebug > 0) {
+    if (fDebug > 1)
+      printf(" %d: ", i-1);
+    ret->Print("s");
+  }
+  // We have to make a copy here, because other wise the clones array
+  // will overwrite the address
+  return new AliFMDCorrELossFit::ELossFit(*ret);
 }
 
 

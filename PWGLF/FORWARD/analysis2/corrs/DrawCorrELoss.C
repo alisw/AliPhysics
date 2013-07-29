@@ -30,7 +30,7 @@ DrawCorrELoss(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
   //__________________________________________________________________
   // Load libraries and object 
   // const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  const char* fwd = "$ALICE_ROOT/../trunk/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
   gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
@@ -39,6 +39,61 @@ DrawCorrELoss(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
   d.Summarize(AliForwardCorrectionManager::kELossFits, runNo, sys, sNN, field, 
 	      mc, sat, "", fname);
 }
+void
+DrawCorrELoss(Bool_t      mc, 
+	      const char* file="forward_eloss.root", 
+	      const char* local="fmd_corrections.root")
+{
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
+  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
+
+  CorrDrawer::Summarize(AliForwardCorrectionManager::kELossFits, 
+			mc, file, local);
+}
+
+void 
+DrawCorrELoss(Bool_t mc, Bool_t dummy, 
+	      const char* file="forward_eloss_rerun.root")
+{
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  if (!gROOT->GetClass("AliAODForwardMult"))
+    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
+  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
+
+  TFile* hist = TFile::Open(file, "READ");
+  if (!hist) { 
+    Error("DrawCorrELoss", "Failed to open %s", file);
+    return;
+  }
+  TList* res = static_cast<TList*>(hist->Get("ForwardResults"));
+  if (!res) { 
+    Error("DrawCorrEloss", "Failed to get ForwardResults from %s", file);
+    return;
+  }
+  TList* ef = static_cast<TList*>(res->FindObject("fmdEnergyFitter"));
+  if (!ef) { 
+    Error("DrawCorrEloss", "Failed to get fmdEnergyFitter from %s:/%s", 
+	  file, res->GetName());
+    return;
+  }
+
+  AliFMDCorrELossFit* fits = 
+    static_cast<AliFMDCorrELossFit*>(ef->FindObject("AliFMDCorrELossFit"));
+  if (!fits) {
+    Error("DrawCorrEloss", "Failed to get AliFMDCorrELossFit from %s:/%s/%s", 
+	  file, res->GetName(), ef->GetName());
+    return;
+  }
+  
+  CorrDrawer* cd = new CorrDrawer;
+  cd->fELossExtra = file;
+  cd->fMinQuality = 8;
+  cd->Summarize(fits);
+}
+
 //
 // EOF
 //

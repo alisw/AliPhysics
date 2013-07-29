@@ -9,16 +9,18 @@
 # include <TString.h>
 # include <TError.h>
 #else
-class SummaryDrawer;
-class TAxis;
-class AliFMDCorrAcceptance;
-class AliFMDCorrSecondaryMap;
-class AliFMDCorrELossFit;
+// class SummaryDrawer;
+// class TAxis;
+// class AliFMDCorrAcceptance;
+// class AliFMDCorrSecondaryMap;
+// class AliFMDCorrELossFit;
 #endif
 
 class CorrDrawer : public SummaryDrawer
 {
 public:
+  TString  fELossExtra;
+  UShort_t fMinQuality;
   /** 
    * Constructor 
    * 
@@ -26,6 +28,8 @@ public:
    */
   CorrDrawer() 
   {
+    fELossExtra = "forward_eloss.root";
+    fMinQuality = 8;
   }
   /** 
    * Destructor.  Closes the PDF 
@@ -51,11 +55,11 @@ public:
 			   ULong_t         runNo, 
 			   UShort_t        sys, 
 			   UShort_t        sNN, 
-			   UShort_t        field,
+			   Short_t         field,
 			   Bool_t          mc=false, 
 			   Bool_t          sat=false)
   {
-    out = TString::Format("%s_run%09d_%s_%04dGeV_%c%dkG_%s_%s.pdf",
+    out = TString::Format("%s_run%09lu_%s_%04dGeV_%c%dkG_%s_%s.pdf",
 			  prefix.Data(), runNo, 
 			  (sys == 1 ? "pp" : 
 			   sys == 2 ? "PbPb" : 
@@ -93,6 +97,20 @@ public:
 	runNo, AliForwardUtil::ParseCollisionSystem(sys), 
 	sNN, field, mc, sat, options, local);
   }
+  void AppendName(TString& what, UShort_t which)
+  {
+    if (!what.IsNull()) what.Append("_");
+    switch (which) {
+    case AliForwardCorrectionManager::kSecondaryMap:
+      what.Append("secondary"); break;
+    case AliForwardCorrectionManager::kAcceptance:
+      what.Append("acceptance"); break;
+    case AliForwardCorrectionManager::kELossFits:		  
+      what.Append("elossfits"); break;
+    default:
+      what.Append("unknown"); break;
+    }
+  }
   /** 
    * Draw corrections using the correction manager to get them 
    *  
@@ -121,18 +139,22 @@ public:
     AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
     mgr.SetDebug(true);
     UShort_t flags = 0;
-    
+
+    TString name;
     if (what & AliForwardCorrectionManager::kSecondaryMap) {
       flags |= AliForwardCorrectionManager::kSecondaryMap;
       if (local) mgr.SetSecondaryMapPath(local);
+      AppendName(name, AliForwardCorrectionManager::kSecondaryMap);
     }
     if (what & AliForwardCorrectionManager::kAcceptance) {
       flags |= AliForwardCorrectionManager::kAcceptance;
       if (local) mgr.SetAcceptancePath(local);
+      AppendName(name, AliForwardCorrectionManager::kAcceptance);
     }
     if (what & AliForwardCorrectionManager::kELossFits) {
       flags |= AliForwardCorrectionManager::kELossFits;
       if (local) mgr.SetELossFitsPath(local);
+      AppendName(name, AliForwardCorrectionManager::kELossFits);
     }
     if (what & AliForwardCorrectionManager::kVertexBias) 
       Warning("CorrDrawer","Vertex bias not implemented yet");
@@ -149,7 +171,7 @@ public:
     }
 
     TString out;
-    MakeFileName(out, "corrs", runNo, sys, sNN, field, mc, sat);
+    MakeFileName(out, name, runNo, sys, sNN, field, mc, sat);
     CreateCanvas(out);
 
     fBody->cd();
@@ -230,9 +252,9 @@ public:
    */
   void Summarize(const TString& what, 
 		 ULong_t        runNo, 
-		 UShort_t       sys, 
+		 const Char_t*  sys, 
 		 UShort_t       sNN, 
-		 UShort_t       field,
+		 Short_t        field,
 		 Bool_t         mc=false, 
 		 Bool_t         sat=false,
 		 Option_t*      options="",
@@ -259,7 +281,7 @@ public:
 		 ULong_t     runNo, 
 		 UShort_t    sys, 
 		 UShort_t    sNN, 
-		 UShort_t    field,
+		 Short_t     field,
 		 Bool_t      mc=false, 
 		 Bool_t      sat=false,
 		 Option_t*   options="",
@@ -288,9 +310,9 @@ public:
     }
     
     if (!mgr.Init(runNo, sys, sNN, field, mc, sat, flag, true)) {
-      Error("CorrDrawer", "Failed to initialize for flags=0x%02x"
-		"run=%lu, sys=%hu, sNN=%hu, field=%hd, mc=%d, sat=%d",
-		flags, runNo, sys, sNN, field, mc, sat);
+      Error("CorrDrawer", "Failed to initialize for flags=0x%02x "
+	    "run=%lu, sys=%hu, sNN=%hu, field=%hd, mc=%d, sat=%d",
+	    flag, runNo, sys, sNN, field, mc, sat);
       return;
     }
 
@@ -347,7 +369,7 @@ public:
    * @param o Object to draw
    * @param pdf Not used
    */
-  void Summarize(const TObject* o, Bool_t pdf) 
+  void Summarize(const TObject* o, Bool_t pdf=true) 
   {
     if (!o) return;
     Warning("CorrDrawer", "Don't know how to draw a %s object", 
@@ -360,7 +382,7 @@ public:
    * @param acc Acceptance correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  void Summarize(const AliFMDCorrAcceptance* acc, Bool_t pdf) 
+  void Summarize(const AliFMDCorrAcceptance* acc, Bool_t pdf=true) 
   { 
     CreateCanvas("acceptance.pdf", false, pdf);
     DrawIt(acc, pdf); 
@@ -373,7 +395,7 @@ public:
    * @param sec Secondary correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf) 
+  void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf=true) 
   { 
     CreateCanvas("scondarymap.pdf", false, pdf);
     DrawIt(sec, pdf); 
@@ -391,6 +413,48 @@ public:
     CreateCanvas("elossfits.pdf", false, pdf);
     DrawIt(fits, pdf); 
     if (pdf) CloseCanvas();
+  }
+
+  static void Summarize(const TString& what   = "", 
+			Bool_t         mc     = false,
+			const TString& output = "forward_eloss.root", 
+			const TString& local  = "fmd_corrections.root",
+			Option_t*      options= "")
+  {
+    Summarize(AliForwardCorrectionManager::ParseFields(what), mc, 
+	      output, local, options);
+  }
+  static void Summarize(UShort_t       what, 
+			Bool_t         mc     = false,
+			const TString& output = "forward_eloss.root", 
+			const TString& local  = "fmd_corrections.root",
+			Option_t*      options= "")
+  {
+    TFile* fout = TFile::Open(output, "READ");
+    if (!fout) { 
+      Warning("SummarizeELoss", "Energy loss task output %s not found",
+	      output.Data());
+      return;
+    }
+    TCollection* forward = GetCollection(fout, "Forward");
+    if (!forward) return;
+    
+    TCollection* eventInsp = GetCollection(forward, "fmdEventInspector");
+    if (!eventInsp) return;
+
+    UShort_t sys   = 0, sNN = 0;
+    Int_t    field = 0;
+    Int_t    runNo; 
+    Bool_t satellite;
+    if (!GetParameter(eventInsp, "sys",       sys))       return;
+    if (!GetParameter(eventInsp, "sNN",       sNN))       return;
+    if (!GetParameter(eventInsp, "field",     field))     return;
+    if (!GetParameter(eventInsp, "satellite", satellite)) return;
+    if (!GetParameter(eventInsp, "runNo",     runNo))     return;
+    
+    CorrDrawer* drawer = new CorrDrawer;
+    drawer->Run(what, runNo, sys, sNN, field, mc, satellite,
+		options, local);
   }
 protected:
   /** 
@@ -463,6 +527,7 @@ protected:
 	  TH2* h2 = corr->GetCorrection(d, r, v);
 	  if (!h2) { 
 	    Warning("DrawCorrAcc", "No correction for FMD%d%c, v=%d", d, r, v);
+	    corr->ls();
 	    continue;
 	  }
 	  
@@ -626,8 +691,8 @@ protected:
     if (details) { 
       TFile* hists = 0;
       TDirectory* savDir = gDirectory;
-      if (!gSystem->AccessPathName("forward_eloss.root")) {
-	hists = TFile::Open("forward_eloss.root", "READ");
+      if (!gSystem->AccessPathName(fELossExtra.Data())) {
+	hists = TFile::Open(fELossExtra, "READ");
 	// Info("", "Opened forward_eloss.root -> %p", hists);
       }
       if (hists) {
@@ -657,22 +722,27 @@ protected:
       l->DrawLatex(0.2, 0.64, "Subsequent pages shows the fitted functions");
       l->DrawLatex(0.3, 0.60, "Black line is the full fitted function");
       l->DrawLatex(0.3, 0.57, "Coloured lines are the individual N-mip comp.");
-      l->DrawLatex(0.3, 0.54, "Full drawn lines correspond to used components");
-      l->DrawLatex(0.3, 0.51, "Dashed lines correspond to ignored components");
-      l->DrawLatex(0.2, 0.47, "Each component has the form");
-      l->DrawLatex(0.3, 0.42, "f_{n}(x; #Delta, #xi, #sigma') = "
+      //l->DrawLatex(0.3, 0.54, "Full drawn lines correspond to used components");
+      //l->DrawLatex(0.3, 0.51, "Dashed lines correspond to ignored components");
+      l->DrawLatex(0.2, 0.54, "Each component has the form");
+      l->DrawLatex(0.3, 0.49, "f_{n}(x; #Delta, #xi, #sigma') = "
 		   "#int_{-#infty}^{+#infty}d#Delta' "
 		   "landau(x; #Delta', #xi)gaus(#Delta'; #Delta, #sigma')");
-      l->DrawLatex(0.2, 0.37, "The full function is given by");
-      l->DrawLatex(0.3, 0.32, "f_{N}(x; #Delta, #xi, #sigma', #bf{a}) = "
+      l->DrawLatex(0.2, 0.44, "The full function is given by");
+      l->DrawLatex(0.3, 0.41, "f_{N}(x; #Delta, #xi, #sigma', #bf{a}) = "
 		 "C #sum_{i=1}^{N} a_{i} "
 		   "f_{i}(x; #Delta_{i}, #xi_{i}, #sigma_{i}')");
-      l->DrawLatex(0.3, 0.26, "#Delta_{i} = i (#Delta_{1} + #xi_{1} log(i))");
-      l->DrawLatex(0.3, 0.23, "#xi_{i} = i #xi_{1}");
-      l->DrawLatex(0.3, 0.20, "#sigma_{i} = #sqrt{i} #sigma_{1}");
-      l->DrawLatex(0.3, 0.17, "#sigma_{n} #dot{=} 0");
-      l->DrawLatex(0.3, 0.14, "#sigma_{i}'^{2} = #sigma^{2}_{n} + #sigma_{i}^{2}");
-      l->DrawLatex(0.3, 0.11, "a_{1} #dot{=} 1");
+      l->DrawLatex(0.3, 0.35, "#Delta_{i} = i (#Delta_{1} + #xi_{1} log(i))");
+      l->DrawLatex(0.3, 0.32, "#xi_{i} = i #xi_{1}");
+      l->DrawLatex(0.3, 0.29, "#sigma_{i} = #sqrt{i} #sigma_{1}");
+      l->DrawLatex(0.3, 0.26, "#sigma_{n} #dot{=} 0");
+      l->DrawLatex(0.3, 0.23, "#sigma_{i}'^{2} = #sigma^{2}_{n} + #sigma_{i}^{2}");
+      l->DrawLatex(0.3, 0.20, "a_{1} #dot{=} 1");
+      l->DrawLatex(0.3, 0.15, Form("Least quality: %d", fMinQuality));
+      if (fitter) {
+	TObject* refit = fitter->FindObject("refitted");
+	if (refit) l->DrawLatex(0.3, .10, "Refitted distributions");
+      }
       PrintCanvas("Energy loss fits");
     }
 
@@ -749,10 +819,9 @@ protected:
       }
       // if (same)
       DrawInPad(fBody, j+1, fit, 
-		Form("comp good values legend %s %s", 
-		     (same ? "same" : "")),
+		Form("comp good values legend %s", (same ? "same" : "")),
 		0x2);
-      if (fit->GetQuality() < 8) { 
+      if (fit->GetQuality() < fMinQuality) { 
 	TLatex* ltx = new TLatex(.2, .2, "NOT USED");
 	ltx->SetNDC();
 	ltx->SetTextFont(62);

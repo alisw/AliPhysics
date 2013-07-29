@@ -95,6 +95,7 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
 {   
    // Default constructor
 
+  for(int i=0; i<100; i++) fTrigClass[i] = 0;
   fNClusters[0]=fNClusters[1]=0;
   for(Int_t itow=0; itow<5; itow++){
      fZNCtower[itow]=0.;  
@@ -159,6 +160,8 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     
 {
   // Default constructor
+
+  for(int i=0; i<100; i++) fTrigClass[i] = 0;
   fNClusters[0]=fNClusters[1]=0;
  
   for(Int_t itow=0; itow<5; itow++){
@@ -301,7 +304,8 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       
       // use response of AliPhysicsSelection
       fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);       
-      fIsPileupFromSPD = esd->IsPileupFromSPD(6,1.0);
+      //fIsPileupFromSPD = esd->IsPileupFromSPD(6, 0.8);
+      fIsPileupFromSPD = esd->IsPileupFromSPDInMultBins();
 
       AliCentrality *centrality = esd->GetCentrality();
       fCentralityV0M = centrality->GetCentralityPercentile("V0M");
@@ -408,8 +412,9 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       fCentralityZPC = centrality->GetCentralityPercentile("ZPC");
       
       // ***** Trigger selection
-      TString triggerClass = aod->GetFiredTriggerClasses();
-      sprintf(fTrigClass,"%s",triggerClass.Data());
+      //fTrigClass = aod->GetFiredTriggerClasses();
+      //TString triggerClass = aod->GetFiredTriggerClasses();
+      //sprintf(fTrigClass,"%s",triggerClass.Data());
       
       const AliAODVertex *vertex = aod->GetPrimaryVertexSPD();
       fxVertex = vertex->GetX();

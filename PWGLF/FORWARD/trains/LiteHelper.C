@@ -16,7 +16,9 @@
 # include <TUrl.h>
 # include <TString.h>
 # include <TChain.h>
+# include <TDSet.h>
 # include <AliAnalysisManager.h>
+# include <AliVEventHandler.h>
 #else
 class TChain;
 class TUrl;
@@ -136,16 +138,23 @@ struct LiteHelper : public ProofHelper
     Bool_t   recursive = fOptions.Has("recursive");
     Bool_t   mc        = fOptions.Has("mc");
     TString  src       = fUrl.GetFile();
-    UShort_t type      = ChainBuilder::CheckSource(src);
+    UShort_t type      = ChainBuilder::CheckSource(src, 0);
     if (type == ChainBuilder::kInvalid) {
       Error("LiteHelper", "Cannot generate TChain from %s", src.Data());
       return false;
     }
 
     // --- Create the chain ------------------------------------------
-    fChain = ChainBuilder::Create(type, src, treeName, pattern, mc, recursive);
+    pattern.ReplaceAll("@", "#");
+    Bool_t chainMC = (mc && AliAnalysisManager::GetAnalysisManager()
+		      ->GetMCtruthEventHandler() != 0);
+    fChain = ChainBuilder::Create(type, src, treeName, pattern, 
+				  chainMC, recursive, fVerbose > 5);
     if (!fChain) { 
-      Error("PreSetup", "No chain defined");
+      Error("PostSetup", "No chain defined "
+	    "(src=%s, treeName=%s, pattern=%s, mc=%s, recursive=%s)", 
+	    src.Data(), treeName.Data(), pattern.Data(), 
+	    (mc ? "true" : "false"), (recursive ? "true" : "false"));
       return false;
     }
 
@@ -174,6 +183,23 @@ struct LiteHelper : public ProofHelper
     
     if (fVerbose > 2) 
       TProof::Mgr(fUrl.GetUrl())->GetSessionLogs()->Save("*","lite.log");
+    return ret;
+  }
+  /** 
+   * Path of output 
+   * 
+   * @return Path to output - possibly a data set
+   */
+  virtual TString OutputPath() const 
+  {
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) return "";
+
+    AliVEventHandler* outH = mgr->GetOutputEventHandler();
+    if (!outH) return "";
+    
+    TString ret = gSystem->ConcatFileName(gSystem->WorkingDirectory(),
+					  outH->GetOutputFileName());
     return ret;
   }
 

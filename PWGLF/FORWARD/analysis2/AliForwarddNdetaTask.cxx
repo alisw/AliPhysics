@@ -94,7 +94,94 @@ AliForwarddNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
   AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
   return &(forward->GetHistogram());
 }
+//____________________________________________________________________
+void
+AliForwarddNdetaTask::CheckEventData(Double_t vtx, 
+				     TH2*     data, 
+				     TH2*     dataMC)
+{
+  // Check if this is satellite
+  // if (!fSatelliteVertices) return;
+  Double_t aVtx = TMath::Abs(vtx);
+  if (aVtx < 37.5 || aVtx > 400) return;
 
+  TH2* hists[] = { data, dataMC };
+
+  // In satellite vertices FMD2i is cut away manually at this point
+  // for certain vertices. It could be done in the ESDs, but as of
+  // this writing not for specific vertices.
+  // 
+  // cholm comment: It would be difficult to setup the filter in the
+  // reconstruction pass, but it could perhaps be done in the AOD
+  // filtering.
+  // 
+  // This is what was done for
+  // the Pb-Pb paper (arXiv:1304.0347).
+  for (Int_t iX = 0; iX<=data->GetNbinsX(); iX++) {
+    // Do all checks up front - as soon as we can - branching is
+    // expensive!
+    Double_t x    = data->GetXaxis()->GetBinCenter(iX);
+    Bool_t   zero = false;
+    if (((vtx >  60 && vtx <  90) && x < 3) ||
+	((vtx > 330 && vtx < 350) && x > -2.5) ||
+	((vtx < 100 || vtx > 305) && TMath::Abs(x) < 4.5) || 
+	(vtx < 50                 && TMath::Abs(x) < 4.75))
+      zero = true;
+    if (!zero) continue;
+    
+    for (Int_t iH = 0; iH < 2; iH++) {
+      if (!hists[iH]) continue;
+      // if (iX > hists[iH]->GetNbinsX()+1) continue;
+      // Also zero coverage and phi acceptance for this 
+      for (Int_t iY = 0; iY<=hists[iH]->GetNbinsY()+1; iY++) {	  
+	hists[iH]->SetBinContent(iX, iY, 0);
+	hists[iH]->SetBinError(iX, iY, 0);
+      }
+    }
+  }
+
+  if (fCorrEmpty) {
+    // Now, since we have some dead areas in FMD2i (sectors 16 and
+    // 17), we need to remove the corresponding bins from the
+    // histogram. However, it is not obvious which bins (in eta) to
+    // remove, so remove everything starting from the most negative to
+    // the middle of the histogram.
+    // 
+    // This hack was first introduced by HHD, but was done at the end of
+    // the event processing (CentralityBin::MakeResults).  That is,
+    // however, not very practical, as we'd like to normalize to the phi
+    // acceptance rather than the eta coverage and then correct for
+    // empty bins. Since the only way to really update the phi
+    // acceptance stored in the overflow bin is on the event level, we
+    // should really do it here.
+    const Int_t phiBin1 = 17; // Sector 16
+    const Int_t phiBin2 = 18; // Sector 17
+    for (Int_t iH = 0; iH < 2; iH++) { 
+      if (!hists[iH]) continue;
+      
+      Int_t midX = hists[iH]->GetNbinsX() / 2;
+      // Int_t nY   = hists[iH]->GetNbinsY();
+      for (Int_t i = 1; i <= midX; i++) { 
+	hists[iH]->SetBinContent(i, phiBin1, 0);
+	hists[iH]->SetBinContent(i, phiBin2, 0);
+	hists[iH]->SetBinError(i, phiBin1, 0);
+	hists[iH]->SetBinError(i, phiBin2, 0);
+	
+	// Here, we should also modify the overflow bin to reflect the
+	// new phi acceptance.  First get the old phi acceptance -
+	// then multiply this on the number of bins. This gives us -
+	// roughly - the number of sectors we had.  Then take out two
+	// from that number, and then calculate the new phi
+	// Acceptance. Note, if the sectors where already taken out in
+	// the AOD production, we _will_ end up with a wrong number,
+	// so we should _not_ do that in the AOD production.  This is
+	// tricky and may not work at all.  For now, we should rely on
+	// the old way of correcting to the eta coverage and
+	// correcting for empty bins.
+      }
+    }
+  }
+}
 //========================================================================
 void
 AliForwarddNdetaTask::CentralityBin::End(TList*      sums, 

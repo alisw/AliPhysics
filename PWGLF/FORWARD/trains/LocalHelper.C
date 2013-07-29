@@ -150,7 +150,16 @@ struct LocalHelper : public Helper
       return false;
     }
 
-    fChain = ChainBuilder::Create(file, treeName, pattern, mc, recursive);
+    pattern.ReplaceAll("@", "#");
+    fChain = ChainBuilder::Create(file, treeName, pattern, mc, recursive,
+				  fVerbose);
+    if (!fChain) { 
+      Error("PostSetup", "No chain defined "
+	    "(src=%s, treeName=%s, pattern=%s, mc=%s, recursive=%s)", 
+	    file.Data(), treeName.Data(), pattern.Data(), 
+	    (mc ? "true" : "false"), (recursive ? "true" : "false"));
+      return false;
+    }
 
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) { 

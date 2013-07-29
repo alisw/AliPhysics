@@ -14,14 +14,15 @@
 AliCorrectionManagerBase::AliCorrectionManagerBase()
   : fCorrections(),
     fIsInit(false),
-    fRun(0), 
-    fSys(0), 
-    fSNN(0), 
-    fField(999), 
+    fRun(kIgnoreValue), 
+    fSys(kIgnoreValue), 
+    fSNN(kIgnoreValue), 
+    fField(kIgnoreField), 
     fMC(false), 
     fSatellite(false), 
     fDB(0),
-    fDebug(false)
+    fDebug(false),
+    fFallBack(false)
 {
 }
 
@@ -29,14 +30,15 @@ AliCorrectionManagerBase::AliCorrectionManagerBase()
 AliCorrectionManagerBase::AliCorrectionManagerBase(Bool_t)
   : fCorrections(16),
     fIsInit(false),
-    fRun(0), 
-    fSys(0), 
-    fSNN(0), 
-    fField(999), 
+    fRun(kIgnoreValue), 
+    fSys(kIgnoreValue), 
+    fSNN(kIgnoreValue), 
+    fField(kIgnoreField), 
     fMC(false), 
     fSatellite(false), 
     fDB(0),
-    fDebug(false)
+    fDebug(false),
+    fFallBack(false)
 {
   fCorrections.SetOwner(false);
   fCorrections.SetName("corrections");
@@ -54,7 +56,8 @@ AliCorrectionManagerBase::AliCorrectionManagerBase(const
     fMC(o.fMC), 
     fSatellite(o.fSatellite), 
     fDB(o.fDB),
-    fDebug(o.fDebug)
+    fDebug(o.fDebug),
+    fFallBack(o.fFallBack)
 {
   fCorrections.SetOwner(false);
   Int_t n = o.fCorrections.GetEntriesFast();
@@ -77,6 +80,7 @@ AliCorrectionManagerBase::operator=(const AliCorrectionManagerBase& o)
   fSatellite 	= o.fSatellite;
   fDB		= o.fDB;
   fDebug        = o.fDebug;
+  fFallBack     = o.fFallBack;
 
   fCorrections.Clear();
   Int_t n = o.fCorrections.GetEntriesFast();
@@ -406,7 +410,7 @@ AliCorrectionManagerBase::ReadCorrection(Int_t      id,
 
   Correction* c = GetCorrection(id);
   if (!c->fEnabled) return true;
-  return c->ReadIt(fDB, run, sys, sNN, fld, mc, sat, fDebug);
+  return c->ReadIt(fDB, run, sys, sNN, fld, mc, sat, fDebug, fFallBack);
 }
 
 //____________________________________________________________________
@@ -510,7 +514,8 @@ AliCorrectionManagerBase::Correction::ReadIt(AliOADBForward* db,
 					     Short_t         fld, 
 					     Bool_t          mc, 
 					     Bool_t          sat,
-					     Bool_t          vrb)
+					     Bool_t          vrb,
+					     Bool_t          fallback)
 {
   if (!fEnabled) {
     AliWarningF("Correction %s not enabled", GetName());
@@ -521,16 +526,16 @@ AliCorrectionManagerBase::Correction::ReadIt(AliOADBForward* db,
   fObject = 0;
 
   // Massage fields according to settings 
-  if (!(fQueryFields & kRun))       run = 0;
-  if (!(fQueryFields & kSys))       sys = 0;
-  if (!(fQueryFields & kSNN))       sNN = 0;
-  if (!(fQueryFields & kField))     fld = 999;
+  if (!(fQueryFields & kRun))       run = kIgnoreValue;
+  if (!(fQueryFields & kSys))       sys = kIgnoreValue;
+  if (!(fQueryFields & kSNN))       sNN = kIgnoreValue;
+  if (!(fQueryFields & kField))     fld = AliOADBForward::kInvalidField; // kIgnoreField;
   if (!(fQueryFields & kMC))        mc  = false;
   if (!(fQueryFields & kSatellite)) sat = false;
 
   // Check if table is open, and if not try to open it 
   if (!db->FindTable(fName, true)) {
-    if (!db->Open(fTitle, fName, false, vrb)) {
+    if (!db->Open(fTitle, fName, false, vrb, fallback)) {
       AliWarningF("Failed to open table %s from %s", GetName(), GetTitle());
       AliWarningF("content of %s for %s:", 
 		  gSystem->WorkingDirectory(), GetName());
@@ -604,10 +609,10 @@ AliCorrectionManagerBase::Correction::StoreIt(AliOADBForward* db,
   }
 
   // Massage fields according to settings 
-  if (!(fQueryFields & kRun))       run = 0;
-  if (!(fQueryFields & kSys))       sys = 0;
-  if (!(fQueryFields & kSNN))       sNN = 0;
-  if (!(fQueryFields & kField))     fld = 999;
+  if (!(fQueryFields & kRun))       run = kIgnoreValue;
+  if (!(fQueryFields & kSys))       sys = kIgnoreValue;
+  if (!(fQueryFields & kSNN))       sNN = kIgnoreValue;
+  if (!(fQueryFields & kField))     fld = AliOADBForward::kInvalidField; // kIgnoreField;
   if (!(fQueryFields & kMC))        mc  = false;
   if (!(fQueryFields & kSatellite)) sat = false;
   
@@ -703,7 +708,7 @@ AliCorrectionManagerBase::Correction::Print(Option_t* option) const
   
   TString opt(option);
   opt.ToUpper();
-  if (!opt.Contains("D")) return;
+  if (!opt.Contains("D") || !fObject) return;
 
   gROOT->IncreaseDirLevel();
   fObject->Print();

@@ -83,14 +83,20 @@ struct GridHelper : public PluginHelper
   GridHelper(const TUrl& url, Int_t verbose)
     : PluginHelper(url, verbose), fRuns()
   {
+    // Note, split, merge, and ttl are by default set to values
+    // optimized for AOD production on real PbPb data.
+    //
+    // TTL shouldn't be much smaller than 4h10m.  Split and merge
+    // shouldn't be much larger than 75, but probably not smaller than
+    // 50.
     fOptions.Add("oper", "FULL|TERMINATE|SUBMIT", "Analysis operation", "FULL");
-    fOptions.Add("split",  "N|max",  "Max number of files before split","max");
-    fOptions.Add("merge",  "N|max",  "Max number of files for merge",   "max");
+    fOptions.Add("split",  "N|max",  "Max number of files before split","50");
+    fOptions.Add("merge",  "N|max",  "Max number of files for merge",   "50");
     fOptions.Add("run",    "RUNS",   "Range, list, and/or file of runs", "");
-    fOptions.Add("pattern","GLOB",   "File/directory name pattern", "");
     fOptions.Add("alien",  "VERSION","Alien API version",              "V1.1x");
+    fOptions.Add("ttl",    "N|max",  "Time to live",                   "6h");
+    fOptions.Add("pattern","GLOB",   "File/directory name pattern", "");
     fOptions.Add("concat", "Concatenate all runs");
-    fOptions.Add("ttl",    "N|max",  "Time to live",                    "max");
   }
   GridHelper(const GridHelper& o)
     : PluginHelper(o), fRuns()

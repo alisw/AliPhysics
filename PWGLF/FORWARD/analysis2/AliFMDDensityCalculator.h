@@ -134,7 +134,8 @@ public:
    * 
    * @param dbg Debug level 
    */
-  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }	
+  void SetDoTiming(Bool_t enable=true) { fDoTiming = enable; }
   /** 
    * Maximum particle weight to use 
    * 
@@ -197,7 +198,7 @@ public:
    * 
    * @param cut Cut value 
    */
-  void SetMinQuality(UShort_t cut=8) { fMinQuality = cut; }
+  void SetMinQuality(UShort_t cut=10) { fMinQuality = cut; }
   /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
@@ -449,8 +450,11 @@ protected:
   Bool_t   fRecalculateEta;  // Whether to recalc eta and angle correction (disp vtx)
   Bool_t   fRecalculatePhi;  // Whether to correct for (X,Y) offset
   UShort_t fMinQuality;      // Least quality for fits
+  AliForwardUtil::Histos fCache;
+  Bool_t                 fDoTiming;
+  TProfile*              fHTiming;
 
-  ClassDef(AliFMDDensityCalculator,12); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,13); // Calculate Nch density 
 };
 
 #endif

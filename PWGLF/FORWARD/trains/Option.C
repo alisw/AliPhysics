@@ -641,6 +641,34 @@ struct OptionList
     return o->AsDouble();
   }
   /** 
+   * return value of an option as a string 
+   * 
+   * @param name Name of option
+   * @param def  Default valie if option isn't found 
+   * 
+   * @return Value or default value
+   */
+  const char* AsString(const TString& name, const TString& def="") const
+  {
+    Option* o = Find(name);
+    if (!o) return def.Data();
+    return o->AsString();
+  }
+  /** 
+   * return value of an option as a string 
+   * 
+   * @param name Name of option
+   * @param def  Default valie if option isn't found 
+   * 
+   * @return Value or default value
+   */
+  const TString& AsTString(const TString& name, const TString& def="") const
+  {
+    Option* o = Find(name);
+    if (!o) return def;
+    return o->Get();
+  }
+  /** 
    * Set value using a format statement 
    * 
    * @param name   Name of option.

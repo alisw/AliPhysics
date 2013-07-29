@@ -152,7 +152,7 @@ AliMCTruthdNdetaTask::Terminate(Option_t *option)
 }
 
 //========================================================================
-void
+Bool_t
 AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* 
 						  forward, 
 						  Int_t triggerMask,
@@ -163,11 +163,11 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
 						  const TH2D*)
 { 
   // Check the centrality class unless this is the 'all' bin 
-  if (!primary) return;
+  if (!primary) return false;
 
   if (!IsAllBin()) { 
     Double_t centrality = forward->GetCentrality();
-    if (centrality < fLow || centrality >= fHigh) return;
+    if (centrality < fLow || centrality >= fHigh) return false;
   }
 
   if (!fSum) CreateSums(primary, 0);
@@ -197,6 +197,7 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
   // Now use our normal check with the full trigger mask and vertex
   if (CheckEvent(forward, triggerMask, vzMin, vzMax)) 
     fSum->Add(primary, isZero);
+  return true;
 }
 
 //________________________________________________________________________

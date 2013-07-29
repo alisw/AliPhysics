@@ -158,6 +158,41 @@ public:
     kAccepted
   };
   /** 
+   * User bits of these objects (bits 14-23 can be used)
+   */
+  enum {
+    /** Secondary correction maps where applied */
+    kSecondary           = (1 << 14), 
+    /** Vertex bias correction was applied */
+    kVertexBias          = (1 << 15),  
+    /** Acceptance correction was applied */
+    kAcceptance          = (1 << 16), 
+    /** Merging efficiency correction was applied */
+    kMergingEfficiency   = (1 << 17),
+    /** Signal in overlaps is the sum */
+    kSum                 = (1 << 18), 
+    /** Used eta dependent empirical correction - to be implemented */
+    kEmpirical           = (1 << 19)
+  };
+  /**
+   * Return codes of CheckEvent 
+   */
+  enum ECheckStatus {
+    /** Event accepted by cuts */
+    kGoodEvent = 0, 
+    /** Event centrality not in range */
+    kWrongCentrality, 
+    /** Event trigger isn't in the supplied mask */
+    kWrongTrigger, 
+    /** Event is a pile-up event */
+    kIsPileup, 
+    /** Event has no interaction point information */
+    kNoVertex, 
+    /** Event interaction point is out of range */
+    kWrongVertex
+  };
+    
+  /** 
    * Default constructor 
    * 
    * Used by ROOT I/O sub-system - do not use
@@ -255,6 +290,14 @@ public:
    * @return Always true
    */
   Bool_t IsFolder() const { return kTRUE; } // Always true 
+
+  Bool_t IsSecondaryCorrected() const { return TestBit(kSecondary); }
+  Bool_t IsVertexBiasCorrected() const { return TestBit(kVertexBias); }
+  Bool_t IsAcceptanceCorrected() const { return TestBit(kAcceptance); }
+  Bool_t IsMergingEfficiencyCorrected() const { 
+    return TestBit(kMergingEfficiency); }
+  Bool_t IsEmpiricalCorrected() const { return TestBit(kEmpirical); }
+  Bool_t IsSumSignal() const { return TestBit(kSum); }
   /** 
    * Print content 
    * 
@@ -388,7 +431,8 @@ public:
   Bool_t CheckEvent(Int_t    triggerMask=kInel,
 		    Double_t vzMin=-10, Double_t vzMax=10,
 		    UShort_t cMin=0,    UShort_t cMax=100, 
-		    TH1*     hist=0) const;
+		    TH1*     hist=0,
+		    TH1*     status=0) const;
   /** 
    * Get a string correspondig to the trigger mask
    * 
@@ -411,6 +455,16 @@ public:
    */
   static TH1I* MakeTriggerHistogram(const char* name="triggers",
 				    Int_t mask=0);
+  /** 
+   * Make a histogram to record status in. 
+   *
+   * The bins defined by the status enumeration in this class.  
+   * 
+   * @param name Name of the histogram 
+   * 
+   * @return Newly allocated histogram 
+   */
+  static TH1I* MakeStatusHistogram(const char* name="status");
   /** 
    * Utility function to make a trigger mask from the passed string. 
    * 
@@ -441,7 +495,7 @@ protected:
   UShort_t fNClusters;  // Number of SPD clusters in |eta|<1
   /** Invalid value for interaction point @f$z@f$ coordiante */
   static const Float_t fgkInvalidIpZ; // Invalid IpZ value 
-  ClassDef(AliAODForwardMult,3); // AOD forward multiplicity 
+  ClassDef(AliAODForwardMult,5); // AOD forward multiplicity 
 };
 
 //____________________________________________________________________

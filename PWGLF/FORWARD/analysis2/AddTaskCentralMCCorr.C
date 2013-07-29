@@ -18,7 +18,7 @@
  * @ingroup pwglf_central_mc
  */
 AliAnalysisTask*
-AddTaskCentralMCCorr()
+AddTaskCentralMCCorr(Bool_t eff=false)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -37,6 +37,7 @@ AddTaskCentralMCCorr()
   // This has to match the binning used in the AliAODCentralMult
   // class.  Currently, this is set to 20. 
   task->SetNPhiBins(20);
+  task->SetEffectiveCorrection(eff);
 //  task->SetVertexAxis(40, -20., 20.);
   
   // --- create containers for input/output --------------------------
