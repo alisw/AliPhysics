@@ -316,6 +316,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
   fListOfHistos->Add(new TH2F("V0AMult", "V0A multiplicity;V0A multiplicity;V0A multiplicity (scaled)", 1000, -.5, 999.5, 1000, -.5, 999.5));
+  fListOfHistos->Add(new TH2F("V0AMultCorrelation", "V0A multiplicity;V0A multiplicity;SPD tracklets", 1000, -.5, 999.5, 1000, -.5, 999.5));
   
   PostData(0,fListOfHistos);
   
@@ -944,7 +945,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 	TParameter<float>* sf=(TParameter<float>*)fMap->GetValue(Form("%d",inputEvent->GetRunNumber()));
 	if(sf)MV0AScaled=MV0A*sf->GetVal();
       }
-      ((TH2F*) fListOfHistos->FindObject("V0AMult"))->Fill(MV0A,MV0AScaled);
       
       if (MV0AScaled > 0)
 	centrality = MV0AScaled;
@@ -1015,6 +1015,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
   fHistos->FillEvent(centrality, AliUEHist::kCFStepVertex);
  
+  // fill V0 control histograms
+  if (fCentralityMethod == "V0A_MANUAL")
+  {
+    ((TH2F*) fListOfHistos->FindObject("V0AMult"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A(), centrality);
+    if (fAOD)
+      ((TH2F*) fListOfHistos->FindObject("V0AMultCorrelation"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A(), fAOD->GetTracklets()->GetNumberOfTracklets());
+  }
+    
   // optimization
   if (centrality < 0)
     return;
