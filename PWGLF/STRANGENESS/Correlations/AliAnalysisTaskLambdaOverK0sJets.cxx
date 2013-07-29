@@ -2087,11 +2087,12 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 
 	AliAODMCParticle *nPart=(AliAODMCParticle*)stackMC->UncheckedAt(nlab);
 	AliAODMCParticle *pPart=(AliAODMCParticle*)stackMC->UncheckedAt(plab);
+
+	if(!nPart || !pPart)   goto noas;
+
 	// MC origin of daughters: Primaries?
 	if( nPart->IsPhysicalPrimary() ) lMCAssocNegDaug = 1;
 	if( pPart->IsPhysicalPrimary() ) lMCAssocPosDaug = 1;
-
-	if(!nPart || !pPart)   goto noas;
 	
 	if ( TMath::Abs(nPart->Eta()) > fMaxEtaDaughter ||
 	     TMath::Abs(pPart->Eta()) > fMaxEtaDaughter )
