@@ -35,7 +35,7 @@ class AliSpectraBothTrackCuts : public TNamed
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0) {}
   
   AliSpectraBothTrackCuts(const char *name);
-  virtual  ~AliSpectraBothTrackCuts() {} // To be implemented
+  virtual  ~AliSpectraBothTrackCuts(); 
   
   Bool_t IsSelected(AliVTrack * track,Bool_t FillHistStat);
   

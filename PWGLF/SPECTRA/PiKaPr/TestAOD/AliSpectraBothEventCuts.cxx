@@ -48,7 +48,9 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0)
 {
-  // Constructor
+  // Constructori
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);	
   fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
   fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",300,-15,15);
   fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",300,-15,15);
@@ -77,6 +79,34 @@ fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEta
   fTrackBits=1;
   fCentEstimator="V0M";
   fMaxChi2perNDFforVertex=-1;
+  TH1::AddDirectory(oldStatus);	
+}
+//______________________________________________________
+
+AliSpectraBothEventCuts::~AliSpectraBothEventCuts()
+{
+	if(fHistoCuts)
+		delete fHistoCuts;
+	if(fHistoVtxBefSel)
+		delete fHistoVtxBefSel;
+	if(fHistoVtxAftSel)
+		delete fHistoVtxAftSel;
+	if(fHistoVtxAftSelwithoutZvertexCut)
+		delete fHistoVtxAftSelwithoutZvertexCut;
+	if(fHistoVtxalltriggerEventswithMCz)
+		delete fHistoVtxalltriggerEventswithMCz;
+	if(fHistoVtxAftSelwithoutZvertexCutusingMCz)
+		delete fHistoVtxAftSelwithoutZvertexCutusingMCz;
+	if(fHistoEtaBefSel)
+		delete fHistoEtaBefSel;
+	if(fHistoEtaAftSel)
+		delete fHistoEtaAftSel ;
+	if(fHistoNChAftSel)
+		delete fHistoNChAftSel;
+	if(fHistoQVector)
+		delete fHistoQVector;
+	if(fHistoEP)
+		delete fHistoEP;
 }
 
 //______________________________________________________
