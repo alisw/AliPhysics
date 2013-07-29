@@ -129,6 +129,12 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fGammaWeight(0)
   ,fPi0Weight(0)
   ,fEtaWeight(0)
+  ,fD0Weight(0)
+  ,fDplusWeight(0)
+  ,fDminusWeight(0)
+  ,fD0e(0)
+  ,fDpluse(0)
+  ,fDminuse(0)
   ,fTot_pi0e(0)
   ,fPhot_pi0e(0)
   ,fPhotBCG_pi0e(0)
@@ -199,6 +205,12 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fGammaWeight(0)
   ,fPi0Weight(0)
   ,fEtaWeight(0)
+  ,fD0Weight(0)
+  ,fDplusWeight(0)
+  ,fDminusWeight(0)
+  ,fD0e(0)
+  ,fDpluse(0)
+  ,fDminuse(0)
   ,fTot_pi0e(0)
   ,fPhot_pi0e(0)
   ,fPhotBCG_pi0e(0)
@@ -325,8 +337,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t evPlaneRes[4]={GetCos2DeltaPhi(evPlaneV0A,evPlaneV0C),GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC),GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC),cent};
   fEPres->Fill(evPlaneRes);
   
-  // Pi0, eta and gamma weights
-  
   if(fIsMC && fMC && stack && cent>30 && cent<50){
    Int_t nParticles = stack->GetNtrack();
    for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
@@ -342,7 +352,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
       
       if(fPDG==111)fPi0Weight->Fill(pTMC,iHijing);//pi0
       if(fPDG==221)fEtaWeight->Fill(pTMC,iHijing);//eta
-    
+      if(fPDG==421)fD0Weight->Fill(pTMC,iHijing);//D0
+      if(fPDG==411)fDplusWeight->Fill(pTMC,iHijing);//D+
+      if(fPDG==-411)fDminusWeight->Fill(pTMC,iHijing);//D-
+	
+
       Int_t idMother = particle->GetFirstMother();
       if (idMother>0){
 	TParticle *mother = stack->Particle(idMother);
@@ -429,6 +443,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     Int_t partPDG = -99, motherPDG = -99, secondMotherPDG = -99, thirdMotherPDG = -99;
     Double_t partPt = -99. , motherPt = -99., secondMotherPt = -99.,thirdMotherPt = -99.;
     Double_t weight = 1.; 
+    Double_t Dweight = 1.; 
     Bool_t MChijing; 
     
     Bool_t pi0Decay= kFALSE;
@@ -480,7 +495,17 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 		  if (thirdMotherPDG==221) whichThirdMother = 1; //eta
 		}
 	      }
-	      
+
+  
+	      if (cent>30 && cent<50 && TMath::Abs(partPDG)==11){
+		Dweight  = GetDweight(motherPt);	
+		if(iHijing==1) Dweight = 1.0;
+		
+		if (motherPDG==421) fD0e->Fill(pt,Dweight);
+		if (motherPDG==411) fDpluse->Fill(pt,Dweight); 
+		if (motherPDG==-411) fDminuse->Fill(pt,Dweight); 
+	      }
+	   
 	      //pi0 decay 
 	      if (TMath::Abs(partPDG)==11 && motherPDG==111 && secondMotherPDG!=221){ //not eta -> pi0 -> e
 		weight = GetPi0weight(motherPt);
@@ -509,7 +534,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 		etaDecay = kTRUE;
 	      }
 	      
-	      if (cent>20 && cent<40 && fTPCnSigma>-1 && fTPCnSigma<3 && EovP>1 && EovP<1.3 && (motherPDG==22 || motherPDG==111 || motherPDG==221)){
+	      if (cent>30 && cent<50 && fTPCnSigma>-1 && fTPCnSigma<3 && EovP>1 && EovP<1.3 && (motherPDG==22 || motherPDG==111 || motherPDG==221)){
 		  if(iHijing==1) weight = 1.0;
 		  
 		  if (pi0Decay){
@@ -727,6 +752,24 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fEtaWeight = new TH2F("fEtaWeight", "Eta weight",100,0,50,3,-1,2);
   fOutputList->Add(fEtaWeight);
 
+  fD0Weight = new TH2F("fD0Weight", "D0 weight",100,0,50,3,-1,2);
+  fOutputList->Add(fD0Weight);
+
+  fDplusWeight = new TH2F("fDplusWeight", "D+ weight",100,0,50,3,-1,2);
+  fOutputList->Add(fDplusWeight);
+
+  fDminusWeight = new TH2F("fDminusWeight", "D- weight",100,0,50,3,-1,2);
+  fOutputList->Add(fDminusWeight);
+
+  fD0e = new TH1F("fD0e", "fD0e",100,0,50);
+  fOutputList->Add(fD0e);
+  
+  fDpluse = new TH1F("fDpluse", "fDpluse",100,0,50);
+  fOutputList->Add(fDpluse);
+  
+  fDminuse = new TH1F("fDminuse", "fDminuse",100,0,50);
+  fOutputList->Add(fDminuse);
+  
   int nbin_v2 = 8;
   double bin_v2[9] = {2,2.5,3,4,6,8,10,13,18};
   
@@ -874,11 +917,13 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT) const
         if(mcPi0pT>0.0 && mcPi0pT<5.0)
         {
 	  
-		weight = (2.877091*mcPi0pT)/(TMath::Power(0.706963+mcPi0pT/3.179309,17.336628)*exp(-mcPi0pT));
+// 		weight = (2.877091*mcPi0pT)/(TMath::Power(0.706963+mcPi0pT/3.179309,17.336628)*exp(-mcPi0pT));
+		weight = (2.392024*mcPi0pT)/(TMath::Power(0.688810+mcPi0pT/3.005145,16.811845)*exp(-mcPi0pT));
         }
         else
         {
-		weight = (0.0004*mcPi0pT)/TMath::Power(-0.176181+mcPi0pT/3.989747,5.629235);
+// 		weight = (0.0004*mcPi0pT)/TMath::Power(-0.176181+mcPi0pT/3.989747,5.629235);
+		weight = (0.000186*mcPi0pT)/TMath::Power(-0.606279+mcPi0pT/3.158642,4.365540);
         }
   return weight;
 }
@@ -887,7 +932,17 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT) const
 {
   double weight = 1.0;
 
-  weight = (0.818052*mcEtapT)/(TMath::Power(0.358651+mcEtapT/2.878631,9.494043));
+//   weight = (0.818052*mcEtapT)/(TMath::Power(0.358651+mcEtapT/2.878631,9.494043));
+  weight = (0.622703*mcEtapT)/(TMath::Power(0.323045+mcEtapT/2.736407,9.180356));
     
+  return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDweight(Double_t mcDpT) const
+{
+    double weight = 1.0;
+
+    weight = 0.512628*TMath::Landau(mcDpT,2.422879,0.586282,0);
+	
   return weight;
 }

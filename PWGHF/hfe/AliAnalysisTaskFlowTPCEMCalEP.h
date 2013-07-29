@@ -58,6 +58,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
   Double_t GetPi0weight(Double_t mcPi0pT) const;
   Double_t GetEtaweight(Double_t mcEtapT) const;
+  Double_t GetDweight(Double_t mcDpT) const;
   
  private:
   
@@ -114,6 +115,13 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH2F			*fGammaWeight;		//! gamma weight
   TH2F			*fPi0Weight;		//! pi0 weight
   TH2F			*fEtaWeight;		//! eta weight
+  TH2F			*fD0Weight;		//! D0 weight
+  TH2F			*fDplusWeight;		//! D+ weight
+  TH2F			*fDminusWeight;		//! D- weight
+  
+  TH1F			*fD0e;
+  TH1F			*fDpluse;
+  TH1F			*fDminuse;
   
   TH1F			*fTot_pi0e;		//! inclusive electron
   TH1F			*fPhot_pi0e;		//! ULS pair 
