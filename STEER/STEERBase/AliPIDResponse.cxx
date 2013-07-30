@@ -704,6 +704,11 @@ void AliPIDResponse::SetRecoInfo()
       fMCperiodTPC="LHC13B2_FIX";
     if (fCurrentAliRootRev >= 62714)
       fMCperiodTPC="LHC13B2_FIXn1";
+    
+    // High luminosity pPb runs require different parametrisations
+    if (fRun >= 195875 && fRun <= 197411) {
+      fLHCperiod="LHC13F"; 
+    }
   }
 
   //exception new pp MC productions from 2011 (11a periods have 10f6a splines!)
@@ -1309,8 +1314,7 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -6.36337e-01);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.13479e-02);
     }
-    else*/ if (period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D") || period.Contains("LHC13E") || 
-             period.Contains("LHC13F"))  {// 2013 pPb data taking
+    else*/ if (period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D"))  {// 2013 pPb data taking at low luminosity
       AliInfo("Using multiplicity correction parameters for 13b.pass2!");
       
       fTPCResponse.SetParameterMultiplicityCorrection(0, -5.906e-06);
