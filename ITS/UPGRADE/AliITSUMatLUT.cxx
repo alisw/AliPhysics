@@ -84,30 +84,40 @@ void AliITSUMatLUT::FillData(Int_t ntest, Double_t zmin,Double_t zmax)
   if (ntest<1 || zmin>zmax) AliFatal(Form("Wrong parameters Ntest:%d Zmin:%f Zmax:%f",ntest,zmin,zmax));
   double dr = (fRMax-fRMin)/fNBins;
   AliInfo(Form("Building material table for %.3f<R<%.3f %.3f<Z<%.3f in %d bins using %d tracks",fRMin,fRMax,zmin,zmax,fNBins,ntest));
+  const double kAngEps = 1e-4; // tiny slope to avoid tracks strictly normal to Z axis
+  double *tmpAcc = new double[fNBins*kNParTypes];
   for (int itst=ntest;itst--;) {
     double parInt[kNParTypes]={0};
     double r   = fRMin;
     double phi = gRandom->Rndm()*TMath::Pi()*2;
     double cs  = TMath::Cos(phi);
     double sn  = TMath::Sin(phi);
+    double angz = 2*(gRandom->Rndm()-0.5)*kAngEps;
     stop[0] = r*cs;
     stop[1] = r*sn;
     stop[2] = zmin + gRandom->Rndm()*(zmax-zmin);
+    Bool_t fail = kFALSE;
     for (int ir=0;ir<fNBins;ir++) {
       r += dr;
       for (int i=3;i--;) start[i] = stop[i];
       stop[0] = r*cs;
       stop[1] = r*sn;
+      stop[2] += dr*angz; // to avoid tracks normal to axis
       AliTrackerBase::MeanMaterialBudget(start,stop, parStep);
+      if (parStep[1]>999) {fail = kTRUE; printf("fail\n"); break;}
       //
       parInt[kParX2X0] += parStep[1];
       parInt[kParRhoL] += parStep[0]*parStep[4];
       //
-      for (int ip=kNParTypes;ip--;) fData[ip][ir] += parInt[ip];
+      for (int ip=kNParTypes;ip--;) tmpAcc[ir*kNParTypes+ip] = parInt[ip];
     }
+    if (fail) {itst++; continue;} // propagation failed
+    for (int ir=0;ir<fNBins;ir++) for (int ip=kNParTypes;ip--;) fData[ip][ir] += tmpAcc[ir*kNParTypes+ip];
   }
   //
   for (int ip=kNParTypes;ip--;) for (int ir=fNBins;ir--;) fData[ip][ir] /= ntest;
+  delete[] tmpAcc;
+  //  Print();
   //
 }
 

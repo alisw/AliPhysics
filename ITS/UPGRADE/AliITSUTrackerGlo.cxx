@@ -406,6 +406,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
     *fCurrHyp = *fCurrESDtrack;  // fetch current ESDtrack kinematics
     //
     int nclFit = 0;
+    //    fCurrHyp->ResetCovariance(1000); // in case we want to do SA refit
     double chi2 = RefitTrack(fCurrHyp,fITS->GetRMin(),nclFit);
     if (chi2>0) { // propagate up to inside radius of the beam pipe      
       int ndf = nclFit*2-5;
@@ -1908,6 +1909,7 @@ void AliITSUTrackerGlo::FlagSeedClusters(const AliITSUSeed* seed, Bool_t flg, US
 void AliITSUTrackerGlo::CheckClusterUsage()
 {
   // check cluster usage info
+  printf("ClusterUsage at pass %d\n",fCurrPassID);
   for (int ilr=0;ilr<fNLrActive;ilr++) {
     AliITSURecoLayer* lr = fITS->GetLayerActive(ilr);
     int ncl = lr->GetNClusters();
