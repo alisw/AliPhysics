@@ -3392,7 +3392,8 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackHistosRecGen(AliFragFu
 
     if(iRec>=0 && trackQARec){
       if(scaleStrangeness){ 
-	Double_t weight = GetMCStrangenessFactor(ptGen);
+	//Double_t weight = GetMCStrangenessFactor(ptGen);
+	Double_t weight = GetMCStrangenessFactorCMS(gentrack);	  
 	trackQARec->FillTrackQA(etaGen, phiGen, ptGen, kFALSE, 0, kTRUE, weight);
       }
       else trackQARec->FillTrackQA(etaGen, phiGen, ptGen);
@@ -3472,7 +3473,9 @@ void  AliAnalysisTaskFragmentationFunction::FillJetTrackHistosRec(AliFragFuncHis
 	Bool_t incrementJetPt = kFALSE; 
 	
 	if(scaleStrangeness){
-	  Double_t weight = GetMCStrangenessFactor(ptGen);	  
+	  //Double_t weight = GetMCStrangenessFactor(ptGen);
+	  Double_t weight = GetMCStrangenessFactorCMS(gentrack);	  
+
 	  ffhistRec->FillFF( trackPt, jetPtRec, incrementJetPt, 0, kTRUE, weight );
 	}
 	else{
@@ -4556,8 +4559,7 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
   delete tracklistout3jetsStat;  
 }
 
-// -----------------------------------------------------------------
-
+//_____________________________________________________________________________________
 Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactor(const Double_t pt)
 {
   // factor strangeness data/MC as function of pt from UE analysis (Sara Vallero)
@@ -4581,7 +4583,149 @@ Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactor(const Doub
   return alpha;
 }
 
-// ---------------------------------------------------------------------------------------------------------------------------------
+//__________________________________________________________________________________________________
+Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactorCMS(AliAODMCParticle* daughter)
+{
+  // strangeness ratio MC/data as function of mother pt from CMS data in |eta|<2.0
+
+  TClonesArray *tca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!tca) return 1;
+
+  AliAODMCParticle* currentMother   = daughter;
+  AliAODMCParticle* currentDaughter = daughter;
+
+
+  // find first primary mother K0s, Lambda or Xi   
+  while(1){
+
+    Int_t daughterPDG   = currentDaughter->GetPdgCode();	
+
+    Int_t motherLabel   = currentDaughter->GetMother();
+    if(motherLabel >= tca->GetEntriesFast()){ // protection
+      currentMother = currentDaughter; 
+      break; 
+    }
+
+    currentMother     = (AliAODMCParticle*) tca->At(motherLabel);
+
+    if(!currentMother){ 
+      currentMother = currentDaughter; 
+      break; 
+    }
+
+    Int_t motherPDG   = currentMother->GetPdgCode();	
+ 
+    // phys. primary found ?  	
+    if(currentMother->IsPhysicalPrimary()) break; 
+
+    if(TMath::Abs(daughterPDG) == 321){ // K+/K- e.g. from phi (ref data not feeddown corrected)
+      currentMother = currentDaughter; break; 
+    }	 	
+    if(TMath::Abs(motherPDG) == 310 ){ // K0s e.g. from phi (ref data not feeddown corrected)
+      break; 
+    } 	
+    if(TMath::Abs(motherPDG) == 3212 && TMath::Abs(daughterPDG) == 3122){ // mother Sigma0, daughter Lambda (this case not included in feeddown corr.)
+      currentMother = currentDaughter; break; 
+    }
+
+    currentDaughter = currentMother;
+  }
+
+
+  Int_t motherPDG   = currentMother->GetPdgCode();	
+  Double_t motherPt = currentMother->Pt();	
+
+  Double_t fac = 1;
+
+  if(motherPDG == 310 || TMath::Abs(motherPDG)==321){ // K0s / K+ / K-
+
+    if(0.00 <= motherPt && motherPt < 0.20) fac = 0.768049;
+    else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.732933;
+    else if(0.40 <= motherPt && motherPt < 0.60) fac = 0.650298;
+    else if(0.60 <= motherPt && motherPt < 0.80) fac = 0.571332;
+    else if(0.80 <= motherPt && motherPt < 1.00) fac = 0.518734;
+    else if(1.00 <= motherPt && motherPt < 1.20) fac = 0.492543;
+    else if(1.20 <= motherPt && motherPt < 1.40) fac = 0.482704;
+    else if(1.40 <= motherPt && motherPt < 1.60) fac = 0.488056;
+    else if(1.60 <= motherPt && motherPt < 1.80) fac = 0.488861;
+    else if(1.80 <= motherPt && motherPt < 2.00) fac = 0.492862;
+    else if(2.00 <= motherPt && motherPt < 2.20) fac = 0.504332;
+    else if(2.20 <= motherPt && motherPt < 2.40) fac = 0.501858;
+    else if(2.40 <= motherPt && motherPt < 2.60) fac = 0.512970;
+    else if(2.60 <= motherPt && motherPt < 2.80) fac = 0.524131;
+    else if(2.80 <= motherPt && motherPt < 3.00) fac = 0.539130;
+    else if(3.00 <= motherPt && motherPt < 3.20) fac = 0.554101;
+    else if(3.20 <= motherPt && motherPt < 3.40) fac = 0.560348;
+    else if(3.40 <= motherPt && motherPt < 3.60) fac = 0.568869;
+    else if(3.60 <= motherPt && motherPt < 3.80) fac = 0.583310;
+    else if(3.80 <= motherPt && motherPt < 4.00) fac = 0.604818;
+    else if(4.00 <= motherPt && motherPt < 5.00) fac = 0.632630;
+    else if(5.00 <= motherPt && motherPt < 6.00) fac = 0.710070;
+    else if(6.00 <= motherPt && motherPt < 8.00) fac = 0.736365;
+    else if(8.00 <= motherPt && motherPt < 10.00) fac = 0.835865;
+  }
+
+  if(motherPDG == 3122){ // Lambda
+
+    if(0.00 <= motherPt && motherPt < 0.20) fac = 0.645162;
+    else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.627431;
+    else if(0.40 <= motherPt && motherPt < 0.60) fac = 0.457136;
+    else if(0.60 <= motherPt && motherPt < 0.80) fac = 0.384369;
+    else if(0.80 <= motherPt && motherPt < 1.00) fac = 0.330597;
+    else if(1.00 <= motherPt && motherPt < 1.20) fac = 0.309571;
+    else if(1.20 <= motherPt && motherPt < 1.40) fac = 0.293620;
+    else if(1.40 <= motherPt && motherPt < 1.60) fac = 0.283709;
+    else if(1.60 <= motherPt && motherPt < 1.80) fac = 0.282047;
+    else if(1.80 <= motherPt && motherPt < 2.00) fac = 0.277261;
+    else if(2.00 <= motherPt && motherPt < 2.20) fac = 0.275772;
+    else if(2.20 <= motherPt && motherPt < 2.40) fac = 0.280726;
+    else if(2.40 <= motherPt && motherPt < 2.60) fac = 0.288540;
+    else if(2.60 <= motherPt && motherPt < 2.80) fac = 0.288315;
+    else if(2.80 <= motherPt && motherPt < 3.00) fac = 0.296619;
+    else if(3.00 <= motherPt && motherPt < 3.20) fac = 0.302993;
+    else if(3.20 <= motherPt && motherPt < 3.40) fac = 0.338121;
+    else if(3.40 <= motherPt && motherPt < 3.60) fac = 0.349800;
+    else if(3.60 <= motherPt && motherPt < 3.80) fac = 0.356802;
+    else if(3.80 <= motherPt && motherPt < 4.00) fac = 0.391202;
+    else if(4.00 <= motherPt && motherPt < 5.00) fac = 0.422573;
+    else if(5.00 <= motherPt && motherPt < 6.00) fac = 0.573815;
+    else if(6.00 <= motherPt && motherPt < 8.00) fac = 0.786984;
+    else if(8.00 <= motherPt && motherPt < 10.00) fac = 1.020021;
+  }	
+  
+  if(motherPDG == 3312 || motherPDG == 3322){ // xi 
+
+    if(0.00 <= motherPt && motherPt < 0.20) fac = 0.666620;
+    else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.575908;
+    else if(0.40 <= motherPt && motherPt < 0.60) fac = 0.433198;
+    else if(0.60 <= motherPt && motherPt < 0.80) fac = 0.340901;
+    else if(0.80 <= motherPt && motherPt < 1.00) fac = 0.290896;
+    else if(1.00 <= motherPt && motherPt < 1.20) fac = 0.236074;
+    else if(1.20 <= motherPt && motherPt < 1.40) fac = 0.218681;
+    else if(1.40 <= motherPt && motherPt < 1.60) fac = 0.207763;
+    else if(1.60 <= motherPt && motherPt < 1.80) fac = 0.222848;
+    else if(1.80 <= motherPt && motherPt < 2.00) fac = 0.208806;
+    else if(2.00 <= motherPt && motherPt < 2.20) fac = 0.197275;
+    else if(2.20 <= motherPt && motherPt < 2.40) fac = 0.183645;
+    else if(2.40 <= motherPt && motherPt < 2.60) fac = 0.188788;
+    else if(2.60 <= motherPt && motherPt < 2.80) fac = 0.188282;
+    else if(2.80 <= motherPt && motherPt < 3.00) fac = 0.207442;
+    else if(3.00 <= motherPt && motherPt < 3.20) fac = 0.240388;
+    else if(3.20 <= motherPt && motherPt < 3.40) fac = 0.241916;
+    else if(3.40 <= motherPt && motherPt < 3.60) fac = 0.208276;
+    else if(3.60 <= motherPt && motherPt < 3.80) fac = 0.234550;
+    else if(3.80 <= motherPt && motherPt < 4.00) fac = 0.251689;
+    else if(4.00 <= motherPt && motherPt < 5.00) fac = 0.310204;
+    else if(5.00 <= motherPt && motherPt < 6.00) fac = 0.343492;  
+  }
+  
+  Double_t weight = 1;
+  if(fac > 0) weight = 1/fac;
+	
+  return weight;
+}
+
+// _________________________________________________________________________________
 void  AliAnalysisTaskFragmentationFunction::FillJetShape(AliAODJet* jet, TList* list,  
 							 TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt, 
 							 Double_t dPhiUE, Double_t normUE, Bool_t scaleStrangeness){
