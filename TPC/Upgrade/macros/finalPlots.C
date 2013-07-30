@@ -29,7 +29,8 @@ void DrawOnTop(TPad *c, TObjArray &arrHists, Bool_t stats);
 
 TString fSaveDir;
 
-void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir="")
+//void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir="")
+void finalPlots(const char* filesEps20, TString saveDir="")
 {
   fSaveDir=saveDir;
   
@@ -37,6 +38,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   TString idealDistorted("t1_1_3_130_10.");
   TString distorted("t0_1_0_130_10.");
   TString realTracking("t0_1_2_130_10.");
+  TString realTrackingPreT0("t0_1_4_130_10.");
   
   SetStyle();
   
@@ -49,7 +51,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
     return;
   }
 
-  if (/*tEps10->GetListOfFriends()->GetEntries()!=5 ||*/ tEps20->GetListOfFriends()->GetEntries()!=5) {
+  if (/*tEps10->GetListOfFriends()->GetEntries()!=5 ||*/ tEps20->GetListOfFriends()->GetEntries()!=6) {
     printf("ERROR: wrong number of entries in the friends, not default\n");
     return;
   }
@@ -70,14 +72,19 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   drawStr=Form("(%sfTime0-t0)*vDrift",distorted.Data());
   tEps20->Draw(drawStr+">>hT0resD","","goff");
   //distorted and average correction
-  TH1F *hT0resDC = new TH1F("hT0resDC","T0 resolution;(#it{t}_{0}^{seed}-#it{t}_{0}) #upoint #it{v}_{drift};#tracks",100,-50.1,50.1);
+  TH1F *hT0resDC = new TH1F("hT0resDC","T0 resolution;(#it{t}_{0}^{seed}-#it{t}_{0}) #upoint #it{v}_{d} (cm);#tracks",100,-50.1,50.1);
 //   hT0resDC->SetLineColor(kGreen+2);
   drawStr=Form("(%sfTime0-t0)*vDrift",realTracking.Data());
   tEps20->Draw(drawStr+">>hT0resDC","","goff");
 
-//   hT0resI->Draw();
-//   hT0resD->Draw("same");
+  TH1F *hT0resDCPreT0 = new TH1F("hT0resDCPreT0","T0 resolution;(#it{t}_{0}^{seed}-#it{t}_{0}) #upoint #it{v}_{drift};#tracks",100,-50.1,50.1);
+  drawStr=Form("(%sfTime0-t0)*vDrift",realTrackingPreT0.Data());
+  tEps20->Draw(drawStr+">>hT0resDCPreT0","","goff");
+  
+  //   hT0resI->Draw();
+  //   hT0resD->Draw("same");
   hT0resDC->Draw(/*"same"*/);
+  //hT0resDCPreT0->Draw(/*"same"*/);
   
   SaveCanvas(cT0res);
 
@@ -86,12 +93,12 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   //
   TCanvas *cYresComparison=GetCanvas("YresComparison","Comparison of Yres for ideal clusters");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresITS = new TH1F("hYresITS",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-0.21,0.21);
+  TH1F *hYresITS = new TH1F("hYresITS",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-0.21,0.21);
   drawStr=Form("%strackITS.fP[0]-%stRealITS.fP[0]",idealUndistorted.Data(),idealUndistorted.Data());
   tEps20->Draw(drawStr+">>hYresITS","","goff");
   hYresITS->SetLineColor(kRed);
 
-  TH1F *hYresTPC = new TH1F("hYresTPC",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-0.21,0.21);
+  TH1F *hYresTPC = new TH1F("hYresTPC",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-0.21,0.21);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",idealUndistorted.Data(),idealUndistorted.Data());
   tEps20->Draw(drawStr+">>hYresTPC","","goff");
 
@@ -106,7 +113,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
 
   TCanvas *cYresDistorted=GetCanvas("YresDistorted","Yres for fully distorted clusters");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresDist = new TH1F("hYresDist",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-15.5,15.5);
+  TH1F *hYresDist = new TH1F("hYresDist",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-15.5,15.5);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",distorted.Data(),distorted.Data());
   tEps20->Draw(drawStr+">>hYresDist","","goff");
   
@@ -121,7 +128,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   
   TCanvas *cYresDistCorrTzeroSeed=GetCanvas("YresDistCorrTzeroSeed","Yres for fully distorted/corrected clusters (Tzero seed)");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresDistCorrTzeroSeed = new TH1F("hYresDistCorrTzeroSeed",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-.85,85);
+  TH1F *hYresDistCorrTzeroSeed = new TH1F("hYresDistCorrTzeroSeed",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-.85,0.85);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",realTracking.Data(),realTracking.Data());
   tEps20->Draw(drawStr+">>hYresDistCorrTzeroSeed","","goff");
   
@@ -136,7 +143,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   
   TCanvas *cYresDistCorrTzero=GetCanvas("YresDistCorrTzero","Yres for fully distorted/corrected clusters (Tzero)");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresDistCorrTzero = new TH1F("hYresDistCorrTzero",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-.5,.85);
+  TH1F *hYresDistCorrTzero = new TH1F("hYresDistCorrTzero",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-.5,.85);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",idealDistorted.Data(),idealDistorted.Data());
   tEps20->Draw(drawStr+">>hYresDistCorrTzero","","goff");
   
@@ -149,7 +156,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   // plot all params
   //
 
-  TString titles[5]={"#it{y}_{TPC}-#it{y}_{ITS}","#it{z}_{TPC}-#it{z}_{ITS}","sin(#it{#alpha})_{TPC}-sin(#it{#alpha})_{ITS}","tan(#it{#lambda})_{TPC}-tan(#it{#lambda})_{ITS}","1/#it{p}_{T TPC}-1/#it{p}_{T ITS}"};
+  TString titles[5]={"#it{y}_{TPC}-#it{y}_{ITS} (cm)","#it{z}_{TPC}-#it{z}_{ITS} (cm)","sin(#it{#alpha})_{TPC}-sin(#it{#alpha})_{ITS}","tan(#it{#lambda})_{TPC}-tan(#it{#lambda})_{ITS}","1/#it{p}_{T TPC}-1/#it{p}_{T ITS} ((GeV/#it{c})^{-1})"};
   Double_t min[5]={-.85,-0.199,-.009,-.0019,-.05};
   Double_t max[5]={ .85, 0.199, .009, .0019, .05};
   TString type[3]={idealUndistorted,idealDistorted,realTracking};
