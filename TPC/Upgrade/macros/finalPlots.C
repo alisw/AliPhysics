@@ -121,7 +121,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   
   TCanvas *cYresDistCorrTzeroSeed=GetCanvas("YresDistCorrTzeroSeed","Yres for fully distorted/corrected clusters (Tzero seed)");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresDistCorrTzeroSeed = new TH1F("hYresDistCorrTzeroSeed",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-.5,1.5);
+  TH1F *hYresDistCorrTzeroSeed = new TH1F("hYresDistCorrTzeroSeed",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-.85,85);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",realTracking.Data(),realTracking.Data());
   tEps20->Draw(drawStr+">>hYresDistCorrTzeroSeed","","goff");
   
@@ -136,7 +136,7 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   
   TCanvas *cYresDistCorrTzero=GetCanvas("YresDistCorrTzero","Yres for fully distorted/corrected clusters (Tzero)");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresDistCorrTzero = new TH1F("hYresDistCorrTzero",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-.5,1.5);
+  TH1F *hYresDistCorrTzero = new TH1F("hYresDistCorrTzero",";#it{y}_{TPC}-#it{y}_{ITS};#tracks",100,-.5,.85);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",idealDistorted.Data(),idealDistorted.Data());
   tEps20->Draw(drawStr+">>hYresDistCorrTzero","","goff");
   
@@ -150,8 +150,8 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   //
 
   TString titles[5]={"#it{y}_{TPC}-#it{y}_{ITS}","#it{z}_{TPC}-#it{z}_{ITS}","sin(#it{#alpha})_{TPC}-sin(#it{#alpha})_{ITS}","tan(#it{#lambda})_{TPC}-tan(#it{#lambda})_{ITS}","1/#it{p}_{T TPC}-1/#it{p}_{T ITS}"};
-  Double_t min[5]={-.5,-0.199,-.009,-.0019,-.039};
-  Double_t max[5]={1.5, 0.199, .009, .0019, .09};
+  Double_t min[5]={-.85,-0.199,-.009,-.0019,-.05};
+  Double_t max[5]={ .85, 0.199, .009, .0019, .05};
   TString type[3]={idealUndistorted,idealDistorted,realTracking};
   Int_t colors[3]={kBlack,kGreen-2,kRed};
 
