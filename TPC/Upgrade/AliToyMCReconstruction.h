@@ -30,7 +30,8 @@ public:
     kNoCorrection = 0,
     kTPCCenter,
     kAverageEta,
-    kIdeal
+    kIdeal,
+    kPreliminaryEta
   };
 
   enum EDet {

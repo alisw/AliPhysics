@@ -949,13 +949,22 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     return 0x0;
   }
 
-  // 
+  // determine preliminary theta
+  Float_t xyz1[3]={0,0,0};
+  Float_t xyz2[3]={0,0,0};
+  seedPoint[0].GetXYZ(xyz1);
+  seedPoint[2].GetXYZ(xyz2);
+  Float_t prelDeltaR = TMath::Sqrt(xyz2[0]*xyz2[0]+xyz2[1]*xyz2[1]) - TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]) ;
+  Float_t prelDeltaZ =  ( seedCluster[0]->GetTimeBin() - seedCluster[2]->GetTimeBin() ) * GetVDrift();
+  Float_t prelTheta  = TMath::ATan(prelDeltaR/prelDeltaZ);
+  if(prelTheta > TMath::Pi()/2) prelTheta = TMath::Pi() - prelTheta;
   
   // do cluster correction for fCorrectionType:
   //   0 - no correction
   //   1 - TPC center
   //   2 - average eta
   //   3 - ideal
+  //   4 - preliminary eta
   // assign the cluster abs time as z component to all seeds
   for (Int_t iseed=0; iseed<3; ++iseed) {
     Float_t xyz[3]={0,0,0};
@@ -974,6 +983,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
         if ( fCorrectionType == kTPCCenter  ) xyz[2] = 125.*sign;
         //!!! TODO: is this the correct association?
         if ( fCorrectionType == kAverageEta ) xyz[2] = TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
+        if ( fCorrectionType == kPreliminaryEta ) xyz[2] = r/TMath::Tan(prelTheta)*sign;
       }
       
       if ( fCorrectionType == kIdeal      ) xyz[2] = seedCluster[iseed]->GetZ();
@@ -1198,7 +1208,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     const Int_t sign=1-2*((sector/18)%2);
     
     if (fCorrectionType != kNoCorrection){
-
+      
       const Float_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
       
       if ( fCreateT0seed ){
