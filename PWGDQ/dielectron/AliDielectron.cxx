@@ -1120,7 +1120,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       //histogram array for the pair
       if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
       // cut qa
-      if(pairIndex==AliDielectron::kEv1PM && fCutQA) {
+      if(pairIndex==kEv1PM && fCutQA) {
 	fQAmonitor->FillAll(candidate);
 	fQAmonitor->Fill(cutMask,candidate);
       }

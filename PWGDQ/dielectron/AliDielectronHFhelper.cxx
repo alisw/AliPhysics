@@ -290,7 +290,7 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
     TObjArray *arr = (TObjArray*) GetObject(cloneArr->At(i)->GetName(),cloneArr);
     if(arr) {
       collection->AddAt(arr->FindObject(key.Data()), i);
-      
+      if(!collection->At(i)) AliError(Form("Object %s does not exist",key.Data()));
       // modify the key name
       stepName.ReplaceAll("(","");
       stepName.ReplaceAll(")","");
