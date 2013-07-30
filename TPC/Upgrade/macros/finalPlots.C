@@ -40,16 +40,16 @@ void finalPlots(const char* filesEps10, const char* filesEps20, TString saveDir=
   
   SetStyle();
   
-  TTree *tEps10=AliToyMCReconstruction::ConnectTrees(filesEps10);
+//   TTree *tEps10=AliToyMCReconstruction::ConnectTrees(filesEps10);
   TTree *tEps20=AliToyMCReconstruction::ConnectTrees(filesEps20);
 
-  TString test(tEps10->GetCurrentFile()->GetName());
+  TString test(tEps20->GetCurrentFile()->GetName());
   if (!test.Contains("0_0_0_")) {
     printf("ERROR: default file is not '0_0_0'\n");
     return;
   }
 
-  if (tEps10->GetListOfFriends()->GetEntries()!=5 || tEps20->GetListOfFriends()->GetEntries()!=5) {
+  if (/*tEps10->GetListOfFriends()->GetEntries()!=5 ||*/ tEps20->GetListOfFriends()->GetEntries()!=5) {
     printf("ERROR: wrong number of entries in the friends, not default\n");
     return;
   }
