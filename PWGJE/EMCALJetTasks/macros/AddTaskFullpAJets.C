@@ -1,10 +1,11 @@
-AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A")
+AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A")
 {
     char *usedTracks = track_name;
     char *usedClusters = clus_name;
     char *outClusName = corrclus_name;
     char *usedMCParticles = mcpart_name;
     char *centEst = Centrality_name;
+    char *projName = proj_name;
     const Double_t minTrackPt=0.15;
     const Double_t minClusterPt=0.30;
     const Double_t minMCPartPt=0.00;
@@ -32,7 +33,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const Double_t jetRadius=0.4, Bool_
     }
     
     TString taskName = Form("AnalysisFullpAJetsR%d",drjet);
-    TString listName = Form("ListR%d",drjet);
+    TString listName = Form("List%sR%d",projName,drjet);
     TString fileName = Form("%s:FullpAJets", AliAnalysisManager::GetCommonFileName());
     
     // Jet finders (RECONSTRUCTED DATA)
