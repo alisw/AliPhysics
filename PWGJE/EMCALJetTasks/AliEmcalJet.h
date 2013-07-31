@@ -10,6 +10,7 @@
 
 #include "AliVParticle.h"
 #include "AliVCluster.h"
+#include "AliVEvent.h"
 
 class AliEmcalJet : public AliVParticle
 {
@@ -102,7 +103,12 @@ class AliEmcalJet : public AliVParticle
   void              SetNEmc(Int_t n)                                { fNEmc           = n;      }
   void              SetPtEmc(Double_t pt)                           { fPtEmc          = pt;     }
   void              SetPtSub(Double_t ps)                           { fPtSub          = ps;     } 
-  void              SetPtSubVect(Double_t ps)                       { fPtVectSub      = ps;     } 
+  void              SetPtSubVect(Double_t ps)                       { fPtVectSub      = ps;     }
+
+  // Trigger
+  Bool_t            IsTriggerJet(UInt_t trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
+  void              SetTrigger(UInt_t trigger)                              { fTriggers  = trigger;                        }
+  void              AddTrigger(UInt_t trigger)                              { fTriggers |= trigger;                        }
 
   // Matching
   void              SetClosestJet(AliEmcalJet *j, Double_t d)       { fClosestJets[0] = j; fClosestJetsDist[0] = d    ; }
@@ -143,6 +149,7 @@ class AliEmcalJet : public AliVParticle
   UShort_t          fMatchingType;        //!          matching type
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
+  UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
   ClassDef(AliEmcalJet,9) // Emcal jet class in cylindrical coordinates
 };

@@ -369,10 +369,12 @@ void AliAnalysisTaskEmcalDev::ExecOnce()
     cont->SetParticleArray(InputEvent());
   }
 
-  fTracks = GetParticleArray(0);
-  if(!fTracks && fParticleCollArray.GetEntriesFast()>0) {
-    AliError(Form("%s: Could not retrieve first track branch!", GetName()));
-    return;
+  if (fParticleCollArray.GetEntriesFast()>0) {
+    fTracks = GetParticleArray(0);
+    if(!fTracks) {
+      AliError(Form("%s: Could not retrieve first track branch!", GetName()));
+      return;
+    }
   }
 
   //Load all requested cluster branches - each container knows name already
@@ -380,11 +382,13 @@ void AliAnalysisTaskEmcalDev::ExecOnce()
     AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
     cont->SetClusterArray(InputEvent());
   }
-  if(fClusterCollArray.GetEntriesFast()>0)
+
+  if(fClusterCollArray.GetEntriesFast()>0) {
     fCaloClusters = GetClusterArray(0);
-  if(!fCaloClusters && fClusterCollArray.GetEntriesFast()>0) {
-    AliError(Form("%s: Could not retrieve first cluster branch!", GetName()));
-    return;
+    if(!fCaloClusters) {
+      AliError(Form("%s: Could not retrieve first cluster branch!", GetName()));
+      return;
+    }
   }
 
   if (!fCaloCellsName.IsNull() && !fCaloCells) {
@@ -585,7 +589,7 @@ Bool_t AliAnalysisTaskEmcalDev::RetrieveEventObjects()
   if (fBeamType == kAA || fBeamType == kpA ) {
     AliCentrality *aliCent = InputEvent()->GetCentrality();
     if (aliCent) {
-      fCent = aliCent->GetCentralityPercentile(fCentEst.Data()); 
+      fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
       if(fNcentBins==4) {
 	if      (fCent >=  0 && fCent <   10) fCentBin = 0;
 	else if (fCent >= 10 && fCent <   30) fCentBin = 1;
@@ -599,10 +603,6 @@ Bool_t AliAnalysisTaskEmcalDev::RetrieveEventObjects()
       else {
 	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
 	fCentBin = TMath::FloorNint(fCent/centWidth);
-	if(fCentBin>=fNcentBins) {
-	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
-	  fCentBin = fNcentBins-1;
-	}
 	if(fCentBin>=fNcentBins) {
 	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
 	  fCentBin = fNcentBins-1;

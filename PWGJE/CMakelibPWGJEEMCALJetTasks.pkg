@@ -53,6 +53,7 @@ set ( SRCS
  EMCALJetTasks/AliRhoParameter.cxx
  EMCALJetTasks/AliLocalRhoParameter.cxx
  EMCALJetTasks/AliEmcalJetFinder.cxx
+ EMCALJetTasks/AliJetTriggerSelectionTask.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalBadCells.cxx

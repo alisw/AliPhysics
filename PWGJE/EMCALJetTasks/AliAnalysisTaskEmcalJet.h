@@ -11,6 +11,7 @@ class AliRhoParameter;
 class AliVCluster;
 class AliVParticle;
 
+#include "AliVEvent.h"
 #include "AliAnalysisTaskEmcal.h"
 
 class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
@@ -35,6 +36,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
   void                        SetNLeadingJets(Int_t t)                             { fNLeadingJets   = t                ; }
   void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
+  void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
  
  protected:
   Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
@@ -66,6 +68,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Int_t                       fLeadingHadronType;          // 0 = charged, 1 = neutral, 2 = both
   Int_t                       fNLeadingJets;               // how many jets are to be considered the leading jet(s)
   UInt_t                      fJetBitMap;                  // bit map of accepted jets
+  UInt_t                      fJetTrigger;                 // jet trigger
   TClonesArray               *fJets;                       //!jets
   AliRhoParameter            *fRho;                        //!event rho
   Double_t                    fRhoVal;                     //!event rho value
@@ -74,6 +77,6 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented
   AliAnalysisTaskEmcalJet &operator=(const AliAnalysisTaskEmcalJet&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJet, 7) // EMCAL Jet base analysis task
+  ClassDef(AliAnalysisTaskEmcalJet, 8) // EMCAL Jet base analysis task
 };
 #endif

@@ -33,7 +33,8 @@ AliEmcalJet::AliEmcalJet() :
   fMatched(2),
   fMatchingType(0),
   fPtSub(0),
-  fPtVectSub(0)
+  fPtVectSub(0),
+  fTriggers(0)
 {
   // Constructor.
 
@@ -68,7 +69,8 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fMatched(2),
   fMatchingType(0),
   fPtSub(0),
-  fPtVectSub(0)
+  fPtVectSub(0),
+  fTriggers(0)
 {    
   // Constructor.
 
@@ -109,7 +111,8 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fMatched(2),
   fMatchingType(0),
   fPtSub(0),
-  fPtVectSub(0)
+  fPtVectSub(0),
+  fTriggers(0)
 {
   // Constructor.
 
@@ -147,7 +150,8 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fMatched(jet.fMatched),
   fMatchingType(jet.fMatchingType),
   fPtSub(jet.fPtSub),
-  fPtVectSub(jet.fPtVectSub)
+  fPtVectSub(jet.fPtVectSub),
+  fTriggers(jet.fTriggers)
 {
   // Copy constructor.
 
@@ -190,6 +194,7 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fMatched            = jet.fMatched;
     fPtSub              = jet.fPtSub;
     fPtVectSub          = jet.fPtVectSub;
+    fTriggers           = jet.fTriggers;
   }
 
   return *this;
