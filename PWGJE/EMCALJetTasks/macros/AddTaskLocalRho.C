@@ -18,7 +18,7 @@ AliAnalysisTaskLocalRho* AddTaskLocalRho(
   UInt_t     type               = AliAnalysisTaskEmcal::kTPC,
   Int_t      leadhadtype        = 0,
   const char *name           = "AliAnalysisTaskLocalRho",
-  TString    fitOpts            = "LQIM",
+  TString    fitOpts            = "WLQI",
   UInt_t     fitType            = AliAnalysisTaskLocalRho::kCombined,
   TArrayI    *centralities      = 0x0,  
   UInt_t     runMode            = AliAnalysisTaskLocalRho::kGrid

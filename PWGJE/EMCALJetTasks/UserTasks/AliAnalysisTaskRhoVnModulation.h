@@ -120,7 +120,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
         void                    CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
-        void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* tpc) const;
+        void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
         Double_t                CalculateEventPlaneChi(Double_t resEP) const;
         void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0, Bool_t randomize = 0) const;
         Double_t                CalculateQC2(Int_t harm);
@@ -170,7 +170,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
     private:
         // analysis flags and settings
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
-        Bool_t                  fLocalInit;           //! is the analysis initialized?
+        Bool_t                  fLocalInit;             //! is the analysis initialized?
         Bool_t                  fAttachToEvent;         // attach local rho to the event
         Bool_t                  fFillHistograms;        // fill histograms
         Bool_t                  fFillQAHistograms;      // fill qa histograms
