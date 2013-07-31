@@ -80,6 +80,7 @@ TChain* loadChain(const char* inpData, const char* chName)
     if (!inpDtStr.Contains("/")) inpDtStr = Form("%s/%s",gSystem->pwd(),inpDtStr.Data());
     printf("Setting %s as an input\n",inpDtStr.Data());
     chain->AddFile(inpDtStr.Data());
+    if (!gGrid && inpDtStr.Contains("alien")) TGrid::Connect("alien://");
   }
   else {
     //
@@ -99,6 +100,7 @@ TChain* loadChain(const char* inpData, const char* chName)
       if (!flName.Contains("/")) flName = Form("%s/%s",gSystem->pwd(),flName);
       printf("Adding %s\n",flName.Data());
       chain->AddFile(flName.Data());
+      if (!gGrid && flName.Contains("alien")) TGrid::Connect("alien://");
       flName.ReadLine(inpf);
     }
   }

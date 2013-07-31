@@ -97,6 +97,7 @@ typedef struct {
   Float_t dcaZ;
   Float_t dcaRE;
   Float_t dcaZE;
+  Float_t ptE;
   Float_t phi;
   Int_t   pdg;
   Int_t   lbl;
@@ -231,6 +232,7 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
   fTree->Branch("dcaZ", &trackInfo.dcaZ,"dcaZ/F");
   fTree->Branch("dcaRE", &trackInfo.dcaRE,"dcaRE/F");
   fTree->Branch("dcaZE", &trackInfo.dcaZE,"dcaZE/F");
+  fTree->Branch("ptE",  &trackInfo.ptE,"ptE/F");
   fTree->Branch("phi",  &trackInfo.phi,"phi/F");
   fTree->Branch("pdf",  &trackInfo.pdg,"pdg/I");
   fTree->Branch("lbl",  &trackInfo.lbl,"lbl/I");
@@ -261,13 +263,13 @@ void AliTaskITSUPerf::UserExec(Option_t *)
   AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
   fRPTree = 0;
   AliESDInputHandlerRP *handRP = (AliESDInputHandlerRP*)anMan->GetInputEventHandler();
-  if (!handRP) { AliFatal("No RP handler"); return; }
+  if (!handRP) { AliFatal("No Input handler"); return; }
   //
   fESDEvent  = handRP->GetEvent();
   if (!fESDEvent) { AliFatal("No AliESDEvent"); return; }
   //
   fRPTree = handRP->GetTreeR("ITS");
-  if (!fRPTree) { AliFatal("Invalid ITS cluster tree"); return; }
+  if (!fRPTree) { AliWarning("No ITS cluster tree"); /*return;*/ }
   //
   AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
   if (!eventHandler) { AliFatal("Could not retrieve MC event handler"); return; }
@@ -496,27 +498,30 @@ void AliTaskITSUPerf::CheckTracks()
       trackInfo.dcaZ = dcaRZ[1];
       trackInfo.dcaRE = TMath::Sqrt(trc->GetSigmaY2());
       trackInfo.dcaZE = TMath::Sqrt(trc->GetSigmaZ2());
+      trackInfo.ptE   = TMath::Sqrt(trc->GetSigma1Pt2())*trackInfo.pt*trackInfo.pt;
       //
       trackInfo.nClITSMC = 0;
       for (int il=0;il<7;il++) {
 	trackInfo.mcCl[il] = (mcStatus & (0x1<<(il+kITSHitBits))) != 0;
 	if (trackInfo.mcCl[il]) trackInfo.nClITSMC++;
-	trackInfo.rcCl[il] = 0; //trc->HasPointOnITSLayer(il);
+	trackInfo.rcCl[il] = (fRPTree) ? 0 : trc->HasPointOnITSLayer(il); // when clusters are available, fill in the cl. loop
 	trackInfo.qCl[il]  = 0;
 	trackInfo.fcCl[il] = trc->HasSharedPointOnITSLayer(il);
       }
       int htc = 0,clID,lrID;
       Int_t lrclID = 0;
       // here we access clusters really attached to the track
-      while ( (lrclID=trc->GetITSModuleIndex(htc++))>=0 ) { // in principle, one can have >1 attached cluster/layer
-	clID = AliITSUAux::UnpackCluster(lrclID,lrID);
-	AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
-	//	printf("cl%d on Lr%d id=%d: pack=%d Cl=%p Q=%d\n",htc,lrID,clID,lrclID,cl,cl ? cl->GetQ():0);
-	if (cl) {
+      if (fRPTree) {
+	while ( (lrclID=trc->GetITSModuleIndex(htc++))>=0 ) { // in principle, one can have >1 attached cluster/layer
+	  clID = AliITSUAux::UnpackCluster(lrclID,lrID);
+	  AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+	  //	printf("cl%d on Lr%d id=%d: pack=%d Cl=%p Q=%d\n",htc,lrID,clID,lrclID,cl,cl ? cl->GetQ():0);
+	  if (cl) {
 	  trackInfo.rcCl[lrID]++;
 	  trackInfo.qCl[lrID] += (Float_t)cl->GetQ();
+	  }
+	  else printf("Failed to fetch cluster: cl%d on Lr%d id=%d: pack=%d\n",htc,lrID,clID,lrclID);
 	}
-	else printf("Failed to fetch cluster: cl%d on Lr%d id=%d: pack=%d\n",htc,lrID,clID,lrclID);
       }
       //
       fTree->Fill();
