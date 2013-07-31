@@ -4269,7 +4269,7 @@ void AliITStrackerMI::BuildMaterialLUT(TString material) {
   } else {
     Error("BuildMaterialLUT","Wrong layer name\n");
   }
-
+  const double kAngEps = 1e-4; // tiny slope to avoid tracks strictly normal to Z axis
   for(Int_t imat=ifirst; imat<=ilast; imat++) {
     Double_t param[5]={0.,0.,0.,0.,0.};
     for (Int_t i=0; i<n; i++) {
@@ -4281,8 +4281,9 @@ void AliITStrackerMI::BuildMaterialLUT(TString material) {
       point1[2] = z;
       point2[0] = rmax[imat]*cosphi;
       point2[1] = rmax[imat]*sinphi;
-      point2[2] = z;
+      point2[2] = z+(rmax[imat]-rmin[imat])*kAngEps;
       AliTracker::MeanMaterialBudget(point1,point2,mparam);
+      if (mparam[1]>999) {n--; continue;}  // skip anomalous values in failed propagation
       for(Int_t j=0;j<5;j++) param[j]+=mparam[j];
     }
     for(Int_t j=0;j<5;j++) param[j]/=(Float_t)n;
