@@ -964,7 +964,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   //   1 - TPC center
   //   2 - average eta
   //   3 - ideal
-  //   4 - preliminary eta
+  //   4 - preliminary eta (needs fixing!!! Not yet in full code!!!)
   // assign the cluster abs time as z component to all seeds
   for (Int_t iseed=0; iseed<3; ++iseed) {
     Float_t xyz[3]={0,0,0};
@@ -974,7 +974,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     const Int_t sector=seedCluster[iseed]->GetDetector();
     const Int_t sign=1-2*((sector/18)%2);
 
-    Float_t zBeforeCorr = xyz[2]; 
+    Float_t zBeforeCorr = xyz[2];
     
     if ( (fClusterType == 1) && (fCorrectionType != kNoCorrection) ) {
       // the settings below are for the T0 seed
@@ -983,10 +983,13 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
         if ( fCorrectionType == kTPCCenter  ) xyz[2] = 125.*sign;
         //!!! TODO: is this the correct association?
         if ( fCorrectionType == kAverageEta ) xyz[2] = TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
-        if ( fCorrectionType == kPreliminaryEta ) xyz[2] = r/TMath::Tan(prelTheta)*sign;
+        if ( fCorrectionType == kPreliminaryEta ) xyz[2] = r/TMath::Tan(prelTheta)*sign;//(needs fixing!!! Not yet in full code!!!)
       }
       
       if ( fCorrectionType == kIdeal      ) xyz[2] = seedCluster[iseed]->GetZ();
+
+      // Store xyz only here!!! To get the Delta z from the correction...
+      zBeforeCorr = xyz[2]; 
 
       //!!! TODO: to be replaced with the proper correction
       fTPCCorrection->CorrectPoint(xyz, seedCluster[iseed]->GetDetector());
@@ -995,7 +998,6 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
     // after the correction set the time bin as z-Position in case of a T0 seed
     if ( fCreateT0seed )
       xyz[2]=seedCluster[iseed]->GetTimeBin() + sign*( zBeforeCorr - xyz[2] )/GetVDrift();
-    //  xyz[2]=seedCluster[iseed]->GetTimeBin()*sign;
       
     seedPoint[iseed].SetXYZ(xyz);
   }
@@ -1217,6 +1219,9 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
         if ( fCorrectionType == kAverageEta ) xyz[2] = TMath::Tan(45./2.*TMath::DegToRad())*r*sign;
         if ( fCorrectionType == kIdeal ) xyz[2] = cl->GetZ();
       }
+
+      // Store xyz only here!!! To get the Delta z from the correction...
+      zBeforeCorr = xyz[2]; 
       
       fTPCCorrection->CorrectPoint(xyz, cl->GetDetector());
     }

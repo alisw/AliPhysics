@@ -31,7 +31,7 @@ public:
     kTPCCenter,
     kAverageEta,
     kIdeal,
-    kPreliminaryEta
+    kPreliminaryEta // NOT TO USE (needs fixing!!! Not yet in full code!!!)
   };
 
   enum EDet {
