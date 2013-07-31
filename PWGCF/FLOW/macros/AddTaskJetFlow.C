@@ -32,7 +32,9 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
     // first check the environment (common to all tasks)
     if(debug) printf("\n\n  >> AddTaskJetFlow <<\n");
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":JetFlow";
+    fileName += ":";
+    fileName += t->GetName();
+    fileName += "_PWGCF";
     if(debug) printf("      - filename: %s \n",fileName.Data());
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -68,10 +70,9 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
         task->SetJetRadius(jetRadius);
         (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
         if(!task) {
-             if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
+             if(debug) printf(" --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!)\n ");
              return 0x0;
         }
-        else printf(" > added task with name %s and jet collection %s < \n", tempName.Data(), rhoTask->GetJetsName().Data());
         // pass specific objects and settigns to the task
         task->SetMinMaxCentrality(cent->At(i), cent->At(1+i));
         mgr->AddTask(task);
@@ -88,18 +89,20 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
             AliAnalysisDataContainer *flowEvent_TPC = mgr->CreateContainer(Form("flowEvent_TPC_%s", tempName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
             (slotTwoFilled) ? mgr->ConnectOutput(task, 3, flowEvent_TPC) : mgr->ConnectOutput(task, 2, flowEvent_TPC);
         }
-        if(FlowPackageSP) TaskJetFlow::AddSPmethod(Form("SPVZERO_A_%s", tempName.Data()), "Qa", 2, flowEvent_VZERO);
-        if(FlowPackageSP) TaskJetFlow::AddSPmethod(Form("SPVZERO_B_%s", tempName.Data()), "Qb", 2, flowEvent_VZERO);
-        if(FlowPackageQC) TaskJetFlow::AddQCmethod(Form("QC_%s", tempName.Data()), 2, flowEvent_TPC);
+        if(FlowPackageSP) TaskJetFlow::AddSPmethod(Form("SPVZERO_A_%s", tempName.Data()), "Qa", 2, flowEvent_VZERO, t);
+        if(FlowPackageSP) TaskJetFlow::AddSPmethod(Form("SPVZERO_B_%s", tempName.Data()), "Qb", 2, flowEvent_VZERO, t);
+        if(FlowPackageQC) TaskJetFlow::AddQCmethod(Form("QC_%s", tempName.Data()), 2, flowEvent_TPC, t);
     }
     return rhoTask;
 }
 //_____________________________________________________________________________
 namespace TaskJetFlow{ // use unique namespace to avoid problems in TRAIN analysis
-    void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent)
+    void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliAnalysisTaskRhoVnModulation* t)
     {
         TString fileName = AliAnalysisManager::GetCommonFileName();
-        fileName+=":SP";
+        fileName+=":";
+        fileName+=t->GetName();
+        fileName+="_PWGCF";
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
         AliAnalysisDataContainer *outSP = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
         AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", name), kFALSE);
@@ -113,10 +116,12 @@ namespace TaskJetFlow{ // use unique namespace to avoid problems in TRAIN analys
         mgr->ConnectOutput(tskSP, 1, outSP);
     }
 //_____________________________________________________________________________
-    void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent)
+    void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, AliAnalysisTaskRhoVnModulation* t)
     {
        TString fileName = AliAnalysisManager::GetCommonFileName();
-       fileName+=":QC";
+       fileName+=":";
+       fileName+=t->GetName();
+       fileName+="_PWGCF";
        AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
        AliAnalysisDataContainer *outQC = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
        AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_%s", name), kFALSE);
