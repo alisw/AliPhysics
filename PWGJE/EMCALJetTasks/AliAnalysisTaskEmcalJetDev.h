@@ -43,12 +43,12 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   void                        AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
   void                        RemoveJetContainer(Int_t i)          { fJetCollArray.RemoveAt(i);} 
 
-  AliJetContainer            *GetJetContainer(Int_t i)                const;
-  TClonesArray               *GetJetArray(Int_t i)                    const;
-  AliEmcalJet                *GetJetFromArray(Int_t j, Int_t c)       const;
-  AliEmcalJet                *GetAcceptJetFromArray(Int_t j, Int_t c) const;
-  Int_t                       GetNJets(Int_t i)                       const;
-  Double_t                    GetRhoVal(Int_t i)                      const;
+  AliJetContainer            *GetJetContainer(Int_t i=0)                const;
+  TClonesArray               *GetJetArray(Int_t i=0)                    const;
+  AliEmcalJet                *GetJetFromArray(Int_t j, Int_t c=0)       const;
+  AliEmcalJet                *GetAcceptJetFromArray(Int_t j, Int_t c=0) const;
+  Int_t                       GetNJets(Int_t i=0)                       const;
+  Double_t                    GetRhoVal(Int_t i=0)                      const;
 
  protected:
   Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;

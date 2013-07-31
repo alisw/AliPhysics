@@ -31,6 +31,7 @@
 #pragma link C++ class AliRhoParameter+;
 #pragma link C++ class AliLocalRhoParameter+;
 #pragma link C++ class AliEmcalJetFinder+;
+#pragma link C++ class AliJetTriggerSelectionTask+;
 
 // user tasks
 #pragma link C++ class AliAnalysisTaskCLQA+;

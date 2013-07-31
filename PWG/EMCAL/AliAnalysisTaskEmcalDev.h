@@ -77,20 +77,20 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   void                        AddClusterContainer(const char *n);
 
 
-  AliParticleContainer       *GetParticleContainer(const Int_t i)   const;
-  AliClusterContainer        *GetClusterContainer(const Int_t i)    const;
-  void                        RemoveParticleContainer(Int_t i)                      { fParticleCollArray.RemoveAt(i);} 
-  void                        RemoveClusterContainer(Int_t i)                       { fClusterCollArray.RemoveAt(i);} 
+  AliParticleContainer       *GetParticleContainer(const Int_t i=0)   const;
+  AliClusterContainer        *GetClusterContainer(const Int_t i=0)    const;
+  void                        RemoveParticleContainer(Int_t i=0)                      { fParticleCollArray.RemoveAt(i);} 
+  void                        RemoveClusterContainer(Int_t i=0)                       { fClusterCollArray.RemoveAt(i);} 
 
 
-  TClonesArray               *GetParticleArray(const Int_t i)       const;
-  TClonesArray               *GetClusterArray(const Int_t i)        const;
+  TClonesArray               *GetParticleArray(const Int_t i=0)       const;
+  TClonesArray               *GetClusterArray(const Int_t i=0)        const;
 
-  AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c) const;
-  AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c) const;
+  AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0) const;
+  AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0) const;
 
-  Int_t                       GetNParticles(Int_t i) const;
-  Int_t                       GetNClusters(Int_t i)  const;
+  Int_t                       GetNParticles(Int_t i=0) const;
+  Int_t                       GetNClusters(Int_t i=0)  const;
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Int_t c = 0)  const;

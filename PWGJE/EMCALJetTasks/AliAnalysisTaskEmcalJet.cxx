@@ -45,6 +45,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
+  fJetTrigger(0),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -73,6 +74,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
+  fJetTrigger(0),
   fJets(0),
   fRho(0),
   fRhoVal(0)
@@ -159,6 +161,9 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
   
   if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
     jetPhi -= TMath::Pi() * 2;
+
+  if (fJetTrigger != 0 && !jet->IsTriggerJet(fJetTrigger))
+    return kFALSE;
 
   return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
 }
