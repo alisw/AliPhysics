@@ -23,7 +23,9 @@ void toyMCRecPlots(TString inFileName = "toyMC.debug.root",Bool_t doPlots = kFAL
   Int_t col = kBlack;
 
   TString sT0[nT0] = {"fTime0-t0","fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift"};
-  TString sT02D[nT02D] = {"fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift:tOrig.fP[3]","fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift:tOrig.fP[4]"};
+  //TString sT02D[nT02D] = {"fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift:tOrig.fP[3]","fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift:tOrig.fP[4]"};
+  TString sT02D[nT02D] = {"(fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift)*vDrift:tOrig.fP[3]","(fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift)*vDrift:tOrig.fP[4]"};
+  //TString sT02D[nT02D] = {"(fTime0-t0)*vDrift:tOrig.fP[3]","(fTime0-t0)*vDrift:tOrig.fP[4]"};
   TString sTrackParams[nTrackParams] = {"track.fP[0]-tOrig.fP[0]","track.fP[1]-tOrig.fP[1]","track.fP[2]-tOrig.fP[2]","track.fP[3]-tOrig.fP[3]","track.fP[4]-tOrig.fP[4]","track.fAlpha-tOrig.fAlpha","track.fX/tOrig.fX","track.fP[0]/tOrig.fP[0]","track.fP[1]/tOrig.fP[1]"};
   TString sTrackParamsITS[nTrackParamsITS] = {"trackITS.fP[0]-tOrigITS.fP[0]","trackITS.fP[1]-tOrigITS.fP[1]","trackITS.fP[2]-tOrigITS.fP[2]","trackITS.fP[3]-tOrigITS.fP[3]","trackITS.fP[4]-tOrigITS.fP[4]","trackITS.fAlpha-tOrigITS.fAlpha","trackITS.fX/tOrigITS.fX","trackITS.fP[0]/tOrigITS.fP[0]","trackITS.fP[1]/tOrigITS.fP[1]"};
   TString sZ0[nZ0] = {"(fTime0-t0)*vDrift","(fTime0-t0+z0*TMath::Sign(1,tOrig.Eta())/vDrift)*vDrift"};
