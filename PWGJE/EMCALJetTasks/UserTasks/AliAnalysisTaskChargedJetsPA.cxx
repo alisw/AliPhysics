@@ -45,6 +45,7 @@
 
 #include "AliAnalysisTaskChargedJetsPA.h"
 using std::min;
+
 //TODO: Not accessing the particles when using MC
 //TODO: FillHistogram can be done better with virtual TH1(?)
 ClassImp(AliAnalysisTaskChargedJetsPA)
@@ -949,7 +950,9 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensityAll(Int_t numberExclude
   if (rhoCMSJetCount > 0)
     rhoCMS = TMath::Median(rhoCMSJetCount, tmpRhoCMS) * tmpCoveredArea/tmpSummedArea;
   if (rhoImprovedCMSJetCount > 0)
+  {
     rhoImprovedCMS = TMath::Median(rhoImprovedCMSJetCount, tmpRhoImprovedCMS) * tmpCoveredArea/tmpSummedArea;
+  }
   if (rhoMeanJetCount > 0)
     rhoMean = TMath::Mean(rhoMeanJetCount, tmpRhoMean);
 
@@ -1022,102 +1025,13 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLea
 
   if (rhoImprovedCMSJetCount > 0)
   {
-    rhoImprovedCMS = TMath::Median(rhoImprovedCMSJetCount, tmpRhoImprovedCMS) * tmpCoveredArea/11.9381;
-    //cout << "Clusterized area: " << tmpSummedArea << endl;
-    //11.9381
+    rhoImprovedCMS = TMath::Median(rhoImprovedCMSJetCount, tmpRhoImprovedCMS) * tmpCoveredArea/tmpSummedArea;
   }
   #ifdef DEBUGMODE
     AliInfo("Got KT background density.");
   #endif
 }
 
-
-
-//________________________________________________________________________
-Int_t AliAnalysisTaskChargedJetsPA::GetRCBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& rhoMedian, Double_t etaMin, Double_t etaMax, Int_t numberRandCones)
-{
-  #ifdef DEBUGMODE
-    AliInfo("Getting RC background density.");
-  #endif
-
-  if(numberRandCones == 0)
-    numberRandCones = fNumberRandCones;
-
-  std::vector<AliEmcalJet> tmpCones(numberRandCones);
-
-  // Setting invalid values
-  rhoMean = 0.0;
-  rhoMedian = 0.0;
-
-  // Exclude UP TO numberExcludeLeadingJets
-  if(numberExcludeLeadingJets==-1)
-    numberExcludeLeadingJets = fNumberSignalJets;
-  if (fNumberSignalJets < numberExcludeLeadingJets)
-    numberExcludeLeadingJets = fNumberSignalJets;
-
-  // Search given amount of RCs
-  Int_t numAcceptedRCs = 0;
-  for(Int_t i=0;i<numberRandCones;i++)
-  {
-    Double_t tmpRandConeEta = 0.0;
-    Double_t tmpRandConePhi = 0.0;
-
-    // Search random cone in acceptance with no overlap with already excluded jets (leading jets and random cones)
-
-    // Check if etaMin/etaMax is given correctly
-    if(etaMin < -fSignalJetEtaWindow)
-      etaMin = -fSignalJetEtaWindow;
-    if(etaMax > fSignalJetEtaWindow)
-      etaMax = fSignalJetEtaWindow;
-
-    // Set the random cone position
-    if ((etaMin == 0) && (etaMax == 0))
-      tmpRandConeEta = (fTrackEtaWindow-fRandConeRadius)*(2.0*fRandom->Rndm()-1.0); // full RC is in acceptance
-    else
-      tmpRandConeEta = etaMin + fRandom->Rndm()*(etaMax-etaMin);
-
-    tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
-
-    // Exclude signal jets
-    Bool_t coneValid = kFALSE;
-    for(Int_t j=0;j<numberExcludeLeadingJets;j++)
-    {
-      AliEmcalJet* signalJet = fSignalJets[j];
-
-      Double_t tmpDeltaPhi = GetDeltaPhi(tmpRandConePhi, signalJet->Phi());
-      
-      if ( tmpDeltaPhi*tmpDeltaPhi + TMath::Abs(signalJet->Eta()-tmpRandConeEta)*TMath::Abs(signalJet->Eta()-tmpRandConeEta) <= (fRandConeRadius+fPhysicalJetRadius)*(fRandConeRadius+fPhysicalJetRadius))
-      {
-        coneValid = kFALSE;
-        break;
-      }
-    }
-
-    // RC is accepted, so save it
-    if(coneValid)
-    {
-      AliEmcalJet tmpJet(GetConePt(tmpRandConeEta, tmpRandConePhi, fRandConeRadius), tmpRandConeEta, tmpRandConePhi, 0.0);
-      tmpCones[numAcceptedRCs] = tmpJet;
-      numAcceptedRCs++;
-    }
-  }
-
-  // Calculate Rho and the mean from the RCs (no excluded jets are considered!)
-  if(numAcceptedRCs > 0)
-  {
-    std::vector<Double_t> tmpRho(numAcceptedRCs);
-    for (Int_t i=0; i<numAcceptedRCs;i++)
-      tmpRho[i] = tmpCones[i].Pt()/(fRandConeRadius*fRandConeRadius*TMath::Pi());
-
-    rhoMean = TMath::Mean(tmpRho.begin(), tmpRho.end());
-    rhoMedian = 0.0; // NOT IMPLEMENTED because TMath::Median is not working with iterators
-  }
-    
-  #ifdef DEBUGMODE
-    AliInfo("Got RC background density.");
-  #endif
-  return numAcceptedRCs;
-}
 
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoNoExclusion, Double_t& rhoConeExclusion02, Double_t& rhoConeExclusion04, Double_t& rhoConeExclusion06, Double_t& rhoConeExclusion08, Double_t& rhoExactExclusion)

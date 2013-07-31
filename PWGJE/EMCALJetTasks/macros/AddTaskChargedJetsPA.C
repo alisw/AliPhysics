@@ -10,7 +10,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   const char*         centralityType          = "V0A",
   Double_t            trackEtaWindow          = 0.9,
   Double_t            minJetPt                = 5.0, // signal jet min pt
-  Double_t            minBackgroundJetPt      = 0.15, // background jet min pt
+  Double_t            minBackgroundJetPt      = 0.0, // background jet min pt
   Double_t            dijetLeadingMinPt       = 10.0,
   Double_t            dijetMaxAngleDev        = 10.0,
   Int_t               numberOfPtHardBins      = 0,
@@ -82,7 +82,6 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     else
       minBackgroundJetPt = 0.15;
   }
-
 
   jetFinderTaskKT->SetMinJetPt(minBackgroundJetPt);
 
