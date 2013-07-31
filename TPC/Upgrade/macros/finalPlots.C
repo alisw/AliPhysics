@@ -113,7 +113,7 @@ void finalPlots(const char* filesEps20, TString saveDir="")
 
   TCanvas *cYresDistorted=GetCanvas("YresDistorted","Yres for fully distorted clusters");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresDist = new TH1F("hYresDist",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-15.5,15.5);
+  TH1F *hYresDist = new TH1F("hYresDist",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-15.5,5.5);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",distorted.Data(),distorted.Data());
   tEps20->Draw(drawStr+">>hYresDist","","goff");
   
@@ -157,8 +157,8 @@ void finalPlots(const char* filesEps20, TString saveDir="")
   //
 
   TString titles[5]={"#it{y}_{TPC}-#it{y}_{ITS} (cm)","#it{z}_{TPC}-#it{z}_{ITS} (cm)","sin(#it{#alpha})_{TPC}-sin(#it{#alpha})_{ITS}","tan(#it{#lambda})_{TPC}-tan(#it{#lambda})_{ITS}","1/#it{p}_{T TPC}-1/#it{p}_{T ITS} ((GeV/#it{c})^{-1})"};
-  Double_t min[5]={-.85,-0.199,-.009,-.0019,-.05};
-  Double_t max[5]={ .85, 0.199, .009, .0019, .05};
+  Double_t min[5]={-.85,-15,-.009,-.005,-.05};
+  Double_t max[5]={ .85, 15, .009, .005, .05};
   TString type[3]={idealUndistorted,idealDistorted,realTracking};
   Int_t colors[3]={kBlack,kGreen-2,kRed};
 
