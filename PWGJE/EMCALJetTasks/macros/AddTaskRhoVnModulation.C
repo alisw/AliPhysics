@@ -20,7 +20,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   const char *taskname           = "AliAnalysisTaskRhoVnModulation",
   UInt_t     runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
   Bool_t     fillQA             = kTRUE,
-  TString    fitOpts            = "LWQIM",
+  TString    fitOpts            = "WLQI",
   UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
   TArrayI    *centralities      = 0x0,
   TRandom3   *randomizer        = 0x0
@@ -100,7 +100,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   TString contname(name);
-  contname += "_histos";
+  contname+="_PWGJE";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
