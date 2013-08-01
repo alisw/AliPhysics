@@ -1617,8 +1617,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     Double_t runNumber = esdEvent->GetRunNumber();
     Double_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
-    // loop over MC stack
+      // loop over MC stack
     for (Int_t iMc = 0; iMc < mcStackSize; ++iMc) 
     {
       particle = stack->Particle(iMc);
@@ -1646,27 +1645,35 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
       // check if particle reconstructed
       Bool_t isRec = kFALSE;
-      Int_t  trackIndex = -1;
+      Int_t  trackIndex = -1;  
+      Int_t isESDtrackCut= 0;
+      Int_t isAccCuts    = 0;
+      AliESDtrack *recTrack = NULL; 
+
       for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
       {
-
         AliESDtrack *track = esdEvent->GetTrack(iTrack);
         if(!track) continue;
         if(track->Charge()==0) continue;
-        if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
-        {
-          Int_t label =  TMath::Abs(track->GetLabel());
-          if (label >= mcStackSize) continue;
-          if(label == iMc) {
-            isRec = kTRUE;
-            trackIndex = iTrack;
-            break;
-          }
-        } 
+	//
+	Int_t label =  TMath::Abs(track->GetLabel());
+	if (label >= mcStackSize) continue;
+	if(label == iMc) {	  
+	  Bool_t isAcc=esdTrackCuts->AcceptTrack(track);
+	  if (isAcc) isESDtrackCut=1;
+	  if (accCuts->AcceptTrack(track)) isAccCuts=1;
+	  isRec = kTRUE;
+	  if (recTrack){
+	    if (track->GetTPCncls()<recTrack->GetTPCncls()) continue; // in case looper tracks use longer track
+	    if (!isAcc) continue;
+	    trackIndex = iTrack;
+	  }
+	  recTrack = esdEvent->GetTrack(trackIndex); 
+	  continue;
+	}        
       }
-
+      
       // Store information in the output tree
-      AliESDtrack *recTrack = NULL; 
       if(trackIndex>-1)  { 
         recTrack = esdEvent->GetTrack(trackIndex); 
       } else {
@@ -1692,14 +1699,18 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
           "triggerClass.="<<&triggerClass<<
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<
-          "evtNumberInFile="<<evtNumberInFile<<
-          "Bz="<<bz<<
-          "vtxESD.="<<vtxESD<<
-          "mult="<<mult<<
+          "evtNumberInFile="<<evtNumberInFile<<     // 
+          "Bz="<<bz<<                               // magnetic field
+          "vtxESD.="<<vtxESD<<                      // vertex info
+          "mult="<<mult<<                           // primary vertex 9whatewe found) multiplicity
+	  "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
+	  //
+	  "isAcc0="<<isESDtrackCut<<                // track accepted by ESD track cuts
+	  "isAcc1="<<isAccCuts<<                    // track accepted by acceptance cuts flag
           "esdTrack.="<<recTrack<<
           "isRec="<<isRec<<
-          "tpcTrackLength="<<tpcTrackLength<<
-          "particle.="<<particle<<
+          "tpcTrackLength="<<tpcTrackLength<<       // track length in the TPC r projection
+          "particle.="<<particle<<                  // particle properties
           "particleMother.="<<particleMother<<
           "mech="<<mech<<
           "\n";
