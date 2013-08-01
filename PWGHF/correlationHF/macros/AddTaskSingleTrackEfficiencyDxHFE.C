@@ -120,6 +120,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Bool_t bclustersTPCPID=kTRUE;
   Bool_t bTPCratio=kTRUE;
   Bool_t brequireTOF=kTRUE;
+  Int_t filterbit=0;
 
 
   if (configuration.IsNull() && gDirectory) {
@@ -148,6 +149,11 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	  if (argument.BeginsWith("cutname=")) {
 	    argument.ReplaceAll("cutname=", "");
 	    TrackCutsfilename=argument;
+	  }
+	  if(argument.BeginsWith("filterbit=")){
+	    argument.ReplaceAll("filterbit=", "");
+	    filterbit=argument.Atoi();
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting filterbit to %d",filterbit));
 	  }
 	  if(argument.BeginsWith("tpcclusters=")){
 	    argument.ReplaceAll("tpcclusters=", "");
@@ -179,9 +185,11 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	  }
 	  if(argument.BeginsWith("itsreq=")){
 	    argument.ReplaceAll("itsreq=", "");
-	    if(argument.CompareTo("kFirst")==0) ITSreq=AliHFEextraCuts::kFirst;
-	    else if(argument.CompareTo("kAny")==0) ITSreq=AliHFEextraCuts::kAny;
-	    else if(argument.CompareTo("kNone")==0) ITSreq=AliHFEextraCuts::kNone;
+	    if(argument.CompareTo("kFirst")==0) ITSreq=AliESDtrackCuts::kFirst;
+	    else if(argument.CompareTo("kAny")==0) ITSreq=AliESDtrackCuts::kAny;
+	    else if(argument.CompareTo("kNone")==0) ITSreq=AliESDtrackCuts::kNone;
+	    else if(argument.CompareTo("kOff")==0) ITSreq=AliESDtrackCuts::kOff;
+	    cout << "Cluster requirement: " << ITSreq << endl; 
 	  }
 	  
 	}	
@@ -190,6 +198,8 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
     }
   }
 
+  cout << "Cluster requirement: " << ITSreq << endl; 
+  cout << "Nr ITS: " << minclustersITS << endl;
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
 
@@ -376,7 +386,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
     QualityCuts->SetMaxDCAToVertexZ(2);
     QualityCuts->SetRequireTPCRefit(TPCRefit);
     QualityCuts->SetRequireITSRefit(ITSRefit);
-    QualityCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    QualityCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,ITSreq);
     QualityCuts->SetAcceptKinkDaughters(kFALSE);
   }
   
@@ -385,8 +395,8 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   printf("CREATE CF Single track task\n");
   
   AliCFSingleTrackEfficiencyTask *task = new AliCFSingleTrackEfficiencyTask("AliCFSingleTrackEfficiencyTask",QualityCuts,cuts);
-  task->SetFilterBit(kFALSE);
-  //  task->SetFilterType(0); //0=standard TPConly tracks, 1=ITSstandalone, 2=PixelOR (necessary for e), 3=PID for electrons, 4=standardwithlooseDCA, 5=standardwithtightDCA, 6=standard with tight DCA but with requiring first SDD instead of SPD cluster tracks, 7=TPC only tracks constrained to SPD vertex 
+  task->SetFilterBit(kTRUE);
+  task->SetFilterType(filterbit); //0=standard TPConly tracks, 1=ITSstandalone, 2=PixelOR (necessary for e), 3=PID for electrons, 4=standardwithlooseDCA, 5=standardwithtightDCA, 6=standard with tight DCA but with requiring first SDD instead of SPD cluster tracks, 7=TPC only tracks constrained to SPD vertex 
   task->SelectCollisionCandidates(AliVEvent::kAnyINT);
   // Specifically for electrons DxHFE:
   if(bclustersTPCPID) task->SetMinNClustersTPCPID(80);
