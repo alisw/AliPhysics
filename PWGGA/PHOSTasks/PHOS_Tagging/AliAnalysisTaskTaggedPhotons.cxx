@@ -78,6 +78,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   for(Int_t i=0;i<10;i++)
     for(Int_t j=0;j<2;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
+  for(Int_t mod=0; mod<6; mod++)
+    fPHOSBadMap[mod]=0x0 ;
 }
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) : 
@@ -137,6 +139,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   for(Int_t i=0;i<1;i++)
     for(Int_t j=0;j<5;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
+  for(Int_t mod=0; mod<6; mod++)
+    fPHOSBadMap[mod]=0x0 ;
+
 }
 
 //_____________________________________________________________________________
