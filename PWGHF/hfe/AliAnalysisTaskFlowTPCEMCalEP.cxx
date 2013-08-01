@@ -132,9 +132,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fD0Weight(0)
   ,fDplusWeight(0)
   ,fDminusWeight(0)
-  ,fD0e(0)
-  ,fDpluse(0)
-  ,fDminuse(0)
+  ,fD0_e(0)
   ,fTot_pi0e(0)
   ,fPhot_pi0e(0)
   ,fPhotBCG_pi0e(0)
@@ -143,7 +141,14 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fPhotBCG_etae(0)
 {
   //Named constructor
-  
+
+  for(Int_t k = 0; k < 6; k++) {
+    fDe[k]= NULL;
+    fD0e[k]= NULL;
+    fDpluse[k]= NULL;
+    fDminuse[k]= NULL;
+  }
+
   fPID = new AliHFEpid("hfePid");
   fTrackCuts = new AliESDtrackCuts();
   
@@ -208,9 +213,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fD0Weight(0)
   ,fDplusWeight(0)
   ,fDminusWeight(0)
-  ,fD0e(0)
-  ,fDpluse(0)
-  ,fDminuse(0)
+  ,fD0_e(0)
   ,fTot_pi0e(0)
   ,fPhot_pi0e(0)
   ,fPhotBCG_pi0e(0)
@@ -219,6 +222,14 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fPhotBCG_etae(0)
 {
 	//Default constructor
+
+	for(Int_t k = 0; k < 6; k++) {
+	  fDe[k]= NULL;
+	  fD0e[k]= NULL;
+	  fDpluse[k]= NULL;
+	  fDminuse[k]= NULL;
+	}
+
 	fPID = new AliHFEpid("hfePid");
 
 	fTrackCuts = new AliESDtrackCuts();
@@ -498,12 +509,53 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
   
 	      if (cent>30 && cent<50 && TMath::Abs(partPDG)==11){
-		Dweight  = GetDweight(motherPt);	
-		if(iHijing==1) Dweight = 1.0;
-		
-		if (motherPDG==421) fD0e->Fill(pt,Dweight);
-		if (motherPDG==411) fDpluse->Fill(pt,Dweight); 
-		if (motherPDG==-411) fDminuse->Fill(pt,Dweight); 
+
+		if (motherPDG==421 || TMath::Abs(motherPDG)==411){ // D
+		  Dweight  = GetDweight(0,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+ 
+		  if (motherPt>=2 && motherPt<3) fDe[0]->Fill(pt,Dweight);
+		  if (motherPt>=3 && motherPt<4) fDe[1]->Fill(pt,Dweight);
+		  if (motherPt>=4 && motherPt<6) fDe[2]->Fill(pt,Dweight);
+		  if (motherPt>=6 && motherPt<8) fDe[3]->Fill(pt,Dweight);
+		  if (motherPt>=8 && motherPt<12) fDe[4]->Fill(pt,Dweight);
+		  if (motherPt>=12 && motherPt<16) fDe[5]->Fill(pt,Dweight);
+		}
+		if (motherPDG==421){ // D0
+		  fD0_e->Fill(pt,motherPt);
+		  
+		  Dweight  = GetDweight(1,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+
+		  if (motherPt>=2 && motherPt<3) fD0e[0]->Fill(pt,Dweight);
+		  if (motherPt>=3 && motherPt<4) fD0e[1]->Fill(pt,Dweight);
+		  if (motherPt>=4 && motherPt<6) fD0e[2]->Fill(pt,Dweight);
+		  if (motherPt>=6 && motherPt<8) fD0e[3]->Fill(pt,Dweight);
+		  if (motherPt>=8 && motherPt<12) fD0e[4]->Fill(pt,Dweight);
+		  if (motherPt>=12 && motherPt<16) fD0e[5]->Fill(pt,Dweight);
+		}
+		if (motherPDG==411){ // D+
+		  Dweight  = GetDweight(2,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+
+		  if (motherPt>=2 && motherPt<3) fDpluse[0]->Fill(pt,Dweight);
+		  if (motherPt>=3 && motherPt<4) fDpluse[1]->Fill(pt,Dweight);
+		  if (motherPt>=4 && motherPt<6) fDpluse[2]->Fill(pt,Dweight);
+		  if (motherPt>=6 && motherPt<8) fDpluse[3]->Fill(pt,Dweight);
+		  if (motherPt>=8 && motherPt<12) fDpluse[4]->Fill(pt,Dweight);
+		  if (motherPt>=12 && motherPt<16) fDpluse[5]->Fill(pt,Dweight);
+  		}
+		if (motherPDG==-411){ //D-
+		  Dweight  = GetDweight(3,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+
+		  if (motherPt>=2 && motherPt<3) fDminuse[0]->Fill(pt,Dweight); 
+		  if (motherPt>=3 && motherPt<4) fDminuse[1]->Fill(pt,Dweight); 
+		  if (motherPt>=4 && motherPt<6) fDminuse[2]->Fill(pt,Dweight); 
+		  if (motherPt>=6 && motherPt<8) fDminuse[3]->Fill(pt,Dweight); 
+		  if (motherPt>=8 && motherPt<12) fDminuse[4]->Fill(pt,Dweight); 
+		  if (motherPt>=12 && motherPt<16) fDminuse[5]->Fill(pt,Dweight); 
+		}	
 	      }
 	   
 	      //pi0 decay 
@@ -761,14 +813,27 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fDminusWeight = new TH2F("fDminusWeight", "D- weight",100,0,50,3,-1,2);
   fOutputList->Add(fDminusWeight);
 
-  fD0e = new TH1F("fD0e", "fD0e",100,0,50);
-  fOutputList->Add(fD0e);
+  fD0_e = new TH2F("fD0_e", "D0 vs e",100,0,50,100,0,50);
+  fOutputList->Add(fD0_e);
   
-  fDpluse = new TH1F("fDpluse", "fDpluse",100,0,50);
-  fOutputList->Add(fDpluse);
-  
-  fDminuse = new TH1F("fDminuse", "fDminuse",100,0,50);
-  fOutputList->Add(fDminuse);
+  for(Int_t k = 0; k < 6; k++) {
+    
+    TString De_name = Form("fDe%d",k);
+    TString D0e_name = Form("fD0e%d",k);
+    TString Dpluse_name = Form("fDpluse%d",k);
+    TString Dminuse_name = Form("fDminuse%d",k);
+       
+    fDe[k] = new TH1F((const char*)De_name,"",100,0,50);
+    fD0e[k] = new TH1F((const char*)D0e_name,"",100,0,50);
+    fDpluse[k] = new TH1F((const char*)Dpluse_name,"",100,0,50);
+    fDminuse[k] = new TH1F((const char*)Dminuse_name,"",100,0,50);
+    
+    fOutputList->Add(fDe[k]);
+    fOutputList->Add(fD0e[k]);
+    fOutputList->Add(fDpluse[k]);
+    fOutputList->Add(fDminuse[k]);
+    
+  }
   
   int nbin_v2 = 8;
   double bin_v2[9] = {2,2.5,3,4,6,8,10,13,18};
@@ -912,6 +977,7 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDeltaPhi(Double_t phiA,Double_t phiB)
 //_________________________________________
 Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT) const
 {
+	//Get Pi0 weight
         double weight = 1.0;
 
         if(mcPi0pT>0.0 && mcPi0pT<5.0)
@@ -930,6 +996,7 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT) const
 //_________________________________________
 Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT) const
 {
+  //Get eta weight
   double weight = 1.0;
 
 //   weight = (0.818052*mcEtapT)/(TMath::Power(0.358651+mcEtapT/2.878631,9.494043));
@@ -938,11 +1005,15 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT) const
   return weight;
 }
 //_________________________________________
-Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDweight(Double_t mcDpT) const
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDweight(Int_t whichD, Double_t mcDpT) const
 {
+    //get D weights
     double weight = 1.0;
-
-    weight = 0.512628*TMath::Landau(mcDpT,2.422879,0.586282,0);
-	
+    
+    if (whichD == 0) weight = 0.271583*TMath::Landau(mcDpT,3.807103,1.536753,0); // D
+    if (whichD == 1) weight = 0.300771*TMath::Landau(mcDpT,3.725771,1.496980,0); // D0
+    if (whichD == 2) weight = 0.247280*TMath::Landau(mcDpT,3.746811,1.607551,0); // D+
+    if (whichD == 3) weight = 0.249410*TMath::Landau(mcDpT,3.611508,1.632196,0); //D-
+    
   return weight;
 }
