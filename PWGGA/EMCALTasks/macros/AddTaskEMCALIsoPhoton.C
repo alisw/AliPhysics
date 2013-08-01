@@ -42,11 +42,26 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   cutsp->SetEtaRange(-1.0,1.0);
   ana->SetPrimTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
-  if(period.Contains("11"))
+  if(period.Contains("11")){
     ana->SetGeoName("EMCAL_COMPLETEV1");
-  else
+    //ana->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root");
+  }
+  else{
+    if(period.Contains("12")){
+      if(isMC){
+	ana->SetGeoName("EMCAL_COMPLETEV1");
+	//ana->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root");
+      }
+      else{
+	ana->SetGeoName("EMCAL_COMPLETE12SMV1");
+	//ana->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2012.root");
+      }
+    }
+    else{
     ana->SetGeoName("EMCAL_FIRSTYEARV1");
-
+    //ana->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2010.root");
+    }
+  }
   
   mgr->AddTask(ana);
   TString containername = "histosEMCALIsoPhoton";
