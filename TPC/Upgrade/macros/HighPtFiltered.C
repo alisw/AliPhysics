@@ -24,17 +24,33 @@ void DrawPTResol(){
 
 }
 
-
 void DrawMatchingEffiency(){
   //
   //
   //
-  TFile * f = TFile::Open("Filtered.root");
+  TFile * f = TFile::Open("Filtered.root"); 
+  TTree * treeMC = f->Get("MCEffTree");
+  reeMC->Draw("isRec:1/particle.Pt()","mult>2500","prof");
+
+  
+}
+
+
+void DrawMatchingEffiency(){
+  //
+  // problem with ITS simulation looks like
+  //
+  TFile * f = TFile::Open("Filtered.root");  
   TTree * treePt= (TTree*)f->Get("highPt");
   treePt->SetAlias("ITSrefit","(esdTrack.fFlags&0x4)!=0");
   //
-  TCut cutNcl = "esdTrack.GetTPCClusterInfo(3,1)>120"; 
-  treePt->Draw("ITSrefit:1/particle.Pt()>>hisMatching(20,0,0.5)",cutNcl,"prof");
+  //
+
+  TCut cutNcl = "esdTrack.GetTPCClusterInfo(3,1)>120&&abs(esdTrack.fP[3])<0.9"; 
+  TCut cutPileUp = "abs(particle.fVt)<0.000000001&&abs(esdTrack.fP[1])<15"; 
+  TCut cutFindable = "particle.R()<0.2&&nrefITS>5"; 
+
+  treePt->Draw("ITSrefit:1/particle.Pt()>>hisMatching(20,0,2)",cutNcl+cutPileUp+cutFindable,"prof");
   
 
 }
