@@ -503,7 +503,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             //apply track selections
 	    if(!isTkSelected) continue;
 	    if(!isSelected) continue;
-	    //	    if(!fCuts->IsInFiducialAcceptance(dstarD0pi->Pt(),dstarD0pi->YDstar())) continue;
+        if(!fCuts->IsInFiducialAcceptance(dstarD0pi->Pt(),dstarD0pi->YDstar())) continue;
             
             // new piece of code
             
