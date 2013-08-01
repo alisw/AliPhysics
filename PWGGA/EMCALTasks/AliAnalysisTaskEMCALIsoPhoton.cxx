@@ -68,6 +68,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fNClusForDirPho(0),
   fDirPhoPt(0),
   fHigherPtCone(0),
+  fImportGeometryFromFile(0),
+  fImportGeometryFilePath(""),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -96,6 +98,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fHnOutput(0)
 {
   // Default constructor.
+  for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
 }
 
 //________________________________________________________________________
@@ -125,6 +128,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fNClusForDirPho(0),
   fDirPhoPt(0),
   fHigherPtCone(0),
+  fImportGeometryFromFile(0),
+  fImportGeometryFilePath(""),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -311,7 +316,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   
   fEvtSel->Fill(0);
   if(fDebug)
-    printf("event is ok\n");
+    printf("event is ok,\n run number=%d\n",runnumber);
+
   
   AliVVertex *pv = (AliVVertex*)event->GetPrimaryVertex();
   Bool_t pvStatus = kTRUE;

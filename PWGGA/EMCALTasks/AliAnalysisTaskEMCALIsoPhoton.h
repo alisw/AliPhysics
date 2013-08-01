@@ -55,6 +55,9 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetDebugOn(Bool_t d)                   { fDebug              = d;       }
   void                   SetPathStringSelect(char *p)           { fPathStrOpt         = p;       }
   void                   SetEtCut(Double_t ec)                  { fECut               = ec;      }
+  void                   SetImportGeometryFromFile(Bool_t  im, 
+                                           TString pa = "")     { fImportGeometryFromFile = im ; 
+                                                                  fImportGeometryFilePath = pa ; }    
   
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -81,6 +84,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNClusForDirPho;        // number of clusters from prompt photon per event
   Float_t                fDirPhoPt;              // prompt photon pt (assumes only one per event)
   Float_t                fHigherPtCone;          // higher pt inside the cone around the candidate
+  Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
+  TString                fImportGeometryFilePath;  // path fo geometry.root file
 
   
  private:
