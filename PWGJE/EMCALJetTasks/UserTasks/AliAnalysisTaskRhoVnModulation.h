@@ -63,7 +63,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetAttachToEvent(Bool_t b)                      {fAttachToEvent = b;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
-        void                    SetReduceBinsXYByFactor(Int_t x, Int_t y)       {fReduceBinsXByFactor = x;
+        void                    SetReduceBinsXYByFactor(Float_t x, Float_t y)   {fReduceBinsXByFactor = x;
                                                                                  fReduceBinsYByFactor = y;}
         void                    SetNoEventWeightsForQC(Bool_t e)                {fNoEventWeightsForQC = e;}
         void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
@@ -148,15 +148,14 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Bool_t                  PassesCuts(Int_t year);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
-        void                    FillHistogramsAfterSubtraction(Double_t vzero[2][2], Double_t* tpc) const;
+        void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
         void                    FillTrackHistograms() const;
         void                    FillClusterHistograms() const;
         void                    FillCorrectedClusterHistograms() const;
-        void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* tpc) const;
+        void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
         void                    FillRhoHistograms() const;
-        void                    FillDeltaPtHistograms(Double_t vzero[2][2], Double_t* tpc) const; 
-        void                    FillJetHistograms(Double_t vzero[2][2], Double_t* psi) const;
-        void                    FillDeltaPhiHistograms(Double_t vzero[2][2], Double_t* tpc) const;
+        void                    FillDeltaPtHistograms(Double_t psi2, Double_t psi3) const; 
+        void                    FillJetHistograms(Double_t psi2, Double_t psi3) const;
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
         void                    FillAnalysisSummaryHistogram() const;
@@ -174,8 +173,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         Bool_t                  fAttachToEvent;         // attach local rho to the event
         Bool_t                  fFillHistograms;        // fill histograms
         Bool_t                  fFillQAHistograms;      // fill qa histograms
-        Int_t                   fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this integer
-        Int_t                   fReduceBinsYByFactor;   // reduce the bins on y-axis of histo's by this integer
+        Float_t                 fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this much
+        Float_t                 fReduceBinsYByFactor;   // reduce the bins on y-axis of histo's by this much
         Bool_t                  fNoEventWeightsForQC;   // don't store event weights for qc analysis
         TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10)
         TArrayD*                fPtBinsHybrids;         //-> pt bins for hybrid track vn anaysis
@@ -263,6 +262,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TProfile*               fHistPsiSpread;          //! event plane spread histogram
         TH1F*                   fHistPsiVZEROA;          //! psi 2 from vzero a
         TH1F*                   fHistPsiVZEROC;          //! psi 2 from vzero c
+        TH1F*                   fHistPsiVZERO;           //! psi 2 from combined vzero
         TH1F*                   fHistPsiTPC;             //! psi 2 from tpc
         // background
         TH1F*                   fHistRhoPackage[10];     //! rho as estimated by emcal jet package
@@ -275,21 +275,13 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistRCPhiEta[10];              //! random cone eta and phi
         TH2F*                   fHistRhoVsRCPt[10];             //! rho * A vs rcpt
         TH1F*                   fHistRCPt[10];                  //! rcpt
-        TH2F*                   fHistDeltaPtDeltaPhi2TPC[10];   //! dpt vs dphi tpc
-        TH2F*                   fHistDeltaPtDeltaPhi2V0A[10];   //! dpt vs dphi vzeroa
-        TH2F*                   fHistDeltaPtDeltaPhi2V0C[10];   //! dpt vs dphi vzeroc
-        TH2F*                   fHistDeltaPtDeltaPhi3TPC[10];   //! dpt vs dphi tpc
-        TH2F*                   fHistDeltaPtDeltaPhi3V0A[10];   //! dpt vs dphi vzeroa
-        TH2F*                   fHistDeltaPtDeltaPhi3V0C[10];   //! dpt vs dphi vzeroc
+        TH2F*                   fHistDeltaPtDeltaPhi2[10];      //! dpt vs dphi (psi2 - phi)
+        TH2F*                   fHistDeltaPtDeltaPhi3[10];      //! dpt vs dphi (psi3 - phi)
         TH2F*                   fHistRCPhiEtaExLJ[10];          //! random cone eta and phi, excl leading jet
         TH2F*                   fHistRhoVsRCPtExLJ[10];         //! rho * A vs rcpt, excl leading jet
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi2ExLJTPC[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi2ExLJV0A[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi2ExLJV0C[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi3ExLJTPC[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi3ExLJV0A[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi3ExLJV0C[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi2ExLJ[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi3ExLJ[10];  //! dpt vs dphi, excl leading jet
         /* TH2F*                   fHistRCPhiEtaRand[10];          //! random cone eta and phi, randomized */
         /* TH2F*                   fHistRhoVsRCPtRand[10];         //! rho * A vs rcpt, randomized */
         /* TH1F*                   fHistRCPtRand[10];              //! rcpt, randomized */ 
@@ -303,16 +295,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistJetPtConstituents[10];     //! jet pt versus number of constituents
         TH2F*                   fHistJetEtaRho[10];             //! jet eta versus jet rho
         // in plane, out of plane jet spectra
-        TH2F*                   fHistJetPsiTPCPt[10];            //! psi tpc versus pt
-        TH2F*                   fHistJetPsiVZEROAPt[10];         //! psi vzeroa versus pt
-        TH2F*                   fHistJetPsiVZEROCPt[10];         //! psi vzeroc versus pt
-        // phi minus psi 
-        TH1F*                   fHistDeltaPhi2VZEROA[10];       //! phi minus psi_A
-        TH1F*                   fHistDeltaPhi2VZEROC[10];       //! phi minus psi_C
-        TH1F*                   fHistDeltaPhi2TPC[10];          //! phi minus psi_TPC
-        TH1F*                   fHistDeltaPhi3VZEROA[10];       //! phi minus psi_A
-        TH1F*                   fHistDeltaPhi3VZEROC[10];       //! phi minus psi_C
-        TH1F*                   fHistDeltaPhi3TPC[10];          //! phi minus psi_TPC
+        TH2F*                   fHistJetPsi2Pt[10];             //! psi tpc versus pt
+        TH2F*                   fHistJetPsi3Pt[10];             //! psi vzeroc versus pt
 
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
