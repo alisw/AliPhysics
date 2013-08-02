@@ -179,8 +179,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       listName     =   baseName;
       taskName     =   baseName;
 
-      inputHistogramFileName =  "/Users/prabhat/MyTestforEta/PbPb276Calibration_2010.root";
-      //inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
+      //inputHistogramFileName =  "/Users/prabhat/MyTestforEta/PbPb276Calibration_2010.root";
+      inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
 
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
