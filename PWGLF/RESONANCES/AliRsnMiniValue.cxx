@@ -111,6 +111,10 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kDipAngle:     return "DipAngle";
       case kCosThetaStar: return "CosThetaStar";
       case kAngleLeading: return "AngleToLeading";
+      case kFirstDaughterPt: return "FirstDaughterPt";  
+      case kSecondDaughterPt: return "SecondDaughterPt";  
+      case kFirstDaughterP: return "FirstDaughterP";  
+      case kSecondDaughterP: return "SecondDaughterP";  
       default:            return "Undefined";
    }
 }
@@ -134,6 +138,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
    // the computation is not doable due to any problem
    // (not initialized support object, wrong values, risk of floating point errors)
    // the method returng kFALSE and sets the computed value to a meaningless number
+   Double_t p3[3]={0.,0.,0.};
+ 
    switch (fType) {
          // ---- event values -------------------------------------------------------------------------
       case kVz:
@@ -166,7 +172,17 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->CosThetaStar(fUseMCInfo);
       case kAngleLeading:
          AliWarning("This method is not yet implemented");
-         return 1E20;
+	 return 1E20;
+      case kFirstDaughterPt:
+         return pair->DaughterPt(0,fUseMCInfo);
+      case kSecondDaughterPt:
+         return pair->DaughterPt(1,fUseMCInfo);
+      case kFirstDaughterP:
+    	 pair->DaughterPxPyPz(0,fUseMCInfo, p3);
+         return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
+      case kSecondDaughterP:
+	 pair->DaughterPxPyPz(1,fUseMCInfo, p3);
+         return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
       default:
          AliError("Invalid value type");
          return 1E20;

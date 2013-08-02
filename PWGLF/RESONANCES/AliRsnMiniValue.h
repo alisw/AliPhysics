@@ -34,6 +34,10 @@ public:
       kDipAngle,      // inverse cosine of the angle between daughter vector momenta
       kCosThetaStar,  // polarization angle
       kAngleLeading,  // angle to leading particle
+      kFirstDaughterPt,  //pt of the first daughter of the pair
+      kSecondDaughterPt, //pt of the second daughter of the pair
+      kFirstDaughterP,   //p of the first daughter of the pair
+      kSecondDaughterP,  //p of the second daughter of the pair
       kTypes          // -- general limit ----------------------------------------------------------
    };
 
