@@ -119,7 +119,6 @@ Bool_t AliAnalysisTaskLocalRho::InitializeAnalysis()
         default : break;
     }
     fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
-    fLocalRho->SetLocalRho(fFitModulation);
     // add the local rho to the event if necessary
     if(fAttachToEvent) {
         if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
@@ -352,6 +351,8 @@ Bool_t AliAnalysisTaskLocalRho::Run()
             }
         } break;
     }
+    // if all went well, add local rho
+    fLocalRho->SetLocalRho(fFitModulation);
     PostData(1, fOutputList);
     return kTRUE;
 }
