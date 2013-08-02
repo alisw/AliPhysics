@@ -20,6 +20,7 @@ class Rtypes;
 class TParticle;
 class TDatabasePDG;
 class AliAnalysisEtCuts;
+class AliPIDResponse;
 
 class AliAnalysisHadEt : public AliAnalysisEtCommon
 {
@@ -71,6 +72,7 @@ public:
 
     void SetHistoList(const TList *mylist){fhistoList = (TList *) mylist;}
 
+    AliPIDResponse *fPIDResponse;
 
 protected:   
     

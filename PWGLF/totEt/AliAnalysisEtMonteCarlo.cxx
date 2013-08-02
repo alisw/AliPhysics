@@ -247,6 +247,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistGammasFound(0)
 						  ,fHistGammasGenerated(0)
 						  ,fHistGammasFoundCent(0)
+						  ,fHistGammasFoundOutOfAccCent(0)
 						  ,fHistGammasGeneratedCent(0)
 						  ,fHistChargedTracksCut(0)
 						  ,fHistChargedTracksAccepted(0)
@@ -283,6 +284,34 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistHadronDepositsRecoCent(0)
 						  ,fHistHadronsAllCent(0)
 						  ,fHistMultChVsSignalVsMult(0)
+						  ,fHistNeutralRemovedSecondaryEtVsCent(0)
+						  ,fHistChargedRemovedSecondaryEtVsCent(0)
+						  ,fHistNeutralNotRemovedSecondaryEtVsCent(0)
+						  ,fHistChargedNotRemovedSecondaryEtVsCent(0)
+						  ,fHistNeutralRemovedSecondaryNumVsNCluster(0)
+						  ,fHistChargedRemovedSecondaryNumVsNCluster(0)
+						  ,fHistNeutralNotRemovedSecondaryNumVsNCluster(0)
+						  ,fHistChargedNotRemovedSecondaryNumVsNCluster(0)
+						  ,fHistNeutralRemovedSecondaryNumVsCent(0)
+						  ,fHistChargedRemovedSecondaryNumVsCent(0)
+						  ,fHistNeutralNotRemovedSecondaryNumVsCent(0)
+						  ,fHistChargedNotRemovedSecondaryNumVsCent(0)
+						  ,fHistNeutronsEtVsCent(0)
+						  ,fHistNeutronsNumVsCent(0)
+						  ,fHistNotNeutronsNumVsCent(0)
+						  ,fHistPiKPDepositedVsNch(0)
+						  ,fHistPiKPNotTrackMatchedDepositedVsNch(0)
+						  ,fHistNeutronsDepositedVsNch(0)
+						  ,fHistAntiNeutronsDepositedVsNch(0)
+						  ,fHistProtonsDepositedVsNch(0)
+						  ,fHistAntiProtonsDepositedVsNch(0)
+						  ,fHistProtonsNotTrackMatchedDepositedVsNch(0)
+						  ,fHistAntiProtonsNotTrackMatchedDepositedVsNch(0)
+						  ,fHistSecondariesVsNch(0)
+						  ,fHistSecondariesVsNcl(0)
+						  ,fHistSecondariesEffCorrVsNch(0)
+						  ,fHistSecondariesEffCorrVsNcl(0)
+						  ,fHistCentVsNchVsNcl(0)
 {
 }
 
@@ -385,6 +414,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistPiZeroMultAcc; // enter comment here
     delete fHistGammasFound; // enter comment here
     delete fHistGammasGenerated; // enter comment here
+    delete fHistGammasFoundOutOfAccCent; // enter comment here
     delete fHistGammasFoundCent; // enter comment here
     delete fHistGammasGeneratedCent; // enter comment here
     delete fHistChargedTracksCut;
@@ -421,6 +451,34 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistHadronDepositsRecoCent;
     delete fHistHadronsAllCent;
     delete fHistMultChVsSignalVsMult;
+    delete fHistNeutralRemovedSecondaryEtVsCent;
+    delete fHistChargedRemovedSecondaryEtVsCent;
+    delete fHistNeutralNotRemovedSecondaryEtVsCent;
+    delete fHistChargedNotRemovedSecondaryEtVsCent;
+    delete fHistNeutralRemovedSecondaryNumVsNCluster;
+    delete fHistChargedRemovedSecondaryNumVsNCluster;
+    delete fHistNeutralNotRemovedSecondaryNumVsNCluster;
+    delete fHistChargedNotRemovedSecondaryNumVsNCluster;
+    delete fHistNeutralRemovedSecondaryNumVsCent;
+    delete fHistChargedRemovedSecondaryNumVsCent;
+    delete fHistNeutralNotRemovedSecondaryNumVsCent;
+    delete fHistChargedNotRemovedSecondaryNumVsCent;
+    delete fHistNeutronsEtVsCent;
+    delete fHistNeutronsNumVsCent;
+    delete fHistNotNeutronsNumVsCent;
+    delete fHistPiKPDepositedVsNch;
+    delete fHistPiKPNotTrackMatchedDepositedVsNch;
+    delete fHistNeutronsDepositedVsNch;
+    delete fHistAntiNeutronsDepositedVsNch;
+    delete fHistProtonsDepositedVsNch;
+    delete fHistAntiProtonsDepositedVsNch;
+    delete fHistProtonsNotTrackMatchedDepositedVsNch;
+    delete fHistAntiProtonsNotTrackMatchedDepositedVsNch;
+    delete fHistSecondariesVsNch;
+    delete fHistSecondariesVsNcl;
+    delete fHistSecondariesEffCorrVsNch;
+    delete fHistSecondariesEffCorrVsNcl;
+    delete fHistCentVsNchVsNcl;
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -685,6 +743,26 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     fNClusters = 0;
     Int_t fClusterMultChargedTracks = 0;
     Int_t fClusterMultGammas = 0;
+    Int_t nChargedSecondariesRemoved = 0;
+    Int_t nChargedSecondariesNotRemoved = 0;
+    Int_t nNeutralSecondariesRemoved = 0;
+    Int_t nNeutralSecondariesNotRemoved = 0;
+    Int_t nNeutrons = 0;
+    Int_t nNotNeutrons = 0;
+    //All efficiency corrected except etSecondaries -->
+    Float_t etPiKPDeposited = 0.0;//
+    Float_t etPiKPDepositedNotTrackMatched = 0.0;//
+    Float_t etProtonDepositedNotTrackMatched = 0.0;//
+    Float_t etAntiProtonDepositedNotTrackMatched = 0.0;//
+    //Float_t etPIDProtonDepositedNotTrackMatched = 0.0;//Still has to be filled!
+    //Float_t etPIDAntiProtonDepositedNotTrackMatched = 0.0;//Still has to be filled
+    Float_t etProtonDeposited = 0.0;//
+    Float_t etAntiProtonDeposited = 0.0;//
+    Float_t etNeutronDeposited = 0.0;
+    Float_t etAntiNeutronDeposited = 0.0;
+    Float_t etSecondaries = 0.0;
+    Float_t etSecondariesEffCorr = 0.0;
+    Float_t multiplicity = fEsdtrackCutsTPC->GetReferenceMultiplicity(realEvent,kTRUE);
     // loop the clusters
     for (int iCluster = 0; iCluster < nCluster; iCluster++ )
     {
@@ -842,14 +920,20 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	if(fSecondary){//all particles from secondary interactions 
 	  written = kTRUE;
 	  if(nottrackmatched){//secondaries not removed
+	    fSecondaryNotRemoved++;
+	    etSecondaries += fReconstructedEt;
+	    etSecondariesEffCorr += clEt;
 	    if (fDepositedCharge != 0){//charged track not removed
 	      fChargedNotRemoved++;
 	      fEnergyChargedNotRemoved += clEt;
 	      fHistRemovedOrNot->Fill(2.0, fCentClass);
 	      fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	      fHistChargedNotRemovedSecondaryEtVsCent->Fill(fReconstructedEt,fCentClass);
+	      nChargedSecondariesNotRemoved++;
 	    }
 	    else{
-	      fSecondaryNotRemoved++;
+	      fHistNeutralNotRemovedSecondaryEtVsCent->Fill(fReconstructedEt,fCentClass);
+	      nNeutralSecondariesNotRemoved++;
 	    }
 	  }
 	  else{//secondaries removed
@@ -858,6 +942,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fEnergyChargedRemoved += clEt;
 	      fHistRemovedOrNot->Fill(0.0, fCentClass);
 	      fHistDxDzRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	      fHistChargedRemovedSecondaryEtVsCent->Fill(fReconstructedEt,fCentClass);
+	      nChargedSecondariesRemoved++;
 	      fHistChargedTracksCut->Fill(fDepositedEt);
 	      if(fCalcTrackMatchVsMult){
 		fHistChargedTracksCutMult->Fill(fDepositedEt,fClusterMult);
@@ -884,15 +970,32 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      fEnergyNeutralRemoved += clEt;
 	      fHistRemovedOrNot->Fill(1.0, fCentClass);
 	      fHistDxDzRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	      fHistNeutralRemovedSecondaryEtVsCent->Fill(fReconstructedEt,fCentClass);
+
+	      nNeutralSecondariesRemoved++;
 	    }
 	  }
 	}
-	else{
+	else{//not a secondary
 
 	  if (fDepositedCharge != 0 && fDepositedCode!=fgEMinusCode && fDepositedCode!=fgEPlusCode){//if the particle hitting the calorimeter is pi/k/p/mu
 	    written = kTRUE;
 	    fClusterMultChargedTracks++;
+	    etPiKPDeposited += clEt;
+	    if(fDepositedCode==fgProtonCode){
+	      etProtonDeposited += clEt;
+	    }
+	    if(fDepositedCode==fgAntiProtonCode){
+	      etAntiProtonDeposited += clEt;
+	    }
 	    if(nottrackmatched){//not removed but should be
+	      etPiKPDepositedNotTrackMatched += clEt;
+	      if(fDepositedCode==fgProtonCode){
+		etProtonDepositedNotTrackMatched += clEt;
+	      }
+	      if(fDepositedCode==fgAntiProtonCode){
+		etAntiProtonDepositedNotTrackMatched += clEt;
+	      }
 	      fHistHadronDepositsAll->Fill(part->Pt());
 	      fHistHadronDepositsAllCent->Fill(part->Pt(), fCentClass);
 	      if(fReconstructedEt>0.5) fHistHadronDepositsAllCent500MeV->Fill(part->Pt(), fCentClass);
@@ -994,14 +1097,54 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  //all other cases - neutron, anti-neutron, not aware of other cases
 	  if(!written){
 	    fNeutralNotRemoved++;
-	    fEnergyNeutralNotRemoved += clEt;
+	    fEnergyNeutralNotRemoved += clEt;//this is the efficiency corrected energy
 	    fHistRemovedOrNot->Fill(3.0, fCentClass);
-	    fHistDxDzNonRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	    if (fDepositedCode == fgNeutronCode || fDepositedCode == fgAntiNeutronCode){
+	      fHistDxDzNonRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
+	      fHistNeutronsEtVsCent->Fill(clEt,fCentClass);
+	      nNeutrons++;
+	      if(fDepositedCode == fgNeutronCode){
+		etNeutronDeposited += clEt;
+	      }
+	      if(fDepositedCode == fgAntiNeutronCode){
+		etAntiNeutronDeposited += clEt;
+	      }
+	      //cout<<"I am a";
+	      //if(fDepositedCode == fgAntiNeutronCode) cout<<"n anti-";
+	      //else{cout<<" ";}
+	      //cout<<"neutron!! pt "<<part->Pt()<<" eta "<<part->Eta()<<" phi "<<part->Phi()<<" Et "<<clEt<<endl;
+	      //PrintFamilyTree(iPart, stack);
+	    }
+	    else{
+	      nNotNeutrons++;
+// 	      cout<<"I am a";
+// 	      if(fDepositedCode == fgAntiNeutronCode) cout<<"n anti-";
+// 	      else{cout<<" ";}
+// 	      cout<<"neutron!! pt "<<part->Pt()<<" eta "<<part->Eta()<<" phi "<<part->Phi()<<" Et "<<clEt<<endl;
+// 	      PrintFamilyTree(iPart, stack);
+// 	      cout<<"I am not a neutron!!"<<endl;
+// 	      PrintFamilyTree(iPart, stack);
+	    }
 	  }
 	}
         fPrimaryTree->Fill();
     } // end of loop over clusters     
+    fHistPiKPNotTrackMatchedDepositedVsNch->Fill(etPiKPDepositedNotTrackMatched,multiplicity);
+    fHistPiKPDepositedVsNch->Fill(etPiKPDeposited,multiplicity);
+    fHistNeutronsDepositedVsNch->Fill(etNeutronDeposited,multiplicity);
+    fHistAntiNeutronsDepositedVsNch->Fill(etAntiNeutronDeposited,multiplicity);
+    fHistProtonsDepositedVsNch->Fill(etProtonDeposited,multiplicity);
+    fHistAntiProtonsDepositedVsNch->Fill(etAntiProtonDeposited,multiplicity);
+    fHistProtonsNotTrackMatchedDepositedVsNch->Fill(etProtonDepositedNotTrackMatched,multiplicity);
+    fHistAntiProtonsNotTrackMatchedDepositedVsNch->Fill(etAntiProtonDepositedNotTrackMatched,multiplicity);
+    fHistSecondariesVsNch->Fill(etSecondaries,multiplicity);
+    fHistSecondariesVsNcl->Fill(etSecondaries,fNClusters);
+    fHistSecondariesEffCorrVsNch->Fill(etSecondariesEffCorr,multiplicity);
+    fHistSecondariesEffCorrVsNcl->Fill(etSecondariesEffCorr,fNClusters);
+    fHistCentVsNchVsNcl->Fill(fCentClass,multiplicity, fNClusters);
 
+    fHistNeutronsNumVsCent->Fill(nNeutrons,fCentClass);
+    fHistNotNeutronsNumVsCent->Fill(nNotNeutrons,fCentClass);
 
     std::sort(foundGammas.begin(), foundGammas.end());
     for (Int_t iPart = 0; iPart < stack->GetNtrack(); iPart++)
@@ -1024,14 +1167,23 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             continue;
         }
         
-        if(pdg->PdgCode()==fgGammaCode && fSelector->CutGeometricalAcceptance(*part))// TMath::Abs(part->Eta()) < 0.12)
+        if(pdg->PdgCode()==fgGammaCode)// TMath::Abs(part->Eta()) < 0.12)
 	{
-	  fHistGammasGenerated->Fill(part->Energy());
-	  fHistGammasGeneratedCent->Fill(part->Energy(),fCentClass);
+	  if(fSelector->CutGeometricalAcceptance(*part)){
+	    fHistGammasGenerated->Fill(part->Energy());
+	    fHistGammasGeneratedCent->Fill(part->Energy(),fCentClass);
+	  }
 	  if(std::binary_search(foundGammas.begin(),foundGammas.end(),iPart))
 	  {
-	    fHistGammasFound->Fill(part->Energy());
-	    fHistGammasFoundCent->Fill(part->Energy(),fCentClass);
+	    if(!fSelector->CutGeometricalAcceptance(*part)){
+	      //cout<<"Gamma NOT in acceptance"<<endl;
+	      fHistGammasFoundOutOfAccCent->Fill(part->Energy(),fCentClass);
+	    }
+	    else{
+	      fHistGammasFound->Fill(part->Energy());
+	      fHistGammasFoundCent->Fill(part->Energy(),fCentClass);
+	      //cout<<"Gamma IN acceptance"<<endl;
+	    }
 	  }
 	}
         if(pdg->PdgCode()==fgPiPlusCode || pdg->PdgCode()==fgPiMinusCode || pdg->PdgCode()==fgProtonCode || pdg->PdgCode()==fgAntiProtonCode){//section here for all hadrons generated
@@ -1141,7 +1293,16 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	}
       }
     }
-    fHistMultChVsSignalVsMult->Fill(fClusterMultChargedTracks,fClusterMultGammas,fClusterMult);
+    fHistMultChVsSignalVsMult->Fill(fClusterMultChargedTracks,fClusterMultGammas,fNClusters);
+    fHistNeutralRemovedSecondaryNumVsNCluster->Fill(nNeutralSecondariesRemoved,fNClusters);
+    fHistChargedRemovedSecondaryNumVsNCluster->Fill(nChargedSecondariesRemoved,fNClusters);
+    fHistNeutralNotRemovedSecondaryNumVsNCluster->Fill(nNeutralSecondariesNotRemoved,fNClusters);
+    fHistChargedNotRemovedSecondaryNumVsNCluster->Fill(nChargedSecondariesNotRemoved,fNClusters);
+    fHistNeutralRemovedSecondaryNumVsCent->Fill(nNeutralSecondariesRemoved,fCentClass);
+    fHistChargedRemovedSecondaryNumVsCent->Fill(nChargedSecondariesRemoved,fCentClass);
+    fHistNeutralNotRemovedSecondaryNumVsCent->Fill(nNeutralSecondariesNotRemoved,fCentClass);
+    fHistChargedNotRemovedSecondaryNumVsCent->Fill(nChargedSecondariesNotRemoved,fCentClass);
+    //cout<<"Secondaries not removed: "<<fSecondaryNotRemoved<<" neutral secondaries not removed "<<nNeutralSecondariesNotRemoved<<" cluster mult "<<fClusterMult<<endl;
     FillHistograms();
     return 0;
 }
@@ -1459,6 +1620,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 
     fHistGammasFound = new TH1F("fHistGammasFound", "fHistGammasFound",200, 0, 10);
     fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",200, 0, 10);
+    fHistGammasFoundOutOfAccCent = new TH2F("fHistGammasFoundOutOfAccCent", "fHistGammasFoundOutOfAccCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundCent = new TH2F("fHistGammasFoundCent", "fHistGammasFoundCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasGeneratedCent = new TH2F("fHistGammasGeneratedCent", "fHistGammasGeneratedCent",200, 0, 10,20,-0.5,19.5);
     fHistChargedTracksCut = new TH1F("fHistChargedTracksCut", "fHistChargedTracksCut",100, 0, 5);
@@ -1515,6 +1677,44 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistHadronsAllCent = new TH2F("fHistHadronsAllCent","All Hadrons vs cluster mult",fgNumOfPtBins,fgPtAxis,nCent,nCentCuts);
 
       fHistMultChVsSignalVsMult = new TH3F("fHistMultChVsSignalVsMult","Charged particle Multiplicity vs Signal particle multiplicity vs Cluster Mult",nMult,nMultCuts,nMult,nMultCuts,nMult,nMultCuts);
+      fHistNeutralRemovedSecondaryEtVsCent = new TH2F("fHistNeutralRemovedSecondaryEtVsCent","Neutral Removed Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
+      fHistChargedRemovedSecondaryEtVsCent = new TH2F("fHistChargedRemovedSecondaryEtVsCent","Charged Removed Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
+      fHistNeutralNotRemovedSecondaryEtVsCent = new TH2F("fHistNeutralNotRemovedSecondaryEtVsCent","Neutral NotRemoved Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
+      fHistChargedNotRemovedSecondaryEtVsCent = new TH2F("fHistChargedNotRemovedSecondaryEtVsCent","Charged NotRemoved Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
+      fHistNeutralRemovedSecondaryNumVsNCluster = new TH2F("fHistNeutralRemovedSecondaryNumVsNCluster","Neutral Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
+      fHistChargedRemovedSecondaryNumVsNCluster = new TH2F("fHistChargedRemovedSecondaryNumVsNCluster","Charged Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
+      fHistNeutralNotRemovedSecondaryNumVsNCluster = new TH2F("fHistNeutralNotRemovedSecondaryNumVsNCluster","Neutral NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
+      fHistChargedNotRemovedSecondaryNumVsNCluster = new TH2F("fHistChargedNotRemovedSecondaryNumVsNCluster","Charged NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
+      fHistNeutralRemovedSecondaryNumVsCent = new TH2F("fHistNeutralRemovedSecondaryNumVsCent","Neutral Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
+      fHistChargedRemovedSecondaryNumVsCent = new TH2F("fHistChargedRemovedSecondaryNumVsCent","Charged Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
+      fHistNeutralNotRemovedSecondaryNumVsCent = new TH2F("fHistNeutralNotRemovedSecondaryNumVsCent","Neutral NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
+      fHistChargedNotRemovedSecondaryNumVsCent = new TH2F("fHistChargedNotRemovedSecondaryNumVsCent","Charged NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
+      fHistNeutronsEtVsCent = new TH2F("fHistNeutronsEtVsCent","Neutrons and anti-neutrons - deposited ET vs Centrality bin",100,0,4.0,20,-0.5,19.5);
+      fHistNeutronsNumVsCent = new TH2F("fHistNeutronsNumVsCent","Neutrons and anti-neutrons - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
+      fHistNotNeutronsNumVsCent = new TH2F("fHistNotNeutronsNumVsCent","Neutral particles not otherwise classified - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
+      Int_t nbinsEt = 125;
+      Float_t maxEtRange = 125;
+      Float_t maxEtRangeShort = 25;
+      Float_t minEtRange = 0;
+      Int_t nbinsMult = 100;
+      Float_t maxMult = 3000;
+      Float_t minMult = 0;
+      Int_t nbinsCl = 150;
+      Float_t maxCl = 300;
+      Float_t minCl = 0;
+      fHistPiKPDepositedVsNch = new TH2F("fHistPiKPDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
+      fHistPiKPNotTrackMatchedDepositedVsNch = new TH2F("fHistPiKPNotTrackMatchedDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
+    fHistNeutronsDepositedVsNch = new TH2F("fHistNeutronsDepositedVsNch","n deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistAntiNeutronsDepositedVsNch = new TH2F("fHistAntiNeutronsDepositedVsNch","#bar{n} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistProtonsDepositedVsNch = new TH2F("fHistProtonsDepositedVsNch","p deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistAntiProtonsDepositedVsNch = new TH2F("fHistAntiProtonsDepositedVsNch","#bar{p} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistProtonsNotTrackMatchedDepositedVsNch = new TH2F("fHistProtonsNotTrackMatchedDepositedVsNch","p not track matched deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistAntiProtonsNotTrackMatchedDepositedVsNch = new TH2F("fHistAntiProtonsNotTrackMatchedDepositedVsNch","#bar{p} not track matched deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistSecondariesVsNch = new TH2F("fHistSecondariesVsNch","secondaries deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistSecondariesVsNcl = new TH2F("fHistSecondariesVsNcl","secondaries deposited in calorimeter vs number of clusters",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
+    fHistSecondariesEffCorrVsNch = new TH2F("fHistSecondariesEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
+    fHistSecondariesEffCorrVsNcl = new TH2F("fHistSecondariesEffCorrVsNcl","efficiency corrected secondaries deposited in calorimeter vs number of clusters",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
+    fHistCentVsNchVsNcl = new TH3F("fHistCentVsNchVsNcl","Cent bin vs Nch Vs NCl",20,-0.5,19.5,nbinsMult,minMult,maxMult,nbinsCl,minCl,maxCl);
 }
 
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
@@ -1627,6 +1827,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     
     list->Add(fHistGammasFound);
     list->Add(fHistGammasGenerated);
+    list->Add(fHistGammasFoundOutOfAccCent);
     list->Add(fHistGammasFoundCent);
     list->Add(fHistGammasGeneratedCent);
     list->Add(fHistChargedTracksCut);
@@ -1667,6 +1868,35 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistHadronDepositsRecoCent);
     list->Add(fHistHadronsAllCent);
     list->Add(fHistMultChVsSignalVsMult);
+    list->Add(fHistNeutralRemovedSecondaryEtVsCent);
+    list->Add(fHistChargedRemovedSecondaryEtVsCent);
+    list->Add(fHistNeutralNotRemovedSecondaryEtVsCent);
+    list->Add(fHistChargedNotRemovedSecondaryEtVsCent);
+    list->Add(fHistNeutralRemovedSecondaryNumVsNCluster);
+    list->Add(fHistChargedRemovedSecondaryNumVsNCluster);
+    list->Add(fHistNeutralNotRemovedSecondaryNumVsNCluster);
+    list->Add(fHistChargedNotRemovedSecondaryNumVsNCluster);
+    list->Add(fHistNeutralRemovedSecondaryNumVsCent);
+    list->Add(fHistChargedRemovedSecondaryNumVsCent);
+    list->Add(fHistNeutralNotRemovedSecondaryNumVsCent);
+    list->Add(fHistChargedNotRemovedSecondaryNumVsCent);
+    list->Add(fHistNeutronsEtVsCent);
+    list->Add(fHistNeutronsNumVsCent);
+    list->Add(fHistNotNeutronsNumVsCent);
+    list->Add(fHistPiKPDepositedVsNch);
+    list->Add(fHistPiKPNotTrackMatchedDepositedVsNch);
+    list->Add(fHistNeutronsDepositedVsNch);
+    list->Add(fHistAntiNeutronsDepositedVsNch);
+    list->Add(fHistProtonsDepositedVsNch);
+    list->Add(fHistAntiProtonsDepositedVsNch);
+    list->Add(fHistProtonsNotTrackMatchedDepositedVsNch);
+    list->Add(fHistAntiProtonsNotTrackMatchedDepositedVsNch);
+    list->Add(fHistSecondariesVsNch);
+    list->Add(fHistSecondariesVsNcl);
+    list->Add(fHistSecondariesEffCorrVsNch);
+    list->Add(fHistSecondariesEffCorrVsNcl);
+    list->Add(fHistCentVsNchVsNcl);
+
 
 }
 

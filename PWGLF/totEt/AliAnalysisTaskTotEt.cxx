@@ -28,6 +28,10 @@
 #include "AliAnalysisEtMonteCarloEmcal.h"
 #include "AliAnalysisEmEtMonteCarlo.h"
 #include "AliAnalysisEmEtReconstructed.h"
+#include "AliAnalysisManager.h"
+#include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h"
+#include "AliInputEventHandler.h"
 
 #include <iostream>
 #include <AliCentrality.h>
@@ -39,6 +43,7 @@ ClassImp(AliAnalysisTaskTotEt)
 //________________________________________________________________________
   AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name, Bool_t isMc) :
     AliAnalysisTaskTransverseEnergy(name, isMc)
+    ,fPIDResponse(0)
     ,fRecAnalysis(0)
     ,fMCAnalysis(0)
 					    // ,fSparseHistRecVsMc(0)
@@ -109,6 +114,7 @@ AliAnalysisTaskTotEt::~AliAnalysisTaskTotEt() {//Destructor
   //    fOutputList->Clear();
   delete fRecAnalysis;
   delete fMCAnalysis;
+  delete fPIDResponse;
   //delete fSparseHistRecVsMc;
   //delete fSparseRecVsMc;
 }
@@ -116,6 +122,15 @@ AliAnalysisTaskTotEt::~AliAnalysisTaskTotEt() {//Destructor
 //________________________________________________________________________
 void AliAnalysisTaskTotEt::UserCreateOutputObjects()
 {
+  //input hander
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
+  if (!inputHandler) AliFatal("Input handler needed");
+
+  //pid response object
+  fPIDResponse=inputHandler->GetPIDResponse();
+  if (!fPIDResponse) AliError("PIDResponse object was not created");
+
   // Create histograms
   // Called once
   if (fMCAnalysis)

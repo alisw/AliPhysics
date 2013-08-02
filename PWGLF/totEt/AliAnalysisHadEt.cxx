@@ -24,6 +24,11 @@
 #include "TParticle.h"
 #include "Rtypes.h"
 #include "AliPDG.h"
+#include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h" 
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
+#include "AliLog.h"
 
 using namespace std;
 
@@ -56,6 +61,7 @@ Int_t AliAnalysisHadEt::fgNumOfResBins = 80;
 
 
 AliAnalysisHadEt::AliAnalysisHadEt() : AliAnalysisEtCommon()
+				     ,fPIDResponse(0)
 				     ,fSumEt(0)
 				     ,fSumEtAcc(0)
 				     ,fTotEt(0)
@@ -78,6 +84,7 @@ AliAnalysisHadEt::~AliAnalysisHadEt()
   delete fEsdtrackCutsITSTPC;
   delete fEsdtrackCutsITS;
   delete fEsdtrackCutsTPC;
+  delete fPIDResponse;
 }
 
 Int_t AliAnalysisHadEt::AnalyseEvent(AliVEvent *event)
@@ -91,6 +98,7 @@ Int_t AliAnalysisHadEt::AnalyseEvent(AliVEvent *event)
 void AliAnalysisHadEt::Init()
 {// clear variables, set up cuts and PDG info
   AliAnalysisEtCommon::Init();
+  
 }
 
 void AliAnalysisHadEt::ResetEventValues()

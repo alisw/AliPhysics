@@ -147,11 +147,23 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Boo
        else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC10e20.pp.ForSimulations.root","corrections.root",kTRUE);}
      }
    }
+
+
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  cout<<"I am adding PID response task"<<endl;
+  //AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
+//                                     Bool_t tuneOnData=kFALSE, Int_t recoPass=2,
+//                                     Bool_t cachePID=kFALSE, TString detResponse="",
+//                                     Bool_t useTPCEtaCorrection = kFALSE);
+  AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(!data,kTRUE,kTRUE,2);
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+  AddTaskPIDqa();
+
    AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt",!data);//,recoFile,mcFile);
    if(!data) task2->SetMcData();
    //Add thing here to select collision type!!
-   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
-   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
    mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");

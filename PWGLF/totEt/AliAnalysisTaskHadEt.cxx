@@ -25,6 +25,10 @@
 #include "AliAnalysisHadEtMonteCarlo.h"
 #include "AliPWG0Helper.h"
 #include "AliTriggerAnalysis.h"
+#include "AliAnalysisManager.h"
+#include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h" 
+#include "AliInputEventHandler.h"
 
 #include <iostream>
 #include "AliLog.h"
@@ -38,6 +42,7 @@ ClassImp(AliAnalysisTaskHadEt)
 //________________________________________________________________________
   AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name, Bool_t isMc, TString recoConfigFile, TString mcConfigFile) :
         AliAnalysisTaskTransverseEnergy(name, isMc)
+	,fPIDResponse(0)
 	,fRecAnalysis(0)
 	,fMCAnalysis(0)
 	,fIsSim(isMc)
@@ -45,6 +50,17 @@ ClassImp(AliAnalysisTaskHadEt)
 	,kIsOfflineMB(0)
 {
     // Constructor
+  //input hander
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
+  if (!inputHandler) AliFatal("Input handler needed");
+
+  //pid response object
+  fPIDResponse=inputHandler->GetPIDResponse();
+  if (!fPIDResponse) AliError("PIDResponse object was not created");
+  else{cout<<"PIDResponse was created!"<<endl;}
+
+
   fMCConfigFile = mcConfigFile;
   fRecoConfigFile = recoConfigFile;
 
@@ -74,6 +90,7 @@ ClassImp(AliAnalysisTaskHadEt)
 AliAnalysisTaskHadEt::~AliAnalysisTaskHadEt(){//Destructor
   delete fRecAnalysis;
   delete fMCAnalysis;
+  delete fPIDResponse;
 }
 
 
@@ -84,6 +101,16 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 
     // Called once
 
+
+  //input hander
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
+  if (!inputHandler) AliFatal("Input handler needed");
+
+  //pid response object
+  fPIDResponse=inputHandler->GetPIDResponse();
+  if (!fPIDResponse) AliError("PIDResponse object was not created");
+  else{cout<<"PIDResponse was created!"<<endl;}
 
 
   fOutputList = new TList;
@@ -157,6 +184,8 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   else{
     Printf("Error: no track cuts!");
   }
+
+
 
  PostData(1, fOutputList);
 }
