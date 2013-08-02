@@ -102,6 +102,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void FillBSJS(Double_t eventCentrality, Double_t rho, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList);
         void FillDeltaPt(Double_t eventCentrality, Double_t rho, Double_t jetRadius, Double_t *RCArray, Int_t nRC);
         void FillDeltaPtSignal(Double_t eventCentrality, Double_t rho, Double_t jetRadius, Double_t *RCArray, Int_t nRC);
+        void FillDeltaPtNColl(Double_t eventCentrality, Double_t rho, Double_t jetRadius, Double_t *RCArray, Int_t nRC);
         void FillBackgroundFluctuations(Double_t eventCentrality, Double_t rho, Double_t jetRadius);
         void FillLeadingJetPtRho(Double_t jetPt, Double_t rho);
         
@@ -117,6 +118,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         
         // User Defined Functions
         TList* GetOutputHistos();
+        Double_t GetRho();
         
     private:
         TList *fOutput; // Output list
@@ -151,6 +153,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH1D *fh80100DeltaPtSignal; //!
         TH1D *fhDeltaPtSignal; //!
         TH2D *fhDeltaPtCenSignal; //!
+
+        // This set of Histograms is for filling Delta Pt with NColl
+        TH1D *fh020DeltaPtNColl; //!
+        TH1D *fh80100DeltaPtNColl; //!
+        TH1D *fhDeltaPtNColl; //!
+        TH2D *fhDeltaPtCenNColl; //!
         
         // This set of Histograms is for filling Background Fluctuations Spectra
         TH1D *fh020BckgFlucPt; //!
@@ -189,6 +197,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t fLJetPtBins;
         Double_t fLJetPtLow;
         Double_t fLJetPtUp;
+        
+        Double_t fRhoValue;
     };
 
     // AliAnalysisTaskFullpAJets
@@ -318,6 +328,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     {
         fAkTFullName = name;
     };
+    
+    // Used to set Ncoll for Delta Pt
+    inline void SetNColl(Double_t ncoll)
+    {
+        fNColl = ncoll;
+    }
 
     private:
     TList *fOutput; // Output list
@@ -330,7 +346,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fhClusterPhi;  //!
     TH1D *fhCentrality; //!
     TH1D *fhEMCalCellCounts;  //! Plots the distribution of cluster counts in the EMCal. Used to determine which cells are hot (if any...)
-
+    TH1D *fhDeltaRhoN;  //!
+    TH1D *fhDeltaRhoCMS;  //!
+    
     TH2D *fhTrackEtaPhi;  //!
     TH2D *fhClusterEtaPhi; //!
     TH2D *fhJetPtArea; //! Jet Area distribution vs Pt
@@ -412,6 +430,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fJetAreaThreshold;
     Int_t fnEMCalCells;  // Total number of cells in the EMCal
     Double_t fScaleFactor;  // Scale Factor obtained from Megan/Rosi
+    Double_t fNColl;  // Used for partial rejection of signal from RC. Obtained via Glauber Calculations
     Double_t fTrackMinPt;
     Double_t fClusterMinPt;
     
@@ -481,7 +500,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t *fEMCalRCBckgFluc; //! Stores the pT of RC Background clusters in EMCal at least 2R away from Leading Signal
     Double_t *fTPCRCBckgFluc; //! Stores the pT of RC Background clusters in TPC at least 2R away from Leading Signal
     Double_t *fEMCalRCBckgFlucSignal; //! Stores the pT of RC Background clusters in EMCal with no spatial restrictions
-    Double_t *fTPCRCBckgFlucSignal; //! Stores the pT of RC Background clusters in TPC with no spatial restrictionsl
+    Double_t *fTPCRCBckgFlucSignal; //! Stores the pT of RC Background clusters in TPC with no spatial restrictions
+    Double_t *fEMCalRCBckgFlucNColl; //! Stores the pT of RC Background clusters in EMCal with no spatial restrictions
+    Double_t *fTPCRCBckgFlucNColl; //! Stores the pT of RC Background clusters in TPC with no spatial restrictions
 
     AliAnalysisTaskFullpAJets(const AliAnalysisTaskFullpAJets&); // not implemented
     AliAnalysisTaskFullpAJets& operator=(const AliAnalysisTaskFullpAJets&); // not implemented
