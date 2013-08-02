@@ -34,7 +34,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
    TString     monitorOpt = "",
    Double_t    minYlab =  0.465,
    Double_t    maxYlab =  0.965,
-   Bool_t      useMixLS = 0
+   Bool_t      useMixLS = 0,
+   AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt                
 )
 {  
   //
@@ -125,7 +126,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data())) return 0x0;
+   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
