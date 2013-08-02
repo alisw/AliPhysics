@@ -36,14 +36,14 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    Int_t       signedPdg = 313,
    TString     monitorOpt = "",
    Double_t    minYlab =  -0.5,
-   Double_t    maxYlab =  0.5
-)
+   Double_t    maxYlab =  0.5,
+   AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt                
+ )
 {  
   //
   // -- INITIALIZATION ----------------------------------------------------------------------------
   // retrieve analysis manager
   //
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
       ::Error("AddAnalysisTaskTOFKStar", "No analysis manager to connect to.");
@@ -143,7 +143,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data())) return 0x0;
+   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
