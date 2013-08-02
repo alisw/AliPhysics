@@ -90,6 +90,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     task->SetCentralityTag(centEst);
     task->SetScaleFactor(scaleFactor);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SetNColl(7);
     
     mgr->AddTask(task);
 

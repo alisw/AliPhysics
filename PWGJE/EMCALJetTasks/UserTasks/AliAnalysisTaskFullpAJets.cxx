@@ -48,6 +48,8 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fhClusterPhi(0),
     fhCentrality(0),
     fhEMCalCellCounts(0),
+    fhDeltaRhoN(0),
+    fhDeltaRhoCMS(0),
 
     fhTrackEtaPhi(0),
     fhClusterEtaPhi(0),
@@ -123,6 +125,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fJetAreaThreshold(0.30159),
     fnEMCalCells(12288),
     fScaleFactor(1.50),
+    fNColl(7),
     fTrackMinPt(0.15),
     fClusterMinPt(0.3),
     fCentralityTag("V0A"),
@@ -172,7 +175,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fEMCalRCBckgFluc(0),
     fTPCRCBckgFluc(0),
     fEMCalRCBckgFlucSignal(0),
-    fTPCRCBckgFlucSignal(0)
+    fTPCRCBckgFlucSignal(0),
+    fEMCalRCBckgFlucNColl(0),
+    fTPCRCBckgFlucNColl(0)
 {
     // Dummy constructor ALWAYS needed for I/O.
     fpJetEtaProfile = new TProfile *[14];
@@ -197,6 +202,8 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fhClusterPhi(0),
     fhCentrality(0),
     fhEMCalCellCounts(0),
+    fhDeltaRhoN(0),
+    fhDeltaRhoCMS(0),
 
     fhTrackEtaPhi(0),
     fhClusterEtaPhi(0),
@@ -272,6 +279,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fJetAreaThreshold(0.30159),
     fnEMCalCells(12288),
     fScaleFactor(1.50),
+    fNColl(7),
     fTrackMinPt(0.15),
     fClusterMinPt(0.3),
     fCentralityTag("V0A"),
@@ -321,7 +329,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fEMCalRCBckgFluc(0),
     fTPCRCBckgFluc(0),
     fEMCalRCBckgFlucSignal(0),
-    fTPCRCBckgFlucSignal(0)
+    fTPCRCBckgFlucSignal(0),
+    fEMCalRCBckgFlucNColl(0),
+    fTPCRCBckgFlucNColl(0)
 {
     // Constructor
     // Define input and output slots here (never in the dummy constructor)
@@ -407,12 +417,16 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fTPCRCBckgFluc = new Double_t[fnBckgClusters];
     fEMCalRCBckgFlucSignal = new Double_t[fnBckgClusters];
     fTPCRCBckgFlucSignal = new Double_t[fnBckgClusters];
+    fEMCalRCBckgFlucNColl = new Double_t[fnBckgClusters];
+    fTPCRCBckgFlucNColl = new Double_t[fnBckgClusters];
     for (Int_t i=0;i<fnBckgClusters;i++)
     {
         fEMCalRCBckgFluc[i]=0.0;
         fTPCRCBckgFluc[i]=0.0;
         fEMCalRCBckgFlucSignal[i]=0.0;
         fTPCRCBckgFlucSignal[i]=0.0;
+        fEMCalRCBckgFlucNColl[i]=0.0;
+        fTPCRCBckgFlucNColl[i]=0.0;
     }
 
     fnEMCalCells=12288;  // sMods 1-10 have 24x48 cells, sMods 11&12 have 8x48 cells...
@@ -481,6 +495,21 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhEMCalCellCounts->GetXaxis()->SetTitle("Absoulute Cell Id");
     fhEMCalCellCounts->GetYaxis()->SetTitle("Counts per Event");
     fhEMCalCellCounts->Sumw2();
+
+    // Rho QA Plots
+    Int_t RhoBins = 1000;
+    Double_t RhoPtMin = -50.0;
+    Double_t RhoPtMax = 50.0;
+
+    fhDeltaRhoN = new TH1D("fhDeltaRhoN","0-100% #delta#rho_{N} = #rho_{N}^{TPC+EMCal} - #rho_{N}^{TPC+Scale}",RhoBins,RhoPtMin,RhoPtMax);
+    fhDeltaRhoN->GetXaxis()->SetTitle("#delta#rho (GeV)");
+    fhDeltaRhoN->GetYaxis()->SetTitle("Counts");
+    fhDeltaRhoN->Sumw2();
+
+    fhDeltaRhoCMS = new TH1D("fhDeltaRhoCMS","0-100% #delta#rho_{CMS} = #rho_{CMS}^{TPC+EMCal} - #rho_{CMS}^{TPC+Scale}",RhoBins,RhoPtMin,RhoPtMax);
+    fhDeltaRhoCMS->GetXaxis()->SetTitle("#delta#rho (GeV)");
+    fhDeltaRhoCMS->GetYaxis()->SetTitle("Counts");
+    fhDeltaRhoCMS->Sumw2();
 
     // Jet Area vs pT Distribution
     Int_t JetPtAreaBins=200;
@@ -649,6 +678,8 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fhClusterEtaPhi);
     fOutput->Add(fhCentrality);
     fOutput->Add(fhEMCalCellCounts);
+    fOutput->Add(fhDeltaRhoN);
+    fOutput->Add(fhDeltaRhoCMS);
     fOutput->Add(fhJetPtArea);
     fOutput->Add(fhJetConstituentPt);
     fOutput->Add(fhRhoScale);
@@ -839,6 +870,16 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     JetPtChargedProfile();
     JetPtFullProfile();
     JetPtEtaProfile();
+    
+    // Compute differences between TPC+EMCal Rho to TPC&Scaled Rho
+    if (fRhoChargedScale->GetRho()>0 && fRhoFullN->GetRho()>0)
+    {
+        fhDeltaRhoN->Fill(fRhoFullN->GetRho()-fRhoChargedScale->GetRho());
+    }
+    if (fRhoChargedCMSScale->GetRho()>0 && fRhoFullCMS->GetRho()>0)
+    {
+        fhDeltaRhoCMS->Fill(fRhoFullCMS->GetRho()-fRhoChargedCMSScale->GetRho());
+    }
     
     // Delete Dynamic Arrays
     DeleteJetData(kTRUE);
@@ -1088,6 +1129,7 @@ void AliAnalysisTaskFullpAJets::GenerateTPCRandomConesPt()
     {
         fTPCRCBckgFluc[i]=0.0;
         fTPCRCBckgFlucSignal[i]=0.0;
+        fTPCRCBckgFlucNColl[i]=0.0;
     }
     
     TLorentzVector *dummy= new TLorentzVector;
@@ -1162,6 +1204,21 @@ void AliAnalysisTaskFullpAJets::GenerateTPCRandomConesPt()
     fpTPCEventMult->Fill(fEventCentrality,event_mult);
     fTPCRawJets->FillDeltaPt(fEventCentrality,0.0,fJetR,fTPCRCBckgFluc,1);
     
+    // For the case of partial exclusion, merely allow a superposition of full and no exclusion with probability p=1/Ncoll
+    Double_t exclusion_prob;
+    for (j=0;j<fnBckgClusters;j++)
+    {
+        exclusion_prob = u.Uniform(0,1);
+        if (exclusion_prob<(1/fNColl))
+        {
+            fTPCRCBckgFlucNColl[j]=fTPCRCBckgFlucSignal[j];
+        }
+        else
+        {
+            fTPCRCBckgFlucNColl[j]=fTPCRCBckgFluc[j];
+        }
+    }
+    
     delete dummy;
     delete temp_jet;
 }
@@ -1182,6 +1239,7 @@ void AliAnalysisTaskFullpAJets::GenerateEMCalRandomConesPt()
     {
         fEMCalRCBckgFluc[i]=0.0;
         fEMCalRCBckgFlucSignal[i]=0.0;
+        fEMCalRCBckgFlucNColl[i]=0.0;
     }
     
     TLorentzVector *dummy= new TLorentzVector;
@@ -1288,6 +1346,21 @@ void AliAnalysisTaskFullpAJets::GenerateEMCalRandomConesPt()
     fpEMCalEventMult->Fill(fEventCentrality,event_mult);
     fEMCalRawJets->FillDeltaPt(fEventCentrality,0.0,fJetR,fEMCalRCBckgFluc,1);
     
+    // For the case of partial exclusion, merely allow a superposition of full and no exclusion with probability p=1/Ncoll
+    Double_t exclusion_prob;
+    for (j=0;j<fnBckgClusters;j++)
+    {
+        exclusion_prob = u.Uniform(0,1);
+        if (exclusion_prob<(1/fNColl))
+        {
+            fEMCalRCBckgFlucNColl[j]=fEMCalRCBckgFlucSignal[j];
+        }
+        else
+        {
+            fEMCalRCBckgFlucNColl[j]=fEMCalRCBckgFluc[j];
+        }
+    }
+
     delete dummy;
     delete temp_jet;
 }
@@ -1318,6 +1391,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRho0()
     fRhoCharged0->FillBSJS(fEventCentrality,TPC_rho,fTPCJetThreshold,fmyAKTChargedJets,fTPCJet->GetJets(),fTPCJet->GetTotalJets());
     fRhoCharged0->FillDeltaPt(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFluc,1);
     fRhoCharged0->FillDeltaPtSignal(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucSignal,1);
+    fRhoCharged0->FillDeltaPtNColl(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucNColl,1);
     fRhoCharged0->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoCharged0->FillLeadingJetPtRho(fTPCJet->GetLeadingPt(),TPC_rho);
     
@@ -1375,6 +1449,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRho1()
     fRhoCharged1->FillBSJS(fEventCentrality,TPC_rho,fTPCJetThreshold,fmyAKTChargedJets,fTPCFullJet->GetJets(),fTPCFullJet->GetTotalJets());
     fRhoCharged1->FillDeltaPt(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFluc,1);
     fRhoCharged1->FillDeltaPtSignal(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucSignal,1);
+    fRhoCharged1->FillDeltaPtNColl(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucNColl,1);
     fRhoCharged1->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoCharged1->FillLeadingJetPtRho(fTPCFullJet->GetLeadingPt(),TPC_rho);
 }
@@ -1463,6 +1538,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRho2()
     fRhoCharged2->FillBSJS(fEventCentrality,TPC_rho,fTPCJetThreshold,fmyAKTChargedJets,fTPCFullJet->GetJets(),fTPCFullJet->GetTotalJets());
     fRhoCharged2->FillDeltaPt(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFluc,1);
     fRhoCharged2->FillDeltaPtSignal(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucSignal,1);
+    fRhoCharged2->FillDeltaPtNColl(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucNColl,1);
     fRhoCharged2->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoCharged2->FillLeadingJetPtRho(fTPCFullJet->GetLeadingPt(),TPC_rho);
 }
@@ -1535,6 +1611,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoN()
     fRhoChargedN->FillBSJS(fEventCentrality,TPC_rho,fTPCJetThreshold,fmyAKTChargedJets,fTPCFullJet->GetJets(),fTPCFullJet->GetTotalJets());
     fRhoChargedN->FillDeltaPt(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFluc,1);
     fRhoChargedN->FillDeltaPtSignal(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucSignal,1);
+    fRhoChargedN->FillDeltaPtNColl(fEventCentrality,TPC_rho,fJetR,fTPCRCBckgFlucNColl,1);
     fRhoChargedN->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoChargedN->FillLeadingJetPtRho(fTPCFullJet->GetLeadingPt(),TPC_rho);
 }
@@ -1585,7 +1662,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoScale()
         }
     }
     
-    // Determine area of all Jets that are within the EMCal
+    // Determine area of all Jets that are within the TPC
     if (fTPCJet->GetTotalSignalJets()==0)
     {
         jet_area_total=0.0;
@@ -1608,6 +1685,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoScale()
     fRhoChargedScale->FillBSJS(fEventCentrality,TPC_rho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoChargedScale->FillDeltaPt(fEventCentrality,TPC_rho,fJetR,fEMCalRCBckgFluc,1);
     fRhoChargedScale->FillDeltaPtSignal(fEventCentrality,TPC_rho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoChargedScale->FillDeltaPtNColl(fEventCentrality,TPC_rho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoChargedScale->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoChargedScale->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),TPC_rho);
 }
@@ -1634,6 +1712,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhokT()
         fRhoChargedkT->FillBSJS(fEventCentrality,kTRho,fTPCJetThreshold,fmyAKTChargedJets,fTPCFullJet->GetJets(),fTPCFullJet->GetTotalJets());
         fRhoChargedkT->FillDeltaPt(fEventCentrality,kTRho,fJetR,fTPCRCBckgFluc,1);
         fRhoChargedkT->FillDeltaPtSignal(fEventCentrality,kTRho,fJetR,fTPCRCBckgFlucSignal,1);
+        fRhoChargedkT->FillDeltaPtNColl(fEventCentrality,kTRho,fJetR,fTPCRCBckgFlucNColl,1);
         fRhoChargedkT->FillBackgroundFluctuations(fEventCentrality,kTRho,fJetR);
         fRhoChargedkT->FillLeadingJetPtRho(fTPCFullJet->GetLeadingPt(),kTRho);
     }
@@ -1664,6 +1743,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhokTScale()
         fRhoChargedkTScale->FillBSJS(fEventCentrality,kTRho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
         fRhoChargedkTScale->FillDeltaPt(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFluc,1);
         fRhoChargedkTScale->FillDeltaPtSignal(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucSignal,1);
+        fRhoChargedkTScale->FillDeltaPtNColl(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucNColl,1);
         fRhoChargedkTScale->FillBackgroundFluctuations(fEventCentrality,kTRho,fJetR);
         fRhoChargedkTScale->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),kTRho);
     }
@@ -1780,6 +1860,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoCMS()
     fRhoChargedCMS->FillBSJS(fEventCentrality,kTRho,fTPCJetThreshold,fmyAKTChargedJets,fTPCFullJet->GetJets(),fTPCFullJet->GetTotalJets());
     fRhoChargedCMS->FillDeltaPt(fEventCentrality,kTRho,fJetR,fTPCRCBckgFluc,1);
     fRhoChargedCMS->FillDeltaPtSignal(fEventCentrality,kTRho,fJetR,fTPCRCBckgFlucSignal,1);
+    fRhoChargedCMS->FillDeltaPtNColl(fEventCentrality,kTRho,fJetR,fTPCRCBckgFlucNColl,1);
     fRhoChargedCMS->FillBackgroundFluctuations(fEventCentrality,kTRho,fJetR);
     fRhoChargedCMS->FillLeadingJetPtRho(fTPCFullJet->GetLeadingPt(),kTRho);
     delete [] RhoArray;
@@ -1897,6 +1978,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoCMSScale()
     fRhoChargedCMSScale->FillBSJS(fEventCentrality,kTRho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoChargedCMSScale->FillDeltaPt(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFluc,1);
     fRhoChargedCMSScale->FillDeltaPtSignal(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoChargedCMSScale->FillDeltaPtNColl(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoChargedCMSScale->FillBackgroundFluctuations(fEventCentrality,kTRho,fJetR);
     fRhoChargedCMSScale->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),kTRho);
     delete [] RhoArray;
@@ -1946,6 +2028,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRho0()
     fRhoFull0->FillBSJS(fEventCentrality,EMCal_rho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoFull0->FillDeltaPt(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFluc,1);
     fRhoFull0->FillDeltaPtSignal(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoFull0->FillDeltaPtNColl(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoFull0->FillBackgroundFluctuations(fEventCentrality,EMCal_rho,fJetR);
     fRhoFull0->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),EMCal_rho);
 }
@@ -2022,6 +2105,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRho1()
     fRhoFull1->FillBSJS(fEventCentrality,EMCal_rho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoFull1->FillDeltaPt(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFluc,1);
     fRhoFull1->FillDeltaPtSignal(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoFull1->FillDeltaPtNColl(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoFull1->FillBackgroundFluctuations(fEventCentrality,EMCal_rho,fJetR);
     fRhoFull1->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),EMCal_rho);
 }
@@ -2142,6 +2226,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRho2()
     fRhoFull2->FillBSJS(fEventCentrality,EMCal_rho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoFull2->FillDeltaPt(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFluc,1);
     fRhoFull2->FillDeltaPtSignal(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoFull2->FillDeltaPtNColl(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoFull2->FillBackgroundFluctuations(fEventCentrality,EMCal_rho,fJetR);
     fRhoFull2->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),EMCal_rho);
 }
@@ -2251,6 +2336,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRhoN()
     fRhoFullN->FillBSJS(fEventCentrality,EMCal_rho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoFullN->FillDeltaPt(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFluc,1);
     fRhoFullN->FillDeltaPtSignal(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoFullN->FillDeltaPtNColl(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoFullN->FillBackgroundFluctuations(fEventCentrality,EMCal_rho,fJetR);
     fRhoFullN->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),EMCal_rho);
 }
@@ -2287,6 +2373,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRhoDijet()
     fRhoFullDijet->FillBSJS(fEventCentrality,EMCal_rho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoFullDijet->FillDeltaPt(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFluc,1);
     fRhoFullDijet->FillDeltaPtSignal(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoFullDijet->FillDeltaPtNColl(fEventCentrality,EMCal_rho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoFullDijet->FillBackgroundFluctuations(fEventCentrality,EMCal_rho,fJetR);
     fRhoFullDijet->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),EMCal_rho);
 }
@@ -2317,6 +2404,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRhokT()
     fRhoFullkT->FillBSJS(fEventCentrality,kTRho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoFullkT->FillDeltaPt(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFluc,1);
     fRhoFullkT->FillDeltaPtSignal(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoFullkT->FillDeltaPtNColl(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoFullkT->FillBackgroundFluctuations(fEventCentrality,kTRho,fJetR);
     fRhoFullkT->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),kTRho);
     delete [] RhoArray;
@@ -2433,6 +2521,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRhoCMS()
     fRhoFullCMS->FillBSJS(fEventCentrality,kTRho,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
     fRhoFullCMS->FillDeltaPt(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFluc,1);
     fRhoFullCMS->FillDeltaPtSignal(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucSignal,1);
+    fRhoFullCMS->FillDeltaPtNColl(fEventCentrality,kTRho,fJetR,fEMCalRCBckgFlucNColl,1);
     fRhoFullCMS->FillBackgroundFluctuations(fEventCentrality,kTRho,fJetR);
     fRhoFullCMS->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),kTRho);
     delete [] RhoArray;
@@ -3276,6 +3365,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fh80100DeltaPtSignal(0),
     fhDeltaPtSignal(0),
     fhDeltaPtCenSignal(0),
+    fh020DeltaPtNColl(0),
+    fh80100DeltaPtNColl(0),
+    fhDeltaPtNColl(0),
+    fhDeltaPtCenNColl(0),
     fh020BckgFlucPt(0),
     fh80100BckgFlucPt(0),
     fhBckgFlucPt(0),
@@ -3303,7 +3396,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fBckgFlucPtUp(0),
     fLJetPtBins(0),
     fLJetPtLow(0),
-    fLJetPtUp(0)
+    fLJetPtUp(0),
+    fRhoValue(0)
 {
     // Dummy constructor ALWAYS needed for I/O.
 }
@@ -3332,6 +3426,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fh80100DeltaPtSignal(0),
     fhDeltaPtSignal(0),
     fhDeltaPtCenSignal(0),
+    fh020DeltaPtNColl(0),
+    fh80100DeltaPtNColl(0),
+    fhDeltaPtNColl(0),
+    fhDeltaPtCenNColl(0),
     fh020BckgFlucPt(0),
     fh80100BckgFlucPt(0),
     fhBckgFlucPt(0),
@@ -3359,7 +3457,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fBckgFlucPtUp(0),
     fLJetPtBins(0),
     fLJetPtLow(0),
-    fLJetPtUp(0)
+    fLJetPtUp(0),
+    fRhoValue(0)
 {
     SetName(name);
     SetCentralityTag("V0A");
@@ -3397,6 +3496,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fh80100DeltaPtSignal(0),
     fhDeltaPtSignal(0),
     fhDeltaPtCenSignal(0),
+    fh020DeltaPtNColl(0),
+    fh80100DeltaPtNColl(0),
+    fhDeltaPtNColl(0),
+    fhDeltaPtCenNColl(0),
     fh020BckgFlucPt(0),
     fh80100BckgFlucPt(0),
     fhBckgFlucPt(0),
@@ -3424,7 +3527,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fBckgFlucPtUp(0),
     fLJetPtBins(0),
     fLJetPtLow(0),
-    fLJetPtUp(0)
+    fLJetPtUp(0),
+    fRhoValue(0)
 {
     SetName(name);
     SetCentralityTag(centag);
@@ -3588,7 +3692,33 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fhDeltaPtCenSignal->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhDeltaPtCenSignal->GetZaxis()->SetTitle("Probability Density");
     fhDeltaPtCenSignal->Sumw2();
+
+    // Delta Pt Plots with NColl restrictions on RC
+    DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,20);
+    fh020DeltaPtNColl = new TH1D("fh020DeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh020DeltaPtNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
+    fh020DeltaPtNColl->GetYaxis()->SetTitle("Probability Density");
+    fh020DeltaPtNColl->Sumw2();
     
+    DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",80,100);
+    fh80100DeltaPtNColl = new TH1D("fh80100DeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh80100DeltaPtNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
+    fh80100DeltaPtNColl->GetYaxis()->SetTitle("Probability Density");
+    fh80100DeltaPtNColl->Sumw2();
+    
+    DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,100);
+    fhDeltaPtNColl = new TH1D("fhDeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fhDeltaPtNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
+    fhDeltaPtNColl->GetYaxis()->SetTitle("Probability Density");
+    fhDeltaPtNColl->Sumw2();
+    
+    DeltaPtString = "#deltap_{T} Spectrum vs Centrality";
+    fhDeltaPtCenNColl = new TH2D("fhDeltaPtCenNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhDeltaPtCenNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
+    fhDeltaPtCenNColl->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhDeltaPtCenNColl->GetZaxis()->SetTitle("Probability Density");
+    fhDeltaPtCenNColl->Sumw2();
+
     // Background Fluctuations Pt Plots
     BckgFlucPtString = Form("%d-%d Centrality, Background Fluctuation p_{T} Spectrum",0,20);
     fh020BckgFlucPt = new TH1D("fh020BckgFlucPt",PtString,fPtBins,fPtLow,fPtUp);
@@ -3647,6 +3777,10 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fOutput->Add(fh80100DeltaPtSignal);
     fOutput->Add(fhDeltaPtSignal);
     fOutput->Add(fhDeltaPtCenSignal);
+    fOutput->Add(fh020DeltaPtNColl);
+    fOutput->Add(fh80100DeltaPtNColl);
+    fOutput->Add(fhDeltaPtNColl);
+    fOutput->Add(fhDeltaPtCenNColl);
     fOutput->Add(fh020BckgFlucPt);
     fOutput->Add(fh80100BckgFlucPt);
     fOutput->Add(fhBckgFlucPt);
@@ -3714,6 +3848,8 @@ TList* AliAnalysisTaskFullpAJets::AlipAJetHistos::GetOutputHistos()
 
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillRho(Double_t eventCentrality, Double_t rho)
 {
+    fRhoValue = rho;
+    
     fhRho->Fill(rho);
     fhRhoCen->Fill(rho,eventCentrality);
     fpRho->Fill(eventCentrality,rho);
@@ -3810,6 +3946,28 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillDeltaPtSignal(Double_t event
     }
 }
 
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillDeltaPtNColl(Double_t eventCentrality, Double_t rho, Double_t jetRadius, Double_t *RCArray, Int_t nRC)
+{
+    Int_t i;
+    Double_t tempPt=0.0;
+    
+    for (i=0;i<nRC;i++)
+    {
+        tempPt=RCArray[i]-rho*TMath::Power(jetRadius,2);
+        fhDeltaPtNColl->Fill(tempPt);
+        fhDeltaPtCenNColl->Fill(tempPt,eventCentrality);
+        if (eventCentrality<=20)
+        {
+            fh020DeltaPtNColl->Fill(tempPt);
+        }
+        else if (eventCentrality>=80)
+        {
+            fh80100DeltaPtNColl->Fill(tempPt);
+        }
+        tempPt=0.0;
+    }
+}
+
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBackgroundFluctuations(Double_t eventCentrality, Double_t rho, Double_t jetRadius)
 {
     Double_t tempPt=0.0;
@@ -3830,6 +3988,11 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBackgroundFluctuations(Doubl
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillLeadingJetPtRho(Double_t jetPt, Double_t rho)
 {
     fpLJetRho->Fill(jetPt,rho);
+}
+
+Double_t AliAnalysisTaskFullpAJets::AlipAJetHistos::GetRho()
+{
+    return fRhoValue;
 }
 
 
