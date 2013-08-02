@@ -35,6 +35,7 @@ class AliESDtrackCuts;
 class AliAnalysisEtCuts;
 class AliESDCaloCluster;
 //class THnSparseD;
+class AliPIDResponse;
 
 class AliAnalysisEt : public AliAnalysisEtCommon
 {
@@ -307,6 +308,9 @@ protected:
     TH1I *fCutFlow; // Cut flow
     
     AliAnalysisEtSelector *fSelector; // Selector class
+
+    AliPIDResponse *fPIDResponse;
+
 
 private:
    

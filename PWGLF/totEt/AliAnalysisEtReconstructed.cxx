@@ -35,6 +35,7 @@
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
 #include "AliAnalysisEtRecEffCorrection.h"
+#include "AliESDpid.h"
 
 
 using namespace std;
@@ -60,6 +61,9 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fClusterPositionAcceptedEnergy(0)
 	,fClusterPositionAllEnergy(0)
 	,fClusterEnergy(0)
+	,fClusterEnergyCent(0)
+	,fClusterEnergyCentMatched(0)
+	,fClusterEnergyCentNotMatched(0)
 	,fClusterEt(0)
 	,fHistChargedEnergyRemoved(0)
 	,fHistNeutralEnergyRemoved(0)
@@ -86,6 +90,16 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistTotRawEtEffCorr500MeV(0)
 	,fHistTotAllRawEt(0)
 	,fHistTotAllRawEtEffCorr(0)
+	,fHistNClustersPhosVsEmcal(0)
+	,fHistClusterSizeVsCent(0)
+	,fHistMatchedClusterSizeVsCent(0)
+	,fHistTotAllRawEtVsTotalPt(0)
+	,fHistTotAllRawEtVsTotalPtVsCent(0)
+	,fHistTotMatchedRawEtVsTotalPtVsCent(0)
+	,fHistPIDProtonsTrackMatchedDepositedVsNch(0)
+	,fHistPIDAntiProtonsTrackMatchedDepositedVsNch(0)
+	,fHistPiKPTrackMatchedDepositedVsNch(0)
+	,fHistCentVsNchVsNclReco(0)
 {
 
 }
@@ -105,6 +119,9 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fClusterPositionAcceptedEnergy;
     delete fClusterPositionAllEnergy;
     delete fClusterEnergy;
+    delete fClusterEnergyCent;
+    delete fClusterEnergyCentMatched;
+    delete fClusterEnergyCentNotMatched;
     delete fClusterEt;
     delete fHistChargedEnergyRemoved;
     delete fHistNeutralEnergyRemoved;
@@ -131,6 +148,16 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistTotAllRawEt;
     delete fHistTotAllRawEtEffCorr;
     delete fHistTotRawEtEffCorr500MeV;
+    delete fHistNClustersPhosVsEmcal;
+    delete fHistClusterSizeVsCent;
+    delete fHistMatchedClusterSizeVsCent;
+    delete fHistTotAllRawEtVsTotalPt;
+    delete fHistTotAllRawEtVsTotalPtVsCent;
+    delete fHistTotMatchedRawEtVsTotalPtVsCent;
+    delete fHistPIDProtonsTrackMatchedDepositedVsNch;
+    delete fHistPIDAntiProtonsTrackMatchedDepositedVsNch;
+    delete fHistPiKPTrackMatchedDepositedVsNch;
+    delete fHistCentVsNchVsNclReco;
 }
 
 Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
@@ -163,6 +190,35 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         fCentClass = fCentrality->GetCentralityClass5("V0M");
     }
 
+
+  //for PID
+  AliESDpid *pID = new AliESDpid();
+  pID->MakePID(event);
+  Float_t etPIDProtons = 0.0;
+  Float_t etPIDAntiProtons = 0.0;
+  Float_t etPiKPMatched = 0.0;
+  Float_t multiplicity = fEsdtrackCutsTPC->GetReferenceMultiplicity(event,kTRUE);
+
+
+    Float_t totalMatchedPt = 0.0;
+    Float_t totalPt = 0.0;
+    TObjArray* list  = fEsdtrackCutsTPC->GetAcceptedTracks(event);
+    Int_t nGoodTracks = list->GetEntries();
+    for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++){
+	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
+	if (!track)
+	  {
+	    Printf("ERROR: Could not get track %d", iTrack);
+	    continue;
+	  }
+	else{
+	  totalPt +=track->Pt();
+	  pID->MakeITSPID(track);
+
+
+	}
+    }
+
     //TRefArray *caloClusters = fSelector->GetClusters();//just gets the correct set of clusters - does not apply any cuts
     //Float_t fClusterMult = caloClusters->GetEntries();
 
@@ -185,7 +241,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Float_t fTotAllRawEt = 0.0;
     Float_t fTotRawEt = 0.0;
     Float_t fTotAllRawEtEffCorr = 0.0;
-
+    Int_t nPhosClusters = 0;
+    Int_t nEmcalClusters = 0;
 
     for (Int_t iCluster = 0; iCluster < event->GetNumberOfCaloClusters(); iCluster++)
     {
@@ -197,6 +254,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         }
         int x = 0;
 	fCutFlow->Fill(x++);
+	if(cluster->IsEMCAL()) nEmcalClusters++;
+	else nPhosClusters++;
 	if(!fSelector->IsDetectorCluster(*cluster)) continue;
 	fCutFlow->Fill(x++);
 	if(!fSelector->PassMinEnergyCut(*cluster)) continue;
@@ -215,6 +274,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	//if(TMath::Abs(cp.Eta())> fCuts->fCuts->GetGeometryEmcalEtaAccCut() || cp.Phi() >  fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180. ||  cp.Phi() >  fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.) continue;//Do not accept if cluster is not in the acceptance
 	fTotAllRawEt += TMath::Sin(cp.Theta())*cluster->E();
 	fTotAllRawEtEffCorr += CorrectForReconstructionEfficiency(*cluster,cent);
+
+	fClusterEnergyCent->Fill(cluster->E(),cent);
 
         Bool_t matched = kTRUE;//default to no track matched
 	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();//find the index of the matched track
@@ -239,20 +300,38 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                     AliError("Error: track does not exist");
                 }
                 else {
+		  totalMatchedPt +=track->Pt();
+		  fClusterEnergyCentMatched->Fill(cluster->E(),cent);
+		  fHistMatchedClusterSizeVsCent->Fill(cluster->GetNCells(),cent);
+
 		  float eff = fTmCorrections->TrackMatchingEfficiency(track->Pt(),cent);
 		  if(TMath::Abs(eff)<1e-5) eff = 1.0;
-		  //cout<<"pt "<<track->Pt()<<" eff "<<eff<<endl;
+		  //cout<<"pt "<<track->Pt()<<" eff "<<eff<<" total "<<nChargedHadronsTotal<<endl;
 		  nChargedHadronsMeasured++;
 		  nChargedHadronsTotal += 1/eff;
 		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,cent);
-		  nChargedHadronsEtMeasured+= 1/eff*effCorrEt;
+		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*cluster->E();
 		  //One efficiency is the gamma efficiency and the other is the track matching efficiency.
-		  nChargedHadronsEtTotal+= 1/eff *effCorrEt;
+		  nChargedHadronsEtTotal+= 1/eff *TMath::Sin(cp.Theta())*cluster->E();
+
+		  Float_t nSigmaPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion); 
+		  Float_t nSigmaProton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton); 
+		  bool isProton = (nSigmaPion>3.0 && nSigmaProton<3.0 && track->Pt()<0.9);
+		  //cout<<"NSigmaProton "<<nSigmaProton<<endl;
+		  etPiKPMatched += effCorrEt;
+		  if(isProton){
+		    if(track->Charge()>0){
+		      etPIDProtons += effCorrEt;
+		    }
+		    else{
+		      etPIDAntiProtons += effCorrEt;
+		    }
+		  }
 		  if(TMath::Sin(cp.Theta())*cluster->E()>0.5){
 		    nChargedHadronsMeasured500MeV++;
 		    nChargedHadronsTotal500MeV += 1/eff;
-		    nChargedHadronsEtMeasured500MeV+= 1/eff*effCorrEt;
-		    nChargedHadronsEtTotal500MeV+= 1/eff *effCorrEt;
+		    nChargedHadronsEtMeasured500MeV+= TMath::Sin(cp.Theta())*cluster->E();
+		    nChargedHadronsEtTotal500MeV+= 1/eff *TMath::Sin(cp.Theta())*cluster->E();
 		  }
 		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),cent);
 		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),effCorrEt,cent);
@@ -344,6 +423,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fClusterPositionAccepted->Fill(p2.Phi(), p2.PseudoRapidity());
 	    fClusterPositionAcceptedEnergy->Fill(p2.Phi(), p2.PseudoRapidity(),cluster->E());
 	    fClusterEnergy->Fill(cluster->E());
+	    fClusterEnergyCentNotMatched->Fill(cluster->E(),cent);
+	    fHistClusterSizeVsCent->Fill(cluster->GetNCells(),cent);
 	    fClusterEt->Fill(TMath::Sin(p2.Theta())*cluster->E());
 	    uncorrEt += TMath::Sin(p2.Theta())*cluster->E();
 	    float myuncorrEt = TMath::Sin(p2.Theta())*cluster->E();
@@ -369,6 +450,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         fMultiplicity++;
     }
     
+    fHistNClustersPhosVsEmcal->Fill(nPhosClusters,nEmcalClusters,cent);
     fChargedEnergyRemoved = GetChargedContribution(fNeutralMultiplicity);
     fNeutralEnergyRemoved = GetNeutralContribution(fNeutralMultiplicity);
     fHistChargedEnergyRemoved->Fill(fChargedEnergyRemoved, fNeutralMultiplicity);
@@ -384,6 +466,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistTotRawEtEffCorr->Fill(fTotNeutralEt,cent);
     fHistTotRawEt->Fill(fTotRawEt,cent);
     fHistTotAllRawEt->Fill(fTotAllRawEt,cent);
+    fHistTotAllRawEtVsTotalPt->Fill(fTotAllRawEt,totalPt);
+    fHistTotAllRawEtVsTotalPtVsCent->Fill(fTotAllRawEt,totalPt,cent);
+    fHistTotMatchedRawEtVsTotalPtVsCent->Fill(fTotAllRawEt,totalMatchedPt,cent);
     fHistTotAllRawEtEffCorr->Fill(fTotAllRawEtEffCorr,cent);
     //cout<<"uncorr "<<uncorrEt<<" raw "<<nominalRawEt<<" tot raw "<<fTotNeutralEt;
     fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
@@ -403,6 +488,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistNotFoundHadronsvsCent->Fill(nChargedHadronsTotal-nChargedHadronsMeasured,cent);
     fHistFoundHadronsEtvsCent->Fill(nChargedHadronsEtMeasured,cent);
     fHistNotFoundHadronsEtvsCent->Fill(nChargedHadronsEtTotal-nChargedHadronsEtMeasured,cent);
+    //cout<<"found "<<nChargedHadronsMeasured<<" total "<<nChargedHadronsTotal<<" not found "<<nChargedHadronsTotal-nChargedHadronsMeasured<<" found "<< nChargedHadronsMeasured500MeV<<" not found "<< nChargedHadronsTotal500MeV-nChargedHadronsMeasured500MeV <<" total "<<nChargedHadronsTotal500MeV<<endl;
     fHistFoundHadronsvsCent500MeV->Fill(nChargedHadronsMeasured500MeV,cent);
     fHistNotFoundHadronsvsCent500MeV->Fill(nChargedHadronsTotal500MeV-nChargedHadronsMeasured500MeV,cent);
     fHistFoundHadronsEtvsCent500MeV->Fill(nChargedHadronsEtMeasured500MeV,cent);
@@ -414,6 +500,11 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 //     cout<<nChargedHadronsEtTotal;
 //     if(nChargedHadronsTotal>0) cout<<" ("<<nChargedHadronsEtTotal/nChargedHadronsTotal<<") ";
 //     cout<<endl;
+    fHistPIDProtonsTrackMatchedDepositedVsNch->Fill(etPIDProtons,multiplicity);
+    fHistPIDAntiProtonsTrackMatchedDepositedVsNch->Fill(etPIDAntiProtons,multiplicity);
+    fHistCentVsNchVsNclReco->Fill(cent,multiplicity,fMultiplicity);
+    fHistPiKPTrackMatchedDepositedVsNch->Fill(etPiKPMatched,multiplicity);
+    delete pID;
     return 0;
 }
 
@@ -488,6 +579,9 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fClusterPositionAcceptedEnergy);
     list->Add(fClusterPositionAllEnergy);
     list->Add(fClusterEnergy);
+    list->Add(fClusterEnergyCent);
+    list->Add(fClusterEnergyCentMatched);
+    list->Add(fClusterEnergyCentNotMatched);
     list->Add(fClusterEt);
     
     list->Add(fHistChargedEnergyRemoved);
@@ -515,6 +609,16 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistTotAllRawEtEffCorr);
     list->Add(fHistTotRawEt);
     list->Add(fHistTotAllRawEt);
+    list->Add(fHistNClustersPhosVsEmcal);
+    list->Add(fHistClusterSizeVsCent);
+    list->Add(fHistMatchedClusterSizeVsCent);
+    list->Add(fHistTotAllRawEtVsTotalPt);
+    list->Add(fHistTotAllRawEtVsTotalPtVsCent);
+    list->Add(fHistTotMatchedRawEtVsTotalPtVsCent);
+    list->Add(fHistPIDProtonsTrackMatchedDepositedVsNch);
+    list->Add(fHistPIDAntiProtonsTrackMatchedDepositedVsNch);
+    list->Add(fHistPiKPTrackMatchedDepositedVsNch);
+    list->Add(fHistCentVsNchVsNclReco);
 }
 
 void AliAnalysisEtReconstructed::CreateHistograms()
@@ -585,8 +689,26 @@ void AliAnalysisEtReconstructed::CreateHistograms()
 
     histname = "fClusterEnergy" + fHistogramNameSuffix;
     fClusterEnergy = new TH1F(histname.Data(), histname.Data(), 100, 0, 5);
-    fClusterEnergy->SetXTitle("Number of clusters");
-    fClusterEnergy->SetYTitle("Energy of cluster");
+    fClusterEnergy->SetYTitle("Number of clusters");
+    fClusterEnergy->SetXTitle("Energy of cluster");
+
+    histname = "fClusterEnergyCent" + fHistogramNameSuffix;
+    fClusterEnergyCent = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);
+    fClusterEnergyCent->SetXTitle("Energy of cluster");
+    fClusterEnergyCent->SetYTitle("Centrality Bin");
+    fClusterEnergyCent->SetZTitle("Number of clusters");
+
+    histname = "fClusterEnergyCentMatched" + fHistogramNameSuffix;
+    fClusterEnergyCentMatched = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);
+    fClusterEnergyCentMatched->SetXTitle("Energy of cluster");
+    fClusterEnergyCentMatched->SetYTitle("Centrality Bin");
+    fClusterEnergyCentMatched->SetZTitle("Number of Clusters");
+
+    histname = "fClusterEnergyCentNotMatched" + fHistogramNameSuffix;
+    fClusterEnergyCentNotMatched = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);
+    fClusterEnergyCentNotMatched->SetXTitle("Energy of cluster");
+    fClusterEnergyCentNotMatched->SetYTitle("Centrality Bin");
+    fClusterEnergyCentNotMatched->SetZTitle("Number of clusters");
 
     histname = "fClusterEt" + fHistogramNameSuffix;
     fClusterEt = new TH1F(histname.Data(), histname.Data(), 100, 0, 5);
@@ -606,20 +728,29 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistMatchedTracksEvspTvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffCorr", "fHistMatchedTracksEvspTvsCentEffCorr",100, 0, 3,100,0,3,20,-0.5,19.5);
     fHistMatchedTracksEvspTvsCentEffTMCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffTMCorr", "fHistMatchedTracksEvspTvsCentEffTMCorr",100, 0, 3,100,0,3,20,-0.5,19.5);
     fHistMatchedTracksEvspTvsCentEffTMCorr500MeV = new TH3F("fHistMatchedTracksEvspTvsCentEffTMCorr500MeV", "fHistMatchedTracksEvspTvsCentEffTMCorr500MeV",100, 0, 3,100,0,3,20,-0.5,19.5);
-    fHistFoundHadronsvsCent = new TH2F("fHistFoundHadronsvsCent","fHistFoundHadronsvsCent",100,0,100,20,-0.5,19.5);
-    fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,200,20,-0.5,19.5);
-    fHistFoundHadronsEtvsCent = new TH2F("fHistFoundHadronsEtvsCent","fHistFoundHadronsEtvsCent",100,0,200,20,-0.5,19.5);
-    fHistNotFoundHadronsEtvsCent = new TH2F("fHistNotFoundHadronsEtvsCent","fHistNotFoundHadronsEtvsCent",100,0,300,20,-0.5,19.5);
-    fHistFoundHadronsvsCent500MeV = new TH2F("fHistFoundHadronsvsCent500MeV","fHistFoundHadronsvsCent500MeV",100,0,100,20,-0.5,19.5);
-    fHistNotFoundHadronsvsCent500MeV = new TH2F("fHistNotFoundHadronsvsCent500MeV","fHistNotFoundHadronsvsCent500MeV",100,0,200,20,-0.5,19.5);
-    fHistFoundHadronsEtvsCent500MeV = new TH2F("fHistFoundHadronsEtvsCent500MeV","fHistFoundHadronsEtvsCent500MeV",100,0,200,20,-0.5,19.5);
-    fHistNotFoundHadronsEtvsCent500MeV = new TH2F("fHistNotFoundHadronsEtvsCent500MeV","fHistNotFoundHadronsEtvsCent500MeV",100,0,300,20,-0.5,19.5);
+
+    float max = 200;
+    if(fHistogramNameSuffix.Contains("P")){max = 100;}
+    fHistFoundHadronsvsCent = new TH2F("fHistFoundHadronsvsCent","fHistFoundHadronsvsCent",100,0,max,20,-0.5,19.5);
+       fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,max,20,-0.5,19.5);
+    fHistFoundHadronsEtvsCent = new TH2F("fHistFoundHadronsEtvsCent","fHistFoundHadronsEtvsCent",100,0,max,20,-0.5,19.5);
+       fHistNotFoundHadronsEtvsCent = new TH2F("fHistNotFoundHadronsEtvsCent","fHistNotFoundHadronsEtvsCent",100,0,max,20,-0.5,19.5);
+    fHistFoundHadronsvsCent500MeV = new TH2F("fHistFoundHadronsvsCent500MeV","fHistFoundHadronsvsCent500MeV",100,0,max,20,-0.5,19.5);
+    fHistNotFoundHadronsvsCent500MeV = new TH2F("fHistNotFoundHadronsvsCent500MeV","fHistNotFoundHadronsvsCent500MeV",100,0,max,20,-0.5,19.5);
+    fHistFoundHadronsEtvsCent500MeV = new TH2F("fHistFoundHadronsEtvsCent500MeV","fHistFoundHadronsEtvsCent500MeV",100,0,max,20,-0.5,19.5);
+    fHistNotFoundHadronsEtvsCent500MeV = new TH2F("fHistNotFoundHadronsEtvsCent500MeV","fHistNotFoundHadronsEtvsCent500MeV",100,0,max,20,-0.5,19.5);
 
     fHistTotRawEtEffCorr = new TH2F("fHistTotRawEtEffCorr","fHistTotRawEtEffCorr",250,0,250,20,-0.5,19.5);
     fHistTotRawEt = new TH2F("fHistTotRawEt","fHistTotRawEt",250,0,250,20,-0.5,19.5);
     fHistTotRawEtEffCorr500MeV = new TH2F("fHistTotRawEtEffCorr500MeV","fHistTotRawEtEffCorr500MeV",250,0,250,20,-0.5,19.5);
     fHistTotAllRawEt = new TH2F("fHistTotAllRawEt","fHistTotAllRawEt",250,0,250,20,-0.5,19.5);
     fHistTotAllRawEtEffCorr = new TH2F("fHistTotAllRawEtEffCorr","fHistTotAllRawEtEffCorr",250,0,250,20,-0.5,19.5);
+    fHistNClustersPhosVsEmcal = new TH3F("fHistNClustersPhosVsEmcal","fHistNClustersPhosVsEmcal",50,0,50,250,0,250,20,-0.5,19);
+    fHistClusterSizeVsCent = new TH2F("fHistClusterSizeVsCent","fHistClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);
+    fHistMatchedClusterSizeVsCent = new TH2F("fHistMatchedClusterSizeVsCent","fHistMatchedClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);
+    fHistTotAllRawEtVsTotalPt = new TH2F("fHistTotAllRawEtVsTotalPt","fHistTotAllRawEtVsTotalPt",125,0,250,200,0,2000);
+    fHistTotAllRawEtVsTotalPtVsCent = new TH3F("fHistTotAllRawEtVsTotalPtVsCent","fHistTotAllRawEtVsTotalPtVsCent",125,0,250,200,0,2000,20,-0.5,19.5);
+    fHistTotMatchedRawEtVsTotalPtVsCent = new TH3F("fHistTotMatchedRawEtVsTotalPtVsCent","fHistTotMatchedRawEtVsTotalPtVsCent",250,0,250,100,0,200,20,-0.5,19.5);
     
     maxEt = 500;
     histname = "fHistNominalRawEt" + fHistogramNameSuffix;
@@ -633,6 +764,19 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     histname = "fHistNominalEffLowEt" + fHistogramNameSuffix;
     fHistNominalEffLowEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
 
+      Float_t maxEtRange = 25;
+      Float_t maxEtRangeHigh = 125;
+      Float_t minEtRange = 0;
+      Int_t nbinsMult = 100;
+      Float_t maxMult = 3000;
+      Float_t minMult = 0;
+      Int_t nbinsCl = 150;
+      Float_t maxCl = 300;
+      Float_t minCl = 0;
+    fHistPIDProtonsTrackMatchedDepositedVsNch = new TH2F("fHistPIDProtonsTrackMatchedDepositedVsNch","PID'd protons deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
+    fHistPIDAntiProtonsTrackMatchedDepositedVsNch = new TH2F("fHistPIDAntiProtonsTrackMatchedDepositedVsNch","PID'd #bar{p} E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
+    fHistPiKPTrackMatchedDepositedVsNch = new TH2F("fHistPiKPTrackMatchedDepositedVsNch","PiKP track matched",nbinsEt,minEtRange,maxEtRangeHigh,nbinsMult,minMult,maxMult);
+    fHistCentVsNchVsNclReco = new TH3F("fHistCentVsNchVsNclReco","Cent bin vs Nch Vs NCl",20,-0.5,19.5,nbinsMult,minMult,maxMult,nbinsCl,minCl,maxCl);
 }
 Double_t AliAnalysisEtReconstructed::ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t cent)
 {
