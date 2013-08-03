@@ -76,6 +76,10 @@ class AliMCAnalysisUtils : public TObject {
   TLorentzVector GetDaughter  (const Int_t daughter, const Int_t label,const AliCaloTrackReader* reader,
                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daugLabel);
 
+  Int_t          GetNOverlaps(const Int_t * label, const UInt_t nlabels,
+                              const Int_t mctag, const Int_t mesonLabel,
+                              AliCaloTrackReader * reader,Int_t *overpdg);
+  
   //Check or set the bits produced in the above methods
   void    SetTagBit(Int_t &tag, const UInt_t set) const {
     // Set bit of type set (mcTypes) in tag
@@ -113,7 +117,7 @@ class AliMCAnalysisUtils : public TObject {
   AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & mcu) ; // cpy assignment
   AliMCAnalysisUtils(              const AliMCAnalysisUtils & mcu) ; // cpy ctor
   
-  ClassDef(AliMCAnalysisUtils,4)
+  ClassDef(AliMCAnalysisUtils,5)
 
 } ;
 

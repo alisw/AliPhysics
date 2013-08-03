@@ -31,14 +31,15 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   virtual ~AliAnaInsideClusterInvariantMass() { ; } //virtual dtor
   
   void         CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex, const Int_t noverlaps);
+                                        //Float_t mass, Float_t m02, TLorentzVector l1, TLorentzVector l2);
   
   TObjString * GetAnalysisCuts();
   
   TList      * GetCreateOutputObjects();
   
-  void         GetMCIndex(AliVCluster * cluster, Int_t & mcindex);
+  void         GetMCIndex(AliVCluster * cluster, Int_t & mcindex, Int_t & mcTag);
   
-  void         GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex, const Bool_t matched,
+  void         GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex, const Int_t mcTag, const Bool_t matched,
                                 Float_t & eprim, Float_t & asymGen, Int_t & noverlaps );
   
   void         FillAngleHistograms(const Int_t nMax, const Bool_t matched,
@@ -48,13 +49,15 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                                   const Float_t mass, const Float_t asym, const Float_t l0);
   
   void         FillMCHistograms(const Float_t en,        const Float_t e1  , const Float_t e2,
-                                const Int_t ebin,        const Int_t mcindex,
+                                const Int_t ebin,        const Int_t mcindex,const Int_t noverlaps,
                                 const Float_t l0,        const Float_t mass,
                                 const Int_t nMax,        const Bool_t  matched,
                                 const Float_t splitFrac, const Float_t asym,
                                 const Float_t eprim,     const Float_t asymGen);
   
-  void         FillMCOverlapHistograms(const Float_t en,      const Float_t mass, const Float_t l0, const Float_t splitFrac,
+  void         FillMCOverlapHistograms(const Float_t en,      const Float_t enprim,
+                                       const Float_t mass,    const Float_t l0,
+                                       const Float_t asym,    const Float_t splitFrac,
                                        const Int_t   nlm,     const Int_t ebin,   const Bool_t matched,
                                        const Int_t   mcindex, const Int_t noverlaps);
   
@@ -63,6 +66,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         FillSSExtraHistograms(AliVCluster *cluster, const Int_t nMax,
                                      const Bool_t matched, const Int_t mcindex,
                                      const Float_t mass  , const Int_t ebin);
+
+  void         FillNCellHistograms(const Int_t   ncells,  const Float_t energy, const Int_t nMax,
+                                   const Bool_t  matched, const Int_t mcindex,
+                                   const Float_t mass   , const Float_t l0);
   
   void         FillTrackMatchingHistograms(AliVCluster * cluster,const Int_t nMax, const Int_t mcindex);
   
@@ -107,6 +114,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnFillMCOverlapHistograms()         { fFillMCOverlapHisto  = kTRUE  ; }
   void         SwitchOffFillMCOverlapHistograms()        { fFillMCOverlapHisto  = kFALSE ; }
+
+  void         SwitchOnFillNCellHistograms()             { fFillNCellHisto      = kTRUE  ; }
+  void         SwitchOffFillNCellHistograms()            { fFillNCellHisto      = kFALSE ; }
   
   void         SetNWeightForShowerShape(Int_t n)           { fSSWeightN = n ; }
   void         SetWeightForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSWeight[i] = v ; }
@@ -142,6 +152,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillSSWeightHisto ;    // Fill weigth histograms
   Bool_t       fFillEbinHisto ;        // Fill E bin histograms
   Bool_t       fFillMCOverlapHisto ;   // Fill MC particles overlap histograms
+  Bool_t       fFillNCellHisto ;       // Fill n cells in cluster dependent histograms
 
   Float_t      fSSWeight[10];          // List of weights to test
   Int_t        fSSWeightN;             // Total number of weights to test
@@ -232,7 +243,11 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCGenFracNLocMax1[8][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhMCGenFracNLocMax2[8][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenFracNLocMaxN[8][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
- 
+
+  TH2F       * fhMCGenFracNLocMax1NoOverlap[8][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, no overlap found
+  TH2F       * fhMCGenFracNLocMax2NoOverlap[8][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, no overlap found
+  TH2F       * fhMCGenFracNLocMaxNNoOverlap[8][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, no overlap found
+  
   TH2F       * fhMCGenFracAfterCutsNLocMax1MCPi0 ;      //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, MCPi0 after M02 and asymmetry cut
   TH2F       * fhMCGenFracAfterCutsNLocMax2MCPi0 ;      //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, MCPi0, after M02 and asymmetry cut
   TH2F       * fhMCGenFracAfterCutsNLocMaxNMCPi0 ;      //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, MCPi0, after M02 and asymmetry cut
@@ -241,6 +256,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCGenSplitEFracNLocMax2[8][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracNLocMaxN[8][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
 
+  TH2F       * fhMCGenSplitEFracNLocMax1NoOverlap[8][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, no overlap
+  TH2F       * fhMCGenSplitEFracNLocMax2NoOverlap[8][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, no overlap
+  TH2F       * fhMCGenSplitEFracNLocMaxNNoOverlap[8][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, no overlap
+  
   TH2F       * fhMCGenSplitEFracAfterCutsNLocMax1MCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracAfterCutsNLocMax2MCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types
@@ -267,6 +286,21 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhNCellNLocMax1[8][2] ;                  //! n cells in cluster vs E for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhNCellNLocMax2[8][2] ;                  //! n cells in cluster vs E for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhNCellNLocMaxN[8][2] ;                  //! n cells in cluster vs E for N max in cluster > 2, 1-6 for different MC particle types
+  
+  TH2F       * fhNCellMassEHighNLocMax1MCPi0 ;          //! n cells in cluster vs mass for high energy clusters,  for N max in cluster = 1, for MC pi0
+  TH2F       * fhNCellM02EHighNLocMax1MCPi0  ;          //! n cells in cluster vs m02  for high energy clusters,  for N max in cluster = 1, for MC pi0
+  TH2F       * fhNCellMassELowNLocMax1MCPi0  ;          //! n cells in cluster vs mass for low  energy clusters,  for N max in cluster = 1, for MC pi0
+  TH2F       * fhNCellM02ELowNLocMax1MCPi0   ;          //! n cells in cluster vs m02  for low  energy clusters,  for N max in cluster = 1, for MC pi0
+
+  TH2F       * fhNCellMassEHighNLocMax2MCPi0 ;          //! n cells in cluster vs mass for high energy clusters,  for N max in cluster = 2, for MC pi0
+  TH2F       * fhNCellM02EHighNLocMax2MCPi0  ;          //! n cells in cluster vs m02  for high energy clusters,  for N max in cluster = 2, for MC pi0
+  TH2F       * fhNCellMassELowNLocMax2MCPi0  ;          //! n cells in cluster vs mass for low  energy clusters,  for N max in cluster = 2, for MC pi0
+  TH2F       * fhNCellM02ELowNLocMax2MCPi0   ;          //! n cells in cluster vs m02  for low  energy clusters,  for N max in cluster = 2, for MC pi0
+  
+  TH2F       * fhNCellMassEHighNLocMaxNMCPi0 ;          //! n cells in cluster vs mass for high energy clusters,  for N max in cluster > 2, for MC pi0
+  TH2F       * fhNCellM02EHighNLocMaxNMCPi0  ;          //! n cells in cluster vs m02  for high energy clusters,  for N max in cluster > 2, for MC pi0
+  TH2F       * fhNCellMassELowNLocMaxNMCPi0  ;          //! n cells in cluster vs mass for low  energy clusters,  for N max in cluster > 2, for MC pi0
+  TH2F       * fhNCellM02ELowNLocMaxNMCPi0   ;          //! n cells in cluster vs m02  for low  energy clusters,  for N max in cluster > 2, for MC pi0
   
   TH2F       * fhM02Pi0NLocMax1[8][2] ;                 //! M02 for Mass around pi0, N Local Maxima = 1
   TH2F       * fhM02EtaNLocMax1[8][2] ;                 //! M02 for Mass around eta, N Local Maxima = 1
@@ -408,10 +442,24 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F       * fhMCESplitEFracOverlap0[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, neutral cluster
   TH2F       * fhMCESplitEFracOverlap1[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, neutral cluster
-  TH2F       * fhMCESplitEFracOverlapN[3][8];           //! E vs sum of splitted cluster energy / cluster energyfor different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCESplitEFracOverlapN[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, N  other MC particles contributes, neutral cluster
   TH2F       * fhMCESplitEFracOverlap0Match[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, charged cluster
   TH2F       * fhMCESplitEFracOverlap1Match[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, charged cluster
-  TH2F       * fhMCESplitEFracOverlapNMatch[3][8];      //! E vs sum of splitted cluster energy / cluster energyc for different MC origin, N  other MC particles contributes, charged cluster
+  TH2F       * fhMCESplitEFracOverlapNMatch[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, N  other MC particles contributes, charged cluster
+
+  TH2F       * fhMCEAsymOverlap0[3][8];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCEAsymOverlap1[3][8];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEAsymOverlapN[3][8];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEAsymOverlap0Match[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCEAsymOverlap1Match[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCEAsymOverlapNMatch[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, charged cluster
+
+  TH2F       * fhMCEEpriOverlap0[3][8];                 //! E reco vs primary for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCEEpriOverlap1[3][8];                 //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEEpriOverlapN[3][8];                 //! E reco vs primary for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEEpriOverlap0Match[3][8];            //! E reco vs primary for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCEEpriOverlap1Match[3][8];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCEEpriOverlapNMatch[3][8];            //! E reco vs primary for different MC origin, N  other MC particles contributes, charged cluster
   
   TH2F       * fhMCPi0MassM02Overlap0[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, no other MC particles contributes, neutral cluster, 4 E bins
   TH2F       * fhMCPi0MassM02Overlap1[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, 1  other MC particles contributes, neutral cluster, 4 E bins
@@ -463,7 +511,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,21)
+  ClassDef(AliAnaInsideClusterInvariantMass,22)
   
 } ;
 
