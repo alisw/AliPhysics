@@ -1435,16 +1435,10 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
         
         // Compare the primary depositing more energy with the rest,
         // if no photon/electron as comon ancestor (conversions), count as other particle
-        Int_t ancPDG = 0, ancStatus = -1;
-        TLorentzVector momentum; TVector3 prodVertex;
-        Int_t ancLabel = 0;
-        Int_t noverlaps = 1;
-        for (UInt_t ilab = 1; ilab < cluster->GetNLabels(); ilab++ )
-        {
-          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab],
-                                                               GetReader(),ancPDG,ancStatus,momentum,prodVertex);
-          if(ancPDG!=22 && TMath::Abs(ancPDG)!=11) noverlaps++;
-        }
+        const UInt_t nlabels = cluster->GetNLabels();
+        Int_t overpdg[nlabels];
+        Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg);
+
         //printf("N overlaps %d \n",noverlaps);
         
         if(noverlaps == 1)

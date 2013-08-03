@@ -1838,6 +1838,84 @@ Int_t AliMCAnalysisUtils::GetNDaughters(const Int_t label, const AliCaloTrackRea
   return -1;
 }
 
+//_______________________________________________________________________________
+Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, const UInt_t nlabels,
+                                       const Int_t mctag, const Int_t mesonLabel,
+                                       AliCaloTrackReader * reader, Int_t *overpdg)
+{
+  // Compare the primary depositing more energy with the rest,
+  // if no photon/electron (conversion) or neutral meson as comon ancestor, consider it as other particle contributing
+  // Give as input the meson label in case it was a pi0 or eta merged cluster
+  // Init overpdg with nlabels
+  
+  Int_t ancPDG = 0, ancStatus = -1;
+  TLorentzVector momentum; TVector3 prodVertex;
+  Int_t ancLabel = 0;
+  Int_t noverlaps = 0;
+  Bool_t ok = kFALSE;
+  
+  for (UInt_t ilab = 1; ilab < nlabels; ilab++ )
+  {
+    ancLabel = CheckCommonAncestor(label[0],label[ilab],reader,ancPDG,ancStatus,momentum,prodVertex);
+    
+    //printf("Overlaps, i %d: Main Label %d, second label %d, ancestor: Label %d, pdg %d - tag %d \n",
+    //       ilab,label[0],label[ilab],ancLabel,ancPDG, mctag);
+    
+    Bool_t overlap = kFALSE;
+    
+    if     ( ancLabel < 0 )
+    {
+      overlap = kTRUE;
+      //printf("\t \t \t No Label = %d\n",ancLabel);
+    }
+    else if( ( ancPDG==111 || ancPDG==221 ) && ( CheckTagBit(mctag,kMCPi0) ||  CheckTagBit(mctag,kMCEta)) && mesonLabel != ancLabel)
+    {
+      //printf("\t \t  meson Label %d, ancestor Label %d\n",mesonLabel,ancLabel);
+      overlap = kTRUE;
+    }
+    else if( ancPDG!=22 && TMath::Abs(ancPDG)!=11 && ancPDG != 111 && ancPDG != 221 )
+    {
+      //printf("\t \t \t Non EM PDG = %d\n",ancPDG);
+      overlap = kTRUE ;
+    }
+    
+    if( !overlap ) continue ;
+    
+    // We have at least one overlap
+    
+    //printf("Overlap!!!!!!!!!!!!!!\n");
+    
+    noverlaps++;
+    
+    // What is the origin of the overlap?
+    Bool_t  mOK = 0,      gOK = 0;
+    Int_t   mpdg = -999999,  gpdg = -1;
+    Int_t   mstatus = -1, gstatus = -1;
+    Int_t   gLabel = -1, ggLabel = -1;
+    TLorentzVector mother      = GetMother     (label[ilab],reader,mpdg,mstatus,mOK);
+    TLorentzVector grandmother = GetGrandMother(label[ilab],reader,gpdg,gstatus,gOK, gLabel,ggLabel);
+    
+    //printf("\t Overlap!, mother pdg %d; grand mother pdg %d",mpdg,gpdg);
+    
+    if( ( mpdg == 22 || TMath::Abs(mpdg==11) ) &&
+        ( gpdg == 22 || TMath::Abs(gpdg==11) ) &&
+       gLabel >=0 )
+    {
+      Int_t labeltmp = gLabel;
+      while( ( gpdg == 22 || TMath::Abs(gpdg==11) ) && gLabel >=0 )
+      {
+        mpdg=gpdg;
+        grandmother = GetGrandMother(labeltmp,reader,gpdg,gstatus,ok, gLabel,ggLabel);
+        labeltmp=gLabel;
+      }
+    }
+    overpdg[noverlaps-1] = mpdg;
+  }
+  
+  return noverlaps ;
+  
+}
+
 //________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
 {

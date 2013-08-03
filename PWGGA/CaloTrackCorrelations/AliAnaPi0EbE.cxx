@@ -2646,13 +2646,25 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t    nMaxima = 0 ;
     Double_t mass    = 0 , angle = 0;
     TLorentzVector    l1, l2;
-    Int_t    absId1 = -1; Int_t absId2 = -1;
+    Int_t    absId1   =-1; Int_t   absId2   =-1;
+    Float_t  distbad1 =-1; Float_t distbad2 =-1;
+    Bool_t   fidcut1  = 0; Bool_t  fidcut2  = 0;
     
     Int_t idPartType = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(calo,cells,GetCaloUtils(),
                                                                                    GetVertex(evtIndex),nMaxima,
-                                                                                   mass,angle,l1,l2,absId1,absId2) ;
+                                                                                   mass,angle,l1,l2,absId1,absId2,
+                                                                                   distbad1,distbad2,fidcut1,fidcut2) ;
     
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",idPartType);
+    
+    
+    // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
+    if(!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist)
+    {
+      if(GetDebug() > 1)  printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
+                                 distbad1,distbad2, fidcut1,fidcut2);
+      continue ;
+    }
     
     
     //Skip events with too few or too many  NLM

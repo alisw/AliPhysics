@@ -654,7 +654,9 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
                                                                 Int_t    & nMax,
                                                                 Double_t & mass,   Double_t & angle,
                                                                 TLorentzVector & l1, TLorentzVector & l2,
-                                                                Int_t    & absId1, Int_t    & absId2 )
+                                                                Int_t   & absId1,   Int_t   & absId2,
+                                                                Float_t & distbad1, Float_t & distbad2,
+                                                                Bool_t  & fidcut1,  Bool_t  & fidcut2  )
 {
   // Split the cluster in 2, do invariant mass, get the mass and decide 
   // if this is a photon, pi0, eta, ...
@@ -770,6 +772,19 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   
   caloutils->SplitEnergy(absId1,absId2,cluster, cells, &cluster1, &cluster2,nMax); /*absIdList, maxEList,*/
   
+  fidcut1 = caloutils->GetEMCALRecoUtils()->CheckCellFiducialRegion(caloutils->GetEMCALGeometry(), &cluster1,cells);
+  fidcut2 = caloutils->GetEMCALRecoUtils()->CheckCellFiducialRegion(caloutils->GetEMCALGeometry(), &cluster2,cells);
+
+  caloutils->GetEMCALRecoUtils()->RecalculateClusterDistanceToBadChannel(caloutils->GetEMCALGeometry(),cells,&cluster1);
+  caloutils->GetEMCALRecoUtils()->RecalculateClusterDistanceToBadChannel(caloutils->GetEMCALGeometry(),cells,&cluster2);
+
+  distbad1 = cluster1.GetDistanceToBadChannel();
+  distbad2 = cluster2.GetDistanceToBadChannel();
+//  if(!fidcut2 || !fidcut1 || distbad1 < 2 || distbad2 < 2)
+//    printf("*** Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cut cl %d, cl1 %d, cl2 %d \n",
+//           cluster->GetDistanceToBadChannel(),distbad1,distbad2,
+//           caloutils->GetEMCALRecoUtils()->CheckCellFiducialRegion(caloutils->GetEMCALGeometry(), cluster,cells),fidcut1,fidcut2);
+  
   cluster1.GetMomentum(l1,vertex);
   cluster2.GetMomentum(l2,vertex);
   
@@ -777,7 +792,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   angle = l2.Angle(l1.Vect());
   Float_t e1 = cluster1.E();
   Float_t e2 = cluster2.E();
-    
+  
   // Consider clusters with splitted energy not too different to original cluster energy
   Float_t splitFracCut = 0;
   if(nMax < 3)  splitFracCut = fSplitEFracMin[nMax-1];
