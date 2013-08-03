@@ -997,6 +997,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if(reject) return kFALSE;
   }// Remove LED events
   
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass LED event rejection \n");
+  
   //-------------------------------------------------------------------------------------
   // Reject or accept events depending on the trigger bit
   //-------------------------------------------------------------------------------------
@@ -1009,6 +1011,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   //printf("AliCaloTrackReader::FillInputEvent() - Accept event? %d, Reject event %d? \n",okA,okR);
   
   if(!okA || !okR) return kFALSE;
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass event bit rejection \n");
+
   
   //-----------------------------------------------------------
   // Reject events depending on the trigger name and event type
@@ -1046,6 +1051,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
 	  if(eventType!=8)return kFALSE;
   }
   
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Trigger name rejection \n");
+
+  
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard
   if(fComparePtHardAndJetPt)
   {
@@ -1056,6 +1064,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   {
     if(!ComparePtHardAndClusterPt()) return kFALSE ;
   }
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pt Hard rejection \n");
   
   //Fill Vertex array
   FillVertexArray();
@@ -1080,6 +1090,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     //printf("\t accept time stamp\n");
   }
   
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Time Stamp rejection \n");
   
   //------------------------------------------------------
   //Event rejection depending on vertex, pileup, v0and
@@ -1092,6 +1103,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
         TMath::Abs(fVertex[0][1] ) < 1.e-6 &&
         TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
   }
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass primary vertex rejection \n");
   
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
@@ -1114,6 +1127,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     }
   }// Event selection/AliceSoft/AliRoot/trunk/PWG/CaloTrackCorrBase/AliCaloTrackReader.h
   
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pile-Up, V0AND event rejection \n");
+
   //------------------------------------------------------
   
   //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
@@ -1123,6 +1138,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     Int_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
   }
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass centrality rejection \n");
+
   
   //Fill the arrays with cluster/tracks/cells data
   
@@ -1144,6 +1162,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
   }
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass uninteresting triggered events rejection in case of mixing analysis \n");
+
   
   //----------------------------------------------------------------------
   // Do not count events that where likely triggered by an exotic cluster
@@ -1193,6 +1214,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   
   patches.Reset();
   
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass EMCal triggered event rejection \n");
+
+  
   // Get the main vertex BC, in case not available
   // it is calculated in FillCTS checking the BC of tracks
   // with DCA small (if cut applied, if open)
@@ -1209,10 +1233,16 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
   }
   
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass rejection of null track events \n");
+
+  
   if(fDoVertexBCEventSelection)
   {
     if(fVertexBC!=0 && fVertexBC!=AliVTrack::kTOFBCNA) return kFALSE ;
   }
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass rejection of events with vertex at BC!=0 \n");
+
   
   if(fFillEMCALCells)
     FillInputEMCALCells();
