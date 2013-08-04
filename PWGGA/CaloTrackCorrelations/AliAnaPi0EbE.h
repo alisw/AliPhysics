@@ -118,6 +118,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOnFillEMCALBCHistograms()             { fFillEMCALBCHistograms = kTRUE  ; }
   void           SwitchOffFillEMCALBCHistograms()            { fFillEMCALBCHistograms = kFALSE ; }
   
+  void           SwitchOnSplitClusterDistToBad()             { fCheckSplitDistToBad   = kTRUE  ; }
+  void           SwitchOffSplitClusterDistToBad()            { fCheckSplitDistToBad   = kFALSE ; }
+
   //For histograms
   enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
                    kmcEta    = 3, kmcElectron   = 4, kmcHadron = 5 };
@@ -145,9 +148,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         fFillOnlySimpleSSHisto;   // Fill selected cluster histograms, selected SS histograms
   Bool_t         fFillEMCALBCHistograms;   // Fill eta-phi BC dependent histograms
 
-  
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
+
+  Bool_t         fCheckSplitDistToBad;     // Check the distance to bad channel and to EMCal borders of split clusters
   
   //Histograms
   
@@ -187,6 +191,34 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
   TH2F         * fhSelectedMassPt  ;       //! pair mass vs pT, for selected pairs
   TH2F         * fhSelectedMassSplitPt  ;  //! pair mass vs pT (split), for selected pairs
+  
+  TH2F         * fhMassNoOverlap  ;                 //! pair mass vs E, for all pairs, no overlap
+  TH2F         * fhMassPtNoOverlap  ;               //! pair mass vs pT, for all pairs, no overlap
+  TH2F         * fhMassSplitPtNoOverlap  ;          //! pair mass vs pT (split), for all pairs, no overlap
+  TH2F         * fhSelectedMassNoOverlap  ;         //! pair mass vs E, for selected pairs, no overlap
+  TH2F         * fhSelectedMassPtNoOverlap  ;       //! pair mass vs pT, for selected pairs, no overlap
+  TH2F         * fhSelectedMassSplitPtNoOverlap  ;  //! pair mass vs pT (split), for selected pairs, no overlap
+
+  TH2F         * fhMCPi0PtRecoPtPrim;      //! pt reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaPtRecoPtPrim;      //! pt reco vs pt prim for eta mother
+  TH2F         * fhMCPi0PtRecoPtPrimNoOverlap; //! pt reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaPtRecoPtPrimNoOverlap; //! pt reco vs pt prim for eta mother
+
+  TH2F         * fhMCPi0SplitPtRecoPtPrim;      //! pt split reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSplitPtRecoPtPrim;      //! pt split reco vs pt prim for eta mother
+  TH2F         * fhMCPi0SplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for eta mother
+
+  TH2F         * fhMCPi0SelectedPtRecoPtPrim;      //! pt reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSelectedPtRecoPtPrim;      //! pt reco vs pt prim for eta mother
+  TH2F         * fhMCPi0SelectedPtRecoPtPrimNoOverlap; //! pt reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSelectedPtRecoPtPrimNoOverlap; //! pt reco vs pt prim for eta mother
+  
+  TH2F         * fhMCPi0SelectedSplitPtRecoPtPrim;      //! pt split reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSelectedSplitPtRecoPtPrim;      //! pt split reco vs pt prim for eta mother
+  TH2F         * fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for eta mother
+  
   TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters
   TH2F         * fhSelectedAsymmetry  ;    //! cluster E vs asymmetry of 2 splitted clusters, for selected pairs
   TH1F         * fhSplitE  ;               //! split sub-cluster pair energy sum
@@ -262,6 +294,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMCMassSplitPt[6];          //! pair pT (split) vs Mass coming from X
   TH2F         * fhMCSelectedMassPt[6];       //! selected pair pT vs Mass coming from X
   TH2F         * fhMCSelectedMassSplitPt[6];  //! selected pair pT (split) vs Mass coming from X
+
+  TH2F         * fhMCMassPtNoOverlap[6];               //! pair pT vs Mass coming from X, no random particles overlap
+  TH2F         * fhMCMassSplitPtNoOverlap[6];          //! pair pT (split) vs Mass coming from X, no random particles overlap
+  TH2F         * fhMCSelectedMassPtNoOverlap[6];       //! selected pair pT vs Mass coming from X, no random particles overlap
+  TH2F         * fhMCSelectedMassSplitPtNoOverlap[6];  //! selected pair pT (split) vs Mass coming from X, no random particles overlap
   
   TH2F         * fhMCPtCentrality[6] ;        //! centrality  vs pi0/eta pT  coming from X
   
@@ -344,7 +381,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,31)
+  ClassDef(AliAnaPi0EbE,33)
 } ;
 
 

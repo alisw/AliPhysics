@@ -57,6 +57,7 @@ fFillPileUpHistograms(0),
 fFillWeightHistograms(kFALSE), fFillTMHisto(0),
 fFillSelectClHisto(0),         fFillOnlySimpleSSHisto(1),    fFillEMCALBCHistograms(0),
 fInputAODGammaConvName(""),
+fCheckSplitDistToBad(0),
 // Histograms
 fhPt(0),                       fhE(0),
 fhEEta(0),                     fhEPhi(0),
@@ -70,6 +71,14 @@ fhPtReject(0),                 fhEReject(0),
 fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
 fhMass(0),                     fhMassPt(0),                  fhMassSplitPt(0),
 fhSelectedMass(0),             fhSelectedMassPt(0),          fhSelectedMassSplitPt(0),
+fhMassNoOverlap(0),            fhMassPtNoOverlap(0),         fhMassSplitPtNoOverlap(0),
+fhSelectedMassNoOverlap(0),    fhSelectedMassPtNoOverlap(0), fhSelectedMassSplitPtNoOverlap(0),
+fhMCPi0SplitPtRecoPtPrim(0),   fhMCEtaSplitPtRecoPtPrim(0),
+fhMCPi0SplitPtRecoPtPrimNoOverlap(0),         fhMCEtaSplitPtRecoPtPrimNoOverlap(0),
+fhMCPi0SelectedPtRecoPtPrim(0),               fhMCEtaSelectedPtRecoPtPrim(0),
+fhMCPi0SelectedPtRecoPtPrimNoOverlap(0),      fhMCEtaSelectedPtRecoPtPrimNoOverlap(0),
+fhMCPi0SelectedSplitPtRecoPtPrim(0),          fhMCEtaSelectedSplitPtRecoPtPrim(0),
+fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap(0), fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap(0),
 fhAsymmetry(0),                fhSelectedAsymmetry(0),
 fhSplitE(0),                   fhSplitPt(0),
 fhSplitPtEta(0),               fhSplitPtPhi(0),
@@ -150,6 +159,11 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
     fhMCMassSplitPt        [i]=0;
     fhMCSelectedMassPt     [i]=0;
     fhMCSelectedMassSplitPt[i]=0;
+    
+    fhMCMassPtNoOverlap             [i]=0;
+    fhMCMassSplitPtNoOverlap        [i]=0;
+    fhMCSelectedMassPtNoOverlap     [i]=0;
+    fhMCSelectedMassSplitPtNoOverlap[i]=0;
     
     for(Int_t j = 0; j < 7; j++)
     {
@@ -986,6 +1000,33 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhSelectedMassPt->SetYTitle("mass (GeV/c^{2})");
   fhSelectedMassPt->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhSelectedMassPt) ;
+
+  if(IsDataMC() && fAnaType == kSSCalo)
+  {
+    fhMassNoOverlap  = new TH2F
+    ("hMassNoOverlap","all pairs mass: E vs mass, no overlap",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhMassNoOverlap->SetYTitle("mass (GeV/c^{2})");
+    fhMassNoOverlap->SetXTitle("E (GeV)");
+    outputContainer->Add(fhMassNoOverlap) ;
+    
+    fhSelectedMassNoOverlap  = new TH2F
+    ("hSelectedMassNoOverlap","Selected #pi^{0} (#eta) pairs mass: E vs mass, no overlap",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhSelectedMassNoOverlap->SetYTitle("mass (GeV/c^{2})");
+    fhSelectedMassNoOverlap->SetXTitle("E (GeV)");
+    outputContainer->Add(fhSelectedMassNoOverlap) ;
+    
+    fhMassPtNoOverlap  = new TH2F
+    ("hMassPtNoOverlap","all pairs mass: p_{T} vs mass, no overlap",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhMassPtNoOverlap->SetYTitle("mass (GeV/c^{2})");
+    fhMassPtNoOverlap->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMassPtNoOverlap) ;
+    
+    fhSelectedMassPtNoOverlap  = new TH2F
+    ("hSelectedMassPtNoOverlap","Selected #pi^{0} (#eta) pairs mass: p_{T} vs mass, no overlap",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhSelectedMassPtNoOverlap->SetYTitle("mass (GeV/c^{2})");
+    fhSelectedMassPtNoOverlap->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhSelectedMassPtNoOverlap) ;
+  }
   
   if(fAnaType != kSSCalo)
   {
@@ -1603,6 +1644,24 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCSelectedMassPt[i]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCSelectedMassPt[i]) ;
         
+        if(fAnaType == kSSCalo)
+        {
+          fhMCMassPtNoOverlap[i]  = new TH2F
+          (Form("hMassPtNoOverlap_MC%s",pname[i].Data()),
+           Form("all pairs mass: p_{T} vs massfrom %s, no overlap",ptype[i].Data()),
+           nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+          fhMCMassPt[i]->SetYTitle("mass (GeV/c^{2})");
+          fhMCMassPt[i]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhMCMassPtNoOverlap[i]) ;
+          
+          fhMCSelectedMassPtNoOverlap[i]  = new TH2F
+          (Form("hSelectedMassPtNoOverlap_MC%s",pname[i].Data()),
+           Form("Selected #pi^{0} (#eta) pairs mass: p_{T} vs massfrom %s, no overlap",ptype[i].Data()),
+           nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+          fhMCSelectedMassPtNoOverlap[i]->SetYTitle("mass (GeV/c^{2})");
+          fhMCSelectedMassPtNoOverlap[i]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhMCSelectedMassPtNoOverlap[i]) ;
+        }
         
         if( fFillSelectClHisto )
         {
@@ -1768,21 +1827,150 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     
     fhMassSplitPt  = new TH2F
-    ("hMassSplitPt","all pairs mass: sum split sub-cluster p_{T} vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    ("hMassSplitPt","all pairs mass: sum split sub-cluster p_{T} vs mass",
+     nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
     fhMassSplitPt->SetYTitle("mass (GeV/c^{2})");
     fhMassSplitPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhMassSplitPt) ;
     
     fhSelectedMassSplitPt  = new TH2F
-    ("hSelectedMassSplitPt","Selected #pi^{0} (#eta) pairs mass: sum split sub-cluster p_{T} vs mass",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    ("hSelectedMassSplitPt","Selected #pi^{0} (#eta) pairs mass: sum split sub-cluster p_{T} vs mass",
+     nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
     fhSelectedMassSplitPt->SetYTitle("mass (GeV/c^{2})");
     fhSelectedMassSplitPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhSelectedMassSplitPt) ;
     
-    
-    
     if(IsDataMC())
     {
+      fhMassSplitPtNoOverlap  = new TH2F
+      ("hMassSplitPtNoOverlap","all pairs mass: sum split sub-cluster p_{T} vs mass, no overlap",
+       nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+      fhMassSplitPtNoOverlap->SetYTitle("mass (GeV/c^{2})");
+      fhMassSplitPtNoOverlap->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhMassSplitPtNoOverlap) ;
+      
+      fhSelectedMassSplitPtNoOverlap  = new TH2F
+      ("hSelectedMassSplitPtNoOverlap","Selected #pi^{0} (#eta) pairs mass: sum split sub-cluster p_{T} vs mass, no overlap",
+       nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+      fhSelectedMassSplitPtNoOverlap->SetYTitle("mass (GeV/c^{2})");
+      fhSelectedMassSplitPtNoOverlap->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhSelectedMassSplitPtNoOverlap) ;
+
+      
+      fhMCPi0PtRecoPtPrim  = new TH2F
+      ("hMCPi0PtRecoPtPrim","p_{T,reco} vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0PtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0PtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0PtRecoPtPrim ) ;
+      
+      fhMCPi0PtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCPi0PtRecoPtPrimNoOverlap","p_{T,reco} vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0PtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0PtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0PtRecoPtPrimNoOverlap ) ;
+      
+      fhMCPi0SelectedPtRecoPtPrim  = new TH2F
+      ("hMCPi0SelectedPtRecoPtPrim","p_{T,reco} vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0SelectedPtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0SelectedPtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0SelectedPtRecoPtPrim ) ;
+      
+      fhMCPi0SelectedPtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCPi0SelectedPtRecoPtPrimNoOverlap","p_{T,reco} vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0SelectedPtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0SelectedPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0SelectedPtRecoPtPrimNoOverlap ) ;
+
+      
+      fhMCPi0SplitPtRecoPtPrim  = new TH2F
+      ("hMCPi0SplitPtRecoPtPrim","p_{T,reco} (split sum) vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0SplitPtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0SplitPtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0SplitPtRecoPtPrim ) ;
+      
+      fhMCPi0SplitPtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCPi0SplitPtRecoPtPrimNoOverlap","p_{T,reco} (split sum) vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0SplitPtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0SplitPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0SplitPtRecoPtPrimNoOverlap ) ;
+      
+      fhMCPi0SelectedSplitPtRecoPtPrim  = new TH2F
+      ("hMCPi0SelectedSplitPtRecoPtPrim","p_{T,reco} (split sum) vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0SelectedSplitPtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0SelectedSplitPtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0SelectedSplitPtRecoPtPrim ) ;
+      
+      fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCPi0SelectedSplitPtRecoPtPrimNoOverlap","p_{T,reco} (split sum) vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap ) ;
+
+      fhMCEtaPtRecoPtPrim  = new TH2F
+      ("hMCEtaPtRecoPtPrim","p_{T,reco} vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaPtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaPtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaPtRecoPtPrim ) ;
+      
+      fhMCEtaPtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCEtaPtRecoPtPrimNoOverlap","p_{T,reco} vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaPtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaPtRecoPtPrimNoOverlap ) ;
+      
+      fhMCEtaSelectedPtRecoPtPrim  = new TH2F
+      ("hMCEtaSelectedPtRecoPtPrim","p_{T,reco} vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaSelectedPtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaSelectedPtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaSelectedPtRecoPtPrim ) ;
+      
+      fhMCEtaSelectedPtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCEtaSelectedPtRecoPtPrimNoOverlap","p_{T,reco} vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaSelectedPtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaSelectedPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaSelectedPtRecoPtPrimNoOverlap ) ;
+      
+      
+      fhMCEtaSplitPtRecoPtPrim  = new TH2F
+      ("hMCEtaSplitPtRecoPtPrim","p_{T,reco} (split sum) vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaSplitPtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaSplitPtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaSplitPtRecoPtPrim ) ;
+      
+      fhMCEtaSplitPtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCEtaSplitPtRecoPtPrimNoOverlap","p_{T,reco} (split sum) vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaSplitPtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaSplitPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaSplitPtRecoPtPrimNoOverlap ) ;
+      
+      fhMCEtaSelectedSplitPtRecoPtPrim  = new TH2F
+      ("hMCEtaSelectedSplitPtRecoPtPrim","p_{T,reco} (split sum) vs p_{T,gen}",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaSelectedSplitPtRecoPtPrim ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaSelectedSplitPtRecoPtPrim ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaSelectedSplitPtRecoPtPrim ) ;
+      
+      fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap  = new TH2F
+      ("hMCEtaSelectedSplitPtRecoPtPrimNoOverlap","p_{T,reco} (split sum) vs p_{T,gen}, no overlap",
+       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+      fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap ->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
+      outputContainer->Add(fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap ) ;
+      
       for(Int_t i = 0; i< 6; i++)
       {
         fhMCEAsymmetry[i]  = new TH2F (Form("hEAsymmetry_MC%s",pname[i].Data()),
@@ -1849,7 +2037,22 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCSelectedMassSplitPt[i]->SetYTitle("mass (GeV/c^{2})");
         fhMCSelectedMassSplitPt[i]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhMCSelectedMassSplitPt[i]) ;
+
+        fhMCMassSplitPtNoOverlap[i]  = new TH2F
+        (Form("hMassSplitPtNoOverlap_MC%s",pname[i].Data()),
+         Form("all pairs mass: split p_{T} vs mass from %s, no overlap",ptype[i].Data()),
+         nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhMCMassSplitPtNoOverlap[i]->SetYTitle("mass (GeV/c^{2})");
+        fhMCMassSplitPtNoOverlap[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCMassSplitPtNoOverlap[i]) ;
         
+        fhMCSelectedMassSplitPtNoOverlap[i]  = new TH2F
+        (Form("hSelectedMassSplitPtNoOverlap_MC%s",pname[i].Data()),
+         Form("Selected #pi^{0} (#eta) pairs mass: split p_{T} vs mass from %s, no overlap",ptype[i].Data()),
+         nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhMCSelectedMassSplitPtNoOverlap[i]->SetYTitle("mass (GeV/c^{2})");
+        fhMCSelectedMassSplitPtNoOverlap[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCSelectedMassSplitPtNoOverlap[i]) ;
       }
     }
   }
@@ -2063,7 +2266,7 @@ Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
     return kmcEta ;
   }//eta
   else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
-            GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
+             GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
   {
     return kmcConversion ;
   }//conversion photon
@@ -2659,7 +2862,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     
     // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
-    if(!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist)
+    if( (fCheckSplitDistToBad) &&
+        (!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist))
     {
       if(GetDebug() > 1)  printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
                                  distbad1,distbad2, fidcut1,fidcut2);
@@ -2686,17 +2890,80 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     TLorentzVector l12 = l1+l2;
     Float_t ptSplit = l12.Pt();
     Float_t  eSplit = e1+e2;
-    Int_t mcIndex = GetMCIndex(tag);
+    
+    Int_t   mcIndex   =-1;
+    Int_t   noverlaps = 0;
+    Float_t ptprim    = 0;
+    if(IsDataMC())
+    {
+      mcIndex = GetMCIndex(tag);
+      
+      Bool_t ok      = kFALSE;
+      Int_t  mcLabel = calo->GetLabel();
+      
+      TLorentzVector primary = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
+      
+      Int_t mesonLabel = -1;
+      
+      if(mcIndex == kmcPi0 || mcIndex == kmcEta)
+      {
+        if(mcIndex == kmcPi0)
+        {
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok,mesonLabel);
+          if(grandmom.E() > 0 && ok) ptprim =  grandmom.Pt();
+        }
+        else
+        {
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok,mesonLabel);
+          if(grandmom.E() > 0 && ok) ptprim =  grandmom.Pt();
+        }
+      }
+            
+      const UInt_t nlabels = calo->GetNLabels();
+      Int_t overpdg[nlabels];
+      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,mesonLabel,GetReader(),overpdg);
+    }
     
     //mass of all clusters
-    fhMass       ->Fill(mom.E(),mass);
+    fhMass       ->Fill(mom.E() ,mass);
     fhMassPt     ->Fill(mom.Pt(),mass);
-    fhMassSplitPt->Fill(ptSplit,mass);
+    fhMassSplitPt->Fill(ptSplit ,mass);
     
     if(IsDataMC())
     {
       fhMCMassPt[mcIndex]     ->Fill(mom.Pt(),mass);
-      fhMCMassSplitPt[mcIndex]->Fill(ptSplit,mass);
+      fhMCMassSplitPt[mcIndex]->Fill(ptSplit ,mass);
+      if(mcIndex==kmcPi0)
+      {
+        fhMCPi0PtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
+        fhMCPi0SplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+      }
+      else if(mcIndex==kmcEta)
+      {
+        fhMCEtaPtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
+        fhMCEtaSplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+      }
+
+      if(noverlaps==0)
+      {
+        if(mcIndex==kmcPi0)
+        {
+          fhMCPi0PtRecoPtPrimNoOverlap     ->Fill(mom.Pt(),ptprim);
+          fhMCPi0SplitPtRecoPtPrimNoOverlap->Fill(ptSplit ,ptprim);
+        }
+        else if(mcIndex==kmcEta)
+        {
+          fhMCEtaPtRecoPtPrimNoOverlap     ->Fill(mom.Pt(),ptprim);
+          fhMCEtaSplitPtRecoPtPrimNoOverlap->Fill(ptSplit ,ptprim);
+        }
+        
+        fhMassNoOverlap       ->Fill(mom.E() ,mass);
+        fhMassPtNoOverlap     ->Fill(mom.Pt(),mass);
+        fhMassSplitPtNoOverlap->Fill(ptSplit ,mass);
+        
+        fhMCMassPtNoOverlap[mcIndex]     ->Fill(mom.Pt(),mass);
+        fhMCMassSplitPtNoOverlap[mcIndex]->Fill(ptSplit ,mass);
+      }
     }
     
     // Asymmetry of all clusters
@@ -2736,6 +3003,38 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedMassPt     ->Fill(mom.Pt(),mass);
     fhSelectedMassSplitPt->Fill(ptSplit ,mass);
     
+    if(IsDataMC())
+    {
+      if(mcIndex==kmcPi0)
+      {
+        fhMCPi0SelectedPtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
+        fhMCPi0SelectedSplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+      }
+      else if(mcIndex==kmcEta)
+      {
+        fhMCEtaSelectedPtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
+        fhMCEtaSelectedSplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+      }
+      
+      if(noverlaps==0)
+      {
+        fhSelectedMassNoOverlap       ->Fill(mom.E() ,mass);
+        fhSelectedMassPtNoOverlap     ->Fill(mom.Pt(),mass);
+        fhSelectedMassSplitPtNoOverlap->Fill(ptSplit ,mass);
+        
+        if(mcIndex==kmcPi0)
+        {
+          fhMCPi0SelectedPtRecoPtPrimNoOverlap     ->Fill(mom.Pt(),ptprim);
+          fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap->Fill(ptSplit ,ptprim);
+        }
+        else if(mcIndex==kmcEta)
+        {
+          fhMCEtaSelectedPtRecoPtPrimNoOverlap     ->Fill(mom.Pt(),ptprim);
+          fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap->Fill(ptSplit ,ptprim);
+        }
+      }
+    }
+    
     fhSplitE        ->Fill( eSplit);
     fhSplitPt       ->Fill(ptSplit);
     Float_t phi = mom.Phi();
@@ -2768,6 +3067,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       
       fhMCSelectedMassPt     [mcIndex]->Fill(mom.Pt(),mass);
       fhMCSelectedMassSplitPt[mcIndex]->Fill(ptSplit,mass);
+      if(noverlaps==0)
+      {
+        fhMCSelectedMassPtNoOverlap     [mcIndex]->Fill(mom.Pt(),mass);
+        fhMCSelectedMassSplitPtNoOverlap[mcIndex]->Fill(ptSplit,mass);
+      }
     }
     
     //-----------------------

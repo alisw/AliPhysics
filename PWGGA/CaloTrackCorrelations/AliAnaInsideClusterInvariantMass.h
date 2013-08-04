@@ -73,18 +73,43 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillTrackMatchingHistograms(AliVCluster * cluster,const Int_t nMax, const Int_t mcindex);
   
+  void         FillHistograms1(const Float_t en,     const Float_t e1,     const Float_t e2,
+                               const Int_t nMax,     const Float_t mass,   const Float_t l0,
+                               const Float_t eta,    const Float_t phi,
+                               const Bool_t matched, const Int_t mcindex);
+
+  
+  void         FillHistograms2(const Float_t en,     const Float_t eprim,
+                               const Float_t e1,     const Float_t e2,      const Int_t nMax,  
+                               const Float_t mass,   const Float_t l0,
+                               const Bool_t matched, const Int_t mcindex);
+  
+  void         FillIdPi0Histograms(const Float_t en,     const Float_t e1,     const Float_t e2,
+                                   const Int_t nc,       const Int_t nMax,  const Float_t t12diff,
+                                   const Float_t mass,   const Float_t l0,
+                                   const Float_t eta,    const Float_t phi,
+                                   const Bool_t matched, const Int_t mcindex);
+  
+  void         FillIdEtaHistograms(const Float_t en,     const Float_t e1,  const Float_t e2,
+                                   const Int_t nc,       const Int_t nMax,  const Float_t t12diff,
+                                   const Float_t mass,   const Float_t l0,
+                                   const Float_t eta,    const Float_t phi,
+                                   const Bool_t matched, const Int_t mcindex);
+  
+  void         FillIdConvHistograms(const Float_t en,    const Int_t nMax, const Float_t asym,
+                                    const Float_t mass,   const Float_t l0,
+                                    const Bool_t matched, const Int_t mcindex);
+  
   void         Init();
   
   void         InitParameters();
-     
-  void         MakeAnalysisFillHistograms() ; 
-      
+  
+  void         MakeAnalysisFillHistograms() ;
+  
   void         Print(const Option_t * opt) const;
 
   void         SetCalorimeter(TString & det)             { fCalorimeter = det ; }
-    
-  void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
-
+  
   void         SetMinNCells(Int_t cut)                   { fMinNCells   = cut ; }
 
   void         SetMinBadChannelDistance(Float_t cut)     { fMinBadDist  = cut ; }
@@ -96,7 +121,16 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnFillExtraSSHistograms()           { fFillSSExtraHisto    = kTRUE  ; }
   void         SwitchOffFillExtraSSHistograms()          { fFillSSExtraHisto    = kFALSE ; }
+  
+  void         SwitchOnFillHighMultHistograms()          { fFillHighMultHisto   = kTRUE  ; }
+  void         SwitchOffFillHighMultHistograms()         { fFillHighMultHisto   = kFALSE ; }
+  
+  void         SwitchOnFillIdConvHistograms()            { fFillIdConvHisto     = kTRUE  ; }
+  void         SwitchOffFillIdConvHistograms()           { fFillIdConvHisto     = kFALSE ; }
 
+  void         SwitchOnFillIdEtaHistograms()             { fFillIdEtaHisto      = kTRUE  ; }
+  void         SwitchOffFillIdEtaHistograms()            { fFillIdEtaHisto      = kFALSE ; }
+  
   void         SwitchOnFillTMHistograms()                { fFillTMHisto         = kTRUE  ; }
   void         SwitchOffFillTMHistograms()               { fFillTMHisto         = kFALSE ; }
   
@@ -118,13 +152,16 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillNCellHistograms()             { fFillNCellHisto      = kTRUE  ; }
   void         SwitchOffFillNCellHistograms()            { fFillNCellHisto      = kFALSE ; }
   
+  void         SwitchOnSplitClusterDistToBad()           { fCheckSplitDistToBad = kTRUE  ; }
+  void         SwitchOffSplitClusterDistToBad()          { fCheckSplitDistToBad = kFALSE ; }
+  
   void         SetNWeightForShowerShape(Int_t n)           { fSSWeightN = n ; }
   void         SetWeightForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSWeight[i] = v ; }
 
   void         SetNECellCutForShowerShape(Int_t n)           { fSSECellCutN = n ; }
   void         SetECellCutForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSECellCut[i] = v ; }
 
-  
+ 
   void         RecalculateClusterShowerShapeParametersWithCellCut(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
                                                    Float_t & l0,   Float_t & l1,
                                                    Float_t & disp, Float_t & dEta, Float_t & dPhi,
@@ -138,11 +175,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString      fCalorimeter ;          // Calorimeter where the gamma is searched
-  Float_t      fM02MaxCut   ;          // Study clusters with l0 smaller than cut
-  Float_t      fM02MinCut   ;          // Study clusters with l0 larger than cut
   Int_t        fMinNCells   ;          // Study clusters with ncells larger than cut
   Float_t      fMinBadDist  ;          // Minimal distance to bad channel to accept cluster
   Float_t      fHistoECut   ;          // Fixed E cut for some histograms
+  Bool_t       fCheckSplitDistToBad;   // Check the distance to bad channel and to EMCal borders of split clusters
   
   Bool_t       fFillAngleHisto;        // Fill splitted clusters angle histograms
   Bool_t       fFillTMHisto ;          // Fill track matching histos,
@@ -153,7 +189,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillEbinHisto ;        // Fill E bin histograms
   Bool_t       fFillMCOverlapHisto ;   // Fill MC particles overlap histograms
   Bool_t       fFillNCellHisto ;       // Fill n cells in cluster dependent histograms
-
+  Bool_t       fFillIdConvHisto ;      // Fill histograms for clusters identified as conversion
+  Bool_t       fFillIdEtaHisto ;       // Fill histograms for clusters identified as Eta
+  Bool_t       fFillHighMultHisto;     // Fill centrality/event plane histograms
+  
   Float_t      fSSWeight[10];          // List of weights to test
   Int_t        fSSWeightN;             // Total number of weights to test
   
@@ -325,6 +364,13 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassPi0NLocMaxN[8][2] ;                //! Mass for selected around pi0, N Local Maxima > 2
   TH2F       * fhMassEtaNLocMaxN[8][2] ;                //! Mass for selected around eta, N Local Maxima > 2
   TH2F       * fhMassConNLocMaxN[8][2] ;                //! Mass for selected around close to 0, N Local Maxima > 2
+
+  TH2F       * fhNCellPi0NLocMax1[8][2] ;               //! n cells for selected around pi0, N Local Maxima = 1
+  TH2F       * fhNCellEtaNLocMax1[8][2] ;               //! n cells for selected around eta, N Local Maxima = 1
+  TH2F       * fhNCellPi0NLocMax2[8][2] ;               //! n cells for selected around pi0, N Local Maxima = 2
+  TH2F       * fhNCellEtaNLocMax2[8][2] ;               //! n cells for selected around eta, N Local Maxima = 2
+  TH2F       * fhNCellPi0NLocMaxN[8][2] ;               //! n cells for selected around pi0, N Local Maxima > 2
+  TH2F       * fhNCellEtaNLocMaxN[8][2] ;               //! n cells for selected around eta, N Local Maxima > 2
   
   TH2F       * fhMassAfterCutsNLocMax1[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1
   TH2F       * fhMassAfterCutsNLocMax2[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2
@@ -383,12 +429,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhTrackMatchedDEtaNLocMaxNNeg[8] ;       //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
   TH2F       * fhTrackMatchedDPhiNLocMaxNNeg[8] ;       //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
 
-  TH2F       * fhCentralityPi0NLocMax1[8][2] ;          //! Centrality for selected pi0, N Local Maxima = 1
-  TH2F       * fhCentralityEtaNLocMax1[8][2] ;          //! Centrality for selected eta, N Local Maxima = 1
-  TH2F       * fhCentralityPi0NLocMax2[8][2] ;          //! Centrality for selected pi0, N Local Maxima = 2
-  TH2F       * fhCentralityEtaNLocMax2[8][2] ;          //! Centrality for selected eta, N Local Maxima = 2
-  TH2F       * fhCentralityPi0NLocMaxN[8][2] ;          //! Centrality for selected pi0, N Local Maxima > 2
-  TH2F       * fhCentralityEtaNLocMaxN[8][2] ;          //! Centrality for selected eta, N Local Maxima > 2
+  TH2F       * fhCentralityPi0NLocMax1 ;                //! Centrality for selected pi0, N Local Maxima = 1
+  TH2F       * fhCentralityEtaNLocMax1 ;                //! Centrality for selected eta, N Local Maxima = 1
+  TH2F       * fhCentralityPi0NLocMax2 ;                //! Centrality for selected pi0, N Local Maxima = 2
+  TH2F       * fhCentralityEtaNLocMax2 ;                //! Centrality for selected eta, N Local Maxima = 2
+  TH2F       * fhCentralityPi0NLocMaxN ;                //! Centrality for selected pi0, N Local Maxima > 2
+  TH2F       * fhCentralityEtaNLocMaxN ;                //! Centrality for selected eta, N Local Maxima > 2
 
   TH2F       * fhEventPlanePi0NLocMax1 ;                //! Event plane for selected pi0, N Local Maxima = 1
   TH2F       * fhEventPlaneEtaNLocMax1 ;                //! Event plane for selected eta, N Local Maxima = 1
@@ -511,7 +557,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,22)
+  ClassDef(AliAnaInsideClusterInvariantMass,23)
   
 } ;
 
