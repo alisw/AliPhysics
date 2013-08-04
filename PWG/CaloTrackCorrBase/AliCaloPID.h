@@ -214,9 +214,11 @@ class AliCaloPID : public TObject {
   
   void    SwitchOnSplitAsymmetryCut()          { fUseSplitAsyCut     = kTRUE  ; }
   void    SwitchOffSplitAsymmetryCut()         { fUseSplitAsyCut     = kFALSE ; }
-  
+  Bool_t  IsSplitAsymmetryCutOn()              { return fUseSplitAsyCut       ; }
+
   void    SwitchOnSplitShowerShapeCut()        { fUseSplitSSCut      = kTRUE  ; }
   void    SwitchOffSplitShowerShapeCut()       { fUseSplitSSCut      = kFALSE ; }
+  Bool_t  IsSplitShowerShapeCutOn()            { return fUseSplitSSCut        ; }
   
   void    SetClusterSplittingM02Cut(Float_t min=0, Float_t max=100) 
   { fSplitM02MinCut   = min ; fSplitM02MaxCut  = max ; }
