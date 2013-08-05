@@ -149,6 +149,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Bool_t        fStoreCutStepInfo;   // Whether to store which cut step is the effective one
   Bool_t        fSetFilterBit;       // Whether or not to use filter bits 
   Int_t         fBit;                // Which bit to use
+  Double_t      fMaxPtCombinedPID;   // Max pt for the combined PID of TPC and TOF (default = 999, thus combined for all pt)
 
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
 
