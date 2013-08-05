@@ -60,7 +60,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	//Setters
 	void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) {fRejectKinkMother = rejectKinkMother;};
-	void SetCorrelationAnalysis() {fCorrelationFlag = kTRUE;};
+	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
 	void SetMCanalysis() {fIsMC = kTRUE;};
 	void SetCentrality(Double_t CentralityMin, Double_t CentralityMax) { fCentralityMin = CentralityMin; fCentralityMax = CentralityMax; fHasCentralitySelection = kTRUE; };
 	void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
@@ -80,11 +80,11 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
 	void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
 	void SetUseEMCal() { fUseEMCal=kTRUE;};
+	void SetUseShowerShapeCut(Bool_t UseShowerShapeCut=kFALSE) { fUseShowerShapeCut=UseShowerShapeCut;};
+	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
-	
-	void SetPPanalysis(Bool_t IsPP = kTRUE) { fIsPP=IsPP; }; //0 = V0A, 1 = Other
 	
 	//Getters
 	AliHFEpid *GetPID() const {return fPID;};
@@ -97,6 +97,8 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
 //Function to process eh analysis
 	void ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack);
+//Function to find non-HFE and fill histos
+	void Background(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack);
 //Selected Hadrons, for mixed event analysis
 	TObjArray* SelectedHadrons();
 //DiHadron Correlation Background
@@ -108,6 +110,9 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Bool_t 				fCorrelationFlag;
 	Bool_t				fIsMC;
 	Bool_t				fUseEMCal;
+	Bool_t				fUseShowerShapeCut;
+	Bool_t				fFillBackground;
+
 	Bool_t				fEMCEG1;
 	Bool_t				fEMCEG2;
 
@@ -132,7 +137,6 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	
 //For the case of AOD analysis
 	Bool_t					fIsAOD;					//flag for AOD analysis
-	Bool_t					fIsPP;					//flag for AOD analysis
 	
 //For Centrality Selection
 	AliCentrality			*fCentrality;
@@ -145,8 +149,9 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Int_t					fEstimator;
 	
 //EMCal
-	//AliESDCaloCluster 		*fClus;
+	
 	AliVCluster				*fClus;
+	//AliESDCaloCluster 		*fClusESD;
 	
 //Histograms
 	TH1F				*fNevent;
@@ -155,6 +160,11 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	
 	TH1F				*fCharge_n;
 	TH1F				*fCharge_p;
+	
+	TH2D				*fTime;
+	TH2D				*fTime2;
+	TH2D				*ftimingEle;
+	TH2D				*ftimingEle2;	
 	
 	TH1F				*fPtElec_ULS;
 	TH1F				*fPtElec_LS;
@@ -171,6 +181,8 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH1F				**fTPCnsigma_pt;
 	TH2F				**fTPCnsigma_p;
 	TH2F				*fTPCnsigma_pt_2D;
+	TH2F				*fShowerShapeCut;
+
 	
 	TH2F				*fTPCnsigma_eta;
 	TH2F				*fTPCnsigma_phi;

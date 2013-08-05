@@ -6,6 +6,8 @@
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
+											
+										
 
 Bool_t isMC=kFALSE, 
 Int_t triggerIndex=0, 
@@ -63,7 +65,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	AliAnalysisTaskEMCalHFEpA *task = new AliAnalysisTaskEMCalHFEpA(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
 	printf("task ------------------------ %p\n ", task);
 	task->SetHFECuts(hfecuts);
-	task->SetCorrelationAnalysis();
+	task->SetCorrelationAnalysis(kFALSE);
 	task->SetAODanalysis(isAOD);
 	task->SetEventMixing(kTRUE);
 	
@@ -72,6 +74,14 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	if(EMCalThreshould==1 && triggerIndex==2) task->SetEMCalTriggerEG2();
 	
 	if(isEMCal) task->SetUseEMCal();
+	
+	
+	if(configIndex==26){
+		task->SetUseShowerShapeCut(kTRUE);
+		//task->SetM02Cut(0.0,0.3);
+		task->SetM20Cut(0.0,0.3);
+	}
+	task->SetBackground(kTRUE);
 	
 	if(configIndex==6) task->SetNonHFEmassCut(0.05);
 	else task->SetNonHFEmassCut(0.1);
