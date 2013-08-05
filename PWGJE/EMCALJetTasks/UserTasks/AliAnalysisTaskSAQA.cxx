@@ -35,7 +35,7 @@ ClassImp(AliAnalysisTaskSAQA)
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
+  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskSAQA", kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -83,7 +83,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
+  AliAnalysisTaskEmcalJetDev(name, kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -140,9 +140,9 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 {
   // Create histograms
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
-  if (!fTracksName.IsNull()) {
+  if (fParticleCollArray.GetEntriesFast()>0) {
     if (!fParticleLevel && fIsMC) {
       fHistTrNegativeLabels = new TH1F("fHistTrNegativeLabels","fHistTrNegativeLabels", 500, 0, 1);
       fHistTrNegativeLabels->GetXaxis()->SetTitle("% of negative labels");
@@ -233,7 +233,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     }
   }
 
-  if (!fCaloName.IsNull()) {
+  if (fClusterCollArray.GetEntriesFast()>0) {
     TString histname;
 
     for (Int_t i = 0; i < fNcentBins; i++) {
@@ -295,7 +295,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fOutput->Add(fHistChVSneCorrCells);
   }
        
-  if (!fJetsName.IsNull()) {
+  if (fJetCollArray.GetEntriesFast()>0) {
 
     TString histname;
 
@@ -310,7 +310,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
       histname = "fHistJetsPtArea_";
       histname += i;
-      fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, 30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+      fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, 50, 0, 1.5);
       fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
       fOutput->Add(fHistJetsPtArea[i]);
@@ -323,7 +323,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   Double_t min[10] = {0};
   Double_t max[10] = {0};
   
-  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+  if (fForceBeamType != AliAnalysisTaskEmcalDev::kpp) {
     title[dim] = "Centrality %";
     nbins[dim] = 101;
     min[dim] = 0;
@@ -377,7 +377,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     }
   }
 
-  if (!fTracksName.IsNull()) {
+  if (fParticleCollArray.GetEntriesFast()>0) {
     title[dim] = "No. of tracks";
     nbins[dim] = 6000;
     min[dim] = -0.5;
@@ -385,7 +385,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     dim++;
   }
 
-  if (!fCaloName.IsNull()) {
+  if (fClusterCollArray.GetEntriesFast()>0) {
     title[dim] = "No. of clusters";
     nbins[dim] = 4000;
     min[dim] = 0;
@@ -401,7 +401,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     dim++;
   }
 
-  if (!fJetsName.IsNull()) {
+  if (fJetCollArray.GetEntriesFast()>0) {
     title[dim] = "No. of jets";
     nbins[dim] = 200;
     min[dim] = 0;
@@ -420,7 +420,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::ExecOnce()
 {
-  AliAnalysisTaskEmcalJet::ExecOnce();
+  AliAnalysisTaskEmcalJetDev::ExecOnce();
   
   if (fDoV0QA) {
     fVZERO = InputEvent()->GetVZEROData();
@@ -435,7 +435,7 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcalJetDev::RetrieveEventObjects())
     return kFALSE;
 
   if (!fCentMethod2.IsNull() || !fCentMethod3.IsNull()) {

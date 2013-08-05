@@ -18,7 +18,7 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
-  AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
+  AliAnalysisTaskEmcalDev("AliEmcalClusTrackMatcherTask",kFALSE),
   fMaxDistance(0.06)
 {
   // Constructor.
@@ -35,7 +35,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo) : 
-  AliAnalysisTaskEmcal(name,histo),
+  AliAnalysisTaskEmcalDev(name,histo),
   fMaxDistance(0.06)
 {
   // Standard constructor.
@@ -64,7 +64,7 @@ void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
   if (!fCreateHisto)
     return;
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
 
   const Int_t nCentChBins = fNcentBins * 2;
 
@@ -116,7 +116,7 @@ Int_t AliEmcalClusTrackMatcherTask::GetMomBin(Double_t p) const
 Bool_t AliEmcalClusTrackMatcherTask::Run() 
 {
   // Run the matching for the selected options.
-  
+
   const Double_t maxd2 = fMaxDistance*fMaxDistance;
 
   const Int_t nC = fCaloClusters->GetEntries();

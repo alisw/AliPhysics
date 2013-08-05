@@ -3,14 +3,9 @@
 //
 // Author: M. Verweij
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TInterpreter.h>
 
-#include <TChain.h>
 #include <TClonesArray.h>
-#include <TList.h>
-#include <TObject.h>
+
 #include "AliEmcalJet.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -27,6 +22,9 @@ AliEmcalContainer::AliEmcalContainer():
 {
   // Default constructor.
 
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
 }
 
 //________________________________________________________________________
@@ -37,18 +35,18 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
 {
   // Standard constructor.
 
-}
-
-//________________________________________________________________________
-AliEmcalContainer::~AliEmcalContainer()
-{
-  // Destructor.
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
 }
 
 //________________________________________________________________________
 void AliEmcalContainer::SetArray(AliVEvent *event, const char *clname) {
 
   // Get array from event.
+
+  const AliVVertex *vertex = event->GetPrimaryVertex();
+  if (vertex) vertex->GetXYZ(fVertex);
 
   if (!fClArrayName.IsNull() && !fClArray) {
     fClArray = dynamic_cast<TClonesArray*>(event->FindListObject(fClArrayName));
@@ -71,7 +69,4 @@ void AliEmcalContainer::SetArray(AliVEvent *event, const char *clname) {
     return;
   }
   return;
-
- 
 }
-

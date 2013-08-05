@@ -9,9 +9,9 @@ class TH3;
 class THnSparse;
 class AliVVZERO;
 
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetDev.h"
 
-class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
  public:
   AliAnalysisTaskSAQA();
   AliAnalysisTaskSAQA(const char *name);
@@ -91,6 +91,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 20) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 21) // Quality task for Emcal analysis
 };
 #endif

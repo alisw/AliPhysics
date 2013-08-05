@@ -5,28 +5,16 @@
 // container with name, TClonesArray and cuts for particles
 //
 
-
-class TClonesArray;
-class TString;
-class TList;
-
 class AliVEvent;
-class AliEmcalParticle;
-class AliMCParticle;
-class AliVTrack;
 class AliVParticle;
 
-#include "Rtypes.h"
-#include <TArrayS.h>
-#include "TString.h"
 #include "AliEmcalContainer.h"
-
 
 class AliParticleContainer : public AliEmcalContainer {
  public:
   AliParticleContainer();
   AliParticleContainer(const char *name); 
-  virtual ~AliParticleContainer();
+  virtual ~AliParticleContainer(){;}
 
   void  SetParticleArray(AliVEvent *event);
 
@@ -35,10 +23,13 @@ class AliParticleContainer : public AliEmcalContainer {
   void  SetParticlePhiLimits(Double_t min, Double_t max) { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
   void  SetTrackBitMap(UInt_t m)                          { fTrackBitMap     = m ; }
   void  SetMCTrackBitMap(UInt_t m)                        { fMCTrackBitMap   = m ; }
-  void  SetMinMCLabel(Int_t s)                            { fMinMCLabel        = s ; }
+  void  SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s ; }
 
-  AliVParticle               *GetParticle(Int_t i) const;
+  AliVParticle               *GetLeadingParticle(const char* opt="")   const;
+  AliVParticle               *GetParticle(Int_t i)                     const;
   AliVParticle               *GetAcceptParticle(Int_t i)               const;
+  AliVParticle               *GetNextAcceptParticle(Int_t i=-1)        const;
+  void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptParticle(AliVParticle         *vp) const;
   Int_t                       GetNParticles()                          const   {return GetNEntries();}
 

@@ -5,31 +5,22 @@
 // container with name, TClonesArray and cuts for jets
 //
 
-class TObjArray;
 class TClonesArray;
 class TString;
-class TList;
-class AliEmcalParticle;
-class AliMCParticle;
-class AliVCluster;
-class AliVTrack;
-class AliVParticle;
-class AliVCaloCells;
-class TH1F;
+
 class AliEMCALGeometry;
 class AliEmcalJet;
 class AliVEvent;
+class AliParticleContainer;
+class AliClusterContainer;
 
-#include "Rtypes.h"
-#include <TArrayS.h>
-#include "TString.h"
-#include "AliLog.h"
 #include "AliRhoParameter.h"
-#include "AliEmcalContainer.h"
 
+#include "AliEmcalContainer.h"
 
 class AliJetContainer : public AliEmcalContainer {
  public:
+ 
   enum JetAcceptanceType {
     kTPC       = 0,     // TPC acceptance
     kEMCAL     = 1,     // EMCal acceptance
@@ -39,7 +30,7 @@ class AliJetContainer : public AliEmcalContainer {
 
   AliJetContainer();
   AliJetContainer(const char *name); 
-  virtual ~AliJetContainer();
+  virtual ~AliJetContainer() {;}
 
   void SetJetArray(AliVEvent *event);
   void SetEMCALGeometry();
@@ -71,13 +62,21 @@ class AliJetContainer : public AliEmcalContainer {
 
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
   void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
+  void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
 
-  AliEmcalJet                *GetJet(Int_t i) const;
+  void                        SetParticleContainer(AliParticleContainer *c)        { fParticleContainer = c             ; }
+  void                        SetClusterContainer(AliClusterContainer *c)          { fClusterContainer  = c             ; }
+
+  AliEmcalJet                *GetLeadingJet(const char* opt="")     const;
+  AliEmcalJet                *GetJet(Int_t i)                       const;
   AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
-  virtual Bool_t              AcceptJet(AliEmcalJet* jet)           const;
+  AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)          const;
+  void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
+  Bool_t                      AcceptJet(AliEmcalJet* jet)           const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)       const; 
   Int_t                       GetNJets()                            const    {return GetNEntries();}
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)  const;
+  void                        GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet* jet)  const;
   AliRhoParameter            *GetRhoParameter()                              {return fRho;}
   Double_t                    GetRhoVal()                           const    {return fRho->GetVal();}
   const TString&              GetRhoName()                          const    {return fRhoName;}
@@ -106,17 +105,19 @@ class AliJetContainer : public AliEmcalContainer {
   Int_t                       fLeadingHadronType;    //  0 = charged, 1 = neutral, 2 = both
   Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
   UInt_t                      fJetBitMap;            //  bit map of accepted jets
+  UInt_t                      fJetTrigger;           //  jet trigger
 
-  AliRhoParameter            *fRho;                  //!event rho for these jets
-
-  AliEMCALGeometry           *fGeom;                 //!emcal geometry
-  Int_t                       fRunNumber;            //  run number
+  AliParticleContainer       *fParticleContainer;    //! particle container (jet constituents)
+  AliClusterContainer        *fClusterContainer;     //! cluster container (jet constituents)
+  AliRhoParameter            *fRho;                  //! event rho for these jets
+  AliEMCALGeometry           *fGeom;                 //! emcal geometry
+  Int_t                       fRunNumber;            //! run number
 
  private:
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,1);
+  ClassDef(AliJetContainer,2);
 
 };
 

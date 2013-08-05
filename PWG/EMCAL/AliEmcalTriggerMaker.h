@@ -6,9 +6,9 @@
 class TClonesArray;
 class AliEmcalTriggerSetupInfo;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalDev.h"
 
-class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
+class AliEmcalTriggerMaker : public AliAnalysisTaskEmcalDev {
  public:
   AliEmcalTriggerMaker();
   AliEmcalTriggerMaker(const char *name);
@@ -30,6 +30,6 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   AliEmcalTriggerMaker(const AliEmcalTriggerMaker&);            // not implemented
   AliEmcalTriggerMaker &operator=(const AliEmcalTriggerMaker&); // not implemented
 
-  ClassDef(AliEmcalTriggerMaker, 1); // Task to make array of EMCAL particle
+  ClassDef(AliEmcalTriggerMaker, 2); // Task to make array of EMCAL particle
 };
 #endif

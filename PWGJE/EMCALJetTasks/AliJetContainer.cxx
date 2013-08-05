@@ -3,19 +3,14 @@
 //
 // Author: M. Verweij
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TInterpreter.h>
-
-#include <TChain.h>
 #include <TClonesArray.h>
-#include <TList.h>
-#include <TObject.h>
+
 #include "AliEmcalJet.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
-#include "AliRhoParameter.h"
 #include "AliEMCALGeometry.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 #include "AliJetContainer.h"
 
@@ -41,6 +36,9 @@ AliJetContainer::AliJetContainer():
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
+  fJetTrigger(0),
+  fParticleContainer(0),
+  fClusterContainer(0),
   fRho(0),
   fGeom(0),
   fRunNumber(0)
@@ -69,18 +67,15 @@ AliJetContainer::AliJetContainer(const char *name):
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
+  fJetTrigger(0),
+  fParticleContainer(0),
+  fClusterContainer(0),
   fRho(0),
   fGeom(0),
   fRunNumber(0)
 {
   // Standard constructor.
 
-}
-
-//________________________________________________________________________
-AliJetContainer::~AliJetContainer()
-{
-  // Destructor.
 }
 
 //________________________________________________________________________
@@ -113,7 +108,7 @@ void AliJetContainer::SetEMCALGeometry() {
 //________________________________________________________________________
 void AliJetContainer::LoadRho(AliVEvent *event)
 {
-  //Load rho
+  // Load rho
 
   if (!fRhoName.IsNull() && !fRho) {
     fRho = dynamic_cast<AliRhoParameter*>(event->FindListObject(fRhoName));
@@ -122,6 +117,31 @@ void AliJetContainer::LoadRho(AliVEvent *event)
       return;
     }
   }
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt) const
+{
+  // Get the leading jet; if opt contains "rho" the sorting is according to pt-A*rho
+
+  TString option(opt);
+  option.ToLower();
+
+  AliEmcalJet *jetMax = GetNextAcceptJet(0);
+  AliEmcalJet *jet = 0;
+
+  if (option.Contains("rho")) {
+    while ((jet = GetNextAcceptJet())) {
+      if (jet->Pt()-jet->Area()*fRho->GetVal() > jetMax->Pt()-jetMax->Area()*fRho->GetVal()) jetMax = jet;
+    }
+  }
+  else {
+    while ((jet = GetNextAcceptJet())) {
+      if (jet->Pt() > jetMax->Pt()) jetMax = jet;
+    }
+  }
+
+  return jetMax;
 }
 
 //________________________________________________________________________
@@ -152,6 +172,33 @@ AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
   if(!AcceptJet(jet)) return 0;
 
   return jet;
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) const {
+
+  //Get next accepted jet; if i >= 0 (re)start counter from i; return 0 if no accepted jet could be found
+
+  static Int_t counter = -1;
+  if (i>=0) counter = i;
+
+  const Int_t njets = GetNEntries();
+  AliEmcalJet *jet = 0;
+  while (counter < njets && !jet) { 
+    jet = GetAcceptJet(counter);
+    counter++;
+  }
+
+  return jet;
+}
+
+//________________________________________________________________________
+void AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
+{
+  //Get momentum of the i^th jet in array
+
+  AliEmcalJet *jet = GetJet(i);
+  if(jet) jet->GetMom(mom);
 }
 
 //________________________________________________________________________
@@ -219,6 +266,43 @@ Double_t AliJetContainer::GetLeadingHadronPt(AliEmcalJet *jet) const
     return jet->MaxPartPt();
 }
 
+//________________________________________________________________________
+void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet *jet) const
+{
+  Double_t maxClusterPt = 0;
+  Double_t maxClusterEta = 0;
+  Double_t maxClusterPhi = 0;
+  
+  Double_t maxTrackPt = 0;
+  Double_t maxTrackEta = 0;
+  Double_t maxTrackPhi = 0;
+      
+  if (fClusterContainer && fClusterContainer->GetArray() && (fLeadingHadronType == 1 || fLeadingHadronType == 2)) {
+    AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
+    if (cluster) {
+      TLorentzVector nPart;
+      cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
+      
+      maxClusterEta = nPart.Eta();
+      maxClusterPhi = nPart.Phi();
+      maxClusterPt = nPart.Pt();
+    }
+  }
+      
+  if (fParticleContainer && fParticleContainer->GetArray() && (fLeadingHadronType == 0 || fLeadingHadronType == 2)) {
+    AliVParticle *track = jet->GetLeadingTrack(fParticleContainer->GetArray());
+    if (track) {
+      maxTrackEta = track->Eta();
+      maxTrackPhi = track->Phi();
+      maxTrackPt = track->Pt();
+    }
+  }
+      
+  if (maxTrackPt > maxClusterPt) 
+    mom.SetPtEtaPhiM(maxTrackPt,maxTrackEta,maxTrackPhi,0.139);
+  else 
+    mom.SetPtEtaPhiM(maxClusterPt,maxClusterEta,maxClusterPhi,0.139);
+}
 
 //________________________________________________________________________
 void AliJetContainer::SetJetEtaPhiEMCAL()
@@ -240,7 +324,6 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
     SetJetEtaLimits(-0.7+fJetRadius,0.7-fJetRadius);
     SetJetPhiLimits(1.4+fJetRadius,TMath::Pi()-fJetRadius);
   }
-
 }
 
 //________________________________________________________________________
@@ -250,7 +333,6 @@ void AliJetContainer::SetJetEtaPhiTPC()
 
   SetJetEtaLimits(-0.9+fJetRadius, 0.9-fJetRadius);
   SetJetPhiLimits(-10, 10);
-
 }
 
 //________________________________________________________________________

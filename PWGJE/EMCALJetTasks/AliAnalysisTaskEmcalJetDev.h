@@ -21,6 +21,7 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   virtual ~AliAnalysisTaskEmcalJetDev();
 
   //these should all point to the jet container
+  void                SetAnaType(UInt_t t, Int_t c = 0);
   void                SetJetAcceptanceType(TString cutType, Int_t c = 0);
   void                SetJetEtaLimits(Float_t min, Float_t max, Int_t c = 0);
   void                SetJetPhiLimits(Float_t min, Float_t max, Int_t c = 0);
@@ -36,19 +37,13 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   void                SetLeadingHadronType(Int_t t, Int_t c = 0);
   void                SetNLeadingJets(Int_t t, Int_t c = 0);
   void                SetJetBitMap(UInt_t m, Int_t c = 0);
+  void                SetJetTrigger(UInt_t t, Int_t c = 0);
 
-  void                SetJetsName(const char *n)                   { fJetsName       = n; AddJetContainer(n); }
-  virtual void                SetRhoName(const char *n, Int_t c = 0);
+  void                SetJetsName(const char *n)                   { AddJetContainer(n); }
+  virtual void        SetRhoName(const char *n, Int_t c = 0);
 
-  void                        AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
-  void                        RemoveJetContainer(Int_t i)          { fJetCollArray.RemoveAt(i);} 
-
-  AliJetContainer            *GetJetContainer(Int_t i=0)                const;
-  TClonesArray               *GetJetArray(Int_t i=0)                    const;
-  AliEmcalJet                *GetJetFromArray(Int_t j, Int_t c=0)       const;
-  AliEmcalJet                *GetAcceptJetFromArray(Int_t j, Int_t c=0) const;
-  Int_t                       GetNJets(Int_t i=0)                       const;
-  Double_t                    GetRhoVal(Int_t i=0)                      const;
+  AliJetContainer    *AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
+  void                RemoveJetContainer(Int_t i)                  { fJetCollArray.RemoveAt(i);} 
 
  protected:
   Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
@@ -58,24 +53,28 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   void                        ExecOnce()                                                                    ;
 
   AliRhoParameter            *GetRhoFromEvent(const char *name)                                             ;
-  Bool_t                      GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho=0, Int_t c = 0)     ;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kFALSE)       const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kFALSE)      const;
   Bool_t                      RetrieveEventObjects()                                                        ;
+  AliJetContainer            *GetJetContainer(Int_t i=0)                                               const;
+  AliJetContainer            *GetJetContainer(const char* name)                                        const;
+  TClonesArray               *GetJetArray(Int_t i=0)                                                   const;
+  AliEmcalJet                *GetJetFromArray(Int_t j, Int_t c=0)                                      const;
+  AliEmcalJet                *GetAcceptJetFromArray(Int_t j, Int_t c=0)                                const;
+  Int_t                       GetNJets(Int_t i=0)                                                      const;
+  Double_t                    GetRhoVal(Int_t i=0)                                                     const;
 
-  TString                     fJetsName;                   // name of jet collection
-  TString                     fRhoName;                    // Name of rho object
+  TString                     fRhoName;                    // rho name
+  TObjArray                   fJetCollArray;               // jet collection array
 
   TClonesArray               *fJets;                       //!jets
   AliRhoParameter            *fRho;                        //!event rho
   Double_t                    fRhoVal;                     //!event rho value
 
-  TObjArray                   fJetCollArray;               // jet collection array
-
  private:
   AliAnalysisTaskEmcalJetDev(const AliAnalysisTaskEmcalJetDev&);            // not implemented
   AliAnalysisTaskEmcalJetDev &operator=(const AliAnalysisTaskEmcalJetDev&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetDev, 1) // EMCAL Jet base analysis task
+  ClassDef(AliAnalysisTaskEmcalJetDev, 2) // EMCAL Jet base analysis task
 };
 #endif

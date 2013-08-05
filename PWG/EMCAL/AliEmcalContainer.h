@@ -5,30 +5,30 @@
 // container with name, TClonesArray
 //
 
+class TLorentzVector;
 class AliVEvent;
 
-#include <iostream>
-#include "Rtypes.h"
-#include <TArrayS.h>
-#include "TString.h"
-#include "TNamed.h"
-#include "TClonesArray.h"
+#include <TNamed.h>
+#include <TClonesArray.h>
 
 class AliEmcalContainer : public TNamed {
  public:
   AliEmcalContainer();
   AliEmcalContainer(const char *name); 
-  virtual ~AliEmcalContainer();
+  virtual ~AliEmcalContainer(){;}
 
   void SetArrayName(const char *n)                 {fClArrayName = n;}
   TClonesArray               *GetArray()           {return fClArray;}
   Int_t                       GetNEntries() const  {return fClArray->GetEntriesFast();}
   const TString&              GetArrayName() const {return fClArrayName;}
+  void                        SortArray() {fClArray->Sort();}
+  virtual void                GetMomentum(TLorentzVector &mom, Int_t i) const = 0;
 
  protected:
   void SetArray(AliVEvent *event, const char *clname=0);
 
   TClonesArray               *fClArray;                 //!TClonesArray
+  Double_t                    fVertex[3];               //!event vertex array
   TString                     fClArrayName;             // name of branch
 
  private:

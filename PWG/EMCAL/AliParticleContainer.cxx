@@ -3,13 +3,8 @@
 //
 // Author: M. Verweij
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TInterpreter.h>
-
-#include <TChain.h>
 #include <TClonesArray.h>
-#include <TObject.h>
+
 #include "AliVEvent.h"
 #include "AliLog.h"
 
@@ -50,18 +45,36 @@ AliParticleContainer::AliParticleContainer(const char *name):
 }
 
 //________________________________________________________________________
-AliParticleContainer::~AliParticleContainer()
-{
-  // Destructor.
-}
-
-//________________________________________________________________________
 void AliParticleContainer::SetParticleArray(AliVEvent *event) 
 {
   // Set jet array
 
   SetArray(event, "AliVParticle");
+}
 
+//________________________________________________________________________
+AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt) const
+{
+  // Get the leading particle; use p if "p" is contained in opt
+
+  TString option(opt);
+  option.ToLower();
+
+  AliVParticle *partMax = GetNextAcceptParticle(0);
+  AliVParticle *part = 0;
+
+  if (option.Contains("p")) {
+    while ((part = GetNextAcceptParticle())) {
+      if (part->P() > partMax->P()) partMax = part;
+    }
+  }
+  else {
+    while ((part = GetNextAcceptParticle())) {
+      if (part->Pt() > partMax->Pt()) partMax = part;
+    }
+  }
+
+  return partMax;
 }
 
 //________________________________________________________________________
@@ -88,6 +101,33 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const {
     AliDebug(2,"Particle not accepted.");
     return 0;
   }
+}
+
+//________________________________________________________________________
+AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) const {
+
+  //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
+
+  static Int_t counter = -1;
+  if (i>=0) counter = i;
+
+  const Int_t n = GetNEntries();
+  AliVParticle *p = 0;
+  while (counter < n && !p) { 
+    p = GetAcceptParticle(counter);
+    counter++;
+  }
+
+  return p;
+}
+
+//________________________________________________________________________
+void AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
+{
+  //Get momentum of the i^th particle in array
+
+  AliVParticle *vp = GetParticle(i);
+  if(vp) mom.SetPtEtaPhiM(vp->Pt(),vp->Eta(),vp->Phi(),0.139);
 }
 
 //________________________________________________________________________

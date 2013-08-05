@@ -57,17 +57,27 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
     name += "_USER";
 
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
-  qaTask->SetTracksName(ntracks);
-  qaTask->SetClusName(nclusters);
   qaTask->SetCaloCellsName(ncells);
-  qaTask->SetJetsName(njets);
-  qaTask->SetRhoName(nrho);
-  qaTask->SetJetRadius(jetradius);
-  qaTask->SetJetPtCut(jetptcut);
-  qaTask->SetPercAreaCut(jetareacut);
-  qaTask->SetTrackPtCut(trackptcut);
-  qaTask->SetClusPtCut(clusptcut);
-  qaTask->SetAnaType(type);
+  qaTask->SetRhoName(nrho,-1);
+
+  if (strcmp(ntracks,"")!=0) {
+    qaTask->SetTracksName(ntracks);
+    qaTask->SetTrackPtCut(trackptcut);
+  }
+
+  if (strcmp(nclusters,"")!=0) {
+    qaTask->SetClusName(nclusters);
+    qaTask->SetClusPtCut(clusptcut);
+  }
+
+  if (strcmp(njets,"")!=0) {
+    qaTask->SetJetsName(njets);
+    qaTask->SetJetRadius(jetradius);
+    qaTask->SetJetPtCut(jetptcut);
+    qaTask->SetPercAreaCut(jetareacut);
+    qaTask->SetAnaType(type);
+    qaTask->SetRhoName(nrho);
+  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

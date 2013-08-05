@@ -11,11 +11,10 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   const char *nrandclusters      = "CaloClustersRandomized",
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
-  Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *type               = "TPC",
   const char *taskname           = "AliAnalysisTaskDeltaPt"
 )
 {  
@@ -41,37 +40,71 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   //-------------------------------------------------------
   TString name;
   if (strcmp(ntracks, "") == 0 && strcmp(nclusters, "") == 0) 
-    name = Form("%s_%s_R0%d",taskname,nrho,(Int_t)floor(jetradius*100+0.5));
+    name = Form("%s_%s_R0%d_%s",taskname,nrho,(Int_t)floor(jetradius*100+0.5),type);
   else if (strcmp(ntracks, "") == 0) 
-    name = Form("%s_%s_%s_R0%d",taskname,nclusters,nrho,(Int_t)floor(jetradius*100+0.5));
+    name = Form("%s_%s_%s_R0%d_%s",taskname,nclusters,nrho,(Int_t)floor(jetradius*100+0.5),type);
   else if (strcmp(nclusters, "") == 0) 
-    name = Form("%s_%s_%s_R0%d",taskname,ntracks,nrho,(Int_t)floor(jetradius*100+0.5));
+    name = Form("%s_%s_%s_R0%d_%s",taskname,ntracks,nrho,(Int_t)floor(jetradius*100+0.5),type);
   else
-    name = Form("%s_%s_%s_%s_R0%d",taskname,ntracks,nclusters,nrho,(Int_t)floor(jetradius*100+0.5));
-
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "_USER";
+    name = Form("%s_%s_%s_%s_R0%d_%s",taskname,ntracks,nclusters,nrho,(Int_t)floor(jetradius*100+0.5),type);
 
   AliAnalysisTaskDeltaPt* jetTask = new AliAnalysisTaskDeltaPt(name);
-  jetTask->SetAnaType(type);
-  jetTask->SetTracksName(ntracks);
-  jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
-  jetTask->SetEmbTracksName(nembtracks);
-  jetTask->SetEmbClusName(nembclusters);
-  jetTask->SetEmbJetsName(nembjets);
-  jetTask->SetRandTracksName(nrandtracks);
-  jetTask->SetRandClusName(nrandclusters);
-  jetTask->SetRhoName(nrho);
-  jetTask->SetClusPtCut(clusptcut);
-  jetTask->SetTrackPtCut(trackptcut);
-  jetTask->SetJetRadius(jetradius);
-  jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetPercAreaCut(jetareacut);
+  jetTask->SetConeRadius(jetradius);
+  jetTask->SetRhoName(nrho,-1);
+  if (strcmp(type,"TPC")==0) 
+    jetTask->SetConeEtaPhiTPC();
+  else if (strcmp(type,"EMCAL")==0) 
+    jetTask->SetConeEtaPhiEMCAL();
+
+  if (strcmp(ntracks,"")!=0) {
+    AliParticleContainer *partCont = jetTask->AddParticleContainer(ntracks);
+    partCont->SetName("Tracks");
+    partCont->SetParticlePtCut(trackptcut);
+  }
+
+  if (strcmp(nclusters,"")!=0) {
+    AliClusterContainer *clusCont = jetTask->AddClusterContainer(nclusters);
+    clusCont->SetName("CaloClusters");
+    clusCont->SetClusPtCut(clusptcut);
+  }
+
+  if (strcmp(njets,"")!=0) {
+    AliJetContainer *jetCont = jetTask->AddJetContainer(njets,type,jetradius);
+    jetCont->SetName("Jets");
+    jetCont->SetPercAreaCut(jetareacut);
+    jetCont->SetRhoName(nrho);
+  }
+
+  if (strcmp(nembtracks,"")!=0) {
+    AliParticleContainer *embPartCont = jetTask->AddParticleContainer(nembtracks);
+    embPartCont->SetName("EmbTracks");
+    embPartCont->SetParticlePtCut(trackptcut);
+  }
+
+  if (strcmp(nembclusters,"")!=0) {
+    AliClusterContainer *embClusCont = jetTask->AddClusterContainer(nembclusters);
+    embClusCont->SetName("EmbClusters");
+    embClusCont->SetClusPtCut(clusptcut);
+  }
+
+  if (strcmp(nembjets,"")!=0) {
+    AliJetContainer *embJetCont = jetTask->AddJetContainer(nembjets,type,jetradius);
+    embJetCont->SetName("EmbJets");
+    embJetCont->SetPercAreaCut(jetareacut);
+    embJetCont->SetRhoName(nrho);
+  }
+
+  if (strcmp(nrandtracks,"")!=0) {
+    AliParticleContainer *randPartCont = jetTask->AddParticleContainer(nrandtracks);
+    randPartCont->SetName("RandTracks");
+    randPartCont->SetParticlePtCut(trackptcut);
+  }
+
+  if (strcmp(nrandclusters,"")!=0) {
+    AliClusterContainer *randClusCont = jetTask->AddClusterContainer(nrandclusters);    
+    randClusCont->SetName("RandClusters");
+    randClusCont->SetClusPtCut(clusptcut);
+  }
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
