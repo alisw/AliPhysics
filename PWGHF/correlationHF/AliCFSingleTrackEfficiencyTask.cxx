@@ -52,9 +52,12 @@
 #include "AliESDVertex.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliVEvent.h"
 #include "AliVVertex.h"
 #include "AliLog.h"
+#include "AliHFEtools.h"
 
 #include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
@@ -75,6 +78,13 @@ fReadTPCTracks(0),
   fMinNclsTPCPID(0),
   fRequireTOF(kFALSE),
   fMinRatioTPCcluster(0),
+  fTPCnSigmaMin(0),
+  fTPCnSigmaMax(0),
+  fTOFnSigma(0),
+//  fParticleIDforPID(AliPID::kElectron),
+  fUsePID(kFALSE),
+  fUseTPCPID(kFALSE),
+  fUseTOFPID(kFALSE),
   fHistEventsProcessed(0x0),
   fElectronPt(NULL),
   fElectronPtStart(NULL)
@@ -99,10 +109,16 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fMinNclsTPCPID(0),
   fRequireTOF(kFALSE),
   fMinRatioTPCcluster(0),
+  fTPCnSigmaMin(0),
+  fTPCnSigmaMax(0),
+  fTOFnSigma(0),
+  //  fParticleIDforPID(AliPID::kElectron),
+  fUsePID(kFALSE),
+  fUseTPCPID(kFALSE),
+  fUseTOFPID(kFALSE),
   fHistEventsProcessed(0x0),
   fElectronPt(NULL),
   fElectronPtStart(NULL)
-
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -240,9 +256,16 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   } else {
     IsEventMCSelected = fMCCuts->IsMCEventSelected(fMCEvent);//ESDs
   }
-       
-       
-
+  
+  AliPIDResponse *pidResponse=NULL;
+  if(fUsePID){
+    pidResponse= ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
+    //    fpidResponse = fInputHandler->GetPIDResponse();
+    if(!pidResponse){
+      AliDebug(1, "Using default PID Response");
+      pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
+    }     
+  }
   //pass the evt info to the cuts that need it 
   if(!isAOD) fCFManager->SetMCEventInfo (fMCEvent);
   else fCFManager->SetMCEventInfo (fEvent);
@@ -310,7 +333,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       // Step 6. Track that are recostructed + true pt and filling
       AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(label);
-      containerInputMC[0] = (Float_t)mcPart->Pt();
+      containerInputMC[0] = mcPart->Pt();
       containerInputMC[1] = mcPart->Eta() ;
       containerInputMC[2] = mcPart->Phi() ;
       containerInputMC[3] = mcPart->Theta() ;
@@ -322,7 +345,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(track);
       if(isAOD && fSetFilterBit) 
 	if (!aodTrack->TestFilterMask(BIT(fbit))){
-	  //cout << "cut due to filter bit " << fSetFilterBit << "  " <<fbit <<endl;
+	  //	  cout << "cut due to filter bit " << fSetFilterBit << "  " <<fbit <<endl;
 	  continue;
 	}
       AliVTrack *vtrack=static_cast<AliVTrack *>(track);
@@ -389,13 +412,47 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       }
 	   
       if(selected){
-	fElectronPt->Fill(tmptrack->Pt());
-
 	AliDebug(2,"Reconstructed track pass quality criteria\n");
 	fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedMC);
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
       }else AliDebug(3,"Reconstructed track not passing quality criteria\n");
 	   
+      // PID requirement! 
+      if(selected){
+	//also check for pdg first????
+	if(fUseTPCPID){
+	  Float_t tpcNsigma = pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron); // change to particle
+	  AliDebug(2, Form("Number of sigmas in TPC: %f", tpcNsigma));
+	  //cout << "sigmaTPC " << tpcNsigma << "   " << fTPCnSigmaMin << " - " << fTPCnSigmaMax << endl;
+	  if(tpcNsigma<fTPCnSigmaMin || tpcNsigma>fTPCnSigmaMax) { selected = false;}
+
+	}
+
+	if(fUseTOFPID){
+	  Float_t tofNsigma = pidResponse->NumberOfSigmasTOF(vtrack, AliPID::kElectron); //change to particle
+	  AliDebug(2, Form("Number of sigmas in TOF: %f", tofNsigma));
+	  //cout << "sigmaTOF " << tofNsigma << "   " << fTOFnSigma  << endl;
+	  // for now: Assume symmetric cut for TOF
+	  if(TMath::Abs(tofNsigma) > fTOFnSigma) {selected = false;}
+	}
+	//cout <<"PDG: " << mcPart->PdgCode() << endl;
+	// check for pdg??
+	//if(TMath::Abs( mcPart->PdgCode() )!= fPdgCode) selected = false;
+
+
+	if(selected){
+	  // fill container for tracks 
+	  fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoPIDMC);
+	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
+	}
+      }
+      if(selected){
+	fElectronPt->Fill(tmptrack->Pt());
+      }
+      // invariant mass method - Not sure if needed here...
+
+
+
       if(isAOD) delete tmptrack;
 	  
     } 
@@ -521,7 +578,7 @@ void AliCFSingleTrackEfficiencyTask::CheckESDParticles(){
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
 	 
     AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);  
-    containerInput[0] = (Float_t)mcPart->Pt(); 
+    containerInput[0] = mcPart->Pt(); 
     containerInput[1] = mcPart->Eta() ;
     containerInput[2] = mcPart->Phi() ;
     containerInput[3] = mcPart->Theta() ;
