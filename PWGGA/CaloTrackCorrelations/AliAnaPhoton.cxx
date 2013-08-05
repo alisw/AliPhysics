@@ -1441,21 +1441,21 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
 
         //printf("N overlaps %d \n",noverlaps);
         
-        if(noverlaps == 1)
+        if(noverlaps == 0)
         {
           fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0);
         }
-        else if(noverlaps == 2)
+        else if(noverlaps == 1)
         {
           fhMCPhotonELambda0TwoOverlap ->Fill(energy, lambda0);
         }
-        else if(noverlaps > 2)
+        else if(noverlaps > 1)
         {
           fhMCPhotonELambda0NOverlap   ->Fill(energy, lambda0);
         }
         else
         {
-          printf("AliAnaPhoton::FillShowerShapeHistogram() - n overlaps = %d!!", noverlaps);
+          printf("AliAnaPhoton::FillShowerShapeHistogram() - n overlaps = %d!!\n", noverlaps);
         }
       }//No embedding
       
@@ -3833,6 +3833,9 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 {
   //Fill histograms
   
+  //In case of simulated data, fill acceptance histograms
+  if(IsDataMC()) FillAcceptanceHistograms();
+  
   // Get vertex
   Double_t v[3] = {0,0,0}; //vertex ;
   GetReader()->GetVertex(v);
@@ -3930,9 +3933,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
         }
       }
-      
-      FillAcceptanceHistograms();
-      
+            
       //....................................................................
       // Access MC information in stack if requested, check that it exists.
       Int_t label =ph->GetLabel();
