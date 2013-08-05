@@ -49,8 +49,10 @@ class AliToyMCDrawer : public TObject {
   void SetFileName(const Char_t* filename) {fFileName = filename;}
   void DrawEvent(AliToyMCEvent *currentEvent, Double_t centerTime, Int_t color);
   void DrawTrack(const AliToyMCTrack *track,  Double_t centerTime, Double_t currentEventTime, Int_t color);
+  void DrawTrack2D(const AliToyMCTrack *track,  Double_t centerTime, Double_t currentEventTime, Int_t color);
   void DrawLaserEvent(Int_t nLaserEvents=1, Int_t side=-1, Int_t rod=-1, Int_t bundle=-1, Int_t beam=-1);
   void DrawGeometry();
+  void DrawGeometry2D();
   void DrawEvents(Bool_t both = kFALSE, Bool_t before = kTRUE);
   //  void DrawEvents(Bool_t time = kTRUE, Bool_t both = kTRUE, Bool_t before = kTRUE);
 
@@ -61,7 +63,7 @@ class AliToyMCDrawer : public TObject {
   void SetRangeGlobalY(Float_t min, Float_t max) { fGlobalYmin=min; fGlobalYmax=max; }
   
   const AliToyMCEvent* GetEvent(Int_t eventnr) const {return static_cast<const AliToyMCEvent*>(fEventArray->At(eventnr));}
-private:
+// private:
 
   TTree* fInputTree;
   TFile* fInFile;

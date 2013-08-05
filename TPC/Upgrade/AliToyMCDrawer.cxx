@@ -9,11 +9,14 @@
 #include <TH2F.h>
 #include <TClonesArray.h>
 #include <TPolyLine3D.h>
+#include <TPolyLine.h>
 #include <TPolyMarker3D.h>
+#include <TPolyMarker.h>
 #include <TAxis.h>
 #include <TLegend.h>
 #include <TPad.h>
 #include <TGeoGlobalMagField.h>
+#include <TCanvas.h>
 
 #include <AliMagF.h>
 #include <AliCDBManager.h>
@@ -81,9 +84,6 @@ AliToyMCDrawer::AliToyMCDrawer()
    fDriftVel = fTPCParam->GetDriftV();
    fMaxZ0    =fTPCParam->GetZLength();
    fTimeRange = 2*fMaxZ0/fDriftVel;
- 
-   fPoints = new TClonesArray("TPolyMarker3D");
-   fDistPoints = new TClonesArray("TPolyMarker3D");
  }
 //________________________________________________________________
 AliToyMCDrawer::AliToyMCDrawer(const AliToyMCDrawer &drawer)
@@ -286,9 +286,11 @@ Int_t AliToyMCDrawer::FillEventArray(Int_t middleEventNbr, Double_t snapShotTime
 //________________________________________________________________
 void AliToyMCDrawer::DrawEvents(Bool_t both, Bool_t before)
 {
-  
-  fPoints->Clear();
-  fDistPoints->Clear();
+
+  if (fPoints){
+    fPoints->Clear();
+    fDistPoints->Clear();
+  }
   DrawGeometry();
  
   
@@ -393,22 +395,13 @@ void AliToyMCDrawer::DrawEvent(AliToyMCEvent *currentEvent, Double_t centerTime,
       
       const AliToyMCTrack *tempTrack = currentEvent->GetTrack(iTrack);
       //AliToyMCTrack *tempTrack = new AliToyMCTrack(*currentEvent->GetTrack(iTrack));
-      DrawTrack(tempTrack, centerTime, currentEvent->GetT0(),color);
-      
+      if (fProjectionType.Length()==3){
+        DrawTrack(tempTrack, centerTime, currentEvent->GetT0(),color);
+      } else if (fProjectionType.Length()==2){
+        DrawTrack2D(tempTrack, centerTime, currentEvent->GetT0(),color);
+      }
 
-
-
-     
-
-      
-
-
-       
     }
-
-
-
-
 }
 
 //________________________________________________________________
@@ -418,15 +411,21 @@ void AliToyMCDrawer::DrawLaserEvent(Int_t nLaserEvents, Int_t side, Int_t rod, I
   //
   //
 
-  fPoints->Clear();
-  fDistPoints->Clear();
+  if (fPoints) {
+    fPoints->Clear();
+    fDistPoints->Clear();
+  }
   if (!ConnectInputTree()) return;
 
   AliTPCLaserTrack::LoadTracks();
   TObjArray *arr=AliTPCLaserTrack::GetTracks();
   
-  DrawGeometry();
-
+  if (fProjectionType.Length()==3){
+    DrawGeometry();
+  } else if (fProjectionType.Length()==2){
+    DrawGeometry2D();
+  }
+  
   Int_t laserEvents=0;
   for (Int_t iev=0;iev<fInputTree->GetEntries();++iev) {
     fInputTree->GetEntry(iev);
@@ -443,7 +442,12 @@ void AliToyMCDrawer::DrawLaserEvent(Int_t nLaserEvents, Int_t side, Int_t rod, I
       if (bundle>-1 && laserTrack->GetBundle() != bundle ) continue;
       if (beam  >-1 && laserTrack->GetBeam()   != beam   ) continue;
       const AliToyMCTrack *track = fEvent->GetTrack(iTrack);
-      DrawTrack(track,0,fEvent->GetT0(),kRed);
+      if (fProjectionType.Length()==3){
+        DrawTrack(track,0,fEvent->GetT0(),kRed);
+      } else if (fProjectionType.Length()==2){
+        DrawTrack2D(track,0,fEvent->GetT0(),kRed);
+      }
+      
     }
 
     ++laserEvents;
@@ -456,6 +460,10 @@ void AliToyMCDrawer::DrawLaserEvent(Int_t nLaserEvents, Int_t side, Int_t rod, I
 //________________________________________________________________
 void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime, Double_t currentEventTime, Int_t color){
   if(!fDispHist) DrawGeometry();
+  if (!fPoints) {
+    fPoints = new TClonesArray("TPolyMarker3D");
+    fDistPoints = new TClonesArray("TPolyMarker3D");
+  }
   
   TPolyMarker3D *disttrackpoints = new((*fDistPoints)[fDistPoints->GetEntriesFast()]) TPolyMarker3D();
   TPolyMarker3D *trackpoints = new((*fPoints)[fPoints->GetEntriesFast()]) TPolyMarker3D();
@@ -493,9 +501,9 @@ void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime,
       xp = prot.GetX();
       yp = prot.GetY();
 
-      Double_t ztime=zDrifted;
-      Double_t globx=xp;
-      Double_t globy=yp;
+//       Double_t ztime=zDrifted;
+//       Double_t globx=xp;
+//       Double_t globy=yp;
 
 //       if (fProje)
 
@@ -591,6 +599,241 @@ void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime,
 }
 
 //________________________________________________________________
+void AliToyMCDrawer::DrawTrack2D(const AliToyMCTrack *track,  Double_t centerTime, Double_t currentEventTime, Int_t color){
+  if(!fDispHist) DrawGeometry2D();
+  if (!fPoints) {
+    fPoints = new TClonesArray("TPolyMarker");
+    fDistPoints = new TClonesArray("TPolyMarker");
+  }
+
+  Double_t timeZmin=-fMaxZ0;
+  Double_t timeZmax= fMaxZ0;
+  Double_t globXmin=-(fOFCRadius +10);
+  Double_t globXmax=  fOFCRadius +10 ;
+  Double_t globYmin=-(fOFCRadius +10);
+  Double_t globYmax=  fOFCRadius +10 ;
+  
+//   const Double_t epsilon=.001;
+  
+  TString title;
+  if (fTimeZmax>fTimeZmin) {
+    timeZmin=fTimeZmin;
+    timeZmax=fTimeZmax;
+  }
+  if (fGlobalXmax>fGlobalXmin) {
+    globXmin=fGlobalXmin;
+    globXmax=fGlobalXmax;
+  }
+  if (fGlobalYmax>fGlobalYmin) {
+    globYmin=fGlobalYmin;
+    globYmax=fGlobalYmax;
+  }
+  
+  TPolyMarker *disttrackpoints = new((*fDistPoints)[fDistPoints->GetEntriesFast()]) TPolyMarker();
+  TPolyMarker *trackpoints = new((*fPoints)[fPoints->GetEntriesFast()]) TPolyMarker();
+  
+  Double_t currentEventTimeRelToCentral = centerTime - currentEventTime;
+  Int_t nDistPoints = track->GetNumberOfDistSpacePoints();
+  Int_t nPoints = track->GetNumberOfSpacePoints();
+  
+  for(Int_t iITSPoint = 0; iITSPoint< track->GetNumberOfITSPoints();iITSPoint++){
+    
+    Double_t xp = track->GetITSPoint(iITSPoint)->GetX();
+    Double_t yp = track->GetITSPoint(iITSPoint)->GetY();
+    Double_t zp = track->GetITSPoint(iITSPoint)->GetZ();
+    Double_t zDrifted =  zp+(zp/TMath::Abs(zp))*currentEventTimeRelToCentral * fDriftVel;
+
+    if ( xp<globXmin || xp>globXmax || yp<globYmin || yp>globYmax || zDrifted<timeZmin || zDrifted>timeZmax ) continue;
+
+    Double_t x=0.;
+    Double_t y=0.;
+    if (fProjectionType=="XT"){
+      x=zDrifted;
+      y=xp;
+    } else if (fProjectionType=="YT"){
+      x=zDrifted;
+      y=yp;
+    } else if (fProjectionType=="RT"){
+      x=zDrifted;
+      y=TMath::Sqrt(xp*xp+yp*yp);
+    } else if (fProjectionType=="XY" || fProjectionType=="YX") {
+      x=xp;
+      y=yp;
+    }
+    trackpoints->SetNextPoint(x,y);
+  }
+  
+  for(Int_t iPoint = 0; iPoint< (nDistPoints<nPoints?nPoints:nDistPoints);iPoint++){
+    if(iPoint<nPoints) {
+      
+      
+      Double_t xp = track->GetSpacePoint(iPoint)->GetX();
+      Double_t yp = track->GetSpacePoint(iPoint)->GetY();
+      Double_t zp = track->GetSpacePoint(iPoint)->GetZ();
+      Double_t zDrifted =  zp+(zp/TMath::Abs(zp))*currentEventTimeRelToCentral * fDriftVel;
+
+      //Double_t zDrifted = (zp/TMath::Abs(zp))*fMaxZ0  -(zp/TMath::Abs(zp))* fDriftVel*(track->GetSpacePoint(iPoint)->GetTimeBin()      -centerTime   );
+      Float_t xyzp[3] = {xp,yp,zp};
+      AliTrackPoint p;
+      p.SetXYZ(xyzp);
+      Float_t tempcov[6] = {0};
+      p.SetCov(tempcov);
+      Int_t sec = track->GetSpacePoint(iPoint)->GetDetector();
+      Double_t angle=((sec%18)*20.+10.)/TMath::RadToDeg();
+      AliTrackPoint prot = p.Rotate(-angle);
+      xp = prot.GetX();
+      yp = prot.GetY();
+
+      if ( xp<globXmin || xp>globXmax || yp<globYmin || yp>globYmax || zDrifted<timeZmin || zDrifted>timeZmax ) continue;
+      
+//       Double_t ztime=zDrifted;
+//       Double_t globx=xp;
+//       Double_t globy=yp;
+      
+      Double_t x=0.;
+      Double_t y=0.;
+      if (fProjectionType=="XT"){
+        x=zDrifted;
+        y=xp;
+      } else if (fProjectionType=="YT"){
+        x=zDrifted;
+        y=yp;
+      } else if (fProjectionType=="RT"){
+        x=zDrifted;
+        y=TMath::Sqrt(xp*xp+yp*yp);
+      } else if (fProjectionType=="XY" || fProjectionType=="YX") {
+        x=xp;
+        y=yp;
+      }
+      
+      if(track->GetSpacePoint(iPoint)->GetRow()!=255) {
+        if(TMath::Abs(zDrifted)<fMaxZ0 && zDrifted*zp >=0 /*&&TMath::Sqrt(xp*xp + yp*yp)<fIFCRadius*/) trackpoints->SetNextPoint(x,y);
+        
+      }
+      else std::cout << "row == " << track->GetSpacePoint(iPoint)->GetRow() << std::endl;
+      
+    }
+    if(iPoint<nDistPoints) {
+      Double_t xpdist = track->GetDistortedSpacePoint(iPoint)->GetX();
+      Double_t ypdist = track->GetDistortedSpacePoint(iPoint)->GetY();
+      Double_t zpdist = track->GetDistortedSpacePoint(iPoint)->GetZ();
+      
+      //std::cout << zpdist << std::endl;
+      
+      Float_t xyzpdist[3] = {xpdist,ypdist,zpdist};
+      AliTrackPoint pdist;
+      pdist.SetXYZ(xyzpdist);
+      Float_t tempcovdist[6] = {0};
+      pdist.SetCov(tempcovdist);
+      Int_t secdist = track->GetDistortedSpacePoint(iPoint)->GetDetector();
+      Double_t angledist=((secdist%18)*20.+10.)/TMath::RadToDeg();
+      AliTrackPoint protdist = pdist.Rotate(-angledist);
+      xpdist = protdist.GetX();
+      ypdist = protdist.GetY();
+      
+      UInt_t sector = track->GetDistortedSpacePoint(iPoint)->GetDetector();
+      UInt_t row = track->GetDistortedSpacePoint(iPoint)->GetRow();
+      UInt_t pad  = track->GetDistortedSpacePoint(iPoint)->GetPad();
+      
+      Int_t nPads = fTPCParam->GetNPads(sector,row);
+      Int_t intPad = TMath::Nint(Float_t(pad+nPads/2));
+      
+      Float_t xyz[3];
+      //std::cout <<"sector: " << sector << " row: " << row << " pad: " <<pad<< std::endl;
+      fRoc->GetPositionGlobal(sector,row,intPad,xyz);
+      
+      Double_t zDrifteddist = (zpdist/TMath::Abs(zpdist))*fMaxZ0  -(zpdist/TMath::Abs(zpdist))* fDriftVel*(track->GetDistortedSpacePoint(iPoint)->GetTimeBin()      -centerTime   );
+
+      if ( xpdist<globXmin || xpdist>globXmax || ypdist<globYmin || ypdist>globYmax || zDrifteddist<timeZmin || zDrifteddist>timeZmax ) continue;
+      
+      Double_t x=0.;
+      Double_t y=0.;
+      if (fProjectionType=="XT"){
+        x=zDrifteddist;
+        y=xpdist;
+      } else if (fProjectionType=="YT"){
+        x=zDrifteddist;
+        y=ypdist;
+      } else if (fProjectionType=="RT"){
+        x=zDrifteddist;
+        y=TMath::Sqrt(xpdist*xpdist+ypdist*ypdist);
+      } else if (fProjectionType=="XY" || fProjectionType=="YX") {
+        x=xpdist;
+        y=ypdist;
+      }
+      
+      if(row!=255){
+        
+        if(TMath::Abs(zDrifteddist)<fMaxZ0 && zDrifteddist*zpdist>=0 /*&&TMath::Sqrt(xpdist*xpdist + ypdist*ypdist)<fIFCRadius*/) {
+          
+          disttrackpoints->SetNextPoint(x,y);
+          //if(TMath::Sqrt(xpdist*xpdist + ypdist*ypdist)<fIFCRadius) std::cout << "fMaxZ0 " << fMaxZ0 <<" inside " << xpdist << " " << "zpdist "  << zpdist << " " << "zDrifteddist "<< zDrifteddist << " " << zDrifteddist*zpdist << std::endl;
+        }
+      }
+      else std::cout << "row == " << row << std::endl;
+      //Double_t zDrifteddist =(zpdist/TMath::Abs(zpdist))*fMaxZ0  -(zpdist/TMath::Abs(zpdist))*(currentEvent->GetTrack(iTrack)->GetDistortedSpacePoint(iPoint)->GetTimeBin()- currentEvent->GetT0() )* fDriftVel;
+      
+      
+    }
+    //  if( (       (trackPhi>phiCut && trackPhi < TMath::Pi() - phiCut) || ( trackPhi>TMath::Pi() + phiCut && trackPhi < TMath::TwoPi() - phiCut))   ) {
+      
+      
+      
+      
+      
+  }
+  if(0){
+    for(Int_t iTRDPoint = 0; iTRDPoint< track->GetNumberOfTRDPoints();iTRDPoint++){
+      
+      Double_t xp = track->GetTRDPoint(iTRDPoint)->GetX();
+      Double_t yp = track->GetTRDPoint(iTRDPoint)->GetY();
+      Double_t zp = track->GetTRDPoint(iTRDPoint)->GetZ();
+      Double_t zDrifted =  zp+(zp/TMath::Abs(zp))*currentEventTimeRelToCentral * fDriftVel;
+
+      if ( xp<globXmin || xp>globXmax || yp<globYmin || yp>globYmax || zDrifted<timeZmin || zDrifted>timeZmax ) continue;
+      
+      Double_t x=0.;
+      Double_t y=0.;
+      if (fProjectionType=="XT"){
+        x=zDrifted;
+        y=xp;
+      } else if (fProjectionType=="YT"){
+        x=zDrifted;
+        y=yp;
+      } else if (fProjectionType=="RT"){
+        x=zDrifted;
+        y=TMath::Sqrt(xp*xp+yp*yp);
+      } else if (fProjectionType=="XY" || fProjectionType=="YX") {
+        x=xp;
+        y=yp;
+      }
+      trackpoints->SetNextPoint(x,y);
+    }
+  }
+  if(1){
+    if(trackpoints && trackpoints->GetN()>0) {
+      //   trackpoints->SetMarkerColor(1+currentEvent->GetEventNumber()%9);
+      //trackpoints->SetMarkerStyle(6);
+      trackpoints->Draw("same");
+    }
+    if(disttrackpoints && disttrackpoints->GetN()>0) {
+      //
+      //disttrackpoints->SetMarkerStyle(6);
+      disttrackpoints->SetMarkerColor(color);
+      
+      
+      disttrackpoints->Draw("same");
+      
+    }
+    
+  }
+  
+  
+  
+  
+}
+
+//________________________________________________________________
 void AliToyMCDrawer::DrawGeometry() {
 
   
@@ -620,29 +863,10 @@ void AliToyMCDrawer::DrawGeometry() {
     globYmin=fGlobalYmin;
     globYmax=fGlobalYmax;
   }
-  if (fProjectionType=="XYT"){
-    fDispHist = new TH3F("fDispHist",";#it{z} [cm]; #it{x} [cm]; #it{y} [cm]",
-                         100, timeZmin-10, timeZmax+10,
-                         100, globXmin, globXmax ,
-                         100, globYmin, globYmax);
-  } else if (fProjectionType=="XT"){
-    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{x} [cm]",
-                         100, timeZmin-10, timeZmax+10,
-                         100, globXmin, globXmax);
-  } else if (fProjectionType=="YT"){
-    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{y} [cm]",
-                         100, timeZmin-10, timeZmax+10,
-                         100, globYmin, globYmax);
-  } else if (fProjectionType=="RT"){
-    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{r} [cm]",
-                         100, timeZmin-10, timeZmax+10,
-                         100, globYmin, globYmax);
-  } else {
-    AliError(Form("Display Format not known: %s",fProjectionType.Data()));
-    return;
-  }
-    
-    
+  fDispHist = new TH3F("fDispHist",";#it{z} [cm]; #it{x} [cm]; #it{y} [cm]",
+                       100, timeZmin-10, timeZmax+10,
+                       100, globXmin, globXmax ,
+                       100, globYmin, globYmax);
     
   //if(!fDispGraph) fDispGraph = new TGraph();
 
@@ -745,6 +969,192 @@ void AliToyMCDrawer::DrawGeometry() {
   if (innerEndCap2) { innerEndCap2->Draw("same"); }
   if (innerCE)      { innerCE     ->Draw("same");      }
   
+}
+
+//________________________________________________________________
+void AliToyMCDrawer::DrawGeometry2D() {
+  
+  
+  //delete fDispGraph;
+  //fDispGraph = new TGraph2D();
+  delete fDispHist;
+  
+  Double_t timeZmin=-fMaxZ0;
+  Double_t timeZmax= fMaxZ0;
+  Double_t globXmin=-(fOFCRadius +10);
+  Double_t globXmax=  fOFCRadius +10 ;
+  Double_t globYmin=-(fOFCRadius +10);
+  Double_t globYmax=  fOFCRadius +10 ;
+  
+  const Double_t epsilon=.001;
+  
+  TString title;
+  if (fTimeZmax>fTimeZmin) {
+    timeZmin=fTimeZmin;
+    timeZmax=fTimeZmax;
+  }
+  if (fGlobalXmax>fGlobalXmin) {
+    globXmin=fGlobalXmin;
+    globXmax=fGlobalXmax;
+  }
+  if (fGlobalYmax>fGlobalYmin) {
+    globYmin=fGlobalYmin;
+    globYmax=fGlobalYmax;
+  }
+  TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("cDrawer");
+
+  if (fProjectionType=="XT"){
+    if (!c) c=new TCanvas("cDrawer","Toy Drawer");
+    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{x} [cm]",
+                         100, timeZmin-10, timeZmax+10,
+                         100, globXmin, globXmax);
+  } else if (fProjectionType=="YT"){
+    if (!c) c=new TCanvas("cDrawer","Toy Drawer");
+    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{y} [cm]",
+                         100, timeZmin-10, timeZmax+10,
+                         100, globYmin, globYmax);
+  } else if (fProjectionType=="RT"){
+    if (!c) c=new TCanvas("cDrawer","Toy Drawer");
+    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{r} [cm]",
+                         100, timeZmin-10, timeZmax+10,
+                         100, globYmin, globYmax);
+  } else if (fProjectionType=="YX"||fProjectionType=="XY"){
+    if (!c) c=new TCanvas("cDrawer","Toy Drawer",800,800);
+    c->SetLeftMargin(0.15);
+    c->SetRightMargin(0.05);
+    fDispHist = new TH2F("fDispHist",";#it{x} [cm]; #it{y} [cm]",
+                         100, globXmin, globXmax,
+                         100, globYmin, globYmax);
+    fDispHist->GetYaxis()->SetTitleOffset(1.5);
+  } else {
+    AliError(Form("Display Format not known: %s",fProjectionType.Data()));
+    return;
+  }
+  
+  c->Clear();
+  
+  //if(!fDispGraph) fDispGraph = new TGraph();
+  
+  //fDispGraph->Clear();
+  fDispHist->SetStats(0);
+  fDispHist->Draw();
+  gPad->SetPhi(0);
+  gPad->SetTheta(0);
+  
+  TPolyLine *endCap1 = 0x0;
+  if (timeZmin-epsilon<-fMaxZ0)
+    endCap1=new TPolyLine();
+  printf("time: %p, %.2f,, %.2f, %.2f, %.2f, %d\n",endCap1,fTimeZmin,fTimeZmax,timeZmin-epsilon,fMaxZ0, timeZmin-epsilon<-fMaxZ0);
+  TPolyLine *endCap2 = 0x0;
+  if (timeZmax+epsilon> fMaxZ0)
+    endCap2=new TPolyLine();
+  
+  TPolyLine *outerCE = 0x0;
+  if (timeZmin<0 && timeZmax>0 )
+    outerCE=new TPolyLine();
+  
+  TPolyLine *cage[18] ={0x0};
+  
+  TPolyLine *innerCage[18] ={0x0};
+  
+  TPolyLine *innerEndCap1 = 0x0;
+  if (timeZmin-epsilon<-fMaxZ0)
+    innerEndCap1=new TPolyLine();
+  
+  TPolyLine *innerEndCap2 = 0x0;
+  if (timeZmax+epsilon> fMaxZ0)
+    innerEndCap2=new TPolyLine();
+  
+  TPolyLine *innerCE = 0x0;
+  if (timeZmin<0 && timeZmax>0 )
+    innerCE=new TPolyLine();
+  
+  Int_t iPoint=0;
+  Double_t angle    = 0.;
+  Double_t globalX  = 0.;
+  Double_t globalY  = 0.;
+  Double_t globalXi = 0.;
+  Double_t globalYi = 0.;
+  Double_t globalXi2= 0.;
+  Double_t globalYi2= 0.;
+
+  
+  if (fProjectionType=="YX"||fProjectionType=="XY") {
+    for(Int_t i = 0; i<18; i++){
+      angle    = i*TMath::TwoPi()/18;
+      globalX  = fOFCRadius*TMath::Cos(angle);
+      globalY  = fOFCRadius*TMath::Sin(angle);
+      globalXi = fIFCRadius*TMath::Cos(angle);
+      globalYi = fIFCRadius*TMath::Sin(angle);
+      globalXi = fIFCRadius*TMath::Cos(angle);
+      globalYi = fIFCRadius*TMath::Sin(angle);
+      globalXi2= 135.5*TMath::Cos(angle);
+      globalYi2= 135.5*TMath::Sin(angle);
+      
+      if ( globalX<globXmin || globalX>globXmax || globalY<globYmin || globalY>globYmax ) {
+        continue;
+      }
+      // in xy, abuse for sector boundaries
+      cage[iPoint] = new TPolyLine();
+      cage[iPoint]->SetPoint(0, globalX ,globalY) ;
+      cage[iPoint]->SetPoint(1, globalXi ,globalYi) ;
+      // only draw if inside range
+      if (endCap1) { endCap1->SetPoint(iPoint, globalX, globalY); }
+
+      if (innerEndCap1) { innerEndCap1->SetPoint(iPoint, globalXi, globalYi); }
+      if (innerEndCap2) { innerEndCap2->SetPoint(iPoint, globalXi2, globalYi2); }
+      
+      cage[iPoint]->Draw("same");
+
+      ++iPoint;
+    }
+  }
+  
+  angle    = 5*TMath::TwoPi()/18;
+  globalX  = fOFCRadius*TMath::Cos(angle);
+  globalY  = fOFCRadius*TMath::Sin(angle);
+  globalXi = fIFCRadius*TMath::Cos(angle);
+  globalYi = fIFCRadius*TMath::Sin(angle);
+  globalXi = fIFCRadius*TMath::Cos(angle);
+  globalYi = fIFCRadius*TMath::Sin(angle);
+  globalXi2= 135.5*TMath::Cos(angle);
+  globalYi2= 135.5*TMath::Sin(angle);
+  if (endCap1) { endCap1->SetPoint(iPoint, 0, globalY); }
+  
+  if (innerEndCap1) { innerEndCap1->SetPoint(iPoint, 0, globalYi); }
+  if (innerEndCap2) { innerEndCap2->SetPoint(iPoint, 0, globalYi2); }
+  ++iPoint;
+  //
+  // close endplate and CE polygons
+  //
+  Int_t i=18;
+  angle    = i*TMath::TwoPi()/18;
+  globalX  = fOFCRadius*TMath::Cos(angle);
+  globalY  = fOFCRadius*TMath::Sin(angle);
+  globalXi = fIFCRadius*TMath::Cos(angle);
+  globalYi = fIFCRadius*TMath::Sin(angle);
+  globalXi2= 135.5*TMath::Cos(angle);
+  globalYi2= 135.5*TMath::Sin(angle);
+  
+  // only draw if inside range
+  if ( !(globalX<globXmin || globalX>globXmax || globalY<globYmin || globalY>globYmax) ) {
+    if (endCap1) { endCap1->SetPoint(i, globalX, globalY); }
+//     if (endCap2) { endCap2->SetPoint(i, globalX, globalY); }
+//     if (outerCE) { outerCE->SetPoint(i, globalX, globalY); }
+
+    if (innerEndCap1) { innerEndCap1->SetPoint(i, globalXi, globalYi); }
+    if (innerEndCap2) { innerEndCap2->SetPoint(i, globalXi2, globalYi2); }
+//     if (innerCE)      { innerCE     ->SetPoint(i, globalXi, globalYi); }
+
+  }
+  
+  if (endCap1) { endCap1->Draw("same"); }
+  //     if (endCap2) { endCap2->Draw("same"); }
+  //     if (outerCE) { outerCE->Draw("same"); }
+  
+  if (innerEndCap1) { innerEndCap1->Draw("same"); }
+  if (innerEndCap2) { innerEndCap2->Draw("same"); }
+  //     if (innerCE)      { innerCE     ->Draw("same");      }
 }
 
 //________________________________________________________________
