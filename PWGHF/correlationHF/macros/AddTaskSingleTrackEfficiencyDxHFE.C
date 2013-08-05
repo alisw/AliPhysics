@@ -115,12 +115,15 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   TString taskOptions;
   Int_t minclustersTPC=120; // quick fix for problem sending hfe track cut object to addtask
   Int_t minclustersITS=4;
-  Int_t ITSreq=AliHFEextraCuts::kFirst;
+  Int_t ITSreq=AliESDtrackCuts::kFirst;
   TString extraname="";
   Bool_t bclustersTPCPID=kTRUE;
   Bool_t bTPCratio=kTRUE;
   Bool_t brequireTOF=kTRUE;
   Int_t filterbit=0;
+  Int_t bUsePID=kTRUE;
+  Int_t bUseTOFPID=kTRUE;
+  Int_t bUseTPCPID=kTRUE;
 
 
   if (configuration.IsNull() && gDirectory) {
@@ -204,7 +207,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
 
   const Int_t nvar   = 5 ; //number of variables on the grid:pt,y,phi
-  UInt_t nstep = 9; //number of selection steps MC
+  UInt_t nstep = 11; //number of selection steps MC
 
   const UInt_t ipt = 0;
   const UInt_t iy  = 1;
@@ -286,7 +289,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 
   //Variable Titles 
   container -> SetVarTitle(ipt,"pt");
-  container -> SetVarTitle(iy, "y");
+  container -> SetVarTitle(iy, "#eta");
   container -> SetVarTitle(iphi,"phi");
   container -> SetVarTitle(itheta, "theta");
   container -> SetVarTitle(izvtx, "Zvtx");
@@ -302,6 +305,8 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   container -> SetStepTitle(6, " Reco Particle With First Quality Cuts");
   container -> SetStepTitle(7, " Reco Particle to MC True pt particles ");
   container -> SetStepTitle(8, " Reco Particle With All Quality Cuts");
+  container -> SetStepTitle(9, " Reco Particle to MC True pt particles after PID");
+  container -> SetStepTitle(10, " Reco Particle after PID");
 
 
   // SET TLIST FOR QA HISTOS
@@ -336,6 +341,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   //cuts->SetYRange(Ymin,Ymax);
   cuts->SetIsCharged(charge);
   cuts->SetMinVtxContr(1);
+  cuts->SetPdgCode(11); // electron pdg
   cuts->SetMinVtxType(3);
   cuts->SetMaxVtxZ(zvtxmax);
   cuts->SetNumberOfClusters(mintrackrefsITS,mintrackrefsTPC,mintrackrefsTOF,mintrackrefsMUON);
@@ -398,10 +404,17 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   task->SetFilterBit(kTRUE);
   task->SetFilterType(filterbit); //0=standard TPConly tracks, 1=ITSstandalone, 2=PixelOR (necessary for e), 3=PID for electrons, 4=standardwithlooseDCA, 5=standardwithtightDCA, 6=standard with tight DCA but with requiring first SDD instead of SPD cluster tracks, 7=TPC only tracks constrained to SPD vertex 
   task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+
   // Specifically for electrons DxHFE:
   if(bclustersTPCPID) task->SetMinNClustersTPCPID(80);
   if(bTPCratio) task->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
   if(brequireTOF) task->SetRequireTOF(kTRUE);
+
+  //PID Settings:
+  task->SetUsePID(bUsePID);
+  task->SetUseTOFPID(bUseTOFPID);
+  task->SetUseTPCPID(bUseTPCPID);
+
   task->SetCFManager(man); //here is set the CF manager
   
   
@@ -422,8 +435,29 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   if (!type.Contains("ESD") && !type.Contains("AOD")) {
     ::Error("AddSingleTrackEfficiencyTask", "AliCFSingleTrackEfficiency task needs the manager to have an ESD or AOD input handler.");
     return NULL;
-  }   
-  
+  } 
+
+  if(bUsePID){
+    // check for existence of PID task and add if not available
+    const char* pidTaskName="PIDResponseTask";
+    const char* pidTaskMacro="$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C";
+    AliAnalysisTask* pidTask=mgr->GetTask(pidTaskName);
+    if (!pidTask) {
+      gROOT->LoadMacro(pidTaskMacro);
+      TString pidFunction;
+      pidFunction.Form("AddTaskPIDResponse(%d, %d)", kTRUE, kTRUE);
+      gROOT->ProcessLine(pidFunction);
+      if (mgr->GetTask(pidTaskName)==NULL) {
+	::Error("AddTaskSingleTrackEfficiencyDxHFE", Form("failed to add PID task '%s' from macro '%s'",
+							  pidTaskName, pidTaskMacro));
+	return 0;
+      }
+    } else {
+      // TODO: would like to check if the PID task was set up
+      // with consistent parameters, however there are no getters at the moment
+      ::Info("AddTaskSingleTrackEfficiencyDxHFE", Form("PID task '%s' already existing", pidTaskName));
+    }
+  }
   
   printf(" Create the output container\n");
 

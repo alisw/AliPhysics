@@ -175,6 +175,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	  if (argument.CompareTo("runD0MassReference")==0){
 	    bRunD0MassReference=kTRUE;
 	  }
+	  if(argument.BeginsWith("maxPtCombinedPID="))
+	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("ElSelection="))
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("useinvmasscut"))

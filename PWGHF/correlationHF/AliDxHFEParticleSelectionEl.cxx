@@ -84,8 +84,9 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fEtaCut(0.8)
   , fSurvivedCutStep(kNotSelected)
   , fStoreCutStepInfo(kFALSE)
-  , fSetFilterBit(kFALSE)
+  , fSetFilterBit(kTRUE)
   , fBit(0)
+  , fMaxPtCombinedPID(999)
 
 {
   // constructor
@@ -526,6 +527,13 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     }
   }
 
+  // if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
+  // PID into two regions: below fMaxptCombinedPID - both TPC and TOF, above only TPC
+  Bool_t useCombinedPID=kTRUE;
+  if(track->Pt() > fMaxPtCombinedPID) useCombinedPID=kFALSE;
+  if(useCombinedPID) AliDebug(2,Form("Pt: %f, use CombinedPID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtCombinedPID));
+  else AliDebug(2,Form("Pt: %f, use only TPC PID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtCombinedPID));
+
   //Using AliHFECuts:
   // RecKine: ITSTPC cuts  
   if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)){
@@ -558,7 +566,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   if(fFinalCutStep==kHFEcutsITS) {AliDebug(2,"Returns after kHFEcutsITS "); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
 
   // HFE cuts: TOF PID and mismatch flag
-  if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
+  if(useCombinedPID && !ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
+    if(!useCombinedPID) cout << "should not be here "<< track->Pt() << endl;
     AliDebug(4,"Cut: kStepHFEcutsTOF");
     ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
     if(!fStoreCutStepInfo) return 0;
@@ -612,6 +621,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
 
   if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF"); return 0;}
 
+  //if(useCombinedPID) AliInfo(Form("Pt: %f, use CombinedPID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtCombinedPID));
+  //else AliInfo(Form("Pt: %f, use only TPC PID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtCombinedPID));
 
   if(fPIDTPC && fPIDTPC->IsSelected(&hfetrack)) {
     ((TH2D*)fHistoList->FindObject("fdEdxPidTPC"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
@@ -619,33 +630,41 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     ((TH2D*)fHistoList->FindObject("fnSigTOFPidTPC"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
     if(fStoreCutStepInfo){fSurvivedCutStep=kPIDTPC; }
     if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTPC"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
+    //if(!useCombinedPID)  cout << "Will be selected" << endl;
   }
   else{
     ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTPC);
-    //return 0; //if rejected by TOF, will also be rejected by TPCTOF
+    if(!useCombinedPID) {return 0; }// if only use combined PID, return 0 here (not selected by TPC PID)
   }
-  if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTTPC"); return 0;}
+  if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTPC"); return 0;}
 
   //Combined tof & tpc pid
   if(fPIDTOFTPC && fPIDTOFTPC->IsSelected(&hfetrack)) {
     AliDebug(3,"Inside FilldPhi, electron is selected");
-    ((TH2D*)fHistoList->FindObject("fdEdxPid"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-    ((TH2D*)fHistoList->FindObject("fnSigTPCPid"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    ((TH2D*)fHistoList->FindObject("fnSigTOFPid"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
-    ((TH1D*)fHistoList->FindObject("fTPCnClTPCTOFPID"))->Fill(track->GetTPCNcls());
-    // Only do this if 
     if(fStoreCutStepInfo){
       fSurvivedCutStep=kPIDTOFTPC;
-
     }
   }
   else{
     ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOFTPC);
     AliDebug(4,"Cut: kTPCTOFPID");
-    if(!fStoreCutStepInfo) return 0;
-    else { return 1; }//return 1 because it passed cuts above, but not this (no need to go further)
+    //Should do nothing if not use combinedPID
+    //    if(!useCombinedPID) cout << "HERE" << endl;
+    if(!fStoreCutStepInfo && useCombinedPID) { return 0;}
+    else if(fStoreCutStepInfo){  return 1; }//return 1 because it passed cuts above, but not this (no need to go further)
   }
-  
+  //if(!useCombinedPID) cout << "HERE" << endl;
+
+  // Filling histograms with particles passing PID criteria
+  // (Filled here due to the option of separating regions for TPC+TOF and TPC)
+  ((TH2D*)fHistoList->FindObject("fdEdxPid"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+  ((TH2D*)fHistoList->FindObject("fnSigTPCPid"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  ((TH2D*)fHistoList->FindObject("fnSigTOFPid"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  ((TH1D*)fHistoList->FindObject("fTPCnClTPCTOFPID"))->Fill(track->GetTPCNcls());
+
+  //if(fStoreCut
+
+  //Removing electrons based on invariant mass method
   if(fUseInvMassCut==kInvMassSingleSelected)
     {
       AliDebug(4,"invmass check");
@@ -662,6 +681,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
 
     }
   ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected);
+
   return 1;
   
 }
@@ -780,6 +800,12 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
       fUseInvMassCut=kInvMassSingleSelected;
       AliInfo("Using Invariant mass cut for single selected particle and looser cuts on partner");
       continue;   
+    }
+    if(argument.BeginsWith("maxPtCombinedPID=")){
+      argument.ReplaceAll("maxPtCombinedPID=", "");
+      fMaxPtCombinedPID=argument.Atoi();
+      AliInfo(Form("Using only TPC PID over %f GeV/c",fMaxPtCombinedPID));
+      continue;
     }
     if(argument.BeginsWith("usefilterbit")){
       fSetFilterBit=kTRUE;
