@@ -6,10 +6,8 @@
 
 #include "AliAnalysisTaskEmcalJetDev.h"
 
-#include <TChain.h>
 #include <TClonesArray.h>
 #include <TList.h>
-#include <TObject.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -28,12 +26,11 @@ ClassImp(AliAnalysisTaskEmcalJetDev)
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetDev::AliAnalysisTaskEmcalJetDev() : 
   AliAnalysisTaskEmcalDev("AliAnalysisTaskEmcalJetDev"),
-  fJetsName(),
   fRhoName(),
+  fJetCollArray(),
   fJets(0),
   fRho(0),
-  fRhoVal(0),
-  fJetCollArray()
+  fRhoVal(0)
 {
   // Default constructor.
 
@@ -43,12 +40,11 @@ AliAnalysisTaskEmcalJetDev::AliAnalysisTaskEmcalJetDev() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetDev::AliAnalysisTaskEmcalJetDev(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcalDev(name, histo),
-  fJetsName(),
   fRhoName(),
+  fJetCollArray(),
   fJets(0),
   fRho(0),
-  fRhoVal(0),
-  fJetCollArray()
+  fRhoVal(0)
 {
   // Standard constructor.
 
@@ -73,7 +69,6 @@ Bool_t AliAnalysisTaskEmcalJetDev::AcceptBiasJet(AliEmcalJet *jet, Int_t c)
   }
 
   return cont->AcceptBiasJet(jet);
-
 }
 
 //________________________________________________________________________
@@ -101,7 +96,6 @@ Double_t AliAnalysisTaskEmcalJetDev::GetLeadingHadronPt(AliEmcalJet *jet, Int_t 
   }
 
   return cont->GetLeadingHadronPt(jet);
-
 }
 
 //________________________________________________________________________
@@ -118,7 +112,6 @@ Bool_t AliAnalysisTaskEmcalJetDev::AcceptJet(AliEmcalJet *jet, Int_t c)
   }
 
   return cont->AcceptJet(jet);
-
 }
 
 //________________________________________________________________________
@@ -161,118 +154,34 @@ void AliAnalysisTaskEmcalJetDev::ExecOnce()
 
   //Get Jets, cuts and rho for first jet container
   AliJetContainer *cont = GetJetContainer(0);
-  if (fAnaType == kTPC) {
-    cont->SetJetAcceptanceType(AliJetContainer::kTPC);
-    cont->SetJetEtaPhiTPC();
-  }
-  else if (fAnaType == kEMCAL) {
-    cont->SetJetAcceptanceType(AliJetContainer::kEMCAL);
-    cont->SetJetEtaPhiEMCAL();
-  }
   
-  fJets = GetJetArray(0);
-  if(!fJets && fJetCollArray.GetEntriesFast()>0) {
-    AliError(Form("%s: Could not retrieve first jet branch!", GetName()));
-    fInitialized = kFALSE;
-    return;
-  }
-
-  fRhoName = cont->GetRhoName();
-  if(!fRhoName.IsNull()) {
-    fRho = cont->GetRhoParameter();
-    if(!fRho) {
-      AliError(Form("%s: Could not retrieve rho of first jet branch!", GetName()));
+  if (!cont->GetArrayName().IsNull()) {
+    fJets = cont->GetArray();
+    if(!fJets && fJetCollArray.GetEntriesFast()>0) {
+      AliError(Form("%s: Could not retrieve first jet branch!", GetName()));
       fInitialized = kFALSE;
       return;
     }
   }
 
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJetDev::GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho, Int_t c)
-{
-  // Get the leading jets.
-
-  static Float_t pt[9999] = {0};
-
-  if (!array)
-    return 0;
-
-  const Int_t n = array->GetEntriesFast();
-
-  if (n < 1)
-    return kFALSE;
-  
-  if (array->GetClass()->GetBaseClass("AliEmcalJet")) {
-
-    for (Int_t i = 0; i < n; i++) {
-
-      pt[i] = -FLT_MAX;
-
-      AliEmcalJet* jet = static_cast<AliEmcalJet*>(array->At(i));
-      
-      if (!jet) {
-	AliError(Form("Could not receive jet %d", i));
-	continue;
+  if (fRhoName.IsNull()) { // if rho name is not provided, tries to use the rho object of the first jet branch
+    fRhoName = cont->GetRhoName();
+    if(!cont->GetRhoName().IsNull()) {
+      fRho = cont->GetRhoParameter();
+      if(!fRho) {
+	AliError(Form("%s: Could not retrieve rho of first jet branch!", GetName()));
+	fInitialized = kFALSE;
+	return;
       }
-      
-      if (!AcceptJet(jet,c))
-	continue;
-      
-      pt[i] = jet->Pt() - rho * jet->Area();
     }
   }
-
-  else if (array->GetClass()->GetBaseClass("AliVTrack")) {
-
-    for (Int_t i = 0; i < n; i++) {
-
-      pt[i] = -FLT_MAX;
-
-      AliVTrack* track = static_cast<AliVTrack*>(array->At(i));
-      
-      if (!track) {
-	AliError(Form("Could not receive track %d", i));
-	continue;
-      }  
-      
-      if (!AcceptTrack(track, c))
-	continue;
-      
-      pt[i] = track->Pt();
+  else { // get rho from the event
+    fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
+    if (!fRho) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      return;
     }
   }
-
-  else if (array->GetClass()->GetBaseClass("AliVCluster")) {
-
-    for (Int_t i = 0; i < n; i++) {
-
-      pt[i] = -FLT_MAX;
-
-      AliVCluster* cluster = static_cast<AliVCluster*>(array->At(i));
-      
-      if (!cluster) {
-	AliError(Form("Could not receive cluster %d", i));
-	continue;
-      }  
-      
-      if (!AcceptCluster(cluster, c))
-	continue;
-
-      TLorentzVector nPart;
-      cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
-      
-      pt[i] = nPart.Pt();
-    }
-  }
-
-  TMath::Sort(n, pt, indexes);
-
-  if (pt[indexes[0]] == -FLT_MAX) 
-    return 0;
-
-  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -320,13 +229,13 @@ Bool_t AliAnalysisTaskEmcalJetDev::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius) {
+AliJetContainer* AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius) {
 
   // Add particle container
   // will be called in AddTask macro
 
   TString tmp = TString(n);
-  if(tmp.IsNull()) return;
+  if(tmp.IsNull()) return 0;
 
   AliJetContainer *cont = 0x0;
   cont = new AliJetContainer();
@@ -335,7 +244,7 @@ void AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TString defaultC
 
   if(!defaultCutType.IsNull()) {
     if(defaultCutType.EqualTo("TPC"))
-     cont->SetJetAcceptanceType(AliJetContainer::kTPC);
+      cont->SetJetAcceptanceType(AliJetContainer::kTPC);
     else if(defaultCutType.EqualTo("EMCAL"))
       cont->SetJetAcceptanceType(AliJetContainer::kEMCAL);
     else
@@ -345,6 +254,7 @@ void AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TString defaultC
  
   fJetCollArray.Add(cont);
 
+  return cont;
 }
 
 //________________________________________________________________________
@@ -354,6 +264,27 @@ AliJetContainer* AliAnalysisTaskEmcalJetDev::GetJetContainer(Int_t i) const{
   if(i<0 || i>fJetCollArray.GetEntriesFast()) return 0;
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
   return cont;
+}
+
+//________________________________________________________________________
+AliJetContainer* AliAnalysisTaskEmcalJetDev::GetJetContainer(const char* name) const{
+  // Get the jet container with name
+
+  AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.FindObject(name));
+  return cont;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJetDev::SetAnaType(UInt_t t, Int_t c) 
+{
+  // Set acceptance cuts
+  AliJetContainer *cont = GetJetContainer(c);
+  if (cont) {
+    cont->SetJetAcceptanceType((AliJetContainer::JetAcceptanceType)t);
+  }
+  else {
+    AliError(Form("%s in SetAnaType(...): container %d not found!",GetName(),c));
+  }
 }
 
 //________________________________________________________________________
@@ -370,112 +301,131 @@ void AliAnalysisTaskEmcalJetDev::SetJetAcceptanceType(TString cutType, Int_t c) 
       AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),cutType.Data()));
   } else
     cont->SetJetAcceptanceType(AliJetContainer::kUser);
-
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetRhoName(const char *n, Int_t c)
 {
-  AliJetContainer *cont = GetJetContainer(c);
-  cont->SetRhoName(n);
+  if (c >= 0) {
+    AliJetContainer *cont = GetJetContainer(c);
+    if (cont) cont->SetRhoName(n);
+    else AliError(Form("%s in SetRhoName(...): container %d not found",GetName(),c));
+  }
+  else {
+    fRhoName = n;
+  }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetJetEtaLimits(Float_t min, Float_t max, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetJetEtaLimits(min,max);
+  if (cont) cont->SetJetEtaLimits(min,max);
+  else AliError(Form("%s in SetJetEtaLimits(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetJetPhiLimits(Float_t min, Float_t max, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetJetPhiLimits(min,max);
+  if (cont) cont->SetJetPhiLimits(min,max);
+  else AliError(Form("%s in SetJetPhiLimits(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetJetAreaCut(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetJetAreaCut(cut);
+  if (cont) cont->SetJetAreaCut(cut);
+  else AliError(Form("%s in SetJetAreaCut(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetPercAreaCut(Float_t p, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetPercAreaCut(p);
+  if (cont) cont->SetPercAreaCut(p);
+  else AliError(Form("%s in SetPercAreaCut(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetAreaEmcCut(Double_t a, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetAreaEmcCut(a);
+  if (cont) cont->SetAreaEmcCut(a);
+  else AliError(Form("%s in SetAreaEmcCut(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetJetPtCut(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetJetPtCut(cut);
+  if (cont) cont->SetJetPtCut(cut);
+  else AliError(Form("%s in SetJetPtCut(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetJetRadius(Float_t r, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetJetRadius(r);
+  if (cont) cont->SetJetRadius(r);
+  else AliError(Form("%s in SetJetRadius(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetMaxClusterPt(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetMaxClusterPt(cut);
+  if (cont) cont->SetMaxClusterPt(cut);
+  else AliError(Form("%s in SetMaxClusterPt(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetMaxTrackPt(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetMaxTrackPt(cut);
+  if (cont) cont->SetMaxTrackPt(cut);
+  else AliError(Form("%s in SetMaxTrackPt(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetPtBiasJetClus(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetPtBiasJetClus(cut);
+  if (cont) cont->SetPtBiasJetClus(cut);
+  else AliError(Form("%s in SetPtBiasJetClus(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetPtBiasJetTrack(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetPtBiasJetTrack(cut);
+  if (cont) cont->SetPtBiasJetTrack(cut);
+  else AliError(Form("%s in SetPtBiasJetTrack(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetLeadingHadronType(Int_t t, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetLeadingHadronType(t);
+  if (cont) cont->SetLeadingHadronType(t);
+  else AliError(Form("%s in SetLeadingHadronType(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetNLeadingJets(Int_t t, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetNLeadingJets(t);
+  if (cont) cont->SetNLeadingJets(t);
+  else AliError(Form("%s in SetNLeadingJets(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetJetBitMap(UInt_t m, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  cont->SetJetBitMap(m);
+  if (cont) cont->SetJetBitMap(m);
+  else AliError(Form("%s in SetJetBitMap(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________
@@ -488,7 +438,6 @@ TClonesArray* AliAnalysisTaskEmcalJetDev::GetJetArray(Int_t i) const {
     return 0;
   }
   return cont->GetArray();
-
 }
 
 //________________________________________________________________________
@@ -504,7 +453,6 @@ AliEmcalJet* AliAnalysisTaskEmcalJetDev::GetJetFromArray(Int_t j, Int_t c) const
   AliEmcalJet *jet = cont->GetJet(j);
 
   return jet;
-  
 }
 
 //________________________________________________________________________
@@ -520,7 +468,6 @@ AliEmcalJet* AliAnalysisTaskEmcalJetDev::GetAcceptJetFromArray(Int_t j, Int_t c)
   AliEmcalJet *jet = cont->GetAcceptJet(j);
 
   return jet;
-  
 }
 
 //________________________________________________________________________
@@ -546,8 +493,4 @@ Double_t AliAnalysisTaskEmcalJetDev::GetRhoVal(Int_t i) const {
     return 0;
   }
   return cont->GetRhoVal();
-
 }
-
-
-

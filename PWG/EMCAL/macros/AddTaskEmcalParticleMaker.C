@@ -47,7 +47,6 @@ AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
   eTask->SetClusName(clustersName);
   eTask->SetTracksOutName(tracksOutName);
   eTask->SetClusOutName(clustersOutName);
-  eTask->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

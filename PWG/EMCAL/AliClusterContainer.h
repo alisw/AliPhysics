@@ -5,26 +5,18 @@
 // container with name, TClonesArray and cuts for particles
 //
 
-
-class TClonesArray;
-class TString;
-class TList;
+class TLorentzVector;
 
 class AliVEvent;
-class AliVVertex;
 class AliVCluster;
 
-#include "Rtypes.h"
-#include <TArrayS.h>
-#include "TString.h"
 #include "AliEmcalContainer.h"
-
 
 class AliClusterContainer : public AliEmcalContainer {
  public:
   AliClusterContainer();
   AliClusterContainer(const char *name); 
-  virtual ~AliClusterContainer();
+  virtual ~AliClusterContainer(){;}
 
   void SetClusterArray(AliVEvent *event);
 
@@ -34,8 +26,11 @@ class AliClusterContainer : public AliEmcalContainer {
   void SetMCClusterBitMap(UInt_t m)                { fMCClusterBitMap   = m ; }
   void SetMinMCLabel(Int_t s)                      { fMinMCLabel        = s ; }
 
-  AliVCluster                *GetCluster(Int_t i) const;
+  AliVCluster                *GetLeadingCluster(const char* opt="")  const;
+  AliVCluster                *GetCluster(Int_t i)                    const;
   AliVCluster                *GetAcceptCluster(Int_t i)              const;
+  AliVCluster                *GetNextAcceptCluster(Int_t i=-1)       const;
+  void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptCluster(AliVCluster         *vp) const;
   Int_t                       GetNClusters()                         const   {return GetNEntries();}
 
@@ -46,8 +41,6 @@ class AliClusterContainer : public AliEmcalContainer {
   UInt_t                      fClusterBitMap;              // bit map of accepted clusters (non MC)
   UInt_t                      fMCClusterBitMap;            // bit map of accepted MC clusters
   Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
-  const AliVVertex           *fVVertex;                    //!event vertex object
-  Double_t                    fVertex[3];                  //!event vertex array
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor

@@ -3,9 +3,9 @@
 
 // $Id$
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalDev.h"
 
-class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcal {
+class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcalDev {
  public:
   AliEmcalClusTrackMatcherTask();
   AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo=kFALSE);
@@ -29,6 +29,6 @@ class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcal {
   AliEmcalClusTrackMatcherTask(const AliEmcalClusTrackMatcherTask&);            // not implemented
   AliEmcalClusTrackMatcherTask &operator=(const AliEmcalClusTrackMatcherTask&); // not implemented
 
-  ClassDef(AliEmcalClusTrackMatcherTask, 3) // Cluster-Track matching task
+  ClassDef(AliEmcalClusTrackMatcherTask, 4) // Cluster-Track matching task
 };
 #endif

@@ -3,13 +3,8 @@
 //
 // Author: M. Verweij
 
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TInterpreter.h>
-
-#include <TChain.h>
 #include <TClonesArray.h>
-#include <TObject.h>
+
 #include "AliVEvent.h"
 #include "AliLog.h"
 
@@ -25,14 +20,9 @@ AliClusterContainer::AliClusterContainer():
   fClusTimeCutUp(10),
   fClusterBitMap(0),
   fMCClusterBitMap(0),
-  fMinMCLabel(0),
-  fVVertex(0)
+  fMinMCLabel(0)
 {
   // Default constructor.
-
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
 
 }
 
@@ -44,21 +34,10 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fClusTimeCutUp(10),
   fClusterBitMap(0),
   fMCClusterBitMap(0),
-  fMinMCLabel(0),
-  fVVertex(0)
+  fMinMCLabel(0)
 {
   // Standard constructor.
 
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
-
-}
-
-//________________________________________________________________________
-AliClusterContainer::~AliClusterContainer()
-{
-  // Destructor.
 }
 
 //________________________________________________________________________
@@ -67,18 +46,45 @@ void AliClusterContainer::SetClusterArray(AliVEvent *event)
   // Set jet array
 
   SetArray(event, "AliVCluster");
+}
 
-  fVVertex = event->GetPrimaryVertex();
-  if (fVVertex) {
-    fVVertex->GetXYZ(fVertex);
+//________________________________________________________________________
+AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt) const
+{
+  // Get the leading cluster; use e if "e" is contained in opt (otherwise et)
+
+  TString option(opt);
+  option.ToLower();
+
+  AliVCluster *clusterMax = GetNextAcceptCluster(0);
+  AliVCluster *cluster = 0;
+
+  if (option.Contains("e")) {
+    while ((cluster = GetNextAcceptCluster())) {
+      if (cluster->E() > clusterMax->E()) clusterMax = cluster;
+    }
+  }
+  else {
+    Double_t et = 0;
+    Double_t etmax = 0;
+    while ((cluster = GetNextAcceptCluster())) {
+      TLorentzVector mom;
+      cluster->GetMomentum(mom,const_cast<Double_t*>(fVertex));
+      et = mom.Et();
+      if (et > etmax) { 
+	clusterMax = cluster;
+	etmax = et;
+      }
+    }
   }
 
+  return clusterMax;
 }
 
 //________________________________________________________________________
 AliVCluster* AliClusterContainer::GetCluster(Int_t i) const {
 
-  //Get i^th jet in array
+  //Get i^th cluster in array
 
   if(i<0 || i>fClArray->GetEntriesFast()) return 0;
   AliVCluster *vp = static_cast<AliVCluster*>(fClArray->At(i));
@@ -88,7 +94,7 @@ AliVCluster* AliClusterContainer::GetCluster(Int_t i) const {
 
 //________________________________________________________________________
 AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const {
-  //return pointer to particle if particle is accepted
+  //return pointer to cluster if cluster is accepted
 
   AliVCluster *vc = GetCluster(i);
   if(!vc) return 0;
@@ -99,6 +105,33 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const {
     AliDebug(2,"Cluster not accepted.");
     return 0;
   }
+}
+
+//________________________________________________________________________
+AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) const {
+
+  //Get next accepted cluster; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
+
+  static Int_t counter = -1;
+  if (i>=0) counter = i;
+
+  const Int_t n = GetNEntries();
+  AliVCluster *c = 0;
+  while (counter < n && !c) { 
+    c = GetAcceptCluster(counter);
+    counter++;
+  }
+
+  return c;
+}
+
+//________________________________________________________________________
+void AliClusterContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
+{
+  //Get momentum of the i^th cluster in array
+
+  AliVCluster *vc = GetCluster(i);
+  if(vc) vc->GetMomentum(mom,const_cast<Double_t*>(fVertex));
 }
 
 //________________________________________________________________________

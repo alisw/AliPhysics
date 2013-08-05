@@ -32,7 +32,6 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   matcher->SetTracksName(nTracks);
   matcher->SetClusName(nClusters);
   matcher->SetMaxDistance(maxDist);
-  matcher->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

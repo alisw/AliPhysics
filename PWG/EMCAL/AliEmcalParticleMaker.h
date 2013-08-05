@@ -5,9 +5,9 @@
 
 class TClonesArray;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalDev.h"
 
-class AliEmcalParticleMaker : public AliAnalysisTaskEmcal {
+class AliEmcalParticleMaker : public AliAnalysisTaskEmcalDev {
  public:
   AliEmcalParticleMaker();
   AliEmcalParticleMaker(const char *name);
@@ -29,6 +29,6 @@ class AliEmcalParticleMaker : public AliAnalysisTaskEmcal {
   AliEmcalParticleMaker(const AliEmcalParticleMaker&);            // not implemented
   AliEmcalParticleMaker &operator=(const AliEmcalParticleMaker&); // not implemented
 
-  ClassDef(AliEmcalParticleMaker, 1); // Task to make array of EMCAL particle
+  ClassDef(AliEmcalParticleMaker, 2); // Task to make array of EMCAL particle
 };
 #endif
