@@ -49,38 +49,38 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
     
  private:
 
-  Int_t ReadEventESD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+  Double_t ReadEventESD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
 			      std::vector<Float_t> &strangnessWeight,
-			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t ReadEventESDRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+			      std::vector<Double_t> &nTracksTracklets, const Int_t step);
+  Double_t ReadEventESDRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
 			      std::vector<Float_t> &strangnessWeight,
-			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t ReadEventESDMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+			      std::vector<Double_t> &nTracksTracklets, const Int_t step);
+  Double_t ReadEventESDMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
 			      std::vector<Float_t> &strangnessWeight,
-			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
+			      std::vector<Double_t> &nTracksTracklets, const Int_t step);
   
-  Int_t ReadEventAOD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
+  Double_t ReadEventAOD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
 			      std::vector<Float_t> &strangnessWeight,
-			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t ReadEventAODRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+			      std::vector<Double_t> &nTracksTracklets, const Int_t step);
+  Double_t ReadEventAODRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
 			      std::vector<Float_t> &strangnessWeight,
-			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t ReadEventAODMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
+			      std::vector<Double_t> &nTracksTracklets, const Int_t step);
+  Double_t ReadEventAODMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
 			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
 			      std::vector<Float_t> &strangnessWeight,
-			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
+			      std::vector<Double_t> &nTracksTracklets, const Int_t step);
   
   void  Analyse         (const std::vector<Float_t> &pt, 
 			 const std::vector<Float_t> &eta, 
 			 const std::vector<Float_t> &phi, 
 			 const std::vector<Short_t> &charge, 
 			 const std::vector<Float_t> &strangnessWeight,
-			 const Int_t ntacks, const Int_t ntacklets=0, 
+			 const Double_t ntacks, const Int_t ntacklets=0,
 			 const Int_t nAll=0, const Int_t step=0);
   
   Bool_t                 SelectParticlePlusCharged(const Short_t charge, const Int_t pdg, const Bool_t prim);
@@ -116,11 +116,11 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
 
   AliESDEvent *fESDEvent;                   //! esd event
   AliAODEvent *fAODEvent;                   //! aod event
-  Int_t        fNMcPrimAccept;              // global variable for mc multiplucity
-  Int_t        fNRecAccept;                 // global variable for rec multiplucity
+  Double_t        fNMcPrimAccept;              // global variable for mc multiplucity
+  Double_t        fNRecAccept;                 // global variable for rec multiplucity
   Float_t      fNRecAcceptStrangeCorr;                 // global variable for rec multiplucity
-  Int_t        fNMcPrimAcceptTracklet;      // global variable for mc multiplucity
-  Int_t        fNRecAcceptTracklet;         // global variable for rec multiplucity
+  Double_t        fNMcPrimAcceptTracklet;      // global variable for mc multiplucity
+  Double_t        fNRecAcceptTracklet;         // global variable for rec multiplucity
   Float_t      fVzEvent;                    // global variable for rec vertex position
   Double_t     fMeanPtRec;                  // global variable for rec mean pt
   Double_t     fLeadingPtRec;               // global variable for rec mean pt
@@ -193,7 +193,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   AliAnalysisTaskMinijet(const AliAnalysisTaskMinijet&); // not implemented
   AliAnalysisTaskMinijet& operator=(const AliAnalysisTaskMinijet&); // not implemented
   
-  ClassDef(AliAnalysisTaskMinijet, 1); // example of analysis
+  ClassDef(AliAnalysisTaskMinijet, 2); // mini jet analysis with two particle correlations
 };
 
 #endif
