@@ -90,20 +90,31 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 	Double_t dm2Min = -10;
 	Double_t dm2Max = 10;
 	
+	// t bins
+	Int_t tBins = 500;
+	Double_t tMin = 0;
+	Double_t tMax = 100;
+	Double_t dtMin = -10;
+	Double_t dtMax = 10;
+	
 	// track multiplicity
 	Int_t ntrkBins = 200;
 	Double_t ntrkMin = 0;
 	Double_t ntrkMax = 200;
+	
+	Int_t zmultBins = 150;
 	Double_t zmultMin = 0;
-	Double_t zmultMax = 35;
+	Double_t zmultMax = 15;
 	
 	if(heavyIons)
 	{
 		ntrkBins = 2000;
 		ntrkMin  = 0;
 		ntrkMax  = 2000;
+		
+		zmultBins = 2000;
 		zmultMin = 0;
-		zmultMax = 350;
+		zmultMax = 200;
 	}
 	
 	// ITS and TPC dE/dx
@@ -175,15 +186,15 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 	// multiplicity
 	
 	hMap->Add( species + "_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, Form("Track multiplicity (all events, |#eta|< %.1f)",maxEta), "N_{trk}", "Events");
-	hMap->Add( species + "_Event_Zmult", ntrkBins, zmultMin, zmultMax, Form("KNO multiplicity (all events, |#eta|< %.1f)", maxEta), "N_{trk}/<N_{trk}>", "Events");
+	hMap->Add( species + "_Event_Zmult", zmultBins, zmultMin, zmultMax, Form("KNO multiplicity (all events, |#eta|< %.1f)", maxEta), "N_{trk}/<N_{trk}>", "Events");
 	hMap->Add( species + "_Ana_Event_Ntrk", ntrkBins, ntrkMin, ntrkMax, Form("Track multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}", "Events");
-	hMap->Add( species + "_Ana_Event_Zmult", ntrkBins, zmultMin, zmultMax, Form("KNO multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}/<N_{trk}>", "Events");
+	hMap->Add( species + "_Ana_Event_Zmult", zmultBins, zmultMin, zmultMax, Form("KNO multiplicity (|#eta|< %.1f)", maxEta), "N_{trk}/<N_{trk}>", "Events");
 	
 	for(Int_t i=0; i<2; ++i)
 	{
 		hMap->Add( particle[i] + "_PID_Ntrk_pTPC", nptbins, ptbins, ntrkBins, ntrkMin, ntrkMax, particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "N_{trk}");
 		
-		hMap->Add( particle[i] + "_PID_Zmult_pTPC", nptbins, ptbins, ntrkBins, zmultMin, zmultMax, particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "z_{mult}");
+		hMap->Add( particle[i] + "_PID_Zmult_pTPC", nptbins, ptbins, zmultBins, zmultMin, zmultMax, particle[i] + " candidates " + Form("(|#eta|< %.1f)", maxEta), "p_{TPC}/Z (GeV/c)", "z_{mult}");
 		
 		if(simulation)
 		{
@@ -266,6 +277,10 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		hMap->Add( particle[i] + "_PID_M2_Pt", nptbins, ptbins, m2Bins, m2Min, m2Max, particle[i] + " candidates", "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
 		
 		hMap->Add( particle[i] + "_PID_DM2_Pt", nptbins, ptbins, m2Bins, dm2Min, dm2Max, particle[i] + " candidates", "p_{T} (GeV/c)", "#Deltam^{2} (GeV^{2}/c^{4})");
+		
+		hMap->Add( particle[i] + "_PID_Time_Pt", nptbins, ptbins, tBins, tMin, tMax, particle[i] + " candidates", "p_{T} (GeV/c)", "t - t_{0} (ns)");
+		
+		hMap->Add( particle[i] + "_PID_DTime_Pt", nptbins, ptbins, tBins, dtMin, dtMax, particle[i] + " candidates", "p_{T} (GeV/c)", "t - <t> (ns)");
 		
 		// as a function of momentum
 		hMap->Add( particle[i] + "_PID_DCAxy_Pt", nptbins, ptbins, dcaxyBins, dcaxyMin, dcaxyMax, particle[i] + " candidates", "p_{T} (GeV/c)", "sign #times DCA_{xy} (cm)");

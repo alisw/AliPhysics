@@ -276,15 +276,6 @@ void AliAnalysisTaskB2::SetParticleSpecies(const TString& species)
 	fPartCode = this->GetPidCode(species);
 }
 
-Double_t AliAnalysisTaskB2::GetDiffM2(Double_t beta, Double_t p, Double_t m) const
-{
-//
-// square mass difference
-//
-	Double_t expBeta2 = p*p/(p*p+m*m);
-	return p*p*(1./(beta*beta)-1./expBeta2);
-}
-
 void AliAnalysisTaskB2::Exec(Option_t* )
 {
 //
@@ -654,6 +645,8 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		Double_t mass = 0;
 		Double_t m2   = 0;
 		Double_t dm2  = -100;
+		Double_t t    = 0;
+		Double_t dt   = -1000;
 		
 		Double_t simPt  = 0;
 		Double_t simPhi = 0;
@@ -681,9 +674,11 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		if(this->TOFmatch(iTrack))
 		{
 			beta = this->GetBeta(iTrack);
-			m2   = this->GetMassSquare(iTrack);
+			m2   = this->GetMassSquared(iTrack);
 			mass = TMath::Sqrt(TMath::Abs(m2));
-			dm2  = this->GetDiffM2(beta, pTOF, AliPID::ParticleMass(fPartCode));
+			dm2  = this->GetM2Difference(beta, pTOF, AliPID::ParticleMass(fPartCode));
+			t    = this->GetTimeOfFlight(iTrack)*1.e-3; // ns
+			dt   = t - 1.e-3*this->GetExpectedTime(iTrack, AliPID::ParticleMass(fPartCode));
 			
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Beta_P"))->Fill(pTOF, beta);
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Mass_P"))->Fill(pTOF, mass);
@@ -820,8 +815,8 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			goodPid = ( simpid == pid );
 		}
 		
-		((TH1D*)fHistoMap->Get(particle + "_PID_Ntrk_pTPC"))->Fill(pTPC,fNtrk);
-		((TH1D*)fHistoMap->Get(particle + "_PID_Zmult_pTPC"))->Fill(pTPC,fKNOmult);
+		((TH2D*)fHistoMap->Get(particle + "_PID_Ntrk_pTPC"))->Fill(pTPC,fNtrk);
+		((TH2D*)fHistoMap->Get(particle + "_PID_Zmult_pTPC"))->Fill(pTPC,fKNOmult);
 		
 		// pid performance
 		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(pITS, dEdxITS);
@@ -868,6 +863,8 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		{
 			((TH2D*)fHistoMap->Get(particle + "_PID_M2_Pt"))->Fill(pt, m2);
 			((TH2D*)fHistoMap->Get(particle + "_PID_DM2_Pt"))->Fill(pt, dm2);
+			((TH2D*)fHistoMap->Get(particle + "_PID_Time_Pt"))->Fill(pt, t);
+			((TH2D*)fHistoMap->Get(particle + "_PID_DTime_Pt"))->Fill(pt, dt);
 			((TH1D*)fHistoMap->Get(particle + "_PID_TOFmatch_Pt"))->Fill(pt);
 		}
 		
@@ -877,7 +874,14 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		if( fTOFmatch && (fLnID->GetPidProcedure() > AliLnID::kMaxLikelihood))
 		{
-			if((m2 < fMinM2) || (m2 >= fMaxM2)) m2match = kFALSE;
+			if( pt < 1.8 )
+			{
+				if ((m2 < fMinM2) || (m2 >= fMaxM2)) m2match = kFALSE;
+			}
+			else
+			{
+				if((dt < -0.6) || (dt >= 1)) m2match = kFALSE;
+			}
 		}
 		
 		if(m2match)
@@ -1126,12 +1130,12 @@ Double_t AliAnalysisTaskB2::GetTOFmomentum(const AliESDtrack* trk) const
 //
 // Momentum for TOF pid
 //
-	Double_t pDCA = trk->GetP();
+	Double_t pIn = trk->GetTPCmomentum();
 	
 	const AliExternalTrackParam* param = trk->GetOuterParam();
 	Double_t pOut = param ? param->GetP() : trk->GetP();
 	
-	return (pDCA+pOut)/2.;
+	return (pIn+pOut)/2.;
 }
 
 Double_t AliAnalysisTaskB2::GetBeta(const AliESDtrack* trk) const
@@ -1147,15 +1151,38 @@ Double_t AliAnalysisTaskB2::GetBeta(const AliESDtrack* trk) const
 	return (l/t)/2.99792458e-2;
 }
 
-Double_t AliAnalysisTaskB2::GetMassSquare(const AliESDtrack* trk) const
+Double_t AliAnalysisTaskB2::GetExpectedTime(const AliESDtrack* trk, Double_t m) const
 {
 //
-// Square mass
+// Expected time (ps) for the given mass hypothesis
+//
+	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*this->GetTOFmomentum(trk) : this->GetTOFmomentum(trk);
+	Double_t beta = p/TMath::Sqrt(p*p + m*m);
+	Double_t l = trk->GetIntegratedLength();
+	
+	return l/beta/2.99792458e-2;
+}
+
+Double_t AliAnalysisTaskB2::GetMassSquared(const AliESDtrack* trk) const
+{
+//
+// Mass squared
 //
 	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*this->GetTOFmomentum(trk) : this->GetTOFmomentum(trk);
 	Double_t beta = this->GetBeta(trk);
 	
 	return p*p*(1./(beta*beta) - 1.);
+}
+
+Double_t AliAnalysisTaskB2::GetM2Difference(Double_t beta, Double_t momentum, Double_t m) const
+{
+//
+// Mass squared difference
+//
+	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*momentum : momentum;
+	Double_t expBeta2 = p*p/(p*p+m*m);
+	
+	return p*p*(1./(beta*beta)-1./expBeta2);
 }
 
 Int_t AliAnalysisTaskB2::GetChargedMultiplicity(Double_t etaMax) const

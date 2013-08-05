@@ -109,7 +109,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Double_t GetITSmomentum(const AliESDtrack* trk) const;
 	Double_t GetTOFmomentum(const AliESDtrack* trk) const;
 	Double_t GetBeta(const AliESDtrack* trk) const;
-	Double_t GetMassSquare(const AliESDtrack* trk) const;
+	Double_t GetMassSquared(const AliESDtrack* trk) const;
 	Double_t GetTimeOfFlight(const AliESDtrack* trk) const;
 	Double_t GetITSchi2PerCluster(const AliESDtrack* trk) const;
 	Int_t    GetITSnClusters(const AliESDtrack* trk) const;
@@ -119,7 +119,8 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	Double_t GetMomentumCorrection(Double_t ptrec) const;
 	
-	Double_t GetDiffM2(Double_t beta, Double_t p, Double_t m=1.875612793) const;
+	Double_t GetM2Difference(Double_t beta, Double_t p, Double_t m) const;
+	Double_t GetExpectedTime(const AliESDtrack* trk, Double_t m) const;
 	
   private:
  
