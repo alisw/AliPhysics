@@ -863,7 +863,7 @@ void AliToyMCDrawer::DrawGeometry() {
     globYmin=fGlobalYmin;
     globYmax=fGlobalYmax;
   }
-  fDispHist = new TH3F("fDispHist",";#it{z} [cm]; #it{x} [cm]; #it{y} [cm]",
+  fDispHist = new TH3F("fDispHist",";#it{z} (cm); #it{x} (cm); #it{y} (cm)",
                        100, timeZmin-10, timeZmax+10,
                        100, globXmin, globXmax ,
                        100, globYmin, globYmax);
@@ -1005,24 +1005,24 @@ void AliToyMCDrawer::DrawGeometry2D() {
 
   if (fProjectionType=="XT"){
     if (!c) c=new TCanvas("cDrawer","Toy Drawer");
-    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{x} [cm]",
+    fDispHist = new TH2F("fDispHist",";#it{z} (cm); #it{x} (cm)",
                          100, timeZmin-10, timeZmax+10,
                          100, globXmin, globXmax);
   } else if (fProjectionType=="YT"){
     if (!c) c=new TCanvas("cDrawer","Toy Drawer");
-    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{y} [cm]",
+    fDispHist = new TH2F("fDispHist",";#it{z} (cm); #it{y} (cm)",
                          100, timeZmin-10, timeZmax+10,
                          100, globYmin, globYmax);
   } else if (fProjectionType=="RT"){
     if (!c) c=new TCanvas("cDrawer","Toy Drawer");
-    fDispHist = new TH2F("fDispHist",";#it{z} [cm]; #it{r} [cm]",
+    fDispHist = new TH2F("fDispHist",";#it{z} (cm); #it{r} (cm)",
                          100, timeZmin-10, timeZmax+10,
                          100, globYmin, globYmax);
   } else if (fProjectionType=="YX"||fProjectionType=="XY"){
     if (!c) c=new TCanvas("cDrawer","Toy Drawer",800,800);
     c->SetLeftMargin(0.15);
     c->SetRightMargin(0.05);
-    fDispHist = new TH2F("fDispHist",";#it{x} [cm]; #it{y} [cm]",
+    fDispHist = new TH2F("fDispHist",";#it{x} (cm); #it{y} (cm)",
                          100, globXmin, globXmax,
                          100, globYmin, globYmax);
     fDispHist->GetYaxis()->SetTitleOffset(1.5);
