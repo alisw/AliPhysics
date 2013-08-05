@@ -41,6 +41,7 @@ class AliESDtrackCuts;
 class AliESDVertex;
 class AliVVertex;
 class AliVParticle;
+class AliPID;
 
 
 class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
@@ -56,6 +57,8 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
     kStepRecoFirstQualityCuts  = 6,
     kStepReconstructedMC  = 7,
     kStepRecoQualityCuts  = 8,
+    kStepRecoPIDMC  = 9,
+    kStepRecoPID  = 10
   };
 
   AliCFSingleTrackEfficiencyTask();
@@ -89,7 +92,12 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   void   SetMinNClustersTPCPID(Int_t cl=0) { fMinNclsTPCPID=cl;}
   void   SetRequireTOF(Bool_t tof=kTRUE) {fRequireTOF=tof;}
   void   SetMinRatioTPCclusters(Double_t ratio) {fMinRatioTPCcluster=ratio;}
-
+  void   SetnSigmaTPC(Double_t min, Double_t max){fTPCnSigmaMin=min; fTPCnSigmaMax=max;}
+  void   SetnSigmaTOF(Double_t sigma){ fTOFnSigma=sigma;}
+  void   SetUsePID(Bool_t usepid=kTRUE){fUsePID=usepid;}
+  void   SetUseTPCPID(Bool_t usepid=kTRUE){fUsePID=usepid; fUseTPCPID=usepid; fTPCnSigmaMin=-1;fTPCnSigmaMax=3;}
+  void   SetUseTOFPID(Bool_t usepid=kTRUE){fUsePID=usepid; fUseTOFPID=usepid; fTOFnSigma=3;}
+  //void   SetUseParticleforPID(Int_t particle){fParticleIDforPID=particle;}
   //Getters
   ULong64_t GetTriggerMask(){ return fTriggerMask; }
   AliESDtrackCuts *GetTrackCuts(){ return (AliESDtrackCuts*)fTrackCuts; }  
@@ -117,6 +125,13 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Int_t           fMinNclsTPCPID;   // Number of clusters for TPC PID
   Bool_t          fRequireTOF;      // whether or not to require TOF matching of the track
   Double_t        fMinRatioTPCcluster; //Min ratio of TPC clusters found/findable
+  Double_t        fTPCnSigmaMin;    // Min nr sigma to cut for TPC PID
+  Double_t        fTPCnSigmaMax;    // Max nr sigma to cut for TPC PID
+  Double_t        fTOFnSigma;       // Nr sigma to cut for TOF PID
+  //EParticleType fParticleIDforPID;// Which particle to ID
+  Bool_t          fUsePID;          // Whether or not to use PID
+  Bool_t          fUseTPCPID;       // Whether or not to use TPC PID
+  Bool_t          fUseTOFPID;       // Whether or not to use TOF PID
 
 
   //Number of events
