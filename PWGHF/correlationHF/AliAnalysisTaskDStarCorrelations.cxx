@@ -540,8 +540,18 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             */
             
             
-            if(fUseDmesonEfficiencyCorrection)  DmesonWeight = 1./DmesonEfficiency;
-            else DmesonWeight = 1.;
+	    ptDStar = dstarD0pi->Pt();
+	    phiDStar = dstarD0pi->Phi();
+	    etaDStar = dstarD0pi->Eta();
+
+	    if(fUseDmesonEfficiencyCorrection){
+	      if(DmesonEfficiency>1.e-5) DmesonWeight = 1./DmesonEfficiency;
+	      else {// THIS ELSE STATEMENT MUST BE REFINED: THE EFFICIENCY MAP HAS TO BE REPLACED WITH A WEIGHT MAP COOKED A PRIORI
+		if(ptDStar>2.) DmesonWeight = 0.5; // at high pt a zero value in the efficiency can come only from stat fluctutations in MC -> 0.5 is an arbitrary asymptotic value
+		else DmesonWeight = 1.e+5; // at low pt it can be that the efficiency is really low
+	      }
+	    }
+            else DmesonWeight = 1.; 
             
             // continue;
             
@@ -551,11 +561,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	      mcLabelDStar = dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,fmcArray,kFALSE);
 	      if(mcLabelDStar>=0) isDStarMCtag = kTRUE;
 	    }
-            
-	    ptDStar = dstarD0pi->Pt();
-	    phiDStar = dstarD0pi->Phi();
-	    etaDStar = dstarD0pi->Eta();
-            
+                        
             
 	    
 	    phiDStar = fCorrelator->SetCorrectPhiRange(phiDStar);
@@ -936,7 +942,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                     if(PartSource[3]) MCarraytofill[5] = 5;
                     if(!isDfromB) MCarraytofill[6] = 0;
                     if(isDfromB) MCarraytofill[6] = 1;
-					if(!fReco && TMath::Abs(etaHad)>0.9) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
+					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
                     ((THnSparseF*)fOutputMC->FindObject("MCDStarCorrelationsDStarHadron"))->Fill(MCarraytofill);
                     
                     delete[] PartSource;
@@ -944,7 +950,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				}
 				if(isInPeak)  {
                     
-					if(!fReco && TMath::Abs(etaHad)>0.9) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
+					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
                     
 					if(fselect==1)  ((THnSparseF*)fOutput->FindObject("CorrelationsDStarHadron"))->Fill(arraytofill,weight);
                     if(fselect==2)  ((THnSparseF*)fOutput->FindObject("CorrelationsDStarKaon"))->Fill(arraytofill,weight);
@@ -958,7 +964,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				}
 				if(isInDZeroSideBand) {
 					
-					if(!fReco && TMath::Abs(etaHad)>0.9) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
+					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
                     
                     
                     if(fselect==1)  ((THnSparseF*)fOutput->FindObject("DZeroBkgCorrelationsDStarHadron"))->Fill(arraytofill,weight);
@@ -972,7 +978,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				}
                 if(isInDStarSideBand) {
 					
-					if(!fReco && TMath::Abs(etaHad)>0.9) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
+					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
                     
                     
                     if(fselect==1 && fFullmode)  ((THnSparseF*)fOutput->FindObject("DStarBkgCorrelationsDStarHadron"))->Fill(arraytofill,weight);
