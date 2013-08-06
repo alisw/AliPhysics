@@ -61,13 +61,13 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t GetSignalJetIndex(Int_t At);
         Bool_t GetIsJetInArray(Int_t At);
         
-        Int_t* GetJets() const {return fJetsIndex;}
-        Int_t* GetSignalJets() const {return fJetsSCIndex;}
+        Int_t* GetJets() const {return fJetsIndex;}  //!
+        Int_t* GetSignalJets() const {return fJetsSCIndex;}  //!
         
     private:
         
         // Variables
-        const char *fName;
+        const char *fName;  //!
         Bool_t fIsJetsFull;
         Int_t fnTotal;
         Int_t fnJets;
@@ -82,9 +82,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t fPtSubLeadingIndex;
         Double_t fPtSubLeading;
         
-        Int_t *fJetsIndex;
-        Int_t *fJetsSCIndex;
-        Bool_t *fIsJetInArray;
+        Int_t *fJetsIndex;  //!
+        Int_t *fJetsSCIndex;  //!
+        Bool_t *fIsJetInArray;  //!
     };
     
     // AlipAJetHistos Helper Class
@@ -117,11 +117,11 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetLeadingJetPtRange(Int_t bins, Double_t low, Double_t up);
         
         // User Defined Functions
-        TList* GetOutputHistos();
+        TList* GetOutputHistos();  //!
         Double_t GetRho();
         
     private:
-        TList *fOutput; // Output list
+        TList *fOutput; //! Output list
         
         // Histograms
         // This set of Histograms is for filling the Rho Spectral distributions
@@ -171,8 +171,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TProfile *fpLJetRho; //!
         
         // Variables
-        const char *fName;
-        const char *fCentralityTag;
+        const char *fName;  //!
+        const char *fCentralityTag;  //!
         
         Int_t fCentralityBins;
         Double_t fCentralityLow;
@@ -336,7 +336,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     }
 
     private:
-    TList *fOutput; // Output list
+    TList *fOutput; //! Output list
     
     TH1D *fhTrackPt;  //!
     TH1D *fhTrackEta;  //!
@@ -434,7 +434,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fTrackMinPt;
     Double_t fClusterMinPt;
     
-    const char *fCentralityTag;
+    const char *fCentralityTag;  //!
     Int_t fCentralityBins;
     Double_t fCentralityLow;
     Double_t fCentralityUp;
