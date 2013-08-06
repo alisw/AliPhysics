@@ -3,7 +3,6 @@
 AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   const char *name              = "TpcSpdVertexConstrainedTracks",
   const char *trackCuts         = "Hybrid_LHC11h",
-  Bool_t      includeNoITS      = kFALSE
 )
 { 
   enum CutsType {
@@ -109,7 +108,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   //-------------------------------------------------------
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-
+  Bool_t includeNoITS = kFALSE;
   AliEmcalEsdTpcTrackTask *eTask = new AliEmcalEsdTpcTrackTask(); // default is TPC only tracks constrained to the vertex
 
   if ((dataSet == kLHC11c && cutsType == kHybrid) ||
@@ -130,6 +129,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     eTask->SetTrackCuts(cutsp);
     eTask->SetHybridTrackCuts(hybsp);
+    includeNoITS = kTRUE;
   }
 
   eTask->SetTracksName(name);
