@@ -27,18 +27,13 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
 
   void MyUserCreateOutputObjects();
   void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
-
- private:
-
-  AliAnalysisTaskSingleMu(const AliAnalysisTaskSingleMu&);
-  AliAnalysisTaskSingleMu& operator=(const AliAnalysisTaskSingleMu&);
-
+  
   enum {
     kIPVz,           ///< Interaction point vertex distribution
     kTrackContainer, ///< CF container for tracks
     kNobjectTypes    ///< Number of objects
   };
-
+  
   enum {
     kThetaAbs23,  ///< Theta abs 2-3 deg
     kThetaAbs310, ///< Theta abs 3-10 deg
@@ -49,7 +44,7 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
     kStepReconstructed,  ///< Reconstructed tracks
     kStepGeneratedMC,    ///< Generated tracks (MC)
     kNsteps              ///< Number of steps
-  };  
+  };
   
   enum {
     kHvarPt,         ///< Pt at vertex
@@ -61,6 +56,11 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
     kHvarMotherType, ///< Mother type (MC only)
     kNvars           ///< THnSparse dimensions
   };
+
+ private:
+
+  AliAnalysisTaskSingleMu(const AliAnalysisTaskSingleMu&);
+  AliAnalysisTaskSingleMu& operator=(const AliAnalysisTaskSingleMu&);
 
   TObjArray* fThetaAbsKeys;    ///< Name of theta at absorber end
 

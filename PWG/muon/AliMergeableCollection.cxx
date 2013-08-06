@@ -447,7 +447,7 @@ AliMergeableCollection::GetObject(const char* identifier,
 }
 
 //_____________________________________________________________________________
-TObject* AliMergeableCollection::GetSum(const char* idPattern)
+TObject* AliMergeableCollection::GetSum(const char* idPattern) const
 {
   /// Sum objects
   /// The pattern must be in the form:
