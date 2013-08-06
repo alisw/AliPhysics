@@ -2298,7 +2298,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if(GetMinPt() < 0.5)
   {
     fhEtaPhi05Photon  = new TH2F
-    ("hEtaPhi05Photon","#eta vs #phi, E > 0.5",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhi05Photon","#eta vs #phi, E < 0.5",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhi05Photon->SetYTitle("#phi (rad)");
     fhEtaPhi05Photon->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhi05Photon) ;

@@ -56,7 +56,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                                 const Float_t eprim,     const Float_t asymGen);
   
   void         FillMCOverlapHistograms(const Float_t en,      const Float_t enprim,
-                                       const Float_t mass,    const Float_t l0,
+                                       const Int_t   nc,      const Float_t mass,    const Float_t l0,
                                        const Float_t asym,    const Float_t splitFrac,
                                        const Int_t   nlm,     const Int_t ebin,   const Bool_t matched,
                                        const Int_t   mcindex, const Int_t noverlaps);
@@ -184,7 +184,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillTMHisto ;          // Fill track matching histos,
   Bool_t       fFillTMResidualHisto ;  // Fill track matching histos, residuals
   Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
-  Bool_t       fFillMCHisto ;  // Fill MC energy fraction histos
+  Bool_t       fFillMCHisto ;          // Fill MC energy fraction histos
   Bool_t       fFillSSWeightHisto ;    // Fill weigth histograms
   Bool_t       fFillEbinHisto ;        // Fill E bin histograms
   Bool_t       fFillMCOverlapHisto ;   // Fill MC particles overlap histograms
@@ -500,6 +500,13 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCEAsymOverlap1Match[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, charged cluster
   TH2F       * fhMCEAsymOverlapNMatch[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, charged cluster
 
+  TH2F       * fhMCENCellOverlap0[3][8];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCENCellOverlap1[3][8];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCENCellOverlapN[3][8];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCENCellOverlap0Match[3][8];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCENCellOverlap1Match[3][8];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCENCellOverlapNMatch[3][8];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, charged cluster
+  
   TH2F       * fhMCEEpriOverlap0[3][8];                 //! E reco vs primary for different MC origin, no other MC particles contributes, neutral cluster
   TH2F       * fhMCEEpriOverlap1[3][8];                 //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster
   TH2F       * fhMCEEpriOverlapN[3][8];                 //! E reco vs primary for different MC origin, N  other MC particles contributes, neutral cluster

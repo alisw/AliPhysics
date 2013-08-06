@@ -283,6 +283,13 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMCEAsymOverlap1Match[nlm][i] = 0;
       fhMCEAsymOverlapNMatch[nlm][i] = 0;
 
+      fhMCENCellOverlap0     [nlm][i] = 0;
+      fhMCENCellOverlap1     [nlm][i] = 0;
+      fhMCENCellOverlapN     [nlm][i] = 0;
+      fhMCENCellOverlap0Match[nlm][i] = 0;
+      fhMCENCellOverlap1Match[nlm][i] = 0;
+      fhMCENCellOverlapNMatch[nlm][i] = 0;
+      
       fhMCEEpriOverlap0     [nlm][i] = 0;
       fhMCEEpriOverlap1     [nlm][i] = 0;
       fhMCEEpriOverlapN     [nlm][i] = 0;
@@ -1647,7 +1654,7 @@ void AliAnaInsideClusterInvariantMass::FillMCHistograms(const Float_t en,       
 
 //__________________________________________________________________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,      const Float_t enprim,
-                                                               const Float_t mass,    const Float_t l0,
+                                                               const Int_t   nc,      const Float_t mass,    const Float_t l0,
                                                                const Float_t asym,    const Float_t splitFrac,
                                                                const Int_t   inlm,    const Int_t ebin, const Bool_t matched,
                                                                const Int_t   mcindex, const Int_t noverlaps)
@@ -1664,28 +1671,31 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
     
     if     (noverlaps == 0)
     {
-      fhMCEM02Overlap0 [inlm][mcindex]->Fill(en, l0);
-      fhMCEMassOverlap0[inlm][mcindex]->Fill(en, mass);
-      fhMCEEpriOverlap0[inlm][mcindex]->Fill(en, enprim);
-      fhMCEAsymOverlap0[inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCEM02Overlap0  [inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap0 [inlm][mcindex]->Fill(en, mass);
+      fhMCEEpriOverlap0 [inlm][mcindex]->Fill(en, enprim);
+      fhMCEAsymOverlap0 [inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCENCellOverlap0[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap0[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap0[inlm][ebin]->Fill(l0,mass);
     }
     else if(noverlaps == 1)
     {
-      fhMCEM02Overlap1 [inlm][mcindex]->Fill(en, l0);
-      fhMCEMassOverlap1[inlm][mcindex]->Fill(en, mass);
-      fhMCEEpriOverlap1[inlm][mcindex]->Fill(en, enprim);
-      fhMCEAsymOverlap1[inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCEM02Overlap1  [inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap1 [inlm][mcindex]->Fill(en, mass);
+      fhMCEEpriOverlap1 [inlm][mcindex]->Fill(en, enprim);
+      fhMCEAsymOverlap1 [inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCENCellOverlap1[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap1[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap1[inlm][ebin]->Fill(l0,mass);
     }
     else if(noverlaps  > 1)
     {
-      fhMCEM02OverlapN [inlm][mcindex]->Fill(en, l0);
-      fhMCEMassOverlapN[inlm][mcindex]->Fill(en, mass);
-      fhMCEEpriOverlapN[inlm][mcindex]->Fill(en, enprim);
-      fhMCEAsymOverlapN[inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCEM02OverlapN  [inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlapN [inlm][mcindex]->Fill(en, mass);
+      fhMCEEpriOverlapN [inlm][mcindex]->Fill(en, enprim);
+      fhMCEAsymOverlapN [inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCENCellOverlapN[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlapN[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapN[inlm][ebin]->Fill(l0,mass);
     }
@@ -1698,28 +1708,31 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
     
     if     (noverlaps == 0)
     {
-      fhMCEM02Overlap0Match [inlm][mcindex]->Fill(en, l0);
-      fhMCEMassOverlap0Match[inlm][mcindex]->Fill(en, mass);
-      fhMCEEpriOverlap0Match[inlm][mcindex]->Fill(en, enprim);
-      fhMCEAsymOverlap0Match[inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCEM02Overlap0Match  [inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap0Match [inlm][mcindex]->Fill(en, mass);
+      fhMCEEpriOverlap0Match [inlm][mcindex]->Fill(en, enprim);
+      fhMCEAsymOverlap0Match [inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCENCellOverlap0Match[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap0Match[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap0Match[inlm][ebin]->Fill(l0,mass);
     }
     else if(noverlaps == 1)
     {
-      fhMCEM02Overlap1Match [inlm][mcindex]->Fill(en, l0);
-      fhMCEMassOverlap1Match[inlm][mcindex]->Fill(en, mass);
-      fhMCEEpriOverlap1Match[inlm][mcindex]->Fill(en, enprim);
-      fhMCEAsymOverlap1Match[inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCEM02Overlap1Match  [inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlap1Match [inlm][mcindex]->Fill(en, mass);
+      fhMCEEpriOverlap1Match [inlm][mcindex]->Fill(en, enprim);
+      fhMCEAsymOverlap1Match [inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCENCellOverlap1Match[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap1Match[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap1Match[inlm][ebin]->Fill(l0,mass);
     }
     else if(noverlaps  > 1)
     {
-      fhMCEM02OverlapNMatch [inlm][mcindex]->Fill(en, l0);
-      fhMCEMassOverlapNMatch[inlm][mcindex]->Fill(en, mass);
-      fhMCEEpriOverlapNMatch[inlm][mcindex]->Fill(en, enprim);
-      fhMCEAsymOverlapNMatch[inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCEM02OverlapNMatch  [inlm][mcindex]->Fill(en, l0);
+      fhMCEMassOverlapNMatch [inlm][mcindex]->Fill(en, mass);
+      fhMCEEpriOverlapNMatch [inlm][mcindex]->Fill(en, enprim);
+      fhMCEAsymOverlapNMatch [inlm][mcindex]->Fill(en, TMath::Abs(asym));
+      fhMCENCellOverlapNMatch[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlapN[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapNMatch[inlm][ebin]->Fill(l0,mass);
     }
@@ -3805,7 +3818,29 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhMCEAsymOverlapN[j][i]   ->SetYTitle("|A|");
         fhMCEAsymOverlapN[j][i]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCEAsymOverlapN[j][i]) ;
+
         
+        fhMCENCellOverlap0[j][i]     = new TH2F(Form("hMCENCellOverlap0NLocMax%s%s",snlm[j].Data(),pname[i].Data()),
+                                               Form("Overlap 0, n cells vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                               nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+        fhMCENCellOverlap0[j][i]   ->SetYTitle("n cells");
+        fhMCENCellOverlap0[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCENCellOverlap0[j][i]) ;
+        
+        fhMCENCellOverlap1[j][i]     = new TH2F(Form("hMCENCellOverlap1NLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                               Form("Overalap 1, n cells vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                               nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+        fhMCENCellOverlap1[j][i]   ->SetYTitle("n cells");
+        fhMCENCellOverlap1[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCENCellOverlap1[j][i]) ;
+        
+        fhMCENCellOverlapN[j][i]     = new TH2F(Form("hMCENCellOverlapNNLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                               Form("Overlap N, n cells vs E for NLM=%s %s",snlm[j].Data(),ptype[i].Data()),
+                                               nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+        fhMCENCellOverlapN[j][i]   ->SetYTitle("n cells");
+        fhMCENCellOverlapN[j][i]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCENCellOverlapN[j][i]) ;
+
         
         fhMCEEpriOverlap0[j][i]     = new TH2F(Form("hMCEEpriOverlap0NLocMax%s%s",snlm[j].Data(),pname[i].Data()),
                                                Form("Overlap 0, E reco vs E prim for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
@@ -3946,8 +3981,29 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
           fhMCEAsymOverlapNMatch[j][i]   ->SetYTitle("|A|");
           fhMCEAsymOverlapNMatch[j][i]   ->SetXTitle("E (GeV)");
           outputContainer->Add(fhMCEAsymOverlapNMatch[j][i]) ;
+
           
+          fhMCENCellOverlap0Match[j][i]     = new TH2F(Form("hMCENCellOverlap0NLocMax%s%sMatched",snlm[j].Data(),pname[i].Data()),
+                                                      Form("Overlap 0, n cells vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                      nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+          fhMCENCellOverlap0Match[j][i]   ->SetYTitle("n cells");
+          fhMCENCellOverlap0Match[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCENCellOverlap0Match[j][i]) ;
           
+          fhMCENCellOverlap1Match[j][i]     = new TH2F(Form("hMCENCellOverlap1NLocMax%s%sMatched",snlm[j].Data(), pname[i].Data()),
+                                                      Form("Overalap 1, n cell vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                      nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+          fhMCENCellOverlap1Match[j][i]   ->SetYTitle("n cells");
+          fhMCENCellOverlap1Match[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCENCellOverlap1Match[j][i]) ;
+          
+          fhMCENCellOverlapNMatch[j][i]     = new TH2F(Form("hMCENCellOverlapNNLocMax%s%sMatched",snlm[j].Data(), pname[i].Data()),
+                                                      Form("Overlap N, n cell vs E for NLM=%s %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
+                                                      nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+          fhMCENCellOverlapNMatch[j][i]   ->SetYTitle("n cells");
+          fhMCENCellOverlapNMatch[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCENCellOverlapNMatch[j][i]) ;
+
           fhMCEEpriOverlap0Match[j][i]     = new TH2F(Form("hMCEEpriOverlap0NLocMax%s%sMatched",snlm[j].Data(),pname[i].Data()),
                                                       Form("Overlap 0, Asymmetry vs E for NLM=%s, %s, Track Matched",snlm[j].Data(),ptype[i].Data()),
                                                       nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
@@ -4452,7 +4508,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       continue ;
     }
 
-    
     // Set some index for array histograms
     
     Int_t inlm = -1;
@@ -4523,7 +4578,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       //
       
       if(fFillMCOverlapHisto)
-        FillMCOverlapHistograms(en,eprim,mass,l0,asym,splitFrac,inlm,ebin,matched,mcindex,noverlaps);
+        FillMCOverlapHistograms(en,eprim,nc,mass,l0,asym,splitFrac,inlm,ebin,matched,mcindex,noverlaps);
     }
     
     //
