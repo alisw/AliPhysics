@@ -223,7 +223,8 @@ class AliCaloPID : public TObject {
   void    SetClusterSplittingM02Cut(Float_t min=0, Float_t max=100) 
   { fSplitM02MinCut   = min ; fSplitM02MaxCut  = max ; }
   
-  void    SetClusterSplittingMinNCells(Int_t cut)   { fSplitMinNCells = cut   ; }
+  void    SetClusterSplittingMinNCells(Int_t c) { fSplitMinNCells = c         ; }
+  Int_t   GetClusterSplittingMinNCells() const  { return fSplitMinNCells      ; }
   
   void    SetSplitEnergyFractionMinimum(Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSplitEFracMin[i]  = min   ; }
   Float_t GetSplitEnergyFractionMinimum(Int_t i) const       { if( i < 3 && i >=0 ) return fSplitEFracMin[i]   ;  else return 0 ; }
