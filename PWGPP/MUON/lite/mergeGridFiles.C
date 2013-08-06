@@ -36,85 +36,58 @@ void mergeGridFiles(TString outFilename, TString inFileList, TString addPrefix =
 
   TString currList = fileList;
   TString currOutput = "", mergedFiles = "";
-  TFileMerger* fileMerger = 0x0;
-  TObjArray* dirsToMergeArray = 0x0;
-  TList* sourceList = new TList();
-  if ( ! dirsToMerge.IsNull() ) {
-    dirsToMergeArray = dirsToMerge.Tokenize(" ");
-    dirsToMergeArray->SetOwner();
-  }
 
   Bool_t showProgressBar = ! gROOT->IsBatch();
 
   for ( Int_t istep = 0; istep < 100; istep++ ) {
+    TFileMerger fileMerger(copyLocal);
+    Int_t mergeType = ( TFileMerger::kRegular | TFileMerger::kAll );
+    if ( ! dirsToMerge.IsNull() ) {
+      fileMerger.AddObjectNames(dirsToMerge.Data());
+      mergeType |= TFileMerger::kOnlyListed;
+    }
     TObjArray* array = currList.Tokenize(" ");
-    array->SetOwner();
     currList = "";
     Int_t nFiles = array->GetEntries();
     Int_t subStep = -1;
     for (Int_t ifile = 0; ifile < nFiles; ifile++ ) {
-      if ( ! fileMerger ) fileMerger = new TFileMerger(copyLocal);
       TString currFilename = array->At(ifile)->GetName();
-      Bool_t isFileAdded = fileMerger->AddFile(currFilename.Data(), showProgressBar);
+      Bool_t isFileAdded = fileMerger.AddFile(currFilename.Data(), showProgressBar);
       if ( ! isFileAdded ) continue;
-      //printf("New file %s\n", gROOT->GetListOfFiles()->Last()->GetName()); // REMEMBER TO CUT
-      if ( dirsToMergeArray ) {
-        if ( ! sourceList ) sourceList = new TList();
-        sourceList->Add(gROOT->GetListOfFiles()->Last());
-      }
       
-      Int_t nFilesToMerge = fileMerger->GetMergeList()->GetEntries();
+      Int_t nFilesToMerge = fileMerger.GetMergeList()->GetEntries();
       if ( nFilesToMerge % nFilesPerStep != 0 && ifile < nFiles - 1 ) 
-	continue;
+        continue;
       // The following part is executed only at the end of each step
       currOutput = outFilename;
       if ( nFiles > nFilesPerStep ) {
-	subStep++;
-	currOutput.ReplaceAll(".root",Form("_%i_%i.root", istep, subStep));
-	AddFileList(currOutput, currList, "");
+        subStep++;
+        currOutput.ReplaceAll(".root",Form("_%i_%i.root", istep, subStep));
+        AddFileList(currOutput, currList, "");
       }
-      if ( dirsToMergeArray ) {
-        TFile* outFile = new TFile(currOutput.Data(), "recreate");
-        for ( Int_t idir=0; idir<dirsToMergeArray->GetEntries(); idir++ ) {
-          outFile->cd();
-          TDirectory* currDir = outFile->mkdir(dirsToMergeArray->At(idir)->GetName());
-          fileMerger->MergeRecursive(currDir, sourceList);
-        }
-        outFile->Close();
-      }
-      else {
-        fileMerger->OutputFile(currOutput.Data());
-        fileMerger->Merge();
-      }
+      fileMerger.OutputFile(currOutput.Data(),kTRUE,1); // needed when merging single files for specific directories
+      fileMerger.PartialMerge(mergeType);
       printf("\nMerged in %s:\n", currOutput.Data());
       mergedFiles = "";
       for ( Int_t ientry=0; ientry<nFilesToMerge; ientry++ )
-	mergedFiles += Form("%s ", fileMerger->GetMergeList()->At(ientry)->GetName());
+        mergedFiles += Form("%s ", fileMerger.GetMergeList()->At(ientry)->GetName());
       printf("%s\n\n", mergedFiles.Data());
 
       // remove merged files
       if ( istep > 0 )
-	gSystem->Exec(Form("rm %s", mergedFiles.Data()));
-
-      delete fileMerger;
-      fileMerger = 0x0;
-      if ( dirsToMergeArray ) {
-        delete sourceList;
-        sourceList = 0x0;
-      }
+        gSystem->Exec(Form("rm %s", mergedFiles.Data()));
 
       // Write log file to keep trace of files to be merged
       ofstream logFile(logFilename.Data());
       TString logString = "";
       for ( Int_t jfile = ifile + 1; jfile < nFiles; jfile++ ) {
-	logString += Form("%s ", array->At(jfile)->GetName());
+        logString += Form("%s ", array->At(jfile)->GetName());
       }
       logString.Append(currList.Data());
       logString.ReplaceAll(" ", "\n");
       logFile << logString.Data() << endl;;
       logFile.close();
     } // loop on files
-
 
     delete array;
     printf("Step %i completed!\n", istep);
@@ -251,6 +224,7 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
         mergeFilename = objs->GetString();
 
         if ( mergeStage > 0 && ! mergeFilename.Contains(stageName.Data()) ) continue;
+        if ( mergeFilename.Contains(".resubmit") ) continue; // Avoid double counting for runs where a resubmission was performed
 
         tmpFile << mergeFilename.Data() << endl;
       } // loop on grid lfns
