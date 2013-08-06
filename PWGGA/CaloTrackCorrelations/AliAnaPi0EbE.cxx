@@ -2822,6 +2822,13 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Bad channel cut passed %4.2f\n",distBad);
     
+    //If too low number of cells, skip it
+    if ( calo->GetNCells() < GetCaloPID()->GetClusterSplittingMinNCells()) continue ;
+    
+    if(GetDebug() > 1)
+      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: N cells cut passed %d > %d\n",
+             calo->GetNCells(), GetCaloPID()->GetClusterSplittingMinNCells());
+    
     //.......................................
     // TOF cut, BE CAREFUL WITH THIS CUT
     Double_t tof = calo->GetTOF()*1e9;
@@ -2865,11 +2872,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if( (fCheckSplitDistToBad) &&
         (!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist))
     {
-      if(GetDebug() > 1)  printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
-                                 distbad1,distbad2, fidcut1,fidcut2);
+      if(GetDebug() > 1)
+        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
+               calo->GetDistanceToBadChannel(),distbad1,distbad2, fidcut1,fidcut2);
       continue ;
     }
-    
     
     //Skip events with too few or too many  NLM
     if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax)
