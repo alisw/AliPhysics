@@ -105,7 +105,7 @@ public:
   
   static Bool_t MergeObject(TObject* baseObject, TObject* objToAdd);
   
-  TObject* GetSum(const char* idPattern);
+  TObject* GetSum(const char* idPattern) const;
   
   Bool_t IsEmptyObject(TObject* obj) const;
   
