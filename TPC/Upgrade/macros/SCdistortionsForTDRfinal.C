@@ -26,7 +26,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   const Int_t nOmegaTau = 5;
   Double_t omegaTau[nOmegaTau] = {0.34,0.32,0.43,1.77,1.84};
   TString tGas[nOmegaTau] = {"NeCO2","NeCO2_2","ArCO2","NeCF4","NeCF4_2"}; // CF4 is the same as CO2 here, but different omegaTau
-  TString sGas[nOmegaTau] = {"NeCO_{2} (90-10)","Ne/CO_{2}/N_{2} (90-10-5)","ArCO_{2} (90-10)","NeCF_{4} (90-10)","NeCF_{4} (80-20)"};
+  TString sGas[nOmegaTau] = {"Ne-CO_{2} (90-10)","Ne-CO_{2}-N_{2} (90-10-5)","Ar-CO_{2} (90-10)","Ne-CF_{4} (90-10)","Ne-CF_{4} (80-20)"};
   TF2 * fdiffR[nEps];
   TF2 * fdiffPhiR[nEps];
   TH2F * hdiffR[nEps];
@@ -125,7 +125,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hMap[iEps]->SetTitleSize(0.05,"XYZ");
   //hMap[iEps]->SetTitleOffset(1.5,"XY");
   //hMap[iEps]->SetTitleOffset(0.9,"Z");
-  hMap[iEps]->SetTitle(Form("#rho_{SC} (fC/cm^{3}) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hMap[iEps]->SetTitle(Form("#rho_{SC} (fC/cm^{3}) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hMap[iEps]->DrawCopy("colz");
 
   // draw the distortion maps
@@ -139,7 +139,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hDistRMap[iEps]->SetTitleSize(0.05,"XYZ");
   //hDistRMap[iEps]->SetTitleOffset(1.5,"XY");
   //hDistRMap[iEps]->SetTitleOffset(0.9,"Z");
-  hDistRMap[iEps]->SetTitle(Form("dr (cm) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hDistRMap[iEps]->SetTitle(Form("dr (cm) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hDistRMap[iEps]->DrawCopy("colz");
 
   cDistRPMap->cd(iEps+1);
@@ -152,7 +152,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hDistRPMap[iEps]->SetTitleSize(0.05,"XYZ");
   //hDistRPMap[iEps]->SetTitleOffset(1.5,"XY");
   //hDistRPMap[iEps]->SetTitleOffset(0.9,"Z");
-  hDistRPMap[iEps]->SetTitle(Form("d(r#varphi) (cm) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hDistRPMap[iEps]->SetTitle(Form("d(r#varphi) (cm) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hDistRPMap[iEps]->DrawCopy("colz");
 
   
@@ -198,7 +198,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hdiffR[iEps]->SetTitleSize(0.05,"XYZ");
   //hdiffR[iEps]->SetTitleOffset(1.5,"XY");
   //hdiffR[iEps]->SetTitleOffset(0.9,"Z");
-  hdiffR[iEps]->SetTitle(Form("dr (cm) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hdiffR[iEps]->SetTitle(Form("dr (cm) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hdiffR[iEps]->DrawCopy("colz");
 
 
@@ -210,7 +210,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hdiffPhiR[iEps]->SetTitleSize(0.05,"XYZ");
   //hdiffPhiR[iEps]->SetTitleOffset(1.5,"XY");
   //hdiffPhiR[iEps]->SetTitleOffset(0.9,"Z");
-  hdiffPhiR[iEps]->SetTitle(Form("d(r#varphi) (cm) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hdiffPhiR[iEps]->SetTitle(Form("d(r#varphi) (cm) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hdiffPhiR[iEps]->DrawCopy("colz");
 
   cDistRIntMap->cd(iEps+1);
@@ -222,7 +222,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hdiffIntR[iEps]->SetTitleSize(0.05,"XYZ");
   //hdiffIntR[iEps]->SetTitleOffset(1.5,"XY");
   //hdiffIntR[iEps]->SetTitleOffset(0.9,"Z");
-  hdiffIntR[iEps]->SetTitle(Form("dr (cm) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hdiffIntR[iEps]->SetTitle(Form("dr (cm) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hdiffIntR[iEps]->DrawCopy("colz");
 
 
@@ -234,7 +234,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hdiffIntPhiR[iEps]->SetTitleSize(0.05,"XYZ");
   //hdiffIntPhiR[iEps]->SetTitleOffset(1.5,"XY");
   //hdiffIntPhiR[iEps]->SetTitleOffset(0.9,"Z");
-  hdiffIntPhiR[iEps]->SetTitle(Form("d(r#varphi) (cm) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hdiffIntPhiR[iEps]->SetTitle(Form("d(r#varphi) (cm) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hdiffIntPhiR[iEps]->DrawCopy("colz");
 
   cDistZIntMap->cd(iEps+1);
@@ -245,7 +245,7 @@ void SCdistortionsForTDRfinal(Double_t radiusScale=1.5, Int_t epsScale=1,Int_t i
   hdiffIntZ[iEps]->SetTitleSize(0.05,"XYZ");
   //hdiffIntZ[iEps]->SetTitleOffset(1.5,"XY");
   //hdiffIntZ[iEps]->SetTitleOffset(0.9,"Z");
-  hdiffIntZ[iEps]->SetTitle(Form("dz (cm) for %s, 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+  hdiffIntZ[iEps]->SetTitle(Form("dz (cm) for %s, 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
   hdiffIntZ[iEps]->DrawCopy("colz");
   }
   

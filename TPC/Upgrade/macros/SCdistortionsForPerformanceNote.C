@@ -20,11 +20,12 @@ void SCdistortionsForPerformanceNote(Double_t radiusScale=1.5, Int_t epsScale=1,
   const Int_t nEps = 2;
   Int_t eps[nEps] = {20,10};
   Int_t col[nEps] = {kBlack,kRed};
+  Int_t sty[nEps] = {1,2};
 
   const Int_t nOmegaTau = 1;
   Double_t omegaTau[nOmegaTau] = {0.32};
   TString tGas[nOmegaTau] = {"NeCO2_2"}; 
-  TString sGas[nOmegaTau] = {"Ne/CO_{2}/N_{2} (90-10-5)"};
+  TString sGas[nOmegaTau] = {"Ne-CO_{2}-N_{2} (90-10-5)"};
   TF1 * fdiffR[nEps];
   TF1 * fdiffPhiR[nEps];
   TH1F * hdiffR[nEps];
@@ -34,8 +35,7 @@ void SCdistortionsForPerformanceNote(Double_t radiusScale=1.5, Int_t epsScale=1,
   //use always the integrate option here
   Double_t integrateStep = 1.;
 
-  TCanvas *cMap = new TCanvas("cMap","cMap",1200,500);
-  cMap->Divide(2,1);
+  TCanvas *cMap[nEps];
 
   TCanvas *cOmegaTau = new TCanvas("cOmegaTau","cOmegaTau",1200,500);
   cOmegaTau->Divide(2,1);
@@ -49,7 +49,8 @@ void SCdistortionsForPerformanceNote(Double_t radiusScale=1.5, Int_t epsScale=1,
   //loop over epsilons
   for(Int_t iEps = 0; iEps < nEps; ++iEps){
 
-    cMap->cd(iEps+1)->SetPhi(150);
+    cMap[iEps] = new TCanvas(Form("cMap%d",iEps),Form("cMap%d",iEps),600,500);
+    cMap[iEps]->SetPhi(150);
     
     // select gas 
     // 0 = NeCO2N2 
@@ -84,7 +85,7 @@ void SCdistortionsForPerformanceNote(Double_t radiusScale=1.5, Int_t epsScale=1,
     hMap[iEps]->SetTitleSize(0.05,"XYZ");
     hMap[iEps]->SetTitleOffset(1.5,"XY");
     hMap[iEps]->SetTitleOffset(0.9,"Z");
-    hMap[iEps]->SetTitle(Form("%s: 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
+    hMap[iEps]->SetTitle(Form("%s: 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iEps]));
     hMap[iEps]->DrawCopy("surf2fb");
     
     
@@ -125,6 +126,9 @@ void SCdistortionsForPerformanceNote(Double_t radiusScale=1.5, Int_t epsScale=1,
     
     hdiffR[iEps]->SetLineColor(col[iEps]);
     hdiffPhiR[iEps]->SetLineColor(col[iEps]);
+
+    hdiffR[iEps]->SetLineStyle(sty[iEps]);
+    hdiffPhiR[iEps]->SetLineStyle(sty[iEps]);
     
     hdiffR[iEps]->SetFillColor(col[iEps]);
     hdiffPhiR[iEps]->SetFillColor(col[iEps]);
@@ -132,7 +136,7 @@ void SCdistortionsForPerformanceNote(Double_t radiusScale=1.5, Int_t epsScale=1,
     hdiffR[iEps]->SetTitleSize(0.05,"XYZ");
     hdiffPhiR[iEps]->SetTitleSize(0.05,"XYZ");
     
-    legend->AddEntry(hdiffR[iEps],Form("#epsilon = %d",eps[iEps]),"lp");
+    legend->AddEntry(hdiffR[iEps],Form("#varepsilon = %d",eps[iEps]),"lp");
     
     cOmegaTau->cd(1);
     if(iEps==0)
@@ -150,9 +154,10 @@ void SCdistortionsForPerformanceNote(Double_t radiusScale=1.5, Int_t epsScale=1,
     }
   }
   
-  
-  cMap->SaveAs(Form("%s_SC_performanceNote.eps",outfilename.Data()));
-  cMap->SaveAs(Form("%s_SC_performanceNote.pdf",outfilename.Data()));
+  for(Int_t iEps = 0; iEps < nEps; iEps++){
+    cMap[iEps]->SaveAs(Form("%s_epsilon%d_SC_performanceNote.eps",outfilename.Data(),eps[iEps]));
+    cMap[iEps]->SaveAs(Form("%s_epsilon%d_SC_performanceNote.pdf",outfilename.Data(),eps[iEps]));
+  }
   cOmegaTau->SaveAs(Form("%s_Distortions_performanceNote.eps",outfilename.Data()));
   cOmegaTau->SaveAs(Form("%s_Distortions_performanceNote.pdf",outfilename.Data()));
 }

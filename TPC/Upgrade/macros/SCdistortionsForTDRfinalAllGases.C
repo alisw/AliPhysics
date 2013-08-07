@@ -13,7 +13,7 @@ void SCdistortionsForTDRfinalAllGases(Double_t radiusScale=1.5, Int_t epsScale=1
   Double_t omegaTau[nOmegaTau] = {0.32};
   Double_t omegaTau[nOmegaTau] = {0.32,0.43,1.77,1.84};
   TString tGas[nOmegaTau] = {"NeCO2_2","ArCO2","NeCF4","NeCF4_2"}; // CF4 is the same as CO2 here, but different omegaTau
-  TString sGas[nOmegaTau] = {"Ne/CO_{2}/N_{2} (90-10-5)","ArCO_{2} (90-10)","NeCF_{4} (90-10)","NeCF_{4} (80-20)"};
+  TString sGas[nOmegaTau] = {"Ne-CO_{2}-N_{2} (90-10-5)","Ar-CO_{2} (90-10)","Ne-CF_{4} (90-10)","Ne-CF_{4} (80-20)"};
   Int_t eps[nOmegaTau] = {20,10,20,20};
   Int_t col[nOmegaTau] = {kBlack,kRed,kOrange-3,kGreen+2};
   TF1 * fdiffR[nOmegaTau];
@@ -87,7 +87,7 @@ void SCdistortionsForTDRfinalAllGases(Double_t radiusScale=1.5, Int_t epsScale=1
     hMap[iOmegaTau]->SetTitleSize(0.05,"XYZ");
     hMap[iOmegaTau]->SetTitleOffset(1.5,"XY");
     hMap[iOmegaTau]->SetTitleOffset(0.9,"Z");
-    hMap[iOmegaTau]->SetTitle(Form("%s: 50 kHz, #epsilon = %d",sGas[iOmegaTau].Data(),eps[iOmegaTau]));
+    hMap[iOmegaTau]->SetTitle(Form("%s: 50 kHz, #varepsilon = %d",sGas[iOmegaTau].Data(),eps[iOmegaTau]));
     hMap[iOmegaTau]->DrawCopy("surf2fb");
     
     
@@ -143,7 +143,7 @@ void SCdistortionsForTDRfinalAllGases(Double_t radiusScale=1.5, Int_t epsScale=1
     hdiffR[iOmegaTau]->SetTitleSize(0.05,"XYZ");
     hdiffPhiR[iOmegaTau]->SetTitleSize(0.05,"XYZ");
     
-    legend->AddEntry(hdiffR[iOmegaTau],Form("%s (#epsilon = %d)",sGas[iOmegaTau].Data(),eps[iOmegaTau]),"lp");
+    legend->AddEntry(hdiffR[iOmegaTau],Form("%s (#varepsilon = %d)",sGas[iOmegaTau].Data(),eps[iOmegaTau]),"lp");
     
     cOmegaTau->cd(1);
     if(iOmegaTau==0)

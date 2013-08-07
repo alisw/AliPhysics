@@ -15,7 +15,7 @@ void epsilonScanFineBinningForPerformanceNote(Int_t radiusScale=1, Int_t epsScal
   Double_t omegaTau[nOmegaTau] = {0.32};
   TString tGas[nOmegaTau] = {"NeCO2_2"}; 
   TString tGasOut[nOmegaTau] = {"NeCO2_2"}; 
-  TString sGas[nOmegaTau] = {"Ne/CO_{2}/N_{2} (90-10-5)"};
+  TString sGas[nOmegaTau] = {"Ne-CO_{2}-N_{2} (90-10-5)"};
   TString sLowE = "";
   //if(bLowE) sLowE = "_lowE";
   if(bLowE) sLowE = "_lowE2"; //second iteration
@@ -135,7 +135,7 @@ void epsilonScanFineBinningPlotOnly(Int_t radiusScale=1, Int_t epsScale=1,Int_t 
   hPhiR1->SetTitle(Form("x = %.0f, y = %.0f, z = %.0f",x,y,z)); 
 
   cEpsilon->cd(1);
-  hR0->GetXaxis()->SetTitle("#epsilon");
+  hR0->GetXaxis()->SetTitle("#varepsilon");
   hR0->GetYaxis()->SetTitle("dr (cm)");
   hR0->SetLineWidth(2);
   hR0->DrawCopy("lp");
@@ -149,7 +149,7 @@ void epsilonScanFineBinningPlotOnly(Int_t radiusScale=1, Int_t epsScale=1,Int_t 
   legend->Draw();
 
   cEpsilon->cd(2);
-  hPhiR0->GetXaxis()->SetTitle("#epsilon");
+  hPhiR0->GetXaxis()->SetTitle("#varepsilon");
   hPhiR0->GetYaxis()->SetTitle("d(r#varphi) (cm)");
   hPhiR0->SetLineWidth(2);
   hPhiR0->DrawCopy("lp");
