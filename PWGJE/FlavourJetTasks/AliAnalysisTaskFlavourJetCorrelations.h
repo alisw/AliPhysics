@@ -1,6 +1,5 @@
 #ifndef ALIANALYSISTASKFLAVOURJETCORRELATIONS_H
 #define ALIANALYSISTASKFLAVOURJETCORRELATIONS_H
-// $Id$
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -80,12 +79,11 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
 
   //Bool_t   FillMCDJetInfo(AliPicoTrack *jetTrk,AliEmcalJet* jet, TClonesArray *mcArray,Double_t ptjet);
   void FillHistogramsRecoJetCorr(AliAODRecoDecayHF* candidate, AliEmcalJet *jet);
-  void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t deltaR, AliAODEvent* aodEvent);
+  void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t deltaR, AliAODEvent* aodEvent);
 
-  void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t deltaR);
+  void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR);
 
-  void FillHistogramsD(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR);
-
+  void FillHistograms(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR);
  private:
   
   AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
@@ -107,10 +105,10 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Int_t  fPDGmother;             // PDG code of D meson
   Int_t  fNProngs;               // number of prong of the decay channel  
   Int_t  fPDGdaughters[4];       // PDG codes of daughters
-  Float_t fSigmaD0[30];            //
+  Float_t fSigmaD0[30];          //
   TString fBranchName;           // AOD branch name
-  TList *fOutput;                  //! user output
-  AliRDHFCuts *fCuts;  // Cuts 
+  TList *fOutput;                //! user output
+  AliRDHFCuts *fCuts;            // Cuts 
 
   Double_t fMinMass;             // mass lower limit histogram
   Double_t fMaxMass;             // mass upper limit histogram

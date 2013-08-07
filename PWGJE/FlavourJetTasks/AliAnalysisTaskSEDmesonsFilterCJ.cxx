@@ -1,4 +1,3 @@
-// $Id$
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -471,13 +470,11 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
 //
 
   // Statistics 
-  TH1I* hstat = new TH1I("hstat","Statistics",6,-0.5,5.5);
+  TH1I* hstat = new TH1I("hstat","Statistics",4,-0.5,3.5);
   hstat->GetXaxis()->SetBinLabel(1, "N ev anal");
   hstat->GetXaxis()->SetBinLabel(2, "N ev sel");
   hstat->GetXaxis()->SetBinLabel(3, "N cand");
   hstat->GetXaxis()->SetBinLabel(4, "N cand sel cuts");
-  hstat->GetXaxis()->SetBinLabel(5, "N jets");
-  hstat->GetXaxis()->SetBinLabel(6, "N cand in jet");
 /*if(fUseMCInfo) {
     hstat->GetXaxis()->SetBinLabel(7,"N D");
     hstat->GetXaxis()->SetBinLabel(8,"N D in jet");
