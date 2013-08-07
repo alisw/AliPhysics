@@ -3983,11 +3983,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMCDeltaPt[kmcConversion] ->Fill(ptcluster,ptprim-ptcluster);
         }
         
-        if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhMCE[kmcPrompt])
+        if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
         {
           mcParticleTag = kmcPrompt;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)&& fhMCE[kmcFragmentation])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
         {
           mcParticleTag = kmcFragmentation;
         }
@@ -3996,34 +3996,34 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           mcParticleTag = kmcISR;
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) &&
-                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[kmcPi0Decay])
+                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
         {
           mcParticleTag = kmcPi0Decay;
         }
         else if((( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) &&
                   !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)        ) ||
-                 GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[kmcOtherDecay])
+                 GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ))
         {
           mcParticleTag = kmcOtherDecay;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[kmcPi0])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
         {
           mcParticleTag = kmcPi0;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[kmcEta])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
         {
           mcParticleTag = kmcEta;
         }
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[kmcAntiNeutron])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron))
       {
         mcParticleTag = kmcAntiNeutron;
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[kmcAntiProton])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton))
       {
         mcParticleTag = kmcAntiProton;
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[kmcElectron])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
       {
         mcParticleTag = kmcElectron;
       }
@@ -4040,16 +4040,18 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         
       }
       
-      fhMCE  [mcParticleTag] ->Fill(ecluster);
-      fhMCPt [mcParticleTag] ->Fill(ptcluster);
-      fhMCPhi[mcParticleTag] ->Fill(ecluster,phicluster);
-      fhMCEta[mcParticleTag] ->Fill(ecluster,etacluster);
-      
-      fhMC2E[mcParticleTag]     ->Fill(ecluster, eprim);
-      fhMC2Pt[mcParticleTag]    ->Fill(ptcluster, ptprim);
-      fhMCDeltaE[mcParticleTag] ->Fill(ecluster,eprim-ecluster);
-      fhMCDeltaPt[mcParticleTag]->Fill(ptcluster,ptprim-ptcluster);
-      
+      if(mcParticleTag >= 0 && fhMCE  [mcParticleTag])
+      {
+        fhMCE  [mcParticleTag]->Fill(ecluster);
+        fhMCPt [mcParticleTag]->Fill(ptcluster);
+        fhMCPhi[mcParticleTag]->Fill(ecluster,phicluster);
+        fhMCEta[mcParticleTag]->Fill(ecluster,etacluster);
+        
+        fhMC2E     [mcParticleTag]->Fill(ecluster, eprim);
+        fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim);
+        fhMCDeltaE [mcParticleTag]->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[mcParticleTag]->Fill(ptcluster,ptprim-ptcluster);
+      }
     }//Histograms with MC
     
   }// aod loop
