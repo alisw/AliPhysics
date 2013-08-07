@@ -875,7 +875,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          if(!triggerGen) continue;
  
          if(fHardest >= 2){ 
-            if(triggerGen->Pt() < 10.0) continue; //all hadrons pt>10  
+            if(triggerGen->Pt() < 6.0) continue; //all hadrons pt>10  
          }
          if(TMath::Abs((Float_t) triggerGen->Eta()) > fTriggerEtaCut) continue;
 
