@@ -807,9 +807,9 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
       AliInfo(Form("Using only TPC PID over %f GeV/c",fMaxPtCombinedPID));
       continue;
     }
-    if(argument.BeginsWith("usefilterbit")){
-      fSetFilterBit=kTRUE;
-      AliInfo("Using Filter Bit");
+    if(argument.BeginsWith("notusefilterbit")){
+      fSetFilterBit=kFALSE;
+      AliInfo("Switching off use of Filter Bit");
       continue;   
     }
     if(argument.BeginsWith("filterbit=")){
