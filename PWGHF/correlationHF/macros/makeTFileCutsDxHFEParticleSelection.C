@@ -67,17 +67,18 @@ void makeTFileCuts(TString arguments="")
   else if (system==1) {
     // TODO: think about p-Pb
     RDHFD0toKpi->SetStandardCutsPbPb2011();
-     
-
+    
+    
     //[FIXME] not working at the moment
-     // // For centrality 0-10%, add centrality flattening
-     // //NB! NEED FOR THE MOMENT THE FILE!
-     // TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
-     // TCanvas *c=fFlat->Get("cintegral");
-     // TH1F *hfl=(TH1F*)c->FindObject("hint");
-     // RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
-     // //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
-     
+    // For centrality 0-10%, add centrality flattening
+    //NB! NEED FOR THE MOMENT THE FILE!
+    TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
+    TCanvas *c;
+    c=(TCanvas*)fFlat->Get("cintegral");
+    TH1F *hfl=(TH1F*)c->FindObject("hint");
+    RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
+    //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    
      RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
      RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
   }
