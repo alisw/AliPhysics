@@ -191,7 +191,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("storelastcutstep"))
 	    taskOptions+=" "+argument;
-	  if(argument.BeginsWith("usefilterbit")){
+	  if(argument.BeginsWith("notusefilterbit")){
 	    taskOptions+=" "+argument;
 	  }
 	  if(argument.BeginsWith("filterbit=")){
