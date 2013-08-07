@@ -2,7 +2,7 @@
 
 AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   const char *name              = "TpcSpdVertexConstrainedTracks",
-  const char *trackCuts         = "Hybrid_LHC11h",
+  const char *trackCuts         = "Hybrid_LHC11h"
 )
 { 
   enum CutsType {
