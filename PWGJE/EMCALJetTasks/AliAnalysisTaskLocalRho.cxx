@@ -342,7 +342,7 @@ Bool_t AliAnalysisTaskLocalRho::Run()
                     Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
                     Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
                     if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)/r2);
-                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)/r3);
+                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(7)/r3);
                 }
                 if(fFillHistograms) {
                     fProfV2->Fill(fCent, fFitModulation->GetParameter(3));
