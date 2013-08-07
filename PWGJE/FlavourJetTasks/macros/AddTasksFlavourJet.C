@@ -1,5 +1,3 @@
-// $Id$
-
 void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
 		        const TString sCutFile = "cutsHF/D0toKpiCutsppRecVtxNoPileupRejNoEMCAL.root",
                         const Double_t dJetPtCut   = 1.,
@@ -18,10 +16,15 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
 
   const Int_t iJetAlgo = 1;
   const Int_t iJetType = 1;
-
+  /*
   const Int_t    nRadius = 3;
   const Double_t aRadius[] = {  0.2,   0.4,   0.6  };
   const TString  sRadius[] = { "R02", "R04", "R06" };
+  */
+  const Int_t    nRadius = 1;
+  const Double_t aRadius[] = {  0.4  };
+  const TString  sRadius[] = { "R04" };
+
 //=============================================================================
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -51,9 +54,9 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
   AliAnalysisTaskSE *taskRespPID = AddTaskPIDResponse(bIsMC);
 
   // -- D meson selection
-  gROOT->LoadMacro("AliAnalysisTaskSEDmesonsForJetCorrelations.cxx++g");
-  gROOT->LoadMacro("AddTaskDmesonsForJetCorrelations.C");
-  AliAnalysisTaskSEDmesonsForJetCorrelations *taskDmesonsFilter = AddTaskDmesonsForJetCorrelations(iCandType,sCutFile,bIsMC,sText);
+  gROOT->LoadMacro("AliAnalysisTaskSEDmesonsFilterCJ.cxx++g");
+  gROOT->LoadMacro("AddTaskSEDmesonsFilterCJ.C");
+  AliAnalysisTaskSEDmesonsFilterCJ *taskDmesonsFilter = AddTaskSEDmesonsFilterCJ(iCandType,sCutFile,bIsMC,sText);
 
   // EMCal framework
   // -- Physics selection task
@@ -72,17 +75,17 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
   taskSetupEMCal->SelectCollisionCandidates(uTriggerMask);
 
   // Jet preparation
-  gROOT->LoadMacro("/data/Work/jets/testEMCalJetFramework/code/v4/AddTaskJetPreparation.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
   AddTaskJetPreparation(type,bIsMC,sRunPeriod);
 
-/*gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
   AliEmcalPicoTrackMaker *taskPicoTrack = AddTaskEmcalPicoTrackMaker(sUsedTrks.Data(),sInputTrk.Data(),sRunPeriod.Data());
-  taskPicoTrack->SelectCollisionCandidates(uTriggerMask);*/
+  taskPicoTrack->SelectCollisionCandidates(uTriggerMask);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C");
-  gROOT->LoadMacro("AliAnalysisTaskRecoJetCorrelations.cxx++g");
-  gROOT->LoadMacro("AddTaskRecoJetCorrelations.C");
+  gROOT->LoadMacro("AliAnalysisTaskFlavourJetCorrelations.cxx++g");
+  gROOT->LoadMacro("AddTaskFlavourJetCorrelations.C");
 
   for (Int_t i=0; i<nRadius; i++) {
     AliEmcalJetTask *taskFJ = AddTaskEmcalJet(sUsedTrks.Data(),sUsedClus.Data(),iJetAlgo,aRadius[i],iJetType);
@@ -100,9 +103,10 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
                                                                                         dJetAreaCut);
 
     taskDmesonCJ->SetName(Form("AliAnalysisTaskSEEmcalJetDmesonsCJ_%s",sRadius[i].Data()));
-    taskDmesonCJ->SetForceBeamType(uBeamType);
+   taskDmesonCJ->SetForceBeamType(uBeamType);
     taskDmesonCJ->SetAnaType(uAnaType);
     taskDmesonCJ->SetLeadingHadronType(iLeading);
+
 //  taskDmesonCJ->SelectCollisionCandidates(uTriggerMask);
   }
 

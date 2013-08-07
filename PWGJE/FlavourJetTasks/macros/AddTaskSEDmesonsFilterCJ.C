@@ -1,7 +1,5 @@
-// $Id$
-
 AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(
-  AliAnalysisTaskSEDmesonsForJetCorrelations::ECandidateType cand = AliAnalysisTaskSEDmesonsForJetCorrelations::kDstartoKpipi,
+  AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType cand = AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
   TString suffix = "")
@@ -50,6 +48,9 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(
   task->SetMC(theMCon); //D meson settings
   mgr->AddTask(task);
 
+  TString candname="DStar"; 
+  if(cand==0)  candname="D0";
+  
   // Create and connect containers for input/output
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_DmesonsForJetCorrelations";
@@ -57,8 +58,11 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(
 
   TString nameContainer0="histograms";
   TString nameContainer1="cuts";
-//TString nameContainer2="DcandidatesSel";
+  //TString nameContainer2="DcandidatesSel";
 
+  nameContainer0 += candname;
+  nameContainer1 += candname;
+  
   nameContainer0 += suffix;
   nameContainer1 += suffix;
 //nameContainer2 += suffix;
@@ -68,7 +72,6 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(
   
   // ----- output data -----
   
-  // output TH1I for event counting
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(nameContainer0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(nameContainer1, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 //AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(nameContainer2, TList::Class(),AliAnalysisManager::kExchangeContainer, outputfile.Data());
