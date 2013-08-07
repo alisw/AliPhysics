@@ -158,7 +158,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("storelastcutstep"))
 	    taskOptions+=" "+argument;
-	  if(argument.BeginsWith("usefilterbit")){
+	  if(argument.BeginsWith("notusefilterbit")){
 	    taskOptions+=" "+argument;
 	  }
 	  if(argument.BeginsWith("filterbit=")){
