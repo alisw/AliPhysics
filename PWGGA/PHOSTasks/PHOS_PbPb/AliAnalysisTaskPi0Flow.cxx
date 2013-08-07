@@ -2564,35 +2564,39 @@ void AliAnalysisTaskPi0Flow::SetPHOSCalibData()
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskPi0Flow::RejectTriggerMaskSelection()
 {
-  Bool_t reject = true;
+  const Bool_t REJECT = true;
+  const Bool_t ACCEPT = false;
 
+  // No need to check trigger mask if no selection is done
+  if( kNoSelection == fInternalTriggerSelection )
+    return ACCEPT;
+  
+  Bool_t reject = REJECT;
+  
   Bool_t isMB = (fEvent->GetTriggerMask() & (ULong64_t(1)<<1));
   Bool_t isCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<4));
   Bool_t isSemiCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<7));
 
-  if ( kNoSelection == fInternalTriggerSelection )
-    reject = false; // accept event.
-
-  else if( kCentralInclusive == fInternalTriggerSelection
-    && isCentral ) reject = false; // accept event.
+  if( kCentralInclusive == fInternalTriggerSelection
+    && isCentral ) reject = ACCEPT; // accept event.
   else if( kCentralExclusive == fInternalTriggerSelection
-    && isCentral && !isSemiCentral && !isMB ) reject = false; // accept event.
+    && isCentral && !isSemiCentral && !isMB ) reject = ACCEPT; // accept event.
 
   else if( kSemiCentralInclusive == fInternalTriggerSelection
-    && isSemiCentral ) reject = false; // accept event
+    && isSemiCentral ) reject = ACCEPT; // accept event
   else if( kSemiCentralExclusive == fInternalTriggerSelection
-    && isSemiCentral && !isCentral && !isMB ) reject = false; // accept event.
+    && isSemiCentral && !isCentral && !isMB ) reject = ACCEPT; // accept event.
 
   else if( kMBInclusive == fInternalTriggerSelection
-    && isMB ) reject = false; // accept event.
+    && isMB ) reject = ACCEPT; // accept event.
   else if( kMBExclusive == fInternalTriggerSelection
-    && isMB && !isCentral && !isSemiCentral ) reject = false; // accept event.
+    && isMB && !isCentral && !isSemiCentral ) reject = ACCEPT; // accept event.
 
-  if( reject )
-    return reject;
+  if( REJECT == reject )
+    return REJECT;
   else {
     LogSelection(kInternalTriggerMaskSelection, fInternalRunNumber);
-    return false;
+    return ACCEPT;
   }
 }
 
