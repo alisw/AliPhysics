@@ -59,7 +59,6 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   eTask->SetCaloTriggersOutName(triggersOutName);
   eTask->SetCaloTriggerSetupOutName(triggerSetupOutName);
   eTask->SetCaloCellsName(cellsName);
-  eTask->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
