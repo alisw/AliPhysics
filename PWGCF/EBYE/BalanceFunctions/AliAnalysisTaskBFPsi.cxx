@@ -54,7 +54,8 @@ ClassImp(AliAnalysisTaskBFPsi)
 
 //________________________________________________________________________
 AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name) 
-: AliAnalysisTaskSE(name), 
+: AliAnalysisTaskSE(name),
+  fArrayMC(0), //+++++++++++++
   fBalance(0),
   fRunShuffling(kFALSE),
   fShuffledBalance(0),
@@ -70,7 +71,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistListPIDQA(0),
   fHistEventStats(0),
   fHistCentStats(0),
-  fHistCentStatsUsed(0),    //++++++++++++++++++++++++++
+  fHistCentStatsUsed(0),
   fHistTriggerStats(0),
   fHistTrackStats(0),
   fHistVx(0),
@@ -757,7 +758,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 
     //Centrality stuff 
     if(fUseCentrality) {
-      if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD") { //centrality in AOD header
+      if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec") { //centrality in AOD header   //+++++++++++
 	AliAODHeader *header = (AliAODHeader*) event->GetHeader();
 	if(header){
 	  gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
@@ -961,7 +962,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   if(fEventClass == "Centrality"){
-    if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD") { //centrality in AOD header
+    if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec" ) { //centrality in AOD header  //++++++++++++++
       AliAODHeader *header = (AliAODHeader*) event->GetHeader();
       if(header){
         gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
@@ -1330,6 +1331,125 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }//aodTracks
     }//MC event
   }//MCAOD
+  //==============================================================================================================
+
+  //==============================================================================================================
+  else if(gAnalysisLevel == "MCAODrec") {
+    
+    /* fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (!fAOD) {
+      printf("ERROR: fAOD not available\n");
+      return;
+      }*/
+    
+    fArrayMC = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName())); 
+    if (!fArrayMC) { 
+       AliError("No array of MC particles found !!!");
+    }
+
+    AliMCEvent* mcEvent = MCEvent();
+    if (!mcEvent) {
+       AliError("ERROR: Could not retrieve MC event");
+    }
+     
+    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
+      if (!aodTrack) {
+	AliError(Form("Could not receive track %d", iTracks));
+	continue;
+      }
+      
+      for(Int_t iTrackBit = 0; iTrackBit < 16; iTrackBit++){
+	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
+      }
+      if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+      
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = aodTrack->Y();
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
+      
+      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+            
+      // Kinematics cuts from ESD track cuts
+      if( vPt < fPtMin || vPt > fPtMax)      continue;
+      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+      
+      // Extra DCA cuts (for systematic studies [!= -1])
+      if( fDCAxyCut != -1 && fDCAzCut != -1){
+	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
+	  continue;  // 2D cut
+	}
+      }
+      
+      // Extra TPC cuts (for systematic studies [!= -1])
+      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
+	continue;
+      }
+      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
+	continue;
+      }
+
+      //Exclude resonances
+      if(fExcludeResonancesInMC) {
+	
+	Bool_t kExcludeParticle = kFALSE;
+
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+      
+        if (AODmcTrack){ 
+	  //if (AODmcTrack->IsPhysicalPrimary()){
+	  
+	  Int_t gMotherIndex = AODmcTrack->GetMother();
+	  if(gMotherIndex != -1) {
+	    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	      if(pdgCodeOfMother == 113  // rho0
+		 || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+		 // || pdgCodeOfMother == 221  // eta
+		 // || pdgCodeOfMother == 331  // eta'
+		 // || pdgCodeOfMother == 223  // omega
+		 // || pdgCodeOfMother == 333  // phi
+		 || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+		 // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
+		 // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
+		 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+		 || pdgCodeOfMother == 111  // pi0 Dalitz
+		 ) {
+		kExcludeParticle = kTRUE;
+	      }
+	    }
+	  }
+	}	
+	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+	if(kExcludeParticle) continue;
+      }
+      
+      // fill QA histograms
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+    }//track loop
+  }//MCAODrec
   //==============================================================================================================
 
   else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD") { // handling of TPC only tracks different in AOD and ESD

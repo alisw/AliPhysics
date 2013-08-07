@@ -104,6 +104,11 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     if(gRunShuffling) bfs = GetBalanceFunctionObject("MCAOD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
     if(gRunMixing)    bfm = GetBalanceFunctionObject("MCAOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
   }
+  else if (analysisType=="MCAODrec"){
+    bf  = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
+  }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");
     return NULL;
@@ -181,6 +186,17 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);    
   }
+  else if(analysisType == "MCAODrec") {     //++++++++++++++++
+    // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
+    taskBF->SetAODtrackCutBit(AODfilterBit);
+    taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
+
+    // set extra DCA cuts (-1 no extra cut)
+    taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);
+
+    // set extra TPC chi2 / nr of clusters cut
+    taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
+  }//++++++++++++++++
 
   // offline trigger selection (AliVEvent.h)
   // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 

@@ -172,7 +172,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   //===============================correction
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
-  
+ 
+  TClonesArray* fArrayMC; //! AOD object  //+++++++++++++++++++++
   AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
