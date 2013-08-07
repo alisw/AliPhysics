@@ -79,7 +79,8 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetDebugMode(-1);
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
-  jetTask->SetModulationFitMinMaxP(.05, 1);
+  jetTask->SetModulationFitMinMaxP(.001, 1);
+  jetTask->SetRandomConeRadius(jetradius);
   // if centralities haven't been specified use defaults
   if(!centralities) {
      Int_t c[] = {0, 10, 30, 50, 70, 90};

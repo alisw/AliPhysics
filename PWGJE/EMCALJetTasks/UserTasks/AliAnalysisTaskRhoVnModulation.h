@@ -90,6 +90,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetRandomConeRadius(Float_t r)                  {fRandomConeRadius = r; }
+        void                    SetMaxNoRandomCones(Int_t m)                    {fMaxCones = m; }
         void                    SetMinLeadingHadronPt(Double_t m)               {fMinLeadingHadronPt = m; }
         void                    SetSetPtSub(Bool_t s)                           {fSubtractJetPt = s;}
         void                    SetForceAbsVnHarmonics(Bool_t f)                {fAbsVnHarmonics = f; }
@@ -223,6 +224,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
         Float_t                 fRandomConeRadius;      // radius of random cone
+        Int_t                   fMaxCones;              // max number of random cones
         Bool_t                  fAbsVnHarmonics;        // force postive local rho
         Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
         Bool_t                  fRebinSwapHistoOnTheFly;       // rebin swap histo on the fly
