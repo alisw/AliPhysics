@@ -133,7 +133,7 @@ void runBalanceFunctionPsi(
     }//local mode
 
     // input handler (ESD or AOD)
-    AliVEventHandler* inputH = NULL;
+    Aliveventhandler* inputH = NULL;
     if(!bAOD){
       inputH = new AliESDInputHandler();
     }
