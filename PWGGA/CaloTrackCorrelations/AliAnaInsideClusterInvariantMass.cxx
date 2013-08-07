@@ -2596,14 +2596,14 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       if(fFillNCellHisto)
       {
         fhNCellNLocMax1[i][j]  = new TH2F(Form("hNCellNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("#lambda_{0}^{2} vs E for N max  = 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          Form("n cells vs E for N max  = 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                           nptbins,ptmin,ptmax,ncbins,ncmin,ncmax); 
         fhNCellNLocMax1[i][j] ->SetYTitle("N cells");
         fhNCellNLocMax1[i][j] ->SetXTitle("E (GeV)");
         outputContainer->Add(fhNCellNLocMax1[i][j]) ; 
         
         fhNCellNLocMax2[i][j]     = new TH2F(Form("hNCellNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                             Form("#lambda_{0}^{2} vs E for N max  = 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                             Form("n cells vs E for N max  = 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                              nptbins,ptmin,ptmax,ncbins,ncmin,ncmax); 
         fhNCellNLocMax2[i][j]   ->SetYTitle("N cells");
         fhNCellNLocMax2[i][j]   ->SetXTitle("E (GeV)");
@@ -2611,7 +2611,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         
         
         fhNCellNLocMaxN[i][j]     = new TH2F(Form("hNCellNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                             Form("#lambda_{0}^{2} vs E for N max  > 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                             Form("n cells vs E for N max  > 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                              nptbins,ptmin,ptmax,ncbins,ncmin,ncmax); 
         fhNCellNLocMaxN[i][j]   ->SetYTitle("N cells");
         fhNCellNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
