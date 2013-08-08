@@ -505,14 +505,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   
   // ****** K0s ******
   fK0sMass = 
-    new TH3F("fK0sMass", "K^{0}_{s}: mass vs p_{T}",nbins/2,0.448,0.548,nbins,pMin,pMax,6,-0.5,5.5);
+    new TH3F("fK0sMass", "K^{0}_{s}: mass vs p_{T}",nbins/2,0.448,0.548,nbins,pMin,pMax,100,0.,100.);
   fK0sMass->GetXaxis()->SetTitle("Mass (GeV/c^2)"); 
   fK0sMass->GetYaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fK0sMass->GetZaxis()->SetBinLabel(1,"All events");
-  fK0sMass->GetZaxis()->SetBinLabel(2,"Central events");
-  fK0sMass->GetZaxis()->SetBinLabel(3,"Arm-Pod Cut");
-  fK0sMass->GetZaxis()->SetBinLabel(4,"Triggered events");
-  fK0sMass->GetZaxis()->SetBinLabel(5,"Triggered central events");
+  fK0sMass->GetZaxis()->SetTitle("centrality"); 
   fOutput->Add(fK0sMass);
 
   fK0sPtvsEta =
@@ -661,14 +657,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
   // ****** Lambda ******
   fLambdaMass = 
-    new TH3F("fLambdaMass","Mass vs p_{T} for \\Lambda",nbins,1.065,1.165,nbins,pMin,pMax,6,-0.5,5.5);
+    new TH3F("fLambdaMass","Mass vs p_{T} for \\Lambda",nbins,1.065,1.165,nbins,pMin,pMax,100,0.,100.);
   fLambdaMass->GetXaxis()->SetTitle("Mass (GeV/c^2)");
   fLambdaMass->GetYaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fLambdaMass->GetZaxis()->SetBinLabel(1,"All events");
-  fLambdaMass->GetZaxis()->SetBinLabel(2,"Central events");
-  fLambdaMass->GetZaxis()->SetBinLabel(3,"Arm-Pod cut");
-  fLambdaMass->GetZaxis()->SetBinLabel(4,"Triggered events");
-  fLambdaMass->GetZaxis()->SetBinLabel(5,"Triggered central events");
+  fLambdaMass->GetZaxis()->SetTitle("centrality"); 
   fOutput->Add(fLambdaMass);
   
   fLambdaPtvsEta =
@@ -827,14 +819,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
   // ****** AntiLambda ******
   fAntiLambdaMass = 
-    new TH3F("fAntiLambdaMass","Mass vs p_{T} for #bar{#Lambda}",nbins,1.065,1.165,nbins,pMin,pMax,6,-0.5,5.5);
+    new TH3F("fAntiLambdaMass","Mass vs p_{T} for #bar{#Lambda}",nbins,1.065,1.165,nbins,pMin,pMax,100,0.,100.);
   fAntiLambdaMass->GetXaxis()->SetTitle("Mass (GeV/c^2)");
   fAntiLambdaMass->GetYaxis()->SetTitle("p_{T} (GeV/c)"); 
-  fAntiLambdaMass->GetZaxis()->SetBinLabel(1,"All events");
-  fAntiLambdaMass->GetZaxis()->SetBinLabel(2,"Central events");
-  fAntiLambdaMass->GetZaxis()->SetBinLabel(3,"Arm-Pod cut");
-  fAntiLambdaMass->GetZaxis()->SetBinLabel(4,"Triggered events");
-  fAntiLambdaMass->GetZaxis()->SetBinLabel(5,"Triggered central events");
+  fAntiLambdaMass->GetZaxis()->SetTitle("centrality"); 
   fOutput->Add(fAntiLambdaMass);
   
   fAntiLambdaPtvsEta =
@@ -2487,10 +2475,10 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	break; // End K0s selection for TriggerCheck
       case kReconstruction:
 	
-	fK0sMass->Fill(massK0s,pt,0);
+	fK0sMass->Fill(massK0s,pt,centrality);
 	fK0sPtvsEta->Fill(pt,lEta,0);
 	fK0sPtvsRap->Fill(pt,v0->RapK0Short(),0);
-	if(centrality<10) fK0sMass->Fill(massK0s,pt,1);
+
 	
 	fK0sMassPtPhi->Fill(massK0s,pt,lPhi);
 
@@ -2500,11 +2488,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	// Only for triggered events and in case of MC K0s is not an embeded particle
 	if( isTriggered && isNaturalPart ){
 	  
-	  fK0sMass->Fill(massK0s,pt,3);
 	  fK0sPtvsEta->Fill(pt,lEta,1);
 	  fK0sPtvsRap->Fill(pt,v0->RapK0Short(),1);
-	  
-	  if(centrality<10) fK0sMass->Fill(massK0s,pt,4);
 	  
 	}
 
@@ -2648,10 +2633,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	break; // End Lambda selection for TriggerCheck
       case kReconstruction:
 	
-	fLambdaMass->Fill(massLambda,pt,0);
+	fLambdaMass->Fill(massLambda,pt,centrality);
 	fLambdaPtvsEta->Fill(pt,lEta,0);
 	fLambdaPtvsRap->Fill(pt,v0->RapLambda(),0);
-	if(centrality<10) fLambdaMass->Fill(massLambda,pt,1);
 	
 	fLambdaMassPtPhi->Fill(massLambda,pt,lPhi);
 
@@ -2661,11 +2645,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	// Only for triggered events and in case of MC Lambda is not a embeded particle
 	if( isTriggered && isNaturalPart ){
 	  
-	  fLambdaMass->Fill(massLambda,pt,3);
 	  fLambdaPtvsEta->Fill(pt,lEta,1);
 	  fLambdaPtvsRap->Fill(pt,v0->RapLambda(),1);
-	  
-	  if(centrality<10)  fLambdaMass->Fill(massLambda,pt,4);
 	  
 	} 
 	// Invariant Mass cut
@@ -2809,10 +2790,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	break; // End AntiLambda selection for CheckTrigger
       case kReconstruction: 
 	
-	fAntiLambdaMass->Fill(massAntiLambda,pt,0);
+	fAntiLambdaMass->Fill(massAntiLambda,pt,centrality);
 	fAntiLambdaPtvsEta->Fill(pt,lEta,0);
 	fAntiLambdaPtvsRap->Fill(pt,v0->RapLambda(),0);
-	if(centrality<10) fAntiLambdaMass->Fill(massAntiLambda,pt,1);
 
 	fAntiLambdaMassPtPhi->Fill(massAntiLambda,pt,lPhi);
 	  
@@ -2822,11 +2802,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	// Only for triggered events and in case of MC AntiLambda is not a embeded particle
 	if( isTriggered && isNaturalPart ){
 	  
-	  fAntiLambdaMass->Fill(massAntiLambda,pt,3);
 	  fAntiLambdaPtvsEta->Fill(pt,lEta,1);
 	  fAntiLambdaPtvsRap->Fill(pt,v0->RapLambda(),1);
-	  
-	  if(centrality<10)  fAntiLambdaMass->Fill(massAntiLambda,pt,4);
 	  
 	} 
 	// Invariant Mass cut
