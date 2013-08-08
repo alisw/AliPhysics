@@ -1595,6 +1595,13 @@ void AliAnalysisTaskRhoVnModulation::Terminate(Option_t *)
     }
 }
 //_____________________________________________________________________________
+void AliAnalysisTaskRhoVnModulation::SetModulationFit(TF1* fit) 
+{
+// set modulation fit
+    if (fFitModulation) delete fFitModulation;
+    fFitModulation = fit; 
+}
+//_____________________________________________________________________________
 TH1F* AliAnalysisTaskRhoVnModulation::GetResolutionFromOuptutFile(detectorType det, Int_t h, TArrayD* cen)
 {
     // INTERFACE METHOD FOR OUTPUTFILE

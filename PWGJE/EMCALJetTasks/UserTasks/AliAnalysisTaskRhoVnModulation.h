@@ -78,8 +78,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetNameRho(const char* name)                    {fNameRho = name; }
         void                    SetLocalRhoName(TString name)                   {fLocalRhoName = name; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
-        void                    SetModulationFit(TF1* fit)                      {if (fFitModulation) delete fFitModulation;
-                                                                                 fFitModulation = fit; }
+        void                    SetModulationFit(TF1* fit);
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
