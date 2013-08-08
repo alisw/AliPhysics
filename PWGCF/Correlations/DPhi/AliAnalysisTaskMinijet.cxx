@@ -678,7 +678,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     else AliInfo("Fatal Error");
                     
                     if (fCentralityMethod.Length() > 0)
-                        ntracks = TMath::Nint(centrality);
+                        ntracks = centrality;
                     
                     //analyse
                     if(pt.size()){//(internally ntracks=fNRecAccept)
