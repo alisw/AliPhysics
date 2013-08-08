@@ -52,8 +52,8 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    void RelabelAODPhotonCandidates(Bool_t mode);
    void ProcessTrueQAESD(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi);
    void ProcessTrueQAAOD(AliAODConversionPhoton *TruePhotonCandidate, AliAODTrack *elec, AliAODTrack *posi);
-   Bool_t IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate);
-   Bool_t IsTruePhotonAOD(AliAODConversionPhoton *TruePhotonCandidate);
+   UInt_t IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate);
+   UInt_t IsTruePhotonAOD(AliAODConversionPhoton *TruePhotonCandidate);
    void CountTracks();
    
 	
@@ -89,6 +89,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH2F *hElecPhi;
    TH1F *hElecNfindableClsTPC;
    TH1F *hPosiNfindableClsTPC;
+   TH2F *hElecAsymP;
    TList *fTrueList;
    TH2F *hTrueResolutionR;
    TH2F *hTrueResolutionZ;
@@ -108,6 +109,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH2F *hTrueElecPhi;
    TH1F *hTrueElecNfindableClsTPC;
    TH1F *hTruePosiNfindableClsTPC;
+   TH2F *hTrueElecAsymP;
    Bool_t fIsMC;
    Int_t fnGammaCandidates;
    Int_t *fMCStackPos;     //[fnGammaCandidates]

@@ -63,6 +63,8 @@ class AliConversionCuts : public AliAnalysisCuts {
 	kCosPAngle,
 	kElecShare,
 	kToCloseV0s,
+        kDcaRPrimVtx,
+        kDcaZPrimVtx,
 	kNCuts
   };
 
@@ -241,8 +243,9 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
   Bool_t SetRejectExtraSignalsCut(Int_t extraSignal);
-
-
+  Bool_t SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx);
+  Bool_t SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx);
+   
   // Request Flags
 
   Int_t IsHeavyIon(){return fIsHeavyIon;}
@@ -344,6 +347,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   TRandom3 fRandom; //
   Int_t fElectronArraySize; // Size of electron array
   Int_t *fElectronLabelArray; //[fElectronArraySize]
+  Double_t fDCAZPrimVtxCut; // cut value for the maximum distance in Z between the photon & the primary vertex [cm]
+  Double_t fDCARPrimVtxCut; // cut value for the maximum distance in R between the photon & the primary vertex [cm]
   Float_t fConversionPointXArray; // Array with conversion Point x
   Float_t fConversionPointYArray; // Array with conversion Point y
   Float_t fConversionPointZArray; // Array with conversion Point z
@@ -381,6 +386,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   TH1F *hCutIndex; // bookkeeping for cuts
   TH1F *hV0EventCuts; // bookkeeping for event selection cuts
   TH1F *hCentrality; // centrality distribution for selected events
+  TH2F *hCentralityVsNumberOfPrimaryTracks; // centrality distribution for selected events
   TH1F *hVertexZ; // vertex z distribution for selected events
   TH1F *hTriggerClass; //fired offline trigger class
   TH1F *hTriggerClassSelected; //selected fired offline trigger class

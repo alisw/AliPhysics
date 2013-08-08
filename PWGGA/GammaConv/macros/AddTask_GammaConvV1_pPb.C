@@ -42,7 +42,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
    }
    
    //=========  Set Cutnumber for V0Reader ================================
-   TString cutnumber = "8000000060084001001500000"; 
+   TString cutnumber = "800000006008400100150000000"; 
    Bool_t doEtaShift = kFALSE;
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -102,41 +102,41 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       // Shifting in pPb direction
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
-      cutarray[ 0] = "8000000080093172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb RCut Changed
-      cutarray[ 1] = "8000000081093172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb RCut Changed
-      cutarray[ 2] = "8000000083093172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb RCut Changed
-      cutarray[ 3] = "8000000084093172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb RCut Changed
-      cutarray[ 4] = "8000000085093172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb RCut Changed
-      cutarray[ 5] = "8000000086093172003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 0] = "800000008009317200329000000"; mesonCutArray[ 0] = "01629045000000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 1] = "800000008109317200329000000"; mesonCutArray[ 1] = "01629045000000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 2] = "800000008309317200329000000"; mesonCutArray[ 2] = "01629045000000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 3] = "800000008409317200329000000"; mesonCutArray[ 3] = "01629045000000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 4] = "800000008509317200329000000"; mesonCutArray[ 4] = "01629045000000";  //standard cut Pi0 pPb RCut Changed
+      cutarray[ 5] = "800000008609317200329000000"; mesonCutArray[ 5] = "01629045000000";  //standard cut Pi0 pPb RCut Changed
    } else if (trainConfig == 2) { 
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
-      cutarray[ 0] = "8000000082193172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 1] = "8000000082293172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 2] = "8000000082493172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 3] = "8000000082693172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 4] = "8000000082793172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 5] = "8000000082593172003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 0] = "800000008219317200329000000"; mesonCutArray[ 0] = "01629045000000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 1] = "800000008229317200329000000"; mesonCutArray[ 1] = "01629045000000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 2] = "800000008249317200329000000"; mesonCutArray[ 2] = "01629045000000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 3] = "800000008269317200329000000"; mesonCutArray[ 3] = "01629045000000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 4] = "800000008279317200329000000"; mesonCutArray[ 4] = "01629045000000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 5] = "800000008259317200329000000"; mesonCutArray[ 5] = "01629045000000";  //standard cut Pi0 pPb Single pT Cut changed
    } else if (trainConfig == 3) { 
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
-      cutarray[ 0] = "8000000082090172003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb dedx electron Cut changed
-      cutarray[ 1] = "8000000082091172003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
-      cutarray[ 2] = "8000000082092172003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
-      cutarray[ 3] = "8000000082094172003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
-      cutarray[ 4] = "8000000082095172003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
-      cutarray[ 5] = "8000000082096172003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 0] = "800000008209017200329000000"; mesonCutArray[ 0] = "01629045000000";  //standard cut Pi0 pPb dedx electron Cut changed
+      cutarray[ 1] = "800000008209117200329000000"; mesonCutArray[ 1] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 2] = "800000008209217200329000000"; mesonCutArray[ 2] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 3] = "800000008209417200329000000"; mesonCutArray[ 3] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 4] = "800000008209517200329000000"; mesonCutArray[ 4] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
+      cutarray[ 5] = "800000008209617200329000000"; mesonCutArray[ 5] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
 
 
    } else if (trainConfig == 4) { 
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
-      cutarray[ 0] = "8000000082093162003290000"; mesonCutArray[ 0] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
-      cutarray[ 1] = "8000000082093102003290000"; mesonCutArray[ 1] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
-      cutarray[ 2] = "8000000082093174003290000"; mesonCutArray[ 2] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
-      cutarray[ 3] = "8000000082093173003290000"; mesonCutArray[ 3] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
-      cutarray[ 4] = "8000000082093572003290000"; mesonCutArray[ 4] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
-      cutarray[ 5] = "8000000082093072003290000"; mesonCutArray[ 5] = "01629045000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 0] = "800000008209316200329000000"; mesonCutArray[ 0] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 1] = "800000008209310200329000000"; mesonCutArray[ 1] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 2] = "800000008209317400329000000"; mesonCutArray[ 2] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 3] = "800000008209317300329000000"; mesonCutArray[ 3] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 4] = "800000008209357200329000000"; mesonCutArray[ 4] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 5] = "800000008209307200329000000"; mesonCutArray[ 5] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;

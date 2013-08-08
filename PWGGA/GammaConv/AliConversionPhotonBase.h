@@ -48,6 +48,7 @@ class AliConversionPhotonBase {
   void SetChi2perNDF(Float_t chi2) {fChi2perNDF = chi2;}
   Float_t GetChi2perNDF() const {return fChi2perNDF;}
 
+  
   ///Track labels
   void SetLabelPositive(Int_t label){fLabel[0] = label;}
   void SetLabelNegative(Int_t label){fLabel[1] = label;}
@@ -88,7 +89,9 @@ class AliConversionPhotonBase {
   Double_t GetConversionX() const {return fConversionPoint[0];}
   Double_t GetConversionY() const {return fConversionPoint[1];}
   Double_t GetConversionZ() const {return fConversionPoint[2];}
-
+  void GetDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex, Float_t * dca);
+  void DeterminePhotonQuality(AliVTrack* negTrack, AliVTrack* posTrack);
+  UChar_t GetPhotonQuality() const {return fQuality;}
   // Armenteros Qt Alpha
   void GetArmenterosQtAlpha(Double_t qtalpha[2]){qtalpha[0]=fArmenteros[0];qtalpha[1]=fArmenteros[1];}
   Double_t GetArmenterosQt() const {return fArmenteros[0];}
@@ -105,7 +108,7 @@ class AliConversionPhotonBase {
   virtual Double_t GetPx() const = 0;
   virtual Double_t GetPy() const = 0;
   virtual Double_t GetPz() const = 0;
-
+  
 
   Float_t GetMass() const { return fIMass; }
   void SetMass( Float_t mass) { fIMass = mass; }
@@ -113,6 +116,7 @@ class AliConversionPhotonBase {
   Float_t GetPsiPair() const {return fPsiPair;}
   void SetPsiPair(Float_t PsiPair){fPsiPair=PsiPair;}
 
+  
  protected:
 
   Int_t fLabel[2]; // Electron/Positron Track Label
@@ -124,8 +128,12 @@ class AliConversionPhotonBase {
   Bool_t fTagged; // Is it tagged as decay pion (only for gammas)
   Float_t fIMass; // Invariant Mass of dilepton pair
   Float_t fPsiPair; // Psi Pair Value
-
-  ClassDef(AliConversionPhotonBase,3);
+  UChar_t fQuality; //Photon Quality: 
+                     //0: garbage,
+                     //1: both tracks TPC only,
+                     //2: 1 track TPC only
+                     //3: both tracks more than 1 ITS cluster
+  ClassDef(AliConversionPhotonBase,5);
 };
 
 

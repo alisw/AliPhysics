@@ -42,7 +42,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
    }
    
    //=========  Set Cutnumber for V0Reader ================================
-   TString cutnumber = "0000000002084000002200000"; 
+   TString cutnumber = "000000000208400000220000000"; 
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -96,20 +96,20 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
    TString *mesonCutArray = new TString[numberOfCuts];
 
    if(trainConfig == 1){
-      cutarray[ 0] = "0000012002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
-      cutarray[ 1] = "0001012002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
-      cutarray[ 2] = "0000012002093260003800000"; mesonCutArray[2] = "01631031009"; //standard cut Gamma pp 2-76TeV , only boxes
-      cutarray[ 3] = "0000012002093260003800000"; mesonCutArray[3] = "01631031009"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 0] = "000001200209366300380000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
+      cutarray[ 1] = "000101200209366300380000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
+      cutarray[ 2] = "000001200209326000380000000"; mesonCutArray[2] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 3] = "000001200209326000380000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
    } else if (trainConfig == 2) {
-      cutarray[ 0] = "0000011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
-      cutarray[ 1] = "0001011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
-      cutarray[ 2] = "0000011002093260003800000"; mesonCutArray[2] = "01631031009"; //standard cut Gamma pp 2-76TeV
-      cutarray[ 3] = "0000011002093260003800000"; mesonCutArray[3] = "01631031009"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 0] = "000001100209366300380000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
+      cutarray[ 1] = "000101100209366300380000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
+      cutarray[ 2] = "000001100209326000380000000"; mesonCutArray[2] = "01631031009000"; //standard cut Gamma pp 2-76TeV
+      cutarray[ 3] = "000001100209326000380000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
    } else if (trainConfig == 3) {
-      cutarray[ 0] = "0002011002093663003800000"; mesonCutArray[0] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
-      cutarray[ 1] = "0003011002093663003800000"; mesonCutArray[1] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
-      cutarray[ 2] = "0002012002093663003800000"; mesonCutArray[2] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
-      cutarray[ 3] = "0003012002093663003800000"; mesonCutArray[3] = "01631031009"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
+      cutarray[ 0] = "000201100209366300380000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
+      cutarray[ 1] = "000301100209366300380000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
+      cutarray[ 2] = "000201200209366300380000000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+      cutarray[ 3] = "000301200209366300380000000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;

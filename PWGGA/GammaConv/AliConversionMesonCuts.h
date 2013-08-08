@@ -48,6 +48,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 	kElecShare,
 	kToCloseV0s,
 	kuseMCPSmearing,
+   kDcaGammaGamma,
+   kDcaRPrimVtx,
+   kDcaZPrimVtx,
 	kNCuts
   };
 
@@ -80,7 +83,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
   void PrintCuts();
 
-  void InitCutHistograms(TString name="");
+  void InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
   void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
   TList *GetCutHistograms(){return fHistograms;}
   void SmearParticle(AliAODConversionPhoton * photon);
@@ -99,7 +102,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Bool_t SetMCPSmearing(Int_t useMCPSmearing);
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
-
+  Bool_t SetDCAGammaGammaCut(Int_t DCAGammaGamma);
+  Bool_t SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx);
+  Bool_t SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx);
 
   // Request Flags
   Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
@@ -140,12 +145,21 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   TRandom3 fRandom; //
   Int_t fElectronLabelArraySize;
   Int_t *fElectronLabelArray; //[fElectronLabelArraySize] Array with elec/pos v0 label
+  Double_t fDCAGammaGammaCut; // cut value for the maximum distance between the two photons [cm]
+  Double_t fDCAZMesonPrimVtxCut; // cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
+  Double_t fDCARMesonPrimVtxCut; // cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
   Int_t fBackgroundHandler; //
   
   // Histograms
   TObjString *fCutString; // cut number used for analysis
   TH1F *hMesonCuts; // bookkeeping for meson cuts
   TH1F *hMesonBGCuts; // bookkeeping for meson bg cuts
+  TH1F *hDCAGammaGammaMesonBefore;
+  TH1F *hDCAZMesonPrimVtxBefore;
+  TH1F *hDCARMesonPrimVtxBefore;
+  TH1F *hDCAGammaGammaMesonAfter;
+  TH2F *hDCAZMesonPrimVtxAfter;
+  TH1F *hDCARMesonPrimVtxAfter;
 
 private:
 

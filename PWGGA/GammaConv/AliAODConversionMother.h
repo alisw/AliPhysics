@@ -55,8 +55,18 @@ class AliAODConversionMother : public AliAODConversionParticle{
      Int_t GetLabel(Int_t i) const {return fLabel[i];}
      Int_t GetLabel1() const {return fLabel[0];}
      Int_t GetLabel2() const {return fLabel[1];}
-	  Int_t GetLabel3() const {return fLabel[2];}
+     Int_t GetLabel3() const {return fLabel[2];}
 		
+     Double_t GetProductionRadius() const {return TMath::Sqrt(fProductionVtx[0]*fProductionVtx[0]+fProductionVtx[1]*fProductionVtx[1]);}
+     Double_t GetProductionX() const {return fProductionVtx[0];}
+     Double_t GetProductionY() const {return fProductionVtx[1];}
+     Double_t GetProductionZ() const {return fProductionVtx[2];}
+
+     Float_t GetDCABetweenPhotons() const {return fdcaBetweenPhotons;}
+     Float_t GetDCAZMotherPrimVtx() const {return fdcaZPrimVtx;}
+     Float_t GetDCARMotherPrimVtx() const {return fdcaRPrimVtx;}
+     UChar_t GetMesonQuality() const {return fQuality;}
+     	
      Double_t GetOpeningAngle() const { return fOpeningAngle;}
 
      Double_t GetAlpha() const { return fAlpha;}
@@ -64,6 +74,10 @@ class AliAODConversionMother : public AliAODConversionParticle{
      void SetWeight(Double_t weight) {fWeight=weight;}
      Double_t GetWeight() const {return fWeight;}
 
+     Float_t CalculateDistanceBetweenPhotons(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2 , Double_t prodPoint[3]);
+     void CalculateDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex);
+     void DetermineMesonQuality(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2);
+        
 private:
     Int_t fLabel[3]; // Labels of the decay photons
     Int_t fMCLabel; // MC Label
@@ -71,8 +85,21 @@ private:
     Double_t fOpeningAngle;
     Double_t fAlpha;
     Double_t fWeight; // Weight for BG Calculation
-
-    ClassDef(AliAODConversionMother,3)
+    Float_t fdcaBetweenPhotons; // dca between the two photons
+    Double_t fProductionVtx[3]; // Production vertex
+    Float_t fdcaZPrimVtx; // dca Z of meson to primary vertex
+    Float_t fdcaRPrimVtx; // dca R of meson to primary vertex
+    UChar_t fQuality; // Quality of the meson:
+                       // 0: garbage
+                       // 1: both photons quality 1
+                       // 2: 1 photon quality 1, 1 photon quality 2
+                       // 3: 1 photon quality 1, 1 photon quality 3
+                       // 4: both photons quality 2
+                       // 5: 1 photon quality 2, 1 photon quality 3
+                       // 6: both photons quality 3
+    
+    
+    ClassDef(AliAODConversionMother,4)
 };
 
 #endif

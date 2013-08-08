@@ -61,7 +61,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
    // BG HandlerSettings
    void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
-   void CountTracks();
    void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[]);
    void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
    void UpdateEventByEventData();
@@ -77,7 +76,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TList **fESDList;
    TList **fBackList;
    TList **fMotherList;
-   TList **fMotherRapList;
+   TList **fPhotonDCAList;
+   TList **fMesonDCAList;        
    TList **fTrueList;
    TList **fTrueMotherRapList;
    TList **fMCList;
@@ -90,10 +90,21 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TList *fMesonCutArray;
    AliConversionMesonCuts *fMesonCuts;
    TH1F **hESDConvGammaPt;
-   TH1F **hESDConvGammaR;
+   TTree **tESDConvGammaPtDcazCat;
+   Float_t fPtGamma;
+   Float_t fDCAzPhoton;
+   Float_t fRConvPhoton;
+   Float_t fEtaPhoton;
+   UChar_t iCatPhoton;
+   UChar_t iPhotonMCInfo; // 0: garbage,
+                         // 1: background
+                         // 2: secondary photon not from eta or k0s,
+                         // 3: secondary photon from eta, 
+                         // 4: secondary photon from k0s, 
+                         // 5: dalitz
+                         // 6: primary gamma
    TH2F **hESDMotherInvMassPt;
    THnSparseF **sESDMotherInvMassPtZM;
-   THnSparseF **sESDMotherInvMassPtY;
    TH2F **hESDMotherBackInvMassPt;
    THnSparseF **sESDMotherBackInvMassPtZM;
    TH2F **hESDMotherInvMassEalpha;
@@ -128,7 +139,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TProfile2D **pESDTruePrimaryMotherWeightsInvMassPt;
    TH2F **hESDTruePrimaryPi0MCPtResolPt;
    TH2F **hESDTruePrimaryEtaMCPtResolPt;
-   THnSparseF **sESDTruePrimaryMotherInvMassPtY;
    TH2F **hESDTrueSecondaryMotherInvMassPt;
    TH2F **hESDTrueSecondaryMotherFromK0sInvMassPt;
    TH1F **hESDTrueK0sWithPi0DaughterMCPt;
@@ -140,19 +150,29 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hESDTrueConvGammaPt;
    TH2F **hESDCombinatorialPt;
    TH1F **hESDTruePrimaryConvGammaPt;
-   TH1F **hESDTruePrimaryConvGammaR;
-   TH1F **hESDTruePrimaryConvGammaEta;
    TH2F **hESDTruePrimaryConvGammaESDPtMCPt;
    TH2F **hESDTruePrimaryConvGammaRSESDPtMCPt;
    TH1F **hESDTrueSecondaryConvGammaPt;
-   TH1F **hESDTrueSecondaryConvGammaR;
    TH1F **hESDTrueSecondaryConvGammaFromXFromK0sPt;
+   TH1F **hESDTrueSecondaryConvGammaFromXFromLambdaPt;
    TH1I **hNEvents;
    TH1I **hNGoodESDTracks;
    TH1I **hNGammaCandidates;
    TH1I **hNV0Tracks;
-   TH1F **hEtaShift;
-   
+   TProfile **hEtaShift;
+   TTree **tESDMesonsInvMassPtDcazMinDcazMaxFlag;
+   Float_t fInvMass;
+   Float_t fPt;
+   Float_t fDCAzGammaMin;
+   Float_t fDCAzGammaMax;
+   UChar_t iFlag;
+   UChar_t iMesonMCInfo; // 0: garbage,
+                         // 1: background
+                         // 2: secondary meson not from eta or k0s,
+                         // 3: secondary meson from eta, 
+                         // 4: secondary meson from k0s, 
+                         // 5: dalitz
+                         // 6: primary meson gamma-gamma-channel
    TRandom3 fRandom;
    Int_t fnGammaCandidates;
    Double_t *fUnsmearedPx; //[fnGammaCandidates]
@@ -165,7 +185,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    Int_t *fESDArrayNeg;    //[fnGammaCandidates]
    Int_t fnCuts;
    Int_t fiCut;
-   Int_t fNumberOfESDTracks;
    Bool_t fMoveParticleAccordingToVertex;
    Bool_t fIsHeavyIon;
    Bool_t fDoMesonAnalysis;
