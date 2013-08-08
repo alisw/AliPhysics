@@ -108,7 +108,7 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  const Int_t nBinsCent = 100.;
+  const Int_t nBinsCent = 100;
   Double_t minCent = 0.;
   Double_t maxCent = 100.;
 
