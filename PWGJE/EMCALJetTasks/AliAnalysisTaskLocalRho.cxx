@@ -185,6 +185,17 @@ void AliAnalysisTaskLocalRho::UserCreateOutputObjects()
         // increase readability of output list
     fOutputList->Sort();
     PostData(1, fOutputList);
+    switch (fRunModeType) {
+        case kLocal : {
+            fOutputListGood = new TList();
+            fOutputListGood->SetOwner(kTRUE);
+            fOutputListBad = new TList();
+            fOutputListBad->SetOwner(kTRUE);
+            PostData(2, fOutputListGood);
+            PostData(3, fOutputListBad);
+        } break;
+        default: break;
+    }
 }
 //_____________________________________________________________________________
 TH1F* AliAnalysisTaskLocalRho::BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c, Bool_t append)
