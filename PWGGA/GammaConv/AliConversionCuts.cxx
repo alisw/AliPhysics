@@ -3848,7 +3848,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
 AliConversionCuts* AliConversionCuts::GetStandardCuts2010PbPb(){
     //Create and return standard 2010 PbPb cuts
     AliConversionCuts *cuts=new AliConversionCuts("StandardCuts2010PbPb","StandardCuts2010PbPb");
-    if(!cuts->InitializeCutsFromCutString("1000002042092970023220000")){
+    if(!cuts->InitializeCutsFromCutString("100000204209297002322000000")){
 	cout<<"Warning: Initialization of Standardcuts2010PbPb failed"<<endl;}
     return cuts;
 }
@@ -3857,7 +3857,7 @@ AliConversionCuts* AliConversionCuts::GetStandardCuts2010PbPb(){
 AliConversionCuts* AliConversionCuts::GetStandardCuts2010pp(){
     //Create and return standard 2010 PbPb cuts
     AliConversionCuts *cuts=new AliConversionCuts("StandardCuts2010pp","StandardCuts2010pp");
-    if(!cuts->InitializeCutsFromCutString("0000011002093663003800000")){
+    if(!cuts->InitializeCutsFromCutString("000001100209366300380000000")){
 	cout<<"Warning: Initialization of Standardcuts2010pp failed"<<endl;}
     return cuts;
 }
