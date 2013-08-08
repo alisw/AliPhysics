@@ -108,6 +108,19 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hESDConvGammaPt;
     TH1F **hESDDalitzElectronPt;
     TH1F **hESDDalitzPositronPt;
+    TH1F **hESDDalitzElectronPhi;
+    TH1F **hESDDalitzPositronPhi;
+    TH1F **hESDDalitzElectronAfterPt;
+    TH1F **hESDDalitzPositronAfterPt;
+    TH1F **hESDDalitzElectronAfterPhi;
+    TH1F **hESDDalitzPositronAfterPhi;
+    TH2F **hESDDalitzElectronAfterNFindClsTPC;
+    TH2F **hESDDalitzPositronAfterNFindClsTPC;
+    TH2F **hESDDalitzPosEleAfterDCAxy;
+    TH2F **hESDDalitzPosEleAfterDCAz;
+    TH2F **hESDDalitzPosEleAfterTPCdEdx;
+    TH2F **hESDDalitzPosEleAfterTPCdEdxSignal;
+    TH1F **hESDMotherPhi;
     TH2F **hESDEposEnegPsiPairDPhi;
     TH2F **hESDEposEnegInvMassPt;
     TH2F **hESDEposEnegLikeSignBackInvMassPt;
@@ -141,6 +154,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH2F **hESDTrueMotherChiCInvMassPt;
     TH2F **hESDTrueMotherChiCDiffInvMassPt;
     TH2F **hESDTrueMotherInvMassPt;
+    TH2F **hESDTrueMotherDalitzInvMassPt;
     TH2F **hESDTrueMotherPi0GGInvMassPt;
     TH2F **hESDTruePrimaryMotherInvMassMCPt;
     TH2F **hESDTruePrimaryPi0DalitzESDPtMCPt;

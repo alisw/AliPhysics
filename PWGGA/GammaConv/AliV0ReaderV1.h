@@ -52,6 +52,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   TList *GetCutHistograms(){if(fConversionCuts){return fConversionCuts->GetCutHistograms();}return NULL;}
   // Set Options
 
+  void CountTracks();
   void SetConversionCuts(const TString cut);
   void SetConversionCuts(AliConversionCuts *cuts){fConversionCuts=cuts;}
   void SetUseOwnXYZCalculation(Bool_t flag){fUseOwnXYZCalculation=flag;}
@@ -64,6 +65,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   Bool_t AreAODsRelabeled(){return fRelabelAODs;}
   void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
   TString GetPeriodName(){return fPeriodName;}
+  Int_t GetNumberOfPrimaryTracks(){return fNumberOfPrimaryTracks;}
   
 protected:
     // Reconstruct Gammas
@@ -98,6 +100,7 @@ protected:
     TString fDeltaAODFilename; // set filename for delta/satellite aod
     Bool_t fRelabelAODs; //
     Bool_t fEventIsSelected;
+    Int_t fNumberOfPrimaryTracks; // Number of Primary Tracks in AOD or ESD
     TString fPeriodName;
     
 private:
