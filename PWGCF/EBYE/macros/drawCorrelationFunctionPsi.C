@@ -79,10 +79,12 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
       listQAName += "_Bit"; listQAName += gBit; }
     if(gCentralityEstimator) {
       listQAName += "_"; listQAName += gCentralityEstimator;}
+    listQAName += listNameAdd;
+  
 
     listQA = (TList*)dir->Get(Form("%s",listQAName.Data()));
     if(!listQA) {
-      Printf("TList QA not found!!!");
+      Printf("TList %s not found!!!",listQAName.Data());
     }
   }
 

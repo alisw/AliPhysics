@@ -7,6 +7,7 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "MCAOD",   /
 					Bool_t bResonancesCut = kFALSE,
 					Bool_t bHBTCut = kFALSE,
 					Bool_t bConversionCut = kFALSE,
+					Double_t invMassForConversionCut = 0.04,
 					Bool_t bMomentumDifferenceCut = kFALSE,
 					Double_t fQCutMin = 0.0,
 					TString fArgEventClass = "EventPlane",
@@ -18,7 +19,7 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "MCAOD",   /
   gBalance->SetShuffle(bShuffle);
   if(bResonancesCut) gBalance->UseResonancesCut();
   if(bHBTCut) gBalance->UseHBTCut();
-  if(bConversionCut) gBalance->UseConversionCut();
+  if(bConversionCut) gBalance->UseConversionCut(invMassForConversionCut);
   if(bMomentumDifferenceCut) gBalance->UseMomentumDifferenceCut(fQCutMin);
   if(centralityName) gBalance->SetCentralityIdentifier(centralityName);
   if(bVertexBinning) gBalance->SetVertexZBinning();

@@ -205,7 +205,8 @@ class AliBalancePsi : public TObject {
 
   void UseResonancesCut() {fResonancesCut = kTRUE;}
   void UseHBTCut() {fHBTCut = kTRUE;}
-  void UseConversionCut() {fConversionCut = kTRUE;}
+  void UseConversionCut(Double_t setInvMassCutConversion = 0.04) {
+    fConversionCut = kTRUE; fInvMassCutConversion = setInvMassCutConversion; }
   void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
     fQCut = kTRUE; fDeltaPtMin = gDeltaPtCutMin;}
 
@@ -247,6 +248,7 @@ class AliBalancePsi : public TObject {
   Bool_t fResonancesCut;//resonances cut
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Bool_t fConversionCut;//conversion cut
+  Double_t fInvMassCutConversion;//invariant mass for conversion cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
   Double_t fDeltaPtMin;//delta pt cut: minimum value
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
@@ -255,7 +257,7 @@ class AliBalancePsi : public TObject {
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
-  ClassDef(AliBalancePsi, 1)
+  ClassDef(AliBalancePsi, 2)
 };
 
 #endif
