@@ -970,3 +970,8 @@ void AliAnalysisTaskLocalRho::Terminate(Option_t *)
     // terminate
 }
 //_____________________________________________________________________________
+void AliAnalysisTaskLocalRho::SetModulationFit(TF1* fit) {
+    // Set function to fit modulation
+    if (fFitModulation) delete fFitModulation;
+    fFitModulation = fit; 
+}
