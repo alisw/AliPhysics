@@ -82,10 +82,10 @@ AliAnalysisTaskLocalRho* AddTaskLocalRho(
   switch (runMode) {
       case AliAnalysisTaskLocalRho::kLocal : {
           gStyle->SetOptFit(1);
-          AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("good_fits_%s", name.Data()), 
+          AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("good_fits_%s", name), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
-          AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("bad_fits_%s", name.Data()),
+          AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("bad_fits_%s", name),
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							     Form("%s", AliAnalysisManager::GetCommonFileName()));
           mgr->ConnectOutput (jetTask, 2, coutput2);

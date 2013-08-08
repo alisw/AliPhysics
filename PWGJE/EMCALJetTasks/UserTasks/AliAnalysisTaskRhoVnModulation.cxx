@@ -1234,6 +1234,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
     if(fExplicitOutlierCut == 2010 || fExplicitOutlierCut == 2011) {
        if(!PassesCuts(fExplicitOutlierCut)) return kFALSE;
     }
+    if(fRho->GetVal() <= 0 ) return kFALSE;
     if(fFillQAHistograms) FillQAHistograms(event);
     return kTRUE;
 }
