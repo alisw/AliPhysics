@@ -66,8 +66,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
                                                                                  fUserSuppliedV3 = j; }
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
                                                                                  fUserSuppliedR3 = r3; }
-        void                    SetModulationFit(TF1* fit)                      {if (fFitModulation) delete fFitModulation;
-                                                                                 fFitModulation = fit; }
+        void                    SetModulationFit(TF1* fit);
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
