@@ -77,6 +77,7 @@ AliBalancePsi::AliBalancePsi() :
   fResonancesCut(kFALSE),
   fHBTCut(kFALSE),
   fConversionCut(kFALSE),
+  fInvMassCutConversion(0.04),
   fQCut(kFALSE),
   fDeltaPtMin(0.0),
   fVertexBinning(kFALSE),
@@ -114,6 +115,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fResonancesCut(balance.fResonancesCut),
   fHBTCut(balance.fHBTCut),
   fConversionCut(balance.fConversionCut),
+  fInvMassCutConversion(balance.fInvMassCutConversion),
   fQCut(balance.fQCut),
   fDeltaPtMin(balance.fDeltaPtMin),
   fVertexBinning(balance.fVertexBinning),
@@ -659,7 +661,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	  
 	  Float_t masssqu = 2 * m0 * m0 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( firstPt * secondPt[j] * ( TMath::Cos(phi1rad - phi2rad) + 1.0 / tantheta1 / tantheta2 ) ) );
 	  
-	  if (masssqu < 0.04*0.04){
+	  if (masssqu < fInvMassCutConversion*fInvMassCutConversion){
 	    //AliInfo(Form("Conversion: Removed track pair %d %d with [[%f %f] %f %f] %d %d <- %f %f  %f %f   %f %f ", i, j, deta, dphi, masssqu, charge1, charge2,eta1,eta2,phi1,phi2,pt1,pt2));
 	    continue;
 	  }
@@ -1803,7 +1805,11 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	
 	// NEW averaging:
 	// average over number of triggers in each sub-bin
-	Double_t NTrigSubBin = (Double_t)(fHistP->Project(0,1)->GetEntries());
+	Double_t NTrigSubBin = 0;
+	if(type=="PN" || type=="PP")
+	  NTrigSubBin = (Double_t)(fHistP->Project(0,1)->GetEntries());
+	else if(type=="NP" || type=="NN")
+	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->GetEntries());
 	fSame->Scale(NTrigSubBin);
 	
 	// for the first: clone
@@ -1826,10 +1832,19 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
     // NEW averaging:
     // average over number of triggers in each sub-bin
     // first set to full range and then obtain number of all triggers 
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
-    Double_t NTrigAll = (Double_t)(fHistP->Project(0,1)->GetEntries());
+    Double_t NTrigAll = 0;
+    if(type=="PN" || type=="PP"){
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistP->Project(0,1)->GetEntries());
+    }
+    else if(type=="NP" || type=="NN"){
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistN->Project(0,1)->GetEntries());
+    }
     gHist->Scale(1./NTrigAll);
     
   }
