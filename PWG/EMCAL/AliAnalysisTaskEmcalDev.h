@@ -144,7 +144,7 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   Int_t                       fSelectPtHardBin;            // select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
-  Int_t                       fNcentBins;                  //!how many centrality bins
+  Int_t                       fNcentBins;                  // how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
@@ -180,14 +180,14 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   TH1                        *fHistPtHard;                 //!pt hard distribution
 
   // General histograms
-  TH1                        *fHistCentrality;             //!Event centrality distribution
-  TH1                        *fHistZVertex;                //!Z vertex position
-  TH1                        *fHistEventPlane;             //!Event plane distribution
+  TH1                        *fHistCentrality;             //!event centrality distribution
+  TH1                        *fHistZVertex;                //!z vertex position
+  TH1                        *fHistEventPlane;             //!event plane distribution
 
  private:
   AliAnalysisTaskEmcalDev(const AliAnalysisTaskEmcalDev&);            // not implemented
   AliAnalysisTaskEmcalDev &operator=(const AliAnalysisTaskEmcalDev&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDev, 2) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcalDev, 3) // EMCAL base analysis task
 };
 #endif
