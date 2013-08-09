@@ -87,6 +87,7 @@ Bool_t AliEmcalJetFinder::FindJets()
 
   fJetArray.resize(fJetCount);
 
+  fastjets.clear();
   fFastjetWrapper->Clear();
   fInputVectorIndex = 0;
   return kTRUE;
