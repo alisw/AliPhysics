@@ -77,6 +77,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetNamePicoTrackClones(const char* name)        {fNamePicoTrackClones = name; }
         void                    SetNameRho(const char* name)                    {fNameRho = name; }
         void                    SetLocalRhoName(TString name)                   {fLocalRhoName = name; }
+        void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
@@ -185,6 +186,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
         // members
         TString                 fLocalRhoName;          // local rho name
+        Bool_t                  fUseScaledRho;          // use scaled rho
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
         fitModulationType       fFitModulationType;     // fit modulation type
