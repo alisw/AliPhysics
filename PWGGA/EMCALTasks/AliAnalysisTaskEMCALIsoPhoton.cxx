@@ -311,8 +311,19 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     return;
   }
   Int_t   runnumber = InputEvent()->GetRunNumber() ;
+  if(fDebug)
+    printf("run number = %d\n",runnumber);
+
   fESD = dynamic_cast<AliESDEvent*>(event);
-  fAOD = dynamic_cast<AliAODEvent*>(event);
+  if(!fESD){
+    fAOD = dynamic_cast<AliAODEvent*>(event);
+    if(!fAOD){
+      printf("ERROR: Invalid type of event!!!\n");
+      return;
+    }
+    else if(fDebug)
+      printf("AOD EVENT!\n");
+  }
   
   fEvtSel->Fill(0);
   if(fDebug)
