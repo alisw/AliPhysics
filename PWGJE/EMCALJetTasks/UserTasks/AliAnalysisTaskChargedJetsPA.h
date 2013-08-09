@@ -106,8 +106,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   const char* GetHistoName(const char* name)
   {
     if (fIsKinematics)    
-      return Form("H%d_%s_MC", fTaskInstanceCounter, name);
-    return Form("H%d_%s", fTaskInstanceCounter, name);
+      return Form("%s_MC", name);
+    return Form("%s", name);
   }
   template <class T> T* AddHistogram1D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis");
   template <class T> T* AddHistogram2D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");

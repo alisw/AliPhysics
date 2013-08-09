@@ -69,12 +69,12 @@ void AliAnalysisTaskChargedJetsPA::Init()
   tmpHisto = AddHistogram1D<TH1D>("hTrackAcceptance", "Accepted tracks (0 = before cuts, 1 = after eta, 2 = after pT)", "", 3, 0, 3, "stage","N^{Tracks}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto->GetXaxis()->SetBinLabel(2, "After eta");
-  tmpHisto->GetXaxis()->SetBinLabel(3, "After pT");
+  tmpHisto->GetXaxis()->SetBinLabel(3, "After p_{T}");
 
   tmpHisto = AddHistogram1D<TH1D>("hJetAcceptance", "Accepted jets (0 = before cuts, 1 = after eta, 2 = after pT, 3 = after area)", "", 4, 0, 4, "stage","N^{Jets}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto->GetXaxis()->SetBinLabel(2, "After eta");
-  tmpHisto->GetXaxis()->SetBinLabel(3, "After pT");
+  tmpHisto->GetXaxis()->SetBinLabel(3, "After p_{T}");
   tmpHisto->GetXaxis()->SetBinLabel(4, "After area");
 
   // NOTE: Jet histograms
@@ -180,6 +180,8 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram1D<TH1D>("hCentralityV0M", "Centrality distribution V0M", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
     AddHistogram1D<TH1D>("hCentralityV0A", "Centrality distribution V0A", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
     AddHistogram1D<TH1D>("hCentralityV0C", "Centrality distribution V0C", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
+    AddHistogram1D<TH1D>("hCentrality", Form("Centrality distribution %s", fCentralityType.Data()), "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
+
 
     AddHistogram2D<TH2D>("hTrackCountAcc", "Number of tracks in acceptance vs. centrality", "LEGO2", 750, 0., 750., fNumberOfCentralityBins, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
     AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 1000, 0., 250., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
@@ -192,13 +194,14 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hTrackPhiPtCut", "Track #phi distribution for different pT cuts", "LEGO2", 360, 0, TMath::TwoPi(), 20, 0, 20, "#phi", "p_{T} lower cut", "dN^{Tracks}/d#phi dp_{T}");
     AddHistogram2D<TH2D>("hTrackPhiLabel", "Track #phi distribution for different labels", "LEGO2", 360, 0, TMath::TwoPi(), 3, 0, 3, "#phi", "Label", "dN^{Tracks}/d#phi");
     AddHistogram2D<TH2D>("hTrackPhiTrackType", "Track #phi distribution for different track types", "LEGO2", 360, 0, TMath::TwoPi(), 3, 0, 3, "#phi", "Label", "dN^{Tracks}/d#phi");
-    AddHistogram1D<TH1D>("hTrackEta", "Track #eta distribution", "", 180, -fTrackEtaWindow, +fTrackEtaWindow, "#eta","dN^{Tracks}/d#eta");
+    AddHistogram2D<TH2D>("hTrackEta", "Track #eta distribution", "COLZ", 180, -fTrackEtaWindow, +fTrackEtaWindow, fNumberOfCentralityBins, 0., 100., "#eta", "Centrality", "dN^{Tracks}/d#eta");
     if (fAnalyzeJets)
     {
       // ######## Jet QA
       AddHistogram1D<TH1D>("hRawJetArea", "Jets area distribution w/o area cut", "", 200, 0., 2., "Area","dN^{Jets}/dA");
       AddHistogram1D<TH1D>("hJetArea", "Jets area distribution", "", 200, 0., 2., "Area","dN^{Jets}/dA");
       AddHistogram2D<TH2D>("hRawJetPhiEta", "Raw Jets angular distribution w/o #eta cut", "LEGO2", 360, 0., 2*TMath::Pi(),100, -1.0, 1.0, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
+      AddHistogram2D<TH2D>("hJetEta", "Jets #eta distribution", "COLZ", 180, -fTrackEtaWindow, +fTrackEtaWindow, fNumberOfCentralityBins, 0., 100., "#eta", "Centrality", "dN^{Jets}/d#eta");
       AddHistogram2D<TH2D>("hJetPhiEta", "Jets angular distribution", "LEGO2", 360, 0., 2*TMath::Pi(),100, -1.0, 1.0, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
       AddHistogram2D<TH2D>("hJetPtVsConstituentCount", "Jets number of constituents vs. jet p_{T}", "COLZ", 400, 0., 200., 100, 0., 100., "p_{T}","N^{Tracks}","dN^{Jets}/(dp_{T} dN^{tracks})");
     }
@@ -1328,6 +1331,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     FillHistogram("hCentralityV0M",centralityPercentileV0M);
     FillHistogram("hCentralityV0A",centralityPercentileV0A);
     FillHistogram("hCentralityV0C",centralityPercentileV0C);
+    FillHistogram("hCentrality",centralityPercentile);
 
     Int_t trackCountAcc = 0;
     Int_t nTracks = fTrackArray->GetEntries();
@@ -1347,7 +1351,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         else
           FillHistogram("hTrackPtNegEta", track->Pt(), centralityPercentile);
                 
-        FillHistogram("hTrackEta", track->Eta());
+        FillHistogram("hTrackEta", track->Eta(), centralityPercentile);
         FillHistogram("hTrackPhi", track->Phi());
         
         if(static_cast<AliPicoTrack*>(track))
@@ -1418,6 +1422,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
           FillHistogram("hJetArea", tmpJet->Area());
           FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
           FillHistogram("hJetPhiEta", tmpJet->Phi(),tmpJet->Eta());
+          FillHistogram("hJetEta", tmpJet->Eta(), centralityPercentile);
         }
         // Signal jet vs. signal jet - "Combinatorial"
         for (Int_t j = i+1; j<fNumberSignalJets; j++)
