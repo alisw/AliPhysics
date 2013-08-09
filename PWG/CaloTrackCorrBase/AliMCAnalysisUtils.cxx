@@ -405,9 +405,11 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels,
     //check for pi0 and eta (shouldn't happen unless their decays were turned off)
     else if(mPdg == 111)
     {
+      
       SetTagBit(tag,kMCPi0Decay);
       
-      if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - First mother is directly pi0, not decayed by generator \n");
+      if(fDebug > 2 )
+        printf("AliMCAnalysisUtils::CheckOriginInStack() - First mother is directly pi0, not decayed by generator \n");
       
       CheckOverlapped2GammaDecay(labels,nlabels, iMom, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
     }
@@ -415,7 +417,8 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels,
     {
       SetTagBit(tag,kMCEtaDecay);
       
-      if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - First mother is directly eta, not decayed by generator \n");
+      if(fDebug > 2 )
+        printf("AliMCAnalysisUtils::CheckOriginInStack() - First mother is directly eta, not decayed by generator \n");
       
       CheckOverlapped2GammaDecay(labels,nlabels, iMom, stack, tag); //set to kMCEta if 2 gammas in same cluster
     }
@@ -423,7 +426,24 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels,
     else if(mPdg == 22)
     {
       SetTagBit(tag,kMCPhoton);
-      if(mStatus == 1)
+      
+      if(pPdg == 111)
+      {
+        SetTagBit(tag,kMCPi0Decay);
+        
+        if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA pi0 decay photon,  parent pi0 with status 11 \n");
+        
+        CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
+      }
+      else if (pPdg == 221)
+      {
+        SetTagBit(tag, kMCEtaDecay);
+        
+        if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA eta decay photon,  parent pi0 with status 11 \n");
+        
+        CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag);//set to kMCEta if 2 gammas in same cluster
+      }
+      else if(mStatus == 1)
       { //undecayed particle
         if(fMCGenerator == "PYTHIA")
         {
@@ -436,51 +456,9 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels,
           {
             SetTagBit(tag, kMCISR); //Initial state radiation
           }
-          else if(pStatus == 11)
-          {//Decay
-            if(pPdg == 111)
-            {
-              SetTagBit(tag,kMCPi0Decay);
-              
-              if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA pi0 decay photon,  parent pi0 with status 11 \n");
-              
-              CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
-            }
-            else if (pPdg == 221)
-            {
-              SetTagBit(tag, kMCEtaDecay);
-              
-              if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA eta decay photon,  parent pi0 with status 11 \n");
-              
-              CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag);//set to kMCEta if 2 gammas in same cluster
-            }
-            else SetTagBit(tag,kMCOtherDecay);
-          }//Decay
-          else
-          {
-            if(fDebug > 1 && parent) printf("AliMCAnalysisUtils::CheckOrigingInStack() - what is it in PYTHIA? Wrong generator setting? Mother mPdg %d, status %d \n    Parent  iParent %d, pPdg %d %s, status %d\n",
-                                            mPdg, mStatus,iParent, pPdg, parent->GetName(),pStatus);
-            
-            if(pPdg == 111)
-            {
-              SetTagBit(tag,kMCPi0Decay);
-              
-              if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA pi0 decay photon,  parent pi0 with status 11 \n");
-             
-              CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
-            }
-            else if (pPdg == 221)
-            {
-              SetTagBit(tag, kMCEtaDecay);
-              
-              if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA eta decay photon,  parent pi0 with status 11 \n");
-              
-              CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag);//set to kMCEta if 2 gammas in same cluster
-            }
-            else SetTagBit(tag,kMCOtherDecay);
-          }
-        }//PYTHIA
-        
+          else  SetTagBit(tag,kMCUnknown);
+         }//PYTHIA
+      
         else if(fMCGenerator == "HERWIG")
         {
           if(pStatus < 197)
@@ -504,52 +482,11 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels,
             }
             else SetTagBit(tag,kMCISR);//Initial state radiation
           }//Not decay
-          else{//Decay
-            if(pPdg == 111)
-            {
-              SetTagBit(tag,kMCPi0Decay);
-              
-              if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - HERWIG pi0 decay photon \n");
-             
-              CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
-            }
-            else if (pPdg == 221)
-            {
-              SetTagBit(tag,kMCEtaDecay);
-              
-              if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - HERWIG eta decay photon \n");
-             
-              CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCEta if 2 gammas in same cluster
-            }
-            else SetTagBit(tag,kMCOtherDecay);
-          }//Decay
+          else  SetTagBit(tag,kMCUnknown);
         }//HERWIG
-        
-        else SetTagBit(tag,kMCUnknown);
-        
-      }//Status 1 : created by event generator
-      
-      else if(mStatus == 0)
-      { // geant
-        if(pPdg == 111)
-        {
-          SetTagBit(tag,kMCPi0Decay);
-          
-          if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Transport MC pi0 decay photon \n");
-          
-          CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
-        }
-        else if (pPdg == 221)
-        {
-          SetTagBit(tag,kMCEtaDecay);
-          
-          if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Transport MC eta decay photon \n");
-          
-          CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCEta if 2 gammas in same cluster
-        }
-        else  SetTagBit(tag,kMCOtherDecay);	
-      }//status 0 : geant generated
-      
+      }
+      else  SetTagBit(tag,kMCOtherDecay);
+                  
     }//Mother Photon
     
     //Electron check.  Where did that electron come from?
@@ -779,7 +716,24 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels,
     else if(mPdg == 22)
     {
       SetTagBit(tag,kMCPhoton);
-      if(mom->IsPhysicalPrimary() && (fMCGenerator=="PYTHIA" || fMCGenerator=="HERWIG")) //undecayed particle
+      
+      if(pPdg == 111)
+      {
+        SetTagBit(tag,kMCPi0Decay);
+        
+        if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Generator pi0 decay photon \n");
+        
+        CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
+      }
+      else if (pPdg == 221)
+      {
+        SetTagBit(tag, kMCEtaDecay);
+        
+        if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Generator eta decay photon \n");
+        
+        CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCEta if 2 gammas in same cluster
+      }
+      else if(mom->IsPhysicalPrimary() && (fMCGenerator=="PYTHIA" || fMCGenerator=="HERWIG")) //undecayed particle
       {
         if(iParent < 8 && iParent > 5 )
         {//outgoing partons
@@ -790,61 +744,10 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels,
         {
           SetTagBit(tag, kMCISR); //Initial state radiation
         }
-        else if(parent && parent->IsPrimary() && !parent->IsPhysicalPrimary())
-        {//Decay
-          if(pPdg == 111)
-          {
-            SetTagBit(tag,kMCPi0Decay);
-            
-            if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Generator pi0 decay photon \n");
-            
-            CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
-          }
-          else if (pPdg == 221)
-          {
-            SetTagBit(tag, kMCEtaDecay);
-            
-            if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Generator eta decay photon \n");
-            
-            CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCEta if 2 gammas in same cluster
-          }
-          else SetTagBit(tag,kMCOtherDecay);
-        }//Decay
-        else
-        {
-          if(parent)
-            printf("AliMCAnalysisUtils::CheckOriginInAOD() - what is it? Mother mPdg %d, is primary? %d, is physical %d \n    Parent  iParent %d, pPdg %d, is primary? %d, is physical? %d\n",
-                   mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary(),iParent, pPdg,parent->IsPrimary(), parent->IsPhysicalPrimary());
-         
-          SetTagBit(tag,kMCOtherDecay);//Check
-        }
+        else SetTagBit(tag,kMCUnknown);
       }//Physical primary
-      else if(!mom->IsPrimary())
-      {	//Decays
-        if(pPdg == 111)
-        {
-          SetTagBit(tag,kMCPi0Decay); 
-          
-          if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Transport MC pi0 decay photon \n");
-          
-          CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
-        }
-        else if (pPdg == 221)
-        {
-          SetTagBit(tag,kMCEtaDecay);
-          
-          if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Transport MC eta decay photon \n");
-          
-          CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCEta if 2 gammas in same cluster
-        }
-        else  SetTagBit(tag,kMCOtherDecay);
-      }//not primary : geant generated, decays
-      else
-      {
-        //printf("UNKNOWN 1, mom  pdg %d, primary %d, physical primary %d; parent %d, pdg %d, primary %d, physical primary %d \n",
-        //mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary(), iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary());
-        SetTagBit(tag,kMCUnknown);
-      }
+      else SetTagBit(tag,kMCOtherDecay);
+
     }//Mother Photon
     
     //Electron check.  Where did that electron come from?
@@ -1261,7 +1164,8 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 		
 		//Get the jet, different way for different generator
 		//PYTHIA
-    if(fMCGenerator == "PYTHIA"){
+    if(fMCGenerator == "PYTHIA")
+    {
       TParticle * jet =  0x0;
       AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) geh;
       nTriggerJets =  pygeh->NTriggerJets();
