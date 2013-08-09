@@ -84,7 +84,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                                const Float_t mass,   const Float_t l0,
                                const Bool_t matched, const Int_t mcindex);
   
-  void         FillIdPi0Histograms(const Float_t en,     const Float_t e1,     const Float_t e2,
+  void         FillIdPi0Histograms(const Float_t en,     const Float_t e1,  const Float_t e2,
                                    const Int_t nc,       const Int_t nMax,  const Float_t t12diff,
                                    const Float_t mass,   const Float_t l0,
                                    const Float_t eta,    const Float_t phi,
@@ -271,6 +271,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhNLocMax      [8][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types
   TH2F       * fhNLocMaxM02Cut[8][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
 
+  TH2F       * fhSplitClusterENLocMax[8][2] ;           //! Number of maxima in cluster vs E of splitted clusters, 1-6 for different MC particle types
+  TH2F       * fhSplitClusterEPi0NLocMax[8][2] ;        //! Number of maxima in cluster vs E of splitted clusters when cluster id as pi0, 1-6 for different MC particle types
+  
   TH2F       * fhM02NLocMax1  [8][2] ;                  //! M02 vs E for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhM02NLocMax2  [8][2] ;                  //! M02 vs E for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhM02NLocMaxN  [8][2] ;                  //! M02 vs E for N max in cluster > 2, 1-6 for different MC particle types
@@ -513,6 +516,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCEEpriOverlap0Match[3][8];            //! E reco vs primary for different MC origin, no other MC particles contributes, charged cluster
   TH2F       * fhMCEEpriOverlap1Match[3][8];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, charged cluster
   TH2F       * fhMCEEpriOverlapNMatch[3][8];            //! E reco vs primary for different MC origin, N  other MC particles contributes, charged cluster
+  
+  TH2F       * fhMCEEpriOverlap0IdPi0[3][8];            //! E reco vs primary for different MC origin, no other MC particles contributes, neutral cluster, neutral clusters id as pi0
+  TH2F       * fhMCEEpriOverlap1IdPi0[3][8];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster, neutral clusters id as pi0
+  TH2F       * fhMCEEpriOverlapNIdPi0[3][8];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster, neutral clusters is as pi0
   
   TH2F       * fhMCPi0MassM02Overlap0[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, no other MC particles contributes, neutral cluster, 4 E bins
   TH2F       * fhMCPi0MassM02Overlap1[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, 1  other MC particles contributes, neutral cluster, 4 E bins
