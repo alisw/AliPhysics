@@ -59,6 +59,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
         void                    SetAttachToEvent(Bool_t a)                      {fAttachToEvent = a;}
         void                    SetLocalRhoName(TString n)                      {fLocalRhoName = n;}
+        void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
         // setters - analysis details
         void                    SetNoEventWeightsForQC(Bool_t e)                {fNoEventWeightsForQC = e;}
@@ -116,6 +117,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         Bool_t                  fFillHistograms;        // fill qa histograms
         Bool_t                  fNoEventWeightsForQC;   // don't store event weights for qc analysis
         TString                 fLocalRhoName;          // name for local rho
+        Bool_t                  fUseScaledRho;          // use scaled rho
         TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10) used for QA
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
@@ -165,7 +167,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskLocalRho(const AliAnalysisTaskLocalRho&);                  // not implemented
         AliAnalysisTaskLocalRho& operator=(const AliAnalysisTaskLocalRho&);       // not implemented
 
-        ClassDef(AliAnalysisTaskLocalRho, 1);
+        ClassDef(AliAnalysisTaskLocalRho, 2);
 };
 
 #endif
