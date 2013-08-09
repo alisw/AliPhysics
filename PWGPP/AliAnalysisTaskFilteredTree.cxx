@@ -1347,7 +1347,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Int_t ntracks = esdEvent->GetNumberOfTracks();
       
       // fill histograms
-      FillHistograms(ptrack, ptpcInnerC, mult, (Double_t)chi2(0,0));
+      FillHistograms(ptrack, ptpcInnerC, centralityF, (Double_t)chi2(0,0));
 
       if(fTreeSRedirector && dumpToTree && fFillTree) 
       {
@@ -2514,18 +2514,19 @@ void AliAnalysisTaskFilteredTree::FillHistograms(AliESDtrack* const ptrack, AliE
 
 // TPC+ITS primary tracks 
 if( abs(ptrack->Eta())<0.8 && 
-    ptrack->GetTPCClusterInfo(3,1)>130 && 
+    ptrack->GetTPCClusterInfo(3,1)>120 && 
     ptrack->IsOn(0x40) && 
     ptrack->GetTPCclusters(0)>0.0 &&  
-    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.2 && 
-    abs(innerParam->GetX())>0.0 && 
-    abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
-    abs(innerParam->GetTgl())<0.85 && 
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.4 && 
+    //abs(innerParam->GetX())>0.0 && 
+    //abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    //abs(innerParam->GetTgl())<0.85 && 
     ptrack->IsOn(0x0004) && 
     ptrack->GetNcls(0)>0 &&
     ptrack->GetITSchi2()>0 && 
     sqrt(ptrack->GetITSchi2()/ptrack->GetNcls(0))<6 &&
     sqrt(chi2TPCInnerC)<6 &&
+    (ptrack->HasPointOnITSLayer(0) || ptrack->HasPointOnITSLayer(1)) &&
     abs(dz)<2.0 && 
     abs(dxy)<(0.018+0.035*abs(ptrack->GetSigned1Pt())) )
     {
@@ -2545,13 +2546,13 @@ if( abs(ptrack->Eta())<0.8 &&
    ptrack->GetImpactParametersTPC(dxyTPC,dzTPC);
 
 if( abs(ptrack->Eta())<0.8 && 
-    ptrack->GetTPCClusterInfo(3,1)>130 && 
+    ptrack->GetTPCClusterInfo(3,1)>120 && 
     ptrack->IsOn(0x40)&& 
     ptrack->GetTPCclusters(0)>0.0 &&  
-    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.2 && 
-    abs(innerParam->GetX())>0.0 && 
-    abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
-    abs(innerParam->GetTgl())<0.85 && 
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.4 && 
+    //abs(innerParam->GetX())>0.0 && 
+    //abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    //abs(innerParam->GetTgl())<0.85 && 
     abs(dzTPC)<3.2 && 
     abs(dxyTPC)<2.4 )
     {
