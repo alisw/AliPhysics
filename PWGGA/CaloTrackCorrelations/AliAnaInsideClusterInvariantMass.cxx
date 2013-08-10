@@ -386,6 +386,11 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhM02WeightPi0  [nlm][i] = 0;
       fhM02ECellCutPi0[nlm][i] = 0;
     }
+    
+    fhMassBadDistClose[nlm] = 0;
+    fhM02BadDistClose [nlm] = 0;
+    fhMassOnBorder    [nlm] = 0;
+    fhM02OnBorder     [nlm] = 0;
   }
   
   InitParameters();
@@ -2172,7 +2177,8 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   
   TString ptype[] ={"","#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron","#pi^{0} (#gamma->e^{#pm})"}; 
   TString pname[] ={"","Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron","Pi0Conv"};
-  
+  TString snlm [] = {"1","2","N"};
+
   Int_t n = 1;
   
   if(IsDataMC()) n = 8;
@@ -2184,11 +2190,93 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   Int_t nMatched = 2;
   if(!fFillTMHisto) nMatched = 1;
   
+  if(fCheckSplitDistToBad)
+  {
+    for(Int_t inlm = 0; inlm < 3; inlm++)
+    {
+      fhMassBadDistClose[inlm]  = new TH2F(Form("hMassBadDistCloseNLocMax%s",snlm[inlm].Data()),
+                                           Form("Invariant mass of splitted cluster with NLM=%d vs E, 2nd LM close to bad channel",inlm),
+                                           nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassBadDistClose[inlm]->SetYTitle("M (GeV/c^{2})");
+      fhMassBadDistClose[inlm]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassBadDistClose[inlm]) ;
+      
+      fhM02BadDistClose[inlm]  = new TH2F(Form("hM02BadDistCloseNLocMax%s",snlm[inlm].Data()),
+                                          Form("#lambda_{0}^{2} for cluster with NLM=%d vs E, 2nd LM close to bad channel",inlm),
+                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhM02BadDistClose[inlm]->SetYTitle("#lambda_{0}^{2}");
+      fhM02BadDistClose[inlm]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhM02BadDistClose[inlm]) ;
+      
+      fhMassOnBorder[inlm]  = new TH2F(Form("hMassOnBorderNLocMax%s",snlm[inlm].Data()),
+                                       Form("Invariant mass of splitted cluster with NLM=%d vs E, 2nd LM close to border",inlm),
+                                       nptbins,ptmin,ptmax,mbins,mmin,mmax);
+      fhMassOnBorder[inlm]->SetYTitle("M (GeV/c^{2})");
+      fhMassOnBorder[inlm]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMassOnBorder[inlm]) ;
+      
+      fhM02OnBorder[inlm]  = new TH2F(Form("hM02OnBorderNLocMax%s",snlm[inlm].Data()),
+                                      Form("#lambda_{0}^{2} for cluster with NLM=%d vs E, 2nd LM close to border",inlm),
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhM02OnBorder[inlm]->SetYTitle("#lambda_{0}^{2}");
+      fhM02OnBorder[inlm]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhM02OnBorder[inlm]) ;
+      
+    }
+  }
+  
   for(Int_t i = 0; i < n; i++)
   {
     for(Int_t j = 0; j < nMatched; j++)
     {
       
+      fhNLocMax[i][j]     = new TH2F(Form("hNLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
+                                     Form("Number of local maxima in cluster %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+      fhNLocMax[i][j]   ->SetYTitle("N maxima");
+      fhNLocMax[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhNLocMax[i][j]) ;
+      
+      fhSplitClusterENLocMax[i][j]     = new TH2F(Form("hSplitEClusterNLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                  Form("Number of local maxima vs E of split clusters %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                  nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+      fhSplitClusterENLocMax[i][j]   ->SetYTitle("N maxima");
+      fhSplitClusterENLocMax[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhSplitClusterENLocMax[i][j]) ;
+      
+      
+      fhSplitClusterEPi0NLocMax[i][j]     = new TH2F(Form("hSplitEClusterPi0NLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                     Form("Number of local maxima vs E of split clusters, id as pi0, %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
+      fhSplitClusterEPi0NLocMax[i][j]   ->SetYTitle("N maxima");
+      fhSplitClusterEPi0NLocMax[i][j]   ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhSplitClusterEPi0NLocMax[i][j]) ;
+
+      if(fFillNCellHisto)
+      {
+        fhNCellNLocMax1[i][j]  = new TH2F(Form("hNCellNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                          Form("n cells vs E for N max  = 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                          nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+        fhNCellNLocMax1[i][j] ->SetYTitle("N cells");
+        fhNCellNLocMax1[i][j] ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhNCellNLocMax1[i][j]) ;
+        
+        fhNCellNLocMax2[i][j]     = new TH2F(Form("hNCellNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                             Form("n cells vs E for N max  = 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                             nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+        fhNCellNLocMax2[i][j]   ->SetYTitle("N cells");
+        fhNCellNLocMax2[i][j]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhNCellNLocMax2[i][j]) ;
+        
+        
+        fhNCellNLocMaxN[i][j]     = new TH2F(Form("hNCellNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                             Form("n cells vs E for N max  > 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
+                                             nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+        fhNCellNLocMaxN[i][j]   ->SetYTitle("N cells");
+        fhNCellNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhNCellNLocMaxN[i][j]) ;
+      }
+
       fhMassNLocMax1[i][j]  = new TH2F(Form("hMassNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                        Form("Invariant mass of splitted cluster with NLM=1 vs E, %s %s",ptype[i].Data(),sMatched[j].Data()),
                                        nptbins,ptmin,ptmax,mbins,mmin,mmax); 
@@ -2464,28 +2552,6 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         outputContainer->Add(fhMassDispAsyNLocMaxN[i][j]) ;   
       }
       
-      fhNLocMax[i][j]     = new TH2F(Form("hNLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
-                                     Form("Number of local maxima in cluster %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins); 
-      fhNLocMax[i][j]   ->SetYTitle("N maxima");
-      fhNLocMax[i][j]   ->SetXTitle("E (GeV)");
-      outputContainer->Add(fhNLocMax[i][j]) ; 
-
-      fhSplitClusterENLocMax[i][j]     = new TH2F(Form("hSplitEClusterNLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
-                                     Form("Number of local maxima vs E of split clusters %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                     nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
-      fhSplitClusterENLocMax[i][j]   ->SetYTitle("N maxima");
-      fhSplitClusterENLocMax[i][j]   ->SetXTitle("E (GeV)");
-      outputContainer->Add(fhSplitClusterENLocMax[i][j]) ;
-
-      
-      fhSplitClusterEPi0NLocMax[i][j]     = new TH2F(Form("hSplitEClusterPi0NLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
-                                                  Form("Number of local maxima vs E of split clusters, id as pi0, %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                                  nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
-      fhSplitClusterEPi0NLocMax[i][j]   ->SetYTitle("N maxima");
-      fhSplitClusterEPi0NLocMax[i][j]   ->SetXTitle("E (GeV)");
-      outputContainer->Add(fhSplitClusterEPi0NLocMax[i][j]) ;
-
       
       if(m02On)
       {
@@ -2628,34 +2694,8 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhMCGenEvsSplitENLocMaxN[i][j]   ->SetYTitle("E_{1 split}+E_{2 split} (GeV)");
         fhMCGenEvsSplitENLocMaxN[i][j]   ->SetXTitle("E_{gen} (GeV)");
         outputContainer->Add(fhMCGenEvsSplitENLocMaxN[i][j]) ; 
-        
       }
-      
-      if(fFillNCellHisto)
-      {
-        fhNCellNLocMax1[i][j]  = new TH2F(Form("hNCellNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
-                                          Form("n cells vs E for N max  = 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                          nptbins,ptmin,ptmax,ncbins,ncmin,ncmax); 
-        fhNCellNLocMax1[i][j] ->SetYTitle("N cells");
-        fhNCellNLocMax1[i][j] ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhNCellNLocMax1[i][j]) ; 
-        
-        fhNCellNLocMax2[i][j]     = new TH2F(Form("hNCellNLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
-                                             Form("n cells vs E for N max  = 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                             nptbins,ptmin,ptmax,ncbins,ncmin,ncmax); 
-        fhNCellNLocMax2[i][j]   ->SetYTitle("N cells");
-        fhNCellNLocMax2[i][j]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhNCellNLocMax2[i][j]) ; 
-        
-        
-        fhNCellNLocMaxN[i][j]     = new TH2F(Form("hNCellNLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
-                                             Form("n cells vs E for N max  > 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
-                                             nptbins,ptmin,ptmax,ncbins,ncmin,ncmax); 
-        fhNCellNLocMaxN[i][j]   ->SetYTitle("N cells");
-        fhNCellNLocMaxN[i][j]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhNCellNLocMaxN[i][j]) ;
-      }
-      
+          
       // Histograms after cluster identification
       
       
@@ -3594,8 +3634,6 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     outputContainer->Add(fhEtaEtaPhiNLocMaxN) ;
   }
   
-  TString snlm[] = {"1","2","N"};
-  
   if(fFillSSWeightHisto)
   {
     for(Int_t nlm = 0; nlm < 3; nlm++)
@@ -4336,6 +4374,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     
   }// MC analysis, check overlaps
   
+  
   return outputContainer ;
   
 }
@@ -4558,16 +4597,6 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       continue;
     }
     
-    // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
-    if( (fCheckSplitDistToBad) &&
-        (!fidcut2 || !fidcut1 || distbad1 < fMinBadDist || distbad2 < fMinBadDist))
-    {
-      if(GetDebug() > 1)
-        printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()  - Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
-                                 distbad1,distbad2, fidcut1,fidcut2);
-      continue ;
-    }
-
     // Set some index for array histograms
     
     Int_t inlm = -1;
@@ -4575,6 +4604,29 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     else if(nMax == 2) inlm = 1;
     else if(nMax >  2) inlm = 2;
     else printf("Wrong N local maximum -> %d, n cells in cluster %d \n",nMax,nc);
+
+    // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
+    if( (fCheckSplitDistToBad) &&
+        (!fidcut2 || !fidcut1 || distbad1 < fMinBadDist || distbad2 < fMinBadDist))
+    {
+      if(GetDebug() > 1)
+        printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()  - Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
+                                 distbad1,distbad2, fidcut1,fidcut2);
+      
+      if(distbad1 < fMinBadDist || distbad2 < fMinBadDist)
+      {
+        fhMassBadDistClose[inlm]->Fill(en,mass);
+        fhM02BadDistClose [inlm]->Fill(en,l0  );
+      }
+      
+      if(!fidcut1 || !fidcut2)
+      {
+        fhMassOnBorder[inlm]->Fill(en,mass);
+        fhM02OnBorder [inlm]->Fill(en,l0  );
+      }
+      
+      continue ;
+    }
 
     // Get sub-cluster parameters
     

@@ -568,10 +568,16 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCEOverlapType;                        //! what particles overlap with pi0, neutral clusters
   TH2F       * fhMCEOverlapTypeMatch;                   //! what particles overlap with pi0, charged clusters
   
+  TH2F       * fhMassBadDistClose[3];                   //! split mass of clusters with second LM close to bad channel
+  TH2F       * fhM02BadDistClose[3];                    //! m02 of clusters with second LM close to bad channel
+  TH2F       * fhMassOnBorder[3];                       //! split mass of clusters with second LM on EMCAL border
+  TH2F       * fhM02OnBorder[3];                        //! m02 of clusters with second LM close to EMCAL border
+
+  
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,23)
+  ClassDef(AliAnaInsideClusterInvariantMass,24)
   
 } ;
 
