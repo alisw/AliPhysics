@@ -403,9 +403,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0s()
       TLorentzVector pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
       
       const Double_t w2 = ph2->GetWeight();
-      Double_t w = w1*w2;
-      if( FindCommonParent(ph1->GetPrimary(), ph1->GetPrimary()) )
-	w = w1*w2;
+      Double_t w = TMath::Sqrt(w1*w2);
       
       FillHistogram("hPHOSphi",fCentralityV0M,p12.Pt(),p12.Phi(), w) ;
       Double_t dphiA=p12.Phi()-fRPV0A ;
@@ -669,7 +667,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0sMix()
 	TLorentzVector pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
 	
 	const Double_t w2 = ph2->GetWeight();
-	Double_t w = w1*w2;
+	Double_t w = TMath::Sqrt(w1*w2);
 
 	Double_t dphiA=p12.Phi()-fRPV0A ;
 	while(dphiA<0)dphiA+=TMath::Pi() ;
