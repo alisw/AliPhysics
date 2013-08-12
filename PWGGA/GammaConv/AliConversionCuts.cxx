@@ -568,7 +568,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
 
       hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",1000,0,100);
       fHistograms->Add(hCentrality);
-      hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,3000,0,3000);
+      hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
       fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
       hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
       fHistograms->Add(hVertexZ);
@@ -3029,40 +3029,40 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
    Int_t PrimaryTracks10[10][2] = 
       {
          {9999,9999}, //  0
-         {1210,1210}, // 10
-         { 817, 817}, // 20
-         { 536, 536}, // 30
-         { 337, 337}, // 40
-         { 197, 197}, // 50
-         { 106, 106}, // 60
-         {  51,  51}, // 70
-         {  21,  21}, // 80
+         {1210,2150}, // 10
+         { 817,1435}, // 20
+         { 536, 930}, // 30
+         { 337, 570}, // 40
+         { 197, 327}, // 50
+         { 106, 173}, // 60
+         {  51,  81}, // 70
+         {  21,  34}, // 80
          {   0,   0}  // 90
       };
    Int_t PrimaryTracks5a[10][2] = 
       {
          {9999,9999}, // 0
-         {1485,2560}, // 5
-         {1210,2070}, // 10
-         { 995,1730}, // 15
-         { 817,1415}, // 20
-         { 666,1145}, // 25
-         { 536, 925}, // 30
-         { 428, 735}, // 35
-         { 337, 557}, // 40
-         { 260, 445}  // 45
+         {1485,2640}, // 5
+         {1210,2150}, // 10
+         { 995,1760}, // 15
+         { 817,1435}, // 20
+         { 666,1160}, // 25
+         { 536, 930}, // 30
+         { 428, 731}, // 35
+         { 337, 570}, // 40
+         { 260, 436}  // 45
       };
    Int_t PrimaryTracks5b[10][2] = 
       {
-         { 260, 445}, // 45
-         { 197, 333}, // 50 // Below still ESDS for AODs
-         { 147, 147}, // 55
-         { 106, 106}, // 60
-         {  75,  75}, // 65
-         {  51,  51}, // 70
-         {  34,  34}, // 75
-         {  21,  21}, // 80
-         {  13,  13}, // 85
+         { 260, 436}, // 45
+         { 197, 327}, // 50
+         { 147, 239}, // 55
+         { 106, 173}, // 60
+         {  75, 120}, // 65
+         {  51,  81}, // 70
+         {  34,  53}, // 75
+         {  21,  34}, // 80
+         {  13,  19}, // 85
          {   0,   0}  // 90
       };
 
