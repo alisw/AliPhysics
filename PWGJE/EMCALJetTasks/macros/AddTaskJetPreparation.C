@@ -17,7 +17,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const Bool_t   doHistos           = kFALSE,
   const Bool_t   makePicoTracks     = kTRUE,
   const Bool_t   makeTrigger        = kTRUE,
-  const Bool_t   isEmcalTrain       = kFALSE
+  const Bool_t   isEmcalTrain       = kFALSE,
+  const Double_t trackeff           = 1.0
 )
 {
   // Add task macros for all jet related helper tasks.
@@ -62,6 +63,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
     AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker("PicoTracks", inputTracks.Data(), period.Data());
     pTrackTask->SelectCollisionCandidates(pSel);
+    pTrackTask->SetTrackEfficiency(trackeff);
   }
 
   // Produce particles used for hadronic correction
