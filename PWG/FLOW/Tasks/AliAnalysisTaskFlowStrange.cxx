@@ -677,13 +677,14 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
     fRunNumber = thisRun;
     MyNotifyRun();
   }
-  if( !CalibrateEvent() ) {
-    ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(5);
-    ResetContainers(); Publish(); return;
-  }
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(2);
   //=>does the event clear?
   if(!acceptEvent) {ResetContainers(); Publish(); return;}
+  // healthy event incomming
+  if( !CalibrateEvent() ) { // saves/retrieves/qas VZEROCAL
+    ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(5);
+    ResetContainers(); Publish(); return; // issue retrieving callibration
+  }
   if(!fSkipFlow) {
     MakeQVectors();
     if(fPsi2<-0.1) {
@@ -2005,7 +2006,7 @@ void AliAnalysisTaskFlowStrange::AddVZEROResponse() {
   AliVEvent *event = InputEvent();
   if(!event) return;
   Int_t thisrun = event->GetRunNumber();
-  fVZEResponse = new TH2D( Form("%d",thisrun), Form("%d;cell;CC",thisrun), 64,0,64, 50, 0, 100);
+  fVZEResponse = new TH2D( Form("%d",thisrun), Form("%d;cell;CC",thisrun), 64,0,64, 100, 0, 100);
   fList->Add(fVZEResponse);
 }
 //=======================================================================
