@@ -114,6 +114,27 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
   return *data;
 }
 
+void AliTransportMonitor::AliTransportMonitorVol::Merge(AliTransportMonitorVol* volM) 
+{
+  // Merging
+  fTotalTime = (fTotalTime + volM->GetTotalTime());
+  if (fTimeRZ && volM->GetHistogram()) {
+    fTimeRZ->Add(volM->GetHistogram()); 
+  } else if (volM->GetHistogram()) {
+    fTimeRZ = (TH2F*)(volM->GetHistogram()->Clone());
+  }
+
+  Int_t ntypes = volM->GetNtypes();
+  Int_t ntypes2 = GetNtypes();
+  for (Int_t i = 0; i < ntypes; i++) {
+    Int_t pdg = volM->GetPDG(i);
+    //PMonData &data  = GetPMonData(pdg);
+    //PMonData &dataM = volM->GetPMonData(pdg);
+    //data.fEdt  += dataM.fEdt;
+    //data.fTime += dataM.fTime;
+  }
+}
+
 ClassImp(AliTransportMonitor)
 
 //______________________________________________________________________________
@@ -283,7 +304,21 @@ void AliTransportMonitor::Export(const char *fname)
   file->Write();
   file->Close();
 }  
-
+//______________________________________________________________________________
+void AliTransportMonitor::Merge(AliTransportMonitor* mergeMon)
+{
+  // merge with monitor 
+  Int_t n = fVolumeMon->GetEntriesFast();
+  TObjArray* mergeVols = mergeMon->GetVolumes();
+  fTotalTime = 0;
+  for (Int_t i = 0; i < n; i++)
+    {
+      AliTransportMonitorVol *volMon1 = (AliTransportMonitorVol*)fVolumeMon->At(i);      
+      AliTransportMonitorVol *volMon2 = (AliTransportMonitorVol*)mergeVols->At(i);      
+      volMon1->Merge(volMon2);
+      fTotalTime += (volMon1->GetTotalTime());
+    }
+}
 //______________________________________________________________________________
 AliTransportMonitor *AliTransportMonitor::Import(const char *fname)
 {
