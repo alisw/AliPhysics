@@ -37,7 +37,6 @@ public:
       Double_t      fEdt;        // Energy * dt integral
       Double_t      fTime;       // Total transport time for the particle in this volume
       AliPMonData() : fPDG(0), fEdt(0), fTime(0) {}
-      void          Merge(AliPMonData* pdata) {fTime = 0.5*(fTime+pdata->fTime); fEdt = 0.5 * (fEdt+pdata->fEdt);}
       virtual ~AliPMonData() {}
       ClassDef(AliPMonData, 1)     // Basic monitoring info structure
     };   

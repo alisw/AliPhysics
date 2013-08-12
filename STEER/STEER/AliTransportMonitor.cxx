@@ -116,7 +116,9 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
 
 void AliTransportMonitor::AliTransportMonitorVol::Merge(AliTransportMonitorVol* volM) 
 {
+  //
   // Merging
+  //
   fTotalTime = (fTotalTime + volM->GetTotalTime());
   if (fTimeRZ && volM->GetHistogram()) {
     fTimeRZ->Add(volM->GetHistogram()); 
@@ -125,13 +127,11 @@ void AliTransportMonitor::AliTransportMonitorVol::Merge(AliTransportMonitorVol* 
   }
 
   Int_t ntypes = volM->GetNtypes();
-  Int_t ntypes2 = GetNtypes();
   for (Int_t i = 0; i < ntypes; i++) {
     Int_t pdg = volM->GetPDG(i);
-    //PMonData &data  = GetPMonData(pdg);
-    //PMonData &dataM = volM->GetPMonData(pdg);
-    //data.fEdt  += dataM.fEdt;
-    //data.fTime += dataM.fTime;
+     PMonData &data  = GetPMonData(pdg);
+     data.fEdt  += (volM->GetEmed(i) * volM->GetTotalTime());
+     data.fTime += (volM->GetTime(i));
   }
 }
 
@@ -203,7 +203,8 @@ void AliTransportMonitor::Print(Option_t *volName) const
       timeperpart[i] = volMon->GetTime(i); 
       timepervol += timeperpart[i];
     }
-    printf("Volume %s: Transport time: %g%% of %g [s]\n", volMon->GetName(), 100.*timepervol/fTotalTime, fTotalTime);
+    printf("Volume %s: Transport time: %g%% of %g %g [s]\n", volMon->GetName(), 100.*timepervol/fTotalTime, fTotalTime,
+	   volMon->GetTotalTime());
     TMath::Sort(ntypes, timeperpart, isort, kTRUE);
     TString particle;
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();    
@@ -307,7 +308,22 @@ void AliTransportMonitor::Export(const char *fname)
 //______________________________________________________________________________
 void AliTransportMonitor::Merge(AliTransportMonitor* mergeMon)
 {
+
   // merge with monitor 
+  if (!fVolumeMon) 
+    {
+      TObjArray* arr = mergeMon->GetVolumes();
+      Int_t nvol = arr->GetEntriesFast();
+      fVolumeMon = new TObjArray(nvol);
+      fVolumeMon->SetOwner();
+      for (Int_t i = 0; i < nvol; i++) {
+	AliTransportMonitorVol *volMon = new AliTransportMonitorVol();
+	volMon->SetName(arr->At(i)->GetName());
+	fVolumeMon->Add(volMon);
+      }
+    } // first time
+
+
   Int_t n = fVolumeMon->GetEntriesFast();
   TObjArray* mergeVols = mergeMon->GetVolumes();
   fTotalTime = 0;
