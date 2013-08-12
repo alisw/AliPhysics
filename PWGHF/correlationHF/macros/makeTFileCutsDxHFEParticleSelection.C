@@ -45,19 +45,150 @@ using namespace std;
 void makeTFileCuts(TString arguments="")
 {
   //  gSystem->AddIncludePath(includePath);
-//  TString libraries=libraryDependencies;
-//  Bool_t bUseMC=kFALSE;
+  //  TString libraries=libraryDependencies;
+  //  Bool_t bUseMC=kFALSE;
   TString ofilename;
   Int_t system=2;
   TString taskOptions;
-    Bool_t bUseKine=kFALSE;
-   Bool_t bUseMCReco=kFALSE;
-   Int_t NrTPCclusters=120; // quick fix for problems sending track cut objects in some instances to task
+  Bool_t bUseMC=kFALSE;
+  Bool_t bUseKine=kFALSE;
+  Bool_t bUseMCReco=kFALSE;
+  Int_t NrTPCclusters=120; // quick fix for problems sending track cut objects in some instances to task
   Int_t NrITSclusters=4; // quick fix for problem sending hfe track cut object to addtask
-   Int_t ITSreq=AliHFEextraCuts::kFirst;
+  Int_t ITSreq=AliHFEextraCuts::kFirst;
   Int_t Particle=AliAnalysisTaskDxHFEParticleSelection::kD0;
   TString extraname="";
 
+
+  //----------------------------------------------------//
+  //                                                    //
+  //           Scanning arguments from string           //
+  //             and changing configuration             //
+  //                   based on them.                   //
+  //                                                    //
+  //----------------------------------------------------//
+  
+  cout << endl << "===============================================" << endl;
+  cout << "Setting up Particle Selection task: " << arguments << endl;
+  
+  // look for configuration arguments if nothing specified
+  // in the function call
+  if (arguments.IsNull() && gDirectory) {                           //--------------------//
+    const char* confObjectName="run_single_task_configuration";     //                    // 
+    TObject* confObject=gDirectory->FindObject(confObjectName);     //   Remove this?     //
+    if (confObject) {                                               //                    //
+      arguments=confObject->GetTitle();                             //--------------------//
+    }
+  }
+  {// deprecated, but keep for formatting
+    {// deprecated, but keep for formatting
+      TObjArray* tokens=arguments.Tokenize(" ");
+      if (tokens) {
+	TIter next(tokens);
+	TObject* token;
+	while ((token=next())) {
+	  TString argument=token->GetName();
+	  // if (argument.BeginsWith("file=")) {
+	  //   argument.ReplaceAll("file=", "");
+	  //   ofilename=argument;
+	  // } else if (argument.BeginsWith("name=")) {
+	  //   argument.ReplaceAll("name=", "");
+	  //   analysisName=" "+argument+"PartSel";
+	  // }	  
+	  // if (argument.BeginsWith("cutname=")) {
+	  //   argument.ReplaceAll("cutname=", "");
+	  //   poolConfigFile=argument;
+	  // }
+	  // if (argument.BeginsWith("cutFilename=")) {
+	  //   argument.ReplaceAll("cutFilename=", "");
+	  //   cutFilename=argument;
+	  // }
+	  if (argument.BeginsWith("mc")) {
+	    bUseMC=kTRUE;
+	    taskOptions+=" mc";
+	  }
+	  if (argument.BeginsWith("PbPb") || argument.BeginsWith("Pb-Pb")) {
+	    system=1;
+	    taskOptions+=" system=Pb-Pb";
+	    cout << "Use PbPb" << endl;
+	  }
+	  if (argument.BeginsWith("system=p-Pb") ||
+	      argument.BeginsWith("pPb") ||
+	      argument.BeginsWith("p-Pb") ||
+	      argument.BeginsWith("system=2")) {
+	    system=2;
+	    taskOptions+=" system=p-Pb";
+	    cout<<"Use pPb"<<endl;
+	  }
+	  
+	  if(argument.BeginsWith("tpcclusters=")){
+	    argument.ReplaceAll("tpcclusters=", "");
+	    NrTPCclusters=argument.Atoi();
+	    //	    ::Info("AddTaskDxHFEParticleSelection",Form("Setting nr TPC clusters to %d",NrTPCclusters));
+	  }
+	  if (argument.BeginsWith("fillD0scheme=")){
+	    argument.ReplaceAll("fillD0scheme=","");
+	    taskOptions+=" fillD0scheme="+argument;
+	  }
+	  if(argument.BeginsWith("elmcreco")){
+	    bUseMCReco=kTRUE;
+	    taskOptions+=" "+argument;
+	  }
+	  if (argument.BeginsWith("usekine") ||argument.BeginsWith("kine")) {
+	    bUseKine=kTRUE;
+	    taskOptions+=" usekine";
+	  }
+	  if (argument.BeginsWith("particle=")) {
+	    taskOptions+=" "+argument;
+	    argument.ReplaceAll("particle=","");
+	    if (argument.CompareTo("D0")==0){ 
+	      Particle=AliAnalysisTaskDxHFEParticleSelection::kD0; 
+	    }
+	    else if (argument.CompareTo("electron")==0){ 
+	      Particle=AliAnalysisTaskDxHFEParticleSelection::kElectron; 
+	    }	    
+	  }
+	  if(argument.BeginsWith("useinvmasscut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("twoselectedinvmasscut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("invmasscut="))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("impactparamcut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("etacut"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("storelastcutstep"))
+	    taskOptions+=" "+argument;
+	  if(argument.BeginsWith("itsclusters=")){
+	    argument.ReplaceAll("itsclusters=", "");
+	    NrITSclusters=argument.Atoi();
+	  }
+	  if(argument.BeginsWith("itsreq=")){
+	    argument.ReplaceAll("itsreq=", "");
+	    if(argument.CompareTo("kFirst")==0) ITSreq=AliHFEextraCuts::kFirst;
+	    else if(argument.CompareTo("kAny")==0) ITSreq=AliHFEextraCuts::kAny;
+	    else if(argument.CompareTo("kNone")==0) ITSreq=AliHFEextraCuts::kNone;
+	  }
+	  if(argument.BeginsWith("extraname=")){
+	    argument.ReplaceAll("extraname=", "");
+	    extraname=argument;
+	  }
+	}
+	
+      }
+      delete tokens;
+    }
+  }
+  
+  if(bUseMCReco && bUseKine) {
+    ::Fatal("AddTaskDxHFECorrelation","CAN'T SET BOTH usekine AND elmcreco AT THE SAME TIME");
+    return;
+  }
+
+  ///////////////////////////////////////////////////////////////////////  
+  //---------------Config from arugments complete----------------------//
+  ///////////////////////////////////////////////////////////////////////
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   if (system==0) {
@@ -65,7 +196,7 @@ void makeTFileCuts(TString arguments="")
   } 
   else if (system==1) {
     RDHFD0toKpi->SetStandardCutsPbPb2011();
-    //[FIXME] not working at the moment
+    //[FIXME] seems to work now
     // For centrality 0-10%, add centrality flattening
     //NB! NEED FOR THE MOMENT THE FILE!
     TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
@@ -88,13 +219,7 @@ void makeTFileCuts(TString arguments="")
   }
   printf("Saving D0toKpiCuts-object:\n");
   RDHFD0toKpi->PrintAll();
-  /*TFile* fout=new TFile("D0toKpiCuts.root","recreate");   //set this!! 
   
-  fout->cd();
-  RDHFD0toKpi->Write();
-  fout->Close();
-  */
-
    ///______________________________________________________________________
   /// Cuts for HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF","HFE Standard Cuts");
