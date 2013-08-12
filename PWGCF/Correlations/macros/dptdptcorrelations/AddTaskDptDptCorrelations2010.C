@@ -86,17 +86,17 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
   double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
-  double etaMin                 = -0.8;
-  double etaMax                 =  0.8;
+  double etaMin                 = -0.9;
+  double etaMax                 =  0.9;
   double dcaZMin                = -3.0;
   double dcaZMax                =  3.0;
   double dcaXYMin               = -2.4;
   double dcaXYMax               =  2.4;
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
-  int    nClusterMin            =   70;
-  //int    trackFilterBit         =  128;//TPC only
-  int    trackFilterBit         =  272; //Hybrid
+  int    nClusterMin            =   80;
+  int    trackFilterBit         =  128;//TPC only
+  //int    trackFilterBit         =  272; //Hybrid
   
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
@@ -179,8 +179,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       listName     =   baseName;
       taskName     =   baseName;
 
-      //inputHistogramFileName =  "/Users/prabhat/MyTestforEta/PbPb276Calibration_2010.root";
-      inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
+      inputHistogramFileName =  "/Users/prabhat/MyTestforEta/PbPb276Calibration_2010.root";
+      //inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
 
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
@@ -297,10 +297,10 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       task->SetPtMax2(              ptMax           ); 
       task->SetEtaMin2(             etaMin          ); 
       task->SetEtaMax2(             etaMax          ); 
-      task->SetDcaZMin(             dcaZMin         ); 
-      task->SetDcaZMax(             dcaZMax         ); 
-      task->SetDcaXYMin(            dcaXYMin        ); 
-      task->SetDcaXYMax(            dcaXYMax        ); 
+      //task->SetDcaZMin(             dcaZMin         ); 
+      //task->SetDcaZMax(             dcaZMax         ); 
+      //task->SetDcaXYMin(            dcaXYMin        ); 
+      //task->SetDcaXYMax(            dcaXYMax        ); //checking by prp
       task->SetDedxMin(             dedxMin         ); 
       task->SetDedxMax(             dedxMax         ); 
       task->SetNClusterMin(         nClusterMin     ); 

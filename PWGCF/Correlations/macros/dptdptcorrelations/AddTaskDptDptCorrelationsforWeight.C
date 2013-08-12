@@ -86,8 +86,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelationsforWeight(int    sys
   double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
-  double etaMin                 = -0.8;
-  double etaMax                 =  0.8;
+  double etaMin                 = -0.9;
+  double etaMax                 =  0.9;
   double dcaZMin                = -3.0;
   double dcaZMax                =  3.0;
   double dcaXYMin               = -2.4;
@@ -95,7 +95,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelationsforWeight(int    sys
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
   int    nClusterMin            =   80;
-  int    trackFilterBit         =  272;
+  int    trackFilterBit         =  128;
   
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
@@ -294,10 +294,10 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelationsforWeight(int    sys
       task->SetPtMax2(              ptMax           ); 
       task->SetEtaMin2(             etaMin          ); 
       task->SetEtaMax2(             etaMax          ); 
-      task->SetDcaZMin(             dcaZMin         ); 
-      task->SetDcaZMax(             dcaZMax         ); 
-      task->SetDcaXYMin(            dcaXYMin        ); 
-      task->SetDcaXYMax(            dcaXYMax        ); 
+      //task->SetDcaZMin(             dcaZMin         ); 
+      //task->SetDcaZMax(             dcaZMax         ); 
+      //task->SetDcaXYMin(            dcaXYMin        ); 
+      //task->SetDcaXYMax(            dcaXYMax        ); 
       task->SetDedxMin(             dedxMin         ); 
       task->SetDedxMax(             dedxMax         ); 
       task->SetNClusterMin(         nClusterMin     ); 
