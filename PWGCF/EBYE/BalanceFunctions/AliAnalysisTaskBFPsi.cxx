@@ -1420,6 +1420,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 		 // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
 		 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
 		 || pdgCodeOfMother == 111  // pi0 Dalitz
+		 || pdgCodeOfMother == 22   // photon
 		 ) {
 		kExcludeParticle = kTRUE;
 	      }
