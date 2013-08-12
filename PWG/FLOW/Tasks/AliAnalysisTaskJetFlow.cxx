@@ -89,7 +89,7 @@ AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
     fTracksName = rhoTask->GetTracksName(); 
     if(GQC2 && QC2) {
         printf(" > Warning, QC2 and gapped QC2 method are both called <\n   will only run gapped QC2 !");
-        QC2 = kFALSE;
+        fDoQC2FlowAnalysis = kFALSE;
     }
     if(FlowPackageSP || FlowPackageQC)    DefineOutput(2, AliFlowEventSimple::Class());
     if(FlowPackageSP && FlowPackageQC)    DefineOutput(3, AliFlowEventSimple::Class());
@@ -340,7 +340,7 @@ void AliAnalysisTaskJetFlow::DoGappedQC2Analysis()
         mq[i] = 0;
     }
     // calculate differential q-vectors and fill the profile with cumulants
-    fRhoVn->SetLocalJetMinMaxEta(fJetRadius+.2);       // avoid overlap in poi and rp region 
+    (fVParticleAnalysis) ? fRhoVn->SetTrackEtaLimits(-0.7, 0.7) : fRhoVn->SetLocalJetMinMaxEta(fJetRadius+.2);       // avoid overlap in poi and rp region 
     QCnDifferentialFlowVectors(repn, impn, mp, reqn, imqn, mq, 2);
     // do the calculation
     if(RHSmQ*LHSmQ < 1) return;
