@@ -48,7 +48,7 @@ void makeTFileCuts(TString arguments="")
 //  TString libraries=libraryDependencies;
 //  Bool_t bUseMC=kFALSE;
   TString ofilename;
-  Int_t system=1;
+  Int_t system=2;
   TString taskOptions;
     Bool_t bUseKine=kFALSE;
    Bool_t bUseMCReco=kFALSE;
@@ -60,15 +60,11 @@ void makeTFileCuts(TString arguments="")
 
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
-
   if (system==0) {
     RDHFD0toKpi->SetStandardCutsPP2010();
   } 
   else if (system==1) {
-    // TODO: think about p-Pb
     RDHFD0toKpi->SetStandardCutsPbPb2011();
-    
-    
     //[FIXME] not working at the moment
     // For centrality 0-10%, add centrality flattening
     //NB! NEED FOR THE MOMENT THE FILE!
