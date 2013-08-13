@@ -74,7 +74,8 @@ AliAnalysisTaskPhiBayes::AliAnalysisTaskPhiBayes():
   fHmismTOF(0),
   fHchannelTOFdistr(0),
   fTypeCol(2),
-  fPIDuserCut(NULL)
+  fPIDuserCut(NULL),
+  fToEP(kFALSE)
 {
   // Default constructor (should not be used)
   fList->SetName("contPhiBayes1");
@@ -145,7 +146,8 @@ AliAnalysisTaskPhiBayes::AliAnalysisTaskPhiBayes(const char *name):
   fHmismTOF(0),
   fHchannelTOFdistr(0),
   fTypeCol(2),
-  fPIDuserCut(NULL)
+  fPIDuserCut(NULL),
+  fToEP(kFALSE)
 {
 
   DefineOutput(1, TList::Class());
@@ -202,9 +204,9 @@ void AliAnalysisTaskPhiBayes::UserCreateOutputObjects()
 
   const Int_t nBinPid = 14;
 
-  Int_t binPid[nBinPid] = {1/*ptPhi*/,8/*EtaKP*/,20/*pt+*/,1/*pt-*/,5/*P+*/,1/*P-*/,2/*TOFmatch+*/,1/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,1/*Nsigma-*/,1/*DeltaPhi+*/,1/*DeltaPhi-*/,1/*Psi*/};
+  Int_t binPid[nBinPid] = {1/*ptKs*/,1+7*(!fToEP)/*EtaPiP*/,20/*pt+*/,1/*pt-*/,5/*P+*/,1/*P-*/,2/*TOFmatch+*/,1/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,1/*Nsigma-*/,1+4*(fToEP)/*DeltaPhi+*/,1/*DeltaPhi-*/,1+4*(fToEP)/*Psi*/};
 
-  Int_t binPid2[nBinPid] = {1/*ptPhi*/,8/*EtaKN*/,1/*pt+*/,20/*pt-*/,1/*P+*/,5/*P-*/,1/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,1/*Nsigma+*/,4/*Nsigma-*/,1/*DeltaPhi+*/,1/*DeltaPhi-*/,1/*Psi*/};
+  Int_t binPid2[nBinPid] = {1/*ptKs*/,1+7*(!fToEP)/*EtaPiN*/,1/*pt+*/,20/*pt-*/,1/*P+*/,5/*P-*/,1/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,1/*Nsigma+*/,4/*Nsigma-*/,1/*DeltaPhi+*/,1+4*(fToEP)/*DeltaPhi-*/,1+4*(fToEP)/*Psi*/};
 
   fContPid = new AliPIDperfContainer("contPID",nBinPid,binPid);
   fContPid->SetTitleX("M_{#phi}");

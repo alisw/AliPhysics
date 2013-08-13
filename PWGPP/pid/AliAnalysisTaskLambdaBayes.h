@@ -43,6 +43,8 @@ class AliAnalysisTaskLambdaBayes : public AliAnalysisTaskSE {
 
   void SetTPCclusterN(Int_t ncl){fNcluster=ncl;};
 
+  void SetCorrEP(Bool_t flag=kTRUE) {fToEP = flag;};
+
   static const Int_t nPtBin = 13;  //! # pt ks bins
 
   void SetFilterBit(Int_t fb){fFilterBit=fb;};
@@ -146,7 +148,9 @@ class AliAnalysisTaskLambdaBayes : public AliAnalysisTaskSE {
   Int_t fTypeCol; // type of collision system (0=pp, 1=pPb, 2=PbPb)
   AliPIDperfCut *fPIDuserCut;  // pid user cut to be cheked
 
-  ClassDef(AliAnalysisTaskLambdaBayes, 3);    //Analysis task for Bayesian (Lambda)
+  Bool_t fToEP;        // correlate to TPC EP
+
+  ClassDef(AliAnalysisTaskLambdaBayes, 4);    //Analysis task for Bayesian (Lambda)
 };
 
 #endif
