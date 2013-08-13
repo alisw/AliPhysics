@@ -877,6 +877,11 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
       Double_t deltaphi1 = KpTrack->Phi() - fPsi;
       Double_t deltaphi2 = KnTrack->Phi() - fPsi;
 
+      if(gRandom->Rndm() < 0.5){
+	deltaphi1 += TMath::Pi();
+	deltaphi2 += TMath::Pi();
+      }
+
       while(deltaphi1 > TMath::Pi()) deltaphi1 -= TMath::Pi()*2;
       while(deltaphi1 < -TMath::Pi()) deltaphi1 += TMath::Pi()*2;
       while(deltaphi2 > TMath::Pi()) deltaphi2 -= TMath::Pi()*2;

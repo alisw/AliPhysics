@@ -13,6 +13,7 @@ Int_t LoadLib();
 void doeffPiUser(Int_t pos,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 void doeffPi(Int_t pos=1,Float_t prob=0.1,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 TH2F *GetHistoPip(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkp=0,Float_t pMinkn=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
+TH2F *GetHistoPipEP(Float_t pt=0.9,Float_t ptM=1.1,Float_t pMinkp=0.,Float_t pMinkn=0.,Float_t deltaphim=-1.57,Float_t deltaphiM=1.57);
 TH2F *GetHistoPin(Float_t pt=1,Float_t ptM=1.1,Float_t pMinkn=0,Float_t pMinkp=0.,Float_t etaminkp=-0.8,Float_t etamaxkp=0.8);
 void fit(TH1D *h,Float_t *a=NULL,char *opt="",char *opt2="",Float_t pt=1.5);
 void AddHisto(TH2F *h1,TH2F *h2,Float_t w);
@@ -27,7 +28,7 @@ TObject* fContUser1;
 TObject* fContUser2;
 const Int_t nBinPid = 14; // pt,eta, ptPip, ptPin, PPip, PPin, TOF3sigmaPip, TOF3sigmaPin, isPhiTrue, nsigmaPip, nsigmaPin
 // 0.985 < mass < 1.045 (60) and 0 < centrality < 100 (10)
-Int_t binPid[nBinPid] = {1/*ptPhi*/,8/*EtaPi*/,20/*pt+*/,20/*pt-*/,5/*P+*/,1/*P-*/,2/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,4/*Nsigma-*/,1/*DeltaPhi+*/,1/*DeltaPhi-*/,1/*Psi*/};
+Int_t binPid[nBinPid] = {1/*ptPhi*/,8/*EtaPi*/,20/*pt+*/,20/*pt-*/,5/*P+*/,1/*P-*/,2/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,4/*Nsigma-*/,5/*DeltaPhi+*/,5/*DeltaPhi-*/,5/*Psi*/};
 Float_t xmin[nBinPid] = {1,-0.8,0.3,0.3,0,0,-0.5,-0.5,-0.5,0,0,-TMath::Pi(),-TMath::Pi(),-TMath::Pi()/2};
 Float_t xmax[nBinPid] = {5,0.8,4.3,4.3,1,1,1.5,1.5,1.5,7.5,7.5,TMath::Pi(),TMath::Pi(),TMath::Pi()/2};
 
@@ -810,4 +811,107 @@ void AddHisto(TH2F *h1,TH2F *h2,Float_t w){
       h1->SetBinError(i,j,err);
     }
   }
+}
+
+TH2F *GetHistoPipEP(Float_t pt,Float_t ptM,Float_t pMinkp,Float_t pMinkn,Float_t deltaphim,Float_t deltaphiM){
+
+  Float_t x[] = {xmin[0]+0.001,-0.8+0.001,0.3+0.001,xmin[3]+0.001,pMinkp+0.001,pMinkn+0.001,(pMinkp>0.09)+0.001,kTOFmatch+0.001,selectTrue,xmin[9],xmin[10],deltaphim+0.001,xmin[12],xmin[13]};
+  Float_t x2[] = {xmax[0],0.8-0.001,10-0.001,xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],keepTrue,xmax[9],xmax[10],deltaphiM-0.001,xmax[12],xmax[13]};
+
+  if(kOverAll){
+    x[6] = 0.0001;
+    x2[9] = 5.9;
+    if(pMinkp > 0.19) x2[9] = 4.9;
+  }
+
+  if(kOverAllTOFmatch && pMinkp > 0.19){
+    x[6] = 1.0001;
+    x2[9] = 5.9;
+    if(pMinkp > 0.19) x2[9] = 4.9;
+  }
+  
+  if(kOverAll2Sigma && pMinkp > 0.09){
+    x2[9] = 2.;
+    x[6] = 1.0001;
+  }
+
+  if(kGoodMatch){
+    x[6] = 1.0001;
+    if(pMinkp > 0)
+      x2[9] = 4.9;
+      
+  }
+
+  if(kTOFmatch){
+    x[6] = 1.0001;
+  }
+
+  if(kSigma2vs3){
+    x[6] = 1.0001;
+    x2[9] = 3;
+    if(pMinkp > 0)
+      x2[9] = 2;
+  }
+
+  if(kSigma2vs3TPC){
+    x[6] = 0.0001;
+    x2[6] = 0.0002;
+    x2[9] = 3;
+    if(pMinkp > 0)
+      x2[9] = 2;
+  }
+
+  if(bayesVsigma){
+    if(pMinkp > 0){
+      x[4] = 0.2001;
+      x2[9] = 5;
+    }
+    else{
+      x2[9] = 3;
+    }
+
+    
+  }
+
+  if(require5sigma) x2[9] = 4.9;
+
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid1;
+
+  Float_t w[5],ws=0;
+  TH2F *hs[5];
+  for(Int_t i=0;i<5;i++){
+    x[13] = -TMath::Pi()/2 + TMath::Pi()*(i+0.5)/5;
+    x2[13] = x[13];
+    hs[i] = tmp->GetQA(0, x, x2);
+    w[i] = hs[i]->Integral();
+    ws += w[i];
+  }
+  ws *= 0.2;
+
+  if(ws == 0) ws = 1;
+  for(Int_t i=0;i<5;i++){
+    w[i] /= ws;
+    if(w[i] == 0) w[i]=1;
+  }
+
+  x[2] = pt + 0.001;
+  x2[2] = ptM - 0.001;
+
+  for(Int_t i=0;i<5;i++){
+    x[13] = -TMath::Pi()/2 + TMath::Pi()*(i+0.5)/5;
+    x2[13] = x[13];
+    hs[i] = tmp->GetQA(0, x, x2);
+    hs[i]->Sumw2();
+    hs[i]->Scale(1./w[i]);
+  }
+
+  TH2F *h = hs[0]; 
+  for(Int_t i=1;i<5;i++){
+    h->Add(hs[i]);
+  }
+
+  h->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/#it{c}^{2})");
+  h->GetYaxis()->SetTitle("centrality [%]");
+
+  return h;
 }
