@@ -376,7 +376,7 @@ AliFMDEnergyFitter::Fit(const TList* dir)
 			  fMaxRelParError, fMaxChi2PerNDF,
 			  fMinWeight);
     if (!l) continue;
-    for (Int_t i = 0; i < l->GetEntriesFast(); i++) { 
+    for (Int_t i = 0; i < l->GetEntriesFast()-1; i++) { // Last is status 
       stack[i % nStack]->Add(static_cast<TH1*>(l->At(i))); 
     }
   }
@@ -1069,6 +1069,45 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
 	 "leaving %d to be fitted, of which %d succeeded\n",  
 	 GetName(), nDists, nEmpty, nLow, nDists-nEmpty-nLow, nFitted);
 
+  // Fit the full-ring histogram 
+  TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));
+  if (total && total->GetEntries() >= minEntries) { 
+
+    // Scale to the bin-width
+    total->Scale(1., "width");
+    
+    // Normalize peak to 1 
+    Double_t max = total->GetMaximum(); 
+    if (max > 0) total->Scale(1/max);
+    
+    AliFMDCorrELossFit::ELossFit* resT = 
+      FitHist(total,nDists+1,lowCut, nParticles,minusBins,
+	      relErrorCut,chi2nuCut,minWeight);
+    if (resT) { 
+      // Make histograms for the result of this fit 
+      Double_t chi2 = resT->GetChi2();
+      Int_t    ndf  = resT->GetNu();
+      pars->Add(MakeTotal("t_chi2",   "#chi^{2}/#nu", eta, low, high,
+			  ndf > 0 ? chi2/ndf : 0, 0));
+      pars->Add(MakeTotal("t_c",      "Constant",     eta, low, high,
+			  resT->GetC(), resT->GetEC()));
+      pars->Add(MakeTotal("t_delta",  "#Delta_{p}",   eta, low, high,
+			  resT->GetDelta(), resT->GetEDelta()));
+      pars->Add(MakeTotal("t_xi",     "#xi",          eta, low, high,
+			  resT->GetXi(), resT->GetEXi()));
+      pars->Add(MakeTotal("t_sigma",  "#sigma",       eta, low, high,
+			  resT->GetSigma(), resT->GetESigma()));
+      pars->Add(MakeTotal("t_sigman", "#sigma_{n}",   eta, low, high,
+			  resT->GetSigmaN(), resT->GetESigmaN()));
+      pars->Add(MakeTotal("t_n",    "N",              eta, low, high,
+			  resT->GetN(), 0));
+      for (UShort_t j = 0; j < nParticles-1; j++) 
+	pars->Add(MakeTotal(Form("t_a%d",j+2), 
+			    Form("a_{%d}",j+2), eta, low, high,
+			    resT->GetA(j), resT->GetEA(j)));
+    }
+  }
+
   TH1* status = new TH1I("status", "Status of Fits", 5, 0, 5);
   status->GetXaxis()->SetBinLabel(1, "Total");
   status->GetXaxis()->SetBinLabel(2, "Empty");
@@ -1088,52 +1127,6 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
   status->SetDirectory(0);
   status->SetStats(0);
   pars->Add(status);
-
-#if 0
-  // Fit the full-ring histogram 
-  TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));
-  if (total && total->GetEntries() >= minEntries) { 
-
-    // Scale to the bin-width
-    total->Scale(1., "width");
-    
-    // Normalize peak to 1 
-    Double_t max = total->GetMaximum(); 
-    if (max > 0) total->Scale(1/max);
-
-    TF1* res = FitHist(total,lowCut,nParticles,minusBins,
-		       relErrorCut,chi2nuCut,minWeight);
-    if (res) { 
-      // Make histograms for the result of this fit 
-      Double_t chi2 = res->GetChisquare();
-      Int_t    ndf  = res->GetNDF();
-      pars->Add(MakeTotal("t_chi2",   "#chi^{2}/#nu", eta, low, high,
-			  ndf > 0 ? chi2/ndf : 0, 0));
-      pars->Add(MakeTotal("t_c",      "Constant",     eta, low, high,
-			  res->GetParameter(kC),
-			  res->GetParError(kC)));
-      pars->Add(MakeTotal("t_delta",  "#Delta_{p}",   eta, low, high,
-			  res->GetParameter(kDelta),
-			  res->GetParError(kDelta)));
-      pars->Add(MakeTotal("t_xi",     "#xi",          eta, low, high,
-			  res->GetParameter(kXi),
-			  res->GetParError(kXi)));
-      pars->Add(MakeTotal("t_sigma",  "#sigma",       eta, low, high,
-			  res->GetParameter(kSigma),
-			  res->GetParError(kSigma)));
-      pars->Add(MakeTotal("t_sigman", "#sigma_{n}",   eta, low, high,
-			  res->GetParameter(kSigmaN),
-			  res->GetParError(kSigmaN)));
-      pars->Add(MakeTotal("t_n",    "N",              eta, low, high,
-			  res->GetParameter(kN),0));
-      for (UShort_t j = 0; j < nParticles-1; j++) 
-	pars->Add(MakeTotal(Form("t_a%d",j+2), 
-			    Form("a_{%d}",j+2), eta, low, high,
-			    res->GetParameter(kA+j), 
-			    res->GetParError(kA+j)));
-    }
-  }
-#endif
     
   // Clean up list of histogram.  Histograms with no entries or 
   // no functions are deleted.  We have to do this using the TObjLink 
@@ -1537,6 +1530,10 @@ AliFMDEnergyFitter::RingHistos::FindBestFit(UShort_t b,
   if (fDebug > 1) fFits.Print("s");
   AliFMDCorrELossFit::ELossFit* ret = 
     static_cast<AliFMDCorrELossFit::ELossFit*>(fFits.At(i-1));
+  if (!ret) {
+    AliWarningF("No fit found for %s, bin %3d", GetName(), b);
+    return 0;
+  }
   if (ret && fDebug > 0) {
     if (fDebug > 1)
       printf(" %d: ", i-1);

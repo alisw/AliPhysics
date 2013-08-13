@@ -88,149 +88,64 @@
 # to Christian Holm Christensen <cholm@nbi.dk>
 # 
 # END_MANUAL
+if test ! -f $ALICE_ROOT/PWGLF/FORWARD/analysis2/baseAnalysis.sh  ; then 
+    echo "baseAnalysis not found!" > /dev/stderr 
+    exit 1
+fi
+. $ALICE_ROOT/PWGLF/FORWARD/analysis2/baseAnalysis.sh 
 
 runs=
 mcruns=
-name=
-sys=0
-snn=0
-field=0
-corrs=
-dotconf=.config
-here=${PWD}
 par=0
-noact=0
-# aliroot="&aliroot=v5-03-75pATF-AN"
-# root="root=v5-34-02-1"
-fwd_dir=$ALICE_ROOT/PWGLF/FORWARD/analysis2
-
 real_dir=
 real_pat=
 mc_dir=
 mc_pat=
 my_real_dir=
 my_mc_dir=
-uuopts=
 watch=0
 
 # === Various functions ==============================================
+
+
+# === Implement base functions =======================================
 # --- Usage ----------------------------------------------------------
-usage()
+setup_usage()
 {
     cat <<EOF
-Usage: $0 --what OPERATION [OPTIONS]
-
-Options:
   -r,--runs=FILENAME        Specify list of runs file ($runs)
   -R,--mc-runs=FILENAME     Specify list of MC runs file ($mcruns)
-  -n,--name=STRING          Base name of jobs ($name)
-  -S,--sys=SYSTEM           Collision system ($sys)
-  -E,--snn=ENERGY           Center of mass energy per nuclean pair ($snn)
-  -F,--field=FIELD          L3 magnetic field ($field)
   -d,--real-dir=ALIEN_DIR   Directory holding real data ($real_dir)
   -p,--real-pattern=PATTERN Glob pattern to match when searching ($real_pat)
   -D,--mc-dir=ALIEN_DIR     Directory holding MC data ($mc_dir)
   -P,--mc-pattern=PATTERN   Glob pattern to match when searching ($mc_pat)
-  -s,--step=STEP            Run stage ($step)
-  -w,--what=TRAINS          What to do 
-  -c,--corrections=DIR      Directory where corrections are stored ($corrs)
   -W,--watch                Watch for job status and terminate automatically
   -a,--par                  Use par files ($par)
-  -u,--url-opts=OPTIONS	    Additional user options ($uuopts)
-  -M,--man                  Show the manual  
-  -N,--noact                Show what will be done 
-
-TRAINS is one of
-
-  clean       Clean directory
-  setup       Do intial setup 
-  corrs       Generate corrections 
-  aods        Generate AODs 
-  dndeta      Generate dNdeta 
-
-and must be executed in that order.  STEP is one of 
-
-  full        Run the analysis 
-  terminate   Terminate the job (may need iterations)
-  upload      Upload corrections (only for TRAINS=corrs)
-  draw        Draw (partial) results (not for TRAINS=corrs)
 EOF
 }
-
-# --- Manual ---------------------------------------------------------
-manual()
+handle_setup_option()
 {
-    prog=`basename $0`
-    grep ^# $0 | \
-	sed -n -e '/BEGIN_MANUAL/,/END_MANUAL/ p' | \
-	sed -e '/\(BEGIN\|END\)_MANUAL/ d' -e 's/^# //' \
-	    -e "s,\$0,$prog,"
-}
-
-# === Utilities to execute scripts ===================================
-# --- Run script -----------------------------------------------------
-script()
-{
-    local scr=$1 ; shift 
-    local args=$1 ; shift
-    echo "Will run aliroot -l -b -q $scr($args)"
-    if test $noact -gt 0 ; then return ; fi
-    aliroot -l -b <<-EOF
-	.x $scr($args)
-	.q
-	EOF
-}
-# --- Run acceptance generation --------------------------------------
-accGen()
-{
-    local run=$1 
-    script ${fwd_dir}/corrs/ExtractAcceptance.C "${run}"
-}
-
+    local arg="$1"
+    local opt="$2"
+    # echo "Grid: Processing '$arg' ('$opt')"
+    case $arg in 
+	-r|--runs)         runs=$opt     ;; 
+	-R|--mc-runs)      mcruns=$opt   ;;
+	-d|--real-dir)     real_dir=$opt ;;
+	-p|--real-pattern) real_pat=$opt ;; 
+	-D|--mc-dir)       mc_dir=$opt   ;; 
+	-P|--mc-pattern)   mc_pat=$opt   ;; 
+	-W|--watch)        let watch=\!$watch ;;
+	-a|--par)          par=1         ;;
+	*) echo "$0: [SETUP] Unknown option $arg"  ; exit 1 ;; 
+    esac
+}    
 # --- Extract corrections --------------------------------------------
 terminate()
 {
     script Terminate.C 
 }
-# --- Extract corrections --------------------------------------------
-download()
-{
-    if test -f .download ; then 
-	echo "Already downloaded in `basename $PWD`"
-	return 0 
-    fi
-    script Download.C 
-    touch .download
-}
-# --- Extract corrections --------------------------------------------
-extract()
-{
-    test -f .extract && return 0 
-    script Extract.C 
-    touch .extract
-}
-# --- Extract corrections --------------------------------------------
-extract_up()
-{
-    if test -f .extract ; then 
-	echo "Aldready extracted in `basename $PWD`" 
-	return 0;
-    fi 
-    echo "= Extracting"
-    script ../Extract.C > /dev/null 2>&1
-    touch .extract
-}
-# --- Upload a file --------------------------------------------------
-upload()
-{
-    if test -f .upload ; then 
-	echo "Already uploaded in `basename $PWD`"
-	return 0 
-    fi
-    echo "= Uploading"
-    script Upload.C \"file://${here}/${name}_corrs_${now}/\" >/dev/null 2>&1
-    touch .upload 
-}
+
 # --- Extract and upload ---------------------------------------------
 extract_upload()
 {
@@ -249,7 +164,7 @@ extract_upload()
 	    unzip ../$i > /dev/null 2>&1
 	    touch .zip 
 	fi
-	extract_up 
+	extract ../Extract.C 
 	upload
 	cd ..
     done
@@ -269,17 +184,36 @@ draw()
 	    mkdir -p $d 
 	    unzip $i -d $d
 	fi
-	(cd $d && script $scr $@)
+	(cd $d && _draw $scr $@)
     done
 }
 dndeta_draw()
 {
-    local d=$1 
-    (cd $d && \
-	draw ${fwd_dir}/DrawdNdetaSummary.C && \
-	draw ../Draw.C)
+    download 
+    for i in *.zip ; do 
+	if test "X$i" = "X*.zip" ; then continue ; fi
+	echo "Will extract $i"
+	d=`basename $i .zip` 
+	if test ! -d $d ; then 
+	    mkdir -p $d 
+	    unzip $i -d $d
+	fi
+	_dndeta_draw $d ../Draw.C $@
+    done
 }
 
+# === Script specific functions ======================================
+# --- Extract corrections --------------------------------------------
+download()
+{
+    if test -f .download ; then 
+	echo "Already downloaded in `basename $PWD`"
+	return 0 
+    fi
+    script Download.C 
+    touch .download
+}
+    
 # --- Get the grid home dir ------------------------------------------
 outputs()
 {
@@ -293,143 +227,51 @@ EOF`
     my_mc_dir="$l/${name}_mcaod_${now}/output"
 }
 
-# === Trains =========================================================
-# --- Run set-ups ----------------------------------------------------
-setup()
+
+run_for_acc()
 {
-    run_for_acc=`grep -v ^# $runs | awk '{FS=" \n\t"}{printf "%d\n", $1}' | head -n 1` 
-    if test x$run_for_acc = "x" || test $run_for_acc -lt 1; then 
+    local r=`grep -v ^# $runs | awk '{FS=" \n\t"}{printf "%d\n", $1}' | head -n 1` 
+    if test x$r = "x" || test $r -lt 1; then 
 	echo "No run for acceptance correction specified" > /dev/stderr 
 	exit 1
     fi
+    echo $r 
+}
 
-   now=`date '+%Y%m%d_%H%M'` 
-   outputs
-
-   # Write settings to a file, which we later can source 
-   dumpvar=
-   if test $par -gt 0 ; then dumpvar="--par " ; fi 
-   if test $watch -gt 0 ; then dumpvar="${dumpvar} --watch " ; fi 
-   cat > ${dotconf} <<-EOF
-	# Settings:
-	name="$name"
+# --- Dump the setup -------------------------------------------------
+dump_setup()
+{
+    local out=$1 
+    cat >> ${out} <<-EOF 
+	# Real data 
 	runs=${runs}
-	mcruns=${mcruns}
-	sys=$sys
-	snn=$snn
-	field=$field
 	real_dir=${real_dir}
 	real_pat=${real_pat}
+	# Simulated data
+	mcruns=${mcruns}
 	mc_dir=${mc_dir}
 	mc_pat=${mc_pat}
+	# Output directories 
 	my_real_dir=${my_real_dir}
 	my_mc_dir=${my_mc_dir}
+	# Other options 
 	par=${par}
-	now=${now}
 	watch=${watch}
-	uuopts="${uuopts}"
-	# Options
-	if false ; then 
-	  $0 --what=setup --name="$name" --runs="$runs" --mcruns="$mcruns" \
-	  --sys="$sys" --snn="$snn" --field="$field" \
-	  --real-dir="${real_dir}" --real-pattern="${real_pat}" \
-	  --mc-dir="${mc_dir}" --mc-pattern="${mc_pat}" \
-	  --now=${now} --url-opts="${uuopts}" ${dumpvar}
-	fi
 	EOF
-   corrdir=${name}_corrs_${now}
-   if test "x$corrs" != "x" && test -d ${corrs} ; then 
-       echo "Linking ${corrs} to ${corrdir}"
-       ln -sf $corrs ${corrdir}
-       ln -sf $corrs last_${name}_corrs	       
-       corrdir=$corrs
-   elif test $noact -lt 1 ; then 
-	mkdir -p ${name}_acc_${now}
-	mkdir -p ${corrdir}
-	rm -f last_${name}_acc last_${name}_corrs
-	ln -sf ${name}_acc_${now} last_${name}_acc
-	ln -sf ${name}_corrs_${now} last_${name}_corrs
-	cat <<-EOF > ${corrdir}/Browse.C
- 	TObject* Browse()
-	{
-	  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-	  if (!gROOT->GetClass("AliOADBForward"))
-	    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
-	  gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGui.C++g", fwd));
-	  
-	  AliOADBForward* db = new AliOADBForward;
-	  db->Open("fmd_corrections.root", "*");
-	  
-	  ForwardOADBGui(db);
-
-	  return db;
-	}
-	EOF
-	echo "Make acceptance corrections" 
-	(cd ${name}_acc_${now} && \
-	    accGen $run_for_acc && \
-	    upload )
-   fi
-   for i in fmd_corrections.root spd_corrections.root deadstrips.C ; do 
-       if test ! -f ${corrdir}/$i ; then continue ; fi 
-       echo "Linking ${corrdir}/$i here"
-       ln -fs ${corrdir}/$i . 
-   done
-}    
+}
 
 # --- Run set-ups ----------------------------------------------------
-cleanup()
+setup()
 {
-    rm -rf \
-	${name}_acc_${now} \
-	${name}_mccorr_${now} \
-	${name}_mceloss_${now} \
-	${name}_eloss_${now} \
-	${name}_mcaod_${now} \
-	${name}_aod_${now} \
-	${name}_mcdndeta_*${now} \
-	${name}_dndeta_*${now} \
-	${name}_corrs_${now} \
-	last_${name}_acc \
-	last_${name}_corrs \
-	last_${name}_mceloss \
-	last_${name}_eloss \
-	last_${name}_mcaod \
-	last_${name}_aod \
-	last_${name}_mcdndeta* \
-	last_${name}_dndeta* \
-	build.log 
-    if test -L fmd_corrections.root ; then 
-	rm fmd_corrections.root
-    fi
-    if test -L spd_corrections.root ; then 
-	rm spd_corrections.root
-    fi
-}
+    _setup $@
+}    
 
-# --- Check AliEn token ----------------------------------------------
-check_token()
-{
-    uid=`id -u`
-    genv_file=/tmp/gclient_env_${uid}
-    
-    if test ! -f ${genv_file} ; then 
-	echo "No such file: ${genv_file}, please do alien-token-init" \
-	    >/dev/stderr
-	exit 1
-    fi
-    . ${genv_file}
-    alien-token-info | grep -q "Token is still valid"
-    if test $? -ne 0 ; then 
-	echo "Token not valid, please re-new" > /dev/stderr 
-	exit 1
-    fi
-}
 
 # --- Check settings -------------------------------------------------
-check()
+check_setup()
 {
-    local w=$1
+    check_token
+
     if test "x$runs" = "x" || test ! -f $runs ; then 
 	echo "List of run file $runs not found" > /dev/stderr 
 	exit 1
@@ -439,22 +281,6 @@ check()
 	echo "List of MC runs file $mcruns not found" > /dev/stderr 
 	exit 1
     fi
-    if test "X$name" = X ; then 
-	echo "No name specified" > /dev/stderr 
-	exit 1
-    fi
-    # if test "x$sys" = "x" ; then 
-    #     echo "No collision system specified" > /dev/stderr 
-    #     exit 1
-    # fi
-    # if test "x$snn" = "x" ; then 
-    #     echo "No center of mass energy specified" > /dev/stderr 
-    #     exit 1
-    # fi
-    # if test "x$field" = "x" ; then 
-    #     echo "No L3 field setting specified" > /dev/stderr 
-    #     exit 1
-    # fi
     if test "x$real_dir" = "x" ; then 
 	echo "No real data directory specified" > /dev/stderr 
 	exit 1
@@ -471,114 +297,52 @@ check()
 	echo "No MC data pattern specified" > /dev/stderr 
 	exit 1
     fi
-    if test "X$w" != "Xsetup" && test "x$now" = "x" ; then 
-	echo "No date/time specified" > /dev/stderr 
-	exit 1
-    fi
-    # sys==0 is OK - autoselect
-    case x$sys in 
-        xpp|xp-p)              sys=1 ;; 
-	xpbpb|xpb-pb|xaa|xa-a) sys=2 ;; 
-	xppb|xp-pb|xpa|xp-a)   sys=3 ;;
-	x0|x1|x2|x3)                 ;; 
-	x)                     sys=0 ;;
-	*) echo "$0: Unknown system: $sys" ; exit 1 ;;
-    esac
 
-    check_token
 }
 
 # --- Show the setup -------------------------------------------------
 print_setup()
 {
     cat <<-EOF
-	Name:			$name
-	Run file:		${runs}
-	MC Run file:            ${mcruns}
-	Collision system:	$sys
-	sqrt(s_NN):		${snn}GeV
-	L3 Field:		${field}kG
-	Real input directory:	${real_dir}
-	Real file pattern:	${real_pat}
-	MC input directory:	${mc_dir}
-	MC file pattern:	${mc_pat}
-	Real output:		${my_real_dir}
-	MC output directory:	${my_mc_dir}
+	Real data:
+	  Run file:	        ${runs}
+	  Directory:		${real_dir}
+	  Pattern:		${real_pat}
+	  Output:		${my_real_dir}
+	MC data:
+	  Run file:       	${mcruns}
+	  Directory:		${mc_dir}
+	  Pattern:		${mc_pat}
+	  Output:		${my_mc_dir}
 	Use PAR files:		${par}
-	Date & time:            ${now}
-	Additional URL options: ${uuopts}
 	EOF
 }
 
-# --- Run the train --------------------------------------------------
-# Usage:
-# 
-allAboard()
-{
-    type=$1 ; shift 
-    trig=$1 ; shift
-    cl=
-    nme=${name}_${type}
-    tree=esdTree
-    opts="--batch"
-    uopt="&merge=50&split=50&aliroot=last,regular"
-    mc=0
-    dir=$real_dir
-    pat=$real_pat
-    rl=$runs
 
+
+# --- Make URI -------------------------------------------------------
+# Must modify URL 
+url_opts()
+{
+    local mc=$1 	; shift
+    local type=$1 	; shift 
+    local trig=$1 	; shift
+
+    local uopt="&merge=50&split=50&aliroot=last,regular"
+
+    local dir=$real_dir
+    local pat=$real_pat
+    local rl=$runs
+    local tree=esdTree
+
+    if test $mc -gt 0 ; then 
+	dir=$mc_dir
+	pat=$mc_pat
+	rl=$mcruns
+    fi
     case $type in 
-	mc*) 
-	    mc=1  
-	    # Default dirs are production dirs 
-	    dir=$mc_dir
-	    pat=$mc_pat
-	    rl=$mcruns
-	    ;;
-	*) ;;
-    esac
-    case $type in 
-	*corr)  cl=MakeMCCorrTrain ; mc=1 ;;
-	*eloss) cl=MakeFMDELossTrain ;;  
-	*aod)   cl=MakeAODTrain 
-	    opts="${opts} --corr=."
-	    # opts="--corr=${name}_corrs_${now} --cent"
-	    # if test $sys -gt 0 && test $snn -gt 0 ; then 
-	    # 	opts="$opts --sys=${sys} --snn=${snn} --field=${field}"
-	    # fi
-	    ;;
-	*dndeta) cl=MakedNdetaTrain 
-	    tree=aodTree 
+	*dndeta|*multdists) 
 	    uopt="${uopt}&concat"
-	    opts="${opts} --cut-edges"
-	    case x$trig in 
-		xinel)    
-		    opts="$opts --scheme=trigger,event,background}" 
-		    opts="$opts --trig=INEL" 
-		    ;;
-		xnsd)     
-		    opts="$opts --scheme=trigger,event"
-		    opts="$opts --trig=V0AND"
-		    ;;
-		xinelgt0) 
-		    opts="$opts --scheme=trigger,event"
-		    opts="$opts --trig=INELGT0"
-		    ;;
-		x*) trig= ;;
-	    esac
-	    if test "x$trig" != "x" ; then 
-		nme="${nme}_${trig}"
-	    fi
-	    # Modify for input dir for our files
-	    dir=$my_real_dir
-	    pat="*/AliAOD.root"
-	    if test $mc -gt 0 ; then 
-		dir=$my_mc_dir
-		opts="$opts --mc"
-	    fi
-	    ;;
-	*multdists) 
-	    cl=MakeMultDistsTrain 
 	    tree=aodTree 
 	    # Modify for input dir for our files
 	    dir=$my_real_dir
@@ -587,13 +351,6 @@ allAboard()
 		dir=$my_mc_dir
 	    fi
 	    ;;
-	*) echo "$0: Unknown type of train: $type" > /dev/stderr ; exit 1 ;;
-    esac
-    # add centrality flag if we do not know what collision system we're 
-    # looking at, or it's PbPb or pPb. 
-    case $sys in 
-	0|2|3) opts="$opts --cent" ;; 
-	1)                         ;;
     esac
     if test $mc -gt 0; then 
 	uopt="${uopt}&mc"
@@ -604,14 +361,19 @@ allAboard()
     if test x$uuopts != x ; then 
 	uopt="${uopt}&${uuopts}"
     fi
-    url="alien://${dir}?run=${rl}&pattern=${pat}${uopt}#${tree}"
-    opts="${opts} --include=$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains"
-    opts="${opts} --date=${now} --class=$cl --name=$nme --verbose=0"
-    
-    echo "Running train: runTrain ${opts} --url=${url} $@" 
-    if test $noact -gt 0 ; then return ; fi
+    url="alien://${dir}?run=${rl}&pattern=${pat}${uopt}#${tree}"    
+}
 
-    runTrain ${opts} --overwrite --url=${url} $@ 
+    
+# --- Run the train --------------------------------------------------
+# Usage:
+# 
+allAboard()
+{
+    local type=$1 ; shift
+    local trig=$1 ; shift
+    opts="--batch"
+    _allAboard "$type" "$trig" $@ 
 
     if test $watch -lt 1 ; then 
 	cat <<-EOF
@@ -619,13 +381,9 @@ allAboard()
 	
 	Remember to do 
 	
-	  (cd ${nme}_${now} && aliroot -l -b -q Terminate.C)
+	  $0 --what=... --step=terminate
 	
-	until the final merge stage, and then do 
-		
-	  (cd ${nme}_${now} && aliroot -l -b -q Download.C) 
-	
-	to get the results. 
+	until the final merge stage to get the results. 
 	EOF
 	
 	case $type in 
@@ -633,322 +391,49 @@ allAboard()
 		cat <<-EOF
 	Then, do 
 	
-	  (cd ${nme}_${now} && aliroot -l -b -q Extract.C)
-	  (cd ${nme}_${now} && aliroot -l -b -q 'Upload.C("local://${here}/${name}_corrs_${now}")')
+	  $0 --what=... --step=upload 
 	
 	to upload the results to our local corrections store. 
 	EOF
 		;; 
-	    *aod)
+	    *aod|*dndeta)
 		cat <<-EOF
 	Then, do 
 	 
-	  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawAODSummary.C)
+	  $0 --what=... --step=draw
 	
-	to get a PDF of the diagnostics histograms
-	EOF
-		;;
-	    *dndeta)
-		cat <<-EOF
-	Then, do 
-	 
-	  (cd ${nme}_${now} && aliroot -l ${fwd_dir}/DrawdNdetaSummary.C)
-	
-	to get a PDF of the diagnostics histograms, and 
-	
-	  (cd ${nme}_${now} && aliroot -l Draw.C)
-	
-	to get the final plot. 
+	to get a PDF of the diagnostics histograms and the final plots. 
 	EOF
 		;;
 	esac
     else 
 	echo "Now waiting for jobs to finish"
 	(cd ${nme}_${now} && \
-	    nice aliroot -l -b -x -q Watch.C\(1\) > watch.log 2>&1 &)
+	    nice aliroot -l -b -x -q Watch.C\(1\) 2>&1 | \
+	    tee watch.log > /dev/null &)
     fi
 }
 
+# --- Collect a directory --------------------------------------------
+collect_files()
+{
+    local dir=$1 ; shift
+    local d=$1 ; shift 
+    local M=$1 ; shift 
+    local out=$1 ; shift
+    local r=$1 ; shift
+    local files="$1"
 
-# === Wrappers =======================================================
-# --- Run all correction jobs ----------------------------------------
-corrs()
-{
-    allAboard mccorr "" $@
-    allAboard mceloss "" $@
-    allAboard eloss "" $@
-}
-corrs_terminate() 
-{
-    (cd ${name}_mccorr_${now}  && terminate)
-    (cd ${name}_mceloss_${now} && terminate)
-    (cd ${name}_eloss_${now}   && terminate)
-}
-corrs_upload() 
-{
-    (cd ${name}_mccorr_${now}  && extract_upload)
-    (cd ${name}_mceloss_${now} && extract_upload)
-    (cd ${name}_eloss_${now}   && extract_upload)
-    rm -f fmd_corrections.root spd_corrections.root 
-    ln -s ${name}_corrs_${now}/fmd_corrections.root .
-    ln -s ${name}_corrs_${now}/spd_corrections.root .
-}
-corrs_draw()
-{
-    (cd ${name}_mccorr_${now}  && draw ${fwd_dir}/DrawMCCorrSummary.C)
-    (cd ${name}_mceloss_${now} && draw ${fwd_dir}/corrs/DrawCorrELoss.C 1)
-    (cd ${name}_eloss_${now}   && draw ${fwd_dir}/corrs/DrawCorrELoss.C 0)
-}
-# --- Run all AOD jobs -----------------------------------------------
-aods()
-{
-    allAboard mcaod "" $@
-    allAboard aod "" $@
-}
-aods_terminate() 
-{
-    (cd ${name}_mcaod_${now} && terminate)
-    (cd ${name}_aod_${now}   && terminate)
-}
-aods_upload()
-{
-    echo "Upload does not make sense for AOD jobs"
-}
-aods_draw() 
-{
-    (cd ${name}_mcaod_${now} && draw ${fwd_dir}/DrawAODSummary.C)
-    (cd ${name}_aod_${now}   && draw ${fwd_dir}/DrawAODSummary.C)
+    for ad in $dir/root_archive_* ; do 
+	if test ! -d $ad ; then continue ; fi 
+	local r=`basename $ad | sed 's/root_archive_0*//'` 
+	_collect_files "$ad" "$d" "$M" "$out" "$r" "$files"
+    done # for ad in ...
 }
 
-# --- Run all dN/deta jobs -------------------------------------------
-dndetas()
-{
-    if test $sys -eq 1 ; then 
-	allAboard mcdndeta inel $@
-	allAboard mcdndeta nsd $@
-	allAboard mcdndeta inelgt0 $@
-	allAboard dndeta inel $@
-	allAboard dndeta nsd $@
-	allAboard dndeta inelgt0 $@
-    else
-	allAboard mcdndeta "" $@
-	allAboard dndeta   "" $@
-    fi
-}
-dndetas_terminate() 
-{
-    if test $sys -eq 1 ; then 
-	(cd ${name}_mcdndeta_inel_${now}    && terminate)
-	(cd ${name}_mcdndeta_nsd_${now}     && terminate)
-	(cd ${name}_mcdndeta_inelgt0_${now} && terminate)
-	(cd ${name}_dndeta_inel_${now}      && terminate)
-	(cd ${name}_dndeta_nsd_${now}       && terminate)
-	(cd ${name}_dndeta_inelgt0_${now}   && terminate)
-    else
-	(cd ${name}_mcdndeta_${now} && terminate)
-	(cd ${name}_dndeta_${now}   && terminate)
-    fi
-}
-dndetas_upload()
-{
-    echo "Upload does not make sense for dN/deta jobs"
-}
-dndetas_draw() 
-{
-    if test $sys -eq 1 ; then 
-	dndeta_draw ${name}_mcdndeta_inel_${now}
-	dndeta_draw ${name}_mcdndeta_nsd_${now}
-	dndeta_draw ${name}_mcdndeta_inelgt0_${now}
-	dndeta_draw ${name}_dndeta_inel_${now} 
-	dndeta_draw ${name}_dndeta_nsd_${now} 
-	dndeta_draw ${name}_dndeta_inelgt0_${now} 
-    else
-	dndeta_draw ${name}_dndeta_${now} 
-    fi
-}
-
-# --- Run all MultDists -------------------------------------------
-multdists()
-{
-    allAboard mcmultdists "" $@
-    allAboard multdists   "" $@
-}
-dndetas_terminate() 
-{
-    (cd ${name}_mcmultdists_${now} && terminate)
-    (cd ${name}_multdists_${now}   && terminate)
-}
-multdists_upload()
-{
-    echo "Upload does not make sense for P(Nch) jobs"
-}
-multdists_draw() 
-{
-    (cd ${name}_mcmultdists_${now} && draw Summarize.C)
-    (cd ${name}_multdists_${now}   && draw Summarize.C)
-}
-
-# --- Collect PDFs ---------------------------------------------------
-collect()
-{
-    out=${name}_pdfs_${now}
-    rm -rf $out
-    mkdir -p ${out}
-    dirs="corr eloss aod dndeta dndeta_inel dndeta_nsd dndeta_inelgt0 multdists"
-    for d in ${dirs} ; do 
-	for m in "" "mc" ; do 
-	    dir=${name}_${m}${d}_${now}
-	    M=
-	    case x$m in 
-		x)   M=real ;; 
-		xmc) M=simu ;;
-	    esac
-	    if test ! -d $dir ; then 
-		# echo "Directory ${dir} doesn't exist"
-		continue
-	    fi
-	    # echo "Will look in $dir"
-	    files=
-	    case $d in 
-		corr)      files="forward_mccorr.pdf" ;; 
-		eloss)     files="corrs*.pdf" ;; 
-		aod)       files="forward.pdf" ;; 
-		dndeta*)   files="forward_dndeta.pdf dNdeta*.pdf" ;; 
-		multdists) files="forward_multdists.pdf" ;;
-		*) echo "Unknown directory type: $d" > /dev/stder 
-		    continue 
-		    ;;
-	    esac
-	    for ad in $dir/root_archive_* ; do 
-		if test ! -d $ad ; then continue ; fi 
-		run=`basename $ad | sed 's/root_archive_0*//'` 
-
-		for f in $files ; do 
-		    ff=$ad/$f
-		    tgt=
-		    case $ff in 
-			*/forward_mccorr.pdf)    tgt=summary_mccorr ;; 
-			*/forward.pdf)           tgt=summary_${d}_${M} ;; 
-			*/forward_dndeta.pdf)    tgt=summary_${d}_${M} ;; 
-			*/forward_multdists.pdf) tgt=summary_${d}_${M} ;; 
-			*/corr*.pdf)             tgt=summary_${d}_${M} ;; 
-			*/dNdeta*.pdf)           tgt=${d}_${M} ;;
-			*) echo "Don't know how to deal with $ff" >/dev/stderr 
-			    continue
-			    ;;
-		    esac
-		    tgt=`printf "%s_%09d.pdf" $tgt $run` 
-		    printf "%100s -> %s\n" $ff $tgt
-		    if test ! -f $ff ; then 
-			echo "$ff not found - ignored"
-			continue
-		    fi
-		    cp $ff $out/$tgt
-		done # for f in files
-	    done # for ad in ...
-	done
-    done 
-    (cd ${out} && pdfjoin -q -o tmp.pdf \
-	--pdftitle "${name} summary ($now)" \
-	--twoside summary_*.pdf dndeta_*.pdf && \
-	pdfnup -q --nup 2x1 -o ${name}_summary_${now}.pdf tmp.pdf && \
-	rm -f tmp.pdf)
-    (cd ${out} && pdfjoin -q -o tmp.pdf \
-	--pdftitle "${name} dN/deta ($now)" \
-	--twoside dndeta_*.pdf && \
-	pdfnup -q --nup 2x1 -o ${name}_dndeta_${now}.pdf tmp.pdf && \
-	rm -f tmp.pdf)
-    echo "Made ${name}_summary_${now}.pdf and ${name}_dndeta_${now}.pdf"
-}
-collect_terminate()
-{
-    echo "Terminate does not make sense for PDF jobs"
-}
-collect_upload()
-{
-    echo "Upload does not make sense for PDF jobs"
-}
-collect_draw() 
-{
-    echo "Draw does not make sense for PDF jobs"
-}    
+    
 # === Procedual code =================================================
-# --- Source settings if found ---------------------------------------
-if test -f $dotconf ; then 
-    source $dotconf 
-fi
-
-
-# --- Process command line -------------------------------------------
-what=
-step=
-while test $# -gt 0 ; do
-    arg=$1 
-    opt=
-    case $1 in 
-	--) shift ; break ;;
-	--*=*) 
-	    arg=`echo $1 | sed 's/=.*//'` ;
-	    opt=`echo $1 | sed 's/--[^=][^=]*=//'` 
-	    ;;
-	--*)
-	    ;;
-	-h|-N|-H|-a) ;;
-	-*) opt=$2 ; shift ;; 
-    esac
-    shift 
-
-    case $arg in 
-	-r|--runs)         runs=$opt     ;; 
-	-R|--mc-runs)      mcruns=$opt   ;;
-	-n|--name)         name=$opt     ;; 
-	-S|--sys)          sys=`echo $opt | tr '[A-Z]' '[a-z]'` ;;
-	-E|--snn)          snn=$opt      ;; 
-	-F|--field)        field=$opt    ;;
-	-d|--real-dir)     real_dir=$opt ;;
-	-p|--real-pattern) real_pat=$opt ;; 
-	-D|--mc-dir)       mc_dir=$opt   ;; 
-	-P|--mc-pattern)   mc_pat=$opt   ;; 
-	-w|--what)         what=`echo $opt | tr '[A-Z]' '[a-z]'`  ;; 
-	-s|--step)         step=`echo $opt | tr '[A-Z]' '[a-z]'`  ;; 
-	-W|--watch)        let watch=\!$watch ;;
-	-N|--noact)        noact=1            ;;
-	-c|--corrections)  corrs=$opt    ;;
-	-a|--par)          par=1         ;;
-	-u|--url-opts)     uuopts="$opt" ;;
-	-h|--help)         usage         ; exit 0 ;; 
-	-H|--manual)       manual        ; exit 0 ;;
-	*) echo "$0: Unknown option $arg"  ; exit 1 ;; 
-    esac
-done 
-
-# --- Check settings -------------------------------------------------
-check $what
-
-# --- Select what to do ----------------------------------------------
-func=
-case $what in 
-    setup)    setup ; exit 0 ;; 
-    clean)    cleanup ; exit 0 ;;
-    corr*)    func=corrs;; 
-    aod*)     func=aods ;; 
-    dndeta*)  func=dndetas ;; 
-    multdist*)func=multdists ;;
-    collect*) func=collect ;;    
-    *) echo "$0: Unknown operation: $what" > /dev/stderr ; exit 1 ;;
-esac
-print_setup
-
-case x$step in 
-    x|xfull) ;; 
-    xterm*) func=${func}_terminate ;; 
-    xup*)   func=${func}_upload ;; 
-    xdr*)   func=${func}_draw ;;
-    *) echo "$0: Unknown step $step" > /dev/stderr ; exit 1 ;;
-esac
-
-echo "Will execute $func" 
-$func $@ 
+runIt $@
 
 #
 # EOF
