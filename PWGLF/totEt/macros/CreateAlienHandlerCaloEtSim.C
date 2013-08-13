@@ -1,4 +1,4 @@
-AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName, const char * pluginRunMode, int production, Bool_t isPHOS, Bool_t ispp,Bool_t isData)
+AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName, const char * pluginRunMode, int production, Bool_t isPHOS, Bool_t ispp,Bool_t isData, Int_t runnum)
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -16,8 +16,8 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 
   // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-34-05");
-   plugin->SetAliROOTVersion("v5-04-62-AN");
+   plugin->SetROOTVersion("v5-34-08");
+   plugin->SetAliROOTVersion("v5-05-02-AN");
   // Declare input data to be processed.
 
   // Method 1: Create automatically XML collections using alien 'find' command.
@@ -68,12 +68,40 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
    }
    else{
     if(isData){//185 jobs
-      cout<<"Running over data"<<endl;
-      plugin->SetGridDataDir("/alice/data/2010/LHC10h");//PbPb data
-      plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
-      plugin->SetRunPrefix("000");   // real data
-      plugin->AddRunNumber(139465);
-      outputDir = outputDir + "LHC10hPass2";
+	 cout<<"Running over data"<<endl;
+       if(production==1){
+	 plugin->SetGridDataDir("/alice/data/2010/LHC10h");//PbPb data
+	 plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
+	 plugin->SetRunPrefix("000");   // real data
+	 outputDir = outputDir + "LHC10hPass2";
+	 if(runnum==0){
+	   plugin->AddRunNumber(139465);
+	   outputDir = outputDir + "Run139465";
+	 }
+	 if(runnum==1){
+	   plugin->AddRunNumber(138442);
+	   outputDir = outputDir + "Run138442";
+	 }
+	 if(runnum==2){
+	   plugin->AddRunNumber(138364);
+	   outputDir = outputDir + "Run138364";
+	 }
+	 if(runnum==3){
+	   plugin->AddRunNumber(138534);
+	   outputDir = outputDir + "Run138534";
+	 }
+	 if(runnum==4){
+	   plugin->AddRunNumber(138275);
+	   outputDir = outputDir + "Run138275";
+	 }
+       }
+       if(production==2){
+	 plugin->SetGridDataDir("/alice/data/2011/LHC11h_2");//PbPb data
+	 plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
+	 plugin->SetRunPrefix("000");   // real data
+	 plugin->AddRunNumber(169099);
+	 outputDir = outputDir + "LHC11hPass2";
+       }
     }
     else{
       if(production==0){
@@ -101,6 +129,10 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 // 	        plugin->AddRunNumber(137161);
 // 	        plugin->AddRunNumber(139470);
 		plugin->AddRunNumber(139465);//probably our focus now
+// 	 plugin->AddRunNumber(138442);
+// 	 plugin->AddRunNumber(138364);
+// 	 plugin->AddRunNumber(138534);
+// 	 plugin->AddRunNumber(138275);
       }
       if(production==2){
 	if(!isPHOS){
@@ -156,7 +188,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   // is correlated with the run time - count few hours TTL per job, not minutes !
   plugin->SetSplitMaxInputFileNumber(100);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
-  plugin->SetMaxInitFailed(50);
+  //plugin->SetMaxInitFailed(50);
   // Optionally resubmit threshold.
   //plugin->SetMasterResubmitThreshold(90);
   // Optionally set time to live (default 30000 sec)
