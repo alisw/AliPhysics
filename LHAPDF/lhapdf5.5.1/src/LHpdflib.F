@@ -268,6 +268,10 @@ subroutine setlhaparm(lparm)
      lhaparm(15)='EKS98'
   else if(lparm.eq.'EPS08') then
      lhaparm(15)='EPS08'
+  else if (lparm.eq.'EPS09LO') then
+     lhaparm(15) = 'EPS09LO'
+  else if (lparm.eq.'EPS09NLO') then
+     lhaparm(15) = 'EPS09NLO'
   else if(lparm.eq.'15') then
      lhaparm(15)=''
   else if(lparm.eq.'NOSTAT') then

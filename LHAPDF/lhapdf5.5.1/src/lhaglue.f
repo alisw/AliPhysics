@@ -982,13 +982,15 @@ subroutine structa(x,q,a,upv,dnv,usea,dsea,str,chm,bot,top,glu)
   implicit double precision (a-h,o-z)
   character*20 lparm
   call getlhaparm(15,lparm)
-
+  ia = int(a);
   if(lparm.eq.'EPS08') then
      call eps08(x,q,a,ruv,rdv,ru,rd,rs,rc,rb,rt,rg)
   else if (lparm.eq.'EPS09LO') then
-     call eps09(1, 1, a, x, q, ruv, rdv, ru, rd, rs, rc, rb, rt, rg)
+     call eps09(1, 1, ia, x, q, ruv, rdv, ru, rd, rs, rc, rb, rg)
+     rt = 1.
   else if (lparm.eq.'EPS09NLO') then
-     call eps09(2, 1, a, x, q, ruv, rdv, ru, rd, rs, rc, rb, rt, rg)
+     call eps09(2, 1, ia, x, q, ruv, rdv, ru, rd, rs, rc, rb, rg)
+     rt = 1.
   else
      call eks98(x,q,a,ruv,rdv,ru,rd,rs,rc,rb,rt,rg)
   endif
