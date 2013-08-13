@@ -46,7 +46,7 @@ eventCuts->SetMinVtxContributors(1);
 
 
   //load dielectron configuration file
-  gROOT->LoadMacro(configFile.Data());
+  gROOT->LoadMacro(configFilePath.Data());
 
   //If MC available decide which pdg codes are tested:
 
