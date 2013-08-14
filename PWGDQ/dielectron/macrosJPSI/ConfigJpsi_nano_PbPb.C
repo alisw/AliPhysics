@@ -116,8 +116,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
   // TOF inclusion
   //  pidVarCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
-  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,
-		  AliDielectronPID::kIfAvailable);
+  //  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
   // TPC inclusion
   pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);
