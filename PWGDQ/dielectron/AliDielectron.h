@@ -205,6 +205,7 @@ private:
   
   void  FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly=kFALSE);
   void  FillMCHistograms(const AliVEvent *ev);
+  void  FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal);
   void  FillHistogramsMC(const AliMCEvent *ev,  AliVEvent *ev1);
   void  FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);

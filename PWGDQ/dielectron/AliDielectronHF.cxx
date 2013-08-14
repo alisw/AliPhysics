@@ -319,6 +319,7 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
 
   AliVParticle* part1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label1);
   AliVParticle* part2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label2);
+  if(!part1 || !part2) return;
 
   AliDielectronMC* dieMC = AliDielectronMC::Instance();
   

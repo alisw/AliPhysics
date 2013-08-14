@@ -24,6 +24,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TH3D.h>
+#include <THnBase.h>
 #include <TFile.h>
 #include <TDatabasePDG.h>
 #include <TKey.h>
@@ -182,6 +183,7 @@ public:
     kEMCALM20,               // M20 showershape parameter
     kEMCALDispersion,        // Dispersion paramter
     
+    kLegEff,                 // single electron efficiency
     kV0Index0,               // v0 index 0
     kKinkIndex0,             // kink index 0
       
@@ -246,6 +248,7 @@ public:
     kTRDpidEffPair,          // TRD pid efficieny from conversion electrons
     kMomAsymDau1,            // momentum fraction of daughter1
     kMomAsymDau2,            // momentum fraction of daughter2
+    kPairEff,                 // pair efficiency
     kPairMax,                 //
   // Event specific variables
     kXvPrim=kPairMax,        // prim vertex
@@ -397,6 +400,7 @@ public:
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
   static void InitTRDpidEffHistograms(const Char_t* filename);
+  static void InitEffMap(const Char_t* filename);
   static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   
   static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
@@ -411,6 +415,7 @@ public:
 
   static TProfile* GetEstimatorHistogram(Int_t period, Int_t type) {return fgMultEstimatorAvg[period][type];}
   static Double_t GetTRDpidEfficiency(Int_t runNo, Double_t centrality, Double_t eta, Double_t trdPhi, Double_t pout, Double_t& effErr);
+  static Double_t GetSingleLegEff(Double_t * const values);
 
   static const AliKFVertex* GetKFVertex() {return fgKFVertex;}
   
@@ -452,6 +457,7 @@ private:
   static TProfile        *fgMultEstimatorAvg[4][9];  // multiplicity estimator averages (4 periods x 9 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
+  static THnBase         *fgEffMap;             // single electron efficiencies
   static TString          fgVZEROCalibrationFile;  // file with VZERO channel-by-channel calibrations
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
   static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
@@ -731,8 +737,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kEMCALM02]        = showershape[1];
   values[AliDielectronVarManager::kEMCALM20]        = showershape[2];
   values[AliDielectronVarManager::kEMCALDispersion] = showershape[3];
-  
-  
+
+  values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
   //restore TPC signal if it was changed
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 }
@@ -952,6 +958,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   } //if(mc->HasMC())
   
   values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
+  values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
 }
 
 inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *particle, Double_t * const values)
@@ -1475,13 +1482,21 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   AliVParticle* leg1 = pair->GetFirstDaughter();
   AliVParticle* leg2 = pair->GetSecondDaughter();
   if (leg1)
-	values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? leg1->P()  / values[AliDielectronVarManager::kP]: 0;
+    values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? leg1->P()  / values[AliDielectronVarManager::kP]: 0;
   else 
-	values[AliDielectronVarManager::kMomAsymDau1] = -9999.;
+    values[AliDielectronVarManager::kMomAsymDau1] = -9999.;
   if (leg2)
-	values[AliDielectronVarManager::kMomAsymDau2] = (values[AliDielectronVarManager::kP] != 0)? leg2->P()  / values[AliDielectronVarManager::kP]: 0;
+    values[AliDielectronVarManager::kMomAsymDau2] = (values[AliDielectronVarManager::kP] != 0)? leg2->P()  / values[AliDielectronVarManager::kP]: 0;
   else 
-	values[AliDielectronVarManager::kMomAsymDau2] = -9999.;
+    values[AliDielectronVarManager::kMomAsymDau2] = -9999.;
+
+  Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
+  Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+  if (leg1 && leg2 && fgEffMap) {
+    Fill(leg1, valuesLeg1);
+    Fill(leg2, valuesLeg2);
+    values[AliDielectronVarManager::kPairEff] = valuesLeg1[AliDielectronVarManager::kLegEff] *valuesLeg2[AliDielectronVarManager::kLegEff];
+  }
 }
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
@@ -2115,6 +2130,37 @@ inline void AliDielectronVarManager::InitTRDpidEffHistograms(const Char_t* filen
       ++idxn;
     }
   }
+}
+
+inline void AliDielectronVarManager::InitEffMap(const Char_t* filename) {
+  //
+  // init an efficiency object for on-the-fly correction calculations
+  //
+  fgEffMap=0x0;
+  TFile* file=TFile::Open(filename);
+  THnBase *hGen = (THnBase*) file->Get("hGenerated");
+  THnBase *hFnd = (THnBase*) file->Get("hFound");
+  if(!hFnd || !hGen) return;
+
+  fgEffMap  = (THnBase*) hFnd->Clone("effMap");
+  fgEffMap->Divide(hFnd, hGen, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
+  if(fgEffMap) printf("[I] AliDielectronVarManager::InitEffMap eff map loaded! \n");
+}
+
+inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values) {
+  //
+  // get the single leg efficiency for a given particle
+  //
+  if(!fgEffMap) return -1.;
+
+  Int_t dim=fgEffMap->GetNdimensions();
+  Int_t idx[dim];
+  for(Int_t idim=0; idim<dim; idim++) {
+    UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
+    idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
+  }
+  /* printf("bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx)); */
+  return (fgEffMap->GetBinContent(idx));
 }
 
 

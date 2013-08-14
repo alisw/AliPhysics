@@ -133,6 +133,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"EMCAL_M20",              "M20 EMCAL showershape param.",                       ""},
   {"EMCAL_Dispersion",       "EMCAL dispersion param.",                            ""},
 
+  {"EffLeg",                 "A#times#epsilon",                                    ""},
   {"V0Index0",               "V0Index0",                                           ""},
   {"KinkIndex0",             "KinkIndex0",                                         ""},
   //
@@ -190,6 +191,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDpidEffPair",          "#epsilon^{TRD pair}(PID)",                           ""},
   {"MomAsymDau1",            "#it{p}^{leg1}/#it{p}^{pair}",                        ""},
   {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
+  {"EffPair",                "A#times#epsilon",                                    ""},
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
@@ -391,6 +393,7 @@ AliEventplane*  AliDielectronVarManager::fgTPCEventPlane    = 0x0;
 AliKFVertex*    AliDielectronVarManager::fgKFVertex         = 0x0;
 TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[4][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
+THnBase*        AliDielectronVarManager::fgEffMap           = 0x0;
 Double_t        AliDielectronVarManager::fgTRDpidEffCentRanges[10][4] = {{0.0}};
 TString         AliDielectronVarManager::fgVZEROCalibrationFile = "";
 TString         AliDielectronVarManager::fgVZERORecenteringFile = "";
