@@ -52,14 +52,11 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	 << "mc                            - Run on MC\n"
 	 << "usekine                       - To run on kinematical level \n"
 	 << "event-mixing/mixing           - Whether to also run event-mixing (NB! Use AddTaskDxHFECorrelationME.C for eventmixing)\n"
-	 << "useTrackEff                   - If you want to use tracking efficiency (need to attach efficiency maps\n"
-	 << "TrackEffName=                 - The file where the efficiency map is stored\n"
 	 << "trigger=D/D0/electron         - Which particle to trigger on \n"
 	 << "\nD0 settings: \n"
 	 << "fillD0scheme=both/D0/D0bar    - Which fillsheme to use for D0\n"
 	 << "\nelectron settings: \n"
 	 << "useinvmasscut                 - If you want to use invariant mass cut (default is 100MeV/c)\n" 
-	 << "twoselectedinvmasscut         - If you want to use invariant mass selection with stricter cut on partner\n"
 	 << "invmasscut=                   - If you want to specify a different invariant mass cut \n"
 	 << "extraname=                    - extraname for directory and list if you run several tasks at once\n"
 	 << "tpcclusters=                  - How many TPC clusters to use on single track cuts for electrons (default=120)\n"
@@ -85,8 +82,6 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   Int_t triggerParticle=AliDxHFECorrelation::kD;
   Bool_t bUseMCReco=kFALSE;
   Bool_t bUseKine=kFALSE;
-  Bool_t bUseEffic=kFALSE;
-  TString TrackEffMap="";
   TString extraname="";
 
   cout << endl << "===============================================" << endl;
@@ -121,19 +116,16 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    argument.ReplaceAll("cutname=", "");
 	    poolConfigFile=argument;
 	  }
-	  if (argument.BeginsWith("TrackEffName=")) {
-	    argument.ReplaceAll("TrackEffName=", "");
-	    bUseEffic=kTRUE;
-	    TrackEffMap=argument;
-	    taskOptions+=" useTrackEff";
-	  }
-	  if(argument.BeginsWith("useTrackEff")) {
-	    bUseEffic=kTRUE;
-	    taskOptions+=" useTrackEff";
-	  }
+	  if (argument.BeginsWith("cutFilename=")) { //--------------------//
+	    argument.ReplaceAll("cutFilename=", ""); //   Move this to     //
+	    cutFilename=argument;                    //     cutname?       //
+	  }                                          //--------------------//
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
 	    taskOptions+=" mc";
+	  }
+	  if(argument.BeginsWith("elreco")){
+	    taskOptions+=" "+argument;
 	  }
 	  if(argument.BeginsWith("tpcclusters=")){
 	    argument.ReplaceAll("tpcclusters=", "");
@@ -149,14 +141,18 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    bEventMixing=kTRUE;
 	    taskOptions+=" event-mixing";
 	  }
-	  if(argument.BeginsWith("runmode=")){
-	    taskOptions+=" "+argument;
-	  }
 	  if (argument.BeginsWith("PbPb") ||
 	      argument.BeginsWith("system=1") ||
 	      argument.BeginsWith("Pb-Pb")) {
 	    system=1;
 	    taskOptions+=" system=Pb-Pb";
+	  }
+	  if (argument.BeginsWith("system=p-Pb") ||
+	      argument.BeginsWith("pPb") ||
+	      argument.BeginsWith("p-Pb") ||
+	      argument.BeginsWith("system=2")) {
+	    system=2;
+	    taskOptions+=" system=p-Pb";
 	  }
 	  if (argument.BeginsWith("fillD0scheme=")){
 	    taskOptions+=" "+argument;
@@ -175,10 +171,6 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	  if (argument.CompareTo("runD0MassReference")==0){
 	    bRunD0MassReference=kTRUE;
 	  }
-	  if(argument.BeginsWith("maxPtCombinedPID="))
-	    taskOptions+=" "+argument;
-	  if(argument.BeginsWith("ElSelection="))
-	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("useinvmasscut"))
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("twoselectedinvmasscut"))
@@ -191,12 +183,6 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("storelastcutstep"))
 	    taskOptions+=" "+argument;
-	  if(argument.BeginsWith("notusefilterbit")){
-	    taskOptions+=" "+argument;
-	  }
-	  if(argument.BeginsWith("filterbit=")){
-	    taskOptions+=" "+argument;
-	  }
 	  if(argument.BeginsWith("extraname=")){
 	    argument.ReplaceAll("extraname=", "");
 	    extraname=argument;
@@ -281,54 +267,82 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
   ofilename+=":"+analysisName;
 
+ if(cutFilename=="")
+    {
   ///______________________________________________________________________
   /// Cuts For D0
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   // TODO: we might want to move this to separate functions if more data
   // sets are going to be handled
-  if (system==0) {|
+
+  //p-p
+  if (system==0) {
   RDHFD0toKpi->SetStandardCutsPP2010();
-  } else {
-  // TODO: think about p-Pb
-  RDHFD0toKpi->SetStandardCutsPbPb2011();
-
-  // For centrality 0-10%, add centrality flattening
-  //NB! NEED FOR THE MOMENT THE FILE!
-  TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
-  TCanvas *c=fFlat->Get("cintegral");
-  TH1F *hfl=(TH1F*)c->FindObject("hint");
-  RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
-  //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
-
-  RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
-  RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
   }
+
+  //Pb-Pb
+  else if (system==1) {
+    // TODO: think about p-Pb
+    RDHFD0toKpi->SetStandardCutsPbPb2011();
+    
+    // For centrality 0-10%, add centrality flattening
+    //NB! NEED FOR THE MOMENT THE FILE!
+    TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
+    TCanvas *c=fFlat->Get("cintegral");
+    TH1F *hfl=(TH1F*)c->FindObject("hint");
+    RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
+    //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    
+    RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
+    RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
+  }
+
+  //p-Pb
+  else if (system==2) {  
+    RDHFD0toKpi->SetStandardCutsPP2010();
+    RDHFD0toKpi->SetTriggerMask(AliVEvent::kINT7); //pPb
+    RDHFD0toKpi->SetTriggerClass(""); //pPb
+  }
+  else {
+    //warning, no system set
+  }
+  
 
   ///______________________________________________________________________
   /// Cuts for HFE
   TString hfeCutsName;
-  if (system==0) hfeCutsName="HFE Standard Cuts";
-  else hfeCutsName="HFE Cuts PbPb";
+  if (system==0){
+    hfeCutsName="HFE Standard Cuts";
+  }
+
+  if (system==1){
+    hfeCutsName="HFE Cuts PbPb";
+  }
+
+  if (system==2){
+    hfeCutsName="HFE Cuts pPb";
+  }
+  
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF", hfeCutsName);
   hfecuts->CreateStandardCuts();
-
+  
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersTPC(NrTPCclusters);	//Default = 80
   hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
   hfecuts->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
-	
+  
   ///ITS
   hfecuts->SetCutITSpixel(ITSreq);        	//Cut on SPD
   //hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 	//Cut on SDD
   //hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetMinNClustersITS(NrITSclusters); //Default = 4
-	
+  
   ///TOF
   hfecuts->SetTOFPIDStep(kTRUE);
-		
+  
   ///Additional Cuts
-  hfecuts->SetPtRange(0.30, 10);
+  hfecuts->SetPtRange(0.30, 10.5);
   hfecuts->SetMaxImpactParam(1.,2.);
   hfecuts->SetVertexRange(10.);
 
@@ -370,21 +384,78 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   listHFE->Add(hfecuts);
   listHFE->Add(fPID);
   listHFE->Add(fPIDOnlyTOF);
+  listHFE->Add(fPIDOnlyTPC); //[FIXME] Not previously included. Remember to check other versions
+    }  // Should this extend further? (default cuts if cutlist-file is not present)
+ else //if there is a cutfile
+   {
+     TFile *filecuts;
+     TString finname="Cutlist.root";
+     filecuts=TFile::Open(finname.Data());
+     TString fRDHFcutsObj="D0toKpiCutsStandard";
+     AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+     RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(fRDHFcutsObj.Data());
+     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile\n\n\n\n\n\n\n\n\n\n");
+     RDHFD0toKpi->PrintAll();
+     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile done\n\n\n\n\n\n\n\n\n\n");
+     
+     
+     ///______________________________________________________________________
+     /// Cuts for HFE
+     AliHFEcuts *hfecuts = new AliHFEcuts();//("hfeCutsTPCTOF","HFE Standard Cuts");
+     TString fHFEcutsObj="hfeCutsTPCTOF";
+     hfecuts=(AliHFEcuts*)filecuts->Get(fHFEcutsObj.Data());
+     
+     // ________________________________________________________________________
+     // PID for HFE
+     // PID for Only TOF
+     
+     AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
+     TString fHFEpidTOFobj="hfePidTOF";
+     fPIDOnlyTOF=(AliHFEpid*)filecuts->Get(fHFEpidTOFobj.Data());
+     
+     // PID object for TPC and TOF combined
+     // Check if PID is set from outside (passed as argument)
+     
+     AliHFEpid* fPID = new AliHFEpid("hfePid");
+     TString fHFEpidobj="hfePid";
+     fPID=(AliHFEpid*)filecuts->Get(fHFEpidobj.Data());
+     
+     AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
+     TString fHFEpidTPCobj="hfePidTPC";
+     fPIDOnlyTPC=(AliHFEpid*)filecuts->Get(fHFEpidTPCobj.Data());
+     
+     
+     //=========================================================
+     //Create TList of cut (and pid) objects for D0 or electron
+     TList *listHFE = new TList;
+     /*      if(Particle==AliAnalysisTaskDxHFEParticleSelection::kD0){
+	     Cutlist->SetName("cut objects D0");
+	     Cutlist->Add(RDHFD0toKpi);
+	     }
+	     else if(Particle==AliAnalysisTaskDxHFEParticleSelection::kElectron){
+     */
+     listHFE->SetName("cut objects HFE");
+     listHFE->Add(hfecuts);
+     listHFE->Add(fPID);
+     listHFE->Add(fPIDOnlyTOF);
+     listHFE->Add(fPIDOnlyTPC);
+   }
 
-
-  ///______________________________________________________________________
-  /// Info for Pool
-  // TODO: Don't think we need the MC part of AliHFCorrelator, needs to be checked
-  AliAnalysisCuts* poolConfiguration=NULL;
-  if (poolConfigFile.IsNull()) {
-    // load the default configuration from below if no file is specified
-    if (system==0) poolConfiguration=createDefaultPoolConfig();
-    else poolConfiguration=createPbPbPoolConfig();
-  } else {
-    // load configuration from file, and abort if something goes wrong
-    TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
-    if(!filePoolConfiguration){
-      ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object file %s not found, exiting", poolConfigFile.Data()));
+ 
+ ///______________________________________________________________________
+ /// Info for Pool
+ // TODO: Don't think we need the MC part of AliHFCorrelator, needs to be checked
+ AliAnalysisCuts* poolConfiguration=NULL;
+ if (poolConfigFile.IsNull()) {
+   // load the default configuration from below if no file is specified
+   if (system==0) poolConfiguration=createDefaultPoolConfig();
+   else if (system==1) poolConfiguration=createPbPbPoolConfig();
+   else if (system==2) poolConfiguration=createDefaultPoolConfig();
+ } else {
+   // load configuration from file, and abort if something goes wrong
+   TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
+   if(!filePoolConfiguration){
+     ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object file %s not found, exiting", poolConfigFile.Data()));
       return 0;
     }
     TObject* pObj=filePoolConfiguration->Get(poolInfoName);
@@ -404,30 +475,6 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     return 0;
   } 
   poolConfiguration->Print();
-
-  // ******************************** OPENING THE EFFICIENCY MAPS  ************************************
-  if(bUseEffic){
-    if(!poolConfiguration){
-      cout << "Setting up AliHFAssociatedTrackCuts" << endl;
-      poolConfiguration = dynamic_cast<AliHFAssociatedTrackCuts*>();
-    }
-    //
-
-    cout << "Getting Efficiency map object from file \n" << TrackEffMap.Data() << "\n "<<  endl;
-    TFile* effFile=new TFile(TrackEffMap.Data());
-    if(!effFile->IsOpen()){
-      cout<<"Input file not found for efficiency! Exiting..."<<endl;
-      return 0;
-    }
-    
-    TCanvas *c = (TCanvas*)effFile->Get("c");
-    if(!c) {cout << "No canvas !" << endl;}
-    TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
-
-    if(!h3D) {cout << "No Single track efficiency histo " << endl; ;}
-	
-    poolConfiguration->AliHFAssociatedTrackCuts::SetEfficiencyWeightMap(h3D);
-  }
 
   //Taken out, causes problem when adding more than one task
   /*const char* taskName=AliAnalysisTaskDxHFECorrelation::Class()->GetName();
