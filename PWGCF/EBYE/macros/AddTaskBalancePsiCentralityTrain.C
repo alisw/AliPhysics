@@ -45,6 +45,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       TString analysisTypeUser="AOD",
 						       Bool_t bVertexBinning=kTRUE,
 						       Double_t sigmaElectronRejection=3,
+						       Bool_t electronExclusiveRejection=kFALSE,
 						       TString correctionFileName = "",
 						       Int_t nCentralityArrayBinsForCorrection,
 						       Double_t *gCentralityArrayForCorrections) {
@@ -175,8 +176,10 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
 
     // electron rejection (so far only for AOD), <0 --> no rejection
-    if(sigmaElectronRejection > 0) taskBF->SetElectronRejection(sigmaElectronRejection);
-    
+    if(sigmaElectronRejection > 0){
+      if(electronExclusiveRejection) taskBF->SetElectronOnlyRejection(sigmaElectronRejection); // no other particle in nsigma 
+      else                           taskBF->SetElectronRejection(sigmaElectronRejection); // check only if electrons in nsigma
+    }
   }
   else if(analysisType == "MC") {
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
@@ -197,6 +200,12 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 
     // set extra TPC chi2 / nr of clusters cut
     taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
+
+    // electron rejection (so far only for AOD), <0 --> no rejection
+    if(sigmaElectronRejection > 0){
+      if(electronExclusiveRejection) taskBF->SetElectronOnlyRejection(sigmaElectronRejection); // no other particle in nsigma 
+      else                           taskBF->SetElectronRejection(sigmaElectronRejection); // check only if electrons in nsigma
+    }
   }//++++++++++++++++
 
   // offline trigger selection (AliVEvent.h)

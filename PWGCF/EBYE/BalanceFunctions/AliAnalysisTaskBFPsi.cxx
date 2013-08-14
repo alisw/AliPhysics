@@ -118,7 +118,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPIDNSigma(3.),
   fMinAcceptedPIDProbability(0.8),
   fElectronRejection(kFALSE),
+  fElectronOnlyRejection(kFALSE),
   fElectronRejectionNSigma(-1.),
+  fElectronRejectionMinPt(0.),
+  fElectronRejectionMaxPt(1000.),
   fESDtrackCuts(0),
   fCentralityEstimator("V0M"),
   fUseCentrality(kFALSE),
@@ -160,6 +163,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
   fExcludeResonancesInMC(kFALSE),
+  fExcludeElectronsInMC(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
   fEventClass("EventPlane") 
@@ -1177,10 +1181,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       }
       if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
-
+      
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = aodTrack->Y();
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
+      
       //===========================PID (so far only for electron rejection)===============================//		    
       if(fElectronRejection) {
-	
+
 	// get the electron nsigma
 	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	
@@ -1189,21 +1199,36 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
 	//end of QA-before pid
 	
-	//Make the decision based on the n-sigma
-	if(nSigma < fElectronRejectionNSigma) continue;
-	
+	// check only for given momentum range
+	if( vPt > fElectronRejectionMinPt && vPt < fElectronRejectionMaxPt ){
+	  	  
+	  //look only at electron nsigma
+	  if(!fElectronOnlyRejection){
+	    
+	    //Make the decision based on the n-sigma of electrons
+	    if(nSigma < fElectronRejectionNSigma) continue;
+	  }
+	  else{
+	    
+	    Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
+	    Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
+	    Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
+	    
+	    //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+	    if(nSigma < fElectronRejectionNSigma
+	       && nSigmaPions   > fElectronRejectionNSigma
+	       && nSigmaKaons   > fElectronRejectionNSigma
+	       && nSigmaProtons > fElectronRejectionNSigma ) continue;
+	  }
+	}
+  
 	//Fill QA after the PID
 	fHistdEdxVsPTPCafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
 	fHistNSigmaTPCvsPtafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	
       }
       //===========================end of PID (so far only for electron rejection)===============================//
-      
-      vCharge = aodTrack->Charge();
-      vEta    = aodTrack->Eta();
-      vY      = aodTrack->Y();
-      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
-      vPt     = aodTrack->Pt();
-      
+
       Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
       Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
       
@@ -1312,6 +1337,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
 	}
+
+	//Exclude electrons with PDG
+	if(fExcludeElectronsInMC) {
+	  
+	  if(TMath::Abs(aodTrack->GetPdgCode()) == 11) continue;
+	  
+	}
 	
 	// fill QA histograms
 	fHistPt->Fill(vPt,gCentrality);
@@ -1370,6 +1402,47 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vY      = aodTrack->Y();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+
+      //===========================PID (so far only for electron rejection)===============================//		    
+      if(fElectronRejection) {
+
+	// get the electron nsigma
+	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
+
+	//Fill QA before the PID
+	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	//end of QA-before pid
+	
+	// check only for given momentum range
+	if( vPt > fElectronRejectionMinPt && vPt < fElectronRejectionMaxPt ){
+	  	  
+	  //look only at electron nsigma
+	  if(!fElectronOnlyRejection){
+	    
+	    //Make the decision based on the n-sigma of electrons
+	    if(nSigma < fElectronRejectionNSigma) continue;
+	  }
+	  else{
+	    
+	    Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
+	    Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
+	    Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
+	    
+	    //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+	    if(nSigma < fElectronRejectionNSigma
+	       && nSigmaPions   > fElectronRejectionNSigma
+	       && nSigmaKaons   > fElectronRejectionNSigma
+	       && nSigmaProtons > fElectronRejectionNSigma ) continue;
+	  }
+	}
+  
+	//Fill QA after the PID
+	fHistdEdxVsPTPCafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	
+      }
+      //===========================end of PID (so far only for electron rejection)===============================//
       
       Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
       Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
@@ -1429,6 +1502,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}	
 	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	if(kExcludeParticle) continue;
+      }
+
+      //Exclude electrons with PDG
+      if(fExcludeElectronsInMC) {
+	
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+	
+        if (AODmcTrack){ 
+	  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
+	}
       }
       
       // fill QA histograms
@@ -1729,7 +1813,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
 	}
-	
+
+	//Exclude electrons with PDG
+	if(fExcludeElectronsInMC) {
+	  
+	  TParticle *particle = track->Particle();
+	  
+	  if (particle){ 
+	    if(TMath::Abs(particle->GetPdgCode()) == 11) continue;
+	  }
+	}
+      
 	vPhi    = track->Phi();
 	//Printf("phi (before): %lf",vPhi);
 	
