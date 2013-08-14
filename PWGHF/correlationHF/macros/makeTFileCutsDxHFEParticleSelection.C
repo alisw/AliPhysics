@@ -39,8 +39,10 @@ using namespace std;
   "libANALYSISalice.so "
   ;
 */
-//const char* poolInfoName="PoolInfo";
-//AliAnalysisCuts* createDefaultPoolConfig();
+const char* poolInfoName="PoolInfo";
+AliAnalysisCuts* createDefaultPoolConfig();
+AliAnalysisCuts* createPbPbPoolConfig();
+AliAnalysisCuts* createpPbPoolConfig();
 
 void makeTFileCuts(TString arguments="")
 {
@@ -48,7 +50,7 @@ void makeTFileCuts(TString arguments="")
   //  TString libraries=libraryDependencies;
   //  Bool_t bUseMC=kFALSE;
   TString ofilename;
-  Int_t system=2;
+  Int_t system=0;
   TString taskOptions;
   Bool_t bUseMC=kFALSE;
   Bool_t bUseKine=kFALSE;
@@ -278,6 +280,51 @@ void makeTFileCuts(TString arguments="")
   fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
   fPIDOnlyTPC->InitializePID();
 
+  //--------------------------------------------//
+  //         Handling of pool-config            //
+  //--------------------------------------------//
+///______________________________________________________________________
+ /// Info for Pool
+ // TODO: Don't think we need the MC part of AliHFCorrelator, needs to be checked
+ AliAnalysisCuts* poolConfiguration=NULL;
+ // if (poolConfigFile.IsNull()) {
+   // load the default configuration from below if no file is specified
+   if (system==0) poolConfiguration=createDefaultPoolConfig();
+   else if (system==1) poolConfiguration=createPbPbPoolConfig();
+   else if (system==2) poolConfiguration=createpPbPoolConfig();
+ 
+ // } else {
+ //   // load configuration from file, and abort if something goes wrong
+ //   TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
+ //   if(!filePoolConfiguration){
+ //     ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object file %s not found, exiting", poolConfigFile.Data()));
+ //      return 0;
+ //    }
+ //    TObject* pObj=filePoolConfiguration->Get(poolInfoName);
+ //    if (!pObj) {
+ //      ::Error("AddTaskDxHFECorrelation", Form("No Pool configuration object with name '%s' found in file %s, exiting", poolInfoName, poolConfigFile.Data()));
+ //      return 0;
+ //    }
+ //    poolConfiguration = dynamic_cast<AliHFAssociatedTrackCuts*>(pObj);
+ //    if (!poolConfiguration) {
+ //      ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object '%s' has inconsistent class type %s, exiting", poolInfoName, pObj->ClassName()));
+ //      return 0;
+ //    }
+ // }
+
+   //  if(!poolConfiguration){
+   //    ::Fatal("AddTaskDxHFECorrelation", Form("Pool configuration not found"));
+   //    return 0;
+   //  } 
+  poolConfiguration->Print();
+
+
+
+  //============================================//
+  //       Handling of pool-config complete     //
+  //============================================//
+
+
   //=========================================================
   //Create TList of cut (and pid) objects for D0 or electron
   TList *Cutlist = new TList;
@@ -293,6 +340,7 @@ void makeTFileCuts(TString arguments="")
     Cutlist->Add(fPID);
     Cutlist->Add(fPIDOnlyTOF);
     Cutlist->Add(fPIDOnlyTPC);
+    Cutlist->Add(poolConfiguration);
     //}
 
   //[FIXME] Add HF asso track cuts
@@ -306,4 +354,83 @@ void makeTFileCuts(TString arguments="")
   //Save to *.root file
 
 
+}
+
+
+//---------------------------------------------------------//
+//                                                         //
+//                        NOTE!                            //
+//                                                         //
+//         These two pool-config functions have            //
+//        been taken from AddTaskDxHFECorrelation          //
+//                                                         //
+//                                                         //
+//---------------------------------------------------------//
+
+// Note: AliHFAssociatedTrackCuts keeps an instance of the external
+// pointer, the arrays thus need to be global
+// TODO: try a proper implementation of AliHFAssociatedTrackCuts later
+const Int_t    nofMBins=5;
+/*const */Double_t MBins[nofMBins+1]={0,20,40,60,80,500};
+/*const */Double_t * MultiplicityBins = MBins;
+const Int_t    nofZBins=5;
+/*const */Double_t ZBins[nofZBins+1]={-10,-5,-2.5,2.5,5,10};
+/*const */Double_t *ZVrtxBins = ZBins;
+
+AliAnalysisCuts* createDefaultPoolConfig()
+{
+  AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
+  HFCorrelationCuts->SetName("PoolInfo");
+  HFCorrelationCuts->SetTitle("Info on Pool for EventMixing");
+
+  // NEED to check this
+  HFCorrelationCuts->SetMaxNEventsInPool(200);
+  HFCorrelationCuts->SetMinNTracksInPool(100);
+  HFCorrelationCuts->SetMinEventsToMix(8);
+  HFCorrelationCuts->SetNofPoolBins(nofZBins,nofMBins); // Note: the arrays have dimension x+1
+  HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
+
+  TString description = "Info on Pool for EventMixing";   
+  HFCorrelationCuts->AddDescription(description);
+
+  return HFCorrelationCuts;
+}
+
+AliAnalysisCuts* createPbPbPoolConfig()
+{
+  AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
+  HFCorrelationCuts->SetName("PoolInfo");
+  HFCorrelationCuts->SetTitle("Info on Pool for EventMixing");
+
+  // NEED to check this
+  HFCorrelationCuts->SetMaxNEventsInPool(250);
+  HFCorrelationCuts->SetMinNTracksInPool(80);
+  HFCorrelationCuts->SetMinEventsToMix(5);
+  HFCorrelationCuts->SetNofPoolBins(nofZBins,nofMBins); // Note: the arrays have dimension x+1
+  HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
+
+  TString description = "Info on Pool for EventMixing";   
+  HFCorrelationCuts->AddDescription(description);
+
+  return HFCorrelationCuts;
+}
+
+
+AliAnalysisCuts* createpPbPoolConfig()
+{
+  AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
+  HFCorrelationCuts->SetName("PoolInfo");
+  HFCorrelationCuts->SetTitle("Info on Pool for EventMixing");
+
+  // NEED to check this
+  HFCorrelationCuts->SetMaxNEventsInPool(200);
+  HFCorrelationCuts->SetMinNTracksInPool(100);
+  HFCorrelationCuts->SetMinEventsToMix(8);
+  HFCorrelationCuts->SetNofPoolBins(nofZBins,nofMBins); // Note: the arrays have dimension x+1
+  HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
+
+  TString description = "Info on Pool for EventMixing";   
+  HFCorrelationCuts->AddDescription(description);
+
+  return HFCorrelationCuts;
 }

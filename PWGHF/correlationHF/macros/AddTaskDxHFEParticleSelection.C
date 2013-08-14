@@ -25,6 +25,7 @@ using namespace std;
 
 const char* poolInfoName="PoolInfo";
 AliAnalysisCuts* createDefaultPoolConfig();
+AliAnalysisCuts* createPbPbPoolConfig();
 
 /// @file   AddTaskDxHFEParticleSelection.C
 /// @author Matthias.Richter@ift.uib.no, Hege.Erdal@ift.uib.no
@@ -67,10 +68,11 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
     ::Error("AddTaskDxHFEParticleSelection", "No analysis manager to connect to.");
     return;
   }
-
+  TString cutFilename="";
   Bool_t bUseMC=kFALSE;
   TString ofilename;
-  Int_t system=0;
+  Int_t system=0; 
+ TString poolConfigFile="";
   TString taskOptions;
   Bool_t bUseKine=kFALSE;
   Bool_t bUseMCReco=kFALSE;
@@ -107,7 +109,15 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	  } else if (argument.BeginsWith("name=")) {
 	    argument.ReplaceAll("name=", "");
 	    analysisName=" "+argument+"PartSel";
+	  }	  
+	  if (argument.BeginsWith("cutname=")) {
+	    argument.ReplaceAll("cutname=", "");
+	    poolConfigFile=argument;
 	  }
+	  if (argument.BeginsWith("cutFilename=")) { //--------------------//
+	    argument.ReplaceAll("cutFilename=", ""); //   Move this to     //
+	    cutFilename=argument;                    //     cutname?       //
+	  }                                          //--------------------//
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
 	    taskOptions+=" mc";
@@ -117,6 +127,14 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    taskOptions+=" system=Pb-Pb";
 	    cout << "Use PbPb" << endl;
 	  }
+	  if (argument.BeginsWith("system=p-Pb") ||
+	      argument.BeginsWith("pPb") ||
+	      argument.BeginsWith("p-Pb") ||
+	      argument.BeginsWith("system=2")) {
+	    system=2;
+	    taskOptions+=" system=p-Pb";
+	  }
+
 	  if(argument.BeginsWith("tpcclusters=")){
 	    argument.ReplaceAll("tpcclusters=", "");
 	    NrTPCclusters=argument.Atoi();
@@ -154,17 +172,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("etacut"))
 	    taskOptions+=" "+argument;
-	  if(argument.BeginsWith("ElSelection="))
-	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("storelastcutstep"))
-	    taskOptions+=" "+argument;
-	  if(argument.BeginsWith("notusefilterbit")){
-	    taskOptions+=" "+argument;
-	  }
-	  if(argument.BeginsWith("filterbit=")){
-	    taskOptions+=" "+argument;
-	  }
-	  if(argument.BeginsWith("maxPtCombinedPID="))
 	    taskOptions+=" "+argument;
 	  if(argument.BeginsWith("itsclusters=")){
 	    argument.ReplaceAll("itsclusters=", "");
@@ -215,99 +223,167 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
   ofilename+=":"+analysisName;
 
-  ///______________________________________________________________________
-  /// Cuts For D0
-  AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
-  if (system==0) {
-    RDHFD0toKpi->SetStandardCutsPP2010();
-  } else {
-    // TODO: think about p-Pb
-    RDHFD0toKpi->SetStandardCutsPbPb2011();
-
-    // For centrality 0-10%, add centrality flattening
-    //NB! NEED FOR THE MOMENT THE FILE!
-    TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
-    TCanvas *c=fFlat->Get("cintegral");
-    TH1F *hfl=(TH1F*)c->FindObject("hint");
-    RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
-    //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
-
-    RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
-    RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
-  }
-
-  ///______________________________________________________________________
-  /// Cuts for HFE
-  AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF","HFE Standard Cuts");
-  hfecuts->CreateStandardCuts();
-  hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
-  hfecuts->SetMinNClustersTPC(NrTPCclusters);	//Default = 80
-  hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
-  hfecuts->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
+  if(cutFilename=="")
+    {
+      ///______________________________________________________________________
+      /// Cuts For D0
+      AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+      //AliRDHFCutsD0toKpi* cuts=new AliRDHFCutsD0toKpi();
+      
+      if (system==0) {
+	RDHFD0toKpi->SetStandardCutsPP2010();
+      } 
+      else if (system==1) {
+	// TODO: think about p-Pb
+	RDHFD0toKpi->SetStandardCutsPbPb2011();
 	
-  ///ITS
-  hfecuts->SetCutITSpixel(ITSreq); 	//Cut on SPD
-  //hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 	//Cut on SDD
-  //hfecuts->SetCheckITSLayerStatus(kFALSE);
-  hfecuts->SetMinNClustersITS(NrITSclusters);		//Default = 4
+	// For centrality 0-10%, add centrality flattening
+	//NB! NEED FOR THE MOMENT THE FILE!
+	TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
+	TCanvas *c=fFlat->Get("cintegral");
+	TH1F *hfl=(TH1F*)c->FindObject("hint");
+	RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
+	//  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
+	
+	RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
+	RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
+      }
+      else if (system==2) {
+	RDHFD0toKpi->SetStandardCutsPP2010();
+	RDHFD0toKpi->SetTriggerMask(AliVEvent::kINT7); //pPb
+	RDHFD0toKpi->SetTriggerClass(""); //pPb  
+      }
+      else {
+	//warning, no system set
+      }
+      
+      ///______________________________________________________________________
+      /// Cuts for HFE
+      AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF","HFE Standard Cuts");
+      hfecuts->CreateStandardCuts();
+      
+      hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
+      hfecuts->SetMinNClustersTPC(NrTPCclusters);	//Default = 80
+      hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
+      hfecuts->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
+      
+      ///ITS
+      hfecuts->SetCutITSpixel(ITSreq); 	//Cut on SPD
+      //hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 	//Cut on SDD
+      //hfecuts->SetCheckITSLayerStatus(kFALSE);
+      hfecuts->SetMinNClustersITS(NrITSclusters);		//Default = 4
+      
+      ///TOF
+      hfecuts->SetTOFPIDStep(kTRUE);
+      
+      ///Additional Cuts
+      hfecuts->SetPtRange(0.30, 10.5);
+      hfecuts->SetMaxImpactParam(1.,2.);
+      hfecuts->SetVertexRange(10.);
+      
+      // ________________________________________________________________________
+      // PID for HFE
+      // PID for Only TOF
+      AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
+      if(!fPIDOnlyTOF->GetNumberOfPIDdetectors()) { 
+	fPIDOnlyTOF->AddDetector("TOF",0);
+      }
+      fPIDOnlyTOF->ConfigureTOF(3); // number of sigma TOF
+      fPIDOnlyTOF->InitializePID();
+      
+      // PID object for TPC and TOF combined
+      // Check if PID is set from outside (passed as argument)
+      ::Info("AddTaskDxHFEParticleSelection",Form("Setting up new combined PID object"));
+      AliHFEpid* fPID = new AliHFEpid("hfePid");
+      if(!fPID->GetNumberOfPIDdetectors()) { 
+	fPID->AddDetector("TOF",0);
+	fPID->AddDetector("TPC",1);
+      }
+      //Add settings for asymmetric cut on nSigma TPC
+      const int paramSize=4;
+      Double_t params[paramSize];
+      memset(params, 0, sizeof(Double_t)*paramSize);
+      params[0]=-1.;
+      fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
+      fPID->InitializePID();
+      
+      // PID for Only TPC
+      AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
+      if(!fPIDOnlyTPC->GetNumberOfPIDdetectors()) { 
+	fPIDOnlyTPC->AddDetector("TPC",0);
+      }
+      fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
+      fPIDOnlyTPC->InitializePID();
+      
+      //=========================================================
+      //Create TList of cut (and pid) objects for D0 or electron
+      TList *Cutlist = new TList;
+      if(Particle==AliAnalysisTaskDxHFEParticleSelection::kD0){
+	Cutlist->SetName("cut objects D0");
+	Cutlist->Add(RDHFD0toKpi);
+      }
+      else if(Particle==AliAnalysisTaskDxHFEParticleSelection::kElectron){
+	Cutlist->SetName("cut objects HFE");
+	Cutlist->Add(hfecuts);
+	Cutlist->Add(fPID);
+	Cutlist->Add(fPIDOnlyTOF);
+	Cutlist->Add(fPIDOnlyTPC);
+      }
+    }
+  else //if there is a cutfile
+    {
+      TFile *filecuts;
+      TString finname="Cutlist.root";
+      filecuts=TFile::Open(finname.Data());
+      TString fRDHFcutsObj="D0toKpiCutsStandard";
+      AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+      RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(fRDHFcutsObj.Data());
+      printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile\n\n\n\n\n\n\n\n\n\n");
+      RDHFD0toKpi->PrintAll();
+      printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile done\n\n\n\n\n\n\n\n\n\n");
+
+      
+      ///______________________________________________________________________
+      /// Cuts for HFE
+      AliHFEcuts *hfecuts = new AliHFEcuts();//("hfeCutsTPCTOF","HFE Standard Cuts");
+      TString fHFEcutsObj="hfeCutsTPCTOF";
+      hfecuts=(AliHFEcuts*)filecuts->Get(fHFEcutsObj.Data());
+
+      // ________________________________________________________________________
+      // PID for HFE
+      // PID for Only TOF
+
+      AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
+      TString fHFEpidTOFobj="hfePidTOF";
+      fPIDOnlyTOF=(AliHFEpid*)filecuts->Get(fHFEpidTOFobj.Data());
+
+      // PID object for TPC and TOF combined
+      // Check if PID is set from outside (passed as argument)
+   
+      AliHFEpid* fPID = new AliHFEpid("hfePid");
+      TString fHFEpidobj="hfePid";
+      fPID=(AliHFEpid*)filecuts->Get(fHFEpidobj.Data());
+
+      AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
+      TString fHFEpidTPCobj="hfePidTPC";
+      fPIDOnlyTPC=(AliHFEpid*)filecuts->Get(fHFEpidTPCobj.Data());
     
-  ///TOF
-  hfecuts->SetTOFPIDStep(kTRUE);
-  hfecuts->SetEtaRange(-0.8,0.8);
-		
-  ///Additional Cuts
-  hfecuts->SetPtRange(0.3, 10);
-  hfecuts->SetMaxImpactParam(1.,2.);
-  hfecuts->SetVertexRange(10.);
-
-  // ________________________________________________________________________
-  // PID for HFE
-  // PID for Only TOF
-  AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
-  if(!fPIDOnlyTOF->GetNumberOfPIDdetectors()) { 
-    fPIDOnlyTOF->AddDetector("TOF",0);
-  }
-  fPIDOnlyTOF->ConfigureTOF(3); // number of sigma TOF
-  fPIDOnlyTOF->InitializePID();
-  
-  // PID object for TPC and TOF combined
-  // Check if PID is set from outside (passed as argument)
-  ::Info("AddTaskDxHFEParticleSelection",Form("Setting up new combined PID object"));
-  AliHFEpid* fPID = new AliHFEpid("hfePid");
-  if(!fPID->GetNumberOfPIDdetectors()) { 
-    fPID->AddDetector("TOF",0);
-    fPID->AddDetector("TPC",1);
-  }
-  //Add settings for asymmetric cut on nSigma TPC
-  const int paramSize=4;
-  Double_t params[paramSize];
-  memset(params, 0, sizeof(Double_t)*paramSize);
-  params[0]=-1.;
-  fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
-  fPID->InitializePID();
-
-   // PID for Only TPC
-  AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
-  if(!fPIDOnlyTPC->GetNumberOfPIDdetectors()) { 
-    fPIDOnlyTPC->AddDetector("TPC",0);
-  }
-  fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
-  fPIDOnlyTPC->InitializePID();
 
   //=========================================================
-  //Create TList of cut (and pid) objects for D0 or electron
-  TList *Cutlist = new TList;
-  if(Particle==AliAnalysisTaskDxHFEParticleSelection::kD0){
-    Cutlist->SetName("cut objects D0");
-    Cutlist->Add(RDHFD0toKpi);
-  }
-  else if(Particle==AliAnalysisTaskDxHFEParticleSelection::kElectron){
-    Cutlist->SetName("cut objects HFE");
-    Cutlist->Add(hfecuts);
-    Cutlist->Add(fPID);
-    Cutlist->Add(fPIDOnlyTOF);
-    Cutlist->Add(fPIDOnlyTPC);
-  }
+      //Create TList of cut (and pid) objects for D0 or electron
+      TList *Cutlist = new TList;
+      /*      if(Particle==AliAnalysisTaskDxHFEParticleSelection::kD0){
+	Cutlist->SetName("cut objects D0");
+	Cutlist->Add(RDHFD0toKpi);
+      }
+      else if(Particle==AliAnalysisTaskDxHFEParticleSelection::kElectron){
+      */Cutlist->SetName("cut objects HFE");
+	Cutlist->Add(hfecuts);
+	Cutlist->Add(fPID);
+	Cutlist->Add(fPIDOnlyTOF);
+	Cutlist->Add(fPIDOnlyTPC);
+	// }
+    }
 
   //=======================Setting up the task=========================================  
   AliAnalysisTaskDxHFEParticleSelection *pTask=new AliAnalysisTaskDxHFEParticleSelection(taskOptions);
@@ -355,3 +431,56 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   return 1;
 }
 
+
+//---------------------------------------------------------//
+//                                                         //
+//                        NOTE!                            //
+//                                                         //
+//         These two pool-config functions have            //
+//        been taken from AddTaskDxHFECorrelation          //
+//                without modifications.                   //
+//                                                         //
+//             Should be adjusted to fit the               //
+//                Particle-Selection code                  //
+//                                                         //
+//         Also consider adding a function for pPb         //
+//                                                         //
+//---------------------------------------------------------//
+
+// AliAnalysisCuts* createDefaultPoolConfig()
+// {
+//   AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
+//   HFCorrelationCuts->SetName("PoolInfo");
+//   HFCorrelationCuts->SetTitle("Info on Pool for EventMixing");
+
+//   // NEED to check this
+//   HFCorrelationCuts->SetMaxNEventsInPool(200);
+//   HFCorrelationCuts->SetMinNTracksInPool(100);
+//   HFCorrelationCuts->SetMinEventsToMix(8);
+//   HFCorrelationCuts->SetNofPoolBins(nofZBins,nofMBins); // Note: the arrays have dimension x+1
+//   HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
+
+//   TString description = "Info on Pool for EventMixing";   
+//   HFCorrelationCuts->AddDescription(description);
+
+//   return HFCorrelationCuts;
+// }
+
+// AliAnalysisCuts* createPbPbPoolConfig()
+// {
+//   AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
+//   HFCorrelationCuts->SetName("PoolInfo");
+//   HFCorrelationCuts->SetTitle("Info on Pool for EventMixing");
+
+//   // NEED to check this
+//   HFCorrelationCuts->SetMaxNEventsInPool(250);
+//   HFCorrelationCuts->SetMinNTracksInPool(80);
+//   HFCorrelationCuts->SetMinEventsToMix(5);
+//   HFCorrelationCuts->SetNofPoolBins(nofZBins,nofMBins); // Note: the arrays have dimension x+1
+//   HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
+
+//   TString description = "Info on Pool for EventMixing";   
+//   HFCorrelationCuts->AddDescription(description);
+
+//   return HFCorrelationCuts;
+// }
