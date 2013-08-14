@@ -341,6 +341,9 @@ void makeTFileCuts(TString arguments="")
     Cutlist->Add(fPIDOnlyTOF);
     Cutlist->Add(fPIDOnlyTPC);
     Cutlist->Add(poolConfiguration);
+    printf("\n\n\ntest\n\n\n");
+    Cutlist->Print();
+    printf("\n\n\ntest\n\n\n");
     //}
 
   //[FIXME] Add HF asso track cuts
