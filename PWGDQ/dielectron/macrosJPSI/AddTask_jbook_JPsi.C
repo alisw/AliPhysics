@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
-				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
+				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -42,17 +42,17 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
   }
 
   // using aliroot config
-  if(!gridconf)
+  if(!gridconf && trainRoot.IsNull())
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
 
-  //create task and add it to the manager
+  //create task
   AliAnalysisTaskMultiDielectron *task;
 
   // trigger selection
   ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
 			   AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB};
-  const char* triggerNames[]={"Central","SemiCentral","MB","MB+Cent+SemiCent"};
+  const char* triggerNames[]={"Central","SemiCentral","MB","ALL"};
   const char* onlineRejection[]={"","CCENT","",""};
 
   // find out the configured triggers
@@ -62,56 +62,69 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
     else break;
   }
 
-  // print task configuration
+  // print overall configuration
   printf("production: %s MC: %d \n",  list.Data(),hasMC);
   printf("triggers:   %s \n",         triggerNames[j]  );
   printf("config:     %s Grid: %d \n",configFile.Data(),gridconf);
-
-  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieJB_%s",triggerNames[j])));
-  task->SetBeamEnergy(1380.);
-  task->SetTriggerMask(triggers);
-  if(strlen(onlineRejection[j])) task->SetFiredTriggerName(onlineRejection[j],kTRUE);
-
-  if (!hasMC) task->UsePhysicsSelection();
-  mgr->AddTask(task);
 
   //load dielectron configuration file
   TString checkconfig="ConfigJpsi_jb_PbPb";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
 
+  //define default output container
+  TString containerName = "JPSI.root";
+
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i) { //nDie defined in config file
+
+    // load configuration
     AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,hasMC,triggers);
-    if (jpsi ) task->AddDielectron(jpsi);
-    if (jpsi ) printf(" %s added\n",jpsi->GetName());
+    if(!jpsi) continue;
+
+    // create unique title
+    TString unitit = Form("%s_%s",triggerNames[j],jpsi->GetName());
+
+    // create single tasks instead of a multi task
+    task = new AliAnalysisTaskMultiDielectron(Form("MultiDieJB_%s",unitit.Data()));
+    task->SetBeamEnergy(1380.);
+    task->SetTriggerMask(triggers);
+    if(strlen(onlineRejection[j])) task->SetFiredTriggerName(onlineRejection[j],kTRUE);
+    if(!hasMC) task->UsePhysicsSelection();
+
+    // add dielectron to the task and manager
+    task->AddDielectron(jpsi);
+    mgr->AddTask(task);
+
+    //create output sub containers
+    AliAnalysisDataContainer *cOutputHist1 =
+      mgr->CreateContainer(Form("jbook_QA_%s",unitit.Data()),
+			   TList::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   containerName.Data());
+    
+    AliAnalysisDataContainer *cOutputHist2 =
+      mgr->CreateContainer(Form("jbook_CF_%s",unitit.Data()),
+			   TList::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   containerName.Data());
+    
+    AliAnalysisDataContainer *cOutputHist3 =
+      mgr->CreateContainer(Form("jbook_EventStat_%s",unitit.Data()),
+			   TH1D::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   containerName.Data());
+
+    mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+    //  mgr->ConnectOutput(task, 0, coutput1 );
+    mgr->ConnectOutput(task, 1, cOutputHist1);
+    mgr->ConnectOutput(task, 2, cOutputHist2);
+    mgr->ConnectOutput(task, 3, cOutputHist3);
+
+    printf(" %s added\n",jpsi->GetName());
+
   }
 
-  //create output container
-  TString containerName = "JPSI.root";
-  AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("jbook_QA_%s",triggerNames[j]),
-			 TList::Class(),
-			 AliAnalysisManager::kOutputContainer,
-			 containerName.Data());
-
-  AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("jbook_CF_%s",triggerNames[j]),
-			 TList::Class(),
-			 AliAnalysisManager::kOutputContainer,
-			 containerName.Data());
-
-  AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("jbook_EventStat_%s",triggerNames[j]),
-			 TH1D::Class(),
-			 AliAnalysisManager::kOutputContainer,
-			 containerName.Data());
-
-  mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-  //  mgr->ConnectOutput(task, 0, coutput1 );
-  mgr->ConnectOutput(task, 1, cOutputHist1);
-  mgr->ConnectOutput(task, 2, cOutputHist2);
-  mgr->ConnectOutput(task, 3, cOutputHist3);
 
   return task;
 }
