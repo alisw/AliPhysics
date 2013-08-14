@@ -119,7 +119,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	  if (argument.BeginsWith("cutFilename=")) { //--------------------//
 	    argument.ReplaceAll("cutFilename=", ""); //   Move this to     //
 	    cutFilename=argument;                    //     cutname?       //
-	  }                                          //--------------------//
+	    poolConfigFile=argument;                 //--------------------//
+	  }                                 
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
 	    taskOptions+=" mc";
@@ -394,9 +395,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
      TString fRDHFcutsObj="D0toKpiCutsStandard";
      AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
      RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(fRDHFcutsObj.Data());
-     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile\n\n\n\n\n\n\n\n\n\n");
-     RDHFD0toKpi->PrintAll();
-     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n TEsting cutfile done\n\n\n\n\n\n\n\n\n\n");
+     //RDHFD0toKpi->PrintAll();
      
      
      ///______________________________________________________________________
@@ -453,7 +452,12 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
    else if (system==2) poolConfiguration=createDefaultPoolConfig();
  } else {
    // load configuration from file, and abort if something goes wrong
-   TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
+   
+   //TFile* filePoolConfiguration=TFile::Open(poolConfigFile.Data());
+
+     TString fPoolConfig="";
+     fPID=(AliHFEpid*)filecuts->Get(fHFEpidobj.Data());
+     
    if(!filePoolConfiguration){
      ::Error("AddTaskDxHFECorrelation", Form("Pool configuration object file %s not found, exiting", poolConfigFile.Data()));
       return 0;
