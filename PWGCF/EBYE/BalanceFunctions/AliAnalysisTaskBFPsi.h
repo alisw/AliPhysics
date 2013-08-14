@@ -97,6 +97,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseFlowAfterBurner = kTRUE;
   }
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
+  void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
 
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
@@ -156,6 +157,17 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     void SetElectronRejection(Double_t gMaxNSigma){
       fElectronRejection = kTRUE;
       fElectronRejectionNSigma = gMaxNSigma;
+    }
+
+    void SetElectronOnlyRejection(Double_t gMaxNSigma){
+      fElectronRejection       = kTRUE;
+      fElectronOnlyRejection   = kTRUE;
+      fElectronRejectionNSigma = gMaxNSigma;
+    }
+
+    void SetElectronRejectionPt(Double_t minPt,Double_t maxPt){
+      fElectronRejectionMinPt  = minPt;
+      fElectronRejectionMaxPt  = maxPt;
     }
 
 
@@ -250,7 +262,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
 
   Bool_t   fElectronRejection;//flag to use electron rejection
+  Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
   Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
+  Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
+  Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
 
   //============PID============//
 
@@ -305,7 +320,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TF1 *fDifferentialV2;//pt-differential v2 (from real data)
   Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
 
-  Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products from the MC analysis
+  Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
+  Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
