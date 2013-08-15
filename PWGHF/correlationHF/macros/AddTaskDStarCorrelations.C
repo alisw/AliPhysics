@@ -78,7 +78,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	
 // ******************************** OPENING THE D* CUTS ************************************
     cout << "Getting D meson cut object from file \n" << DStarCutsFile.Data() << "\n " << endl;
-    TFile* filecuts=new TFile(DStarCutsFile.Data());
+    TFile* filecuts=TFile::Open(DStarCutsFile.Data());
     if(!filecuts->IsOpen()){
     cout<<"DStar cut object file not found: exit"<<endl;
     return;
@@ -102,7 +102,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	
 // ******************************** OPENING THE ASSOCIATED TRACK CUTS ************************************
 	cout << "Getting associated track cut object from file \n" << TrackCutsFile.Data() << "\n " << endl;
-    TFile* filecuts2=new TFile(TrackCutsFile.Data());
+	TFile* filecuts2=TFile::Open(TrackCutsFile.Data());
 	  if(!filecuts2->IsOpen()){
 		  cout<<"Track cut object file not found: exit"<<endl;
 		  return;
