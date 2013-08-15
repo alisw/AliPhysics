@@ -78,6 +78,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	
 	Int_t GetNofMCEventType() const {return fNofMCEventType;}
 	Int_t *GetMCEventType() const {return fMCEventType;}
+    Int_t GetPoolBin(Double_t multorcent, Double_t zVtx) const;
 	
 	Int_t GetNTrackCuts() const {return fNTrackCuts;}
 	Float_t* GetAODTrackCuts() const {return fAODTrackCuts;}

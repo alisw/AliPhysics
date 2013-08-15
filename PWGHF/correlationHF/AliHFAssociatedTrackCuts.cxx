@@ -525,6 +525,37 @@ void AliHFAssociatedTrackCuts::Print(Option_t *option) const
 }
 
 //--------------------------------------------------------------------------
+Int_t AliHFAssociatedTrackCuts::GetPoolBin(Double_t multorcent, Double_t zVtx) const
+{
+ 
+    Int_t poolbin = -1;
+    Int_t centbin = -1;
+    Int_t zvtxbin = -1;
+    
+    
+    if(multorcent <fCentBins[0]) return poolbin;
+    if(zVtx <fZvtxBins[0]) return poolbin;
+    
+    
+    for (Int_t i=0;i<fNCentBins;i++){
+        if(multorcent<fCentBins[i+1]) {
+            centbin=i;
+            break;
+        }
+    }
+    
+    for (Int_t i=0;i<fNzVtxBins;i++){
+        if(zVtx<fZvtxBins[i+1]) {
+            zvtxbin=i;
+            break;
+        }
+    }
+
+    poolbin = centbin  + zvtxbin*fNzVtxBins;
+    
+    return poolbin;
+}
+//--------------------------------------------------------------------------
 void AliHFAssociatedTrackCuts::PrintAll() const
 {
 	
