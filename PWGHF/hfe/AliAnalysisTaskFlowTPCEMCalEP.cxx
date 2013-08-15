@@ -511,6 +511,12 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	      if (cent>30 && cent<50 && TMath::Abs(partPDG)==11){
 
 		if (motherPDG==421 || TMath::Abs(motherPDG)==411){ // D
+		  Double_t phi_D = -99., Deltaphi_De=-99.;
+		  phi_D = mother->Phi();
+		  Deltaphi_De = phi_D - phi;
+		  
+		  fD0_e->Fill(pt,Deltaphi_De);
+		  
 		  Dweight  = GetDweight(0,motherPt);	
 		  if(iHijing==1) Dweight = 1.0;
  
@@ -522,8 +528,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 		  if (motherPt>=12 && motherPt<16) fDe[5]->Fill(pt,Dweight);
 		}
 		if (motherPDG==421){ // D0
-		  fD0_e->Fill(pt,motherPt);
-		  
+		    
 		  Dweight  = GetDweight(1,motherPt);	
 		  if(iHijing==1) Dweight = 1.0;
 
@@ -813,7 +818,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fDminusWeight = new TH2F("fDminusWeight", "D- weight",100,0,50,3,-1,2);
   fOutputList->Add(fDminusWeight);
 
-  fD0_e = new TH2F("fD0_e", "D0 vs e",100,0,50,100,0,50);
+  fD0_e = new TH2F("fD0_e", "D0 vs e",100,0,50,200,-6.3,6.3);
   fOutputList->Add(fD0_e);
   
   for(Int_t k = 0; k < 6; k++) {
