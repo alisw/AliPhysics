@@ -42,7 +42,8 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);  
 
   void MyInit();
-  void GetGlobalPositionAtGlobalRadiiThroughTPC(const AliESDtrack *track, const Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
+  void GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield, Float_t globalPositionsAtRadii[9][3], double PrimaryVertex[3]);
+  void GetGlobalPositionAtGlobalRadiiThroughTPCTEST(const AliAODTrack *track, const Float_t bfield, double PrimaryVertex[3]);
   
   enum 
   {
@@ -70,10 +71,6 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   AliAODEvent    *fAOD; //!    // AOD object
   TList          *fOutputList; //! Compact Output list
   AliPIDResponse *fPidAOD; //!
-  AliESDtrack    *fPosDaughter1;//!
-  AliESDtrack    *fPosDaughter2;//!
-  AliESDtrack    *fNegDaughter1;//!
-  AliESDtrack    *fNegDaughter2;//!
   
   ClassDef(AliFemtoK0Analysis, 1); 
 };
