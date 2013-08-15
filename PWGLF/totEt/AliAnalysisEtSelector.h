@@ -92,7 +92,7 @@ protected:
 
     AliAnalysisEtCuts *fCuts; // Pointer to the cuts object; DS: also in base class?
     
-    Bool_t SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
+    Bool_t SuspiciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
     
     Int_t fRunNumber;
 

@@ -93,14 +93,14 @@ Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, Al
   
   //Let's find suspect decay (typical for secondary interaction)...
   
-  return SuspeciousDecayInChain(211, 111, part, stack);
+  return SuspiciousDecayInChain(211, 111, part, stack);
   
 			    
   
   
 }
 
-Bool_t AliAnalysisEtSelector::SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle &part, AliStack& stack) const
+Bool_t AliAnalysisEtSelector::SuspiciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle &part, AliStack& stack) const
 {
   UInt_t partPdg = TMath::Abs(part.GetPdgCode());
   if(part.GetFirstMother() == -1)
@@ -113,7 +113,7 @@ Bool_t AliAnalysisEtSelector::SuspeciousDecayInChain(const UInt_t suspectMotherP
   {
     return kTRUE;
   }
-  return SuspeciousDecayInChain(suspectMotherPdg, suspectDaughterPdg, *mother, stack);
+  return SuspiciousDecayInChain(suspectMotherPdg, suspectDaughterPdg, *mother, stack);
 }
 
 Float_t AliAnalysisEtSelector::ShiftAngle(Float_t phi){//Always returns an angle in radians between -pi<phi<pi
