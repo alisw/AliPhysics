@@ -136,6 +136,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   TH1F*   fEvents;                       //! Counter for the number of events in each step
   TH1F*   fCentrality;                   //! Event centrality per centil
+  TH1F*   fCentrality2;                  //! Event centrality per centil with |VtxZ|<10cm
   TH1F*   fPrimaryVertexX;               //! Primary vertex position in X
   TH1F*   fPrimaryVertexY;               //! Primary vertex position in Y
   TH1F*   fPrimaryVertexZ;               //! Primary vertex position in Z
@@ -170,10 +171,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fK0sMCPt;                      //! K0s MC: pt
   TH3F*   fK0sMCPtRap;                   //! K0s MC: pt vs rapidity
   TH3F*   fK0sMCPtRap2;                  //! K0s MC: pt vs rapidity
+  TH3F*   fK0sMCPtRapEmbeded;            //! K0s MC: pt vs rapidity  (embeded particles)
   TH3F*   fK0sMCPtPhiEta[kNCent];        //! K0s MC: pt vs pseudo-rapidity
   TH1F*   fK0sAssocPt;                   //! K0s Assoc: pt
-  TH3F*   fK0sAssocPtArm;                //! K0s Assoc: pt vs decay lenght vs centrality
+  TH3F*   fK0sAssocPtArm;                //! K0s Assoc: pt vs rapidity vs centrality
+  TH3F*   fK0sAssocPtArmEmbeded;         //! K0s Assoc: pt vs rapidity vs centrality  (embeded particles)
   TH3F*   fK0sAssocPtRap;                //! K0s Assoc: pt vs rapidity
+  TH3F*   fK0sAssocPtRapEmbeded;         //! K0s Assoc: pt vs rapidity (embeded particles)
   TH3F*   fK0sAssocPtPhiEta[kNCent];     //! K0s Assoc: pt vs pseudo-rapidity
   TH3F*   fK0sMCResEta;                  //! K0s Assoc: eta resolution
   TH3F*   fK0sMCResPhi;                  //! K0s Assoc: phi resolution
@@ -181,10 +185,11 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fLambdaMCPt;                   //! Lambda MC: pt
   TH3F*   fLambdaMCPtRap;                //! Lambda MC: pt vs rapidity
   TH3F*   fLambdaMCPtRap2;               //! Lambda MC: pt vs rapidity
+  TH3F*   fLambdaMCPtRapEmbeded;         //! Lambda MC: pt vs rapidity (embeded particles)
   TH3F*   fLambdaMCPtPhiEta[kNCent];     //! Lambda MC: pt vs pseudo-rapidity
   TH1F*   fLambdaAssocPt;                //! Lambda Assoc: pt
-  TH3F*   fLambdaAssocPtArm;             //! Lambda Assoc: pt vs decay lenght vs centrality
   TH3F*   fLambdaAssocPtRap;             //! Lambda Assoc: pt vs rapidity
+  TH3F*   fLambdaAssocPtRapEmbeded;      //! Lambda Assoc: pt vs rapidity (embeded particles)
   TH3F*   fLambdaAssocPtPhiEta[kNCent];  //! Lambda Assoc: pt vs pseudo-rapidity
   TH3F*   fLambdaMCResEta;               //! Lambda Assoc: eta resolution
   TH3F*   fLambdaMCResPhi;               //! Lambda Assoc: phi resolution
@@ -192,10 +197,11 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fAntiLambdaMCPt;               //! AntiLambda MC: pt
   TH3F*   fAntiLambdaMCPtRap;            //! AntiLambda MC: pt vs rapidity
   TH3F*   fAntiLambdaMCPtRap2;           //! AntiLambda MC: pt vs rapidity
+  TH3F*   fAntiLambdaMCPtRapEmbeded;            //! AntiLambda MC: pt vs rapidity (embeded particles)
   TH3F*   fAntiLambdaMCPtPhiEta[kNCent]; //! AntiLambda MC: pt vs pseudo-rapidity
   TH1F*   fAntiLambdaAssocPt;            //! AntiLambda Assoc: pt
-  TH3F*   fAntiLambdaAssocPtArm;         //! AntiLambda Assoc: pt vs decay lenght vs centrality
   TH3F*   fAntiLambdaAssocPtRap;         //! AntiLambda Assoc: pt vs rapidity
+  TH3F*   fAntiLambdaAssocPtRapEmbeded;  //! AntiLambda Assoc: pt vs rapidity (embeded particles)
   TH3F*   fAntiLambdaAssocPtPhiEta[kNCent]; //! AntiLambda Assoc: pt vs pseudo-rapidity
   TH3F*   fAntiLambdaMCResEta;           //! AntiLambda Assoc: eta resolution
   TH3F*   fAntiLambdaMCResPhi;           //! AntiLambda Assoc: phi resolution
