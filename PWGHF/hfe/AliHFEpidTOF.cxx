@@ -40,6 +40,8 @@ ClassImp(AliHFEpidTOF)
 AliHFEpidTOF::AliHFEpidTOF():
   AliHFEpidBase()
   , fNsigmaTOF(3)
+  , fUseOnlyIfAvailable(kFALSE)
+  , fRejectMismatch(kFALSE)
 {
   //
   // Constructor
@@ -53,6 +55,8 @@ AliHFEpidTOF::AliHFEpidTOF():
 AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
   AliHFEpidBase(name)
   , fNsigmaTOF(3)
+  , fUseOnlyIfAvailable(kFALSE)
+  , fRejectMismatch(kFALSE)
 {
   //
   // Constructor
@@ -66,6 +70,8 @@ AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
 AliHFEpidTOF::AliHFEpidTOF(const AliHFEpidTOF &c):
   AliHFEpidBase("")
   , fNsigmaTOF(3)
+  , fUseOnlyIfAvailable(kFALSE)
+  , fRejectMismatch(kFALSE)
 {  
   // 
   // Copy operator
@@ -99,6 +105,8 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
   AliHFEpidTOF &target = dynamic_cast<AliHFEpidTOF &>(ref);
 
   target.fNsigmaTOF = fNsigmaTOF;
+  target.fUseOnlyIfAvailable = fUseOnlyIfAvailable;
+  target.fRejectMismatch = fRejectMismatch;
   memcpy(target.fSigmaBordersTOFLower, fSigmaBordersTOFLower, sizeof(Float_t) * 12);
   memcpy(target.fSigmaBordersTOFUpper, fSigmaBordersTOFUpper, sizeof(Float_t) * 12);
 
@@ -124,8 +132,20 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   AliDebug(2, "PID object available");
 
   const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
-  if(!(vtrack && (vtrack->GetStatus() & AliESDtrack::kTOFpid))) return 0;
+  if(!vtrack) return 0;
+  Bool_t hasTOFpid = vtrack->GetStatus() & AliESDtrack::kTOFpid;
+  if(fUseOnlyIfAvailable && !hasTOFpid){
+    AliDebug(2, "No TOF PID, but PID required only if available");
+    return 11;   
+  } else if(!hasTOFpid){
+    AliDebug(2, "No TOF PID, and TOF PID is required always");
+    return 0;
+  }
   AliDebug(2, "Track Has TOF PID");
+
+  if(fRejectMismatch){
+    if(IsMismatch(vtrack)) return 0;
+  }
 
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTOFpid, AliHFEdetPIDqa::kBeforePID);
 
@@ -178,3 +198,13 @@ void AliHFEpidTOF::SetTOFnSigmaBandCentrality(Float_t lower, Float_t upper, Int_
 
 }
 
+//___________________________________________________________________
+Bool_t AliHFEpidTOF::IsMismatch(const AliVTrack * const track) const {
+  //
+  // Check for mismatch
+  //
+  if(!fkPIDResponse) return kFALSE;
+  Double_t probs[AliPID::kSPECIESC];
+  AliPIDResponse::EDetPidStatus status = fkPIDResponse->ComputeTOFProbability(track, AliPID::kSPECIESC, probs);
+  return status == AliPIDResponse::kDetMismatch;
+}

@@ -250,7 +250,7 @@ TH2 *AliHFEtofPIDqa::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t s
 }
 
 //_________________________________________________________
-TH2 *AliHFEtofPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t species){
+TH2 *AliHFEtofPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t species, Int_t centralityClass){
   //
   // Plot the Spectrum
   //
@@ -259,9 +259,29 @@ TH2 *AliHFEtofPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   hSignal->GetAxis(3)->SetRange(istep + 1, istep + 1);
   if(species >= 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+    if(hSignal->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo = kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      AliInfo(Form("Centrality Class: %d", centralityClass));
+      hSignal->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form("Centrality %d", centralityClass);
+    }
+  } else {
+    hSignal->GetAxis(4)->SetRange(1, hSignal->GetAxis(4)->GetNbins()-1);
+    centname = centtitle = "MinBias";
+    hasCentralityInfo = kTRUE;
+  }
   TH2 *hTmp = hSignal->Projection(2,1);
-  TString hname = Form("hTOFsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
-          htitle = Form("Time-of-flight spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
+  TString hname = Form("hTOFsigma%s%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after", centname.Data()), 
+          htitle = Form("Time-of-flight spectrum[#sigma] %s selection %s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after", centtitle.Data());
   if(species > -1){
     hname += AliPID::ParticleName(species);
     htitle += Form(" for %ss", AliPID::ParticleName(species));
@@ -273,6 +293,7 @@ TH2 *AliHFEtofPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   hTmp->GetYaxis()->SetTitle("TOF time|_{el} - expected time|_{el} [#sigma]");
   hSignal->GetAxis(3)->SetRange(0, hSignal->GetAxis(3)->GetNbins());
   hSignal->GetAxis(0)->SetRange(0, hSignal->GetAxis(0)->GetNbins());
+  if(hasCentralityInfo)hSignal->GetAxis(4)->SetRange(0, hSignal->GetAxis(4)->GetNbins());
   return hTmp;
 }
 

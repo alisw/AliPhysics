@@ -13,48 +13,53 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 //
-// Class AliHFEtofPIDqa
-// Monitoring TPC PID in the HFE PID montioring framework
+// Class AliHFEitsPIDqa
+// Monitoring ITS PID in the HFE PID montioring framework
 // More information can be found inside the implementation file
 //
-#ifndef ALIHFETOFPIDQA_H
-#define ALIHFETOFPIDQA_H
+#ifndef ALIHFEITSPIDQA_H
+#define ALIHFEITSPIDQA_H
 
 #ifndef ALIHFEDETPIDQA_H
 #include "AliHFEdetPIDqa.h"
 #endif
 
-class TH1;
+#ifndef ALIHFEPIDBASE_H
+#include "AliHFEpidBase.h"
+#endif
+
+class TBrowser;
 class TH2;
 class AliHFEcollection;
-class AliHFEpidObject;
-class AliESDtrack;
-class AliAODTrack;
+class AliVParticle;
 
-class AliHFEtofPIDqa : public AliHFEdetPIDqa{
+class AliHFEitsPIDqa : public AliHFEdetPIDqa{
   public:
-    AliHFEtofPIDqa();
-    AliHFEtofPIDqa(const char*name);
-    AliHFEtofPIDqa(const AliHFEtofPIDqa &o);
-    AliHFEtofPIDqa &operator=(const AliHFEtofPIDqa &o);
-    ~AliHFEtofPIDqa();
+    AliHFEitsPIDqa();
+    AliHFEitsPIDqa(const char*name);
+    AliHFEitsPIDqa(const AliHFEitsPIDqa &o);
+    AliHFEitsPIDqa &operator=(const AliHFEitsPIDqa &o);
+    ~AliHFEitsPIDqa();
     void Copy(TObject &o) const;
     virtual Long64_t Merge(TCollection *col);
+    virtual void Browse(TBrowser *b);
+    virtual Bool_t IsFolder() const { return kTRUE; };
   
     virtual void Initialize();
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
-    TH2 *MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
+    void SetBrowseCentrality(Int_t browseCentrality) { browseCentrality < 11  && browseCentrality >= -1 ? fBrowseCentrality = browseCentrality : -1;} // *MENU*
+
+    AliHFEcollection *GetHistograms() const { return fHistos; }
     TH2 *MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
-    TH1 *GetHistogram(const char *name);
-    AliHFEcollection *GetHistoCollection() const { return fHistos; }
 
   protected:
-    void ProcessESDtrack(const AliESDtrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species);
-    void ProcessAODtrack(const AliAODTrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species);
+    Double_t GetEta(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype);
+
   private:
     AliHFEcollection *fHistos;        // Container for Histograms
+    Int_t fBrowseCentrality;          // Centrality Class for Browser
 
-    ClassDef(AliHFEtofPIDqa, 1);
+    ClassDef(AliHFEitsPIDqa, 1);
 };
 #endif

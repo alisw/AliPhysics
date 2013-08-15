@@ -14,6 +14,7 @@
 #endif
 
 class AliVParticle;
+class AliVTrack;
 class AliPID;
 
 class AliHFEpidQAmanager;
@@ -32,9 +33,13 @@ class AliHFEpidTOF : public AliHFEpidBase{
     void SetTOFnSigma(Float_t nSigma) { fNsigmaTOF = nSigma; };
     void SetTOFnSigmaBand(Float_t lower, Float_t upper);
     void SetTOFnSigmaBandCentrality(Float_t lower, Float_t upper, Int_t centralityBin); 
+    void UseTOFonlyIfAvailable() { fUseOnlyIfAvailable = kTRUE; }
+    void SetRejectTOFmismatch() { fRejectMismatch = kTRUE; }
 
   protected:
     void Copy(TObject &ref) const;
+    Bool_t IsMismatch(const AliVTrack *const track) const;
+
   private:
     enum {
       kSigmaBand = BIT(15)
@@ -42,6 +47,8 @@ class AliHFEpidTOF : public AliHFEpidBase{
     Float_t    fNsigmaTOF;          // TOF sigma band
     Float_t    fSigmaBordersTOFLower[12]; // Min.  sigma cut
     Float_t    fSigmaBordersTOFUpper[12]; // Max.  sigma cut
+    Bool_t     fUseOnlyIfAvailable;       // Use TOF obly if available
+    Bool_t     fRejectMismatch;           // Reject TOF mismatch
 
     ClassDef(AliHFEpidTOF, 1)
 };

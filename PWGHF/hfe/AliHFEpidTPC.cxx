@@ -55,6 +55,7 @@ AliHFEpidTPC::AliHFEpidTPC() :
   , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
+  , fUsedEdx(kFALSE)
 {
   //
   // default  constructor
@@ -81,6 +82,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
+  , fUsedEdx(kFALSE)
 {
   //
   // default  constructor
@@ -105,6 +107,7 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   , fUseOnlyOROC(ref.fUseOnlyOROC)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
+  , fUsedEdx(kFALSE)
 {
   //
   // Copy constructor
@@ -228,7 +231,7 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   AliDebug(1, "Doing TPC PID based on n-Sigma cut approach");
   
   // make copy of the track in order to allow for applying the correction 
-  Float_t nsigma = fkPIDResponse->NumberOfSigmasTPC(rectrack, AliPID::kElectron);
+  Float_t nsigma = fUsedEdx ? rectrack->GetTPCsignal() : fkPIDResponse->NumberOfSigmasTPC(rectrack, AliPID::kElectron);
   AliDebug(1, Form("TPC NSigma: %f", nsigma));
   // exclude crossing points:
   // Determine the bethe values for each particle species
@@ -261,8 +264,8 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
       
       //printf("p %f, fPAsigCut[0] %f, fPAsigCut[1] %f\n",p,fPAsigCut[0],fPAsigCut[1]);
       if(p >= fPAsigCut[0] && p <= fPAsigCut[1]) { 
-	if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
-	else pdg = 0;
+	      if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
+	        else pdg = 0;
       }
       else pdg = 0;
     
@@ -283,7 +286,7 @@ Bool_t AliHFEpidTPC::CutSigmaModel(const AliHFEpidObject * const track) const {
   //
   Bool_t isSelected = kTRUE;
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  Float_t nsigma = fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron);
+  Float_t nsigma = fUsedEdx ? track->GetRecTrack()->GetTPCsignal() : fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron);
   Double_t p = GetP(track->GetRecTrack(), anatype);
   Int_t centrality = track->IsPbPb() ? track->GetCentrality() + 1 : 0;
   AliDebug(2, Form("Centrality: %d\n", centrality));

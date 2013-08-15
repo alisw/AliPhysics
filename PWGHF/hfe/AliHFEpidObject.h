@@ -36,7 +36,8 @@ class AliHFEpidObject{
       fAbInitioPID(-1),
       fCentrality(99),
       fMultiplicity(0),
-      fIsPbPb(kFALSE)         // Default: pp
+      fIsPbPb(kFALSE),         // Default: pp
+      fIspPb(kFALSE)         // Default: pp
       {
       }
     AliHFEpidObject(const AliHFEpidObject &ref):
@@ -45,7 +46,8 @@ class AliHFEpidObject{
       fAbInitioPID(ref.fAbInitioPID),
       fCentrality(ref.fCentrality),
       fMultiplicity(ref.fMultiplicity),
-      fIsPbPb(ref.fIsPbPb)
+      fIsPbPb(ref.fIsPbPb),
+      fIspPb(ref.fIspPb)
       {
       }
     AliHFEpidObject &operator=(const AliHFEpidObject &ref);
@@ -58,6 +60,7 @@ class AliHFEpidObject{
     void SetCentrality(Int_t centrality) { fCentrality = centrality; }
     void SetMulitplicity(Double_t mult) { fMultiplicity = mult; }
     void SetPbPb() { fIsPbPb = kTRUE; }
+    void SetpPb() { fIsPbPb = kFALSE; fIspPb=kTRUE; }
     void SetPP() { fIsPbPb = kFALSE; }
 
     const AliVTrack *GetRecTrack() const { return fkRecTrack; }
@@ -67,6 +70,7 @@ class AliHFEpidObject{
     Bool_t IsAODanalysis() const { return fAnalysisType == static_cast<UChar_t>(kAODanalysis); }
     Bool_t IsESDanalysis() const { return fAnalysisType == static_cast<UChar_t>(kESDanalysis); }
     Bool_t IsPbPb() const { return fIsPbPb; }
+    Bool_t IspPb() const { return fIspPb; }
 
   private:
     const AliVTrack *fkRecTrack;        // Reconstructed track
@@ -74,7 +78,8 @@ class AliHFEpidObject{
     Int_t fAbInitioPID;                 // AbInitio PID
     Int_t fCentrality;                  // Centrality Information
     Double_t fMultiplicity;             // Multiplicity information
-    Bool_t fIsPbPb;                     // Collision type
+    Bool_t fIsPbPb;                     // Collision type PbPb
+    Bool_t fIspPb;                      // Collision type pPb
 };
 #endif
 
