@@ -14,7 +14,7 @@ AliAnalysisTask *AddTask_shin_pPb(){
   //  TString trainConfig=gSystem->Getenv("CONFIG_FILE");
   
   //set config file name
-  TString configBasePath("$ALICE_ROOT/PWGDQ/dielectron/macroLMEE");
+  TString configBasePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/");
   TString configFile("Config_shin_pPb.C");
   TString configFilePath(configBasePath+configFile);
 
