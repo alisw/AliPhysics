@@ -24,15 +24,20 @@
 #endif
 
 class AliVParticle;
+class AliVTrack;
+class AliPID;
+
 class AliHFEpidQAmanager;
 
 class AliHFEpidITS : public AliHFEpidBase{
   public:
+    AliHFEpidITS();
     AliHFEpidITS(const Char_t *name);
     AliHFEpidITS(const AliHFEpidITS &ref);
     AliHFEpidITS& operator=(const AliHFEpidITS &ref);
     virtual ~AliHFEpidITS();
 
+    void SetITSnSigma(Float_t nSigma) { fNsigmaITS = nSigma; };
     virtual Bool_t InitializePID(Int_t /*run*/);
     virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
@@ -45,8 +50,9 @@ class AliHFEpidITS : public AliHFEpidBase{
       kITSsigV1 = 0,
       kITSsigV2 = 1
     };
+    Float_t    fNsigmaITS;          // TOF sigma band
 
-    ClassDef(AliHFEpidITS, 0)  // PID class for ITS
+    ClassDef(AliHFEpidITS, 1)  // PID class for ITS
 };
 #endif
 

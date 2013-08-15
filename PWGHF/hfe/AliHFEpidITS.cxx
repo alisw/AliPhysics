@@ -31,14 +31,29 @@
 #include "AliLog.h"
 #include "AliPID.h"
 #include "AliVParticle.h"
+#include "AliPIDResponse.h"
 
+#include "AliHFEdetPIDqa.h"
 #include "AliHFEpidITS.h"
+#include "AliHFEpidQAmanager.h"
 
 ClassImp(AliHFEpidITS)
 
 //___________________________________________________________________
+AliHFEpidITS::AliHFEpidITS():
+  AliHFEpidBase()
+  , fNsigmaITS(3)
+{
+  //
+  // Constructor
+  //
+  
+} 
+
+//___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const Char_t *name):
     AliHFEpidBase(name)
+    , fNsigmaITS(3)
 {
   //
   // Default constructor
@@ -72,12 +87,15 @@ AliHFEpidITS::~AliHFEpidITS(){
 }
 
 //___________________________________________________________________
-void AliHFEpidITS::Copy(TObject &o) const {
+void AliHFEpidITS::Copy(TObject &ref) const {
   //
   // Copy function
   // Provides a deep copy
-  //
-  AliHFEpidBase::Copy(o);
+    //
+    AliHFEpidITS &target = dynamic_cast<AliHFEpidITS &>(ref);
+
+    target.fNsigmaITS = fNsigmaITS;
+    AliHFEpidBase::Copy(ref);
 }
 
 //___________________________________________________________________
@@ -90,11 +108,26 @@ Bool_t AliHFEpidITS::InitializePID(Int_t /*run*/){
 
 
 //___________________________________________________________________
-Int_t AliHFEpidITS::IsSelected(const AliHFEpidObject* /*track*/, AliHFEpidQAmanager* /*pidqa*/) const {
+Int_t AliHFEpidITS::IsSelected(const AliHFEpidObject* track, AliHFEpidQAmanager* pidqa) const {
   //
   // Does PID decision for ITS
-  // 
-  return 11;  // @TODO: Implement ITS PID decision
+  //
+    if(!fkPIDResponse) return 0;
+    AliDebug(2, "PID object available");
+
+    const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
+    if(!vtrack) return 0;
+
+    if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kITSpid, AliHFEdetPIDqa::kBeforePID);
+    
+    // Fill before selection
+    Int_t pdg = 0;
+    Double_t sigEle = fkPIDResponse->NumberOfSigmasITS(vtrack, AliPID::kElectron);
+    AliDebug(2, Form("Number of sigmas in ITS: %f", sigEle));
+    if(TMath::Abs(sigEle) < fNsigmaITS) pdg = 11;
+    if(pdg == 11 && pidqa) pidqa->ProcessTrack(track, AliHFEpid::kITSpid, AliHFEdetPIDqa::kAfterPID);
+    return pdg;
+//  return 11;  // @TODO: Implement ITS PID decision
 }
 
 //___________________________________________________________________

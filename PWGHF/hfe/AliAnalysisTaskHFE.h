@@ -112,7 +112,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t Ispp() const { return fCollisionSystem.TestBitNumber(kpp); }
     Bool_t IsPbPb() const { return fCollisionSystem.TestBitNumber(kPbPb); }
     Bool_t IspPb() const { return fCollisionSystem.TestBitNumber(kpPb); }
-    Bool_t IsHeavyIon() const { return IsPbPb() || IspPb(); }
+    Bool_t IsHeavyIon() const { return IsPbPb(); }
     Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
 
     // Get Components for configuration
@@ -178,7 +178,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void RejectionPileUpVertexRangeEventCut();  
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
     void SetDebugStreaming() {SetBit(kTreeStream);};
-    Bool_t CheckTRDTrigger(AliESDEvent *ev);
+    Bool_t CheckTRDTriggerESD(AliESDEvent *ev);
+    Bool_t CheckTRDTrigger(AliVEvent *ev);
     void DrawTRDTrigger(AliESDEvent *ev);
 
   private:
@@ -238,7 +239,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
     AliHFEpid *fPID;                      // PID
     AliHFEpidQAmanager *fPIDqa;           // PID QA
-    AliTRDTriggerAnalysis *fTRDTriggerAnalysis; //! TRD Trigger Analysis 
+    AliTRDTriggerAnalysis *fTRDTriggerAnalysis; //! TRD Trigger Analysis
     AliHFEpid *fPIDpreselect;             // PID oject for pre-selected tracks (without QA)
     AliHFEcuts *fCuts;                    // Cut Collection
     AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks

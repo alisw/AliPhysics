@@ -134,7 +134,8 @@ AliHFEcuts::AliHFEcuts():
   fUseMixedVertex(kTRUE),
   fUseSPDVertex(kFALSE),
   fUseCorrelationVertex(kFALSE),
-  fSPDVtxResolution(kFALSE),
+  fSPDVtxResolution(kFALSE), 
+  fPApileupCut(kFALSE),
   fIsIPSigmacut(kFALSE),
   fIsIPcharge(kFALSE),
   fIsIPOpp(kFALSE),
@@ -186,6 +187,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fUseSPDVertex(kFALSE),
   fUseCorrelationVertex(kFALSE),
   fSPDVtxResolution(kFALSE),
+  fPApileupCut(kFALSE),
   fIsIPSigmacut(kFALSE),
   fIsIPcharge(kFALSE),
   fIsIPOpp(kFALSE),
@@ -237,6 +239,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fUseSPDVertex(kFALSE),
   fUseCorrelationVertex(c.fUseCorrelationVertex),
   fSPDVtxResolution(c.fSPDVtxResolution),
+  fPApileupCut(c.fPApileupCut),
   fIsIPSigmacut(kFALSE),
   fIsIPcharge(kFALSE),
   fIsIPOpp(kFALSE),
@@ -295,6 +298,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fUseSPDVertex = fUseSPDVertex;
   target.fUseCorrelationVertex = fUseCorrelationVertex;
   target.fSPDVtxResolution = fSPDVtxResolution;
+  target.fPApileupCut = fPApileupCut;
   target.fIsIPSigmacut = fIsIPSigmacut;
   target.fIsIPcharge = fIsIPcharge;
   target.fIsIPOpp = fIsIPOpp;
@@ -504,6 +508,7 @@ void AliHFEcuts::SetEventCutList(Int_t istep){
     if(fUseMixedVertex) evRecCuts->SetUseMixedVertex();
     if(fUseCorrelationVertex) evRecCuts->SetCheckCorrelationSPDVtx();
     if(fSPDVtxResolution) evRecCuts->SetCheckSPDResolution();
+    if(fPApileupCut) evRecCuts->SetpAPileupCut();
     evRecCuts->SetVertexZCut(-fVertexRangeZ, fVertexRangeZ);
     //evRecCuts->SetVertexNContributors(1,(Int_t)1.e9);
     if(IsQAOn()) evRecCuts->SetQAOn(fHistQA);

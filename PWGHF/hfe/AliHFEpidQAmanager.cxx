@@ -36,6 +36,7 @@
 #include "AliHFEtpcPIDqa.h"
 #include "AliHFEtrdPIDqaV1.h"
 #include "AliHFEtofPIDqa.h"
+#include "AliHFEitsPIDqa.h"
 #include "AliHFEemcalPIDqa.h"  //s.s
 #include "AliHFEbayesPIDqa.h"
 #include "AliHFEpidQAmanager.h"
@@ -134,6 +135,9 @@ void AliHFEpidQAmanager::CreateDetPIDqa(AliHFEpid::EDETtype_t idet){
           break;
     case AliHFEpid::kTOFpid: 
           fDetPIDqa[idet] = new AliHFEtofPIDqa("TOFQA"); 
+	  break;
+  case AliHFEpid::kITSpid:
+          fDetPIDqa[idet] = new AliHFEitsPIDqa("ITSQA");
           break;
     case AliHFEpid::kEMCALpid: //s.s (name) 
           fDetPIDqa[idet] = new AliHFEemcalPIDqa("EMCALQA"); // s.s 

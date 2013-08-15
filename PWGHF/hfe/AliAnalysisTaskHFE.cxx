@@ -66,7 +66,7 @@
 #include "AliOADBContainer.h"
 #include "AliStack.h"
 #include "AliTriggerAnalysis.h"
-#include "AliTRDTriggerAnalysis.h" 
+#include "AliTRDTriggerAnalysis.h"
 #include "AliVVertex.h"
 
 #include "AliHFEcollection.h"
@@ -100,7 +100,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fApplyCutAOD(kFALSE)
+  , fApplyCutAOD(kTRUE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -170,7 +170,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fCollisionSystem(3)
   , fFillSignalOnly(kTRUE)
   , fFillNoCuts(kFALSE)
-  , fApplyCutAOD(kFALSE)
+  , fApplyCutAOD(kTRUE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -618,11 +618,14 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   }
 
   AliESDEvent *ev = dynamic_cast<AliESDEvent *>(fInputEvent);
-  if(ev && fTRDTrigger)
+  if(ev && fTRDTrigger && (fWhichTRDTrigger<6))
   {
-      if(!CheckTRDTrigger(ev)) return;
+      if(!CheckTRDTriggerESD(ev)) return;
   }
-
+  if(fInputEvent && fTRDTrigger && (fWhichTRDTrigger>5))
+  {
+      if(!CheckTRDTrigger(fInputEvent)) return;
+  }
 
   if(IsESDanalysis() && HasMCData()){
     // Protect against missing MC trees
@@ -857,8 +860,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
   if(fTaggedTrackAnalysis) {
     fTaggedTrackAnalysis->SetMagneticField(fESD->GetMagneticField());
     fTaggedTrackAnalysis->SetCentrality(fCentralityF);
-    if(IsHeavyIon()) fTaggedTrackAnalysis->SetPbPb();
-    else fTaggedTrackAnalysis->SetPP();
+    if(IsPbPb()) fTaggedTrackAnalysis->SetPbPb();
+    else {
+	if(IspPb()) fTaggedTrackAnalysis->SetpPb();
+	else fTaggedTrackAnalysis->SetPP();
+    }
+
   }
 
   // Do event Normalization
@@ -964,7 +971,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     AliDebug(4, "New ESD track");
     track = fESD->GetTrack(itrack);
     track->SetESDEvent(fESD);
-    
+
     // fill counts of v0-identified particles
     Int_t v0pid = -1;
     if(track->TestBit(BIT(14))) v0pid = AliPID::kElectron;
@@ -1155,8 +1162,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
     hfetrack.SetMulitplicity(ncontribVtx);
-    if(IsHeavyIon()) hfetrack.SetPbPb();
-    else hfetrack.SetPP();
+    if(IsPbPb()) hfetrack.SetPbPb();
+    else {
+	if(IspPb()) hfetrack.SetpPb();
+	else hfetrack.SetPP();
+    }
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
     nElectronCandidates++;
@@ -1216,8 +1226,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(signal) {
       // Apply weight for background contamination
       if(fBackGroundFactorApply) {
-        if(IsHeavyIon() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
-        else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+        if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
+        else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // for pp and pPb
 
         if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
         else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
@@ -1503,14 +1513,14 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
       // Reject kink mother
       if(fRejectKinkMother) {
-	Bool_t kinkmotherpass = kTRUE;
-	for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
-	  if(track->GetID() == listofmotherkink[kinkmother]) {
-	    kinkmotherpass = kFALSE;
-	    continue;
-	  }
-	}
-	if(!kinkmotherpass) continue;
+	      Bool_t kinkmotherpass = kTRUE;
+	      for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+	        if(track->GetID() == listofmotherkink[kinkmother]) {
+	          kinkmotherpass = kFALSE;
+	          continue;
+	        }
+	      }
+	      if(!kinkmotherpass) continue;
       }
       
       // RecPrim
@@ -1591,8 +1601,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
     hfetrack.SetMulitplicity(ncontribVtx); // for correction
-    if(IsHeavyIon()) hfetrack.SetPbPb();
-    else hfetrack.SetPP();
+    if(IsPbPb()) hfetrack.SetPbPb();
+    else{
+      if(IspPb()) hfetrack.SetpPb();
+      else hfetrack.SetPP();
+    }
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;   
     // we will do PID here as soon as possible
@@ -1620,7 +1633,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(signal) {
       // Apply weight for background contamination
       if(fBackGroundFactorApply) {
-	      if(IsHeavyIon() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
+	      if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
 	      else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
 	
 	      if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
@@ -2037,7 +2050,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   
 
   Int_t bin = -1;
-  if(IsHeavyIon()) {
+  if(IsPbPb()||IspPb()) {
     // Centrality
     AliCentrality *centrality = fInputEvent->GetCentrality();
     fCentralityPercent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
@@ -2185,7 +2198,7 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
 }
 
 //___________________________________________________
-Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
+Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
 //
 // Check TRD trigger; pPb settings
 //
@@ -2193,10 +2206,22 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
     Bool_t cint7=kFALSE;
     Bool_t cint5=kFALSE;
     Bool_t trdtrgevent=kFALSE;
-    fTRDTriggerAnalysis->CalcTriggers(ev); 
+
+
+    // mb selection of WU events
+    if(fWhichTRDTrigger==1)
+    {
+	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+	{
+	    DrawTRDTrigger(ev);
+	    return kTRUE;
+	}
+        else return kFALSE;
+    }
+
 
     // HSE no cleanup
-    if(fWhichTRDTrigger==1)
+    if(fWhichTRDTrigger==2)
     {
 	cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
 	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");
@@ -2210,19 +2235,7 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
 	}
     }
 
-    // HSE cleanup
-    if(fWhichTRDTrigger==2)
-    {
-	if(!fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE))
-	{
-	    return kFALSE;
-	}
-	else
-	{
-	    DrawTRDTrigger(ev);
-	    return kTRUE;
-	}
-    }
+   
 
     //HQU no cleanup
     if(fWhichTRDTrigger==3)
@@ -2239,8 +2252,39 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
 	}
     }
 
+   
+
+    return trdtrgevent;
+
+}
+
+
+//___________________________________________________
+Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
+//
+// Check TRD trigger; pPb settings
+//
+
+    fTRDTriggerAnalysis->CalcTriggers(ev);
+
+    // HSE cleanup
+    if(fWhichTRDTrigger==6)
+    {
+	if(!fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE))
+	{
+	    return kFALSE;
+	}
+	else
+	{
+	 //   DrawTRDTrigger(ev);
+	    return kTRUE;
+	}
+    }
+
+ 
+
     // HQU cleanup
-    if(fWhichTRDTrigger==4)
+    if(fWhichTRDTrigger==7)
     {
 
 	if(!fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHQU))
@@ -2249,12 +2293,26 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliESDEvent *ev) {
 	}
 	else
 	{
-	    DrawTRDTrigger(ev);
+       //     DrawTRDTrigger(ev);
 	    return kTRUE;
 	}
     }
-   
-    return trdtrgevent;
+
+    // HSE or HQU cleanup
+    if(fWhichTRDTrigger==8)
+    {
+	if((fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE))||(fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHQU)))
+	{
+	//    DrawTRDTrigger(ev);
+	    return kTRUE;
+	}
+	else
+	{
+	    return kFALSE; 
+	}
+    }
+
+    return kFALSE;
 
 }
 
@@ -2371,4 +2429,3 @@ void AliAnalysisTaskHFE::DrawTRDTrigger(AliESDEvent *ev) {
     if(ntriggerbit==0) fQACollection->Fill("nTriggerBit",1);
 
 }
-

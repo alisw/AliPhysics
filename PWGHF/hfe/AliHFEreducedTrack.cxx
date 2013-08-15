@@ -57,6 +57,7 @@ TObject(),
   fTPCsharedClusters(0),
   fTPCclusterRatio(0.),
   fTPCclusterRatioAll(0.),
+  fChi2PerTPCcluster(0.),
   fTRDtrackletsPID(0),
   fTRDnslices(0),
   fTRDlayer(6),
@@ -67,7 +68,8 @@ TObject(),
   fTPCsigmaElCorrected(-1000.),
   fTOFsigmaEl(-1000.),
   fTOFmismatchProb(0.),
-  fEoverP(0.),
+  fITSsigmaEl(-1000.),
+  fEoverP(-1.),
   fEMCALsigmaEl(-1000.),
   fV0PID(kV0undef)
 {
@@ -77,6 +79,8 @@ TObject(),
   memset(fMCProdVtx, 0, sizeof(Double_t)*3);
   memset(fShowerShape, 0, sizeof(Double_t)*4);
   memset(fDCA, 0, sizeof(Float_t)*2);
+  fHFEImpactParam[0] = -999.;
+  fHFEImpactParam[1] = -999.;
 }
 
 //_______________________________________
@@ -109,6 +113,7 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   fTPCsharedClusters(ref.fTPCsharedClusters),
   fTPCclusterRatio(ref.fTPCclusterRatio),
   fTPCclusterRatioAll(ref.fTPCclusterRatioAll),
+  fChi2PerTPCcluster(ref.fChi2PerTPCcluster),
   fTRDtrackletsPID(ref.fTRDtrackletsPID),
   fTRDnslices(ref.fTRDnslices),
   fTRDlayer(ref.fTRDlayer),
@@ -119,6 +124,7 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   fTPCsigmaElCorrected(ref.fTPCsigmaElCorrected),
   fTOFsigmaEl(ref.fTOFsigmaEl),
   fTOFmismatchProb(ref.fTOFmismatchProb),
+  fITSsigmaEl(ref.fITSsigmaEl),
   fEoverP(ref.fEoverP),
   fEMCALsigmaEl(ref.fEMCALsigmaEl),
   fV0PID(ref.fV0PID)
@@ -129,6 +135,7 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   memcpy(fMCProdVtx, ref.fMCProdVtx, sizeof(Double_t) *3);
   memcpy(fShowerShape, ref.fShowerShape, sizeof(Double_t)*4);
   memcpy(fDCA, ref.fDCA, sizeof(Float_t)*2);
+  memcpy(fHFEImpactParam, ref.fHFEImpactParam, sizeof(Double_t) * 2);
 }
 
 //_______________________________________
@@ -166,6 +173,7 @@ AliHFEreducedTrack &AliHFEreducedTrack::operator=(const AliHFEreducedTrack &ref)
     fTPCsharedClusters = ref.fTPCsharedClusters;
     fTPCclusterRatio = ref.fTPCclusterRatio;
     fTPCclusterRatioAll = ref.fTPCclusterRatioAll;
+    fChi2PerTPCcluster = ref.fChi2PerTPCcluster;
     fTRDtrackletsPID = ref.fTRDtrackletsPID;
     fTRDnslices = ref.fTRDnslices;
     fTRDlayer = ref.fTRDlayer;
@@ -176,11 +184,13 @@ AliHFEreducedTrack &AliHFEreducedTrack::operator=(const AliHFEreducedTrack &ref)
     fTPCsigmaElCorrected = ref.fTPCsigmaElCorrected;
     fTOFsigmaEl = ref.fTOFsigmaEl;
     fTOFmismatchProb = ref.fTOFmismatchProb;
+    fITSsigmaEl = ref.fITSsigmaEl;
     fEoverP = ref.fEoverP;
     fEMCALsigmaEl = ref.fEMCALsigmaEl;
     fV0PID = ref.fV0PID;
     memcpy(fShowerShape, ref.fShowerShape, sizeof(Double_t)*4);
     memcpy(fDCA, ref.fDCA, sizeof(Float_t)*2);
+    memcpy(fHFEImpactParam, ref.fHFEImpactParam, sizeof(Double_t) * 2);
   }
   return *this;
 }
