@@ -16,18 +16,21 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
   return status;
 }
 
-AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix,
+AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix,
                 UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
                 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000., 
                 Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL, 
                 Double_t TOFs=3., Int_t TOFmis=0, 
                 Int_t itshitpixel = 0, Int_t icent, 
-                Double_t assETA=0.8, Int_t assITS=2, 
+		            Double_t etami=-0.8, Double_t etama=0.8,
+                Double_t assETAm=-0.8, Double_t assETAp=0.8,
+                Int_t assITS=2, 
                 Int_t assTPCcl=100, Int_t assTPCPIDcl=80, 
                 Double_t assDCAr=1.0, Double_t assDCAz=2.0, 
-                Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL)
+                Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
+                Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE)
 {
-  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
+  Bool_t kAnalyseTaggedTracks = kFALSE;
  
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -43,11 +46,19 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
-  hfecuts->SetEtaRange(0.8);
+  hfecuts->SetEtaRange(etami,etama);
+  if(isAOD) hfecuts->SetAODFilterBit(4);
+  
+  //if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
+  //hfecuts->SetProductionVertex(0,7,0,7);
+ 
   hfecuts->SetMaxImpactParam(DCAxy,DCAz);
   hfecuts->SetUseMixedVertex(kTRUE);
   hfecuts->SetVertexRange(10.);
-  if(isAOD) hfecuts->SetAODFilterBit(4);
+  // New pPb cuts (February 2013)
+  hfecuts->SetUseCorrelationVertex();
+  hfecuts->SetSPDVtxResolutionCut();
+  hfecuts->SetpApileupCut();
 
   // TOF settings:
   Int_t usetof=0;
@@ -143,6 +154,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix
       pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
     }
   }
+  pid->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
 
   // Configure TOF PID
   if (usetof){
@@ -162,7 +174,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix
   if(!useMC){
     Bool_t status = kTRUE;
     TF1 *hBackground[12];
-    status = ReadContaminationFunctions("hadronContamination_pPbTPCTOF_forwardEta.root", hBackground, tpcdEdxcutlow[0]);
+    status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, tpcdEdxcutlow[0]);
     for(Int_t a=0;a<12;a++) {
       //  printf("back %f \n",p0[a]);
       if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
@@ -173,18 +185,18 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix
   //***************************************//
   //       Configure NPE plugin            //
   //***************************************//
-
   AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(Form("HFEBackGroundSubtractionPID2%s",appendix.Data()),"Background subtraction");  //appendix
-  if(isAOD) backe->SetAOD(kTRUE);
     //Setting the Cuts for the Associated electron-pool
   AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendix.Data()),"Background sub Cuts");
-  hfeBackgroundCuts->SetEtaRange(assETA);
+  //  hfeBackgroundCuts->SetEtaRange(assETA);
+  hfeBackgroundCuts->SetEtaRange(assETAm,assETAp);
   hfeBackgroundCuts->SetPtRange(0.1,1e10);
 
   hfeBackgroundCuts->SetMaxChi2perClusterTPC(4);
   hfeBackgroundCuts->SetMinNClustersITS(assITS);
   hfeBackgroundCuts->SetMinNClustersTPC(assTPCcl);
   hfeBackgroundCuts->SetMinNClustersTPCPID(assTPCPIDcl);
+  hfeBackgroundCuts->SetMaxImpactParam(assDCAr,assDCAz);
   if(isAOD) hfeBackgroundCuts->SetAODFilterBit(4);
   hfeBackgroundCuts->SetQAOn();			        // QA
 
@@ -201,13 +213,22 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t isAOD, Bool_t useMC, TString appendix
   cutmodelAssoc="pol0";
   for(Int_t a=0;a<11;a++)
   {
+    // Not necessary anymore, since the pPb case is handled similarly to the pp case
     //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
     Double_t tpcparamlow[1]={paramsTPCdEdxcutlowAssoc[a]};
     Float_t tpcparamhigh=paramsTPCdEdxcuthighAssoc[a];
     pidbackground->ConfigureTPCcentralityCut(a,cutmodelAssoc,tpcparamlow,tpcparamhigh);
   }
-  //backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+  pidbackground->ConfigureTPCdefaultCut(cutmodelAssoc,paramsTPCdEdxcutlowAssoc,paramsTPCdEdxcuthighAssoc[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
+  backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
   backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
+
+  // Selection of associated tracks for the pool
+  if(useCat1Tracks) backe->SelectCategory1Tracks(kTRUE);
+  if(useCat2Tracks) backe->SelectCategory2Tracks(kTRUE);
+
+  // apply opening angle cut to reduce file size
+  backe->SetMaxInvMass(0.3);
 
   task->SetHFEBackgroundSubtraction(backe);
 
