@@ -32,16 +32,21 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
   const double kDefTOFs = 3.;
   //const int TRDtrigger = 1; // trd trigger type
   if(!kTPCTOFTRD_Ref) TRDtrigger = 0;
-  
-  Double_t dEdxlm[12] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};  //  50%
-  Double_t dEdxhm[12] = {3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
-  // For systematics:
-  Double_t tpcl0[12]  = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0};  //  84%
-  Double_t tpcl1[12]  = {-0.53,-0.53,-0.53,-0.53,-0.53,-0.53,-0.53,-0.53,-0.53,-0.53,-0.53,-0.53};  //  70%
-  Double_t tpcl2[12]  = {-0.26,-0.26,-0.26,-0.26,-0.26,-0.26,-0.26,-0.26,-0.26,-0.26,-0.26,-0.26};  //  60%
-  Double_t tpcl3[12]  = {0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25};  //   40%/   40%
 
-  
+  // NEW SPLINES + CORRECTIONS: mean 0, width 1
+  // mean is actually 0.06 (abs(eta)<0.6)
+  Double_t dEdxhm[12] = {3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06};  // Above 3 sigma we neglect 0.13%
+
+  Double_t tpcl0[12]  = {-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94};  // 84%
+  Double_t tpcl1[12]  = {-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44};  // 69%
+  Double_t tpcl2[12]  = {0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06};  // 50%
+
+  Double_t tpcl3[12]  = {-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69};  // 77.2%
+  Double_t tpcl4[12]  = {-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19};  // 59.7%
+  Double_t tpcl5[12]  = {0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186};  // 45%
+  Double_t tpcl6[12]  = {0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31};  // 40%
+  Double_t tpcl7[12]  = {0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56};  // 30.7%
+
   // For TPC only
   const double kDefTPCs1 = 0.0;
   const double kDefTPCu1 = 3.0;
@@ -50,8 +55,8 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
   Int_t etacut=0; // eta cut off
   
   if(kTPC_Only){
-    // for the moment (09.02.2013) use the same as TOF-TPC. Refine later on
-    RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,-0.8,0.8); // 50%
+    // Reference, 50% TPC PID, with centrality V0A
+    RegisterTask(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1);
   }
 
   //------------------------------//
@@ -61,7 +66,7 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t isMC = kFALSE,
   if(kTPCTOF_Ref){
     // Reference task
     // with centrality V0A
-    RegisterTask(isMC,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&dEdxlm[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth,1,-0.8,0.8); // 50%
+    RegisterTask(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],kDefTOFs,0,AliHFEextraCuts::kBoth,1);
   }
 
   if (kTPCTOF_Cent){
@@ -163,9 +168,8 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   else if (icent == 4) TString cesti("ZNA");
   else TString cesti("V0A");
 
-  
-  TString appendix(TString::Format("centTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dce%seta%d%d",tpcCls,
-				   tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,tofm,ipixelany,cesti.Data(),iEtaMin,iEtaMax));
+   TString appendix(TString::Format("centTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dce%s",tpcCls,
+				   tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,tofm,ipixelany,cesti.Data()));
   printf("Add macro appendix %s\n", appendix.Data());
 
 
@@ -174,7 +178,7 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEpPb(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
 					  tpcdEdxcutlow,tpcdEdxcuthigh,
-					  tofs,tofm,itshitpixel,icent,EtaMin,EtaMax);
+					  tofs,tofm,itshitpixel,icent);
 
   if(isAOD)
     task->SetAODAnalysis();

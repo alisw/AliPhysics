@@ -24,7 +24,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
 				 Int_t itshitpixel = 0, Int_t icent = 1,
          Double_t etami=-0.8, Double_t etama=0.8){
   
-  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
+  Bool_t kAnalyseTaggedTracks = kFALSE;
   
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -53,6 +53,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
   // New pPb cuts (February 2013)
   hfecuts->SetUseCorrelationVertex();
   hfecuts->SetSPDVtxResolutionCut();
+  hfecuts->SetpApileupCut();
 
   // TOF settings:
   Int_t usetof=0;
@@ -144,6 +145,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
       pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
     }
   }
+  pid->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
 
   // Configure TOF PID
   if (usetof){
@@ -162,7 +164,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
   if(!useMC){
     Bool_t status = kTRUE;
     TF1 *hBackground[12];
-    status = ReadContaminationFunctions("hadronContamination_pPbTPCTOF_forwardEta.root", hBackground, tpcdEdxcutlow[0]);
+    status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, tpcdEdxcutlow[0]);
     for(Int_t a=0;a<12;a++) {
       //  printf("back %f \n",p0[a]);
       if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
