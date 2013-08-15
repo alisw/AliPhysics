@@ -312,6 +312,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistSecondariesEffCorrVsNch(0)
 						  ,fHistSecondariesEffCorrVsNcl(0)
 						  ,fHistCentVsNchVsNcl(0)
+						  ,fHistSecondaryPositionInDetector(0)
 {
 }
 
@@ -479,6 +480,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistSecondariesEffCorrVsNch;
     delete fHistSecondariesEffCorrVsNcl;
     delete fHistCentVsNchVsNcl;
+    delete fHistSecondaryPositionInDetector;
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -755,7 +757,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     Float_t etProtonDepositedNotTrackMatched = 0.0;//
     Float_t etAntiProtonDepositedNotTrackMatched = 0.0;//
     //Float_t etPIDProtonDepositedNotTrackMatched = 0.0;//Still has to be filled!
-    //Float_t etPIDAntiProtonDepositedNotTrackMatched = 0.0;//Still has to be filled
+    //1Float_t etPIDAntiProtonDepositedNotTrackMatched = 0.0;//Still has to be filled
     Float_t etProtonDeposited = 0.0;//
     Float_t etAntiProtonDeposited = 0.0;//
     Float_t etNeutronDeposited = 0.0;
@@ -920,6 +922,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	if(fSecondary){//all particles from secondary interactions 
 	  written = kTRUE;
 	  if(nottrackmatched){//secondaries not removed
+// 	    Float_t vtx = TMath::Sqrt( TMath::Power(part->Vx(),2) + TMath::Power(part->Vy(),2) + TMath::Power(part->Vz(),2) );
+	    fHistSecondaryPositionInDetector->Fill(part->Vx(),part->Vy(),part->Vz());
+// 	    if(vtx>300){
+// 	      //cout<<"Vtx "<<vtx<<endl;
+// 	      if(fPrimaryCode==fgProtonCode ||  fPrimaryCode==fgAntiProtonCode || fPrimaryCode==fgPiPlusCode || fPrimaryCode==fgPiMinusCode || fPrimaryCode==fgKPlusCode || fPrimaryCode==fgKMinusCode){
+// 		cout<<"I think I am really a charged hadron!"<<endl;
+// 	      }
+// 	      //PrintFamilyTree(iPart, stack);
+// 	      }
 	    fSecondaryNotRemoved++;
 	    etSecondaries += fReconstructedEt;
 	    etSecondariesEffCorr += clEt;
@@ -1699,8 +1710,8 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       Int_t nbinsMult = 100;
       Float_t maxMult = 3000;
       Float_t minMult = 0;
-      Int_t nbinsCl = 150;
-      Float_t maxCl = 300;
+      Int_t nbinsCl = 175;
+      Float_t maxCl = 350;
       Float_t minCl = 0;
       fHistPiKPDepositedVsNch = new TH2F("fHistPiKPDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
       fHistPiKPNotTrackMatchedDepositedVsNch = new TH2F("fHistPiKPNotTrackMatchedDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
@@ -1715,6 +1726,12 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistSecondariesEffCorrVsNch = new TH2F("fHistSecondariesEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
     fHistSecondariesEffCorrVsNcl = new TH2F("fHistSecondariesEffCorrVsNcl","efficiency corrected secondaries deposited in calorimeter vs number of clusters",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
     fHistCentVsNchVsNcl = new TH3F("fHistCentVsNchVsNcl","Cent bin vs Nch Vs NCl",20,-0.5,19.5,nbinsMult,minMult,maxMult,nbinsCl,minCl,maxCl);
+    float maxpos = 500;
+    int nbinspos = 200;
+    fHistSecondaryPositionInDetector = new TH3F("fHistSecondaryPositionInDetector","Position of secondaries",nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos);
+    fHistSecondaryPositionInDetector->GetXaxis()->SetTitle("X");
+    fHistSecondaryPositionInDetector->GetYaxis()->SetTitle("Y");
+    fHistSecondaryPositionInDetector->GetZaxis()->SetTitle("Z");
 }
 
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
@@ -1896,6 +1913,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistSecondariesEffCorrVsNch);
     list->Add(fHistSecondariesEffCorrVsNcl);
     list->Add(fHistCentVsNchVsNcl);
+    list->Add(fHistSecondaryPositionInDetector);
 
 
 }
@@ -2024,7 +2042,8 @@ Int_t AliAnalysisEtMonteCarlo::PrintFamilyTree(Int_t partIdx, AliStack* stack)
         std::cout << "This is index: " << partIdx << " (" << stack->Particle(partIdx)->GetName() <<") , is it primary: " << stack->IsPhysicalPrimary(partIdx)<< std::endl;
         std::cout << "PID: " << part->GetPdgCode() << "/" << part->GetName() << std::endl;
         std::cout << "Energy: " << part->Energy() << std::endl;
-        std::cout << "Vertex: " << part->Vx() << ", " << part->Vy() << ", " << part->Vz() << std::endl;
+	Float_t vtx = TMath::Sqrt( TMath::Power(part->Vx(),2) + TMath::Power(part->Vy(),2) + TMath::Power(part->Vz(),2) );
+        std::cout << "Vertex: " << part->Vx() << ", " << part->Vy() << ", " << part->Vz() <<"|Vtx| "<<vtx << std::endl;
     }
     return PrintMothers(partIdx, stack, 1);
 }
@@ -2058,7 +2077,8 @@ Int_t AliAnalysisEtMonteCarlo::PrintMothers(Int_t partIdx, AliStack* stack, Int_
 	  if(mother->GetSecondMother() >= 0) std::cout << ", " << stack->Particle(mother->GetSecondMother())->GetPdgCode();
 	  std::cout << std::endl;
 	}
-        std::cout << tabs << "Vertex: " << mother->Vx() << ", " << mother->Vy() << ", " << mother->Vz() << std::endl;
+	Float_t vtx = TMath::Sqrt( TMath::Power(mother->Vx(),2) + TMath::Power(mother->Vy(),2) + TMath::Power(mother->Vz(),2) );
+        std::cout<<tabs << "Vertex: " << mother->Vx() << ", " << mother->Vy() << ", " << mother->Vz() <<"|Vtx| "<<vtx << std::endl;
     }
     if(mother->GetPdgCode() == fgK0SCode)
     {
