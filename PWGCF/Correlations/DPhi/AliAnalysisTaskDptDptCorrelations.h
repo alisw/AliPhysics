@@ -161,6 +161,11 @@ protected:
   int      _nClusterMin; 
   int      _trackFilterBit;
   
+  //double _min_eta_1;
+  //double _max_eta_1;
+  //double _min_eta_2;
+  //double _max_eta_2;
+
  
   // event and track wise variables
   

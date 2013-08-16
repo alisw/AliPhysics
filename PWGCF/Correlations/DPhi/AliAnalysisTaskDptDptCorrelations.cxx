@@ -73,7 +73,13 @@ _dcaXYMax             (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
-_trackFilterBit       ( 128),
+_trackFilterBit       (0),
+  
+//_min_eta_1(0),                                                                                
+//_max_eta_1 (0),                                                                                
+//_min_eta_2 (0),                                                                                
+//_max_eta_2 (0),   
+
 _field    ( 1.),
 _nTracks  ( 0 ),
 _mult0    ( 0 ),
@@ -117,7 +123,10 @@ _nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ
 
 _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
 _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
-_nBins_eta_1(18),     _min_eta_1(-0.9),  _max_eta_1(0.9),           _width_eta_1(0.1),
+//_nBins_eta_1(18),    
+//_min_eta_1(-0.9),  _max_eta_1(0.9),           _width_eta_1(0.1),
+  _nBins_eta_1(0),    
+  _min_eta_1(0),  _max_eta_1(0),           _width_eta_1(0.1),
 
 _nBins_etaPhi_1(0), 
 _nBins_etaPhiPt_1(0),
@@ -125,7 +134,12 @@ _nBins_zEtaPhiPt_1(0),
 
 _nBins_pt_2(18),     _min_pt_2(0.2),     _max_pt_2(2.0),          _width_pt_2(0.1),
 _nBins_phi_2(72),    _min_phi_2(0),      _max_phi_2(2.*3.1415927),_width_phi_2(2.*3.1415927/72),
-_nBins_eta_2(18),    _min_eta_2(-0.9),     _max_eta_2(0.9),           _width_eta_2(0.1),
+//_nBins_eta_2(18),    
+//_min_eta_2(-0.9),     _max_eta_2(0.9),           _width_eta_2(0.1),
+  _nBins_eta_2(0),    
+  _min_eta_2(0),     _max_eta_2(0),           _width_eta_2(0.1),
+
+
 
 _nBins_etaPhi_2(0), 
 _nBins_etaPhiPt_2(0),
@@ -353,7 +367,7 @@ _dcaXYMax             (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
-_trackFilterBit       ( 128),
+_trackFilterBit       ( 0),
 _field    ( 1.),
 _nTracks  ( 0 ),
 _mult0    ( 0 ),
@@ -397,7 +411,10 @@ _nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ
 
 _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
 _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
-_nBins_eta_1(18),     _min_eta_1(-0.9),    _max_eta_1(0.9),           _width_eta_1(0.1),
+  //_nBins_eta_1(18),     
+  //_min_eta_1(-0.9),    _max_eta_1(0.9),           _width_eta_1(0.1),
+  _nBins_eta_1(0),     
+  _min_eta_1(0),    _max_eta_1(0),           _width_eta_1(0.1),
 
 _nBins_etaPhi_1(0), 
 _nBins_etaPhiPt_1(0),
@@ -405,7 +422,11 @@ _nBins_zEtaPhiPt_1(0),
 
 _nBins_pt_2(18),     _min_pt_2(0.2),     _max_pt_2(2.0),          _width_pt_2(0.1),
 _nBins_phi_2(72),    _min_phi_2(0),      _max_phi_2(2.*3.1415927),_width_phi_2(2.*3.1415927/72),
-_nBins_eta_2(18),    _min_eta_2(-0.9),     _max_eta_2(0.9),           _width_eta_2(0.1),
+  //_nBins_eta_2(18),   
+  //_min_eta_2(-0.9),     _max_eta_2(0.9),           _width_eta_2(0.1),
+  _nBins_eta_2(0),   
+  _min_eta_2(0),     _max_eta_2(0),           _width_eta_2(0.1),
+
 
 _nBins_etaPhi_2(0), 
 _nBins_etaPhiPt_2(0),
