@@ -546,7 +546,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
                     Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
                     Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
                     if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)*r2);
-                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)*r3);
+                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(7)*r3);
                 }
                 if (fUsePtWeight) { // use weighted weights
                     fProfV2->Fill(fCent, TMath::Power(fFitModulation->GetParameter(3),0.5)/*, QCnM1111()*/);
@@ -564,7 +564,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
                     Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
                     Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
                     if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)/r2);
-                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)/r3);
+                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(7)/r3);
                 }
                 fProfV2->Fill(fCent, fFitModulation->GetParameter(3));
                 fProfV3->Fill(fCent, fFitModulation->GetParameter(7));
@@ -575,7 +575,8 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
     // if all went well, update the local rho parameter
     fLocalRho->SetLocalRho(fFitModulation);
     // fill a number of histograms 
-    if(fFillHistograms) FillHistogramsAfterSubtraction(psi2, psi3, vzero, vzeroComb, tpc);
+    if(fFillHistograms)         FillHistogramsAfterSubtraction(psi2, psi3, vzero, vzeroComb, tpc);
+    if(fFillQAHistograms)       FillQAHistograms(InputEvent());
     // send the output to the connected output container
     PostData(1, fOutputList);
     switch (fRunModeType) {
@@ -585,6 +586,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
         } break;
         default: break;
     }
+
     return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1243,7 +1245,6 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
        if(!PassesCuts(fExplicitOutlierCut)) return kFALSE;
     }
     if(fRho->GetVal() <= 0 ) return kFALSE;
-    if(fFillQAHistograms) FillQAHistograms(event);
     return kTRUE;
 }
 //_____________________________________________________________________________

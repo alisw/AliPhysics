@@ -118,7 +118,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         Bool_t                  fNoEventWeightsForQC;   // don't store event weights for qc analysis
         TString                 fLocalRhoName;          // name for local rho
         Bool_t                  fUseScaledRho;          // use scaled rho
-        TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10) used for QA
+        TArrayI*                fCentralityClasses;     // centrality classes (maximum 10) used for QA
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
@@ -132,7 +132,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         detectorType            fDetectorType;          // type of detector used for modulation fit
         TString                 fFitModulationOptions;  // fit options for modulation fit
         runModeType             fRunModeType;           // run mode type 
-        TF1*                    fFitModulation;         //-> modulation fit for rho
+        TF1*                    fFitModulation;         // modulation fit for rho
         Float_t                 fMinPvalue;             // minimum value of p
         Float_t                 fMaxPvalue;             // maximum value of p
         AliLocalRhoParameter*   fLocalRho;              //! local rho

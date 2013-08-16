@@ -246,12 +246,14 @@ Bool_t AliAnalysisTaskLocalRho::Run()
     if(!(InputEvent()||fTracks||fJets||fRho)) return kFALSE;
     if(!fInitialized) fInitialized = InitializeAnalysis();
     // get the centrality bin (necessary for some control histograms
+    fInCentralitySelection = -1;
     Double_t cent(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
         if(cent >= fCentralityClasses->At(i) && cent <= fCentralityClasses->At(1+i)) {
             fInCentralitySelection = i;
             break; }
     }
+    if(fInCentralitySelection < 0) return kFALSE;
     // set the rho value 
     fLocalRho->SetVal(fRho->GetVal());
     // set the correct event plane accordign to the requested reference detector
@@ -315,7 +317,7 @@ Bool_t AliAnalysisTaskLocalRho::Run()
                     Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
                     Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
                     if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)*r2);
-                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)*r3);
+                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(7)*r3);
                 }
                 if (fUsePtWeight) { // use weighted weights
                     Double_t dQCnM11 = (fNoEventWeightsForQC) ? 1. : QCnM11();
@@ -339,7 +341,7 @@ Bool_t AliAnalysisTaskLocalRho::Run()
                     Double_t r2(fUserSuppliedR2->GetBinContent(fUserSuppliedR2->GetXaxis()->FindBin(fCent)));
                     Double_t r3(fUserSuppliedR3->GetBinContent(fUserSuppliedR3->GetXaxis()->FindBin(fCent)));
                     if(r2 > 0) fFitModulation->SetParameter(3, fFitModulation->GetParameter(3)*r2);
-                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(3)*r3);
+                    if(r3 > 0) fFitModulation->SetParameter(7, fFitModulation->GetParameter(7)*r3);
                 }
                 if (fUsePtWeight) { // use weighted weights
                     if(fFillHistograms) {
