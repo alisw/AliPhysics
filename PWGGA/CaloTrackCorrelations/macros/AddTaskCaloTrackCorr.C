@@ -271,17 +271,16 @@ AliCaloTrackReader * ConfigureReader()
   
   reader->SetDebug(kDebug);//10 for lots of messages
   
-  
-  //reader->SwitchOffTriggerClusterTimeRecal() ;
-
-  
   /*
-   // Event rejection cuts for jet-jet simulations
-   reader->SetPtHardAndJetPtComparison(kTRUE);
-   reader->SetPtHardAndJetPtFactor(4);
+   if(kSimulation)
+   {
+     // Event rejection cuts for jet-jet simulations
+     reader->SetPtHardAndJetPtComparison(kTRUE);
+     reader->SetPtHardAndJetPtFactor(4);
    
-   reader->SetPtHardAndClusterPtComparison(kTRUE);
-   reader->SetPtHardAndClusterPtFactor(1.5);
+     reader->SetPtHardAndClusterPtComparison(kTRUE);
+     reader->SetPtHardAndClusterPtFactor(1.5);
+   }
    */
   
   //Delta AOD?
@@ -450,9 +449,11 @@ AliCaloTrackReader * ConfigureReader()
 
   // Event triggered selection settings
   reader->SwitchOnTriggerPatchMatching();
-  reader->SwitchOnBadTriggerEventsRemoval();
-  
-  reader->SetTriggerPatchTimeWindow(8,9);
+  reader->SwitchOnBadTriggerEventsRemoval(); // only if SwitchOnTriggerPatchMatching();
+  reader->SwitchOnUnMatchedTriggerEventsRemoval(); // only if SwitchOnBadTriggerEventsRemoval();
+  //reader->SwitchOffTriggerClusterTimeRecal() ;
+
+  reader->SetTriggerPatchTimeWindow(8,9); // L0
   if     (kRunNumber < 146861) reader->SetEventTriggerThreshold(3.);
   else if(kRunNumber < 154000) reader->SetEventTriggerThreshold(4.);
   else if(kRunNumber < 165000) reader->SetEventTriggerThreshold(5.5);

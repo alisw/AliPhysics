@@ -113,8 +113,8 @@ fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerEventThreshold(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
 fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
-fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),        fTriggerClusterTimeRecal(kTRUE),
-
+fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),
+fTriggerClusterTimeRecal(kTRUE), fRemoveUnMatchedTriggers(kTRUE),
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
@@ -1186,6 +1186,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
            fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
     if     (fIsExoticEvent)         return kFALSE;
     else if(fIsBadCellEvent)        return kFALSE;
+    else if(fRemoveUnMatchedTriggers && !fIsTriggerMatch) return kFALSE ;
     else if(fTriggerClusterBC != 0) return kFALSE;
     //printf("\t *** YES\n");
   }

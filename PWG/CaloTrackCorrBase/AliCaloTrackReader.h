@@ -298,11 +298,14 @@ public:
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
   void             SwitchOnBadTriggerEventsRemoval()       { fRemoveBadTriggerEvents   = kTRUE  ; }
 
+  void             SwitchOffUnMatchedTriggerEventsRemoval(){ fRemoveUnMatchedTriggers  = kFALSE ; }
+  void             SwitchOnUnMatchedTriggerEventsRemoval() { fRemoveUnMatchedTriggers  = kTRUE  ; }
+  
   void             SwitchOffTriggerPatchMatching()         { fTriggerPatchClusterMatch = kFALSE ; }
   void             SwitchOnTriggerPatchMatching()          { fTriggerPatchClusterMatch = kTRUE  ; }
 
-  void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal = kTRUE ; }
-  void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal = kFALSE; }
+  void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
+  void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
   void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT) 
@@ -704,6 +707,8 @@ public:
   Bool_t           fIsTriggerMatch;              // Could match the event to a trigger patch?
   Bool_t           fIsTriggerMatchOpenCut[3];    // Could not match the event to a trigger patch?, retry opening cuts
   Bool_t           fTriggerClusterTimeRecal;     // In case cluster already calibrated, do not try to recalibrate even if recalib on in RecoUtils.
+  Bool_t           fRemoveUnMatchedTriggers;     // Analyze events where trigger patch and cluster where found or not
+  
   
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
