@@ -2843,14 +2843,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
       if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
     }
-    
-    //Skip matched clusters with tracks
-    if(fRejectTrackMatch && IsTrackMatched(calo, GetReader()->GetInputEvent()))
-    {
-      FillRejectedClusterHistograms(mom,tag);
-      continue ;
-    }
-    
+            
+
     //Check PID
     //PID selection or bit setting
     Int_t    nMaxima = 0 ;
@@ -2865,16 +2859,18 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
                                                                                    mass,angle,l1,l2,absId1,absId2,
                                                                                    distbad1,distbad2,fidcut1,fidcut2) ;
     
+    
     if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",idPartType);
     
     
     // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
     if( (fCheckSplitDistToBad) &&
-        (!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist))
+       (!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist))
     {
       if(GetDebug() > 1)
         printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
                calo->GetDistanceToBadChannel(),distbad1,distbad2, fidcut1,fidcut2);
+      
       continue ;
     }
     
@@ -2892,6 +2888,13 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(GetDebug() > 1)
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
     
+    //Skip matched clusters with tracks
+    if(fRejectTrackMatch && IsTrackMatched(calo, GetReader()->GetInputEvent()))
+    {
+      FillRejectedClusterHistograms(mom,tag);
+      continue ;
+    }
+
     Float_t e1 = l1.Energy();
     Float_t e2 = l2.Energy();
     TLorentzVector l12 = l1+l2;

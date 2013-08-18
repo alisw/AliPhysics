@@ -30,8 +30,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass() ; // default ctor
   virtual ~AliAnaInsideClusterInvariantMass() { ; } //virtual dtor
   
-  void         CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex, const Int_t noverlaps);
-                                        //Float_t mass, Float_t m02, TLorentzVector l1, TLorentzVector l2);
+  void         CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex, const Int_t noverlaps,
+                                        const Float_t e1,     const Float_t e2,    const Float_t mass);
+                                        //, Float_t m02, TLorentzVector l1, TLorentzVector l2);
   
   TObjString * GetAnalysisCuts();
   
@@ -243,6 +244,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAsyMCGenRecoNLocMax1EbinPi0[4] ;       //! Generated vs reconstructed asymmetry of splitted clusters from pi0 when 1  local max, 4 E bins, neutral clusters
   TH2F       * fhAsyMCGenRecoNLocMax2EbinPi0[4] ;       //! Generated vs reconstructed asymmetry of splitted clusters from pi0 when 2  local max, 4 E bins, neutral clusters
   TH2F       * fhAsyMCGenRecoNLocMaxNEbinPi0[4] ;       //! Generated vs reconstructed asymmetry of splitted clusters from pi0 when >2 local max, 4 E bins, neutral clusters
+  
+  TH2F       * fhAsyMCGenRecoDiffMCPi0[3];              //! reconstructed-generated asymmetry of splitted clusters vs E from pi0, for 3 NLM cases
+  TH2F       * fhAsyMCGenRecoDiffMCPi0Conv[3];          //! reconstructed-generated asymmetry of splitted clusters vs E from converted pi0, for 3 NLM cases
   
   TH2F       * fhMassDispEtaNLocMax1[8][2]  ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 8 GeV, 1-6 for different MC particle types 
   TH2F       * fhMassDispEtaNLocMax2[8][2]  ;           //! Mass of 2 cells local maxima, vs M02, for E > 8 GeV,  1-6 for different MC particle types
@@ -565,6 +569,41 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCPi0DecayPhotonAdjacentOverlap;       //! E vs NLM when cluster originated in pi0 merging and MC photon decay hit adjacen cells, not 2 LM, overlap
   TH2F       * fhMCPi0DecayPhotonHitNoLMOverlap;        //! E vs NLM when cluster originated in pi0 merging and MC photon decay do not hit the cell local maximas, overlap
 
+  TH2F       * fhMCPi0DecayPhotonHitHighLMDiffELM1[3];             //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMDiffELM1[3];             //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMDiffELM1[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMDiffELM1[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high
+ 
+  TH2F       * fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[3];      //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[3];      //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high, overlap
+ 
+  TH2F       * fhMCPi0DecayPhotonHitHighLMDiffELM2[3];             //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMDiffELM2[3];             //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMDiffELM2[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMDiffELM2[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high
+  
+  TH2F       * fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[3];      //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[3];      //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high, overlap
+  
+  TH2F       * fhMCPi0DecayPhotonHitHighLMMass[3];                 //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMMass[3];                 //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMMass[3];                //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMMass[3];                //! E vs Mass when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjacentMass[3];                  //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit adjacen cells, not 2 LM
+  TH2F       * fhMCPi0DecayPhotonHitNoLMMass[3];                   //! E vs Mass when cluster originated in pi0 merging and MC photon decay do not hit the cell local maximas
+               
+  TH2F       * fhMCPi0DecayPhotonHitHighLMOverlapMass[3];          //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMOverlapMass[3];          //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMOverlapMass[3];         //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMOverlapMass[3];         //! E vs Mass when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjacentOverlapMass[3];           //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit adjacen cells, not 2 LM, overlap
+  TH2F       * fhMCPi0DecayPhotonHitNoLMOverlapMass[3];            //! E vs Mass when cluster originated in pi0 merging and MC photon decay do not hit the cell local maximas, overlap
+
+  
   TH2F       * fhMCEOverlapType;                        //! what particles overlap with pi0, neutral clusters
   TH2F       * fhMCEOverlapTypeMatch;                   //! what particles overlap with pi0, charged clusters
   
