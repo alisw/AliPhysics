@@ -208,7 +208,10 @@ public:
   Bool_t           AreClustersRecalculated()         const { return fRecalculateClusters   ; }
   void             SwitchOnClusterRecalculation()          { fRecalculateClusters = kTRUE  ; }
   void             SwitchOffClusterRecalculation()         { fRecalculateClusters = kFALSE ; }  
-  
+
+  void             SwitchOnClusterELinearityCorrection()   { fCorrectELinearity = kTRUE    ; }
+  void             SwitchOffClusterELinearityCorrection()  { fCorrectELinearity = kFALSE   ; }
+
   Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
   void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
   void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
@@ -298,6 +301,9 @@ public:
   void             SwitchOffTriggerPatchMatching()         { fTriggerPatchClusterMatch = kFALSE ; }
   void             SwitchOnTriggerPatchMatching()          { fTriggerPatchClusterMatch = kTRUE  ; }
 
+  void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal = kTRUE ; }
+  void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal = kFALSE; }
+  
   UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
   void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT) 
                                                            { fMixEventTriggerMask = evtTrig  ; }
@@ -622,6 +628,7 @@ public:
   Bool_t           fFillEMCALCells;            // use data from EMCAL
   Bool_t           fFillPHOSCells;             // use data from PHOS
   Bool_t           fRecalculateClusters;       // Correct clusters, recalculate them if recalibration parameters is given
+  Bool_t           fCorrectELinearity;         // Correct cluster linearity, always on
   Bool_t           fSelectEmbeddedClusters;    // Use only simulated clusters that come from embedding.
   
   ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
@@ -696,7 +703,7 @@ public:
   Bool_t           fIsBadMaxCellEvent;           // Bad cell triggered event flag, only max energy cell is bad
   Bool_t           fIsTriggerMatch;              // Could match the event to a trigger patch?
   Bool_t           fIsTriggerMatchOpenCut[3];    // Could not match the event to a trigger patch?, retry opening cuts
-
+  Bool_t           fTriggerClusterTimeRecal;     // In case cluster already calibrated, do not try to recalibrate even if recalib on in RecoUtils.
   
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
@@ -752,7 +759,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,60)
+  ClassDef(AliCaloTrackReader,61)
   
 } ;
 

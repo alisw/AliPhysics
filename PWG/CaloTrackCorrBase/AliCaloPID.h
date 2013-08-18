@@ -237,13 +237,16 @@ class AliCaloPID : public TObject {
   Float_t GetPhotonMaxMass()             const { return fMassPhoMax           ; }
   
   void    SetSplitWidthSigma(Float_t s)        { fSplitWidthSigma        = s  ; }
-  void    SetPi0MassWidthSelectionParameters    (Int_t iparam, Float_t param) { if(iparam < 7 ) fMassWidthPi0Param[iparam] = param ; }
+
+  void    SetPi0MassShiftHighECell(Float_t s)  { s = fMassShiftHighECell      ; }
+  void    SetPi0MassWidthSelectionParameters    (Int_t inlm, Int_t iparam, Float_t param)
+  { if(iparam < 7 ) fMassWidthPi0Param[inlm][iparam] = param ; }
   void    SetM02MaximumSelectionParameters      (Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 6 && inlm < 2) fM02MaxParam[inlm][iparam] = param ; }
+  { if(iparam < 7 && inlm < 2) fM02MaxParam[inlm][iparam] = param ; }
   void    SetM02MinimumSelectionParameters      (Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 6 && inlm < 2) fM02MinParam[inlm][iparam] = param ; }
+  { if(iparam < 7 && inlm < 2) fM02MinParam[inlm][iparam] = param ; }
   void    SetAsymmetryMinimumSelectionParameters(Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 6 && inlm < 2) fAsyMinParam[inlm][iparam] = param ; }
+  { if(iparam < 4 && inlm < 2) fAsyMinParam[inlm][iparam] = param ; }
 
   void    SetPi0MassRange(Float_t min, Float_t max)    { fMassPi0Min    = min ; fMassPi0Max = max ; } // Simple case
   void    SetEtaMassRange(Float_t min, Float_t max)    { fMassEtaMin    = min ; fMassEtaMax = max ; }
@@ -302,20 +305,19 @@ private:
   Float_t   fMassPi0Max  ;                      // Min Pi0 mass // simple cut case
   Float_t   fMassPhoMin  ;                      // Min Photon mass
   Float_t   fMassPhoMax  ;                      // Min Photon mass
-  Float_t   fMassWidthPi0Param[7] ;             // 3 param for pol2 fit on width, 2 param for mass position NLM=1 and NLM>1 for pi0 selection
-  Float_t   fM02MinParam[2][6] ;                // 4 param for pol3 fit on M02 minimum for pi0 selection (maximum for conversions)
-  Float_t   fM02MaxParam[2][6] ;                // 4 param for pol3 fit on M02 maximum for pi0 selection
-  Float_t   fAsyMinParam[2][6] ;                // 4 param for pol3 fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
+  Float_t   fMassWidthPi0Param[2][7] ;          // 2+1 param for pol1 fit on width, 2+1 param for mass position pi0 selection
+  Float_t   fM02MinParam[2][7] ;                // 5 param for expo + pol fit on M02 minimum for pi0 selection (maximum for conversions)
+  Float_t   fM02MaxParam[2][7] ;                // 5 param for expo + pol fit on M02 maximum for pi0 selection
+  Float_t   fAsyMinParam[2][4] ;                // 2 param for fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
   Float_t   fSplitEFracMin[3]  ;                // Do not use clusters with too large energy in cluster compared
                                                 // to energy in splitted clusters, depeding on NLM
   Float_t   fSplitWidthSigma;                   // Cut on mass+-width*fSplitWidthSigma
+  Float_t   fMassShiftHighECell;                // Shift cuts 5 MeV for Ecell > 150 MeV, default Ecell > 50 MeV
 
-
-  
   AliCaloPID & operator = (const AliCaloPID & cpid) ; // cpy assignment
   AliCaloPID(              const AliCaloPID & cpid) ; // cpy ctor
   
-  ClassDef(AliCaloPID,18)
+  ClassDef(AliCaloPID,19)
   
 } ;
 
