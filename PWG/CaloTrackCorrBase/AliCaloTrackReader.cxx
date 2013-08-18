@@ -84,7 +84,8 @@ fEMCALCells(0x0),            fPHOSCells(0x0),
 fInputEvent(0x0),            fOutputEvent(0x0),fMC(0x0),
 fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
-fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
+fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
+fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),
 fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
 fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
@@ -112,7 +113,7 @@ fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerEventThreshold(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
 fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
-fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),
+fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),        fTriggerClusterTimeRecal(kTRUE),
 
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
@@ -1176,36 +1177,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
 	
   //Get Patches that triggered
   TArrayI patches = GetTriggerPatches(fTriggerPatchTimeWindow[0],fTriggerPatchTimeWindow[1]);
-  /*
-   if(fRemoveExoticEvents)
-   {
-   RejectExoticEvents(patches);
-   if(fIsExoticEvent)
-   {
-   //printf("AliCaloTrackReader::FillInputEvent() - REJECT exotic triggered event \n");
-   return kFALSE;
-   }
-   }
-   
-   RejectTriggeredEventsByPileUp(patches);
-   //printf("AliCaloTrackReader::FillInputEvent(), Trigger BC = %d\n",fTriggerClusterBC);
-   
-   if(fRemoveTriggerOutBCEvents)
-   {
-   if(fTriggerClusterBC != 0 && fTriggerClusterBC != 6)
-   {
-   //printf("\t REJECT, bad trigger cluster BC\n");
-   return kFALSE;
-   }
-   }
-   */
   
   MatchTriggerCluster(patches);
   
   if(fRemoveBadTriggerEvents)
   {
-    //printf("ACCEPT triggered event? - exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
-    //       fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
+    if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent() - ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
+           fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
     if     (fIsExoticEvent)         return kFALSE;
     else if(fIsBadCellEvent)        return kFALSE;
     else if(fTriggerClusterBC != 0) return kFALSE;
@@ -1701,17 +1679,16 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
   
   //Correct non linearity
-  if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn())
+  if(fCorrectELinearity && GetCaloUtils()->IsCorrectionOfClusterEnergyOn())
   {
     GetCaloUtils()->CorrectClusterEnergy(clus) ;
-    //printf("Linearity Corrected Energy %f\n",clus->E());
     
     //In case of MC analysis, to match resolution/calibration in real data
     Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
     // printf("\t Energy %f, smeared %f\n", clus->E(),rdmEnergy);
     clus->SetE(rdmEnergy);
   }
-  
+    
   Double_t tof = clus->GetTOF()*1e9;
   
   Int_t bc = TMath::Nint(tof/50) + 9;
@@ -2277,7 +2254,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     Int_t    idclus     = clus->GetID();
     
     Double_t tof        = clus->GetTOF();
-    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn() && fTriggerClusterTimeRecal)
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
     tof *=1.e9;
     
@@ -2501,7 +2478,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("AODs Track filter mask  =  %d or hybrid %d, SPD hit %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks,fSelectSPDHitTracks) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
-  printf("Recalculate Clusters = %d\n",    fRecalculateClusters) ;
+  printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
   
   printf("Use Triggers selected in SE base class %d; If not what trigger Mask? %d; Trigger max for mixed %d \n",
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
@@ -2624,6 +2601,8 @@ void AliCaloTrackReader::SetEventTriggerBit()
   fEventTrigEMCALL1Jet1   = kFALSE;
   fEventTrigEMCALL1Jet2   = kFALSE;
   
+  if(fDebug > 0) printf("AliCaloTrackReader::SetEventTriggerBit() - Select trigger mask bit %d - Trigger Event %s\n",fEventTriggerMask,GetFiredTriggerClasses().Data());
+  
   if(fEventTriggerMask <=0 )// in case no mask set
   {
     // EMC triggered event? Which type?
@@ -2659,16 +2638,24 @@ void AliCaloTrackReader::SetEventTriggerBit()
               !GetFiredTriggerClasses().Contains("EJ1" ) &&
               !GetFiredTriggerClasses().Contains("EG2" ) &&
               !GetFiredTriggerClasses().Contains("EJ2" )    )
+      {
         fEventTrigEMCALL0 = kTRUE;
+      }
       
       //Min bias event trigger?
       if     (GetFiredTriggerClasses().Contains("CCENT_R2-B-NOPF-ALLNOTRD"))
+      {
         fEventTrigCentral     = kTRUE;
+      }
       else if(GetFiredTriggerClasses().Contains("CSEMI_R1-B-NOPF-ALLNOTRD"))
+      {
         fEventTrigSemiCentral = kTRUE;
+      }
 			else if((GetFiredTriggerClasses().Contains("CINT") || GetFiredTriggerClasses().Contains("CPBI2_B1") ) &&
               GetFiredTriggerClasses().Contains("-NOPF-ALLNOTRD") )
+      {
 			  fEventTrigMinBias = kTRUE;
+      }
     }
   }
   else
@@ -2706,18 +2693,26 @@ void AliCaloTrackReader::SetEventTriggerBit()
 		// EMC L0
 	  else if((fEventTriggerMask & AliVEvent::kEMC7) ||
             (fEventTriggerMask & AliVEvent::kEMC1)       )
+    {
 	    fEventTrigEMCALL0 = kTRUE;
+    }
 	  // Min Bias Pb-Pb
 	  else if( fEventTriggerMask & AliVEvent::kCentral     )
+    {
 	    fEventTrigSemiCentral = kTRUE;
+    }
 	  // Min Bias Pb-Pb
 	  else if( fEventTriggerMask & AliVEvent::kSemiCentral )
+    {
 	    fEventTrigCentral = kTRUE;
+    }
 	  // Min Bias pp, PbPb, pPb
 	  else if((fEventTriggerMask & AliVEvent::kMB  ) ||
             (fEventTriggerMask & AliVEvent::kINT7) ||
             (fEventTriggerMask & AliVEvent::kINT8)       )
+    {
 	    fEventTrigMinBias = kTRUE;
+    }
 	}
   
   if(fDebug > 0 )
