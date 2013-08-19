@@ -25,17 +25,20 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
   void                        SetAdditionalCentEst(const char* meth2, const char* meth3="") { fCentMethod2 = meth2; fCentMethod3 = meth3; }
   void                        SetDoV0QA(Int_t b)                                   { fDoV0QA             = b          ; }
   void                        SetDoEPQA(Int_t b)                                   { fDoEPQA             = b          ; }
+  void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b          ; }
 
  protected:
 
   void                        ExecOnce()                                                    ;
   Bool_t                      FillHistograms()                                              ;
-  void                        FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets);
+  void                        FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, Float_t ep, Float_t rho, 
+					       Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets, 
+					       Float_t maxtrack, Float_t maxcluster, Float_t maxjet);
   Bool_t                      RetrieveEventObjects()                                        ;
   Int_t                       DoCellLoop(Float_t &sum, Float_t &sum_cut)                    ;
-  Int_t                       DoTrackLoop(Float_t &sum)                                     ;
-  Int_t                       DoClusterLoop(Float_t &sum)                                   ;
-  Int_t                       DoJetLoop()                                                   ;
+  Int_t                       DoTrackLoop(Float_t &sum, Float_t &leading)                   ;
+  Int_t                       DoClusterLoop(Float_t &sum, Float_t &leading)                 ;
+  Int_t                       DoJetLoop(Float_t &leading)                                   ;
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
 
   Float_t                     fCellEnergyCut;            // Energy cell cut
@@ -45,6 +48,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
   TString                     fCentMethod3;              // Centrality method 3
   Int_t                       fDoV0QA;                   // Add V0 QA histograms
   Int_t                       fDoEPQA;                   // Add event plane QA histograms
+  Int_t                       fMaxCellsInCluster;        // Maximum number (approx) of cells in a cluster
   Double_t                    fCent2;                    //!Event centrality with method 2
   Double_t                    fCent3;                    //!Event centrality with method 3
   AliVVZERO                  *fVZERO;                    //!Event V0 object
@@ -91,6 +95,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 21) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 22) // Quality task for Emcal analysis
 };
 #endif

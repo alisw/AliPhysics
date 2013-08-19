@@ -2,9 +2,10 @@
 
 AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
   const char* trigType = "L0",   // Trigger type: it can be "L0" (4x4, with 2x2 sliding inside SM), 
-                                 //"L1GAMMA" (4x4, with 2x2 sliding through SMs), "L1JET" (40x40 with 4x4 sliding through SMs)
+                                 //"L1GAMMA" (4x4, with 2x2 sliding through SMs), "L1JET" (32x32 with 4x4 sliding through SMs)
   const Bool_t fOR = kFALSE,
-  const TString & geomName = "EMCAL_COMPLETEV1"
+  const TString & geomName = "EMCAL_COMPLETEV1",
+  Double_t minE = -1
 ) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -52,13 +53,13 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(
   if (fOR) {
     name += "FOR";
     nameout += "FOR";
-    minE = 3;
+    if (minE < 0) minE = 3;
     minT = -20;
     maxT = 20;
   } else {
     name += "FEE";
     nameout += "FEE";
-    minE = .045;
+    if (minE < 0) minE = .045;
     minT = -1.;
     maxT = +1.;
   }
