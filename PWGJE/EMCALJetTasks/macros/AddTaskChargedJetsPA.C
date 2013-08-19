@@ -19,7 +19,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Bool_t              usePileUpCut            = kTRUE,
   Bool_t              isEMCalTrain            = kFALSE,
   Bool_t              calculateExternalRho    = kFALSE,
-  Bool_t              analyzeDeprecatedBackgrounds = kTRUE
+  Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
+  Int_t               numberOfCentralityBins  = 20
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -83,6 +84,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
       minBackgroundJetPt = 0.15;
   }
 
+
   jetFinderTaskKT->SetMinJetPt(minBackgroundJetPt);
 
   // #### Define extern rho task
@@ -133,6 +135,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetTRBackgroundConeRadius(trackBgrdConeR);
   task->SelectCollisionCandidates(trigger);
   task->SetCentralityType(centralityType);
+  task->SetNumberOfCentralityBins(numberOfCentralityBins);
   task->SetUsePtHardBin(ptHardBin);
   if(calculateExternalRho)
     task->SetExternalRhoTaskName(myRhoName.Data());
