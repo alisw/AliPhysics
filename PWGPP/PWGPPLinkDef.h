@@ -124,6 +124,7 @@
 #pragma link C++ class  AliTRDpidRefMakerNN+;
 // TOF QA
 #pragma link C++ class  AliAnalysisTaskTOFqa+;
+#pragma link C++ class  AliAnalysisTaskTOFqaID+;
 // HMPID QA
 #pragma link C++ class  AliHMPIDTaskQA+;
 // Cosmics QA
