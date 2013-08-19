@@ -99,8 +99,8 @@ Bool_t AliJetTriggerSelectionTask::RetrieveEventObjects()
     return kFALSE;
 
   if (fVZERO) {
-    fV0ATotMult = AliESDUtils::GetCorrV0A(fVZERO->GetMTotV0A(),fVertex[2]);
-    fV0CTotMult = AliESDUtils::GetCorrV0C(fVZERO->GetMTotV0C(),fVertex[2]);
+    fV0ATotMult = fVZERO->GetMTotV0A();
+    fV0CTotMult = fVZERO->GetMTotV0C();
   }
 
   return kTRUE;
