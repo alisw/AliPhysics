@@ -219,7 +219,6 @@ void AliAnalysisTaskReducedTree::UserExec(Option_t *option)
   //
   // Main loop. Called for every event
   //  
-  option = option;
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
