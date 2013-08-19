@@ -1304,6 +1304,9 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    Double_t rapidity = hDibaryon.Rapidity();
 	    if(rapidity > 1.0 || rapidity < -1.0) continue;
 
+	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+            fHistNdim->Fill(vec);
+
 	    fHistRap->Fill(rapidity);
 	    //if (pointingAngleH > 0.1) continue;
 	    if (pointingAngleH > 0.05) continue;
@@ -1378,8 +1381,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 
 	    //  fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
 
-	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
-	    fHistNdim->Fill(vec);
+	    //	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+	    //	    fHistNdim->Fill(vec);
 
 	  }
 	}
