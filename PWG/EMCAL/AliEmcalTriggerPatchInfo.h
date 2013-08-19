@@ -37,9 +37,13 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t    GetEdgeCellY() const { return fEdgeCell[1]; }
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
-  Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetLow))&1); }
-  Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetHigh))&1); }
-  Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> 24)&1); }
+  Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetLow))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetHigh))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> 24)&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetLow))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (kTriggerTypeEnd + kL1JetHigh))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsMainTriggerSimple() const { return (Bool_t)((fTriggerBits >> 24)&(fTriggerBits >> 25)&1); }
+  Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> 25)&1); }
   
   void SetCenterGeo( TVector3 &v, Double_t e ) { SetLorentzVector( fCenterGeo, v, e ); }
   void SetCenterGeo( TLorentzVector &v ) { fCenterGeo = v; }
@@ -68,6 +72,6 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t             fTriggerBits;                   //trigger bit mask
   Int_t             fEdgeCell[2];                   // cell "bottom lower" edge (min phi, max eta)
 
-  ClassDef(AliEmcalTriggerPatchInfo, 2) // Emcal particle class
+  ClassDef(AliEmcalTriggerPatchInfo, 3) // Emcal particle class
 };
 #endif

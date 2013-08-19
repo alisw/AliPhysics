@@ -16,7 +16,9 @@
 #include "AliEMCALGeometry.h"
 
 #include "AliVCaloTrigger.h"
+#include "AliAODCaloTrigger.h"
 #include "AliVCaloCells.h"
+#include "AliVVZERO.h"
 
 ClassImp(AliEmcalTriggerMaker)
 
@@ -27,10 +29,16 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   AliAnalysisTaskEmcalDev("AliEmcalTriggerMaker",kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
+  fV0InName("AliAODVZERO"),
   fCaloTriggersOut(0),
-  fCaloTriggerSetupOut(0)
+  fCaloTriggerSetupOut(0),
+  fSimpleOfflineTriggers(0),
+  fV0(0)
 {
   // Constructor.
+  for( int i = 0; i < 4; i++ )
+    for( int j = 0; j < 3; j++ )
+      fThresholdConstants[i][j] = 0;
 }
 
 //________________________________________________________________________
@@ -38,11 +46,16 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name) :
   AliAnalysisTaskEmcalDev(name,kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
+  fV0InName("AliAODVZERO"),
   fCaloTriggersOut(0),
-  fCaloTriggerSetupOut(0)
+  fCaloTriggerSetupOut(0),
+  fSimpleOfflineTriggers(0),
+  fV0(0)
 {
   // Constructor.
-
+  for( int i = 0; i < 4; i++ )
+    for( int j = 0; j < 3; j++ )
+      fThresholdConstants[i][j] = 0;
 }
 
 //________________________________________________________________________
@@ -89,6 +102,13 @@ void AliEmcalTriggerMaker::ExecOnce()
     }
   }
 
+  if ( ! fV0InName.IsNull()) {
+    fV0 = (AliVVZERO*)InputEvent()->FindListObject( fV0InName );
+  }
+
+  // container for simple offline trigger processing
+  fSimpleOfflineTriggers = new AliAODCaloTrigger();
+  fSimpleOfflineTriggers->Allocate( 0 );
 }
 
 //________________________________________________________________________
@@ -96,12 +116,15 @@ Bool_t AliEmcalTriggerMaker::Run()
 {
   // Create the emcal particles
 
-  Int_t globCol, globRow, tBits, cellAbsId[4];
+  Short_t cellId;
+  Int_t globCol, globRow, tBits, cellAbsId[4], v0[2];
   Int_t absId, adcAmp;
-  Int_t i, j, k, iMain, cmCol, cmRow, cmiCellCol, cmiCellRow;
+  Int_t i, j, k, iMain, iMainSimple, cmCol, cmRow, cmiCellCol, cmiCellRow, nCell, iCell;
   Int_t jetTrigger, iTriggers;
 	Int_t patchADC[48][64];
-  Double_t amp, ca, eMain, cmiCol, cmiRow;
+  Double_t amp, ca, eMain, eMainSimple, cmiCol, cmiRow;
+  ULong64_t v0S, thresh;
+  Bool_t isOfflineSimple;
   
   TVector3 centerGeo, center1, center2, centerMass, edge1, edge2, vertex;
   
@@ -117,6 +140,10 @@ Bool_t AliEmcalTriggerMaker::Run()
   }
   if( !fCaloCells ){
     AliError(Form("Calo cells container %s not available.", fCaloCellsName.Data()));
+    return kTRUE;
+  }
+  if( !fCaloCells ){
+    AliError(Form("V0 container %s not available.", fV0InName.Data()));
     return kTRUE;
   }
   
@@ -157,8 +184,27 @@ Bool_t AliEmcalTriggerMaker::Run()
 		} // patches
 	} // array not empty
   
-  // reset for re-run
-  fCaloTriggers->Reset();
+  // fill the array for offline trigger processing
+  // using calibrated cell energies
+  for( i = 0; i < 48; i++ )
+    for( j = 0; j < 64; j++ )
+      fPatchADCSimple[i][j] = 0;
+
+  // fill the patch ADCs from cells
+  nCell = fCaloCells->GetNumberOfCells();
+  
+  for( iCell = 0; iCell < nCell; iCell++ ){
+    // get the cell info, based in index in array
+    cellId = fCaloCells->GetCellNumber( iCell );
+    amp = fCaloCells->GetAmplitude( iCell );
+    
+    // get position
+    fGeom->GetFastORIndexFromCellIndex( cellId, absId );
+    fGeom->GetPositionInEMCALFromAbsFastORIndex( absId, globCol, globRow );
+    
+    // add
+    fPatchADCSimple[globCol][globRow] += amp/kEMCL1ADCtoGeV;
+  }
 
   // dig out common data (thresholds)
   // 0 - jet high, 1 - gamma high, 2 - jet low, 3 - gamma low
@@ -167,21 +213,55 @@ Bool_t AliEmcalTriggerMaker::Run()
                                        fCaloTriggers->GetL1Threshold( 2 ),
                                        fCaloTriggers->GetL1Threshold( 3 ));
 
+  // get the V0 value and compute and set the offline thresholds
+  // get V0, compute thresholds and save them as global parameters
+  v0[0] = fV0->GetTriggerChargeA();
+  v0[1] = fV0->GetTriggerChargeC();
+  v0S = v0[0] + v0[1];
+  
+  fSimpleOfflineTriggers->SetL1V0( v0 );
+  
+  for( i = 0; i < 4; i++ ){
+    // A*V0^2/2^32+B*V0/2^16+C
+    thresh = ( ((ULong64_t)fThresholdConstants[i][0]) * v0S * v0S ) >> 32;
+    thresh += ( ((ULong64_t)fThresholdConstants[i][1]) * v0S ) >> 16;
+    thresh += ((ULong64_t)fThresholdConstants[i][2]);
+    fSimpleOfflineTriggers->SetL1Threshold( i, thresh );
+  }
+  
+  // save the thresholds in output object
+  fCaloTriggerSetupOut->SetThresholdsSimple( fSimpleOfflineTriggers->GetL1Threshold( 0 ),
+                                       fSimpleOfflineTriggers->GetL1Threshold( 1 ),
+                                       fSimpleOfflineTriggers->GetL1Threshold( 2 ),
+                                       fSimpleOfflineTriggers->GetL1Threshold( 3 ));
+  
+  // run the trigger
+  RunSimpleOfflineTrigger();
+
+  // reset for re-run
+  fCaloTriggers->Reset();
+  fSimpleOfflineTriggers->Reset();
+
   // class is not empty
-  if( fCaloTriggers->GetEntries() > 0 ){
+  if( fCaloTriggers->GetEntries() > 0 ||  fSimpleOfflineTriggers->GetEntries() > 0 ){
  
     iTriggers = 0;
     iMain = -1;
     eMain = -1;
+    iMainSimple = -1;
+    eMainSimple = -1;
 
     // save primary vertex in vector
     vertex.SetXYZ( fVertex[0], fVertex[1], fVertex[2] );
 
-    // go throuth the trigger channels
-    while( fCaloTriggers->Next() ){
+    // go throuth the trigger channels, real first, then offline
+    while( NextTrigger( isOfflineSimple ) ){
       
       // check if jet trigger low or high
+      if( ! isOfflineSimple )
       fCaloTriggers->GetTriggerBits( tBits );
+      else
+        fSimpleOfflineTriggers->GetTriggerBits( tBits );
       
       jetTrigger = 0;
       if(( tBits >> ( kTriggerTypeEnd + kL1JetLow )) & 1 )
@@ -194,7 +274,10 @@ Bool_t AliEmcalTriggerMaker::Run()
       
       // get position in global 2x2 tower coordinates
       // A0 left bottom (0,0)
+      if( ! isOfflineSimple )
       fCaloTriggers->GetPosition( globCol, globRow );
+      else
+        fSimpleOfflineTriggers->GetPosition( globCol, globRow );
 
       // get the absolute trigger ID
       fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol, globRow, absId );
@@ -224,7 +307,10 @@ Bool_t AliEmcalTriggerMaker::Run()
             cmiRow += ca*(Double_t)j;
           }
           // add the STU ADCs in the patch
+          if( ! isOfflineSimple )
           adcAmp += patchADC[globCol+i][globRow+j];
+          else
+            adcAmp += fPatchADCSimple[globCol+i][globRow+j];
         }
       } // 32x32 cell window
       if( amp == 0 ){
@@ -290,9 +376,13 @@ Bool_t AliEmcalTriggerMaker::Run()
       trigger->SetEdgeCell( globCol*2, globRow*2 ); // from triggers to cells
       
       // check if more energetic than others for main patch marking
-      if( eMain < amp ){
+      if( ! isOfflineSimple && eMain < amp ){
         eMain = amp;
         iMain = iTriggers - 1;
+      }
+      if( isOfflineSimple && eMainSimple < amp ){
+        eMainSimple = amp;
+        iMainSimple = iTriggers - 1;
       }
       
 //       cout << " pi:" << trigger->GetPhiMin() << " px:" << trigger->GetPhiMax();
@@ -307,8 +397,16 @@ Bool_t AliEmcalTriggerMaker::Run()
     } // triggers
     
     // mark the most energetic patch as main
+    // for real and also simple offline
     if( iMain > -1 ){
       trigger = (AliEmcalTriggerPatchInfo*)fCaloTriggersOut->At( iMain );
+      tBits = trigger->GetTriggerBits();
+      // main trigger flag
+      tBits = tBits | ( 1 << 24 );
+      trigger->SetTriggerBits( tBits );
+    }
+    if( iMainSimple > -1 ){
+      trigger = (AliEmcalTriggerPatchInfo*)fCaloTriggersOut->At( iMainSimple );
       tBits = trigger->GetTriggerBits();
       // main trigger flag
       tBits = tBits | ( 1 << 24 );
@@ -318,4 +416,79 @@ Bool_t AliEmcalTriggerMaker::Run()
   } // there are some triggers
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliEmcalTriggerMaker::RunSimpleOfflineTrigger() 
+{
+  // runs simple offline trigger algorithm
+
+  Int_t i, j, k, l, tBits, tSum;
+  TArrayI tBitsArray, rowArray, colArray;
+  
+  // 0 thresholds = no processing
+  if( fCaloTriggerSetupOut->GetThresholdJetLowSimple() == 0 &&
+    fCaloTriggerSetupOut->GetThresholdJetHighSimple() == 0 )
+    return;
+  
+  // run the trigger algo, stepping by 8 towers (= 4 trigger channels)
+  for( i = 0; i < 32; i += 4 ){
+    for( j = 0; j < 48; j += 4 ){
+      
+      tSum = 0;
+      tBits = 0;
+      
+      // window
+      for( k = 0; k < 16; k++ )
+        for( l = 0; l < 16; l++ )
+          tSum += (ULong64_t)fPatchADCSimple[i+k][j+l];
+      
+      // check thresholds
+      if( tSum > fCaloTriggerSetupOut->GetThresholdJetLowSimple() )
+        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1JetLow ));
+      if( tSum > fCaloTriggerSetupOut->GetThresholdJetHighSimple() )
+        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1JetHigh ));
+      
+      // add trigger values
+      if( tBits != 0 ){
+        // add offline bit
+        tBits = tBits | ( 1 << 25 );
+        
+        tBitsArray.Set( tBitsArray.GetSize() + 1 );
+        colArray.Set( colArray.GetSize() + 1 );
+        rowArray.Set( rowArray.GetSize() + 1 );
+        
+        tBitsArray[tBitsArray.GetSize()-1] = tBits;
+        colArray[colArray.GetSize()-1] = i;
+        rowArray[rowArray.GetSize()-1] = j;
+      }
+    }
+  } // trigger algo
+  
+  // save in object
+  fSimpleOfflineTriggers->DeAllocate();
+  fSimpleOfflineTriggers->Allocate( tBitsArray.GetSize() );
+
+  for( i = 0; i < tBitsArray.GetSize(); i++ ){
+    fSimpleOfflineTriggers->Add( colArray[i], rowArray[i], 0, 0, 0, 0, 0, tBitsArray[i] );
+  }
+  
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalTriggerMaker::NextTrigger( Bool_t &isOfflineSimple ) 
+{
+  // get next trigger
+  
+  Bool_t loopContinue;
+  
+  loopContinue = fCaloTriggers->Next();
+  isOfflineSimple = kFALSE;
+
+  if( ! loopContinue ){
+    loopContinue = fSimpleOfflineTriggers->Next();
+    isOfflineSimple = kTRUE;
+  }
+  
+  return loopContinue;
 }

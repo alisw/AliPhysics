@@ -10,11 +10,14 @@
 //_________________________________________________________________________________________________
 AliEmcalTriggerSetupInfo::AliEmcalTriggerSetupInfo() :
   TNamed(),
-  fThresholds()
+  fThresholds(),
+  fThresholdsSimple()
 {
   // Default constructor.
   for( int i = 0; i < 4; i++ )
     fThresholds[i] = -1;
+  for( int i = 0; i < 4; i++ )
+    fThresholdsSimple[i] = -1;
 }
 
   
@@ -25,6 +28,8 @@ AliEmcalTriggerSetupInfo::AliEmcalTriggerSetupInfo(const AliEmcalTriggerSetupInf
   // Copy constructor.
   for( int i = 0; i < 4; i++ )
     fThresholds[i] = p.fThresholds[i];
+  for( int i = 0; i < 4; i++ )
+    fThresholdsSimple[i] = p.fThresholdsSimple[i];
 }
 
 //_________________________________________________________________________________________________
@@ -41,6 +46,8 @@ AliEmcalTriggerSetupInfo &AliEmcalTriggerSetupInfo::operator=(const AliEmcalTrig
   if (this != &p) {
     for( int i = 0; i < 4; i++ )
       fThresholds[i] = p.fThresholds[i];
+    for( int i = 0; i < 4; i++ )
+      fThresholdsSimple[i] = p.fThresholdsSimple[i];
   }
 
   return *this;
@@ -51,5 +58,7 @@ void AliEmcalTriggerSetupInfo::Clean(){
   // cleaner
   for( int i = 0; i < 4; i++ )
     fThresholds[i] = -1;
+  for( int i = 0; i < 4; i++ )
+    fThresholdsSimple[i] = -1;
 }
 
