@@ -13,9 +13,11 @@
 
 #include <TMath.h>
 #include <TClonesArray.h>
+#include <TClass.h>
 
 ClassImp(AliReducedTrack)
 ClassImp(AliReducedPair)
+ClassImp(AliReducedFMD)
 ClassImp(AliReducedEvent)
 ClassImp(AliReducedEventFriend)
 ClassImp(AliReducedCaloCluster)
@@ -23,6 +25,11 @@ ClassImp(AliReducedCaloCluster)
 TClonesArray* AliReducedEvent::fgTracks = 0;
 TClonesArray* AliReducedEvent::fgCandidates = 0;
 TClonesArray* AliReducedEvent::fgCaloClusters = 0;
+TClonesArray* AliReducedEvent::fgFMD1 = 0;
+TClonesArray* AliReducedEvent::fgFMD2I = 0;
+TClonesArray* AliReducedEvent::fgFMD2O = 0;
+TClonesArray* AliReducedEvent::fgFMD3I = 0;
+TClonesArray* AliReducedEvent::fgFMD3O = 0;
 
 //_______________________________________________________________________________
 AliReducedTrack::AliReducedTrack() :
@@ -36,20 +43,26 @@ AliReducedTrack::AliReducedTrack() :
   fTPCEta(0.0),
   fMomentumInner(0.0),
   fDCA(),
+  fTrackLength(0.0),
   fITSclusterMap(0),
   fITSsignal(0.0),
   fITSnSig(),
+  fITSchi2(0.0),
   fTPCNcls(0),
   fTPCCrossedRows(0),
   fTPCNclsF(0),
   fTPCNclsIter1(0),
   fTPCClusterMap(0),
   fTPCsignal(0),
+  fTPCsignalN(0),
   fTPCnSig(),
+  fTPCchi2(0.0),
   fTOFbeta(0.0),
   fTOFnSig(),
+  fTOFdeltaBC(0),
   fTRDntracklets(),
   fTRDpid(),
+  fTRDpidLQ2D(),
   fCaloClusterId(-999),
   fBayesPID(),
   fFlags(0),
@@ -62,6 +75,7 @@ AliReducedTrack::AliReducedTrack() :
   for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.; fITSnSig[i]=-999.;} 
   for(Int_t i=0; i<3; ++i) {fBayesPID[i]=-999.;}
   fTRDpid[0]=-999.; fTRDpid[1]=-999.;
+  fTRDpidLQ2D[0] = -999.; fTRDpidLQ2D[1] = -999.;
 }
 
 
@@ -129,16 +143,47 @@ AliReducedPair::~AliReducedPair() {
   //
 }
 
+
+//_______________________________________________________________________________
+AliReducedFMD::AliReducedFMD() :
+  fMultiplicity(0),
+  //fEta(0.0),
+  fId(0)
+{
+  AliReducedFMD::Class()->IgnoreTObjectStreamer();
+  //
+  // Constructor
+  //
+}
+
+
+//_______________________________________________________________________________
+AliReducedFMD::~AliReducedFMD()
+{
+  //
+  // De-Constructor
+  //
+}
+
+
 //____________________________________________________________________________
 AliReducedEvent::AliReducedEvent() :
   TObject(),
+  fEventTag(0),
+  fEventNumberInFile(0),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0),
   fRunNo(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
   fTriggerMask(0),
   fIsPhysicsSelection(kTRUE),
-  fIsSPDPileup(kTRUE),
+  fIsSPDPileup(kFALSE),
+  fIsSPDPileupMultBins(kFALSE),
+  fIRIntClosestIntMap(),
+  fIsFMDReduced(kTRUE),
   fVtx(),
   fNVtxContributors(0),
   fVtxTPC(),
@@ -156,36 +201,65 @@ AliReducedEvent::AliReducedEvent() :
   fSPDntracklets(0),
   fVZEROMult(),
   fZDCnEnergy(),
+  fZDCpEnergy(),
+  fT0amplitude(),
+  fT0TOF(),
+  fT0TOFbest(),
+  fT0zVertex(0),
+  fT0start(0),
+  fT0pileup(kFALSE),
+  fT0sattelite(kFALSE),
   fTracks(0x0),
   fCandidates(0x0),
+  fNFMDchannels(),
+  fFMDtotalMult(),
+  fFMD1(0x0),
+  fFMD2I(0x0),
+  fFMD2O(0x0),
+  fFMD3I(0x0),
+  fFMD3O(0x0),
   fNCaloClusters(0),
   fCaloClusters(0x0)
-//fFMDMult()
 {
   //
   // Constructor
   //
+  for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.;}
   for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
   fNtracks[0]=0; fNtracks[1]=0;
-  for(Int_t i=0; i<16; ++i) fSPDntrackletsEta[i]=0;
+  for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
-  for(Int_t i=0; i<8; ++i) fZDCnEnergy[i]=0.0;
+  for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
+  for(Int_t i=0; i<10; ++i) fZDCpEnergy[i]=0.0;
+  for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
+  for(Int_t i=0; i<5; ++i)  fNFMDchannels[i]=0.0;
+  for(Int_t i=0; i<5; ++i)  fFMDtotalMult[i]=0.0;
 }
 
 
 //____________________________________________________________________________
 AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   TObject(),
+  fEventTag(0),
+  fEventNumberInFile(0),
+  fL0TriggerInputs(0),
+  fL1TriggerInputs(0),
+  fL2TriggerInputs(0),
   fRunNo(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
   fTriggerMask(0),
   fIsPhysicsSelection(kTRUE),
-  fIsSPDPileup(kTRUE),
+  fIsSPDPileup(kFALSE),
+  fIsSPDPileupMultBins(kFALSE),
+  fIRIntClosestIntMap(),
+  fIsFMDReduced(kTRUE),
   fVtx(),
   fNVtxContributors(0),
   fVtxTPC(),
@@ -203,8 +277,23 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   fSPDntracklets(0),
   fVZEROMult(),
   fZDCnEnergy(),
+  fZDCpEnergy(),
+  fT0amplitude(),
+  fT0TOF(),
+  fT0TOFbest(),
+  fT0zVertex(0),
+  fT0start(0),
+  fT0pileup(kFALSE),
+  fT0sattelite(kFALSE),
   fTracks(0x0),
   fCandidates(0x0),
+  fNFMDchannels(),
+  fFMDtotalMult(),
+  fFMD1(0x0),
+  fFMD2I(0x0),
+  fFMD2O(0x0),
+  fFMD3I(0x0),
+  fFMD3O(0x0),
   fNCaloClusters(0),
   fCaloClusters(0x0)
 //fFMDMult()
@@ -212,14 +301,21 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   //
   // Constructor
   //
+  for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.;}
   for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
   fNtracks[0]=0; fNtracks[1]=0;
-  for(Int_t i=0; i<16; ++i) fSPDntrackletsEta[i]=0;
+  for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
-  for(Int_t i=0; i<8; ++i) fZDCnEnergy[i]=0.0;
+  for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
+  for(Int_t i=0; i<10; ++i) fZDCpEnergy[i]=0.0;
+  for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
+  for(Int_t i=0; i<5; ++i)  fNFMDchannels[i]=0.0;
+  for(Int_t i=0; i<5; ++i)  fFMDtotalMult[i]=0.0;
   
   if(!fgTracks) fgTracks = new TClonesArray("AliReducedTrack", 100000);
   fTracks = fgTracks;
@@ -227,6 +323,16 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   fCandidates = fgCandidates;
   if(!fgCaloClusters) fgCaloClusters = new TClonesArray("AliReducedCaloCluster", 50000);
   fCaloClusters = fgCaloClusters;
+  if(!fgFMD1) fgFMD1 = new TClonesArray("AliReducedFMD", 10240);
+  fFMD1 = fgFMD1;
+  if(!fgFMD2I) fgFMD2I = new TClonesArray("AliReducedFMD", 10240);
+  fFMD2I = fgFMD2I;
+  if(!fgFMD2O) fgFMD2O = new TClonesArray("AliReducedFMD", 10240);
+  fFMD2O = fgFMD2O;
+  if(!fgFMD3I) fgFMD3I = new TClonesArray("AliReducedFMD", 10240);
+  fFMD3I = fgFMD3I;
+  if(!fgFMD3O) fgFMD3O = new TClonesArray("AliReducedFMD", 10240);
+  fFMD3O = fgFMD3O;
 }
 
 
@@ -305,6 +411,101 @@ Float_t AliReducedEvent::MultRingVZEROC(Int_t ring) const
   return mult;
 }
 
+//____________________________________________________________________________
+Float_t AliReducedEvent::AmplitudeTZEROA() const
+{
+  //
+  // Total TZERO multiplicity in A side
+  //
+  Float_t mult=0.0;
+  for(Int_t i=12;i<24;++i)
+    mult += fT0amplitude[i];
+  return mult;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEvent::AmplitudeTZEROC() const
+{
+  //
+  // Total TZERO multiplicity in C side
+  //
+  Float_t mult=0.0;
+  for(Int_t i=0;i<12;++i)
+    mult += fT0amplitude[i];
+  return mult;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEvent::AmplitudeTZERO() const
+{
+  //
+  // Total TZERO multiplicity
+  //
+  return AmplitudeTZEROA()+AmplitudeTZEROC();
+}
+
+
+
+//____________________________________________________________________________
+Float_t AliReducedEvent::EnergyZDCA() const
+{
+  //
+  // Total ZDC energy in A side
+  //
+  Float_t energy=0.0;
+  for(Int_t i=6;i<10;++i){
+      if(fZDCnEnergy[i]>0.) {
+  Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], gZdcNalpha);
+    energy += zdcNenergyAlpha;}
+  }
+  return energy;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEvent::EnergyZDCC() const
+{
+  //
+  // Total ZDC energy in C side
+  //
+  Float_t energy=0.0;
+  for(Int_t i=1;i<5;++i){
+      if(fZDCnEnergy[i]>0.) {
+    Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], gZdcNalpha);
+    energy += zdcNenergyAlpha;}
+  }
+  return energy;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEvent::EnergyZDC() const
+{
+  //
+  // Total ZDC energy   
+  //
+  return EnergyZDCA()+EnergyZDCC();
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEvent::EnergyZDCn(Int_t ch) const
+{
+  //
+  // Total ZDC energy in channel
+  //
+  Float_t energy=0;
+  if(ch<0 || ch>9) return -999.;
+      if(fZDCnEnergy[ch]>0.) {
+  			energy = TMath::Power(fZDCnEnergy[ch], gZdcNalpha);
+		}
+  return energy;
+
+}
+
+
 //_____________________________________________________________________________
 void AliReducedEvent::ClearEvent() {
   //
@@ -313,6 +514,17 @@ void AliReducedEvent::ClearEvent() {
   if(fTracks) fTracks->Clear("C");
   if(fCandidates) fCandidates->Clear("C");
   if(fCaloClusters) fCaloClusters->Clear("C");
+  if(fFMD1) fFMD1->Clear("C");
+  if(fFMD2I) fFMD2I->Clear("C");
+  if(fFMD2O) fFMD2O->Clear("C");
+  if(fFMD3I) fFMD3I->Clear("C");
+  if(fFMD3O) fFMD3O->Clear("C");
+  fEventTag = 0;
+  fEventNumberInFile = -999;
+  fL0TriggerInputs=0;
+  fL1TriggerInputs=0;
+  fL2TriggerInputs=0;
+  fIRIntClosestIntMap[0] = 0; fIRIntClosestIntMap[1] = 0;
   fRunNo = 0;
   fBC = 0;
   fTimeStamp = 0;
@@ -320,7 +532,12 @@ void AliReducedEvent::ClearEvent() {
   fTriggerMask = 0;
   fIsPhysicsSelection = kTRUE;
   fIsSPDPileup = kFALSE;
+  fIsSPDPileupMultBins = kFALSE;
+  fIsFMDReduced = kTRUE;
+  fNVtxContributors = 0;
+  fNVtxTPCContributors = 0;
   fCentQuality = 0;
+  for(Int_t i=0;i<4;++i) fCentrality[i] = -1.0;
   fNV0candidates[0] = 0; fNV0candidates[1] = 0;
   fNpileupSPD=0;
   fNpileupTracks=0;
@@ -329,11 +546,21 @@ void AliReducedEvent::ClearEvent() {
   fNTRDtracklets=0;
   fNDielectronCandidates = 0;
   fNtracks[0] = 0; fNtracks[1] = 0;
-  for(Int_t i=0; i<16; ++i) fSPDntrackletsEta[i] = 0;
+  for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i] = 0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
-  for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.; fCentrality[i]=-1.;}
+  for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.;}
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
-  for(Int_t i=0; i<8; ++i) fZDCnEnergy[i]=0.0;
+  for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
+  for(Int_t i=0; i<10; ++i) fZDCpEnergy[i]=0.0;
+  for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
+  fT0pileup = kFALSE;
+  fT0zVertex = -999.;
+  fT0start = -999.;
+  fT0sattelite = kFALSE;
+  for(Int_t i=0; i<5; ++i)  fNFMDchannels[i]=0.0;
+  for(Int_t i=0; i<5; ++i)  fFMDtotalMult[i]=0.0;
 }
 
 
@@ -623,31 +850,88 @@ void AliReducedEvent::GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vz
 //_________________________________________________________________
 void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det) const {
   //
+  // Get the reaction plane from the ZDC detector for a given harmonic
+  //
+  GetZDCQvector(Qvec, det, fZDCnEnergy);
+}
+
+
+//_________________________________________________________________
+void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det, const Float_t* zdcEnergy) const {
+  //
   // Construct the event plane using the ZDC
   // ZDC has 2 side (A and C) with 4 calorimeters on each side  
   // The XY position of each calorimeter is specified by the 
   // zdcNTowerCenters_x and zdcNTowerCenters_y arrays
-  if(!(det==AliReducedEventFriend::kZDCA || 
-       det==AliReducedEventFriend::kZDCC)) return;       // bad detector option
-  const Float_t zdcTowerCenter = 1.75;
-  const Float_t zdcNTowerCentersX[4] = {-zdcTowerCenter,  zdcTowerCenter, -zdcTowerCenter, zdcTowerCenter};
-  const Float_t zdcNTowerCentersY[4] = {-zdcTowerCenter, -zdcTowerCenter,  zdcTowerCenter, zdcTowerCenter};
+  if(!(det==AliReducedEventFriend::kZDCA ||
+       det==AliReducedEventFriend::kZDCC ))
+    return; 
+ 
 
-  Qvec[0][0] = 0.0; Qvec[0][1] = 0.0;   // first harmonic Q-vector
+  //Int_t minTower,maxTower;
+  //Float_t totalEnergy = 0.0;
+
+  const Float_t zdcTowerCenter = 1.75;
+
+
+  Float_t zdcNTowerCentersX[4] = {0.0};
+  Float_t zdcNTowerCentersY[4] = {0.0};
+
+
+  if(det==AliReducedEventFriend::kZDCA){
+    zdcNTowerCentersX[0] =  zdcTowerCenter; zdcNTowerCentersX[1] =-zdcTowerCenter;
+    zdcNTowerCentersX[2] =  zdcTowerCenter; zdcNTowerCentersX[3] =-zdcTowerCenter;
+  }
+
+  if(det==AliReducedEventFriend::kZDCC){
+    zdcNTowerCentersX[0] = -zdcTowerCenter; zdcNTowerCentersX[1] = zdcTowerCenter;
+    zdcNTowerCentersX[2] = -zdcTowerCenter; zdcNTowerCentersX[3] = zdcTowerCenter;
+  }
+
+  zdcNTowerCentersY[0] = -zdcTowerCenter; zdcNTowerCentersY[1] =-zdcTowerCenter;
+  zdcNTowerCentersY[2] =  zdcTowerCenter; zdcNTowerCentersY[3] = zdcTowerCenter;
+
+ 
+  for(Int_t ih=0; ih<6; ih++) {Qvec[ih][0] = 0.0; Qvec[ih][1] = 0.0;}   // harmonic Q-vector
   Float_t zdcNCentroidSum = 0;
-  Float_t zdcNalpha = 0.5;
     
-  for(Int_t i=0; i<4; ++i) {
-    if(fZDCnEnergy[i+(det==AliReducedEventFriend::kZDCA ? 4 : 0)]>0.0) {
-      Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i+(det==AliReducedEventFriend::kZDCA ? 4 : 0)], zdcNalpha);
-      Qvec[0][0] += zdcNTowerCentersX[i-1]*zdcNenergyAlpha;
-      Qvec[0][1] += zdcNTowerCentersY[i-1]*zdcNenergyAlpha;
-      zdcNCentroidSum += zdcNenergyAlpha;
+  for(Int_t iTow=(det==AliReducedEventFriend::kZDCA ? 6 : 1); iTow<(det==AliReducedEventFriend::kZDCA ? 10 : 5); ++iTow) {
+    //if(fZDCnEnergy[i+(det==AliReducedEventFriend::kZDCA ? 4 : 0)]>0.0) {
+    //  1st harmonic  
+    Qvec[0][0] += zdcEnergy[iTow]*zdcNTowerCentersX[(iTow-1)%5];
+    Qvec[0][1] += zdcEnergy[iTow]*zdcNTowerCentersY[(iTow-1)%5];
+    //  2nd harmonic
+    Qvec[1][0] += zdcEnergy[iTow]*(2.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5],2.0)-1);
+    Qvec[1][1] += zdcEnergy[iTow]*(2.0*zdcNTowerCentersX[(iTow-1)%5]*zdcNTowerCentersY[(iTow-1)%5]);
+    //  3rd harmonic
+    Qvec[2][0] += zdcEnergy[iTow]*(4.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5],3.0)-3.0*zdcNTowerCentersX[(iTow-1)%5]);
+    Qvec[2][1] += zdcEnergy[iTow]*(3.0*zdcNTowerCentersY[(iTow-1)%5]-4.0*TMath::Power(zdcNTowerCentersY[(iTow-1)%5],3.0));
+    //  4th harmonic
+    Qvec[3][0] += zdcEnergy[iTow]*(1.0-8.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5]*zdcNTowerCentersY[(iTow-1)%5],2.0));
+    Qvec[3][1] += zdcEnergy[iTow]*(4.0*zdcNTowerCentersX[(iTow-1)%5]*zdcNTowerCentersY[(iTow-1)%5]-8.0*zdcNTowerCentersX[(iTow-1)%5]*TMath::Power(zdcNTowerCentersY[(iTow-1)%5],3.0));
+    //  5th harmonic
+    Qvec[4][0] += zdcEnergy[iTow]*(16.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5],5.0)-20.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5], 3.0)+5.0*zdcNTowerCentersX[(iTow-1)%5]);
+    Qvec[4][1] += zdcEnergy[iTow]*(16.0*TMath::Power(zdcNTowerCentersY[(iTow-1)%5],5.0)-20.0*TMath::Power(zdcNTowerCentersY[(iTow-1)%5], 3.0)+5.0*zdcNTowerCentersY[(iTow-1)%5]);
+    //  6th harmonic
+    Qvec[5][0] += zdcEnergy[iTow]*(32.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5],6.0)-48.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5], 4.0)+18.0*TMath::Power(zdcNTowerCentersX[(iTow-1)%5], 2.0)-1.0);
+    Qvec[5][1] += zdcEnergy[iTow]*(zdcNTowerCentersX[(iTow-1)%5]*zdcNTowerCentersY[(iTow-1)%5]*(32.0*TMath::Power(zdcNTowerCentersY[(iTow-1)%5],4.0)-32.0*TMath::Power(zdcNTowerCentersY[(iTow-1)%5], 2.0)+6.0));
+
+    zdcNCentroidSum += zdcEnergy[iTow];
+
+    if(zdcNCentroidSum>0.0) {
+      Qvec[0][0] /= zdcNCentroidSum;
+      Qvec[0][1] /= zdcNCentroidSum;
+      Qvec[1][0] /= zdcNCentroidSum;
+      Qvec[1][1] /= zdcNCentroidSum;
+      Qvec[2][0] /= zdcNCentroidSum;
+      Qvec[2][1] /= zdcNCentroidSum;
+      Qvec[3][0] /= zdcNCentroidSum;
+      Qvec[3][1] /= zdcNCentroidSum;
+      Qvec[4][0] /= zdcNCentroidSum;
+      Qvec[4][1] /= zdcNCentroidSum;
+      Qvec[5][0] /= zdcNCentroidSum;
+      Qvec[5][1] /= zdcNCentroidSum;
     }
   }   // end loop over channels
-  
-  if(zdcNCentroidSum>0.0) {
-    Qvec[0][0] /= zdcNCentroidSum;
-    Qvec[0][1] /= zdcNCentroidSum;
-  }
+  return;
 }

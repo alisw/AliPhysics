@@ -68,6 +68,8 @@ public:
   void SetFillLambda(Bool_t flag=kTRUE)           {fFillLambda = flag;}
   void SetFillALambda(Bool_t flag=kTRUE)          {fFillALambda = flag;}
   void SetFillCaloClusterInfo(Bool_t flag=kTRUE)  {fFillCaloClusterInfo = flag;}
+  void SetFillFMDSectorInfo(Bool_t flag=kFALSE)   {fFillFMDSectorInfo = flag;}
+  void SetFillFMDChannelInfo(Bool_t flag=kFALSE)  {fFillFMDChannelInfo = flag;}
   void SetFillFriendInfo(Bool_t flag=kTRUE)       {fFillFriendInfo = flag;}
   
   // Add dielectron objects to the list. These contain cuts and histogram definitions
@@ -90,6 +92,8 @@ public:
   Bool_t fFillLambda;                // fill the lambda V0s
   Bool_t fFillALambda;               // fill the anti-lambda V0s
   Bool_t fFillCaloClusterInfo;       // fill the calorimeter clusters
+  Bool_t fFillFMDSectorInfo;         // fill the FMD info for every sector
+  Bool_t fFillFMDChannelInfo;        // fill the FMD info for every channel
   Bool_t fFillFriendInfo;            // fill friend tree information
 
   AliAnalysisCuts *fEventFilter;     // event filter
@@ -127,11 +131,12 @@ public:
   AliReducedPair* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
   UChar_t EncodeTPCClusterMap(AliVParticle* track, Bool_t isAOD);
   void FillCaloClusters();
+  void FillFMDInfo();
   Int_t GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta);
   
   AliAnalysisTaskReducedTree(const AliAnalysisTaskReducedTree &c);
   AliAnalysisTaskReducedTree& operator= (const AliAnalysisTaskReducedTree &c);
 
-  ClassDef(AliAnalysisTaskReducedTree, 2); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTree, 3); //Analysis Task for creating a reduced event information tree 
 };
 #endif
