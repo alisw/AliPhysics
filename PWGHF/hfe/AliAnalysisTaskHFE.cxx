@@ -1614,7 +1614,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if (GetPlugin(kNonPhotonicElectron)) {
       Int_t indexmother = -1;
       Int_t mcsource = -1;
-      if(HasMCData() && mctrack)  mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+      if(HasMCData() && mctrack)  mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
       fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, 1, fCentralityF, -1,mcsource, indexmother);
     }
     //---------------------------------------------------------------------------------------------------------------------
