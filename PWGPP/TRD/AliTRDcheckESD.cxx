@@ -263,6 +263,7 @@ void AliTRDcheckESD::MakeSummaryFromCF(Double_t* trendValues, const Char_t* trig
   PlotCentSummaryFromCF(trendValues, triggerName, useIsolatedBC, cutTOFbc);
   cOut->SaveAs("centSummary.gif");
 
+  for(Int_t i=0;i<50;++i) cout << "trend #" << i << " :: " << trendValues[i] << endl;
 }
 
 
@@ -564,20 +565,13 @@ void AliTRDcheckESD::UserExec(Option_t *){
   AliESDtrack *esdTrack(NULL);
   for(Int_t itrk = 0; itrk < fESD->GetNumberOfTracks(); itrk++){
     esdTrack = fESD->GetTrack(itrk);
-    //    cout << "track pt/eta: " << esdTrack->Pt() << "/" << esdTrack->Eta() << endl;
+    
     Float_t dcaxy,dcaz;
     esdTrack->GetImpactParameters(dcaxy,dcaz);
-    //    cout << "dca xy/z: " << dcaxy << "/" << dcaz << endl;
-    //    cout << "TPC ncls: " << esdTrack->GetTPCNcls() << endl;
-    //    cout << "ITS hit map: ";
-    //    for (Int_t iC=0; iC<6; iC++) {
-    //      cout << ((esdTrack->GetITSClusterMap())&(1<<(iC)) ? "1" : "0") << flush;
-    //    }
-    //    cout << endl;
+    
     if(!fReferenceTrackFilter->IsSelected(esdTrack)) continue;
-    //    cout << "track passed" << endl;    
 
-    ULong_t status = esdTrack->GetStatus(); //PrintStatus(status);
+    ULong_t status = esdTrack->GetStatus(); 
             
     // pid quality
     Bool_t kBarrel = Bool_t(status & AliESDtrack::kTRDin);
@@ -608,6 +602,11 @@ void AliTRDcheckESD::UserExec(Option_t *){
     values[kTrackTrdClusters] = esdTrack->GetTRDncls();
     for(Int_t i=0; i<6; ++i) values[kTrackQtot+i] = 0.0;
         
+    if(values[kTrackPt]>1.0 && values[kTrackPt]<3.0) {
+      for(Int_t iv=0; iv<fBunchCrossingsCF->GetNVar(); ++iv) valuesBCCF[iv] = values[fBunchCrossingsCFVars[iv]];
+      fBunchCrossingsCF->Fill(valuesBCCF, 0);
+    }
+	  
     if(localCoordGood[0] && localMomGood[0]) {
       for(Int_t itrig=0; itrig<nTrigFired; ++itrig) {
 	values[kEventTrigger] = triggerIndices[itrig];
@@ -619,11 +618,6 @@ void AliTRDcheckESD::UserExec(Option_t *){
 	  for(Int_t iv=0; iv<fMatchingPtCF->GetNVar(); ++iv) valuesMatchingPtCF[iv] = values[fMatchingPtCFVars[iv]];
 	  fMatchingPtCF->Fill(valuesMatchingPtCF, 0);
 	}
-	if(values[kTrackPt]>1.0 && values[kTrackPt]<3.0)
-	  if((fBunchCrossingsCF->GetVar("trigger")<0 && itrig==0) || (fBunchCrossingsCF->GetVar("trigger")>=0)) {
-	    for(Int_t iv=0; iv<fBunchCrossingsCF->GetNVar(); ++iv) valuesBCCF[iv] = values[fBunchCrossingsCFVars[iv]];
-	    fBunchCrossingsCF->Fill(valuesBCCF, 0);
-	  }
 	if(fExpertCF) {
 	  if((fExpertCF->GetVar("trigger")<0 && itrig==0) || (fExpertCF->GetVar("trigger")>=0))
 	    if(fExpertCF->GetStep("TPC")>=0 && fExpertCF->GetStep("TPC")<3) {
@@ -644,13 +638,13 @@ void AliTRDcheckESD::UserExec(Option_t *){
 	  values[kEventTrigger] = triggerIndices[itrig];
 	  if((fCentralityCF->GetVar("trigger")<0 && itrig==0) || (fCentralityCF->GetVar("trigger")>=0)) {
 	    for(Int_t iv=0; iv<fCentralityCF->GetNVar(); ++iv) valuesCentCF[iv] = values[fCentralityCFVars[iv]];
-	    valuesCentCF[fCentralityCF->GetNVar()-1] = values[kTrackQtot+iPlane];
+	    valuesCentCF[fCentralityCF->GetNVar()-2] = values[kTrackQtot+iPlane];
 	    fCentralityCF->Fill(valuesCentCF, 0);
 	  }
 	  if(values[kTrackTrdTracklets]>=4)
 	    if((fQtotCF->GetVar("trigger")<0 && itrig==0) || (fQtotCF->GetVar("trigger")>=0)) {
-	      for(Int_t iv=0; iv<fQtotCF->GetNVar()-2; ++iv) valuesQtotCF[iv] = values[fQtotCFVars[iv]];
-	      valuesQtotCF[fQtotCF->GetNVar()-2] = values[kTrackQtot+iPlane];
+	      for(Int_t iv=0; iv<fQtotCF->GetNVar(); ++iv) valuesQtotCF[iv] = values[fQtotCFVars[iv]];
+	      valuesQtotCF[fQtotCF->GetNVar()-3] = values[kTrackQtot+iPlane];
 	      valuesQtotCF[fQtotCF->GetNVar()-1] = iPlane;
 	      fQtotCF->Fill(valuesQtotCF, 0);
 	    }
@@ -663,9 +657,10 @@ void AliTRDcheckESD::UserExec(Option_t *){
 	    for(Int_t itrig=0; itrig<triggers->GetEntries(); ++itrig) {
 	      values[kEventTrigger] = triggerIndices[itrig];
 	      if((fPulseHeightCF->GetVar("trigger")<0 && itrig==0) || (fPulseHeightCF->GetVar("trigger")>=0)) {
-	        for(Int_t iv=0; iv<fPulseHeightCF->GetNVar()-2; ++iv) valuesPHCF[iv] = values[fPulseHeightCFVars[iv]];
-	        valuesPHCF[fPulseHeightCF->GetNVar()-2] = values[kTrackPHslice+iSlice];
+	        for(Int_t iv=0; iv<fPulseHeightCF->GetNVar(); ++iv) valuesPHCF[iv] = values[fPulseHeightCFVars[iv]];
+	        valuesPHCF[fPulseHeightCF->GetNVar()-3] = values[kTrackPHslice+iSlice];
 	        valuesPHCF[fPulseHeightCF->GetNVar()-1] = iSlice;
+		//                for(Int_t iv=0;iv<fPulseHeightCF->GetNVar(); ++iv) cout << "var #" << iv << " :: " << valuesPHCF[iv] << endl;
 	        fPulseHeightCF->Fill(valuesPHCF, 0);
 	      }
 	    }
@@ -1913,9 +1908,9 @@ void AliTRDcheckESD::PrintStatus(ULong_t status)
 }
 
 //____________________________________________________________________
-TH1D* AliTRDcheckESD::Proj2D(TH2* hist, TH1* fitErr) {
+TH1D* AliTRDcheckESD::Proj2D(TH2* hist, TH1* mpvErr, TH1* widthErr, TH1* chi2) {
   //
-  // project the PH vs Slice 2D-histo into a 1D histo
+  // project the PH vs Slice 2D-histo into a 1D histo with Landau MPV and widths
   //
   
   TH1D* hProjection = (TH1D*)hist->ProjectionX(Form("hProjection_%f", gRandom->Rndm()));
@@ -1927,21 +1922,28 @@ TH1D* AliTRDcheckESD::Proj2D(TH2* hist, TH1* fitErr) {
     if(gROOT->FindObject("projection"))
       delete gROOT->FindObject("projection");
     hD = (TH1D*)hist->ProjectionY("projection",iBin,iBin);
-    hD->Rebin(4);
+    //hD->Rebin(4);
     if(hD->Integral()>10) {
       fitLandau->SetParameter(1, hD->GetBinCenter(hD->GetMaximumBin()));
       fitLandau->SetParLimits(1, 0.2*hD->GetBinCenter(hD->GetMaximumBin()), 3.0*hD->GetBinCenter(hD->GetMaximumBin()));
       fitLandau->SetParameter(0, 1000.);
       fitLandau->SetParLimits(0, 1., 10000000.);
       fitLandau->SetParameter(2, 0.5*hD->GetBinCenter(hD->GetMaximumBin()));
-      fitLandau->SetParLimits(2, 0.01*hD->GetBinCenter(hD->GetMaximumBin()), 1.0*hD->GetBinCenter(hD->GetMaximumBin()));
+      fitLandau->SetParLimits(2, 0.01*hD->GetBinCenter(hD->GetMaximumBin()), 1.0*hD->GetRMS());
       hD->Fit(fitLandau, "Q0", "", hD->GetXaxis()->GetXmin(), hD->GetXaxis()->GetXmax());
       hD->Fit(fitLandau, "Q0", "", hD->GetXaxis()->GetXmin(), hD->GetXaxis()->GetXmax());
       hProjection->SetBinContent(iBin, fitLandau->GetParameter(1));
       hProjection->SetBinError(iBin, fitLandau->GetParameter(2));
-      if(fitErr) {
-	fitErr->SetBinContent(iBin, fitLandau->GetParameter(1));
-	fitErr->SetBinError(iBin, fitLandau->GetParError(1));
+      if(mpvErr) {
+	mpvErr->SetBinContent(iBin, fitLandau->GetParameter(1));
+	mpvErr->SetBinError(iBin, fitLandau->GetParError(1));
+      }
+      if(widthErr) {
+	widthErr->SetBinContent(iBin, fitLandau->GetParameter(2));
+	widthErr->SetBinError(iBin, fitLandau->GetParError(2));
+      }
+      if(chi2) {
+	chi2->SetBinContent(iBin, (fitLandau->GetNDF()>0 ? fitLandau->GetChisquare()/Double_t(fitLandau->GetNDF()) : 0.0));
       }
     }
     else{
@@ -2774,11 +2776,15 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
   
   cf = fCentralityCF;
   TH2D* hQtotP = (TH2D*)cf->Project(0, cf->GetVar("P"), cf->GetVar("Qtot0"));
-    
+  TH1D* mpvErr=new TH1D("mpvErr", "Landau MPV error vs. P", hQtotP->GetXaxis()->GetNbins(), hQtotP->GetXaxis()->GetXbins()->GetArray());  
+  TH1D* widthErr=new TH1D("widthErr", "Landau width error vs. P", hQtotP->GetXaxis()->GetNbins(), hQtotP->GetXaxis()->GetXbins()->GetArray());
+  TH1D* landauChi2=new TH1D("landauChi2", "Landau fit #chi^{2} vs. P", hQtotP->GetXaxis()->GetNbins(), hQtotP->GetXaxis()->GetXbins()->GetArray());  
+  
   if(hQtotP)
     for(Int_t i=1; i<=hQtotP->GetXaxis()->GetNbins(); ++i) 
       hQtotP->SetBinContent(i, 1, 0.0);  
-  TH1D* hQtotProj = (hQtotP ? Proj2D(hQtotP) : 0x0);
+  TH1D* hQtotProj = (hQtotP ? Proj2D(hQtotP, mpvErr, widthErr, landauChi2) : 0x0);
+  //landauChi2->Scale(0.001);
   if(hQtotProj) SetStyle(hQtotProj, 2, kBlue, 2, 1, kBlue, 1);
   if(trendValues && hQtotProj && hQtotProj->GetEntries()>2) {
     trendValues[16] = hQtotProj->GetBinContent(hQtotProj->FindBin(1.0));   // Landau MPV at 1GeV/c
@@ -2790,6 +2796,38 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
     hQtotProj->Draw("same");
   }
   //if(cutTOFbc) cf->SetRangeUser(stepTOFBC, -1000.0, +1000.0);  // reset the cut on TOFbc
+  
+  
+  // Qtot vs P (fit results)
+  pad = ((TVirtualPad*)l->At(8)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.03); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  pad->SetLogz();
+  
+  if(gROOT->FindObject("rangeQtotPfit")) delete gROOT->FindObject("rangeQtotPfit");
+  TH2F* rangeQtotPfit = new TH2F("rangeQtotPfit", "", 100, 0.0, 11.99, 100, 0.0, 5.99);
+  SetStyle(rangeQtotPfit->GetXaxis(), "P [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeQtotPfit->GetYaxis(), "Q_{tot}", 0.07, 0.8, kTRUE, 0.05);
+  rangeQtotPfit->SetStats(kFALSE);
+  rangeQtotPfit->Draw();
+  
+  if(mpvErr) SetStyle(mpvErr, 1, kBlue, 2, 1, kBlue, 1);
+  if(widthErr) SetStyle(widthErr, 2, kRed, 2, 1, kRed, 1);
+  if(mpvErr) {
+    mpvErr->SetStats(kFALSE);
+    mpvErr->Draw("same");
+  }
+  if(widthErr) {
+    widthErr->SetStats(kFALSE);
+    widthErr->Draw("same");
+  }
+  TLegend* leg=new TLegend(0.2,0.6,0.5,0.9);
+  leg->SetFillColor(0);
+  leg->SetBorderSize(0);
+  leg->AddEntry("mpvErr","Landau MPV","l");
+  leg->AddEntry("widthErr","Landau width","l");
+  leg->Draw();
 }
 
 

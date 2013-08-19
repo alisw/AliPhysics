@@ -195,7 +195,7 @@ private:
   void          Process2D(TH2 * const h, TGraphErrors **g);
   void          PrintStatus(ULong_t s);
   TH2F*         Proj3D(TH3* hist, TH2* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
-  TH1D*         Proj2D(TH2* hist, TH1* fitErr=0x0);
+  TH1D*         Proj2D(TH2* hist, TH1* mpvErr=0x0, TH1* widthErr=0x0, TH1* chi2=0x0);
   TH1F*         EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance=kTRUE);
   TH1F*         EfficiencyFromPhiPt(AliCFContainer* cf, Int_t minNtrkl, Int_t maxNtrkl, Int_t stepNom, Int_t stepDenom, const Char_t* varStr="pt", const Char_t* type="TPCTRD");
   void          DrawTRDGrid();
