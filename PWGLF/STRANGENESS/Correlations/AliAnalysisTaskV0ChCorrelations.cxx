@@ -420,6 +420,8 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
          AliError(Form("ERROR: Could not retrieve aodv0 %d", i));
          continue;
         }
+		if (aodV0->GetOnFlyStatus()) fHistTemp->Fill(6.);
+		if (!aodV0->GetOnFlyStatus()) fHistTemp->Fill(8.);
 		//cout << "pt of v0: " << aodV0->Pt() << endl;
 		if (((aodV0->Pt())<PtTrigMin)||((aodV0->Pt())>PtTrigMax)) continue;
         // get daughters
@@ -858,8 +860,24 @@ Bool_t AliAnalysisTaskV0ChCorrelations::IsMyGoodV0(const AliAODEvent* aod, const
     if (oSta==1) {if (aodV0->GetOnFlyStatus()) return kFALSE;}
     if (oSta==3) {if (!aodV0->GetOnFlyStatus()) return kFALSE;}
    
-	if (oSta==2) {if (aodV0->GetOnFlyStatus()) return kTRUE;}
-    if (oSta==4) {if (!aodV0->GetOnFlyStatus()) return kTRUE;}
+	if (oSta==2) 
+	{
+		if (aodV0->GetOnFlyStatus()) 
+		{
+			return kTRUE;
+		} else {
+			return kFALSE;
+		}
+	}
+    if (oSta==4) 
+	{
+		if (!aodV0->GetOnFlyStatus()) 
+		{
+			return kTRUE;
+		} else {
+			return kFALSE;
+		}
+	}
     
     // Get daughters and check them
 	AliAODTrack *myTrackNegTest=dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(1));
