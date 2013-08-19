@@ -88,16 +88,17 @@ class AliHFENonPhotonicElectron : public TNamed {
   Int_t    CountPoolAssociated		(AliVEvent *inputEvent, Int_t binct=-1);
   Int_t    LookAtNonHFE			(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight=1., Int_t binct=-1, Double_t deltaphi=-1, Int_t source=-1, Int_t indexmother=-1);
 
-  Int_t    FindMother		(Int_t tr, Int_t &indexmother);
-  Int_t    CheckPdg		(Int_t tr);
-  Int_t    IsMotherGamma	(Int_t tr);
-  Int_t    IsMotherPi0		(Int_t tr);
-  Int_t    IsMotherC		(Int_t tr);
-  Int_t    IsMotherB		(Int_t tr);
-  Int_t    IsMotherEta		(Int_t tr);
+  Int_t    FindMother		(Int_t tr, Int_t &indexmother) const;
 
 
  private:
+  Int_t    GetMotherPDG(Int_t tr, Int_t &motherIndex) const;
+  Int_t    CheckPdg		(Int_t tr) const;
+  Int_t    IsMotherGamma	(Int_t tr) const;
+  Int_t    IsMotherPi0		(Int_t tr) const;
+  Int_t    IsMotherC		(Int_t tr) const;
+  Int_t    IsMotherB		(Int_t tr) const;
+  Int_t    IsMotherEta		(Int_t tr) const;
   Bool_t MakePairDCA(const AliVTrack *inclusive, const AliVTrack *associated, AliVEvent *vEvent, Bool_t isAOD, Double_t &invMass, Double_t &angle) const;
   Bool_t MakePairKF(const AliVTrack *inclusive, const AliVTrack *associated, AliKFVertex &primV, Double_t &invMass, Double_t &angle) const;
   Bool_t FilterCategory1Track(const AliVTrack * const track, Bool_t isAOD, Int_t binct);
