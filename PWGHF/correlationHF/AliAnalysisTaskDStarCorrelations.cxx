@@ -226,7 +226,7 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
 	
     Double_t Pi = TMath::Pi();
 	fCorrelator = new AliHFCorrelator("Correlator",fCuts2,fUseCentrality); // fCuts2 is the hadron cut object, fSystem to switch between pp or PbPb
-	fCorrelator->SetDeltaPhiInterval(  -0.5*Pi - Pi/fPhiBins, 1.5*Pi- Pi/fPhiBins); // set correct phi interval
+	fCorrelator->SetDeltaPhiInterval(  -0.5*Pi, 1.5*Pi); // set correct phi interval
 	//fCorrelator->SetDeltaPhiInterval((-0.5)*Pi,(1.5)*Pi); // set correct phi interval
 	fCorrelator->SetEventMixing(fmixing); //set kFALSE/kTRUE for mixing Off/On
 	fCorrelator->SetAssociatedParticleType(fselect); // set 1/2/3 for hadron/kaons/kzeros
@@ -427,6 +427,13 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	
 	if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
 	
+    
+    // get the poolbin
+    
+    Int_t poolbin = fCuts2->GetPoolBin(MultipOrCent, zVtxPosition);
+  
+    
+    
 	// initialize variables you will need for the D*
 	
 	Double_t ptDStar;//
@@ -840,7 +847,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	    
 	    
 	    
-            Double_t arraytofill[6];
+            Double_t arraytofill[5];
             Double_t MCarraytofill[7];
             
             
@@ -878,9 +885,8 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	      arraytofill[0] = DeltaPhi;
 	      arraytofill[1] = DeltaEta;
 	      arraytofill[2] = ptDStar;
-	      arraytofill[3] = MultipOrCent;
-	      arraytofill[4] = ptHad;
-	      arraytofill[5] = zVtxPosition;
+	      arraytofill[3] = ptHad;
+	      arraytofill[4] = poolbin;
               
               
               
@@ -1050,8 +1056,8 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     
     Double_t Pi = TMath::Pi();
 	Int_t nbinscorr = fPhiBins;
-	Double_t lowcorrbin = -0.5*Pi - Pi/fPhiBins ; // shift the bin by half the width so that at 0 is it the bin center
-	Double_t upcorrbin = 1.5*Pi - Pi/fPhiBins ;
+	Double_t lowcorrbin = -0.5*Pi;
+	Double_t upcorrbin = 1.5*Pi;
     // define the THnSparseF
     
     //sparse bins
@@ -1063,10 +1069,13 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     //5 track pt
     //6 zVtx position
     
+    Int_t nbinsPool = (fCuts2->GetNZvtxPoolBins())*(fCuts2->GetNCentPoolBins());
     
-    Int_t nbinsSparse[6]={nbinscorr,fPhiBins,50,100,250,8};
-    Double_t binLowLimitSparse[6]={lowcorrbin,-1.6,0,0,0,-10};
-    Double_t binUpLimitSparse[6]={upcorrbin,1.6,50,100,25,10};
+    
+    Int_t nbinsSparse[5]=         {nbinscorr,   32,30,250,nbinsPool};
+    Double_t binLowLimitSparse[5]={lowcorrbin,-1.6, 0,  0,-0.5};
+    Double_t binUpLimitSparse[5]= {upcorrbin,  1.6,30,25,nbinsPool-0.5};
+  
     Int_t MCnbinsSparse[7]={nbinscorr,40,50,40,250,10,2};
     Double_t MCbinLowLimitSparse[7]={lowcorrbin,-2,0.,-1,0,0.5,-0.5};
     Double_t MCbinUpLimitSparse[7]={upcorrbin,2,50,1,25,9.5,1.5};
@@ -1084,13 +1093,13 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     TString MCSparseName = "MCDStar";
     MCSparseName += sparsename;
     // signal correlations
-    THnSparseF * Correlations = new THnSparseF(sparsename.Data(),"Correlations for signal",6,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
+    THnSparseF * Correlations = new THnSparseF(sparsename.Data(),"Correlations for signal",5,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
     
     // bkg correlations from D0 sidebands
-    THnSparseF * DZeroBkgCorrelations = new THnSparseF(D0Bkgsparsename.Data(),"Bkg Correlations estimated with D0 sidebands",6,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
+    THnSparseF * DZeroBkgCorrelations = new THnSparseF(D0Bkgsparsename.Data(),"Bkg Correlations estimated with D0 sidebands",5,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
     
     // bkg correlations from D* sidebands
-    THnSparseF * DStarBkgCorrelations = new THnSparseF(DStarBkgsparsename.Data(),"Bkg Correlations estimated with D* sidebands",6,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
+    THnSparseF * DStarBkgCorrelations = new THnSparseF(DStarBkgsparsename.Data(),"Bkg Correlations estimated with D* sidebands",5,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
     
     
     THnSparseF * MCCorrelations = new THnSparseF(MCSparseName.Data(),"MC Correlations",7,MCnbinsSparse,MCbinLowLimitSparse,MCbinUpLimitSparse);
@@ -1123,8 +1132,8 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	
 	Double_t Pi = TMath::Pi();
 	Int_t nbinscorr = fPhiBins;
-	Double_t lowcorrbin = -0.5*Pi - Pi/fPhiBins ; // shift the bin by half the width so that at 0 is it the bin center
-	Double_t upcorrbin = 1.5*Pi - Pi/fPhiBins ;
+	Double_t lowcorrbin = -0.5*Pi ; // shift the bin by half the width so that at 0 is it the bin center
+	Double_t upcorrbin = 1.5*Pi ;
 	
 	// ========================= histograms for both Data and MonteCarlo
 	
