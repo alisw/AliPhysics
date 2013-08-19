@@ -366,6 +366,9 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fSignN",fSignN,"fSignN[fItrk]/D");
   fTreeV0->Branch("fSignP",fSignP,"fSignP[fItrk]/D");
 
+  fTreeV0->Branch("fSigmadEdxPionPos",fSigmadEdxPionPos,"fSigmadEdxPionPos[fItrk]/I");
+  fTreeV0->Branch("fSigmadEdxPionNeg",fSigmadEdxPionNeg,"fSigmadEdxPionNeg[fItrk]/I");
+
   fTreeV0->Branch("fDCAv0",fDCAv0,"fDCAv0[fItrk]/F"); //Dca v0 Daughters
   fTreeV0->Branch("fCosinePAv0",fCosinePAv0,"fCosinePAv0[fItrk]/F"); //Cosine of Pionting Angle
   fTreeV0->Branch("fDecayRadiusTree",fDecayRadiusTree,"fDecayRadiusTree[fItrk]/F"); //decay radius
@@ -773,6 +776,9 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fdEdxP[fItrk]            = -1;
    fSignN[fItrk]            = 0;
    fSignP[fItrk]            = 0;
+  
+   fSigmadEdxPionPos[fItrk] = -1;
+   fSigmadEdxPionNeg[fItrk] = -1;
    
    fDCAv0[fItrk]            = -1;
    fCosinePAv0[fItrk]       = -2;
@@ -1356,24 +1362,24 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	    fHistArmenterosPodolanskiAntiDeuteronPion->Fill(alpha,qt);
 	  }
 
-	Int_t numberOfTPCclustersPos = 0;
-        Int_t numberOfTPCclustersNeg = 0;
+	Int_t numberOfTPCclustersPos = 0.;
+        Int_t numberOfTPCclustersNeg = 0.;
 
-	TPCclusters(trackP,numberOfTPCclustersPos);
-	TPCclusters(trackN,numberOfTPCclustersNeg);
+	numberOfTPCclustersPos = TPCclusters(trackP,numberOfTPCclustersPos);
+	numberOfTPCclustersNeg = TPCclusters(trackN,numberOfTPCclustersNeg);
 
 	Float_t numberOfChi2clustersTPCPos = 10;
         Float_t numberOfChi2clustersTPCNeg = 10;
 
-	TPCchi2(trackP,numberOfChi2clustersTPCPos,numberOfTPCclustersPos);
-        TPCchi2(trackN,numberOfChi2clustersTPCNeg,numberOfTPCclustersNeg);
+	numberOfChi2clustersTPCPos = TPCchi2(trackP,numberOfChi2clustersTPCPos,numberOfTPCclustersPos);
+	numberOfChi2clustersTPCNeg = TPCchi2(trackN,numberOfChi2clustersTPCNeg,numberOfTPCclustersNeg);
 
         //ImpactParameters
 	Double_t dcaPosToVertex = 0;
 	Double_t dcaNegToVertex =  0;
 
-	ImpactParameter(trackP,dcaPosToVertex);	
-        ImpactParameter(trackN,dcaNegToVertex);
+	dcaPosToVertex = ImpactParameter(trackP,dcaPosToVertex);	
+        dcaNegToVertex = ImpactParameter(trackN,dcaNegToVertex);
 
 	//ImpactParameter with AliKF 
 	//Get the primary vertex from the ITS for the following calculations, because it is the most precise determination of the primary vertex  
@@ -1487,6 +1493,9 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  fSignN[fItrk]            = trackN->Charge();
 	  fSignP[fItrk]            = trackP->Charge();
 	  
+	  fSigmadEdxPionPos[fItrk] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion));
+	  fSigmadEdxPionNeg[fItrk] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion));
+	       
 	  fDCAv0[fItrk]            = dcaV0;
 	  fCosinePAv0[fItrk]       = cosPointing;
 	  fDecayRadiusTree[fItrk]  = decayRadius;
@@ -1668,18 +1677,18 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	expSignalDeuteronN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	expSignalDeuteronP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	
-	if(trackP->GetTPCsignal() >= 110 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
+	if(trackP->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies; standard value 110, variation for systematics
 	   trackP->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.2 &&
+	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.3 &&
 	   ptotP > 0.2 ){
 	  
 	  if(trackP->Charge() >0)	 	isDeuteron[0] = kTRUE; //pos deuteron
 	  if(trackP->Charge() <0)	 	isDeuteron[1] = kTRUE; //neg deuteron
 	}
 	
-	if(trackN->GetTPCsignal() >= 110 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
+	if(trackN->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
 	   trackN->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.2 &&
+	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.3 &&
 	   ptotN > 0.2){ 
 	  
 	  isDeuteron[2] = kTRUE;
@@ -1779,12 +1788,12 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
     isPion[1] = kFALSE;
     //data
     if(!fMCtrue){
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion))<3){
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion))<4){
 
 	if(trackP->Charge()>0 )	isPion[0] = kTRUE; //pos pion
 	if(trackP->Charge()<0 )	isPion[1] = kTRUE; //neg pion
      }
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion))<3){
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion))<4){
 
 	if(trackN->Charge()>0 )	isPion[0] = kTRUE; //pos pion
 	if(trackN->Charge()<0 )	isPion[1] = kTRUE; //neg pion
