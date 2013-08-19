@@ -27,7 +27,7 @@ AliAnalysisTask *AddTask_shin_pPb(){
 
   
   //load dielectron configuration file
-  gROOT->LoadMacro(configFile.Data());
+  gROOT->LoadMacro(configFilePath.Data());
   
   //add dielectron analysis with different cuts to the task
    for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
