@@ -245,11 +245,11 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   /****************************************************************/
   /***************       MONITOR TOF           ********************/
   /****************************************************************/
-  // output:3D histogram of TOF Nsigma pi vs. TPC Nsigma pi vs momentum
+  // output:2D histogram of TOF Nsigma pi vs. TPC Nsigma pi vs momentum
   AliRsnListOutput *outMonitorTOFvsTPCnsigmaPi = new AliRsnListOutput("TOFnsigmaPi_TPCnsigmaPi", AliRsnListOutput::kHistoDefault);
   outMonitorTOFvsTPCnsigmaPi->AddValue(axisTOFnsigmaPi);
   outMonitorTOFvsTPCnsigmaPi->AddValue(axisTPCnsigmaPi);
-  outMonitorTOFvsTPCnsigmaPi->AddValue(axisMomP);
+  //outMonitorTOFvsTPCnsigmaPi->AddValue(axisMomP);
   if (mon) mon->Add(outMonitorTOFvsTPCnsigmaPi);
   if (lm) lm->AddOutput(outMonitorTOFvsTPCnsigmaPi);
   
