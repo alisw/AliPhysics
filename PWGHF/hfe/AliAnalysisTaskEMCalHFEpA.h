@@ -85,6 +85,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
+	//void SetAdditionalCuts(Double_t PtMinAsso, Int_t TpcNclsAsso) {fPtMinAsso = PtMinAsso; fTpcNclsAsso = TpcNclsAsso;};
 	
 	//Getters
 	AliHFEpid *GetPID() const {return fPID;};
@@ -98,7 +99,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 //Function to process eh analysis
 	void ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack);
 //Function to find non-HFE and fill histos
-	void Background(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack);
+	void Background(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack, Bool_t IsTPConly);
 //Selected Hadrons, for mixed event analysis
 	TObjArray* SelectedHadrons();
 //DiHadron Correlation Background
@@ -112,6 +113,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Bool_t				fUseEMCal;
 	Bool_t				fUseShowerShapeCut;
 	Bool_t				fFillBackground;
+	
 
 	Bool_t				fEMCEG1;
 	Bool_t				fEMCEG2;
@@ -168,6 +170,8 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	
 	TH1F				*fPtElec_ULS;
 	TH1F				*fPtElec_LS;
+	TH1F				*fPtElec_ULS2;
+	TH1F				*fPtElec_LS2;
 	
 	//PID Histograms
 	TH1F				*fpid;		
@@ -182,7 +186,10 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH2F				**fTPCnsigma_p;
 	TH2F				*fTPCnsigma_pt_2D;
 	TH2F				*fShowerShapeCut;
-
+	TH2F				*fShowerShapeM02_EoverP;
+	TH2F				*fShowerShapeM20_EoverP;
+	TH2F				*fShowerShape_ha;
+	TH2F				*fShowerShape_ele;
 	
 	TH2F				*fTPCnsigma_eta;
 	TH2F				*fTPCnsigma_phi;
@@ -240,6 +247,13 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH1F				*fOpAngle;
 	TH1F				*fOpAngleBack;
 	
+	TH1F				*fInvMass2;
+	TH1F				*fInvMassBack2;
+	TH1F				*fDCA2;
+	TH1F				*fDCABack2;
+	TH1F				*fOpAngle2;
+	TH1F				*fOpAngleBack2;
+	
 	Double_t			fMassCut;
 	Double_t			fEtaCutMin;
 	Double_t			fEtaCutMax;
@@ -264,7 +278,12 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	
 	//Non-HFE reconstruction efficiency
 	TH1F				*fPtBackgroundBeforeReco;
-	TH1F				*fPtBackgroundAfterReco;	
+	TH1F				*fPtBackgroundBeforeReco2;
+	TH1F				*fPtBackgroundAfterReco;
+	
+		//Double_t			fPtMinAsso;
+		//Double_t			fTpcNclsAsso;
+	
 	//Tracking Efficiency
 	TH1F				*fPtMCparticleAll;
 	TH1F				*fPtMCparticleReco;
