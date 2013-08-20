@@ -33,33 +33,33 @@ void SimpleQA() {
   //
   // execution part -- make the QA for all periods
   //
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10bPass3.txt", "./Plots/2010/10bPass3.pdf", "LHC10bPass3");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10cPass2.txt", "./Plots/2010/10cPass2.pdf", "LHC10cPass2");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10dPass2.txt", "./Plots/2010/10dPass2.pdf", "LHC10dPass2");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10ePass2.txt", "./Plots/2010/10ePass2.pdf", "LHC10ePass2");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10hPass2.txt", "./Plots/2010/10hPass2.pdf", "LHC10hPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10bPass3.txt", "./Plots/2010/LHC10b/10bPass3.pdf", "LHC10bPass3");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10cPass2.txt", "./Plots/2010/LHC10c/10cPass2.pdf", "LHC10cPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10dPass2.txt", "./Plots/2010/LHC10d/10dPass2.pdf", "LHC10dPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10ePass2.txt", "./Plots/2010/LHC10e/10ePass2.pdf", "LHC10ePass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10hPass2.txt", "./Plots/2010/LHC10h/10hPass2.pdf", "LHC10hPass2");
   //
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11aPass4withSDD.txt", "./Plots/2011/11aPass4withSDD.pdf", "LHC11aPass4withSDD");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11bPass1.txt", "./Plots/2011/11bPass1.pdf", "LHC11bPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11cPass1.txt", "./Plots/2011/11cPass1.pdf", "LHC11cPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11dPass1.txt", "./Plots/2011/11dPass1.pdf", "LHC11dPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11fPass1.txt", "./Plots/2011/11fPass1.pdf", "LHC11fPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11hPass2.txt", "./Plots/2011/11hPass2.pdf", "LHC11hPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11aPass4withSDD.txt", "./Plots/2011/LHC11a/11aPass4withSDD.pdf", "LHC11aPass4withSDD");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11bPass1.txt", "./Plots/2011/LHC11b/11bPass1.pdf", "LHC11bPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11cPass1.txt", "./Plots/2011/LHC11c/11cPass1.pdf", "LHC11cPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11dPass1.txt", "./Plots/2011/LHC11d/11dPass1.pdf", "LHC11dPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11fPass1.txt", "./Plots/2011/LHC11e/11fPass1.pdf", "LHC11fPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11hPass2.txt", "./Plots/2011/LHC11h/11hPass2.pdf", "LHC11hPass2");
   //
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12aPass1.txt", "./Plots/2012/12aPass1.pdf", "LHC12aPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12bPass1.txt", "./Plots/2012/12bPass1.pdf", "LHC12bPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12cPass1.txt", "./Plots/2012/12cPass1.pdf", "LHC12cPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12dPass1.txt", "./Plots/2012/12dPass1.pdf", "LHC12dPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12ePass1.txt", "./Plots/2012/12ePass1.pdf", "LHC12ePass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12fPass1.txt", "./Plots/2012/12fPass1.pdf", "LHC12fPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12gPass1.txt", "./Plots/2012/12gPass1.pdf", "LHC12gPass1");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12iPass1.txt", "./Plots/2012/12iPass1.pdf", "LHC12iPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12aPass1.txt", "./Plots/2012/LHC12a/12aPass1.pdf", "LHC12aPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12bPass1.txt", "./Plots/2012/LHC12b/12bPass1.pdf", "LHC12bPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12cPass1.txt", "./Plots/2012/LHC12c/12cPass1.pdf", "LHC12cPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12dPass1.txt", "./Plots/2012/LHC12d/12dPass1.pdf", "LHC12dPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12ePass1.txt", "./Plots/2012/LHC12e/12ePass1.pdf", "LHC12ePass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12fPass1.txt", "./Plots/2012/LHC12f/12fPass1.pdf", "LHC12fPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12gPass1.txt", "./Plots/2012/LHC12g/12gPass1.pdf", "LHC12gPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12iPass1.txt", "./Plots/2012/LHC12i/12iPass1.pdf", "LHC12iPass1");
   //
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13bPass3.txt", "./Plots/2013/13bPass3.pdf", "LHC13bPass3");  
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13cPass2.txt", "./Plots/2013/13cPass2.pdf", "LHC13cPass2");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13dPass2.txt", "./Plots/2013/13dPass2.pdf", "LHC13dPass2");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13ePass2.txt", "./Plots/2013/13ePass2.pdf", "LHC13ePass2");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13fPass2.txt", "./Plots/2013/13fPass2.pdf", "LHC13fPass2");  
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13bPass3.txt", "./Plots/2013/LHC12b/13bPass3.pdf", "LHC13bPass3");  
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13cPass2.txt", "./Plots/2013/LHC13c/13cPass2.pdf", "LHC13cPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13dPass2.txt", "./Plots/2013/LHC13d/13dPass2.pdf", "LHC13dPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13ePass2.txt", "./Plots/2013/LHC13e/13ePass2.pdf", "LHC13ePass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13fPass2.txt", "./Plots/2013/LHC13f/13fPass2.pdf", "LHC13fPass2");  
   //
   
 }
@@ -107,6 +107,7 @@ void MakeQAperPeriod(const Char_t * inputList, const Char_t * outputFileName,con
       Float_t acceptedFractionErr = GetFraction((Char_t *) objfile.Data(), "Accepted", TMath::Nint(TMath::Power(2,iTrig)), kTRUE);
       if (acceptedFraction > -0.5) {
 	histTrig->Fill(runNumber.Data(), acceptedFraction);
+	if (acceptedFraction < 1e-9) histTrig->SetBinContent(histTrig->GetXaxis()->FindBin(runNumber.Data()), 0.0001);
 	histTrig->SetBinError(histTrig->GetXaxis()->FindBin(runNumber.Data()), acceptedFractionErr);
       }
     }
@@ -245,7 +246,7 @@ TList * InitializeHistograms(const Char_t * label) {
     listOfHists->Add(histAccepted[iTrig]);
     //
     histAccepted[iTrig]->SetBit(TH1::kCanRebin);
-    histAccepted[iTrig]->GetYaxis()->SetRangeUser(-0.0000001,1.2);
+    histAccepted[iTrig]->GetYaxis()->SetRangeUser(0.,1.2);
     histAccepted[iTrig]->SetStats(0);
     histAccepted[iTrig]->SetMarkerStyle(20);
     histAccepted[iTrig]->SetMarkerColor(TColor::GetColor("#268bd2"));
