@@ -46,8 +46,6 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AODSemiCent(Bool_t runAll=kFALSE,B
   if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0)
 	hasMC=kTRUE;
 
-
-
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
 	gROOT->LoadMacro(configLMEECutLibPath.Data());
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
@@ -58,8 +56,6 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AODSemiCent(Bool_t runAll=kFALSE,B
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-//  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-//  task->SetRejectPileup();
   task->SelectCollisionCandidates(AliVEvent::kAny);  
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 	
@@ -71,14 +67,9 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AODSemiCent(Bool_t runAll=kFALSE,B
   task->AddDielectron(lowmass2);
   printf("add: %s\n",lowmass2->GetName());
 
-  AliDielectron *lowmass5=ConfigLMEEPbPb2011AOD(5,hasMC,bESDANA);
-  task->AddDielectron(lowmass5);
-  printf("add: %s\n",lowmass5->GetName());
 
 if (PIDbaseline) {
-	AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
-	task->AddDielectron(lowmass7);
-	printf("add: %s\n",lowmass7->GetName());
+   //obsolete variable, kept for compatibility with existing train setups
 }
 
   mgr->AddTask(task);
