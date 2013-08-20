@@ -283,7 +283,7 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
   while (AliTRDtrackletBase* tracklet = (AliTRDtrackletBase*) trackletIter()) {
     Int_t label = -2; // mark raw tracklets with label -2
     if (AliTRDtrackletMCM *trklMCM = dynamic_cast<AliTRDtrackletMCM*> (tracklet)) label = trklMCM->GetLabel();
-    esd->AddTrdTracklet(new AliESDTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), label));
+    esd->AddTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), label);
   }
 
   // ----- filling GTU tracks -----
