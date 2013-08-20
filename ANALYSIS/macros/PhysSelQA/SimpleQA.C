@@ -33,6 +33,19 @@ void SimpleQA() {
   //
   // execution part -- make the QA for all periods
   //
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10bPass3.txt", "./Plots/2010/10bPass3.pdf", "LHC10bPass3");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10cPass2.txt", "./Plots/2010/10cPass2.pdf", "LHC10cPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10dPass2.txt", "./Plots/2010/10dPass2.pdf", "LHC10dPass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10ePass2.txt", "./Plots/2010/10ePass2.pdf", "LHC10ePass2");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2010/inputList10hPass2.txt", "./Plots/2010/10hPass2.pdf", "LHC10hPass2");
+  //
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11aPass4withSDD.txt", "./Plots/2011/11aPass4withSDD.pdf", "LHC11aPass4withSDD");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11bPass1.txt", "./Plots/2011/11bPass1.pdf", "LHC11bPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11cPass1.txt", "./Plots/2011/11cPass1.pdf", "LHC11cPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11dPass1.txt", "./Plots/2011/11dPass1.pdf", "LHC11dPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11fPass1.txt", "./Plots/2011/11fPass1.pdf", "LHC11fPass1");
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2011/inputList11hPass2.txt", "./Plots/2011/11hPass2.pdf", "LHC11hPass2");
+  //
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12aPass1.txt", "./Plots/2012/12aPass1.pdf", "LHC12aPass1");
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12bPass1.txt", "./Plots/2012/12bPass1.pdf", "LHC12bPass1");
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2012/inputListLHC12cPass1.txt", "./Plots/2012/12cPass1.pdf", "LHC12cPass1");
@@ -46,8 +59,7 @@ void SimpleQA() {
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13cPass2.txt", "./Plots/2013/13cPass2.pdf", "LHC13cPass2");
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13dPass2.txt", "./Plots/2013/13dPass2.pdf", "LHC13dPass2");
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13ePass2.txt", "./Plots/2013/13ePass2.pdf", "LHC13ePass2");
-  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13fPass2.txt", "./Plots/2013/13fPass2.pdf", "LHC13fPass2");
-  
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13fPass2.txt", "./Plots/2013/13fPass2.pdf", "LHC13fPass2");  
   //
   
 }
@@ -104,7 +116,7 @@ void MakeQAperPeriod(const Char_t * inputList, const Char_t * outputFileName,con
   //
   // Draw histograms
   //  
-  TCanvas * canvAcc = new TCanvas(Form("canvAcc_%s", periodLabel),"fraction of accepted events", 2000, 800);
+  TCanvas * canvAcc = new TCanvas(Form("canvAcc_%s", periodLabel),"fraction of accepted events", 2400, 800);
   canvAcc->SetRightMargin(0.01);
   canvAcc->SetBottomMargin(0.15);
   //
@@ -169,19 +181,35 @@ Float_t GetFraction(const Char_t * inputFile, const Char_t * columnLabel, UInt_t
   //
   // find y-axis bins
   //
+  Float_t fraction = 0.; 
+  Float_t all = 0.;
+  Float_t accepted = 0.;
+  //
   for(Int_t iY =0; iY < hist->GetNbinsY() + 1; iY++) {
     TString label = hist->GetYaxis()->GetBinLabel(iY);
     Ssiz_t start  = label.First('&');
-    Ssiz_t finish = label.First('*');
+    Ssiz_t finish = label.Length();
+    if (label.Contains("*")) finish = label.First('*'); // works for 2011 and later data
     TString maskLabel( label( start+1, finish - start - 1 ) ); // returns the substring between the & and *
+    //    cout << maskLabel.Data() << "" << label.Data() << endl;
     UInt_t   maskInt = maskLabel.Atoi(); // Convert string to int (the int is in decimal form)
-    if (maskInt == triggerBit && label.Contains("-B-")) binTriggerBitY = iY;
+    //    if (maskInt == triggerBit && label.Contains("-B-")) binTriggerBitY = iY; // works only for 2011 and later data
+    if (maskInt == triggerBit) {
+      if (label.Contains("-B-")) {
+	binTriggerBitY = iY; // works only for 2011 and later data
+	all += hist->GetBinContent(binAllX, binTriggerBitY);
+	accepted += hist->GetBinContent(binColumnLabelX,binTriggerBitY);
+      }
+      if (label.Contains("-ABCE-") && label.Contains("1B-")) {
+	binTriggerBitY = iY; // works only for 2010 data also
+	all += hist->GetBinContent(binAllX, binTriggerBitY);
+	accepted += hist->GetBinContent(binColumnLabelX,binTriggerBitY);
+      }
+    }
   }
   //
-  Float_t fraction = 0.;
-  Float_t all = hist->GetBinContent(binAllX, binTriggerBitY);
   if (all > 0 &&binColumnLabelX != -1 && binTriggerBitY != -1) {
-    fraction = hist->GetBinContent(binColumnLabelX,binTriggerBitY)/all;
+    fraction = accepted/all;
   } else {
     inFile->Close();
     delete inFile;
