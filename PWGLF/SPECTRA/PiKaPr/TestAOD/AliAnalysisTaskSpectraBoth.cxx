@@ -22,6 +22,7 @@
 #include "TLegend.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "TCanvas.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -81,11 +82,13 @@ void AliAnalysisTaskSpectraBoth::UserCreateOutputObjects()
   if (!fEventCuts) AliFatal("Event Cuts should be set in the steering macro");
   if (!fPID)       AliFatal("PID object should be set in the steering macro");
   fTrackCuts->SetAliESDtrackCuts(fCuts);
+  fEventCuts->InitHisto();
+  fTrackCuts->InitHisto();
+
   PostData(1, fHistMan  );
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);
   PostData(4, fPID      );
-
 }
 //________________________________________________________________________
 void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
@@ -93,7 +96,6 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
   // main event loop
 	Int_t ifAODEvent=AliSpectraBothTrackCuts::kotherobject;
 	fAOD = dynamic_cast<AliVEvent*>(InputEvent());
-   
   //	AliESDEvent* esdevent=0x0;
  // 	AliAODEvent* aodevent=0x0;
    
@@ -112,8 +114,6 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		AliFatal("Not processing AODs or ESDS") ;
 	if(fdotheMCLoopAfterEventCuts)
   		if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
- 
-  
   	TClonesArray *arrayMC = 0;
   	Int_t npar=0;
   	AliStack* stack=0x0;
@@ -205,7 +205,6 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 	}
 	if(!fdotheMCLoopAfterEventCuts)
   		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ))return;//event selection
-
   	//main loop on tracks
 	Int_t ntracks=0;
   	//cout<<fAOD->GetNumberOfTracks()<<endl;
@@ -215,13 +214,22 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
       		AliAODTrack* aodtrack=0;
   		AliESDtrack* esdtrack=0;
   		Float_t dca=-999.;
+		Float_t dcaz=-999.;
+		Short_t ncls=-1; 
+		Float_t chi2perndf=-1.0;
   		if(ifAODEvent==AliSpectraBothTrackCuts::kESDobject)
   		{
 			esdtrack=dynamic_cast<AliESDtrack*>(track);
 			if(!esdtrack)
 				continue;
-			Float_t dcaz=0.0;
 			esdtrack->GetImpactParameters(dca,dcaz);
+			ncls=esdtrack->GetTPCNcls();
+			if ( ncls > 5) 
+       				chi2perndf=(esdtrack->GetTPCchi2()/Float_t(ncls - 5));
+  
+			else 
+       				chi2perndf=-1;
+    			
   		}
   		else if (ifAODEvent==AliSpectraBothTrackCuts::kAODobject)
   		{
@@ -229,6 +237,9 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			if(!aodtrack)
 				continue;		
 			dca=aodtrack->DCA();
+			dcaz=aodtrack->ZAtDCA();
+			ncls=aodtrack->GetTPCNcls();
+			chi2perndf=aodtrack->Chi2perNDF();
   		}
   		else
 			continue;
@@ -247,7 +258,9 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
       			if(!isDCA)
 				d[0]=-999.;
       			dca=d[0];
+			dcaz=d[1];	
     		}
+	
      		fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),dca);  // PT histo
     		// get identity and charge
     		Bool_t rec[3]={false,false,false};
@@ -272,7 +285,12 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		
 			// Fill histograms, only if inside y and nsigma acceptance
 			if(idRec != kSpUndefined && fTrackCuts->CheckYCut ((BothParticleSpecies_t)idRec))
+			{
 				fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),dca);
+				fTrackCuts->GetHistoDCAzQA()->Fill(idRec,track->Pt(),dcaz);
+				fTrackCuts->GetHistoNclustersQA()->Fill(idRec,track->Pt(),ncls);
+				fTrackCuts->GetHistochi2perNDFQA()->Fill(idRec,track->Pt(),chi2perndf);
+			}
 			//can't put a continue because we still have to fill allcharged primaries, done later
 		
 			/* MC Part */
@@ -346,7 +364,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			//	  cout<<" functions "<<partMC->IsPhysicalPrimary()<<" "<<partMC->IsSecondaryFromWeakDecay()<<" "<<partMC->IsSecondaryFromMaterial()<<endl;
 		  
 		  		if (isPrimary&&irec==kSpPion)
-					fHistMan->GetPtHistogram(kHistPtRecPrimaryAll)->Fill(track->Pt(),dca);  // PT histo of primaries
+					fHistMan->GetPtHistogram(kHistPtRecPrimaryAll)->Fill(track->Pt(),dca);  // PT histo of reconstrutsed primaries in defined eta
 		  
 		  	//nsigma cut (reconstructed nsigma)
 		  		if(idRec == kSpUndefined) 
@@ -357,8 +375,6 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  
 		  // Get true ID
 		  
-		  //if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    // FIXME: do we need a rapidity cut on the generated?
-		  // Fill histograms for primaries
 		  
 		 		 if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),dca); 
 		  
@@ -401,6 +417,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 	
 	
   	} // end loop on tracks
+
  // cout<< ntracks<<endl;
   fHistMan->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->Fill(npar,ntracks);
   PostData(1, fHistMan  );

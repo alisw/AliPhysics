@@ -55,8 +55,10 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
 	pid->SetPIDtype(AliSpectraBothPID::kNSigmaTPC);
   else if (pidmethod==1)
 	pid->SetPIDtype(AliSpectraBothPID::kNSigmaTOF);
-  else		
-  	pid->SetPIDtype(AliSpectraBothPID::kNSigmaTPCTOF);
+  else if  (pidmethod==2)		
+  	pid->SetPIDtype(AliSpectraBothPID::kNSigmacircleTPCTOF);
+  else 
+	pid->SetPIDtype(AliSpectraBothPID::kNSigmasquareTPCTOF);	
 
   AliSpectraBothTrackCuts  * trcuts = new AliSpectraBothTrackCuts("Track Cuts");  
   trcuts->SetDCA(DCA);
