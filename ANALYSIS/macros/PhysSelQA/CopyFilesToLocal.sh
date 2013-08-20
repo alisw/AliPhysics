@@ -24,7 +24,7 @@ mkdir $destinationFolder
 counter=0
 for i in `alien_ls $dataPeriodFolder`; do
     counter=`expr $counter + 1`;
-    runNumber=`expr $i |  sed 's/000//g'`
+    runNumber=`expr $i |  sed 's/\/000/\//g'`
     echo Copying file number $counter which corresponds to $runNumber to $destinationFolder$runNumber\_event_stat.root
     alien_cp  alien://$dataPeriodFolder$i$productionFileName file://$destinationFolder$runNumber\_event_stat.root
 done
