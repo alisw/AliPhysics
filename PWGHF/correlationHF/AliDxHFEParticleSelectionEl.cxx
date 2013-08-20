@@ -67,6 +67,7 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fPIDTOFTPC(NULL)
   , fPIDTOF(NULL)
   , fPIDTPC(NULL)
+  , fPIDTPCEMCAL(NULL)
   , fElectronProperties(NULL)
   , fHistoList(NULL)
   , fCutPidList(NULL)
@@ -120,6 +121,7 @@ AliDxHFEParticleSelectionEl::~AliDxHFEParticleSelectionEl()
   fPIDTOFTPC=NULL;
   fPIDTOF=NULL;
   fPIDTPC=NULL;
+  fPIDTPCEMCAL=NULL;
   fCuts=NULL;
   if(fSelNHFE){
     delete fSelNHFE;
@@ -565,7 +567,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsITS;
   if(fFinalCutStep==kHFEcutsITS) {AliDebug(2,"Returns after kHFEcutsITS "); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
 
-  // HFE cuts: TOF PID and mismatch flag
+  /* // HFE cuts: TOF PID and mismatch flag
+  //[FIX] EMCAL, set possibility to opt-out this part?
   if(useCombinedPID && !ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
     if(!useCombinedPID) cout << "should not be here "<< track->Pt() << endl;
     AliDebug(4,"Cut: kStepHFEcutsTOF");
@@ -575,7 +578,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }
   if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsTOF;
   if(fFinalCutStep==kHFEcutsTOF) {AliDebug(2,"Returns after kHFEcutsTOF"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-  
+  //[/FIX]  */
+
   // HFE cuts: TPC PID cleanup
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)){
     AliDebug(4,"Cut: kStepHFEcutsTPC");
@@ -605,6 +609,95 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }
   else  hfetrack.SetPP();
   //  hfetrack.SetMulitplicity(ncontribVtx);
+
+  // Development of EMCAL PID //
+
+  Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999, dEdx=-999, fTPCnSigma=0;
+    pt = track->Pt();
+    p = track->P();
+    dEdx = track->GetTPCsignal();
+    fTPCnSigma = fPIDTPCEMCAL->GetPIDResponse() ? fPIDTPCEMCAL->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
+
+    if(pt<2){
+      //Cutreason: Out of bounds, pt
+      return 0;
+    }
+
+    // Crude cut on TPC nSigma, -3,3
+    if(fTPCnSigma < -3 || fTPCnSigma > 3){
+      //Cutreason: Out of bounds, TPC nSigma
+      return 0;
+    }
+
+    //eta cut (-0.7,0.7)
+    if(track->Eta() < -0.7 || track->Eta() > 0.7){
+      //Cutreason: Out of bounds, eta
+      return 0;
+    }
+
+    // Track extrapolation to EMCAL
+    Int_t fClsId = track->GetEMCALcluster();
+    if(fClsId <0) return 0;
+    AliVCluster *cluster = pEvent->GetCaloCluster(fClsId);
+    if(!cluster->IsEMCAL()) return 0;
+    if(TMath::Abs(cluster->GetTrackDx())>0.05 || TMath::Abs(cluster->GetTrackDz())>0.05) return 0;    
+    //     fdEdxBef->Fill(p,dEdx);
+    // fTPCnsigma->Fill(p,fTPCnSigma);
+    
+    //     fTrkpt->Fill(pt);
+    fClsE = cluster->E();
+    fEovP = fClsE/p;
+    
+
+    //Electron id with TPC
+    //    if(fTPCnSigma < fTPCnsigEleMin || fTPCnSigma > fTPCnsigEleMax) continue;
+    //    fEovPWoSS->Fill(pt,fEovP);
+    //    fElecPhiTPCEovP->Fill(track->Phi());
+
+    //Electron id with shower shape  
+    /*[FIX] Look into this later    if(cluster->GetM20()< fM20CutMin || cluster->GetM20()> fM20CutMax || cluster->GetM02()< fM02CutMin || cluster->GetM02()> fM02CutMax || cluster->GetDispersion()> fDispCutMax) continue;
+    fEovPWSS->Fill(pt,fEovP);
+    */
+    //Electron id with E/p
+    Double_t fEovPMin=0.8;
+    Double_t fEovPMax=1.2;
+    if(fEovP < fEovPMin || fEovP > fEovPMax) return 0;
+    printf("Track selected by EMCAL only\n");
+    //    fTrkEovPAft->Fill(pt,fEovP);
+    //    fElecPhi->Fill(track->Phi());
+    //    fElecPhiPt->Fill(track->Phi(),track->Pt());
+    //    if (track->Eta() >0 && track->Eta() <0.7) fElecPhiTPChalf->Fill(track->Phi());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // /Development of EMCAL PID //
+  /* Temporarily remove all other PID stuff
 
   // TODO: Put this into a while-loop instead, looping over the number of pid objects in the cut-list?
   // This needs a bit of thinking and finetuning (wrt histogramming)
@@ -681,7 +774,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
 
     }
   ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected);
-
+  */
   return 1;
   
 }
