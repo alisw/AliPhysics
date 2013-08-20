@@ -1227,7 +1227,7 @@ void AliTRDmcmSim::CalcFitreg()
 
   if (fgStoreClusters) {
     timebin1 = 0;
-    timebin2 = fNTimeBin - 1;
+    timebin2 = fNTimeBin;
   }
   else {
     // find first timebin to be looked at
@@ -1643,8 +1643,8 @@ void AliTRDmcmSim::FitTracklet()
                        (Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos),
                        (Int_t) fTrapConfig->GetDmemUnsigned(fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)));
 
-      AliDebug(5, Form("Fit sums: x = %i, X = %i, y = %i, Y = %i, Z = %i",
-		       sumX, sumX2, sumY, sumY2, sumXY));
+      AliDebug(5, Form("Fit sums: x = %i, X = %i, y = %i, Y = %i, Z = %i, q0 = %i, q1 = %i",
+		       sumX, sumX2, sumY, sumY2, sumXY, q0, q1));
 
       fitSlope  = (Float_t) (nHits * sumXY - sumX * sumY) / (nHits * sumX2 - sumX*sumX);
 
@@ -2276,8 +2276,8 @@ void AliTRDmcmSim::PrintFitRegXml(ostream& os) const
 	   for(int adcch=fFitPtr[cpu]; adcch<fFitPtr[cpu]+2; adcch++) {
 	      os << "    <ch chnr=\"" << adcch << "\">"<< std::endl;
 	      os << "     <hits>"   << fFitReg[adcch].fNhits << "</hits>"<< std::endl;
-	      os << "     <q0>"     << fFitReg[adcch].fQ0/4 << "</q0>"<< std::endl;    // divided by 4 because in simulation we have 2 additional decimal places
-	      os << "     <q1>"     << fFitReg[adcch].fQ1/4 << "</q1>"<< std::endl;    // in the output
+	      os << "     <q0>"     << fFitReg[adcch].fQ0 << "</q0>"<< std::endl;
+	      os << "     <q1>"     << fFitReg[adcch].fQ1 << "</q1>"<< std::endl;
 	      os << "     <sumx>"   << fFitReg[adcch].fSumX << "</sumx>"<< std::endl;
 	      os << "     <sumxsq>" << fFitReg[adcch].fSumX2 << "</sumxsq>"<< std::endl;
 	      os << "     <sumy>"   << fFitReg[adcch].fSumY << "</sumy>"<< std::endl;
