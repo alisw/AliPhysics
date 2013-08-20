@@ -118,7 +118,7 @@ int AddTaskDxHFE()
   //AddTaskDxHFEParticleSelection//
   /////////////////////////////////
   */
-  taskOptions=filename+" name=DxHFE extraname=ITS3kAny itsclusters=3 itsreq=kAny particle=electron storelastcutstep p-Pb cutFilename=Cutlist.root";
+  taskOptions=filename+" name=DxHFE extraname=ITS3kAny itsclusters=3 itsreq=kAny particle=electron storelastcutstep";
 
   if(gDirectory) gDirectory->Clear();
   if(gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", taskOptions.Data()));

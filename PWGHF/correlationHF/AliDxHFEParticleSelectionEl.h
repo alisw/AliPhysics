@@ -130,6 +130,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   AliHFEpid*    fPIDTOFTPC;          //! the PID object
   AliHFEpid*    fPIDTOF;             //! the PID TOF object
   AliHFEpid*    fPIDTPC;             //! the PID TOF object
+  AliHFEpid*    fPIDTPCEMCAL;             //! the PID TOF object
   THnSparse*    fElectronProperties; // the particle properties of selected particles
   TList*        fHistoList;          // list of histograms
   TList*        fCutPidList;         // list for pid and cut objects
