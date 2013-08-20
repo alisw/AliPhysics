@@ -2281,11 +2281,11 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist, Bool_t 
     Double_t zeroYield    = 0.;
     Double_t zeroYieldCur = -FLT_MAX;
     if(kUseZYAM){
-      for(Int_t iMin = 0; iMin<8; iMin++){
+      for(Int_t iMin = 0; iMin<2; iMin++){
 	zeroYieldCur = gHist->GetMinimum(zeroYieldCur);
 	zeroYield   += zeroYieldCur;
       }
-      zeroYield /= 8.;
+      zeroYield /= 2.;
       //zeroYield = gHist->GetMinimum();
     }
     // ----------------------------------------------------------------------
