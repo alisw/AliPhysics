@@ -74,6 +74,10 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fOutput(0)
   , fOption(opt)
   , fCorrelation(NULL)
+  , fCorrelationCharm(NULL)
+  , fCorrelationBeauty(NULL)
+  , fCorrelationNonHF(NULL)
+  , fCorrelationHadron(NULL)
   , fD0s(NULL)
   , fElectrons(NULL)
   , fCutsD0(NULL)
@@ -88,6 +92,8 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fUseKine(kFALSE)
   , fMCArray(NULL)
   , fCorrelationArguments("")
+  , fD0EffMap(NULL)
+  , fStoreSeparateOrigins(kFALSE)
 {
   // constructor
   //
@@ -125,6 +131,14 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fElectrons=NULL;
   if (fCorrelation) delete fCorrelation;
   fCorrelation=NULL;
+  if (fCorrelationCharm) delete fCorrelationCharm;
+  fCorrelationCharm=NULL;
+  if (fCorrelationBeauty) delete fCorrelationBeauty;
+  fCorrelationBeauty=NULL;
+  if (fCorrelationNonHF) delete fCorrelationNonHF;
+  fCorrelationNonHF=NULL;
+  if (fCorrelationHadron) delete fCorrelationHadron;
+  fCorrelationHadron=NULL;
   // external object, do not delete
   fCutsD0=NULL;
   // external object, do not delete
@@ -138,6 +152,7 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fListHFE=NULL;
   if(fMCArray) delete fMCArray;
   fMCArray=NULL;
+  fD0EffMap=NULL; //external object, do not delete
 
 
 }
@@ -178,8 +193,53 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   else fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(fCuts);
   iResult=fCorrelation->Init(fOption);
+  if(fD0EffMap) fCorrelation->SetD0EffMap(fD0EffMap);
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+  }
+
+  if(fUseMC && fStoreSeparateOrigins){
+    TString option;
+    
+    //Correlation only charm===========================================
+    fCorrelationCharm=new AliDxHFECorrelationMC("AliDxHFECorrelationMCCharm");
+    fCorrelationCharm->SetCuts(fCuts);
+    option=fOption+" storeoriginD=charm storeoriginEl=charm";
+    iResult=fCorrelationCharm->Init(option);
+    if(fD0EffMap) fCorrelationCharm->SetD0EffMap(fD0EffMap);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
+
+    //Correlation only beauty==========================================
+    fCorrelationBeauty=new AliDxHFECorrelationMC("AliDxHFECorrelationMCBeauty");
+    fCorrelationBeauty->SetCuts(fCuts);
+    option=fOption+" storeoriginD=beauty storeoriginEl=beauty";
+    iResult=fCorrelationBeauty->Init(option);
+    if(fD0EffMap) fCorrelationBeauty->SetD0EffMap(fD0EffMap);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
+
+    //Correlation nonHFE with c+b Ds====================================
+    fCorrelationNonHF=new AliDxHFECorrelationMC("AliDxHFECorrelationMCNonHF");
+    fCorrelationNonHF->SetCuts(fCuts);
+    option=fOption+" storeoriginD=HF storeoriginEl=nonHF";
+    iResult=fCorrelationNonHF->Init(option);
+    if(fD0EffMap) fCorrelationNonHF->SetD0EffMap(fD0EffMap);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
+
+    //Correlation hadrons with c+b Ds====================================
+    fCorrelationHadron=new AliDxHFECorrelationMC("AliDxHFECorrelationMCHadrons");
+    fCorrelationHadron->SetCuts(fCuts);
+    option=fOption+" storeoriginD=HF storeoriginEl=hadrons";
+    iResult=fCorrelationHadron->Init(option);
+    if(fD0EffMap) fCorrelationHadron->SetD0EffMap(fD0EffMap);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
   }
 
   // Fix for merging:
@@ -191,6 +251,32 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   TIter next(list);
   while((obj = next())){
     fOutput->Add(obj);
+  }
+  if(fUseMC && fStoreSeparateOrigins){
+    
+    list=(TList*)fCorrelationCharm->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
+
+    list=(TList*)fCorrelationBeauty->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
+
+    list=(TList*)fCorrelationNonHF->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
+
+    list=(TList*)fCorrelationHadron->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
   }
 
   list=(TList*)fD0s->GetControlObjects();
@@ -418,11 +504,24 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   if(nD0Selected >0 && nElSelected>0) fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsCorrelated);
 
   int iResult=0;
-  if(fTriggerParticle==AliDxHFECorrelation::kD) 
+  if(fTriggerParticle==AliDxHFECorrelation::kD){ 
     fCorrelation->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
-  else 
+    if(fUseMC && fStoreSeparateOrigins){
+      fCorrelationCharm->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+      fCorrelationBeauty->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+      fCorrelationNonHF->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+      fCorrelationHadron->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+    }
+  }
+  else {
     fCorrelation->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
-
+    if(fUseMC && fStoreSeparateOrigins){
+      fCorrelationCharm->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+      fCorrelationBeauty->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+      fCorrelationNonHF->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+      fCorrelationHadron->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+    }
+  }
   if (iResult<0) {
     AliFatal(Form("%s processing failed with error %d", fCorrelation->GetName(), iResult));
   }
@@ -453,6 +552,11 @@ int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
     if (argument.BeginsWith("mc")) {
       fUseMC=true;
       AliInfo("Running on MC data");
+      continue;
+    }
+    if (argument.BeginsWith("storeseparateorigins")) {
+      fStoreSeparateOrigins=true;
+      AliInfo("Store separate origins");
       continue;
     }
     if (argument.BeginsWith("usekine") || argument.BeginsWith("kine")) {
