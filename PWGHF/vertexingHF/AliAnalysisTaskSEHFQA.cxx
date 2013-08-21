@@ -888,6 +888,22 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hTrigCentSel->GetXaxis()->SetBinLabel(13,"HighMult");
     hTrigCentSel->GetXaxis()->SetBinLabel(14,"Others");
 
+    TH2F* hTrigMulSel=new TH2F("hTrigMulSel","Multiplicity after selection vs. Trigger types",14,-1.5,12.5,100,0.,10000.);
+    hTrigMulSel->GetXaxis()->SetBinLabel(1,"All");
+    hTrigMulSel->GetXaxis()->SetBinLabel(2,"kAny");
+    hTrigMulSel->GetXaxis()->SetBinLabel(3,"kMB");
+    hTrigMulSel->GetXaxis()->SetBinLabel(4,"kINT7");
+    hTrigMulSel->GetXaxis()->SetBinLabel(5,"kCINT5");
+    hTrigMulSel->GetXaxis()->SetBinLabel(6,"kCent");
+    hTrigMulSel->GetXaxis()->SetBinLabel(7,"kSemiCent");
+    hTrigMulSel->GetXaxis()->SetBinLabel(8,"kEMC1+7");
+    hTrigMulSel->GetXaxis()->SetBinLabel(9,"kEMCJET+GAMMA");
+    hTrigMulSel->GetXaxis()->SetBinLabel(10,"Muons");
+    hTrigMulSel->GetXaxis()->SetBinLabel(11,"PHOS");
+    hTrigMulSel->GetXaxis()->SetBinLabel(12,"TRD");
+    hTrigMulSel->GetXaxis()->SetBinLabel(13,"HighMult");
+    hTrigMulSel->GetXaxis()->SetBinLabel(14,"Others");
+
     AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
     trigCounter->AddRubric("run",500000);
     trigCounter->AddRubric("triggerType","All/Any/MB/Cent/SemiCent/EMCAL/MUON/NoPhysSelMUON/NoPhysSelEvNot7/NoPhysSelCMUP1/NoPhysSelMB/NoPhysSelCent/NoPhysSelSemiCent/CINT7");
@@ -915,6 +931,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(hWhichVertSelEv);
     fOutputEvSelection->Add(hTrigCent);
     fOutputEvSelection->Add(hTrigMul);
+    fOutputEvSelection->Add(hTrigMulSel);
     fOutputEvSelection->Add(hTrigCentSel);
     fOutputEvSelection->Add(trigCounter);
     fOutputEvSelection->Add(hWhyEvRejected);
@@ -1426,21 +1443,48 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
   if(evSelected && fOnOff[3]){
     TH2F* hTrigS=(TH2F*)fOutputEvSelection->FindObject("hTrigCentSel");
+    TH2F* hTrigSM=(TH2F*)fOutputEvSelection->FindObject("hTrigMulSel");
     hTrigS->Fill(-1.,centrality);
-
-    if(evSelMask & AliVEvent::kAny) hTrigS->Fill(0.,centrality);
-    if(evSelMask & AliVEvent::kMB) hTrigS->Fill(1.,centrality);
-    if(evSelMask & AliVEvent::kINT7) hTrigS->Fill(2.,centrality);
-    if(evSelMask & AliVEvent::kCINT5) hTrigS->Fill(3.,centrality);
-    if(evSelMask & AliVEvent::kCentral) hTrigS->Fill(4.,centrality);
-    if(evSelMask & AliVEvent::kSemiCentral) hTrigS->Fill(5.,centrality);
-    if(evSelMask & (AliVEvent::kEMC1 | AliVEvent::kEMC7)) hTrigS->Fill(6.,centrality);
-    if(evSelMask & (AliVEvent::kEMCEJE | AliVEvent::kEMCEGA)) hTrigS->Fill(7.,centrality);
-    if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))) hTrigS->Fill(8.,centrality);
-    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)) hTrigS->Fill(9.,centrality);
-    if(evSelMask & (AliVEvent::kTRD)) hTrigS->Fill(10.,centrality);
-    if(evSelMask & (AliVEvent::kHighMult)) hTrigS->Fill(11.,centrality);
-    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)) hTrigS->Fill(12.,centrality);
+    hTrigSM->Fill(-1.,multiplicity);
+    if(evSelMask & AliVEvent::kAny) {
+      hTrigS->Fill(0.,centrality);
+      hTrigSM->Fill(0.,multiplicity);}
+    if(evSelMask & AliVEvent::kMB) {
+      hTrigS->Fill(1.,centrality);
+      hTrigSM->Fill(1.,multiplicity);}
+    if(evSelMask & AliVEvent::kINT7){
+      hTrigS->Fill(2.,centrality);
+      hTrigSM->Fill(2.,multiplicity);}
+    if(evSelMask & AliVEvent::kCINT5){ 
+      hTrigS->Fill(3.,centrality);
+      hTrigSM->Fill(3.,multiplicity);}
+    if(evSelMask & AliVEvent::kCentral){
+      hTrigS->Fill(4.,centrality);
+      hTrigSM->Fill(4.,multiplicity);}
+    if(evSelMask & AliVEvent::kSemiCentral){
+      hTrigS->Fill(5.,centrality);
+      hTrigSM->Fill(5.,multiplicity);}
+    if(evSelMask & (AliVEvent::kEMC1 | AliVEvent::kEMC7)){
+      hTrigS->Fill(6.,centrality);
+      hTrigSM->Fill(6.,multiplicity);}
+    if(evSelMask & (AliVEvent::kEMCEJE | AliVEvent::kEMCEGA)){
+      hTrigS->Fill(7.,centrality);
+      hTrigSM->Fill(7.,multiplicity);}
+    if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
+      hTrigS->Fill(8.,centrality);
+      hTrigSM->Fill(8.,multiplicity);}
+    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){
+      hTrigS->Fill(9.,centrality);
+      hTrigSM->Fill(9.,multiplicity);}
+    if(evSelMask & (AliVEvent::kTRD)){
+      hTrigS->Fill(10.,centrality);
+      hTrigSM->Fill(10.,multiplicity);}
+    if(evSelMask & (AliVEvent::kHighMult)){
+      hTrigS->Fill(11.,centrality);
+      hTrigSM->Fill(11.,multiplicity);}
+    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
+      hTrigS->Fill(12.,centrality);
+      hTrigSM->Fill(12.,multiplicity);}
   }
   
   if(evSelected || (!evSelbyCentrality && evSelByVertex && evselByPileup && evSelByPS)){ //events selected or not selected because of centrality
