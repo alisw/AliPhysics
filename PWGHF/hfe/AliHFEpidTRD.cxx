@@ -372,7 +372,8 @@ Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVTrack *track, AliHFEpidOb
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
     if(esdtrack) esdtrack->GetTRDpid(pidProbs);
   } else {
-    fkPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, pidProbs);
+      if(fTRD2DPID) fkPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, pidProbs,AliTRDPIDResponse::kLQ2D); 
+      else fkPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, pidProbs,AliTRDPIDResponse::kLQ1D);
   }
   if(!IsRenormalizeElPi()) return pidProbs[AliPID::kElectron];
   Double_t probsNew[AliPID::kSPECIES];
