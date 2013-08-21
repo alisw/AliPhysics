@@ -1,3 +1,5 @@
+
+
 #ifndef ALIANALYSISTASKFLOWTPCEMCALQCSP_H
 #define ALIANALYSISTASKFLOWTPCEMCALQCSP_H
 
@@ -73,7 +75,10 @@ public:
     void                                 SetIDCuts(Double_t minTPC, Double_t maxTPC, Double_t minEovP, Double_t maxEovP, Double_t minM20, Double_t maxM20, Double_t minM02, Double_t maxM02, Double_t Dispersion);
     void                                 SetOpeningAngleflag(Bool_t opang){fOP_angle = opang;};
     void                                 SetOpeningAngleCut(Double_t opanglecut) {fOpeningAngleCut = opanglecut;};
+    void                                 SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
+    Bool_t                               IsEventSelectedForCentrFlattening(Float_t centvalue);
     
+
     
     
     
@@ -153,12 +158,21 @@ private:
     Double_t             fOpeningAngleCut; //openingAngle cut value
     Bool_t               fOP_angle; //to shitch on and off the op_angle cut
     Int_t                fAssoTPCCluster;//asso tpc cluster
-    Bool_t               fAssoITSRefit;//asso its refit    
-    Bool_t               fMultCut;//for mult correlationcut 
+    Bool_t               fAssoITSRefit;//asso its refit
+    Bool_t               fMultCut;//for mult correlationcut
     TH2F                 *fMultCorAfterCentrBeforeCuts; //! QA profile global and tpc multiplicity after outlier cut
     TH2F                 *fMultCorAfterVZTRKComp;//!after cent comp
     TH1F                 *fCentralityBeforePileup;//!cent chneck
     TH1F                 *fCentralityAfterVZTRK;//!cent chneck2
+    TH1D                 *EPVz;//v0cep
+    TH1D                 *EPTPCp;//tpcep
+    TH1D                 *EPTPCn;//!tpcep
+    TProfile             *fSubEventDPhiv2new;
+    THnSparseF           *fV2Phivzerotot;//! v2 analysis of EP-V0
+    TH1F                 *fHistCentrDistr;// isto for Centr Flat
+    TH1F                 *fCentralityNoPassForFlattening; //! QA histogram of events that do not pass centrality cut for flattening
+    TH1F                 *fInvmassLS1highpt; //LS Invmass for all rec par high pt
+    TH1F                 *fInvmassULS1highpt;//ULS Invmass for all rec par high pt
 
     
     
@@ -169,4 +183,6 @@ private:
 };
 
 #endif
+
+
 
