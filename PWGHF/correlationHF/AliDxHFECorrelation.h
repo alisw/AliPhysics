@@ -52,7 +52,7 @@ class AliDxHFECorrelation : public TNamed {
   int Init(const char* arguments="");
 
   // parse argument string
-  int ParseArguments(const char* arguments);
+  virtual int ParseArguments(const char* arguments);
 
   /// fill histograms from particles
   int Fill(const TObjArray* candidatesD0, const TObjArray* candidatesElectron, const AliVEvent* pEvent);
@@ -82,6 +82,8 @@ class AliDxHFECorrelation : public TNamed {
   virtual TObject* FindObject(const TObject *obj) const;
   /// overloaded from TObject: save to file
   virtual void     SaveAs(const char *filename="",Option_t *option="") const; // *MENU*
+  // Tests the particle
+  virtual Bool_t TestParticle(AliVParticle* /*as*/, Int_t /*id*/);
 
   virtual void SetCuts(AliAnalysisCuts* cuts) {fCuts=cuts;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
@@ -91,6 +93,7 @@ class AliDxHFECorrelation : public TNamed {
   // TODO: SetEventType only needed for MC. How to avoid this?
   virtual void SetEventType(int type){fEventType=type;}
   void SetRunFullMode(bool fullmode=kTRUE){fRunFullMode=fullmode;}
+  void SetD0EffMap(TH1* eff){fD0EffMap=eff;}
 
   Bool_t GetUseMC() const {return fUseMC;}
   const TList* GetControlObjects() const {return fControlObjects;}
@@ -164,7 +167,9 @@ class AliDxHFECorrelation : public TNamed {
   Int_t fEventType;              // Event type. Only needed for MC (fix)
   Int_t fTriggerParticleType;    // Which particle to trigger on
   Bool_t fUseTrackEfficiency;    // Whether or not to correct for single track efficiency
+  Bool_t fUseD0Efficiency;       // Whether or not to correct for D0 efficiency
   Bool_t fRunFullMode;           // If run in full mode (bigger thnsparse)
+  TH1* fD0EffMap;                //! Eff map for D0 
 
   static const char* fgkEventControlBinNames[];
 

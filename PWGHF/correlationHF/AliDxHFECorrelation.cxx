@@ -74,7 +74,9 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fEventType(0)
   , fTriggerParticleType(kD)
   , fUseTrackEfficiency(kFALSE)
+  , fUseD0Efficiency(kFALSE)
   , fRunFullMode(kTRUE)
+  , fD0EffMap(NULL)
 {
   // default constructor
   // 
@@ -107,6 +109,7 @@ AliDxHFECorrelation::~AliDxHFECorrelation()
   fCorrelator=NULL;
   if(fCorrArray) delete fCorrArray;
   fCorrArray=NULL;
+  fD0EffMap=NULL;
 
   // NOTE: the external object is deleted elsewhere
   fCuts=NULL;
@@ -268,6 +271,16 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
     if (argument.BeginsWith("useTrackEff")){
       fUseTrackEfficiency=true;
       AliInfo("Applying track efficiency");
+      continue;
+    }
+    if (argument.BeginsWith("reducedMode")){
+      fRunFullMode=false;
+      AliInfo("Running in Reduced mode");
+      continue;
+    }
+    if (argument.BeginsWith("useD0Eff")){
+      fUseD0Efficiency=true;
+      AliInfo("Applying Correction for D0 efficiency");
       continue;
     }
     if (argument.BeginsWith("system=")) {
@@ -438,6 +451,12 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
     AliReducedParticle* ptrigger=dynamic_cast<AliReducedParticle*>(otrigger);
     if (!ptrigger)  continue;
 
+    if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+      if(! TestParticle(ptrigger,kD)) continue;
+    }
+    else if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
+      if(! TestParticle(ptrigger,kElectron)) continue;
+
     Double_t phiTrigger = ptrigger->Phi();
     Double_t ptTrigger = ptrigger->Pt();
     Double_t etaTrigger = ptrigger->Eta();
@@ -477,16 +496,32 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	
 	AliReducedParticle *assoc = fCorrelator->GetAssociatedParticle();
 	//	Double_t efficiency = assoc->GetWeight();
+	if(!assoc) continue;
+
+	// Test associated particle, which is electron if trigger is D, 
+	// or D if trigger is electron
+	if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+	  if(! TestParticle(assoc,kElectron)) continue;
+	}
+	else if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
+	  if(! TestParticle(assoc,kD)) continue;
 	
 	Double_t weight =1.;
 	if(fUseTrackEfficiency){
 	  AliAODVertex *vtx = AOD->GetPrimaryVertex();
 	  Double_t zvertex = vtx->GetZ(); // zvertex
 	  weight=cuts->GetTrackWeight(assoc->Pt(),assoc->Eta(),zvertex);
-	  AliDebug(2,Form("Vertex: %f  weight: &f ",zvertex, weight));
+	  AliDebug(2,Form("Vertex: %f  weight: %f ",zvertex, weight));
 	  //	  cout << "Vertex: " << zvertex << "   weight: " << weight << endl;
 	}
-
+	if(fUseD0Efficiency){
+	  Double_t D0eff=1;
+	  Int_t bin=fD0EffMap->FindBin(ptTrigger);
+	  if(fD0EffMap->IsBinUnderflow(bin)|| fD0EffMap->IsBinOverflow(bin)) D0eff = 1.;
+	  else D0eff = fD0EffMap->GetBinContent(bin);
+	  weight=weight*D0eff;
+	  AliDebug(2,Form("D0eff: %f, combined efficiency: %f",D0eff, weight));
+	}
 
 	FillParticleProperties(ptrigger,assoc,ParticleProperties(),GetDimTHnSparse());
 	fCorrProperties->Fill(ParticleProperties(),1./weight);
@@ -650,3 +685,8 @@ void AliDxHFECorrelation::EventMixingChecks(const AliVEvent* pEvent){
   ((TH3D*)fControlObjects->FindObject("NofTracksPerPoolBin"))->Fill(MultipOrCent,zvertex,pool->GetCurrentNEvents()); // number of calls of pool
 }
 	
+Bool_t AliDxHFECorrelation::TestParticle(AliVParticle* /*p*/, Int_t /*id*/){
+
+  // Testing particle - for now mainly needed in MC
+  return kTRUE;
+}
