@@ -41,6 +41,9 @@
 #include "TLorentzVector.h"
 #include "AliReducedParticle.h"
 #include "AliDxHFEParticleSelection.h"
+#include "AliDxHFEParticleSelectionMCD0.h"
+#include "AliDxHFEParticleSelectionMCEl.h"
+#include "AliDxHFEToolsMC.h"
 #include <iostream>
 #include <cerrno>
 #include <memory>
@@ -52,6 +55,8 @@ ClassImp(AliDxHFECorrelationMC)
 AliDxHFECorrelationMC::AliDxHFECorrelationMC(const char* name)
   : AliDxHFECorrelation(name?name:"AliDxHFECorrelationMC")
   , fMCEventType(0)
+  , fStoreOriginEl(kAll)
+  , fStoreOriginD(kAll)
 {
   // default constructor
   // 
@@ -109,7 +114,7 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
     };
     thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
   }
-  else{
+  else{//Could also here consider removing process
     //           			                    0        1     2      3    4      5      6
     // 		                	                 D0invmass  PtD0 PhiD0  Pte   dphi    dEta  process
     int         binsEventdphiRed[sizeEventdphiReduced] = {   200,    100,  100,  21, 100,     100,   100 };
@@ -132,6 +137,73 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
 
 }
 
+Bool_t AliDxHFECorrelationMC::TestParticle(AliVParticle* p, Int_t id){
+
+  AliReducedParticle *part=(AliReducedParticle*)p;
+  if (!part) return -ENODATA;
+
+  Bool_t selected = kTRUE;
+  Bool_t isCharm=(part->GetOriginMother()==AliDxHFEToolsMC::kOriginCharm || 
+		  part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonCharm);
+  Bool_t isBeauty=(part->GetOriginMother()==AliDxHFEToolsMC::kOriginBeauty || 
+		   part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonBeauty);
+
+  if(id==kD){
+    if(!fStoreOriginD==kAll){
+      if(fStoreOriginD==kC ){
+	// Test if particle really is from C
+	if(!isCharm)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginD==kB ){
+	// Test if particle really is from B
+	if(!isBeauty)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginD==kHF ){
+	// Test if particle really is HF
+	if(!(isCharm || isBeauty))
+	  selected=kFALSE;
+      }
+    }
+  }
+
+
+  // Test to see if test for D/el and whether to do further selection
+  if(id==kElectron){
+    if(!fStoreOriginEl==kAll){
+      if(fStoreOriginEl==kC){ // Test if particle really is from C
+	if(!isCharm)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginEl==kB){ // Test if particle really is from B
+
+	if(!isBeauty)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginEl==kHF){ // Test if particle really is HF	
+	if((!isCharm) || (!isBeauty))
+	  selected=kFALSE;
+      }
+  
+      // Test extra for source of el
+      if(fStoreOriginEl==kNonHF){
+	// Test if particle really is from NonHF
+	if(!((part->GetOriginMother() >= AliDxHFEToolsMC::kOriginNone && part->GetOriginMother()<=AliDxHFEToolsMC::kOriginStrange)
+	     || (part->GetOriginMother() > AliDxHFEToolsMC::kOriginGluonBeauty )))
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginEl==kHadrons){
+	// Test if particle really is from hadrons
+	if(! (part->GetOriginMother()<AliDxHFEToolsMC::kOriginNone))
+	  selected =kFALSE;
+      }
+    }
+  }
+
+  return selected;
+
+}
 
 int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle *as, Double_t* data, int dimension) const
 {
@@ -181,3 +253,39 @@ int AliDxHFECorrelationMC::Fill(const TObjArray* triggerCandidates, TObjArray* a
   return AliDxHFECorrelation::Fill(triggerCandidates,associatedTracks,pEvent);
 }
 
+
+int AliDxHFECorrelationMC::ParseArguments(const char* arguments)
+{
+  // parse arguments and set internal flags
+  TString strArguments(arguments);
+  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  if (!tokens.get()) return -ENOMEM;
+  TIter next(tokens.get());
+  TObject* token;
+  while ((token=next())) {
+    TString argument=token->GetName();
+    if (argument.BeginsWith("storeoriginD=")){
+      argument.ReplaceAll("storeoriginD=", "");
+      if (argument.CompareTo("all")==0) { fStoreOriginD=kAll; AliInfo("Store all Ds"); }
+      else if (argument.CompareTo("charm")==0) { fStoreOriginD=kC; AliInfo("Store only D from charm");}
+      else if (argument.CompareTo("beauty")==0){ fStoreOriginD=kB; AliInfo("Store only D from beauty");}
+      else if (argument.CompareTo("HF")==0){ fStoreOriginD=kHF; AliInfo("Store D from HF");}
+      continue;
+    }  
+    if (argument.BeginsWith("storeoriginEl=")){
+      argument.ReplaceAll("storeoriginEl=", "");
+      if (argument.CompareTo("all")==0) { fStoreOriginEl=kAll; AliInfo("Store all electrons"); }
+      else if (argument.CompareTo("charm")==0) { fStoreOriginEl=kC; AliInfo("Store only electrons from charm");}
+      else if (argument.CompareTo("beauty")==0){ fStoreOriginEl=kB; AliInfo("Store only electrons from beauty");}
+      else if (argument.CompareTo("HF")==0){ fStoreOriginEl=kHF; AliInfo("Store electrons from HF");}
+      else if (argument.CompareTo("nonHF")==0){ fStoreOriginEl=kNonHF; AliInfo("Store electrons from nonHF");}
+      else if (argument.CompareTo("hadrons")==0){ fStoreOriginEl=kHadrons; AliInfo("Store electrons candidates from hadrons");}
+      continue;
+    }  
+
+    //    AliWarning(Form("unknown argument '%s'", argument.Data()));
+    AliDxHFECorrelation::ParseArguments(argument);      
+  }
+
+  return 0;
+}

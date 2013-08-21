@@ -66,6 +66,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   void SetUseEventMixing(Bool_t useMixing) {fUseEventMixing=useMixing;}
   void SetSystem(Bool_t system){fSystem=system;}
   void SetTriggerParticle(int trigger){fTriggerParticle=trigger;} 
+  void SetD0EffMap(TH1* eff){fD0EffMap=eff;}
 
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
@@ -85,6 +86,10 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   TList* fOutput;                        //! list send on output slot 1
   TString fOption;                       //  option string
   AliDxHFECorrelation* fCorrelation;     //  correlation worker class
+  AliDxHFECorrelation* fCorrelationCharm;//  correlation worker class - kine only store C
+  AliDxHFECorrelation* fCorrelationBeauty; //  correlation worker class - kine only store B
+  AliDxHFECorrelation* fCorrelationNonHF;//  correlation worker class - kine only store NonHF
+  AliDxHFECorrelation* fCorrelationHadron;//  correlation worker class - kine only store hadrons
   AliDxHFEParticleSelection* fD0s;       //  selection of D0s
   AliDxHFEParticleSelection* fElectrons; //  selection of electrons
   AliAnalysisCuts *fCutsD0;              //  Cuts D0 
@@ -99,8 +104,10 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   Bool_t fUseKine;                       // To run over MC or reconstructed data
   TObjArray* fMCArray;                   // Array to hold MCarray
   TString fCorrelationArguments;         // String argument for correlation
+  TH1* fD0EffMap;                        //! histo containing efficiency map for D0
+  Bool_t fStoreSeparateOrigins;          // Whether to create correlation objects for various origins
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 6);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 7);
 };
 
 #endif
