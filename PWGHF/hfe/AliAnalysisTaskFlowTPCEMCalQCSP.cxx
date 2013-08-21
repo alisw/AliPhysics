@@ -186,6 +186,15 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,fMultCorAfterVZTRKComp(0)
 ,fCentralityBeforePileup(0)
 ,fCentralityAfterVZTRK(0)
+,EPVz(0)
+,EPTPCp(0)
+,EPTPCn(0)
+,fSubEventDPhiv2new(0)
+,fV2Phivzerotot(0)
+,fHistCentrDistr(0x0)
+,fCentralityNoPassForFlattening(0)
+,fInvmassLS1highpt(0)
+,fInvmassULS1highpt(0)
 {
     //Named constructor
     
@@ -283,6 +292,15 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fMultCorAfterVZTRKComp(0)
 ,fCentralityBeforePileup(0)
 ,fCentralityAfterVZTRK(0)
+,EPVz(0)
+,EPTPCp(0)
+,EPTPCn(0)
+,fSubEventDPhiv2new(0)
+,fV2Phivzerotot(0)
+,fHistCentrDistr(0x0)
+,fCentralityNoPassForFlattening(0)
+,fInvmassLS1highpt(0)
+,fInvmassULS1highpt(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -347,7 +365,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         fPID->InitializePID(fAOD->GetRunNumber());
     }
     
-   //  cout << "kTrigger   ==   " << fTrigger <<endl;
+    //  cout << "kTrigger   ==   " << fTrigger <<endl;
     
     if(fTrigger==0){
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) ) return;
@@ -422,15 +440,20 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         }
     }
     
+    
     //=============================================V0EP from Alex======================================================================
     Double_t qxEPa = 0, qyEPa = 0;
     Double_t qxEPc = 0, qyEPc = 0;
+    Double_t qxEP = 0, qyEP = 0;
     
     Double_t evPlAngV0A = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 8, 2, qxEPa, qyEPa);
     Double_t evPlAngV0C = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 9, 2, qxEPc, qyEPc);
+    Double_t evPlAngV0 = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 10, 2, qxEP, qyEP);
     
     
     Double_t Qx2 = 0, Qy2 = 0;
+    Double_t Qx2p = 0, Qy2p = 0;
+    Double_t Qx2n = 0, Qy2n = 0;
     
     for (Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++){
         
@@ -445,19 +468,54 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         if (!aodTrack->TestFilterBit(128))
             continue;
         
+        
+        if(aodTrack->Eta()>0 && aodTrack->Eta()<0.8){
+            
+            Qx2p += TMath::Cos(2*aodTrack->Phi());
+            Qy2p += TMath::Sin(2*aodTrack->Phi());
+        }
+        if(aodTrack->Eta()<0 && aodTrack->Eta()> -0.8){
+            
+            Qx2n += TMath::Cos(2*aodTrack->Phi());
+            Qy2n += TMath::Sin(2*aodTrack->Phi());
+        }
+        
+        
         Qx2 += TMath::Cos(2*aodTrack->Phi());
         Qy2 += TMath::Sin(2*aodTrack->Phi());
+        
+        
+        
+        
     }
     
     Double_t evPlAngTPC = TMath::ATan2(Qy2, Qx2)/2.;
+    Double_t evPlAngTPCn = TMath::ATan2(Qy2n, Qx2n)/2.;
+    Double_t evPlAngTPCp = TMath::ATan2(Qy2p, Qx2p)/2.;
     
     EPVzA->Fill(evPlAngV0A);
     EPVzC->Fill(evPlAngV0C);
     EPTPC->Fill(evPlAngTPC);
     
+    EPTPCn->Fill(evPlAngTPCn);
+    EPTPCp->Fill(evPlAngTPCp);
+    EPVz->Fill(evPlAngV0);
+    
+    
+    
+    
     fSubEventDPhiv2->Fill(0.5, TMath::Cos(2.*(evPlAngV0A-evPlAngTPC))); // vzeroa - tpc
     fSubEventDPhiv2->Fill(1.5, TMath::Cos(2.*(evPlAngV0A-evPlAngV0C))); // vzeroa - vzeroc
     fSubEventDPhiv2->Fill(2.5, TMath::Cos(2.*(evPlAngV0C-evPlAngTPC))); // tpc - vzeroc
+    
+    
+    fSubEventDPhiv2new->Fill(0.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCp))); // vzero - tpcp
+    fSubEventDPhiv2new->Fill(1.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCn))); // vzero - tpcn
+    fSubEventDPhiv2new->Fill(2.5, TMath::Cos(2.*(evPlAngTPCp-evPlAngTPCn))); // tpcp - tpcn
+    
+    
+    
+    
     //====================================================================================================================
     
     
@@ -550,7 +608,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                 pt,
                 fEovP,
                 fTPCnSigma};
-                fSparseElectronpurity->Fill(valuepurity);
+            fSparseElectronpurity->Fill(valuepurity);
         }
         //----------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------
@@ -593,6 +651,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
             v2PhiV0C,
             pt};
         fV2Phi->Fill(v2Phi);
+        
+        Double_t v2PhiVz = TMath::Cos(2*(phi - evPlAngV0));
+        Double_t v2PhiV0tot[2] = {
+            v2PhiVz,
+            pt};
+        fV2Phivzerotot->Fill(v2PhiV0tot);
         //=========================================================================================================
         fTPCnsigmaAft->Fill(p,fTPCnSigma);
         fInclusiveElecPt->Fill(pt);
@@ -710,10 +774,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         Double_t mass=-999., width = -999;
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
         Double_t openingAngle = -999.;
-        
+        Double_t ptcutonmasshighpt = track->Pt();
+
         ptAsso = trackAsso->Pt();
         Short_t chargeAsso = trackAsso->Charge();
         Short_t charge = track->Charge();
+
         nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
         
         //80
@@ -747,6 +813,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         
         if(fFlagLS) fInvmassLS1->Fill(mass);
         if(fFlagULS) fInvmassULS1->Fill(mass);
+        
+        if(ptcutonmasshighpt >= 8.){
+        if(fFlagLS) fInvmassLS1highpt->Fill(mass);
+        if(fFlagULS) fInvmassULS1highpt->Fill(mass);
+        }
+        
         
         if(mass<fInvmassCut){
             if(fFlagULS){fULSElecPt->Fill(track->Pt());}
@@ -856,6 +928,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     fInvmassULS1 = new TH1F("fInvmassULS1", "Inv mass of ULS (e,e); mass(GeV/c^2); counts;", 1000,0,1.0);
     fOutputList->Add(fInvmassULS1);
+   
+    fInvmassLS1highpt = new TH1F("fInvmassLS1highpt", "Inv mass of LS (e,e); mass(GeV/c^2) highpt; counts;", 1000,0,1.0);
+    fOutputList->Add(fInvmassLS1highpt);
+    
+    fInvmassULS1highpt = new TH1F("fInvmassULS1highpt", "Inv mass of ULS (e,e); mass(GeV/c^2) highpt; counts;", 1000,0,1.0);
+    fOutputList->Add(fInvmassULS1highpt);
     
     fCentralityPass = new TH1F("fCentralityPass", "Centrality Pass", 101, -1, 100);
     fOutputList->Add(fCentralityPass);
@@ -863,12 +941,15 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
     fOutputList->Add(fCentralityNoPass);
     
+    fCentralityNoPassForFlattening = new TH1F("fCentralityNoPassForFlattening", "Centrality No Pass for flattening", 101, -1, 100);
+    fOutputList->Add(fCentralityNoPassForFlattening);
+    
     fCentralityBeforePileup = new TH1F("fCentralityBeforePileup", "fCentralityBeforePileup Pass", 101, -1, 100);
     fOutputList->Add(fCentralityBeforePileup);
-     
+    
     fCentralityAfterVZTRK = new TH1F("fCentralityAfterVZTRK", "fCentralityAfterVZTRK Pass", 101, -1, 100);
     fOutputList->Add(fCentralityAfterVZTRK);
-   
+    
     fPhi = new TH1F("fPhi", "#phi distribution", 100, -.5, 7);
     fOutputList->Add(fPhi);
     
@@ -916,19 +997,36 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fOutputList->Add(EPVzC);
     EPTPC = new TH1D("EPTPC", "EPTPC", 80, -2, 2);
     fOutputList->Add(EPTPC);
+    
+    
+    EPVz = new TH1D("EPVz", "EPVz", 80, -2, 2);
+    fOutputList->Add(EPVz);
+    EPTPCp = new TH1D("EPTPCp", "EPTPCp", 80, -2, 2);
+    fOutputList->Add(EPTPCp);
+    EPTPCn = new TH1D("EPTPCn", "EPTPCn", 80, -2, 2);
+    fOutputList->Add(EPTPCn);
+    
     //----------------------------------------------------------------------------
     fSubEventDPhiv2 = new TProfile("fSubEventDPhiv2", "fSubEventDPhiv2", 3, 0, 3);
     fSubEventDPhiv2->GetXaxis()->SetBinLabel(1, "<cos(2(#Psi_{a} - #Psi_{b}))>");
     fSubEventDPhiv2->GetXaxis()->SetBinLabel(2, "<cos(2(#Psi_{a} - #Psi_{c}>))");
     fSubEventDPhiv2->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{b} - #Psi_{c}>))");
     fOutputList->Add(fSubEventDPhiv2);
-    //================================Event Plane with VZERO=====================
-    const Int_t nPtBins = 10;
-    Double_t binsPt[nPtBins+1] = {0, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+    
+    
+    
+    fSubEventDPhiv2new = new TProfile("fSubEventDPhiv2new", "fSubEventDPhiv2new", 3, 0, 3);
+    fSubEventDPhiv2new->GetXaxis()->SetBinLabel(1, "<cos(2(#Psi_{a} - #Psi_{b}))>");
+    fSubEventDPhiv2new->GetXaxis()->SetBinLabel(2, "<cos(2(#Psi_{a} - #Psi_{c}>))");
+    fSubEventDPhiv2new->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{b} - #Psi_{c}>))");
+    fOutputList->Add(fSubEventDPhiv2new);
+    //================================Event Plane with VZERO A & C=====================
+    const Int_t nPtBins = 12;
+    Double_t binsPt[nPtBins+1] = {0, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10, 13};
     // v2A, v2C, pt
     Int_t    bins[3] = {  50,  50, nPtBins};
     Double_t xmin[3] = { -1., -1.,   0};
-    Double_t xmax[3] = {  1.,  1.,   8};
+    Double_t xmax[3] = {  1.,  1.,   13};
     fV2Phi = new THnSparseF("fV2Phi", "v2A:v2C:pt", 3, bins, xmin, xmax);
     // Set bin limits for axes which are not standard binned
     fV2Phi->SetBinEdges(2, binsPt);
@@ -937,7 +1035,28 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fV2Phi->GetAxis(1)->SetTitle("v_{2} (V0C)");
     fV2Phi->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
     fOutputList->Add(fV2Phi);
+    
+    
+    
+    //================================Event Plane with VZERO=====================
+    // const Int_t nPtBins = 10;
+    // Double_t binsPt[nPtBins+1] = {0, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+    // v2, pt
+    Int_t    binsV[2] = {  50,  nPtBins};
+    Double_t xminV[2] = { -1.,   0};
+    Double_t xmaxV[2] = {  1.,   13};
+    fV2Phivzerotot = new THnSparseF("fV2Phivzerotot", "v2:pt", 2, binsV, xminV, xmaxV);
+    // Set bin limits for axes which are not standard binned
+    fV2Phivzerotot->SetBinEdges(1, binsPt);
+    // set axes titles
+    fV2Phivzerotot->GetAxis(0)->SetTitle("v_{2} (V0)");
+    fV2Phivzerotot->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
+    fOutputList->Add(fV2Phivzerotot);
+    
+    
+    
     //----------------------------------------------------------------------------
+
     if(fPhiminusPsi){
         Int_t binsvElectH[8]={ 600,  200, 200 ,100,  100,  100,   10,          10}; //pt, E/p,TPCnSigma,M20,M02,Disp Phi-psiV0A ,Phi-PsiV0C,eta (commented)
         Double_t xminvElectH[8]={0,    0, -10 ,  0,    0,    0,    0,           0};
@@ -1023,7 +1142,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalQCSP::ProcessCutStep(Int_t cutStep, AliVPartic
 //_________________________________________
 void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t &centralitypass)
 {
-//============================Multiplicity TPV vs Global===============================================================================      
+    //============================Multiplicity TPV vs Global===============================================================================
     const Int_t nGoodTracks = event->GetNumberOfTracks();
     Float_t multTPC(0.); // tpc mult estimate
     Float_t multGlob(0.); // global multiplicity
@@ -1044,13 +1163,13 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
         if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
         if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
         multGlob++;
-    } //track loop 
-       fMultCorBeforeCuts->Fill(multGlob, multTPC);//before all cuts...even before centrality selectrion
-//============================================================================================================================    
+    } //track loop
+    fMultCorBeforeCuts->Fill(multGlob, multTPC);//before all cuts...even before centrality selectrion
+    //============================================================================================================================
     // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
     if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
     fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
-   //   cout << "--------------Centrality evaluated-------------------------"<<endl;
+    //   cout << "--------------Centrality evaluated-------------------------"<<endl;
     if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
     {
         fCentralityNoPass->Fill(fCentrality);
@@ -1062,11 +1181,11 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
         centralitypass = kTRUE;
     }
     if (centralitypass){
-      fMultCorAfterCentrBeforeCuts->Fill(multGlob, multTPC);
-      fCentralityBeforePileup->Fill(fCentrality);
-      }//...after centrality selectrion
-//============================================================================================================================       
-//to remove the bias introduced by multeplicity outliers---------------------
+        fMultCorAfterCentrBeforeCuts->Fill(multGlob, multTPC);
+        fCentralityBeforePileup->Fill(fCentrality);
+    }//...after centrality selectrion
+    //============================================================================================================================
+    //to remove the bias introduced by multeplicity outliers---------------------
     Float_t centTrk = event->GetCentrality()->GetCentralityPercentile("TRK");
     Float_t centv0 = event->GetCentrality()->GetCentralityPercentile("V0M");
     if (TMath::Abs(centv0 - centTrk) > 5.0){
@@ -1074,27 +1193,35 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
         fCentralityNoPass->Fill(fCentrality);
     }
     if (centralitypass){
-      fMultCorAfterVZTRKComp->Fill(multGlob, multTPC);
-      fCentralityAfterVZTRK->Fill(fCentrality);
+        fMultCorAfterVZTRKComp->Fill(multGlob, multTPC);
+        fCentralityAfterVZTRK->Fill(fCentrality);
     }//...after centrality selectrion
-//============================================================================================================================    
- if(fMultCut){
-    if(fTrigger==1){
-    if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
-     //   cout <<" Trigger ==" <<fTrigger<< endl;
-        centralitypass = kFALSE;
-        fCentralityNoPass->Fill(fCentrality);
-    }//2011 Semicentral
-     }
+    //============================================================================================================================
+    if(fMultCut){
+        if(fTrigger==1){
+            if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
+                //   cout <<" Trigger ==" <<fTrigger<< endl;
+                centralitypass = kFALSE;
+                fCentralityNoPass->Fill(fCentrality);
+            }//2011 Semicentral
+        }
+        if(fTrigger==0){
+            if(! (multTPC > (77.9 + 1.395*multGlob) && multTPC < (187.3 + 1.665*multGlob))){
+                //     cout <<" Trigger ==" <<fTrigger<< endl;
+                centralitypass = kFALSE;
+                fCentralityNoPass->Fill(fCentrality);
+            }//2011
+        }//2011 Central
+    }
+    //=================================All cuts are passed==================++++==================================================
+    //=================================Now Centrality flattening for central trigger==================++++==================================================
     if(fTrigger==0){
-        if(! (multTPC > (77.6 + 1.399*multGlob) && multTPC < (371.3 + 1.50*multGlob))){
-       //     cout <<" Trigger ==" <<fTrigger<< endl;
+        if(!IsEventSelectedForCentrFlattening(fCentrality)){
             centralitypass = kFALSE;
-            fCentralityNoPass->Fill(fCentrality);
-        }//2011
-    }//2011 Central
- }
-//=================================All cuts are passed==================++++==================================================    
+            fCentralityNoPassForFlattening->Fill(fCentrality);
+        }
+    }
+    //==============================fill histo after all cuts==============================++++==================================================
     if(centralitypass){
         fCentralityPass->Fill(fCentrality);
         fMultCorAfterCuts->Fill(multGlob, multTPC);
@@ -1124,3 +1251,94 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SetIDCuts(Double_t minTPC, Double_t maxTPC
     fDispersion = Dispersion;
 }
 //_____________________________________________________________________________
+//_____________________________________________________________________________
+void AliAnalysisTaskFlowTPCEMCalQCSP::SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef,Int_t switchTRand){
+    // set the histo for centrality flattening
+    // the centrality is flatten in the range minCentr,maxCentr
+    // if centrRef is zero, the minimum in h within (minCentr,maxCentr) defines the reference
+    //                positive, the value of h(centrRef) defines the reference (-> the centrality distribution might be not flat in the whole desired range)
+    //                negative, h(bin with max in range)*centrRef is used to define the reference (-> defines the maximum loss of events, also in this case the distribution might be not flat)
+    // switchTRand is used to set the unerflow bin of the histo: if it is < -1 in the analysis the random event selection will be done on using TRandom
+    
+    if(maxCentr<minCentr){
+        AliWarning("AliAnalysisCheckCorrdist::Wrong centralities values while setting the histogram for centrality flattening");
+    }
+    
+    if(fHistCentrDistr)delete fHistCentrDistr;
+    fHistCentrDistr=(TH1F*)h->Clone("hCentralityFlat");
+    fHistCentrDistr->SetTitle("Reference histo for centrality flattening");
+    Int_t minbin=fHistCentrDistr->FindBin(minCentr*1.00001); // fast if fix bin width
+    Int_t maxbin=fHistCentrDistr->FindBin(maxCentr*0.9999);
+    fHistCentrDistr->GetXaxis()->SetRange(minbin,maxbin);
+    Double_t ref=0.,bincont=0.,binrefwidth=1.;
+    Int_t binref=0;
+    if(TMath::Abs(centrRef)<0.0001){
+        binref=fHistCentrDistr->GetMinimumBin();
+        binrefwidth=fHistCentrDistr->GetBinWidth(binref);
+        ref=fHistCentrDistr->GetBinContent(binref)/binrefwidth;
+    }
+    else if(centrRef>0.){
+        binref=h->FindBin(centrRef);
+        if(binref<1||binref>h->GetNbinsX()){
+            AliWarning("AliRDHFCuts::Wrong centrality reference value while setting the histogram for centrality flattening");
+        }
+        binrefwidth=fHistCentrDistr->GetBinWidth(binref);
+        ref=fHistCentrDistr->GetBinContent(binref)/binrefwidth;
+    }
+    else{
+        if(centrRef<-1) AliWarning("AliRDHFCuts: with this centrality reference no flattening will be applied");
+        binref=fHistCentrDistr->GetMaximumBin();
+        binrefwidth=fHistCentrDistr->GetBinWidth(binref);
+        ref=fHistCentrDistr->GetMaximum()*TMath::Abs(centrRef)/binrefwidth;
+    }
+    
+    for(Int_t j=1;j<=h->GetNbinsX();j++){// Now set the "probabilities"
+        if(h->GetBinLowEdge(j)*1.0001>=minCentr&&h->GetBinLowEdge(j+1)*0.9999<=maxCentr){
+            bincont=h->GetBinContent(j);
+            fHistCentrDistr->SetBinContent(j,ref/bincont*h->GetBinWidth(j));
+            fHistCentrDistr->SetBinError(j,h->GetBinError(j)*ref/bincont);
+        }
+        else{
+            h->SetBinContent(j,1.1);// prob > 1 to assure that events will not be rejected
+        }
+    }
+    
+    fHistCentrDistr->SetBinContent(0,switchTRand);
+    return;
+    
+}
+
+//-------------------------------------------------
+Bool_t AliAnalysisTaskFlowTPCEMCalQCSP::IsEventSelectedForCentrFlattening(Float_t centvalue){
+    //
+    //  Random event selection, based on fHistCentrDistr, to flatten the centrality distribution
+    //  Can be faster if it was required that fHistCentrDistr covers
+    //  exactly the desired centrality range (e.g. part of the lines below should be done during the
+    // setting of the histo) and TH1::SetMinimum called
+    //
+    
+    if(!fHistCentrDistr) return kTRUE;
+    // Int_t maxbin=fHistCentrDistr->FindBin(fMaxCentrality*0.9999);
+    //   if(maxbin>fHistCentrDistr->GetNbinsX()){
+    //     AliWarning("AliRDHFCuts: The maximum centrality exceeds the x-axis limit of the histogram for centrality flattening");
+    //   }
+    
+    Int_t bin=fHistCentrDistr->FindBin(centvalue); // Fast if the histo has a fix bin
+    Double_t bincont=fHistCentrDistr->GetBinContent(bin);
+    Double_t centDigits=centvalue-(Int_t)(centvalue*100.)/100.;// this is to extract a random number between 0 and 0.01
+    
+    if(fHistCentrDistr->GetBinContent(0)<-0.9999){
+        if(gRandom->Uniform(1.)<bincont)return kTRUE;
+        return kFALSE;
+    }
+    
+    if(centDigits*100.<bincont)return kTRUE;
+    return kFALSE;
+    
+}
+//---------------------------------------------------------------------------
+
+
+
+
+

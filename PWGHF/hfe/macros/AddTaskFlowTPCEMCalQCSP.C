@@ -1,3 +1,5 @@
+
+
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // AddTaskFlowTPCEMCalQCSP macro                                 //
@@ -19,7 +21,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Double_t InvmassCut,
                                                           Double_t pTCut,
                                                           Int_t Trigger,
-						                                  Bool_t multCorrcut,
+                                                          Bool_t multCorrcut,
                                                           Double_t minTPC,
                                                           Double_t maxTPC,
                                                           Double_t minEovP,
@@ -31,6 +33,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Double_t Dispersion,
                                                           Int_t minTPCCluster,
                                                           AliHFEextraCuts::ITSPixel_t pixel,
+                                                          Bool_t NUA = kTRUE,
                                                           Bool_t PhotonicElectronDCA = kFALSE,
                                                           Int_t TPCClusterforAsso = 80,
                                                           Bool_t AssoITSref = kTRUE,
@@ -41,12 +44,14 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Bool_t QC = kTRUE, // use qc2 and qc4
                                                           Bool_t SP_TPC = kTRUE, //use tpc sp method
                                                           Bool_t VZERO_SP = kFALSE, // use vzero sp method
+                                                          Bool_t BaseH = kFALSE, // base histo
                                                           Int_t harmonic = 2,
                                                           Bool_t shrinkSP = kTRUE,
                                                           Bool_t debug = kFALSE,
                                                           Int_t RPFilterBit = 1,
                                                           Bool_t op_ang = kFALSE,
-                                                          Double_t op_angle_cut=3.
+                                                          Double_t op_angle_cut=3.,
+                                                          const char *histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
                                                           )
 
 {
@@ -76,11 +81,18 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
         return 0x0;
     }
+    taskHFE->SetTrigger(Trigger);
+    
+    if(Trigger==0){
+        TFile *fFlat=TFile::Open(histoflatname,"READ");
+        TCanvas *c=fFlat->Get("cintegral");
+        TH1F *hfl=(TH1F*)c->FindObject("hint");
+        taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
+    }
     
     // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
     taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
     taskHFE->SetInvariantMassCut(InvmassCut);
-    taskHFE->SetTrigger(Trigger);
     taskHFE->SetIDCuts(minTPC, maxTPC, minEovP, maxEovP, minM20, maxM20, minM02, maxM02, Dispersion);
     taskHFE->SetFlowSideBands(SideBandsFlow);
     taskHFE->Setphiminuspsi(Phi_minus_psi);
@@ -193,32 +205,32 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     mgr->AddTask(taskHFE);
     
     if (QC) {  // add qc tasks
-        AddQCmethod(Form("QCTPCin_%s",uniqueID.Data()), harmonic, flowEvent,  debug ,uniqueID, -0.7, -0.0, 0.0, 0.7,false,POIfilterQC);
+        AddQCmethod(Form("QCTPCin_%s",uniqueID.Data()), harmonic, flowEvent,  debug ,uniqueID, -0.7, -0.0, 0.0, 0.7,false,POIfilterQC, NUA, shrinkSP, BaseH);
         if(debug) cout << "    --> Hanging QC task ...succes! "<< endl;
     }
     if (SP_TPC) {  // add sp subevent tasks
-        AddSPmethod(Form("SPTPCQa_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, false, POIfilterRight);
+        AddSPmethod(Form("SPTPCQa_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, false, POIfilterRight, NUA,BaseH);
         if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-        AddSPmethod(Form("SPTPCQb_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, false, POIfilterLeft);
+        AddSPmethod(Form("SPTPCQb_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, false, POIfilterLeft, NUA,BaseH);
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
     if (VZERO_SP) {  // add sp subevent tasks
-        AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterRight);
+        AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterRight, NUA,BaseH);
         if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-        AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, true, POIfilterLeft);
+        AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, true, POIfilterLeft, NUA,BaseH);
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
     
     //=========================================Flow event for elctronContamination==============================================================================================
     if(SideBandsFlow){
         if (QC) {  // add qc tasks
-            AddQCmethod(Form("QCTPCCont_%s",uniqueID.Data()), harmonic, flowEventCont,  debug ,uniqueID, -0.7, -0.0, 0.0, 0.7,false,POIfilterQCH);
+            AddQCmethod(Form("QCTPCCont_%s",uniqueID.Data()), harmonic, flowEventCont,  debug ,uniqueID, -0.7, -0.0, 0.0, 0.7,false,POIfilterQCH, NUA, shrinkSP,BaseH);
             if(debug) cout << "    --> Hanging QC task ...succes! "<< endl;
         }
         if (SP_TPC) {  // add sp subevent tasks
-            AddSPmethod(Form("SPTPCQa_Cont_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qa", harmonic, flowEventCont, false, shrinkSP, debug,uniqueID, false, POIfilterRightH);
+            AddSPmethod(Form("SPTPCQa_Cont_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qa", harmonic, flowEventCont, false, shrinkSP, debug,uniqueID, false, POIfilterRightH, NUA,BaseH);
             if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-            AddSPmethod(Form("SPTPCQb_Cont_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qb", harmonic, flowEventCont,  false, shrinkSP, debug,uniqueID, false, POIfilterLeftH);
+            AddSPmethod(Form("SPTPCQb_Cont_%s", uniqueID.Data()), -0.7, -.0, .0, +0.7, "Qb", harmonic, flowEventCont,  false, shrinkSP, debug,uniqueID, false, POIfilterLeftH, NUA,BaseH);
             if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
         }
     }
@@ -233,7 +245,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
 
 
 //_____________________________________________________________________________
-void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool bEP, bool shrink = false, bool debug, TString uniqueID,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter)
+void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool bEP, bool shrink = false, bool debug, TString uniqueID, Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter, Bool_t kNUA, Bool_t kBaseH)
 {
     // add sp task and invm filter tasks
     if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
@@ -259,17 +271,17 @@ void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, dou
     mgr->ConnectOutput(tskFilter, 1, flowEventOut);
     AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
     AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
-    tskSP->SetApplyCorrectionForNUA(kTRUE);
+    tskSP->SetApplyCorrectionForNUA(kNUA);
     tskSP->SetHarmonic(harmonic);
     tskSP->SetTotalQvector(Qvector);
     if (bEP) tskSP->SetBehaveAsEP();
-    if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
+    if (shrink)tskSP->SetBookOnlyBasicCCH(kBaseH);
     mgr->AddTask(tskSP);
     mgr->ConnectInput(tskSP, 0, flowEventOut);
     mgr->ConnectOutput(tskSP, 1, outSP);
 }
 //_____________________________________________________________________________
-void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, Bool_t debug, TString uniqueID,double minEtaA, double maxEtaA, double minEtaB, double maxEtaB,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter)
+void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, Bool_t debug, TString uniqueID,double minEtaA, double maxEtaA, double minEtaB, double maxEtaB,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter, Bool_t kNUA, bool shrink = false, Bool_t kBaseH)
 {
     // add qc task and invm filter tasks
     if(debug) cout << " ****** Received request for QC v" << harmonic << " task " << name << ", IO ****** " << flowEvent << endl;
@@ -291,9 +303,9 @@ void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, 
     
     AliAnalysisDataContainer *outQC = mgr->CreateContainer(myName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
     AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_%s", myName.Data()), kFALSE);
-    tskQC->SetApplyCorrectionForNUA(kTRUE);
+    tskQC->SetApplyCorrectionForNUA(kNUA);
     tskQC->SetHarmonic(harmonic);
-    tskQC->SetBookOnlyBasicCCH(kTRUE);
+    if (shrink)tskQC->SetBookOnlyBasicCCH(kBaseH);
     mgr->AddTask(tskQC);
     mgr->ConnectInput(tskQC, 0, flowEventOut);
     mgr->ConnectOutput(tskQC, 1, outQC);
@@ -359,3 +371,4 @@ AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCuls
 }
 
 //_____________________________________________________________________________
+
