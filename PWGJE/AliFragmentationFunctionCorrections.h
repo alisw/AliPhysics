@@ -124,10 +124,11 @@ class AliFragmentationFunctionCorrections : public TObject {
   void WriteJetTrackEff(TString strInfile, TString strdir, TString strlist, TString strOutfile, Bool_t updateOutfile = kTRUE);
 
   void WriteJetSecCorr(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "");
-  void WriteBgrJetSecCorr(TString strInfile, TString strBgrID, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "");
+  void WriteBgrJetSecCorr(TString strInfile, TString strBgrID, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, 
+			  TString strOutDir = "", Double_t scaleFacBgrRec=1);
 
   void WriteJetSecCorr(TString strInfile, TString strdir, TString strlist, TString strOutfile, Bool_t updateOutfile = kTRUE, 
-		       TString strOutDir = "",Bool_t writeBgr=kFALSE,TString strBgrID="");
+		       TString strOutDir = "",Bool_t writeBgr=kFALSE,TString strBgrID="",Double_t scaleFacBgrRec=1);
  
   void WriteJetResponse(TString strInfile, TString strID, TString strOutfile,Bool_t updateOutfile = kTRUE, TString strOutDir = "");
   void WriteJetResponse(TString strInfile, TString strdir, TString strlist,TString strOutfile, Bool_t updateOutfile, TString strOutDir = "");
@@ -157,16 +158,16 @@ class AliFragmentationFunctionCorrections : public TObject {
 
   void WriteBinShiftCorr(TString strInfile, TString strIDGen,  TString strIDRec,  
 			 TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim = kTRUE,  
-			 TString strOutDir = "");
+			 TString strOutDir = "", Double_t scaleFacBgrRec=1);
 
   void WriteBgrBinShiftCorr(TString strInfile, TString strBgrID, TString strIDGen,  TString strIDRec,  
 			    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim = kTRUE,  
-			    TString strOutDir = "");
+			    TString strOutDir = "", Double_t scaleFacBgrRec=1);
 
   void WriteBinShiftCorr(TString strInfile, TString strdirGen, TString strlistGen, 
 			 TString strdirRec, TString strlistRec, 
 			 TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim = kTRUE, 
-			 TString strOutDir = "",Bool_t writeBgr = kFALSE, TString strBgrID = "");
+			 TString strOutDir = "",Bool_t writeBgr = kFALSE, TString strBgrID = "",Double_t scaleFacBgrRec=1);
 
   void ReadBgrBinShiftCorr(TString strfile,  TString strBgrID, TString strdir="", TString strlist="");
   void ReadBinShiftCorr(TString strfile, TString strdir="", TString strlist="", Bool_t readBgr = kFALSE, TString strBgrID="");

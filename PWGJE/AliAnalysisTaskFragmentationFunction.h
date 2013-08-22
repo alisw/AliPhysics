@@ -396,8 +396,13 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncQAJetHistos*  fQAJetHistosRecEffLeading;   //! jet QA: leading jet used for reconstruction efficiency histos  
   
 
-  AliFragFuncHistos*  fFFHistosRecCuts;         //! FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFHistosRecCuts;         //! FF reconstructed tracks after cuts (leading jet) 
+  AliFragFuncHistos*  fFFHistosRecCutsInc;      //! inclusive FF (all jets) 
+  AliFragFuncHistos*  fFFHistosRecLeadingTrack; //! FF reconstructed tracks after cuts: leading track pt / jet pt (all jets)
+
   AliFragFuncHistos*  fFFHistosGen;             //! FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFHistosGenInc;          //! inclusive FF (all jets) 
+  AliFragFuncHistos*  fFFHistosGenLeadingTrack; //! FF reconstructed tracks after cuts: leading track pt / jet pt (all jets)
 
   Float_t  fQATrackHighPtThreshold;       // track QA high transverse momentum threshold
   
