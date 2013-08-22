@@ -1,16 +1,16 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *				       					  *
- * Authors: Svein Lindal, Daniel Lohner					  *
- * Version 1.0								  *
- *									  *
- * Permission to use, copy, modify and distribute this software and its	  *
- * documentation strictly for non-commercial purposes is hereby granted	  *
- * without fee, provided that the above copyright notice appears in all	  *
- * copies and that both the copyright notice and this permission notice	  *
- * appear in the supporting documentation. The authors make no claims	  *
- * about the suitability of this software for any purpose. It is	  *
- * provided "as is" without express or implied warranty.		  *
+ *                                 *
+ * Authors: Svein Lindal, Daniel Lohner                 *
+ * Version 1.0                        *
+ *                           *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is    *
+ * provided "as is" without express or implied warranty.      *
  **************************************************************************/
 
 ////////////////////////////////////////////////
@@ -190,6 +190,9 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fNameHistoReweightingPi0(""),
    fNameHistoReweightingEta(""),
    fNameHistoReweightingK0s(""),
+   fNameFitDataPi0(""),
+   fNameFitDataEta(""),
+   fNameFitDataK0s(""),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -215,6 +218,9 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    hReweightMCHistPi0(NULL),
    hReweightMCHistEta(NULL),
    hReweightMCHistK0s(NULL),
+   fFitDataPi0(NULL),
+   fFitDataEta(NULL),
+   fFitDataK0s(NULL),
    fPreSelCut(kFALSE),
    fTriggerSelectedManually(kFALSE),
    fSpecialTriggerName("")
@@ -334,6 +340,9 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fNameHistoReweightingPi0(ref.fNameHistoReweightingPi0),
    fNameHistoReweightingEta(ref.fNameHistoReweightingEta),
    fNameHistoReweightingK0s(ref.fNameHistoReweightingK0s),
+   fNameFitDataPi0(ref.fNameFitDataPi0),
+   fNameFitDataEta(ref.fNameFitDataEta),
+   fNameFitDataK0s(ref.fNameFitDataK0s),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -359,6 +368,9 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    hReweightMCHistPi0(NULL),
    hReweightMCHistEta(NULL),
    hReweightMCHistK0s(NULL),
+   fFitDataPi0(NULL),
+   fFitDataEta(NULL),
+   fFitDataK0s(NULL),
    fPreSelCut(ref.fPreSelCut),
    fTriggerSelectedManually(ref.fTriggerSelectedManually),
    fSpecialTriggerName(ref.fSpecialTriggerName)
@@ -378,7 +390,7 @@ AliConversionCuts::~AliConversionCuts() {
    // Destructor
    //Deleting fHistograms leads to seg fault it it's added to output collection of a task
    // if(fHistograms)
-   // 	delete fHistograms;
+   //    delete fHistograms;
    // fHistograms = NULL;
    if(fCutString != NULL){
       delete fCutString;
@@ -424,10 +436,30 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
    }
 
-   if (hReweightMCHistPi0) fHistograms->Add(hReweightMCHistPi0);
-   if (hReweightMCHistEta) fHistograms->Add(hReweightMCHistEta);
-   if (hReweightMCHistK0s) fHistograms->Add(hReweightMCHistK0s);
-   
+   if (hReweightMCHistPi0){
+      hReweightMCHistPi0->SetName("MCInputForWeightingPi0");
+      fHistograms->Add(hReweightMCHistPi0);
+   }
+   if (hReweightMCHistEta){
+      hReweightMCHistEta->SetName("MCInputForWeightingEta");
+      fHistograms->Add(hReweightMCHistEta);
+   }   
+   if (hReweightMCHistK0s){
+      hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
+      fHistograms->Add(hReweightMCHistK0s);
+   }   
+   if (fFitDataPi0){
+      fFitDataPi0->SetName("DataFitForWeightingPi0");
+      fHistograms->Add(fFitDataPi0);
+   }   
+   if (fFitDataEta){
+      fFitDataEta->SetName("DataFitForWeightingEta");
+      fHistograms->Add(fFitDataEta);
+   }
+   if (fFitDataK0s){
+      fFitDataK0s->SetName("DataFitForWeightingK0s");
+      fHistograms->Add(fFitDataK0s);
+   }
    // IsPhotonSelected
    hCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",10,-0.5,9.5);
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonIn+1,"in");
@@ -827,10 +859,10 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
       }
 
       if(abs(ePos->Vz()) > fMaxZ){
-         return kFALSE;	 // outside material
+         return kFALSE;  // outside material
       }
       if(abs(eNeg->Vz()) > fMaxZ){
-         return kFALSE;	 // outside material
+         return kFALSE;  // outside material
       }
 
       if( ePos->R() <= ((abs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
@@ -918,10 +950,10 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
          return kFALSE; // cuts on distance from collision point
       }
       if(abs(ePos->Zv()) > fMaxZ){
-         return kFALSE;	 // outside material
+         return kFALSE;  // outside material
       }
       if(abs(eNeg->Zv()) > fMaxZ){
-         return kFALSE;	 // outside material
+         return kFALSE;  // outside material
       }
 
       if( rPos <= ((abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
@@ -1295,7 +1327,7 @@ Bool_t AliConversionCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrack * po
    cutIndex++;
 
    // Single Pt Cut
-   if( negTrack->Pt()< fSinglePtCut ||	posTrack->Pt()< fSinglePtCut){
+   if( negTrack->Pt()< fSinglePtCut || posTrack->Pt()< fSinglePtCut){
       if(hTrackCuts)hTrackCuts->Fill(cutIndex);
       return kFALSE;
    }
@@ -1424,7 +1456,7 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
          Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
          Double_t times[5];
          fCurrentTrack->GetIntegratedTimes(times);
-         Double_t TOFsignal =	fCurrentTrack->GetTOFsignal();
+         Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
          Double_t dT = TOFsignal - t0 - times[0];
          hTOFbefore->Fill(fCurrentTrack->P(),dT);
       }
@@ -1541,8 +1573,8 @@ Bool_t AliConversionCuts::PIDProbabilityCut(AliConversionPhotonBase *photon, Ali
       Double_t *posProbArray = new Double_t[AliPID::kSPECIES];
       Double_t *negProbArray = new Double_t[AliPID::kSPECIES];
 
-      AliESDtrack* negTrack	= esdEvent->GetTrack(photon->GetTrackLabelNegative());
-      AliESDtrack* posTrack	= esdEvent->GetTrack(photon->GetTrackLabelPositive());
+      AliESDtrack* negTrack   = esdEvent->GetTrack(photon->GetTrackLabelNegative());
+      AliESDtrack* posTrack   = esdEvent->GetTrack(photon->GetTrackLabelPositive());
 
       if(negProbArray && posProbArray){
 
@@ -1659,28 +1691,52 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   if (fNameHistoReweightingPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
      hReweightMCHistPi0 = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
      if (hReweightMCHistPi0) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingPi0.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameHistoReweightingPi0.Data() ));
+       else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
   }
+  if (fNameFitDataPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
+     fFitDataPi0 = (TF1*)f->Get(fNameFitDataPi0.Data());
+     if (fFitDataPi0) AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(),fPathTrFReweighting.Data() ));
+       else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameFitDataPi0.Data() ));
+  }
+  
   if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
      hReweightMCHistEta = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
      if (hReweightMCHistEta) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameHistoReweightingEta.Data() ));
+       else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
+
+  }
+  
+  if (fNameFitDataEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
+     fFitDataEta = (TF1*)f->Get(fNameFitDataEta.Data());
+     if (fFitDataEta) AliInfo(Form("%s has been loaded from %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
+       else AliWarning(Form("%s not found in %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
 
   }
   if (fNameHistoReweightingK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
      hReweightMCHistK0s = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
      if (hReweightMCHistK0s) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameHistoReweightingK0s.Data() ));
+       else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
 
   }
 
+  if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
+     fFitDataK0s = (TF1*)f->Get(fNameFitDataK0s.Data());
+     if (fFitDataK0s) AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
+       else AliWarning(Form("%s not found in %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
+
+  }
+  
 }
 
 
 ///________________________________________________________________________
 Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
    // Initialize Cuts from a given Cut string
-   if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s)   LoadReweightingHistosMCFromFile();
+   if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
+      AliInfo("Weighting was enabled");
+      LoadReweightingHistosMCFromFile();
+      
+   }
    
    AliInfo(Form("Set Photoncut Number: %s",analysisCutSelection.Data()));
    if(analysisCutSelection.Length()!=kNCuts) {
@@ -1693,7 +1749,7 @@ Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutS
    }
 
    const char *cutSelection = analysisCutSelection.Data();
-#define ASSIGNARRAY(i)	fCuts[i] = cutSelection[i] - '0'
+#define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
    for(Int_t ii=0;ii<kNCuts;ii++){
       ASSIGNARRAY(ii);
    }
@@ -2128,69 +2184,69 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
 
    switch(etaCut){
    case 0: // 0.9
-      fEtaCut		= 0.9;
+      fEtaCut     = 0.9;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
-   case 1:	// 1.2  // changed from 1.2 to 0.6 on 2013.06.10
-      fEtaCut		= 0.6;
+   case 1:  // 1.2  // changed from 1.2 to 0.6 on 2013.06.10
+      fEtaCut     = 0.6;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
-   case 2:	// 1.4
-      fEtaCut		= 1.4;
+   case 2:  // 1.4
+      fEtaCut     = 1.4;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    case 3: // 0.8
-      fEtaCut		= 0.8;
+      fEtaCut     = 0.8;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    case 4: // 0.75
-      fEtaCut		= 0.75;
+      fEtaCut     = 0.75;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    case 5: // 0.5
-      fEtaCut		= 0.5;
+      fEtaCut     = 0.5;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    case 6: // 5.
-      fEtaCut		= 5.;
+      fEtaCut     = 5.;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    case 7:
-      fEtaCut		= 0.3;
+      fEtaCut     = 0.3;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    // case 8: // 0.1 - 0.8
-   //    fEtaCut		= 0.9;
+   //    fEtaCut     = 0.9;
    //    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-   //    fEtaCutMin		= 0.1;
+   //    fEtaCutMin     = 0.1;
    //    fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin)));
    //    break;
    case 8: // 0.4
-      fEtaCut		= 0.4;
+      fEtaCut     = 0.4;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    case 9: // 10
-      fEtaCut		= 10;
+      fEtaCut     = 10;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin		= -0.1;
+      fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
    default:
@@ -3136,14 +3192,14 @@ Int_t AliConversionCuts::GetNumberOfContributorsVtx(AliVEvent *event){
    if(fESDEvent){
       if (fESDEvent->GetPrimaryVertex() != NULL){
          if(fESDEvent->GetPrimaryVertex()->GetNContributors()>0) {
-//	    cout << "accepted global" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertex()->GetNContributors() << endl;
+//     cout << "accepted global" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertex()->GetNContributors() << endl;
             return fESDEvent->GetPrimaryVertex()->GetNContributors();
          }
       }
 
       if(fESDEvent->GetPrimaryVertexSPD() !=NULL){
          if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()>0) {
-//	    cout << "accepted SPD" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertexSPD()->GetNContributors() << endl;
+//     cout << "accepted SPD" << fESDEvent->GetEventNumberInFile() << " with NCont: " << fESDEvent->GetPrimaryVertexSPD()->GetNContributors() << endl;
             return fESDEvent->GetPrimaryVertexSPD()->GetNContributors();
          }  else {
             AliWarning(Form("Number of contributors from bad vertex type:: %s",fESDEvent->GetPrimaryVertex()->GetName()));
@@ -3634,7 +3690,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
                     fGeneratorNames[i].Contains("hijing")){
             kCaseGen = 3;
          } else if (fGeneratorNames[i].CompareTo("BOX") == 0){
-            kCaseGen = 4;
+             kCaseGen = 4;
          } else if (fGeneratorNames[i].CompareTo("PARAM") == 0){
             kCaseGen = 5;
          } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound") == 0){
@@ -3645,6 +3701,12 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
             kCaseGen = 2;
          } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
             kCaseGen = 3;
+         }
+         TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+                                                ->GetTask("V0ReaderV1"))->GetPeriodName();
+                                                
+         if (periodName.Contains("LHC13d2")){
+            kCaseGen = 3; 
          }
       }
    }
@@ -3721,7 +3783,10 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
    } else if (kCaseGen == 3 ){ // HIJING
       if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0){
          functionResultMC = hReweightMCHistPi0->Interpolate(mesonPt);
-      } 
+      }
+      if ( PDGCode ==  221 && fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0){
+         functionResultMC = hReweightMCHistEta->Interpolate(mesonPt);
+      }
       if ( PDGCode ==  310 && fDoReweightHistoMCK0s && hReweightMCHistK0s!= 0x0){
          functionResultMC = hReweightMCHistK0s->Interpolate(mesonPt);
       }
@@ -3744,82 +3809,92 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
       functionResultData = dNdyData / ( 2 * TMath::Pi())*(nData-1.)*(nData-2.) / (nData*tData*(nData*tData+mesonMass*(nData-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nData*tData), -nData);
 //       cout << functionResultData << endl;
    } else {
-      Float_t a = 0.;
-      Float_t b = 0.;
-      Float_t c = 0.;
-      Float_t d = 0.;
-      Float_t e = 0.;
-      if ( PDGCode ==  111 ){
-         if (fModCentralityClass == 1 && fCentralityMin == 0 && fCentralityMax == 1 ){ // 0-5 % PbPb
-            a = 25.8747458223;
-            b = 5.8761820045;
-            c = -33.9928191673;
-            d = 3.0731850142;
-            e = 13.2500447620;
-         } else if (fModCentralityClass == 1 && fCentralityMin == 1 && fCentralityMax == 2){ // 5-10% PbPb
-            a = 21.7518148922;
-            b = 5.8441200081;
-            c = -17.1497051691;
-            d = 2.3799090842;
-            e = 5.4346404718;
-         } else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 1){ // 0-10% PbPb
-            a = 22.9852133622;
-            b = 5.8602063916;
-            c = -17.0992478654;
-            d = 2.4426218039;
-            e = 5.1194526345;
-         } else if (fModCentralityClass == 0 && fCentralityMin == 1 && fCentralityMax == 2){ // 10-20% PbPb
-            a = 19.3237333776;
-            b = 5.8145906958;
-            c = -13.8316665424;
-            d = 2.3737630637;
-            e = 4.7690300693;
-         } else if (fModCentralityClass == 0 && fCentralityMin == 2 && fCentralityMax == 4){ // 20-40% PbPb
-            a = 11.2656032751;
-            b = 5.8003194354;
-            c = -13.3936105929;
-            d = 2.3371452334;
-            e = 4.4726244958;
-         } else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6){ // 40-60% PbPb   
-            a = 4.1578154081;
-            b = 5.6450005163;
-            c = -8.4309375240;
-            d = 1.8918308704;
-            e = 2.9429194709;
-         } else if (fModCentralityClass == 0 && fCentralityMin == 6 && fCentralityMax == 8){ // 60-80% PbPb      
-            a = 1.0635443810;
-            b = 5.1337469970;
-            c = -8.5906997238;
-            d = 2.9794995997;
-            e = 3.9294980048;
-         }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 2){ // 0-20% PbPb      
-            a = 21.7018745556;
-            b = 5.9019352094;
-            c = -14.2295510326;
-            d = 2.2104490688;
-            e = 4.2969671500;
-         }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 4){ // 0-40% PbPb      
-            a = 16.8227412106;
-            b = 5.8660502207;
-            c = -12.0978551215;
-            d = 2.1695068981;
-            e = 3.5349621182;
-         }   else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 8){ // 0-80% PbPb      
-            a = 9.4675681080;
-            b = 5.8114944205;
-            c = -10.4901523616;
-            d = 2.0607982712;
-            e = 2.9262259130;
-         }   else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 8){ // 60-80% PbPb      
-            a = 2.5985551785;
-            b = 5.4118895738;
-            c = -8.2510958428;
-            d = 2.2551249190;
-            e = 3.0700919491;
-         }
-         
-         functionResultData = a*TMath::Power(mesonPt,-1*(b+c/(TMath::Power(mesonPt,d)+e)));
-      } 
+      if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && fFitDataPi0!= 0x0){
+         functionResultData = fFitDataPi0->Eval(mesonPt);
+      }
+      if ( PDGCode ==  221 && fDoReweightHistoMCEta && fFitDataEta!= 0x0){
+         functionResultData = fFitDataEta->Eval(mesonPt);
+      }
+      if ( PDGCode ==  310 && fDoReweightHistoMCK0s && fFitDataK0s!= 0x0){
+         functionResultData = fFitDataK0s->Eval(mesonPt);
+      }
+      
+//       Float_t a = 0.;
+//       Float_t b = 0.;
+//       Float_t c = 0.;
+//       Float_t d = 0.;
+//       Float_t e = 0.;
+//       if ( PDGCode ==  111 ){
+//          if (fModCentralityClass == 1 && fCentralityMin == 0 && fCentralityMax == 1 ){ // 0-5 % PbPb
+//             a = 25.8747458223;
+//             b = 5.8761820045;
+//             c = -33.9928191673;
+//             d = 3.0731850142;
+//             e = 13.2500447620;
+//          } else if (fModCentralityClass == 1 && fCentralityMin == 1 && fCentralityMax == 2){ // 5-10% PbPb
+//             a = 21.7518148922;
+//             b = 5.8441200081;
+//             c = -17.1497051691;
+//             d = 2.3799090842;
+//             e = 5.4346404718;
+//          } else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 1){ // 0-10% PbPb
+//             a = 22.9852133622;
+//             b = 5.8602063916;
+//             c = -17.0992478654;
+//             d = 2.4426218039;
+//             e = 5.1194526345;
+//          } else if (fModCentralityClass == 0 && fCentralityMin == 1 && fCentralityMax == 2){ // 10-20% PbPb
+//             a = 19.3237333776;
+//             b = 5.8145906958;
+//             c = -13.8316665424;
+//             d = 2.3737630637;
+//             e = 4.7690300693;
+//          } else if (fModCentralityClass == 0 && fCentralityMin == 2 && fCentralityMax == 4){ // 20-40% PbPb
+//             a = 11.2656032751;
+//             b = 5.8003194354;
+//             c = -13.3936105929;
+//             d = 2.3371452334;
+//             e = 4.4726244958;
+//          } else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6){ // 40-60% PbPb   
+//             a = 4.1578154081;
+//             b = 5.6450005163;
+//             c = -8.4309375240;
+//             d = 1.8918308704;
+//             e = 2.9429194709;
+//          } else if (fModCentralityClass == 0 && fCentralityMin == 6 && fCentralityMax == 8){ // 60-80% PbPb      
+//             a = 1.0635443810;
+//             b = 5.1337469970;
+//             c = -8.5906997238;
+//             d = 2.9794995997;
+//             e = 3.9294980048;
+//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 2){ // 0-20% PbPb      
+//             a = 21.7018745556;
+//             b = 5.9019352094;
+//             c = -14.2295510326;
+//             d = 2.2104490688;
+//             e = 4.2969671500;
+//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 4){ // 0-40% PbPb      
+//             a = 16.8227412106;
+//             b = 5.8660502207;
+//             c = -12.0978551215;
+//             d = 2.1695068981;
+//             e = 3.5349621182;
+//          }   else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 8){ // 0-80% PbPb      
+//             a = 9.4675681080;
+//             b = 5.8114944205;
+//             c = -10.4901523616;
+//             d = 2.0607982712;
+//             e = 2.9262259130;
+//          }   else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 8){ // 60-80% PbPb      
+//             a = 2.5985551785;
+//             b = 5.4118895738;
+//             c = -8.2510958428;
+//             d = 2.2551249190;
+//             e = 3.0700919491;
+//          }
+//          
+//          functionResultData = a*TMath::Power(mesonPt,-1*(b+c/(TMath::Power(mesonPt,d)+e)));
+//       } 
       
    }
    
@@ -3849,7 +3924,7 @@ AliConversionCuts* AliConversionCuts::GetStandardCuts2010PbPb(){
     //Create and return standard 2010 PbPb cuts
     AliConversionCuts *cuts=new AliConversionCuts("StandardCuts2010PbPb","StandardCuts2010PbPb");
     if(!cuts->InitializeCutsFromCutString("100000204209297002322000000")){
-	cout<<"Warning: Initialization of Standardcuts2010PbPb failed"<<endl;}
+   cout<<"Warning: Initialization of Standardcuts2010PbPb failed"<<endl;}
     return cuts;
 }
 
@@ -3858,7 +3933,7 @@ AliConversionCuts* AliConversionCuts::GetStandardCuts2010pp(){
     //Create and return standard 2010 PbPb cuts
     AliConversionCuts *cuts=new AliConversionCuts("StandardCuts2010pp","StandardCuts2010pp");
     if(!cuts->InitializeCutsFromCutString("000001100209366300380000000")){
-	cout<<"Warning: Initialization of Standardcuts2010pp failed"<<endl;}
+   cout<<"Warning: Initialization of Standardcuts2010pp failed"<<endl;}
     return cuts;
 }
 ///________________________________________________________________________

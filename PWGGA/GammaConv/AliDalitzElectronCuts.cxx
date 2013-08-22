@@ -1180,6 +1180,14 @@ Bool_t AliDalitzElectronCuts::SetITSClusterCut(Int_t clsITSCut){
 		fesdTrackCuts->SetMinNClustersITS(3);
 		// 3 hits in total in the ITS. At least 1 hit in any layer of SPD
 		break;
+        case 5: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+                fesdTrackCuts->SetMinNClustersITS(4);
+                // 4 hits in total in the ITS. At least 1 hit in any layer of SPD
+                break;
+        case 6: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+                fesdTrackCuts->SetMinNClustersITS(5);
+                // 5 hits in total in the ITS. At least 1 hit in any layer of SPD
+                break;
 	default:
 		cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
 		return kFALSE;
@@ -1280,6 +1288,9 @@ Bool_t AliDalitzElectronCuts::SetEtaCut(Int_t etaCut)
 		break;
 	case 7: //0.5
 		fEtaCut = 0.5; //changed from 0.3 to 0.5 2013.06.10
+		fDoEtaCut = kTRUE;
+		break;
+	case 8: fEtaCut = 0.4;
 		fDoEtaCut = kTRUE;
 		break;
 	default:
