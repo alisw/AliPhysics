@@ -196,7 +196,7 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD(const char *name)
   fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
   fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
   fESDtrackCutsV0->SetMinNClustersTPC(60);
-  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(4); //set to 4 for sytematics
+  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(6); //set to 6 for sytematics
   //fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
   fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
   //  fESDtrackCutsV0->SetMinNClustersITS(1); // to be tested if this cut is not too strong
