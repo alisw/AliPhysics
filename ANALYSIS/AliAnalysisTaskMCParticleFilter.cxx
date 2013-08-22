@@ -47,6 +47,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliGenEventHeaderTunedPbPb.h"
 
 #include "AliLog.h"
 
@@ -277,12 +278,17 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   AliGenHijingEventHeader *hiH  = 0;
   AliCollisionGeometry    *colG = 0;
   AliGenDPMjetEventHeader *dpmH = 0;
+  AliGenEventHeaderTunedPbPb *tunedH = 0;
+
   // it can be only one save some casts
   // assuming PYTHIA and HIJING are the most likely ones...
   if(!pyH){
       hiH = dynamic_cast<AliGenHijingEventHeader*>(mcEH);
       if(!hiH){
 	  dpmH = dynamic_cast<AliGenDPMjetEventHeader*>(mcEH);
+	  if(!dpmH){
+	    tunedH = dynamic_cast<AliGenEventHeaderTunedPbPb*>(mcEH);
+	  }
       }
   }
   
@@ -319,8 +325,10 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     fAODMcHeader->SetReactionPlaneAngle(colG->ReactionPlaneAngle());
     AliInfo(Form("Found Collision Geometry. Got Reaction Plane %lf\n", colG->ReactionPlaneAngle()));
   }
-
-
+  else if(tunedH) {
+    fAODMcHeader->SetReactionPlaneAngle(tunedH->GetPsi2());
+    fAODMcHeader->SetCrossSection(tunedH->GetCentrality());
+  }
 
 
   Int_t j=0;

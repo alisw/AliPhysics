@@ -69,4 +69,5 @@
 #pragma link C++ class  AliGenMUONLMR+;
 #pragma link C++ class  AliGenLcLib+;
 #pragma link C++ class  AliGenITSULib;
+#pragma link C++ class  AliGenTunedOnPbPb;
 #endif
