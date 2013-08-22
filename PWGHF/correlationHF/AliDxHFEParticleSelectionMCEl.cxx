@@ -31,6 +31,7 @@
 #include "TAxis.h"
 #include "AliAODTrack.h"
 #include "AliReducedParticle.h"
+#include "TList.h"
 #include <iostream>
 #include <cerrno>
 #include <memory>
@@ -45,8 +46,7 @@ ClassImp(AliDxHFEParticleSelectionMCEl)
 AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   : AliDxHFEParticleSelectionEl(opt)
   , fMCTools()
-  , fPDGnotMCElectron(NULL)
-  , fPDGNotHFMother(NULL)
+  , fHistoList(NULL)
   , fOriginMother(0)
   , fResultMC(0)
   , fUseKine(kFALSE)
@@ -109,12 +109,10 @@ const char*  AliDxHFEParticleSelectionMCEl::fgkPDGBinLabels[]={
 AliDxHFEParticleSelectionMCEl::~AliDxHFEParticleSelectionMCEl()
 {
   // destructor
-
-  if(fPDGnotMCElectron){
-    delete fPDGnotMCElectron;
-    fPDGnotMCElectron=NULL;
+  if(fHistoList){
+    delete fHistoList;
+    fHistoList=NULL;
   }
-
 }
 
 int AliDxHFEParticleSelectionMCEl::Init()
@@ -134,11 +132,16 @@ int AliDxHFEParticleSelectionMCEl::Init()
   if (iResult<0) return iResult;
 
   // Histo containing PDG of track which was not MC truth electron
-  // TODO: Add to list in baseclass
-  fPDGnotMCElectron=CreateControlHistogram("fPDGnotMCElectron","PDG of track not MC truth electron",AliDxHFEToolsMC::kNofPDGLabels,fgkPDGBinLabels);  
-  fPDGNotHFMother=CreateControlHistogram("fPDGNotHFMother","PDG of mother not HF",5000);  
-  AddControlObject(fPDGnotMCElectron);
-  AddControlObject(fPDGNotHFMother);
+  fHistoList=new TList;
+  fHistoList->SetName("HFE MC Histograms");
+  fHistoList->SetOwner();
+
+  fHistoList->Add(CreateControlHistogram("fPDGnotMCElectron","PDG of track not MC truth electron",AliDxHFEToolsMC::kNofPDGLabels,fgkPDGBinLabels));
+  fHistoList->Add(CreateControlHistogram("fPDGNotHFMother","PDG of mother not HF",5000));  
+  fHistoList->Add(CreateControlHistogram("fPDGHadronMother","PDG of mother of hadrons",5000));  
+
+  AddControlObject(fHistoList);
+
   return 0;
 }
 
@@ -299,7 +302,7 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     Int_t test = fMCTools.CheckMCParticle(p);
     if(test==1) return 0;
     // Add additional contraints on the electrons? 
-    // remove delta e? also remove E<300MeV?
+    // TODO: remove delta e? also remove E<300MeV?
     // Should also mark dalitz decay and gamma conversion..
     AliAODMCParticle *mcp=dynamic_cast<AliAODMCParticle*>(p);
     if(!mcp || !mcp->IsPhysicalPrimary()) return 0; 
@@ -307,17 +310,19 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
 
   }
 
+  int pdgMother=0;
   int pdgParticle=-1;
   if (!fUseKine && fMCTools.RejectByPDG(p,false, &pdgParticle)) {
     // rejected by pdg
     // TODO: Move this to fMCTools???? Can this be part of the statistics in the MC class?
-    fPDGnotMCElectron->Fill(fMCTools.MapPDGLabel(pdgParticle));
+    ((TH1D*)fHistoList->FindObject("fPDGnotMCElectron"))->Fill(fMCTools.MapPDGLabel(pdgParticle));
+    ((TH1D*)fHistoList->FindObject("fPDGHadronMother"))->Fill(fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetFirstMother));
+
     // If the hadrons (and only hadrons) are going to be stored
     if(fElSelection==kHadron) return 1;
     else return 0;
   }
 
-  int pdgMother=0;
   // Find PDG of first mother
   pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetFirstMother);
 
@@ -349,13 +354,14 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     }
     else{
       //NotHFmother
-      fPDGNotHFMother->Fill(pdgMother);
+      ((TH1D*)fHistoList->FindObject("fPDGNotHFMother"))->Fill(pdgMother);
       fOriginMother=AliDxHFEToolsMC::kNrOrginMother+4;
       selection=kNonHFE;
     }
 
   }
-  //TODO: Implement checks on the electrons, to return only specific sources (nonHFE/HF(c, b or candb)/hadrons)
+
+  // Checks on the electrons, to return only specific sources
   if(fOriginMother >= AliDxHFEToolsMC::kOriginNone && fOriginMother <= AliDxHFEToolsMC::kOriginStrange)
     selection=kNonHFE;
 
