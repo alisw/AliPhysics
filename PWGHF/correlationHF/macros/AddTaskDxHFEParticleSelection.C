@@ -76,6 +76,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   TString taskOptions;
   Bool_t bUseKine=kFALSE;
   Bool_t bUseMCReco=kFALSE;
+  Bool_t bUseEMCAL=kFALSE;
   Int_t NrTPCclusters=120; // quick fix for problems sending track cut objects in some instances to task
   Int_t NrITSclusters=4; // quick fix for problem sending hfe track cut object to addtask
   Int_t ITSreq=AliHFEextraCuts::kFirst;
@@ -117,6 +118,10 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
 	    taskOptions+=" mc";
+	  }
+	  if (argument.BeginsWith("EMCALPID")) {
+	    bUseEMCAL=kTRUE;
+	    taskOptions+=" EMCALPID";
 	  }
 	  if (argument.BeginsWith("PbPb") || argument.BeginsWith("Pb-Pb")) {
 	    system=1;
@@ -288,46 +293,58 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   // ________________________________________________________________________
   // PID for HFE
   // PID for Only TOF
-  AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
-  if(!fPIDOnlyTOF->GetNumberOfPIDdetectors()) { 
-    fPIDOnlyTOF->AddDetector("TOF",0);
-  }
-  fPIDOnlyTOF->ConfigureTOF(3); // number of sigma TOF
-  fPIDOnlyTOF->InitializePID();
   
-  // PID object for TPC and TOF combined
-  // Check if PID is set from outside (passed as argument)
-  ::Info("AddTaskDxHFEParticleSelection",Form("Setting up new combined PID object"));
-  AliHFEpid* fPID = new AliHFEpid("hfePid");
-  if(!fPID->GetNumberOfPIDdetectors()) { 
-    fPID->AddDetector("TOF",0);
-    fPID->AddDetector("TPC",1);
-  }
-  //Add settings for asymmetric cut on nSigma TPC
+  //Moved out of TPC+TOF PID, to make it easier available
   const int paramSize=4;
   Double_t params[paramSize];
   memset(params, 0, sizeof(Double_t)*paramSize);
   params[0]=-1.;
-  fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
-  fPID->InitializePID();
 
-   // PID for Only TPC
+  if(!bUseEMCAL)
+    {
+      AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
+      if(!fPIDOnlyTOF->GetNumberOfPIDdetectors()) { 
+	fPIDOnlyTOF->AddDetector("TOF",0);
+      }
+      fPIDOnlyTOF->ConfigureTOF(3); // number of sigma TOF
+      fPIDOnlyTOF->InitializePID();
+      
+      // PID object for TPC and TOF combined
+      // Check if PID is set from outside (passed as argument)
+      ::Info("AddTaskDxHFEParticleSelection",Form("Setting up new combined PID object"));
+      AliHFEpid* fPID = new AliHFEpid("hfePid");
+      if(!fPID->GetNumberOfPIDdetectors()) { 
+	fPID->AddDetector("TOF",0);
+	fPID->AddDetector("TPC",1);
+      }
+      
+      //Add settings for asymmetric cut on nSigma TPC
+      //      const int paramSize=4;
+      //      Double_t params[paramSize];
+      //      memset(params, 0, sizeof(Double_t)*paramSize);
+      //      params[0]=-1.;
+      fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
+      fPID->InitializePID();
+    }
+  // PID for Only TPC
   AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
   if(!fPIDOnlyTPC->GetNumberOfPIDdetectors()) { 
     fPIDOnlyTPC->AddDetector("TPC",0);
   }
   fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
   fPIDOnlyTPC->InitializePID();
-
-  // PID for TPC and EMCAL
-  AliHFEpid *fPIDTPCEMCAL = new AliHFEpid("hfePidTPCEMCAL");
-  if(!fPIDTPCEMCAL->GetNumberOfPIDdetectors()) {
-    fPIDTPCEMCAL->AddDetector("TPC", 0);
-    fPIDTPCEMCAL->AddDetector("EMCAL", 1);
-  }
-  fPIDTPCEMCAL->SortDetectors();
-  fPIDTPCEMCAL->InitializePID();
-   
+  
+  if(bUseEMCAL)
+    {
+      printf("Using EMCAL\n");
+      // PID for EMCAL
+      AliHFEpid *fPIDEMCAL = new AliHFEpid("hfePidEMCAL");
+      if(!fPIDEMCAL->GetNumberOfPIDdetectors()) {
+	fPIDEMCAL->AddDetector("EMCAL", 1);
+      }
+      fPIDEMCAL->SortDetectors();
+      fPIDEMCAL->InitializePID();
+    }
   //=========================================================
   //Create TList of cut (and pid) objects for D0 or electron
   TList *Cutlist = new TList;
@@ -338,10 +355,12 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   else if(Particle==AliAnalysisTaskDxHFEParticleSelection::kElectron){
     Cutlist->SetName("cut objects HFE");
     Cutlist->Add(hfecuts);
-    Cutlist->Add(fPID);
-    Cutlist->Add(fPIDOnlyTOF);
+    if(!bUseEMCAL){
+	Cutlist->Add(fPID);
+	Cutlist->Add(fPIDOnlyTOF);
+      }
     Cutlist->Add(fPIDOnlyTPC);
-    Cutlist->Add(fPIDTPCEMCAL);
+    if(bUseEMCAL) Cutlist->Add(fPIDEMCAL);
   }
  }
   else //if there is a cutfile
@@ -366,23 +385,28 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
       // ________________________________________________________________________
       // PID for HFE
       // PID for Only TOF
-
-      AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
-      TString fHFEpidTOFobj="hfePidTOF";
-      fPIDOnlyTOF=(AliHFEpid*)filecuts->Get(fHFEpidTOFobj.Data());
-
-      // PID object for TPC and TOF combined
-      // Check if PID is set from outside (passed as argument)
-   
-      AliHFEpid* fPID = new AliHFEpid("hfePid");
-      TString fHFEpidobj="hfePid";
-      fPID=(AliHFEpid*)filecuts->Get(fHFEpidobj.Data());
-
+      if(!bUseEMCAL)
+	{
+	  AliHFEpid *fPIDOnlyTOF = new AliHFEpid("hfePidTOF");
+	  TString fHFEpidTOFobj="hfePidTOF";
+	  fPIDOnlyTOF=(AliHFEpid*)filecuts->Get(fHFEpidTOFobj.Data());
+	  
+	  // PID object for TPC and TOF combined
+	  // Check if PID is set from outside (passed as argument)
+	  
+	  AliHFEpid* fPID = new AliHFEpid("hfePid");
+	  TString fHFEpidobj="hfePid";
+	  fPID=(AliHFEpid*)filecuts->Get(fHFEpidobj.Data());
+	}
       AliHFEpid *fPIDOnlyTPC = new AliHFEpid("hfePidTPC");
       TString fHFEpidTPCobj="hfePidTPC";
       fPIDOnlyTPC=(AliHFEpid*)filecuts->Get(fHFEpidTPCobj.Data());
-    
-
+      
+      //  if(bUseEMCAL)
+      //{
+      //[FIX] implement
+      //}
+	  
   //=========================================================
       //Create TList of cut (and pid) objects for D0 or electron
       TList *Cutlist = new TList;
@@ -393,8 +417,15 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
       else if(Particle==AliAnalysisTaskDxHFEParticleSelection::kElectron){
       */Cutlist->SetName("cut objects HFE");
 	Cutlist->Add(hfecuts);
-	Cutlist->Add(fPID);
-	Cutlist->Add(fPIDOnlyTOF);
+
+	if(!bUseEMCAL)	
+	  {
+	    Cutlist->Add(fPID);
+	    Cutlist->Add(fPIDOnlyTOF);
+	  }
+	if(bUseEMCAL){
+	  Cutlist->Add(fPIDEMCAL);
+	}
 	Cutlist->Add(fPIDOnlyTPC);
 	// }
     }

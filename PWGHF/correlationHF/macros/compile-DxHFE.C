@@ -33,8 +33,6 @@ void compile_DxHFE(Bool_t bUseLocalDir=kFALSE){
     else
       TString dir("$ALICE_ROOT/PWGHF/correlationHF/");
 
-    gROOT->LoadMacro(dir+"AliSingleTrackEffCuts.cxx+");
-    gROOT->LoadMacro(dir+"AliCFSingleTrackEfficiencyTask.cxx+");
     gROOT->LoadMacro(dir+"AliHFAssociatedTrackCuts.cxx+");
     gROOT->LoadMacro(dir+"AliReducedParticle.cxx+");
     gROOT->LoadMacro(dir+"AliHFCorrelator.cxx+");
@@ -48,6 +46,8 @@ void compile_DxHFE(Bool_t bUseLocalDir=kFALSE){
     gROOT->LoadMacro(dir+"AliDxHFECorrelationMC.cxx+");
     gROOT->LoadMacro(dir+"AliAnalysisTaskDxHFEParticleSelection.cxx+");
     gROOT->LoadMacro(dir+"AliAnalysisTaskDxHFECorrelation.cxx+");
+    gROOT->LoadMacro(dir+"AliSingleTrackEffCuts.cxx+");
+    gROOT->LoadMacro(dir+"AliCFSingleTrackEfficiencyTask.cxx+");
 
   }
 #elif
@@ -56,3 +56,4 @@ void compile_DxHFE(Bool_t bUseLocalDir=kFALSE){
   }
 #endif
 }
+#endif

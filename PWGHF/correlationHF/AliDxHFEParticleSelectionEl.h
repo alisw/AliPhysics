@@ -151,7 +151,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Bool_t        fSetFilterBit;       // Whether or not to use filter bits 
   Int_t         fBit;                // Which bit to use
   Double_t      fMaxPtCombinedPID;   // Max pt for the combined PID of TPC and TOF (default = 999, thus combined for all pt)
-
+  Bool_t        fUseEMCAL;           // Whether or not to use EMCAL PID
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
 
   ClassDef(AliDxHFEParticleSelectionEl, 6); 
