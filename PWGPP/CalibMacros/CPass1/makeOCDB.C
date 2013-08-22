@@ -93,7 +93,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     Printf("\n******* Calibrating T0 *******");
     procesT0 = new AliT0PreprocessorOffline;
     // Make  calibration of channels offset
-    procesT0->setDArun(177000);
+    procesT0->setDArun(100000);
     procesT0->Process("CalibObjects.root",runNumber, runNumber, targetStorage);
   }
 
