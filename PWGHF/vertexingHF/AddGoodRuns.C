@@ -253,6 +253,17 @@ Int_t AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod,TString mcprod="") 
       }
       plugin->SetNrunsPerMaster(ngoodruns);
    }
+   if(lhcPeriod=="LHC12a"){
+     nruns=4;
+     Int_t runlist[4]={177182, 177167, 177160, 177157};
+
+     for(Int_t k=0;k<nruns;k++){
+       if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+       plugin->AddRunNumber(runlist[k]);
+       ngoodruns++;
+     }
+     plugin->SetNrunsPerMaster(ngoodruns);
+   }
 
 
    //
