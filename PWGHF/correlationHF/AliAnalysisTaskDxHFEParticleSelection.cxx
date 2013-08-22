@@ -165,6 +165,7 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
       {
 	cuts->SetTriggerMask(AliVEvent::kINT7); //pPb
 	cuts->SetTriggerClass(""); //pPb  
+	printf("Using pPb trigger setup\n");
       }
   }
   
@@ -243,7 +244,6 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
     AliDebug(2,"rejected at IsEventSelected");
     return;
   }
-
   fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsSel);
 
   if(fUseMC && fUseKine){
