@@ -18,7 +18,7 @@
 #include "AliDxHFEToolsMC.h"
 
 class THnSparse;
-class TH1;
+class TList;
 
 /**
  * @class AliDxHFEParticleSelectionMCEl
@@ -74,8 +74,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   static const char* fgkPDGBinLabels[];
                     
   AliDxHFEToolsMC fMCTools;            // MC selection tools
-  TH1*            fPDGnotMCElectron;   //! PDG of track not MC truth electron
-  TH1*            fPDGNotHFMother;     //! PDG of mother not HF
+  TList*          fHistoList;          // list of histograms
   int fOriginMother;                   //  Holds the origin motherquark (process)
   int fResultMC;                       // Holds information on check on MC
   Bool_t fUseKine;                     // Run over MC stack
