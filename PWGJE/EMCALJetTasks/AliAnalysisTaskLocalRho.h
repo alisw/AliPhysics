@@ -31,6 +31,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
                                 AliAnalysisTaskLocalRho(const char *name, runModeType type);
         virtual                 ~AliAnalysisTaskLocalRho();
         // setting up the task and technical aspects
+        void                    ExecOnce();
         Bool_t                  InitializeAnalysis();
         virtual void            UserCreateOutputObjects();
         TH1F*                   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
@@ -58,7 +59,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
         void                    SetAttachToEvent(Bool_t a)                      {fAttachToEvent = a;}
-        void                    SetLocalRhoName(TString n)                      {fLocalRhoName = n;}
         void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
         // setters - analysis details
@@ -116,7 +116,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         Bool_t                  fAttachToEvent;         // attach local rho to the event
         Bool_t                  fFillHistograms;        // fill qa histograms
         Bool_t                  fNoEventWeightsForQC;   // don't store event weights for qc analysis
-        TString                 fLocalRhoName;          // name for local rho
         Bool_t                  fUseScaledRho;          // use scaled rho
         TArrayI*                fCentralityClasses;     // centrality classes (maximum 10) used for QA
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
@@ -135,7 +134,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         TF1*                    fFitModulation;         // modulation fit for rho
         Float_t                 fMinPvalue;             // minimum value of p
         Float_t                 fMaxPvalue;             // maximum value of p
-        AliLocalRhoParameter*   fLocalRho;              //! local rho
         // additional jet cuts (most are inherited)
         Float_t                 fLocalJetMinEta;        // local eta cut for jets
         Float_t                 fLocalJetMaxEta;        // local eta cut for jets
@@ -167,7 +165,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskLocalRho(const AliAnalysisTaskLocalRho&);                  // not implemented
         AliAnalysisTaskLocalRho& operator=(const AliAnalysisTaskLocalRho&);       // not implemented
 
-        ClassDef(AliAnalysisTaskLocalRho, 2);
+        ClassDef(AliAnalysisTaskLocalRho, 3);
 };
 
 #endif
