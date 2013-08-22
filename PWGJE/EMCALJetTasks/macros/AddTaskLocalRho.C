@@ -8,20 +8,21 @@
  */
 
 AliAnalysisTaskLocalRho* AddTaskLocalRho(
-  const char *ntracks            = "Tracks",    // track selection used for vn estimate
-  const char *nclusters          = "",
-  const char *njets              = "Jets",      // jet selection for finding leading jet
-  const char *nrho               = "Rho",
-  Double_t   jetradius          = 0.3, 
-  Double_t   jetptcut           = 1,
+  const char *ntracks           = "Tracks",     // track selection used for vn estimate
+  const char *nclusters         = "",           // clusters (not used) 
+  const char *njets             = "Jets",       // jet selection for finding leading jet
+  const char *nrho              = "Rho",        // name of nominal rho
+  const char *lrho              = "LocalRho",   // name of local rho object
+  Double_t   jetradius          = 0.3,          // jet radius (to remove leading jet)
+  Double_t   jetptcut           = 1,            
   Double_t   jetareacut         = 0.557,
   UInt_t     type               = AliAnalysisTaskEmcal::kTPC,
   Int_t      leadhadtype        = 0,
-  const char *name           = "AliAnalysisTaskLocalRho",
-  TString    fitOpts            = "WLQI",
-  UInt_t     fitType            = AliAnalysisTaskLocalRho::kCombined,
-  TArrayI    *centralities      = 0x0,  
-  UInt_t     runMode            = AliAnalysisTaskLocalRho::kGrid
+  const char *name              = "AliAnalysisTaskLocalRho",    // task name
+  TString    fitOpts            = "WLQI",                       // options for tfitter
+  UInt_t     fitType            = AliAnalysisTaskLocalRho::kCombined,   // fitting strategy
+  TArrayI    *centralities      = 0x0,                                  // centrality binning for qa
+  UInt_t     runMode            = AliAnalysisTaskLocalRho::kGrid        // run mode 
   )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -52,6 +53,7 @@ AliAnalysisTaskLocalRho* AddTaskLocalRho(
   jetTask->SetClusName(nclusters);
   jetTask->SetJetsName(njets);
   jetTask->SetRhoName(nrho);
+  jetTask->SetLocalRhoName(lrho);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
   jetTask->SetPercAreaCut(jetareacut);

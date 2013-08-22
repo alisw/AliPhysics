@@ -45,7 +45,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskLocalRho)
 
 AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() : AliAnalysisTaskEmcalJet("AliAnalysisTaskLocalRho", kTRUE), 
-    fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), fLocalRhoName(GetName()), fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("WLQI"), fRunModeType(kGrid), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fLocalRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0) {
+    fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("WLQI"), fRunModeType(kGrid), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0) {
     for(Int_t i(0); i < 10; i++) {
         fHistPsi2[i] = 0; 
         fHistPsi3[i] = 0;
@@ -54,7 +54,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() : AliAnalysisTaskEmcalJet("Al
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-    fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), fLocalRhoName(GetName()), fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("WLQI"), fRunModeType(type), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fLocalRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0) {
+    fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("WLQI"), fRunModeType(type), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0) {
     for(Int_t i(0); i < 10; i++) {
         fHistPsi2[i] = 0; 
         fHistPsi3[i] = 0;
@@ -80,6 +80,29 @@ AliAnalysisTaskLocalRho::~AliAnalysisTaskLocalRho()
     if(fOutputListBad)          delete fOutputListBad;
     if(fFitModulation)          delete fFitModulation;
     if(fHistSwap)               delete fHistSwap;
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskLocalRho::ExecOnce()
+{
+    // Init the analysis
+   if(fLocalRhoName=="") fLocalRhoName = Form("LocalRhoFrom_%s", GetName());
+    fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
+    // add the local rho to the event if necessary
+    if(fAttachToEvent) {
+        if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
+            InputEvent()->AddObject(fLocalRho);
+        } else {
+            AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fLocalRho->GetName()));
+        }
+    }
+    AliAnalysisTaskEmcalJet::ExecOnce();        // init the base clas
+    if(fUseScaledRho) {
+        // unscaled rho has been retrieved by the parent class, now we retrieve rho scaled
+        fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(Form("%s_Scaled", fRho->GetName())));
+        if(!fRho) {
+            AliFatal(Form("%s: Couldn't find container for scaled rho. Aborting !", GetName()));
+        }
+    }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskLocalRho::InitializeAnalysis() 
@@ -117,23 +140,6 @@ Bool_t AliAnalysisTaskLocalRho::InitializeAnalysis()
     switch (fRunModeType) {
         case kGrid : { fFitModulationOptions += "N0"; } break;
         default : break;
-    }
-    if(fUseScaledRho) {
-        // unscaled rho has been retrieved by the parent class, now we retrieve rho scaled
-        fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(Form("%s_Scaled", fRho->GetName())));
-        if(!fRho) {
-            AliFatal(Form("%s: Couldn't find container for scaled rho. Aborting !", GetName()));
-            return kFALSE;  // pointless, but coverity will want this return value ...
-        }
-    }
-    fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
-    // add the local rho to the event if necessary
-    if(fAttachToEvent) {
-        if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
-            InputEvent()->AddObject(fLocalRho);
-        } else {
-            AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fLocalRho->GetName()));
-        }
     }
     FillAnalysisSummaryHistogram();
     return kTRUE;

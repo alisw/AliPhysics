@@ -8,6 +8,7 @@ class TList;
 class TString;
 class AliEmcalJet;
 class AliRhoParameter;
+class AliLocalRhoParameter;
 class AliVCluster;
 class AliVParticle;
 
@@ -29,6 +30,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   void                        SetJetsName(const char *n)                           { fJetsName       = n                ; }
   virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
+  virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   void                        SetMaxClusterPt(Float_t b)                           { fMaxClusterPt   = b                ; }
   void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
@@ -45,6 +47,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)                                     const;
   void                        ExecOnce()                                                                    ;
   AliRhoParameter            *GetRhoFromEvent(const char *name)                                             ;
+  AliLocalRhoParameter       *GetLocalRhoFromEvent(const char *name)                                        ;
   Int_t                       GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho=0)     const;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kFALSE)       const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kFALSE)      const;
@@ -53,6 +56,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Float_t                     fJetRadius;                  // jet radius
   TString                     fJetsName;                   // name of jet collection
   TString                     fRhoName;                    // Name of rho object
+  TString                     fLocalRhoName;               // Name of local rho object
   Float_t                     fPtBiasJetTrack;             // select jets with a minimum pt track
   Float_t                     fPtBiasJetClus;              // select jets with a minimum pt cluster
   Float_t                     fJetPtCut;                   // cut on jet pt
@@ -71,12 +75,13 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   UInt_t                      fJetTrigger;                 // jet trigger
   TClonesArray               *fJets;                       //!jets
   AliRhoParameter            *fRho;                        //!event rho
-  Double_t                    fRhoVal;                     //!event rho value
+  AliLocalRhoParameter       *fLocalRho;                   //!local event rho
+  Double_t                    fRhoVal;                     //!event rho value, same for local rho
 
  private:
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented
   AliAnalysisTaskEmcalJet &operator=(const AliAnalysisTaskEmcalJet&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJet, 8) // EMCAL Jet base analysis task
+  ClassDef(AliAnalysisTaskEmcalJet, 10) // EMCAL Jet base analysis task
 };
 #endif

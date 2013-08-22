@@ -33,8 +33,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
                                 AliAnalysisTaskRhoVnModulation();
                                 AliAnalysisTaskRhoVnModulation(const char *name, runModeType type);
         virtual                 ~AliAnalysisTaskRhoVnModulation();
-       
         // setting up the task and technical aspects
+        void                    ExecOnce();
         Bool_t                  InitializeAnalysis();
         virtual void            UserCreateOutputObjects();
         virtual Bool_t          Run();
@@ -76,7 +76,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetNameJetClones(const char* name)              {fNameJetClones = name; }
         void                    SetNamePicoTrackClones(const char* name)        {fNamePicoTrackClones = name; }
         void                    SetNameRho(const char* name)                    {fNameRho = name; }
-        void                    SetLocalRhoName(TString name)                   {fLocalRhoName = name; }
         void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
@@ -185,7 +184,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
         // members
-        TString                 fLocalRhoName;          // local rho name
         Bool_t                  fUseScaledRho;          // use scaled rho
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
@@ -205,7 +203,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         const char*             fNameJetClones;         //! collection of tclones array with jets
         const char*             fNamePicoTrackClones;   //! collection of tclones with pico tracks
         const char*             fNameRho;               //! name of rho
-        AliLocalRhoParameter*   fLocalRho;              //! local rho
         // additional jet cuts (most are inherited)
         Float_t                 fLocalJetMinEta;        // local eta cut for jets
         Float_t                 fLocalJetMaxEta;        // local eta cut for jets
@@ -304,7 +301,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 14);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 15);
 };
 
 #endif
