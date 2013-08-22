@@ -60,6 +60,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 	void SetMesonCutList(TList *CutArray){
 		fCutMesonArray = CutArray;
 	}
+	void SetDoChicAnalysis(Bool_t flag){ fDoChicAnalysis = flag; }
+	void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
   
 
 	private:
@@ -90,6 +92,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TList **fCutFolder;
     TList **fESDList;
     TList **fBackList;
+    TList **fMotherList;
     TList **fTrueList;
     TList **fMCList;
     TList *fOutputContainer;
@@ -192,6 +195,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     Bool_t fMoveParticleAccordingToVertex;
     Bool_t fIsHeavyIon;
     Bool_t fDoMesonAnalysis;
+    Bool_t fDoChicAnalysis;
+    Bool_t fDoMesonQA;
     Bool_t fIsFromMBHeader;
 		Bool_t fIsMC;
 

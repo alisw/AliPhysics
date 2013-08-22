@@ -405,8 +405,6 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    Float_t gammaPsiPair = gamma->GetPsiPair();
    Float_t gammaCosPointing = fConversionCuts->GetCosineOfPointingAngle(gamma,event);
 	Float_t gammaMass = gamma->GetMass();
-   Float_t dcaToPrim[2];
-   gamma->GetDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex(),dcaToPrim);
    TVectorF conversionPoint(3);
    conversionPoint(0) = gamma->GetConversionX();
    conversionPoint(1) = gamma->GetConversionY();
@@ -499,9 +497,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
                      << "psipair=" << gammaPsiPair
                      << "cosPoint=" << gammaCosPointing
 							<< "mass="<< gammaMass
-							<< "dcaR="<< dcaToPrim[0]
-							<< "dcaZ="<< dcaToPrim[1]
-                     << "TruePhoton=" << isTruePhoton
+							<< "TruePhoton=" << isTruePhoton
                      << "conversionPoint=" << &conversionPoint
                      << "daugtherProp.=" << &daughterProp
                      << "\n";
@@ -517,9 +513,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
                      << "psipair=" << gammaPsiPair
                      << "cosPoint=" << gammaCosPointing
 							<< "mass="<< gammaMass
-							<< "dcaR="<< dcaToPrim[0]
-                     << "dcaZ="<< dcaToPrim[1]
-                     << "conversionPoint=" << &conversionPoint
+							<< "conversionPoint=" << &conversionPoint
                      << "daugtherProp.=" << &daughterProp
                      << "\n";
       }
