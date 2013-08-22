@@ -127,7 +127,11 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fQAJetHistosGenLeading(0)
    ,fQAJetHistosRecEffLeading(0)
    ,fFFHistosRecCuts(0)
+   ,fFFHistosRecCutsInc(0)
+   ,fFFHistosRecLeadingTrack(0)
    ,fFFHistosGen(0)
+   ,fFFHistosGenInc(0)
+   ,fFFHistosGenLeadingTrack(0)
    ,fQATrackHighPtThreshold(0)
    ,fFFNBinsJetPt(0)    
    ,fFFJetPtMin(0) 
@@ -323,7 +327,11 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fQAJetHistosGenLeading(0)
   ,fQAJetHistosRecEffLeading(0)
   ,fFFHistosRecCuts(0)
+  ,fFFHistosRecCutsInc(0)
+  ,fFFHistosRecLeadingTrack(0)
   ,fFFHistosGen(0)
+  ,fFFHistosGenInc(0)
+  ,fFFHistosGenLeadingTrack(0)
   ,fQATrackHighPtThreshold(0) 
   ,fFFNBinsJetPt(0)    
   ,fFFJetPtMin(0) 
@@ -520,7 +528,11 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fQAJetHistosGenLeading(copy.fQAJetHistosGenLeading)
   ,fQAJetHistosRecEffLeading(copy.fQAJetHistosRecEffLeading)
   ,fFFHistosRecCuts(copy.fFFHistosRecCuts)
+  ,fFFHistosRecCutsInc(copy.fFFHistosRecCutsInc)
+  ,fFFHistosRecLeadingTrack(copy.fFFHistosRecLeadingTrack)
   ,fFFHistosGen(copy.fFFHistosGen)
+  ,fFFHistosGenInc(copy.fFFHistosGenInc)
+  ,fFFHistosGenLeadingTrack(copy.fFFHistosGenLeadingTrack)
   ,fQATrackHighPtThreshold(copy.fQATrackHighPtThreshold) 
   ,fFFNBinsJetPt(copy.fFFNBinsJetPt)    
   ,fFFJetPtMin(copy.fFFJetPtMin) 
@@ -726,7 +738,11 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fQAJetHistosGenLeading         = o.fQAJetHistosGenLeading;
     fQAJetHistosRecEffLeading      = o.fQAJetHistosRecEffLeading;
     fFFHistosRecCuts               = o.fFFHistosRecCuts;
+    fFFHistosRecCutsInc            = o.fFFHistosRecCutsInc;
+    fFFHistosRecLeadingTrack       = o.fFFHistosRecLeadingTrack;
     fFFHistosGen                   = o.fFFHistosGen;
+    fFFHistosGenInc                = o.fFFHistosGenInc;
+    fFFHistosGenLeadingTrack       = o.fFFHistosGenLeadingTrack;
     fQATrackHighPtThreshold        = o.fQATrackHighPtThreshold; 
     fFFNBinsJetPt                  = o.fFFNBinsJetPt;    
     fFFJetPtMin                    = o.fFFJetPtMin; 
@@ -1459,10 +1475,33 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 						     fFFNBinsXi, fFFXiMin, fFFXiMax,  
 						     fFFNBinsZ , fFFZMin , fFFZMax );
 
-    fFFHistosGen   	     = new AliFragFuncHistos("Gen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+
+    fFFHistosRecCutsInc      = new AliFragFuncHistos("RecCutsInc", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
 						     fFFNBinsXi, fFFXiMin, fFFXiMax,  
-						     fFFNBinsZ , fFFZMin , fFFZMax);
+						     fFFNBinsZ , fFFZMin , fFFZMax );
+
+
+    fFFHistosRecLeadingTrack  = new AliFragFuncHistos("RecLeadingTrack", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						      fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						      fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						      fFFNBinsZ , fFFZMin , fFFZMax );
+    
+    fFFHistosGen   	      = new AliFragFuncHistos("Gen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						      fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						      fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						      fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    fFFHistosGenInc           = new AliFragFuncHistos("GenInc", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						      fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						      fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						      fFFNBinsZ , fFFZMin , fFFZMax);
+    
+    fFFHistosGenLeadingTrack  = new AliFragFuncHistos("GenLeadingTrack", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						      fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						      fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						      fFFNBinsZ , fFFZMin , fFFZMax);
+
   } // end: FF
   
   // efficiency
@@ -1718,7 +1757,11 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   
   if(fFFMode){
     fFFHistosRecCuts->DefineHistos();
+    fFFHistosRecCutsInc->DefineHistos();
+    fFFHistosRecLeadingTrack->DefineHistos();
     fFFHistosGen->DefineHistos();
+    fFFHistosGenInc->DefineHistos();
+    fFFHistosGenLeadingTrack->DefineHistos();
   }
   
   if(fEffMode){
@@ -1794,8 +1837,13 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   // FF histograms
   if(fFFMode){
     fFFHistosRecCuts->AddToOutput(fCommonHistList);
+    fFFHistosRecCutsInc->AddToOutput(fCommonHistList);
+    fFFHistosRecLeadingTrack->AddToOutput(fCommonHistList);
+
     if(genJets && genTracks){
       fFFHistosGen->AddToOutput(fCommonHistList);
+      fFFHistosGenInc->AddToOutput(fCommonHistList);
+      fFFHistosGenLeadingTrack->AddToOutput(fCommonHistList);
     }
   }
 
@@ -2322,112 +2370,115 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
       
       AliAODJet* jet = (AliAODJet*)(fJetsRecCuts->At(ij));
       if(fQAMode&2) fQAJetHistosRecCuts->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
+      	
+      if(fQAMode&2 && ij==0) fQAJetHistosRecCutsLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
+
+      Double_t ptFractionEmbedded = 0; 
+      AliAODJet* embeddedJet = 0; 
+
+      if(fBranchEmbeddedJets.Length()){ // find embedded jet
+
+	Int_t indexEmbedded = -1;
+	for(Int_t i=0; i<nEmbeddedJets; i++){
+	  if(iEmbeddedMatchIndex[i] == ij){
+	    indexEmbedded      = i;
+	    ptFractionEmbedded = fEmbeddedPtFraction[i];
+	  }
+	}
+
+	fh1IndexEmbedded->Fill(indexEmbedded);
+	fh1FractionPtEmbedded->Fill(ptFractionEmbedded);
+	
+	if(indexEmbedded>-1){ 
+	    
+	  embeddedJet = dynamic_cast<AliAODJet*>(fJetsEmbedded->At(indexEmbedded));
+	  if(!embeddedJet) continue;
+
+	  Double_t deltaPt = jet->Pt() - embeddedJet->Pt();
+	  Double_t deltaR  = jet->DeltaR((AliVParticle*) (embeddedJet)); 
+	  
+	  fh2DeltaPtVsJetPtEmbedded->Fill(embeddedJet->Pt(),deltaPt);
+	  fh2DeltaPtVsRecJetPtEmbedded->Fill(jet->Pt(),deltaPt);
+	  fh1DeltaREmbedded->Fill(deltaR);
+	}
+      }
+
+      // get tracks in jet
+      TList* jettracklist = new TList();
+      Double_t sumPt      = 0.;
+      Bool_t isBadJet     = kFALSE;
+
+      if(GetFFRadius()<=0){
+	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
+      } else {
+	if(fUseEmbeddedJetAxis){
+	  if(embeddedJet) GetJetTracksPointing(fTracksRecCuts, jettracklist, embeddedJet, 
+					       GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
+	  }
+	else              GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, 
+					       GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
+      }
+	
+      if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
       
-      if(ij==0){ // leading jet
-	
-	if(fQAMode&2) fQAJetHistosRecCutsLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
+      if(isBadJet) continue; 
 
-	Double_t ptFractionEmbedded = 0; 
-	AliAODJet* embeddedJet = 0; 
-
-	if(fBranchEmbeddedJets.Length()){ // find embedded jet
-
-	  Int_t indexEmbedded = -1;
-	  for(Int_t i=0; i<nEmbeddedJets; i++){
-	    if(iEmbeddedMatchIndex[i] == ij){
-	      indexEmbedded      = i;
-	      ptFractionEmbedded = fEmbeddedPtFraction[i];
-	    }
-	  }
-
-	  fh1IndexEmbedded->Fill(indexEmbedded);
-	  fh1FractionPtEmbedded->Fill(ptFractionEmbedded);
+      if(ptFractionEmbedded>=fCutFractionPtEmbedded){ // if no embedding: ptFraction = cutFraction = 0
 	  
-	  if(indexEmbedded>-1){ 
-	    
-	    embeddedJet = dynamic_cast<AliAODJet*>(fJetsEmbedded->At(indexEmbedded));
-	    if(!embeddedJet) continue;
+	for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+	  
+	  AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+	  if(!trackVP)continue;
 
-	    Double_t deltaPt = jet->Pt() - embeddedJet->Pt();
-	    Double_t deltaR  = jet->DeltaR((AliVParticle*) (embeddedJet)); 
-	    
-	    fh2DeltaPtVsJetPtEmbedded->Fill(embeddedJet->Pt(),deltaPt);
-	    fh2DeltaPtVsRecJetPtEmbedded->Fill(jet->Pt(),deltaPt);
-	    fh1DeltaREmbedded->Fill(deltaR);
+	  AliAODTrack * aodtrack  = dynamic_cast<AliAODTrack*>(jettracklist->At(it));
+	  if(!aodtrack) continue;
+	  
+	  TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
+	  
+	  Float_t jetPt   = jet->Pt();
+	  if(fUseEmbeddedJetPt){
+	    if(embeddedJet) jetPt = embeddedJet->Pt();
+	    else jetPt = 0;
 	  }
+	  Float_t trackPt = trackV->Pt();
+
+	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	    
+	  if(fFFMode && (ij==0)) fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);
+	  if(fFFMode)            fFFHistosRecCutsInc->FillFF(trackPt, jetPt, incrementJetPt);
+	  
+	  if(it==0){ // leading track 
+	    if(fFFMode) fFFHistosRecLeadingTrack->FillFF( trackPt, jetPt, kTRUE);
+	  }
+	  
+	  delete trackV;
 	}
-
-	// get tracks in jet
-	TList* jettracklist = new TList();
-	Double_t sumPt      = 0.;
-	Bool_t isBadJet     = kFALSE;
-
-	if(GetFFRadius()<=0){
-	  GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
-	} else {
-	  if(fUseEmbeddedJetAxis){
-	    if(embeddedJet) GetJetTracksPointing(fTracksRecCuts, jettracklist, embeddedJet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
-	  }
-	  else              GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
-	}
-	
-	if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
-	
-	if(isBadJet) continue; 
-
-	if(ptFractionEmbedded>=fCutFractionPtEmbedded){ // if no embedding: ptFraction = cutFraction = 0
 	  
-	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+	// background ff
+	if(fBckgMode && (ij==0)){
+	  if(fBckgType[0]!=kBckgNone)
+	    FillBckgHistos(fBckgType[0], fTracksRecCuts, fJetsRecCuts, jet,  
+			   fFFBckgHisto0RecCuts,fQABckgHisto0RecCuts, fh1BckgMult0);
+	  if(fBckgType[1]!=kBckgNone)
+	    FillBckgHistos(fBckgType[1], fTracksRecCuts, fJetsRecCuts, jet,
+			   fFFBckgHisto1RecCuts,fQABckgHisto1RecCuts, fh1BckgMult1);
+	  if(fBckgType[2]!=kBckgNone)
+	    FillBckgHistos(fBckgType[2], fTracksRecCuts, fJetsRecCuts, jet, 
+			   fFFBckgHisto2RecCuts,fQABckgHisto2RecCuts, fh1BckgMult2);
+	  if(fBckgType[3]!=kBckgNone)
+	    FillBckgHistos(fBckgType[3], fTracksRecCuts, fJetsRecCuts, jet, 
+			   fFFBckgHisto3RecCuts,fQABckgHisto3RecCuts, fh1BckgMult3);
+	  if(fBckgType[4]!=kBckgNone)
+	    FillBckgHistos(fBckgType[4], fTracksRecCuts, fJetsRecCuts, jet, 
+			   fFFBckgHisto4RecCuts,fQABckgHisto4RecCuts, fh1BckgMult4);
+	} // end if(fBckgMode)
+	
 
-	    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
-	    if(!trackVP)continue;
-
-            AliAODTrack * aodtrack  = dynamic_cast<AliAODTrack*>(jettracklist->At(it));
-            if(!aodtrack) continue;
-
-	    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
-	    
-	    Float_t jetPt   = jet->Pt();
-	    if(fUseEmbeddedJetPt){
-	      if(embeddedJet) jetPt = embeddedJet->Pt();
-	      else jetPt = 0;
-	    }
-	    Float_t trackPt = trackV->Pt();
-
-
-	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
-	    
-	    if(fFFMode) fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);
-
-	    delete trackV;
-	  }
-	  
-	  // background ff
-	  if(fBckgMode){
-	    if(fBckgType[0]!=kBckgNone)
-	      FillBckgHistos(fBckgType[0], fTracksRecCuts, fJetsRecCuts, jet,  
-			     fFFBckgHisto0RecCuts,fQABckgHisto0RecCuts, fh1BckgMult0);
-	    if(fBckgType[1]!=kBckgNone)
-	      FillBckgHistos(fBckgType[1], fTracksRecCuts, fJetsRecCuts, jet,
-			     fFFBckgHisto1RecCuts,fQABckgHisto1RecCuts, fh1BckgMult1);
-	    if(fBckgType[2]!=kBckgNone)
-	      FillBckgHistos(fBckgType[2], fTracksRecCuts, fJetsRecCuts, jet, 
-			     fFFBckgHisto2RecCuts,fQABckgHisto2RecCuts, fh1BckgMult2);
-	    if(fBckgType[3]!=kBckgNone)
-	      FillBckgHistos(fBckgType[3], fTracksRecCuts, fJetsRecCuts, jet, 
-			     fFFBckgHisto3RecCuts,fQABckgHisto3RecCuts, fh1BckgMult3);
-	    if(fBckgType[4]!=kBckgNone)
-	      FillBckgHistos(fBckgType[4], fTracksRecCuts, fJetsRecCuts, jet, 
-			     fFFBckgHisto4RecCuts,fQABckgHisto4RecCuts, fh1BckgMult4);
-	  } // end if(fBckgMode)
-	 
-
-	  if(fJSMode) FillJetShape(jet, jettracklist, fProNtracksLeadingJet, fProDelRPtSum, fProDelR80pcPt);
+	if(fJSMode && (ij==0)) FillJetShape(jet, jettracklist, fProNtracksLeadingJet, fProDelRPtSum, fProDelR80pcPt);
 	   
-	  delete jettracklist;	
-
-	} // end: cut embedded ratio
-      } // end: leading jet
+	delete jettracklist;	
+	
+      } // end: cut embedded ratio
     } // end: rec. jets after cuts
     
     // generated jets
@@ -2435,68 +2486,71 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
       
       AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsGen->At(ij));
       if(!jet)continue;
+
       if(fQAMode&2) fQAJetHistosGen->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
-      
-      if(ij==0){ // leading jet
+
+      if(fQAMode&2 && (ij==0)) fQAJetHistosGenLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
+
+      TList* jettracklist = new TList();
+      Double_t sumPt      = 0.;
+      Bool_t isBadJet     = kFALSE;
 	
-	if(fQAMode&2) fQAJetHistosGenLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
-
-	TList* jettracklist = new TList();
-	Double_t sumPt      = 0.;
-	Bool_t isBadJet     = kFALSE;
-	
-	if(GetFFRadius()<=0){
-	  GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
-	} else {
-	  GetJetTracksPointing(fTracksGen, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
-	}
-	
-	if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;;
-	if(isBadJet) continue; 
-
-	for(Int_t it=0; it<jettracklist->GetSize(); ++it){
-	  
-	  AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
-	  if(!trackVP)continue;
-	  TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
-	  
-	  Float_t jetPt   = jet->Pt();
-	  Float_t trackPt = trackV->Pt();
-	  
-	  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
-	  
-	  if(fFFMode) fFFHistosGen->FillFF( trackPt, jetPt, incrementJetPt );
-	  
-	  delete trackV;
-	}
-
-	if(fBckgMode){
-	  if(fBckgType[0]!=kBckgNone)
-	    FillBckgHistos(fBckgType[0], fTracksGen, fJetsGen, jet,
-			   fFFBckgHisto0Gen, fQABckgHisto0Gen);
-	  if(fBckgType[1]!=kBckgNone)
-	    FillBckgHistos(fBckgType[1], fTracksGen, fJetsGen, jet,
-			   fFFBckgHisto1Gen, fQABckgHisto1Gen);
-	  if(fBckgType[2]!=kBckgNone)
-	    FillBckgHistos(fBckgType[2], fTracksGen, fJetsGen, jet,
-			   fFFBckgHisto2Gen, fQABckgHisto2Gen);
-	  if(fBckgType[3]!=kBckgNone)
-	    FillBckgHistos(fBckgType[3], fTracksGen, fJetsGen, jet,
-			   fFFBckgHisto3Gen, fQABckgHisto3Gen);
-	  if(fBckgType[4]!=kBckgNone)
-	    FillBckgHistos(fBckgType[4], fTracksGen, fJetsGen, jet,
-			   fFFBckgHisto4Gen, fQABckgHisto4Gen);
-	} // end if(fBckgMode)
-	
-
-	if(fJSMode) FillJetShape(jet, jettracklist, fProNtracksLeadingJetGen, fProDelRPtSumGen, fProDelR80pcPtGen);
-
-	delete jettracklist;
+      if(GetFFRadius()<=0){
+	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
+      } else {
+	GetJetTracksPointing(fTracksGen, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
       }
+      
+      if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;;
+      
+      if(isBadJet) continue; 
+
+      for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+	
+	AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+	if(!trackVP)continue;
+	TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
+	
+	Float_t jetPt   = jet->Pt();
+	Float_t trackPt = trackV->Pt();
+	
+	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	
+	if(fFFMode && (ij==0)) fFFHistosGen->FillFF( trackPt, jetPt, incrementJetPt );
+	if(fFFMode)            fFFHistosGenInc->FillFF( trackPt, jetPt, incrementJetPt );
+	
+	if(it==0){ // leading track
+	  if(fFFMode) fFFHistosGenLeadingTrack->FillFF( trackPt, jetPt, kTRUE );	  
+	}
+	
+	delete trackV;
+      }
+
+      if(fBckgMode && (ij==0)){
+	if(fBckgType[0]!=kBckgNone)
+	  FillBckgHistos(fBckgType[0], fTracksGen, fJetsGen, jet,
+			 fFFBckgHisto0Gen, fQABckgHisto0Gen);
+	if(fBckgType[1]!=kBckgNone)
+	  FillBckgHistos(fBckgType[1], fTracksGen, fJetsGen, jet,
+			 fFFBckgHisto1Gen, fQABckgHisto1Gen);
+	if(fBckgType[2]!=kBckgNone)
+	  FillBckgHistos(fBckgType[2], fTracksGen, fJetsGen, jet,
+			 fFFBckgHisto2Gen, fQABckgHisto2Gen);
+	if(fBckgType[3]!=kBckgNone)
+	  FillBckgHistos(fBckgType[3], fTracksGen, fJetsGen, jet,
+			 fFFBckgHisto3Gen, fQABckgHisto3Gen);
+	if(fBckgType[4]!=kBckgNone)
+	  FillBckgHistos(fBckgType[4], fTracksGen, fJetsGen, jet,
+			 fFFBckgHisto4Gen, fQABckgHisto4Gen);
+      } // end if(fBckgMode)
+      
+      if(fJSMode && (ij==0)) FillJetShape(jet, jettracklist, fProNtracksLeadingJetGen, fProDelRPtSumGen, fProDelR80pcPtGen);
+      
+      delete jettracklist;
     }
   } // end: QA, FF and intra-jet
-
-      
+  
+  
   // ____ efficiency _______________________________
 
   if(fEffMode && (fJetTypeRecEff != kJetsUndef)){
