@@ -86,7 +86,6 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   Int_t fSystem;                        // holds collisions system (0=pp, 1=PbPb(,2=pPb))
   Bool_t fUseKine;                      // Whether or not to run on MC stack
 
-
   ClassDef(AliAnalysisTaskDxHFEParticleSelection, 5);
 };
 
