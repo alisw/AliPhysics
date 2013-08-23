@@ -20,6 +20,7 @@
 #include "TDirectory.h"
 #include "TROOT.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliVEvent.h"
 using namespace std;
 #endif
 
@@ -80,6 +81,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   Int_t NrTPCclusters=120; // quick fix for problems sending track cut objects in some instances to task
   Int_t NrITSclusters=4; // quick fix for problem sending hfe track cut object to addtask
   Int_t ITSreq=AliHFEextraCuts::kFirst;
+  ULong64_t triggerMask=AliVEvent::kAnyINT;
   Int_t Particle=AliAnalysisTaskDxHFEParticleSelection::kD0;
   TString extraname="";
 
@@ -195,6 +197,15 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    else if(argument.CompareTo("kAny")==0) ITSreq=AliHFEextraCuts::kAny;
 	    else if(argument.CompareTo("kNone")==0) ITSreq=AliHFEextraCuts::kNone;
 	  }
+	  if(argument.BeginsWith("triggermask=")){
+	    argument.ReplaceAll("triggermask=", "");
+	    if(argument.CompareTo("kINT7")==0) triggerMask=AliVEvent::kINT7;
+	    else if(argument.CompareTo("kEMC1")==0) triggerMask=AliVEvent::kEMC1;
+	    else if(argument.CompareTo("kEMC7")==0) triggerMask=AliVEvent::kEMC7;
+	    else if(argument.CompareTo("kEMC8")==0) triggerMask=AliVEvent::kEMC8;
+	    else if(argument.CompareTo("allEMCAL")==0) triggerMask=(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8);
+	  }
+
 	  if(argument.BeginsWith("extraname=")){
 	    argument.ReplaceAll("extraname=", "");
 	    extraname=argument;
@@ -241,6 +252,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   if (system==0) {
     RDHFD0toKpi->SetStandardCutsPP2010();
+    RDHFD0toKpi->SetTriggerMask(triggerMask); //pPb
   }
   else if (system==1) {
     RDHFD0toKpi->SetStandardCutsPbPb2011();
