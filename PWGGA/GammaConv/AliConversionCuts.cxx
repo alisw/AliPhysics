@@ -1,16 +1,16 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                 *
- * Authors: Svein Lindal, Daniel Lohner                 *
- * Version 1.0                        *
- *                           *
+ *					                                  *
+ * Authors: Svein Lindal, Daniel Lohner 		                  *
+ * Version 1.0                        					  *
+ *                           						  *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is    *
- * provided "as is" without express or implied warranty.      *
+ * about the suitability of this software for any purpose. It is    	  *
+ * provided "as is" without express or implied warranty.       		  *
  **************************************************************************/
 
 ////////////////////////////////////////////////
@@ -32,6 +32,7 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TF1.h"
 #include "AliStack.h"
 #include "AliAODConversionMother.h"
 #include "TObjString.h"
@@ -224,7 +225,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fPreSelCut(kFALSE),
    fTriggerSelectedManually(kFALSE),
    fSpecialTriggerName("")
-   
+
 {
    InitPIDResponse();
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -365,12 +366,12 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    hVertexZ(NULL),
    hTriggerClass(NULL),
    hTriggerClassSelected(NULL),
-   hReweightMCHistPi0(NULL),
-   hReweightMCHistEta(NULL),
-   hReweightMCHistK0s(NULL),
-   fFitDataPi0(NULL),
-   fFitDataEta(NULL),
-   fFitDataK0s(NULL),
+   hReweightMCHistPi0(ref.hReweightMCHistPi0),
+   hReweightMCHistEta(ref.hReweightMCHistEta),
+   hReweightMCHistK0s(ref.hReweightMCHistK0s),
+   fFitDataPi0(ref.fFitDataPi0),
+   fFitDataEta(ref.fFitDataEta),
+   fFitDataK0s(ref.fFitDataK0s),
    fPreSelCut(ref.fPreSelCut),
    fTriggerSelectedManually(ref.fTriggerSelectedManually),
    fSpecialTriggerName(ref.fSpecialTriggerName)
@@ -443,15 +444,15 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    if (hReweightMCHistEta){
       hReweightMCHistEta->SetName("MCInputForWeightingEta");
       fHistograms->Add(hReweightMCHistEta);
-   }   
+   }
    if (hReweightMCHistK0s){
       hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
       fHistograms->Add(hReweightMCHistK0s);
-   }   
+   }
    if (fFitDataPi0){
       fFitDataPi0->SetName("DataFitForWeightingPi0");
       fHistograms->Add(fFitDataPi0);
-   }   
+   }
    if (fFitDataEta){
       fFitDataEta->SetName("DataFitForWeightingEta");
       fHistograms->Add(fFitDataEta);
@@ -887,7 +888,7 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
    // MonteCarlo Photon Selection
 
    if(!aodmcArray)return kFALSE;
-   
+
    if (particle->GetPdgCode() == 22){
       if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
          return kFALSE;
@@ -904,7 +905,7 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
             return kFALSE; // the gamma has a mother, and it is not a primary particle
          }
       }
-      
+
       if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
 
       // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
@@ -924,7 +925,7 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
             }
          }
       }
-      
+
       if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
          return kFALSE;
       }
@@ -945,7 +946,7 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
 
       Double_t rPos = sqrt( (ePos->Xv()*ePos->Xv()) + (ePos->Yv()*ePos->Yv()) );
       Double_t rNeg = sqrt( (eNeg->Xv()*eNeg->Xv()) + (eNeg->Yv()*eNeg->Yv()) );
-     
+
       if(rPos>fMaxR){
          return kFALSE; // cuts on distance from collision point
       }
@@ -1048,13 +1049,13 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
    AliAODConversionPhoton* photonAOD = dynamic_cast<AliAODConversionPhoton*>(photon);
    if (photonAOD){
       photonAOD->CalculateDistanceOfClossetApproachToPrimVtx(event->GetPrimaryVertex());
-      
+
       cutIndex++; //9
       if(photonAOD->GetDCArToPrimVtx() > fDCARPrimVtxCut) { //DCA R cut of photon to primary vertex
          if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //9
          return kFALSE;
       }
-      
+
       cutIndex++; //10
       if(abs(photonAOD->GetDCAzToPrimVtx()) > fDCAZPrimVtxCut) { //DCA Z cut of photon to primary vertex
          if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //10
@@ -1070,7 +1071,7 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
    // Histos after Cuts
    if(hInvMassafter)hInvMassafter->Fill(photon->GetMass());
    if(hArmenterosafter)hArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
-   
+
    return kTRUE;
 
 }
@@ -1144,7 +1145,7 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
       FillPhotonCutIndex(kTrackCuts);
       return kFALSE;
    }
-   
+
    // dEdx Cuts
    if(!dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
       FillPhotonCutIndex(kdEdxCuts);
@@ -1303,8 +1304,8 @@ Bool_t AliConversionCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrack * po
    cutIndex++;
 
    // Number of TPC Clusters
-   
-   
+
+
    if( negTrack->GetNcls(1) < fMinClsTPC || posTrack->GetNcls(1) < fMinClsTPC ) {
       if(hTrackCuts)hTrackCuts->Fill(cutIndex);
       return kFALSE;
@@ -1500,7 +1501,7 @@ Bool_t AliConversionCuts::AsymmetryCut(AliConversionPhotonBase * photon,AliVEven
          if (photon->GetPhotonP()!=0.){
             trackNegAsy= track->P()/photon->GetPhotonP();
          }
-         
+
          if( trackNegAsy<fMinPhotonAsymmetry ||trackNegAsy>(1.- fMinPhotonAsymmetry)){
             return kFALSE;
          }
@@ -1528,7 +1529,7 @@ AliVTrack *AliConversionCuts::GetTrack(AliVEvent * event, Int_t label){
          track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
          return track;
       }
-      else{      
+      else{
          for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
             track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
             if(track){
@@ -1679,7 +1680,7 @@ Bool_t AliConversionCuts::UpdateCutString() {
    }
    return kTRUE;
 }
-
+///________________________________________________________________________
 void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 
   AliInfo("Entering loading of histograms for weighting");
@@ -1687,45 +1688,48 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   if(!f){
      AliError(Form("file for weighting %s not found",fPathTrFReweighting.Data()));
      return;
-  } 
+  }
   if (fNameHistoReweightingPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
-     hReweightMCHistPi0 = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
+     TH1D *hReweightMCHistPi0temp = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
+     hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
      if (hReweightMCHistPi0) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingPi0.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
+     else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
   }
   if (fNameFitDataPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
-     fFitDataPi0 = (TF1*)f->Get(fNameFitDataPi0.Data());
+     TF1 *fFitDataPi0temp = (TF1*)f->Get(fNameFitDataPi0.Data());
+     fFitDataPi0 = new TF1(*fFitDataPi0temp);
      if (fFitDataPi0) AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameFitDataPi0.Data() ));
+     else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameFitDataPi0.Data() ));
   }
-  
-  if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
-     hReweightMCHistEta = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
-     if (hReweightMCHistEta) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
 
+  if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
+     TH1D *hReweightMCHistEtatemp = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
+     hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
+     if (hReweightMCHistEta) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
+     else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
   }
-  
+
   if (fNameFitDataEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
-     fFitDataEta = (TF1*)f->Get(fNameFitDataEta.Data());
+     TF1 *fFitDataEtatemp = (TF1*)f->Get(fNameFitDataEta.Data());
+     fFitDataEta = new TF1(*fFitDataEtatemp);
      if (fFitDataEta) AliInfo(Form("%s has been loaded from %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
+     else AliWarning(Form("%s not found in %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
 
   }
   if (fNameHistoReweightingK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
-     hReweightMCHistK0s = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
+     TH1D *hReweightMCHistK0stemp = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
+     hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
      if (hReweightMCHistK0s) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
-
+     else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
   }
 
   if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
-     fFitDataK0s = (TF1*)f->Get(fNameFitDataK0s.Data());
+     TF1 *fFitDataK0stemp = (TF1*)f->Get(fNameFitDataK0s.Data());
+     fFitDataK0s = new TF1(*fFitDataK0stemp);
      if (fFitDataK0s) AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
-       else AliWarning(Form("%s not found in %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
-
+     else AliWarning(Form("%s not found in %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
   }
-  
+
 }
 
 
@@ -1735,9 +1739,8 @@ Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutS
    if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
       AliInfo("Weighting was enabled");
       LoadReweightingHistosMCFromFile();
-      
    }
-   
+
    AliInfo(Form("Set Photoncut Number: %s",analysisCutSelection.Data()));
    if(analysisCutSelection.Length()!=kNCuts) {
       AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
@@ -1959,7 +1962,7 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
          return kTRUE;
       } else return kFALSE;
 
-      
+
    case kNCuts:
       AliError("Cut id out of range");
       return kFALSE;
@@ -2074,31 +2077,31 @@ Int_t AliConversionCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
    case 3:
       fSpecialTrigger=3; // V0AND plus with SDD requested
       break;
-   // allows to run MB & 6 other different trigger classes in parallel with the same photon cut   
-   case 4: 
+   // allows to run MB & 6 other different trigger classes in parallel with the same photon cut
+   case 4:
       fSpecialTrigger=4; // different trigger class as MB
       fTriggerSelectedManually = kTRUE;
       break;
-   case 5: 
+   case 5:
       fSpecialTrigger=4; // different trigger class as MB
       fTriggerSelectedManually = kTRUE;
       break;
-   case 6: 
+   case 6:
       fSpecialTrigger=4; // different trigger class as MB
       fTriggerSelectedManually = kTRUE;
       break;
-   case 7: 
+   case 7:
       fSpecialTrigger=4; // different trigger class as MB
       fTriggerSelectedManually = kTRUE;
       break;
-    case 8: 
+    case 8:
       fSpecialTrigger=4; // different trigger class as MB
       fTriggerSelectedManually = kTRUE;
-      break;  
-    case 9: 
+      break;
+    case 9:
       fSpecialTrigger=4; // different trigger class as MB
       fTriggerSelectedManually = kTRUE;
-      break;    
+      break;
    default:
       AliError("Warning: Special Trigger Not known");
       return kFALSE;
@@ -2941,11 +2944,11 @@ Bool_t AliConversionCuts::SetTRDElectronCut(Int_t TRDElectronCut)
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx){ 
+Bool_t AliConversionCuts::SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx){
    // Set Cut
    switch(DCAZPhotonPrimVtx){
    case 0:  //
-      fDCAZPrimVtxCut   = 1000; 
+      fDCAZPrimVtxCut   = 1000;
       break;
    case 1:  //
       fDCAZPrimVtxCut   = 10;
@@ -2982,11 +2985,11 @@ Bool_t AliConversionCuts::SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx){
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx){ 
+Bool_t AliConversionCuts::SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx){
    // Set Cut
    switch(DCARPhotonPrimVtx){
    case 0:  //
-      fDCARPrimVtxCut   = 1000; 
+      fDCARPrimVtxCut   = 1000;
       break;
    case 1:  //
       fDCARPrimVtxCut   = 10;
@@ -3057,7 +3060,7 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
 
    if(fCentralityMin == fCentralityMax ) return kTRUE;//0-100%
    else if(fCentralityMax==0) fCentralityMax=10; //CentralityRange = fCentralityMin-100%
-         
+
    Double_t centrality=GetCentrality(event);
    if(centrality<0)return kFALSE;
 
@@ -3080,9 +3083,9 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
          return kTRUE;
       else return kFALSE;
    }
-   
+
    Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetNumberOfPrimaryTracks();
-   Int_t PrimaryTracks10[10][2] = 
+   Int_t PrimaryTracks10[10][2] =
       {
          {9999,9999}, //  0
          {1210,2150}, // 10
@@ -3095,7 +3098,7 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
          {  21,  34}, // 80
          {   0,   0}  // 90
       };
-   Int_t PrimaryTracks5a[10][2] = 
+   Int_t PrimaryTracks5a[10][2] =
       {
          {9999,9999}, // 0
          {1485,2640}, // 5
@@ -3108,7 +3111,7 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
          { 337, 570}, // 40
          { 260, 436}  // 45
       };
-   Int_t PrimaryTracks5b[10][2] = 
+   Int_t PrimaryTracks5b[10][2] =
       {
          { 260, 436}, // 45
          { 197, 327}, // 50
@@ -3125,7 +3128,7 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
    Int_t column = -1;
    if(event->IsA()==AliESDEvent::Class()) column = 0;
    if(event->IsA()==AliAODEvent::Class()) column = 1;
-      
+
    if (fModCentralityClass == 3){
       if(fMCEvent){
          if(nprimaryTracks > PrimaryTracks10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks10[fCentralityMin][column])
@@ -3245,13 +3248,13 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
             if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
                else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
                else fOfflineTriggerMask = AliVEvent::kMB;
-         } 
+         }
       }
       // Get the actual offline trigger mask for the event and AND it with the
       // requested mask. If no mask requested select by default the event.
 //       if (fPreSelCut) cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask for Precut: " << fOfflineTriggerMask << endl;
 //       else cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask: " << fOfflineTriggerMask << endl;
-      
+
       if (fOfflineTriggerMask)
          isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
    }
@@ -3527,7 +3530,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
       cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
       if(cHeaderAOD) headerFound = kTRUE;
    }
-      
+
    if(headerFound){
       TList *genHeaders = 0x0;
       if(cHeader) genHeaders = cHeader->GetHeaders();
@@ -3652,7 +3655,7 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 
    if ( !IsTriggerSelected(InputEvent) )
       return 3;
-   
+
    if(isHeavyIon && !(IsCentralitySelected(InputEvent,MCEvent)))
       return 1; // Check Centrality --> Not Accepted => eventQuality = 1
 
@@ -3662,7 +3665,7 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
          return 6; // Check Pileup --> Not Accepted => eventQuality = 6
       }
    }
-   
+
    Bool_t hasV0And = ReaderCuts->HasV0AND();
    Bool_t isSDDFired = ReaderCuts->IsSDDFired();
    if( (IsSpecialTrigger() == 2 || IsSpecialTrigger() == 3) && !isSDDFired && !MCEvent)
@@ -3670,14 +3673,14 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 
    if( (IsSpecialTrigger() == 1 || IsSpecialTrigger() == 3) && !hasV0And)
       return 8; // V0AND requested but no fired
-   
+
 
    return 0;
 }
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
    if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.CompareTo("LHC13d2") == 0)) return 1.;
-   
+
    Int_t kCaseGen = 0;
    for (Int_t i = 0; i < fnHeaders; i++){
       if (index >= fNotRejectedStart[i] && index < fNotRejectedEnd[i]+1){
@@ -3685,8 +3688,8 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
             kCaseGen = 1;
          } else if (fGeneratorNames[i].CompareTo("DPMJET") == 0){
             kCaseGen = 2;
-         } else if (fGeneratorNames[i].CompareTo("HIJING") == 0 || 
-                    fGeneratorNames[i].CompareTo("Hijing") == 0 || 
+         } else if (fGeneratorNames[i].CompareTo("HIJING") == 0 ||
+                    fGeneratorNames[i].CompareTo("Hijing") == 0 ||
                     fGeneratorNames[i].Contains("hijing")){
             kCaseGen = 3;
          } else if (fGeneratorNames[i].CompareTo("BOX") == 0){
@@ -3704,14 +3707,14 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
          }
          TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
                                                 ->GetTask("V0ReaderV1"))->GetPeriodName();
-                                                
+
          if (periodName.Contains("LHC13d2")){
-            kCaseGen = 3; 
+            kCaseGen = 3;
          }
       }
    }
    if (kCaseGen == 0) return 1;
-   
+
 
    Double_t mesonPt = 0;
    Double_t mesonMass = 0;
@@ -3727,7 +3730,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
       mesonPt = aodMCParticle->Pt();
       mesonMass = aodMCParticle->GetCalcMass();
       PDGCode = aodMCParticle->GetPdgCode();
-   }   
+   }
 
    Float_t functionResultMC = 1.;
    if (kCaseGen == 1){ // Pythia 6
@@ -3818,7 +3821,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
       if ( PDGCode ==  310 && fDoReweightHistoMCK0s && fFitDataK0s!= 0x0){
          functionResultData = fFitDataK0s->Eval(mesonPt);
       }
-      
+
 //       Float_t a = 0.;
 //       Float_t b = 0.;
 //       Float_t c = 0.;
@@ -3855,65 +3858,65 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
 //             c = -13.3936105929;
 //             d = 2.3371452334;
 //             e = 4.4726244958;
-//          } else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6){ // 40-60% PbPb   
+//          } else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6){ // 40-60% PbPb
 //             a = 4.1578154081;
 //             b = 5.6450005163;
 //             c = -8.4309375240;
 //             d = 1.8918308704;
 //             e = 2.9429194709;
-//          } else if (fModCentralityClass == 0 && fCentralityMin == 6 && fCentralityMax == 8){ // 60-80% PbPb      
+//          } else if (fModCentralityClass == 0 && fCentralityMin == 6 && fCentralityMax == 8){ // 60-80% PbPb
 //             a = 1.0635443810;
 //             b = 5.1337469970;
 //             c = -8.5906997238;
 //             d = 2.9794995997;
 //             e = 3.9294980048;
-//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 2){ // 0-20% PbPb      
+//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 2){ // 0-20% PbPb
 //             a = 21.7018745556;
 //             b = 5.9019352094;
 //             c = -14.2295510326;
 //             d = 2.2104490688;
 //             e = 4.2969671500;
-//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 4){ // 0-40% PbPb      
+//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 4){ // 0-40% PbPb
 //             a = 16.8227412106;
 //             b = 5.8660502207;
 //             c = -12.0978551215;
 //             d = 2.1695068981;
 //             e = 3.5349621182;
-//          }   else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 8){ // 0-80% PbPb      
+//          }   else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 8){ // 0-80% PbPb
 //             a = 9.4675681080;
 //             b = 5.8114944205;
 //             c = -10.4901523616;
 //             d = 2.0607982712;
 //             e = 2.9262259130;
-//          }   else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 8){ // 60-80% PbPb      
+//          }   else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 8){ // 60-80% PbPb
 //             a = 2.5985551785;
 //             b = 5.4118895738;
 //             c = -8.2510958428;
 //             d = 2.2551249190;
 //             e = 3.0700919491;
 //          }
-//          
+//
 //          functionResultData = a*TMath::Power(mesonPt,-1*(b+c/(TMath::Power(mesonPt,d)+e)));
-//       } 
-      
+//       }
+
    }
-   
+
    Double_t weight = 1;
    if (PDGCode ==  111 || PDGCode ==  221){
       if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
          weight = functionResultData/functionResultMC;
          if ( kCaseGen == 3){
             if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
-               weight = 1.;  
+               weight = 1.;
             }
          }
-         if (!isfinite(functionResultData)) weight = 1.;  
-         if (!isfinite(weight)) weight = 1.;  
+         if (!isfinite(functionResultData)) weight = 1.;
+         if (!isfinite(weight)) weight = 1.;
       }
    } else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
         weight = functionResultMC;
    }
-      
+
 //    if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6 && PDGCode ==  111){
 //        cout << period.Data() << "\t" << kCaseGen << "\t" <<fModCentralityClass<< "\t" <<fCentralityMin<< "\t" <<fCentralityMax << "\t" << mesonPt << "\t" <<mesonMass<< "\t"<<functionResultData << "\t"<< functionResultMC << "\t" << weight <<endl;
 //    }
