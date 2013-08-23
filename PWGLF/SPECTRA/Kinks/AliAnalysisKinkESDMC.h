@@ -144,6 +144,7 @@ class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
    TH2F        *fMothKinkMomSgnlD;//kink  mother TPC momentum vrs nsigmas of dEdx                    
    TH1F        *fInvMassMuNuAll;//kinks,  Inv Mass all kinks  MuNu                                       
    TH2F        *fInvMassMuNuPt;//kinks,Invariant Mass MuNu     vs Pt                                         
+   TH2F        *fInvMassMuNuPtAll;//kinks,Invariant Mass MuNu     vs Pt      22/8/2013                                   
    TH1F        *fRatioCrossedRows; //ratio  crossed rows                                           
    TH1F        *fRatioCrossedRowsKink; //ratio  crossed rows  for kinks                                      
    TH2F        *fRadiusPt;//kinks,  Radius      vs Pt                                        
