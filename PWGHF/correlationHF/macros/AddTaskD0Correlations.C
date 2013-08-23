@@ -77,12 +77,12 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     //     printf("    d0d0  [cm^2] < %f\n",fD0CorrCuts[7]);
     //     printf("    cosThetaPoint    > %f\n",fD0CorrCuts[8]);
 
-  TFile* filecuts=new TFile(cutsfilename.Data());
+  TFile* filecuts=TFile::Open(cutsfilename.Data());
   if(!filecuts->IsOpen()){
     cout<<"Input file not found for D0 cuts: using std cut object"<<endl;
     stdcuts=kTRUE;
   }
-  TFile* filecuts2=new TFile(cutsfilename2.Data());
+  TFile* filecuts2=TFile::Open(cutsfilename2.Data());
   if(!filecuts2->IsOpen()){
     cout<<"Input file not found for tracks cuts!"<<endl;
     return;
@@ -118,7 +118,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   }
 
   //Load efficiency map
-  TFile* fileeff=new TFile(effName.Data());
+  TFile* fileeff=TFile::Open(effName.Data());
   if(!fileeff->IsOpen()){
     cout<<"Input file not found for efficiency! Exiting..."<<endl;
     return;
@@ -127,7 +127,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
 
   //Load D0 efficiency map
-  TFile* fileeffD0c=new TFile(effD0namec.Data());
+  TFile* fileeffD0c=TFile::Open(effD0namec.Data());
   if(!fileeffD0c->IsOpen()){
     cout<<"Input file not found for efficiency! Exiting..."<<endl;
     return;
@@ -137,7 +137,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
   //Load D0 efficiency map from b
   if(readMC) {
-    TFile* fileeffD0b=new TFile(effD0nameb.Data());
+    TFile* fileeffD0b=TFile::Open(effD0nameb.Data());
     if(!fileeffD0b->IsOpen()){
       cout<<"Input file not found for efficiency! Exiting..."<<endl;
       return;
