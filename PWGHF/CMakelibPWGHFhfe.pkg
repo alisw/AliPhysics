@@ -41,6 +41,7 @@ set (SRCS
     hfe/AliHFEV0pid.cxx 
     hfe/AliHFEpidQA.cxx 
     hfe/AliHFEtrdPIDqa.cxx 
+    hfe/AliHFEitsPIDqa.cxx
     hfe/AliHFEdetPIDqa.cxx 
     hfe/AliHFEtpcPIDqa.cxx 
     hfe/AliHFEtofPIDqa.cxx 

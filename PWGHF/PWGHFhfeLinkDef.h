@@ -26,6 +26,7 @@
 #pragma link C++ class  AliHFEV0cuts+;
 #pragma link C++ class  AliHFEV0pidMC+;
 #pragma link C++ class  AliHFEpidQA+;
+#pragma link C++ class  AliHFEitsPIDqa+;
 #pragma link C++ class  AliHFEtrdPIDqa+;
 #pragma link C++ class  AliHFEdetPIDqa+;
 #pragma link C++ class  AliHFEtpcPIDqa+;
