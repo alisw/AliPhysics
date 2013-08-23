@@ -56,6 +56,9 @@
 # define rluget_hijing rluget_hijing_
 # define rluset_hijing rluset_hijing_
 # define lulist_hijing lulist_hijing_
+# define luupda_hijing luupda_hijing_
+# define opendecaytable_hijing opendecaytable_hijing_
+# define closedecaytable_hijing closedecaytable_hijing_
 # define type_of_call
 #else
 # define hijset HIJSET
@@ -64,6 +67,9 @@
 # define rluget_hijing RLUGET_HIJING
 # define rluset_hijing RLUSET_HIJING
 # define lulist_hijing LULIST_HIJING
+# define luupda_hijing LUUPDA_HIJING
+# define opendecaytable_hijing OPENDECAYTABLE_HIJING
+# define closedecaytable_hijing CLOSEDECAYTABLE_HIJING
 # define type_of_call _stdcall
 #endif
 
@@ -80,6 +86,11 @@ extern "C" void type_of_call rluget_hijing(Int_t & lfn, Int_t & move);
 
 extern "C" void type_of_call rluset_hijing(Int_t & lfn, Int_t & move);
 extern "C" void type_of_call lulist_hijing(Int_t &);
+extern "C" void type_of_call luupda_hijing(Int_t &, Int_t &);
+extern "C" void type_of_call 
+          opendecaytable_hijing(Int_t&);
+extern "C" void type_of_call 
+          closedecaytable_hijing(Int_t&);
 
 #else
 #endif
@@ -125,6 +136,13 @@ THijing::THijing(Float_t efrm, const char *frame="CMS",
 // THijing constructor: 
 // Note that there may be only one functional THijing object
 // at a time, so it's not use to create more than one instance of it.
+//  
+// Read decaytable
+  Int_t lun = 15;
+  opendecaytable_hijing(lun);
+  Luupda(2,lun);
+  closedecaytable_hijing(lun);
+  
 }
 
 //______________________________________________________________________________
@@ -1314,4 +1332,10 @@ void  THijing::Pylist(Int_t flag)
 {
 // call lulist
   lulist_hijing(flag);
+}
+
+void  THijing::Luupda(Int_t mupda, Int_t lfn)
+{
+// call luupda
+  luupda_hijing(mupda, lfn);
 }
