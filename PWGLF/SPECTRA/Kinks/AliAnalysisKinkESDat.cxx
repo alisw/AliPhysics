@@ -58,7 +58,7 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
     fradPtRpDt(0), fInvMuNuAll(0), fQtInvM(0), 
          fDCAkink(0), fPosiKink(0),  fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0), fPosiKinKBg(0), fQtMothP(0), fTPCSgnlPtpc(0),
        fTPCMomNSgnl(0),  fMothKinkMomSgnl(0), fNSigmTPC(0),  fTPCSgnlKinkDau(0), fPtKinkPos(0), fPtKinkNeg(0),  fRadNclCln(0),
-       fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fInvMassMuNuPtAll(0) fPtCut1(0), fPtCut2(0), 
+       fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fInvMassMuNuPtAll(0),fPtCut1(0), fPtCut2(0), 
       fPtCut3(0), fAngMomKKinks(0),
  f1(0), f2(0),
       fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200), fKinkRadLow(130), fLowCluster(20), fLowQt(.12), fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
