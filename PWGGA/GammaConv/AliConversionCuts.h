@@ -14,6 +14,7 @@
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 
@@ -23,6 +24,7 @@ class AliConversionPhotonBase;
 class AliKFVertex;
 class TH1F;
 class TH2F;
+class TF1;
 class AliPIDResponse;
 class AliAnalysisCuts;
 class iostream;
