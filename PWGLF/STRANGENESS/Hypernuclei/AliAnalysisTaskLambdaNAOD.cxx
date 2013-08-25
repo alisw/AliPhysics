@@ -382,21 +382,21 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fAmenterosQtTree",fAmenterosQtTree,"fAmenterosQtTree[fItrk]/D");
   fTreeV0->Branch("fRotationTree",fRotationTree,"fRotationTree[fItrk]/I");
 
-  fTreeV0->Branch("fImpactParameterDeuteronPos",fImpactParameterDeuteronPos,"fImpactParameterDeuteronPos/D");
-  fTreeV0->Branch("fImpactParameterDeuteronNeg",fImpactParameterDeuteronNeg,"fImpactParameterDeuteronNeg/D");
-  fTreeV0->Branch("fImpactParameterPionPos",fImpactParameterPionPos,"fImpactParameterPionPos/D");
-  fTreeV0->Branch("fImpactParameterPionNeg",fImpactParameterPionNeg,"fImpactParameterPionNeg/D");
+  fTreeV0->Branch("fImpactParameterDeuteronPos",fImpactParameterDeuteronPos,"fImpactParameterDeuteronPos[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterDeuteronNeg",fImpactParameterDeuteronNeg,"fImpactParameterDeuteronNeg[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionPos",fImpactParameterPionPos,"fImpactParameterPionPos[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionNeg",fImpactParameterPionNeg,"fImpactParameterPionNeg[fItrk]/D");
 
-  fTreeV0->Branch("fImpactParameterDeuteronPosAliKF",fImpactParameterDeuteronPosAliKF,"fImpactParameterDeuteronPosAliKF/D");
-  fTreeV0->Branch("fImpactParameterDeuteronNegAliKF",fImpactParameterDeuteronNegAliKF,"fImpactParameterDeuteronNegAliKF/D");
-  fTreeV0->Branch("fImpactParameterPionPosAliKF",fImpactParameterPionPosAliKF,"fImpactParameterPionPosAliKF/D");
-  fTreeV0->Branch("fImpactParameterPionNegAliKF",fImpactParameterPionNegAliKF,"fImpactParameterPionNegAliKF/D");
+  fTreeV0->Branch("fImpactParameterDeuteronPosAliKF",fImpactParameterDeuteronPosAliKF,"fImpactParameterDeuteronPosAliKF[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterDeuteronNegAliKF",fImpactParameterDeuteronNegAliKF,"fImpactParameterDeuteronNegAliKF[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionPosAliKF",fImpactParameterPionPosAliKF,"fImpactParameterPionPosAliKF[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionNegAliKF",fImpactParameterPionNegAliKF,"fImpactParameterPionNegAliKF[fItrk]/D");
 
-  fTreeV0->Branch("fMinNClustersTPCPos",fMinNClustersTPCPos,"fMinNClustersTPCPos/I");
-  fTreeV0->Branch("fMinNClustersTPCNeg",fMinNClustersTPCNeg,"fMinNClustersTPCNeg/I");
+  fTreeV0->Branch("fMinNClustersTPCPos",fMinNClustersTPCPos,"fMinNClustersTPCPos[fItrk]/s");
+  fTreeV0->Branch("fMinNClustersTPCNeg",fMinNClustersTPCNeg,"fMinNClustersTPCNeg[fItrk]/s");
 
-  fTreeV0->Branch("fMaxChi2PerClusterTPCPos",fMaxChi2PerClusterTPCPos,"fMaxChi2PerClusterTPCPos/F");
-  fTreeV0->Branch("fMaxChi2PerClusterTPCNeg",fMaxChi2PerClusterTPCNeg,"fMaxChi2PerClusterTPCNeg/F");
+  fTreeV0->Branch("fMaxChi2PerClusterTPCPos",fMaxChi2PerClusterTPCPos,"fMaxChi2PerClusterTPCPos[fItrk]/D");
+  fTreeV0->Branch("fMaxChi2PerClusterTPCNeg",fMaxChi2PerClusterTPCNeg,"fMaxChi2PerClusterTPCNeg[fItrk]/D");
    
   //Armenteros-Podolanski
   fHistArmenterosPodolanskiDeuteronPion= new TH2F("fHistArmenterosPodolanskiDeuteronPion", "Armenteros-Podolanski d #pi^{-}", 200,-1.0,1.0, 500,0,1);
@@ -790,23 +790,23 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fAmenterosAlphaTree[fItrk] = 2;
    fAmenterosQtTree[fItrk] = -1;
    
-   fImpactParameterDeuteronPos[fItrk]            = 0; 
-   fImpactParameterDeuteronNeg[fItrk]            = 0;
+   fImpactParameterDeuteronPos[fItrk]            = -1; 
+   fImpactParameterDeuteronNeg[fItrk]            = -1;
 
-   fImpactParameterPionPos[fItrk]            = 0; 
-   fImpactParameterPionNeg[fItrk]            = 0;
+   fImpactParameterPionPos[fItrk]            = -1; 
+   fImpactParameterPionNeg[fItrk]            = -1;
 
-   fImpactParameterDeuteronPosAliKF[fItrk]            = 0;
-   fImpactParameterDeuteronNegAliKF[fItrk]            = 0;
+   fImpactParameterDeuteronPosAliKF[fItrk]            = -1;
+   fImpactParameterDeuteronNegAliKF[fItrk]            = -1;
 
-   fImpactParameterPionPosAliKF[fItrk]            = 0;
-   fImpactParameterPionNegAliKF[fItrk]            = 0;
+   fImpactParameterPionPosAliKF[fItrk]            = -1;
+   fImpactParameterPionNegAliKF[fItrk]            = -1;
 
    fMinNClustersTPCPos[fItrk]            = 0;
    fMinNClustersTPCNeg[fItrk]            = 0;
 
-   fMaxChi2PerClusterTPCPos[fItrk]            = 0;
-   fMaxChi2PerClusterTPCNeg[fItrk]            = 0; 
+   fMaxChi2PerClusterTPCPos[fItrk]            = -1;
+   fMaxChi2PerClusterTPCNeg[fItrk]            = -1; 
 
    //Get v0 object
    if(fAnalysisType == "ESD")v0ESD = fESDevent->GetV0(ivertex);
@@ -1362,14 +1362,14 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	    fHistArmenterosPodolanskiAntiDeuteronPion->Fill(alpha,qt);
 	  }
 
-	Int_t numberOfTPCclustersPos = 0.;
-        Int_t numberOfTPCclustersNeg = 0.;
+	UShort_t numberOfTPCclustersPos = 0;
+        UShort_t numberOfTPCclustersNeg = 0;
 
 	numberOfTPCclustersPos = TPCclusters(trackP,numberOfTPCclustersPos);
 	numberOfTPCclustersNeg = TPCclusters(trackN,numberOfTPCclustersNeg);
 
-	Float_t numberOfChi2clustersTPCPos = 10;
-        Float_t numberOfChi2clustersTPCNeg = 10;
+	Double_t numberOfChi2clustersTPCPos = 10.;
+        Double_t numberOfChi2clustersTPCNeg = 10.;
 
 	numberOfChi2clustersTPCPos = TPCchi2(trackP,numberOfChi2clustersTPCPos,numberOfTPCclustersPos);
 	numberOfChi2clustersTPCNeg = TPCchi2(trackN,numberOfChi2clustersTPCNeg,numberOfTPCclustersNeg);
@@ -1522,11 +1522,14 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  fMinNClustersTPCPos[fItrk]            = numberOfTPCclustersPos;
 	  fMinNClustersTPCNeg[fItrk]            = numberOfTPCclustersNeg;
 
+	  //  cout << "numberOfTPCclustersPos: " << numberOfTPCclustersPos << " fMinNClustersTPCPos[fItrk]: "  << fMinNClustersTPCPos[fItrk] << endl;
+
 	  fMaxChi2PerClusterTPCPos[fItrk]            = numberOfChi2clustersTPCPos;
 	  fMaxChi2PerClusterTPCNeg[fItrk]            = numberOfChi2clustersTPCNeg;
-	  
+
 	  fItrk++;
 	}
+	//cout << "fItrk: " << fItrk-1 << " fChargeComboDeuteronPionTree[fItrk]: " << fChargeComboDeuteronPionTree[fItrk-1] << " fV0finder[fItrk]: " << fV0finder[fItrk-1] << " fInvaMassDeuteronPionTree[fItrk]: " << fInvaMassDeuteronPionTree[fItrk-1] << " fMaxChi2PerClusterTPCPos[fItrk]: " << fMaxChi2PerClusterTPCPos[fItrk-1] << " numberOfTPCclustersPos: " << numberOfTPCclustersPos << " fMinNClustersTPCPos[fItrk]: "  << fMinNClustersTPCPos[fItrk-1] << " fCentralityPercentile[fItrk]: " << fCentralityPercentile[fItrk-1]  << " fMotherPt[fItrk]: " << fMotherPt[fItrk-1] << endl;
 
       }//end rotation loop
       
@@ -1655,11 +1658,11 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	}
 
       if(fMCtrue && runNumber > 166500){ //LHC11h MC (local production)
-        parDeuteron[0] = 1.064; // ALEPH parameters for deuterons (pass2)                                                                                                        
-	parDeuteron[1] = 26.3;
-	parDeuteron[2] = 4.00313e-15;
-	parDeuteron[3] = 2.703 ;
-	parDeuteron[4] = 9.967;
+        parDeuteron[0] = 4.449; // ALEPH parameters for deuterons (pass2)                                                                                                        
+	parDeuteron[1] = 6.91865;
+	parDeuteron[2] = 0.0183501;
+	parDeuteron[3] = 2.49437;
+	parDeuteron[4] = 2.62616;
       }
 
 
@@ -1679,7 +1682,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	
 	if(trackP->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies; standard value 110, variation for systematics
 	   trackP->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.3 &&
+	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.3 && //for systemactics -- normal value 0.2
 	   ptotP > 0.2 ){
 	  
 	  if(trackP->Charge() >0)	 	isDeuteron[0] = kTRUE; //pos deuteron
@@ -1688,7 +1691,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	
 	if(trackN->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
 	   trackN->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.3 &&
+	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.3 && //for systemactics -- normal value 0.2
 	   ptotN > 0.2){ 
 	  
 	  isDeuteron[2] = kTRUE;
@@ -1708,12 +1711,12 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	    }
 	  if(runNumber > 166500) //2011
 	    { 
-	      expSignalDeuteronN = 0.8*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
-	      expSignalDeuteronP = 0.8*AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]); 
+	      expSignalDeuteronN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
+	      expSignalDeuteronP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]); 
 	    }
 	 
 	  if(trackP->GetTPCsignal() < 1200 && 
-	     (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.5 &&
+	     (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.2 &&
 	     ptotP > 0.2 )
 	    {
 	      if(trackP->Charge() >0)	 	isDeuteron[0] = kTRUE; //pos deuteron
@@ -1721,7 +1724,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	    }
 
 	  if(trackN->GetTPCsignal() < 1200 && 
-	     (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.5 &&
+	     (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.2 &&
 	     ptotN > 0.2 )
 	    {
 	      isDeuteron[2] = kTRUE;
@@ -1788,12 +1791,12 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
     isPion[1] = kFALSE;
     //data
     if(!fMCtrue){
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion))<4){
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion))<4){ //for systematics -- normal value 3
 
 	if(trackP->Charge()>0 )	isPion[0] = kTRUE; //pos pion
 	if(trackP->Charge()<0 )	isPion[1] = kTRUE; //neg pion
      }
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion))<4){
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion))<4){ //for systematics -- normal value 3
 
 	if(trackN->Charge()>0 )	isPion[0] = kTRUE; //pos pion
 	if(trackN->Charge()<0 )	isPion[1] = kTRUE; //neg pion
@@ -1802,12 +1805,12 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
 
     //MC
     if(fMCtrue){
-      if(TMath::Abs(trackP->GetTPCsignal() - expSignalPionP)/expSignalPionP < 0.5
+      if(TMath::Abs(trackP->GetTPCsignal() - expSignalPionP)/expSignalPionP < 0.2
 	 && ptotP>0.00001){
  	if(trackP->Charge()>0) isPion[0] = kTRUE; //pos pion
 	if(trackP->Charge()<0) isPion[1] = kTRUE; //neg pion
       }
-     if(TMath::Abs(trackN->GetTPCsignal() - expSignalPionN)/expSignalPionN < 0.5
+     if(TMath::Abs(trackN->GetTPCsignal() - expSignalPionN)/expSignalPionN < 0.2
         && ptotN>0.00001){
  	if(trackN->Charge()>0) isPion[0] = kTRUE; //pos pion
 	if(trackN->Charge()<0) isPion[1] = kTRUE; //neg pion
@@ -2013,7 +2016,7 @@ Double_t AliAnalysisTaskLambdaNAOD::MomentumInnerParam(AliVTrack *track, Double_
   return ptot;
 }
 //_____________________________________________
-Int_t AliAnalysisTaskLambdaNAOD::TPCclusters(AliVTrack *track, Int_t numberOfTPCclusters){ //function to get the number of clusters used for each track
+UShort_t AliAnalysisTaskLambdaNAOD::TPCclusters(AliVTrack *track, UShort_t numberOfTPCclusters){ //function to get the number of clusters used for each track
 
   AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
   numberOfTPCclusters = esdtrack->GetTPCNcls();
@@ -2021,7 +2024,7 @@ Int_t AliAnalysisTaskLambdaNAOD::TPCclusters(AliVTrack *track, Int_t numberOfTPC
   return numberOfTPCclusters;
 }
 //_____________________________________________ 
-Int_t AliAnalysisTaskLambdaNAOD::TPCchi2(AliVTrack *track, Float_t numberOfChi2clustersTPC, Int_t numberOfTPCclusters){ //function to get the chi2 per clusters used for each track
+Double_t AliAnalysisTaskLambdaNAOD::TPCchi2(AliVTrack *track, Double_t numberOfChi2clustersTPC, UShort_t numberOfTPCclusters){ //function to get the chi2 per clusters used for each track
 
   AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
   numberOfChi2clustersTPC = esdtrack->GetTPCchi2()/numberOfTPCclusters;

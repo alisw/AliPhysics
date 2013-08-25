@@ -204,11 +204,11 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Double_t fImpactParameterPionPosAliKF[maxNofTracks];        //! Tree variable                                                                          
   Double_t fImpactParameterPionNegAliKF[maxNofTracks];        //! Tree variable      
 
-  Int_t fMinNClustersTPCPos[maxNofTracks];                     //! Tree variable
-  Int_t fMinNClustersTPCNeg[maxNofTracks];                     //! Tree variable
+  UShort_t fMinNClustersTPCPos[maxNofTracks];                     //! Tree variable
+  UShort_t fMinNClustersTPCNeg[maxNofTracks];                     //! Tree variable
 
-  Float_t fMaxChi2PerClusterTPCPos[maxNofTracks];              //! Tree variable
-  Float_t fMaxChi2PerClusterTPCNeg[maxNofTracks];              //! Tree variable
+  Double_t fMaxChi2PerClusterTPCPos[maxNofTracks];              //! Tree variable
+  Double_t fMaxChi2PerClusterTPCNeg[maxNofTracks];              //! Tree variable
   
   TObjArray         *fOutputContainer;         //! output data container for the histogramms
   //
@@ -222,8 +222,8 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Bool_t   TrackCuts(AliVTrack *track, Bool_t testTrackCuts);
   //Bool_t   FilterBit(AliVTrack *track, Bool_t testFilterBit);
   Double_t MomentumInnerParam(AliVTrack *track, Double_t ptot);
-  Int_t TPCclusters(AliVTrack *track, Int_t numberOfTPCclusters);
-  Int_t TPCchi2(AliVTrack *track, Float_t numberOfChi2clustersTPC, Int_t numberOfTPCclusters);
+  UShort_t TPCclusters(AliVTrack *track, UShort_t numberOfTPCclusters);
+  Double_t TPCchi2(AliVTrack *track, Double_t numberOfChi2clustersTPC, UShort_t numberOfTPCclusters);
   Double_t ImpactParameter(AliVTrack *track, Double_t dcaToVertex);
 
  
