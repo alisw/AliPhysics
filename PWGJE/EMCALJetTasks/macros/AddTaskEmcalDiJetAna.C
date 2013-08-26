@@ -26,7 +26,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   Int_t       pSel                = AliVEvent::kINT7,
 						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 						   Double_t    ptTrackBias         = 0.,
-						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateAll
+						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -148,11 +148,13 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   //Connect output
   AliAnalysisDataContainer *coutput1 = 0x0;
 
-  TString containerName1 = Form("%s",wagonName.Data());
+  TString contName(wagonName);
+  contName += "_histos";
 
-  TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
+  //  TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
+  TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
 
-  coutput1 = mgr->CreateContainer(containerName1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
   mgr->ConnectOutput(taskDiJet,1,coutput1);
   

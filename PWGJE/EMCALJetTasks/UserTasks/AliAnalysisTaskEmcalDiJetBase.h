@@ -77,6 +77,8 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
   Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
 
+  AliEmcalJet* GetLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig);
+
  protected:
   virtual Bool_t                      RetrieveEventObjects();
 
@@ -138,6 +140,6 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   AliAnalysisTaskEmcalDiJetBase(const AliAnalysisTaskEmcalDiJetBase&);            // not implemented
   AliAnalysisTaskEmcalDiJetBase &operator=(const AliAnalysisTaskEmcalDiJetBase&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetBase, 3) // dijet base task
+  ClassDef(AliAnalysisTaskEmcalDiJetBase, 4) // dijet base task
 };
 #endif

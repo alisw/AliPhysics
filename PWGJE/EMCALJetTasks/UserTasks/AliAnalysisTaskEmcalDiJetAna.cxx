@@ -424,41 +424,9 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetLeadingAssociatedJet(const Int_t t
     typea = fContainerCharged;
   else if(type==2)  //full-charged
     typea = fContainerCharged;
+
+  AliEmcalJet *jetAssocLead = GetLeadingJetOppositeHemisphere(type, typea, jetTrig);
   
-  Int_t nJetsAssoc = GetNJets(typea);
-  Double_t ptLead = -999;
-  Int_t    iJetLead = -1;
-  for(Int_t ija=0; ija<nJetsAssoc; ija++) {
-
-    AliEmcalJet *jetAssoc = NULL;
-    if(type==0) {
-      jetAssoc = static_cast<AliEmcalJet*>(GetJetFromArray(ija, typea));
-      if(TMath::Abs(jetAssoc->Eta())>0.5)
-	jetAssoc = NULL;
-    }
-    else
-      jetAssoc = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ija, typea));
-    
-    if(!jetAssoc)
-      continue;
-   
-    Double_t dPhi = GetDeltaPhi(jetTrig,jetAssoc);
-    Double_t phiMin = 0.5*TMath::Pi();
-    Double_t phiMax = 1.5*TMath::Pi();
-    if(dPhi<phiMin || phiMax>phiMax)
-      continue;
- 
-    Double_t jetAssocPt = GetJetPt(jetAssoc,typea);
-
-    if(jetAssocPt>ptLead) {
-      ptLead = jetAssocPt;
-      iJetLead = ija;
-    }
-    
-  }
-  
-  AliEmcalJet *jetAssocLead = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead, typea));
-
   return jetAssocLead;
 
 }

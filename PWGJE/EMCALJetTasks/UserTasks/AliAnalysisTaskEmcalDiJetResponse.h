@@ -26,17 +26,23 @@ class AliAnalysisTaskEmcalDiJetResponse : public AliAnalysisTaskEmcalDiJetBase {
   void                        Terminate(Option_t *option);
 
   //Setters
-  void SetMatchFullCharged(Bool_t b)        { fDoMatchFullCharged = b;}
+  void SetMatchFullCharged(Bool_t b)        { fDoMatchFullCharged = b; }
+  void SetResponseVar(Int_t v)              { fnUsedResponseVar   = v; }    
 
   //Getters
 
  protected:
   Bool_t                      Run()              ;
   void                        CorrelateJets(const Int_t type);
+  void                        CorrelateAllJets(const Int_t type);
+  void                        CorrelateTwoJets(const Int_t type);
+
   Bool_t                      FillHistograms()   ;
   void                        FillDiJetHistos(const AliEmcalJet *jet1 = 0, const AliEmcalJet *jet2 = 0, const Int_t mode = 0);
   void                        FillMatchHistos();
   Bool_t                      RetrieveEventObjects();
+
+  void                        FillDiJetResponse(const AliEmcalJet *jetTrigMC = 0, const AliEmcalJet *jetAssocMC = 0, const AliEmcalJet *jetTrigDet = 0, const AliEmcalJet *jetAssocDet = 0, Int_t type = 0);
 
  private:
   Bool_t            fDoMatchFullCharged;          //  do full-charged matching histos
@@ -50,11 +56,12 @@ class AliAnalysisTaskEmcalDiJetResponse : public AliAnalysisTaskEmcalDiJetBase {
   TH3F             *fh3AssocLostPtDeltaPhiFull;   //! lost full associated jet
   THnSparse        *fhnMatchingCharged;           //! sparse comparing matched particle and detector level charged jets
   THnSparse        *fhnMatchingFull;              //! sparse comparing matched particle and detector level charged jets
+  Int_t             fnUsedResponseVar;            //  build response for kt (0) or dijet eta (1)
 
 
   AliAnalysisTaskEmcalDiJetResponse(const AliAnalysisTaskEmcalDiJetResponse&);            // not implemented
   AliAnalysisTaskEmcalDiJetResponse &operator=(const AliAnalysisTaskEmcalDiJetResponse&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetResponse, 1) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalDiJetResponse, 2) // jet sample analysis task
 };
 #endif

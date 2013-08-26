@@ -9,7 +9,9 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 							     const char *CentEst             = "V0A",
 							     Int_t       pSel                = AliVEvent::kINT7,
 							     Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
-							     Double_t    ptTrackBias         = 0.
+							     Double_t    ptTrackBias         = 0.,
+							     Int_t       responseVar         = 0,
+							     Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo
 							     ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -47,7 +49,7 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   TString strJetsChMC   = jetFinderTaskChargedMC->GetName();
 
 
-  TString wagonName = Form("DiJetResponse_%s_%s_Rho%dTC%sMatch%dHadTrig%d",strJetsFull.Data(),strJetsFullMC.Data(),rhoType,trigClass.Data(),matchFullCh,(Int_t)(ptTrackBias));
+  TString wagonName = Form("DiJetResponse_%s_%s_Rho%dTC%sMatch%dHadTrig%dRV%d",strJetsFull.Data(),strJetsFullMC.Data(),rhoType,trigClass.Data(),matchFullCh,(Int_t)(ptTrackBias),responseVar);
 
   //Configure DiJet task
   AliAnalysisTaskEmcalDiJetResponse *taskDiJet = NULL;
@@ -55,6 +57,10 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
  
   Printf("strJetsFull: %s",strJetsFull.Data());
   Printf("strJetsCh: %s",strJetsCh.Data());
+
+  taskDiJet->SetIsPythiaPtHard(kTRUE);
+
+  taskDiJet->SetJetCorrelationType(corrType);
 
   taskDiJet->SetContainerFull(0);
   taskDiJet->SetContainerCharged(1);
@@ -89,6 +95,8 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 
   taskDiJet->SetIsPythiaPtHard(kTRUE);
 
+  taskDiJet->SetResponseVar(responseVar);
+
 
   mgr->AddTask(taskDiJet);
 
@@ -98,11 +106,13 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   //Connect output
   AliAnalysisDataContainer *coutput1 = 0x0;
 
-  TString containerName1 = Form("%s",wagonName.Data());
+  TString contName(wagonName);
+  contName += "_histos";
 
-  TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
+  //  TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
+  TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
 
-  coutput1 = mgr->CreateContainer(containerName1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
   mgr->ConnectOutput(taskDiJet,1,coutput1);
   
