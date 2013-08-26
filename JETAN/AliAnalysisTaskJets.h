@@ -33,11 +33,13 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void Init();
     virtual void LocalInit() {Init();}
     virtual void UserExec(Option_t *option);
+
     virtual void SetConfigFile(const char *c) {fConfigFile = c;}
     virtual void SetJetFinder(AliJetFinder *finder) {fJetFinder = finder;}
     virtual void SetNonStdBranch(const char *c){fNonStdBranch = c;}
     virtual const char* GetNonStdBranch(){return fNonStdBranch.Data();}
     virtual void SetNonStdOutputFile(const char *c){fNonStdFile = c;}
+    virtual const char* GetNonStdOutputFile() {return fNonStdFile.Data();}
     virtual void SetBookAODBackground(Bool_t b){fUseAODBackground = b;}
     virtual void Terminate(Option_t *option);
     virtual void ReadAODFromOutput() {fReadAODFromOutput = kTRUE;}
