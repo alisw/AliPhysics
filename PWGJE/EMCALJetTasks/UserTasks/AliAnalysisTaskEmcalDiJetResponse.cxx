@@ -45,10 +45,10 @@ AliAnalysisTaskEmcalDiJetResponse::AliAnalysisTaskEmcalDiJetResponse() :
   fh3AssocLostPtDeltaPhiCharged(0),
   fh3AssocLostPtDeltaPhiFull(0),
   fhnMatchingCharged(0),
-  fhnMatchingFull(0)
+  fhnMatchingFull(0),
+  fnUsedResponseVar(0)
 {
   // Default constructor.
-
   
   SetMakeGeneralHistograms(kTRUE);
 
@@ -70,7 +70,8 @@ AliAnalysisTaskEmcalDiJetResponse::AliAnalysisTaskEmcalDiJetResponse(const char 
   fh3AssocLostPtDeltaPhiCharged(0),
   fh3AssocLostPtDeltaPhiFull(0),
   fhnMatchingCharged(0),
-  fhnMatchingFull(0)
+  fhnMatchingFull(0),
+  fnUsedResponseVar(0)
 {
   // Standard constructor.
 
@@ -107,18 +108,34 @@ void AliAnalysisTaskEmcalDiJetResponse::UserCreateOutputObjects()
   const Int_t nBinsPt = 250;
   const Int_t nBinsDPhi     = 72;
   const Int_t nBinsKt       = 50;
-  const Int_t nBins0[nBinsSparse0] = {nBinsPt,nBinsPt,nBinsPt,nBinsPt,nBinsDPhi,nBinsDPhi,nBinsKt,nBinsKt};
+  const Int_t nBinsDiJetEta = 40;
+  const Int_t nBinsVar[2] = {nBinsKt,nBinsDiJetEta};
+
+  const Int_t nBins0[nBinsSparse0] = {nBinsPt,nBinsPt,nBinsPt,nBinsPt,nBinsDPhi,nBinsDPhi,nBinsVar[fnUsedResponseVar],nBinsVar[fnUsedResponseVar]};
 
   const Double_t minPt = 0.;
   const Double_t maxPt = 250.;
+  const Double_t minVar[2] = {-100.,-1.};
+  const Double_t maxVar[2] = { 100., 1.};
 
-  const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, minPt, minPt, -0.5*TMath::Pi(), -0.5*TMath::Pi(), -100.,-100.};
-  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt, maxPt, maxPt,  1.5*TMath::Pi(), 1.5*TMath::Pi(),  100., 100.};
+  const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, minPt, minPt, -0.5*TMath::Pi(), -0.5*TMath::Pi(), minVar[fnUsedResponseVar], minVar[fnUsedResponseVar]};
+  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt, maxPt, maxPt,  1.5*TMath::Pi(), 1.5*TMath::Pi(),  maxVar[fnUsedResponseVar], maxVar[fnUsedResponseVar]};
 
   fhnDiJetResponseCharged = new THnSparseF("fhnDiJetResponseCharged","fhnDiJetResponseCharged;p_{T,trig}^{part};p_{T,trig}^{det};p_{T,ass}^{part};p_{T,ass}^{det};#Delta#varphi_{part};#Delta#varphi_{det};k_{T}^{part},k_{T}^{det}",nBinsSparse0,nBins0,xmin0,xmax0);
-  fOutput->Add(fhnDiJetResponseCharged);
 
   fhnDiJetResponseFullCharged = new THnSparseF("fhnDiJetResponseFullCharged","fhnDiJetResponseFullCharged;p_{T,trig}^{part};p_{T,trig}^{det};p_{T,ass}^{part};p_{T,ass}^{det};#Delta#varphi_{part};#Delta#varphi_{det};k_{T}^{part},k_{T}^{det}",nBinsSparse0,nBins0,xmin0,xmax0);
+
+  if(fnUsedResponseVar==1) {
+    fhnDiJetResponseCharged->SetTitle("fhnDiJetResponseCharged DiJetEta"); 
+    fhnDiJetResponseCharged->GetAxis(6)->SetTitle("#eta_{dijet}^{part}");
+    fhnDiJetResponseCharged->GetAxis(7)->SetTitle("#eta_{dijet}^{det}");
+
+    fhnDiJetResponseFullCharged->SetTitle("fhnDiJetResponseFullCharged DiJetEta"); 
+    fhnDiJetResponseFullCharged->GetAxis(6)->SetTitle("#eta_{dijet}^{part}");
+    fhnDiJetResponseFullCharged->GetAxis(7)->SetTitle("#eta_{dijet}^{det}");
+  }
+
+  fOutput->Add(fhnDiJetResponseCharged);
   fOutput->Add(fhnDiJetResponseFullCharged);
 
   TString strType = "";
@@ -231,6 +248,24 @@ void AliAnalysisTaskEmcalDiJetResponse::CorrelateJets(const Int_t type) {
   // Correlate jets and fill histos
   //
 
+  if( fJetCorrelationType==kCorrelateAll )
+    CorrelateAllJets(type);
+  else if( fJetCorrelationType==kCorrelateTwo )
+    CorrelateTwoJets(type);
+  else if( fJetCorrelationType==kCorrelateLS )
+    AliWarning(Form("%s: leading-subleading correlation not implemented for response!",GetName()));
+
+  return;
+
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDiJetResponse::CorrelateAllJets(const Int_t type) {
+  //
+  // Correlate jets and fill histos
+  //
+
   Int_t typet = 0;
   Int_t typea = 0;
   Int_t typetMC = 0;
@@ -324,26 +359,172 @@ void AliAnalysisTaskEmcalDiJetResponse::CorrelateJets(const Int_t type) {
 	continue;
       }
 
-      //Store dijet vars: pt,trig MC; pt,trig DET; pt,ass MC; pt,ass DET; dPhi MC; dPhi Det; kT MC; kT Det;
-      Double_t diJetVars[8] = {
-	jetTrigPtMC,
-	GetJetPt(jetTrigDet,typet),
-	jetAssocPtMC,
-	GetJetPt(jetAssocDet,typea),
-	GetDeltaPhi(jetTrigMC,jetAssocMC),
-	GetDeltaPhi(jetTrigDet,jetAssocDet),
-	jetTrigPtMC*TMath::Sin(GetDeltaPhi(jetTrigMC,jetAssocMC)),
-	GetJetPt(jetTrigDet,typet)*TMath::Sin(GetDeltaPhi(jetTrigDet,jetAssocDet))
-      }; 
+      FillDiJetResponse(jetTrigMC,jetAssocMC,jetTrigDet,jetAssocDet,type);
 
-      if(type==1)
-	fhnDiJetResponseCharged->Fill(diJetVars);
-      else if(type==2)
-	fhnDiJetResponseFullCharged->Fill(diJetVars);
-
-      
     } // associate jet loop
   }//trigger jet loop
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDiJetResponse::CorrelateTwoJets(const Int_t type) {
+  //
+  // Correlate jets and fill histos
+  //
+
+  Int_t typet = 0;
+  Int_t typea = 0;
+  Int_t typetMC = 0;
+  Int_t typeaMC = 0;
+  if(type==0) { //full-full
+    typetMC = fContainerFullMC;
+    typeaMC = fContainerFullMC;
+    typet = fContainerFull;
+    typea = fContainerFull;
+  }
+  else if(type==1) { //charged-charged
+    typetMC = fContainerChargedMC;
+    typeaMC = fContainerChargedMC;
+    typet = fContainerCharged;
+    typea = fContainerCharged;
+  }
+  else if(type==2) { //full-charged
+    typetMC = fContainerFullMC;
+    typeaMC = fContainerChargedMC;
+    typet = fContainerFull;
+    typea = fContainerCharged;
+  }
+  else {
+    AliWarning(Form("%s: type %d of dijet correlation not defined!",GetName(),type));
+    return;
+  }
+
+  Int_t nJetsTrig  = 0;
+  Int_t nJetsAssoc = 0;
+  if(type==0) {
+    nJetsTrig  = GetNJets(fContainerFullMC);
+    nJetsAssoc = nJetsTrig;
+  }
+  else if(type==1) {
+    nJetsTrig  = GetNJets(fContainerChargedMC);
+    nJetsAssoc = nJetsTrig;
+  }
+  else if(type==2) {
+    nJetsTrig  = GetNJets(fContainerFullMC);
+    nJetsAssoc = GetNJets(fContainerChargedMC);
+  }
+
+
+  for(Int_t ijt=0; ijt<nJetsTrig; ijt++) {
+
+    AliEmcalJet *jetTrigMC = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ijt, typetMC));
+    if(!jetTrigMC) continue; //jet not selected
+
+    Double_t jetTrigPtMC = GetJetPt(jetTrigMC,typetMC);
+
+    if(jetTrigPtMC<fPtMinTriggerJet)
+      continue;
+
+    if(type==1)
+      fh1TriggersCharged[0]->Fill(jetTrigPtMC);
+    if(type==2)
+      fh1TriggersFull[0]->Fill(jetTrigPtMC);
+
+    AliEmcalJet *jetTrigDet = jetTrigMC->ClosestJet();
+    if(!jetTrigDet) {
+      //trigger is lost
+      if(type==1)
+	fh1TriggersLostCharged->Fill(jetTrigPtMC);
+      if(type==2)
+	fh1TriggersLostFull->Fill(jetTrigPtMC);
+      
+      continue;
+    }
+
+    if(type==1)
+      fh1TriggersCharged[1]->Fill(GetJetPt(jetTrigDet,typet));
+    if(type==2)
+      fh1TriggersFull[1]->Fill(GetJetPt(jetTrigDet,typet));
+
+
+    AliEmcalJet *jetAssocMC = GetLeadingJetOppositeHemisphere(type,typeaMC,jetTrigMC);
+    if(!jetAssocMC) continue;
+
+    Double_t jetAssocPtMC = GetJetPt(jetAssocMC,typeaMC);
+      
+    //Now check if jets are also there on detector level
+    AliEmcalJet *jetAssocDet = jetAssocMC->ClosestJet();
+    if(!jetAssocDet) {
+      //dijet is lost
+      if(type==1)
+	fh3AssocLostPtDeltaPhiCharged->Fill(jetTrigPtMC,jetAssocPtMC,GetDeltaPhi(jetTrigMC,jetAssocMC));
+      if(type==2)
+	fh3AssocLostPtDeltaPhiFull->Fill(jetTrigPtMC,jetAssocPtMC,GetDeltaPhi(jetTrigMC,jetAssocMC));
+      continue;
+    }
+
+    FillDiJetResponse(jetTrigMC,jetAssocMC,jetTrigDet,jetAssocDet,type);
+
+
+  }//trigger jet loop
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDiJetResponse::FillDiJetResponse(const AliEmcalJet *jetTrigMC, const AliEmcalJet *jetAssocMC, const AliEmcalJet *jetTrigDet, const AliEmcalJet *jetAssocDet, Int_t type) {
+
+  //Fill dijet response
+
+  Int_t typet = 0;
+  Int_t typea = 0;
+  Int_t typetMC = 0;
+  Int_t typeaMC = 0;
+  if(type==0) { //full-full
+    typetMC = fContainerFullMC;
+    typeaMC = fContainerFullMC;
+    typet = fContainerFull;
+    typea = fContainerFull;
+  }
+  else if(type==1) { //charged-charged
+    typetMC = fContainerChargedMC;
+    typeaMC = fContainerChargedMC;
+    typet = fContainerCharged;
+    typea = fContainerCharged;
+  }
+  else if(type==2) { //full-charged
+    typetMC = fContainerFullMC;
+    typeaMC = fContainerChargedMC;
+    typet = fContainerFull;
+    typea = fContainerCharged;
+  }
+  else {
+    AliWarning(Form("%s: type %d of dijet correlation not defined!",GetName(),type));
+    return;
+  }
+
+  Double_t jetTrigPtMC  = GetJetPt(jetTrigMC,typetMC);
+  Double_t jetAssocPtMC = GetJetPt(jetAssocMC,typeaMC);
+
+  Double_t varDet[2] = {GetJetPt(jetTrigDet,typet)*TMath::Sin(GetDeltaPhi(jetTrigDet,jetAssocDet)),(jetTrigDet->Eta()+jetAssocDet->Eta())/2.};
+  Double_t varPart[2] = {jetTrigPtMC*TMath::Sin(GetDeltaPhi(jetTrigMC,jetAssocMC)),(jetTrigMC->Eta()+jetAssocMC->Eta())/2.};
+
+  //Store dijet vars: pt,trig MC; pt,trig DET; pt,ass MC; pt,ass DET; dPhi MC; dPhi Det; kT MC; kT Det;
+  Double_t diJetVars[8] = {
+    jetTrigPtMC,
+    GetJetPt(jetTrigDet,typet),
+    jetAssocPtMC,
+    GetJetPt(jetAssocDet,typea),
+    GetDeltaPhi(jetTrigMC,jetAssocMC),
+    GetDeltaPhi(jetTrigDet,jetAssocDet),
+    varPart[fnUsedResponseVar],
+    varDet[fnUsedResponseVar]
+  }; 
+  
+  if(type==1)
+    fhnDiJetResponseCharged->Fill(diJetVars);
+  else if(type==2)
+    fhnDiJetResponseFullCharged->Fill(diJetVars);
+
 
 }
 

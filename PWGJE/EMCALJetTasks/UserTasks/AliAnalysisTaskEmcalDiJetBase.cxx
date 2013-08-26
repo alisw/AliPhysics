@@ -605,6 +605,51 @@ void AliAnalysisTaskEmcalDiJetBase::SetChargedFractionIndexMC() {
 
 }
 
+//_______________________________________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig) {
+
+  // Get leading jet in opposite hemisphere from trigger jet
+  // type = correlation type
+  // typea = container of associated jets
+
+  Int_t nJetsAssoc = GetNJets(typea);
+  Double_t ptLead = -999;
+  Int_t    iJetLead = -1;
+  for(Int_t ija=0; ija<nJetsAssoc; ija++) {
+
+    AliEmcalJet *jetAssoc = NULL;
+    if(type==0) {
+      jetAssoc = static_cast<AliEmcalJet*>(GetJetFromArray(ija, typea));
+      if(TMath::Abs(jetAssoc->Eta())>0.5)
+        jetAssoc = NULL;
+    }
+    else
+      jetAssoc = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ija, typea));
+
+    if(!jetAssoc)
+      continue;
+
+    Double_t dPhi = GetDeltaPhi(jetTrig,jetAssoc);
+    Double_t phiMin = 0.5*TMath::Pi();
+    Double_t phiMax = 1.5*TMath::Pi();
+    if(dPhi<phiMin || phiMax>phiMax)
+      continue;
+
+    Double_t jetAssocPt = GetJetPt(jetAssoc,typea);
+
+    if(jetAssocPt>ptLead) {
+      ptLead = jetAssocPt;
+      iJetLead = ija;
+    }
+
+  }
+
+  AliEmcalJet *jetAssocLead = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead, typea));
+
+  return jetAssocLead;
+
+}
+
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalDiJetBase::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
 {
