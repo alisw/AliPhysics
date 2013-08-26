@@ -246,6 +246,8 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   UInt_t iPhysicsSelectionFlagMB = AliVEvent::kMB; 
   UInt_t iPhysicsSelectionFlagCentral = AliVEvent::kCentral;
   UInt_t iPhysicsSelectionFlagSemiCentral = AliVEvent::kSemiCentral;
+  UInt_t iPhysicsSelectionFlagINT7 = AliVEvent::kINT7; 
+  UInt_t iPhysicsSelectionFlagEMCEJE = AliVEvent::kEMCEJE; 
 
   Int_t cent = 10;
 
@@ -269,8 +271,32 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   }
   else {
     cent = 10;
-    AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
-    taskTrackQAMB->SetFilterMask(filterBit);
+
+    if(strRunPeriod.Contains("LHC13")) {
+      AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagINT7);
+      taskTrackQAMB->SetFilterMask(768);
+
+      AliPWG4HighPtTrackQA *taskTrackQAMB1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagINT7);
+      taskTrackQAMB1->SetFilterMask(256);
+
+      AliPWG4HighPtTrackQA *taskTrackQAMB2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagINT7);
+      taskTrackQAMB2->SetFilterMask(512);
+
+      if(strRunPeriod.EqualTo("LHC13d") || strRunPeriod.EqualTo("LHC13e") || strRunPeriod.EqualTo("LHC13f")) {
+	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
+	taskTrackQAEMCEJE->SetFilterMask(768);
+	
+	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagEMCEJE);
+	taskTrackQAEMCEJE1->SetFilterMask(256);
+	
+	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagEMCEJE);
+	taskTrackQAEMCEJE2->SetFilterMask(512);
+      }
+    }
+    else {
+      AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
+      taskTrackQAMB->SetFilterMask(filterBit);
+    }
   }
 }
 
