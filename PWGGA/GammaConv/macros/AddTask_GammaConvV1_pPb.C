@@ -126,8 +126,6 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       cutarray[ 3] = "800000008209417200329000000"; mesonCutArray[ 3] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
       cutarray[ 4] = "800000008209517200329000000"; mesonCutArray[ 4] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
       cutarray[ 5] = "800000008209617200329000000"; mesonCutArray[ 5] = "01629045000000";  //standard cut Pi0 pPb  dedx electron Cut changed
-
-
    } else if (trainConfig == 4) { 
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
@@ -137,6 +135,15 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       cutarray[ 3] = "800000008209317300329000000"; mesonCutArray[ 3] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
       cutarray[ 4] = "800000008209357200329000000"; mesonCutArray[ 4] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
       cutarray[ 5] = "800000008209307200329000000"; mesonCutArray[ 5] = "01629045000000";  //standard cut Pi0 pPb dedx Pion Line changed
+   } else if (trainConfig == 5) { 
+      doEtaShiftIndCuts = kFALSE;
+      stringShift = "pPb";cd 
+      cutarray[ 0] = "800001100209326000380000000"; mesonCutArray[ 0] = "01631031009000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 1] = "802001100209326000380000000"; mesonCutArray[ 1] = "01631031009000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 2] = "804001100209326000380000000"; mesonCutArray[ 2] = "01631031009000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 3] = "828001100209326000380000000"; mesonCutArray[ 3] = "01631031009000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 4] = "848001100209326000380000000"; mesonCutArray[ 4] = "01631031009000";  //standard cut Pi0 pPb dedx Pion Line changed
+      cutarray[ 5] = "800001100209226000380000000"; mesonCutArray[ 5] = "01631031009000";  //standard cut Pi0 pPb dedx Pion Line changed   
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;

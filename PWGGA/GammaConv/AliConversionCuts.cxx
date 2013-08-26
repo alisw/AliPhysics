@@ -1692,6 +1692,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   if (fNameHistoReweightingPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
      TH1D *hReweightMCHistPi0temp = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
      hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
+     hReweightMCHistPi0->SetDirectory(0);
      if (hReweightMCHistPi0) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingPi0.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
   }
@@ -1705,6 +1706,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
      TH1D *hReweightMCHistEtatemp = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
      hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
+     hReweightMCHistEta->SetDirectory(0);
      if (hReweightMCHistEta) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
   }
@@ -1719,6 +1721,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   if (fNameHistoReweightingK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
      TH1D *hReweightMCHistK0stemp = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
      hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
+     hReweightMCHistK0s->SetDirectory(0);
      if (hReweightMCHistK0s) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
   }
@@ -1729,7 +1732,9 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
      if (fFitDataK0s) AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
   }
-
+  f->Close();
+  delete f;
+  
 }
 
 
