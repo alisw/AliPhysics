@@ -379,6 +379,8 @@ protected:
     TH2F *fHistSecondariesEffCorrVsNcl;
     TH3F *fHistCentVsNchVsNcl;
     TH3F *fHistSecondaryPositionInDetector;
+    TH2F *fClusterPositionWeird;
+    TH3F *fHistSecondaryPositionInDetectorMultiple;
 
 
 private:
