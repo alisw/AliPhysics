@@ -35,8 +35,8 @@
 #include <AliESDHeader.h>
 #include <AliAODHeader.h>
 #include <AliAODTrack.h>
-#include <AliAODForwardMult.h>
-#include <AliForwardUtil.h>
+//#include <AliAODForwardMult.h>
+//#include <AliForwardUtil.h>
 #include <AliTriggerAnalysis.h>
 #include <AliESDtrackCuts.h>
 #include <AliVZDC.h>
@@ -214,11 +214,11 @@ void AliAnalysisTaskReducedTree::UserCreateOutputObjects()
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskReducedTree::UserExec(Option_t *option)
+void AliAnalysisTaskReducedTree::UserExec(Option_t *)
 {
   //
   // Main loop. Called for every event
-  //  
+  //
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
