@@ -591,14 +591,16 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	}
       }
       for(Int_t j=0;j<nbin;j++) {//3he
-	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7+9][j]);
-	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7+9][j]);
-	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7+9][j]);
-	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7+9][j]);
+	
+	fList1[iB]->Add(hDCAxy[iB][7][j]);
+	fList1[iB]->Add(hDCAz[iB][7][j]);
+	fList1[iB]->Add(hM2CutDCAxy[iB][7][j]);
+	fList1[iB]->Add(hM2CutGroundDCAxy[iB][7][j]);
+	fList1[iB]->Add(hDCAxy[iB][7+9][j]);
+	fList1[iB]->Add(hDCAz[iB][7+9][j]);
+	fList1[iB]->Add(hM2CutDCAxy[iB][7+9][j]);
+	fList1[iB]->Add(hM2CutGroundDCAxy[iB][7+9][j]);
+
       }
     }
     if(MomType & 2) {
@@ -615,14 +617,14 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	}
       }
       for(Int_t j=0;j<nbin;j++) {//3he
-	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7][j]);
-	  fList1[iB]->Add(hDCAxy_pTpcbin[iB][7+9][j]);
-	  fList1[iB]->Add(hDCAz_pTpcbin[iB][7+9][j]);
-	  fList1[iB]->Add(hM2CutDCAxy_pTpcbin[iB][7+9][j]);
-	  fList1[iB]->Add(hM2CutGroundDCAxy_pTpcbin[iB][7+9][j]);
+	  fList1[iB]->Add(hDCAxy_pbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAz_pbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pbin[iB][7][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pbin[iB][7][j]);
+	  fList1[iB]->Add(hDCAxy_pbin[iB][7+9][j]);
+	  fList1[iB]->Add(hDCAz_pbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutDCAxy_pbin[iB][7+9][j]);
+	  fList1[iB]->Add(hM2CutGroundDCAxy_pbin[iB][7+9][j]);
       }
     }
     if(MomType & 4) {
