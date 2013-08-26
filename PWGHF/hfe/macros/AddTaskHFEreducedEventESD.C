@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskHFEreducedEvent(Bool_t MCthere=kFALSE, Int_t TRDtrigger=
   if(isRemoveFirstEvent) reducedEventCreator->SetRemoveFirstEventFromChunk();
 
   if(TRDtrigger==0) reducedEventCreator->SelectCollisionCandidates(AliVEvent::kINT7);
-  else reducedEventCreator->SelectCollisionCandidates(AliVEvent::kTRD);
+  else reducedEventCreator->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kTRD);
 
   mgr->AddTask(reducedEventCreator);
   
