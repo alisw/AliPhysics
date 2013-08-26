@@ -75,7 +75,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // set track quality cut parameters
     void SetCutRequireTPCRefit(Bool_t *b) 				{ bCutRequireTPCRefit = b; } 
-    void SetCutMinNCrossedRowsTPC(Double_t d) 				{ dCutMinNumberOfCrossedRows = d; }
+    void SetCutMinNCrossedRowsTPC(Double_t d) 				{ dCutMinNumberOfCrossedRows = d; }    
     void SetCutMinRatioCrossedRowsOverFindableClustersTPC(Double_t d) 	{ dCutMinRatioCrossedRowsOverFindableClustersTPC = d; }
     void SetCutMaxChi2PerClusterTPC(Double_t d) 			{ dCutMaxChi2PerClusterTPC = d; }
     void SetCutMaxFractionSharedTPCClusters(Double_t d) 		{ dCutMaxFractionSharedTPCClusters = d; }
@@ -93,6 +93,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     }
     void SetCutAcceptKinkDaughters(Bool_t *b) 				{ bCutAcceptKinkDaughters = b; } 
     void SetCutMaxChi2TPCConstrainedGlobal(Double_t d) 			{ dCutMaxChi2TPCConstrainedGlobal = d; }
+    
+    // getter for qualtiy track cuts
+    Double_t GetCutMinNCrossedRowsTPC()					{ return dCutMinNumberOfCrossedRows; }
     
     THnSparseF *GetHistZvPtEtaCent() const { return hnZvPtEtaCent; }
     TH1F *GetHistEventStatistics() const { return hEventStatistics; }
@@ -117,8 +120,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TList	*fOutputList;
     
     // Histograms
-    TH1F	*hPt;
-    TH1F	*hMCPt;
+    TH1F	*hPt; // simple pT histogramm
+    TH1F	*hMCPt; // simple pT truth histogramm
     THnSparseF 	*hnZvPtEtaCent; //-> Zv:Pt:Eta:Cent
     THnSparseF 	*hnMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*hnMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
@@ -140,8 +143,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // global variables
     Bool_t bIsMonteCarlo;
-    
-    
+     
     // event cut variables
     Double_t dCutMaxZVertex;
     
@@ -186,7 +188,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,0);
+    ClassDef(AlidNdPtAnalysisPbPbAOD,1); // has to be at least 1, otherwise not streamable...
 };
 
 #endif
