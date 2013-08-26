@@ -32,7 +32,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	if(configIndex==22) hfecuts->SetMinNClustersTPCPID(70); 
 	else if (configIndex==23) hfecuts->SetMinNClustersTPCPID(80);					//Minimum number of clusters for dE/dx
-	else (configIndex==24) hfecuts->SetMinNClustersTPCPID(90);					    //Minimum number of clusters for dE/dx
+	else hfecuts->SetMinNClustersTPCPID(90);					    //Minimum number of clusters for dE/dx
 	
 	hfecuts->SetMinRatioTPCclusters(0.6);						                    //Number of clusters (Found/Findable)
 	
