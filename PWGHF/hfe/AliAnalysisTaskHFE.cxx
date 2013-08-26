@@ -445,6 +445,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
   fQACollection->CreateTH1F("nTriggerBit", "Histo Trigger Bit", 22, 0, 22);
+  fQACollection->CreateTH1F("Filterend", "AOD filter of tracks after all cuts", 21, -1, 20);
  
   InitHistoITScluster();
   InitContaminationQA();
