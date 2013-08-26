@@ -352,6 +352,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
 
 void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 {
+  
   // Main Loop
   // called for each event
   hEventStatistics->Fill("all events",1);
@@ -632,6 +633,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
+  
+  if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
   
   hAccNclsTPC->Fill(dNClustersTPC);
   hAccCrossedRowsTPC->Fill(dCrossedRowsTPC);
