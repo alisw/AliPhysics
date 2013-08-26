@@ -14,6 +14,7 @@
 **************************************************************************/
 
 #include "iostream"
+#include "TSystem.h"
 
 #include <TPDGCode.h>
 #include <TDatabasePDG.h>
@@ -294,6 +295,23 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
       if(!fESDfriend) {
         Printf("ERROR: ESD friends not available");
     }
+  }
+
+  //if set, use the environment variables to set the downscaling factors
+  //AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
+  //AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
+  TString env;
+  env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF");
+  if (!env.IsNull())
+  {
+    fLowPtTrackDownscaligF=env.Atof();
+    AliInfo(Form("fLowPtTrackDownscaligF=%f",fLowPtTrackDownscaligF));
+  }
+  env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF");
+  if (!env.IsNull())
+  {
+    fLowPtV0DownscaligF=env.Atof();
+    AliInfo(Form("fLowPtV0DownscaligF=%f",fLowPtTrackDownscaligF));
   }
 
   //
