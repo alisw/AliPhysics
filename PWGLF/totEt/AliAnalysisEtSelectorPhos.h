@@ -13,6 +13,7 @@ class TH2I;
 class TParticle;
 class AliPHOSGeometry;
 class AliESDEvent;
+class AliStack;
 
 class AliAnalysisEtSelectorPhos : public AliAnalysisEtSelector
 {
@@ -35,6 +36,8 @@ public:
     virtual Int_t Init(const AliESDEvent *ev);
 
     virtual Bool_t IsDetectorCluster(const AliESDCaloCluster& cluster) const {return cluster.IsPHOS();}
+
+     virtual UInt_t GetLabel(const AliESDCaloCluster *cluster, AliStack *stack);
     
 private:
 

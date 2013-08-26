@@ -313,6 +313,8 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistSecondariesEffCorrVsNcl(0)
 						  ,fHistCentVsNchVsNcl(0)
 						  ,fHistSecondaryPositionInDetector(0)
+						  ,fClusterPositionWeird(0)
+						  ,fHistSecondaryPositionInDetectorMultiple(0)
 {
 }
 
@@ -481,6 +483,8 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistSecondariesEffCorrVsNcl;
     delete fHistCentVsNchVsNcl;
     delete fHistSecondaryPositionInDetector;
+    delete fClusterPositionWeird;
+    delete fHistSecondaryPositionInDetectorMultiple;
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -773,7 +777,9 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         //Float_t caloE = caloCluster->E()
         if (!fSelector->CutGeometricalAcceptance(*caloCluster)) continue;
         fNClusters++;
-        const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
+        //const UInt_t iPart = (UInt_t)TMath::Abs(fSelector->GetLabel(caloCluster));//->GetLabel());
+	const UInt_t iPart = fSelector->GetLabel(caloCluster,stack);
+	//const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
         TParticle *part  =  stack->Particle(iPart);
 
         if (!part)
@@ -921,9 +927,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	if(fSecondary){//all particles from secondary interactions 
 	  written = kTRUE;
+	  if(!fSelector->CutGeometricalAcceptance(*part)){
+	    fClusterPositionWeird->Fill(cp.Phi(), cp.PseudoRapidity());
+	  }
 	  if(nottrackmatched){//secondaries not removed
 // 	    Float_t vtx = TMath::Sqrt( TMath::Power(part->Vx(),2) + TMath::Power(part->Vy(),2) + TMath::Power(part->Vz(),2) );
 	    fHistSecondaryPositionInDetector->Fill(part->Vx(),part->Vy(),part->Vz());
+	    if(caloCluster->GetNLabels()>1){
+	      fHistSecondaryPositionInDetectorMultiple->Fill(part->Vx(),part->Vy(),part->Vz());
+	    }
 // 	    if(vtx>300){
 // 	      //cout<<"Vtx "<<vtx<<endl;
 // 	      if(fPrimaryCode==fgProtonCode ||  fPrimaryCode==fgAntiProtonCode || fPrimaryCode==fgPiPlusCode || fPrimaryCode==fgPiMinusCode || fPrimaryCode==fgKPlusCode || fPrimaryCode==fgKMinusCode){
@@ -966,8 +978,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		fHistMatchedTracksEvspTBkgdvsCent->Fill(matchedTrackp,fReconstructedEt, fCentClass);
 		fHistMatchedTracksEvspTBkgdvsCentEffCorr->Fill(matchedTrackp,clEt, fCentClass);//Fill with the efficiency corrected energy
 	      }
-	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
-	      if(caloCluster->GetLabel()!=trackindex){
+	      //Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
+	      UInt_t trackindex = fSelector->GetLabel(caloCluster,stack);//(caloCluster->GetLabelsArray())->At(1);
+	      if(((UInt_t)caloCluster->GetLabel())!=trackindex){
+	      //if(fSelector->GetLabel(caloCluster,stack) !=trackindex){
 		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
 		fHistBadTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
 		//cout<<"Track matched, label cluster "<<caloCluster->GetLabel()<<" track "<<trackindex<<endl;
@@ -1031,7 +1045,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      }
 	    }
 	    else{//removed and should have been
-	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(0);
+	      Int_t trackindex =  fSelector->GetLabel(caloCluster,stack);// (caloCluster->GetLabelsArray())->At(0);
 	      fHistHadronDepositsReco->Fill(part->Pt());
 	      fHistHadronDepositsRecoCent->Fill(part->Pt(), fCentClass);
 	      fHistHadronDepositsAll->Fill(part->Pt());
@@ -1082,7 +1096,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      }
 	    }
 	    else{//removed but shouldn't have been
-	      Int_t trackindex = (caloCluster->GetLabelsArray())->At(1);
+	      Int_t trackindex = fSelector->GetLabel(caloCluster,stack);// (caloCluster->GetLabelsArray())->At(1);
 	      if(caloCluster->GetLabel()!=trackindex){
 		fHistBadTrackMatches->Fill(part->Pt(),fReconstructedE);
 		fHistBadTrackMatchesdPhidEta->Fill(caloCluster->GetTrackDx(),caloCluster->GetTrackDz());
@@ -1246,7 +1260,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  for (int iCluster = 0; iCluster < nCluster; iCluster++ ){//if this cluster is from any of the decay daughters of any kaon...  but there is no easy way to look at this so we loop over clusters...
 	    AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
 	    if (!fSelector->CutGeometricalAcceptance(*caloCluster)) continue;
-	    const Int_t myPart = TMath::Abs(caloCluster->GetLabel());
+	    const Int_t myPart = fSelector->GetLabel(caloCluster,stack);
+	    //const Int_t myPart = TMath::Abs(caloCluster->GetLabel());
 	    //identify the primary particle which created this cluster
 	    int primIdx = myPart;
 	    if (!stack->IsPhysicalPrimary(myPart)){
@@ -1732,6 +1747,11 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistSecondaryPositionInDetector->GetXaxis()->SetTitle("X");
     fHistSecondaryPositionInDetector->GetYaxis()->SetTitle("Y");
     fHistSecondaryPositionInDetector->GetZaxis()->SetTitle("Z");
+    fHistSecondaryPositionInDetectorMultiple = new TH3F("fHistSecondaryPositionInDetectorMultiple","Position of secondaries",nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos);
+    fHistSecondaryPositionInDetectorMultiple->GetXaxis()->SetTitle("X");
+    fHistSecondaryPositionInDetectorMultiple->GetYaxis()->SetTitle("Y");
+    fHistSecondaryPositionInDetectorMultiple->GetZaxis()->SetTitle("Z");
+    fClusterPositionWeird =  new TH2F("fClusterPositionWeird", "Position of weird secondary clusters",300, -TMath::Pi(),TMath::Pi(), 100, -0.7 , 0.7);
 }
 
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
@@ -1914,6 +1934,8 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistSecondariesEffCorrVsNcl);
     list->Add(fHistCentVsNchVsNcl);
     list->Add(fHistSecondaryPositionInDetector);
+    list->Add(fClusterPositionWeird);
+    list->Add(fHistSecondaryPositionInDetectorMultiple);
 
 
 }

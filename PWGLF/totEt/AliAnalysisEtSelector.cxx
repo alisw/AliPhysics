@@ -91,9 +91,15 @@ Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, Al
 // 			    )
 // 			    && TMath::Sqrt(part.Vx()*part.Vx()+part.Vy()*part.Vy() + part.Vz()*part.Vz())<(fCuts->GetGeometryPhosDetectorRadius()-10);
   
-  //Let's find suspect decay (typical for secondary interaction)...
-  
-  return SuspiciousDecayInChain(211, 111, part, stack);
+
+//   Bool_t partVtxSecondary = (TMath::Sqrt(part.Vx()*part.Vx() + part.Vy()*part.Vy()) <300);
+//   //Let's find suspect decay (typical for secondary interaction)...
+//   if(partVtxSecondary){
+    return SuspiciousDecayInChain(211, 111, part, stack);
+//   }
+//   else{
+//     return kFALSE;
+//   }
   
 			    
   

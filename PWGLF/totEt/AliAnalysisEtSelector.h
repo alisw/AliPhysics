@@ -83,6 +83,9 @@ public:
     
     // Cluster is in correct detector
     virtual Bool_t IsDetectorCluster(const AliESDCaloCluster &cluster) const = 0;
+
+    // Get correct cluster label - PHOS needs different method
+    virtual UInt_t GetLabel(const AliESDCaloCluster *cluster, AliStack *stack){if(!stack){return 0;}else{return TMath::Abs(cluster->GetLabel());}}
     
 protected:
   
