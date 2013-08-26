@@ -79,7 +79,8 @@ goCPass0()
 
   logOutputDir=$runpath
   [[ -n $logToFinalDestination ]] && logOutputDir=$outputDir
-  [[ -z $dontRedirectStdOutToLog ]] && exec 2>&1 > $logOutputDir/runCPass0.log
+  [[ -z $dontRedirectStdOutToLog ]] && exec 1> $logOutputDir/stdout
+  [[ -z $dontRedirectStdOutToLog ]] && exec 2> $logOutputDir/stderr
   echo "$0 $*"
 
   calibDoneFile="$commonOutputPath/cpass0.job${jobindex}.run${runNumber}.done"
@@ -142,11 +143,6 @@ goCPass0()
     ./runCPass0.sh "$infile" "$nEvents" "$runNumber" "$ocdbPath" "$recoTriggerOptions"
   fi
   
-  #validate CPass0
-  touch ${calibDoneFile}
-  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" > ${calibDoneFile}
-  summarizeLogs >> ${calibDoneFile}
-  
   #move stuff to final destination
   echo "this directory ($PWD) contents:"
   ls -lh
@@ -157,6 +153,12 @@ goCPass0()
   echo "cp --recursive $runpath/* ${outputDir}"
   cp --recursive $runpath/* $outputDir
   echo
+  
+  #validate CPass0
+  cd ${outputDir}
+  touch ${calibDoneFile}
+  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" > ${calibDoneFile}
+  summarizeLogs >> ${calibDoneFile}
 
   rm -rf ${runpath}
 }
@@ -210,7 +212,8 @@ goCPass1()
 
   logOutputDir=$runpath
   [[ -n $logToFinalDestination ]] && logOutputDir=$outputDir
-  [[ -z $dontRedirectStdOutToLog ]] && exec 2>&1 > $logOutputDir/runCPass1.log
+  [[ -z $dontRedirectStdOutToLog ]] && exec 1> $logOutputDir/stdout
+  [[ -z $dontRedirectStdOutToLog ]] && exec 2> $logOutputDir/stderr
   echo "$0 $*"
 
   echo "#####################"
@@ -288,13 +291,6 @@ goCPass1()
     ./runCPass1.sh "$infile" "$nEvents" "$runNumber" "$ocdbPath" "$recoTriggerOptions"
   fi
   
-  #validate CPass1
-  touch ${calibDoneFile}
-  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" > ${calibDoneFile}
-  [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${calibDoneFile}
-  [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${calibDoneFile}
-  summarizeLogs >> ${calibDoneFile}
-  
   #move stuff to final destination
   echo "this directory ($PWD) contents:"
   ls
@@ -306,6 +302,14 @@ goCPass1()
   cp --recursive ${runpath}/* ${outputDir}
   echo
 
+  #validate CPass1
+  cd ${outputDir}
+  touch ${calibDoneFile}
+  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" > ${calibDoneFile}
+  [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${calibDoneFile}
+  [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${calibDoneFile}
+  summarizeLogs >> ${calibDoneFile}
+  
   rm -rf ${runpath}
 }
 
@@ -401,16 +405,18 @@ goMergeCPass0()
   #tar the produced OCDB for reuse
   tar czf $commonOutputPath/cpass0.localOCDB.${runNumber}.tgz ./OCDB
 
+  ls -ltrh
+
+  #copy all to output dir
+  cp --recursive ${runpath}/* $outputDir
+  
   #validate merging cpass0
+  cd ${outputDir}
   calibDoneFile="${commonOutputPath}/merge.cpass0.run${runNumber}.done"
   touch ${calibDoneFile}
   [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" > ${calibDoneFile}
   summarizeLogs >> ${calibDoneFile}
 
-  ls -ltrh
-
-  #copy all to output dir
-  cp --recursive ${runpath}/* $outputDir
   rm -rf ${runpath}
 }
 
@@ -508,7 +514,10 @@ goMergeCPass1()
   tar czf localCPass1_${runNumber}.tgz ./OCDB
 
   #merge QA
-  if [[ -z qaFilesToMergeExternal ]]; then
+  [[ -n ${AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
+  [[ -n ${AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
+
+  if [[ -z $qaFilesToMergeExternal ]]; then
     echo "find $outputDir -name $qaOutputFileName > $qaFilesToMerge"
     find $outputDir -name $qaOutputFileName > $qaFilesToMerge
   fi
@@ -521,17 +530,19 @@ goMergeCPass1()
     aliroot -l -b -q "merge.C(\"$qaFilesToMerge\",\"\",kFALSE,\"$qaMergedOutputFileName\")"
   fi
 
+  ls -ltrh
+
+  #copy all to output dir
+  cp --recursive ${runpath}/* ${outputDir}
+  
   #validate merge cpass1
+  cd ${outputDir}
   calibDoneFile="${commonOutputPath}/merge.cpass1.run${runNumber}.done"
   touch ${calibDoneFile}
   [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" > ${calibDoneFile}
   [[ -f $qaMergedOutputFileName ]] && echo "qafile $outputDir/$qaMergedOutputFileName" >> ${calibDoneFile}
   summarizeLogs >>  ${calibDoneFile}
 
-  ls -ltrh
-
-  #copy all to output dir
-  cp --recursive ${runpath}/* ${outputDir}
   rm -rf ${runpath}
 }
 
