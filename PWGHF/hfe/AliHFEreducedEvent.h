@@ -108,14 +108,16 @@ class AliHFEreducedEvent : public TObject{
   Bool_t IsEMCalTrigger() const { return TESTBIT(fTrigger, kEMCAL); }
   Bool_t IsTRDSETrigger() const { return TESTBIT(fTrigger, kTRDSE); }
   Bool_t IsTRDDQTrigger() const { return TESTBIT(fTrigger, kTRDDQ); }
-  
+  Bool_t IsINTTrigger() const { return TESTBIT(fTrigger, kINTTRG); }
+
   void SetMBTrigger() { SETBIT(fTrigger, kMB); }
   void SetSemiCentralTrigger() { SETBIT(fTrigger, kSemiCentral); }
   void SetCentralTrigger() { SETBIT(fTrigger, kCentral); }
   void SetEMCALTrigger() { SETBIT(fTrigger, kEMCAL); }
   void SetTRDSETrigger() { SETBIT(fTrigger, kTRDSE); }
   void SetTRDDQTrigger() { SETBIT(fTrigger, kTRDDQ); }
-  
+  void SetINTTrigger() { SETBIT(fTrigger, kINTTRG); }
+
   void SetV0Multiplicity(Float_t v0A, Float_t v0C) {
     fV0Multiplicity[0] = v0A;
     fV0Multiplicity[1] = v0C;
@@ -130,7 +132,8 @@ class AliHFEreducedEvent : public TObject{
     kCentral = 2,
     kEMCAL = 3,
     kTRDSE = 4,
-    kTRDDQ = 5
+    kTRDDQ = 5,
+    kINTTRG = 6 
   } Trigger_t;
   enum{
     kCentBuff = 15
@@ -151,7 +154,7 @@ class AliHFEreducedEvent : public TObject{
   Float_t  fZDCEnergy[4];       // ZDC Energy (n,p)
   Int_t    fSPDMultiplicity;    // SPD tracklet multiplicity
   
-  ClassDef(AliHFEreducedEvent, 3)
+  ClassDef(AliHFEreducedEvent, 4)
 };
 
 //____________________________________________________________

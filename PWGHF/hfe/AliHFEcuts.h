@@ -371,7 +371,7 @@ void AliHFEcuts::CreateStandardCuts(){
   fMaxChi2clusterTPC = 4.;
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;
-  fPtRange[1] = 20.;
+  fPtRange[1] = 100.;
   SetRequireKineMCCuts();
 }
 #endif

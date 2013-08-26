@@ -1,5 +1,5 @@
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
-  TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/configs/pPb/%s", filename.Data()));
+  TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
   gROOT->cd();
   int isig = static_cast<int>(sigma * 100.);
   printf("Getting hadron background for the sigma cut: %d\n", isig);
@@ -31,12 +31,12 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
                 Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE)
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
- 
+
   //***************************************//
   //        Setting up the HFE cuts        //
   //***************************************//
-  
-  AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts pPb");
+
+  AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts for pPb");
   //hfecuts->SetQAOn();
   hfecuts->CreateStandardCuts();
   hfecuts->SetMinNClustersTPC(TPCcl);
@@ -81,20 +81,20 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(Form("HFEtask%s",appendix.Data()));
   printf("task %p\n", task);
   task->SetpPbAnalysis();
-  task->SetHFECuts(hfecuts);
-  task->SetRemovePileUp(kFALSE);
   if(!isAOD) task->SetRemoveFirstEventInChunk();
+  task->SetRemovePileUp(kFALSE);
+  task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();
 
-  // Setttings for pPb
-  task    -> SetRemoveFirstEventInChunk();
-  hfecuts -> SetUseCorrelationVertex();
-  hfecuts -> SetSPDVtxResolutionCut();
+  // Determine the centrality estimator
+  task->SetCentralityEstimator("V0A");
+  if (icent == 2) task->SetCentralityEstimator("V0M");
+  else if (icent == 3) task->SetCentralityEstimator("CL1");
+  else if (icent == 4) task->SetCentralityEstimator("ZNA");
 
   //***************************************//
   //          Variable manager             //
   //***************************************//
-
   // Define Variables
   Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
   Double_t etabinning[17] = {-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
@@ -110,15 +110,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   vm->AddVariable("source");
   vm->AddVariable("centrality");
 
-  // Determine the centrality estimator
-  task->SetCentralityEstimator("V0A");
-  if (icent == 2) task->SetCentralityEstimator("V0M");
-  else if (icent == 3) task->SetCentralityEstimator("CL1");
-  else if (icent == 4) task->SetCentralityEstimator("ZNA");
-
   // For the moment, remove the part dedicated to the background subtraction.
   // It will be implemented in a different way, reading it from a root file.
- 
 
   //***************************************//
   //          Configure the PID            //
@@ -136,23 +129,22 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   }
   
   // Configure TPC PID
-  if(!useMC){
-    Double_t paramsTPCdEdxcutlow[12] ={0.0, 0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-    if(tpcdEdxcutlow) memcpy(paramsTPCdEdxcutlow,tpcdEdxcutlow,sizeof(paramsTPCdEdxcutlow));
+  // do the identical thing in data and MC
+  Double_t paramsTPCdEdxcutlow[12] ={0.0, 0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+  if(tpcdEdxcutlow) memcpy(paramsTPCdEdxcutlow,tpcdEdxcutlow,sizeof(paramsTPCdEdxcutlow));
 
-    Double_t paramsTPCdEdxcuthigh[12] ={3.0, 3.0, 3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
-    if(tpcdEdxcuthigh) memcpy(paramsTPCdEdxcuthigh,tpcdEdxcuthigh,sizeof(paramsTPCdEdxcuthigh));
-    
-    char *cutmodel;
-    cutmodel="pol0";
-    
-    for(Int_t a=0;a<11;a++)
-    {
-      //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
-      Double_t tpcparamlow[1]={paramsTPCdEdxcutlow[a]};
-      Float_t tpcparamhigh=paramsTPCdEdxcuthigh[a];
-      pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
-    }
+  Double_t paramsTPCdEdxcuthigh[12] ={3.0, 3.0, 3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
+  if(tpcdEdxcuthigh) memcpy(paramsTPCdEdxcuthigh,tpcdEdxcuthigh,sizeof(paramsTPCdEdxcuthigh));
+
+  char *cutmodel;
+  cutmodel="pol0";
+
+  for(Int_t a=0;a<11;a++){
+    // Not necessary anymore, since the pPb case is handled similarly to the pp case
+    //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
+    Double_t tpcparamlow[1]={paramsTPCdEdxcutlow[a]};
+    Float_t tpcparamhigh=paramsTPCdEdxcuthigh[a];
+    pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
   }
   pid->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
 
@@ -169,14 +161,14 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   // The below two lines should be removed after this check
   //AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
   //if(TOFs<3.) tofpid->SetTOFnSigmaBand(-3,TOFs); //only to check the assymmetric tof cut
-  
+
   // Load hadron background
   if(!useMC){
     Bool_t status = kTRUE;
     TF1 *hBackground[12];
     status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, tpcdEdxcutlow[0]);
     for(Int_t a=0;a<12;a++) {
-      //  printf("back %f \n",p0[a]);
+      //printf("back %f \n",hBackground[a]);
       if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
       else printf("not all background functions found\n");
     }
@@ -185,6 +177,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   //***************************************//
   //       Configure NPE plugin            //
   //***************************************//
+
   AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(Form("HFEBackGroundSubtractionPID2%s",appendix.Data()),"Background subtraction");  //appendix
     //Setting the Cuts for the Associated electron-pool
   AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendix.Data()),"Background sub Cuts");
@@ -211,8 +204,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
     
   char *cutmodelAssoc;
   cutmodelAssoc="pol0";
-  for(Int_t a=0;a<11;a++)
-  {
+  for(Int_t a=0;a<11;a++){
     // Not necessary anymore, since the pPb case is handled similarly to the pp case
     //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
     Double_t tpcparamlow[1]={paramsTPCdEdxcutlowAssoc[a]};
@@ -240,6 +232,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
     AliHFEcuts *v0trackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
     v0trackCuts->CreateStandardCuts();
     v0trackCuts->SetMinNClustersTPC(TPCcl);
+    v0trackCuts->SetMinNClustersTPCPID(TPCclPID);
     v0trackCuts->SetMinRatioTPCclusters(0.6);
     v0trackCuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
     v0trackCuts->SetMinNClustersITS(1);
@@ -247,7 +240,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
     v0trackCuts->SetCheckITSLayerStatus(kFALSE);
     v0trackCuts->UnsetVertexRequirement();
     //hfecuts->SetSigmaToVertex(10);
-    v0trackCuts->SetTOFPIDStep(kTRUE);
+    if(usetof) v0trackCuts->SetTOFPIDStep(kTRUE);
     v0trackCuts->SetQAOn();
 
     task->SwitchOnPlugin(AliAnalysisTaskHFE::kTaggedTrackAnalysis);
