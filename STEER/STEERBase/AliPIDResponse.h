@@ -148,7 +148,7 @@ public:
 
   // event info
   Float_t GetCurrentCentrality() const {return fCurrCentrality;};
-
+  void SetCurrentCentrality(Float_t centrality) {fCurrCentrality=centrality;fEMCALResponse.SetCentrality(fCurrCentrality);};
   // TPC setting
   void SetUseTPCEtaCorrection(Bool_t useEtaCorrection = kTRUE) { fUseTPCEtaCorrection = useEtaCorrection; };
   Bool_t UseTPCEtaCorrection() const { return fUseTPCEtaCorrection; };
