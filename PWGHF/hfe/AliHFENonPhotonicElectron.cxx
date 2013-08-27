@@ -940,8 +940,11 @@ Bool_t AliHFENonPhotonicElectron::MakePairDCA(const AliVTrack *inclusive, const 
     esdtrack2 = new AliESDtrack(associated);
   } else {
     // call copy constructor for ESDs
-    esdtrack1 = new AliESDtrack(*(dynamic_cast<const AliESDtrack *>(inclusive)));
-    esdtrack2 = new AliESDtrack(*(dynamic_cast<const AliESDtrack *>(associated)));
+    const AliESDtrack *esdincIn = dynamic_cast<const AliESDtrack *>(inclusive),
+                      *esdassIn = dynamic_cast<const AliESDtrack *>(associated);
+    if(!(esdincIn && esdassIn)) return kFALSE;
+    esdtrack1 = new AliESDtrack(*esdincIn);
+    esdtrack2 = new AliESDtrack(*esdassIn);
   }
   if((!esdtrack1) || (!esdtrack2)){ 
     delete esdtrack1;
@@ -1062,12 +1065,14 @@ Bool_t AliHFENonPhotonicElectron::FilterCategory2Track(const AliVTrack * const t
   Int_t nclustersITS(0), nclustersOuter(0);
   if(isAOD){
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    if(!aodtrack) return kFALSE;
     if(!(aodtrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA) || aodtrack->TestFilterBit(AliAODTrack::kTrkITSsa))) return kFALSE;
     nclustersITS = aodtrack->GetITSNcls();
     for(int ily = 2; ily < 5; ily++)
       if(aodtrack->HasPointOnITSLayer(ily)) nclustersOuter++;
   } else {
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    if(!esdtrack) return kFALSE;
     if(esdtrack->GetStatus() & AliESDtrack::kITSpureSA) return kFALSE;
     nclustersITS = esdtrack->GetITSclusters(NULL);
     for(int ily = 2; ily < 5; ily++)

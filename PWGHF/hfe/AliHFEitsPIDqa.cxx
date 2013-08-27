@@ -202,17 +202,16 @@ void AliHFEitsPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   // Fill ITS histograms
   //
   AliDebug(1, Form("QA started for ITS PID for step %d", (Int_t)step));
-  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+  //AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   Float_t centrality = track->GetCentrality();
   Int_t species = track->GetAbInitioPID();
   if(species >= AliPID::kSPECIES) species = -1;
 
   AliHFEpidITS *itspid = dynamic_cast<AliHFEpidITS *>(fQAmanager->GetDetectorPID(AliHFEpid::kITSpid));
-  const AliPIDResponse *pidResponse = itspid ? itspid->GetPIDResponse() : NULL;
   Double_t contentSignal[5];
   contentSignal[0] = species;
   contentSignal[1] = track->GetRecTrack()->P();
-  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasITS(track->GetRecTrack(), AliPID::kElectron) : 0.; 
+  contentSignal[2] = itspid ? itspid->GetITSNsigmaCorrected(track->GetRecTrack()) : -100.; 
   contentSignal[3] = step;
   contentSignal[4] = centrality;
  
