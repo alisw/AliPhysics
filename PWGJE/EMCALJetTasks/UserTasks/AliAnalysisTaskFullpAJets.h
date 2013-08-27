@@ -15,6 +15,7 @@ class TLorentzVector;
 class AliESDtrackCuts;
 class AliEmcalJet;
 class AliEMCALGeometry;
+class AliPicoTrack;
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -341,6 +342,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fhTrackPt;  //!
     TH1D *fhTrackEta;  //!
     TH1D *fhTrackPhi;  //!
+    TH1D *fhGlobalTrackPt;  //!
+    TH1D *fhGlobalTrackEta;  //!
+    TH1D *fhGlobalTrackPhi;  //!
+    TH1D *fhComplementaryTrackPt;  //!
+    TH1D *fhComplementaryTrackEta;  //!
+    TH1D *fhComplementaryTrackPhi;  //!
     TH1D *fhClusterPt;  //!
     TH1D *fhClusterEta;  //!
     TH1D *fhClusterPhi;  //!
@@ -350,10 +357,26 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fhDeltaRhoCMS;  //!
     
     TH2D *fhTrackEtaPhi;  //!
+    TH2D *fhTrackPhiPt;  //!
+    TH2D *fhTrackEtaPt;  //!
+    TH2D *fhGlobalTrackEtaPhi;  //!
+    TH2D *fhGlobalTrackPhiPt;  //!
+    TH2D *fhGlobalTrackEtaPt;  //!
+    TH2D *fhComplementaryTrackEtaPhi;  //!
+    TH2D *fhComplementaryTrackPhiPt;  //!
+    TH2D *fhComplementaryTrackEtaPt;  //!
+
     TH2D *fhClusterEtaPhi; //!
+    TH2D *fhClusterPhiPt;  //!
+    TH2D *fhClusterEtaPt;  //!
     TH2D *fhJetPtArea; //! Jet Area distribution vs Pt
     TH2D *fhJetConstituentPt; //! Pt distribution of jet constituents
     TH2D *fhRhoScale;  //!
+    
+    TH3D *fhTrackEtaPhiPt;  //!
+    TH3D *fhGlobalTrackEtaPhiPt;  //!
+    TH3D *fhComplementaryTrackEtaPhiPt;  //!
+    TH3D *fhClusterEtaPhiPt;  //!
     
     TProfile *fpEMCalEventMult;  //!
     TProfile *fpTPCEventMult;  //!
@@ -423,6 +446,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fTPCEtaMax;
     Double_t fTPCEtaTotal;
     Double_t fTPCArea;
+    
+    Double_t fParticlePtLow;
+    Double_t fParticlePtUp;
+    Int_t fParticlePtBins;
     
     Double_t fJetR;
     Double_t fJetRForRho;  // Required distance a track/cluster must be away from a jet for rho calculation
