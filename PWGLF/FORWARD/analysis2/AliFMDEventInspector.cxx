@@ -58,7 +58,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHCentVsQual(0),
     fHStatus(0),
     fHVtxStatus(0),
-    fHTrgStatus(0),
+    fHTrgStatus(0), 
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
@@ -70,9 +70,9 @@ AliFMDEventInspector::AliFMDEventInspector()
     fVtxAxis(10,-10,10),
     fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
-    fMinPileupContrib(3), 
+  fMinPileupContrib(3), 
   fMinPileupDistance(0.8),
-  fUseDisplacedVertices(false),
+    fUseDisplacedVertices(false),
   fDisplacedVertex(),
   fCollWords(),
   fBgWords(),
@@ -80,7 +80,8 @@ AliFMDEventInspector::AliFMDEventInspector()
   fMinCent(-1.0),
   fMaxCent(-1.0),
   fUsepA2012Vertex(false),
-  fRunNumber(0)
+  fRunNumber(0),
+  fMC(false)
 {
   // 
   // Constructor 
@@ -125,7 +126,8 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   fMinCent(-1.0),
   fMaxCent(-1.0),
   fUsepA2012Vertex(false),
-  fRunNumber(0)
+  fRunNumber(0),
+  fMC(false)
 {
   // 
   // Constructor 
@@ -173,7 +175,8 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
   fMinCent(o.fMinCent),
   fMaxCent(o.fMaxCent),
   fUsepA2012Vertex(o.fUsepA2012Vertex),
-  fRunNumber(o.fRunNumber)
+  fRunNumber(o.fRunNumber),
+  fMC(o.fMC)
   	
 {
   // 
@@ -244,6 +247,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fMaxCent		 = o.fMaxCent; 
   fUsepA2012Vertex       = o.fUsepA2012Vertex;
   fRunNumber             = o.fRunNumber;
+  fMC                    = o.fMC;
 
   if (fList) { 
     fList->SetName(GetName());
@@ -675,6 +679,7 @@ AliFMDEventInspector::StoreInformation()
 					   AliForwardUtil::AliROOTRevision()));
   fList->Add(AliForwardUtil::MakeParameter("alirootBranch", 
 					   AliForwardUtil::AliROOTBranch()));
+  fList->Add(AliForwardUtil::MakeParameter("mc", fMC));
 
 }
 
@@ -1004,6 +1009,7 @@ AliFMDEventInspector::CheckFastPartition(bool fastonly) const
   // triggers are fast.
   if (TMath::Abs(fEnergy - 2750.) > 20) return false;
   if (fCollisionSystem != AliForwardUtil::kPP) return false;
+  if (fMC) return false; // All MC events for pp @ 2.76TeV are `fast'
   if (fastonly)
     DMSG(fDebug,1,"Fast trigger in pp @ sqrt(s)=2.76TeV removed");
 
@@ -1367,6 +1373,9 @@ AliFMDEventInspector::Print(Option_t*) const
 	    << ind << " CMS energy per nucleon: " << sNN << '\n'
 	    << ind << " Field:                  " <<  field << '\n'
 	    << ind << " Satellite events:       " << fUseDisplacedVertices<<'\n'
+	    << ind << " Use 2012 pA vertex:     " << fUsepA2012Vertex << '\n'
+	    << ind << " Use PWG-UD vertex:      " <<fUseFirstPhysicsVertex<<'\n'
+	    << ind << " Simulation input:       " << fMC << '\n'
 	    << ind << " Centrality method:      " << fCentMethod << '\n'
 	    << std::noboolalpha;
   if (!fCentAxis) { std::cout << std::flush; return; }

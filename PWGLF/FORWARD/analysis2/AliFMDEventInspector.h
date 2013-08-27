@@ -319,6 +319,15 @@ public:
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
   /** 
+   * Set whether this is MC or not.  Needed by energy loss fitter task
+   * that never instantices AliFMDMCEventInspector.  In particular, we
+   * need this to make sure we ignore the FAST partition flag in MC
+   * for 2.76TeV pp.
+   * 
+   * @param isMC If true, assume MC input 
+   */
+  void SetMC(Bool_t isMC=true) { fMC = isMC; }
+  /** 
    * Fetch our histograms from the passed list 
    * 
    * @param d             Input
@@ -595,8 +604,8 @@ protected:
   Double_t fMaxCent;  //max centrailty
   Bool_t   fUsepA2012Vertex;// flag to use pA2012 Veretx selection
   ULong_t  fRunNumber; // Current run number 
-
-  ClassDef(AliFMDEventInspector,10); // Inspect the event 
+  Bool_t   fMC;        // Is this MC input
+  ClassDef(AliFMDEventInspector,11); // Inspect the event 
 };
 
 #endif

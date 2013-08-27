@@ -25,6 +25,7 @@
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TFile.h>
+#include <TROOT.h>
 #include "AliMCEvent.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliHeader.h"
@@ -159,7 +160,7 @@ AliFMDEnergyFitterTask::SetupForData()
   TAxis vAxis(10,-10,10); // Default only 
   fEnergyFitter.SetupForData(eAxis);
   fEventInspector.SetupForData(vAxis);
-
+  Print();
 }
 
 //____________________________________________________________________
@@ -194,21 +195,7 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // cnt++;
   // Get the input data 
   DGUARD(fDebug,3,"Analyse event of AliFMDEnergyFitterTask");
-  
-  AliMCEvent* mcevent = MCEvent();
-  if(mcevent) {
-    AliHeader* header            = mcevent->Header();
-    AliGenHijingEventHeader* hijingHeader = 
-      dynamic_cast<AliGenHijingEventHeader*>(header->GenEventHeader());
-    if(hijingHeader) {
-      Float_t b = hijingHeader->ImpactParameter();
-      if(b<fbLow || b>fbHigh) return;
-      else
-	std::cout<<"Selecting event with impact parameter "<<b<<std::endl;
-    }
     
-  }
-  
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   // AliInfo(Form("Event # %6d (esd=%p)", cnt, esd));
   if (!esd) { 
@@ -221,6 +208,7 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
 
   // On the first event, initialize the parameters 
   if (fFirstEvent && esd->GetESDRun()) { 
+    fEventInspector.SetMC(MCEvent());
     fEventInspector.ReadRunDetails(esd);
     
     AliInfo(Form("Initializing with parameters from the ESD:\n"
@@ -330,7 +318,7 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitterTask::Print(Option_t*) const
+AliFMDEnergyFitterTask::Print(Option_t* option) const
 {
   // 
   // Print information 
@@ -338,6 +326,13 @@ AliFMDEnergyFitterTask::Print(Option_t*) const
   // Parameters:
   //    option Not used
   //
+  std::cout << ClassName() << ": " << GetName() << std::endl; 
+  gROOT->IncreaseDirLevel();
+
+  fEventInspector.Print(option);
+  fEnergyFitter.Print(option);
+
+  gROOT->DecreaseDirLevel();
 }
 
 //

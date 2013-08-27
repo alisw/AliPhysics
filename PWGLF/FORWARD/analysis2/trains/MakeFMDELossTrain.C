@@ -29,6 +29,8 @@ public:
     : TrainSetup(name)
   {
     fOptions.Add("cent", "Use centrality");
+    fOptions.Add("residuals", "MODE", "Optional calculation of residuals", "");
+    fOptions.Set("type", "ESD");
   }
 protected:
   //------------------------------------------------------------------
@@ -64,12 +66,15 @@ protected:
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
-    Bool_t mc   = mgr->GetMCtruthEventHandler() != 0;
-    Bool_t cent = fOptions.Has("cent");
-    Int_t  verb = fOptions.AsInt("verbose");
+    Bool_t   mc   = mgr->GetMCtruthEventHandler() != 0;
+    Bool_t   cent = fOptions.Has("cent");
+    Int_t    verb = fOptions.AsInt("verbose");
+    TString  resi = "";
+    if (fOptions.Has("residuals")) resi = fOptions.Get("residuals"); 
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskFMDELoss.C(%d,%d,%d)", mc, cent, verb));
+    gROOT->Macro(Form("AddTaskFMDELoss.C(%d,%d,%d,\"%s\")", 
+		      mc, cent, verb, resi.Data()));
   }
   /** 
    * Create entrality selection if enabled 

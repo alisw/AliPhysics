@@ -164,7 +164,7 @@ extract_upload()
 	    unzip ../$i > /dev/null 2>&1
 	    touch .zip 
 	fi
-	extract ../Extract.C 
+	_extract ../Extract.C 
 	upload
 	cd ..
     done
@@ -173,12 +173,19 @@ extract_upload()
 # --- Draw -----------------------------------------------------------
 draw()
 {
-    local scr=$1  ; shift
+    local dd=`pwd` 
+    dd=`basename $dd` 
+    echo "=== Drawing in $dd using $1"
+    local scr=$1  ; shift    
+    case x$scr in 
+	x/*) ;; 
+	x*)  scr=../$scr ;; 
+    esac
     # local args=$1 ; shift
     download 
     for i in *.zip ; do 
 	if test "X$i" = "X*.zip" ; then continue ; fi
-	echo "Will extract $i"
+	echo "--- Will extract $i in $dd"
 	d=`basename $i .zip` 
 	if test ! -d $d ; then 
 	    mkdir -p $d 
@@ -189,25 +196,32 @@ draw()
 }
 dndeta_draw()
 {
+    echo "=== Drawing dN/deta in $1"
+    local top=$1 ; shift 
+    cd $top
     download 
     for i in *.zip ; do 
 	if test "X$i" = "X*.zip" ; then continue ; fi
-	echo "Will extract $i"
+	echo "--- Will extract $i"
 	d=`basename $i .zip` 
 	if test ! -d $d ; then 
 	    mkdir -p $d 
 	    unzip $i -d $d
 	fi
-	_dndeta_draw $d ../Draw.C $@
+	(cd $d && \
+	    script ${fwd_dir}/DrawdNdetaSummary.C && \
+	    script ../Draw.C)
     done
+    cd ..
 }
 
 # === Script specific functions ======================================
 # --- Extract corrections --------------------------------------------
 download()
 {
+    echo "=== Executing download in `pwd`"
     if test -f .download ; then 
-	echo "Already downloaded in `basename $PWD`"
+	echo "--- Already downloaded in `basename $PWD`"
 	return 0 
     fi
     script Download.C 
@@ -230,7 +244,7 @@ EOF`
 
 run_for_acc()
 {
-    local r=`grep -v ^# $runs | awk '{FS=" \n\t"}{printf "%d\n", $1}' | head -n 1` 
+    local r=`grep -v ^# ../$runs | awk '{FS=" \n\t"}{printf "%d\n", $1}' | head -n 1` 
     if test x$r = "x" || test $r -lt 1; then 
 	echo "No run for acceptance correction specified" > /dev/stderr 
 	exit 1
@@ -372,8 +386,7 @@ allAboard()
 {
     local type=$1 ; shift
     local trig=$1 ; shift
-    opts="--batch"
-    _allAboard "$type" "$trig" $@ 
+    _allAboard "$type" "$trig" --batch $@ 
 
     if test $watch -lt 1 ; then 
 	cat <<-EOF

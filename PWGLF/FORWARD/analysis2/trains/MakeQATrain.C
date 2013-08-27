@@ -31,6 +31,7 @@ public:
   {
     fOptions.Add("cent", "Use centrality");
     fOptions.Set("type", "ESD");
+    fOptions.Add("corr", "DIR", "Corrections dir", "");
   }
 protected:
   //__________________________________________________________________
@@ -64,6 +65,12 @@ protected:
 		 Form("%d,%d", mc, fOptions.Has("cent"))))
       Fatal("CreateTasks", "Failed to add ForwardQA task");
 #endif
+
+    TString  cor = "";
+    if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
+    if (!cor.IsNull()) {
+      fHelper->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
+    }
   }
   /** 
    * Create entrality selection if enabled 

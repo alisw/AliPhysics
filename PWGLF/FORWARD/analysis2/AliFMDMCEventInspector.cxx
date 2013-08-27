@@ -81,6 +81,7 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const char* /* name */)
   // Parameters:
   //   name Name of object
   //
+  fMC = true;
 }
 
 //____________________________________________________________________
@@ -253,17 +254,6 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   fList->Add(fHCentVsMcC);
 
   if (fUseDisplacedVertices) fDisplacedVertex.SetupForData(fList, "", true);
-}
-
-//____________________________________________________________________
-void AliFMDMCEventInspector::StoreInformation()
-{
-  // Store information about running conditions in the output list 
-  if (!fList) return;
-  AliFMDEventInspector::StoreInformation();
-  Bool_t mc = true;
-  fList->Add(AliForwardUtil::MakeParameter("mc", mc));
-  // , fProduction.Data());
 }
 
 namespace
