@@ -7,7 +7,7 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
         const char* targetJets  = "TargetJets", // target jets
         const char* matchedJets = "MatchedJets",// matched jets
         UInt_t matchingScheme   = AliAnalysisTaskJetMatching::kDeepMatching,
-        UInt_t duplicateRecovery= AliAnalysisTaskJetMatching::kTraceDuplicates,
+        UInt_t duplicateRecovery= AliAnalysisTaskJetMatching::kDoNothing,
         const char *name        = "AliAnalysisTaskJetMatching",
   )
 { 

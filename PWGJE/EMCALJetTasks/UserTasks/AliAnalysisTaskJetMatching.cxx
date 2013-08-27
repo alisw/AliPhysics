@@ -35,13 +35,13 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetMatching)
 
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetMatching", kTRUE), 
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fUseScaledRho(0), fMatchingScheme(kGeoEtaPhi), fDuplicateJetRecoveryMode(kDoNothing), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(100), fMatchEta(.03), fMatchPhi(.03), fMatchR(.03), fMatchArea(0), fMaxRelEnergyDiff(.1), fMaxAbsEnergyDiff(5) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fUseScaledRho(0), fMatchingScheme(kGeoEtaPhi), fDuplicateJetRecoveryMode(kDoNothing), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(100), fMatchEta(.03), fMatchPhi(.03), fMatchR(.03), fMatchArea(0), fMaxRelEnergyDiff(.1), fMaxAbsEnergyDiff(5) {
     // default constructor
     ClearMatchedJetsCache();
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE),
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fUseScaledRho(0), fMatchingScheme(kGeoEtaPhi), fDuplicateJetRecoveryMode(kDoNothing), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(100), fMatchEta(.03), fMatchPhi(.03), fMatchR(.03), fMatchArea(0), fMaxRelEnergyDiff(.1), fMaxAbsEnergyDiff(5) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fUseScaledRho(0), fMatchingScheme(kGeoEtaPhi), fDuplicateJetRecoveryMode(kDoNothing), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(100), fMatchEta(.03), fMatchPhi(.03), fMatchR(.03), fMatchArea(0), fMaxRelEnergyDiff(.1), fMaxAbsEnergyDiff(5) {
     // constructor
     ClearMatchedJetsCache();
     DefineInput(0, TChain::Class());
@@ -103,6 +103,14 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     fProfQA->GetXaxis()->SetBinLabel(2, "<#delta #eta>");
     fProfQA->GetXaxis()->SetBinLabel(3, "<#delta #varphi>");
     fOutputList->Add(fProfQA);
+    fProfFracPtMatched = new TProfile("fProfFracPtMatched", "fProfFracPtMatched", 10, 0, 200);
+    fOutputList->Add(fProfFracPtMatched);
+    fProfFracPtJets = new TProfile("fProfFracPtJets", "fProfFracPtJets", 10, 0, 200);
+    fOutputList->Add(fProfFracPtJets);
+    fProfFracNoMatched = new TProfile("fProfFracNoMatched", "fProfFracNoMatched", 10, 0, 200);
+    fOutputList->Add(fProfFracNoMatched);
+    fProfFracNoJets = new TProfile("fProfFracNoJets", "fProfFracNoJets", 10, 0, 200);
+    fOutputList->Add(fProfFracNoJets);
     fOutputList->Sort();
     PostData(1, fOutputList);
 }
@@ -247,20 +255,36 @@ void AliAnalysisTaskJetMatching::DoDeepMatching()
         return; // coverity ...
     }
     for(Int_t i(0); i < fNoMatchedJets; i++) {
-        AliEmcalJet* sourceJet = fMatchedJetContainer[0][i];
-        AliEmcalJet* targetJet = fMatchedJetContainer[1][i];
+        AliEmcalJet* sourceJet = fMatchedJetContainer[i][0];
+        AliEmcalJet* targetJet = fMatchedJetContainer[i][1];
         if(sourceJet && targetJet) {    // duplicate check: slot migth be NULL
-            Int_t iSJ = sourceJet->GetNumberOfTracks();
-            Int_t iTJ = targetJet->GetNumberOfTracks();
-            for(Int_t j(0); j < iSJ; j++) {     // nested loops over constituets ...
-                AliVParticle* pSJ = sourceJet->TrackAt(j, fTracks);
-                if(!pSJ) continue;              // shouldn't happen
-                for(Int_t k(0); k < iTJ; k++) {
-                    AliVParticle* pTJ = targetJet->TrackAt(k, fTracks);
-                    if(!pTJ) continue;
-                    if(pTJ == pSJ) printf(" > matched track by pointer value \n");
-                    else if(CompareTracks(pSJ, pTJ)) printf(" > hurray, matched source and target constituent ! \n");
+            Double_t targetPt(0);
+            Int_t iSJ(sourceJet->GetNumberOfTracks());
+            Int_t iTJ(targetJet->GetNumberOfTracks());
+            Int_t overlap(0), alreadyFound(0);
+            for(Int_t j(0); j < iSJ; j++) {
+                alreadyFound = 0;
+                Int_t idSource((Int_t)sourceJet->TrackAt(j));
+                for(Int_t k(0); k < iTJ; k++) { // compare all target tracks to the source track
+                    if(idSource == targetJet->TrackAt(k) && alreadyFound == 0) {
+                        overlap++;
+                        alreadyFound++; // avoid possible duplicate matching
+                        AliVParticle* vp(static_cast<AliVParticle*>(targetJet->TrackAt(k, fTracks)));
+                        if(vp) targetPt += vp->Pt();
+                        continue;
+                    }
                 }
+            }
+            if(sourceJet->Pt() > 0) {
+                fProfFracPtMatched->Fill(sourceJet->Pt(), targetPt / sourceJet->Pt());
+                fProfFracPtJets->Fill(sourceJet->Pt(), targetJet->Pt() / sourceJet->Pt());
+                fProfFracNoMatched->Fill(sourceJet->Pt(), (double)overlap / (double)sourceJet->GetNumberOfTracks());
+                fProfFracNoJets->Fill(sourceJet->Pt(), (double)targetJet->GetNumberOfTracks() / (double)sourceJet->GetNumberOfTracks());
+            }
+            if(fDebug > 0) {
+                printf("\n\n > Jet a has %i constituents \n", iSJ);
+                printf(" > Jet b has %i constituents \n", iTJ);
+                printf("  -OVERLAP %i tracks-\n\n", overlap);
             }
         }
     }

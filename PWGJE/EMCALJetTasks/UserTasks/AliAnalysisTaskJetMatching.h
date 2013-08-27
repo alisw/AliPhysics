@@ -54,6 +54,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetMatchingScheme(matchingSceme m)              {fMatchingScheme = m;}
         void                    SetDuplicateRecoveryScheme(duplicateRecovery d) {fDuplicateJetRecoveryMode = d;}
+        void                    SetUseEmcalBaseJetCuts(Bool_t b)                {fUseEmcalBaseJetCuts = b;}
         void                    SetSourceBKG(sourceBKG b)                       {fSourceBKG = b;}
         void                    SetTargetBKG(targetBKG b)                       {fTargetBKG = b;}
         void                    SetSourceJetsName(const char* n)                {fSourceJetsName = n;}
@@ -79,7 +80,8 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
             if(!track) return kFALSE;
             return (track->Pt() < fTrackPtCut || track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) ? kFALSE : kTRUE; }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const {
-            return (jet) ? kTRUE : kFALSE; }
+            if(!jet) return kFALSE;
+            return (fUseEmcalBaseJetCuts) ? AliAnalysisTaskEmcalJet::AcceptJet(jet) : kTRUE; }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* a, AliEmcalJet* b) const {
             if (fMatchArea > 0) { return (TMath::Abs(a->Area()/b->Area()) < fMatchArea) ? kTRUE : kFALSE; }
             if (fMaxRelEnergyDiff > 0) { return (TMath::Abs(a->E()/b->E()) > fMaxRelEnergyDiff) ? kTRUE : kFALSE; }
@@ -104,6 +106,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         Bool_t                  fUseScaledRho;          // use scaled rho
         matchingSceme           fMatchingScheme;        // select your favorite matching algorithm
         duplicateRecovery       fDuplicateJetRecoveryMode;      // what to do with duplicate matches
+        Bool_t                  fUseEmcalBaseJetCuts;   // use the emcal jet base class for jet cuts
         sourceBKG               fSourceBKG;             // subtracted background of source jets
         targetBKG               fTargetBKG;             // subtracted background of target jets
         // additional jet cuts (most are inherited)
@@ -121,6 +124,10 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         TH1F*                   fHistNoConstSourceJet;  //! number of constituents of source jet
         TH1F*                   fHistNoConstTargetJet;  //! number of constituents of target jet
         TH1F*                   fHistNoConstMatchJet;   //! number of constituents of matched jets
+        TProfile*               fProfFracPtMatched;     //! sum pt fraction for matched tracks / jet
+        TProfile*               fProfFracPtJets;        //! sum pt fraction for matched jets
+        TProfile*               fProfFracNoMatched;     //! no of constituents fraction found / jet
+        TProfile*               fProfFracNoJets;        //! no of consstituents fraction jet / jet
         TH1F*                   fHistAnalysisSummary;   //! flags
         TProfile*               fProfQAMatched;         //! QA spreads of matched jets
         TProfile*               fProfQA;                //! QA spreads of source and target jets
@@ -137,7 +144,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskJetMatching(const AliAnalysisTaskJetMatching&);                  // not implemented
         AliAnalysisTaskJetMatching& operator=(const AliAnalysisTaskJetMatching&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetMatching, 1);
+        ClassDef(AliAnalysisTaskJetMatching, 2);
 };
 
 #endif
