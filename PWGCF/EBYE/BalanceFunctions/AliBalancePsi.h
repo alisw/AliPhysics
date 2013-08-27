@@ -204,7 +204,8 @@ class AliBalancePsi : public TObject {
   TH3D *GetQAHistQafter() {return fHistQafter;}
 
   void UseResonancesCut() {fResonancesCut = kTRUE;}
-  void UseHBTCut() {fHBTCut = kTRUE;}
+  void UseHBTCut(Double_t setHBTCutValue = 0.02) {
+    fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
   void UseConversionCut(Double_t setInvMassCutConversion = 0.04) {
     fConversionCut = kTRUE; fInvMassCutConversion = setInvMassCutConversion; }
   void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
@@ -247,6 +248,7 @@ class AliBalancePsi : public TObject {
 
   Bool_t fResonancesCut;//resonances cut
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
+  Double_t fHBTCutValue;// value for two-track efficiency cut (default = 0.02 from dphicorrelations)
   Bool_t fConversionCut;//conversion cut
   Double_t fInvMassCutConversion;//invariant mass for conversion cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
