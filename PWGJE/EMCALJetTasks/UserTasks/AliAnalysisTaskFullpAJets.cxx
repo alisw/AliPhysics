@@ -31,6 +31,7 @@
 #include "AliVCluster.h"
 #include "AliEmcalJet.h"
 #include "AliEMCALGeometry.h"
+#include "AliPicoTrack.h"
 #include "Rtypes.h"
 
 ClassImp(AliAnalysisTaskFullpAJets)
@@ -43,6 +44,12 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fhTrackPt(0),
     fhTrackEta(0),
     fhTrackPhi(0),
+    fhGlobalTrackPt(0),
+    fhGlobalTrackEta(0),
+    fhGlobalTrackPhi(0),
+    fhComplementaryTrackPt(0),
+    fhComplementaryTrackEta(0),
+    fhComplementaryTrackPhi(0),
     fhClusterPt(0),
     fhClusterEta(0),
     fhClusterPhi(0),
@@ -52,10 +59,25 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fhDeltaRhoCMS(0),
 
     fhTrackEtaPhi(0),
+    fhTrackPhiPt(0),
+    fhTrackEtaPt(0),
+    fhGlobalTrackEtaPhi(0),
+    fhGlobalTrackPhiPt(0),
+    fhGlobalTrackEtaPt(0),
+    fhComplementaryTrackEtaPhi(0),
+    fhComplementaryTrackPhiPt(0),
+    fhComplementaryTrackEtaPt(0),
     fhClusterEtaPhi(0),
+    fhClusterPhiPt(0),
+    fhClusterEtaPt(0),
     fhJetPtArea(0),
     fhJetConstituentPt(0),
     fhRhoScale(0),
+
+    fhTrackEtaPhiPt(0),
+    fhGlobalTrackEtaPhiPt(0),
+    fhComplementaryTrackEtaPhiPt(0),
+    fhClusterEtaPhiPt(0),
 
     fpEMCalEventMult(0),
     fpTPCEventMult(0),
@@ -119,6 +141,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fTPCEtaMax(0.9),
     fTPCEtaTotal(1.8),
     fTPCArea(11.30973),
+    fParticlePtLow(0.0),
+    fParticlePtUp(200.0),
+    fParticlePtBins(2000),
     fJetR(0.4),
     fJetRForRho(0.5),
     fJetAreaCutFrac(0.6),
@@ -197,6 +222,12 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fhTrackPt(0),
     fhTrackEta(0),
     fhTrackPhi(0),
+    fhGlobalTrackPt(0),
+    fhGlobalTrackEta(0),
+    fhGlobalTrackPhi(0),
+    fhComplementaryTrackPt(0),
+    fhComplementaryTrackEta(0),
+    fhComplementaryTrackPhi(0),
     fhClusterPt(0),
     fhClusterEta(0),
     fhClusterPhi(0),
@@ -206,10 +237,25 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fhDeltaRhoCMS(0),
 
     fhTrackEtaPhi(0),
+    fhTrackPhiPt(0),
+    fhTrackEtaPt(0),
+    fhGlobalTrackEtaPhi(0),
+    fhGlobalTrackPhiPt(0),
+    fhGlobalTrackEtaPt(0),
+    fhComplementaryTrackEtaPhi(0),
+    fhComplementaryTrackPhiPt(0),
+    fhComplementaryTrackEtaPt(0),
     fhClusterEtaPhi(0),
+    fhClusterPhiPt(0),
+    fhClusterEtaPt(0),
     fhJetPtArea(0),
     fhJetConstituentPt(0),
     fhRhoScale(0),
+
+    fhTrackEtaPhiPt(0),
+    fhGlobalTrackEtaPhiPt(0),
+    fhComplementaryTrackEtaPhiPt(0),
+    fhClusterEtaPhiPt(0),
 
     fpEMCalEventMult(0),
     fpTPCEventMult(0),
@@ -273,6 +319,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fTPCEtaMax(0.9),
     fTPCEtaTotal(1.8),
     fTPCArea(11.30973),
+    fParticlePtLow(0.0),
+    fParticlePtUp(200.0),
+    fParticlePtBins(2000),
     fJetR(0.4),
     fJetRForRho(0.5),
     fJetAreaCutFrac(0.6),
@@ -399,7 +448,11 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fTPCEtaMax=0.9;
     fTPCEtaTotal=fTPCEtaMax-fTPCEtaMin;
     fTPCArea=fTPCPhiTotal*fTPCEtaTotal;
-
+    
+    fParticlePtLow=0.0;
+    fParticlePtUp=200.0;
+    fParticlePtBins=Int_t(fParticlePtUp-fParticlePtLow);
+    
     fCentralityBins=10;
     fCentralityLow=0.0;
     fCentralityUp=100.0;
@@ -439,7 +492,8 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     Int_t TCBins=100;
     
     // QA Plots
-    fhTrackPt = new TH1D("fhTrackPt","p_{T} distribution of tracks in event",10*JetPtBins,JetPtLow,JetPtUp);
+    // Hybrid Tracks
+    fhTrackPt = new TH1D("fhTrackPt","p_{T} distribution of tracks in event",fParticlePtBins,fParticlePtLow,fParticlePtUp);
     fhTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhTrackPt->Sumw2();
@@ -460,6 +514,105 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhTrackEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#phi");
     fhTrackEtaPhi->Sumw2();
 
+    fhTrackPhiPt = new TH2D("fhTrackPhiPt","#phi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhTrackPhiPt->GetXaxis()->SetTitle("#phi");
+    fhTrackPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhTrackPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#phidp_{T}");
+    fhTrackPhiPt->Sumw2();
+
+    fhTrackEtaPt = new TH2D("fhTrackEtaPt","#eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhTrackEtaPt->GetXaxis()->SetTitle("#phi");
+    fhTrackEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhTrackEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
+    fhTrackEtaPt->Sumw2();
+
+    fhTrackEtaPhiPt = new TH3D("fhTrackEtaPhiPt","#eta-#phi-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhTrackEtaPhiPt->GetXaxis()->SetTitle("#eta");
+    fhTrackEtaPhiPt->GetYaxis()->SetTitle("#phi");
+    fhTrackEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+    fhTrackEtaPhiPt->Sumw2();
+
+    // Global Tracks
+    fhGlobalTrackPt = new TH1D("fhGlobalTrackPt","Global p_{T} distribution of tracks in event",fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhGlobalTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fhGlobalTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
+    fhGlobalTrackPt->Sumw2();
+    
+    fhGlobalTrackPhi = new TH1D("fhGlobalTrackPhi","Global #phi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
+    fhGlobalTrackPhi->GetXaxis()->SetTitle("#phi");
+    fhGlobalTrackPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#phi");
+    fhGlobalTrackPhi->Sumw2();
+    
+    fhGlobalTrackEta = new TH1D("fhGlobalTrackEta","Global #eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
+    fhGlobalTrackEta->GetXaxis()->SetTitle("#eta");
+    fhGlobalTrackEta->GetYaxis()->SetTitle("1/N_{Events} dN/d#eta");
+    fhGlobalTrackEta->Sumw2();
+    
+    fhGlobalTrackEtaPhi = new TH2D("fhGlobalTrackEtaPhi","Global #eta-#phi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
+    fhGlobalTrackEtaPhi->GetXaxis()->SetTitle("#eta");
+    fhGlobalTrackEtaPhi->GetYaxis()->SetTitle("#phi");
+    fhGlobalTrackEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#phi");
+    fhGlobalTrackEtaPhi->Sumw2();
+    
+    fhGlobalTrackPhiPt = new TH2D("fhGlobalTrackPhiPt","Global #phi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhGlobalTrackPhiPt->GetXaxis()->SetTitle("#phi");
+    fhGlobalTrackPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhGlobalTrackPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#phidp_{T}");
+    fhGlobalTrackPhiPt->Sumw2();
+    
+    fhGlobalTrackEtaPt = new TH2D("fhGlobalTrackEtaPt","Global #eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhGlobalTrackEtaPt->GetXaxis()->SetTitle("#phi");
+    fhGlobalTrackEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhGlobalTrackEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
+    fhGlobalTrackEtaPt->Sumw2();
+    
+    fhGlobalTrackEtaPhiPt = new TH3D("fhGlobalTrackEtaPhiPt","Global #eta-#phi-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhGlobalTrackEtaPhiPt->GetXaxis()->SetTitle("#eta");
+    fhGlobalTrackEtaPhiPt->GetYaxis()->SetTitle("#phi");
+    fhGlobalTrackEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+    fhGlobalTrackEtaPhiPt->Sumw2();
+
+    // Complementary Tracks
+    fhComplementaryTrackPt = new TH1D("fhComplementaryTrackPt","Complementary p_{T} distribution of tracks in event",fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhComplementaryTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fhComplementaryTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
+    fhComplementaryTrackPt->Sumw2();
+    
+    fhComplementaryTrackPhi = new TH1D("fhComplementaryTrackPhi","Complementary #phi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
+    fhComplementaryTrackPhi->GetXaxis()->SetTitle("#phi");
+    fhComplementaryTrackPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#phi");
+    fhComplementaryTrackPhi->Sumw2();
+    
+    fhComplementaryTrackEta = new TH1D("fhComplementaryTrackEta","Complementary #eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
+    fhComplementaryTrackEta->GetXaxis()->SetTitle("#eta");
+    fhComplementaryTrackEta->GetYaxis()->SetTitle("1/N_{Events} dN/d#eta");
+    fhComplementaryTrackEta->Sumw2();
+    
+    fhComplementaryTrackEtaPhi = new TH2D("fhComplementaryTrackEtaPhi","Complementary #eta-#phi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
+    fhComplementaryTrackEtaPhi->GetXaxis()->SetTitle("#eta");
+    fhComplementaryTrackEtaPhi->GetYaxis()->SetTitle("#phi");
+    fhComplementaryTrackEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#phi");
+    fhComplementaryTrackEtaPhi->Sumw2();
+    
+    fhComplementaryTrackPhiPt = new TH2D("fhComplementaryTrackPhiPt","Complementary #phi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhComplementaryTrackPhiPt->GetXaxis()->SetTitle("#phi");
+    fhComplementaryTrackPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhComplementaryTrackPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#phidp_{T}");
+    fhComplementaryTrackPhiPt->Sumw2();
+    
+    fhComplementaryTrackEtaPt = new TH2D("fhComplementaryTrackEtaPt","Complementary #eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhComplementaryTrackEtaPt->GetXaxis()->SetTitle("#phi");
+    fhComplementaryTrackEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhComplementaryTrackEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
+    fhComplementaryTrackEtaPt->Sumw2();
+    
+    fhComplementaryTrackEtaPhiPt = new TH3D("fhComplementaryTrackEtaPhiPt","Complementary #eta-#phi-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhComplementaryTrackEtaPhiPt->GetXaxis()->SetTitle("#eta");
+    fhComplementaryTrackEtaPhiPt->GetYaxis()->SetTitle("#phi");
+    fhComplementaryTrackEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+    fhComplementaryTrackEtaPhiPt->Sumw2();
+    
+    // Corrected Calo Clusters
     fhClusterPt = new TH1D("fhClusterPt","p_{T} distribution of clusters in event",10*JetPtBins,JetPtLow,JetPtUp);
     fhClusterPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhClusterPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
@@ -480,6 +633,24 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhClusterEtaPhi->GetYaxis()->SetTitle("#phi");
     fhClusterEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#phi");
     fhClusterEtaPhi->Sumw2();
+
+    fhClusterPhiPt = new TH2D("fhClusterPhiPt","#phi-p_{T} distribution of clusters in event",TCBins,fEMCalPhiMin,fEMCalPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhClusterPhiPt->GetXaxis()->SetTitle("#phi");
+    fhClusterPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhClusterPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#phidp_{T}");
+    fhClusterPhiPt->Sumw2();
+    
+    fhClusterEtaPt = new TH2D("fhClusterEtaPt","#eta-p_{T} distribution of clusters in event",TCBins,fEMCalEtaMin,fEMCalEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhClusterEtaPt->GetXaxis()->SetTitle("#phi");
+    fhClusterEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fhClusterEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
+    fhClusterEtaPt->Sumw2();
+    
+    fhClusterEtaPhiPt = new TH3D("fhClusterEtaPhiPt","#eta-#phi-p_{T} distribution of clusters in event",TCBins,fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhClusterEtaPhiPt->GetXaxis()->SetTitle("#eta");
+    fhClusterEtaPhiPt->GetYaxis()->SetTitle("#phi");
+    fhClusterEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+    fhClusterEtaPhiPt->Sumw2();
 
     fhCentrality = new TH1D("fhCentrality","Event Centrality Distribution",fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
     fhCentrality->GetXaxis()->SetTitle(fCentralityTag);
@@ -672,10 +843,30 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fhTrackEta);
     fOutput->Add(fhTrackPhi);
     fOutput->Add(fhTrackEtaPhi);
+    fOutput->Add(fhTrackPhiPt);
+    fOutput->Add(fhTrackEtaPt);
+    fOutput->Add(fhTrackEtaPhiPt);
+    fOutput->Add(fhGlobalTrackPt);
+    fOutput->Add(fhGlobalTrackEta);
+    fOutput->Add(fhGlobalTrackPhi);
+    fOutput->Add(fhGlobalTrackEtaPhi);
+    fOutput->Add(fhGlobalTrackPhiPt);
+    fOutput->Add(fhGlobalTrackEtaPt);
+    fOutput->Add(fhGlobalTrackEtaPhiPt);
+    fOutput->Add(fhComplementaryTrackPt);
+    fOutput->Add(fhComplementaryTrackEta);
+    fOutput->Add(fhComplementaryTrackPhi);
+    fOutput->Add(fhComplementaryTrackEtaPhi);
+    fOutput->Add(fhComplementaryTrackPhiPt);
+    fOutput->Add(fhComplementaryTrackEtaPt);
+    fOutput->Add(fhComplementaryTrackEtaPhiPt);
     fOutput->Add(fhClusterPt);
     fOutput->Add(fhClusterEta);
     fOutput->Add(fhClusterPhi);
     fOutput->Add(fhClusterEtaPhi);
+    fOutput->Add(fhClusterPhiPt);
+    fOutput->Add(fhClusterEtaPt);
+    fOutput->Add(fhClusterEtaPhiPt);
     fOutput->Add(fhCentrality);
     fOutput->Add(fhEMCalCellCounts);
     fOutput->Add(fhDeltaRhoN);
@@ -948,11 +1139,39 @@ void AliAnalysisTaskFullpAJets::TrackHisto()
 
     for (i=0;i<fnTracks;i++)
     {
-        AliVTrack* vtrack =(AliVTrack*) fmyTracks->At(i);
+        AliPicoTrack* vtrack =(AliPicoTrack*) fmyTracks->At(i);
         fhTrackPt->Fill(vtrack->Pt());
         fhTrackEta->Fill(vtrack->Eta());
         fhTrackPhi->Fill(vtrack->Phi());
         fhTrackEtaPhi->Fill(vtrack->Eta(),vtrack->Phi());
+        fhTrackPhiPt->Fill(vtrack->Phi(),vtrack->Pt());
+        fhTrackEtaPt->Fill(vtrack->Eta(),vtrack->Pt());
+        fhTrackEtaPhiPt->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
+        
+        // Fill Associated Track Distributions for AOD QA Productions
+        // Global Tracks
+        if (vtrack->GetTrackType()==0)
+        {
+            fhGlobalTrackPt->Fill(vtrack->Pt());
+            fhGlobalTrackEta->Fill(vtrack->Eta());
+            fhGlobalTrackPhi->Fill(vtrack->Phi());
+            fhGlobalTrackEtaPhi->Fill(vtrack->Eta(),vtrack->Phi());
+            fhGlobalTrackPhiPt->Fill(vtrack->Phi(),vtrack->Pt());
+            fhGlobalTrackEtaPt->Fill(vtrack->Eta(),vtrack->Pt());
+            fhGlobalTrackEtaPhiPt->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
+        }
+        // Complementary Tracks
+        else if (vtrack->GetTrackType()==1)
+        {
+            fhComplementaryTrackPt->Fill(vtrack->Pt());
+            fhComplementaryTrackEta->Fill(vtrack->Eta());
+            fhComplementaryTrackPhi->Fill(vtrack->Phi());
+            fhComplementaryTrackEtaPhi->Fill(vtrack->Eta(),vtrack->Phi());
+            fhComplementaryTrackPhiPt->Fill(vtrack->Phi(),vtrack->Pt());
+            fhComplementaryTrackEtaPt->Fill(vtrack->Eta(),vtrack->Pt());
+            fhComplementaryTrackEtaPhiPt->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
+        }
+
         hdummypT->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
     }
     for (i=1;i<=TCBins;i++)
@@ -984,6 +1203,9 @@ void AliAnalysisTaskFullpAJets::ClusterHisto()
         fhClusterEta->Fill(cluster_vec->Eta());
         fhClusterPhi->Fill(cluster_vec->Phi());
         fhClusterEtaPhi->Fill(cluster_vec->Eta(),cluster_vec->Phi());
+        fhClusterPhiPt->Fill(cluster_vec->Phi(),cluster_vec->Pt());
+        fhClusterEtaPt->Fill(cluster_vec->Eta(),cluster_vec->Pt());
+        fhClusterEtaPhiPt->Fill(cluster_vec->Eta(),cluster_vec->Phi(),cluster_vec->Pt());
         hdummypT->Fill(cluster_vec->Eta(),cluster_vec->Phi(),cluster_vec->Pt());
         myAliEMCGeo->GetAbsCellIdFromEtaPhi(cluster_vec->Eta(),cluster_vec->Phi(),myCellID);
         fhEMCalCellCounts->Fill(myCellID);
