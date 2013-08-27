@@ -605,9 +605,16 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
 void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if (!man) {
+    AliFatal("Analysis manager needed");
+    return;
+  }
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  if (!inputHandler) AliFatal("Input handler needed");
-  
+  if (!inputHandler) {
+    AliFatal("Input handler needed");
+    return;
+  }
+
   //pid response object
   fPIDResponse=inputHandler->GetPIDResponse();
   if (!fPIDResponse) AliError("PIDResponse object was not created");
