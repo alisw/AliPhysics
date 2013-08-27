@@ -136,6 +136,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseOfflineTrigger(kFALSE),
   fCheckFirstEventInChunk(kFALSE),
   fCheckPileUp(kFALSE),
+  fUseMCforKinematics(kFALSE),
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
@@ -1383,6 +1384,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
     AliMCEvent* mcEvent = MCEvent();
     if (!mcEvent) {
        AliError("ERROR: Could not retrieve MC event");
+       return tracksAccepted;
     }
      
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
@@ -1402,6 +1404,27 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vY      = aodTrack->Y();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+      
+      //===========================use MC information for Kinematics===============================//		    
+      if(fUseMCforKinematics){
+
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+
+	if(AODmcTrack){
+	  vCharge = AODmcTrack->Charge();
+	  vEta    = AODmcTrack->Eta();
+	  vY      = AODmcTrack->Y();
+	  vPhi    = AODmcTrack->Phi();// * TMath::RadToDeg();
+	  vPt     = AODmcTrack->Pt();
+	}
+	else{
+	  AliDebug(1, "no MC particle for this track"); 
+	  continue;
+	}
+      }
+      //===========================end of use MC information for Kinematics========================//		    
+
 
       //===========================PID (so far only for electron rejection)===============================//		    
       if(fElectronRejection) {

@@ -76,6 +76,7 @@ AliBalancePsi::AliBalancePsi() :
   fDeltaEtaMax(2.0),
   fResonancesCut(kFALSE),
   fHBTCut(kFALSE),
+  fHBTCutValue(0.02),
   fConversionCut(kFALSE),
   fInvMassCutConversion(0.04),
   fQCut(kFALSE),
@@ -114,6 +115,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fDeltaEtaMax(balance.fDeltaEtaMax),
   fResonancesCut(balance.fResonancesCut),
   fHBTCut(balance.fHBTCut),
+  fHBTCutValue(balance.fHBTCutValue),
   fConversionCut(balance.fConversionCut),
   fInvMassCutConversion(balance.fInvMassCutConversion),
   fQCut(balance.fQCut),
@@ -596,7 +598,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	fHistHBTbefore->Fill(deta,dphi);
 	
 	// optimization
-	if (TMath::Abs(deta) < 0.02 * 2.5 * 3) //twoTrackEfficiencyCutValue = 0.02 [default for dphicorrelations]
+	if (TMath::Abs(deta) < fHBTCutValue * 2.5 * 3) //fHBTCutValue = 0.02 [default for dphicorrelations]
 	  {
 	    // phi in rad
 	    //Float_t phi1rad = firstPhi*TMath::DegToRad();
