@@ -44,7 +44,7 @@ Int_t runNumbers[5] = {158626};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
-Bool_t doCentrality   = 0;
+Bool_t doCentrality   = 1;
 Bool_t doQAsym        = 1;
 Bool_t doVZERO        = 1;   // there is a 2nd file
 Bool_t doVZEROPbPb    = 1; 
@@ -242,14 +242,14 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
     taskv0qatrig->SelectCollisionCandidates(AliVEvent::kINT8);
 
   }
-  if (doVZEROPbPb && iCollisionType==1) {
+  if (doVZEROPbPb && iCollisionType==0) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/VZERO/AddTaskVZEROPbPb.C");
-    AliAnaVZEROPbPb* taskV0PbPb = (AliAnaVZEROPbPb*)AddTaskVZEROPbPb(0);
+    AliAnaVZEROPbPb* taskV0PbPb = (AliAnaVZEROPbPb*)AddTaskVZEROPbPb(run_number);
 //    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVLNWU-,CVLN-");
 //    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU,CPBI2,CPBI1WU-,CPBI1-,CVHNWU,CVHN,CVLNWU,CVLN");
 //    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_B2-,CVLNWU_B2-");
 //    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_R1-,CVLN_B2-,CVLNWU_R1-,CVLNWU_B2-");
-    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_R1-,CVLN_B2-,CVLNWU_R1-,CVLNWU_B2-,CSEMI_R1-,CSEMIWU_R1-,CCENT_R2-,CCENTWU_R2-");
+//    taskV0PbPb->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_R1-,CVLN_B2-,CVLNWU_R1-,CVLNWU_B2-,CSEMI_R1-,CSEMIWU_R1-,CCENT_R2-,CCENTWU_R2-");
   }
   //
   // TPC (Jacek Otwinowski & Michael Knichel)
@@ -409,7 +409,7 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   // no offline trigger selection
       gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
       AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
-      taskMuonTrig->GetMuonTrackCuts()->SetCustomParamFromRun(160000,2);       
+//      taskMuonTrig->GetMuonTrackCuts()->SetCustomParamFromRun(160000,2);       
   }
 
   //
@@ -432,14 +432,14 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   // trigger analysis internal
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
     AliAnalysisTaskMuonQA* taskmuonqa= AddTaskMuonQA();
-    taskmuonqa->GetTrackCuts()->SetCustomParamFromRun(160000,2);
+//    taskmuonqa->GetTrackCuts()->SetCustomParamFromRun(160000,2);
   }  
   //
   // TOF (Francesca Bellini)
   //
   if (doTOF && (ibarrel || iall)) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TOF/AddTaskTOFQA.C");
-    AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA();
+    AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA(kTRUE);
     tofQA->SelectCollisionCandidates(kTriggerMask);
   } 
    //
@@ -498,7 +498,7 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
     taskPHOSCellQA2->SelectCollisionCandidates(AliVEvent::kPHI7);
     taskPHOSCellQA2->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.3,1.0);
     // Pi0 QA fo PbPb
-    if (iCollisionType) {
+    if (iCollisionType == 0) {
       gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPbQA/macros/AddTaskPHOSPbPb.C");
       AliAnalysisTaskPHOSPbPbQA* phosPbPb = AddTaskPHOSPbPbQA(0);
     }

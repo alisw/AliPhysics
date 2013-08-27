@@ -7,7 +7,7 @@ Int_t       run_flag           = 1100;    // year (2011 = 1100)
 Bool_t      doCDBconnect        =1;
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
 Bool_t      useTender           = kFALSE; // use tender wagon
-Bool_t      useCentrality       = kFALSE; // centrality
+Bool_t      useCentrality       = kTRUE; // centrality
 Bool_t      useV0tender         = kFALSE;  // use V0 correction in tender
 Bool_t      useDBG              = kTRUE;  // activate debugging
 Bool_t      useMC               = kFALSE;  // use MC info
@@ -28,6 +28,7 @@ Int_t       iPWGHFvertexing     = 1;      // Vertexing HF task (PWG3)
 Int_t       iPWGDQJPSIfilter    = 0;      // JPSI filtering (PWG3)
 Int_t       iPWGHFd2h           = 1;      // D0->2 hadrons (PWG3)
 Int_t       iPWGPP               =1;      // high pt filter task
+Int_t       iPWGLFForward       = 1;      // Forward mult task (PWGLF)
 Bool_t doPIDResponse  = 1;
 Bool_t doPIDqa        = 1; //new
 
@@ -189,7 +190,7 @@ void AddAnalysisTasks(){
 //Jacek
    if (iPWGPP) {
       gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
-      AddTaskFilteredTree();
+      AddTaskFilteredTree("FilterEvents_Trees.root");
    }   
    
    // Centrality (only Pb-Pb)
@@ -198,6 +199,22 @@ void AddAnalysisTasks(){
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
       //taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
    }
+   
+// --- PWGLF - Forward (cholm@nbi.dk) -----------------------------
+   if (iPWGLFForward && usePhysicsSelection) { 
+        gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C");
+     UShort_t pwglfForwardSys = 0; // iCollision+1; // pp:1, PbPb:2, pPb:3
+     UShort_t pwglfSNN        = 0;            // GeV, 0==unknown
+     Short_t  pwglfField      = 0;
+     AddTaskForwardMult(useMC && useTR,        // Need track-refs 
+			pwglfForwardSys,       // Collision system
+			pwglfSNN, 
+			pwglfField);
+        gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskCentralMult.C");
+        AddTaskCentralMult(useMC, pwglfForwardSys, pwglfSNN, pwglfField);
+   }
+ 
+    
 
    if (iESDfilter) {
       //  ESD filter task configuration.
@@ -305,7 +322,6 @@ void AddAnalysisTasks(){
      } 
    }
 }
-
 //______________________________________________________________________________
 Bool_t LoadCommonLibraries()
 {
@@ -361,7 +377,13 @@ Bool_t LoadAnalysisLibraries()
           !LoadLibrary("siscone") ||
           !LoadLibrary("SISConePlugin") ||
           !LoadLibrary("FASTJETAN")) return kFALSE;
-   }     
+   }  
+   // PWG2 FORWARD
+   if (iPWGLFForward) {
+      //if (!LoadLibrary("PWGLFforward", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("PWGLFforward2")) return kFALSE;
+   }   
+   
    // PWG3 Vertexing HF
    if (iPWGHFvertexing || iPWGHFd2h) {
       if (!LoadLibrary("PWGflowBase") ||
