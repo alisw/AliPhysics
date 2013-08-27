@@ -43,6 +43,7 @@ ClassImp(AliHFEpidITS)
 AliHFEpidITS::AliHFEpidITS():
   AliHFEpidBase()
   , fNsigmaITS(3)
+  , fMeanShift(0)
 {
   //
   // Constructor
@@ -52,8 +53,9 @@ AliHFEpidITS::AliHFEpidITS():
 
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const Char_t *name):
-    AliHFEpidBase(name)
-    , fNsigmaITS(3)
+  AliHFEpidBase(name)
+  , fNsigmaITS(3)
+  , fMeanShift(0)
 {
   //
   // Default constructor
@@ -62,7 +64,9 @@ AliHFEpidITS::AliHFEpidITS(const Char_t *name):
 
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const AliHFEpidITS &ref):
-    AliHFEpidBase("")
+  AliHFEpidBase("")
+  , fNsigmaITS(ref.fNsigmaITS)
+  , fMeanShift(ref.fMeanShift)
 {
   //
   // Copy constructor
@@ -95,6 +99,7 @@ void AliHFEpidITS::Copy(TObject &ref) const {
     AliHFEpidITS &target = dynamic_cast<AliHFEpidITS &>(ref);
 
     target.fNsigmaITS = fNsigmaITS;
+    target.fMeanShift = fMeanShift;
     AliHFEpidBase::Copy(ref);
 }
 
@@ -122,7 +127,7 @@ Int_t AliHFEpidITS::IsSelected(const AliHFEpidObject* track, AliHFEpidQAmanager*
     
     // Fill before selection
     Int_t pdg = 0;
-    Double_t sigEle = fkPIDResponse->NumberOfSigmasITS(vtrack, AliPID::kElectron);
+    Double_t sigEle = GetITSNsigmaCorrected(vtrack);
     AliDebug(2, Form("Number of sigmas in ITS: %f", sigEle));
     if(TMath::Abs(sigEle) < fNsigmaITS) pdg = 11;
     if(pdg == 11 && pidqa) pidqa->ProcessTrack(track, AliHFEpid::kITSpid, AliHFEdetPIDqa::kAfterPID);
@@ -131,48 +136,9 @@ Int_t AliHFEpidITS::IsSelected(const AliHFEpidObject* track, AliHFEpidQAmanager*
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidITS::GetITSSignalV1(AliVParticle *vtrack){
+Double_t AliHFEpidITS::GetITSNsigmaCorrected(const AliVTrack *track) const {
   //
-  // Calculate the ITS signal according to the mean charge of the clusters
+  // Get the ITS number of sigmas corrected for a possible shift of the mean dE/dx
   //
-  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODTrack")){
-    AliError("PID for AODs not implemented yet");
-    return 0.;
-  }
-  AliESDtrack *track = dynamic_cast<AliESDtrack *>(vtrack);
-  if(!track) return 0.;
-  Double_t signal = 0.;
-#ifdef TRUNK
-  Double_t dedx[4];
-  track->GetITSdEdxSamples(dedx);
-  signal = TMath::Mean(4, dedx);
-#else
-  signal = track->GetITSsignal();
-#endif
-  Double_t p = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
-  AliDebug(1, Form("Momentum: %f, ITS Signal: %f", p, signal));
-  return signal;
+  return fkPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron) - fMeanShift;
 }
-
-//___________________________________________________________________
-Double_t AliHFEpidITS::GetITSSignalV2(AliVParticle *vtrack){
-  //
-  // Calculates the ITS signal. Truncated mean is used.
-  //
-  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODTrack")){
-    AliError("PID for AODs not implemented yet");
-    return 0.;
-  }
-  AliESDtrack *track = dynamic_cast<AliESDtrack *>(vtrack);
-  if(!track) return 0.;
-  Double_t dedx[4], tmp[4];
-  Int_t indices[4];
-  track->GetITSdEdxSamples(tmp);
-  TMath::Sort(4, tmp, indices);
-  for(Int_t ien = 0; ien < 4; ien++) dedx[ien] = tmp[indices[ien]];
-  Double_t signal = TMath::Mean(3, dedx); 
-  Double_t p = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
-  AliDebug(1, Form("Momentum: %f, ITS Signal: %f", p, signal));
-  return signal;
-}
-
