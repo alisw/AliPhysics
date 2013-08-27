@@ -74,14 +74,20 @@ TCollection* GetCollection(const TCollection* parent, const TString& name)
  * to.  If this is not specified, it defaults to the name of the input
  * file with "_rerun" attached to the base name
  */
-void RerunELossFits(const TString& input="forward_eloss.root", 
+void RerunELossFits(Bool_t forceSet=false, 
+		    const TString& input="forward_eloss.root", 
 		    const TString& output="")
 {
   const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
 
-  TFile* inFile  = 0;
-  TFile* outFile = 0;
+  TFile*  inFile  = 0;
+  TFile*  outFile = 0;
+  TString outName(output);
+  if (outName.IsNull()) {
+    outName = input;
+    outName.ReplaceAll(".root", "_rerun.root");
+  }
 
   try {
     // --- Open input file ---------------------------------------------
@@ -102,18 +108,10 @@ void RerunELossFits(const TString& input="forward_eloss.root",
     TCollection* inEFRes = GetCollection(inFwdRes, "fmdEnergyFitter");
     if (!inEFRes) throw TString("Cannot proceed without previous results");
 
-    const TAxis* etaAxis = static_cast<TAxis*>(GetObject(inEFSum, "etaAxis"));
-    if (!etaAxis) throw TString("Cannot proceed without eta axis");
-
     // --- Open output file --------------------------------------------
-    TString outName(output);
-    if (outName.IsNull()) {
-      outName = input;
-      outName.ReplaceAll(".root", "_rerun.root");
-    }
     outFile = TFile::Open(outName, "RECREATE");
     if (!outFile)
-      throw TString::Format("Failed to open %s", input.Data());
+      throw TString::Format("Failed to open %s", outName.Data());
 
     // --- Write copy of sum collection to output --------------------
     TCollection* outFwdSum = static_cast<TCollection*>(inFwdSum->Clone());
@@ -122,33 +120,43 @@ void RerunELossFits(const TString& input="forward_eloss.root",
     
     // --- Make our fitter object ------------------------------------
     AliFMDEnergyFitter* fitter = new AliFMDEnergyFitter("energy");
-    fitter->SetEtaAxis(*etaAxis);
-    // Here, we should get the parameters from the file, but since
-    // that isn't implemented yet, we do it by hand
+    if (forceSet || !fitter->ReadParameters(inEFSum)) {
 
-    // Set maximum energy loss to consider 
-    fitter->SetMaxE(15); 
-    // Set number of energy loss bins 
-    fitter->SetNEbins(500);
-    // Set whether to use increasing bin sizes 
-    // fitter->SetUseIncreasingBins(true);
-    // Set whether to do fit the energy distributions 
-    fitter->SetDoFits(kTRUE);
-    // Set whether to make the correction object 
-    fitter->SetDoMakeObject(kTRUE);
-    // Set the low cut used for energy
-    fitter->SetLowCut(0.4);
+      const TAxis* etaAxis = static_cast<TAxis*>(GetObject(inEFSum,"etaAxis"));
+      if (!etaAxis) throw TString("Cannot proceed without eta axis");
+      fitter->SetEtaAxis(*etaAxis);
+      
+      // Set maximum energy loss to consider 
+      fitter->SetMaxE(15); 
+      // Set number of energy loss bins 
+      fitter->SetNEbins(500);
+      // Set whether to use increasing bin sizes 
+      // fitter->SetUseIncreasingBins(true);
+      // Set whether to do fit the energy distributions 
+      fitter->SetDoFits(kTRUE);
+      // Set whether to make the correction object 
+      fitter->SetDoMakeObject(kTRUE);
+      // Set the low cut used for energy
+      fitter->SetLowCut(0.4);
+      // Set the number of bins to subtract from maximum of distributions
+      // to get the lower bound of the fit range
+      fitter->SetFitRangeBinWidth(4);
+      // Set the maximum number of landaus to try to fit (max 5)
+      fitter->SetNParticles(5);
+      // Set the minimum number of entries in the distribution before
+      // trying to fit to the data - 10k seems the least we can do
+      fitter->SetMinEntries(10000);
+      // fitter->SetMaxChi2PerNDF(10);
+      // Enable debug 
+    }
+    fitter->SetDebug(1);
+    fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
+    // fitter->SetRegularizationCut(3e6);
     // Set the number of bins to subtract from maximum of distributions
     // to get the lower bound of the fit range
-    fitter->SetFitRangeBinWidth(4);
-    // Set the maximum number of landaus to try to fit (max 5)
-    fitter->SetNParticles(5);
-    // Set the minimum number of entries in the distribution before
-    // trying to fit to the data - 10k seems the least we can do
-    fitter->SetMinEntries(10000);
-    // fitter->SetMaxChi2PerNDF(10);
-    // Enable debug 
-    fitter->SetDebug(1);
+    // fitter->SetFitRangeBinWidth(2);
+    // Skip all of FMD2 and 3 
+    // fitter->SetSkips(AliFMDEnergyFitter::kFMD2|AliFMDEnergyFitter::kFMD3);
 
     // --- Now do the fits -------------------------------------------
     fitter->Print();
@@ -168,14 +176,19 @@ void RerunELossFits(const TString& input="forward_eloss.root",
     // --- Write out new results folder ------------------------------
     outFile->cd();
     outFwdRes->Write("ForwardResults", TObject::kSingleKey);
+    Printf("Wrote results to \"%s\" (%s)", outName.Data(), outFile->GetName());
   }
   catch (const TString& e) {
     Error("RerunELossFits", e);
   }
   if (inFile)  inFile->Close();
-  if (outFile) outFile->Close();
+  if (outFile) {
+    Printf("Wrote new output to \"%s\"", outName.Data());
+    outFile->Close();
+  }
     
-  gROOT->Macro(Form("%s/corrs/DrawCorrELoss.C(false,false)", fwd));
+  gROOT->Macro(Form("%s/corrs/DrawCorrELoss.C(false,false,\"%s\")", 
+		    fwd, outName.Data()));
 }
 
 

@@ -9,11 +9,13 @@
 # include <TString.h>
 # include <TError.h>
 #else
-// class SummaryDrawer;
+class SummaryDrawer;
+class TObject;
 // class TAxis;
-// class AliFMDCorrAcceptance;
-// class AliFMDCorrSecondaryMap;
-// class AliFMDCorrELossFit;
+class AliFMDCorrAcceptance;
+class AliFMDCorrSecondaryMap;
+class AliFMDCorrELossFit;
+#include <TString.h>
 #endif
 
 class CorrDrawer : public SummaryDrawer
@@ -59,6 +61,8 @@ public:
 			   Bool_t          mc=false, 
 			   Bool_t          sat=false)
   {
+    out = TString::Format("forward_%s.pdf", prefix.Data());
+#if 0
     out = TString::Format("%s_run%09lu_%s_%04dGeV_%c%dkG_%s_%s.pdf",
 			  prefix.Data(), runNo, 
 			  (sys == 1 ? "pp" : 
@@ -67,6 +71,7 @@ public:
 			  (field >= 0 ? 'p' : 'm'), TMath::Abs(field), 
 			  (mc ? "MC" : "real"),
 			  (sat ? "satellite" : "nominal"));
+#endif
   }
   /** 
    * Draw corrections using the correction manager to get them 
@@ -213,7 +218,7 @@ public:
    * 
    * @param o Object to draw
    */
-  void Draw(const TObject* o) 
+  virtual void Draw(const TObject* o) 
   {
     if (!o) return;
     Warning("CorrDrawer", "Don't know how to draw a %s object", 
@@ -224,19 +229,19 @@ public:
    * 
    * @param acc Acceptance correction
    */
-  void Draw(const AliFMDCorrAcceptance* acc) { Summarize(acc, false); }
+  virtual void Draw(const AliFMDCorrAcceptance* acc) { Summarize(acc, false); }
   /** 
    * Draw a single plot of the mean secondary correction 
    * 
    * @param sec Secondary correction
    */
-  void Draw(const AliFMDCorrSecondaryMap* sec) { Summarize(sec, false); }
+  virtual void Draw(const AliFMDCorrSecondaryMap* sec) { Summarize(sec, false);}
   /** 
    * Draw a single plot summarizing the energy loss fits
    * 
    * @param sec Energy loss fits
    */
-  void Draw(const AliFMDCorrELossFit* fits) { Summarize(fits, false); }
+  virtual void Draw(const AliFMDCorrELossFit* fits) { Summarize(fits, false); }
   /** 
    * A generalized entry to the summarization functions
    * 
@@ -250,15 +255,15 @@ public:
    * @param options Options 
    * @param local   Local storage
    */
-  void Summarize(const TString& what, 
-		 ULong_t        runNo, 
-		 const Char_t*  sys, 
-		 UShort_t       sNN, 
-		 Short_t        field,
-		 Bool_t         mc=false, 
-		 Bool_t         sat=false,
-		 Option_t*      options="",
-		 const char*    local="")
+  virtual void Summarize(const TString& what, 
+			 ULong_t        runNo, 
+			 const Char_t*  sys, 
+			 UShort_t       sNN, 
+			 Short_t        field,
+			 Bool_t         mc=false, 
+			 Bool_t         sat=false,
+			 Option_t*      options="",
+			 const char*    local="")
   {
     Summarize(AliForwardCorrectionManager::ParseFields(what), 
 	      runNo, AliForwardUtil::ParseCollisionSystem(sys), 
@@ -277,15 +282,15 @@ public:
    * @param options Options 
    * @param local   Local storage
    */
-  void Summarize(UShort_t    what, 
-		 ULong_t     runNo, 
-		 UShort_t    sys, 
-		 UShort_t    sNN, 
-		 Short_t     field,
-		 Bool_t      mc=false, 
-		 Bool_t      sat=false,
-		 Option_t*   options="",
-		 const char* local="")
+  virtual void Summarize(UShort_t    what, 
+			 ULong_t     runNo, 
+			 UShort_t    sys, 
+			 UShort_t    sNN, 
+			 Short_t     field,
+			 Bool_t      mc=false, 
+			 Bool_t      sat=false,
+			 Option_t*   options="",
+			 const char* local="")
   {
     AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
     mgr.SetDebug(true);
@@ -369,7 +374,7 @@ public:
    * @param o Object to draw
    * @param pdf Not used
    */
-  void Summarize(const TObject* o, Bool_t pdf=true) 
+  virtual void Summarize(const TObject* o, Bool_t pdf=true) 
   {
     if (!o) return;
     Warning("CorrDrawer", "Don't know how to draw a %s object", 
@@ -382,7 +387,7 @@ public:
    * @param acc Acceptance correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  void Summarize(const AliFMDCorrAcceptance* acc, Bool_t pdf=true) 
+  virtual void Summarize(const AliFMDCorrAcceptance* acc, Bool_t pdf=true) 
   { 
     CreateCanvas("acceptance.pdf", false, pdf);
     DrawIt(acc, pdf); 
@@ -395,7 +400,7 @@ public:
    * @param sec Secondary correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf=true) 
+  virtual void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf) 
   { 
     CreateCanvas("scondarymap.pdf", false, pdf);
     DrawIt(sec, pdf); 
@@ -408,17 +413,17 @@ public:
    * @param sec Energy loss fits
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  void Summarize(const AliFMDCorrELossFit* fits, Bool_t pdf=true) 
+  virtual void Summarize(const AliFMDCorrELossFit* fits, Bool_t pdf) 
   { 
     CreateCanvas("elossfits.pdf", false, pdf);
     DrawIt(fits, pdf); 
     if (pdf) CloseCanvas();
   }
 
-  static void Summarize(const TString& what   = "", 
+  static void Summarize(const TString& what   = TString(""), 
 			Bool_t         mc     = false,
-			const TString& output = "forward_eloss.root", 
-			const TString& local  = "fmd_corrections.root",
+			const TString& output = TString("forward_eloss.root"), 
+			const TString& local  = TString("fmd_corrections.root"),
 			Option_t*      options= "")
   {
     Summarize(AliForwardCorrectionManager::ParseFields(what), mc, 
@@ -462,7 +467,7 @@ protected:
    * 
    * @param o Object to summarize
    */
-  void DrawIt(const TObject* o) 
+  virtual void DrawIt(const TObject* o) 
   {
     if (!o) return;
     Warning("CorrDrawer", "Don't know how to summarize a %s object", 
@@ -474,7 +479,7 @@ protected:
    * @param corr    Correction
    * @param details If true, make a multipage PDF, otherwise plot the mean. 
    */
-  void DrawIt(const AliFMDCorrAcceptance* corr, Bool_t details=true)
+  virtual void DrawIt(const AliFMDCorrAcceptance* corr, Bool_t details=true)
   {
     if (!corr || !fCanvas) return;
 
@@ -589,7 +594,7 @@ protected:
    * @param corr       Correction
    * @param details If true, make a multipage PDF, otherwise plot the mean. 
    */
-  void DrawIt(const AliFMDCorrSecondaryMap* corr, bool details=true) 
+  virtual void DrawIt(const AliFMDCorrSecondaryMap* corr, bool details) 
   {
     if (!corr || !fCanvas) return;
     
@@ -680,7 +685,7 @@ protected:
    * @param details If true, make a multipage PDF, 
    *                   otherwise plot the parameters. 
    */
-  void DrawIt(const AliFMDCorrELossFit* corr, bool details=true) 
+  virtual void DrawIt(const AliFMDCorrELossFit* corr, bool details) 
   {
     if (!corr || !fCanvas) return;
 
@@ -706,7 +711,8 @@ protected:
 	savDir->cd();
       }
       fBody->cd();
-      TLatex* ll = new TLatex(.5,.8, fCanvas->GetTitle());
+      TLatex* ll = new TLatex(.5,.8, "ESD #rightarrow #Delta-fits"
+			      /* fCanvas->GetTitle() */);
       ll->SetTextAlign(22);
       ll->SetTextSize(0.05);
       ll->SetNDC();
@@ -764,6 +770,7 @@ protected:
       for (UShort_t q = 0; q < nQ; q++) { 
 	Char_t r = (q == 0 ? 'I' : 'O');
 	TList* dists = 0;
+	TList* resis = 0;
 	if (fitter) { 
 	  // Info("", "Fitter: %s", fitter->GetName());
 	  TList* dl = 
@@ -773,6 +780,7 @@ protected:
 	    // Info("", "Detector list: %s", dl->GetName());
 	    dists = static_cast<TList*>(dl->FindObject("EDists"));
 	    // Info("", "Got distributions -> %p", dists);
+	    resis = static_cast<TList*>(dl->FindObject("residuals"));
 	  }
 	}
 	
@@ -780,7 +788,7 @@ protected:
 	ClearCanvas();
 	TObjArray*  ra = fits->GetRingArray(d, r);
 	if (!ra) continue;
-	DrawELossFits(d, r, ra, dists);
+	DrawELossFits(d, r, ra, dists, resis);
       }
     }
   }
@@ -792,7 +800,8 @@ protected:
    * @param r 
    * @param ra 
    */
-  void DrawELossFits(UShort_t d, Char_t r, TObjArray* ra, TList* dists)
+  void DrawELossFits(UShort_t d, Char_t r, TObjArray* ra, 
+		     TList* dists, TList* resis)
   {
     Int_t nPad = 6;
     AliFMDCorrELossFit::ELossFit* fit = 0;
@@ -804,21 +813,60 @@ protected:
       Bool_t last = j == nPad-1;
       if (j == 0) DivideForRings(true, true);
 
-      Bool_t same = false;
+      Bool_t        same    = false;
+      TVirtualPad*  drawPad = fBody->GetPad(j+1);
+      Int_t         subPad  = 0;
       if (dists) { 
 	// Info("", "Distributions: %s", dists->GetName());
-	TH1* dist = 
-	  static_cast<TH1*>(dists->FindObject(Form("FMD%d%c_etabin%03d", 
-						   d,r,fit->GetBin())));
+	TString hName(Form("FMD%d%c_etabin%03d", d,r,fit->GetBin()));
+	TH1* dist = static_cast<TH1*>(dists->FindObject(hName));
+	TH1* resi = 0;
+	if (resis) resi = static_cast<TH1*>(resis->FindObject(hName));
 	// Info("", "Got histogram -> %p", dist);
+	if (resi) { 
+	  Bool_t err = resi->GetUniqueID() <= 1;
+	  drawPad->SetGridx();
+	  if (err) {
+	    resi->SetYTitle("#chi^{2}_{bin}=(h-f)^{2}/#delta^{2}h");
+	    for (Int_t k=1; k<=resi->GetNbinsX(); k++) { 
+	      Double_t c = resi->GetBinContent(k);
+	      Double_t e = resi->GetBinError(k);
+	      if (e <= 0) continue;
+	      c          *= c;
+	      c          /= (e*e);
+	      resi->SetBinContent(k, c);
+	      resi->SetBinError(k, 0);
+	    }
+	  }
+	  drawPad->Divide(1,2,0,0);
+	  DrawInPad(drawPad, 2, resi, "HIST", 0x100);
+	  subPad = 1;
+	  Double_t red = fit->GetNu() > 0 ? fit->GetChi2() / fit->GetNu() : 0;
+	  if (red > 0) {
+	    drawPad->cd(2);
+	    TLine* l = new TLine(resi->GetXaxis()->GetXmin(), red,
+				 resi->GetXaxis()->GetXmax(), red);
+	    l->SetLineWidth(2);
+	    l->SetLineStyle(2);
+	    l->Draw();
+	    TLatex* cltx = new TLatex(0.5, 0.5,
+				      Form("#chi^{2}/#nu=%6.2f", red));
+	    cltx->SetNDC();
+	    cltx->SetTextAlign(22);
+	    cltx->SetTextFont(42);
+	    cltx->SetTextSize(0.07);
+	    cltx->Draw();
+	    cltx->DrawLatex(0.5,0.4,Form("%g", dist->GetEntries()));
+	  }
+	}
 	if (dist) { 
 	  // Info("", "Histogram: %s", dist->GetName());
-	  DrawInPad(fBody, j+1, dist, "HIST", 0x2);
+	  DrawInPad(drawPad, subPad, dist, "HIST E", (subPad * 0x100) + 0x2);
 	  same = true;	  
 	}
       }
       // if (same)
-      DrawInPad(fBody, j+1, fit, 
+      DrawInPad(drawPad, subPad, fit, 
 		Form("comp good values legend %s", (same ? "same" : "")),
 		0x2);
       if (fit->GetQuality() < fMinQuality) { 

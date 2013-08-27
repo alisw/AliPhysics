@@ -511,15 +511,15 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
   
   if (!opt.Contains("SAME")) {
     TH1* frame = new TH1F(GetName(), 
-			  Form("FMD%d%c, eta bin %d",fDet,fRing,fBin),
-			  100, 0, 10);
+		     Form("FMD%d%c, eta bin %d",fDet,fRing,fBin),
+		     100, 0, 10);
     frame->SetMinimum(max/10000);
     frame->SetMaximum(max*1.4);
     frame->SetXTitle("#Delta / #Delta_{mip}");
     frame->Draw();
     opt.Append(" SAME");
   }
-  tot->DrawCopy(opt.Data());
+  TF1* cpy = tot->DrawCopy(opt.Data());
   cleanup.Add(tot);
 
   if (vals) { 
@@ -588,9 +588,13 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
     cleanup.Add(f);
   }
   min /= 100;
-  tot->GetHistogram()->SetMaximum(max);
-  tot->GetHistogram()->SetMinimum(min);
-  tot->GetHistogram()->GetYaxis()->SetRangeUser(min, max);
+  if (max <= 0) max = 0.1;
+  if (min <= 0) min = 1e-4;
+  cpy->SetMaximum(max);
+  cpy->SetMinimum(min);
+  cpy->GetHistogram()->SetMaximum(max);
+  cpy->GetHistogram()->SetMinimum(min);
+  cpy->GetHistogram()->GetYaxis()->SetRangeUser(min, max);
   if (l) l->Draw();
 
   gPad->cd();
@@ -643,6 +647,8 @@ AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu,
   if (CHECKPAR(fXi,     fEXi,     maxRelError)) qual++;
   if (CHECKPAR(fSigma,  fESigma,  maxRelError)) qual++;
   if (CHECKPAR(fSigmaN, fESigmaN, maxRelError)) qual++;
+  // Large penalty for large sigma - often a bad fit. 
+  if (fSigma > 10*fXi)                          qual -= 4; 
   qual += FindMaxWeight(2*maxRelError, leastWeight, fN);
   fQuality = qual;
 }

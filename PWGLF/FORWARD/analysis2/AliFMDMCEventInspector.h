@@ -122,16 +122,6 @@ public:
 				Double_t b,
 				Int_t    npart, Int_t    nbin);
   /** 
-   * Store information about running conditions in output list 
-   * 
-   * The 3 TNamed objects from AliFMDEventInspector::StoreInformation
-   * are defined.  In addition, a fourth TNamed object is defined.
-   * The presence of this indicate MC data.
-   *
-   * - mc    Nothing special, and unique id is 1
-   */
-  virtual void StoreInformation();
-  /** 
    * Read the production details 
    * 
    * @param event MC event

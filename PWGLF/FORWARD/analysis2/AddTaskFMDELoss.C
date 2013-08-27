@@ -28,7 +28,8 @@
  * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*
-AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0)
+AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
+		const Char_t* residuals="")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -78,6 +79,20 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0)
   task->GetEnergyFitter().SetMinEntries(10000);
   // Debug 
   task->SetDebug(debug);
+
+  TString resi(residuals);
+  resi.ToUpper();
+  AliFMDEnergyFitter::EResidualMethod rm = AliFMDEnergyFitter::kNoResiduals;
+  if (!resi.IsNull() && !resi.BeginsWith("no")) {
+    if (resi.BeginsWith("square")) 
+      rm = AliFMDEnergyFitter::kResidualSquareDifference;
+    else if (resi.BeginsWith("scale")) 
+      rm = AliFMDEnergyFitter::kResidualScaledDifference;
+    else // Anything else gives plain difference and errors in errors
+      rm = AliFMDEnergyFitter::kResidualDifference;
+  }
+  Printf("Got residual: \"%s\" -> %d", resi.Data(), rm);
+  task->GetEnergyFitter().SetStoreResiduals(rm);
 
   // --- Set limits on fits the energy -------------------------------
   // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING

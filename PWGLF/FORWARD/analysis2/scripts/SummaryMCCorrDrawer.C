@@ -57,8 +57,11 @@ public:
     // --- Make our canvas -------------------------------------------
     TString pdfName(filename);
     pdfName.ReplaceAll(".root", ".pdf");
-    CreateCanvas(pdfName, what & 0x100);
+    CreateCanvas(pdfName, what & kLandscape);
 
+    // --- Make a Title page -------------------------------------------
+    DrawTitlePage(file);
+    
     // --- Possibly make a chapter here ------------------------------
     if (what & kCentral && GetCollection(file, "CentralCorrSums")) 
       MakeChapter("Forward");
@@ -101,6 +104,47 @@ public:
     CloseCanvas();
   }
 protected:
+  //____________________________________________________________________
+  void DrawTitlePage(TFile* file)
+  {
+    TCollection* c   = GetCollection(file, "ForwardCorrResults");
+
+    fBody->cd();
+    
+    Double_t y = .9;
+    TLatex* ltx = new TLatex(.5, y, "ESD+MC #rightarrow Corrections");
+    ltx->SetTextSize(0.07);
+    ltx->SetTextFont(42);
+    ltx->SetTextAlign(22);
+    ltx->SetNDC();
+    ltx->Draw();
+    y -= .075;
+
+    TCollection* ei = GetCollection(c, "fmdEventInspector");
+    if (ei) { 
+      Int_t sys=0, sNN=0, field=0, runNo=0;
+
+      if (GetParameter(ei, "sys", sys))
+	DrawParameter(y, "System", (sys == 1 ? "pp" : sys == 2 ? "PbPb" : 
+				    sys == 3 ? "pPb" : "unknown"));
+      if (GetParameter(ei, "sNN", sNN)) {
+	TString tsNN = TString::Format("%dGeV", sNN);
+	if (sNN >= 10000) 
+	  tsNN = TString::Format("%5.2f", float(sNN)/1000);
+	else if (sNN >= 1000) 
+	  tsNN = TString::Format("%4.2f", float(sNN)/1000);
+	DrawParameter(y, "#sqrt{s_{NN}}", tsNN);
+      }
+
+      if (GetParameter(ei, "field", field))
+	DrawParameter(y, "L3 B field", Form("%+2dkG", field));
+
+      if (GetParameter(ei, "runNo", runNo))
+	DrawParameter(y, "Run #", Form("%6d", runNo));
+    }
+
+    PrintCanvas("MC Corrections");
+  }
   //____________________________________________________________________
   TCollection* GetVertexList(TCollection* parent, const TAxis& axis, Int_t bin)
   {

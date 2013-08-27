@@ -108,12 +108,19 @@ upload()
 # --- Extract and upload ---------------------------------------------
 extract_upload()
 {
-    dummy extract_upload 
+    echo "=== Download, extract, and uploade in `basename $PWD` ==="
+    _extract
+    upload
 }
 # --- Draw -----------------------------------------------------------
 _draw()
 {
     script $@
+}
+# --- Generic draw ---------------------------------------------------
+draw()
+{
+    _draw $@ 
 }
 # --- Draw dN/deta results -------------------------------------------
 _dndeta_draw()
@@ -124,8 +131,13 @@ _dndeta_draw()
     (cd $d && \
 	draw ${fwd_dir}/DrawdNdetaSummary.C && \
 	draw ${scr})
+    echo "Back to `pwd`"
 }
-
+# --- Draw dN/deta ---------------------------------------------------
+dndeta_draw()
+{
+    _dndeta_draw $@ 
+}
 # === Task functions =================================================
 # --- Common options help --------------------------------------------
 usage()
@@ -216,6 +228,8 @@ _setup()
 	fi
     done
 
+    check setup
+
     # Set the date/time string 
     now=`date '+%Y%m%d_%H%M'` 
 
@@ -241,12 +255,12 @@ _setup()
 	ln -sf ${name}_acc_${now} last_${name}_acc
 	ln -sf ${name}_corrs_${now} last_${name}_corrs
 	cat <<-EOF > ${corrdir}/Browse.C
- 	TObject* Browse()
+	TObject* Browse()
 	{
 	  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
 	  if (!gROOT->GetClass("AliOADBForward"))
 	    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
-	  gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGui.C++g", fwd));
+	  gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGui.C", fwd));
 	  
 	  AliOADBForward* db = new AliOADBForward;
 	  db->Open("fmd_corrections.root", "*");
@@ -258,7 +272,7 @@ _setup()
 	EOF
 	echo "=== Make acceptance corrections" 
 	(cd ${name}_acc_${now} && \
-	    accGen `$run_for_acc` && \
+	    accGen `run_for_acc` && \
 	    upload )
    fi
    for i in fmd_corrections.root spd_corrections.root deadstrips.C ; do 
@@ -266,6 +280,8 @@ _setup()
        echo "Linking ${corrdir}/$i here"
        ln -fs ${corrdir}/$i . 
    done
+   print 
+
     
 }
 # --- Default implementation -----------------------------------------
@@ -332,7 +348,9 @@ accGen()
     check_token
     local run=$1 
     script ${fwd_dir}/corrs/ExtractAcceptance.C "${run}"
-
+    if test -f deadstrips.C ; then 
+	cp ${here}/${name}_corrs_${now}/
+    fi
 }
 
 # === Check function =================================================
@@ -455,7 +473,9 @@ _allAboard()
     case $type in 
 	mc*) mc=1  ;; 
     esac
-	    
+
+    opts=
+    url=
     train_opts $mc $type $trig 
     url_opts $mc $type $trig
 
@@ -497,7 +517,7 @@ collect()
 	    local files=
 	    case $d in 
 		corr)      files="forward_mccorr.pdf" ;; 
-		eloss)     files="corrs*.pdf" ;; 
+		eloss)     files="forward_elossfits.pdf" ;; 
 		aod)       files="forward.pdf" ;; 
 		dndeta*)   files="forward_dndeta.pdf dNdeta*.pdf" ;; 
 		multdists) files="forward_multdists.pdf" ;;
@@ -520,6 +540,8 @@ collect()
 	pdfnup -q --nup 2x1 -o ${name}_dndeta_${now}.pdf tmp.pdf && \
 	rm -f tmp.pdf)
     echo "Made ${name}_summary_${now}.pdf and ${name}_dndeta_${now}.pdf"
+    rm -f last_${name}_pdfs
+    ln -s ${out} last_${name}_pdfs
 }
 
 _collect_files()
@@ -557,7 +579,7 @@ collect_name()
 	*/forward.pdf)           tgt=summary_${d}_${M} ;; 
 	*/forward_dndeta.pdf)    tgt=summary_${d}_${M} ;; 
 	*/forward_multdists.pdf) tgt=summary_${d}_${M} ;; 
-	*/eloss*.pdf)            tgt=summary_${d}_${M} ;; 
+	*/forward_elossfits.pdf) tgt=summary_${d}_${M} ;; 
 	*/dNdeta*.pdf)           tgt=${d}_${M} ;;
 	*) echo "Don't know how to deal with $ff" >/dev/stderr 
     esac

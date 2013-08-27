@@ -20,6 +20,7 @@
 #include <TDatime.h>
 #include <TParameter.h>
 #include <TPaveText.h>
+#include <TBrowser.h>
 
 namespace {
   void 
@@ -42,8 +43,9 @@ namespace {
 #else 
 class AliOADBForward;
 class AliOADBForward::Entry;
+#if 0
 class TGFrame;
-class TGLVEtry;
+class TGLVEntry;
 class TGHorizontalFrame;
 class TGTextButton;
 class TGTextEntry;
@@ -56,6 +58,7 @@ class TGLVContainer;
 class TGHButtonGroup;
 class TGLayoutHints;
 class TGNumberEntry;
+#endif
 #endif
 
 struct ForwardOADBGUI
@@ -333,11 +336,12 @@ struct ForwardOADBGUI
   void HandleOpen()
   {
     if (fDB) HandleClose();
-    fDB = new AliOADBForward();
+    fDB = new AliOADBForward;
     Info("HandleOpen", "Opening DB file %s for tables %s", 
 	 fFileText.GetText(), fTablesText.GetText());
-    if (!fDB->Open(fFileText.GetText(), fTablesText.GetText(), 
-		   false, true, true)) { 
+    TString fn(fFileText.GetText());
+    TString tn(fTablesText.GetText());
+    if (!fDB->Open(fn, tn, false, true, true)) { 
       Error("HandleOpen", "Failed to open database");
       delete fDB;
       fDB = 0;
@@ -655,9 +659,9 @@ struct ForwardOADBGUI
 TGMainFrame* ForwardOADBGui(AliOADBForward* db=0)
 {
   const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  // if (!gROOT->GetClass("AliOADBForward")) 
-  // gSystem->Load("libGui");
-  gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  if (!gROOT->GetClass("AliOADBForward")) 
+    // gSystem->Load("libGui");
+    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   
   // gSystem->AddIncludePath(Form("-I%s", fwd));
   // gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGUI.C", fwd));

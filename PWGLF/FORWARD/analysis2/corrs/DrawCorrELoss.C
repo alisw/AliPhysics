@@ -5,6 +5,18 @@
  *
  * @ingroup pwglf_forward_scripts_corr
  */
+void Setup(Bool_t compile)
+{
+  const char* post = (compile ? "++g" : "");
+  const char* fwd  = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  if (!gROOT->GetClass("AliFMDCorrELossFit"))
+    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  gSystem->AddIncludePath(Form("-I%s/scripts -I%s/corrs -I%s "
+			       "-I$ALICE_ROOT/include", fwd, fwd, fwd));
+  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C%s", fwd, post));
+  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C%s", fwd, post));
+
+}
 /** 
  * Draw energy loss fits to a multi-page PDF. 
  *
@@ -30,10 +42,7 @@ DrawCorrELoss(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
   //__________________________________________________________________
   // Load libraries and object 
   // const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
-  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
-  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
+  Setup(false);
 
   CorrDrawer d;
   d.Summarize(AliForwardCorrectionManager::kELossFits, runNo, sys, sNN, field, 
@@ -44,10 +53,7 @@ DrawCorrELoss(Bool_t      mc,
 	      const char* file="forward_eloss.root", 
 	      const char* local="fmd_corrections.root")
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
-  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
-  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
+  Setup(true);
 
   CorrDrawer::Summarize(AliForwardCorrectionManager::kELossFits, 
 			mc, file, local);
@@ -57,12 +63,9 @@ void
 DrawCorrELoss(Bool_t mc, Bool_t dummy, 
 	      const char* file="forward_eloss_rerun.root")
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  if (!gROOT->GetClass("AliAODForwardMult"))
-    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
-  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
-  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
+  Setup(true);
 
+  Printf("Drawing fit results from %s", file);
   TFile* hist = TFile::Open(file, "READ");
   if (!hist) { 
     Error("DrawCorrELoss", "Failed to open %s", file);
@@ -91,7 +94,7 @@ DrawCorrELoss(Bool_t mc, Bool_t dummy,
   CorrDrawer* cd = new CorrDrawer;
   cd->fELossExtra = file;
   cd->fMinQuality = 8;
-  cd->Summarize(fits);
+  cd->Summarize(const_cast<const AliFMDCorrELossFit*>(fits), true);
 }
 
 //

@@ -24,6 +24,7 @@
 #include <TMath.h>
 #include <TError.h>
 #include <TROOT.h>
+#define FIT_OPTIONS "RNQS"
 
 //====================================================================
 ULong_t AliForwardUtil::AliROOTRevision()
@@ -352,7 +353,7 @@ void AliForwardUtil::GetParameter(TObject* o, UShort_t& value)
 {
   if (!o) return;
   TParameter<int>* p = static_cast<TParameter<int>*>(o);
-  if (p->TestBit(BIT(17)))
+  if (p->TestBit(BIT(19)))
     value = p->GetVal(); 
   else
     value = o->GetUniqueID();
@@ -362,7 +363,7 @@ void AliForwardUtil::GetParameter(TObject* o, Int_t& value)
 {
   if (!o) return;
   TParameter<int>* p = static_cast<TParameter<int>*>(o);
-  if (p->TestBit(BIT(17)))
+  if (p->TestBit(BIT(19)))
     value = p->GetVal(); 
   else
     value = o->GetUniqueID();
@@ -372,7 +373,7 @@ void AliForwardUtil::GetParameter(TObject* o, ULong_t& value)
 {
   if (!o) return;
   TParameter<Long_t>* p = static_cast<TParameter<Long_t>*>(o);
-  if (p->TestBit(BIT(17)))
+  if (p->TestBit(BIT(19)))
     value = p->GetVal(); 
   else
     value = o->GetUniqueID();
@@ -382,7 +383,7 @@ void AliForwardUtil::GetParameter(TObject* o, Double_t& value)
 {
   if (!o) return;
   TParameter<double>* p = static_cast<TParameter<double>*>(o);
-  if (p->TestBit(BIT(17)))
+  if (p->TestBit(BIT(19)))
     value = p->GetVal(); // o->GetUniqueID();
   else {
     UInt_t  i = o->GetUniqueID();
@@ -395,7 +396,7 @@ void AliForwardUtil::GetParameter(TObject* o, Bool_t& value)
 {
   if (!o) return;
   TParameter<bool>* p = static_cast<TParameter<bool>*>(o);
-  if (p->TestBit(BIT(17)))
+  if (p->TestBit(BIT(19)))
     value = p->GetVal(); // o->GetUniqueID();
   else
     value = o->GetUniqueID();
@@ -1087,7 +1088,7 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   // Do the fit, getting the result object 
   if (fDebug) 
     ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
-  TFitResultPtr r = dist->Fit(landau1, "RNQS", "", minE, maxE);
+  TFitResultPtr r = dist->Fit(landau1, FIT_OPTIONS, "", minE, maxE);
   // landau1->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*r), 0);
   fFunctions.AddAtAndExpand(landau1, 0);
@@ -1186,7 +1187,7 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
   // Do the fit 
   if (fDebug) 
     ::Info("FitNParticle", "Fitting in the range %f,%f (%d)", minE, maxEi, n);
-  TFitResultPtr tr = dist->Fit(landaun, "RSQN", "", minE, maxEi);
+  TFitResultPtr tr = dist->Fit(landaun, FIT_OPTIONS, "", minE, maxEi);
   
   // landaun->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*tr), n-1);
@@ -1258,7 +1259,7 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   // Do the fit, getting the result object 
   if (fDebug) 
     ::Info("FitComposite", "Fitting seed in the range %f,%f", minE, maxE);
-  /* TFitResultPtr r = */ dist->Fit(seed, "RNQS", "", minE, maxE);
+  /* TFitResultPtr r = */ dist->Fit(seed, FIT_OPTIONS, "", minE, maxE);
 
   maxE = dist->GetXaxis()->GetXmax();
   TF1* comp = new TF1("composite", landauGausComposite, 
@@ -1288,7 +1289,7 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   // Do the fit, getting the result object 
   if (fDebug) 
     ::Info("FitComposite", "Fitting composite in the range %f,%f", minE, maxE);
-  /* TFitResultPtr r = */ dist->Fit(comp, "RNQS", "", minE, maxE);
+  /* TFitResultPtr r = */ dist->Fit(comp, FIT_OPTIONS, "", minE, maxE);
 
 #if 0
   TF1* part1 = static_cast<TF1*>(seed->Clone("part1"));
