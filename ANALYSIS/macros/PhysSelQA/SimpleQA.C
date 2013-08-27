@@ -9,6 +9,7 @@
 #include "TCanvas.h"
 #include "TColor.h"
 #include "TMath.h"
+#include "TTree.h"
 
 /////////////////////////////////////////////////////////////////////////////////
 //                                                                             //
@@ -23,9 +24,18 @@ void      SimpleQA();
 void      MakeQAperPeriod(const Char_t * inputList = "inputListLHC13b.txt", const Char_t * outputFileName = "./Plots/2013/13bPass3.pdf", const Char_t * label = "LHC13bPass3");
 Float_t   GetFraction(const Char_t * inputFile = "event_stat.root", const  Char_t * columnLabel = "Accepted",  UInt_t triggerBit = 2, Bool_t returnError = kFALSE);
 TList   * InitializeHistograms(const Char_t * label);
+TTree   * InitializeTree();
 TString * GetTriggerBitName(Int_t bitNumber = 0);
 UInt_t    GetFillFromRunNumber(UInt_t runNumber);
 void      AddFillSeparationLines(TH1D * hist);
+//
+void      DumpFileInfoToTree(TTree * tree, const Char_t * inputFile = "event_stat.root", UInt_t runNumber = 0);
+
+//
+// global tree variables
+//
+UInt_t  runNumberTree, fillNumberTree, triggerBitTree;
+Float_t acceptedFractionTree, hardwareTrigger, v0Abackgr, v0Cbackgr, tpcDip, tpcLaserNoise, t0Backgr, t0PileUp, zdcTimeCut, zdcAbackgr, zdcCbackgr;
 
 
 //______________________________________________________________________________
@@ -60,6 +70,7 @@ void SimpleQA() {
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13dPass2.txt", "./Plots/2013/LHC13d/13dPass2.pdf", "LHC13dPass2");
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13ePass2.txt", "./Plots/2013/LHC13e/13ePass2.pdf", "LHC13ePass2");
   MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13fPass2.txt", "./Plots/2013/LHC13f/13fPass2.pdf", "LHC13fPass2");  
+  MakeQAperPeriod("./InputFilesFromGridPerPeriod/2013/inputListLHC13gVPass1.txt", "./Plots/2013/LHC13g/13gVPass1.pdf", "LHC13gVPass1");
   //
   
 }
@@ -76,9 +87,10 @@ void MakeQAperPeriod(const Char_t * inputList, const Char_t * outputFileName,con
   TString objfile;
   Int_t counter = 0;
   //
-  // Initialize histograms
+  // Initialize histograms and tree
   //
   TList * list = InitializeHistograms(periodLabel); // one histogram per trigger type
+  TTree *  tree = InitializeTree();
   //
   while(in.good()) {
     in >> objfile;
@@ -103,14 +115,18 @@ void MakeQAperPeriod(const Char_t * inputList, const Char_t * outputFileName,con
     //
     for(Int_t iTrig = 0; iTrig < 29; iTrig++) { // loop over trigger types
       TH1D * histTrig = (TH1D*) list->FindObject(Form("histAccepted_%s_&%i",periodLabel, iTrig));
-      Float_t acceptedFraction = GetFraction((Char_t *) objfile.Data(), "Accepted", TMath::Nint( TMath::Power(2,iTrig)));
-      Float_t acceptedFractionErr = GetFraction((Char_t *) objfile.Data(), "Accepted", TMath::Nint(TMath::Power(2,iTrig)), kTRUE);
+      Float_t acceptedFraction = GetFraction((Char_t *) objfile.Data(), "Accepted", 1<<iTrig); 
+      Float_t acceptedFractionErr = GetFraction((Char_t *) objfile.Data(), "Accepted", 1<<iTrig, kTRUE);
       if (acceptedFraction > -0.5) {
 	histTrig->Fill(runNumber.Data(), acceptedFraction);
 	if (acceptedFraction < 1e-9) histTrig->SetBinContent(histTrig->GetXaxis()->FindBin(runNumber.Data()), 0.0001);
 	histTrig->SetBinError(histTrig->GetXaxis()->FindBin(runNumber.Data()), acceptedFractionErr);
       }
     }
+    //
+    // fill the tree
+    //
+    DumpFileInfoToTree(tree, objfile.Data(), runNumber.Atoi());
     //
     counter++;
   }
@@ -143,6 +159,10 @@ void MakeQAperPeriod(const Char_t * inputList, const Char_t * outputFileName,con
   TString * triggerBitName = GetTriggerBitName(countFilledHists); 
   canvAcc->Print(Form("%s%s",outputFileName,"]"), Form("Title:%s", triggerBitName->Data()));
   delete triggerBitName;
+  //
+  //
+  TString  treeFileName(outputFileName);
+  tree->SaveAs(treeFileName.ReplaceAll(".pdf",".root"));
   //
   //
   in.close();
@@ -259,6 +279,37 @@ TList * InitializeHistograms(const Char_t * label) {
 }
 
 
+
+//______________________________________________________________________________
+TTree * InitializeTree() {
+
+  TTree * tree = new TTree("tree","basic QA variables of PhysicsSelection");
+  tree->Branch("runNumber",&runNumberTree,"runNumber/i");
+  tree->Branch("fillNumber",&fillNumberTree,"fillNumber/i");
+  tree->Branch("triggerBit",&triggerBitTree,"triggerBit/i");
+  //
+  //
+  tree->Branch("acceptedFraction",&acceptedFractionTree,"acceptedFraction/f"); 
+  tree->Branch("hardwareTrigger",&hardwareTrigger,"hardwareTrigger/f"); 
+  //
+  tree->Branch("v0Abackgr",&v0Abackgr,"v0Abackgr/f"); 
+  tree->Branch("v0Cbackgr",&v0Cbackgr,"v0Cbackgr/f"); 
+  //
+  tree->Branch("t0Backgr",&t0Backgr,"t0Backgr/f"); 
+  tree->Branch("t0PileUp",&t0PileUp,"t0PileUp/f");
+  //
+  tree->Branch("zdcTimeCut", &zdcTimeCut, "zdcTimeCut/f");
+  tree->Branch("zdcAbackgr", &zdcAbackgr, "zdcAbackgr/f");
+  tree->Branch("zdcCbackgr", &zdcCbackgr, "zdcCbackgr/f");
+  //
+  tree->Branch("tpcDip",&tpcDip,"tpcDip/f"); 
+  tree->Branch("tpcLaserNoise",&tpcLaserNoise,"tpcLaserNoise/f"); 
+
+  return tree;
+}
+
+
+
 //______________________________________________________________________________
 TString * GetTriggerBitName(Int_t bitNumber) {
   //
@@ -365,5 +416,38 @@ void  AddFillSeparationLines(TH1D * hist) {
       fillSeparationLine->Draw();
     }
   }
+
+}
+
+
+
+//______________________________________________________________________________
+void DumpFileInfoToTree(TTree * tree, const Char_t * inputFile, UInt_t runNumber) {
+  //
+  // store the information of the file in the tree
+  //
+  runNumberTree  = runNumber;
+  fillNumberTree = GetFillFromRunNumber(runNumber);
+  //
+  //
+  for(Int_t iTrig = 0; iTrig < 29; iTrig++) { // loop over trigger types
+    triggerBitTree = 1<<iTrig;
+    //
+    acceptedFractionTree = GetFraction(inputFile, "Accepted", 1<<iTrig); 
+    hardwareTrigger  = GetFraction(inputFile, "Hardware trigger", 1<<iTrig); 
+    v0Abackgr        = GetFraction(inputFile, "V0A BG", 1<<iTrig); 
+    v0Cbackgr        = GetFraction(inputFile, "V0C BG", 1<<iTrig); 
+    tpcDip           = GetFraction(inputFile, "TPC HV dip Cut", 1<<iTrig); 
+    tpcLaserNoise    = GetFraction(inputFile, "TPC Laser Wup Cut", 1<<iTrig); 
+    t0Backgr         = GetFraction(inputFile, "T0BG", 1<<iTrig);
+    t0PileUp         = GetFraction(inputFile, "T0 PileUp", 1<<iTrig);
+    zdcTimeCut       = GetFraction(inputFile, "ZDC Time Cut", 1<<iTrig);
+    zdcAbackgr       = GetFraction(inputFile, "ZNA BG", 1<<iTrig);
+    zdcCbackgr       = GetFraction(inputFile, "ZNC BG", 1<<iTrig);
+    //
+    if (acceptedFractionTree > 0) tree->Fill();      
+  }
+
+
 
 }
