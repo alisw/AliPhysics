@@ -2329,7 +2329,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     }
     
     if(!fGeoUt){
-        fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
+        fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
         AliInfo("Creating new AliEMCALGeometry");
     }
     //fGeoUt = new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
