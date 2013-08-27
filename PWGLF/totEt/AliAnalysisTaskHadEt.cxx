@@ -52,8 +52,16 @@ ClassImp(AliAnalysisTaskHadEt)
     // Constructor
   //input hander
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if (!man) {
+    AliFatal("Analysis manager needed");
+    return;
+  }
+
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  if (!inputHandler) AliFatal("Input handler needed");
+  if (!inputHandler) {
+    AliFatal("Input handler needed");
+    return;
+  }
 
   //pid response object
   fPIDResponse=inputHandler->GetPIDResponse();
@@ -104,8 +112,16 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 
   //input hander
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if (!man) {
+    AliFatal("Analysis manager needed");
+    return;
+  }
+
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  if (!inputHandler) AliFatal("Input handler needed");
+  if (!inputHandler) {
+    AliFatal("Input handler needed");
+    return;
+  }
 
   //pid response object
   fPIDResponse=inputHandler->GetPIDResponse();

@@ -342,28 +342,32 @@ Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliESDCaloClust
 UInt_t AliAnalysisEtSelectorPhos::GetLabel(const AliESDCaloCluster *cluster, AliStack *stack){
   //Finds primary and estimates if it unique one?
   Int_t n=cluster->GetNLabels() ;
-  Double_t*  Ekin=  new  Double_t[n] ;
-  for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  stack->Particle(cluster->GetLabelAt(i)) ;
-    Ekin[i]=p->P() ;  // estimate of kinetic energy
-    if(p->GetPdgCode()==-2212  ||  p->GetPdgCode()==-2112){
-      Ekin[i]+=1.8  ;  //due to annihilation
-    }
-  }
   Int_t iMax=0;
-  Double_t eMax=0.;//eSubMax=0. ;
-  for(Int_t i=0;  i<n;  i++){
-    if(Ekin[i]>eMax){
-      //      eSubMax=eMax;
-      eMax=Ekin[i];
-      iMax=i;
+
+  if (n > 0) {
+    Double_t*  Ekin=  new  Double_t[n] ;
+    for(Int_t i=0;  i<n;  i++){
+      TParticle*  p=  stack->Particle(cluster->GetLabelAt(i)) ;
+      Ekin[i]=p->P() ;  // estimate of kinetic energy
+      if(p->GetPdgCode()==-2212  ||  p->GetPdgCode()==-2112){
+	Ekin[i]+=1.8  ;  //due to annihilation
+      }
     }
-  }
+    Double_t eMax=0.;//eSubMax=0. ;
+    for(Int_t i=0;  i<n;  i++){
+      if(Ekin[i]>eMax){
+	//      eSubMax=eMax;
+	eMax=Ekin[i];
+	iMax=i;
+      }
+    }
 //   if(eSubMax>0.8*eMax)//not obvious primary
 //     sure=kFALSE;
 //   else
 //     sure=kTRUE;
-  delete  Ekin;
-  return  cluster->GetLabelAt(iMax) ;
+    delete  Ekin;
+
+  } // n>0
+  return  cluster->GetLabelAt(iMax) ; // DS: should this line be inside n>0 check, and return another value if n<=0 ? 
 
 }
