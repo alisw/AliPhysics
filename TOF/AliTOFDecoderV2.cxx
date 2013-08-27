@@ -61,7 +61,7 @@ AliTOFDecoderV2::AliTOFDecoderV2(AliRawReader *reader) :
   TObject(),
   fRawReader(reader),
   fVerbose(kFALSE),
-  fLogErrors(kTRUE),
+  fLogErrors(kFALSE),
   fV2718Patch(kFALSE),
   fRecoverError(kTRUE),
   fRecoverErrorThr(0),
