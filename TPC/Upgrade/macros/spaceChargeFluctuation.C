@@ -12,7 +12,7 @@
   .x $HOME/rootlogon.C
   .L $ALICE_ROOT/TPC/Upgrade/macros/spaceChargeFluctuation.C+ 
 
-
+ 
   
  */
 #include "TMath.h"
@@ -111,19 +111,23 @@ Double_t RndmdNchdY(Double_t s){
     f1.SetParameters(1,-1)
     his550->Fit("f1","","",10,3000);
     TH1F his276("his276","his276",1000,0,3000)
-    for (Int_t i=0; i<300000; i++) his276->Fill(RndmdNchdY(5.5));
+    for (Int_t i=0; i<300000; i++) his276->Fill(RndmdNchdY(2.76));
     his276->Draw();    
 
   */
   static TSpline3 * spline276=0;
+  const Double_t sref=2.76; // reference s
+
   if (!spline276){
+    // Refence multiplicities for 2.76 TeV
     // multplicity from archive except of the last  point was set to 0
-    Double_t mult[20]={1601,  1294,   966,  649,   426,  261,  149,  76, 35,      0.001};
-    Double_t cent[20]={2.5,   7.5,    15,   25,    35,   45,   55,   65, 75,   100.};   
+    //
+    const Double_t mult[20]={1601,  1294,   966,  649,   426,  261,  149,  76, 35,      0.001};
+    const Double_t cent[20]={2.5,   7.5,    15,   25,    35,   45,   55,   65, 75,   100.};   
     TGraphErrors * gr = new TGraphErrors(10,cent,mult);
     spline276 = new TSpline3("spline276",gr);
   }
-  Double_t norm = TMath::Power((s/2.76),0.15);
+  Double_t norm = TMath::Power((s*s)/(sref*sref),0.15);
   spline276->Eval(gRandom->Rndm()*100.);
   return  spline276->Eval(gRandom->Rndm()*100.)*norm;
 }
@@ -140,9 +144,6 @@ void pileUpToyMC(Int_t nframes){
     Int)t nframes=1000;
    */
   TTreeSRedirector *pcstream = new TTreeSRedirector("pileup.root","recreate");
-  Double_t FPOT=1.0, EEND=3000;
-  Double_t  EEXPO=0.8567;
-  const Double_t XEXPO=-EEXPO+1, YEXPO=1/XEXPO;
   Double_t central = 2350;
   Double_t pmean=5;
   TVectorD vectorT(nframes);
@@ -156,7 +157,6 @@ void pileUpToyMC(Int_t nframes){
       Int_t ntracks=0; // to be taken from the MB primary distribution    
       Bool_t hasCentral=0;
       for (Int_t ievent=0; ievent<nevents; ievent++){
-	Float_t RAN = gRandom->Rndm();
 	ntracks=RndmdNchdY(5.5);
 	ntracksAll+=ntracks; 
 	if (ntracks>central) hasCentral = kTRUE;
@@ -255,14 +255,32 @@ void pileUpToyMC(Int_t nframes){
   }
   canvasMult->SaveAs("effectiveMultF5.pdf");
   canvasMult->SaveAs("effectiveMultF5.png");
-  TH1F his550("his550","his550",1000,0,3000);
-  for (Int_t i=0; i<300000; i++) his550->Fill(RndmdNchdY(5.5));
-  his550->Draw();    
-  TF1 f1("f1","[0]*x^(-(0.00001+abs([1])))",1,2000);
-  f1.SetParameters(1,-1);
-  his550->GetXaxis()->SetTitle("dN_{ch}/d#eta");
-  his550->Fit("f1","","",10,3000);
-  canvasMult->SaveAs("dNchdEta55.pdf");
+
+  {    
+    gStyle->SetOptFit(1);
+    gStyle->SetOptStat(1);
+    gStyle->SetOptTitle(1);
+    TCanvas * canvasMultH = new TCanvas("canvasCumulH","canvasCumulH",700,700);
+    canvasMultH->Divide(1,2);
+    canvasMultH->cd(1);
+    TH1F his550("his550","his550",1000,0,3000);
+    TH1F his276("his276","his276",1000,0,3000);
+    for (Int_t i=0; i<300000; i++) his550.Fill(RndmdNchdY(5.5));
+    for (Int_t i=0; i<300000; i++) his276.Fill(RndmdNchdY(2.76));     
+    TF1 f1("f1","[0]*x^(-(0.00001+abs([1])))",1,2000);
+    f1.SetParameters(1,-1);
+    his550.GetXaxis()->SetTitle("dN_{ch}/d#eta");
+    his276.GetXaxis()->SetTitle("dN_{ch}/d#eta");
+    his550.Fit("f1","","",10,3000);
+    his276.Fit("f1","","",10,3000); 
+    canvasMultH->cd(1)->SetLogx(1);
+    canvasMultH->cd(1)->SetLogy(1);
+    his550.Draw();    
+    canvasMultH->cd(2)->SetLogx(1);
+    canvasMultH->cd(2)->SetLogy(1);
+    his276.Draw("");    
+    canvasMultH->SaveAs("dNchdEta.pdf");
+  }
   delete pcstream;
 }
 
@@ -1181,7 +1199,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   
   Double_t bsign= sign;
   if (bsign>1) bsign=-1;
-  const Int_t nTracks=20000;
+  const Int_t nTracks=2000;
   const char *ocdb="local://$ALICE_ROOT/OCDB/";
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
   AliCDBManager::Instance()->SetRun(0);   
@@ -2093,3 +2111,166 @@ void DrawTrackFluctuationZ(){
 }
 
 
+
+
+
+void DrawTrackFluctuationFrame(){
+  //
+  // Function to make a fluctuation figures for differnt multiplicities of pileup space charge
+  // it is assumed that the text files  
+  //
+  //
+  TObjArray arrayFit(3);
+  const char *inputList;
+  TH2F * hisCorrRef[10]={0};
+  TH2F * hisCorrNo[10]={0};
+  TH1  * hisCorrRefM[10], *hisCorrRefRMS[10];
+  TH1  * hisCorrNoM[10], *hisCorrNoRMS[10];
+  //
+  // 1. Load chains for different statistic
+  //  
+  TCut cutOut="abs(T_DistRef_0.fX-OT_DistRef_0.fX)<0.1&&T_DistRef_0.fX>1&&abs(OT_DistRef_0.fP[4])<4";
+  TCut cutOutF="abs(R.T_DistRef_0.fX-R.OT_DistRef_0.fX)<0.1&&R.T_DistRef_0.fX>1&&abs(R.OT_DistRef_0.fP[4])<4";
+  TCut cutFit="Entry$%4==0";  //use only subset of data for fit 
+
+  TChain * chains[10]={0};
+  TChain * chainR = AliXRDPROOFtoolkit::MakeChain("track0_1.list","trackFit",0,1000);
+  chainR->SetCacheSize(1000000000);
+  for (Int_t ichain=0; ichain<7; ichain++){
+    chains[ichain] = AliXRDPROOFtoolkit::MakeChain(Form("track%d_1.list",2*(ichain+1)),"trackFit",0,1000);
+    chains[ichain]->AddFriend(chainR,"R");
+    chains[ichain]->SetCacheSize(1000000000);
+    chains[ichain]->SetMarkerStyle(25);
+    chains[ichain]->SetMarkerSize(0.5);
+    chains[ichain]->SetAlias("meanNorm","(1+0.2*abs(neventsCorr/10000-1))"); // second order correction - renomalization of mean hardwired  
+    chains[ichain]->SetAlias("dMean0","(neventsCorr*R.T_DistRef_0.fP[0]/10000)");
+    chains[ichain]->SetAlias("dMeas0","T_DistRef_0.fP[0]");
+    chains[ichain]->SetAlias("dMean1","(neventsCorr*R.T_DistRef_1.fP[0]/10000)");
+    chains[ichain]->SetAlias("dMeas1","T_DistRef_1.fP[0]"); 
+    for (Int_t ig=0; ig<10;ig++) chains[ichain]->SetAlias(Form("FR%d",ig),Form("(abs(Entry$-%d)<1000)",ig*2000+1000));
+  }
+  //
+  // 2.  Get or Create histogram (do fit per frame)
+  //   
+  TStatToolkit toolkit;
+  Double_t chi2=0;
+  Int_t    npoints=0;
+  TVectorD param;
+  TMatrixD covar;  
+  TString  fstringG="";              // global part
+  fstringG+="dMean0++";  
+  TVectorD vec0,vec1;
+  TString  fstringF0="";              // global part
+  for (Int_t ig=0; ig<10;ig++) fstringF0+=Form("FR%d++",ig);
+  for (Int_t ig=0; ig<10;ig++) fstringF0+=Form("FR%d*dMean0++",ig);
+  TString  fstringF1="";              // global part
+  for (Int_t ig=0; ig<10;ig++) fstringF1+=Form("FR%d++",ig);
+  for (Int_t ig=0; ig<10;ig++) fstringF1+=Form("FR%d*dMean0++",ig);
+  for (Int_t ig=0; ig<10;ig++) fstringF1+=Form("FR%d*dMean0*abs(T_DistRef_0.fP[3])++",ig);
+  for (Int_t ig=0; ig<10;ig++) fstringF1+=Form("FR%d*dMean0*(T_DistRef_0.fP[3]^2)++",ig);
+
+  //
+  //
+  TH2F *hisA=0, *hisF0=0, *hisF1=0, *hisM=0;
+  TObjArray * arrayHisto = new TObjArray(200);
+  TFile *ftrackFit = TFile::Open("trackFluctuationFrame.root","update");
+  for (Int_t ihis=0; ihis<7; ihis++){
+    printf("\n\nProcessing frames\t%d\nnn",(ihis+1)*2000);
+    hisM = (TH2F*)ftrackFit->Get(Form("hisMean_%d",(ihis+1)*2000));
+    hisA = (TH2F*)ftrackFit->Get(Form("hisAll_%d",(ihis+1)*2000));
+    hisF0 = (TH2F*)ftrackFit->Get(Form("hisFrame0_%d",(ihis+1)*2000));
+    hisF1 = (TH2F*)ftrackFit->Get(Form("hisFrame1_%d",(ihis+1)*2000));
+    if (!hisA){    
+      ftrackFit->cd();
+      TString * fitResultAll = TStatToolkit::FitPlane(chains[ihis],"dMeas0", fstringG.Data(),cutOut+cutOutF+cutFit, chi2,npoints,param,covar,-1,0, 40*2000, kFALSE);
+      chains[ihis]->SetAlias("fitAll",fitResultAll->Data());  
+      TString * fitResultF0 = TStatToolkit::FitPlane(chains[ihis],"dMeas0", fstringF0.Data(),cutOut+cutOutF+cutFit+"abs(dMeas0-fitAll)<0.3", chi2,npoints,vec0,covar,-1,0, 10*2000, kFALSE);
+      chains[ihis]->SetAlias("fitF0",fitResultF0->Data());  
+      TString * fitResultF1 = TStatToolkit::FitPlane(chains[ihis],"dMeas0", fstringF1.Data(),cutOut+cutOutF+cutFit+"abs(dMeas0-fitAll)<0.3", chi2,npoints,vec1,covar,-1,0, 10*2000, kFALSE);
+      chains[ihis]->SetAlias("fitF1",fitResultF1->Data());  
+      fitResultF0->Tokenize("++")->Print();
+      chains[ihis]->Draw(Form("dMeas0-fitAll:T_DistRef_0.fP[4]>>hisAll_%d(20,-4,4,100,-0.25,0.25)",(ihis+1)*2000),cutOut+cutOutF,"colz",100000,0);   
+      hisA = (TH2F*)chains[ihis]->GetHistogram();
+      chains[ihis]->Draw(Form("dMeas0-fitF0:T_DistRef_0.fP[4]>>hisFrame0_%d(20,-4,4,100,-0.10,0.10)",(ihis+1)*2000),cutOut+cutOutF,"colz",20000,0);
+      hisF0 = (TH2F*)chains[ihis]->GetHistogram();
+      chains[ihis]->Draw(Form("dMeas0-fitF1:T_DistRef_0.fP[4]>>hisFrame1_%d(20,-4,4,100,-0.10,0.10)",(ihis+1)*2000),cutOut+cutOutF,"colz",20000,0);
+      hisF1 = (TH2F*)chains[ihis]->GetHistogram();
+      chains[ihis]->Draw(Form("dMeas0-dMean0:T_DistRef_0.fP[4]>>hisMean_%d(20,-4,4,100,-0.25,0.25)",(ihis+1)*2000),cutOut+cutOutF,"colz",100000,0);
+      hisM = (TH2F*)chains[ihis]->GetHistogram();
+      hisM->Write(); hisA->Write();hisF0->Write(); hisF1->Write();
+      ftrackFit->Flush();
+    }
+  }
+
+  for (Int_t ihis=0; ihis<7; ihis++){
+    printf("\n\nProcessing frames\t%d\nnn",(ihis+1)*2000);
+    hisM = (TH2F*)ftrackFit->Get(Form("hisMean_%d",(ihis+1)*2000));
+    hisA = (TH2F*)ftrackFit->Get(Form("hisAll_%d",(ihis+1)*2000));
+    hisF0 = (TH2F*)ftrackFit->Get(Form("hisFrame0_%d",(ihis+1)*2000));
+    hisF1 = (TH2F*)ftrackFit->Get(Form("hisFrame1_%d",(ihis+1)*2000));
+    arrayHisto->AddLast(hisA);
+    arrayHisto->AddLast(hisF0);
+    arrayHisto->AddLast(hisF1);
+    arrayHisto->AddLast(hisM);
+  }
+  delete ftrackFit;
+  //
+  // 3. Draw figures
+  //
+  gStyle->SetOptStat(0);
+  TCanvas *canvasFit   = new TCanvas("canvasFitFrame","canvasFitframe",900,700);
+  canvasFit->Divide(3,2,0,0);
+  for (Int_t ihis=1; ihis<7; ihis++){
+    //
+    canvasFit->cd(ihis);
+    char hname[10000];
+    snprintf(hname,1000,"hisAll_%d",(ihis+1)*2000);
+    hisA = (TH2F*)arrayHisto->FindObject(hname);
+    snprintf(hname,1000,"hisFrame0_%d",(ihis+1)*2000);
+    hisF0 = (TH2F*)arrayHisto->FindObject(hname);
+    snprintf(hname,1000,"hisFrame1_%d",(ihis+1)*2000);
+    hisF1 = (TH2F*)arrayHisto->FindObject(hname);
+    snprintf(hname,1000,"hisMean_%d",(ihis+1)*2000);
+    hisM = (TH2F*)arrayHisto->FindObject(hname);
+    //
+    //
+    hisM->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+    TH1 * hisRA= (TH1*)arrayFit.At(2)->Clone();
+    hisF0->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+    TH1 * hisRF0= (TH1*)arrayFit.At(2)->Clone();    
+    hisF1->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+    TH1 * hisRF1= (TH1*)arrayFit.At(2)->Clone();    
+    //
+    hisRA->SetMarkerStyle(20);
+    hisRF0->SetMarkerStyle(21);
+    hisRF1->SetMarkerStyle(21);
+    hisRA->SetMarkerColor(1);
+    hisRF0->SetMarkerColor(4);
+    hisRF1->SetMarkerColor(2);
+    TF1 * f1a= new TF1("f1a","pol1");
+    TF1 * f1f0= new TF1("f1a0","pol1");
+    TF1 * f1f1= new TF1("f1a1","pol1");
+    f1a->SetLineColor(1);
+    f1f0->SetLineColor(4);
+    f1f1->SetLineColor(2);
+    hisRA->Fit(f1a);
+    hisRF0->Fit(f1f0);
+    hisRF1->Fit(f1f1);
+    hisRF1->SetMinimum(0);
+    hisRF1->SetMaximum(0.05);
+    // hisRA->Draw();
+    hisRF1->GetXaxis()->SetTitle("q/p_{T} (1/GeV)");
+    hisRF1->GetYaxis()->SetTitle("#sigma_{r#phi} (cm)");
+    hisRF1->Draw("");   
+    hisRF0->Draw("same");   
+    TLegend * legend = new TLegend(0.11,0.11,0.65,0.25, Form("Track residual r#phi distortion: N_{ion}=%d",(ihis+1)*2000));
+    legend->AddEntry(hisRF0,"a_{0}+a_{1}#rho");
+    legend->AddEntry(hisRF1,"a_{0}+(a_{1}+a_{2}z+a_{3}z^2)#rho");
+    legend->SetBorderSize(0);
+    legend->Draw();
+  }
+  //
+  canvasFit->SaveAs("canvasFrameFitRPhiVersion0.pdf");
+  canvasFit->SaveAs("canvasFrameFitRPhiVersion0.png");
+  //
+}
