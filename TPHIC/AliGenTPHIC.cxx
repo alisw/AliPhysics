@@ -84,6 +84,7 @@ AliGenTPHIC::AliGenTPHIC() :
   // eta_b production in Ca-Ca collisions at 7 A*TeV
 
   SetMC(new TPHICgen());
+  fTPHICgen = (TPHICgen*) fMCEvGen;
   fPythia = AliPythia::Instance();
   fParticles = new TClonesArray("TParticle",100);
 

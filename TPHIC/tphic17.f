@@ -1265,6 +1265,7 @@ C
       REAL*4  wlum
       DATA    ifl/0/, stpy/0./, stpm/0./
       REAL*8 ggrnd
+      save ifl,aky,akm,stpy,stpm,rmin,rmax,dr
 C
       IF (ifl.EQ.0) THEN
         IF (ymin.LT.ymn .OR. ymin.GT.ymx .OR.
