@@ -449,18 +449,18 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
       fHistograms->Add(hReweightMCHistK0s);
    }
-   if (fFitDataPi0){
-      fFitDataPi0->SetName("DataFitForWeightingPi0");
-      fHistograms->Add(fFitDataPi0);
-   }
-   if (fFitDataEta){
-      fFitDataEta->SetName("DataFitForWeightingEta");
-      fHistograms->Add(fFitDataEta);
-   }
-   if (fFitDataK0s){
-      fFitDataK0s->SetName("DataFitForWeightingK0s");
-      fHistograms->Add(fFitDataK0s);
-   }
+//    if (fFitDataPi0){
+//       fFitDataPi0->SetName("DataFitForWeightingPi0");
+//       fHistograms->Add(fFitDataPi0);
+//    }
+//    if (fFitDataEta){
+//       fFitDataEta->SetName("DataFitForWeightingEta");
+//       fHistograms->Add(fFitDataEta);
+//    }
+//    if (fFitDataK0s){
+//       fFitDataK0s->SetName("DataFitForWeightingK0s");
+//       fHistograms->Add(fFitDataK0s);
+//    }
    // IsPhotonSelected
    hCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",10,-0.5,9.5);
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonIn+1,"in");
@@ -3684,7 +3684,7 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 }
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.CompareTo("LHC13d2") == 0)) return 1.;
+   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2"))) return 1.;
 
    Int_t kCaseGen = 0;
    for (Int_t i = 0; i < fnHeaders; i++){
@@ -3710,10 +3710,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
          } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
             kCaseGen = 3;
          }
-         TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-                                                ->GetTask("V0ReaderV1"))->GetPeriodName();
-
-         if (periodName.Contains("LHC13d2")){
+         if (period.Contains("LHC13d2")){
             kCaseGen = 3;
          }
       }
