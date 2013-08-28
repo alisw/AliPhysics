@@ -14,6 +14,7 @@
 **************************************************************************/
 
 #include "iostream"
+#include "TSystem.h"
 
 #include <TPDGCode.h>
 #include <TDatabasePDG.h>
@@ -238,8 +239,8 @@ fPtResCentPtTPC = new TH3D("fPtResCentPtTPC","pt rel. resolution from cov. matri
 
   
   fOutput = new TList; 
-  fOutput->SetOwner();
   if(!fOutput) return;
+  fOutput->SetOwner();
 
   fOutput->Add(fPtResPhiPtTPC);
   fOutput->Add(fPtResPhiPtTPCc);
@@ -294,6 +295,23 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
       if(!fESDfriend) {
         Printf("ERROR: ESD friends not available");
     }
+  }
+
+  //if set, use the environment variables to set the downscaling factors
+  //AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
+  //AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
+  TString env;
+  env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF");
+  if (!env.IsNull())
+  {
+    fLowPtTrackDownscaligF=env.Atof();
+    AliInfo(Form("fLowPtTrackDownscaligF=%f",fLowPtTrackDownscaligF));
+  }
+  env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF");
+  if (!env.IsNull())
+  {
+    fLowPtV0DownscaligF=env.Atof();
+    AliInfo(Form("fLowPtV0DownscaligF=%f",fLowPtTrackDownscaligF));
   }
 
   //
@@ -841,6 +859,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
   TArrayF vtxMC(3);
+  Int_t mcStackSize=0;
 
   Int_t multMCTrueTracks = 0;
   if(mcEvent)
@@ -857,6 +876,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliDebug(AliLog::kError, "Stack not available");
       return;
     }
+    mcStackSize=stack->GetNtrack();
 
     // get MC vertex
     genHeader = header->GenEventHeader();
@@ -1126,7 +1146,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         // global track
 	//
         Int_t label = TMath::Abs(track->GetLabel()); 
+        if (label >= mcStackSize) continue;
         particle = stack->Particle(label);
+        if (!particle) continue;
         if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0.)
 	{
 	  particleMother = GetMother(particle,stack);
@@ -1141,7 +1163,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	// TPC track
 	//
 	Int_t labelTPC = TMath::Abs(track->GetTPCLabel()); 
+        if (labelTPC >= mcStackSize) continue;
         particleTPC = stack->Particle(labelTPC);
+        if (!particleTPC) continue;
         if(particleTPC && particleTPC->GetPDG() && particleTPC->GetPDG()->Charge()!=0.)
 	{
 	  particleMotherTPC = GetMother(particleTPC,stack);
@@ -1158,7 +1182,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	//
         TParticle *part=0;
         TClonesArray *trefs=0;
-        Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(track->GetTPCLabel()), part, trefs);
+        Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(labelTPC), part, trefs);
 
 	if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.) 
 	{
@@ -1240,7 +1264,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	// ITS track
 	//
 	Int_t labelITS = TMath::Abs(track->GetITSLabel()); 
+        if (labelITS >= mcStackSize) continue;
         particleITS = stack->Particle(labelITS);
+        if (!particleITS) continue;
         if(particleITS && particleITS->GetPDG() && particleITS->GetPDG()->Charge()!=0.)
 	{
 	  particleMotherITS = GetMother(particleITS,stack);
@@ -1339,7 +1365,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Int_t ntracks = esdEvent->GetNumberOfTracks();
       
       // fill histograms
-      FillHistograms(ptrack, ptpcInnerC, mult, (Double_t)chi2(0,0));
+      FillHistograms(ptrack, ptpcInnerC, centralityF, (Double_t)chi2(0,0));
 
       if(fTreeSRedirector && dumpToTree && fFillTree) 
       {
@@ -1530,6 +1556,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
+  Int_t mcStackSize=0;
   TArrayF vtxMC(3);
 
   Int_t multMCTrueTracks = 0;
@@ -1550,6 +1577,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     AliDebug(AliLog::kError, "Stack not available");
     return;
   }
+  mcStackSize=stack->GetNtrack();
 
   // get MC vertex
   genHeader = header->GenEventHeader();
@@ -1588,7 +1616,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
-    if(!stack) return;
+    //if(!stack) return;
 
     //
     // MC info
@@ -1607,9 +1635,8 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     Double_t runNumber = esdEvent->GetRunNumber();
     Double_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
-    // loop over MC stack
-    for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
+      // loop over MC stack
+    for (Int_t iMc = 0; iMc < mcStackSize; ++iMc) 
     {
       particle = stack->Particle(iMc);
       if (!particle)
@@ -1636,26 +1663,35 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
       // check if particle reconstructed
       Bool_t isRec = kFALSE;
-      Int_t  trackIndex = -1;
+      Int_t  trackIndex = -1;  
+      Int_t isESDtrackCut= 0;
+      Int_t isAccCuts    = 0;
+      AliESDtrack *recTrack = NULL; 
+
       for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
       {
-
         AliESDtrack *track = esdEvent->GetTrack(iTrack);
         if(!track) continue;
         if(track->Charge()==0) continue;
-        if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
-        {
-          Int_t label =  TMath::Abs(track->GetLabel());
-          if(label == iMc) {
-            isRec = kTRUE;
-            trackIndex = iTrack;
-            break;
-          }
-        } 
+	//
+	Int_t label =  TMath::Abs(track->GetLabel());
+	if (label >= mcStackSize) continue;
+	if(label == iMc) {	  
+	  Bool_t isAcc=esdTrackCuts->AcceptTrack(track);
+	  if (isAcc) isESDtrackCut=1;
+	  if (accCuts->AcceptTrack(track)) isAccCuts=1;
+	  isRec = kTRUE;
+	  if (recTrack){
+	    if (track->GetTPCncls()<recTrack->GetTPCncls()) continue; // in case looper tracks use longer track
+	    if (!isAcc) continue;
+	    trackIndex = iTrack;
+	  }
+	  recTrack = esdEvent->GetTrack(trackIndex); 
+	  continue;
+	}        
       }
-
+      
       // Store information in the output tree
-      AliESDtrack *recTrack = NULL; 
       if(trackIndex>-1)  { 
         recTrack = esdEvent->GetTrack(trackIndex); 
       } else {
@@ -1681,14 +1717,18 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
           "triggerClass.="<<&triggerClass<<
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<
-          "evtNumberInFile="<<evtNumberInFile<<
-          "Bz="<<bz<<
-          "vtxESD.="<<vtxESD<<
-          "mult="<<mult<<
+          "evtNumberInFile="<<evtNumberInFile<<     // 
+          "Bz="<<bz<<                               // magnetic field
+          "vtxESD.="<<vtxESD<<                      // vertex info
+          "mult="<<mult<<                           // primary vertex 9whatewe found) multiplicity
+	  "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
+	  //
+	  "isAcc0="<<isESDtrackCut<<                // track accepted by ESD track cuts
+	  "isAcc1="<<isAccCuts<<                    // track accepted by acceptance cuts flag
           "esdTrack.="<<recTrack<<
           "isRec="<<isRec<<
-          "tpcTrackLength="<<tpcTrackLength<<
-          "particle.="<<particle<<
+          "tpcTrackLength="<<tpcTrackLength<<       // track length in the TPC r projection
+          "particle.="<<particle<<                  // particle properties
           "particleMother.="<<particleMother<<
           "mech="<<mech<<
           "\n";
@@ -2206,6 +2246,8 @@ TParticle *AliAnalysisTaskFilteredTree::GetMother(TParticle *const particle, Ali
 
   Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
   TParticle* mother = NULL; 
+  Int_t mcStackSize=stack->GetNtrack();
+  if (motherLabel>=mcStackSize) return NULL;
   mother = stack->Particle(motherLabel); 
 
 return mother;
@@ -2217,7 +2259,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack
   Bool_t isFromConversion = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2225,6 +2270,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           Int_t motherPdg = mother->GetPdgCode();
@@ -2245,7 +2291,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *
   Bool_t isFromMaterial = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2253,6 +2302,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           if(!isPrim && mech==13) { 
@@ -2271,7 +2321,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(const Int_t label, AliStac
   Bool_t isFromStrangeness = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2279,6 +2332,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(const Int_t label, AliStac
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           Int_t motherPdg = mother->GetPdgCode();
@@ -2478,18 +2532,19 @@ void AliAnalysisTaskFilteredTree::FillHistograms(AliESDtrack* const ptrack, AliE
 
 // TPC+ITS primary tracks 
 if( abs(ptrack->Eta())<0.8 && 
-    ptrack->GetTPCClusterInfo(3,1)>130 && 
+    ptrack->GetTPCClusterInfo(3,1)>120 && 
     ptrack->IsOn(0x40) && 
     ptrack->GetTPCclusters(0)>0.0 &&  
-    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.2 && 
-    abs(innerParam->GetX())>0.0 && 
-    abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
-    abs(innerParam->GetTgl())<0.85 && 
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.4 && 
+    //abs(innerParam->GetX())>0.0 && 
+    //abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    //abs(innerParam->GetTgl())<0.85 && 
     ptrack->IsOn(0x0004) && 
     ptrack->GetNcls(0)>0 &&
     ptrack->GetITSchi2()>0 && 
     sqrt(ptrack->GetITSchi2()/ptrack->GetNcls(0))<6 &&
     sqrt(chi2TPCInnerC)<6 &&
+    (ptrack->HasPointOnITSLayer(0) || ptrack->HasPointOnITSLayer(1)) &&
     abs(dz)<2.0 && 
     abs(dxy)<(0.018+0.035*abs(ptrack->GetSigned1Pt())) )
     {
@@ -2509,13 +2564,13 @@ if( abs(ptrack->Eta())<0.8 &&
    ptrack->GetImpactParametersTPC(dxyTPC,dzTPC);
 
 if( abs(ptrack->Eta())<0.8 && 
-    ptrack->GetTPCClusterInfo(3,1)>130 && 
+    ptrack->GetTPCClusterInfo(3,1)>120 && 
     ptrack->IsOn(0x40)&& 
     ptrack->GetTPCclusters(0)>0.0 &&  
-    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.2 && 
-    abs(innerParam->GetX())>0.0 && 
-    abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
-    abs(innerParam->GetTgl())<0.85 && 
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.4 && 
+    //abs(innerParam->GetX())>0.0 && 
+    //abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    //abs(innerParam->GetTgl())<0.85 && 
     abs(dzTPC)<3.2 && 
     abs(dxyTPC)<2.4 )
     {
