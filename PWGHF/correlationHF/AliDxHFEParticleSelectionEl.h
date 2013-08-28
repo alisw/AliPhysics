@@ -152,8 +152,15 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Int_t         fBit;                // Which bit to use
   Double_t      fMaxPtCombinedPID;   // Max pt for the combined PID of TPC and TOF (default = 999, thus combined for all pt)
   Bool_t        fUseEMCAL;           // Whether or not to use EMCAL PID
+  Double_t      fMinM20;             // Lower cut value for Shower shape, EMCAL, M20
+  Double_t      fMaxM20;             // Upper cut value for Shower shape, EMCAL, M20
+  Double_t      fMinM02;             // Lower cut value for Shower shape, EMCAL, M02
+  Double_t      fMaxM02;             // Upper cut value for Shower shape, EMCAL, M02
+  Double_t      fDispersion;         // Shower shape dispersion cut
+  Double_t      fEovPMin;            // Lower cut value for E over P, EMCAL
+  Double_t      fEovPMax;            // Upper cut value for E over P, EMCAL
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
-
+  
   ClassDef(AliDxHFEParticleSelectionEl, 6); 
 };
 
