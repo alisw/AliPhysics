@@ -26,16 +26,29 @@ class AliTOFPIDParams : public TNamed {
   AliPIDResponse::EStartTimeType_t GetStartTimeMethod(void) const {return fStartTime;}
   Float_t GetSigParams(Int_t i) const {
     return ((i >= 0)  && (i<kSigPparams)) ? fSigPparams[i] : 0;}    
+  Float_t GetTOFtail(void) const {return fTOFtail;}
+  Float_t GetTOFmatchingLossMC(void) const {return fTOFmatchingLossMC;}
+  Float_t GetTOFadditionalMismForMC(void) const {return fTOFadditionalMismForMC;}
+  Float_t GetTOFtimeOffset(void) const {return fTOFtimeOffset;}
+
   void SetTOFresolution(Float_t res){fTOFresolution = res;}
   void SetStartTimeMethod(AliPIDResponse::EStartTimeType_t method){fStartTime=method;}
   void SetSigPparams(Float_t *params);
+  void SetTOFtail(Float_t tail){fTOFtail = tail;}
+  void SetTOFmatchingLossMC(Float_t lossMC){fTOFmatchingLossMC = lossMC;}
+  void SetTOFadditionalMismForMC(Float_t misMC){fTOFadditionalMismForMC = misMC;}
+  void SetTOFtimeOffset(Float_t timeOffset){fTOFtimeOffset = timeOffset;}
 
  private:
   AliPIDResponse::EStartTimeType_t fStartTime;      // startTime method
   Float_t fTOFresolution;                           // TOF MRPC intrinsic resolution
-  Float_t fSigPparams[kSigPparams];                // parameterisation of sigma(p) dependency 
+  Float_t fSigPparams[kSigPparams];                 // parameterisation of sigma(p) dependency 
+  Float_t fTOFtail;                                 // fraction of tracks with TOF signal within gaussian behaviour
+  Float_t fTOFmatchingLossMC;                       // fraction of tracks (%) MC has to loose to follow reconstructed data performance
+  Float_t fTOFadditionalMismForMC;                  // fraction of tracks (%) MC has to add to match mismatch percentage in data
+  Float_t fTOFtimeOffset;                           // overall offset to be added to startTime to handle intercalibration issues
 
-  ClassDef(AliTOFPIDParams,1);
+  ClassDef(AliTOFPIDParams,2);
 
 };
 
