@@ -124,6 +124,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Int_t bUsePID=kTRUE;
   Int_t bUseTOFPID=kTRUE;
   Int_t bUseTPCPID=kTRUE;
+  Double_t maxTOFpt=999.;
 
 
   if (configuration.IsNull() && gDirectory) {
@@ -164,13 +165,21 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting nr TPC clusters to %d",NrTPCclusters));
 	  }
 	  if (argument.BeginsWith("notTPCratio")){
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE", "No requirement on tpc clusters /findable");
 	    bTPCratio=kFALSE;	    
 	  }
 	  if (argument.BeginsWith("notrequireTOF")){
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE", "No requirement on TOF");
 	    brequireTOF=kFALSE;	    
 	  }
 	  if (argument.BeginsWith("notclustersTPCPID")){
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE", "No requirement on nr clusters for TPC PID");
 	    bclustersTPCPID=kFALSE;	    
+	  }
+	  if(argument.BeginsWith("maxTOFpt=")){
+	    argument.ReplaceAll("maxTOFpt=", "");
+	    maxTOFpt=argument.Atof();
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting max pt for TOF PID to %f",maxTOFpt));
 	  }
 	  if (argument.BeginsWith("PbPb") ||
 	      argument.BeginsWith("system=1") ||
@@ -412,7 +421,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 
   //PID Settings:
   task->SetUsePID(bUsePID);
-  task->SetUseTOFPID(bUseTOFPID);
+  task->SetUseTOFPID(bUseTOFPID,maxTOFpt);
   task->SetUseTPCPID(bUseTPCPID);
 
   task->SetCFManager(man); //here is set the CF manager

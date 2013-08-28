@@ -96,7 +96,8 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   void   SetnSigmaTOF(Double_t sigma){ fTOFnSigma=sigma;}
   void   SetUsePID(Bool_t usepid=kTRUE){fUsePID=usepid;}
   void   SetUseTPCPID(Bool_t usepid=kTRUE){fUsePID=usepid; fUseTPCPID=usepid; fTPCnSigmaMin=-1;fTPCnSigmaMax=3;}
-  void   SetUseTOFPID(Bool_t usepid=kTRUE){fUsePID=usepid; fUseTOFPID=usepid; fTOFnSigma=3;}
+  void   SetUseTOFPID(Bool_t usepid=kTRUE, Double_t maxTOF=999){fUsePID=usepid; fUseTOFPID=usepid; fTOFnSigma=3;fMaxPtForTOFPID=maxTOF;}
+
   //void   SetUseParticleforPID(Int_t particle){fParticleIDforPID=particle;}
   //Getters
   ULong64_t GetTriggerMask(){ return fTriggerMask; }
@@ -132,6 +133,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Bool_t          fUsePID;          // Whether or not to use PID
   Bool_t          fUseTPCPID;       // Whether or not to use TPC PID
   Bool_t          fUseTOFPID;       // Whether or not to use TOF PID
+  Double_t        fMaxPtForTOFPID;// At which Pt to stop using TOF
 
 
   //Number of events
