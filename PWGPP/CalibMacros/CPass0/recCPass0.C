@@ -19,7 +19,6 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   AliReconstruction rec;
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
-    //rec.SetFromCDBSnapshot("OCDB.root");
     rec.SetCDBSnapshotMode("OCDB.root");
   }
 
@@ -62,9 +61,6 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   rec.SetRunReconstruction("ALL");
   rec.SetFillESD("ALL");
   rec.SetCleanESD(kFALSE);
-
-  // Specific reco params for ZDC (why isn't this automatic?)
-//  rec.SetRecoParam("ZDC",AliZDCRecoParamPbPb::GetHighFluxParam(2760));
 
   //Ignore SetStopOnError
   rec.SetStopOnError(kFALSE);
