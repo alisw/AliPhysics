@@ -85,6 +85,7 @@ fReadTPCTracks(0),
   fUsePID(kFALSE),
   fUseTPCPID(kFALSE),
   fUseTOFPID(kFALSE),
+  fMaxPtForTOFPID(999),
   fHistEventsProcessed(0x0),
   fElectronPt(NULL),
   fElectronPtStart(NULL)
@@ -116,6 +117,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fUsePID(kFALSE),
   fUseTPCPID(kFALSE),
   fUseTOFPID(kFALSE),
+  fMaxPtForTOFPID(999),
   fHistEventsProcessed(0x0),
   fElectronPt(NULL),
   fElectronPtStart(NULL)
@@ -377,12 +379,23 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoFirstQualityCuts);
       }else AliDebug(3,"Reconstructed track not passing first quality criteria\n");
 	   
-      
+      Bool_t useTOFPID=kTRUE;
+      if(track->Pt() > fMaxPtForTOFPID) useTOFPID=kFALSE;
+      if(useTOFPID) 
+	AliDebug(2,Form("Pt: %f, use CombinedPID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtForTOFPID));
+      else 
+	AliDebug(2,Form("Pt: %f, use only TPC PID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtForTOFPID));
+      /*
+      if(useTOFPID) printf(Form("Pt: %f, use CombinedPID (fMaxPtCombinedPID= %f)\n",track->Pt(),fMaxPtForTOFPID));
+      if(fMinNclsTPCPID>0) cout <<"using TPC clusters for PID"<<endl;
+      if(fMinRatioTPCcluster>0) cout <<"using ratio TPC clusters"<<endl;
+      if(fRequireTOF) cout << "require hit in TOF" << endl;*/
       // DxHFE: Add here the extra cuts
       // 1. TPC PID clusters
       if(fMinNclsTPCPID>0 && selected){
 	Int_t nclsTPCPID = tmptrack->GetTPCsignalN();
 	if(nclsTPCPID<fMinNclsTPCPID){
+	  //cout << "cut due to nr cls TPC PID " << endl;
 	  AliDebug(2,Form("nlcTPCPID NOT selected - nrclusters=%d", nclsTPCPID));
 	  selected=kFALSE;
 	}
@@ -398,17 +411,22 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	  AliDebug(2,Form("clusterRatio: %f  of all clusters: %d",clusterRatio,allclusters));
 	  if(clusterRatio <= fMinRatioTPCcluster){
 	    AliDebug(2,"clusterRatio NOT selected");
+	    //cout << "cut due to clusterratio" << endl;
 	    selected=kFALSE;
 	  }
 	}
       }
       
       // 3. TOF matching
-      if(fRequireTOF && selected){
+      if(fRequireTOF && selected && useTOFPID){
 	if(!(vtrack->GetStatus() & AliESDtrack::kTOFpid)){
 	  selected =kFALSE;
+	  //cout << "cut due to TOF" << endl;
 	  AliDebug(2,"Cut due to TOF requirement");
 	}
+      }
+      if(selected){
+	fElectronPt->Fill(tmptrack->Pt());
       }
 	   
       if(selected){
@@ -429,11 +447,14 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	}
 
 	if(fUseTOFPID){
+
+	  // if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
+	  // PID into two regions: below fMaxptCombinedPID - both TPC and TOF, above only TPC
 	  Float_t tofNsigma = pidResponse->NumberOfSigmasTOF(vtrack, AliPID::kElectron); //change to particle
 	  AliDebug(2, Form("Number of sigmas in TOF: %f", tofNsigma));
 	  //cout << "sigmaTOF " << tofNsigma << "   " << fTOFnSigma  << endl;
 	  // for now: Assume symmetric cut for TOF
-	  if(TMath::Abs(tofNsigma) > fTOFnSigma) {selected = false;}
+	  if(TMath::Abs(tofNsigma) > fTOFnSigma  && useTOFPID) {selected = false;}
 	}
 	//cout <<"PDG: " << mcPart->PdgCode() << endl;
 	// check for pdg??
@@ -446,9 +467,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
 	}
       }
-      if(selected){
-	fElectronPt->Fill(tmptrack->Pt());
-      }
+ 
       // invariant mass method - Not sure if needed here...
 
 
@@ -476,7 +495,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 void AliCFSingleTrackEfficiencyTask::Terminate(Option_t*)
 {
 
-  Info("Terminate","");
+  //  Info("Terminate","");
   AliAnalysisTaskSE::Terminate();
 
   /*
