@@ -102,6 +102,22 @@ void AliGenTunedOnPbPb::Generate()
 
   SetParameters(centrality);
 
+  if(!fChangeWithCentrality){
+    Float_t in=0;
+    for(Int_t i=0;i < fgNspecies;i++){
+      in=0;
+      if(fgHSpectrum[i]){
+	for(Int_t j=1;j<=fgHSpectrum[i]->GetNbinsX();j++){
+	  in += fgHSpectrum[i]->GetBinContent(j)*fgHSpectrum[i]->GetBinWidth(j);
+	}
+      }
+
+      // replace n-particles with the one in input file if centralidy dependece was disable
+      fgMult[i] = in;
+    }
+  }
+  
+
   TMCProcess statusPdg[fgNspecies] = {kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary,kPPrimary};
 
   Float_t parV2scaling[3] = {1,0.202538,-0.00214468};
@@ -141,9 +157,11 @@ void AliGenTunedOnPbPb::Generate()
   for(Int_t isp=0;isp < fgNspecies;isp++){
     if(! fgHSpectrum[isp]) continue;
         
-    printf("Total number of %i = %f\n",fgPdgInput[isp],fgMult[isp]*2*fYMaxValue);
+    Int_t npartSp = Int_t(fgMult[isp]*2*fYMaxValue + gRandom->Rndm());
 
-    for(Int_t ipart =0; ipart < fgMult[isp]*2*fYMaxValue; ipart++){
+    printf("Total number of %i = %i\n",fgPdgInput[isp],npartSp);
+
+    for(Int_t ipart =0; ipart < npartSp; ipart++){
       Int_t pdg = fgPdgInput[isp];
       
       Double_t y = gRandom->Rndm()*2*fYMaxValue - fYMaxValue;
@@ -205,7 +223,7 @@ TH1F *AliGenTunedOnPbPb::GetMultVsCentrality(Int_t species){
 //_____________________________________________________________________________
 void AliGenTunedOnPbPb::SetParameters(Float_t centrality){
 
-  if(!fgV2) fgV2 = new TF1("fv2Par","(1 + 2*[0]*cos(2*(x-[1])) + 2*[0]*[2]*cos(3*(x-[3])))",-TMath::Pi(),TMath::Pi());
+  if(!fgV2) fgV2 = new TF1("fv2Par","TMath::Max(0.,(1 + 2*[0]*cos(2*(x-[1])) + 2*[0]*[2]*cos(3*(x-[3]))))",-TMath::Pi(),TMath::Pi());
 
   Float_t fr[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.};
 
@@ -258,6 +276,10 @@ void AliGenTunedOnPbPb::SetParameters(Float_t centrality){
 
   Float_t v3Overv2Cent[9] = {1.2,0.82,0.625,0.5,0.45,0.4,0.37,0.3,0.3};
 
+  fgV3Overv2 = 0;
+  for(Int_t j=0;j < 9;j++)
+      fgV3Overv2 += fr[j]*v3Overv2Cent[j];
+
   // set parameters for current centrality
   for(Int_t i=0;i < fgNspecies;i++){
     fgMult[i] = 0;
@@ -266,14 +288,9 @@ void AliGenTunedOnPbPb::SetParameters(Float_t centrality){
       fgMult[i] += fr[j]*multCent[i+j*fgNspecies];
     }
   }
-
-  fgV3Overv2 = 0;
-  for(Int_t j=0;j < 9;j++)
-      fgV3Overv2 += fr[j]*v3Overv2Cent[j];
  
   if(centrality > 80){
     for(Int_t i=0;i < fgNspecies;i++)
       fgMult[i] /= TMath::Log(centrality-77.);
   }
-
 }
