@@ -299,6 +299,7 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   double dEdxBins[6]={1000,0.,10.,200,0.,200.};
   double nSigBins[6]={1000,0.,10.,200,-10.,10.};
   double eovpBins[6]={100 ,0.,10.,350,-15.,20.};
+  double eovppTBins[6]={500,0.,20.,300,0.,5.};
 
   // dEdx plots, TPC signal vs momentum
   fHistoList->Add(CreateControl2DHistogram("fdEdx", "dEdx before cuts", dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
@@ -325,9 +326,15 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   fHistoList->Add(CreateControl2DHistogram("fnSigTOFPidEMCAL", "nSigmaTOF after EMCAL PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fnSigTOFPid", "nSigmaTOF after PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
 
-  // E/p
+  // E/p vs TPC nSig
+  fHistoList->Add(CreateControl2DHistogram("feopCut", "E/p after single track cuts", eovpBins,"E/p","nSigma in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("feopEMCAL", "E/p after EMCAL PID", eovpBins,"E/p","nSigma in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("feopTPC", "E/p after TPC PID", eovpBins,"E/p","nSigma in TPC (a.u.)"));
+
+  // E/p vs pT
+  fHistoList->Add(CreateControl2DHistogram("feoppTCut", "E/p vs pT after single track cuts", eovppTBins,"E/p","momentum (GeV/c)"));
+  fHistoList->Add(CreateControl2DHistogram("feoppTEMCAL", "E/p vs pT after EMCAL PID", eovppTBins,"E/p","momentum (GeV/c)"));
+  fHistoList->Add(CreateControl2DHistogram("feoppTTPC", "E/p vs pT after TPC PID", eovppTBins,"E/p","momentum (GeV/c)"));
 
   // Invariant mass LS and ULS without cut
   fHistoList->Add(CreateControlHistogram("fInvMassLS", "Invariant mass LS", 1000, 0., 0.5));
@@ -654,6 +661,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       //Electron id with E/p
       Double_t fEovPMin=0.8;
       Double_t fEovPMax=1.2;
+      ((TH2D*)fHistoList->FindObject("feopCut"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("feoppTCut"))->Fill(track->GetTPCmomentum(), fEovP);
       if(fEovP < fEovPMin || fEovP > fEovPMax) return 0;
       //      printf("Track selected by EMCAL only\n");
       //    fTrkEovPAft->Fill(pt,fEovP);
@@ -664,6 +673,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       ((TH2D*)fHistoList->FindObject("fnSigTPCPidEMCAL"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
       ((TH2D*)fHistoList->FindObject("fnSigTOFPidEMCAL"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
       ((TH2D*)fHistoList->FindObject("feopEMCAL"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("feoppTEMCAL"))->Fill(track->GetTPCmomentum(), fEovP);
       // /Development of EMCAL PID //
     }
   
@@ -696,7 +706,10 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     if(!useCombinedPID) {return 0; }// if only use combined PID, return 0 here (not selected by TPC PID)
     if(fUseEMCAL) {return 0; }// if use EMCAL and TPC return here
   }
-  if(fUseEMCAL) ((TH2D*)fHistoList->FindObject("feopTPC"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  if(fUseEMCAL)
+    { ((TH2D*)fHistoList->FindObject("feopTPC"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("feoppTTPC"))->Fill(track->GetTPCmomentum(), fEovP);
+    }
   if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTPC"); return 0;}
 
   //Combined tof & tpc pid
