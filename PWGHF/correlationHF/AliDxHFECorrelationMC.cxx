@@ -83,7 +83,7 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
     AliDebug(1, "Creating Reduced Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 10;  
-  static const int sizeEventdphiReduced = 7;  
+  static const int sizeEventdphiReduced = 5;  
   InitTHnSparseArray(sizeEventdphi);
   const double pi=TMath::Pi();
   Double_t minPhi=GetMinPhi();
@@ -115,19 +115,17 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
     thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
   }
   else{//Could also here consider removing process
-    //           			                    0        1     2      3    4      5      6
-    // 		                	                 D0invmass  PtD0 PhiD0  Pte   dphi    dEta  process
-    int         binsEventdphiRed[sizeEventdphiReduced] = {   200,    100,  100,  21, 100,     100,   100 };
-    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,     0,    0,   0, minPhi, -0.9,  -0.5 };
-    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,    50, 2*pi,  20, maxPhi,  0.9,  99.5 };
+    //           			                    0        1      2    3      4  
+    // 		                	                 D0invmass  PtD0  Pte   dphi    dEta
+    int         binsEventdphiRed[sizeEventdphiReduced] = {   200,    100,  21, 100,     100 };
+    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,     0,   0, minPhi, -0.9 };
+    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,    50,  20, maxPhi,  0.9 };
     const char* nameEventdphiRed[sizeEventdphiReduced] = {
       "D0InvMass",
       "PtD0",
-      "PhiD0",
       "PtEl",
       "#Delta#Phi",
-      "#Delta#eta", 
-      "Original Process"
+      "#Delta#eta" 
     };
     thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiReduced,binsEventdphiRed,minEventdphiRed,maxEventdphiRed,nameEventdphiRed);
 
@@ -220,7 +218,7 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
   if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
     data[i++]=ptrigger->GetInvMass();
     data[i++]=ptrigger->Pt();
-    data[i++]=ptrigger->Phi();
+    if(RunFullMode())data[i++]=ptrigger->Phi();
     if(RunFullMode()) {data[i++]=ptrigger->GetPtBin(); }
     data[i++]=assoc->Pt();
   } 
@@ -243,7 +241,7 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
       data[i++]=ptrigger->GetOriginMother();
     }
   }
-  data[i++]=fMCEventType;
+  if(RunFullMode()) data[i++]=fMCEventType;
   return i;
 }
 
