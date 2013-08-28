@@ -358,8 +358,7 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
   if (fHistos) FillHistogramsMC(dieMC->GetMCEvent(), ev1);
 
   if(!fSignalsMC) return;
-  //loop over all MC data and Fill the CF container if it exist
-  if(!fCfManagerPair && !fHistoArray && !fHistos) return;
+  //loop over all MC data and Fill the HF, CF containers and histograms if they exist
   if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
 
   // signals to be studied
@@ -437,9 +436,11 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
 
   // Do the pairing and fill the CF container with pure MC info
   for(Int_t isig=0; isig<nSignals; ++isig) {
+    //    printf("INDEXES: %d-%d both%d\n",indexes1[isig],indexes2[isig],indexes12[isig]);
     // mix the particles which satisfy only one of the signal branches
     for(Int_t i1=0;i1<indexes1[isig];++i1) {
-      for(Int_t i2=0;i2<=indexes2[isig];++i2) {
+      if(!indexes2[isig]) FillMCHistograms(labels1[isig][i1], -1, isig); // (e.g. single electrons only, no pairs)
+      for(Int_t i2=0;i2<indexes2[isig];++i2) {
 	if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
 	if(bFillHF) fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
 	FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
@@ -1234,7 +1235,7 @@ void AliDielectron::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) 
   Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
   Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
   Bool_t trkClass=fHistos->GetHistogramList()->FindObject(className3.Data())!=0x0;
-  //  printf("filling signal %d: pair %d legs %d trk %d \n",nSignal,pairClass,legClass,trkClass);
+  //  printf("fill signal %d: pair %d legs %d trk %d \n",nSignal,pairClass,legClass,trkClass);
   if(!pairClass && !legClass && !trkClass) return;
 
   //  printf("leg labels: %d-%d \n",label1,label2);
@@ -1243,8 +1244,6 @@ void AliDielectron::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) 
   if(!part1 && !part2) return;
   if(part1&&part2) {
     // fill only unlike sign (and only SE)
-    //printf("leg charge: %d-%d \n",part1->Charge(),part2->Charge());
-    //printf("leg pt: %f-%f \n",part1->Pt(),part2->Pt());
     if(part1->Charge()*part2->Charge()>=0) return;
   }
 
@@ -1259,9 +1258,12 @@ void AliDielectron::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) 
   if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kSame && mLabel1!=mLabel2) return;
   if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent && mLabel1==mLabel2) return;
 
-  // fill the leg variables
+  // fill event values
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::Fill(dieMC->GetMCEvent(), values); // get event informations
+
+  // fill the leg variables
+  //  printf("leg:%d trk:%d part1:%p part2:%p \n",legClass,trkClass,part1,part2);
   if (legClass || trkClass) {
     if(part1) AliDielectronVarManager::Fill(part1,values);
     if(part1 && trkClass)          fHistos->FillClass(className3, AliDielectronVarManager::kNMaxValues, values);
@@ -1292,6 +1294,7 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   //loop over all added mc signals
   for(Int_t isig=0; isig<fSignalsMC->GetEntries(); isig++) {
 
+    //check if and what to fill
     className.Form("Pair_%s",fSignalsMC->At(isig)->GetName());
     className2.Form("Track_Legs_%s",fSignalsMC->At(isig)->GetName());
     className3.Form("Track_%s_%s",fgkPairClassNames[1],fSignalsMC->At(isig)->GetName());  // unlike sign, SE only
@@ -1325,21 +1328,20 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
     }
 
     // fill single tracks of signals
-    if(mergedtrkClass) {
-      // loop over SE track arrays
-      for (Int_t i=0; i<2; ++i){
-	Int_t ntracks=fTracks[i].GetEntriesFast();
-	for (Int_t itrack=0; itrack<ntracks; ++itrack){
-	  Int_t label=((AliVParticle*)fTracks[i].UncheckedAt(itrack))->GetLabel();
-	  Bool_t isMCtruth1 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 1);
-	  Bool_t isMCtruth2 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 2);
-	  // skip if track does not correspond to the signal
-	  if(!isMCtruth1 && !isMCtruth2) continue;
-	  AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
-	  fHistos->FillClass(className3, AliDielectronVarManager::kNMaxValues, values);
-	}
+    if(!mergedtrkClass) continue;
+    // loop over SE track arrays
+    for (Int_t i=0; i<2; ++i){
+      Int_t ntracks=fTracks[i].GetEntriesFast();
+      for (Int_t itrack=0; itrack<ntracks; ++itrack){
+	Int_t label=((AliVParticle*)fTracks[i].UncheckedAt(itrack))->GetLabel();
+	Bool_t isMCtruth1 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 1);
+	Bool_t isMCtruth2 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(isig), 2);
+	// skip if track does not correspond to the signal
+	if(!isMCtruth1 && !isMCtruth2) continue;
+	AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
+	fHistos->FillClass(className3, AliDielectronVarManager::kNMaxValues, values);
       } //loop: tracks
-    }
+    } //loop: arrays
 
   } //loop: MCsignals
 
