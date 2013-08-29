@@ -792,7 +792,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsMCSecondary(AliAODMCParticle *part, TClonesArr
   
   if( isSecondaryMaterial || isSecondaryWeak ) return kTRUE;
   
-  return kFALSE;
+  // return kFALSE; this line will not be reached, as either isSecondaryMaterial or isSecondaryWeak is true!
+  // removed due to coverity
 }
 
 
