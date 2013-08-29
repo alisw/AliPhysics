@@ -12,11 +12,12 @@
 #include <TString.h>
 #include <TGFrame.h>
 
+class TGComboBox;
+class TGCheckButton;
 class TGLabel;
 class TGFileInfo;
 class TGTextButton;
 class TGTextEntry;
-class TGComboBox;
 
 //______________________________________________________________________________
 // AliEveMainWindow
