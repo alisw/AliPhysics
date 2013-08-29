@@ -1,8 +1,6 @@
 ///*******************************************************
 ///Config Description
-//configIndex = 0 ---> Default cuts and PID
-//configIndex = 1 ---> Non-HFE, Op Angle < 0.1
-//configIndex = 2 ---> 
+
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
@@ -26,24 +24,34 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//TPC Cuts
 	hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);	
-	if(configIndex==2) 	hfecuts->SetMinNClustersTPC(90);			                //Minimum number of clusters on TPC
-	else if(configIndex==3) 	hfecuts->SetMinNClustersTPC(110);			        //Minimum number of clusters on TPC
+	if(configIndex==1) 	hfecuts->SetMinNClustersTPC(90);			                //Minimum number of clusters on TPC
+	else if(configIndex==2) 	hfecuts->SetMinNClustersTPC(110);
+	else if(configIndex==3) 	hfecuts->SetMinNClustersTPC(80);
+	else if(configIndex==4) 	hfecuts->SetMinNClustersTPC(85);
+	else if(configIndex==5) 	hfecuts->SetMinNClustersTPC(115);
+	else if(configIndex==6) 	hfecuts->SetMinNClustersTPC(120);					//Minimum number of clusters on TPC
 	else hfecuts->SetMinNClustersTPC(100);							                //Minimum number of clusters on TPC
 	
-	if(configIndex==22) hfecuts->SetMinNClustersTPCPID(70); 
-	else if (configIndex==23) hfecuts->SetMinNClustersTPCPID(80);					//Minimum number of clusters for dE/dx
-	else hfecuts->SetMinNClustersTPCPID(90);					    //Minimum number of clusters for dE/dx
+	if(configIndex==7) hfecuts->SetMinNClustersTPCPID(70); 
+	else if (configIndex==8) hfecuts->SetMinNClustersTPCPID(90);
+	else if (configIndex==9) hfecuts->SetMinNClustersTPCPID(60)
+	else if (configIndex==10) hfecuts->SetMinNClustersTPCPID(65);
+	else if (configIndex==11) hfecuts->SetMinNClustersTPCPID(100);
+	else if (configIndex==12) hfecuts->SetMinNClustersTPCPID(95);
+	else hfecuts->SetMinNClustersTPCPID(80);										//Minimum number of clusters for dE/dx
 	
 	hfecuts->SetMinRatioTPCclusters(0.6);						                    //Number of clusters (Found/Findable)
 	
 	//ITS
-	if(configIndex==25) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);			//Require at least one cluster on SPD
+	if(configIndex==13) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);				//Require at least one cluster on SPD
 	else hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);							//Require at least one cluster on SPD
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
 	
-	if(configIndex==4) hfecuts->SetMinNClustersITS(2);								//Minimum number of clusters on ITS
-	else if(configIndex==5) hfecuts->SetMinNClustersITS(4);								//Minimum number of clusters on ITS
+	if(configIndex==14) hfecuts->SetMinNClustersITS(2);								//Minimum number of clusters on ITS
+	else if(configIndex==15) hfecuts->SetMinNClustersITS(4);	
+	else if(configIndex==16) hfecuts->SetMinNClustersITS(1);
+	else if(configIndex==17) hfecuts->SetMinNClustersITS(5);
 	else hfecuts->SetMinNClustersITS(3);								            //Minimum number of clusters on ITS
 	
 	//Additional Cuts
@@ -76,40 +84,55 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	if(isEMCal) task->SetUseEMCal();
 	
 	
-	if(configIndex==26){
+	if(configIndex==100){
 		task->SetUseShowerShapeCut(kTRUE);
 		//task->SetM02Cut(0.0,0.3);
 		task->SetM20Cut(0.0,0.3);
 	}
 	task->SetBackground(kTRUE);
 	
-	if(configIndex==6) task->SetNonHFEmassCut(0.05);
+	//nonHFE cuts
+	if(configIndex==20) task->SetNonHFEmassCut(0.05);
+	else if(configIndex==21) task->SetNonHFEmassCut(0.15);
+	else if(configIndex==22) task->SetNonHFEmassCut(0.03);
+	else if(configIndex==23) task->SetNonHFEmassCut(0.18);
+	else if(configIndex==24) task->SetNonHFEmassCut(0.01);
+	else if(configIndex==25) task->SetNonHFEmassCut(0.2);
 	else task->SetNonHFEmassCut(0.1);
 	
-	//if(isEMCal) task->SetEtaCut(-0.6,0.6);
-	//else task->SetEtaCut(-0.9,0.9);
+	if(configIndex==26) task->SetNonHFEangleCut(0.1);
+	if(configIndex==27) task->SetNonHFEangleCut(0.15);
+	if(configIndex==28) task->SetNonHFEangleCut(0.05);
 	
-	
-	if(configIndex==12) task->SetEtaCut(-0.6,-0.2);
-	else if (configIndex==13) task->SetEtaCut(-0.5,-0.1);
-	else if (configIndex==14) task->SetEtaCut(-0.4,0);
-	else if (configIndex==15) task->SetEtaCut(-0.3,0.1);
-	else if (configIndex==16) task->SetEtaCut(-0.2,0.2);
-	else if (configIndex==17) task->SetEtaCut(-0.1,0.3);
-	else if (configIndex==18) task->SetEtaCut(0,0.4);
+	//eta cuts
+	if(configIndex==40) task->SetEtaCut(-0.6,-0.2);
+	else if (configIndex==41) task->SetEtaCut(-0.5,-0.1);
+	else if (configIndex==42) task->SetEtaCut(-0.4,0);
+	else if (configIndex==43) task->SetEtaCut(-0.3,0.1);
+	else if (configIndex==44) task->SetEtaCut(-0.2,0.2);
+	else if (configIndex==45) task->SetEtaCut(-0.1,0.3);
+	else if (configIndex==46) task->SetEtaCut(0,0.4);
+	else if (configIndex==47) task->SetEtaCut(-0.4,0.4);
+	else if (configIndex==48) task->SetEtaCut(-0.3,0.3);
 	else task->SetEtaCut(-0.6,0.6);
 	
-	if(configIndex==19) task->SetdPhidEtaCut(0.02,0.02);
-	else if (configIndex==20) task->SetdPhidEtaCut(0.03,0.03);
-	else if (configIndex==21) task->SetdPhidEtaCut(0.04,0.04);
+	//track matching cuts
+	if(configIndex==50) task->SetdPhidEtaCut(0.02,0.02);
+	else if (configIndex==51) task->SetdPhidEtaCut(0.03,0.03);
+	else if (configIndex==52) task->SetdPhidEtaCut(0.04,0.04);
 	else task->SetdPhidEtaCut(0.05,0.05);
 
-	
-	if (configIndex==7) task->SetEoverPCut(0.85,1.2);
-	else if (configIndex==8) task->SetEoverPCut(0.75,1.25);
+	//E/p Cuts
+	if (configIndex==60) task->SetEoverPCut(0.85,1.2);
+	else if (configIndex==61) task->SetEoverPCut(0.75,1.25);
+	else if (configIndex==62) task->SetEoverPCut(0.70,1.2);
+	else if (configIndex==63) task->SetEoverPCut(0.80,1.25);
+	else if (configIndex==64) task->SetEoverPCut(0.9,1.3);
+	else if (configIndex==65) task->SetEoverPCut(0.95,1.3);
+	else if (configIndex==66) task->SetEoverPCut(0.75,1.2);
 	else task->SetEoverPCut(0.8,1.2);
 
-	if(configIndex==1) task->SetNonHFEangleCut(0.1);
+	
 	
 	if(centralityIndex==0) task->SetCentrality(0,20);
 	if(centralityIndex==1) task->SetCentrality(20,40);
@@ -148,9 +171,11 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	char *cutmodel;
 	cutmodel = "pol0";
 	
-	if(configIndex==9) params[0] = -1.5;
-	else if (configIndex==10) params[0] = -0.5;
-	else if (configIndex==11) params[0] = 0;
+	if(configIndex==70) params[0] = -1.5;
+	else if (configIndex==71) params[0] = -0.5;
+	else if (configIndex==72) params[0] = 0;
+	else if (configIndex==73) params[0] = 0.25;
+	else if (configIndex==74) params[0] = -1.75;
 	else params[0] = -1;
 	
 	pid->ConfigureTPCdefaultCut(cutmodel,params,3.0); 
