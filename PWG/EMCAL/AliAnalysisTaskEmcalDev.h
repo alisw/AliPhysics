@@ -63,12 +63,6 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
-  void                        SetTrackBitMap(UInt_t m)                              { fTrackBitMap       = m                              ; }
-  void                        SetClusterBitMap(UInt_t m)                            { fClusterBitMap     = m                              ; }
-  void                        SetParticleBitMap(UInt_t m)                           { fClusterBitMap     = m    ; fTrackBitMap       = m  ; }
-  void                        SetMCTrackBitMap(UInt_t m)                            { fMCTrackBitMap     = m                              ; }
-  void                        SetMCClusterBitMap(UInt_t m)                          { fMCClusterBitMap   = m                              ; }
-  void                        SetMCParticleBitMap(UInt_t m)                         { fMCClusterBitMap   = m    ; fMCTrackBitMap     = m  ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
@@ -95,7 +89,6 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Int_t c = 0)  const;
-  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part)                const;
   Bool_t                      AcceptTrack(AliVParticle         *track, Int_t c = 0)  const;
   virtual void                ExecOnce();
   virtual Bool_t              FillGeneralHistograms();
@@ -135,10 +128,6 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   Double_t                    fMinEventPlane;              // minimum event plane value
   Double_t                    fMaxEventPlane;              // maximum event plane value
   TString                     fCentEst;                    // name of V0 centrality estimator
-  UInt_t                      fTrackBitMap;                // bit map of accepted tracks (non MC)
-  UInt_t                      fClusterBitMap;              // bit map of accepted clusters (non MC)
-  UInt_t                      fMCTrackBitMap;              // bit map of accepted MC tracks
-  UInt_t                      fMCClusterBitMap;            // bit map of accepted MC clusters
   Bool_t                      fIsEmbedded;                 // trigger, embedded signal
   Bool_t                      fIsPythia;                   // trigger, if it is a PYTHIA production
   Int_t                       fSelectPtHardBin;            // select one pt hard bin for analysis

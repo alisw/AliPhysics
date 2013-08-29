@@ -70,10 +70,6 @@ AliAnalysisTaskEmcalDev::AliAnalysisTaskEmcalDev() :
   fMinEventPlane(-10),
   fMaxEventPlane(10),
   fCentEst("V0M"),
-  fTrackBitMap(0),
-  fClusterBitMap(0),
-  fMCTrackBitMap(0),
-  fMCClusterBitMap(0),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fSelectPtHardBin(-999),
@@ -151,10 +147,6 @@ AliAnalysisTaskEmcalDev::AliAnalysisTaskEmcalDev(const char *name, Bool_t histo)
   fMinEventPlane(-10),
   fMaxEventPlane(10),
   fCentEst("V0M"),
-  fTrackBitMap(0),
-  fClusterBitMap(0),
-  fMCTrackBitMap(0),
-  fMCClusterBitMap(0),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fSelectPtHardBin(-999),
@@ -374,56 +366,6 @@ Bool_t AliAnalysisTaskEmcalDev::AcceptTrack(AliVParticle *track, Int_t c) const
   }
 
   return cont->AcceptParticle(track);
-
-  if (!track)
-    return kFALSE;
-
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalDev::AcceptEmcalPart(AliEmcalParticle *part) const
-{
-  // Return true if EMCal particle is accepted.
-
-  if (!part)
-    return kFALSE;
-
-  if (part->IsTrack()) {
-    if (part->IsMC()) { 
-      if (part->TestBits(fMCTrackBitMap) != (Int_t)fMCTrackBitMap)
-	return kFALSE;
-    }
-    else {
-      if (part->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap)
-	return kFALSE;
-    }
-
-    if (part->Pt() < fTrackPtCut)
-      return kFALSE;
-
-    if (part->Eta() < fTrackMinEta || part->Eta() > fTrackMaxEta || 
-	part->Phi() < fTrackMinPhi || part->Phi() > fTrackMaxPhi)
-      return kFALSE;
-  }
-
-  if (part->IsCluster()) {
-    if (part->IsMC(fMinMCLabel)) { 
-      if (part->TestBits(fMCClusterBitMap) != (Int_t)fMCClusterBitMap)
-	return kFALSE;
-    }
-    else {
-      if (part->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap)
-	return kFALSE;
-    }
-
-    if (!part->IsEMCAL())
-      return kFALSE;
-
-    if (part->Pt() < fClusPtCut)
-      return kFALSE;
-  }
-
-  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -570,7 +512,7 @@ void AliAnalysisTaskEmcalDev::ExecOnce()
   //Load all requested track branches - each container knows name already
   for(Int_t i =0; i<fParticleCollArray.GetEntriesFast(); i++) {
     AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
-    cont->SetParticleArray(InputEvent());
+    cont->SetArray(InputEvent());
   }
 
   if (fParticleCollArray.GetEntriesFast()>0) {
@@ -584,7 +526,7 @@ void AliAnalysisTaskEmcalDev::ExecOnce()
   //Load all requested cluster branches - each container knows name already
   for(Int_t i =0; i<fClusterCollArray.GetEntriesFast(); i++) {
     AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
-    cont->SetClusterArray(InputEvent());
+    cont->SetArray(InputEvent());
   }
 
   if(fClusterCollArray.GetEntriesFast()>0) {
