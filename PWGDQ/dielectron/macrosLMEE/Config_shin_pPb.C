@@ -8,7 +8,7 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 
 
 //start systematics
-TString names= ("nopid;SPDBoth+ITSNcls2+TPCTOF;SPDFisrt+ITSNcls2+TPCTOF;SPDBoth+ITSNcls3+TPCTOF;SPDFirst+ITSNcls3+TPCTOF;SPDFirst+ITSNcls3+TPCTOF+phiv;SPDFirst+ITSNcls3+TPCTOFloose+phiv");
+TString names= ("nopid;SPDBoth+ITSNcls2+TPCTOF;SPDFisrt+ITSNcls2+TPCTOF;SPDBoth+ITSNcls3+TPCTOF;SPDFirst+ITSNcls3+TPCTOF;SPDFirst+ITSNcls3+TPCTOF+phiv;SPDboth+ITSNcls3+TPCTOF+phiv;SPDFirst+ITSNcls3+TPCTOF+phiv+convtag;SPDBoth+ITSNcls3+TPCTOF+phiv+convtag");
 
 
 	Bool_t kRot = 0;
@@ -81,9 +81,10 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 	TrackCuts->SetRequireTPCRefit(kTRUE);
 	TrackCuts->SetRequireITSRefit(kTRUE);
 	//SPD require
-	if(cutDefinition == 1|cutDefinition ==3) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
-	if(cutDefinition == 0|cutDefinition ==2) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-	if(cutDefinition > 3) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth); 
+	if(cutDefinition == 1|cutDefinition == 3 |cutDefinition == 6| cutDefinition == 8) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+	if(cutDefinition == 0|cutDefinition == 2| cutDefinition == 4|cutDefinition == 5 |cutDefinition==7 ) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+	//	if(cutDefinition == 4|cutDefinition == 5 |cutDefinition==7) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst); 
+	//if(cutDefinition == 6| cutDefinition == 8) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst); 
 	die->GetTrackFilter().AddCuts(TrackCuts);
 		
 	AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("varCuts","varCuts");
@@ -95,7 +96,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
 
 	varCuts->AddCut(AliDielectronVarManager::kNclsTPC,80.,500.);
-	varCuts->AddCut(AliDielectronVarManager::kNFclsTPC,100.,500.); // or NFclsTPCr?
+	varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,100.,500.); // or NFclsTPCr?
 	varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.,4.);
 	varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross,0.5,500.);
 
@@ -110,11 +111,11 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 	if(cutDefinition > 0){
 	  AliDielectronPID *pid = new AliDielectronPID("pid","pid"); 	
 	  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-1.5,3.,0.2,100.,kFALSE);
-	  pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.,0.2,100.,kTRUE);
-	  if(cutDefinition < 6)
+	  pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.,0.2,100.,kTRUE);
+	  // if(cutDefinition < 6)
 	  pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3.,3.,0.4, 5., kFALSE);	  
-	  if(cutDefinition==6 )
-	    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3.,3.,0.4, 2., kFALSE);
+	  //  if(cutDefinition==6 )
+	  //  pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3.,3.,0.4, 2., kFALSE);
 	  die->GetTrackFilter().AddCuts(pid);
 	}
 	
@@ -127,10 +128,11 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
     PhiV->AddCut(AliDielectronVarManager::kM, 0. , 0.05);
     PhiV->AddCut(AliDielectronVarManager::kPhivPair, 2.5 , 3.2);
     die->GetPairPreFilter().AddCuts(PhiV);
-    
-    //  AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","conversion tagging");
-    //  noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
-    //  die->GetTrackFilter().AddCuts(noconv);
+    if(cutDefinition >6){
+      AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","conversion tagging");
+      noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
+      die->GetTrackFilter().AddCuts(noconv);
+    }
   }
 }
 /*
@@ -338,6 +340,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         "InvMass_Pt","InvMass_Pt;InvMass;Pt",
                         500, 0. , 4., 100 , 0., 5. ,
 			AliDielectronVarManager::kM , AliDielectronVarManager::kPt );
+  histos->UserHistogram("Pair",
+                        "InvMass_deltaphi","InvMass_deltaphi;InvMass;deltaphi",
+                        500, 0. , 4., 320 , 0., 6.4 ,
+			AliDielectronVarManager::kM , AliDielectronVarManager::kDeltaPhi );
+
 
   histos->UserHistogram("Pair",
                         "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
@@ -358,6 +365,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 
   die->SetHistogramManager(histos);
+
 }
 
 
@@ -411,27 +419,6 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
 
 
-
-
-void SetEtaCorrection()
-{
-  if (AliDielectronPID::GetEtaCorrFunction()) return;
-
-  TString list=gSystem->Getenv("LIST");
-  
-  TFile f("$TRAIN_ROOT/jpsi_JPSI/EtaCorrMaps.root");
-  if (!f.IsOpen()) return;
-  TList *keys=f.GetListOfKeys();
-
-  for (Int_t i=0; i<keys->GetEntries(); ++i){
-    TString kName=keys->At(i)->GetName();
-    TPRegexp reg(kName);
-    if (reg.MatchB(list)){
-      printf("Using Eta Correction Function: %s\n",kName.Data());
-      AliDielectronPID::SetEtaCorrFunction((TF1*)f.Get(kName.Data()));
-    }
-  }
-}
 
 
 
