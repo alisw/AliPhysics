@@ -24,7 +24,7 @@ AliChaoticity *AddTaskChaoticity(
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskBF", "No analysis manager to connect to.");
+    ::Error("AddTaskChaoticity", "No analysis manager to connect to.");
     return NULL;
   }
  
