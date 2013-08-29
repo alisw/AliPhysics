@@ -212,8 +212,8 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    fOutput->Add(fHistMassLambda);
    fOutput->Add(fHistMassAntiLambda);
    
-   fOutput->Add(fHistdPhidEtaSib);
-   fOutput->Add(fHistdPhidEtaMix);
+  // fOutput->Add(fHistdPhidEtaSib);
+  // fOutput->Add(fHistdPhidEtaMix);
    fOutput->Add(fHistNTrigSib);
 
    fOutput->Add(fHistMCPtCentTrig);
