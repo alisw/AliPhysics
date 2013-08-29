@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#arguments:
+#1: map file for space charge
+#2: output directory for lookup tables
+#3: number of phi bins
+#4: module
+
+
+# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
+# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps10_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
+# $ALICE_ROOT/TPC/Upgrade/macros/submitCreateLookup $ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps20_50kHz_precal.root /hera/alice/wiechula/Upgrade/LUTs 181 ALICE/TPCdev
+
+mapFile=$1
+outDir=$2
+phiBins=$3
+mod=$4
+
+if [ "x$mod" == "x" ]; then
+  mod=ALICE/TPCdev.lxb
+fi
+
+LOG_DIR=/hera/alice/wiechula/logs/lookup
+
+script=$(readlink -f $0)
+SCRIPTDIR=$(dirname $script)
+
+mapName=$(basename $mapFile .root)
+jobName=createLookup.$mapName
+
+outFiles=$outDir/${mapName}.[0-9][0-9][0-9].root
+outFileMerge=$outDir/${mapName}.lookup.root
+
+ARRAY=1-$phiBins
+
+qsub -wd /tmp -N $jobName -e $LOG_DIR -o $LOG_DIR -t $ARRAY $SCRIPTDIR/createLookup $mapFile $outDir $mod
+
+qsub -wd /tmp -hold_jid $jobName -N merge.$jobName -e $LOG_DIR -o $LOG_DIR $SCRIPTDIR/mergeLookup "$outFiles" "$outFileMerge" $mod

@@ -1,0 +1,57 @@
+======== Continuous readout toy simulation =======
+
+loadlibs.C    //modified version of the one used for GEMtest code. I haven't looked into this so it probably contains a lot of stuff that is not needed
+
+AliToyMCTrack, AliToyMCEvent //classes for storing event and track parameters
+
+AliToyMCEventGenerator   //base class for event generators, contains DistortTrack method to distort track using method borrowed from AliTPCCorrection
+
+AliToyMCEventGeneratorSimple  //simple first MC event generator, borrowing from Marians macro. Inherits from AliToyMCEventGenerator to get DistortTrack method. Generate(Double_t time) generates and returns an event at time time
+
+makeTree.C  //short macro to generate events from a poisson distr and storing in a ROOT tree.
+
+
+to run : root -l loadlibs.C
+       	 .L makeTree.C+
+	 makeTree(Double_t collFreq/*kHz*/, Double_t bunchFreq/*MHz*/, Int_t nEvents)
+
+
+======== Continuous readout toy reconstruction =======
+AliToyMCReconstruction -- Class to reconstruct 
+         
+         
+========== Simple example =========
+1. simultate
+
+AliToyMCEventGeneratorSimple s
+s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps5)
+s.SetOutputFileName("toyMC_eps05_10ev_50tr.NoMat.root");
+s.RunSimulation(10,50);
+
+2. run reconstruction
+const char *file="toyMC_eps05_50ev_500tr.root"
+AliToyMCReconstruction rec
+rec.SetUseMaterialBudget(kTRUE)
+
+rec.SetRecoSettings(1,0,AliToyMCReconstruction::kNoCorrection)
+rec.RunReco(file,-1); > /tmp/log_1_0_0
+
+rec.SetRecoSettings(1,1,AliToyMCReconstruction::kIdeal)
+rec.RunReco(file,-1); > /tmp/log_1_1_3
+
+rec.SetRecoSettings(0,1,AliToyMCReconstruction::kIdeal)
+rec.RunReco(file,-1); > /tmp/log_0_1_3
+
+rec.SetRecoSettings(0,1,AliToyMCReconstruction::kAverageEta)
+rec.RunReco(file,-1); > /tmp/log_0_1_2
+
+rec.SetRecoSettings(0,1,AliToyMCReconstruction::kNoCorrection)
+rec.RunReco(file,-1); > /tmp/log_0_1_0
+
+rec.SetRecoSettings(0,0,AliToyMCReconstruction::kNoCorrection)
+rec.RunReco(file,-1); > /tmp/log_0_0_0
+
+3. visualisation
+.L $ALICE_ROOT/TPC/Upgrade/macros/toyMCRecPlots.C
+toyMCRecPlots("toyMC_eps20_50ev_500tr.0.1_0_0_140_10.debug.root")
+

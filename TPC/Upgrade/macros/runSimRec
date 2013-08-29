@@ -1,0 +1,24 @@
+#!/bin/bash
+
+outDir=$1
+mod=$2
+simtype=$3
+SCtype=$4
+nevents=$5
+ntracks=$6
+rate=$7
+
+if [ "x$rate" == "x" ]; then
+  rate=50
+fi
+
+module use /cvmfs/alice.gsi.de/modules
+module purge
+#module load ALICE/${vers}
+module use -a /hera/alice/wiechula/software/modules
+module load $mod
+
+test -d $outDir || mkdir -p $outDir
+cd $outDir
+
+root.exe -l -b -q $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C} $ALICE_ROOT/TPC/Upgrade/macros/runSimRec.C\($simtype,$SCtype,$nevents,$ntracks,$rate\)

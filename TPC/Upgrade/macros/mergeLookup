@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#1: files to merge
+#2: output file
+#3: module
+
+filesToMerge=$1
+outFile=$2
+mod=$3
+
+module use /cvmfs/alice.gsi.de/modules
+module purge
+#module load ALICE/${vers}
+module use -a /hera/alice/wiechula/software/modules
+module load $mod
+
+root.exe -l -b -q $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C} $ALICE_ROOT/TPC/Upgrade/macros/MergeLookup.C\(\"$filesToMerge\"\,\"$outFile\"\)

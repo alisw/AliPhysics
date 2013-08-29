@@ -3,7 +3,8 @@
 //
 
 int makeSpaceChargeMap(Double_t multiplicity = 950., Double_t intRate = 5e4, Double_t eps = 10.,
-		       Double_t gasfactor = 1., string filename = "SpaceChargeMap.root") {
+		       Double_t gasfactor = 1., string filename = "SpaceChargeMap.root",
+		       Double_t radialScaling = 2., Double_t epsilonScaling = 2./3.) {
   //
   // Charge distribution is splitted into two (RZ and RPHI) in order to speed up
   // the needed calculation time. It is dumped to 
@@ -39,6 +40,23 @@ int makeSpaceChargeMap(Double_t multiplicity = 950., Double_t intRate = 5e4, Dou
   TH2F *histoZR = new TH2F("chargeZR", "chargeZR",
                            nr, fgkIFCRadius-dr-safty, fgkOFCRadius+dr+safty,
                            nz, -250-dz-safty, 250+dz+safty);
+
+  // For the normalization to same integral as radial exponent = 2
+  Double_t radialExponent             = -2.; // reference = 2
+  Double_t radiusInner                = histoZR->GetXaxis()->GetBinCenter(1) / 100.;//in [m]
+  Double_t radiusOuter                = histoZR->GetXaxis()->GetBinCenter(nr) / 100.;//in [m]
+  Double_t integralRadialExponent2    = TMath::Power(radiusOuter,radialExponent+1) * 1./(radialExponent+1) 
+    - TMath::Power(radiusInner,radialExponent+1) * 1./(radialExponent+1);
+  
+  radialExponent                      = -radialScaling; // user set   
+  Double_t integralRadialExponentUser = 0.;
+  if(radialScaling > 1 + 0.000001 || radialScaling < 1 - 0.000001 ) // to avoid n = -1
+    integralRadialExponentUser = TMath::Power(radiusOuter,radialExponent+1) * 1./(radialExponent+1) 
+      - TMath::Power(radiusInner,radialExponent+1) * 1./(radialExponent+1);
+  else
+    integralRadialExponentUser = TMath::Log(radiusOuter) - TMath::Log(radiusInner);
+    
+  Double_t normRadialExponent         = integralRadialExponent2 / integralRadialExponentUser;
  
   for (Int_t ir=1;ir<=nr;++ir) {
     Double_t rp = histoZR->GetXaxis()->GetBinCenter(ir);
@@ -53,8 +71,8 @@ int makeSpaceChargeMap(Double_t multiplicity = 950., Double_t intRate = 5e4, Dou
       // calculation of "scaled" parameters
       Double_t a = multiplicity*intRate/76628;
       //Double_t charge = gasfactor * ( a / (rpM*rpM) * (1 - zpM/lZ) ); // charge in [C/m^3/e0], no IBF
-      Double_t charge = gasfactor * ( a / (rpM*rpM) * (1 - zpM/lZ + 2*eps/3) ); // charge in [C/m^3/e0], with IBF
-
+      Double_t charge = normRadialExponent * gasfactor * ( a / (TMath::Power(rpM,radialScaling)) * (1 - zpM/lZ + epsilonScaling*eps) ); // charge in [C/m^3/e0], with IBF
+      
       charge = charge*fgke0;          // [C/m^3]
 
       // from MC simulation (Stefan)
