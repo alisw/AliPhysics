@@ -32,7 +32,6 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const char *name); 
   virtual ~AliJetContainer() {;}
 
-  void SetJetArray(AliVEvent *event);
   void SetEMCALGeometry();
   void SetEMCALGeometry(AliEMCALGeometry *p) {fGeom = p;}
   void LoadRho(AliVEvent *event);
@@ -67,10 +66,10 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetParticleContainer(AliParticleContainer *c)        { fParticleContainer = c             ; }
   void                        SetClusterContainer(AliClusterContainer *c)          { fClusterContainer  = c             ; }
 
-  AliEmcalJet                *GetLeadingJet(const char* opt="")     const;
+  AliEmcalJet                *GetLeadingJet(const char* opt="")          ;
   AliEmcalJet                *GetJet(Int_t i)                       const;
   AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
-  AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)          const;
+  AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)               ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptJet(AliEmcalJet* jet)           const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)       const; 
@@ -86,6 +85,8 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     GetJetEtaMax()                        const    {return fJetMaxEta;}
   Float_t                     GetJetPhiMin()                        const    {return fJetMinPhi;}
   Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
+  void                        SetClassName(const char *clname);
+  void                        SetArray(AliVEvent *event);
 
  protected:
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type

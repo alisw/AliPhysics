@@ -138,7 +138,16 @@ void AliAnalysisTaskEmcalJetDev::ExecOnce()
 
   AliAnalysisTaskEmcalDev::ExecOnce();
 
-  //Load all requested track branches - each container knows name already
+  if (!fRhoName.IsNull() && !fRho) { // get rho from the event
+    fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
+    if (!fRho) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      fInitialized = kFALSE;
+      return;
+    }
+  }
+
+  //Load all requested jet branches - each container knows name already
   if(fJetCollArray.GetEntriesFast()==0) {
     AliWarning("There are no jet collections");
     return;
@@ -148,7 +157,7 @@ void AliAnalysisTaskEmcalJetDev::ExecOnce()
     AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
     cont->SetRunNumber(InputEvent()->GetRunNumber());
     cont->SetEMCALGeometry();
-    cont->SetJetArray(InputEvent());
+    cont->SetArray(InputEvent());
     cont->LoadRho(InputEvent());
   }
 
@@ -164,23 +173,9 @@ void AliAnalysisTaskEmcalJetDev::ExecOnce()
     }
   }
 
-  if (fRhoName.IsNull()) { // if rho name is not provided, tries to use the rho object of the first jet branch
+  if (!fRho) { // if rho name is not provided, tries to use the rho object of the first jet branch
     fRhoName = cont->GetRhoName();
-    if(!cont->GetRhoName().IsNull()) {
-      fRho = cont->GetRhoParameter();
-      if(!fRho) {
-	AliError(Form("%s: Could not retrieve rho of first jet branch!", GetName()));
-	fInitialized = kFALSE;
-	return;
-      }
-    }
-  }
-  else { // get rho from the event
-    fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
-    if (!fRho) {
-      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
-      return;
-    }
+    fRho = cont->GetRhoParameter();
   }
 }
 

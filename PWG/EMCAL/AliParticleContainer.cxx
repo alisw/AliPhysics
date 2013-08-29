@@ -26,6 +26,7 @@ AliParticleContainer::AliParticleContainer():
 {
   // Default constructor.
 
+  fClassName = "AliVParticle";
 }
 
 //________________________________________________________________________
@@ -42,23 +43,18 @@ AliParticleContainer::AliParticleContainer(const char *name):
 {
   // Standard constructor.
 
+  fClassName = "AliVParticle";
 }
 
 //________________________________________________________________________
-void AliParticleContainer::SetParticleArray(AliVEvent *event) 
-{
-  // Set jet array
-
-  SetArray(event, "AliVParticle");
-}
-
-//________________________________________________________________________
-AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt) const
+AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt) 
 {
   // Get the leading particle; use p if "p" is contained in opt
 
   TString option(opt);
   option.ToLower();
+
+  Int_t tempID = fCurrentID;
 
   AliVParticle *partMax = GetNextAcceptParticle(0);
   AliVParticle *part = 0;
@@ -73,6 +69,8 @@ AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt) const
       if (part->Pt() > partMax->Pt()) partMax = part;
     }
   }
+
+  fCurrentID = tempID;
 
   return partMax;
 }
@@ -104,18 +102,17 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) const {
+AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) {
 
   //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
 
-  static Int_t counter = -1;
-  if (i>=0) counter = i;
+  if (i>=0) fCurrentID = i;
 
   const Int_t n = GetNEntries();
   AliVParticle *p = 0;
-  while (counter < n && !p) { 
-    p = GetAcceptParticle(counter);
-    counter++;
+  while (fCurrentID < n && !p) { 
+    p = GetAcceptParticle(fCurrentID);
+    fCurrentID++;
   }
 
   return p;
@@ -159,4 +156,14 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp) const
     return kFALSE;
   
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliParticleContainer::SetClassName(const char *clname)
+{
+  // Set the class name
+
+  TClass cls(clname);
+  if (cls.InheritsFrom("AliVParticle")) fClassName = clname;
+  else AliError(Form("Unable to set class name %s for a AliParticleContainer, it must inherits from AliVParticle!",clname));
 }

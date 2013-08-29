@@ -45,6 +45,7 @@ AliJetContainer::AliJetContainer():
 {
   // Default constructor.
 
+  fClassName = "AliEmcalJet";
 }
 
 //________________________________________________________________________
@@ -76,14 +77,15 @@ AliJetContainer::AliJetContainer(const char *name):
 {
   // Standard constructor.
 
+  fClassName = "AliEmcalJet";
 }
 
 //________________________________________________________________________
-void AliJetContainer::SetJetArray(AliVEvent *event) 
+void AliJetContainer::SetArray(AliVEvent *event) 
 {
   // Set jet array
 
-  SetArray(event, "AliEmcalJet");
+  AliEmcalContainer::SetArray(event);
 
   if(fJetAcceptanceType==kTPC) {
     AliDebug(2,Form("%s: set TPC acceptance cuts",GetName()));
@@ -120,12 +122,14 @@ void AliJetContainer::LoadRho(AliVEvent *event)
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt) const
+AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
 {
   // Get the leading jet; if opt contains "rho" the sorting is according to pt-A*rho
 
   TString option(opt);
   option.ToLower();
+
+  Int_t tempID = fCurrentID;
 
   AliEmcalJet *jetMax = GetNextAcceptJet(0);
   AliEmcalJet *jet = 0;
@@ -140,6 +144,8 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt) const
       if (jet->Pt() > jetMax->Pt()) jetMax = jet;
     }
   }
+
+  fCurrentID = tempID;
 
   return jetMax;
 }
@@ -175,18 +181,17 @@ AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) const {
+AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) {
 
   //Get next accepted jet; if i >= 0 (re)start counter from i; return 0 if no accepted jet could be found
 
-  static Int_t counter = -1;
-  if (i>=0) counter = i;
+  if (i>=0) fCurrentID = i;
 
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
-  while (counter < njets && !jet) { 
-    jet = GetAcceptJet(counter);
-    counter++;
+  while (fCurrentID < njets && !jet) { 
+    jet = GetAcceptJet(fCurrentID);
+    fCurrentID++;
   }
 
   return jet;
@@ -353,4 +358,14 @@ void AliJetContainer::ResetCuts()
   fMaxTrackPt = 100;
   fLeadingHadronType = 0;
 
+}
+
+//________________________________________________________________________
+void AliJetContainer::SetClassName(const char *clname)
+{
+  // Set the class name
+
+  TClass cls(clname);
+  if (cls.InheritsFrom("AliEmcalJet")) fClassName = clname;
+  else AliError(Form("Unable to set class name %s for a AliJetContainer, it must inherits from AliEmcalJet!",clname));
 }

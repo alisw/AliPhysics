@@ -24,6 +24,7 @@ AliClusterContainer::AliClusterContainer():
 {
   // Default constructor.
 
+  fClassName = "AliVCluster";
 }
 
 //________________________________________________________________________
@@ -38,23 +39,18 @@ AliClusterContainer::AliClusterContainer(const char *name):
 {
   // Standard constructor.
 
+  fClassName = "AliVCluster";
 }
 
 //________________________________________________________________________
-void AliClusterContainer::SetClusterArray(AliVEvent *event) 
-{
-  // Set jet array
-
-  SetArray(event, "AliVCluster");
-}
-
-//________________________________________________________________________
-AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt) const
+AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
 {
   // Get the leading cluster; use e if "e" is contained in opt (otherwise et)
 
   TString option(opt);
   option.ToLower();
+
+  Int_t tempID = fCurrentID;
 
   AliVCluster *clusterMax = GetNextAcceptCluster(0);
   AliVCluster *cluster = 0;
@@ -77,6 +73,8 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt) const
       }
     }
   }
+
+  fCurrentID = tempID;
 
   return clusterMax;
 }
@@ -108,18 +106,17 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) const {
+AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) {
 
   //Get next accepted cluster; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
 
-  static Int_t counter = -1;
-  if (i>=0) counter = i;
+  if (i>=0) fCurrentID = i;
 
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
-  while (counter < n && !c) { 
-    c = GetAcceptCluster(counter);
-    counter++;
+  while (fCurrentID < n && !c) { 
+    c = GetAcceptCluster(fCurrentID);
+    fCurrentID++;
   }
 
   return c;
@@ -169,4 +166,14 @@ Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus) const
   
   return kTRUE;
 
+}
+
+//________________________________________________________________________
+void AliClusterContainer::SetClassName(const char *clname)
+{
+  // Set the class name
+
+  TClass cls(clname);
+  if (cls.InheritsFrom("AliVCluster")) fClassName = clname;
+  else AliError(Form("Unable to set class name %s for a AliClusterContainer, it must inherits from AliVCluster!",clname));
 }

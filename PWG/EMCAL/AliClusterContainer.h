@@ -18,21 +18,20 @@ class AliClusterContainer : public AliEmcalContainer {
   AliClusterContainer(const char *name); 
   virtual ~AliClusterContainer(){;}
 
-  void SetClusterArray(AliVEvent *event);
-
   void SetClusPtCut(Double_t cut)                  { fClusPtCut      = cut ; }
   void SetClusTimeCut(Double_t min, Double_t max)  { fClusTimeCutLow = min ; fClusTimeCutUp = max ; }
   void SetClusterBitMap(UInt_t m)                  { fClusterBitMap     = m ; }
   void SetMCClusterBitMap(UInt_t m)                { fMCClusterBitMap   = m ; }
   void SetMinMCLabel(Int_t s)                      { fMinMCLabel        = s ; }
 
-  AliVCluster                *GetLeadingCluster(const char* opt="")  const;
+  AliVCluster                *GetLeadingCluster(const char* opt="")       ;
   AliVCluster                *GetCluster(Int_t i)                    const;
   AliVCluster                *GetAcceptCluster(Int_t i)              const;
-  AliVCluster                *GetNextAcceptCluster(Int_t i=-1)       const;
+  AliVCluster                *GetNextAcceptCluster(Int_t i=-1)            ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptCluster(AliVCluster         *vp) const;
   Int_t                       GetNClusters()                         const   {return GetNEntries();}
+  void                        SetClassName(const char *clname);
 
  protected:
   Double_t                    fClusPtCut;                  // cut on cluster pt

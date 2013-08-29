@@ -16,7 +16,7 @@ class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcalDev {
   void         SetMaxDistance(Double_t d)       { fMaxDistance = d; }
 
  protected:
-
+  void         ExecOnce()                 ;
   Bool_t       Run();
   Int_t        GetMomBin(Double_t p) const;
 
@@ -29,6 +29,6 @@ class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcalDev {
   AliEmcalClusTrackMatcherTask(const AliEmcalClusTrackMatcherTask&);            // not implemented
   AliEmcalClusTrackMatcherTask &operator=(const AliEmcalClusTrackMatcherTask&); // not implemented
 
-  ClassDef(AliEmcalClusTrackMatcherTask, 4) // Cluster-Track matching task
+  ClassDef(AliEmcalClusTrackMatcherTask, 5) // Cluster-Track matching task
 };
 #endif

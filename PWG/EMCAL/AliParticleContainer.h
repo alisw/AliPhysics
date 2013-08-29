@@ -16,8 +16,6 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const char *name); 
   virtual ~AliParticleContainer(){;}
 
-  void  SetParticleArray(AliVEvent *event);
-
   void  SetParticlePtCut(Double_t cut)                   { fParticlePtCut = cut ; }
   void  SetParticleEtaLimits(Double_t min, Double_t max) { fParticleMaxEta = max ; fParticleMinEta = min ; }
   void  SetParticlePhiLimits(Double_t min, Double_t max) { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
@@ -25,13 +23,14 @@ class AliParticleContainer : public AliEmcalContainer {
   void  SetMCTrackBitMap(UInt_t m)                        { fMCTrackBitMap   = m ; }
   void  SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s ; }
 
-  AliVParticle               *GetLeadingParticle(const char* opt="")   const;
+  AliVParticle               *GetLeadingParticle(const char* opt="")        ;
   AliVParticle               *GetParticle(Int_t i)                     const;
   AliVParticle               *GetAcceptParticle(Int_t i)               const;
-  AliVParticle               *GetNextAcceptParticle(Int_t i=-1)        const;
+  AliVParticle               *GetNextAcceptParticle(Int_t i=-1)             ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptParticle(AliVParticle         *vp) const;
   Int_t                       GetNParticles()                          const   {return GetNEntries();}
+  void                        SetClassName(const char *clname);
 
  protected:
   Double_t                    fParticlePtCut;                 // cut on particle pt

@@ -18,7 +18,9 @@ ClassImp(AliEmcalContainer)
 AliEmcalContainer::AliEmcalContainer():
   TNamed("AliEmcalContainer","AliEmcalContainer"),
   fClArray(0),
-  fClArrayName()
+  fClArrayName(),
+  fClassName(),
+  fCurrentID(0)
 {
   // Default constructor.
 
@@ -31,7 +33,9 @@ AliEmcalContainer::AliEmcalContainer():
 AliEmcalContainer::AliEmcalContainer(const char *name):
   TNamed(name,name),
   fClArray(0),
-  fClArrayName()
+  fClArrayName(),
+  fClassName(),
+  fCurrentID(0)
 {
   // Standard constructor.
 
@@ -41,8 +45,8 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
 }
 
 //________________________________________________________________________
-void AliEmcalContainer::SetArray(AliVEvent *event, const char *clname) {
-
+void AliEmcalContainer::SetArray(AliVEvent *event) 
+{
   // Get array from event.
 
   const AliVVertex *vertex = event->GetPrimaryVertex();
@@ -51,22 +55,20 @@ void AliEmcalContainer::SetArray(AliVEvent *event, const char *clname) {
   if (!fClArrayName.IsNull() && !fClArray) {
     fClArray = dynamic_cast<TClonesArray*>(event->FindListObject(fClArrayName));
     if (!fClArray) {
-      AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), fClArrayName.Data())); 
+      AliError(Form("%s: Could not retrieve array with name %s!", GetName(), fClArrayName.Data())); 
       return;
     }
   } else {
     return;
   }
 
-  if (!clname)
-    return;
-
-  TString objname(fClArray->GetClass()->GetName());
-  TClass cls(objname);
-  if (!cls.InheritsFrom(clname)) {
-    AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!", 
-                    GetName(), cls.GetName(), fClArrayName.Data(), clname)); 
-    return;
+  if (!fClassName.IsNull()) {
+    TString objname(fClArray->GetClass()->GetName());
+    TClass cls(objname);
+    if (!cls.InheritsFrom(fClassName)) {
+      AliError(Form("%s: Objects of type %s in %s are not inherited from %s!", 
+		    GetName(), cls.GetName(), fClArrayName.Data(), fClassName.Data())); 
+      fClArray = 0;
+    }
   }
-  return;
 }
