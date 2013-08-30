@@ -12,49 +12,38 @@
 #include "AliJetHeader.h"
 
 class AliCdfJetHeader : public AliJetHeader
-  {
-  public:
-
+{
+ public:
   AliCdfJetHeader();
   virtual ~AliCdfJetHeader() { }
 
   // Getters
-  Double_t GetRadius   () const { return fRadius; }
-  Double_t GetJetPtCut () const { return fJetPtCut ; }
-  Int_t GetMinPartJet  () const { return fMinPartJet ; }
+  Double_t GetJetPtCut() const      { return fJetPtCut; }
+  Int_t    GetMinPartJet() const    { return fMinPartJet; }
+  Bool_t   GetAnalyseJets() const   { return fkAnalyseJets; }
 
   // Setters
-  void SetRadius         ( Double_t radius )          { fRadius = radius; }
-  void SetJetPtCut       ( Double_t jetptcut )        { fJetPtCut = jetptcut; }
-  void SetAODwrite       ( Bool_t aodwrite )          { fAODwrite = aodwrite ; }
-  void SetAODtracksWrite ( Bool_t aodtrackswrite )    { fAODtracksWrite = aodtrackswrite ; }
-  void SetMinPartJet     ( Int_t npart )              { fMinPartJet = npart ; }
+  void     SetJetPtCut(Double_t jetptcut)          { fJetPtCut = jetptcut; }
+  void     SetAODwrite(Bool_t aodwrite)            { fAODwrite = aodwrite; }
+  void     SetAODtracksWrite(Bool_t aodtrackswrite){ fAODtracksWrite = aodtrackswrite; }
+  void     SetMinPartJet(Int_t npart)              { fMinPartJet = npart; }
+  void     SetAnalyseJets(Bool_t flag = kTRUE)     { fkAnalyseJets = flag; }
 
-//  void SetCDFJetHeader   () { fCDFheader = (AliCdfJetHeader*)fHeader; }
+  Bool_t   IsAODwrite() const       { return fAODwrite; }
+  Bool_t   IsAODtracksWrite() const { return fAODtracksWrite; }
 
-  Bool_t IsAODwrite() const { return fAODwrite ; }
-  Bool_t IsAODtracksWrite() const { return fAODtracksWrite ; }
+ protected:
+  // Parameters of algorithm
+  Int_t    fMinPartJet;           // minimum number of particles in jet
+  Double_t fJetPtCut;             // pt cut of jets
 
-//     void PrintParameters() const ;
+  Bool_t   fAODwrite;             // flag for writing to AOD
+  Bool_t   fAODtracksWrite;       // flag for writing tracks to AOD
 
-  protected:
+  Bool_t   fkAnalyseJets;         // analyse jets 
 
-  AliCdfJetHeader(const AliCdfJetHeader &jh);
-  AliCdfJetHeader& operator=(const AliCdfJetHeader &jh);
+  ClassDef ( AliCdfJetHeader, 2 ) // CDF jet header class
 
-  // parameters of algorithm
-  Double_t fRadius ;      //  Cone radius
-  Int_t  fMinPartJet ;       // minimum number of particles in jet
+};
 
-  // JET Pt cut
-  Double_t fJetPtCut ;  // pt cut of jets
-
-  Bool_t fAODwrite ;         // flag for writing to AOD
-  Bool_t fAODtracksWrite ;   // flag for writing tracks to AOD
-
-//  AliCdfJetHeader* fCDFheader ; // local pointer to CDF Jet Header
-
-  ClassDef ( AliCdfJetHeader, 1 )
-
-  };
 #endif

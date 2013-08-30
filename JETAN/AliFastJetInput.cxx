@@ -13,186 +13,120 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
+//---------------------------------------------------------------------
+// Class for input particles
+// manages the search for jets
+// Authors: Elena Bruna elena.bruna@yale.edu
+//
+// ** 2011 magali.estienne@subatech.in2p3.fr &  alexandre.shabetai@cern.ch
+// Modified accordingly to reader/finder splitting and new handling of neutral information
+//---------------------------------------------------------------------
+
 #include <Riostream.h> 
-#include <TChain.h>
-#include <TFile.h>
-#include <TF1.h>
-#include <TRandom.h>
-#include <TList.h>
-#include <TLorentzVector.h>
-#include <TArrayF.h>
-#include <TClonesArray.h>
 
 #include "AliJetHeader.h"
-#include "AliJetReader.h"
-#include "AliJetReaderHeader.h"
-#include "AliJetHistos.h"
-
-#include "AliFastJetFinder.h"
 #include "AliFastJetHeaderV1.h"
-#include "AliJetReaderHeader.h"
-#include "AliJetReader.h"
-#include "AliJetESDReader.h"
-#include "AliJetUnitArray.h"
 #include "AliFastJetInput.h"
+#include "AliJetCalTrk.h"
 
 #include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
-// get info on how fastjet was configured
-#include "fastjet/config.h"
 
-#ifdef ENABLE_PLUGIN_SISCONE
-#include "fastjet/SISConePlugin.hh"
-#endif
-
-#include<sstream>  // needed for internal io
 #include<vector> 
-#include <cmath> 
 
 using namespace std;
-
 
 ClassImp(AliFastJetInput)
 
 ////////////////////////////////////////////////////////////////////////
 
 AliFastJetInput::AliFastJetInput():
-    fReader(0),
-    fHeader(0),
-    fInputParticles(0),
-    fInputParticlesCh(0)
+  fHeader(0x0),
+  fCalTrkEvent(0x0),
+  fInputParticles(0),
+  fInputParticlesCh(0)
 {
   // Default constructor
 }
+
+//______________________________________________________________________
 AliFastJetInput::AliFastJetInput(const AliFastJetInput &input):
-    TObject(),
-    fReader(input.fReader),
-    fHeader(input.fHeader),
-    fInputParticles(input.fInputParticles),
-    fInputParticlesCh(input.fInputParticlesCh)
+  TObject(input),
+  fHeader(input.fHeader),
+  fCalTrkEvent(input.fCalTrkEvent),
+  fInputParticles(input.fInputParticles),
+  fInputParticlesCh(input.fInputParticlesCh)
 {
   // copy constructor
 }
+
 //______________________________________________________________________
-AliFastJetInput& AliFastJetInput::operator=(const AliFastJetInput& source){
-    // Assignment operator. 
-    this->~AliFastJetInput();
-    new(this) AliFastJetInput(source);
-    return *this;
+AliFastJetInput& AliFastJetInput::operator=(const AliFastJetInput& source)
+{
+  // Assignment operator. 
+  if(this!=&source){
+   TObject::operator=(source);
+   fHeader = source.fHeader;
+   fCalTrkEvent = source.fCalTrkEvent;
+   fInputParticles = source.fInputParticles;
+   fInputParticlesCh = source.fInputParticlesCh;
+  }
+
+  return *this;
 
 }
-//___________________________________________________________
-void AliFastJetInput::FillInput(){
-  //cout<<"-------- AliFastJetInput::FillInput()  ----------------"<<endl;
 
+//___________________________________________________________
+void AliFastJetInput::FillInput()
+{
+  // fills input particles for FASTJET based analysis
+  
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Int_t debug  = header->GetDebug();     // debug option
+
+  if(debug>0) cout<<"-------- AliFastJetInput::FillInput()  ----------------"<<endl;
+
   fInputParticles.clear();
   fInputParticlesCh.clear();
-
-  Int_t debug  = header->GetDebug();     // debug option
-  Int_t fOpt   = fReader->GetReaderHeader()->GetDetector();
 
   // RUN ALGORITHM  
   // read input particles -----------------------------
   vector<fastjet::PseudoJet> inputParticles;
-  //  cout<<"=============== AliFastJetInput::FillInput()  =========== fOpt="<<fOpt<<endl;
-  //cout<<"pointers --> fReader="<<fReader<<" header="<<header<<" fHeader="<<fHeader<<endl;
-  //cout<<"Rparam="<<Rparam<<"  ghost_etamax="<<ghost_etamax<<"  ghost_area="<<ghost_area<<endl;
-  //cout<<fReader->ClassName()<<endl;
 
-  if(fOpt==0)
-    {
-      TClonesArray *lvArray = fReader->GetMomentumArray();
-      if(lvArray == 0) { cout << "Could not get the momentum array" << endl; return; }
-      Int_t nIn =  lvArray->GetEntries();
-      if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-      Float_t px,py,pz,en;
-      // load input vectors
-      for(Int_t i = 0; i < nIn; i++){ // loop for all input particles
-	if(fReader->GetCutFlag(i)!=1)continue; // pt cut
-	TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
-	px = lv->Px();
-	py = lv->Py();
-	pz = lv->Pz();
-	en = lv->Energy();
-	
-	//	cout<<"in FillInput...... "<<i<<" "<<px<<" "<<py<<"  "<<pz<<" "<<en<<endl;
-	fastjet::PseudoJet inputPart(px,py,pz,en); // create PseudoJet object
-	inputPart.set_user_index(i); //label the particle into Fastjet algortihm
-	fInputParticles.push_back(inputPart);  // back of the inputParticles vector  
-      } // end loop 
-    }
-  else {
-    TClonesArray* fUnit = fReader->GetUnitArray();
-    if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
-    Int_t         nIn = fUnit->GetEntries();
-    if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-   
-    // Information extracted from fUnitArray
-    // load input vectors and calculate total energy in array
-    Float_t pt,eta,phi,theta,px,py,pz,en;
-    Int_t ipart = 0;
-    Int_t countUnit=0,countUnitNonZero=0;
-    //cout<<" nIn = "<<nIn<<endl;
+  if(fCalTrkEvent == 0) { cout << "Could not get the CalTrk Event" << endl; return; }
+  Int_t nIn =  fCalTrkEvent->GetNCalTrkTracks() ;
+  if(nIn == 0) { if (debug>0) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
 
-    for(Int_t i=0; i<nIn; i++) 
-      {
-	AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(i);
-	if(uArray->GetUnitEnergy()>0.){
-	  countUnit++;
-	  // It is not necessary anymore to cut on particle pt
-	  pt    = uArray->GetUnitEnergy();
-	  eta   = uArray->GetUnitEta();
-	  phi   = uArray->GetUnitPhi();
-	  theta = EtaToTheta(eta);
-	  en    = (TMath::Abs(TMath::Sin(theta)) == 0) ? pt : pt/TMath::Abs(TMath::Sin(theta));
-	  px    = TMath::Cos(phi)*pt;
-	  py    = TMath::Sin(phi)*pt;
-	  pz    = en*TMath::TanH(eta);
-	  if(debug) cout << "pt: " << pt << ", eta: " << eta << ", phi: " << phi << ", en: " << en << ", px: " << px << ", py: " << py << ", pz: " << pz << endl;
-	  //cout << i<<" "<<"pt: " << pt << ", eta: " << eta << ", phi: " << phi << ", en: " << en << ", px: " << px << ", py: " << py << ", pz: " << pz << endl;
-	  //cout<<"in FillInput...... "<<i<<" "<<px<<" "<<py<<"  "<<pz<<" "<<en<<endl;
+  // Information extracted from fCalTrkEvent
+  // load input vectors and calculate total energy in array
+  Float_t px = -999., py = -999., pz = -999., en = -999.; 
+ 
+  // Fill charged tracks
+  for(Int_t i = 0; i < fCalTrkEvent->GetNCalTrkTracks(); i++)
+    { // loop for all input particles
+      if (fCalTrkEvent->GetCalTrkTrack(i)->GetCutFlag() != 1) continue;
+      px =  fCalTrkEvent->GetCalTrkTrack(i)->GetPx();
+      py =  fCalTrkEvent->GetCalTrkTrack(i)->GetPy();
+      pz =  fCalTrkEvent->GetCalTrkTrack(i)->GetPz();
+      en =  fCalTrkEvent->GetCalTrkTrack(i)->GetP();
 
-	  fastjet::PseudoJet inputPart(px,py,pz,en); // create PseudoJet object
-	  inputPart.set_user_index(ipart); //label the particle into Fastjet algortihm
-	  fInputParticles.push_back(inputPart);  // back of the inputParticles vector 
-	  ipart++;
-
-	
-	
-	  //only for charged particles (TPC+ITS)
-	  TRefArray* ref = uArray->GetUnitTrackRef();
-	  Int_t nRef = ref->GetEntries();
-	  for(Int_t j=0; j<nRef;j++){
-	    Float_t pxj=0.;  Float_t pyj=0.;  Float_t pzj=0.;Float_t enj=0.;
-	    pxj = ((AliVTrack*)ref->At(j))->Px();
-	    pyj = ((AliVTrack*)ref->At(j))->Py();
-	    pzj = ((AliVTrack*)ref->At(j))->Pz();
-	    enj=TMath::Sqrt(pxj*pxj+pyj*pyj+pzj*pzj);
-	    fastjet::PseudoJet inputPartCh(pxj,pyj,pzj,enj); // create PseudoJet object
-	    inputPartCh.set_user_index(((AliVTrack*)ref->At(j))->GetID()); //label the particle into Fastjet algortihm
-	    fInputParticlesCh.push_back(inputPartCh);  // back of the inputParticles vector 
-
-	  }
-	}
-      } // End loop on UnitArray 
-    if (debug) cout<<"countUnit(En>0) = "<<countUnit<<"  countUnit with Non ZeroSize = "<<countUnitNonZero<<endl;
-  }
+      fastjet::PseudoJet inputPart(px,py,pz,en);  // create PseudoJet object
+      inputPart.set_user_index(i);      //label the particle into Fastjet algortihm
+      fInputParticles.push_back(inputPart);       // back of the inputParticles vector
+ 
+      // only for charged particles (TPC+ITS)
+      fastjet::PseudoJet inputPartCh(px,py,pz,en); // create PseudoJet object
+      inputPartCh.set_user_index(i);               //label the particle into Fastjet algortihm
+      fInputParticlesCh.push_back(inputPartCh);    // back of the inputParticles vector
+    } // End loop on CalTrk
 
 }
 
 //_____________________________________________________________________
-Float_t  AliFastJetInput::EtaToTheta(Float_t arg)
+Double_t AliFastJetInput::Thermalspectrum(const Double_t *x, const Double_t *par)
 {
-  //  return (180./TMath::Pi())*2.*atan(exp(-arg));
-  return 2.*atan(exp(-arg));
-
-
-}
-Double_t AliFastJetInput::Thermalspectrum(const Double_t *x, const Double_t *par){
-
+  // compute an exponential function
   return x[0]*TMath::Exp(-x[0]/par[0]);
 
 }

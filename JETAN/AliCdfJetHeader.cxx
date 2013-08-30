@@ -25,36 +25,24 @@
 
 
 /*
-Changelog
+  Changelog
 
 
 
 */
 
 #include "AliCdfJetHeader.h"
+
 ClassImp ( AliCdfJetHeader )
 
 ////////////////////////////////////////////////////////////////////////
 
-AliCdfJetHeader::AliCdfJetHeader() :
-    fRadius (0.7),
-    fMinPartJet (1),
-    fJetPtCut (0.),
-    fAODwrite (false),
-    fAODtracksWrite (false)
-  {
+AliCdfJetHeader::AliCdfJetHeader():
+  fMinPartJet(1),
+  fJetPtCut(0.),
+  fAODwrite(kFALSE),
+  fAODtracksWrite(kFALSE),
+  fkAnalyseJets(kFALSE)
+{
   // Constructor
-  }
-
-////////////////////////////////////////////////////////////////////////
-
-// void AliCdfJetHeader::PrintParameters() const
-//   {
-//   // prints out parameters of jet algorithm
-//
-//   cout << " CDF simplified jet algorithm " << endl;
-//   cout << " * Jet parameters: " << endl;
-//   cout << " Cone size: " << fRadius << endl;
-//
-//
-//   }
+}

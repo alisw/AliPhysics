@@ -49,7 +49,7 @@ class AliAnalysisTaskDiJets : public AliAnalysisTaskSE
   TH2F         *fH2Pt2vsPt1; // scatter plot with the two jets' Pt
   TH2F         *fH2DifvsSum; // Pt difference vs Pt sum
 
-  ClassDef(AliAnalysisTaskDiJets, 2); // Analysis task for standard dijet analysis
+  ClassDef(AliAnalysisTaskDiJets, 2) // Analysis task for standard dijet analysis
 };
 
 #endif

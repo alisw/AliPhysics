@@ -4,7 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
   
-#pragma link C++ class AliJetBkg+;
+#pragma link C++ class AliFastJetBkg+;
 #pragma link C++ class AliFastJetInput+;
 #pragma	link C++ class AliFastJetFinder+;
 #pragma	link C++ class AliFastJetHeaderV1+;
