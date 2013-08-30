@@ -47,6 +47,7 @@ class AliHFEsecVtx;
 class AliHFEsignalCuts;
 class AliHFEvarManager;
 class AliHFEtaggedTrackAnalysis;
+class AliHFEV0taginfo;
 class AliCFManager;
 class AliMCEvent;
 class AliOADBContainer;
@@ -255,6 +256,9 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
     Bool_t fTRDTrigger;                   // Check if event is TRD triggered event
     Int_t  fWhichTRDTrigger;               // Select type of TRD trigger
+
+    AliHFEV0taginfo *fV0Tagger;           // Tags v0 tracks per Event 
+
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output

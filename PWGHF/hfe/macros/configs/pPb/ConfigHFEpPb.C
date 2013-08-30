@@ -24,7 +24,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
 				 Int_t itshitpixel = 0, Int_t icent=1,
 				 Double_t etami=-0.8, Double_t etama=0.8){
   
-  Bool_t kAnalyseTaggedTracks = kFALSE;
+  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
 
   //***************************************//
   //        Setting up the HFE cuts        //

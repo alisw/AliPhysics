@@ -83,6 +83,7 @@
 #include "AliHFEsignalCuts.h"
 #include "AliHFEtaggedTrackAnalysis.h"
 #include "AliHFEtools.h"
+#include "AliHFEV0taginfo.h"
 #include "AliHFEvarManager.h"
 #include "AliAnalysisTaskHFE.h"
 #include "AliAODMCHeader.h"
@@ -141,6 +142,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fBackgroundSubtraction(NULL)
   , fTRDTrigger(kFALSE)
   , fWhichTRDTrigger(0)
+  , fV0Tagger(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -211,6 +213,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fBackgroundSubtraction(NULL)
   , fTRDTrigger(kFALSE)
   , fWhichTRDTrigger(0)
+  , fV0Tagger(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -224,6 +227,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 
+  fV0Tagger = new AliHFEV0taginfo("Tagger");
   fPID = new AliHFEpid("hfePid");
   fPIDqa = new AliHFEpidQAmanager;
   fVarManager = new AliHFEvarManager("hfeVarManager");
@@ -290,6 +294,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fBackgroundSubtraction(NULL)
   , fTRDTrigger(ref.fTRDTrigger)
   , fWhichTRDTrigger(ref.fWhichTRDTrigger)
+  , fV0Tagger(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -367,6 +372,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fBackgroundSubtraction = fBackgroundSubtraction;
   target.fTRDTrigger = fTRDTrigger;
   target.fWhichTRDTrigger = fWhichTRDTrigger;
+  target.fV0Tagger = fV0Tagger;
   target.fQA = fQA;
   target.fOutput = fOutput;
   target.fHistMCQA = fHistMCQA;
@@ -393,6 +399,7 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
   if(fBackgroundSubtraction) delete fBackgroundSubtraction;
   if(fSpecialTrigger) delete fSpecialTrigger;
   if(fAnalysisUtils) delete fAnalysisUtils;
+  if(fV0Tagger) delete fV0Tagger;
   // Delete output objects only if we are not running in PROOF mode because otherwise this produces a crash during merging
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(mgr && mgr->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
@@ -857,6 +864,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
     return;
   }
 
+  // Tag all v0s in current event
+  if(fV0Tagger){
+      fV0Tagger->Reset();
+      fV0Tagger->TagV0Tracks(fESD);
+  }
   // Set magnetic field if V0 task on
   if(fTaggedTrackAnalysis) {
     fTaggedTrackAnalysis->SetMagneticField(fESD->GetMagneticField());
@@ -974,12 +986,9 @@ void AliAnalysisTaskHFE::ProcessESD(){
     track->SetESDEvent(fESD);
 
     // fill counts of v0-identified particles
-    Int_t v0pid = -1;
-    if(track->TestBit(BIT(14))) v0pid = AliPID::kElectron;
-    else if(track->TestBit(BIT(15))) v0pid = AliPID::kPion;
-    else if(track->TestBit(BIT(16))) v0pid = AliPID::kProton;
+    AliPID::EParticleType v0pid = fV0Tagger->GetV0Info(track->GetID());
     // here the tagged track analysis will run
-    if(fTaggedTrackAnalysis && v0pid > -1){ 
+    if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){ 
       AliDebug(1, Form("Track identified as %s", AliPID::ParticleName(v0pid)));
       fTaggedTrackAnalysis->ProcessTrack(track, v0pid);
       AliDebug(1, "V0 PID done");
