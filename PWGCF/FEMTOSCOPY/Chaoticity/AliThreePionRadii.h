@@ -203,13 +203,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   Float_t fNormQcutHigh[3];
   Float_t fKupperBound;
   Float_t fQupperBound;
-  Float_t fQupperBoundWeights;
   Int_t   fQbins;
-  Int_t   fQbinsWeights;
-  Float_t fQstep;
-  Float_t fQstepWeights;
-  Float_t fQmean[kQbinsWeights];
-  Float_t fQmeanPP[kQbinsWeightsPP];
   Float_t fDampStart;
   Float_t fDampStep;
   
