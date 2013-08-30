@@ -82,12 +82,7 @@ AliAnalysisTaskSE(),
   fNormQcutHigh(),
   fKupperBound(0),
   fQupperBound(0),
-  fQupperBoundWeights(0),
   fQbins(0),
-  fQbinsWeights(0),
-  fQstep(0),
-  fQstepWeights(0),
-  fQmean(),
   fDampStart(0),
   fDampStep(0),
   fTPCTOFboundry(0),
@@ -200,12 +195,7 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
   fNormQcutHigh(),
   fKupperBound(0),
   fQupperBound(0),
-  fQupperBoundWeights(0),
   fQbins(0),
-  fQbinsWeights(0),
-  fQstep(0),
-  fQstepWeights(0),
-  fQmean(),
   fDampStart(0),
   fDampStep(0),
   fTPCTOFboundry(0),
@@ -325,12 +315,7 @@ AliThreePionRadii::AliThreePionRadii(const AliThreePionRadii &obj)
     fNormQcutHigh(),
     fKupperBound(obj.fKupperBound),
     fQupperBound(obj.fQupperBound),
-    fQupperBoundWeights(obj.fQupperBoundWeights),
     fQbins(obj.fQbins),
-    fQbinsWeights(obj.fQbinsWeights),
-    fQstep(obj.fQstep),
-    fQstepWeights(obj.fQstepWeights),
-    fQmean(),
     fDampStart(obj.fDampStart),
     fDampStep(obj.fDampStep),
     fTPCTOFboundry(obj.fTPCTOFboundry),
@@ -410,11 +395,7 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fQbinsC2 = obj.fQbinsC2;
   fKupperBound = obj.fKupperBound;
   fQupperBound = obj.fQupperBound;
-  fQupperBoundWeights = obj.fQupperBoundWeights;
   fQbins = obj.fQbins;
-  fQbinsWeights = obj.fQbinsWeights;
-  fQstep = obj.fQstep;
-  fQstepWeights = obj.fQstepWeights;
   fDampStart = obj.fDampStart;
   fDampStep = obj.fDampStep;
   fTPCTOFboundry = obj.fTPCTOFboundry;
@@ -556,13 +537,8 @@ void AliThreePionRadii::ParInit()
     //
     fQlimitC2 = 2.0;
     fQbinsC2 = 400;
-    fQupperBoundWeights = 2*fQcut[0];
     fQupperBound = fQcut[0];
     fQbins = kQbins;
-    fQbinsWeights = kQbinsWeights;
-    fQstep = fQupperBound/Float_t(fQbins);
-    fQstepWeights = fQupperBoundWeights/Float_t(fQbinsWeights);
-    for(Int_t i=0; i<fQbinsWeights; i++) {fQmean[i]=(i+0.5)*fQstepWeights;}
     //
     fDampStart = 0.5;// was 0.3
     fDampStep = 0.02;
@@ -581,13 +557,8 @@ void AliThreePionRadii::ParInit()
     //
     fQlimitC2 = 2.0;
     fQbinsC2 = 400;
-    fQupperBoundWeights = fQcut[0];
     fQupperBound = fQcut[0];
     fQbins = 2*kQbins;
-    fQbinsWeights = 2*kQbinsWeights;
-    fQstep = fQupperBound/Float_t(fQbins);
-    fQstepWeights = fQupperBoundWeights/Float_t(fQbinsWeights);
-    for(Int_t i=0; i<fQbinsWeights; i++) {fQmean[i]=(i+0.5)*fQstepWeights;}
     //
     fDampStart = 0.5;// was 0.3
     fDampStep = 0.02;
@@ -606,13 +577,8 @@ void AliThreePionRadii::ParInit()
     //
     fQlimitC2 = 2.0;
     fQbinsC2 = 200;
-    fQupperBoundWeights = 0.4;
     fQupperBound = 0.4;
     fQbins = kQbinsPP;
-    fQbinsWeights = kQbinsWeightsPP;
-    fQstep = fQupperBound/Float_t(kQbinsPP);
-    fQstepWeights = fQupperBoundWeights/Float_t(kQbinsWeightsPP);
-    for(Int_t i=0; i<kQbinsWeightsPP; i++) {fQmeanPP[i]=(i+0.5)*fQstepWeights;}
     //
     fDampStart = 0.5;// was 0.3
     fDampStep = 0.02;
@@ -866,11 +832,11 @@ void AliThreePionRadii::UserCreateOutputObjects()
 		if(fMCcase && sc==0){
 		  TString *nameIdeal = new TString(nameEx2->Data());
 		  nameIdeal->Append("_Ideal");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal = new TH2D(nameIdeal->Data(),"Two Particle Distribution",fRVALUES*kNDampValues,-0.5,fRVALUES*kNDampValues-0.5, fQbinsWeights,0,fQupperBoundWeights);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal = new TH2D(nameIdeal->Data(),"Two Particle Distribution",fRVALUES*kNDampValues,-0.5,fRVALUES*kNDampValues-0.5, fQbins,0,fQupperBound);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal);
 		  TString *nameSmeared = new TString(nameEx2->Data());
 		  nameSmeared->Append("_Smeared");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared = new TH2D(nameSmeared->Data(),"Two Particle Distribution",fRVALUES*kNDampValues,-0.5,fRVALUES*kNDampValues-0.5, fQbinsWeights,0,fQupperBoundWeights);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared = new TH2D(nameSmeared->Data(),"Two Particle Distribution",fRVALUES*kNDampValues,-0.5,fRVALUES*kNDampValues-0.5, fQbins,0,fQupperBound);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared);
 		  //
 		  TString *nameEx2MC=new TString(nameEx2->Data());
