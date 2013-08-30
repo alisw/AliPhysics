@@ -25,11 +25,11 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS DEV/AliJetHeader.cxx DEV/AliJetFinder.cxx  DEV/AliJetReaderHeader.cxx DEV/AliJetReader.cxx DEV/AliUA1JetHeaderV1.cxx DEV/AliUA1JetFinder.cxx DEV/AliCdfJetFinder.cxx  DEV/AliCdfJetHeader.cxx DEV/AliAnalysisTaskJetsReader.cxx  DEV/AliAnalysisTaskJetsFinder.cxx DEV/AliDAJetFinder.cxx DEV/AliDAJetHeader.cxx DEV/AliJetKineReaderHeader.cxx DEV/AliJetHistos.cxx DEV/AliAnalysisTaskDiJets.cxx DEV/AliEventShape.cxx DEV/AliKMeansClustering.cxx DEV/AliAnalysisTaskKMeans.cxx DEV/AliAnalysisTaskFastEmbedding.cxx DEV/AliJetBkg.cxx DEV/AliJetCalTrk.cxx DEV/AliJetFillCalTrkTrack.cxx DEV/AliJetFillCalTrkTrackMC.cxx DEV/AliJetFillCalTrkEvent.cxx )
+set ( SRCS AliJetHeader.cxx AliJetFinder.cxx  AliJetReaderHeader.cxx AliJetReader.cxx AliUA1JetHeaderV1.cxx AliUA1JetFinder.cxx AliCdfJetFinder.cxx  AliCdfJetHeader.cxx AliAnalysisTaskJetsReader.cxx  AliAnalysisTaskJetsFinder.cxx AliDAJetFinder.cxx AliDAJetHeader.cxx AliJetKineReaderHeader.cxx AliJetHistos.cxx AliAnalysisTaskDiJets.cxx AliEventShape.cxx AliKMeansClustering.cxx AliAnalysisTaskKMeans.cxx AliAnalysisTaskFastEmbedding.cxx AliJetBkg.cxx AliJetCalTrk.cxx AliJetFillCalTrkTrack.cxx AliJetFillCalTrkTrackMC.cxx AliJetFillCalTrkEvent.cxx )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  JETANdevLinkDef.h)
+set ( DHDR  JETANLinkDef.h)
 
 set(FASTJET_ROOT $ENV{FASTJET_ROOT})
 
