@@ -48,7 +48,7 @@ class AliPHOSDigit : public AliDigitNew {
   AliPHOSDigit(Int_t primary, Int_t id, Float_t energy , Float_t Time, Int_t index = -1) ;
   AliPHOSDigit(const AliPHOSDigit & digit) ;
   virtual ~AliPHOSDigit() ;
-
+  void   Clear(const Option_t*);
   Bool_t operator==(const AliPHOSDigit &rValue) const;
 
   AliPHOSDigit& operator += (AliPHOSDigit const &rValue) ;

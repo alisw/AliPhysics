@@ -387,7 +387,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     delete [] fracList;
     delete [] absIdList;
   }
-  fgDigitsArray ->Clear();
+  fgDigitsArray ->Clear("C");
   fgEMCRecPoints->Clear("C");
   recParticles  ->Clear();
 

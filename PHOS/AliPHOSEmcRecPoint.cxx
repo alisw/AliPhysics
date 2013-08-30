@@ -60,6 +60,9 @@
  
 ClassImp(AliPHOSEmcRecPoint)
 
+Long64_t AliPHOSEmcRecPoint::fgInstCount=0;
+
+
 //____________________________________________________________________________
 AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : 
   AliPHOSRecPoint(),
@@ -67,6 +70,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() :
   fEnergyList(0), fTime(-1.), fNExMax(0),
   fM2x(0.), fM2z(0.), fM3x(0.), fM4z(0.),
   fPhixe(0.), fDistToBadCrystal(-1),fDebug(0)
+  ,fInstCount(0)
 {
   // ctor
   fMulDigit   = 0 ;  
@@ -75,7 +79,8 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() :
 
   fLambda[0] = 0.;
   fLambda[1] = 0.;
-
+  fInstCount=fgInstCount++;
+  if (gDebug==-10) AliInfo(Form("0Create instance %lld",fInstCount));
 }
 
 //____________________________________________________________________________
@@ -85,6 +90,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) :
   fEnergyList(0), fTime(-1.), fNExMax(0),
   fM2x(0.), fM2z(0.), fM3x(0.), fM4z(0.),
   fPhixe(0.), fDistToBadCrystal(-1), fDebug(0)
+  ,fInstCount(0)
 {
   // ctor
   fMulDigit   = 0 ;  
@@ -93,6 +99,8 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) :
   
   fLambda[0] = 0.;
   fLambda[1] = 0.;
+  fInstCount=fgInstCount++;
+   if (gDebug==-10) AliInfo(Form("1Create instance %lld",fInstCount));
 }
 
 //____________________________________________________________________________
@@ -102,6 +110,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) :
   fEnergyList(0), fTime(rp.fTime), fNExMax(rp.fNExMax),
   fM2x(rp.fM2x), fM2z(rp.fM2z), fM3x(rp.fM3x), fM4z(rp.fM4z),
   fPhixe(rp.fPhixe), fDistToBadCrystal(rp.fDistToBadCrystal), fDebug(rp.fDebug)
+  ,fInstCount(0)
 {
   // cpy ctor
   fMulDigit   = rp.fMulDigit ;  
@@ -113,6 +122,8 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) :
   for(Int_t i=0; i<2; i++) {
     fLambda[i] = rp.fLambda[i];
   }
+  fInstCount=fgInstCount++;
+   if (gDebug==-10) AliInfo(Form("2Create instance %lld",fInstCount));
 }
 
 //____________________________________________________________________________
@@ -121,6 +132,9 @@ AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint()
   // dtor
   if ( fEnergyList )
     delete[] fEnergyList ; 
+   if (gDebug==-10) AliInfo(Form("Delete instance %lld (%lld)",fInstCount, fgInstCount));
+  if (fInstCount>=fgInstCount-1) fgInstCount--;
+
 }
 
 //____________________________________________________________________________
