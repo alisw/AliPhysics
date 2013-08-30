@@ -303,8 +303,9 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
   coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
 
-  if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
-  areNeighbours = kTRUE ;
+  //if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
+  if ((coldiff + rowdiff == 1 )) 
+    areNeighbours = kTRUE ;
   
   return areNeighbours;
 }
