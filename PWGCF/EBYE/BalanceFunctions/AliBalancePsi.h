@@ -193,8 +193,8 @@ class AliBalancePsi : public TObject {
   
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
-  TH2D *GetQAHistConversionbefore() {return fHistConversionbefore;}
-  TH2D *GetQAHistConversionafter() {return fHistConversionafter;}
+  TH3D *GetQAHistConversionbefore() {return fHistConversionbefore;}
+  TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
   TH3D *GetQAHistResonancesBefore() {return fHistResonancesBefore;}
   TH3D *GetQAHistResonancesRho() {return fHistResonancesRho;}
@@ -233,8 +233,8 @@ class AliBalancePsi : public TObject {
   //QA histograms
   TH2D *fHistHBTbefore; // Delta Eta vs. Delta Phi before HBT inspired cuts
   TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts
-  TH2D *fHistConversionbefore; // Delta Eta vs. Delta Phi before Conversion cuts
-  TH2D *fHistConversionafter; // Delta Eta vs. Delta Phi before Conversion cuts
+  TH3D *fHistConversionbefore; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
+  TH3D *fHistConversionafter; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
   TH3D *fHistResonancesBefore; // 3D histogram (Deta,Dphi,Invmass) before resonance cuts
   TH3D *fHistResonancesRho;    // 3D histogram (Deta,Dphi,Invmass) after removing rho 
