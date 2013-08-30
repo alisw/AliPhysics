@@ -396,8 +396,8 @@ void AliBalancePsi::InitHistograms() {
   // QA histograms
   fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,0,2,200,0,2.*TMath::Pi());
   fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,2.*TMath::Pi());
-  fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,2.*TMath::Pi());
-  fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,2.*TMath::Pi());
+  fHistConversionbefore = new TH3D("fHistConversionbefore","before Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistConversionafter  = new TH3D("fHistConversionafter","after Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistPsiMinusPhi      = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
   fHistResonancesBefore = new TH3D("fHistResonancesBefore","before resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesRho    = new TH3D("fHistResonancesRho","after #rho resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
@@ -640,7 +640,6 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	if (charge1 * charge2 < 0) {
 	  Double_t deta = firstEta - secondEta[j];
 	  Double_t dphi = firstPhi - secondPhi[j];
-	  fHistConversionbefore->Fill(deta,dphi);
 	  
 	  Float_t m0 = 0.510e-3;
 	  Float_t tantheta1 = 1e10;
@@ -662,12 +661,14 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	  Float_t e2squ = m0 * m0 + secondPt[j] * secondPt[j] * (1.0 + 1.0 / tantheta2 / tantheta2);
 	  
 	  Float_t masssqu = 2 * m0 * m0 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( firstPt * secondPt[j] * ( TMath::Cos(phi1rad - phi2rad) + 1.0 / tantheta1 / tantheta2 ) ) );
+
+	  fHistConversionbefore->Fill(deta,dphi,masssqu);
 	  
 	  if (masssqu < fInvMassCutConversion*fInvMassCutConversion){
 	    //AliInfo(Form("Conversion: Removed track pair %d %d with [[%f %f] %f %f] %d %d <- %f %f  %f %f   %f %f ", i, j, deta, dphi, masssqu, charge1, charge2,eta1,eta2,phi1,phi2,pt1,pt2));
 	    continue;
 	  }
-	  fHistConversionafter->Fill(deta,dphi);
+	  fHistConversionafter->Fill(deta,dphi,masssqu);
 	}
       }//conversion cut
 
