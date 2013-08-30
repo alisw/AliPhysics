@@ -783,7 +783,6 @@ void AliDxHFEParticleSelectionEl::SetCuts(TObject* cuts, int level)
       TIter next(fCutPidList);
       while((obj = next())){
 	iii++;
-	printf(Form("Cut object is of type %s  - %d \n", obj->ClassName(), iii));
 	if(iii==1) {
 	  fCuts=dynamic_cast<AliHFEcuts*>(obj);
 	  if (!fCuts) 
