@@ -1,62 +1,88 @@
-AliLeadingV0Correlation* AddTaskLV0Correlation(TString fListName = "LV0Correlation",
-					       TString  fCollisiontype           = "PbPb",
-						   TString	fTriggerMask             = "kMB",
-						   TString  fwithPID                 = "withPID",
-					       Bool_t   fAnalysisMC              = 0,
-					       Double_t aPVzCut                  = 10,
-					       UInt_t   aFilterBit               = 128,
-						   Double_t aRapidityCut             = 0.75,
-						   Double_t aEtaCut                  = 0.9,
-					       Double_t aCutV0Radius             = 0.5,
-					       Double_t aCutDCANegToPV           = 0.06,
-					       Double_t aCutDCAPosToPV           = 0.06,
-					       Double_t aCutDCAV0Daughters       = 1.0,
-					       Double_t aCutV0CosPA              = 0.995,
-					       Double_t aSpecialArmenterosCutK0s = 5,
-						   Double_t aCTauK0                  = 20,
-						   Double_t aCTauLambda              = 30,
-						   Int_t    fmaxEventsinPool         = 2000,
-						   Int_t    fmaxTracksinPool         = 1000,
-						   Double_t  aTrigLow                = 6,
-						   Double_t  aTrigHigh               = 12) 
+AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName                = "LV0Correlation",
+											   TString	fCollisiontype           = "PP",
+											   Bool_t	fAnalysisMC              = 0,
+											   Int_t    fCase                    = 2,
+											   Bool_t   fRemovePileUP            = 0,
+											   Bool_t   fRemoveAutoCorr          = 0,
+											   Double_t	fPVzCut                  = 10,
+											   UInt_t   fFilterBit               = 128,
+											   Double_t	fRapidityCut             = 0.75,
+											   Double_t	fEtaCut                  = 0.9,
+											   Int_t	fmaxEventsinPool         = 2000,
+											   Int_t	fmaxTracksinPool         = 1000,
+											   Int_t    fMinEventsToMix          = 5,
+											   Double_t	fV0radius				 = 0.3,
+											   Double_t	fV0PostoPVz				 = 0.060,
+											   Double_t	fV0NegtoPVz				 = 0.060,
+											   Double_t	fDCAV0Daughters			 = 1.00,
+											   Double_t	fCPAK0					 = 0.960,
+											   Double_t	fCPALam					 = 0.997,
+											   Double_t	fRejectLamK0			 = 0.005,
+											   Double_t	fRejectK0Lam			 = 0.010,
+											   Double_t fSigmaPID                = 3.0,
+											   Double_t fCutCTK0				 = 20.0,
+											   Double_t fCutCTLa				 = 30.0,
+											   Double_t fMassCutK0               = 0.0105,             
+											   Double_t fMassCutLa               = 0.0105) 
 {
 	// Get the current analysis manager.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {Error("AddTaskLV0Correlation.C", "No Analysis Manager ");return 0;}
 	
-	//PVz Binning for pool	
+	//PVz Binning for pool PP or PbPb	
 	Double_t pvzbinlimits[] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
 	Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 	
-	//Cent(PbPb) or Mult(PP) Binning for pool	
-	Double_t cent_mult_binlimits[] = {0,10,20,30,40,50,60,70,80,90,100}; 
-	Int_t cent_mult_bin_numb = sizeof(cent_mult_binlimits)/sizeof(Double_t) - 1;
-
+	//Mult Binning for pool	pp 
+	Double_t cent_mult_binlimitsPP[] = {  0, 10, 20, 30, 40, 50, 60, 70, 80, 90,
+		100,110,120,130,140,150,160,170,180,190,
+		200,210,220,230,240,250,260,270,280,290,
+		300,310,320,330,340,350,360,370,380,390,
+		400,410,420,430,440,450,460,470,480,490,
+		500,520,540,560,580,600,620,640,660,680,
+		700,650,800,900,1000,1200,1400,1600,1800,
+		2000};
+	
+	Int_t cent_mult_bin_numbPP = sizeof(cent_mult_binlimitsPP)/sizeof(Double_t) - 1;
+	
+	//Cent Binning for pool	PbPb 
+	Double_t cent_mult_binlimitsPbPb[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,
+		14,15,16,17,18,19,20,21,22,23,24,25,26,27,
+		28,29,30,31,32,33,34,35,36,37,38,39,40,42,
+		44,46,48,50,52,54,56,58,60,65,70,75,80,90};
+	
+	Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
 	//Correlation task
 	AliLeadingV0Correlation *myTask = new AliLeadingV0Correlation(fListName.Data());
 	
 	myTask->SetCollidingSystem(fCollisiontype);
-	myTask->SetTrigger(fTriggerMask);
 	myTask->SetMCAnalysis(fAnalysisMC);
+	myTask->SetCase(fCase);
+	myTask->SetRemovePileUp(fRemovePileUP);
+	myTask->SetRemoveAutoCorr(fRemoveAutoCorr);
 	myTask->SetMaxNEventsInPool(fmaxEventsinPool);
 	myTask->SetMinNTracksInPool(fmaxTracksinPool);
+	myTask->SetMinEventsToMix(fMinEventsToMix);
 	myTask->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
-	myTask->SetPoolCentBinLimits(cent_mult_bin_numb,cent_mult_binlimits);
-	myTask->SetPrimeryVertexCut(aPVzCut);
-	myTask->SetEatCut(aEtaCut);
-	myTask->SetFilterBit(aFilterBit);
-	myTask->SetTrigPtBinLimits(aTrigLow,aTrigHigh);
-	myTask->SetAssocPtBinLimits(0.15,aTrigLow);
-	myTask->SetCutV0Radius(aCutV0Radius);
-	myTask->SetCutDCANToP(aCutDCANegToPV);
-	myTask->SetCutDCAPToP(aCutDCAPosToPV);
-	myTask->SetCutDCADaughters(aCutDCAV0Daughters);
-	myTask->SetCutCPA(aCutV0CosPA);
-	myTask->SetCutArmenterosK0s(aSpecialArmenterosCutK0s);
-	myTask->SetCutCTauK0(aCTauK0);
-	myTask->SetCutCTauLambda(aCTauLambda);
-	myTask->SetUSEPID(fwithPID);
-	myTask->SetCutRap(aRapidityCut);
+	if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
+	if(fCollisiontype=="PbPb2010"||fCollisiontype=="PbPb2011")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+	myTask->SetPrimeryVertexCut(fPVzCut);
+	myTask->SetEatCut(fEtaCut);
+	myTask->SetFilterBit(fFilterBit);
+	myTask->SetCutRap(fRapidityCut);
+	myTask->SetV0Radius(fV0radius);
+	myTask->SetV0PostoPVz(fV0PostoPVz);
+	myTask->SetV0NegtoPVz(fV0NegtoPVz);
+	myTask->SetDCAV0Daughters(fDCAV0Daughters);
+	myTask->SetCPAK0(fCPAK0);
+	myTask->SetCPALam(fCPALam);
+	myTask->SetRejectLamK0(fRejectLamK0);
+	myTask->SetRejectK0Lam(fRejectK0Lam);
+	myTask->SetSigmaPID(fSigmaPID);
+	myTask->SetCTK0(fCutCTK0);
+	myTask->SetCTLa(fCutCTLa);
+	myTask->SetMassCutK0(fMassCutK0);
+	myTask->SetMassCutLa(fMassCutLa);
 	
 	mgr->AddTask(myTask);
 	
