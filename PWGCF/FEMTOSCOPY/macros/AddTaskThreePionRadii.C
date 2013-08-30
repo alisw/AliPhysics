@@ -1,4 +1,4 @@
-AliChaoticity *AddTaskThreePionRadii(
+AliThreePionRadii *AddTaskThreePionRadii(
 				 Bool_t LEGO=kTRUE, 
 				 Bool_t MCcase=kFALSE, 
 				 Bool_t PbPbcase=kTRUE, 
