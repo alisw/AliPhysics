@@ -51,6 +51,7 @@ ClassImp(AliHLTJETConeFinder)
 AliHLTJETConeFinder::AliHLTJETConeFinder()
   : 
   AliJetFinder(),
+  fReader(NULL),
   fGrid(NULL),
   fJets(NULL) {
   // see header file for class documentation

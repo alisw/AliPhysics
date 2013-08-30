@@ -100,6 +100,9 @@ public:
   
   /** Set ptr to output container */
   void SetOutputJets( AliHLTJets* jets ) { fJets = jets; }
+
+  /** Set ptr to jet reader */
+  void SetJetReader( AliJetReader *reader) { fReader = reader; }
   
   /*
    * ---------------------------------------------------------------------------------
@@ -156,13 +159,14 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
+  AliJetReader                *fReader;         // pointer to reader; used to be in AliJetFinder
   /** Grid for cone finder */
   AliHLTJETConeGrid           *fGrid;           //! transient
 
   /** Container of AliAODJets */
   AliHLTJets                  *fJets;           //! transient
 
-  ClassDef(AliHLTJETConeFinder, 1)
+  ClassDef(AliHLTJETConeFinder, 2)
 
 };
 #endif
