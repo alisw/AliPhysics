@@ -10,23 +10,14 @@
 // Authors: jgcn@mda.cinvestav.mx
 //          andreas.morsch@cern.ch
 //          magali.estienne@subatech.in2p3.fr
+//          alexandre.shabetai@cern.ch
 //---------------------------------------------------------------------
 
-//#include <Riostream.h>
-//#include <vector>
-
-#include <TObject.h>
+#include "AliJetCalTrk.h"
 #include "AliAODJet.h"
 #include "AliJetHeader.h"
-#include "AliJetReader.h"
 #include "AliAODJetEventBackground.h"
-
-class TChain;
-class TTree;
 class AliAODEvent;
-class AliJetReaderHeader;
-
-using std::vector;
 
 class AliJetFinder : public TObject 
 {
@@ -35,42 +26,42 @@ class AliJetFinder : public TObject
   virtual ~AliJetFinder();
 
   // Getters
-  virtual AliJetReader *GetReader() const {return fReader;}
-  virtual AliJetHeader *GetHeader() const {return fHeader;}
+  virtual AliJetCalTrkEvent* GetCalTrkEvent() const {return fCalTrkEvent;}
+  virtual AliJetHeader *GetJetHeader() const {return fHeader;}
   virtual AliAODJetEventBackground* GetEventBackground() const {return fAODEvBkg;}
   // Setters
-  virtual void          SetJetReader(AliJetReader* r) {fReader=r;}
-  virtual void          SetJetHeader(AliJetHeader* h) {fHeader=h;}
-  virtual void          SetEventBackground(AliAODJetEventBackground* bkg) {fAODEvBkg = bkg;}
+  virtual void              SetCalTrkEvent(AliJetCalTrkEvent& event) {fCalTrkEvent = &event;}
+  virtual void              SetJetHeader(AliJetHeader* h) {fHeader=h;}
+  virtual void              SetEventBackground(AliAODJetEventBackground* bkg) {fAODEvBkg = bkg;}
   // Others
-  virtual void          AddJet(AliAODJet jet);
-  virtual void          WriteRHeaderToFile();  
+  virtual void              AddJet(AliAODJet jet);
+  virtual void              WriteHeaderToFile();
+  virtual void		    WriteHeader();
   // the following have to be implemented for each specific finder
-  virtual void          Init() {}
-  virtual void          InitTask(TChain* /*tree*/) {}
-  virtual void          Reset() {fNAODjets = 0;}
-  virtual void          FindJets() {}
-  virtual void          FindJetsC(){}
-  virtual void          WriteJHeaderToFile() const {}
+  virtual void              Init() {}
+  virtual void              Reset() {fNAODjets = 0;}
+  virtual void              FindJets() {}
+  virtual void              ComputeBkgs() {}
+  virtual void              CreateOutputObjects(TList * const /*histos*/) {} // Used by CDF for histo storage
+
   // some methods to allow steering from the outside
-  virtual Bool_t        ProcessEvent();
-  virtual Bool_t        ProcessEvent2();
-  virtual void          ConnectTree(TTree* tree, TObject* data);
-  virtual void          ConnectAOD(const AliAODEvent* aod);
-  virtual void          ConnectAODNonStd(AliAODEvent* aod,const char* bname);
-  virtual void          WriteHeaders();
+  virtual Bool_t            ProcessEvent();
+  virtual void              ConnectAOD(const AliAODEvent* aod);
+  virtual void              ConnectAODNonStd(AliAODEvent* aod,const char* bname);
+  virtual void              AddHistosToList(TList */*list*/) {}
 
  protected:
   AliJetFinder(const AliJetFinder& rJetFinder);
   AliJetFinder& operator = (const AliJetFinder& rhsf);
-  AliJetReader*             fReader;         //  pointer to reader
   AliJetHeader*             fHeader;         //  pointer to header
   TClonesArray*             fAODjets;        //! reconstructed jets
-  Int_t                     fNAODjets;       //! number of reconstructed jets
+  Int_t                     fNAODjets;       //  number of reconstructed jets
   AliAODJetEventBackground* fAODEvBkg;       //! bkg object to be store
   Int_t                     fDebug;          //  debug option, set through the header
+  AliJetCalTrkEvent*        fCalTrkEvent;    //  pointer to AliJetCalTrkEvent object
+ 
+  ClassDef(AliJetFinder,3)                   //  base class for any jet finder
 
-  ClassDef(AliJetFinder,2)
 };
 
 #endif

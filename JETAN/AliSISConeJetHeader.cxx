@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 //---------------------------------------------------------------------
 // SISCone (FastJet v2.3.4) finder algorithm interface
@@ -23,10 +24,6 @@
 #include <Riostream.h>
 #include <TMath.h>
 
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
-
 #include "AliSISConeJetHeader.h"
 
 using std::cout;
@@ -36,37 +33,38 @@ ClassImp(AliSISConeJetHeader)
 ////////////////////////////////////////////////////////////////////////
 
 AliSISConeJetHeader::AliSISConeJetHeader():
-    AliJetHeader("AliSISConeJetHeader"),
-    fActiveAreaRepeats(1),
-    fAreaTypeNumber(4),
-    fBGAlgo(1),
-    fNHardJets(2),
-    fBGMode(1),
-    fCaching(0),
-    fConeRadius(0.7),
-    fEffectiveRFact(1),
-    fGhostEtaMax(4.0),
-    fGhostArea(0.05),
-    fGridScatter(1),
-    fKtScatter(0.1),
-    fMeanGhostKt(1e-100),
-    fMinJetPt(2),
-    fNPassMax(0),
-    fOverlapThreshold(0.75),
-    fPhiMax(TMath::TwoPi()),
-    fPhiMin(0),
-    fPtProtoJetMin(2),
-    fRapMax(0.9),
-    fRapMin(-0.9),
-    fRRho(0.5),
-    fSplitMergeScaleNumber(0),
-    fSplitMergeStoppingScale(0)    
+  AliJetHeader("AliSISConeJetHeader"),
+  fActiveAreaRepeats(1),
+  fAreaTypeNumber(4),
+  fBGAlgo(1),
+  fCaching(0),
+  fConeRadius(0.7),
+  fEffectiveRFact(1),
+  fGhostEtaMax(4.0),
+  fGhostArea(0.05),
+  fGridScatter(1),
+  fKtScatter(0.1),
+  fMeanGhostKt(1e-100),
+  fMinJetPt(2),
+  fNPassMax(0),
+  fOverlapThreshold(0.75),
+  fPhiMax(TMath::TwoPi()),
+  fPhiMin(0),
+  fPtProtoJetMin(2),
+  fRapMax(0.9),
+  fRapMin(-0.9),
+  fRRho(0.5),
+  fSplitMergeScaleNumber(0),
+  fSplitMergeStoppingScale(0),
+  fRparamBkg(0.4),
+  fStrategy(fastjet::Best),
+  fRecombScheme(fastjet::BIpt_scheme),
+  fkUse4VectorArea(kTRUE)
 {
   // Constructor  
 }
 
-////////////////////////////////////////////////////////////////////////
-
+//____________________________________________________________________________
 void AliSISConeJetHeader::PrintParameters() const
 {
   // prints out parameters of jet algorithm

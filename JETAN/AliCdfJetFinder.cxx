@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //---------------------------------------------------------------------
 // Jet Finder based on CDF algortihm
 // Charged jet evolution and the underlying event in proton-antiproton collisions at 1.8 TeV
@@ -21,35 +23,23 @@
 // Authors : Adrian.Sevcenco@cern.ch (adriansev@spacescience.ro )
 //           Daniel.Felea@cern.ch    (dfelea@spacescience.ro)
 //           Ciprian.Mihai.Mitu@cern.ch  (mcm@spacescience.ro)
+//           magali.estienne@subatech.in2p3.fr &
+//           alexandre.shabetai@cern.ch (Modification of the input object (reader/finder splitting))
+// ** 2011
+// Modified accordingly to reader/finder splitting and new handling of neutral information
 //---------------------------------------------------------------------
 
-/*
-Changelog
-
-
-
-*/
-
 #include <Riostream.h>
-#include <TROOT.h>
 #include <TMath.h>
 #include <TBits.h>
 #include <TFile.h>
-#include <TCanvas.h>
-#include <TClonesArray.h>
-#include <TLorentzVector.h>
 #include <TH1F.h>
-#include <TH2F.h>
 #include <TProfile.h>
-#include <TArrayF.h>
 #include <TVector2.h>
 
-#include "AliJetReader.h"
-#include "AliJetReaderHeader.h"
 #include "AliAODJet.h"
-#include "AliAODEvent.h"
 #include "AliJetFinder.h"
-
+#include "AliJetCalTrk.h"
 #include "AliCdfJetFinder.h"
 #include "AliCdfJetHeader.h"
 
@@ -57,30 +47,33 @@ ClassImp(AliCdfJetFinder)
 
 //______________________________________________________________________________
 AliCdfJetFinder::AliCdfJetFinder():
-    AliJetFinder(),
-    fHistos(0),
-    fFromAod(0),
-    fAODwrite(0),
-    fAODtracksWrite(0),
-    fAnalyseJets(0),
-    fRefArr (NULL),
-    fNJets(0),
-    fNPart(0),
-    fRadius(0.7),
-    fMinJetParticles(1),
-    fJetPtCut(0.),
-    fVectParticle(NULL),
-    fVectJet(NULL),
-    fPtArray(NULL),
-    fIdxArray(NULL)
-  {  /* Constructor */  }
+  AliJetFinder(),
+  fHistos(0),
+  fAODwrite(0),
+  fAODtracksWrite(0),
+  fAnalyseJets(0),
+  fNJets(0),
+  fNPart(0),
+  fNInC(0),
+  fNInN(0),
+  fRadius(0.7),
+  fMinJetParticles(1),
+  fJetPtCut(0.),
+  fVectParticle(NULL),
+  fVectJet(NULL),
+  fPtArray(NULL),
+  fIdxArray(NULL)
+{  
+  // Default constructor
+}
 
 //______________________________________________________________________________
 AliCdfJetFinder::~AliCdfJetFinder()
-  {
-    Clean();
+{
   // destructor
-  }
+  Clean();
+
+}
 
 //______________________________________________________________________________
 void AliCdfJetFinder::CreateOutputObjects(TList * const histos)
@@ -88,7 +81,7 @@ void AliCdfJetFinder::CreateOutputObjects(TList * const histos)
   // Create the list of histograms. Only the list is owned.
   fHistos = histos;
 
-//  gStyle->SetOptStat(11111111);
+  //  gStyle->SetOptStat(11111111);
 
   TH1F *h1 = new TH1F ("histo1", "Pt distribution of jets", 200, 0,200);  // 1GeV/bin
   h1->SetStats(kTRUE);
@@ -327,106 +320,98 @@ void AliCdfJetFinder::CreateOutputObjects(TList * const histos)
 //______________________________________________________________________________
 void AliCdfJetFinder::FindJets()
 {
-// Jet Algorithm:
-//  * Order all charged particles according to their PT.
-//  * Start with the highest PT particle and include in the "jet" all particles within the "radius" R = 0.7
-//     (considering each particle in the order of decreasing PT and recalculating the centroid of the jet after
-//     each new particle is added to the jet).
-//  * Go to the next highest PT particle (not already included in a jet) and include in the "jet" all particles
-//     (not already included in a jet) within the radius R =0.7.
-//  * Continue until all particles are in a "jet".
+  // Jet Algorithm:
+  //  * Order all charged particles according to their PT.
+  //  * Start with the highest PT particle and include in the "jet" all particles within the "radius" R = 0.7
+  //     (considering each particle in the order of decreasing PT and recalculating the centroid of the jet after
+  //     each new particle is added to the jet).
+  //  * Go to the next highest PT particle (not already included in a jet) and include in the "jet" all particles
+  //     (not already included in a jet) within the radius R =0.7.
+  //  * Continue until all particles are in a "jet".
   if (fDebug) { printf("AliCDJetfinder::FindJets() %d \n", __LINE__ ); }
-AliCdfJetHeader *header = (AliCdfJetHeader*)fHeader;
+  AliCdfJetHeader *header = (AliCdfJetHeader*)fHeader;
 
   if (header)
     {
-    fDebug            = header->GetDebug();
-    fAODwrite         = header->IsAODwrite() ;       // write jets to AOD
-    fAODtracksWrite   = header->IsAODtracksWrite() ; // write jet tracks to AOD
-    fRadius           = header->GetRadius();      // get Radius from jet finder header
-    fMinJetParticles  = header->GetMinPartJet (); // get minimum multiplicity of an jet
-    fJetPtCut         = header->GetJetPtCut ();   // get minimum of jet pt
+      fDebug            = header->GetDebug();
+      fAODwrite         = header->IsAODwrite() ;       // write jets to AOD
+      fAODtracksWrite   = header->IsAODtracksWrite() ; // write jet tracks to AOD
+      fRadius           = header->GetRadius();      // get Radius from jet finder header
+      fMinJetParticles  = header->GetMinPartJet (); // get minimum multiplicity of an jet
+      fJetPtCut         = header->GetJetPtCut ();   // get minimum of jet pt
+      fAnalyseJets      = header->GetAnalyseJets(); // get analyse jet
     }
   else
     { cout << "Header not found" << endl; return; }
 
-if (fAODwrite)
-  {
-  fFromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
-  if (fFromAod) { fRefArr = fReader->GetReferences(); }
+  InitData();
+
+  if (!fNPart) { 
+    if (fDebug) {
+      cout << "entries = 0 ; Event empty !!!" << endl ;
+    }
+    // no need to call clean, InitData does not 
+    // create pointers if npart == 0
+    return; 
+  } // if event empty then exit
+
+  FindCones();
+ 
+  ComputeConesWeight();
+ 
+  if (fAODwrite) { 
+    if(fDebug)cout << "Writing AOD" << endl ; 
+    WriteJets();
   }
-
-InitData();
-
- if (!fNPart) { 
-  if (fDebug) {
-    cout << "entries = 0 ; Event empty !!!" << endl ;
-  }
-  // no need to call clean, InitData does not 
-  // create pointers if npart == 0
-  return; 
- } // if event empty then exit
-
- FindCones();
  
- ComputeConesWeight();
+  if (fAnalyseJets) AnalizeJets();
  
- if (fAODwrite) { 
-   if(fDebug)cout << "Writing AOD" << endl ; 
-   WriteJets();
- }
- 
- if (fAnalyseJets) AnalizeJets();
- 
- Clean();
+  Clean();
 
 }
 
 //______________________________________________________________________________
 void AliCdfJetFinder::InitData()
 {
-// initialisation of variables and data members
+  // initialisation of variables and data members
 
-  TClonesArray * vectArray = fReader->GetMomentumArray() ;
-  if ( vectArray == 0 ) { cout << "Could not get the momentum array" << endl; return; }
+  if( fHeader->GetDebug() && fCalTrkEvent->GetNCalTrkTracks()  == 0) { cout << "No charged tracks found" << endl; }
 
-  fNPart = vectArray->GetEntries()  ; // n particles in this event;
+  fNPart = fCalTrkEvent->GetNCalTrkTracks() ;
 
-  if ( fNPart == 0 ) { return ; } // if event empty then exit
+  if ( fCalTrkEvent->GetNCalTrkTracks() ) { return; } // if event empty then exit
 
   fVectParticle = new varContainer* [fNPart]; // container for Particles
 
-  fPtArray  = new Double_t [fNPart] ; // momentum array
-  fIdxArray = new Int_t    [fNPart] ; // index array of sorted pts
+  fPtArray  = new Double_t [fCalTrkEvent->GetNCalTrkTracks()] ; 
+  fIdxArray = new Int_t    [fCalTrkEvent->GetNCalTrkTracks()] ; // index array of sorted pts
 
   // initialisation of momentum and index arrays
-  for (  Int_t i = 0 ; i < fNPart ; i++ )
-    {// SORTING STEP :: fPtArray with data from TClonesArray of TLorentzVector
-    TLorentzVector * lv = (TLorentzVector*) vectArray->At(i);
+  for (  Int_t i = 0 ; i <fCalTrkEvent->GetNCalTrkTracks() ; i++ )
+    {// SORTING STEP :: fPtArray with data from CalTrkTracks
 
-   // INITIALISATION of local arrays for temporary storage
-    varContainer *aParticle = new varContainer;
-    aParticle->pt   = lv->Pt();
-    aParticle->eta  = lv->Eta();
-    aParticle->phi  = TVector2::Phi_mpi_pi ( lv->Phi() ); // normalize to -pi,pi
-    aParticle->njet = -999;
+      // INITIALISATION of local arrays for temporary storage
+      varContainer *aParticle = new varContainer;
+      aParticle->pt   = fCalTrkEvent->GetCalTrkTrack(i)->GetPt();
+      aParticle->eta  = fCalTrkEvent->GetCalTrkTrack(i)->GetEta();
+      aParticle->phi  = TVector2::Phi_mpi_pi ( fCalTrkEvent->GetCalTrkTrack(i)->GetPhi() ); // normalize to -pi,pi
+      aParticle->njet = -999;
 
-    fVectParticle[i] = aParticle;  // vector of Particles
+      fVectParticle[i] = aParticle;  // vector of Particles
 
-    // initializing arrays
-    fIdxArray [i] = -999 ;
-     fPtArray [i] = aParticle->pt ;
+      // initializing arrays
+      fIdxArray [i] = -999 ;
+      fPtArray [i] = aParticle->pt ;
     }
 
-  TMath::Sort ( fNPart, fPtArray, fIdxArray ) ; // get a sorted array of indexes with TClonesArray.Size()
+  TMath::Sort ( fNPart, fPtArray, fIdxArray ) ; // get a sorted array of indexes
 
 }
-
 
 //______________________________________________________________________________
 void AliCdfJetFinder::FindCones()
 {
-// parsing of particles in event and estlabish jets (label them with jet index)
+  // parsing of particles in event and estlabish jets (label them with jet index)
 
   Double_t  ptSeed = 0. , etaSeed = 0. , phiSeed = 0. ; // leading particle params
   Double_t pttmp = 0. , etatmp = 0. , phitmp = 0. ; // temporary variables to be used in various calculations
@@ -444,176 +429,177 @@ void AliCdfJetFinder::FindCones()
 
   while ( lkupTable.CountBits() != (UInt_t)fNPart )
     { // loop over particles in event until all flags are set
-    UInt_t firstnonflagged = lkupTable.FirstNullBit() ; // set the index to the first NON flagged bit ; less conditions
+      UInt_t firstnonflagged = lkupTable.FirstNullBit() ; // set the index to the first NON flagged bit ; less conditions
 
-    if(fDebug)cout << "\n\nfirst_non_flagged : " << firstnonflagged << endl;
+      if(fDebug)cout << "\n\nfirst_non_flagged : " << firstnonflagged << endl;
 
-    ++fNJets; // incrementing the jet counter
-    if (fDebug) { printf("JET %d \n", fNJets); }
+      ++fNJets; // incrementing the jet counter
+      if (fDebug) { printf("JET %d \n", fNJets); }
 
-    ptSeed = 0. ; etaSeed = 0. ; phiSeed = 0. ;  // reseting leading particle params
+      ptSeed = 0. ; etaSeed = 0. ; phiSeed = 0. ;  // reseting leading particle params
 
-    for (  UInt_t ipart = firstnonflagged ; ipart < (UInt_t)fNPart ; ipart++ )
-      {// iteration over particles in event
-      // the loop is done over sorted array of pt
-      idxPtSort = fIdxArray[ipart] ;  // index of particle ! fIdxArray is an index list pt sorted
+      for (  UInt_t ipart = firstnonflagged ; ipart < (UInt_t)fNPart ; ipart++ )
+	{// iteration over particles in event
+	  // the loop is done over sorted array of pt
+	  idxPtSort = fIdxArray[ipart] ;  // index of particle ! fIdxArray is an index list pt sorted
 
-      if ( lkupTable.TestBitNumber(ipart) ) { continue; } // if 4vector is already flagged skip it
+	  if ( lkupTable.TestBitNumber(ipart) ) { continue; } // if 4vector is already flagged skip it
 
-      //init computed and used vars
-      pttmp = 0. ; etatmp = 0. ; phitmp = 0. ;
-      deta = 0. ; dphi = 0. ; dcomputed = 0. ; injet = 0 ;
+	  //init computed and used vars
+	  pttmp = 0. ; etatmp = 0. ; phitmp = 0. ;
+	  deta = 0. ; dphi = 0. ; dcomputed = 0. ; injet = 0 ;
 
-      //taking info from fVectParticle ;
-       pttmp = fVectParticle[idxPtSort]->pt ;
-      etatmp = fVectParticle[idxPtSort]->eta ;
-      phitmp = fVectParticle[idxPtSort]->phi ;
+	  //taking info from fVectParticle ;
+	  pttmp = fVectParticle[idxPtSort]->pt ;
+	  etatmp = fVectParticle[idxPtSort]->eta ;
+	  phitmp = fVectParticle[idxPtSort]->phi ;
 
-      if ( ipart == firstnonflagged )
-        {// this is first particle in event; leading particle
-        // begin the search around this particle in a fRadius
+	  if ( ipart == firstnonflagged )
+	    {// this is first particle in event; leading particle
+	      // begin the search around this particle in a fRadius
 
-        // CENTRE OF THE JET
-        ptSeed = pttmp ; etaSeed = etatmp ; phiSeed = phitmp ; // seeding the jet with first particle idxPtSort
+	      // CENTRE OF THE JET
+	      ptSeed = pttmp ; etaSeed = etatmp ; phiSeed = phitmp ; // seeding the jet with first particle idxPtSort
 
-        lkupTable.SetBitNumber ( ipart ) ; // flag the index of particle in lkup_table
-        fVectParticle[idxPtSort]->njet = fNJets ; // associate particle with current jet number
+	      lkupTable.SetBitNumber ( ipart ) ; // flag the index of particle in lkup_table
+	      fVectParticle[idxPtSort]->njet = fNJets ; // associate particle with current jet number
 
-        if (fDebug) { printf("\nLeading particle :: particle index = %d ;  at sorted index %d ; in jet %d \n", idxPtSort, ipart, fNJets); }
-        if (fDebug) { printf("pt= %g ; eta= %g ; phi = %g \n", pttmp, etatmp, phitmp) ; }
-        if (fDebug) { lkupTable.Print() ;}
+	      if (fDebug) { printf("\nLeading particle :: particle index = %d ;  at sorted index %d ; in jet %d \n", idxPtSort, ipart, fNJets); }
+	      if (fDebug) { printf("pt= %g ; eta= %g ; phi = %g \n", pttmp, etatmp, phitmp) ; }
+	      if (fDebug) { lkupTable.Print() ;}
 
-        continue ; // skip to next particle
-        }
+	      continue ; // skip to next particle
+	    }
 
-      // condition to be in jet
-      deta = etatmp - etaSeed ;
-      dphi = TVector2::Phi_mpi_pi (phitmp - phiSeed) ; // computing dphi and normalizing to (0,2pi) interval in one step
+	  // condition to be in jet
+	  deta = etatmp - etaSeed ;
+	  dphi = TVector2::Phi_mpi_pi (phitmp - phiSeed) ; // computing dphi and normalizing to (0,2pi) interval in one step
 
-      dcomputed = TMath::Hypot(deta, dphi) ; // Distance(fRadius) to (eta,phi) seed
+	  dcomputed = TMath::Hypot(deta, dphi) ; // Distance(fRadius) to (eta,phi) seed
 
-      injet = ( ( fRadius - dcomputed ) >= 0.000000001 ) ? 1 : 0 ; // if r_computed is within jet_r in_jet == 1 else 0
+	  injet = ( ( fRadius - dcomputed ) >= 0.000000001 ) ? 1 : 0 ; // if r_computed is within jet_r in_jet == 1 else 0
 
-      if ( injet )
-        { // calculus of jet variables
-        lkupTable.SetBitNumber ( ipart ) ;  // flag the index of particle in lkup_table
-        fVectParticle[idxPtSort]->njet = fNJets ; // setting in particle list the associated jet
+	  if ( injet )
+	    { // calculus of jet variables
+	      lkupTable.SetBitNumber ( ipart ) ;  // flag the index of particle in lkup_table
+	      fVectParticle[idxPtSort]->njet = fNJets ; // setting in particle list the associated jet
 
-        if (fDebug) { printf("\njet particle :: particle index = %d ; at sorted index %d ; in jet %d ; found at radius %g ;  \n", idxPtSort, ipart, fNJets, dcomputed); }
-        if (fDebug) { printf("pt= %g ; eta= %g ; phi = %g \n", pttmp, etatmp, phitmp) ; }
-        if (fDebug) { lkupTable.Print() ;}
+	      if (fDebug) { printf("\njet particle :: particle index = %d ; at sorted index %d ; in jet %d ; found at radius %g ;  \n", idxPtSort, ipart, fNJets, dcomputed); }
+	      if (fDebug) { printf("pt= %g ; eta= %g ; phi = %g \n", pttmp, etatmp, phitmp) ; }
+	      if (fDebug) { lkupTable.Print() ;}
 
-        continue ; // skip to next particle
-        }
+	      continue ; // skip to next particle
+	    }
 
-      }
+	}
       // end of iteration over event; one jet definition of content ; jet parameters to be computed later
     }
-}
 
+}
 
 //______________________________________________________________________________
 void AliCdfJetFinder::ComputeConesWeight()
 {
-// computing of jets Pt, Eta and Phi (centre of weight in (eta,phi) plane)
-// rescan the vector of particles by identify them by asociate jet number for computing of weight centre
+  // computing of jets Pt, Eta and Phi (centre of weight in (eta,phi) plane)
+  // rescan the vector of particles by identify them by asociate jet number for computing of weight centre
 
-// JET CONTAINER
-fVectJet      = new varContainer* [fNJets]; // container for Jets
+  // JET CONTAINER
+  fVectJet      = new varContainer* [fNJets]; // container for Jets
 
-Double_t ptJet, ptJet2 , etaJet , phiJet ; Int_t npartJet ;
-Double_t pttmp = 0. , etatmp = 0. , phitmp = 0. ; // temporary variables to be used in various calculations
-Int_t idxPtSort = -999 ;  // index of array of sorted pt indexes
+  Double_t ptJet, ptJet2 , etaJet , phiJet ; Int_t npartJet ;
+  Double_t pttmp = 0. , etatmp = 0. , phitmp = 0. ; // temporary variables to be used in various calculations
+  Int_t idxPtSort = -999 ;  // index of array of sorted pt indexes
 
-for(  Int_t jet = 0 ; jet < fNJets ; jet++ )
-  {
-  if (fDebug) { printf("\n\n--- Computing weight of Jet %d \n", jet ); }
-  npartJet = 0 ; ptJet = 0. ; etaJet = 0. ; phiJet = 0. ; // reset variables for a new computation
+  for(  Int_t jet = 0 ; jet < fNJets ; jet++ )
+    {
+      if (fDebug) { printf("\n\n--- Computing weight of Jet %d \n", jet ); }
+      npartJet = 0 ; ptJet = 0. ; etaJet = 0. ; phiJet = 0. ; // reset variables for a new computation
 
-  for (  Int_t ipart = 0 ; ipart < fNPart ; ipart++ )
-    {// iteration over particles in event
-    // the loop is done over sorted array of pt
-    idxPtSort = fIdxArray[ipart] ;  // index of particle ! fIdxArray is an index list pt sorted
+      for (  Int_t ipart = 0 ; ipart < fNPart ; ipart++ )
+	{// iteration over particles in event
+	  // the loop is done over sorted array of pt
+	  idxPtSort = fIdxArray[ipart] ;  // index of particle ! fIdxArray is an index list pt sorted
 
-    if ( fVectParticle[idxPtSort]->njet == jet )
-      {
-      ++npartJet; // incrementing the counter of jet particles
+	  if ( fVectParticle[idxPtSort]->njet == jet )
+	    {
+	      ++npartJet; // incrementing the counter of jet particles
 
-      //taking info from fVectParticle ;
-       pttmp = fVectParticle[idxPtSort]->pt ;
-      etatmp = fVectParticle[idxPtSort]->eta ;
-      phitmp = TVector2::Phi_mpi_pi (fVectParticle[idxPtSort]->phi) ;
+	      //taking info from fVectParticle ;
+	      pttmp = fVectParticle[idxPtSort]->pt ;
+	      etatmp = fVectParticle[idxPtSort]->eta ;
+	      phitmp = TVector2::Phi_mpi_pi (fVectParticle[idxPtSort]->phi) ;
 
-//      jet_new_angular_coordinate = jet_old_angular_coordinate * jet_old_pt / jet_new_pt +
-//                                    part[i]_angular_coordinate * part[i]_pt/jet_new_pt
+	      //      jet_new_angular_coordinate = jet_old_angular_coordinate * jet_old_pt / jet_new_pt +
+	      //                                    part[i]_angular_coordinate * part[i]_pt/jet_new_pt
 
-      ptJet2 = ptJet + pttmp ;
+	      ptJet2 = ptJet + pttmp ;
 
-      etaJet = etaJet * ptJet / ptJet2 +  etatmp * pttmp / ptJet2 ;
-      phiJet = phiJet * ptJet / ptJet2 +  phitmp * pttmp / ptJet2 ;
+	      etaJet = etaJet * ptJet / ptJet2 +  etatmp * pttmp / ptJet2 ;
+	      phiJet = phiJet * ptJet / ptJet2 +  phitmp * pttmp / ptJet2 ;
 
-      ptJet = ptJet2 ;
+	      ptJet = ptJet2 ;
 
-      }
-      // add a particle and recalculation of centroid
+	    }
+	  // add a particle and recalculation of centroid
+	}
+      // end of 1 jet computation
+
+      varContainer *aJet = new varContainer;  // Jet container
+      aJet->pt = ptJet; aJet->eta = etaJet; aJet->phi = phiJet; aJet->njet = npartJet; // setting jet vars in container
+      fVectJet[jet] = aJet;   // store the number of the jet(fNJets) and increment afterwards
+
+      if (fDebug) { printf ("=== current jet %d : npartjet= %d ; pt_jet= %g ; eta_jet = %g ; phi_jet = %g \n\n\n",
+			    jet,     npartJet,      ptJet,      etaJet,       phiJet ) ; }
+
     }
-    // end of 1 jet computation
-
-    varContainer *aJet = new varContainer;  // Jet container
-    aJet->pt = ptJet; aJet->eta = etaJet; aJet->phi = phiJet; aJet->njet = npartJet; // setting jet vars in container
-    fVectJet[jet] = aJet;   // store the number of the jet(fNJets) and increment afterwards
-
-    if (fDebug) { printf ("=== current jet %d : npartjet= %d ; pt_jet= %g ; eta_jet = %g ; phi_jet = %g \n\n\n",
-                                       jet,     npartJet,      ptJet,      etaJet,       phiJet ) ; }
-
-  }
   //end loop over jets
 
 }
 
-
 //______________________________________________________________________________
 void AliCdfJetFinder::WriteJets()  
 { 
-// Writing AOD jets and AOD tracks
+  // Writing AOD jets and AOD tracks
 
-for(  Int_t jetnr = 0 ; jetnr < fNJets ; jetnr++ )
-  {
-  Double_t pt = 0., eta = 0., phi = 0., // jet variables
-            px = 0., py = 0., pz = 0., en = 0.; // convert to 4-vector
-  pt  = fVectJet[ jetnr ]->pt   ; // pt  of jet
-  eta = fVectJet[ jetnr ]->eta  ; // eta of jet
-  phi = fVectJet[ jetnr ]->phi  ; // phi of jet
-
-  px = pt * TMath::Cos ( phi ) ;
-  py = pt * TMath::Sin ( phi ) ;
-  pz = pt / TMath::Tan ( 2.0 * TMath::ATan ( TMath::Exp ( -eta ) ) ) ;
-  en = TMath::Sqrt ( px * px + py * py + pz * pz );
-
-  AliAODJet jet (px, py, pz, en);
-
-
-  if (fDebug) jet.Print("");
-
-  if (fFromAod && fAODtracksWrite)
+  for(  Int_t jetnr = 0 ; jetnr < fNJets ; jetnr++ )
     {
-      for (  Int_t jetTrack = 0; jetTrack < fNPart; jetTrack++ )
-	{ if ( fVectParticle[jetTrack]->njet == jetnr ) { jet.AddTrack(fRefArr->At(jetTrack)) ; } }
+      Double_t pt = 0., eta = 0., phi = 0., // jet variables
+	px = 0., py = 0., pz = 0., en = 0.; // convert to 4-vector
+      pt  = fVectJet[ jetnr ]->pt   ; // pt  of jet
+      eta = fVectJet[ jetnr ]->eta  ; // eta of jet
+      phi = fVectJet[ jetnr ]->phi  ; // phi of jet
+
+      px = pt * TMath::Cos ( phi ) ;
+      py = pt * TMath::Sin ( phi ) ;
+      pz = pt / TMath::Tan ( 2.0 * TMath::ATan ( TMath::Exp ( -eta ) ) ) ;
+      en = TMath::Sqrt ( px * px + py * py + pz * pz );
+
+      AliAODJet jet (px, py, pz, en);
+
+
+      if (fDebug) jet.Print("");
+
+      if (fAODtracksWrite)
+	{
+	  for (  Int_t jetTrack = 0; jetTrack < fCalTrkEvent->GetNCalTrkTracks(); jetTrack++ )
+	    {
+	      // The first if condition below has to be checked
+	      if ( fVectParticle[jetTrack]->njet == jetnr ) { jet.AddTrack(fCalTrkEvent->GetCalTrkTrack(jetTrack)->GetTrackObject()) ; }
+	    }
+	}
+      // tracks REFs written in AOD
+      AddJet(jet);
+
     }
-  // tracks REFs written in AOD
-  AddJet(jet);
-
-  }
-//jets vector parsed and written to AOD
+  //jets vector parsed and written to AOD
 }
-
 
 //______________________________________________________________________________
 void AliCdfJetFinder::AnalizeJets()
 {
-// analyzing of jets and filling of histograms
+  // analyzing of jets and filling of histograms
 
-    const Double_t kPI = TMath::Pi();
+  const Double_t kPI = TMath::Pi();
     
   //persistent pointer to histo20
   TH1F *hR = (TH1F*)fHistos->FindObject("histo20");
@@ -629,17 +615,17 @@ void AliCdfJetFinder::AnalizeJets()
   jetsptidx = new Int_t    [fNJets] ;
   jetspt    = new Double_t [fNJets] ;
 
-//________________________________________________________________________________________
-//  Jet sorting and finding the leading jet that coresponds to cuts in pt and multiplicity
-//________________________________________________________________________________________
+  //________________________________________________________________________________________
+  //  Jet sorting and finding the leading jet that coresponds to cuts in pt and multiplicity
+  //________________________________________________________________________________________
 
   // filing the idx_ptjets array
   if (fDebug) printf("List of unsorted jets:\n");
   for(  Int_t i = 0 ; i < fNJets ; i++ )
     {
-    jetsptidx [i] = 0 ;
-    jetspt    [i] = fVectJet[i]->pt ;
-    if (fDebug) { cout << "   jet found: " << i << " npartjet=" << fVectJet[i]->njet << " ; jets_pt = " << jetspt[i] << endl; }
+      jetsptidx [i] = 0 ;
+      jetspt    [i] = fVectJet[i]->pt ;
+      if (fDebug) { cout << "   jet found: " << i << " npartjet=" << fVectJet[i]->njet << " ; jets_pt = " << jetspt[i] << endl; }
     }
 
   TMath::Sort ( fNJets, jetspt , jetsptidx ) ; // sorting pt of jets
@@ -648,169 +634,168 @@ void AliCdfJetFinder::AnalizeJets()
   // looping over jets searching for __first__ one that coresponds to cuts
   for(  Int_t i = 0 ; i < fNJets ; i++ )
     {
-    if ( ( fVectJet[ jetsptidx[i] ]->njet >= fMinJetParticles ) && ( fVectJet[ jetsptidx[i] ]->pt >= fJetPtCut ) )
-      {
-      leadingjetindex = jetsptidx[i] ;
-      partleadjet = fVectJet[ leadingjetindex ]->njet ; // number of particles in leading jet
-        ptleadjet = fVectJet[ leadingjetindex ]->pt   ; // pt  of leading jet
-       etaleadjet = fVectJet[ leadingjetindex ]->eta  ; // eta of leading jet
-       phileadjet = fVectJet[ leadingjetindex ]->phi  ; // phi of leading jet
+      if ( ( fVectJet[ jetsptidx[i] ]->njet >= fMinJetParticles ) && ( fVectJet[ jetsptidx[i] ]->pt >= fJetPtCut ) )
+	{
+	  leadingjetindex = jetsptidx[i] ;
+	  partleadjet = fVectJet[ leadingjetindex ]->njet ; // number of particles in leading jet
+	  ptleadjet = fVectJet[ leadingjetindex ]->pt   ; // pt  of leading jet
+	  etaleadjet = fVectJet[ leadingjetindex ]->eta  ; // eta of leading jet
+	  phileadjet = fVectJet[ leadingjetindex ]->phi  ; // phi of leading jet
 
-      if (fDebug)
-      { printf("Leading jet %d : npart= %d ; pt= %g ; eta = %g ; phi = %g \n", leadingjetindex, partleadjet, ptleadjet, etaleadjet, phileadjet ); }
+	  if (fDebug)
+	    { printf("Leading jet %d : npart= %d ; pt= %g ; eta = %g ; phi = %g \n", leadingjetindex, partleadjet, ptleadjet, etaleadjet, phileadjet ); }
 
-      break ;
-      }
+	  break ;
+	}
     }
-    // end of selection of leading jet
+  // end of selection of leading jet
 
 
 
-//////////////////////////////////////////////////
-////  Computing of values used in histograms
-//////////////////////////////////////////////////
+  //////////////////////////////////////////////////
+  ////  Computing of values used in histograms
+  //////////////////////////////////////////////////
 
-//___________________________________________________________________________
-// pt_sum of all particles in event
-//___________________________________________________________________________
-cout << "Computing sum of pt in event" << endl ;
-Double_t ptsumevent = 0.;
-for (  Int_t i = 0 ; i< fNPart ; i++ ) { ptsumevent += fVectParticle[i]->pt ; }
-printf ("Sum of all Pt in event : pt_sum_event = %g", ptsumevent) ;
+  //___________________________________________________________________________
+  // pt_sum of all particles in event
+  //___________________________________________________________________________
+  if (fDebug) cout << "Computing sum of pt in event" << endl ;
+  Double_t ptsumevent = 0.;
+  for (  Int_t i = 0 ; i< fNPart ; i++ ) { ptsumevent += fVectParticle[i]->pt ; }
+  if (fDebug) printf ("Sum of all Pt in event : pt_sum_event = %g", ptsumevent) ;
 
-//___________________________________________________________________________
-// Filling an array with indexes of leading jet particles
-//___________________________________________________________________________
-Int_t * idxpartLJ = new Int_t [partleadjet] ;
-Int_t counterpartleadjet = 0;
+  //___________________________________________________________________________
+  // Filling an array with indexes of leading jet particles
+  //___________________________________________________________________________
+  Int_t * idxpartLJ = new Int_t [partleadjet] ;
+  Int_t counterpartleadjet = 0;
 
-cout << "Filling an array with indexes of leading jet particles" << endl;
+  if (fDebug) cout << "Filling an array with indexes of leading jet particles" << endl;
 
-for( Int_t i = 0 ; i < fNPart ; i++ )
-  {
-  if ( fVectParticle[i]->njet == leadingjetindex )
-    {  idxpartLJ[counterpartleadjet++] = i ; }
-  }
-
-if ( (counterpartleadjet-1) > partleadjet ) { cout << " Counter_part_lead_jet > part_leadjet !!!!" << endl;}
-
-
-//___________________________________________________________________________
-// Calculus of part distribution in leading jet
-//___________________________________________________________________________
-Double_t z = 0. ;
-Double_t *zpartljet = new Double_t [ partleadjet ] ; // array of z of particles in leading jet
-
-cout << "Entering loop of calculus of part distribution in leading jet" << endl ;
-
-for( Int_t j = 0 ; j < partleadjet ; j++ )
-  {
-  Double_t zj = fVectParticle[idxpartLJ[j]]->pt ;
-  z =  zj / ptleadjet ;
-  zpartljet [j] = z ;
-  cout << "idx_leadjet_part[j] = " << idxpartLJ[j]
-      << " p of particle = " << zj
-      << " pt lead jet = " << ptleadjet
-      << " Z = " << z << endl;
-  }
-
-
-//___________________________________________________________________________
-// array of delta phi's between phi of particles and leading jet phi
-//___________________________________________________________________________
-cout << "array of delta phi's between phi of particles and leading jet phi" << endl;
-Double_t dphipartLJ = 0. ;
-Double_t *dphipartljet = new Double_t [fNPart];
-for(  Int_t part = 0 ; part < fNPart ; part++ )
-  {
-  dphipartLJ = fVectParticle[part]->phi - phileadjet ;
-  dphipartLJ = TVector2::Phi_mpi_pi (dphipartLJ) ; // restrict the delta phi to (-pi,pi) interval
-  dphipartljet [part] = dphipartLJ ;
-  printf("part= %d ; dphi_partLJ = %g  \n", part, dphipartLJ );
-  }
-
-
-//______________________________________________________________________________
-//  Pt distribution for all particles
-//______________________________________________________________________________
-TH1F * hpt = (TH1F*)fHistos->FindObject("histo11");
-if ( hpt ) { for (  Int_t i = 0 ; i < fNPart ; i++ ) { hpt->Fill( fVectParticle[i]->pt ); } }
-
-//___________________________________________________________________________
-// Recomputing of radius of particles in leading jet
-//___________________________________________________________________________
-if (fDebug) { printf("   Searching particles with jet index %d\n", leadingjetindex); }
-
-Double_t ddeta = 0. , ddphi = 0. , rpart = 0. ;
-
-for( Int_t j = 0 ; j < partleadjet ; j++ )
-  {
-  ddeta = etaleadjet - fVectParticle[idxpartLJ[j]]->eta;
-
-  Double_t phitmp = fVectParticle[idxpartLJ[j]]->phi ;
-
-  ddphi = TVector2::Phi_mpi_pi ( phileadjet - phitmp ) ; // restrict the delta phi to (-pi,pi) interval
-
-  rpart = TMath::Hypot (ddeta, ddphi) ;
-
-  printf ("Particle %d with Re-Computed radius = %f ", idxpartLJ[j], rpart) ;
-  if ( (rpart - fRadius) >= 0.00000001 )
-    { printf ("    bigger than selected radius of %f\n", fRadius ); }
-  else
-    { printf ("\n") ; }
-
-  if (hR) hR->Fill(rpart);
-
-  }
-
-
-
-//_______________________________________________________________________
-// Computing of radius that contain 80% of Leading Jet ( PT and multiplicity )
-//_______________________________________________________________________
-Double_t corepartleadjet = 0.8 * partleadjet ;
-Double_t coreptleadjet = 0.8 * ptleadjet ;
-Int_t countercorepart = 0 ;
-Double_t countercorept = 0. ;
-Int_t sortedindex = -1 ;
-
-TProfile * hprof24 = (TProfile*)fHistos->FindObject("histo24");
-TProfile * hprof25 = (TProfile*)fHistos->FindObject("histo25");
-
-TProfile * hprof26 = (TProfile*)fHistos->FindObject("histo26");
-TProfile * hprof27 = (TProfile*)fHistos->FindObject("histo27");
-TProfile * hprof28 = (TProfile*)fHistos->FindObject("histo28");
-TProfile * hprof29 = (TProfile*)fHistos->FindObject("histo29");
-
-
-if ((hprof24) && (hprof25) && (hprof26) && (hprof27) && (hprof28) && (hprof29) )
-{
-for(  Int_t part = 0 ; part < fNPart ; part++ )
-  {
-  Double_t pttmp = 0. ; Double_t etatmp = 0. ; Double_t phitmp = 0. ; // temporary variables
-  Double_t dpart = 0. ;
-  sortedindex = fIdxArray[part] ;
-
-  if ( fVectParticle [ sortedindex ]->njet == leadingjetindex )
+  for( Int_t i = 0 ; i < fNPart ; i++ )
     {
-     pttmp = fVectParticle[sortedindex]->pt ;
-    etatmp = fVectParticle[sortedindex]->eta ;
-    phitmp = fVectParticle[sortedindex]->phi ;
+      if ( fVectParticle[i]->njet == leadingjetindex )
+	{  idxpartLJ[counterpartleadjet++] = i ; }
+    }
 
-    ++countercorepart ;
-    countercorept += pttmp ;
+  if ( (counterpartleadjet-1) > partleadjet ) { cout << " Counter_part_lead_jet > part_leadjet !!!!" << endl;}
 
-    dpart = TMath::Hypot ( etaleadjet - etatmp, TVector2::Phi_mpi_pi (phileadjet - phitmp) ) ;
 
-    if ( countercorepart <=  corepartleadjet ) { hprof24->Fill(ptleadjet, dpart); }
-    if ( countercorept <= coreptleadjet ) { hprof25->Fill(ptleadjet, dpart); }
+  //___________________________________________________________________________
+  // Calculus of part distribution in leading jet
+  //___________________________________________________________________________
+  Double_t z = 0. ;
+  Double_t *zpartljet = new Double_t [ partleadjet ] ; // array of z of particles in leading jet
 
-    if (ptleadjet >  5.) { hprof26->Fill(dpart, countercorepart); hprof28->Fill(dpart, countercorept); }
-    if (ptleadjet > 30.) { hprof27->Fill(dpart, countercorepart); hprof29->Fill(dpart, countercorept); }
+  if (fDebug) cout << "Entering loop of calculus of part distribution in leading jet" << endl ;
+
+  for( Int_t j = 0 ; j < partleadjet ; j++ )
+    {
+      Double_t zj = fVectParticle[idxpartLJ[j]]->pt ;
+      z =  zj / ptleadjet ;
+      zpartljet [j] = z ;
+      if (fDebug) cout << "idx_leadjet_part[j] = " << idxpartLJ[j]
+		       << " p of particle = " << zj
+		       << " pt lead jet = " << ptleadjet
+		       << " Z = " << z << endl;
+    }
+
+
+  //___________________________________________________________________________
+  // array of delta phi's between phi of particles and leading jet phi
+  //___________________________________________________________________________
+  if (fDebug) cout << "array of delta phi's between phi of particles and leading jet phi" << endl;
+  Double_t dphipartLJ = 0. ;
+  Double_t *dphipartljet = new Double_t [fNPart];
+  for(  Int_t part = 0 ; part < fNPart ; part++ )
+    {
+      dphipartLJ = fVectParticle[part]->phi - phileadjet ;
+      dphipartLJ = TVector2::Phi_mpi_pi (dphipartLJ) ; // restrict the delta phi to (-pi,pi) interval
+      dphipartljet [part] = dphipartLJ ;
+      if (fDebug) printf("part= %d ; dphi_partLJ = %g  \n", part, dphipartLJ );
+    }
+
+
+  //______________________________________________________________________________
+  //  Pt distribution for all particles
+  //______________________________________________________________________________
+  TH1F * hpt = (TH1F*)fHistos->FindObject("histo11");
+  if ( hpt ) { for (  Int_t i = 0 ; i < fNPart ; i++ ) { hpt->Fill( fVectParticle[i]->pt ); } }
+
+  //___________________________________________________________________________
+  // Recomputing of radius of particles in leading jet
+  //___________________________________________________________________________
+  if (fDebug) { printf("   Searching particles with jet index %d\n", leadingjetindex); }
+
+  Double_t ddeta = 0. , ddphi = 0. , rpart = 0. ;
+
+  for( Int_t j = 0 ; j < partleadjet ; j++ )
+    {
+      ddeta = etaleadjet - fVectParticle[idxpartLJ[j]]->eta;
+
+      Double_t phitmp = fVectParticle[idxpartLJ[j]]->phi ;
+
+      ddphi = TVector2::Phi_mpi_pi ( phileadjet - phitmp ) ; // restrict the delta phi to (-pi,pi) interval
+
+      rpart = TMath::Hypot (ddeta, ddphi) ;
+
+      if (fDebug) printf ("Particle %d with Re-Computed radius = %f ", idxpartLJ[j], rpart) ;
+      if ( (rpart - fRadius) >= 0.00000001 )
+	{ if (fDebug) printf ("    bigger than selected radius of %f\n", fRadius ); }
+      else
+	{ if (fDebug) printf ("\n") ; }
+
+      if (hR) hR->Fill(rpart);
 
     }
-  }
-}
+
+
+
+  //_______________________________________________________________________
+  // Computing of radius that contain 80% of Leading Jet ( PT and multiplicity )
+  //_______________________________________________________________________
+  Double_t corepartleadjet = 0.8 * partleadjet ;
+  Double_t coreptleadjet = 0.8 * ptleadjet ;
+  Int_t countercorepart = 0 ;
+  Double_t countercorept = 0. ;
+  Int_t sortedindex = -1 ;
+
+  TProfile * hprof24 = (TProfile*)fHistos->FindObject("histo24");
+  TProfile * hprof25 = (TProfile*)fHistos->FindObject("histo25");
+  TProfile * hprof26 = (TProfile*)fHistos->FindObject("histo26");
+  TProfile * hprof27 = (TProfile*)fHistos->FindObject("histo27");
+  TProfile * hprof28 = (TProfile*)fHistos->FindObject("histo28");
+  TProfile * hprof29 = (TProfile*)fHistos->FindObject("histo29");
+
+
+  if ((hprof24) && (hprof25) && (hprof26) && (hprof27) && (hprof28) && (hprof29) )
+    {
+      for(  Int_t part = 0 ; part < fNPart ; part++ )
+	{
+	  Double_t pttmp = 0. ; Double_t etatmp = 0. ; Double_t phitmp = 0. ; // temporary variables
+	  Double_t dpart = 0. ;
+	  sortedindex = fIdxArray[part] ;
+
+	  if ( fVectParticle [ sortedindex ]->njet == leadingjetindex )
+	    {
+	      pttmp = fVectParticle[sortedindex]->pt ;
+	      etatmp = fVectParticle[sortedindex]->eta ;
+	      phitmp = fVectParticle[sortedindex]->phi ;
+
+	      ++countercorepart ;
+	      countercorept += pttmp ;
+
+	      dpart = TMath::Hypot ( etaleadjet - etatmp, TVector2::Phi_mpi_pi (phileadjet - phitmp) ) ;
+
+	      if ( countercorepart <=  corepartleadjet ) { hprof24->Fill(ptleadjet, dpart); }
+	      if ( countercorept <= coreptleadjet ) { hprof25->Fill(ptleadjet, dpart); }
+
+	      if (ptleadjet >  5.) { hprof26->Fill(dpart, countercorepart); hprof28->Fill(dpart, countercorept); }
+	      if (ptleadjet > 30.) { hprof27->Fill(dpart, countercorepart); hprof29->Fill(dpart, countercorept); }
+
+	    }
+	}
+    }
 
   TH1F *hjetpt = (TH1F*)fHistos->FindObject("histo1");
   TH1F *hjeteta = (TH1F*)fHistos->FindObject("histo2");
@@ -819,10 +804,10 @@ for(  Int_t part = 0 ; part < fNPart ; part++ )
 
   for(  Int_t jet = 0 ; jet < fNJets ; jet++ )
     {
-    if (hjetpt)   hjetpt   ->Fill ( fVectJet[jet]->pt   ) ;
-    if (hjeteta)  hjeteta  ->Fill ( fVectJet[jet]->eta  ) ;
-    if (hjetphi)  hjetphi  ->Fill ( fVectJet[jet]->phi  ) ;
-    if (hjetnjet) hjetnjet ->Fill ( fVectJet[jet]->njet ) ;
+      if (hjetpt)   hjetpt   ->Fill ( fVectJet[jet]->pt   ) ;
+      if (hjeteta)  hjeteta  ->Fill ( fVectJet[jet]->eta  ) ;
+      if (hjetphi)  hjetphi  ->Fill ( fVectJet[jet]->phi  ) ;
+      if (hjetnjet) hjetnjet ->Fill ( fVectJet[jet]->njet ) ;
     }
 
   TH1F *hjets = (TH1F*)fHistos->FindObject("histo5");
@@ -835,16 +820,16 @@ for(  Int_t part = 0 ; part < fNPart ; part++ )
   if (hprof) hprof->Fill(ptleadjet,partleadjet);
 
   TH1F *hMD = (TH1F*)fHistos->FindObject("histo8");
-   for(  Int_t k = 0  ; k < partleadjet ; k++)
-     { hMD->Fill( zpartljet[k] ); }
+  for(  Int_t k = 0  ; k < partleadjet ; k++)
+    { hMD->Fill( zpartljet[k] ); }
 
   TProfile * hphi = (TProfile*)fHistos->FindObject("histo9");
-    for(  Int_t k = 0  ; k < partleadjet ; k++)
-        { hphi->Fill( TMath::RadToDeg() * dphipartljet [k] , fNPart ) ; }
+  for(  Int_t k = 0  ; k < partleadjet ; k++)
+    { hphi->Fill( TMath::RadToDeg() * dphipartljet [k] , fNPart ) ; }
 
   TProfile * htpd = (TProfile*)fHistos->FindObject("histo10");
-    for(  Int_t k = 0  ; k < fNPart ; k++)
-        { htpd->Fill( TMath::RadToDeg() * dphipartljet [k] , ptsumevent ) ; }
+  for(  Int_t k = 0  ; k < fNPart ; k++)
+    { htpd->Fill( TMath::RadToDeg() * dphipartljet [k] , ptsumevent ) ; }
 
 
   TProfile * hprof1 = (TProfile*)fHistos->FindObject("histo21");
@@ -865,42 +850,42 @@ for(  Int_t part = 0 ; part < fNPart ; part++ )
 
   if ( (hprof1toward) && (hprof1transverse) && (hprof1away) && (hprof2toward) && (hprof2transverse) && (hprof2away) )
     {
-    for( Int_t part = 0  ; part < fNPart ; part++)
-      {
-      Double_t ptpart = fVectParticle[part]->pt ; // pt of particle
-      if ( ( dphipartljet[part] >=0.) && ( dphipartljet[part] < kPI/3. ) )
-        {
-        hprof1toward->Fill( ptleadjet, fNPart );
-        hprof2toward->Fill( ptleadjet, ptsumevent);
-        hpttoward->Fill( ptpart );
-        }
-      else
-      if ( ( dphipartljet[part] >= (kPI/3.)) && ( dphipartljet[part] < (2.*kPI/3.)) )
-        {
-        hprof1transverse->Fill( ptleadjet, fNPart );
-        hprof2transverse->Fill( ptleadjet, ptsumevent);
-        hpttransverse->Fill( ptpart );
-        }
-      else
-      if ( ( dphipartljet[part] >= ( 2.*kPI/3.)) && ( dphipartljet[part] < kPI ) )
-        {
-        hprof1away->Fill( ptleadjet, fNPart );
-        hprof2away->Fill( ptleadjet, ptsumevent);
-        hptaway->Fill( ptpart );
-        }
-      }
+      for( Int_t part = 0  ; part < fNPart ; part++)
+	{
+	  Double_t ptpart = fVectParticle[part]->pt ; // pt of particle
+	  if ( ( dphipartljet[part] >=0.) && ( dphipartljet[part] < kPI/3. ) )
+	    {
+	      hprof1toward->Fill( ptleadjet, fNPart );
+	      hprof2toward->Fill( ptleadjet, ptsumevent);
+	      hpttoward->Fill( ptpart );
+	    }
+	  else
+	    if ( ( dphipartljet[part] >= (kPI/3.)) && ( dphipartljet[part] < (2.*kPI/3.)) )
+	      {
+		hprof1transverse->Fill( ptleadjet, fNPart );
+		hprof2transverse->Fill( ptleadjet, ptsumevent);
+		hpttransverse->Fill( ptpart );
+	      }
+	    else
+	      if ( ( dphipartljet[part] >= ( 2.*kPI/3.)) && ( dphipartljet[part] < kPI ) )
+		{
+		  hprof1away->Fill( ptleadjet, fNPart );
+		  hprof2away->Fill( ptleadjet, ptsumevent);
+		  hptaway->Fill( ptpart );
+		}
+	}
     }
 
   delete [] dphipartljet;
   delete [] zpartljet;
   delete [] idxpartLJ;
-}
 
+}
 
 //______________________________________________________________________________
 void AliCdfJetFinder::Clean()
 {
-// CLEANING SECTION
+  // CLEANING SECTION
   for (  Int_t i = 0 ; i < fNPart ; i++ ){
     delete fVectParticle[i];
     fVectParticle[i] = 0;
@@ -917,11 +902,6 @@ void AliCdfJetFinder::Clean()
   delete [] fIdxArray;fIdxArray = 0;
 
   Reset();
-}
 
-//______________________________________________________________________________
-void AliCdfJetFinder::FinishRun()
-{
-// do i need this?
 }
 

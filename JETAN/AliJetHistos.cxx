@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+//---------------------------------------------------------------------
+// Jet Histos class
+// Creates and fills a few cummon histograms for jet analysis
+//
+//---------------------------------------------------------------------
+
 #include <TList.h>
 #include <TClonesArray.h>
 #include <TH1I.h>
@@ -26,6 +32,8 @@
 
 ClassImp(AliJetHistos)
 
+///////////////////////////////////////////////////////////////////////
+
 AliJetHistos::AliJetHistos():
   fNJetsH(0x0),
   fPtH(0x0),
@@ -34,6 +42,12 @@ AliJetHistos::AliJetHistos():
   fPhiH(0x0)
 {
   // Default constructor
+}
+
+//-----------------------------------------------------------------------
+void AliJetHistos::CreateHistos()
+{
+  // create histos
 
   fNJetsH = new TH1I("NJetsH","Number of Jets",12,0,11);
   SetProperties(fNJetsH,"Number of jets","Entries");
@@ -52,9 +66,10 @@ AliJetHistos::AliJetHistos():
   SetProperties(fPhiH,"#phi","Entries");
 }
 
+//-----------------------------------------------------------------------
 AliJetHistos::~AliJetHistos()
 {
-// Destructor
+  // Destructor
   delete fNJetsH;
   delete fPtH;
   delete fEtaH;
@@ -62,9 +77,10 @@ AliJetHistos::~AliJetHistos()
   delete fPhiH;
 }
 
+//-----------------------------------------------------------------------
 void AliJetHistos::SetProperties(TH1* h,const char* x, const char* y) const
 {
-// Sets the histogram style properties
+  // Sets the histogram style properties
   h->SetMarkerStyle(20);
   h->SetMarkerSize(.5);
   h->SetMarkerColor(2);
@@ -73,9 +89,10 @@ void AliJetHistos::SetProperties(TH1* h,const char* x, const char* y) const
   h->Sumw2();
 }
 
-void AliJetHistos::AddHistosToList(TList *list)
+//-----------------------------------------------------------------------
+void AliJetHistos::AddHistosToList(TList *list) const
 {
-// Add histos to the list
+  // Add histos to the list
   list->Add(fNJetsH);
   list->Add(fPtH);
   list->Add(fEtaH);
@@ -83,10 +100,10 @@ void AliJetHistos::AddHistosToList(TList *list)
   list->Add(fPhiH);
 }
 
-
+//-----------------------------------------------------------------------
 void AliJetHistos::FillHistos(TClonesArray *jets)
 {
-// Fill histograms
+  // Fill histograms
   if(!jets)return;
   Int_t nj = jets->GetEntries();
   fNJetsH->Fill(nj,1);
