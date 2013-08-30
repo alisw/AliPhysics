@@ -117,7 +117,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     fastjet::AreaType            GetAreaType()          const {return fAreaType;}
     // Setters
     void SetRparam(Double_t f)                           {fRparam = f;}
-    void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}
+    // Temporary change to integer; problem with dictionary generation?
+    //void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}
+    void SetAlgorithm(Int_t f)           {fAlgorithm = (fastjet::JetAlgorithm) f;}
     void SetStrategy(fastjet::Strategy f)                {fStrategy = f;}
     void SetRecombScheme(fastjet::RecombinationScheme f) {fRecombScheme = f;}
     void SetAreaType(fastjet::AreaType f)                {fAreaType = f;}
