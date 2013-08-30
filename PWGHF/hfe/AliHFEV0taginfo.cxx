@@ -42,6 +42,7 @@ ClassImp(AliHFEV0taginfo::AliHFEV0tag)
 //___________________________________________________________________
 AliHFEV0taginfo::AliHFEV0taginfo():
     TNamed(), 
+    fIsAODana(NULL),
     fTaggedTracks(NULL),
     fV0finder(NULL)
 {
@@ -52,6 +53,7 @@ AliHFEV0taginfo::AliHFEV0taginfo():
 //___________________________________________________________________
 AliHFEV0taginfo::AliHFEV0taginfo(const char* name):
     TNamed(name, ""), 
+    fIsAODana(kFALSE),
     fTaggedTracks(NULL),
     fV0finder(NULL)
 {
@@ -64,6 +66,50 @@ AliHFEV0taginfo::AliHFEV0taginfo(const char* name):
         fTaggedTracks->SetOwner();
     }
     fV0finder = new AliESDv0KineCuts();
+}
+
+//__________________________________________________________________
+AliHFEV0taginfo::AliHFEV0taginfo(const AliHFEV0taginfo &ref):
+  TNamed(ref),
+    fIsAODana(ref.fIsAODana),
+    fTaggedTracks(NULL),
+    fV0finder(ref.fV0finder)
+{
+  //
+  // Copy constructor
+  // creates a new object with new (empty) containers
+  //
+    fTaggedTracks = new TList();
+    if(fTaggedTracks){
+        fTaggedTracks->SetOwner();
+    }
+
+
+    AliHFEV0tag *tmp = NULL;
+    for(Int_t ien = 0; ien < ref.fTaggedTracks->GetEntries(); ien++){
+        tmp = static_cast<AliHFEV0tag *>(ref.fTaggedTracks->At(ien));
+        fTaggedTracks->Add(new AliHFEV0tag(tmp->GetTrackID(),tmp->GetPinfo()));
+    }
+}
+
+//__________________________________________________________________
+AliHFEV0taginfo &AliHFEV0taginfo::operator=(const AliHFEV0taginfo &ref){
+    //
+    // Assignment operator
+    // Cleanup old object, create a new one with new containers inside
+    //
+    if(this == &ref) return *this;
+    this->~AliHFEV0taginfo(); 
+    TNamed::operator=(ref);
+    fIsAODana = ref.fIsAODana;
+    fTaggedTracks = new TList();
+    AliHFEV0tag *tmp = NULL;
+    for(Int_t ien = 0; ien < ref.fTaggedTracks->GetEntries(); ien++){
+        tmp = static_cast<AliHFEV0tag *>(ref.fTaggedTracks->At(ien));
+        fTaggedTracks->Add(new AliHFEV0tag(tmp->GetTrackID(),tmp->GetPinfo()));
+    }
+    fV0finder=ref.fV0finder;
+    return *this;
 }
 //___________________________________________________________________
 AliHFEV0taginfo::~AliHFEV0taginfo(){

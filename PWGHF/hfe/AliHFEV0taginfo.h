@@ -30,12 +30,15 @@ class AliHFEV0taginfo: public TNamed{
 
         AliHFEV0taginfo();
         AliHFEV0taginfo(const char* name);
+        AliHFEV0taginfo(const AliHFEV0taginfo &ref);
+        AliHFEV0taginfo& operator=(const AliHFEV0taginfo &ref);
         virtual ~AliHFEV0taginfo();
 
         void Reset(); //resets the fTaggedTracks TList
         void TagV0Tracks(AliESDEvent *event); // loops over V0s in event and fills fTaggedTracks with V0 tracks
         AliPID::EParticleType GetV0Info(Int_t trackID); //check for V0 information from track ID 
         void SetIsAODana() { fIsAODana = kTRUE; } // Setter AOD analysis
+        void SetIsESDana() { fIsAODana = kFALSE; } // Setter ESD analysis
         void AddTrack(Int_t TrackID, Int_t pdgCode); //Translates the pdg code to AliPID enum and adds track to tagged list (currently only e, pion and proton tracks)
 
         class AliHFEV0tag: public TObject{
@@ -45,7 +48,6 @@ class AliHFEV0taginfo: public TNamed{
                 AliHFEV0tag(const AliHFEV0tag &ref);
                 AliHFEV0tag &operator=(const AliHFEV0tag &ref);
                 virtual ~AliHFEV0tag();
-
 
                 //TObject virtual functions
                 virtual Bool_t IsSortable() const { return kTRUE; };
@@ -64,8 +66,8 @@ class AliHFEV0taginfo: public TNamed{
                 ClassDef(AliHFEV0taginfo::AliHFEV0tag,1);
         };
     private:
-        TList *fTaggedTracks;
         Bool_t fIsAODana;
+        TList *fTaggedTracks;
         AliESDv0KineCuts *fV0finder;
 
         ClassDef(AliHFEV0taginfo,1)
