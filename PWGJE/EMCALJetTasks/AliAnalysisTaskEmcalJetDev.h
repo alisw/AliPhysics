@@ -8,6 +8,7 @@ class TList;
 class TString;
 class AliEmcalJet;
 class AliRhoParameter;
+class AliLocalRhoParameter;
 class AliVCluster;
 class AliVParticle;
 class AliJetContainer;
@@ -41,6 +42,7 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
 
   void                SetJetsName(const char *n)                   { AddJetContainer(n); }
   virtual void        SetRhoName(const char *n, Int_t c = 0);
+  virtual void        SetLocalRhoName(const char *n)               { fLocalRhoName   = n; }
 
   AliJetContainer    *AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
   void                RemoveJetContainer(Int_t i)                  { fJetCollArray.RemoveAt(i);} 
@@ -53,6 +55,7 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   void                        ExecOnce()                                                                    ;
 
   AliRhoParameter            *GetRhoFromEvent(const char *name)                                             ;
+  AliLocalRhoParameter       *GetLocalRhoFromEvent(const char *name)                                        ;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kFALSE)       const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kFALSE)      const;
   Bool_t                      RetrieveEventObjects()                                                        ;
@@ -65,16 +68,18 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   Double_t                    GetRhoVal(Int_t i=0)                                                     const;
 
   TString                     fRhoName;                    // rho name
+  TString                     fLocalRhoName;               // name for local rho
   TObjArray                   fJetCollArray;               // jet collection array
 
   TClonesArray               *fJets;                       //!jets
   AliRhoParameter            *fRho;                        //!event rho
-  Double_t                    fRhoVal;                     //!event rho value
+  AliLocalRhoParameter       *fLocalRho;                   //!local event rho
+  Double_t                    fRhoVal;                     //!event rho value, same for local rho
 
  private:
   AliAnalysisTaskEmcalJetDev(const AliAnalysisTaskEmcalJetDev&);            // not implemented
   AliAnalysisTaskEmcalJetDev &operator=(const AliAnalysisTaskEmcalJetDev&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetDev, 2) // EMCAL Jet base analysis task
+  ClassDef(AliAnalysisTaskEmcalJetDev, 3) // EMCAL Jet base analysis task
 };
 #endif
