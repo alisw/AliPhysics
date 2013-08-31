@@ -16,6 +16,7 @@
 #include "AliEmcalJet.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
+#include "AliLocalRhoParameter.h"
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
@@ -27,9 +28,11 @@ ClassImp(AliAnalysisTaskEmcalJetDev)
 AliAnalysisTaskEmcalJetDev::AliAnalysisTaskEmcalJetDev() : 
   AliAnalysisTaskEmcalDev("AliAnalysisTaskEmcalJetDev"),
   fRhoName(),
+  fLocalRhoName(),
   fJetCollArray(),
   fJets(0),
   fRho(0),
+  fLocalRho(0),
   fRhoVal(0)
 {
   // Default constructor.
@@ -41,9 +44,11 @@ AliAnalysisTaskEmcalJetDev::AliAnalysisTaskEmcalJetDev() :
 AliAnalysisTaskEmcalJetDev::AliAnalysisTaskEmcalJetDev(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcalDev(name, histo),
   fRhoName(),
+  fLocalRhoName(),
   fJetCollArray(),
   fJets(0),
   fRho(0),
+  fLocalRho(0),
   fRhoVal(0)
 {
   // Standard constructor.
@@ -132,6 +137,23 @@ AliRhoParameter *AliAnalysisTaskEmcalJetDev::GetRhoFromEvent(const char *name)
 }
 
 //________________________________________________________________________
+AliLocalRhoParameter *AliAnalysisTaskEmcalJetDev::GetLocalRhoFromEvent(const char *name)
+{
+  // Get local rho from event.
+  AliLocalRhoParameter *rho = 0;
+  TString sname(name);
+  if (!sname.IsNull()) {
+    rho = dynamic_cast<AliLocalRhoParameter*>(InputEvent()->FindListObject(sname));
+    if (!rho) {
+      AliWarning(Form("%s: Could not retrieve local rho with name %s!", GetName(), name));
+      return 0;
+    }
+  }
+  return rho;
+}
+
+
+//________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::ExecOnce()
 {
   // Init the analysis.
@@ -142,6 +164,15 @@ void AliAnalysisTaskEmcalJetDev::ExecOnce()
     fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
     if (!fRho) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      fInitialized = kFALSE;
+      return;
+    }
+  }
+
+  if (!fLocalRhoName.IsNull() && !fLocalRho) {
+    fLocalRho = dynamic_cast<AliLocalRhoParameter*>(InputEvent()->FindListObject(fLocalRhoName));
+    if (!fLocalRho) {
+      AliError(Form("%s: Could not retrieve local rho %s!", GetName(), fLocalRhoName.Data()));
       fInitialized = kFALSE;
       return;
     }
