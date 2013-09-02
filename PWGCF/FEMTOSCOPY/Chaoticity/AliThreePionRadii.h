@@ -63,7 +63,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   };
 
   static const Int_t fEDbins   = 1;
-  static const Int_t fCentBins = 20;// 0-50%
+  static const Int_t fCentBins = 20;// 0-100% PbPb, pPb, pp
   static const Int_t fRVALUES  = 10;// 
 
 
