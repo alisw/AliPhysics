@@ -285,11 +285,8 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isTr
 //Phase 0. Initialise Fitter  
   Double_t arglist[10];
   Int_t ierflg = 0;
-  TVirtualFitter *fitter = TVirtualFitter::Fitter(this,3*6);                            //initialize Fitter
-
-  delete fitter;                                                                        //temporary solution to avoid the inteference with previous instances
-  fitter = TVirtualFitter::Fitter(this,3*6);                                            //initialize Fitter
-
+  TVirtualFitter* fitter = TVirtualFitter::Fitter(this,3*6);                       //initialize Fitter
+  //
   arglist[0] = -1;
   ierflg = fitter->ExecuteCommand("SET PRI", arglist, 1);                               // no printout
   ierflg = fitter->ExecuteCommand("SET NOW", arglist, 0);                               //no warning messages
@@ -345,15 +342,14 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Int_t *pSigmaCut, Bool_t isTr
    fSt=kNoLoc;
    SetClusterParams(fXX,fYY,fCh);                                                          //need to fill the AliCluster3D part
    new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);	                                   //add new unfolded cluster
-   
    return fNlocMax;
  }
 
 // case 2 -> loc max found. Check # of loc maxima 
  if ( fNlocMax >= kMaxLocMax)  { 
- SetClusterParams(fXX,fYY,fCh);                                                           // if # of local maxima exceeds kMaxLocMax...
+   SetClusterParams(fXX,fYY,fCh);                                                           // if # of local maxima exceeds kMaxLocMax...
    fSt = kMax;   new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);                      //...add this raw cluster  
-   } else {                                                                               //or resonable number of local maxima to fit and user requested it
+ } else {                                                                               //or resonable number of local maxima to fit and user requested it
   // Now ready for minimization step
    arglist[0] = 500;                                                                      //number of steps and sigma on pads charges
    arglist[1] = 1.;                                                                       //
