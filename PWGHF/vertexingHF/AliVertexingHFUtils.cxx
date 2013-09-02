@@ -470,16 +470,62 @@ Double_t AliVertexingHFUtils::GetCorrectedNtracklets(TProfile* estimatorAvg, Dou
 }
 //______________________________________________________________________
 TString AliVertexingHFUtils::GetGenerator(Int_t label, AliAODMCHeader* header){
-   Int_t nsumpart=0;
-   TList *lh=header->GetCocktailHeaders();
-   Int_t nh=lh->GetEntries();
-   for(Int_t i=0;i<nh;i++){
-     AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-     TString genname=gh->GetName();
-     Int_t npart=gh->NProduced();
-     if(label>=nsumpart && label<(nsumpart+npart)) return genname;
-     nsumpart+=npart;
-   }
-   TString empty="";
-   return empty;
- }
+  // get the name of the generator that produced a given particle
+
+  Int_t nsumpart=0;
+  TList *lh=header->GetCocktailHeaders();
+  Int_t nh=lh->GetEntries();
+  for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+    TString genname=gh->GetName();
+    Int_t npart=gh->NProduced();
+    if(label>=nsumpart && label<(nsumpart+npart)) return genname;
+    nsumpart+=npart;
+  }
+  TString empty="";
+  return empty;
+}
+//----------------------------------------------------------------------
+Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC){
+  // method to check if a track comes from the signal event or from the underlying Hijing event
+
+  Int_t lab=TMath::Abs(track->GetLabel());
+  TString nameGen=GetGenerator(lab,header);
+  
+  //  Int_t countControl=0;
+  
+  while(nameGen.IsWhitespace()){
+    AliAODMCParticle *mcpart= (AliAODMCParticle*)arrayMC->At(lab);
+    if(!mcpart){
+      printf("AliVertexingHFUtils::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
+      break;
+    }
+    Int_t mother = mcpart->GetMother();
+    if(mother<0){
+      printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+      break;
+    }
+    lab=mother;
+    nameGen=GetGenerator(mother,header);
+    // countControl++;
+    // if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
+    //   printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Protection from infinite loop active\n");
+    //   break;
+    // }
+  }
+  
+  if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
+  
+  return kTRUE;
+}
+//____________________________________________________________________________
+Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC){
+  // method to check if a D meson candidate comes from the signal event or from the underlying Hijing event
+
+  Int_t nprongs=cand->GetNProngs();
+  for(Int_t i=0;i<nprongs;i++){
+    AliAODTrack *daugh=(AliAODTrack*)cand->GetDaughter(i);
+    if(IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
+  }
+  return kFALSE;
+}
