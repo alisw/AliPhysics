@@ -709,53 +709,54 @@ void AliTOFClusterFinderV1::FillRecPoint()
   UShort_t volIdClus;
 
   for (ii=0; ii<fNumberOfTofClusters; ii++) {
-
-    digitIndex = fTofClusters[ii]->GetIndex();
-    for(jj=0; jj<5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);
+    AliTOFcluster* clOr = fTofClusters[ii];
+    fTofClusters[ii] = 0;
+    digitIndex = clOr->GetIndex();
+    for(jj=0; jj<5; jj++) detectorIndex[jj] = clOr->GetDetInd(jj);
     volIdClus = fTOFGeometry->GetAliSensVolIndex(detectorIndex[0],detectorIndex[1],detectorIndex[2]);
     //volIdClus = GetClusterVolIndex(detectorIndex);
-    for(jj=0; jj<3; jj++) trackLabels[jj] = fTofClusters[ii]->GetLabel(jj);
-    parTOF[0] = fTofClusters[ii]->GetTDC(); // TDC
-    parTOF[1] = fTofClusters[ii]->GetToT(); // TOT
-    parTOF[2] = fTofClusters[ii]->GetADC(); // ADC=TOT
-    parTOF[3] = fTofClusters[ii]->GetTDCND(); // TDCND
-    parTOF[4] = fTofClusters[ii]->GetTDCRAW();//RAW
+    for(jj=0; jj<3; jj++) trackLabels[jj] = clOr->GetLabel(jj);
+    parTOF[0] = clOr->GetTDC(); // TDC
+    parTOF[1] = clOr->GetToT(); // TOT
+    parTOF[2] = clOr->GetADC(); // ADC=TOT
+    parTOF[3] = clOr->GetTDCND(); // TDCND
+    parTOF[4] = clOr->GetTDCRAW();//RAW
     parTOF[5] = 0;
     parTOF[6] = 0;
-    status = fTofClusters[ii]->GetStatus();
+    status = clOr->GetStatus();
 
-    posClus[0] = fTofClusters[ii]->GetX();
-    posClus[1] = fTofClusters[ii]->GetY();
-    posClus[2] = fTofClusters[ii]->GetZ();
+    posClus[0] = clOr->GetX();
+    posClus[1] = clOr->GetY();
+    posClus[2] = clOr->GetZ();
 
     //for (jj=0; jj<6; jj++) covClus[jj] = 0.;
-    //((AliCluster*)fTofClusters[ii])->GetGlobalCov(covClus);
+    //((AliCluster*)clOr)->GetGlobalCov(covClus);
 
     new(lRecPoints[ii]) AliTOFcluster(volIdClus, (Double_t)posClus[0], (Double_t)posClus[1], (Double_t)posClus[2],
-				      (Double_t)(fTofClusters[ii]->GetSigmaX2()),
-				      (Double_t)(fTofClusters[ii]->GetSigmaXY()),
-				      (Double_t)(fTofClusters[ii]->GetSigmaXZ()),
-				      (Double_t)(fTofClusters[ii]->GetSigmaY2()),
-				      (Double_t)(fTofClusters[ii]->GetSigmaYZ()),
-				      (Double_t)(fTofClusters[ii]->GetSigmaZ2()),
+				      (Double_t)(clOr->GetSigmaX2()),
+				      (Double_t)(clOr->GetSigmaXY()),
+				      (Double_t)(clOr->GetSigmaXZ()),
+				      (Double_t)(clOr->GetSigmaY2()),
+				      (Double_t)(clOr->GetSigmaYZ()),
+				      (Double_t)(clOr->GetSigmaZ2()),
 				      //(Double_t)covClus[0], (Double_t)covClus[1], (Double_t)covClus[2],
 				      //(Double_t)covClus[3], (Double_t)covClus[4], (Double_t)covClus[5],
 				      trackLabels, detectorIndex, parTOF, status, digitIndex);
 
     AliDebug(2, Form(" %4d  %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 		     ii, volIdClus, posClus[0], posClus[1], posClus[2],
-		     fTofClusters[ii]->GetSigmaX2(),
-		     fTofClusters[ii]->GetSigmaXY(),
-		     fTofClusters[ii]->GetSigmaXZ(),
-		     fTofClusters[ii]->GetSigmaY2(),
-		     fTofClusters[ii]->GetSigmaYZ(),
-		     fTofClusters[ii]->GetSigmaZ2(),
+		     clOr->GetSigmaX2(),
+		     clOr->GetSigmaXY(),
+		     clOr->GetSigmaXZ(),
+		     clOr->GetSigmaY2(),
+		     clOr->GetSigmaYZ(),
+		     clOr->GetSigmaZ2(),
 		     trackLabels[0], trackLabels[1], trackLabels[2],
 		     detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[3], detectorIndex[4],
 		     parTOF[0], parTOF[1], parTOF[2], parTOF[3], parTOF[4],
 		     status, digitIndex));
 
-
+    delete clOr;
   }
 
   for (Int_t iSector=0; iSector<AliTOFGeometry::NSectors(); iSector++)

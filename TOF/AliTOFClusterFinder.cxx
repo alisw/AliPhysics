@@ -1057,18 +1057,19 @@ void AliTOFClusterFinder::FillRecPoint()
   TClonesArray &lRecPoints = *fRecPoints;
   
   for (ii=0; ii<fNumberOfTofClusters; ii++) {
-
-    digitIndex = fTofClusters[ii]->GetIndex();
-    for(jj=0; jj<5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);
-    for(jj=0; jj<3; jj++) trackLabels[jj] = fTofClusters[ii]->GetLabel(jj);
-    parTOF[0] = fTofClusters[ii]->GetTDC(); // TDC
-    parTOF[1] = fTofClusters[ii]->GetToT(); // TOT
-    parTOF[2] = fTofClusters[ii]->GetADC(); // ADC=TOT
-    parTOF[3] = fTofClusters[ii]->GetTDCND(); // TDCND
-    parTOF[4] = fTofClusters[ii]->GetTDCRAW();//RAW
-    parTOF[5] = fTofClusters[ii]->GetDeltaBC();//deltaBC
-    parTOF[6] = fTofClusters[ii]->GetL0L1Latency();//L0-L1 latency
-    status=fTofClusters[ii]->GetStatus();
+    AliTOFcluster* clOr = fTofClusters[ii];
+    fTofClusters[ii] = 0;
+    digitIndex = clOr->GetIndex();
+    for(jj=0; jj<5; jj++) detectorIndex[jj] = clOr->GetDetInd(jj);
+    for(jj=0; jj<3; jj++) trackLabels[jj] = clOr->GetLabel(jj);
+    parTOF[0] = clOr->GetTDC(); // TDC
+    parTOF[1] = clOr->GetToT(); // TOT
+    parTOF[2] = clOr->GetADC(); // ADC=TOT
+    parTOF[3] = clOr->GetTDCND(); // TDCND
+    parTOF[4] = clOr->GetTDCRAW();//RAW
+    parTOF[5] = clOr->GetDeltaBC();//deltaBC
+    parTOF[6] = clOr->GetL0L1Latency();//L0-L1 latency
+    status=clOr->GetStatus();
     Double_t posClus[3];
     Double_t covClus[6];
     UShort_t volIdClus=GetClusterVolIndex(detectorIndex);
@@ -1077,17 +1078,18 @@ void AliTOFClusterFinder::FillRecPoint()
 
     AliDebug(2, Form(" %4d  %4d  %f %f %f  %f %f %f %f %f %f  %3d %3d %3d  %2d %1d %2d %1d %2d  %4d %3d %3d %4d %4d  %1d  %4d", 
 		     ii, volIdClus, posClus[0], posClus[1], posClus[2],
-		     fTofClusters[ii]->GetSigmaX2(),
-		     fTofClusters[ii]->GetSigmaXY(),
-		     fTofClusters[ii]->GetSigmaXZ(),
-		     fTofClusters[ii]->GetSigmaY2(),
-		     fTofClusters[ii]->GetSigmaYZ(),
-		     fTofClusters[ii]->GetSigmaZ2(),
+		     clOr->GetSigmaX2(),
+		     clOr->GetSigmaXY(),
+		     clOr->GetSigmaXZ(),
+		     clOr->GetSigmaY2(),
+		     clOr->GetSigmaYZ(),
+		     clOr->GetSigmaZ2(),
 		     trackLabels[0], trackLabels[1], trackLabels[2],
 		     detectorIndex[0], detectorIndex[1], detectorIndex[2], detectorIndex[3], detectorIndex[4],
 		     parTOF[0], parTOF[1], parTOF[2], parTOF[3], parTOF[4],
 		     status, digitIndex));
 
+    delete clOr;
   } // loop on clusters
 
 }
