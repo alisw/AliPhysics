@@ -105,7 +105,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AliGenHijingEventHeader* GetHijingEventHeader(AliAODMCHeader *header);
     AliGenPythiaEventHeader* GetPythiaEventHeader(AliAODMCHeader *header);
     
-    Bool_t IsMCSecondary(AliAODMCParticle *part, TClonesArray *arrayMC);
+//     Int_t IsMCSecondary(AliAODMCParticle *part, TClonesArray *arrayMC);
     Bool_t IsTrackAccepted(AliAODTrack *tr);
     Bool_t IsMCTrackAccepted(AliAODMCParticle *part);
     
@@ -125,7 +125,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF 	*hnZvPtEtaCent; //-> Zv:Pt:Eta:Cent
     THnSparseF 	*hnMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*hnMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
-    THnSparseF 	*hnMCSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
+    THnSparseF 	*hnMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
     TH1F	*hEventStatistics; // contains statistics of number of events after each cut
     TH1F	*hEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
     TH1F	*hAllEventStatisticsCentrality; // contains number of events vs centrality, events need to be triggered
@@ -139,6 +139,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	*hMCHijingPrim; // number of particles, which are Hijing particles and primaries
     TH1F	*hAccNclsTPC; //control histo: number of clusters in TPC for accepted tracks
     TH1F	*hAccCrossedRowsTPC; //control histo: number of crossed rows in TPC for accepted tracks
+    TH2F	*hDCAPtAll; //control histo: DCA vs pT for all reconstructed tracks
+    TH2F	*hDCAPtAccepted; //control histo: DCA vs pT for all accepted reco tracks
+    TH2F	*hMCDCAPtSecondary; //control histo: DCA vs pT for all accepted reco track, which are secondaries (using MC info)
+    TH2F	*hMCDCAPtPrimary; //control histo: DCA vs pT for all accepted reco track, which are primaries (using MC info)
     
     
     // global variables
@@ -188,7 +192,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,1); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,2); // has to be at least 1, otherwise not streamable...
 };
 
 #endif
