@@ -167,7 +167,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
 void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
 {
   // Create histograms, called once.
-  if(fDebug)
+  if(this->fDebug)
     printf("::UserCreateOutputObjects() starting\n");
 
   fSelTracks = new TObjArray();
@@ -271,7 +271,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   PostData(1, fOutputList);
   PostData(2, fTree);
 
-  if(fDebug)
+  if(this->fDebug)
     printf("::UserCreateOutputObjects() DONE!\n");
 
 }
@@ -293,15 +293,15 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   }
   if(fIsMC){
     isSelected = kTRUE;  
-    if(fDebug)
+    if(this->fDebug)
       printf("+++Message+++: MC input files.\n");
   }
   if(!isSelected){
-    if(fDebug)
+    if(this->fDebug)
       printf("+++Message+++: Event didn't pass the selection\n");
     return;
   }
-  if(fDebug){
+  if(this->fDebug){
     printf("::UserExec(): event accepted\n");
     if(fIsMC)
       printf("\t in MC mode\n");
@@ -316,7 +316,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     return;
   }
   Int_t   runnumber = InputEvent()->GetRunNumber() ;
-  if(fDebug)
+  if(this->fDebug)
     printf("run number = %d\n",runnumber);
   fESD = dynamic_cast<AliESDEvent*>(fVev);
   if(!fESD){
@@ -325,7 +325,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
       printf("ERROR: Invalid type of event!!!\n");
       return;
     }
-    else if(fDebug)
+    else if(this->fDebug)
       printf("AOD EVENT!\n");
   }
   
@@ -342,7 +342,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   }
   if(TMath::Abs(pv->GetZ())>15)
     return;
-  if(fDebug)
+  if(this->fDebug)
     printf("+++Message+++: event passed the vertex cut\n");
 
   if(fESD)
@@ -352,7 +352,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
 
   if(!fTracks){
     AliError("Track array in event is NULL!");
-    if(fDebug)
+    if(this->fDebug)
       printf("returning due to not finding tracks!\n");
     return;
   }
@@ -404,12 +404,12 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fESD){
     AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
     trackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5); 
-    if(fDebug)
+    if(this->fDebug)
       printf("ESD Track mult= %d\n",trackMult);
   }
   else if(fAOD){
     trackMult = Ntracks;
-    if(fDebug)
+    if(this->fDebug)
       printf("AOD Track mult= %d\n",trackMult);
   }
   if(fESD){
@@ -417,14 +417,14 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     fCaloClusters =  dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
     fVCells = fESD->GetEMCALCells();
     fHeader->fNCells = fVCells->GetNumberOfCells();
-    if(fDebug)
+    if(this->fDebug)
       printf("ESD cluster mult= %d\n",fCaloClusters->GetEntriesFast());
   }
   else if(fAOD){
     fCaloClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
     fVCells = fAOD->GetEMCALCells();
     fHeader->fNCells = fVCells->GetNumberOfCells();
-    if(fDebug)
+    if(this->fDebug)
       printf("AOD cluster mult= %d\n",fCaloClusters->GetEntriesFast());
   }
     
@@ -435,8 +435,8 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   fMCEvent = MCEvent();
   if(fMCEvent){
     fStack = (AliStack*)fMCEvent->Stack();
-    if(fStack)
-      fHeader->fNMcParts = fStack->GetNtrack();
+    if(this->fStack)
+      fHeader->fNMcParts = this->fStack->GetNtrack();
     else{
       printf("Stack not found\n");
       fHeader->fNMcParts = 0;
@@ -454,13 +454,13 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
 
   
   FindConversions();
-  if(fDebug)
+  if(this->fDebug)
     printf("FindConversions done\n");
   FillMyCells();
-  if(fDebug)
+  if(this->fDebug)
     printf("FillMyCells done\n");
   FillMyClusters();
-  if(fDebug)
+  if(this->fDebug)
     printf("FillMyClusters done\n");
   if(fCaloClustersNew)
     FillMyAltClusters();
@@ -468,7 +468,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fIsMC)
     GetMcParts();
 
-  if(fDebug)
+  if(this->fDebug)
     printf("fMyMcParts nentries=%d",fMyMcParts->GetEntries());
   
   fTree->Fill();
@@ -499,7 +499,7 @@ void AliAnalysisTaskEMCALPhoton::FindConversions() //WARNING: not ready to use w
   // Find conversion.
   if(!fESD)//not working with AODs yet
     return;
-  if(fDebug)
+  if(this->fDebug)
     printf("::FindConversions() starting\n");
   if(!fTrCuts)
     return;
@@ -601,7 +601,7 @@ void AliAnalysisTaskEMCALPhoton::FindConversions() //WARNING: not ready to use w
    myconv->fPosDedx    =  pos->GetTPCsignal();
    myconv->fPosMcLabel =  pos->GetLabel();
   }
-  if(fDebug)
+  if(this->fDebug)
     printf("::FindConversions() returning...\n\n");
   return;
 }
@@ -610,7 +610,7 @@ void AliAnalysisTaskEMCALPhoton::FindConversions() //WARNING: not ready to use w
 void AliAnalysisTaskEMCALPhoton::FillMyCells() 
 {
   // Fill cells.
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillMyCells() starting\n");
 
   if (!fVCells)
@@ -636,7 +636,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
     mycell->fPhi = phi;
     mycell->fTime = fVCells->GetCellTime(absID);
   }
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillMyCells() returning...\n\n");
 }
 
@@ -644,7 +644,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
 void AliAnalysisTaskEMCALPhoton::FillMyClusters() 
 {
   // Fill clusters.
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillMyClusters() starting\n");
 
   if (!fCaloClusters){
@@ -720,7 +720,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
     myclus->fTrEp = clus->E()/track->P();
     myclus->fTrDedx = track->GetTPCsignal();
   }
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillMyClusters() returning...\n\n");
   
 }
@@ -728,7 +728,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
 void AliAnalysisTaskEMCALPhoton::FillMyAltClusters() 
 {
   // Fill clusters.
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillMyAltClusters() starting\n");
 
   if(!fCaloClustersNew)
@@ -793,7 +793,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyAltClusters()
     }
     myclus->fTrEp = clus->E()/track->P();
   }
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillMyAltClusters() returning...\n\n");
   
 }
@@ -801,7 +801,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyAltClusters()
 void  AliAnalysisTaskEMCALPhoton::FillIsoTracks()
 {
   // Fill high pt tracks.
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillIsoTracks() starting\n");
 
   if(!fSelPrimTracks)
@@ -826,7 +826,7 @@ void  AliAnalysisTaskEMCALPhoton::FillIsoTracks()
     mtr->fDedx = track->GetTPCsignal();
     mtr->fMcLabel = track->GetLabel();
   }
-  if(fDebug)
+  if(this->fDebug)
     printf("::FillIsoTracks() returning...\n\n");
 }
 
@@ -834,34 +834,34 @@ void  AliAnalysisTaskEMCALPhoton::FillIsoTracks()
 void  AliAnalysisTaskEMCALPhoton::GetMcParts()
 {
    // Get MC particles.
-  if(fDebug)
+  if(this->fDebug)
     printf("::GetMcParts() starting\n");
 
-  if (!fStack && !fAODMCParticles)
+  if (!this->fStack && !fAODMCParticles)
     return;
-  if(fDebug)
+  if(this->fDebug)
     printf("either stack or aodmcpaticles exists\n");
   const AliVVertex *evtVtx = 0;
-  if(fStack)
+  if(this->fStack)
      evtVtx = fMCEvent->GetPrimaryVertex();
   else
     printf("no such thing as mc vvtx\n");
   /*if (!evtVtx)
     return;*/
-  if(fDebug)
+  if(this->fDebug)
     printf("mc vvertex ok\n");
   Int_t nTracks = 0;
-  if(fStack)
-    nTracks = fStack->GetNtrack();
+  if(this->fStack)
+    nTracks = this->fStack->GetNtrack();
   else if(fAODMCParticles)
     nTracks = fAODMCParticles->GetEntriesFast();
   TParticle *mcP = 0;
   AliAODMCParticle *amcP = 0;
-  if(fDebug)
+  if(this->fDebug)
     printf("loop in the %d mc particles starting\n",nTracks);
   for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
-    if(fStack)
-      mcP = dynamic_cast<TParticle*>(fStack->Particle(iTrack));
+    if(this->fStack)
+      mcP = dynamic_cast<TParticle*>(this->fStack->Particle(iTrack));
     if(fAODMCParticles)
       amcP = dynamic_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
 
@@ -921,7 +921,7 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
 
     FillMcPart( fMyMcIndex++, iTrack);
   }
-  if(fDebug)
+  if(this->fDebug)
     printf("::GetMcParts() returning...\n\n");
 }
 
@@ -932,15 +932,15 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(  Int_t itrack, Int_t label)
   Int_t nTracks = 0;
   TParticle *mcP = 0;
   AliAODMCParticle *amcP= 0;
-  if(fStack){
-    nTracks = fStack->GetNtrack();
-    mcP = dynamic_cast<TParticle*>(fStack->Particle(itrack));
+  if(this->fStack){
+    nTracks = this->fStack->GetNtrack();
+    mcP = dynamic_cast<TParticle*>(this->fStack->Particle(itrack));
   }
   else if(fAODMCParticles){
     nTracks = fAODMCParticles->GetEntriesFast();
     amcP = dynamic_cast<AliAODMCParticle*>(fAODMCParticles->At(itrack));
  }
-  if(fDebug)
+  if(this->fDebug)
     printf("\t::FillMcParts() starting with label %d\n", itrack);
    TVector3 vmcv;
    if(mcP)
@@ -983,7 +983,7 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(  Int_t itrack, Int_t label)
     mcp->fIso = AliAnalysisTaskEMCALPhoton::GetMcIsolation( itrack, 0.4 , 0.2);
     mcp->fIso3 = AliAnalysisTaskEMCALPhoton::GetMcIsolation( itrack, 0.3 , 0.2);
     }
-  if(fDebug)
+  if(this->fDebug)
     printf("\t::FillMcParts(): label=%d, pdg=%d, pt=%1.1f, mom=%d, 1stD=%d,last=%d\n\t::FillMcParts() returning...\n\n", mcp->fLabel,mcp->fPdg,mcp->fPt,mcp->fMother,mcp->fFirstD,mcp->fLastD);
   for(Int_t id=mcp->fFirstD; id < mcp->fLastD; id++){
     if(id<=mcp->fMother)
@@ -997,17 +997,17 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(  Int_t itrack, Int_t label)
 //________________________________________________________________________                                                                                                                                   
 Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation( Int_t itrack, Double_t radius, Double_t ptcut) const
 {
-  if(fDebug){
+  if(this->fDebug){
     printf("\t\t::GetMcIsolation() starting\n");
     //printf("\t\t   incoming particle: PDG = %d, itrack=%d;\n",mcP->GetPdgCode(),itrack);
   }
-  if (!fStack && !fAODMCParticles){
+  if (!this->fStack && !this->fAODMCParticles){
     printf("\t\t\tNo MC stack/array!\n");
     return -1;
   }
   if(itrack<6 || itrack>8)
     return -1;
-  if(fDebug)
+  if(this->fDebug)
     printf("\t\t\tparticle of interest selected\n");
   TParticle *mcP = 0;
   AliAODMCParticle *amcP = 0;
@@ -1017,19 +1017,21 @@ Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation( Int_t itrack, Double_t radi
   Double_t sumpt=0;
   Float_t dR;
   Int_t nparts =  0;
-  if(fStack){
+  if(this->fStack){
     nparts = fStack->GetNtrack();
-    mcP = dynamic_cast<TParticle*>(fStack->Particle(itrack));  
+    mcP = dynamic_cast<TParticle*>(this->fStack->Particle(itrack));  
     eta = mcP->Eta();
     phi = mcP->Phi();
     pdgcode = mcP->GetPdgCode();
   }
-  if(fAODMCParticles){
+  if(this->fAODMCParticles){
     nparts = fAODMCParticles->GetEntriesFast();
-    amcP = dynamic_cast<AliAODMCParticle*>(fAODMCParticles->At(itrack));
-    eta = amcP->Eta();
-    phi = amcP->Phi();
-    pdgcode = amcP->GetPdgCode();
+    amcP = dynamic_cast<AliAODMCParticle*>(this->fAODMCParticles->At(itrack));
+    if(amcP){
+      eta = amcP->Eta();
+      phi = amcP->Phi();
+      pdgcode = amcP->GetPdgCode();
+    }
   }
   if(pdgcode!=22)
     return -1;
@@ -1038,8 +1040,8 @@ Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation( Int_t itrack, Double_t radi
   for(Int_t ip = 0; ip<nparts; ip++){
     if(ip==itrack)
       continue;
-    if(fStack)
-      mcisop = dynamic_cast<TParticle*>(fStack->Particle(ip));
+    if(this->fStack)
+      mcisop = dynamic_cast<TParticle*>(this->fStack->Particle(ip));
     if(fAODMCParticles)
       amcisop = dynamic_cast<AliAODMCParticle*>(fAODMCParticles->At(ip));
     Int_t status = 0;
@@ -1081,7 +1083,7 @@ Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation( Int_t itrack, Double_t radi
       continue;
     sumpt += pt;
   }
-  if(fDebug)
+  if(this->fDebug)
     printf("\t\t::GetMcIsolation() returning value %f ...\n\n",sumpt);
   return sumpt;
  }
@@ -1090,7 +1092,7 @@ Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation( Int_t itrack, Double_t radi
 Double_t AliAnalysisTaskEMCALPhoton::GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius, Double_t pt) const
 {
   // Compute isolation based on tracks.
-  if(fDebug)
+  if(this->fDebug)
     printf("\t::GetTrackIsolation() starting\n");
    
   Double_t trkIsolation = 0;
@@ -1111,7 +1113,7 @@ Double_t AliAnalysisTaskEMCALPhoton::GetTrackIsolation(Double_t cEta, Double_t c
       continue;
     trkIsolation += track->Pt();
   } 
-  if(fDebug)
+  if(this->fDebug)
     printf("\t::GetTrackIsolation() returning\n\n");
   return trkIsolation;
 }
