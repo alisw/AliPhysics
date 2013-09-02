@@ -143,7 +143,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fTPCArea(11.30973),
     fParticlePtLow(0.0),
     fParticlePtUp(200.0),
-    fParticlePtBins(2000),
+    fParticlePtBins(200),
     fJetR(0.4),
     fJetRForRho(0.5),
     fJetAreaCutFrac(0.6),
@@ -493,7 +493,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     
     // QA Plots
     // Hybrid Tracks
-    fhTrackPt = new TH1D("fhTrackPt","p_{T} distribution of tracks in event",fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhTrackPt = new TH1D("fhTrackPt","p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
     fhTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhTrackPt->Sumw2();
@@ -533,7 +533,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhTrackEtaPhiPt->Sumw2();
 
     // Global Tracks
-    fhGlobalTrackPt = new TH1D("fhGlobalTrackPt","Global p_{T} distribution of tracks in event",fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhGlobalTrackPt = new TH1D("fhGlobalTrackPt","Global p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
     fhGlobalTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhGlobalTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhGlobalTrackPt->Sumw2();
@@ -573,7 +573,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhGlobalTrackEtaPhiPt->Sumw2();
 
     // Complementary Tracks
-    fhComplementaryTrackPt = new TH1D("fhComplementaryTrackPt","Complementary p_{T} distribution of tracks in event",fParticlePtBins,fParticlePtLow,fParticlePtUp);
+    fhComplementaryTrackPt = new TH1D("fhComplementaryTrackPt","Complementary p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
     fhComplementaryTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhComplementaryTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhComplementaryTrackPt->Sumw2();
@@ -613,7 +613,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhComplementaryTrackEtaPhiPt->Sumw2();
     
     // Corrected Calo Clusters
-    fhClusterPt = new TH1D("fhClusterPt","p_{T} distribution of clusters in event",10*JetPtBins,JetPtLow,JetPtUp);
+    fhClusterPt = new TH1D("fhClusterPt","p_{T} distribution of clusters in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
     fhClusterPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhClusterPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
     fhClusterPt->Sumw2();
@@ -657,7 +657,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhCentrality->GetYaxis()->SetTitle("1/N_{Events}");
     fhCentrality->Sumw2();
     
-    fhJetConstituentPt= new TH2D("fhJetConstituentPt","Jet constituents p_{T} distribution",JetPtBins, JetPtLow, JetPtUp,10*JetPtBins, JetPtLow, JetPtUp);
+    fhJetConstituentPt= new TH2D("fhJetConstituentPt","Jet constituents p_{T} distribution",JetPtBins, JetPtLow, JetPtUp,10*fParticlePtBins,fParticlePtLow, fParticlePtUp);
     fhJetConstituentPt->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
     fhJetConstituentPt->GetYaxis()->SetTitle("Constituent p_{T} (GeV/c)");
     fhJetConstituentPt->Sumw2();
@@ -1112,20 +1112,21 @@ void AliAnalysisTaskFullpAJets::ClusterCuts()
     Int_t i;
     
     fmyClusters = new TObjArray();
-    if(fOrgClusters) {
-    for (i=0;i<fOrgClusters->GetEntries();i++)
+    if(fOrgClusters)
     {
-        AliVCluster* vcluster = (AliVCluster*) fOrgClusters->At(i);
-        TLorentzVector *cluster_vec = new TLorentzVector;
-        vcluster->GetMomentum(*cluster_vec,fvertex);
-
-        if (cluster_vec->Pt()>=fClusterMinPt)
+        for (i=0;i<fOrgClusters->GetEntries();i++)
         {
-            fmyClusters->Add(vcluster);
+            AliVCluster* vcluster = (AliVCluster*) fOrgClusters->At(i);
+            TLorentzVector *cluster_vec = new TLorentzVector;
+            vcluster->GetMomentum(*cluster_vec,fvertex);
+            
+            if (cluster_vec->Pt()>=fClusterMinPt)
+            {
+                fmyClusters->Add(vcluster);
+            }
+            delete cluster_vec;
+            
         }
-        delete cluster_vec;
-
-    }
     }
     fnClusters = fmyClusters->GetEntries();
 }
@@ -3340,7 +3341,8 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData() :
     fPtSubLeading(0),
     fJetsIndex(0),
     fJetsSCIndex(0),
-    fIsJetInArray(0)
+    fIsJetInArray(0),
+    fJetMaxChargedPt(0)
 {
     fnTotal=0;
     // Dummy constructor ALWAYS needed for I/O.
@@ -3362,7 +3364,8 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t i
     fPtSubLeading(0),
     fJetsIndex(0),
     fJetsSCIndex(0),
-    fIsJetInArray(0)
+    fIsJetInArray(0),
+    fJetMaxChargedPt(0)
 {
     SetName(name);
     SetIsJetsFull(isFull);
@@ -3393,6 +3396,7 @@ AliAnalysisTaskFullpAJets::AlipAJetData::~AlipAJetData()
         delete [] fJetsIndex;
         delete [] fJetsSCIndex;
         delete [] fIsJetInArray;
+        delete [] fJetMaxChargedPt;
     }
 }
 
@@ -3419,9 +3423,11 @@ void AliAnalysisTaskFullpAJets::AlipAJetData::InitializeJetData(TClonesArray *je
             }
             else if (myJet->Pt()>fPtSubLeading)
             {
-                SetSubLeading(i,myJet->Pt());
+                SetSubLeading(i,myJet->Pt()); 
             }
-            if (myJet->Pt()>=fSignalPt)
+            // require leading charged constituent to have a pT greater then the signal threshold
+            fJetMaxChargedPt[i] = myJet->MaxTrackPt();
+            if (fJetMaxChargedPt[i]>=fSignalPt)
             {
                 SetSignalJetIndex(i,l);
                 l++;
@@ -3450,6 +3456,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetData::SetTotalEntries(Int_t nEntries)
     fJetsIndex = new Int_t[fnTotal];
     fJetsSCIndex = new Int_t[fnTotal];
     fIsJetInArray = new Bool_t[fnTotal];
+    fJetMaxChargedPt = new Double_t[fnTotal];
 }
 
 void AliAnalysisTaskFullpAJets::AlipAJetData::SetTotalJets(Int_t nJets)
@@ -3560,6 +3567,10 @@ Bool_t AliAnalysisTaskFullpAJets::AlipAJetData::GetIsJetInArray(Int_t At)
     return fIsJetInArray[At];
 }
 
+Double_t AliAnalysisTaskFullpAJets::AlipAJetData::GetJetMaxChargedPt(Int_t At)
+{
+    return fJetMaxChargedPt[At];
+}
 
 // AlipAJetHistos Class Member Defs
 // Constructors
@@ -3575,6 +3586,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fh80100BSPt(0),
     fhBSPt(0),
     fhBSPtCen(0),
+/*  fhBSPtCenLCT(0),*/
     fh020BSPtSignal(0),
     fh80100BSPtSignal(0),
     fhBSPtSignal(0),
@@ -3619,7 +3631,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fLJetPtBins(0),
     fLJetPtLow(0),
     fLJetPtUp(0),
-    fRhoValue(0)
+    fRhoValue(0),
+    fLChargedTrackPtBins(0),
+    fLChargedTrackPtLow(0),
+    fLChargedTrackPtUp(0)
 {
     // Dummy constructor ALWAYS needed for I/O.
 }
@@ -3636,6 +3651,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fh80100BSPt(0),
     fhBSPt(0),
     fhBSPtCen(0),
+/*  fhBSPtCenLCT(0),*/
     fh020BSPtSignal(0),
     fh80100BSPtSignal(0),
     fhBSPtSignal(0),
@@ -3680,7 +3696,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fLJetPtBins(0),
     fLJetPtLow(0),
     fLJetPtUp(0),
-    fRhoValue(0)
+    fRhoValue(0),
+    fLChargedTrackPtBins(0),
+    fLChargedTrackPtLow(0),
+    fLChargedTrackPtUp(0)
 {
     SetName(name);
     SetCentralityTag("V0A");
@@ -3690,6 +3709,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     SetDeltaPtRange(200,-100,100);
     SetBackgroundFluctuationsPtRange(100,0,100);
     SetLeadingJetPtRange(200,0,200);
+    SetLeadingChargedTrackPtRange(100,0,100);
     
     Init();
 }
@@ -3706,6 +3726,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fh80100BSPt(0),
     fhBSPt(0),
     fhBSPtCen(0),
+/*  fhBSPtCenLCT(0),*/
     fh020BSPtSignal(0),
     fh80100BSPtSignal(0),
     fhBSPtSignal(0),
@@ -3750,7 +3771,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fLJetPtBins(0),
     fLJetPtLow(0),
     fLJetPtUp(0),
-    fRhoValue(0)
+    fRhoValue(0),
+    fLChargedTrackPtBins(0),
+    fLChargedTrackPtLow(0),
+    fLChargedTrackPtUp(0)
 {
     SetName(name);
     SetCentralityTag(centag);
@@ -3760,7 +3784,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     SetDeltaPtRange(200,-100,100);
     SetBackgroundFluctuationsPtRange(100,0,100);
     SetLeadingJetPtRange(200,0,200);
-    
+    SetLeadingChargedTrackPtRange(100,0,100);
+
     Init();
 }
 
@@ -3808,7 +3833,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     RhoString = "Rho Spectrum vs Centrality";
     fhRhoCen = new TH2D("fhRhoCen",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhRhoCen->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
-    fhRhoCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhRhoCen->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fhRhoCen->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fhRhoCen->Sumw2();
     
@@ -3834,10 +3859,17 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     PtString = "Background Subtracted Jet Spectrum vs Centrality";
     fhBSPtCen = new TH2D("fhBSPtCen",PtString,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhBSPtCen->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
-    fhBSPtCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhBSPtCen->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fhBSPtCen->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#phi");
     fhBSPtCen->Sumw2();
-    
+    /*
+    PtString = "Background Subtracted Jet Spectrum vs Centrality vs Leading Charge Track p_{T}";
+    fhBSPtCenLCT = new TH3D("fhBSPtCenLCT",PtString,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp,fLChargedTrackPtBins,fLChargedTrackPtLow,fLChargedTrackPtUp);
+    fhBSPtCenLCT->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
+    fhBSPtCenLCT->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
+    fhBSPtCenLCT->GetZaxis()->SetTitle("Leading Charged Track p_{T} (GeV/c)");
+    fhBSPtCenLCT->Sumw2();
+    */
     PtString = Form("%d-%d Centrality, Background Subtracted Signal Jet Spectrum",0,20);
     fh020BSPtSignal = new TH1D("fh020BSPtSignal",PtString,fPtBins,fPtLow,fPtUp);
     fh020BSPtSignal->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
@@ -3859,7 +3891,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     PtString = "Background Subtracted Signal Jet Spectrum vs Centrality";
     fhBSPtCenSignal = new TH2D("fhBSPtCenSignal",PtString,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhBSPtCenSignal->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
-    fhBSPtCenSignal->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhBSPtCenSignal->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fhBSPtCenSignal->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#phi");
     fhBSPtCenSignal->Sumw2();
     
@@ -3885,7 +3917,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     DeltaPtString = "#deltap_{T} Spectrum vs Centrality";
     fhDeltaPtCen = new TH2D("fhDeltaPtCen",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhDeltaPtCen->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
-    fhDeltaPtCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhDeltaPtCen->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fhDeltaPtCen->GetZaxis()->SetTitle("Probability Density");
     fhDeltaPtCen->Sumw2();
     
@@ -3911,7 +3943,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     DeltaPtString = "#deltap_{T} Spectrum vs Centrality";
     fhDeltaPtCenSignal = new TH2D("fhDeltaPtCenSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhDeltaPtCenSignal->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
-    fhDeltaPtCenSignal->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhDeltaPtCenSignal->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fhDeltaPtCenSignal->GetZaxis()->SetTitle("Probability Density");
     fhDeltaPtCenSignal->Sumw2();
 
@@ -3937,7 +3969,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     DeltaPtString = "#deltap_{T} Spectrum vs Centrality";
     fhDeltaPtCenNColl = new TH2D("fhDeltaPtCenNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhDeltaPtCenNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
-    fhDeltaPtCenNColl->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhDeltaPtCenNColl->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fhDeltaPtCenNColl->GetZaxis()->SetTitle("Probability Density");
     fhDeltaPtCenNColl->Sumw2();
 
@@ -3963,14 +3995,14 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     BckgFlucPtString = "Background Fluctuation p_{T} Spectrum vs Centrality";
     fhBckgFlucPtCen = new TH2D("fhBckgFlucPtCen",BckgFlucPtString,fBckgFlucPtBins,fBckgFlucPtLow,fBckgFlucPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhBckgFlucPtCen->GetXaxis()->SetTitle("#p_{T} (GeV/c)");
-    fhBckgFlucPtCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhBckgFlucPtCen->GetYaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fhBckgFlucPtCen->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#phi");
     fhBckgFlucPtCen->Sumw2();
     
     // Background Density vs Centrality Profile
     RhoString = "Background Density vs Centrality";
     fpRho = new TProfile("fpRho",RhoString,fCentralityBins,fCentralityLow,fCentralityUp);
-    fpRho->GetXaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fpRho->GetXaxis()->SetTitle(Form("Centrality %s",CentralityString.Data()));
     fpRho->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
     
     // Background Density vs Leading Jet Profile
@@ -3987,6 +4019,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fOutput->Add(fh80100BSPt);
     fOutput->Add(fhBSPt);
     fOutput->Add(fhBSPtCen);
+    //fOutput->Add(fhBSPtCenLCT);
     fOutput->Add(fh020BSPtSignal);
     fOutput->Add(fh80100BSPtSignal);
     fOutput->Add(fhBSPtSignal);
@@ -4063,6 +4096,13 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetLeadingJetPtRange(Int_t bins,
     fLJetPtUp=up;
 }
 
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up)
+{
+    fLChargedTrackPtBins=bins;
+    fLChargedTrackPtLow=low;
+    fLChargedTrackPtUp=up;
+}
+
 TList* AliAnalysisTaskFullpAJets::AlipAJetHistos::GetOutputHistos()
 {
     return fOutput;
@@ -4090,14 +4130,17 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBSJS(Double_t eventCentralit
 {
     Int_t i;
     Double_t tempPt=0.0;
+    Double_t tempChargedHighPt=0.0;
     
     for (i=0;i<nIndexJetList;i++)
     {
         AliEmcalJet *myJet = (AliEmcalJet*) jetList->At(indexJetList[i]);
         tempPt=myJet->Pt()-rho*myJet->Area();
-        
+        tempChargedHighPt = myJet->MaxTrackPt();
+
         fhBSPt->Fill(tempPt);
         fhBSPtCen->Fill(tempPt,eventCentrality);
+        //fhBSPtCenLCT->Fill(tempPt,eventCentrality,tempChargedHighPt);
         if (eventCentrality<=20)
         {
             fh020BSPt->Fill(tempPt);
@@ -4106,8 +4149,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBSJS(Double_t eventCentralit
         {
             fh80100BSPt->Fill(tempPt);
         }
-        
-        if (myJet->Pt()>=signalCut)
+        if (tempChargedHighPt>=signalCut)
         {
             fhBSPtSignal->Fill(tempPt);
             fhBSPtCenSignal->Fill(tempPt,eventCentrality);
@@ -4121,6 +4163,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBSJS(Double_t eventCentralit
             }
         }
         tempPt=0.0;
+        tempChargedHighPt=0.0;
     }
 }
 

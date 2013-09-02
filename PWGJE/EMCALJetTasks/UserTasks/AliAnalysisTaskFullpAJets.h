@@ -61,6 +61,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t GetJetIndex(Int_t At);
         Int_t GetSignalJetIndex(Int_t At);
         Bool_t GetIsJetInArray(Int_t At);
+        Double_t GetJetMaxChargedPt(Int_t At);
         
         Int_t* GetJets() const {return fJetsIndex;}  //!
         Int_t* GetSignalJets() const {return fJetsSCIndex;}  //!
@@ -86,6 +87,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t *fJetsIndex;  //!
         Int_t *fJetsSCIndex;  //!
         Bool_t *fIsJetInArray;  //!
+        Double_t *fJetMaxChargedPt; //!
     };
     
     // AlipAJetHistos Helper Class
@@ -116,7 +118,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetDeltaPtRange(Int_t bins, Double_t low, Double_t up);
         void SetBackgroundFluctuationsPtRange(Int_t bins, Double_t low, Double_t up);
         void SetLeadingJetPtRange(Int_t bins, Double_t low, Double_t up);
-        
+        void SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up);
+                                           
         // User Defined Functions
         TList* GetOutputHistos();  //!
         Double_t GetRho();
@@ -136,6 +139,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH1D *fh80100BSPt; //!
         TH1D *fhBSPt; //!
         TH2D *fhBSPtCen; //!
+        //TH3D *fhBSPtCenLCT; //!
         
         // This set of Histograms is for filling the Background Subtracted Signal Jet Spectra
         TH1D *fh020BSPtSignal; //!
@@ -200,6 +204,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Double_t fLJetPtUp;
         
         Double_t fRhoValue;
+        
+        Int_t fLChargedTrackPtBins;
+        Double_t fLChargedTrackPtLow;
+        Double_t fLChargedTrackPtUp;
     };
 
     // AliAnalysisTaskFullpAJets
