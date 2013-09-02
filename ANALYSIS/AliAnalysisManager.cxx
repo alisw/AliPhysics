@@ -100,7 +100,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fExtraFiles(),
                     fFileInfoLog(),
                     fAutoBranchHandling(kTRUE), 
-                    fAsyncReading(kTRUE), // default prefetching on
+                    fAsyncReading(kFALSE), // default prefetching on
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(0),
