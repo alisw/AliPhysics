@@ -35,7 +35,7 @@ hMCPt(0),
 hnZvPtEtaCent(0),
 hnMCRecPrimZvPtEtaCent(0),
 hnMCGenZvPtEtaCent(0),
-hnMCSecZvPtEtaCent(0),
+hnMCRecSecZvPtEtaCent(0),
 hEventStatistics(0),
 hEventStatisticsCentrality(0),
 hAllEventStatisticsCentrality(0),
@@ -49,6 +49,10 @@ hMCPdgPt(0),
 hMCHijingPrim(0),
 hAccNclsTPC(0),
 hAccCrossedRowsTPC(0),
+hDCAPtAll(0),
+hDCAPtAccepted(0),
+hMCDCAPtSecondary(0),
+hMCDCAPtPrimary(0),
 //global
 bIsMonteCarlo(0),
 // event cut variables
@@ -114,7 +118,7 @@ hMCPt(0),
 hnZvPtEtaCent(0),
 hnMCRecPrimZvPtEtaCent(0),
 hnMCGenZvPtEtaCent(0),
-hnMCSecZvPtEtaCent(0),
+hnMCRecSecZvPtEtaCent(0),
 hEventStatistics(0),
 hEventStatisticsCentrality(0),
 hAllEventStatisticsCentrality(0),
@@ -128,6 +132,10 @@ hMCPdgPt(0),
 hMCHijingPrim(0),
 hAccNclsTPC(0),
 hAccCrossedRowsTPC(0),
+hDCAPtAll(0),
+hDCAPtAccepted(0),
+hMCDCAPtSecondary(0),
+hMCDCAPtPrimary(0),
 //global
 bIsMonteCarlo(0),
 // event cut variables
@@ -190,6 +198,27 @@ AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
 {
   if(hnZvPtEtaCent) delete hnZvPtEtaCent; hnZvPtEtaCent = 0;
   if(hPt) delete hPt; hPt = 0;
+  if(hnMCRecPrimZvPtEtaCent) delete hnMCRecPrimZvPtEtaCent; hnMCRecPrimZvPtEtaCent = 0;
+  if(hnMCGenZvPtEtaCent) delete hnMCGenZvPtEtaCent; hnMCGenZvPtEtaCent = 0;
+  if(hnMCRecSecZvPtEtaCent) delete hnMCRecSecZvPtEtaCent; hnMCRecSecZvPtEtaCent = 0;
+  if(hMCPt) delete hMCPt; hMCPt = 0;
+  if(hEventStatistics) delete hEventStatistics; hEventStatistics = 0;
+  if(hEventStatisticsCentrality) delete hEventStatisticsCentrality; hEventStatisticsCentrality = 0;
+  if(hAllEventStatisticsCentrality) delete hAllEventStatisticsCentrality; hAllEventStatisticsCentrality = 0;
+  if(hnZvMultCent) delete hnZvMultCent; hnZvMultCent = 0;
+  if(hTriggerStatistics) delete hTriggerStatistics; hTriggerStatistics = 0;
+  if(hMCTrackPdgCode) delete hMCTrackPdgCode; hMCTrackPdgCode = 0;
+  if(hMCTrackStatusCode) delete hMCTrackStatusCode; hMCTrackStatusCode = 0;
+  if(hCharge) delete hCharge; hCharge = 0;
+  if(hMCCharge) delete hMCCharge; hMCCharge = 0;
+  if(hMCPdgPt) delete hMCPdgPt; hMCPdgPt = 0;
+  if(hMCHijingPrim) delete hMCHijingPrim; hMCHijingPrim = 0;
+  if(hAccNclsTPC) delete hAccNclsTPC; hAccNclsTPC = 0;
+  if(hAccCrossedRowsTPC) delete hAccCrossedRowsTPC; hAccCrossedRowsTPC = 0;
+  if(hDCAPtAll) delete hDCAPtAll; hDCAPtAll = 0;
+  if(hDCAPtAccepted) delete hDCAPtAccepted; hDCAPtAccepted = 0;
+  if(hMCDCAPtSecondary) delete hMCDCAPtSecondary; hMCDCAPtSecondary = 0;
+  if(hMCDCAPtPrimary) delete hMCDCAPtPrimary; hMCDCAPtPrimary = 0;
 }
 
 void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
@@ -253,16 +282,16 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hnMCGenZvPtEtaCent->GetAxis(3)->SetTitle("Centrality");
   hnMCGenZvPtEtaCent->Sumw2();
   
-  hnMCSecZvPtEtaCent = new THnSparseF("hnMCSecZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtEtaCent);
-  hnMCSecZvPtEtaCent->SetBinEdges(0,fBinsZv);
-  hnMCSecZvPtEtaCent->SetBinEdges(1,fBinsPt);
-  hnMCSecZvPtEtaCent->SetBinEdges(2,fBinsEta);
-  hnMCSecZvPtEtaCent->SetBinEdges(3,fBinsCentrality);
-  hnMCSecZvPtEtaCent->GetAxis(0)->SetTitle("MC Sec Zv (cm)");
-  hnMCSecZvPtEtaCent->GetAxis(1)->SetTitle("MC Sec Pt (GeV/c)");
-  hnMCSecZvPtEtaCent->GetAxis(2)->SetTitle("MC Sec Eta");
-  hnMCSecZvPtEtaCent->GetAxis(3)->SetTitle("Centrality");
-  hnMCSecZvPtEtaCent->Sumw2();
+  hnMCRecSecZvPtEtaCent = new THnSparseF("hnMCRecSecZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtEtaCent);
+  hnMCRecSecZvPtEtaCent->SetBinEdges(0,fBinsZv);
+  hnMCRecSecZvPtEtaCent->SetBinEdges(1,fBinsPt);
+  hnMCRecSecZvPtEtaCent->SetBinEdges(2,fBinsEta);
+  hnMCRecSecZvPtEtaCent->SetBinEdges(3,fBinsCentrality);
+  hnMCRecSecZvPtEtaCent->GetAxis(0)->SetTitle("MC Sec Zv (cm)");
+  hnMCRecSecZvPtEtaCent->GetAxis(1)->SetTitle("MC Sec Pt (GeV/c)");
+  hnMCRecSecZvPtEtaCent->GetAxis(2)->SetTitle("MC Sec Eta");
+  hnMCRecSecZvPtEtaCent->GetAxis(3)->SetTitle("Centrality");
+  hnMCRecSecZvPtEtaCent->Sumw2();
   
   hPt = new TH1F("hPt","hPt",2000,0,200);
   hPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -325,13 +354,17 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hAccCrossedRowsTPC = new TH1F("hAccCrossedRowsTPC","hAccCrossedRowsTPC",160,0,159);
   hAccCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track after cut");
   
+  hDCAPtAll = new TH2F("hDCAPtAll","hDCAPtAll;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
+  hDCAPtAccepted = new TH2F("hDCAPtAccepted","hDCAPtAccepted;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
+  hMCDCAPtSecondary = new TH2F("hMCDCAPtSecondary","hMCDCAPtSecondary;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
+  hMCDCAPtPrimary = new TH2F("hMCDCAPtPrimary","hMCDCAPtPrimary;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(hnZvPtEtaCent);
   fOutputList->Add(hPt);
   fOutputList->Add(hnMCRecPrimZvPtEtaCent);
   fOutputList->Add(hnMCGenZvPtEtaCent);
-  fOutputList->Add(hnMCSecZvPtEtaCent);
+  fOutputList->Add(hnMCRecSecZvPtEtaCent);
   fOutputList->Add(hMCPt);
   fOutputList->Add(hEventStatistics);
   fOutputList->Add(hEventStatisticsCentrality);
@@ -346,6 +379,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hMCHijingPrim);
   fOutputList->Add(hAccNclsTPC);
   fOutputList->Add(hAccCrossedRowsTPC);
+  fOutputList->Add(hDCAPtAll);
+  fOutputList->Add(hDCAPtAccepted);
+  fOutputList->Add(hMCDCAPtSecondary);
+  fOutputList->Add(hMCDCAPtPrimary);
+  
   
   PostData(1, fOutputList);
 }
@@ -531,6 +569,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     if( !(IsTrackAccepted(track)) ) continue;
     
+    dTrackZvPtEtaCent[1] = track->Pt();
+    dTrackZvPtEtaCent[2] = track->Eta();
+    dTrackZvPtEtaCent[3] = dCentrality;
+    
     if( bIsMonteCarlo )
     {
       mcPart = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
@@ -552,7 +594,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
       
       if(bIsPrimary && bIsHijingParticle)
       {
-	hnMCRecPrimZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
+	hnMCRecPrimZvPtEtaCent->Fill(dTrackZvPtEtaCent);
+	hMCDCAPtPrimary->Fill(track->Pt(), track->DCA());
       }
       
       if(!bIsPrimary /*&& !bIsHijingParticle*/)
@@ -568,7 +611,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	    hMCTrackStatusCode->Fill(Form("%d",mcPart->GetStatus()), 1);
 	    if(TMath::Abs(mcPart->Eta()) < 0.8) { hMCPdgPt->Fill(mcPart->Pt(), Form("%s",GetParticleName(mcPart->GetPdgCode())), 1); }
 	    
-	    hnMCSecZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
+	    hnMCRecSecZvPtEtaCent->Fill(dTrackZvPtEtaCent);
+	    hMCDCAPtSecondary->Fill(track->Pt(), track->DCA());
 	    hMCTrackPdgCode->Fill(Form("%s_H%i_H%i",GetParticleName(moth->GetPdgCode()),bMotherIsHijingParticle, bIsHijingParticle), 1);
 	    // 	  delete moth;
 	  }
@@ -583,9 +627,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 //       continue;  //only store reco tracks, which do not come from embedded signal
 //     }
     
-    dTrackZvPtEtaCent[1] = track->Pt();
-    dTrackZvPtEtaCent[2] = track->Eta();
-    dTrackZvPtEtaCent[3] = dCentrality;
+   
     
     bEventHasATrack = kTRUE;
     
@@ -627,6 +669,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   
   if(tr->Charge()==0) { return kFALSE; }
   
+  hDCAPtAll->Fill(tr->Pt(), tr->DCA());
+  
   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; }
   
   
@@ -635,7 +679,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
   
   if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
-  
+
+  hDCAPtAccepted->Fill(tr->Pt(), tr->DCA());
   hAccNclsTPC->Fill(dNClustersTPC);
   hAccCrossedRowsTPC->Fill(dCrossedRowsTPC);
   //   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
@@ -765,36 +810,46 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsPythiaParticle(const AliAODMCParticle *part, A
   return kTRUE;
 }
 
-Bool_t AlidNdPtAnalysisPbPbAOD::IsMCSecondary(AliAODMCParticle *part, TClonesArray *arrayMC)
-{
-  //
-  // from AliAnalysisTaskSpectraAOD.cxx
-  //
-  
-  if(!part) return kFALSE; 
-  
-  if( part->IsPhysicalPrimary() ) return kFALSE;
-  
-  Bool_t isSecondaryMaterial = kFALSE; 
-  Bool_t isSecondaryWeak     = kFALSE; 
-  Int_t mfl = -999;
-  Int_t codemoth = -999;
-  Int_t indexMoth = part->GetMother(); // FIXME ignore fakes? TO BE CHECKED, on ESD is GetFirstMother()
-  if(indexMoth >= 0)
-  {
-    AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
-    codemoth = TMath::Abs(moth->GetPdgCode());
-    mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
-  } 
-  // add if(partMC->GetStatus() & kPDecay)? FIXME
-  if(mfl==3) isSecondaryWeak     = kTRUE;     
-  else       isSecondaryMaterial = kTRUE; 
-  
-  if( isSecondaryMaterial || isSecondaryWeak ) return kTRUE;
-  
-  // return kFALSE; this line will not be reached, as either isSecondaryMaterial or isSecondaryWeak is true!
-  // removed due to coverity
-}
+// Int_t AlidNdPtAnalysisPbPbAOD::IsMCSecondary(AliAODMCParticle *part, TClonesArray *arrayMC)
+// {
+//   //
+//   // adapted from AliAnalysisTaskSpectraAOD.cxx
+//   //
+//   // returns
+//   // -1: no particle
+//   // 0: is primary
+//   // 1: is secondary from weak
+//   // 2: is secondary from material
+//   
+//   // usage for studies, currrently not implemented
+//   
+//   if(!part) return -1; 
+//   
+//   if( part->IsPhysicalPrimary() ) return 0;
+//   
+//   Bool_t isSecondaryMaterial = kFALSE; 
+//   Bool_t isSecondaryWeak     = kFALSE; 
+//   Int_t mfl = -999;
+//   Int_t codemoth = -999;
+//   Int_t indexMoth = part->GetMother(); // FIXME ignore fakes? TO BE CHECKED, on ESD is GetFirstMother()
+//   if(indexMoth >= 0)
+//   {
+//     AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
+//     codemoth = TMath::Abs(moth->GetPdgCode());
+//     mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+//   } 
+//   // add if(partMC->GetStatus() & kPDecay)? FIXME
+//   if(mfl==3) isSecondaryWeak     = kTRUE;     
+//   else       isSecondaryMaterial = kTRUE; 
+//   
+//   if(isSecondaryWeak) return 1;
+//   if(isSecondaryMaterial) return 2;
+//   
+// //   if( isSecondaryMaterial || isSecondaryWeak ) return kTRUE;
+//   
+//   // return kFALSE; this line will not be reached, as either isSecondaryMaterial or isSecondaryWeak is true!
+//   // removed due to coverity
+// }
 
 
 
