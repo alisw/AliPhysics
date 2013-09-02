@@ -29,6 +29,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTracklets.h"
+
 #include "AliThreePionRadii.h"
 
 #define PI 3.1415927
@@ -121,10 +122,16 @@ AliAnalysisTaskSE(),
 	  for(Int_t sc=0; sc<kSCLimit2; sc++){
 	    for(Int_t term=0; term<2; term++){
 	      
-	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2=0x0;
-	      
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2 = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fAvgP = 0x0;
 	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal = 0x0;
 	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared = 0x0;
+	      //
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinv = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = 0x0;
 	      
 	    }// term_2
 	  }// SC_2
@@ -133,11 +140,12 @@ AliAnalysisTaskSE(),
 	    for(Int_t sc=0; sc<kSCLimit3; sc++){
 	      for(Int_t term=0; term<5; term++){
 		
-		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fExplicit3 = 0x0;
-		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNormEx3 = 0x0;
 		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNorm3 = 0x0;
 		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = 0x0;
-		
+		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTermsQ3 = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fIdeal = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fSmeared = 0x0;
+
 	      }// term_3
 	    }// SC_3
 	  }//c3
@@ -238,11 +246,16 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
 	  for(Int_t sc=0; sc<kSCLimit2; sc++){
 	    for(Int_t term=0; term<2; term++){
 	      
-	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2=0x0;
-	      
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2 = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fAvgP = 0x0;
 	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal = 0x0;
 	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared = 0x0;
-	      
+	      //
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinv = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen = 0x0;
+	      Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = 0x0;
 	    }// term_2
 	  }// SC_2
 	  
@@ -250,11 +263,11 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
 	    for(Int_t sc=0; sc<kSCLimit3; sc++){
 	      for(Int_t term=0; term<5; term++){
 		
-		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fExplicit3 = 0x0;
-		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNormEx3 = 0x0;
 		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNorm3 = 0x0;
 		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = 0x0;
-		
+		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTermsQ3 = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fIdeal = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fSmeared = 0x0;
 	      }// term_3
 	    }// SC_3
 	  }//c3
@@ -369,7 +382,7 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fEvt = obj.fEvt;
   fTempStruct = obj.fTempStruct;
   fRandomNumber = obj.fRandomNumber;
-  fLEGO = fLEGO;
+  fLEGO = obj.fLEGO;
   fMCcase = obj.fMCcase;
   fAODcase = obj.fAODcase;
   fPbPbcase = obj.fPbPbcase; 
@@ -457,7 +470,8 @@ AliThreePionRadii::~AliThreePionRadii()
 	    for(Int_t term=0; term<2; term++){
 	      
 	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2;
-	      
+	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW;
+
 	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fIdeal;
 	      if(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared) delete Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fSmeared;
 	      //
@@ -470,8 +484,6 @@ AliThreePionRadii::~AliThreePionRadii()
 	    for(Int_t sc=0; sc<kSCLimit3; sc++){
 	      for(Int_t term=0; term<5; term++){
 		
-		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fExplicit3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fExplicit3;
-		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNormEx3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNormEx3;
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNorm3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fNorm3;
 		if(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3) delete Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3;
 				
@@ -1401,8 +1413,7 @@ void AliThreePionRadii::Exec(Option_t *)
   //
   AliAODMCParticle *mcParticle1=0x0;
   AliAODMCParticle *mcParticle2=0x0;
-  
-
+ 
   if(fPdensityPairCut){
     ////////////////////
     Int_t pairCountSE=0, pairCountME=0;
@@ -1552,7 +1563,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	// Pair Splitting/Merging cut
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
 	if(ch1 == ch2){
-	  if(!AcceptPair((fEvt)->fTracks[i], (fEvt+en2)->fTracks[j])) {
+	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[0][i]->AddAt('1',j);
 	    ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
 	    continue;
@@ -1839,7 +1850,7 @@ void AliThreePionRadii::Exec(Option_t *)
 		    ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, 1, jj, firstQMC, secondQMC, thirdQMC);
 		    
 		    if(ch1==ch2 && ch1==ch3){// same charge
-		      WInput = MCWeight3D(kTRUE, jj, 9, firstQMC, secondQMC, thirdQMC);
+		      WInput = MCWeight3D(kTRUE, jj, 10, firstQMC, secondQMC, thirdQMC);
 		      if(jj==1) {
 			((TH1D*)fOutputList->FindObject("fMCWeight3DTerm1SC"))->Fill(q3MC, WInput);
 			((TH1D*)fOutputList->FindObject("fMCWeight3DTerm1SCden"))->Fill(q3MC);
@@ -1849,10 +1860,10 @@ void AliThreePionRadii::Exec(Option_t *)
 		      }
 		    }else {// mixed charge
 		      if(bin1==bin2) {
-			WInput = MCWeight3D(kFALSE, jj, 9, firstQMC, secondQMC, thirdQMC);
+			WInput = MCWeight3D(kFALSE, jj, 10, firstQMC, secondQMC, thirdQMC);
 		      }else {
-			if(jj==1 || jj==5) WInput = MCWeight3D(kFALSE, jj, 9, thirdQMC, secondQMC, firstQMC);// thirdQMC is ss
-			else WInput = MCWeight3D(kFALSE, 6-jj, 9, thirdQMC, secondQMC, firstQMC);
+			if(jj==1 || jj==5) WInput = MCWeight3D(kFALSE, jj, 10, thirdQMC, secondQMC, firstQMC);// thirdQMC is ss
+			else WInput = MCWeight3D(kFALSE, 6-jj, 10, thirdQMC, secondQMC, firstQMC);
 		      }
 		      if(jj==1){
 			((TH1D*)fOutputList->FindObject("fMCWeight3DTerm1MC"))->Fill(q3MC, WInput);
@@ -1976,7 +1987,7 @@ void AliThreePionRadii::Exec(Option_t *)
 
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting cut)
 	if(ch1 == ch2){
-	  if(!AcceptPair((fEvt)->fTracks[i], (fEvt+en2)->fTracks[j])) {
+	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[1][i]->AddAt('1',j);
 	    continue;
 	  }
@@ -2117,7 +2128,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	
 	if(ch1 == ch2){
-	  if(!AcceptPair((fEvt)->fTracks[i], (fEvt+en2)->fTracks[j])) {
+	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[2][i]->AddAt('1',j);
 	    continue;
 	  }
@@ -2170,7 +2181,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	
 	if(ch1 == ch2){
-	  if(!AcceptPair((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
+	  if(!AcceptPair(&((fEvt+en1)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[3][i]->AddAt('1',j);
 	    continue;
 	  }
@@ -2551,16 +2562,16 @@ void AliThreePionRadii::Terminate(Option_t *)
 
 }
 //________________________________________________________________________
-Bool_t AliThreePionRadii::AcceptPair(AliChaoticityTrackStruct first, AliChaoticityTrackStruct second)
+Bool_t AliThreePionRadii::AcceptPair(AliChaoticityTrackStruct *first, AliChaoticityTrackStruct *second)
 {
   
-  if(fabs(first.fEta-second.fEta) > fMinSepPairEta) return kTRUE;
+  if(fabs(first->fEta-second->fEta) > fMinSepPairEta) return kTRUE;
   
   // propagate through B field to r=1m
-  Float_t phi1 = first.fPhi - asin(first.fCharge*(0.1*fBfield)*0.15/first.fPt);// 0.15 for D=1m
+  Float_t phi1 = first->fPhi - asin(first->fCharge*(0.1*fBfield)*0.15/first->fPt);// 0.15 for D=1m
   if(phi1 > 2*PI) phi1 -= 2*PI;
   if(phi1 < 0) phi1 += 2*PI;
-  Float_t phi2 = second.fPhi - asin(second.fCharge*(0.1*fBfield)*0.15/second.fPt);// 0.15 for D=1m 
+  Float_t phi2 = second->fPhi - asin(second->fCharge*(0.1*fBfield)*0.15/second->fPt);// 0.15 for D=1m 
   if(phi2 > 2*PI) phi2 -= 2*PI;
   if(phi2 < 0) phi2 += 2*PI;
   
@@ -2573,10 +2584,10 @@ Bool_t AliThreePionRadii::AcceptPair(AliChaoticityTrackStruct first, AliChaotici
     
   
   // propagate through B field to r=1.6m
-  phi1 = first.fPhi - asin(first.fCharge*(0.1*fBfield)*0.24/first.fPt);// mine. 0.24 for D=1.6m
+  phi1 = first->fPhi - asin(first->fCharge*(0.1*fBfield)*0.24/first->fPt);// mine. 0.24 for D=1.6m
   if(phi1 > 2*PI) phi1 -= 2*PI;
   if(phi1 < 0) phi1 += 2*PI;
-  phi2 = second.fPhi - asin(second.fCharge*(0.1*fBfield)*0.24/second.fPt);// mine. 0.24 for D=1.6m 
+  phi2 = second->fPhi - asin(second->fCharge*(0.1*fBfield)*0.24/second->fPt);// mine. 0.24 for D=1.6m 
   if(phi2 > 2*PI) phi2 -= 2*PI;
   if(phi2 < 0) phi2 += 2*PI;
   
@@ -2591,19 +2602,19 @@ Bool_t AliThreePionRadii::AcceptPair(AliChaoticityTrackStruct first, AliChaotici
    
   //
   
-  Int_t ncl1 = first.fClusterMap.GetNbits();
-  Int_t ncl2 = second.fClusterMap.GetNbits();
+  Int_t ncl1 = first->fClusterMap.GetNbits();
+  Int_t ncl2 = second->fClusterMap.GetNbits();
   Int_t sumCls = 0; Int_t sumSha = 0; Int_t sumQ = 0;
   Double_t shfrac = 0; Double_t qfactor = 0;
   for(Int_t imap = 0; imap < ncl1 && imap < ncl2; imap++) {
-    if (first.fClusterMap.TestBitNumber(imap) && second.fClusterMap.TestBitNumber(imap)) {// Both clusters
-      if (first.fSharedMap.TestBitNumber(imap) && second.fSharedMap.TestBitNumber(imap)) { // Shared
+    if (first->fClusterMap.TestBitNumber(imap) && second->fClusterMap.TestBitNumber(imap)) {// Both clusters
+      if (first->fSharedMap.TestBitNumber(imap) && second->fSharedMap.TestBitNumber(imap)) { // Shared
 	sumQ++;
 	sumCls+=2;
 	sumSha+=2;}
       else {sumQ--; sumCls+=2;}
     }
-    else if (first.fClusterMap.TestBitNumber(imap) || second.fClusterMap.TestBitNumber(imap)) {// Non shared
+    else if (first->fClusterMap.TestBitNumber(imap) || second->fClusterMap.TestBitNumber(imap)) {// Non shared
       sumQ++;
       sumCls++;}
   }
@@ -3090,10 +3101,10 @@ void AliThreePionRadii::SetFSICorrelations(Bool_t legoCase, TH1D *temp1DSS[10], 
 //________________________________________________________________________
 Float_t AliThreePionRadii::FSICorrelation2(Int_t charge1, Int_t charge2, Float_t qinv){
   // returns 2-particle Coulomb correlations = K2
-  Int_t qbinL = fFSI2SS[fFSIindex]->GetYaxis()->FindBin(qinv-fFSI2SS[fFSIindex]->GetYaxis()->GetBinWidth(1)/2.);
+  Int_t qbinL = fFSI2SS[fFSIindex]->GetXaxis()->FindBin(qinv-fFSI2SS[fFSIindex]->GetXaxis()->GetBinWidth(1)/2.);
   Int_t qbinH = qbinL+1;
   if(qbinL <= 0) return 1.0;
-  if(qbinH > fFSI2SS[fFSIindex]->GetNbinsY()) return 1.0;
+  if(qbinH > fFSI2SS[fFSIindex]->GetNbinsX()) return 1.0;
   
   Float_t slope=0;
   if(charge1==charge2){

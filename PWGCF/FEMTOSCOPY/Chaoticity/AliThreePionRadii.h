@@ -30,7 +30,6 @@ class AliESDpid;
 #include "AliESDpid.h"
 #include "AliAODPid.h"
 #include "AliChaoticityEventCollection.h"
-#include "AliThreePionRadii.h"
 
 class AliThreePionRadii : public AliAnalysisTaskSE {
  public:
@@ -92,7 +91,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
  private:
 
   void ParInit();
-  Bool_t AcceptPair(AliChaoticityTrackStruct, AliChaoticityTrackStruct);
+  Bool_t AcceptPair(AliChaoticityTrackStruct*, AliChaoticityTrackStruct*);
   Float_t GamovFactor(Int_t, Int_t, Float_t);
   void Shuffle(Int_t*, Int_t, Int_t);
   Short_t FillIndex2part(Short_t);
@@ -127,9 +126,6 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   // histogram structures
 
   struct St6 {
-    TH1D *fExplicit3; //!
-    TH1D *fNormEx3; //!
-    //
     TH1D *fNorm3; //!
     TH3D *fTerms3; //!
     TH1D *fTermsQ3; //!
@@ -139,7 +135,6 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   struct St5 {
     TH2D *fExplicit2; //!
     TH2D *fExplicit2QW; //!
-    TH3D *fExplicit2ThreeD; //!
     TProfile2D *fAvgP; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
