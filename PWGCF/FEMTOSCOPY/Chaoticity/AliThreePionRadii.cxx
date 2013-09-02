@@ -530,10 +530,14 @@ void AliThreePionRadii::ParInit()
   
   //fMultLimits[0]=0, fMultLimits[1]=5, fMultLimits[2]=10, fMultLimits[3]=15, fMultLimits[4]=20, fMultLimits[5]=25;
   //fMultLimits[6]=30, fMultLimits[7]=35, fMultLimits[8]=40, fMultLimits[9]=45, fMultLimits[10]=kMultLimitPP;
-  for(Int_t index=0; index<fCentBins+1; index++){// (dNtracklet/deta)^(1/3)
-    fMultLimits[index]=index;
-  }
-
+  
+  fMultLimits[0]=0, fMultLimits[1]=5; fMultLimits[2]=10; fMultLimits[3]=15; fMultLimits[4]=20;
+  fMultLimits[5]=30, fMultLimits[6]=40; fMultLimits[7]=50; fMultLimits[8]=70; fMultLimits[9]=100;
+  fMultLimits[10]=150, fMultLimits[11]=200; fMultLimits[12]=260; fMultLimits[13]=320; fMultLimits[14]=400;
+  fMultLimits[15]=500, fMultLimits[16]=600; fMultLimits[17]=700; fMultLimits[18]=850; fMultLimits[19]=1050;
+  fMultLimits[20]=2000;
+  
+  
   if(fPbPbcase && fCentBinLowLimit < 10) {// PbPb 0-50%
     fMultLimit=kMultLimitPbPb; 
     fMbins=fCentBins; 
@@ -576,7 +580,7 @@ void AliThreePionRadii::ParInit()
     fDampStep = 0.02;
   }else {// pp or pPb
     fMultLimit=kMultLimitPP;
-    fMbins=5;
+    fMbins=fCentBins;
     fQcut[0]=2.0;// 0.4
     fQcut[1]=2.0;
     fQcut[2]=2.0;
@@ -747,6 +751,9 @@ void AliThreePionRadii::UserCreateOutputObjects()
 
   TProfile *fAvgMult = new TProfile("fAvgMult","",fMbins,.5,fMbins+.5, 0,1500,"");
   fOutputList->Add(fAvgMult);
+  TH2D *fAvgMultHisto2D = new TH2D("fAvgMultHisto2D","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
+  fOutputList->Add(fAvgMultHisto2D);
+  
 
   TH2D *fTrackChi2NDF = new TH2D("fTrackChi2NDF","",20,0,100, 100,0,10);
   fOutputList->Add(fTrackChi2NDF);
@@ -797,14 +804,19 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fOutputList->Add(fMCWeight3DTerm4MCden);
 
   TH2D *fdNchdEtaResponse = new TH2D("fdNchdEtaResponse","",15,0,15, 15,0,15);
+  TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
+  TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
   if(fMCcase) fOutputList->Add(fdNchdEtaResponse);
+  if(fMCcase) fOutputList->Add(fNpionTrueDist);
+  if(fMCcase) fOutputList->Add(fNchTrueDist);
   TH2D *fdCentVsNchdEta = new TH2D("fdCentVsNchdEta","",fMbins,.5,fMbins+.5, 15,0,15);
   if(fPbPbcase) fOutputList->Add(fdCentVsNchdEta);
+  
   
   if(fPdensityPairCut){
     
     for(Int_t mb=0; mb<fMbins; mb++){
-      if(fPbPbcase && ((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit))) continue;
+      if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;
       
       for(Int_t edB=0; edB<fEDbins; edB++){
 	for(Int_t c1=0; c1<2; c1++){
@@ -1022,7 +1034,8 @@ void AliThreePionRadii::Exec(Option_t *)
 
   
   TClonesArray *mcArray = 0x0;
-  Int_t mcdNchdEta=0;
+  Int_t mcdNch=0;
+  Int_t mcdNpion=0;
   if(fMCcase){
     if(fAODcase){ 
       mcArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
@@ -1035,11 +1048,13 @@ void AliThreePionRadii::Exec(Option_t *)
       for(Int_t mctrackN=0; mctrackN<mcArray->GetEntriesFast(); mctrackN++){
 	AliAODMCParticle *mcParticle = (AliAODMCParticle*)mcArray->At(mctrackN);
 	if(!mcParticle) continue;
-	if(fabs(mcParticle->Eta())>0.5) continue;
+	if(fabs(mcParticle->Eta())>0.8) continue;
 	if(mcParticle->Charge()!=-3 && mcParticle->Charge()!=+3) continue;// x3 by convention
+	if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
 	if(!mcParticle->IsPrimary()) continue;
 	if(!mcParticle->IsPhysicalPrimary()) continue;
-	mcdNchdEta++;
+	mcdNch++;
+	if(abs(mcParticle->GetPdgCode())==211) mcdNpion++;
       }
       
     }
@@ -1065,7 +1080,7 @@ void AliThreePionRadii::Exec(Option_t *)
       centrality = fAOD->GetCentrality();
       centralityPercentile = centrality->GetCentralityPercentile("V0M");
       if(centralityPercentile == 0) {cout<<"Centrality = 0, skipping event"<<endl; return;}
-      if((centralityPercentile < 5*fCentBinLowLimit) || (centralityPercentile>= 5*(fCentBinHighLimit+1))) {/*cout<<"Centrality out of Range.  Skipping Event"<<endl;*/ return;}
+      //if((centralityPercentile < 5*fCentBinLowLimit) || (centralityPercentile>= 5*(fCentBinHighLimit+1))) {/*cout<<"Centrality out of Range.  Skipping Event"<<endl;*/ return;}
       cout<<"Centrality % = "<<centralityPercentile<<endl;
     }else{
       //cout<<"AOD multiplicity = "<<fAOD->GetNumberOfTracks()<<endl;
@@ -1325,19 +1340,21 @@ void AliThreePionRadii::Exec(Option_t *)
   // Mbin determination
   //
   fMbin=-1;
-  for(Int_t i=0; i<fMbins; i++){
-    if(fPbPbcase){
-      if(centralityPercentile >= 5*i && centralityPercentile < 5*(i+1)) {fMbin=i; break;}
-    }else{
-     if( (pow(trackletMult,1/3.) >= fMultLimits[i]) && (pow(trackletMult,1/3.) < fMultLimits[i+1])) {fMbin=i; break;}
-    } 
+  for(Int_t i=0; i<fCentBins; i++){
+    if( pionCount >= fMultLimits[i] && pionCount < fMultLimits[i+1]) {fMbin = fCentBins-i-1; break;}
+    
+    //if(fPbPbcase){
+    //if(centralityPercentile >= 5*i && centralityPercentile < 5*(i+1)) {fMbin=i; break;}
+    //}else{
+    //if( (pow(trackletMult,1/3.) >= fMultLimits[i]) && (pow(trackletMult,1/3.) < fMultLimits[i+1])) {fMbin=i; break;}
+    //} 
     //if( ( pionCount > fMultLimits[i]) && ( pionCount <= fMultLimits[i+1]) ) { fMbin=i; break;}// Mbin 0 has 0-5 pions
   }
 
     
 
   if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
-  if(fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
+  if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
   
 
   fFSIindex=0;
@@ -1358,16 +1375,20 @@ void AliThreePionRadii::Exec(Option_t *)
   fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
   //////////////////////////////////////////////////
   
-  
+  //cout<<fMbin<<"  "<<pionCount<<endl;
   
   ((TH1F*)fOutputList->FindObject("fEvents1"))->Fill(fMbin+1);
   ((TProfile*)fOutputList->FindObject("fAvgMult"))->Fill(fMbin+1., pionCount);
+  ((TH2D*)fOutputList->FindObject("fAvgMultHisto2D"))->Fill(fMbin+1., pionCount);
   if(fMCcase){
-    ((TH2D*)fOutputList->FindObject("fdNchdEtaResponse"))->Fill(pow(trackletMult,1/3.), pow(mcdNchdEta,1/3.));
+    ((TH2D*)fOutputList->FindObject("fdNchdEtaResponse"))->Fill(pow(trackletMult,1/3.), pow(mcdNch,1/3.));
+    ((TH2D*)fOutputList->FindObject("fNpionTrueDist"))->Fill(fMbin+1., mcdNpion);
+    ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcdNch);
   }
   if(fPbPbcase){
     ((TH2D*)fOutputList->FindObject("fdCentVsNchdEta"))->Fill(fMbin+1, pow(trackletMult,1/3.));
   }
+  
   //cout<<trackletMult<<"  "<<mcdNchdEta<<endl;
   
   ////////////////////////////////////
