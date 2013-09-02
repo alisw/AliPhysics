@@ -39,22 +39,23 @@ class AliEbyEPidTaskFastGen: public AliAnalysisTaskSE {
     fPtHigherLimit  = pth;
     fEtaLowerLimit  = -eta;
     fEtaHigherLimit = eta;
-
   }
-
 
    
  enum ESparseData_t {
-    kCent_V0M=0,
-    kCent_TRK=1,
-    kRef=2,
-    kRefTPC=3,
+    kAll_part=0,
+    kCent_imp=1,
+    kN_part=2,
+    kN_ch=3,
     kNch_plus,
     kNch_minus,
+    kN_pi,
     kNpi_plus,
     kNpi_minus,
+    kN_k,
     kNka_plus,
     kNka_minus,
+    kN_pr,
     kNpr_plus,
     kNpr_minus,
     kNSparseData
