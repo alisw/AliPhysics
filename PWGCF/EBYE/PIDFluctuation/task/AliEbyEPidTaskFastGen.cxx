@@ -76,26 +76,29 @@ AliEbyEPidTaskFastGen::~AliEbyEPidTaskFastGen()
 void AliEbyEPidTaskFastGen::UserCreateOutputObjects() {
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
-  Int_t fgSparseDataBins[kNSparseData]   = {50000,  500,  10000,  10000,  5000,  5000,   1500,  1500,   500,  500,  250,  250};
-  Double_t fgSparseDataMin[kNSparseData] = {0.,     0.,    0.,    0.,    0.,    0.,     0.,    0.,    0., 0.,     0.,   0.};
-  Double_t fgSparseDataMax[kNSparseData] = {50000., 50., 10000., 10000., 5000., 5000.,  1500., 1500.,  500., 500., 250., 250.};
+  Int_t fgSparseDataBins[kNSparseData]   = {50000,  500,  440,  30000,  15000,  15000,   10000,  5000,   5000,  2500,  2500,  2500,  1250, 1250};
+  Double_t fgSparseDataMin[kNSparseData] = {0.,     0.,     0.,     0.,     0.,     0.,      0.,    0.,     0.,    0.,    0.,   0., 0., 0. };
+  Double_t fgSparseDataMax[kNSparseData] = {50000., 50.,  440., 30000., 15000., 15000.,  10000., 5000.,  5000., 2500., 2500., 2500., 2500., 2500. };
   
   const Char_t *fgkSparseDataTitle[] = {
     "Nnumber of Partiles",
     "Impact Parameters",
     "N_{p}",
-    "N_{t}",
+    "N_{ch}",
     "N_{+}",
     "N_{-}",
+    "N_{#pi}",
     "N_{#pi^{+}}",
     "N_{#pi^{-}}",
+    "N_{K}",
     "N_{K^{+}}",
     "N_{K^{-}}",
+    "N_{pr}",
     "N_{p}",
     "N_{#bar{p}}"
   };
   
-  fHistoCorrelationMC = new THnSparseI("hHistoPR", "", 12, fgSparseDataBins, fgSparseDataMin, fgSparseDataMax);
+  fHistoCorrelationMC = new THnSparseI("hHistoPR", "", kNSparseData, fgSparseDataBins, fgSparseDataMin, fgSparseDataMax);
   for (Int_t iaxis = 0; iaxis < kNSparseData; iaxis++)
     fHistoCorrelationMC->GetAxis(iaxis)->SetTitle(fgkSparseDataTitle[iaxis]);
   fThnList->Add(fHistoCorrelationMC);
@@ -167,22 +170,28 @@ void AliEbyEPidTaskFastGen::UserExec( Option_t * ){
   Double_t vsparseMC[kNSparseData];
   vsparseMC[0]  = nParticles;
   vsparseMC[1]  = imp;
-  vsparseMC[2]  = np;
-  vsparseMC[3]  = nt;
+  vsparseMC[2]  = np + nt;
+  vsparseMC[3]  = count[0][0] + count[0][1];
   vsparseMC[4]  = count[0][0];
   vsparseMC[5]  = count[0][1];
-  vsparseMC[6]  = count[1][0];
-  vsparseMC[7]  = count[1][1];
-  vsparseMC[8]  = count[2][0];
-  vsparseMC[9]  = count[2][1];
-  vsparseMC[10] = count[3][0];
-  vsparseMC[11] = count[3][1];
+
+  vsparseMC[6]  = count[1][0] + count[1][1];
+  vsparseMC[7]  = count[1][0];
+  vsparseMC[8]  = count[1][1];
+
+  vsparseMC[9]  = count[2][0] + count[2][1];
+  vsparseMC[10]  = count[2][0];
+  vsparseMC[11]  = count[2][1];
+
+  vsparseMC[12] = count[3][0] + count[3][1];
+  vsparseMC[13] = count[3][0];
+  vsparseMC[14] = count[3][1];
   
 
   /*   Printf(" %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f",
   	 vsparseMC[0], vsparseMC[1], vsparseMC[2], vsparseMC[3],
-	  vsparseMC[4],  vsparseMC[5], vsparseMC[6], vsparseMC[7], 
-	  vsparseMC[8], vsparseMC[9], vsparseMC[10], vsparseMC[11]);*/
+	 vsparseMC[4],  vsparseMC[5], vsparseMC[6], vsparseMC[7], 
+	 vsparseMC[8], vsparseMC[9], vsparseMC[10], vsparseMC[11]);*/
 
   fHistoCorrelationMC->Fill(vsparseMC);
   PostData(1, fThnList);
@@ -191,7 +200,7 @@ void AliEbyEPidTaskFastGen::UserExec( Option_t * ){
 
 void AliEbyEPidTaskFastGen::Terminate( Option_t * ){
 
-  Info("AliEbyEHigherMomentTask"," Task Successfully finished");
+  Info("AliEbyEPiDTask"," Task Successfully finished");
   
 }
 
