@@ -56,6 +56,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts() :
 //____________________________________________________________________
 AliHFEextraEventCuts::AliHFEextraEventCuts(Char_t* name, Char_t* title) : 
   AliCFCutBase(name,title),
+  fAnalysisUtils(NULL),
   fRequireVtxCuts(kFALSE),
   fVtxZMax(1.e99),
   fVtxZMin(-1.e99),
