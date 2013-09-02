@@ -79,6 +79,8 @@ AliLeadingV0Correlation::AliLeadingV0Correlation()
 	fCutCTLa(0),
 	fMassCutK0(0),
 	fMassCutLa(0),
+	fUseChargeHadrons(kTRUE), 
+	fPtMin(0.15),
 	fOutputList(0),
 	fHistEventViceGen(0),
 	fHistEventViceReconst(0),
@@ -107,8 +109,6 @@ AliLeadingV0Correlation::AliLeadingV0Correlation()
     fZvtxBins[iBin] = 0.;
     fCentBins[iBin] = 0.;
   }
-	fUseChargeHadrons=kTRUE; 
-	fPtMin=0.15;
 }
 //---------------------------------------------------------------------------------------
 AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
@@ -144,6 +144,8 @@ AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
 	fCutCTLa(0),
 	fMassCutK0(0),
 	fMassCutLa(0),
+	fUseChargeHadrons(kTRUE), 
+	fPtMin(0.15),
 	fOutputList(0),
 	fHistEventViceGen(0),
 	fHistEventViceReconst(0),
@@ -172,9 +174,6 @@ AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
     fZvtxBins[iBin] = 0.;
     fCentBins[iBin] = 0.;
   }
-	fUseChargeHadrons=kTRUE; 
-	fPtMin=0.15;
-  
   DefineOutput(1, TList::Class());                                            
 }
 
