@@ -15,6 +15,9 @@
 ///////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
+#include "AliAODTrack.h"
+#include "AliAODRecoDecay.h"
+#include "AliAODRecoDecayHF.h"
 
 class AliAODMCParticle;
 class AliAODMCHeader;
@@ -66,6 +69,8 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
   static TString  GetGenerator(Int_t label, AliAODMCHeader* header); 
+  Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
+  Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   // Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
     fMinEtaForTracklets=mineta; 
