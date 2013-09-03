@@ -29,6 +29,7 @@
 #include "TH2F.h"
 #include "TGeoManager.h"
 #include "AliPDG.h"
+#include "TVirtualMC.h"
 
 ClassImp(AliTransportMonitor)
 ClassImp(AliTransportMonitor::AliTransportMonitorVol)
@@ -86,6 +87,20 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
 
   // The object could have been retrieved from file, in which case we have to 
   // build the map.
+  //
+  // unknown heavy fragment ?
+  //  TParticlePDG* pdgP = (TDatabasePDG::Instance())->GetParticle(pdg);
+  Int_t apdg = abs(pdg);
+  if ((apdg > 10000) 
+      && (apdg != 1000010020)
+      && (apdg != 1000010030)
+      && (apdg != 1000020030)
+      && (apdg != 1000020040)
+      && (apdg != 50000050)
+      && (apdg != 50000051)
+      ) 
+    pdg = 1111111111; 
+
   PMonData *data;
   if (fNtypes) {
     if (fParticles.empty()) {
@@ -106,7 +121,9 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
      TDatabasePDG *pdgDB = TDatabasePDG::Instance();
      if (!pdgDB->ParticleList()) AliPDG::AddParticlesToPdgDataBase();
      Int_t size = pdgDB->ParticleList()->GetSize();
-     fPData = new PMonData[size];
+     // account for heavy fragments coded as "1111111111"
+     //
+     fPData = new PMonData[size+10];
      data = &fPData[fNtypes];
      data->fPDG = pdg;
      fParticles[pdg] = fNtypes++;
@@ -159,7 +176,7 @@ AliTransportMonitor::AliTransportMonitor(Int_t nvolumes)
   fVolumeMon->SetOwner();
   for (Int_t i=0; i<nvolumes; i++) {
     AliTransportMonitorVol *volMon = new AliTransportMonitorVol();
-    if (gGeoManager) volMon->SetName(gGeoManager->GetListOfUVolumes()->At(i)->GetName());
+    if (TVirtualMC::GetMC()) volMon->SetName(TVirtualMC::GetMC()->VolName(i));
     fVolumeMon->Add(volMon);
   }   
 }
@@ -211,7 +228,12 @@ void AliTransportMonitor::Print(Option_t *volName) const
     if (!pdgDB->ParticleList()) AliPDG::AddParticlesToPdgDataBase();
     for (i=0; i<ntypes; i++)  {
        timeperpart[i] /=  timepervol;
-       particle = pdgDB->GetParticle(volMon->GetPDG(isort[i]))->GetName();
+       TParticlePDG* pdgP =  pdgDB->GetParticle(volMon->GetPDG(isort[i]));
+       if (pdgP) {
+	 particle = pdgDB->GetParticle(volMon->GetPDG(isort[i]))->GetName();
+       } else {
+	 particle = Form("pdg code not in DB: %d", volMon->GetPDG(isort[i]));
+       }
        printf("   %s: %g%%  mean energy: %g\n", particle.Data(), 100.*timeperpart[i], volMon->GetEmed(i));
     }
     if (volMon->GetHistogram()) {
