@@ -39,6 +39,7 @@ set (SRCS
     hfe/AliHFEspectrum.cxx 
     hfe/AliHFEV0info.cxx 
     hfe/AliHFEV0pid.cxx 
+    hfe/AliHFEV0taginfo.cxx
     hfe/AliHFEpidQA.cxx 
     hfe/AliHFEtrdPIDqa.cxx 
     hfe/AliHFEitsPIDqa.cxx
