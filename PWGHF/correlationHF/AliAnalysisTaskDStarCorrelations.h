@@ -58,6 +58,8 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
  public :
   
   enum CollSyst {pp,pA,AA};
+  enum DEffVariable{kNone,kMult,kCentr,kRapidity,kEta};
+  
   AliAnalysisTaskDStarCorrelations();
   AliAnalysisTaskDStarCorrelations(const Char_t* name,AliRDHFCutsDStartoKpipi* cuts, AliHFAssociatedTrackCuts *AsscCuts, AliAnalysisTaskDStarCorrelations::CollSyst syst,Bool_t mode);
   virtual ~AliAnalysisTaskDStarCorrelations();
@@ -74,7 +76,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
   void DefineThNSparseForAnalysis();
   void DefineHistoForAnalysis();
   void EnlargeDZeroMassWindow();
-  
+    Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track) const ;
   
   // checker for event mixing
   void EventMixingChecks(AliAODEvent * AOD); 
@@ -84,6 +86,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
   void SetCorrelator(Int_t l) {fselect = l;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
   void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
   void SetCollSys(CollSyst system){fSystem=system;} // select between pp (kFALSE) or PbPb (kTRUE)
+  void SetEfficiencyVariable(DEffVariable var){fEfficiencyVariable = var;} // set the efficiency variable to use
   void SetLevelOfDebug(Int_t debug){fDebugLevel=debug;} // set debug level
   void SetUseReconstruction(Bool_t reco){fReco = reco;}
   void SetDMesonSigmas(Float_t DStarWin, Float_t D0Win, Float_t SBmin, Float_t SBmax){
@@ -96,12 +99,15 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
 
   void SetUseEfficiencyCorrection(Bool_t correction){fUseEfficiencyCorrection = correction;} // setter for using the single track efficiency correction
   void SetUseDmesonEfficiencyCorrection(Bool_t correction){fUseDmesonEfficiencyCorrection = correction;} // setter for using the single track efficiency correction
+  void SetUseHadronicChannelAtKineLevel (Bool_t use){fUseHadronicChannelAtKineLevel = use;}
+    
   void SetDim(){fDim = 4;
     fDMesonSigmas = new Float_t[4];}
   void SetDeffMapvsPt(TH1D * map){fDeffMapvsPt = map;}
   void SetDeffMapvsPtvsMult(TH2D * map){fDeffMapvsPtvsMult = (TH2D*)map;}
   void SetDeffMapvsPtvsMultvsEta(TH2D * map){fDeffMapvsPtvsEta = map;}
   void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;}
+    void SetMaxDStarEta(Double_t eta){fMaxEtaDStar = eta;}
   
   
 
@@ -122,18 +128,23 @@ private:
   Bool_t fmixing;// switch for event mixing
   Bool_t fFullmode;
   CollSyst fSystem; // pp, pPb or PbPb
+  DEffVariable  fEfficiencyVariable; // set second variable to study efficiency (mult, centr, y, eta)
   Bool_t fReco; // use reconstruction or MC truth
   Bool_t fUseEfficiencyCorrection; // boolean variable to use or not the efficiency correction
   Bool_t fUseDmesonEfficiencyCorrection; // boolean flag for the use of Dmeson efficiency correction
-    Bool_t fUseCentrality;// boolean to switch in between centrality or multiplicity
+  Bool_t fUseCentrality;// boolean to switch in between centrality or multiplicity
+  Bool_t fUseHadronicChannelAtKineLevel; //
+ 
   Int_t fPhiBins;
   Int_t fEvents; //! number of event
   Int_t fDebugLevel; //! debug level
   Int_t fDisplacement; // set 0 for no displacement cut, 1 for absolute d0, 2 for d0/sigma_d0
   Int_t fDim;//
-    Int_t fNofPtBins;
+  Int_t fNofPtBins;
+     Double_t fMaxEtaDStar;
   Float_t *fDMesonSigmas;//[fDim]
- Float_t * fD0Window;  //[fNofPtBins]
+  Float_t * fD0Window;  //[fNofPtBins]
+   
   
   
   
@@ -148,7 +159,7 @@ private:
   TH2D * fDeffMapvsPtvsMult; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsEta; // histo for Deff mappin
   
-  ClassDef(AliAnalysisTaskDStarCorrelations,5); // class for D meson correlations
+  ClassDef(AliAnalysisTaskDStarCorrelations,6); // class for D meson correlations
   
 };
 

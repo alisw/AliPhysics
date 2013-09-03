@@ -3,20 +3,15 @@
 
 /* $Id$ */
 
-AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarCorrelations::CollSyst syst,
-                                                                     Bool_t theMCon, Bool_t mixing, Bool_t UseReco = kTRUE, Bool_t fullmode = kFALSE ,Bool_t UseEffic = kFALSE, Bool_t UseDEffic = kFALSE ,
-                                                                     Int_t trackselect =1, Int_t usedispl =0, Int_t nbins, Float_t DStarSigma, Float_t D0Sigma, Float_t D0SBSigmaLow, Float_t D0SBSigmaHigh, 
+AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarCorrelations::CollSyst syst, 
+                                                            Bool_t theMCon, Bool_t mixing, Bool_t UseReco=kTRUE,Bool_t UseHadChannelinMC,Bool_t fullmode = kFALSE,Bool_t UseEffic=kFALSE,Bool_t UseDEffic = kFALSE,
+                                                        AliAnalysisTaskDStarCorrelations::DEffVariable var,
+                                                            Int_t trackselect =1, Int_t usedispl =0, Int_t nbins, Float_t DStarSigma, Float_t D0Sigma, Float_t D0SBSigmaLow, Float_t D0SBSigmaHigh, Float_t eta,
                                                                      TString DStarCutsFile, TString TrackCutsFile,
                                                                      Int_t tasknumber = 0)
 {
 
-    
-    //Float_t sigmasval[]={DStarSigma,D0Sigma,D0SBSigmaLow,D0SBSigmaHigh};
-    //Float_t * sigmas = sigmasval;//new Float_t[4];
-    //sigma[0] = DStarSigma;
-    //sigma[1] = D0Sigma;
-    //sigma[2] = D0SBSigmaLow;
-    //sigma[3] = D0SBSigmaHigh;
+ 
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -28,8 +23,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     cout << "Set Inputs : " << endl;
     cout << " " << endl;
     if(syst == AliAnalysisTaskDStarCorrelations::pp) cout << "Running on pp @ 7 TeV" << endl;
-    if(syst == AliAnalysisTaskDStarCorrelations::pA) cout << "Running on pA @ 5.02 TeV" << endl;
-    if(syst == AliAnalysisTaskDStarCorrelations::AA) cout << "Running on AA @ 2.76 TeV" << endl;
+    if(syst == AliAnalysisTaskDStarCorrelations::pA) cout << "Running on pPb @ 5.02 TeV" << endl;
+    if(syst == AliAnalysisTaskDStarCorrelations::AA) cout << "Running on PbPb @ 2.76 TeV" << endl;
     
     if(theMCon) cout << "Analysis on MonteCarlo" << endl;
     else cout << "Analysis on Data" << endl;
@@ -48,6 +43,13 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     
     if(UseDEffic) cout << "Using Dmeson efficiency map" << endl;
     else cout << "Not Using Dmeson efficiency map " << endl;
+    
+ 
+    if(var == AliAnalysisTaskDStarCorrelations::kNone) cout << "Applying D Efficiency map vs pT " << endl;
+    if(var == AliAnalysisTaskDStarCorrelations::kMult) cout << "Applying D Efficiency map vs pT vs Multiplicity" << endl;
+    if(var == AliAnalysisTaskDStarCorrelations::kCentr) cout << "Applying D Efficiency map vs pT vs Centrality" << endl;
+    if(var == AliAnalysisTaskDStarCorrelations::kRapidity) cout << "Applying D Efficiency map vs pT vs Rapidity" << endl;
+    if(var == AliAnalysisTaskDStarCorrelations::kEta) cout << "Applying D Efficiency map vs pT vs Eta" << endl;
 
     if(trackselect == 1) cout << "Correlating with hadrons" << endl;
     if(trackselect == 2) cout << "Correlating with kaons" << endl;
@@ -142,12 +144,13 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	if(!theMCon) {
 		printf("Analysis on Data - reconstruction only!");
 		UseReco = kTRUE;
+        printf("Analysis on Data - hadronic channel only!");
+		UseHadChannelinMC = kFALSE;
 	}
-	
     
-   // cout << "Adding efficiency map to Assoc track cut object \n" << endl;
-  //  if(effMap) task->SetDeffMapvsPt(effMap);
-  //  if(effMap2d) task->SetDeffMapvsPtvsMult(effMap2d);
+    
+
+	
     
     task->SetNofPhiBins(nbins);
 	task->SetMonteCarlo(theMCon);
@@ -162,6 +165,10 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     //task->SetDMesonSigmas(sigmas);
     task->SetUseEfficiencyCorrection(UseEffic);
     task->SetUseDmesonEfficiencyCorrection(UseDEffic);
+    
+    task->SetEfficiencyVariable(var);
+    task->SetMaxDStarEta(eta);
+    task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
 	
 
 	if(trackselect == 1) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged hadrons \n");
@@ -240,13 +247,21 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     }
     
     if(UseDEffic){
-        outputfile += "DEffY_";
-		outputfileMC += "DEffY_";
-		contname += "DEffY_";
-		contname2 += "DEffY_";
-		cutname += "DEffY_";
-		cutname2 += "DEffY_";
-		counter+= "DEffY_";
+        TString string = "DEffY_";
+        
+        if(var == AliAnalysisTaskDStarCorrelations::kNone) string += "vsPt_";
+        if(var == AliAnalysisTaskDStarCorrelations::kMult) string += "vsPtMult_";
+        if(var == AliAnalysisTaskDStarCorrelations::kCentr) string += "vsPCentrt_";
+        if(var == AliAnalysisTaskDStarCorrelations::kRapidity) string += "vsPtY_";
+        if(var == AliAnalysisTaskDStarCorrelations::kEta) string += "vsPtEta_";
+        
+        outputfile += string;
+		outputfileMC += string;
+		contname += string;
+		contname2 += string;
+		cutname += string;
+		cutname2 += string;
+		counter+= string;
     }
     
     if(!UseDEffic){
@@ -296,8 +311,10 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	TString reco = "";
 	
 	if(UseReco) reco = "_reco";
-	if(!UseReco) reco = "_MCTruth";
-	
+	if(!UseReco) {
+        if(UseHadChannelinMC) reco = "_MCTruthHadChan";
+        if(!UseHadChannelinMC) reco = "_MCTruthAllChan";
+	}
 	outputfile += reco;
 	outputfileMC += reco;
 	cutname += reco;
