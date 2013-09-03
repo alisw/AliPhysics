@@ -57,12 +57,15 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   /// assignment operator prohibited
   AliDxHFEParticleSelectionMCD0& operator=(const AliDxHFEParticleSelectionMCD0&);
 
+  int ParseArguments(const char* arguments);
+
   AliDxHFEToolsMC fMCTools;  // MC selction tools
   TH1* fPDGnotMCD0;          // holds PDG of not MC truth D0s
   int fResultMC;             // Result on MC check
   int fOriginMother;         // Holds info on the original mother particle
   bool fUseKine;             // Whether to run over MC particles (true) or Reco (false)
   THnSparse* fD0PropertiesKine; //the particle properties of selected particles
+  Bool_t fStoreOnlyMCD0;     // Store only MC truth D0s, discard the rest
 
   ClassDef(AliDxHFEParticleSelectionMCD0, 3);
 };

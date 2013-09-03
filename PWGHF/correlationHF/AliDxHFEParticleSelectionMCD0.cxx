@@ -48,15 +48,13 @@ AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
   , fOriginMother(0)
   , fUseKine(kFALSE)  
   , fD0PropertiesKine(NULL)
+  , fStoreOnlyMCD0(kFALSE)
 {
   // constructor
   // 
   // 
   // 
-  // TODO: Could implement ParseArgument if need more arguments for MC
-  TString strOption(opt);
-  AliInfo(strOption.Data());
-  if (strOption.Contains("usekine")) fUseKine=kTRUE;
+  ParseArguments(opt);
 
   // TODO: argument scan, pass only relevant arguments to tools
   fMCTools.~AliDxHFEToolsMC();
@@ -245,6 +243,8 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
   // the logic outside
   fResultMC=CheckMC(p, pEvent);
 
+  if(fStoreOnlyMCD0) return fResultMC;
+  
   return iResult;
   }
 
@@ -330,4 +330,30 @@ AliVParticle *AliDxHFEParticleSelectionMCD0::CreateParticle(AliVParticle* track)
 
   return part;
 
+}
+
+int AliDxHFEParticleSelectionMCD0::ParseArguments(const char* arguments)
+{
+  // parse arguments and set internal flags
+  TString strArguments(arguments);
+  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  if (!tokens.get()) return 0;
+
+  AliInfo(strArguments);
+  TIter next(tokens.get());
+  TObject* token;
+  while ((token=next())) {
+    TString argument=token->GetName();
+    if (argument.BeginsWith("usekine") ){
+      fUseKine=kTRUE;
+      continue;
+    }
+    if(argument.BeginsWith("storeonlyMCD0")){
+      AliInfo("Store only MC truth D0");
+      fStoreOnlyMCD0=kTRUE;
+      continue;
+    }
+    AliDxHFEParticleSelection::ParseArguments(argument);
+  }
+  return 0;
 }

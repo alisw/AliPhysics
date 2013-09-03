@@ -61,8 +61,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	 << "D0EffName=                    - The file where the efficiency map for D0 is stored\n"
 	 << "trigger=D/D0/electron         - Which particle to trigger on \n"
 	 << "PbPb/Pb-Pb/system=1           - To use Pb-Pb collision system\n"
-	 << "pPb/p-Pb/system=2/system=p-Pb - To use p-Pb collision system\n"
-	 << "\nD0 SETTINGS: \n"
+	 << "pPb/p-Pb/system=2/system=p-Pb - To use p-Pb collision system\n";
+      cout << "\nD0 SETTINGS: \n"
 	 << "fillD0scheme=both/D0/D0bar    - Which fillsheme to use for D0\n"
 	 << "\nELECTRON SETTINGS: \n"
 	 << "useinvmasscut                 - If you want to use invariant mass cut (default is 100MeV/c)\n" 
@@ -692,15 +692,16 @@ AliAnalysisCuts* createDefaultPoolConfig(Bool_t usekine)
 
   // NEED to check this
   if(usekine){
-    HFCorrelationCuts->SetMaxNEventsInPool(200);
-    HFCorrelationCuts->SetMinNTracksInPool(1000);
+    HFCorrelationCuts->SetMinEventsToMix(8);
+    HFCorrelationCuts->SetMaxNEventsInPool(50);
+    HFCorrelationCuts->SetMinNTracksInPool(500);
   }
   else{
+    HFCorrelationCuts->SetMinEventsToMix(8);
     HFCorrelationCuts->SetMaxNEventsInPool(200);
     HFCorrelationCuts->SetMinNTracksInPool(100);
 
   }
-  HFCorrelationCuts->SetMinEventsToMix(8);
   HFCorrelationCuts->SetNofPoolBins(nofZBins,nofMBins); // Note: the arrays have dimension x+1
   HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
 
