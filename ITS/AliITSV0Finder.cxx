@@ -245,7 +245,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   //
   TTreeSRedirector &cstream = *(tracker->GetDebugStreamer());
   Int_t ntracks    = event->GetNumberOfTracks(); 
-  Int_t nitstracks = trackHypothesys->GetEntriesFast();
+  Int_t nitstracks = originalTracks->GetEntriesFast();
   originalTracks->Expand(ntracks);
   trackHypothesys->Expand(ntracks);
   bestHypothesys->Expand(ntracks);
