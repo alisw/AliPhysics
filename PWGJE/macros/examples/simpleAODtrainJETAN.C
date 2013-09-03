@@ -30,7 +30,6 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/JETAN -I$ALICE_ROOT/PWG4/JetTasks");
 
   // Create and configure the alien handler plugin
-  gROOT->LoadMacro("CreateAlienHandler.C");
   AliAnalysisGrid *alienHandler = CreateAlienHandler(mode);  
   if (!alienHandler) return;
 
