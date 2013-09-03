@@ -55,6 +55,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fSelectionStep(AliDxHFEParticleSelectionEl::kNoCuts)
   , fStoreCutStepInfo(kFALSE)
   , fElSelection(kAllPassingSelection)
+  , fStoreOnlyMCElectrons(kFALSE)
 {
   // constructor
   // 
@@ -276,7 +277,7 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
   // Return only result of MC checks (rather than result from reconstruction) for kinematical studies, 
   // when looking at the various selection steps (want only electrons) or when we only want to store specific
   // sources from the reconstruction (hadrons/nonHFE/HFE/onlyc/onlyb)
-  if(fUseKine || fUseMCReco || fElSelection>kAllPassingSelection)
+  if(fUseKine || fUseMCReco || fElSelection>kAllPassingSelection || fStoreOnlyMCElectrons)
     return fResultMC;
 
   return iResult;
@@ -440,6 +441,11 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
 
 	AliDxHFEParticleSelectionEl::SetFinalCutStep(fSelectionStep);
       }
+      continue;
+    }
+    if(argument.BeginsWith("storeonlyMCelectrons")){
+      AliInfo("Store only MC truth electrons");
+      fStoreOnlyMCElectrons=kTRUE;
       continue;
     }
     if(argument.BeginsWith("storelastcutstep")){

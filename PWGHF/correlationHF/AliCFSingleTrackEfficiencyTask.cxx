@@ -446,7 +446,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
 	}
 
-	if(fUseTOFPID){
+	if(useTOFPID && fUseTOFPID){
 
 	  // if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
 	  // PID into two regions: below fMaxptCombinedPID - both TPC and TOF, above only TPC
