@@ -1000,9 +1000,9 @@ void AliThreePionRadii::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-  //cout<<"===========  Event # "<<fEventCounter+1<<"  ==========="<<endl;
   fEventCounter++;
-  
+  if(fEventCounter%1000==0) cout<<"===========  Event # "<<fEventCounter<<"  ==========="<<endl;
+
   if(!fAODcase) {cout<<"ESDs not supported"<<endl; return;}
   
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -1079,7 +1079,7 @@ void AliThreePionRadii::Exec(Option_t *)
     if(fPbPbcase){
       centrality = fAOD->GetCentrality();
       centralityPercentile = centrality->GetCentralityPercentile("V0M");
-      if(centralityPercentile == 0) {cout<<"Centrality = 0, skipping event"<<endl; return;}
+      if(centralityPercentile == 0) {/*cout<<"Centrality = 0, skipping event"<<endl;*/ return;}
       //if((centralityPercentile < 5*fCentBinLowLimit) || (centralityPercentile>= 5*(fCentBinHighLimit+1))) {/*cout<<"Centrality out of Range.  Skipping Event"<<endl;*/ return;}
       cout<<"Centrality % = "<<centralityPercentile<<endl;
     }else{
@@ -1095,11 +1095,11 @@ void AliThreePionRadii::Exec(Option_t *)
     primaryVertexAOD = fAOD->GetPrimaryVertex();
     vertex[0]=primaryVertexAOD->GetX(); vertex[1]=primaryVertexAOD->GetY(); vertex[2]=primaryVertexAOD->GetZ();
     
-    if(fabs(vertex[2]) > 10) {cout<<"Zvertex Out of Range. Skip Event"<<endl; return;} // Z-Vertex Cut 
+    if(fabs(vertex[2]) > 10) {/*cout<<"Zvertex Out of Range. Skip Event"<<endl;*/ return;} // Z-Vertex Cut 
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
-    if(fAOD->IsPileupFromSPD()) {cout<<"PileUpEvent. Skip Event"<<endl; return;} // Reject Pile-up events
-    if(primaryVertexAOD->GetNContributors() < 1) {cout<<"Bad Vertex. Skip Event"<<endl; return;}
+    if(fAOD->IsPileupFromSPD()) {/*cout<<"PileUpEvent. Skip Event"<<endl;*/ return;} // Reject Pile-up events
+    if(primaryVertexAOD->GetNContributors() < 1) {/*cout<<"Bad Vertex. Skip Event"<<endl;*/ return;}
    
     ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fAOD->GetNumberOfTracks());
  
@@ -1331,7 +1331,7 @@ void AliThreePionRadii::Exec(Option_t *)
 
   /////////////////////////////////////////
   // Pion Multiplicity Cut (To ensure all Correlation orders are present in each event)
-  if(myTracks < 3) {cout<<"Less than 3 tracks. Skipping Event."<<endl; return;}
+  if(myTracks < 3) {/*cout<<"Less than 3 tracks. Skipping Event."<<endl;*/ return;}
   /////////////////////////////////////////
  
 
