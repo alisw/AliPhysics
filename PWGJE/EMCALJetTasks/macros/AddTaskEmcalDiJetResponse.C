@@ -70,14 +70,14 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   taskDiJet->AddParticleContainer(kTracksName.Data());
   taskDiJet->AddClusterContainer(kClusName.Data());
    
-  taskDiJet->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
+  //  taskDiJet->SetAnaType(AliAnalysisTaskEmcalDev::kEMCAL);
   taskDiJet->AddJetContainer(strJetsFull.Data(),"EMCAL",R);
   taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
   taskDiJet->AddJetContainer(strJetsFullMC.Data(),"EMCAL",R);
   taskDiJet->AddJetContainer(strJetsChMC.Data(),"TPC",R);
 
   for(Int_t i=0; i<4; i++) {
-    taskDiJet->SetPercAreaCut(0.557, i);
+    taskDiJet->SetPercAreaCut(0.6, i);
     taskDiJet->SetPtBiasJetTrack(ptTrackBias,i);
   }
 

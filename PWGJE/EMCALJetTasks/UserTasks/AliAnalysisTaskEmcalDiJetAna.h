@@ -63,10 +63,13 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
 
   TH3F             *fh3DiJetKtNEFPtAssoc[4];              //! dijet kt vs NEF vs pTassoc for 4 trigger intervals
 
+  TH3F             *fCentCorrPtAssocCh[4];                //! default(V0A) vs ZNA centrality vs pT trigger assoc
+  TH3F             *fCentCorrPtAssocFuCh[4];              //! default(V0A) vs ZNA centrality vs pT trigger assoc
+
 
   AliAnalysisTaskEmcalDiJetAna(const AliAnalysisTaskEmcalDiJetAna&);            // not implemented
   AliAnalysisTaskEmcalDiJetAna &operator=(const AliAnalysisTaskEmcalDiJetAna&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetAna, 5) // dijet analysis task
+  ClassDef(AliAnalysisTaskEmcalDiJetAna, 6) // dijet analysis task
 };
 #endif
