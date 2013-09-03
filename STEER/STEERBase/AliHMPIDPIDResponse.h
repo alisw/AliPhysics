@@ -29,7 +29,7 @@ public :
              AliHMPIDPIDResponse();    //ctor
              AliHMPIDPIDResponse(const AliHMPIDPIDResponse& c);                //copy constructor
              AliHMPIDPIDResponse &operator=(const AliHMPIDPIDResponse& c);     //dummy assignment operator
-    virtual ~AliHMPIDPIDResponse() {;} //dtor
+	     virtual ~AliHMPIDPIDResponse();
     
     enum EChamberData{kMinCh=0,kMaxCh=6,kMinPc=0,kMaxPc=5};      //Segmenation
     enum EPadxData{kPadPcX=80,kMinPx=0,kMaxPx=79,kMaxPcx=159};   //Segmentation structure along x
