@@ -111,7 +111,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   taskDiJet->AddParticleContainer(kTracksName.Data());
   taskDiJet->AddClusterContainer(kClusName.Data());
    
-  taskDiJet->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
+  //taskDiJet->SetAnaType(AliAnalysisTaskEmcalDev::kEMCAL);
 
   taskDiJet->SetContainerFull(0);
   taskDiJet->SetContainerCharged(1);
@@ -119,7 +119,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
 
   for(Int_t i=0; i<2; i++) {
-    taskDiJet->SetPercAreaCut(0.557, i);
+    taskDiJet->SetPercAreaCut(0.6, i);
     taskDiJet->SetPtBiasJetTrack(ptTrackBias,i);
   }
 
