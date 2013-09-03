@@ -365,7 +365,7 @@ UInt_t AliAnalysisEtSelectorPhos::GetLabel(const AliESDCaloCluster *cluster, Ali
 //     sure=kFALSE;
 //   else
 //     sure=kTRUE;
-    delete  Ekin;
+    delete [] Ekin;
 
   } // n>0
   return  cluster->GetLabelAt(iMax) ; // DS: should this line be inside n>0 check, and return another value if n<=0 ? 
