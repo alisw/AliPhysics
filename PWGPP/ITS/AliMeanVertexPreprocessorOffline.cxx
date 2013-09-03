@@ -414,8 +414,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     
     if (useTRKvtx){
       if (list){
-	histTRKdefMultX = (TH1F*)list->FindObject("hTRKVertexXdefMult");
-	histTRKdefMultY = (TH1F*)list->FindObject("hTRKVertexYdefMult");
+	      //histTRKdefMultX = (TH1F*)list->FindObject("hTRKVertexXdefMult");
+	      //histTRKdefMultY = (TH1F*)list->FindObject("hTRKVertexYdefMult");
 	histTRKHighMultX = (TH1F*)list->FindObject("hTRKVertexXHighMult");
 	histTRKHighMultY = (TH1F*)list->FindObject("hTRKVertexYHighMult");
 	
@@ -427,8 +427,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       }
       
       else {
-	histTRKdefMultX = (TH1F*)file->Get("hTRKVertexXdefMult");
-	histTRKdefMultY = (TH1F*)file->Get("hTRKVertexYdefMult");
+	      //histTRKdefMultX = (TH1F*)file->Get("hTRKVertexXdefMult");
+	      //histTRKdefMultY = (TH1F*)file->Get("hTRKVertexYdefMult");
 	histTRKHighMultX = (TH1F*)file->Get("hTRKVertexXHighMult");
 	histTRKHighMultY = (TH1F*)file->Get("hTRKVertexYHighMult");
 	
