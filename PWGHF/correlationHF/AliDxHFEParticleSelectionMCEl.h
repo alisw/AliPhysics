@@ -83,6 +83,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Int_t fSelectionStep;                // Where to stop track selection
   Bool_t          fStoreCutStepInfo;   // Whether to store which cut step is the effective one
   Int_t fElSelection;                  // If there should be a selection on the electrons
+  Bool_t fStoreOnlyMCElectrons;        // Store only MC truth electrons, discard hadrons
 
 
   ClassDef(AliDxHFEParticleSelectionMCEl, 4);

@@ -273,7 +273,7 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       AliInfo("Applying track efficiency");
       continue;
     }
-    if (argument.BeginsWith("reducedMode")){
+    if (argument.BeginsWith("reducedMode") || argument.BeginsWith("reducedmode")){
       fRunFullMode=false;
       AliInfo("Running in Reduced mode");
       continue;
