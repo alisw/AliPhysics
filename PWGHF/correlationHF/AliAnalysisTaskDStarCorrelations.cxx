@@ -72,16 +72,19 @@ fmontecarlo(kFALSE),
 fmixing(kFALSE),
 fFullmode(kFALSE),
 fSystem(pp),
+fEfficiencyVariable(kNone),
 fReco(kTRUE),
 fUseEfficiencyCorrection(kFALSE),
 fUseDmesonEfficiencyCorrection(kFALSE),
 fUseCentrality(kFALSE),
+fUseHadronicChannelAtKineLevel(kFALSE),
 fPhiBins(32),
 fEvents(0),
 fDebugLevel(0),
 fDisplacement(0),
 fDim(0),
 fNofPtBins(0),
+fMaxEtaDStar(0.9),
 fDMesonSigmas(0),
 
 fD0Window(0),
@@ -113,15 +116,19 @@ fmontecarlo(kFALSE),
 fmixing(kFALSE),
 fFullmode(mode),
 fSystem(syst),
+fEfficiencyVariable(kNone),
 fReco(kTRUE),
 fUseEfficiencyCorrection(kFALSE),
 fUseDmesonEfficiencyCorrection(kFALSE),
+fUseCentrality(kFALSE),
+fUseHadronicChannelAtKineLevel(kFALSE),
 fPhiBins(32),
 fEvents(0),
 fDebugLevel(0),
 fDisplacement(0),
 fDim(0),
 fNofPtBins(0),
+fMaxEtaDStar(0.9),
 fDMesonSigmas(0),
 fD0Window(0),
 
@@ -190,16 +197,13 @@ void AliAnalysisTaskDStarCorrelations::Init(){
 	AliRDHFCutsDStartoKpipi* copyfCuts=new AliRDHFCutsDStartoKpipi(*fCuts);
 	
 	
-	
-	
+    
 	// Post the D* cuts
 	PostData(3,copyfCuts);
 	
 	// Post the hadron cuts
 	PostData(4,fCuts2);
-	
-
-	
+    
 	return;
 }
 
@@ -249,8 +253,6 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
 
 //_________________________________________________
 void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
-  
-  
   
   
   if(fDebugLevel){
@@ -337,7 +339,6 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     // ******************************** END event selections **************************************************
     
     AliCentrality *centralityObj = 0;
-    //Int_t multiplicity = -1;
     Double_t MultipOrCent = -1;
     
     if(fUseCentrality){
@@ -346,27 +347,21 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
       //AliInfo(Form("Centrality is %f", MultipOrCent));
     }
     
-    if(!fUseCentrality){
-      /* if(fSystem == pp || fSystem == pA){*/
-        //	MultipOrCent = fTracklets->GetNumberOfTracklets();
-      MultipOrCent = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
-      //AliInfo(Form("multiplicity is %f", MultipOrCent));
-    }
+    if(!fUseCentrality) MultipOrCent = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
     
-    
+        
     fCorrelator->SetAODEvent(aodEvent); // set the event to be processed
     
     ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(1);
-    //
-    Bool_t correlatorON = fCorrelator->Initialize(); //define the pool for mixing
+    
+    Bool_t correlatorON = fCorrelator->Initialize(); //define the pool for mixing and check if event is in pool settings
 	if(!correlatorON) {
 	  AliInfo("AliHFCorrelator didn't initialize the pool correctly or processed a bad event");
 	  return;
 	}
 	
 	if(fmontecarlo) fCorrelator->SetMCArray(fmcArray);
-	
-	
+		
 	// check the event type
 	// load MC header
 	if(fmontecarlo){
@@ -433,7 +428,6 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     Int_t poolbin = fCuts2->GetPoolBin(MultipOrCent, zVtxPosition);
   
     
-    
 	// initialize variables you will need for the D*
 	
 	Double_t ptDStar;//
@@ -454,9 +448,12 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	Int_t pdgDgD0toKpi[2]={321,211};
 	
 	Bool_t isDStarCand = kFALSE;
-	Bool_t isFilled = kFALSE;
+    Bool_t isDfromB = kFALSE;
 	Bool_t isEventMixingFilledPeak = kFALSE;
 	Bool_t isEventMixingFilledSB = kFALSE;
+    Bool_t EventHasDStarCandidate = kFALSE;
+    Bool_t EventHasDZeroSideBandCandidate = kFALSE;
+    Bool_t EventHasDStarSideBandCandidate = kFALSE;
 	//loop on D* candidates
 	
 	Int_t looponDCands = 0;
@@ -466,11 +463,10 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	Int_t nOfDStarCandidates = 0;
 	Int_t nOfSBCandidates = 0;
 	
-	
-	
 	Double_t DmesonEfficiency = 1.;
 	Double_t DmesonWeight = 1.;
-	Bool_t isDfromB = kFALSE;
+    Double_t efficiencyvariable = -999;
+    
 	
 	
 	for (Int_t iDStartoD0pi = 0; iDStartoD0pi<looponDCands; iDStartoD0pi++) {
@@ -487,7 +483,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	  AliAODRecoCascadeHF* dstarD0pi;
 	  AliAODRecoDecayHF2Prong* theD0particle;
 	  AliAODMCParticle* DStarMC;
-	  Short_t daughtercharge;
+      Short_t daughtercharge = -2;
 	  Int_t trackiddaugh0 = -1; // track id if it is reconstruction - label if it is montecarlo info
 	  Int_t trackiddaugh1 = -1;
 	  Int_t trackidsoftPi = -1;
@@ -501,7 +497,6 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	    if (!theD0particle) continue;
             
 	    
-            
 	    // track quality cuts
 	    Int_t isTkSelected = fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kTracks); // quality cuts on tracks
 	    // region of interest + topological cuts + PID
@@ -511,45 +506,21 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	    if(!isTkSelected) continue;
 	    if(!isSelected) continue;
         if(!fCuts->IsInFiducialAcceptance(dstarD0pi->Pt(),dstarD0pi->YDstar())) continue;
+          
+          
+          ptDStar = dstarD0pi->Pt();
+          phiDStar = dstarD0pi->Phi();
+          etaDStar = dstarD0pi->Eta();
+          if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue;
+          if(fEfficiencyVariable == kMult || fEfficiencyVariable == kCentr)  efficiencyvariable = MultipOrCent;
+          if(fEfficiencyVariable == kEta) efficiencyvariable = etaDStar;
+          if(fEfficiencyVariable == kRapidity) efficiencyvariable = dstarD0pi->YDstar();
+          if(fEfficiencyVariable == kNone) efficiencyvariable = 0;
+          
+        // get the D meson efficiency
+        DmesonEfficiency = fCuts2->GetTrigWeight(dstarD0pi->Pt(),efficiencyvariable);
             
-            // new piece of code
-            
-            
-	    //            Double_t rapidity = dstarD0pi->YDstar();
-            
-            DmesonEfficiency = fCuts2->GetTrigWeight(dstarD0pi->Pt(),MultipOrCent);
-            
-	    /* if(fDeffMapvsPt){
-	       if(fDebugLevel)  std::cout << "Reading pT eff map from " << fDeffMapvsPt->GetName() <<  std::endl;
-                Int_t bin=fDeffMapvsPt->FindBin(dstarD0pi->Pt());
-                if(fDeffMapvsPt->IsBinUnderflow(bin)||fDeffMapvsPt->IsBinOverflow(bin)) DmesonEfficiency = 1.;
-                else DmesonEfficiency = fDeffMapvsPt->GetBinContent(bin);
-                
-                
-                
-                
-		}
-		if(fDeffMapvsPtvsMult)
-		{
-                Int_t bin=fDeffMapvsPtvsMult->FindBin(dstarD0pi->Pt(),MultipOrCent);
-                if(fDeffMapvsPtvsMult->IsBinUnderflow(bin)||fDeffMapvsPtvsMult->IsBinOverflow(bin)) DmesonEfficiency = 1.;
-                else DmesonEfficiency = fDeffMapvsPtvsMult->GetBinContent(bin);
-            }
-            if(fDeffMapvsPtvsEta){
-	    Int_t bin=fDeffMapvsPtvsEta->FindBin(dstarD0pi->Pt(),rapidity);
-	    if(fDeffMapvsPtvsEta->IsBinUnderflow(bin)||fDeffMapvsPtvsEta->IsBinOverflow(bin)) DmesonEfficiency = 1.;
-                else DmesonEfficiency = fDeffMapvsPtvsEta->GetBinContent(bin);
-		
-                
-                
-                
-		}
-            */
-            
-            
-	    ptDStar = dstarD0pi->Pt();
-	    phiDStar = dstarD0pi->Phi();
-	    etaDStar = dstarD0pi->Eta();
+         
 
 	    if(fUseDmesonEfficiencyCorrection){
 	      if(DmesonEfficiency>1.e-5) DmesonWeight = 1./DmesonEfficiency;
@@ -561,15 +532,22 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             else DmesonWeight = 1.; 
             
             // continue;
-            
+          
 	    Int_t mcLabelDStar = -999;
-	    if(fmontecarlo){
+          if(fmontecarlo){
 	      // find associated MC particle for D* ->D0toKpi
-	      mcLabelDStar = dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,fmcArray,kFALSE);
+	      mcLabelDStar = dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,fmcArray/*,kFALSE*/);
 	      if(mcLabelDStar>=0) isDStarMCtag = kTRUE;
+              if(!isDStarMCtag) continue;
+            AliAODMCParticle *MCDStar = (AliAODMCParticle*)fmcArray->At(mcLabelDStar);
+            //check if DStar from B
+            Int_t labelMother = MCDStar->GetMother();
+            AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
+            if(!mother) continue;
+            Int_t motherPDG =TMath::Abs(mother->PdgCode());
+            if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 )) isDfromB = kTRUE;
 	    }
                         
-            
 	    
 	    phiDStar = fCorrelator->SetCorrectPhiRange(phiDStar);
             
@@ -594,54 +572,49 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	    //good D0 candidates
 	    if (TMath::Abs(invMassDZero-mPDGD0)<fDMesonSigmas[1]*mD0Window){
 	      
-	      if(!fmixing)	((TH3F*)fOutput->FindObject("DeltaInvMass"))->Fill(ptDStar,deltainvMDStar,MultipOrCent,DmesonWeight);
-	      
+	      if(!fmixing)	((TH2F*)fOutput->FindObject("DeltaInvMass"))->Fill(ptDStar,deltainvMDStar,DmesonWeight);
 	      // good D*?
 	      if(TMath::Abs(deltainvMDStar-(mPDGDstar-mPDGD0))<fDMesonSigmas[0]*dmDStarWindow){
 		
 		if(!fmixing)	((TH1F*)fOutput->FindObject("RecoPtDStar"))->Fill(ptDStar,DmesonWeight);
 		if(!fmixing)	((TH2F*)fOutput->FindObject("PhiEtaTrigger"))->Fill(phiDStar,etaDStar);
 		isInPeak = kTRUE;
+        EventHasDStarCandidate = kTRUE;
 		nOfDStarCandidates++;
 	      } // end Good D*
               
                 //  D* sideband?
-	      if((deltainvMDStar-(mPDGDstar-mPDGD0)>4*dmDStarWindow) && (deltainvMDStar-(mPDGDstar-mPDGD0)<8*dmDStarWindow)){
+	      if((deltainvMDStar-(mPDGDstar-mPDGD0)>fDMesonSigmas[2]*dmDStarWindow) && (deltainvMDStar-(mPDGDstar-mPDGD0)<fDMesonSigmas[3]*dmDStarWindow)){
 		isInDStarSideBand = kTRUE;
+              EventHasDStarSideBandCandidate = kTRUE;
 	      } // end D* sideband
               
             }// end good D0 candidates
             
             //D0 sidebands
 	    if (TMath::Abs(invMassDZero-mPDGD0)>fDMesonSigmas[2]*mD0Window && TMath::Abs(invMassDZero-mPDGD0)<fDMesonSigmas[3]*mD0Window ){
-	      if(!fmixing)((TH3F*)fOutput->FindObject("bkgDeltaInvMass"))->Fill(ptDStar,deltainvMDStar,MultipOrCent,DmesonWeight);
+	      if(!fmixing)((TH2F*)fOutput->FindObject("bkgDeltaInvMass"))->Fill(ptDStar,deltainvMDStar,DmesonWeight);
 	      if(!fmixing && fFullmode)((TH2F*)fOutput->FindObject("D0InvMassinSB"))->Fill(ptDStar,invMassDZero,DmesonWeight);
               
 	      if(TMath::Abs(deltainvMDStar-(mPDGDstar-mPDGD0))<fDMesonSigmas[0] *dmDStarWindow){ // is in DStar peak region?
 		if(!fmixing)	((TH1F*)fOutput->FindObject("RecoPtBkg"))->Fill(ptDStar,DmesonWeight);
 		isInDZeroSideBand = kTRUE;
+        EventHasDZeroSideBandCandidate = kTRUE;
 		nOfSBCandidates++;
 		if(!fmixing)	((TH2F*)fOutput->FindObject("PhiEtaSideBand"))->Fill(phiDStar,etaDStar);
 	      }
               
 	    }//end if sidebands
             
-	    // getting the number of triggers in the MCtag D* case
-            if(fmontecarlo && isDStarMCtag) ((TH1F*)fOutput->FindObject("MCtagPtDStar"))->Fill(ptDStar);
+	   
             
             
 	    if(!isInPeak && !isInDStarSideBand && !isInDZeroSideBand) continue; // skip if it is not side band or peak event - SAVE CPU TIME
 	    
 	    
             // check properties of the events containing the D*
-            
-            
-            
-            if(isInPeak &&!isFilled) {
-	      
-	      if(fFullmode)  ((TH2F*)fOutput->FindObject("EventPropsCheckifDStar"))->Fill(MultipOrCent,zVtxPosition);
-	      isFilled = kTRUE;
-            }
+
+     
             
             isDStarCand = kTRUE;
             
@@ -661,125 +634,90 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	  Int_t DStarLabel = -1;
 	  
 	  if(!fReco){ // use pure MC information
-	    
-            
-            // check if DStar from B
-            
-            
-            
+          
+        // get the DStar Particle
 	    DStarMC = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iDStartoD0pi));
 	    if (!DStarMC) {
 	      AliWarning("Careful: DStar MC Particle not found in tree, skipping");
 	      continue;
 	    }
 	    DStarLabel = DStarMC->GetLabel();
-            if(DStarLabel>0)isDStarMCtag = kTRUE;
+        if(DStarLabel>0)isDStarMCtag = kTRUE;
 	    
 	    Int_t PDG =TMath::Abs(DStarMC->PdgCode());
-	    
 	    if(PDG !=413) continue; // skip if it is not a DStar
 	    // check fiducial acceptance
-            if(!fCuts->IsInFiducialAcceptance(DStarMC->Pt(),DStarMC->Y())) continue;
+        if(!fCuts->IsInFiducialAcceptance(DStarMC->Pt(),DStarMC->Y())) continue;
             
-            //chech if DStar from B
-            
-            
+            //check if DStar from B
             Int_t labelMother = DStarMC->GetMother();
-            
             AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
-	    
-            if(!mother) continue;
+	         if(!mother) continue;
             Int_t motherPDG =TMath::Abs(mother->PdgCode());
-            
-            
-            
-            if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 ))
-	      {isDfromB = kTRUE; }
-            
-            
-            //end check
-	    
-	    
-	    
-	    
-	    Bool_t isDZero = kFALSE;
-	    Bool_t isSoftPi = kFALSE;
-	    
-            
-            
-            
-            
-            
-            
-	    
-	    //check decay channel on MC ************************************************
-	    
-	    Int_t NDaugh = DStarMC->GetNDaughters();
-	    if(NDaugh != 2) continue; // skip decay channels w/0 2 prongs
-	    for(Int_t i=0; i<NDaugh;i++){ // loop on daughters
+            if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 )) isDfromB = kTRUE;
+          
+          Bool_t isDZero = kFALSE;
+          Bool_t isSoftPi = kFALSE;
+          
+          if(fUseHadronicChannelAtKineLevel){
+          //check decay channel on MC ************************************************
+                Int_t NDaugh = DStarMC->GetNDaughters();
+                if(NDaugh != 2) continue; // skip decay channels w/0 2 prongs
+                
+                for(Int_t i=0; i<NDaugh;i++){ // loop on daughters
+                        Int_t daugh_label = DStarMC->GetDaughter(i);
+                        AliAODMCParticle* mcDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daugh_label));
+                        if(!mcDaughter) continue;
+                        Int_t daugh_pdg = TMath::Abs(mcDaughter->GetPdgCode());
+                        if(fDebugLevel) std::cout << "Daughter " << i << " pdg code is " << daugh_pdg << std::endl;
 	      
-	      Int_t daugh_label = DStarMC->GetDaughter(i);
-	      AliAODMCParticle* mcDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daugh_label));
-	      if(!mcDaughter) continue;
-	      Int_t daugh_pdg = TMath::Abs(mcDaughter->GetPdgCode());
-	      if(fDebugLevel) std::cout << "Daughter " << i << " pdg code is " << daugh_pdg << std::endl;
-	      
-	      if(daugh_pdg == 421) {isDZero = kTRUE;
-		Int_t NDaughD0 = mcDaughter->GetNDaughters();
-		if(NDaughD0 != 2) continue; // skip decay channels w/0 2 prongs
-		trackiddaugh0 = mcDaughter->GetDaughter(0);
-		trackiddaugh1 = mcDaughter->GetDaughter(1);
+                        if(daugh_pdg == 421) {isDZero = kTRUE;
+                            Int_t NDaughD0 = mcDaughter->GetNDaughters();
+                            if(NDaughD0 != 2) continue; // skip decay channels w/0 2 prongs
+                            trackiddaugh0 = mcDaughter->GetDaughter(0);
+                            trackiddaugh1 = mcDaughter->GetDaughter(1);
+                            Bool_t isKaon = kFALSE;
+                            Bool_t isPion = kFALSE;
 		
-		Bool_t isKaon = kFALSE;
-		Bool_t isPion = kFALSE;
-		
-		for(Int_t k=0;k<NDaughD0;k++){
-		  
-		  Int_t labelD0daugh = mcDaughter->GetDaughter(k);
-		  AliAODMCParticle* mcGrandDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelD0daugh));
-		  if(!mcGrandDaughter) continue;
-		  Int_t granddaugh_pdg = TMath::Abs(mcGrandDaughter->GetPdgCode());
-		  if(granddaugh_pdg==321) isKaon = kTRUE;
-		  if(granddaugh_pdg==211) isPion = kTRUE;
-		}
-		if(!isKaon || !isKaon) continue; // skip if not correct decay channel of D0
-	      }
+                            for(Int_t k=0;k<NDaughD0;k++){
+                                Int_t labelD0daugh = mcDaughter->GetDaughter(k);
+                                AliAODMCParticle* mcGrandDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelD0daugh));
+                                if(!mcGrandDaughter) continue;
+                                Int_t granddaugh_pdg = TMath::Abs(mcGrandDaughter->GetPdgCode());
+                                if(granddaugh_pdg==321) isKaon = kTRUE;
+                                if(granddaugh_pdg==211) isPion = kTRUE;
+                            }
+                            if(!isKaon || !isKaon) continue; // skip if not correct decay channel of D0
+                        }
 	      
-	      if(daugh_pdg == 211) {
-		isSoftPi = kTRUE;
-		daughtercharge = mcDaughter->Charge();
-		trackidsoftPi = daugh_label;}
-	    }
-	    
-	    
-	    if(!isDZero || !isSoftPi) continue; // skip if not correct decay channel
-	    
-	    
-	    // end check decay channel
+                        if(daugh_pdg == 211) {
+                            isSoftPi = kTRUE;
+                            daughtercharge = mcDaughter->Charge();
+                            trackidsoftPi = daugh_label;}
+                    }
+              if(!isDZero || !isSoftPi) continue; // skip if not correct decay channel
+          } // end check decay channel
 	    
 	    ptDStar = DStarMC->Pt();
 	    phiDStar = DStarMC->Phi();
 	    etaDStar = DStarMC->Eta();
+          
+          if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue;
 	    
 	  } // end use pure MC information
 	  
-	  
-	  // check if it is a DStar from B
-	  
-	  
+    
+        // getting the number of triggers in the MCtag D* case
+        if(fmontecarlo && isDStarMCtag) ((TH1F*)fOutput->FindObject("MCtagPtDStar"))->Fill(ptDStar);
 	  if(fmontecarlo && isDStarMCtag && !isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromCharm"))->Fill(ptDStar);
 	  if(fmontecarlo && isDStarMCtag && isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromBeauty"))->Fill(ptDStar);
 	  
 	  
 	  fCorrelator->SetTriggerParticleProperties(ptDStar,phiDStar,etaDStar); // pass to the object the necessary trigger part parameters
-	  
-	  
 	  fCorrelator->SetTriggerParticleDaughterCharge(daughtercharge);
 	  
 	  
 	  // ************************************************ CORRELATION ANALYSIS STARTS HERE
-	  
-	  
 	  
 	  
 	  Bool_t execPool = fCorrelator->ProcessEventPool();
@@ -812,19 +750,15 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	      ((TH1D*)fOutput->FindObject("CheckPoolReadiness"))->Fill(2);
 	      isEventMixingFilledSB=kTRUE;
             }
-            
-            
 	  }
 	  
 	  Int_t NofEventsinPool = 1;
 	  if(fmixing) NofEventsinPool = fCorrelator->GetNofEventsInPool();
 	  
-	  //  if(fmixing) cout << "Nof events in pool = " << NofEventsinPool << endl;
 	  
 	  for (Int_t jMix =0; jMix < NofEventsinPool; jMix++){// loop on events in the pool; if it is SE analysis, stops at one
 	    
 	    Bool_t analyzetracks = fCorrelator->ProcessAssociatedTracks(jMix);
-	    
 	    if(!analyzetracks) {
 	      AliInfo("AliHFCorrelator::Cannot process the track array");
 	      continue;
@@ -832,12 +766,8 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             
             //initialization of variables for correlations with leading particles
             Double_t DeltaPhiLeading = -999.;
-	    Double_t DeltaEtaLeading = -999.;
-	    //Double_t ptleading = -999.;
-            //     Int_t labelleading = -999;
-            
-            //	Int_t crosscheck = (Int_t)((fCorrelator->GetTrackArray())->GetEntriesFast());
-	    
+          Double_t DeltaEtaLeading = -999.;
+	
 	    
 	    Int_t NofTracks = fCorrelator->GetNofTracks();
             
@@ -853,89 +783,91 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             
             Double_t weight;
             
-	    for(Int_t iTrack = 0; iTrack<NofTracks; iTrack++){ // looping on track candidates
-	      Bool_t runcorrelation = fCorrelator->Correlate(iTrack);
-	      if(!runcorrelation) continue;
+          for(Int_t iTrack = 0; iTrack<NofTracks; iTrack++){ // looping on track candidates
+              Bool_t runcorrelation = fCorrelator->Correlate(iTrack);
+              if(!runcorrelation) continue;
               
-	      Double_t DeltaPhi = fCorrelator->GetDeltaPhi();
-	      Double_t DeltaEta = fCorrelator->GetDeltaEta();
+              Double_t DeltaPhi = fCorrelator->GetDeltaPhi();
+              Double_t DeltaEta = fCorrelator->GetDeltaEta();
 	      
-	      AliReducedParticle * hadron = fCorrelator->GetAssociatedParticle();
-	      if(!hadron) {/*cout << "No Hadron" << endl;*/ continue;}
+              AliReducedParticle * hadron = fCorrelator->GetAssociatedParticle();
+              if(!hadron) {/*cout << "No Hadron" << endl;*/ continue;}
               
-	      Double_t ptHad = hadron->Pt();
-	      Double_t phiHad = hadron->Phi();
-	      Double_t etaHad = hadron->Eta();
-	      Int_t label = hadron->GetLabel();
-	      Int_t trackid = hadron->GetID();
-	      Double_t efficiency = hadron->GetWeight();
+              Double_t ptHad = hadron->Pt();
+              Double_t phiHad = hadron->Phi();
+              Double_t etaHad = hadron->Eta();
+              Int_t label = hadron->GetLabel();
+              Int_t trackid = hadron->GetID();
+              Double_t efficiency = hadron->GetWeight();
               
-	      weight = 1;
-	      if(fUseEfficiencyCorrection && efficiency){
-		//weight = 1./efficiency;
-		weight = DmesonWeight * (1./efficiency);
-	      }
-	      // weight = DmesonWeight * (1./efficiency);
-              
-	      phiHad = fCorrelator->SetCorrectPhiRange(phiHad);
+              weight = 1;
+              if(fUseEfficiencyCorrection && efficiency){
+                  weight = DmesonWeight * (1./efficiency);
+              }
+        
+              phiHad = fCorrelator->SetCorrectPhiRange(phiHad);
               
               
-	      if(fFullmode) ((TH2F*)fOutput->FindObject("WeightChecks"))->Fill(ptHad,efficiency);
+              if(fFullmode) ((TH2F*)fOutput->FindObject("WeightChecks"))->Fill(ptHad,efficiency);
               
-	      arraytofill[0] = DeltaPhi;
-	      arraytofill[1] = DeltaEta;
-	      arraytofill[2] = ptDStar;
-	      arraytofill[3] = ptHad;
-	      arraytofill[4] = poolbin;
+              arraytofill[0] = DeltaPhi;
+              arraytofill[1] = DeltaEta;
+              arraytofill[2] = ptDStar;
+              arraytofill[3] = ptHad;
+              arraytofill[4] = poolbin;
+                
               
-              
-              
-              
-	      MCarraytofill[0] = DeltaPhi;
-	      MCarraytofill[1] = DeltaEta;
-	      MCarraytofill[2] = ptDStar;
-	      MCarraytofill[3] = etaDStar;
-	      MCarraytofill[4] = ptHad;
+              MCarraytofill[0] = DeltaPhi;
+              MCarraytofill[1] = DeltaEta;
+              MCarraytofill[2] = ptDStar;
+              MCarraytofill[3] = ptHad;
+              MCarraytofill[4] = poolbin;
 	      
-	      Bool_t isDdaughter = kFALSE;
+	     
 	      if(fmontecarlo){
 		if(label<0 && fFullmode) ((TH2D*)fOutputMC->FindObject("TrackLabels"))->Fill(0.,NofTracks);
 		if(label>=0 && fFullmode) ((TH2D*)fOutputMC->FindObject("TrackLabels"))->Fill(1.,NofTracks);
 		if(label<0) continue; // skip track with wrong label
 	      }
-	      if(!fmixing && fReco){ // skip D* Daughetrs if it is reconstruced DStar
-		if(trackid == trackiddaugh0) continue;
-		if(trackid == trackiddaugh1) continue;
-		if(trackid == trackidsoftPi) continue;
-	      }
-	      if(!fmixing && !fReco && fmontecarlo){  // skip D* Daughetrs if it is Pure MCDStar
-		//	if(label == trackiddaugh0) continue;
-		//	if(label == trackiddaugh1) continue;
-                    //	if(label == trackidsoftPi) continue;
-		Int_t hadronlabel = label;
-		for(Int_t k=0; k<4;k++){ // go back 4 generations and check the mothers
-		  if(DStarLabel<0){ break;}
-		  if(hadronlabel<0) { break;}
-		  AliAODMCParticle* mcParticle = dynamic_cast<AliAODMCParticle*>(fmcArray->At(hadronlabel));
-		  if(!mcParticle) {AliInfo("NO MC PARTICLE"); break;}
-		  
-		  hadronlabel = mcParticle->GetMother();
-		  if(hadronlabel == DStarLabel) isDdaughter = kTRUE;
-		}
+              
+               Bool_t isDdaughter = kFALSE;
+            // skip the D daughters in the correlation
+              if(!fmixing && fReco){
+                  if(trackid == trackiddaugh0) continue;
+                  if(trackid == trackiddaugh1) continue;
+                  if(trackid == trackidsoftPi) continue;
+              }
+              
+              if(!fmixing && !fReco){
+                  AliAODMCParticle *part = (AliAODMCParticle*)fmcArray->At(label);
+                  if(!part) continue;
+                  if(IsDDaughter(DStarMC, part)) continue;
+                  cout << "Skipping DStar  daugheter " << endl;
+              }
+              if(!fmixing && !fReco && fmontecarlo){  // skip D* Daughetrs if it is Pure MCDStar
+                    Int_t hadronlabel = label;
+                    for(Int_t k=0; k<4;k++){ // go back 4 generations and check the mothers
+                        if(DStarLabel<0){ break;}
+                        if(hadronlabel<0) { break;}
+                        AliAODMCParticle* mcParticle = dynamic_cast<AliAODMCParticle*>(fmcArray->At(hadronlabel));
+                        if(!mcParticle) {AliInfo("NO MC PARTICLE"); break;}
+                        hadronlabel = mcParticle->GetMother();
+                        if(hadronlabel == DStarLabel) isDdaughter = kTRUE;
+                    }
 		
-		
-		if(isDdaughter && fDebugLevel){
-		  std::cout << "It is the D* daughter with label " << label << std::endl;
-		  std::cout << "Daughter 0 label = " << trackiddaugh0 << std::endl;
-		  std::cout << "Daughter 1 label = " << trackiddaugh1 << std::endl;
-		  std::cout << "Soft pi label = " << trackidsoftPi << std::endl;
-		}
+                  if(isDdaughter && fDebugLevel){
+                      std::cout << "It is the D* daughter with label " << label << std::endl;
+                      std::cout << "Daughter 0 label = " << trackiddaugh0 << std::endl;
+                      std::cout << "Daughter 1 label = " << trackiddaugh1 << std::endl;
+                      std::cout << "Soft pi label = " << trackidsoftPi << std::endl;
+                  }
                     
 					if(isDdaughter) continue; // skip if track is from DStar
 				}
                 
-				// from here on it is up to the user to decide what object to fill
+				// ================ FILL CORRELATION HISTOGRAMS ===============================
 				
+                // monte carlo case (mc tagged D*)
 				if((fmontecarlo && isDStarMCtag) || (fmontecarlo && !fReco)){ // check correlations of MC tagged DStars in MonteCarlo
                     
 					Bool_t* PartSource = fCuts2->IsMCpartFromHF(label,fmcArray); // check source of associated particle (hadron/kaon/K0)
@@ -952,48 +884,41 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                     ((THnSparseF*)fOutputMC->FindObject("MCDStarCorrelationsDStarHadron"))->Fill(MCarraytofill);
                     
                     delete[] PartSource;
-                    
 				}
+              
+                // Good DStar canidates
 				if(isInPeak)  {
                     
 					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
-                    
-					if(fselect==1)  ((THnSparseF*)fOutput->FindObject("CorrelationsDStarHadron"))->Fill(arraytofill,weight);
+                    if(fselect==1)  ((THnSparseF*)fOutput->FindObject("CorrelationsDStarHadron"))->Fill(arraytofill,weight);
                     if(fselect==2)  ((THnSparseF*)fOutput->FindObject("CorrelationsDStarKaon"))->Fill(arraytofill,weight);
                     if(fselect==3)  ((THnSparseF*)fOutput->FindObject("CorrelationsDStarKZero"))->Fill(arraytofill,weight);
 					
 				    ((TH3F*)fOutput->FindObject("PhiEtaPart"))->Fill(phiHad,etaHad,MultipOrCent);
 					if(fFullmode)((TH1D*)fOutput->FindObject("TracksInPeakSpectra"))->Fill(ptHad);
-                    
-					//counterPeak++; // count tracks per peak per event
-                    
+                                    
 				}
+              
+                // Sidebands from D0 candidate
 				if(isInDZeroSideBand) {
 					
 					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
-                    
-                    
                     if(fselect==1)  ((THnSparseF*)fOutput->FindObject("DZeroBkgCorrelationsDStarHadron"))->Fill(arraytofill,weight);
                     if(fselect==2)  ((THnSparseF*)fOutput->FindObject("DZeroBkgCorrelationsDStarKaon"))->Fill(arraytofill,weight);
                     if(fselect==3)  ((THnSparseF*)fOutput->FindObject("DZeroBkgCorrelationsDStarKZero"))->Fill(arraytofill,weight);
                     
 					if(fFullmode) ((TH1D*)fOutput->FindObject("TracksInSBSpectra"))->Fill(ptHad);
                     
-                    
-					//counterSB++;
-				}
+                }
+              
+              // Sidebands from D* candidate
                 if(isInDStarSideBand) {
 					
 					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
-                    
-                    
                     if(fselect==1 && fFullmode)  ((THnSparseF*)fOutput->FindObject("DStarBkgCorrelationsDStarHadron"))->Fill(arraytofill,weight);
                     if(fselect==2 && fFullmode)  ((THnSparseF*)fOutput->FindObject("DStarBkgCorrelationsDStarKaon"))->Fill(arraytofill,weight);
                     if(fselect==3 && fFullmode)  ((THnSparseF*)fOutput->FindObject("DStarBkgCorrelationsDStarKZero"))->Fill(arraytofill,weight);
-                    
-                    
-                    
-					//counterSB++;
+
 				}
                 
                 
@@ -1006,26 +931,27 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             if(isInPeak && fFullmode) ((TH3D*)fOutput->FindObject("LeadingCand"))->Fill(DeltaPhiLeading,ptDStar,DeltaEtaLeading);
 			if(isInDZeroSideBand && fFullmode) ((TH3D*)fOutput->FindObject("LeadingSB"))->Fill(DeltaPhiLeading,ptDStar,DeltaEtaLeading);
             
-			if(fmontecarlo && isDStarMCtag){
-                // Bool_t* LeadPartSource = fCuts2->IsMCpartFromHF(labelleading,fmcArray);
-                //   FillMCTagLeadingCorrelations(ptDStar,DeltaPhiLeading,DeltaEtaLeading,LeadPartSource);
-                
-            }
-            
 		} // end loop on events in the pool
         
 	}// end loop on D* candidates
 	
     
+ 
+        // check events with D* or SB canidates
+    if(fFullmode && EventHasDStarCandidate)  ((TH2F*)fOutput->FindObject("EventPropsCheckifDStar"))->Fill(MultipOrCent,zVtxPosition);
+     if(fFullmode && EventHasDZeroSideBandCandidate)  ((TH2F*)fOutput->FindObject("EventPropsCheckifDZeroSB"))->Fill(MultipOrCent,zVtxPosition);
+    
+    if(fFullmode && EventHasDStarCandidate)  ((TH2F*)fOutput->FindObject("EventPropsCheckifDStarSB"))->Fill(MultipOrCent,zVtxPosition);
+    
+    
 	if(fFullmode) ((TH2F*)fOutput->FindObject("DStarCandidates"))->Fill(nOfDStarCandidates,MultipOrCent);
     if(fFullmode) ((TH2F*)fOutput->FindObject("SBCandidates"))->Fill(nOfSBCandidates,MultipOrCent);
 	
+    // update event pool
     Bool_t updated = fCorrelator->PoolUpdate();
 	
     //	if(updated) EventMixingChecks(aodEvent);
 	if(!updated) AliInfo("Pool was not updated");
-	
-	
 	
     
 } //end the exec
@@ -1047,7 +973,29 @@ void AliAnalysisTaskDStarCorrelations::Terminate(Option_t*)
 
 	return;
 }
-
+//_____________________________________________________
+Bool_t AliAnalysisTaskDStarCorrelations::IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track) const {
+    
+    //Daughter removal in MCKine case
+    Bool_t isDaughter = kFALSE;
+    Int_t labelD0 = d->GetLabel();
+    
+    Int_t mother = track->GetMother();
+    
+    //Loop on the mothers to find the D0 label (it must be the trigger D0, not a generic D0!)
+    while (mother > 0){
+        AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(fmcArray->At(mother)); //it's the mother of the track!
+        if (mcMoth){
+            if (mcMoth->GetLabel() == labelD0) isDaughter = kTRUE;
+            mother = mcMoth->GetMother(); //goes back by one
+        } else{
+            AliError("Failed casting the mother particle!");
+            break;
+        }
+    }
+    
+    return isDaughter;
+}
 
 //_____________________________________________________
 void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
@@ -1076,9 +1024,10 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Double_t binLowLimitSparse[5]={lowcorrbin,-1.6, 0,  0,-0.5};
     Double_t binUpLimitSparse[5]= {upcorrbin,  1.6,30,25,nbinsPool-0.5};
   
-    Int_t MCnbinsSparse[7]={nbinscorr,40,50,40,250,10,2};
-    Double_t MCbinLowLimitSparse[7]={lowcorrbin,-2,0.,-1,0,0.5,-0.5};
-    Double_t MCbinUpLimitSparse[7]={upcorrbin,2,50,1,25,9.5,1.5};
+    Int_t MCnbinsSparse[7]=         {nbinscorr,   32,30,250,nbinsPool,10,2};    
+    Double_t MCbinLowLimitSparse[7]={lowcorrbin,-1.6, 0,  0,-0.5,-0.5,-0.5};      //  
+    Double_t MCbinUpLimitSparse[7]= {upcorrbin,  1.6,30,25,nbinsPool-0.5,9.5,1.5};
+    
     TString sparsename = "CorrelationsDStar";
     if(fselect==1) sparsename += "Hadron";
 	if(fselect==2) sparsename += "Kaon";
@@ -1163,10 +1112,10 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	
 	//TH2F *DeltaInvMass = new TH2F("DeltaInvMass","K#pi#pi - K#pi invariant mass distribution",300,0,30,750,0.1,0.2);
 	//if(!fmixing) fOutput->Add(DeltaInvMass);
-    TH3F *DeltaInvMass = new TH3F("DeltaInvMass","K#pi#pi - K#pi invariant mass distribution",30,0,30,750,0.1,0.2,100,0,100);
+    TH2F *DeltaInvMass = new TH2F("DeltaInvMass","K#pi#pi - K#pi invariant mass distribution; D* p_{T}; #DeltaInvMass",30,0,30,750,0.1,0.2);
 	if(!fmixing) fOutput->Add(DeltaInvMass);
 	
-	TH3F *bkgDeltaInvMass = new TH3F("bkgDeltaInvMass","K#pi#pi - K#pi invariant mass distribution",30,0,30,750,0.1,0.2,100,0,100);
+	TH2F *bkgDeltaInvMass = new TH2F("bkgDeltaInvMass","K#pi#pi - K#pi invariant mass distribution; SB p_{T}; #DeltaInvMass",30,0,30,750,0.1,0.2);
 	if(!fmixing) fOutput->Add(bkgDeltaInvMass);
     
     DeltaInvMass->Sumw2();
@@ -1215,6 +1164,12 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     
     TH2F * EventPropsCheckifDStar = new TH2F("EventPropsCheckifDStar","Properties of the event with D* Cand; Multiplicity; ZVtx Position [cm]",1000,0,1000,40,-10,10);
 	if(fFullmode)fOutput->Add(EventPropsCheckifDStar);
+    
+    TH2F * EventPropsCheckifDZeroSB = new TH2F("EventPropsCheckifDZeroSB","Properties of the event with D* Cand; Multiplicity; ZVtx Position [cm]",1000,0,1000,40,-10,10);
+	if(fFullmode)fOutput->Add(EventPropsCheckifDZeroSB);
+    
+    TH2F * EventPropsCheckifDStarSB = new TH2F("EventPropsCheckifDStarSB","Properties of the event with D* Cand; Multiplicity; ZVtx Position [cm]",1000,0,1000,40,-10,10);
+	if(fFullmode)fOutput->Add(EventPropsCheckifDStarSB);
     
 	
     TH2F * WeightChecks = new TH2F("WeightChecks","Checks on efficiency correction",300,0,30,100,0.005,1.005);
