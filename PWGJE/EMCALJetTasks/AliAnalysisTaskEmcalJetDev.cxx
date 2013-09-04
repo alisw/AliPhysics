@@ -268,7 +268,9 @@ AliJetContainer* AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TStr
   cont->SetArrayName(n);
   cont->SetJetRadius(jetRadius);
 
-  if(!defaultCutType.IsNull()) {
+  defaultCutType.ToUpper();
+
+  if(!defaultCutType.IsNull() && !defaultCutType.EqualTo("USER")) {
     if(defaultCutType.EqualTo("TPC"))
       cont->SetJetAcceptanceType(AliJetContainer::kTPC);
     else if(defaultCutType.EqualTo("EMCAL"))
@@ -301,7 +303,7 @@ AliJetContainer* AliAnalysisTaskEmcalJetDev::GetJetContainer(const char* name) c
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetDev::SetAnaType(UInt_t t, Int_t c) 
+void AliAnalysisTaskEmcalJetDev::SetJetAcceptanceType(UInt_t t, Int_t c) 
 {
   // Set acceptance cuts
   AliJetContainer *cont = GetJetContainer(c);
@@ -309,16 +311,23 @@ void AliAnalysisTaskEmcalJetDev::SetAnaType(UInt_t t, Int_t c)
     cont->SetJetAcceptanceType((AliJetContainer::JetAcceptanceType)t);
   }
   else {
-    AliError(Form("%s in SetAnaType(...): container %d not found!",GetName(),c));
+    AliError(Form("%s in SetJetAcceptanceType(...): container %d not found!",GetName(),c));
   }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetJetAcceptanceType(TString cutType, Int_t c) {
   //set acceptance cuts
-  AliJetContainer *cont = GetJetContainer(c);
 
-  if(!cutType.IsNull()) {
+  AliJetContainer *cont = GetJetContainer(c);
+  if (!cont) {
+    AliError(Form("%s in SetJetAcceptanceType(...): container %d not found",GetName(),c));
+    return;
+  }
+
+  cutType.ToUpper();
+
+  if(!cutType.IsNull() && !cutType.EqualTo("USER")) {
     if(cutType.EqualTo("TPC"))
      cont->SetJetAcceptanceType(AliJetContainer::kTPC);
     else if(cutType.EqualTo("EMCAL"))
@@ -455,6 +464,27 @@ void AliAnalysisTaskEmcalJetDev::SetJetBitMap(UInt_t m, Int_t c)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskEmcalJetDev::SetIsParticleLevel(Bool_t b, Int_t c)
+{
+  AliJetContainer *cont = GetJetContainer(c);
+  if (cont) cont->SetIsParticleLevel(b);
+  else AliError(Form("%s in SetIsParticleLevel(...): container %d not found",GetName(),c));
+}
+
+//________________________________________________________________________
+const TString& AliAnalysisTaskEmcalJetDev::GetRhoName(Int_t c) const
+{
+  if (c >= 0) {
+    AliJetContainer *cont = GetJetContainer(c);
+    if (cont) return cont->GetRhoName();
+    else { AliError(Form("%s in GetRhoName(...): container %d not found. Returning fRhoName...",GetName(),c)); return fRhoName; }
+  }
+  else {
+    return fRhoName;
+  }
+}
+
+//________________________________________________________________________
 TClonesArray* AliAnalysisTaskEmcalJetDev::GetJetArray(Int_t i) const {
   // Get i^th TClonesArray with AliEmcalJet
 
@@ -464,6 +494,19 @@ TClonesArray* AliAnalysisTaskEmcalJetDev::GetJetArray(Int_t i) const {
     return 0;
   }
   return cont->GetArray();
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetDev::GetJetRadius(Int_t i) const {
+  // Get jet radius from jet container i
+
+  AliJetContainer *cont = GetJetContainer(i);
+  if(!cont) {
+    AliError(Form("%s:Container %d not found",GetName(),i));
+    return 0;
+  }
+
+  return cont->GetJetRadius();
 }
 
 //________________________________________________________________________

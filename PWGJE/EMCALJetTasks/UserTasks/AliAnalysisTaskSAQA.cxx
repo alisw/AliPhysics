@@ -43,6 +43,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fCentMethod3(""),
   fDoV0QA(0),
   fDoEPQA(0),
+  fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(30),
   fCent2(0),
   fCent3(0),
@@ -92,6 +93,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fCentMethod3(""),
   fDoV0QA(0),
   fDoEPQA(0),
+  fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(30),
   fCent2(0),
   fCent3(0),
@@ -166,7 +168,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < fNcentBins; i++) {
       for (Int_t j = 0; j < nlabels; j++) {
 	histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
-	fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
+	fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
 	fHistTrPhiEtaPt[i][j]->GetXaxis()->SetTitle("#eta");
 	fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
 	fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
@@ -176,7 +178,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       if (!fParticleLevel) {
 	if (fIsMC) {
 	  histname = Form("fHistTrPhiEtaZeroLab_%d",i);
-	  fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
+	  fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
 	  fHistTrPhiEtaZeroLab[i]->GetXaxis()->SetTitle("#eta");
 	  fHistTrPhiEtaZeroLab[i]->GetYaxis()->SetTitle("#phi");
 	  fHistTrPhiEtaZeroLab[i]->GetZaxis()->SetTitle("counts");
@@ -190,7 +192,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	}
 	
 	histname = Form("fHistTrEmcPhiEta_%d",i);
-	fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
+	fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
 	fHistTrEmcPhiEta[i]->GetXaxis()->SetTitle("#eta");
 	fHistTrEmcPhiEta[i]->GetYaxis()->SetTitle("#phi");
 	fOutput->Add(fHistTrEmcPhiEta[i]);
@@ -202,7 +204,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fOutput->Add(fHistTrEmcPt[i]);
 	
 	histname = Form("fHistTrPhiEtaNonProp_%d",i);
-	fHistTrPhiEtaNonProp[i] = new TH2F(histname,histname, 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
+	fHistTrPhiEtaNonProp[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
 	fHistTrPhiEtaNonProp[i]->GetXaxis()->SetTitle("#eta");
 	fHistTrPhiEtaNonProp[i]->GetYaxis()->SetTitle("#phi");
 	fOutput->Add(fHistTrPhiEtaNonProp[i]);
@@ -241,7 +243,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistClusPhiEtaEnergy_";
       histname += i;
-      fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
       fHistClusPhiEtaEnergy[i]->GetXaxis()->SetTitle("#eta");
       fHistClusPhiEtaEnergy[i]->GetYaxis()->SetTitle("#phi");
       fHistClusPhiEtaEnergy[i]->GetZaxis()->SetTitle("E_{cluster} (GeV)");
@@ -306,7 +308,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistJetsPhiEta_";
       histname += i;
-      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01);
+      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
       fHistJetsPhiEta[i]->GetXaxis()->SetTitle("#eta");
       fHistJetsPhiEta[i]->GetYaxis()->SetTitle("#phi");
       fHistJetsPhiEta[i]->GetZaxis()->SetTitle("counts");
@@ -400,6 +402,20 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     min[dim] = fMinBinPt;
     max[dim] = fMaxBinPt;
     dim++;
+
+    if (fDoLeadingObjectPosition) {
+      title[dim] = "#eta_{track}^{leading}";
+      nbins[dim] = 100;
+      min[dim] = -1;
+      max[dim] = 1;
+      dim++;
+
+      title[dim] = "#phi_{track}^{leading}";
+      nbins[dim] = 101;
+      min[dim] = 0;
+      max[dim] = TMath::Pi() * 2.02;
+      dim++;
+    }
   }
 
   if (fClusterCollArray.GetEntriesFast()>0) {
@@ -414,6 +430,20 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     min[dim] = fMinBinPt;
     max[dim] = fMaxBinPt;
     dim++;
+
+    if (fDoLeadingObjectPosition) {
+      title[dim] = "#eta_{cluster}^{leading}";
+      nbins[dim] = 100;
+      min[dim] = -1;
+      max[dim] = 1;
+      dim++;
+
+      title[dim] = "#phi_{cluster}^{leading}";
+      nbins[dim] = 101;
+      min[dim] = 0;
+      max[dim] = TMath::Pi() * 2.02;
+      dim++;
+    }
   }
 
   if (!fCaloCellsName.IsNull()) {
@@ -436,6 +466,20 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     min[dim] = fMinBinPt;
     max[dim] = fMaxBinPt;
     dim++;
+
+    if (fDoLeadingObjectPosition) {
+      title[dim] = "#eta_{jet}^{leading}";
+      nbins[dim] = 100;
+      min[dim] = -1;
+      max[dim] = 1;
+      dim++;
+
+      title[dim] = "#phi_{jet}^{leading}";
+      nbins[dim] = 101;
+      min[dim] = 0;
+      max[dim] = TMath::Pi() * 2.02;
+      dim++;
+    }
   }
 
   fHistEventQA = new THnSparseF("fHistEventQA","fHistEventQA",dim,nbins,min,max);
@@ -503,18 +547,44 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   Int_t ncells = 0;
   Int_t njets = 0;
 
-  Float_t leadingTrack = 0;
-  Float_t leadingClus = 0;
-  Float_t leadingJet = 0;
+  Float_t leadingClusE = 0;
+  Float_t leadingClusEta = 0;
+  Float_t leadingClusPhi = 0;
+
+  Float_t leadingTrackPt = 0;
+  Float_t leadingTrackEta = 0;
+  Float_t leadingTrackPhi = 0;
+
+  Float_t leadingJetPt = 0;
+  Float_t leadingJetEta = 0;
+  Float_t leadingJetPhi = 0;
     
   if (fTracks) {
+    AliVParticle *leadingTrack = 0;
+
     ntracks = DoTrackLoop(trackSum, leadingTrack);
     AliDebug(2,Form("%d tracks found in the event", ntracks));
+
+    if (leadingTrack) {
+      leadingTrackPt = leadingTrack->Pt();
+      leadingTrackEta = leadingTrack->Eta();
+      leadingTrackPhi = leadingTrack->Phi();
+    }
   } 
 
   if (fCaloClusters) {
+    AliVCluster  *leadingClus = 0;
+
     nclusters = DoClusterLoop(clusSum, leadingClus);
     AliDebug(2,Form("%d clusters found in the event", nclusters));
+
+    if (leadingClus) {
+      TLorentzVector leadingClusVect;
+      leadingClus->GetMomentum(leadingClusVect, fVertex);
+      leadingClusE = leadingClus->E();
+      leadingClusEta = leadingClusVect.Eta();
+      leadingClusPhi = leadingClusVect.Phi();
+    }
 
     fHistChVSneClus->Fill(clusSum, trackSum);
   }
@@ -528,11 +598,23 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   }
 
   if (fJets) {
+    AliEmcalJet  *leadingJet = 0;
+
     njets = DoJetLoop(leadingJet);
     AliDebug(2,Form("%d jets found in the event", njets));
+
+    if (leadingJet) {
+      leadingJetPt = leadingJet->Pt();
+      leadingJetEta = leadingJet->Eta();
+      leadingJetPhi = leadingJet->Phi();
+    }
   }
 
-  FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal, ntracks, nclusters, ncells, njets, leadingTrack, leadingClus, leadingJet);
+  FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal, 
+		   ntracks, nclusters, ncells, njets, 
+		   leadingTrackPt, leadingTrackEta, leadingTrackPhi, 
+		   leadingClusE, leadingClusEta, leadingClusPhi, 
+		   leadingJetPt, leadingJetEta, leadingJetPhi);
 
   return kTRUE;
 }
@@ -540,7 +622,9 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, 
 					   Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets, 
-					   Float_t maxtrack, Float_t maxcluster, Float_t maxjet)
+					   Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
+					   Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi,
+					   Float_t maxJetPt, Float_t maxJetEta, Float_t maxJetPhi)
 {
   Double_t contents[20]={0};
 
@@ -571,11 +655,23 @@ void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t 
     else if (title=="No. of jets")
       contents[i] = njets;
     else if (title=="p_{T,track}^{leading} (GeV/c)")
-      contents[i] = maxtrack;
+      contents[i] = maxTrackPt;
+    else if (title=="#eta_{track}^{leading}")
+      contents[i] = maxTrackEta;
+    else if (title=="#phi_{track}^{leading}")
+      contents[i] = maxTrackPhi;
     else if (title=="E_{cluster}^{leading} (GeV)")
-      contents[i] = maxcluster;
+      contents[i] = maxClusterE;
+    else if (title=="#eta_{cluster}^{leading}")
+      contents[i] = maxClusterEta;
+    else if (title=="#phi_{cluster}^{leading}")
+      contents[i] = maxClusterPhi;
     else if (title=="p_{T,jet}^{leading} (GeV/c)")
-      contents[i] = maxjet;
+      contents[i] = maxJetPt;
+    else if (title=="#eta_{jet}^{leading}")
+      contents[i] = maxJetEta;
+    else if (title=="#phi_{jet}^{leading}")
+      contents[i] = maxJetPhi;
     else 
       AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
@@ -668,7 +764,7 @@ Double_t AliAnalysisTaskSAQA::GetFcross(AliVCluster *cluster, AliVCaloCells *cel
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, Float_t &leading)
+Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
 {
   // Do cluster loop.
 
@@ -697,7 +793,7 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, Float_t &leading)
 
     sum += cluster->E();
 
-    if (leading < cluster->E()) leading = cluster->E();
+    if (!leading || leading->E() < cluster->E()) leading = cluster;
 
     TLorentzVector nPart;
     cluster->GetMomentum(nPart, fVertex);
@@ -720,7 +816,7 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, Float_t &leading)
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, Float_t &leading)
+Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
 {
   // Do track loop.
 
@@ -752,7 +848,7 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, Float_t &leading)
 
     sum += track->P();
 
-    if (leading < track->Pt()) leading = track->P();
+    if (!leading || leading->Pt() < track->Pt()) leading = track;
 
     if (fParticleLevel) {
       fHistTrPhiEtaPt[fCentBin][0]->Fill(track->Eta(), track->Phi(), track->Pt());
@@ -814,7 +910,7 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, Float_t &leading)
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskSAQA::DoJetLoop(Float_t &leading)
+Int_t AliAnalysisTaskSAQA::DoJetLoop(AliEmcalJet* &leading)
 {
   // Do jet loop.
 
@@ -839,7 +935,7 @@ Int_t AliAnalysisTaskSAQA::DoJetLoop(Float_t &leading)
     if (!AcceptJet(jet))
       continue;
 
-    if (leading < jet->Pt()) leading = jet->Pt();
+    if (!leading || leading->Pt() < jet->Pt()) leading = jet;
 
     nAccJets++;
 

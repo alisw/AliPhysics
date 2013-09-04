@@ -9,9 +9,9 @@ class THnSparse;
 class AliNamedArrayI;
 
 #include "AliEmcalJet.h"
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetDev.h"
 
-class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
+class AliJetResponseMaker : public AliAnalysisTaskEmcalJetDev {
  public:
   AliJetResponseMaker();
   AliJetResponseMaker(const char *name);
@@ -26,23 +26,10 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
 
-  void                        SetJets2Name(const char *n)                                     { fJets2Name         = n         ; }
-  void                        SetTracks2Name(const char *n)                                   { fTracks2Name       = n         ; }
-  void                        SetClus2Name(const char *n)                                     { fCalo2Name         = n         ; }
-  void                        SetJet2EtaLimits(Float_t min=-999, Float_t max=-999)            { fJet2MinEta = min, fJet2MaxEta = max ; }
-  void                        SetJet2PhiLimits(Float_t min=-999, Float_t max=-999)            { fJet2MinPhi = min, fJet2MaxPhi = max ; }
-  void                        SetJet2Radius(Float_t r)                                        { fJet2Radius        = r         ; }
-  void                        SetJet2AreaCut(Float_t cut)                                     { fJet2AreaCut       = cut       ; }
-  void                        SetRho2Name(const char *n)                                      { fRho2Name          = n         ; }
-  void                        SetPtBiasJet2Clus(Float_t b)                                    { fPtBiasJet2Clus    = b         ; }
-  void                        SetPtBiasJet2Track(Float_t b)                                   { fPtBiasJet2Track   = b         ; }
   void                        SetMatching(MatchingType t, Double_t p1=1, Double_t p2=1)       { fMatching = t; fMatchingPar1 = p1; fMatchingPar2 = p2; }
   void                        SetPtHardBin(Int_t b)                                           { fSelectPtHardBin   = b         ; }
-  void                        SetAreMCCollections(Bool_t f1, Bool_t f2)                       { fAreCollections1MC = f1; fAreCollections2MC = f2; }
   void                        SetUseCellsToMatch(Bool_t i)                                    { fUseCellsToMatch   = i         ; }
   void                        SetMinJetMCPt(Float_t pt)                                       { fMinJetMCPt        = pt        ; }
-  void                        SetMaxClusterPt2(Float_t b)                                     { fMaxClusterPt2     = b         ; }
-  void                        SetMaxTrackPt2(Float_t b)                                       { fMaxTrackPt2       = b         ; }
   void                        SetHistoType(Int_t b)                                           { fHistoType         = b         ; }
   void                        SetDeltaPtAxis(Int_t b)                                         { fDeltaPtAxis       = b         ; }
   void                        SetDeltaEtaDeltaPhiAxis(Int_t b)                                { fDeltaEtaDeltaPhiAxis= b       ; }
@@ -51,12 +38,9 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetDoJet2Histogram(Int_t b)                                     { fDoJet2Histogram   = b         ; }
 
  protected:
-  Bool_t                      AcceptJet(AliEmcalJet* jet) const;
-  Bool_t                      AcceptBiasJet2(AliEmcalJet *jet) const;
   void                        ExecOnce();
-  void                        DoJetLoop(Bool_t order);
+  void                        DoJetLoop();
   Bool_t                      FillHistograms();
-  Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
   Bool_t                      DoJetMatching();
   void                        SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching);
@@ -70,39 +54,20 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        AllocateTH2();
   void                        AllocateTHnSparse();
 
-  TString                     fTracks2Name;                   // name of second track collection
-  TString                     fCalo2Name;                     // name of second cluster collection
-  TString                     fJets2Name;                     // name of second jet collection
-  TString                     fRho2Name;                      // name of second jet collection
-  Float_t                     fJet2Radius;                    // jet radius of second jet collection
-  Float_t                     fJet2AreaCut;                   // cut on jet area (second jet collection)
-  Float_t                     fPtBiasJet2Track;               // select jets 2 with a minimum pt track
-  Float_t                     fPtBiasJet2Clus;                // select jets 2 with a minimum pt cluster
-  Float_t                     fJet2MinEta;                    // minimum eta jet 2 acceptance
-  Float_t                     fJet2MaxEta;                    // maximum eta jet 2 acceptance
-  Float_t                     fJet2MinPhi;                    // minimum phi jet 2 acceptance
-  Float_t                     fJet2MaxPhi;                    // maximum phi jet 2 acceptance
-  Float_t                     fMaxClusterPt2;                 // maximum cluster constituent pt to accept the jet in collection 2 (default 1000 GeV/c)
-  Float_t                     fMaxTrackPt2;                   // maximum track constituent pt to accept the jet in collection 2 (default 1000 GeV/c)
-  Bool_t                      fAreCollections1MC;             // collections 1 MC
-  Bool_t                      fAreCollections2MC;             // collections 1 MC
-  MatchingType                fMatching;                      // matching type
-  Double_t                    fMatchingPar1;                  // matching parameter for jet1-jet2 matching
-  Double_t                    fMatchingPar2;                  // matching parameter for jet2-jet1 matching
-  Bool_t                      fUseCellsToMatch;               // use cells instead of clusters to match jets (slower but sometimes needed)
-  Double_t                    fMinJetMCPt;                    // minimum jet MC pt
-  Int_t                       fHistoType;                     // histogram type (0=TH2, 1=THnSparse)
-  Int_t                       fDeltaPtAxis;                   // add delta pt axis in THnSparse (default=0)
-  Int_t                       fDeltaEtaDeltaPhiAxis;          // add delta eta and delta phi axes in THnSparse (default=0)
-  Int_t                       fNEFAxis;                       // add NEF axis in matching THnSparse (default=0)
-  Int_t                       fZAxis;                         // add Z axis in matching THnSparse (default=0)
-  Int_t                       fDoJet2Histogram;               // add unbiased jet2 histogram (potentially memory consuming if on particle level)
-  TClonesArray               *fTracks2;                       //!Tracks 2
-  TClonesArray               *fCaloClusters2;                 //!Clusters 2
-  TClonesArray               *fJets2;                         //!Jets 2
-  AliRhoParameter            *fRho2;                          //!Event rho 2
-  Double_t                    fRho2Val;                       //!Event rho 2 value 
-  AliNamedArrayI             *fTracks2Map;                    //!MC particle map
+  MatchingType                fMatching;                               // matching type
+  Double_t                    fMatchingPar1;                           // matching parameter for jet1-jet2 matching
+  Double_t                    fMatchingPar2;                           // matching parameter for jet2-jet1 matching
+  Bool_t                      fUseCellsToMatch;                        // use cells instead of clusters to match jets (slower but sometimes needed)
+  Double_t                    fMinJetMCPt;                             // minimum jet MC pt
+  Int_t                       fHistoType;                              // histogram type (0=TH2, 1=THnSparse)
+  Int_t                       fDeltaPtAxis;                            // add delta pt axis in THnSparse (default=0)
+  Int_t                       fDeltaEtaDeltaPhiAxis;                   // add delta eta and delta phi axes in THnSparse (default=0)
+  Int_t                       fNEFAxis;                                // add NEF axis in matching THnSparse (default=0)
+  Int_t                       fZAxis;                                  // add Z axis in matching THnSparse (default=0)
+  Int_t                       fDoJet2Histogram;                        // add unbiased jet2 histogram (potentially memory consuming if on particle level)
+
+  Bool_t                      fIsJet1Rho;                              //!whether the jet1 collection has to be average subtracted
+  Bool_t                      fIsJet2Rho;                              //!whether the jet2 collection has to be average subtracted
 
   // General histos
   TH2                        *fHistLeadingJets1PtArea;                 //!leading jet pt vs. area histogram 1
@@ -189,6 +154,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 22) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 23) // Jet response matrix producing task
 };
 #endif

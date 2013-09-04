@@ -8,9 +8,9 @@ class THnSparse;
 
 #include <TH3F.h>
 
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetDev.h"
 
-class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJetDev {
  public:
 
   AliAnalysisTaskSAJF();
@@ -60,6 +60,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 16) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 17) // jet analysis task
 };
 #endif

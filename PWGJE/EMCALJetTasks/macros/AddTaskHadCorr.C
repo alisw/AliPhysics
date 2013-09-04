@@ -37,16 +37,17 @@ AliHadCorrTask* AddTaskHadCorr(
 
   TString name(Form("HadCorr_%s", outClusName));
   AliHadCorrTask *hcor = new AliHadCorrTask(name, histo);
-  hcor->SetTracksName(nTracks);
-  hcor->SetClusName(nClusters);
   hcor->SetOutClusName(outClusName);
   hcor->SetPhiMatch(phiMatch);
   hcor->SetEtaMatch(etaMatch);
   hcor->SetHadCorr(hadcorr);
-  hcor->SetPtCut(minPt);
   hcor->SetEexcl(Eexcl);
   hcor->SetTrackClus(trackClus);
-  hcor->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
+
+  AliParticleContainer *trackCont = hcor->AddParticleContainer(nTracks);  
+  if (trackCont) trackCont->SetParticlePtCut(minPt);
+  AliParticleContainer *clusCont = hcor->AddParticleContainer(nClusters);
+  if (clusCont) clusCont->SetParticlePtCut(minPt);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

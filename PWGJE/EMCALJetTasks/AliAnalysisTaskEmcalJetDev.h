@@ -22,7 +22,8 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   virtual ~AliAnalysisTaskEmcalJetDev();
 
   //these should all point to the jet container
-  void                SetAnaType(UInt_t t, Int_t c = 0);
+  void                SetAnaType(UInt_t t, Int_t c = 0) { SetJetAcceptanceType(t,c); }
+  void                SetJetAcceptanceType(UInt_t t, Int_t c = 0);
   void                SetJetAcceptanceType(TString cutType, Int_t c = 0);
   void                SetJetEtaLimits(Float_t min, Float_t max, Int_t c = 0);
   void                SetJetPhiLimits(Float_t min, Float_t max, Int_t c = 0);
@@ -39,10 +40,13 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   void                SetNLeadingJets(Int_t t, Int_t c = 0);
   void                SetJetBitMap(UInt_t m, Int_t c = 0);
   void                SetJetTrigger(UInt_t t, Int_t c = 0);
+  void                SetIsParticleLevel(Bool_t b, Int_t c = 0);
 
   void                SetJetsName(const char *n)                   { AddJetContainer(n); }
   virtual void        SetRhoName(const char *n, Int_t c = 0);
   virtual void        SetLocalRhoName(const char *n)               { fLocalRhoName   = n; }
+
+  const TString&      GetRhoName(Int_t c = 0) const;
 
   AliJetContainer    *AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
   void                RemoveJetContainer(Int_t i)                  { fJetCollArray.RemoveAt(i);} 
@@ -59,6 +63,7 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kFALSE)       const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kFALSE)      const;
   Bool_t                      RetrieveEventObjects()                                                        ;
+  Double_t                    GetJetRadius(Int_t i=0)                                                  const;
   AliJetContainer            *GetJetContainer(Int_t i=0)                                               const;
   AliJetContainer            *GetJetContainer(const char* name)                                        const;
   TClonesArray               *GetJetArray(Int_t i=0)                                                   const;

@@ -161,14 +161,6 @@ AliEmcalJet* AliJetContainer::GetJet(Int_t i) const {
 
 }
 
-
-//________________________________________________________________________
-Double_t AliJetContainer::GetJetPtCorr(Int_t i) const {
-  AliEmcalJet *jet = GetJet(i);
-
-  return jet->Pt() - fRho->GetVal()*jet->Area();
-}
-
 //________________________________________________________________________
 AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
 
@@ -178,6 +170,24 @@ AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
   if(!AcceptJet(jet)) return 0;
 
   return jet;
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliJetContainer::GetJetWithLabel(Int_t lab) const {
+
+  //Get particle with label lab in array
+  
+  Int_t i = GetIndexFromLabel(lab);
+  return GetJet(i);
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) const {
+
+  //Get particle with label lab in array
+  
+  Int_t i = GetIndexFromLabel(lab);
+  return GetAcceptJet(i);
 }
 
 //________________________________________________________________________
@@ -195,6 +205,30 @@ AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) {
   }
 
   return jet;
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliJetContainer::GetNextJet(Int_t i) {
+
+  //Get next jet; if i >= 0 (re)start counter from i; return 0 if no jet could be found
+
+  if (i>=0) fCurrentID = i;
+
+  const Int_t njets = GetNEntries();
+  AliEmcalJet *jet = 0;
+  while (fCurrentID < njets && !jet) { 
+    jet = GetJet(fCurrentID);
+    fCurrentID++;
+  }
+
+  return jet;
+}
+
+//________________________________________________________________________
+Double_t AliJetContainer::GetJetPtCorr(Int_t i) const {
+  AliEmcalJet *jet = GetJet(i);
+
+  return jet->Pt() - fRho->GetVal()*jet->Area();
 }
 
 //________________________________________________________________________

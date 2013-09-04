@@ -2,7 +2,7 @@
 //
 // Calculation of rho from a collection of jets.
 // If scale function is given the scaled rho will be exported
-// with the name as "fRhoName".apppend("_Scaled").
+// with the name as "fOutRhoName".apppend("_Scaled").
 //
 // Authors: R.Reed, S.Aiola, M.Connors
 
@@ -15,16 +15,16 @@
 #include "AliEmcalJet.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
+#include "AliJetContainer.h"
 
 ClassImp(AliAnalysisTaskRhoSparse)
 
 //________________________________________________________________________
 AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() : 
   AliAnalysisTaskRhoBase("AliAnalysisTaskRhoSparse"),
-  fHistOccCorrvsCent(0),
   fNExclLeadJets(0),
   fRhoCMS(0),
-  fSigJetsName("SJets")
+  fHistOccCorrvsCent(0)
 {
   // Constructor.
 }
@@ -32,10 +32,9 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() :
 //________________________________________________________________________
 AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBase(name, histo),
-  fHistOccCorrvsCent(0),
   fNExclLeadJets(0),
   fRhoCMS(0),
-  fSigJetsName("SJets")
+  fHistOccCorrvsCent(0)
 {
   // Constructor.
 }
@@ -43,8 +42,7 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse(const char *name, Bool_t hist
 //________________________________________________________________________
 void AliAnalysisTaskRhoSparse::UserCreateOutputObjects()
 {
-  if (!fCreateHisto)
-    return;
+  if (!fCreateHisto) return;
 
   AliAnalysisTaskRhoBase::UserCreateOutputObjects();
   
@@ -84,21 +82,19 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
 {
   // Run the analysis.
 
-  fRho->SetVal(0);
-  if (fRhoScaled)
-    fRhoScaled->SetVal(0);
+  fOutRho->SetVal(0);
+  if (fOutRhoScaled)
+    fOutRhoScaled->SetVal(0);
 
   if (!fJets)
     return kFALSE;
 
-  const Int_t Njets   = fJets->GetEntries();
+  const Int_t Njets = fJets->GetEntries();
 
-  TClonesArray *sigjets = 0;
-  sigjets= dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fSigJetsName));
+  AliJetContainer *sigjets = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
   Int_t NjetsSig = 0;
-  if(sigjets) NjetsSig = sigjets->GetEntries();
- 
+  if (sigjets) NjetsSig = sigjets->GetNJets();
 
   Int_t maxJetIds[]   = {-1, -1};
   Float_t maxJetPts[] = { 0,  0};
@@ -157,15 +153,13 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     if (!AcceptJet(jet))
       continue;
 
- 
-
    // Search for overlap with signal jets
     Bool_t isOverlapping = kFALSE;
-    if(sigjets){
+    if (sigjets) {
       for(Int_t j=0;j<NjetsSig;j++)
 	{
-	  AliEmcalJet* signalJet = static_cast<AliEmcalJet*>(sigjets->At(j));
-	  if(!AcceptJet(signalJet))
+	  AliEmcalJet* signalJet = sigjets->GetAcceptJet(j);
+	  if(!signalJet)
 	    continue;
 	  if(!IsJetSignal(signalJet))     
 	    continue;
@@ -185,8 +179,6 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
       rhovec[NjetAcc] = jet->Pt() / jet->Area();
       ++NjetAcc;
     }
-    
-
   }
 
   Double_t OccCorr=0.0;
@@ -194,21 +186,19 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
  
   fHistOccCorrvsCent->Fill(fCent, OccCorr);
 
-
   if (NjetAcc > 0) {
     //find median value
     Double_t rho = TMath::Median(NjetAcc, rhovec);
-
 
     if(fRhoCMS){
       rho = rho * OccCorr;
     }
 
-    fRho->SetVal(rho);
+    fOutRho->SetVal(rho);
 
-    if (fRhoScaled) {
+    if (fOutRhoScaled) {
       Double_t rhoScaled = rho * GetScaleFactor(fCent);
-      fRhoScaled->SetVal(rhoScaled);
+      fOutRhoScaled->SetVal(rhoScaled);
     }
   }
 

@@ -9,9 +9,9 @@ class TH1F;
 class TH2F;
 class AliRhoParameter;
 
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetDev.h"
 
-class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJetDev {
  public:
   AliAnalysisTaskRhoBase();
   AliAnalysisTaskRhoBase(const char *name, Bool_t histo=kFALSE);
@@ -19,8 +19,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
 
   void                   UserCreateOutputObjects();
 
-  void                   SetRhoName(const char *name)                          { fRhoName              = name ; 
-                                                                                 fRhoScaledName        = Form("%s_Scaled",name) ; }
+  void                   SetOutRhoName(const char *name)                       { fOutRhoName           = name ; 
+                                                                                 fOutRhoScaledName     = Form("%s_Scaled",name) ; }
   void                   SetCompareRhoName(const char *name)                   { fCompareRhoName       = name ;                   }
   void                   SetCompareRhoScaledName(const char *name)             { fCompareRhoScaledName = name ;                   }
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction        = sf   ;                   }
@@ -28,8 +28,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   void                   SetInEventSigmaRho(Double_t s)                        { fInEventSigmaRho      = s    ;                   }
   void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a    ;                   }
 
-  const TString&         GetRhoName() const                                    { return fRhoName;                                 }
-  const TString&         GetRhoScaledName() const                              { return fRhoScaledName;                           } 
+  const TString&         GetOutRhoName() const                                 { return fOutRhoName;                              }
+  const TString&         GetOutRhoScaledName() const                           { return fOutRhoScaledName;                        } 
 
  protected:
   void                   ExecOnce();
@@ -39,7 +39,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   virtual Double_t       GetRhoFactor(Double_t cent);
   virtual Double_t       GetScaleFactor(Double_t cent);
 
-  TString                fRhoScaledName;                 // name of scaled rho object
+  TString                fOutRhoName;                    // name of output rho object
+  TString                fOutRhoScaledName;              // name of output scaled rho object
   TString                fCompareRhoName;                // name of rho object to compare
   TString                fCompareRhoScaledName;          // name of scaled rho object to compare
   TF1                   *fRhoFunction;                   // pre-computed rho as a function of centrality
@@ -47,7 +48,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   Double_t               fInEventSigmaRho;               // in-event sigma rho
   Bool_t                 fAttachToEvent;                 // whether or not attach rho to the event objects list
 
-  AliRhoParameter       *fRhoScaled;                     //!scaled rho object
+  AliRhoParameter       *fOutRho;                        //!output rho object
+  AliRhoParameter       *fOutRhoScaled;                  //!output scaled rho object
   AliRhoParameter       *fCompareRho;                    //!rho object to compare
   AliRhoParameter       *fCompareRhoScaled;              //!scaled rho object to compare
 
@@ -77,6 +79,6 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskRhoBase(const AliAnalysisTaskRhoBase&);             // not implemented
   AliAnalysisTaskRhoBase& operator=(const AliAnalysisTaskRhoBase&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoBase, 9); // Rho base task
+  ClassDef(AliAnalysisTaskRhoBase, 10); // Rho base task
 };
 #endif
