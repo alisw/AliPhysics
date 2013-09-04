@@ -54,7 +54,9 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
   for(Int_t i=0; i<4; i++) {
     fh3DiJetKtNEFPtAssoc[i] = 0;
     fCentCorrPtAssocCh[i]   = 0;
-    fCentCorrPtAssocFuCh[i]   = 0;
+    fCentCorrPtAssocFuCh[i] = 0;
+    fAjPtAssocCentCh[i]     = 0;
+    fAjPtAssocCentFuCh[i]   = 0;
   }  
 
   SetMakeGeneralHistograms(kTRUE);
@@ -80,6 +82,8 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) :
     fh3DiJetKtNEFPtAssoc[i] = 0;
     fCentCorrPtAssocCh[i] = 0;
     fCentCorrPtAssocFuCh[i] = 0;
+    fAjPtAssocCentCh[i]     = 0;
+    fAjPtAssocCentFuCh[i]   = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -187,6 +191,15 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
     histoName = Form("fCentCorrPtAssocFuCh_TrigBin%d",i);
     fCentCorrPtAssocFuCh[i]  = new TH3F(histoName.Data(),histoName.Data(),100,0.,100.,100,0.,100.,nBinsPt,minPt,maxPt);
     fOutput->Add(fCentCorrPtAssocFuCh[i]);
+
+    histoName = Form("fAjPtAssocCentCh_TrigBin%d",i);
+    fAjPtAssocCentCh[i]  = new TH3F(histoName.Data(),histoName.Data(),100,0.,1.,nBinsPt,minPt,maxPt,100,0.,100.);
+    fOutput->Add(fAjPtAssocCentCh[i]);
+
+    histoName = Form("fAjPtAssocCentFuCh_TrigBin%d",i);
+    fAjPtAssocCentFuCh[i]  = new TH3F(histoName.Data(),histoName.Data(),100,0.,1.,nBinsPt,minPt,maxPt,100,0.,100.);
+    fOutput->Add(fAjPtAssocCentFuCh[i]);
+
 
   }
 
@@ -624,11 +637,11 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
   else if(mode==2)
     fhnDiJetVarsFullCharged->Fill(diJetVars);
 
+  Double_t dPhiMin = TMath::Pi()-0.9;
+  Double_t dPhiMax = TMath::Pi()+0.9;
   Int_t trigBin = GetPtTriggerBin(jetTrigPt);
   if(mode==2) {
     if(trigBin>-1 && trigBin<4) {
-      Double_t dPhiMin = TMath::Pi()-0.52;
-      Double_t dPhiMax = TMath::Pi()+0.52;
       if(deltaPhi>dPhiMin && deltaPhi<dPhiMax)
 	fh3DiJetKtNEFPtAssoc[trigBin]->Fill(kT, jet1->NEF(), jetAssocPt);
     }
@@ -636,17 +649,23 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
 
   //Fill centrality correlation histos in case a dijet is present in acceptance
 
+  Double_t aj = (jetTrigPt-jetAssocPt)/(jetTrigPt+jetAssocPt);
   Double_t centZNA = -1.;
   AliCentrality *aliCent = InputEvent()->GetCentrality();
   if (aliCent) {
     centZNA = aliCent->GetCentralityPercentile("ZNA");
     
     if(trigBin>-1 && trigBin<4) {
-      if(mode==1)
-	fCentCorrPtAssocCh[trigBin]->Fill(fCent,centZNA,jetAssocPt);
-      else if(mode==2)
-	fCentCorrPtAssocCh[trigBin]->Fill(fCent,centZNA,jetAssocPt);
-
+      if(deltaPhi>dPhiMin && deltaPhi<dPhiMax) {
+	if(mode==1) {
+	  fCentCorrPtAssocCh[trigBin]->Fill(fCent,centZNA,jetAssocPt);
+	  fAjPtAssocCentCh[trigBin]->Fill(aj,jetAssocPt,fCent);
+	}
+	else if(mode==2) {
+	  fCentCorrPtAssocFuCh[trigBin]->Fill(fCent,centZNA,jetAssocPt);
+	  fAjPtAssocCentFuCh[trigBin]->Fill(aj,jetAssocPt,fCent);
+	}
+      }
     }
   }
 
