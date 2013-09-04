@@ -57,14 +57,6 @@ AliAnalysisTaskEmcalDev::AliAnalysisTaskEmcalDev() :
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
-  fClusPtCut(0.15),
-  fTrackPtCut(0.15),
-  fTrackMinEta(-0.9),
-  fTrackMaxEta(0.9),
-  fTrackMinPhi(-10),
-  fTrackMaxPhi(10),
-  fClusTimeCutLow(-10),
-  fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
   fEventPlaneVsEmcal(-1),
   fMinEventPlane(-10),
@@ -134,14 +126,6 @@ AliAnalysisTaskEmcalDev::AliAnalysisTaskEmcalDev(const char *name, Bool_t histo)
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
-  fClusPtCut(0.15),
-  fTrackPtCut(0.15),
-  fTrackMinEta(-0.9),
-  fTrackMaxEta(0.9),
-  fTrackMinPhi(-10),
-  fTrackMaxPhi(10),
-  fClusTimeCutLow(-10),
-  fClusTimeCutUp(10),
   fMinPtTrackInEmcal(0),
   fEventPlaneVsEmcal(-1),
   fMinEventPlane(-10),
@@ -200,6 +184,46 @@ AliAnalysisTaskEmcalDev::AliAnalysisTaskEmcalDev(const char *name, Bool_t histo)
 AliAnalysisTaskEmcalDev::~AliAnalysisTaskEmcalDev()
 {
   // Destructor
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDev::SetClusPtCut(Double_t cut, Int_t c)
+{
+  AliClusterContainer *cont = GetClusterContainer(c);
+  if (cont) cont->SetClusPtCut(cut);
+  else AliError(Form("%s in SetClusPtCut(...): container %d not found",GetName(),c));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDev::SetClusTimeCut(Double_t min, Double_t max, Int_t c)
+{
+  AliClusterContainer *cont = GetClusterContainer(c);
+  if (cont) cont->SetClusTimeCut(min,max);
+  else AliError(Form("%s in SetClusTimeCut(...): container %d not found",GetName(),c));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDev::SetTrackPtCut(Double_t cut, Int_t c)
+{
+  AliParticleContainer *cont = GetParticleContainer(c);
+  if (cont) cont->SetParticlePtCut(cut);
+  else AliError(Form("%s in SetTrackPtCut(...): container %d not found",GetName(),c));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDev::SetTrackEtaLimits(Double_t min, Double_t max, Int_t c)
+{
+  AliParticleContainer *cont = GetParticleContainer(c);
+  if (cont) cont->SetParticleEtaLimits(min,max);
+  else AliError(Form("%s in SetTrackPtCut(...): container %d not found",GetName(),c));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDev::SetTrackPhiLimits(Double_t min, Double_t max, Int_t c)
+{
+  AliParticleContainer *cont = GetParticleContainer(c);
+  if (cont) cont->SetParticlePhiLimits(min,max);
+  else AliError(Form("%s in SetTrackPhiLimits(...): container %d not found",GetName(),c));
 }
 
 //________________________________________________________________________

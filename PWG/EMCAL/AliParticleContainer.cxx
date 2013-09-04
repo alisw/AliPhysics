@@ -102,6 +102,24 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const {
 }
 
 //________________________________________________________________________
+AliVParticle* AliParticleContainer::GetParticleWithLabel(Int_t lab) const {
+
+  //Get particle with label lab in array
+  
+  Int_t i = GetIndexFromLabel(lab);
+  return GetParticle(i);
+}
+
+//________________________________________________________________________
+AliVParticle* AliParticleContainer::GetAcceptParticleWithLabel(Int_t lab) const {
+
+  //Get particle with label lab in array
+  
+  Int_t i = GetIndexFromLabel(lab);
+  return GetAcceptParticle(i);
+}
+
+//________________________________________________________________________
 AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) {
 
   //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
@@ -112,6 +130,23 @@ AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) {
   AliVParticle *p = 0;
   while (fCurrentID < n && !p) { 
     p = GetAcceptParticle(fCurrentID);
+    fCurrentID++;
+  }
+
+  return p;
+}
+
+//________________________________________________________________________
+AliVParticle* AliParticleContainer::GetNextParticle(Int_t i) {
+
+  //Get next particle; if i >= 0 (re)start counter from i; return 0 if no particle could be found
+
+  if (i>=0) fCurrentID = i;
+
+  const Int_t n = GetNEntries();
+  AliVParticle *p = 0;
+  while (fCurrentID < n && !p) { 
+    p = GetParticle(fCurrentID);
     fCurrentID++;
   }
 
