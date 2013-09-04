@@ -10,7 +10,8 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   Double_t etamax          = +10,
   Double_t phimin          = -10,
   Double_t phimax          = +10,
-  AliESDtrackCuts *cuts    = 0
+  AliESDtrackCuts *cuts    = 0,
+  const char *taskName     = "AliEmcalPicoTrackMaker"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -34,7 +35,7 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliEmcalPicoTrackMaker *eTask = new AliEmcalPicoTrackMaker();
+  AliEmcalPicoTrackMaker *eTask = new AliEmcalPicoTrackMaker(taskName);
   eTask->SetTracksOutName(name);
   eTask->SetTracksInName(inname);
   eTask->SetTrackPtLimits(ptmin, ptmax);
