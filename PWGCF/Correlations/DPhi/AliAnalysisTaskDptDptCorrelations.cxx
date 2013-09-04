@@ -15,6 +15,16 @@
 
 /* $Id:$ */
 
+#include "TChain.h"
+#include "TList.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
+#include "THnSparse.h"
+#include "TCanvas.h"
+
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -41,6 +51,32 @@
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptCorrelations.h"
 
+#include "AliPID.h"
+#include "AliPIDResponse.h"
+
+#include "AliESDVertex.h"
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
+#include "AliAODInputHandler.h"
+#include "AliESD.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliStack.h"
+#include "AliESDtrackCuts.h"
+#include "AliAODMCHeader.h"
+
+
+#include "AliGenHijingEventHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliPID.h"
+#include "AliAODPid.h"
+#include "AliPIDResponse.h"
+#include "AliAODpidUtil.h"
+#include "AliPIDCombined.h"
+
+
 ClassImp(AliAnalysisTaskDptDptCorrelations)
 
 AliAnalysisTaskDptDptCorrelations::AliAnalysisTaskDptDptCorrelations()
@@ -48,6 +84,7 @@ AliAnalysisTaskDptDptCorrelations::AliAnalysisTaskDptDptCorrelations()
 fAODEvent(0), 
 fESDEvent(0),             //! ESD Event 
 fInputHandler(0),
+fPIDResponse(0x0),
 _outputHistoList(0),
 _twoPi         ( 2.0 * 3.1415927),
 _eventCount    ( 0), 
@@ -342,6 +379,9 @@ AliAnalysisTaskDptDptCorrelations::AliAnalysisTaskDptDptCorrelations(const TStri
 fAODEvent(0), 
 fESDEvent(0),  
 fInputHandler(0),
+fNSigmaCut(3.),
+
+fPIDResponse(0),
 _outputHistoList(0),
 _twoPi         ( 2.0 * 3.1415927),
 _eventCount    ( 0), 
@@ -955,6 +995,11 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
   name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
   
+  name = "dedxVsP_1"; _dedxVsP_1  = createHisto2D(name,name,1000,-10.,10.,1000,0.,1000.,"p (GeV/c)", "dedx", "counts");                          
+  name = "dedxVsP_2"; _dedxVsP_2  = createHisto2D(name,name,1000,-10.,10.,1000,0.,1000.,"p (GeV/c)", "dedx", "counts");     
+  name = "corrDedxVsP_1"; _corrDedxVsP_1 = createHisto2D(name,name,1000,-10.,10.,1000,0.,500,"p (GeV/c)", "dedx", "counts");  
+  name = "corrDedxVsP_2"; _corrDedxVsP_2 = createHisto2D(name,name,1000,-10.,10.,1000,0.,500,"p (GeV/c)", "dedx", "counts"); 
+
   name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
   
@@ -1070,6 +1115,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   int    iPhi, iEta, iEtaPhi, iPt, charge;
   float  q, p, phi, pt, eta, corr, corrPt, dedx, px, py, pz;
   int    ij;
+  //double nSigma;
   int    id_1, q_1, iEtaPhi_1, iPt_1;
   float  pt_1, px_1, py_1, pz_1, corr_1, dedx_1;
   int    id_2, q_2, iEtaPhi_2, iPt_2;
@@ -1082,6 +1128,30 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   int    nClus;
   bool   bitOK;
     
+  AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
+  if (!manager) {
+    cout<<"ERROR: Analysis manager not found."<<endl;
+    return;
+  }
+  //coneect to the inputHandler------------                                             
+  AliAODInputHandler* inputHandler = dynamic_cast<AliAODInputHandler*> (manager->GetInputEventHandler());
+  if (!inputHandler) {
+    cout<<"ERROR: Input handler not found."<<endl;
+    return;
+  }
+
+  fAODEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+  if (!fAODEvent)
+    {
+      cout<< "ERROR 01: AOD not found " <<endl;
+      return;
+    }
+  fPIDResponse =inputHandler->GetPIDResponse();
+  if (!fPIDResponse){
+    AliFatal("This Task needs the PID response attached to the inputHandler");
+    return;
+  }
+
   // count all events looked at here
   _eventCount++;
 
@@ -1092,24 +1162,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     }
   else 
     {
-    cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - !_eventAccounting" << endl;
-    cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - Skip this task" << endl;
+
     return;
     }
+  
+
+  //fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+//fAODEvent = dynamic_cast<AliAODEvent*> (InputEvent());
+  
     
-  //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 1" << endl;
-  
-  //Get pointer to current event
-  //fESDEvent = dynamic_cast<AliESDEvent*> (InputEvent());
-  fAODEvent = dynamic_cast<AliAODEvent*> (InputEvent());
-  
-  //  if(!fAODEvent && !fESDEvent)
-  if(!fAODEvent)
-    {
-    AliError("AliAnalysisTaskDptDptCorrelations::Exec(Option_t *option) !fAODEvent");
-    return;
-    }
-  
   _eventAccounting->Fill(1);// count all calls to this function with a valid pointer
   //reset single particle counters
   k1 = k2 = 0;
@@ -1128,7 +1189,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float dcaZ     = -999;
   float dcaXY    = -999;
   float centrality = -999;
-  
+  Double_t nSigma =-999;   
+
   if(fAODEvent)
     {
     //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 5" << endl;
@@ -1147,7 +1209,11 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       }
     //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 8" << endl;
     
-    _nTracks  = fAODEvent->GetNTracks();
+    // _nTracks  = fAODEvent->GetNTracks(); //OLD
+    _nTracks  =fAODEvent->GetNumberOfTracks();//NEW Test
+
+      
+
     //_mult0    = 0;
     //_mult1    = 0;
     //_mult2    = 0;
@@ -1171,21 +1237,12 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
         case 6: centrality = _mult6; break;
       }
     
-    //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 10" << endl;
-    
-    //filter on centrality
-    // require the v0 and trk centralities to agree within 5%.
-    
-    //if ((Float_t(GetTPCMult(fAOD)) > (-40.3+1.22*GetGlobalMult(fAOD))) && (Float_t(GetTPCMult(fAOD)) < (32.1+1.59*GetGlobalMult(fAOD)))) {//3 sigma
-
     
     if ( centrality < _centralityMin ||  
          centrality > _centralityMax ||
          fabs(v0Centr-trkCentr)>5.0)
       {
-      //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 11" << endl;
-      
-      // we dont analyze this event here... 
+
       return;
       }
     _eventAccounting->Fill(2);// count all events with right centrality
@@ -1222,9 +1279,30 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       return;
       }
     _eventAccounting->Fill(3);// count all calls to this function with a valid pointer
+    //====================== 
     
-    // loop over all particles for singles
-    //debug() << "_nTracks:"<< _nTracks << endl;
+    TExMap *trackMap = new TExMap();//Mapping matrix---- 
+
+    //1st loop track
+    for(Int_t i = 0; i < _nTracks; i++)
+      {
+	AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
+	if(!aodTrack) {
+	  AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
+	  continue;
+	}
+	Double_t tpcSignalAll = aodTrack->GetTPCsignal();
+	//_dedxVsP_1->Fill(aodTrack->GetTPCmomentum(),tpcSignalAll);
+	Int_t gID = aodTrack->GetID();
+	if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks
+      }
+
+
+    //--------------------------
+
+    AliAODTrack* newAodTrack;
+
+    //2nd loop track starts here
     for (int iTrack=0; iTrack< _nTracks; iTrack++)
       {
       //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 16 iTrack:" << iTrack << endl;
@@ -1236,6 +1314,13 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
         continue;
         }
       
+      bitOK  = t->TestFilterBit(_trackFilterBit);
+      if (!bitOK) continue; 
+
+      Int_t gID = t->GetID();
+      newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
+
+
       q      = t->Charge();
       charge = int(q);
       phi    = t->Phi();
@@ -1248,13 +1333,36 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       dedx   = t->GetTPCsignal();
       nClus  = t->GetTPCNcls();
       Double_t nclus2 = t->GetTPCClusterInfo(2,1);
-      bitOK  = t->TestFilterBit(_trackFilterBit);
       
       
-      if (!bitOK) continue;
+      //_Ncluster1->Fill(nClus);
+      //_Ncluster2->Fill(nclus2);
+            
+      //Float_t nsigmaTPCPID = -999.;
+      //Float_t nsigmaTOFPID = -999.;
       
-      _Ncluster1->Fill(nClus);
-      _Ncluster2->Fill(nclus2);
+      Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
+      Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
+      Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
+      Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
+      
+      //Fill QA before the PID                                                                      
+      //_dedxVsP_1 -> Fill(newAodTrack->P()*newAodTrack->Charge(),newAodTrack->GetTPCsignal());
+      //_corrDedxVsP_1 -> Fill(newAodTrack->P()*newAodTrack->Charge(),nsigmaelectron);
+      //end of QA-before pid 
+
+      //-----------------------------------------
+      //nsigma cut to reject electron (NEW)
+      if(nsigmaelectron  < fNSigmaCut
+	 && nsigmapion   > fNSigmaCut
+	 && nsigmakaon   > fNSigmaCut
+	 && nsigmaproton > fNSigmaCut ) continue;
+      //------------------------------------------
+
+      //Fill QA after the PID      
+      // _dedxVsP_2 -> Fill(newAodTrack->P()*newAodTrack->Charge(),newAodTrack->GetTPCsignal());
+      //_corrDedxVsP_2 -> Fill(newAodTrack->P()*newAodTrack->Charge(),nsigmaelectron);
+      //-----------------
 
       //Particle 1
       if (_requestedCharge_1 == charge &&
@@ -1264,28 +1372,12 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           eta      <   _max_eta_1) 
         {
         
-	  	  
-	  dcaXY = t->DCA(); //new change Prabhat                                        
-	  dcaZ  = t->ZAtDCA(); //new change Prabhat  
 	  
-	  /*  // skip track if DCA too large
-	     if (dcaZ  <  _dcaZMin || 
-	     dcaZ     >   _dcaZMax || 
-	     dcaXY    <  _dcaXYMin || 
-	     dcaXY    >   _dcaXYMax)
-	     continue; //track does not have a valid DCA
-	  */
-	_etadis->Fill(eta); //prabhat QA                                  
-	_phidis->Fill(phi);
-	_dcaz->Fill(dcaZ); //Prabhat QA             
-        _dcaxy->Fill(dcaXY);
-
-
-        iPhi   = int( phi/_width_phi_1);
+	  iPhi   = int( phi/_width_phi_1);
         
-        if (iPhi<0 || iPhi>=_nBins_phi_1 ) 
-          {
-          AliWarning("AliAnalysisTaskDptDptCorrelations::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
+	  if (iPhi<0 || iPhi>=_nBins_phi_1 ) 
+	    {
+	      AliWarning("AliAnalysisTaskDptDptCorrelations::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
           return;
           }
         
@@ -1349,7 +1441,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           }
         }
       
-      if (!_sameFilter &&
+      if (!_sameFilter && 
           _requestedCharge_2 == charge &&
           pt       >=  _min_pt_2 && 
           pt       <   _max_pt_2 && 
@@ -1452,7 +1544,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   _m4->Fill(_mult4);
   _m5->Fill(_mult5);
   _m6->Fill(_mult6);
-  _vertexZ->Fill(vertexZ);
+  //_vertexZ->Fill(vertexZ);
       
   if (_singlesOnly)
     {
@@ -1627,21 +1719,23 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
               py_2      = _py_2[i2];          ////cout << "      py_2:" << py_2 << endl;
               pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
               dedx_2    = _dedx_2[i2];        ////cout << "     dedx_2:" << dedx_2 << endl;
-              if (_rejectPairConversion)
+              
+
+	      if (_rejectPairConversion)
                 {
                 float e1Sq = massElecSq + pt_1*pt_1 + pz_1*pz_1;
                 float e2Sq = massElecSq + pt_2*pt_2 + pz_2*pz_2;
                 float mInvSq = 2*(massElecSq + sqrt(e1Sq*e2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
                 float mInv = sqrt(mInvSq);
                 _invMass->Fill(mInv);
-                if (mInv<0.5)
-                  {
-                  if (dedx_1>75. && dedx_2>75.)
-                    {
+                //if (mInv<0.5)
+		//{
+		    // if (dedx_1>75. && dedx_2>75.)
+                    //{
                     _invMassElec->Fill(mInv);
-                    if (mInv<0.05) continue;
-                    }
-                  }
+                    //if (mInv<0.05) continue;
+                    //}
+		    //}
                 }
               corr      = corr_1*corr_2;
               ij        = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2;   ////cout << " ij:" << ij<< endl;
