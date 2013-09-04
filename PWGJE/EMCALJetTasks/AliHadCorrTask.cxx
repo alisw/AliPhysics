@@ -19,6 +19,8 @@
 #include "AliVEventHandler.h"
 #include "AliEmcalParticle.h"
 #include "AliEMCALGeometry.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 #include "AliHadCorrTask.h"
 
@@ -26,7 +28,7 @@ ClassImp(AliHadCorrTask)
 
 //________________________________________________________________________
 AliHadCorrTask::AliHadCorrTask() : 
-  AliAnalysisTaskEmcal("AliHadCorrTask", kFALSE),
+  AliAnalysisTaskEmcalDev("AliHadCorrTask", kFALSE),
   fOutCaloName(),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
@@ -75,7 +77,7 @@ AliHadCorrTask::AliHadCorrTask() :
 
 //________________________________________________________________________
 AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) : 
-  AliAnalysisTaskEmcal(name, histo),
+  AliAnalysisTaskEmcalDev(name, histo),
   fOutCaloName("CaloClustersCorr"),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
@@ -370,10 +372,9 @@ void AliHadCorrTask::UserCreateOutputObjects()
 {
   // Create my user objects.
 
-  if (!fCreateHisto)
-    return;
+  if (!fCreateHisto) return;
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
 
   TString name;
 
@@ -477,24 +478,23 @@ void AliHadCorrTask::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliHadCorrTask::ExecOnce() 
 {
-  // Do base class initializations and if it fails -> bail out
-  if (!fInitialized)
-    AliAnalysisTaskEmcal::ExecOnce();
+  // Initialize the analysis.
 
-  if (!fInitialized)
+  if (fParticleCollArray.GetEntriesFast()<2) {
+    AliError(Form("Wrong number of particle collections (%d), required 2",fParticleCollArray.GetEntriesFast()));
     return;
-
-  if (dynamic_cast<AliAODEvent*>(InputEvent()))
-    fEsdMode = kFALSE;
-
-  if (fEsdMode) { // optimization in case autobranch loading is off
-    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-    if (fCaloName == "CaloClusters")
-      am->LoadBranch("CaloClusters");
-    if (fTracksName == "Tracks")
-      am->LoadBranch("Tracks");
-    am->LoadBranch("Centrality.");      
   }
+
+  for (Int_t i = 0; i < 2; i++) {
+    AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
+    cont->SetClassName("AliEmcalParticle");
+  }
+
+  // Do base class initializations and if it fails -> bail out
+  AliAnalysisTaskEmcalDev::ExecOnce();
+  if (!fInitialized) return;
+
+  if (dynamic_cast<AliAODEvent*>(InputEvent())) fEsdMode = kFALSE;
 
   if (fEsdMode) 
     fOutClusters = new TClonesArray("AliESDCaloCluster");
@@ -517,21 +517,19 @@ void AliHadCorrTask::ExecOnce()
 //________________________________________________________________________
 void AliHadCorrTask::DoTrackLoop() 
 {
-  const Int_t Ntracks = fTracks->GetEntries();
-  for (Int_t iTrk = 0; iTrk < Ntracks; ++iTrk) {
+  AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+  AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
+
+  AliEmcalParticle *emctrack = 0;
+
+  tracks->ResetCurrentID();
+  while ((emctrack = static_cast<AliEmcalParticle*>(tracks->GetNextAcceptParticle()))) {
     Int_t NmatchClus = 0;
 
-    AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iTrk));
-    if (!emctrack)
-      continue;
-    if (!emctrack->IsEMCAL())
-      continue;
+    if (!emctrack->IsEMCAL()) continue;
 
     AliVTrack *track = emctrack->GetTrack();
-    if (!track)
-      continue;
-    if (!AcceptTrack(track))
-      continue;
+    if (!track) continue;
     
     if (track->GetTrackEtaOnEMCal() < fGeom->GetArm1EtaMin() - fEtaMatch ||
 	track->GetTrackEtaOnEMCal() > fGeom->GetArm1EtaMax() + fEtaMatch || 
@@ -542,22 +540,18 @@ void AliHadCorrTask::DoTrackLoop()
     Int_t Nclus = emctrack->GetNumberOfMatchedObj();
 
     for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
-      AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(iClus));
-      if (!emccluster)
-	continue;
+      AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(emctrack->GetMatchedObjId(iClus)));
+      if (!emccluster) continue;
 
       AliVCluster *cluster = emccluster->GetCluster();
-      if (!cluster)
-	continue;
-      if (!AcceptCluster(cluster))
-	continue;
+      if (!cluster->IsEMCAL()) continue;
+      if (!cluster) continue;
 
       Double_t etadiff = 999;
       Double_t phidiff = 999;
       AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
 
-      if (TMath::Abs(phidiff) < fPhiMatch && TMath::Abs(etadiff) < fEtaMatch) 
-	NmatchClus++;
+      if (TMath::Abs(phidiff) < fPhiMatch && TMath::Abs(etadiff) < fEtaMatch) NmatchClus++;
     }
     fHistNClusMatchCent->Fill(fCent, NmatchClus);
   }
@@ -567,6 +561,8 @@ void AliHadCorrTask::DoTrackLoop()
 void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches) 
 {
   // Do the loop over matched tracks for cluster emccluster.
+
+  AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
 
   AliVCluster *cluster = emccluster->GetCluster();
   Int_t iClus = emccluster->IdInCollection();
@@ -578,19 +574,14 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     Int_t    iTrack = emccluster->GetMatchedObjId(i);
     Double_t dR     = emccluster->GetMatchedObjDistance(i);
     
-    AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iTrack));
-    if (!emctrack)
-      continue;
+    AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(tracks->GetAcceptParticle(iTrack));
+    if (!emctrack) continue;
 
     // check if track also points to cluster
-    if (fDoTrackClus && (emctrack->GetMatchedObjId(0)) != iClus)
-      continue;
+    if (fDoTrackClus && (emctrack->GetMatchedObjId(0)) != iClus) continue;
 
     AliVTrack *track = emctrack->GetTrack();
-    if (!track)
-      continue;
-    if (!AcceptTrack(track))
-      continue;
+    if (!track) continue;
 
     Double_t etadiff = 999;
     Double_t phidiff = 999;
@@ -650,6 +641,9 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
 Bool_t AliHadCorrTask::Run() 
 {
   // Run the hadronic correction
+
+  AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
+  AliEmcalParticle *emccluster = 0;
   
   if (fCreateHisto)
     DoTrackLoop();
@@ -657,18 +651,15 @@ Bool_t AliHadCorrTask::Run()
   // delete output
   fOutClusters->Delete();
 
+  Int_t clusCount = 0;
+
    // loop over all clusters
-  const Int_t Nclus = fCaloClusters->GetEntries();
-  for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
-    AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(iClus));
-    if (!emccluster)
-      continue;
+  clusters->ResetCurrentID();
+  while ((emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle()))) {
+    if (!emccluster->IsEMCAL()) continue;
 
     AliVCluster *cluster = emccluster->GetCluster();
-    if (!cluster)
-      continue;
-    if (!AcceptCluster(cluster))
-      continue;
+    if (!cluster) continue;
 
     Double_t energyclus = 0;
     if (fCreateHisto) {
@@ -693,21 +684,18 @@ Bool_t AliHadCorrTask::Run()
       AliVCluster *oc;
       if (fEsdMode) {
         AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(cluster);
-        if (!ec)
-          continue;
+        if (!ec) continue;
 	oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*ec);
       } else { 
         AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(cluster);
-        if (!ac)
-          continue;
+        if (!ac) continue;
 	oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*ac);
       }
       oc->SetE(energyclus);
 
       ++clusCount;
 
-      if (fCreateHisto)
-	fHistEafter->Fill(fCent, energyclus);
+      if (fCreateHisto) fHistEafter->Fill(fCent, energyclus);
     }
   }
   
@@ -720,27 +708,26 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   // Apply the hadronic correction with one track only.
 
   AliVCluster *cluster = emccluster->GetCluster();
+  if (!cluster) return 0;
+
   Double_t energyclus  = cluster->E();
   Int_t    iMin        = emccluster->GetMatchedObjId();
   if (iMin < 0)
     return energyclus;
 
-  AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
-  if (!emctrack)
-    return energyclus;
+  AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+  AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(tracks->GetParticle(iMin));
+  if (!emctrack) return energyclus;
 
   // check if track also points to cluster
   Int_t cid = emctrack->GetMatchedObjId();
-  if (fDoTrackClus && (cid!=emccluster->IdInCollection())) 
-    return energyclus;
+  if (fDoTrackClus && (cid!=emccluster->IdInCollection())) return energyclus;
 
   AliVTrack *track = emctrack->GetTrack();
-  if (!track)
-    return energyclus;
+  if (!track) return energyclus;
 
   Double_t mom = track->P();
-  if (mom == 0)
-    return energyclus;
+  if (mom < 1e-6) return energyclus;
 
   Double_t dRmin      = emccluster->GetMatchedObjDistance();
   Double_t dEtaMin    = 1e9;
@@ -749,8 +736,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
 
   UInt_t mombin = GetMomBin(mom);
   Int_t centbinch = fCentBin;
-  if (track->Charge()<0) 
-    centbinch += fNcentBins;
+  if (track->Charge()<0) centbinch += fNcentBins;
 
   // plot some histograms if switched on
   if (fCreateHisto) {
@@ -799,6 +785,8 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 {
   // Apply the hadronic correction with all tracks.
 
+  AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+
   AliVCluster *cluster = emccluster->GetCluster();
   
   Double_t energyclus = cluster->E();
@@ -815,16 +803,13 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 
   Double_t Esub = hadCorr * totalTrkP;
 	
-  if (Esub > energyclus) 
-    Esub = energyclus;
+  if (Esub > energyclus) Esub = energyclus;
 	
   // applying Peter's proposed algorithm
   // never subtract the full energy of the cluster 
   Double_t clusEexcl = fEexclCell * cNcells;
-  if (energyclus < clusEexcl) 
-    clusEexcl = energyclus;
-  if ((energyclus - Esub) < clusEexcl) 
-    Esub = (energyclus - clusEexcl);
+  if (energyclus < clusEexcl) clusEexcl = energyclus;
+  if ((energyclus - Esub) < clusEexcl) Esub = (energyclus - clusEexcl);
 
   // embedding
   Double_t EsubMC = 0;
@@ -875,14 +860,17 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 
       if (Nmatches == 1) {
 	Int_t iMin = emccluster->GetMatchedObjId();
-	AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
-	AliVTrack *track = emctrack->GetTrack();
-	Int_t centbinchm = fCentBin;
-	if (track->Charge()<0) 
-	  centbinchm += fNcentBins;
-	
-	fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
-	fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
+	AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(tracks->GetParticle(iMin));
+	if (emctrack) {
+	  AliVTrack *track = emctrack->GetTrack();
+	  if (track) {
+	    Int_t centbinchm = fCentBin;
+	    if (track->Charge()<0) centbinchm += fNcentBins;
+	    
+	    fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
+	    fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
+	  }
+	}
       }
 
       if (fIsEmbedded) {
@@ -914,4 +902,3 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 
   return energyclus;
 }
-

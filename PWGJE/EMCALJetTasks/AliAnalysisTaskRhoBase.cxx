@@ -20,15 +20,17 @@ ClassImp(AliAnalysisTaskRhoBase)
 
 //________________________________________________________________________
 AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoBase", kFALSE),
-  fRhoScaledName(),
+  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskRhoBase", kFALSE),
+  fOutRhoName(),
+  fOutRhoScaledName(),
   fCompareRhoName(),
   fCompareRhoScaledName(),
   fRhoFunction(0),
   fScaleFunction(0),
   fInEventSigmaRho(35.83),
   fAttachToEvent(kTRUE),
-  fRhoScaled(0),
+  fOutRho(0),
+  fOutRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
   fHistJetPtvsCent(0),
@@ -62,15 +64,17 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
 
 //________________________________________________________________________
 AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
-  AliAnalysisTaskEmcalJet(name, histo),
-  fRhoScaledName(),
+  AliAnalysisTaskEmcalJetDev(name, histo),
+  fOutRhoName(),
+  fOutRhoScaledName(),
   fCompareRhoName(),
   fCompareRhoScaledName(),
   fRhoFunction(0),
   fScaleFunction(0),
   fInEventSigmaRho(35.83),
   fAttachToEvent(kTRUE),
-  fRhoScaled(0),
+  fOutRho(0),
+  fOutRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
   fHistJetPtvsCent(0),
@@ -111,34 +115,34 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
   if (!fCreateHisto)
     return;
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
   fHistRhovsCent = new TH2F("fHistRhovsCent", "fHistRhovsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
   fHistRhovsCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistRhovsCent->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
   fOutput->Add(fHistRhovsCent);
 
-  if (!fTracksName.IsNull()) {
+  if (fParticleCollArray.GetEntriesFast()>0) {
     fHistRhovsNtrack = new TH2F("fHistRhovsNtrack", "fHistRhovsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2);
     fHistRhovsNtrack->GetXaxis()->SetTitle("No. of tracks");
     fHistRhovsNtrack->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhovsNtrack);
   }
 
-  if (!fCaloName.IsNull()) {
+  if (fClusterCollArray.GetEntriesFast()>0) {
     fHistRhovsNcluster = new TH2F("fHistRhovsNcluster", "fHistRhovsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
     fHistRhovsNcluster->GetXaxis()->SetTitle("No. of tracks");
     fHistRhovsNcluster->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhovsNcluster);
   }
 
-  if (!fJetsName.IsNull()) {
+  if (fJetCollArray.GetEntriesFast()>0) {
     fHistJetPtvsCent = new TH2F("fHistJetPtvsCent", "fHistJetPtvsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt);
     fHistJetPtvsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistJetPtvsCent->GetYaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
     fOutput->Add(fHistJetPtvsCent);
 
-    fHistJetAreavsCent = new TH2F("fHistJetAreavsCent", "fHistJetAreavsCent", 101, -1, 100, 30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+    fHistJetAreavsCent = new TH2F("fHistJetAreavsCent", "fHistJetAreavsCent", 101, -1, 100, 100, 0, 1);
     fHistJetAreavsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistJetAreavsCent->GetYaxis()->SetTitle("Jet area");
     fOutput->Add(fHistJetAreavsCent);
@@ -154,13 +158,13 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     fOutput->Add(fHistNjetvsCent);
 
 
-    if (!fTracksName.IsNull()) {
+    if (fParticleCollArray.GetEntriesFast()>0) {
       fHistJetPtvsNtrack = new TH2F("fHistJetPtvsNtrack", "fHistJetPtvsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt);
       fHistJetPtvsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistJetPtvsNtrack->GetYaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
       fOutput->Add(fHistJetPtvsNtrack);
 
-      fHistJetAreavsNtrack = new TH2F("fHistJetAreavsNtrack", "fHistJetAreavsNtrack", 150, 0, 6000, 30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+      fHistJetAreavsNtrack = new TH2F("fHistJetAreavsNtrack", "fHistJetAreavsNtrack", 150, 0, 6000, 100, 0, 1);
       fHistJetAreavsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistJetAreavsNtrack->GetYaxis()->SetTitle("Jet area");
       fOutput->Add(fHistJetAreavsNtrack);
@@ -202,7 +206,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     fHistDeltaRhovsCent->GetYaxis()->SetTitle("#Delta#rho (GeV/c * rad^{-1})");
     fOutput->Add(fHistDeltaRhovsCent);
 
-    if (!fTracksName.IsNull()) {
+    if (fParticleCollArray.GetEntriesFast()>0) {
       fHistDeltaRhovsNtrack = new TH2F("fHistDeltaRhovsNtrack", "fHistDeltaRhovsNtrack", 150, 0, 6000, fNbins, -fMaxBinPt, fMaxBinPt);
       fHistDeltaRhovsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistDeltaRhovsNtrack->GetYaxis()->SetTitle("#Delta#rho (GeV/c * rad^{-1})");
@@ -216,14 +220,14 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     fHistRhoScaledvsCent->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhoScaledvsCent);
 
-    if (!fTracksName.IsNull()) {
+    if (fParticleCollArray.GetEntriesFast()>0) {
       fHistRhoScaledvsNtrack = new TH2F("fHistRhoScaledvsNtrack", "fHistRhoScaledvsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2);
       fHistRhoScaledvsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistRhoScaledvsNtrack->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistRhoScaledvsNtrack);
     }
 
-    if (!fCaloName.IsNull()) {
+    if (fClusterCollArray.GetEntriesFast()>0) {
       fHistRhoScaledvsNcluster = new TH2F("fHistRhoScaledvsNcluster", "fHistRhoScaledvsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
       fHistRhoScaledvsNcluster->GetXaxis()->SetTitle("No. of clusters");
       fHistRhoScaledvsNcluster->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
@@ -236,7 +240,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
       fHistDeltaRhoScalevsCent->GetYaxis()->SetTitle("#Delta#rho_{scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistDeltaRhoScalevsCent);
       
-      if (!fTracksName.IsNull()) {
+      if (fParticleCollArray.GetEntriesFast()>0) {
 	fHistDeltaRhoScalevsNtrack = new TH2F("fHistDeltaRhoScalevsNtrack", "fHistDeltaRhoScalevsNtrack", 150, 0, 6000, fNbins, -fMaxBinPt, fMaxBinPt);
 	fHistDeltaRhoScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
 	fHistDeltaRhoScalevsNtrack->GetYaxis()->SetTitle("#Delta#rho_{scaled} (GeV/c * rad^{-1})");
@@ -252,11 +256,11 @@ Bool_t AliAnalysisTaskRhoBase::Run()
   // Run the analysis.
 
   Double_t rho = GetRhoFactor(fCent);
-  fRho->SetVal(rho);
+  fOutRho->SetVal(rho);
 
   if (fScaleFunction) {
     Double_t rhoScaled = rho * GetScaleFactor(fCent);
-    fRhoScaled->SetVal(rhoScaled);
+    fOutRhoScaled->SetVal(rhoScaled);
   }
 
   return kTRUE;
@@ -281,9 +285,9 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
     Int_t    NjetUE1Sigma  = 0;
     Int_t    NjetUE2Sigma  = 0;
     Int_t    NjetUE3Sigma  = 0;
-    Double_t rhoPlus1Sigma = fRho->GetVal() + fInEventSigmaRho;
-    Double_t rhoPlus2Sigma = fRho->GetVal() + 2*fInEventSigmaRho;
-    Double_t rhoPlus3Sigma = fRho->GetVal() + 3*fInEventSigmaRho;
+    Double_t rhoPlus1Sigma = fOutRho->GetVal() + fInEventSigmaRho;
+    Double_t rhoPlus2Sigma = fOutRho->GetVal() + 2*fInEventSigmaRho;
+    Double_t rhoPlus3Sigma = fOutRho->GetVal() + 3*fInEventSigmaRho;
 
     for (Int_t i = 0; i < Njets; ++i) {
       
@@ -331,28 +335,28 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
       fHistNjetvsNtrack->Fill(Ntracks, NjetAcc);
   }
   
-  fHistRhovsCent->Fill(fCent, fRho->GetVal());
+  fHistRhovsCent->Fill(fCent, fOutRho->GetVal());
 
   if (fTracks)
-    fHistRhovsNtrack->Fill(Ntracks, fRho->GetVal());
+    fHistRhovsNtrack->Fill(Ntracks, fOutRho->GetVal());
   if (fCaloClusters)
-    fHistRhovsNcluster->Fill(Nclusters, fRho->GetVal());
+    fHistRhovsNcluster->Fill(Nclusters, fOutRho->GetVal());
   if (fCompareRho) {
-    fHistDeltaRhovsCent->Fill(fCent, fRho->GetVal() - fCompareRho->GetVal());
+    fHistDeltaRhovsCent->Fill(fCent, fOutRho->GetVal() - fCompareRho->GetVal());
     if (fTracks)
-      fHistDeltaRhovsNtrack->Fill(Ntracks, fRho->GetVal() - fCompareRho->GetVal());
+      fHistDeltaRhovsNtrack->Fill(Ntracks, fOutRho->GetVal() - fCompareRho->GetVal());
   }
 
-  if (fRhoScaled) {
-    fHistRhoScaledvsCent->Fill(fCent, fRhoScaled->GetVal());
+  if (fOutRhoScaled) {
+    fHistRhoScaledvsCent->Fill(fCent, fOutRhoScaled->GetVal());
     if (fTracks)
-      fHistRhoScaledvsNtrack->Fill(Ntracks, fRhoScaled->GetVal());
+      fHistRhoScaledvsNtrack->Fill(Ntracks, fOutRhoScaled->GetVal());
     if (fCaloClusters)
-      fHistRhoScaledvsNcluster->Fill(Nclusters,  fRhoScaled->GetVal());
+      fHistRhoScaledvsNcluster->Fill(Nclusters,  fOutRhoScaled->GetVal());
     if (fCompareRhoScaled) {
-      fHistDeltaRhoScalevsCent->Fill(fCent, fRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
+      fHistDeltaRhoScalevsCent->Fill(fCent, fOutRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
       if (fTracks)
-	fHistDeltaRhoScalevsNtrack->Fill(Ntracks, fRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
+	fHistDeltaRhoScalevsNtrack->Fill(Ntracks, fOutRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
     }
   }
 
@@ -365,27 +369,28 @@ void AliAnalysisTaskRhoBase::ExecOnce()
 {
   // Init the analysis.
 
-  if (!fRho) {
-    fRho = new AliRhoParameter(fRhoName, 0);
+  if (!fOutRho) {
+    fOutRho = new AliRhoParameter(fOutRhoName, 0);
 
     if (fAttachToEvent) {
-      if (!(InputEvent()->FindListObject(fRhoName))) {
-	InputEvent()->AddObject(fRho);
+      if (!(InputEvent()->FindListObject(fOutRhoName))) {
+	InputEvent()->AddObject(fOutRho);
       } else {
-	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoName.Data()));
+	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoName.Data()));
 	return;
       }
     }
-    
-    if (fScaleFunction && !fRhoScaled) {
-      fRhoScaled = new AliRhoParameter(fRhoScaledName, 0);
-      if (fAttachToEvent) {
-	if (!(InputEvent()->FindListObject(fRhoScaledName))) {
-	  InputEvent()->AddObject(fRhoScaled);
-	} else {
-	  AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoScaledName.Data()));
-	  return;
-	}
+  }
+
+  if (fScaleFunction && !fOutRhoScaled) {
+    fOutRhoScaled = new AliRhoParameter(fOutRhoScaledName, 0);
+
+    if (fAttachToEvent) {
+      if (!(InputEvent()->FindListObject(fOutRhoScaledName))) {
+	InputEvent()->AddObject(fOutRhoScaled);
+      } else {
+	AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutRhoScaledName.Data()));
+	return;
       }
     }
   }
@@ -404,7 +409,7 @@ void AliAnalysisTaskRhoBase::ExecOnce()
     }
   }
 
-  AliAnalysisTaskEmcalJet::ExecOnce();
+  AliAnalysisTaskEmcalJetDev::ExecOnce();
 }
 
 //________________________________________________________________________

@@ -6,7 +6,7 @@ AliAnalysisTaskRhoBase* AddTaskRhoBase(
    const char    *nClusters   = "CaloClusters",  
    const char    *nRho        = "Rho",
    Double_t       jetradius   = 0.2,
-   UInt_t         type        = AliAnalysisTaskEmcal::kTPC,
+   const char    *cutType     = "TPC",
    Double_t       jetareacut  = 0.01,
    Double_t       emcareacut  = 0,
    TF1           *sfunc       = 0,
@@ -38,17 +38,21 @@ AliAnalysisTaskRhoBase* AddTaskRhoBase(
   //-------------------------------------------------------
 
   AliAnalysisTaskRhoBase *rhotask = new AliAnalysisTaskRhoBase(taskname,histo);
-  rhotask->SetAnaType(type);
   rhotask->SetRhoFunction(rfunc);
   rhotask->SetScaleFunction(sfunc);
-  rhotask->SetJetsName(nJets);
-  rhotask->SetTracksName(nTracks);
-  rhotask->SetClusName(nClusters);
-  rhotask->SetRhoName(nRho);
-  rhotask->SetJetAreaCut(jetareacut);
-  rhotask->SetAreaEmcCut(emcareacut);
-  rhotask->SetJetPtCut(0);
-  rhotask->SetJetRadius(jetradius);
+  rhotask->SetOutRhoName(nRho);
+
+  AliParticleContainer *trackCont = rhotask->AddParticleContainer(nTracks);
+  AliClusterContainer *clusterCont = rhotask->AddClusterContainer(nClusters);
+
+  AliJetContainer *jetCont = rhotask->AddJetContainer(nJets,cutType,jetradius);
+  if (jetCont) {
+    jetCont->SetJetAreaCut(jetareacut);
+    jetCont->SetAreaEmcCut(emcareacut);
+    jetCont->SetJetPtCut(0);
+    jetCont->ConnectParticleContainer(trackCont);
+    jetCont->ConnectClusterContainer(clusterCont);
+  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

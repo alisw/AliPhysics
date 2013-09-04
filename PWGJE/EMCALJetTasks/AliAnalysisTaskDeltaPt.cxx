@@ -692,26 +692,8 @@ void AliAnalysisTaskDeltaPt::ExecOnce()
   if (fEmbCaloClustersCont && fEmbCaloClustersCont->GetArray() == 0) fEmbCaloClustersCont = 0;
   if (fRandTracksCont && fRandTracksCont->GetArray() == 0) fRandTracksCont = 0;
   if (fRandCaloClustersCont && fRandCaloClustersCont->GetArray() == 0) fRandCaloClustersCont = 0;
-
-  if (fJetsCont) {
-    if (fJetsCont->GetArray() == 0) {
-      fJetsCont = 0;
-    }
-    else {
-      fJetsCont->SetParticleContainer(fTracksCont);
-      fJetsCont->SetClusterContainer(fCaloClustersCont);
-    }
-  }
-
-  if (fEmbJetsCont) { 
-    if (fEmbJetsCont->GetArray() == 0) {
-      fEmbJetsCont = 0;
-    }
-    else {
-      fEmbJetsCont->SetParticleContainer(fEmbTracksCont);
-      fEmbJetsCont->SetClusterContainer(fEmbCaloClustersCont);
-    }
-  }
+  if (fJetsCont && fJetsCont->GetArray() == 0) fJetsCont = 0;
+  if (fEmbJetsCont && fEmbJetsCont->GetArray() == 0) fEmbJetsCont = 0;
 
   if (fRCperEvent < 0) {
     Double_t area = (fConeMaxEta - fConeMinEta) * (fConeMaxPhi - fConeMinPhi);

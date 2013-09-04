@@ -11,7 +11,7 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   Double_t    jetareacut         = 0.557,
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *cutType            = "TPC",
   const char *taskname           = "AliAnalysisTaskSAQA"
 )
 {  
@@ -49,34 +49,25 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
     name += "_";
     name += njets;
   }
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "_USER";
+  
+  name += "_";
+  name += cutType;
 
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetCaloCellsName(ncells);
   qaTask->SetRhoName(nrho,-1);
 
-  if (strcmp(ntracks,"")!=0) {
-    qaTask->SetTracksName(ntracks);
-    qaTask->SetTrackPtCut(trackptcut);
-  }
+  AliParticleContainer *partCont = qaTask->AddParticleContainer(ntracks);
+  if (partCont) partCont->SetParticlePtCut(trackptcut);
 
-  if (strcmp(nclusters,"")!=0) {
-    qaTask->SetClusName(nclusters);
-    qaTask->SetClusPtCut(clusptcut);
-  }
+  AliClusterContainer *clusCont = qaTask->AddClusterContainer(nclusters);
+  if (clusCont) clusCont->SetClusPtCut(clusptcut);
 
-  if (strcmp(njets,"")!=0) {
-    qaTask->SetJetsName(njets);
-    qaTask->SetJetRadius(jetradius);
-    qaTask->SetJetPtCut(jetptcut);
-    qaTask->SetPercAreaCut(jetareacut);
-    qaTask->SetAnaType(type);
-    qaTask->SetRhoName(nrho);
+  AliJetContainer *jetCont = qaTask->AddJetContainer(njets,cutType,jetradius);
+  if (jetCont) {
+    jetCont->SetJetPtCut(jetptcut);
+    jetCont->SetPercAreaCut(jetareacut);
+    jetCont->SetRhoName(nrho);
   }
 
   //-------------------------------------------------------

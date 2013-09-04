@@ -61,7 +61,7 @@ void AliAnalysisTaskRhoFlow::UserCreateOutputObjects()
 {
   // User create output objects, called at the beginning of the analysis.
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
   fHistRhoNearVsCent = new TH2F("RhoNearVsCent", "RhoNearVsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
   fOutput->Add(fHistRhoNearVsCent);
@@ -96,6 +96,7 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
   if (!fTracks)
     return kFALSE;
   
+  Double_t jetRadius = GetJetRadius();
   Double_t maxTrackPhi = -1;
   Double_t maxTrackPt  = 0;
 
@@ -116,8 +117,8 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
   Double_t maxPhi = -1;
 
   // away side
-  minPhi = maxTrackPhi + TMath::Pi() - TMath::Pi()/4 + fJetRadius;
-  maxPhi = maxTrackPhi + TMath::Pi() + TMath::Pi()/4 + fJetRadius;
+  minPhi = maxTrackPhi + TMath::Pi() - TMath::Pi()/4 + jetRadius;
+  maxPhi = maxTrackPhi + TMath::Pi() + TMath::Pi()/4 + jetRadius;
   if (maxPhi > TMath::Pi() * 2) {
     minPhi -= TMath::Pi() * 2;
     maxPhi -= TMath::Pi() * 2;
@@ -125,11 +126,11 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
   SetJetPhiLimits(minPhi, maxPhi);  
   fNExclLeadJets = 1;
   AliAnalysisTaskRho::Run();
-  fRhoAwaySide = fRho->GetVal();
+  fRhoAwaySide = fOutRho->GetVal();
 
   // perp 1 side
-  minPhi = maxTrackPhi + TMath::Pi()/2 - TMath::Pi()/4 + fJetRadius;
-  maxPhi = maxTrackPhi + TMath::Pi()/2 + TMath::Pi()/4 + fJetRadius;
+  minPhi = maxTrackPhi + TMath::Pi()/2 - TMath::Pi()/4 + jetRadius;
+  maxPhi = maxTrackPhi + TMath::Pi()/2 + TMath::Pi()/4 + jetRadius;
   if (maxPhi > TMath::Pi() * 2) {
     minPhi -= TMath::Pi() * 2;
     maxPhi -= TMath::Pi() * 2;
@@ -137,11 +138,11 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
   SetJetPhiLimits(minPhi, maxPhi);  
   fNExclLeadJets = 0;
   AliAnalysisTaskRho::Run();
-  fRhoPerpSide1 = fRho->GetVal();
+  fRhoPerpSide1 = fOutRho->GetVal();
 
   // perp 2 side
-  minPhi = maxTrackPhi - TMath::Pi()/2 - TMath::Pi()/4 + fJetRadius;
-  maxPhi = maxTrackPhi - TMath::Pi()/2 + TMath::Pi()/4 + fJetRadius;
+  minPhi = maxTrackPhi - TMath::Pi()/2 - TMath::Pi()/4 + jetRadius;
+  maxPhi = maxTrackPhi - TMath::Pi()/2 + TMath::Pi()/4 + jetRadius;
   if (maxPhi > TMath::Pi() * 2) {
     minPhi -= TMath::Pi() * 2;
     maxPhi -= TMath::Pi() * 2;
@@ -149,11 +150,11 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
   SetJetPhiLimits(minPhi, maxPhi);
   fNExclLeadJets = 0;
   AliAnalysisTaskRho::Run();
-  fRhoPerpSide2 = fRho->GetVal();
+  fRhoPerpSide2 = fOutRho->GetVal();
 
   // near side
-  minPhi = maxTrackPhi - TMath::Pi()/4 + fJetRadius;
-  maxPhi = maxTrackPhi + TMath::Pi()/4 + fJetRadius;
+  minPhi = maxTrackPhi - TMath::Pi()/4 + jetRadius;
+  maxPhi = maxTrackPhi + TMath::Pi()/4 + jetRadius;
   if (maxPhi > TMath::Pi() * 2) {
     minPhi -= TMath::Pi() * 2;
     maxPhi -= TMath::Pi() * 2;
@@ -161,7 +162,7 @@ Bool_t AliAnalysisTaskRhoFlow::Run()
   SetJetPhiLimits(minPhi, maxPhi);
   fNExclLeadJets = 1;
   AliAnalysisTaskRho::Run();
-  fRhoNearSide = fRho->GetVal();
+  fRhoNearSide = fOutRho->GetVal();
   
   return kTRUE;
 }

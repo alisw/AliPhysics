@@ -10,9 +10,9 @@ class TH2;
 class AliEmcalParticle;
 class TString;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalDev.h"
 
-class AliHadCorrTask : public AliAnalysisTaskEmcal {
+class AliHadCorrTask : public AliAnalysisTaskEmcalDev {
 
  public:
   AliHadCorrTask();
@@ -82,6 +82,6 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 12) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 13) // Hadronic correction task
 };
 #endif

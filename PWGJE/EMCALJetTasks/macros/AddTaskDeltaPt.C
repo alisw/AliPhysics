@@ -56,52 +56,56 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   else if (strcmp(type,"EMCAL")==0) 
     jetTask->SetConeEtaPhiEMCAL();
 
-  if (strcmp(ntracks,"")!=0) {
-    AliParticleContainer *partCont = jetTask->AddParticleContainer(ntracks);
+  AliParticleContainer *partCont = jetTask->AddParticleContainer(ntracks);
+  if (partCont) {
     partCont->SetName("Tracks");
     partCont->SetParticlePtCut(trackptcut);
   }
 
-  if (strcmp(nclusters,"")!=0) {
-    AliClusterContainer *clusCont = jetTask->AddClusterContainer(nclusters);
+  AliClusterContainer *clusCont = jetTask->AddClusterContainer(nclusters);
+  if (clusCont) {
     clusCont->SetName("CaloClusters");
     clusCont->SetClusPtCut(clusptcut);
   }
 
-  if (strcmp(njets,"")!=0) {
-    AliJetContainer *jetCont = jetTask->AddJetContainer(njets,type,jetradius);
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,type,jetradius);
+  if (jetCont) {
     jetCont->SetName("Jets");
     jetCont->SetPercAreaCut(jetareacut);
     jetCont->SetRhoName(nrho);
+    jetCont->ConnectParticleContainer(partCont);
+    jetCont->ConnectClusterContainer(clusCont);
   }
 
-  if (strcmp(nembtracks,"")!=0) {
-    AliParticleContainer *embPartCont = jetTask->AddParticleContainer(nembtracks);
+  AliParticleContainer *embPartCont = jetTask->AddParticleContainer(nembtracks);
+  if (embPartCont) {
     embPartCont->SetName("EmbTracks");
     embPartCont->SetParticlePtCut(trackptcut);
   }
 
-  if (strcmp(nembclusters,"")!=0) {
-    AliClusterContainer *embClusCont = jetTask->AddClusterContainer(nembclusters);
+  AliClusterContainer *embClusCont = jetTask->AddClusterContainer(nembclusters);
+  if (embClusCont) {
     embClusCont->SetName("EmbClusters");
     embClusCont->SetClusPtCut(clusptcut);
   }
 
-  if (strcmp(nembjets,"")!=0) {
-    AliJetContainer *embJetCont = jetTask->AddJetContainer(nembjets,type,jetradius);
+  AliJetContainer *embJetCont = jetTask->AddJetContainer(nembjets,type,jetradius);
+  if (embJetCont) {
     embJetCont->SetName("EmbJets");
     embJetCont->SetPercAreaCut(jetareacut);
     embJetCont->SetRhoName(nrho);
+    embJetCont->ConnectParticleContainer(embPartCont);
+    embJetCont->ConnectClusterContainer(embClusCont);
   }
 
-  if (strcmp(nrandtracks,"")!=0) {
-    AliParticleContainer *randPartCont = jetTask->AddParticleContainer(nrandtracks);
+  AliParticleContainer *randPartCont = jetTask->AddParticleContainer(nrandtracks);
+  if (randPartCont) {
     randPartCont->SetName("RandTracks");
     randPartCont->SetParticlePtCut(trackptcut);
   }
 
-  if (strcmp(nrandclusters,"")!=0) {
-    AliClusterContainer *randClusCont = jetTask->AddClusterContainer(nrandclusters);    
+  AliClusterContainer *randClusCont = jetTask->AddClusterContainer(nrandclusters);    
+  if (randClusCont) {
     randClusCont->SetName("RandClusters");
     randClusCont->SetClusPtCut(clusptcut);
   }

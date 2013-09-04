@@ -18,28 +18,15 @@
 #include "AliLog.h"
 #include "AliRhoParameter.h"
 #include "AliNamedArrayI.h"
+#include "AliJetContainer.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 ClassImp(AliJetResponseMaker)
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker() : 
-  AliAnalysisTaskEmcalJet("AliJetResponseMaker", kTRUE),
-  fTracks2Name(""),
-  fCalo2Name(""),
-  fJets2Name(""),
-  fRho2Name(""),
-  fJet2Radius(0.4),
-  fJet2AreaCut(-1),
-  fPtBiasJet2Track(0),
-  fPtBiasJet2Clus(0),
-  fJet2MinEta(-999),
-  fJet2MaxEta(-999),
-  fJet2MinPhi(-999),
-  fJet2MaxPhi(-999),
-  fMaxClusterPt2(1000),
-  fMaxTrackPt2(1000),
-  fAreCollections1MC(kFALSE),  
-  fAreCollections2MC(kTRUE),
+  AliAnalysisTaskEmcalJetDev("AliJetResponseMaker", kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
@@ -51,12 +38,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fNEFAxis(0),
   fZAxis(0),
   fDoJet2Histogram(0),
-  fTracks2(0),
-  fCaloClusters2(0),
-  fJets2(0),
-  fRho2(0),
-  fRho2Val(0),
-  fTracks2Map(0),
+  fIsJet1Rho(kFALSE),
+  fIsJet2Rho(kFALSE),
   fHistLeadingJets1PtArea(0),
   fHistLeadingJets1CorrPtArea(0),
   fHistLeadingJets2PtArea(0),
@@ -133,23 +116,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
-  fTracks2Name("MCParticles"),
-  fCalo2Name(""),
-  fJets2Name("MCJets"),
-  fRho2Name(""),
-  fJet2Radius(0.4),
-  fJet2AreaCut(-1),
-  fPtBiasJet2Track(0),
-  fPtBiasJet2Clus(0),
-  fJet2MinEta(-999),
-  fJet2MaxEta(-999),
-  fJet2MinPhi(-999),
-  fJet2MaxPhi(-999),
-  fMaxClusterPt2(1000),
-  fMaxTrackPt2(1000),
-  fAreCollections1MC(kFALSE),  
-  fAreCollections2MC(kTRUE),
+  AliAnalysisTaskEmcalJetDev(name, kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
@@ -161,12 +128,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fNEFAxis(0),
   fZAxis(0),
   fDoJet2Histogram(0),
-  fTracks2(0),
-  fCaloClusters2(0),
-  fJets2(0),
-  fRho2(0),
-  fRho2Val(0),
-  fTracks2Map(0),
+  fIsJet1Rho(kFALSE),
+  fIsJet2Rho(kFALSE),
   fHistLeadingJets1PtArea(0),
   fHistLeadingJets1CorrPtArea(0),
   fHistLeadingJets2PtArea(0),
@@ -264,7 +227,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets1PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets1PtArea);
  
-  if (!fRhoName.IsNull()) {
+  if (!fIsJet1Rho) {
     fHistJets1CorrPtArea = new TH2F("fHistJets1CorrPtArea", "fHistJets1CorrPtArea", 
 				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets1CorrPtArea->GetXaxis()->SetTitle("area");
@@ -304,7 +267,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets2PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtArea);
 
-  if (!fRho2Name.IsNull()) {
+  if (!fIsJet2Rho) {
     fHistJets2CorrPtArea = new TH2F("fHistJets2CorrPtArea", "fHistJets2CorrPtArea", 
 				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtArea->GetXaxis()->SetTitle("area");
@@ -325,7 +288,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtAreaAcceptance);
 
-  if (!fRho2Name.IsNull()) {
+  if (!fIsJet2Rho) {
     fHistJets2CorrPtAreaAcceptance = new TH2F("fHistJets2CorrPtAreaAcceptance", "fHistJets2CorrPtAreaAcceptance", 
 					      fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
@@ -490,8 +453,8 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJet1PtvsJet2Pt->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJet1PtvsJet2Pt);
 
-  if (!fRhoName.IsNull() || !fRho2Name.IsNull()) {
-    if (fRhoName.IsNull()) 
+  if (fIsJet1Rho || fIsJet2Rho) {
+    if (!fIsJet1Rho) 
       fHistDeltaCorrPtvsJet1CorrPt = new TH2F("fHistDeltaCorrPtvsJet1CorrPt", "fHistDeltaCorrPtvsJet1CorrPt", 
 					      fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     else
@@ -503,7 +466,7 @@ void AliJetResponseMaker::AllocateTH2()
     fHistDeltaCorrPtvsJet1CorrPt->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaCorrPtvsJet1CorrPt);
 
-    if (fRho2Name.IsNull()) 
+    if (!fIsJet2Rho) 
       fHistDeltaCorrPtvsJet2CorrPt = new TH2F("fHistDeltaCorrPtvsJet2CorrPt", "fHistDeltaCorrPtvsJet2CorrPt", 
 					      fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);					      
     else
@@ -571,10 +534,10 @@ void AliJetResponseMaker::AllocateTH2()
     fHistDeltaCorrPtvsDeltaArea->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaCorrPtvsDeltaArea);
     
-    if (fRhoName.IsNull()) 
+    if (!fIsJet1Rho) 
       fHistJet1CorrPtvsJet2CorrPt = new TH2F("fHistJet1CorrPtvsJet2CorrPt", "fHistJet1CorrPtvsJet2CorrPt", 
 					     fNbins, fMinBinPt, fMaxBinPt, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    else if (fRho2Name.IsNull()) 
+    else if (!fIsJet2Rho) 
       fHistJet1CorrPtvsJet2CorrPt = new TH2F("fHistJet1CorrPtvsJet2CorrPt", "fHistJet1CorrPtvsJet2CorrPt", 
 					     2*fNbins, -fMaxBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
     else
@@ -716,7 +679,7 @@ void AliJetResponseMaker::AllocateTHnSparse()
 
   Int_t dim1 = dim, dim2 = dim;
 
-  if (!fRhoName.IsNull()) {
+  if (fIsJet1Rho) {
     title[dim1] = "p_{T}^{corr}";
     nbins[dim1] = fNbins*2;
     min[dim1] = -250;
@@ -737,7 +700,7 @@ void AliJetResponseMaker::AllocateTHnSparse()
     fHistJets1->GetAxis(i)->SetTitle(title[i]);
   fOutput->Add(fHistJets1);
 
-  if (!fRho2Name.IsNull()) {
+  if (fIsJet2Rho) {
     title[dim2] = "p_{T}^{corr}";
     nbins[dim2] = fNbins*2;
     min[dim2] = -250;
@@ -816,21 +779,21 @@ void AliJetResponseMaker::AllocateTHnSparse()
     max[dim] = 250;
     dim++;
   }
-  if (!fRhoName.IsNull()) {
+  if (fIsJet1Rho) {
     title[dim] = "p_{T,1}^{corr}";
     nbins[dim] = fNbins*2;
     min[dim] = -250;
     max[dim] = 250;
     dim++;
   }
-  if (!fRho2Name.IsNull()) {
+  if (fIsJet2Rho) {
     title[dim] = "p_{T,2}^{corr}";
     nbins[dim] = fNbins*2;
     min[dim] = -250;
     max[dim] = 250;
     dim++;
   }
-  if (fDeltaPtAxis && (!fRhoName.IsNull() || !fRho2Name.IsNull())) {
+  if (fDeltaPtAxis && (fIsJet1Rho || fIsJet2Rho)) {
     title[dim] = "#deltap_{T}^{corr}";
     nbins[dim] = fNbins*2;
     min[dim] = -250;
@@ -907,54 +870,17 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 {
   // Create user objects.
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
-  // Jets 1 histograms
-  fHistLeadingJets1PtArea = new TH2F("fHistLeadingJets1PtArea", "fHistLeadingJets1PtArea", 
-				     fNbins/2, 0, 1, fNbins, fMinBinPt, fMaxBinPt);
-  fHistLeadingJets1PtArea->GetXaxis()->SetTitle("area");
-  fHistLeadingJets1PtArea->GetYaxis()->SetTitle("p_{T,1} (GeV/c)");
-  fHistLeadingJets1PtArea->GetZaxis()->SetTitle("counts");
-  fOutput->Add(fHistLeadingJets1PtArea);
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
-  if (!fRhoName.IsNull()) {
-    fHistLeadingJets1CorrPtArea = new TH2F("fHistLeadingJets1CorrPtArea", "fHistLeadingJets1CorrPtArea", 
-					   fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    fHistLeadingJets1CorrPtArea->GetXaxis()->SetTitle("area");
-    fHistLeadingJets1CorrPtArea->GetYaxis()->SetTitle("p_{T,1}^{corr} (GeV/c)");
-    fHistLeadingJets1CorrPtArea->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistLeadingJets1CorrPtArea);
-  }
+  if (!jets1 || !jets2) return;
 
-  fHistLeadingJets2PtAreaAcceptance = new TH2F("fHistLeadingJets2PtAreaAcceptance", "fHistLeadingJets2PtAreaAcceptance", 
-					       fNbins/2, 1, 2, fNbins, fMinBinPt, fMaxBinPt);
-  fHistLeadingJets2PtAreaAcceptance->GetXaxis()->SetTitle("area");
-  fHistLeadingJets2PtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
-  fHistLeadingJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
-  fOutput->Add(fHistLeadingJets2PtAreaAcceptance);
-
-  fHistLeadingJets2PtArea = new TH2F("fHistLeadingJets2PtArea", "fHistLeadingJets2PtArea", 
-				     fNbins/2, 0, 1, fNbins, fMinBinPt, fMaxBinPt);
-  fHistLeadingJets2PtArea->GetXaxis()->SetTitle("area");
-  fHistLeadingJets2PtArea->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
-  fHistLeadingJets2PtArea->GetZaxis()->SetTitle("counts");
-  fOutput->Add(fHistLeadingJets2PtArea);
-
-  if (!fRho2Name.IsNull()) {
-    fHistLeadingJets2CorrPtAreaAcceptance = new TH2F("fHistLeadingJets2CorrPtAreaAcceptance", "fHistLeadingJets2CorrPtAreaAcceptance", 
-						     fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    fHistLeadingJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
-    fHistLeadingJets2CorrPtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
-    fHistLeadingJets2CorrPtAreaAcceptance->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistLeadingJets2CorrPtAreaAcceptance);
-
-    fHistLeadingJets2CorrPtArea = new TH2F("fHistLeadingJets2CorrPtArea", "fHistLeadingJets2CorrPtArea", 
-					   fNbins/2, 0, 1, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    fHistLeadingJets2CorrPtArea->GetXaxis()->SetTitle("area");
-    fHistLeadingJets2CorrPtArea->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
-    fHistLeadingJets2CorrPtArea->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistLeadingJets2CorrPtArea);
-  }
+  if (jets1->GetRhoName().IsNull()) fIsJet1Rho = kFALSE;
+  else fIsJet1Rho = kTRUE;
+  if (jets2->GetRhoName().IsNull()) fIsJet2Rho = kFALSE;
+  else fIsJet2Rho = kTRUE;
 
   if (fHistoType==0)
     AllocateTH2();
@@ -1012,13 +938,13 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
       fHistJets1ZvsPt->Fill(Z, Pt);
       fHistJets1NEFvsPt->Fill(NEF, Pt);
       fHistJets1CEFvsCEFPt->Fill(1-NEF, (1-NEF)*Pt);
-      if (!fRhoName.IsNull())
+      if (fIsJet1Rho)
 	fHistJets1CorrPtArea->Fill(A, CorrPt);
     }
     else if (Set == 2) {
       fHistJets2PtArea->Fill(A, Pt);
       fHistJets2PhiEta->Fill(Eta, Phi);
-      if (!fRho2Name.IsNull())
+      if (fIsJet2Rho)
 	fHistJets2CorrPtArea->Fill(A, CorrPt);
     }
     else if (Set == 3) {
@@ -1027,7 +953,7 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
       fHistJets2ZvsPt->Fill(Z, Pt);
       fHistJets2NEFvsPt->Fill(NEF, Pt);
       fHistJets2CEFvsCEFPt->Fill(1-NEF, (1-NEF)*Pt);
-      if (!fRho2Name.IsNull())
+      if (fIsJet2Rho)
 	fHistJets2CorrPtAreaAcceptance->Fill(A, CorrPt);
     }
   }
@@ -1123,7 +1049,7 @@ void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_
 
     fHistJet1PtvsJet2Pt->Fill(Pt1, Pt2);
 
-    if (!fRhoName.IsNull() || !fRho2Name.IsNull()) {
+    if (fIsJet1Rho || fIsJet2Rho) {
       Double_t dcorrpt = CorrPt1 - CorrPt2;
       fHistDeltaCorrPtvsJet1CorrPt->Fill(CorrPt1, dcorrpt);
       fHistDeltaCorrPtvsJet2CorrPt->Fill(CorrPt2, dcorrpt);
@@ -1156,128 +1082,19 @@ void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_
 }
 
 //________________________________________________________________________
-Bool_t AliJetResponseMaker::AcceptJet(AliEmcalJet *jet) const
-{   
-  // Return true if jet is accepted.
-
-  if (jet->Pt() < fJetPtCut)
-    return kFALSE;
-  if (jet->Area() < fJetAreaCut)
-    return kFALSE;
-  if (jet->MCPt() < fMinJetMCPt)
-    return kFALSE;
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliJetResponseMaker::AcceptBiasJet2(AliEmcalJet *jet) const
-{ 
-  // Accept jet with a bias.
-
-  if (fLeadingHadronType == 0) {
-    if (jet->MaxTrackPt() < fPtBiasJet2Track) return kFALSE;
-  }
-  else if (fLeadingHadronType == 1) {
-    if (jet->MaxClusterPt() < fPtBiasJet2Clus) return kFALSE;
-  }
-  else {
-    if (jet->MaxTrackPt() < fPtBiasJet2Track && jet->MaxClusterPt() < fPtBiasJet2Clus) return kFALSE;
-  }
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
 void AliJetResponseMaker::ExecOnce()
 {
   // Execute once.
 
-  if (!fJets2Name.IsNull() && !fJets2) {
-    fJets2 = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJets2Name));
-    if (!fJets2) {
-      AliError(Form("%s: Could not retrieve jets2 %s!", GetName(), fJets2Name.Data()));
-      return;
-    }
-    else if (!fJets2->GetClass()->GetBaseClass("AliEmcalJet")) {
-      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fJets2Name.Data())); 
-      fJets2 = 0;
-      return;
-    }
-  }
+  AliAnalysisTaskEmcalJetDev::ExecOnce();
 
-  if (!fTracks2Name.IsNull() && !fTracks2) {
-    fTracks2 = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracks2Name));
-    if (!fTracks2) {
-      AliError(Form("%s: Could not retrieve tracks2 %s!", GetName(), fTracks2Name.Data())); 
-      return;
-    }
-    else {
-      TClass *cl = fTracks2->GetClass();
-      if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
-	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fTracks2Name.Data())); 
-	fTracks2 = 0;
-	return;
-      }
-    }
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
-    if (fAreCollections2MC) {
-      fTracks2Map = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(fTracks2Name + "_Map"));
-      // this is needed to map the MC labels with the indexes of the MC particle collection
-      // if teh map is not given, the MC labels are assumed to be consistent with the indexes (which is not the case if AliEmcalMCTrackSelector is used)
-      if (!fTracks2Map) {
-	AliWarning(Form("%s: Could not retrieve map for tracks2 %s! Will assume MC labels consistent with indexes...", GetName(), fTracks2Name.Data())); 
-	fTracks2Map = new AliNamedArrayI("tracksMap",9999);
-	for (Int_t i = 0; i < 9999; i++) {
-	  fTracks2Map->AddAt(i,i);
-	}
-      }
-    }
-  }
+  if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
 
-  if (!fCalo2Name.IsNull() && !fCaloClusters2) {
-    fCaloClusters2 =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCalo2Name));
-    if (!fCaloClusters2) {
-      AliError(Form("%s: Could not retrieve clusters %s!", GetName(), fCalo2Name.Data())); 
-      return;
-    } else {
-      TClass *cl = fCaloClusters2->GetClass();
-      if (!cl->GetBaseClass("AliVCluster") && !cl->GetBaseClass("AliEmcalParticle")) {
-	AliError(Form("%s: Collection %s does not contain AliVCluster nor AliEmcalParticle objects!", GetName(), fCalo2Name.Data())); 
-	fCaloClusters2 = 0;
-	return;
-      }
-    }
-  }
-
-  if (!fRho2Name.IsNull() && !fRho2) {
-    fRho2 = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRho2Name));
-    if (!fRho2) {
-      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRho2Name.Data()));
-      fInitialized = kFALSE;
-      return;
-    }
-  }
-
-  if (fPercAreaCut >= 0) {
-    if (fJet2AreaCut >= 0)
-      AliInfo(Form("%s: jet 2 area cut will be calculated as a percentage of the average area, given value will be overwritten", GetName()));
-    fJet2AreaCut = fPercAreaCut * fJet2Radius * fJet2Radius * TMath::Pi();
-  }
-  if (fJet2AreaCut < 0)
-    fJet2AreaCut = 0;
-
-  if (fJet2MinEta == -999)
-    fJet2MinEta = fJetMinEta - fJetRadius;
-  if (fJet2MaxEta == -999)
-    fJet2MaxEta = fJetMaxEta + fJetRadius;
-  if (fJet2MinPhi == -999)
-    fJet2MinPhi = fJetMinPhi - fJetRadius;
-  if (fJet2MaxPhi == -999)
-    fJet2MaxPhi = fJetMaxPhi + fJetRadius;
-
-  if (fMatching == kMCLabel && (!fAreCollections2MC || fAreCollections1MC)) {
-    if (fAreCollections2MC == fAreCollections1MC) {
+  if (fMatching == kMCLabel && (!jets2->GetIsParticleLevel() || jets1->GetIsParticleLevel())) {
+    if (jets1->GetIsParticleLevel() == jets2->GetIsParticleLevel()) {
       AliWarning("Changing matching type from MC label to same collection...");
       fMatching = kSameCollections;
     }
@@ -1286,8 +1103,8 @@ void AliJetResponseMaker::ExecOnce()
       fMatching = kGeometrical;
     }
   }
-  else if (fMatching == kSameCollections && fAreCollections2MC != fAreCollections1MC) {
-    if (fAreCollections2MC && !fAreCollections1MC) {
+  else if (fMatching == kSameCollections && jets1->GetIsParticleLevel() != jets2->GetIsParticleLevel()) {
+    if (jets2->GetIsParticleLevel() && !jets1->GetIsParticleLevel()) {
       AliWarning("Changing matching type from same collection to MC label...");
       fMatching = kMCLabel;
     }
@@ -1296,22 +1113,6 @@ void AliJetResponseMaker::ExecOnce()
       fMatching = kGeometrical;
     }
   }
-
-  AliAnalysisTaskEmcalJet::ExecOnce();
-}
-
-//________________________________________________________________________
-Bool_t AliJetResponseMaker::RetrieveEventObjects()
-{
-  // Retrieve event objects.
-
-  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
-    return kFALSE;
-
-  if (fRho2)
-    fRho2Val = fRho2->GetVal();
-
-  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -1328,123 +1129,61 @@ Bool_t AliJetResponseMaker::Run()
 //________________________________________________________________________
 Bool_t AliJetResponseMaker::DoJetMatching()
 {
-  DoJetLoop(kFALSE);
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
-  const Int_t nJets = fJets->GetEntriesFast();
+  if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return kFALSE;
 
-  for (Int_t i = 0; i < nJets; i++) {
+  DoJetLoop();
 
-    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(fJets->At(i));
+  AliEmcalJet* jet1 = 0;
 
-    if (!jet1) {
-      AliError(Form("Could not receive jet %d", i));
-      continue;
-    }  
+  jets1->ResetCurrentID();
+  while ((jet1 = jets1->GetNextJet())) {
 
-    if (!AcceptJet(jet1))
-      continue;
+    AliEmcalJet *jet2 = jet1->ClosestJet();
 
-    if (jet1->Eta() < fJetMinEta || jet1->Eta() > fJetMaxEta || jet1->Phi() < fJetMinPhi || jet1->Phi() > fJetMaxPhi)
-      continue;
+    if (!jet2) continue;
+    if (jet2->ClosestJet() != jet1) continue;
+    if (jet1->ClosestJetDistance() > fMatchingPar1 || jet2->ClosestJetDistance() > fMatchingPar2) continue;
 
-    if (jet1->ClosestJet() && jet1->ClosestJet()->ClosestJet() == jet1 && 
-	jet1->ClosestJetDistance() < fMatchingPar1 && jet1->ClosestJet()->ClosestJetDistance() < fMatchingPar2) {    // Matched jet found
-      jet1->SetMatchedToClosest(fMatching);
-      jet1->ClosestJet()->SetMatchedToClosest(fMatching);
-      AliDebug(2,Form("Found matching: jet1 pt = %f, eta = %f, phi = %f, jet2 pt = %f, eta = %f, phi = %f", 
-		      jet1->Pt(), jet1->Eta(), jet1->Phi(), 
-		      jet1->MatchedJet()->Pt(), jet1->MatchedJet()->Eta(), jet1->MatchedJet()->Phi()));
-    }
+    // Matched jet found
+    jet1->SetMatchedToClosest(fMatching);
+    jet2->SetMatchedToClosest(fMatching);
+    AliDebug(2,Form("Found matching: jet1 pt = %f, eta = %f, phi = %f, jet2 pt = %f, eta = %f, phi = %f", 
+		    jet1->Pt(), jet1->Eta(), jet1->Phi(), 
+		    jet2->Pt(), jet2->Eta(), jet2->Phi()));
   }
 
   return kTRUE;
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::DoJetLoop(Bool_t order)
+void AliJetResponseMaker::DoJetLoop()
 {
   // Do the jet loop.
 
-  TClonesArray *jets1 = 0;
-  TClonesArray *jets2 = 0;
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
-  if (order) {
-    jets1 = fJets2;
-    jets2 = fJets;
-  }
-  else {
-    jets1 = fJets;
-    jets2 = fJets2;
-  }
+  if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
 
-  Int_t nJets1 = jets1->GetEntriesFast();
-  Int_t nJets2 = jets2->GetEntriesFast();
+  AliEmcalJet* jet1 = 0;
+  AliEmcalJet* jet2 = 0;
 
-  for (Int_t j = 0; j < nJets2; j++) {
-      
-    AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(jets2->At(j));
-      
-    if (!jet2) {
-      AliError(Form("Could not receive jet %d", j));
-      continue;
-    }
-
-    jet2->ResetMatching();
-
-
-    if (!AcceptJet(jet2))
-      continue;
-
-    if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
-      continue;
-  }
+  jets2->ResetCurrentID();
+  while ((jet2 = jets2->GetNextJet())) jet2->ResetMatching();
     
-  for (Int_t i = 0; i < nJets1; i++) {
-
-    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(jets1->At(i));
-
-    if (!jet1) {
-      AliError(Form("Could not receive jet %d", i));
-      continue;
-    }
-
+  jets1->ResetCurrentID();
+  while ((jet1 = jets1->GetNextJet())) {
     jet1->ResetMatching();
+    
+    if (jet1->MCPt() < fMinJetMCPt) continue;
 
-    if (!AcceptJet(jet1))
-      continue;
-
-    if (order) {
-     if (jet1->Eta() < fJet2MinEta || jet1->Eta() > fJet2MaxEta || jet1->Phi() < fJet2MinPhi || jet1->Phi() > fJet2MaxPhi)
-	continue;
-    }
-    else {
-      if (jet1->Eta() < fJetMinEta || jet1->Eta() > fJetMaxEta || jet1->Phi() < fJetMinPhi || jet1->Phi() > fJetMaxPhi)
-	continue;
-    }
-
-    for (Int_t j = 0; j < nJets2; j++) {
-      
-      AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(jets2->At(j));
-      
-      if (!jet2) {
-	AliError(Form("Could not receive jet %d", j));
-	continue;
-      }
-      if (!AcceptJet(jet2))
-	continue;
-
-      if (order) {
-	if (jet2->Eta() < fJetMinEta || jet2->Eta() > fJetMaxEta || jet2->Phi() < fJetMinPhi || jet2->Phi() > fJetMaxPhi)
-	  continue;
-      }
-      else {
-	if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
-	  continue;
-      }
-
+    jets2->ResetCurrentID();
+    while ((jet2 = jets2->GetNextJet())) {
       SetMatchingLevel(jet1, jet2, fMatching);
     } // jet2 loop
-
   } // jet1 loop
 }
 
@@ -1459,52 +1198,44 @@ void AliJetResponseMaker::GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmca
 //________________________________________________________________________
 void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const
 { 
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
+
+  if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
+
+  AliParticleContainer *tracks1   = jets1->GetParticleContainer();
+  AliClusterContainer  *clusters1 = jets1->GetClusterContainer();
+  AliParticleContainer *tracks2   = jets2->GetParticleContainer();
+
   // d1 and d2 represent the matching level: 0 = maximum level of matching, 1 = the two jets are completely unrelated
   d1 = jet1->Pt();
   d2 = jet2->Pt();
   Double_t totalPt1 = d1; // the total pt of the reconstructed jet will be cleaned from the background
 
-  for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
-    Bool_t track2Found = kFALSE;
-    Int_t index2 = jet2->TrackAt(iTrack2);
+  // remove completely tracks that are not MC particles (label == 0)
+  if (tracks1 && tracks1->GetArray()) {
     for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
-      AliVParticle *track = jet1->TrackAt(iTrack,fTracks);
+      AliVParticle *track = jet1->TrackAt(iTrack,tracks1->GetArray());
       if (!track) {
 	AliWarning(Form("Could not find track %d!", iTrack));
 	continue;
       }
-      Int_t MClabel = TMath::Abs(track->GetLabel());
-      if (MClabel > fMCLabelShift)
-	MClabel -= fMCLabelShift;
-      Int_t index = -1;
-	  
-      if (MClabel == 0) {// this is not a MC particle; remove it completely
-	AliDebug(3,Form("Track %d (pT = %f) is not a MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
-	totalPt1 -= track->Pt();
-	d1 -= track->Pt();
-	continue;
-      }
-      else if (MClabel < fTracks2Map->GetSize()) {
-	index = fTracks2Map->At(MClabel);
-      }
-	  
-      if (index < 0) {
-	AliDebug(2,Form("Track %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
-	continue;
-      }
 
-      if (index2 == index) { // found common particle
-	track2Found = kTRUE;
-	d1 -= track->Pt();
-	AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
-	AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
-			iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
-	d2 -= MCpart->Pt();
-	break;
-      }
+      Int_t MClabel = TMath::Abs(track->GetLabel());
+      if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+      if (MClabel != 0) continue;
+
+      // this is not a MC particle; remove it completely
+      AliDebug(3,Form("Track %d (pT = %f) is not a MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
+      totalPt1 -= track->Pt();
+      d1 -= track->Pt();
     }
+  }
+
+  // remove completely clusters that are not MC particles (label == 0)
+  if (fUseCellsToMatch && fCaloCells) { 
     for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-      AliVCluster *clus = jet1->ClusterAt(iClus,fCaloClusters);
+      AliVCluster *clus = jet1->ClusterAt(iClus,clusters1->GetArray());
       if (!clus) {
 	AliWarning(Form("Could not find cluster %d!", iClus));
 	continue;
@@ -1512,75 +1243,157 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       TLorentzVector part;
       clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
 	  
-      if (fUseCellsToMatch && fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
+      for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
+	Int_t cellId = clus->GetCellAbsId(iCell);
+	Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
+
+	Int_t MClabel = TMath::Abs(fCaloCells->GetCellMCLabel(cellId));
+	if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+	if (MClabel != 0) continue;
+
+	// this is not a MC particle; remove it completely
+	AliDebug(3,Form("Cell %d (frac = %f) is not a MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
+	totalPt1 -= part.Pt() * cellFrac;
+	d1 -= part.Pt() * cellFrac;
+      }
+    }
+  }
+  else {
+    for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
+      AliVCluster *clus = jet1->ClusterAt(iClus,clusters1->GetArray());
+      if (!clus) {
+	AliWarning(Form("Could not find cluster %d!", iClus));
+	continue;
+      }
+      TLorentzVector part;
+      clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+	  
+      Int_t MClabel = TMath::Abs(clus->GetLabel());
+      if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+      if (MClabel != 0) continue;
+
+      // this is not a MC particle; remove it completely
+      AliDebug(3,Form("Cluster %d (pT = %f) is not a MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
+      totalPt1 -= part.Pt();
+      d1 -= part.Pt();
+    }
+  }
+
+  for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
+    Bool_t track2Found = kFALSE;
+    Int_t index2 = jet2->TrackAt(iTrack2);
+
+    // now look for common particles in the track array
+    for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
+      AliVParticle *track = jet1->TrackAt(iTrack,tracks1->GetArray());
+      if (!track) {
+	AliWarning(Form("Could not find track %d!", iTrack));
+	continue;
+      }
+      Int_t MClabel = TMath::Abs(track->GetLabel());
+      if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;	  
+      if (MClabel <= 0) continue;
+
+      Int_t index = -1;
+      index = tracks2->GetIndexFromLabel(MClabel);
+      if (index < 0) {
+	AliDebug(2,Form("Track %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iTrack,track->Pt(),MClabel));
+	continue;
+      }
+	
+      if (index2 != index) continue;
+      
+      // found common particle
+      d1 -= track->Pt();
+
+      if (!track2Found) {
+	AliVParticle *MCpart = tracks2->GetParticle(index2);
+	AliDebug(3,Form("Track %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			iTrack,track->Pt(),track->Eta(),track->Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
+	d2 -= MCpart->Pt();
+      }
+
+      track2Found = kTRUE;
+    }
+
+    // now look for common particles in the cluster array
+    if (fUseCellsToMatch && fCaloCells) { // if the cell colection is available, look for cells with a matched MC particle
+      for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
+	AliVCluster *clus = jet1->ClusterAt(iClus,fCaloClusters);
+	if (!clus) {
+	  AliWarning(Form("Could not find cluster %d!", iClus));
+	  continue;
+	}
+	TLorentzVector part;
+	clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+      
 	for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
 	  Int_t cellId = clus->GetCellAbsId(iCell);
 	  Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
-
+	
 	  Int_t MClabel = TMath::Abs(fCaloCells->GetCellMCLabel(cellId));
-	  if (MClabel > fMCLabelShift)
-	    MClabel -= fMCLabelShift;
-	  Int_t index = -1;
+	  if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+	  if (MClabel <= 0) continue;
 	  
-	  if (MClabel == 0) {// this is not a MC particle; remove it completely
-	    AliDebug(3,Form("Cell %d (frac = %f) is not a MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
-	    totalPt1 -= part.Pt() * cellFrac;
-	    d1 -= part.Pt() * cellFrac;
-	    continue;
-	  }
-	  else if (MClabel < fTracks2Map->GetSize()) {
-	    index = fTracks2Map->At(MClabel);
-	  }
-
-	  if (index < 0) {
+	  Int_t index1 = -1;
+	  index1 = tracks2->GetIndexFromLabel(MClabel);
+	  if (index1 < 0) {
 	    AliDebug(3,Form("Cell %d (frac = %f) does not have an associated MC particle (MClabel = %d)!",iCell,cellFrac,MClabel));
 	    continue;
 	  }
-	  if (index2 == index) { // found common particle
-	    d1 -= part.Pt() * cellFrac;
-		
-	    if (!track2Found) {// only if it is not already found among charged tracks (charged particles are most likely already found)
-	      AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
-	      AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
-			      iCell,iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));		  
-	      d2 -= MCpart->Pt() * cellFrac;
-	    }
-	    break;
+	
+	  if (index2 != index1) continue;
+	  
+	  // found common particle
+	  d1 -= part.Pt() * cellFrac;
+	
+	  if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
+	    AliVParticle *MCpart = tracks2->GetParticle(index2);
+	    AliDebug(3,Form("Cell %d belonging to cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			    iCell,iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));		  
+	    d2 -= MCpart->Pt() * cellFrac;
 	  }
+
+	  track2Found = kTRUE;
 	}
       }
-      else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
-	Int_t MClabel = TMath::Abs(clus->GetLabel());
-	if (MClabel > fMCLabelShift)
-	  MClabel -= fMCLabelShift;
-	Int_t index = -1;
-	    
-	if (MClabel == 0) {// this is not a MC particle; remove it completely
-	  AliDebug(3,Form("Cluster %d (pT = %f) is not a MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
-	  totalPt1 -= part.Pt();
-	  d1 -= part.Pt();
+    }
+    else { //otherwise look for the first contributor to the cluster, and if matched to a MC label remove it
+      for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
+	AliVCluster *clus = jet1->ClusterAt(iClus,fCaloClusters);
+	if (!clus) {
+	  AliWarning(Form("Could not find cluster %d!", iClus));
 	  continue;
 	}
-	else if (MClabel < fTracks2Map->GetSize()) {
-	  index = fTracks2Map->At(MClabel);
-	}
-	 
+	TLorentzVector part;
+	clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+      
+	Int_t MClabel = TMath::Abs(clus->GetLabel());
+	if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;	    
+	if (MClabel <= 0) continue;
+
+	Int_t index = -1;
+	index = tracks2->GetIndexFromLabel(MClabel);
+      
 	if (index < 0) {
 	  AliDebug(3,Form("Cluster %d (pT = %f) does not have an associated MC particle (MClabel = %d)!",iClus,part.Pt(),MClabel));
 	  continue;
 	}
-	if (index2 == index) { // found common particle
-	  d1 -= part.Pt();
 
-	  if (!track2Found) {// only if it is not already found among charged tracks (charged particles are most likely already found)
-	    AliVParticle *MCpart = static_cast<AliVParticle*>(fTracks2->At(index2));
-	    AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
-			    iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
-		
-	    d2 -= MCpart->Pt();
-	  }
-	  break;
+	if (index2 != index) continue;
+      
+	// found common particle
+	d1 -= part.Pt();
+      
+	if (!track2Found) { // only if it is not already found among charged tracks (charged particles are most likely already found)
+	  AliVParticle *MCpart = tracks2->GetParticle(index2);
+	  AliDebug(3,Form("Cluster %d (pT = %f, eta = %f, phi = %f) is associated with the MC particle %d (pT = %f, eta = %f, phi = %f)!",
+			  iClus,part.Pt(),part.Eta(),part.Phi(),MClabel,MCpart->Pt(),MCpart->Eta(),MCpart->Phi()));
+	  
+	  d2 -= MCpart->Pt();
 	}
+
+	track2Found = kTRUE;
       }
     }
   }
@@ -1605,29 +1418,39 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 //________________________________________________________________________
 void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const
 { 
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
+
+  if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
+
+  AliParticleContainer *tracks1   = jets1->GetParticleContainer();
+  AliClusterContainer  *clusters1 = jets1->GetClusterContainer();
+  AliParticleContainer *tracks2   = jets2->GetParticleContainer();
+  AliClusterContainer  *clusters2 = jets2->GetClusterContainer();
+
   // d1 and d2 represent the matching level: 0 = maximum level of matching, 1 = the two jets are completely unrelated
   d1 = jet1->Pt();
   d2 = jet2->Pt();
 
-  if (fTracks && fTracks2) {
+  if (tracks1 && tracks2) {
 
     for (Int_t iTrack2 = 0; iTrack2 < jet2->GetNumberOfTracks(); iTrack2++) {
       Int_t index2 = jet2->TrackAt(iTrack2);
-      for (Int_t iTrack = 0; iTrack < jet1->GetNumberOfTracks(); iTrack++) {
-	Int_t index = jet1->TrackAt(iTrack);
-	if (index2 == index) { // found common particle
-	  AliVParticle *part = static_cast<AliVParticle*>(fTracks->At(index));
-	  if (!part) {
-	    AliWarning(Form("Could not find track %d!", index));
+      for (Int_t iTrack1 = 0; iTrack1 < jet1->GetNumberOfTracks(); iTrack1++) {
+	Int_t index1 = jet1->TrackAt(iTrack1);
+	if (index2 == index1) { // found common particle
+	  AliVParticle *part1 = tracks1->GetParticle(index1);
+	  if (!part1) {
+	    AliWarning(Form("Could not find track %d!", index1));
 	    continue;
 	  }
-	  AliVParticle *part2 = static_cast<AliVParticle*>(fTracks2->At(index2));
+	  AliVParticle *part2 = tracks2->GetParticle(index2);
 	  if (!part2) {
 	    AliWarning(Form("Could not find track %d!", index2));
 	    continue;
 	  }
 
-	  d1 -= part->Pt();
+	  d1 -= part1->Pt();
 	  d2 -= part2->Pt();
 	  break;
 	}
@@ -1636,7 +1459,7 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
 
   }
 
-  if (fCaloClusters && fCaloClusters2) {
+  if (clusters1 && clusters2) {
 
     if (fUseCellsToMatch) {
       const Int_t nClus1 = jet1->GetNumberOfClusters();
@@ -1648,7 +1471,7 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
       Double_t ptClus1[nClus1];
       for (Int_t iClus1 = 0; iClus1 < nClus1; iClus1++) {
 	Int_t index1 = jet1->ClusterAt(iClus1);
-	AliVCluster *clus1 =  static_cast<AliVCluster*>(fCaloClusters->At(index1));
+	AliVCluster *clus1 = clusters1->GetCluster(index1);
 	if (!clus1) {
 	  AliWarning(Form("Could not find cluster %d!", index1));
 	  ncells1[iClus1] = 0;
@@ -1676,7 +1499,7 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
       Int_t sortedIndexes2[maxNcells2];
       for (Int_t iClus2 = 0; iClus2 < nClus2; iClus2++) {
 	Int_t index2 = jet2->ClusterAt(iClus2);
-	AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
+	AliVCluster *clus2 =  clusters2->GetCluster(index2);
 	if (!clus2) {
 	  AliWarning(Form("Could not find cluster %d!", index2));
 	  continue;
@@ -1719,24 +1542,24 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
     else {
       for (Int_t iClus2 = 0; iClus2 < jet2->GetNumberOfClusters(); iClus2++) {
 	Int_t index2 = jet2->ClusterAt(iClus2);
-	for (Int_t iClus = 0; iClus < jet1->GetNumberOfClusters(); iClus++) {
-	  Int_t index = jet1->ClusterAt(iClus);
-	  if (index2 == index) { // found common particle
-	    AliVCluster *clus =  static_cast<AliVCluster*>(fCaloClusters->At(index));
-	    if (!clus) {
-	      AliWarning(Form("Could not find cluster %d!", index));
+	for (Int_t iClus1 = 0; iClus1 < jet1->GetNumberOfClusters(); iClus1++) {
+	  Int_t index1 = jet1->ClusterAt(iClus1);
+	  if (index2 == index1) { // found common particle
+	    AliVCluster *clus1 = clusters1->GetCluster(index1);
+	    if (!clus1) {
+	      AliWarning(Form("Could not find cluster %d!", index1));
 	      continue;
 	    }
-	    AliVCluster *clus2 =  static_cast<AliVCluster*>(fCaloClusters2->At(index2));
+	    AliVCluster *clus2 =  clusters2->GetCluster(index2);
 	    if (!clus2) {
 	      AliWarning(Form("Could not find cluster %d!", index2));
 	      continue;
 	    }
-	    TLorentzVector part, part2;
-	    clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+	    TLorentzVector part1, part2;
+	    clus1->GetMomentum(part1, const_cast<Double_t*>(fVertex));
 	    clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
 	    
-	    d1 -= part.Pt();
+	    d1 -= part1.Pt();
 	    d2 -= part2.Pt();
 	    break;
 	  }
@@ -1811,122 +1634,64 @@ Bool_t AliJetResponseMaker::FillHistograms()
 {
   // Fill histograms.
 
-  static Int_t indexes[9999] = {-1};
+  AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+  AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 
-  const Int_t nJets2 = GetSortedArray(indexes, fJets2, fRho2Val);
+  if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return kFALSE;
 
-  Int_t naccJets2 = 0;
-  Int_t naccJets2Acceptance = 0;
-
-  for (Int_t i = 0; i < nJets2; i++) {
-    AliDebug(2,Form("Processing jet (2) %d", indexes[i]));
-
-    AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(fJets2->At(indexes[i]));
-
-    if (!jet2) {
-      AliError(Form("Could not receive jet2 %d", i));
-      continue;
-    }
-
-    // Jet 2 cuts
-    if (!AcceptJet(jet2))
-      continue;
-    if (!AcceptBiasJet2(jet2))
-      continue;
-    if (jet2->Eta() < fJet2MinEta || jet2->Eta() > fJet2MaxEta || jet2->Phi() < fJet2MinPhi || jet2->Phi() > fJet2MaxPhi)
-      continue;
-    if (jet2->MaxTrackPt() > fMaxTrackPt2 || jet2->MaxClusterPt() > fMaxClusterPt2)
-      continue;
-
-    if (naccJets2 < fNLeadingJets) {
-      fHistLeadingJets2PtArea->Fill(jet2->Area(), jet2->Pt());
-      if (!fRho2Name.IsNull())
-	fHistLeadingJets2CorrPtArea->Fill(jet2->Area(), jet2->Pt() - fRho2Val * jet2->Area());
-    }
+  AliEmcalJet* jet1 = 0;  
+  AliEmcalJet* jet2 = 0;
+  
+  jets2->ResetCurrentID();
+  while ((jet2 = jets2->GetNextJet())) {
+    AliDebug(2,Form("Processing jet (2) %d", jets2->GetCurrentID()));
 
     if (fDoJet2Histogram)
-      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), jet2->Pt() - fRho2Val * jet2->Area(), jet2->MCPt(), 2);
+      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
+		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 2);
 
-    naccJets2++;
+    // Verify accept jet
+    if (jets2->AcceptJet(jet2))
+      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
+		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 3);
 
-    // Verify also jet cuts 1 on jet 2
-    if (AcceptBiasJet(jet2) &&
-	(jet2->Eta() > fJetMinEta && jet2->Eta() < fJetMaxEta && jet2->Phi() > fJetMinPhi && jet2->Phi() < fJetMaxPhi)) {
+    jet1 = jet2->MatchedJet();
+
+    if (!jet1) continue;
+    if (!jets1->AcceptJet(jet1)) continue;
+    if (jet1->MCPt() < fMinJetMCPt) continue;
+
+    Double_t d=-1, ce1=-1, ce2=-1;
+    if (jet2->GetMatchingType() == kGeometrical) {
+      if (jets2->GetIsParticleLevel() && !jets1->GetIsParticleLevel()) // the other way around is not supported
+	GetMCLabelMatchingLevel(jet1, jet2, ce1, ce2);
+      else if (jets1->GetIsParticleLevel() == jets2->GetIsParticleLevel())
+	GetSameCollectionsMatchingLevel(jet1, jet2, ce1, ce2);
       
-      if (naccJets2Acceptance < fNLeadingJets) {
-	fHistLeadingJets2PtAreaAcceptance->Fill(jet2->Area(), jet2->Pt());
-	if (!fRho2Name.IsNull()) 
-	  fHistLeadingJets2CorrPtAreaAcceptance->Fill(jet2->Area(), jet2->Pt() - fRho2Val * jet2->Area());
-      }
-      
-      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), jet2->Pt() - fRho2Val * jet2->Area(), jet2->MCPt(), 3);
-      naccJets2Acceptance++;
+      d = jet2->ClosestJetDistance();
+    }
+    else if (jet2->GetMatchingType() == kMCLabel || jet2->GetMatchingType() == kSameCollections) {
+      GetGeometricalMatchingLevel(jet1, jet2, d);
+
+      ce1 = jet1->ClosestJetDistance();
+      ce2 = jet2->ClosestJetDistance();
     }
 
-    if (jet2->MatchedJet()) {
+    Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
+    Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
 
-      if (AcceptJet(jet2->MatchedJet()) &&
-	  jet2->MatchedJet()->Eta() > fJetMinEta && jet2->MatchedJet()->Eta() < fJetMaxEta &&
-	  jet2->MatchedJet()->Phi() > fJetMinPhi && jet2->MatchedJet()->Phi() < fJetMaxPhi &&
-	  AcceptBiasJet(jet2->MatchedJet()) &&
-	  jet2->MatchedJet()->MaxTrackPt() < fMaxTrackPt && jet2->MatchedJet()->MaxClusterPt() < fMaxClusterPt) {
-
-	Double_t d=-1, ce1=-1, ce2=-1;
-	if (jet2->GetMatchingType() == kGeometrical) {
-	  if (fAreCollections2MC && !fAreCollections1MC) // the other way around is not supported
-	    GetMCLabelMatchingLevel(jet2->MatchedJet(), jet2, ce1, ce2);
-	  else if (fAreCollections1MC == fAreCollections2MC)
-	    GetSameCollectionsMatchingLevel(jet2->MatchedJet(), jet2, ce1, ce2);
-
-	  d = jet2->ClosestJetDistance();
-	}
-	else if (jet2->GetMatchingType() == kMCLabel || jet2->GetMatchingType() == kSameCollections) {
-	  GetGeometricalMatchingLevel(jet2->MatchedJet(), jet2, d);
-
-	  ce1 = jet2->MatchedJet()->ClosestJetDistance();
-	  ce2 = jet2->ClosestJetDistance();
-	}
-
-	Double_t corrpt1 = jet2->MatchedJet()->Pt() - fRhoVal * jet2->MatchedJet()->Area();
-	Double_t corrpt2 = jet2->Pt() - fRho2Val * jet2->Area();
-
-	FillMatchingHistos(jet2->MatchedJet()->Pt(), jet2->Pt(), jet2->MatchedJet()->Eta(), jet2->Eta(), jet2->MatchedJet()->Phi(), jet2->Phi(), 
-			   jet2->MatchedJet()->Area(), jet2->Area(), d, ce1, ce2, corrpt1, corrpt2, jet2->MatchedJet()->MCPt(), 
-			   jet2->MatchedJet()->NEF(), jet2->NEF(), jet2->MatchedJet()->MaxPartPt()/jet2->MatchedJet()->Pt(), jet2->MaxPartPt()/jet2->Pt());
-      }
-    }
+    FillMatchingHistos(jet1->Pt(), jet2->Pt(), jet1->Eta(), jet2->Eta(), jet1->Phi(), jet2->Phi(), 
+		       jet1->Area(), jet2->Area(), d, ce1, ce2, corrpt1, corrpt2, jet1->MCPt(), 
+		       jet1->NEF(), jet2->NEF(), jet1->MaxPartPt()/jet1->Pt(), jet2->MaxPartPt()/jet2->Pt());
   }
 
-  const Int_t nJets1 = GetSortedArray(indexes, fJets, fRhoVal);
+  jets1->ResetCurrentID();
+  while ((jet1 = jets1->GetNextAcceptJet())) {
+    if (jet1->MCPt() < fMinJetMCPt) continue;
+    AliDebug(2,Form("Processing jet (1) %d", jets1->GetCurrentID()));
 
-  Int_t naccJets1 = 0;
-
-  for (Int_t i = 0; i < nJets1; i++) {
-    AliDebug(2,Form("Processing jet (1) %d", indexes[i]));
-    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(fJets->At(indexes[i]));
-
-    if (!jet1) {
-      AliError(Form("Could not receive jet %d", i));
-      continue;
-    }  
-
-    if (!AcceptJet(jet1))
-      continue;
-    if (!AcceptBiasJet(jet1))
-      continue;
-    if (jet1->MaxTrackPt() > fMaxTrackPt || jet1->MaxClusterPt() > fMaxClusterPt)
-      continue;
-    if (jet1->Eta() < fJetMinEta || jet1->Eta() > fJetMaxEta || jet1->Phi() < fJetMinPhi || jet1->Phi() > fJetMaxPhi)
-      continue;
-
-    if (naccJets1 < fNLeadingJets){
-      fHistLeadingJets1PtArea->Fill(jet1->Area(), jet1->Pt());
-      if (!fRhoName.IsNull())
-	fHistLeadingJets1CorrPtArea->Fill(jet1->Area(), jet1->Pt() - fRhoVal * jet1->Area());
-    }
-
-    FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), jet1->MaxPartPt()/jet1->Pt(), jet1->Pt() - fRhoVal * jet1->Area(), jet1->MCPt(), 1);
-    naccJets1++;
+    FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), jet1->MaxPartPt()/jet1->Pt(), 
+		 jet1->Pt() - jets1->GetRhoVal() * jet1->Area(), jet1->MCPt(), 1);
   }
 
   return kTRUE;

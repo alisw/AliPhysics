@@ -63,13 +63,16 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
   void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
 
-  void                        SetParticleContainer(AliParticleContainer *c)        { fParticleContainer = c             ; }
-  void                        SetClusterContainer(AliClusterContainer *c)          { fClusterContainer  = c             ; }
+  void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
+  void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
 
   AliEmcalJet                *GetLeadingJet(const char* opt="")          ;
   AliEmcalJet                *GetJet(Int_t i)                       const;
   AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
+  AliEmcalJet                *GetJetWithLabel(Int_t lab)            const;
+  AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)      const;
   AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)               ;
+  AliEmcalJet                *GetNextJet(Int_t i=-1)                     ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptJet(AliEmcalJet* jet)           const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)       const; 
@@ -77,7 +80,7 @@ class AliJetContainer : public AliEmcalContainer {
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)  const;
   void                        GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet* jet)  const;
   AliRhoParameter            *GetRhoParameter()                              {return fRho;}
-  Double_t                    GetRhoVal()                           const    {return fRho->GetVal();}
+  Double_t                    GetRhoVal()                           const    { if (fRho) return fRho->GetVal(); else return 0;}
   const TString&              GetRhoName()                          const    {return fRhoName;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
   Float_t                     GetJetRadius()                        const    {return fJetRadius;}
@@ -87,6 +90,8 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
   void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
+  AliParticleContainer       *GetParticleContainer()                         {return fParticleContainer;}
+  AliClusterContainer        *GetClusterContainer()                          {return fClusterContainer;}
 
  protected:
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
@@ -107,9 +112,9 @@ class AliJetContainer : public AliEmcalContainer {
   Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
   UInt_t                      fJetBitMap;            //  bit map of accepted jets
   UInt_t                      fJetTrigger;           //  jet trigger
+  AliParticleContainer       *fParticleContainer;    //  particle container (jet constituents)
+  AliClusterContainer        *fClusterContainer;     //  cluster container (jet constituents)
 
-  AliParticleContainer       *fParticleContainer;    //! particle container (jet constituents)
-  AliClusterContainer        *fClusterContainer;     //! cluster container (jet constituents)
   AliRhoParameter            *fRho;                  //! event rho for these jets
   AliEMCALGeometry           *fGeom;                 //! emcal geometry
   Int_t                       fRunNumber;            //! run number
@@ -118,7 +123,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,2);
+  ClassDef(AliJetContainer,3);
 
 };
 

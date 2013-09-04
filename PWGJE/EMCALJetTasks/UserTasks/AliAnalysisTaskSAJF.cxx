@@ -23,7 +23,7 @@ ClassImp(AliAnalysisTaskSAJF)
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
+  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskSAJF", kTRUE),
   fHistoType(1),
   fHistJetObservables(0)
 
@@ -58,7 +58,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
+  AliAnalysisTaskEmcalJetDev(name, kTRUE),
   fHistoType(1),
   fHistJetObservables(0)
 {
@@ -139,7 +139,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     dim++;
   }
 
-  if (!fRhoName.IsNull()) {
+  if (!GetRhoName().IsNull()) {
     title[dim] = "p_{T}^{corr} (GeV/c)";
     nbins[dim] = fNbins*2;
     min[dim] = -fMaxBinPt;
@@ -237,7 +237,7 @@ void AliAnalysisTaskSAJF::AllocateTHX()
     fHistJetPtLeadingPartPt[i]->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistJetPtLeadingPartPt[i]);
 
-    if (!fRhoName.IsNull()) {
+    if (!GetRhoName().IsNull()) {
       histname = "fHistJetCorrPtEtaPhi_";
       histname += i;
       fHistJetCorrPtEtaPhi[i] = new TH3F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 20, -1, 1, 41, 0, 2*TMath::Pi()*201/200);
@@ -322,7 +322,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 {
   // Create user output.
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
   if (fHistoType == 0)
     AllocateTHX();
@@ -332,7 +332,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   for (Int_t i = 0; i < 4; i++) {
     TString histname;
 
-    if (!fTracksName.IsNull()) {
+    if (fParticleCollArray.GetEntriesFast()>0) {
       histname = "fHistTracksJetPt_";
       histname += i;
       fHistTracksJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
@@ -350,7 +350,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fOutput->Add(fHistTracksPtDist[i]);
     }
 
-    if (!fCaloName.IsNull()) {
+    if (fClusterCollArray.GetEntriesFast()>0) {
       histname = "fHistClustersJetPt_";
       histname += i;
       fHistClustersJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
@@ -447,7 +447,7 @@ void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta,
     fHistJetPtNEF[fCentBin]->Fill(pt,NEF);
     fHistJetPtZ[fCentBin]->Fill(pt,z);
     fHistJetPtLeadingPartPt[fCentBin]->Fill(pt,leadingpt);
-    if (!fRhoName.IsNull()) {
+    if (fHistJetCorrPtEtaPhi[fCentBin]) {
       fHistJetCorrPtEtaPhi[fCentBin]->Fill(corrpt,eta,phi);
       fHistJetCorrPtArea[fCentBin]->Fill(corrpt,area);
       fHistJetCorrPtEP[fCentBin]->Fill(corrpt,ep);
