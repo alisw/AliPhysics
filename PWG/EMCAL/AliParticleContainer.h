@@ -16,20 +16,28 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const char *name); 
   virtual ~AliParticleContainer(){;}
 
-  void  SetParticlePtCut(Double_t cut)                   { fParticlePtCut = cut ; }
-  void  SetParticleEtaLimits(Double_t min, Double_t max) { fParticleMaxEta = max ; fParticleMinEta = min ; }
-  void  SetParticlePhiLimits(Double_t min, Double_t max) { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
+  void  SetParticlePtCut(Double_t cut)                    { fParticlePtCut = cut ; }
+  void  SetParticleEtaLimits(Double_t min, Double_t max)  { fParticleMaxEta = max ; fParticleMinEta = min ; }
+  void  SetParticlePhiLimits(Double_t min, Double_t max)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
   void  SetTrackBitMap(UInt_t m)                          { fTrackBitMap     = m ; }
   void  SetMCTrackBitMap(UInt_t m)                        { fMCTrackBitMap   = m ; }
   void  SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s ; }
 
-  AliVParticle               *GetLeadingParticle(const char* opt="")        ;
-  AliVParticle               *GetParticle(Int_t i)                     const;
-  AliVParticle               *GetAcceptParticle(Int_t i)               const;
-  AliVParticle               *GetNextAcceptParticle(Int_t i=-1)             ;
+  Double_t                    GetParticlePtCut()                        const   { return fParticlePtCut; }
+  Double_t                    GetParticleEtaMin()                       const   { return fParticleMinEta; }
+  Double_t                    GetParticleEtaMax()                       const   { return fParticleMaxEta; }
+  Double_t                    GetParticlePhiMin()                       const   { return fParticleMinPhi; }
+  Double_t                    GetParticlePhiMax()                       const   { return fParticleMaxPhi; }
+  AliVParticle               *GetLeadingParticle(const char* opt="")         ;
+  AliVParticle               *GetParticle(Int_t i)                      const;
+  AliVParticle               *GetAcceptParticle(Int_t i)                const;
+  AliVParticle               *GetParticleWithLabel(Int_t lab)           const;
+  AliVParticle               *GetAcceptParticleWithLabel(Int_t lab)     const;
+  AliVParticle               *GetNextAcceptParticle(Int_t i=-1)              ;
+  AliVParticle               *GetNextParticle(Int_t i=-1)                    ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
-  Bool_t                      AcceptParticle(AliVParticle         *vp) const;
-  Int_t                       GetNParticles()                          const   {return GetNEntries();}
+  Bool_t                      AcceptParticle(AliVParticle         *vp)  const;
+  Int_t                       GetNParticles()                           const   {return GetNEntries();}
   void                        SetClassName(const char *clname);
 
  protected:

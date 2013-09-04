@@ -9,6 +9,7 @@
 #include "AliEmcalJet.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
+#include "AliNamedArrayI.h"
 
 #include "AliEmcalContainer.h"
 
@@ -17,10 +18,12 @@ ClassImp(AliEmcalContainer)
 //________________________________________________________________________
 AliEmcalContainer::AliEmcalContainer():
   TNamed("AliEmcalContainer","AliEmcalContainer"),
-  fClArray(0),
   fClArrayName(),
   fClassName(),
-  fCurrentID(0)
+  fIsParticleLevel(kFALSE),
+  fClArray(0),
+  fCurrentID(0),
+  fLabelMap(0)
 {
   // Default constructor.
 
@@ -32,10 +35,12 @@ AliEmcalContainer::AliEmcalContainer():
 //________________________________________________________________________
 AliEmcalContainer::AliEmcalContainer(const char *name):
   TNamed(name,name),
-  fClArray(0),
   fClArrayName(),
   fClassName(),
-  fCurrentID(0)
+  fIsParticleLevel(kFALSE),
+  fClArray(0),
+  fCurrentID(0),
+  fLabelMap(0)
 {
   // Standard constructor.
 
@@ -70,5 +75,25 @@ void AliEmcalContainer::SetArray(AliVEvent *event)
 		    GetName(), cls.GetName(), fClArrayName.Data(), fClassName.Data())); 
       fClArray = 0;
     }
+  }
+
+  fLabelMap = dynamic_cast<AliNamedArrayI*>(event->FindListObject(fClArrayName + "_Map"));
+}
+
+//________________________________________________________________________
+Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
+{ 
+  if (fLabelMap) {
+    if (lab < fLabelMap->GetSize()) {
+      return fLabelMap->At(lab); 
+    }
+    else {
+      AliDebug(3,Form("%s_AliEmcalContainer::GetIndexFromLabel - Label not found in the map, returning -1...",fClArrayName.Data()));
+      return -1;
+    }
+  }
+  else {
+    AliDebug(3,Form("%s_AliEmcalContainer::GetIndexFromLabel - No index-label map found, returning label...",fClArrayName.Data()));
+    return lab; 
   }
 }

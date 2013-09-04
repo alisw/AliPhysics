@@ -27,7 +27,10 @@ class AliClusterContainer : public AliEmcalContainer {
   AliVCluster                *GetLeadingCluster(const char* opt="")       ;
   AliVCluster                *GetCluster(Int_t i)                    const;
   AliVCluster                *GetAcceptCluster(Int_t i)              const;
+  AliVCluster                *GetClusterWithLabel(Int_t lab)         const;
+  AliVCluster                *GetAcceptClusterWithLabel(Int_t lab)   const;
   AliVCluster                *GetNextAcceptCluster(Int_t i=-1)            ;
+  AliVCluster                *GetNextCluster(Int_t i=-1)                  ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptCluster(AliVCluster         *vp) const;
   Int_t                       GetNClusters()                         const   {return GetNEntries();}

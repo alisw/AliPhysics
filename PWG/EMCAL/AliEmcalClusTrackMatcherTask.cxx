@@ -139,12 +139,12 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
   AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
   AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
 
-  const Double_t maxd2 = fMaxDistance*fMaxDistance;
-
-  // set the links between tracks and clusters
   AliEmcalParticle *partC = 0;
   AliEmcalParticle *partT = 0;
 
+  const Double_t maxd2 = fMaxDistance*fMaxDistance;
+
+  // set the links between tracks and clusters
   clusters->ResetCurrentID();
   while ((partC = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle()))) {
     AliVCluster *clust = partC->GetCluster();

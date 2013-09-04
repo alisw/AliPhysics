@@ -106,9 +106,27 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const {
 }
 
 //________________________________________________________________________
+AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const {
+
+  //Get particle with label lab in array
+  
+  Int_t i = GetIndexFromLabel(lab);
+  return GetCluster(i);
+}
+
+//________________________________________________________________________
+AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab) const {
+
+  //Get particle with label lab in array
+  
+  Int_t i = GetIndexFromLabel(lab);
+  return GetAcceptCluster(i);
+}
+
+//________________________________________________________________________
 AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) {
 
-  //Get next accepted cluster; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
+  //Get next accepted cluster; if i >= 0 (re)start counter from i; return 0 if no accepted cluster could be found
 
   if (i>=0) fCurrentID = i;
 
@@ -116,6 +134,23 @@ AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) {
   AliVCluster *c = 0;
   while (fCurrentID < n && !c) { 
     c = GetAcceptCluster(fCurrentID);
+    fCurrentID++;
+  }
+
+  return c;
+}
+
+//________________________________________________________________________
+AliVCluster* AliClusterContainer::GetNextCluster(Int_t i) {
+
+  //Get next cluster; if i >= 0 (re)start counter from i; return 0 if no cluster could be found
+
+  if (i>=0) fCurrentID = i;
+
+  const Int_t n = GetNEntries();
+  AliVCluster *c = 0;
+  while (fCurrentID < n && !c) { 
+    c = GetCluster(fCurrentID);
     fCurrentID++;
   }
 

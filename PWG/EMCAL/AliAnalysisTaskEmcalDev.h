@@ -44,18 +44,8 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
 
   void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }  
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
-  void                        SetClusName(const char *n)                            { AddClusterContainer(n)                              ; }
-  void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
-  void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
-  void                        SetClusPtCut(Double_t cut)                            { fClusPtCut         = cut                            ; }
-  void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow    = min  ; fClusTimeCutUp = max    ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
-  void                        SetPtCut(Double_t cut)                                { SetClusPtCut(cut)         ; SetTrackPtCut(cut)      ; }
-  void                        SetTrackPtCut(Double_t cut)                           { fTrackPtCut        = cut                            ; }
-  void                        SetTrackEtaLimits(Double_t min, Double_t max)         { fTrackMaxEta       = max  ; fTrackMinEta      = min ; }
-  void                        SetTrackPhiLimits(Double_t min, Double_t max)         { fTrackMaxPhi       = max  ; fTrackMinPhi      = min ; }
-  void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
   void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; }  
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
@@ -68,6 +58,18 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
 
+  void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
+  void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
+
+  void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
+  void                        SetClusName(const char *n)                            { AddClusterContainer(n)                              ; }
+
+  void                        SetClusPtCut(Double_t cut, Int_t c=0);
+  void                        SetClusTimeCut(Double_t min, Double_t max, Int_t c=0);
+  void                        SetTrackPtCut(Double_t cut, Int_t c=0);
+  void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
+  void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
+
   AliParticleContainer       *AddParticleContainer(const char *n);
   AliClusterContainer        *AddClusterContainer(const char *n);
   void                        RemoveParticleContainer(Int_t i=0)                      { fParticleCollArray.RemoveAt(i);} 
@@ -78,27 +80,31 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   AliParticleContainer       *GetParticleContainer(const char* name)  const;
   AliClusterContainer        *GetClusterContainer(const char* name)   const;
 
-  TClonesArray               *GetParticleArray(const Int_t i=0)       const;
-  TClonesArray               *GetClusterArray(const Int_t i=0)        const;
-
-  AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0) const;
-  AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0) const;
-
-  Int_t                       GetNParticles(Int_t i=0) const;
-  Int_t                       GetNClusters(Int_t i=0)  const;
-
  protected:
-  Bool_t                      AcceptCluster(AliVCluster        *clus,  Int_t c = 0)  const;
-  Bool_t                      AcceptTrack(AliVParticle         *track, Int_t c = 0)  const;
-  virtual void                ExecOnce();
-  virtual Bool_t              FillGeneralHistograms();
-  virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
   BeamType                    GetBeamType();
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+
+  TClonesArray               *GetParticleArray(const Int_t i=0)                  const;
+  TClonesArray               *GetClusterArray(const Int_t i=0)                   const;
+
+  AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0)     const;
+  AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0)     const;
+
+  Int_t                       GetNParticles(Int_t i=0)                           const;
+  Int_t                       GetNClusters(Int_t i=0)                            const;
+
+  Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
+  Bool_t                      AcceptTrack(AliVParticle *track, Int_t c = 0)      const;
+
+  // Virtual functions, to be overloaded in derived classes
+  virtual void                ExecOnce();
+  virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
+  virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
   virtual Bool_t              Run()                                                { return kTRUE                 ; }
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+
 
   BeamType                    fForceBeamType;              // forced beam type
   Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
@@ -115,14 +121,6 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   Int_t                       fNbins;                      // no. of pt bins
   Double_t                    fMinBinPt;                   // min pt in histograms
   Double_t                    fMaxBinPt;                   // max pt in histograms
-  Double_t                    fClusPtCut;                  // cut on cluster pt
-  Double_t                    fTrackPtCut;                 // cut on track pt
-  Double_t                    fTrackMinEta;                // cut on track eta
-  Double_t                    fTrackMaxEta;                // cut on track eta
-  Double_t                    fTrackMinPhi;                // cut on track phi
-  Double_t                    fTrackMaxPhi;                // cut on track phi
-  Double_t                    fClusTimeCutLow;             // low time cut for clusters
-  Double_t                    fClusTimeCutUp;              // up time cut for clusters
   Double_t                    fMinPtTrackInEmcal;          // min pt track in emcal
   Double_t                    fEventPlaneVsEmcal;          // select events which have a certain event plane wrt the emcal
   Double_t                    fMinEventPlane;              // minimum event plane value
@@ -177,6 +175,6 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalDev(const AliAnalysisTaskEmcalDev&);            // not implemented
   AliAnalysisTaskEmcalDev &operator=(const AliAnalysisTaskEmcalDev&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDev, 3) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcalDev, 4) // EMCAL base analysis task
 };
 #endif
