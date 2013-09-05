@@ -693,8 +693,8 @@ AliAnalysisCuts* createDefaultPoolConfig(Bool_t usekine)
   // NEED to check this
   if(usekine){
     HFCorrelationCuts->SetMinEventsToMix(8);
-    HFCorrelationCuts->SetMaxNEventsInPool(50);
-    HFCorrelationCuts->SetMinNTracksInPool(500);
+    HFCorrelationCuts->SetMaxNEventsInPool(10);
+    HFCorrelationCuts->SetMinNTracksInPool(50);
   }
   else{
     HFCorrelationCuts->SetMinEventsToMix(8);
