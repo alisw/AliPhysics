@@ -26,6 +26,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
    Float_t     nsigmaKa = 2.0,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
+   Bool_t      is2011PbPb = kFALSE,
    Int_t       nmix = 0,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
@@ -52,6 +53,13 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
      task->SetUseCentralityPatch(aodN==49);
    }
+
+   if(is2011PbPb)
+     task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+   else
+     task->SelectCollisionCandidates(AliVEvent::kMB);
+
+
    if (isPP) 
      task->UseMultiplicity("QUALITY");
    else
