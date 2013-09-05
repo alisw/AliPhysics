@@ -248,37 +248,43 @@ Bool_t AliHFCorrelator::ProcessEventPool(){
 
 //_____________________________________________________
 Bool_t AliHFCorrelator::ProcessAssociatedTracks(Int_t EventLoopIndex, const TObjArray* associatedTracks){
-  // TODO: memory leak needs to be fixed, for every call, a new array
-  // is allocated, but the pointer immediately lost. The cleanup is
-  // not straightforward as in the case of event mixing the pointer
-  // will be an external array which must not be deleted.
-	fAssociatedTracks = new TObjArray();
-
-	if(!fmixing){ // analysis on Single Event
-		
-		
-		
-		if(fselect==kHadron || fselect ==kKaon)	fAssociatedTracks = AcceptAndReduceTracks(fAODEvent);
-		if(fselect==kKZero) {fAssociatedTracks = AcceptAndReduceKZero(fAODEvent);}	
-		if(fselect==kElectron && associatedTracks) fAssociatedTracks=new TObjArray(*associatedTracks);
-		
-	}
-	
-	if(fmixing) { // analysis on Mixed Events
+  // associatedTracks is not deleted, it should be (if needed) deleted in the user task
+  
+  if(!fmixing){ // analysis on Single Event
+    if(fAssociatedTracks){
+      fAssociatedTracks->Delete();
+      delete fAssociatedTracks;
+    }      
+    if(fselect==kHadron || fselect ==kKaon){
+      fAssociatedTracks = AcceptAndReduceTracks(fAODEvent);
+      fAssociatedTracks->SetOwner(kTRUE);
+    }
+    if(fselect==kKZero) {
+      fAssociatedTracks = AcceptAndReduceKZero(fAODEvent);
+      fAssociatedTracks->SetOwner(kTRUE);
+    }	
+    if(fselect==kElectron && associatedTracks) {
+      fAssociatedTracks=new TObjArray(*associatedTracks);// Maybe better to call the copy constructor
+      fAssociatedTracks->SetOwner(kFALSE);
+    }
+    
+  }
+  
+  if(fmixing) { // analysis on Mixed Events
 		
 			
-		fAssociatedTracks = fPool->GetEvent(EventLoopIndex);
+    fAssociatedTracks = fPool->GetEvent(EventLoopIndex);
 				
-				
-			
-
-	} // end if mixing
-	
-	if(!fAssociatedTracks) return kFALSE;
-	
-	fNofTracks = fAssociatedTracks->GetEntriesFast(); 
-		
-	return kTRUE;
+    
+    
+    
+  } // end if mixing
+  
+  if(!fAssociatedTracks) return kFALSE;
+  
+  fNofTracks = fAssociatedTracks->GetEntriesFast(); 
+  
+  return kTRUE;
 	
 }
 //_____________________________________________________
