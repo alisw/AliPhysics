@@ -24,6 +24,8 @@
 //#include "AliAODTrack.h"
 #include "TClonesArray.h"
 #include "AliAODConversionParticle.h"
+#include <AliLog.h>
+
 //#include "AliAODConversionMother.h"
 //#include "AliAODConversionPhoton.h"
 //#include "THnSparse.h"
@@ -65,9 +67,9 @@ void AliAnaConvCorrPion::InitMassAxis() {
   Double_t mbins[7] = {0.1, 0.11, 0.12, 0.15, 0.16, 0.18, 0.2};
   fAxisM.Set(6, mbins);
   fAxisM.SetNameTitle("InvMass", "invariant mass");
-  GetAxisList().AddAt(&fAxisM, 5);
-  GetTrackAxisList().AddAt(&fAxisM, 5);
-  GetTrigAxisList().AddAt(&fAxisM, 4);
+  GetAxisList().AddAt(&fAxisM, 4);
+  GetTrackAxisList().AddAt(&fAxisM, 3);
+  GetTrigAxisList().AddAt(&fAxisM, 2);
 }
 
 ///________________________________________________________________________________
@@ -75,12 +77,12 @@ void AliAnaConvCorrPion::CreateHistograms() {
   //Create histograms
   CreateBaseHistograms();
  
-  hTriggerPtvsMass[0] = new TH2D("hTriggerPtvsMass_all", "Pt vs Mass all pizero", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
-  hTriggerPtvsMass[1] = new TH2D("hTriggerPtvsMass_leadingcone", "Pt vs Mass leading cone", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
-  hTriggerPtvsMass[2] = new TH2D("hTriggerPtvsMass_leadingevent", "Pt vs Mass leading event", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
+  hTriggerPtvsMass[0] = new TH2D(Form("hTriggerPtvsMass_all_%s", GetName()), "Pt vs Mass all pizero", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
+  hTriggerPtvsMass[1] = new TH2D("hTriggerPtvsMass_leadingcone", "Pt vs Mass leading cone", 1, 0, .400, 1, 0, 100);
+  hTriggerPtvsMass[2] = new TH2D("hTriggerPtvsMass_leadingevent", "Pt vs Mass leading event", 1, 0, .400, 1, 0, 100);
   GetHistograms()->Add(hTriggerPtvsMass[0]);
-  GetHistograms()->Add(hTriggerPtvsMass[1]);
-  GetHistograms()->Add(hTriggerPtvsMass[2]);
+  //GetHistograms()->Add(hTriggerPtvsMass[1]);
+  //GetHistograms()->Add(hTriggerPtvsMass[2]);
 }
 
 
@@ -88,6 +90,7 @@ void AliAnaConvCorrPion::CreateHistograms() {
 void AliAnaConvCorrPion::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
   //Fill histograms counting triggers
   //fHNTriggers[leading]->Fill(particle->Pt());
+  AliDebug(AliLog::kDebug + 5, Form("Fill trigger countder %f %f", particle->M(), particle->Pt()));
   hTriggerPtvsMass[leading]->Fill(particle->M(), particle->Pt());
 }
 

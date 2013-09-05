@@ -82,22 +82,22 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxisdPhi.Set(32, -TMath::PiOver2(), 3*TMath::PiOver2());
   fAxisdPhi.SetNameTitle("dPhi", "delta Phi");
 
-  Double_t tptbins[14] = {3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
+  Double_t tptbins[15] = {2.0, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
   fAxistPt.Set(13, tptbins);
   fAxistPt.SetNameTitle("tPt", "trigger Pt");
 
-  Double_t cptbins[18] = {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
-  fAxiscPt.Set(17, cptbins);
+  Double_t cptbins[19] = {0.7, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
+  fAxiscPt.Set(18, cptbins);
   fAxiscPt.SetNameTitle("cPt", "track Pt");
 
-  fAxisIso.Set(3, -0.5, 2.5);
+  fAxisIso.Set(1, -0.5, 2.5);
   fAxisIso.SetNameTitle("iso", "isolation");
 
   fAxesList.AddAt(&fAxisdEta, 0);
   fAxesList.AddAt(&fAxisdPhi, 1);
   fAxesList.AddAt(&fAxistPt, 2);
   fAxesList.AddAt(&fAxiscPt, 3);
-  fAxesList.AddAt(&fAxisIso, 4);
+  //fAxesList.AddAt(&fAxisIso, 4);
 
   fAxisMEEta.Set(320, -0.8, 0.8);
   fAxisMEEta.SetNameTitle("eta", "eta");
@@ -106,15 +106,15 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxisMEPhi.SetNameTitle("phi", "phi");
 
   fTrackAxisList.AddAt(&fAxisMEEta, 0);
-  fTrackAxisList.AddAt(&fAxisMEPhi, 1);
-  fTrackAxisList.AddAt(&fAxistPt, 2);
-  fTrackAxisList.AddAt(&fAxiscPt, 3);
-  fTrackAxisList.AddAt(&fAxisIso, 4);
+  //  fTrackAxisList.AddAt(&fAxisMEPhi, 1);
+  fTrackAxisList.AddAt(&fAxistPt, 1);
+  fTrackAxisList.AddAt(&fAxiscPt, 2);
+  //fTrackAxisList.AddAt(&fAxisIso, 4);
 
   fTrigAxisList.AddAt(&fAxisMEEta, 0);
-  fTrigAxisList.AddAt(&fAxisMEPhi, 1);
-  fTrigAxisList.AddAt(&fAxistPt, 2);
-  fTrigAxisList.AddAt(&fAxisIso, 3);
+  //fTrigAxisList.AddAt(&fAxisMEPhi, 1);
+  fTrigAxisList.AddAt(&fAxistPt, 1);
+  //fTrigAxisList.AddAt(&fAxisIso, 3);
 
 
 }
@@ -222,55 +222,76 @@ void AliAnaConvCorrBase::PrintStatistics()  {
 // }
 
 
+
+//_______________________________________________________________________________
+void AliAnaConvCorrBase::FillCounters(TObjArray * particles, TObjArray * tracks) {
+  //Fill ME Counters
+  const Int_t nbins = fAxistPt.GetNbins();
+  Bool_t tmap[nbins];
+  for(Int_t ptbin = 0; ptbin < nbins; ptbin++){
+    tmap[ptbin] = kFALSE;
+  }
+  for(Int_t ip = 0; ip < particles->GetEntriesFast(); ip++){
+    AliAODConversionParticle * particle = static_cast<AliAODConversionParticle*>(particles->At(ip));
+    Int_t tbin = fAxistPt.FindFixBin(particle->Pt());
+    if (tbin > 0 && tbin < nbins + 1) {
+      if(tmap[tbin - 1] == kTRUE) {
+	continue;
+      } else {
+	tmap[tbin -1 ] = kTRUE;
+	Double_t trackValues[fTrackAxisList.GetSize()];
+	if( fTrackAxisList.GetSize() > 3){
+	  trackValues[3] = particle->M();
+	}
+	
+	for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
+	  AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));
+	  trackValues[0] = track->Eta();
+	  trackValues[1] = particle->Pt();
+	  trackValues[2] = track->Pt();
+	  fTrackSparse->Fill(trackValues);	
+	}
+      }
+    }
+  }
+}
+
 //________________________________________________________________
 void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, Int_t const tIDs[4], Int_t isolated = 0) {
   //Correlate particle with tracks
 
-
-   //FillTriggerCounters(particle, isolated);
-
-  Int_t nDim = fAxesList.GetSize();
-  Double_t dphivalues[nDim];
-  Double_t trackValues[nDim];
-
-  Double_t trigValues[nDim - 1];
-  trigValues[0] = particle->Eta();
-  trigValues[1] = particle->Phi();
-  trigValues[2] = particle->Pt();
-  trigValues[3] = isolated;
-  
-  fTrigSparse->Fill(trigValues);
-
-  if(nDim > 4) {
-	dphivalues[5] = particle->M();
-	trackValues[5] = particle->M();
-	trigValues[4] = particle->M();
+  if(isolated) {
+    ;//should be removed
   }
 
+  const Int_t nDim = fAxesList.GetSize();
+  Double_t dphivalues[nDim];
+  Double_t trigValues[fTrigAxisList.GetSize()];
+  trigValues[0] = particle->Eta();
+  trigValues[1] = particle->Pt();
+  
+  if(nDim > 4) {
+    dphivalues[4] = particle->M();
+    trigValues[2] = particle->M();
+  }
+
+  fTrigSparse->Fill(trigValues);
+
+
   for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
-	AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));
-	Int_t tid = track->GetID();
-
-	if((tid > 0) && (tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3]) ) {
-	  continue;
-	}
+    AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));
+    
+    Int_t tid = track->GetID();
+    
+    if((tid > 0) && (tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3]) ) {
+      continue;
+    }
 	
-	dphivalues[0] = particle->Eta() - track->Eta();
-	dphivalues[1] = GetDPhi(particle->Phi() - track->Phi());
-	dphivalues[2] = particle->Pt();
-	dphivalues[3] = track->Pt();
-	dphivalues[4] = isolated;
-
-	trackValues[0] = track->Eta();
-	trackValues[1] = track->Phi();
-	trackValues[2] = particle->Pt();
-	trackValues[3] = track->Pt();
-	trackValues[4] = isolated;
-
-
-	
-	fCorrSparse->Fill(dphivalues);
-	fTrackSparse->Fill(trackValues);
+    dphivalues[0] = particle->Eta() - track->Eta();
+    dphivalues[1] = GetDPhi(particle->Phi() - track->Phi());
+    dphivalues[2] = particle->Pt();
+    dphivalues[3] = track->Pt();
+    fCorrSparse->Fill(dphivalues);
   }
 }
 

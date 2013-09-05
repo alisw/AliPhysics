@@ -149,6 +149,7 @@ Float_t AliAODConversionMother::CalculateDistanceBetweenPhotons(AliAODConversion
       prodPoint[2] = Prod(2);
       
    }
+   if (dist > 1000) dist = 999.;
    return dist;
 }
 

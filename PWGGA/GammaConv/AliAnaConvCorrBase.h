@@ -64,7 +64,7 @@ public:
   void PrintStatistics();
 
   void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Int_t isolated);
-  //virtual void FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading);
+  void FillCounters(TObjArray * particles, TObjArray * tracks);
 
   TAxis& GetAxistPt()       { return fAxistPt;   }
   TAxis& GetAxiscPt()       { return fAxiscPt;   }
@@ -82,10 +82,6 @@ public:
 
 protected:
 
-  //Fill histograms
-  //void FillHistograms(Float_t tPt, Float_t cPt, Float_t dPhi, Float_t dEta, Bool_t isolated);
-  //Fill trigger counter histograms
-  //virtual void FillTriggerCounters(Float_t tPt, Bool_t isolated) = NULL;
   THnSparseF * CreateSparse(TString name, TString title, TList * axes);
 
 private:
