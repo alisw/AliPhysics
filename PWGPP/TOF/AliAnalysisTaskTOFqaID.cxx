@@ -296,16 +296,26 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   //Defines output objects and histograms
   Info("CreateOutputObjects","CreateOutputObjects (TList) of task %s", GetName());
   OpenFile(1);
+
   if (!fHlist) fHlist = new TList();	
   fHlist->SetOwner(kTRUE);
+  fHlist->SetName("base");
+
   if (!fHlistTimeZero) fHlistTimeZero = new TList();	
   fHlistTimeZero->SetOwner(kTRUE);
+  fHlistTimeZero->SetName("startTime");
+
   if (!fHlistPID) fHlistPID = new TList();	
   fHlistPID->SetOwner(kTRUE);
+  fHlistPID->SetName("pid");
+
   if (!fHlistTRD) fHlistTRD = new TList();	
   fHlistTRD->SetOwner(kTRUE);  
+  fHlistTRD->SetName("TRD");
+
   if (!fHlistTrigger) fHlistTrigger = new TList();	
   fHlistTrigger->SetOwner(kTRUE);  
+  fHlistTrigger->SetName("trigger");
 
   if (fExpTimeRangeMax<fExpTimeRangeMin) {
     SetExpTimeHistoRange(-25010.,25010.);
@@ -739,10 +749,10 @@ Bool_t  AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(TList* list, TString v
     primaryName = "hTOFprimaryESDphi";
     xAxisTitle = "#phi_vtx (deg)";
   }
-  if (!list) return 0;
   
   TH1D*hDummy = ((TH1D*)list->FindObject(matchedName.Data()));
   if (!hDummy) return 0;
+
   TH1D*hMatchingEff = (TH1D*) hDummy->Clone("hMatchingEff");
   hMatchingEff->SetNameTitle(Form("hMatchingEff_%s", variable.Data()),Form("Matching efficiency vs %s", variable.Data()));
   hMatchingEff->Divide((TH1F*) list->FindObject(primaryName.Data()));
@@ -1143,17 +1153,23 @@ void AliAnalysisTaskTOFqaID::FillPrimaryTrkHisto(Int_t charge, TString suffix)
   // => denominator for matching efficiency
   TString cLabel; 
   
-  TList * list = new TList();
-  if (suffix.Contains("Trd")) list = fHlistTRD;
-  else list = fHlist;
-
   if (charge<0) cLabel.Form("neg"); else if (charge>0) cLabel.Form("pos"); else cLabel.Form("all");
-  ((TH1F*)list->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
-  ((TH1F*)list->FindObject(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
-  if (fPt>=fMatchingMomCut) {
-    ((TH1F*)list->FindObject(Form("hPrimaryEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
-    ((TH1F*)list->FindObject(Form("hPrimaryPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
-    ((TH2F*)list->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
+  if (suffix.Contains("Trd")) {
+    ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
+    ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    if (fPt>=fMatchingMomCut) {
+      ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
+      ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
+      ((TH2F*)fHlistTRD->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
+    }
+  } else {
+    ((TH1F*)fHlist->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
+    ((TH1F*)fHlist->FindObject(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    if (fPt>=fMatchingMomCut) {
+      ((TH1F*)fHlist->FindObject(Form("hPrimaryEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
+      ((TH1F*)fHlist->FindObject(Form("hPrimaryPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
+      ((TH2F*)fHlist->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt); 
+    }
   }
   return;
 }
@@ -1164,21 +1180,27 @@ void AliAnalysisTaskTOFqaID::FillMatchedTrkHisto(Int_t charge, TString suffix)
   //=> numerator for matching efficiency
   TString cLabel; 
 
-  TList * list = new TList();
-  if (suffix.Contains("Trd")) list = fHlistTRD;
-  else list = fHlist;
-
   if (charge<0) cLabel.Form("neg"); 
   else 
     if (charge>0) cLabel.Form("pos"); 
     else cLabel.Form("all");
-  
-  ((TH1F*)list->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
-  ((TH1F*)list->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
-  if (fPt>=fMatchingMomCut) {
-    ((TH1F*)list->FindObject(Form("hMatchedEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
-    ((TH1F*)list->FindObject(Form("hMatchedPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
-    ((TH2F*)list->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
+
+  if (suffix.Contains("Trd")) { 
+    ((TH1F*)fHlistTRD->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
+    ((TH1F*)fHlistTRD->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    if (fPt>=fMatchingMomCut) {
+      ((TH1F*)fHlistTRD->FindObject(Form("hMatchedEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
+      ((TH1F*)fHlistTRD->FindObject(Form("hMatchedPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
+      ((TH2F*)fHlistTRD->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
+    }
+  } else {
+    ((TH1F*)fHlist->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
+    ((TH1F*)fHlist->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    if (fPt>=fMatchingMomCut) {
+      ((TH1F*)fHlist->FindObject(Form("hMatchedEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
+      ((TH1F*)fHlist->FindObject(Form("hMatchedPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
+      ((TH2F*)fHlist->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
+    }
   }
   return;
 }
@@ -1196,10 +1218,6 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
     return;
   }
   if (!track) return;
-  
-  TList * list = new TList();
-  if (suffix.Contains("Trd")) list = fHlistTRD;
-  else list = fHlistPID;
   
   TString cLabel; 
   if (charge<0) cLabel.Form("neg"); 
@@ -1222,9 +1240,15 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
     mass = fP*TMath::Sqrt(fact); 
   }
   
-  ((TH2F*) list->FindObject(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,beta);
-  ((TH1F*) list->FindObject(Form("hMatchedMass%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass);
-  ((TH1F*) list->FindObject(Form("hMatchedMass2%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass*mass);
+  if (suffix.Contains("Trd")) {
+    ((TH2F*) fHlistTRD->FindObject(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,beta);
+    ((TH1F*) fHlistTRD->FindObject(Form("hMatchedMass%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass);
+    ((TH1F*) fHlistTRD->FindObject(Form("hMatchedMass2%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass*mass);
+  } else {
+    ((TH2F*) fHlist->FindObject(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,beta);
+    ((TH1F*) fHlist->FindObject(Form("hMatchedMass%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass);
+    ((TH1F*) fHlist->FindObject(Form("hMatchedMass2%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass*mass);
+  }
   
   //PID sigmas
   Bool_t isValidBeta[AliPID::kSPECIES]={0,0,0,0,0};
@@ -1245,34 +1269,67 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
   Int_t volId[5]; //(sector, plate,strip,padZ,padX)
   AliTOFGeometry::GetVolumeIndices(channel,volId);
   
+if (suffix.Contains("Trd")) {
   if (isValidBeta[AliPID::kPion]){
-    ((TH2F*)list->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[AliPID::kPion]);//ps
-    ((TH1F*)list->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]);//ps
-    ((TH2F*)list->FindObject(Form("hExpTimePiVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kPion]);
-    ((TH2F*)list->FindObject(Form("hTOFpidSigmaPi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
-    ((TH2F*)list->FindObject(Form("hExpTimePiT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);  
-    ((TH2F*)list->FindObject(Form("hExpTimePiVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[AliPID::kPion]);//ps
+    ((TH1F*)fHlistTRD->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]);//ps
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kPion]);
+    ((TH2F*)fHlistTRD->FindObject(Form("hTOFpidSigmaPi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);  
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);
     
     if (ComputeTimeZeroByTOF1GeV()){
       if ((fPt>0.95)&&(fPt<1.05)){
-	((TH2F*)list->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
+	((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
       }
     } 
   }//end pion
   
   if (isValidBeta[AliPID::kKaon]){
-    ((TH2F*)list->FindObject(Form("hExpTimeKaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kKaon]);
-    ((TH2F*)list->FindObject(Form("hTOFpidSigmaKa%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
-    ((TH2F*)list->FindObject(Form("hExpTimeKaT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);  
-    ((TH2F*)list->FindObject(Form("hExpTimeKaVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);    
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeKaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kKaon]);
+    ((TH2F*)fHlistTRD->FindObject(Form("hTOFpidSigmaKa%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeKaT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);  
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeKaVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);    
   }//end kaon  
   
   if (isValidBeta[AliPID::kProton]){
-    ((TH2F*)list->FindObject(Form("hExpTimeProVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kProton]);
-    ((TH2F*)list->FindObject(Form("hTOFpidSigmaPro%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
-    ((TH2F*)list->FindObject(Form("hExpTimeProT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);  
-    ((TH2F*)list->FindObject(Form("hExpTimeProVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeProVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kProton]);
+    ((TH2F*)fHlistTRD->FindObject(Form("hTOFpidSigmaPro%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeProT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);  
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeProVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);
   }//end proton  
+
+ } else { 
+
+  if (isValidBeta[AliPID::kPion]){
+    ((TH2F*)fHlist->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[AliPID::kPion]);//ps
+    ((TH1F*)fHlist->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]);//ps
+    ((TH2F*)fHlist->FindObject(Form("hExpTimePiVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kPion]);
+    ((TH2F*)fHlist->FindObject(Form("hTOFpidSigmaPi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
+    ((TH2F*)fHlist->FindObject(Form("hExpTimePiT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);  
+    ((TH2F*)fHlist->FindObject(Form("hExpTimePiVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);
+    
+    if (ComputeTimeZeroByTOF1GeV()){
+      if ((fPt>0.95)&&(fPt<1.05)){
+	((TH2F*)fHlist->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
+      }
+    } 
+  }//end pion
+  
+  if (isValidBeta[AliPID::kKaon]){
+    ((TH2F*)fHlist->FindObject(Form("hExpTimeKaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kKaon]);
+    ((TH2F*)fHlist->FindObject(Form("hTOFpidSigmaKa%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
+    ((TH2F*)fHlist->FindObject(Form("hExpTimeKaT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);  
+    ((TH2F*)fHlist->FindObject(Form("hExpTimeKaVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);    
+  }//end kaon  
+  
+  if (isValidBeta[AliPID::kProton]){
+    ((TH2F*)fHlist->FindObject(Form("hExpTimeProVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kProton]);
+    ((TH2F*)fHlist->FindObject(Form("hTOFpidSigmaPro%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
+    ((TH2F*)fHlist->FindObject(Form("hExpTimeProT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);  
+    ((TH2F*)fHlist->FindObject(Form("hExpTimeProVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);
+  }//end proton  
+ }
   
   // if (fEnableAdvancedCheck && (fPt<1.)) {
   //   Double_t pos[3]={0.,0.,0.};
