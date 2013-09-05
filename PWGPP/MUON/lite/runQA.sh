@@ -178,7 +178,7 @@ EOF
 # Use absolute path for file inputTriggerList
 if [ "${inputTriggerList}" != "0x0" ]; then
   inputTriggerDir=`dirname ${inputTriggerList}`
-  if [ "${inputTriggerDir}"="." ]; then
+  if [ "${inputTriggerDir}" = "." ]; then
     inputTriggerList="`pwd`/${inputTriggerList}"
   fi
   inputTriggerList="\"${inputTriggerList}\""
