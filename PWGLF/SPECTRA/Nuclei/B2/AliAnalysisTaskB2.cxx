@@ -661,7 +661,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_ITSchi2PerCls"))->Fill(this->GetITSchi2PerCluster(iTrack));
 		
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCncls"))->Fill(iTrack->GetTPCNcls());
-		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCclsOverF"))->Fill((Double_t)iTrack->GetTPCNcls()/(Double_t)iTrack->GetTPCNclsF());
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCxRowsOverF"))->Fill(static_cast<Double_t>(iTrack->GetTPCCrossedRows())/static_cast<Double_t>(iTrack->GetTPCNclsF()));
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCxRows"))->Fill(iTrack->GetTPCCrossedRows());
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2PerCls"))->Fill(iTrack->GetTPCchi2()/iTrack->GetTPCNcls());
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2Global"))->Fill(iTrack->GetChi2TPCConstrainedVsGlobal(fESDevent->GetPrimaryVertex()));
