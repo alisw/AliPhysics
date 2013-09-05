@@ -1,11 +1,11 @@
-AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
-						     Bool_t readMC=kFALSE,
-						     Bool_t mixing=kFALSE,
-						     Int_t select=2,
-						     Int_t usedisp=0,
-						     TString finDirname="Loose",
-						     TString filename="",
-						     TString finAnObjname="AnalysisCuts")
+AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrWT(Bool_t system=kFALSE,				                              					                                     Bool_t readMC=kFALSE,
+					     Bool_t ifTrig=kTRUE,	     
+					     Bool_t mixing=kFALSE,
+					     Int_t select=1,
+					     Bool_t reco=kTRUE,		         					     Int_t usedisp=0,
+					     TString finDirname="",
+					     TString filename="",
+					     TString finAnObjname="AnalysisCuts")
 {
 
     //                                                                                                                                    
@@ -32,7 +32,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
       }
   }
   
-  TFile* filecuts1=new TFile("AssocPartCutsDplus.root");
+  TFile* filecuts1=new TFile("AssocPartCuts.root");
 	  if(!filecuts1->IsOpen()){
 		  cout<<"Input file1 not found: exit"<<endl;
 		  return;
@@ -44,6 +44,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
   
   AliRDHFCutsDplustoKpipi* analysiscuts=new AliRDHFCutsDplustoKpipi();
   if(stdcuts) {
+    cout<<analysiscuts->GetNPtBins()<<endl;
     if(system==0) analysiscuts->SetStandardCutsPP2010();
     else if(system==1){
       analysiscuts->SetStandardCutsPbPb2011();
@@ -64,15 +65,18 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
   
     
   AliAnalysisTaskSEDplusCorrelations *dplusTask = new AliAnalysisTaskSEDplusCorrelations("DplusAnalysis",analysiscuts,corrCuts);
+
+
   dplusTask->SetReadMC(readMC);
   dplusTask->SetEventMix(mixing);
   dplusTask->SetCorrelator(select);
   dplusTask->SetUseDisplacement(usedisp);
+  dplusTask->SetTrigEfficiency(ifTrig);
   dplusTask->SetDebugLevel(0);
   dplusTask->SetMassLimits(0.2);
   dplusTask->SetUseBit(kTRUE);
   dplusTask->SetSystem(kFALSE);
-   
+dplusTask->SetUseReconstruction(kTRUE);   
 
   //  if (system==0) dplusTask->SetDoImpactParameterHistos(kTRUE);
 
@@ -84,25 +88,24 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
   TString outname = "coutputDplus";
   TString cutsname = "coutputDplusCuts";
   TString normname = "coutputDplusNorm";
-  TString trackcutsname = "coutputTrackCuts";
+  //TString assocutsname = "coutputAssoCuts";
   inname += finDirname.Data();
   outname += finDirname.Data();
   cutsname += finDirname.Data();
   normname += finDirname.Data();
-  trackcutsname += finDirname.Data();
+  //assocutsname += finDirname.Data();
   TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
   inname += centr;
   outname += centr;
   cutsname += centr;
   normname += centr;
-  trackcutsname += centr;
-  
+  // assocutsname += centr;
 
 
   AliAnalysisDataContainer *cinputDplus = mgr->CreateContainer(inname,TChain::Class(),
 							       AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += ":PWG3_D2H_InvMassDplus";
+  outputfile += ":PWGHF_CorrHF_Dplus";
   
   AliAnalysisDataContainer *coutputDplusCuts = mgr->CreateContainer(cutsname,TList::Class(),
 								    AliAnalysisManager::kOutputContainer,
@@ -115,17 +118,21 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorr(Bool_t system=kFALSE,
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
   
-AliAnalysisDataContainer *coutputTrackCuts = mgr->CreateContainer(trackcutsname,AliHFAssociatedTrackCuts::Class(),
-								  AliAnalysisManager::kOutputContainer,								                                                 outputfile.Data());
+
+  //  AliAnalysisDataContainer *coutputAssoCuts = mgr->CreateContainer(assocutsname,TList::Class(),
+  //								   AliAnalysisManager::kOutputContainer,
+  //								   outputfile.Data());
+    
+
+  mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
   
- mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
- 
   mgr->ConnectOutput(dplusTask,1,coutputDplus);
   
   mgr->ConnectOutput(dplusTask,2,coutputDplusCuts);
-  
+
   mgr->ConnectOutput(dplusTask,3,coutputDplusNorm);  
-  mgr->ConnectOutput(dplusTask,4,coutputTrackCuts); 
+
+  // mgr->ConnectOutput(dplusTask,4,coutputAssoCuts);
   
   return dplusTask;
 }
