@@ -108,7 +108,7 @@ private:
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1,2)
+    ClassDef(AliV0ReaderV1, 3)
 };
 
 inline void AliV0ReaderV1::SetConversionCuts(const TString cut){
