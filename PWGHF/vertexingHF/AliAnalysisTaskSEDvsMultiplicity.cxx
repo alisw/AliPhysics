@@ -172,10 +172,10 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
   if(fPdgMeson==413){
-    fNMassBins=200; // FIXME
-    SetMassLimits(0.,0.2); // FIXME
-  }else{ 
-    fNMassBins=200; 
+    fNMassBins=200;
+    SetMassLimits(0.12,0.2);
+  }else{
+    fNMassBins=200;
     SetMassLimits(fPdgMeson,0.1);
   }
   // Default constructor
@@ -439,8 +439,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     selbit=AliRDHFCuts::kD0toKpiCuts;
   }else if(fPdgMeson==413){
     arrayName="Dstar";
-    pdgDau[0]=321; pdgDau[1]=211; pdgDau[2]=211; 
-    nDau=3;
+    pdgDau[0]=321; pdgDau[1]=211; pdgDau[2]=0; // Quoting here D0 daughters (D* ones on another variable later)
+    nDau=2;
     selbit=AliRDHFCuts::kDstarCuts;
   }
 
@@ -612,10 +612,17 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
   Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+
+  // pdg of daughters needed for D* too
+  UInt_t pdgDgDStartoD0pi[2]={421,211};
+
   Double_t aveMult=0.;
   Double_t nSelCand=0.;
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
+    AliAODRecoCascadeHF *dCascade = NULL;
+    if(fPdgMeson==413) dCascade = (AliAODRecoCascadeHF*)d;
+
     fHistNEvents->Fill(7);
     if(fUseBit && !d->HasSelectionBit(selbit)){
       fHistNEvents->Fill(8);
@@ -629,7 +636,11 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
    
     Int_t labD=-1;
     if(fReadMC) {
-      labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+      if(fPdgMeson==413){
+	labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+      } else {
+	labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+      }
       FillMCMassHistos(arrayMC,labD, countMult,nchWeight);
     }
 
@@ -643,9 +654,16 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       fHistNEvents->Fill(10);
     }
     Double_t multForCand = countCorr;
+
     if(fSubtractTrackletsFromDau){
+      // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+      AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
+      if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+
       for(Int_t iDau=0; iDau<nDau; iDau++){
-	AliAODTrack *t = (AliAODTrack*)d->GetDaughter(iDau);
+	AliAODTrack *t = NULL;
+	if(fPdgMeson==413){ t = (AliAODTrack*)d0fromDstar->GetDaughter(iDau); }
+	else{ t = (AliAODTrack*)d->GetDaughter(iDau); }
 	if(!t) continue;
 	if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
 	  if(multForCand>0) multForCand-=1;
@@ -669,10 +687,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       if(TMath::Abs(mass[0]-mD0PDG)<0.02 || TMath::Abs(mass[1]-mD0PDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
     }else if(fPdgMeson==413){
       // FIXME
-      AliAODRecoCascadeHF* temp = (AliAODRecoCascadeHF*)d;
-      mass[0]=temp->DeltaInvMass();
+      mass[0]=dCascade->DeltaInvMass();
       mass[1]=-1.;
-      if(TMath::Abs(mass[0]-(mDstarPDG-mD0PDG))<0.001) nSelectedInMassPeak++; //1 MeV for now... FIXME
+      if(TMath::Abs(mass[0]-(mDstarPDG-mD0PDG))<0.0015) nSelectedInMassPeak++; //1 MeV for now... FIXME
     }
     for(Int_t iHyp=0; iHyp<2; iHyp++){
       if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
@@ -681,7 +698,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 
       if(fReadMC){
 	
-	labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+	if(fPdgMeson==413){
+	  labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+	} else {
+	  labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+	}
+
 	Bool_t fillHisto=fDoImpPar;
 	if(labD>=0){
 	  AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
@@ -738,7 +760,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	  if(passAllCuts&1) fPtVsMassVsMultPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	  if(passAllCuts&2) fPtVsMassVsMultAntiPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	}else if(fPdgMeson==413){
-	  // FIXME ADD Dstar!!!!!!!!
+	  if(d->GetCharge()>0) fPtVsMassVsMultPart->Fill(multForCand,invMass,ptCand,nchWeight);
+	  else fPtVsMassVsMultAntiPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	}
       	
 	if(fDoImpPar){
