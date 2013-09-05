@@ -141,22 +141,24 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trksel, Doubl
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
 	
+	Int_t clusterCut = (xrows) ? 1 : 0;
+	
 	else if(tracksel == "std_its_tpc_2009") // pp data 2009
 	{
 		delete trkCuts;
-		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(1);
+		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(1, clusterCut);
 	}
 	
 	else if(tracksel == "std_its_tpc_2010") // pp data 2010
 	{
 		delete trkCuts;
-		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(1);
+		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(1, clusterCut);
 	}
 	
 	else if(tracksel == "std_its_tpc_2011") // pp data 2011
 	{
 		delete trkCuts;
-		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(1);
+		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(1, clusterCut);
 	}
 	
 	else
