@@ -33,6 +33,7 @@
 #include "AliESDtrack.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
+#include "AliTOFPIDParams.h"
 
 #include <AliDetectorPID.h>
 
@@ -111,8 +112,17 @@ Float_t AliAODpidUtil::GetTOFsignalTunedOnData(const AliVTrack *t) const {
     Double_t tofSignal = track->GetTOFsignalTunedOnData();
 
     if(tofSignal <  99999) return (Float_t)tofSignal; // it has been already set
+
+    // read additional mismatch fraction
+    Float_t addmism = GetTOFPIDParams()->GetTOFadditionalMismForMC();
+    if(addmism > 1.){
+      Float_t centr = GetCurrentCentrality();
+      if(centr > 50) addmism *= 0.1667;
+      else if(centr > 20) addmism *= 0.33;
+    }
+
     AliAODPid *pidObj = track->GetDetPid();
-    tofSignal = pidObj->GetTOFsignal() + fTOFResponse.GetTailRandomValue();
+    tofSignal = pidObj->GetTOFsignal() + fTOFResponse.GetTailRandomValue(t->Pt(),t->Eta(),pidObj->GetTOFsignal(),addmism);
     track->SetTOFsignalTunedOnData(tofSignal);
     return (Float_t)tofSignal;
 }

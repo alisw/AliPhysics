@@ -118,6 +118,7 @@ public:
   // pid status
   EDetPidStatus CheckPIDStatus(EDetector detCode, const AliVTrack *track)  const;
 
+  AliTOFPIDParams *GetTOFPIDParams() const {return fTOFPIDParams;}
   Float_t GetTOFMismatchProbability(const AliVTrack *track) const;
   
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
@@ -173,7 +174,7 @@ public:
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 
-  
+
 protected:
   AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
   AliTPCPIDResponse   fTPCResponse;    //PID response function of the TPC

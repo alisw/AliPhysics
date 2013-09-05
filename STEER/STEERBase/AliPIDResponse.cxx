@@ -582,6 +582,17 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   // Set centrality percentile for EMCAL
   fEMCALResponse.SetCentrality(fCurrCentrality);
 
+  // switch off some TOF channel according to OADB to match data TOF matching eff 
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) && fTOFPIDParams->GetTOFmatchingLossMC() > 0.01){
+    Int_t ntrk = event->GetNumberOfTracks();
+    for(Int_t i=0;i < ntrk;i++){
+      AliVParticle *trk = event->GetTrack(i);
+      Int_t channel = GetTOFResponse().GetTOFchannel(trk);
+      Int_t swoffEachOfThem = Int_t(100./fTOFPIDParams->GetTOFmatchingLossMC() + 0.5);
+      if(!(channel%swoffEachOfThem)) ((AliVTrack *) trk)->ResetStatus(AliVTrack::kTOFout);
+    }
+  }
+
 }
 
 //______________________________________________________________________________
@@ -1528,7 +1539,11 @@ void AliPIDResponse::InitializeTOFResponse(){
   AliInfo(Form("  StartTime method %d",fTOFPIDParams->GetStartTimeMethod()));
   AliInfo(Form("  TOF res. mom. params: %5.2f %5.2f %5.2f %5.2f",
                fTOFPIDParams->GetSigParams(0),fTOFPIDParams->GetSigParams(1),fTOFPIDParams->GetSigParams(2),fTOFPIDParams->GetSigParams(3)));
-  
+  AliInfo(Form("  Fraction of tracks within gaussian behaviour: %6.4f",fTOFPIDParams->GetTOFtail()));
+  AliInfo(Form("  MC: Fraction of tracks (percentage) to cut to fit matching in data: %6.2f%%",fTOFPIDParams->GetTOFmatchingLossMC()));
+  AliInfo(Form("  MC: Fraction of random hits (percentage) to add to fit mismatch in data: %6.2f%%",fTOFPIDParams->GetTOFadditionalMismForMC()));
+  AliInfo(Form("  Start Time Offset %6.2f ps",fTOFPIDParams->GetTOFtimeOffset()));
+
   for (Int_t i=0;i<4;i++) {
     fTOFResponse.SetTrackParameter(i,fTOFPIDParams->GetSigParams(i));
   }
@@ -1717,12 +1732,16 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
   // Set TOF response function
   // Input option for event_time used
   //
-  
+
     Float_t t0spread = 0.; //vevent->GetEventTimeSpread();
     if(t0spread < 10) t0spread = 80;
 
-    // T0 from TOF algorithm
+    // T0-FILL and T0-TO offset (because of TOF misallignment
+    Float_t starttimeoffset = 0;
+    if(fTOFPIDParams && !(fIsMC)) starttimeoffset=fTOFPIDParams->GetTOFtimeOffset();
 
+
+    // T0 from TOF algorithm
     Bool_t flagT0TOF=kFALSE;
     Bool_t flagT0T0=kFALSE;
     Float_t *startTime = new Float_t[fTOFResponse.GetNmomBins()];
@@ -1758,6 +1777,8 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	startTime[i]=tofHeader->GetDefaultEventTimeVal();
 	startTimeRes[i]=tofHeader->GetDefaultEventTimeRes();
 	if(startTimeRes[i] < 1.e-5) startTimeRes[i] = t0spread;
+
+	if(startTimeRes[i] > t0spread - 10 && TMath::Abs(startTime[i]) < 0.001) startTime[i] = -starttimeoffset; // apply offset for T0-fill
       }
 
       TArrayI *ibin=(TArrayI*)tofHeader->GetNvalues();
@@ -1768,6 +1789,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	startTime[icurrent]=t0Bin->GetAt(j);
 	startTimeRes[icurrent]=t0ResBin->GetAt(j);
 	if(startTimeRes[icurrent] < 1.e-5) startTimeRes[icurrent] = t0spread;
+	if(startTimeRes[icurrent] > t0spread - 10 && TMath::Abs(startTime[icurrent]) < 0.001) startTime[icurrent] = -starttimeoffset; // apply offset for T0-fill
       }
     }
 
@@ -1777,7 +1799,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 
     if(option == kFILL_T0){ // T0-FILL is used
 	for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
-	  estimatedT0event[i]=0.0;
+	  estimatedT0event[i]=0.0-starttimeoffset;
 	  estimatedT0resolution[i]=t0spread;
 	}
 	fTOFResponse.SetT0event(estimatedT0event);
@@ -1795,7 +1817,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	}
 	else{
 	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
-	      estimatedT0event[i]=0.0;
+	      estimatedT0event[i]=0.0-starttimeoffset;
 	      estimatedT0resolution[i]=t0spread;
 	      fTOFResponse.SetT0binMask(i,startTimeMask[i]);
 	    }
@@ -1808,12 +1830,12 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	Float_t t0A=-10000;
 	Float_t t0C=-10000;
 	if(flagT0T0){
-	    t0A= vevent->GetT0TOF()[1];
-	    t0C= vevent->GetT0TOF()[2];
+	    t0A= vevent->GetT0TOF()[1] - starttimeoffset;
+	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
-        t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-        resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-        t0AC /= resT0AC*resT0AC;
+	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC /= resT0AC*resT0AC;
 	}
 
 	Float_t t0t0Best = 0;
@@ -1869,7 +1891,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 		estimatedT0resolution[i]=t0t0BestRes;
 	      }
 	      else{
-		estimatedT0event[i]=0.0;
+		estimatedT0event[i]=0.0-starttimeoffset;
 		estimatedT0resolution[i]=t0spread;
 	      }
 	    }
@@ -1883,12 +1905,12 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	Float_t t0A=-10000;
 	Float_t t0C=-10000;
 	if(flagT0T0){
-	    t0A= vevent->GetT0TOF()[1];
-	    t0C= vevent->GetT0TOF()[2];
+	    t0A= vevent->GetT0TOF()[1] - starttimeoffset;
+	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
-        t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-        resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-        t0AC /= resT0AC*resT0AC;
+	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC /= resT0AC*resT0AC;
 	}
 
 	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
@@ -1914,7 +1936,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	}
 	else{
 	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
-	      estimatedT0event[i]=0.0;
+	      estimatedT0event[i]= 0.0 - starttimeoffset;
 	      estimatedT0resolution[i]=t0spread;
 	      fTOFResponse.SetT0binMask(i,0);
 	    }
@@ -1922,6 +1944,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	fTOFResponse.SetT0event(estimatedT0event);
 	fTOFResponse.SetT0resolution(estimatedT0resolution);
     }
+
     delete [] startTime;
     delete [] startTimeRes;
     delete [] startTimeMask;

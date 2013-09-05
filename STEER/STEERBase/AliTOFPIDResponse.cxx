@@ -26,6 +26,7 @@
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TFile.h"
+#include "TRandom.h"
 
 #include "AliTOFPIDResponse.h"
 
@@ -222,8 +223,19 @@ Int_t AliTOFPIDResponse::GetStartTimeMask(Float_t mom) const {
 
 }
 //_________________________________________________________________________
-Double_t AliTOFPIDResponse::GetTailRandomValue() // generate a random value to add a tail to TOF time (for MC analyses)
+Double_t AliTOFPIDResponse::GetTailRandomValue(Float_t pt,Float_t eta,Float_t time,Float_t addmism) // generate a random value to add a tail to TOF time (for MC analyses)
 {
+
+  // To add mismatch
+  Float_t mismAdd = addmism*0.01;
+  if(pt>1.0) mismAdd /= pt;
+
+  if(mismAdd > 0.01){ // apply additional mismatch
+    if(gRandom->Rndm() < mismAdd){
+      return GetMismatchRandomValue(eta)-time;
+    }
+  }
+
   if(fTOFtailResponse)
     return fTOFtailResponse->GetRandom();
   else
@@ -254,4 +266,12 @@ Double_t AliTOFPIDResponse::GetMismatchRandomValue(Float_t eta) // generate a ra
   Float_t distIP = fHchannelTOFdistr->GetBinContent(channel);
 	   
   return fHmismTOF->GetRandom() + distIP*3.35655419905265973e+01;
+}
+//_________________________________________________________________________
+Int_t AliTOFPIDResponse::GetTOFchannel(AliVParticle *trk) const{
+  Float_t etaAbs = TMath::Abs(trk->Eta());
+  Int_t channel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs);
+  if(channel < 1 || etaAbs > 1) channel = 1; 
+  
+  return channel;
 }
