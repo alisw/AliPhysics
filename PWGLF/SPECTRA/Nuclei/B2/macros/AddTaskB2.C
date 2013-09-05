@@ -38,6 +38,8 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
                              , Double_t maxVz            = 10
                              , Bool_t momentumCorr       = kFALSE
                              , const TString& binSize    = ""
+                             , Bool_t xRowsTPC           = 0
+                             , Int_t minTPCnClsOrXRows   = 70
                              , Double_t minCentrality    = 0
                              , Double_t maxCentrality    = 20
                              , Double_t minM2            = 2.
@@ -58,7 +60,6 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	const Int_t kMaxNSigmaITS = 3;
 	const Int_t kMaxNSigmaTPC = 3;
 	const Int_t kMaxNSigmaTOF = 3;
-	const Int_t kMinTPCnCls   = 70;
 	
 	TString period = periodname;
 	period.ToLower();
@@ -135,7 +136,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/TrackCuts.C");
 	
-	AliESDtrackCuts* trkCuts = TrackCuts(task, trksel, maxDCAxy, maxDCAz, kMaxNSigma, kMinTPCnCls, maxEta);
+	AliESDtrackCuts* trkCuts = TrackCuts(task, trksel, maxDCAxy, maxDCAz, kMaxNSigma, xRowsTPC, minTPCnClsOrXRows, maxEta);
 	task->SetESDtrackCuts(trkCuts);
 	
 	// PID

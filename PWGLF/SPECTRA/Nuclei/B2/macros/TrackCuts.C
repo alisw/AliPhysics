@@ -34,7 +34,7 @@ void AddDCACuts(AliESDtrackCuts* trkCuts, Float_t maxDCAxy=1.5, Float_t maxDCAz=
 	trkCuts->SetMaxDCAToVertexZ(maxDCAz);
 }
 
-AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trackselection, Double_t maxDCAxy, Double_t maxDCAz, Double_t maxNSigma, Int_t minTPCnCls, Double_t maxEta)
+AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trksel, Double_t maxDCAxy, Double_t maxDCAz, Double_t maxNSigma, Bool_t xrows, Int_t minTPCnClsOrXRows, Double_t maxEta)
 {
 //
 // Create an AliESDtrackCuts from a predefined set
@@ -52,10 +52,19 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trackselectio
 	
 	// TPC
 	trkCuts->SetRequireTPCRefit(kTRUE);
-	trkCuts->SetMinNClustersTPC(minTPCnCls);
+	if(xrows)
+	{
+		trkCuts->SetMinNCrossedRowsTPC(minTPCnClsOrXRows);
+		trkCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	}
+	else
+	{
+		trkCuts->SetMinNClustersTPC(minTPCnClsOrXRows);
+	}
 	trkCuts->SetMaxChi2PerClusterTPC(4.);
+	//trkCuts->SetMaxChi2TPCConstrainedGlobal(36);
 	
-	TString tracksel = trackselection;
+	TString tracksel = trksel;
 	tracksel.ToLower();
 	
 	if(tracksel == "its_tpc_nsigma")
@@ -142,6 +151,12 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trackselectio
 	{
 		delete trkCuts;
 		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(1);
+	}
+	
+	else if(tracksel == "std_its_tpc_2011") // pp data 2011
+	{
+		delete trkCuts;
+		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(1);
 	}
 	
 	else

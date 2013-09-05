@@ -238,8 +238,8 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		hMap->Add( particle[i] + "_ITS_dEdx_P", 1000, 0.001, 10.001, dEdxBins, mindEdx, maxdEdx, "", "p/Z (GeV/c)", "dE/dx",logx,logy);
 		hMap->Add( particle[i] + "_TPC_dEdx_P", 1000, 0.001, 10.001, dEdxBins, mindEdx, maxdEdx, "", "p_{TPC}/Z (GeV/c)", "dE/dx",logx,logy);
 		hMap->Add( particle[i] + "_TOF_Beta_P", 1000, 0.001, 10.001, 1200, 0.001, 1.2, "", "p_{TOF}/Z (GeV/c)", "#beta",logx,logy);
-		
 		hMap->Add( particle[i] + "_TOF_Mass_P", 1000, 0.001, 10.001, 500, 0.01, 5., "", "p_{TOF}/Z (GeV/c)", "Mass (GeV/c^{2})");
+		
 		
 		// TrackCuts
 		
@@ -250,7 +250,7 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		hMap->Add( particle[i] + "_TrackCuts_ITSchi2PerCls", 200, 0, 40, "Track cuts", "ITS #chi^{2} / Cluster");
 		
 		hMap->Add( particle[i] + "_TrackCuts_TPCncls", 200, 0, 200, "Track cuts", "TPC clusters");
-		hMap->Add( particle[i] + "_TrackCuts_TPCclsOverF", 200, 0, 2, "Track cuts", "TPC clusters/Findable");
+		hMap->Add( particle[i] + "_TrackCuts_TPCxRowsOverF", 200, 0, 2, "Track cuts", "TPC crossedRows/Findable");
 		hMap->Add( particle[i] + "_TrackCuts_TPCxRows", 200, 0, 200, "Track cuts", "TPC crossed rows");
 		hMap->Add( particle[i] + "_TrackCuts_TPCchi2PerCls", 200, 0, 20, "Track cuts", "TPC #chi^{2} / Cluster");
 		hMap->Add( particle[i] + "_TrackCuts_TPCchi2Global", 200, -2, 38, "Track cuts", "#chi^{2} of constrained TPC vs global track");
