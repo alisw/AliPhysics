@@ -16,7 +16,6 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
-#include "AliTOFPIDParams.h"
 #include "AliCDBManager.h"
 #include "AliTOFcalib.h"
 #include "AliTOFT0maker.h"
@@ -37,7 +36,7 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa() :
   fTrackFilter(0x0), 
   fVertex(0x0),
   fESDpid(new AliESDpid()),
-//  fTOFT0v1(new AliTOFT0v1(fESDpid)),
+  fTOFT0v1(new AliTOFT0v1(fESDpid)),
   fNTOFtracks(0), 
   fEnableAdvancedCheck(kFALSE),
   fExpTimeBinWidth(24.4),
@@ -71,7 +70,7 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa(const char *name) :
   fTrackFilter(0x0),
   fVertex(0x0),
   fESDpid(new AliESDpid()),
-  //  fTOFT0v1(new AliTOFT0v1(fESDpid)),
+  fTOFT0v1(new AliTOFT0v1(fESDpid)),
   fNTOFtracks(0), 
   fEnableAdvancedCheck(kFALSE),
   fExpTimeBinWidth(24.4),
@@ -118,7 +117,7 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa(const AliAnalysisTaskTOFqa& copy)
   fTrackFilter(copy.fTrackFilter), 
   fVertex(copy.fVertex),
   fESDpid(copy.fESDpid),
-  //  fTOFT0v1(copy.fTOFT0v1),
+  fTOFT0v1(copy.fTOFT0v1),
   fNTOFtracks(copy.fNTOFtracks), 
   fEnableAdvancedCheck(copy.fEnableAdvancedCheck),
   fExpTimeBinWidth(copy.fExpTimeBinWidth),
@@ -159,7 +158,7 @@ AliAnalysisTaskTOFqa& AliAnalysisTaskTOFqa::operator=(const AliAnalysisTaskTOFqa
     fTrackFilter=copy.fTrackFilter;
     fVertex=copy.fVertex;
     fESDpid=copy.fESDpid;
-    //    fTOFT0v1=copy.fTOFT0v1;
+    fTOFT0v1=copy.fTOFT0v1;
     fNTOFtracks=copy.fNTOFtracks; 
     fEnableAdvancedCheck=copy.fEnableAdvancedCheck;
     fExpTimeBinWidth=copy.fExpTimeBinWidth;
@@ -193,7 +192,7 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
 
   Info("~AliAnalysisTaskTOFqa","Calling Destructor");
   if (fESDpid) delete fESDpid;
-  //  if (fTOFT0v1) delete fTOFT0v1;
+  if (fTOFT0v1) delete fTOFT0v1;
   if (fVertex) delete fVertex;
   if (fTrackFilter) delete fTrackFilter;
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;  
@@ -222,16 +221,6 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
 //________________________________________________________________________
 void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 {
-  // 
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  if (!inputHandler) AliFatal("Input handler needed");
-
-  //pid response object
-  fESDpid=(AliESDpid*)inputHandler->GetPIDResponse();
-  if (!fESDpid) AliError("PIDResponse object was not created");
-  //  fESDpid->SetOADBPath("$ALICE_ROOT/OADB");
-
   //Defines output objects and histograms
   Info("CreateOutputObjects","CreateOutputObjects (TList) of task %s", GetName());
   OpenFile(1);
@@ -558,17 +547,6 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   hTOFmatchedExpTimePi->SetMarkerSize(0.8); 
   hTOFmatchedExpTimePi->SetMarkerColor(kRed);
   fHlistPID->AddLast(hTOFmatchedExpTimePi) ;
-
-  //PID 3bis
-  TH1F* hExpTimePiFillSub = new TH1F("hExpTimePiFillSub", "ESDs t_{TOF}-t_{#pi,exp}-t_{0,FILL} (from tracking); t_{TOF}-t_{#pi,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hExpTimePiFillSub->Sumw2() ;
-  hExpTimePiFillSub->SetLineWidth(1);
-  hExpTimePiFillSub->SetLineColor(kRed);
-  hExpTimePiFillSub->SetMarkerStyle(20);
-  hExpTimePiFillSub->SetMarkerSize(0.8); 
-  hExpTimePiFillSub->SetMarkerColor(kRed);
-  fHlistPID->AddLast(hExpTimePiFillSub) ;
-
   
   //PID 4
   TH2F* hTOFmatchedExpTimePiVsP = new TH2F("hTOFmatchedExpTimePiVsP", "ESDs t_{TOF}-t_{#pi,exp} (from tracking) Vs P ; p (GeV/c);t_{TOF}-t_{#pi,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
@@ -1296,7 +1274,6 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     It extracts event information and track information after selecting 
     primary tracks via standard cuts. */
   
-  /*
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!esdH) {
     Printf("ERROR: Could not get ESDInputHandler");
@@ -1304,31 +1281,16 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
   } else {
     fESD = (AliESDEvent*) esdH->GetEvent();
   } 
-  */
-  fESD=(AliESDEvent*)InputEvent();
-  if (!fESD||!fESDpid) return;
-
   
   if (!fESD) {
     Printf("ERROR: fESD not available");
     return;
   }
 
-  AliPIDResponse::EStartTimeType_t startTimeMethodDefault = AliPIDResponse::kBest_T0;  
-  if (fESDpid->GetTOFPIDParams()) {  // during reconstruction OADB not yet available
-    startTimeMethodDefault = ((AliTOFPIDParams *)fESDpid->GetTOFPIDParams())->GetStartTimeMethod();
-  }
-
-
-
   /* get run number */
    Int_t runNb = fESD->GetRunNumber();
    if (runNb>0)
      fRunNumber = runNb;
-
-   //   /* added PA: this ensure PID Response is correctly initialized!!! */
-   //   Int_t passNumber = 2;  // this is needed 
-   //   fESDpid->InitialiseEvent(fESD,passNumber); // after this call a default startTime method is selected
 
   //Get vertex info and apply vertex cut
   fVertex = (AliESDVertex*) fESD->GetPrimaryVertexTracks(); 
@@ -1385,6 +1347,8 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
   }
   //response set to best_t0 by previous loop
   FillStartTimeMaskHisto();
+  //re-set response tof_t0 for all other checks
+  fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
   
   // loop over ESD tracks 
   fNTOFtracks=0;
@@ -1396,8 +1360,6 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
-    //set response tof_t0 for all checks but one
-    fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
 
     //primary tracks selection: kTPCrefit and std cuts
     if (fTrackFilter){
@@ -1715,21 +1677,11 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       	  ((TH2F*)fHlistPID->FindObject("hTOFmatchedTimePion1GeV"))->Fill(fMyTimeZeroTOFtracks,tofTime-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
       	}
       }//fill timeZero TOF vs number of tracks used
-
-      //re-set response kFILL_T0 to check post-alignment wih OADB
-      fESDpid->SetTOFResponse(fESD,AliESDpid::kFILL_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
-      Float_t startTimeFill=fESDpid->GetTOFResponse().GetStartTime(mom); //timeZero for bin pT>10GeV/c
-      ((TH1F*)fHlistPID->FindObject("hExpTimePiFillSub"))->Fill(tofTime-fTrkExpTimes[AliPID::kPion]-startTimeFill);//ps
-
     }//matched
-
-
   }//end loop on tracks
   
   ((TH1F*)fHlist->FindObject("hTOFmatchedPerEvt"))->Fill(fNTOFtracks) ;
   ((TH2F*)fHlistTimeZero->FindObject("hT0TOFvsNtrk"))->Fill(fNTOFtracks,timeZero[AliESDpid::kTOF_T0]);
-
-  fESDpid->SetTOFResponse(fESD,startTimeMethodDefault);//restore value set by AliPIDResponseTask for subsequent wagons
   
   PostData(1, fHlist);
   PostData(2, fHlistTimeZero);
@@ -1834,7 +1786,6 @@ Bool_t AliAnalysisTaskTOFqa::ComputeTimeZeroByTOF1GeV()
 {
   /* compute T0-TOF for tracks within momentum range [0.95, 1.05] */
   /* init T0-TOF */
-  AliTOFT0v1 *fTOFT0v1 = new AliTOFT0v1(fESDpid); // TOF-T0 v1
   fTOFT0v1->Init(fESD);
   //AliTOFT0v1 *fTOFT0v1 = new AliTOFT0v1(fESDpid);
   fTOFT0v1->DefineT0("all", 0.95, 1.05);
@@ -1842,7 +1793,6 @@ Bool_t AliAnalysisTaskTOFqa::ComputeTimeZeroByTOF1GeV()
   fMyTimeZeroTOFsigma = 1000. * fTOFT0v1->GetResult(1);
   fMyTimeZeroTOFtracks = fTOFT0v1->GetResult(3);
   Bool_t hasTimeZeroTOF = kFALSE;
-  if (fTOFT0v1) delete fTOFT0v1;
   /* check T0-TOF sigma */
   if (fMyTimeZeroTOFsigma < 250.)
     hasTimeZeroTOF = kTRUE;  
