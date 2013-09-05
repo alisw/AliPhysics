@@ -54,6 +54,7 @@
 #include "AliAODTracklets.h"
 #include "AliAODHeader.h"
 
+#include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "TClonesArray.h"
 #include "TDatabasePDG.h"
@@ -110,8 +111,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fVZEload(NULL),
   fVZEResponse(NULL),
   fVZEmb(kFALSE),
+  fVZEByDisk(kTRUE),
   fVZEQA(NULL),
   fPsi2(0.0),
+  fMCEP(0.0),
   fMassBins(0),
   fMinMass(0.0),
   fMaxMass(0.0),
@@ -136,8 +139,9 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fDecayAlpha(0.0),
   fDecayRapidity(0.0),
   fDecayProductIPXY(0.0),
-  fDecayIDneg(0),
-  fDecayIDpos(0),
+  fDecayIDneg(-1),
+  fDecayIDpos(-1),
+  fDecayID(-1),
   fDecayMinEta(0.0),
   fDecayMaxEta(0.0),
   fDecayMinPt(0.0),
@@ -210,8 +214,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fVZEload(NULL),
   fVZEResponse(NULL),
   fVZEmb(kFALSE),
+  fVZEByDisk(kTRUE),
   fVZEQA(NULL),
   fPsi2(0.0),
+  fMCEP(0.0),
   fMassBins(0),
   fMinMass(0.0),
   fMaxMass(0.0),
@@ -236,8 +242,9 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fDecayAlpha(0.0),
   fDecayRapidity(0.0),
   fDecayProductIPXY(0.0),
-  fDecayIDneg(0),
-  fDecayIDpos(0),
+  fDecayIDneg(-1),
+  fDecayIDpos(-1),
+  fDecayID(-1),
   fDecayMinEta(0.0),
   fDecayMaxEta(0.0),
   fDecayMinPt(0.0),
@@ -297,7 +304,7 @@ void AliAnalysisTaskFlowStrange::UserCreateOutputObjects() {
   if(fReadESD) MakeFilterBits();
 
   AliFlowCommonConstants *cc = AliFlowCommonConstants::GetMaster();
-  cc->SetNbinsMult(100); cc->SetMultMin(0);   cc->SetMultMax(4000);
+  cc->SetNbinsMult(3000); cc->SetMultMin(0);   cc->SetMultMax(30000);
   cc->SetNbinsPt(200); cc->SetPtMin(0.0);   cc->SetPtMax(20.0);
   cc->SetNbinsPhi(100);  cc->SetPhiMin(0.0);  cc->SetPhiMax(TMath::TwoPi());
   cc->SetNbinsEta(100);  cc->SetEtaMin(-5.0); cc->SetEtaMax(+5.0);
@@ -370,6 +377,7 @@ void AliAnalysisTaskFlowStrange::AddQAEvents() {
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddEventSpy() {
+  TH1D *tH1D;
   TH2D *tH2D;
   TList *tList=new TList();
   tList->SetName("EventSpy");
@@ -378,6 +386,10 @@ void AliAnalysisTaskFlowStrange::AddEventSpy() {
     tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-25,+25,60,-25,+25); tList->Add( tH2D );
     tH2D = new TH2D("CCCC","CCCC;V0M;TRK",60,-10,110,60,-10,110);         tList->Add( tH2D );
     tH2D = new TH2D("REFM","REFM;TPC;GLOBAL",100,0,3000,100,0,3000);      tList->Add( tH2D );
+    if(fReadMC) {
+      tH1D = new TH1D("MCCC","MCCC;Xsection",100,-10,110); tList->Add( tH1D );
+      tH1D = new TH1D("MCEP","MCEP;MCEP",100,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
+    }
   }
   fList->Add(tList);
 }
@@ -457,13 +469,13 @@ void AliAnalysisTaskFlowStrange::AddQACandidates() {
   if(fReadMC) {
     tList=new TList(); tList->SetName("RecMth"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
     tH1D = new TH1D("MCOrigin", "MCOrigin;Rad2",1000,0,100); tList->Add(tH1D);
-    tH2D = new TH2D("PTRes", "PTRes;MCPt;|DAT-MC|/MC",100,0,20,50,0,1); tList->Add(tH2D);
-    tH2D = new TH2D("ETARes","ETARes;MCETA;|DAT-MC|/MC",16,0,0.8,50,0,1); tList->Add(tH2D);
-    tH2D = new TH2D("RXYRes","RXYRes;MCRXY;|DAT-MC|/MC",100,0,20,50,0,1); tList->Add(tH2D);
-    tH2D = new TH2D("DLERes","DLERes;MCDLE;|DAT-MC|/MC",100,0,20,50,0,1); tList->Add(tH2D);
-    tH2D = new TH2D("RAPRes","RAPRes;MCRAP;|DAT-MC|/MC",10,0,0.5,50,0,1); tList->Add(tH2D);
-    tH2D = new TH2D("APARes","APARes;MCAPA;|DAT-MC|/MC",24,-1.2,1.2,50,0,1); tList->Add(tH2D);
-    tH2D = new TH2D("APQRes","APQRes;MCAPQ;|DAT-MC|/MC",25,0,0.25,50,0,1); tList->Add(tH2D);
+    tH2D = new TH2D("PTRes", "PTRes;MCPt;DAT-MC/MC",  100,   0,  20,100,-0.2,+0.2); tList->Add(tH2D);
+    tH2D = new TH2D("ETARes","ETARes;MCETA;DAT-MC/MC", 16,   0, 0.8,100,-0.5,+0.5); tList->Add(tH2D);
+    tH2D = new TH2D("RXYRes","RXYRes;MCRXY;DAT-MC/MC",100,   0,  20,100,-1,1);      tList->Add(tH2D);
+    tH2D = new TH2D("DLERes","DLERes;MCDLE;DAT-MC/MC",100,   0,  20,100,-1,1);      tList->Add(tH2D);
+    tH2D = new TH2D("RAPRes","RAPRes;MCRAP;DAT-MC/MC", 10,   0, 0.5,100,-0.5,+0.5); tList->Add(tH2D);
+    tH2D = new TH2D("APARes","APARes;MCAPA;DAT-MC/MC", 24,-1.2, 1.2,100,-0.5,+0.5); tList->Add(tH2D);
+    tH2D = new TH2D("APQRes","APQRes;MCAPQ;DAT-MC/MC", 25,   0,0.25,100,-0.3,+0.3); tList->Add(tH2D);
 
     tList=new TList(); tList->SetName("TrkMth"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MthFDW"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
@@ -564,12 +576,29 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliAODEvent *tAOD) {
     mycent = "V0M";
   }
   fThisCent = cent->GetCentralityPercentile( mycent );
+
+  Double_t xsec=0;
+  if(fReadMC) {
+    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(tAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!mcHeader) {
+      return kFALSE;
+    }
+    xsec = mcHeader->GetCrossSection();
+    fMCEP = mcHeader->GetReactionPlaneAngle();
+  }
+
   acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tVtxZ)>10.0?kFALSE:acceptEvent;
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("REFM"))->Fill( tpc, glo );
+  if(fQAlevel>0) {
+    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("REFM"))->Fill( tpc, glo );
+    if(fReadMC) {
+      ((TH1D*)((TList*)fList->FindObject("EventSpy"))->FindObject("MCCC"))->Fill( xsec );
+      ((TH1D*)((TList*)fList->FindObject("EventSpy"))->FindObject("MCEP"))->Fill( fMCEP );
+    }
+  }
   // EndOfCuts
   return acceptEvent;
 }
@@ -1162,9 +1191,9 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
               mcPt = mcmot->Pt();
               mcEta = TMath::Abs( mcmot->Eta() );
               mcRap = TMath::Abs( mcmot->Y() );
-              if(!TMath::AreEqualAbs(mcPt,0,1e-6))  resPt = TMath::Abs(fDecayPt - mcPt) / mcPt;
-              if(!TMath::AreEqualAbs(mcEta,0,1e-6)) resEta = TMath::Abs(fDecayEta - mcEta) / mcEta;
-              if(!TMath::AreEqualAbs(mcRap,0,1e-6)) resRap = TMath::Abs(fDecayRapidity - mcRap) / mcRap;
+              if(!TMath::AreEqualAbs(mcPt,0,1e-6))  resPt = (fDecayPt - mcPt) / mcPt;
+              if(!TMath::AreEqualAbs(mcEta,0,1e-6)) resEta = (fDecayEta - mcEta) / mcEta;
+              if(!TMath::AreEqualAbs(mcRap,0,1e-6)) resRap = (fDecayRapidity - mcRap) / mcRap;
               if( TMath::Abs(mcmot->GetPdgCode())==mompdg) {
                 if(mcmot->GetNDaughters()==2) {
                   matched=true;
@@ -1174,8 +1203,8 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
                   Double_t mcGamma = mcmot->E() / mcmot->GetCalcMass();
                   mcRxy = TMath::Sqrt( dx*dx + dy*dy );
                   mcDle = TMath::Sqrt(dx*dx+dy*dy+dz*dz)/mcGamma;
-                  if(!TMath::AreEqualAbs(mcRxy,0,1e-6)) resRxy = TMath::Abs(fDecayRadXY - mcRxy) / mcRxy;
-                  if(!TMath::AreEqualAbs(mcDle,0,1e-6)) resDle = TMath::Abs(fDecayDecayLength - mcDle) / mcDle;
+                  if(!TMath::AreEqualAbs(mcRxy,0,1e-6)) resRxy = (fDecayRadXY - mcRxy) / mcRxy;
+                  if(!TMath::AreEqualAbs(mcDle,0,1e-6)) resDle = (fDecayDecayLength - mcDle) / mcDle;
                   TVector3 momPos(mcpos->Px(),mcpos->Py(),mcpos->Pz());
                   TVector3 momNeg(mcneg->Px(),mcneg->Py(),mcneg->Pz());
                   TVector3 momTot(mcmot->Px(),mcmot->Py(),mcmot->Pz());
@@ -1183,8 +1212,8 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
                   Double_t qlneg = momNeg.Dot(momTot)/momTot.Mag();
                   mcApq = momPos.Perp(momTot);
                   mcApa = 1.-2./(1.+qlpos/qlneg);
-                  if(!TMath::AreEqualAbs(mcApq,0,1e-6)) resApq = TMath::Abs(fDecayQt - mcApq) / mcApq;
-                  if(!TMath::AreEqualAbs(mcApa,0,1e-6)) resApa = TMath::Abs(fDecayAlpha - mcApa) / mcApa;
+                  if(!TMath::AreEqualAbs(mcApq,0,1e-6)) resApq = (fDecayQt - mcApq) / mcApq;
+                  if(!TMath::AreEqualAbs(mcApa,0,1e-6)) resApa = (fDecayAlpha - mcApa) / mcApa;
                 }
                 if(mcmot->GetMother()>0) {
                   AliAODMCParticle *mcfdw = (AliAODMCParticle*) mcArray->At( mcmot->GetMother() );
@@ -1269,8 +1298,7 @@ void AliAnalysisTaskFlowStrange::ChargeParticles(AliAODEvent *tAOD) {
     fDecayPt=t->Pt();
     fDecayPhi=t->Phi();
     fDecayEta=t->Eta();
-    fDecayIDpos=-1;
-    fDecayIDneg=-1;
+    fDecayID=t->GetID();
 
     FillCandidateSpy("RecAll");
     if(!pass) continue;
@@ -1316,8 +1344,12 @@ void AliAnalysisTaskFlowStrange::MakeTrack() {
   oTrack->SetPt(fDecayPt);
   oTrack->SetPhi(fDecayPhi);
   oTrack->SetEta(fDecayEta);
-  oTrack->AddDaughter(fDecayIDpos);
-  oTrack->AddDaughter(fDecayIDneg);
+  if(fSpecie<10) {
+    oTrack->AddDaughter(fDecayIDpos);
+    oTrack->AddDaughter(fDecayIDneg);
+  } else {
+    oTrack->SetID( fDecayID );
+  }
   oTrack->SetForPOISelection(kTRUE);
   oTrack->SetForRPSelection(kFALSE);
   if(overwrite) {
@@ -1338,30 +1370,48 @@ void AliAnalysisTaskFlowStrange::AddCandidates() {
   for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
     AliFlowCandidateTrack *cand = static_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
     if(!cand) continue;
+    cand->SetForPOISelection(kTRUE);
+    cand->SetForRPSelection(kFALSE);
+    poi++;
     if(fDebug) printf(" >Checking at candidate %d with %d daughters: mass %f\n",
                       iCand,cand->GetNDaughters(),cand->Mass());
-    // untagging ===>
-    for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
-      if(fDebug) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
+    if(fSpecie<10) { // DECAYS
+      // untagging ===>
+      for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
+        if(fDebug) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
+        for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
+          AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
+          if(!iRP) continue;
+          if(!iRP->InRPSelection()) continue;
+          if(cand->GetIDDaughter(iDau) == iRP->GetID()) {
+            if(fDebug) printf(" was in RP set");
+            ++untagged;
+            iRP->SetForRPSelection(kFALSE);
+            fTPCevent->SetNumberOfRPs( fTPCevent->GetNumberOfRPs() -1 );
+          }
+        }
+        if(fDebug) printf("\n");
+      }
+      // <=== untagging 
+      fTPCevent->InsertTrack( ((AliFlowTrack*) cand) );
+    } else {  // CHARGED
+      // adding only new tracks and tagging accordingly ===>
+      Bool_t found=kFALSE;
       for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
         AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
         if(!iRP) continue;
         if(!iRP->InRPSelection()) continue;
-        if(cand->GetIDDaughter(iDau) == iRP->GetID()) {
-          if(fDebug) printf(" was in RP set");
-          ++untagged;
-          iRP->SetForRPSelection(kFALSE);
-          fTPCevent->SetNumberOfRPs( fTPCevent->GetNumberOfRPs() -1 );
+        if(cand->GetID() == iRP->GetID()) {
+          if(fDebug) printf("  >charged track (%d) was also found in RP set (adding poi tag)\n",cand->GetID());
+          iRP->SetForPOISelection(kTRUE);
+          found = kTRUE;
         }
       }
-      if(fDebug) printf("\n");
+      if(!found) // not found adding track
+        fTPCevent->InsertTrack( ((AliFlowTrack*) cand) );
     }
-    // <=== untagging 
-    poi++;
-    cand->SetForPOISelection(kTRUE);
-    fTPCevent->InsertTrack( ((AliFlowTrack*) cand) );
     fVZEevent->InsertTrack( ((AliFlowTrack*) cand) );
-  }
+  } //END OF LOOP
   fTPCevent->SetNumberOfPOIs( poi );
   fVZEevent->SetNumberOfPOIs( poi );
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("POI"))->Fill( poi );
@@ -1489,8 +1539,15 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
       ring[j]=0;
       for(int i=0;i!=8;++i) ring[j] += extW[j*8+i];
     }
+    Double_t disk[2];
+    disk[0] = fVZEResponse->Integral(1,32,ybinmin,ybinmax)/(maxC-minC);
+    disk[1] = fVZEResponse->Integral(33,64,ybinmin,ybinmax)/(maxC-minC);
     //for(int i=0;i!=64;++i) printf("CELL %d -> W = %f ||",i,extW[i]);
-    for(int i=0;i!=64;++i) extW[i] = ring[i/8]/extW[i]/8.0;
+    if(fVZEByDisk) {
+      for(int i=0;i!=64;++i) extW[i] = disk[i/32]/extW[i]/8.0;
+    } else {
+      for(int i=0;i!=64;++i) extW[i] = ring[i/8]/extW[i]/8.0;
+    }
     //for(int i=0;i!=64;++i) printf(" W = %f \n",extW[i]);
   }
   //=>computing
@@ -1719,10 +1776,12 @@ void AliAnalysisTaskFlowStrange::MakeQTPC(AliESDEvent *tESD,
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddMCParticleSpy(TList *me) {
   TH1D *tH1D;
+  TH2D *tH2D;
   tH1D = new TH1D("Pt",   "Pt",   100,0.0,20);  me->Add(tH1D);
   tH1D = new TH1D("Phi",  "Phi",  100,0,TMath::TwoPi()); me->Add(tH1D);
   tH1D = new TH1D("Eta",  "Eta",  100,-1,+1);   me->Add(tH1D);
   tH1D = new TH1D("Rad2", "Rad2", 1000,0,+100); me->Add(tH1D);
+  tH2D = new TH2D("Dphi", "phi-MCEP;pt;dphi",100,0,20, 72,0,TMath::Pi()); me->Add(tH2D);
   return;
 }
 //=======================================================================
@@ -1732,7 +1791,15 @@ void AliAnalysisTaskFlowStrange::FillMCParticleSpy(TString listName, AliAODMCPar
   ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Phi" ))->Fill( p->Phi() );
   ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Rad2" ))->Fill( TMath::Sqrt( p->Xv()*p->Xv() +
 												 p->Yv()*p->Yv() ) );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Dphi" ))->Fill( p->Pt(), GetMCDPHI(p->Phi()) );
   return;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::GetMCDPHI(Double_t phi) {
+  Double_t dDPHI = phi - fMCEP;
+  if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
+  if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
+  return dDPHI;
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::FillMCParticleSpy(TString listName, TParticle *p) {
@@ -1758,6 +1825,7 @@ void AliAnalysisTaskFlowStrange::AddCandidatesSpy(TList *me) {
   tH2D = new TH2D("APPOS",   "APPOS;alphaPOS;QtPOS",100,-2,+2,100,0,0.3);     me->Add(tH2D);
   tH2D = new TH2D("D0PD0N",  "D0PD0N;D0P;D0N",      200,-10,+10,200,-10,+10); me->Add(tH2D);
   tH2D = new TH2D("XPOSXNEG","XPOSXNEG;XPOS;XNEG",  200,-50,+50,200,-50,+50); me->Add(tH2D);
+  tH2D = new TH2D("PTDPHIMC","PtDPHIMC;Pt;PHI-MCEP",100,0,20,72,0,TMath::Pi()); me->Add(tH2D);
   return;
 }
 //=======================================================================
@@ -1771,6 +1839,7 @@ void AliAnalysisTaskFlowStrange::FillCandidateSpy(TString listName) {
   ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtDL"  ))->Fill( fDecayPt, fDecayDecayLength );
   ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtMASS"))->Fill( fDecayPt, fDecayMass );
   ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("APPOS" ))->Fill( fDecayAlpha, fDecayQt );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PTDPHIMC" ))->Fill( fDecayPt, GetMCDPHI( fDecayPhi ) );
 }
 //=======================================================================
 Bool_t AliAnalysisTaskFlowStrange::AcceptCandidate() {

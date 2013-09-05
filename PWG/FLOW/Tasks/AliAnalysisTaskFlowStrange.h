@@ -65,7 +65,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
 
   void SetWhichPsi(Int_t val) {fWhichPsi=val;}
   void SetStoreVZEResponse(Bool_t val) {fVZEsave=val;}
-  void LoadVZEResponse(TList *val, Bool_t val2=kFALSE) {fVZEload=val;fVZEmb=val2;}
+  void LoadVZEResponse(TList *val, Bool_t val2=kFALSE, Bool_t val3=kTRUE) {fVZEload=val;fVZEmb=val2;fVZEByDisk=val3;}
   
   void SetRFPFilterBit(Int_t val) {fRFPFilterBit=val;}
   void SetRFPMinPt(Double_t val) {fRFPminPt=val;}
@@ -135,6 +135,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void MakeDHcorr();
   void AddCandidates();
   void ReadEventPlanesFromAOD(AliAODEvent *tAOD);
+
+  Double_t GetMCDPHI(Double_t phi);
 
   Double_t CosThetaPointXY(AliESDv0 *me, const AliVVertex *vtx);
   Double_t CosThetaPointXY(AliAODv0 *me, const AliVVertex *vtx);
@@ -217,8 +219,10 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   TList  *fVZEload; // adress to calibration file
   TH2D   *fVZEResponse; // vze response vs centrality class
   Bool_t  fVZEmb;   // integrate response (linearity)
+  Bool_t  fVZEByDisk; // normalized by disk
   TList  *fVZEQA;   // adress to qalist
   Double_t fPsi2;   // best estimation of Psi2
+  Double_t fMCEP;   // stores MC EP (when available)
 
   Int_t    fMassBins; // opens
   Double_t fMinMass;  // mass
@@ -248,6 +252,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fDecayProductIPXY;           // DECAY
   Int_t    fDecayIDneg;                 // DECAY
   Int_t    fDecayIDpos;                 // DECAY
+  Int_t    fDecayID;                    // DECAY
 
   Double_t fDecayMinEta;                   // DECAY CUTS
   Double_t fDecayMaxEta;                   // DECAY CUTS
