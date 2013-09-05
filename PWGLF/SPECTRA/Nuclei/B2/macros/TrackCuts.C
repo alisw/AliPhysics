@@ -67,100 +67,85 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trksel, Doubl
 	TString tracksel = trksel;
 	tracksel.ToLower();
 	
+	Int_t clusterCut = (xrows) ? 1 : 0;
+	
 	if(tracksel == "its_tpc_nsigma")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 	}
-	
 	else if(tracksel == "its_tpc_nsigma_spd1")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 	}
-	
 	else if(tracksel == "its_tpc_nsigma_spd")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
-	
 	else if(tracksel == "its_tpc_dca")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 	}
-	
 	else if(tracksel == "its_tpc_dca_spd1")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 	}
-	
 	else if(tracksel == "its_tpc_dca_spd")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
-	
 	else if(tracksel == "its_tpc_tof_nsigma")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 		task->SetTOFmatch(1);
 	}
-	
 	else if(tracksel == "its_tpc_tof_nsigma_spd1")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 		task->SetTOFmatch(1);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 	}
-	
 	else if(tracksel == "its_tpc_tof_nsigma_spd")
 	{
 		AddNSigmaCuts(trkCuts, maxNSigma);
 		task->SetTOFmatch(1);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
-	
 	else if(tracksel == "its_tpc_tof_dca")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 		task->SetTOFmatch(1);
 	}
-	
 	else if(tracksel == "its_tpc_tof_dca_spd1")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 		task->SetTOFmatch(1);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 	}
-	
 	else if(tracksel == "its_tpc_tof_dca_spd")
 	{
 		AddDCACuts(trkCuts,maxDCAxy,maxDCAz);
 		task->SetTOFmatch(1);
 		trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	}
-	
-	Int_t clusterCut = (xrows) ? 1 : 0;
-	
 	else if(tracksel == "std_its_tpc_2009") // pp data 2009
 	{
 		delete trkCuts;
 		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(1, clusterCut);
 	}
-	
 	else if(tracksel == "std_its_tpc_2010") // pp data 2010
 	{
 		delete trkCuts;
 		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(1, clusterCut);
 	}
-	
 	else if(tracksel == "std_its_tpc_2011") // pp data 2011
 	{
 		delete trkCuts;
 		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(1, clusterCut);
 	}
-	
 	else
 	{
 		std::cerr << "Warning: no track selection criteria selected" << std::endl;
