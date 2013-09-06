@@ -512,7 +512,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     // if not fUseKinkDaughters don't use tracks with kink index > 0
     if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
     
-    if(bUseESDfriend && esdFriend && esdFriend->TestSkipBit()==kFALSE) 
+    if(bUseESDfriend && esdFriend && esdFriend->TestSkipBit()==kFALSE && iTrack<esdFriend->GetNumberOfTracks()) 
     {
       AliESDfriendTrack *friendTrack=esdFriend->GetTrack(iTrack);
       if(friendTrack) 
