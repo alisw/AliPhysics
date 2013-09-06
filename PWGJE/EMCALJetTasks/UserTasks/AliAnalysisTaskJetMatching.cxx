@@ -34,13 +34,13 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskJetMatching)
 
-AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetMatching", kTRUE), 
+AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJetDev("AliAnalysisTaskJetMatching", kTRUE), 
     fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fUseScaledRho(0), fMatchingScheme(kGeoEtaPhi), fDuplicateJetRecoveryMode(kDoNothing), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(100), fMatchEta(.03), fMatchPhi(.03), fMatchR(.03), fMatchArea(0), fMaxRelEnergyDiff(.1), fMaxAbsEnergyDiff(5) {
     // default constructor
     ClearMatchedJetsCache();
 }
 //_____________________________________________________________________________
-AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE),
+AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJetDev(name, kTRUE),
     fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fUseScaledRho(0), fMatchingScheme(kGeoEtaPhi), fDuplicateJetRecoveryMode(kDoNothing), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(100), fMatchEta(.03), fMatchPhi(.03), fMatchR(.03), fMatchArea(0), fMaxRelEnergyDiff(.1), fMaxAbsEnergyDiff(5) {
     // constructor
     ClearMatchedJetsCache();
@@ -58,8 +58,6 @@ void AliAnalysisTaskJetMatching::ExecOnce()
 {
     // initialize the anaysis
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(fLocalJetMinEta > -10 && fLocalJetMaxEta > -10) SetJetEtaLimits(fLocalJetMinEta, fLocalJetMaxEta);
-    if(fLocalJetMinPhi > -10 && fLocalJetMaxPhi > -10) SetJetPhiLimits(fLocalJetMinPhi, fLocalJetMaxPhi);
     // get the stand alone jets from the input event
     fSourceJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fSourceJetsName.Data()));
     if(!fSourceJets) AliFatal(Form("%s: Container with name %s not found. Aborting", GetName(), fSourceJetsName.Data()));
@@ -70,7 +68,7 @@ void AliAnalysisTaskJetMatching::ExecOnce()
     if (!(InputEvent()->FindListObject(fMatchedJetsName))) InputEvent()->AddObject(fMatchedJets);
     else AliFatal(Form("%s: Object with name %s already in event! Aborting", GetName(), fMatchedJetsName.Data()));
     FillAnalysisSummaryHistogram();
-    AliAnalysisTaskEmcalJet::ExecOnce(); // init base class
+    AliAnalysisTaskEmcalJetDev::ExecOnce(); // init base class
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetMatching::UserCreateOutputObjects()

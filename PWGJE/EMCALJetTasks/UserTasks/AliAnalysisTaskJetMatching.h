@@ -1,7 +1,7 @@
 #ifndef AliAnalysisTaskJetMatching_H
 #define AliAnalysisTaskJetMatching_H
 
-#include <AliAnalysisTaskEmcalJet.h>
+#include <AliAnalysisTaskEmcalJetDev.h>
 #include <AliEmcalJet.h>
 #include <AliVTrack.h>
 #include <TClonesArray.h>
@@ -16,7 +16,7 @@ class AliRhoParameter;
 class AliLocalRhoParameter;
 class TClonesArray;
 
-class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
+class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
 {
     public:
         // enumerators
@@ -77,11 +77,8 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         void                    FillMatchedJetHistograms() const;
         // setters - analysis details
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
-            if(!track) return kFALSE;
-            return (track->Pt() < fTrackPtCut || track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) ? kFALSE : kTRUE; }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const {
-            if(!jet) return kFALSE;
-            return (fUseEmcalBaseJetCuts) ? AliAnalysisTaskEmcalJet::AcceptJet(jet) : kTRUE; }
+            return (!track || TMath::Abs(track->Eta()) > 0.9 || track->Phi() < 0 || track->Phi() > TMath::TwoPi()) ? kFALSE : kTRUE; }
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const { return (jet) ? kTRUE : kFALSE; }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* a, AliEmcalJet* b) const {
             if (fMatchArea > 0) { return (TMath::Abs(a->Area()/b->Area()) < fMatchArea) ? kTRUE : kFALSE; }
             if (fMaxRelEnergyDiff > 0) { return (TMath::Abs(a->E()/b->E()) > fMaxRelEnergyDiff) ? kTRUE : kFALSE; }
@@ -144,7 +141,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskJetMatching(const AliAnalysisTaskJetMatching&);                  // not implemented
         AliAnalysisTaskJetMatching& operator=(const AliAnalysisTaskJetMatching&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetMatching, 2);
+        ClassDef(AliAnalysisTaskJetMatching, 3);
 };
 
 #endif
