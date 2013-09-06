@@ -48,6 +48,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetPhiLimits(Float_t min, Float_t max)            { fJetMinPhi = min, fJetMaxPhi = max ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
   void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
+  void                        SetZLeadingCut(Float_t zemc, Float_t zch)            { fZLeadingEmcCut = zemc; fZLeadingChCut = zch ; }
 
   void                        SetAreaEmcCut(Double_t a = 0.99)                     { fAreaEmcCut     = a                ; }
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
@@ -79,6 +80,9 @@ class AliJetContainer : public AliEmcalContainer {
   Int_t                       GetNJets()                            const    {return GetNEntries();}
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)  const;
   void                        GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet* jet)  const;
+  Double_t                    GetZ(AliEmcalJet *jet, TLorentzVector mom) const;
+  Double_t                    GetZLeadingEmc(AliEmcalJet *jet)      const;
+  Double_t                    GetZLeadingCharged(AliEmcalJet *jet)  const;
   AliRhoParameter            *GetRhoParameter()                              {return fRho;}
   Double_t                    GetRhoVal()                           const    { if (fRho) return fRho->GetVal(); else return 0;}
   const TString&              GetRhoName()                          const    {return fRhoName;}
@@ -108,6 +112,8 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     fJetMaxPhi;            //  maximum phi jet acceptance  
   Float_t                     fMaxClusterPt;         //  maximum cluster constituent pt to accept the jet
   Float_t                     fMaxTrackPt;           //  maximum track constituent pt to accept the jet
+  Float_t                     fZLeadingEmcCut;       //  maximum z,leading neutral
+  Float_t                     fZLeadingChCut;        //  maximum z,leading charged
   Int_t                       fLeadingHadronType;    //  0 = charged, 1 = neutral, 2 = both
   Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
   UInt_t                      fJetBitMap;            //  bit map of accepted jets
@@ -123,7 +129,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,3);
+  ClassDef(AliJetContainer,4);
 
 };
 
