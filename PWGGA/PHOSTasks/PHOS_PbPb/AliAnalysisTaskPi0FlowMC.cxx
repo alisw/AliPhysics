@@ -616,7 +616,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0s()
       
       
       if(ph1->IsDisp2OK() && ph2->IsDisp2OK()){
-	FillHistogram(Form("hPi0Disp2_cen%d",fCentBin),m,pt) ;
+	FillHistogram(Form("hPi0Disp2_cen%d",fCentBin),m,pt,w) ;
   	FillHistogram(Form("hPi0Disp2core_cen%d",fCentBin),mcore, ptcore, w) ;	
 
 	FillHistogram(Form("hMassPtV0ADisp2_cen%d",fCentBin),m,pt,dphiA, w) ;
