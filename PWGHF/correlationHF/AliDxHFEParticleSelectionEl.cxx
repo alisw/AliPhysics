@@ -205,21 +205,6 @@ int AliDxHFEParticleSelectionEl::Init()
   }
   // TODO: error handling?
   fCuts->Initialize(fCFM);
-  
-  //Setting up TPC PID
-  //Add settings for asymmetric cut on nSigma TPC
-  //TODO: have this completely set up from addtask 
-  const int paramSize=4;
-  Double_t params[paramSize];
-  memset(params, 0, sizeof(Double_t)*paramSize);
-  if(fUseEMCAL)  params[0]=-3.;
-  else params[0]=-1.;
-  fPIDTPC = new AliHFEpid("hfePidTPC");
-  if(!fPIDTPC->GetNumberOfPIDdetectors()) { 
-    fPIDTPC->AddDetector("TPC",1);
-  }
-  fPIDTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
-  fPIDTPC->InitializePID();
 
   if(fUseInvMassCut>kNoInvMass)  AliDebug(2,Form("Setting up with invariant mass cut of %f",fInvMassLow));
   if(fStoreCutStepInfo) AliDebug(2,"will store cut step info");
