@@ -33,6 +33,8 @@ AliJetContainer::AliJetContainer():
   fJetMaxPhi(10),
   fMaxClusterPt(1000),
   fMaxTrackPt(100),
+  fZLeadingEmcCut(10.),
+  fZLeadingChCut(10.),
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
@@ -65,6 +67,8 @@ AliJetContainer::AliJetContainer(const char *name):
   fJetMaxPhi(10),
   fMaxClusterPt(1000),
   fMaxTrackPt(100),
+  fZLeadingEmcCut(10.),
+  fZLeadingChCut(10.),
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
@@ -279,12 +283,16 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
   if (jet->AreaEmc()<fAreaEmcCut)
     return kFALSE;
 
+  if( GetZLeadingCharged(jet)>fZLeadingChCut ||  GetZLeadingEmc(jet)>fZLeadingEmcCut)
+    return kFALSE;
+
   if (!AcceptBiasJet(jet))
     return kFALSE;
   
   if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
     return kFALSE;
 
+ 
   Double_t jetPhi = jet->Phi();
   Double_t jetEta = jet->Eta();
   
@@ -344,6 +352,61 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet 
 }
 
 //________________________________________________________________________
+Double_t AliJetContainer::GetZLeadingEmc(AliEmcalJet *jet) const
+{
+
+  if (fClusterContainer && fClusterContainer->GetArray() ) {
+    TLorentzVector mom;
+    
+    AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
+    if (cluster) {
+      cluster->GetMomentum(mom, const_cast<Double_t*>(fVertex));
+      
+      return GetZ(jet,mom);
+    }
+    else
+      return -1;
+  }
+  else
+    return -1;
+}
+
+//________________________________________________________________________
+Double_t AliJetContainer::GetZLeadingCharged(AliEmcalJet *jet) const
+{
+
+  if (fParticleContainer && fParticleContainer->GetArray() ) {
+    TLorentzVector mom;
+    
+    AliVParticle *track = jet->GetLeadingTrack(fParticleContainer->GetArray());
+    if (track) {
+      mom.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.139);
+      
+      return GetZ(jet,mom);
+    }
+    else
+      return -1;
+  }
+  else
+    return -1;
+}
+
+//________________________________________________________________________
+Double_t AliJetContainer::GetZ(AliEmcalJet *jet, TLorentzVector mom) const
+{
+
+  Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
+
+  if(pJetSq>0.)
+    return (mom.Px()*jet->Px() + mom.Py()*jet->Py() + mom.Pz()*jet->Pz())/pJetSq;
+  else {
+    AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq));
+    return -1;
+  }
+
+}
+
+//________________________________________________________________________
 void AliJetContainer::SetJetEtaPhiEMCAL()
 {
   //Set default cuts for full jets
@@ -391,7 +454,8 @@ void AliJetContainer::ResetCuts()
   fMaxClusterPt = 1000;
   fMaxTrackPt = 100;
   fLeadingHadronType = 0;
-
+  fZLeadingEmcCut = 10.;
+  fZLeadingChCut = 10.;
 }
 
 //________________________________________________________________________
