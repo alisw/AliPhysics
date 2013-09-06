@@ -51,7 +51,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Int_t RPFilterBit = 1,
                                                           Bool_t op_ang = kFALSE,
                                                           Double_t op_angle_cut=3.,
-                                                          const char *histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
+                                                          TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
                                                           )
 
 {
@@ -84,7 +84,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     taskHFE->SetTrigger(Trigger);
     
     if(Trigger==0){
-        TFile *fFlat=TFile::Open(histoflatname,"READ");
+        TFile *fFlat=TFile::Open(histoflatname.Data());
         TCanvas *c=fFlat->Get("cintegral");
         TH1F *hfl=(TH1F*)c->FindObject("hint");
         taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
