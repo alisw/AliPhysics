@@ -1353,6 +1353,16 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276andBAMPSoverLHC12a17b(){
 }
 
 //_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
+  // weight function from the ratio of the LHC12a17b MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
+  fFuncWeight->SetParameters(2.94999e+00,3.47032e+00,2.81278e+00,2.5,1.93370e-02,3.86865e+00,-1.54113e-01,8.86944e-02,2.56267e-02);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
 Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
 {
   //
