@@ -98,7 +98,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void LoadTrPtResolutionRootFileFromOADB();
     virtual void SetChangeEfficiencyFraction(Double_t p) {fChangeEfficiencyFraction = p;}
     virtual void SetSmearResolution(Bool_t b){fUseTrPtResolutionSmearing = b;} 
-    virtual void SetDiceEfficiency(Bool_t b){fUseDiceEfficiency = b;} 
+    virtual void SetDiceEfficiency(Int_t b){fUseDiceEfficiency = b;} 
     virtual void SetDiceEfficiencyMinPt(Double_t pt) {fDiceEfficiencyMinPt = pt;}
     virtual void SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3);
     virtual void SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3);
