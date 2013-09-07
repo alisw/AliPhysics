@@ -909,8 +909,13 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
   //Check if information is provided detector level effects
   if(!fMomResH1 || !fMomResH2 || !fMomResH3) fUseTrPtResolutionSmearing = kFALSE;
-  if(!fhEffH1 || !fhEffH2 || !fhEffH3 )      fUseDiceEfficiency = kFALSE;
-  if(  fEfficiencyFixed < 1. )               fUseDiceEfficiency = kTRUE;  
+  if(  fEfficiencyFixed < 1. ) {
+     if (!fUseDiceEfficiency)
+       fUseDiceEfficiency = 1; // 1 is the default; 2 can be set by user
+  }
+  else {
+    if(!fhEffH1 || !fhEffH2 || !fhEffH3 )      fUseDiceEfficiency = kFALSE;
+  }
 
   Bool_t selectEvent =  false;
   Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
@@ -998,6 +1003,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
   Int_t nT = GetListOfTracks(&recParticles,fTrackTypeRec);
   Float_t nCh = recParticles.GetEntries(); 
+  Float_t nGen=genParticles.GetEntries();
   fh1Nch->Fill(nCh);
   if(fDebug>2)Printf("%s:%d Selected Rec tracks: %d %d",(char*)__FILE__,__LINE__,nT,recParticles.GetEntries());
   nT = GetListOfTracks(&genParticles,fTrackTypeGen);
@@ -1035,6 +1041,9 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       Double_t rnd = fRandom->Uniform(1.);
       if(  fEfficiencyFixed<1. ) {
 	sumEff = fEfficiencyFixed;
+        if (fUseDiceEfficiency == 2) {
+           sumEff = (nCh - fEfficiencyFixed*nGen) / nCh;  // rescale eff; fEfficiencyFixed is wrt to nGen, but dicing is fraction of nCh
+        }
       } else {
 
 	pT = vp->Pt();
