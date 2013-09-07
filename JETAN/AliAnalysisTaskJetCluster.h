@@ -210,7 +210,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1      *fhEffH2;        // Efficiency for Spectra Hybrid Category 2
     TH1      *fhEffH3;        // Efficiency for Spectra Hybrid Category 3
     Bool_t    fUseTrPtResolutionSmearing;  // Apply momentum smearing on track level
-    Bool_t    fUseDiceEfficiency;          // Apply efficiency on track level by dicing
+    Int_t    fUseDiceEfficiency;           // Flag to apply efficiency on track level by dicing 0: no dicing; 1: dicing wrt to accepted; 2: dicing wrt to generated
     Double_t  fDiceEfficiencyMinPt;        // Only do efficiency dicing for tracks above this pt
     Bool_t fUseTrPtResolutionFromOADB;     // Load track pt resolution root file from OADB path
     Bool_t fUseTrEfficiencyFromOADB;       // Load tracking efficiency root file from OADB path
@@ -344,7 +344,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 24) 
+    ClassDef(AliAnalysisTaskJetCluster, 25) 
 };
  
 #endif
