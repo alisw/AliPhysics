@@ -71,21 +71,21 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
     TF1 *fScale = new TF1("fit",fitf,0,100,5);
     fScale->SetParameters(60.,1.41363e+00,7.95329e-01,1.95281e-02,-1.55196e-04);
     */
-    rhoTask = AddTaskRhoSparse(
-			       jetFinderKt->GetName(),
+    TString rhoSparseName = Form("RhoSparseR%03d",(int)(100*R));
+    rhoTask = AddTaskRhoSparse(jetFinderKt->GetName(),
 			       jetFinderAKt->GetName(),
-			       kTracksName,
-			       kClusName,
-			       Form("RhoSparseR%03d",(int)(100*R)),
+			       kTracksName.Data(),
+			       kClusName.Data(),
+			       rhoSparseName.Data(),
 			       R,
-			       AliAnalysisTaskEmcal::kTPC,
+			       "TPC",
 			       0.01,
 			       0.15,
 			       0,
 			       fScale,
 			       0,
 			       kTRUE,
-			       Form("RhoSparseR%03d",(int)(100*R)),
+			       rhoSparseName.Data(),
 			       kTRUE
 			       );
     rhoTask->SetCentralityEstimator(CentEst);
@@ -118,6 +118,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   taskDiJet->AddJetContainer(strJetsFull.Data(),"EMCAL",R);
   taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
 
+  taskDiJet->SetZLeadingCut(0.98,0.98,0);
+
   for(Int_t i=0; i<2; i++) {
     taskDiJet->SetPercAreaCut(0.6, i);
     taskDiJet->SetPtBiasJetTrack(ptTrackBias,i);
@@ -125,8 +127,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 
   taskDiJet->SetRhoType(rhoType);
   if(rhoType==1) {
-    taskDiJet->SetRhoName(rhoTask->GetRhoScaledName(),0);
-    taskDiJet->SetRhoName(rhoTask->GetRhoName(),1);
+    taskDiJet->SetRhoName(rhoTask->GetOutRhoScaledName(),0);
+    taskDiJet->SetRhoName(rhoTask->GetOutRhoName(),1);
   }
 
   taskDiJet->SetCentralityEstimator(CentEst);

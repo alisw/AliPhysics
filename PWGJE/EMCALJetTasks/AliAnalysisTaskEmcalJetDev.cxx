@@ -384,6 +384,22 @@ void AliAnalysisTaskEmcalJetDev::SetPercAreaCut(Float_t p, Int_t c)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskEmcalJetDev::SetZLeadingCut(Float_t zemc, Float_t zch, Int_t c)
+{
+  AliJetContainer *cont = GetJetContainer(c);
+  if (cont) cont->SetZLeadingCut(zemc,zch);
+  else AliError(Form("%s in SetZLeadingCut(...): container %d not found",GetName(),c));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJetDev::SetNEFCut(Float_t min, Float_t max, Int_t c)
+{
+  AliJetContainer *cont = GetJetContainer(c);
+  if (cont) cont->SetNEFCut(min,max);
+  else AliError(Form("%s in SetNEFCut(...): container %d not found",GetName(),c));
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEmcalJetDev::SetAreaEmcCut(Double_t a, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);

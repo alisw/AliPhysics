@@ -29,6 +29,8 @@ class AliAnalysisTaskEmcalJetDev : public AliAnalysisTaskEmcalDev {
   void                SetJetPhiLimits(Float_t min, Float_t max, Int_t c = 0);
   void                SetJetAreaCut(Float_t cut, Int_t c = 0);
   void                SetPercAreaCut(Float_t p, Int_t c = 0);
+  void                SetZLeadingCut(Float_t zemc, Float_t zch, Int_t c = 0);
+  void                SetNEFCut(Float_t min, Float_t max, Int_t c = 0);
   void                SetAreaEmcCut(Double_t a = 0.99, Int_t c = 0);
   void                SetJetPtCut(Float_t cut, Int_t c = 0);
   void                SetJetRadius(Float_t r, Int_t c = 0);

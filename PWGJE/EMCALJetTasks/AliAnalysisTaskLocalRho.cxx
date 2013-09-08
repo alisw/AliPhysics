@@ -44,7 +44,7 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskLocalRho)
 
-AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() : AliAnalysisTaskEmcalJet("AliAnalysisTaskLocalRho", kTRUE), 
+AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() : AliAnalysisTaskEmcalJetDev("AliAnalysisTaskLocalRho", kTRUE), 
     fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("WLQI"), fRunModeType(kGrid), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0) {
     for(Int_t i(0); i < 10; i++) {
         fHistPsi2[i] = 0; 
@@ -53,7 +53,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() : AliAnalysisTaskEmcalJet("Al
     // default constructor
 }
 //_____________________________________________________________________________
-AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
+AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho(const char* name, runModeType type) : AliAnalysisTaskEmcalJetDev(name, kTRUE),
     fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("WLQI"), fRunModeType(type), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0) {
     for(Int_t i(0); i < 10; i++) {
         fHistPsi2[i] = 0; 
@@ -95,7 +95,7 @@ void AliAnalysisTaskLocalRho::ExecOnce()
             AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fLocalRho->GetName()));
         }
     }
-    AliAnalysisTaskEmcalJet::ExecOnce();        // init the base clas
+    AliAnalysisTaskEmcalJetDev::ExecOnce();        // init the base clas
     if(fUseScaledRho) {
         // unscaled rho has been retrieved by the parent class, now we retrieve rho scaled
         fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(Form("%s_Scaled", fRho->GetName())));
@@ -103,6 +103,7 @@ void AliAnalysisTaskLocalRho::ExecOnce()
             AliFatal(Form("%s: Couldn't find container for scaled rho. Aborting !", GetName()));
         }
     }
+    if(!GetJetContainer()) AliFatal(Form("%s: Couldn't get jet container. Aborting !", GetName()));
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskLocalRho::InitializeAnalysis() 
@@ -428,33 +429,23 @@ void AliAnalysisTaskLocalRho::CalculateEventPlaneVZERO(Double_t vzero[2][2]) con
 void AliAnalysisTaskLocalRho::CalculateEventPlaneTPC(Double_t* tpc)
 {
    // grab the TPC event plane. if parameter fExcludeLeadingJetsFromFit is larger than 0, 
-   // strip in eta of width fExcludeLeadingJetsFromFit * fJetRadius around the leading jet (before
+   // strip in eta of width fExcludeLeadingJetsFromFit * GetJetContainer()->GetJetRadius() around the leading jet (before
    // subtraction of rho) will be exluded from the event plane estimate
    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
    fNAcceptedTracks = 0;                // reset the track counter
    Double_t qx2(0), qy2(0);     // for psi2
    Double_t qx3(0), qy3(0);     // for psi3
    if(fTracks) {
-       Float_t excludeInEta[] = {-999, -999};
+       Float_t excludeInEta = -999;
        if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
-           AliEmcalJet* leadingJet[] = {0x0, 0x0};
-           static Int_t lJets[9999] = {-1};
-           GetSortedArray(lJets, fJets);
-           for(Int_t i(0); i < fJets->GetEntriesFast(); i++) {     // get the two leading jets
-               if (1 + i > fJets->GetEntriesFast()) break;
-               leadingJet[0] = static_cast<AliEmcalJet*>(fJets->At(lJets[i]));
-               leadingJet[1] = static_cast<AliEmcalJet*>(fJets->At(lJets[i+1]));
-               if(PassesCuts(leadingJet[0]) && PassesCuts(leadingJet[1])) break;
-           }
-           if(leadingJet[0] && leadingJet[1]) {
-               for(Int_t i(0); i < 2; i++) excludeInEta[i] = leadingJet[i]->Eta();
-           }
+           AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
+           if(leadingJet) leadingJet->Eta();
        }
        Int_t iTracks(fTracks->GetEntriesFast());
        for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
            AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(iTPC));
            if(!PassesCuts(track) || track->Pt() < fSoftTrackMinPt || track->Pt() > fSoftTrackMaxPt) continue;
-           if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta[0]) < fJetRadius*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - fJetRadius - fJetMaxEta ) > 0 )) continue;
+           if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < GetJetContainer()->GetJetRadius()*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - GetJetContainer()->GetJetRadius() - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
            fNAcceptedTracks++;
            qx2+= TMath::Cos(2.*track->Phi());
            qy2+= TMath::Sin(2.*track->Phi());
@@ -741,26 +732,16 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
         default: break;
     }
     Int_t iTracks(fTracks->GetEntriesFast());
-    Double_t excludeInEta[] = {-999, -999};
-    Double_t excludeInPhi[] = {-999, -999};
-    Double_t excludeInPt[]  = {-999, -999};
+    Double_t excludeInEta = -999;
+    Double_t excludeInPhi = -999;
+    Double_t excludeInPt  = -999;
     if(iTracks <= 0 || fLocalRho->GetVal() <= 0 ) return kFALSE;   // no use fitting an empty event ...
     if(fExcludeLeadingJetsFromFit > 0 ) {
-        AliEmcalJet* leadingJet[] = {0x0, 0x0};
-        static Int_t lJets[9999] = {-1};
-        GetSortedArray(lJets, fJets);
-        for(Int_t i(0); i < fJets->GetEntriesFast(); i++) {     // get the two leading jets
-            if (1 + i > fJets->GetEntriesFast()) break;
-            leadingJet[0] = static_cast<AliEmcalJet*>(fJets->At(lJets[i]));
-            leadingJet[1] = static_cast<AliEmcalJet*>(fJets->At(lJets[i+1]));
-            if(PassesCuts(leadingJet[0]) && PassesCuts(leadingJet[1])) break;
-        }
-        if(leadingJet[0] && leadingJet[1]) {
-            for(Int_t i(0); i < 2; i++) {
-                excludeInEta[i] = leadingJet[i]->Eta();
-                excludeInPhi[i] = leadingJet[i]->Phi();
-                excludeInPt[i]  = leadingJet[i]->Pt();
-            }
+        AliEmcalJet* leadingJet = GetJetContainer()->GetLeadingJet();
+        if(PassesCuts(leadingJet)) {
+            excludeInEta = leadingJet->Eta();
+            excludeInPhi = leadingJet->Phi();
+            excludeInPt  = leadingJet->Pt();
         }
     }
     fHistSwap->Reset();                 // clear the histogram
@@ -773,7 +754,7 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
     else _tempSwap = *fHistSwap;         // now _tempSwap holds the desired histo
     for(Int_t i(0); i < iTracks; i++) {
             AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(i));
-            if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta[0]) < fJetRadius*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - fJetRadius - fJetMaxEta ) > 0 )) continue;
+            if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < GetJetContainer()->GetJetRadius()*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - GetJetContainer()->GetJetRadius() - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
             if(!PassesCuts(track) || track->Pt() > fSoftTrackMaxPt || track->Pt() < fSoftTrackMinPt) continue;
             if(fUsePtWeight) _tempSwap.Fill(track->Phi(), track->Pt());
             else _tempSwap.Fill(track->Phi());
@@ -840,12 +821,8 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
                 }
                 if(fExcludeLeadingJetsFromFit) {       // visualize the excluded region
                     TF2 *f2 = new TF2(Form("%s_LJ", didacticSurface->GetName()),"[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", 0, TMath::TwoPi(), -1, 1);
-                    f2->SetParameters(excludeInPt[0]/3.,excludeInPhi[0],.1,excludeInEta[0],.1);
+                    f2->SetParameters(excludeInPt/3.,excludeInPhi,.1,excludeInEta,.1);
                     didacticSurface->GetListOfFunctions()->Add(f2);
-                    TF2 *f3 = new TF2(Form("%s_NLJ", didacticSurface->GetName()),"[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])", 0, TMath::TwoPi(), -1, 1);
-                    f3->SetParameters(excludeInPt[1]/3.,excludeInPhi[1],.1,excludeInEta[1],.1);
-                    f3->SetLineColor(kGreen);
-                    didacticSurface->GetListOfFunctions()->Add(f3);
                 }
                 fOutputListGood->Add(didacticSurface);
             } break;
@@ -882,66 +859,16 @@ void AliAnalysisTaskLocalRho::FillAnalysisSummaryHistogram() const
 {
     // fill the analysis summary histrogram, saves all relevant analysis settigns
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(1, "fJetRadius"); 
-    fHistAnalysisSummary->SetBinContent(1, fJetRadius);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fPtBiasJetTrack");
-    fHistAnalysisSummary->SetBinContent(2, fPtBiasJetTrack);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(3, "fPtBiasJetClus");
-    fHistAnalysisSummary->SetBinContent(3, fPtBiasJetClus);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(4, "fJetPtCut");
-    fHistAnalysisSummary->SetBinContent(4, fJetPtCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(5, "fJetAreaCut");
-    fHistAnalysisSummary->SetBinContent(5, fJetAreaCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(6, "fPercAreaCut");
-    fHistAnalysisSummary->SetBinContent(6, fPercAreaCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(7, "fAreaEmcCut");
-    fHistAnalysisSummary->SetBinContent(7, fAreaEmcCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(8, "fJetMinEta");
-    fHistAnalysisSummary->SetBinContent(8, fJetMinEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(9, "fJetMaxEta");
-    fHistAnalysisSummary->SetBinContent(9, fJetMaxEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(10, "fJetMinPhi");
-    fHistAnalysisSummary->SetBinContent(10, fJetMinPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(11, "fJetMaxPhi");
-    fHistAnalysisSummary->SetBinContent(11, fJetMaxPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(12, "fMaxClusterPt");
-    fHistAnalysisSummary->SetBinContent(12, fMaxClusterPt);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(13, "fMaxTrackPt");
-    fHistAnalysisSummary->SetBinContent(13, fMaxTrackPt);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(14, "fLeadingHadronType");
-    fHistAnalysisSummary->SetBinContent(14, fLeadingHadronType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(15, "fAnaType");
-    fHistAnalysisSummary->SetBinContent(15, fAnaType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(16, "fForceBeamType");
-    fHistAnalysisSummary->SetBinContent(16, fForceBeamType);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(19, "fMinVz");
-    fHistAnalysisSummary->SetBinContent(19, fMinVz);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(20, "fMaxVz");
-    fHistAnalysisSummary->SetBinContent(20, fMaxVz);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(21, "fOffTrigger");
-    fHistAnalysisSummary->SetBinContent(21, fOffTrigger);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(22, "fClusPtCut");
-    fHistAnalysisSummary->SetBinContent(22, fClusPtCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(23, "fTrackPtCut");
-    fHistAnalysisSummary->SetBinContent(23, fTrackPtCut);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(24, "fTrackMinEta");
-    fHistAnalysisSummary->SetBinContent(24, fTrackMinEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(25, "fTrackMaxEta");
-    fHistAnalysisSummary->SetBinContent(25, fTrackMaxEta);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(26, "fTrackMinPhi");
-    fHistAnalysisSummary->SetBinContent(26, fTrackMinPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(27, "fTrackMaxPhi");
-    fHistAnalysisSummary->SetBinContent(27, fTrackMaxPhi);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(28, "fClusTimeCutLow");
-    fHistAnalysisSummary->SetBinContent(28, fClusTimeCutLow);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(29, "fClusTimeCutUp");
-    fHistAnalysisSummary->SetBinContent(29, fClusTimeCutUp);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(30, "fMinPtTrackInEmcal");
-    fHistAnalysisSummary->SetBinContent(30, fMinPtTrackInEmcal);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(31, "fEventPlaneVsEmcal");
-    fHistAnalysisSummary->SetBinContent(31, fEventPlaneVsEmcal);
-    fHistAnalysisSummary->GetXaxis()->SetBinLabel(32, "fMinEventPlane");
-    fHistAnalysisSummary->SetBinContent(32, fMaxEventPlane);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fJetRadius");
+    fHistAnalysisSummary->SetBinContent(2, GetJetContainer()->GetJetRadius());
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(3, "fJetEtaMin");
+    fHistAnalysisSummary->SetBinContent(3, GetJetContainer()->GetJetEtaMin());
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(4, "fJetEtaMax");
+    fHistAnalysisSummary->SetBinContent(4, GetJetContainer()->GetJetEtaMax());
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(5, "fJetPhiMin");
+    fHistAnalysisSummary->SetBinContent(5, GetJetContainer()->GetJetPhiMin());
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(6, "fJetPhiMax");
+    fHistAnalysisSummary->SetBinContent(6, GetJetContainer()->GetJetPhiMin());
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(34, "fitModulationType");
     fHistAnalysisSummary->SetBinContent(34, (int)fFitModulationType);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(35, "runModeType");

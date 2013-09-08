@@ -12,9 +12,9 @@ class AliAnalysisUtils;
 #include <TRef.h>
 #include <TBits.h>
 
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetDev.h"
 
-class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJetDev {
  public:
 
   AliAnalysisTaskEmcalJetTriggerQA();
@@ -30,19 +30,14 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Bool_t                      SelectEvent();              //decides if event is used for analysis
   void                        FindTriggerPatch();
 
-  Bool_t                      AcceptJet2(const AliEmcalJet *jet) const;
-
   //Setters
   void SetDebug(Int_t d)                    { fDebug = d;}
   void SetTriggerClass(const char *n)       { fTriggerClass = n; }
   void SetNFastorPatch(Int_t i)             { fNFastOR = i;}
  
-  void SetJetsName2(const char *n)          { fJetsName2 = n; }
-  void SetRhoChName(const char *n)          { fRhoChName = n; }
-  void SetMinEtaJets2(Double_t p)           { fEtaMinJet2 = p;}
-  void SetMaxEtaJets2(Double_t p)           { fEtaMaxJet2 = p;}
-  void SetMinPhiJets2(Double_t p)           { fPhiMinJet2 = p;}
-  void SetMaxPhiJets2(Double_t p)           { fPhiMaxJet2 = p;}
+  void SetContainerFull(Int_t c)            { fContainerFull      = c;}
+  void SetContainerCharged(Int_t c)         { fContainerCharged   = c;}
+
 
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
   Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
@@ -59,21 +54,11 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Bool_t            fDebug;                 //  debug level
   Bool_t            fUseAnaUtils;           //  used for LHC13* data
   AliAnalysisUtils *fAnalysisUtils;         //! vertex selection
-  TString           fJetsName2;             //  name of charged jet collection
-  TClonesArray     *fJets2;                 //! list with charged jets
-  Double_t          fEtaMinJet2;            //  min eta of jet axis, jets in 2nd branch
-  Double_t          fEtaMaxJet2;            //  max eta of jet axis, jets in 2nd branch
-  Double_t          fPhiMinJet2;            //  min phi of jet axis, jets in 2nd branch
-  Double_t          fPhiMaxJet2;            //  max phi of jet axis, jets in 2nd branch
-  Double_t          fMaxTrackPtJet2;        //  maximum track pT in jet
-
-  TString           fRhoChName;             //  name of charged rho branch
-  AliRhoParameter  *fRhoCh;                 //! event rho charged
-  Double_t          fRhoChVal;              //  charged rho value
-
   TString           fTriggerClass;          // trigger class to analyze EJ1 or EJ2    
   UInt_t            fBitJ1;                 // trigger bit of EJE1
   UInt_t            fBitJ2;                 // trigger bit of EJE2
+  Int_t             fContainerFull;             //  number of container with full jets DET
+  Int_t             fContainerCharged;          //  number of container with charged jets DET
   Double_t          fMaxPatchEnergy;        // energy of patch with largest energy
   Int_t             fTriggerType;           // trigger type
   Int_t             fNFastOR;               // size of trigger patch fNFastORxfNFastOR
@@ -102,6 +87,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 1) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 2)
 };
 #endif
