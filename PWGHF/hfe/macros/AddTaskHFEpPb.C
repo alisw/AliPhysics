@@ -34,7 +34,6 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t MCthere = kFALSE,
   const double kDefTPCs = 0.0;
   const double kDefTPCu = 3.0;   
   const double kDefTOFs = 3.0;
-  if(!kTPCTOFTRD_Ref) TRDtrigger = 0;
 
   // NEW SPLINES + CORRECTIONS: mean 0, width 1
   // mean is actually 0.06 (abs(eta)<0.6)
@@ -145,20 +144,20 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t MCthere = kFALSE,
 
   if(kTPCTOFTRD_mbPID){
     // without TOF
-    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,4,"TRD,TPC",etacut);
-    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,4,"TPC,TRD",etacut);
-    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,6,2,"TRD,TPC",etacut);
-    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,4,"TRD,TPC",etacut);
-    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,4,"TPC,TRD",etacut);
-    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,0,5,2,"TRD,TPC",etacut);
+    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger,6,4,"TRD,TPC",etacut);
+    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger,6,4,"TPC,TRD",etacut);
+    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger,6,2,"TRD,TPC",etacut);
+    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger,5,4,"TRD,TPC",etacut);
+    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger,5,4,"TPC,TRD",etacut);
+    RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger,5,2,"TRD,TPC",etacut);
   }
 
   if(kTPCTOFTRD_PID){
     // without TOF
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,0,5,4,"TRD,TPC");
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,0,5,4,"TPC,TRD");
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,0,6,4,"TRD,TPC");
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,0,6,4,"TPC,TRD");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,5,4,"TRD,TPC");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,5,4,"TPC,TRD");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,6,4,"TRD,TPC");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,6,4,"TPC,TRD");
   }
 
   return NULL;
