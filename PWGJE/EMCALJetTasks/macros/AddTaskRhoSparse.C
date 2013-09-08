@@ -1,23 +1,24 @@
 // $Id$
 
 AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
-   const char    *nJetsBkg    = "JetsBkg",
-   const char    *nJetsSig    = "JetsSig",
-   const char    *nTracks     = "PicoTracks",
-   const char    *nClusters   = "CaloClusters",  
-   const char    *nRho        = "Rho",
-   Double_t       jetradius   = 0.2,
-   const char    *cutType     = "TPC",
-   Double_t       jetareacut  = 0.01,
-   Double_t       jetptcut    = 0.0,
-   Double_t       emcareacut  = 0,
-   TF1           *sfunc       = 0,
-   const UInt_t   exclJets    = 2,
-   const Bool_t   histo       = kFALSE,
-   const char    *taskname    = "Rho",
-   const Bool_t   fRhoCMS      = kTRUE
-)
+					   const char    *nJetsBkg    = "JetsBkg",
+					   const char    *nJetsSig    = "JetsSig",
+					   const char    *nTracks     = "PicoTracks",
+					   const char    *nClusters   = "CaloClusters",  
+					   const char    *nRho        = "Rho",
+					   Double_t       jetradius   = 0.2,
+					   const char    *cutType     = "TPC",
+					   Double_t       jetareacut  = 0.01,
+					   Double_t       jetptcut    = 0.0,
+					   Double_t       emcareacut  = 0,
+					   TF1           *sfunc       = 0x0,
+					   const UInt_t   exclJets    = 2,
+					   const Bool_t   histo       = kFALSE,
+					   const char    *taskname    = "Rho",
+					   const Bool_t   fRhoCMS      = kTRUE
+					   )
 {  
+
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -57,18 +58,16 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
   if (bkgJetCont) {
     bkgJetCont->SetJetAreaCut(jetareacut);
     bkgJetCont->SetAreaEmcCut(emcareacut);
-    bkgJetCont->SetJetPtCut(0);
+    bkgJetCont->SetJetPtCut(0.);
     bkgJetCont->ConnectParticleContainer(trackCont);
     bkgJetCont->ConnectClusterContainer(clusterCont);
   }
 
   AliJetContainer *sigJetCont = rhotask->AddJetContainer(nJetsSig,cutType,jetradius);
   if (sigJetCont) {
-    // are these cuts correct for signal jets?
     sigJetCont->SetJetAreaCut(jetareacut);
     sigJetCont->SetAreaEmcCut(emcareacut);
-    sigJetCont->SetJetPtCut(0);
-
+    sigJetCont->SetJetPtCut(jetptcut);
     sigJetCont->ConnectParticleContainer(trackCont);
     sigJetCont->ConnectClusterContainer(clusterCont);
   }

@@ -3,7 +3,7 @@
 
 // $Id$
 
-#include <AliAnalysisTaskEmcalJet.h>
+#include <AliAnalysisTaskEmcalJetDev.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
 #include <AliVTrack.h>
@@ -11,6 +11,8 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <AliLog.h>
+#include <AliJetContainer.h>
 
 class TF1;
 class THF1;
@@ -18,8 +20,7 @@ class THF2;
 class TProfile;
 class AliLocalRhoParameter;
 
-class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
-{
+class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJetDev {
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
@@ -53,7 +54,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
             Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
             if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
             return -999; }
-        // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
+        // the cdf of the chisquare distribution is the normalized lower incomplete gamma function
         /* inline */    Double_t ChiSquareCDF(Int_t ndf, Double_t x) const { return TMath::Gamma(ndf/2., x/2.); }
         // setters - setup how to run
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
@@ -101,13 +102,8 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         void                    FillEventPlaneHistograms(Double_t psi2, Double_t psi3) const;
         void                    FillAnalysisSummaryHistogram() const;
         // track selection
-        /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
-            if(!track) return kFALSE;
-            return (track->Pt() < fTrackPtCut || track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) ? kFALSE : kTRUE; }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const {
-            if(!jet || fJetRadius <= 0) return kFALSE;
-            return (jet->Pt() < fJetPtCut || jet->Area()/(fJetRadius*fJetRadius*TMath::Pi()) < fPercAreaCut || jet->Eta() < fJetMinEta || jet->Eta() > fJetMaxEta || jet->Phi() < fJetMinPhi || jet->Phi() > fJetMaxPhi) ? kFALSE : kTRUE; }
-        // filling histograms
+        /* inline */    Bool_t PassesCuts(AliVTrack* track) const { return AcceptTrack(track, 0);}
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) { return AcceptJet(jet, 0);}
         virtual void            Terminate(Option_t* option);
 
     private: 
@@ -165,7 +161,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskLocalRho(const AliAnalysisTaskLocalRho&);                  // not implemented
         AliAnalysisTaskLocalRho& operator=(const AliAnalysisTaskLocalRho&);       // not implemented
 
-        ClassDef(AliAnalysisTaskLocalRho, 3);
+        ClassDef(AliAnalysisTaskLocalRho, 4);
 };
 
 #endif

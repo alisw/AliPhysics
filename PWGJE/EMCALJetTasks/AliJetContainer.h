@@ -13,6 +13,7 @@ class AliEmcalJet;
 class AliVEvent;
 class AliParticleContainer;
 class AliClusterContainer;
+class AliLocalRhoParameter;
 
 #include "AliRhoParameter.h"
 
@@ -35,6 +36,7 @@ class AliJetContainer : public AliEmcalContainer {
   void SetEMCALGeometry();
   void SetEMCALGeometry(AliEMCALGeometry *p) {fGeom = p;}
   void LoadRho(AliVEvent *event);
+  void LoadLocalRho(AliVEvent *event);
 
   void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
 
@@ -49,11 +51,13 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
   void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
   void                        SetZLeadingCut(Float_t zemc, Float_t zch)            { fZLeadingEmcCut = zemc; fZLeadingChCut = zch ; }
+  void                        SetNEFCut(Float_t min = 0., Float_t max = 1.)        { fNEFMinCut = min; fNEFMaxCut = max;  }
 
   void                        SetAreaEmcCut(Double_t a = 0.99)                     { fAreaEmcCut     = a                ; }
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
+  virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   void                        SetMaxClusterPt(Float_t b)                           { fMaxClusterPt   = b                ; }
   void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
@@ -86,7 +90,10 @@ class AliJetContainer : public AliEmcalContainer {
   AliRhoParameter            *GetRhoParameter()                              {return fRho;}
   Double_t                    GetRhoVal()                           const    { if (fRho) return fRho->GetVal(); else return 0;}
   const TString&              GetRhoName()                          const    {return fRhoName;}
+  AliLocalRhoParameter       *GetLocalRhoParameter()                const    {return fLocalRho;}
+  const TString&              GetLocalRhoName()                     const    {return fLocalRhoName;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
+  Double_t                    GetJetPtCorrLocal(Int_t i)            const;
   Float_t                     GetJetRadius()                        const    {return fJetRadius;}
   Float_t                     GetJetEtaMin()                        const    {return fJetMinEta;}
   Float_t                     GetJetEtaMax()                        const    {return fJetMaxEta;}
@@ -101,6 +108,7 @@ class AliJetContainer : public AliEmcalContainer {
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
   Float_t                     fJetRadius;            //  jet radius
   TString                     fRhoName;              //  Name of rho object
+  TString                     fLocalRhoName;         //  Name of local rho object
   Float_t                     fPtBiasJetTrack;       //  select jets with a minimum pt track
   Float_t                     fPtBiasJetClus;        //  select jets with a minimum pt cluster
   Float_t                     fJetPtCut;             //  cut on jet pt
@@ -114,6 +122,8 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     fMaxTrackPt;           //  maximum track constituent pt to accept the jet
   Float_t                     fZLeadingEmcCut;       //  maximum z,leading neutral
   Float_t                     fZLeadingChCut;        //  maximum z,leading charged
+  Float_t                     fNEFMinCut;            //  minimum NEF in a jet
+  Float_t                     fNEFMaxCut;            //  maximum NEF in a jet
   Int_t                       fLeadingHadronType;    //  0 = charged, 1 = neutral, 2 = both
   Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
   UInt_t                      fJetBitMap;            //  bit map of accepted jets
@@ -122,6 +132,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliClusterContainer        *fClusterContainer;     //  cluster container (jet constituents)
 
   AliRhoParameter            *fRho;                  //! event rho for these jets
+  AliLocalRhoParameter       *fLocalRho;             //! event local rho for these jets
   AliEMCALGeometry           *fGeom;                 //! emcal geometry
   Int_t                       fRunNumber;            //! run number
 
@@ -129,7 +140,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,4);
+  ClassDef(AliJetContainer,5);
 
 };
 

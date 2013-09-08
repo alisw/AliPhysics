@@ -5,7 +5,7 @@
 #ifndef ALIANALYSISTASKRHOVNMODULATION_H
 #define ALIANALYSISTASKRHOVNMODULATION_H
 
-#include <AliAnalysisTaskEmcalJet.h>
+#include <AliAnalysisTaskEmcalJetDev.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
 #include <AliVTrack.h>
@@ -13,6 +13,7 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <AliJetContainer.h>
 
 class TF1;
 class THF1;
@@ -20,8 +21,7 @@ class THF2;
 class TProfile;
 class AliLocalRhoParameter;
 
-class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
-{
+class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
@@ -99,8 +99,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
         void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
         // getters - these are used as well by AliAnalyisTaskJetFlow, so be careful when changing them
-        TString                 GetJetsName() const                             {return fJetsName; }
-        TString                 GetTracksName() const                           {return fTracksName; }
+        TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
+        TString                 GetTracksName() const                           {return fTracks->GetName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
         TArrayI*                GetCentralityClasses() const                    {return fCentralityClasses;}
         TArrayD*                GetPtBinsHybrids() const                        {return fPtBinsHybrids; }
@@ -108,7 +108,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         TProfile*               GetResolutionParameters(Int_t h, Int_t c) const {return (h==2) ? fProfV2Resolution[c] : fProfV3Resolution[c];}
         TList*                  GetOutputList() const                           {return fOutputList;}
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
-        Double_t                GetJetRadius() const                            {return fJetRadius;}
+        Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
         void                    ExecMe()                                        {ExecOnce();}
         AliAnalysisTaskRhoVnModulation* ReturnMe()                              {return this;}
         // local cuts
@@ -122,7 +122,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         void                    CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
         void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
         Double_t                CalculateEventPlaneChi(Double_t resEP) const;
-        void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0, Bool_t randomize = 0) const;
+        void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0) const;
         Double_t                CalculateQC2(Int_t harm);
         Double_t                CalculateQC4(Int_t harm);
         // helper calculations for the q-cumulant analysis, also used by AliAnalyisTaskJetFlow
@@ -138,24 +138,20 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection, also used by AliAnalyisTaskJetFlow
-        /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
-            if(!track) return kFALSE;
-            return (track->Pt() < fTrackPtCut || track->Eta() < fTrackMinEta || track->Eta() > fTrackMaxEta || track->Phi() < fTrackMinPhi || track->Phi() > fTrackMaxPhi) ? kFALSE : kTRUE; }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const {
-            if(!jet || fJetRadius <= 0) return kFALSE;
-            return (GetLeadingHadronPt(jet) < fMinLeadingHadronPt || jet->Pt() < fJetPtCut || jet->Area()/(fJetRadius*fJetRadius*TMath::Pi()) < fPercAreaCut || jet->Eta() < fJetMinEta || jet->Eta() > fJetMaxEta || jet->Phi() < fJetMinPhi || jet->Phi() > fJetMaxPhi) ? kFALSE : kTRUE; }
+        /* inline */    Bool_t PassesCuts(AliVTrack* track) const { return AcceptTrack(track, 0); }
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) { return AcceptJet(jet, 0); }
         Bool_t                  PassesCuts(AliVEvent* event);
         Bool_t                  PassesCuts(Int_t year);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
-        void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
+        void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
         void                    FillTrackHistograms() const;
         void                    FillClusterHistograms() const;
         void                    FillCorrectedClusterHistograms() const;
         void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
-        void                    FillRhoHistograms() const;
+        void                    FillRhoHistograms();
         void                    FillDeltaPtHistograms(Double_t psi2, Double_t psi3) const; 
-        void                    FillJetHistograms(Double_t psi2, Double_t psi3) const;
+        void                    FillJetHistograms(Double_t psi2, Double_t psi3);
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
         void                    FillAnalysisSummaryHistogram() const;
@@ -301,7 +297,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 15);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 16);
 };
 
 #endif

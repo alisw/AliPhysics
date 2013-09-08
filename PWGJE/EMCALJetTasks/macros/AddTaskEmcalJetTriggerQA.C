@@ -4,7 +4,6 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 							   Double_t    ptminTrack          = 0.15, 
 							   Double_t    etminClus           = 0.3, 
 							   Int_t       rhoType             = 0,
-							   UInt_t      type                = AliAnalysisTaskEmcal::kEMCAL,
 							   TString     trigClass           = "",
 							   TString     kEmcalCellsName     = "",
 							   const char *CentEst             = "V0A",
@@ -70,7 +69,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 			       kClusName,
 			       Form("RhoSparseR%03d",(int)(100*R)),
 			       R,
-			       AliAnalysisTaskEmcal::kTPC,
+			       "TPC",
 			       0.01,
 			       0.15,
 			       0,
@@ -88,36 +87,28 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 
   //Configure TriggerQA task
   AliAnalysisTaskEmcalJetTriggerQA *task = new AliAnalysisTaskEmcalJetTriggerQA(wagonName);
-  task->SetTracksName(kTracksName.Data());
-  task->SetClusName(kClusName.Data());
-  task->SetJetsName(strJets1.Data());
-  task->SetJetRadius(R);
-  task->SetJetPtCut(0.15);
-  task->SetPercAreaCut(0.6);
-  task->SetTrackPtCut(ptminTrack);
-  task->SetClusPtCut(etminClus);
-  task->SetAnaType(type);
+  AliParticleContainer *trackCont  = task->AddParticleContainer(kTracksName.Data());
+  AliClusterContainer *clusterCont = task->AddClusterContainer(kClusName.Data());
+
+  task->SetContainerFull(0);
+  task->SetContainerCharged(1);
+  AliJetContainer *jetCont0 = task->AddJetContainer(strJets1.Data(),"EMCAL",R);
+  AliJetContainer *jetCont1 = NULL;
+  if(strJets2.Contains("Charged")) jetCont1 = task->AddJetContainer(strJets2.Data(),"TPC",R);
+  else { 
+    jetCont1 = task->AddJetContainer(strJets2.Data(),"EMCAL",R);
+    task->SetZLeadingCut(0.98,0.98,1);
+  }
+
+  task->SetZLeadingCut(0.98,0.98,0);
+
+  for(Int_t i=0; i<2; i++) {
+    task->SetPercAreaCut(0.6, i);
+  }
+
   task->SetTriggerClass(trigClass.Data());
   task->SetCaloCellsName(kEmcalCellsName.Data());
 
-  task->SetJetsName2(strJets2.Data());
-  if(strJets2.Contains("Charged")) {
-    task->SetMinEtaJets2(-0.9+R);
-    task->SetMaxEtaJets2(0.9-R);
-    task->SetMinPhiJets2(-10.);
-    task->SetMaxPhiJets2(10.);
-  }
-  else {
-    task->SetMinEtaJets2(-0.7+R);
-    task->SetMaxEtaJets2(0.7-R);
-    task->SetMinPhiJets2(1.4+R);
-    task->SetMaxPhiJets2(TMath::Pi()-R);
-  }
-
-  if(rhoType==1) {
-    task->SetRhoName(rhoTask->GetRhoScaledName());
-    task->SetRhoChName(rhoTask->GetRhoName());
-  }
   task->SetCentralityEstimator(CentEst);
 
   task->SelectCollisionCandidates(pSel);

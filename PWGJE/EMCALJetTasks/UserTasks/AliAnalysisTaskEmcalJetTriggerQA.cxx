@@ -21,7 +21,8 @@
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
 #include "AliVCaloCells.h"
-
+#include "AliJetContainer.h"
+#include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskEmcalJetTriggerQA.h"
 
@@ -29,23 +30,15 @@ ClassImp(AliAnalysisTaskEmcalJetTriggerQA)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetTriggerQA", kTRUE),
+  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskEmcalJetTriggerQA", kTRUE),
   fDebug(kFALSE),
   fUseAnaUtils(kTRUE),
   fAnalysisUtils(0),
-  fJetsName2("Jet_AKTChargedR040_PicoTracks_pT0150_caloClustersCorr_ET0300"),
-  fJets2(0),
-  fEtaMinJet2(0.5),
-  fEtaMaxJet2(0.5),
-  fPhiMinJet2(-10.),
-  fPhiMaxJet2(10.),
-  fMaxTrackPtJet2(100.),
-  fRhoChName(""),
-  fRhoCh(0),
-  fRhoChVal(0),
   fTriggerClass(""),
   fBitJ1((1<<8)),
   fBitJ2((1<<11)),
+  fContainerFull(0),
+  fContainerCharged(1),
   fMaxPatchEnergy(0),
   fTriggerType(-1),
   fNFastOR(16),
@@ -77,23 +70,15 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
+  AliAnalysisTaskEmcalJetDev(name, kTRUE),
   fDebug(kFALSE),
   fUseAnaUtils(kTRUE),
   fAnalysisUtils(0),
-  fJetsName2("Jet_AKTChargedR040_PicoTracks_pT0150_caloClustersCorr_ET0300"),
-  fJets2(0),
-  fEtaMinJet2(0.5),
-  fEtaMaxJet2(0.5),
-  fPhiMinJet2(-10.),
-  fPhiMaxJet2(10.),
-  fMaxTrackPtJet2(100.),
-  fRhoChName(""),
-  fRhoCh(0),
-  fRhoChVal(0),
   fTriggerClass(""),
   fBitJ1((1<<8)),
   fBitJ2((1<<11)),
+  fContainerFull(0),
+  fContainerCharged(1),
   fMaxPatchEnergy(0),
   fTriggerType(-1),
   fNFastOR(16),
@@ -300,69 +285,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::FindTriggerPatch() {
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetTriggerQA::LoadExtraBranches() {
   //
-  // get charged jets
+  // load extra brances
   //
-
-  if (!fJetsName2.IsNull() && !fJets2) {
-    fJets2 = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName2.Data()));
-    if (!fJets2) {
-      AliError(Form("%s: Could not retrieve charged jets %s!", GetName(), fJetsName2.Data()));
-      return;
-    }
-    else if (!fJets2->GetClass()->GetBaseClass("AliEmcalJet")) {
-      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fJetsName2.Data()));
-      fJets2 = 0;
-      return;
-    }
-  }
-
-  //Get Charged Rho
-  if (!fRhoChName.IsNull() && !fRhoCh) {
-    fRhoCh = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoChName.Data()));
-    if (!fRhoCh) {
-      AliError(Form("%s: Could not retrieve charged rho %s!", GetName(), fRhoChName.Data()));
-      return;
-    }
-    else
-      fRhoChVal = 0.;
-  }
-  if (fRhoChName.IsNull() ) {
-    if(fDebug>10) AliInfo(Form("%s: fRhoChName empty %s",GetName(),fRhoChName.Data()));
-    fRhoChVal = 0.;
-  }
-  else if(!fRhoChName.IsNull() && fRhoCh) //do not use rho if rhoType==0
-    fRhoChVal = fRhoCh->GetVal();
-
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJetTriggerQA::AcceptJet2(const AliEmcalJet *jet) const {
-
-  // Accept jet in 2nd branch
-
-  Bool_t accept = kFALSE;
-
-  if(jet->Pt()<0.15) //reject ghost jets
-    return accept;
-
-  //do area cut
-  if(jet->Area()<fJetAreaCut)
-    return accept;
-
-  //Check if jet is within fiducial acceptance
-  Double_t eta = jet->Eta();
-  Double_t phi = jet->Phi();
-
-  if(eta<fEtaMinJet2 || eta>fEtaMaxJet2)
-    return accept;
-
-  if(phi<fPhiMinJet2 || phi>fPhiMaxJet2)
-    return accept;
-
-  if (jet->MaxTrackPt() > fMaxTrackPtJet2)
-    return kFALSE;
-
-  return kTRUE;
 
 }
 
@@ -373,7 +297,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   InitOnce();
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -499,19 +423,21 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 {
   // Fill histograms.
-
   
-  if (fCaloClusters) {
-    const Int_t nclusters = fCaloClusters->GetEntriesFast();
-    
+  AliClusterContainer  *clusCont = GetClusterContainer(0);
+
+  if (clusCont) {
+    Int_t nclusters = clusCont->GetNClusters();
     for (Int_t ic = 0; ic < nclusters; ic++) {
-      AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(ic));
+      AliVCluster *cluster = static_cast<AliVCluster*>(clusCont->GetCluster(ic));
       if (!cluster) {
 	AliError(Form("Could not receive cluster %d", ic));
 	continue;
       }
-      if (!cluster->IsEMCAL())
-        continue;
+      if (!cluster->IsEMCAL()) {
+	AliDebug(11,Form("%s: Cluster is not emcal",GetName()));
+	continue;
+      }
 
       TLorentzVector lp;
       cluster->GetMomentum(lp, const_cast<Double_t*>(fVertex));
@@ -543,19 +469,14 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   nJetsArr->Reset(0);
   nJetsArr->Set(fh2NJetsPtFull->GetNbinsY()+1);
 
-  if (fJets) {
-    const Int_t njets = fJets->GetEntriesFast();
+  if (GetJetContainer(fContainerFull)) {
+    const Int_t njets = GetNJets(fContainerFull);
     for (Int_t ij = 0; ij < njets; ij++) {
 
-      AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
-      if (!jet) {
-	AliError(Form("Could not receive jet %d", ij));
-	continue;
-      }  
-
-      if (!AcceptJet(jet))
-	continue;
-
+      AliEmcalJet* jet = GetAcceptJetFromArray(ij,fContainerFull);
+      if (!jet)
+	continue; //jet not selected
+      
       Double_t jetPt = jet->Pt();
       if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
       fh3PtEtaPhiJetFull->Fill(jetPt,jet->Eta(),jet->Phi());
@@ -588,20 +509,20 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       AliVCluster *vc = 0x0;
       Double_t sumPtNe = 0.;
-      for(Int_t icc=0; icc<jet->GetNumberOfClusters(); icc++) {
-	vc = static_cast<AliVCluster*>(jet->ClusterAt(icc, fCaloClusters));
-	if(!vc) continue;
+      if (clusCont) {
+	for(Int_t icc=0; icc<jet->GetNumberOfClusters(); icc++) {
+	  vc = static_cast<AliVCluster*>(clusCont->GetCluster(icc));
+	  if(!vc) continue;
 
-	TLorentzVector lp;
-	vc->GetMomentum(lp, const_cast<Double_t*>(fVertex));
-	
-	sumPtNe+=lp.Pt();
+	  TLorentzVector lp;
+	  vc->GetMomentum(lp, const_cast<Double_t*>(fVertex));
+	  sumPtNe+=lp.Pt();
+	  
+	}
 
+	if(jet->GetNumberOfClusters()>0)
+	  fh2PtMeanPtConstituentsNeutral->Fill(jetPt,sumPtNe/(double)(jet->GetNumberOfClusters()) );
       }
-
-      if(jet->GetNumberOfClusters()>0)
-	fh2PtMeanPtConstituentsNeutral->Fill(jetPt,sumPtNe/(double)(jet->GetNumberOfClusters()) );
-
     } //full jet loop
 
     for(Int_t i=1; i<=fh2NJetsPtFull->GetNbinsY(); i++) {
@@ -615,19 +536,14 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   nJetsArr->Reset(0);
   
   //Loop over charged jets
-  if (fJets2) {
-    const Int_t njetsCh = fJets2->GetEntriesFast();
-    for (Int_t ij = 0; ij < njetsCh; ij++) {
+  if (GetJetContainer(fContainerCharged)) {
+    const Int_t njets = GetNJets(fContainerCharged);
+    for (Int_t ij = 0; ij < njets; ij++) {
 
-      AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets2->At(ij));
-      if (!jet) {
-	AliError(Form("Could not receive charged jet %d", ij));
-	continue;
-      }
+      AliEmcalJet* jet = GetAcceptJetFromArray(ij,fContainerCharged);
+      if (!jet)
+	continue; //jet not selected
 
-      if(!AcceptJet2(jet)) 
-	continue;
-      
       Double_t jetPt = jet->Pt();
       if(jetPt>ptLeadJet2) ptLeadJet2=jetPt;
       fh3PtEtaPhiJetCharged->Fill(jetPt,jet->Eta(),jet->Phi());
@@ -645,7 +561,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
     }
   }
 
-  if(fJets && fJets2) {
+  if(GetJetContainer(fContainerFull) && GetJetContainer(fContainerCharged)) {
     fh2PtLeadJet1VsLeadJet2->Fill(ptLeadJet1,ptLeadJet2);
   }
 
@@ -667,11 +583,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::Run()
     return kFALSE;
   
   LoadExtraBranches();
-
-  if(fRhoChName.IsNull())
-    fRhoChVal = 0.;
-  else
-    fRhoChVal = fRhoCh->GetVal();
 
   if(!fTriggerClass.IsNull())
     FindTriggerPatch();

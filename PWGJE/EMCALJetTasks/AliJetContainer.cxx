@@ -11,6 +11,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliLocalRhoParameter.h"
 
 #include "AliJetContainer.h"
 
@@ -22,6 +23,7 @@ AliJetContainer::AliJetContainer():
   fJetAcceptanceType(kUser),
   fJetRadius(0),
   fRhoName(),
+  fLocalRhoName(),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -35,6 +37,8 @@ AliJetContainer::AliJetContainer():
   fMaxTrackPt(100),
   fZLeadingEmcCut(10.),
   fZLeadingChCut(10.),
+  fNEFMinCut(-10.),
+  fNEFMaxCut(10.),
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
@@ -42,6 +46,7 @@ AliJetContainer::AliJetContainer():
   fParticleContainer(0),
   fClusterContainer(0),
   fRho(0),
+  fLocalRho(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -56,6 +61,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fJetAcceptanceType(kUser),
   fJetRadius(0),
   fRhoName(),
+  fLocalRhoName(),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -69,6 +75,8 @@ AliJetContainer::AliJetContainer(const char *name):
   fMaxTrackPt(100),
   fZLeadingEmcCut(10.),
   fZLeadingChCut(10.),
+  fNEFMinCut(-10.),
+  fNEFMaxCut(10.),
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
@@ -76,6 +84,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fParticleContainer(0),
   fClusterContainer(0),
   fRho(0),
+  fLocalRho(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -120,6 +129,20 @@ void AliJetContainer::LoadRho(AliVEvent *event)
     fRho = dynamic_cast<AliRhoParameter*>(event->FindListObject(fRhoName));
     if (!fRho) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      return;
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliJetContainer::LoadLocalRho(AliVEvent *event)
+{
+  // Load local rho
+
+  if (!fLocalRhoName.IsNull() && !fLocalRho) {
+    fLocalRho = dynamic_cast<AliLocalRhoParameter*>(event->FindListObject(fLocalRhoName));
+    if (!fLocalRho) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fLocalRhoName.Data()));
       return;
     }
   }
@@ -236,6 +259,13 @@ Double_t AliJetContainer::GetJetPtCorr(Int_t i) const {
 }
 
 //________________________________________________________________________
+Double_t AliJetContainer::GetJetPtCorrLocal(Int_t i) const {
+  AliEmcalJet *jet = GetJet(i);
+
+  return jet->Pt() - fLocalRho->GetLocalVal(jet->Phi(), fJetRadius)*jet->Area();
+}
+
+//________________________________________________________________________
 void AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
   //Get momentum of the i^th jet in array
@@ -284,6 +314,9 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
     return kFALSE;
 
   if( GetZLeadingCharged(jet)>fZLeadingChCut ||  GetZLeadingEmc(jet)>fZLeadingEmcCut)
+    return kFALSE;
+
+  if(jet->NEF()<fNEFMinCut || jet->NEF()>fNEFMaxCut)
     return kFALSE;
 
   if (!AcceptBiasJet(jet))
