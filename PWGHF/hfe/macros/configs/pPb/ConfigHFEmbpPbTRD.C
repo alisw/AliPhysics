@@ -127,7 +127,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString append
       printf("CONFIGURATION FILE: TOF mismatch rejection is set ON \n");
     }
   }
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(appendix);
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(Form("HFEtask%s",appendix.Data()));
   printf("task %p\n", task);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();

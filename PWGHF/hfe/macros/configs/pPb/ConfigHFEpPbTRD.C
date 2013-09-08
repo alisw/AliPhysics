@@ -88,7 +88,7 @@ AliAnalysisTaskHFE* ConfigHFEpPbTRD(Bool_t useMC, Bool_t isAOD, TString appendix
   //        Setting up the task            //
   //***************************************//
 
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(appendix);
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(Form("HFEtask%s",appendix.Data()));
   printf("task %p\n", task);
   task->SetpPbAnalysis();
   if(!isAOD) task->SetRemoveFirstEventInChunk();
