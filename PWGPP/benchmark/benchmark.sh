@@ -308,6 +308,7 @@ goCPass1()
   [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" > ${calibDoneFile}
   [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${calibDoneFile}
   [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${calibDoneFile}
+  echo "dir ${outputDir}" >> ${calibDoneFile}
   summarizeLogs >> ${calibDoneFile}
   
   rm -rf ${runpath}
@@ -541,6 +542,7 @@ goMergeCPass1()
   touch ${calibDoneFile}
   [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" > ${calibDoneFile}
   [[ -f $qaMergedOutputFileName ]] && echo "qafile $outputDir/$qaMergedOutputFileName" >> ${calibDoneFile}
+  echo "dir ${outputDir}" >> ${calibDoneFile}
   summarizeLogs >>  ${calibDoneFile}
 
   rm -rf ${runpath}
