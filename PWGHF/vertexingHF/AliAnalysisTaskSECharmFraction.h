@@ -23,6 +23,7 @@ class AliAODMCParticle;
 class AliAnalysisVertexingHF;
 class AliRDHFCutsD0toKpi;
 class AliNormalizationCounter;
+class AliVertexingHFUtils;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -75,7 +76,9 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   void FillAziHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Double_t azilist[30000],Int_t trkIDlist[30000],Int_t nprim,Int_t okD0,Int_t okD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar)const;
 
   AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *d);
- 
+  void SetRejecCandidateMCUpgrade(Bool_t selection){fselectForUpgrade=selection;}
+  void SetSkipEventSelection(Bool_t skip){fskipEventSelection=skip;}
+  void SetMaxZvtxForSkipEventSelection(Double_t zmax){fZvtxUpgr=zmax;}
   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
      Int_t GetPtBin(Double_t pt)const;
      void SetD0Cuts(Int_t ptbin,Double_t &*d0cutsLoose,Double_t &*d0cutsTight);
@@ -152,6 +155,10 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   TList *flistTghCutsFromB;               //!TList for D from B or D from Dstar from Bwith tight cuts, container 18
   TList *flistTghCutsFromDstar;               //!TList for D from Dstar Dstar with tight cuts, container 19
   TList *flistTghCutsOther;               //!TList for others with tight cuts, container 20
+  AliVertexingHFUtils *fVertUtil;         // vertexing HF Util
+  Bool_t fselectForUpgrade;               // switch to reject candidates from HIJING and not Pythia for upgrade studies
+  Bool_t fskipEventSelection;               // switch to skip event selection (for upgrade studies)
+  Double_t fZvtxUpgr;                       // cut value on max zvtx used ONLY if fskipEventSelection is kTRUE
   /*  Bool_t       fD0usecuts;            // Switch on the use of the cuts             TO BE IMPLEMENTED 
       Bool_t       fcheckMC;              //  Switch on MC check: minimum check is same mother  TO BE IMPLEMENTED
       Bool_t       fcheckMCD0;           //  check the mother is a D0                  TO BE IMPLEMENTED
@@ -166,7 +173,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   
-  ClassDef(AliAnalysisTaskSECharmFraction,4); // analysis task for prompt charm fraction
+  ClassDef(AliAnalysisTaskSECharmFraction,5); // analysis task for prompt charm fraction
 };
 
 #endif

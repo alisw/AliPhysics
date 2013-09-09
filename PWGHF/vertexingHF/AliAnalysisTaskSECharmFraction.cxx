@@ -51,6 +51,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliNormalizationCounter.h"
+#include "AliVertexingHFUtils.h"
 
 class TCanvas;
 class TTree;
@@ -105,8 +106,11 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
   flistTghCutsBack(0),
   flistTghCutsFromB(0),
   flistTghCutsFromDstar(0),
-  flistTghCutsOther(0)
-  
+  flistTghCutsOther(0),
+  fVertUtil(0),
+  fselectForUpgrade(0),  
+  fskipEventSelection(kFALSE),
+  fZvtxUpgr(10.)
 {
   //Default constructor
 }
@@ -155,14 +159,17 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
       flistTghCutsBack(0),
       flistTghCutsFromB(0),
       flistTghCutsFromDstar(0),
-      flistTghCutsOther(0)
-   
-{
-  // Constructor
- 
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  // Output slot #0 writes into a TH1 container
+      flistTghCutsOther(0),
+      fVertUtil(0),
+      fselectForUpgrade(0),
+      fskipEventSelection(kFALSE),
+      fZvtxUpgr(10.)
+  {
+    // Constructor
+    
+    // Define input and output slots here
+    // Input slot #0 works with a TChain
+    // Output slot #0 writes into a TH1 container
 
   //Standard pt bin
   fnbins=SetStandardCuts(fptbins);// THIS TO SET NBINS AND BINNING
@@ -176,7 +183,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
   for(Int_t j=6;j<22;j++){
     DefineOutput(j, TList::Class());
   }
-
+  fVertUtil=new AliVertexingHFUtils();
   // Output slot for the Cut Objects 
   DefineOutput(22,AliRDHFCutsD0toKpi::Class());  //My private output
   DefineOutput(23,AliRDHFCutsD0toKpi::Class());  //My private output
@@ -228,7 +235,11 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     flistTghCutsBack(0),
     flistTghCutsFromB(0),
     flistTghCutsFromDstar(0),
-    flistTghCutsOther(0)
+    flistTghCutsOther(0),
+    fVertUtil(0),
+    fselectForUpgrade(0),
+    fskipEventSelection(kFALSE),
+    fZvtxUpgr(10.)
 {
   // Constructor
   if(fCutsTight){
@@ -255,7 +266,8 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     }
     SetPtBins(fCutsTight->GetNPtBins(),fCutsTight->GetPtBinLimits());   
   }
-  
+
+  fVertUtil=new AliVertexingHFUtils();
   // Output slot #0 writes into a TH1 container
   DefineOutput(1, TH1F::Class());
   DefineOutput(2, TH1F::Class());
@@ -399,7 +411,7 @@ AliAnalysisTaskSECharmFraction::~AliAnalysisTaskSECharmFraction()
     flistTghCutsOther=0;
   }
   
-  
+  delete   fVertUtil;
 }  
 
 
@@ -5461,40 +5473,48 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   Int_t nSelectedloose=0, nSelectedtight=0; 
 
   Bool_t isEventSelTGHT=kTRUE,isEventSelLOOSE=kTRUE;
-  if(!fCutsTight->IsEventSelected(aod)){
-    isEventSelTGHT=kFALSE;
-    if(fCutsTight->GetWhyRejection()==1){ 
-      // rejected for pileup
-      fNentries->Fill(2);    
+  if(!fskipEventSelection){
+    if(!fCutsTight->IsEventSelected(aod)){
+      isEventSelTGHT=kFALSE;
+      if(fCutsTight->GetWhyRejection()==1){ 
+	// rejected for pileup
+	fNentries->Fill(2);    
+      }
+      if(fCutsTight->GetWhyRejection()==6){
+	// |prim Vtx Zspd| > acceptable
+	fNentries->Fill(4);      
+      }
+    }  
+    else {
+      fNentries->Fill(1);    
     }
-    if(fCutsTight->GetWhyRejection()==6){
-      // |prim Vtx Zspd| > acceptable
-      fNentries->Fill(4);      
+    if(!fCutsLoose->IsEventSelected(aod)){
+      isEventSelLOOSE=kFALSE;
+      if(fCutsLoose->GetWhyRejection()==1){
+	// rejected for pileup    
+	fNentries->Fill(9);
+	
+      }
+      if(fCutsLoose->GetWhyRejection()==6){
+	// |prim Vtx Z| > acceptable
+	fNentries->Fill(11);      
+      }
     }
-  }
-  else {
-    fNentries->Fill(1);    
-  }
-  if(!fCutsLoose->IsEventSelected(aod)){
-    isEventSelLOOSE=kFALSE;
-    if(fCutsLoose->GetWhyRejection()==1){
-      // rejected for pileup    
-      fNentries->Fill(9);
-      
+    else {
+      fNentries->Fill(8);    
     }
-    if(fCutsLoose->GetWhyRejection()==6){
-      // |prim Vtx Z| > acceptable
-      fNentries->Fill(11);      
-    }
-  }
-  else {
-    fNentries->Fill(8);    
-  }
-  
-  if(!(isEventSelTGHT||isEventSelLOOSE)){
+    
+    if(!(isEventSelTGHT||isEventSelLOOSE)){
       PostData(1,fNentries);
       return;
+    }
   }
+  else{
+    fCutsTight->SetupPID(aod);
+    // SHOULD ADD RECOMPUTATION OF PRIMARY VERTEX DONE AT THE BEGINNING OF IS EVENT SELECTED??
+    // LIKELY NOT NEEDE
+  }
+
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001){
@@ -5513,10 +5533,21 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   }
   else {
     PostData(1,fNentries);
-    return;
-    
+    return;    
   }
-
+  if(fskipEventSelection){
+    //check z of the primary vertex for the cases in which the z vtx > maximum
+    if(TMath::Abs(vtx1->GetZ())>fZvtxUpgr){
+      	fNentries->Fill(4);      
+	fNentries->Fill(11);      
+	PostData(1,fNentries);
+	return;
+    }
+    else {
+      fNentries->Fill(1);    
+      fNentries->Fill(8);    
+    }
+  }
   // FILL n-tracks counter
   if(isEventSelTGHT)fNentries->Fill(5,aod->GetNumberOfTracks());
   if(isEventSelLOOSE)fNentries->Fill(12,aod->GetNumberOfTracks());
@@ -5651,7 +5682,8 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
     //       unsetvtx=kTRUE;
     //     }
-
+    
+    
     //recalculate vertex w/o daughters
     AliAODVertex *origownvtx=0x0;
     if(fCleanCandOwnVtx){      
@@ -5706,7 +5738,41 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 
     // INVESTIGATE SIGNAL TYPE : ACCESS TO MC INFORMATION
     if(fReadMC){
-      aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
+      if(fselectForUpgrade){
+	TString nameGen;	
+	Int_t generator=0;// adding per track: -1 hijing; 0-pythiaHF; 2-the rest  --> -2= pure hijing -> back ok (but check identity); 0= phytia,pythia-> ok for checking signal; reject the rest: -1 (Hij,pyt), 1 (hij, rest), 2 (pythia,rest) ,4 (rest,rest) 
+	for(Int_t jp=0;jp<2;jp++){
+	  AliAODTrack *daughA=(AliAODTrack*)d->GetDaughter(0);
+	  fVertUtil->GetTrackPrimaryGenerator(daughA,aodmcHeader,arrayMC,nameGen);
+	  if(nameGen.Contains("ijing")){
+	    generator+=-1;
+	  }
+	  else if(!nameGen.Contains("pythia")){
+	    generator+=2;
+	  }
+	}
+	if(generator==-2){
+	  Int_t pdgdaughters[2]={211,321};
+	  Int_t labMum=d->MatchToMC(421,arrayMC,2,pdgdaughters);
+	  if(labMum<0)signallevel=-1;
+	  else signallevel=-2;
+	}
+	else if (generator==0){
+	  aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
+	}
+	else{
+	  signallevel=-3;
+	}
+	if(fVertUtil->IsCandidateInjected(d,aodmcHeader,arrayMC)){
+	  //	  Printf("The candidate is injected and generator is : %d",generator);
+	}
+	else {
+	  //	  Printf("The candidate is not injected and generator is : %d",generator);
+	}
+      }      
+      else {
+	aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
+      }
     }
     else signallevel=0;
     //   ACCOUNT FOR ETA & ITS CLUSTER SELECTION
@@ -6510,18 +6576,19 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
     signaltype=-1;
     return aodDMC;    
   }
+  
 
   if(labMum<0){
     signaltype=-1;
     return aodDMC;    
   }
-
+  
   // get daughter AOD tracks
   AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
   AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
  
   if(trk0==0x0||trk1==0x0){
-    AliDebug(2,"Delete tracks I AM \n");
+    AliDebug(2,"null daughter tracks \n");
   
     signaltype=-1;
     return aodDMC;
