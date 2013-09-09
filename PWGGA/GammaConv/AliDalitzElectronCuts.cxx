@@ -1075,8 +1075,8 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut)
 		fPIDnSigmaAbovePionLineTPCHighPt=-100;
 		break;
 	case 1:  // -10
-		fPIDnSigmaAbovePionLineTPC=-10;
-		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		fPIDnSigmaAbovePionLineTPC=3.0;              //Update Sep-05-2013 from -10 to 3
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;        
 		break;
 	case 2:  // 1
 		fPIDnSigmaAbovePionLineTPC=-1;

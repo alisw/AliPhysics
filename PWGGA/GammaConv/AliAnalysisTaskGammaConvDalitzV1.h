@@ -12,6 +12,7 @@
 #include "AliDalitzElectronSelector.h"
 #include "AliConversionMesonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
+#include "TProfile2D.h"
 
 class AliESDInputHandler;
 class AliMCEventHandler;
@@ -183,6 +184,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 
     TH1I **hNEvents;
     TH1I **hNGoodESDTracks;
+    TProfile **hEtaShift;
         
     TRandom3 fRandom;
     Double_t *fUnsmearedPx;
