@@ -178,10 +178,11 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    cutFilename=argument;                    //     cutname?       //
 	    poolConfigFile=argument;                 //--------------------//
 	    continue;
-	  }       
-	  if (argument.BeginsWith("mc")) {
+	  }   
+	  if (argument.CompareTo("mc")==0){     
+	    //	  if (argument.Compare("mc")) {
 	    bUseMC=kTRUE;
-	    taskOptions+=" mc";
+	    taskOptions+=" "+argument;
 	    continue;
 	  }
 	  if(argument.BeginsWith("tpcclusters=")){
