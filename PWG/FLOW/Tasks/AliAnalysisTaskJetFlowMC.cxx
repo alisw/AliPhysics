@@ -130,7 +130,8 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
 TH1F* AliAnalysisTaskJetFlowMC::BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c, Bool_t append)
 {
     // book a TH1F and connect it to the output container
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    if(!fOutputList) return 0x0;
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
+    if(!fOutputList) return 0x0;
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
@@ -146,7 +147,8 @@ TH1F* AliAnalysisTaskJetFlowMC::BookTH1F(const char* name, const char* x, Int_t 
 TH2F* AliAnalysisTaskJetFlowMC::BookTH2F(const char* name, const char* x, const char*y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c, Bool_t append)
 {
     // book a TH2F and connect it to the output container
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    if(!fOutputList) return 0x0;
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
+    if(!fOutputList) return 0x0;
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
@@ -162,7 +164,8 @@ TH2F* AliAnalysisTaskJetFlowMC::BookTH2F(const char* name, const char* x, const 
 void AliAnalysisTaskJetFlowMC::UserExec(Option_t *) 
 {
     // user exec, called for each event.
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    if(!AliAnalysisManager::GetAnalysisManager()) return;
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
+    if(!AliAnalysisManager::GetAnalysisManager()) return;
     // retrieve tracks from input.
     if (!fTracksIn) { 
         fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
@@ -196,7 +199,7 @@ void AliAnalysisTaskJetFlowMC::UserExec(Option_t *)
         FillHistogramsOriginalData(pt, eta, phi);
         if(fHistDiffV2[fCenBin] || fFuncDiffV2[fCenBin])        V2AfterBurner(phi, eta, pt);
         else if(fHistDiffV3[fCenBin] || fFuncDiffV3[fCenBin])   V3AfterBurner(phi, eta, pt);
-        else if(fHistDiffV2 || fHistDiffV3)                     SampleVnFromTF1(phi);        
+        else if(fHistIntV2 || fHistIntV3)                       SampleVnFromTF1(phi);        
         /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, track->Charge(), track->GetLabel(), 4, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->GetTrackPtOnEMCal(), 1); 
         nacc++;
     }
@@ -208,7 +211,8 @@ void AliAnalysisTaskJetFlowMC::UserExec(Option_t *)
 void AliAnalysisTaskJetFlowMC::V2AfterBurner(Double_t &phi, Double_t &eta, Double_t &pt) const
 {
     // similar to AliFlowTrackSimple::AddV2, except for the flow fluctuations
-    if(fDebug > 1) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    phi = PhaseShift(gRandom->Uniform(0, TMath::TwoPi()) + fPsi2);
+    if(fDebug > 1) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
+    phi = gRandom->Uniform(0, TMath::TwoPi());
     Double_t phi0(phi), v2(GetV2(pt)), f(0.), fp(0.), phiprev(0.);
     if(TMath::AreEqualAbs(v2, 0, 1e-5)) { 
         FillHistogramsToyData(pt, eta, phi, v2);
@@ -229,7 +233,8 @@ void AliAnalysisTaskJetFlowMC::V2AfterBurner(Double_t &phi, Double_t &eta, Doubl
 void AliAnalysisTaskJetFlowMC::V3AfterBurner(Double_t &phi, Double_t &eta, Double_t &pt) const
 {
     // similar to AliFlowTrackSimple::AddV3, except for the flow fluctuations
-    if(fDebug > 1) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    phi = PhaseShift(gRandom->Uniform(0, TMath::TwoPi()) + fPsi3);
+    if(fDebug > 1) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
+    phi = gRandom->Uniform(0, TMath::TwoPi());
     Double_t phi0(phi), v3(GetV3(pt)), f(0.), fp(0.), phiprev(0.);
     if(TMath::AreEqualAbs(v3, 0, 1e-5)) {
         FillHistogramsToyData(pt, eta, phi, v3);
@@ -251,7 +256,8 @@ void AliAnalysisTaskJetFlowMC::InjectSingleFragmentationJetSpectrum(Int_t nacc)
 {
     // inject single fragmentation jet spectrum to the tclones array, note that emcal params 
     // equal the barrel kinematics to pass the track and jet cuts later on
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    for(Int_t i(nacc); i < (nacc + fNoOfSFJets); i++) {
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
+    for(Int_t i(nacc); i < (nacc + fNoOfSFJets); i++) {
         Double_t eta(gRandom->Uniform(-.5, .5)), phi(gRandom->Uniform(0, TMath::TwoPi())), pt(fJetSpectrumSF->GetRandom());
         /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[i]) AliPicoTrack(pt, eta, phi, +1, 0, 0, eta, phi, pt, 0);
         fHistSFJetSpectrum->Fill(pt);
@@ -263,7 +269,8 @@ void AliAnalysisTaskJetFlowMC::InjectSingleFragmentationJetSpectrum(Int_t nacc)
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlowMC::CalculateEventPlane() {
     // grab the event plane orientation from the AliVEvent header
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    Double_t a(0), b(0), e(0), f(0);
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
+    Double_t a(0), b(0), e(0), f(0);
     switch (fDetectorType) {
         case kVZEROA : {
             fPsi2 = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, e, f);
