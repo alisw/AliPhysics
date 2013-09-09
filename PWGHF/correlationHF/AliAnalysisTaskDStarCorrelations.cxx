@@ -482,7 +482,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	  deltainvMDStar = -998;
 	  AliAODRecoCascadeHF* dstarD0pi;
 	  AliAODRecoDecayHF2Prong* theD0particle;
-	  AliAODMCParticle* DStarMC;
+	  AliAODMCParticle* DStarMC=0x0;
       Short_t daughtercharge = -2;
 	  Int_t trackiddaugh0 = -1; // track id if it is reconstruction - label if it is montecarlo info
 	  Int_t trackiddaugh1 = -1;
@@ -868,19 +868,22 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				// ================ FILL CORRELATION HISTOGRAMS ===============================
 				
                 // monte carlo case (mc tagged D*)
-				if((fmontecarlo && isDStarMCtag) || (fmontecarlo && !fReco)){ // check correlations of MC tagged DStars in MonteCarlo
-                    
-					Bool_t* PartSource = fCuts2->IsMCpartFromHF(label,fmcArray); // check source of associated particle (hadron/kaon/K0)
-                    
-                    MCarraytofill[5] = 0;
-					if(PartSource[0]) MCarraytofill[5] = 1;
-                    if(PartSource[1]) MCarraytofill[5] = 2;
-                    if(PartSource[2]&&PartSource[0]) MCarraytofill[5] = 3;
+	      if((fmontecarlo && isDStarMCtag) || (fmontecarlo && !fReco)){ // check correlations of MC tagged DStars in MonteCarlo
+                
+		Bool_t* PartSource = fCuts2->IsMCpartFromHF(label,fmcArray); // check source of associated particle (hadron/kaon/K0)
+	                      
+		MCarraytofill[5] = 0;
+		if(PartSource[0]) MCarraytofill[5] = 1;
+		if(PartSource[1]) MCarraytofill[5] = 2;
+		if(PartSource[2]&&PartSource[0]) MCarraytofill[5] = 3;
                     if(PartSource[2]&&PartSource[1]) MCarraytofill[5] = 4;
                     if(PartSource[3]) MCarraytofill[5] = 5;
                     if(!isDfromB) MCarraytofill[6] = 0;
                     if(isDfromB) MCarraytofill[6] = 1;
-					if(!fReco && TMath::Abs(etaHad)>0.8) continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
+		    if(!fReco && TMath::Abs(etaHad)>0.8) {
+		      delete [] PartSource;
+		      continue; // makes sure you study the correlation on MC  truth only if particles are in acceptance
+		    }
                     ((THnSparseF*)fOutputMC->FindObject("MCDStarCorrelationsDStarHadron"))->Fill(MCarraytofill);
                     
                     delete[] PartSource;
@@ -1459,7 +1462,11 @@ void AliAnalysisTaskDStarCorrelations::EnlargeDZeroMassWindow(){
     
   AliInfo("Enlarging the D0 mass windows from cut object\n"); 
   Int_t nvars = fCuts->GetNVars();
-    
+
+  if(nvars<1){
+    AliWarning("EnlargeDZeroMassWindow: 0 variables in cut object... check!");
+    return;
+  }
   Float_t** rdcutsvalmine=new Float_t*[nvars];
   for(Int_t iv=0;iv<nvars;iv++){
     rdcutsvalmine[iv]=new Float_t[fNofPtBins];
