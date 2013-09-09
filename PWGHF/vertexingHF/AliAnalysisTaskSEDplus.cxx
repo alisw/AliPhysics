@@ -662,8 +662,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
   fPtVsMass=new TH2F("hPtVsMass","PtVsMass (prod. cuts)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
   fPtVsMassTC=new TH2F("hPtVsMassTC","PtVsMass (analysis cuts)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);  
-  fYVsPt=new TH2F("hYVsPt","YvsPt (prod. cuts)",40,0.,20.,80,-2.,2.);
-  fYVsPtTC=new TH2F("hYVsPtTC","YvsPt (analysis cuts)",40,0.,20.,80,-2.,2.);
+  fYVsPt=new TH3F("hYVsPt","YvsPt (prod. cuts)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
+  fYVsPtTC=new TH3F("hYVsPtTC","YvsPt (analysis cuts)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
   fYVsPtSig=new TH2F("hYVsPtSig","YvsPt (MC, only sig., prod. cuts)",40,0.,20.,80,-2.,2.);
   fYVsPtSigTC=new TH2F("hYVsPtSigTC","YvsPt (MC, only Sig, analysis cuts)",40,0.,20.,80,-2.,2.);
   fPhiEtaCand=new TH2F("hPhiEtaCand","phi vs. eta candidates",20,-1.,1.,50,0.,2*TMath::Pi());
@@ -872,8 +872,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
       Double_t invMass=d->InvMassDplus();
       Double_t rapid=d->YDplus();
-      fYVsPt->Fill(ptCand,rapid);
-      if(passTightCuts) {fYVsPtTC->Fill(ptCand,rapid);nOS++;}
+      fYVsPt->Fill(ptCand,rapid,invMass);
+      if(passTightCuts) {fYVsPtTC->Fill(ptCand,rapid,invMass);nOS++;}
       Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
       if(isFidAcc){
 	fPtVsMass->Fill(invMass,ptCand);
@@ -1032,8 +1032,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  }
 	}else{//outside fidAcc
 	  if(labDp>=0){
-	    fYVsPtSig->Fill(ptCand,rapid);
-	    if(passTightCuts)fYVsPtSigTC->Fill(ptCand,rapid);
+	    fYVsPtSig->Fill(ptCand,rapid, invMass);
+	    if(passTightCuts)fYVsPtSigTC->Fill(ptCand,rapid, invMass);
 	  }
 	}
       }//readmc
