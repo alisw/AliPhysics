@@ -857,6 +857,47 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
       }
    }
+   
+   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
+     
+   if(fV0Reader)
+      if((AliConversionCuts*)fV0Reader->GetConversionCuts())
+         if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
+            fOutputContainer->Add(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
+	 
+	 
+	 
+   fElecSelector=(AliDalitzElectronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ElectronSelector");
+   if(!fElecSelector){printf("Error: No ElectronSelector");return;} // GetV0Reader
+     
+    if( fElecSelector ){
+
+      if ( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() ){
+         fOutputContainer->Add( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() );
+      }
+   }  
+
+   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+
+      if( fCutElectronArray ){
+         if( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetCutHistograms() ) {
+            fCutFolder[iCut]->Add( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetCutHistograms() );
+         }
+      }
+
+      if( fCutMesonArray  ) {
+         if( ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->GetCutHistograms() ) {
+            fCutFolder[iCut]->Add( ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->GetCutHistograms());
+         }
+      }
+
+      if( fCutGammaArray ) {
+         if( ((AliConversionCuts*)fCutGammaArray->At(iCut))->GetCutHistograms() ) {
+            fCutFolder[iCut]->Add( ((AliConversionCuts*)fCutGammaArray->At(iCut))->GetCutHistograms()  );
+         }
+      }
+   }
 
    PostData(1, fOutputContainer);
 
@@ -1032,40 +1073,7 @@ Bool_t AliAnalysisTaskGammaConvDalitzV1::Notify()
 void AliAnalysisTaskGammaConvDalitzV1::Terminate(const Option_t *)
 {
 
-   if( fElecSelector ){
-
-      if ( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() ){
-         fOutputContainer->Add( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() );
-      }
-   }
-
-  if ( fV0Reader ) {
-
-      if ( ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms() ){
-         fOutputContainer->Add(  ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms() );
-      }
-   }
-
-   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-
-      if( fCutElectronArray ){
-         if( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetCutHistograms() ) {
-            fCutFolder[iCut]->Add( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetCutHistograms() );
-         }
-      }
-
-      if( fCutMesonArray  ) {
-         if( ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->GetCutHistograms() ) {
-            fCutFolder[iCut]->Add( ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->GetCutHistograms());
-         }
-      }
-
-      if( fCutGammaArray ) {
-         if( ((AliConversionCuts*)fCutGammaArray->At(iCut))->GetCutHistograms() ) {
-            fCutFolder[iCut]->Add( ((AliConversionCuts*)fCutGammaArray->At(iCut))->GetCutHistograms()  );
-         }
-      }
-   }
+//Grid
 
 }
 //________________________________________________________________________
