@@ -16,6 +16,14 @@
 // macro for creating histograms
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TMath.h>
+#include <TString.h>
+#include "AliLnHistoMap.h"
+#endif
+
 AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, Bool_t simulation, Double_t maxDCAxy, Double_t maxEta, Double_t maxY, Bool_t heavyIons)
 {
 //
@@ -239,7 +247,6 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		hMap->Add( particle[i] + "_TPC_dEdx_P", 1000, 0.001, 10.001, dEdxBins, mindEdx, maxdEdx, "", "p_{TPC}/Z (GeV/c)", "dE/dx",logx,logy);
 		hMap->Add( particle[i] + "_TOF_Beta_P", 1000, 0.001, 10.001, 1200, 0.001, 1.2, "", "p_{TOF}/Z (GeV/c)", "#beta",logx,logy);
 		hMap->Add( particle[i] + "_TOF_Mass_P", 1000, 0.001, 10.001, 500, 0.01, 5., "", "p_{TOF}/Z (GeV/c)", "Mass (GeV/c^{2})");
-		
 		
 		// TrackCuts
 		
