@@ -485,12 +485,13 @@ TString AliVertexingHFUtils::GetGenerator(Int_t label, AliAODMCHeader* header){
   TString empty="";
   return empty;
 }
-//----------------------------------------------------------------------
-Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC){
-  // method to check if a track comes from the signal event or from the underlying Hijing event
+//_____________________________________________________________________
+void AliVertexingHFUtils::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen){
+
+  // method to check if a track comes from a given generator
 
   Int_t lab=TMath::Abs(track->GetLabel());
-  TString nameGen=GetGenerator(lab,header);
+  nameGen=GetGenerator(lab,header);
   
   //  Int_t countControl=0;
   
@@ -513,6 +514,14 @@ Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *h
     //   break;
     // }
   }
+  
+  return;
+}
+//----------------------------------------------------------------------
+Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC){
+  // method to check if a track comes from the signal event or from the underlying Hijing event
+  TString nameGen;
+  GetTrackPrimaryGenerator(track,header,arrayMC,nameGen);
   
   if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
   
