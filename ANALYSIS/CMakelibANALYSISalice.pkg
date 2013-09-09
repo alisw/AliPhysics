@@ -65,6 +65,7 @@ set ( SRCS
     AliUnfolding.cxx
     AliAnalysisUtils.cxx
     BadChunkFilter/AliAnalysisTaskBadChunkID.cxx
+    AliAODv0KineCuts.cxx
     )
 
 if( ROOTHASALIEN STREQUAL "yes")
