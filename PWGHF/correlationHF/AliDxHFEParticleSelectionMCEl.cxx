@@ -56,6 +56,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fStoreCutStepInfo(kFALSE)
   , fElSelection(kAllPassingSelection)
   , fStoreOnlyMCElectrons(kFALSE)
+  , fMCInfo(kMCLast)
 {
   // constructor
   // 
@@ -72,7 +73,10 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
 
   // TODO: argument scan, build tool options accordingly
   // e.g. set mc mode first/last, skip control histograms
-  TString toolopt("pdg=11 mc-last");
+  TString toolopt("pdg=11");
+  if(fMCInfo==kMCLast) toolopt+=" mc-last";
+  if(fMCInfo==kMCOnly) toolopt+=" mc-first";
+  if(fMCInfo==kMCFirst) toolopt+=" mc-first";
   if(fUseKine) toolopt+=" usekine";
   new (&fMCTools) AliDxHFEToolsMC(toolopt);
 }
@@ -235,6 +239,7 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
   /// THnSparse. 
 
   int iResult=0;
+  fResultMC=0;
   if (!p || !pEvent){
     return -EINVAL;
   }
@@ -243,10 +248,12 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
   if(!fUseKine && !fUseMCReco){
   // step 1:
   // optional MC selection before the particle selection
-  if (fMCTools.MCFirst() && (iResult=CheckMC(p, pEvent))==0) {
-    // histograming?
-    return iResult;
-  }
+    if (fMCTools.MCFirst()){
+      fResultMC=CheckMC(p, pEvent);
+      // histograming?
+      if(fMCInfo==kMCOnly) return fResultMC;
+      if(fResultMC==0) return fResultMC;
+    }
 
   // step 2 or 1, depending on sequence:
   // normal particle selection
@@ -464,6 +471,21 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       else if(argument.CompareTo("Onlyb")==0){ fElSelection=kOnlyb;}
       else AliFatal(Form("unknown argument '%s'", argument.Data()));
       AliInfo(Form("Selecting only source %d",fElSelection));
+      continue;
+    }
+    if(argument.BeginsWith("mc-only")){
+      AliInfo("Do only test on MC info");
+      fMCInfo=kMCOnly;
+      continue;
+    }
+    if(argument.BeginsWith("mc-first")){
+      AliInfo("Do test on MC info first");
+      fMCInfo=kMCFirst;
+      continue;
+    }
+    if(argument.BeginsWith("mc-last")){
+      AliInfo("Do test on MC info last");
+      fMCInfo=kMCLast;
       continue;
     }
     // forwarding of single argument works, unless key-option pairs separated
