@@ -25,6 +25,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
+        enum collisionType      { kPbPb, kPythia };                     // collision type
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
@@ -84,6 +85,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
         void                    SetModulationFitOptions(TString opt)            {fFitModulationOptions = opt; }
         void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
+        void                    SetCollisionType(collisionType type)            {fCollisionType = type; }
         void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
@@ -190,6 +192,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         TString                 fFitModulationOptions;  // fit options for modulation fit
         runModeType             fRunModeType;           // run mode type 
         dataType                fDataType;              // datatype 
+        collisionType           fCollisionType;         // collision type
         TRandom3*               fRandom;                //-> dont use gRandom to not interfere with other tasks
         Int_t                   fMappedRunNumber;       //! mapped runnumer (for QA)
         Int_t                   fInCentralitySelection; //! centrality bin
