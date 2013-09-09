@@ -354,10 +354,19 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hAccCrossedRowsTPC = new TH1F("hAccCrossedRowsTPC","hAccCrossedRowsTPC",160,0,159);
   hAccCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track after cut");
   
-  hDCAPtAll = new TH2F("hDCAPtAll","hDCAPtAll;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
-  hDCAPtAccepted = new TH2F("hDCAPtAccepted","hDCAPtAccepted;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
-  hMCDCAPtSecondary = new TH2F("hMCDCAPtSecondary","hMCDCAPtSecondary;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
-  hMCDCAPtPrimary = new TH2F("hMCDCAPtPrimary","hMCDCAPtPrimary;p_{T} (GeV/c);DCA",fPtNbins-1, fBinsPt, 20,-10,10);
+  Int_t binsDCAxyDCAzPt[3] = { 200,200, fPtNbins-1};
+  Double_t minDCAxyDCAzPt[3] = { -10, -10, 0};
+  Double_t maxDCAxyDCAzPt[3] = { 10., 10., 100};
+  
+  hDCAPtAll = new THnSparseF("hDCAPtAll","hDCAPtAll;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hDCAPtAccepted = new THnSparseF("hDCAPtAccepted","hDCAPtAccepted;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hMCDCAPtSecondary = new THnSparseF("hMCDCAPtSecondary","hMCDCAPtSecondary;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hMCDCAPtPrimary = new THnSparseF("hMCDCAPtPrimary","hMCDCAPtPrimary;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  
+  hDCAPtAll->SetBinEdges(2, fBinsPt);
+  hDCAPtAccepted->SetBinEdges(2, fBinsPt);
+  hMCDCAPtSecondary->SetBinEdges(2, fBinsPt);
+  hMCDCAPtPrimary->SetBinEdges(2, fBinsPt);
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(hnZvPtEtaCent);
@@ -514,7 +523,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	continue;
       }
       
-        
+      
       //       
       // ======================== fill histograms ========================
       dMCTrackZvPtEtaCent[1] = mcPart->Pt();
@@ -567,6 +576,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     bIsPrimary = kFALSE;
     
+    Double_t dDCAxyDCAzPt[3] = { GetDCAxy(track, eventAOD), GetDCAz(track, eventAOD), track->Pt() };
+    
+    hDCAPtAll->Fill(dDCAxyDCAzPt);
+    
     if( !(IsTrackAccepted(track)) ) continue;
     
     dTrackZvPtEtaCent[1] = track->Pt();
@@ -594,8 +607,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
       
       if(bIsPrimary && bIsHijingParticle)
       {
-	hnMCRecPrimZvPtEtaCent->Fill(dTrackZvPtEtaCent);
-	hMCDCAPtPrimary->Fill(track->Pt(), track->DCA());
+	hnMCRecPrimZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
+	hMCDCAPtPrimary->Fill(dDCAxyDCAzPt);
       }
       
       if(!bIsPrimary /*&& !bIsHijingParticle*/)
@@ -611,8 +624,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	    hMCTrackStatusCode->Fill(Form("%d",mcPart->GetStatus()), 1);
 	    if(TMath::Abs(mcPart->Eta()) < 0.8) { hMCPdgPt->Fill(mcPart->Pt(), Form("%s",GetParticleName(mcPart->GetPdgCode())), 1); }
 	    
-	    hnMCRecSecZvPtEtaCent->Fill(dTrackZvPtEtaCent);
-	    hMCDCAPtSecondary->Fill(track->Pt(), track->DCA());
+	    hnMCRecSecZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
+	    hMCDCAPtSecondary->Fill(dDCAxyDCAzPt);
 	    hMCTrackPdgCode->Fill(Form("%s_H%i_H%i",GetParticleName(moth->GetPdgCode()),bMotherIsHijingParticle, bIsHijingParticle), 1);
 	    // 	  delete moth;
 	  }
@@ -622,27 +635,28 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     // ======================== fill histograms ========================
     
-//     if(bIsMonteCarlo && !bIsHijingParticle) 
-//     { 
-//       continue;  //only store reco tracks, which do not come from embedded signal
-//     }
-    
-   
-    
-    bEventHasATrack = kTRUE;
-    
-    hnZvPtEtaCent->Fill(dTrackZvPtEtaCent);
-    
-    if( (dTrackZvPtEtaCent[1] > dCutPtMin) &&
-      (dTrackZvPtEtaCent[1] < dCutPtMax) &&
-      (dTrackZvPtEtaCent[2] > dCutEtaMin) &&
-      (dTrackZvPtEtaCent[2] < dCutEtaMax) )
-    {
-      iAcceptedMultiplicity++;
-      bEventHasATrackInRange = kTRUE;
-      hPt->Fill(track->Pt());
-      hCharge->Fill(track->Charge());
-    }
+    //     if(bIsMonteCarlo && !bIsHijingParticle) 
+    //     { 
+      //       continue;  //only store reco tracks, which do not come from embedded signal
+      //     }
+      
+      
+      
+      bEventHasATrack = kTRUE;
+      
+      hnZvPtEtaCent->Fill(dTrackZvPtEtaCent);
+      hDCAPtAccepted->Fill(dDCAxyDCAzPt);
+      
+      if( (dTrackZvPtEtaCent[1] > dCutPtMin) &&
+	(dTrackZvPtEtaCent[1] < dCutPtMax) &&
+	(dTrackZvPtEtaCent[2] > dCutEtaMin) &&
+	(dTrackZvPtEtaCent[2] < dCutEtaMax) )
+      {
+	iAcceptedMultiplicity++;
+	bEventHasATrackInRange = kTRUE;
+	hPt->Fill(track->Pt());
+	hCharge->Fill(track->Charge());
+      }
   } // end track loop
   
   if(bEventHasATrack) { hEventStatistics->Fill("events with tracks",1); bEventHasATrack = kFALSE; }
@@ -669,18 +683,13 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   
   if(tr->Charge()==0) { return kFALSE; }
   
-  hDCAPtAll->Fill(tr->Pt(), tr->DCA());
-  
   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; }
-  
-  
   
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
   
   if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
-
-  hDCAPtAccepted->Fill(tr->Pt(), tr->DCA());
+  
   hAccNclsTPC->Fill(dNClustersTPC);
   hAccCrossedRowsTPC->Fill(dCrossedRowsTPC);
   //   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
@@ -729,6 +738,60 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
     
     
     return kTRUE;
+}
+
+Double_t AlidNdPtAnalysisPbPbAOD::GetDCAz(AliAODTrack *track, AliAODEvent *event)
+{
+ return GetDCA(track, event, kTRUE); 
+}
+
+Double_t AlidNdPtAnalysisPbPbAOD::GetDCAxy(AliAODTrack *track, AliAODEvent *event)
+{
+ return GetDCA(track, event, kFALSE); 
+}
+
+Double_t AlidNdPtAnalysisPbPbAOD::GetDCA(AliAODTrack *tr, AliAODEvent *evt, Bool_t bDCAz)
+{
+  if(!tr) return -999.;
+  
+  if(tr->TestBit(AliAODTrack::kIsDCA))
+  {
+    if(bDCAz) return tr->ZAtDCA();
+    else return sqrt(tr->XAtDCA()*tr->XAtDCA() + tr->YAtDCA()*tr->YAtDCA());
+  }
+  
+  Bool_t ok=kFALSE;
+  Double_t d0z0[2];
+  if(evt) 
+  {
+    Double_t covd0z0[3];
+    
+    AliExternalTrackParam etp; 
+    etp.CopyFromVTrack(tr);
+    
+    Float_t xstart = etp.GetX();
+    if(xstart>3.) 
+    {
+      d0z0[0]=-999.;
+      d0z0[1]=-999.;
+      //printf("This method can be used only for propagation inside the beam pipe \n");
+      if(bDCAz) return d0z0[1];
+      else return d0z0[0];
+    }
+    
+    
+    AliAODVertex *vtx =(AliAODVertex*)(evt->GetPrimaryVertex());
+    Double_t fBzkG = evt->GetMagneticField(); // z componenent of field in kG
+    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+  }
+  if(!ok){
+    d0z0[0]=-999.;
+    d0z0[1]=-999.;
+    if(bDCAz) return d0z0[1];
+    else return d0z0[0];
+  }
+  if(bDCAz) return d0z0[1];
+  else return d0z0[0];
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::IsMCTrackAccepted(AliAODMCParticle *part)
@@ -812,56 +875,57 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsPythiaParticle(const AliAODMCParticle *part, A
 
 // Int_t AlidNdPtAnalysisPbPbAOD::IsMCSecondary(AliAODMCParticle *part, TClonesArray *arrayMC)
 // {
-//   //
-//   // adapted from AliAnalysisTaskSpectraAOD.cxx
-//   //
-//   // returns
-//   // -1: no particle
-//   // 0: is primary
-//   // 1: is secondary from weak
-//   // 2: is secondary from material
-//   
-//   // usage for studies, currrently not implemented
-//   
-//   if(!part) return -1; 
-//   
-//   if( part->IsPhysicalPrimary() ) return 0;
-//   
-//   Bool_t isSecondaryMaterial = kFALSE; 
-//   Bool_t isSecondaryWeak     = kFALSE; 
-//   Int_t mfl = -999;
-//   Int_t codemoth = -999;
-//   Int_t indexMoth = part->GetMother(); // FIXME ignore fakes? TO BE CHECKED, on ESD is GetFirstMother()
-//   if(indexMoth >= 0)
-//   {
-//     AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
-//     codemoth = TMath::Abs(moth->GetPdgCode());
-//     mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
-//   } 
-//   // add if(partMC->GetStatus() & kPDecay)? FIXME
-//   if(mfl==3) isSecondaryWeak     = kTRUE;     
-//   else       isSecondaryMaterial = kTRUE; 
-//   
-//   if(isSecondaryWeak) return 1;
-//   if(isSecondaryMaterial) return 2;
-//   
-// //   if( isSecondaryMaterial || isSecondaryWeak ) return kTRUE;
-//   
-//   // return kFALSE; this line will not be reached, as either isSecondaryMaterial or isSecondaryWeak is true!
-//   // removed due to coverity
-// }
-
-
-
-void AlidNdPtAnalysisPbPbAOD::Terminate(Option_t *)
-{
-  
-}
-
-Double_t* AlidNdPtAnalysisPbPbAOD::GetArrayClone(Int_t n, Double_t* source)
-{
-  if (!source || n==0) return 0;
-  Double_t* dest = new Double_t[n];
-  for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
-  return dest;
-}
+  //   //
+  //   // adapted from AliAnalysisTaskSpectraAOD.cxx
+  //   //
+  //   // returns
+  //   // -1: no particle
+  //   // 0: is primary
+  //   // 1: is secondary from weak
+  //   // 2: is secondary from material
+  //   
+  //   // usage for studies, currrently not implemented
+  //   
+  //   if(!part) return -1; 
+  //   
+  //   if( part->IsPhysicalPrimary() ) return 0;
+  //   
+  //   Bool_t isSecondaryMaterial = kFALSE; 
+  //   Bool_t isSecondaryWeak     = kFALSE; 
+  //   Int_t mfl = -999;
+  //   Int_t codemoth = -999;
+  //   Int_t indexMoth = part->GetMother(); // FIXME ignore fakes? TO BE CHECKED, on ESD is GetFirstMother()
+  //   if(indexMoth >= 0)
+  //   {
+    //     AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
+    //     codemoth = TMath::Abs(moth->GetPdgCode());
+    //     mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+    //   } 
+    //   // add if(partMC->GetStatus() & kPDecay)? FIXME
+    //   if(mfl==3) isSecondaryWeak     = kTRUE;     
+    //   else       isSecondaryMaterial = kTRUE; 
+    //   
+    //   if(isSecondaryWeak) return 1;
+    //   if(isSecondaryMaterial) return 2;
+    //   
+    // //   if( isSecondaryMaterial || isSecondaryWeak ) return kTRUE;
+    //   
+    //   // return kFALSE; this line will not be reached, as either isSecondaryMaterial or isSecondaryWeak is true!
+    //   // removed due to coverity
+    // }
+    
+    
+    
+    void AlidNdPtAnalysisPbPbAOD::Terminate(Option_t *)
+    {
+      
+    }
+    
+    Double_t* AlidNdPtAnalysisPbPbAOD::GetArrayClone(Int_t n, Double_t* source)
+    {
+      if (!source || n==0) return 0;
+      Double_t* dest = new Double_t[n];
+      for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
+      return dest;
+    }
+    

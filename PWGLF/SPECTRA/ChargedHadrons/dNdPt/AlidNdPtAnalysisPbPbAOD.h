@@ -43,6 +43,7 @@ class THnSparse;
 #include "AliAODMCParticle.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliExternalTrackParam.h"
 
 #include "TSystem.h"
 #include "TROOT.h"
@@ -97,6 +98,11 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     // getter for qualtiy track cuts
     Double_t GetCutMinNCrossedRowsTPC()					{ return dCutMinNumberOfCrossedRows; }
     
+    // getter for DCA
+    Double_t GetDCAz(AliAODTrack *track, AliAODEvent *event);
+    Double_t GetDCAxy(AliAODTrack *track, AliAODEvent *event);
+    Double_t GetDCA(AliAODTrack *tr, AliAODEvent *evt, Bool_t bDCAz);
+    
     THnSparseF *GetHistZvPtEtaCent() const { return hnZvPtEtaCent; }
     TH1F *GetHistEventStatistics() const { return hEventStatistics; }
     
@@ -139,11 +145,11 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	*hMCHijingPrim; // number of particles, which are Hijing particles and primaries
     TH1F	*hAccNclsTPC; //control histo: number of clusters in TPC for accepted tracks
     TH1F	*hAccCrossedRowsTPC; //control histo: number of crossed rows in TPC for accepted tracks
-    TH2F	*hDCAPtAll; //control histo: DCA vs pT for all reconstructed tracks
-    TH2F	*hDCAPtAccepted; //control histo: DCA vs pT for all accepted reco tracks
-    TH2F	*hMCDCAPtSecondary; //control histo: DCA vs pT for all accepted reco track, which are secondaries (using MC info)
-    TH2F	*hMCDCAPtPrimary; //control histo: DCA vs pT for all accepted reco track, which are primaries (using MC info)
-    
+    THnSparseF	*hDCAPtAll; //control histo: DCAz vs DCAxy vs pT for all reconstructed tracks
+    THnSparseF	*hDCAPtAccepted; //control histo: DCAz vs DCAxy vs pT for all accepted reco tracks
+    THnSparseF	*hMCDCAPtSecondary; //control histo: DCAz vs DCAxy vs pT for all accepted reco track, which are secondaries (using MC info)
+    THnSparseF	*hMCDCAPtPrimary; //control histo: DCAz vs DCAxy vs pT for all accepted reco track, which are primaries (using MC info)
+   
     
     // global variables
     Bool_t bIsMonteCarlo;
