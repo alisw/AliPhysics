@@ -76,7 +76,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "missing ITS points",
  "#Chi^{2} TPC constrained vs. global",
  "require TOF out",
- "TOF Distance cut"
+ "TOF Distance cut",
+ "min length in active volume TPC"
 };
 
 AliESDtrackCuts* AliESDtrackCuts::fgMultEstTrackCuts[AliESDtrackCuts::kNMultEstTrackCuts] = { 0, 0, 0, 0 };
@@ -90,6 +91,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
   f1CutMinNClustersTPCPtDep(0x0),
   fCutMaxPtDepNClustersTPC(0),
+  fCutMinLengthActiveVolumeTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxChi2TPCConstrainedVsGlobal(0),
@@ -203,6 +205,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
   f1CutMinNClustersTPCPtDep(0x0),
   fCutMaxPtDepNClustersTPC(0),
+  fCutMinLengthActiveVolumeTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxChi2TPCConstrainedVsGlobal(0),
@@ -506,7 +509,8 @@ void AliESDtrackCuts::Copy(TObject &c) const
     target.f1CutMinNClustersTPCPtDep = (TFormula*) f1CutMinNClustersTPCPtDep->Clone("f1CutMinNClustersTPCPtDep");
   }
   target.fCutMaxPtDepNClustersTPC =   fCutMaxPtDepNClustersTPC;
-
+  target.fCutMinLengthActiveVolumeTPC = fCutMinLengthActiveVolumeTPC;
+  
   target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
   target.fCutMaxChi2PerClusterITS = fCutMaxChi2PerClusterITS;
   target.fCutMaxChi2TPCConstrainedVsGlobal = fCutMaxChi2TPCConstrainedVsGlobal;
@@ -1094,7 +1098,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   else {
     nClustersTPC = esdTrack->GetTPCclusters(0);
   }
-
+  
   //Pt dependent NClusters Cut
   if(f1CutMinNClustersTPCPtDep) {
     if(esdTrack->Pt()<fCutMaxPtDepNClustersTPC)
@@ -1388,6 +1392,21 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 	cut = kTRUE;
       }
     }
+
+    // max length in active volume
+    Float_t lengthInActiveZoneTPC = -1;
+    if (fCutMinLengthActiveVolumeTPC > 1.) { // do the calculation only if needed to save cpu-time
+      if (esdTrack->GetESDEvent()) {
+	lengthInActiveZoneTPC = esdTrack->GetLengthInActiveZone(1, 1.8, 220, esdTrack->GetESDEvent()->GetMagneticField()); 
+	//
+	if (lengthInActiveZoneTPC < fCutMinLengthActiveVolumeTPC ) {
+	  cuts[42] = kTRUE;
+	  cut = kTRUE;
+	}
+      }
+    }
+
+    
   }
 
   //########################################################################
@@ -2221,7 +2240,6 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   Int_t trackletsITSSA_complementary = 0; //number of SPD tracklets complementary to ITSSA tracks for a given event
 
   const Int_t nESDTracks = esd->GetNumberOfTracks();
-  Int_t highestID = 0;
 
   // flags for secondary and rejected tracks
   const Int_t kRejBit = BIT(15); // set this bit in global tracks if it is rejected by a cut
