@@ -30,7 +30,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
                 Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
                 Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE)
 {
-  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
+  Bool_t kAnalyseTaggedTracks = kTRUE;
 
   //***************************************//
   //        Setting up the HFE cuts        //
