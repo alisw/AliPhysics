@@ -87,13 +87,14 @@ AliAnalysisTaskSE(),
   
   for(Int_t i=0;i<3*kMaxPtBins;i++){
    
-    if(fMassHistK0S[i])fMassHistK0S[i]=0;
-    if(fLeadPt[i])fLeadPt[i]=0;
-    if(fMassHist[i])fMassHist[i]=0;
-    if(fMassHistTC[i])fMassHistTC[i]=0;
-    if(fMassHistOrigC[i])fMassHistOrigC[i]=0;
-    if(fMassHistOrigB[i])fMassHistOrigB[i]=0;
-    if(fMassHistMC[i])fMassHistMC[i]=0;
+    fMassHistK0S[i]=0;
+    fLeadPt[i]=0;
+    fPtSig[i]=0;
+    fMassHist[i]=0;
+    fMassHistTC[i]=0;
+    fMassHistOrigC[i]=0;
+    fMassHistOrigB[i]=0;
+    fMassHistMC[i]=0;
   }
   
   for(Int_t i=0;i<kMaxPtBins+1;i++){
@@ -135,13 +136,14 @@ AliAnalysisTaskSEDplusCorrelations::AliAnalysisTaskSEDplusCorrelations(const cha
     
   for(Int_t i=0;i<3*kMaxPtBins;i++){
    
-    if(fMassHistK0S[i])fMassHistK0S[i]=0;
-    if(fLeadPt[i])fLeadPt[i]=0;
-    if(fMassHist[i])fMassHist[i]=0;
-    if(fMassHistTC[i])fMassHistTC[i]=0;
-    if(fMassHistOrigC[i])fMassHistOrigC[i]=0;
-    if(fMassHistOrigB[i])fMassHistOrigB[i]=0;
-    if(fMassHistMC[i])fMassHistMC[i]=0;
+    fMassHistK0S[i]=0;
+    fLeadPt[i]=0;
+    fPtSig[i]=0;
+    fMassHist[i]=0;
+    fMassHistTC[i]=0;
+    fMassHistOrigC[i]=0;
+    fMassHistOrigB[i]=0;
+    fMassHistMC[i]=0;
    
     
     
