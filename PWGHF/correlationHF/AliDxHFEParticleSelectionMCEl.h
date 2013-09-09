@@ -60,6 +60,12 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
     kOnlyb=4,
   };
 
+  enum{
+    kMCFirst=0,
+    kMCLast=1,
+    kMCOnly=2
+  };
+
  protected:
 
  private:
@@ -84,6 +90,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Bool_t          fStoreCutStepInfo;   // Whether to store which cut step is the effective one
   Int_t fElSelection;                  // If there should be a selection on the electrons
   Bool_t fStoreOnlyMCElectrons;        // Store only MC truth electrons, discard hadrons
+  Int_t fMCInfo;                       // What to check and in which order
 
 
   ClassDef(AliDxHFEParticleSelectionMCEl, 4);

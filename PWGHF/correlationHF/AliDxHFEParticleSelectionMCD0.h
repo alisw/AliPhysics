@@ -48,6 +48,12 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   /// clear internal memory
   virtual void Clear(const char* option="");
 
+  enum{
+    kMCFirst=0,
+    kMCLast=1,
+    kMCOnly=2
+  };
+
  protected:
   virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
 
@@ -66,6 +72,7 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   bool fUseKine;             // Whether to run over MC particles (true) or Reco (false)
   THnSparse* fD0PropertiesKine; //the particle properties of selected particles
   Bool_t fStoreOnlyMCD0;     // Store only MC truth D0s, discard the rest
+  Int_t fMCInfo;             // What to check and in which order
 
   ClassDef(AliDxHFEParticleSelectionMCD0, 3);
 };
