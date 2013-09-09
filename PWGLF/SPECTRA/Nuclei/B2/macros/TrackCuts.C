@@ -16,6 +16,13 @@
 // macro for a predefined set of track cuts
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <AliESDtrackCuts.h>
+#include <TString.h>
+#include "AliAnalysisTaskB2.h"
+#endif
+
 void AddNSigmaCuts(AliESDtrackCuts* trkCuts, Float_t maxNSigma=3)
 {
 //
@@ -134,7 +141,7 @@ AliESDtrackCuts* TrackCuts(AliAnalysisTaskB2* task, const TString& trksel, Doubl
 	else if(tracksel == "std_its_tpc_2009") // pp data 2009
 	{
 		delete trkCuts;
-		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(1, clusterCut);
+		return AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(1);
 	}
 	else if(tracksel == "std_its_tpc_2010") // pp data 2010
 	{

@@ -16,6 +16,11 @@
 // macro for prior probabilities
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TString.h>
+#endif
+
 void SetParameters(Double_t* prob, Double_t c0, Double_t c1, Double_t c2, Double_t c3, Double_t c4, Double_t c5, Double_t c6, Double_t c7, Double_t c8)
 {
 //

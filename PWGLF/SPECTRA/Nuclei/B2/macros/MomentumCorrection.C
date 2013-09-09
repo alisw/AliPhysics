@@ -16,6 +16,12 @@
 // momentum correction for deuteron and antideuterons
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TProfile.h>
+#include <TString.h>
+#endif
+
 TProfile* MomentumCorrection(const TString& species)
 {
 //
