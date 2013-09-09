@@ -2305,9 +2305,12 @@ Bool_t AliAnalysisTaskSED0Correlations::IsSoftPion_MCKine(AliAODMCParticle* d, A
   Int_t labelD0 = d->GetLabel();
 
   Int_t mother = track->GetMother();
-  if(!mother) return isSoftPi; //safety check
+  if(mother<0) return isSoftPi; //safety check
 
   AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother)); //it's the mother of the track!
+  if(!mcMoth){
+    return isSoftPi;
+  }
   if(TMath::Abs(mcMoth->GetPdgCode())==413 && mcMoth->GetNDaughters()==2) { //mother is D* with 2 daughs
     Int_t labdau1 = mcMoth->GetDaughter(0);
     Int_t labdau2 = mcMoth->GetDaughter(1);
