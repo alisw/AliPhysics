@@ -2706,7 +2706,7 @@ void AliESDtrack::SetDetectorPID(const AliDetectorPID *pid)
   
 }
 
-Double_t AliESDtrack::GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream){
+Double_t AliESDtrack::GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) const {
   //
   // Input parameters:
   //   mode  - type of external track parameters 
@@ -2723,7 +2723,7 @@ Double_t AliESDtrack::GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double
   return 0;
 }
 
-Double_t AliESDtrack::GetLengthInActiveZone( AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream){
+Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) const {
   //
   // Numerical code to calculate the length of the track in active region of the TPC
   // ( can be speed up if somebody wants to invest time - analysical version shoult be possible) 
@@ -2775,6 +2775,7 @@ Double_t AliESDtrack::GetLengthInActiveZone( AliExternalTrackParam  *paramT, Dou
     //    Double_t deltaZ= dphi*radius; 
     if (pcstream){
       //should we keep debug possibility ?
+      AliExternalTrackParam paramTcopy=(*paramT);
       paramR.Rotate(phi);
       paramR.PropagateTo(R,bz);
       (*pcstream)<<"debugEdge"<<
@@ -2783,7 +2784,7 @@ Double_t AliESDtrack::GetLengthInActiveZone( AliExternalTrackParam  *paramT, Dou
 	"phi0="<<phi0<<	            // phi0 -phi at the track initial position
 	"phi="<<phi<<               // 
 	"z="<<z<<
-	"pT.="<<paramT<<
+	"pT.="<<&paramTcopy<<
 	"pR.="<<&paramR<<
 	"\n";
     }
