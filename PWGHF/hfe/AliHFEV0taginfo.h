@@ -23,6 +23,9 @@
 
 #include "AliPID.h"
 #include "AliESDv0KineCuts.h"
+#include "AliAODv0KineCuts.h"
+
+class AliVEvent;
 
 class AliHFEV0taginfo: public TNamed{
 
@@ -35,7 +38,7 @@ class AliHFEV0taginfo: public TNamed{
         virtual ~AliHFEV0taginfo();
 
         void Reset(); //resets the fTaggedTracks TList
-        void TagV0Tracks(AliESDEvent *event); // loops over V0s in event and fills fTaggedTracks with V0 tracks
+        void TagV0Tracks(AliVEvent *event); // loops over V0s in event and fills fTaggedTracks with V0 tracks
         AliPID::EParticleType GetV0Info(Int_t trackID); //check for V0 information from track ID 
         void SetIsAODana() { fIsAODana = kTRUE; } // Setter AOD analysis
         void SetIsESDana() { fIsAODana = kFALSE; } // Setter ESD analysis
@@ -69,6 +72,7 @@ class AliHFEV0taginfo: public TNamed{
         Bool_t fIsAODana;
         TList *fTaggedTracks;
         AliESDv0KineCuts *fV0finder;
+        AliAODv0KineCuts *fAODV0finder;
 
         ClassDef(AliHFEV0taginfo,1)
 };

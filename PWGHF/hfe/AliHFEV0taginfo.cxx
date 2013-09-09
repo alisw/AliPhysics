@@ -30,6 +30,8 @@
 
 
 #include "AliLog.h"
+#include "AliAODEvent.h"
+#include "AliAODv0.h"
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
 
@@ -44,7 +46,8 @@ AliHFEV0taginfo::AliHFEV0taginfo():
     TNamed(), 
     fIsAODana(NULL),
     fTaggedTracks(NULL),
-    fV0finder(NULL)
+    fV0finder(NULL),
+    fAODV0finder(NULL)
 {
     //
     // default constructor
@@ -55,7 +58,8 @@ AliHFEV0taginfo::AliHFEV0taginfo(const char* name):
     TNamed(name, ""), 
     fIsAODana(kFALSE),
     fTaggedTracks(NULL),
-    fV0finder(NULL)
+    fV0finder(NULL),
+    fAODV0finder(NULL)
 {
     //
     // constructor
@@ -66,6 +70,7 @@ AliHFEV0taginfo::AliHFEV0taginfo(const char* name):
         fTaggedTracks->SetOwner();
     }
     fV0finder = new AliESDv0KineCuts();
+    fAODV0finder = new AliAODv0KineCuts();
 }
 
 //__________________________________________________________________
@@ -73,7 +78,8 @@ AliHFEV0taginfo::AliHFEV0taginfo(const AliHFEV0taginfo &ref):
   TNamed(ref),
     fIsAODana(ref.fIsAODana),
     fTaggedTracks(NULL),
-    fV0finder(ref.fV0finder)
+    fV0finder(ref.fV0finder),
+    fAODV0finder(ref.fAODV0finder)
 {
   //
   // Copy constructor
@@ -109,6 +115,7 @@ AliHFEV0taginfo &AliHFEV0taginfo::operator=(const AliHFEV0taginfo &ref){
         fTaggedTracks->Add(new AliHFEV0tag(tmp->GetTrackID(),tmp->GetPinfo()));
     }
     fV0finder=ref.fV0finder;
+    fAODV0finder=ref.fAODV0finder;
     return *this;
 }
 //___________________________________________________________________
@@ -124,7 +131,7 @@ AliHFEV0taginfo::~AliHFEV0taginfo(){
 
 //________________________________________________________________________________
 // loops over V0s in event and fills fTaggedTracks with V0 tracks
-void AliHFEV0taginfo::TagV0Tracks(AliESDEvent *fEvent){
+void AliHFEV0taginfo::TagV0Tracks(AliVEvent *fEvent){
 
     if (!fEvent) return;
 
@@ -134,18 +141,38 @@ void AliHFEV0taginfo::TagV0Tracks(AliESDEvent *fEvent){
     const Int_t nV0s = fEvent->GetNumberOfV0s();
     if(nV0s < 1) return;
     AliDebug(3,Form("%d V0s found!",nV0s));
+  
+    if(fEvent->IsA() == AliESDEvent::Class()){
+        AliDebug(4, "ESD part");
+        AliESDEvent *esdevent = static_cast<AliESDEvent *>(fEvent);
+        fV0finder->SetEvent(esdevent);
 
-    fV0finder->SetEvent(fEvent);
+        for(Int_t i=0; i<nV0s; ++i){
+            Int_t pdgP = 0;
+            Int_t pdgN = 0;
+            AliESDv0 *fV0 = esdevent->GetV0(i);
+            if(!fV0) continue;
+            if(fV0finder->ProcessV0(fV0,pdgP,pdgN)){
+                AliDebug(5,Form("V0 has: pos pdg: %d, neg pdg: %d",pdgP,pdgN));
+                AddTrack(fV0->GetPindex(),pdgP);
+                AddTrack(fV0->GetNindex(),pdgN);
+            }
+        }
+    } else if(fEvent->IsA() == AliAODEvent::Class()){
+        AliDebug(4,"AOD part");
+        AliAODEvent *aodevent = static_cast<AliAODEvent *>(fEvent);
+        fAODV0finder->SetEvent(aodevent);
 
-    for(Int_t i=0; i<nV0s; ++i){
-        Int_t pdgP = 0;
-        Int_t pdgN = 0;
-        AliESDv0 *fV0 = fEvent->GetV0(i);
-        if(!fV0) continue;
-        if(fV0finder->ProcessV0(fV0,pdgP,pdgN)){
-            AliDebug(5,Form("V0 has: pos pdg: %d, neg pdg: %d",pdgP,pdgN));
-            AddTrack(fV0->GetPindex(),pdgP);
-            AddTrack(fV0->GetNindex(),pdgN);
+        for(Int_t i=0; i<nV0s; ++i){
+            Int_t pdgP = 0;
+            Int_t pdgN = 0;
+            AliAODv0 *fV0 = aodevent->GetV0(i);
+            if(!fV0) continue;
+            if(fAODV0finder->ProcessV0(fV0,pdgP,pdgN)){
+                AliDebug(5,Form("V0 has: pos pdg: %d, neg pdg: %d",pdgP,pdgN));
+                AddTrack(fV0->GetPosID(),pdgP);
+                AddTrack(fV0->GetNegID(),pdgN);
+            }
         }
     }
 }

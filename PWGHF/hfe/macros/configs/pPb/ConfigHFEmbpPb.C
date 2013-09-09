@@ -8,7 +8,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPb(Bool_t useMC, Bool_t isAOD, UChar_t TPCcl=70,
   // HFE task configuration PID2 (TOF-TPC only!)
   //
 
-  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
+  Bool_t kAnalyseTaggedTracks = kTRUE;
   
   Int_t iDCAxy = (Int_t)(DCAxy*10.);
   Int_t iDCAz = (Int_t)(DCAz*10.);

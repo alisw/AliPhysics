@@ -31,7 +31,7 @@ AliAnalysisTaskHFE* ConfigHFEpPbTRD(Bool_t useMC, Bool_t isAOD, TString appendix
 				 Int_t TRDtrigger=1, Int_t TRDtl=6, Int_t TRDeff=4,
 				 TString detector){
   
-    Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
+    Bool_t kAnalyseTaggedTracks = kTRUE;
 
     // TRD settings
     Float_t eeff[6] = {0.7, 0.75, 0.8, 0.85, 0.9, 0.95};

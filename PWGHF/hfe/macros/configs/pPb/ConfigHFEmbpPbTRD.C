@@ -9,7 +9,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString append
   // HFE task configuration PID2 (TOF-TPC-TRD)
   //
 //  AliLog::SetClassDebugLevel("AliHFEpidTRD", 10);
-  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
+  Bool_t kAnalyseTaggedTracks = kTRUE;
 
 
   // TRD settings

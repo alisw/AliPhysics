@@ -215,8 +215,8 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVTrack *track, Int_t abinitioPID
       
       const AliExternalTrackParam *trueparam = NULL;
       if(esdtrackc->GetOuterParam()) {
-	trueparam = esdtrackc->GetOuterParam();
-	fVarManager->NewTrack((AliVParticle *)trueparam, NULL, fCentralityF, abinitioPID, kTRUE);
+	      trueparam = esdtrackc->GetOuterParam();
+	      fVarManager->NewTrack((AliVParticle *)trueparam, NULL, fCentralityF, abinitioPID, kTRUE);
       }
       else return;
     }
@@ -277,15 +277,17 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVTrack *track, Int_t abinitioPID
      AliDebug(2, "Use track in the PID");
      // Apply PID
      AliHFEpidObject hfetrack;
-     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+     if(track->IsA() == AliESDtrack::Class())
+      hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+     else
+      hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
      hfetrack.SetRecTrack(track);
      hfetrack.SetAbInitioPID(abinitioPID);
      hfetrack.SetCentrality(fCentralityF);
      if(fIsPbPb) hfetrack.SetPbPb();
-     else
-     {
-	 if(fIspPb) hfetrack.SetpPb();
-	 else hfetrack.SetPP();
+     else{
+      if(fIspPb) hfetrack.SetpPb();
+	    else hfetrack.SetPP();
      }
      fPID->SetVarManager(fVarManager);
      fPID->IsSelected(&hfetrack, fContainer, "taggedTrackContainer", fPIDqa);

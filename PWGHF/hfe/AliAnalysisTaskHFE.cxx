@@ -452,6 +452,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
   fQACollection->CreateTH1F("nTriggerBit", "Histo Trigger Bit", 22, 0, 22);
+  fQACollection->CreateTH1F("Filterbegin", "AOD filter of tracks after all cuts", 21, -1, 20);
   fQACollection->CreateTH1F("Filterend", "AOD filter of tracks after all cuts", 21, -1, 20);
  
   InitHistoITScluster();
@@ -1430,6 +1431,22 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     AliError("AOD Event required for AOD Analysis");
       return;
   }
+
+  // Tag all v0s in current event
+  if(fV0Tagger){
+      fV0Tagger->Reset();
+      fV0Tagger->TagV0Tracks(fAOD);
+  }
+  // Set magnetic field if V0 task on
+  if(fTaggedTrackAnalysis) {
+    fTaggedTrackAnalysis->SetMagneticField(fAOD->GetMagneticField());
+    fTaggedTrackAnalysis->SetCentrality(fCentralityF);
+    if(IsPbPb()) fTaggedTrackAnalysis->SetPbPb();
+    else {
+	    if(IspPb()) fTaggedTrackAnalysis->SetpPb();
+	    else fTaggedTrackAnalysis->SetPP();
+    }
+  }
   
   //printf("Will fill\n");
   //
@@ -1497,6 +1514,15 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   for(Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); itrack++){
     track = fAOD->GetTrack(itrack); mctrack = NULL;
     if(!track) continue;
+
+    // fill counts of v0-identified particles
+    AliPID::EParticleType v0pid = fV0Tagger->GetV0Info(track->GetID());
+    // here the tagged track analysis will run
+    if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){ 
+      AliDebug(1, Form("Track identified as %s", AliPID::ParticleName(v0pid)));
+      fTaggedTrackAnalysis->ProcessTrack(track, v0pid);
+      AliDebug(1, "V0 PID done");
+    }
     
     signal = kTRUE;
     if(HasMCData()){
@@ -1513,6 +1539,15 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       if(signal || !fFillSignalOnly){
         fVarManager->FillContainer(fContainer, "recTrackContReco", AliHFEcuts::kStepRecNoCut, kFALSE);
         fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
+      }
+    }
+
+    // begin AOD QA
+    fQACollection->Fill("Filterbegin", -1);  
+    for(Int_t k=0; k<20; k++) {
+      Int_t u = 1<<k;
+      if((track->TestFilterBit(u))) {
+	      fQACollection->Fill("Filterbegin", k);
       }
     }
 
@@ -1727,8 +1762,10 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
   if(!fPassTheEventCut) return kFALSE;
   fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCGeneratedEventCut, kFALSE);
 
-  if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCInAcceptance, track)) return kFALSE;
-  fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCInAcceptance, kFALSE);
+  if(IsESDanalysis()){
+    if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCInAcceptance, track)) return kFALSE;
+    fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCInAcceptance, kFALSE);
+  }
   return kTRUE;
 }
 
