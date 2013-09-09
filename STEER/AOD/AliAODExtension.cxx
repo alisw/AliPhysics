@@ -30,7 +30,7 @@ ClassImp(AliAODExtension)
 AliAODExtension::AliAODExtension() : TNamed(), 
 fAODEvent(0), fTreeE(0), fFileE(0), fNtotal(0), fNpassed(0), 
 fSelected(kFALSE), fTreeBuffSize(30000000), fMemCountAOD(0),
-fRepFiMap(0x0), fRepFiList(0x0), fEnableReferences(kTRUE)
+fRepFiMap(0x0), fRepFiList(0x0), fEnableReferences(kTRUE), fObjectList(0)
 {
   // default ctor
 }
