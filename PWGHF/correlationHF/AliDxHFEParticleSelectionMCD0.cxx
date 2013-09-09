@@ -29,6 +29,7 @@
 #include "AliRDHFCuts.h"
 #include "AliVParticle.h"
 #include "AliReducedParticle.h"
+#include "AliRDHFCuts.h"
 #include "THnSparse.h"
 #include "TH1F.h"
 #include <iostream>
@@ -49,6 +50,7 @@ AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
   , fUseKine(kFALSE)  
   , fD0PropertiesKine(NULL)
   , fStoreOnlyMCD0(kFALSE)
+  , fMCInfo(kMCLast)
 {
   // constructor
   // 
@@ -58,7 +60,11 @@ AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
 
   // TODO: argument scan, pass only relevant arguments to tools
   fMCTools.~AliDxHFEToolsMC();
-  TString toolopt("pdg=421 mc-last");
+  TString toolopt("pdg=421");
+  if(fMCInfo==kMCLast) toolopt+=" mc-last";
+  if(fMCInfo==kMCOnly) toolopt+=" mc-first";
+  if(fMCInfo==kMCFirst) toolopt+=" mc-first";
+
   if(fUseKine) toolopt+=" usekine";  
   new (&fMCTools) AliDxHFEToolsMC(toolopt);
 }
@@ -208,26 +214,44 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
   /// THnSparse. 
 
   int iResult=0;
+  fResultMC=0;
   fOriginMother=-1;
   if(fUseKine){
     // Will here loop on all tracks in the stack, and checks whether they are D0s (through CheckMCParticle())
     if (!fMCTools.IsInitialized() && (iResult=fMCTools.InitMCParticles(pEvent))<0) {
       return 0; // no meaningful filtering on mc possible
     }
-
     Int_t result = fMCTools.CheckMCParticle(p);
     if(result==1) return 0;
-    fMCTools.FindMotherPDG(p);
-    fOriginMother=fMCTools.GetOriginMother();
+    AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(p);
+    if (!mcPart) {
+      AliWarning("Particle not found in tree, skipping"); 
+      return 0;
+    } 
+    AliRDHFCuts* cuts=const_cast<AliRDHFCuts*>(GetHFCuts());
+    if (!cuts) {
+      return 0;
+    } 
+    else if(cuts->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y()) ) {
+      if(TMath::Abs(mcPart->Eta()) < 0.8 ){
+	fMCTools.FindMotherPDG(p);
+	fOriginMother=fMCTools.GetOriginMother();
+
+	iResult=1;
+      }
+    }
+
     //TODO: Should also return whether D0 or D0bar... at the moment only care of absolute value of D0
-    return 1;
+    return iResult;
   }
   else{
   // step 1:
   // MC selection
-  if (fMCTools.MCFirst() && (iResult=CheckMC(p, pEvent))==0) {
+  if (fMCTools.MCFirst()){
+    fResultMC=CheckMC(p, pEvent);
     // histograming?
-    return iResult;
+    if(fMCInfo==kMCOnly) return fResultMC;
+    if(fResultMC==0) return fResultMC;
   }
 
   // step 2 or 1, depending on sequence:
@@ -351,6 +375,21 @@ int AliDxHFEParticleSelectionMCD0::ParseArguments(const char* arguments)
     if(argument.BeginsWith("storeonlyMCD0")){
       AliInfo("Store only MC truth D0");
       fStoreOnlyMCD0=kTRUE;
+      continue;
+    }
+    if(argument.BeginsWith("mc-only")){
+      AliInfo("Do only test on MC info");
+      fMCInfo=kMCOnly;
+      continue;
+    }
+    if(argument.BeginsWith("mc-first")){
+      AliInfo("Do test on MC info first");
+      fMCInfo=kMCFirst;
+      continue;
+    }
+    if(argument.BeginsWith("mc-last")){
+      AliInfo("Do test on MC info last");
+      fMCInfo=kMCLast;
       continue;
     }
     AliDxHFEParticleSelection::ParseArguments(argument);
