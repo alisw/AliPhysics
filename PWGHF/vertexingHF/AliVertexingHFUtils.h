@@ -70,6 +70,7 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
   static TString  GetGenerator(Int_t label, AliAODMCHeader* header); 
   Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
+  void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   // Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
