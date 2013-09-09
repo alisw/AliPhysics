@@ -443,8 +443,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     
     if (useITSSAvtx){
       if (list){
-	histTRKdefMultX = (TH1F*)list->FindObject("hITSSAVertexXdefMult");
-	histTRKdefMultY = (TH1F*)list->FindObject("hITSSAVertexYdefMult");
+	      //histTRKdefMultX = (TH1F*)list->FindObject("hITSSAVertexXdefMult");
+	      //histTRKdefMultY = (TH1F*)list->FindObject("hITSSAVertexYdefMult");
 	histTRKHighMultX = (TH1F*)list->FindObject("hITSSAVertexXHighMult");
 	histTRKHighMultY = (TH1F*)list->FindObject("hITSSAVertexYHighMult");
 	
@@ -456,8 +456,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       }
       
       else {
-	histTRKdefMultX = (TH1F*)file->Get("hITSSAVertexXdefMult");
-	histTRKdefMultY = (TH1F*)file->Get("hITSSAVertexYdefMult");
+	      //histTRKdefMultX = (TH1F*)file->Get("hITSSAVertexXdefMult");
+	      //histTRKdefMultY = (TH1F*)file->Get("hITSSAVertexYdefMult");
 	histTRKHighMultX = (TH1F*)file->Get("hITSSAVertexXHighMult");
 	histTRKHighMultY = (TH1F*)file->Get("hITSSAVertexYHighMult");
 	
