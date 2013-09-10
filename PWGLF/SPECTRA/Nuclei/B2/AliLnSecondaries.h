@@ -34,7 +34,7 @@ class AliLnSecondaries: public TObject
 	
 	void SetOutputTag(const TString& tag) { fOutputTag = tag; }
 	
-	void SetCorBins(Int_t lowbin, Int_t hibin) { fLowPtBin = lowbin; fHiPtBin = hibin; }
+	void SetCorBins(Double_t min, Double_t max) { fPtMin = min; fPtMax = max; }
 	void SetDCAxyInterval(Double_t lowdca, Double_t hidca) { fMinDCAxy = lowdca; fMaxDCAxy = hidca; }
 	
 	void SetNBin(Int_t nbin) { fNbin = nbin; }
@@ -46,8 +46,8 @@ class AliLnSecondaries: public TObject
 	
 	void SetAddFakeTracks(Bool_t flag=1) { fAddFakeTracks = flag; }
 	
-	enum { kTFractionFitter=0, kRooFit, kMonteCarlo };
-	enum { kGeantDCAxy=0, kFlatDCAxy};
+	enum { kTFractionFitter=0, kMonteCarlo };
+	enum { kGeantDCAxy=0, kFlatDCAxy };
 	
   private:
  
@@ -60,9 +60,6 @@ class AliLnSecondaries: public TObject
 	
 	Int_t GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hData, TH1D* hPrim, TH1D* hMat, TH1D* hFdwn, Int_t ibin) const;
 	Int_t GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hData, TH1D* hPrim, TH1D* hSec, Int_t ibin, const TString& secName) const;
-	
-	void GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hSec, Int_t ibin, const TString& secName) const;
-	void GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hMat, const TH1D* hFdwn, Int_t ibin) const;
 	
 	TH2D* GetFlatDCAxyPt(Double_t norm, const TH2D* hDCAxyPt, const TString& name) const;
 	
@@ -81,8 +78,8 @@ class AliLnSecondaries: public TObject
 	TString fOutputFilename; // output filename
 	TString fOutputTag; // tag for the ouput
 	
-	Int_t fLowPtBin; // low pt bin for the corrections
-	Int_t fHiPtBin ; // high pt bin for the corrections
+	Double_t fPtMin; // minimum pt value for the corrections
+	Double_t fPtMax ; // maximum pt value for the corrections
 	
 	Int_t fNbin; // for rebinning DCA distributions
 	

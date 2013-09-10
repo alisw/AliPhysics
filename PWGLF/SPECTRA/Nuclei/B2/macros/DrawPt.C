@@ -16,25 +16,26 @@
 // Draw corrected pt
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <Riostream.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TROOT.h>
+#include <TStyle.h>
 #include <TFile.h>
 #include <TH1D.h>
 #include <TString.h>
 #include <TCanvas.h>
 #include <TGraphErrors.h>
 #include <TLegend.h>
-
 #include <RooWorkspace.h>
 #include <RooMsgService.h>
 #include <RooPlot.h>
 #include <RooRealVar.h>
-#include <RooAbsPdf.h>
 #include <RooAbsData.h>
+#include <RooAbsPdf.h>
+#endif
 
 #include "B2.h"
 
-void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", const TString& particle="AntiDeuteron", Int_t hiptbin=17, Bool_t m2pid=0, Int_t lowm2bin=9, Int_t him2bin=17)
+void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", const TString& particle="AntiDeuteron", Double_t ptmax=3., Bool_t m2pid=0, Double_t ptpid=1.2)
 {
 //
 // Draw corrected pt for debugging
@@ -42,16 +43,26 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 	Double_t xmin = 0;
 	Double_t xmax = 3.5;
 	
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetPadGridX(1);
+	gStyle->SetPadGridY(1);
+	gStyle->SetOptStat(0);
+	gStyle->SetOptTitle(1);
+	
 	TFile* finput = new TFile(inputFile.Data());
 	if (finput->IsZombie()) exit(1);
+	
+	TH1D* hPidPt = FindObj<TH1D>(finput, tag, Form("%s_PID_Pt",particle.Data()));
+	
+	Int_t hiptbin  = hPidPt->GetXaxis()->FindFixBin(ptmax);
+	Int_t lowm2bin = hPidPt->GetXaxis()->FindFixBin(ptpid);
+	Int_t him2bin  = hPidPt->GetXaxis()->FindFixBin(ptmax);
 	
 	// m2 data fitted models
 	
 	if(m2pid && (hiptbin>lowm2bin))
 	{
-		TH1D* hPidPt = (TH1D*)FindObj(finput, tag, Form("%s_PID_Pt",particle.Data()));
-		Double_t binwidth = hPidPt->GetBinWidth(0);
-		
 		using namespace RooFit;
 		
 		// disable verbose in RooFit
@@ -59,7 +70,7 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 		RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
 		
 		TCanvas* c0 = new TCanvas(Form("%s.M2",particle.Data()), Form("M2 for %ss",particle.Data()));
-		c0->Divide(3,3);
+		c0->Divide(4,5);
 		
 		TGraphErrors* grFitSigmaPt = new TGraphErrors();
 		grFitSigmaPt->SetName(Form("%s_Fit_Sigma_Pt", particle.Data()));
@@ -67,36 +78,35 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 		TGraphErrors* grFitM2Pt = new TGraphErrors();
 		grFitM2Pt->SetName(Form("%s_Fit_M2_Pt", particle.Data()));
 		
-		for(Int_t i=lowm2bin, j=0; i<him2bin && i-lowm2bin < 9 && i < hiptbin; ++i)
+		for(Int_t i=lowm2bin, j=0; i<him2bin && i-lowm2bin < 20 && i < hiptbin; ++i)
 		{
 			c0->cd(i-lowm2bin+1);
-			//gPad->SetLogy(0);
 			
-			RooWorkspace* w= (RooWorkspace*)FindObj(finput, tag, Form("%s_M2_%02d",particle.Data(),i));
+			RooWorkspace* w= FindObj<RooWorkspace>(finput, tag, Form("%s_M2_%02d",particle.Data(),i));
 			
-			RooPlot* m2frame = w->var("m2")->frame();
+			RooPlot* m2frame = w->var("x")->frame();
 			
 			w->data("data")->plotOn(m2frame);
 			
-			w->pdf("model")->plotOn(m2frame, LineWidth(2));
-			w->pdf("model")->plotOn(m2frame, Components(*(w->pdf("Sd"))),LineWidth(1), LineColor(9));
+			w->pdf("model")->plotOn(m2frame, Components(*(w->pdf("Sd"))),LineWidth(1), LineColor(8));
 			w->pdf("model")->plotOn(m2frame, Components(*(w->pdf("Bkg"))),LineWidth(1), LineColor(46),LineStyle(kDashed));
+			w->pdf("model")->plotOn(m2frame, LineWidth(1));
 			
-			Double_t ptMin = (i-1)*binwidth;
-			Double_t ptMax = i*binwidth;
-			Double_t pt = (ptMin+ptMax)/2.;
-			
-			m2frame->SetTitle(Form("%0.2f < p_{T} < %0.2f GeV/c", ptMin, ptMax));
+			m2frame->SetTitle(Form("%0.2f < #it{p}_{T} < %0.2f GeV/#it{c}", hPidPt->GetBinLowEdge(i), hPidPt->GetBinLowEdge(i)+hPidPt->GetBinWidth(i)));
 			m2frame->SetMinimum(0.2);
-		
+			
 			m2frame->Draw();
 			
-			grFitSigmaPt->SetPoint(j, pt, w->var("width")->getVal());
-			grFitSigmaPt->SetPointError(j, 0, w->var("width")->getError());
+			Double_t pt = hPidPt->GetBinCenter(i);
 			
-			grFitM2Pt->SetPoint(j, pt, w->var("mean")->getVal());
-			grFitM2Pt->SetPointError(j++, 0, w->var("mean")->getError());
+			grFitSigmaPt->SetPoint(j, pt, w->var("sigma")->getVal());
+			grFitSigmaPt->SetPointError(j, 0, w->var("sigma")->getError());
+			
+			grFitM2Pt->SetPoint(j, pt, w->var("mu")->getVal());
+			grFitM2Pt->SetPointError(j++, 0, w->var("mu")->getError());
 		}
+		
+		c0->Update();
 		
 		// model parameters
 		
@@ -105,38 +115,39 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 		c1->Divide(2,1);
 		
 		c1->cd(1);
-		gPad->SetGridx();
-		gPad->SetGridy();
 		
 		grFitSigmaPt->SetMarkerStyle(kFullCircle);
 		grFitSigmaPt->SetMarkerColor(kBlue);
 		grFitSigmaPt->SetLineColor(kBlue);
 		grFitSigmaPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-		grFitSigmaPt->GetYaxis()->SetTitle("#sigma_{m^{2}}");
+		grFitSigmaPt->GetYaxis()->SetTitle("#sigma");
 		grFitSigmaPt->Draw("ALP");
 		
 		c1->cd(2);
-		gPad->SetGridx();
-		gPad->SetGridy();
 		
 		grFitM2Pt->SetMarkerStyle(kFullCircle);
 		grFitM2Pt->SetMarkerColor(kBlue);
 		grFitM2Pt->SetLineColor(kBlue);
 		grFitM2Pt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-		grFitM2Pt->GetYaxis()->SetTitle("m^{2} (GeV^{2}/c^{4})");
+		grFitM2Pt->GetYaxis()->SetTitle("#mu");
 		grFitM2Pt->Draw("ALP");
 		
 		//delete grFitSigmaPt;
 		//delete grFitM2Pt;
+		
+		c1->Update();
 	}
 	
 	// remaining corrections
 	
-	const Int_t kNum = 5;
-	const TString kCorr[kNum]  = { "PID", "M2Corr", "SecCor", "Unfolded", "EffCor"};
-	const TString kLabel[kNum] = { "Raw", "PID contamination", "Secondaries", "Unfolding","Efficiency" };
-	const Int_t kColor[kNum]   = { kRed, kAzure, kOrange+1, kGreen-2, kGreen-3};
-	const Int_t kMarker[kNum]  = { kFullCircle, kOpenCircle, kFullTriangleUp, kOpenTriangleUp, kFullCircle};
+	TCanvas* c2 = new TCanvas(Form("%s.Pt",particle.Data()), Form("Pt for %s",particle.Data()));
+	c2->SetLogy();
+	
+	const Int_t kNum = 4;
+	const TString kCorr[kNum]  = { "PID", "PidCorr", "SecCorr", "EffCorr"};
+	const TString kLabel[kNum] = { "Raw", "PID", "Secondaries","Efficiency" };
+	const Int_t kColor[]   = { kRed, kAzure, kOrange+1, kGreen-3, kGreen-2};
+	const Int_t kMarker[]  = { kFullCircle, kFullSquare, kFullTriangleUp, kFullTriangleDown, kFullCircle, kOpenTriangleUp};
 	
 	TLegend* legend = new TLegend(0.5689655,0.6355932,0.8362069,0.8326271,0,"brNDC");
 	legend->SetTextSize(0.03);
@@ -147,20 +158,19 @@ void DrawPt(const TString& inputFile="debug.root", const TString& tag="test", co
 	
 	for(Int_t i=0; i<kNum; ++i)
 	{
-		hPt[i] = (TH1D*)FindObj(finput, tag, particle + "_" + kCorr[i] + "_Pt");
+		hPt[i] = FindObj<TH1D>(finput, tag, particle + "_" + kCorr[i] + "_Pt");
 		hPt[i]->SetLineColor(kColor[i]);
 		hPt[i]->SetMarkerColor(kColor[i]);
 		hPt[i]->SetMarkerStyle(kMarker[i]);
 		legend->AddEntry(hPt[i], kLabel[i], "lp");
 	}
 	
-	TCanvas* c2 = new TCanvas(Form("%s.Pt",particle.Data()), Form("Pt for %s",particle.Data()));
-	c2->SetLogy();
-	
 	hPt[kNum-1]->SetTitle(particle.Data());
 	hPt[kNum-1]->SetAxisRange(xmin,xmax,"X");
 	hPt[kNum-1]->Draw("E");
-	for(Int_t i=0; i<kNum-1; ++i) hPt[i]->Draw("sameE");
 	
+	for(Int_t i=0; i<kNum-1; ++i) hPt[i]->Draw("sameE");
 	legend->Draw();
+	
+	c2->Update();
 }

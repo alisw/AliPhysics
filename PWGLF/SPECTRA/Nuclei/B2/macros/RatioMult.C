@@ -16,6 +16,8 @@
 // d/p ratio
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
 #include <TROOT.h>
 #include <TFile.h>
 #include <TString.h>
@@ -27,6 +29,9 @@
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TVirtualFitter.h>
+#include <TPaveText.h>
+#include <TAxis.h>
+#endif
 
 #include "B2.h"
 #include "Config.h"
@@ -34,19 +39,20 @@
 void GetRatio(Double_t x, Double_t y, Double_t errx, Double_t erry, Double_t& r, Double_t& rerr);
 void Draw(TGraph* gr, Int_t marker, Int_t color, const TString& xtitle, const TString& ytitle);
 
-void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-Mult-Spectra.root"
-               , const TString&  dSpectra   = "~/alice/output/Deuteron-lhc10bcde-nsd-Mult-Spectra.root"
-               , const TString&  ptag       = "lhc10d-nsd"
-               , const TString&  dtag       = "lhc10bcde-nsd"
-               , const Int_t     nx         = B2mult::kNmult
-               , const TString*  xtag       = B2mult::kMultTag
-               , const Double_t* x          = B2mult::kKNOmult
-               , const Double_t* xerr       = B2mult::kKNOmultErr
-               , const TString&  xname      = B2mult::kKNOmultName
-               , const Bool_t    tsallis    = 1
-               , const TString&  outputfile = "~/alice/output/Ratio-Tsallis-Mult.root"
+void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-Mult-Spectra.root"
+               , const TString&  dSpectra   = "~/alice/output/Deuteron-lhc10d-hilow-Mult-Spectra.root"
+               , const TString&  ptag       = "lhc10d"
+               , const TString&  dtag       = "lhc10d"
+               , const Int_t     nx         = B2Mult::kNmult
+               , const TString*  xtag       = B2Mult::kMultTag
+               , const Double_t* x          = B2Mult::kKNOmult
+               , const Double_t* xerr       = B2Mult::kKNOmultErr
+               , const TString&  xname      = B2Mult::kKNOmultName
+               , const Bool_t    qTsallis   = 0
+               , const TString&  outputfile = "~/alice/output/Particle-Ratios-lhc10d-Tsallis.root"
                , const TString&  otag       = "Tsallis")
 {
+
 //
 // d/p ratio as a function of X
 //
@@ -54,6 +60,12 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-
 	const Int_t kNpart = 2;
 	
 	const TString kParticle[kNspec][kNpart] = { {"Proton", "AntiProton"}, { "Deuteron", "AntiDeuteron"} };
+	
+	const Double_t xmin[kNspec] = {0., 0.};
+	const Double_t xmax[kNspec] = {100, 100};
+	
+	const Double_t xminf[kNspec] = {0.4, 0.8};
+	const Double_t xmaxf[kNspec] = {2., 2.2};
 	
 	TVirtualFitter::SetDefaultFitter("Minuit2");
 	
@@ -77,11 +89,15 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-
 	                                           {new TGraphErrors(), new TGraphErrors()}};
 	TGraphErrors* grP2[kNspec][kNpart]      = {{new TGraphErrors(), new TGraphErrors()},
 	                                           {new TGraphErrors(), new TGraphErrors()}};
-	TGraphErrors* grChi2Ndf[kNspec][kNpart] = {{new TGraphErrors(), new TGraphErrors()},
-	                                           {new TGraphErrors(), new TGraphErrors()}};
 	
 	TGraphErrors* grdNdy[kNspec][kNpart]    = {{new TGraphErrors(), new TGraphErrors()},
 	                                           {new TGraphErrors(), new TGraphErrors()}};
+	
+	TGraphErrors* grMeanPt[kNspec][kNpart]  = {{new TGraphErrors(), new TGraphErrors()},
+	                                           {new TGraphErrors(), new TGraphErrors()}};
+	
+	using std::cout;
+	using std::endl;
 	
 	TGraphErrors* grDYieldPt[nx][kNspec][kNpart];
 	TF1* fncTsallis[nx][kNspec][kNpart];
@@ -91,39 +107,87 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-
 		Double_t dNdy[kNspec][kNpart];
 		Double_t dNdyErr[kNspec][kNpart];
 		
+		cout << endl << xtag[i] << endl << endl;
+		
 		for(Int_t j=0; j<kNspec; ++j)
 		{
 			for(Int_t k=0; k<kNpart; ++k)
 			{
-				grDYieldPt[i][j][k] = (TGraphErrors*)FindObj(finput[j], tag[j] + "-" + xtag[i], kParticle[j][k] + "_SysErr_DiffYield_Pt");
+				// data
 				
-				if(tsallis)
-				{
-					fncTsallis[i][j][k] = TsallisDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_DiffYield_Pt",0,10);
-				}
-				else
-				{
-					fncTsallis[i][j][k] = TsallisParetoDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_DiffYield_Pt",0,10);
-				}
+				grDYieldPt[i][j][k] = FindObj<TGraphErrors>(finput[j], tag[j] + xtag[i], kParticle[j][k] + "_StatSystErr_DiffYield_Pt");
+				
+				// Tsallis distribution
+				
+				fncTsallis[i][j][k] = (qTsallis) ? QTsallisDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_DiffYield_Pt",xmin[j],xmax[j])
+				                                 : TsallisDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_DiffYield_Pt",xmin[j],xmax[j]);
+				
+				// fit to data
 				
 				TFitResultPtr r = grDYieldPt[i][j][k]->Fit(fncTsallis[i][j][k], "RENSQ");
-				
-				if(tsallis)
-				{
-					dNdy[j][k] = fncTsallis[i][j][k]->Integral(0,100);
-					dNdyErr[j][k] = fncTsallis[i][j][k]->IntegralError(0,100,r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray());
-				}
-				else
-				{
-					dNdy[j][k] = fncTsallis[i][j][k]->GetParameter(0);
-					dNdyErr[j][k] = fncTsallis[i][j][k]->GetParError(0);
-				}
-				
 				Int_t status = r;
-				printf("status: %d\tdN/dy: %g +/- %g\n",status,dNdy[j][k],dNdyErr[j][k]);
+				
+				Int_t n=0;
+				while(status != 0 && n<7)
+				{
+					r = grDYieldPt[i][j][k]->Fit(fncTsallis[i][j][k], "RENSQ");
+					status = r;
+					++n;
+					printf("\t*** %s, status: %d (%d)\n", kParticle[j][k].Data(), status,n);
+				}
+				
+				// integral
+				
+				Double_t integral = fncTsallis[i][j][k]->Integral(xmin[j], xmax[j]);
+				Double_t intErr   = fncTsallis[i][j][k]->IntegralError(xmin[j], xmax[j], r->GetParams(),  r->GetCovarianceMatrix().GetMatrixArray());
+				
+				// mean pt (dy cancels out)
+				
+				TF1* fncPtTsallis = (qTsallis) ? PtQTsallisDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_MeanPt",xmin[j],xmax[j])
+				                            : PtTsallisDYield(GetMass(kParticle[j][k]), kParticle[j][k] + "_Tsallis_MeanPt",xmin[j],xmax[j]) ;
+				
+				Double_t par[]   = {  fncTsallis[i][j][k]->GetParameter(0)
+				                    , fncTsallis[i][j][k]->GetParameter(1)
+					            , fncTsallis[i][j][k]->GetParameter(2)
+					           };
+					
+				Double_t parErr[] = {  fncTsallis[i][j][k]->GetParError(0)
+					             , fncTsallis[i][j][k]->GetParError(1)
+					             , fncTsallis[i][j][k]->GetParError(2)
+					            };
+				
+				fncPtTsallis->SetParameters(par);
+				fncPtTsallis->SetParErrors(parErr);
+				
+				Double_t intPtTsallis    = fncPtTsallis->Integral(xmin[j], xmax[j]);
+				Double_t intPtTsallisErr = fncPtTsallis->IntegralError(xmin[j], xmax[j], r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray());
+				
+				Double_t meanPt, meanPtErr;
+				GetRatio(intPtTsallis, integral, intPtTsallisErr, intErr, meanPt, meanPtErr);
+				
+				grMeanPt[j][k]->SetPoint(i, x[i], meanPt);
+				grMeanPt[j][k]->SetPointError(i, xerr[i], meanPtErr);
+				
+				delete fncPtTsallis;
+				
+				// extrapolation fraction
+				
+				Double_t intFrac    = fncTsallis[i][j][k]->Integral(xminf[j], xmaxf[j]);
+				Double_t intFracErr = fncTsallis[i][j][k]->IntegralError(xminf[j], xmaxf[j], r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray());
+				
+				Double_t extrFrac, extrFracErr;
+				GetRatio(intFrac, integral, intFracErr, intErr, extrFrac, extrFracErr);
+				
+				// dN/dy
+				
+				dNdy[j][k]    = (qTsallis) ? fncTsallis[i][j][k]->GetParameter(0) : integral;
+				dNdyErr[j][k] = (qTsallis) ? fncTsallis[i][j][k]->GetParError(0)  : intErr;
 				
 				grdNdy[j][k]->SetPoint(i, x[i], dNdy[j][k]);
 				grdNdy[j][k]->SetPointError(i, xerr[i], dNdyErr[j][k]);
+				
+				// debug
+				printf("\t*** %s, status: %d\tdN/dy: %g +/- %g\t extr: %g +/- %g\t<pt>: %g +/- %g\n", kParticle[j][k].Data(), status, dNdy[j][k], dNdyErr[j][k], 1.-extrFrac, extrFracErr, meanPt, meanPtErr);
 			}
 		}
 		
@@ -160,8 +224,6 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-
 				
 				grP2[j][k]->SetPoint(i, x[i], fncTsallis[i][j][k]->GetParameter(2));
 				grP2[j][k]->SetPointError(i, xerr[i], fncTsallis[i][j][k]->GetParError(2));
-				
-				grChi2Ndf[j][k]->SetPoint(i, x[i], fncTsallis[i][j][k]->GetChisquare()/fncTsallis[i][j][k]->GetNDF());
 			}
 		}
 	}
@@ -196,31 +258,20 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-
 			grP2[i][j]->Write();
 			
 			grdNdy[i][j]->SetName(Form("%s_dNdy", kParticle[i][j].Data()));
-			grChi2Ndf[i][j]->SetName(Form("%s_Chi2Ndf", kParticle[i][j].Data()));
-			
 			grdNdy[i][j]->Write();
-			grChi2Ndf[i][j]->Write();
+			
+			grMeanPt[i][j]->SetName(Form("%s_MeanPt", kParticle[i][j].Data()));
+			grMeanPt[i][j]->Write();
 		}
 	}
 	
 	// draw
 	
-	TStyle* st = new TStyle();
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetOptStat(0);
 	
-	st->SetPadTickX(1);
-	st->SetPadTickY(1);
-	st->SetPadGridX(1);
-	st->SetPadGridY(1);
-	st->SetCanvasColor(0);
-	st->SetFrameBorderMode(0);
-	st->SetFrameFillColor(0);
-	st->SetLabelFont(62,"XYZ");
-	st->SetTitleFont(62,"XYZ");
-	
-	st->cd();
-	gROOT->ForceStyle();
-	
-	const Int_t kNCol = 4;
+	const Int_t kNCol = 3;
 	
 	TCanvas* c0[kNspec];
 	
@@ -239,9 +290,6 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-
 			
 			c0[i]->cd(kNCol*j+3);
 			Draw(grP2[i][j], kFullCircle, kBlue, xname, fncTsallis[0][0][0]->GetParName(2));
-			
-			c0[i]->cd(kNCol*j+4);
-			Draw(grChi2Ndf[i][j], kFullCircle, kBlue, xname, "#chi^{2}/ndf");
 		}
 	}
 	
@@ -262,21 +310,30 @@ void RatioMult(  const TString&  pSpectra   = "~/alice/output/Proton-lhc10d-nsd-
 	
 	// spectra
 	
-	TCanvas* c2[kNspec];
+	TPaveText* label[nx][kNspec][kNpart];
+	
+	TCanvas* c2[kNspec][kNpart];
 	
 	for(Int_t j=0; j<kNspec; ++j)
 	{
-		c2[j] = new TCanvas(Form("c2.%s",kParticle[j][0].Data()), Form("%s data",kParticle[j][0].Data()));
-		c2[j]->Divide(nx,2);
-		
 		for(Int_t k=0; k<kNpart; ++k)
 		{
-			for(Int_t i=0; i<nx; ++i)
+			c2[j][k] = new TCanvas(Form("c2.%s",kParticle[j][k].Data()), Form("%s data",kParticle[j][k].Data()));
+			c2[j][k]->Divide(3,2);
+			for(Int_t i=0; i<nx && i<6; ++i)
 			{
 				gPad->SetLogy(0);
-				c2[j]->cd(nx*k+i+1);
-				Draw(grDYieldPt[i][j][k], kFullCircle, kBlue, "p_{T} (GeV/c)", "DYield");
+				c2[j][k]->cd(i+1);
+				Draw(grDYieldPt[i][j][k], kFullCircle, kBlue, "p_{T} (GeV/c)", "1/N_{ev} d^{2}N/dp_{T}dy (GeV^{-1})");
+				fncTsallis[i][j][k]->SetLineWidth(1);
 				fncTsallis[i][j][k]->Draw("same");
+				
+				label[i][j][k] = new TPaveText(0.5658525,0.7471751,0.814296,0.835452,"brNDC");
+				label[i][j][k]->AddText(Form("%s = %.2f",xname.Data(),x[i]));
+				label[i][j][k]->SetBorderSize(0);
+				label[i][j][k]->SetFillColor(0);
+				label[i][j][k]->SetTextSize(0.06);
+				label[i][j][k]->Draw();
 			}
 		}
 	}
@@ -315,5 +372,6 @@ void Draw(TGraph* gr, Int_t marker, Int_t color, const TString& xtitle, const TS
 	gr->SetLineColor(color);
 	gr->GetXaxis()->SetTitle(xtitle.Data());
 	gr->GetYaxis()->SetTitle(ytitle.Data());
-	gr->Draw("AP");
+	gr->GetYaxis()->SetTitleOffset(1.3);
+	gr->Draw("zAP");
 }

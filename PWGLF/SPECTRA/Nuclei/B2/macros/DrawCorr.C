@@ -16,24 +16,31 @@
 // Draw pt corrections for debugging
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <Riostream.h>
-#include <TROOT.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
 #include <TFile.h>
 #include <TH1D.h>
-#include <TH2D.h>
 #include <TString.h>
 #include <TCanvas.h>
 #include <TF1.h>
+#endif
 
 #include "B2.h"
 
-void DrawPair(TH1* hX, TH1* hY, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, const char* title="", const char* option="E", Int_t xMarker=kFullCircle, Int_t yMarker=kFullCircle, Int_t xColor=kBlue, Int_t yColor=kRed);
+void DrawPair(TH1* hX, TH1* hY, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, const TString& title="", const char* option="E", Int_t xMarker=kFullCircle, Int_t yMarker=kFullCircle, Int_t xColor=kBlue, Int_t yColor=kRed);
 
 void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corrections.root", const TString& tag="")
 {
 //
 // Draw pt corrections for debugging
 //
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetPadGridX(1);
+	gStyle->SetPadGridY(1);
+	gStyle->SetOptTitle(0);
+	gStyle->SetOptStat(0);
+	
 	Double_t xmin = 0;
 	Double_t xmax = 3.5;
 	
@@ -43,23 +50,6 @@ void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corre
 	if (finput->IsZombie()) exit(1);
 	
 	const TString kPrefix[] = {"", "Anti"};
-	
-	// Response matrix
-	
-	TCanvas* c0 = new TCanvas(Form("%s.Unfolding", species.Data()), Form("Response matrix for (Anti)%ss", species.Data()));
-	
-	c0->Divide(2,1);
-	
-	for(Int_t i=0; i<kNpart; ++i)
-	{
-		c0->cd(i+1);
-		
-		TH2D* hResponseMtx = (TH2D*)FindObj(finput, tag, Form("%s%s_Response_Matrix",kPrefix[i].Data(), species.Data()));
-		hResponseMtx->SetAxisRange(xmin, xmax, "X");
-		hResponseMtx->SetAxisRange(xmin, xmax, "Y");
-		hResponseMtx->GetYaxis()->SetTitleOffset(1.3);
-		hResponseMtx->DrawCopy("cont0colZ");
-	}
 	
 	// Reconstruction efficiency
 	
@@ -72,9 +62,9 @@ void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corre
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
-		hEffTrigPt[i] = (TH1D*)FindObj(finput, tag, kPrefix[i] + species + "_Eff_Trig_Pt");
-		hEffVtxPt[i] = (TH1D*)FindObj(finput, tag, kPrefix[i] + species + "_Eff_Vtx_Pt");
-		hEffAccTrkPt[i] = (TH1D*)FindObj(finput, tag, kPrefix[i] + species + "_Eff_AccTrk_Pt");
+		hEffTrigPt[i] = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Eff_Trig_Pt");
+		hEffVtxPt[i] = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Eff_Vtx_Pt");
+		hEffAccTrkPt[i] = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Eff_AccTrk_Pt");
 	}
 	
 	c2->cd(1);
@@ -94,11 +84,11 @@ void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corre
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
-		TH1D* hFracFdwnPt = (TH1D*)FindObj(finput, tag, kPrefix[i] + species + "_Frac_Fdwn_Pt");
-		TH1D* hFracMatPt  = (TH1D*)FindObj(finput, tag, kPrefix[i] + species + "_Frac_Mat_Pt");
+		TH1D* hFracFdwnPt = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Frac_Fdwn_Pt");
+		TH1D* hFracMatPt  = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Frac_Mat_Pt");
 		
-		TF1* fncFracFdwnPt = (TF1*)FindObj(finput, tag, kPrefix[i] + species + "_Frac_Fdwn_Fit_Pt");
-		TF1* fncFracMatPt  = (TF1*)FindObj(finput, tag, kPrefix[i] + species + "_Frac_Mat_Fit_Pt");
+		TF1* fncFracFdwnPt = FindObj<TF1>(finput, tag, kPrefix[i] + species + "_Frac_Fdwn_Fit_Pt");
+		TF1* fncFracMatPt  = FindObj<TF1>(finput, tag, kPrefix[i] + species + "_Frac_Mat_Fit_Pt");
 		
 		c3->cd(2*i+1);
 		hFracFdwnPt->SetAxisRange(xmin, xmax, "X");
@@ -130,12 +120,12 @@ void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corre
 	}
 }
 
-void DrawPair(TH1* hX, TH1* hY, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, const char* title, const char* option, Int_t xMarker, Int_t yMarker, Int_t xColor, Int_t yColor)
+void DrawPair(TH1* hX, TH1* hY, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax, const TString& title, const char* option, Int_t xMarker, Int_t yMarker, Int_t xColor, Int_t yColor)
 {
 //
 // Draw a pair of histograms in the current pad
 //
-	hX->SetTitle(title);
+	hX->SetTitle(title.Data());
 	hX->SetAxisRange(xmin, xmax, "X");
 	hX->SetAxisRange(ymin, ymax, "Y");
 	hX->SetMarkerColor(xColor);

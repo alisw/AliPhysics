@@ -16,33 +16,35 @@
 // TPC+TOF config
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TString.h>
 #include <TFileMerger.h>
-
 #include "AliLnDriver.h"
+#endif
+
 #include "Config.h"
 
-Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
-                           const TString& outputDir  = "~/alice/output",
-                           const TString& period     = "lhc10d",
-                           const TString& outputTag  = "lhc10d",
-                           const TString& multTag    = "",
-                           const TString& multCorTag = "",
-                           Bool_t inel               = 1,  // for mult
-                           Bool_t drawOutput         = 1,  // for batch
-                           const TString& species    = "Proton",
-                           Int_t lowPtBin            = 5,
-                           Int_t jointPtBin          = 11,
-                           Int_t hiPtBin             = 36)
+Int_t Config_TPCTOF_LHC10x(  const TString& inputDir   = "~/alice/input"
+                           , const TString& outputDir  = "~/alice/output"
+                           , const TString& period     = "lhc10d"
+                           , const TString& outputTag  = "lhc10d"
+                           , const TString& trkselTag  = "-bayes-nsd"
+                           , const TString& multTag    = ""
+                           , const TString& multCorTag = ""
+                           , Double_t ymax             = 0.5
+                           , Bool_t inel               = 0
+                           , Bool_t drawOutput         = 1
+                           , const TString& species    = "Proton"
+                           , Double_t ptmin            = 0.4
+                           , Double_t ptjoint          = 1.0
+                           , Double_t ptmax            = 3.2
+                           , Double_t ptpid            = 4)
 {
 //
 // combine TPC and TOF for protons and deuterons
 //
-	const Double_t kProtonSysErr[2]   = {0.08, 0.08} ;
-	const Double_t kDeuteronSysErr[2] = {0.10, 0.11} ;
-	
 	using namespace std;
 	
 	if((species != "Proton") && (species != "Deuteron"))
@@ -58,6 +60,7 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 		              + "\"" + outputDir       + "\","
 		              + "\"" + period          + "\","
 		              + "\"" + kOutputTagTPC   + "\","
+		              + "\"" + trkselTag       + "\","
 		              + "\"" + multTag         + "\","
 		              + "\"" + multCorTag;
 		
@@ -65,27 +68,35 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 		              + "\"" + outputDir       + "\","
 		              + "\"" + period          + "\","
 		              + "\"" + kOutputTagTOF   + "\","
+		              + "\"" + trkselTag       + "\","
 		              + "\"" + multTag         + "\","
 		              + "\"" + multCorTag;
 	
 	cout << "Config_" << species << "_TPC_LHC10x.C" << endl << endl;
-	gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 0,1,1,0,0)"
+	gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %f, %d, 0, %f, %f, 0,1,1,0,0)"
 				, species.Data()
 				, kArgTPC.Data()
+				, ymax
 				, inel
-				, lowPtBin
-				, jointPtBin));
+				, ptmin
+				, ptjoint));
+		
 		
 	cout << "Config_" << species << "_TOF_LHC10x.C" << endl << endl;
-	gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %d, 0, %d, %d, 1,1,1,0,0)"
+	gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %f, %d, 0, %f, %f, %f, 1,1,1,0,0)"
 				, species.Data()
 				, kArgTOF.Data()
+				, ymax
 				, inel
-				, jointPtBin
-				, hiPtBin));
+				, ptjoint
+				, ptmax
+				, ptpid));
 		
 	TString outputPtTPC = outputDir + "/" + MakeOutputName(species, kOutputTagTPC) + "-Pt.root";
 	TString outputPtTOF = outputDir + "/" + MakeOutputName(species, kOutputTagTOF) + "-Pt.root";
+	
+	TString outputPtTPCdbg = outputDir + "/" + MakeOutputName(species, kOutputTagTPC) + "-Pt-debug.root";
+	TString outputPtTOFdbg = outputDir + "/" + MakeOutputName(species, kOutputTagTOF) + "-Pt-debug.root";
 	
 	// combine TPC and TOF pt
 	
@@ -102,20 +113,18 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	
 	m.Merge();
 	
+	// remove tmp files
+	gSystem->Exec(Form("rm -f %s %s %s %s", outputPtTPC.Data(), outputPtTOF.Data(), outputPtTPCdbg.Data(), outputPtTOFdbg.Data()));
+	
 	// make ratio and spectra
 	
 	AliLnDriver driver;
 	
 	driver.SetSpecies(species);
 	
-	Double_t xsec[3];
-	GetInelXSection(xsec, period);
+	driver.SetRapidityInterval(-ymax,ymax);
 	
-	driver.SetInelXSection(xsec);
 	driver.SetExtrapolateToINEL(inel);
-
-	if(species == "Proton") driver.SetSysErr(kProtonSysErr[0],kProtonSysErr[1]);
-	if(species == "Deuteron") driver.SetSysErr(kDeuteronSysErr[0],kDeuteronSysErr[1]);
 	
 	driver.SetOutputFilenames(outputPt, outputRatio, outputSpectra);
 	
@@ -129,10 +138,6 @@ Int_t Config_TPCTOF_LHC10x(const TString& inputDir   = "~/alice/input",
 	driver.Run();
 	
 	if(!drawOutput) return 0;
-	
-	TStyle* st = GetDrawingStyle();
-	st->cd();
-	gROOT->ForceStyle();
 	
 	DrawOutputRatio(outputRatio, outputTag, species);
 	DrawOutputSpectra(outputSpectra, outputTag, species);

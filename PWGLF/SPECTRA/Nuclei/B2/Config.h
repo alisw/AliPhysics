@@ -4,23 +4,25 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// functions for configs
+// common functions for config macros
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TString.h>
-#include <TStyle.h>
 #include <cstdlib>
+#endif
 
 namespace CollSystem
 {
 //
-// pp collision systems
+// pp collision energies
 //
 	const Int_t    kNener               = 3;
-	const TString  kEnergyTag[kNener]   = { "900GeV", "2.76TeV", "7TeV" };
-	const Double_t kEnergy[kNener]      = { 0.9, 2.76, 7. };
+	const TString  kEnergyTag[kNener]   = { "-900GeV", "-2.76TeV", "-7TeV" };
+	const TString  kEnergyLabel[kNener] = { "900 GeV", "2.76 TeV", "7 TeV" };
+	const Double_t kEnergy[kNener]      = { 0.9, 2.76, 7 };
 	const Double_t kEnergyError[kNener] = { 0 };
 	const TString  kEnergyName          = "#sqrt{s} (TeV)";
 };
@@ -30,21 +32,24 @@ namespace B2mult
 //
 // multiplicity classes
 //
-	const Int_t    kNmult              = 6;
-	const TString  kMultTag[kNmult]    = { "ntrk0002", "ntrk0204", "ntrk0408", "ntrk0811", "ntrk1120", "ntrk20xx" };
-	const Double_t kKNOmult[kNmult]    = { 0.20, 0.60, 1.01, 1.60, 2.60, 4.35 };
+
+	const Int_t    kNmult              = 5;
+	const TString  kMultTag[kNmult]    = { "-ntrk0103", "-ntrk0405", "-ntrk0608", "-ntrk0914", "-ntrk15xx" };
+	const Double_t kKNOmult[kNmult]    = { 0.35, 0.74, 1.13, 1.82, 3.14 };
+	const Double_t kDtrPtMax[kNmult]   = { 1.8, 2.0, 2.2, 2.3, 2.5 };
 	const Double_t kKNOmultErr[kNmult] = { 0 };
 	const TString  kKNOmultName        = "z";
 };
 
-namespace HiMult
+namespace B2HiLowMult
 {
 //
-// high multiplicity
+// high and low multiplicity classes
 //
-	const Int_t    kNmult              = 6;
-	const TString  kMultTag[kNmult]    = { "kno04xx", "kno05xx", "kno06xx", "kno07xx", "kno08xx",  "kno09xx"};
-	const Double_t kKNOmult[kNmult]    = { 4.16, 5.85, 6.70, 7.70, 8.73, 9.75 };
+	const Int_t    kNmult              = 2;
+	const TString  kMultTag[kNmult]    = { "-ntrk0108", "-ntrk09xx" };
+	const Double_t kKNOmult[kNmult]    = { 0.64, 2.23 };
+	const Double_t kDtrPtMax[kNmult]   = { 2.0, 2.5 };
 	const Double_t kKNOmultErr[kNmult] = { 0 };
 	const TString  kKNOmultName        = "z";
 };
@@ -74,43 +79,10 @@ TString GetCollSystem(const TString& period)
 	return "unknown";
 }
 
-void GetInelXSection(Double_t xsection[3], const TString& period)
-{
-//
-// inelastic cross section in mb and largest stat. and syst error
-// measured by ALICE for the given colliding system
-// http://arxiv.org/abs/1208.4968
-//
-	TString collsystem = GetCollSystem(period);
-	
-	if( collsystem == "pp0.9TeV" )
-	{
-		xsection[0] = 50.3;
-		xsection[1] = 0.4;
-		xsection[2] = 1.0;
-	}
-	else if( collsystem == "pp2.76TeV" )
-	{
-		xsection[0] = 62.8;
-		xsection[1] = 4.0;
-		xsection[2] = 4.6;
-	}
-	else if( collsystem == "pp7TeV" )
-	{
-		xsection[0] = 73.2;
-		xsection[1] = 1.2;
-		xsection[2] = 2.6;
-	}
-	else
-	{
-		std::cerr << "Warning: unknown colliding system " << collsystem << " for period " << period << std::endl;
-	}
-}
-
 void GetTriggerEfficiency(Double_t trigeff[3], const TString& trigname, const TString& period)
 {
 //
-// trigger efficiency for the given colliding system and largest stat. and syst. errors
+// trigger efficiency for the given colliding system and largest systematic error
 // http://arxiv.org/abs/1208.4968
 //
 	TString collsystem = GetCollSystem(period);
@@ -191,8 +163,10 @@ TString GetSimuFixPeriod(const TString& period)
 	if(period=="lhc10c")      return "lhc12a5bc";
 	if(period=="lhc10d")      return "lhc12a5bd";
 	if(period=="lhc10e")      return "lhc12a5be";
+	if(period=="lhc10bc")     return "lhc12a5bbc";
 	if(period=="lhc10de")     return "lhc12a5bde";
 	if(period=="lhc10cde")    return "lhc12a5bcde";
+	if(period=="lhc10bcd")   return "lhc12a5bbcd";
 	if(period=="lhc10bcde")   return "lhc12a5bbcde";
 	if(period=="lhc11a_wsdd") return "lhc12a5c_wsdd";
 	
@@ -204,6 +178,8 @@ TString MakeInputName(const TString& species, const TString& period, const TStri
 //
 // make input name for data
 //
+	if(trksel == "")           return species + "-" + period;
+	if(trksel.BeginsWith("-")) return species + "-" + period + trksel;
 	return species + "-" + period + "-" + trksel;
 }
 
@@ -247,35 +223,6 @@ TString MakeOutputName(const TString& species, const TString& outputTag)
 	return species + "-" + outputTag;
 }
 
-TStyle* GetDrawingStyle()
-{
-//
-// define a default style for drawing
-//
-	TStyle* st = new TStyle();
-	
-	//st->SetPalette(51);
-	st->SetPalette(1);
-	st->SetPadTickX(1);
-	st->SetPadTickY(1);
-	st->SetPadGridX(1);
-	st->SetPadGridY(1);
-	
-	st->SetCanvasColor(0);
-	st->SetFrameBorderMode(0);
-	st->SetStatBorderSize(1);
-	st->SetStatColor(0);
-	st->SetFrameFillColor(0);
-	st->SetTitleFillColor(0);
-	st->SetLabelFont(62,"XYZ");
-	st->SetTitleFont(62,"XYZ");
-	
-	//st->SetOptTitle(1);
-	st->SetOptStat(0);
-	
-	return st;
-}
-
 void DrawOutputCorr(const TString& species, const TString& corr, const TString& tag="")
 {
 //
@@ -284,7 +231,7 @@ void DrawOutputCorr(const TString& species, const TString& corr, const TString& 
 	gROOT->ProcessLine(Form(".x DrawCorr.C+g(\"%s\",\"%s\",\"%s\")", species.Data(), corr.Data(), tag.Data()));
 }
 
-void DrawCorrDebug(const TString& sec, const TString& tag, const TString& species, Int_t lowbin=1, Int_t hibin=10, Double_t dcaxyMin=-1.5, Double_t dcaxyMax=1.5)
+void DrawCorrDebug(const TString& sec, const TString& tag, const TString& species, Double_t ptmin=0.5, Double_t ptmax=3., Double_t dcaxyMin=-1.5, Double_t dcaxyMax=1.5)
 {
 //
 // draw correction for secondaries
@@ -293,11 +240,11 @@ void DrawCorrDebug(const TString& sec, const TString& tag, const TString& specie
 	
 	for(Int_t i=0; i<2; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawSec.C+g(\"%s\",\"%s\",\"%s\", %d, %d, %f, %f)", sec.Data(), tag.Data(), kParticle[i].Data(), lowbin, hibin, dcaxyMin, dcaxyMax));
+		gROOT->ProcessLine(Form(".x DrawSec.C+g(\"%s\",\"%s\",\"%s\", %f, %f, %f, %f)", sec.Data(), tag.Data(), kParticle[i].Data(), ptmin, ptmax, dcaxyMin, dcaxyMax));
 	}
 }
 
-void DrawPtDebug(const TString& pt, const TString& tag, const TString& species, Bool_t m2pid=0, Int_t hiptbin=17, Int_t lowm2bin=9, Int_t him2bin=17)
+void DrawPtDebug(const TString& pt, const TString& tag, const TString& species, Bool_t m2pid=0, Double_t ptmax=3., Double_t ptpid=1.2)
 {
 //
 // draw pt debug for the particle species
@@ -306,7 +253,7 @@ void DrawPtDebug(const TString& pt, const TString& tag, const TString& species, 
 	
 	for(Int_t i=0; i<2; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawPt.C+g(\"%s\",\"%s\",\"%s\",%d, %d, %d, %d)", pt.Data(), tag.Data(), kParticle[i].Data(), hiptbin, m2pid, lowm2bin, him2bin));
+		gROOT->ProcessLine(Form(".x DrawPt.C+g(\"%s\",\"%s\",\"%s\",%f, %d, %f)", pt.Data(), tag.Data(), kParticle[i].Data(), ptmax, m2pid, ptpid));
 	}
 }
 

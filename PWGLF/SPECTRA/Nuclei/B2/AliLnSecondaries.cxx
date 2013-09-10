@@ -25,12 +25,6 @@
 #include <TObjArray.h>
 #include <TH1D.h>
 #include <TH2D.h>
-#include <RooRealVar.h>
-#include <RooDataSet.h>
-#include <RooDataHist.h>
-#include <RooHistPdf.h>
-#include <RooWorkspace.h>
-#include <RooMsgService.h>
 #include <TBackCompFitter.h>
 
 #include "AliLnSecondaries.h"
@@ -45,8 +39,8 @@ AliLnSecondaries::AliLnSecondaries(const TString& particle, const TString& dataF
 , fSimuFilename(simuFilename)
 , fOutputFilename(outputFilename)
 , fOutputTag(otag)
-, fLowPtBin(3)
-, fHiPtBin(15)
+, fPtMin(0.5)
+, fPtMax(3.0)
 , fNbin(1)
 , fMinDCAxy(-1.5)
 , fMaxDCAxy(1.5)
@@ -61,10 +55,6 @@ AliLnSecondaries::AliLnSecondaries(const TString& particle, const TString& dataF
 // constructor
 //
 	TH1::SetDefaultSumw2(); // switch on histogram errors
-	
-	// disable verbose in RooFit
-	RooMsgService::instance().setSilentMode(1);
-	RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
 }
 
 AliLnSecondaries::~AliLnSecondaries()
@@ -95,7 +85,7 @@ Int_t AliLnSecondaries::Exec()
 	
 	// --------- ideal values: primaries + no secondaries --------
 	
-	TH1D* hPidPt = (TH1D*)FindObj(fdata, fParticle + "_PID_Pt");
+	TH1D* hPidPt = FindObj<TH1D>(fdata, fParticle + "_PID_Pt");
 	hPidPt->Write();
 	
 	const char* contrib[] = { "prim", "mat", "fdwn" };
@@ -112,10 +102,10 @@ Int_t AliLnSecondaries::Exec()
 	if(fFracProc == kMonteCarlo)
 	{
 		// compute the fractions from the montecarlo simulation
-		TH1D* hAll  = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Pt");
-		TH1D* hPrim = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Prim_Pt");
-		TH1D* hMat  = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Mat_Pt");
-		TH1D* hFdwn = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Fdwn_Pt");
+		TH1D* hAll  = FindObj<TH1D>(fsimu, fParticle + "_Sim_Pt");
+		TH1D* hPrim = FindObj<TH1D>(fsimu, fParticle + "_Sim_Prim_Pt");
+		TH1D* hMat  = FindObj<TH1D>(fsimu, fParticle + "_Sim_Mat_Pt");
+		TH1D* hFdwn = FindObj<TH1D>(fsimu, fParticle + "_Sim_Fdwn_Pt");
 		
 		delete hFracPt[0];
 		delete hFracPt[1];
@@ -131,12 +121,12 @@ Int_t AliLnSecondaries::Exec()
 	else if(fParticle == "AntiProton")
 	{
 		// assume only secondaries from feed-down
-		TH2D* hDataDCAxyPt     = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hDataMCDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hPrimDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
-		TH2D* hFdwnDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
-		TH2D* hFakePrimDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
-		TH2D* hFakeFdwnDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt");
+		TH2D* hDataDCAxyPt     = FindObj<TH2D>(fdata, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hDataMCDCAxyPt   = FindObj<TH2D>(fsimu, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hPrimDCAxyPt     = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
+		TH2D* hFdwnDCAxyPt     = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
+		TH2D* hFakePrimDCAxyPt = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
+		TH2D* hFakeFdwnDCAxyPt = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt");
 		
 		if(fAddFakeTracks)
 		{
@@ -159,14 +149,14 @@ Int_t AliLnSecondaries::Exec()
 	else if(fParticle == "Proton")
 	{
 		// secondaries from materials and feed-down
-		TH2D* hDataDCAxyPt     = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hDataMCDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hPrimDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
-		TH2D* hMatDCAxyPt      = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
-		TH2D* hFdwnDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
-		TH2D* hFakePrimDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
-		TH2D* hFakeMatDCAxyPt  = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Mat_DCAxy_Pt");
-		TH2D* hFakeFdwnDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt");
+		TH2D* hDataDCAxyPt     = FindObj<TH2D>(fdata, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hDataMCDCAxyPt   = FindObj<TH2D>(fsimu, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hPrimDCAxyPt     = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
+		TH2D* hMatDCAxyPt      = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
+		TH2D* hFdwnDCAxyPt     = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fdwn_DCAxy_Pt");
+		TH2D* hFakePrimDCAxyPt = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
+		TH2D* hFakeMatDCAxyPt  = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fake_Mat_DCAxy_Pt");
+		TH2D* hFakeFdwnDCAxyPt = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fake_Fdwn_DCAxy_Pt");
 		
 		if(fAddFakeTracks)
 		{
@@ -191,19 +181,19 @@ Int_t AliLnSecondaries::Exec()
 	else
 	{
 		// only secondaries from materials for nuclei
-		TH2D* hDataDCAxyPt     = (TH2D*)FindObj(fdata, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hDataMCDCAxyPt   = (TH2D*)FindObj(fsimu, fParticle + "_PID_DCAxy_Pt");
-		TH2D* hPrimDCAxyPt     = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
-		TH2D* hFakePrimDCAxyPt = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
+		TH2D* hDataDCAxyPt     = FindObj<TH2D>(fdata, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hDataMCDCAxyPt   = FindObj<TH2D>(fsimu, fParticle + "_PID_DCAxy_Pt");
+		TH2D* hPrimDCAxyPt     = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Prim_DCAxy_Pt");
+		TH2D* hFakePrimDCAxyPt = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Fake_Prim_DCAxy_Pt");
 		
 		if(fAddFakeTracks) hPrimDCAxyPt->Add(hFakePrimDCAxyPt);
 		
 		if(fANucTemplate)
 		{
-			hPrimDCAxyPt   = (TH2D*)FindObj(fdata, Form("Anti%s_PID_DCAxy_Pt",fParticle.Data()));
+			hPrimDCAxyPt   = FindObj<TH2D>(fdata, Form("Anti%s_PID_DCAxy_Pt",fParticle.Data()));
 		}
 		
-		TH2D* hMatDCAxyPt    = (TH2D*)FindObj(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
+		TH2D* hMatDCAxyPt = FindObj<TH2D>(fsimu, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
 		if(fMatDCAxyMod == kFlatDCAxy)
 		{
 			hMatDCAxyPt = this->GetFlatDCAxyPt(10, hPrimDCAxyPt, fParticle + "_Sim_PID_Mat_DCAxy_Pt");
@@ -251,7 +241,7 @@ Int_t AliLnSecondaries::Exec()
 	}
 	else
 	{
-		hMatFracPt->Fit(fncMat, "NQ", "", 0.,1.4);
+		hMatFracPt->Fit(fncMat, "NQ", "", 0.,1.6);
 	}
 	
 	TF1* fncFdwn = this->GetFdwnFraction(fParticle + "_Frac_Fdwn_Fit_Pt");
@@ -311,7 +301,10 @@ void AliLnSecondaries::GetFraction(TH1D* hPrimPt, TH1D* hSecPt, const TH2D* hDCA
 //
 	TString nosec = (sec == "Fdwn") ? "Mat" : "Fdwn";
 	
-	for(Int_t i=fLowPtBin; i<fHiPtBin; ++i)
+	Int_t lowbin = hDCAxyPt->GetXaxis()->FindFixBin(fPtMin);
+	Int_t hibin  = hDCAxyPt->GetXaxis()->FindFixBin(fPtMax);
+	
+	for(Int_t i=lowbin; i<hibin; ++i)
 	{
 		TH1D* hDCAxy      = hDCAxyPt->ProjectionY(Form("%s_Data_DCAxy_%02d",fParticle.Data(),i),i,i);
 		TH1D* hMCDCAxy    = hMCDCAxyPt->ProjectionY(Form("%s_SimData_DCAxy_%02d",fParticle.Data(),i),i,i);
@@ -319,17 +312,10 @@ void AliLnSecondaries::GetFraction(TH1D* hPrimPt, TH1D* hSecPt, const TH2D* hDCA
 		TH1D* hSecDCAxy   = hSecDCAxyPt->ProjectionY(Form("%s_%s_DCAxy_%02d",fParticle.Data(),sec.Data(),i),i,i);
 		
 		// fractions
-		Double_t frac[2] = {0,0};
-		Double_t err[2]  = {0,0};
+		Double_t frac[2] = {0};
+		Double_t err[2]  = {0};
 		
-		if(fFracProc == kTFractionFitter)
-		{
-			this->GetTFFfractions(frac, err, hDCAxy, hPrimDCAxy, hSecDCAxy, i, sec);
-		}
-		else
-		{
-			this->GetRooFitFractions(frac, err, hDCAxy, hPrimDCAxy, hSecDCAxy, i, sec);
-		}
+		this->GetTFFfractions(frac, err, hDCAxy, hPrimDCAxy, hSecDCAxy, i, sec);
 		
 		// fill
 		TH1D* hFracPt[] = { hPrimPt, hSecPt};
@@ -370,7 +356,10 @@ void AliLnSecondaries::GetFraction(TH1D* hFracPt[3], const TH2D* hDCAxyPt, const
 // slice the DCA distribution and get the fractions for each pt bin
 // (3 contributions)
 //
-	for(Int_t i=fLowPtBin; i<fHiPtBin; ++i)
+	Int_t lowbin = hDCAxyPt->GetXaxis()->FindFixBin(fPtMin);
+	Int_t hibin  = hDCAxyPt->GetXaxis()->FindFixBin(fPtMax);
+	
+	for(Int_t i=lowbin; i<hibin; ++i)
 	{
 		// slices
 		TH1D* hDCAxy     = hDCAxyPt->ProjectionY(Form("%s_Data_DCAxy_%02d",fParticle.Data(),i),i,i);
@@ -383,14 +372,7 @@ void AliLnSecondaries::GetFraction(TH1D* hFracPt[3], const TH2D* hDCAxyPt, const
 		Double_t frac[3] = {0};
 		Double_t err[3]  = {0};
 		
-		if(fFracProc == kTFractionFitter)
-		{
-			this->GetTFFfractions(frac, err, hDCAxy, hPrimDCAxy, hMatDCAxy, hFdwnDCAxy, i);
-		}
-		else
-		{
-			this->GetRooFitFractions(frac, err, hDCAxy, hPrimDCAxy, hMatDCAxy, hFdwnDCAxy, i);
-		}
+		this->GetTFFfractions(frac, err, hDCAxy, hPrimDCAxy, hMatDCAxy, hFdwnDCAxy, i);
 		
 		// fill
 		for(Int_t k=0; k<3; ++k)
@@ -432,6 +414,8 @@ Int_t AliLnSecondaries::GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hDa
 	fit->Constrain(2,0.0001,1.);
 	
 	Int_t status = fit->Fit();
+	status = fit->Fit();
+	status = fit->Fit();
 	
 	if (status == 0) // get fractions
 	{
@@ -466,6 +450,8 @@ Int_t AliLnSecondaries::GetTFFfractions(Double_t* frac, Double_t* err, TH1D* hDa
 	//fit->SetRangeX(1,50);
 	
 	Int_t status = fit->Fit();
+	status = fit->Fit();
+	status = fit->Fit();
 	
 	if (status == 0) // get fractions
 	{
@@ -525,148 +511,16 @@ TH1D* AliLnSecondaries::ZeroClone(const TH1D* h, const TString& name) const
 //
 // clone histogram and reset to zero
 //
-	TH1D* clone = (TH1D*)h->Clone(name.Data());
+	TH1D* clone = dynamic_cast<TH1D*>(h->Clone(name.Data()));
+	if(clone == 0)
+	{
+		this->Error("ZeroClone", "could not clone %s", h->GetName());
+		exit(1);
+	}
 	clone->Reset();
 	clone->Sumw2();
 	
 	return clone;
-}
-
-void AliLnSecondaries::GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hSec, Int_t ibin, const TString& secname) const
-{
-//
-// DCAxy model 2 contributions
-// RooHistPdf class only represents the distribution as a fixed shape and
-// does not propagate the statistical uncertainty to the likelihood
-//
-	using namespace RooFit;
-	
-	RooWorkspace* w = new RooWorkspace("RigidTemplates");
-	
-	RooRealVar x("x", "sign #times DCA_{xy} (cm)", fMinDCAxy, fMaxDCAxy);
-	w->import(x);
-	
-	RooDataHist dataPrim("data_sig", "primaries", x, hPrim);
-	RooHistPdf prim("Sprim", "Template for primaries", x, dataPrim);
-	w->import(prim);
-	
-	RooDataHist dataSec("data_sec", "secondaries", x, hSec);
-	RooHistPdf sec("Ssec", "Template for secondaries", x, dataSec);
-	w->import(sec);
-	
-	w->factory(Form("SUM::model( Nprim[0,%f]*Sprim, Nsec[0,%f]*Ssec)",hData->Integral(), 0.8*hData->Integral()));
-	
-	// data
-	RooDataHist data("data", "data to fit", x, hData);
-	w->import(data);
-	
-	w->pdf("model")->fitTo(data, Minos(kTRUE), PrintLevel(-1), Verbose(kFALSE), Warnings(kFALSE), PrintEvalErrors(-1));
-	
-	// --------- get fractions --------------
-	
-	Double_t nevents = w->var("Nprim")->getVal()+w->var("Nsec")->getVal();
-	
-	frac[0] = w->var("Nprim")->getVal()/nevents;
-	err[0]  = w->var("Nprim")->getError()/nevents;
-	
-	frac[1] = w->var("Nsec")->getVal()/nevents;
-	err[1]  = w->var("Nsec")->getError()/nevents;
-	
-	// ------ debug ------------
-	
-	TH1D* hDebugFit  = this->ZeroClone(hData, fParticle + "_Fit_Data_DCAxy_" + Form("%02d",ibin));
-	TH1D* hDebugPrim = this->ZeroClone(hData, fParticle + "_Fit_Prim_DCAxy_" + Form("%02d",ibin));
-	TH1D* hDebugSec  = this->ZeroClone(hData, fParticle + "_Fit_" + secname + "_DCAxy_" + Form("%02d",ibin));
-	
-	w->pdf("model")->fillHistogram(hDebugFit,x,nevents);
-	w->pdf("Sprim")->fillHistogram(hDebugPrim,x,w->var("Nprim")->getVal());
-	w->pdf("Ssec")->fillHistogram(hDebugSec,x,w->var("Nsec")->getVal());
-	
-	hDebugFit->Write();
-	hDebugPrim->Write();
-	hDebugSec->Write();
-	
-	delete hDebugFit;
-	delete hDebugPrim;
-	delete hDebugSec;
-	
-	// ---------- end debug --------------
-	
-	delete w;
-}
-
-void AliLnSecondaries::GetRooFitFractions(Double_t* frac, Double_t* err, const TH1D* hData, const TH1D* hPrim, const TH1D* hMat, const TH1D* hFdwn, Int_t ibin) const
-{
-//
-// DCAxy model 3 contributions
-// RooHistPdf class only represents the distribution as a fixed shape and
-// does not propagate the statistical uncertainty to the likelihood
-//
-	using namespace RooFit;
-	
-	RooWorkspace* w = new RooWorkspace("RigidTemplates");
-	
-	RooRealVar x("x", "sign #times DCA_{xy} (cm)", fMinDCAxy, fMaxDCAxy);
-	w->import(x);
-	
-	RooDataHist dataPrim("data_sig", "data for primaries", x, hPrim);
-	RooHistPdf prim("Sprim", "Template for primaries", x, dataPrim);
-	w->import(prim);
-	
-	RooDataHist dataMat("data_mat", "MC for materials", x, hMat);
-	RooHistPdf mat("Smat", "Template for matondaries", x, dataMat);
-	w->import(mat);
-	
-	RooDataHist dataFdwn("data_fdwn", "MC for feed-down", x, hFdwn);
-	RooHistPdf fdwn("Sfdwn", "Template for feed-down", x, dataFdwn);
-	w->import(fdwn);
-	
-	w->factory(Form("SUM::model( Nprim[0.,%f]*Sprim, Nmat[0.,%f]*Smat, Nfdwn[0.,%f]*Sfdwn )",hData->Integral(),0.8*hData->Integral(),0.8*hData->Integral()));
-	
-	// --------------- fit -----------------
-	RooDataHist data("data", "data to fit", x, hData);
-	w->import(data);
-	
-	w->pdf("model")->fitTo(data, Minos(kTRUE), PrintLevel(-1), Verbose(kFALSE), Warnings(kFALSE), PrintEvalErrors(-1));
-	
-	// --------- get fractions --------------
-	
-	Double_t nevents = w->var("Nprim")->getVal()+w->var("Nmat")->getVal()+w->var("Nfdwn")->getVal();
-	
-	frac[0] = w->var("Nprim")->getVal()/nevents;
-	err[0]  = w->var("Nprim")->getError()/nevents;
-	
-	frac[1] = w->var("Nmat")->getVal()/nevents;
-	err[1]  = w->var("Nmat")->getError()/nevents;
-	
-	frac[2] = w->var("Nfdwn")->getVal()/nevents;
-	err[2]  = w->var("Nfdwn")->getError()/nevents;
-	
-	// ------ debug ------------
-	
-	TH1D* hDebugFit  = this->ZeroClone(hData, fParticle + "_Fit_Data_DCAxy_" + Form("%02d",ibin));
-	TH1D* hDebugPrim = this->ZeroClone(hData, fParticle + "_Fit_Prim_DCAxy_" + Form("%02d",ibin));
-	TH1D* hDebugMat  = this->ZeroClone(hData, fParticle + "_Fit_Mat_DCAxy_" + Form("%02d",ibin));
-	TH1D* hDebugFdwn = this->ZeroClone(hData, fParticle + "_Fit_Fdwn_DCAxy_" + Form("%02d",ibin));
-	
-	w->pdf("model")->fillHistogram(hDebugFit,x,hData->Integral());
-	w->pdf("Sprim")->fillHistogram(hDebugPrim,x,w->var("Nprim")->getVal());
-	w->pdf("Smat")->fillHistogram(hDebugMat,x,w->var("Nmat")->getVal());
-	w->pdf("Sfdwn")->fillHistogram(hDebugFdwn,x,w->var("Nfdwn")->getVal());
-	
-	hDebugFit->Write();
-	hDebugPrim->Write();
-	hDebugMat->Write();
-	hDebugFdwn->Write();
-	
-	delete hDebugFit;
-	delete hDebugPrim;
-	delete hDebugMat;
-	delete hDebugFdwn;
-	
-	// ----------- end debug --------------
-	
-	delete w;
 }
 
 TH2D* AliLnSecondaries::GetFlatDCAxyPt(Double_t max, const TH2D* hDCAxyPt, const TString& name) const

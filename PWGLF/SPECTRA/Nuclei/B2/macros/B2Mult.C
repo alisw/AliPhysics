@@ -16,6 +16,7 @@
 // B2 as a function of multiplicity
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TROOT.h>
@@ -23,8 +24,9 @@
 #include <TString.h>
 #include <TFile.h>
 #include <TGraphErrors.h>
-
 #include "AliLnB2.h"
+#endif
+
 #include "B2.h"
 #include "Config.h"
 
@@ -37,18 +39,24 @@ Double_t GetCd(Double_t z)
 	return 0.046133 + 0.0484458*z;
 }
 
-Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-Mult-Spectra.root"
-             , const TString& ptag         = "lhc10d-nsd"
-             , const TString& dSpectra     = "~/alice/output/Deuteron-lhc10bcde-nsd-Mult-Spectra.root"
-             , const TString& dtag         = "lhc10bcde-nsd"
-             , const TString& outputMultPt = "~/alice/output/B2-Mult-Pt.root"
-             , const TString& outputPtMult = "~/alice/output/B2-Pt-Mult.root"
-             , const TString& otag         = "pp-nsd")
+extern void RatioMult(  const TString&, const TString&, const TString&, const TString&, const Int_t, const TString*, const Double_t*, const Double_t*, const TString&, const Bool_t, const TString& , const TString& );
+
+Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-Spectra.root"
+             , const TString& ptag         = "lhc10d"
+             , const TString& dSpectra     = "~/alice/output/Deuteron-lhc10d-Mult-Spectra.root"
+             , const TString& dtag         = "lhc10d"
+             , const TString& outputMultPt = "~/alice/output/B2-lhc10d-MultPt.root"
+             , const TString& outputPtMult = "~/alice/output/B2-lhc10d-PtMult.root"
+             , const TString& otag         = "lhc10d"
+             , const Bool_t qTsallis       = 0
+             , const TString& tsallisTag   = "Tsallis"
+             , const TString& oratio       = "~/alice/output/Particle-Ratios-lhc10d-Tsallis.root")
 {
 //
 // B2 as a function of multiplicity
 //
 	using namespace B2mult;
+	using namespace std;
 	
 	const Int_t kNpart = 2;
 	
@@ -69,7 +77,9 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 		{
 			TString b2file = kPrefix[j] + "B2.root";
 			
-			AliLnB2 b2(pSpectra, ptag + "-" + kMultTag[i], dSpectra, dtag + "-" + kMultTag[i], b2file, otag + "-" + kMultTag[i], 2, kCharge[j]);
+			cout << kMultTag[i] << endl;
+			
+			AliLnB2 b2(pSpectra, ptag + kMultTag[i], dSpectra, dtag + kMultTag[i], b2file, otag + kMultTag[i], 2, kCharge[j]);
 			
 			b2.SetCd(GetCd(kKNOmult[i]));
 			
@@ -80,7 +90,7 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 		
 		// merge B2 and B2bar
 		
-		TString outputfile = otag + "-" + kMultTag[i] + "-B2.root";
+		TString outputfile = otag + kMultTag[i] + "-B2.root";
 		
 		m.OutputFile(outputfile.Data());
 		m.Merge();
@@ -94,7 +104,7 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 	
 	for(Int_t i=0; i<kNmult; ++i)
 	{
-		TString b2 = otag + "-" + kMultTag[i] + "-B2.root";
+		TString b2 = otag + kMultTag[i] + "-B2.root";
 		m.AddFile(b2.Data(),0);
 	}
 	
@@ -105,7 +115,7 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 	
 	for(Int_t i=0; i<kNmult; ++i)
 	{
-		gSystem->Exec(Form("rm -f %s-%s-B2.root",otag.Data(),kMultTag[i].Data()));
+		gSystem->Exec(Form("rm -f %s%s-B2.root",otag.Data(),kMultTag[i].Data()));
 	}
 	
 	// B2 as a function of multiplicity for each pt
@@ -115,13 +125,18 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 	
 	TGraphErrors* grB2pt[kNpart][kNmult];
 	TGraphErrors* grR3pt[kNpart][kNmult];
+	TGraphErrors* grSysB2pt[kNpart][kNmult];
+	TGraphErrors* grSysR3pt[kNpart][kNmult];
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
 		for(Int_t j=0; j<kNmult; ++j)
 		{
-			grB2pt[i][j] = (TGraphErrors*)FindObj(finput, otag + "-" + kMultTag[j], Form("B2%s_Pt", kSuffix[i].Data()));
-			grR3pt[i][j] = (TGraphErrors*)FindObj(finput, otag + "-" + kMultTag[j], Form("R3%s_Pt", kSuffix[i].Data()));
+			grB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("B2%s_Pt", kSuffix[i].Data()));
+			grR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("R3%s_Pt", kSuffix[i].Data()));
+			
+			grSysB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("SystErr_B2%s_Pt", kSuffix[i].Data()));
+			grSysR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("SystErr_R3%s_Pt", kSuffix[i].Data()));
 		}
 	}
 	
@@ -138,7 +153,7 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 	
 	for(Int_t i=kNMinPt; i<kNMaxPt; ++i)
 	{
-		ptLabel[i] = Form("pT%.02fA",pt[i]);
+		ptLabel[i] = Form("pT %.02fA",pt[i]);
 		foutput->mkdir(ptLabel[i].Data());
 	}
 	
@@ -148,24 +163,30 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 		{
 			Double_t B2[kNmult];
 			Double_t B2StatErr[kNmult];
+			Double_t B2SystErr[kNmult];
 			
 			Double_t R3[kNmult];
 			Double_t R3StatErr[kNmult];
+			Double_t R3SystErr[kNmult];
 			
 			for(Int_t k=0; k<kNmult; ++k)
 			{
-				Double_t x, y, ey;
+				Double_t x, y, staterr, systerr;
 				grB2pt[i][k]->GetPoint(j,x,y);
-				ey = grB2pt[i][k]->GetErrorY(j);
+				staterr = grB2pt[i][k]->GetErrorY(j);
+				systerr = grSysB2pt[i][k]->GetErrorY(j);
 				
 				B2[k] = y;
-				B2StatErr[k] = ey;
+				B2StatErr[k] = staterr;
+				B2SystErr[k] = systerr;
 				
 				grR3pt[i][k]->GetPoint(j,x,y);
-				ey = grR3pt[i][k]->GetErrorY(j);
+				staterr = grR3pt[i][k]->GetErrorY(j);
+				systerr = grSysR3pt[i][k]->GetErrorY(j);
 				
 				R3[k] = y;
-				R3StatErr[k] = ey;
+				R3StatErr[k] = staterr;
+				R3SystErr[k] = systerr;
 			}
 			
 			TGraphErrors* grB2Mult = new TGraphErrors(kNmult, kKNOmult, B2, kKNOmultErr, B2StatErr);
@@ -174,22 +195,38 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-nsd-M
 			TGraphErrors* grR3Mult = new TGraphErrors(kNmult, kKNOmult, R3, kKNOmultErr, R3StatErr);
 			grR3Mult->SetName(Form("R3%s_Zmult", kSuffix[i].Data()));
 			
+			Double_t zMultSystErr[kNmult];
+			for(Int_t k=0; k<kNmult; ++k) zMultSystErr[k]=0.07;
+			
+			TGraphErrors* grSysB2Mult = new TGraphErrors(kNmult, kKNOmult, B2, zMultSystErr, B2SystErr);
+			grSysB2Mult->SetName(Form("SystErr_B2%s_Zmult", kSuffix[i].Data()));
+			
+			TGraphErrors* grSysR3Mult = new TGraphErrors(kNmult, kKNOmult, R3, zMultSystErr, R3SystErr);
+			grSysR3Mult->SetName(Form("SystErr_R3%s_Zmult", kSuffix[i].Data()));
+			
 			foutput->cd(ptLabel[j].Data());
 			
 			grB2Mult->Write();
 			grR3Mult->Write();
+			grSysB2Mult->Write();
+			grSysR3Mult->Write();
 			
 			delete grB2Mult;
 			delete grR3Mult;
+			delete grSysB2Mult;
+			delete grSysR3Mult;
 		}
 	}
 	
 	delete foutput;
 	delete finput;
 	
-	// particle ratios
+	//
+	// Particle ratios
+	// -----------------------------------
 	
-	gROOT->ProcessLine(Form(".x RatioMult.C+g(\"%s\",\"%s\",\"%s\",\"%s\")", pSpectra.Data(), dSpectra.Data(), ptag.Data(), dtag.Data()));
+	RatioMult(pSpectra, dSpectra, ptag, dtag, kNmult, kMultTag, kKNOmult, kKNOmultErr, kKNOmultName, qTsallis, oratio, tsallisTag);
+	
 	
 	// draw B2 as a function of pt
 	

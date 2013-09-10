@@ -25,8 +25,6 @@ class AliLnDriver: public TObject
 	void MakeRatio() const;
 	void MakeSpectra() const;
 	
-	void PrintFilenames() const;
-	
 	Int_t Run() const;
 	
 	TString GetSpecies() const { return fSpecies; }
@@ -46,7 +44,6 @@ class AliLnDriver: public TObject
 	void SetOutputCorTag(const TString& tag) { fOutputCorTag = tag; }
 	
 	void SetTriggerEfficiency(Double_t eff[3]);
-	void SetInelXSection(Double_t xsec[3]);
 	void SetExtrapolateToINEL(Bool_t flag=1) { fINEL = flag; }
 	void SetOnlyGeneration(Bool_t flag=1) { fIsOnlyGen = flag; }
 	
@@ -58,14 +55,13 @@ class AliLnDriver: public TObject
 	
 	void SetRapidityInterval(Double_t ymin, Double_t ymax) { fYMin = ymin; fYMax = ymax; }
 	
-	void SetPtBinInterval(Int_t lowbin, Int_t hibin) { fLowPtBin = lowbin; fHiPtBin = hibin; }
-	void SetM2BinInterval(Int_t lowbin, Int_t hibin) { fLowM2Bin = lowbin; fHighM2Bin = hibin; }
-	void SetM2BkgInterval(Double_t min, Double_t max) { fMinM2Bkg = min; fMaxM2Bkg = max; }
-	void SetM2TPCInterval(Double_t min, Double_t max) { fMinM2tpc = min; fMaxM2tpc = max; }
-	void SetPidM2(Bool_t flag=1) { fPidM2 = flag; }
-	void SetUnfolding(Bool_t flag=1, Int_t niter=4) { fUnfolding = flag; fNIter=niter; }
+	void SetPtInterval(Double_t min, Double_t max) { fPtMin = min; fPtMax = max; }
+	void SetPidPt(Double_t ptpid) { fPidPt = ptpid; }
+	void SetBkgInterval(Double_t min, Double_t max) { fBkgMin = min; fBkgMax = max; }
+	void SetPidInterval(Double_t min, Double_t max) { fIntMin = min; fIntMax = max; }
+	void SetPid(Bool_t flag=1) { fPid = flag; }
 	void SetSecondaries(Bool_t flag=1) { fSecondaries = flag; }
-	void SetSecProd(Int_t prod) { fSecProd = prod; }
+	void SetSecProcedure(Int_t proc) { fSecProc = proc; }
 	void SetAntiNucleusAsTemplate(Bool_t flag=1) { fANucTemplate = flag; }
 	void SetMatDCAxyModel(Int_t model=1) { fMatDCAxyMod = model; }
 	void SetNBin(Int_t nbin) { fNbin = nbin; }
@@ -78,9 +74,13 @@ class AliLnDriver: public TObject
 	void SetFeedDownCorr(Bool_t flag=1) { fFdwnCorr=flag; }
 	void SetSameFeedDownCorr(Bool_t flag=1) { fSameFdwn = flag; }
 	
+	void SetPidProcedure(Int_t proc) { fPidProc=proc; }
+	
+	void SetPidEfficiency(Double_t eff) { fPidEff=eff; }
+	
 	void SetAddFakeTracks(Bool_t flag=1) { fAddFakeTracks = flag; }
 	
-	void SetSysErr( Double_t pos, Double_t neg) { fSysPos = pos; fSysNeg = neg; }
+	void SetDebugLevel(Int_t level) { fDebugLevel = level; }
 	
   private:
  
@@ -104,15 +104,12 @@ class AliLnDriver: public TObject
 	Bool_t  fMakeSpectra;   // make spectra
 	Bool_t  fMakeStats;     // make event stats
 	
-	Int_t    fLowPtBin;     // low pt bin
-	Int_t    fHiPtBin;      // high pt bin
-	Bool_t   fPidM2;        // enable m2 pid correction
-	Int_t    fLowM2Bin;     // low m2 bin for pid contamination
-	Int_t    fHighM2Bin;    // high m2 bin for pid contamination
-	Bool_t   fUnfolding;    // unfolding correction
-	Int_t    fNIter;        // number of iterations for Bayesian unfolding
+	Double_t fPtMin;        // minimum pt value
+	Double_t fPtMax;        // maximum pt value
+	Bool_t   fPid;          // enable pid correction
+	Double_t fPidPt;        // minimum pt value for pid correction
 	Bool_t   fSecondaries;  // correction of secondaries
-	Int_t    fSecProd;      // procedure for estimating fractions
+	Int_t    fSecProc;      // procedure to estimate fractions
 	Int_t    fMatDCAxyMod;  // DCAxy model for correction of secondaries
 	Bool_t   fANucTemplate; // enable antinucleus as template for primaries
 	Int_t    fNbin;         // rebin of DCAxy distribution
@@ -120,17 +117,14 @@ class AliLnDriver: public TObject
 	Double_t fYMax;         // max rapidity
 	Double_t fMinDCAxy;     // min DCAxy
 	Double_t fMaxDCAxy;     // max DCAxy
-	Double_t fMinM2Bkg;     // min M2 for removing background
-	Double_t fMaxM2Bkg;     // max M2 for removing background
-	Double_t fMinM2tpc;     // min M2 for integration
-	Double_t fMaxM2tpc;     // max M2 for integration
+	Double_t fBkgMin;       // lower limit for removing background
+	Double_t fBkgMax;       // upper limit for removing background
+	Double_t fIntMin;       // lower limit for integration
+	Double_t fIntMax;       // upper limit for integration
 	Bool_t   fEfficiency;   // efficiency correction
 	Bool_t   fG3Fluka;      // enable G3/Fluka correction for TPC
 	Double_t fScMat;        // scaling factor for material fraction
 	Double_t fScFd;         // scaling factor for feed-down fraction
-	
-	Double_t fSysPos;       // variation for positives
-	Double_t fSysNeg;       // variation for negatives
 	
 	TString fInputData;     // input data filename
 	TString fInputSimu;     // input simulation filename
@@ -150,6 +144,12 @@ class AliLnDriver: public TObject
 	Bool_t fMCtoINEL;       // MC to extrapolate to inel or for triggering events
 	
 	Bool_t fAddFakeTracks;  // include fake tracks in the efficiency and templates
+	
+	Int_t fPidProc;  // pid procedure on the pt distribution
+	
+	Double_t fPidEff;  // pid efficiency for all pt
+	
+	Int_t fDebugLevel; // 0 no verbose, > 1 verbose
 	
 	ClassDef(AliLnDriver,3)
 };
