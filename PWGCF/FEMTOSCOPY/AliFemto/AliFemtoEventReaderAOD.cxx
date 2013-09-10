@@ -158,6 +158,7 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fUsePreCent = aReader.fUsePreCent;
   fEstEventMult = aReader.fEstEventMult;
   fpA2013 = aReader.fpA2013;
+  fDCAglobalTrack = aReader.fDCAglobalTrack;
 
   return *this;
 }
