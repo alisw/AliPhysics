@@ -14,6 +14,7 @@
 #include <TMath.h>
 #include <TRandom3.h>
 #include <AliJetContainer.h>
+#include <AliParticleContainer.h>
 
 class TF1;
 class THF1;
@@ -102,7 +103,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
         // getters - these are used as well by AliAnalyisTaskJetFlow, so be careful when changing them
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
-        TString                 GetTracksName() const                           {return fTracks->GetName(); }
+        TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
         TArrayI*                GetCentralityClasses() const                    {return fCentralityClasses;}
         TArrayD*                GetPtBinsHybrids() const                        {return fPtBinsHybrids; }

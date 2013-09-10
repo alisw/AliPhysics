@@ -47,12 +47,19 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
             }
             return x; }
         /* inline */    Bool_t CompareTracks(AliVParticle* a, AliVParticle* b) const {
-//            printf("dEta %.2f \t dPhi %.2f \n", a->Eta()-b->Eta(), a->Phi()-b->Phi());
             return (TMath::AreEqualAbs(a->Pt(), b->Pt(), 1e-2) && TMath::AreEqualAbs(a->Eta(), b->Eta(), 1e-2) && TMath::AreEqualAbs(a->Phi(), b->Phi(), 1e-2)) ? kTRUE : kFALSE; }
+        /* inline */    Double_t GetR(AliVParticle* a, AliVParticle* b) const {
+               if(!(a&&b)) return 999;
+               Double_t phiA(a->Phi()), phiB(b->Phi()), etaA(a->Eta()), etaB(b->Eta());
+               if(TMath::Abs(phiA-phiB) > TMath::Abs(phiA-phiB + TMath::TwoPi())) phiA+=TMath::TwoPi();
+               if(TMath::Abs(phiA-phiB) > TMath::Abs(phiA-phiB - TMath::TwoPi())) phiA-=TMath::TwoPi();
+               return TMath::Sqrt(TMath::Abs((etaA-etaB)*(etaA-etaB)+(phiA-phiB)*(phiA-phiB))); }
 
         // setters - setup how to run
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetMatchingScheme(matchingSceme m)              {fMatchingScheme = m;}
+        void                    SetMatchConstituents(Bool_t m)                  {fMatchConstituents = m;}
+        void                    SetMinFracRecoveredConstituents(Float_t f)      {fMinFracRecoveredConstituents = f;}
         void                    SetDuplicateRecoveryScheme(duplicateRecovery d) {fDuplicateJetRecoveryMode = d;}
         void                    SetUseEmcalBaseJetCuts(Bool_t b)                {fUseEmcalBaseJetCuts = b;}
         void                    SetSourceBKG(sourceBKG b)                       {fSourceBKG = b;}
@@ -60,6 +67,10 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         void                    SetSourceJetsName(const char* n)                {fSourceJetsName = n;}
         void                    SetTargetJetsName(const char* n)                {fTargetJetsName = n; }
         void                    SetMatchedJetsName(const char* n)               {fMatchedJetsName = n;}
+        void                    SetSourceLocalRhoName(const char* n)            {fSourceRhoName = n;}
+        void                    SetTargetLocalRhoName(const char* n)            {fTargetRhoName = n;}
+        void                    SetSourceRadius(Float_t r)                      {fSourceRadius = r;}
+        void                    SetTargetRadius(Float_t r)                      {fTargetRadius = r;}
         void                    SetMatchEta(Float_t f)                          {fMatchEta = f;}
         void                    SetMatchPhi(Float_t f)                          {fMatchPhi = f;}
         void                    SetMatchR(Float_t f)                            {fMatchR = f;}
@@ -100,7 +111,13 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         TString                 fTargetJetsName;        // name of array with target jets
         TClonesArray*           fMatchedJets;           //! final list of matched jets which is added to event
         TString                 fMatchedJetsName;       // name of list of matched jets
+        AliLocalRhoParameter*   fSourceRho;             //! source rho
+        TString                 fSourceRhoName;         // source rho  name
+        AliLocalRhoParameter*   fTargetRho;             //! target rho
+        TString                 fTargetRhoName;         // target rho name
         Bool_t                  fUseScaledRho;          // use scaled rho
+        Float_t                 fSourceRadius;          // source radius 
+        Float_t                 fTargetRadius;          // target radius
         matchingSceme           fMatchingScheme;        // select your favorite matching algorithm
         duplicateRecovery       fDuplicateJetRecoveryMode;      // what to do with duplicate matches
         Bool_t                  fUseEmcalBaseJetCuts;   // use the emcal jet base class for jet cuts
@@ -137,11 +154,13 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         Float_t                 fMatchArea;             // max relative area mismatch between matched jets
         Float_t                 fMaxRelEnergyDiff;      // max relative energy difference between matched jets
         Float_t                 fMaxAbsEnergyDiff;      // max absolute energy difference between matched jets
+        Bool_t                  fMatchConstituents;     // match constituents
+        Float_t                 fMinFracRecoveredConstituents;  // minimium fraction of constituents that needs to be found
 
         AliAnalysisTaskJetMatching(const AliAnalysisTaskJetMatching&);                  // not implemented
         AliAnalysisTaskJetMatching& operator=(const AliAnalysisTaskJetMatching&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetMatching, 3);
+        ClassDef(AliAnalysisTaskJetMatching, 4);
 };
 
 #endif

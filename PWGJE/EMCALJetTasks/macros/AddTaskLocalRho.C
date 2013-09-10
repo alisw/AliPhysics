@@ -48,10 +48,10 @@ AliAnalysisTaskLocalRho* AddTaskLocalRho(
 
   AliAnalysisTaskLocalRho* jetTask = new AliAnalysisTaskLocalRho(name, runMode);
   // inherited setters
+  jetTask->SetJetsName(njets);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
   jetTask->SetRhoName(nrho);
   jetTask->SetLocalRhoName(lrho);
   jetTask->SetJetRadius(jetradius);

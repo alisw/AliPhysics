@@ -65,10 +65,10 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
 
   AliAnalysisTaskRhoVnModulation* jetTask = new AliAnalysisTaskRhoVnModulation(name, runMode);
   // inherited setters
+  jetTask->SetJetsName(njets);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
   jetTask->SetRhoName(nrho);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
