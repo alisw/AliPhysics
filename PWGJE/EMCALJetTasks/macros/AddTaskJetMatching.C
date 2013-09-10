@@ -1,4 +1,4 @@
-/* AddTask macro for class AddTaskJetMatching.C
+/* AddTask macro for class AliAnalysisTaskJetMatching
  * Redmer Alexander Bertens, rbertens@cern.ch
  * Utrecht University, Utrecht, Netherlands             */
 
@@ -6,9 +6,16 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
         const char* sourceJets  = "SourceJets", // source jets
         const char* targetJets  = "TargetJets", // target jets
         const char* matchedJets = "MatchedJets",// matched jets
-        UInt_t matchingScheme   = AliAnalysisTaskJetMatching::kDeepMatching,
-        UInt_t duplicateRecovery= AliAnalysisTaskJetMatching::kDoNothing,
+        UInt_t matchingScheme   = AliAnalysisTaskJetMatching::kGeoEtaPhi,
+        UInt_t duplicateRecovery= AliAnalysisTaskJetMatching::kTraceDuplicates,
+        Bool_t matchConstituents= kTRUE,
+        Float_t minFrReCon      = .7,
         const char *name        = "AliAnalysisTaskJetMatching",
+        Bool_t cut              = kFALSE,
+        UInt_t  sourceType      = AliAnalysisTaskEmcal::kTPC,
+        Float_t sourceRadius    = 0.4,
+        UInt_t targetType       = AliAnalysisTaskEmcal::kTPC,
+        Float_t targetRadius    = 0.4
   )
 { 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,11 +24,24 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
 
   AliAnalysisTaskJetMatching* jetTask = new AliAnalysisTaskJetMatching(name);
   jetTask->SetDebugMode(-1);
+  jetTask->SetMatchConstituents(matchConstituents);
+  jetTask->SetMinFracRecoveredConstituents(minFrReCon);
   jetTask->SetSourceJetsName(sourceJets);
   jetTask->SetTargetJetsName(targetJets);
   jetTask->SetMatchedJetsName(matchedJets);
   jetTask->SetMatchingScheme(matchingScheme);
   jetTask->SetDuplicateRecoveryScheme(duplicateRecovery);
+  // if we want the jet package to cut on the source and target jets
+  jetTask->SetUseEmcalBaseJetCuts(cut);
+  if(cut) {
+      jetTask->AddJetContainer(Form("sourceJets%s", "container"));
+      jetTask->SetAnaType(sourceType, 0);
+      jetTask->SetJetRadius(sourceRadius, 0);
+      jetTask->AddJetContainer(Form("targetJets%s", "container"));
+      jetTask->SetAnaType(targetType, 1);
+      jetTask->SetJetRadius(targetRadius, 1);
+  }
+  
   mgr->AddTask(jetTask);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
