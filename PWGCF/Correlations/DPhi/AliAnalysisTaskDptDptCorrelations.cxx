@@ -111,7 +111,7 @@ _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
 _trackFilterBit       (0),
-  
+fNSigmaCut            (3.),
 //_min_eta_1(0),                                                                                
 //_max_eta_1 (0),                                                                                
 //_min_eta_2 (0),                                                                                
@@ -379,8 +379,6 @@ AliAnalysisTaskDptDptCorrelations::AliAnalysisTaskDptDptCorrelations(const TStri
 fAODEvent(0), 
 fESDEvent(0),  
 fInputHandler(0),
-fNSigmaCut(3.),
-
 fPIDResponse(0),
 _outputHistoList(0),
 _twoPi         ( 2.0 * 3.1415927),
@@ -408,6 +406,7 @@ _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
 _trackFilterBit       ( 0),
+fNSigmaCut            ( 3.),
 _field    ( 1.),
 _nTracks  ( 0 ),
 _mult0    ( 0 ),
@@ -1189,7 +1188,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float dcaZ     = -999;
   float dcaXY    = -999;
   float centrality = -999;
-  Double_t nSigma =-999;   
+  //Double_t nSigma =-999;   
 
   if(fAODEvent)
     {
@@ -1291,7 +1290,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
 	  continue;
 	}
-	Double_t tpcSignalAll = aodTrack->GetTPCsignal();
+	//Double_t tpcSignalAll = aodTrack->GetTPCsignal();
 	//_dedxVsP_1->Fill(aodTrack->GetTPCmomentum(),tpcSignalAll);
 	Int_t gID = aodTrack->GetID();
 	if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks
@@ -1332,7 +1331,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       eta    = t->Eta();
       dedx   = t->GetTPCsignal();
       nClus  = t->GetTPCNcls();
-      Double_t nclus2 = t->GetTPCClusterInfo(2,1);
+      //Double_t nclus2 = t->GetTPCClusterInfo(2,1);
       
       
       //_Ncluster1->Fill(nClus);
