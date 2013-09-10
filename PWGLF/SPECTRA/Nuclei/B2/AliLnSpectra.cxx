@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// invariant differential yields and cross sections
+// (invariant) differential yield
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
 #include <Riostream.h>
@@ -29,7 +29,7 @@
 
 ClassImp(AliLnSpectra)
 
-AliLnSpectra::AliLnSpectra(const TString& particle, const TString& ptFilename, const TString& tag, const TString& outputFilename, const TString& otag, const Double_t xsec[3])
+AliLnSpectra::AliLnSpectra(const TString& particle, const TString& ptFilename, const TString& tag, const TString& outputFilename, const TString& otag)
 : TObject()
 , fParticle(particle)
 , fPtFilename(ptFilename)
@@ -39,13 +39,10 @@ AliLnSpectra::AliLnSpectra(const TString& particle, const TString& ptFilename, c
 , fYMin(-0.5)
 , fYMax(0.5)
 , fINEL(1)
-, fIsOnlyGen(0)
-, fSysErr(1)
 {
 //
 // constructor
 //
-	for(Int_t i=0; i<3; ++i) fInelXsec[i] = xsec[i];
 }
 
 AliLnSpectra::~AliLnSpectra()
@@ -58,7 +55,7 @@ AliLnSpectra::~AliLnSpectra()
 Int_t AliLnSpectra::Exec()
 {
 //
-// (invariant) differential yield projection in pt for |y| < 0.5
+// (invariant) differential yield projection in pt for |y| < ymax-ymin
 //
 	using namespace std;
 	
@@ -67,8 +64,8 @@ Int_t AliLnSpectra::Exec()
 	
 	// pt and number of events
 	
-	TH1D* hPt = (TH1D*)FindObj(finput, fParticle + "_Pt");
-	TH1D* hStats = (TH1D*)FindObj(finput, fParticle + "_Stats");
+	TH1D* hPt = FindObj<TH1D>(finput, fParticle + "_Pt");
+	TH1D* hStats = FindObj<TH1D>(finput, fParticle + "_Stats");
 	
 	Double_t nEvent = hStats->Integral(3,3);
 	if(fINEL) nEvent = hStats->Integral(4,4);
@@ -85,32 +82,15 @@ Int_t AliLnSpectra::Exec()
 	TGraphErrors* grDYieldPt = this->GetDiffYieldPt(hPt, nEvent, fParticle + "_DiffYield_Pt");
 	grDYieldPt->Write();
 	
-	TGraphErrors* grSysErrDYieldPt = this->AddSystError(grDYieldPt, fSysErr, fParticle + "_SysErr_DiffYield_Pt");
-	grSysErrDYieldPt->Write();
-	
 	// invariant differential yield
 	
 	TGraphErrors* grInvDYieldPt = this->GetInvDiffYieldPt(grDYieldPt, fParticle + "_InvDiffYield_Pt");
 	grInvDYieldPt->Write();
 	
-	TGraphErrors* grSysErrInvDYieldPt = this->AddSystError(grInvDYieldPt, fSysErr, fParticle + "_SysErr_InvDiffYield_Pt");
-	grSysErrInvDYieldPt->Write();
-	
-	// invariant differential cross section
-	
-	TGraphErrors* grInvXsectPt = GetInvDiffXsectionPt(grInvDYieldPt, fInelXsec, fParticle + "_InvDiffXSection_Pt");
-	grInvXsectPt->Write();
-	
-	TGraphErrors* grSysErrInvXsectPt = GetInvDiffXsectionPt(grSysErrInvDYieldPt, fInelXsec, fParticle + "_SysErr_InvDiffXSection_Pt");
-	grSysErrInvXsectPt->Write();
-	
 	// clean
 	
 	delete grDYieldPt;
 	delete grInvDYieldPt;
-	delete grSysErrDYieldPt;
-	delete grSysErrInvDYieldPt;
-	delete grInvXsectPt;
 	
 	delete foutput;
 	delete finput;
@@ -144,8 +124,8 @@ TGraphErrors* AliLnSpectra::GetDiffYieldPt(const TH1D* hPt, Int_t nEvent, const 
 		Double_t yield = n/(nEvent*dpt*dy);
 		Double_t yError = yield*eN/n;
 		
-		grDYieldPt->SetPoint(j,pt,yield);
-		grDYieldPt->SetPointError(j++,0,yError);
+		grDYieldPt->SetPoint(j, pt, yield);
+		grDYieldPt->SetPointError(j++, dpt/2., yError);
 	}
 	
 	return grDYieldPt;
@@ -189,55 +169,4 @@ TGraphErrors* AliLnSpectra::GetInvDiffYieldPt(const TH1D* hPt, Int_t nEvent, con
 	
 	delete grDYieldPt;
 	return grInvDYieldPt;
-}
-
-TGraphErrors* AliLnSpectra::GetInvDiffXsectionPt(const TGraphErrors* grInvDYieldPt, const Double_t* sigma, const TString& name) const
-{
-//
-// invariant differential cross section, only stat. errors
-// (multiply each value for the total cross section)
-//
-	Double_t xsec = sigma[0];
-	Double_t errXSec = sigma[1];
-	
-	TGraphErrors* grInvDXsecPt = new TGraphErrors();
-	grInvDXsecPt->SetName(name.Data());
-	
-	for(Int_t i=0; i < grInvDYieldPt->GetN(); ++i)
-	{
-		Double_t pt, y;
-		grInvDYieldPt->GetPoint(i,pt,y);
-		
-		Double_t errpt = grInvDYieldPt->GetErrorX(i);
-		Double_t erry = grInvDYieldPt->GetErrorY(i);
-		
-		Double_t invxsec = xsec*y;
-		Double_t err = invxsec*TMath::Sqrt(TMath::Power(errXSec/xsec,2) + TMath::Power(erry/y,2));
-		
-		grInvDXsecPt->SetPoint(i, pt, invxsec);
-		grInvDXsecPt->SetPointError(i, errpt, err);
-	}
-	
-	return grInvDXsecPt;
-}
-
-TGraphErrors* AliLnSpectra::AddSystError(const TGraphErrors* gr, Double_t percent, const TString& name) const
-{
-//
-// set the error of h as the given percent of its value
-//
-	TGraphErrors* grSyst = new TGraphErrors();
-	grSyst->SetName(name.Data());
-	
-	for(Int_t i=0; i < gr->GetN(); ++i)
-	{
-		Double_t x, y;
-		gr->GetPoint(i,x,y);
-		Double_t err = percent*y;
-		
-		grSyst->SetPoint(i, x, y);
-		grSyst->SetPointError(i, 0.025, err);
-	}
-	
-	return grSyst;
 }

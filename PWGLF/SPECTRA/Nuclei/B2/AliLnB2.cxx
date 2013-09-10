@@ -96,11 +96,8 @@ Int_t AliLnB2::Run()
 	
 	// invariant differential yields
 	
-	TGraphErrors* grPrtInvDYieldPt = (TGraphErrors*)FindObj(finput1, fProtonTag, prefix + "Proton_InvDiffYield_Pt");
-	TGraphErrors* grNucInvDYieldPt = (TGraphErrors*)FindObj(finputA, fNucleusTag, prefix + fNucleusName + "_InvDiffYield_Pt");
-	
-	TGraphErrors* grSysErrPrtInvDYieldPt = (TGraphErrors*)FindObj(finput1, fProtonTag, prefix + "Proton_SysErr_InvDiffYield_Pt");
-	TGraphErrors* grSysErrNucInvDYieldPt = (TGraphErrors*)FindObj(finputA, fNucleusTag, prefix + fNucleusName + "_SysErr_InvDiffYield_Pt");
+	TGraphErrors* grPrtInvDYieldPt = FindObj<TGraphErrors>(finput1, fProtonTag, prefix + "Proton_InvDiffYield_Pt");
+	TGraphErrors* grNucInvDYieldPt = FindObj<TGraphErrors>(finputA, fNucleusTag, prefix + fNucleusName + "_InvDiffYield_Pt");
 	
 	TFile* foutput = new TFile(fOutputFilename.Data(),"recreate");
 	
@@ -111,25 +108,42 @@ Int_t AliLnB2::Run()
 	
 	TGraphErrors* grB2Pt = this->GetBAPt(grPrtInvDYieldPt, grNucInvDYieldPt, Form("B2%s_Pt",suffix.Data()));
 	
-	TGraphErrors* grSysErrB2Pt = this->GetBAPt(grSysErrPrtInvDYieldPt, grSysErrNucInvDYieldPt, Form("B2%s_SysErr_Pt",suffix.Data()), 0.025);
 	
 	grB2Pt->Write();
-	grSysErrB2Pt->Write();
 	
 	// homogeneity volume
 	
 	TGraphErrors* grR3Pt = this->Rside2Rlong(grB2Pt, Form("R3%s_Pt", suffix.Data()), fCd);
-	TGraphErrors* grSysErrR3Pt = this->Rside2Rlong(grSysErrB2Pt, Form("R3%s_SysErr_Pt", suffix.Data()), fCd, 0.025);
 	
 	grR3Pt->Write();
-	grSysErrR3Pt->Write();
 	
-	// clean
+	// propagate systematic errors if possible
+	
+	TString grPrtName = fProtonTag +  "/" + prefix + "Proton_SystErr_InvDiffYield_Pt;1";
+	TString grNucName = fNucleusTag + "/" + prefix + fNucleusName + "_SystErr_InvDiffYield_Pt;1";
+	
+	TGraphErrors* grSystErrPrtInvDYieldPt = dynamic_cast<TGraphErrors*>(finput1->Get(grPrtName.Data()));
+	TGraphErrors* grSystErrNucInvDYieldPt = dynamic_cast<TGraphErrors*>(finput1->Get(grNucName.Data()));
+	
+	if( (grSystErrPrtInvDYieldPt != 0) && (grSystErrNucInvDYieldPt != 0) )
+	{
+		TGraphErrors* grSystErrB2Pt = this->GetBAPt(grSystErrPrtInvDYieldPt, grSystErrNucInvDYieldPt, Form("SystErr_B2%s_Pt",suffix.Data()));
+		
+		grSystErrB2Pt->Write();
+		
+		TGraphErrors* grSystErrR3Pt = this->Rside2Rlong(grSystErrB2Pt, Form("SystErr_R3%s_Pt", suffix.Data()), fCd);
+		grSystErrR3Pt->Write();
+		
+		delete grSystErrB2Pt;
+		delete grSystErrR3Pt;
+	}
+	else
+	{
+		this->Warning("Run", "systematic errors are not propagated");
+	}
 	
 	delete grB2Pt;
-	delete grSysErrB2Pt;
 	delete grR3Pt;
-	delete grSysErrR3Pt;
 	
 	delete foutput;
 	delete finput1;
@@ -138,7 +152,7 @@ Int_t AliLnB2::Run()
 	return 0;
 }
 
-TGraphErrors* AliLnB2::GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGraphErrors* grNucInvDYieldPt, const TString& name, Double_t errPt) const
+TGraphErrors* AliLnB2::GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGraphErrors* grNucInvDYieldPt, const TString& name) const
 {
 //
 // coalescence parameter
@@ -146,43 +160,62 @@ TGraphErrors* AliLnB2::GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGrap
 	TGraphErrors* grBAPt = new TGraphErrors();
 	grBAPt->SetName(name.Data());
 	
-	Int_t offset = 0;
-	Double_t pt, yPrt, ptNuc, yNuc;
-	
-	grPrtInvDYieldPt->GetPoint(0,pt,yPrt);
-	
-	// find offset
-	for(Int_t i=0; i < grNucInvDYieldPt->GetN(); ++i)
+	for(Int_t i=0, j=0; i < grNucInvDYieldPt->GetN(); ++i)
 	{
+		Double_t ptNuc, yNuc;
+		
 		grNucInvDYieldPt->GetPoint(i, ptNuc, yNuc);
-		if(TMath::Abs(fA*pt-ptNuc)<0.001)
-		{
-			offset = i;
-			break;
-		}
-	}
-	
-	for(Int_t i=0, j=0; i < grPrtInvDYieldPt->GetN() && i+offset < grNucInvDYieldPt->GetN(); ++i)
-	{
-		grPrtInvDYieldPt->GetPoint(i,pt,yPrt);
-		grNucInvDYieldPt->GetPoint(i+offset,ptNuc, yNuc);
+		
+		if(ptNuc<0.8) continue; // acceptance
+		
+		Double_t yPrt = grPrtInvDYieldPt->Eval(ptNuc/fA); // interpolate
 		
 		if(yPrt == 0 || yNuc == 0 ) continue;
-		if(TMath::Abs(fA*pt-ptNuc)>0.001) continue; // compare at equal momentum per nucleon
 		
 		Double_t bA = yNuc/TMath::Power(yPrt,fA);
 		
 		// error
-		Double_t ePrt = grPrtInvDYieldPt->GetErrorY(i);
+		Double_t ePrt = this->GetErrorY(grPrtInvDYieldPt, ptNuc/fA);
 		Double_t eNuc = grNucInvDYieldPt->GetErrorY(i);
 		
+		Double_t errPt = grNucInvDYieldPt->GetErrorX(i)/fA;
 		Double_t errBA = bA*TMath::Sqrt(TMath::Power(eNuc/yNuc,2) + TMath::Power(fA*ePrt/yPrt,2));
 		
-		grBAPt->SetPoint(j, pt, bA);
+		grBAPt->SetPoint(j, ptNuc/fA, bA);
 		grBAPt->SetPointError(j++, errPt, errBA);
 	}
 	
 	return grBAPt;
+}
+
+Double_t AliLnB2::GetErrorY(const TGraphErrors* gr, Double_t x0) const
+{
+//
+// estimate error of gr(x0) with the closest point to x0
+//
+	const Double_t kEpsilon  = 1.e-6;
+	const Double_t kUnknownError = 1.e+6;
+	
+	for(Int_t i=0; i<gr->GetN(); ++i)
+	{
+		Double_t x = gr->GetX()[i];
+		
+		if( TMath::Abs(x-x0) < kEpsilon) return gr->GetErrorY(i);
+		
+		if( ((i == 0) && (x > x0)) || ((i == (gr->GetN()-1)) && (x < x0)) )
+		{
+			this->Warning("GetErrorY", "%f is out of bounds",x);
+			return kUnknownError;
+		}
+		
+		if( x > x0 )
+		{
+			this->Warning("GetErrorY", "Interpolating error at %f",x0);
+			return (gr->GetErrorY(i)+gr->GetErrorY(i-1))/2;
+		}
+	}
+	
+	return 0;
 }
 
 Double_t AliLnB2::Rside2Rlong(Double_t pt, Double_t B2, Double_t Cd) const
@@ -204,7 +237,7 @@ Double_t AliLnB2::Rside2Rlong(Double_t pt, Double_t B2, Double_t Cd) const
 	return r3;
 }
 
-TGraphErrors* AliLnB2::Rside2Rlong(const TGraphErrors* grB2, const TString& name, Double_t Cd, Double_t errPt) const
+TGraphErrors* AliLnB2::Rside2Rlong(const TGraphErrors* grB2, const TString& name, Double_t Cd) const
 {
 //
 // Rside^2*Rlong from B2 value
@@ -226,7 +259,8 @@ TGraphErrors* AliLnB2::Rside2Rlong(const TGraphErrors* grB2, const TString& name
 		grR3->SetPoint(i, pt, r3);
 		
 		// only statistical error propagation of B2
-		Double_t errB2 = grR3->GetErrorY(i);
+		Double_t errPt = grB2->GetErrorX(i);
+		Double_t errB2 = grB2->GetErrorY(i);
 		Double_t errR = r3*errB2/b2;
 		
 		grR3->SetPointError(i, errPt, errR);

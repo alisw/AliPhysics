@@ -7,74 +7,78 @@
 // some common functions
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <TObject.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
 #include <TList.h>
 #include <TString.h>
 #include <TH1D.h>
 #include <TF1.h>
 #include <cstdlib>
+#endif
 
-TObject* FindObj(TFile* f, const TString& name)
+template <class T>
+inline T* FindObj(TFile* f, const TString& name)
 {
 //
 // check if the object exists
 //
-	TObject* obj = f->Get(name.Data());
+	T* obj = dynamic_cast<T*>(f->Get(name.Data()));
 	if(obj == 0)
 	{
-		f->Error("Get","%s not found",name.Data());
+		f->Error("Get","%s not found", name.Data());
 		exit(1);
 	}
 	
 	return obj;
 }
 
-TObject* FindObj(TFile* f, const TString& dir, const TString& name)
+template <class T>
+inline T* FindObj(TFile* f, const TString& dir, const TString& name)
 {
 //
 // check if the object exists
 //
-	if(dir=="") return FindObj(f,name);
+	if(dir=="") return FindObj<T>(f,name);
+	return FindObj<T>(f, dir + "/" + name + ";1");
+}
+
+template <class T>
+inline T* FindObj(const TList* l, const TString& name)
+{
+//
+// check if the object exists
+//
+	T* obj = dynamic_cast<T*>(l->FindObject(name.Data()));
 	
-	TObject* obj;
-	f->GetObject(Form("%s/%s;1",dir.Data(),name.Data()),obj);
 	if(obj == 0)
 	{
-		f->Error("GetObject","%s/%s not found",dir.Data(),name.Data());
+		l->Error("FindObject","%s not found", name.Data());
 		exit(1);
 	}
 	
 	return obj;
 }
 
-TObject* FindObj(const TList* l, const TString& name)
-{
-//
-// check if the object exists
-//
-	TObject* obj = l->FindObject(name.Data());
-	if(obj == 0)
-	{
-		l->Error("FindObject","%s not found",name.Data());
-		exit(1);
-	}
-	
-	return obj;
-}
-
-TH1D* Divide(const TH1* hX, const TH1* hY, const TString& name)
+inline TH1D* Divide(const TH1* hX, const TH1* hY, const TString& name)
 {
 //
 // clone and divide
 //
-	TH1D* q = (TH1D*)hX->Clone(name.Data());
+	TH1D* q = dynamic_cast<TH1D*>(hX->Clone(name.Data()));
+	
+	if(q == 0)
+	{
+		hX->Warning("Clone", "could not clone %s", hX->GetName());
+		return q;
+	}
+	
 	q->Sumw2();
 	q->Divide(hY);
+	
 	return q;
 }
 
-Double_t GetMass(const TString& name)
+inline Double_t GetMass(const TString& name)
 {
 //
 // return particle mass
@@ -97,7 +101,7 @@ Double_t GetMass(const TString& name)
 	return 0;
 }
 
-TF1* Tsallis(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+inline TF1* Tsallis(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
 {
 //
 // Tsallis distribution
@@ -109,40 +113,72 @@ TF1* Tsallis(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10
 	fnc->SetParNames("gV","q","T");
 	fnc->SetParameters(100., 1.1, 0.07);
 	
-	fnc->SetParLimits(0, 1., 1.e+7);
+	fnc->SetParLimits(0, 0., 1.e+7);
 	fnc->SetParLimits(1, 1.0001, 3.);
 	fnc->SetParLimits(2, 0.001, 0.3);
 	
 	return fnc;
 }
 
-TF1* TsallisDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+inline TF1* TsallisDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
 {
 //
 // Tsallis distribution for differential yield
-// Journal of Statistical Physics, Vol. 52, Nos. 1/2, 1988
-// J. Phys. G: Nucl. Part. Phys. 39 (2012)
 //
 	TF1* fnc = new TF1(name.Data(), Form("[0]*x*sqrt(x*x+%f)*pow(1+([1]-1)*sqrt(x*x+%f)/[2],[1]/(1-[1]))/pow(2.*TMath::Pi(),2)",m0*m0,m0*m0),xmin,xmax);
 	
 	fnc->SetParNames("gV","q","T");
 	fnc->SetParameters(100., 1.1, 0.07);
 	
-	fnc->SetParLimits(0, 1., 1.e+7);
+	fnc->SetParLimits(0, 0., 1.e+7);
 	fnc->SetParLimits(1, 1.0001, 3.);
 	fnc->SetParLimits(2, 0.001, 0.3);
 	
 	return fnc;
 }
 
-TF1* TsallisPareto(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+inline TF1* PtTsallisDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
 {
 //
-// Tsallis-Pareto distribution
+// Tsallis distribution for mean pt
+//
+	TF1* fnc = new TF1(name.Data(), Form("[0]*x*x*sqrt(x*x+%f)*pow(1+([1]-1)*sqrt(x*x+%f)/[2],[1]/(1-[1]))/pow(2.*TMath::Pi(),2)",m0*m0,m0*m0),xmin,xmax);
+	
+	fnc->SetParNames("gV","q","T");
+	fnc->SetParameters(100., 1.1, 0.07);
+	
+	fnc->SetParLimits(0, 0., 1.e+7);
+	fnc->SetParLimits(1, 1.0001, 3.);
+	fnc->SetParLimits(2, 0.001, 0.3);
+	
+	return fnc;
+}
+
+inline TF1* QTsallis(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+{
+//
+// q-Tsallis distribution
 // Phys. Rev. C 83, 064903 (2011)
 // Phys. Rev. C 75, 064901 (2007)
 //
 	TF1* fnc = new TF1(name.Data(), Form("[0]*([1]-1)*([1]-2)*pow(1+(sqrt(x*x+%f)-%f)/([1]*[2]),-[1])/(2*TMath::Pi()*[1]*[2]*([1]*[2]+%f*([1]-2)))", m0*m0, m0, m0), xmin, xmax);
+	
+	fnc->SetParNames("dN/dy","n","C");
+	fnc->SetParameters(0.05, 7, 0.3);
+	
+	fnc->SetParLimits(0, 0, 10);
+	fnc->SetParLimits(1, 4, 50);
+	fnc->SetParLimits(2, 0.01, 10);
+	
+	return fnc;
+}
+
+inline TF1* QTsallisDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+{
+//
+// q-Tsallis distribution for differential yield
+//
+	TF1* fnc = new TF1(name.Data(), Form("x*[0]*([1]-1)*([1]-2)*pow(1+(sqrt(x*x+%f)-%f)/([1]*[2]),-[1])/([1]*[2]*([1]*[2]+%f*([1]-2)))", m0*m0, m0, m0), xmin, xmax);
 	
 	fnc->SetParNames("dN/dy","n","C");
 	fnc->SetParameters(0.05, 7, 0.3);
@@ -154,14 +190,12 @@ TF1* TsallisPareto(Double_t m0, const TString& name, Double_t xmin=0, Double_t x
 	return fnc;
 }
 
-TF1* TsallisParetoDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
+inline TF1* PtQTsallisDYield(Double_t m0, const TString& name, Double_t xmin=0, Double_t xmax=10)
 {
 //
-// Tsallis-Pareto distribution for differential yield
-// Phys. Rev. C 83, 064903 (2011)
-// Phys. Rev. C 75, 064901 (2007)
+// q-Tsallis distribution for mean pt
 //
-	TF1* fnc = new TF1(name.Data(), Form("x*[0]*([1]-1)*([1]-2)*pow(1+(sqrt(x*x+%f)-%f)/([1]*[2]),-[1])/([1]*[2]*([1]*[2]+%f*([1]-2)))", m0*m0, m0, m0), xmin, xmax);
+	TF1* fnc = new TF1(name.Data(), Form("x*x*[0]*([1]-1)*([1]-2)*pow(1+(sqrt(x*x+%f)-%f)/([1]*[2]),-[1])/([1]*[2]*([1]*[2]+%f*([1]-2)))", m0*m0, m0, m0), xmin, xmax);
 	
 	fnc->SetParNames("dN/dy","n","C");
 	fnc->SetParameters(0.05, 7, 0.3);

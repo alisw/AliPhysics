@@ -16,24 +16,28 @@
 // call Config_XXX for each period
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TString.h>
 #include <TFileMerger.h>
-
 #include "AliLnDriver.h"
+#endif
+
 #include "Config.h"
 
-Int_t LHC10bcde(const TString& species    = "Deuteron",
-                const TString& inputDir   = "~/alice/input",
-                const TString& outputDir  = "~/alice/output",
-                const TString& outputTag  = "lhc10bcde",
-                const TString& multTag    = "",
-                const TString& multCorTag = "",
-                Bool_t inel               = 1,  // for mult
-                Bool_t drawOutput         = 1,  // for batch
-                Int_t option              = 2)
+Int_t LHC10bcde(  const TString& species    = "Deuteron"
+                , const TString& inputDir   = "~/alice/input"
+                , const TString& outputDir  = "~/alice/output"
+                , const TString& outputTag  = "lhc10bcde"
+                , const TString& trkselTag  = "-tpc3-nsd-moc"
+                , const TString& multTag    = ""
+                , const TString& multCorTag = ""
+                , Double_t       ymax       = 0.5
+                , Bool_t inel               = 0  // for mult
+                , Bool_t drawOutput         = 1  // for batch
+                , Int_t option              = 2)
 {
 //
 // call Config_XXX for each period, merge the corrected pt and then get the results
@@ -42,12 +46,10 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 	const TString kPeriod[kNper]    = { "lhc10b", "lhc10c", "lhc10d", "lhc10e" };
 	const TString kOutputTag[kNper] = { "lhc10b", "lhc10c", "lhc10d", "lhc10e" };
 	
-	Int_t lowbin   = (species=="Proton") ? 5  : 4;
-	Int_t jointbin = (species=="Proton") ? 11 : 6;
-	Int_t hibin    = (species=="Proton") ? 36 : 15;
-	
-	Double_t ymin  = (species=="Proton") ? 1.1e-6 : 1.1e-8;
-	Double_t ymax  = (species=="Proton") ? 4.e-1  : 4.e-4;
+	Double_t ptmin   = (species=="Proton") ? 0.4 : 0.7;
+	Double_t ptjoint = (species=="Proton") ? 1.0 : 1.0;
+	Double_t ptmax   = (species=="Proton") ? 2.0 : 3.0;
+	Double_t ptpid   = (species=="Proton") ? 3.5 : 1.6;
 	
 	using namespace std;
 	
@@ -68,6 +70,7 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 			      + "\""  + outputDir      + "\","
 			      + "\""  + kPeriod[i]     + "\","
 			      + "\""  + kOutputTag[i]  + "\","
+		              + "\""  + trkselTag      + "\","
 			      + "\""  + multTag        + "\","
 			      + "\""  + multCorTag;
 			
@@ -75,15 +78,15 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 		{
 			case 0:
 				cout << "Config_" << species << "_TPC_LHC10x.C" << endl << endl;
-				gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %d, 0)", species.Data(), arg.Data(), inel));
+				gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %f, %d, 0)", species.Data(), arg.Data(), ymax, inel));
 				break;
 			case 1:
 				cout << "Config_" << species << "_LHC10x.C" << endl << endl;
-				gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %d, 0)", species.Data(), arg.Data(), inel));
+				gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %f, %d, 0)", species.Data(), arg.Data(), ymax, inel));
 				break;
 			case 2:
 				cout << "Config_TPCTOF_LHC10x.C" << endl << endl;
-				gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\", %d, 0, \"%s\", %d, %d, %d)", arg.Data(), inel, species.Data(), lowbin, jointbin, hibin));
+				gROOT->ProcessLine(Form(".x Config_TPCTOF_LHC10x.C+g(\"%s\", %f, %d, 0, \"%s\", %f, %f, %f, %f)", arg.Data(), ymax, inel, species.Data(), ptmin, ptjoint, ptmax, ptpid));
 				break;
 		}
 		
@@ -91,9 +94,9 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 		m.AddFile(ptfile,0);
 	}
 	
-	TString outputPt      = outputDir + "/" + species + "-" + outputTag + "-Pt.root";
-	TString outputRatio   = outputDir + "/" + species + "-" + outputTag + "-Ratio.root";
-	TString outputSpectra = outputDir + "/" + species + "-" + outputTag + "-Spectra.root";
+	TString outputPt      = outputDir + "/" + species + "-" + outputTag + multTag + "-Pt.root";
+	TString outputRatio   = outputDir + "/" + species + "-" + outputTag + multTag + "-Ratio.root";
+	TString outputSpectra = outputDir + "/" + species + "-" + outputTag + multTag + "-Spectra.root";
 	
 	// pt
 	
@@ -108,6 +111,9 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 	
 	driver.SetOutputFilenames(outputPt, outputRatio, outputSpectra);
 	driver.SetOutputTag(outputTag);
+	
+	driver.SetRapidityInterval(-ymax,ymax);
+	driver.SetExtrapolateToINEL(inel);
 	
 	driver.SetMakeCorrections(0);
 	driver.SetMakePt(0);
@@ -129,8 +135,8 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 	m2.AddFile(outputRatio.Data(),0);
 	m3.AddFile(outputSpectra.Data(),0);
 	
-	TString allRatios = outputDir + "/" + species + "-lhc10bcde1-Ratio.root";
-	TString allSpectra = outputDir + "/" + species + "-lhc10bcde1-Spectra.root";
+	TString allRatios = outputDir + "/" + species + "-" + outputTag + "-2" + multTag + "-Ratio.root";
+	TString allSpectra = outputDir + "/" + species + "-" + outputTag + "-2" + multTag + "-Spectra.root";
 	
 	m2.OutputFile(allRatios.Data());
 	m3.OutputFile(allSpectra.Data());
@@ -142,9 +148,12 @@ Int_t LHC10bcde(const TString& species    = "Deuteron",
 	
 	if(!drawOutput) return 0;
 	
-	gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"Anti%s%s_Ratio_Pt\",\"lhc10bcde\",0,4.5, 0., 1.8, \"p_{T} (GeV/c)\", \"neg/pos\", 1, \"cRatio\",\"Particle ratio\")", allRatios.Data(), species.Data(), species.Data()));
+	gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"Anti%s%s_Ratio_Pt\",\"%s\",0,4.5, 0., 1.8, \"p_{T} (GeV/c)\", \"neg/pos\", 2, \"cRatio\",\"Particle ratio\")", allRatios.Data(), species.Data(), species.Data(),outputTag.Data()));
 	
-	DrawOutputSpectraMult(allSpectra, species, ymin, ymax, 1, "lhc10bcde");
+	Double_t minYield  = (species=="Proton") ? 1.1e-6 : 2.e-8;
+	Double_t maxYield  = (species=="Proton") ? 4.e-1  : 9.e-4;
+	
+	DrawOutputSpectraMult(allSpectra, species, minYield, maxYield, 2, outputTag);
 	
 	return 0;
 }

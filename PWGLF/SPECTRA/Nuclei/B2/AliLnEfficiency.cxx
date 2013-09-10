@@ -67,12 +67,12 @@ Int_t AliLnEfficiency::Exec()
 		foutput->cd(fOutputTag.Data());
 	}
 	
-	TH1D* hGenPhSpPt = (TH1D*)FindObj(fsimu, fParticle + "_Gen_PhS_Prim_Pt");
-	TH1D* hGenTrigPt = (TH1D*)FindObj(fsimu, fParticle + "_Gen_Trig_Prim_Pt");
-	TH1D* hGenVtxPt  = (TH1D*)FindObj(fsimu, fParticle + "_Gen_Vtx_Prim_Pt");
-	TH1D* hGenAccPt  = (TH1D*)FindObj(fsimu, fParticle + "_Gen_Acc_Prim_Pt");
-	TH1D* hPrimRecPt = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Prim_Pt");
-	TH1D* hFakePrimRecPt = (TH1D*)FindObj(fsimu, fParticle + "_Sim_Fake_Prim_Pt");
+	TH1D* hGenPhSpPt = FindObj<TH1D>(fsimu, fParticle + "_Gen_PhS_Prim_Pt");
+	TH1D* hGenTrigPt = FindObj<TH1D>(fsimu, fParticle + "_Gen_Trig_Prim_Pt");
+	TH1D* hGenVtxPt  = FindObj<TH1D>(fsimu, fParticle + "_Gen_Vtx_Prim_Pt");
+	TH1D* hGenAccPt  = FindObj<TH1D>(fsimu, fParticle + "_Gen_Acc_Prim_Pt");
+	TH1D* hPrimRecPt = FindObj<TH1D>(fsimu, fParticle + "_Sim_Prim_Pt");
+	TH1D* hFakePrimRecPt = FindObj<TH1D>(fsimu, fParticle + "_Sim_Fake_Prim_Pt");
 	
 	if(fAddFakeTracks) hPrimRecPt->Add(hFakePrimRecPt);
 	
@@ -99,7 +99,7 @@ Int_t AliLnEfficiency::Exec()
 	
 	if(!fParticle.Contains("Anti"))
 	{
-		TH1D* hStats = (TH1D*)FindObj(fsimu, fParticle + "_Stats");
+		TH1D* hStats = FindObj<TH1D>(fsimu, fParticle + "_Stats");
 		hStats->Write();
 	}
 	
