@@ -657,25 +657,25 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
         tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
 
-        // fillDCA
-        //if (TMath::Abs(impact[0]) > 0.001) {
-        if (tPart->IsPhysicalPrimary()){
-          tInfo->SetPartOrigin(0);
-          // trackCopy->SetImpactDprim(impact[0]);
-          // cout << "Read prim" << endl;
-        }
-        else if (tPart->IsSecondaryFromWeakDecay()) {
-          tInfo->SetPartOrigin(1);
-          // trackCopy->SetImpactDweak(impact[0]);
-          //cout << "Read wea" << endl;
-        }
-        else if (tPart->IsSecondaryFromMaterial()) {
-          tInfo->SetPartOrigin(2);
-          // trackCopy->SetImpactDmat(impact[0]);
-          //cout << "Read mat" << endl;
-        }
-        //}
-        //  end fillDCA
+        // // fillDCA
+        // //if (TMath::Abs(impact[0]) > 0.001) {
+        // if (tPart->IsPhysicalPrimary()){
+        //   tInfo->SetPartOrigin(0);
+        //   // trackCopy->SetImpactDprim(impact[0]);
+        //   // cout << "Read prim" << endl;
+        // }
+        // else if (tPart->IsSecondaryFromWeakDecay()) {
+        //   tInfo->SetPartOrigin(1);
+        //   // trackCopy->SetImpactDweak(impact[0]);
+        //   //cout << "Read wea" << endl;
+        // }
+        // else if (tPart->IsSecondaryFromMaterial()) {
+        //   tInfo->SetPartOrigin(2);
+        //   // trackCopy->SetImpactDmat(impact[0]);
+        //   //cout << "Read mat" << endl;
+        // }
+        // //}
+        // //  end fillDCA
 
 
       }
