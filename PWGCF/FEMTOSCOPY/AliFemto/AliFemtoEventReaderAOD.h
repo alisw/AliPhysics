@@ -28,7 +28,7 @@
 class AliFemtoEvent;
 class AliFemtoTrack;
 
-class AliFemtoEventReaderAOD : public AliFemtoEventReader 
+class AliFemtoEventReaderAOD : public AliFemtoEventReader
 {
  public:
   enum EventMult {kCentrality=0, kGlobalCount=1, kReference=2, kTPCOnlyRef=3, kVZERO=4, kCentralityTRK=5, kCentralityZNA=6, kCentralityCL1=7, kCentralityCND=9,  kCentralityV0A=10, kCentralityV0C=11, kCentralityZNC=12, kCentralityCL0=13, kCentralityFMD=14, kCentralityTKL=15, kCentralityNPA=16};
@@ -56,15 +56,16 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
   void SetUseMultiplicity(EstEventMult aType);
   void SetpA2013(Bool_t pa2013);
+  void SetDCAglobalTrack(Bool_t dcagt);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
-  virtual void CopyAODtoFemtoTrack( AliAODTrack *tAodTrack,  
+  virtual void CopyAODtoFemtoTrack( AliAODTrack *tAodTrack,
 				    AliFemtoTrack *tFemtoTrack
 				    //				    AliPWG2AODTrack *tPWG2AODTrack
-				    ); 
-  virtual void CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0);			    
-  virtual void CopyPIDtoFemtoTrack( AliAODTrack *tAodTrack, 
+				    );
+  virtual void CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0);
+  virtual void CopyPIDtoFemtoTrack( AliAODTrack *tAodTrack,
 				   AliFemtoTrack *tFemtoTrack);
 
   int            fNumberofEvent;    // number of Events in AOD file
@@ -73,28 +74,29 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   TBits          fAllTrue;          // Bit set with all true bits
   TBits          fAllFalse;         // Bit set with all false bits
   UInt_t         fFilterBit;        // Bitmap bit for AOD filters
-  UInt_t         fFilterMask;       
+  UInt_t         fFilterMask;
   //  TClonesArray*  fPWG2AODTracks;    // Link to PWG2 specific AOD information (if it exists)
-  
+
   unsigned char  fReadMC;           // Attempt to read the MC information from the AOD
   unsigned char  fReadV0;           // Read V0 information from the AOD and put it into V0Collection
   unsigned char  fUsePreCent;       // Use centrality pre-selection to speed up analysis
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   double         fCentRange[2];     // Centrality pre-selection range
   AliAODpidUtil* fAODpidUtil;
-  AliAODHeader* fAODheader; 
- 
+  AliAODHeader* fAODheader;
+
 
  private:
 
-  AliAODMCParticle* GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel); 
+  AliAODMCParticle* GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel);
 
   string         fInputFile;        // name of input file with AOD filenames
   TChain*        fTree;             // AOD tree
-  TFile*         fAodFile;          // AOD file 
+  TFile*         fAodFile;          // AOD file
   int            fMagFieldSign;     // Magnetic field sign
   Bool_t fisEPVZ; // to get event plane angle from VZERO
   Bool_t fpA2013; // analysis on pA 2013 data
+  Bool_t fDCAglobalTrack; // to get DCA from global tracks instead of TPC-only
 
 
 #ifdef __ROOT__
@@ -102,7 +104,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
 #endif
 
 };
-  
+
 #endif
 
 
