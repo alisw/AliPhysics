@@ -61,7 +61,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAodFile(0x0),
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
-  fpA2013(kFALSE)
+  fpA2013(kFALSE),
+  fDCAglobalTrack(kFALSE)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -91,7 +92,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAodFile(0x0),
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
-  fpA2013(kFALSE)
+  fpA2013(kFALSE),
+  fDCAglobalTrack(kFALSE)
 {
   // copy constructor
   fReadMC = aReader.fReadMC;
@@ -112,6 +114,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fEstEventMult = aReader.fEstEventMult;
   fUsePreCent = aReader.fUsePreCent;
   fpA2013 = aReader.fpA2013;
+  fDCAglobalTrack = aReader.fDCAglobalTrack;
+
 }
 //__________________
 //Destructor
@@ -587,6 +591,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
         tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
 
+
         fpx *= 1e13;
         fpy *= 1e13;
         fpz *= 1e13;
@@ -650,6 +655,28 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
           tInfo->SetMass(0.0);
 
         tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
+
+        // fillDCA
+        //if (TMath::Abs(impact[0]) > 0.001) {
+        if (tPart->IsPhysicalPrimary()){
+          tInfo->SetPartOrigin(0);
+          // trackCopy->SetImpactDprim(impact[0]);
+          // cout << "Read prim" << endl;
+        }
+        else if (tPart->IsSecondaryFromWeakDecay()) {
+          tInfo->SetPartOrigin(1);
+          // trackCopy->SetImpactDweak(impact[0]);
+          //cout << "Read wea" << endl;
+        }
+        else if (tPart->IsSecondaryFromMaterial()) {
+          tInfo->SetPartOrigin(2);
+          // trackCopy->SetImpactDmat(impact[0]);
+          //cout << "Read mat" << endl;
+        }
+        //}
+        //  end fillDCA
+
+
       }
       trackCopy->SetHiddenInfo(tInfo);
     }
@@ -810,21 +837,21 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   float covmat[6];
   tAodTrack->GetCovMatrix(covmat);
 
-  // ! DCA information is done in CopyPIDtoFemtoTrack()
+  if (!fDCAglobalTrack) {
+    double impact[2];
+    double covimpact[3];
 
-	double impact[2];
-	double covimpact[3];
+    if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+      //cout << "sth went wrong with dca propagation" << endl;
+      tFemtoTrack->SetImpactD(-1000.0);
+      tFemtoTrack->SetImpactZ(-1000.0);
 
-	if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-	  //cout << "sth went wrong with dca propagation" << endl;
-	  tFemtoTrack->SetImpactD(-1000.0);
-	  tFemtoTrack->SetImpactZ(-1000.0);
-
-	}
-	else {
-	  tFemtoTrack->SetImpactD(impact[0]);
-	  tFemtoTrack->SetImpactZ(impact[1]);
-	}
+    }
+    else {
+      tFemtoTrack->SetImpactD(impact[0]);
+      tFemtoTrack->SetImpactZ(impact[1]);
+    }
+  }
 
   //   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
   //     tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv())*(tAodTrack->Xv()/TMath::Abs(tAodTrack->Xv())));
@@ -1186,21 +1213,23 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
                                                  AliFemtoTrack *tFemtoTrack)
 {
 
-	// // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
+  if (fDCAglobalTrack) {
+    // // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
 
-	// double impact[2];
-	// double covimpact[3];
+    double impact[2];
+    double covimpact[3];
 
-	// if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-	// 	//cout << "sth went wrong with dca propagation" << endl;
-	// 	tFemtoTrack->SetImpactD(-1000.0);
-	// 	tFemtoTrack->SetImpactZ(-1000.0);
+    if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+      //cout << "sth went wrong with dca propagation" << endl;
+      tFemtoTrack->SetImpactD(-1000.0);
+      tFemtoTrack->SetImpactZ(-1000.0);
 
-	// }
-	// else {
-	// 	tFemtoTrack->SetImpactD(impact[0]);
-	// 	tFemtoTrack->SetImpactZ(impact[1]);
-	// }
+    }
+    else {
+      tFemtoTrack->SetImpactD(impact[0]);
+      tFemtoTrack->SetImpactZ(impact[1]);
+    }
+  }
 
   double aodpid[10];
   tAodTrack->GetPID(aodpid);
@@ -1405,3 +1434,9 @@ void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {
   fpA2013 = pa2013;
 }
+
+void AliFemtoEventReaderAOD::SetDCAglobalTrack(Bool_t dcagt)
+{
+  fDCAglobalTrack = dcagt;
+}
+
