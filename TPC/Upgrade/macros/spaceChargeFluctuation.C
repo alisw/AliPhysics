@@ -49,6 +49,8 @@
 #include "TStyle.h"
 #include "AliTPCSpaceCharge3D.h"
 #include "AliExternalTrackParam.h"
+#include "AliTrackerBase.h"
+#include "TDatabasePDG.h"
 //
 // constants
 //
@@ -1170,21 +1172,23 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   //
   //
   // Input:
-  //   scale           - scaling of the space charge
+  //   scale           - scaling of the space charge (defaul 1 corrsponds to the epsilon ~ 5)
   //   nfilesMerge     - amount of chunks to merge
   //                   - =0  all chunks used
   //                     <0  subset form full statistic
-  //                     >0  subset from the  limited (1000 mean) stistic
+  //                     >0  subset from the  limited (1000 mean) statistic
+  // Output"  
+  // For given SC setups the distortion on the space point and track level characterezed
+  //    SpaceChargeFluc%d_%d.root        - space point distortion maps       
+  //    SpaceChargeTrackFluc%d%d.root    - tracks distortion caused by  space point distortion 
+  //
+
   // Make fluctuation scan:
   //   1.) Shift of z disk - to show which granularity in time needed
   //   2.) Shift in sector - to show influence of the gass gain and epsilon
   //   3.) Smearing in phi - to define phi granularity needed
-  //   4.) Rebin z
-  //   5.) Rebin phi
-  // For given SC setups the distortion on the space point and track level characterezed
-  //    SpaceChargeFluc%d_%d.root
-  //    SpaceChargeTrackFluc%d%d.root
-  //
+  //   4.) Rebin z         - commented out (not delete it for the moment)
+  //   5.) Rebin phi       - commented out 
   
 
   //
@@ -1471,6 +1475,10 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   //
   // generate track distortions
   //
+  const Double_t xITSlayer[7]={2.2, 2.8 ,3.6 , 20, 22,41,43 };  // ITS layers R poition (http://arxiv.org/pdf/1304.1306v3.pdf)
+  const Double_t resITSlayer[7]={0.0004, 0.0004 ,0.0004 , 0.0004, 0.0004, 0.0004, 0.0004 };  // ITS layers R poition (http://arxiv.org/pdf/1304.1306v3.pdf - pixel scenario) 
+  const Double_t kMaxSnp = 0.85;   
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   if (nTracks>0){
     for(Int_t nt=1; nt<=nTracks; nt++){
       gRandom->SetSeed(nt);
@@ -1501,29 +1509,70 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
 	"nfilesMerge="<<nfilesMerge<<       // number of files to define propertiesneventsCorr
 	"neventsCorr="<<neventsCorr<<       // number of events used to define the corection
 	"fullNorm="<<fullNorm<<             // in case full statistic used this is the normalization coeficient
-	"itrack="<<nt<<
-	"input.="<<t;
+	"itrack="<<nt<<                     //
+	"input.="<<t;                       // 
       for (Int_t idist=0; idist<ndist; idist++){
 	AliTPCCorrection * corr   = (AliTPCCorrection *)distortionArray->At(idist);
+	// 0. TPC only information at the entrance
+	// 1. TPC only information close to vertex ( refX=1 cm) 
+	// 2. TPC constrained information close to the primary vertex
+	// 3. TPC +ITS
 	AliExternalTrackParam *ot0= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
 	AliExternalTrackParam *ot1= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
 	AliExternalTrackParam *td0 =  corr->FitDistortedTrack(*ot0, refX0, dir,  0);
 	AliExternalTrackParam *td1 =  corr->FitDistortedTrack(*ot1, refX1, dir,  0);
+	// 2. TPC constrained umulation
+	AliExternalTrackParam *tdConstrained =  new  AliExternalTrackParam(*td1);
+	tdConstrained->Rotate(ot1->GetAlpha());
+	tdConstrained->PropagateTo(ot1->GetX(), AliTrackerBase::GetBz());
+	Double_t pointPos[2]={ot1->GetY(),ot1->GetZ()};  // local y and local z of point
+	Double_t pointCov[3]={0.0001,0,0.0001};                    // 
+	tdConstrained->Update(pointPos,pointCov);
+	// 3. TPC+ITS  constrained umulation
+	AliExternalTrackParam *tdITS     =  new  AliExternalTrackParam(*td0); 
+	AliExternalTrackParam *tdITSOrig =  new  AliExternalTrackParam(*ot0); 
+	Bool_t itsOK=kTRUE;
+	//
+	for (Int_t ilayer=6; ilayer<=0; ilayer--){
+	  if (!AliTrackerBase::PropagateTrackTo(tdITSOrig,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) itsOK=kFALSE;
+	  if (!AliTrackerBase::PropagateTrackTo(tdITS,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) itsOK=kFALSE;
+	  //
+	  tdITS->Rotate(tdITSOrig->GetAlpha());
+	  tdITS->PropagateTo(tdITSOrig->GetX(), AliTrackerBase::GetBz());
+	  Double_t itspointPos[2]={tdITS->GetY(),tdITS->GetZ()};  // local y and local z of point
+	  Double_t itspointCov[3]={resITSlayer[ilayer]*resITSlayer[ilayer],0,resITSlayer[ilayer]*resITSlayer[ilayer]};   
+	  tdITS->Update(itspointPos,itspointCov);
+	}
+	//
 	trackArray.AddLast(td0);
 	trackArray.AddLast(td1);
+	trackArray.AddLast(tdConstrained);
+	trackArray.AddLast(tdITS);
+	trackArray.AddLast(tdITSOrig);
+	//
 	trackArray.AddLast(ot0);
 	trackArray.AddLast(ot1);
-	char name0[100], name1[1000];
-	char oname0[100], oname1[1000];
+	char name0[100], name1[1000], nameITS[1000];
+	char oname0[100], oname1[1000], onameConstrained[1000], onameITS[1000];
 	snprintf(name0, 100, "T_%s_0.=",corr->GetName());
 	snprintf(name1, 100, "T_%s_1.=",corr->GetName());
 	snprintf(oname0, 100, "OT_%s_0.=",corr->GetName());
-	snprintf(oname1, 100, "OT_%s_1.=",corr->GetName());
+	snprintf(oname1, 100, "T_%s_1.=",corr->GetName());
+	snprintf(onameConstrained, 100, "OConst_%s_1.=",corr->GetName());
+	//
+	snprintf(nameITS, 100, "TPCITS_%s_1.=",corr->GetName());
+	snprintf(onameITS, 100, "OTPCITS_%s_1.=",corr->GetName());
 	(*pcstreamTrack)<<"trackFit"<<
-	  name0<<td0<< 
-	  name1<<td1<< 
-	  oname0<<ot0<< 
-	  oname1<<ot1; 
+	  name0<<td0<<                       // distorted TPC track only at the refX=85
+	  name1<<td1<<                       // distorted TPC track only at the refX=1
+	  onameConstrained<<tdConstrained<<  // distorted TPC constrained track only at the refX=1 
+	  //
+	  onameITS<<tdITSOrig<<              //  original TPC+ITS track
+	  nameITS<<tdITS<<                   //  distorted TPC+ (indistrted)ITS track fit
+	  //
+	  oname0<<ot0<<                      // original track at the entrance refX=85
+	  oname1<<ot1;                       // original track at the refX=1 cm (to be used for TPC only and also for the constrained
+	
       }
       (*pcstreamTrack)<<"trackFit"<<"\n";
     }
