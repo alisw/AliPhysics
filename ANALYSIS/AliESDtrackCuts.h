@@ -332,7 +332,7 @@ protected:
 
   TH2F* fhTOFdistance[2];            //-> TOF signal distance dx vs dz
 
-  ClassDef(AliESDtrackCuts, 20)
+  ClassDef(AliESDtrackCuts, 21)
 };
 
 
