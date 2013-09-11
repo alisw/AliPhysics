@@ -662,8 +662,11 @@ goGenerateMakeflow()
     echo
 
     #CPass1 list of Calib/QA files to merge
-    echo "cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.list: ${arr_cpass1_outputs[*]}"
-    echo "  awk '/^calibfile / {print "'\$'"2}' ${arr_cpass1_outputs[*]} > cpass1.calib.run${runNumber}.list;  awk '/^qafile / {print "'\$'"2}' ${arr_cpass1_outputs[*]} > cpass1.QA.run${runNumber}.list"
+    # the trick is to have the string "Stage" in the file name of the list of directories with QA output to trigger
+    # the production of the trending tree (only then the task->Finish() will be called in QAtrain_duo.C, on the grid
+    # this corresponds to the last merging stage)
+    echo "cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.list: ${arr_cpass1_outputs[*]}"
+    echo "  awk '/^calibfile / {print "'\$'"2}' ${arr_cpass1_outputs[*]} > cpass1.calib.run${runNumber}.list;  awk '/^dir / {print "'\$'"2}' ${arr_cpass1_outputs[*]} > cpass1.QA.run${runNumber}.lastMergingStage.list"
     echo
 
     #CPass0 merging
@@ -674,8 +677,8 @@ goGenerateMakeflow()
 
     #CPass1 Calib/QA merging
     arr_cpass1_final[$runindex]="merge.cpass1.run${runNumber}.done"
-    echo "${arr_cpass1_final[$runindex]}: cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.list benchmark.sh ${configFile} ${copyFiles[@]}"
-    echo " ${alirootEnv} ./benchmark.sh MergeCPass1 ${commonOutputPath}/cpass1/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.list"
+    echo "${arr_cpass1_final[$runindex]}: cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.list benchmark.sh ${configFile} ${copyFiles[@]}"
+    echo " ${alirootEnv} ./benchmark.sh MergeCPass1 ${commonOutputPath}/cpass1/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.list"
     echo
     ((runindex++))
   done
