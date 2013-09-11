@@ -193,26 +193,8 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   if (GetBenchmarkInstance()) {
     GetBenchmarkInstance()->Start(2);
   }
- 
-  // Write header block
-  {
-    AliHLTComponent_BlockData bd;
-    FillBlockData(bd);
-    bd.fOffset        = size;
-    bd.fSize          = sizeof(AliHLTTPCDataCompressionDescriptor);
-    bd.fDataType      = AliHLTTPCDefinitions::DataCompressionDescriptorDataType();
-    if( capacity < size + bd.fSize ){
-      iResult = -ENOMEM;
-      return iResult;
-    }    
-    AliHLTTPCDataCompressionDescriptor desc; 
-    desc.SetMergedClustersFlag(1);
-    *(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = desc;
-    outputBlocks.push_back(bd);
-    size += bd.fSize;
-    outputDataSize+=bd.fSize;
-    HLTBenchmark("header data block of size %d", bd.fSize);
-  }
+
+  bool isInputPresent = kFALSE;
 
   // transformed clusters
   // the transformed clusters have not been used yet
@@ -222,6 +204,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       if (GetBenchmarkInstance()) {
 	GetBenchmarkInstance()->AddInput(pDesc->fSize);
       }
+      isInputPresent = kTRUE;
       AliHLTUInt8_t slice = 0;
       AliHLTUInt8_t patch = 0;
       slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
@@ -354,6 +337,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       GetBenchmarkInstance()->Start(1);
       GetBenchmarkInstance()->AddInput(pDesc->fSize);
     }
+    isInputPresent = kTRUE;
     AliHLTUInt8_t slice = 0;
     AliHLTUInt8_t patch = 0;
     slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
@@ -506,6 +490,26 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   } while (0);
 
   fRawInputClusters->Clear();
+
+  // Write header block 
+  if( isInputPresent ){
+    AliHLTComponent_BlockData bd;
+    FillBlockData(bd);
+    bd.fOffset        = size;
+    bd.fSize          = sizeof(AliHLTTPCDataCompressionDescriptor);
+    bd.fDataType      = AliHLTTPCDefinitions::DataCompressionDescriptorDataType();
+    if( capacity < size + bd.fSize ){
+      iResult = -ENOMEM;
+      return iResult;
+    }    
+    AliHLTTPCDataCompressionDescriptor desc; 
+    desc.SetMergedClustersFlag(1);
+    *(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = desc;
+    outputBlocks.push_back(bd);
+    size += bd.fSize;
+    outputDataSize+=bd.fSize;
+    HLTBenchmark("header data block of size %d", bd.fSize);
+  }
 
   float compressionFactor=(float)inputRawClusterSize;
   if ((outputDataSize)>0) compressionFactor/=outputDataSize;
