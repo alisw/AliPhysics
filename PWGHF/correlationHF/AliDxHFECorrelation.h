@@ -48,6 +48,24 @@ class AliDxHFECorrelation : public TNamed {
     kElectron=1
   } ;
 
+
+  // Probably not needed anymore, since code was changed to THnSparse
+  // but keep here in case we need it later
+  enum {
+    khD0pT,         // TH1F
+    khD0Phi,        // TH1F
+    khD0Eta,        // TH1F
+    khElectronpT,   // TH1F
+    khElectronPhi,  // TH1F
+    khElectronEta,  // TH1F
+    kNofHistograms
+  };
+
+  enum {
+    kPrompt=0,
+    kFeedDown=1
+  };
+
   // init
   int Init(const char* arguments="");
 
@@ -84,6 +102,8 @@ class AliDxHFECorrelation : public TNamed {
   virtual void     SaveAs(const char *filename="",Option_t *option="") const; // *MENU*
   // Tests the particle
   virtual Bool_t TestParticle(AliVParticle* /*as*/, Int_t /*id*/);
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr);
 
   virtual void SetCuts(AliAnalysisCuts* cuts) {fCuts=cuts;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
@@ -93,7 +113,7 @@ class AliDxHFECorrelation : public TNamed {
   // TODO: SetEventType only needed for MC. How to avoid this?
   virtual void SetEventType(int type){fEventType=type;}
   void SetRunFullMode(bool fullmode=kTRUE){fRunFullMode=fullmode;}
-  void SetD0EffMap(TH1* eff){fD0EffMap=eff;}
+  virtual void SetD0EffMap(TH1* eff, int whichMap=kPrompt){if(whichMap==kPrompt) fD0EffMap=eff;}
 
   Bool_t GetUseMC() const {return fUseMC;}
   const TList* GetControlObjects() const {return fControlObjects;}
@@ -102,24 +122,13 @@ class AliDxHFECorrelation : public TNamed {
   Double_t GetDeltaPhi() const {return fDeltaPhi;}
   Double_t GetDeltaEta() const {return fDeltaEta;}
   inline int GetDimTHnSparse() const {return fDimThn;}
+  const TH1* GetD0EffMap() const {return fD0EffMap;}
   Int_t GetTriggerParticleType() const {return fTriggerParticleType;}
   Bool_t RunFullMode() const {return fRunFullMode;}
 
   void EventMixingChecks(const AliVEvent* pEvent);
 
   AliDxHFECorrelation& operator+=(const AliDxHFECorrelation& other);
-
-  // Probably not needed anymore, since code was changed to THnSparse
-  // but keep here in case we need it later
-  enum {
-    khD0pT,         // TH1F
-    khD0Phi,        // TH1F
-    khD0Eta,        // TH1F
-    khElectronpT,   // TH1F
-    khElectronPhi,  // TH1F
-    khElectronEta,  // TH1F
-    kNofHistograms
-  };
 
  protected:
   /// add control object to list, the base class becomes owner of the object

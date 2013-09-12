@@ -92,7 +92,8 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fUseKine(kFALSE)
   , fMCArray(NULL)
   , fCorrelationArguments("")
-  , fD0EffMap(NULL)
+  , fD0EffMapP(NULL)
+  , fD0EffMapFD(NULL)
   , fStoreSeparateOrigins(kFALSE)
 {
   // constructor
@@ -152,7 +153,8 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fListHFE=NULL;
   if(fMCArray) delete fMCArray;
   fMCArray=NULL;
-  fD0EffMap=NULL; //external object, do not delete
+  fD0EffMapFD=NULL; //external object, do not delete
+  fD0EffMapP=NULL; //external object, do not delete
 
 
 }
@@ -193,7 +195,8 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   else fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(fCuts);
   iResult=fCorrelation->Init(fOption);
-  if(fD0EffMap) fCorrelation->SetD0EffMap(fD0EffMap);
+  if(fD0EffMapP) { std::cout << "SETTINGPROMPT" << std::endl; fCorrelation->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);}
+  if(fD0EffMapFD) {std::cout << "SETTINGFEEDDOWN" << std::endl; fCorrelation->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);}
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
   }
@@ -206,7 +209,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationCharm->SetCuts(fCuts);
     option=fOption+" storeoriginD=charm storeoriginEl=charm";
     iResult=fCorrelationCharm->Init(option);
-    if(fD0EffMap) fCorrelationCharm->SetD0EffMap(fD0EffMap);
+    if(fD0EffMapP) fCorrelationCharm->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }
@@ -216,7 +219,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationBeauty->SetCuts(fCuts);
     option=fOption+" storeoriginD=beauty storeoriginEl=beauty";
     iResult=fCorrelationBeauty->Init(option);
-    if(fD0EffMap) fCorrelationBeauty->SetD0EffMap(fD0EffMap);
+    if(fD0EffMapFD) fCorrelationBeauty->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }
@@ -226,7 +229,8 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationNonHF->SetCuts(fCuts);
     option=fOption+" storeoriginD=HF storeoriginEl=nonHF";
     iResult=fCorrelationNonHF->Init(option);
-    if(fD0EffMap) fCorrelationNonHF->SetD0EffMap(fD0EffMap);
+    if(fD0EffMapP) fCorrelationNonHF->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);
+    if(fD0EffMapFD) fCorrelationNonHF->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }
@@ -236,7 +240,8 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationHadron->SetCuts(fCuts);
     option=fOption+" storeoriginD=HF storeoriginEl=hadrons";
     iResult=fCorrelationHadron->Init(option);
-    if(fD0EffMap) fCorrelationHadron->SetD0EffMap(fD0EffMap);
+    if(fD0EffMapP) fCorrelationHadron->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);
+    if(fD0EffMapFD) fCorrelationHadron->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }

@@ -58,7 +58,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	 << "useTrackEff                   - If you want to use tracking efficiency (need to attach efficiency maps\n"
 	 << "TrackEffName=                 - The file where the efficiency map is stored\n";
     cout << "useD0Eff                      - If you want to use tracking efficiency (need to attach efficiency maps\n"
-	 << "D0EffName=                    - The file where the efficiency map for D0 is stored\n"
+	 << "PromptD0EffName=              - The file where the efficiency map for Prompt D0 is stored\n"
+	 << "FeedDownD0EffName=            - The file where the efficiency map for Feeddown D0 is stored\n"
 	 << "trigger=D/D0/electron         - Which particle to trigger on \n"
 	 << "PbPb/Pb-Pb/system=1           - To use Pb-Pb collision system\n"
 	 << "pPb/p-Pb/system=2/system=p-Pb - To use p-Pb collision system\n";
@@ -105,7 +106,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   Bool_t bUseEMCAL=kFALSE;
   Bool_t bUseD0Eff=kFALSE;
   TString TrackEffMap="";
-  TString D0EffMap="";
+  TString D0EffMapPrompt="";
+  TString D0EffMapFeedDown="";
   TString extraname="";
   TString cutFilename="";
 
@@ -151,11 +153,17 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    taskOptions+=" useTrackEff";
 	    continue;
 	  }
-	  if (argument.BeginsWith("D0EffName=")) {
-	    argument.ReplaceAll("D0EffName=", "");
+	  if (argument.BeginsWith("PromptD0EffName=")) {
+	    argument.ReplaceAll("PromptD0EffName=", "");
 	    bUseD0Eff=kTRUE;
-	    D0EffMap=argument;
+	    D0EffMapPrompt=argument;
 	    taskOptions+=" useD0Eff";
+	    continue;
+	  }
+	  if (argument.BeginsWith("FeedDownD0EffName=")) {
+	    argument.ReplaceAll("FeedDownD0EffName=", "");
+	    bUseD0Eff=kTRUE;
+	    D0EffMapFeedDown=argument;
 	    continue;
 	  }
 	  if(argument.BeginsWith("useTrackEff")) {
@@ -597,16 +605,30 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     //D0 efficiency
     //********************
 
-    TFile* fileeffD0=TFile::Open(D0EffMap.Data());
-    if(!fileeffD0->IsOpen()){
-      cout<<"Input file not found for efficiency! Exiting..."<<endl;
+    TFile* fileeffD0Prompt=TFile::Open(D0EffMapPrompt.Data());
+    if(!fileeffD0Prompt->IsOpen()){
+      ::Fatal("AddTaskDxHFECorrelation", Form("Input file not found for efficiency with charm correction! Exiting..."));
       return 0;
     }
-    TCanvas *c1 = (TCanvas*)fileeffD0->Get("c1");
-    if(!c1) {cout << "No canvas inside D0 eff map file" << endl; return 0;}
+    TCanvas *c1 = (TCanvas*)fileeffD0Prompt->Get("c1");
+    if(!c1) {::Fatal("AddTaskDxHFECorrelation", Form("No canvas inside D0 eff map file for prompt")); return 0;}
     TH1D *hEff = (TH1D*)c1->FindObject("h_Eff");
-    if(!hEff) {cout << "No efficiency histo for D0" << endl; return 0;}
-    pTask->SetD0EffMap(hEff);
+    if(!hEff) {::Fatal("AddTaskDxHFECorrelation", Form("No efficiency histo for Prompt D0")); return 0;}
+    pTask->SetD0EffMap(hEff, AliDxHFECorrelation::kPrompt);
+
+    if(bUseMC){
+      //Only Add feeddown correction for MC      
+      TFile* fileeffD0FeedDown=TFile::Open(D0EffMapFeedDown.Data());
+      if(!fileeffD0FeedDown->IsOpen()){
+	::Fatal("AddTaskDxHFECorrelation", Form("Input file not found for efficiency with feeddown correction! Exiting..."));
+	return 0;
+      }
+      TCanvas *c2 = (TCanvas*)fileeffD0FeedDown->Get("c2");
+      if(!c2) {::Fatal("AddTaskDxHFECorrelation", Form("No canvas inside D0 eff map file for feeddown")); return 0;}
+      TH1D *hEff2 = (TH1D*)c2->FindObject("h_Eff");
+      if(!hEff2) {::Fatal("AddTaskDxHFECorrelation", Form("No efficiency histo for Feeddown D0")); return 0;}
+      pTask->SetD0EffMap(hEff2,AliDxHFECorrelation::kFeedDown);
+    }
 
   }
 

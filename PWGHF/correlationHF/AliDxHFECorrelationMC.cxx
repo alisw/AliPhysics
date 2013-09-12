@@ -36,6 +36,7 @@
 #include "AliDxHFECorrelation.h"
 #include "TMath.h"
 #include "TFile.h"
+#include "TH1.h"
 #include "TCanvas.h"
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
@@ -57,6 +58,8 @@ AliDxHFECorrelationMC::AliDxHFECorrelationMC(const char* name)
   , fMCEventType(0)
   , fStoreOriginEl(kAll)
   , fStoreOriginD(kAll)
+  , fD0EffMapP(NULL)
+  , fD0EffMapFD(NULL)
 {
   // default constructor
   // 
@@ -70,6 +73,8 @@ AliDxHFECorrelationMC::~AliDxHFECorrelationMC()
   // destructor
   //
   //
+  fD0EffMapFD=NULL;
+  fD0EffMapP=NULL;
 
 }
 
@@ -166,7 +171,6 @@ Bool_t AliDxHFECorrelationMC::TestParticle(AliVParticle* p, Int_t id){
     }
   }
 
-
   // Test to see if test for D/el and whether to do further selection
   if(id==kElectron){
     if(!fStoreOriginEl==kAll){
@@ -249,6 +253,45 @@ int AliDxHFECorrelationMC::Fill(const TObjArray* triggerCandidates, TObjArray* a
 {
   // TODO: Implement more on MC?? (Needed?)
   return AliDxHFECorrelation::Fill(triggerCandidates,associatedTracks,pEvent);
+}
+
+double AliDxHFECorrelationMC::GetD0Eff(AliVParticle* tr){
+
+  Double_t D0eff=1;
+  AliReducedParticle *track=(AliReducedParticle*)tr;
+  if (!track) return -ENODATA;
+  Double_t pt=track->Pt();
+  Double_t origin=track->GetOriginMother();
+
+  Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
+		  origin==AliDxHFEToolsMC::kOriginGluonCharm);
+  Bool_t isBeauty=(origin==AliDxHFEToolsMC::kOriginBeauty || 
+		   origin==AliDxHFEToolsMC::kOriginGluonBeauty);
+
+  TH1F* effMap=NULL;
+  // TODO: redefine how D0 origin is set, so for now only say that on uses 
+  // Feeddown correction when it's defined as beauty, for the rest apply
+  // Prompt correction
+  if(isBeauty)
+    effMap=(TH1F*)fD0EffMapFD;
+  else
+    effMap=(TH1F*)fD0EffMapP;
+
+  if(isCharm)  AliDebug(2, "Correcting for Prompt D0");
+  else AliDebug(2, "Correcting for Feeddown D0");
+
+  Int_t bin=effMap->FindBin(pt);
+  if(effMap->IsBinUnderflow(bin)|| effMap->IsBinOverflow(bin)) 
+    D0eff = 1.;
+  else 
+    D0eff = effMap->GetBinContent(bin);
+  return D0eff;
+}
+
+void AliDxHFECorrelationMC::SetD0EffMap(TH1* eff, int whichMap){
+
+  if(whichMap==AliDxHFECorrelation::kPrompt) {fD0EffMapP=(TH1F*)eff; }
+  if(whichMap==AliDxHFECorrelation::kFeedDown) { fD0EffMapFD=(TH1F*)eff;}
 }
 
 

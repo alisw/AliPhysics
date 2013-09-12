@@ -96,6 +96,8 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fDispersion(1)
   , fEovPMin(0.8)
   , fEovPMax(1.2)
+  , fUseTOFonlyWhenPresent(false)
+  , fStopAfterFilterBit(false)
 {
   // constructor
   // 
@@ -398,6 +400,7 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
   
   TList* selectedTracks=new TList;
   fSelNHFE->SetPIDresponse(fPIDResponse);
+  // TODO: move out to analysis task
   fPIDTPC->SetPIDResponse(fPIDResponse);
   TObjArray* finalTracks=new TObjArray;
   if (!finalTracks) return NULL;
@@ -429,8 +432,7 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
   }
 
   // Calculating invariant mass for electron pairs with same selection criteria
-  // TODO: Could be removed if it is verified that looser cuts is better, but keep
-  // for now
+  // TODO: Remove
   if(selectedTracks->GetSize()>0)
     {
       Bool_t* selTrackIndex=new Bool_t[selectedTracks->GetSize()];
@@ -535,6 +537,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       return 0;
     }
   }
+  if(fStopAfterFilterBit) return 1;
   
   // if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
   // PID into two regions: below fMaxptCombinedPID - both TPC and TOF, above only TPC
@@ -577,11 +580,23 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   if(!fUseEMCAL){
     // HFE cuts: TOF PID and mismatch flag
     if(useCombinedPID && !ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
-      if(!useCombinedPID) cout << "should not be here "<< track->Pt() << endl;
-      AliDebug(4,"Cut: kStepHFEcutsTOF");
-      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
-      if(!fStoreCutStepInfo) return 0;
-      else return 1; //return 1 because it passed cuts above, but not this (no need to go further)
+      if(fUseTOFonlyWhenPresent) {
+	useCombinedPID=kFALSE; 
+	AliDebug(2,"Don't use TOF anymore, no TOF mathing of the track");
+	// For the moment: if set limit of max pt TOF and also fUseTOFonlyWhenPresent is set
+	// Then require that there is TOF matching, thus return here
+        if(track->Pt() < fMaxPtCombinedPID && fMaxPtCombinedPID < 999) {
+	  ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
+	  AliDebug(2,"return 0, since track is below limit where one wants to use both TPC and TOF PID"); 
+	  return 0;
+	}
+      }
+      else{ //only return here if use TOF everywhere    
+	AliDebug(4,"Cut: kStepHFEcutsTOF");
+	((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
+	if(!fStoreCutStepInfo) return 0;
+	else return 1; //return 1 because it passed cuts above, but not this (no need to go further)
+      }
     }
     if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsTOF;
     if(fFinalCutStep==kHFEcutsTOF) {AliDebug(2,"Returns after kHFEcutsTOF"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
@@ -618,6 +633,9 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   else  hfetrack.SetPP();
   //  hfetrack.SetMulitplicity(ncontribVtx);
   
+  // TODO: Put this into a while-loop instead, looping over the number of pid objects in the cut-list?
+  // This needs a bit of thinking and finetuning (wrt histogramming)
+
   //---------EMCAL PID----------//
   if(fUseEMCAL)
     {
@@ -635,7 +653,9 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       
       //Electron id with shower shape  
       
-      if(cluster->GetM20()< fMinM20 || cluster->GetM20()> fMaxM20 || cluster->GetM02()< fMinM02 || cluster->GetM02()> fMaxM02 || cluster->GetDispersion()> fDispersion) return 0;
+      if(cluster->GetM20()< fMinM20 || cluster->GetM20()> fMaxM20 || 
+	 cluster->GetM02()< fMinM02 || cluster->GetM02()> fMaxM02 || 
+	 cluster->GetDispersion()> fDispersion) return 0;
       
       //Electron id with E/p
       ((TH2D*)fHistoList->FindObject("feopCut"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
@@ -648,23 +668,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       ((TH2D*)fHistoList->FindObject("feoppTEMCAL"))->Fill(pt, fEovP);//track->GetTPCmomentum(), fEovP);
     }
   
-  // TODO: Put this into a while-loop instead, looping over the number of pid objects in the cut-list?
-  // This needs a bit of thinking and finetuning (wrt histogramming)
-  if(!fUseEMCAL){
-    if(fPIDTOF && fPIDTOF->IsSelected(&hfetrack)) {
-      ((TH2D*)fHistoList->FindObject("fdEdxPidTOF"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-      ((TH2D*)fHistoList->FindObject("fnSigTPCPidTOF"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-      ((TH2D*)fHistoList->FindObject("fnSigTOFPidTOF"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
-      if(fStoreCutStepInfo){fSurvivedCutStep=kPIDTOF; }
-      if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF");((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-    }
-    else{
-      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOF);
-    }
-    
-    if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF"); return 0;}
-  }
-  
+  // TPC PID
   if(fPIDTPC && fPIDTPC->IsSelected(&hfetrack)) {
     ((TH2D*)fHistoList->FindObject("fdEdxPidTPC"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
     ((TH2D*)fHistoList->FindObject("fnSigTPCPidTPC"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
@@ -683,8 +687,23 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     }
   if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTPC"); return 0;}
   
-  //Combined tof & tpc pid
-  if(!fUseEMCAL){
+
+  if(!fUseEMCAL && useCombinedPID){
+
+    //TOF PID
+    if(fPIDTOF && fPIDTOF->IsSelected(&hfetrack)) {
+      ((TH2D*)fHistoList->FindObject("fdEdxPidTOF"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      ((TH2D*)fHistoList->FindObject("fnSigTPCPidTOF"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("fnSigTOFPidTOF"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+      if(fStoreCutStepInfo){fSurvivedCutStep=kPIDTOF; }
+      if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF");((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
+    }
+    else{
+      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOF);
+    }
+    if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF"); return 0;}
+
+    //Combined TOF & TPC PID
     if(fPIDTOFTPC && fPIDTOFTPC->IsSelected(&hfetrack)) {
       AliDebug(3,"Inside FilldPhi, electron is selected");
       if(fStoreCutStepInfo){
@@ -694,11 +713,11 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     else{
       ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOFTPC);
       AliDebug(4,"Cut: kTPCTOFPID");
-      //Should do nothing if not use combinedPID
-      if(!fStoreCutStepInfo && useCombinedPID) { return 0;}
+      if(!fStoreCutStepInfo) { return 0;}
       else if(fStoreCutStepInfo){  return 1; }//return 1 because it passed cuts above, but not this (no need to go further)
     }
   }
+
   // Filling histograms with particles passing PID criteria
   // (Filled here due to the option of separating regions for TPC+TOF and TPC)
   ((TH2D*)fHistoList->FindObject("fdEdxPid"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
@@ -853,6 +872,16 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
       argument.ReplaceAll("maxPtCombinedPID=", "");
       fMaxPtCombinedPID=argument.Atoi();
       AliInfo(Form("Using only TPC PID over %f GeV/c",fMaxPtCombinedPID));
+      continue;
+    }
+    if(argument.BeginsWith("onlyTOFwhenpresent") || argument.BeginsWith("TOFwhenpresent") || argument.BeginsWith("TOFwhenthere")){
+      fUseTOFonlyWhenPresent=kTRUE;
+      AliInfo("Only using TOF when present");
+      continue;
+    }
+    if(argument.BeginsWith("StopFB") || argument.BeginsWith("stopafterfilterbit") || argument.BeginsWith("stopfb")){
+      fStopAfterFilterBit=kTRUE;
+      AliInfo("Only using TOF when present");
       continue;
     }
     if(argument.BeginsWith("notusefilterbit")){
