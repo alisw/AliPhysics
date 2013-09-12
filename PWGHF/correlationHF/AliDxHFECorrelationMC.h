@@ -36,6 +36,12 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   virtual int FillParticleProperties(AliVParticle* tr, AliVParticle *as, Double_t* data, int dimension) const;
   // Tests the particle
   virtual Bool_t TestParticle(AliVParticle* p, Int_t id);
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr);
+  virtual void SetD0EffMap(TH1* eff, int whichMap=AliDxHFECorrelation::kPrompt);
+  //    if(whichMap==AliDxHFECorrelation::kPrompt) { fD0EffMapP=eff; }
+  //  if(whichMap==AliDxHFECorrelation::kFeedDown) { fD0EffMapFD=eff;}
+  //};
 
   // parse argument string
   virtual int ParseArguments(const char* arguments);
@@ -63,6 +69,8 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   int fMCEventType;  // Holds MC Event type, retrieved from MCHeader
   int fStoreOriginEl;// Which origin to store for electrons
   int fStoreOriginD; // Which origin to store for Ds
+  TH1* fD0EffMapP;   //! Eff map for Prompt D0 
+  TH1* fD0EffMapFD;  //! Eff map for Feeddown D0 
 
   ClassDef(AliDxHFECorrelationMC, 2)
 };
