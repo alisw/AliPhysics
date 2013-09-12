@@ -159,6 +159,9 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Double_t      fDispersion;         // Shower shape dispersion cut
   Double_t      fEovPMin;            // Lower cut value for E over P, EMCAL
   Double_t      fEovPMax;            // Upper cut value for E over P, EMCAL
+  Bool_t        fUseTOFonlyWhenPresent; // use tof only when it's there
+  Bool_t        fStopAfterFilterBit; // Stop selection after checking filterbits
+
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
   
   ClassDef(AliDxHFEParticleSelectionEl, 6); 
