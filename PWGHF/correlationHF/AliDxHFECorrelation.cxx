@@ -510,15 +510,19 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	if(fUseTrackEfficiency){
 	  AliAODVertex *vtx = AOD->GetPrimaryVertex();
 	  Double_t zvertex = vtx->GetZ(); // zvertex
-	  weight=cuts->GetTrackWeight(assoc->Pt(),assoc->Eta(),zvertex);
+	  if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
+	    weight=cuts->GetTrackWeight(ptrigger->Pt(),ptrigger->Eta(),zvertex);
+	  else
+	    weight=cuts->GetTrackWeight(assoc->Pt(),assoc->Eta(),zvertex);
 	  AliDebug(2,Form("Vertex: %f  weight: %f ",zvertex, weight));
-	  //	  cout << "Vertex: " << zvertex << "   weight: " << weight << endl;
 	}
 	if(fUseD0Efficiency){
 	  Double_t D0eff=1;
-	  Int_t bin=fD0EffMap->FindBin(ptTrigger);
-	  if(fD0EffMap->IsBinUnderflow(bin)|| fD0EffMap->IsBinOverflow(bin)) D0eff = 1.;
-	  else D0eff = fD0EffMap->GetBinContent(bin);
+	  if(AliDxHFECorrelation::GetTriggerParticleType()==kD) 
+	    D0eff=GetD0Eff(ptrigger);
+	  else
+	    D0eff=GetD0Eff(assoc);
+
 	  weight=weight*D0eff;
 	  AliDebug(2,Form("D0eff: %f, combined efficiency: %f",D0eff, weight));
 	}
@@ -541,6 +545,20 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
   return 0;
 }
 
+double AliDxHFECorrelation::GetD0Eff(AliVParticle* tr){
+
+  AliReducedParticle *track=(AliReducedParticle*)tr;
+  if (!track) return -ENODATA;
+  Double_t pt=track->Pt();
+
+  Double_t D0eff=1;
+  Int_t bin=fD0EffMap->FindBin(pt);
+  if(fD0EffMap->IsBinUnderflow(bin)|| fD0EffMap->IsBinOverflow(bin)) 
+    D0eff = 1.;
+  else 
+    D0eff = fD0EffMap->GetBinContent(bin);
+  return D0eff;
+}
 
 
 int AliDxHFECorrelation::FillParticleProperties(AliVParticle* tr, AliVParticle *as, Double_t* data, int dimension) const

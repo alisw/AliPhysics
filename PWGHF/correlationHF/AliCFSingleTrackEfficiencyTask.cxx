@@ -86,6 +86,7 @@ fReadTPCTracks(0),
   fUseTPCPID(kFALSE),
   fUseTOFPID(kFALSE),
   fMaxPtForTOFPID(999),
+  fUseTOFonlyWhenPresent(kFALSE),
   fHistEventsProcessed(0x0),
   fElectronPt(NULL),
   fElectronPtStart(NULL)
@@ -118,9 +119,11 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fUseTPCPID(kFALSE),
   fUseTOFPID(kFALSE),
   fMaxPtForTOFPID(999),
+  fUseTOFonlyWhenPresent(kFALSE),
   fHistEventsProcessed(0x0),
   fElectronPt(NULL),
   fElectronPtStart(NULL)
+
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -420,9 +423,12 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       // 3. TOF matching
       if(fRequireTOF && selected && useTOFPID){
 	if(!(vtrack->GetStatus() & AliESDtrack::kTOFpid)){
-	  selected =kFALSE;
-	  //cout << "cut due to TOF" << endl;
-	  AliDebug(2,"Cut due to TOF requirement");
+	  if(fUseTOFonlyWhenPresent) 
+	    useTOFPID=kFALSE;
+	  else{
+	    selected = kFALSE;
+	    AliDebug(2,"Cut due to TOF requirement");
+	  }
 	}
       }
       if(selected){

@@ -125,6 +125,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Int_t bUseTOFPID=kTRUE;
   Int_t bUseTPCPID=kTRUE;
   Double_t maxTOFpt=999.;
+  Bool_t bTOFwhenpresent=kFALSE;
 
 
   if (configuration.IsNull() && gDirectory) {
@@ -180,6 +181,10 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	    argument.ReplaceAll("maxTOFpt=", "");
 	    maxTOFpt=argument.Atof();
 	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting max pt for TOF PID to %f",maxTOFpt));
+	  }
+	  if(argument.BeginsWith("TOFwhenpresent")){
+	    bTOFwhenpresent=kTRUE;
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE","Only use TOF when it's present");
 	  }
 	  if (argument.BeginsWith("PbPb") ||
 	      argument.BeginsWith("system=1") ||
@@ -423,6 +428,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   task->SetUsePID(bUsePID);
   task->SetUseTOFPID(bUseTOFPID,maxTOFpt);
   task->SetUseTPCPID(bUseTPCPID);
+  task->SetUseTOFWhenPresent(bTOFwhenpresent);
 
   task->SetCFManager(man); //here is set the CF manager
   
