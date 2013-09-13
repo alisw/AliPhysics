@@ -147,34 +147,35 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   fh3PtEtaPhiJetCharged = new TH3F("fh3PtEtaPhiJetCharged","fh3PtEtaPhiJetCharged;#it{p}_{T}^{jet};#eta;#varphi",nBinsPt,minPt,maxPt,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
   fOutput->Add(fh3PtEtaPhiJetCharged);
 
-  const Int_t nBinsSparse0 = 6;
+  const Int_t nBinsSparse0 = 7;
   const Int_t nBinsPtW      = 30;
   const Int_t nBinsDPhi     = 72;
-  const Int_t nBinsKt       = 100;
+  const Int_t nBinsKt       = 50;
   const Int_t nBinsDiJetEta = 40;
-  const Int_t nBinsCentr    = 10;
-  const Int_t nBins0[nBinsSparse0] = {nBinsPtW,nBinsPtW,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr};
+  const Int_t nBinsCentr    = 5;
+  const Int_t nBinsAj       = 50;
+  const Int_t nBins0[nBinsSparse0] = {nBinsPtW,nBinsPtW,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr,nBinsAj};
   //pT1, pT2, deltaPhi, kT
-  const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, -0.5*TMath::Pi(),-100.,-1.,0.};
-  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt,  1.5*TMath::Pi(), 100., 1.,100.};
+  const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, -0.5*TMath::Pi(),   0.,-1.,0.  , 0.};
+  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt,  1.5*TMath::Pi(), 100., 1.,100., 1.};
 
   if(fDoChargedCharged) {
     fhnDiJetVarsCh = new THnSparseF("fhnDiJetVarsCh",
-				    "fhnDiJetVarsCh;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality",
+				    "fhnDiJetVarsCh;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality;#it{A}_{j}",
 				    nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnDiJetVarsCh);
   }
 
   if(fDoFullCharged) {
     fhnDiJetVarsFullCharged = new THnSparseF("fhnDiJetVarsFullCharged",
-				"fhnDiJetVarsFullCharged;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality",
+				"fhnDiJetVarsFullCharged;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality;#it{A}_{j}",
 				nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnDiJetVarsFullCharged);
   }
 
   if(fDoFullFull) {
     fhnDiJetVarsFull = new THnSparseF("fhnDiJetVarsFull",
-				    "fhnDiJetVarsFull;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality",
+				    "fhnDiJetVarsFull;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality;#it{A}_{j}",
 				    nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnDiJetVarsFull);
   }
@@ -623,12 +624,13 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
   Double_t deltaPhi = GetDeltaPhi(jet1->Phi(),jet2->Phi());
   if(fDebug>10) Printf("deltaPhi:%.2f",deltaPhi);
 
-  Double_t kT = jetTrigPt*TMath::Sin(deltaPhi);
+  Double_t kT = TMath::Abs(jetTrigPt*TMath::Sin(deltaPhi));
 
   Double_t dijetEta = (jet1->Eta()+jet2->Eta())/2.;
 
+  Double_t aj = (jetTrigPt-jetAssocPt)/(jetTrigPt+jetAssocPt);
 
-  Double_t diJetVars[6] = {jetTrigPt,jetAssocPt,deltaPhi,kT,dijetEta,fCent};
+  Double_t diJetVars[7] = {jetTrigPt,jetAssocPt,deltaPhi,kT,dijetEta,fCent,aj};
 
   if(mode==0)
     fhnDiJetVarsFull->Fill(diJetVars);
@@ -648,8 +650,6 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
   }
 
   //Fill centrality correlation histos in case a dijet is present in acceptance
-
-  Double_t aj = (jetTrigPt-jetAssocPt)/(jetTrigPt+jetAssocPt);
   Double_t centZNA = -1.;
   AliCentrality *aliCent = InputEvent()->GetCentrality();
   if (aliCent) {

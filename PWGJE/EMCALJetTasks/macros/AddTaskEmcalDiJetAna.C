@@ -26,7 +26,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   Int_t       pSel                = AliVEvent::kINT7,
 						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 						   Double_t    ptTrackBias         = 0.,
-						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo
+						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo,
+						   Float_t     nefCut              = 0.95
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -119,6 +120,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
 
   taskDiJet->SetZLeadingCut(0.98,0.98,0);
+  taskDiJet->SetNEFCut(0.,nefCut,0);
 
   for(Int_t i=0; i<2; i++) {
     taskDiJet->SetPercAreaCut(0.6, i);

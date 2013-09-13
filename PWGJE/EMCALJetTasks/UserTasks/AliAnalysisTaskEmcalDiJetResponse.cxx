@@ -104,26 +104,27 @@ void AliAnalysisTaskEmcalDiJetResponse::UserCreateOutputObjects()
   TH1::AddDirectory(kFALSE);
 
   //Store dijet vars: pt,trig MC, pt,trig DET, pt,ass MC, pt,ass DET, dPhi MC, dPhi Det, kT MC, kT Det 
-  const Int_t nBinsSparse0 = 8;
+  const Int_t nBinsSparse0 = 10;
   const Int_t nBinsPt = 250;
-  const Int_t nBinsDPhi     = 72;
-  const Int_t nBinsKt       = 50;
+  const Int_t nBinsDPhi     = 36;
+  const Int_t nBinsKt       = 25;
   const Int_t nBinsDiJetEta = 40;
+  const Int_t nBinsAj       = 50;
   const Int_t nBinsVar[2] = {nBinsKt,nBinsDiJetEta};
 
-  const Int_t nBins0[nBinsSparse0] = {nBinsPt,nBinsPt,nBinsPt,nBinsPt,nBinsDPhi,nBinsDPhi,nBinsVar[fnUsedResponseVar],nBinsVar[fnUsedResponseVar]};
+  const Int_t nBins0[nBinsSparse0] = {nBinsPt,nBinsPt,nBinsPt,nBinsPt,nBinsDPhi,nBinsDPhi,nBinsVar[fnUsedResponseVar],nBinsVar[fnUsedResponseVar],nBinsAj,nBinsAj};
 
   const Double_t minPt = 0.;
   const Double_t maxPt = 250.;
-  const Double_t minVar[2] = {-100.,-1.};
+  const Double_t minVar[2] = {   0.,-1.};
   const Double_t maxVar[2] = { 100., 1.};
 
-  const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, minPt, minPt, -0.5*TMath::Pi(), -0.5*TMath::Pi(), minVar[fnUsedResponseVar], minVar[fnUsedResponseVar]};
-  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt, maxPt, maxPt,  1.5*TMath::Pi(), 1.5*TMath::Pi(),  maxVar[fnUsedResponseVar], maxVar[fnUsedResponseVar]};
+  const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, minPt, minPt, 0.5*TMath::Pi(), 0.5*TMath::Pi(), minVar[fnUsedResponseVar], minVar[fnUsedResponseVar],0.,0.};
+  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt, maxPt, maxPt, 1.5*TMath::Pi(), 1.5*TMath::Pi(), maxVar[fnUsedResponseVar], maxVar[fnUsedResponseVar],1.,1.};
 
-  fhnDiJetResponseCharged = new THnSparseF("fhnDiJetResponseCharged","fhnDiJetResponseCharged;p_{T,trig}^{part};p_{T,trig}^{det};p_{T,ass}^{part};p_{T,ass}^{det};#Delta#varphi_{part};#Delta#varphi_{det};k_{T}^{part},k_{T}^{det}",nBinsSparse0,nBins0,xmin0,xmax0);
+  fhnDiJetResponseCharged = new THnSparseF("fhnDiJetResponseCharged","fhnDiJetResponseCharged;p_{T,trig}^{part};p_{T,trig}^{det};p_{T,ass}^{part};p_{T,ass}^{det};#Delta#varphi_{part};#Delta#varphi_{det};k_{T}^{part},k_{T}^{det};A_{j}^{part}A_{j}^{det}",nBinsSparse0,nBins0,xmin0,xmax0);
 
-  fhnDiJetResponseFullCharged = new THnSparseF("fhnDiJetResponseFullCharged","fhnDiJetResponseFullCharged;p_{T,trig}^{part};p_{T,trig}^{det};p_{T,ass}^{part};p_{T,ass}^{det};#Delta#varphi_{part};#Delta#varphi_{det};k_{T}^{part},k_{T}^{det}",nBinsSparse0,nBins0,xmin0,xmax0);
+  fhnDiJetResponseFullCharged = new THnSparseF("fhnDiJetResponseFullCharged","fhnDiJetResponseFullCharged;p_{T,trig}^{part};p_{T,trig}^{det};p_{T,ass}^{part};p_{T,ass}^{det};#Delta#varphi_{part};#Delta#varphi_{det};k_{T}^{part},k_{T}^{det};A_{j}^{part}A_{j}^{det}",nBinsSparse0,nBins0,xmin0,xmax0);
 
   if(fnUsedResponseVar==1) {
     fhnDiJetResponseCharged->SetTitle("fhnDiJetResponseCharged DiJetEta"); 
@@ -505,11 +506,14 @@ void AliAnalysisTaskEmcalDiJetResponse::FillDiJetResponse(const AliEmcalJet *jet
   Double_t jetTrigPtMC  = GetJetPt(jetTrigMC,typetMC);
   Double_t jetAssocPtMC = GetJetPt(jetAssocMC,typeaMC);
 
-  Double_t varDet[2] = {GetJetPt(jetTrigDet,typet)*TMath::Sin(GetDeltaPhi(jetTrigDet,jetAssocDet)),(jetTrigDet->Eta()+jetAssocDet->Eta())/2.};
-  Double_t varPart[2] = {jetTrigPtMC*TMath::Sin(GetDeltaPhi(jetTrigMC,jetAssocMC)),(jetTrigMC->Eta()+jetAssocMC->Eta())/2.};
+  Double_t varDet[2] = {TMath::Abs(GetJetPt(jetTrigDet,typet)*TMath::Sin(GetDeltaPhi(jetTrigDet,jetAssocDet))),(jetTrigDet->Eta()+jetAssocDet->Eta())/2.};
+  Double_t varPart[2] = {TMath::Abs(jetTrigPtMC*TMath::Sin(GetDeltaPhi(jetTrigMC,jetAssocMC))),(jetTrigMC->Eta()+jetAssocMC->Eta())/2.};
+
+  Double_t ajDet  = (GetJetPt(jetTrigDet,typet)-GetJetPt(jetAssocDet,typea))/(GetJetPt(jetTrigDet,typet)+GetJetPt(jetAssocDet,typea));
+  Double_t ajPart = (jetTrigPtMC-jetAssocPtMC)/(jetTrigPtMC+jetAssocPtMC);
 
   //Store dijet vars: pt,trig MC; pt,trig DET; pt,ass MC; pt,ass DET; dPhi MC; dPhi Det; kT MC; kT Det;
-  Double_t diJetVars[8] = {
+  Double_t diJetVars[10] = {
     jetTrigPtMC,
     GetJetPt(jetTrigDet,typet),
     jetAssocPtMC,
@@ -517,7 +521,9 @@ void AliAnalysisTaskEmcalDiJetResponse::FillDiJetResponse(const AliEmcalJet *jet
     GetDeltaPhi(jetTrigMC,jetAssocMC),
     GetDeltaPhi(jetTrigDet,jetAssocDet),
     varPart[fnUsedResponseVar],
-    varDet[fnUsedResponseVar]
+    varDet[fnUsedResponseVar],
+    ajDet,
+    ajPart
   }; 
   
   if(type==1)
