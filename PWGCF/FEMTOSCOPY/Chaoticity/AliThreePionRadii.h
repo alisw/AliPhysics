@@ -164,7 +164,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   struct St1 {
     struct St2 Charge2[2];
   };
-  struct St1 Charge1[2];//!
+  struct St1 Charge1[2];
 
 
  

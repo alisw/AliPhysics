@@ -538,7 +538,7 @@ void AliThreePionRadii::ParInit()
   fMultLimits[20]=2000;
   
   
-  if(fPbPbcase && fCentBinLowLimit < 10) {// PbPb 0-50%
+  if(fPbPbcase && fCentBinLowLimit < 6) {// PbPb 0-30%, was 0-50%
     fMultLimit=kMultLimitPbPb; 
     fMbins=fCentBins; 
     fQcut[0]=0.1;//pi-pi, pi-k, pi-p
@@ -558,7 +558,7 @@ void AliThreePionRadii::ParInit()
     //
     fDampStart = 0.5;// was 0.3
     fDampStep = 0.02;
-  }else if(fPbPbcase && fCentBinLowLimit >= 10) {// PbPb 50-100%
+  }else if(fPbPbcase && fCentBinLowLimit >= 6) {// PbPb 30-100%, was 50-100%
     fMultLimit=kMultLimitPbPb;
     fMbins=fCentBins;
     fQcut[0]=0.2;//pi-pi, pi-k, pi-p
@@ -806,9 +806,11 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH2D *fdNchdEtaResponse = new TH2D("fdNchdEtaResponse","",15,0,15, 15,0,15);
   TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
   TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
+  TProfile *fAvgRecRate = new TProfile("fAvgRecRate","",2000,0.5,2000.5, 0,2000, "");
   if(fMCcase) fOutputList->Add(fdNchdEtaResponse);
   if(fMCcase) fOutputList->Add(fNpionTrueDist);
   if(fMCcase) fOutputList->Add(fNchTrueDist);
+  if(fMCcase) fOutputList->Add(fAvgRecRate);
   TH2D *fdCentVsNchdEta = new TH2D("fdCentVsNchdEta","",fMbins,.5,fMbins+.5, 15,0,15);
   if(fPbPbcase) fOutputList->Add(fdCentVsNchdEta);
   
@@ -1034,8 +1036,8 @@ void AliThreePionRadii::Exec(Option_t *)
 
   
   TClonesArray *mcArray = 0x0;
-  Int_t mcdNch=0;
-  Int_t mcdNpion=0;
+  Int_t mcNch=0;
+  Int_t mcNpion=0;
   if(fMCcase){
     if(fAODcase){ 
       mcArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
@@ -1053,8 +1055,8 @@ void AliThreePionRadii::Exec(Option_t *)
 	if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
 	if(!mcParticle->IsPrimary()) continue;
 	if(!mcParticle->IsPhysicalPrimary()) continue;
-	mcdNch++;
-	if(abs(mcParticle->GetPdgCode())==211) mcdNpion++;
+	mcNch++;
+	if(abs(mcParticle->GetPdgCode())==211) mcNpion++;
       }
       
     }
@@ -1199,8 +1201,9 @@ void AliThreePionRadii::Exec(Option_t *)
       Float_t signalTPC=0, signalTOF=0;
       Double_t integratedTimesTOF[10]={0};
 
-      
-      if(fFilterBit != 7 || (fMCcase && !fPbPbcase)) {
+      Bool_t DoPIDWorkAround=kTRUE;
+      if(fFilterBit == 7 || (fMCcase && !fPbPbcase)) DoPIDWorkAround=kFALSE;
+      if(DoPIDWorkAround==kFALSE && fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion)) < 900) {
 	nSigmaTPC[0]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron));
 	nSigmaTPC[1]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kMuon));
 	nSigmaTPC[2]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion));
@@ -1220,7 +1223,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	}else fTempStruct[myTracks].fTOFhit = kFALSE;
 
       }else {// FilterBit 7 PID workaround
-    
+	
 	for(Int_t j = 0; j < fAOD->GetNumberOfTracks(); j++) {
 	  AliAODTrack* aodTrack2 = fAOD->GetTrack(j);
 	  if (!aodTrack2) continue;
@@ -1381,15 +1384,16 @@ void AliThreePionRadii::Exec(Option_t *)
   ((TProfile*)fOutputList->FindObject("fAvgMult"))->Fill(fMbin+1., pionCount);
   ((TH2D*)fOutputList->FindObject("fAvgMultHisto2D"))->Fill(fMbin+1., pionCount);
   if(fMCcase){
-    ((TH2D*)fOutputList->FindObject("fdNchdEtaResponse"))->Fill(pow(trackletMult,1/3.), pow(mcdNch,1/3.));
-    ((TH2D*)fOutputList->FindObject("fNpionTrueDist"))->Fill(fMbin+1., mcdNpion);
-    ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcdNch);
+    ((TH2D*)fOutputList->FindObject("fdNchdEtaResponse"))->Fill(pow(trackletMult,1/3.), pow(mcNch,1/3.));
+    ((TH2D*)fOutputList->FindObject("fNpionTrueDist"))->Fill(fMbin+1., mcNpion);
+    ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcNch);
+    ((TProfile*)fOutputList->FindObject("fAvgRecRate"))->Fill(mcNpion, pionCount);
   }
   if(fPbPbcase){
     ((TH2D*)fOutputList->FindObject("fdCentVsNchdEta"))->Fill(fMbin+1, pow(trackletMult,1/3.));
   }
   
-  //cout<<trackletMult<<"  "<<mcdNchdEta<<endl;
+  //cout<<trackletMult<<"  "<<mcNchdEta<<endl;
   
   ////////////////////////////////////
   // Add event to buffer if > 0 tracks
