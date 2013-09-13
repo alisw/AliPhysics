@@ -1580,9 +1580,10 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 //                   cout << "gamma 0: " << gamma0->GetV0Index()<< "\t" << gamma0->GetPx() << "\t" << gamma0->GetPy() << "\t" <<  gamma0->GetPz() << "\t" << endl; 
 //                   cout << "gamma 1: " << gamma1->GetV0Index()<< "\t"<< gamma1->GetPx() << "\t" << gamma1->GetPy() << "\t" <<  gamma1->GetPz() << "\t" << endl; 
 //                    cout << "pi0: "<<fInvMass << "\t" << fPt <<"\t" << fDCAzGammaMin << "\t" << fDCAzGammaMax << "\t" << (Int_t)iFlag << "\t" << (Int_t)iMesonMCInfo <<endl;
-                  if (fIsHeavyIon == 1 && fPt > 0.399 && fPt < 12. ) {
-                     if ( fInvMass > 0.08 && fInvMass < 0.2) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
-                  } else if (fPt > 0.299 && fPt < 12. )  {
+                  if (fIsHeavyIon == 1 && fPt > 0.399 && fPt < 20. ) {
+                     if (fInvMass > 0.08 && fInvMass < 0.2) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
+                     if ((fInvMass > 0.45 && fInvMass < 0.6) &&  (fPt > 0.999 && fPt < 20.) )tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
+                  } else if (fPt > 0.299 && fPt < 20. )  {
                      if ( (fInvMass > 0.08 && fInvMass < 0.2) || (fInvMass > 0.45 && fInvMass < 0.6)) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
                   }   
                }
