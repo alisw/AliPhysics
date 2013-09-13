@@ -11,7 +11,8 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 							     Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 							     Double_t    ptTrackBias         = 0.,
 							     Int_t       responseVar         = 0,
-							     Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo
+							     Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo,
+							     Float_t     nefCut              = 0.95
 							     ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -52,8 +53,7 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   TString wagonName = Form("DiJetResponse_%s_%s_Rho%dTC%sMatch%dHadTrig%dRV%d",strJetsFull.Data(),strJetsFullMC.Data(),rhoType,trigClass.Data(),matchFullCh,(Int_t)(ptTrackBias),responseVar);
 
   //Configure DiJet task
-  AliAnalysisTaskEmcalDiJetResponse *taskDiJet = NULL;
-  taskDiJet = new AliAnalysisTaskEmcalDiJetResponse(wagonName.Data());
+  AliAnalysisTaskEmcalDiJetResponse *taskDiJet = new AliAnalysisTaskEmcalDiJetResponse(wagonName.Data());
  
   Printf("strJetsFull: %s",strJetsFull.Data());
   Printf("strJetsCh: %s",strJetsCh.Data());
@@ -78,6 +78,9 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   taskDiJet->SetZLeadingCut(0.98,0.98,0);
   taskDiJet->SetZLeadingCut(0.98,0.98,2);
 
+  taskDiJet->SetNEFCut(0.,nefCut,0);
+  taskDiJet->SetNEFCut(0.,nefCut,2);
+
   for(Int_t i=0; i<4; i++) {
     taskDiJet->SetPercAreaCut(0.6, i);
     taskDiJet->SetPtBiasJetTrack(ptTrackBias,i);
@@ -95,10 +98,7 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   taskDiJet->SetDoFullCharged(kTRUE);
   taskDiJet->SetMatchFullCharged(kTRUE);
 
-  taskDiJet->SetIsPythiaPtHard(kTRUE);
-
   taskDiJet->SetResponseVar(responseVar);
-
 
   mgr->AddTask(taskDiJet);
 

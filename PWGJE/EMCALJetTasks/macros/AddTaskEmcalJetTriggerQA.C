@@ -7,7 +7,8 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 							   TString     trigClass           = "",
 							   TString     kEmcalCellsName     = "",
 							   const char *CentEst             = "V0A",
-							   Int_t       pSel                = AliVEvent::kINT7
+							   Int_t       pSel                = AliVEvent::kINT7,
+							   Float_t     nefCut              = 0.95
 							   ) {
 
   enum AlgoType {kKT, kANTIKT};
@@ -98,9 +99,11 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   else { 
     jetCont1 = task->AddJetContainer(strJets2.Data(),"EMCAL",R);
     task->SetZLeadingCut(0.98,0.98,1);
+    task->SetNEFCut(0.,nefCut,1);
   }
 
   task->SetZLeadingCut(0.98,0.98,0);
+  task->SetNEFCut(0.,nefCut,0);
 
   for(Int_t i=0; i<2; i++) {
     task->SetPercAreaCut(0.6, i);
