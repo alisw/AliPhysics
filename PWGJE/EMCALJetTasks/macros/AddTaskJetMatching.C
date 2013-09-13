@@ -6,16 +6,16 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
         const char* sourceJets  = "SourceJets", // source jets
         const char* targetJets  = "TargetJets", // target jets
         const char* matchedJets = "MatchedJets",// matched jets
-        UInt_t matchingScheme   = AliAnalysisTaskJetMatching::kGeoEtaPhi,
-        UInt_t duplicateRecovery= AliAnalysisTaskJetMatching::kTraceDuplicates,
+        UInt_t matchingScheme   = AliAnalysisTaskJetMatching::kGeoR,
         Bool_t matchConstituents= kTRUE,
-        Float_t minFrReCon      = .7,
+        Float_t minFrReCon      = .3,
+        Float_t minFrReConPt    = .5,
         const char *name        = "AliAnalysisTaskJetMatching",
         Bool_t cut              = kFALSE,
         UInt_t  sourceType      = AliAnalysisTaskEmcal::kTPC,
-        Float_t sourceRadius    = 0.4,
+        Float_t sourceRadius    = 0.3,
         UInt_t targetType       = AliAnalysisTaskEmcal::kTPC,
-        Float_t targetRadius    = 0.4
+        Float_t targetRadius    = 0.3
   )
 { 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -26,18 +26,18 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
   jetTask->SetDebugMode(-1);
   jetTask->SetMatchConstituents(matchConstituents);
   jetTask->SetMinFracRecoveredConstituents(minFrReCon);
+  jetTask->SetMinFracRecoveredConstituentPt(minFrReConPt);
   jetTask->SetSourceJetsName(sourceJets);
   jetTask->SetTargetJetsName(targetJets);
   jetTask->SetMatchedJetsName(matchedJets);
   jetTask->SetMatchingScheme(matchingScheme);
-  jetTask->SetDuplicateRecoveryScheme(duplicateRecovery);
   // if we want the jet package to cut on the source and target jets
   jetTask->SetUseEmcalBaseJetCuts(cut);
   if(cut) {
-      jetTask->AddJetContainer(Form("sourceJets%s", "container"));
+      jetTask->SetJetsName(sourceJets);
       jetTask->SetAnaType(sourceType, 0);
       jetTask->SetJetRadius(sourceRadius, 0);
-      jetTask->AddJetContainer(Form("targetJets%s", "container"));
+      jetTask->SetJetsName(targetJets);
       jetTask->SetAnaType(targetType, 1);
       jetTask->SetJetRadius(targetRadius, 1);
   }

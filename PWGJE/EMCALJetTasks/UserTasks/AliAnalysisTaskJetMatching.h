@@ -20,8 +20,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
 {
     public:
         // enumerators
-        enum matchingSceme      {kGeoEtaPhi, kGeoR, kGeoEtaPhiArea, kGeoRArea, kDeepMatching};
-        enum duplicateRecovery  {kDoNothing, kTraceDuplicates, kRemoveDuplicates}; 
+        enum matchingSceme      {kGeoEtaPhi, kGeoR};
         enum sourceBKG          {kNoSourceBKG, kSourceRho, kSourceLocalRho};
         enum targetBKG          {kNoTargetBKG, kTargetRho, kTargetLocalRho};
         // constructors, destructor
@@ -60,8 +59,9 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         void                    SetMatchingScheme(matchingSceme m)              {fMatchingScheme = m;}
         void                    SetMatchConstituents(Bool_t m)                  {fMatchConstituents = m;}
         void                    SetMinFracRecoveredConstituents(Float_t f)      {fMinFracRecoveredConstituents = f;}
-        void                    SetDuplicateRecoveryScheme(duplicateRecovery d) {fDuplicateJetRecoveryMode = d;}
+        void                    SetMinFracRecoveredConstituentPt(Float_t f)     {fMinFracRecoveredConstituentPt = f;}
         void                    SetUseEmcalBaseJetCuts(Bool_t b)                {fUseEmcalBaseJetCuts = b;}
+        void                    SetGetBijection(Bool_t b)                       {fGetBijection = b;}
         void                    SetSourceBKG(sourceBKG b)                       {fSourceBKG = b;}
         void                    SetTargetBKG(targetBKG b)                       {fTargetBKG = b;}
         void                    SetSourceJetsName(const char* n)                {fSourceJetsName = n;}
@@ -74,14 +74,11 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         void                    SetMatchEta(Float_t f)                          {fMatchEta = f;}
         void                    SetMatchPhi(Float_t f)                          {fMatchPhi = f;}
         void                    SetMatchR(Float_t f)                            {fMatchR = f;}
-        void                    SetMatchRelArea(Float_t f)                      {fMatchArea = f;}
-        void                    SetMaxRelEnergyDiff(Float_t f)                  {fMaxRelEnergyDiff = f;}
-        void                    SetMaxAbsEnergyDiff(Float_t f)                  {fMaxAbsEnergyDiff = f;}
         // methods
-        void                    DoGeometricMatchingEtaPhi(Bool_t pairCuts = kFALSE);
-        void                    DoGeometricMatchingR(Bool_t pairCuts = kFALSE);
-        void                    DoDeepMatching();
-        void                    DuplicateJetRecovery();
+        void                    DoGeometricMatchingEtaPhi();
+        void                    DoGeometricMatchingR();
+        void                    DoConstituentMatching();
+        void                    GetBijection();
         void                    PostMatchedJets();
         // fill histogrmas
         void                    FillAnalysisSummaryHistogram() const;
@@ -90,11 +87,6 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             return (!track || TMath::Abs(track->Eta()) > 0.9 || track->Phi() < 0 || track->Phi() > TMath::TwoPi()) ? kFALSE : kTRUE; }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const { return (jet) ? kTRUE : kFALSE; }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* a, AliEmcalJet* b) const {
-            if (fMatchArea > 0) { return (TMath::Abs(a->Area()/b->Area()) < fMatchArea) ? kTRUE : kFALSE; }
-            if (fMaxRelEnergyDiff > 0) { return (TMath::Abs(a->E()/b->E()) > fMaxRelEnergyDiff) ? kTRUE : kFALSE; }
-            if (fMaxAbsEnergyDiff > 0) { return (TMath::Abs(a->E()-b->E()) > fMaxAbsEnergyDiff) ? kTRUE : kFALSE; }
-            return kTRUE; }
         /* inline */    void ClearMatchedJetsCache() {
             for (Int_t i(0); i < fNoMatchedJets; i++) {
                 fMatchedJetContainer[i][0] = 0x0; fMatchedJetContainer[i][1] = 0x0; }
@@ -119,15 +111,9 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         Float_t                 fSourceRadius;          // source radius 
         Float_t                 fTargetRadius;          // target radius
         matchingSceme           fMatchingScheme;        // select your favorite matching algorithm
-        duplicateRecovery       fDuplicateJetRecoveryMode;      // what to do with duplicate matches
         Bool_t                  fUseEmcalBaseJetCuts;   // use the emcal jet base class for jet cuts
         sourceBKG               fSourceBKG;             // subtracted background of source jets
         targetBKG               fTargetBKG;             // subtracted background of target jets
-        // additional jet cuts (most are inherited)
-        Float_t                 fLocalJetMinEta;        // local eta cut for jets
-        Float_t                 fLocalJetMaxEta;        // local eta cut for jets
-        Float_t                 fLocalJetMinPhi;        // local phi cut for jets
-        Float_t                 fLocalJetMaxPhi;        // local phi cut for jets
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TH1F*                   fHistUnsortedCorrelation;       //! dphi correlation of unsorted jets
@@ -151,11 +137,10 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         Float_t                 fMatchEta;              // max eta distance between centers of matched jets
         Float_t                 fMatchPhi;              // max phi distance between centers of matched jets
         Float_t                 fMatchR;                // max distance between matched jets
-        Float_t                 fMatchArea;             // max relative area mismatch between matched jets
-        Float_t                 fMaxRelEnergyDiff;      // max relative energy difference between matched jets
-        Float_t                 fMaxAbsEnergyDiff;      // max absolute energy difference between matched jets
         Bool_t                  fMatchConstituents;     // match constituents
         Float_t                 fMinFracRecoveredConstituents;  // minimium fraction of constituents that needs to be found
+        Float_t                 fMinFracRecoveredConstituentPt; // minimium fraction of constituent pt that needs to be recovered
+        Bool_t                  fGetBijection;          // get bijection of source and matched jets
 
         AliAnalysisTaskJetMatching(const AliAnalysisTaskJetMatching&);                  // not implemented
         AliAnalysisTaskJetMatching& operator=(const AliAnalysisTaskJetMatching&);       // not implemented
