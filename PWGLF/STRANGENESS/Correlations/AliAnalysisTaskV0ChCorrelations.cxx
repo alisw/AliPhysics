@@ -16,7 +16,7 @@
 /* The task selects candidates for K0s, Lambdas and AntiLambdas (trigger particles)
  * and calculates correlations with charged unidentified particles (associated particles) in phi and eta. 
  * The task works with AOD (with or without MC info) events only and containes also mixing for acceptance corrections.
- * Last update edited by Marek Bombara, March 2013, Marek.Bombara@cern.ch
+ * Last update edited by Marek Bombara, August 2013, Marek.Bombara@cern.ch
  */
 
 #include <TCanvas.h>
@@ -25,6 +25,8 @@
 #include <TH2.h>
 #include <TH3.h>
 #include <THnSparse.h>
+#include <TObjArray.h>
+#include <TObject.h>
 
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
@@ -36,8 +38,10 @@
 
 #include "AliMCEvent.h"
 #include "AliMCVertex.h" 
+#include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
+#include "AliAnalyseLeadingTrackUE.h"
 
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
@@ -58,7 +62,7 @@ AliAnalysisTaskV0ChCorrelations::AliAnalysisTaskV0ChCorrelations(const char *nam
    : AliAnalysisTaskSE(name),
      fAnalysisMC(kFALSE),
 	 fFillMixed(kTRUE),
-	 fMixingTracks(500),
+	 fMixingTracks(50000),
 	 fPoolMgr(0x0),
      
      fDcaDToPV(0.5),
@@ -82,6 +86,7 @@ AliAnalysisTaskV0ChCorrelations::AliAnalysisTaskV0ChCorrelations(const char *nam
      fHistRCPtCentTrig(0),
      fHistMCPtCentAs(0),
      fHistRCPtCentAs(0),
+     fHistRCPtCentAll(0),
 	 
 	 fHistTemp(0),
 	 fHistTemp2(0)// The last in the above list should not have a comma after it
@@ -115,18 +120,19 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    Double_t centBins[] = {0.,10.,20.,30.,40.,50.,60.,70.,80.,90.};
    const Double_t* centralityBins = centBins;
    // defining bins for Z vertex
-   Int_t nZvtxBins  = 20;
-   Double_t vertexBins[] = {-10.,-9.,-8.,-7.,-6.,-5.,-4.,-3.,-2.,-1.,0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.};
+   Int_t nZvtxBins  = 7;
+   //Double_t vertexBins[] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
    // pt bins of associated particles for the analysis
-   Int_t nPtBins = 6;
-   const Double_t PtBins[7] = {3.0,4.0,5.0,6.0,7.0,8.0,9.0}; 
+   Int_t nPtBins = 7;
+   const Double_t PtBins[8] = {2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0}; 
    //Int_t nPtBins = 1;
    //const Double_t PtBins[2] = {3.0,15.0}; 
    // pt bins of trigger particles for the analysis
-   Int_t nPtBinsV0 = 9;
+   Int_t nPtBinsV0 = 11;
    //const Double_t PtBinsV0[2] = {6.0,15.0}; 
-   const Double_t PtBinsV0[10] = {6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+   const Double_t PtBinsV0[12] = {4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    // V0 candidate: 1 - K0sig, 2 - Lamsig, 3 - Alamsig, 4 - K0bg, 5 - Lambg, 6 - Alambg
    Int_t nTrigC = 7;
    const Double_t TrigC[8] = {0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5};
@@ -137,18 +143,19 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
 
    const Int_t mrBins[3] = {nPtBinsV0, nCentralityBins, nTrigC};
    const Double_t mrMin[3] = {PtBinsV0[0], centralityBins[0], TrigC[0]};
-   const Double_t mrMax[3] = {PtBinsV0[9], centralityBins[9], TrigC[6]};
+   const Double_t mrMax[3] = {PtBinsV0[11], centralityBins[9], TrigC[6]};
 
    // Create histograms for reconstruction track and V0 efficiency
    fHistMCPtCentTrig = new THnSparseF("fHistMCPtCentTrig", "MC Pt vs. Cent. Trig", 3, mrBins, mrMin, mrMax);
    fHistRCPtCentTrig = new THnSparseF("fHistRCPtCentTrig", "Rec Pt vs. Cent. Trig", 3, mrBins, mrMin, mrMax);
 
    // pt bins of associated particles for the efficiency
-   Int_t nPtBinsAs = 12;
-   const Double_t PtBinsAs[13] = {3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0};
+   Int_t nPtBinsAs = 13;
+   const Double_t PtBinsAs[14] = {2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0};
 
-   fHistMCPtCentAs = new TH2D("fHistMCPtCentAs", "MC Pt vs. Cent. Assoc", nPtBinsAs, PtBinsAs[0], PtBinsAs[12], nCentralityBins, centBins[0], centBins[9]);
-   fHistRCPtCentAs = new TH2D("fHistRCPtCentAs", "Rec Pt vs. Cent. Assoc", nPtBinsAs, PtBinsAs[0], PtBinsAs[12], nCentralityBins, centBins[0], centBins[9]);
+   fHistMCPtCentAs = new TH2D("fHistMCPtCentAs", "MC Pt vs. Cent. Assoc", nPtBinsAs, PtBinsAs[0], PtBinsAs[13], nCentralityBins, centBins[0], centBins[9]);
+   fHistRCPtCentAs = new TH2D("fHistRCPtCentAs", "Rec Pt vs. Cent. Assoc", nPtBinsAs, PtBinsAs[0], PtBinsAs[13], nCentralityBins, centBins[0], centBins[9]);
+   fHistRCPtCentAll = new TH2D("fHistRCPtCentAll", "Rec Pt vs. Cent. All Prim+Sec", nPtBinsAs, PtBinsAs[0], PtBinsAs[13], nCentralityBins, centBins[0], centBins[9]);
 
    // defining bins for mass distributions
    Int_t nBins = 200;
@@ -161,36 +168,38 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    
    const Int_t spBins[3] = {nBins, nPtBinsV0, nCentralityBins};
    const Double_t spMinK0[3] = {mk0Min, PtBinsV0[0], centralityBins[0]};
-   const Double_t spMaxK0[3] = {mk0Max, PtBinsV0[9], centralityBins[9]};
+   const Double_t spMaxK0[3] = {mk0Max, PtBinsV0[11], centralityBins[9]};
    const Double_t spMinLa[3] = {mlaMin, PtBinsV0[0], centralityBins[0]};
-   const Double_t spMaxLa[3] = {mlaMax, PtBinsV0[9], centralityBins[9]};
+   const Double_t spMaxLa[3] = {mlaMax, PtBinsV0[11], centralityBins[9]};
    const Double_t spMinAl[3] = {malMin, PtBinsV0[0], centralityBins[0]};
-   const Double_t spMaxAl[3] = {malMax, PtBinsV0[9], centralityBins[9]};
+   const Double_t spMaxAl[3] = {malMax, PtBinsV0[11], centralityBins[9]};
    // Create mass histograms
    fHistMassK0 = new THnSparseF("fHistMassK0","V0 mass for K0 hypothesis", 3, spBins, spMinK0, spMaxK0);
    fHistMassLambda = new THnSparseF("fHistMassLambda","V0 mass for Lambda hypothesis", 3, spBins, spMinLa, spMaxLa);
    fHistMassAntiLambda = new THnSparseF("fHistMassAntiLambda","V0 mass for AntiLambda hypothesis", 3, spBins, spMinAl, spMaxAl);
    
    // defining bins for dPhi distributions
-   const Int_t nbPhiBins = 144;
-   const Double_t kPi = TMath::Pi();
-   Double_t PhiMin = -kPi/2.;
-   Double_t PhiMax = -kPi/2. + 2*kPi;
+   const Int_t nbPhiBins = 72;
+   //const Double_t kPi = TMath::Pi();
+   //Double_t PhiMin = -kPi/2.;
+   //Double_t PhiMax = -kPi/2. + 2*kPi;
+   Double_t PhiMin = -1.57;
+   Double_t PhiMax = 4.71;
    Double_t PhiBins[nbPhiBins+1] = {0.};
    PhiBins[0] = PhiMin;
    for (Int_t i=0; i<nbPhiBins; i++) { PhiBins[i+1] = PhiBins[i] + (PhiMax - PhiMin)/nbPhiBins; }
 
    // defining bins for dEta distributions
-   const Int_t nbEtaBins = 72;
-   Double_t EtaMin = -1.8;
-   Double_t EtaMax = 1.8;
+   const Int_t nbEtaBins = 40;
+   Double_t EtaMin = -2.0;
+   Double_t EtaMax = 2.0;
    Double_t EtaBins[nbEtaBins+1] = {0.};
    EtaBins[0] = EtaMin;
    for (Int_t i=0; i<nbEtaBins; i++) { EtaBins[i+1] = EtaBins[i] + (EtaMax - EtaMin)/nbEtaBins; }
 
    const Int_t corBins[7] = {nbPhiBins, nbEtaBins, nPtBinsV0, nPtBins, nCentralityBins, nZvtxBins, nTrigC};
    const Double_t corMin[7] = {PhiBins[0], EtaBins[0], PtBinsV0[0], PtBins[0], centralityBins[0], zvtxBins[0], TrigC[0]};
-   const Double_t corMax[7] = {PhiBins[144], EtaBins[72], PtBinsV0[9], PtBins[6], centralityBins[9], zvtxBins[20], TrigC[7]};
+   const Double_t corMax[7] = {PhiBins[72], EtaBins[40], PtBinsV0[11], PtBins[7], centralityBins[9], zvtxBins[7], TrigC[7]};
    // Create correlation histograms
    fHistdPhidEtaSib = new THnSparseF("fHistdPhidEtaSib","dPhi vs. dEta siblings", 7, corBins, corMin, corMax); 
    fHistdPhidEtaMix = new THnSparseF("fHistdPhidEtaMix","dPhi vs. dEta mixed", 7, corBins, corMin, corMax);
@@ -198,7 +207,7 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    // Create histograms for counting the numbers of trigger particles
    const Int_t corNTrigBins[5] = {nPtBinsV0, nCentralityBins, nZvtxBins, nTrigC};
    const Double_t corNTrigMin[5] = {PtBinsV0[0], centBins[0], vertexBins[0], TrigC[0]};
-   const Double_t corNTrigMax[5] = {PtBinsV0[9], centBins[9], vertexBins[20], TrigC[7]};
+   const Double_t corNTrigMax[5] = {PtBinsV0[11], centBins[9], vertexBins[7], TrigC[7]};
    fHistNTrigSib = new THnSparseF("fHistNTrigSib","Number trigger sib", 4, corNTrigBins, corNTrigMin, corNTrigMax);
 
    // Histograms for debugging
@@ -212,14 +221,15 @@ void AliAnalysisTaskV0ChCorrelations::UserCreateOutputObjects()
    fOutput->Add(fHistMassLambda);
    fOutput->Add(fHistMassAntiLambda);
    
-  // fOutput->Add(fHistdPhidEtaSib);
-  // fOutput->Add(fHistdPhidEtaMix);
+   fOutput->Add(fHistdPhidEtaSib);
+   fOutput->Add(fHistdPhidEtaMix);
    fOutput->Add(fHistNTrigSib);
 
    fOutput->Add(fHistMCPtCentTrig);
    fOutput->Add(fHistRCPtCentTrig);
    fOutput->Add(fHistMCPtCentAs);
    fOutput->Add(fHistRCPtCentAs);
+   fOutput->Add(fHistRCPtCentAll);
    
    fOutput->Add(fHistTemp);
    fOutput->Add(fHistTemp2);
@@ -270,14 +280,14 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
 
   // pt intervals for trigger particles  
   const Double_t kPi = TMath::Pi();
-  Double_t PtTrigMin = 6.0;
+  Double_t PtTrigMin = 4.0;
   Double_t PtTrigMax = 15.0;
   // pt interval for associated particles
-  Double_t PtAssocMin = 3.0;
+  Double_t PtAssocMin = 2.0;
   fHistMultiMain->Fill(aod->GetNumberOfTracks());
 
   // Vertex cut
-  Double_t cutPrimVertex = 10.0;
+  Double_t cutPrimVertex = 7.0;
   AliAODVertex *myPrimVertex = aod->GetPrimaryVertex();
   if (!myPrimVertex) return;
   if ( ( TMath::Abs(myPrimVertex->GetZ()) ) >= cutPrimVertex) return ;
@@ -291,7 +301,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
   Double_t lCent = 0.0;
   AliCentrality *centralityObj = 0;
   centralityObj = aod->GetHeader()->GetCentralityP();
-  lCent = centralityObj->GetCentralityPercentile("CL1");
+  lCent = centralityObj->GetCentralityPercentile("V0M");
   if ((lCent < 0.)||(lCent > 90.)) return;
   fHistCentVtx->Fill(lCent,lPVz);
 
@@ -300,19 +310,59 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
   {
     AliAODMCHeader *aodMCheader = (AliAODMCHeader*)aod->FindListObject(AliAODMCHeader::StdBranchName());
     Float_t vzMC = aodMCheader->GetVtxZ();
-    if (TMath::Abs(vzMC) >= 10.) return;
-    //retreive MC particles from event
+    if (TMath::Abs(vzMC) >= 7.) return;
+    //retrieve MC particles from event
     TClonesArray *mcArray = (TClonesArray*)aod->FindListObject(AliAODMCParticle::StdBranchName());
     if(!mcArray){
         Printf("No MC particle branch found");
         return;
     }
-   
-    Int_t nMCTracks = mcArray->GetEntriesFast();
+    
+    Int_t nMCAllTracks = mcArray->GetEntriesFast();
+    // new tracks array - without injected signal
+    TObjArray * mcTracks = new TObjArray;
+    //selectedMCTracks->SetOwner(kTRUE);
+  
+    for (Int_t i = 0; i < nMCAllTracks; i++)
+    { 
+        AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(i);
+        if (!mcTrack) {
+            Error("ReadEventAODMC", "Could not receive particle %d", i);
+            continue;
+        }
+        mcTracks->Add(mcTrack);
+    }
+
+    // get labels for injected particles -------
+    TObject* mc = mcArray;
+    //TObjArray * mcTracks = mcArray;
+    Int_t skipParticlesAbove = 0;
+    //AliGenEventHeader* eventHeader = 0;
+    //Int_t headers = 0;
+    //headers = aodMCheader->GetNCocktailHeaders();
+    //eventHeader = aodMCheader->GetCocktailHeader(0);
+    AliGenEventHeader* eventHeader = aodMCheader->GetCocktailHeader(0);
+    Int_t headers = aodMCheader->GetNCocktailHeaders();
+    if (!eventHeader)
+    {
+      // We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing
+      // (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+      AliError("First event header not found. Skipping this event.");
+      return;
+    }
+    skipParticlesAbove = eventHeader->NProduced();
+    //cout << "ski label = " << skipParticlesAbove << endl;
+    AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s.Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
+    //cout << "before MC compressing = " << mcTracks->GetEntriesFast() << endl;
+    RemovingInjectedSignal(mcTracks,mc,skipParticlesAbove);
+    //cout << "after MC compressing = " << mcTracks->GetEntriesFast() << endl;
+    // -------------
+
+    Int_t nMCTracks = mcTracks->GetEntriesFast();
     //cout << "number of MC tracks = " << nMCTracks << endl;
     for (Int_t iMC = 0; iMC<nMCTracks; iMC++)
     {
-      AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(iMC);
+      AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcTracks->At(iMC);
         if (!mcTrack) {
             Error("ReadEventAODMC", "Could not receive particle %d", iMC);
             continue;
@@ -321,7 +371,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
       Double_t mcTrackEta = mcTrack->Eta();
       Double_t mcTrackPt = mcTrack->Pt();
       Bool_t TrIsPrim = mcTrack->IsPhysicalPrimary();
-      Bool_t TrEtaMax = TMath::Abs(mcTrackEta)<0.8;
+      Bool_t TrEtaMax = TMath::Abs(mcTrackEta)<0.9;
       Bool_t TrPtMin = mcTrackPt>PtAssocMin;
       Bool_t TrCharge = (mcTrack->Charge())!=0;
       if (TrIsPrim && TrEtaMax && TrPtMin && TrCharge) fHistMCPtCentAs->Fill(mcTrackPt,lCent);
@@ -338,7 +388,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
       Bool_t IsLambda = mcPartPdg==3122;
       Bool_t IsAntiLambda = mcPartPdg==-3122;
 	  Bool_t IsSigma = kFALSE;
-      Int_t mcMotherLabel = mcTrack->GetMother();
+	  Int_t mcMotherLabel = mcTrack->GetMother();
       AliAODMCParticle *mcMother = (AliAODMCParticle*)mcArray->At(mcMotherLabel);
 	  if (mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();}
 	  //if ((mcMotherLabel >= 0) && mcMother) 
@@ -366,17 +416,51 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
 	   //}
     }
     // ------- access the real data -----------
-    Int_t nRecTracks = aod->GetNumberOfTracks();
+    Int_t nTracks = aod->GetNumberOfTracks();
+    // new tracks array - without injected signal
+    TObjArray * selectedMCTracks = new TObjArray;
+    //selectedMCTracks->SetOwner(kTRUE);
+  
+    for (Int_t i = 0; i < nTracks; i++)
+    {
+        AliAODTrack* tr = aod->GetTrack(i); 
+        selectedMCTracks->Add(tr);
+    }
+   // cout << "before compressing = " << selectedMCTracks->GetEntriesFast() << endl;
+    RemovingInjectedSignal(selectedMCTracks,mc,skipParticlesAbove);
+    //AliAnalyseLeadingTrackUE::RemoveInjectedSignals(selectedMCTracks,mc,skipParticlesAbove);
+    //RemoveInjectedSignals(selectedMCTracks,mc,skipParticlesAbove);
+   // cout << "after compressing = " << selectedMCTracks->GetEntriesFast() << endl;
+    //-----------------------
+    //cout << "before getting label -4" << endl;
+    Int_t nRecTracks = selectedMCTracks->GetEntriesFast();
+    //cout << "before getting label -3" << endl;
     for (Int_t i = 0; i < nRecTracks; i++)
     {
-      AliAODTrack* tras = aod->GetTrack(i);
+      //AliAODTrack* tras = aod->GetTrack(i);
+      AliAODTrack* tras = (AliAODTrack*)selectedMCTracks->At(i);
+      //cout << "before getting label -2" << endl;
+      //cout << " and i = " << i << endl;
+      //cout << "pt = " << tras->Pt() << " and i = " << i << endl;
       if ((tras->Pt())<PtAssocMin) continue; 
+      //cout << "before getting label -1" << endl;
       if (!(IsMyGoodPrimaryTrack(tras))) continue;
+      //cout << "before getting label 0" << endl;
       Int_t AssocLabel = tras->GetLabel();
       if (AssocLabel<=0) continue;
-      if(!(static_cast<AliAODMCParticle*>(mcArray->At(tras->GetLabel()))->IsPhysicalPrimary())) continue;
-      Double_t trPt = tras->Pt();
-      fHistRCPtCentAs->Fill(trPt,lCent);
+      //cout << "before getting label 1" << endl;
+      Bool_t isPhyPrim = static_cast<AliAODMCParticle*>(mcArray->At(tras->GetLabel()))->IsPhysicalPrimary();
+      //Bool_t isPhyPrim = static_cast<AliAODMCParticle*>(mcArray->At(tras->GetLabel()))->IsPhysicalPrimary();
+      //if(!(static_cast<AliAODMCParticle*>(mcArray->At(tras->GetLabel()))->IsPhysicalPrimary())) continue;
+	     //cout << "before getting label 2" << endl;
+    Double_t mcPt = static_cast<AliAODMCParticle*>(mcArray->At(tras->GetLabel()))->Pt();
+	     //cout << "before getting label 3" << endl;
+    //Double_t mcEta = static_cast<AliAODMCParticle*>(mcArray->At(tras->GetLabel()))->Eta();
+	  //if (mcPt<PtAssocMin) continue;
+	  //if (TMath::Abs(mcEta)>0.8) continue;
+      //Double_t trPt = tras->Pt();
+      fHistRCPtCentAll->Fill(mcPt,lCent);
+      if (isPhyPrim) fHistRCPtCentAs->Fill(mcPt,lCent);
     }
     // ------- end of real data access, for V0s see the main V0 loop -------- 
   }
@@ -399,7 +483,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
         if (!(IsMyGoodPrimaryTrack(tr))) continue;
         selectedTracks->Add(tr);
         // saving the Charged trigger particles
-        if ((tr->Pt()>6.)&&(tr->Pt()<15.))
+        if ((tr->Pt()>4.)&&(tr->Pt()<15.))
         {
            selectedChargedTriggers->Add(new AliV0ChBasicParticle(tr->Eta(), tr->Phi(), tr->Pt(), 7));
         }
@@ -828,9 +912,9 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
 Bool_t AliAnalysisTaskV0ChCorrelations::IsMyGoodPrimaryTrack(const AliAODTrack *t)
 {
 	// Pseudorapidity cut
-	if (TMath::Abs(t->Eta())>0.8) return kFALSE;
-	// Should correspond to set of cuts suitable for correlation analysis
-    if (!t->TestFilterBit(1<<7)) return kFALSE;
+	if (TMath::Abs(t->Eta())>0.9) return kFALSE;
+	// Should correspond to set of cuts suitable for correlation analysis, 768 - hybrid tracks for 2011 data
+    if (!t->TestFilterBit(768)) return kFALSE;
 
 	return kTRUE;
 }
@@ -965,5 +1049,92 @@ Bool_t AliAnalysisTaskV0ChCorrelations::IsMyGoodV0(const AliAODEvent* aod, const
 	// Daughter PID cut - in main V0 loop - depends on particle hypothesis
 
 	return kTRUE;
+}
+
+void AliAnalysisTaskV0ChCorrelations::RemovingInjectedSignal(TObjArray* tracks, TObject* mcObj, Int_t maxLabel)
+{
+  // remove injected signals (primaries above <maxLabel>)
+  // <tracks> can be the following cases:
+  // a. tracks: in this case the label is taken and then case b.
+  // b. particles: the first stable mother is searched and checked if it is <= <maxLabel>
+  // <mcObj> can be AOD (TClonesArray) or ESD (AliMCEvent)
+
+  TClonesArray* arrayMC = 0;
+  AliMCEvent* mcEvent = 0;
+  if (mcObj->InheritsFrom("AliMCEvent"))
+    mcEvent = static_cast<AliMCEvent*>(mcObj);
+  else if (mcObj->InheritsFrom("TClonesArray"))
+    arrayMC = static_cast<TClonesArray*>(mcObj);
+  else
+  {
+    mcObj->Dump();
+    AliFatal("Invalid object passed");
+  }
+
+  Int_t before = tracks->GetEntriesFast();
+
+  for (Int_t i=0; i<before; ++i)
+  {
+    AliVParticle* part = (AliVParticle*) tracks->At(i);
+
+    if (part->InheritsFrom("AliESDtrack")) part = mcEvent->GetTrack(TMath::Abs(part->GetLabel()));
+    if (part->InheritsFrom("AliAODTrack"))
+    {
+      part =(AliVParticle*)arrayMC->At(TMath::Abs(part->GetLabel()));
+      //cout << "toto musi byt len pri reco trackoch" << endl;
+    }
+
+    AliVParticle* mother = part;
+    if (mcEvent)
+    {
+      while (!mcEvent->IsPhysicalPrimary(mother->GetLabel()))
+      {
+    if (((AliMCParticle*)mother)->GetMother() < 0)
+    {
+      mother = 0;
+      break;
+    }
+
+    mother = (AliMCParticle*) mcEvent->GetTrack(((AliMCParticle*)mother)->GetMother());
+    if (!mother)
+      break;
+      }
+    }
+    else
+    {
+      // find the primary mother
+     while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
+      {
+    if (((AliAODMCParticle*)mother)->GetMother() < 0)
+    {
+      mother = 0;
+      break;
+    }
+
+    mother = (AliVParticle*) arrayMC->At(((AliAODMCParticle*)mother)->GetMother());
+    if (!mother)
+      break;
+      }
+    }
+
+    if (!mother)
+    {
+      //Printf("WARNING: No mother found for particle %d:", part->GetLabel());
+      continue;
+    }
+
+    if (mother->GetLabel() > maxLabel)
+    {
+//      Printf("Removing %d with label %d", i, part->GetLabel()); part->Dump();
+      TObject* object = tracks->RemoveAt(i);
+      if (tracks->IsOwner())
+    delete object;
+    }
+  }
+
+  tracks->Compress();
+
+  AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast()));
+
 }
 
