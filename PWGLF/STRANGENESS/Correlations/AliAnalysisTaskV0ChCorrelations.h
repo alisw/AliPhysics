@@ -51,6 +51,7 @@ public:
    Bool_t IsMyGoodPrimaryTrack(const AliAODTrack* aodtrack);
    Bool_t IsMyGoodDaughterTrack(const AliAODTrack* aodtrack);
    Bool_t IsMyGoodV0(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2, Int_t osta);
+   void RemovingInjectedSignal(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
 
 private:
 
@@ -85,6 +86,7 @@ private:
    THnSparseF    *fHistRCPtCentTrig;   // pt vs. centrality of reconstructed trigger particles
    TH2D	           *fHistMCPtCentAs;   // pt vs. centrality of MC associated particles
    TH2D	           *fHistRCPtCentAs;   // pt vs. centrality of reconstructed associated particles
+   TH2D	           *fHistRCPtCentAll;   // pt vs. centrality of reconstructed all primary+secondary particles
    
    TH1D			   *fHistTemp;   // temporary histogram for debugging
    TH1D			   *fHistTemp2;   // temporary histogram for debugging
