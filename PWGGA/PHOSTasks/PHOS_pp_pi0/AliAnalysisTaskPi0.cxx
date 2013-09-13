@@ -28,7 +28,10 @@
 #include "TParticle.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "THashList.h"
 
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskPi0.h"
 #include "AliCaloPhoton.h"
@@ -58,6 +61,7 @@ AliAnalysisTaskPi0::AliAnalysisTaskPi0(const char *name)
   fnCINT1A(0),
   fnCINT1C(0),
   fnCINT1E(0),
+  fBCgap(525e-09),
   fPHOSGeo(0),
   fEventCounter(0),
   fTriggerAnalysis(new AliTriggerAnalysis)
@@ -81,6 +85,11 @@ AliAnalysisTaskPi0::AliAnalysisTaskPi0(const char *name)
   // Initialize the PHOS geometry
   fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
 
+  // Absolute recalibration for LHC11a. Use SetRecalib(mod,recalib) to change it
+  fRecalib[0] = 0.9942;
+  fRecalib[1] = 0.9822;
+  fRecalib[2] = 1.0072;
+
 }
 
 //________________________________________________________________________
@@ -93,7 +102,7 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   if(fOutputContainer != NULL){
     delete fOutputContainer;
   }
-  fOutputContainer = new TList();
+  fOutputContainer = new THashList();
   fOutputContainer->SetOwner(kTRUE);
 
   fOutputContainer->Add(new TH1I("hCellMultEvent"  ,"PHOS cell multiplicity per event"    ,2000,0,2000));
@@ -105,24 +114,27 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1I("hPHOSClusterMultM1","PHOS cluster multiplicity, M1",100,0,100));
   fOutputContainer->Add(new TH1I("hPHOSClusterMultM2","PHOS cluster multiplicity, M2",100,0,100));
   fOutputContainer->Add(new TH1I("hPHOSClusterMultM3","PHOS cluster multiplicity, M3",100,0,100));
-  fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,5000,0.,50.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM1","Cell energy in module 1",5000,0.,50.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM2","Cell energy in module 2",5000,0.,50.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM3","Cell energy in module 3",5000,0.,50.));
-  fOutputContainer->Add(new TH1F("hClusterEnergy"  ,"Cluster energy"      ,5000,0.,50.));
-  fOutputContainer->Add(new TH1F("hClusterEnergyM1","Cluster energy, M1"  ,5000,0.,50.));
-  fOutputContainer->Add(new TH1F("hClusterEnergyM2","Cluster energy, M2"  ,5000,0.,50.));
-  fOutputContainer->Add(new TH1F("hClusterEnergyM3","Cluster energy, M3"  ,5000,0.,50.));
-  fOutputContainer->Add(new TH2F("hClusterEvsN"  ,"Cluster energy vs digit multiplicity"    ,5000,0.,50.,40,0.,40.));
-  fOutputContainer->Add(new TH2F("hClusterEvsNM1","Cluster energy vs digit multiplicity, M1",5000,0.,50.,40,0.,40.));
-  fOutputContainer->Add(new TH2F("hClusterEvsNM2","Cluster energy vs digit multiplicity, M2",5000,0.,50.,40,0.,40.));
-  fOutputContainer->Add(new TH2F("hClusterEvsNM3","Cluster energy vs digit multiplicity, M3",5000,0.,50.,40,0.,40.));
+  fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,500,0.,50.));
+  fOutputContainer->Add(new TH1F("hCellEnergyM1","Cell energy in module 1",500,0.,50.));
+  fOutputContainer->Add(new TH1F("hCellEnergyM2","Cell energy in module 2",500,0.,50.));
+  fOutputContainer->Add(new TH1F("hCellEnergyM3","Cell energy in module 3",500,0.,50.));
+  fOutputContainer->Add(new TH1F("hClusterEnergy"  ,"Cluster energy"      ,500,0.,50.));
+  fOutputContainer->Add(new TH1F("hClusterEnergyM1","Cluster energy, M1"  ,500,0.,50.));
+  fOutputContainer->Add(new TH1F("hClusterEnergyM2","Cluster energy, M2"  ,500,0.,50.));
+  fOutputContainer->Add(new TH1F("hClusterEnergyM3","Cluster energy, M3"  ,500,0.,50.));
+  fOutputContainer->Add(new TH2F("hClusterEvsN"  ,"Cluster energy vs digit multiplicity"    ,500,0.,50.,40,0.,40.));
+  fOutputContainer->Add(new TH2F("hClusterEvsNM1","Cluster energy vs digit multiplicity, M1",500,0.,50.,40,0.,40.));
+  fOutputContainer->Add(new TH2F("hClusterEvsNM2","Cluster energy vs digit multiplicity, M2",500,0.,50.,40,0.,40.));
+  fOutputContainer->Add(new TH2F("hClusterEvsNM3","Cluster energy vs digit multiplicity, M3",500,0.,50.,40,0.,40.));
+  fOutputContainer->Add(new TH2F("hClusterEvsTM1","Cluster energy vs time, M1", 500,0.,50., 1200,-6.e-6,+6.e-6));
+  fOutputContainer->Add(new TH2F("hClusterEvsTM2","Cluster energy vs time, M2", 500,0.,50., 1200,-6.e-6,+6.e-6));
+  fOutputContainer->Add(new TH2F("hClusterEvsTM3","Cluster energy vs time, M3", 500,0.,50., 1200,-6.e-6,+6.e-6));
   fOutputContainer->Add(new TH1I("hCellMultClu"  ,"Cell multiplicity per cluster"    ,200,0,200));
   fOutputContainer->Add(new TH1I("hCellMultCluM1","Cell multiplicity per cluster, M1",200,0,200));
   fOutputContainer->Add(new TH1I("hCellMultCluM2","Cell multiplicity per cluster, M3",200,0,200));
   fOutputContainer->Add(new TH1I("hCellMultCluM3","Cell multiplicity per cluster, M3",200,0,200));
   fOutputContainer->Add(new TH1I("hModule","Module events",5,0.,5.));
-  fOutputContainer->Add(new TH1F("hSelEvents","Selected events",7,0.5,7.5));
+  fOutputContainer->Add(new TH1F("hSelEvents","Selected events",8,-0.5,7.5));
 
   fOutputContainer->Add(new TH2F("hCellNXZM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellNXZM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
@@ -130,12 +142,18 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCellEXZM1","Cell E(X,Z), M1",64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellEXZM2","Cell E(X,Z), M2",64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellEXZM3","Cell E(X,Z), M3",64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluNXZM1","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluNXZM2","Clu (X,Z), M2"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluNXZM3","Clu (X,Z), M3"   ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluEXZM1","Clu E(X,Z), M1"  ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluEXZM2","Clu E(X,Z), M2"  ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluEXZM3","Clu E(X,Z), M3"  ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluNXZM1_0","Clu (X,Z), M1, E>0.5 GeV"   ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluNXZM2_0","Clu (X,Z), M2, E>0.5 GeV"   ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluNXZM3_0","Clu (X,Z), M3, E>0.5 GeV"   ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluEXZM1_0","Clu E(X,Z), M1, E>0.5 GeV"  ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluEXZM2_0","Clu E(X,Z), M2, E>0.5 GeV"  ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluEXZM3_0","Clu E(X,Z), M3, E>0.5 GeV"  ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluNXZM1_1","Clu (X,Z), M1, E>1 GeV"     ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluNXZM2_1","Clu (X,Z), M2, E>1 GeV"     ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluNXZM3_1","Clu (X,Z), M3, E>1 GeV"     ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluEXZM1_1","Clu E(X,Z), M1, E>1 GeV"    ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluEXZM2_1","Clu E(X,Z), M2, E>1 GeV"    ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluEXZM3_1","Clu E(X,Z), M3, E>1 GeV"    ,64,0.5,64.5, 56,0.5,56.5));
 
   Int_t nM       = 750;
   Double_t mMin  = 0.0;
@@ -152,17 +170,23 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hAsymPtPi0M12","(A,p_{T})_{#gamma#gamma} #pi^{0}. M12" ,20,0.,1.,    40,0.,20.));
   fOutputContainer->Add(new TH2F("hAsymPtPi0M23","(A,p_{T})_{#gamma#gamma} #pi^{0}. M23" ,20,0.,1.,    40,0.,20.));
 
-
   fOutputContainer->Add(new TH2F("hMassPtA10" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA08" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.8"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA07" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA01" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.1"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
+
+  fOutputContainer->Add(new TH2F("hMassPtA10BC0" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, BC1=BC2=0",nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMassPtA10BC1" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, BC1!=BC2" ,nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMassPtA10BC2" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, BC1=0"    ,nM,mMin,mMax,nPt,ptMin,ptMax));
 
   fOutputContainer->Add(new TH2F("hMassPtA10nvtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, no vtx" ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA07nvtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, no vtx" ,nM,mMin,mMax,nPt,ptMin,ptMax));
 
   fOutputContainer->Add(new TH2F("hMassPtA10vtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, vtx"     ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA07vtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, vtx"     ,nM,mMin,mMax,nPt,ptMin,ptMax));
+
+  fOutputContainer->Add(new TH2F("hMassPtA10vtx10","(M,p_{T})_{#gamma#gamma}, 0<A<1.0, |Zvtx|<10 cm"     ,nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMassPtA07vtx10","(M,p_{T})_{#gamma#gamma}, 0<A<0.7, |Zvtx|<10 cm"     ,nM,mMin,mMax,nPt,ptMin,ptMax));
 
   fOutputContainer->Add(new TH2F("hMassPtA10V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMassPtA07V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
@@ -210,11 +234,18 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hMiMassPtA07" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMiMassPtA01" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.1"   ,nM,mMin,mMax,nPt,ptMin,ptMax));
 
+  fOutputContainer->Add(new TH2F("hMiMassPtA10BC0" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, BC1=BC2=0",nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMiMassPtA10BC1" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, BC1!=BC2" ,nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMiMassPtA10BC2" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, BC1=0"    ,nM,mMin,mMax,nPt,ptMin,ptMax));
+
   fOutputContainer->Add(new TH2F("hMiMassPtA10nvtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, no vtx" ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMiMassPtA07nvtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, no vtx" ,nM,mMin,mMax,nPt,ptMin,ptMax));
 
   fOutputContainer->Add(new TH2F("hMiMassPtA10vtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, vtx"     ,nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMiMassPtA07vtx" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, vtx"     ,nM,mMin,mMax,nPt,ptMin,ptMax));
+
+  fOutputContainer->Add(new TH2F("hMiMassPtA10vtx10","(M,p_{T})_{#gamma#gamma}, 0<A<1.0, |Zvtx|<10 cm",nM,mMin,mMax,nPt,ptMin,ptMax));
+  fOutputContainer->Add(new TH2F("hMiMassPtA07vtx10","(M,p_{T})_{#gamma#gamma}, 0<A<0.7, |Zvtx|<10 cm",nM,mMin,mMax,nPt,ptMin,ptMax));
 
   fOutputContainer->Add(new TH2F("hMiMassPtA10V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<1.0, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
   fOutputContainer->Add(new TH2F("hMiMassPtA07V0AND" ,"(M,p_{T})_{#gamma#gamma}, 0<A<0.7, V0AND",nM,mMin,mMax,nPt,ptMin,ptMax));
@@ -262,9 +293,16 @@ void AliAnalysisTaskPi0::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH1F("hTrigClass","Trigger class",5,0.5,5.5));
 
+  fOutputContainer->Add(new TH1F("hNPileupVtx","Number of SPD pileup vertices",10,0.,10.));
+  fOutputContainer->Add(new TH1F("hZPileupVtx","#Delta_{Z} vtx_{0}-vtx_{PU}",200,-50.,+50.));
+
   fOutputContainer->Add(new TH1F("hZvertex","Z vertex",200,-50.,+50.));
   fOutputContainer->Add(new TH1F("hNvertexTracks","N of primary tracks from the primary vertex",150,0.,150.));
   fOutputContainer->Add(new TH1F("hTrackMult","Charged track multiplicity",150,0.,150.));
+
+  fOutputContainer->Add(new TH1F("hV0Atime","V0A time",1200,-6.e-6,+6.e-6));
+  fOutputContainer->Add(new TH1F("hV0Ctime","V0C time",1200,-6.e-6,+6.e-6));
+  fOutputContainer->Add(new TH2F("hV0AV0Ctime","V0A time vs V0C time",120,-6.e-6,+6.e-6 ,120,-6.e-6,+6.e-6));
 
   // Create ESD track cut
 
@@ -283,18 +321,32 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
   // Main loop, called for each event
   // Analyze ESD
 
+  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!event) {
+     Printf("ERROR: Could not retrieve event");
+     return;
+  }
+
+  //Skip events from fast cluster
+
+  // UInt_t triggerMask = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+  // if(triggerMask& AliVEvent::kFastOnly) return; // reject events in the fast cluster only
+  // if(!(triggerMask& AliVEvent::kMB)) return; // check the trigger mask as usual
+
+  FillHistogram("hSelEvents",0) ; // All events accepted by PSel
+
+  TString trigClasses = event->GetFiredTriggerClasses();
+  if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")) {
+    AliWarning(Form("Skip event with triggers %s",trigClasses.Data()));
+    return;
+  }
+
   // Event selection flags
 
   Bool_t eventVtxExist    = kFALSE;
   Bool_t eventVtxZ10cm    = kFALSE;
   Bool_t eventPileup      = kFALSE;
   Bool_t eventV0AND       = kFALSE;
-
-  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!event) {
-     Printf("ERROR: Could not retrieve event");
-     return;
-  }
 
   Int_t eventNumberInFile = event->GetEventNumberInFile();
   if(fPHOSEvent)
@@ -310,28 +362,38 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
   else if (event->GetPrimaryVertexSPD()   ->GetNContributors()>0)
     eventVtxExist    = kTRUE;
 
-  const AliESDVertex *esdVertex5 = event->GetPrimaryVertex();
+  const AliESDVertex *esdVertexBest = event->GetPrimaryVertex();
+  const AliESDVertex *esdVertexSPD  = event->GetPrimaryVertexSPD();
 
   Double_t vtx0[3] = {0,0,0}; // don't rely on ESD vertex, assume (0,0,0)
-  Double_t vtx5[3];
-  vtx5[0] = esdVertex5->GetX();
-  vtx5[1] = esdVertex5->GetY();
-  vtx5[2] = esdVertex5->GetZ();
+  Double_t vtxBest[3];
+  vtxBest[0] = esdVertexBest->GetX();
+  vtxBest[1] = esdVertexBest->GetY();
+  vtxBest[2] = esdVertexBest->GetZ();
 
-  FillHistogram("hNvertexTracks",esdVertex5->GetNContributors());
-  FillHistogram("hZvertex"      ,esdVertex5->GetZ());
-  if (TMath::Abs(esdVertex5->GetZ()) < 10. )
+  FillHistogram("hNvertexTracks",esdVertexBest->GetNContributors());
+  FillHistogram("hZvertex"      ,esdVertexBest->GetZ());
+  if (TMath::Abs(esdVertexBest->GetZ()) < 10. )
     eventVtxZ10cm = kTRUE;
 
-  if (event->IsPileupFromSPD())
+  // Check for pileup and fill pileup histograms
+  if (event->IsPileupFromSPD()) {
     eventPileup = kTRUE;
+    TClonesArray *pileupVertices = event->GetPileupVerticesSPD();
+    Int_t nPileupVertices = pileupVertices->GetEntriesFast();
+    FillHistogram("hNPileupVtx",nPileupVertices);
+    for (Int_t puVtx=0; puVtx<nPileupVertices; puVtx++) {
+      Double_t dZpileup = esdVertexSPD->GetZ() - event->GetPileupVertexSPD(puVtx)->GetZ();
+      FillHistogram("hZPileupVtx",dZpileup);
+    }
+  }
 
   eventV0AND = fTriggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kV0AND);
 
   // Fill event statistics for different selection criteria
 
   FillHistogram("hSelEvents",1) ;
-  if (eventVtxExist)
+  if (eventVtxExist) 
     FillHistogram("hSelEvents",2) ;
   if (eventVtxExist && eventVtxZ10cm)
     FillHistogram("hSelEvents",3) ;
@@ -346,11 +408,9 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
   }
       
   //Vtx class z-bin
-  Int_t zvtx = (Int_t)((vtx5[2]+10.)/2.) ;
+  Int_t zvtx = (Int_t)((vtxBest[2]+10.)/2.) ;
   if(zvtx<0)zvtx=0 ;
   if(zvtx>9)zvtx=9 ;
-
-  TString trigClasses = event->GetFiredTriggerClasses();
 
   if (trigClasses.Contains("CINT1B")) fnCINT1B++;
   if (trigClasses.Contains("CINT1A")) fnCINT1A++;
@@ -366,6 +426,12 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     delete track;
   }
   FillHistogram("hTrackMult",trackMult+0.5) ;
+
+  Float_t tV0A = event->GetVZEROData()->GetV0ATime();
+  Float_t tV0C = event->GetVZEROData()->GetV0CTime();
+  FillHistogram("hV0Atime",tV0A);
+  FillHistogram("hV0Atime",tV0C);
+  FillHistogram("hV0AV0Ctime",tV0A,tV0C);
 
   Int_t centr=0 ;
   //always zero centrality
@@ -420,7 +486,7 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     }
   }
 
-  Float_t  energy;
+  Float_t  energy, tof;
   Int_t    mod1, relId[4], cellAbsId, cellX, cellZ;
 
   // Single loop over cells
@@ -480,7 +546,11 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
     mod1   = relId[0];
     energy = clu1->E();
+    tof    = clu1->GetTOF();
 
+    // Printf("\tmodule=%d, xyz=(%.3f,%.3f,%.3f) cm, E=%.3f GeV",
+    // 	   mod1,position[0],position[1],position[2],energy);
+    
     multPHOSClust[0]++;
     FillHistogram("hClusterEnergy",energy);
     FillHistogram("hClusterEvsN",energy,digMult);
@@ -488,26 +558,47 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     if      (mod1==1) {
       multPHOSClust[1]++;
       FillHistogram("hClusterEvsNM1",energy,digMult);
+      FillHistogram("hClusterEvsTM1",energy,tof);
       FillHistogram("hCellMultCluM1",digMult);
       FillHistogram("hClusterEnergyM1",energy);
-      FillHistogram("hCluNXZM1",cellX,cellZ,1.);
-      FillHistogram("hCluEXZM1",cellX,cellZ,energy);
+      if (energy > 0.5) {
+	FillHistogram("hCluNXZM1_0",cellX,cellZ,1.);
+	FillHistogram("hCluEXZM1_0",cellX,cellZ,energy);
+      }
+      if (energy > 1.0) {
+	FillHistogram("hCluNXZM1_1",cellX,cellZ,1.);
+	FillHistogram("hCluEXZM1_1",cellX,cellZ,energy);
+      }
     }
     else if (mod1==2) {
       multPHOSClust[2]++;
       FillHistogram("hClusterEvsNM2",energy,digMult);
+      FillHistogram("hClusterEvsTM2",energy,tof);
       FillHistogram("hCellMultCluM2",digMult);
       FillHistogram("hClusterEnergyM2",energy);
-      FillHistogram("hCluNXZM2",cellX,cellZ,1.);
-      FillHistogram("hCluEXZM2",cellX,cellZ,energy);
+      if (energy > 0.5) {
+	FillHistogram("hCluNXZM2_0",cellX,cellZ,1.);
+	FillHistogram("hCluEXZM2_0",cellX,cellZ,energy);
+      }
+      if (energy > 1.0) {
+	FillHistogram("hCluNXZM2_1",cellX,cellZ,1.);
+	FillHistogram("hCluEXZM2_1",cellX,cellZ,energy);
+      }
     }
     else if (mod1==3) {
       multPHOSClust[3]++;
       FillHistogram("hClusterEvsNM3",energy,digMult);
+      FillHistogram("hClusterEvsTM3",energy,tof);
       FillHistogram("hCellMultCluM3",digMult);
       FillHistogram("hClusterEnergyM3",energy);
-      FillHistogram("hCluNXZM3",cellX,cellZ,1.);
-      FillHistogram("hCluEXZM3",cellX,cellZ,energy);
+      if (energy > 0.5) {
+	FillHistogram("hCluNXZM3_0",cellX,cellZ,1.);
+	FillHistogram("hCluEXZM3_0",cellX,cellZ,energy);
+      }
+      if (energy > 1.0) {
+	FillHistogram("hCluNXZM3_1",cellX,cellZ,1.);
+	FillHistogram("hCluEXZM3_1",cellX,cellZ,energy);
+      }
     }
     
     if (digMult > 2) {
@@ -525,7 +616,7 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
       FillHistogram("hPhotonPy",pY);
     }
   }
-  FillHistogram("hPHOSClusterMult",multPHOSClust[0]);
+  FillHistogram("hPHOSClusterMult"  ,multPHOSClust[0]);
   FillHistogram("hPHOSClusterMultM1",multPHOSClust[1]);
   FillHistogram("hPHOSClusterMultM2",multPHOSClust[2]);
   FillHistogram("hPHOSClusterMultM3",multPHOSClust[3]);
@@ -544,13 +635,30 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     cellZ = relId[3] ;
     if ( !IsGoodChannel("PHOS",mod1,cellX,cellZ) ) continue ;
 
-    if (mod1 < 1 || mod1 > 5) {
+    if (mod1 < 1 || mod1 > 3) {
       AliError(Form("Wrong module number %d",mod1));
       return;
     }
 
+    //..................................................
+    // Apply module misalignment
+
+    Float_t dXmodule[3] = {-2.30, -2.11, -1.53}; // X-shift in local system for module 1,2,3
+    Float_t dZmodule[3] = {-0.40, +0.52, +0.80}; // Z-shift in local system for module 1,2,3
+
+    TVector3 globalXYZ(position[0],position[1],position[2]);
+    TVector3 localXYZ;
+    fPHOSGeo->Global2Local(localXYZ,globalXYZ,mod1) ;
+    fPHOSGeo->Local2Global(mod1,localXYZ.X()+dXmodule[mod1-1],localXYZ.Z()+dZmodule[mod1-1],globalXYZ);
+    for (Int_t ixyz=0; ixyz<3; ixyz++) position[ixyz]=globalXYZ[ixyz] ;
+    clu1->SetPosition(position) ;
+
+    //..................................................
+
     clu1 ->GetMomentum(p1 ,vtx0);
-    clu1 ->GetMomentum(pv1,vtx5);
+    clu1 ->GetMomentum(pv1,vtxBest);
+
+    p1 *= fRecalib[mod1-1];
 
     digMult   = clu1->GetNCells();
     new((*fPHOSEvent)[inPHOS]) AliCaloPhoton(p1.X(),p1.Py(),p1.Z(),p1.E()) ;
@@ -563,6 +671,7 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
     ph->SetEMCz(global1.Z());
     ph->SetDispBit(TestLambda(clu1->GetM20(),clu1->GetM02())) ;
     ph->SetCPVBit(clu1->GetEmcCpvDistance()>10.) ;
+    ph->SetBC(TestBC(clu1->GetTOF()));
 
     inPHOS++ ;
   }
@@ -575,6 +684,10 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       p12  = *ph1  + *ph2;
       pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
+      Bool_t mainBC = (ph1->GetBC()==0 && ph2->GetBC()==0);
+      Bool_t mainBC1= (ph1->GetBC()==0 || ph2->GetBC()==0);
+      Bool_t diffBC = ((ph1->GetBC()==0 && ph2->GetBC()!=ph1->GetBC()) || 
+		       (ph2->GetBC()==0 && ph2->GetBC()!=ph1->GetBC()));
       Double_t asym  = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));
       Double_t ma12 = p12.M();
       Double_t pt12 = p12.Pt();
@@ -585,12 +698,20 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
         FillHistogram("hMassPtCA10",ma12 ,pt12, centr+0.5);
         FillHistogram("hMassSingle_all",ma12,ph1->Pt()) ;
         FillHistogram("hMassSingle_all",ma12,ph2->Pt()) ;
+	if (mainBC) 
+	  FillHistogram("hMassPtA10BC0",ma12 ,pt12 );
+	if (diffBC) 
+	  FillHistogram("hMassPtA10BC1",ma12 ,pt12 );
+	if (mainBC1) 
+	  FillHistogram("hMassPtA10BC2",ma12 ,pt12 );
 
 	if(!eventVtxExist)
 	  FillHistogram("hMassPtA10nvtx",ma12 ,pt12 );
 	if(eventVtxExist)
 	  FillHistogram("hMassPtA10vtx"  ,ma12 ,pt12 );
-	if(eventVtxExist && eventV0AND)
+	if(eventVtxExist & eventVtxZ10cm)
+	  FillHistogram("hMassPtA10vtx10",ma12 ,pt12 );
+	if(eventV0AND)
 	  FillHistogram("hMassPtA10V0AND",ma12 ,pt12 );
 	if(eventPileup)
 	  FillHistogram("hMassPtA10PU"   ,ma12 ,pt12 );
@@ -673,12 +794,12 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
         if ((ph1->Module()==1 && ph2->Module()==3) ||
 	    (ph1->Module()==3 && ph2->Module()==1)) FillHistogram("hMassPtM13",ma12 ,pt12 );
 
-	if (TMath::Abs(ph1->EMCz()) < 20. || TMath::Abs(ph2->EMCz()) < 20.)
+	if ( TMath::Abs(ph1->EMCz()) < 20. || TMath::Abs(ph2->EMCz()) < 20.)
 	  FillHistogram("hMassPt20cm",ma12 ,pt12 );
 	if ((TMath::Abs(ph1->EMCz()) > 20. && TMath::Abs(ph1->EMCz()) < 40.) ||
 	    (TMath::Abs(ph2->EMCz()) > 20. && TMath::Abs(ph2->EMCz()) < 40.))
 	  FillHistogram("hMassPt40cm",ma12 ,pt12 );
-	if (TMath::Abs(ph1->EMCz()) > 40. || TMath::Abs(ph2->EMCz()) > 40.)
+	if ( TMath::Abs(ph1->EMCz()) > 40. || TMath::Abs(ph2->EMCz()) > 40.)
 	  FillHistogram("hMassPt60cm",ma12 ,pt12 );
 
       }
@@ -708,6 +829,10 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
       AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
       p12  = *ph1  + *ph2;
       pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
+      Bool_t mainBC = (ph1->GetBC()==0 && ph2->GetBC()==0);
+      Bool_t mainBC1= (ph1->GetBC()==0 || ph2->GetBC()==0);
+      Bool_t diffBC = ((ph1->GetBC()==0 && ph2->GetBC()!=ph1->GetBC()) || 
+		       (ph2->GetBC()==0 && ph2->GetBC()!=ph1->GetBC()));
       Double_t asym  = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));
       Double_t ma12 = p12.M();
       Double_t pt12 = p12.Pt();
@@ -718,12 +843,20 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
         FillHistogram("hMiMassPtCA10",ma12 ,pt12, centr+0.5);
         FillHistogram("hMiMassSingle_all",ma12,ph1->Pt()) ;
         FillHistogram("hMiMassSingle_all",ma12,ph2->Pt()) ;
+	if (mainBC) 
+	  FillHistogram("hMiMassPtA10BC0",ma12 ,pt12 );
+	if (diffBC) 
+	  FillHistogram("hMiMassPtA10BC1",ma12 ,pt12 );
+	if (mainBC1) 
+	  FillHistogram("hMiMassPtA10BC2",ma12 ,pt12 );
 
 	if(!eventVtxExist)
 	  FillHistogram("hMiMassPtA10nvtx",ma12 ,pt12 );
 	if(eventVtxExist)
 	  FillHistogram("hMiMassPtA10vtx"  ,ma12 ,pt12 );
-	if(eventVtxExist && eventV0AND)
+	if(eventVtxExist & eventVtxZ10cm)
+	  FillHistogram("hMiMassPtA10vtx10",ma12 ,pt12 );
+	if(eventV0AND)
 	  FillHistogram("hMiMassPtA10V0AND",ma12 ,pt12 );
 	if(eventPileup)
 	  FillHistogram("hMiMassPtA10PU"   ,ma12 ,pt12 );
@@ -873,61 +1006,46 @@ Bool_t AliAnalysisTaskPi0::IsGoodChannel(const char * det, Int_t mod, Int_t ix, 
   return kTRUE ;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPi0::FillHistogram(const char * key,Double_t x)const{
+void AliAnalysisTaskPi0::FillHistogram(const char * key,Double_t x)const
+{
   //FillHistogram
-  TH1I * tmpI = dynamic_cast<TH1I*>(fOutputContainer->FindObject(key)) ;
-  if(tmpI){
-    tmpI->Fill(x) ;
-    return ;
-  }
-  TH1F * tmpF = dynamic_cast<TH1F*>(fOutputContainer->FindObject(key)) ;
-  if(tmpF){
-    tmpF->Fill(x) ;
-    return ;
-  }
-  TH1D * tmpD = dynamic_cast<TH1D*>(fOutputContainer->FindObject(key)) ;
-  if(tmpD){
-    tmpD->Fill(x) ;
-    return ;
-  }
-  AliInfo(Form("can not find histogram <%s> ",key)) ;
+  TH1 * hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key)) ;
+  if(hist)
+    hist->Fill(x) ;
+  else
+    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPi0::FillHistogram(const char * key,Double_t x,Double_t y)const{
+void AliAnalysisTaskPi0::FillHistogram(const char * key,Double_t x,Double_t y)const
+{
   //FillHistogram
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1F")){
-    ((TH1F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s",key,tmp->IsA()->GetName())) ;
+  TH1 * th1 = dynamic_cast<TH1*> (fOutputContainer->FindObject(key));
+  if(th1)
+    th1->Fill(x, y) ;
+  else
+    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPi0::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
+void AliAnalysisTaskPi0::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const
+{
   //Fills 1D histograms with key
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
+  TObject * obj = fOutputContainer->FindObject(key);
+  
+  TH2 * th2 = dynamic_cast<TH2*> (obj);
+  if(th2) {
+    th2->Fill(x, y, z) ;
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y,z) ;
-    return ;
+  TH3 * th3 = dynamic_cast<TH3*> (obj);
+  if(th3) {
+    th3->Fill(x, y, z) ;
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
+  
+  AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
 }
+
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskPi0::TestLambda(Double_t l1,Double_t l2){
   Double_t l1Mean=1.22 ;
@@ -937,5 +1055,9 @@ Bool_t AliAnalysisTaskPi0::TestLambda(Double_t l1,Double_t l2){
   Double_t c=-0.59 ;
   Double_t R2=(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma+(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma-c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
   return (R2<9.) ;
-
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskPi0::TestBC(Double_t tof){
+  Int_t bc = (Int_t)(TMath::Ceil((tof + fBCgap/2)/fBCgap) - 1);
+  return bc;
 }

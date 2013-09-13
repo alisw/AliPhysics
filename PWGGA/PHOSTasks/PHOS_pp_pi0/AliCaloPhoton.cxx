@@ -43,6 +43,7 @@ AliCaloPhoton::AliCaloPhoton() :
   fLambda1(0.),
   fTime(0.),
   fModule(0),
+  fBC(0),
   fBadDist(0),
   fNCells(0),
   fPi0Decayflag(0),

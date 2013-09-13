@@ -30,6 +30,7 @@ class AliCaloPhoton :public TLorentzVector{
    Double_t EMCy(void)const {return fY;}
    Double_t EMCz(void)const {return fZ;}
    Int_t    Module(void)const{return fModule;}
+   Int_t    GetBC()const{return fBC;}
    Int_t    DistToBad()const  {return fBadDist ;}
    Int_t    GetNCells()const { return fNCells ;} 
    Double_t GetTime(void) const {return fTime ;}
@@ -80,6 +81,7 @@ class AliCaloPhoton :public TLorentzVector{
    void SetEMCy(Double_t y){fY = y ;} 
    void SetEMCz(Double_t z){fZ = z ;} 
    void SetModule(Int_t mod){fModule = mod ;} 
+   void SetBC(Int_t bc){fBC = bc;}
    void SetDistToBad(Int_t dist){fBadDist=dist;} 
    void SetTagged(Bool_t bit){fIsTagged=bit;}
    void SetTagged(Bool_t bit,Int_t i,Int_t k){fIsTagged_reg[i][k]=bit;}
@@ -122,6 +124,7 @@ private:
   Double_t  fLambda1 ;  //Long dispersion axis
   Double_t  fTime ;     //time of the cluster
   Int_t     fModule ;   //Module number
+  Int_t     fBC ;       //Bunch crossing number (BC=0 is main-main collision)
   Int_t     fBadDist ;  //Distance to bad module in module units
   Int_t     fNCells ;   //Number of cells in cluster
   Int_t     fPi0Decayflag; //if this photon is from pi0 decay (from simulation)
@@ -133,7 +136,7 @@ private:
   Int_t     fPrimary;   //Primary label
   AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 
-  ClassDef(AliCaloPhoton,5);
+  ClassDef(AliCaloPhoton,6);
 
 };
 
