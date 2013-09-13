@@ -176,7 +176,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 
     if (fCentralityMethod.Length() > 0)
     {
-        nbinsCentr = 101;
+        nbinsCentr = 105;
         minbinCentr=0;
         maxbinCentr=105;
     }
