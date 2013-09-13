@@ -40,6 +40,7 @@
 //	- tidied up LCMS boost			 				(6/10/13)
 //	- added new boosting prescription, get q out-side-long for LCMS and PRF (6/24/13)
 //		- added histograms and values for LCMS momenta (for simulation)
+//	- added random particle order switch in correlations (9/09/13)
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -255,15 +256,16 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   fOutputList->Add(fHistPzCM);
   fOutputList->Add(fHistKsCM);
 
-  TH1F* fHistPtLCMS	= new TH1F("fHistPtLCMS","",300,0,3);
-  fOutputList->Add(fHistPtLCMS);
-  TH3F *fHistPLCMS = new TH3F("fHistPLCMS","",200,0,2,200,0,2,200,0,2);
-  fOutputList->Add(fHistPLCMS);
-
+  TH1F* fHistPOutLCMS = new TH1F("fHistPOutLCMS","",200,0,2);
+  TH1F* fHistPSideLCMS = new TH1F("fHistPSideLCMS","",200,0,2);
+  TH1F* fHistPLongLCMS = new TH1F("fHistPLongLCMS","",200,0,2);
+  fOutputList->Add(fHistPOutLCMS);
+  fOutputList->Add(fHistPSideLCMS);
+  fOutputList->Add(fHistPLongLCMS);
 
   //pair gamma (LCMS to PRF, OSL)
-  TH3F* fHistKtGammaQinv = new TH3F("fHistKtGammaQinv","",200,0,2,500,1,5,100,0,1);
-  fOutputList->Add(fHistKtGammaQinv);
+  TH2F* fHistGamma = new TH2F("fHistGamma","Gamma from LCMS to PRF",500,1,5,100,0,1);
+  fOutputList->Add(fHistGamma);
 
   //invariant mass distributions
   TH3F* fHistMass = new TH3F("fHistMass","",kCentBins,.5,kCentBins+.5,50,0.,5.,400,.3,.7);
@@ -396,7 +398,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-  cout<<"===========  Event # "<<fEventCount+1<<"  ==========="<<endl;
+  //cout<<"===========  Event # "<<fEventCount+1<<"  ==========="<<endl;
   fEventCount++;
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
   if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
@@ -611,17 +613,17 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     }
     
     //K0 cuts
-    if(v0->Eta() > kEtaCut)                                	continue;    
-    if(v0->CosPointingAngle(primaryVertex) < kMinCosAngle) 	continue;
-    if(v0->MassK0Short() < .2 || v0->MassK0Short() > .8)   	continue;
-    if(v0->DcaNegToPrimVertex() < kMinDCAPrimaryPion)      	continue;
-    if(v0->DcaPosToPrimVertex() < kMinDCAPrimaryPion)      	continue;  
-    if(v0->DecayLength(primaryVertex) > kMaxDLK0)          	continue;
+    if(v0->Eta() > kEtaCut)                                continue;    
+    if(v0->CosPointingAngle(primaryVertex) < kMinCosAngle) continue;
+    if(v0->MassK0Short() < .2 || v0->MassK0Short() > .8)   continue;
+    if(v0->DcaNegToPrimVertex() < kMinDCAPrimaryPion)      continue;
+    if(v0->DcaPosToPrimVertex() < kMinDCAPrimaryPion)      continue;  
+    if(v0->DecayLength(primaryVertex) > kMaxDLK0)          continue;
     if(v0->DecayLength(primaryVertex) < kMinDLK0)	   		continue;
-    if(v0->DcaV0Daughters() > kMaxDCADaughtersK0)          	continue;
+    if(v0->DcaV0Daughters() > kMaxDCADaughtersK0)          continue;
     double v0Dca = v0->DcaV0ToPrimVertex();
-    if(v0Dca > kMaxDCAK0) 		                   			continue;        
-    if(!goodPiMinus || !goodPiPlus)                        	continue; 
+    if(v0Dca > kMaxDCAK0) 		                   continue;        
+    if(!goodPiMinus || !goodPiPlus)                        continue; 
     
     //EVERYTHING BELOW HERE PASSES SINGLE PARTICLE CUTS, PION PID, and LOOSE MASS CUT
 
@@ -674,7 +676,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     //load parameters into temporary class instance
     if(v0Count < kMaxNumK0)
     {
-	 	if(goodK0){
+	if(goodK0){
          tempK0[v0Count].fK0 = kTRUE;
          k0Count++;
         }
@@ -684,7 +686,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         //else tempK0[v0Count].fSideLeft = kFALSE;
         //if(v0->MassK0Short() > .515 && v0->MassK0Short() < .545) tempK0[v0Count].fSideRight = kTRUE;
         //else tempK0[v0Count].fSideRight = kFALSE;
-		//if(!goodK0) continue; //no sides, speed up analysis (REDUNDANT RIGHT NOW)
+	//if(!goodK0) continue; //no sides, speed up analysis (REDUNDANT RIGHT NOW)
 
         tempK0[v0Count].fDaughterID1    = prongTrackPos->GetID();
         tempK0[v0Count].fDaughterID2    = prongTrackNeg->GetID();
@@ -697,23 +699,23 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
         //for hists
         tempK0[v0Count].fDDDca		= v0->DcaV0Daughters();
-		tempK0[v0Count].fDecayLength	= v0->DecayLength(primaryVertex);
+	tempK0[v0Count].fDecayLength	= v0->DecayLength(primaryVertex);
         tempK0[v0Count].fPosPt		= v0->PtProng(pos0or1);
         tempK0[v0Count].fNegPt		= v0->PtProng(neg0or1);
         tempK0[v0Count].fPosPhi		= v0->PhiProng(pos0or1);
         tempK0[v0Count].fNegPhi		= v0->PhiProng(neg0or1);
-		if(!orderswitch){
+	if(!orderswitch){
          tempK0[v0Count].fPosDca	= v0->DcaPosToPrimVertex();
          tempK0[v0Count].fNegDca	= v0->DcaNegToPrimVertex();
-		}
+	}
         else{
          tempK0[v0Count].fPosDca	= v0->DcaNegToPrimVertex();
          tempK0[v0Count].fNegDca	= v0->DcaPosToPrimVertex();
-		} 
+	} 
         
         //for separation
         GetGlobalPositionAtGlobalRadiiThroughTPC(prongTrackPos, bField, tempK0[v0Count].fPosXYZ, vertex);
-		GetGlobalPositionAtGlobalRadiiThroughTPC(prongTrackNeg, bField, tempK0[v0Count].fNegXYZ, vertex);
+	GetGlobalPositionAtGlobalRadiiThroughTPC(prongTrackNeg, bField, tempK0[v0Count].fNegXYZ, vertex);
         //for DPC
         prongTrackPos->GetPxPyPz(tempK0[v0Count].fPPos);
         prongTrackNeg->GetPxPyPz(tempK0[v0Count].fPNeg);
@@ -764,7 +766,8 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   //////////////////////////////////////////////////////////////////////
 
   float px1, py1, pz1, px2, py2, pz2;			//single kaon values
-  float en1, en2;//, pt1, pt2; 				//single kaon values
+  float en1, en2;								//single kaon values 
+  //float pt1, pt2; 								//single kaon values
   float pairPx, pairPy, pairPz, pairP0;			//pair momentum values
   float pairPt, pairMt, pairKt;         		//pair momentum values
   float pairMInv, pairPDotQ;
@@ -774,8 +777,8 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   //float qOutLCMS;
   float qOutPRF, qSide, qLong;				//relative momentum in LCMS/PRF frame
   float betasq, gamma;
-  float p1LCMSOut, p1LCMSSide, p1LCMSLong, p1LCMSPt, en1LCMS;
-  float p2LCMSOut, p2LCMSSide, p2LCMSLong, p2LCMSPt, en2LCMS;
+  float p1LCMSOut, p1LCMSSide, p1LCMSLong, en1LCMS;
+  float p2LCMSOut, p2LCMSSide, p2LCMSLong, en2LCMS;
 
 
   for(int i=0; i<(fEvt)->fNumV0s; i++) // Current event V0
@@ -783,18 +786,18 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     //single particle histograms (done here to avoid "skipped" v0s
      ((TH1F*)fOutputList->FindObject("fHistDCADaughters"))	->Fill((fEvt)->fK0Particle[i].fDDDca);
      ((TH1F*)fOutputList->FindObject("fHistDecayLengthK0"))	->Fill((fEvt)->fK0Particle[i].fDecayLength);
-     ((TH1F*)fOutputList->FindObject("fHistDCAK0"))			->Fill((fEvt)->fK0Particle[i].fV0Dca);
+     ((TH1F*)fOutputList->FindObject("fHistDCAK0"))		->Fill((fEvt)->fK0Particle[i].fV0Dca);
      ((TH1F*)fOutputList->FindObject("fHistDCAPiMinus"))	->Fill((fEvt)->fK0Particle[i].fNegDca);
      ((TH1F*)fOutputList->FindObject("fHistDCAPiPlus"))		->Fill((fEvt)->fK0Particle[i].fPosDca);
-     ((TH2F*)fOutputList->FindObject("fHistPtK0"))			->Fill(centBin+1, (fEvt)->fK0Particle[i].fPt);
+     ((TH2F*)fOutputList->FindObject("fHistPtK0"))		->Fill(centBin+1, (fEvt)->fK0Particle[i].fPt);
      ((TH2F*)fOutputList->FindObject("fHistK0PiPlusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fPosPt);
      ((TH2F*)fOutputList->FindObject("fHistK0PiMinusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fNegPt);
      ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fPosPhi);
      ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fNegPhi);
      
-     ((TH1F*)fOutputList->FindObject("fHistPx"))->Fill((fEvt)->fK0Particle[i].fMomentum[0]);
-     ((TH1F*)fOutputList->FindObject("fHistPy"))->Fill((fEvt)->fK0Particle[i].fMomentum[1]);
-     ((TH1F*)fOutputList->FindObject("fHistPz"))->Fill((fEvt)->fK0Particle[i].fMomentum[2]);
+     ((TH1F*)fOutputList->FindObject("fHistPx"))		->Fill((fEvt)->fK0Particle[i].fMomentum[0]);
+     ((TH1F*)fOutputList->FindObject("fHistPy"))		->Fill((fEvt)->fK0Particle[i].fMomentum[1]);
+     ((TH1F*)fOutputList->FindObject("fHistPz"))		->Fill((fEvt)->fK0Particle[i].fMomentum[2]);
 
     for(int evnum=0; evnum<kEventsToMix+1; evnum++)// Event buffer loop: evnum=0 is the current event, all other evnum's are past events
     {
@@ -810,15 +813,22 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 	      if((fEvt)->fK0Particle[i].fDaughterID2 == (fEvt+evnum)->fK0Particle[j].fDaughterID1) continue;
 	      if((fEvt)->fK0Particle[i].fDaughterID2 == (fEvt+evnum)->fK0Particle[j].fDaughterID2) continue;
 	    }
-
+	     
         px1 = (fEvt)->fK0Particle[i].fMomentum[0];
-		px2 = (fEvt+evnum)->fK0Particle[j].fMomentum[0];
 		py1 = (fEvt)->fK0Particle[i].fMomentum[1];
-		py2 = (fEvt+evnum)->fK0Particle[j].fMomentum[1];
 		pz1 = (fEvt)->fK0Particle[i].fMomentum[2];
+        //pt1 = (fEvt)->fK0Particle[i].fPt;
+		px2 = (fEvt+evnum)->fK0Particle[j].fMomentum[0];
+		py2 = (fEvt+evnum)->fK0Particle[j].fMomentum[1];
 		pz2 = (fEvt+evnum)->fK0Particle[j].fMomentum[2];
-		//pt1 = (fEvt)->fK0Particle[i].fPt;
-		//pt2 = (fEvt+evnum)->fK0Particle[j].fPt;
+        //pt2 = (fEvt+evnum)->fK0Particle[j].fPt;
+        if(fRandomNumber->Rndm() < .5){	//switch particle order for 3D qout bias
+		 double tempvar;
+         tempvar = px1; px1 = px2; px2 = tempvar;
+         tempvar = py1; py1 = py2; py2 = tempvar;
+         tempvar = pz1; pz1 = pz2; pz2 = tempvar;
+		}
+
 		en1  = sqrt(pow(px1,2)+pow(py1,2)+pow(pz1,2)+pow(kMassK0Short,2));
 		en2  = sqrt(pow(px2,2)+pow(py2,2)+pow(pz2,2)+pow(kMassK0Short,2));
 
@@ -855,9 +865,6 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         ((TH1F*)fOutputList->FindObject("fHistKsCM"))->Fill(ks);
         
         //relative momentum in out-side-long for LCMS and PRF
-        //if(fRandomNumber->Rndm() < .5){
-	 	 //qx = -1*qx; qy = -1*qy; qz = -1*qz;	//randomizing signs, not sure if needed
-		//}
         if(pairMt == 0 || pairPt == 0) continue;
         qLong = (pairP0*qz - pairPz*q0)/pairMt;	//same for both frames
         qSide = (pairPx*qy - pairPy*qx)/pairPt;	//same for both frames
@@ -865,23 +872,23 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 	 	qOutPRF  = pairMInv*(pairPx*qx+pairPy*qy)/pairMt/pairPt - pairPt*pairPDotQ/pairMt/pairMInv;
         
 		//finding gamma for gamma binning/hists (likely will be removed after tests)
-		p1LCMSOut  	= (pairPx*px1+pairPy*py1)/pairPt;
-		p1LCMSSide 	= (pairPx*py1-pairPy*px1)/pairPt;
-		p1LCMSLong 	= (pairP0*pz1-pairPz*en1)/pairMt;
-		p1LCMSPt   	= sqrt(pow(p1LCMSOut,2)+pow(p1LCMSSide,2));
-		p2LCMSOut  	= (pairPx*px2+pairPy*py2)/pairPt;
-		p2LCMSSide 	= (pairPx*py2-pairPy*px2)/pairPt;
-		p2LCMSLong 	= (pairP0*pz2-pairPz*en2)/pairMt;
-		p2LCMSPt   	= sqrt(pow(p2LCMSOut,2)+pow(p2LCMSSide,2));
+		p1LCMSOut  = (pairPx*px1+pairPy*py1)/pairPt;
+		p1LCMSSide = (pairPx*py1-pairPy*px1)/pairPt;
+		p1LCMSLong = (pairP0*pz1-pairPz*en1)/pairMt;
+		p2LCMSOut  = (pairPx*px2+pairPy*py2)/pairPt;
+		p2LCMSSide = (pairPx*py2-pairPy*px2)/pairPt;
+		p2LCMSLong = (pairP0*pz2-pairPz*en2)/pairMt;
 		en1LCMS	= sqrt(pow(p1LCMSOut,2)+pow(p1LCMSSide,2)+pow(p1LCMSLong,2)+pow(kMassK0Short,2));
 		en2LCMS	= sqrt(pow(p2LCMSOut,2)+pow(p2LCMSSide,2)+pow(p2LCMSLong,2)+pow(kMassK0Short,2));		
 		betasq = pow((p1LCMSOut+p2LCMSOut)/(en1LCMS+en2LCMS),2);
 		gamma = 1./sqrt(1-betasq);
-		((TH3F*)fOutputList->FindObject("fHistKtGammaQinv"))->Fill(pairKt,gamma,qinv);
-		((TH1F*)fOutputList->FindObject("fHistPtLCMS"))->Fill(p1LCMSPt);
-		((TH1F*)fOutputList->FindObject("fHistPtLCMS"))->Fill(p2LCMSPt);
-		((TH3F*)fOutputList->FindObject("fHistPLCMS"))->Fill(p1LCMSOut,p1LCMSSide,p1LCMSLong);
-		((TH3F*)fOutputList->FindObject("fHistPLCMS"))->Fill(p2LCMSOut,p2LCMSSide,p2LCMSLong);
+		((TH2F*)fOutputList->FindObject("fHistGamma"))->Fill(gamma,qinv);
+		((TH1F*)fOutputList->FindObject("fHistPOutLCMS"))->Fill(p1LCMSOut);
+		((TH1F*)fOutputList->FindObject("fHistPSideLCMS"))->Fill(p1LCMSSide);
+		((TH1F*)fOutputList->FindObject("fHistPLongLCMS"))->Fill(p1LCMSLong);
+		((TH1F*)fOutputList->FindObject("fHistPOutLCMS"))->Fill(p2LCMSOut);
+		((TH1F*)fOutputList->FindObject("fHistPSideLCMS"))->Fill(p2LCMSSide);
+		((TH1F*)fOutputList->FindObject("fHistPLongLCMS"))->Fill(p2LCMSLong);
 
         //Spherical harmonics
         qLength = sqrt(qLong*qLong + qSide*qSide + qOutPRF*qOutPRF);
@@ -975,7 +982,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
         //Fill Histograms
         bool center1K0   = kFALSE;  //accepted mass K0
-		bool center2K0   = kFALSE;
+	bool center2K0   = kFALSE;
         if((fEvt)->fK0Particle[i].fK0) center1K0=kTRUE;
         if((fEvt+evnum)->fK0Particle[j].fK0) center2K0=kTRUE;
         //bool CL1 = kFALSE;
@@ -997,36 +1004,6 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         //else if((fEvt)->fK0Particle[i].fSideRight) SideRight1 = kTRUE;
         //if((fEvt+evnum)->fK0Particle[j].fSideLeft) SideLeft2 = kTRUE;
         //else if((fEvt+evnum)->fK0Particle[j].fSideRight) SideRight2 = kTRUE;
-
-        //for daughter sharing studies - REMOVED - NOW I CUT SHARED DAUGHTERS AT THE V0 LEVEL
-        //bool splitK0sides = kFALSE;
-        //bool splitK0centers = kFALSE;
-        //int posD1ID = (fEvt)->fK0Particle[i].fDaughterID1;
-        //int negD1ID = (fEvt)->fK0Particle[i].fDaughterID2;
-        //int posD2ID = (fEvt+evnum)->fK0Particle[j].fDaughterID1;
-        //int negD2ID = (fEvt+evnum)->fK0Particle[j].fDaughterID2;
-        //if(evnum == 0){
-        // //centers
-        // if(center1K0 && center2K0){
-        //  for(int iID=0;iID<idCount;iID++){
-        //   if(posD1ID == idArray[iID*2] && negD2ID == idArray[iID*2+1]){
-        //    ((TH3F*)fOutputList->FindObject("fHistSplitK0Centers"))->Fill(centBin+1, pairKt, qinv);
-        //    splitK0centers = kTRUE;}
-        //   else if(negD1ID == idArray[iID*2+1] && posD2ID == idArray[iID*2]){
-        //    ((TH3F*)fOutputList->FindObject("fHistSplitK0Centers"))->Fill(centBin+1, pairKt, qinv);
-        //    splitK0centers = kTRUE;}
-        // }}
-        // //sides
-        // else if((SideLeft1 || SideRight1) && (SideLeft2 || SideRight2)){
-        //  for(int iID=0;iID<idCount;iID++){
-        //   if(posD1ID == idArray[iID*2] && negD2ID == idArray[iID*2+1]){
-        //    ((TH3F*)fOutputList->FindObject("fHistSplitK0Sides"))->Fill(centBin+1, pairKt, qinv);
-        //    splitK0sides = kTRUE;}
-        //   else if(negD1ID == idArray[iID*2+1] && posD2ID == idArray[iID*2]){
-        //    ((TH3F*)fOutputList->FindObject("fHistSplitK0Sides"))->Fill(centBin+1, pairKt, qinv);
-        //    splitK0sides = kTRUE;}
-        // }}
-        //}//end of daughter sharing section
 	
 
         if(evnum==0) //Same Event
