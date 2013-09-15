@@ -75,7 +75,11 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJetDev {
   TH2F  *fh2PtMeanPtConstituentsCharged;    //! pt, <pt> charged constituents
   TH2F  *fh2PtMeanPtConstituentsNeutral;    //! pt, <pt> neutral constituents
   TH2F  *fh2PtNEF;                          //! pt, NEF (neutral energy fraction)
-  TH2F  *fh2Ptz;                            //! pt, z=pT,h,proj/p,jet
+  TH3F  *fh3NEFEtaPhi;                      //! NEF, eta, phi
+  TH2F  *fh2NEFNConstituentsCharged;        //! NEF, # charged jet constituents
+  TH2F  *fh2NEFNConstituentsNeutral;        //! NEF, # neutral jet constituents
+  TH2F  *fh2Ptz;                            //! pt, z=pT,h,proj/p,jet full jet
+  TH2F  *fh2PtzCharged;                     //! pt, z=pT,h,proj/p,jet charged jet
   TH2F  *fh2PtLeadJet1VsLeadJet2;           //! correlation between leading jet of the two branches
   TH3F  *fh3EEtaPhiCluster;                 //! cluster E, eta, phi
   TH3F  *fh3PtLeadJet1VsPatchEnergy;        //! leading jet energy vs leading patch energy vs jet trigger (J1/J2)
@@ -87,6 +91,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJetDev {
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 2)
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 3)
 };
 #endif

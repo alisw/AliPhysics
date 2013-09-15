@@ -632,7 +632,7 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(cons
     Double_t dPhi = GetDeltaPhi(jetTrig,jetAssoc);
     Double_t phiMin = 0.5*TMath::Pi();
     Double_t phiMax = 1.5*TMath::Pi();
-    if(dPhi<phiMin || phiMax>phiMax)
+    if(dPhi<phiMin || dPhi>phiMax)
       continue;
 
     Double_t jetAssocPt = GetJetPt(jetAssoc,typea);
