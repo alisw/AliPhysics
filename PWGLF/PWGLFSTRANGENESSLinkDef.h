@@ -31,5 +31,7 @@
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp276+;
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
+#pragma link C++ class AliAnalysisTaskHelium3Pi+;
+#pragma link C++ class AliAnalysisTaskHelium3PiMC+;
 
 #endif
