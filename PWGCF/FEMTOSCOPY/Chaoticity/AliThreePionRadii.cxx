@@ -1201,8 +1201,9 @@ void AliThreePionRadii::Exec(Option_t *)
       Float_t signalTPC=0, signalTOF=0;
       Double_t integratedTimesTOF[10]={0};
 
-      Bool_t DoPIDWorkAround=kTRUE;
-      if(fFilterBit == 7 || (fMCcase && !fPbPbcase)) DoPIDWorkAround=kFALSE;
+      Bool_t DoPIDWorkAround=kFALSE;
+      if(fFilterBit == 7) DoPIDWorkAround=kTRUE;
+      if(fMCcase && !fPbPbcase) DoPIDWorkAround=kFALSE;
       if(DoPIDWorkAround==kFALSE && fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion)) < 900) {
 	nSigmaTPC[0]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron));
 	nSigmaTPC[1]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kMuon));
