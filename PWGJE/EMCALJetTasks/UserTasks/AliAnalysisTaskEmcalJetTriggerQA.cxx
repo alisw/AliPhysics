@@ -54,7 +54,11 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh2PtMeanPtConstituentsCharged(0),
   fh2PtMeanPtConstituentsNeutral(0),
   fh2PtNEF(0),
+  fh3NEFEtaPhi(0),
+  fh2NEFNConstituentsCharged(0),
+  fh2NEFNConstituentsNeutral(0),
   fh2Ptz(0),
+  fh2PtzCharged(0),
   fh2PtLeadJet1VsLeadJet2(0),
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
@@ -94,7 +98,11 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh2PtMeanPtConstituentsCharged(0),
   fh2PtMeanPtConstituentsNeutral(0),
   fh2PtNEF(0),
+  fh3NEFEtaPhi(0),
+  fh2NEFNConstituentsCharged(0),
+  fh2NEFNConstituentsNeutral(0),
   fh2Ptz(0),
+  fh2PtzCharged(0),
   fh2PtLeadJet1VsLeadJet2(0),
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
@@ -372,8 +380,20 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh2PtNEF = new TH2F("fh2PtNEF","fh2PtNEF;#it{p}_{T}^{jet};NEF",nBinsPt,minPt,maxPt,nBinsNEF,minNEF,maxNEF);
   fOutput->Add(fh2PtNEF);
 
+  fh3NEFEtaPhi = new TH3F("fh3NEFEtaPhi","fh3NEFEtaPhi;NEF;#eta;#varphi",nBinsNEF,minNEF,maxNEF,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  fOutput->Add(fh3NEFEtaPhi);
+
+  fh2NEFNConstituentsCharged = new TH2F("fh2NEFNConstituentsCharged","fh2NEFNConstituentsCharged;NEF;N_{charged constituents}",nBinsNEF,minNEF,maxNEF,nBinsConst,minConst,maxConst);
+  fOutput->Add(fh2NEFNConstituentsCharged);
+
+  fh2NEFNConstituentsNeutral = new TH2F("fh2NEFNConstituentsNeutral","fh2NEFNConstituentsNeutral;NEF;N_{clusters}",nBinsNEF,minNEF,maxNEF,nBinsConst,minConst,maxConst);
+  fOutput->Add(fh2NEFNConstituentsNeutral);
+
   fh2Ptz = new TH2F("fh2Ptz","fh2Ptz;#it{p}_{T}^{jet};z=p_{t,trk}^{proj}/p_{jet}",nBinsPt,minPt,maxPt,nBinsz,minz,maxz);
   fOutput->Add(fh2Ptz);
+
+  fh2PtzCharged = new TH2F("fh2PtzCharged","fh2Ptz;#it{p}_{T}^{ch jet};z=p_{t,trk}^{proj}/p_{ch jet}",nBinsPt,minPt,maxPt,nBinsz,minz,maxz);
+  fOutput->Add(fh2PtzCharged);
 
   fh2PtLeadJet1VsLeadJet2 = new TH2F("fh2PtLeadJet1VsLeadJet2","fh2PtLeadJet1VsLeadJet2;#it{p}_{T}^{jet 1};#it{p}_{T}^{jet 2}",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
   fOutput->Add(fh2PtLeadJet1VsLeadJet2);
@@ -491,6 +511,9 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       fh2PtNConstituents->Fill(jetPt,jet->GetNumberOfConstituents());
 
       fh2PtNEF->Fill(jetPt,jet->NEF());
+      fh3NEFEtaPhi->Fill(jet->NEF(),jet->Eta(),jet->Phi());
+      fh2NEFNConstituentsCharged->Fill(jet->NEF(),jet->GetNumberOfTracks());
+      fh2NEFNConstituentsNeutral->Fill(jet->NEF(),jet->GetNumberOfClusters());
 
       AliVParticle *vp;
       Double_t sumPtCh = 0.;
@@ -498,9 +521,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 	vp = static_cast<AliVParticle*>(jet->TrackAt(icc, fTracks));
 	if(!vp) continue;
 	fh2Ptz->Fill(jetPt,GetZ(vp,jet));
-	
 	sumPtCh+=vp->Pt();
-	
       }
       
       if(jet->GetNumberOfTracks()>0)
@@ -548,6 +569,13 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       if(jetPt>ptLeadJet2) ptLeadJet2=jetPt;
       fh3PtEtaPhiJetCharged->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetCharged->Fill(jetPt,jet->Eta(),jet->Area());
+
+      AliVParticle *vp;
+      for(Int_t icc=0; icc<jet->GetNumberOfTracks(); icc++) {
+	vp = static_cast<AliVParticle*>(jet->TrackAt(icc, fTracks));
+	if(!vp) continue;
+	fh2PtzCharged->Fill(jetPt,GetZ(vp,jet));
+      }
       
       //count jets above certain pT threshold
       Int_t ptbin = fh2NJetsPtCharged->GetYaxis()->FindBin(jetPt);

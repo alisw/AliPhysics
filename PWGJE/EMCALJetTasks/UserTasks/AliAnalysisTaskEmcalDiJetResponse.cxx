@@ -464,6 +464,11 @@ void AliAnalysisTaskEmcalDiJetResponse::CorrelateTwoJets(const Int_t type) {
       continue;
     }
 
+    if(type==0 || type==1) {
+      if(GetJetPt(jetAssocDet,typea)>GetJetPt(jetTrigDet,typet))
+	continue;
+    }
+
     FillDiJetResponse(jetTrigMC,jetAssocMC,jetTrigDet,jetAssocDet,type);
 
 

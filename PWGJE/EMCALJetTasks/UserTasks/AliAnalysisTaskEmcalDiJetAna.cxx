@@ -390,6 +390,11 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
     if(!jetAssoc)
       continue;
 
+    if(type==0 || type==1) {
+      if(GetJetPt(jetAssoc,typea)>jetTrigPt)
+	continue;
+    }
+
     FillDiJetHistos(jetTrig,jetAssoc, type);
     
 
