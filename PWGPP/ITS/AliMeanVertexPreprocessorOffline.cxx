@@ -402,8 +402,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     
     TF1 *sigmaFitX, *sigmaFitY, *corrFit;
     
-    TH1F *histTRKdefMultX=0;
-    TH1F *histTRKdefMultY=0;
+    //TH1F *histTRKdefMultX=0;
+    //TH1F *histTRKdefMultY=0;
     TH1F *histTRKHighMultX=0;
     TH1F *histTRKHighMultY=0;
     TH2F *histTRKVertexXZ=0;
