@@ -73,6 +73,7 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   THnSparse* fD0PropertiesKine; //the particle properties of selected particles
   Bool_t fStoreOnlyMCD0;     // Store only MC truth D0s, discard the rest
   Int_t fMCInfo;             // What to check and in which order
+  Bool_t fRequireD0toKpi;    // Only take D0 to Kpi
 
   ClassDef(AliDxHFEParticleSelectionMCD0, 3);
 };
