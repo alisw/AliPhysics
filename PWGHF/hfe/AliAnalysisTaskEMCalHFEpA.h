@@ -4,18 +4,18 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////
-//                                                                    //
-//      Task for Heavy-flavour electron analysis in pPb collisions    //
-//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
-//																	  //
-//		v1.0														  //
-//                                                                    //
-//	    Authors 							                          //
-//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
-//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)		      //
-//                                                                    //
-////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////
+	//                                                                    //
+	//      Task for Heavy-flavour electron analysis in pPb collisions    //
+	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
+	//																	  //
+	//		version: September 12th, 2013.														  //
+	//                                                                    //
+	//	    Authors 							                          //
+	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
+	//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)		      //
+	//                                                                    //
+	////////////////////////////////////////////////////////////////////////
 
 class TH1F;
 class TH2F;
@@ -37,27 +37,27 @@ class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
 
-//______________________________________________________________________
-//Library
+	//______________________________________________________________________
+	//Library
 #include "AliAnalysisTaskSE.h"
 #include "AliHFEpid.h"
 #include "AliLog.h"
-//______________________________________________________________________
+	//______________________________________________________________________
 
-//______________________________________________________________________
+	//______________________________________________________________________
 class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE 
 {
-//______________________________________________________________________
-	public:
+		//______________________________________________________________________
+public:
 	AliAnalysisTaskEMCalHFEpA();
 	AliAnalysisTaskEMCalHFEpA(const char *name);
 	virtual ~AliAnalysisTaskEMCalHFEpA();
-  
+	
 	virtual void   UserCreateOutputObjects();
 	virtual void   UserExec(Option_t *option);
 	virtual void   Terminate(Option_t *);
-
-	//Setters
+	
+		//Setters
 	void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) {fRejectKinkMother = rejectKinkMother;};
 	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
@@ -85,40 +85,40 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
-	//void SetAdditionalCuts(Double_t PtMinAsso, Int_t TpcNclsAsso) {fPtMinAsso = PtMinAsso; fTpcNclsAsso = TpcNclsAsso;};
+	void SetAdditionalCuts(Double_t PtMinAsso, Int_t TpcNclsAsso) {fPtMinAsso = PtMinAsso; fTpcNclsAsso = TpcNclsAsso;};
 	
-	//Getters
+		//Getters
 	AliHFEpid *GetPID() const {return fPID;};
-//______________________________________________________________________
-  
-//______________________________________________________________________
-	private:
+		//______________________________________________________________________
 	
-//Function to process track cuts
+		//______________________________________________________________________
+private:
+	
+		//Function to process track cuts
 	Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
-//Function to process eh analysis
+		//Function to process eh analysis
 	void ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack);
-//Function to find non-HFE and fill histos
+		//Function to find non-HFE and fill histos
 	void Background(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack, Bool_t IsTPConly);
-//Selected Hadrons, for mixed event analysis
+		//Selected Hadrons, for mixed event analysis
 	TObjArray* SelectedHadrons();
-//DiHadron Correlation Background
+		//DiHadron Correlation Background
 	void DiHadronCorrelation(AliVTrack *track, Int_t trackIndex);
-//Find Mothers (Finde HFE and NonHFE from MC information)
+		//Find Mothers (Finde HFE and NonHFE from MC information)
 	Bool_t FindMother(Int_t mcIndex);
-
-//Flags for specifics analysis
+	
+		//Flags for specifics analysis
 	Bool_t 				fCorrelationFlag;
 	Bool_t				fIsMC;
 	Bool_t				fUseEMCal;
 	Bool_t				fUseShowerShapeCut;
 	Bool_t				fFillBackground;
 	
-
+	
 	Bool_t				fEMCEG1;
 	Bool_t				fEMCEG2;
-
-//Used in the function FindMother
+	
+		//Used in the function FindMother
 	Bool_t				fIsHFE1;
 	Bool_t				fIsHFE2;
 	Bool_t				fIsNonHFE;
@@ -128,7 +128,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Bool_t				fIsFromEta;
 	Bool_t				fIsFromGamma;
 	
-//General variables
+		//General variables
 	AliESDEvent 			*fESD;
 	AliAODEvent 		   	*fAOD;				/// new
 	AliVEvent 		      	*fVevent;			/// new
@@ -137,10 +137,10 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	AliPIDResponse 			*fPidResponse;
 	AliSelectNonHFE 		*fNonHFE;
 	
-//For the case of AOD analysis
+		//For the case of AOD analysis
 	Bool_t					fIsAOD;					//flag for AOD analysis
 	
-//For Centrality Selection
+		//For Centrality Selection
 	AliCentrality			*fCentrality;
 	Double_t				fCentralityMin;
 	Double_t				fCentralityMax;
@@ -150,15 +150,15 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Float_t					fZvtx;	
 	Int_t					fEstimator;
 	
-//EMCal
+		//EMCal
 	
 	AliVCluster				*fClus;
-	//AliESDCaloCluster 		*fClusESD;
+		//AliESDCaloCluster 		*fClusESD;
 	
-//Histograms
+		//Histograms
 	TH1F				*fNevent;
 	TH1F				*fPtElec_Inc;
-
+	
 	
 	TH1F				*fCharge_n;
 	TH1F				*fCharge_p;
@@ -173,7 +173,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
 	
-	//PID Histograms
+		//PID Histograms
 	TH1F				*fpid;		
 	
 	TH2F				**fEoverP_pt;
@@ -194,7 +194,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH2F				*fTPCnsigma_eta;
 	TH2F				*fTPCnsigma_phi;
 	
-
+	
 	TH1F				**fECluster;
 	TH2F				**fEtaPhi;
 	TH1F				**fVtxZ;
@@ -227,7 +227,7 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH2F				*fNcells_pt;
 	TH2F				*fEoverP_pt_hadrons;
 	
-	//Electron-Hadron Correlation Histograms
+		//Electron-Hadron Correlation Histograms
 	TH2F				**fCEtaPhi_Inc;
 	
 	TH2F				**fCEtaPhi_ULS;
@@ -276,24 +276,30 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	Bool_t				fChi2CutFlag;
 	Bool_t				fDCAcutFlag;
 	
-	//Non-HFE reconstruction efficiency
+		//Non-HFE reconstruction efficiency
 	TH1F				*fPtBackgroundBeforeReco;
 	TH1F				*fPtBackgroundBeforeReco2;
 	TH1F				*fPtBackgroundAfterReco;
 	
-		//Double_t			fPtMinAsso;
-		//Double_t			fTpcNclsAsso;
+	Double_t			fPtMinAsso;
+	Int_t			fTpcNclsAsso;
 	
-	//Tracking Efficiency
+		//Tracking Efficiency
 	TH1F				*fPtMCparticleAll;
+	TH1F				*fPtMCparticleAll_nonPrimary;
+	TH1F				*fPtMCparticleAlle_nonPrimary;
+
 	TH1F				*fPtMCparticleReco;
+	TH1F				*fPtMCparticleReco_nonPrimary;
 	TH1F				*fPtMCparticleAllHfe1;
 	TH1F				*fPtMCparticleRecoHfe1;
 	TH1F				*fPtMCparticleAllHfe2;
 	TH1F				*fPtMCparticleRecoHfe2;
 	TH1F				*fPtMCelectronAfterAll;
+	TH1F				*fPtMCelectronAfterAll_nonPrimary;
 	
 	TH1F				*fPtMCpi0;
+	TH1F				*fPtMCeta;
 	
 	TH1F				*fPtMC_EMCal_All;
 	TH1F				*fPtMC_EMCal_Selected;
@@ -304,13 +310,13 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH1F				*fPtMCWithoutLabel;
 	TH1F				*fPtIsPhysicaPrimary;
 	
-//For the HFE package
+		//For the HFE package
 	AliHFEcuts 			*fCuts;                 		// Cut Collection for HFE
 	AliCFManager 		*fCFM;                  		// Correction Framework Manager
 	AliHFEpid 			*fPID;                  		// PID
 	AliHFEpidQAmanager 	*fPIDqa;						// PID QA manager
 	
-//Others
+		//Others
 	AliStack 			*fMCstack;						//
 	Bool_t              fRejectKinkMother;				//
 	TParticle 			*fMCtrack;
@@ -327,9 +333,9 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	AliAODMCParticle 	*fMCparticleGGGMother;
 	AliMCEventHandler	*fEventHandler;
 	AliMCEvent			*fMCevent;
-
-//______________________________________________________________________
-//Mixed event analysis
+	
+		//______________________________________________________________________
+		//Mixed event analysis
 	AliEventPoolManager *fPoolMgr;
 	AliEventPool		*fPool;
 	TObjArray			*fTracksClone;
@@ -346,45 +352,45 @@ class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 	TH1F				*fPoolNevents;
 	
 	Bool_t				fEventMixingFlag;
-//______________________________________________________________________
-
-//______________________________________________________________________
-//Di-hadron correlation
+		//______________________________________________________________________
+	
+		//______________________________________________________________________
+		//Di-hadron correlation
 	TH2F				**fCEtaPhi_Inc_DiHadron;
 	TH1F				*fPtTrigger_Inc;
-//______________________________________________________________________
-
+		//______________________________________________________________________
+	
 	AliAnalysisTaskEMCalHFEpA(const AliAnalysisTaskEMCalHFEpA&); 			// not implemented
 	AliAnalysisTaskEMCalHFEpA& operator=(const AliAnalysisTaskEMCalHFEpA&); 		// not implemented
-  
+	
 	ClassDef(AliAnalysisTaskEMCalHFEpA, 1); 								// example of analysis
-//______________________________________________________________________
+																			//______________________________________________________________________
 };
 
-///_________________________________________________________________________________________________
-///Class copied from : $ALICE_ROOT/PWGCF/Correlations/DPhi/AliAnalysisTaskLongRangeCorrelations.h
-///Author: Christoph Mayer
+	///_________________________________________________________________________________________________
+	///Class copied from : $ALICE_ROOT/PWGCF/Correlations/DPhi/AliAnalysisTaskLongRangeCorrelations.h
+	///Author: Christoph Mayer
 class AliEHCParticle : public TObject {
 public:
-  AliEHCParticle(Double_t eta=0, Double_t phi=0, Double_t pt=0)
+	AliEHCParticle(Double_t eta=0, Double_t phi=0, Double_t pt=0)
     : fEta(eta), fPhi(phi), fPt(pt) {}
-  virtual ~AliEHCParticle() {}
-
-  Double_t Eta() const { return fEta; }
-  Double_t Phi() const { return fPhi; }
-  Double_t Pt() const { return fPt; }
-
+	virtual ~AliEHCParticle() {}
+	
+	Double_t Eta() const { return fEta; }
+	Double_t Phi() const { return fPhi; }
+	Double_t Pt() const { return fPt; }
+	
 protected:
 private:
-  AliEHCParticle(const AliEHCParticle&);
-  AliEHCParticle& operator=(const AliEHCParticle&);
-
-  Double_t fEta;
-  Double_t fPhi;
-  Double_t fPt;
-  
-  ClassDef(AliEHCParticle, 1);
+	AliEHCParticle(const AliEHCParticle&);
+	AliEHCParticle& operator=(const AliEHCParticle&);
+	
+	Double_t fEta;
+	Double_t fPhi;
+	Double_t fPt;
+	
+	ClassDef(AliEHCParticle, 1);
 } ;
-///_________________________________________________________________________________________________
+	///_________________________________________________________________________________________________
 
 #endif
