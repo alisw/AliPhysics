@@ -404,6 +404,7 @@ void AliAnalysisTaskSEDplus::Init(){
   
   //PostData(2,fRDCutsloose);//we should then put those cuts in a tlist if we have more than 1
   fListCuts=new TList();
+  fListCuts->SetOwner();
   AliRDHFCutsDplustoKpipi *analysis = new AliRDHFCutsDplustoKpipi(*fRDCutsAnalysis);
   analysis->SetName("AnalysisCuts");
   
