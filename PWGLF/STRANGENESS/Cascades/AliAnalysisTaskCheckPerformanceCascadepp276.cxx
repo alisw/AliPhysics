@@ -76,8 +76,8 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
-//#include "AliV0vertexer.h"
-//#include "AliCascadeVertexer.h"
+#include "AliV0vertexer.h"
+#include "AliCascadeVertexer.h"
 #include "AliESDEvent.h"
 #include "AliESDcascade.h"
 #include "AliAODEvent.h"
@@ -486,20 +486,20 @@ AliAnalysisTaskCheckPerformanceCascadepp276::AliAnalysisTaskCheckPerformanceCasc
       // Output slot #1 writes into a TList container (cascade)
         
         // PbPb default cuts  
-        fV0Sels[0] =  33.  ;     // max allowed chi2
+        fV0Sels[0] =  33.;       // max allowed chi2
         fV0Sels[1] =   0.1;      // min allowed impact parameter for the 1st daughter 
         fV0Sels[2] =   0.1;      // min allowed impact parameter for the 2nd daughter 
-        fV0Sels[3] =   1.0 ;     // max allowed DCA between the daughter tracks       
-        fV0Sels[4] =   0.998 ;   // min allowed cosine of V0's pointing angle         
-        fV0Sels[5] =   0.9;      // min radius of the fiducial volume                 
-        fV0Sels[6] = 100.  ;     // max radius of the fiducial volume                 
-        fCascSels[0] =  33.   ;  // max allowed chi2 
-        fCascSels[1] =   0.05;   // min allowed V0 impact parameter                    
+        fV0Sels[3] =   1.5 ;     // max allowed DCA between the daughter tracks       
+        fV0Sels[4] =   0.9 ;     // min allowed cosine of V0's pointing angle         
+        fV0Sels[5] =   0.2;      // min radius of the fiducial volume                 
+        fV0Sels[6] = 200.  ;     // max radius of the fiducial volume                 
+        fCascSels[0] =  33.;     // max allowed chi2 
+        fCascSels[1] =   0.01;   // min allowed V0 impact parameter                    
         fCascSels[2] =   0.008;  // "window" around the Lambda mass                    
-        fCascSels[3] =   0.03;   // min allowed bachelor's impact parameter            
-        fCascSels[4] =   0.3  ;  // max allowed DCA between the V0 and the bachelor    
-        fCascSels[5] =   0.999;  // min allowed cosine of the cascade pointing angle   
-        fCascSels[6] =   0.9  ;  // min radius of the fiducial volume                  
+        fCascSels[3] =   0.01;   // min allowed bachelor's impact parameter            
+        fCascSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    
+        fCascSels[5] =   0.95;   // min allowed cosine of the cascade pointing angle   
+        fCascSels[6] =   0.2  ;  // min radius of the fiducial volume                  
         fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  
               
         DefineOutput(1, TList::Class());
@@ -1272,7 +1272,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      Int_t lNbBinsPerVar[lNbVariables] = {0};
      lNbBinsPerVar[0]  = 25;   //DcaCascDaughters                : [0.0,2.,3.0]        -> Rec.Cut = 2.0; 
      lNbBinsPerVar[1]  = 25;   //DcaBachToPrimVertex             : [0.0,0.24,100.0]    -> Rec.Cur = 0.01;
-     lNbBinsPerVar[2]  = 30;   //CascCosineOfPointingAngle       : [0.97,1.]           -> Rec.Cut = 0.98;
+     lNbBinsPerVar[2]  = 60;     //CascCosineOfPointingAngle    :  [0.94,1.0]          -> Rec.Cut = 0.95;
+     //lNbBinsPerVar[2]  = 30;   //CascCosineOfPointingAngle       : [0.97,1.]           -> Rec.Cut = 0.98;
      lNbBinsPerVar[3]  = 40;   //CascRadius                      : [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
      lNbBinsPerVar[4]  = 30;   //InvMassLambdaAsCascDghter       : [1.1,1.3]           -> Rec.Cut = 0.008;
      lNbBinsPerVar[5]  = 20;   //DcaV0Daughters                  : [0.0,2.0]           -> Rec.Cut = 1.5;
@@ -1304,7 +1305,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContAsCascadeCuts -> SetBinLimits(1, lBinLim1);
      delete [] lBinLim1;
        //2 - CascCosineOfPointingAngle
-     fCFContAsCascadeCuts -> SetBinLimits(2, .97, 1.);        
+     fCFContAsCascadeCuts -> SetBinLimits(2, .94, 1.);        
        //3 - CascRadius
      Double_t *lBinLim3 = new Double_t[ lNbBinsPerVar[3]+1 ];
      for(Int_t i=0; i<lNbBinsPerVar[3]; i++) lBinLim3[i] = (Double_t)0.0 + (3.9 -0.0)/(lNbBinsPerVar[3] - 1) * (Double_t)i;
@@ -1458,6 +1459,19 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
        if (fkRerunV0CascVertexers) { 
            lESDevent->ResetCascades();
            lESDevent->ResetV0s();
+           AliV0vertexer *lV0vtxer = new AliV0vertexer();
+           AliCascadeVertexer *lCascVtxer = new AliCascadeVertexer();
+           //lV0vtxer->GetCuts(fV0Sels);
+           //lCascVtxer->GetCuts(fCascSels);
+           lV0vtxer->SetCuts(fV0Sels);      // NB don't use SetDefaultCuts!! because it acts on static variables 
+           lCascVtxer->SetCuts(fCascSels);
+           lV0vtxer->Tracks2V0vertices(lESDevent);
+           lCascVtxer->V0sTracks2CascadeVertices(lESDevent);
+           //delete lV0vtxer;
+           //delete lCascVtxer; 
+           //---
+           //lESDevent->ResetCascades();
+           //lESDevent->ResetV0s();
            //AliV0vertexer lV0vtxer;
            //AliCascadeVertexer lCascVtxer;
            //lV0vtxer.SetCuts(fV0Sels);
