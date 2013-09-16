@@ -69,8 +69,8 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   int fMCEventType;  // Holds MC Event type, retrieved from MCHeader
   int fStoreOriginEl;// Which origin to store for electrons
   int fStoreOriginD; // Which origin to store for Ds
-  TH1* fD0EffMapP;   //! Eff map for Prompt D0 
-  TH1* fD0EffMapFD;  //! Eff map for Feeddown D0 
+  TH1* fD0EffMapP;   // Eff map for Prompt D0 
+  TH1* fD0EffMapFD;  // Eff map for Feeddown D0 
 
   ClassDef(AliDxHFECorrelationMC, 2)
 };

@@ -113,8 +113,8 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   Bool_t fUseKine;                       // To run over MC or reconstructed data
   TObjArray* fMCArray;                   // Array to hold MCarray
   TString fCorrelationArguments;         // String argument for correlation
-  TH1* fD0EffMapP;                       //! histo containing efficiency map for D0 for prompt D0
-  TH1* fD0EffMapFD;                      //! histo containing efficiency map for D0 for feeddown D0 (only useful for MC)
+  TH1* fD0EffMapP;                       // histo containing efficiency map for D0 for prompt D0
+  TH1* fD0EffMapFD;                      // histo containing efficiency map for D0 for feeddown D0 (only useful for MC)
   Bool_t fStoreSeparateOrigins;          // Whether to create correlation objects for various origins
 
   ClassDef(AliAnalysisTaskDxHFECorrelation, 7);

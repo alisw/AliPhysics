@@ -277,9 +277,9 @@ double AliDxHFECorrelationMC::GetD0Eff(AliVParticle* tr){
   else
     effMap=(TH1F*)fD0EffMapP;
 
-  if(isCharm)  AliDebug(2, "Correcting for Prompt D0");
-  else AliDebug(2, "Correcting for Feeddown D0");
-
+  if(isCharm) {cout << "isCharm"<< endl; AliDebug(2, "Correcting for Prompt D0");}
+  else {cout << "isBeauty" << endl; AliDebug(2, "Correcting for Feeddown D0");}
+  
   Int_t bin=effMap->FindBin(pt);
   if(effMap->IsBinUnderflow(bin)|| effMap->IsBinOverflow(bin)) 
     D0eff = 1.;
