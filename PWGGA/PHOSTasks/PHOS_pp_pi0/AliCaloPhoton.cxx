@@ -80,6 +80,7 @@ AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy
   fLambda1(0.),
   fTime(0.),
   fModule(0),
+  fBC(0),
   fBadDist(0),
   fNCells(0),
   fPi0Decayflag(0),
