@@ -519,7 +519,8 @@ Bool_t AliCalorimeterUtils::AreNeighbours(const TString calo,
   rowdiff = TMath::Abs( irow1 - irow2 ) ;  
   coldiff = TMath::Abs( icol1 - icol2 ) ;  
   
-  if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
+  //if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0))
+  if ((coldiff + rowdiff == 1 ))
     areNeighbours = kTRUE ;
   
   return areNeighbours;
