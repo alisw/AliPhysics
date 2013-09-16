@@ -30,6 +30,7 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE, ULon
   // Setup the instance of AliDielectron
   //
 
+
   // gsi train?
   TString trainRoot = gSystem->Getenv("TRAIN_ROOT");
   Bool_t isGSItrain = (trainRoot.IsNull()?kFALSE:kTRUE); 
