@@ -437,7 +437,7 @@ void AliAnalysisTaskJetMatching::FillMatchedJetHistograms() const
         if(fMatchedJetContainer[i][0] && fMatchedJetContainer[i][1]) {
             Double_t sourceRho(0), targetRho(0);
             if(fSourceRho) sourceRho = fSourceRho->GetLocalVal(fMatchedJetContainer[i][0]->Phi(), fSourceRadius)*fMatchedJetContainer[i][0]->Area();
-            if(fTargetRho) targetRho = fSourceRho->GetLocalVal(fMatchedJetContainer[i][1]->Phi(), fTargetRadius)*fMatchedJetContainer[i][1]->Area();
+            if(fTargetRho) targetRho = fTargetRho->GetLocalVal(fMatchedJetContainer[i][1]->Phi(), fTargetRadius)*fMatchedJetContainer[i][1]->Area();
             fHistMatchedCorrelation->Fill(PhaseShift(fMatchedJetContainer[i][0]->Phi()-fMatchedJetContainer[i][1]->Phi(), 2));
             fHistMatchedJetPt->Fill(fMatchedJetContainer[i][1]->Pt()-targetRho);
             fHistNoConstMatchJet->Fill(fMatchedJetContainer[i][1]->Pt()-targetRho);
