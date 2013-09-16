@@ -21,7 +21,7 @@
 // 
 //  AliTPC parallel tracker
 //
-//  The track fitting is based on Kalaman filtering approach
+//  The track fitting is based on Kalman filtering approach
 
 //  The track finding steps:
 //      1. Seeding - with and without vertex constraint
@@ -2845,18 +2845,23 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       // fill new dEdx information
       //
       Double32_t signal[4]; 
+      Double32_t signalMax[4]; 
       Char_t ncl[3]; 
       Char_t nrows[3];
       //
       for(Int_t iarr=0;iarr<3;iarr++) {
 	signal[iarr] = seed->GetDEDXregion(iarr+1);
+	signalMax[iarr] = seed->GetDEDXregion(iarr+5);
 	ncl[iarr] = seed->GetNCDEDX(iarr+1);
 	nrows[iarr] = seed->GetNCDEDXInclThres(iarr+1);
       }
       signal[3] = seed->GetDEDXregion(4);
+      signalMax[3] = seed->GetDEDXregion(8);
+      
       //
       AliTPCdEdxInfo * infoTpcPid = new AliTPCdEdxInfo();
       infoTpcPid->SetTPCSignalRegionInfo(signal, ncl, nrows);
+      infoTpcPid->SetTPCSignalsQmax(signalMax);
       esd->SetTPCdEdxInfo(infoTpcPid);
       //
       // add seed to the esd track in Calib level

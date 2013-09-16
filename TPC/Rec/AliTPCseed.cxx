@@ -84,7 +84,7 @@ AliTPCseed::AliTPCseed():
     fNCDEDX[i] = 0;
     fNCDEDXInclThres[i] = 0;
   }
-  fDEDX[4] = 0;
+  for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
@@ -138,7 +138,8 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
     fNCDEDX[i] = s.fNCDEDX[i];
     fNCDEDXInclThres[i] = s.fNCDEDXInclThres[i];
   }
-  fDEDX[4] = s.fDEDX[4];
+  for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
+
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = s.fOverlapLabels[i];
 
 }
@@ -194,7 +195,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
     fNCDEDX[i] = 0;
     fNCDEDXInclThres[i] = 0;
   }
-    fDEDX[4] = 0;
+  for (Int_t i=0;i<9;i++) fDEDX[i] = fDEDX[i];
+
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
@@ -241,7 +243,8 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
     fNCDEDX[i] = 0;
     fNCDEDXInclThres[i] = 0;
   }
-    fDEDX[4] = 0;
+  for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
+
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
@@ -294,7 +297,8 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
       fNCDEDX[i] = param.fNCDEDX[i];
       fNCDEDXInclThres[i] = param.fNCDEDXInclThres[i];
     }
-      fDEDX[4]   = param.fDEDX[4];
+    for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
+
     for(Int_t i = 0;i<AliPID::kSPECIES;++i)fTPCr[i] = param.fTPCr[i];
     
     fSeedType = param.fSeedType;
@@ -608,37 +612,54 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   //
   //
   TVectorF i1i2;
-  TVectorF  iro;
-  TVectorF oro1;
-  TVectorF oro2;
-  TVectorF foro;
+  TVectorF  irocTot;
+  TVectorF oroc1Tot;
+  TVectorF oroc2Tot;
+  TVectorF forocTot;
+  //
+  TVectorF  irocMax;
+  TVectorF oroc1Max;
+  TVectorF oroc2Max;
+  TVectorF forocMax;
 
   CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   0, 2, 0, &i1i2);
-  CookdEdxAnalytical(low,up,useTot ,0   ,row0, 0, 2, 0, &iro);
-  CookdEdxAnalytical(low,up,useTot ,row0,row1, 0, 2, 0, &oro1);
-  CookdEdxAnalytical(low,up,useTot ,row1,row2, 0, 2, 0, &oro2);
-  CookdEdxAnalytical(low,up,useTot ,row0,row2, 0, 2, 0, &foro); // full OROC truncated mean
+  //
+  CookdEdxAnalytical(low,up,kTRUE ,0   ,row0, 0, 2, 0, &irocTot);
+  CookdEdxAnalytical(low,up,kTRUE ,row0,row1, 0, 2, 0, &oroc1Tot);
+  CookdEdxAnalytical(low,up,kTRUE ,row1,row2, 0, 2, 0, &oroc2Tot);
+  CookdEdxAnalytical(low,up,kTRUE ,row0,row2, 0, 2, 0, &forocTot); // full OROC truncated mean
+  //
+  CookdEdxAnalytical(low,up,kFALSE ,0   ,row0, 0, 2, 0, &irocMax);
+  CookdEdxAnalytical(low,up,kFALSE ,row0,row1, 0, 2, 0, &oroc1Max);
+  CookdEdxAnalytical(low,up,kFALSE ,row1,row2, 0, 2, 0, &oroc2Max);
+  CookdEdxAnalytical(low,up,kFALSE ,row0,row2, 0, 2, 0, &forocMax); // full OROC truncated mean
 
   fDEDX[0]      = i1i2(0);
-  fDEDX[1]      =  iro(0);
-  fDEDX[2]      = oro1(0);
-  fDEDX[3]      = oro2(0);
-  fDEDX[4]      = foro(0); // full OROC truncated mean
+  //
+  fDEDX[1]      =  irocTot(0);
+  fDEDX[2]      = oroc1Tot(0);
+  fDEDX[3]      = oroc2Tot(0);
+  fDEDX[4]      = forocTot(0); // full OROC truncated mean
+  fDEDX[5]      =  irocMax(0);
+  fDEDX[6]      = oroc1Max(0);
+  fDEDX[7]      = oroc2Max(0);
+  fDEDX[8]      = forocMax(0); // full OROC truncated mean
   //
   fSDEDX[0]     = i1i2(1);
-  fSDEDX[1]     =  iro(1);
-  fSDEDX[2]     = oro1(1);
-  fSDEDX[3]     = oro2(1);
+  fSDEDX[1]     =  irocTot(1);
+  fSDEDX[2]     = oroc1Tot(1);
+  fSDEDX[3]     = oroc2Tot(1);
   //
   fNCDEDX[0]    = TMath::Nint(i1i2(2));
-  fNCDEDX[1]    = TMath::Nint( iro(2));
-  fNCDEDX[2]    = TMath::Nint(oro1(2));
-  fNCDEDX[3]    = TMath::Nint(oro2(2));
+
+  fNCDEDX[1]    = TMath::Nint( irocTot(2));
+  fNCDEDX[2]    = TMath::Nint(oroc1Tot(2));
+  fNCDEDX[3]    = TMath::Nint(oroc2Tot(2));
   //
   fNCDEDXInclThres[0]    = TMath::Nint(i1i2(2)+i1i2(9));
-  fNCDEDXInclThres[1]    = TMath::Nint( iro(2)+ iro(9));
-  fNCDEDXInclThres[2]    = TMath::Nint(oro1(2)+oro1(9));
-  fNCDEDXInclThres[3]    = TMath::Nint(oro2(2)+oro2(9));
+  fNCDEDXInclThres[1]    = TMath::Nint( irocTot(2)+ irocTot(9));
+  fNCDEDXInclThres[2]    = TMath::Nint(oroc1Tot(2)+oroc1Tot(9));
+  fNCDEDXInclThres[3]    = TMath::Nint(oroc2Tot(2)+oroc2Tot(9));
   //
   SetdEdx(fDEDX[0]);
   return fDEDX[0];

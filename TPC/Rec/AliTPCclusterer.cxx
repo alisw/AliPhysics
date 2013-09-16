@@ -648,8 +648,8 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t
   if (!fRecoParam->DumpSignal()) {
     cl->SetInfo(0);
   }
-  
-  if (AliTPCReconstructor::StreamLevel()>1) {
+  const Int_t kClusterStream=101; // stream level should be per action - to be added to the AliTPCReconstructor
+  if (AliTPCReconstructor::StreamLevel()&kClusterStream !=0) {
     Float_t xyz[3];
     cl->GetGlobalXYZ(xyz);
      (*fDebugStreamer)<<"Clusters"<<
