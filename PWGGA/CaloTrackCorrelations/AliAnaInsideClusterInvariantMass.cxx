@@ -68,8 +68,11 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fFillIdConvHisto(0),
   fFillIdEtaHisto(0),
   fFillHighMultHisto(0),
+  fFillArmenterosHisto(0),
   fSSWeightN(0),              fSSECellCutN(0),
   fWSimu(0),
+  fhMassAsyCutNLocMax1(0),    fhMassAsyCutNLocMax2(0),    fhMassAsyCutNLocMaxN(0),
+  fhM02AsyCutNLocMax1(0),     fhM02AsyCutNLocMax2(0),     fhM02AsyCutNLocMaxN(0),
   fhMassM02CutNLocMax1(0),    fhMassM02CutNLocMax2(0),    fhMassM02CutNLocMaxN(0),
   fhAsymM02CutNLocMax1(0),    fhAsymM02CutNLocMax2(0),    fhAsymM02CutNLocMaxN(0),
   fhMassSplitECutNLocMax1(0), fhMassSplitECutNLocMax2(0), fhMassSplitECutNLocMaxN(0),
@@ -115,13 +118,16 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   //default ctor
   
   // Init array of histograms
-  for(Int_t i = 0; i < 8; i++)
+  for(Int_t i = 0; i < 7; i++)
   {
     for(Int_t j = 0; j < 2; j++)
     {
       fhMassNLocMax1[i][j]  = 0;
       fhMassNLocMax2[i][j]  = 0;
       fhMassNLocMaxN[i][j]  = 0;
+      fhArmNLocMax1[i][j]  = 0;
+      fhArmNLocMax2[i][j]  = 0;
+      fhArmNLocMaxN[i][j]  = 0;
       fhNLocMax[i][j]       = 0;
       fhNLocMaxM02Cut[i][j] = 0;
       fhSplitClusterENLocMax   [i][j] = 0;
@@ -152,6 +158,10 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassEtaNLocMaxN[i][j] = 0;
       fhMassConNLocMaxN[i][j] = 0;
 
+      fhArmPi0NLocMax1[i][j] = 0;
+      fhArmPi0NLocMax2[i][j] = 0;
+      fhArmPi0NLocMaxN[i][j] = 0;
+      
       fhNCellPi0NLocMax1[i][j] = 0;
       fhNCellEtaNLocMax1[i][j] = 0;
       fhNCellPi0NLocMax2[i][j] = 0;
@@ -217,6 +227,10 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassAfterCutsNLocMax1[i][j] = 0;
       fhMassAfterCutsNLocMax2[i][j] = 0;
       fhMassAfterCutsNLocMaxN[i][j] = 0;
+
+      fhArmAfterCutsNLocMax1[i][j] = 0;
+      fhArmAfterCutsNLocMax2[i][j] = 0;
+      fhArmAfterCutsNLocMaxN[i][j] = 0;
       
       fhSplitEFractionAfterCutsNLocMax1[i][j] = 0 ;
       fhSplitEFractionAfterCutsNLocMax2[i][j] = 0 ;
@@ -934,13 +948,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitHighLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
     }
     else
@@ -949,13 +963,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitHighLMOverlapMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax )
       {
-        fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
 
     }
@@ -1001,13 +1015,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 
       if(match0 && imatch0 == imax)
       {
-        fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
     }
     else
@@ -1016,13 +1030,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonAdjHighLMOverlapMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
     }
     
@@ -1081,13 +1095,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitOtherLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
     }
     else
@@ -1096,13 +1110,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitOtherLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
     }
     
@@ -1155,13 +1169,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonAdjOtherLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
     }
     else
@@ -1170,13 +1184,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonAdjOtherLMOverlapMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,e1-photon0Kine.E());
-        fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,e2-photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
       }
       else
       {
-        fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,e1-photon1Kine.E());
-        fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,e2-photon0Kine.E());
+        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
+        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
       }
     }
     
@@ -1222,6 +1236,86 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, con
   
 }
 
+//______________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcIndex,
+                                                                TLorentzVector pi0, TLorentzVector g1, TLorentzVector g2,
+                                                                const Float_t m02, const Int_t pid)
+{
+  // Fill Armeteros type histograms
+  Float_t en   = pi0.Energy();
+  Float_t asym = TMath::Abs( g1.Energy()-g2.Energy() )/( g1.Energy()+g2.Energy() ) ;
+
+  Bool_t m02OK = GetCaloPID()->IsInPi0M02Range(en,m02,nMax);
+  Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
+  Bool_t m02On = GetCaloPID()->IsSplitShowerShapeCutOn();
+  Bool_t asyOn = GetCaloPID()->IsSplitAsymmetryCutOn();
+
+  // TO DO THE CALCULATIONS
+  Float_t epsilon = 0;
+  Float_t alpha   = 0;
+//  Float_t angle   = g2.Angle(g1.Vect());
+//  Float_t phiPi0  = pi0.Phi();
+//  Float_t phiGam1 = g1.Phi();
+//  Float_t phiGam2 = g2.Phi();
+//  
+//  printf("Phi: Pi0 %f, G1 %f, G2, %f, OpAng %f, G1-G2 %f, Pi0-G1 %f, Pi0-G2 %f, \n",phiPi0,phiGam1,phiGam2,angle,phiGam2-phiGam1,phiPi0-phiGam1,phiPi0-phiGam2);
+  
+  if     (nMax==1)
+  {
+    fhArmNLocMax1[0][ebin]->Fill(epsilon,alpha);
+    if((m02OK && asyOK) && (asyOn || m02On))
+      fhArmAfterCutsNLocMax1[0][ebin]->Fill(epsilon,alpha);
+    if(pid==AliCaloPID::kPi0)
+      fhArmPi0NLocMax1[0][ebin]->Fill(epsilon,alpha);
+  }
+  else if(nMax==2)
+  {
+    fhArmNLocMax2[0][ebin]->Fill(epsilon,alpha);
+    if((m02OK && asyOK) && (asyOn || m02On))
+      fhArmAfterCutsNLocMax2[0][ebin]->Fill(epsilon,alpha);
+    if(pid==AliCaloPID::kPi0)
+      fhArmPi0NLocMax2[0][ebin]->Fill(epsilon,alpha);
+  }
+  else if(nMax >2)
+  {
+    fhArmNLocMaxN[0][ebin]->Fill(epsilon,alpha);
+    if((m02OK && asyOK) && (asyOn || m02On))
+      fhArmAfterCutsNLocMaxN[0][ebin]->Fill(epsilon,alpha);
+    if(pid==AliCaloPID::kPi0)
+      fhArmPi0NLocMaxN[0][ebin]->Fill(epsilon,alpha);
+  }
+
+  if(IsDataMC() && mcIndex >  0 && mcIndex < 5)
+  {
+    if     (nMax==1)
+    {
+      fhArmNLocMax1[mcIndex][ebin]->Fill(epsilon,alpha);
+      if((m02OK && asyOK) && (asyOn || m02On))
+        fhArmAfterCutsNLocMax1[mcIndex][ebin]->Fill(epsilon,alpha);
+      if(pid==AliCaloPID::kPi0)
+        fhArmPi0NLocMax1[mcIndex][ebin]->Fill(epsilon,alpha);
+    }
+    else if(nMax==2)
+    {
+      fhArmNLocMax2[mcIndex][ebin]->Fill(epsilon,alpha);
+      if((m02OK && asyOK) && (asyOn || m02On))
+        fhArmAfterCutsNLocMax2[mcIndex][ebin]->Fill(epsilon,alpha);
+      if(pid==AliCaloPID::kPi0)
+        fhArmPi0NLocMax2[mcIndex][ebin]->Fill(epsilon,alpha);
+    }
+    else if(nMax >2)
+    {
+      fhArmNLocMaxN[mcIndex][ebin]->Fill(epsilon,alpha);
+      if((m02OK && asyOK) && (asyOn || m02On))
+        fhArmAfterCutsNLocMaxN[mcIndex][ebin]->Fill(epsilon,alpha);
+      if(pid==AliCaloPID::kPi0)
+        fhArmPi0NLocMaxN[mcIndex][ebin]->Fill(epsilon,alpha);
+    }  
+  
+  }
+  
+}
+
 //__________________________________________________________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::FillEBinHistograms(const Int_t   ebin     , const Int_t   nMax, const Int_t mcindex,
                                                           const Float_t splitFrac, const Float_t mass, const Float_t asym, const Float_t l0)
@@ -1231,7 +1325,7 @@ void AliAnaInsideClusterInvariantMass::FillEBinHistograms(const Int_t   ebin    
   if     (nMax==1)
   {
     fhMassSplitEFractionNLocMax1Ebin[0][ebin]->Fill(splitFrac,  mass);
-    if(IsDataMC())fhMassSplitEFractionNLocMax1Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
+    if(IsDataMC() && mcindex > 0 && mcindex < 7)fhMassSplitEFractionNLocMax1Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
     
     fhMassM02NLocMax1Ebin    [ebin]->Fill(l0  ,  mass );
     fhMassAsyNLocMax1Ebin    [ebin]->Fill(asym,  mass );
@@ -1239,7 +1333,7 @@ void AliAnaInsideClusterInvariantMass::FillEBinHistograms(const Int_t   ebin    
   else if(nMax==2)
   {
     fhMassSplitEFractionNLocMax2Ebin[0][ebin]->Fill(splitFrac,  mass);
-    if(IsDataMC())fhMassSplitEFractionNLocMax2Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
+    if(IsDataMC() && mcindex > 0 && mcindex < 7)fhMassSplitEFractionNLocMax2Ebin[mcindex][ebin]->Fill(splitFrac,  mass);
     
     fhMassM02NLocMax2Ebin    [ebin]->Fill(l0  ,  mass );
     fhMassAsyNLocMax2Ebin    [ebin]->Fill(asym,  mass );
@@ -1247,7 +1341,7 @@ void AliAnaInsideClusterInvariantMass::FillEBinHistograms(const Int_t   ebin    
   else if(nMax > 2 )
   {
     fhMassSplitEFractionNLocMaxNEbin[0][ebin]->Fill(splitFrac,  mass);
-    if(IsDataMC())fhMassSplitEFractionNLocMaxNEbin[mcindex][ebin]->Fill(splitFrac,  mass);
+    if(IsDataMC() && mcindex > 0 && mcindex < 7)fhMassSplitEFractionNLocMaxNEbin[mcindex][ebin]->Fill(splitFrac,  mass);
     
     fhMassM02NLocMaxNEbin    [ebin]->Fill(l0  ,  mass );
     fhMassAsyNLocMaxNEbin    [ebin]->Fill(asym,  mass );
@@ -1272,7 +1366,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
   fhSplitClusterENLocMax[0][matched]->Fill(e1,nMax);
   fhSplitClusterENLocMax[0][matched]->Fill(e2,nMax);
   
-  if(IsDataMC())
+  if(IsDataMC() && mcindex > 0 && mcindex < 7)
   {
     fhNLocMax[mcindex][matched]->Fill(en,nMax);
     fhSplitClusterENLocMax[mcindex][matched]->Fill(e1,nMax);
@@ -1284,7 +1378,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
     fhM02NLocMax1[0][matched]->Fill(en,l0) ;
     fhSplitEFractionNLocMax1[0][matched]->Fill(en,splitFrac) ;
     
-    if(IsDataMC())
+    if(IsDataMC() && mcindex > 0 && mcindex < 7)
     {
       fhM02NLocMax1[mcindex][matched]->Fill(en,l0) ;
       fhSplitEFractionNLocMax1[mcindex][matched]->Fill(en,splitFrac) ;
@@ -1293,7 +1387,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
     if(en > fHistoECut)
     {
       fhMassM02NLocMax1[0][matched]->Fill(l0, mass);
-      if( IsDataMC() ) fhMassM02NLocMax1[mcindex][matched]->Fill(l0, mass);
+      if( IsDataMC() && mcindex > 0 && mcindex < 7 ) fhMassM02NLocMax1[mcindex][matched]->Fill(l0, mass);
       
       fhSplitEFractionvsAsyNLocMax1[matched]->Fill(asym,splitFrac) ;
       if(!matched)fhClusterEtaPhiNLocMax1->Fill(eta,phi);
@@ -1304,7 +1398,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
     fhM02NLocMax2[0][matched]->Fill(en,l0) ;
     fhSplitEFractionNLocMax2[0][matched]->Fill(en,splitFrac) ;
     
-    if(IsDataMC())
+    if(IsDataMC() && mcindex > 0 && mcindex < 7)
     {
       fhM02NLocMax2[mcindex][matched]->Fill(en,l0) ;
       fhSplitEFractionNLocMax2[mcindex][matched]->Fill(en,splitFrac) ;
@@ -1313,7 +1407,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
     if(en > fHistoECut)
     {
       fhMassM02NLocMax2[0][matched]->Fill(l0,  mass );
-      if( IsDataMC() ) fhMassM02NLocMax2[mcindex][matched]->Fill(l0,mass);
+      if( IsDataMC() && mcindex > 0 && mcindex < 7 ) fhMassM02NLocMax2[mcindex][matched]->Fill(l0,mass);
       
       fhSplitEFractionvsAsyNLocMax2[matched]->Fill(asym,splitFrac) ;
       if(!matched)fhClusterEtaPhiNLocMax2->Fill(eta,phi);
@@ -1324,7 +1418,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
     fhM02NLocMaxN[0][matched]->Fill(en,l0) ;
     fhSplitEFractionNLocMaxN[0][matched]->Fill(en,splitFrac) ;
     
-    if(IsDataMC())
+    if(IsDataMC() && mcindex > 0 && mcindex < 7)
     {
       fhM02NLocMaxN[mcindex][matched]->Fill(en,l0) ;
       fhSplitEFractionNLocMaxN[mcindex][matched]->Fill(en,splitFrac) ;
@@ -1334,7 +1428,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
     {
       
       fhMassM02NLocMaxN[0][matched]->Fill(l0,mass);
-      if( IsDataMC() ) fhMassM02NLocMaxN[mcindex][matched]->Fill(l0,mass);
+      if( IsDataMC() && mcindex > 0 && mcindex < 7 ) fhMassM02NLocMaxN[mcindex][matched]->Fill(l0,mass);
       
       fhSplitEFractionvsAsyNLocMaxN[matched]->Fill(asym,splitFrac) ;
       if(!matched)fhClusterEtaPhiNLocMaxN->Fill(eta,phi);
@@ -1375,7 +1469,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
   if(m02On && m02OK)
   {
     fhNLocMaxM02Cut[0][matched]->Fill(en,nMax);
-    if(IsDataMC()) fhNLocMaxM02Cut[mcindex][matched]->Fill(en,nMax);
+    if(IsDataMC() && mcindex > 0 && mcindex < 7) fhNLocMaxM02Cut[mcindex][matched]->Fill(en,nMax);
   }
   
   if     (nMax==1)
@@ -1384,6 +1478,12 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
     fhAsymNLocMax1[0][matched]->Fill(en,asym );
     
     // Effect of cuts in mass histograms
+
+    if(!matched && asyOK && asyOn )
+    {
+      fhMassAsyCutNLocMax1->Fill(en,mass);
+      fhM02AsyCutNLocMax1 ->Fill(en,l0 );
+    }
     
     if(!matched && m02OK && m02On )
     {
@@ -1411,6 +1511,12 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
     
     // Effect of cuts in mass histograms
     
+    if(!matched && asyOK && asyOn )
+    {
+      fhMassAsyCutNLocMax2->Fill(en,mass);
+      fhM02AsyCutNLocMax2 ->Fill(en,l0 );
+    }
+    
     if(!matched && m02OK && m02On )
     {
       fhMassM02CutNLocMax2->Fill(en,mass);
@@ -1436,6 +1542,13 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
     fhAsymNLocMaxN[0][matched]->Fill(en,asym);
     
     // Effect of cuts in mass histograms
+    
+    if(!matched && asyOK && asyOn )
+    {
+      fhMassAsyCutNLocMaxN->Fill(en,mass);
+      fhM02AsyCutNLocMaxN ->Fill(en,l0 );
+    }
+    
     if(!matched && m02OK && m02On )
     {
       fhMassM02CutNLocMaxN->Fill(en,mass);
@@ -1456,7 +1569,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
     }
   }
   
-  if(IsDataMC())
+  if(IsDataMC() && mcindex > 0 && mcindex < 7)
   {
     if     (nMax==1)
     {
@@ -1513,7 +1626,7 @@ void AliAnaInsideClusterInvariantMass::FillIdPi0Histograms(const Float_t en,    
   fhSplitClusterEPi0NLocMax[0][matched]->Fill(e1,nMax);
   fhSplitClusterEPi0NLocMax[0][matched]->Fill(e2,nMax);
   
-  if(IsDataMC())
+  if(IsDataMC() && mcindex > 0 && mcindex < 7)
   {
     fhSplitClusterEPi0NLocMax[mcindex][matched]->Fill(e1,nMax);
     fhSplitClusterEPi0NLocMax[mcindex][matched]->Fill(e2,nMax);
@@ -1574,7 +1687,7 @@ void AliAnaInsideClusterInvariantMass::FillIdPi0Histograms(const Float_t en,    
     }
   }
   
-  if(IsDataMC())
+  if(IsDataMC() && mcindex > 0 && mcindex < 7)
   {
     if     (nMax==1)
     {
@@ -1668,7 +1781,7 @@ void AliAnaInsideClusterInvariantMass::FillIdEtaHistograms(const Float_t en,    
     }
   }
   
-  if(IsDataMC())
+  if(IsDataMC() && mcindex > 0 && mcindex < 7)
   {
     if     (nMax==1)
     {
@@ -1722,7 +1835,7 @@ void AliAnaInsideClusterInvariantMass::FillIdConvHistograms(const Float_t en,   
     fhAsyConNLocMaxN [0][matched]->Fill(en,asym);
   }
   
-  if(IsDataMC())
+  if(IsDataMC() && mcindex > 0 && mcindex < 7)
   {
     if     (nMax==1)
     {
@@ -1898,7 +2011,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       fhMCEMassOverlap0 [inlm][mcindex]->Fill(en, mass);
       fhMCEEpriOverlap0 [inlm][mcindex]->Fill(en, enprim);
       fhMCEAsymOverlap0 [inlm][mcindex]->Fill(en, TMath::Abs(asym));
-      fhMCENCellOverlap0[inlm][mcindex]->Fill(en, nc);
+      if(fFillNCellHisto) fhMCENCellOverlap0[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap0[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap0[inlm][ebin]->Fill(l0,mass);
     }
@@ -1908,7 +2021,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       fhMCEMassOverlap1 [inlm][mcindex]->Fill(en, mass);
       fhMCEEpriOverlap1 [inlm][mcindex]->Fill(en, enprim);
       fhMCEAsymOverlap1 [inlm][mcindex]->Fill(en, TMath::Abs(asym));
-      fhMCENCellOverlap1[inlm][mcindex]->Fill(en, nc);
+      if(fFillNCellHisto) fhMCENCellOverlap1[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap1[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap1[inlm][ebin]->Fill(l0,mass);
     }
@@ -1918,7 +2031,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       fhMCEMassOverlapN [inlm][mcindex]->Fill(en, mass);
       fhMCEEpriOverlapN [inlm][mcindex]->Fill(en, enprim);
       fhMCEAsymOverlapN [inlm][mcindex]->Fill(en, TMath::Abs(asym));
-      fhMCENCellOverlapN[inlm][mcindex]->Fill(en, nc);
+      if(fFillNCellHisto) fhMCENCellOverlapN[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlapN[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapN[inlm][ebin]->Fill(l0,mass);
     }
@@ -1935,7 +2048,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       fhMCEMassOverlap0Match [inlm][mcindex]->Fill(en, mass);
       fhMCEEpriOverlap0Match [inlm][mcindex]->Fill(en, enprim);
       fhMCEAsymOverlap0Match [inlm][mcindex]->Fill(en, TMath::Abs(asym));
-      fhMCENCellOverlap0Match[inlm][mcindex]->Fill(en, nc);
+      if(fFillNCellHisto) fhMCENCellOverlap0Match[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap0Match[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap0Match[inlm][ebin]->Fill(l0,mass);
     }
@@ -1945,7 +2058,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       fhMCEMassOverlap1Match [inlm][mcindex]->Fill(en, mass);
       fhMCEEpriOverlap1Match [inlm][mcindex]->Fill(en, enprim);
       fhMCEAsymOverlap1Match [inlm][mcindex]->Fill(en, TMath::Abs(asym));
-      fhMCENCellOverlap1Match[inlm][mcindex]->Fill(en, nc);
+      if(fFillNCellHisto) fhMCENCellOverlap1Match[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlap1Match[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02Overlap1Match[inlm][ebin]->Fill(l0,mass);
     }
@@ -1955,7 +2068,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       fhMCEMassOverlapNMatch [inlm][mcindex]->Fill(en, mass);
       fhMCEEpriOverlapNMatch [inlm][mcindex]->Fill(en, enprim);
       fhMCEAsymOverlapNMatch [inlm][mcindex]->Fill(en, TMath::Abs(asym));
-      fhMCENCellOverlapNMatch[inlm][mcindex]->Fill(en, nc);
+      if(fFillNCellHisto) fhMCENCellOverlapNMatch[inlm][mcindex]->Fill(en, nc);
       fhMCESplitEFracOverlapN[inlm][mcindex]->Fill(en, splitFrac);
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapNMatch[inlm][ebin]->Fill(l0,mass);
     }
@@ -2061,7 +2174,7 @@ void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *clust
       fhMassDispPhiNLocMax1[0][matched]->Fill(dispPhi,  mass );
       fhMassDispAsyNLocMax1[0][matched]->Fill(dispAsy,  mass );
       
-      if(IsDataMC())
+      if(IsDataMC() && mcindex > 0 && mcindex < 7)
       {
         fhMassDispEtaNLocMax1[mcindex][matched]->Fill(dispEta,  mass );
         fhMassDispPhiNLocMax1[mcindex][matched]->Fill(dispPhi,  mass );
@@ -2084,7 +2197,7 @@ void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *clust
       fhMassDispPhiNLocMax2[0][matched]->Fill(dispPhi,  mass );
       fhMassDispAsyNLocMax2[0][matched]->Fill(dispAsy,  mass );
       
-      if(IsDataMC())
+      if(IsDataMC() && mcindex > 0 && mcindex < 7)
       {
         fhMassDispEtaNLocMax2[mcindex][matched]->Fill(dispEta,  mass );
         fhMassDispPhiNLocMax2[mcindex][matched]->Fill(dispPhi,  mass );
@@ -2108,7 +2221,7 @@ void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *clust
       fhMassDispPhiNLocMaxN[0][matched]->Fill(dispPhi,  mass );
       fhMassDispAsyNLocMaxN[0][matched]->Fill(dispAsy,  mass );
       
-      if(IsDataMC())
+      if(IsDataMC() && mcindex > 0 && mcindex < 7)
       {
         fhMassDispEtaNLocMaxN[mcindex][matched]->Fill(dispEta,  mass );
         fhMassDispPhiNLocMaxN[mcindex][matched]->Fill(dispPhi,  mass );
@@ -2264,7 +2377,7 @@ void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster 
     else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2[0]->Fill(en,dR); }
     else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxN[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxN[0]->Fill(en,dR); }
     
-    if(IsDataMC())
+    if(IsDataMC() && mcindex > 0 && mcindex < 7)
     {
       if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1[mcindex]->Fill(en,dR); }
       else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2[mcindex]->Fill(en,dR); }
@@ -2284,7 +2397,7 @@ void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster 
         else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Pos[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Pos[0]->Fill(en,dR); }
         else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxNPos[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxNPos[0]->Fill(en,dR); }
         
-        if(IsDataMC())
+        if(IsDataMC() && mcindex > 0 && mcindex < 7)
         {
           if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1Pos[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1Pos[mcindex]->Fill(en,dR); }
           else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Pos[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Pos[mcindex]->Fill(en,dR); }
@@ -2297,7 +2410,7 @@ void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster 
         else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Neg[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Neg[0]->Fill(en,dR); }
         else if( nMax >= 3  ) { fhTrackMatchedDEtaNLocMaxNNeg[0]->Fill(en,dZ); fhTrackMatchedDPhiNLocMaxNNeg[0]->Fill(en,dR); }
         
-        if(IsDataMC())
+        if(IsDataMC() && mcindex > 0 && mcindex < 7)
         {
           if     ( nMax == 1  ) { fhTrackMatchedDEtaNLocMax1Neg[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax1Neg[mcindex]->Fill(en,dR); }
           else if( nMax == 2  ) { fhTrackMatchedDEtaNLocMax2Neg[mcindex]->Fill(en,dZ); fhTrackMatchedDPhiNLocMax2Neg[mcindex]->Fill(en,dR); }
@@ -2370,13 +2483,13 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
      GetCaloPID()->GetSplitEnergyFractionMinimum(1) > 0 ||
      GetCaloPID()->GetSplitEnergyFractionMinimum(2) > 0) splitOn = kTRUE;
   
-  TString ptype[] ={"","#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron","#pi^{0} (#gamma->e^{#pm})"}; 
-  TString pname[] ={"","Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron","Pi0Conv"};
+  TString ptype[] ={"","#gamma","#gamma->e^{#pm}","#pi^{0}","#pi^{0} (#gamma->e^{#pm})","#eta", "hadron"};
+  TString pname[] ={"","Photon","Conversion",     "Pi0",    "Pi0Conv",                  "Eta","Hadron"};
   TString snlm [] = {"1","2","N"};
 
   Int_t n = 1;
   
-  if(IsDataMC()) n = 8;
+  if(IsDataMC()) n = 7;
   
   Int_t nMaxBins = 10;
   
@@ -2555,63 +2668,103 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhSplitEFractionNLocMaxN[i][j]   ->SetXTitle("E_{cluster} (GeV)");
       fhSplitEFractionNLocMaxN[i][j]   ->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
       outputContainer->Add(fhSplitEFractionNLocMaxN[i][j]) ;
-    
       
-      if(i==0 && j==0 && m02On)
+      if(i==0 && j==0 )
       {
-        if(splitOn)
+        if(m02On)
         {
-          fhMassSplitECutNLocMax1  = new TH2F("hMassSplitECutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, (E1+E2)/E cut, M02 cut, no TM",
-                                              nptbins,ptmin,ptmax,mbins,mmin,mmax);
-          fhMassSplitECutNLocMax1->SetYTitle("M (GeV/c^{2})");
-          fhMassSplitECutNLocMax1->SetXTitle("E (GeV)");
-          outputContainer->Add(fhMassSplitECutNLocMax1) ;
+          fhMassM02CutNLocMax1  = new TH2F("hMassM02CutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, M02 cut, no TM",
+                                           nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassM02CutNLocMax1->SetYTitle("M (GeV/c^{2})");
+          fhMassM02CutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassM02CutNLocMax1) ;
           
-          fhMassSplitECutNLocMax2  = new TH2F("hMassSplitECutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, (E1+E2)/E cut, M02 cut, no TM",
-                                              nptbins,ptmin,ptmax,mbins,mmin,mmax);
-          fhMassSplitECutNLocMax2->SetYTitle("M (GeV/c^{2})");
-          fhMassSplitECutNLocMax2->SetXTitle("E (GeV)");
-          outputContainer->Add(fhMassSplitECutNLocMax2) ;
+          fhMassM02CutNLocMax2  = new TH2F("hMassM02CutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, M02 cut, no TM",
+                                           nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassM02CutNLocMax2->SetYTitle("M (GeV/c^{2})");
+          fhMassM02CutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassM02CutNLocMax2) ;
           
-          fhMassSplitECutNLocMaxN  = new TH2F("hMassSplitECutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, (E1+E2)/E cut, M02 cut, no TM",
-                                              nptbins,ptmin,ptmax,mbins,mmin,mmax);
-          fhMassSplitECutNLocMaxN->SetYTitle("M (GeV/c^{2})");
-          fhMassSplitECutNLocMaxN->SetXTitle("E (GeV)");
-          outputContainer->Add(fhMassSplitECutNLocMaxN) ;
-        }
+          fhMassM02CutNLocMaxN  = new TH2F("hMassM02CutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, M02 cut, no TM",
+                                           nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassM02CutNLocMaxN->SetYTitle("M (GeV/c^{2})");
+          fhMassM02CutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassM02CutNLocMaxN) ;
+          
+          fhAsymM02CutNLocMax1  = new TH2F("hAsymM02CutNLocMax1","Asymmetry of NLM=1  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
+          fhAsymM02CutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+          fhAsymM02CutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhAsymM02CutNLocMax1) ;
+          
+          fhAsymM02CutNLocMax2  = new TH2F("hAsymM02CutNLocMax2","Asymmetry of NLM=2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
+          fhAsymM02CutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+          fhAsymM02CutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhAsymM02CutNLocMax2) ;
+          
+          fhAsymM02CutNLocMaxN  = new TH2F("hAsymM02CutNLocMaxN","Asymmetry of NLM>2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
+          fhAsymM02CutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+          fhAsymM02CutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhAsymM02CutNLocMaxN) ;
+          if(splitOn)
+          {
+            fhMassSplitECutNLocMax1  = new TH2F("hMassSplitECutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, (E1+E2)/E cut, M02 cut, no TM",
+                                                nptbins,ptmin,ptmax,mbins,mmin,mmax);
+            fhMassSplitECutNLocMax1->SetYTitle("M (GeV/c^{2})");
+            fhMassSplitECutNLocMax1->SetXTitle("E (GeV)");
+            outputContainer->Add(fhMassSplitECutNLocMax1) ;
+            
+            fhMassSplitECutNLocMax2  = new TH2F("hMassSplitECutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, (E1+E2)/E cut, M02 cut, no TM",
+                                                nptbins,ptmin,ptmax,mbins,mmin,mmax);
+            fhMassSplitECutNLocMax2->SetYTitle("M (GeV/c^{2})");
+            fhMassSplitECutNLocMax2->SetXTitle("E (GeV)");
+            outputContainer->Add(fhMassSplitECutNLocMax2) ;
+            
+            fhMassSplitECutNLocMaxN  = new TH2F("hMassSplitECutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, (E1+E2)/E cut, M02 cut, no TM",
+                                                nptbins,ptmin,ptmax,mbins,mmin,mmax);
+            fhMassSplitECutNLocMaxN->SetYTitle("M (GeV/c^{2})");
+            fhMassSplitECutNLocMaxN->SetXTitle("E (GeV)");
+            outputContainer->Add(fhMassSplitECutNLocMaxN) ;
+          }
+        }//m02on
         
-        fhMassM02CutNLocMax1  = new TH2F("hMassM02CutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, M02 cut, no TM",
-                                         nptbins,ptmin,ptmax,mbins,mmin,mmax);
-        fhMassM02CutNLocMax1->SetYTitle("M (GeV/c^{2})");
-        fhMassM02CutNLocMax1->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMassM02CutNLocMax1) ;
-        
-        fhMassM02CutNLocMax2  = new TH2F("hMassM02CutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, M02 cut, no TM",
-                                         nptbins,ptmin,ptmax,mbins,mmin,mmax);
-        fhMassM02CutNLocMax2->SetYTitle("M (GeV/c^{2})");
-        fhMassM02CutNLocMax2->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMassM02CutNLocMax2) ;
-        
-        fhMassM02CutNLocMaxN  = new TH2F("hMassM02CutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, M02 cut, no TM",
-                                         nptbins,ptmin,ptmax,mbins,mmin,mmax);
-        fhMassM02CutNLocMaxN->SetYTitle("M (GeV/c^{2})");
-        fhMassM02CutNLocMaxN->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMassM02CutNLocMaxN) ;
-        
-        fhAsymM02CutNLocMax1  = new TH2F("hAsymM02CutNLocMax1","Asymmetry of NLM=1  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
-        fhAsymM02CutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-        fhAsymM02CutNLocMax1->SetXTitle("E (GeV)");
-        outputContainer->Add(fhAsymM02CutNLocMax1) ;
-        
-        fhAsymM02CutNLocMax2  = new TH2F("hAsymM02CutNLocMax2","Asymmetry of NLM=2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
-        fhAsymM02CutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-        fhAsymM02CutNLocMax2->SetXTitle("E (GeV)");
-        outputContainer->Add(fhAsymM02CutNLocMax2) ;
-        
-        fhAsymM02CutNLocMaxN  = new TH2F("hAsymM02CutNLocMaxN","Asymmetry of NLM>2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
-        fhAsymM02CutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-        fhAsymM02CutNLocMaxN->SetXTitle("E (GeV)");
-        outputContainer->Add(fhAsymM02CutNLocMaxN) ;
+        if(asyOn)
+        {
+          fhMassAsyCutNLocMax1  = new TH2F("hMassAsyCutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, M02 cut, no TM",
+                                           nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassAsyCutNLocMax1->SetYTitle("M (GeV/c^{2})");
+          fhMassAsyCutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassAsyCutNLocMax1) ;
+          
+          fhMassAsyCutNLocMax2  = new TH2F("hMassAsyCutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, M02 cut, no TM",
+                                           nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassAsyCutNLocMax2->SetYTitle("M (GeV/c^{2})");
+          fhMassAsyCutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassAsyCutNLocMax2) ;
+          
+          fhMassAsyCutNLocMaxN  = new TH2F("hMassAsyCutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, M02 cut, no TM",
+                                           nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassAsyCutNLocMaxN->SetYTitle("M (GeV/c^{2})");
+          fhMassAsyCutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassAsyCutNLocMaxN) ;
+          
+          fhM02AsyCutNLocMax1  = new TH2F("hM02AsyCutNLocMax1","#lambda_{0}^{2} of NLM=1  vs cluster Energy, AsyCut, no TM",
+                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+          fhM02AsyCutNLocMax1->SetYTitle("#lambda_{0}^{2}");
+          fhM02AsyCutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhM02AsyCutNLocMax1) ;
+          
+          fhM02AsyCutNLocMax2  = new TH2F("hM02AsyCutNLocMax2","#lambda_{0}^{2} of NLM=2  vs cluster Energy, AsyCut, no TM",
+                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+          fhM02AsyCutNLocMax2->SetYTitle("#lambda_{0}^{2}");
+          fhM02AsyCutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhM02AsyCutNLocMax2) ;
+          
+          fhM02AsyCutNLocMaxN  = new TH2F("hM02AsyCutNLocMaxN","#lambda_{0}^{2} of NLM>2  vs cluster Energy, AsyCut, no TM",
+                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+          fhM02AsyCutNLocMaxN->SetYTitle("#lambda_{0}^{2}");
+          fhM02AsyCutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhM02AsyCutNLocMaxN) ;
+      }
       }
       
       if(asyOn || m02On)
@@ -4091,27 +4244,29 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         outputContainer->Add(fhMCEAsymOverlapN[j][i]) ;
 
         
-        fhMCENCellOverlap0[j][i]     = new TH2F(Form("hMCENCellOverlap0NLocMax%s%s",snlm[j].Data(),pname[i].Data()),
-                                               Form("Overlap 0, n cells vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
-                                               nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
-        fhMCENCellOverlap0[j][i]   ->SetYTitle("n cells");
-        fhMCENCellOverlap0[j][i]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCENCellOverlap0[j][i]) ;
-        
-        fhMCENCellOverlap1[j][i]     = new TH2F(Form("hMCENCellOverlap1NLocMax%s%s",snlm[j].Data(), pname[i].Data()),
-                                               Form("Overalap 1, n cells vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
-                                               nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
-        fhMCENCellOverlap1[j][i]   ->SetYTitle("n cells");
-        fhMCENCellOverlap1[j][i]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCENCellOverlap1[j][i]) ;
-        
-        fhMCENCellOverlapN[j][i]     = new TH2F(Form("hMCENCellOverlapNNLocMax%s%s",snlm[j].Data(), pname[i].Data()),
-                                               Form("Overlap N, n cells vs E for NLM=%s %s",snlm[j].Data(),ptype[i].Data()),
-                                               nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
-        fhMCENCellOverlapN[j][i]   ->SetYTitle("n cells");
-        fhMCENCellOverlapN[j][i]   ->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCENCellOverlapN[j][i]) ;
-
+        if(fFillNCellHisto)
+        {
+          fhMCENCellOverlap0[j][i]     = new TH2F(Form("hMCENCellOverlap0NLocMax%s%s",snlm[j].Data(),pname[i].Data()),
+                                                  Form("Overlap 0, n cells vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                                  nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+          fhMCENCellOverlap0[j][i]   ->SetYTitle("n cells");
+          fhMCENCellOverlap0[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCENCellOverlap0[j][i]) ;
+          
+          fhMCENCellOverlap1[j][i]     = new TH2F(Form("hMCENCellOverlap1NLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                                  Form("Overalap 1, n cells vs E for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
+                                                  nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+          fhMCENCellOverlap1[j][i]   ->SetYTitle("n cells");
+          fhMCENCellOverlap1[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCENCellOverlap1[j][i]) ;
+          
+          fhMCENCellOverlapN[j][i]     = new TH2F(Form("hMCENCellOverlapNNLocMax%s%s",snlm[j].Data(), pname[i].Data()),
+                                                  Form("Overlap N, n cells vs E for NLM=%s %s",snlm[j].Data(),ptype[i].Data()),
+                                                  nptbins,ptmin,ptmax,ncbins,ncmin,ncmax);
+          fhMCENCellOverlapN[j][i]   ->SetYTitle("n cells");
+          fhMCENCellOverlapN[j][i]   ->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMCENCellOverlapN[j][i]) ;
+        }
         
         fhMCEEpriOverlap0[j][i]     = new TH2F(Form("hMCEEpriOverlap0NLocMax%s%s",snlm[j].Data(),pname[i].Data()),
                                                Form("Overlap 0, E reco vs E prim for NLM=%s, %s",snlm[j].Data(),ptype[i].Data()),
@@ -4631,115 +4786,115 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       outputContainer->Add(fhMCPi0DecayPhotonHitNoLMOverlapMass[nlm]) ;
 
       fhMCPi0DecayPhotonHitHighLMDiffELM1[nlm]  = new TH2F(Form("hMCPi0DecayPhotonHitHighLM%sDiffELM1",snlm[nlm].Data()),
-                                                       Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima",snlm[nlm].Data()),
-                                                       nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitHighLMDiffELM1[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitHighLMDiffELM1[nlm]  ->SetXTitle("E (GeV)");
+                                                       Form("(E_{reco}-E_{gen})/E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima",snlm[nlm].Data()),
+                                                           nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitHighLMDiffELM1[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitHighLMDiffELM1[nlm]  ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitHighLMDiffELM1[nlm] ) ;
       
       fhMCPi0DecayPhotonAdjHighLMDiffELM1[nlm]  = new TH2F(Form("hMCPi0DecayPhotonAdjHighLM%sDiffELM1",snlm[nlm].Data()),
-                                                       Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima",snlm[nlm].Data()),
-                                                       nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjHighLMDiffELM1[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
+                                                       Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima",snlm[nlm].Data()),
+                                                       nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjHighLMDiffELM1[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
       fhMCPi0DecayPhotonAdjHighLMDiffELM1[nlm]  ->SetXTitle("E (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjHighLMDiffELM1[nlm] ) ;
       
       fhMCPi0DecayPhotonHitOtherLMDiffELM1[nlm]  = new TH2F(Form("hMCPi0DecayPhotonHitOtherLM%sDiffELM1",snlm[nlm].Data()),
-                                                        Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima",snlm[nlm].Data()),
-                                                        nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitOtherLMDiffELM1[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitOtherLMDiffELM1[nlm]  ->SetXTitle("E (GeV)");
+                                                        Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima",snlm[nlm].Data()),
+                                                        nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitOtherLMDiffELM1[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitOtherLMDiffELM1[nlm]  ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitOtherLMDiffELM1[nlm] ) ;
       
       fhMCPi0DecayPhotonAdjOtherLMDiffELM1[nlm]  = new TH2F(Form("hMCPi0DecayPhotonAdjOtherLM%sDiffELM1",snlm[nlm].Data()),
-                                                        Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima",snlm[nlm].Data()),
-                                                        nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjOtherLMDiffELM1[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonAdjOtherLMDiffELM1[nlm]  ->SetXTitle("E (GeV)");
+                                                        Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima",snlm[nlm].Data()),
+                                                        nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjOtherLMDiffELM1[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonAdjOtherLMDiffELM1[nlm]  ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjOtherLMDiffELM1[nlm] ) ;
       
       fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[nlm]   = new TH2F(Form("hMCPi0DecayPhotonHitHighLM%sOverlapDiffELM1",snlm[nlm].Data()),
-                                                               Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                               nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[nlm]   ->SetXTitle("E (GeV)");
+                                                               Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                               nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[nlm]) ;
       
       fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[nlm]   = new TH2F(Form("hMCPi0DecayPhotonAdjHighLM%sOverlapDiffELM1",snlm[nlm].Data()),
-                                                               Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                               nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[nlm]   ->SetXTitle("E (GeV)");
+                                                               Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                               nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[nlm]) ;
       
       fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[nlm]   = new TH2F(Form("hMCPi0DecayPhotonHitOtherLM%sOverlapDiffELM1",snlm[nlm].Data()),
-                                                                Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                                nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[nlm]   ->SetXTitle("E (GeV)");
+                                                                Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                                nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[nlm]) ;
       
       fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[nlm]   = new TH2F(Form("hMCPi0DecayPhotonAdjOtherLM%sOverlapDiffELM1",snlm[nlm].Data()),
-                                                                Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                                nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[nlm]   ->SetXTitle("E (GeV)");
+                                                                Form("E_{reco}-E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                                nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[nlm]) ;
       
       fhMCPi0DecayPhotonHitHighLMDiffELM2[nlm]  = new TH2F(Form("hMCPi0DecayPhotonHitHighLM%sDiffELM2",snlm[nlm].Data()),
-                                                           Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima",snlm[nlm].Data()),
-                                                           nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitHighLMDiffELM2[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitHighLMDiffELM2[nlm]  ->SetXTitle("E (GeV)");
+                                                           Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima",snlm[nlm].Data()),
+                                                           nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitHighLMDiffELM2[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitHighLMDiffELM2[nlm]  ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitHighLMDiffELM2[nlm] ) ;
       
       fhMCPi0DecayPhotonAdjHighLMDiffELM2[nlm]  = new TH2F(Form("hMCPi0DecayPhotonAdjHighLM%sDiffELM2",snlm[nlm].Data()),
-                                                           Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima",snlm[nlm].Data()),
-                                                           nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjHighLMDiffELM2[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonAdjHighLMDiffELM2[nlm]  ->SetXTitle("E (GeV)");
+                                                           Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima",snlm[nlm].Data()),
+                                                           nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjHighLMDiffELM2[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonAdjHighLMDiffELM2[nlm]  ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjHighLMDiffELM2[nlm] ) ;
       
       fhMCPi0DecayPhotonHitOtherLMDiffELM2[nlm]  = new TH2F(Form("hMCPi0DecayPhotonHitOtherLM%sDiffELM2",snlm[nlm].Data()),
-                                                            Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima",snlm[nlm].Data()),
-                                                            nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitOtherLMDiffELM2[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitOtherLMDiffELM2[nlm]  ->SetXTitle("E (GeV)");
+                                                            Form("E_{reco}-E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima",snlm[nlm].Data()),
+                                                            nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitOtherLMDiffELM2[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitOtherLMDiffELM2[nlm]  ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitOtherLMDiffELM2[nlm] ) ;
       
       fhMCPi0DecayPhotonAdjOtherLMDiffELM2[nlm]  = new TH2F(Form("hMCPi0DecayPhotonAdjOtherLM%sDiffELM2",snlm[nlm].Data()),
-                                                            Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima",snlm[nlm].Data()),
-                                                            nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjOtherLMDiffELM2[nlm]  ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonAdjOtherLMDiffELM2[nlm]  ->SetXTitle("E (GeV)");
+                                                            Form("E_{reco}-E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima",snlm[nlm].Data()),
+                                                            nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjOtherLMDiffELM2[nlm]  ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonAdjOtherLMDiffELM2[nlm]  ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjOtherLMDiffELM2[nlm] ) ;
       
       fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[nlm]   = new TH2F(Form("hMCPi0DecayPhotonHitHighLM%sOverlapDiffELM2",snlm[nlm].Data()),
-                                                                   Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                                   nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[nlm]   ->SetXTitle("E (GeV)");
+                                                                   Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit High Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                                   nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[nlm]) ;
       
       fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[nlm]   = new TH2F(Form("hMCPi0DecayPhotonAdjHighLM%sOverlapDiffELM2",snlm[nlm].Data()),
-                                                                   Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                                   nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[nlm]   ->SetXTitle("E (GeV)");
+                                                                   Form("E_{reco}-E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to High Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                                   nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[nlm]) ;
       
       fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[nlm]   = new TH2F(Form("hMCPi0DecayPhotonHitOtherLM%sOverlapDiffELM2",snlm[nlm].Data()),
-                                                                    Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                                    nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[nlm]   ->SetXTitle("E (GeV)");
+                                                                    Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit Other Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                                    nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[nlm]) ;
       
       fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[nlm]   = new TH2F(Form("hMCPi0DecayPhotonAdjOtherLM%sOverlapDiffELM2",snlm[nlm].Data()),
-                                                                    Form("E_{reco}-E_{gen} vs E for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima, there was an overlap",snlm[nlm].Data()),
-                                                                    nptbins,ptmin,ptmax,nptbins,-ptmax/4,ptmax/4);
-      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[nlm]   ->SetYTitle("E_{reco}-E_{gen}");
-      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[nlm]   ->SetXTitle("E (GeV)");
+                                                                    Form("(E_{reco}-E_{gen})/E_{gen} vs E_{reco} for merged pi0 cluster, NLM=%s, decay photon hit cells adjacent to Other Local Maxima, there was an overlap",snlm[nlm].Data()),
+                                                                    nptbins,ptmin,ptmax,200,-2,2);//nptbins,-ptmax/4,ptmax/4);
+      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[nlm]   ->SetYTitle("(E_{reco}-E_{gen})/E_{gen}");
+      fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[nlm]   ->SetXTitle("E_{reco} (GeV)");
       outputContainer->Add(fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[nlm]) ;
 
     }
@@ -4789,6 +4944,82 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     }
   }
   
+  if(fFillArmenterosHisto)
+  {
+    for(Int_t i = 0; i < 5; i++) // MC bin
+    {
+      for(Int_t j = 0; j < 4; j++) // E bin
+      {
+        fhArmNLocMax1[i][j]  = new TH2F(Form("hArmNLocMax1EBin%d%s",j,pname[i].Data()),
+                                         Form("Armenteros of splitted cluster with NLM=1, E bin %d, %s",j,ptype[i].Data()),
+                                         200, -1, 1, nptbins,ptmin,ptmax);
+        fhArmNLocMax1[i][j]->SetYTitle("#epsilon");
+        fhArmNLocMax1[i][j]->SetXTitle("#alpha");
+        outputContainer->Add(fhArmNLocMax1[i][j]) ;
+        
+        fhArmNLocMax2[i][j]  = new TH2F(Form("hArmNLocMax2EBin%d%s",j,pname[i].Data()),
+                                         Form("Armenteros of splitted cluster with NLM=2, E bin %d, %s",j,ptype[i].Data()),
+                                         200, -1, 1, nptbins,ptmin,ptmax);
+        fhArmNLocMax2[i][j]->SetYTitle("#epsilon");
+        fhArmNLocMax2[i][j]->SetXTitle("#alpha");
+        outputContainer->Add(fhArmNLocMax2[i][j]) ;
+        
+        fhArmNLocMaxN[i][j]  = new TH2F(Form("hArmNLocMaxNEBin%d%s",j,pname[i].Data()),
+                                         Form("Armenteros of splitted cluster with NLM>2, E bin %d, %s",j,ptype[i].Data()),
+                                         200, -1, 1, nptbins,ptmin,ptmax);
+        fhArmNLocMaxN[i][j]->SetYTitle("#epsilon");
+        fhArmNLocMaxN[i][j]->SetXTitle("#alpha");
+        outputContainer->Add(fhArmNLocMaxN[i][j]) ;
+        
+        if(asyOn || m02On)
+        {
+          fhArmAfterCutsNLocMax1[i][j]  = new TH2F(Form("hArmAfterCutsNLocMax1EBin%d%s",j,pname[i].Data()),
+                                          Form("Armenteros of splitted cluster with NLM=1, E bin %d, %s",j,ptype[i].Data()),
+                                          200, -1, 1, nptbins,ptmin,ptmax);
+          fhArmAfterCutsNLocMax1[i][j]->SetYTitle("#epsilon");
+          fhArmAfterCutsNLocMax1[i][j]->SetXTitle("#alpha");
+          outputContainer->Add(fhArmAfterCutsNLocMax1[i][j]) ;
+          
+          fhArmAfterCutsNLocMax2[i][j]  = new TH2F(Form("hArmAfterCutsNLocMax2EBin%d%s",j,pname[i].Data()),
+                                          Form("Armenteros of splitted cluster with NLM=2, E bin %d, %s",j,ptype[i].Data()),
+                                          200, -1, 1, nptbins,ptmin,ptmax);
+          fhArmAfterCutsNLocMax2[i][j]->SetYTitle("#epsilon");
+          fhArmAfterCutsNLocMax2[i][j]->SetXTitle("#alpha");
+          outputContainer->Add(fhArmAfterCutsNLocMax2[i][j]) ;
+          
+          fhArmAfterCutsNLocMaxN[i][j]  = new TH2F(Form("hArmAfterCutsNLocMaxNEBin%d%s",j,pname[i].Data()),
+                                          Form("Armenteros of splitted cluster with NLM>2, E bin %d, %s",j,ptype[i].Data()),
+                                          200, -1, 1, nptbins,ptmin,ptmax);
+          fhArmAfterCutsNLocMaxN[i][j]->SetYTitle("#epsilon");
+          fhArmAfterCutsNLocMaxN[i][j]->SetXTitle("#alpha");
+          outputContainer->Add(fhArmAfterCutsNLocMaxN[i][j]) ;
+        }
+
+        fhArmPi0NLocMax1[i][j]  = new TH2F(Form("hArmPi0NLocMax1EBin%d%s",j,pname[i].Data()),
+                                                 Form("Armenteros of splitted cluster with NLM=1, E bin %d, %s",j,ptype[i].Data()),
+                                                 200, -1, 1, nptbins,ptmin,ptmax);
+        fhArmPi0NLocMax1[i][j]->SetYTitle("#epsilon");
+        fhArmPi0NLocMax1[i][j]->SetXTitle("#alpha");
+        outputContainer->Add(fhArmPi0NLocMax1[i][j]) ;
+        
+        fhArmPi0NLocMax2[i][j]  = new TH2F(Form("hArmPi0NLocMax2EBin%d%s",j,pname[i].Data()),
+                                                 Form("Armenteros of splitted cluster with NLM=2, E bin %d, %s",j,ptype[i].Data()),
+                                                 200, -1, 1, nptbins,ptmin,ptmax);
+        fhArmPi0NLocMax2[i][j]->SetYTitle("#epsilon");
+        fhArmPi0NLocMax2[i][j]->SetXTitle("#alpha");
+        outputContainer->Add(fhArmPi0NLocMax2[i][j]) ;
+        
+        fhArmPi0NLocMaxN[i][j]  = new TH2F(Form("hArmPi0NLocMaxNEBin%d%s",j,pname[i].Data()),
+                                                 Form("Armenteros of splitted cluster with NLM>2, E bin %d, %s",j,ptype[i].Data()),
+                                                 200, -1, 1, nptbins,ptmin,ptmax);
+        fhArmPi0NLocMaxN[i][j]->SetYTitle("#epsilon");
+        fhArmPi0NLocMaxN[i][j]->SetXTitle("#alpha");
+        outputContainer->Add(fhArmPi0NLocMaxN[i][j]) ;
+ 
+      }
+    }
+  }
+  
   return outputContainer ;
   
 }
@@ -4810,11 +5041,11 @@ void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster,
            !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPhoton;
   else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
             GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcConversion;
-  else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))   mcindex = kmcElectron;
-  else                                                                                mcindex = kmcHadron;
+  else if (!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) mcindex = kmcHadron;
+ 
+  //printf("MC index %d\n",mcindex);
   
 }
-
 
 //______________________________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex,
@@ -4994,14 +5225,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     Int_t    nMax = 0;
     Double_t mass = 0., angle = 0.;
-    TLorentzVector    l1, l2;
+    TLorentzVector    lv1, lv2;
     Int_t    absId1   =-1; Int_t   absId2   =-1;
     Float_t  distbad1 =-1; Float_t distbad2 =-1;
     Bool_t   fidcut1  = 0; Bool_t  fidcut2  = 0;
     
     Int_t pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(cluster,cells,GetCaloUtils(),
                                                                                GetVertex(0), nMax, mass, angle,
-                                                                               l1,l2,absId1,absId2,
+                                                                               lv1,lv2,absId1,absId2,
                                                                                distbad1,distbad2,fidcut1,fidcut2);
     if (nMax <= 0) 
     {
@@ -5044,8 +5275,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
     // Get sub-cluster parameters
     
-    Float_t e1 = l1.Energy();
-    Float_t e2 = l2.Energy();
+    Float_t e1 = lv1.Energy();
+    Float_t e2 = lv2.Energy();
     
     Double_t tof1  = cells->GetCellTime(absId1);
     GetCaloUtils()->RecalibrateCellTime(tof1, fCalorimeter, absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
@@ -5091,21 +5322,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         
       // For cluster with MC pi0 and more than 1 maxima
       
-      if(fFillMCOverlapHisto)
-        CheckLocalMaximaMCOrigin(cluster, mcindex,noverlaps,e1,e2,mass);
-                                 //l0, l1, l2);
-      
-      //
-      
-     if(fFillMCHisto)
-       FillMCHistograms(en,e1,e2,ebin,mcindex,noverlaps,l0,mass,
-                        nMax,matched,splitFrac, asym, eprim,asymGen);
-      
-      //
-      
-      if(fFillMCOverlapHisto)
-        FillMCOverlapHistograms(en,eprim,nc,mass,l0,asym,splitFrac,inlm,ebin,matched,mcindex,noverlaps);
-    }
+     }
     
     //
     
@@ -5119,11 +5336,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //
     
     if(fFillSSExtraHisto)
-    FillSSExtraHistograms(cluster, nMax, matched,mcindex,mass,ebin)  ;
+      FillSSExtraHistograms(cluster, nMax, matched,mcindex,mass,ebin)  ;
     
     //
 
-    if(!matched && ebin > 0 && fFillEbinHisto)
+    if(!matched && ebin >= 0 && fFillEbinHisto)
       FillEBinHistograms(ebin,nMax,mcindex,splitFrac,mass,asym,l0);
 
     //
@@ -5131,10 +5348,36 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if(fFillAngleHisto)
       FillAngleHistograms(matched,nMax,en,angle,mass);
 
+    if(fFillArmenterosHisto && ebin >= 0)
+      FillArmenterosHistograms(nMax, ebin, mcindex, lv, lv1, lv2, l0, pidTag);
+    
     //---------------------------------------------------------------------
     // From here start applying some cuts
     //---------------------------------------------------------------------
-     
+    
+    // If set, check just on MC clusters when SS cut is applied
+    if( IsDataMC() && mcindex > 0 && mcindex < 7 && GetCaloPID()->IsInM02Range(l0) )
+    {
+      // For cluster with MC pi0 and more than 1 maxima
+      
+      if(fFillMCOverlapHisto)
+        CheckLocalMaximaMCOrigin(cluster, mcindex,noverlaps,e1,e2,mass);
+      //l0, l1, l2);
+      
+      //
+      
+      if(fFillMCHisto)
+        FillMCHistograms(en,e1,e2,ebin,mcindex,noverlaps,l0,mass,
+                         nMax,matched,splitFrac, asym, eprim,asymGen);
+      
+      //
+      
+      if(fFillMCOverlapHisto)
+        FillMCOverlapHistograms(en,eprim,nc,mass,l0,asym,splitFrac,inlm,ebin,matched,mcindex,noverlaps);
+      
+    }
+    
+    // Fill few histograms, some still without cuts
     FillHistograms2(en, eprim, e1, e2, nMax, mass, l0, matched, mcindex);
     
     if(pidTag==AliCaloPID::kPi0)
@@ -5147,7 +5390,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       if(fFillTMHisto && fFillTMResidualHisto)
         FillTrackMatchingHistograms(cluster,nMax,mcindex);
       
-      if(fFillMCOverlapHisto && IsDataMC() && !matched)
+      if(fFillMCOverlapHisto && IsDataMC() && mcindex > 0 && mcindex < 7 && !matched)
       {
         if     (noverlaps == 0) fhMCEEpriOverlap0IdPi0 [inlm][mcindex]->Fill(en, eprim);
         else if(noverlaps == 1) fhMCEEpriOverlap1IdPi0 [inlm][mcindex]->Fill(en, eprim);
