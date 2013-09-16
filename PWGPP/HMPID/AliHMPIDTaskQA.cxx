@@ -242,6 +242,9 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
     if (mcH) {
       fMC = mcH->MCEvent();
       pStack = fMC->Stack();
+    } else {
+      AliFatal("fMC flag set but MC handler not available");
+      return;
     }  
   }
 
