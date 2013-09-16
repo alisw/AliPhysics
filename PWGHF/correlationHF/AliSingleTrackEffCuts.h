@@ -32,7 +32,7 @@
 #include "TObject.h"
 
 class AliVEvent;
-
+class AliMCEvent;
 
 class AliSingleTrackEffCuts : public TObject 
 {
