@@ -87,6 +87,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
+fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 {
   //Ctor
@@ -244,21 +245,33 @@ void AliCaloPID::InitParameters()
   fMassPhoMin  = 0.0;
   fMassPhoMax  = 0.08;
   
-  fMassWidthPi0Param[0][0] = 0.123 ; // Constant term on mass dependence
-  fMassWidthPi0Param[0][1] =-6.58e-4;// Slope term on mass dependence
-  fMassWidthPi0Param[0][2] = 3.25e-5;// xx term on mass dependence
-  fMassWidthPi0Param[0][3] = 25    ; // E function change
-  fMassWidthPi0Param[0][4] =-0.002 ; // Constant term on width dependence
-  fMassWidthPi0Param[0][5] = 0.0013; // Slope term on width dependence
-  fMassWidthPi0Param[0][6] = 0.100 ; // Absolute low mass cut
+  fMassPi0Param[0][0] = 0     ; // Constant term on mass dependence
+  fMassPi0Param[0][1] = 0     ; // slope term on mass dependence
+  fMassPi0Param[0][2] = 0     ; // E function change
+  fMassPi0Param[0][3] = 0.063 ; // constant term on mass dependence
+  fMassPi0Param[0][4] = 0.004 ; // slope term on mass dependence
+  fMassPi0Param[0][5] = 0.070 ; // Absolute low mass cut
+  
+  fMassPi0Param[1][0] = 0.131 ; // Constant term below 21 GeV
+  fMassPi0Param[1][1] = 0     ; // slope term below 21 GeV
+  fMassPi0Param[1][2] = 21    ; // E function change
+  fMassPi0Param[1][3] = 0.095 ; // constant term on mass dependence
+  fMassPi0Param[1][4] = 0.0017; // slope term on mass dependence
+  fMassPi0Param[1][5] = 0.070 ; // Absolute low mass cut
+  
+  fWidthPi0Param[0][0] = 0.023 ; // Constant term on width dependence
+  fWidthPi0Param[0][1] = 0.0   ; // Slope term on width dependence
+  fWidthPi0Param[0][2] = 20    ; // E function change
+  fWidthPi0Param[0][3] =-0.001 ; // Constant term on width dependence
+  fWidthPi0Param[0][4] = 0.0012; // Slope term on width dependence
+  fWidthPi0Param[0][5] = 0.0   ; // xx term
 
-  fMassWidthPi0Param[1][0] = 0.128 ; // Constant term on mass dependence
-  fMassWidthPi0Param[1][1] = 1.13e-4;// Slope term on mass dependence
-  fMassWidthPi0Param[1][2] = 7.27e-6;// xx term on mass dependence
-  fMassWidthPi0Param[1][3] = 16    ; // E function change
-  fMassWidthPi0Param[1][4] = 0.0023; // Constant term on width dependence
-  fMassWidthPi0Param[1][5] = 0.0008; // Slope term on width dependence
-  fMassWidthPi0Param[1][6] = 0.050 ; // Absolute low mass cut
+  fWidthPi0Param[1][0] = 0.0075; // Constant term on width dependence
+  fWidthPi0Param[1][1] = 0.0006; // Slope term on width dependence
+  fWidthPi0Param[1][2] = 19    ; // E function change
+  fWidthPi0Param[1][3] = 0.04  ; // Constant term on width dependence
+  fWidthPi0Param[1][4] =-0.0019; // Slope term on width dependence
+  fWidthPi0Param[1][5] = 0.000041;// xx term
 
   fMassShiftHighECell = 0; // Shift of cuts in case of higher energy threshold in cells, 5 MeV when Ecell>150 MeV
   
@@ -268,17 +281,13 @@ void AliCaloPID::InitParameters()
   fM02MinParam[0][2] = 0.0    ; 
   fM02MinParam[0][3] = 0.0    ;
   fM02MinParam[0][4] = 0.0    ;
-  fM02MinParam[0][5] = 0.3    ; // cut for E > 13.6 GeV, pp/PbPb
-  fM02MinParam[0][6] = 13.6   ; // E cut change
 
-  //TF1 *lM02MinNLM2 = new TF1("M02MinNLM2","exp(6.021-0.866*x)+0.733-0.00966*x[0]+0/x[0]",6,45);
-  fM02MinParam[1][0] = 6.021  ;  
-  fM02MinParam[1][1] =-0.866  ;  
-  fM02MinParam[1][2] = 0.733  ; 
-  fM02MinParam[1][3] =-0.00966;
+  // Same as NLM=1 for NLM=2
+  fM02MinParam[1][0] = 2.135  ;
+  fM02MinParam[1][1] =-0.245  ;
+  fM02MinParam[1][2] = 0.0    ;
+  fM02MinParam[1][3] = 0.0    ;
   fM02MinParam[1][4] = 0.0    ;
-  fM02MinParam[1][5] = 0.3    ;  // cut for E > 45 GeV, pp/PbPb
-  fM02MinParam[1][6] = 45.    ;  // E cut change
 
   //TF1 *lM02MaxNLM1 = new TF1("M02MaxNLM1","exp(0.0662-0.0201*x)-0.0955+0.00186*x[0]+9.91/x[0]",6,100);
   fM02MaxParam[0][0] = 0.0662 ;
@@ -286,8 +295,6 @@ void AliCaloPID::InitParameters()
   fM02MaxParam[0][2] =-0.0955 ;
   fM02MaxParam[0][3] = 0.00186;
   fM02MaxParam[0][4] = 9.91   ;
-  fM02MaxParam[0][5] = 0.3    ; // cut for E > 100 GeV, pp/PbPb
-  fM02MaxParam[0][6] = 100.   ; // E cut change
   
   //TF1 *lM02MaxNLM2 = new TF1("M02MaxNLM2","exp(0.353-0.0264*x)-0.524+0.00559*x[0]+21.9/x[0]",6,100);
   fM02MaxParam[1][0] = 0.353  ;  
@@ -295,21 +302,21 @@ void AliCaloPID::InitParameters()
   fM02MaxParam[1][2] =-0.524  ; 
   fM02MaxParam[1][3] = 0.00559;
   fM02MaxParam[1][4] = 21.9   ;
-  fM02MaxParam[1][5] = 0.3    ;  // cut for E > 21 GeV, pp/PbPb
-  fM02MaxParam[1][6] = 100.   ;  // E cut change, it will never happen
   
-  //TF1 *lAsyNLM1 = new TF1("lAsyNLM1","0.97-546/(x*x*x)",5,100);
-  fAsyMinParam[0][0] = 0.97 ;  
-  fAsyMinParam[0][1] =-546  ;  
-  fAsyMinParam[0][2] = 0.97 ;  // cut for NLM=1 
-  fAsyMinParam[0][3] = 100. ;  // E cut change
+  fM02MaxParamShiftNLMN = 0.75;
+  
+  //TF1 *lAsyNLM1 = new TF1("lAsyNLM1","0.96-879/(x*x*x)",5,100);
+  fAsyMinParam[0][0] = 0.96 ;
+  fAsyMinParam[0][1] = 0    ;
+  fAsyMinParam[0][2] =-879  ;
+  fAsyMinParam[0][3] = 0.96 ; // Absolute max
 
-  //TF1 *lAsyNLM2 = new TF1("lAsyNLM2","1.0-205/(x*x*x)",5,100);
-  fAsyMinParam[1][0] = 1.0  ;   
-  fAsyMinParam[1][1] =-205  ;   
-  fAsyMinParam[1][2] = 1.0  ;   // cut for NLM>=2 
-  fAsyMinParam[1][3] = 100  ;   // E cut change
-  
+  //TF1 *lAsyNLM2 = new TF1("lAsyNLM2","0.95+0.0015*x-233/(x*x*x)",5,100);
+  fAsyMinParam[1][0] = 0.95  ;
+  fAsyMinParam[1][1] = 0.0015;
+  fAsyMinParam[1][2] =-233   ;
+  fAsyMinParam[1][3] = 1.0   ; // Absolute max
+
   fSplitEFracMin[0]   = 0.0 ; // 0.96
   fSplitEFracMin[1]   = 0.0 ; // 0.96
   fSplitEFracMin[2]   = 0.0 ; // 0.7
@@ -334,11 +341,11 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_
   
   // Get the parametrized min cut of asymmetry for NLM=2 up to 11 GeV
 
-  Float_t cut = fAsyMinParam[inlm][0] + fAsyMinParam[inlm][1]/energy/energy/energy ;
+  Float_t cut = fAsyMinParam[inlm][0] + fAsyMinParam[inlm][1]*energy + fAsyMinParam[inlm][2]/energy/energy/energy ;
   
   // In any case and beyond validity energy range of the function,
   // the parameter cannot be smaller than 1
-  if(cut > fAsyMinParam[inlm][2] || energy > fAsyMinParam[inlm][3] ) cut = fAsyMinParam[inlm][2];
+  if( cut > fAsyMinParam[inlm][3] ) cut = fAsyMinParam[inlm][3];
   
   //printf("energy %2.2f - nlm: %d (%d)- p0 %f, p1 %f, p2 %f, p3 %f ; cut: %2.2f\n",energy,nlm,inlm,
   //       fAsyMinParam[inlm][0],fAsyMinParam[inlm][1],fAsyMinParam[inlm][2],fAsyMinParam[inlm][3],cut);
@@ -363,26 +370,25 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   Int_t inlm = nlm-1;
   if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
     
-  Float_t meanMass = (energy * energy * fMassWidthPi0Param[inlm][2] +
-                      energy * fMassWidthPi0Param[inlm][1] +
-                      fMassWidthPi0Param[inlm][0]);
+  Float_t meanMass = energy * fMassPi0Param[inlm][1] + fMassPi0Param[inlm][0];
+  if(energy > fMassPi0Param[inlm][2]) meanMass = energy * fMassPi0Param[inlm][4] + fMassPi0Param[inlm][3];
   
   // In case of higher energy cell cut than 50 MeV, smaller mean mass
   meanMass -= fMassShiftHighECell;
   
   // Get the parametrized width of the mass
   Float_t width   = 0.009;
-  if     (energy <  fMassWidthPi0Param[inlm][3] && energy > 8 )
-    width = fMassWidthPi0Param[inlm][4] + energy                     *fMassWidthPi0Param[inlm][5];
-  else if(energy >= fMassWidthPi0Param[inlm][3])
-    width = fMassWidthPi0Param[inlm][4] + fMassWidthPi0Param[inlm][3]*fMassWidthPi0Param[inlm][5]; // Fixed value at 16 GeV
-  
+  if     (energy > 8 && energy < fWidthPi0Param[inlm][2])
+    width = energy * fWidthPi0Param[inlm][1] + fWidthPi0Param[inlm][0];
+  else if(              energy > fWidthPi0Param[inlm][2])
+    width = energy * energy * fWidthPi0Param[inlm][5] + energy * fWidthPi0Param[inlm][4] + fWidthPi0Param[inlm][3];
+
   // Calculate the 2 sigma cut
   Float_t minMass = meanMass-fSplitWidthSigma*width;
   Float_t maxMass = meanMass+fSplitWidthSigma*width;
 
   // In case of low energy, hard cut to avoid conversions
-  if(energy < 10  && minMass < fMassWidthPi0Param[inlm][6] ) minMass = fMassWidthPi0Param[inlm][6];
+  if(energy < 10  && minMass < fMassPi0Param[inlm][5] ) minMass = fMassPi0Param[inlm][5];
   
   //printf("E %2.2f, mass %1.1f, nlm %d: sigma %1.1f width %3.1f, mean Mass %3.0f, minMass %3.0f, maxMass %3.0f\n ",
   //       energy,mass *1000, inlm, fSplitWidthSigma, width*1000, meanMass*1000,minMass*1000,maxMass*1000);
@@ -392,42 +398,60 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   
 }
 
-//_____________________________________________________________________________________________
+//________________________________________________
+Bool_t AliCaloPID::IsInM02Range(const Float_t m02)
+{
+  // Select the appropriate m02 range, fix cut, not E dependent 
+    
+  Float_t minCut = fSplitM02MinCut;
+  Float_t maxCut = fSplitM02MaxCut;
+
+  if(m02 < maxCut && m02 > minCut) return kTRUE;
+  else                             return kFALSE;
+  
+}
+
+//___________________________________________________________________________________________
 Bool_t AliCaloPID::IsInPi0M02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
 {
   // Select the appropriate m02 range in splitting method for pi0
   
   if(!fUseSplitSSCut) return kTRUE ;
+
+  //First check the absolute minimum and maximum
+  if(!IsInM02Range(m02)) return kFALSE ;
   
-  Float_t minCut = fSplitM02MinCut;
-  Float_t maxCut = fSplitM02MaxCut;
-  
-  if(!fUseSimpleM02Cut)
+  //If requested, check the E dependent cuts
+  else if(!fUseSimpleM02Cut)
   {
     Int_t inlm = nlm-1;
     if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
-        
 
+    Float_t minCut = fSplitM02MinCut;
+    Float_t maxCut = fSplitM02MaxCut;
+    
     //e^{a+bx} + c + dx + e/x
-    minCut = TMath::Exp( fM02MinParam[inlm][0] + fM02MinParam[inlm][1]*energy ) +
-             fM02MinParam[inlm][2] + fM02MinParam[inlm][3]*energy + fM02MinParam[inlm][4]/energy;
-
-    maxCut = TMath::Exp( fM02MaxParam[inlm][0] + fM02MaxParam[inlm][1]*energy ) +
-             fM02MaxParam[inlm][2] + fM02MaxParam[inlm][3]*energy + fM02MaxParam[inlm][4]/energy;
-
- 
+    if(energy > 1) minCut = TMath::Exp( fM02MinParam[inlm][0] + fM02MinParam[inlm][1]*energy ) +
+                            fM02MinParam[inlm][2] + fM02MinParam[inlm][3]*energy + fM02MinParam[inlm][4]/energy;
+    
+    if(energy > 1) maxCut = TMath::Exp( fM02MaxParam[inlm][0] + fM02MaxParam[inlm][1]*energy ) +
+                            fM02MaxParam[inlm][2] + fM02MaxParam[inlm][3]*energy + fM02MaxParam[inlm][4]/energy;
+    
     // In any case and beyond validity energy range of the function,
-    // the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
-    if( minCut < fM02MinParam[inlm][5] || energy > fM02MinParam[inlm][6] ) minCut = fM02MinParam[inlm][5];
-    if( maxCut < fM02MaxParam[inlm][5] || energy > fM02MaxParam[inlm][6] ) maxCut = fM02MaxParam[inlm][5];
-    if( nlm>2 ) maxCut+=0.75;
+    // the parameter cannot be smaller than 0.3 or larger than 4-5
+    if( minCut < fSplitM02MinCut) minCut = fSplitM02MinCut;
+    if( maxCut > fSplitM02MaxCut) maxCut = fSplitM02MaxCut;
+    if( nlm > 2 ) maxCut+=fM02MaxParamShiftNLMN;
+    
+    //if(energy > 7) printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,maxCut);
+    
+    if(m02 < maxCut && m02 > minCut) return kTRUE;
+    else                             return kFALSE;
+    
   }
   
-  //if(energy > 7) printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,maxCut);
+  else return kTRUE;
   
-  if(m02 < maxCut && m02 > minCut) return kTRUE;
-  else                             return kFALSE;
-
 }
 
 
@@ -439,43 +463,47 @@ Bool_t AliCaloPID::IsInEtaM02Range(const Float_t energy, const Float_t m02,  con
   
   if(!fUseSplitSSCut) return kTRUE ;
   
-  Float_t minCut = fSplitM02MinCut;
-  Float_t maxCut = fSplitM02MaxCut;
+  //First check the absolute minimum and maximum
+  if(!IsInM02Range(m02)) return kFALSE ;
   
-  //DO NOT USE, study with new parametrization
-  if(!fUseSimpleM02Cut)
+  //DO NOT USE, study parametrization
+  
+  //If requested, check the E dependent cuts
+  else if(!fUseSimpleM02Cut)
   {
     Int_t inlm = nlm-1;
     if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
+    
+    Float_t minCut = fSplitM02MinCut;
+    Float_t maxCut = fSplitM02MaxCut;
     
     Float_t shiftE = energy-20; // to be tuned
     if(nlm==1) shiftE=energy-28;
     
     //e^{a+bx} + c + dx + e/x
-    minCut = TMath::Exp( fM02MinParam[inlm][0] + fM02MinParam[inlm][1]*shiftE ) +
-             fM02MinParam[inlm][2] + fM02MinParam[inlm][3]*shiftE + fM02MinParam[inlm][4]/shiftE;
+    if(shiftE > 1) minCut = TMath::Exp( fM02MinParam[inlm][0] + fM02MinParam[inlm][1]*shiftE ) +
+                  fM02MinParam[inlm][2] + fM02MinParam[inlm][3]*shiftE + fM02MinParam[inlm][4]/shiftE;
     
-    // In any case and beyond validity energy range of the function,
-    // the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
-    Float_t minE = 50;
-    if( nlm>1 ) minE = 35;
-    if( minCut < fM02MinParam[inlm][5]+1 || shiftE > minE ) minCut = fM02MinParam[inlm][5]+1;
-
+    // In any case the parameter cannot be smaller than 0.3
+    if( minCut < fSplitM02MinCut) minCut = fSplitM02MinCut;
+    
     shiftE = energy+20; // to be tuned
-
-    maxCut = 1 + TMath::Exp( fM02MaxParam[inlm][0] + fM02MaxParam[inlm][1]*shiftE ) +
-             fM02MaxParam[inlm][2] + fM02MaxParam[inlm][3]*shiftE + fM02MaxParam[inlm][4]/shiftE;
     
-    Float_t maxE = 50;
-    if(nlm>1) maxE = 40;
-    if( maxCut < fM02MaxParam[inlm][5]+1 || shiftE > maxE ) maxCut = fM02MaxParam[inlm][5]+1;
-    if( nlm>2 ) maxCut+=0.75;
+    if(shiftE > 1)  maxCut = 1 + TMath::Exp( fM02MaxParam[inlm][0] + fM02MaxParam[inlm][1]*shiftE ) +
+                             fM02MaxParam[inlm][2] + fM02MaxParam[inlm][3]*shiftE + fM02MaxParam[inlm][4]/shiftE;
+    
+    // In any case the parameter cannot be smaller than 4-5
+    if( maxCut > fSplitM02MaxCut) maxCut = fSplitM02MaxCut;
+    if( nlm > 2 ) maxCut+=fM02MaxParamShiftNLMN;
+    
+    //if(energy>6)printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,maxCut);
+    
+    if(m02 < maxCut && m02 > minCut) return kTRUE;
+    else                             return kFALSE;
+    
   }
   
-  //if(energy>6)printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,maxCut);
-  
-  if(m02 < maxCut && m02 > minCut) return kTRUE;
-  else                             return kFALSE;
+  else return kTRUE;
   
 }
 
@@ -488,7 +516,7 @@ Bool_t AliCaloPID::IsInConM02Range(const Float_t energy, const Float_t m02,  con
   if(!fUseSplitSSCut) return kTRUE ;
   
   Float_t minCut = 0.1;
-  Float_t maxCut = 0.3;
+  Float_t maxCut = fSplitM02MinCut;
   
   if(!fUseSimpleM02Cut)
   {
@@ -496,14 +524,11 @@ Bool_t AliCaloPID::IsInConM02Range(const Float_t energy, const Float_t m02,  con
     if(nlm > 2) inlm=1; // only 2 cases defined nlm=1 and nlm>=2
     
     //e^{a+bx} + c + dx + e/x
-    maxCut = TMath::Exp( fM02MinParam[inlm][0] + fM02MinParam[inlm][1]*energy ) +
-             fM02MinParam[inlm][2] + fM02MinParam[inlm][3]*energy + fM02MinParam[inlm][4]/energy;
+    if(energy > 1) maxCut = TMath::Exp( fM02MinParam[inlm][0] + fM02MinParam[inlm][1]*energy ) +
+                            fM02MinParam[inlm][2] + fM02MinParam[inlm][3]*energy + fM02MinParam[inlm][4]/energy;
     
-    // In any case and beyond validity energy range of the function,
-    // the parameter cannot be smaller than this (0.3 for nlm=1 and 0.6 for the rest)
-    if( maxCut < fM02MaxParam[inlm][5] || energy > fM02MaxParam[inlm][6] ) maxCut = fM02MaxParam[inlm][5];
+    if( maxCut < fSplitM02MinCut) maxCut = fSplitM02MinCut;
   }
-  
   
   if(m02 < maxCut && m02 > minCut) return kTRUE;
   else                             return kFALSE;
@@ -806,7 +831,9 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Asymmetry of cluster
   Float_t asy =-10;
   if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
+
   if( !IsInPi0SplitAsymmetryRange(eClus,asy,nMax) ) return kNeutralUnknown ;
+  
   
   if (fDebug>0) printf("\t pass asymmetry cut\n");
   
