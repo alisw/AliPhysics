@@ -1180,7 +1180,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   
   MatchTriggerCluster(patches);
   
-  if(fRemoveBadTriggerEvents)
+  // If requested, remove badly triggeed events, but only when the EMCal trigger bit is set
+  if(fRemoveBadTriggerEvents  && (IsEventEMCALL1() || IsEventEMCALL0()))
   {
     if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent() - ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
            fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
@@ -2710,7 +2711,8 @@ void AliCaloTrackReader::SetEventTriggerBit()
 	  // Min Bias pp, PbPb, pPb
 	  else if((fEventTriggerMask & AliVEvent::kMB  ) ||
             (fEventTriggerMask & AliVEvent::kINT7) ||
-            (fEventTriggerMask & AliVEvent::kINT8)       )
+            (fEventTriggerMask & AliVEvent::kINT8) ||
+            (fEventTriggerMask & AliVEvent::kAnyINT) )
     {
 	    fEventTrigMinBias = kTRUE;
     }
