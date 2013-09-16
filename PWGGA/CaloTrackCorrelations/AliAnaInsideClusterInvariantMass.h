@@ -46,6 +46,12 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         FillAngleHistograms(const Int_t nMax, const Bool_t matched,
                                    const Float_t en, const Float_t angle, const Float_t mass);
   
+
+  void         FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcindex,
+                                        TLorentzVector pi0, TLorentzVector g1, TLorentzVector g2,
+                                        const Float_t m02, const Int_t pid);
+
+  
   void         FillEBinHistograms(const Int_t ebin, const Int_t nMax, const Int_t mcindex, const Float_t splitFrac,
                                   const Float_t mass, const Float_t asym, const Float_t l0);
   
@@ -119,7 +125,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnFillAngleHistograms()             { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHistograms()            { fFillAngleHisto      = kFALSE ; }
-  
+
+  void         SwitchOnFillArmenterosHistograms()        { fFillArmenterosHisto = kTRUE  ; }
+  void         SwitchOffFillArmenterosHistograms()       { fFillArmenterosHisto = kFALSE ; }
+
   void         SwitchOnFillExtraSSHistograms()           { fFillSSExtraHisto    = kTRUE  ; }
   void         SwitchOffFillExtraSSHistograms()          { fFillSSExtraHisto    = kFALSE ; }
   
@@ -170,8 +179,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   
   //For histograms
-  enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  
-                 kmcEta    = 4, kmcElectron   = 5, kmcHadron = 6, kmcPi0Conv = 7 };
+  enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  kmcPi0Conv = 4,
+                 kmcEta    = 5, kmcHadron = 6  };
 
  private:
   
@@ -193,6 +202,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillIdConvHisto ;      // Fill histograms for clusters identified as conversion
   Bool_t       fFillIdEtaHisto ;       // Fill histograms for clusters identified as Eta
   Bool_t       fFillHighMultHisto;     // Fill centrality/event plane histograms
+  Bool_t       fFillArmenterosHisto;   // Fill armenteros type histo
   
   Float_t      fSSWeight[10];          // List of weights to test
   Int_t        fSSWeightN;             // Total number of weights to test
@@ -205,17 +215,29 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   //Histograms
   
-  TH2F       * fhMassNLocMax1[8][2]  ;                  //! Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
-  TH2F       * fhMassNLocMax2[8][2]  ;                  //! Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
-  TH2F       * fhMassNLocMaxN[8][2]  ;                  //! Mass of >2 cells local maxima vs E, 1-6 for different MC particle types
+  TH2F       * fhMassNLocMax1[7][2]  ;                  //! Mass of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
+  TH2F       * fhMassNLocMax2[7][2]  ;                  //! Mass of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhMassNLocMaxN[7][2]  ;                  //! Mass of >2 cells local maxima vs E, 1-6 for different MC particle types
 
-  TH2F       * fhAsymNLocMax1[8][2]  ;                  //! Asymmetry of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
-  TH2F       * fhAsymNLocMax2[8][2]  ;                  //! Asymmetry of 2 cells local maxima vs E,  1-6 for different MC particle types
-  TH2F       * fhAsymNLocMaxN[8][2]  ;                  //! Asymmetry of >2 cells local maxima vs E, 1-6 for different MC particle types
+  TH2F       * fhAsymNLocMax1[7][2]  ;                  //! Asymmetry of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
+  TH2F       * fhAsymNLocMax2[7][2]  ;                  //! Asymmetry of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhAsymNLocMaxN[7][2]  ;                  //! Asymmetry of >2 cells local maxima vs E, 1-6 for different MC particle types
+  
+  TH2F       * fhArmNLocMax1[5][4]  ;                   //! Armenteros of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types
+  TH2F       * fhArmNLocMax2[5][4]  ;                   //! Armenteros of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhArmNLocMaxN[5][4]  ;                   //! Armenteros of >2 cells local maxima vs E, 1-6 for different MC particle types
   
   TH2F       * fhSplitEFractionvsAsyNLocMax1[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1 vs |A|
   TH2F       * fhSplitEFractionvsAsyNLocMax2[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2 vs |A|
   TH2F       * fhSplitEFractionvsAsyNLocMaxN[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2 vs |A|  
+
+  TH2F       * fhMassAsyCutNLocMax1  ;                  //! Asy(E) selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassAsyCutNLocMax2  ;                  //! Asy(E) selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassAsyCutNLocMaxN  ;                  //! Asy(E) selection, not matched, Mass of split clusters, NLM > 2
+  
+  TH2F       * fhM02AsyCutNLocMax1  ;                   //! Asy(E) selection, not matched, M02, NLM = 1
+  TH2F       * fhM02AsyCutNLocMax2  ;                   //! Asy(E) selection, not matched, M02, NLM = 2
+  TH2F       * fhM02AsyCutNLocMaxN  ;                   //! Asy(E) selection, not matched, M02, NLM > 2
   
   TH2F       * fhMassM02CutNLocMax1  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhMassM02CutNLocMax2  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM = 1
@@ -229,9 +251,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassSplitECutNLocMax2 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhMassSplitECutNLocMaxN ;                //! 85% of split energy, not matched, Mass of split clusters, NLM > 2    
     
-  TH2F       * fhMassM02NLocMax1[8][2]  ;               //! Mass of splitted clusters when 1  local max vs M02, for E > 8 GeV, 1-6 for different MC particle types
-  TH2F       * fhMassM02NLocMax2[8][2]  ;               //! Mass of splitted clusters when 2  local max vs M02, for E > 8 GeV, 1-6 for different MC particle types
-  TH2F       * fhMassM02NLocMaxN[8][2]  ;               //! Mass of splitted clusters when >2 local max vs M02, for E > 8 GeV, 1-6 for different MC particle types
+  TH2F       * fhMassM02NLocMax1[7][2]  ;               //! Mass of splitted clusters when 1  local max vs M02, for E > 8 GeV, 1-6 for different MC particle types
+  TH2F       * fhMassM02NLocMax2[7][2]  ;               //! Mass of splitted clusters when 2  local max vs M02, for E > 8 GeV, 1-6 for different MC particle types
+  TH2F       * fhMassM02NLocMaxN[7][2]  ;               //! Mass of splitted clusters when >2 local max vs M02, for E > 8 GeV, 1-6 for different MC particle types
   
   TH2F       * fhMassM02NLocMax1Ebin[4] ;               //! Mass of splitted clusters when 1  local max vs M02, 4 E bins, neutral clusters
   TH2F       * fhMassM02NLocMax2Ebin[4] ;               //! Mass of splitted clusters when 2  local max vs M02, 4 E bins, neutral clusters
@@ -248,90 +270,90 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAsyMCGenRecoDiffMCPi0[3];              //! reconstructed-generated asymmetry of splitted clusters vs E from pi0, for 3 NLM cases
   TH2F       * fhAsyMCGenRecoDiffMCPi0Conv[3];          //! reconstructed-generated asymmetry of splitted clusters vs E from converted pi0, for 3 NLM cases
   
-  TH2F       * fhMassDispEtaNLocMax1[8][2]  ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 8 GeV, 1-6 for different MC particle types 
-  TH2F       * fhMassDispEtaNLocMax2[8][2]  ;           //! Mass of 2 cells local maxima, vs M02, for E > 8 GeV,  1-6 for different MC particle types
-  TH2F       * fhMassDispEtaNLocMaxN[8][2]  ;           //! Mass of >2 cells local maxima, vs M02, for E > 8 GeV, 1-6 for different MC particle types  
+  TH2F       * fhMassDispEtaNLocMax1[7][2]  ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 8 GeV, 1-6 for different MC particle types 
+  TH2F       * fhMassDispEtaNLocMax2[7][2]  ;           //! Mass of 2 cells local maxima, vs M02, for E > 8 GeV,  1-6 for different MC particle types
+  TH2F       * fhMassDispEtaNLocMaxN[7][2]  ;           //! Mass of >2 cells local maxima, vs M02, for E > 8 GeV, 1-6 for different MC particle types  
   
   TH2F       * fhMassDispEtaNLocMax1Ebin[4] ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, 4 E bins, neutral clusters 
   TH2F       * fhMassDispEtaNLocMax2Ebin[4] ;           //! Mass of 2 cells local maxima, vs M02, 4 E bins, neutral clusters
   TH2F       * fhMassDispEtaNLocMaxNEbin[4] ;           //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
   
-  TH2F       * fhMassDispPhiNLocMax1[8][2]  ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 8 GeV, 1-6 for different MC particle types 
-  TH2F       * fhMassDispPhiNLocMax2[8][2]  ;           //! Mass of 2 cells local maxima, vs M02, for E > 8 GeV,  1-6 for different MC particle types
-  TH2F       * fhMassDispPhiNLocMaxN[8][2]  ;           //! Mass of >2 cells local maxima, vs M02, for E > 8 GeV, 1-6 for different MC particle types  
+  TH2F       * fhMassDispPhiNLocMax1[7][2]  ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 8 GeV, 1-6 for different MC particle types 
+  TH2F       * fhMassDispPhiNLocMax2[7][2]  ;           //! Mass of 2 cells local maxima, vs M02, for E > 8 GeV,  1-6 for different MC particle types
+  TH2F       * fhMassDispPhiNLocMaxN[7][2]  ;           //! Mass of >2 cells local maxima, vs M02, for E > 8 GeV, 1-6 for different MC particle types  
   
   TH2F       * fhMassDispPhiNLocMax1Ebin[4] ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, 4 E bins, neutral clusters 
   TH2F       * fhMassDispPhiNLocMax2Ebin[4] ;           //! Mass of 2 cells local maxima, vs M02, 4 E bins, neutral clusters
   TH2F       * fhMassDispPhiNLocMaxNEbin[4] ;           //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
   
-  TH2F       * fhMassDispAsyNLocMax1[8][2]  ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 8 GeV, 1-6 for different MC particle types 
-  TH2F       * fhMassDispAsyNLocMax2[8][2]  ;           //! Mass of 2 cells local maxima, vs M02, for E > 8 GeV,  1-6 for different MC particle types
-  TH2F       * fhMassDispAsyNLocMaxN[8][2]  ;           //! Mass of >2 cells local maxima, vs M02, for E > 8 GeV, 1-6 for different MC particle types  
+  TH2F       * fhMassDispAsyNLocMax1[7][2]  ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, for E > 8 GeV, 1-6 for different MC particle types 
+  TH2F       * fhMassDispAsyNLocMax2[7][2]  ;           //! Mass of 2 cells local maxima, vs M02, for E > 8 GeV,  1-6 for different MC particle types
+  TH2F       * fhMassDispAsyNLocMaxN[7][2]  ;           //! Mass of >2 cells local maxima, vs M02, for E > 8 GeV, 1-6 for different MC particle types  
   
   TH2F       * fhMassDispAsyNLocMax1Ebin[4] ;           //! Mass of 2 highest energy cells when 1 local max, vs M02, 4 E bins, neutral clusters 
   TH2F       * fhMassDispAsyNLocMax2Ebin[4] ;           //! Mass of 2 cells local maxima, vs M02, 4 E bins, neutral clusters
   TH2F       * fhMassDispAsyNLocMaxNEbin[4] ;           //! Mass of >2 cells local maxima, vs M02, 4 E bins, neutral clusters  
   
-  TH2F       * fhNLocMax      [8][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types
-  TH2F       * fhNLocMaxM02Cut[8][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
+  TH2F       * fhNLocMax      [7][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types
+  TH2F       * fhNLocMaxM02Cut[7][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
 
-  TH2F       * fhSplitClusterENLocMax[8][2] ;           //! Number of maxima in cluster vs E of splitted clusters, 1-6 for different MC particle types
-  TH2F       * fhSplitClusterEPi0NLocMax[8][2] ;        //! Number of maxima in cluster vs E of splitted clusters when cluster id as pi0, 1-6 for different MC particle types
+  TH2F       * fhSplitClusterENLocMax[7][2] ;           //! Number of maxima in cluster vs E of splitted clusters, 1-6 for different MC particle types
+  TH2F       * fhSplitClusterEPi0NLocMax[7][2] ;        //! Number of maxima in cluster vs E of splitted clusters when cluster id as pi0, 1-6 for different MC particle types
   
-  TH2F       * fhM02NLocMax1  [8][2] ;                  //! M02 vs E for N max in cluster = 1, 1-6 for different MC particle types
-  TH2F       * fhM02NLocMax2  [8][2] ;                  //! M02 vs E for N max in cluster = 2, 1-6 for different MC particle types
-  TH2F       * fhM02NLocMaxN  [8][2] ;                  //! M02 vs E for N max in cluster > 2, 1-6 for different MC particle types
+  TH2F       * fhM02NLocMax1  [7][2] ;                  //! M02 vs E for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhM02NLocMax2  [7][2] ;                  //! M02 vs E for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhM02NLocMaxN  [7][2] ;                  //! M02 vs E for N max in cluster > 2, 1-6 for different MC particle types
   
   TH2F       * fhMCAsymM02NLocMax1MCPi0Ebin[4] ;        //! M02 vs decay asymmetry for N max in cluster = 1, for 4 energy bins
   TH2F       * fhMCAsymM02NLocMax2MCPi0Ebin[4] ;        //! M02 vs decay asymmetry for N max in cluster = 2, for 4 energy bins
   TH2F       * fhMCAsymM02NLocMaxNMCPi0Ebin[4] ;        //! M02 vs decay asymmetry for N max in cluster > 2, for 4 energy bins
   
-  TH2F       * fhMCGenFracNLocMax1[8][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
-  TH2F       * fhMCGenFracNLocMax2[8][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
-  TH2F       * fhMCGenFracNLocMaxN[8][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
+  TH2F       * fhMCGenFracNLocMax1[7][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenFracNLocMax2[7][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenFracNLocMaxN[7][2] ;              //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
 
-  TH2F       * fhMCGenFracNLocMax1NoOverlap[8][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, no overlap found
-  TH2F       * fhMCGenFracNLocMax2NoOverlap[8][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, no overlap found
-  TH2F       * fhMCGenFracNLocMaxNNoOverlap[8][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, no overlap found
+  TH2F       * fhMCGenFracNLocMax1NoOverlap[7][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, no overlap found
+  TH2F       * fhMCGenFracNLocMax2NoOverlap[7][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, no overlap found
+  TH2F       * fhMCGenFracNLocMaxNNoOverlap[7][2] ;     //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, no overlap found
   
   TH2F       * fhMCGenFracAfterCutsNLocMax1MCPi0 ;      //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, MCPi0 after M02 and asymmetry cut
   TH2F       * fhMCGenFracAfterCutsNLocMax2MCPi0 ;      //! E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, MCPi0, after M02 and asymmetry cut
   TH2F       * fhMCGenFracAfterCutsNLocMaxNMCPi0 ;      //! E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, MCPi0, after M02 and asymmetry cut
 
-  TH2F       * fhMCGenSplitEFracNLocMax1[8][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
-  TH2F       * fhMCGenSplitEFracNLocMax2[8][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
-  TH2F       * fhMCGenSplitEFracNLocMaxN[8][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
+  TH2F       * fhMCGenSplitEFracNLocMax1[7][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenSplitEFracNLocMax2[7][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenSplitEFracNLocMaxN[7][2] ;        //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types  
 
-  TH2F       * fhMCGenSplitEFracNLocMax1NoOverlap[8][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, no overlap
-  TH2F       * fhMCGenSplitEFracNLocMax2NoOverlap[8][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, no overlap
-  TH2F       * fhMCGenSplitEFracNLocMaxNNoOverlap[8][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, no overlap
+  TH2F       * fhMCGenSplitEFracNLocMax1NoOverlap[7][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, no overlap
+  TH2F       * fhMCGenSplitEFracNLocMax2NoOverlap[7][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, no overlap
+  TH2F       * fhMCGenSplitEFracNLocMaxNNoOverlap[7][2];//! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, no overlap
   
   TH2F       * fhMCGenSplitEFracAfterCutsNLocMax1MCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracAfterCutsNLocMax2MCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0; //! E generated particle / E1+E2 reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types
   
-  TH2F       * fhMCGenEFracvsSplitEFracNLocMax1[8][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 1, MC pi0
-  TH2F       * fhMCGenEFracvsSplitEFracNLocMax2[8][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 2, MC pi0
-  TH2F       * fhMCGenEFracvsSplitEFracNLocMaxN[8][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster > 2, MC pi0
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMax1[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 1, MC pi0
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMax2[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster = 2, MC pi0
+  TH2F       * fhMCGenEFracvsSplitEFracNLocMaxN[7][2] ; //! E generated particle / E reconstructed vs E1+E2 reconstructed / E reconstructed for N max in cluster > 2, MC pi0
   
-  TH2F       * fhMCGenEvsSplitENLocMax1[8][2] ;         //! E generated particle vs E1+E2 for N max in cluster = 1, 1-6 for different MC particle types
-  TH2F       * fhMCGenEvsSplitENLocMax2[8][2] ;         //! E generated particle vs E1+E2 for N max in cluster = 2, 1-6 for different MC particle types
-  TH2F       * fhMCGenEvsSplitENLocMaxN[8][2] ;         //! E generated particle vs E1+E2 for N max in cluster > 2, 1-6 for different MC particle types  
+  TH2F       * fhMCGenEvsSplitENLocMax1[7][2] ;         //! E generated particle vs E1+E2 for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhMCGenEvsSplitENLocMax2[7][2] ;         //! E generated particle vs E1+E2 for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhMCGenEvsSplitENLocMaxN[7][2] ;         //! E generated particle vs E1+E2 for N max in cluster > 2, 1-6 for different MC particle types  
   
-  TH2F       * fhMCGenFracNLocMaxEbin[8][4] ;           //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, not matched to track
-  TH2F       * fhMCGenFracNLocMaxEbinMatched[8][4] ;    //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, matched to track
+  TH2F       * fhMCGenFracNLocMaxEbin[7][4] ;           //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, not matched to track
+  TH2F       * fhMCGenFracNLocMaxEbinMatched[7][4] ;    //! NLM vs E generated particle / E reconstructed vs E reconstructed 1-6 for different MC particle types, matched to track
   
-  TH2F       * fhM02MCGenFracNLocMax1Ebin[8][4] ;       //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, not track matched
-  TH2F       * fhM02MCGenFracNLocMax2Ebin[8][4] ;       //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, not track matched
-  TH2F       * fhM02MCGenFracNLocMaxNEbin[8][4] ;       //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
+  TH2F       * fhM02MCGenFracNLocMax1Ebin[7][4] ;       //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, not track matched
+  TH2F       * fhM02MCGenFracNLocMax2Ebin[7][4] ;       //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, not track matched
+  TH2F       * fhM02MCGenFracNLocMaxNEbin[7][4] ;       //! M02 vs E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
   
-  TH2F       * fhMassMCGenFracNLocMax1Ebin[8][4] ;      //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, not track matched
-  TH2F       * fhMassMCGenFracNLocMax2Ebin[8][4] ;      //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, not track matched
-  TH2F       * fhMassMCGenFracNLocMaxNEbin[8][4] ;      //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
+  TH2F       * fhMassMCGenFracNLocMax1Ebin[7][4] ;      //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 1, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassMCGenFracNLocMax2Ebin[7][4] ;      //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster = 2, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassMCGenFracNLocMaxNEbin[7][4] ;      //! Mass vs E generated particle / E reconstructed vs E reconstructed for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
   
-  TH2F       * fhNCellNLocMax1[8][2] ;                  //! n cells in cluster vs E for N max in cluster = 1, 1-6 for different MC particle types
-  TH2F       * fhNCellNLocMax2[8][2] ;                  //! n cells in cluster vs E for N max in cluster = 2, 1-6 for different MC particle types
-  TH2F       * fhNCellNLocMaxN[8][2] ;                  //! n cells in cluster vs E for N max in cluster > 2, 1-6 for different MC particle types
+  TH2F       * fhNCellNLocMax1[7][2] ;                  //! n cells in cluster vs E for N max in cluster = 1, 1-6 for different MC particle types
+  TH2F       * fhNCellNLocMax2[7][2] ;                  //! n cells in cluster vs E for N max in cluster = 2, 1-6 for different MC particle types
+  TH2F       * fhNCellNLocMaxN[7][2] ;                  //! n cells in cluster vs E for N max in cluster > 2, 1-6 for different MC particle types
   
   TH2F       * fhNCellMassEHighNLocMax1MCPi0 ;          //! n cells in cluster vs mass for high energy clusters,  for N max in cluster = 1, for MC pi0
   TH2F       * fhNCellM02EHighNLocMax1MCPi0  ;          //! n cells in cluster vs m02  for high energy clusters,  for N max in cluster = 1, for MC pi0
@@ -348,64 +370,72 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhNCellMassELowNLocMaxNMCPi0  ;          //! n cells in cluster vs mass for low  energy clusters,  for N max in cluster > 2, for MC pi0
   TH2F       * fhNCellM02ELowNLocMaxNMCPi0   ;          //! n cells in cluster vs m02  for low  energy clusters,  for N max in cluster > 2, for MC pi0
   
-  TH2F       * fhM02Pi0NLocMax1[8][2] ;                 //! M02 for Mass around pi0, N Local Maxima = 1
-  TH2F       * fhM02EtaNLocMax1[8][2] ;                 //! M02 for Mass around eta, N Local Maxima = 1
-  TH2F       * fhM02ConNLocMax1[8][2] ;                 //! M02 for Mass around close to 0, N Local Maxima = 1
+  TH2F       * fhM02Pi0NLocMax1[7][2] ;                 //! M02 for Mass around pi0, N Local Maxima = 1
+  TH2F       * fhM02EtaNLocMax1[7][2] ;                 //! M02 for Mass around eta, N Local Maxima = 1
+  TH2F       * fhM02ConNLocMax1[7][2] ;                 //! M02 for Mass around close to 0, N Local Maxima = 1
   
-  TH2F       * fhM02Pi0NLocMax2[8][2] ;                 //! M02 for Mass around pi0, N Local Maxima = 2
-  TH2F       * fhM02EtaNLocMax2[8][2] ;                 //! M02 for Mass around eta, N Local Maxima = 2
-  TH2F       * fhM02ConNLocMax2[8][2] ;                 //! M02 for Mass around close to 0, N Local Maxima = 2
+  TH2F       * fhM02Pi0NLocMax2[7][2] ;                 //! M02 for Mass around pi0, N Local Maxima = 2
+  TH2F       * fhM02EtaNLocMax2[7][2] ;                 //! M02 for Mass around eta, N Local Maxima = 2
+  TH2F       * fhM02ConNLocMax2[7][2] ;                 //! M02 for Mass around close to 0, N Local Maxima = 2
   
-  TH2F       * fhM02Pi0NLocMaxN[8][2] ;                 //! M02 for Mass around pi0, N Local Maxima > 2
-  TH2F       * fhM02EtaNLocMaxN[8][2] ;                 //! M02 for Mass around eta, N Local Maxima > 2
-  TH2F       * fhM02ConNLocMaxN[8][2] ;                 //! M02 for Mass around close to 0, N Local Maxima > 2
+  TH2F       * fhM02Pi0NLocMaxN[7][2] ;                 //! M02 for Mass around pi0, N Local Maxima > 2
+  TH2F       * fhM02EtaNLocMaxN[7][2] ;                 //! M02 for Mass around eta, N Local Maxima > 2
+  TH2F       * fhM02ConNLocMaxN[7][2] ;                 //! M02 for Mass around close to 0, N Local Maxima > 2
 
-  TH2F       * fhMassPi0NLocMax1[8][2] ;                //! Mass for selected pi0, N Local Maxima = 1
-  TH2F       * fhMassEtaNLocMax1[8][2] ;                //! Mass for selected around eta, N Local Maxima = 1
-  TH2F       * fhMassConNLocMax1[8][2] ;                //! Mass for selected around close to 0, N Local Maxima = 1
+  TH2F       * fhMassPi0NLocMax1[7][2] ;                //! Mass for selected pi0, N Local Maxima = 1
+  TH2F       * fhMassEtaNLocMax1[7][2] ;                //! Mass for selected around eta, N Local Maxima = 1
+  TH2F       * fhMassConNLocMax1[7][2] ;                //! Mass for selected around close to 0, N Local Maxima = 1
   
-  TH2F       * fhMassPi0NLocMax2[8][2] ;                //! Mass for selected around pi0, N Local Maxima = 2
-  TH2F       * fhMassEtaNLocMax2[8][2] ;                //! Mass for selected around eta, N Local Maxima = 2
-  TH2F       * fhMassConNLocMax2[8][2] ;                //! Mass for selected around close to 0, N Local Maxima = 2
+  TH2F       * fhMassPi0NLocMax2[7][2] ;                //! Mass for selected around pi0, N Local Maxima = 2
+  TH2F       * fhMassEtaNLocMax2[7][2] ;                //! Mass for selected around eta, N Local Maxima = 2
+  TH2F       * fhMassConNLocMax2[7][2] ;                //! Mass for selected around close to 0, N Local Maxima = 2
   
-  TH2F       * fhMassPi0NLocMaxN[8][2] ;                //! Mass for selected around pi0, N Local Maxima > 2
-  TH2F       * fhMassEtaNLocMaxN[8][2] ;                //! Mass for selected around eta, N Local Maxima > 2
-  TH2F       * fhMassConNLocMaxN[8][2] ;                //! Mass for selected around close to 0, N Local Maxima > 2
+  TH2F       * fhMassPi0NLocMaxN[7][2] ;                //! Mass for selected around pi0, N Local Maxima > 2
+  TH2F       * fhMassEtaNLocMaxN[7][2] ;                //! Mass for selected around eta, N Local Maxima > 2
+  TH2F       * fhMassConNLocMaxN[7][2] ;                //! Mass for selected around close to 0, N Local Maxima > 2
 
-  TH2F       * fhNCellPi0NLocMax1[8][2] ;               //! n cells for selected around pi0, N Local Maxima = 1
-  TH2F       * fhNCellEtaNLocMax1[8][2] ;               //! n cells for selected around eta, N Local Maxima = 1
-  TH2F       * fhNCellPi0NLocMax2[8][2] ;               //! n cells for selected around pi0, N Local Maxima = 2
-  TH2F       * fhNCellEtaNLocMax2[8][2] ;               //! n cells for selected around eta, N Local Maxima = 2
-  TH2F       * fhNCellPi0NLocMaxN[8][2] ;               //! n cells for selected around pi0, N Local Maxima > 2
-  TH2F       * fhNCellEtaNLocMaxN[8][2] ;               //! n cells for selected around eta, N Local Maxima > 2
+  TH2F       * fhArmPi0NLocMax1[5][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 1
+  TH2F       * fhArmPi0NLocMax2[5][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 2
+  TH2F       * fhArmPi0NLocMaxN[5][4] ;                 //! Armenteros for selected pi0, N Local Maxima > 2
   
-  TH2F       * fhMassAfterCutsNLocMax1[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1
-  TH2F       * fhMassAfterCutsNLocMax2[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2
-  TH2F       * fhMassAfterCutsNLocMaxN[8][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2
+  TH2F       * fhNCellPi0NLocMax1[7][2] ;               //! n cells for selected around pi0, N Local Maxima = 1
+  TH2F       * fhNCellEtaNLocMax1[7][2] ;               //! n cells for selected around eta, N Local Maxima = 1
+  TH2F       * fhNCellPi0NLocMax2[7][2] ;               //! n cells for selected around pi0, N Local Maxima = 2
+  TH2F       * fhNCellEtaNLocMax2[7][2] ;               //! n cells for selected around eta, N Local Maxima = 2
+  TH2F       * fhNCellPi0NLocMaxN[7][2] ;               //! n cells for selected around pi0, N Local Maxima > 2
+  TH2F       * fhNCellEtaNLocMaxN[7][2] ;               //! n cells for selected around eta, N Local Maxima > 2
   
-  TH2F       * fhAsyPi0NLocMax1[8][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 1
-  TH2F       * fhAsyEtaNLocMax1[8][2] ;                 //! Asy for Mass around eta, N Local Maxima = 1
-  TH2F       * fhAsyConNLocMax1[8][2] ;                 //! Asy for Mass around close to 0, N Local Maxima = 1
-  
-  TH2F       * fhAsyPi0NLocMax2[8][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 2
-  TH2F       * fhAsyEtaNLocMax2[8][2] ;                 //! Asy for Mass around eta, N Local Maxima = 2
-  TH2F       * fhAsyConNLocMax2[8][2] ;                 //! Asy for Mass around close to 0, N Local Maxima = 2
-  
-  TH2F       * fhAsyPi0NLocMaxN[8][2] ;                 //! Asy for Mass around pi0, N Local Maxima > 2
-  TH2F       * fhAsyEtaNLocMaxN[8][2] ;                 //! Asy for Mass around eta, N Local Maxima > 2
-  TH2F       * fhAsyConNLocMaxN[8][2] ;                 //! Asy for Mass around close to 0, N Local Maxima > 2
-  
-  TH2F       * fhSplitEFractionNLocMax1[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1
-  TH2F       * fhSplitEFractionNLocMax2[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2
-  TH2F       * fhSplitEFractionNLocMaxN[8][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2
+  TH2F       * fhMassAfterCutsNLocMax1[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1
+  TH2F       * fhMassAfterCutsNLocMax2[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2
+  TH2F       * fhMassAfterCutsNLocMaxN[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2
 
-  TH2F       * fhSplitEFractionAfterCutsNLocMax1[8][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1, after M02 and asymmetry cut
-  TH2F       * fhSplitEFractionAfterCutsNLocMax2[8][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2, after M02 and asymmetry cut
-  TH2F       * fhSplitEFractionAfterCutsNLocMaxN[8][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2, after M02 and asymmetry cut
+  TH2F       * fhArmAfterCutsNLocMax1[5][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 1
+  TH2F       * fhArmAfterCutsNLocMax2[5][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 2
+  TH2F       * fhArmAfterCutsNLocMaxN[5][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima > 2
   
-  TH2F       * fhMassSplitEFractionNLocMax1Ebin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 1, 1-6 for different MC particle types, not track matched
-  TH2F       * fhMassSplitEFractionNLocMax2Ebin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
-  TH2F       * fhMassSplitEFractionNLocMaxNEbin[8][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
+  TH2F       * fhAsyPi0NLocMax1[7][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 1
+  TH2F       * fhAsyEtaNLocMax1[7][2] ;                 //! Asy for Mass around eta, N Local Maxima = 1
+  TH2F       * fhAsyConNLocMax1[7][2] ;                 //! Asy for Mass around close to 0, N Local Maxima = 1
+  
+  TH2F       * fhAsyPi0NLocMax2[7][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 2
+  TH2F       * fhAsyEtaNLocMax2[7][2] ;                 //! Asy for Mass around eta, N Local Maxima = 2
+  TH2F       * fhAsyConNLocMax2[7][2] ;                 //! Asy for Mass around close to 0, N Local Maxima = 2
+  
+  TH2F       * fhAsyPi0NLocMaxN[7][2] ;                 //! Asy for Mass around pi0, N Local Maxima > 2
+  TH2F       * fhAsyEtaNLocMaxN[7][2] ;                 //! Asy for Mass around eta, N Local Maxima > 2
+  TH2F       * fhAsyConNLocMaxN[7][2] ;                 //! Asy for Mass around close to 0, N Local Maxima > 2
+  
+  TH2F       * fhSplitEFractionNLocMax1[7][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1
+  TH2F       * fhSplitEFractionNLocMax2[7][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2
+  TH2F       * fhSplitEFractionNLocMaxN[7][2] ;         //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2
+
+  TH2F       * fhSplitEFractionAfterCutsNLocMax1[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMax2[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2, after M02 and asymmetry cut
+  TH2F       * fhSplitEFractionAfterCutsNLocMaxN[7][2] ; //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2, after M02 and asymmetry cut
+  
+  TH2F       * fhMassSplitEFractionNLocMax1Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 1, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassSplitEFractionNLocMax2Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
+  TH2F       * fhMassSplitEFractionNLocMaxNEbin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
     
   TH2F       * fhAnglePairNLocMax1[2] ;                 //! pair opening angle vs E
   TH2F       * fhAnglePairNLocMax2[2] ;                 //! pair opening angle vs E
@@ -415,26 +445,26 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAnglePairMassNLocMax2[2] ;             //! pair opening angle vs Mass for E > 7 GeV
   TH2F       * fhAnglePairMassNLocMaxN[2] ;             //! pair opening angle vs Mass for E > 7 GeV
   
-  TH2F       * fhTrackMatchedDEtaNLocMax1[8] ;          //! Eta distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMax1[8] ;          //! Phi distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDEtaNLocMax2[8] ;          //! Eta distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMax2[8] ;          //! Phi distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDEtaNLocMaxN[8] ;          //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMaxN[8] ;          //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMax1[7] ;          //! Eta distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax1[7] ;          //! Phi distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMax2[7] ;          //! Eta distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax2[7] ;          //! Phi distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMaxN[7] ;          //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMaxN[7] ;          //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
 
-  TH2F       * fhTrackMatchedDEtaNLocMax1Pos[8] ;       //! Eta distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMax1Pos[8] ;       //! Phi distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDEtaNLocMax2Pos[8] ;       //! Eta distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMax2Pos[8] ;       //! Phi distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDEtaNLocMaxNPos[8] ;       //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMaxNPos[8] ;       //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMax1Pos[7] ;       //! Eta distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax1Pos[7] ;       //! Phi distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMax2Pos[7] ;       //! Eta distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax2Pos[7] ;       //! Phi distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMaxNPos[7] ;       //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMaxNPos[7] ;       //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
 
-  TH2F       * fhTrackMatchedDEtaNLocMax1Neg[8] ;       //! Eta distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMax1Neg[8] ;       //! Phi distance between track and cluster vs cluster E, 1 local maximum
-  TH2F       * fhTrackMatchedDEtaNLocMax2Neg[8] ;       //! Eta distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMax2Neg[8] ;       //! Phi distance between track and cluster vs cluster E, 2 local maximum
-  TH2F       * fhTrackMatchedDEtaNLocMaxNNeg[8] ;       //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
-  TH2F       * fhTrackMatchedDPhiNLocMaxNNeg[8] ;       //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMax1Neg[7] ;       //! Eta distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax1Neg[7] ;       //! Phi distance between track and cluster vs cluster E, 1 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMax2Neg[7] ;       //! Eta distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMax2Neg[7] ;       //! Phi distance between track and cluster vs cluster E, 2 local maximum
+  TH2F       * fhTrackMatchedDEtaNLocMaxNNeg[7] ;       //! Eta distance between track and cluster vs cluster E, more than 2 local maximum
+  TH2F       * fhTrackMatchedDPhiNLocMaxNNeg[7] ;       //! Phi distance between track and cluster vs cluster E, more than 2 local maximum
 
   TH2F       * fhCentralityPi0NLocMax1 ;                //! Centrality for selected pi0, N Local Maxima = 1
   TH2F       * fhCentralityEtaNLocMax1 ;                //! Centrality for selected eta, N Local Maxima = 1
@@ -479,51 +509,51 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhEtaEPairDiffTimeNLM2;                  //! E vs Pair of clusters time difference vs E, for selected eta, NLM=2
   TH2F       * fhEtaEPairDiffTimeNLMN;                  //! E vs Pair of clusters time difference vs E, for selected eta, NLM>2
 
-  TH2F       * fhMCEM02Overlap0[3][8];                  //! E vs M02 for different MC origin, no other MC particles contributes, neutral cluster
-  TH2F       * fhMCEM02Overlap1[3][8];                  //! E vs M02 for different MC origin, 1  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEM02OverlapN[3][8];                  //! E vs M02 for different MC origin, N  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEM02Overlap0Match[3][8];             //! E vs M02 for different MC origin, no other MC particles contributes, charged cluster
-  TH2F       * fhMCEM02Overlap1Match[3][8];             //! E vs M02 for different MC origin, 1  other MC particles contributes, charged cluster
-  TH2F       * fhMCEM02OverlapNMatch[3][8];             //! E vs M02 for different MC origin, N  other MC particles contributes, charged cluster
+  TH2F       * fhMCEM02Overlap0[3][7];                  //! E vs M02 for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCEM02Overlap1[3][7];                  //! E vs M02 for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEM02OverlapN[3][7];                  //! E vs M02 for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEM02Overlap0Match[3][7];             //! E vs M02 for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCEM02Overlap1Match[3][7];             //! E vs M02 for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCEM02OverlapNMatch[3][7];             //! E vs M02 for different MC origin, N  other MC particles contributes, charged cluster
   
-  TH2F       * fhMCEMassOverlap0[3][8];                 //! E vs Mass for different MC origin, no other MC particles contributes, neutral cluster
-  TH2F       * fhMCEMassOverlap1[3][8];                 //! E vs Mass for different MC origin, 1  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEMassOverlapN[3][8];                 //! E vs Mass for different MC origin, N  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEMassOverlap0Match[3][8];            //! E vs Mass for different MC origin, no other MC particles contributes, charged cluster
-  TH2F       * fhMCEMassOverlap1Match[3][8];            //! E vs Mass for different MC origin, 1  other MC particles contributes, charged cluster
-  TH2F       * fhMCEMassOverlapNMatch[3][8];            //! E vs Mass for different MC origin, N  other MC particles contributes, charged cluster
+  TH2F       * fhMCEMassOverlap0[3][7];                 //! E vs Mass for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCEMassOverlap1[3][7];                 //! E vs Mass for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEMassOverlapN[3][7];                 //! E vs Mass for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEMassOverlap0Match[3][7];            //! E vs Mass for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCEMassOverlap1Match[3][7];            //! E vs Mass for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCEMassOverlapNMatch[3][7];            //! E vs Mass for different MC origin, N  other MC particles contributes, charged cluster
 
-  TH2F       * fhMCESplitEFracOverlap0[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, neutral cluster
-  TH2F       * fhMCESplitEFracOverlap1[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, neutral cluster
-  TH2F       * fhMCESplitEFracOverlapN[3][8];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, N  other MC particles contributes, neutral cluster
-  TH2F       * fhMCESplitEFracOverlap0Match[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, charged cluster
-  TH2F       * fhMCESplitEFracOverlap1Match[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, charged cluster
-  TH2F       * fhMCESplitEFracOverlapNMatch[3][8];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, N  other MC particles contributes, charged cluster
+  TH2F       * fhMCESplitEFracOverlap0[3][7];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCESplitEFracOverlap1[3][7];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCESplitEFracOverlapN[3][7];           //! E vs sum of splitted cluster energy / cluster energy for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCESplitEFracOverlap0Match[3][7];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCESplitEFracOverlap1Match[3][7];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCESplitEFracOverlapNMatch[3][7];      //! E vs sum of splitted cluster energy / cluster energy for different MC origin, N  other MC particles contributes, charged cluster
 
-  TH2F       * fhMCEAsymOverlap0[3][8];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, neutral cluster
-  TH2F       * fhMCEAsymOverlap1[3][8];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEAsymOverlapN[3][8];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEAsymOverlap0Match[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, charged cluster
-  TH2F       * fhMCEAsymOverlap1Match[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, charged cluster
-  TH2F       * fhMCEAsymOverlapNMatch[3][8];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, charged cluster
+  TH2F       * fhMCEAsymOverlap0[3][7];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCEAsymOverlap1[3][7];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEAsymOverlapN[3][7];                 //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEAsymOverlap0Match[3][7];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCEAsymOverlap1Match[3][7];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCEAsymOverlapNMatch[3][7];            //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, charged cluster
 
-  TH2F       * fhMCENCellOverlap0[3][8];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, neutral cluster
-  TH2F       * fhMCENCellOverlap1[3][8];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, neutral cluster
-  TH2F       * fhMCENCellOverlapN[3][8];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, neutral cluster
-  TH2F       * fhMCENCellOverlap0Match[3][8];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, charged cluster
-  TH2F       * fhMCENCellOverlap1Match[3][8];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, charged cluster
-  TH2F       * fhMCENCellOverlapNMatch[3][8];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, charged cluster
+  TH2F       * fhMCENCellOverlap0[3][7];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCENCellOverlap1[3][7];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCENCellOverlapN[3][7];                //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCENCellOverlap0Match[3][7];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCENCellOverlap1Match[3][7];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCENCellOverlapNMatch[3][7];           //! E vs sum of splitted cluster energy asymmetry for different MC origin, N  other MC particles contributes, charged cluster
   
-  TH2F       * fhMCEEpriOverlap0[3][8];                 //! E reco vs primary for different MC origin, no other MC particles contributes, neutral cluster
-  TH2F       * fhMCEEpriOverlap1[3][8];                 //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEEpriOverlapN[3][8];                 //! E reco vs primary for different MC origin, N  other MC particles contributes, neutral cluster
-  TH2F       * fhMCEEpriOverlap0Match[3][8];            //! E reco vs primary for different MC origin, no other MC particles contributes, charged cluster
-  TH2F       * fhMCEEpriOverlap1Match[3][8];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, charged cluster
-  TH2F       * fhMCEEpriOverlapNMatch[3][8];            //! E reco vs primary for different MC origin, N  other MC particles contributes, charged cluster
+  TH2F       * fhMCEEpriOverlap0[3][7];                 //! E reco vs primary for different MC origin, no other MC particles contributes, neutral cluster
+  TH2F       * fhMCEEpriOverlap1[3][7];                 //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEEpriOverlapN[3][7];                 //! E reco vs primary for different MC origin, N  other MC particles contributes, neutral cluster
+  TH2F       * fhMCEEpriOverlap0Match[3][7];            //! E reco vs primary for different MC origin, no other MC particles contributes, charged cluster
+  TH2F       * fhMCEEpriOverlap1Match[3][7];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, charged cluster
+  TH2F       * fhMCEEpriOverlapNMatch[3][7];            //! E reco vs primary for different MC origin, N  other MC particles contributes, charged cluster
   
-  TH2F       * fhMCEEpriOverlap0IdPi0[3][8];            //! E reco vs primary for different MC origin, no other MC particles contributes, neutral cluster, neutral clusters id as pi0
-  TH2F       * fhMCEEpriOverlap1IdPi0[3][8];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster, neutral clusters id as pi0
-  TH2F       * fhMCEEpriOverlapNIdPi0[3][8];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster, neutral clusters is as pi0
+  TH2F       * fhMCEEpriOverlap0IdPi0[3][7];            //! E reco vs primary for different MC origin, no other MC particles contributes, neutral cluster, neutral clusters id as pi0
+  TH2F       * fhMCEEpriOverlap1IdPi0[3][7];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster, neutral clusters id as pi0
+  TH2F       * fhMCEEpriOverlapNIdPi0[3][7];            //! E reco vs primary for different MC origin, 1  other MC particles contributes, neutral cluster, neutral clusters is as pi0
   
   TH2F       * fhMCPi0MassM02Overlap0[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, no other MC particles contributes, neutral cluster, 4 E bins
   TH2F       * fhMCPi0MassM02Overlap1[3][4];            //! MC Pi0 M02 vs Mass for different MC origin, 1  other MC particles contributes, neutral cluster, 4 E bins
@@ -532,8 +562,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCPi0MassM02Overlap1Match[3][4];       //! MC Pi0 M02 vs Mass for different MC origin, 1  other MC particles contributes, charged cluster, 4 E bins
   TH2F       * fhMCPi0MassM02OverlapNMatch[3][4];       //! MC Pi0 M02 vs Mass for different MC origin, N  other MC particles contributes, charged cluster, 4 E bins
   
-  TH2F       * fhMCENOverlaps[3][8];                    //! E vs number of Overlaps in MC, neutral cluster
-  TH2F       * fhMCENOverlapsMatch[3][8];               //! E vs number of Overlaps in MC, charged cluster
+  TH2F       * fhMCENOverlaps[3][7];                    //! E vs number of Overlaps in MC, neutral cluster
+  TH2F       * fhMCENOverlapsMatch[3][7];               //! E vs number of Overlaps in MC, charged cluster
   
   TH2F       * fhMCPi0HighNLMPair;                      //! E vs NLM when cluster originated in pi0 merging and highest energy local maxima correspond to 2 photons
   TH2F       * fhMCPi0LowNLMPair;                       //! E vs NLM when cluster originated in pi0 merging and a pair of local maxima except highest energy correspond to 2 photons
@@ -616,7 +646,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,24)
+  ClassDef(AliAnaInsideClusterInvariantMass,25)
   
 } ;
 
