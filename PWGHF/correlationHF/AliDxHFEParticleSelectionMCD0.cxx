@@ -51,6 +51,7 @@ AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
   , fD0PropertiesKine(NULL)
   , fStoreOnlyMCD0(kFALSE)
   , fMCInfo(kMCLast)
+  , fRequireD0toKpi(kFALSE)
 {
   // constructor
   // 
@@ -236,7 +237,17 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
       if(TMath::Abs(mcPart->Eta()) < 0.8 ){
 	fMCTools.FindMotherPDG(p);
 	fOriginMother=fMCTools.GetOriginMother();
+	if(fRequireD0toKpi){
+	  AliAODRecoDecayHF2Prong *particle = dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
 
+	  Int_t pdgDgD0toKpi[2]={AliDxHFEToolsMC::kPDGkaon,AliDxHFEToolsMC::kPDGpion};
+	  TClonesArray* fMCArray = dynamic_cast<TClonesArray*>(fMCTools.GetMCArray());
+	  if(!fMCArray) {cout << "no array" << endl; return 0;}
+
+	  //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx). Checks both D0s and daughters
+	  //Int_t MClabel=particle->MatchToMC(AliDxHFEToolsMC::kPDGD0,fMCArray,2,pdgDgD0toKpi); 
+	  //if(MClabel<0){ AliDebug(2,"MClabel is smaller than 0");return 0;}
+	}
 	iResult=1;
       }
     }
@@ -375,6 +386,11 @@ int AliDxHFEParticleSelectionMCD0::ParseArguments(const char* arguments)
     if(argument.BeginsWith("storeonlyMCD0")){
       AliInfo("Store only MC truth D0");
       fStoreOnlyMCD0=kTRUE;
+      continue;
+    }
+    if(argument.BeginsWith("RequireD0toKpi")|| argument.BeginsWith("requireD0toKpi")){
+      AliInfo("Store only D0 to Kpi");
+      fRequireD0toKpi=kTRUE;
       continue;
     }
     if(argument.BeginsWith("mc-only")){

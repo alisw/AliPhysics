@@ -57,6 +57,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fElSelection(kAllPassingSelection)
   , fStoreOnlyMCElectrons(kFALSE)
   , fMCInfo(kMCLast)
+  , fRemoveEfromD0(kFALSE)
 {
   // constructor
   // 
@@ -334,6 +335,11 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
   // Find PDG of first mother
   pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetFirstMother);
 
+  if(fRemoveEfromD0 && ( TMath::Abs(pdgMother)==AliDxHFEToolsMC::kPDGD0)){
+    AliDebug(2,"Electron comes from D0");
+    return 0;
+  }
+
   // Check if first mother is counted as background
   Bool_t isNotBackground=fMCTools.RejectByPDG(pdgMother,fMotherPDGs);
   Int_t selection=-1;
@@ -460,6 +466,11 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       fUseMCReco=kTRUE;
       fStoreCutStepInfo=kTRUE;
       AliDxHFEParticleSelectionEl::SetStoreLastCutStep(kTRUE);
+      continue;
+    }
+    if(argument.BeginsWith("removeEfromD0")){
+      AliInfo("Removing electrons decaying from D0");
+      fRemoveEfromD0=kTRUE;
       continue;
     }
     if(argument.BeginsWith("ElSelection=")){

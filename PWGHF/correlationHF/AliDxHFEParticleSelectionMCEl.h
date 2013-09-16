@@ -91,6 +91,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Int_t fElSelection;                  // If there should be a selection on the electrons
   Bool_t fStoreOnlyMCElectrons;        // Store only MC truth electrons, discard hadrons
   Int_t fMCInfo;                       // What to check and in which order
+  Bool_t fRemoveEfromD0;               // Removing electrons decaying from a D0
 
 
   ClassDef(AliDxHFEParticleSelectionMCEl, 4);
