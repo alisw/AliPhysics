@@ -522,7 +522,6 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	    D0eff=GetD0Eff(ptrigger);
 	  else
 	    D0eff=GetD0Eff(assoc);
-
 	  weight=weight*D0eff;
 	  AliDebug(2,Form("D0eff: %f, combined efficiency: %f",D0eff, weight));
 	}
