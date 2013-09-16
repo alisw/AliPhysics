@@ -157,11 +157,17 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
   fOutputList->Add(fHistDiffEtRecEtMCOverEtMC);
 
   Bool_t selectPrimaries=kTRUE;
-  if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111||fRecAnalysis->DataSet()==2009){
+  if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111||fRecAnalysis->DataSet()==2009 || fRecAnalysis->DataSet()==2012 || fRecAnalysis->DataSet()==2013){
     if(fRecAnalysis->DataSet()==2010)cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
     else{
-      if(fRecAnalysis->DataSet()==2009){cout<<"Setting track cuts for the 2010 p+p collisions at 900 GeV"<<endl;}
-      else{cout<<"Setting track cuts for the 2011 p+p collisions at 2.76 TeV"<<endl;}
+      if(fRecAnalysis->DataSet()==2012)cout<<"Setting track cuts for the 2012 p+p collisions at 8 TeV"<<endl;
+      else{
+	if(fRecAnalysis->DataSet()==2013)cout<<"Setting track cuts for the 2013 p+Pb collisions at 5 TeV"<<endl;
+	else{
+	  if(fRecAnalysis->DataSet()==2009){cout<<"Setting track cuts for the 2010 p+p collisions at 900 GeV"<<endl;}
+	  else{cout<<"Setting track cuts for the 2011 p+p collisions at 2.76 TeV"<<endl;}
+	}
+      }
     }
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
