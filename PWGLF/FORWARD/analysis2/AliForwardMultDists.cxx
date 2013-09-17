@@ -22,6 +22,9 @@ AliForwardMultDists::AliForwardMultDists()
     fList(0),
     fTriggers(0),
     fStatus(0),
+    fVertex(0),
+    fMCVertex(0),
+    fDiag(0),
     fTriggerMask(0),
     fMinIpZ(0),
     fMaxIpZ(0),
@@ -30,6 +33,7 @@ AliForwardMultDists::AliForwardMultDists()
     fCentralCache(0),
     fMCCache(0),
     fMaxN(200),
+    fNDivisions(1),
     fUsePhiAcc(true)
 {}
 
@@ -43,6 +47,9 @@ AliForwardMultDists::AliForwardMultDists(const char* name)
     fList(0),
     fTriggers(0),
     fStatus(0),
+    fVertex(0),
+    fMCVertex(0),
+    fDiag(0),
     fTriggerMask(AliAODForwardMult::kV0AND),
     fMinIpZ(-4),
     fMaxIpZ(4),
@@ -51,6 +58,7 @@ AliForwardMultDists::AliForwardMultDists(const char* name)
     fCentralCache(0),
     fMCCache(0),
     fMaxN(200),
+    fNDivisions(1),
     fUsePhiAcc(true)
 {
   /** 
@@ -72,6 +80,9 @@ AliForwardMultDists::AliForwardMultDists(const AliForwardMultDists& o)
     fList(o.fList),
     fTriggers(o.fTriggers),
     fStatus(o.fStatus),
+    fVertex(o.fVertex),
+    fMCVertex(o.fMCVertex),
+    fDiag(o.fDiag),
     fTriggerMask(o.fTriggerMask),
     fMinIpZ(o.fMinIpZ),
     fMaxIpZ(o.fMaxIpZ),
@@ -80,6 +91,7 @@ AliForwardMultDists::AliForwardMultDists(const AliForwardMultDists& o)
     fCentralCache(o.fCentralCache),
     fMCCache(o.fMCCache),
     fMaxN(o.fMaxN),
+    fNDivisions(o.fNDivisions),
     fUsePhiAcc(o.fUsePhiAcc)
 {}
 //____________________________________________________________________
@@ -94,6 +106,9 @@ AliForwardMultDists::operator=(const AliForwardMultDists& o)
   fList			= o.fList;
   fTriggers		= o.fTriggers;
   fStatus		= o.fStatus;
+  fVertex               = o.fVertex;
+  fMCVertex             = o.fMCVertex;
+  fDiag                 = o.fDiag;
   fTriggerMask		= o.fTriggerMask;
   fMinIpZ		= o.fMinIpZ;
   fMaxIpZ		= o.fMaxIpZ;
@@ -102,9 +117,20 @@ AliForwardMultDists::operator=(const AliForwardMultDists& o)
   fCentralCache		= o.fCentralCache;
   fMCCache		= o.fMCCache;
   fMaxN			= o.fMaxN;
+  fNDivisions           = o.fNDivisions;
   fUsePhiAcc		= o.fUsePhiAcc;
-
+  
   return *this;
+}
+
+//____________________________________________________________________
+void
+AliForwardMultDists::SetMaxN(UShort_t maxN, 
+			     UShort_t nDivisions)
+{
+  const UShort_t one = 1;
+  fMaxN              = maxN;
+  fNDivisions        = TMath::Max(nDivisions, one); 
 }
 
 //____________________________________________________________________
@@ -171,9 +197,71 @@ AliForwardMultDists::UserExec(Option_t* /*option=""*/)
     SetupForData(forwardData, primary != 0);
     fFirstEvent = false;
   }
-    
-  if (!forward->CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 0, 0, 
-			   fTriggers, fStatus)) return;
+
+  Double_t vz  = forward->GetIpZ();
+  Bool_t acc   = forward->CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 0, 0, 
+				     fTriggers, fStatus);
+  Bool_t trg   = forward->IsTriggerBits(fTriggerMask);
+  Bool_t vtx   = (vz <= fMaxIpZ && vz >= fMinIpZ);
+  Bool_t ok    = true;  // Should bins process this event?
+  Bool_t mcTrg = false;
+  Bool_t mcVtx = false;
+  fVertex->Fill(vz);
+  // If the event was not accepted for analysis 
+  if (primary) {
+    // For MC, we need to check if we should process the event for
+    // MC information or not.
+    if ((fTriggerMask & (AliAODForwardMult::kV0AND|AliAODForwardMult::kNSD))
+	&& !forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) 
+      // Bail out if this event is not MC NSD event
+      ok = false;
+      else 
+	mcTrg = true;
+    Double_t mcVz = primary->GetBinContent(0,0);
+    fMCVertex->Fill(mcVz);
+    if (mcVz > fMaxIpZ || mcVz < fMinIpZ) 
+      // Bail out if this event was not in the valid range 
+      ok = false;
+    else 
+      mcVtx = true;
+  }
+#if 0
+  Printf("accepted=%3s triggered=%3s vertex=%3s "
+	 "mcTriggered=%3s mcVertex=%3s ok=%3s vz=%f", 
+	 (acc ? "yes" : "no"), (trg ? "yes" : "no"), (vtx ? "yes" : "no"), 
+	 (mcTrg ? "yes" : "no"), (mcVtx ? "yes" : "no"), (ok ? "yes" : "no"),
+	 vz);
+  if (mcTrg && trg) 
+    Printf("Both MC and analysis trigger present");
+#endif
+  if (trg) { 
+    fDiag->Fill(kTrigger, kAnalysis);
+    if (mcTrg)          fDiag->Fill(kTrigger,       kTrigger);
+    if (mcVtx)          fDiag->Fill(kTrigger,       kVertex);
+    if (mcTrg && mcVtx) fDiag->Fill(kTrigger,       kTriggerVertex);
+  }
+  if (vtx) { 
+    fDiag->Fill(kVertex, kAnalysis);
+    if (mcTrg)          fDiag->Fill(kVertex,        kTrigger);
+    if (mcVtx)          fDiag->Fill(kVertex,        kVertex);
+    if (mcTrg && mcVtx) fDiag->Fill(kVertex,        kTriggerVertex);
+  }
+  if (trg && vtx) {
+    fDiag->Fill(kTriggerVertex, kAnalysis);
+    if (mcTrg)          fDiag->Fill(kTriggerVertex, kTrigger);
+    if (mcVtx)          fDiag->Fill(kTriggerVertex, kVertex);
+    if (mcTrg && mcVtx) fDiag->Fill(kTriggerVertex, kTriggerVertex);
+  }
+  if (primary) {
+    if (mcTrg)          fDiag->Fill(kTrigger,       kMC);
+    if (mcVtx)          fDiag->Fill(kVertex,        kMC);
+    if (mcTrg && mcVtx) fDiag->Fill(kTriggerVertex, kMC);
+  }
+  if (!acc && !ok) {
+    // Printf("Event is neither accepted by analysis nor by MC");
+    return; 
+  }
+
   // forward->Print();
   // Info("", "Event vz=%f", forward->GetIpZ());
   
@@ -185,8 +273,8 @@ AliForwardMultDists::UserExec(Option_t* /*option=""*/)
   EtaBin* bin = 0;
   while ((bin = static_cast<EtaBin*>(next()))) {
     bin->Process(*fForwardCache, *fCentralCache,
-		 forwardData,    centralData,
-		 fMCCache);
+		 forwardData,    centralData, 
+		 acc,	 fMCCache);
   }
 
   PostData(1, fList);
@@ -304,6 +392,7 @@ AliForwardMultDists::Terminate(Option_t* /*option=""*/)
   }
   out->Add(in->FindObject("triggers")->Clone());
   out->Add(in->FindObject("status")->Clone());
+  out->Add(in->FindObject("diagnostics")->Clone());
 
   THStack* sym    = new THStack("all", "All distributions");
   THStack* pos    = new THStack("all", "All distributions");
@@ -320,7 +409,7 @@ AliForwardMultDists::Terminate(Option_t* /*option=""*/)
     else if (bin->IsNegative())  sta = neg;
     else if (bin->IsPositive())  sta = pos;
 
-    TH1*  hh[] = { bin->fSum, bin->fTruth, 0 };
+    TH1*  hh[] = { bin->fSum, bin->fTruth, bin->fTruthAccepted, 0 };
     TH1** ph   = hh;
 
     Int_t idx     = sta->GetHists() ? sta->GetHists()->GetEntries() : 0;
@@ -363,6 +452,7 @@ AliForwardMultDists::StoreInformation(const AliAODForwardMult* aod)
   fList->Add(AliForwardUtil::MakeParameter("minIpZ", fMinIpZ));
   fList->Add(AliForwardUtil::MakeParameter("maxIpZ", fMaxIpZ));
   fList->Add(AliForwardUtil::MakeParameter("maxN", UShort_t(fMaxN)));
+  fList->Add(AliForwardUtil::MakeParameter("count", UShort_t(1)));
 }
 
 //____________________________________________________________________
@@ -404,17 +494,52 @@ AliForwardMultDists::SetupForData(const TH2& hist, Bool_t useMC)
   fCentralCache->GetXaxis()->SetTitle("#eta");
   fCentralCache->GetYaxis()->SetTitle("#sum#frac{d^{2}N}{d#etadphi}");
   fCentralCache->Sumw2();
+
+  fVertex = new TH1D("vertex", "Vertex distribution",
+		     Int_t(fMaxIpZ-fMinIpZ+.5), 2*fMinIpZ, 2*fMaxIpZ);
+  fVertex->SetDirectory(0);
+  fVertex->SetXTitle("IP_{z} [cm]");
+  fVertex->SetFillColor(kRed+2);
+  fVertex->SetFillStyle(3002);
+  fList->Add(fVertex);
+
   if (useMC) {
     fMCCache->SetDirectory(0);
     fMCCache->GetXaxis()->SetTitle("#eta");
     fMCCache->GetYaxis()->SetTitle("#sum#frac{d^{2}N}{d#etadphi}");
     fMCCache->Sumw2();
+
+    fMCVertex = static_cast<TH1*>(fVertex->Clone("mcVertex"));
+    fMCVertex->SetTitle("Vertex distribution from MC");
+    fMCVertex->SetDirectory(0);
+    fMCVertex->SetFillColor(kBlue+2);
+    fList->Add(fMCVertex);
   }
+
+  UShort_t xBase = kTrigger-1;
+  UShort_t yBase = kAnalysis-1;
+  fDiag = new TH2I("diagnostics", "Event selection", 
+		   kTriggerVertex-xBase, kTrigger-.5,  kTriggerVertex+.5, 
+		   kTriggerVertex-yBase, kAnalysis-.5, kTriggerVertex+.5);
+  fDiag->SetDirectory(0);
+  fDiag->GetXaxis()->SetTitle("Selection");
+  fDiag->GetXaxis()->SetBinLabel(kTrigger      -xBase, "Trigger");
+  fDiag->GetXaxis()->SetBinLabel(kVertex       -xBase, "Vertex");
+  fDiag->GetXaxis()->SetBinLabel(kTriggerVertex-xBase, "Trigger+Vertex");
+  fDiag->GetYaxis()->SetTitle("Type/MC selection");
+  fDiag->GetYaxis()->SetBinLabel(kAnalysis     -yBase, "Analysis");
+  fDiag->GetYaxis()->SetBinLabel(kMC           -yBase, "MC");
+  fDiag->GetYaxis()->SetBinLabel(kTrigger      -yBase, "MC Trigger");
+  fDiag->GetYaxis()->SetBinLabel(kVertex       -yBase, "MC Vertex");
+  fDiag->GetYaxis()->SetBinLabel(kTriggerVertex-yBase, "MC Trigger+Vertex");
+  fDiag->SetMarkerSize(3);
+  fDiag->SetMarkerColor(kWhite);
+  fList->Add(fDiag);
 
   TIter   next(&fBins);
   EtaBin* bin = 0;
   while ((bin = static_cast<EtaBin*>(next()))) {
-    bin->SetupForData(fList, hist, fMaxN, useMC);
+    bin->SetupForData(fList, hist, fMaxN, fNDivisions, useMC);
   }
     
 }
@@ -552,6 +677,7 @@ AliForwardMultDists::EtaBin::EtaBin()
     fCorr(0),
     fResponse(0), 
     fTruth(0),
+    fTruthAccepted(0),
     fCoverage(0)
 {
   /** 
@@ -570,6 +696,7 @@ AliForwardMultDists::EtaBin::EtaBin(Double_t minEta, Double_t maxEta)
     fCorr(0),
     fResponse(0), 
     fTruth(0),
+    fTruthAccepted(0),
     fCoverage(0)
 {
   /** 
@@ -595,6 +722,7 @@ AliForwardMultDists::EtaBin::EtaBin(const EtaBin& o)
     fCorr(o.fCorr),
     fResponse(o.fResponse), 
     fTruth(o.fTruth),
+    fTruthAccepted(o.fTruthAccepted),
     fCoverage(o.fCoverage)
 {}
 //____________________________________________________________________
@@ -603,16 +731,17 @@ AliForwardMultDists::EtaBin::operator=(const EtaBin& o)
 {
   if (&o == this) return *this;
   
-  fName		= o.fName;
-  fMinEta	= o.fMinEta;
-  fMaxEta	= o.fMaxEta;
-  fMinBin	= o.fMinBin; 
-  fMaxBin	= o.fMaxBin; 
-  fSum		= o.fSum;
-  fCorr		= o.fCorr;
-  fResponse	= o.fResponse; 
-  fTruth	= o.fTruth;
-  fCoverage     = o.fCoverage;
+  fName		 = o.fName;
+  fMinEta	 = o.fMinEta;
+  fMaxEta	 = o.fMaxEta;
+  fMinBin	 = o.fMinBin; 
+  fMaxBin	 = o.fMaxBin; 
+  fSum		 = o.fSum;
+  fCorr		 = o.fCorr;
+  fResponse	 = o.fResponse; 
+  fTruth	 = o.fTruth;
+  fTruthAccepted = o.fTruthAccepted;
+  fCoverage      = o.fCoverage;
 
   return *this;
 }
@@ -676,7 +805,8 @@ AliForwardMultDists::EtaBin::FindParent(TList* l, Bool_t create) const
 //____________________________________________________________________
 void
 AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist, 
-					  UShort_t max, Bool_t useMC)
+					  UShort_t max, UShort_t nDiv, 
+					  Bool_t useMC)
 {
   /** 
    * Set-up internal structures on first event. 
@@ -711,11 +841,10 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
   
   fMinBin = hist.GetXaxis()->FindBin(fMinEta);
   fMaxBin = hist.GetXaxis()->FindBin(fMaxEta-.00001);
-  
-  fSum = new TH1D("rawDist", 
-		  Form("Raw P(#it{N}_{ch}) in %+5.2f<#eta<%+5.2f", 
-		       fMinEta, fMaxEta),
-		  max+1, -.5, max+.5);
+
+  TString eta(Form("%+5.2f<#eta<%+5.2f", fMinEta, fMaxEta));
+  fSum = new TH1D("rawDist", Form("Raw P(#it{N}_{ch}) in %s", eta.Data()), 
+		  (max+1)*nDiv, -.5, max+.5);
   fSum->SetDirectory(0);
   fSum->GetXaxis()->SetTitle("#it{N}_{ch}");
   fSum->GetYaxis()->SetTitle("Raw P(#it{N}_{ch})");
@@ -728,7 +857,7 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
   fSum->Sumw2();
   l->Add(fSum);
   
-  fCorr = new TH2D("corr", "Correlation of SPD and FMD signals",
+  fCorr = new TH2D("corr", Form("C_{SPD,FMD} in %s", eta.Data()),
 		   max+2, -1.5, max+.5, max+2, -1.5, max+.5);
   fCorr->SetDirectory(0);
   fCorr->GetXaxis()->SetTitle("Forward");
@@ -745,17 +874,18 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
   l->Add(fCoverage);
 
   if (!useMC) return;
-  fResponse = new TH2D("response", "Reponse matrix", 
-		       max+1, -.5, max+.5, max+1, -.5, max+.5);
+  fResponse = new TH2D("response", Form("Reponse matrix in %s", eta.Data()),
+		       nDiv*(max+1), -0.5, max+0.5, max+1, -.5, max+.5);
   fResponse->SetDirectory(0);
-  fResponse->SetXTitle("MC");
-  fResponse->SetYTitle("Signal");
+  fResponse->SetYTitle("MC");
+  fResponse->SetXTitle("Signal");
   fResponse->SetOption("colz");
   l->Add(fResponse);
   
-  fTruth = static_cast<TH1D*>(fSum->Clone("truth"));
-  fTruth->SetTitle(Form("True P(#it{N}_{ch}) in %+5.2f<#eta<%+5.2f", 
-			fMinEta, fMaxEta));
+  fTruth = new TH1D("truth", Form("True P(#it{N}_{ch}) in %s", eta.Data()),
+		    (max+1), -0.5, max+0.5);
+  fTruth->SetXTitle(fSum->GetXaxis()->GetTitle());
+  fTruth->SetYTitle(fSum->GetYaxis()->GetTitle());
   fTruth->SetLineColor(kBlack);
   fTruth->SetFillColor(kBlue+1);
   fTruth->SetFillStyle(0);
@@ -763,8 +893,18 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
   /// fTruth->SetOption("");
   fTruth->SetMarkerColor(kBlue+1);
   fTruth->SetMarkerStyle(24);
-  // fTruth->Sumw2();
+  fTruth->Sumw2();
   l->Add(fTruth);
+
+  fTruthAccepted = static_cast<TH1D*>(fTruth->Clone("truthAccepted"));
+  fTruthAccepted->SetTitle(Form("True (accepted) P(#it{N}_{ch}) in %s", 
+				eta.Data()));
+  fTruthAccepted->SetLineColor(kGray+2);
+  fTruthAccepted->SetFillColor(kOrange+2);
+  fTruthAccepted->SetDirectory(0);
+  /// fTruth->SetOption("");
+  fTruthAccepted->SetMarkerColor(kOrange+2);
+  l->Add(fTruthAccepted);
 }
 //____________________________________________________________________
 void
@@ -772,6 +912,7 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
 				     const TH1& sumCentral,
 				     const TH2& forward,   
 				     const TH2& central,
+				     Bool_t     accepted, 
 				     const TH1* mc)
 {
   /** 
@@ -782,6 +923,12 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
    * @param forward     The original forward data 
    * @param central     The original central data
    */
+  if (!mc && !accepted) 
+    // If we're not looking at MC data, and the event wasn't selected,
+    // we bail out - this check is already done, but we do it again
+    // for safety.
+    return;
+
   Double_t sum        = 0;
   Double_t e2sum      = 0;
   Int_t    covered    = 0;
@@ -790,29 +937,26 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
   Double_t mcsum      = 0;
   Double_t mce2sum    = 0;
   for (Int_t iEta = fMinBin; iEta <= fMaxBin; iEta++) { 
+    if (mc) {
+      Double_t cM = mc->GetBinContent(iEta);
+      Double_t eM = mc->GetBinError(iEta);
+      mcsum   += cM;
+      mce2sum += eM * eM;
+    }
+    if (!accepted) 
+      // Event wasn't selected, but we still need to get the rest of
+      // the MC data.
+      continue;
+
     Double_t cF = sumForward.GetBinContent(iEta);
     Double_t eF = sumForward.GetBinError(iEta);
     Bool_t   bF = forward.GetBinContent(iEta, 0) > 0;
     Double_t cC = sumCentral.GetBinContent(iEta);
     Double_t eC = sumCentral.GetBinError(iEta);
     Bool_t   bC = central.GetBinContent(iEta, 0) > 0;
-    Double_t cM = (mc ? mc->GetBinContent(iEta) : 0);
-    Double_t eM = (mc ? mc->GetBinError(iEta)   : 0);
-
-    /*
-      Info("", 
-      "bF=%d cF=%7.4f+/-%8.5f "
-      "bC=%d cC=%7.4f+/-%8.5f "
-      "cM=%7.4f+/-%48.5f", 
-      bF, cF, eF, bC, cC, eC, cM, eM); 
-    */
-    if (mc) { 
-      mcsum   += cM;
-      mce2sum += eM * eM;
-    }
-
     Double_t c  = 0;
     Double_t e  = 0;
+
     // If we have an overlap - as given by the eta-coverage, 
     // calculate the mean 
     if (bF & bC) { 
@@ -847,23 +991,29 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
     e2sum += e*e;
   }
       
-  // Fill with weight 
-  Double_t w = 1; // e2sum > 0 ? 1/TMath::Sqrt(e2sum) : 1
-  fSum->Fill(sum, w);
-  fCorr->Fill(fsum, csum);
-
-  Int_t nTotal = fMaxBin - fMinBin + 1;
-  fCoverage->Fill(100*float(covered) / nTotal);
-  // Info(GetName(), "covered: %3d, nTotal: %3d -> %3d%% mc: %3d", 
-  //      covered, nTotal, int(100*float(covered)/nTotal), int(mcsum));
+  if (accepted) {
+    // Only update the histograms if the event was triggered. 
+    // Fill with weight 
+    Double_t w = 1; // e2sum > 0 ? 1/TMath::Sqrt(e2sum) : 1
+    fSum->Fill(sum, w);
+    fCorr->Fill(fsum, csum);
+    
+    Int_t nTotal = fMaxBin - fMinBin + 1;
+    fCoverage->Fill(100*float(covered) / nTotal);
+  }
 
   if (mc) {
+    Double_t w = 1; // mce2sum > 0 ? 1/TMath::Sqrt(mce2sum) : 1
     if (fTruth) {
-      w = 1; // mce2sum > 0 ? 1/TMath::Sqrt(mce2sum) : 1
       fTruth->Fill(mcsum, w);
     }
-    if (fResponse) 
-      fResponse->Fill(mcsum, sum);
+    if (accepted) {
+      if (fResponse) 
+	// Only fill response matrix for accepted events
+	fResponse->Fill(sum, mcsum);
+      if (fTruthAccepted) 
+	fTruthAccepted->Fill(mcsum, w);
+    }
   }
 }
 //____________________________________________________________________
@@ -895,18 +1045,32 @@ AliForwardMultDists::EtaBin::Terminate(TList* in, TList* out, UShort_t maxN)
   o->SetOwner();
   op->Add(o);
 
-  fSum   = static_cast<TH1*>(o->FindObject("rawDist"));
-  fTruth = static_cast<TH1*>(o->FindObject("truth"));
-  TH1*  hists[] = { fSum, fTruth, 0 };
+  fSum           = static_cast<TH1*>(o->FindObject("rawDist"));
+  fTruth         = static_cast<TH1*>(o->FindObject("truth"));
+  fTruthAccepted = static_cast<TH1*>(o->FindObject("truthAccepted"));
+
+  TH1*  hists[] = { fSum, fTruth, fTruthAccepted, 0 };
   TH1** phist   = hists;
   while (*phist) { 
     TH1* h = *phist;
     if (h) { 
       Double_t intg = h->Integral(1, maxN);
-      h->Scale(1. / intg);
+      h->Scale(1. / intg, "width");
     }
     phist++;
   }
+
+  if (fTruth && fTruthAccepted) {
+    TH1*  trgVtx  = static_cast<TH1*>(fTruthAccepted->Clone("triggerVertex"));
+    TString tit(fTruth->GetTitle());
+    tit.ReplaceAll("True P(#it{N}_{ch})", "C_{trigger,vertex}");
+    trgVtx->SetTitle(tit);
+    trgVtx->SetYTitle("P_{MC}(#it{N}_{ch})/P_{MC,accepted}(#it{N}_{ch})");
+    trgVtx->Divide(fTruth);
+    trgVtx->SetDirectory(0);
+    o->Add(trgVtx);
+  }
+  
 }
 //====================================================================
 // 

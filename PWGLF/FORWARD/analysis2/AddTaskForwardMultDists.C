@@ -28,6 +28,7 @@ AddTaskForwardMultDists(const char* trig      = "V0AND",
 			Double_t    vzMin     = -4, 
 			Double_t    vzMax     = +4,
 			UShort_t    maxN      = 150,
+			UShort_t    nDiv      = 1,
 			Bool_t      usePhiAcc = true,
 			Bool_t      useAsymm  = false)
 {
@@ -55,6 +56,8 @@ AddTaskForwardMultDists(const char* trig      = "V0AND",
   task->SetTriggerMask(trig);
   // Set the maximum number of charged particles
   task->SetMaxN(maxN);
+  // Set number of divisions per particle number 
+  task->SetNDivisions(nDiv);
   // Set whether to use stored phi acceptance 
   task->SetUsePhiAcc(usePhiAcc);
   // add the task 
