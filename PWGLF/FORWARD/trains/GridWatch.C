@@ -34,9 +34,9 @@ class TString;
  * @return Formatted string
  * @ingroup pwglf_forward_trains_helper
  */
-TString TokenName(const TString& name, 
-		   const TString& ext, 
-		   Bool_t merge=false)
+TString CacheFileName(const TString& name, 
+		      const TString& ext, 
+		      Bool_t merge=false)
 {
   return TString::Format("%s%s.%s", name.Data(), 
 			 (merge ? "_merge" : ""), ext.Data());
@@ -51,12 +51,12 @@ TString TokenName(const TString& name,
  * @return true if file exits
  * @ingroup pwglf_forward_trains_helper
  */
-Bool_t CheckTokens(const TString& name, 
-		   const TString& ext, 
-		   Bool_t merge=false)
+Bool_t CheckCacheFile(const TString& name, 
+		      const TString& ext, 
+		      Bool_t merge=false)
 {
   // TSystem::AccessPathName return false if file is there 
-  return !gSystem->AccessPathName(TokenName(name, ext, merge));
+  return !gSystem->AccessPathName(CacheFileName(name, ext, merge));
 }
 /** 
  * Remove a token file 
@@ -66,11 +66,11 @@ Bool_t CheckTokens(const TString& name,
  * @param merge  Merging stage or not 
  * @ingroup pwglf_forward_trains_helper
  */
-void RemoveTokens(const TString& name, 
+void RemoveCacheFile(const TString& name, 
 		  const TString& ext, 
 		  Bool_t merge=false)
 {
-  gSystem->Unlink(TokenName(name, ext, merge));
+  gSystem->Unlink(CacheFileName(name, ext, merge));
 }
 
 /** 
@@ -84,7 +84,7 @@ void RemoveTokens(const TString& name,
  *
  * @ingroup pwglf_forward_trains_helper
  */
-TObjArray* ReadTokens(const TString& name, 
+TObjArray* ReadCacheFile(const TString& name, 
 		      const TString& ext, 
 		      bool merge=false) 
 {
@@ -92,7 +92,7 @@ TObjArray* ReadTokens(const TString& name,
 			       (merge ? "_merge" : ""), ext.Data());
   std::ifstream in(fn.Data());
   if (!in) { 
-    Error("ReadTokens", "Failed to open %s", fn.Data());
+    Error("ReadCacheFile", "Failed to open %s", fn.Data());
     return 0;
   }
   TString ln;
@@ -115,7 +115,7 @@ TObjArray* ReadTokens(const TString& name,
  */
 TObjArray* ReadJobIDs(const TString& name, bool merge=false)
 {
-  return ReadTokens(name, "jobid", merge);
+  return ReadCacheFile(name, "jobid", merge);
 }
 
 /** 
@@ -130,7 +130,7 @@ TObjArray* ReadJobIDs(const TString& name, bool merge=false)
  */
 TObjArray* ReadStages(const TString& name, bool merge=false)
 {
-  return ReadTokens(name, "stage", merge);
+  return ReadCacheFile(name, "stage", merge);
 }
 
 /** 
@@ -351,6 +351,21 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
   return true;
 }
 
+/** 
+ * Check if the AliEn token is valid 
+ * 
+ * 
+ * @return true if it is 
+ */
+Bool_t CheckAlienToken()
+{
+  Int_t ret = gSystem->Exec("alien-token-info > /dev/null 2>&1");
+  if (ret != 0) {
+    Printf("=== AliEn token not valid");
+    return false;
+  }
+  return true;
+}
 
 /** 
  * Refersh the grid token every 6th hour
@@ -358,20 +373,53 @@ Bool_t GetJobStates(const TArrayI& jobs, TObjArray& states)
  * @param now 
  * @param force 
  */
-void RefreshToken(UInt_t now, Bool_t force=false)
+#if 0
+void RefreshAlienToken(UInt_t, Bool_t f=false)
+{}
+#else
+void RefreshAlienToken(UInt_t now, Bool_t force=false)
 {
-  static UInt_t start = 0;
-  if (start == 0) start = now;
-  
-  // Try to refresh token every 6th hour
-  if (!force || (now - start) / 60 / 60 < 6) return;
+  Bool_t renew = force;
+  if (!renew && !CheckAlienToken()) renew = true;
+
+  if (!renew) {
+    TString l = gSystem->GetFromPipe(Form("cat /tmp/gclient_token_%d",
+					  gSystem->GetUid()));
+    TObjArray*  lines  = l.Tokenize("\n");
+    TObjString* sline  = 0;
+    UInt_t      expire = 0;
+    TIter       next(lines);
+    while ((sline = static_cast<TObjString*>(next()))) {
+      TString& line = sline->String();
+      if (!line.BeginsWith("Expiretime")) continue;
+
+      Size_t  eq      = line.Index("=");
+      TString sdatime = line(eq+2, line.Length()-eq-2);
+      expire          = sdatime.Atoi();
+      break;
+    }
+    lines->Delete();
+    // If the expiration date/time has passed or is less than 30 min
+    // away, we refresh
+    Int_t diff = (expire - now);
+    if (now > expire || diff < 30*60) renew = true;
+
+    Printf("=== Now: %d, Expires: %d, in %03d:%02d:%02d -> %s", 
+	   now, expire, diff/60/60, (diff/60 % 60), (diff % 60), 
+	    (renew ? "renew" : "nothing"));
+	   
+  }
+
+  if (!renew) return;
 
   // Reset the start time 
-  start = now;
   Printf("=== Refreshing AliEn token");
   gSystem->Exec("alien-token-init");
   Printf("=== Done refreshing AliEn token");
 }
+#endif
+
+
 /** 
  * Wait of jobs to finish 
  * 
@@ -388,9 +436,10 @@ Bool_t WaitForJobs(TArrayI&   jobs,
 		   Int_t      delay,
 		   Bool_t     batch)
 {
+  if (!CheckAlienToken()) return false;
   // Bool_t stopped = false;
   TFileHandler h(0, 0x1);
-  RefreshToken(0, true);
+  // RefreshAlienToken(0, true);
   do { 
     Bool_t allDone = true;
     TDatime t;
@@ -424,7 +473,7 @@ Bool_t WaitForJobs(TArrayI&   jobs,
       Printf(" %d(%s)=%s", job, stages->At(i)->GetName(), state.Data());
       
     }
-    RefreshToken(now);
+    RefreshAlienToken(now);
 
     if (allDone) break;
     if (missing >= total) {
@@ -462,12 +511,16 @@ Bool_t WaitForJobs(TArrayI&   jobs,
  */
 void GridWatch(const TString& name, Bool_t batch=false, UShort_t delay=5*60)
 {
+#if 1
+  // We use command line tools instead of ROOT interface - which is
+  // broken so badly that it's hard to believe it ever worked.
   gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   TGrid::Connect("alien:///");
   if (!gGrid) { 
     Error("GridWatch", "Failed to connect to the Grid");
     return;
   }
+#endif
 
   TObjArray* jobIDs = ReadJobIDs(name, false);
   TObjArray* stages = ReadStages(name, false);
@@ -478,33 +531,34 @@ void GridWatch(const TString& name, Bool_t batch=false, UShort_t delay=5*60)
   if (!ParseJobIDs(jobIDs, jobs)) return;
 
   gSystem->Sleep(10*1000);
-  if (!(CheckTokens(name, "jobid", true) && 
-	CheckTokens(name, "stage", true))) 
-    WaitForJobs(jobs, stages, delay, batch);
+  if (!(CheckCacheFile(name, "jobid", true) && 
+	CheckCacheFile(name, "stage", true))) 
+    if (!WaitForJobs(jobs, stages, delay, batch)) return;
 
   delete jobIDs;
   delete stages;
 
   // return;
   do {
-    if (!CheckTokens(name, "jobid", true) && 
-	!CheckTokens(name, "stage", true)) {
+    if (!CheckCacheFile(name, "jobid", true) && 
+	!CheckCacheFile(name, "stage", true)) {
+      if (!CheckAlienToken()) return;
       Printf("Now executing terminate");
       gSystem->Exec("aliroot -l -b -q Terminate.C");
       gSystem->Sleep(10*1000);
     }
-    Printf("Reading job ids");
 
+    Printf("Reading job ids");
     jobIDs = ReadJobIDs(name, true);
     stages = ReadStages(name, true);
     
     if (!ParseJobIDs(jobIDs, jobs)) {
       Error("GridWatch", "Failed to parse job ids %s", 
-	    TokenName(name,"jobid",true).Data());
+	    CacheFileName(name,"jobid",true).Data());
       return;
     }
 
-    WaitForJobs(jobs, stages, delay, batch);
+    if (!WaitForJobs(jobs, stages, delay, batch)) return;
     
     Bool_t allFinal = true;
     for (Int_t i = 0; i < jobs.GetSize(); i++) {
@@ -520,8 +574,8 @@ void GridWatch(const TString& name, Bool_t batch=false, UShort_t delay=5*60)
     Printf("All jobs in final stage");
     if (allFinal) break;
 
-    RemoveTokens(name, "jobid", true);
-    RemoveTokens(name, "stage", true);
+    RemoveCacheFile(name, "jobid", true);
+    RemoveCacheFile(name, "stage", true);
   } while (true);
 
   Printf("Finished");

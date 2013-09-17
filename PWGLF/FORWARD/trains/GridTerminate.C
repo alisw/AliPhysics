@@ -136,6 +136,14 @@ Bool_t GridTerminate(const TString& name,
     }
   }
 
+  // Connect to the grid
+  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+  // TGrid::Connect("alien://");
+  // if (!gGrid) {
+  //   Error("GridTerminate", "Failed to connect to AliEn");
+  //   return false;
+  // }
+
   // Load the analysis manager from file
   TString base(name);
   base.Append(".root");
@@ -148,7 +156,6 @@ Bool_t GridTerminate(const TString& name,
     }
     base = sub;
   }
-  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   AliAnalysisManager* mgr= AliAnalysisAlien::LoadAnalysisManager(base);
   if (!mgr) {
     Error("GridTerminate", "Failed to load manager from %s",base.Data());
