@@ -1316,7 +1316,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   //
   // Make Z scan corrections
   // 
-  if (1){
+  if (0){
   for (Int_t  ihis=1; ihis<=9; ihis+=2){ 
     TH3 *his3DZ = PermutationHistoZ(his3DReference,16*(ihis));
     AliTPCSpaceCharge3D *spaceChargeZ = new AliTPCSpaceCharge3D;
@@ -1521,6 +1521,14 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
 	AliExternalTrackParam *ot1= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
 	AliExternalTrackParam *td0 =  corr->FitDistortedTrack(*ot0, refX0, dir,  0);
 	AliExternalTrackParam *td1 =  corr->FitDistortedTrack(*ot1, refX1, dir,  0);
+	if (td0==0) { // if fit fail use dummy values
+	  ot0= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  td0= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	}
+	if (td1==0) {
+	  ot1= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  td1= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	}
 	// 2. TPC constrained umulation
 	AliExternalTrackParam *tdConstrained =  new  AliExternalTrackParam(*td1);
 	tdConstrained->Rotate(ot1->GetAlpha());
@@ -1557,7 +1565,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
 	snprintf(name0, 100, "T_%s_0.=",corr->GetName());
 	snprintf(name1, 100, "T_%s_1.=",corr->GetName());
 	snprintf(oname0, 100, "OT_%s_0.=",corr->GetName());
-	snprintf(oname1, 100, "T_%s_1.=",corr->GetName());
+	snprintf(oname1, 100, "OT_%s_1.=",corr->GetName());
 	snprintf(onameConstrained, 100, "OConst_%s_1.=",corr->GetName());
 	//
 	snprintf(nameITS, 100, "TPCITS_%s_1.=",corr->GetName());
