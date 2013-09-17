@@ -179,6 +179,19 @@ protected:
     }
     return true;
   }
+  template <typename T>
+  static Bool_t DoGetParameter(TObject* o, const TObject* p, T& value) 
+  {
+    if (!o) return false;
+    if (!CheckType(o, TParameter<T>::Class(), p->GetName())) return false;
+    // TParameter<T>* p = static_cast<TParameter<T>*>(o);
+    // if (p->TestBit(TParameter<T>::kFirst)) 
+    // value = p->GetVal();
+    // else 
+    value = o->GetUniqueID();
+    return true;
+  }
+    
   //___________________________________________________________________
   /** 
    * Get a UShort_t parameter value 
@@ -193,10 +206,20 @@ protected:
 			     UShort_t&           value,
 			     Bool_t              verb=true)
   {
-    TObject* o = GetObject(c, name, verb);
-    if (!o) return false;
-    value = o->GetUniqueID();
-    return true;
+    int v;
+    Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v); 
+    value = v;
+    return r;
+  }
+  static Bool_t GetParameter(const TDirectory*  c, 
+			     const TString&      name, 
+			     UShort_t&           value,
+			     Bool_t              verb=true)
+  {
+    int v; 
+    Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v);
+    value = v;
+    return r;
   }
   //_____________________________________________________________________
   /** 
@@ -211,12 +234,15 @@ protected:
 			     const TString&      name, 
 			     Int_t&              value,
 			     Bool_t              verb=true)
-
   {
-    TObject* o = GetObject(c, name, verb);
-    if (!o) return false;
-    value = o->GetUniqueID();
-    return true;
+    return DoGetParameter(GetObject(c, name, verb), c, value);
+  }
+  static Bool_t GetParameter(const TDirectory*  c, 
+			     const TString&      name, 
+			     Int_t&              value,
+			     Bool_t              verb=true)
+  {
+    return DoGetParameter(GetObject(c, name, verb), c, value);
   }
   //_____________________________________________________________________
   /** 
@@ -230,16 +256,11 @@ protected:
   static Bool_t GetParameter(const TCollection*  c, 
 			     const TString&      name, 
 			     Double_t&           value,
-			     Bool_t              verb=true)
-    
-  {
-    TObject* o = GetObject(c, name, verb);
-    if (!o) return false;
-    UInt_t  i = o->GetUniqueID();
-    Float_t v = *reinterpret_cast<Float_t*>(&i);
-    value = v;
-    return true;
-  }
+			     Bool_t              verb=true);
+  static Bool_t GetParameter(const TDirectory*  c, 
+			     const TString&      name, 
+			     Double_t&           value,
+			     Bool_t              verb=true);
   //_____________________________________________________________________
   /** 
    * Get a Bool_t parameter value 
@@ -254,10 +275,14 @@ protected:
 			   Bool_t&             value,
 			   Bool_t              verb=true)
   {
-    TObject* o = GetObject(c, name, verb);
-    if (!o) return false;
-    value = o->GetUniqueID();
-    return true;
+    return DoGetParameter(GetObject(c, name, verb), c, value);
+  }
+  static Bool_t GetParameter(const TDirectory*  c, 
+			     const TString&      name, 
+			     Bool_t&             value,
+			     Bool_t              verb=true)
+  {
+    return DoGetParameter(GetObject(c, name, verb), c, value);
   }
   //____________________________________________________________________
   /** 
@@ -269,14 +294,17 @@ protected:
    *
    * @return pointer to collection on success, otherwise null 
    */
+  static TCollection* DoGetCollection(TObject* o, const TObject* p)
+  {
+    if (!o) return 0;
+    if (!CheckType(o, TCollection::Class(), p->GetName())) return 0;
+    return static_cast<TCollection*>(o);
+  }
   static TCollection* GetCollection(const TCollection* parent, 
 				    const TString&     name,
 				    Bool_t             verb=true)
   {
-    TObject* o = GetObject(parent, name, verb);
-    if (!o) return 0;
-    if (!CheckType(o, TCollection::Class(), parent->GetName())) return 0;
-    return static_cast<TCollection*>(o);
+    return DoGetCollection(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
@@ -292,10 +320,7 @@ protected:
 				    const TString&    name,
 				    Bool_t            verb=true)
   {
-    TObject* o = GetObject(parent, name, verb);
-    if (!o) return 0;
-    if (!CheckType(o, TCollection::Class(), parent->GetName())) return 0;
-    return static_cast<TCollection*>(o);
+    return DoGetCollection(GetObject(parent, name, verb), parent);
   }
 
   //____________________________________________________________________
@@ -308,14 +333,23 @@ protected:
    * 
    * @return pointer or null
    */
+  static TH1* DoGetH1(TObject* o, const TObject* p) 
+  {
+    if (!o) return 0;
+    if (!CheckType(o, TH1::Class(), p->GetName())) return 0;
+    return static_cast<TH1*>(o);
+  }    
   static TH1* GetH1(const TCollection* parent, 
 		    const TString&     name,
 		    Bool_t             verb=true)
   {
-    TObject* o = GetObject(parent, name, verb);
-    if (!o) return 0;
-    if (!CheckType(o, TH1::Class(), parent->GetName())) return 0;
-    return static_cast<TH1*>(o);
+    return DoGetH1(GetObject(parent, name, verb), parent);
+  }
+  static TH1* GetH1(const TDirectory* parent, 
+		    const TString&    name, 
+		    Bool_t            verb=true)
+  {
+    return DoGetH1(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
@@ -327,20 +361,23 @@ protected:
    * 
    * @return pointer or null
    */
+  static TH2* DoGetH2(TObject* o, const TObject* p) 
+  {
+    if (!o) return 0;
+    if (!CheckType(o, TH2::Class(), p->GetName())) return 0;
+    return static_cast<TH2*>(o);
+  }    
   static TH2* GetH2(const TCollection* parent, 
 		    const TString&     name, 
 		    Bool_t             verb=true)
   {
-    // Info("GetH2", "Getting 2D histogram of %s from %p", name.Data(), c);
-    // --- Find the object -------------------------------------------
-    TObject* o = GetObject(parent, name, verb);
-    if (!o) return 0;
-
-    // --- Check the type of object ----------------------------------
-    if (!CheckType(o, TH2::Class(), parent->GetName())) return 0;
-  
-    // --- Return the collection -------------------------------------
-    return static_cast<TH2*>(o);
+    return DoGetH2(GetObject(parent, name, verb), parent);
+  }
+  static TH2* GetH2(const TDirectory*  parent, 
+		    const TString&     name, 
+		    Bool_t             verb=true)
+  {
+    return DoGetH2(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
@@ -352,20 +389,19 @@ protected:
    * 
    * @return pointer or null
    */
+  static TH3* DoGetH3(TObject* o, const TObject* p) 
+  {
+    if (!o) return 0;
+    if (!CheckType(o, TH3::Class(), p->GetName())) return 0;
+    return static_cast<TH3*>(o);
+  }    
   static TH3* GetH3(const TCollection* parent, 
 		    const TString&     name, 
 		    Bool_t             verb=true)
   {
     // Info("GetH2", "Getting 2D histogram of %s from %p", name.Data(), c);
     // --- Find the object -------------------------------------------
-    TObject* o = GetObject(parent, name, verb);
-    if (!o) return 0;
-
-    // --- Check the type of object ----------------------------------
-    if (!CheckType(o, TH3::Class(), parent->GetName())) return 0;
-  
-    // --- Return the collection -------------------------------------
-    return static_cast<TH3*>(o);
+    return DoGetH3(GetObject(parent, name, verb), parent);
   }
   //__________________________________________________________________
   /** 
@@ -378,19 +414,18 @@ protected:
    * 
    * @return pointer or null
    */
+  static THStack* DoGetStack(TObject* o, const TObject* p)
+  {
+    if (!o) return 0;
+    if (!CheckType(o, THStack::Class(), p->GetName())) return 0;
+    return static_cast<THStack*>(o);
+  }
   static THStack* GetStack(const TCollection* parent, 
 			   const TString&     name,
 			   const char*        sub=0,
 			   Bool_t             verb=true)
   {
-    // --- Find the object -------------------------------------------
-    TObject* o = GetObject(parent, name, verb);
-    if (!o) return 0;
-
-    // --- Check the type of object -----------------------------------
-    if (!CheckType(o, THStack::Class(), parent->GetName())) return 0;
-  
-    THStack* stack = static_cast<THStack*>(o);
+    THStack* stack = DoGetStack(GetObject(parent, name, verb), parent);
     if (sub == 0) return stack;
   
     if (stack->GetHists()->GetEntries() <= 0 ||stack->GetMaximum() < 1) { 
@@ -426,6 +461,12 @@ protected:
     }
     // --- Return the collection -------------------------------------
     return stack;
+  }
+  static THStack* GetStack(const TDirectory* parent, 
+			   const TString&     name,
+			   Bool_t             verb=true)
+  {
+    return DoGetStack(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
@@ -1216,5 +1257,39 @@ protected:
   TVirtualPad** fRingMap;
   Bool_t   fPDF;
 };
+
+  template <> 
+  inline Bool_t 
+  SummaryDrawer::DoGetParameter<Double_t>(TObject* o, const TObject* p, 
+				       Double_t& value)
+  {
+    if (!o) return false;
+    if (!CheckType(o, TParameter<Double_t>::Class(), p->GetName())) 
+      return false;
+    UInt_t  i = o->GetUniqueID();
+    Float_t v = *reinterpret_cast<Float_t*>(&i);
+    value = v;
+    return true;
+    // TParameter<T>* p = static_cast<TParameter<T>*>(o);
+  }
+inline Bool_t 
+SummaryDrawer::GetParameter(const TCollection*  c, 
+			    const TString&      name, 
+			    Double_t&           value,
+			    Bool_t              verb)
+  
+{
+  return DoGetParameter(GetObject(c, name, verb), c, value);
+}
+inline Bool_t 
+SummaryDrawer::GetParameter(const TDirectory*  c, 
+			    const TString&      name, 
+			    Double_t&           value,
+			    Bool_t              verb)
+  
+{
+  return DoGetParameter(GetObject(c, name, verb), c, value);
+}
+
 #endif
 
