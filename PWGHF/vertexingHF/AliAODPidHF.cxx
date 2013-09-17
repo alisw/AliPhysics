@@ -129,7 +129,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fCompat(pid.fCompat),
   fPCompatTOF(pid.fPCompatTOF),
   fnNSigmaCompat(pid.fnNSigmaCompat),
-  fnSigmaCompat(pid.fnSigmaCompat),
+  fnSigmaCompat(0x0),
   fMC(pid.fMC),
   fOnePad(pid.fOnePad),
   fMCLowEn2011(pid.fMCLowEn2011),
@@ -139,13 +139,17 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fOldPid(pid.fOldPid),
   fPtThresholdTPC(pid.fPtThresholdTPC),
   fMaxTrackMomForCombinedPID(pid.fMaxTrackMomForCombinedPID),
-  fPidResponse(pid.fPidResponse),
-  fPidCombined(pid.fPidCombined),
+  fPidResponse(0x0),
+  fPidCombined(0x0),
   fTPCResponse(0x0),
   fCombDetectors(pid.fCombDetectors),
   fUseCombined(pid.fUseCombined)
 {
   
+  fnSigmaCompat=new Double_t[fnNSigmaCompat];
+  for(Int_t i=0;i<fnNSigmaCompat;i++){
+    fnSigmaCompat[i]=pid.fnSigmaCompat[i];
+  }
   fnSigma = new Double_t[fnNSigma];
   for(Int_t i=0;i<fnNSigma;i++){
     fnSigma[i]=pid.fnSigma[i];
@@ -166,7 +170,10 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
     fPriorsH[i]=pid.fPriorsH[i];
   }
 
-  if(pid.fTPCResponse) fTPCResponse = new AliTPCPIDResponse(*(pid.fTPCResponse));
+  //  if(pid.fTPCResponse) fTPCResponse = new AliTPCPIDResponse(*(pid.fTPCResponse));
+  fTPCResponse = new AliTPCPIDResponse();
+  SetBetheBloch();
+  fPidCombined = new AliPIDCombined();
   //fPidResponse = new AliPIDResponse(*(pid.fPidResponse));
   //fPidCombined = new AliPIDCombined(*(pid.fPidCombined));  
     
