@@ -16,32 +16,37 @@
 // Draw corrections of secondaries
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <Riostream.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TROOT.h>
+#include <TStyle.h>
 #include <TFile.h>
-#include <TSystem.h>
 #include <TH1D.h>
 #include <TString.h>
 #include <TMath.h>
 #include <TCanvas.h>
+#endif
 
 #include "B2.h"
 
-
 Int_t GetNumberCols(Int_t lowbin, Int_t hibin);
 
-TCanvas* DrawMC(TH1D** hData, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, Double_t binwidth, Double_t dcaxyMin, Double_t dcaxyMax);
+TCanvas* DrawMC(TH1D** hData, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, const TH1D* hPt, Double_t dcaxyMin, Double_t dcaxyMax);
 
-TCanvas* DrawFit(TH1D** hData, TH1D** hDataFit, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, Double_t binwidth, Double_t dcaxyMin, Double_t dcaxyMax);
+TCanvas* DrawFit(TH1D** hData, TH1D** hDataFit, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, const TH1D* hPt, Double_t dcaxyMin, Double_t dcaxyMax);
 
-TCanvas* DrawGoF(TH1D** hData, TH1D** hDataFit, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, Double_t binwidth, Double_t dcaxyMin, Double_t dcaxyMax);
+TCanvas* DrawGoF(TH1D** hData, TH1D** hDataFit, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, const TH1D* hPt, Double_t dcaxyMin, Double_t dcaxyMax);
 
-void DrawSec(const TString& inputFile="debug.root", const TString& tag="test", const TString& particle="Proton", Int_t lowbin=1, Int_t hibin=10, Double_t dcaxyMin=-1.5, Double_t dcaxyMax=1.5)
+void DrawSec(const TString& inputFile="debug.root", const TString& tag="test", const TString& particle="Proton", Double_t ptmin=0.5, Double_t ptmax=3., Double_t dcaxyMin=-1.5, Double_t dcaxyMax=1.5)
 {
 //
 // draw corrections of secondaries
 //
-	const Int_t kNBin = hibin;
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetOptStat(0);
+	gStyle->SetOptTitle(1);
+	
+	const Int_t kNBin = 50;
 	
 	TFile* finput = new TFile(inputFile.Data());
 	if (finput->IsZombie()) exit(1);
@@ -61,17 +66,22 @@ void DrawSec(const TString& inputFile="debug.root", const TString& tag="test", c
 	TH1D* hMatFit[kNBin];
 	TH1D* hFdwnFit[kNBin];
 	
+	TH1D* hPidPt = FindObj<TH1D>(finput, tag, particle + "_PID_Pt");
+	
+	Int_t lowbin = hPidPt->GetXaxis()->FindFixBin(ptmin);
+	Int_t hibin  = hPidPt->GetXaxis()->FindFixBin(ptmax);
+	
 	for(Int_t i=lowbin; i<hibin && i<kNBin; ++i)
 	{
 		// MC
-		hData[i]   = (TH1D*)FindObj(finput, tag, particle + Form("_Data_DCAxy_%02d",i));
-		hDataMC[i] = (TH1D*)FindObj(finput, tag, particle + Form("_SimData_DCAxy_%02d",i));
-		hPrim[i]   = (TH1D*)FindObj(finput, tag, particle + Form("_Prim_DCAxy_%02d",i));
-		hMat[i]    = (TH1D*)FindObj(finput, tag, particle + Form("_Mat_DCAxy_%02d",i));
+		hData[i]   = FindObj<TH1D>(finput, tag, particle + Form("_Data_DCAxy_%02d",i));
+		hDataMC[i] = FindObj<TH1D>(finput, tag, particle + Form("_SimData_DCAxy_%02d",i));
+		hPrim[i]   = FindObj<TH1D>(finput, tag, particle + Form("_Prim_DCAxy_%02d",i));
+		hMat[i]    = FindObj<TH1D>(finput, tag, particle + Form("_Mat_DCAxy_%02d",i));
 		
 		if(particle.Contains("Proton"))
 		{
-			hFdwn[i] = (TH1D*)FindObj(finput, tag, particle + Form("_Fdwn_DCAxy_%02d",i));
+			hFdwn[i] = FindObj<TH1D>(finput, tag, particle + Form("_Fdwn_DCAxy_%02d",i));
 		}
 		else
 		{
@@ -79,13 +89,13 @@ void DrawSec(const TString& inputFile="debug.root", const TString& tag="test", c
 		}
 		
 		// fitted data
-		hDataFit[i] = (TH1D*)FindObj(finput, tag, particle + Form("_Fit_Data_DCAxy_%02d",i));
-		hPrimFit[i] = (TH1D*)FindObj(finput, tag, particle + Form("_Fit_Prim_DCAxy_%02d",i));
-		hMatFit[i]  = (TH1D*)FindObj(finput, tag, particle + Form("_Fit_Mat_DCAxy_%02d",i));
+		hDataFit[i] = FindObj<TH1D>(finput, tag, particle + Form("_Fit_Data_DCAxy_%02d",i));
+		hPrimFit[i] = FindObj<TH1D>(finput, tag, particle + Form("_Fit_Prim_DCAxy_%02d",i));
+		hMatFit[i]  = FindObj<TH1D>(finput, tag, particle + Form("_Fit_Mat_DCAxy_%02d",i));
 		
 		if(particle.Contains("Proton"))
 		{
-			hFdwnFit[i] = (TH1D*)FindObj(finput, tag, particle + Form("_Fit_Fdwn_DCAxy_%02d",i));
+			hFdwnFit[i] = FindObj<TH1D>(finput, tag, particle + Form("_Fit_Fdwn_DCAxy_%02d",i));
 		}
 		else
 		{
@@ -93,31 +103,30 @@ void DrawSec(const TString& inputFile="debug.root", const TString& tag="test", c
 		}
 	}
 	
-	// pt bin width
-	TH1D* hPidPt = (TH1D*)FindObj(finput, tag, particle + "_PID_Pt");
-	Double_t binwidth = hPidPt->GetBinWidth(0);
-	
 	// draw
 	
 	TCanvas* c0 = 0;
 	
 	if(hDataMC[lowbin]!=0)
 	{
-		c0 = DrawMC(hDataMC, hPrim, hMat, hFdwn, lowbin, hibin, particle + ".MC", Form("MC simulation for %s",particle.Data()), binwidth, dcaxyMin, dcaxyMax);
+		c0 = DrawMC(hDataMC, hPrim, hMat, hFdwn, lowbin, hibin, particle + ".MC", Form("MC simulation for %s",particle.Data()), hPidPt, dcaxyMin, dcaxyMax);
+		c0->Update();
 	}
 	
 	TCanvas* c1;
 	
 	if(hDataFit[lowbin]!=0)
 	{
-		c1 = DrawFit(hData, hDataFit, hPrimFit, hMatFit, hFdwnFit, lowbin, hibin, particle + ".Fit", Form("Fitted DCA for %s",particle.Data()), binwidth, dcaxyMin, dcaxyMax);
+		c1 = DrawFit(hData, hDataFit, hPrimFit, hMatFit, hFdwnFit, lowbin, hibin, particle + ".Fit", Form("Fitted DCA for %s",particle.Data()), hPidPt, dcaxyMin, dcaxyMax);
+		c1->Update();
 	}
 	
 	TCanvas* c2;
 	
 	if(hDataFit[lowbin]!=0)
 	{
-		c2 = DrawGoF(hData, hDataFit, lowbin, hibin, particle + ".GoF", Form("GoF for %s",particle.Data()), binwidth, dcaxyMin, dcaxyMax);
+		c2 = DrawGoF(hData, hDataFit, lowbin, hibin, particle + ".GoF", Form("GoF for %s",particle.Data()), hPidPt, dcaxyMin, dcaxyMax);
+		c2->Update();
 	}
 }
 
@@ -130,7 +139,7 @@ Int_t GetNumberCols(Int_t lowbin, Int_t hibin)
 	return TMath::CeilNint(TMath::Sqrt(TMath::Abs(hibin - lowbin)));
 }
 
-TCanvas* DrawMC(TH1D** hData, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, Double_t binwidth, Double_t dcaxyMin, Double_t dcaxyMax)
+TCanvas* DrawMC(TH1D** hData, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, const TH1D* hPt, Double_t dcaxyMin, Double_t dcaxyMax)
 {
 //
 // Draw MC DCA distributions for each pt bin
@@ -144,10 +153,9 @@ TCanvas* DrawMC(TH1D** hData, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t low
 	{
 		c0->cd(i+1-lowbin);
 		
-		gPad->SetGrid();
 		gPad->SetLogy();
 		
-		hData[i]->SetTitle(Form("%0.2f < p_{T} < %0.2f GeV/c", (i-1)*binwidth, i*binwidth));
+		hData[i]->SetTitle(Form("%0.2f < p_{T} < %0.2f GeV/c", hPt->GetBinLowEdge(i), hPt->GetBinLowEdge(i)+hPt->GetBinWidth(i)));
 		hData[i]->SetMinimum(0.2);
 		
 		hData[i]->SetAxisRange(dcaxyMin, dcaxyMax, "X");
@@ -178,7 +186,7 @@ TCanvas* DrawMC(TH1D** hData, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t low
 	return c0;
 }
 
-TCanvas* DrawFit(TH1D** hData, TH1D** hDataFit, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, Double_t binwidth, Double_t dcaxyMin, Double_t dcaxyMax)
+TCanvas* DrawFit(TH1D** hData, TH1D** hDataFit, TH1D** hPrim, TH1D** hMat, TH1D** hFdwn, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, const TH1D* hPt, Double_t dcaxyMin, Double_t dcaxyMax)
 {
 //
 // Draw DCA fitted model for each pt bin in current canvas
@@ -188,15 +196,13 @@ TCanvas* DrawFit(TH1D** hData, TH1D** hDataFit, TH1D** hPrim, TH1D** hMat, TH1D*
 	TCanvas* c0 = new TCanvas(name.Data(), title.Data());
 	c0->Divide(ncol, ncol);
 	
-	for(Int_t i=lowbin; i < hibin; ++i)
+	for(Int_t i=lowbin; i < hibin && i < ncol*ncol; ++i)
 	{
 		c0->cd(i+1-lowbin);
 		
-		gPad->SetGridx();
-		gPad->SetGridy();
 		gPad->SetLogy();
 		
-		hData[i]->SetTitle(Form("%0.2f < p_{T} < %0.2f GeV/c", (i-1)*binwidth, i*binwidth));
+		hData[i]->SetTitle(Form("%0.2f < #it{p}_{T} < %0.2f GeV/c", hPt->GetBinLowEdge(i), hPt->GetBinLowEdge(i)+hPt->GetBinWidth(i)));
 		hData[i]->SetMinimum(0.2);
 		
 		hData[i]->SetAxisRange(dcaxyMin, dcaxyMax, "X");
@@ -230,7 +236,7 @@ TCanvas* DrawFit(TH1D** hData, TH1D** hDataFit, TH1D** hPrim, TH1D** hMat, TH1D*
 	return c0;
 }
 
-TCanvas* DrawGoF(TH1D** hData, TH1D** hDataFit, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, Double_t binwidth, Double_t dcaxyMin, Double_t dcaxyMax)
+TCanvas* DrawGoF(TH1D** hData, TH1D** hDataFit, Int_t lowbin, Int_t hibin, const TString& name, const TString& title, const TH1D* hPt, Double_t dcaxyMin, Double_t dcaxyMax)
 {
 //
 // Draw a goodness of fit for each pt bin consisting of data/fit
@@ -244,13 +250,11 @@ TCanvas* DrawGoF(TH1D** hData, TH1D** hDataFit, Int_t lowbin, Int_t hibin, const
 	{
 		c0->cd(i+1-lowbin);
 		
-		gPad->SetGrid();
-		
 		TH1D* hDiv = (TH1D*)hData[i]->Clone("_Div_Data_Fit_");
 		hDiv->Sumw2();
 		hDiv->Divide(hDataFit[i]);
 		
-		hDiv->SetTitle(Form("%0.2f < p_{T} < %0.2f GeV/c", (i-1)*binwidth, i*binwidth));
+		hDiv->SetTitle(Form("%0.2f < p_{T} < %0.2f GeV/c", hPt->GetBinLowEdge(i), hPt->GetBinLowEdge(i)+hPt->GetBinWidth(i)));
 		hDiv->SetAxisRange(dcaxyMin, dcaxyMax, "X");
 		hDiv->SetAxisRange(0,3,"Y");
 		hDiv->SetMarkerStyle(kFullCircle);

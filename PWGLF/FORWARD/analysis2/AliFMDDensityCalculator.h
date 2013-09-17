@@ -134,7 +134,8 @@ public:
    * 
    * @param dbg Debug level 
    */
-  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  void SetDebug(Int_t dbg=1) { fDebug = dbg; }	
+  void SetDoTiming(Bool_t enable=true) { fDoTiming = enable; }
   /** 
    * Maximum particle weight to use 
    * 
@@ -193,6 +194,12 @@ public:
     fPhiLumping = (phi < 1 ? 1 : phi); 
   }
   /** 
+   * Set the minimum quality of the energy loss fits 
+   * 
+   * @param cut Cut value 
+   */
+  void SetMinQuality(UShort_t cut=10) { fMinQuality = cut; }
+  /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
@@ -220,6 +227,12 @@ public:
    */
   Double_t GetMultCut(UShort_t d, Char_t r, Int_t ieta, 
 		      Bool_t errors=true) const;
+  /** 
+   * Set the minimum quality of the energy loss fits 
+   * 
+   * @param cut Cut value 
+   */
+  UShort_t GetMinQuality() const { return fMinQuality; }
   /** 
    * Print information 
    * 
@@ -386,10 +399,10 @@ protected:
      */
     void Terminate(TList* dir, Int_t nEvents);
     TList*    fList;
-    TH2D*     fEvsN;           // Correlation of Eloss vs uncorrected Nch
-    TH2D*     fEvsM;           // Correlation of Eloss vs corrected Nch
-    TProfile* fEtaVsN;         // Average uncorrected Nch vs eta
-    TProfile* fEtaVsM;         // Average corrected Nch vs eta
+    // TH2D*     fEvsN;           // Correlation of Eloss vs uncorrected Nch
+    // TH2D*     fEvsM;           // Correlation of Eloss vs corrected Nch
+    // TProfile* fEtaVsN;         // Average uncorrected Nch vs eta
+    // TProfile* fEtaVsM;         // Average corrected Nch vs eta
     TProfile* fCorr;           // Average correction vs eta
     TH2D*     fDensity;        // Distribution inclusive Nch
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
@@ -434,10 +447,14 @@ protected:
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
   AliFMDMultCuts fCuts;    // Cuts
-  Bool_t fRecalculateEta;  // Whether to recalc eta and angle correction (disp vtx)
-  Bool_t fRecalculatePhi;  // Whether to correct for (X,Y) offset
+  Bool_t   fRecalculateEta;  // Whether to recalc eta and angle correction (disp vtx)
+  Bool_t   fRecalculatePhi;  // Whether to correct for (X,Y) offset
+  UShort_t fMinQuality;      // Least quality for fits
+  AliForwardUtil::Histos fCache;
+  Bool_t                 fDoTiming;
+  TProfile*              fHTiming;
 
-  ClassDef(AliFMDDensityCalculator,9); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,13); // Calculate Nch density 
 };
 
 #endif

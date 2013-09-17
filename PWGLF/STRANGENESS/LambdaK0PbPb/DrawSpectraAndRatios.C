@@ -96,7 +96,8 @@ const Double_t sysRatio=0.05;//Efficiency systematics for the L/K ratio
 
 Double_t fd(Double_t x) {
   //Effective FD correction
-  return 0.1619 + 0.05295*x - 0.01749*x*x + 0.001425*x*x*x - 3.446e-05*x*x*x*x;
+//return 0.1619 + 0.05295*x - 0.01749*x*x + 0.001425*x*x*x - 3.446e-05*x*x*x*x;
+  return 0.2199 + 0.03226*x - 0.01739*x*x + 0.001790*x*x*x - 5.679e-05*x*x*x*x;
 }
 
 void FeedDown(TH1 *spe) {
@@ -193,6 +194,7 @@ DrawHisto(const TH1 *h, const Option_t *option, Double_t *sysEff,
   Int_t nb=hh->GetNbinsX();
 
   for (Int_t i=1; i<=nb; i++) {
+      Double_t pt=h->GetBinCenter(i);
       Double_t c=hh->GetBinContent(i);
       Double_t e=hh->GetBinError(i);
       Int_t j=i-1;
@@ -201,8 +203,12 @@ DrawHisto(const TH1 *h, const Option_t *option, Double_t *sysEff,
       if (sysEff==sysEffLam) {// for Lambda
 	 e += sysFD*sysFD;
          if (i<13) e += sysPID*sysPID;
+         Double_t matBgt=( pt < 0.5*(3.5-0.6) ) ? 3.4e-2 : 2.0e-2;
+         e += matBgt*matBgt;
       } else {// for K0s
          e += sysArm*sysArm;
+         Double_t matBgt=( pt < 0.5*(3.0-0.2) ) ? 1.5e-2 : 1.1e-2;
+         e += matBgt*matBgt;
       }
 
       e=c*TMath::Sqrt(e); 

@@ -291,20 +291,20 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276(const char *n
      // Output slot #1 writes into a TList container (cascade)
         // default p-p values
         fV0Sels[0] =  33.  ;     // max allowed chi2
-        fV0Sels[1] =   0.073;    // min allowed impact parameter for the 1st daughter 
-        fV0Sels[2] =   0.073;    // min allowed impact parameter for the 2nd daughter 
-        fV0Sels[3] =   1.18;     // max allowed DCA between the daughter tracks       
-        fV0Sels[4] =    .983;    // min allowed cosine of V0's pointing angle         
-        fV0Sels[5] =   2.67;     // min radius of the fiducial volume                 
-        fV0Sels[6] = 100.;       // max radius of the fiducial volume                 
+        fV0Sels[1] =   0.01;     // min allowed impact parameter for the 1st daughter 
+        fV0Sels[2] =   0.01;     // min allowed impact parameter for the 2nd daughter 
+        fV0Sels[3] =   1.5;      // max allowed DCA between the daughter tracks       
+        fV0Sels[4] =   0.9;      // min allowed cosine of V0's pointing angle  - This is pT dependent         
+        fV0Sels[5] =   0.2;      // min radius of the fiducial volume                 
+        fV0Sels[6] = 200.;       // max radius of the fiducial volume                 
 
         fCascSels[0] =  33.;     // max allowed chi2 (same as PDC07)
-        fCascSels[1] =   0.03;   // min allowed V0 impact parameter                    
+        fCascSels[1] =   0.01;   // min allowed V0 impact parameter                    
         fCascSels[2] =   0.008;  // "window" around the Lambda mass                    
-        fCascSels[3] =   0.0204; // min allowed bachelor's impact parameter          
-        fCascSels[4] =   1.68;   // max allowed DCA between the V0 and the bachelor    
-        fCascSels[5] =   0.9826; // min allowed cosine of the cascade pointing angle   
-        fCascSels[6] =   0.38;   // min radius of the fiducial volume                  
+        fCascSels[3] =   0.01;   // min allowed bachelor's impact parameter          
+        fCascSels[4] =   2.0;    // max allowed DCA between the V0 and the bachelor    
+        fCascSels[5] =   0.95;   // min allowed cosine of the cascade pointing angle   
+        fCascSels[6] =   0.2;    // min radius of the fiducial volume                  
         fCascSels[7] = 100.;     // max radius of the fiducial volume                  
 
      // Output slot #0 writes into a TList container (Cascade)
@@ -359,20 +359,20 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
  //---------------------------------------------------
  // Not validated; to be checked
  fV0Sels[0] =  33.  ;     // max allowed chi2
- fV0Sels[1] =   0.073;    // min allowed impact parameter for the 1st daughter 
- fV0Sels[2] =   0.073;    // min allowed impact parameter for the 2nd daughter 
- fV0Sels[3] =   1.18;     // max allowed DCA between the daughter tracks       
- fV0Sels[4] =    .983;    // min allowed cosine of V0's pointing angle         
- fV0Sels[5] =   2.67;     // min radius of the fiducial volume                 
- fV0Sels[6] = 100.;       // max radius of the fiducial volume                 
+ fV0Sels[1] =   0.01;     // min allowed impact parameter for the 1st daughter 
+ fV0Sels[2] =   0.01;     // min allowed impact parameter for the 2nd daughter 
+ fV0Sels[3] =   1.5;      // max allowed DCA between the daughter tracks       
+ fV0Sels[4] =   0.9;     // min allowed cosine of V0's pointing angle         
+ fV0Sels[5] =   0.2;      // min radius of the fiducial volume                 
+ fV0Sels[6] = 200.;       // max radius of the fiducial volume                 
 
  fCascSels[0] =  33.;     // max allowed chi2 (same as PDC07)
- fCascSels[1] =   0.03;   // min allowed V0 impact parameter                    
+ fCascSels[1] =   0.01;   // min allowed V0 impact parameter                    
  fCascSels[2] =   0.008;  // "window" around the Lambda mass                    
- fCascSels[3] =   0.0204; // min allowed bachelor's impact parameter           //check cuts 
- fCascSels[4] =   1.68;   // max allowed DCA between the V0 and the bachelor    
- fCascSels[5] =   0.9826; // min allowed cosine of the cascade pointing angle   
- fCascSels[6] =   0.38;   // min radius of the fiducial volume                  
+ fCascSels[3] =   0.01;   // min allowed bachelor's impact parameter          
+ fCascSels[4] =   2.0;    // max allowed DCA between the V0 and the bachelor    
+ fCascSels[5] =   0.95;   // min allowed cosine of the cascade pointing angle   
+ fCascSels[6] =   0.2;    // min radius of the fiducial volume                  
  fCascSels[7] = 100.;     // max radius of the fiducial volume 
 
  //----------------------
@@ -383,74 +383,74 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
  if(! fHistCascadeMultiplicityBeforeAnySel) {
         fHistCascadeMultiplicityBeforeAnySel = new TH1F("fHistCascadeMultiplicityBeforeAnySel",
                         "Cascades per event (before any selections);Nbr of Cascades/Evt;Events",                
-                        50, 0, 50);
+                        20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityBeforeAnySel);
  }
  if(! fHistCascadeMultiplicityAfterSDDSel) {
         fHistCascadeMultiplicityAfterSDDSel = new TH1F("fHistCascadeMultiplicityAfterSDDSel", 
 			"Cascades per event (after the SDD selection);Nbr of Cascades/Evt;Events", 
-			50, 0, 50); 		
+			20, 0, 20); 		
 	fListHistCascade->Add(fHistCascadeMultiplicityAfterSDDSel);
  }
  if(! fHistCascadeMultiplicityAfterPhysicsSel) {
         fHistCascadeMultiplicityAfterPhysicsSel = new TH1F("fHistCascadeMultiplicityAfterPhysicsSel",
                         "Cascades per event (after physics selection);Nbr of Cascades/Evt;Events",
-                        50, 0, 50);
+                        20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterPhysicsSel);
  }
  if(! fHistCascadeMultiplicityForSelEvtNoTPCOnly) {
         fHistCascadeMultiplicityForSelEvtNoTPCOnly = new TH1F("fHistCascadeMultiplicityForSelEvtNoTPCOnly",
                         "Cascades per event (for selected events with well-established PV);Nbr of Cascades/Evt;Events",
-                        50, 0, 50);
+                        20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityForSelEvtNoTPCOnly);
  }
  if(! fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup) {
         fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup = new TH1F("fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup",
                         "Cascades per event (for selected events with well-establisched PV and no pile-up);Nbr of Cascades/Evt;Events",
-                        50, 0, 50);
+                        20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup);
  }
  if(! fHistCascadeMultiplicityAfterVertexCutSel) {
         fHistCascadeMultiplicityAfterVertexCutSel = new TH1F("fHistCascadeMultiplicityAfterVertexCutSel",
                                                              "Cascades per event (after vertex cut selection);Nbr of Cascades/Evt;Events",
-                                                             50, 0, 50);
+                                                             20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterVertexCutSel);
  }
  // - Tracks multiplicity plots 
  if(! fHistTrackMultiplicityBeforeAnySel) {
 	fHistTrackMultiplicityBeforeAnySel = new TH1F("fHistTrackMultiplicityBeforeAnySel", 
 			"Tracks per event (before any selections);Nbr of Cascades/Evt;Events", 
-			200, 0, 200); 		
+			100, 0, 100); 		
 	fListHistCascade->Add(fHistTrackMultiplicityBeforeAnySel);
  } 
  if(! fHistTrackMultiplicityAfterSDDSel) {
         fHistTrackMultiplicityAfterSDDSel = new TH1F("fHistTrackMultiplicityAfterSDDSel",                  
                         "Tracks per event (after the SDD selection);Nbr of Cascades/Evt;Events",
-                        200, 0, 200);
+                        100, 0, 100);
         fListHistCascade->Add(fHistTrackMultiplicityAfterSDDSel);
  }
  if(! fHistTrackMultiplicityAfterPhysicsSel) {
         fHistTrackMultiplicityAfterPhysicsSel = new TH1F("fHistTrackMultiplicityAfterPhysicsSel",
                         "Tracks per event (after physics selection);Nbr of Cascades/Evt;Events",
-                        200, 0, 200);
+                        100, 0, 100);
         fListHistCascade->Add(fHistTrackMultiplicityAfterPhysicsSel);
  }
  if(! fHistTrackMultiplicityForSelEvtNoTPCOnly) {
         fHistTrackMultiplicityForSelEvtNoTPCOnly = new TH1F("fHistTrackMultiplicityForSelEvtNoTPCOnly",
                         "Tracks per event (for selected events with well-established PV);Nbr of Cascades/Evt;Events",
-                        200, 0, 200);
+                        100, 0, 100);
         fListHistCascade->Add(fHistTrackMultiplicityForSelEvtNoTPCOnly);
  }
  if(! fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup) {
         fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup = new TH1F("fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup",
                         "Tracks per event (for selected events with well-establisched PV and no pile-up);Nbr of Cascades/Evt;Events",
-                        200, 0, 200);
+                        100, 0, 100);
         fListHistCascade->Add(fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup);
  }
  if(! fHistTrackMultiplicityAfterVertexCutSel) {
         fHistTrackMultiplicityAfterVertexCutSel = new TH1F("fHistTrackMultiplicityAfterVertexCutSel",
                                                            "Tracks per event (after vertex cut selection);Nbr of Cascades/Evt;Events",
-                                                           200, 0, 200);
+                                                           100, 0, 100);
         fListHistCascade->Add(fHistTrackMultiplicityAfterVertexCutSel);
  }
  // - Vertex position plots
@@ -505,11 +505,11 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
      fListHistCascade->Add(fHistDcaBachToPrimVertex);
  }
  if(! fHistXiCosineOfPointingAngle) {
-     fHistXiCosineOfPointingAngle = new TH1F("fHistXiCosineOfPointingAngle", "Cosine of Xi Pointing Angle; Cos (Xi Point.Angl); Counts", 301, 0.97, 1.0001);
+     fHistXiCosineOfPointingAngle = new TH1F("fHistXiCosineOfPointingAngle", "Cosine of Xi Pointing Angle; Cos (Xi Point.Angl); Counts", 601, 0.94, 1.0001);
      fListHistCascade->Add(fHistXiCosineOfPointingAngle);
  }
  if(! fHistXiRadius ){
-     fHistXiRadius = new TH1F("fHistXiRadius", "Cascade decay transv. radius; r (cm); Counts" , 1050, 0., 105.0);
+     fHistXiRadius = new TH1F("fHistXiRadius", "Cascade decay transv. radius; r (cm); Counts" , 2050, 0., 205.0);
      fListHistCascade->Add(fHistXiRadius);
  }
  if(! fHistMassLambdaAsCascDghter) {
@@ -529,7 +529,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
      fListHistCascade->Add(fHistV0CosineOfPointingAngleXi);
  }
  if(! fHistV0RadiusXi) {
-     fHistV0RadiusXi = new TH1F("fHistV0RadiusXi", "V0 decay radius, in cascade; radius (cm); Counts", 1050, 0., 105.0);
+     fHistV0RadiusXi = new TH1F("fHistV0RadiusXi", "V0 decay radius, in cascade; radius (cm); Counts", 2050, 0., 205.0);
      fListHistCascade->Add(fHistV0RadiusXi);
  }
  if(! fHistDcaPosToPrimVertexXi) {
@@ -816,15 +816,15 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    Int_t lNbBinsPerVar[lNbVariables] = {0};
    lNbBinsPerVar[0]  = 25;     //DcaCascDaughters             :  [0.0,2.4,3.0]       -> Rec.Cut = 2.0;
    lNbBinsPerVar[1]  = 25;     //DcaBachToPrimVertex          :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01; 
-   lNbBinsPerVar[2]  = 30;     //CascCosineOfPointingAngle    :  [0.97,1.0]          -> Rec.Cut = 0.98;
+   lNbBinsPerVar[2]  = 60;     //CascCosineOfPointingAngle    :  [0.94,1.0]          -> Rec.Cut = 0.95;
    lNbBinsPerVar[3]  = 40;     //CascRadius                   :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
    lNbBinsPerVar[4]  = 30;     //InvMassLambdaAsCascDghter    :  [1.1,1.3]           -> Rec.Cut = 0.008;
    lNbBinsPerVar[5]  = 20;     //DcaV0Daughters               :  [0.0,2.0]           -> Rec.Cut = 1.5;
-   lNbBinsPerVar[6]  = 201;    //V0CosineOfPointingAngle      :  [0.89,1.0]          -> Rec.Cut = 0.9;
+   lNbBinsPerVar[6]  = 201;    //V0CosineOfPointingAngleToXi  :  [0.89,1.0]          -> No Rec.Cut;
    lNbBinsPerVar[7]  = 40;     //V0Radius                     :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
    lNbBinsPerVar[8]  = 40;     //DcaV0ToPrimVertex            :  [0.0,0.39,110.0]    -> Rec.Cut = 0.01;  
-   lNbBinsPerVar[9]  = 25;     //DcaPosToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05;
-   lNbBinsPerVar[10] = 25;     //DcaNegToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05
+   lNbBinsPerVar[9]  = 25;     //DcaPosToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01;
+   lNbBinsPerVar[10] = 25;     //DcaNegToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01;
    lNbBinsPerVar[11] = 150;    //InvMassXi                    :   2-MeV/c2 bins
    lNbBinsPerVar[12] = 120;    //InvMassOmega                 :   2-MeV/c2 bins
    lNbBinsPerVar[13] = 100;    //XiTransvMom                  :  [0.0,10.0]
@@ -851,7 +851,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadeCuts -> SetBinLimits(1, lBinLim1);  
    delete [] lBinLim1;    
      //2 - CascCosineOfPointingAngle 
-   fCFContCascadeCuts->SetBinLimits(2, 0.97, 1.);
+   fCFContCascadeCuts->SetBinLimits(2, 0.94, 1.);
      //3 - CascRadius
    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
         for(Int_t i=0; i< lNbBinsPerVar[3]; i++)   lBinLim3[i]  = (Double_t)0.0   + (3.9  - 0.0 )/(lNbBinsPerVar[3] - 1)  * (Double_t)i ;
@@ -919,7 +919,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadeCuts->SetVarTitle(3,  "R_{2d}(cascade decay) (cm)");
    fCFContCascadeCuts->SetVarTitle(4,  "M_{#Lambda}(as casc dghter) (GeV/c^{2})");
    fCFContCascadeCuts->SetVarTitle(5,  "Dca(V0 daughters) in Xi (cm)");
-   fCFContCascadeCuts->SetVarTitle(6,  "cos(V0 PA) in cascade");
+   fCFContCascadeCuts->SetVarTitle(6,  "cos(V0 PA) to cascade vtx");
    fCFContCascadeCuts->SetVarTitle(7,  "R_{2d}(V0 decay) (cm)");
    fCFContCascadeCuts->SetVarTitle(8,  "ImpactParamToPV(V0) (cm)");
    fCFContCascadeCuts->SetVarTitle(9,  "ImpactParamToPV(Pos) (cm)");
@@ -1109,14 +1109,14 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       if (fkRerunV0CascVertexers) { 
             lESDevent->ResetCascades();
             lESDevent->ResetV0s();
-            //AliV0vertexer *lV0vtxer = new AliV0vertexer();
-            //AliCascadeVertexer *lCascVtxer = new AliCascadeVertexer();
+            AliV0vertexer *lV0vtxer = new AliV0vertexer();
+            AliCascadeVertexer *lCascVtxer = new AliCascadeVertexer();
             //lV0vtxer->GetCuts(fV0Sels);
             //lCascVtxer->GetCuts(fCascSels);
-            //lV0vtxer->SetCuts(fV0Sels);      // NB don't use SetDefaultCuts!! because it acts on static variables 
-            //lCascVtxer->SetCuts(fCascSels);
-            //lV0vtxer->Tracks2V0vertices(lESDevent);
-            //lCascVtxer->V0sTracks2CascadeVertices(lESDevent);
+            lV0vtxer->SetCuts(fV0Sels);      // NB don't use SetDefaultCuts!! because it acts on static variables 
+            lCascVtxer->SetCuts(fCascSels);
+            lV0vtxer->Tracks2V0vertices(lESDevent);
+            lCascVtxer->V0sTracks2CascadeVertices(lESDevent);
             //delete lV0vtxer;
             //delete lCascVtxer;
       }         

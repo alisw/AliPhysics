@@ -3,13 +3,15 @@
 AliAnalysisTaskSAQA* AddTaskSAQA(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
+  const char *ncells             = "EMCALCells",
   const char *njets              = "Jets",
+  const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *cutType            = "TPC",
   const char *taskname           = "AliAnalysisTaskSAQA"
 )
 {  
@@ -47,23 +49,26 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
     name += "_";
     name += njets;
   }
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "_USER";
+  
+  name += "_";
+  name += cutType;
 
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
-  qaTask->SetTracksName(ntracks);
-  qaTask->SetClusName(nclusters);
-  qaTask->SetJetsName(njets);
-  qaTask->SetJetRadius(jetradius);
-  qaTask->SetJetPtCut(jetptcut);
-  qaTask->SetPercAreaCut(jetareacut);
-  qaTask->SetTrackPtCut(trackptcut);
-  qaTask->SetClusPtCut(clusptcut);
-  qaTask->SetAnaType(type);
+  qaTask->SetCaloCellsName(ncells);
+  qaTask->SetRhoName(nrho,-1);
+
+  AliParticleContainer *partCont = qaTask->AddParticleContainer(ntracks);
+  if (partCont) partCont->SetParticlePtCut(trackptcut);
+
+  AliClusterContainer *clusCont = qaTask->AddClusterContainer(nclusters);
+  if (clusCont) clusCont->SetClusPtCut(clusptcut);
+
+  AliJetContainer *jetCont = qaTask->AddJetContainer(njets,cutType,jetradius);
+  if (jetCont) {
+    jetCont->SetJetPtCut(jetptcut);
+    jetCont->SetPercAreaCut(jetareacut);
+    jetCont->SetRhoName(nrho);
+  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

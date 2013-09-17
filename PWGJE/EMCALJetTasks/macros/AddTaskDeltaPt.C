@@ -11,11 +11,10 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   const char *nrandclusters      = "CaloClustersRandomized",
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
-  Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *type               = "TPC",
   const char *taskname           = "AliAnalysisTaskDeltaPt"
 )
 {  
@@ -24,7 +23,7 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskSAJF", "No analysis manager to connect to.");
+    ::Error("AddTaskDeltaPt", "No analysis manager to connect to.");
     return NULL;
   }  
   
@@ -32,7 +31,7 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   //==============================================================================
   if (!mgr->GetInputEventHandler())
   {
-    ::Error("AddTaskSAJF", "This task requires an input event handler");
+    ::Error("AddTaskDeltaPt", "This task requires an input event handler");
     return NULL;
   }
   
@@ -41,37 +40,75 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   //-------------------------------------------------------
   TString name;
   if (strcmp(ntracks, "") == 0 && strcmp(nclusters, "") == 0) 
-    name = Form("%s_%s_R0%d",taskname,nrho,(Int_t)floor(jetradius*100+0.5));
+    name = Form("%s_%s_R0%d_%s",taskname,nrho,(Int_t)floor(jetradius*100+0.5),type);
   else if (strcmp(ntracks, "") == 0) 
-    name = Form("%s_%s_%s_R0%d",taskname,nclusters,nrho,(Int_t)floor(jetradius*100+0.5));
+    name = Form("%s_%s_%s_R0%d_%s",taskname,nclusters,nrho,(Int_t)floor(jetradius*100+0.5),type);
   else if (strcmp(nclusters, "") == 0) 
-    name = Form("%s_%s_%s_R0%d",taskname,ntracks,nrho,(Int_t)floor(jetradius*100+0.5));
+    name = Form("%s_%s_%s_R0%d_%s",taskname,ntracks,nrho,(Int_t)floor(jetradius*100+0.5),type);
   else
-    name = Form("%s_%s_%s_%s_R0%d",taskname,ntracks,nclusters,nrho,(Int_t)floor(jetradius*100+0.5));
-
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "_USER";
+    name = Form("%s_%s_%s_%s_R0%d_%s",taskname,ntracks,nclusters,nrho,(Int_t)floor(jetradius*100+0.5),type);
 
   AliAnalysisTaskDeltaPt* jetTask = new AliAnalysisTaskDeltaPt(name);
-  jetTask->SetAnaType(type);
-  jetTask->SetTracksName(ntracks);
-  jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
-  jetTask->SetEmbTracksName(nembtracks);
-  jetTask->SetEmbClusName(nembclusters);
-  jetTask->SetEmbJetsName(nembjets);
-  jetTask->SetRandTracksName(nrandtracks);
-  jetTask->SetRandClusName(nrandclusters);
-  jetTask->SetRhoName(nrho);
-  jetTask->SetClusPtCut(clusptcut);
-  jetTask->SetTrackPtCut(trackptcut);
-  jetTask->SetJetRadius(jetradius);
-  jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetPercAreaCut(jetareacut);
+  jetTask->SetConeRadius(jetradius);
+  jetTask->SetRhoName(nrho,-1);
+  if (strcmp(type,"TPC")==0) 
+    jetTask->SetConeEtaPhiTPC();
+  else if (strcmp(type,"EMCAL")==0) 
+    jetTask->SetConeEtaPhiEMCAL();
+
+  AliParticleContainer *partCont = jetTask->AddParticleContainer(ntracks);
+  if (partCont) {
+    partCont->SetName("Tracks");
+    partCont->SetParticlePtCut(trackptcut);
+  }
+
+  AliClusterContainer *clusCont = jetTask->AddClusterContainer(nclusters);
+  if (clusCont) {
+    clusCont->SetName("CaloClusters");
+    clusCont->SetClusPtCut(clusptcut);
+  }
+
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,type,jetradius);
+  if (jetCont) {
+    jetCont->SetName("Jets");
+    jetCont->SetPercAreaCut(jetareacut);
+    jetCont->SetRhoName(nrho);
+    jetCont->ConnectParticleContainer(partCont);
+    jetCont->ConnectClusterContainer(clusCont);
+  }
+
+  AliParticleContainer *embPartCont = jetTask->AddParticleContainer(nembtracks);
+  if (embPartCont) {
+    embPartCont->SetName("EmbTracks");
+    embPartCont->SetParticlePtCut(trackptcut);
+  }
+
+  AliClusterContainer *embClusCont = jetTask->AddClusterContainer(nembclusters);
+  if (embClusCont) {
+    embClusCont->SetName("EmbClusters");
+    embClusCont->SetClusPtCut(clusptcut);
+  }
+
+  AliJetContainer *embJetCont = jetTask->AddJetContainer(nembjets,type,jetradius);
+  if (embJetCont) {
+    embJetCont->SetName("EmbJets");
+    embJetCont->SetPercAreaCut(jetareacut);
+    embJetCont->SetRhoName(nrho);
+    embJetCont->ConnectParticleContainer(embPartCont);
+    embJetCont->ConnectClusterContainer(embClusCont);
+  }
+
+  AliParticleContainer *randPartCont = jetTask->AddParticleContainer(nrandtracks);
+  if (randPartCont) {
+    randPartCont->SetName("RandTracks");
+    randPartCont->SetParticlePtCut(trackptcut);
+  }
+
+  AliClusterContainer *randClusCont = jetTask->AddClusterContainer(nrandclusters);    
+  if (randClusCont) {
+    randClusCont->SetName("RandClusters");
+    randClusCont->SetClusPtCut(clusptcut);
+  }
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -38,6 +38,7 @@
 #pragma link C++ class AliFlowVZEROQA+;
 #pragma link C++ class AliAnalysisTaskFlowEPCascade+;
 #pragma link C++ class AliAnalysisTaskJetFlow+;
+#pragma link C++ class AliAnalysisTaskJetFlowMC+;
 
 #endif
 

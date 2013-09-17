@@ -95,8 +95,10 @@ int AddTaskDxHFECorrelationME(TString configuration="")
       }
     }
     else if(argument.BeginsWith("PbPb") ||
-	    argument.BeginsWith("system=1")){
+	    argument.BeginsWith("system=1") ||
+	    argument.BeginsWith("Pb-Pb")){
       system=1;
+      taskOptions+=" PbPb";
     }
     else {
       // simply pass argument
@@ -104,17 +106,11 @@ int AddTaskDxHFECorrelationME(TString configuration="")
     }
   }
   TString path;
-  if(system!=0)
-    path="AddTaskDxHFECorrelationPbPb.C";
-  else
-    path="AddTaskDxHFECorrelation.C";
+  path="AddTaskDxHFECorrelation.C";
 
   if (gSystem->AccessPathName(path)!=0) {
     // first try local macro, than AliRoot default path
-    if(system!=0)
-      path="$ALICE_ROOT/PWGHF/correlationHF/macros/AddTaskDxHFECorrelationPbPb.C";
-    else
-      path="$ALICE_ROOT/PWGHF/correlationHF/macros/AddTaskDxHFECorrelation.C";
+    path="$ALICE_ROOT/PWGHF/correlationHF/macros/AddTaskDxHFECorrelation.C";
   }
 
   gROOT->LoadMacro(path);
@@ -122,30 +118,17 @@ int AddTaskDxHFECorrelationME(TString configuration="")
   if (!nameset) taskOptions+=" name=DxHFE";
   if (!taskOptions) taskOptions+=" trigger=D0";
 
-  if(system!=0){
-    if(!AddTaskDxHFECorrelationPbPb(taskOptions)) {
-      printf("Problem setting up the single event correlation task, returning\n");
-      return 0;
-    }
-
-    taskOptions+=" event-mixing";
-    if(!AddTaskDxHFECorrelationPbPb(taskOptions)) {
-      printf("Problem setting up the mixed event correlation task, returning\n");
-      return 0;
-    }
+  if(!AddTaskDxHFECorrelation(taskOptions)) {
+    printf("Problem setting up the single event correlation task, returning\n");
+    return 0;
   }
-  else{
-    if(!AddTaskDxHFECorrelation(taskOptions)) {
-      printf("Problem setting up the single event correlation task, returning\n");
+  
+  taskOptions+=" event-mixing";
+  if(!AddTaskDxHFECorrelation(taskOptions)) {
+    printf("Problem setting up the mixed event correlation task, returning\n");
       return 0;
-    }
-
-    taskOptions+=" event-mixing";
-    if(!AddTaskDxHFECorrelation(taskOptions)) {
-      printf("Problem setting up the mixed event correlation task, returning\n");
-      return 0;
-    }
   }
+
   return 1;
 }                
 

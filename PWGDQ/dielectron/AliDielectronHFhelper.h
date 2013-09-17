@@ -5,8 +5,8 @@
 
 //#############################################################
 //#                                                           #
-//#             Class AliDielectronHF                         #
-//#       Dielectron Histogram Framework helper         #
+//#             Class AliDielectronHFhelper                   #
+//#       Dielectron Histogram Framework helper               #
 //#                                                           #
 //#  Authors:                                                 #
 //#   Julian    Book,     Uni Ffm / Julian.Book@cern.ch       #
@@ -36,26 +36,37 @@ public:
   void UnsetRangeUser(const char* varname, Bool_t leg=kFALSE);
   void UnsetRangeUser(AliDielectronVarManager::ValueTypes type, Bool_t leg=kFALSE);
 
-  TObjArray* CollectHistos();
+  // getter functions
+  Int_t GetNSteps() const {return fMainArr->GetEntries(); }
 
-  TH1* GetHistogram(const char *step, TObjArray *histArr=0x0);
-  TH1* FindHistograms(TObjArray *histos);
-  TH1* MergeHistos(TObjArray *arr);
+  TObjArray* CollectHistos(AliDielectronVarManager::ValueTypes varx,
+			   AliDielectronVarManager::ValueTypes vary=AliDielectronVarManager::kNMaxValues,
+			   AliDielectronVarManager::ValueTypes varz=AliDielectronVarManager::kNMaxValues)
+  { return CollectProfiles("hist",varx,vary,varz); }
+  TObjArray* CollectProfiles(TString option,
+			     AliDielectronVarManager::ValueTypes varx,
+			     AliDielectronVarManager::ValueTypes vary=AliDielectronVarManager::kNMaxValues,
+			     AliDielectronVarManager::ValueTypes varz=AliDielectronVarManager::kNMaxValues,
+			     AliDielectronVarManager::ValueTypes vart=AliDielectronVarManager::kNMaxValues);
+
+  TObject* GetObject(const char *step, TObjArray *histArr=0x0);
+  TObject* FindObjects(TObjArray *histos);
+  TObject* Merge(TObjArray *arr);
 
   void CheckCuts(TObjArray *arr);
   virtual void Print(const Option_t* option ="") const ;
   void PrintCuts();
 
 private:
-  TObjArray *fArrPairType;         // array of pair types, sources or steps
-  TObjArray *fCutVars;             // array for cut variables
-  TVectorD fCutLowLimits;
-  TVectorD fCutUpLimits;
+  TObjArray *fMainArr;         // main array of pair types or sources
+  TObjArray *fCutVars;         // array for cut variables
+  TVectorD fCutLowLimits;      // vector to store the lower cut limits
+  TVectorD fCutUpLimits;       // vector to store the upper cut limits
 
   AliDielectronHFhelper(const AliDielectronHFhelper &c);
   AliDielectronHFhelper &operator=(const AliDielectronHFhelper &c);
 
-  ClassDef(AliDielectronHFhelper,0)                   // HF  helper class
+  ClassDef(AliDielectronHFhelper,1)                   // HF  helper class
 };
 
 //

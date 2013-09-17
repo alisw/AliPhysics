@@ -53,6 +53,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
   void SetFillVarHists(Bool_t flag) {fFillVarHists=flag;}
   void SetFillPtHistos(Bool_t flag) {fFillPtHist=flag;}
+  void SetFillYHistos(Bool_t flag) {fFillYHist=flag;}
   void SetFillImpactParameterHistos(Bool_t flag) {fFillImpParHist=flag;}
   void SetSystem(Int_t sys){fSys=sys; if(fSys==1) SetFillVarHists(kFALSE);}
   void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
@@ -67,6 +68,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
   Bool_t GetFillVarHists() const {return fFillVarHists;}
   Bool_t GetFillPtHistos() const {return fFillPtHist;}
+  Bool_t GetFillYHistos() const {return fFillYHist;}
   Bool_t GetFillImpactParameterHistos() const {return fFillImpParHist;}
   Int_t  GetSystem() const {return fSys;}
   Bool_t GetRejectSDDClusters() const { return fIsRejectSDDClusters; }
@@ -90,6 +92,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 
   TList    *fOutputMass;          //! list send on output slot 1
   TList    *fOutputMassPt;        //! list send on output slot 6
+  TList    *fOutputMassY;        //! list send on output slot 9
   TList    *fDistr;               //! list send on output slot 2
   TH1F     *fNentries;            //! histogram with number of events on output slot 3
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
@@ -108,6 +111,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Int_t     fSys;                 // fSys=0 -> p-p; fSys=1 ->PbPb (in this case fFillVarHists=kFALSE by default: set it to kTRUE *after* if needed)
   Bool_t    fIsRejectSDDClusters; // flag to reject events with SDD clusters
   Bool_t    fFillPtHist;          // flag to fill Pt and Impact Parameter Histograms
+  Bool_t    fFillYHist;          // flag to fill Y Histograms
   Bool_t    fFillImpParHist;      // flag to fill Pt and Impact Parameter Histograms
   Bool_t    fUseSelectionBit;     // flag to check or not the selection bit
 
@@ -118,7 +122,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fDrawDetSignal;		// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
   TList	   *fDetSignal;		//!Detector signal histograms (on output slot 8)
 
-  ClassDef(AliAnalysisTaskSED0Mass,18); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,19); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif

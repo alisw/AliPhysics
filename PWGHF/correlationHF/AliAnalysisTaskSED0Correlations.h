@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //*************************************************************************
 // Class AliAnalysisTaskSED0Correlations
@@ -54,6 +54,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetSystem(Int_t sys){fSys=sys;}
   void SetRejectSDDClusters(Bool_t flag) {fIsRejectSDDClusters=flag; }
   void SetFillGlobalPlots(Bool_t fill=kTRUE){fFillGlobal=fill;}
+  void SetSoftPiFlag(Bool_t piflag) {fSoftPiCut=piflag;}
+  void SetMEAxisThresh(Bool_t methresh) {fMEAxisThresh=methresh;}
 
   Int_t  GetReadMC() const {return fReadMC;}
   Int_t  GetMCReconstructedTracks() const {return fRecoTr;}
@@ -64,6 +66,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t GetRejectSDDClusters() const {return fIsRejectSDDClusters;}
   Bool_t GetFillGlobalPlots() const {return fFillGlobal;}
   Double_t GetEtaForCorrel() {return fEtaForCorrel;}
+  Double_t GetMultEv() {return fMultEv;}
+  Bool_t GetSoftPiFlag() const {return fSoftPiCut;}
+  Bool_t GetMEAxisThresh() const {return fMEAxisThresh;}
 
   //correlations setters/printers
   void SetNPtBinsCorr(Int_t nbins) {fNPtBinsCorr = nbins;}
@@ -71,6 +76,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetPtBinsLimsCorr(Float_t* ptlims) {for(int i=0;i<=fNPtBinsCorr;i++) {fBinLimsCorr.push_back((Double_t)ptlims[i]);}}
   void SetPtTreshLow(Double_t* pttreshlow) {for(int i=0;i<fNPtBinsCorr;i++) {fPtThreshLow.push_back(pttreshlow[i]);}}
   void SetPtTreshUp(Double_t* pttreshup) {for(int i=0;i<fNPtBinsCorr;i++) {fPtThreshUp.push_back(pttreshup[i]);}}
+
   void PrintBinsAndLimits();
   Int_t PtBinCorr(Double_t pt) const;
   void SetEvMixing(Bool_t mix) {fMixing=mix;}
@@ -93,6 +99,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Int_t CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
   Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
+  Bool_t IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const;
 
   Int_t             fNPtBinsCorr;        // number of pt bins per correlations
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
@@ -123,8 +130,11 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fEtaForCorrel;		// cut for D0 eta to enable correlation with associated particles
   Bool_t    fIsRejectSDDClusters; 	// flag to reject events with SDD clusters
   Bool_t    fFillGlobal;          	// flag to fill global plots (in loops on tracks and V0 for each event)
+  Double_t  fMultEv;			// event multiplicity (for trigger eff)
+  Bool_t    fSoftPiCut;			// flag to activate soft pion cut on Data
+  Bool_t    fMEAxisThresh;		// flag to fill threshold axis in ME plots
 
-  ClassDef(AliAnalysisTaskSED0Correlations,2); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Correlations,4); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif

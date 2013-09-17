@@ -18,7 +18,7 @@ class TRandom3;
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsKinematics(0), fUseVertexCut(1), fUsePileUpCut(1), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRhoTaskName(), fNcoll(6.88348), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(100), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0)
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsKinematics(0), fUseVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRhoTaskName(), fNcoll(6.88348), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0), fEventCounter(0)
   {
     for(Int_t i=0;i<1024;i++)
       fSignalJets[i] = NULL;
@@ -37,9 +37,11 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetAnalyzeBackground(Bool_t val) {fAnalyzeBackground = val;}
   void        SetAnalyzeDeprecatedBackgrounds(Bool_t val) {fAnalyzeDeprecatedBackgrounds = val;}
   void        SetAnalyzePythia(Bool_t val) {fAnalyzePythia = val;}
+  void        SetAnalyzePartialEvents(Int_t nParts, Int_t index) {fPartialAnalysisNParts = nParts; fPartialAnalysisIndex = index;}
   void        SetUseVertexCut (Bool_t val) {fUseVertexCut = val;}
   void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;}
-
+  void        SetCentralityToOne (Bool_t val) {fSetCentralityToOne = val;}
+  void        SetNumberOfCentralityBins(Int_t val) {fNumberOfCentralityBins = val;} 
   void        SetTrackMinPt(Double_t minPt) {fMinJetPt = minPt;}
   void        SetSignalJetMinPt(Double_t minPt) {fMinJetPt = minPt;}
   void        SetSignalJetMinArea(Double_t minArea) {fMinJetArea = minArea;}
@@ -64,12 +66,11 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        GetSignalJets();
   Int_t       GetLeadingJets(TClonesArray* jetArray, Int_t* jetIDArray, Bool_t isSignalJets);
   Double_t    GetCorrectedJetPt(AliEmcalJet* jet, Double_t background);
-  Double_t    GetDeltaPt(Double_t rho, Bool_t leadingJetExclusion = kFALSE);
+  Double_t    GetDeltaPt(Double_t rho, Double_t leadingJetExclusionProbability = 0);
 
   void        GetKTBackgroundDensityAll(Int_t numberExcludeLeadingJets, Double_t& rhoPbPb, Double_t& rhoPbPbWithGhosts, Double_t& rhoCMS, Double_t& rhoImprovedCMS, Double_t& rhoMean, Double_t& rhoTrackLike);
   void        GetKTBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoImprovedCMS);
 
-  Int_t       GetRCBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& rhoMedian, Double_t etaMin = 0, Double_t etaMax = 0, Int_t numberRandCones = 0);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoNoExclusion, Double_t& rhoConeExclusion02, Double_t& rhoConeExclusion04, Double_t& rhoConeExclusion06, Double_t& rhoConeExclusion08, Double_t& rhoExactExclusion);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular);
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius);
@@ -106,8 +107,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   const char* GetHistoName(const char* name)
   {
     if (fIsKinematics)    
-      return Form("H%d_%s_MC", fTaskInstanceCounter, name);
-    return Form("H%d_%s", fTaskInstanceCounter, name);
+      return Form("%s_MC", name);
+    return Form("%s", name);
   }
   template <class T> T* AddHistogram1D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis");
   template <class T> T* AddHistogram2D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
@@ -130,6 +131,10 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Bool_t              fIsKinematics;          // trigger if data is kinematics only (for naming reasons)
   Bool_t              fUseVertexCut;          // trigger if vertex cut should be done
   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
+  Bool_t              fSetCentralityToOne;    // trigger if centrality val. should be set to one for every event (failsafe)
+  Int_t               fPartialAnalysisNParts; // take only every Nth event
+  Int_t               fPartialAnalysisIndex;  // using e.g. only every 5th event, this specifies which one
+  
 
   // ########## SOURCE INFORMATION
   TClonesArray*       fJetArray;              //! object containing the jets
@@ -179,7 +184,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   TList*              fHistList;              // Histogram list
   Int_t               fHistCount;             // Histogram count
   Bool_t              fIsDEBUG;               // Debug trigger
-
+  ULong_t             fEventCounter;          // Internal event counter
   AliAnalysisTaskChargedJetsPA(const AliAnalysisTaskChargedJetsPA&);
   AliAnalysisTaskChargedJetsPA& operator=(const AliAnalysisTaskChargedJetsPA&);
 

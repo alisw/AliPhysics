@@ -29,6 +29,7 @@
 set ( SRCS  
     FEMTOSCOPY/Chaoticity/AliChaoticityEventCollection.cxx 
     FEMTOSCOPY/Chaoticity/AliChaoticity.cxx 
+    FEMTOSCOPY/Chaoticity/AliThreePionRadii.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

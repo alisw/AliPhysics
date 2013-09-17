@@ -22,6 +22,8 @@ AliAnalysisEtMonteCarlo * ConfigEtMonteCarlo(Bool_t EMCAL = true, Bool_t DETAIL 
       AliAnalysisEtMonteCarloEmcal *totEtMC = new AliAnalysisEtMonteCarloEmcal();
       //Look at the 2010 Pb+Pb data...
       totEtMC->SetDataSet(20100);
+      totEtMC->CalcTrackMatchVsMult();
+      totEtMC->CalcForKaonCorrection();
       totEtMC->Init();
       return totEtMC;
     }
@@ -30,6 +32,8 @@ AliAnalysisEtMonteCarlo * ConfigEtMonteCarlo(Bool_t EMCAL = true, Bool_t DETAIL 
     AliAnalysisEtMonteCarloPhos *totEtMC = new AliAnalysisEtMonteCarloPhos();
     //Look at the 2010 Pb+Pb data...
     totEtMC->SetDataSet(20100);
+      totEtMC->CalcTrackMatchVsMult();
+      totEtMC->CalcForKaonCorrection();
     totEtMC->Init();
     return totEtMC;
   }

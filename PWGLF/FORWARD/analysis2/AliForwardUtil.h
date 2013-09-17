@@ -512,6 +512,7 @@ public:
      * 
      */
     virtual ~ELossFitter();
+    void SetDebug(Bool_t debug=true) { fDebug = debug; }
     /** 
      * Clear internal arrays 
      * 
@@ -604,6 +605,7 @@ public:
     const UShort_t fMinusBins;  // Number of bins from maximum to fit 1st peak
     TObjArray fFitResults;      // Array of fit results 
     TObjArray fFunctions;       // Array of functions 
+    Bool_t    fDebug;
   };
   /* @} */
       
@@ -663,6 +665,12 @@ public:
      */
     void Init(const TAxis& etaAxis);
     /** 
+     * Re-initialize the object with new @f$\eta@f$ axis 
+     * 
+     * @param etaAxis Eta axis to use 
+     */
+    void ReInit(const TAxis& etaAxis);
+    /** 
      * Make a histogram 
      * 
      * @param d        Detector
@@ -671,7 +679,14 @@ public:
      * 
      * @return Newly allocated histogram 
      */
-    TH2D* Make(UShort_t d, Char_t r, const TAxis& etaAxis) const;
+    static TH2D* Make(UShort_t d, Char_t r, const TAxis& etaAxis);
+    /** 
+     * Set the @f$\eta@f$ axis 
+     * 
+     * @param hist    Histogram
+     * @param etaAxis @f$\eta@f$ axis to use
+     */
+    static void RebinEta(TH2D* hist, const TAxis& etaAxis);
     /** 
      * Clear data 
      * 

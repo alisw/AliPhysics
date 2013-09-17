@@ -234,7 +234,7 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   contentSignal[5] = GetEta(track->GetRecTrack(), anatype);
   fHistos->Fill("tpcDedx", contentSignal);
 
-  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.; 
+  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : -100.; 
   fHistos->Fill("tpcnSigma", contentSignal);
 }
 

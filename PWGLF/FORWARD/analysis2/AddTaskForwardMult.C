@@ -38,6 +38,7 @@
  */
 AliAnalysisTask*
 AddTaskForwardMult(Bool_t   mc, 
+		   ULong_t  runNo=0,
 		   UShort_t sys=0, 
 		   UShort_t sNN=0, 
 		   Short_t  field=0, 
@@ -72,7 +73,7 @@ AddTaskForwardMult(Bool_t   mc,
     what ^= AliForwardCorrectionManager::kVertexBias;
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
   //  what ^= AliForwardCorrectionManager::kAcceptance;
-    if (!cm.Init(sys,sNN,field,mc,what))
+    if (!cm.Init(runNo, sys,sNN,field,mc,false,what))
       Fatal("AddTaskForwardMult", "Failed to initialize corrections");
   }
   

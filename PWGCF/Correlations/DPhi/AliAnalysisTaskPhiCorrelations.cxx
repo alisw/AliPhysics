@@ -24,6 +24,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TRandom.h>
+#include <TParameter.h>
 
 #include "AliAnalysisTaskPhiCorrelations.h"
 #include "AliAnalyseLeadingTrackUE.h"
@@ -56,6 +57,7 @@
 
 #include "AliHelperPID.h"
 #include "AliAnalysisUtils.h"
+#include "TMap.h"
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -96,9 +98,10 @@ fUseVtxAxis(kFALSE),
 fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
-// pointers to UE classes
 fHelperPID(0x0),
 fAnalysisUtils(0x0),
+fMap(0x0),
+// pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
 fHistosMixed(0),
@@ -120,6 +123,7 @@ fZVertex(7.),
 fCentralityMethod("V0M"),
 // track cuts
 fTrackEtaCut(0.8),
+fTrackEtaCutMin(-1.),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
@@ -141,12 +145,14 @@ fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
 fRejectCentralityOutliers(kFALSE),
+fRejectZeroTrackEvents(kFALSE),
 fRemoveWeakDecays(kFALSE),
 fRemoveDuplicates(kFALSE),
 fSkipFastCluster(kFALSE),
 fWeightPerEvent(kFALSE),
 fCustomBinning(),
 fPtOrder(kTRUE),
+fTriggersFromDetector(0),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -218,7 +224,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
    
   // Initialize class with main algorithms, event and track selection. 
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
-  fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fPtMin);
+  fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fTrackEtaCutMin, fPtMin);
   fAnalyseUE->SetDCAXYCut(fDCAXYCut);
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetCheckMotherPDG(fCheckMotherPDG);
@@ -300,13 +306,22 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // add HelperPID to list
   if (fHelperPID)
     fListOfHistos->Add(fHelperPID);
+  // add TMap to list
+  if (fMap)
+    fListOfHistos->Add(fMap);
   
-  fListOfHistos->Add(new TH2F("trackletsVsV0Cent", ";L1 clusters;v0 centrality", 100, -0.5, 9999.5, 101, 0, 101));
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
-  fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
+  //fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
+  if (fCentralityMethod == "V0A_MANUAL")
+  {
+    fListOfHistos->Add(new TH2F("V0AMult", "V0A multiplicity;V0A multiplicity;V0A multiplicity (scaled)", 1000, -.5, 999.5, 1000, -.5, 999.5));
+    fListOfHistos->Add(new TH2F("V0AMultCorrelation", "V0A multiplicity;V0A multiplicity;SPD tracklets", 1000, -.5, 999.5, 1000, -.5, 999.5));
+  }
+  if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2)
+    fListOfHistos->Add(new TH1F("V0SingleCells", "V0 single cell multiplicity;multiplicity;events", 100, -0.5, 99.5));
   
   PostData(0,fListOfHistos);
   
@@ -385,6 +400,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fZVertex", &fZVertex,"ZVertex/D");
   //settingsTree->Branch("fCentralityMethod", fCentralityMethod.Data(),"CentralityMethod/C");
   settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
+  settingsTree->Branch("fTrackEtaCutMin", &fTrackEtaCutMin, "TrackEtaCutMin/D");
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
@@ -407,11 +423,14 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
   settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
+  settingsTree->Branch("fRejectZeroTrackEvents", &fRejectZeroTrackEvents,"RejectZeroTrackEvents/O");
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
   settingsTree->Branch("fRemoveDuplicates", &fRemoveDuplicates,"RemoveDuplicates/O");
   settingsTree->Branch("fSkipFastCluster", &fSkipFastCluster,"SkipFastCluster/O");
   settingsTree->Branch("fWeightPerEvent", &fWeightPerEvent,"WeightPerEvent/O");
   settingsTree->Branch("fPtOrder", &fPtOrder,"PtOrder/O");
+  settingsTree->Branch("fTriggersFromDetector", &fTriggersFromDetector,"TriggersFromDetector/I");
+  
   //fCustomBinning
   
   settingsTree->Fill();
@@ -922,6 +941,23 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
       delete tracks;
     }
+    else if (fCentralityMethod == "V0A_MANUAL")
+    {
+      // for pp
+      
+      //Total multiplicity in the VZERO A detector
+      Float_t MV0A=inputEvent->GetVZEROData()->GetMTotV0A();
+      Float_t MV0AScaled=0.;
+      if (fMap){
+	TParameter<float>* sf=(TParameter<float>*)fMap->GetValue(Form("%d",inputEvent->GetRunNumber()));
+	if(sf)MV0AScaled=MV0A*sf->GetVal();
+      }
+      
+      if (MV0AScaled > 0)
+	centrality = MV0AScaled;
+      else
+	centrality = -1;
+    }
     else
     {
       if (fAOD)
@@ -986,11 +1022,50 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
   fHistos->FillEvent(centrality, AliUEHist::kCFStepVertex);
  
+  // fill V0 control histograms
+  if (fCentralityMethod == "V0A_MANUAL")
+  {
+    ((TH2F*) fListOfHistos->FindObject("V0AMult"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A(), centrality);
+    if (fAOD)
+      ((TH2F*) fListOfHistos->FindObject("V0AMultCorrelation"))->Fill(inputEvent->GetVZEROData()->GetMTotV0A(), fAOD->GetTracklets()->GetNumberOfTracklets());
+  }
+    
   // optimization
   if (centrality < 0)
     return;
 
-  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+  TObjArray* tracks = 0;
+  
+  if (fTriggersFromDetector == 0)
+    tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+  else if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2)
+  {
+    tracks = new TObjArray;
+    tracks->SetOwner(kTRUE);
+    
+    AliVVZERO* vZero = inputEvent->GetVZEROData();
+
+    const Int_t vZeroStart = (fTriggersFromDetector == 1) ? 32 : 0;
+    
+    TH1F* singleCells = (TH1F*) fListOfHistos->FindObject("V0SingleCells");
+    for (Int_t i=vZeroStart; i<vZeroStart+32; i++)
+    {
+      Float_t weight = vZero->GetMultiplicity(i);
+      singleCells->Fill(weight);
+      
+      // rough estimate of multiplicity
+      for (Int_t j=0; j<TMath::Nint(weight); j++)
+      {
+	AliDPhiBasicParticle* particle = new AliDPhiBasicParticle((AliVVZERO::GetVZEROEtaMax(i) + AliVVZERO::GetVZEROEtaMin(i)) / 2, AliVVZERO::GetVZEROAvgPhi(i), 1.1, 0); // fit pT = 1.1 and charge = 0
+	particle->SetUniqueID(-1); // not needed here
+	
+	tracks->Add(particle);
+      }
+    }
+  }
+  else
+    AliFatal(Form("Invalid setting for fTriggersFromDetector: %d", fTriggersFromDetector));
+
   //Printf("Accepted %d tracks", tracks->GetEntries());
   
   // check for outlier in centrality vs number of tracks (rough constants extracted from correlation histgram)
@@ -1019,9 +1094,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   }
   
+  if (fRejectZeroTrackEvents && tracks->GetEntriesFast() == 0)
+  {
+    AliInfo(Form("Rejecting event because it has no tracks: %f %d", centrality, tracks->GetEntriesFast()));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    delete tracks;
+    return;
+  }
+
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
-  if (fParticleSpeciesAssociated != fParticleSpeciesTrigger)
+  if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0)
     tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
   
   // reference multiplicity

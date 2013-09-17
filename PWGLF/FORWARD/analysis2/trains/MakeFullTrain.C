@@ -37,6 +37,7 @@ public:
     fOptions.Add("flow", "Add flow tasks");
     fOptions.Add("cent",  "Use centrality");
     // ESD settings
+    fOptions.Add("run",   "NUMBER",  "Run number", 0);
     fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", "");
     fOptions.Add("snn",   "ENERGY",  "Center of mass energy in GeV", "");
     fOptions.Add("field", "STRENGTH","L3 field strength in kG", "");
@@ -57,9 +58,10 @@ public:
     fOptions.Add("cut-edges", "Cut acceptance edges");
     // Flow AOD settings
     fOptions.Add("mom", "Flow moments to analyse", "234", "234");
-    fOptions.Add("eta-gap", "Whether to use an eta-gap", "[no,yes,both]", "both");
+    fOptions.Add("eta-gap", "Whether to use an eta-gap", "[no,yes,both]", 
+		 "both");
     fOptions.Add("eg-value", "Set value in |eta| of the eta gap", "2.0");
-    fOptions.Add("use-cent", "Whether to use the impact parameter for centrality");
+    fOptions.Add("b-cent","Whether to use the impact parameter for centrality");
     fOptions.Add("afterburner", "What to afterburn", "[eta,phi,b,pid]", "");
     fOptions.Add("ab-type", "Type of afterburner", "1|2|3|4", "");
     fOptions.Add("ab-order", "Order of afterburner", "2|3|4|5|6", "");
@@ -101,6 +103,7 @@ protected:
     gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Get options -----------------------------------------------
+    ULong_t  run = fOptions.AsInt("run", 0);
     UShort_t sys = fOptions.AsInt("sys", 0);
     UShort_t sNN = fOptions.AsInt("snn", 0);
     UShort_t fld = fOptions.AsInt("field", 0);
@@ -110,14 +113,14 @@ protected:
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,\"%s\")", 
-		      mc, sys, sNN, fld, fwdConfig.Data()));
+    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,%d,\"%s\")", 
+		      mc, runNo, sys, sNN, fld, fwdConfig.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig));
 
     // --- Add the task ----------------------------------------------
     TString cenConfig = fOptions.Get("central-config");
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,\"%s\")", 
-		      mc, sys, sNN, fld, cenConfig.Data()));
+    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,%d,\"%s\")", 
+		      mc, runNo, sys, sNN, fld, cenConfig.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig));
 
     // --- Add MC particle task --------------------------------------
@@ -153,7 +156,7 @@ protected:
       TString  type    = fOptions.Get("mom");
       TString  etaGap  = fOptions.Get("eta-gap");
       Double_t egValue = fOptions.AsDouble("eg-value");
-      Bool_t   useCent = fOptions.AsBool("use-cent");
+      Bool_t   useCent = fOptions.AsBool("b-cent");
       TString  addFlow = fOptions.Get("afterburner");
       Int_t    abType  = fOptions.AsInt("ab-type");
       Int_t    abOrder = fOptions.AsInt("ab-order");
@@ -162,35 +165,26 @@ protected:
       Double_t spdCut  = fOptions.AsDouble("outlier-spd");
 
       // --- Add the task ----------------------------------------------
+      // Notice the '%%d' for second argument.  We substitute that later
+      TString arg(Form("AddTaskForwardFlow.C(\"%s\",%%d,%d,%f,%f,%f,%d,%d,\"%s\",%d,%d)",
+		       type.Data(),
+		       mc, 
+		       fmdCut, 
+		       spdCut,
+		       egValue,
+		       useCent,
+		       satVtx, 
+		       addFlow.Data(), 
+		       abType, 
+		       abOrder));
+      
       if (etaGap.Contains("no") || etaGap.Contains("false") ||
 	  etaGap.Contains("both"))
-	    gROOT->Macro(Form("AddTaskForwardFlow.C(\"%s\",%d,%d,%f,%f,%f,%d,%d,\"%s\",%d,%d)",
-			type.Data(),
-			kFALSE,
-			mc, 
-			fmdCut, 
-			spdCut,
-			egValue,
-			useCent,
-			satVtx, 
-			addFlow.Data(), 
-			abType, 
-			abOrder));
+	gROOT->Macro(Form(arg.Data(), false));
       
       if (etaGap.Contains("yes") || etaGap.Contains("true") ||
 	  etaGap.Contains("both"))
-	    gROOT->Macro(Form("AddTaskForwardFlow.C(\"%s\",%d,%d,%f,%f,%f,%d,%d,\"%s\",%d,%d)",
-			type.Data(),
-			kTRUE,
-			mc, 
-			fmdCut, 
-			spdCut, 
-			egValue,
-			useCent,
-			satVtx, 
-			addFlow.Data(), 
-			abType, 
-			abOrder));
+	gROOT->Macro(Form(arg.Data(), true));
     }
   }
   //__________________________________________________________________

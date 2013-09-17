@@ -1,7 +1,8 @@
 AliPHOSTenderTask* AddAODPHOSTender(const char* taskName = "PHOSTenderTask",
 				    const char* tenderName = "PHOStender",
 				    const char* options = "",
-				    Int_t pass = -1
+				    Int_t pass = 1,
+				    Bool_t isMC = kFALSE
 )
 {
   //Add a task with PHOS tender which works with AOD to the analysis train
@@ -18,16 +19,18 @@ AliPHOSTenderTask* AddAODPHOSTender(const char* taskName = "PHOSTenderTask",
     return NULL;
   }
 
-  // input must be AOD
-  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if( "AOD" != inputDataType )
-    ::Error("AddAODPHOSTender", Form("AOD input data required, input data is of type: %s", inputDataType.Data()));
+//  // input must be AOD
+//  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+//  if( "AOD" != inputDataType )
+//    ::Error("AddAODPHOSTender", Form("AOD input data required, input data is of type: %s", inputDataType.Data()));
 
   // create and add task
   AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask(taskName) ;
   AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply(tenderName) ;
   PHOSSupply->SetReconstructionPass(pass) ;
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
+  if(isMC) //handle MC data
+    PHOSSupply->SetMCProduction(options) ;
 
   mgr->AddTask(tenderTask);
 

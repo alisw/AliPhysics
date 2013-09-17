@@ -19,7 +19,9 @@
 #include <TArrayI.h>
 #include "AliForwardUtil.h"
 class AliESDFMD;
+class TH2;
 class TH2D;
+class TObjArray;
 
 /** 
  * This class collects the event histograms into single histograms, 
@@ -81,7 +83,18 @@ public:
     /** 
      * Just sum the signals 
      */
-    kSum
+    kSum,
+    /** 
+     * In overlaps, prefer inners, or if both are inners, 
+     * do the straight mean 
+     */
+    kPreferInner,
+    /** 
+     * In overlaps, prefer outers, or if both are outers (doesn't happen), 
+     * do the straight mean 
+     */
+    kPreferOuter
+
   };
   /**
    * How to obtain the fiducial cuts 
@@ -105,7 +118,7 @@ public:
      kFMD1I=0x01,
      kFMD1 =kFMD1I,
      kFMD2I=0x02,
-     kFMD2O=0x24,
+     kFMD2O=0x04,
      kFMD2 =kFMD2I|kFMD2O,
      kFMD3I=0x08,
      kFMD3O=0x10,
@@ -162,9 +175,7 @@ public:
 			 AliForwardUtil::Histos&       sums, 
 			 UShort_t                      vtxBin, 
 			 TH2D&                         out,
-			 TList* 			lout=0x0,
-			 Double_t 		        cent=-1.0,
-			 TList*       sumsv=0x0);
+			 Double_t 		       cent=-1.0);
   /** 
    * Output diagnostic histograms to directory 
    * 
@@ -177,6 +188,7 @@ public:
    * @param m Method
    */
   void SetMergeMethod(MergeMethod m) { fMergeMethod = m; }
+  MergeMethod GetMergeMethod() const { return fMergeMethod; }
   /** 
    * Set the method for finding the fidicual area of the secondary maps 
    * 
@@ -211,13 +223,17 @@ public:
    * @param use make them
    */
   void SetMakeBGHitMaps(Bool_t use) { fBgAndHitMaps = use; }
- 
+  /** 
+   * Set whether to make by-centrality sums for each ring
+   * 
+   * @param use If true, make by-centrality sums
+   */
+  void SetMakeCentralitySums(Bool_t use) { fDoByCent = use; }
   /** 
    * Set the debug level. The higher the value the more output 
    * 
    * @param dbg Debug level 
    */
-
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
   /** 
    * Print information 
@@ -227,72 +243,13 @@ public:
   void Print(Option_t* option="") const;
 protected:
   /** 
-   * Get the first and last eta bin to use for a given ring and vertex 
-   * 
-   * @param d        Detector
-   * @param r        Ring 
-   * @param vtxBin   Vertex bin (1 based)
-   * @param first    On return, the first eta bin to use 
-   * @param last     On return, the last eta bin to use 
-   */
-  virtual void GetFirstAndLast(UShort_t d, Char_t r, UShort_t vtxBin, 
-			       Int_t& first, Int_t& last) const;
-  /** 
-   * Get the first and last eta bin to use for a given ring and vertex 
-   * 
-   * @param idx      Ring index as given by GetIdx
-   * @param vtxBin   Vertex bin (1 based) 
-   * @param first    On return, the first eta bin to use 
-   * @param last     On return, the last eta bin to use 
-   */
-  virtual void GetFirstAndLast(Int_t idx, UShort_t vtxBin, 
-			       Int_t& first, Int_t& last) const;
-  /** 
-   * Get the first eta bin to use for a given ring and vertex 
-   * 
-   * @param d Detector 
-   * @param r Ring 
-   * @param v vertex bin (1 based)
-   * 
-   * @return First eta bin to use, or -1 in case of problems 
-   */  
-  Int_t GetFirst(UShort_t d, Char_t r, UShort_t v) const; 
-  /** 
-   * Get the first eta bin to use for a given ring and vertex 
-   * 
-   * @param idx Ring index as given by GetIdx
-   * @param v vertex bin (1 based)
-   * 
-   * @return First eta bin to use, or -1 in case of problems 
-   */  
-  Int_t GetFirst(Int_t idx, UShort_t v) const; 
-  /** 
-   * Get the last eta bin to use for a given ring and vertex 
-   * 
-   * @param d Detector 
-   * @param r Ring 
-   * @param v vertex bin (1 based)
-   * 
-   * @return Last eta bin to use, or -1 in case of problems 
-   */  
-  Int_t GetLast(UShort_t d, Char_t r, UShort_t v) const;
-  /** 
-   * Get the last eta bin to use for a given ring and vertex 
-   * 
-   * @param idx Ring index as given by GetIdx
-   * @param v vertex bin (1 based)
-   * 
-   * @return Last eta bin to use, or -1 in case of problems 
-   */  
-  Int_t GetLast(Int_t idx, UShort_t v) const; 
-  /** 
    * Get the detector and ring from the ring index 
    * 
    * @param idx Ring index 
    * @param d   On return, the detector or 0 in case of errors 
    * @param r   On return, the ring id or '0' in case of errors 
    */
-  void GetDetRing(Int_t idx, UShort_t& d, Char_t& r) const;
+  static void GetDetRing(Int_t idx, UShort_t& d, Char_t& r);
   /** 
    * Get the ring index from detector number and ring identifier 
    * 
@@ -301,63 +258,44 @@ protected:
    * 
    * @return ring index or -1 in case of problems 
    */
-  Int_t GetIdx(UShort_t d, Char_t r) const;
+  static Int_t GetIdx(UShort_t d, Char_t r);
   /** 
-   * Get the possibly overlapping histogram of eta bin @a e in 
-   * detector and ring 
+   * Check if the detector @a d, ring @a r is listed <i>in</i> the @a
+   * skips bit mask.  If the detector/ring is in the mask, return true.
    * 
-   * @param d Detector
-   * @param r Ring 
-   * @param e Eta bin
-   * @param v Vertex bin (1 based)
+   * That is, use case is 
+   * @code 
+   *  for (UShort_t d=1. d<=3, d++) {
+   *    UShort_t nr = (d == 1 ? 1 : 2);
+   *    for (UShort_t q = 0; q < nr; q++) { 
+   *      Char_t r = (q == 0 ? 'I' : 'O');
+   *      if (CheckSkips(d, r, skips)) continue; 
+   *      // Process detector/ring 
+   *    }
+   *  }
+   * @endcode
    *
-   * @return Overlapping histogram index or -1
+   * @param d      Detector
+   * @param r      Ring 
+   * @param skips  Mask of detector/rings to skip
+   * 
+   * @return True if detector @a d, ring @a r is in the mask @a skips 
    */
-  Int_t GetOverlap(UShort_t d, Char_t r, Int_t e, UShort_t v) const;
+  static Bool_t CheckSkip(UShort_t d, Char_t r, UShort_t skips);
   /** 
-   * Get the possibly overlapping histogram of eta bin @a e in 
-   * detector and ring 
+   * Check the correction
    * 
-   * @param i Ring index
-   * @param e Eta bin
-   * @param v Vertex bin (1 based)
-   *
-   * @return Overlapping histogram index or -1
+   * @param m   Fiducial method used
+   * @param cut Cut value 
+   * @param bg  Secondary map
+   * @param ie  @f$\eta@f$ bin
+   * @param ip  @f$\varphi@f$ bin
+   * 
+   * @return true if OK. 
    */
-  Int_t GetOverlap(Int_t i, Int_t e, UShort_t v) const;
-  /** 
-   * Check if there's an overlapping histogram with this eta bin of
-   * the detector and ring
-   * 
-   * @param d Detector 
-   * @param r Ring 
-   * @param e eta bin
-   * @param v Vertex bin (1 based)
-   * 
-   * @return True if there's an overlapping histogram 
-   */
-  Bool_t HasOverlap(UShort_t d, Char_t r, Int_t e, UShort_t v) const;
-  /** 
-   * Check if there's an overlapping histogram with this eta bin of
-   * ring
-   * 
-   * @param i Ring index
-   * @param e eta bin
-   * @param v Vertex bin
-   * 
-   * @return True if there's an overlapping histogram 
-   */
-  Bool_t HasOverlap(Int_t i, Int_t e, UShort_t v) const;
-  /** 
-   * Check if we should include the bin in the data range 
-   * 
-   * @param bg Secondary map histogram
-   * @param ie Eta bin
-   * @param ip Phi bin
-   * 
-   * @return True if to be used
-   */
-  Bool_t CheckCorrection(const TH2D* bg, Int_t ie, Int_t ip) const;
+  static Bool_t CheckCorrection(FiducialMethod m, Double_t cut, 
+				const TH2D* bg, Int_t ie, Int_t ip);
+
   /** 
    * Merge bins accoring to set method
    * 
@@ -368,15 +306,186 @@ protected:
    * @param rc  On return, the new content
    * @param re  On return, tne new error
    */
-  void MergeBins(Double_t c,   Double_t e, 
-		 Double_t oc,  Double_t oe,
-		 Double_t& rc, Double_t& re) const;
+  static void MergeBins(MergeMethod   m, 
+			Double_t c,   Double_t e, 
+			Double_t oc,  Double_t oe,
+			Double_t& rc, Double_t& re);
   
+  //==================================================================
+  /**
+   * Structure to hold per-vertex bin cache of per-ring histograms 
+   */
+  struct VtxBin : public TObject
+  {
+    /** 
+     * Constructor 
+     * 
+     * @param index 
+     * @param minIpZ 
+     * @param maxIpZ 
+     */
+    VtxBin(Int_t index=0, Double_t minIpZ=999, Double_t maxIpZ=-999,
+	   Int_t nCut=0);
+    /** 
+     * Copy constructor 
+     * 
+     * @param o Object to copy from
+     */
+    VtxBin(const VtxBin& o);
+    /** 
+     * Assignment operator
+     * 
+     * @param o Object to assign from 
+     * 
+     * @return Reference to this object
+     */    
+    VtxBin& operator=(const VtxBin& o);
+    /** 
+     * Override to give name based on cuts
+     * 
+     * @return Name
+     */
+    const Char_t* GetName() const;
+    /** 
+     * Set up for data
+     * 
+     * @param coverage    Diagnostics histogram to be filled 
+     * @param l           Parent output list 
+     * @param etaAxis     @f$\eta@f$ axis used
+     * @param doHitMap    If true, also do a per-ring sum
+     * @param storeSecMap If true, store used secondary map
+     */
+    void SetupForData(TH2*           coverage,
+		      UShort_t       skip,
+		      FiducialMethod fiducial, 
+		      Double_t       cut,
+		      TList*         l, 
+		      const TAxis&   etaAxis,
+		      Bool_t         doHitMap,
+		      Bool_t         storeSecMap);
+    /** 
+     * Process one event
+     * 
+     * @param cache Cache of data
+     */
+    /** 
+     * Process one event in this vertex bin
+     * 
+     * @param hists      Histograms
+     * @param sums       Sum histograms
+     * @param out        Per-event output histogram
+     * @param sumRings   Sum per ring 
+     * @param cent       Event centrality
+     * @param m          Merging method
+     * @param skips      Which rings to skip
+     * @param byCent     List (or null) of per centrality sums
+     * 
+     * @return true on success
+     */
+    Bool_t Collect(const AliForwardUtil::Histos& hists, 
+		   AliForwardUtil::Histos&       sums, 
+		   TH2D&                         out,
+		   TH2D*                         sumRings,
+		   Double_t                      cent,
+		   MergeMethod                   m,
+		   UShort_t                      skips,
+		   TList*                        byCent);
+    /** 
+     * Check if there's an overlap between detector @a d, ring @a r
+     * and some other ring for the given @f$\eta@f$ @a bin.  If so,
+     * return the ring index.  If not, return -1.
+     * 
+     * @param d    Current detector
+     * @param r    Current ring
+     * @param bin  Current @f$\eta@f$ bin
+     * 
+     * @return Index of overlapping ring, or -1
+     */    
+    Int_t GetOverlap(UShort_t d, Char_t r, Int_t bin) const;
+    /** 
+     * Get the first and last @f$\eta@f$ bin for a detector 
+     * 
+     * @param d      Current detector 
+     * @param r      Current ring	   
+     * @param first  On return, the first @f$\eta@f$ bin
+     * @param last   On return, the last @f$\eta@f$ bin
+     */
+    void GetFirstAndLast(UShort_t d, UShort_t r, 
+			 Int_t& first, Int_t& last) const {
+      GetFirstAndLast(GetIdx(d,r), first, last);
+    }
+    /** 
+     * Get the first and last @f$\eta@f$ bin for a detector 
+     * 
+     * @param idx    Current ring index
+     * @param first  On return, the first @f$\eta@f$ bin
+     * @param last   On return, the last @f$\eta@f$ bin
+     */
+    void GetFirstAndLast(Int_t idx,Int_t& first, Int_t& last) const;
+    /** 
+     * Get the first @f$\eta@f$ bin
+     * 
+     * @param idx Ring index (0-4)
+     * 
+     * @return bin number
+     */
+    Int_t GetFirst(Int_t idx) const;
+    /** 
+     * Get the last @f$\eta@f$ bin
+     * 
+     * @param idx Ring index (0-4)
+     * 
+     * @return bin number
+     */
+    Int_t GetLast(Int_t idx) const;
+    /** 
+     * Get the first @f$\eta@f$ bin
+     * 
+     * @param d  Detector
+     * @param r  Ring
+     * 
+     * @return bin number
+     */
+    Int_t GetFirst(UShort_t d, Char_t r) const { return GetFirst(GetIdx(d,r));}
+    /** 
+     * Get the last @f$\eta@f$ bin
+     * 
+     * @param d  Detector
+     * @param r  Ring
+     * 
+     * @return bin number
+     */
+    Int_t GetLast(UShort_t d, Char_t r) const { return GetLast(GetIdx(d,r));}
+
+    Int_t                   fIndex;     // Vertex bin index
+    Double_t                fLow;       // Low @f$ ip_z @f$ 
+    Double_t                fHigh;      // High @f$ ip_z @f$
+    AliForwardUtil::Histos* fHitMap;    // Hit map (optional)
+    TArrayI                 fFirstBin;  // Per-ring first bin
+    TArrayI                 fLastBin;   // Per-ring last bin
+    Int_t                   fNCutBins;  // Number of bins to cut 
+
+    // ClassDef(VtxBin,1); // Vertex bin in histogram collector
+  };
+  /** 
+   * Get a vertex bin
+   * 
+   * @param ivtx Bin number (1-nVz)
+   * 
+   * @return Bin or null
+   */
+  VtxBin* GetVtxBin(Int_t ivtx);
+  /** 
+   * Get a vertex bin
+   * 
+   * @param ivtx Bin number (1-nVz)
+   * 
+   * @return Bin or null
+   */
+  const VtxBin* GetVtxBin(Int_t ivtx) const;
 
   Int_t       fNCutBins;        // Number of additional bins to cut away
   Float_t     fCorrectionCut;   // Cut-off on secondary corrections 
-  TArrayI     fFirstBins;       // Array of first eta bins 
-  TArrayI     fLastBins;        // Array of last eta bins 
   Int_t       fDebug;           // Debug level 
   TList*      fList;		// Output list
   TH2D*       fSumRings;        // Sum per ring (on y-axis)
@@ -385,41 +494,12 @@ protected:
   FiducialMethod fFiducialMethod; // Fidicual method
   UShort_t    fSkipFMDRings;    // FMD rings to ignore     
   Bool_t      fBgAndHitMaps;    // Make hit/bg maps or not
-  
-  ClassDef(AliFMDHistCollector,4); // Calculate Nch density 
+  TObjArray*  fVtxList;         //! Per-vertex list
+  TList*      fByCent;          // By centrality sums
+  Bool_t      fDoByCent;        // Whether to do by centrality sum
+  ClassDef(AliFMDHistCollector,6); // Calculate Nch density 
 };
 
-//____________________________________________________________________
-inline void
-AliFMDHistCollector::GetFirstAndLast(UShort_t d, Char_t r, UShort_t vtxbin, 
-				     Int_t& first, Int_t& last) const
-{
-  GetFirstAndLast(GetIdx(d,r), vtxbin, first, last);
-}
-//____________________________________________________________________
-inline Int_t
-AliFMDHistCollector::GetFirst(UShort_t d, Char_t r, UShort_t v) const 
-{
-  return GetFirst(GetIdx(d,r), v);
-}
-//____________________________________________________________________
-inline Int_t
-AliFMDHistCollector::GetLast(UShort_t d, Char_t r, UShort_t v) const 
-{
-  return GetLast(GetIdx(d, r), v);
-}
-//____________________________________________________________________
-inline Bool_t
-AliFMDHistCollector::HasOverlap(UShort_t d, Char_t r, Int_t e, UShort_t v) const
-{
-  return GetOverlap(d,r,e,v) >= 0;
-}
-//____________________________________________________________________
-inline Bool_t
-AliFMDHistCollector::HasOverlap(Int_t i, Int_t e, UShort_t v) const
-{
-  return GetOverlap(i,e,v) >= 0;
-}
 
 #endif
 // Local Variables:

@@ -26,6 +26,7 @@
 #include "TList.h"
 #include "TBits.h"
 #include "AliLog.h"
+#include "AliAnalysisUtils.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliAODEvent.h"
@@ -35,6 +36,7 @@ ClassImp(AliHFEextraEventCuts)
 //____________________________________________________________________
 AliHFEextraEventCuts::AliHFEextraEventCuts() : 
   AliCFCutBase(),
+  fAnalysisUtils(NULL),
   fRequireVtxCuts(kFALSE),
   fVtxZMax(1.e99),
   fVtxZMin(-1.e99),
@@ -43,6 +45,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts() :
   fVtxSPD(0),
   fCheckCorrelationSPDVtx(0),
   fVtxResolution(kFALSE),
+  fPApileupCut(kFALSE),
   fBitMap(0x0)
 {
   //
@@ -53,6 +56,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts() :
 //____________________________________________________________________
 AliHFEextraEventCuts::AliHFEextraEventCuts(Char_t* name, Char_t* title) : 
   AliCFCutBase(name,title),
+  fAnalysisUtils(NULL),
   fRequireVtxCuts(kFALSE),
   fVtxZMax(1.e99),
   fVtxZMin(-1.e99),
@@ -61,6 +65,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(Char_t* name, Char_t* title) :
   fVtxSPD(0),
   fCheckCorrelationSPDVtx(0),
   fVtxResolution(kFALSE),
+  fPApileupCut(kFALSE),
   fBitMap(0x0)
  {
   //
@@ -68,11 +73,13 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(Char_t* name, Char_t* title) :
   //
   fBitMap=new TBits(0);
   Initialise();
+  fAnalysisUtils = new AliAnalysisUtils;
  }
 
 //____________________________________________________________________
 AliHFEextraEventCuts::AliHFEextraEventCuts(const AliHFEextraEventCuts& c) : 
   AliCFCutBase(c),
+  fAnalysisUtils(NULL),
   fRequireVtxCuts(c.fRequireVtxCuts),
   fVtxZMax(c.fVtxZMax),
   fVtxZMin(c.fVtxZMin),
@@ -81,6 +88,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(const AliHFEextraEventCuts& c) :
   fVtxSPD(c.fVtxSPD),
   fCheckCorrelationSPDVtx(c.fCheckCorrelationSPDVtx),
   fVtxResolution(c.fVtxResolution),
+  fPApileupCut(c.fPApileupCut),
   fBitMap(c.fBitMap)
 {
   //
@@ -91,7 +99,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(const AliHFEextraEventCuts& c) :
       if(c.fhQA[i][j]) fhQA[i][j] = (TH1F*)c.fhQA[i][j]->Clone();
     }
   }
-
+  fAnalysisUtils = new AliAnalysisUtils;
 }
 
 //____________________________________________________________________
@@ -106,8 +114,8 @@ AliHFEextraEventCuts::~AliHFEextraEventCuts() {
     }
   }
 
-  if(fBitMap)delete fBitMap;
-
+  if(fBitMap) delete fBitMap;
+  if(fAnalysisUtils) delete fAnalysisUtils;
 }
 //_____________________________________________________________________________
 void AliHFEextraEventCuts::Initialise()
@@ -145,6 +153,8 @@ AliHFEextraEventCuts& AliHFEextraEventCuts::operator=(const AliHFEextraEventCuts
     fCheckCorrelationSPDVtx=c.fCheckCorrelationSPDVtx;
     fVtxResolution = c.fVtxResolution;
     fBitMap=c.fBitMap;
+    if(!fAnalysisUtils) fAnalysisUtils = new AliAnalysisUtils;
+    fPApileupCut = c.fPApileupCut;
   }
 
   for (Int_t i=0; i<c.kNCuts; i++){
@@ -255,6 +265,10 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
       fBitMap->SetBitNumber(kResolution, kFALSE);
     }
   }
+  // check pA pileup cut
+  if(fPApileupCut){
+    if(fAnalysisUtils->IsPileUpEvent(inputEvent)) fBitMap->SetBitNumber(kpApileup,kFALSE);
+  }
 }
 
 //_____________________________________________________________________________
@@ -300,6 +314,9 @@ void AliHFEextraEventCuts::FillHistograms(TObject* obj, Bool_t b)
     vtxSPD->GetCovarianceMatrix(cov);
     fhQA[kResolution][index]->Fill(TMath::Sqrt(cov[5]));
   }
+  double isPileup =0 ;
+  if(fAnalysisUtils->IsPileUpEvent(inputEvent)) isPileup = 1,
+  fhQA[kpApileup][index]->Fill(isPileup);
 }
 
 //____________________________________________________________________
@@ -353,6 +370,7 @@ void AliHFEextraEventCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t x
     fhQA[kVtxNCtrb][i]	= new  TH1F(Form("%s_Vtx_N_Ctrb%s",GetName(),str),		"",1000,0.,1000.);
     fhQA[kCorrelation][i] = new TH1F(Form("%s_SPDCorrelation_%s",GetName(),str), "",200, -10., 10);
     fhQA[kResolution][i] = new TH1F(Form("%s_SPDResolution_%s",GetName(), str), "", 100, 0., 1.); 
+    fhQA[kpApileup][i] = new TH1F(Form("%s_pApileup_%s",GetName(),str), "", 2, 0., 2.);
  
     fhQA[kVtxPosZ][i]	->SetXTitle("Vertex Position Z (cm)");
     fhQA[kVtxNCtrb][i]	->SetXTitle("Number of contributors");

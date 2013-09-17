@@ -626,14 +626,14 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fUseQvectorTerms; // use TH2D with separate Q-vector terms instead of TProfile to improve numerical stability in reference flow calculation 
 
   //  3c.) event-by-event quantities:
-  TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
-  TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
-  TMatrixD *fSpk; // fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
+  TMatrixD *fReQ; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
+  TMatrixD *fImQ; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
+  TMatrixD *fSpk; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
   TH1D *fIntFlowCorrelationsEBE; // 1st bin: <2>, 2nd bin: <4>, 3rd bin: <6>, 4th bin: <8>
   TH1D *fIntFlowEventWeightsForCorrelationsEBE; // 1st bin: eW_<2>, 2nd bin: eW_<4>, 3rd bin: eW_<6>, 4th bin: eW_<8>
   TH1D *fIntFlowCorrelationsAllEBE; // to be improved (add comment)
-  TH1D *fIntFlowCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
-  TH1D *fIntFlowEventWeightForCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance 
+  TH1D *fIntFlowCorrectionTermsForNUAEBE[2]; //! [0=sin terms,1=cos terms], NUA = non-uniform acceptance
+  TH1D *fIntFlowEventWeightForCorrectionTermsForNUAEBE[2]; //! [0=sin terms,1=cos terms], NUA = non-uniform acceptance 
   Double_t fNumberOfRPsEBE; // # of Reference Particles  
   Double_t fNumberOfPOIsEBE; // # of Particles of Interest
   Double_t fReferenceMultiplicityEBE; // reference multiplicity 
@@ -650,16 +650,16 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fIntFlowProductOfCorrelationsVsMPro[6]; // average product of correlations <2>, <4>, <6> and <8>  
                                                     // [0=<<2><4>>,1=<<2><6>>,2=<<2><8>>,3=<<4><6>>,4=<<4><8>>,5=<<6><8>>]  
   TProfile *fIntFlowProductOfCorrectionTermsForNUAPro; // average product of correction terms for NUA  
-  TProfile *fIntFlowCorrectionTermsForNUAPro[2]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms] 
-  TProfile *fIntFlowCorrectionTermsForNUAVsMPro[2][4]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms][correction term index] vs multiplicity   
+  TProfile *fIntFlowCorrectionTermsForNUAPro[2]; //! average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms] 
+  TProfile *fIntFlowCorrectionTermsForNUAVsMPro[2][4]; //! average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms][correction term index] vs multiplicity   
 
   //  3e.) histograms with final results:
   TH1D *fIntFlowCorrelationsHist; // final results for average correlations <<2>>, <<4>>, <<6>> and <<8>> (with correct errors!) 
   TH1D *fIntFlowCorrelationsVsMHist[4]; // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity (error is correct here!)
   TH1D *fIntFlowCorrelationsAllHist; // final results for all average correlations (with correct errors!) 
-  TH1D *fIntFlowCorrectionTermsForNUAHist[2];// final results for correction terms for non-uniform acceptance (with correct errors!) [0=sin terms,1=cos terms]
+  TH1D *fIntFlowCorrectionTermsForNUAHist[2]; //! final results for correction terms for non-uniform acceptance (with correct errors!) [0=sin terms,1=cos terms]
   TH1D *fIntFlowCovariances; // final result for covariances of correlations (multiplied with weight dependent prefactor)
-  TH1D *fIntFlowSumOfEventWeights[2]; // sum of linear and quadratic event weights for <2>, <4>, <6> and <8>: [0=linear 1,1=quadratic]
+  TH1D *fIntFlowSumOfEventWeights[2]; //! sum of linear and quadratic event weights for <2>, <4>, <6> and <8>: [0=linear 1,1=quadratic]
   TH1D *fIntFlowSumOfProductOfEventWeights; // sum of products of event weights for correlations <2>, <4>, <6> and <8>  
   TH1D *fIntFlowCovariancesVsM[6]; // final result for covariances of correlations (multiplied with weight dependent prefactor) versus M
                                    // [0=Cov(2,4),1=Cov(2,6),2=Cov(2,8),3=Cov(4,6),4=Cov(4,8),5=Cov(6,8)]
@@ -669,7 +669,7 @@ class AliFlowAnalysisWithQCumulants{
                                                   // [0=sum{w_{<2>}w_{<4>}},1=sum{w_{<2>}w_{<6>}},2=sum{w_{<2>}w_{<8>}},
                                                   //  3=sum{w_{<4>}w_{<6>}},4=sum{w_{<4>}w_{<8>}},5=sum{w_{<6>}w_{<8>}}]  
   TH1D *fIntFlowCovariancesNUA; // final result for covariances of all terms needed for NUA (multiplied with weight dependent prefactor)
-  TH1D *fIntFlowSumOfEventWeightsNUA[2][2]; // sum of linear and quadratic event weights for NUA terms: [0=sin,1=cos][0=linear 1,1=quadratic]
+  TH1D *fIntFlowSumOfEventWeightsNUA[2][2]; //! sum of linear and quadratic event weights for NUA terms: [0=sin,1=cos][0=linear 1,1=quadratic]
   TH1D *fIntFlowSumOfProductOfEventWeightsNUA; // sum of products of event weights for NUA terms
   TH1D *fIntFlowQcumulants; // final results for integrated Q-cumulants QC{2}, QC{4}, QC{6} and QC{8}
   TH1D *fIntFlowQcumulantsVsM[4]; // final results for integrated Q-cumulants QC{2}, QC{4}, QC{6} and QC{8} versus multiplicity
@@ -687,19 +687,19 @@ class AliFlowAnalysisWithQCumulants{
   TList *fDiffFlowResults; // list to hold all histograms with final results relevant for differential flow  
   TList *fDiffFlow2D; // list to hold all objects relevant for 2D differential flow  
   //    4aa.) nested list in list fDiffFlowProfiles: 
-  TList *fDiffFlowCorrelationsProList[2][2]; // list to hold profiles with all correlations for differential flow [0=RP,1=POI][0=pt,1=eta] 
-  TList *fDiffFlowProductOfCorrelationsProList[2][2]; // list to hold profiles with products of all correlations for differential flow [0=RP,1=POI][0=pt,1=eta] 
-  TList *fDiffFlowCorrectionsProList[2][2]; // list to hold profiles with correction term for NUA for differential flow [0=RP,1=POI][0=pt,1=eta] 
-  TList *f2DDiffFlowCorrelationsProList[2]; // list to hold profiles with all correlations for 2D differential flow [0=RP,1=POI]  
+  TList *fDiffFlowCorrelationsProList[2][2]; //! list to hold profiles with all correlations for differential flow [0=RP,1=POI][0=pt,1=eta] 
+  TList *fDiffFlowProductOfCorrelationsProList[2][2]; //! list to hold profiles with products of all correlations for differential flow [0=RP,1=POI][0=pt,1=eta] 
+  TList *fDiffFlowCorrectionsProList[2][2]; //! list to hold profiles with correction term for NUA for differential flow [0=RP,1=POI][0=pt,1=eta] 
+  TList *f2DDiffFlowCorrelationsProList[2]; //! list to hold profiles with all correlations for 2D differential flow [0=RP,1=POI]  
   //    4ab.) nested list in list fDiffFlowResults: 
-  TList *fDiffFlowCorrelationsHistList[2][2]; // list to hold histograms with all correlations for differential flow [0=RP,1=POI][0=pt,1=eta] 
-  TList *fDiffFlowSumOfEventWeightsHistList[2][2][2]; // list to hold histograms with sum of linear/quadratic event weights [0=RP,1=POI][0=pt,1=eta][0=linear 1,1=quadratic]
-  TList *fDiffFlowSumOfProductOfEventWeightsHistList[2][2]; // list to hold histograms with sum of products of event weights [0=RP,1=POI][0=pt,1=eta]
-  TList *fDiffFlowCorrectionsHistList[2][2]; // list to hold histograms with correction term for NUA for differential flow [0=RP,1=POI][0=pt,1=eta] 
-  TList *fDiffFlowCovariancesHistList[2][2]; // list to hold histograms with all covariances for differential flow [0=RP,1=POI][0=pt,1=eta] 
-  TList *fDiffFlowCumulantsHistList[2][2]; // list to hold histograms with all cumulants for differential flow [0=RP,1=POI][0=pt,1=eta] 
-  TList *fDiffFlowDetectorBiasHistList[2][2]; // list to hold histograms which quantify detector bias to differential cumulants [0=RP,1=POI][0=pt,1=eta] 
-  TList *fDiffFlowHistList[2][2]; // list to hold histograms with final results for differential flow [0=RP,1=POI][0=pt,1=eta]
+  TList *fDiffFlowCorrelationsHistList[2][2]; //! list to hold histograms with all correlations for differential flow [0=RP,1=POI][0=pt,1=eta] 
+  TList *fDiffFlowSumOfEventWeightsHistList[2][2][2]; //! list to hold histograms with sum of linear/quadratic event weights [0=RP,1=POI][0=pt,1=eta][0=linear 1,1=quadratic]
+  TList *fDiffFlowSumOfProductOfEventWeightsHistList[2][2]; //! list to hold histograms with sum of products of event weights [0=RP,1=POI][0=pt,1=eta]
+  TList *fDiffFlowCorrectionsHistList[2][2]; //! list to hold histograms with correction term for NUA for differential flow [0=RP,1=POI][0=pt,1=eta] 
+  TList *fDiffFlowCovariancesHistList[2][2]; //! list to hold histograms with all covariances for differential flow [0=RP,1=POI][0=pt,1=eta] 
+  TList *fDiffFlowCumulantsHistList[2][2]; //! list to hold histograms with all cumulants for differential flow [0=RP,1=POI][0=pt,1=eta] 
+  TList *fDiffFlowDetectorBiasHistList[2][2]; //! list to hold histograms which quantify detector bias to differential cumulants [0=RP,1=POI][0=pt,1=eta] 
+  TList *fDiffFlowHistList[2][2]; //! list to hold histograms with final results for differential flow [0=RP,1=POI][0=pt,1=eta]
   //  4b.) flags:  
   TProfile *fDiffFlowFlags; // profile to hold all flags for differential flow
   Bool_t fCalculateDiffFlow; // if you set kFALSE only reference flow will be calculated
@@ -707,47 +707,47 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fCalculateDiffFlowVsEta; // if you set kFALSE only differential flow vs pt is calculated
   //  4c.) event-by-event quantities:
   //   1D:
-  TProfile *fReRPQ1dEBE[3][2][4][9]; // real part [0=r,1=p,2=q][0=pt,1=eta][m][k]
-  TProfile *fImRPQ1dEBE[3][2][4][9]; // imaginary part [0=r,1=p,2=q][0=pt,1=eta][m][k]
-  TProfile *fs1dEBE[3][2][9]; // [0=r,1=p,2=q][0=pt,1=eta][k] // to be improved
-  TH1D *fDiffFlowCorrelationsEBE[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][reduced correlation index]
-  TH1D *fDiffFlowEventWeightsForCorrelationsEBE[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][event weights for reduced correlation index]
-  TH1D *fDiffFlowCorrectionTermsForNUAEBE[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
+  TProfile *fReRPQ1dEBE[3][2][4][9]; //! real part [0=r,1=p,2=q][0=pt,1=eta][m][k]
+  TProfile *fImRPQ1dEBE[3][2][4][9]; //! imaginary part [0=r,1=p,2=q][0=pt,1=eta][m][k]
+  TProfile *fs1dEBE[3][2][9]; //! [0=r,1=p,2=q][0=pt,1=eta][k] // to be improved
+  TH1D *fDiffFlowCorrelationsEBE[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][reduced correlation index]
+  TH1D *fDiffFlowEventWeightsForCorrelationsEBE[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][event weights for reduced correlation index]
+  TH1D *fDiffFlowCorrectionTermsForNUAEBE[2][2][2][10]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
   //   2D:
   TProfile2D *fReRPQ2dEBE[3][4][9]; // real part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
   TProfile2D *fImRPQ2dEBE[3][4][9]; // imaginary part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
-  TProfile2D *fs2dEBE[3][9]; // [t][k] // to be improved
+  TProfile2D *fs2dEBE[3][9]; //! [t][k] // to be improved
   //  4d.) profiles:
   //   1D:
-  TProfile *fDiffFlowCorrelationsPro[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
-  TProfile *fDiffFlowSquaredCorrelationsPro[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
-  TProfile *fDiffFlowProductOfCorrelationsPro[2][2][8][8]; // [0=RP,1=POI][0=pt,1=eta] [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x 
+  TProfile *fDiffFlowCorrelationsPro[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][correlation index]
+  TProfile *fDiffFlowSquaredCorrelationsPro[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][correlation index]
+  TProfile *fDiffFlowProductOfCorrelationsPro[2][2][8][8]; //! [0=RP,1=POI][0=pt,1=eta] [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x 
                                                            //                          [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
-  TProfile *fDiffFlowCorrectionTermsForNUAPro[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
+  TProfile *fDiffFlowCorrectionTermsForNUAPro[2][2][2][10]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
   //   2D:                                                            
-  TProfile2D *f2DDiffFlowCorrelationsPro[2][4]; // [0=RP,1=POI][correlation index]
+  TProfile2D *f2DDiffFlowCorrelationsPro[2][4]; //! [0=RP,1=POI][correlation index]
   //   Other differential correlators:
   TList *fOtherDiffCorrelatorsList; // list to hold profiles with other differential correlators
-  TProfile *fOtherDiffCorrelators[2][2][2][1]; // // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index] 
+  TProfile *fOtherDiffCorrelators[2][2][2][1]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index] 
   //  4e.) histograms holding final results:
   //   1D:
-  TH1D *fDiffFlowCorrelationsHist[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
-  TH1D *fDiffFlowCovariances[2][2][5]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=pt,1=eta][index of covariances] 
-  TH1D *fDiffFlowCumulants[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][0=QC{2'},1=QC{4'},2=QC{6'},3=QC{8'}]
-  TH1D *fDiffFlowDetectorBias[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][0=gQC{2'}/QC{2'},1=gQC{4'}/QC{4'},2=gQC{6'}/QC{6'},3=gQC{8'}/QC{8'}]
-  TH1D *fDiffFlow[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][0=v'{2},1=v'{4},2=v'{6},3=v'{8}]
-  TH1D *fDiffFlowSumOfEventWeights[2][2][2][4]; // [0=RP,1=POI][0=pt,1=eta][0=linear 1,1=quadratic][0=<2'>,1=<4'>,2=<6'>,3=<8'>]
-  TH1D *fDiffFlowSumOfProductOfEventWeights[2][2][8][8]; // [0=RP,1=POI][0=pt,1=eta]  [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x 
+  TH1D *fDiffFlowCorrelationsHist[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][correlation index]
+  TH1D *fDiffFlowCovariances[2][2][5]; //! [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=pt,1=eta][index of covariances] 
+  TH1D *fDiffFlowCumulants[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][0=QC{2'},1=QC{4'},2=QC{6'},3=QC{8'}]
+  TH1D *fDiffFlowDetectorBias[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][0=gQC{2'}/QC{2'},1=gQC{4'}/QC{4'},2=gQC{6'}/QC{6'},3=gQC{8'}/QC{8'}]
+  TH1D *fDiffFlow[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][0=v'{2},1=v'{4},2=v'{6},3=v'{8}]
+  TH1D *fDiffFlowSumOfEventWeights[2][2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][0=linear 1,1=quadratic][0=<2'>,1=<4'>,2=<6'>,3=<8'>]
+  TH1D *fDiffFlowSumOfProductOfEventWeights[2][2][8][8]; //! [0=RP,1=POI][0=pt,1=eta]  [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x 
                                                          //                           [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
-  TH1D *fDiffFlowCorrectionTermsForNUAHist[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]        
+  TH1D *fDiffFlowCorrectionTermsForNUAHist[2][2][2][10]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]        
   //   2D:                                                            
-  TH2D *f2DDiffFlowCumulants[2][4]; // 2D differential cumulants [0=RP,1=POI][cumulant order]
-  TH2D *f2DDiffFlow[2][4]; // 2D differential flow [0=RP,1=POI][cumulants order]
+  TH2D *f2DDiffFlowCumulants[2][4]; //! 2D differential cumulants [0=RP,1=POI][cumulant order]
+  TH2D *f2DDiffFlow[2][4]; //! 2D differential flow [0=RP,1=POI][cumulants order]
   // 6.) distributions:
   TList *fDistributionsList; // list to hold all distributions of correlations
   TProfile *fDistributionsFlags; // profile to hold all flags for distributions of correlations
   Bool_t fStoreDistributions; // store or not distributions of correlations
-  TH1D *fDistributions[4]; // [0=distribution of <2>,1=distribution of <4>,2=distribution of <6>,3=distribution of <8>]
+  TH1D *fDistributions[4]; //! [0=distribution of <2>,1=distribution of <4>,2=distribution of <6>,3=distribution of <8>]
   Int_t fnBinsForCorrelations; // # of bins for correlation axis in fDistributions[4], fCorrelation2468VsMult[4] and fCorrelationProduct2468VsMult[1]
   Double_t fMinValueOfCorrelation[4]; // min values of <2>, <4>, <6> and <8>
   Double_t fMaxValueOfCorrelation[4]; // max values of <2>, <4>, <6> and <8>
@@ -769,15 +769,15 @@ class AliFlowAnalysisWithQCumulants{
   // integrated flow:
   TProfile *fIntFlowDirectCorrelations; // multiparticle correlations relevant for int. flow calculated with nested loops  
   TProfile *fIntFlowExtraDirectCorrelations; // when particle weights are used some extra correlations appear   
-  TProfile *fIntFlowDirectCorrectionTermsForNUA[2]; // average correction terms for non-uniform acceptance evaluated with nested loops [0=sin terms,1=cos terms] 
+  TProfile *fIntFlowDirectCorrectionTermsForNUA[2]; //! average correction terms for non-uniform acceptance evaluated with nested loops [0=sin terms,1=cos terms] 
   // differential flow:
   Int_t fCrossCheckInPtBinNo; // cross-check results for reduced correlations and corrections in this pt bin
   Int_t fCrossCheckInEtaBinNo; // cross-check results for reduced correlations and corrections in this eta bin
   TH1D *fNoOfParticlesInBin; // bin: 1 = # of RPs in pt bin, 2 = # of RPs in eta bin, 3 = # of POIs in pt bin, 4 = # of POIs in eta bin 
-  TProfile *fDiffFlowDirectCorrelations[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
-  TProfile *fDiffFlowDirectCorrectionTermsForNUA[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
+  TProfile *fDiffFlowDirectCorrelations[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][correlation index]
+  TProfile *fDiffFlowDirectCorrectionTermsForNUA[2][2][2][10]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
   // other differential correlators: 
-  TProfile *fOtherDirectDiffCorrelators[2][2][2][1]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index]
+  TProfile *fOtherDirectDiffCorrelators[2][2][2][1]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index]
   // mixed harmonics:
   TProfile *fMixedHarmonicsNestedLoops; // Cross-check mixed harmonics with nested loops.
              
@@ -809,7 +809,7 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *f7pCumulants; // histogram to hold all 7-particle cumulants
   TH1D *f8pCumulants; // histogram to hold all 8-particle cumulants
   //  9e.) statistical error propagation:
-  TH1D *fMixedHarmonicEventWeights[2]; // sum of linear and quadratic event weights for mixed harmonics => [0=linear 1,1=quadratic]    
+  TH1D *fMixedHarmonicEventWeights[2]; //! sum of linear and quadratic event weights for mixed harmonics => [0=linear 1,1=quadratic]    
   TH2D *fMixedHarmonicProductOfEventWeights; // sum of products of event weights for mixed harmonics
   TProfile2D *fMixedHarmonicProductOfCorrelations; // averages of products of mixed harmonics correlations
   // 10.) Control histograms:
@@ -825,7 +825,7 @@ class AliFlowAnalysisWithQCumulants{
   TH2D *fCorrelation2468VsMult[4]; // <2>, <4>, <6> and <8> vs multiplicity (#RPs, #POIs or external)
   TH2D *fCorrelationProduct2468VsMult[1]; // <2><4>, <2><6>, <2><8>, <4><6> etc. vs multiplicity (#RPs, #POIs or external)
                                           // TBI: added for the time being only <2><4>, the other ones will follow when needed 
-  TH2D *fQvectorTermsVsMult[4]; // |Qn|^2/M, |Q2n|^2/M, |Qn|^4/(M(2M-1)), Re[Q2nQn^*Qn^*]/M, ... vs multiplicity (#RPs, #POIs or external)
+  TH2D *fQvectorTermsVsMult[4]; //! |Qn|^2/M, |Q2n|^2/M, |Qn|^4/(M(2M-1)), Re[Q2nQn^*Qn^*]/M, ... vs multiplicity (#RPs, #POIs or external)
   // 11.) Bootstrap:
   //  11a) lists:
   TList *fBootstrapList; // list to hold all output objects for bootstrap 

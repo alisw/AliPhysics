@@ -46,6 +46,8 @@ public:
 
   virtual AliMergeableCollection* Clone(const char* name="") const;
   
+  Bool_t Attach(AliMergeableCollection* mc, const char* identifier, Bool_t pruneFirstIfAlreadyExists=kFALSE);
+  
   Bool_t Adopt(TObject* obj);
   Bool_t Adopt(const char* identifier, TObject* obj);
     
@@ -99,9 +101,11 @@ public:
   
   void PruneEmptyObjects();
   
+  Int_t Prune(const char* identifier);
+  
   static Bool_t MergeObject(TObject* baseObject, TObject* objToAdd);
   
-  TObject* GetSum(const char* idPattern);
+  TObject* GetSum(const char* idPattern) const;
   
   Bool_t IsEmptyObject(TObject* obj) const;
   

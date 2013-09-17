@@ -45,7 +45,7 @@ TObject(),
   fTracks->SetOwner();
   fMCparticles = new TObjArray;
   fMCparticles->SetOwner();
-  memset(fCentrality, 0, sizeof(Float_t) * 6);
+  memset(fCentrality, 0, sizeof(Float_t) * kCentBuff);
   memset(fV0Multiplicity, 0, sizeof(Float_t) * 2);
   memset(fZDCEnergy, 0, sizeof(Float_t) * 4);
   memset(fVX, 0, sizeof(Float_t)*2);
@@ -77,7 +77,7 @@ AliHFEreducedEvent::AliHFEreducedEvent(const AliHFEreducedEvent &ref):
   fMCparticles->SetOwner();
   for(int iprt = 0; iprt < ref.GetNumberOfMCParticles(); iprt++)
     fMCparticles->Add(new AliHFEreducedMCParticle(*(ref.GetMCParticle(iprt))));
-  memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * 6);
+  memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * kCentBuff);
   memcpy(fV0Multiplicity, ref.fV0Multiplicity, sizeof(Float_t) * 2);
   memcpy(fZDCEnergy, ref.fZDCEnergy, sizeof(Float_t) *4);
   memcpy(fVX, ref.fVX, sizeof(Float_t)*2);
@@ -112,7 +112,7 @@ AliHFEreducedEvent &AliHFEreducedEvent::operator=(const AliHFEreducedEvent &ref)
     memcpy(fNContrib, ref.fNContrib, sizeof(Int_t) * 2);
     memcpy(fVertexResolution, ref.fVertexResolution, sizeof(Float_t)*2);
     fSPDMultiplicity = ref.fSPDMultiplicity;
-    memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * 6);
+    memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * kCentBuff);
     memcpy(fV0Multiplicity, ref.fV0Multiplicity, sizeof(Float_t) * 2);
     memcpy(fZDCEnergy, ref.fZDCEnergy, sizeof(Float_t) *4);
   }

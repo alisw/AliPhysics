@@ -13,13 +13,15 @@
 #include <TAxis.h>
 #include <TH3I.h>
 #include <THnSparse.h>
-#include <AliAnalysisFilter.h>
+//#include <AliAnalysisFilter.h>
 #include <iostream>
 #include <AliAnaConvCorrBase.h>
 #include <AliLog.h>
 #include <AliAnalysisCuts.h>
 class AliAnaConvIsolation;
 class AliConversionCuts;
+class AliConversionMesonCuts;
+class AliV0ReaderV1;
 class TList;
 class TH2I;
 //class THnSparseF;
@@ -29,7 +31,7 @@ using namespace std;
 class AliAnalysisTaskdPhi : public AliAnalysisTaskSE {
 
 public:
-  AliAnalysisTaskdPhi(const char *name);
+  AliAnalysisTaskdPhi(const char *name="slindal_dPhi");
   virtual ~AliAnalysisTaskdPhi();
 
   virtual void   UserCreateOutputObjects();
@@ -46,6 +48,8 @@ public:
   TAxis& GetAxisPiMass() { return fAxisPiM; }
 
   void SetV0Filter(AliConversionCuts * filter) { fV0Filter = filter; }
+  void SetMesonFilter(AliConversionMesonCuts * filter) { fMesonFilter = filter; }
+  void SetPhotonFilter(AliConversionCuts * filter) { fPhotonFilter = filter; }
   AliAnalysisCuts * GetTrackCuts() const { return fTrackCuts; }
   void SetTrackCuts( AliAnalysisCuts * cuts) { if (fTrackCuts) delete fTrackCuts; fTrackCuts = cuts; }
   
@@ -67,8 +71,11 @@ private:
   TList * fHistoPion; //pion histo
 
 
-  AliConversionCuts * fV0Filter; //v0 filter
-  AliAnalysisCuts * fTrackCuts;
+  AliV0ReaderV1 * fV0Reader; // V0 reader
+  AliConversionCuts * fV0Filter; //additional v0 filter on top of v0 reader
+  AliConversionCuts * fPhotonFilter; //additional v0 filter for photons only
+  AliConversionMesonCuts * fMesonFilter; //additional meson filter behind fv0filter
+  AliAnalysisCuts * fTrackCuts; //Cuts for corr tracks
 
   TObjArray * fGammas; //gammas
   TObjArray * fPions; //poins
@@ -80,10 +87,7 @@ private:
 
   TObjArray * fPhotonCorr; //photon
   TObjArray * fPionCorr; //poin
-  AliAnaConvIsolation * fIsoAna; //comment
 
-  Int_t fL1; //comment
-  Int_t fL2; //comment
 
   TString fDeltaAODBranchName; //comment
 
@@ -98,7 +102,7 @@ private:
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 2); // example of analysis
+  ClassDef(AliAnalysisTaskdPhi, 3); 
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {
@@ -112,8 +116,8 @@ inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, 
 	return NULL;
   }  
   
-  TObjArray * arrayc = static_cast<TObjArray*>(array->At(binz));
-  THnSparseF * histogram = static_cast<THnSparseF*>(arrayc->At(binc));
+  TObjArray * arrayc = static_cast<TObjArray*>(array->At(binc));
+  THnSparseF * histogram = static_cast<THnSparseF*>(arrayc->At(binz));
   return histogram;
 }
 
@@ -125,10 +129,9 @@ inline AliAnaConvCorrBase * AliAnalysisTaskdPhi::GetCorrObject(Int_t binz, Int_t
 	  return NULL;
 	}
 
-  TObjArray * arrayc = static_cast<TObjArray*>(array->At(binz));
-  AliAnaConvCorrBase * corrmaker = static_cast<AliAnaConvCorrBase*>(arrayc->At(binc));
+  TObjArray * arrayc = static_cast<TObjArray*>(array->At(binc));
+  AliAnaConvCorrBase * corrmaker = static_cast<AliAnaConvCorrBase*>(arrayc->At(binz));
   return corrmaker;
-
 }
 
 inline Int_t AliAnalysisTaskdPhi::GetBin(TAxis & axis, Double_t value) {

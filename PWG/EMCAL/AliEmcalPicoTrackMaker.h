@@ -55,6 +55,6 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   AliEmcalPicoTrackMaker(const AliEmcalPicoTrackMaker&);            // not implemented
   AliEmcalPicoTrackMaker &operator=(const AliEmcalPicoTrackMaker&); // not implemented
 
-  ClassDef(AliEmcalPicoTrackMaker, 5); // Task to make PicoTracks in AOD/ESD events
+  ClassDef(AliEmcalPicoTrackMaker, 6); // Task to make PicoTracks in AOD/ESD events
 };
 #endif

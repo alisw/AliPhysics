@@ -26,6 +26,9 @@
 #pragma link C++ class  AliHFEV0cuts+;
 #pragma link C++ class  AliHFEV0pidMC+;
 #pragma link C++ class  AliHFEpidQA+;
+#pragma link C++ class  AliHFEV0taginfo+;
+#pragma link C++ class  AliHFEV0taginfo::AliHFEV0tag+;
+#pragma link C++ class  AliHFEitsPIDqa+;
 #pragma link C++ class  AliHFEtrdPIDqa+;
 #pragma link C++ class  AliHFEdetPIDqa+;
 #pragma link C++ class  AliHFEtpcPIDqa+;
@@ -64,6 +67,8 @@
 #pragma link C++ class  AliehDPhiBasicParticle+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCEMCalEP+;
 #pragma link C++ class  AliAnalysisTaskHFECal+;
+#pragma link C++ class  AliAnalysisTaskEMCalHFEpA+;
+#pragma link C++ class  AliEHCParticle+;
 
 #pragma link C++ class  AliHFEdebugTreeTask+;
 

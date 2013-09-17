@@ -831,7 +831,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			  }		    
 			  Int_t nDauRes=partK0S->GetNDaughters();
 			  if(nDauRes!=2 || partK0S->GetPdgCode()!=310) {
-			    AliError("No K0S on no 2-body decay");
+			    AliDebug(2,"No K0S on no 2-body decay");
 			    delete [] fLabelArray;
 			    fLabelArray = 0x0;
 			    return bLabelArray;
@@ -843,7 +843,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			    AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
 			    if (dauRes){
 			      if (TMath::Abs(dauRes->GetPdgCode())!=211) {
-				AliError("K0S doesn't decay in 2 charged pions!");
+				AliDebug(2,"K0S doesn't decay in 2 charged pions!");
 				delete [] fLabelArray; 
 				fLabelArray = 0x0;  
 				return bLabelArray;

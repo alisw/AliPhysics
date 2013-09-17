@@ -6,11 +6,12 @@
 RUNLISTFULL=runlistLHC11h.txt
 AFILENAME=AnalysisResults.root
 GRID_PATH=/alice/data/2011/LHC11h_2
-GRID_FILE_PATERN=ESDs/pass2/AOD115/PWGGA/GA_PbPb/17_20121218-1528/$AFILENAME
+GRID_FILE_PATERN=ESDs/pass2/AOD115/PWGGA/GA_PbPb/39_20130410-1211/$AFILENAME
 # Where to store:
-LOCAL_DIR=$(pwd)/GA_PbPb_17
+LOCAL_DIR=$(pwd)/GA_PbPb_39
 FIND_RESULTS_FILE=$LOCAL_DIR/find_results.txt
 RUNFILE=$LOCAL_DIR/runFile.txt
+DONTEXISTFILE=$LOCAL_DIR/dontExistFile.txt
 
 
 
@@ -26,7 +27,8 @@ else
 fi
 
 # Remove the file which lists runs and files
-rm -rf $RUNFILE
+rm -f $RUNFILE
+rm -f $DONTEXISTFILE
 
 # Download run output files, and fill $RUNFILE
 for run in $(cat $RUNLISTFULL); do
@@ -52,5 +54,6 @@ for run in $(cat $RUNLISTFULL); do
 	echo "$run $TOFILE" >> $RUNFILE
     else
 	echo $run has no file
+	echo "$run" >> $DONTEXISTFILE
     fi
 done

@@ -161,6 +161,33 @@ AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
  */
 
 //________________________________________________________________________
+void AliAnalysisNetParticleHelper::SetPhiRange(Float_t f1, Float_t f2) {
+  // -- Set phi range and adopt to phi-histogram
+  
+  fPhiMin = f1; 
+  fPhiMax = (f1 < f2) ? f2 : f2+TMath::TwoPi();
+  
+  // -- Update Ranges
+  Float_t binWidth = (AliAnalysisNetParticleHelper::fgkfHistRangePhi[1] - AliAnalysisNetParticleHelper::fgkfHistRangePhi[0]) / 
+    Float_t(AliAnalysisNetParticleHelper::fgkfHistNBinsPhi);
+
+  Float_t lowEdge  = AliAnalysisNetParticleHelper::fgkfHistRangePhi[0] - binWidth;
+  Float_t highEdge = AliAnalysisNetParticleHelper::fgkfHistRangePhi[0];
+
+  for (Int_t ii = 1; ii <= AliAnalysisNetParticleHelper::fgkfHistNBinsPhi; ++ii) {
+    lowEdge += binWidth;
+    highEdge += binWidth;
+
+    if (fPhiMin >= lowEdge && fPhiMin < highEdge ) 
+      fPhiMin = lowEdge;
+    if (fPhiMax > lowEdge && fPhiMax <= highEdge ) 
+      fPhiMax = highEdge;
+  }
+  
+}
+
+
+//________________________________________________________________________
 void AliAnalysisNetParticleHelper::SetParticleSpecies(AliPID::EParticleType pid) {
   // -- Set particle species (ID, Name, Title, Title LATEX)
 
@@ -177,6 +204,7 @@ void AliAnalysisNetParticleHelper::SetParticleSpecies(AliPID::EParticleType pid)
     fPartTitleLatex[idxPart] = aPartTitlesLatex[fParticleSpecies][idxPart];
   }
 }
+
 //________________________________________________________________________
 void AliAnalysisNetParticleHelper::SetUsePID(Bool_t usePID) {
   // -- Set usage of PID

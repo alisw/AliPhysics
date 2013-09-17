@@ -65,7 +65,6 @@ AliAnalysisTaskDxHFEParticleSelection::AliAnalysisTaskDxHFEParticleSelection(con
   , fMCArray(NULL)
   , fParticleType(kD0)
   , fSystem(0)
-  , fSelectionParticleOptions()
   , fUseKine(kFALSE)
 {
   // constructor

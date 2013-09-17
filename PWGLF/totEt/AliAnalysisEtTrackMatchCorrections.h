@@ -44,8 +44,8 @@ public:
         return *fSecondaryContr;
     }
 
-    TH2F TrackMatchingEfficiency() const {
-      return *fRecoEff;
+    TH2F *TrackMatchingEfficiency() const {
+      return fRecoEff;
     }
     
     Double_t ChargedContr(int mult) const {
@@ -64,7 +64,7 @@ public:
         return fSecondaryContr->Eval(mult)*fMeanSecondary;
     }
 
-    Double_t TrackMatchingEfficiency(Float_t pT, Int_t mult) const;
+    Double_t TrackMatchingEfficiency(Float_t pT, Int_t cent) const;
 
 
 // Setters

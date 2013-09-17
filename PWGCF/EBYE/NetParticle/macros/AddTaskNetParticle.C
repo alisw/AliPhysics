@@ -10,7 +10,7 @@
  *     isModeDist     -> Fill Distributions
  *     isModeEff      -> Fill Efficiency/Contamination ThnSparse
  *     isModeDCA      -> Fill DCA ThnSparse
- *     useQAThnSparse -> Fill QA ThnSparse
+ *     isModeQA       -> Fill QA ThnSparse
  *     isCreateCSC    -> Prepare for CrossSectionCorrection 
  *                       - requires isModeEff to be set
  *                       - Proton only
@@ -26,7 +26,7 @@
  ********************************************************************************* */
 
 AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton", 
-				    Bool_t isModeDist, Bool_t isModeEff, Bool_t isModeDCA, Bool_t useQAThnSparse = kFALSE,
+				    Bool_t isModeDist, Bool_t isModeEff, Bool_t isModeDCA, Bool_t isModeQA = kFALSE,
 				    Bool_t isCreateCSC = kFALSE, Bool_t isModeAOD = kFALSE) {
 
   TString sName(name);
@@ -64,9 +64,6 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   // ----------------------------------------------
   // -- Configure flags
   // ----------------------------------------------
-
-  // -- Enable QA plots
-  Int_t isModeQA = 0;
 
   if (isMC) 
     task->SetIsMC();
@@ -171,7 +168,7 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t * name = "jthaeder_NetProton",
   helper->SetMinTrackLengthMC(70.);  
   helper->SetNSigmaMaxCdd(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now
   helper->SetNSigmaMaxCzz(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now
-  helper->SetPhiRange(0., 4.);
+  helper->SetPhiRange(0., 3.88);  //  Only used if requested in task - default is TwoPi
 
   // -- Set pid cuts
   helper->SetNSigmaMaxTPC(nSigmaTPC);

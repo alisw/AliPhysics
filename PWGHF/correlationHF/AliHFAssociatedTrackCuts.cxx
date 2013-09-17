@@ -45,6 +45,11 @@ AliAnalysisCuts(),
 fESDTrackCuts(0),
 fPidObj(0),
   fEffWeights(0),
+
+fTrigEffWeightsvspt(0),
+fTrigEffWeightsvsptB(0),
+fTrigEffWeights(0),
+fTrigEffWeightsB(0),
 fPoolMaxNEvents(0), 
 fPoolMinNTracks(0), 
 fMinEventsToMix(0),
@@ -84,6 +89,10 @@ AliAnalysisCuts(name,title),
 fESDTrackCuts(0),
 fPidObj(0),
 fEffWeights(0),
+fTrigEffWeightsvspt(0),
+fTrigEffWeightsvsptB(0),
+fTrigEffWeights(0),
+fTrigEffWeightsB(0),
 fPoolMaxNEvents(0), 
 fPoolMinNTracks(0), 
 fMinEventsToMix(0),
@@ -119,6 +128,11 @@ AliAnalysisCuts(source),
 fESDTrackCuts(source.fESDTrackCuts),
 fPidObj(source.fPidObj),
 fEffWeights(source.fEffWeights),
+fTrigEffWeightsvspt(source.fTrigEffWeightsvspt),
+fTrigEffWeightsvsptB(source.fTrigEffWeightsvsptB),
+fTrigEffWeights(source.fTrigEffWeights),
+fTrigEffWeightsB(source.fTrigEffWeightsB),
+
 fPoolMaxNEvents(source.fPoolMaxNEvents), 
 fPoolMinNTracks(source.fPoolMinNTracks), 
 fMinEventsToMix(source.fMinEventsToMix),
@@ -153,6 +167,12 @@ fDescription(source.fDescription)
 	if(source.fAODvZeroCuts) SetAODvZeroCuts(source.fAODvZeroCuts);
 	if(source.fPidObj) SetPidHF(source.fPidObj);
 	if(source.fEffWeights) SetEfficiencyWeightMap(source.fEffWeights);
+	if(source.fTrigEffWeightsvspt) SetTriggerEffWeightMapvspt(source.fTrigEffWeightsvspt);
+	if(source.fTrigEffWeightsvsptB) SetTriggerEffWeightMapvsptB(source.fTrigEffWeightsvsptB);
+	if(source.fTrigEffWeights) SetTriggerEffWeightMap(source.fTrigEffWeights);
+	if(source.fTrigEffWeightsB)SetTriggerEffWeightMapB(source.fTrigEffWeightsB);
+   
+    
 }
 //--------------------------------------------------------------------------
 AliHFAssociatedTrackCuts &AliHFAssociatedTrackCuts::operator=(const AliHFAssociatedTrackCuts &source)
@@ -166,6 +186,10 @@ AliHFAssociatedTrackCuts &AliHFAssociatedTrackCuts::operator=(const AliHFAssocia
 	fESDTrackCuts=source.fESDTrackCuts;
 	fPidObj=source.fPidObj;
 	fEffWeights=source.fEffWeights;
+    fTrigEffWeightsvspt=source.fTrigEffWeightsvspt;
+	fTrigEffWeightsvsptB=source.fTrigEffWeightsvsptB;
+    fTrigEffWeights=source.fTrigEffWeights;
+	fTrigEffWeightsB=source.fTrigEffWeightsB;
 	fNTrackCuts=source.fNTrackCuts;
 	fAODTrackCuts=source.fAODTrackCuts;
 	fTrackCutsNames=source.fTrackCutsNames;
@@ -186,6 +210,10 @@ AliHFAssociatedTrackCuts::~AliHFAssociatedTrackCuts()
 	if(fESDTrackCuts) {delete fESDTrackCuts; fESDTrackCuts = 0;}
 	if(fPidObj) {delete fPidObj; fPidObj = 0;}
 	if(fEffWeights){delete fEffWeights;fEffWeights=0;}
+    if(fTrigEffWeightsvspt){delete fTrigEffWeightsvspt;fTrigEffWeightsvspt=0;}
+	if(fTrigEffWeightsvsptB){delete fTrigEffWeightsvsptB;fTrigEffWeightsvsptB=0;}
+    if(fTrigEffWeights){delete fTrigEffWeights;fTrigEffWeights=0;}
+	if(fTrigEffWeightsB){delete fTrigEffWeightsB;fTrigEffWeightsB=0;}
 	if(fZvtxBins) {delete[] fZvtxBins; fZvtxBins=0;} 
 	if(fCentBins) {delete[] fCentBins; fCentBins=0;}
 	if(fAODTrackCuts) {delete[] fAODTrackCuts; fAODTrackCuts=0;}
@@ -481,6 +509,7 @@ void AliHFAssociatedTrackCuts::SetPidAssociated()
     fPidObj->SetPidResponse(pidResp);
   }
 }
+//--------------------------------------------------------------------------
 
 void AliHFAssociatedTrackCuts::Print(Option_t *option) const
 {
@@ -495,6 +524,37 @@ void AliHFAssociatedTrackCuts::Print(Option_t *option) const
   PrintAll();
 }
 
+//--------------------------------------------------------------------------
+Int_t AliHFAssociatedTrackCuts::GetPoolBin(Double_t multorcent, Double_t zVtx) const
+{
+ 
+    Int_t poolbin = -1;
+    Int_t centbin = -1;
+    Int_t zvtxbin = -1;
+    
+    
+    if(multorcent <fCentBins[0]) return poolbin;
+    if(zVtx <fZvtxBins[0]) return poolbin;
+    
+    
+    for (Int_t i=0;i<fNCentBins;i++){
+        if(multorcent<fCentBins[i+1]) {
+            centbin=i;
+            break;
+        }
+    }
+    
+    for (Int_t i=0;i<fNzVtxBins;i++){
+        if(zVtx<fZvtxBins[i+1]) {
+            zvtxbin=i;
+            break;
+        }
+    }
+
+    poolbin = centbin  + zvtxbin*fNzVtxBins;
+    
+    return poolbin;
+}
 //--------------------------------------------------------------------------
 void AliHFAssociatedTrackCuts::PrintAll() const
 {
@@ -572,6 +632,8 @@ void AliHFAssociatedTrackCuts::PrintPoolParameters() const
 	
 	
 }
+//--------------------------------------------------------------------------
+
 Double_t AliHFAssociatedTrackCuts::GetTrackWeight(Double_t pt, Double_t eta,Double_t zvtx){
   if(!fEffWeights)return 1.;
   
@@ -579,6 +641,53 @@ Double_t AliHFAssociatedTrackCuts::GetTrackWeight(Double_t pt, Double_t eta,Doub
   if(fEffWeights->IsBinUnderflow(bin)||fEffWeights->IsBinOverflow(bin))return 1.;
   return fEffWeights->GetBinContent(bin);
 
+}
+
+
+//--------------------------------------------------------------------------
+Double_t AliHFAssociatedTrackCuts::GetTrigWeight(Double_t pt, Double_t mult){
+    
+    
+    
+    if(fTrigEffWeightsvspt){
+       Int_t bin=fTrigEffWeightsvspt->FindBin(pt);
+        if(fTrigEffWeightsvspt->IsBinUnderflow(bin)||fTrigEffWeightsvspt->IsBinOverflow(bin))return 1.;
+        return fTrigEffWeightsvspt->GetBinContent(bin);
+        
+    }
+    
+    if(fTrigEffWeights){
+        Int_t bin=fTrigEffWeights->FindBin(pt,mult);
+        if(fTrigEffWeights->IsBinUnderflow(bin)||fTrigEffWeights->IsBinOverflow(bin))return 1.;
+        return fTrigEffWeights->GetBinContent(bin);
+        
+    }
+    
+    //if(!fTrigEffWeights && !fTrigEffWeightsvspt)return 1.;
+    
+    return 1.;
+    
+}
+
+//--------------------------------------------------------------------------
+Double_t AliHFAssociatedTrackCuts::GetTrigWeightB(Double_t pt, Double_t mult){
+    
+    if(fTrigEffWeightsvsptB){
+        Int_t bin=fTrigEffWeightsvsptB->FindBin(pt);
+        if(fTrigEffWeightsvsptB->IsBinUnderflow(bin)||fTrigEffWeightsvsptB->IsBinOverflow(bin))return 1.;
+        return fTrigEffWeightsvsptB->GetBinContent(bin);
+        
+    }
+    
+    if(fTrigEffWeightsB){
+        Int_t bin=fTrigEffWeightsB->FindBin(pt,mult);
+        if(fTrigEffWeightsB->IsBinUnderflow(bin)||fTrigEffWeightsB->IsBinOverflow(bin))return 1.;
+        return fTrigEffWeightsB->GetBinContent(bin);
+        
+    }
+    
+ //   if(!fTrigEffWeightsB && !fTrigEffWeightsvsptB)return 1.;
+    return 1;
 }
 //--------------------------------------------------------------------------
 void AliHFAssociatedTrackCuts::PrintSelectedMCevents() const

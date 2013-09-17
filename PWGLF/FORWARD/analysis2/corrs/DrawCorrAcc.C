@@ -5,78 +5,6 @@
  *
  * @ingroup pwglf_forward_scripts_corr
  */
-#ifndef __CINT__
-# include <TH1.h>
-# include <TH2.h>
-# include <THStack.h>
-# include <TObjArray.h>
-# include <TList.h>
-# include <TFile.h>
-# include <TError.h>
-# include <TCanvas.h>
-# include <TLatex.h>
-# include <TMath.h>
-# include <TStyle.h>
-# include "AliForwardCorrectionManager.h"
-# include "AliFMDCorrAcceptance.h"
-# include "AliForwardUtil.h"
-#else
-class TCanvas;
-class TObjArray;
-#endif
-/** 
- * Clear canvas 
- * 
- * @param c Canvas to clear 
- *
- * @ingroup pwglf_forward_scripts_corr
- */
-void
-ClearCanvas(TCanvas* c)
-{
-  c->SetLeftMargin(.1);
-  c->SetRightMargin(.05);
-  c->SetBottomMargin(.1);
-  c->SetTopMargin(.05);
-  c->Clear();
-}
-
-Bool_t
-DrawSummary(TObjArray* stacks, TCanvas* c)
-{
-  if (!stacks) return false;
-  // --- Make summary page -------------------------------------------
-  ClearCanvas(c);
-  Int_t nVtx = 10; // stacks->GetEntries();
-
-  c->Divide(3, (nVtx+2)/3, 0, 0);
-  Int_t ipad = 0;
-  for (UShort_t v = 1; v <= nVtx; v++) {
-    ipad++;
-    
-    if (ipad == 1 || ipad == 12) ipad++;
-
-    THStack*     stack = static_cast<THStack*>(stacks->At(v-1));
-    if (!stack) { 
-      Error("", "No stack at v=%d", v-1);
-      continue;
-    }
-    TVirtualPad* pad   = c->cd(ipad);
-    if (!pad) { 
-      Error("", "No pad at %d", ipad);
-      continue;
-    }
-    pad->SetFillColor(kWhite);
-    
-    stack->SetMaximum(1.2);
-    stack->Draw("nostack hist");
-  }
-  c->Modified();
-  c->Update();
-  c->cd();
-  return true;
-}
-
 /** 
  * Draw energy loss fits to a multi-page PDF. 
  *
@@ -95,165 +23,21 @@ DrawSummary(TObjArray* stacks, TCanvas* c)
  * @ingroup pwglf_forward_scripts_corr
  */
 void
-DrawCorrAcc(const char* fname, const char* option="colz")
+DrawCorrAcc(ULong_t runNo, UShort_t sys, UShort_t sNN, 
+	    const char* fname=0, Bool_t details=true)
 {
   //__________________________________________________________________
   // Load libraries and object 
-#ifdef __CINT__
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
-#endif
+  // const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
+  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
 
-  TFile* file = TFile::Open(fname, "READ");
-  if (!file) { 
-    Error("DrawCorrAcc", "Failed to open %s", fname);
-    return;
-  }
-  TString pname(fname);
-  pname.ReplaceAll(".root", ".pdf");
-
-  const char* objName = 
-    AliForwardCorrectionManager::Instance()
-    .GetObjectName(AliForwardCorrectionManager::kAcceptance);
-  AliFMDCorrAcceptance* corr = 
-    static_cast<AliFMDCorrAcceptance*>(file->Get(objName));
-  if (!corr) { 
-    Error("DrawCorrAcc", "Object '%s' not found in %s", objName, fname);
-    return;
-  }
-
-  //__________________________________________________________________
-  // Create a canvas
-  TCanvas* c = new TCanvas("c", "c", 800 / TMath::Sqrt(2), 800);
-  c->SetFillColor(0);
-  c->SetBorderSize(0);
-  c->SetBorderMode(0);
-  c->Print(Form("%s[", pname.Data()));
-  
-  gStyle->SetOptStat(0);
-  gStyle->SetTitleColor(0);
-  gStyle->SetTitleStyle(0);
-  gStyle->SetTitleBorderSize(0);
-  gStyle->SetTitleX(.5);
-  gStyle->SetTitleY(1);
-  gStyle->SetTitleW(.8);
-  gStyle->SetTitleH(.09);
-  gStyle->SetFrameFillColor(kWhite);
-  gStyle->SetFrameBorderSize(1);
-  gStyle->SetFrameBorderMode(1);
-  gStyle->SetPalette(1);
-
-  ClearCanvas(c);
-  //__________________________________________________________________
-  // Create a title page 
-  TLatex* ll = new TLatex(.5,.8, fname);
-  ll->SetTextAlign(22);
-  ll->SetTextSize(0.03);
-  ll->SetNDC();
-  ll->Draw();
-
-  TLatex* l = new TLatex(.5,.8, fname);
-  l->SetNDC();
-  l->SetTextSize(0.03);
-  l->SetTextFont(132);
-  l->SetTextAlign(12);
-  l->DrawLatex(0.2, 0.70, "Acceptance due to dead channels");
-  l->SetTextAlign(22);
-  l->DrawLatex(0.5, 0.60, "c_{v,r}(#eta,#phi)=#frac{"
-	       "#sum active strips#in(#eta,#phi)}{"
-	       "#sum strips#in(#eta,#phi)}");
-  
-  c->Print(pname.Data(), "Title:Title page");
-
-  ClearCanvas(c);
-
-  //__________________________________________________________________
-  // Draw all corrections
-  const TAxis& vtxAxis = corr->GetVertexAxis();
-  Int_t        nVtx    = vtxAxis.GetNbins();
-
-  // --- Create stacks for summaries ---------------------------------
-  TObjArray* stacks  = new TObjArray(nVtx);
-  TObjArray* stacks2 = (corr->HasOverflow() ? new TObjArray(nVtx) : 0);
-  for (UShort_t v = 1; v <= nVtx; v++) { 
-    THStack* stack = new THStack(Form("vtx%02d", v),
-				 Form("%+5.1f<v_{z}<%+5.1f",
-				      vtxAxis.GetBinLowEdge(v),
-				      vtxAxis.GetBinUpEdge(v)));
-    stacks->AddAt(stack, v-1);
-    if (!stacks2) continue;
-    stacks2->AddAt(stack->Clone(), v-1);
-  }
-
-  // --- Loop over detectors -----------------------------------------
-  for (UShort_t d = 1; d <= 3; d++) {
-    UShort_t     nQ = (d == 1 ? 1 : 2);
-    for (UShort_t q = 0; q < nQ; q++) { 
-      Char_t r = (q == 0 ? 'I' : 'O');
-
-      ClearCanvas(c);
-      c->Divide(2, (nVtx+1)/2);
-      for (UShort_t v=1; v <= nVtx; v++) { 
-	TVirtualPad* p = c->cd(v);
-	p->SetFillColor(kWhite);
-      
-	TH2* h2 = corr->GetCorrection(d, r, v);
-	if (!h2) { 
-	  Warning("DrawCorrAcc", "No correction for r=%c, v=%d", r, v);
-	  continue;
-	}
-	h2->Draw(option);
-
-	Int_t nY = h2->GetNbinsY();
-	TH1* hh = h2->ProjectionX(Form("FMD%d%c", d, r), 1, nY);
-	hh->Scale(1. / nY);
-	hh->SetDirectory(0);
-	hh->SetMarkerColor(AliForwardUtil::RingColor(d, r));
-	hh->SetLineColor(AliForwardUtil::RingColor(d, r));
-	hh->SetFillColor(AliForwardUtil::RingColor(d, r));
-	hh->SetFillStyle(3001);
-
-	THStack* stack = static_cast<THStack*>(stacks->At(v-1));
-	if (!stack) { 
-	  Error("", "No stack at v=%d", v-1);
-	  continue;
-	}
-	stack->Add(hh);
-
-	if (!stacks2) {
-	  Warning("", "No phi acceptance defined");
-	  continue;
-	}
-	stack = static_cast<THStack*>(stacks2->At(v-1));
-	if (!stack) { 
-	  Error("", "No stack at v=%d", v-1);
-	  continue;
-	}
-	TH1* hp = corr->GetPhiAcceptance(d, r, v);
-	if (!hp) { 
-	  Error("", "No phi acceptance at v=%d", v-1);
-	  continue;
-	}
-	hp->SetDirectory(0);
-	hp->SetMarkerColor(AliForwardUtil::RingColor(d, r));
-	hp->SetLineColor(AliForwardUtil::RingColor(d, r));
-	hp->SetFillColor(AliForwardUtil::RingColor(d, r));
-	hp->SetFillStyle(3001);
-	Info("", "Adding phi acceptance plot %d", hp->GetEntries());
-	stack->Add(hp);
-
-      }
-      c->Print(pname.Data(), Form("Title:FMD%d%c", d, r));
-    }
-  }
-
-  if (DrawSummary(stacks2, c))  
-    c->Print(pname.Data(), "Title:Summary2");
-  if (DrawSummary(stacks, c))  
-    c->Print(pname.Data(), "Title:Summary");
-
-  //__________________________________________________________________
-  // Close output file 
-  c->Print(Form("%s]", pname.Data()));
+  CorrDrawer d;
+  d.Run(AliForwardCorrectionManager::kAcceptance, runNo, sys, sNN, 0, 
+	false, false, "", fname);
+	
 }
 //
 // EOF

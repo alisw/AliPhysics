@@ -752,6 +752,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   
   Bool_t checkPIDInfo[2]={kTRUE,kTRUE};
   Double_t sigma_tmp[3]={fPidHF->GetSigma(0),fPidHF->GetSigma(1),fPidHF->GetSigma(2)};
+  Bool_t isTOFused=fPidHF->GetTOF(),isCompat=fPidHF->GetCompat();
   for(Int_t daught=0;daught<2;daught++){
     //Loop con prongs
     AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught);
@@ -774,11 +775,11 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
       }else{
 	fPidHF->SetTOF(kFALSE);
 	combinedPID[daught][1]=fPidHF->MakeRawPid(aodtrack,2);
-	fPidHF->SetTOF(kTRUE);
-	fPidHF->SetCompat(kTRUE);
+	if(isTOFused)fPidHF->SetTOF(kTRUE);
+	if(isCompat)fPidHF->SetCompat(kTRUE);
       }
     }
-
+  
     if(combinedPID[daught][0]<=-1&&combinedPID[daught][1]<=-1){ // if not a K- and not a pi- both D0 and D0bar excluded
       isD0D0barPID[0]=0;
       isD0D0barPID[1]=0;
@@ -1767,8 +1768,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
      //WeightNoFilter: Accept all particles (no PID cut) but fill mass histos with weights in task
      CalculateBayesianWeights(d);
      return 3;
-     
-}
+  }
 
 
 
@@ -1776,7 +1776,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
   Int_t isD0bar = 0;
   Int_t returnvalue = 0;
 
-  Int_t isPosKaon = 0, isNegKaon = 0;
+  Int_t isPosKaon = 0, isNegKaon = 0, isPosPion = 0, isNegPion = 0;
 
   //Bayesian methods used here check for ID of kaon, and whether it is positive or negative.
   
@@ -1818,50 +1818,68 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
    switch (fBayesianCondition) {
       ///A: Standard max. probability method (accept most likely species) 
       case kMaxProb:
-			if (TMath::MaxElement(AliPID::kSPECIES, fWeightsPositive) == fWeightsPositive[AliPID::kKaon]) { //If highest probability lies with kaon
-			  isPosKaon = 1;  //flag [daught] as a kaon
-			}
-
-			if (TMath::MaxElement(AliPID::kSPECIES, fWeightsNegative) == fWeightsNegative[AliPID::kKaon]) { //If highest probability lies with kaon
-			  isNegKaon = 1;  //flag [daught] as a kaon
-			}
-   		    break;
-      ///B: Accept if probability greater than prior
-      case kAbovePrior:
-
-			if (fWeightsNegative[AliPID::kKaon] > (fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->
-						                        GetBinContent(fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->FindBin(momentumnegative)))) {  //Retrieves relevant prior, gets value at momentum
-			isNegKaon = 1;
-			}
-			if (fWeightsPositive[AliPID::kKaon] > (fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->
-						                        GetBinContent(fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->FindBin(momentumpositive)))) {  //Retrieves relevant prior, gets value at momentum
-			isPosKaon = 1;
-			}
-
-        	break;
-
-      ///C: Accept if probability greater than user-defined threshold
+	if (TMath::MaxElement(AliPID::kSPECIES, fWeightsPositive) == fWeightsPositive[AliPID::kKaon]) { //If highest probability lies with kaon
+	  isPosKaon = 1;  //flag [daught] as a kaon
+	}
+	
+	if (TMath::MaxElement(AliPID::kSPECIES, fWeightsPositive) == fWeightsPositive[AliPID::kPion]) { //If highest probability lies with pion
+	  isPosPion = 1;  //flag [daught] as a pion
+	}            
+	
+	if (TMath::MaxElement(AliPID::kSPECIES, fWeightsNegative) == fWeightsNegative[AliPID::kKaon]) { //If highest probability lies with kaon
+	  isNegKaon = 1;  //flag [daught] as a kaon
+	}
+	
+	if (TMath::MaxElement(AliPID::kSPECIES, fWeightsNegative) == fWeightsNegative[AliPID::kPion]) { //If highest probability lies with kaon
+	  isNegPion = 1;  //flag [daught] as a pion
+	}
+	
+	
+	break;
+	///B: Accept if probability greater than prior
+   case kAbovePrior:
+     
+     if (fWeightsNegative[AliPID::kKaon] > (fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->
+					    GetBinContent(fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->FindBin(momentumnegative)))) {  //Retrieves relevant prior, gets value at momentum
+       isNegKaon = 1;
+     }
+     if (fWeightsPositive[AliPID::kKaon] > (fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->
+					    GetBinContent(fPidHF->GetPidCombined()->GetPriorDistribution(AliPID::kKaon)->FindBin(momentumpositive)))) {  //Retrieves relevant prior, gets value at momentum
+       isPosKaon = 1;
+     }
+     
+     break;
+     
+     ///C: Accept if probability greater than user-defined threshold
       case kThreshold:
          if (fWeightsNegative[AliPID::kKaon] > fProbThreshold) {
             isNegKaon = 1;
          }
+         if (fWeightsNegative[AliPID::kPion] > fProbThreshold) {
+            isNegPion = 1;
+         }
+         
          if (fWeightsPositive[AliPID::kKaon] > fProbThreshold) {
             isPosKaon = 1;
          }
+        
+         if (fWeightsPositive[AliPID::kPion] > fProbThreshold) {
+            isPosPion = 1;
+         }
 
          break;
-  }
+   }
    
      
      //Momentum-based selection (also applied to filtered weighted method)
      
      if (fBayesianStrategy == kBayesMomentum || fBayesianCondition == kBayesWeight) {
          if (isNegKaon && isPosKaon) { // If both are kaons, reject
-            isD0 = 0;
-            isD0bar = 0;
-         } else if (isNegKaon) {       //If negative kaon present, D0
             isD0 = 1;
-         } else if (isPosKaon) {       //If positive kaon present, D0bar
+            isD0bar = 1;
+         } else if (isNegKaon && isPosPion) {       //If negative kaon present, D0
+            isD0 = 1;
+         } else if (isPosKaon && isNegPion) {       //If positive kaon present, D0bar
             isD0bar = 1;
          } else {                      //If neither ID'd as kaon, subject to extra tests
             isD0 = 1;
@@ -1903,15 +1921,16 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
     //Simple Bayesian
     if (fBayesianStrategy == kBayesSimple) {
        
-         if (isPosKaon && isNegKaon)   {  //If both are ID'd as kaons, reject
-               returnvalue = 0;
-            } else if (isNegKaon)   {     //If negative kaon, D0
+         if (isPosKaon && isNegKaon)   {  //If both are ID'd as kaons, accept as possible
+               returnvalue = 3;
+            } else if (isNegKaon && isPosPion)   {     //If negative kaon, D0
                returnvalue = 1;
-            } else if (isPosKaon)   {     //If positive kaon, D0-bar
+            } else if (isPosKaon && isNegPion)   {     //If positive kaon, D0-bar
                returnvalue = 2;
-            } else {
+            } else if (isPosPion && isNegPion)   {
                returnvalue = 0;  //If neither kaon, reject
-            }
+            } else {returnvalue = 0;}  //default
+            
     }
     
   return returnvalue;

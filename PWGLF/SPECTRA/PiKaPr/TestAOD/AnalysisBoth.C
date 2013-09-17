@@ -42,12 +42,14 @@ enum {
  kuseprimaryPIDcont=0x80, //pid contamination is calculated using only primiary particle in this case K should use dca fits 
  knormalizationwithbin0integralsdata=0x100, // the normalization factor is calcualte using integral over z vertex distributions (in this case reconstructed vertex disitrbution uses z vertex for data) 
  knormalizationwithbin0integralsMC=0x200, //in this case reconstructed vertex disitrbution uses z vertex for data, those to options will be use only if knormalizationtoeventspassingPhySel is not set
- kuserangeonfigfile=0x400 // use of config file for dca fit settings					
+ kuserangeonfigfile=0x400, // use of config file for dca fit settings
+ kskipconcutonspectra=0x800 //do not use conPID<02 cut  useful for syst. studies						
 };	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
 void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="" )
 {
+	gStyle->SetOptStat(0);	
 	TH1::AddDirectory(kFALSE);
 	gSystem->Load("libCore.so");  
 	gSystem->Load("libPhysics.so");
@@ -110,6 +112,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	TH1F* contMat[6];
 	TH1F* confinal[6];
 	TH1F* contPIDpri[6];
+	TH1F* contSecMC[6];
 	
 	TH1F* contfit[12];
 	TH1F* contWDfit[12];
@@ -158,13 +161,13 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	}
 	else
 	{
-		//neventsdata=ecutsdata->NumberOfEvents(); //number of accepted events
+		neventsdata=ecutsdata->NumberOfEvents(); //number of accepted events
 		 neventsmc=ecutsmc->NumberOfEvents();
 		neventsmcall= ecutsmc->NumberOfEvents();
 
 	}
 	GetMCTruth(MCTruth);
-	
+	cout<<neventsdata<<" Events"<<endl;
 	
 	
 	TH1F* allgen=((TH1F*)managermc->GetPtHistogram1D("hHistPtGen",1,1))->Clone();
@@ -180,7 +183,8 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	spectraall->SetTitle("recNch");
 	TH1F* contall=(TH1F*)allrecMC->Clone("contall");
 	contall->SetTitle("contall");
-	contall->Add(alleff,-1);
+	//contall->Add(alleff,-1);
+	SubHistWithFullCorr(contall,alleff);
 	alleff->Divide(alleff,allgen,1,1,"B");
 	contall->Divide(contall,allrecMC,1,1,"B");
 	
@@ -225,6 +229,8 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		primaryfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"primaryfitMC"));
 		primaryfit[i+6]->SetTitle(Form(tmpname.Data(),"primaryfitMC"));
 		
+
+
 		contfit[i]->Reset();
 		contWDfit[i]->Reset();
 		contMatfit[i]->Reset();
@@ -249,24 +255,29 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		
 		
 		
-		contallMC[i]->Add(eff[i],-1.0);
-		RecomputeErrors(contallMC[i]);
+		//contallMC[i]->Add(eff[i],-1.0);
+		SubHistWithFullCorr(contallMC[i],eff[i]);
+		//RecomputeErrors(contallMC[i]);
 		contallMC[i]->Sumw2(); 
 		contallMC[i]->Divide(contallMC[i],rawspectramc[i],1,1,"B");
 	
 		// contamintaion from PID but only primaries
-		contPIDpri[i]->Add(eff[i],-1.0);
-		RecomputeErrors(contPIDpri[i]);
-		contPIDpri[i]->Divide(contPIDpri[i],rawspectramc[i],1,1,"B");
+		//contPIDpri[i]->Add(eff[i],-1.0);
+		SubHistWithFullCorr(contPIDpri[i],eff[i]);
 
+		//RecomputeErrors(contPIDpri[i]);
+		contPIDpri[i]->Divide(contPIDpri[i],rawspectramc[i],1,1,"B");
 	
 		eff[i]->Divide(eff[i],MCTruth[i],1,1,"B");
 		
 		
 		contPID[i]->Sumw2();
 		rawspectramc[i]->Sumw2();
-		contPID[i]->Add(contPID[i],rawspectramc[i],-1,1);
-		RecomputeErrors(contPID[i]);
+		//contPID[i]->Add(contPID[i],rawspectramc[i],-1,1);
+		SubHistWithFullCorr(contPID[i],rawspectramc[i]);
+		contPID[i]->Scale(-1.0);
+
+		//RecomputeErrors(contPID[i]);
 		contPID[i]->ResetStats();
 		contPID[i]->Sumw2();
 		contPID[i]->Divide(contPID[i],rawspectramc[i],1,1,"B");
@@ -277,9 +288,11 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 			confinal[i]=(TH1F*)contPID[i]->Clone(Form(tmpname.Data(),"confinal"));
 		confinal[i]->SetTitle(Form(tmpname.Data(),"confinal"));
 
+		contSecMC[i]=(TH1F*)contWD[i]->Clone(Form(tmpname.Data(),"conSecMC"));
+		contSecMC[i]->Add(contMat[i]);
 		contWD[i]->Divide(contWD[i],rawspectramc[i],1,1,"B");
 		contMat[i]->Divide(contMat[i],rawspectramc[i],1,1,"B");
-	
+		contSecMC[i]->Divide(contSecMC[i],rawspectramc[i],1,1,"B");
 	
 	
 		rawspectradata[i]->Scale(1./neventsdata,"width");
@@ -309,6 +322,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		lout->Add(spectraLeonardo[i]);
 		lout->Add(confinal[i]);
 		lout->Add(contPIDpri[i]);
+		lout->Add(contSecMC[i]);
 	}
 	outdate.ReplaceAll("/","_");
 	configfile.ReplaceAll(".","_");
@@ -332,6 +346,8 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 				GetCorrectedSpectra(spectra[i],rawspectradata[i],eff[i],contallMC[i]);	
 			}
 			GetCorrectedSpectraLeonardo(spectraLeonardo[i],corrLeonardo[i],primaryfit[i],primaryfit[i+6]);
+			if(options&kskipconcutonspectra)
+				continue;
 			if(options&kuseprimaryPIDcont)
 			{
 				CleanHisto(spectra[i],-1,100,contPIDpri[i]);
@@ -438,8 +454,8 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 		tcutsmc->PrintCuts();
 		if(!managermc||!ecutsmc||!tcutsmc)
 			return false;
-		if(managermc->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsmc->GetHistoCuts()->GetBinContent(4))
-			cout<<"Please check MC file possible problem with merging"<<endl;
+		if(managermc->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsmc->GetHistoCuts()->GetBinContent(3))
+			cout<<"Please check MC file possible problem with merging"<<" "<<managermc->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()<<" "<<ecutsmc->GetHistoCuts()->GetBinContent(3)<<endl;
 	}
 	else
 	{
@@ -450,8 +466,8 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 		tcutsdata->PrintCuts();
 		if(!managerdata||!ecutsdata||!tcutsdata)
 			return false;
-		if(managerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsdata->GetHistoCuts()->GetBinContent(4))
-			cout<<"Please check DATA file possible problem with merging"<<endl;
+		if(managerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsdata->GetHistoCuts()->GetBinContent(3))
+			cout<<"Please check DATA file possible problem with merging"<<" "<<anagerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()<<" "<<ecutsdata->GetHistoCuts()->GetBinContent(3)<<endl;
 
 	}
 	return true;
@@ -485,12 +501,25 @@ TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHisto
 				{
 					Double_t lowedge=histo->GetBinLowEdge(ibin);
 					Float_t cut=dcacutxy->Eval(lowedge);
-					TH1F* dcahist=(TH1F*)hman->GetDCAHistogram1D(name.Data(),lowedge,lowedge));
-					Float_t inyield=dcahist->Integral(dcahist->GetXaxis()->FindBin(-1.0*cut),dcahist->GetXaxis()->FindBin(cut));
+					TH1F* dcahist=(TH1F*)hman->GetDCAHistogram1D(name.Data(),lowedge,lowedge);
+					//Float_t inyield=dcahist->Integral(dcahist->GetXaxis()->FindBin(-1.0*cut),dcahist->GetXaxis()->FindBin(cut));
+					Float_t testyield=0.0;
+					Float_t testerror=0.0; 	
+					for (int itest=dcahist->GetXaxis()->FindBin(-1.0*cut);itest<=dcahist->GetXaxis()->FindBin(cut);itest++)
+					{
+						testyield+=dcahist->GetBinContent(itest);
+						testerror+=dcahist->GetBinError(itest)*dcahist->GetBinError(itest);
+					}
 					//cout<<"corr data "<<histo->GetBinContent(ibin)<<" "<<inyield<<" "<<dcahist->Integral()<<" "<<hnameout.Data()<<endl;
 					//cout<<"test dca "<<lowedge<<" "<<dcacutxy->Eval(lowedge)<<" "<<dcacutxy->Eval(histo->GetXaxis()->GetBinUpEdge(ibin))<<" "<<dcahist->GetBinLowEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<" "<<dcahist->GetXaxis()->GetBinUpEdge(dcahist->GetXaxis()->FindBin(-1.0*cut))<<endl;
-					histo->SetBinContent(ibin,inyield);
-					histo->SetBinError(ibin,TMath::Sqrt(inyield));
+
+					//cout<<testyield<<" "<<TMath::Sqrt(testerror)<<" error2 "<<inyield<<" "<<TMath::Sqrt(inyield)<<endl;
+						
+					//histo->SetBinContent(ibin,inyield);
+					//histo->SetBinError(ibin,TMath::Sqrt(inyield));
+					histo->SetBinContent(ibin,testyield);
+					histo->SetBinError(ibin,TMath::Sqrt(testerror));
+
 				}
 			}
 			histo->Sumw2();
@@ -502,7 +531,7 @@ TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHisto
 	
 void GetPtHistFromPtDCAhisto(TString hnamein, TString hnameout, AliSpectraBothHistoManager* hman,TH1F** histo,TFormula* dcacutxy)
 {
-	Float_t min[3]={0.3,0.3,0.4};
+	Float_t min[3]={0.3,0.3,0.45};
 	Float_t max[3]={1.5,1.2,2.2};
 	for(Int_t icharge=0;icharge<2;icharge++)
 	{
@@ -530,7 +559,7 @@ void CleanHisto(TH1F* h, Float_t minV, Float_t maxV,TH1* contpid=0x0)
 		}	
 		if(contpid)
 		{
-			if(contpid->GetBinContent(i)>0.2)
+			if(contpid->GetBinContent(i)>0.201)
 			{
 				h->SetBinContent(i,0);
 				h->SetBinError(i,0);
@@ -575,6 +604,12 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						continue;	
 						
 					TCanvas *cDCA=new TCanvas(Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),1700,1500);
+					TLegend* Leg1 = new TLegend(0.6,0.6,0.85,0.85,"","NDC");
+					Leg1->SetFillStyle(kFALSE);
+					Leg1->SetLineColor(kWhite);
+					Leg1->SetBorderSize(0);
+
+					
 					if(isample==0)
 						TH1F *hToFit =(TH1F*) ((TH1F*)hman_data->GetDCAHistogram1D(Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					if(isample==1)
@@ -784,15 +819,23 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						hToFit->DrawClone("E1x0");
 						result->SetTitle("Fit result");
 						result->SetLineColor(kBlack);
+						Leg1->AddEntry(result,"result","lp");
 						result->DrawClone("lhistsame");
 					
 						PrimMCPred->SetLineColor(kGreen+2);
+						PrimMCPred->SetLineStyle(2);
+						 PrimMCPred->SetLineWidth(3.0);
+						Leg1->AddEntry(PrimMCPred,"Prmi.","l");
 						PrimMCPred->DrawClone("lhistsame");
 						if(fitsettings&0x1)
 						{
 
 							secStMCPred->Scale(v2/secStMCPred->Integral(secStMCPred->GetXaxis()->FindBin(FitRange[0]),secStMCPred->GetXaxis()->FindBin(FitRange[1])));
 							secStMCPred->SetLineColor(kRed);
+							secStMCPred->SetLineWidth(3.0);
+
+							secStMCPred->SetLineStyle(3);
+							Leg1->AddEntry(secStMCPred,"Sec.WD","l");
 							secStMCPred->DrawClone("lhistsame");
 
 						}
@@ -800,7 +843,11 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						{
 							
 							secMCPred->Scale(v3/secMCPred->Integral(secMCPred->GetXaxis()->FindBin(FitRange[0]),secMCPred->GetXaxis()->FindBin(FitRange[1])));
-							secMCPred->SetLineColor(kBlue);	
+							secMCPred->SetLineColor(kBlue);
+							secMCPred->SetLineWidth(3.0);
+
+							secMCPred->SetLineStyle(4);	
+							Leg1->AddEntry(secMCPred,"Sec.Mat","l");
 							secMCPred->DrawClone("lhistsame");
 	    
 						}   
@@ -816,6 +863,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						hprimary[index+6*isample]->SetBinContent(ibin_data,1.0);
 						hprimary[index+6*isample]->SetBinError(ibin_data,0.0);
 					}
+					Leg1->Draw();
 					listofdcafits->Add(cDCA);
 					
 					//cDCA->Write();
@@ -834,7 +882,10 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 void RecomputeErrors(TH1* h)
 {
 	for (int i=0; i<=h->GetXaxis()->GetNbins(); i++)
+	{
+		cout<<h->GetBinContent(i)<<" "<<h->GetBinError(i)<<" error "<<TMath::Sqrt(h->GetBinContent(i))<<endl;
 		h->SetBinError(i,TMath::Sqrt(h->GetBinContent(i)));
+	}
 	h->Sumw2(); 	
 }
 void SetBintoOne(TH1* h)
@@ -948,7 +999,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  const Int_t kNCharge=2;
 	  Int_t kPos=0;
 	  Int_t kNeg=1;
-          TString fnameGFProtons= "GFCorrection/correctionForCrossSection.root"
+          TString fnameGFProtons= "GFCorrection/correctionForCrossSection.root";
 	  TFile* fGFProtons = new TFile (fnameGFProtons.Data());
 	  if (!fGFProtons)
 	  { 
@@ -1107,17 +1158,25 @@ void MatchingTOFEff(TH1F** Spectra, TList* list=0x0)
 {
 	  if(TOFMatchingScalling[0]<0.0&&TOFMatchingScalling[1]<0.0)
 	  {
-		  TH1F *hMatcEffPos_data=(TH1F*)tcutsdata->GetHistoNMatchedPos();
-		  hMatcEffPos_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedPos());
+		TH1F *hMatcEffPos_data=(TH1F*)tcutsdata->GetHistoNMatchedPos();
+		  hMatcEffPos_data->Sumw2();
+		  //hMatcEffPos_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedPos());
+		  hMatcEffPos_data->Divide(hMatcEffPos_data,(TH1F*)tcutsdata->GetHistoNSelectedPos(),1,1,"B");
 		  hMatcEffPos_data->SetTitle("Matching Eff Pos - data");
 		  TH1F *hMatcEffNeg_data=(TH1F*)tcutsdata->GetHistoNMatchedNeg();
-		  hMatcEffNeg_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedNeg());
+		  hMatcEffNeg_data->Sumw2();
+		  //hMatcEffNeg_data->Divide((TH1F*)tcutsdata->GetHistoNSelectedNeg());
+		  hMatcEffNeg_data->Divide(hMatcEffNeg_data,(TH1F*)tcutsdata->GetHistoNSelectedNeg(),1,1,"B");
 		  hMatcEffNeg_data->SetTitle("Matching Eff Neg - data");
 		  TH1F *hMatcEffPos_mc=(TH1F*)tcutsmc->GetHistoNMatchedPos();
-		  hMatcEffPos_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedPos());
+		  hMatcEffPos_mc->Sumw2();
+		  //hMatcEffPos_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedPos());
+		  hMatcEffPos_mc->Divide(hMatcEffPos_mc,(TH1F*)tcutsmc->GetHistoNSelectedPos(),1,1,"B");
 		  hMatcEffPos_mc->SetTitle("Matching Eff Pos - mc");
 		  TH1F *hMatcEffNeg_mc=(TH1F*)tcutsmc->GetHistoNMatchedNeg();
-		  hMatcEffNeg_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedNeg());
+		  hMatcEffNeg_mc->Sumw2();
+		  //hMatcEffNeg_mc->Divide((TH1F*)tcutsmc->GetHistoNSelectedNeg());
+		  hMatcEffNeg_mc->Divide(hMatcEffNeg_mc,(TH1F*)tcutsmc->GetHistoNSelectedNeg(),1,1,"B");
 		  hMatcEffNeg_mc->SetTitle("Matching Eff Neg - mc");
 
 
@@ -1138,6 +1197,7 @@ void MatchingTOFEff(TH1F** Spectra, TList* list=0x0)
 			
 		  TOFMatchingScalling[0]=pol0MatchPos_data->GetParameter(0);
 		  TOFMatchingScalling[1]=pol0MatchNeg_data->GetParameter(0);
+
 	  }
 	  //Correction spectra for matching efficiency
 	  //For the moment I'm using the inclusive correction
@@ -1384,3 +1444,17 @@ Bool_t ReadConfigFile(TString configfile)
 
 	return true;
 }
+
+void SubHistWithFullCorr(TH1F* h1, TH1F* h2, Float_t factor1=1.0, Float_t factor2=1.0)
+{
+	if(h1->GetNbinsX()!=h2->GetNbinsX())
+		return;
+	for (int i=0;i<=h1->GetNbinsX();i++)
+	{
+		Float_t tmpvalue=factor1*h1->GetBinContent(i)-factor2*h2->GetBinContent(i);
+		Float_t tmperror=TMath::Abs(factor1*factor1*h1->GetBinError(i)*h1->GetBinError(i)-factor2*factor2*h2->GetBinError(i)*h2->GetBinError(i));
+		h1->SetBinContent(i,tmpvalue);
+		h1->SetBinError(i,TMath::Sqrt(tmperror));
+	}		
+	
+}	

@@ -29,13 +29,14 @@
 #pragma link C++ class AliDielectronTrackCuts+;
 #pragma link C++ class AliDielectronPairLegCuts+;
 #pragma link C++ class AliDielectronSignalBase+;
-#pragma link C++ class AliDielectronSignalFunc+;
 #pragma link C++ class AliDielectronSignalExt+;
+#pragma link C++ class AliDielectronSignalFunc+;
 #pragma link C++ class AliDielectronSpectrum+;
 #pragma link C++ class AliDielectronDebugTree+;
 #pragma link C++ class AliDielectronTrackRotator+;
 #pragma link C++ class AliDielectronPID+;
 #pragma link C++ class AliDielectronCutGroup+;
+#pragma link C++ class AliDielectronCutQA+;
 #pragma link C++ class AliDielectronEventCuts+;
 #pragma link C++ class AliDielectronHelper+;
 #pragma link C++ class AliDielectronBtoJPSItoEleCDFfitFCN+;
@@ -50,6 +51,7 @@
 #pragma link C++ class AliReducedEventFriend+;
 #pragma link C++ class AliReducedTrack+;
 #pragma link C++ class AliReducedPair+;
+#pragma link C++ class AliReducedFMD+;
 #pragma link C++ class AliReducedCaloCluster+;
 #pragma link C++ class AliAnalysisTaskReducedTree+;
 

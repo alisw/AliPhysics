@@ -30,6 +30,26 @@
 #include "AliVParticle.h"
 #include "AliReducedParticle.h"
 
+AliReducedParticle::AliReducedParticle() :
+fEta(0),
+fPhi(0),
+fpT(0),
+fMcLabel(0),
+fid(0),
+fImpPar(0),
+fCheckSoftPi(0),
+fCharge(0),
+fInvMass(0),
+fWeight(1.),
+fPtBin(-1),
+fOriginMother(-1)
+{
+	//
+	// default constructor
+	//
+}
+
+
 AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi) : 
 fEta(eta), 
 fPhi(phi), 

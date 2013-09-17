@@ -59,6 +59,10 @@ class AliHFEreducedEvent : public TObject{
   Double_t GetCentralityTracklets() const { return fCentrality[3]; }
   Double_t GetCentralityTracks() const { return fCentrality[4]; }
   Double_t GetCentralityZNA() const { return fCentrality[5]; }
+  Double_t GetCentralityZNC() const { return fCentrality[6]; }
+  Double_t GetCentralityCL0() const { return fCentrality[7]; }
+  Double_t GetCentralityCL1() const { return fCentrality[8]; }
+  Double_t GetCentralityCND() const { return fCentrality[9]; }
   Float_t GetV0AMultiplicity() const { return fV0Multiplicity[0]; }
   Float_t GetV0CMultiplicity() const { return fV0Multiplicity[1]; }
   Float_t GetV0MMultiplicity() const { return fV0Multiplicity[0] + fV0Multiplicity[1]; }
@@ -81,7 +85,18 @@ class AliHFEreducedEvent : public TObject{
   void SetVYSPD(Float_t vy) { fVY[1] = vy; }
   void SetVZSPD(Float_t vz) { fVZ[1] = vz; }
   void SetRunNumber(Int_t runnumber) { fRunNumber = runnumber; }
-  inline void SetCentrality(Float_t centV0M, Float_t centV0A, Float_t centV0C, Float_t centTLS, Float_t centTrks, Float_t centZNA);
+  inline void SetCentrality(
+        Float_t centV0M, 
+        Float_t centV0A, 
+        Float_t centV0C, 
+        Float_t centTLS, 
+        Float_t centTrks, 
+        Float_t centZNA, 
+        Float_t centZNC,
+        Float_t centCL0,
+        Float_t centCL1,
+        Float_t centCND
+  );
   void SetNContribVertex(Int_t ncontrib) { fNContrib[0] = ncontrib; }
   void SetNContribVertexSPD(Int_t ncontrib) { fNContrib[1] = ncontrib; }
   void SetVertexResolution(Float_t res) { fVertexResolution[0] = res; }
@@ -93,14 +108,16 @@ class AliHFEreducedEvent : public TObject{
   Bool_t IsEMCalTrigger() const { return TESTBIT(fTrigger, kEMCAL); }
   Bool_t IsTRDSETrigger() const { return TESTBIT(fTrigger, kTRDSE); }
   Bool_t IsTRDDQTrigger() const { return TESTBIT(fTrigger, kTRDDQ); }
-  
+  Bool_t IsINTTrigger() const { return TESTBIT(fTrigger, kINTTRG); }
+
   void SetMBTrigger() { SETBIT(fTrigger, kMB); }
   void SetSemiCentralTrigger() { SETBIT(fTrigger, kSemiCentral); }
   void SetCentralTrigger() { SETBIT(fTrigger, kCentral); }
   void SetEMCALTrigger() { SETBIT(fTrigger, kEMCAL); }
   void SetTRDSETrigger() { SETBIT(fTrigger, kTRDSE); }
   void SetTRDDQTrigger() { SETBIT(fTrigger, kTRDDQ); }
-  
+  void SetINTTrigger() { SETBIT(fTrigger, kINTTRG); }
+
   void SetV0Multiplicity(Float_t v0A, Float_t v0C) {
     fV0Multiplicity[0] = v0A;
     fV0Multiplicity[1] = v0C;
@@ -115,14 +132,18 @@ class AliHFEreducedEvent : public TObject{
     kCentral = 2,
     kEMCAL = 3,
     kTRDSE = 4,
-    kTRDDQ = 5
+    kTRDDQ = 5,
+    kINTTRG = 6 
   } Trigger_t;
+  enum{
+    kCentBuff = 15
+  };
   TObjArray *fTracks;           // Array with reconstructed tracks
   TObjArray *fMCparticles;      // Array with MC particles
   Int_t fNtracks;               // Number of tracks
   Int_t fNmcparticles;          // Number of MC Particles
   Int_t fRunNumber;             // Run Number
-  Float_t  fCentrality[6];      // Centrality (V0M, V0A, V0C, TLS, TRK, ZNA)
+  Float_t  fCentrality[kCentBuff];     // Centrality (V0M, V0A, V0C, TLS, TRK, ZNA, ZNC, CL0, CL1, CND)
   Int_t fTrigger;               // Trigger bits
   Float_t fVX[2];               // Vertex X
   Float_t fVY[2];               // Vertex Y
@@ -133,18 +154,35 @@ class AliHFEreducedEvent : public TObject{
   Float_t  fZDCEnergy[4];       // ZDC Energy (n,p)
   Int_t    fSPDMultiplicity;    // SPD tracklet multiplicity
   
-  ClassDef(AliHFEreducedEvent, 2)
+  ClassDef(AliHFEreducedEvent, 4)
 };
 
 //____________________________________________________________
-void AliHFEreducedEvent::SetCentrality(Float_t centV0M, Float_t centV0A, Float_t centV0C, Float_t centTLS, Float_t centTrks, Float_t centZNA) { 
+void AliHFEreducedEvent::SetCentrality(
+        Float_t centV0M, 
+        Float_t centV0A, 
+        Float_t centV0C, 
+        Float_t centTLS, 
+        Float_t centTrks, 
+        Float_t centZNA, 
+        Float_t centZNC,
+        Float_t centCL0,
+        Float_t centCL1,
+        Float_t centCND
+  ) 
+{ 
     fCentrality[0] = centV0M; 
     fCentrality[1] = centV0A; 
     fCentrality[2] = centV0C; 
     fCentrality[3] = centTLS; 
     fCentrality[4] = centTrks; 
     fCentrality[5] = centZNA; 
+    fCentrality[6] = centZNC; 
+    fCentrality[7] = centCL0; 
+    fCentrality[8] = centCL1; 
+    fCentrality[9] = centCND; 
 }
+
 //_________________________________________________________
 void AliHFEreducedEvent::SetZDCEnergy(Float_t zna, Float_t znc, Float_t zpa, Float_t zpc){
   fZDCEnergy[0] = zna;

@@ -1,0 +1,1457 @@
+\documentclass[11pt]{article}
+\usepackage{pwglfforward}
+\title{%
+  {\LARGE EUROPEAN ORGANIZATION FOR NUCLEAR RESEARCH}\\%
+  {\Large European Organization for Particle Physics}\\[2ex]%
+  {\normalsize%
+    \begin{tabular}[t]{@{}p{.25\textwidth}@{}%
+        p{.5\textwidth}@{}%
+        p{.25\textwidth}@{}}%
+      % \vfil%
+      \vfil
+      \includegraphics[keepaspectratio,width=.12\textwidth]{alicelogo}%
+      \vfil%
+      &% 
+      \vfil
+      \begin{center}%
+        {\LARGE\bf Analysing the FMD data for $\dndeta$}%
+      \end{center}%
+      \vfil
+      &%
+      % \vfil%
+      \vfil
+      \begin{tabular}[t]{@{}p{.25\textwidth}@{}}
+        \hfill\includegraphics[keepaspectratio,width=.12\textwidth]{%
+          cernlogo}\\
+        \hfill ALICE--INT--2012--040 v2\\
+        \hfill \today%
+      \end{tabular}%
+      \vfil%
+    \end{tabular}}}
+\author{Christian Holm
+  Christensen\thanks{\texttt{$\langle$cholm@nbi.dk$\rangle$}}\quad\&\quad
+  Hans Hjersing Dalsgaard\thanks{\texttt{$\langle$canute@nbi.dk$\rangle$}}\\ 
+  Niels Bohr Institute\\
+  University of Copenhagen}
+\date{}
+\begin{document}
+\pdfbookmark{Analysing the FMD data for dN/deta}{top}
+\maketitle 
+
+\tableofcontents 
+\section{Introduction}
+
+This document describes the steps performed in the analysis of the
+charged particle multiplicity in the forward pseudo--rapidity regions
+with the \FMD{} detector \cite{FWD:2004mz,cholm:2009}. The document
+also include a summary (see section \ref{prelim}) of the request for
+preliminary figures for the measurement of $\dndeta$ with
+SPD\cite{ruben,Aamodt:2010cz}, VZERO\cite{maxime}, and FMD.
+%  The primary detector used for this is the \FMD{}
+
+The \FMD{} is organised in 3 \emph{sub--detectors} \FMD{1}, \FMD{2},
+and \FMD{3}, each consisting of 1 (\FMD{1}) or 2 (\FMD{2} and~3)
+\emph{rings}.  The rings fall into two types: \emph{Inner} or
+\emph{outer} rings.  Each ring is in turn azimuthally divided into
+\emph{sectors}, and each sector is radially divided into
+\emph{strips}.  How many sectors, strips, as well as the $\eta$
+coverage is given in \tablename~\ref{tab:fmd:overview}.
+
+\begin{table}[htbp]
+  \begin{center}
+    \caption{Physical dimensions of Si segments and strips.}
+    \label{tab:fmd:overview}
+    \vglue0.2cm
+    \begin{tabular}{|c|cc|cr@{\space--\space}l|r@{\space--\space}l|}
+      \hline
+      \textbf{Sub--detector/} &
+      \textbf{Azimuthal}&
+      \textbf{Radial} &
+      $z$ &
+      \multicolumn{2}{c|}{\textbf{$r$}} &
+      \multicolumn{2}{c|}{\textbf{$\eta$}} \\ 
+      \textbf{Ring}&  
+      \textbf{sectors} &
+      \textbf{strips} & 
+      \textbf{[cm]} &
+      \multicolumn{2}{c|}{\textbf{range [cm]}} &
+      \multicolumn{2}{c|}{\textbf{coverage}} \\
+      \hline
+      FMD1i & 20& 512& 320  &  4.2& 17.2& 3.68&  5.03\\
+      FMD2i & 20& 512&  83.4&  4.2& 17.2& 2.28&  3.68\\
+      FMD2o & 40& 256&  75.2& 15.4& 28.4& 1.70&  2.29\\
+      FMD3i & 20& 512& -75.2&  4.2& 17.2&-2.29& -1.70\\
+      FMD3o & 40& 256& -83.4& 15.4& 28.4&-3.40& -2.01\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+The \FMD{} \ESD{} object contains the scaled energy deposited $\Delta
+E/\Delta E_{mip}$ for each of the 51,200 strips.  This is determined
+in the reconstruction pass.  The scaling to $\Delta E_{mip}$ is done
+using calibration factors extracted in designated pulser runs.  In
+these runs, the front-end electronics is pulsed with an increasing
+known pulse size, and the conversion factor from ADC counts to $\Delta
+E_{mip}$ is determined \cite{cholm:2009}.
+
+The \SPD{} is used for determination of the position of the primary
+interaction point except in the case of displaced vertex analysis as
+discussed in section \ref{sec:sub:sub:dispvtx}.
+
+The analysis is performed as a two--step process.  
+\begin{enumerate}
+\item The Event--Summary--Data (\ESD{}) is processed event--by--event
+  and passed through a number of algorithms, and
+  $\dndetadphi$ for each event is output to an Analysis--Object--Data
+  (\AOD{}) tree (see \secref{sec:gen_aod}).
+\item The \AOD{} data is read in and the sub--sample of the data under
+  investigation is selected (e.g., \INEL{}, \INELONE{}, \NSD{} in p+p data, or
+  some centrality class in Pb+Pb data) and the $\dndetadphi$ histogram read for
+  those events to build up $\dndeta$ (see \secref{sec:ana_aod}).
+\end{enumerate}
+The details of each step above will be expanded upon in the
+following. 
+
+In Appendix~\ref{app:nomen} is an overview of the nomenclature used in
+this document.
+
+\section{Generating $\dndetadphi[i]$ event--by--event}
+\label{sec:gen_aod}
+
+When reading in the \ESD{}s and generating the $\dndetadphi$
+event--by--event the following steps are taken (in order) for each
+event $i$ and FMD ring $r$.
+\begin{description}
+\item[Event inspection] The global properties of the event is
+  determined, including the trigger type and primary interaction
+  point\footnote{`Vertex' and `primary interaction point' will be used
+    interchangeably in the text, since there is no ambiguity with
+    particle production vertex in this analysis.} $z$ coordinate (see
+  \secref{sec:sub:event_inspection}).
+\item[Sharing filter] The \ESD{} object is read in and corrected for
+  sharing.  The result is a new \ESD{} object (see
+  \secref{sec:sub:sharing_filter}).
+\item[Density calculator] The (possibly un--corrected) \ESD{} object
+  is then inspected and an inclusive (primary \emph{and} secondary
+  particles), per--ring charged particle density
+  $\dndetadphi[incl,r,v,i]$ is made.  This calculation depends in
+  general upon the interaction vertex position along the $z$ axis
+  $v_z$ (see \secref{sec:sub:density_calculator}).
+\item[Corrections] The 5 (one for each FMD ring)
+  $\dndetadphi[incl,r,v,i]$ are corrected for secondary production and
+  acceptance.  The correction for the secondary particle production is
+  highly dependent on the vertex $z$ coordinate.  The result is a
+  per--ring, charged primary particle density $\dndetadphi[r,v,i]$
+  (see \secref{sec:sub:corrector}).
+\item[Histogram collector] Finally, the 5 $\dndetadphi[r,v,i]$ are
+  summed into a single $\dndetadphi[v,i]$ histogram, taking care of
+  the overlaps between the detector rings.  In principle, this
+  histogram is independent of the vertex, except that the
+  pseudo--rapidity range, and possible holes in that range, depends on
+  $v_z$ --- or rather the bin in which the $v_z$ falls (see
+  \secref{sec:sub:hist_collector}).
+\end{description}
+
+Each of these steps will be detailed in the following. 
+
+\subsection{Event inspection}
+\label{sec:sub:event_inspection}
+
+The first thing to do, is to inspect the event for triggers.  A number
+of trigger bits, like \INEL{} (Minimum Bias for Pb+Pb), \INELONE{},
+\NSD{}, and so on is then propagated to the \AOD{} output.
+
+Just after the sharing filter (described below) but before any further
+processing, the vertex information is queried.  If there is no vertex
+information, or if the vertex $z$ coordinate is outside the
+pre--defined range, then no further processing of that event takes
+place.
+
+\subsubsection{Displaced Vertices}
+\label{sec:sub:sub:dispvtx}
+
+The analysis can be set up to run on the `displaced vertices' that
+occur during LHC Pb+Pb running. Details on the displaced vertices, and
+their selection can be found in the VZERO analysis note \cite{maxime}.
+
+\subsection{Sharing filter}
+\label{sec:sub:sharing_filter}
+
+A particle originating from the vertex can, because of its incident
+angle on the \FMD{} sensors traverse more than one strip (see
+\figref{fig:share_fraction}).  This means that the energy loss of the
+particle is distributed over 1 or more strips.  The signal in each
+strip should therefore possibly be merged with its neighboring strip
+signals to properly reconstruct the energy loss of a single particle.
+
+\begin{figure}[htbp]
+  \centering
+  \figinput[3cm]{share_fraction}
+  \caption{A particle traversing 2 strips and depositing energy in
+    each strip. }
+  \label{fig:share_fraction}
+\end{figure}
+
+The effect is most pronounced in low--flux\footnote{Events with a low
+  hit density.} events, like proton--proton collisions or peripheral
+Pb--Pb collisions, while in high--flux events the hit density is so
+high that most likely each and every strip will be hit and the effect
+cancels out on average.
+
+Since the particles travel more or less in straight lines toward the
+\FMD{} sensors, the sharing effect is predominantly in the $r$ or
+\emph{strip} direction.  Only neighbouring strips in a given sector are
+therefore investigated for this effect.  
+
+Algorithm~\ref{algo:sharing} is applied to the signals in a given
+sector.
+
+\begin{algorithm}[htpb]
+  \belowpdfbookmark{Algorithm 1}{algo:sharing}
+  \SetKwData{usedThis}{current strip used}
+  \SetKwData{usedPrev}{previous strip used}
+  \SetKwData{Output}{output}
+  \SetKwData{Input}{input}
+  \SetKwData{Nstr}{\# strips}
+  \SetKwData{Signal}{current}
+  \SetKwData{Eta}{$\eta$}
+  \SetKwData{prevE}{previous strip signal} 
+  \SetKwData{nextE}{next strip signal} 
+  \SetKwData{lowFlux}{low flux flag} 
+  \SetKwFunction{SignalInStrip}{SignalInStrip}
+  \SetKwFunction{MultiplicityOfStrip}{MultiplicityOfStrip}
+  \usedThis $\leftarrow$ false\;
+  \usedPrev $\leftarrow$ false\;
+  \For{$t\leftarrow1$ \KwTo \Nstr}{ 
+    \Output${}_t\leftarrow 0$\;
+    \Signal $\leftarrow$ \SignalInStrip($t$)\;
+
+    \uIf{\Signal is not valid}{ 
+      \Output${}_t \leftarrow$ invalid\;
+    }
+    \uElseIf{\Signal is 0}{ 
+      \Output${}_t \leftarrow$ 0\;
+    }
+    \Else{
+      \Eta$\leftarrow$ $\eta$ of \Input${}_t$\;
+      \prevE$\leftarrow$ 0\;
+      \nextE$\leftarrow$ 0\;
+      \lIf{$t \ne 1$}{ 
+        \prevE$\leftarrow$ \SignalInStrip($t-1$)\;
+      }
+      \lIf{$t \ne $\Nstr}{ 
+        \nextE$\leftarrow$ \SignalInStrip($t+1$)\;
+      }
+      \Output${}_t\leftarrow$
+      \MultiplicityOfStrip(\Signal,\Eta,\prevE,\nextE,\\
+      \hfill\lowFlux,$t$,\usedPrev,\usedThis)\;
+    }   
+  }
+  \caption{Sharing correction}
+  \label{algo:sharing}
+\end{algorithm}
+
+Here the function \FuncSty{SignalInStrip}($t$) returns the properly
+path--length corrected signal in strip $t$.  The function
+\FuncSty{MultiplicityOfStrip} is where the real processing takes
+place (see page \pageref{func:MultiplicityOfStrip}). 
+
+\begin{function}[htbp]
+  \belowpdfbookmark{MultiplicityOfStrip}{func:MultiplicityOfStrip}
+  \caption{MultiplicityOfStrip(\DataSty{current},$\eta$,\DataSty{previous},\DataSty{next},\DataSty{low
+      flux flag},\DataSty{previous signal used},\DataSty{this signal
+      used})} 
+  \label{func:MultiplicityOfStrip}
+  \SetKwData{Current}{current} 
+  \SetKwData{Next}{next} 
+  \SetKwData{Previous}{previous} 
+  \SetKwData{lowFlux}{low flux flag}
+  \SetKwData{usedPrev}{previous signal used}
+  \SetKwData{usedThis}{this signal used}
+  \SetKwData{lowCut}{low cut}
+  \SetKwData{total}{Total}
+  \SetKwData{highCut}{high cut}
+  \SetKwData{Eta}{$\eta$}  
+  \SetKwFunction{GetHighCut}{GetHighCut}
+  \If{\Current is very large or \Current $<$ \lowCut} {
+    \usedThis $\leftarrow$ false\;
+    \usedPrev $\leftarrow$ false\;
+    \Return{0}
+  }
+  \If{\usedThis}{ 
+    \usedThis $\leftarrow$ false\;
+    \usedPrev $\leftarrow$ true\;
+    \Return{0}
+  }
+  \highCut $\leftarrow$ \GetHighCut($t$,\Eta)\;
+  %\If{\Current $<$ \Next and \Next $>$ \highCut and \lowFlux set}{ 
+  %  \usedThis $\leftarrow$ false\;
+  %  \usedPrev $\leftarrow$ false\;
+  %  \Return{0}
+  %}
+  \total $\leftarrow$ \Current\;
+  \lIf{\lowCut $<$ \Previous $<$ \highCut and not \usedPrev}{ 
+    \total $\leftarrow$ \total + \Previous\;
+  }
+  \If{\lowCut $<$ \Next $<$ \highCut}{ 
+    \total $\leftarrow$ \total + \Next\;  
+    \usedThis $\leftarrow$ true\;
+  }
+  \eIf{\total $>$ 0}{ 
+    \usedPrev $\leftarrow$ true\;
+    \Return{\total}
+  }{
+    \usedPrev $\leftarrow$ false\;
+    \usedThis $\leftarrow$ false\;
+    \Return{0}
+  }
+\end{function}
+Here, the function \FuncSty{GetHighCut} (see below) evaluates a fit to the energy
+distribution in the specified $\eta$ bin (see also
+\secref{sec:sub:density_calculator}).  It returns
+$$
+\Delta_{mp} - 2 w
+$$
+where $\Delta_{mp}$ is the most probable energy loss, and $w$ is the
+width of the Landau distribution.  
+
+The \KwSty{if} in line 5, says that if the previous strip was merged
+with current one, and the signal of the current strip was added to
+that, then the current signal is set to 0, and we mark it as used for
+the next iteration (\DataSty{previous signal used}$\leftarrow$true).
+
+% The \KwSty{if} in line 10 checks if the current signal is smaller than
+% the next signal, if the next signal is larger than the upper cut
+% defined above, and if we have a low--flux event\footnote{Note, that in
+%   the current implementation there are never any low--flux events.}.
+% If that condition is met, then the current signal is the smaller of
+% two possible candidates for merging, and it should be merged into the
+% next signal.  Note, that this \emph{only} applies in low--flux events.
+
+In line 11, % 15, 
+we test if the previous signal lies between our low and
+high cuts, and if it has not been marked as being used.  If so, we add
+it to our current signal.  
+
+The next \KwSty{if} on line 12 % 16 
+checks if the next signal is within our
+cut bounds.  If so, we add that signal to the current signal and mark
+it as used for the next iteration (\DataSty{this signal
+  used}$\leftarrow$true).  It will then be put to zero on the next
+iteration by the condition on line 6.
+
+Finally, if our signal is still larger than 0, we return the signal
+and mark this signal as used (\DataSty{previous signal
+  used}$\leftarrow$true) so that it will not be used in the next
+iteration. Otherwise, we mark the current signal and the next signal
+as unused and return a 0. 
+
+
+\subsection{Density calculator}
+\label{sec:sub:density_calculator}
+
+The density calculator loops over all the strip signals in the sharing
+corrected\footnote{The sharing correction can be disabled, in which
+  case the density calculator uses the input \ESD{} signals.} \ESD{}
+and calculates the inclusive (primary + secondary) charged particle
+density in pre--defined $\etaphi$ bins.
+
+\subsubsection{Inclusive number of charged particles: Energy Fits} 
+\label{sec:sub:sub:eloss_fits}
+
+The number charged particles in a strip $\mult[,t]$ is calculated
+using multiple Landau-like distributions fitted to the energy loss
+spectrum of all strips in a given $\eta$ bin.
+\begin{align}
+  \Delta_{i,mp} &= i (\Delta_{1,mp}+ \xi_1 \log(i))\nonumber\\
+  \xi_i         &= i\xi_1\nonumber\\
+  \sigma_i      &= \sqrt{i}\sigma_1\nonumber\\
+  \mult[,t]     &= \frac{\sum_i^{N_{max}}
+    i\,a_i\,F(\Delta_t;\Delta_{i,mp},\xi_i,\sigma_i)}{
+    \sum_i^{N_{max}}\,a_i\,F(\Delta_t;\Delta_{i,mp},\xi_i,\sigma_i)}\quad,
+\end{align}
+where $F(x;\Delta_{mp},\xi,\sigma)$ is the evaluation of the Landau
+distribution $f_L$ with most probable value $\Delta_{mp}$ and width
+$\xi$, folded with a Gaussian distribution with spread $\sigma$ at the
+energy loss $x$ \cite{nim:b1:16,phyrev:a28:615}.
+\begin{align}
+  \label{eq:energy_response}
+  F(x;\Delta_{mp},\xi,\sigma) = \frac{1}{\sigma \sqrt{2 \pi}}
+  \int_{-\infty}^{+\infty} d\Delta' f_{L}(x;\Delta',\xi)
+  \exp{-\frac{(\Delta_{mp}-\Delta')^2}{2\sigma^2}}\quad,
+\end{align}
+where $\Delta_{1,mp}$, $\xi_1$, and $\sigma_1$ are the parameters for
+the first MIP peak, $a_1=1$, and $a_i$ is the relative weight of the
+$i$-fold MIP peak.  The parameters $\Delta_{1,mp}, \xi_1,
+\sigma_1, \mathbf{a} = \left(a_2, \ldots a_{N_{max}}\right)$ are
+obtained by fitting 
+$$
+F_j(x;C,\Delta_{mp},\xi,\sigma,\mathbf{a}) = C 
+\sum_{i=1}^{j} a_i F(x;\Delta_{i,mp},\xi_{i},\sigma_i) 
+$$
+for increasing $j$ to the energy loss spectra in separate $\eta$ bins.
+The fit procedure is stopped when for $j+1$: (the default values for
+each value are included below) 
+\begin{itemize}
+\item the reduced $\chi^2$ exceeds a certain threshold (usually 20), or
+\item the relative error $\delta p/p$ of any parameter of the fit
+  exceeds a certain threshold (usually 0.12), or 
+\item when the weight $a_j+1$ is smaller than some number (typically
+  $10^{-5}$). 
+\end{itemize}
+$N_{max}$ is then set to $j$.  Examples of the result of these fits
+are given in \figref{fig:eloss_fits} in Appendix~\ref{app:eloss_fits}.
+\subsubsection{Inclusive number of charged particles: Poisson Approach} 
+\label{sec:sub:sub:poisson}
+Another approach to the calculation of the number of charged particles
+is using Poisson statistics. This is the default choice because it is
+less sensitive to the stability of the fits required for the energy
+fits method. 
+Assume that in a region of the FMD % where
+$\mult$ 
+%is azimuthally uniform in $\eta$ intervals it 
+is
+distributed according to a Poisson distribution. This means that the
+probability of $\mult=n$ becomes:
+\begin{equation}
+P(n) = \frac{\mu^n e^{-\mu}}{n!} \label{eq:PoissonDef}
+\end{equation}
+In particular the measured occupancy, $\mu_{meas}$, is the probability
+of any number of hits, thus using \eqref{eq:PoissonDef} :
+\begin{equation}
+\mu_{meas} = 1 - P(0) = 1 - e^{-\mu } 
+%\Rightarrow \mu = \ln
+%(1 - \mu_{meas})^{-1} \label{eq:PoissonDef2}
+\end{equation}
+which implies:
+\begin{equation}
+\mu = \ln
+(1 - \mu_{meas})^{-1} \label{eq:PoissonDef2}
+\end{equation}
+The mean number of particles in a hit strip becomes:
+\begin{eqnarray}
+C &=& \frac{\sum_{n>0} n P(n>0)}{\sum_{n>0} P(n>0)} \nonumber \\
+  &=& \frac{e^{-\mu}}{1-e^{-\mu}} \mu  \sum \frac{\mu^n}{n!} 
+  \nonumber \\
+  &=& \frac{e^{-\mu}}{1-e^{-\mu}} \mu e^{\mu} \nonumber \\
+  &=& \frac{\mu}{1-e^{-\mu}}
+\end{eqnarray}
+%While $\mu$ can be calculated analytically for practical purposes we
+With $\mu$ defined in \eqref{eq:PoissonDef2} this calculation is
+carried out per event in
+regions of the FMD each containing 256 strips\footnote{Note that this means that the same factor is used for each of the 256 strips.}. %Defining
+%$\mu_{meas}^{region}$ to be the measured occupancy
+ In such a region,
+$\mult$ for a hit strip ($N_{hits} \equiv 1$) in that region becomes:
+\begin{equation}
+\mult = N_{hits} \times C = 1 \times C = C
+\end{equation}
+Where C is calculated using $\mu_{meas}^{region}$.
+
+The Poisson method and the energy fits method have been compared in
+\cite{hhd:2009} where it is found that the two methods are in good
+agreement. The residual difference between the methods contributes to
+the systematic error.
+
+\subsubsection{Azimuthal Acceptance}
+
+Before the signal $\mult[,t]$ can be added to the $\etaphi$
+bin in one of the 5 per--ring histograms, it needs to be corrected for
+the $\varphi$ acceptance of the strip.
+
+The sensors of the \FMD{} are not perfect arc--segments --- the two
+top corners are cut off to allow the largest possible sensor on a 6''
+Si-wafer.   This means, however, that the strips in these outer
+regions do not fully cover $2\pi$ in azimuth, and there is therefore a
+need to correct for this limited acceptance.  
+
+The acceptance correction is only applicable where the strip length
+does not cover the full sector.  This is the case for the outer strips
+in both the inner and outer type rings.  The acceptance correction is
+then simply 
+\begin{align}
+  \label{eq:acc_corr}
+  \Corners{} &= \frac{l_t}{\Delta\varphi}\quad
+\end{align}
+where $l_t$ is the strip length in radians at constant $r$, and
+$\Delta\varphi$ is $2\pi$ divided by the number of sectors in the
+ring (20 for inner type rings, and 40 for outer type rings). 
+
+Note, that this correction is a hardware--related correction, and does
+not depend on the properties of the collision (e.g., primary vertex
+location). 
+
+The final $\etaphi$ content of the 5 output vertex dependent,
+per--ring histograms of the inclusive charged particle density is then
+given by
+\begin{align}
+  \label{eq:density}
+  \dndetadphi[incl,r,v,i\etaphi] &= \sum_t^{t\in\etaphi}
+  \mult[,t]\,\Corners{}
+\end{align}
+where $t$ runs over the strips in the $\etaphi$ bin. 
+
+\subsection{Corrections}
+\label{sec:sub:corrector}
+
+The corrections code receives the five vertex dependent,
+per--ring histograms of the inclusive charged particle density
+$\dndetadphi[incl,r,v,i]$ from the density calculator and applies
+two corrections 
+
+\subsubsection{Secondary correction}
+%%
+%%                hHits_FMD<d><r>_vtx<v> 
+%% hCorrection = -----------------------
+%%                hPrimary_FMD_<r>_vtx<v>
+%%
+%% where 
+%% - hPrimary_FMD_<r>_vtx<vtx> is 2D of eta,phi for all primary ch
+%%   particles
+%% - hHits_FMD<d><r>_vtx<v>  is 2D of eta,phi for all track-refs that
+%%   hit the FMD - The 2D version of hMCHits_nocuts_FMD<d><r>_vtx<v>
+%%   used below. 
+This is a 2 dimensional histogram generated from simulations, as the
+ratio of primary particles to the total number of particles that fall
+within an $\etaphi$ bin for a given vertex bin
+
+\begin{align}
+  \label{eq:secondary}
+  \SecMap{} &=
+  \frac{\sum_i^{\NV[,v]}\mult[,\text{primary},i]\etaphi}{
+    \sum_i^{\NV[,v]}\mult[,\text{\FMD{}},i]\etaphi}\quad,
+\end{align}
+where $\NV[,v]$ is the number of events with a valid trigger and a
+vertex in bin $v$, and $\mult[,\FMD{},i]$ is the total number of
+charged particles that hit the \FMD{} in event $i$ in the specified
+$\etaphi$ bin and $\mult[,\text{primary},i]$ is number of
+primary charged particles in event $i$ within the specified
+$\etaphi$ bin.
+
+$\mult[,\text{primary}]\etaphi$ is given by summing over the
+charged particles labelled as primaries \emph{at the time of the
+  collision} as defined in the simulation code.  That is, it is the
+number of primaries within the $\etaphi$ bin at the collision
+point --- not at the \FMD{}.
+
+$\SecMap$ varies from $\approx 1.5$ for the most forward bins to
+$\approx 3$ for the more central bins. Figure \ref{secondaries} shows
+the $\dndeta$ of secondaries from various sources assessed with MC
+simulations to give an idea of the magnitude of the effects of
+secondaries.
+\begin{figure}[]
+  \centering
+  \figinput[\textwidth]{secondary_origin}
+  \caption{$\dndeta$ for secondaries and primaries in the FMD. The
+    same plot for the SPD inner layer is included for comparison.}
+  \label{secondaries}
+\end{figure} 
+ 
+%For pp, different event
+%generators were used and found to give compatible results within
+%3--5\%.   
+For pp, at least some millions of events must be
+accumulated to reach satisfactory statistics.  For Pb--Pb where the
+general hit density is larger, reasonable statistics can be achieved
+with less simulated data.   
+
+\subsubsection{Acceptance due to dead channels}
+
+Some of the strips in the \FMD{} have been marked up as \emph{dead},
+meaning that they are not used in the reconstruction or analysis.
+This leaves holes in the acceptance of each defined $\etaphi$
+which need to be corrected for.  
+
+Dead channels are marked specially in the \ESD{}s with the flag
+\textit{Invalid Multiplicity}.  This is used in the analysis to build
+up and event--by--event acceptance correction in each $\etaphi$
+bin by calculating the ratio
+\begin{align}
+  \label{eq:dead_channels} 
+  \DeadCh{} &= 
+  \frac{\sum_t^{t\in\etaphi}\left\{\begin{array}{cl}
+        1 & \text{if not dead}\\
+        0 & \text{otherwise}
+      \end{array}\right.}{\sum_t^{t\in\etaphi} 1}\quad,
+\end{align}
+where $t$ runs over the strips in the $\etaphi$ bin.  This correction
+is obviously $v_z$ dependent since the $\etaphi$ bin to which a strip $t$
+corresponds to depends on its  position relative to the primary vertex.
+
+Alternatively, pre--made acceptance factors can be used.  These are
+made from the off-line conditions database (\OCDB{}).
+
+The 5 output vertex dependent, per--ring histograms of the primary
+charged particle density is then given by
+\begin{align}
+  \dndetadphi[r,v,i\etaphi] &=
+  \SecMap{} \frac{1}{\DeadCh{}}\dndetadphi[incl,r,v,i\etaphi]
+\end{align}
+
+\subsection{Histogram collector}
+\label{sec:sub:hist_collector}
+
+The histogram collector collects the information from the 5 vertex
+dependent, per--ring histograms of the primary charged particle
+density $\dndetadphi[r,v,i]$ into a single vertex dependent histogram
+of the charged particle density $\dndetadphi[v,i]$.  
+
+To do this, it first calculates, for each vertex bin, the $\eta$ bin
+range to use for each ring.  It investigates the secondary correction
+maps $\SecMap{}$ to find the edges of each map.  The edges are given
+by the $\eta$ range where $\SecMap{}$ is larger than some
+threshold\footnote{Typically $t_s\approx 0.1$.}  $t_s$. The code
+applies safety margin of a number of bins, $N_{cut}$\footnote{Typically
+  $N_{cut}=1$.}, to ensure that the data selected does not have too
+large corrections associated with it.
+
+It then loops over the bins in the defined $\eta$ range and sums the
+contributions from each of the 5 histograms.  In the $\eta$ ranges
+where two rings overlap, the collector calculates the average and adds
+the errors in quadrature\footnote{While not explicitly checked, it was
+  found that the histograms agrees within error bars in the
+  overlapping region}.
+
+The output vertex dependent histogram of the primary
+charged particle density is then given by
+\begin{align}
+  \label{eq:superhist}
+  \dndetadphi[v,i\etaphi] &=
+  \frac{1}{N_{r\in\etaphi}}\sum_{r}^{r\in\etaphi}  
+  \dndetadphi[r,v,i\etaphi]\\
+  \delta\left[\dndetadphi[v,i\etaphi]\right] &=
+  \frac{1}{N_{r\in\etaphi}}\sqrt{\sum_{r}^{r\in\etaphi}   
+    \delta\left[\dndetadphi[r,v,i\etaphi]\right]^2}
+  \quad,
+\end{align}
+where $N_{r\in\etaphi}$ is the number of overlapping histograms
+in the given $\etaphi$ bin. 
+
+The histogram collector stores the found $\eta$ ranges in the
+underflow bin of the histogram produced.  The content of the overflow
+bins are 
+\begin{align}
+  \label{eq:overflow}
+  I_{v,i}(\eta) &= 
+  \frac{1}{N_{r\in(\eta)}}
+  \sum_{r}^{r\in(\eta)} \left\{\begin{array}{cl} 
+      0 & \eta \text{\ bin not selected}\\ 
+      1 & \eta \text{\ bin selected}
+      \end{array}\right.\quad,
+\end{align}
+where $N_{r\in(\eta)}$ is the number of overlapping histograms in the
+given $\eta$ bin.  The subscript $v$ indicates that the content
+depends on the current vertex bin of event $i$.
+
+\section{Building the final $\dndeta$}
+\label{sec:ana_aod}
+
+To build the final $\dndeta$ distribution it is enough to sum
+\eqref{eq:superhist} and \eqref{eq:overflow} over all accepted
+events, $\NA$, and correct for the acceptance $I(\eta)$ 
+\begin{align}
+  \dndetadphi[\etaphi] &= \sum_i^{\NA}\dndetadphi[i,v\etaphi]\\ 
+  I(\eta) &= \sum_i^{\NA}I_{i,v}(\eta)\quad.
+\end{align}
+Note, that $I(\eta)\le\NA$.  
+
+We then need to normalise to the total number of events $N_X$, given
+by 
+\begin{align}
+  \N{X}{} &= \frac{1}{\epsilon_X}\left[\NA + \alpha(\NnotV -
+    \beta)\right]  \label{eq:fulleventnorm}\\
+  & = \frac{1}{\epsilon_X}\left[\NA + \frac{\NA}{\NV}(\NT-\NV{} -
+    \beta)\right]\nonumber \\
+  & =\frac{1}{\epsilon_X}\NA\left[1+\frac{1}{\epsilon_V}-1-
+    \frac{\beta}{\NV}\right]\nonumber\\ 
+  & = \frac{1}{\epsilon_X}\frac{1}{\epsilon_V}\NA
+  \left(1-\frac{\beta}{\NT{}}\right)\nonumber
+\end{align}
+where
+\begin{description}
+\item[$\epsilon_X$]  is the trigger efficiency for type
+  $X\in[\text{\INEL},\text{\INELONE},\text{\NSD} for p+p data and MB
+  for Pb+Pb data]$
+\item[$\epsilon_V=\frac{\NV{}}{\NT{}}$] is the vertex efficiency
+  evaluated over the data.
+\item[$\NA$] is the number of events with a trigger \emph{and} a valid
+  vertex in the selected range
+\item[$\NV{}$] is the number of events with a trigger \emph{and} a valid
+  vertex. 
+\item[$\NT$] is the number of events with a trigger.
+\item[$\NnotV{}=\NT-\NV{}$] is the number of events with a trigger
+  \emph{but no} valid vertex
+\item[$\alpha=\frac{\NA}{\NV}$] is the fraction of accepted events of
+  the total number of events with a trigger and valid vertex.  
+\item[$\beta=\N{a}{}+\N{c}{}-\N{e}{}$] is the number of background
+  events \emph{with} a valid off-line trigger. This formula is the
+  simplest case of one bunch crossing per trigger/background
+  class. For more complicated collision setups the fractions in the
+  formula change.
+\end{description}
+The two terms under the parenthesis in \eqref{eq:fulleventnorm} refers
+to the observed number of event $\NA$, and the events missed because
+of no vertex reconstruction.  Note, for $\beta\ll\NT{}$
+\eqref{eq:fulleventnorm} reduces to the simpler expression
+$$
+\N{X}{} = \frac1{\epsilon_X}\frac1{\epsilon_V}\NA{}
+$$
+The trigger efficiency $\epsilon_X$ for a given trigger type $X$ is
+evaluated from simulations as
+\begin{align}
+  \epsilon_X = \frac{\N{X\wedge \text{T}}{}}{\N{X}{}}\quad,
+\end{align}
+that is, the ratio of number of events of type $X$ with a
+corresponding trigger to the number of events of type $X$. 
+
+The final event--normalised charged particle density then becomes 
+\begin{align}
+  \frac{1}{N}\frac{dN_{\text{ch}}}{d\eta} &= 
+  \frac{1}{\N{X}{}} \int_0^{2\pi} d\varphi
+  \frac{\dndetadphi[\etaphi]}{I(\eta)}
+  \label{eq:eventnormdndeta}
+\end{align}
+
+If the trigger $X$ introduces a bias on the measured number of events,
+then \eqref{eq:eventnormdndeta} need to be modified to 
+\begin{align}
+  \frac{1}{N}\frac{dN_{\text{ch}}}{d\eta} &= 
+  \frac{1}{\N{X}{}} \int_0^{2\pi} d\varphi
+  \frac{\frac{1}{B\etaphi}\dndetadphi[\etaphi]}{I(\eta)}
+  \label{eq:eventnormdndeta2}\quad,
+\end{align}
+where $B\etaphi$ is the bias correction.  This is typically
+calculated from simulations using the expression 
+\begin{align}
+  B\etaphi = \frac{\frac{1}{\N{X\wedge
+        \text{T}}{}}\sum_i^{\N{X\wedge \text{T}}{}}
+    \mult[,\text{primary}]\etaphi}{\frac{1}{\N{X}{}}\sum_i^{\N{X}{}}
+    \mult[,\text{primary}]\etaphi}
+\end{align}
+
+\section{Systematic Errors} \label{fmdsysterror} 
+\begin{table} 
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+ Effect & Magnitude in Pb+Pb analysis & Magnitude in p+p
+ analysis \\
+\hline
+ Variation of the cuts in sec. \ref{sec:sub:sharing_filter} & 2\%   &  3\% \\
+\hline
+Calculation of $\mult$ & 3\%   &  4\% \\
+\hline
+ Material budget   & 7 \%  & 7 \%  \\
+\hline
+ Generator    & 2\%  & 2\%   \\
+\hline
+Vertex and trigger bias    & N/A  &  3\%  \\
+\hline
+ Centrality   & 1\% --6\%   & N/A  \\
+\hline
+ Normalization   & N/A  &  1.3\% - 3\% \\
+\hline
+\hline
+Total in quadrature & 8.2\% -- 10.1\% & 9.4 \% -- 9.8\% \\
+\hline
+\end{tabular}
+\caption[Systematic Errors in the FMD]{The table summarizes the
+  systematic errors in the FMD including the total systematic error
+  obtained by addition in quadrature.} \label{systerrors} 
+\end{table}
+The systematic errors on the $\dndeta$ measurement are discussed in detail in 
+\cite{hhd:2009}. The results for the systematic errors in p+p and
+Pb+Pb data are shown in table \ref{systerrors}. A short summary of the elements of the table is given here:
+\begin{itemize}
+\item The variations of the cuts in section \ref{sec:sub:sharing_filter} are carried out by re--running the analysis with different cuts and taking the observed differences as the contribution to the systematic error.
+\item To assess the error on the calculation of the multiplcity the two methods for counting particles (see section \ref{sec:sub:density_calculator}) are compared.
+\item The systematic error on the material budget description was found from simulations with $\pm 10 \%$ increased density.
+\item Several event generators were used to assess the error from the particular choice of generator in the analysis. The same procedure was used to assess the error from the MC dependent part of the correction for trigger and vertex bias (p+p only). 
+\item The systematic error on the centrality selection was obtained from variations of the different methods for measuring centrality. 
+\end{itemize}
+
+\section{Using the per--event $\dndetadphi[i,v]$ histogram for other
+  analysis} 
+
+\subsection{Multiplicity distribution} 
+
+To build the multiplicity distribution for a given $\eta$ range
+$[\eta_1,\eta_2]$, one needs to find the total multiplicity in that
+$\eta$ range for each event. To do so, one should sum the
+$\dndetadphi[i,v]$ histogram over all $\varphi$ and in the selected
+$\eta$ range.
+\begin{align}
+  n'_{i[\eta_1,\eta_2]}, &= \int_{\eta_1}^{\eta_2}d\eta\int_0^{2\pi}d\varphi
+  \dndetadphi[i,v]\quad.\nonumber
+\end{align}
+However, $n'_i$ is not corrected for the coverage in $\eta$ for the
+particular vertex range $v$.  One therefor needs to correct for the
+number of missing bins in the range $[\eta_1,\eta_2]$.  Suppose
+$[\eta_1,\eta_2]$ covers $N_{[\eta_1,\eta_2]}$ $\eta$ bins, then the acceptance
+correction is given by 
+\begin{align}
+  A_{i,[\eta_1,\eta_2]} = \frac{N_{[\eta_1,\eta_2]}}{\int_{\eta_1}^{\eta_2}d\eta\,
+    I_{i,v}(\eta)}\quad.\nonumber
+\end{align}
+The per--event multiplicity is then given by 
+\begin{align}
+  n_{i,[\eta_1,\eta_2]} &= A_{i,[\eta_1,\eta_2]}\,n'_{i,[\eta_1,\eta_2]}\nonumber\\
+  &= \frac{N_{[\eta_1,\eta_2]}}{\int_{\eta_1}^{\eta_2}\eta
+    I_{i,v}(\eta)} \int_{\eta_1}^{\eta_2}d\eta\int_0^{2\pi}d\varphi
+  \dndetadphi[i,v]
+  \label{eq:event_n}
+\end{align}
+
+\subsection{Forward--Backward correlations} 
+
+To do forward--backward correlations, one need to calculate
+$n_{i,[\eta_1,\eta_2]}$ as shown in \eqref{eq:event_n} in two bins
+$n_{i,[\eta_1,\eta_2]}$ and $n_{i,[-\eta_2,-\eta_1]}$ \textit{e.g.},
+$n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$. 
+
+\clearpage
+\section{Some results}
+
+%% \figurename{}s \ref{fig:1} to \ref{fig:3} shows some results.
+Figures below show some examples \cite{hhd:2009}.  Note these are not
+finalised plots.
+\begin{figure}[]
+  \centering
+  \figinput[\textwidth]{results_ppdndeta}
+  \caption{$\dndeta$ for pp for \INEL{} events at
+    $\sqrt{s}=\GeV{900}$, $\sqrt{s}=\TeV{2.76}$, and $\sqrt{s}=\TeV{7}$
+    $\cm{-10}\le v_z\le\cm{10}$, rebinned by a factor 5 \cite{hhd:2009}. 
+    % Middle panel
+    % shows the ratio of ALICE data to UA5, and the bottom panel shows
+    % the ratio of the right (positive) side to the left (negative) side
+    % of the forward $\dndeta$.
+  }
+  \label{fig:1}
+\end{figure} 
+\begin{figure}[]
+  \centering
+  \figinput[\textwidth]{results_PbPbdndeta}
+  \caption{$\dndeta$ for Pb+Pb for Minimum Bias events at
+    $\sqrt{s_{NN}}=\TeV{2.76}$ $\cm{-10}\le v_z\le\cm{10}$, rebinned by a
+    factor 5 in 10 centrality intervals \cite{hhd:2009}. 
+% Middle panel
+%    shows the ratio of ALICE data to UA5, and the bottom panel shows
+%    the ratio of the right (positive) side to the left (negative) side
+%    of the forward $\dndeta$.
+}
+  \label{fig:2}
+\end{figure} 
+
+
+\clearpage
+
+\section{Analysis for QM 2012 and Paper} \label{prelim}
+\subsection{Analysis}
+
+Following the development of the displaced vertex technique for VZERO
+\cite{maxime} it was decided also to attempt such an analysis with the
+FMD using exactly the same event selection and centrality selection as
+the VZERO analysis.
+
+The analysis described in this note was used successfully on these
+special events. Three detectors contribute to this measurement: SPD
+with tracklets covering $-2<\eta<2$ \cite{ruben,Aamodt:2010cz}, VZERO
+covering $-3<\eta<-1.25$ and $1.25<\eta<5.25$, and FMD covering
+$-5<\eta<-1.25$ and $1.25<\eta<5.5$. The extended coverage of the
+VZERO and FMD comes from the positions of the displaced vertices. The
+full pseudorapidity coverage of the combined measurement is
+$-5<\eta<5.5$.
+
+To combine the measurements the individual measurements were weighted
+by their systematic error before a weighted average was taken to form
+the final $\dndeta$. The systematic error is calculated as an average
+in quadrature with a contribution from the residual difference between
+the measurements.
+
+Due to the nature of the ZDCvsZEM centrality determination (see
+\cite{maxime} for details) the centrality selection of the measurement
+with SPD, VZERO, and FMD is limited to $30\%$ central collisions. The
+centrality bins considered are thus $0-5\%$, $5-10\%$, $10-20\%$, and
+$20-30\%$.
+
+The selected vertices with full pseudorapidity coverage for FMD in
+this analysis are $\cm{112.5}$, $\cm{150}$, $\cm{187.5}$, $\cm{225}$,
+$\cm{262.5}$, $\cm{300}$. For vertices $v_z > \cm{300}$ and $v_z <
+\cm{112.5}$ a cut is imposed in pseudorapidity to only accept data
+with $|\eta| > 4$ to avoid regions in ALICE known to have issues with
+the material budget description.
+
+\subsection{Analysis Performance}
+
+This section includes some plots to assess the validity of the
+analysis. This includes comparisons between the measurements used
+(SPD, VZERO, and FMD) and $\dndphi$ from the FMD.
+
+Figure \ref{coverage} shows the pseudorapidity coverage of the FMD
+when using FMD1 and FMD2I as a function of vertex with displaced
+vertices.
+\begin{figure}[hbp]
+  \centering
+  \figinput[\textwidth]{performance_coverage}
+  \caption{Pseudorapidity coverage of the FMD as a function of vertex
+    with displaced vertices.}
+  \label{coverage}
+\end{figure} 
+
+Figure \ref{spdfmdvzero} shows the results of the measurements of the
+SPD, VZERO, and FMD. It is seen that there is good agreement between
+the three different measurements albeit residual differences of up to
+$6 \%$ remain.
+\begin{figure}[hbp]
+   \centering
+  \figinput[\textwidth]{performance_spdfmdvzero}
+  \caption{$\dndeta$ measured with nominal vertices with the SPD and
+    displaced vertices with VZERO and FMD. It is seen that there is
+    good agreement between the measurements.}
+  \label{spdfmdvzero}
+\end{figure} 
+
+Figure \ref{ratiofmdvzero} shows the ratios of the measurements of FMD
+and VZERO to the combined measurement and to the SPD measurement. It
+is seen that the residual differences are small and there is good
+agreement between the three different measurements.
+\begin{figure}
+  \centering
+  \begin{minipage}{0.5\linewidth}
+    \centering
+    \figinput[\textwidth]{performance_ratio_tocombined}
+  \end{minipage}%
+  \begin{minipage}{0.5\linewidth}
+    \centering
+    \figinput[\textwidth]{performance_ratio_tospd}
+  \end{minipage}%
+  \caption{Left: Ratio of FMD and VZERO measurements to the combined
+    $\dndeta$ measured with SPD, VZERO and FMD. Right: Ratios of FMD
+    and VZERO measurement to SPD measurement in regions of
+    overlap. It is worth pointing out that the residual differences
+    can come from the fact that the VZERO analysis uses SPD for
+    absolute calibration while the FMD analysis does not. This means that the
+    centrality determination for displaced vertices will affect the
+    FMD analysis the most because the VZERO analysis has an additional
+  constraint from the SPD analysis that uses the ZDCvsZEM centrality
+  at midrapidity where it can be crosschecked with other means of
+  centrality determination. Such a crosscheck is not possible elsewhere.}
+  \label{ratiofmdvzero}
+\end{figure} 
+
+Since $\dndeta$ is an average taken over $\varphi$ it is instructive
+to consider $\dndphi$ to check that these distributions are flat as
+they should be. Figure \ref{dndphi_pos} shows examples of the
+$\dndphi$ distributions for FMD1. Figure \ref{dndphi_neg} shows
+examples from FMD2 (inner ring). The two low points at $\varphi \sim
+5.5$ in Figure \ref{dndphi_neg} are understood as coming from two
+dying chips in FMD2I. They are considered dead in the final analysis
+and corrected for. It is seen that the trends are quite flat within
+$\sim 5\%$ as expected. The same trend is observed for all the
+distributions.
+
+\begin{figure}
+  \centering
+  \figinput[\textwidth]{performance_dndphi_fmd1}
+  \caption{Examples of $\dndphi$ from FMD1 (positive
+    pseudorapidities). The distributions are essentially flat.}
+  \label{dndphi_pos}
+\end{figure} 
+
+\begin{figure}
+  \centering
+  \figinput[\textwidth]{performance_dndphi_fmd2}
+  \caption{Examples of $\dndphi$ from FMD2I (negative
+    pseudorapidities). The two low points at $\varphi \sim 5.5$ are
+    understood as the result of two dying chips in FMD2I. They are
+    considered dead in the final analysis and corrected for
+    accordingly. Apart from these points, the distributions are
+    essentially flat.}
+  \label{dndphi_neg}
+\end{figure} 
+
+Figure \ref{pervertex} shows the analysis performed for each
+vertex. The material budget effects for vertices $<\cm{112.5}$ are
+clearly seen.
+
+\begin{figure}
+  \centering
+  \figinput[0.8\textwidth]{performance_pervertex_negfield}
+  \figinput[0.8\textwidth]{performance_pervertex_posfield}
+%\end{minipage}%
+  \caption{Top: Analysis per vertex for negative field data. Bottom:
+    Analysis per vertex for positive field data. In the two plots the
+    vertices where the full coverage is used are shown in blue. For
+    the red and green points there a cut is applied for the
+    pseudorapidity so that only points with $|\eta|>4$ are used in the
+    analysis.}
+\label{pervertex}
+\end{figure} 
+
+Figure \ref{leftright} shows the ratio of the postive and negative
+pseudorapidities for the FMD. It is seen that there are discrepancies
+of up to $\sim 5 \%$.
+\begin{figure}
+  \centering
+  \figinput[0.7\textwidth]{performance_ratio_leftright}
+  \caption{Ratios of the positive and negative pseudorapidities for
+    the FMD (ratio is negative over positive). The grey band indicates
+    the combined systematic error for FMD1I and FMD2I assuming
+    excluding all contributions from event selection and material
+    budget (i.e. the minimum systematic error between FMD1I and
+    FMD2I).}  \label{leftright}
+\end{figure} 
+
+\subsection{Results}
+
+This section summarizes the final results of the analysis and includes
+the figures for approval.
+
+Figure \ref{combineddndeta} shows the combined $\dndeta$ from SPD,
+VZERO, and FMD in the full pseudorapidity range of $-5<\eta<5.5$.
+
+\begin{figure}
+  \centering
+  \figinput[\textwidth]{results_PbPbdndeta_sat}
+  \caption{Request for ALICE preliminary: Combined $\dndeta$ measured
+    with SPD, VZERO and FMD. The VZERO and FMD measurements are made
+    with displaced vertices and the SPD measurement is made at the
+    nominal vertex. The fits are fits to a function $f(\eta) = A\exp
+    (\frac{\eta -a_1}{2 a_2^2}) - B\exp (\frac{\eta -b_1}{2 b_{2}^2})$
+    i.e. a Gaussian centered on $ \eta = 0$ subtracted from a similar
+    Gaussian.}
+  \label{combineddndeta}
+\end{figure} 
+
+Figure \ref{dndetaoverNpart} shows $dN/d\eta/(N_{part}/2)$ based on
+figure \ref{combineddndeta} and data taken from \cite{Aamodt:2010cz}.
+\begin{figure}
+  \centering
+  \figinput[\textwidth]{results_PbPbnpart_sat}
+  \caption{Request for ALICE preliminary: The $dN/d\eta/(N_{part}/2)$
+    measured with SPD, VZERO and FMD. The VZERO and FMD measurements
+    are made with displaced vertices and the SPD measurement is made
+    at the nominal vertex. The values of $N_{part}$ and the
+    measurement at $-0.5<\eta<0.5$ taken from \cite{Aamodt:2010cz}.}
+  \label{dndetaoverNpart}
+\end{figure} 
+
+Using figure \ref{dndetaoverNpart}, figure \ref{RatiodndetaoverNpart}
+is constructed. It shows the ratios of $dN/d\eta/(N_{part}/2)$ in the
+following $\eta$ bins: $0.5<\eta<1.5$, $1.5<\eta<2.5$, $2.5<\eta<3.5$,
+$3.5<\eta<4.5$, and $4.5<\eta<5.5$ to the published
+$dN/d\eta/(N_{part}/2)$ at $-0.5<\eta<0.5$. These ratios are found to
+be flat for all pseudorapidity intervals.
+
+\begin{figure}
+  \centering
+  \figinput[\textwidth]{results_PbPbnpart_ratio}
+  \caption{Request for ALICE preliminary: Ratios of
+    $dN/d\eta/(N_{part}/2)$ at $0.5<\eta<1.5$, $1.5<\eta<2.5$,
+    $2.5<\eta<3.5$, $3.5<\eta<4.5$, and $4.5<\eta<5.5$ to the
+    published $dN/d\eta/(N_{part}/2)$ at $-0.5<\eta<0.5$. The ratios
+    are found to be flat for all the pseudorapidity intervals.}
+  \label{RatiodndetaoverNpart}
+\end{figure} 
+
+With the analysis presented in figure \ref{combineddndeta} it is also
+possible to study longitudinal scaling from LHC to RHIC
+energies. Figure \ref{longscaling} shows $\dndeta$ as a function of
+$y'=\eta-y_{beam}$ from Figure \ref{combineddndeta} and results from
+the BRAHMS\cite{Bearden:2001qq} and PHOBOS\cite{Alver:2010ck}
+experiments at RHIC. From the figure it is seen that with the wide
+coverage of the SPD, VZERO, and FMD measurement it is indeed likely
+that longitudinal scaling exist from RHIC to LHC energies.
+
+\begin{figure}
+  \centering
+  \figinput[\textwidth]{results_PbPblongscaling_sat}
+  \caption{Request for ALICE preliminary: Study of Longitudinal
+    scaling. $\dndeta$ as a function of $y'=\eta-y_{beam}$ from Figure
+    \ref{combineddndeta} and the BRAHMS\cite{Bearden:2001qq} and
+    PHOBOS\cite{Alver:2010ck} experiments at RHIC. The fits are the
+    function from figure \ref{combineddndeta} and a straight line
+    ending in $\eta=y_{beam}$. From the figure it seems likely that
+    longitudinal scaling exists from RHIC to LHC energies.}
+  \label{longscaling}
+\end{figure} 
+
+Finally the total number of produced charged particles,
+$N_{ch}=\int^{y_{beam}}_{-y_{beam}}\dndeta d\eta$, has
+been calculated from the fits in Figure \ref{combineddndeta}. The
+obtained values of $N_{ch}$ versus $N_{part}$ are shown in figure
+\ref{totalNch}. The systematic errors on $N_{ch}$ have been assessed
+by the procedure of varying fit functions discussed in \cite{maxime}.
+
+\begin{figure}
+  \centering
+  \figinput[\textwidth]{results_PbPbtotalnch_sat}
+  \caption{Request for ALICE preliminary: Total number of charged
+    particles, $N_{ch}=\int^{y_{beam}}_{-y_{beam}}\dndeta d\eta$,
+    obtained from the fitted function in figure
+    \ref{combineddndeta}. The systematic errors on this plot were
+    assessed by variation of the fit function as described in \cite{maxime}.}
+  \label{totalNch}
+\end{figure} 
+
+\subsection{Comparison to old Preliminary}
+
+At QM 2011 figures were approved for preliminary status and
+shown. Roughly six months later it was found that the execution of the
+FMD analysis had a flaw\footnote{A boolean variable was wrong in a
+  configuration macro for FMD.} which caused the results to be lower
+than what they should be. The top panel of Figure
+\ref{prelimcomparison} shows a comparison between the distribution in
+Figure \ref{combineddndeta} and the preliminary (ALI-PREL-2536) shown
+at QM 2011. The top panel shows the same comparison with the proper
+FMD distribution instead of the incorrect one. It is clear that the
+agreement observed between VZERO, SPD, and FMD at QM 2011 does not
+hold with the FMD analysis run properly for nominal vertices.
+
+\begin{figure}
+  \centering
+  \begin{minipage}{0.5\linewidth}
+    \centering
+    \figinput[\textwidth]{oldprelim_wrong}
+  \end{minipage}%
+  \begin{minipage}{0.5\linewidth}
+    \centering
+    \figinput[\textwidth]{oldprelim_right}
+  \end{minipage}%
+  \caption{Left: Comparison of new combined $\dndeta$ to the data
+    shown at QM 2011. Right: The same comparison with the properly run
+    FMD analysis at nominal vertices (`FMD Hits'). The difference is
+    clearly seen around $|\eta| \sim 2$.}
+  \label{prelimcomparison}
+\end{figure} 
+
+\subsection{Summary of Systematic Errors}
+
+Table \ref{combinedsyst} shows the various sources of systematic
+errors for the combined measurement of VZERO, SPD, and FMD collected
+from Table \ref{fmdsysterror}, \cite{maxime}, and
+\cite{ruben,Aamodt:2010cz}. The `common' section of the table refers
+to source of systematic errors identified as common in the different
+measurements. These errors were evaluated for the displaced vertices
+analysis in the following way:
+\begin{itemize}
+\item Centrality errors come from variation in the parameters used in
+  the scaling of the ZEM signal (see \cite{maxime}).
+\item Material budget errors were estimated by analyzing a simulation
+  and adding a weight of $0.9$ or $1.1$ to all physical processes
+  except decays for all secondary particles. This approach was used in
+  the absence of suitable ALICE simulation productions.
+\item $p_T$ weights were developed to assess the effect of the
+  difference in $p_T$ spectra measured by ALICE and in the HIJING
+  generator.
+\end{itemize}
+
+\begin{table} 
+  \centering
+  \begin{tabular}{|c|c|}
+    \hline
+    Source of Error & Magnitude   \\
+    \hline
+    Common   &   \\
+    \hline
+    Centrality  & 1-4\%    \\
+    \hline
+    $p_T$ weights (FMD+VZERO)  & 2\%   \\
+    \hline
+    % Strangeness Enhancement  & 1\%    \\
+    % \hline
+    Material budget(FMD+VZERO)  & 4\%    \\
+    \hline
+    Generator  & 2\%    \\
+    \hline
+    SPD   &   \\
+    \hline
+    Background Subtraction & 0.1\%-2\%    \\
+    \hline
+    Particle Mix & 1\%   \\
+    \hline
+    Weak Decays & 1 \%   \\
+    \hline
+    Extrapolation to zero $p$ & 2\%    \\
+    \hline
+    VZERO &   \\
+    \hline
+    Fluctuation between rings & 3\%   \\
+    \hline
+    Normalization & 3\%-4\%   \\
+    \hline
+    FMD  &  \\
+    \hline
+    Variation of Cuts    &  2\%  \\
+    \hline
+    Calculation of Multiplicity    &  3\%  \\
+    \hline
+  \end{tabular}
+  \caption[Combined Systematic Errors]{The table summarizes the
+    systematic errors in the SPD\cite{ruben,Aamodt:2010cz},
+    VZERO\cite{maxime}, and FMD\cite{hhd:2009}.} \label{combinedsyst}  
+\end{table}
+
+The errors are obtained using variation of the quantities studied in
+MC simulations. In particular the studies of the dependence on the
+material budget are carried out with special MC simulations where the
+material density of ALICE is increased.
+
+\subsection{Technical Details}
+
+Here, the technical aspects of the analysis are described. The SPD
+analysis was done on run 137366, reconstruction pass 2 while the FMD
+and VZERO analysis were carried out on a total of 126 runs (46 with
+negative field and 80 with positive field) to obtain the necessary
+statistics for the displaced vertices. These runs were selected to be
+of good quality for VZERO, SPD, FMD, and ZDC. These data were also
+from pass 2 reconstruction.
+
+The AliRoot version for SPD is: \textbf{v5-03-24-AN}, for VZERO:
+\textbf{v5-03-28-AN}, and for FMD: \textbf{v5-03-26-AN}.
+
+For the analysis of the displaced vertices presented here the
+production LHC12c2 was used (the simulation was done with an anchor
+run for each field polarity). This production includes the latest
+version (as of July 2012) of the ALICE geometry and alignment.
+
+There is a twiki page for the paper using this analysis:
+\url{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWGLFGeoPbPbdNdeta}.
+\clearpage
+%% \currentpdfbookmark{Appendices}{Appendices}
+\appendix 
+\section{Nomenclature} 
+\label{app:nomen}
+
+\begin{table}[hbp]
+  \centering
+  \begin{tabular}[t]{|lp{.8\textwidth}|}
+    \hline 
+    \textbf{Symbol}&\textbf{Description}\\
+    \hline 
+    \INEL & In--elastic event\\ 
+    \INELONE & In--elastic event with at least one tracklet in the
+    \SPD{} in the region $-1\le\eta\le1$\\ 
+    \NSD{} & Non--single--diffractive event.  Single diffractive
+    events are events where one of the incident collision systems
+    (proton or nucleus) is excited and radiates particles, but there
+    is no other processes taking place\\ 
+    \hline
+    $\NT{}$ & Number of events with a valid trigger\\
+    $\NV{}$ & Number of events with a valid trigger \emph{and} a valid
+    vertex.\\  
+    $\NA{}$ & Number of events with a valid trigger
+    \emph{and} a valid vertex \emph{within} the selected vertex range.\\ 
+    $\N{a,c,ac,e}{}$ & Number of events with background triggers $A$,
+    $B$, $AC$, or $E$, \emph{and} a valid off-line trigger of the
+    considered type.   Background triggers are typically flagged with
+    the trigger words \texttt{CINT1-A},  \texttt{CINT1-C},
+    \texttt{CINT1-AC}, \texttt{CINT1-E}, or similar.\\
+    \hline
+    $\mult{}$ & Charged particle multiplicity\\ 
+    $\mult[,\text{primary}]$ & Primary charged particle multiplicity
+    as given by simulations\\ 
+    $\mult[,\text{\FMD{}}]$ & Number of charged particles that hit the
+    \FMD{} as given by simulations\\ 
+    $\mult[,t]$ & Number of charged particles in an \FMD{} strip as
+    given by evaluating the energy response functions $F$\\ 
+    \hline
+    $F$ & Energy response function (see \eqref{eq:energy_response})\\
+    $\Delta_{mp}$ & Most probably energy loss\\ 
+    $\xi$ & `Width' parameter of a Landau distribution\\
+    $\sigma$ & Variance of a Gaussian distribution\\ 
+    $a_i$ & Relative weight of the $i$--fold MIP peak in the energy
+    loss spectra.\\ 
+    \hline
+    $\Corners{}$ & Azimuthal acceptance of strip $t$\\ 
+    $\SecMap{}$ & Secondary particle correction factor in $\etaphi$
+    for a given vertex bin $v$\\  
+    $\DeadCh{}$ & Acceptance in $\etaphi$ for a given vertex bin $v$\\ 
+    \hline
+    $\dndetadphi[incl,r,v,i]$ & Inclusive (primary \emph{and}
+    secondary) charge particle density in event $i$ with vertex $v$,
+    for \FMD{} ring $r$.\\ 
+    $\dndetadphi[r,v,i]$ & Primary charged particle
+    density in event $i$ with vertex $v$ for \FMD{} ring $r$. \\
+    $\dndetadphi[v,i]$ & Primary charged particle density in event $i$
+    with vertex $v$\\  
+    $I_{v,i}(\eta)$ & $\eta$ acceptance of event $i$ with vertex $v$\\ 
+    $I(\eta)$ & Integrated $\eta$ acceptance over $\NA$ events.
+    Note, that this has a value of $\NA$ for $(\eta)$ bins where we
+    have full coverage\\ 
+    \hline 
+    $X_t$ & Value $X$ for strip number $t$ (0-511 for inner rings,
+    0-255 for outer rings)\\ 
+    $X_r$ & Value $X$ for ring $r$ (where rings are \FMD{1i},
+    \FMD{2i}, \FMD{2o}, \FMD{3o}, and \FMD{3i} in decreasing $\eta$
+    coverage).\\ 
+    $X_v$ & Value $X$ for vertex bin $v$ (typically 10 bins from -10cm
+    to +10cm)\\ 
+    $X_i$ & Value $X$ for event $i$\\
+    \hline
+  \end{tabular}
+  \caption{Nomenclature used in this document}
+  \label{tab:nomenclature}
+\end{table}
+\clearpage
+
+
+\section{Second pass example code}
+\label{app:exa_pass2}
+\lstset{basicstyle=\small\ttfamily,% 
+  keywordstyle=\color[rgb]{0.627,0.125,0.941}\bfseries,% 
+  identifierstyle=\color[rgb]{0.133,0.545,0.133}\itshape,%
+  commentstyle=\color[rgb]{0.698,0.133,0.133},%
+  stringstyle=\color[rgb]{0.737,0.561,0.561},
+  emph={TH2D,TH1D,TFile,TTree,AliAODForwardMult},emphstyle=\color{blue},%
+  emph={[2]dndeta,sum,norm},emphstyle={[2]\bfseries\underbar},%
+  emph={[3]file,tree,mult,nV,nBg,nA,nT,i,gSystem},emphstyle={[3]},%
+  language=c++,%
+}
+\begin{lstlisting}[caption={Example 2\textsuperscript{nd} pass code to
+    do $\dndeta$},label={lst:example},frame=single,captionpos=b]
+void Analyse(int mask=AliAODForwardMult::kInel,
+             float vzLow=-10, float vzHigh=10, float trigEff=1)
+{ 
+  gSystem->Load("libANALYSIS.so");      // Load analysis libraries
+  gSystem->Load("libANALYSISalice.so"); // General ALICE stuff
+  gSystem->Load("libPWGLFforward2.so");  // Forward analysis code
+
+  int                nT      = 0;              // # of ev. w/trigger
+  int                nV      = 0;              // # of ev. w/trigger&vertex
+  int                nA      = 0;              // # of accepted ev.
+  int                nBg     = 0;              // # of background ev
+  TH2D*              sum     = 0;              // Summed hist
+  AliAODForwardMult* mult    = 0;              // AOD object
+  TFile*             file    = TFile::Open("AliAODs.root","READ");
+  TTree*             tree    = static_cast<TTree*>(file->Get("aodTree"));
+  tree->SetBranchAddress("Forward", &forward); // Set the address
+
+  for (int i = 0; i < tree->GetEntries(); i++) { 
+    // Read the i'th event 
+    tree->GetEntry(i);
+
+    // Create sum histogram on first event - to match binning to input
+    if (!sum) 
+      sum = static_cast<TH2D*>(mult->GetHistogram()->Clone("d2ndetadphi"));
+    
+    // Calculate beta=A+C-E
+    if (mult->IsTriggerBits(mask|AliAODForwardMult::kA))    nBg++;
+    if (mult->IsTriggerBits(mask|AliAODForwardMult::kC))    nBg++;
+    if (mult->IsTriggerBits(mask|AliAODForwardMult::kE))    nBg--;
+
+    // Other trigger/event requirements could be defined 
+    if (!mult->IsTriggerBits(mask)) continue; 
+    nT++;
+
+    // Check if we have vertex and select vertex range (in centimeters) 
+    if (!mult->HasIpZ()) continue;
+    nV++;
+    
+    if (!mult->InRange(vzLow, vzHigh) continue; 
+    nA++;
+
+    // Add contribution from this event
+    sum->Add(&(mult->GetHistogram()));
+  }
+
+  // Get acceptance normalisation from underflow bins 
+  TH1D* norm   = sum->ProjectionX("norm", 0, 0, "");
+  // Project onto eta axis - _ignoring_underflow_bins_!
+  TH1D* dndeta = sum->ProjectionX("dndeta", 1, -1, "e");
+  // Normalize to the acceptance, and scale by the vertex efficiency 
+  dndeta->Divide(norm);
+  dndeta->Scale(trigEff * nT/nV / (1 - nBg/nT), "width");
+  // And draw the result
+  dndeta->Draw();
+}
+\end{lstlisting}
+
+\section{$\Delta E$ fits} 
+\label{app:eloss_fits}
+
+\begin{figure}[htbp]
+  \centering
+  \figinput[\textwidth]{eloss_fits}
+  \caption{Summary of energy loss fits in each $\eta$ bin (see also
+    \secref{sec:sub:sub:eloss_fits}).
+    \newline
+    On the left side: Top panel shows the
+    reduced $\chi^2$, second from the top shows the found
+    scaling constant, 3\textsuperscript{rd} from the top is
+    the most probable energy loss $\Delta_{mp}$, 4\textsuperscript{th}
+    shows the width parameter $\xi$ of the Landau, and the
+    5\textsuperscript{th} is the Gaussian width $\sigma$.
+    $\Delta_{mp}$, $\xi$, and $\sigma$ have units of $\Delta E/\Delta
+    E_{mip}$. 
+    \newline
+    On the right: The top panel shows the maximum number of
+    multi--particle signals that where fitted, and the 4 bottom panels
+    shows the weights $a_2,a_3,a_4,$ and $a_5$ for 2, 3, 4, and 5
+    particle responses.}
+  \label{fig:eloss_fits}
+\end{figure}
+
+\clearpage
+\currentpdfbookmark{References}{References}
+\begin{thebibliography}{99}
+\bibitem{FWD:2004mz} \ALICE{} Collaboration, Bearden, I.~G.\
+  \textit{et al} \textit{ALICE technical design report on forward
+    detectors: FMD, T0 and V0}, \CERN{}, 2004, CERN-LHCC-2004-025
+\bibitem{cholm:2009} Christensen, C.~H., \textit{The ALICE Forward
+    Multiplicity Detector --- From Design to Installation},
+  Ph.D.~thesis, University of Copenhagen, 2009,
+  \url{http://www.nbi.dk/~cholm/}.
+\bibitem{maxime} Guilbaud, M. \textit{et al}, \textit{Measurement of
+    the charged-particle multiplicity density at forward rapidity with
+    ALICE VZERO detector in central Pb-Pb collision at
+    $\sqrt{s_{NN}}=\TeV{2.76}$}, ALICE internal note, 2012,
+  \url{https://aliceinfo.cern.ch/Notes/node/17/}.
+\bibitem{nim:b1:16}
+%% \bibitem{Hancock:1983ry}
+  S.~Hancock, F.~James, J.~Movchet {\it et al.}, ``Energy Loss
+  Distributions For Single Particles And Several Particles In A Thin
+  Silicon Absorber,'' Nucl.\ Instrum.\ Meth.\ \textbf{B1} (1984) 16,
+  \url{http://cdsweb.cern.ch/record/147286/files/cer-000058451.pdf}.
+\bibitem{phyrev:a28:615} 
+  %% \bibitem{Hancock:1983fp}
+  S.~Hancock, F.~James, J.~Movchet {\it et al.}, ``Energy Loss And
+  Energy Straggling Of Protons And Pions In The Momentum Range
+  0.7-gev/c To 115-gev/c,'' Phys.\ Rev.\ \textbf{A28} (1983) 615,
+  \url{http://cdsweb.cern.ch/record/145395/files/PhysRevA.28.615.pdf}.
+\bibitem{hhd:2009} Dalsgaard, H.~H., \textit{Pseudorapidity Densities
+    in p+p and Pb+Pb collisions at LHC measured with the ALICE
+    experiment}, Ph.D.~thesis, University of Copenhagen, 2011,
+  \url{http://www.nbi.dk/~canute/thesis.pdf}.
+\bibitem{ruben} Shahoyan, R. \textit{Determination of $\dndeta$ in
+    Pb-Pb collision at 2.76 A TeV with SPD tracklets}, ALICE internal
+  note 2012, \url{https://aliceinfo.cern.ch/Notes/node/59/}.
+\bibitem{Aamodt:2010cz} K.~Aamodt {\it et al.}  [ALICE Collaboration],
+  %``Centrality dependence of the charged-particle multiplicity
+  %density at mid-rapidity in Pb-Pb collisions at sqrt(sNN) = 2.76
+  %TeV,''
+  Phys.\ Rev.\ Lett.\  {\bf 106} (2011) 032301
+  [arXiv:1012.1657 [nucl-ex]].
+  %%CITATION = ARXIV:1012.1657;%%
+\bibitem{Bearden:2001qq} I.~G.~Bearden {\it et al.}  [BRAHMS
+  Collaboration],
+  %``Pseudorapidity distributions of charged particles from Au+Au
+  %collisions at the maximum RHIC energy,''
+  Phys.\ Rev.\ Lett.\ {\bf 88} (2002) 202301 [nucl-ex/0112001].
+  %%CITATION = NUCL-EX/0112001;%%
+\bibitem{Alver:2010ck} B.~Alver {\it et al.}  [PHOBOS Collaboration],
+  % ``Phobos results on charged particle multiplicity and
+  % pseudorapidity distributions in Au+Au, Cu+Cu, d+Au, and p+p
+  % collisions at ultra-relativistic energies,''
+  Phys.\ Rev.\ C {\bf 83} (2011) 024913 [arXiv:1011.1940 [nucl-ex]].
+  %%CITATION = ARXIV:1011.1940;%%
+\end{thebibliography}
+\end{document}
+
+% Local Variables:
+%   ispell-local-dictionary: "british"
+%   TeX-PDF-mode: t
+% End:
+%
+% LocalWords:  tracklet diffractive IsTriggerBits AliAODForwardMult ProjectionX

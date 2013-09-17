@@ -91,16 +91,22 @@ Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, Al
 // 			    )
 // 			    && TMath::Sqrt(part.Vx()*part.Vx()+part.Vy()*part.Vy() + part.Vz()*part.Vz())<(fCuts->GetGeometryPhosDetectorRadius()-10);
   
-  //Let's find suspect decay (typical for secondary interaction)...
-  
-  return SuspeciousDecayInChain(211, 111, part, stack);
+
+//   Bool_t partVtxSecondary = (TMath::Sqrt(part.Vx()*part.Vx() + part.Vy()*part.Vy()) <300);
+//   //Let's find suspect decay (typical for secondary interaction)...
+//   if(partVtxSecondary){
+    return SuspiciousDecayInChain(211, 111, part, stack);
+//   }
+//   else{
+//     return kFALSE;
+//   }
   
 			    
   
   
 }
 
-Bool_t AliAnalysisEtSelector::SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle &part, AliStack& stack) const
+Bool_t AliAnalysisEtSelector::SuspiciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle &part, AliStack& stack) const
 {
   UInt_t partPdg = TMath::Abs(part.GetPdgCode());
   if(part.GetFirstMother() == -1)
@@ -113,5 +119,16 @@ Bool_t AliAnalysisEtSelector::SuspeciousDecayInChain(const UInt_t suspectMotherP
   {
     return kTRUE;
   }
-  return SuspeciousDecayInChain(suspectMotherPdg, suspectDaughterPdg, *mother, stack);
+  return SuspiciousDecayInChain(suspectMotherPdg, suspectDaughterPdg, *mother, stack);
+}
+
+Float_t AliAnalysisEtSelector::ShiftAngle(Float_t phi){//Always returns an angle in radians between -pi<phi<pi
+  float myphi = phi;
+  while(myphi>TMath::Pi()){//angle is too high, decrease the angle
+    myphi = myphi - 2*TMath::Pi();
+  }
+  while(myphi<-TMath::Pi()){//angle is too low, increase the angle
+    myphi = myphi + 2*TMath::Pi();
+  }
+  return myphi;
 }

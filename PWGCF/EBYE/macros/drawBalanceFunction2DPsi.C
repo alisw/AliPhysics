@@ -931,7 +931,8 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 		     Double_t ptAssociatedMax = -1.,
 		     Bool_t k2pMethod = kTRUE,
 		     TString eventClass = "Centrality",
-		     Bool_t bRootMoments = kFALSE) {
+		     Bool_t bRootMoments = kFALSE,
+		     Bool_t kUseZYAM = kFALSE) {
   //Macro that draws the balance functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
@@ -1170,12 +1171,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     Double_t sigmaAnalytical, sigmaAnalyticalError;
     Double_t skewnessAnalytical, skewnessAnalyticalError;
     Double_t kurtosisAnalytical, kurtosisAnalyticalError;
-
+    
     Int_t gDeltaEtaPhi = 2;
     if(kProjectInEta) gDeltaEtaPhi = 1;
 
     AliBalancePsi *bHelper = new AliBalancePsi;
-    bHelper->GetMomentsAnalytical(gDeltaEtaPhi,gHistBalanceFunctionSubtracted,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
+    bHelper->GetMomentsAnalytical(gDeltaEtaPhi,gHistBalanceFunctionSubtracted,kUseZYAM,meanAnalytical,meanAnalyticalError,sigmaAnalytical,sigmaAnalyticalError,skewnessAnalytical,skewnessAnalyticalError,kurtosisAnalytical,kurtosisAnalyticalError);
 
     meanLatex = "#mu = "; 
     meanLatex += Form("%.3f",meanAnalytical);

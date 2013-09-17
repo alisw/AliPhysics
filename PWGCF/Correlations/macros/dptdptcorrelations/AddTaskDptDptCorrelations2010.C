@@ -13,8 +13,12 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
                                                                  int    singlesOnly            = 0,
                                                                  int    useWeights             = 1,
                                                                  int    centralityMethod       = 4,
-                                                                 int    chargeSet              = 1)
-
+                                                                 int    chargeSet              = 1,
+								 int    trackFilterBit         = 128,
+								 int    nClusterMin            = 80, 
+								 double etaMin                 = -0.9,
+                                                                 double etaMax                 = 0.9)
+                                                                 
 {
   // Set Default Configuration of this analysis
   // ==========================================
@@ -33,26 +37,19 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
     if (centralityMethod == 4)
       {
 
-	nCentrality = 6;
-        minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
-        minCentrality[1] = 5.0; maxCentrality[1] = 10.;
-	minCentrality[2] = 30.; maxCentrality[2] = 40.;
-        minCentrality[3] = 40.; maxCentrality[3] = 50.;
-        minCentrality[4] = 70.; maxCentrality[4] = 80.;
-        minCentrality[5] = 80.; maxCentrality[5] = 90.;
-	/*
-	  nCentrality = 10;
-	  minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
-	  minCentrality[1] = 5.0; maxCentrality[1] = 10.;
-	  minCentrality[2] = 10.; maxCentrality[2] = 20.;
-	  minCentrality[3] = 20.; maxCentrality[3] = 30.;
-	  minCentrality[4] = 30.; maxCentrality[4] = 40.;
-	  minCentrality[5] = 40.; maxCentrality[5] = 50.;
-	  minCentrality[6] = 50.; maxCentrality[6] = 60.;
-	  minCentrality[7] = 60.; maxCentrality[7] = 70.;
-	  minCentrality[8] = 70.; maxCentrality[8] = 80.;
-	  minCentrality[9] = 80.; maxCentrality[9] = 90.;
-	*/
+	
+	nCentrality = 10;
+	minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
+	minCentrality[1] = 5.0; maxCentrality[1] = 10.;
+	minCentrality[2] = 10.; maxCentrality[2] = 20.;
+	minCentrality[3] = 20.; maxCentrality[3] = 30.;
+	minCentrality[4] = 30.; maxCentrality[4] = 40.;
+	minCentrality[5] = 40.; maxCentrality[5] = 50.;
+	minCentrality[6] = 50.; maxCentrality[6] = 60.;
+	minCentrality[7] = 60.; maxCentrality[7] = 70.;
+	minCentrality[8] = 70.; maxCentrality[8] = 80.;
+	minCentrality[9] = 80.; maxCentrality[9] = 90.;
+	
       }
     else
       {
@@ -86,16 +83,17 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
   double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
-  double etaMin                 = -1.0;
-  double etaMax                 =  1.0;
+  //double etaMin                 = -0.9;
+  //double etaMax                 =  0.9;
   double dcaZMin                = -3.0;
   double dcaZMax                =  3.0;
   double dcaXYMin               = -2.4;
   double dcaXYMax               =  2.4;
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
-  int    nClusterMin            =   70;
-  int    trackFilterBit         =  128;
+  //int    nClusterMin            =   80;
+  //int    trackFilterBit         =  128;//TPC only
+  //int    trackFilterBit         =  272; //Hybrid
   
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
@@ -178,8 +176,9 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       listName     =   baseName;
       taskName     =   baseName;
 
-      //inputHistogramFileName =  "/Users/prabhat/Archive/calib/PbPb276Calibration_PP_2010.root";
+      
       inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPb276Calibration_2010.root";
+      //inputHistogramFileName =  "/Users/prabhat/MyTestforEta/eta900/128/PbPb276Calibration_2010.root";
 
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
@@ -296,10 +295,10 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       task->SetPtMax2(              ptMax           ); 
       task->SetEtaMin2(             etaMin          ); 
       task->SetEtaMax2(             etaMax          ); 
-      task->SetDcaZMin(             dcaZMin         ); 
-      task->SetDcaZMax(             dcaZMax         ); 
-      task->SetDcaXYMin(            dcaXYMin        ); 
-      task->SetDcaXYMax(            dcaXYMax        ); 
+      //task->SetDcaZMin(             dcaZMin         ); 
+      //task->SetDcaZMax(             dcaZMax         ); 
+      //task->SetDcaXYMin(            dcaXYMin        ); 
+      //task->SetDcaXYMax(            dcaXYMax        ); //checking by prp
       task->SetDedxMin(             dedxMin         ); 
       task->SetDedxMax(             dedxMax         ); 
       task->SetNClusterMin(         nClusterMin     ); 

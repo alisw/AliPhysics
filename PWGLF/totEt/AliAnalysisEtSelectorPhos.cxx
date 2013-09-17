@@ -18,6 +18,7 @@
 #include "TParticle.h"
 #include "AliLog.h"
 #include <iostream>
+#include "AliStack.h"
 
 ClassImp(AliAnalysisEtSelectorPhos)
 
@@ -308,17 +309,65 @@ TFile *f = TFile::Open("badchannels.root", "READ");
 }
 
 
-Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const TParticle& part) const
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const TParticle& part)
 {
+  float myphi = part.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
   return TMath::Abs(part.Eta()) < fCuts->GetGeometryPhosEtaAccCut() 
-	  && part.Phi() < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
-	  && part.Phi() > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
+    && myphi < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }
 
-Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliVTrack& track) const
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliVTrack& track)
 {
-  return TMath::Abs(track.Eta()) < fCuts->GetGeometryPhosEtaAccCut() &&
-           track.Phi() > fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180. &&
-           track.Phi() < fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
+  float myphi = track.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
+  return TMath::Abs(track.Eta()) < fCuts->GetGeometryPhosEtaAccCut()
+    && myphi < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }
 
+
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliESDCaloCluster& cluster)
+{
+  Float_t pos[3];
+  cluster.GetPosition(pos);
+  TVector3 cp(pos);
+  float myphi = cp.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
+  return TMath::Abs(cp.Eta()) < fCuts->GetGeometryPhosEtaAccCut()
+    && myphi < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
+}
+UInt_t AliAnalysisEtSelectorPhos::GetLabel(const AliESDCaloCluster *cluster, AliStack *stack){
+  //Finds primary and estimates if it unique one?
+  Int_t n=cluster->GetNLabels() ;
+  Int_t iMax=0;
+
+  if (n > 0) {
+    Double_t*  Ekin=  new  Double_t[n] ;
+    for(Int_t i=0;  i<n;  i++){
+      TParticle*  p=  stack->Particle(cluster->GetLabelAt(i)) ;
+      Ekin[i]=p->P() ;  // estimate of kinetic energy
+      if(p->GetPdgCode()==-2212  ||  p->GetPdgCode()==-2112){
+	Ekin[i]+=1.8  ;  //due to annihilation
+      }
+    }
+    Double_t eMax=0.;//eSubMax=0. ;
+    for(Int_t i=0;  i<n;  i++){
+      if(Ekin[i]>eMax){
+	//      eSubMax=eMax;
+	eMax=Ekin[i];
+	iMax=i;
+      }
+    }
+//   if(eSubMax>0.8*eMax)//not obvious primary
+//     sure=kFALSE;
+//   else
+//     sure=kTRUE;
+    delete [] Ekin;
+
+  } // n>0
+  return  cluster->GetLabelAt(iMax) ; // DS: should this line be inside n>0 check, and return another value if n<=0 ? 
+
+}

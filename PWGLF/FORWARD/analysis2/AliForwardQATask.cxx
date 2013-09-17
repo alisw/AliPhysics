@@ -173,32 +173,37 @@ AliForwardQATask::CheckCorrections(UInt_t what)
   // Check that we have the energy loss fits, needed by 
   //   AliFMDSharingFilter 
   //   AliFMDDensityCalculator 
-  if (what & AliForwardCorrectionManager::kELossFits && !fcm.GetELossFit()) { 
-    AliWarning("No energy loss fits");
-
-    // Fall-back values if we do not have the energy loss fits 
-    AliFMDMultCuts& sfLCuts = GetSharingFilter().GetLCuts();
-    if (sfLCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-      Double_t cut = 0.3;
-      AliWarningF("Using fixed cut @ %f for the lower bound "
-		 "of the sharing filter", cut);
-      sfLCuts.SetMultCuts(cut);
+  if (what & AliForwardCorrectionManager::kELossFits) {
+    if (!fcm.GetELossFit()) { 
+      AliWarning("No energy loss fits");
+      
+      // Fall-back values if we do not have the energy loss fits 
+      AliFMDMultCuts& sfLCuts = GetSharingFilter().GetLCuts();
+      if (sfLCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+	Double_t cut = 0.3;
+	AliWarningF("Using fixed cut @ %f for the lower bound "
+		    "of the sharing filter", cut);
+	sfLCuts.SetMultCuts(cut);
+      }
+      AliFMDMultCuts& sfHCuts = GetSharingFilter().GetHCuts();
+      if (sfHCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+	Double_t cut = 100;
+	AliWarningF("Using fixed cut @ %f for the upper bound "
+		    "of the sharing filter", cut);
+	sfHCuts.SetMultCuts(cut);
+      }
+      AliFMDMultCuts& dcCuts  = GetDensityCalculator().GetCuts();
+      if (dcCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+	Double_t cut = 0.3;
+	AliWarningF("Using fixed cut @ %f for the lower bound "
+		    "of the density calculator", cut);
+	dcCuts.SetMultCuts(cut);
+      }
     }
-    AliFMDMultCuts& sfHCuts = GetSharingFilter().GetHCuts();
-    if (sfHCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-      Double_t cut = 100;
-      AliWarningF("Using fixed cut @ %f for the upper bound "
-		 "of the sharing filter", cut);
-      sfHCuts.SetMultCuts(cut);
-    }
-    AliFMDMultCuts& dcCuts  = GetDensityCalculator().GetCuts();
-    if (dcCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-      Double_t cut = 0.3;
-      AliWarningF("Using fixed cut @ %f for the lower bound "
-		 "of the density calculator", cut);
-      dcCuts.SetMultCuts(cut);
-    }
+    else 
+      fcm.GetELossFit()->CacheBins(GetDensityCalculator().GetMinQuality());
   }
+
   return true;
 }
 
@@ -206,7 +211,8 @@ AliForwardQATask::CheckCorrections(UInt_t what)
 Bool_t
 AliForwardQATask::ReadCorrections(const TAxis*& pe, 
 				  const TAxis*& pv, 
-				  Bool_t        mc)
+				  Bool_t        mc,
+				  Bool_t        sat)
 {
   //
   // Read corrections
@@ -219,11 +225,17 @@ AliForwardQATask::ReadCorrections(const TAxis*& pe,
   what ^= AliForwardCorrectionManager::kMergingEfficiency;
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  if (!fcm.Init(GetEventInspector().GetCollisionSystem(),
+  // We allow fall-back queries so that we may proceed in case we have no 
+  // valid corrections 
+  fcm.SetEnableFallBack(true); 
+  if (!fcm.Init(GetEventInspector().GetRunNumber(), 
+		GetEventInspector().GetCollisionSystem(),
 		GetEventInspector().GetEnergy(),
 		GetEventInspector().GetField(),
 		mc,
-		what)) return false;
+		sat,
+		what,
+		false)) return false;
   if (!CheckCorrections(what)) {
     return false;
   }
@@ -387,6 +399,10 @@ AliForwardQATask::UserExec(Option_t*)
   if (found & AliFMDEventInspector::kNoFMD)      ok = false;
   if (found & AliFMDEventInspector::kNoVertex)   ok = false;
   if (triggers & AliAODForwardMult::kPileUp)     ok = false;
+  if (triggers & AliAODForwardMult::kA)          ok = false;
+  if (triggers & AliAODForwardMult::kC)          ok = false;
+  if (triggers & AliAODForwardMult::kE)          ok = false;
+  if (!(triggers & AliAODForwardMult::kOffline)) ok = false;
   if (found & AliFMDEventInspector::kBadVertex)  ok = false;
   if (!ok) { 
     DMSG(fDebug,2,"Event failed selection: %s", 

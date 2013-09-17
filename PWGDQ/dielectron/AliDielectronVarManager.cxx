@@ -110,8 +110,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TOF_signal",             "TOF signal",                                         "(ps)"},
   {"TOF_beta",               "TOF #beta",                                          "(#it{c})"},
   {"TOF_PIDbit",             "TOF PID bit",                                        ""},
-  {"TOF_mismProb",           "TOF mismatch probability",                               ""},
-  
+  {"TOF_mismProb",           "TOF mismatch probability"                            ""},
+
+  {"TPC_nSigma_ElectronsRaw","n#sigma_{e}^{TPC} (raw)",                            ""},
   {"TPC_nSigma_Electrons",   "n#sigma_{e}^{TPC}",                                  ""},
   {"TPC_nSigma_Pions",       "n#sigma_{#pi}^{TPC}",                                ""},
   {"TPC_nSigma_Muons",       "n#sigma_{#mu}^{TPC}",                                ""},
@@ -132,6 +133,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"EMCAL_M20",              "M20 EMCAL showershape param.",                       ""},
   {"EMCAL_Dispersion",       "EMCAL dispersion param.",                            ""},
 
+  {"EffLeg",                 "A#times#epsilon",                                    ""},
   {"V0Index0",               "V0Index0",                                           ""},
   {"KinkIndex0",             "KinkIndex0",                                         ""},
   //
@@ -158,6 +160,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"kRotPairz",         	 "kRotPairz",                                          "(rad.)"},
   {"Cos2PhiCS",              "cos(2#phi_{CS})",                                    ""},
   {"CosTilPhiCS",            "cos(#phi_{CS})",                                     ""},
+  {"CosPhiH2",               "cos(2#phi)",                                         ""},
+  {"SinPhiH2",               "sin(2#phi)",                                         ""},
   {"DeltaPhiV0ArpH2",        "#phi^{pair}-#Psi^{V0A}",                             ""},
   {"DeltaPhiV0CrpH2",        "#phi^{pair}-#Psi^{V0C}",                             ""},
   {"DeltaPhiV0ACrpH2",       "#phi^{pair}-#Psi^{V0AC}",                            ""},
@@ -172,6 +176,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"v0CrpH2FlowV2",          "cos(2(#phi^{pair}-#Psi^{V0C}))",                     ""},
   {"v0ACrpH2FlowV2",         "cos(2(#phi^{pair}-#Psi^{V0AC}))",                    ""},
   {"TPCrpH2FlowV2",          "cos(2(#phi^{pair}-#Psi^{TPC}))",                     ""},
+  {"TPCrpH2FlowV2Sin",       "sin(2(#phi^{pair}-#Psi^{TPC}))",                     ""},
   {"LegDistance",            "d^{legs}",                                           "(cm)"},
   {"LegDistanceXY",          "d^{legs}_{xy}",                                      "(cm)"},
   {"DeltaEta",               "#Delta #eta",                                        ""},
@@ -186,6 +191,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDpidEffPair",          "#epsilon^{TRD pair}(PID)",                           ""},
   {"MomAsymDau1",            "#it{p}^{leg1}/#it{p}^{pair}",                        ""},
   {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
+  {"EffPair",                "A#times#epsilon",                                    ""},
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
@@ -316,8 +322,10 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"V0AV0CDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{V0C}))",                      ""},
   {"TPCxH2",                 "Q_{x}^{TPC}",                                        ""},
   {"TPCyH2",                 "Q_{y}^{TPC}",                                        ""},
-  {"TPCmagH2",               "|#vec{Q}^{TPC}|",                                   ""},
+  {"TPCmagH2",               "|#vec{Q}^{TPC}|",                                    ""},
   {"TPCrpH2",                "#Psi^{TPC}",                                         ""},
+  {"CosTPCrpH2",             "cos(2#Psi^{TPC})",                                   ""},
+  {"SinTPCrpH2",             "sin(2#Psi^{TPC})",                                   ""},
   {"TPCsub1xH2",             "Q_{x}^{TPCsub1}",                                    ""},
   {"TPCsub1yH2",             "Q_{y}^{TPCsub1}",                                    ""},
   {"TPCsub1rpH2",            "#Psi^{TPCsub1}",                                     ""},
@@ -385,6 +393,7 @@ AliEventplane*  AliDielectronVarManager::fgTPCEventPlane    = 0x0;
 AliKFVertex*    AliDielectronVarManager::fgKFVertex         = 0x0;
 TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[4][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
+THnBase*        AliDielectronVarManager::fgEffMap           = 0x0;
 Double_t        AliDielectronVarManager::fgTRDpidEffCentRanges[10][4] = {{0.0}};
 TString         AliDielectronVarManager::fgVZEROCalibrationFile = "";
 TString         AliDielectronVarManager::fgVZERORecenteringFile = "";

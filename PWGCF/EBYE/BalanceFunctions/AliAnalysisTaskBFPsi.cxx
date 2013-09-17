@@ -31,6 +31,7 @@
 #include "AliEventplane.h"
 #include "AliTHn.h"    
 #include "AliLog.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliEventPoolManager.h"           
 
@@ -53,7 +54,8 @@ ClassImp(AliAnalysisTaskBFPsi)
 
 //________________________________________________________________________
 AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name) 
-: AliAnalysisTaskSE(name), 
+: AliAnalysisTaskSE(name),
+  fArrayMC(0), //+++++++++++++
   fBalance(0),
   fRunShuffling(kFALSE),
   fShuffledBalance(0),
@@ -69,6 +71,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistListPIDQA(0),
   fHistEventStats(0),
   fHistCentStats(0),
+  fHistCentStatsUsed(0),
   fHistTriggerStats(0),
   fHistTrackStats(0),
   fHistVx(0),
@@ -115,7 +118,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPIDNSigma(3.),
   fMinAcceptedPIDProbability(0.8),
   fElectronRejection(kFALSE),
+  fElectronOnlyRejection(kFALSE),
   fElectronRejectionNSigma(-1.),
+  fElectronRejectionMinPt(0.),
+  fElectronRejectionMaxPt(1000.),
   fESDtrackCuts(0),
   fCentralityEstimator("V0M"),
   fUseCentrality(kFALSE),
@@ -128,6 +134,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fNumberOfAcceptedTracksMax(10000),
   fHistNumberOfAcceptedTracks(0),
   fUseOfflineTrigger(kFALSE),
+  fCheckFirstEventInChunk(kFALSE),
+  fCheckPileUp(kFALSE),
+  fUseMCforKinematics(kFALSE),
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
@@ -155,6 +164,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
   fExcludeResonancesInMC(kFALSE),
+  fExcludeElectronsInMC(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
   fEventClass("EventPlane") 
@@ -270,22 +280,28 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   //Event stats.
-  TString gCutName[5] = {"Total","Offline trigger",
-                         "Vertex","Analyzed","sel. Centrality"};
+  TString gCutName[7] = {"Total","Offline trigger",
+                         "Vertex","Analyzed","sel. Centrality","Not1stEvInChunk","No Pile-Up"};
   fHistEventStats = new TH2F("fHistEventStats",
                              "Event statistics;;Centrality percentile;N_{events}",
-                             5,0.5,5.5,220,-5,105);
-  for(Int_t i = 1; i <= 5; i++)
+                             7,0.5,7.5,220,-5,105);
+  for(Int_t i = 1; i <= 7; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
-  TString gCentName[9] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZEMvsZDC"};
+  TString gCentName[13] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","CL1","ZNA","ZPA","V0MvsFMD","TKLvsV0M","ZEMvsZDC"};
   fHistCentStats = new TH2F("fHistCentStats",
                              "Centrality statistics;;Cent percentile",
-			    9,-0.5,8.5,220,-5,105);
-  for(Int_t i = 1; i <= 9; i++)
+			    13,-0.5,12.5,220,-5,105);
+  for(Int_t i = 1; i <= 13; i++){
     fHistCentStats->GetXaxis()->SetBinLabel(i,gCentName[i-1].Data());
+    //fHistCentStatsUsed->GetXaxis()->SetBinLabel(i,gCentName[i-1].Data());  //++++++++++++++++++++++
+  }
   fList->Add(fHistCentStats);
+
+  fHistCentStatsUsed = new TH2F("fHistCentStatsUsed","Centrality statistics;;Cent percentile", 1,-0.5,0.5,220,-5,105); //++++++++++++++++++++++
+  fHistCentStatsUsed->GetXaxis()->SetBinLabel(1,fCentralityEstimator.Data());  //++++++++++++++++++++++
+  fList->Add(fHistCentStatsUsed); //++++++++++++++++++++++
 
   fHistTriggerStats = new TH1F("fHistTriggerStats","Trigger statistics;TriggerBit;N_{events}",1025,0,1025);
   fList->Add(fHistTriggerStats);
@@ -715,7 +731,27 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   Float_t gRefMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
+  AliMCEvent *mcevent = dynamic_cast<AliMCEvent*>(event);
+
   fHistEventStats->Fill(1,gCentrality); //all events
+
+  // check first event in chunk (is not needed for new reconstructions)
+  if(fCheckFirstEventInChunk){
+    AliAnalysisUtils ut;
+    if(ut.IsFirstEventInChunk(event)) 
+      return -1.;
+    fHistEventStats->Fill(6,gCentrality); 
+  }
+
+  // check for pile-up event
+  if(fCheckPileUp){
+    AliAnalysisUtils ut;
+    ut.SetUseMVPlpSelection(kTRUE);
+    ut.SetUseOutOfBunchPileUp(kTRUE);
+    if(ut.IsPileUpEvent(event))
+      return -1.;
+    fHistEventStats->Fill(7,gCentrality); 
+  }
 
   // Event trigger bits
   fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
@@ -727,21 +763,28 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 
     //Centrality stuff 
     if(fUseCentrality) {
-      if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD") { //centrality in AOD header
+      if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec") { //centrality in AOD header   //+++++++++++
 	AliAODHeader *header = (AliAODHeader*) event->GetHeader();
 	if(header){
 	  gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
 
 	  // QA for centrality estimators
 	  fHistCentStats->Fill(0.,header->GetCentralityP()->GetCentralityPercentile("V0M"));
-	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
-	  fHistCentStats->Fill(2.,header->GetCentralityP()->GetCentralityPercentile("TRK"));
-	  fHistCentStats->Fill(3.,header->GetCentralityP()->GetCentralityPercentile("TKL"));
-	  fHistCentStats->Fill(4.,header->GetCentralityP()->GetCentralityPercentile("CL0"));
-	  fHistCentStats->Fill(5.,header->GetCentralityP()->GetCentralityPercentile("CL1"));
-	  fHistCentStats->Fill(6.,header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
-	  fHistCentStats->Fill(7.,header->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
-	  fHistCentStats->Fill(8.,header->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("V0A"));
+	  fHistCentStats->Fill(2.,header->GetCentralityP()->GetCentralityPercentile("V0C"));
+	  fHistCentStats->Fill(3.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
+	  fHistCentStats->Fill(4.,header->GetCentralityP()->GetCentralityPercentile("TRK"));
+	  fHistCentStats->Fill(5.,header->GetCentralityP()->GetCentralityPercentile("TKL")); 
+	  fHistCentStats->Fill(6.,header->GetCentralityP()->GetCentralityPercentile("CL0"));
+	  fHistCentStats->Fill(7.,header->GetCentralityP()->GetCentralityPercentile("CL1"));
+	  fHistCentStats->Fill(8.,header->GetCentralityP()->GetCentralityPercentile("ZNA"));
+	  fHistCentStats->Fill(9.,header->GetCentralityP()->GetCentralityPercentile("ZPA"));
+	  fHistCentStats->Fill(10.,header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
+	  fHistCentStats->Fill(11.,header->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
+	  fHistCentStats->Fill(12.,header->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+
+	  // Centrality estimator USED   ++++++++++++++++++++++++++++++
+	  fHistCentStatsUsed->Fill(0.,header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data()));
 	  
 	  // centrality QA (V0M)
 	  fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
@@ -765,22 +808,29 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 
 	// QA for centrality estimators
 	fHistCentStats->Fill(0.,centrality->GetCentralityPercentile("V0M"));
-	fHistCentStats->Fill(1.,centrality->GetCentralityPercentile("FMD"));
-	fHistCentStats->Fill(2.,centrality->GetCentralityPercentile("TRK"));
-	fHistCentStats->Fill(3.,centrality->GetCentralityPercentile("TKL"));
-	fHistCentStats->Fill(4.,centrality->GetCentralityPercentile("CL0"));
-	fHistCentStats->Fill(5.,centrality->GetCentralityPercentile("CL1"));
-	fHistCentStats->Fill(6.,centrality->GetCentralityPercentile("V0MvsFMD"));
-	fHistCentStats->Fill(7.,centrality->GetCentralityPercentile("TKLvsV0M"));
-	fHistCentStats->Fill(8.,centrality->GetCentralityPercentile("ZEMvsZDC"));
+	fHistCentStats->Fill(1.,centrality->GetCentralityPercentile("V0A"));
+	fHistCentStats->Fill(2.,centrality->GetCentralityPercentile("V0C"));
+	fHistCentStats->Fill(3.,centrality->GetCentralityPercentile("FMD"));
+	fHistCentStats->Fill(4.,centrality->GetCentralityPercentile("TRK"));
+	fHistCentStats->Fill(5.,centrality->GetCentralityPercentile("TKL"));
+	fHistCentStats->Fill(6.,centrality->GetCentralityPercentile("CL0"));
+	fHistCentStats->Fill(7.,centrality->GetCentralityPercentile("CL1"));
+	fHistCentStats->Fill(8.,centrality->GetCentralityPercentile("ZNA"));
+	fHistCentStats->Fill(9.,centrality->GetCentralityPercentile("ZPA"));
+	fHistCentStats->Fill(10.,centrality->GetCentralityPercentile("V0MvsFMD"));
+	fHistCentStats->Fill(11.,centrality->GetCentralityPercentile("TKLvsV0M"));
+	fHistCentStats->Fill(12.,centrality->GetCentralityPercentile("ZEMvsZDC"));
+
+	// Centrality estimator USED   ++++++++++++++++++++++++++++++
+	fHistCentStatsUsed->Fill(0.,centrality->GetCentralityPercentile(fCentralityEstimator.Data()));
 
 	// centrality QA (V0M)
 	fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
       }//ESD
       else if(gAnalysisLevel == "MC"){
 	Double_t gImpactParameter = 0.;
-	if(dynamic_cast<AliMCEvent*>(event)){
-	  AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
+	if(mcevent) {
+	  AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(mcevent)->GenEventHeader());
 	  if(headerH){
 	    gImpactParameter = headerH->ImpactParameter();
 	    gCentrality      = gImpactParameter;
@@ -803,8 +853,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	return 0x0;
       }
       
-      if(dynamic_cast<AliMCEvent*>(event)){
-	AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
+      if(mcevent){
+	AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(mcevent->GenEventHeader());
 	if(header){  
 	  TArrayF gVertexArray;
 	  header->PrimaryVertex(gVertexArray);
@@ -917,7 +967,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   if(fEventClass == "Centrality"){
-    if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD") { //centrality in AOD header
+    if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec" ) { //centrality in AOD header  //++++++++++++++
       AliAODHeader *header = (AliAODHeader*) event->GetHeader();
       if(header){
         gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
@@ -1132,10 +1182,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       }
       if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
-
+      
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = aodTrack->Y();
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
+      
       //===========================PID (so far only for electron rejection)===============================//		    
       if(fElectronRejection) {
-	
+
 	// get the electron nsigma
 	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	
@@ -1144,21 +1200,36 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
 	//end of QA-before pid
 	
-	//Make the decision based on the n-sigma
-	if(nSigma < fElectronRejectionNSigma) continue;
-	
+	// check only for given momentum range
+	if( vPt > fElectronRejectionMinPt && vPt < fElectronRejectionMaxPt ){
+	  	  
+	  //look only at electron nsigma
+	  if(!fElectronOnlyRejection){
+	    
+	    //Make the decision based on the n-sigma of electrons
+	    if(nSigma < fElectronRejectionNSigma) continue;
+	  }
+	  else{
+	    
+	    Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
+	    Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
+	    Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
+	    
+	    //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+	    if(nSigma < fElectronRejectionNSigma
+	       && nSigmaPions   > fElectronRejectionNSigma
+	       && nSigmaKaons   > fElectronRejectionNSigma
+	       && nSigmaProtons > fElectronRejectionNSigma ) continue;
+	  }
+	}
+  
 	//Fill QA after the PID
 	fHistdEdxVsPTPCafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
 	fHistNSigmaTPCvsPtafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	
       }
       //===========================end of PID (so far only for electron rejection)===============================//
-      
-      vCharge = aodTrack->Charge();
-      vEta    = aodTrack->Eta();
-      vY      = aodTrack->Y();
-      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
-      vPt     = aodTrack->Pt();
-      
+
       Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
       Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
       
@@ -1257,6 +1328,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 		 // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
 		 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
 		 || pdgCodeOfMother == 111  // pi0 Dalitz
+		 || pdgCodeOfMother == 22  // photon
 		 ) {
 		kExcludeParticle = kTRUE;
 	      }
@@ -1265,6 +1337,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
+	}
+
+	//Exclude electrons with PDG
+	if(fExcludeElectronsInMC) {
+	  
+	  if(TMath::Abs(aodTrack->GetPdgCode()) == 11) continue;
+	  
 	}
 	
 	// fill QA histograms
@@ -1286,6 +1365,200 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }//aodTracks
     }//MC event
   }//MCAOD
+  //==============================================================================================================
+
+  //==============================================================================================================
+  else if(gAnalysisLevel == "MCAODrec") {
+    
+    /* fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (!fAOD) {
+      printf("ERROR: fAOD not available\n");
+      return;
+      }*/
+    
+    fArrayMC = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName())); 
+    if (!fArrayMC) { 
+       AliError("No array of MC particles found !!!");
+    }
+
+    AliMCEvent* mcEvent = MCEvent();
+    if (!mcEvent) {
+       AliError("ERROR: Could not retrieve MC event");
+       return tracksAccepted;
+    }
+     
+    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
+      if (!aodTrack) {
+	AliError(Form("Could not receive track %d", iTracks));
+	continue;
+      }
+      
+      for(Int_t iTrackBit = 0; iTrackBit < 16; iTrackBit++){
+	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
+      }
+      if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+      
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = aodTrack->Y();
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
+      
+      //===========================use MC information for Kinematics===============================//		    
+      if(fUseMCforKinematics){
+
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+
+	if(AODmcTrack){
+	  vCharge = AODmcTrack->Charge();
+	  vEta    = AODmcTrack->Eta();
+	  vY      = AODmcTrack->Y();
+	  vPhi    = AODmcTrack->Phi();// * TMath::RadToDeg();
+	  vPt     = AODmcTrack->Pt();
+	}
+	else{
+	  AliDebug(1, "no MC particle for this track"); 
+	  continue;
+	}
+      }
+      //===========================end of use MC information for Kinematics========================//		    
+
+
+      //===========================PID (so far only for electron rejection)===============================//		    
+      if(fElectronRejection) {
+
+	// get the electron nsigma
+	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
+
+	//Fill QA before the PID
+	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	//end of QA-before pid
+	
+	// check only for given momentum range
+	if( vPt > fElectronRejectionMinPt && vPt < fElectronRejectionMaxPt ){
+	  	  
+	  //look only at electron nsigma
+	  if(!fElectronOnlyRejection){
+	    
+	    //Make the decision based on the n-sigma of electrons
+	    if(nSigma < fElectronRejectionNSigma) continue;
+	  }
+	  else{
+	    
+	    Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
+	    Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
+	    Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
+	    
+	    //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+	    if(nSigma < fElectronRejectionNSigma
+	       && nSigmaPions   > fElectronRejectionNSigma
+	       && nSigmaKaons   > fElectronRejectionNSigma
+	       && nSigmaProtons > fElectronRejectionNSigma ) continue;
+	  }
+	}
+  
+	//Fill QA after the PID
+	fHistdEdxVsPTPCafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	
+      }
+      //===========================end of PID (so far only for electron rejection)===============================//
+      
+      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+            
+      // Kinematics cuts from ESD track cuts
+      if( vPt < fPtMin || vPt > fPtMax)      continue;
+      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+      
+      // Extra DCA cuts (for systematic studies [!= -1])
+      if( fDCAxyCut != -1 && fDCAzCut != -1){
+	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
+	  continue;  // 2D cut
+	}
+      }
+      
+      // Extra TPC cuts (for systematic studies [!= -1])
+      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
+	continue;
+      }
+      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
+	continue;
+      }
+
+      //Exclude resonances
+      if(fExcludeResonancesInMC) {
+	
+	Bool_t kExcludeParticle = kFALSE;
+
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+      
+        if (AODmcTrack){ 
+	  //if (AODmcTrack->IsPhysicalPrimary()){
+	  
+	  Int_t gMotherIndex = AODmcTrack->GetMother();
+	  if(gMotherIndex != -1) {
+	    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	      if(pdgCodeOfMother == 113  // rho0
+		 || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+		 // || pdgCodeOfMother == 221  // eta
+		 // || pdgCodeOfMother == 331  // eta'
+		 // || pdgCodeOfMother == 223  // omega
+		 // || pdgCodeOfMother == 333  // phi
+		 || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+		 // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
+		 // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
+		 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+		 || pdgCodeOfMother == 111  // pi0 Dalitz
+		 || pdgCodeOfMother == 22   // photon
+		 ) {
+		kExcludeParticle = kTRUE;
+	      }
+	    }
+	  }
+	}	
+	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+	if(kExcludeParticle) continue;
+      }
+
+      //Exclude electrons with PDG
+      if(fExcludeElectronsInMC) {
+	
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+	
+        if (AODmcTrack){ 
+	  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
+	}
+      }
+      
+      // fill QA histograms
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+    }//track loop
+  }//MCAODrec
   //==============================================================================================================
 
   else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD") { // handling of TPC only tracks different in AOD and ESD
@@ -1563,7 +1836,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
 	}
-	
+
+	//Exclude electrons with PDG
+	if(fExcludeElectronsInMC) {
+	  
+	  TParticle *particle = track->Particle();
+	  
+	  if (particle){ 
+	    if(TMath::Abs(particle->GetPdgCode()) == 11) continue;
+	  }
+	}
+      
 	vPhi    = track->Phi();
 	//Printf("phi (before): %lf",vPhi);
 	

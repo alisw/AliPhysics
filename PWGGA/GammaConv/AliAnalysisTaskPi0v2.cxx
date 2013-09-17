@@ -2,13 +2,6 @@
 #include "TRandom3.h"
 #include "TChain.h"
 #include "AliLog.h"
-#include "TList.h"
-#include "TChain.h"
-#include "TDirectory.h"
-#include "TTree.h"
-#include "TH1.h"
-#include "TH1F.h"
-#include "THnSparse.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskPi0v2.h"
@@ -35,8 +28,7 @@ ClassImp(AliAnalysisTaskPi0v2)
     fNCuts(0),
     fConversionSelection(NULL),
     fConversionGammas(NULL),
-    fNCentralityBins(1),
-    fCentralityBins(NULL),
+    fNCentralityBins(knCentMax-1),
     fCentrality(-1),
     fCentralityBin(0),
     fNBinsPhi(6),
@@ -70,6 +62,7 @@ ClassImp(AliAnalysisTaskPi0v2)
     fSparseDist(NULL),
     fHruns(NULL),
     fDoEPFlattening(kTRUE),
+    fPeriodIndex(-1),
 
     hNEvents(NULL),
     hEventSelection(NULL),
@@ -130,6 +123,28 @@ ClassImp(AliAnalysisTaskPi0v2)
 	fPhiDist[i] = 0;
     }
 
+    for(Int_t ii=0;ii<knFlatPeriod;ii++){
+	for(Int_t jj=0;jj<knEP;jj++){
+	    for(Int_t kk=0;kk<knCentMax;kk++){
+		fFlatc2[ii][jj][kk]=0;
+		fFlats2[ii][jj][kk]=0;
+		fFlatc4[ii][jj][kk]=0;
+		fFlats4[ii][jj][kk]=0;
+	    }
+	}
+    }
+
+    fCentralityBins[0]=0;
+    fCentralityBins[1]=5;
+    fCentralityBins[2]=10;
+    fCentralityBins[3]=20;
+    fCentralityBins[4]=30;
+    fCentralityBins[5]=40;
+    fCentralityBins[6]=50;
+    fCentralityBins[7]=60;
+    fCentralityBins[8]=70;
+    fCentralityBins[9]=80;
+
     // Define input and output slots here
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -142,10 +157,6 @@ AliAnalysisTaskPi0v2::~AliAnalysisTaskPi0v2(){
 	delete fRandomizer;
 	fRandomizer=NULL;
     }
-    if(fCentralityBins){
-	delete fCentralityBins;
-	fCentralityBins=NULL;
-    }
 
     if(fConversionSelection){
 	for(Int_t ii=0;ii<fNCuts;ii++)delete fConversionSelection[ii];
@@ -153,14 +164,22 @@ AliAnalysisTaskPi0v2::~AliAnalysisTaskPi0v2(){
 	fConversionSelection=NULL;
     }
 
+    if(fEP){
+	delete fEP;
+	fEP=NULL;
+    }
+
     if (fPeriod.CompareTo("LHC11h")==0){
 	for(Int_t i = 0; i < 4; i++) {
 	    if(fPhiDist[i]){
 		delete fPhiDist[i];
-		fPhiDist[i] = 0;
+		fPhiDist[i] = NULL;
 	    }
 	}
-	if(fHruns) delete fHruns;
+	if(fHruns){
+	    delete fHruns;
+	    fHruns=NULL;
+	}
     }
 }
 
@@ -178,12 +197,6 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
     Bool_t IsHeavyIon=fConversionCuts->IsHeavyIon();
 
     if(!IsHeavyIon||IsMC)fNEPMethods=1;
-
-    if(!fCentralityBins){
-	fCentralityBins=new Double_t[fNCentralityBins+1];
-	fCentralityBins[0]=-0.5;
-	fCentralityBins[1]=0.5;
-    }
 
     // Create histograms
 
@@ -281,19 +294,19 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	fRPList->SetOwner(kTRUE);
 	fOutputList->Add(fRPList);
 
-	hRPTPC=new TH2F("TPCAC" ,"TPC_AC" , fNCentralityBins,fCentralityBins, 180, 0, fPsiMax);
+	hRPTPC=new TH2F("TPCAC" ,"TPC_AC" , fNCentralityBins,&fCentralityBins[0], 180, 0, fPsiMax);
 	hRPTPC->Sumw2();
 	fRPList->Add(hRPTPC);
-	hRPTPCEtaA=new TH2F("TPCEtaA" ,"TPC_EtaA" , fNCentralityBins,fCentralityBins, 180, 0, fPsiMax);
+	hRPTPCEtaA=new TH2F("TPCEtaA" ,"TPC_EtaA" , fNCentralityBins,&fCentralityBins[0], 180, 0, fPsiMax);
 	hRPTPCEtaA->Sumw2();
 	fRPList->Add(hRPTPCEtaA);
-	hRPTPCEtaC=new TH2F("TPCEtaC" ,"TPC_EtaC" , fNCentralityBins,fCentralityBins, 180, 0, fPsiMax);
+	hRPTPCEtaC=new TH2F("TPCEtaC" ,"TPC_EtaC" , fNCentralityBins,&fCentralityBins[0], 180, 0, fPsiMax);
 	hRPTPCEtaC->Sumw2();
 	fRPList->Add(hRPTPCEtaC);
-	hRPV0A=new TH2F("V0A" ,"VZERO_A" , fNCentralityBins,fCentralityBins, 180, 0, fPsiMax);
+	hRPV0A=new TH2F("V0A" ,"VZERO_A" , fNCentralityBins,&fCentralityBins[0], 180, 0, fPsiMax);
 	hRPV0A->Sumw2();
 	fRPList->Add(hRPV0A);
-	hRPV0C=new TH2F("V0C" ,"VZERO_C" , fNCentralityBins,fCentralityBins, 180, 0, fPsiMax);
+	hRPV0C=new TH2F("V0C" ,"VZERO_C" , fNCentralityBins,&fCentralityBins[0], 180, 0, fPsiMax);
 	hRPV0C->Sumw2();
 	fRPList->Add(hRPV0C);
 
@@ -315,38 +328,38 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 
         Int_t nsystep=4;// 3 different weights + unflattened EP
 
-	hCos2TPC=new TH2F("Cos2_TPCAC" ,"Cos2_TPCAC" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2TPC=new TH2F("Cos2_TPCAC" ,"Cos2_TPCAC" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2TPC->Sumw2();
 	fRPList->Add(hCos2TPC);
-	hCos2TPCEta=new TH2F("Cos2_TPCEtaAC" ,"Cos2_TPCEtaAC" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2TPCEta=new TH2F("Cos2_TPCEtaAC" ,"Cos2_TPCEtaAC" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2TPCEta->Sumw2();
 	fRPList->Add(hCos2TPCEta);
-	hCos2V0ATPC=new TH2F("Cos2_V0ATPC" ,"Cos2_V0ATPC" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2V0ATPC=new TH2F("Cos2_V0ATPC" ,"Cos2_V0ATPC" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2V0ATPC->Sumw2();
 	fRPList->Add(hCos2V0ATPC);
-	hCos2V0CTPC=new TH2F("Cos2_V0CTPC" ,"Cos2_V0CTPC" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2V0CTPC=new TH2F("Cos2_V0CTPC" ,"Cos2_V0CTPC" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2V0CTPC->Sumw2();
 	fRPList->Add(hCos2V0CTPC);
-	hCos2V0AC=new TH2F("Cos2_V0AC" ,"Cos2_V0AC" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2V0AC=new TH2F("Cos2_V0AC" ,"Cos2_V0AC" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2V0AC->Sumw2();
 	fRPList->Add(hCos2V0AC);
-        hCos2V0ATPCEtaA=new TH2F("Cos2_V0ATPCEtaA" ,"Cos2_V0ATPCEtaA" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+        hCos2V0ATPCEtaA=new TH2F("Cos2_V0ATPCEtaA" ,"Cos2_V0ATPCEtaA" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2V0ATPCEtaA->Sumw2();
 	fRPList->Add(hCos2V0ATPCEtaA);
-	hCos2V0ATPCEtaC=new TH2F("Cos2_V0ATPCEtaC" ,"Cos2_V0ATPCEtaC" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2V0ATPCEtaC=new TH2F("Cos2_V0ATPCEtaC" ,"Cos2_V0ATPCEtaC" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2V0ATPCEtaC->Sumw2();
 	fRPList->Add(hCos2V0ATPCEtaC);
-        hCos2V0CTPCEtaA=new TH2F("Cos2_V0CTPCEtaA" ,"Cos2_V0CTPCEtaA" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+        hCos2V0CTPCEtaA=new TH2F("Cos2_V0CTPCEtaA" ,"Cos2_V0CTPCEtaA" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2V0CTPCEtaA->Sumw2();
 	fRPList->Add(hCos2V0CTPCEtaA);
-	hCos2V0CTPCEtaC=new TH2F("Cos2_V0CTPCEtaC" ,"Cos2_V0CTPCEtaC" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2V0CTPCEtaC=new TH2F("Cos2_V0CTPCEtaC" ,"Cos2_V0CTPCEtaC" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2V0CTPCEtaC->Sumw2();
 	fRPList->Add(hCos2V0CTPCEtaC);
-	hCos2SumWeights=new TH2F("Cos2_SumWeights" ,"Cos2_SumWeights" ,fNCentralityBins,fCentralityBins,nsystep+1,-0.5,nsystep+0.5);
+	hCos2SumWeights=new TH2F("Cos2_SumWeights" ,"Cos2_SumWeights" ,fNCentralityBins,&fCentralityBins[0],nsystep+1,-0.5,nsystep+0.5);
 	hCos2SumWeights->Sumw2();
 	fRPList->Add(hCos2SumWeights);
 
-	hEtaTPCEP=new TH2F("Eta_TPCEP" ,"Eta_TPCEP" ,fNCentralityBins,fCentralityBins,100,-1,1);
+	hEtaTPCEP=new TH2F("Eta_TPCEP" ,"Eta_TPCEP" ,fNCentralityBins,&fCentralityBins[0],100,-1,1);
 	hEtaTPCEP->Sumw2();
 	fRPList->Add(hEtaTPCEP);
 
@@ -383,7 +396,7 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	    fPhotonQAList->Add(hGammaPhi[m]);
 	}
 
-	hGammaMultCent=new TH2F("GammaMultvsCent","GammaMultvsCent",fNCentralityBins,fCentralityBins, 60,-0.5,59.5);
+	hGammaMultCent=new TH2F("GammaMultvsCent","GammaMultvsCent",fNCentralityBins,&fCentralityBins[0], 60,-0.5,59.5);
 	hGammaMultCent->Sumw2();
 	fPhotonQAList->Add(hGammaMultCent);
 
@@ -466,7 +479,7 @@ void AliAnalysisTaskPi0v2::UserCreateOutputObjects()
 	fPhotonQAList->Add(hGammaFull);
 
     }
-    hNEvents=new TH1F("NEvents","NEvents",fNCentralityBins,fCentralityBins);
+    hNEvents=new TH1F("NEvents","NEvents",fNCentralityBins,&fCentralityBins[0]);
     fPhotonQAList->Add(hNEvents);
     hEventSelection=new TH1F("EventSelection","EventSelection",kEventSelected,0.5,kEventSelected+0.5);
     hEventSelection->GetXaxis()->SetBinLabel(kEventIn,"in");
@@ -517,6 +530,7 @@ Bool_t AliAnalysisTaskPi0v2::InitEvent(){
 	    if (fRunNumber >= 136851 && fRunNumber <= 139515){fPeriod = "LHC10h";}
 	    if (fRunNumber >= 166529 && fRunNumber <= 170593){fPeriod = "LHC11h";}
 	    fRunIndex=GetRunIndex(fRunNumber);
+            fPeriodIndex=GetPeriodIndex(fPeriod);
 	    LoadVZEROCalibration(fRunNumber); // Load Calibration for V0 Event Plane
             LoadTPCCalibration(fRunNumber); // Load Calibration for TPC Event Plane
 	}
@@ -557,9 +571,6 @@ Bool_t AliAnalysisTaskPi0v2::InitEvent(){
 //________________________________________________________________________
 void AliAnalysisTaskPi0v2::UserExec(Option_t *) 
 {
-    cout<<hNEvents->GetEntries()<<endl;
-    if(hNEvents->GetEntries()>5)return;
-
     hEventSelection->Fill(kEventIn);
 
     if(!InitEvent())return;
@@ -1146,16 +1157,13 @@ Bool_t AliAnalysisTaskPi0v2::SetCentrality(){
 //________________________________________________________________________
 void AliAnalysisTaskPi0v2::SetCentralityBins(Double_t *bins,Int_t nbins)
 {
+
+    if(nbins>=knCentMax){AliError("Not enough slots");return;}
+
     // Set Centrality bins for analysis
 
     fNCentralityBins=nbins;
 
-    if(fCentralityBins){
-	delete[] fCentralityBins;
-	fCentralityBins=NULL;
-    }
-
-    fCentralityBins=new Double_t[fNCentralityBins+1];
     for(Int_t ii=0;ii<=fNCentralityBins;ii++){
 	fCentralityBins[ii]=bins[ii];
     }
@@ -1528,14 +1536,17 @@ void AliAnalysisTaskPi0v2::GetV0EP(AliVEvent * event,Double_t &rpv0a,Double_t &r
         rpv0c=eventEP->CalculateVZEROEventPlane(fInputEvent,9,fHarmonic,qx,qy);
     }
 
+    //AliEventplane *ep=fInputEvent->GetEventplane();
+    //cout<<fHarmonic<<" A "<<ep->GetEventplane("V0A",fInputEvent,fHarmonic)<<" "<<rpv0a<<" C "<<ep->GetEventplane("V0C",fInputEvent,fHarmonic)<<" "<<rpv0c<<endl;
+
     rpv0a=GetPsiInRange(rpv0a);
     rpv0c=GetPsiInRange(rpv0c);
+
+  
 }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0v2::LoadVZEROCalibration(Int_t run){
-
-    cout<<fPeriod.Data()<<endl;
 
     // VZERO Phi Weights and Recentering
     if (fPeriod.CompareTo("LHC10h")==0){
@@ -1865,160 +1876,55 @@ Bool_t AliAnalysisTaskPi0v2::GetTPCEventPlane(){
 
     Int_t ntracks=trackcounter1+trackcounter2;
 
+    //AliEventplane *ep=fInputEvent->GetEventplane();
+    //if(fHarmonic==2)cout<<ep->GetQVector()->Phi()<<" "<<fEP->GetQVector()->Phi()<<endl;
+
     if(ntracks<3)return kFALSE;// <3 -> no subevents
     return kTRUE;
 }
 
+//____________________________________________________________________________
+void AliAnalysisTaskPi0v2::SetFlatteningCoeff(EEventPlane ep,Int_t period,Int_t nCent,Double_t *cc2,Double_t *cs2,Double_t *cc4,Double_t *cs4){
+
+    if(nCent>knCentMax){AliError("Exceeds available Slots");return;}
+    if(ep>=knEP||ep<0){AliError("Unknown EPMethod");return;}
+    if(period>=knFlatPeriod||period<0){AliError("Unknown EPMethod");return;}
+
+    for(Int_t ic=0;ic<nCent;ic++){
+	fFlatc2[period][ep][ic]=cc2[ic];
+	fFlats2[period][ep][ic]=cs2[ic];
+	fFlatc4[period][ep][ic]=cc4[ic];
+	fFlats4[period][ep][ic]=cs4[ic];
+    }
+}
+
+//____________________________________________________________________________
+Int_t AliAnalysisTaskPi0v2::GetPeriodIndex(TString period){
+
+    if(period.CompareTo("LHC10h")==0)return 0;
+    if(period.CompareTo("LHC11h")==0)return 1;
+
+    return -1;
+}
 
 //____________________________________________________________________________
 Double_t AliAnalysisTaskPi0v2::ApplyFlattening(Double_t phi,EEventPlane ep){
 
-    Double_t c2=0;
-    Double_t s2=0;
-    Double_t c4=0;
-    Double_t s4=0;
-
-    // GetCorrection Parameter
-    if(fHarmonic==2){
-     
-	if(ep==kEPTPC){
-
-	    Double_t cc2[5]={0.00904396,0.00472483,0.00306154,0.00218462,0.00167447};
-	    Double_t cs2[5]={0.00885519,0.00516223,0.00411065,0.00380145,0.00324424};
-	    Double_t cc4[5]={-0.00110933,-0.00110521,-0.00124342,0.00104131,0.000651779};
-	    Double_t cs4[5]={0.00163869,-0.00053565,0.000878745,-0.000563657,-0.000604021};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPTPCEtaA){
-
-	    Double_t cc2[5]={0.00529447,0.00278029,0.00315325,0.00173634,0.000763168};
-	    Double_t cs2[5]={0.00314285,0.00170173,0.00263333,0.0018509,0.00223784};
-	    Double_t cc4[5]={-0.000737254,-0.00037845,-0.000492715,0.000775897,0.000768656};
-	    Double_t cs4[5]={0.000347583,3.79872e-05,0.000387037,-0.000186129,0.000432698};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPTPCEtaC){
-
-	    Double_t cc2[5]={-0.00562282,-0.00456735,-0.00306068,-0.0027173,-0.00172432};
-	    Double_t cs2[5]={0.0101804,0.00430782,0.00394715,0.00350156,0.00302749};
-	    Double_t cc4[5]={0.00150831,-0.00159271,-0.000964157,0.000525894,9.93172e-05};
-	    Double_t cs4[5]={0.00119279,-4.74629e-05,0.000118845,0.000278554,3.20868e-05};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPV0A){
-
-	    Double_t cc2[5]={0.046427,0.0105401,-0.000152992,-0.00578274,-0.0108038};
-	    Double_t cs2[5]={0.00551503,0.0158159,0.00965148,0.00135414,-0.00548846};
-	    Double_t cc4[5]={0.00362833,0.00170777,0.000152998,0.00223823,0.00215164};
-	    Double_t cs4[5]={0.00349056,0.00142802,0.00123298,0.00207995,0.00145625};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPV0C){
-
-	    Double_t cc2[5]={-0.00473277,-0.000371313,0.000857122,-1.54263e-05,-0.000686139};
-	    Double_t cs2[5]={0.00408304,-0.00208615,-0.00149018,-0.000853616,-2.78855e-05};
-	    Double_t cc4[5]={-0.00451741,-0.00399036,-0.00318784,-0.00186472,-0.00106299};
-	    Double_t cs4[5]={0.00188045,-0.00713956,-0.00484254,-0.00448149,-0.00482164};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-    }
-
-    if(fHarmonic==3){
-
-	if(ep==kEPTPC){
-
-	    Double_t cc2[5]={0.0116542,0.0103631,0.00897965,0.00707409,0.00605151};
-	    Double_t cs2[5]={-0.0171191,-0.013024,-0.0114752,-0.0086613,-0.00706863};
-	    Double_t cc4[5]={-0.000602948,0.00144836,-0.000193641,0.000108773,-0.000518333};
-	    Double_t cs4[5]={-0.00164769,0.00134327,-0.00106369,7.96546e-06,-0.000261517};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPTPCEtaA){
-
-	    Double_t cc2[5]={0.000386277,0.000119225,0.00111969,0.000534801,0.000642703};
-	    Double_t cs2[5]={-0.00581604,-0.00607255,-0.00443819,-0.00268834,-0.00299961};
-	    Double_t cc4[5]={0.00051635,0.00036326,-0.000221272,4.66775e-05,-3.05784e-06};
-	    Double_t cs4[5]={1.43285e-05,0.000514099,0.000619339,0.00106466,0.000344196};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPTPCEtaC){
-
-	    Double_t cc2[5]={0.0116475,0.0102385,0.00801121,0.00552336,0.00423273};
-	    Double_t cs2[5]={-0.0112722,-0.00796059,-0.00683678,-0.00531097,-0.00430716};
-	    Double_t cc4[5]={-0.000609051,1.36573e-08,-0.000464961,-0.000387943,-2.28363e-05};
-	    Double_t cs4[5]={0.00125449,0.00168484,-0.000390491,-0.000219447,8.11997e-07};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPV0A){
-
-            Double_t cc2[5]={-0.0057427,-0.00482728,-0.00565919,-0.000717094,-0.00933233};
-	    Double_t cs2[5]={0.0306554,-0.0144675,-0.0159243,-0.0120465,-0.00814124};
-	    Double_t cc4[5]={-0.002868,0.00159533,0.00754171,0.00683898,0.00689441};
-	    Double_t cs4[5]={0.00083196,0.00198133,4.68307e-05,-0.00018187,-0.0014258};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-
-	if(ep==kEPV0C){
-
-	    Double_t cc2[5]={-0.00259141,-0.00115826,-0.000738658,-4.96667e-05,-0.000346694};
-	    Double_t cs2[5]={-0.0111001,0.00258109,0.00110959,-0.000147296,-0.000199817};
-	    Double_t cc4[5]={0.000968742,0.00157903,0.000206157,0.000444206,-0.00046573};
-	    Double_t cs4[5]={-0.00307319,-0.0047952,-0.00412117,-0.00320344,-0.00386629};
-
-	    c2=cc2[fCentralityBin];
-	    s2=cs2[fCentralityBin];
-	    c4=cc4[fCentralityBin];
-	    s4=cs4[fCentralityBin];
-	}
-    }
-
-    // Do correction
     Double_t newphi=phi;
-    newphi+=1/Double_t(fHarmonic)*(2*c2*sin(Double_t(fHarmonic)*phi)-2*s2*cos(Double_t(fHarmonic)*phi)+c4*sin(2*Double_t(fHarmonic)*phi)-s4*cos(2*Double_t(fHarmonic)*phi));
-    newphi=GetPsiInRange(newphi);
+
+    if(fPeriodIndex>=0){
+
+	Double_t c2=fFlatc2[fPeriodIndex][Int_t(ep)][fCentralityBin];
+	Double_t s2=fFlats2[fPeriodIndex][Int_t(ep)][fCentralityBin];
+	Double_t c4=fFlatc4[fPeriodIndex][Int_t(ep)][fCentralityBin];
+	Double_t s4=fFlats4[fPeriodIndex][Int_t(ep)][fCentralityBin];
+
+	// Do correction
+
+	newphi+=1/Double_t(fHarmonic)*(2*c2*sin(Double_t(fHarmonic)*phi)-2*s2*cos(Double_t(fHarmonic)*phi)+c4*sin(2*Double_t(fHarmonic)*phi)-s4*cos(2*Double_t(fHarmonic)*phi));
+	newphi=GetPsiInRange(newphi);
+
+    }
 
     return newphi;
 }
@@ -2032,6 +1938,7 @@ Double_t AliAnalysisTaskPi0v2::GetWeight(TObject* track1)
 	if (track->Pt()<2) ptweight=track->Pt();
 	else ptweight=2;
     }
+
     return ptweight*GetPhiWeight(track);
 }
 

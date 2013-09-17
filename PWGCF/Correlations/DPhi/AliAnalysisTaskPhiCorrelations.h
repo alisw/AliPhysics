@@ -47,6 +47,7 @@ class AliESDEvent;
 class AliHelperPID;
 class AliAnalysisUtils;
 class TFormula;
+class TMap;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -85,6 +86,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     // track cuts
     void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
+    void   SetTrackEtaCutMin( Double_t val )    { fTrackEtaCutMin = val; }
     void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
@@ -106,18 +108,23 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetFillpT(Bool_t flag) { fFillpT = flag; }
     void   SetStepsFillSkip(Bool_t step0, Bool_t step6) { fFillOnlyStep0 = step0; fSkipStep6 = step6; }
     void   SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
+    void   SetRejectZeroTrackEvents(Bool_t flag)    { fRejectZeroTrackEvents = flag; }
     void   SetRemoveWeakDecays(Bool_t flag = kTRUE) { fRemoveWeakDecays = flag; }
     void   SetRemoveDuplicates(Bool_t flag = kTRUE) { fRemoveDuplicates = flag; }
     void   SetSkipFastCluster(Bool_t flag = kTRUE)  { fSkipFastCluster = flag; }
     void   SetWeightPerEvent(Bool_t flag = kTRUE)   { fWeightPerEvent = flag; }
     void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
     void   SetPtOrder(Bool_t flag) { fPtOrder = flag; }
+    void   SetTriggersFromDetector(Int_t flag) { fTriggersFromDetector = flag; }
     
     AliHelperPID* GetHelperPID() { return fHelperPID; }
     void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
    
     AliAnalysisUtils* GetAnalysisUtils() { return fAnalysisUtils; }
     void   SetAnalysisUtils(AliAnalysisUtils* utils){ fAnalysisUtils = utils; }
+   
+    TMap* GetMap() { return fMap; }
+    void   SetMap(TMap* map){ fMap = map; }
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -146,9 +153,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t		fSkipTrigger;		  // skip trigger selection
     Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
     
-    // Pointers to external UE classes
-    AliHelperPID*     fHelperPID;      // points to class containing common analysis algorithms
-    AliAnalysisUtils*     fAnalysisUtils;      // points to class containing common analysis algorithms
+    AliHelperPID*     fHelperPID;      // points to class for PID
+    AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
+    TMap*     fMap;                   // points to TMap class containing scaling factors for VZERO A signal
+ 
+   // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
@@ -174,7 +183,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TString             fCentralityMethod;     // Method to determine centrality
     
     // Track cuts
-    Double_t      	fTrackEtaCut;          // Eta cut on particles
+    Double_t      	fTrackEtaCut;          // Maximum Eta cut on particles
+    Double_t      	fTrackEtaCutMin;          // Minimum Eta cut on particles
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
     TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
@@ -197,16 +207,18 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fFillOnlyStep0; 	   // fill only step 0
     Bool_t fSkipStep6;		   // skip step 6 when filling
     Bool_t fRejectCentralityOutliers;  // enable rejection of outliers in centrality vs no track correlation
+    Bool_t fRejectZeroTrackEvents;  // reject events which have no tracks (using the eta, pT cuts defined)
     Bool_t fRemoveWeakDecays;	   // remove secondaries from weak decays from tracks and particles
     Bool_t fRemoveDuplicates;      // remove particles with the same label (double reconstruction)
     Bool_t fSkipFastCluster;	   // skip kFastOnly flagged events (only for data)
     Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
+    Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 33); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 37); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

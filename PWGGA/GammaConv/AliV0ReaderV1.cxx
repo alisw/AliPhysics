@@ -24,6 +24,19 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
+// The AliAODConversionPhotons will return the Position (== ESDTrack->GetID())of the positive (negative) ESDTrack 
+// in the Array of ESDTracks stored in the ESDEvent via GetTrackLabelPositive() (GetTrackLabelNagative()).
+// Since it is the Position in the Array it is always positive.
+// After the conversion ESD --> AOD each AOD track will give you the former Position in the ESDArray via the
+// Function AODTrack->GetID(). AODTracks are stored for different TrackParameter (e.g. HybridTracks, TPC only ...). No Standard 
+// AODTracks (not copies of AliExternalTrackParam) will be stored with negative values of AODTrack->GetID() (Formula: (ESDTrack->GetID()+1)*-1)
+// This leads to the possibility of more than one AOD track with the same negative ID. For that reason all AOD tracks are additionally flaged.
+// In this analysis we should therefore only use AODTracks with positive values of AODTrack->GetID().
+
+// If you want to find the AODTrack corresponding to the daugher track of a AliAODConversionPhoton you have to find the AODTrack with
+// AODTrack->GetID() == GetTrackLabelPositive() (GetTrackLabelNagative()).
+
+
 #include "AliV0ReaderV1.h"
 #include "AliKFParticle.h"
 #include "AliAODv0.h"
@@ -64,113 +77,114 @@ ClassImp(AliV0ReaderV1)
 
 //________________________________________________________________________
 AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
-    fConversionCuts(NULL),
-    fConversionGammas(NULL),
-    fUseImprovedVertex(kTRUE),
-    fUseOwnXYZCalculation(kTRUE),
-    fUseConstructGamma(kFALSE),
-    kUseAODConversionPhoton(kTRUE),
-    fCreateAOD(kFALSE),
-    fDeltaAODBranchName("GammaConv"),
-    fDeltaAODFilename("AliAODGammaConversion.root"),
-    fEventIsSelected(kFALSE),
-    fPeriodName("")
+   fConversionCuts(NULL),
+   fConversionGammas(NULL),
+   fUseImprovedVertex(kTRUE),
+   fUseOwnXYZCalculation(kTRUE),
+   fUseConstructGamma(kFALSE),
+   kUseAODConversionPhoton(kTRUE),
+   fCreateAOD(kFALSE),
+   fDeltaAODBranchName("GammaConv"),
+   fDeltaAODFilename("AliAODGammaConversion.root"),
+   fRelabelAODs(kFALSE),
+   fEventIsSelected(kFALSE),
+   fNumberOfPrimaryTracks(0),
+   fPeriodName("")
 {
-    // Default constructor
+   // Default constructor
 
-    DefineInput(0, TChain::Class());
+   DefineInput(0, TChain::Class());
 }
 
 //________________________________________________________________________
 AliV0ReaderV1::~AliV0ReaderV1()
 {
-    // default deconstructor
+   // default deconstructor
 
-    if(fConversionGammas){
-	fConversionGammas->Delete();// Clear Objects
-	delete fConversionGammas;
-	fConversionGammas=0x0;
-    }
+   if(fConversionGammas){
+      fConversionGammas->Delete();// Clear Objects
+      delete fConversionGammas;
+      fConversionGammas=0x0;
+   }
 }
 /*
 //________________________________________________________________________
 AliV0ReaderV1::AliV0ReaderV1(AliV0ReaderV1 &original) : AliAnalysisTaskSE(original),
-    fConversionCuts(NULL),
-    fConversionGammas(NULL),
-    fUseImprovedVertex(original.fUseImprovedVertex),
-    fUseOwnXYZCalculation(original.fUseOwnXYZCalculation),
-    fUseConstructGamma(original.fUseConstructGamma),
-    kUseAODConversionPhoton(original.kUseAODConversionPhoton),
-    fCreateAOD(original.fCreateAOD),
-    fDeltaAODBranchName(original.fDeltaAODBranchName),
-    fDeltaAODFilename(original.fDeltaAODFilename),
-    fEventIsSelected(original.fEventIsSelected)
+fConversionCuts(NULL),
+fConversionGammas(NULL),
+fUseImprovedVertex(original.fUseImprovedVertex),
+fUseOwnXYZCalculation(original.fUseOwnXYZCalculation),
+fUseConstructGamma(original.fUseConstructGamma),
+kUseAODConversionPhoton(original.kUseAODConversionPhoton),
+fCreateAOD(original.fCreateAOD),
+fDeltaAODBranchName(original.fDeltaAODBranchName),
+fDeltaAODFilename(original.fDeltaAODFilename),
+fEventIsSelected(original.fEventIsSelected)
 {
-    // Default constructor
+// Default constructor
 
-    DefineInput(0, TChain::Class());
+DefineInput(0, TChain::Class());
 }
 
 //____________________________________________________________
 AliV0ReaderV1 &AliV0ReaderV1::operator=(const AliV0ReaderV1 &ref){
-	//
-	// Assignment operator
-	// Only copies pointers, object is not the owner of the references
-	//
-    if(this != &ref){
-	AliAnalysisTaskSE::operator=(ref);
-	fUseImprovedVertex=ref.fUseImprovedVertex;
-	fUseOwnXYZCalculation=ref.fUseOwnXYZCalculation;
-	fUseConstructGamma=ref.fUseConstructGamma;
-	kUseAODConversionPhoton=ref.kUseAODConversionPhoton;
-	fCreateAOD=ref.fCreateAOD;
-	fDeltaAODBranchName=ref.fDeltaAODBranchName;
-	fDeltaAODFilename=ref.fDeltaAODFilename;
-	fEventIsSelected=ref.fEventIsSelected;
-    }
-    return *this;
+//
+// Assignment operator
+// Only copies pointers, object is not the owner of the references
+//
+if(this != &ref){
+AliAnalysisTaskSE::operator=(ref);
+fUseImprovedVertex=ref.fUseImprovedVertex;
+fUseOwnXYZCalculation=ref.fUseOwnXYZCalculation;
+fUseConstructGamma=ref.fUseConstructGamma;
+kUseAODConversionPhoton=ref.kUseAODConversionPhoton;
+fCreateAOD=ref.fCreateAOD;
+fDeltaAODBranchName=ref.fDeltaAODBranchName;
+fDeltaAODFilename=ref.fDeltaAODFilename;
+fEventIsSelected=ref.fEventIsSelected;
+}
+return *this;
 }
 */
 //________________________________________________________________________
 void AliV0ReaderV1::Init()
 {
-    // Initialize function to be called once before analysis
-    if(fConversionCuts==NULL){
-	if(fConversionCuts==NULL)AliError("No Cut Selection initialized");
-    }
+   // Initialize function to be called once before analysis
+   if(fConversionCuts==NULL){
+      if(fConversionCuts==NULL)AliError("No Cut Selection initialized");
+   }
+   if(fCreateAOD){kUseAODConversionPhoton=kTRUE;}
 
-    if(fCreateAOD){kUseAODConversionPhoton=kTRUE;}
+   if(fConversionGammas != NULL){
+      delete fConversionGammas;
+      fConversionGammas=NULL;
+   }
 
-    if(fConversionGammas != NULL){
-	delete fConversionGammas;
-	fConversionGammas=NULL;
-    }
-
-    if(fConversionGammas == NULL){
-	if(kUseAODConversionPhoton){
-	    fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);}
-	else{
-	    fConversionGammas = new TClonesArray("AliKFConversionPhoton",100);}
-    }
-    fConversionGammas->Delete();//Reset the TClonesArray
+   if(fConversionGammas == NULL){
+      if(kUseAODConversionPhoton){
+         fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);}
+      else{
+         fConversionGammas = new TClonesArray("AliKFConversionPhoton",100);}
+   }
+   fConversionGammas->Delete();//Reset the TClonesArray
 }
 
 //________________________________________________________________________
 void AliV0ReaderV1::UserCreateOutputObjects()
 {
-    // Create AODs
+   // Create AODs
 
-    if(fCreateAOD){
-	if(fConversionCuts){
-	    fDeltaAODBranchName.Append("_");
-	    fDeltaAODBranchName.Append(fConversionCuts->GetCutNumber());
-	    fDeltaAODBranchName.Append("_gamma");
-	}
-	fConversionGammas->SetName(fDeltaAODBranchName.Data());
+   if(fCreateAOD){
+      if(fConversionCuts){
+         fDeltaAODBranchName.Append("_");
+         fDeltaAODBranchName.Append(fConversionCuts->GetCutNumber());
+         fDeltaAODBranchName.Append("_gamma");
+      }
+      fConversionGammas->SetName(fDeltaAODBranchName.Data());
 
-	AddAODBranch("TClonesArray", &fConversionGammas, fDeltaAODFilename.Data());
-	AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fDeltaAODFilename.Data());
-    }
+      AddAODBranch("TClonesArray", &fConversionGammas, fDeltaAODFilename.Data());
+      AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fDeltaAODFilename.Data());
+   }
 
 }
 //________________________________________________________________________
@@ -203,7 +217,7 @@ Bool_t AliV0ReaderV1::Notify()
       else{
          printf(" Gamma Conversion Reader %s :: Eta Shift Manually Set to %f \n\n",
                 (fConversionCuts->GetCutNumber()).Data(),fConversionCuts->GetEtaShift());
-         fConversionCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
+         fConversionCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
       }
    }
 
@@ -212,264 +226,275 @@ Bool_t AliV0ReaderV1::Notify()
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *option){
 
-    // Check if correctly initialized
-    if(!fConversionGammas)Init();
+   // Check if correctly initialized
+   if(!fConversionGammas)Init();
 
-    // User Exec
-    fEventIsSelected=ProcessEvent(fInputEvent,fMCEvent);
+   // User Exec
+   fEventIsSelected=ProcessEvent(fInputEvent,fMCEvent);
+
+   // AOD Output
+   FillAODOutput();
+
 }
 
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 {
 
-    //Reset the TClonesArray
-    fConversionGammas->Delete();
+   //Reset the TClonesArray
+   fConversionGammas->Delete();
 
-    fInputEvent=inputEvent;
-    fMCEvent=mcEvent;
+   fInputEvent=inputEvent;
+   fMCEvent=mcEvent;
 
-    if(!fInputEvent){
-	AliError("No Input event");
-	return kFALSE;
-    }
+   if(!fInputEvent){
+      AliError("No Input event");
+      return kFALSE;
+   }
+   if(!fConversionCuts){AliError("No ConversionCuts");return kFALSE;}
 
-    if(!fConversionCuts){AliError("No ConversionCuts");return kFALSE;}
+   // Count Primary Tracks Event
+   CountTracks();
 
-    // Event Cuts
-    if(!fConversionCuts->EventIsSelected(fInputEvent,fMCEvent))return kFALSE;
+   // Event Cuts
+   if(!fConversionCuts->EventIsSelected(fInputEvent,fMCEvent))return kFALSE;
 
-    // Set Magnetic Field
-    AliKFParticle::SetField(fInputEvent->GetMagneticField());
+   // Set Magnetic Field
+   AliKFParticle::SetField(fInputEvent->GetMagneticField());
 
-    if(fInputEvent->IsA()==AliESDEvent::Class()){
-	ProcessESDV0s();
-    }
-    if(fInputEvent->IsA()==AliAODEvent::Class()){
-	GetAODConversionGammas();
-    }
+   if(fInputEvent->IsA()==AliESDEvent::Class()){
+      ProcessESDV0s();
+   }
+   if(fInputEvent->IsA()==AliAODEvent::Class()){
+      GetAODConversionGammas();
+   }
 
-    // AOD Output
-    FillAODOutput();
 
-    return kTRUE;
+
+   return kTRUE;
 }
 ///________________________________________________________________________
 void AliV0ReaderV1::FillAODOutput()
 {
-    // Fill AOD Output with reconstructed Photons
+   // Fill AOD Output with reconstructed Photons
 
-    if(fInputEvent->IsA()==AliESDEvent::Class()){
-	///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
-	if(fCreateAOD) {
-	    AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-            if (aodhandler && aodhandler->GetFillAOD()) {
-               AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
-	      //PostData(0, fConversionGammas);
+   if(fInputEvent->IsA()==AliESDEvent::Class()){
+      ///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
+      if(fCreateAOD) {
+         AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+         if (aodhandler && aodhandler->GetFillAOD()) {
+            AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
+            //PostData(0, fConversionGammas);
 
-	    }
-	}
-    }
+         }
+      }
+   }
 }
 
 ///________________________________________________________________________
 const AliExternalTrackParam *AliV0ReaderV1::GetExternalTrackParam(AliESDv0 *fCurrentV0,Int_t &tracklabel,Int_t charge){
 
-    // Get External Track Parameter with given charge
+   // Get External Track Parameter with given charge
 
-    if(!(charge==1||charge==-1)){AliError("Charge not defined");return 0x0;}
+   if(!(charge==1||charge==-1)){AliError("Charge not defined");return 0x0;}
 
-    // Check for sign flip
-    if(fCurrentV0){
-	if(!fCurrentV0->GetParamN()||!fCurrentV0->GetParamP())return 0x0;
-	if(!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex())||!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))return 0x0;
-	if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==charge){
-	    tracklabel=fCurrentV0->GetPindex();
-	    return fCurrentV0->GetParamP();}
-	if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()==charge){
-	    tracklabel=fCurrentV0->GetNindex();
-	    return fCurrentV0->GetParamN();}
-    }
-    return 0x0;
+   // Check for sign flip
+   if(fCurrentV0){
+      if(!fCurrentV0->GetParamN()||!fCurrentV0->GetParamP())return 0x0;
+      if(!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex())||!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))return 0x0;
+      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==charge){
+         tracklabel=fCurrentV0->GetPindex();
+         return fCurrentV0->GetParamP();}
+      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()==charge){
+         tracklabel=fCurrentV0->GetNindex();
+         return fCurrentV0->GetParamN();}
+   }
+   return 0x0;
 }
 
 ///________________________________________________________________________
 Bool_t AliV0ReaderV1::ProcessESDV0s()
 {
-    // Process ESD V0s for conversion photon reconstruction
-    AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(fInputEvent);
+   // Process ESD V0s for conversion photon reconstruction
+   AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(fInputEvent);
 
-    AliKFConversionPhoton *fCurrentMotherKFCandidate=NULL;
+   AliKFConversionPhoton *fCurrentMotherKFCandidate=NULL;
 
-    if(fESDEvent){
+   if(fESDEvent){
 
-	for(Int_t currentV0Index=0;currentV0Index<fESDEvent->GetNumberOfV0s();currentV0Index++){
-	    AliESDv0 *fCurrentV0=(AliESDv0*)(fESDEvent->GetV0(currentV0Index));
-	    if(!fCurrentV0){
-		printf("Requested V0 does not exist");
-		continue;
+      for(Int_t currentV0Index=0;currentV0Index<fESDEvent->GetNumberOfV0s();currentV0Index++){
+         AliESDv0 *fCurrentV0=(AliESDv0*)(fESDEvent->GetV0(currentV0Index));
+         if(!fCurrentV0){
+            printf("Requested V0 does not exist");
+            continue;
+         }
+
+         fCurrentMotherKFCandidate=ReconstructV0(fCurrentV0,currentV0Index);
+
+         if(fCurrentMotherKFCandidate){
+            // Add Gamma to the TClonesArray
+
+            if(kUseAODConversionPhoton){
+               new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(fCurrentMotherKFCandidate);
+               AliAODConversionPhoton * currentConversionPhoton = (AliAODConversionPhoton*)(fConversionGammas->At(fConversionGammas->GetEntriesFast()-1));
+               currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
+               currentConversionPhoton->SetMassToZero();
+
+            }
+            else{
+               new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
             }
 
-	    fCurrentMotherKFCandidate=ReconstructV0(fCurrentV0,currentV0Index);
-
-	    if(fCurrentMotherKFCandidate){
-
-		// Add Gamma to the TClonesArray
-
-		if(kUseAODConversionPhoton){
-		    new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(fCurrentMotherKFCandidate);
-		}
-		else{
-		    new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
-		}
-
-		delete fCurrentMotherKFCandidate;
-		fCurrentMotherKFCandidate=NULL;
-	    }
-	}
-    }
-    return kTRUE;
+            delete fCurrentMotherKFCandidate;
+            fCurrentMotherKFCandidate=NULL;
+         }
+      }
+   }
+   return kTRUE;
 }
 
 ///________________________________________________________________________
 AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t currentV0Index)
 {
-	// Reconstruct conversion photon from ESD v0
-    fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonIn);
+   // Reconstruct conversion photon from ESD v0
+   fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonIn);
 
-    //checks if on the fly mode is set
-    if(!fConversionCuts->SelectV0Finder(fCurrentV0->GetOnFlyStatus())){
-       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kOnFly);
-       return 0x0;
-    }
+   //checks if on the fly mode is set
+   if(!fConversionCuts->SelectV0Finder(fCurrentV0->GetOnFlyStatus())){
+      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kOnFly);
+      return 0x0;
+   }
 
-    // TrackLabels
-    Int_t currentTrackLabels[2]={-1,-1};
+   // TrackLabels
+   Int_t currentTrackLabels[2]={-1,-1};
 
-    // Get Daughter KF Particles
+   // Get Daughter KF Particles
 
-    const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0,currentTrackLabels[0]);
-    const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0,currentTrackLabels[1]);
+   const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0,currentTrackLabels[0]);
+   const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0,currentTrackLabels[1]);
 
-    if(!fCurrentExternalTrackParamPositive||!fCurrentExternalTrackParamNegative)return 0x0;
+   if(!fCurrentExternalTrackParamPositive||!fCurrentExternalTrackParamNegative)return 0x0;
 
-    // Apply some Cuts before Reconstruction
+   // Apply some Cuts before Reconstruction
 
-    AliVTrack * posTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[0]);
-    AliVTrack * negTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[1]);
+   AliVTrack * posTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[0]);
+   AliVTrack * negTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[1]);
 
-    if(!negTrack || !posTrack) {
-       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kNoTracks);
-       return 0x0;
-    }
+   if(!negTrack || !posTrack) {
+      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kNoTracks);
+      return 0x0;
+   }
 
-    // Track Cuts
-    if(!fConversionCuts->TracksAreSelected(negTrack, posTrack)){
-       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kTrackCuts);
-       return 0x0;
-    }
+   // Track Cuts
+   if(!fConversionCuts->TracksAreSelected(negTrack, posTrack)){
+      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kTrackCuts);
+      return 0x0;
+   }
 
-    // PID Cuts
-    if(!fConversionCuts->dEdxCuts(negTrack) || !fConversionCuts->dEdxCuts(posTrack)) {
-       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
-       return 0x0;
-    }
+   // PID Cuts
+   if(!fConversionCuts->dEdxCuts(negTrack) || !fConversionCuts->dEdxCuts(posTrack)) {
+      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
+      return 0x0;
+   }
 
-    // Reconstruct Photon
+   // Reconstruct Photon
 
-    AliKFConversionPhoton *fCurrentMotherKF=NULL;
+   AliKFConversionPhoton *fCurrentMotherKF=NULL;
 
-    AliKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
-    AliKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
+   AliKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
+   AliKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
 
-    // Reconstruct Gamma
+   // Reconstruct Gamma
 
-    if(fUseConstructGamma){
-	fCurrentMotherKF = new AliKFConversionPhoton();
-	fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
-    }else{
-	fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
-	fCurrentMotherKF->SetMassConstraint(0,0);
-    }
+   if(fUseConstructGamma){
+      fCurrentMotherKF = new AliKFConversionPhoton();
+      fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+   }else{
+      fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+      fCurrentMotherKF->SetMassConstraint(0,0.0001);
+   }
 
-    // Set Track Labels
+   // Set Track Labels
 
-    fCurrentMotherKF->SetTrackLabels(currentTrackLabels[0],currentTrackLabels[1]);
+   fCurrentMotherKF->SetTrackLabels(currentTrackLabels[0],currentTrackLabels[1]);
 
-    // Set V0 index
+   // Set V0 index
 
-    fCurrentMotherKF->SetV0Index(currentV0Index);
+   fCurrentMotherKF->SetV0Index(currentV0Index);
 
-    //Set MC Label
+   //Set MC Label
 
-    if(fMCEvent){
+   if(fMCEvent){
 
-	AliStack *fMCStack= fMCEvent->Stack();
+      AliStack *fMCStack= fMCEvent->Stack();
 
-	Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
-	Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
+      Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
+      Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
 
-	TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
-	TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
+      TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
+      TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
 
-	if(fPositiveMCParticle&&fNegativeMCParticle){
-	    fCurrentMotherKF->SetMCLabelPositive(labelp);
-	    fCurrentMotherKF->SetMCLabelNegative(labeln);
-	}
-    }
+      if(fPositiveMCParticle&&fNegativeMCParticle){
+         fCurrentMotherKF->SetMCLabelPositive(labelp);
+         fCurrentMotherKF->SetMCLabelNegative(labeln);
+      }
+   }
 
-    // Update Vertex (moved for same eta compared to old)
-    if(fUseImprovedVertex == kTRUE){
-       AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
-       primaryVertexImproved+=*fCurrentMotherKF;
-       fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
-    }
+   // Update Vertex (moved for same eta compared to old)
+   //      cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+   if(fUseImprovedVertex == kTRUE){
+      AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+      //        cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
+      primaryVertexImproved+=*fCurrentMotherKF;
+      fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
+   }
+   // SetPsiPair
 
-    // SetPsiPair
-
-    Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative);
-    fCurrentMotherKF->SetPsiPair(PsiPair);
-
-
-    // Recalculate ConversionPoint
-    Double_t dca[2]={0,0};
-    if(fUseOwnXYZCalculation){
-	Double_t convpos[3]={0,0,0};
-	if(!GetConversionPoint(fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative,convpos,dca)){
-           fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kConvPointFail);
-           delete fCurrentMotherKF;
-           fCurrentMotherKF=NULL;
-           return 0x0;
-	}
-
-	fCurrentMotherKF->SetConversionPoint(convpos);
-    }
-
-    if(fCurrentMotherKF->GetNDF() > 0.)
-	fCurrentMotherKF->SetChi2perNDF(fCurrentMotherKF->GetChi2()/fCurrentMotherKF->GetNDF());   //->Photon is created before all chi2 relevant changes are performed, set it "by hand"
+   Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative);
+   fCurrentMotherKF->SetPsiPair(PsiPair);
 
 
-    // Set Dilepton Mass (moved down for same eta compared to old)
-    fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
+   // Recalculate ConversionPoint
+   Double_t dca[2]={0,0};
+   if(fUseOwnXYZCalculation){
+      Double_t convpos[3]={0,0,0};
+      if(!GetConversionPoint(fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative,convpos,dca)){
+         fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kConvPointFail);
+         delete fCurrentMotherKF;
+         fCurrentMotherKF=NULL;
+         return 0x0;
+      }
 
-    // Apply Photon Cuts
+      fCurrentMotherKF->SetConversionPoint(convpos);
+   }
 
-    if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
-	fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonCuts);
-	delete fCurrentMotherKF;
-	fCurrentMotherKF=NULL;
-	return 0x0;
-    }
+   if(fCurrentMotherKF->GetNDF() > 0.)
+      fCurrentMotherKF->SetChi2perNDF(fCurrentMotherKF->GetChi2()/fCurrentMotherKF->GetNDF());   //->Photon is created before all chi2 relevant changes are performed, set it "by hand"
 
-    fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonOut);
-    return fCurrentMotherKF;
+
+   // Set Dilepton Mass (moved down for same eta compared to old)
+   fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
+
+   // Apply Photon Cuts
+
+   if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
+      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonCuts);
+      delete fCurrentMotherKF;
+      fCurrentMotherKF=NULL;
+      return 0x0;
+   }
+
+   //     cout << currentV0Index <<" \t after: \t" <<fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+
+   fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonOut);
+   return fCurrentMotherKF;
 }
 
 ///________________________________________________________________________
 Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackParam *positiveparam,const AliExternalTrackParam *negativeparam) const {
-    //
-    // Angle between daughter momentum plane and plane
-    //
+   //
+   // Angle between daughter momentum plane and plane
+   //
 
    AliExternalTrackParam nt(*negativeparam);
    AliExternalTrackParam pt(*positiveparam);
@@ -557,13 +582,13 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
    nt.GetPxPyPz(momNegProp);
 
    Double_t pEle =
-       TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
+      TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
 
    Double_t pPos =
-       TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
+      TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
 
    Double_t scalarproduct =
-       momPosProp[0]*momNegProp[0]+momPosProp[1]*momNegProp[1]+momPosProp[2]*momNegProp[2];//scalar product of propagated positive and negative daughters' momenta
+      momPosProp[0]*momNegProp[0]+momPosProp[1]*momNegProp[1]+momPosProp[2]*momNegProp[2];//scalar product of propagated positive and negative daughters' momenta
 
    Double_t chipair = TMath::ACos(scalarproduct/(pEle*pPos));//Angle between propagated daughter tracks
 
@@ -575,189 +600,271 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
 ///________________________________________________________________________
 Bool_t AliV0ReaderV1::GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2]){
 
-    // Get Center of the helix track parametrization
+   // Get Center of the helix track parametrization
 
-    Int_t charge=track->Charge();
-    Double_t b=fInputEvent->GetMagneticField();
+   Int_t charge=track->Charge();
+   Double_t b=fInputEvent->GetMagneticField();
 
-    Double_t	helix[6];
-    track->GetHelixParameters(helix,b);
+   Double_t	helix[6];
+   track->GetHelixParameters(helix,b);
 
-    Double_t xpos =	helix[5];
-    Double_t ypos =	helix[0];
-    Double_t radius = TMath::Abs(1./helix[4]);
-    Double_t phi = helix[2];
+   Double_t xpos =	helix[5];
+   Double_t ypos =	helix[0];
+   Double_t radius = TMath::Abs(1./helix[4]);
+   Double_t phi = helix[2];
 
-    if(phi < 0){
-	phi = phi + 2*TMath::Pi();
-    }
+   if(phi < 0){
+      phi = phi + 2*TMath::Pi();
+   }
 
-    phi -= TMath::Pi()/2.;
-    Double_t xpoint =	radius * TMath::Cos(phi);
-    Double_t ypoint =	radius * TMath::Sin(phi);
+   phi -= TMath::Pi()/2.;
+   Double_t xpoint =	radius * TMath::Cos(phi);
+   Double_t ypoint =	radius * TMath::Sin(phi);
 
-    if(b<0){
-	if(charge > 0){
-	    xpoint = - xpoint;
-	    ypoint = - ypoint;
-	}
+   if(b<0){
+      if(charge > 0){
+         xpoint = - xpoint;
+         ypoint = - ypoint;
+      }
 
-	if(charge < 0){
-	    xpoint =	xpoint;
-	    ypoint =	ypoint;
-	}
-    }
-    if(b>0){
-	if(charge > 0){
-	    xpoint =	xpoint;
-	    ypoint =	ypoint;
-	}
+      if(charge < 0){
+         xpoint =	xpoint;
+         ypoint =	ypoint;
+      }
+   }
+   if(b>0){
+      if(charge > 0){
+         xpoint =	xpoint;
+         ypoint =	ypoint;
+      }
 
-	if(charge < 0){
-	    xpoint = - xpoint;
-	    ypoint = - ypoint;
-	}
-    }
-    center[0] =	xpos + xpoint;
-    center[1] =	ypos + ypoint;
+      if(charge < 0){
+         xpoint = - xpoint;
+         ypoint = - ypoint;
+      }
+   }
+   center[0] =	xpos + xpoint;
+   center[1] =	ypos + ypoint;
 
-    return 1;
+   return 1;
 }
 ///________________________________________________________________________
 Bool_t AliV0ReaderV1::GetConversionPoint(const AliExternalTrackParam *pparam,const AliExternalTrackParam *nparam,Double_t convpos[3],Double_t dca[2]){
 
-    // Recalculate Conversion Point
+   // Recalculate Conversion Point
 
-    if(!pparam||!nparam)return kFALSE;
+   if(!pparam||!nparam)return kFALSE;
 
-    Double_t helixcenterpos[2];
-    GetHelixCenter(pparam,helixcenterpos);
+   Double_t helixcenterpos[2];
+   GetHelixCenter(pparam,helixcenterpos);
 
-    Double_t helixcenterneg[2];
-    GetHelixCenter(nparam,helixcenterneg);
+   Double_t helixcenterneg[2];
+   GetHelixCenter(nparam,helixcenterneg);
 
-	Double_t helixpos[6];
-	pparam->GetHelixParameters(helixpos,fInputEvent->GetMagneticField());
-	Double_t posradius = TMath::Abs(1./helixpos[4]);
+   Double_t helixpos[6];
+   pparam->GetHelixParameters(helixpos,fInputEvent->GetMagneticField());
+   Double_t posradius = TMath::Abs(1./helixpos[4]);
 
-	Double_t helixneg[6];
-	nparam->GetHelixParameters(helixneg,fInputEvent->GetMagneticField());
-	Double_t negradius = TMath::Abs(1./helixneg[4]);
+   Double_t helixneg[6];
+   nparam->GetHelixParameters(helixneg,fInputEvent->GetMagneticField());
+   Double_t negradius = TMath::Abs(1./helixneg[4]);
 
-        // Calculate xy-position
+   // Calculate xy-position
 
-	Double_t xpos = helixcenterpos[0];
-	Double_t ypos = helixcenterpos[1];
-	Double_t xneg = helixcenterneg[0];
-	Double_t yneg = helixcenterneg[1];
+   Double_t xpos = helixcenterpos[0];
+   Double_t ypos = helixcenterpos[1];
+   Double_t xneg = helixcenterneg[0];
+   Double_t yneg = helixcenterneg[1];
 
-	convpos[0] = (xpos*negradius + xneg*posradius)/(negradius+posradius);
-	convpos[1] = (ypos*negradius+ yneg*posradius)/(negradius+posradius);
+   convpos[0] = (xpos*negradius + xneg*posradius)/(negradius+posradius);
+   convpos[1] = (ypos*negradius+ yneg*posradius)/(negradius+posradius);
 
 
-	// Calculate Track XY vertex position
+   // Calculate Track XY vertex position
 
-	Double_t deltaXPos = convpos[0] -	xpos;
-	Double_t deltaYPos = convpos[1] -	ypos;
+   Double_t deltaXPos = convpos[0] -	xpos;
+   Double_t deltaYPos = convpos[1] -	ypos;
 
-	Double_t deltaXNeg = convpos[0] -	xneg;
-	Double_t deltaYNeg = convpos[1] -	yneg;
+   Double_t deltaXNeg = convpos[0] -	xneg;
+   Double_t deltaYNeg = convpos[1] -	yneg;
 
-	Double_t alphaPos =	TMath::Pi() + TMath::ATan2(-deltaYPos,-deltaXPos);
-	Double_t alphaNeg =	TMath::Pi() + TMath::ATan2(-deltaYNeg,-deltaXNeg);
+   Double_t alphaPos =	TMath::Pi() + TMath::ATan2(-deltaYPos,-deltaXPos);
+   Double_t alphaNeg =	TMath::Pi() + TMath::ATan2(-deltaYNeg,-deltaXNeg);
 
-	Double_t vertexXNeg =	xneg +	TMath::Abs(negradius)*TMath::Cos(alphaNeg);
-	Double_t vertexYNeg =	yneg +	TMath::Abs(negradius)*TMath::Sin(alphaNeg);
+   Double_t vertexXNeg =	xneg +	TMath::Abs(negradius)*TMath::Cos(alphaNeg);
+   Double_t vertexYNeg =	yneg +	TMath::Abs(negradius)*TMath::Sin(alphaNeg);
 
-	Double_t vertexXPos =	xpos +	TMath::Abs(posradius)*TMath::Cos(alphaPos);
-	Double_t vertexYPos =	ypos +	TMath::Abs(posradius)*TMath::Sin(alphaPos);
+   Double_t vertexXPos =	xpos +	TMath::Abs(posradius)*TMath::Cos(alphaPos);
+   Double_t vertexYPos =	ypos +	TMath::Abs(posradius)*TMath::Sin(alphaPos);
 
-	AliExternalTrackParam p(*pparam);
-        AliExternalTrackParam n(*nparam);
+   AliExternalTrackParam p(*pparam);
+   AliExternalTrackParam n(*nparam);
 
-	TVector2 vertexPos(vertexXPos,vertexYPos);
-	TVector2 vertexNeg(vertexXNeg,vertexYNeg);
+   TVector2 vertexPos(vertexXPos,vertexYPos);
+   TVector2 vertexNeg(vertexXNeg,vertexYNeg);
 
-	// Convert to local coordinate system
-	TVector2 vertexPosRot=vertexPos.Rotate(-p.GetAlpha());
-	TVector2 vertexNegRot=vertexNeg.Rotate(-n.GetAlpha());
+   // Convert to local coordinate system
+   TVector2 vertexPosRot=vertexPos.Rotate(-p.GetAlpha());
+   TVector2 vertexNegRot=vertexNeg.Rotate(-n.GetAlpha());
 
-	// Propagate Track Params to Vertex
+   // Propagate Track Params to Vertex
 
-	if(!p.PropagateTo(vertexPosRot.X(),fInputEvent->GetMagneticField()))return kFALSE;
-	if(!n.PropagateTo(vertexNegRot.X(),fInputEvent->GetMagneticField()))return kFALSE;
+   if(!p.PropagateTo(vertexPosRot.X(),fInputEvent->GetMagneticField()))return kFALSE;
+   if(!n.PropagateTo(vertexNegRot.X(),fInputEvent->GetMagneticField()))return kFALSE;
 
-	// Check whether propagation was sucessful
+   // Check whether propagation was sucessful
 
-	if(TMath::Abs(vertexPos.Mod()-TMath::Sqrt(p.GetX()*p.GetX()+p.GetY()*p.GetY()))>0.01)return kFALSE;
-	if(TMath::Abs(vertexNeg.Mod()-TMath::Sqrt(n.GetX()*n.GetX()+n.GetY()*n.GetY()))>0.01)return kFALSE;
+   if(TMath::Abs(vertexPos.Mod()-TMath::Sqrt(p.GetX()*p.GetX()+p.GetY()*p.GetY()))>0.01)return kFALSE;
+   if(TMath::Abs(vertexNeg.Mod()-TMath::Sqrt(n.GetX()*n.GetX()+n.GetY()*n.GetY()))>0.01)return kFALSE;
 
-	// Calculate z position
+   // Calculate z position
 
-	convpos[2] = (p.GetZ()*negradius+n.GetZ()*posradius)/(negradius+posradius);
+   convpos[2] = (p.GetZ()*negradius+n.GetZ()*posradius)/(negradius+posradius);
 
-	// Calculate DCA
-	TVector2 vdca=vertexPos-vertexNeg;
-	dca[0]=vdca.Mod();
-	dca[1]=TMath::Abs(n.GetZ()-p.GetZ());
+   // Calculate DCA
+   TVector2 vdca=vertexPos-vertexNeg;
+   dca[0]=vdca.Mod();
+   dca[1]=TMath::Abs(n.GetZ()-p.GetZ());
 
-	return kTRUE;
+   return kTRUE;
 }
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::GetAODConversionGammas(){
 
-    // Get reconstructed conversion photons from satellite AOD file
+   // Get reconstructed conversion photons from satellite AOD file
 
-    AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(fInputEvent);
+   AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(fInputEvent);
 
-    if(fAODEvent){
+   if(fAODEvent){
 
-       if(fConversionGammas == NULL){
-          fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);
-       }
-	fConversionGammas->Delete();//Reset the TClonesArray
+      if(fConversionGammas == NULL){
+         fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);
+      }
+      fConversionGammas->Delete();//Reset the TClonesArray
 
-	//Get Gammas from satellite AOD gamma branch
+      //Get Gammas from satellite AOD gamma branch
 
-	AliAODConversionPhoton *gamma=0x0;
+      AliAODConversionPhoton *gamma=0x0;
 
-	TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
-	if(!fInputGammas){
-           FindDeltaAODBranchName();
-           fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
-	if(!fInputGammas){AliError("No Gamma Satellites found");return kFALSE;}
-	// Apply Selection Cuts to Gammas and create local working copy
-	if(fInputGammas){
-           for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
-              gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
-              if(gamma){
-                 if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
-                    new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
-              }
-           }
-	}
-    }
+      TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
+      if(!fInputGammas){
+         FindDeltaAODBranchName();
+         fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
+      if(!fInputGammas){AliError("No Gamma Satellites found");return kFALSE;}
+      // Apply Selection Cuts to Gammas and create local working copy
+      if(fInputGammas){
+         for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
+            gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
+            if(gamma){
+               if(fRelabelAODs)RelabelAODPhotonCandidates(gamma);
+               if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
+                  new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
+            }
+         }
+      }
+   }
 
-    if(fConversionGammas->GetEntries()){return kTRUE;}
+   if(fConversionGammas->GetEntries()){return kTRUE;}
 
-    return kFALSE;
+   return kFALSE;
 }
 
 //________________________________________________________________________
 void AliV0ReaderV1::FindDeltaAODBranchName(){
 
-    // Find delta AOD branchname containing reconstructed photons
+   // Find delta AOD branchname containing reconstructed photons
 
-    TList *list=fInputEvent->GetList();
-    for(Int_t ii=0;ii<list->GetEntries();ii++){
-	TString name((list->At(ii))->GetName());
-	if(name.BeginsWith(fDeltaAODBranchName)&&name.EndsWith("gamma")){
-	    fDeltaAODBranchName=name;
-	    AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));
-	    return;
-	}
-    }
+   TList *list=fInputEvent->GetList();
+   for(Int_t ii=0;ii<list->GetEntries();ii++){
+      TString name((list->At(ii))->GetName());
+      if(name.BeginsWith(fDeltaAODBranchName)&&name.EndsWith("gamma")){
+         fDeltaAODBranchName=name;
+         AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));
+         return;
+      }
+   }
 }
+//________________________________________________________________________
+void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
+
+   // Relabeling For AOD Event
+   // ESDiD -> AODiD
+   // MCLabel -> AODMCLabel
+   Bool_t AODLabelPos = kFALSE;
+   Bool_t AODLabelNeg = kFALSE;
+
+   for(Int_t i = 0; i<fInputEvent->GetNumberOfTracks();i++){
+      AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
+      if(!AODLabelPos){
+         if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
+            PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+            PhotonCandidate->SetLabelPositive(i);
+            AODLabelPos = kTRUE;
+         }
+      }
+      if(!AODLabelNeg){
+         if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
+            PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+            PhotonCandidate->SetLabelNegative(i);
+            AODLabelNeg = kTRUE;
+         }
+      }
+      if(AODLabelNeg && AODLabelPos){
+         return;
+      }
+   }
+   if(!AODLabelPos || !AODLabelNeg){
+      AliError(Form("NO AOD Daughters Found Pos: %i %i Neg: %i %i",AODLabelPos,PhotonCandidate->GetTrackLabelPositive(),AODLabelNeg,PhotonCandidate->GetTrackLabelNegative()));
+   }
+
+}
+
+//________________________________________________________________________
+void AliV0ReaderV1::CountTracks(){
+
+   // In Case of MC count only MB tracks
+   // if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
+   //    fConversionCuts->GetNotRejectedParticles(1,NULL,fMCEvent);   
+   // }
+   // if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class()){
+   //    fConversionCuts->GetNotRejectedParticles(1,NULL,fInputEvent);   
+   // }
+   
+   if(fInputEvent->IsA()==AliESDEvent::Class()){
+      // Using standard function for setting Cuts
+      Bool_t selectPrimaries=kTRUE;
+      AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      EsdTrackCuts->SetPtRange(0.15);
+      fNumberOfPrimaryTracks = 0;
+      for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+         AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+         if(!curTrack) continue;
+         if(!EsdTrackCuts->AcceptTrack(curTrack)) continue;
+         //if(fMCEvent && !(fConversionCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()),fMCEvent->Stack(),fInputEvent))) continue;
+         fNumberOfPrimaryTracks++;
+      }
+      delete EsdTrackCuts;
+      EsdTrackCuts=0x0;
+   }
+   else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      fNumberOfPrimaryTracks = 0;
+      for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+         AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+         if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+         if(!curTrack->IsPrimaryCandidate()) continue;
+         if(abs(curTrack->Eta())>0.8) continue;
+         if(curTrack->Pt()<0.15) continue;
+         //if(fMCEvent && !(fConversionCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()),NULL,fInputEvent))) continue;
+         //if(abs(curTrack->ZAtDCA())>2) continue; // Only Set For TPCOnly tracks
+         fNumberOfPrimaryTracks++;
+      }
+   }
+
+   return;
+}
+
 //________________________________________________________________________
 void AliV0ReaderV1::Terminate(Option_t *)
 {

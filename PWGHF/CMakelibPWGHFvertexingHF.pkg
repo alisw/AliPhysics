@@ -81,6 +81,8 @@ set ( SRCS
     vertexingHF/charmFlow/AliAnalysisTaskSEHFv2.cxx
     vertexingHF/charmFlow/AliHFAfterBurner.cxx
     vertexingHF/charmFlow/AliAnalysisTaskFlowD2H.cxx
+    vertexingHF/upgrade/AliAnalysisTaskSELambdacUp.cxx
+    vertexingHF/upgrade/AliAnalysisTaskCountLcEta.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

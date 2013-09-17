@@ -8,6 +8,7 @@
 
 #include <TClonesArray.h>
 
+#include "AliParticleContainer.h"
 #include "AliEmcalParticle.h"
 #include "AliLog.h"
 #include "AliPicoTrack.h"
@@ -18,7 +19,7 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
-  AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
+  AliAnalysisTaskEmcalDev("AliEmcalClusTrackMatcherTask",kFALSE),
   fMaxDistance(0.06)
 {
   // Constructor.
@@ -35,7 +36,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo) : 
-  AliAnalysisTaskEmcal(name,histo),
+  AliAnalysisTaskEmcalDev(name,histo),
   fMaxDistance(0.06)
 {
   // Standard constructor.
@@ -57,6 +58,24 @@ AliEmcalClusTrackMatcherTask::~AliEmcalClusTrackMatcherTask()
 }
 
 //________________________________________________________________________
+void AliEmcalClusTrackMatcherTask::ExecOnce()
+{
+  // Initialize the analysis.
+
+  if (fParticleCollArray.GetEntriesFast()<2) {
+    AliError(Form("Wrong number of particle collections (%d), required 2",fParticleCollArray.GetEntriesFast()));
+    return;
+  }
+
+  for (Int_t i = 0; i < 2; i++) {
+    AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
+    cont->SetClassName("AliEmcalParticle");
+  }
+
+  AliAnalysisTaskEmcalDev::ExecOnce();
+}
+
+//________________________________________________________________________
 void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
 {
   // Create my user objects.
@@ -64,7 +83,7 @@ void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
   if (!fCreateHisto)
     return;
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
 
   const Int_t nCentChBins = fNcentBins * 2;
 
@@ -116,29 +135,23 @@ Int_t AliEmcalClusTrackMatcherTask::GetMomBin(Double_t p) const
 Bool_t AliEmcalClusTrackMatcherTask::Run() 
 {
   // Run the matching for the selected options.
-  
+
+  AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+  AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
+
+  AliEmcalParticle *partC = 0;
+  AliEmcalParticle *partT = 0;
+
   const Double_t maxd2 = fMaxDistance*fMaxDistance;
 
-  const Int_t nC = fCaloClusters->GetEntries();
-  const Int_t nT = fTracks->GetEntries();
-
   // set the links between tracks and clusters
-  for (Int_t c = 0; c < nC; ++c) {
-    AliEmcalParticle *partC = static_cast<AliEmcalParticle*>(fCaloClusters->At(c));
-    if (!partC)
-      continue;
-    if (!AcceptEmcalPart(partC))
-      continue;
+  clusters->ResetCurrentID();
+  while ((partC = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle()))) {
     AliVCluster *clust = partC->GetCluster();
 
-    for (Int_t t = 0; t < nT; ++t) {
-      AliEmcalParticle *partT = static_cast<AliEmcalParticle*>(fTracks->At(t));
-      if (!partT)
-	continue;
-      if (!AcceptEmcalPart(partT))
-        continue;
-      AliVTrack   *track = partT->GetTrack()  ;
-
+    tracks->ResetCurrentID();
+    while ((partT = static_cast<AliEmcalParticle*>(tracks->GetNextAcceptParticle()))) {
+      AliVTrack *track = partT->GetTrack();
       Double_t deta = 999;
       Double_t dphi = 999;
       AliPicoTrack::GetEtaPhiDiff(track, clust, dphi, deta);
@@ -147,8 +160,8 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
         continue;
 
       Double_t d = TMath::Sqrt(d2);
-      partC->AddMatchedObj(t, d);
-      partT->AddMatchedObj(c, d);
+      partC->AddMatchedObj(tracks->GetCurrentID(), d);
+      partT->AddMatchedObj(clusters->GetCurrentID(), d);
 
       if (fCreateHisto) {
 	Int_t mombin = GetMomBin(track->P());
@@ -165,14 +178,13 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     }
   }
 
-  for (Int_t c = 0; c < nC; ++c) {
-    AliEmcalParticle *partC = static_cast<AliEmcalParticle*>(fCaloClusters->At(c));
-    if (!partC)
-      continue;
+
+  clusters->ResetCurrentID();
+  while ((partC = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle()))) {
     if (partC->GetNumberOfMatchedObj() <= 0)
       continue;
     const UInt_t matchedId = partC->GetMatchedObjId();
-    AliEmcalParticle *partT = static_cast<AliEmcalParticle*>(fTracks->At(matchedId));
+    partT = static_cast<AliEmcalParticle*>(tracks->GetParticle(matchedId));
     AliVCluster *clust = partC->GetCluster();
     AliVTrack   *track = partT->GetTrack()  ;
     Double_t deta = 999;
@@ -181,11 +193,9 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     clust->SetEmcCpvDistance(matchedId);
     clust->SetTrackDistance(deta, dphi);
   }
-
-  for (Int_t t = 0; t < nT; ++t) {
-    AliEmcalParticle *partT = static_cast<AliEmcalParticle*>(fTracks->At(t));
-    if (!partT)
-      continue;
+  
+  tracks->ResetCurrentID();
+  while ((partT = static_cast<AliEmcalParticle*>(tracks->GetNextAcceptParticle()))) {
     if (partT->GetNumberOfMatchedObj() <= 0)
       continue;
     AliVTrack *track = partT->GetTrack();

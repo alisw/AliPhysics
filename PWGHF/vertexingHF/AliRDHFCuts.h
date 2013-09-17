@@ -22,12 +22,14 @@
 class AliAODTrack;
 class AliAODRecoDecayHF;
 class AliESDVertex;
+class TF1;
+class TFormula;
 
 class AliRDHFCuts : public AliAnalysisCuts 
 {
  public:
 
-  enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid};
+   enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentZNA,kCentZPA,kCentV0A,kCentInvalid};
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
@@ -151,7 +153,9 @@ class AliRDHFCuts : public AliAnalysisCuts
     fMinContrPileup=minContrib;
     fMinDzPileup=minDz;
   }
-
+  void SetMinCrossedRowsTPCPtDep(const char *rows="");
+  void SetMinRatioClsOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioClsOverCrossRowsTPC = ratio;}
+  void SetMinRatioSignalNOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioSignalNOverCrossRowsTPC = ratio;}
 
   AliAODPidHF* GetPidHF() const {return fPidHF;}
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
@@ -192,6 +196,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t GetMaxPtCandidate() const {return fMaxPtCand;}
   TH1F *GetHistoForCentralityFlattening(){return fHistCentrDistr;}
   void SetUseCentralityFlatteningInMC(Bool_t opt){fUseCentrFlatteningInMC=opt;}
+  const char* GetMinCrossedRowsTPCPtDep() const {return fCutMinCrossedRowsTPCPtDep;}
+  Float_t GetMinRatioClsOverCrossRowsTPC() const {return fCutRatioClsOverCrossRowsTPC;}
+  Float_t GetMinRatioSignalNOverCrossRowsTPC() const {return fCutRatioSignalNOverCrossRowsTPC;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
@@ -273,6 +280,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsSelectCandTrackSPDFirst() const { return fIsCandTrackSPDFirst; }
   Double_t IsMaxCandTrackSPDFirst() const { return fMaxPtCandTrackSPDFirst; }
 
+  Bool_t CheckPtDepCrossedRows(TString rows,Bool_t print=kFALSE) const;
+
+
 
  protected:
 
@@ -340,8 +350,13 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseTrackSelectionWithFilterBits; // flag to enable/disable the check on filter bits
   Bool_t fUseCentrFlatteningInMC; // flag for enabling/diabling centrality flattening in MC
   TH1F *fHistCentrDistr;   // histogram with reference centrality distribution for centrality distribution flattening
+  Float_t fCutRatioClsOverCrossRowsTPC; // min. value ratio NTPCClusters/NTPCCrossedRows, cut if !=0
+  Float_t fCutRatioSignalNOverCrossRowsTPC;   // min. value ratio TPCPointsUsedForPID/NTPCCrossedRows, cut if !=0 
+  TString fCutMinCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
+  TFormula *f1CutMinNCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
+ 
 
-  ClassDef(AliRDHFCuts,32);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,33);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

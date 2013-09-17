@@ -44,7 +44,7 @@ ClassImp(AliAnaChargedParticles)
 //__________________________________________________
   AliAnaChargedParticles::AliAnaChargedParticles() :
     AliAnaCaloTrackCorrBaseClass(),
-    fFillPileUpHistograms(0),
+    fFillPileUpHistograms(0),   fFillTrackBCHistograms(0),
     fFillVertexBC0Histograms(0),
     //Histograms
     fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
@@ -63,6 +63,8 @@ ClassImp(AliAnaChargedParticles)
     fhPtElectron(0),   fhPhiElectron(0),     fhEtaElectron(0),
     fhPtKaon(0),       fhPhiKaon(0),         fhEtaKaon(0),
     fhPtUnknown(0),    fhPhiUnknown(0),      fhEtaUnknown(0),
+    fhMCPt(0),         fhMCPhi(0),           fhMCEta(0),
+    fhMCRecPt(0),
     //TOF
     fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
     fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
@@ -72,7 +74,10 @@ ClassImp(AliAnaChargedParticles)
     fhEtaPhiTOFBC0PileUpSPD(0),
     fhEtaPhiTOFBCPlusPileUpSPD(0),
     fhEtaPhiTOFBCMinusPileUpSPD(0),
-    fhProductionVertexBC(0)
+    fhProductionVertexBC(0),
+    fhPtNPileUpSPDVtx(0),    fhPtNPileUpTrkVtx(0),
+    fhPtNPileUpSPDVtxBC0(0), fhPtNPileUpTrkVtxBC0(0)
+
 {
   //Default Ctor
 
@@ -145,10 +150,13 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPtCutDCA->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPtCutDCA);
   
-  fhPtCutDCABCOK  = new TH1F ("hPtCutDCABCOK","p_T distribution, DCA cut, track BC=0 or -100", nptbins,ptmin,ptmax);
-  fhPtCutDCABCOK->SetXTitle("p_{T} (GeV/c)");
-  outputContainer->Add(fhPtCutDCABCOK);
-
+  if(fFillVertexBC0Histograms)
+  {
+    fhPtCutDCABCOK  = new TH1F ("hPtCutDCABCOK","p_T distribution, DCA cut, track BC=0 or -100", nptbins,ptmin,ptmax);
+    fhPtCutDCABCOK->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtCutDCABCOK);
+  }
+  
   fhPhiNeg  = new TH2F ("hPhiNegative","#phi of negative charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhiNeg->SetYTitle("#phi (rad)");
@@ -262,9 +270,12 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhTOFSignal->SetXTitle("TOF signal (ns)");
   outputContainer->Add(fhTOFSignal);
 
-  fhTOFSignalBCOK  = new TH1F ("hTOFSignalBCOK","TOF signal", ntofbins,mintof,maxtof);
-  fhTOFSignalBCOK->SetXTitle("TOF signal (ns)");
-  outputContainer->Add(fhTOFSignalBCOK);
+  if(fFillTrackBCHistograms)
+  {
+    fhTOFSignalBCOK  = new TH1F ("hTOFSignalBCOK","TOF signal", ntofbins,mintof,maxtof);
+    fhTOFSignalBCOK->SetXTitle("TOF signal (ns)");
+    outputContainer->Add(fhTOFSignalBCOK);
+  }
   
   fhTOFSignalPtCut  = new TH1F ("hTOFSignalPtCut","TOF signal", ntofbins,mintof,maxtof);
   fhTOFSignalPtCut->SetXTitle("TOF signal (ns)");
@@ -340,35 +351,42 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       }
     }
  
-    fhEtaPhiTOFBC0  = new TH2F ("hEtaPhiTOFBC0","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
-    fhEtaPhiTOFBC0->SetXTitle("#eta ");
-    fhEtaPhiTOFBC0->SetYTitle("#phi (rad)");
-    outputContainer->Add(fhEtaPhiTOFBC0);
     
-    fhEtaPhiTOFBCPlus  = new TH2F ("hEtaPhiTOFBCPlus","eta-phi for tracks with hit on TOF, and tof corresponding to BC>0",netabins,etamin,etamax, nphibins,phimin,phimax);
-    fhEtaPhiTOFBCPlus->SetXTitle("#eta ");
-    fhEtaPhiTOFBCPlus->SetYTitle("#phi (rad)");
-    outputContainer->Add(fhEtaPhiTOFBCPlus);
-    
-    fhEtaPhiTOFBCMinus  = new TH2F ("hEtaPhiTOFBCMinus","eta-phi for tracks with hit on TOF, and tof corresponding to BC<0",netabins,etamin,etamax, nphibins,phimin,phimax);
-    fhEtaPhiTOFBCMinus->SetXTitle("#eta ");
-    fhEtaPhiTOFBCMinus->SetYTitle("#phi (rad)");
-    outputContainer->Add(fhEtaPhiTOFBCMinus);
-
-    fhEtaPhiTOFBC0PileUpSPD  = new TH2F ("hEtaPhiTOFBC0PileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
-    fhEtaPhiTOFBC0PileUpSPD->SetXTitle("#eta ");
-    fhEtaPhiTOFBC0PileUpSPD->SetYTitle("#phi (rad)");
-    outputContainer->Add(fhEtaPhiTOFBC0PileUpSPD);
-    
-    fhEtaPhiTOFBCPlusPileUpSPD  = new TH2F ("hEtaPhiTOFBCPlusPileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC>0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
-    fhEtaPhiTOFBCPlusPileUpSPD->SetXTitle("#eta ");
-    fhEtaPhiTOFBCPlusPileUpSPD->SetYTitle("#phi (rad)");
-    outputContainer->Add(fhEtaPhiTOFBCPlusPileUpSPD);
-    
-    fhEtaPhiTOFBCMinusPileUpSPD  = new TH2F ("hEtaPhiTOFBCMinusPileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC<0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
-    fhEtaPhiTOFBCMinusPileUpSPD->SetXTitle("#eta ");
-    fhEtaPhiTOFBCMinusPileUpSPD->SetYTitle("#phi (rad)");
-    outputContainer->Add(fhEtaPhiTOFBCMinusPileUpSPD);
+    if(fFillTrackBCHistograms)
+    {
+      fhEtaPhiTOFBC0  = new TH2F ("hEtaPhiTOFBC0","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+      fhEtaPhiTOFBC0->SetXTitle("#eta ");
+      fhEtaPhiTOFBC0->SetYTitle("#phi (rad)");
+      outputContainer->Add(fhEtaPhiTOFBC0);
+      
+      fhEtaPhiTOFBCPlus  = new TH2F ("hEtaPhiTOFBCPlus","eta-phi for tracks with hit on TOF, and tof corresponding to BC>0",netabins,etamin,etamax, nphibins,phimin,phimax);
+      fhEtaPhiTOFBCPlus->SetXTitle("#eta ");
+      fhEtaPhiTOFBCPlus->SetYTitle("#phi (rad)");
+      outputContainer->Add(fhEtaPhiTOFBCPlus);
+      
+      fhEtaPhiTOFBCMinus  = new TH2F ("hEtaPhiTOFBCMinus","eta-phi for tracks with hit on TOF, and tof corresponding to BC<0",netabins,etamin,etamax, nphibins,phimin,phimax);
+      fhEtaPhiTOFBCMinus->SetXTitle("#eta ");
+      fhEtaPhiTOFBCMinus->SetYTitle("#phi (rad)");
+      outputContainer->Add(fhEtaPhiTOFBCMinus);
+      
+      if(fFillPileUpHistograms)
+      {
+        fhEtaPhiTOFBC0PileUpSPD  = new TH2F ("hEtaPhiTOFBC0PileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+        fhEtaPhiTOFBC0PileUpSPD->SetXTitle("#eta ");
+        fhEtaPhiTOFBC0PileUpSPD->SetYTitle("#phi (rad)");
+        outputContainer->Add(fhEtaPhiTOFBC0PileUpSPD);
+        
+        fhEtaPhiTOFBCPlusPileUpSPD  = new TH2F ("hEtaPhiTOFBCPlusPileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC>0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+        fhEtaPhiTOFBCPlusPileUpSPD->SetXTitle("#eta ");
+        fhEtaPhiTOFBCPlusPileUpSPD->SetYTitle("#phi (rad)");
+        outputContainer->Add(fhEtaPhiTOFBCPlusPileUpSPD);
+        
+        fhEtaPhiTOFBCMinusPileUpSPD  = new TH2F ("hEtaPhiTOFBCMinusPileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC<0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
+        fhEtaPhiTOFBCMinusPileUpSPD->SetXTitle("#eta ");
+        fhEtaPhiTOFBCMinusPileUpSPD->SetYTitle("#phi (rad)");
+        outputContainer->Add(fhEtaPhiTOFBCMinusPileUpSPD);
+      }
+    }
     
   }
   
@@ -418,19 +436,22 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhPtDCANoSPDNoRefit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCANoSPDNoRefit[i]);
     
-    fhPtDCATOFBC0[i]  = new TH2F(Form("hPtDCA%sTOFBC0",dcaName[i].Data()),
-                           Form("Track DCA%s vs p_{T} distribution, BC=0",dcaName[i].Data()),
-                           nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-    fhPtDCATOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCATOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
-    outputContainer->Add(fhPtDCATOFBC0[i]);
-
-    fhPtDCATOFBCOut[i]  = new TH2F(Form("hPtDCA%sTOFBCOut",dcaName[i].Data()),
-                                 Form("Track DCA%s vs p_{T} distribution, BC!=0",dcaName[i].Data()),
-                                 nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-    fhPtDCATOFBCOut[i]->SetXTitle("p_{T} (GeV/c)");
-    fhPtDCATOFBCOut[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
-    outputContainer->Add(fhPtDCATOFBCOut[i]);
+    if(fFillTrackBCHistograms)
+    {
+      fhPtDCATOFBC0[i]  = new TH2F(Form("hPtDCA%sTOFBC0",dcaName[i].Data()),
+                                   Form("Track DCA%s vs p_{T} distribution, BC=0",dcaName[i].Data()),
+                                   nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+      fhPtDCATOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCATOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      outputContainer->Add(fhPtDCATOFBC0[i]);
+      
+      fhPtDCATOFBCOut[i]  = new TH2F(Form("hPtDCA%sTOFBCOut",dcaName[i].Data()),
+                                     Form("Track DCA%s vs p_{T} distribution, BC!=0",dcaName[i].Data()),
+                                     nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+      fhPtDCATOFBCOut[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCATOFBCOut[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
+      outputContainer->Add(fhPtDCATOFBCOut[i]);
+    }
     
     fhPtDCANoTOFHit[i]  = new TH2F(Form("hPtDCA%sNoTOFHit",dcaName[i].Data()),
                            Form("Track (no TOF hit) DCA%s vs p_{T} distribution",dcaName[i].Data()),
@@ -479,12 +500,15 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhPtDCAPileUp[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAPileUp[i]);
       
-      fhPtDCAPileUpTOFBC0[i]  = new TH2F(Form("hPtDCA%sPileUpTOFBC0",dcaName[i].Data()),
-                                   Form("Track DCA%s vs p_{T} distribution",dcaName[i].Data()),
-                                   nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCAPileUpTOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
-      fhPtDCAPileUpTOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
-      outputContainer->Add(fhPtDCAPileUpTOFBC0[i]);
+      if(fFillTrackBCHistograms)
+      {
+        fhPtDCAPileUpTOFBC0[i]  = new TH2F(Form("hPtDCA%sPileUpTOFBC0",dcaName[i].Data()),
+                                           Form("Track DCA%s vs p_{T} distribution",dcaName[i].Data()),
+                                           nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
+        fhPtDCAPileUpTOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtDCAPileUpTOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
+        outputContainer->Add(fhPtDCAPileUpTOFBC0[i]);
+      }
       
       fhPtDCAPileUpNoTOFHit[i]  = new TH2F(Form("hPtDCA%sPileUpNoTOFHit",dcaName[i].Data()),
                                      Form("Track (no TOF hit) DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
@@ -588,9 +612,51 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhEtaUnknown  = new TH2F ("hEtaMCUnknown","#eta distribution from unknown",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
     fhEtaUnknown->SetXTitle("#eta ");
     outputContainer->Add(fhEtaUnknown);
-    
+
+    fhMCPt  = new TH1F ("hMCPt","p_T distribution from MC", nptbins,ptmin,ptmax); 
+    fhMCPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCPt);
+
+    fhMCPhi  = new TH2F ("hMCPhi","#phi distribution from MC",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhMCPhi->SetXTitle("#phi (rad)");
+    outputContainer->Add(fhMCPhi);
+   
+    fhMCEta  = new TH2F ("hMCEta","#eta distribution from MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+    fhMCEta->SetXTitle("#eta (rad)");
+    outputContainer->Add(fhMCEta);
+
+    fhMCRecPt  = new TH1F ("hMCRecPt","p_T distribution from Rec MC", nptbins,ptmin,ptmax); 
+    fhMCRecPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhMCRecPt);
   }
   
+  fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
+                                 nptbins,ptmin,ptmax,20,0,20);
+  fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
+  fhPtNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtNPileUpSPDVtx);
+  
+  fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
+                                 nptbins,ptmin,ptmax, 20,0,20 );
+  fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
+  fhPtNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPtNPileUpTrkVtx);
+  
+  if(fFillVertexBC0Histograms)
+  {
+    fhPtNPileUpSPDVtxBC0  = new TH2F ("hPt_NPileUpVertSPD_BC0","pT of cluster vs N pile-up SPD vertex",
+                                   nptbins,ptmin,ptmax,20,0,20);
+    fhPtNPileUpSPDVtxBC0->SetYTitle("# vertex ");
+    fhPtNPileUpSPDVtxBC0->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNPileUpSPDVtxBC0);
+  
+    fhPtNPileUpTrkVtxBC0  = new TH2F ("hPt_NPileUpVertTracks_BC0","pT of cluster vs N pile-up Tracks vertex",
+                                   nptbins,ptmin,ptmax, 20,0,20 );
+    fhPtNPileUpTrkVtxBC0->SetYTitle("# vertex ");
+    fhPtNPileUpTrkVtxBC0->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNPileUpTrkVtxBC0);
+  }
+
   return outputContainer;
 
 }
@@ -648,8 +714,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
   
-  AliVEvent * event = GetReader()->GetInputEvent();
-
+  AliVEvent  * event = GetReader()->GetInputEvent();
+  AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
+  AliAODEvent* aodEv = dynamic_cast<AliAODEvent*> (event);
+  
   Int_t vtxBC = GetReader()->GetVertexBC();
   if(!GetReader()->IsDCACutOn()) vtxBC = GetReader()->GetVertexBC(event->GetPrimaryVertex());
 
@@ -667,6 +735,23 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhProductionVertexBCPileUp[6]->Fill(vtxBC);
     }
   }
+  
+  // N pile up vertices
+  Int_t nVtxSPD = -1;
+  Int_t nVtxTrk = -1;
+  
+  if      (esdEv)
+  {
+    nVtxSPD = esdEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = esdEv->GetNumberOfPileupVerticesTracks();
+    
+  }//ESD
+  else if (aodEv)
+  {
+    nVtxSPD = aodEv->GetNumberOfPileupVerticesSPD();
+    nVtxTrk = aodEv->GetNumberOfPileupVerticesTracks();
+  }//AOD
+
   
   //printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - primary vertex BC %d\n",vtxBC);
   
@@ -686,6 +771,9 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     phi = track->Phi();
 
     fhPtNoCut->Fill(pt);
+    
+    fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);
+    fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
     
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
     AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
@@ -741,6 +829,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       {
         fhPtVtxInBC0->Fill(pt);
         fhEtaPhiVtxInBC0->Fill(eta,phi);
+        
+        fhPtNPileUpSPDVtxBC0->Fill(pt,nVtxSPD);
+        fhPtNPileUpTrkVtxBC0->Fill(pt,nVtxTrk);
+        
         if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtCutDCABCOK->Fill(pt);
         
         if(dcaCons == -999)
@@ -862,7 +954,6 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     //printf("track pT %2.2f, DCA Cons %f, DCA1 %f, DCA2 %f, TOFBC %d, oktof %d, tof %f\n",
     //      pt,dcaCons,dca[0],dca[1],track->GetTOFBunchCrossing(bz),okTOF, tof);
     
-    Int_t trackBC = track->GetTOFBunchCrossing(bz);
     
 //    if( vtxBC == 0 && trackBC !=0 && trackBC!=AliVTrack::kTOFBCNA)
 //      printf("TOF Signal %e, BC %d, pt %f, dca_xy %f, dca_z %f, dca_tpc %f \n", tof,trackBC, pt,dca[0],dca[1],dcaCons);
@@ -882,41 +973,48 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
           fhPtTOFSignalVtxInBC0->Fill(pt, tof);
       }
       
-      if(trackBC==0)
+      Int_t trackBC = 1000;
+      
+      if(fFillTrackBCHistograms)
       {
-        fhTOFSignalBCOK->Fill(tof);
-        
-        if(dcaCons == -999)
+        trackBC = track->GetTOFBunchCrossing(bz);
+
+        if(trackBC==0)
         {
-          fhPtDCATOFBC0[0]->Fill(pt, dca[0]);
-          fhPtDCATOFBC0[1]->Fill(pt, dca[1]);
+          fhTOFSignalBCOK->Fill(tof);
+          
+          if(dcaCons == -999)
+          {
+            fhPtDCATOFBC0[0]->Fill(pt, dca[0]);
+            fhPtDCATOFBC0[1]->Fill(pt, dca[1]);
+          }
+          else
+            fhPtDCATOFBC0[2]->Fill(pt, dcaCons);
+          
+          if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+          {
+            if(dcaCons == -999)
+            {
+              fhPtDCAPileUpTOFBC0[0]->Fill(pt, dca[0]);
+              fhPtDCAPileUpTOFBC0[1]->Fill(pt, dca[1]);
+            }
+            else
+              fhPtDCAPileUpTOFBC0[2]->Fill(pt, dcaCons);
+          }
         }
-        else
-          fhPtDCATOFBC0[2]->Fill(pt, dcaCons);
-        
-        if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+        else if(trackBC!=AliVTrack::kTOFBCNA)
         {
           if(dcaCons == -999)
           {
-            fhPtDCAPileUpTOFBC0[0]->Fill(pt, dca[0]);
-            fhPtDCAPileUpTOFBC0[1]->Fill(pt, dca[1]);
+            fhPtDCATOFBCOut[0]->Fill(pt, dca[0]);
+            fhPtDCATOFBCOut[1]->Fill(pt, dca[1]);
           }
           else
-            fhPtDCAPileUpTOFBC0[2]->Fill(pt, dcaCons);
+            fhPtDCATOFBCOut[2]->Fill(pt, dcaCons);
+          
         }
       }
-      else if(trackBC!=AliVTrack::kTOFBCNA)
-      {
-        if(dcaCons == -999)
-        {
-          fhPtDCATOFBCOut[0]->Fill(pt, dca[0]);
-          fhPtDCATOFBCOut[1]->Fill(pt, dca[1]);
-        }
-        else
-          fhPtDCATOFBCOut[2]->Fill(pt, dcaCons);
       
-      }
-
       if(fFillPileUpHistograms)
       {
         if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalPileUp[0]->Fill(pt, tof);
@@ -927,9 +1025,12 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTOFSignalPileUp[5]->Fill(pt, tof);
         if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTOFSignalPileUp[6]->Fill(pt, tof);
         
-        if      (trackBC ==0)  { fhEtaPhiTOFBC0    ->Fill(eta,phi); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBC0PileUpSPD    ->Fill(eta,phi); }
-        else if (trackBC < 0)  { fhEtaPhiTOFBCPlus ->Fill(eta,phi); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta,phi); }
-        else if (trackBC > 0)  { fhEtaPhiTOFBCMinus->Fill(eta,phi); if(GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta,phi); }
+        if(fFillTrackBCHistograms)
+        {
+          if      (trackBC ==0)  { fhEtaPhiTOFBC0    ->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBC0PileUpSPD    ->Fill(eta,phi); }
+          else if (trackBC < 0)  { fhEtaPhiTOFBCPlus ->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta,phi); }
+          else if (trackBC > 0)  { fhEtaPhiTOFBCMinus->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta,phi); }
+        }
         
         if(fFillVertexBC0Histograms)
         {
@@ -1108,24 +1209,29 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     
     if(IsDataMC())
     {
-      //Play with the MC stack if available		
+      //Play with the MC stack if available
       Int_t mompdg = -1;
       Int_t label  = track->GetLabel();
+
       if(label >= 0)
-      {
-        if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
-        {
-          TParticle * mom = GetMCStack()->Particle(label);
-          mompdg =TMath::Abs(mom->GetPdgCode());
-        }
-        else if(GetReader()->ReadAODMCParticles())
-        {
-          AliAODMCParticle * aodmom = 0;
-          //Get the list of MC particles
-          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
-          mompdg =TMath::Abs(aodmom->GetPdgCode());
-        }
-      }
+	{
+	  if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
+	    {
+	      TParticle * mom = GetMCStack()->Particle(label);
+	      mompdg =TMath::Abs(mom->GetPdgCode());
+	    }
+	  else if(GetReader()->ReadAODMCParticles())
+	    {
+	      AliAODMCParticle * aodmom = 0;
+	      //Get the list of MC particles
+	      aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
+	      mompdg =TMath::Abs(aodmom->GetPdgCode());
+	    }
+	}
+
+      if(mompdg==211 || mompdg==2212 || mompdg==321 || mompdg==11){
+	if(TMath::Abs(eta) < 0.8 && phi < 3.145) fhMCRecPt->Fill(pt);
+      } 
       
       if(mompdg==211)
       {
@@ -1156,10 +1262,46 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
         fhPtUnknown ->Fill(pt);
         fhPhiUnknown->Fill(pt, phi);
         fhEtaUnknown->Fill(pt, eta);
-      }
-      
+      }     
     }//Work with stack also
     
   }// aod branch loop
   
-}
+  if(IsDataMC())
+    {
+      Int_t primpdg = -1;
+      if(GetReader()->ReadStack()) {	
+	AliStack * stack = GetMCStack();
+	if(stack) {
+	  for(Int_t i=0 ; i<stack->GetNtrack(); i++){
+	    TParticle *prim = stack->Particle(i);
+	    primpdg = TMath::Abs(prim->GetPdgCode());
+	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
+	      if(prim->IsPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
+		fhMCPt->Fill(prim->Pt());
+		fhMCPhi->Fill(prim->Pt(),prim->Phi());
+		fhMCEta->Fill(prim->Pt(),prim->Eta());
+	      }
+	    }
+	  }
+	}
+      }
+      else if(GetReader()->ReadAODMCParticles()){
+	TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+	if(mcparticles){
+	  Int_t nprim = mcparticles->GetEntriesFast();
+	  for(Int_t i=0; i < nprim; i++){
+	    AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i); 
+	    primpdg = TMath::Abs(prim->GetPdgCode());
+	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
+	      if(prim->IsPhysicalPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
+		fhMCPt->Fill(prim->Pt());
+		fhMCPhi->Fill(prim->Pt(),prim->Phi());
+		fhMCEta->Fill(prim->Pt(),prim->Eta());
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }

@@ -66,14 +66,17 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
                     
   AliDxHFEToolsMC fMCTools;            // MC selection tools
   TH1*            fPDGnotMCElectron;   //! PDG of track not MC truth electron
+  TH1*            fPDGNotHFMother;     //! PDG of mother not HF
   int fOriginMother;                   //  Holds the origin motherquark (process)
   int fResultMC;                       // Holds information on check on MC
   Bool_t fUseKine;                     // Run over MC stack
   vector<int> fMotherPDGs;             // list off mothers counted as background
   Bool_t fUseMCReco;                   // Run over all MC reconstructed tracks
   Int_t fSelectionStep;                // Where to stop track selection
+  Bool_t          fStoreCutStepInfo;   // Whether to store which cut step is the effective one
 
-  ClassDef(AliDxHFEParticleSelectionMCEl, 3);
+
+  ClassDef(AliDxHFEParticleSelectionMCEl, 4);
 };
 
 #endif

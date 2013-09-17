@@ -14,12 +14,29 @@ void AddTaskPWG4HighPtTrackQA(TString year = "2010", TString prodType = "LHC10h"
       else
 	AddTaskPWG4HighPtTrackQAAll2011(prodType.Data(),isPbPb,iAODanalysis);
     }
+    else if(year.Contains("2013")) {
+      AddTaskPWG4HighPtTrackQApPb();
+    }
+
   }
   else if(iAODanalysis==1) {
     AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
   }
 
 }
+
+void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b") {
+
+  AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliVEvent::kINT7);
+  AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kINT7);
+  
+  if(!strcmp(prodType,"LHC13d") || !strcmp(prodType,"LHC13e") || !strcmp(prodType,"LHC13f")) {
+    AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliVEvent::kEMCEJE);
+    AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kEMCEJE);
+  }
+
+}
+
 
 void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
 {    
@@ -229,6 +246,8 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   UInt_t iPhysicsSelectionFlagMB = AliVEvent::kMB; 
   UInt_t iPhysicsSelectionFlagCentral = AliVEvent::kCentral;
   UInt_t iPhysicsSelectionFlagSemiCentral = AliVEvent::kSemiCentral;
+  UInt_t iPhysicsSelectionFlagINT7 = AliVEvent::kINT7; 
+  UInt_t iPhysicsSelectionFlagEMCEJE = AliVEvent::kEMCEJE; 
 
   Int_t cent = 10;
 
@@ -252,8 +271,32 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   }
   else {
     cent = 10;
-    AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
-    taskTrackQAMB->SetFilterMask(filterBit);
+
+    if(strRunPeriod.Contains("LHC13")) {
+      AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagINT7);
+      taskTrackQAMB->SetFilterMask(768);
+
+      AliPWG4HighPtTrackQA *taskTrackQAMB1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagINT7);
+      taskTrackQAMB1->SetFilterMask(256);
+
+      AliPWG4HighPtTrackQA *taskTrackQAMB2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagINT7);
+      taskTrackQAMB2->SetFilterMask(512);
+
+      if(strRunPeriod.EqualTo("LHC13d") || strRunPeriod.EqualTo("LHC13e") || strRunPeriod.EqualTo("LHC13f")) {
+	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
+	taskTrackQAEMCEJE->SetFilterMask(768);
+	
+	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagEMCEJE);
+	taskTrackQAEMCEJE1->SetFilterMask(256);
+	
+	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagEMCEJE);
+	taskTrackQAEMCEJE2->SetFilterMask(512);
+      }
+    }
+    else {
+      AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
+      taskTrackQAMB->SetFilterMask(filterBit);
+    }
   }
 }
 
@@ -407,10 +450,25 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
   
+  TString trigName = "";
+  if (iPhysicsSelectionFlag == AliVEvent::kAnyINT)
+    trigName += "kAnyINT";
+  else if (iPhysicsSelectionFlag == AliVEvent::kAny)
+    trigName += "kAny";
+  else if(iPhysicsSelectionFlag == AliVEvent::kINT7)
+    trigName += "kINT7";
+  else if(iPhysicsSelectionFlag == AliVEvent::kMB)
+    trigName += "kMB";
+  else if(iPhysicsSelectionFlag == AliVEvent::kEMC7)
+    trigName += "kEMC7";
+  else if(iPhysicsSelectionFlag == AliVEvent::kEMCEJE)
+    trigName += "kEMCEJE";
+  else if(iPhysicsSelectionFlag == AliVEvent::kEMCEGA)
+    trigName += "kEMCEGA";
 
 
   //Create the task
-  AliPWG4HighPtTrackQA *taskPWG4TrackQA = new AliPWG4HighPtTrackQA(Form("AliPWG4HighPtTrackQACent%dTrack%dCuts%dPSF%d",centClass,trackType,cuts,iPhysicsSelectionFlag));
+  AliPWG4HighPtTrackQA *taskPWG4TrackQA = new AliPWG4HighPtTrackQA(Form("AliPWG4HighPtTrackQACent%dTrack%dCuts%d%s",centClass,trackType,cuts,trigName.Data()));
   taskPWG4TrackQA->SetTrackType(trackType);
   taskPWG4TrackQA->SetCuts(trackCuts);
   taskPWG4TrackQA->SetCutsITSLoose(trackCutsReject);
@@ -433,36 +491,17 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   taskPWG4TrackQA->SelectCollisionCandidates(iPhysicsSelectionFlag);
 
 
+
+
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  if(iPhysicsSelectionFlag == AliVEvent::kMB)
-    outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%d",centClass,trackType,cuts);
-  else if(iPhysicsSelectionFlag == AliVEvent::kCentral)
-    outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dkCentral",centClass,trackType,cuts);
-  else if(iPhysicsSelectionFlag == AliVEvent::kSemiCentral)
-    outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dkSemiCentral",centClass,trackType,cuts);
-  else if(iPhysicsSelectionFlag == AliVEvent::kEMCEJE)
-    outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dkEMCEJE",centClass,trackType,cuts);
-  else if(iPhysicsSelectionFlag == AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral)
-    outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dkMBkCentralkSemiCentral",centClass,trackType,cuts);
-  else
-    outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,iPhysicsSelectionFlag);
+  outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data());
 
   AliAnalysisDataContainer *cout_histQAtrack = 0x0;
-  if(iPhysicsSelectionFlag == AliVEvent::kMB)
-    cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%d",centClass,trackType,cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-  else if(iPhysicsSelectionFlag == AliVEvent::kCentral)
-    cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dkCentral",centClass,trackType,cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-  else if(iPhysicsSelectionFlag == AliVEvent::kSemiCentral)
-    cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dkSemiCentral",centClass,trackType,cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-  else if(iPhysicsSelectionFlag == AliVEvent::kEMCEJE)
-    cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dkEMCEJE",centClass,trackType,cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-  else if(iPhysicsSelectionFlag == AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral)
-    cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dkMBkCentralSemiCentral",centClass,trackType,cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-  else
-    cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dPSF%d",centClass,trackType,cuts,iPhysicsSelectionFlag), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
+  TString contName = Form("qa_histsQAtrackCent%dType%dcuts%d%s",centClass,trackType,cuts,trigName.Data());
+  cout_histQAtrack = mgr->CreateContainer(contName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
 
   mgr->AddTask(taskPWG4TrackQA);
   mgr->ConnectInput(taskPWG4TrackQA,0,mgr->GetCommonInputContainer());

@@ -45,11 +45,13 @@ public:
     void SetPoolSize(Int_t poolsize) {fPoolSize = poolsize;}
     void SetMixEvents(Bool_t mixevents = kTRUE) {fMixEvents = mixevents;}
     void SetMixTriggers(Bool_t mixtriggers = kTRUE) {fMixTriggers = mixtriggers;}
-	//void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
 	void SetCalculateMismatch(Bool_t calcmismatch) {fCalculateMismatch = calcmismatch;}
 	void SetMakeTOFCorrelations(Bool_t makeTOF) {fMakeTOFcorrelations = makeTOF;}
-	void SetMakeTOFTPCCorrelations(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelations = makeTOFTPC;}
+	void SetMakeTOFTPCCorrelationsPi(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelationsPi = makeTOFTPC;}
+	void SetMakeTOFTPCCorrelationsKa(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelationsKa = makeTOFTPC;}
+	void SetMakeTOFTPCCorrelationsPr(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelationsPr = makeTOFTPC;}		
+	void SetTOFIntervalFactorTOFTPC(Double_t factor = 1.) {fTOFIntervalFactorTOFTPC = factor;}
 
 	// Getters.
 	Int_t GetNDEtaBins() const {return fNDEtaBins;}
@@ -59,11 +61,13 @@ public:
 	Int_t GetPoolSize() const {return fPoolSize;}
 	Bool_t GetMixEvents() const {return fMixEvents;}
 	Bool_t GetMixTriggers() const {return fMixTriggers;}
-	//Int_t GetDebugLevel() const {return fDebug;}	
 
 	Bool_t GetCalculateMismatch() const {return fCalculateMismatch;}
 	Bool_t GetMakeTOFCorrelations() const {return fMakeTOFcorrelations;}
-	Bool_t GetMakeTOFTPCCorrelations() const {return fMakeTOFTPCcorrelations;}
+	Bool_t GetMakeTOFTPCCorrelationsPi() const {return fMakeTOFTPCcorrelationsPi;}
+	Bool_t GetMakeTOFTPCCorrelationsKa() const {return fMakeTOFTPCcorrelationsKa;}
+	Bool_t GetMakeTOFTPCCorrelationsPr() const {return fMakeTOFTPCcorrelationsPr;}		
+	Double_t GetTOFIntervalFactorTOFTPC() const {return fTOFIntervalFactorTOFTPC;}
 
 private:
 	//void FillGlobalTracksArray();
@@ -130,8 +134,10 @@ private:
 
 	// Flags.
 	Bool_t							fMakeTOFcorrelations;		//
-	Bool_t							fMakeTOFTPCcorrelations;	//
-	//Int_t							fDebug;						// Debug flag.
+	Bool_t							fMakeTOFTPCcorrelationsPi;	//
+	Bool_t							fMakeTOFTPCcorrelationsKa;	//
+	Bool_t							fMakeTOFTPCcorrelationsPr;	//
+	Double_t						fTOFIntervalFactorTOFTPC;	// Makes the TOF interval longer while keeping the resolution constant.
 
 	ClassDef(AliAnalysisTaskDiHadronPID, 3);
 

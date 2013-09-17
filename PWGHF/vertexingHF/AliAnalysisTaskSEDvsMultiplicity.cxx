@@ -72,6 +72,8 @@ AliAnalysisTaskSE(),
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrUnCorrEvSel(0),
+  fHistNtrUnCorrEvWithCand(0),
+  fHistNtrUnCorrEvWithD(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -80,6 +82,7 @@ AliAnalysisTaskSE(),
   fPtVsMassVsMultUncorr(0),
   fPtVsMassVsMultPart(0),
   fPtVsMassVsMultAntiPart(0),
+  fPtVsMassVsMultMC(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
   fNMassBins(200),
@@ -92,6 +95,7 @@ AliAnalysisTaskSE(),
   fHigherImpPar(2000.),
   fReadMC(kFALSE),
   fMCOption(0),
+  fisPPbData(kFALSE),
   fUseBit(kTRUE),
   fSubtractTrackletsFromDau(kFALSE),
   fUseNchWeight(kFALSE),
@@ -99,7 +103,8 @@ AliAnalysisTaskSE(),
   fHistoMeasNch(0),
   fRefMult(9.26),
   fPdgMeson(411),
-  fMultiplicityEstimator(kNtrk10)
+  fMultiplicityEstimator(kNtrk10),
+  fMCPrimariesEstimator(kEta10)
 {
    // Default constructor
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
@@ -127,6 +132,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrUnCorrEvSel(0),
+  fHistNtrUnCorrEvWithCand(0),
+  fHistNtrUnCorrEvWithD(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -135,6 +142,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fPtVsMassVsMultUncorr(0),
   fPtVsMassVsMultPart(0),
   fPtVsMassVsMultAntiPart(0),
+  fPtVsMassVsMultMC(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
   fNMassBins(200),
@@ -147,6 +155,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHigherImpPar(2000.),
   fReadMC(kFALSE),
   fMCOption(0),
+  fisPPbData(kFALSE),
   fUseBit(kTRUE),
   fSubtractTrackletsFromDau(kFALSE),
   fUseNchWeight(kFALSE),
@@ -154,7 +163,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistoMeasNch(0),
   fRefMult(9.26),
   fPdgMeson(pdgMeson),
-  fMultiplicityEstimator(kNtrk10)
+  fMultiplicityEstimator(kNtrk10),
+  fMCPrimariesEstimator(kEta10)
 {
   // 
   // Standard constructor
@@ -162,10 +172,10 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
   if(fPdgMeson==413){
-    fNMassBins=200; // FIXME
-    SetMassLimits(0.,0.2); // FIXME
-  }else{ 
-    fNMassBins=200; 
+    fNMassBins=200;
+    SetMassLimits(0.12,0.2);
+  }else{
+    fNMassBins=200;
     SetMassLimits(fPdgMeson,0.1);
   }
   // Default constructor
@@ -275,12 +285,18 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   Int_t nMultBins = 200;
   Float_t firstMultBin = -0.5;
   Float_t lastMultBin = 199.5;
+  if(fisPPbData) {
+    nMultBins = 375;
+    lastMultBin = 374.5;
+  }
   if(fMultiplicityEstimator==kVZERO) {
-    nMultBins = 600;
-    lastMultBin = 599.5;
+    nMultBins = 400;
+    lastMultBin = 799.5;
   }
 
   fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand", "Uncorrected Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
+  fHistNtrUnCorrEvWithD = new TH1F("hNtrUnCorrEvWithD","Uncorrected Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
   fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Corrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
   fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
@@ -303,11 +319,15 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin);
 
   fHistNtrUnCorrEvSel->Sumw2();
+  fHistNtrUnCorrEvWithCand->Sumw2();
+  fHistNtrUnCorrEvWithD->Sumw2();
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
   fHistNtrCorrEvWithD->Sumw2();
   fHistGenPrimaryParticlesInelGt0->Sumw2();
   fOutput->Add(fHistNtrUnCorrEvSel);
+  fOutput->Add(fHistNtrUnCorrEvWithCand);
+  fOutput->Add(fHistNtrUnCorrEvWithD);
   fOutput->Add(fHistNtrCorrEvSel);
   fOutput->Add(fHistNtrCorrEvWithCand);
   fOutput->Add(fHistNtrCorrEvWithD);
@@ -353,11 +373,14 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
 
   fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
+  fPtVsMassVsMultMC=new TH3F("hPtVsMassvsMultMC", "D true candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",nMultBins,firstMultBin,lastMultBin,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+
   fOutput->Add(fPtVsMassVsMult);
   fOutput->Add(fPtVsMassVsMultUncorr);
   fOutput->Add(fPtVsMassVsMultNoPid);
   fOutput->Add(fPtVsMassVsMultPart);
   fOutput->Add(fPtVsMassVsMultAntiPart);
+  fOutput->Add(fPtVsMassVsMultMC);
 
   if(fDoImpPar) CreateImpactParameterHistos();
 
@@ -416,8 +439,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     selbit=AliRDHFCuts::kD0toKpiCuts;
   }else if(fPdgMeson==413){
     arrayName="Dstar";
-    pdgDau[0]=321; pdgDau[1]=211; pdgDau[2]=211; 
-    nDau=3;
+    pdgDau[0]=321; pdgDau[1]=211; pdgDau[2]=0; // Quoting here D0 daughters (D* ones on another variable later)
+    nDau=2;
     selbit=AliRDHFCuts::kDstarCuts;
   }
 
@@ -443,6 +466,14 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     return;
   }
 
+  if(fisPPbData && fReadMC){
+    Int_t runnumber = aod->GetRunNumber();
+    if(aod->GetTriggerMask()==0 && 
+       (runnumber>=195344 && runnumber<=195677)){
+      AliDebug(3,"Event rejected because of null trigger mask");
+      return;
+    }
+  }
 
 
   // fix for temporary bug in ESDfilter 
@@ -521,6 +552,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Int_t nChargedMC=AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.0,1.0);
     Int_t nChargedMCPrimary=AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.0,1.0);
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.0,1.0);
+
+    // Compute the Nch weights (reference is Ntracklets within |eta|<1.0)
     if(fUseNchWeight){
       Double_t tmpweight = 1.0;
       if(nChargedMCPhysicalPrimary<=0) tmpweight = 0.0;
@@ -528,11 +561,36 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	Double_t pMeas = fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nChargedMCPhysicalPrimary));
 	//	printf(" pMeas=%2.2f  and histo MCNch %s \n",pMeas,fHistoMCNch);
 	Double_t pMC = fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nChargedMCPhysicalPrimary));
-	tmpweight = pMeas/pMC;
+	tmpweight = pMC>0 ? pMeas/pMC : 0.;
       }
       nchWeight *= tmpweight;
       AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,nchWeight));
     }
+
+    // Now recompute the variables in case another MC estimator is considered
+    Int_t nChargedMCEta10 = nChargedMC;
+    Int_t nChargedMCEta16 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCEtam37tm17 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
+    Int_t nChargedMCEta28t51 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,2.8,5.1);
+    Int_t nChargedMCPrimaryEta10 = nChargedMCPrimary;
+    Int_t nChargedMCPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-3.7,-1.7);
+    Int_t nChargedMCPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,2.8,5.1);
+    Int_t nChargedMCPhysicalPrimaryEta10 = nChargedMCPhysicalPrimary;
+    Int_t nChargedMCPhysicalPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCPhysicalPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-3.7,-1.7);
+    Int_t nChargedMCPhysicalPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,2.8,5.1);
+    if(fMCPrimariesEstimator==kEta10to16){
+      nChargedMC = nChargedMCEta16 - nChargedMCEta10;
+      nChargedMCPrimary = nChargedMCPrimaryEta16 - nChargedMCPrimaryEta10;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta16 - nChargedMCPhysicalPrimaryEta10;
+    } else if(fMCPrimariesEstimator==kEtaVZERO){
+      nChargedMC = nChargedMCEtam37tm17 + nChargedMCEta28t51;
+      nChargedMCPrimary = nChargedMCPrimaryEtam37tm17 + nChargedMCPrimaryEta28t51;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEtam37tm17 + nChargedMCPhysicalPrimaryEta28t51;
+    }
+
+    // Here fill the MC correlation plots
     if(nChargedMCPhysicalPrimary>0){ // INEL>0 for |eta|<1
       fHistGenPrimaryParticlesInelGt0->Fill(nChargedMCPhysicalPrimary,nchWeight);
     }
@@ -554,10 +612,17 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
   Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+
+  // pdg of daughters needed for D* too
+  UInt_t pdgDgDStartoD0pi[2]={421,211};
+
   Double_t aveMult=0.;
   Double_t nSelCand=0.;
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
+    AliAODRecoCascadeHF *dCascade = NULL;
+    if(fPdgMeson==413) dCascade = (AliAODRecoCascadeHF*)d;
+
     fHistNEvents->Fill(7);
     if(fUseBit && !d->HasSelectionBit(selbit)){
       fHistNEvents->Fill(8);
@@ -568,6 +633,17 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Double_t rapid=d->Y(fPdgMeson);
     Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
     if(!isFidAcc) continue;
+   
+    Int_t labD=-1;
+    if(fReadMC) {
+      if(fPdgMeson==413){
+	labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+      } else {
+	labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+      }
+      FillMCMassHistos(arrayMC,labD, countMult,nchWeight);
+    }
+
     Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
     Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
     if(passTopolCuts==0) continue;
@@ -578,9 +654,16 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       fHistNEvents->Fill(10);
     }
     Double_t multForCand = countCorr;
+
     if(fSubtractTrackletsFromDau){
+      // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+      AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
+      if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+
       for(Int_t iDau=0; iDau<nDau; iDau++){
-	AliAODTrack *t = (AliAODTrack*)d->GetDaughter(iDau);
+	AliAODTrack *t = NULL;
+	if(fPdgMeson==413){ t = (AliAODTrack*)d0fromDstar->GetDaughter(iDau); }
+	else{ t = (AliAODTrack*)d->GetDaughter(iDau); }
 	if(!t) continue;
 	if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
 	  if(multForCand>0) multForCand-=1;
@@ -588,7 +671,6 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       }
     }
     Bool_t isPrimary=kTRUE;
-    Int_t labD=-1;
     Double_t trueImpParXY=9999.;
     Double_t impparXY=d->ImpParXY()*10000.;
     Double_t dlen=0.1; //FIXME
@@ -605,10 +687,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       if(TMath::Abs(mass[0]-mD0PDG)<0.02 || TMath::Abs(mass[1]-mD0PDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
     }else if(fPdgMeson==413){
       // FIXME
-      AliAODRecoCascadeHF* temp = (AliAODRecoCascadeHF*)d;
-      mass[0]=temp->DeltaInvMass();
+      mass[0]=dCascade->DeltaInvMass();
       mass[1]=-1.;
-      if(TMath::Abs(mass[0]-(mDstarPDG-mD0PDG))<0.001) nSelectedInMassPeak++; //1 MeV for now... FIXME
+      if(TMath::Abs(mass[0]-(mDstarPDG-mD0PDG))<0.0015) nSelectedInMassPeak++; //1 MeV for now... FIXME
     }
     for(Int_t iHyp=0; iHyp<2; iHyp++){
       if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
@@ -617,7 +698,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 
       if(fReadMC){
 	
-	labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+	if(fPdgMeson==413){
+	  labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+	} else {
+	  labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+	}
+
 	Bool_t fillHisto=fDoImpPar;
 	if(labD>=0){
 	  AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
@@ -644,10 +730,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	}else{
 	  if(fillHisto && passAllCuts)fHistMassPtImpPar[4]->Fill(arrayForSparse);
 	}
-	if(fPdgMeson==421){
-	  if(TMath::Abs(labD)==fPdgMeson && fMCOption==2) continue;
-	  if(TMath::Abs(labD)!=fPdgMeson && fMCOption==1) continue;      
-	}
+
+	if(TMath::Abs(labD)==fPdgMeson && fMCOption==2) continue;
+	if(TMath::Abs(labD)!=fPdgMeson && fMCOption==1) continue;      
+
       }
       
       if(fPdgMeson==421){
@@ -674,7 +760,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	  if(passAllCuts&1) fPtVsMassVsMultPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	  if(passAllCuts&2) fPtVsMassVsMultAntiPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	}else if(fPdgMeson==413){
-	  // FIXME ADD Dstar!!!!!!!!
+	  if(d->GetCharge()>0) fPtVsMassVsMultPart->Fill(multForCand,invMass,ptCand,nchWeight);
+	  else fPtVsMassVsMultAntiPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	}
       	
 	if(fDoImpPar){
@@ -689,16 +776,22 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     aveMult/=nSelCand;
     fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001));
   }else{
-    fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countTreta1corr);
+    fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr);
   }
 
 
   fCounter->StoreCandidates(aod,nSelectedNoPID,kTRUE);
   fCounter->StoreCandidates(aod,nSelectedPID,kFALSE);
-  fHistNtrUnCorrEvSel->Fill(countTreta1,nchWeight);
-  fHistNtrCorrEvSel->Fill(countTreta1corr,nchWeight);
-  if(nSelectedPID>0) fHistNtrCorrEvWithCand->Fill(countTreta1corr,nchWeight);
-  if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countTreta1corr,nchWeight);
+  fHistNtrUnCorrEvSel->Fill(countMult,nchWeight);
+  fHistNtrCorrEvSel->Fill(countCorr,nchWeight);
+  if(nSelectedPID>0) {
+    fHistNtrUnCorrEvWithCand->Fill(countMult,nchWeight);
+    fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
+  }
+  if(nSelectedInMassPeak>0) {
+    fHistNtrUnCorrEvWithD->Fill(countMult,nchWeight);
+    fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
+  }
 
   PostData(1,fOutput); 
   PostData(2,fListCuts);
@@ -815,25 +908,50 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
 //__________________________________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::CreateMeasuredNchHisto(){
   // creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)
-  Double_t nchbins[66]={0.50,1.50,2.50,3.50,4.50,5.50,6.50,7.50,8.50,9.50,
+  //
+  // for Nch  > 70 the points were obtainedwith a double NBD distribution
+  // TF1 *fit1 = new TF1("fit1","[0]*(TMath::Gamma(x+[1])/(TMath::Gamma(x+1)*TMath::Gamma([1])))*(TMath::Power(([2]/[1]),x))*(TMath::Power((1+([2]/[1])),-x-[1]))"); fit1->SetParameter(0,1.);// normalization constant
+  // fit1->SetParameter(1,1.63); // k parameter
+  // fit1->SetParameter(2,12.8); // mean multiplicity
+  Double_t nchbins[82]={0.50,1.50,2.50,3.50,4.50,5.50,6.50,7.50,8.50,9.50,
 			10.50,11.50,12.50,13.50,14.50,15.50,16.50,17.50,18.50,19.50,
 			20.50,21.50,22.50,23.50,24.50,25.50,26.50,27.50,28.50,29.50,
 			30.50,31.50,32.50,33.50,34.50,35.50,36.50,37.50,38.50,39.50,
 			40.50,41.50,42.50,43.50,44.50,45.50,46.50,47.50,48.50,49.50,
 			50.50,51.50,52.50,53.50,54.50,55.50,56.50,57.50,58.50,59.50,
-			60.50,62.50,64.50,66.50,68.50,70.50};
-  Double_t pch[65]={0.062011,0.072943,0.070771,0.067245,0.062834,0.057383,0.051499,0.04591,0.041109,0.036954,
+			60.50,62.50,64.50,66.50,68.50,70.50,72.50,74.50,76.50,78.50,
+			80.50,82.50,84.50,86.50,88.50,90.50,92.50,94.50,96.50,98.50, 
+			100.50,102.50};
+  Double_t pch[81]={0.062011,0.072943,0.070771,0.067245,0.062834,0.057383,0.051499,0.04591,0.041109,0.036954,
 		    0.03359,0.030729,0.028539,0.026575,0.024653,0.0229,0.021325,0.019768,0.018561,0.017187,
 		    0.01604,0.014836,0.013726,0.012576,0.011481,0.010393,0.009502,0.008776,0.008024,0.007452,
 		    0.006851,0.006428,0.00594,0.005515,0.005102,0.00469,0.004162,0.003811,0.003389,0.003071,
 		    0.002708,0.002422,0.002184,0.001968,0.00186,0.00165,0.001577,0.001387,0.001254,0.001118,
 		    0.001037,0.000942,0.000823,0.000736,0.000654,0.000579,0.000512,0.00049,0.00045,0.000355,
-		    0.000296,0.000265,0.000193,0.00016,0.000126};
+		    0.000296,0.000265,0.000193,0.00016,0.000126,0.0000851, 0.0000676,0.0000537,0.0000426, 0.0000338,
+		    0.0000268,0.0000213,0.0000166,0.0000133,0.0000106,0.00000837,0.00000662, 0.00000524,0.00000414, 0.00000327,
+		    0.00000258};
 
   if(fHistoMeasNch) delete fHistoMeasNch;
-  fHistoMeasNch=new TH1F("hMeaseNch","",65,nchbins);
-  for(Int_t i=0; i<65; i++){
+  fHistoMeasNch=new TH1F("hMeaseNch","",81,nchbins);
+  for(Int_t i=0; i<81; i++){
     fHistoMeasNch->SetBinContent(i+1,pch[i]);
     fHistoMeasNch->SetBinError(i+1,0.);
   }
+}
+
+//__________________________________________________________________________________________________
+void AliAnalysisTaskSEDvsMultiplicity::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Int_t countMult,Double_t nchWeight) 
+{
+  //
+  // Function to fill the true MC signal
+  //
+  
+  if(labD>=0){
+    AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+    Double_t mass = partD->M();
+    Double_t pt = partD->Pt();
+    fPtVsMassVsMultMC->Fill(countMult,mass,pt,nchWeight);
+  }
+
 }

@@ -16,8 +16,10 @@
 #pragma link C++ class AliAnalysisTaskPerformanceStrange+;
 #pragma link C++ class AliAnalysisTaskV0ForRAA+;
 #pragma link C++ class AliAnalysisTaskExtractV0+;
+#pragma link C++ class AliAnalysisTaskExtractV0pPb+;
 #pragma link C++ class AliAnalysisTaskExtractV0AOD+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceV0+;
+#pragma link C++ class AliAnalysisTaskExtractPerformanceV0pPb+;
 #pragma link C++ class AliAnalysisTaskLK0Spectra+;
 #pragma link C++ class AliAnalysisTaskExtractCascade+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceCascade+;
@@ -29,5 +31,7 @@
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp276+;
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
+#pragma link C++ class AliAnalysisTaskHelium3Pi+;
+#pragma link C++ class AliAnalysisTaskHelium3PiMC+;
 
 #endif

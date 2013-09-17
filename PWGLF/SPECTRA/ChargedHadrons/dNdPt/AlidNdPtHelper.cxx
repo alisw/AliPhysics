@@ -20,7 +20,7 @@
 //
 // Origin: Jan Fiete Grosse-Oetringhaus
 // Modified and Extended: Jacek Otwinowski 19/11/2009
-// last change: 2013-02-05 by M.Knichel
+// last change: 2013-06-13 by M.Knichel
 // 
 
 #include <TROOT.h>
@@ -149,7 +149,8 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const Ali
 
         Double_t x[3]; t->GetXYZ(x);
         Double_t b[3]; AliTracker::GetBxByBz(x,b);
-	t->RelateToVertexTPCBxByBz(vTPC, b, kVeryBig);
+	Bool_t isOK = t->RelateToVertexTPCBxByBz(vTPC, b, kVeryBig);
+        if(!isOK) continue;
       }
       
       delete vTPC;
@@ -1079,9 +1080,68 @@ Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEven
      Bool_t prim = stack->IsPhysicalPrimary(iMc);
      if(!prim) continue;
 
+     // checked accepted including pt cut
+     //if(accCuts->AcceptTrack(particle)) 
+     if( particle->Eta() > accCuts->GetMinEta() && particle->Eta() < accCuts->GetMaxEta() && particle->Pt() > accCuts->GetMinPt() && particle->Pt() < accCuts->GetMaxPt() ) 
+	 
+     {
+       mult++;
+     }
+  }
+
+return mult;  
+}
+
+//_____________________________________________________________________________
+Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, Double_t yShift)
+{
+  //
+  // calculate mc event true track multiplicity
+  //
+  if(!mcEvent) return 0;
+
+  AliStack* stack = 0;
+  Int_t mult = 0;
+
+  // MC particle stack
+  stack = mcEvent->Stack();
+  if (!stack) return 0;
+
+  //
+  //printf("minZv %f, maxZv %f \n", evtCuts->GetMinZv(), evtCuts->GetMaxZv());
+  //
+
+  Bool_t isEventOK = evtCuts->AcceptMCEvent(mcEvent);
+  if(!isEventOK) return 0; 
+
+  Int_t nPart  = stack->GetNtrack();
+  for (Int_t iMc = 0; iMc < nPart; ++iMc) 
+  {
+     TParticle* particle = stack->Particle(iMc);
+     if (!particle)
+     continue;
+
+     // only charged particles
+     if(!particle->GetPDG()) continue;
+     Double_t charge = particle->GetPDG()->Charge()/3.;
+     if (TMath::Abs(charge) < 0.001)
+     continue;
+      
+     // physical primary
+     Bool_t prim = stack->IsPhysicalPrimary(iMc);
+     if(!prim) continue;
+
      // checked accepted without pt cut
      //if(accCuts->AcceptTrack(particle)) 
-     if( particle->Eta() > accCuts->GetMinEta() && particle->Eta() < accCuts->GetMaxEta() ) 
+     if (TMath::Abs(particle->Eta()) > 100.) continue;
+  
+     Double_t etacms = TMath::ASinH((TMath::CosH(yShift)*TMath::SinH(particle->Eta())) - (TMath::SinH(yShift)*particle->Energy()/particle->Pt()));
+     Double_t minetacms = accCuts->GetMinEta()-yShift;
+     Double_t maxetacms = accCuts->GetMaxEta()-yShift;
+
+     // checked accepted including pt cut
+     //if(accCuts->AcceptTrack(particle)) 
+     if( etacms > minetacms && etacms < maxetacms && particle->Pt() > accCuts->GetMinPt() && particle->Pt() < accCuts->GetMaxPt() )
      {
        mult++;
      }
@@ -1233,7 +1293,7 @@ THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, const THnS
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
-THnSparse *h =(THnSparse*)hist1->Clone(name);;
+THnSparse *h =(THnSparse*)hist1->Clone(name);
 h->Divide(hist1,hist2,1,1,"B");
 
 return h;

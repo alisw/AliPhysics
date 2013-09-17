@@ -81,6 +81,7 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const char* /* name */)
   // Parameters:
   //   name Name of object
   //
+  fMC = true;
 }
 
 //____________________________________________________________________
@@ -141,7 +142,13 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   // Parameters:
   //   vtxAxis Vertex axis in use 
   //
+
+  // We temporary disable the displaced vertices so we can initialize
+  // the routine ourselves.
+  Bool_t saveDisplaced  = fUseDisplacedVertices;
+  fUseDisplacedVertices = false;
   AliFMDEventInspector::SetupForData(vtxAxis);
+  fUseDisplacedVertices = saveDisplaced;
 
   Int_t    maxPart = 450;
   Int_t    maxBin  = 225;
@@ -245,17 +252,8 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   fHCentVsMcC->SetYTitle("Centralty derived from Impact Par. [%]");
   fHCentVsMcC->SetZTitle("Events");
   fList->Add(fHCentVsMcC);
-}
 
-//____________________________________________________________________
-void AliFMDMCEventInspector::StoreInformation(Int_t runNo)
-{
-  // Store information about running conditions in the output list 
-  if (!fList) return;
-  AliFMDEventInspector::StoreInformation(runNo);
-  TParameter<bool>* mc = new TParameter<bool>("mc",true); // , fProduction.Data());
-  mc->SetUniqueID(1);
-  fList->Add(mc);
+  if (fUseDisplacedVertices) fDisplacedVertex.SetupForData(fList, "", true);
 }
 
 namespace
@@ -462,6 +460,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   fHBvsBin->Fill(b, nbin);
 
   if(fUseDisplacedVertices) {
+#if 0
     // Put the vertex at fixed locations 
     Double_t zvtx  = vz;
     Double_t ratio = zvtx/37.5;
@@ -471,6 +470,11 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     zvtx = 37.5*((Double_t)ratioInt);
     if(TMath::Abs(zvtx) > 999) 
       return kBadVertex;
+#endif
+    if (!fDisplacedVertex.ProcessMC(event)) 
+      return kBadVertex;
+    if (fDisplacedVertex.IsSatellite())
+      vz = fDisplacedVertex.GetVertexZ();
   }
 
   // Check for the vertex bin 

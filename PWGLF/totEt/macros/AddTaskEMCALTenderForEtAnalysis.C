@@ -1,7 +1,7 @@
 // EMCal tender task adder
 // Author: Jiri Kral
 
-AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", AliEMCALRecParam *pars = 0 )
+AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", AliEMCALRecParam *pars = 0 , Bool_t withNonlinearity = kTRUE , Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts==0)
 {
   // Parameters: geoname = "EMCAL_FIRSTYEARV1" or "EMCAL_COMPLETEV1" or ""
 
@@ -61,11 +61,23 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", AliEMCALRe
   // track matching parameters
   //EMCALSupply->SetMass(0.139);
   //EMCALSupply->SetStep(5);
-  EMCALSupply->SwitchOnCutEtaPhiSum(); 
-  EMCALSupply->SetRCut(0.025);
-  //EMCALSupply->SwitchOnCutEtaPhiSeparate();
-  EMCALSupply->SetEtaCut(0.025);
-  EMCALSupply->SetPhiCut(0.05);
+  //EMCALSupply->SwitchOnCutEtaPhiSum(); 
+  //EMCALSupply->SetRCut(0.025);
+  EMCALSupply->SwitchOnCutEtaPhiSeparate();
+//   EMCALSupply->SetEtaCut(0.015);
+//   EMCALSupply->SetPhiCut(0.03);
+  if(trackmatchcuts==0){//default
+    EMCALSupply->SetEtaCut(0.025);
+    EMCALSupply->SetPhiCut(0.05);
+  }
+  if(trackmatchcuts==1){//tighter
+    EMCALSupply->SetEtaCut(0.015);
+    EMCALSupply->SetPhiCut(0.03);
+  }
+  if(trackmatchcuts==2){//looser
+    EMCALSupply->SetEtaCut(0.035);
+    EMCALSupply->SetPhiCut(0.07);
+  }
 
   // switches ---------------------------------------------------------------
   EMCALSupply->SwitchOnBadCellRemove();
@@ -73,7 +85,7 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", AliEMCALRe
   EMCALSupply->SwitchOnCalibrateEnergy();
   EMCALSupply->SwitchOnCalibrateTime();
   EMCALSupply->SwitchOnUpdateCell();
-  //EMCALSupply->SwitchOnReclustering();
+  if(withReclusterizing) EMCALSupply->SwitchOnReclustering();
   EMCALSupply->SwitchOnClusterBadChannelCheck();
   EMCALSupply->SwitchOnClusterExoticChannelCheck();
   EMCALSupply->SwitchOnCellFiducialRegion();
@@ -81,7 +93,8 @@ AliTender *AddTaskEMCALTender(const char *geoname="EMCAL_COMPLETEV1", AliEMCALRe
   EMCALSupply->SwitchOnRecalculateClusPos();
   EMCALSupply->SwitchOnRecalShowerShape();
   EMCALSupply->SwitchOnRecalDistBadChannel();
-  EMCALSupply->SwitchOnNonLinearityCorrection();
+ if(withNonlinearity) EMCALSupply->SwitchOnNonLinearityCorrection();
+else{cout<<"WARNING:  TURNING OFF NONLINEARITY"<<endl;}
   EMCALSupply->SwitchOnTrackMatch();
   
 

@@ -17,34 +17,40 @@
 // Deterministic Annealing Jet header class
 // Stores parameters of DA jet algorithm
 // Author: Davide Perrino (davide.perrino@ba.infn.it, davide.perrino@cern.ch)
+// 2011:
+// Adding FiducialEta/PhiMin/Max setters/getters and variables to accommodate with reader/finder splitting 
 //----------------------------------------------------------------------------
 
 #include "AliDAJetHeader.h"
 
 ClassImp(AliDAJetHeader)
 
+///////////////////////////////////////////////////////////////////////
 
-//---------------------------------------------------------------------
 AliDAJetHeader::AliDAJetHeader():
-	AliJetHeader("AliDAJetHeader"),
-	fSelectJets(kTRUE),
-	fRadius(0.7),
-	fNclustMax(10),
-	fFixedCl(kFALSE),
-	fEtMin(10.),
-	fNeff(0),
-	fEtaEff(0.9)
+  AliJetHeader("AliDAJetHeader"),
+  fSelectJets(kTRUE),
+  fNclustMax(10),
+  fFixedCl(kFALSE),
+  fEtMin(10.),
+  fNeff(0),
+  fEtaEff(0.9),
+  fFidEtaMin(-0.9),
+  fFidEtaMax(0.9),
+  fFidPhiMin(0.),
+  fFidPhiMax(2*TMath::Pi())
 {
-    // Constructor
+  // Constructor
 }
 
 //---------------------------------------------------------------------
 void AliDAJetHeader::SetRadius(Float_t radius)
 {
-    // The radius requested is used to estimate the number of clusters
-    // to be found, in order to obtain jets with the expected area.
-    // It must not be intended as a sharp limit on the cluster radius
+  // The radius requested is used to estimate the number of clusters
+  // to be found, in order to obtain jets with the expected area.
+  // It must not be intended as a sharp limit on the cluster radius
     
   Int_t nclust = (Int_t) (4.*fEtaEff/(radius*radius)) + 1;
   SetNclust(nclust);
+
 }

@@ -16,12 +16,12 @@
 #include <AliAnalysisTaskSE.h>
 #include "AliFMDMCEventInspector.h"
 #include "AliSPDMCTrackDensity.h"
-#include <TH1I.h>
 class AliCentralCorrSecondaryMap;
 class AliCentralCorrAcceptance;
 class AliESDEvent;
 class TH2D;
 class TH1D;
+class TH1I;
 class TList;
 
 
@@ -147,6 +147,21 @@ public:
    */
   void SetEffectiveCorrection(Bool_t e) { fEffectiveCorr = e; }
   /** 
+   * Set the maximum @f$|\eta|@f$ to accept. 
+   * 
+   * @param maxEta maximum @f$|\eta|@f$
+   */
+  void SetEtaCut(Double_t maxEta=1.9) { fEtaCut = maxEta; }
+  /** 
+   * If a particular phi bin has less then this fraction of the
+   * largest signal in the corresponding @f$\eta@f$ slice, then it is
+   * not used.
+   * 
+   * @param least Lower bound on fraction of largest signal in this
+   * @f$\eta@f$ slice
+   */
+  void SetAcceptanceCut(Double_t least=0.8) { fCorrCut = least; }
+  /** 
    * Get a reference to the track density calculator 
    * 
    * @return Reference to the track density calculator 
@@ -222,20 +237,24 @@ protected:
     /** 
      * End of job process 
      * 
-     * @param o   List to add output to 
-     * @param i   Input list
-     * @param iVz Vertex bin 
+     * @param o         List to add output to 
+     * @param i         Input list
+     * @param iVz       Vertex bin 
      * @param effective Make an effective correction 
-     * @param acorr Acceptance correction 
-     * @param map Correctons map 
+     * @param etaCut    Maximum @f$|\eta|@f$ to use 
+     * @param accCut    Cut on acceptance 
+     * @param acorr     Acceptance correction 
+     * @param map       Corrections map 
      */
     void Terminate(const TList* i, 
-		TList* o,
-		UShort_t iVz, 
-		Bool_t effective,
-		AliCentralCorrSecondaryMap* map,
-		AliCentralCorrAcceptance* acorr);
-
+		   TList* o,
+		   UShort_t iVz, 
+		   Bool_t effective,
+		   Double_t etaCut, 
+		   Double_t accCut,
+		   AliCentralCorrSecondaryMap* map,
+		   AliCentralCorrAcceptance* acorr);
+    
     TH2D* fHits;     // Cache of MC-truth hits
     TH2D* fClusters; // Cache of reconstructed hits
     TH2D* fPrimary;  // Cache or primary 
@@ -263,7 +282,9 @@ protected:
   TList*     fList;          // Output list 
   UShort_t   fNPhiBins;      // Nunber of phi bins
   Bool_t     fEffectiveCorr; // Whether to make effective corrections
-  ClassDef(AliCentralMCCorrectionsTask,2) // Central corrections class
+  Double_t   fEtaCut;        // Maximum Eta
+  Double_t   fCorrCut;       // Correction cut
+  ClassDef(AliCentralMCCorrectionsTask,3) // Central corrections class
 };
 
 #endif

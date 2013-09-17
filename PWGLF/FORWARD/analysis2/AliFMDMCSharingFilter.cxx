@@ -47,8 +47,7 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
     fFMD2i(0),
     fFMD2o(0),
     fFMD3i(0),
-    fFMD3o(0),
-    fOperComp(0)
+    fFMD3o(0)// , fOperComp(0)
 {
   // 
   // Constructor 
@@ -77,6 +76,7 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
   fFMD3i->SetDirectory(0);
   fFMD3o->SetDirectory(0);
 
+#if 0
   fOper     = new AliFMDFloatMap(0,0,0,0);
   fOperComp = new TH2I("operComp", "Operation vs # track refs", 
 		       kMergedInto, kNone-.5, kMergedInto+.5, 
@@ -89,6 +89,7 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
   fOperComp->GetXaxis()->SetBinLabel(kMergedWithOther, "Merged w/other");
   fOperComp->GetXaxis()->SetBinLabel(kMergedInto,      "Merged into");
   fOperComp->SetDirectory(0);
+#endif
 }
 
 //____________________________________________________________________
@@ -99,8 +100,7 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const AliFMDMCSharingFilter& o)
     fFMD2i(o.fFMD2i),
     fFMD2o(o.fFMD2o),
     fFMD3i(o.fFMD3i),
-    fFMD3o(o.fFMD3o),
-    fOperComp(o.fOperComp)
+    fFMD3o(o.fFMD3o) // ,  fOperComp(o.fOperComp)
 {
   // 
   // Copy constructor 
@@ -230,7 +230,7 @@ AliFMDMCSharingFilter::CreateOutputObjects(TList* dir)
   cd->Add(fFMD2o);
   cd->Add(fFMD3i);
   cd->Add(fFMD3o);
-  cd->Add(fOperComp);
+  // cd->Add(fOperComp);
   fTrackDensity.CreateOutputObjects(d);
 }
 

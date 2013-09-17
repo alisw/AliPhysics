@@ -13,11 +13,12 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
   Double_t    jetradius2         = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
-  Double_t    jetBiasTrack       = 5,
+  Double_t    jetBias            = 5,
+  Int_t       biasType           = 0,   //  0 = charged, 1 = neutral, 2 = both
   UInt_t      matching           = AliJetResponseMaker::kGeometrical,
   Double_t    maxDistance1       = 0.25,
   Double_t    maxDistance2       = 0.25,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *cutType            = "TPC",
   Int_t       minPtHardBin       = -999,
   Int_t       maxPtHardBin       = -999,
   Int_t       ncent              = 0,
@@ -44,10 +45,10 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
 
   Int_t ntasks = (maxPtHardBin - minPtHardBin + 1) * ncent;
 
-  if (jetBiasTrack > 5)
-    ntasks *= 5;
-  else if (jetBiasTrack > 0)
-    ntasks *= 5;
+  if (jetBias > 5)
+    ntasks *= 3;
+  else if (jetBias > 0)
+    ntasks *= 2;
 
   AliJetResponseMaker *jetTask = new AliJetResponseMaker[ntasks];
 
@@ -57,23 +58,23 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
     for (Int_t j = 0; j < ncent; j++) {
       Printf("Adding AliJetResponseMaker n. %d", itask);
       AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, jetradius1, ntracks2, nclusters2, njets2, nrho2, jetradius2,
-			      jetptcut, jetareacut, 0, 0,
-			      matching, maxDistance1, maxDistance2, type, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
+			      jetptcut, jetareacut, 0, biasType,
+			      matching, maxDistance1, maxDistance2, cutType, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
       itask++;
 
-      if (jetBiasTrack > 5) {
+      if (jetBias > 5) {
 	Printf("Adding AliJetResponseMaker n. %d", itask);
 	AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, jetradius1, ntracks2, nclusters2, njets2, nrho2, jetradius2,
-				jetptcut, jetareacut, 5, 1000,
-				0, 1, 1, type, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
+				jetptcut, jetareacut, 5, biasType,
+				0, 1, 1, cutType, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
 	itask++;
       }
 
-      if (jetBiasTrack > 0) {
+      if (jetBias > 0) {
 	Printf("Adding AliJetResponseMaker n. %d", itask);
 	AddTaskJetResponseMaker(ntracks1, nclusters1, njets1, nrho1, jetradius1, ntracks2, nclusters2, njets2, nrho2, jetradius2,
-				jetptcut, jetareacut, jetBiasTrack, 1000,
-				0, 1, 1, type, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
+				jetptcut, jetareacut, jetBias, biasType,
+				0, 1, 1, cutType, i, centRanges[j], centRanges[j+1], taskname, biggerMatrix, jetTask + itask);
 	itask++;
       }
     }

@@ -222,7 +222,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   TH1* hstdspdtrmultB = static_cast<TH1*>(before->At(23));
   TH1* hstdspdtrmultA = static_cast<TH1*>(after->At(23));
 
-  Bool_t passevent = fEventCuts->IsSelected(event);
+  Bool_t passevent = fEventCuts->IsSelected(event,0x0);
   Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
 
   AliMultiplicity* tracklets = const_cast<AliMultiplicity*>(event->GetMultiplicity());

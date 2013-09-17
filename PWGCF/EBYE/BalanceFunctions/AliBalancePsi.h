@@ -185,7 +185,7 @@ class AliBalancePsi : public TObject {
 					   Double_t ptAssociatedMax=-1.,
 					   AliBalancePsi *bfMix=NULL);
 
-  Bool_t GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
+  Bool_t GetMomentsAnalytical(Int_t fVariable, TH1D* gHist, Bool_t kUseZYAM,
 			      Double_t &mean, Double_t &meanError,
 			      Double_t &sigma, Double_t &sigmaError,
 			      Double_t &skewness, Double_t &skewnessError,
@@ -193,8 +193,8 @@ class AliBalancePsi : public TObject {
   
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
-  TH2D *GetQAHistConversionbefore() {return fHistConversionbefore;}
-  TH2D *GetQAHistConversionafter() {return fHistConversionafter;}
+  TH3D *GetQAHistConversionbefore() {return fHistConversionbefore;}
+  TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
   TH3D *GetQAHistResonancesBefore() {return fHistResonancesBefore;}
   TH3D *GetQAHistResonancesRho() {return fHistResonancesRho;}
@@ -204,8 +204,10 @@ class AliBalancePsi : public TObject {
   TH3D *GetQAHistQafter() {return fHistQafter;}
 
   void UseResonancesCut() {fResonancesCut = kTRUE;}
-  void UseHBTCut() {fHBTCut = kTRUE;}
-  void UseConversionCut() {fConversionCut = kTRUE;}
+  void UseHBTCut(Double_t setHBTCutValue = 0.02) {
+    fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
+  void UseConversionCut(Double_t setInvMassCutConversion = 0.04) {
+    fConversionCut = kTRUE; fInvMassCutConversion = setInvMassCutConversion; }
   void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
     fQCut = kTRUE; fDeltaPtMin = gDeltaPtCutMin;}
 
@@ -231,8 +233,8 @@ class AliBalancePsi : public TObject {
   //QA histograms
   TH2D *fHistHBTbefore; // Delta Eta vs. Delta Phi before HBT inspired cuts
   TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts
-  TH2D *fHistConversionbefore; // Delta Eta vs. Delta Phi before Conversion cuts
-  TH2D *fHistConversionafter; // Delta Eta vs. Delta Phi before Conversion cuts
+  TH3D *fHistConversionbefore; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
+  TH3D *fHistConversionafter; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
   TH3D *fHistResonancesBefore; // 3D histogram (Deta,Dphi,Invmass) before resonance cuts
   TH3D *fHistResonancesRho;    // 3D histogram (Deta,Dphi,Invmass) after removing rho 
@@ -246,7 +248,9 @@ class AliBalancePsi : public TObject {
 
   Bool_t fResonancesCut;//resonances cut
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
+  Double_t fHBTCutValue;// value for two-track efficiency cut (default = 0.02 from dphicorrelations)
   Bool_t fConversionCut;//conversion cut
+  Double_t fInvMassCutConversion;//invariant mass for conversion cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
   Double_t fDeltaPtMin;//delta pt cut: minimum value
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
@@ -255,7 +259,7 @@ class AliBalancePsi : public TObject {
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
-  ClassDef(AliBalancePsi, 1)
+  ClassDef(AliBalancePsi, 2)
 };
 
 #endif

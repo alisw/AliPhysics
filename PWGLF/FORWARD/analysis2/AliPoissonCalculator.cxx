@@ -1,5 +1,5 @@
 #include "AliPoissonCalculator.h"
-#include "AliForwardCorrectionManager.h"
+// #include "AliForwardCorrectionManager.h"
 #include <TH2D.h>
 #include <TBrowser.h>
 #include <TROOT.h>
@@ -179,8 +179,8 @@ AliPoissonCalculator::Define(const TAxis& xaxis, const TAxis& yaxis)
   Reset(fBasic);
 }
 //____________________________________________________________________
-void AliPoissonCalculator::MakeOutput() {
-
+void AliPoissonCalculator::MakeOutput() 
+{
   Int_t n = fXLumping * fYLumping + 1;
   fEmptyVsTotal = new TH2D("emptyVsTotal", 
 			   "# of empty # bins vs total # bins", 
@@ -216,9 +216,7 @@ void AliPoissonCalculator::MakeOutput() {
   fCorr->SetYTitle("Correction 1/(1-e^{#bar{N_{c}}})");
   fCorr->SetZTitle("Events");
   fCorr->SetOption("colz");
-  fCorr->SetDirectory(0);
-  
- 
+  fCorr->SetDirectory(0); 
 }
 //____________________________________________________________________
 void

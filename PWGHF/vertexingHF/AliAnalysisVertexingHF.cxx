@@ -708,7 +708,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	AliNeutralTrackParam *trackV0=NULL;
 	if(fInputAOD) {
 	  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
-	  if(trackVV0) trackV0 = new AliNeutralTrackParam(trackVV0);
+	  if(trackVV0)  trackV0 = new AliNeutralTrackParam(trackVV0);
 	} else {  
 	  Double_t xyz[3], pxpypz[3];
 	  esdV0->XvYvZv(xyz);
@@ -716,6 +716,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
 	  trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
 	}
+
+
 	// Fill in the object array to create the cascade
 	twoTrackArrayCasc->AddAt(postrack1,0);
 	twoTrackArrayCasc->AddAt(trackV0,1);
@@ -877,7 +879,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  //printf("--->  %d %d %d %d %d\n",vertexp1n1->GetNDaughters(),iTrkP1,iTrkN1,postrack1->Charge(),negtrack1->Charge());
 	  // create a track from the D0
 	  AliNeutralTrackParam *trackD0 = new AliNeutralTrackParam(io2Prong);
-
+	  
 	  // LOOP ON TRACKS THAT PASSED THE SOFT PION CUTS
 	  for(iTrkSoftPi=0; iTrkSoftPi<nSeleTrks; iTrkSoftPi++) {
 

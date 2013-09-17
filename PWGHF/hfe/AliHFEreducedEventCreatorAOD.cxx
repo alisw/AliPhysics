@@ -283,7 +283,11 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
     hicent->GetCentralityPercentile("V0C"),
     hicent->GetCentralityPercentile("TKL"),
     hicent->GetCentralityPercentile("TRK"),
-    hicent->GetCentralityPercentile("ZNA")
+    hicent->GetCentralityPercentile("ZNA"),
+    hicent->GetCentralityPercentile("ZNC"),
+    hicent->GetCentralityPercentile("CL0"),
+    hicent->GetCentralityPercentile("CL1"),
+    hicent->GetCentralityPercentile("CND")
   );
 
   // Get VZERO Information
@@ -335,7 +339,8 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
       mctrack = (AliAODMCParticle *)(fAODArrayMCInfo->At(itrack));
       if(!mctrack) continue;
       AliHFEreducedMCParticle hfemcpart;
-      if(fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) hfemcpart.SetSignal();
+      if(fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) continue;        
+      hfemcpart.SetSignal();
       // Kinematics
       hfemcpart.SetSignedPt(mctrack->Pt(), mctrack->Charge() > 0.);
       hfemcpart.SetP(mctrack->P());
@@ -415,36 +420,40 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
     if(mcthere){
       // Fill Monte-Carlo Information
       Int_t label = TMath::Abs(track->GetLabel());
-      if(label && label < fAODArrayMCInfo->GetEntriesFast())
+      if(label < fAODArrayMCInfo->GetEntriesFast())
         mctrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(label));
-      if(!mctrack) continue;
-      if(fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) hfetrack.SetMCSignal();
-      // Kinematics
-      hfetrack.SetMCSignedPt(mctrack->Pt(),mctrack->Charge() > 0.);
-      hfetrack.SetMCP(mctrack->P());
-      hfetrack.SetMCEta(mctrack->Eta());
-      hfetrack.SetMCPhi(mctrack->Phi());
-      hfetrack.SetMCPDG(mctrack->GetPdgCode());
+      if(mctrack){ 
+        AliDebug(2, "Associated MC particle found\n");
+        if(fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) hfetrack.SetMCSignal();
+        // Kinematics
+        hfetrack.SetMCSignedPt(mctrack->Pt(),mctrack->Charge() > 0.);
+        hfetrack.SetMCP(mctrack->P());
+        hfetrack.SetMCEta(mctrack->Eta());
+        hfetrack.SetMCPhi(mctrack->Phi());
+        hfetrack.SetMCPDG(mctrack->GetPdgCode());
       
-      // Get Production Vertex in radial direction
-      hfetrack.SetMCProdVtx(mctrack->Xv(),mctrack->Yv(),mctrack->Zv());
+        // Get Production Vertex in radial direction
+        hfetrack.SetMCProdVtx(mctrack->Xv(),mctrack->Yv(),mctrack->Zv());
       
-      // Get Mother PDG code of the particle
-      Int_t motherlabel = TMath::Abs(mctrack->GetMother());
-      if(motherlabel >= 0 && motherlabel < fAODArrayMCInfo->GetEntriesFast()){
-        AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
-        if(mother) hfetrack.SetMCMotherPdg(mother->GetPdgCode());
+        // Get Mother PDG code of the particle
+        Int_t motherlabel = TMath::Abs(mctrack->GetMother());
+        if(motherlabel >= 0 && motherlabel < fAODArrayMCInfo->GetEntriesFast()){
+          AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
+          if(mother) hfetrack.SetMCMotherPdg(mother->GetPdgCode());
+        }
+      
+        // derive source
+        source = 5;
+        if(fSignalCuts->IsCharmElectron(mctrack)) source = 0;
+        else if(fSignalCuts->IsBeautyElectron(mctrack)) source = 1;
+        else if(fSignalCuts->IsGammaElectron(mctrack)) source = 2;
+        else if(fSignalCuts->IsNonHFElectron(mctrack)) source = 3;
+        else if(TMath::Abs(mctrack->GetPdgCode()) == 11) source = 4;
+        else source = 5;
+        hfetrack.SetMCSource(source); 
+      } else {
+        AliDebug(2, "Associated MC particle not found\n");
       }
-      
-      // derive source
-      source = 5;
-      if(fSignalCuts->IsCharmElectron(mctrack)) source = 0;
-      else if(fSignalCuts->IsBeautyElectron(mctrack)) source = 1;
-      else if(fSignalCuts->IsGammaElectron(mctrack)) source = 2;
-      else if(fSignalCuts->IsNonHFElectron(mctrack)) source = 3;
-      else if(TMath::Abs(mctrack->GetPdgCode()) == 11) source = 4;
-      else source = 5;
-      hfetrack.SetMCSource(source); 
     }
 
     // HFE DCA
@@ -452,6 +461,9 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
             dcaz = -999.;
     fExtraCuts->GetImpactParameters((AliVTrack *)track,dcaxy,dcaz);
     hfetrack.SetDCA(dcaxy, dcaz);
+    Double_t hfeImpactParam(-999.), hfeImpactParamResol(-999.);
+    fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,hfeImpactParam,hfeImpactParamResol);
+    hfetrack.SetHFEImpactParam(hfeImpactParam,hfeImpactParamResol);
 
     // Different number of clusters definitions
     Int_t nclustersITS(track->GetITSNcls()),
@@ -494,17 +506,16 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
 
 
     // Kink
-    Int_t kink = 0;
-    if(fExtraCuts->IsKinkDaughter(track)) kink = 1;
+    if(fExtraCuts->IsKinkDaughter(track)) hfetrack.SetIsKinkDaughter();
 
     // kink mother
-    Int_t kinkmotherpass = 0;
     for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
       if(track->GetID() == listofmotherkink[kinkmother]) {
-	      kinkmotherpass = 1;
+	      hfetrack.SetIsKinkMother();
 	      continue;
       }
     }
+    
     
     // Double counted
     Int_t id(track->GetID());
@@ -524,6 +535,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
     hfetrack.SetTPCsigmaEl(pid->NumberOfSigmasTPC(track, AliPID::kElectron));
     hfetrack.SetTOFsigmaEl(pid->NumberOfSigmasTOF(track, AliPID::kElectron));
     hfetrack.SetTOFmismatchProbability(pid->GetTOFMismatchProbability(track));
+    hfetrack.SetITSsigmaEl(pid->NumberOfSigmasITS(track, AliPID::kElectron));
     // Eta correction
     copyTrack.~AliAODTrack();
     new(&copyTrack) AliAODTrack(*track);

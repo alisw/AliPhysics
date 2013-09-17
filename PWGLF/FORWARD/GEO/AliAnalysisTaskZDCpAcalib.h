@@ -46,7 +46,7 @@ class AliAnalysisTaskZDCpAcalib : public AliAnalysisTaskSE {
   //
   TTree   *fCentralityTree;    //! output tree
   //
-  char     fTrigClass[100];    //  fired trigger classes
+  TString  fTrigClass;    //  fired trigger classes
   //
   Bool_t   fIsEventSelected;   //  is physics selection on
   //
@@ -70,7 +70,7 @@ class AliAnalysisTaskZDCpAcalib : public AliAnalysisTaskSE {
   AliAnalysisTaskZDCpAcalib& operator= (const AliAnalysisTaskZDCpAcalib& ana);
   AliAnalysisTaskZDCpAcalib(const AliAnalysisTaskZDCpAcalib& c);
   //
-  ClassDef(AliAnalysisTaskZDCpAcalib,2); 
+  ClassDef(AliAnalysisTaskZDCpAcalib, 3); 
 
 };
 

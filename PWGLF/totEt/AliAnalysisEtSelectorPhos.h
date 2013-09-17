@@ -13,6 +13,7 @@ class TH2I;
 class TParticle;
 class AliPHOSGeometry;
 class AliESDEvent;
+class AliStack;
 
 class AliAnalysisEtSelectorPhos : public AliAnalysisEtSelector
 {
@@ -28,12 +29,15 @@ public:
     virtual Bool_t PassMinEnergyCut(const TParticle& part) const;
     virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t PassTrackMatchingCut(const AliESDCaloCluster& cluster) const;
-    virtual Bool_t CutGeometricalAcceptance(const TParticle& part) const;    
-    virtual Bool_t CutGeometricalAcceptance(const AliVTrack& part) const;    
+    virtual Bool_t CutGeometricalAcceptance(const TParticle& part);    
+    virtual Bool_t CutGeometricalAcceptance(const AliVTrack& part);    
+    virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster& cluster);    
     virtual void Init() {}
     virtual Int_t Init(const AliESDEvent *ev);
 
     virtual Bool_t IsDetectorCluster(const AliESDCaloCluster& cluster) const {return cluster.IsPHOS();}
+
+     virtual UInt_t GetLabel(const AliESDCaloCluster *cluster, AliStack *stack);
     
 private:
 

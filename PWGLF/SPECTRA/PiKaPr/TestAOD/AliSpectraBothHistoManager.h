@@ -71,7 +71,7 @@ class AliSpectraBothHistoManager : public TNamed
 public:
    AliSpectraBothHistoManager() :  TNamed(), fOutputList(0), fNRebin(0) {}
   AliSpectraBothHistoManager(const char *name,Int_t nrebin);
-   virtual  ~AliSpectraBothHistoManager() {}
+   virtual  ~AliSpectraBothHistoManager() ;
 
 
    TH2F*   BookPtGenHistogram(const char * name);

@@ -8,21 +8,20 @@
 #define ALILEADINGV0CORRELATIONH
 
 #include "AliAnalysisTask.h"
-#include "AliUEHist.h"
 #include "TString.h"
 #include "AliVParticle.h"
 #include "AliLog.h"
 #include "AliPID.h"
+#include "THnSparse.h"
 
 class TList;
-class TH2;
 class AliAODEvent;
 class AliEventPoolManager;
-class AliEventPool;
 class AliVParticle;
 class AliPIDResponse;
 class AliPID;
 class AliAODv0;
+class AliAnalyseLeadingTrackUE;
 
 
 #ifndef ALIANALYSISTASKSEH
@@ -55,59 +54,68 @@ public:
 	}
 	
 	void SetCollidingSystem(TString system){fcollidingSys = system;}
-	void SetTrigger(TString aTriggerMask){fTriggerMask = aTriggerMask;}
 	void SetPrimeryVertexCut(Double_t pvzcut){fpvzcut = pvzcut;}
 	void SetEatCut(Double_t  TrackEtaCut){fTrackEtaCut = TrackEtaCut;}
 	void SetFilterBit(UInt_t  filterBit){fFilterBit = filterBit;}
-	void SetTrigPtBinLimits(Double_t trigPtLow,Double_t trigPtHigh){
-		ftrigPtLow = trigPtLow;
-		ftrigPtHigh = trigPtHigh;
-	}
-	void SetAssocPtBinLimits(Double_t assocPtLow,Double_t assocPtHigh){
-		fassocPtLow = assocPtLow;
-		fassocPtHigh = assocPtHigh;
-	}
 	void SetMCAnalysis(Bool_t aAnalysisMC){fAnalysisMC=aAnalysisMC;}
-	void SetCutV0Radius(Double_t aCutV0Radius){fCutV0Radius=aCutV0Radius;}
-	void SetCutDCANToP(Double_t aCutDCANegToPV){fCutDCANegToPV=aCutDCANegToPV;}
-	void SetCutDCAPToP(Double_t aCutDCAPosToPV){fCutDCAPosToPV=aCutDCAPosToPV;}
-	void SetCutDCADaughters(Double_t aCutDCAV0Daughters){fCutDCAV0Daughters=aCutDCAV0Daughters;}
-	void SetCutCPA(Double_t aCutV0CosPA){fCutV0CosPA=aCutV0CosPA;}
-	void SetCutArmenterosK0s(Double_t aSpecialArmenterosCutK0s){fSpecialArmenterosCutK0s=aSpecialArmenterosCutK0s;}
-	void SetUSEPID(TString aUsePID){fUsePID=aUsePID;}
+	void SetCase(Int_t aCase){fCase=aCase;}
+	void SetRemovePileUp(Bool_t aRemovePileUP){fRemovePileUP=aRemovePileUP;}
+	void SetRemoveAutoCorr(Bool_t aRemoveAutoCorr){fRemoveAutoCorr=aRemoveAutoCorr;}
 	void SetCutRap(Double_t aRapidityCut){fRapidityCut=aRapidityCut;}
-	void SetCutCTauK0(Double_t aCTauK0){fCTauK0=aCTauK0;}
-	void SetCutCTauLambda(Double_t aCTauLambda){fCTauLambda=aCTauLambda;}
-	
+	void SetV0Radius(Double_t aV0radius){fV0radius=aV0radius;}
+	void SetV0PostoPVz(Double_t aV0PostoPVz){fV0PostoPVz=aV0PostoPVz;}
+	void SetV0NegtoPVz(Double_t aV0NegtoPVz){fV0NegtoPVz=aV0NegtoPVz;}
+	void SetDCAV0Daughters(Double_t aDCAV0Daughters){fDCAV0Daughters=aDCAV0Daughters;}
+	void SetCPAK0(Double_t aCPAK0){fCPAK0=aCPAK0;}
+	void SetCPALam(Double_t aCPALam){fCPALam=aCPALam;}
+	void SetRejectLamK0(Double_t aRejectLamK0){fRejectLamK0=aRejectLamK0;}
+	void SetRejectK0Lam(Double_t aRejectK0Lam){fRejectK0Lam=aRejectK0Lam;}
+	void SetSigmaPID(Double_t aSigmaPID){fSigmaPID=aSigmaPID;}
+	void SetCTK0(Double_t aCutCTK0){fCutCTK0=aCutCTK0;}
+	void SetCTLa(Double_t aCutCTLa){fCutCTLa=aCutCTLa;}
+	void SetMassCutK0(Double_t aMassCutK0){fMassCutK0=aMassCutK0;}
+	void SetMassCutLa(Double_t aMassCutLambda){fMassCutLa=aMassCutLambda;}
 	
 private:
 	AliLeadingV0Correlation(const  AliLeadingV0Correlation &det);
     AliLeadingV0Correlation&   operator=(const  AliLeadingV0Correlation &det);
 	
-	AliVParticle* ParticleWithCuts(TObject* obj, Int_t ipart);
-	TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
-	TObjArray* FindLeadingObjects(TObject *obj);
-	TObjArray* FindLeadingObjectsMC(TObject *obj);
-	Int_t  NParticles(TObject* obj);
-	Double_t RangePhi(Double_t DPhi);
-	void FillCorrelations(TObjArray* particles, TObjArray* mixed,TH3F*histo,TH3F*leadinfo);
-	void QSortTracks(TObjArray &a, Int_t first, Int_t last);
-	Bool_t IsAcseptedPrimaryTrack(const AliAODTrack *itrack);
 	Bool_t IsAcseptedDaughterTrack(const AliAODTrack *itrack);
+	Bool_t IsAcseptedV0(const AliAODv0* aodV0, const AliAODTrack* myTrackPos, const AliAODTrack* myTrackNeg);
+	Bool_t IsAcseptedK0(Double_t v0rad,
+						Double_t dcaptp,
+						Double_t dcantp,
+						Double_t dcav0d,
+						Double_t cpa,
+						Double_t massLa,
+						Double_t massALa);
+	Bool_t IsAcseptedLA(Double_t v0rad,
+						Double_t dcaptp,
+						Double_t dcantp,
+						Double_t dcav0d,
+						Double_t cpa,
+						Double_t massK0);
 	Bool_t IsK0InvMass(const Double_t mass)const;
 	Bool_t IsLambdaInvMass(const Double_t mass) const;
-	Bool_t IsTrackNotFromV0(AliAODTrack* track);
-	Bool_t IsAcseptedV0(const AliAODEvent*aod,const AliAODv0* aodV0, const AliAODTrack* myTrackPos, const AliAODTrack* myTrackNeg);
-
-    
-	AliAODEvent              * fAODEvent;        //! AOD Event
-	AliEventPoolManager      * fPoolMgr;         //! event pool manager
-	AliEventPoolManager      * fPoolMgrMC;         //! event pool manager
-	AliEventPool             * fPoolK0;          //! Pool for event mixing
-	AliEventPool             * fPoolLambda;      //! Pool for event mixing
-	AliEventPool             * fPoolK0MC;          //! Pool for event mixing
-	AliEventPool             * fPoolLambdaMC;      //! Pool for event mixing
+	Double_t RangePhi(Double_t DPhi);
+	Bool_t IsTrackFromV0(AliAODTrack* track);
+	void FillCorrelationSibling(Double_t MultipOrCent,
+								TObjArray*triggerArray,TObjArray*selectedV0Array,
+								THnSparse*triggerHist,THnSparse*associateHist);
+	void FillCorrelationMixing(Double_t MultipOrCentMix,Double_t pvxMix,
+							   Double_t poolmax,Double_t poolmin,
+							   TObjArray*triggerArray,TObjArray*selectedV0Array,
+							   THnSparse*triggerHist,THnSparse*associateHist);
+	Bool_t IsFeedDownV0(UInt_t lIdxPosV0,
+				  UInt_t lIdxNegV0,
+				  Double_t lInvMassXiMinus,
+				  Double_t lInvMassXiPlus,
+				  TH1F*HistXiMinus);
+	
+	AliAODEvent              * fAODEvent;        //  AOD Event
+	AliEventPoolManager      * fPoolMgr;         //  event pool manager for Event Mixing
 	AliPIDResponse           * fPIDResponse;     //  PID response
+	AliAnalyseLeadingTrackUE * fAnalyseUE;       //  Leading Track Underling Event
 	
 	Int_t fPoolMaxNEvents;                       // set maximum number of events in the pool
 	Int_t fPoolMinNTracks;                       // set minimum number of tracks in the pool
@@ -117,171 +125,110 @@ private:
 	Int_t fNCentBins;                            // number of centrality bins
 	Double_t fCentBins[100];                     // [fNCentBinsDim]
 	
-	TString         fcollidingSys;               // "PP" or "PbPb"
-	TString         fTriggerMask;                // "Default"
+	TString         fcollidingSys;               // "PP" or "PbPb2010,2011"
 	Double_t        fpvzcut;                     // PVz cut of event
     Double_t      	fTrackEtaCut;                // Eta cut on particles
     UInt_t         	fFilterBit;                  // Select tracks from an specific track cut (default 0xFF all track selected)
-	Double_t        ftrigPtLow;
-	Double_t        ftrigPtHigh;
-	Double_t        fassocPtLow;
-	Double_t        fassocPtHigh;
-	Bool_t          fAnalysisMC;
-	TString         fUsePID;
+	Bool_t          fAnalysisMC;                 // MC or Not
+	Int_t           fCase;                       // Case number
+	Bool_t          fRemovePileUP;               // 1Remove or 0 Not Remove
+	Bool_t          fRemoveAutoCorr;             // 1Remove or 0 Not Remove
+	
 	Double_t        fRapidityCut;                // Rapidity cut V0
+	Double_t        fV0radius;                   // Topological selection for systamatics
+	Double_t        fV0PostoPVz;                 // Topological selection for systamatics
+	Double_t        fV0NegtoPVz;                 // Topological selection for systamatics
+	Double_t        fDCAV0Daughters;             // Topological selection for systamatics
+	Double_t        fCPAK0;                      // Topological selection for systamatics
+	Double_t        fCPALam;                     // Topological selection for systamatics
+	Double_t        fRejectLamK0;                // selection for systamatics
+	Double_t        fRejectK0Lam;                // selection for systamatics
+	Double_t        fSigmaPID;                   // selection for systamatics
+	Double_t        fCutCTK0;                    // selection for systamatics
+	Double_t        fCutCTLa;                    // selection for systamatics
+	
+	Double_t        fMassCutK0;                  // selection for systamatics
+	Double_t        fMassCutLa;                  // selection for systamatics
+	
+	Bool_t          fUseChargeHadrons;           // Only pi,k,and proton
+	Double_t        fPtMin;                      // 0.15 
 	
 	
-	//--- 5 Topological Selections And other quality cuts for V0
-	Double_t        fCutV0Radius;
-	Double_t        fCutDCANegToPV;
-	Double_t        fCutDCAPosToPV;
-	Double_t        fCutDCAV0Daughters;
-	Double_t        fCutV0CosPA;
-	Double_t        fSpecialArmenterosCutK0s;
-	Double_t        fCTauK0;
-	Double_t        fCTauLambda;
+	TList       * fOutputList;                   // Output list
 	
+	THnSparse   *fHistEventViceGen;
+	THnSparse   *fHistEventViceReconst;
+	THnSparse	*fHistMCGenK0;
+	THnSparse	*fHistMCGenLAM;
+	THnSparse	*fHistMCGenALAM;
+	THnSparse	*fHistReconstK0;
+	THnSparse	*fHistReconstLA;
+	THnSparse	*fHistReconstALA;
+	THnSparse	*fHistMCAssoK0;
+	THnSparse	*fHistMCAssoLA;
+	THnSparse	*fHistMCAssoALA;
 	
-	TList       * fOutputList;           // Output list
-	
-	//---------------------MC--------------
-	TH1F        *fHistMCPrimaryVertexX;       
-	TH1F        *fHistMCPrimaryVertexY;       
-	TH1F        *fHistMCPrimaryVertexZ;                       
-	TH1F        *fHistMCPtAllK0s;
-	TH1F        *fHistMCPtAllLambda;
-	TH1F        *fHistMCPtAllAntiLambda;
-	TH1F        *fHistMCRapK0s;                  
-	TH1F        *fHistMCRapLambda;
-	TH1F        *fHistMCRapAntiLambda;           
-	TH1F        *fHistMCPtK0s;        
-	TH1F        *fHistMCPtLambda;        
-	TH1F        *fHistMCPtAntiLambda;
-	TH1F        *fHistMCPtLambdaFromSigma;        
-	TH1F        *fHistMCPtAntiLambdaFromSigma;        
-	TH2F        *fHistPrimRawPtVsYK0s;
-	TH2F        *fHistPrimRawPtVsYLambda;
-	TH2F        *fHistPrimRawPtVsYAntiLambda;
-	//-------------------REAL--------------
-	TH1F        *fHistPrimaryVertexX;
-	TH1F        *fHistPrimaryVertexY;
-	TH1F        *fHistPrimaryVertexZ;
-	TH2F        *fHistDcaPosToPrimVertexK0vsMassK0;   
-	TH2F        *fHistDcaNegToPrimVertexK0vsMassK0;   
-	TH2F        *fHistRadiusV0K0vsMassK0;             
-	TH2F        *fHistDecayLengthV0K0vsMassK0;        
-	TH2F        *fHistDcaV0DaughtersK0vsMassK0;       
-	TH2F        *fHistCosPointAngleK0vsMassK0;        
-	TH2F        *fHistDcaPosToPrimVertexLvsMassL;       
-	TH2F        *fHistDcaNegToPrimVertexLvsMassL;       
-	TH2F        *fHistRadiusV0LvsMassL;                  
-	TH2F        *fHistDecayLengthV0LvsMassL;             
-	TH2F        *fHistDcaV0DaughtersLvsMassL;          
-	TH2F        *fHistCosPointAngleLvsMassL;                
-	TH2F        *fHistDcaPosToPrimVertexAntiLvsMass;       
-	TH2F        *fHistDcaNegToPrimVertexAntiLvsMass;       
-	TH2F        *fHistRadiusV0AntiLvsMass;                  
-	TH2F        *fHistDecayLengthV0AntiLvsMass;             
-	TH2F        *fHistDcaV0DaughtersAntiLvsMass;          
-	TH2F        *fHistCosPointAngleAntiLvsMass;             
-	TH1F        *fHistMassK0;        
-	TH1F        *fHistMassLambda;        
-	TH1F        *fHistMassAntiLambda;                
-	TH2F        *fHistPtVsMassK0;        
-	TH2F        *fHistPtVsMassLambda;        
-	TH2F        *fHistPtVsMassAntiLambda;
-	TH2F        *fHistArmenterosPodolanskiK0; 
-	TH2F        *fHistArmenterosPodolanskiLambda;
-	TH2F        *fHistArmenterosPodolanskiAntiLambda;
-	//-----------Associated----------------       
-	TH1F        *fHistAsMcPtK0;        
-	TH1F        *fHistAsMcPtLambda;        
-	TH1F        *fHistAsMcPtAntiLambda;        
-	TH1F        *fHistAsMcProdRadiusK0;        
-	TH1F        *fHistAsMcProdRadiusLambda;        
-	TH1F        *fHistAsMcProdRadiusAntiLambda;        
-	TH2F        *fHistAsMcProdRadiusXvsYK0s;        
-	TH2F        *fHistAsMcProdRadiusXvsYLambda;        
-	TH2F        *fHistAsMcProdRadiusXvsYAntiLambda;        
-	TH1F        *fHistPidMcMassK0;        
-	TH1F        *fHistPidMcMassLambda;        
-	TH1F        *fHistPidMcMassAntiLambda;                             
-	TH1F        *fHistAsMcPtLambdaFromSigma;        
-	TH1F        *fHistAsMcPtAntiLambdaFromSigma;        
-	TH2F        *fHistAsMcSecondaryPtVsRapK0s;        
-	TH2F        *fHistAsMcSecondaryPtVsRapLambda;        
-	TH2F        *fHistAsMcSecondaryPtVsRapAntiLambda;        
-	TH1F        *fHistAsMcSecondaryProdRadiusK0s;        
-	TH1F        *fHistAsMcSecondaryProdRadiusLambda;        
-	TH1F        *fHistAsMcSecondaryProdRadiusAntiLambda;        
-	TH2F        *fHistAsMcSecondaryProdRadiusXvsYK0s;        
-	TH2F        *fHistAsMcSecondaryProdRadiusXvsYLambda;        
-	TH2F        *fHistAsMcSecondaryProdRadiusXvsYAntiLambda;        
-	TH1F        *fHistAsMcSecondaryPtLambdaFromSigma;        
-	TH1F        *fHistAsMcSecondaryPtAntiLambdaFromSigma;        
-	//-----------Correlation----------------
-	TH3F        * fHistSibK0;
-	TH3F        * fHistMixK0;
-	TH3F        * fHistSibLambda;
-	TH3F        * fHistMixLambda;
-	TH3F        * fHistSibK0MC;
-	TH3F        * fHistMixK0MC;
-	TH3F        * fHistSibLambdaMC;
-	TH3F        * fHistMixLambdaMC;
-	TH3F        * fHistLeadInfo;
-	TH3F        * fHistLeadInfoMC;
-	TH3F        * fHistLeadInfoMix;
-	TH3F        * fHistLeadInfoMixMC;
-	
+	THnSparse   *fHistReconstSib;
+	THnSparse   *fHistReconstMix;
+	THnSparse   *fHistReconstSibMC;
+	THnSparse   *fHistReconstMixMC;
+	THnSparse   *fHistReconstSibMCAssoc;
+	THnSparse   *fHistReconstMixMCAssoc;
+	THnSparse   *fHistTriggerSib;
+	THnSparse   *fHistTriggerMix;
+	THnSparse   *fHistTriggerSibMC;
+	THnSparse   *fHistTriggerMixMC;
+
 	ClassDef(AliLeadingV0Correlation, 1); 
 };
 //---------------------------------------------------------------------------------------
-class AliLeadingBasicParticle : public AliVParticle
+class V0Correlationparticle : public AliVParticle
 {
-  public:
-    AliLeadingBasicParticle(Float_t eta, Float_t phi, Float_t pt)
-      : fEta(eta), fPhi(phi), fpT(pt)
+public:
+    V0Correlationparticle(Float_t eta, 
+							Float_t phi, 
+							Float_t pt, 
+							Short_t candidate):
+	  fEta(eta), 
+	  fPhi(phi), 
+	  fpT(pt), 
+	  fCandidate(candidate)
     {
     }
-    virtual ~AliLeadingBasicParticle() {}
-
-    // kinematics
-    virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Pt() const { return fpT; }
-    virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
-    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
-    virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
-    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
-    virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Phi()        const { return fPhi; }
-    virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
-
-
-    virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
-
-    virtual Double_t Eta()        const { return fEta; }
-    virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
-
-    virtual Short_t Charge()      const { AliFatal("Not implemented"); return 0; }
-    virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
-    // PID
-    virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
-    virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+    virtual ~V0Correlationparticle(){}
 	
-  private:
-    Float_t fEta;      // eta
-    Float_t fPhi;      // phi
-    Float_t fpT;       // pT
+    virtual Double_t Px()                 const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Py()                 const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Pz()                 const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Pt()                 const { return fpT;}
+    virtual Double_t P()                  const { AliFatal("Not implemented"); return 0;}
+    virtual Bool_t   PxPyPz(Double_t[3])  const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Xv()                 const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Yv()                 const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Zv()                 const { AliFatal("Not implemented"); return 0;}
+    virtual Bool_t   XvYvZv(Double_t[3])  const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t OneOverPt()          const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Phi()                const { return fPhi;}
+    virtual Double_t Theta()              const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t E()                  const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t M()                  const { AliFatal("Not implemented"); return 0;}
+    virtual Double_t Eta()                const { return fEta;}
+    virtual Double_t Y()                  const { AliFatal("Not implemented"); return 0;}
+    virtual Short_t  Charge()             const { AliFatal("Not implemented"); return 0;}
+    virtual Int_t    GetLabel()           const { AliFatal("Not implemented"); return 0;}
+    virtual Int_t    PdgCode()            const { AliFatal("Not implemented"); return 0;}
+    virtual const    Double_t *PID()      const { AliFatal("Not implemented"); return 0;}
+    virtual Short_t  WhichCandidate()     const { return fCandidate;}
 
-    ClassDef( AliLeadingBasicParticle, 1); // class required for event mixing
+	
+private:
+    Float_t  fEta;            // Eta
+    Float_t  fPhi;            // Phi
+    Float_t  fpT;             // pT
+    Short_t  fCandidate;      // 1-K0,2-Lam,3-Alam
+	
+	
+    ClassDef( V0Correlationparticle, 1);
 };
 
 #endif
-

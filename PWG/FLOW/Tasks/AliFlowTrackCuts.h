@@ -58,6 +58,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kSPDtracklet,
                             kPMD,
                             kV0,
+                            kVZERO=kV0,
                             kMUON  // XZhang 20120604
                           };
   enum trackParameterMix  { kPure, 
@@ -322,7 +323,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   //PID
   AliESDpid fESDpid; //pid obj
-  AliFlowBayesianPID *fBayesianResponse; // Baysian response with all the TOF tuning (using fESDpid)
+  AliFlowBayesianPID *fBayesianResponse; //! Baysian response with all the TOF tuning (using fESDpid)
   PIDsource fPIDsource; //pid source
   TMatrixF* fTPCpidCuts; //tpc pid cuts
   TMatrixF* fTOFpidCuts; //tof pid cuts

@@ -44,6 +44,8 @@
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMC.h"
 
+ClassImp(AliDielectronMC)
+
 AliDielectronMC* AliDielectronMC::fgInstance=0x0;
 
 //____________________________________________________________

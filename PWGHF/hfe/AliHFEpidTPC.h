@@ -29,6 +29,7 @@
 #endif
 
 class TList;
+class TF1;
 class AliAODTrack;
 class AliAODMCParticle;
 class AliESDtrack;
@@ -62,8 +63,11 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void SetLowerSigmaCutCentrality(const TF1 * const model, Int_t centralityBin) { if(centralityBin < 11) fkLowerSigmaCut[centralityBin+1] = model; fHasCutModel = kTRUE; }
     void SetEtaCorrection(const TF1 *const param) { fkEtaCorrection = param; }
     void SetCentralityCorrection(const TF1 *const param){ fkCentralityCorrection = param; }
+    void UsedEdx() { fUsedEdx = kTRUE; }
+    void UseNSigma() { fUsedEdx = kFALSE; }
     Bool_t HasEtaCorrection() const { return fkEtaCorrection != NULL; }
     Bool_t HasCentralityCorrection() const { return fkCentralityCorrection != NULL; } 
+    Bool_t IsUsingdEdx() const { return fUsedEdx; }
 
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
     void ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
@@ -94,6 +98,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Short_t fNsigmaTPC;                                     // TPC sigma band
     Float_t fRejection[4*AliPID::kSPECIES];                 // All informations for Particle Rejection, order pmin, sigmin, pmax, sigmax
     UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
+    Bool_t  fUsedEdx;                                       // Apply cut on dE/dx instead of number of sigmas
 
   ClassDef(AliHFEpidTPC, 1)   // TPC Electron ID class
 };

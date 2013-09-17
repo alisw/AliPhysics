@@ -39,7 +39,7 @@ public:
 
   void Print(Option_t* opt="") const;
 
-  TObjArray* Bins() const { return fBins; }
+  TObjArray* BinContentArray() const { return fBins; }
   
   AliAnalysisMuMuBinning* Binning() const { return fBinning; }
   
@@ -49,11 +49,18 @@ public:
   
   Bool_t HasValue(const char* what="NofJpsi") const;
   
+  void Scale(Double_t value);
+  
+  void SetWeight(Double_t w);
+  
+  Double_t Weight() const { return fWeight; }
+  
 private:
   AliAnalysisMuMuBinning* fBinning; // internal binning
   TObjArray* fBins; // the results (bin by bin)
+  Double_t fWeight; // weight of this spectra (assumed to be a normalized weight)
   
-  ClassDef(AliAnalysisMuMuSpectra,1) // class to hold spectra (with its associated binning and errors)
+  ClassDef(AliAnalysisMuMuSpectra,2) // class to hold spectra (with its associated binning and errors)
 };
 
 #endif

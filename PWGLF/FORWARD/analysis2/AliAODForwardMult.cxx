@@ -204,6 +204,7 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   if ((mask & kE)           != 0x0) AppendAnd(trg, "E");
   if ((mask & kMCNSD)       != 0x0) AppendAnd(trg, "MCNSD");
   if ((mask & kNClusterGt0) != 0x0) AppendAnd(trg, "NCluster>0");
+  if ((mask & kSatellite)   != 0x0) AppendAnd(trg, "Satellite");
   return trg.Data();
 }
   
@@ -246,6 +247,7 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask)
   ret->GetXaxis()->SetBinLabel(kBinNSD,         "Coll. & NSD");
   ret->GetXaxis()->SetBinLabel(kBinV0AND,       "Coll. & V0AND");
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
+  ret->GetXaxis()->SetBinLabel(kBinSatellite,   "Satellite");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
   ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
   ret->GetXaxis()->SetBinLabel(kBinNClusterGt0, "w/N_{cluster}>1");
@@ -258,6 +260,38 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask)
 
   return ret;
 }
+
+//____________________________________________________________________
+TH1I*
+AliAODForwardMult::MakeStatusHistogram(const char* name) 
+{
+  // 
+  // Make a histogram to record status in. 
+  //
+  // The bins defined by the status enumeration in this class.  
+  // 
+  // Parameters:
+  //    name Name of the histogram 
+  // 
+  // Return:
+  //    Newly allocated histogram 
+  //
+  TH1I* ret = new TH1I(name, "Event selection status", 
+		       kWrongVertex+1, -.5, kWrongVertex+.5);
+  ret->SetYTitle("Events");
+  ret->SetFillColor(kBlue+1);
+  ret->SetFillStyle(3001);
+  ret->GetXaxis()->SetBinLabel(kGoodEvent+1,       "Good");
+  ret->GetXaxis()->SetBinLabel(kWrongCentrality+1, "Out-of-range centrality");
+  ret->GetXaxis()->SetBinLabel(kWrongTrigger+1,    "Wrong trigger");
+  ret->GetXaxis()->SetBinLabel(kIsPileup+1,        "Pile-up");
+  ret->GetXaxis()->SetBinLabel(kNoVertex+1,        "No IP_{z}");
+  ret->GetXaxis()->SetBinLabel(kWrongVertex+1,     "Out-or-range IP_{z}");
+  ret->GetXaxis()->SetNdivisions(kWrongVertex, false);
+  ret->SetStats(0);
+  return ret;
+}
+
 //____________________________________________________________________
 UInt_t 
 AliAODForwardMult::MakeTriggerMask(const char* what)
@@ -273,17 +307,18 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     s.Strip(TString::kBoth, ' ');
     s.ToUpper();
     if      (s.IsNull()) continue;
-    if      (s.CompareTo("INEL")  == 0) trgMask |= AliAODForwardMult::kInel;
-    else if (s.CompareTo("INEL>0")== 0) trgMask |= AliAODForwardMult::kInelGt0;
-    else if (s.CompareTo("NSD")   == 0) trgMask |= AliAODForwardMult::kNSD;
-    else if (s.CompareTo("V0AND") == 0) trgMask |= AliAODForwardMult::kV0AND;
-    else if (s.CompareTo("MCNSD") == 0) trgMask |= AliAODForwardMult::kMCNSD;
-    else if (s.CompareTo("B")     == 0) trgMask |= AliAODForwardMult::kB;
-    else if (s.CompareTo("A")     == 0) trgMask |= AliAODForwardMult::kA;
-    else if (s.CompareTo("C")     == 0) trgMask |= AliAODForwardMult::kC;
-    else if (s.CompareTo("E")     == 0) trgMask |= AliAODForwardMult::kE;
-    else if (s.CompareTo("NCLUSTER>0") == 0) 
-      trgMask |= AliAODForwardMult::kNClusterGt0;
+    if      (s.CompareTo("INEL")       == 0) trgMask |= kInel;
+    else if (s.CompareTo("INEL>0")     == 0) trgMask |= kInelGt0;
+    else if (s.CompareTo("INELGT0")    == 0) trgMask |= kInelGt0;
+    else if (s.CompareTo("NSD")        == 0) trgMask |= kNSD;
+    else if (s.CompareTo("V0AND")      == 0) trgMask |= kV0AND;
+    else if (s.CompareTo("MCNSD")      == 0) trgMask |= kMCNSD;
+    else if (s.CompareTo("B")          == 0) trgMask |= kB;
+    else if (s.CompareTo("A")          == 0) trgMask |= kA;
+    else if (s.CompareTo("C")          == 0) trgMask |= kC;
+    else if (s.CompareTo("SAT")        == 0) trgMask |= kSatellite;
+    else if (s.CompareTo("E")          == 0) trgMask |= kE;
+    else if (s.CompareTo("NCLUSTER>0") == 0) trgMask |= kNClusterGt0;
     else 
       AliWarningGeneral("MakeTriggerMask", 
 			Form("Unknown trigger %s", s.Data()));
@@ -297,7 +332,7 @@ Bool_t
 AliAODForwardMult::CheckEvent(Int_t    triggerMask,
 			      Double_t vzMin, Double_t vzMax,
 			      UShort_t cMin,  UShort_t cMax, 
-			      TH1*     hist) const
+			      TH1*     hist,  TH1*     status) const
 {
   // 
   // Check if event meets the passses requirements.   
@@ -323,7 +358,10 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
   // Return:
   //    @c true if the event meets the requirements 
   //
-  if (cMin < cMax && (cMin > fCentrality || cMax <= fCentrality)) return false;
+  if (cMin < cMax && (cMin > fCentrality || cMax <= fCentrality)) {
+    if (status) status->Fill(kWrongCentrality);
+    return false;
+  }
 
   if (hist) { 
     Int_t tmp = triggerMask & ~kB;
@@ -340,26 +378,40 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (IsTriggerBits(kMCNSD))          hist->AddBinContent(kBinMCNSD);
     if (IsTriggerBits(kOffline))        hist->AddBinContent(kBinOffline);
     if (IsTriggerBits(kNClusterGt0))    hist->AddBinContent(kBinNClusterGt0);
+    if (IsTriggerBits(kSatellite))      hist->AddBinContent(kBinSatellite);
     if (IsTriggerBits(triggerMask) && !IsTriggerBits(kB|tmp))
       Warning("CheckEvent", "event: 0x%x, mask: 0x%x, tmp: 0x%x, tmp|b: 0x%x",
 	     fTriggers, triggerMask, tmp, tmp|kB);
   }
   // Check if we have an event of interest. 
   Int_t mask = triggerMask; //|kB
-  if (!IsTriggerBits(mask)) return false;
+  if (!IsTriggerBits(mask)) { 
+    if (status) status->Fill(kWrongTrigger);
+    return false;
+  }
   
   // Check for pileup
-  if (IsTriggerBits(kPileUp)) return false;
+  if (IsTriggerBits(kPileUp)) {
+    if (status) status->Fill(kIsPileup);
+    return false;
+  }
   if (hist) hist->AddBinContent(kWithTrigger);
   
   // Check that we have a valid vertex
-  if (vzMin < vzMax && !HasIpZ()) return false;
+  if (vzMin < vzMax && !HasIpZ()) {
+    if (status) status->Fill(kNoVertex);
+    return false;
+  }
   if (hist) hist->AddBinContent(kWithVertex);
 
   // Check that vertex is within cuts 
-  if (vzMin < vzMax && !InRange(vzMin, vzMax)) return false;
+  if (vzMin < vzMax && !InRange(vzMin, vzMax)) {
+    if (status) status->Fill(kWrongVertex);
+    return false;
+  }
   if (hist) hist->AddBinContent(kAccepted);
   
+  if (status) status->Fill(kGoodEvent);
   return true;
 }
 

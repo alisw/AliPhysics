@@ -1,20 +1,24 @@
-// AddTaskFullpAJets.C 2013-02-07 cyaldo
-
-AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const Double_t jetRadius=0.4)
+AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A", Double_t scaleFactor = 1.42, Double_t nefJetCut = 0.9)
 {
-    const char *usedTracks="PicoTracks";
-    const char *usedClusters="CaloClusters";
-    const char *outClusName="CaloClustersCorr";
+    char *usedTracks = track_name;
+    char *usedClusters = clus_name;
+    char *outClusName = corrclus_name;
+    char *usedMCParticles = mcpart_name;
+    char *centEst = Centrality_name;
+    char *projName = proj_name;
     const Double_t minTrackPt=0.15;
     const Double_t minClusterPt=0.30;
+    const Double_t minMCPartPt=0.00;
+    Double_t scaleFac = scaleFactor; // Obtained from previous runs...
+    Double_t NEFSignalJetCut = nefJetCut; // Require signal jet to not exceed a Neutral Energy Fraction of this setting...
     
     // Some constants for the jet finders
-    const Int_t cKT                 = 0;
-    const Int_t cANTIKT             = 1;
-    const Int_t cFULLJETS           = 0;
-    const Int_t cCHARGEDJETS        = 1;
-    const Int_t cNEUTRALJETS        = 2;
-    
+    const Int_t cKT=0;
+    const Int_t cANTIKT=1;
+    const Int_t cFULLJETS=0;
+    const Int_t cCHARGEDJETS=1;
+    const Int_t cNEUTRALJETS=2;
+
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr)
     {
@@ -30,7 +34,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const Double_t jetRadius=0.4)
     }
     
     TString taskName = Form("AnalysisFullpAJetsR%d",drjet);
-    TString listName = Form("ListR%d",drjet);
+    TString listName = Form("List%sR%d",projName,drjet);
     TString fileName = Form("%s:FullpAJets", AliAnalysisManager::GetCommonFileName());
     
     // Jet finders (RECONSTRUCTED DATA)
@@ -39,32 +43,62 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const Double_t jetRadius=0.4)
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
     
-    // ########## CHARGED JETS ##########
-    jetFinderTask = AddTaskEmcalJet(usedTracks,"",cANTIKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt);
-    //RequestMemory(jetFinderTask,250*1024);//more memory
-
-    jetFinderTask = AddTaskEmcalJet(usedTracks,"",cKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt);
-    //RequestMemory(jetFinderTask,250*1024);//more memory
-
-    // ########## FULL JETS ##########
-    // last two settings are for min pt tracks/clusters
-    // anti-kT
-    jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt);
-    //RequestMemory(jetFinderTask,250*1024);//more memory
-
-    // kT
-    jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt);
-    //RequestMemory(jetFinderTask,250*1024);//more memory
-
     // Add User Task
     AliAnalysisTaskFullpAJets *task = new AliAnalysisTaskFullpAJets(taskName);
-    mgr->AddTask(task);
-    //task->SetR_JET(drjet);
+
+    if (IsMC == kTRUE)
+    {
+        task->SetTrackName(usedMCParticles);
+        task->SetClusterName("");
+        task->SetTrackPtCut(minMCPartPt);
+        task->SetClusterPtCut(minMCPartPt);
+        
+        // ########## CHARGED JETS ##########
+        jetFinderTask = AddTaskEmcalJet(usedMCParticles,"",cKT,jetRadius,cCHARGEDJETS,minMCPartPt,minMCPartPt);
+        task->SetkTChargedJetName(jetFinderTask->GetName());
+        
+        jetFinderTask = AddTaskEmcalJet(usedMCParticles,"",cANTIKT,jetRadius,cCHARGEDJETS,minMCPartPt,minMCPartPt);
+        task->SetAkTChargedJetName(jetFinderTask->GetName());
+        
+        // ########## FULL JETS ##########
+        // No Full jets or clusters are used if run over MCParticles!
+        task->SetkTFullJetName("");
+        task->SetAkTFullJetName("");
+    }
+    else
+    {
+        task->SetTrackName(usedTracks);
+        task->SetClusterName(outClusName);
+        task->SetTrackPtCut(minTrackPt);
+        task->SetClusterPtCut(minClusterPt);
+
+        // ########## CHARGED JETS ##########
+        jetFinderTask = AddTaskEmcalJet(usedTracks,"",cKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt);
+        task->SetkTChargedJetName(jetFinderTask->GetName());
+        
+        jetFinderTask = AddTaskEmcalJet(usedTracks,"",cANTIKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt);
+        task->SetAkTChargedJetName(jetFinderTask->GetName());
+        
+        // ########## FULL JETS ##########
+        jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt);
+        task->SetkTFullJetName(jetFinderTask->GetName());
+
+        jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt);
+        task->SetAkTFullJetName(jetFinderTask->GetName());
+    }
+
     task->SetRjet(drjet);
+    task->SetCentralityTag(centEst);
+    task->SetScaleFactor(scaleFac);
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SetNColl(7);
+    task->SetNEFSignalJetCut(NEFSignalJetCut);
+    
+    mgr->AddTask(task);
+
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(listName,TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task,1,coutput);
-    //RequestMemory(task,250*1024);//more memory
 
     return task;
 

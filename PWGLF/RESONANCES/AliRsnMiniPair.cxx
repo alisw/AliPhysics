@@ -83,3 +83,98 @@ void AliRsnMiniPair::InvertP(Bool_t first)
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), fRef[i].M());
    }
 }
+
+//__________________________________________________________________________________________________
+void AliRsnMiniPair::FillRef(Double_t mass)
+{
+//
+// Fill ref 4-vectors using the passed mass and the values in 'sum'
+//
+
+   Int_t i;
+   for (i = 0; i < 2; i++) {
+      fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), mass);
+   }
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::InvMassRes() const
+{
+//
+// Return invariant mass resolution
+//
+
+   if (fSum[1].M() <= 0.0) return 1E20;
+
+   return (fSum[0].M() - fSum[1].M()) / fSum[1].M();
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::InvMassDiff() const
+{
+//
+// Return invariant mass resolution
+//
+
+   if (fSum[1].M() <= 0.0) return 1E20;
+
+   return (fSum[0].M() - fSum[1].M());
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PtRatio(Bool_t mc) const
+{
+//
+// Return ratio of transverse momenta of daughters
+//
+
+   Double_t num = TMath::Abs(fP1[ID(mc)].Perp() - fP2[ID(mc)].Perp());
+   Double_t den = TMath::Abs(fP1[ID(mc)].Perp() + fP2[ID(mc)].Perp());
+
+   if (den <= 0.0) return 1E20;
+
+   return num / den;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DipAngle(Bool_t mc) const
+{
+//
+// Opening angle in a Z-T space
+//
+
+   const TLorentzVector &p1 = fP1[ID(mc)];
+   const TLorentzVector &p2 = fP2[ID(mc)];
+
+   return ((p1.Perp() * p2.Perp() + p1.Z() * p2.Z()) / p1.Mag() / p2.Mag());
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
+{
+  //returns pt of the <id> daughter 
+  // if MC returns generated momenta
+  if (daughterId==0)
+    return fP1[ID(mc)].Pt();
+  else 
+    return fP2[ID(mc)].Pt();
+}
+
+//__________________________________________________________________________________________________
+void AliRsnMiniPair::DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz)
+{
+  //returns px,py,pz of the <id> daughter by saving them into pxpypz
+  // if MC returns generated momenta
+  if (!pxpypz)    return;
+ 
+  if (daughterId==0){
+    pxpypz[0]=fP1[ID(mc)].Px();
+    pxpypz[1]=fP1[ID(mc)].Py();
+    pxpypz[2]=fP1[ID(mc)].Pz();
+  } else {
+    pxpypz[0]=fP2[ID(mc)].Px();
+    pxpypz[1]=fP2[ID(mc)].Py();
+    pxpypz[2]=fP2[ID(mc)].Pz();
+  }
+  return;
+}

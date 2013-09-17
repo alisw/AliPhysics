@@ -12,6 +12,7 @@
 #include "AliDalitzElectronSelector.h"
 #include "AliConversionMesonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
+#include "TProfile2D.h"
 
 class AliESDInputHandler;
 class AliMCEventHandler;
@@ -33,24 +34,36 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 
 	virtual void UserExec(Option_t *);
 	virtual void UserCreateOutputObjects();
+	virtual Bool_t Notify();
 	virtual void Terminate(const Option_t *);
 
 
 
          
-         void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
-         void SetIsHeavyIon(Bool_t flag){fIsHeavyIon = flag;}
-         void SetConversionCutList(Int_t nCuts, TList *CutArray){
-                        fnCuts= nCuts;
-                        fCutGammaArray = CutArray;
-                }
-         void SetElectronCutList(TList *CutArray){
-                        fCutElectronArray = CutArray;
-                }
-         void SetMesonCutList(TList *CutArray){
-                        fCutMesonArray = CutArray;
-                }
-        	
+	void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
+         
+	void SetIsHeavyIon(Int_t flag){
+		if (flag == 1 || flag ==2 ){
+			fIsHeavyIon = 1;    
+		} else {
+			fIsHeavyIon = 0;    
+		}
+	}
+	
+	void SetIsMC(Bool_t isMC){fIsMC=isMC;}
+	void SetConversionCutList(Int_t nCuts, TList *CutArray){
+		fnCuts= nCuts;
+		fCutGammaArray = CutArray;
+	}
+	void SetElectronCutList(TList *CutArray){
+		fCutElectronArray = CutArray;
+	}
+	void SetMesonCutList(TList *CutArray){
+		fCutMesonArray = CutArray;
+	}
+	void SetDoChicAnalysis(Bool_t flag){ fDoChicAnalysis = flag; }
+	void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
+  
 
 	private:
 
@@ -66,7 +79,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
                 void CalculateBackground();
                 void UpdateEventByEventData();
                 Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
-		Bool_t IsDalitz(TParticle *fMCMother,Int_t &labelgamma, Int_t &labelelectron,Int_t &labelpositron);
+		Bool_t IsDalitz(TParticle *fMCMother) const;
                 Bool_t IsPi0DalitzDaughter( Int_t label ) const;
 		
 		
@@ -80,6 +93,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TList **fCutFolder;
     TList **fESDList;
     TList **fBackList;
+    TList **fMotherList;
     TList **fTrueList;
     TList **fMCList;
     TList *fOutputContainer;
@@ -98,16 +112,32 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hESDConvGammaPt;
     TH1F **hESDDalitzElectronPt;
     TH1F **hESDDalitzPositronPt;
+    TH1F **hESDDalitzElectronPhi;
+    TH1F **hESDDalitzPositronPhi;
+    TH1F **hESDDalitzElectronAfterPt;
+    TH1F **hESDDalitzPositronAfterPt;
+    TH1F **hESDDalitzElectronAfterPhi;
+    TH1F **hESDDalitzPositronAfterPhi;
+    TH2F **hESDDalitzElectronAfterNFindClsTPC;
+    TH2F **hESDDalitzPositronAfterNFindClsTPC;
+    TH2F **hESDDalitzPosEleAfterDCAxy;
+    TH2F **hESDDalitzPosEleAfterDCAz;
+    TH2F **hESDDalitzPosEleAfterTPCdEdx;
+    TH2F **hESDDalitzPosEleAfterTPCdEdxSignal;
+    TH1F **hESDMotherPhi;
     TH2F **hESDEposEnegPsiPairDPhi;
     TH2F **hESDEposEnegInvMassPt;
     TH2F **hESDEposEnegLikeSignBackInvMassPt;
     TH2F **hESDMotherInvMassPt;
     TH2F **hESDPi0MotherInvMassPt;
     TH2F **hESDPi0MotherDiffInvMassPt;
+    TH2F **hESDPi0MotherDiffLimInvMassPt;
     THnSparseF **sESDMotherInvMassPtZM;
     TH2F **hESDMotherBackInvMassPt;
     THnSparseF **sESDMotherBackInvMassPtZM;
     TH1F **hMCAllGammaPt;
+    TH1F **hMCConvGammaPt;
+    TH1F **hMCConvGammaRSPt;
     TH1F **hMCAllPositronsPt;
     TH1F **hMCAllElectronsPt;
     TH1F **hMCPi0DalitzGammaPt;
@@ -126,7 +156,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH2F **hESDEposEnegTruePhotonInvMassPt;
     TH2F **hESDEposEnegTrueJPsiInvMassPt;
     TH2F **hESDTrueMotherChiCInvMassPt;
+    TH2F **hESDTrueMotherChiCDiffInvMassPt;
     TH2F **hESDTrueMotherInvMassPt;
+    TH2F **hESDTrueMotherDalitzInvMassPt;
     TH2F **hESDTrueMotherPi0GGInvMassPt;
     TH2F **hESDTruePrimaryMotherInvMassMCPt;
     TH2F **hESDTruePrimaryPi0DalitzESDPtMCPt;
@@ -138,14 +170,21 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hESDTrueConvGammaPt;
     TH1F **hESDTruePositronPt;
     TH1F **hESDTrueElectronPt;
+    TH1F **hESDTrueSecConvGammaPt;
+    TH1F **hESDTrueSecPositronPt;
+    TH1F **hESDTrueSecElectronPt;
     TH1F **hESDTruePi0DalitzConvGammaPt;
     TH1F **hESDTruePi0DalitzPositronPt;
     TH1F **hESDTruePi0DalitzElectronPt;
+    TH1F **hESDTruePi0DalitzSecConvGammaPt;
+    TH1F **hESDTruePi0DalitzSecPositronPt;
+    TH1F **hESDTruePi0DalitzSecElectronPt;
       //if(fDoMesonAnalysis){
 
 
     TH1I **hNEvents;
     TH1I **hNGoodESDTracks;
+    TProfile **hEtaShift;
         
     TRandom3 fRandom;
     Double_t *fUnsmearedPx;
@@ -158,12 +197,16 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     Bool_t fMoveParticleAccordingToVertex;
     Bool_t fIsHeavyIon;
     Bool_t fDoMesonAnalysis;
-   
+    Bool_t fDoChicAnalysis;
+    Bool_t fDoMesonQA;
+    Bool_t fIsFromMBHeader;
+		Bool_t fIsMC;
+
 	private:
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 		AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskGammaConvDalitzV1, 2 );
+		ClassDef( AliAnalysisTaskGammaConvDalitzV1, 3 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H

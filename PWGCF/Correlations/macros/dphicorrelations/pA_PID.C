@@ -1,8 +1,8 @@
 // 0       1       2       3       4  5  6 	        7     8             9                            10         11
 // nsyield,asyield,nswidth,aswidth,v2,v3,nsasyieldratio,v3/v2,remainingpeak,remainingjetyield/ridgeyield,chi2(v2v3),baseline
-const char* graphTitles[] = { "NS Ridge Yield", "AS Ridge Yield", "NS Width", "AS Width", "v2", "v3", "NS Yield / AS Yield", "v3 / v2", "remaining peak in %", "remaining jet / NS yield in %", "chi2/ndf", "baseline" };
-const Int_t NGraphs = 5; // pt index
-const Int_t NHists = 12; 
+const char* graphTitles[] = { "NS Ridge Yield", "AS Ridge Yield", "NS Width", "AS Width", "v2", "v3", "NS Yield / AS Yield", "v3 / v2", "remaining peak in %", "remaining jet / NS yield in %", "chi2/ndf", "baseline", "v1" };
+const Int_t NGraphs = 28; // pt index
+const Int_t NHists = 13; 
 TGraphErrors*** graphs = 0;
 
 const char* kCorrFuncTitle = "#frac{1}{#it{N}_{trig}} #frac{d^{2}#it{N}_{assoc}}{d#Delta#etad#Delta#varphi} (rad^{-1})";
@@ -16,7 +16,9 @@ Float_t etaMax = 1.6;
 Bool_t gUseAnalyticalVn=0;
 Bool_t gDoSubtraction=1;
 Bool_t gDoEtaGap=1;
+Bool_t gDoEtaGapAS=0;
 Bool_t gExcludeNearSidePeakFromPhiProj=0;
+Int_t gBinning = 0;
 
 void CreateGraphStructure()
 {
@@ -38,6 +40,8 @@ void WriteGraphs(const char* outputFileName = "graphs.root")
   for (Int_t i=0; i<NGraphs; i++)
     for (Int_t j=0; j<NHists; j++)
       {
+	if (!graphs[i][j])
+	  continue;
 	graphs[i][j]->GetYaxis()->SetTitle(graphTitles[j]);
 	graphs[i][j]->Write(Form("graph_%d_%d", i, j));
       }
@@ -962,15 +966,56 @@ void SetParticleSpecie(Int_t ParticleSpecie=0){
 
 void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis = kTRUE, const char* outputFileName = "graphs.root",const char* inputFileNameHadrons)
 {
-  Int_t n = 5; //merging og 2.5 - 4
-  Int_t is[] = { 0, 1, 2, 3, 4 };
-  Int_t js[] = { 1, 2, 3, 4, 5 };
-  Bool_t symm[] = { 1, 1, 1, 1, 1, 1 };
+  if (gBinning == 0)
+  {
+    Int_t n = 5; //merging og 2.5 - 4
+    Int_t is[] = { 0, 1, 2, 3, 4 };
+    Int_t js[] = { 1, 2, 3, 4, 5 };
+    Bool_t symm[] = { 1, 1, 1, 1, 1, 1 };
+  }
+  
+  if (gBinning == 1)
+  {
+    // for extraction when trigger pT is from whole range
+    Int_t n = 8;
+    Int_t is[] =    { 0, 0, 0, 0, 0, 0, 0, 0 };
+    Int_t js[] =    { 1, 2, 3, 4, 5, 6, 7, 9 };
+    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1, 1 };
+  }
+
+  if (gBinning == 2)
+  {
+    // default with all bins
+    Int_t n = 15+6+7;
+    // sorted by pT,T
+    Int_t is[] =    { 0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6 };
+    Int_t js[] =    { 1, 1, 2, 1, 2, 3, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 7 };
+    Bool_t symm[] = { 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 };
+  }
+
+  if (gBinning == 3)
+  {
+    // less bins for v3
+    Int_t n = 3;
+    Int_t is[] = { 0, 1, 2 };
+    Int_t js[] = { 1, 2, 3 };
+    Bool_t symm[] = { 1, 1, 1 };
+  }
+
+  if (gBinning == 4)
+  {
+    // default with all but only symmetric bins
+    Int_t n = 7;
+    // sorted by pT,T
+    Int_t is[] =    { 0, 1, 2, 3, 4, 5, 8 };
+    Int_t js[] =    { 1, 2, 3, 4, 5, 6, 9 };
+    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1 };
+  }
 
   Int_t centralityBins =(gDoSubtraction)?4:5;
 
   Int_t colors[] = { 1, 2, 3, 4, 6, 7 };
-  Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26 };
+  Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 };
 
   CreateGraphStructure();
   
@@ -1014,7 +1059,7 @@ void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis
 	{
 	  canvas[ci/2]->cd();
 
-	  graphs[i][ci]->SetMarkerStyle(markers[i]);
+	  graphs[i][ci]->SetMarkerStyle(markers[i%14]);
 	  graphs[i][ci]->SetMarkerColor((ci % 2 == 0) ? 1 : 2);
 	  graphs[i][ci]->SetLineColor((ci % 2 == 0) ? 1 : 2);
 	  graphs[i][ci]->GetXaxis()->SetTitle(dummy->GetXaxis()->GetTitle());
@@ -1025,7 +1070,7 @@ void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis
 	{
 	  canvas[ci-3]->cd();
 
-	  graphs[i][ci]->SetMarkerStyle(markers[i]);
+	  graphs[i][ci]->SetMarkerStyle(markers[i%14]);
 	  graphs[i][ci]->SetMarkerColor(1);
 	  graphs[i][ci]->SetLineColor(1);
 	  graphs[i][ci]->GetXaxis()->SetTitle(dummy->GetXaxis()->GetTitle());
@@ -1257,8 +1302,8 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     exclusion = 1.2;
   
   Int_t eta1 = hist1->GetYaxis()->FindBin(-etaMax + 0.001);
-  Int_t eta2 = hist1->GetYaxis()->FindBin(-exclusion + 0.001);
-  Int_t eta3 = hist1->GetYaxis()->FindBin(exclusion - 0.001);
+  Int_t eta2 = hist1->GetYaxis()->FindBin(-exclusion - 0.001);
+  Int_t eta3 = hist1->GetYaxis()->FindBin(exclusion + 0.001);
   Int_t eta6 = hist1->GetYaxis()->FindBin(etaMax - 0.001);
   Int_t phi1Z = hist1->GetXaxis()->FindBin(TMath::Pi()/2 - 0.2);
   Int_t phi2Z = hist1->GetXaxis()->FindBin(TMath::Pi()/2 + 0.2);
@@ -1283,11 +1328,22 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   proj->Add(proj2, 1);
   
   // AS
-  projAS = hist1->ProjectionX(Form("%s_proj3x", hist1->GetName()), eta1, eta6);
-
+  if (gDoEtaGapAS)
+  {
+    projAS = hist1->ProjectionX(Form("%s_proj3x", hist1->GetName()), eta1, eta2);
+    projAS2 = hist1->ProjectionX(Form("%s_proj4x", hist1->GetName()), eta3, eta6);
+    projAS->Add(projAS2, 1);
+    
+    projAS->Scale(1.0 * (eta6 - eta1 + 1) / (eta6 - eta3 + 1 + eta2 - eta1 + 1));
+  }
+  else
+  {
+    projAS = hist1->ProjectionX(Form("%s_proj3x", hist1->GetName()), eta1, eta6);
+  }
+  
   // match NS and AS yield
   proj->Scale(1.0 * (eta6 - eta1 + 1) / (eta6 - eta3 + 1 + eta2 - eta1 + 1));
-  
+
   // copy AS
   for (Int_t bin=proj->FindBin(TMath::Pi()/2+0.001); bin<=proj->GetNbinsX(); bin++)
     {
@@ -1300,8 +1356,8 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     {
       // get difference between exclusion 0.8 and 0.0, shift to AS, remove from AS
       Printf("\nParticleSpecie: %d",gParticleSpecie);
-      projAll = hist1->ProjectionX(Form("%s_proj4x", hist1->GetName()), eta1, eta6);
-      projAll->Add(proj, -1);
+      projAll = hist1->ProjectionX(Form("%s_proj4x", hist1->GetName()), eta2+1, eta3-1);
+      projAll->Add(proj, -1.0 * (eta3-1 - (eta2+1) + 1) / (eta6 - eta1 + 1));
   
       if (!silent)
 	{
@@ -1570,12 +1626,13 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   v2->SetLineStyle(2);
   //   v2->SetLineWidth(1);
   
-  TF1* v2v3 = new TF1("func", "[0]+2*[1]*cos(2*x)+2*[2]*cos(3*x)", -5, 5);
-  v2v3->SetLineColor(2);
+  TF1* v2v3 = new TF1("func", "[0]+2*[1]*cos(2*x)+2*[2]*cos(3*x)+2*[3]*cos(x)", -5, 5);
+
+  v2v3->SetLineColor(1);
   //   v2v3->FixParameter(2, 0);
-  proj->Fit(v2, fitOption);
+//   proj->Fit(v2, fitOption);
   //   return;
-    
+  
   fitOption += "+";
   proj->Fit(v2v3, fitOption, "E0 X0");
   
@@ -1598,6 +1655,8 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   
   AddPoint(graph[11], xValue1, baseLine + diffMinParam0, 0, baseLineE);
   //   AddPoint(graph[11], xValue1, baseLine, 0, baseLineE);
+
+  
   
   Float_t v2value = 0, v2E = 0, v3 = 0, v3E = 0;
   if(gUseAnalyticalVn){//analytic calculation of vv
@@ -1610,6 +1669,30 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     v3E = CalculateVnErrAnalytically(proj,3,(gDoSubtraction)?baseLine2:0.,(gDoSubtraction)?baseLineE2:0);
     if (symmetricpT)
       AddPoint(graph[5], xValue2vn, v3, 0, v3E);
+    
+    if (0 && !silent)
+    {
+      proj->Fit("pol0", "+W");
+      Float_t v0 = proj->GetFunction("pol0")->GetParameter(0);
+      Float_t v1 = CalculateVnAnalyticallyRaw(proj,1,(gDoSubtraction)?baseLine2:0.);//baseline2 is the peripheral one
+      Printf("%f", v1);
+      Float_t v4 = 0;//CalculateVnAnalyticallyRaw(proj,4,(gDoSubtraction)?baseLine2:0.);//baseline2 is the peripheral one
+      
+      Float_t scaleBaseline = 1;
+      if (gDoSubtraction)
+	scaleBaseline = v0 * (v0+baseLine2);
+
+      TF1* v1v2v3v4 = new TF1("func", "[0]*(1+2*[1]*cos(2*x)+2*[2]*cos(3*x)+2*[3]*cos(x)+2*[4]*cos(4*x))", -5, 5);
+      v1v2v3v4->SetParameters((Double_t) v0, (Double_t) v2value*v2value / scaleBaseline, (Double_t) v3*v3 * scaleBaseline, (Double_t) v1 / scaleBaseline, (Double_t) v4 / scaleBaseline);
+      v1v2v3v4->SetLineColor(4);
+      v1v2v3v4->Draw("SAME");
+
+      TF1* v2only = (TF1*) v1v2v3v4->Clone("v2only");
+      v2only->SetParameters((Double_t) v0, (Double_t) v2value*v2value);
+      v2only->SetLineColor(4);
+      v2only->SetLineStyle(2);      
+      v2only->Draw("SAME");
+    }
   }else{//v2 calculated from the fit 
     Printf("vn calculated from fit!");
     if (v2v3->GetParameter(1) > 0)
@@ -1627,6 +1710,18 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 	if (symmetricpT)
 	  AddPoint(graph[5], xValue2vn, v3, 0, v3E);
       }
+      
+// 	Float_t v1 = TMath::Sqrt(TMath::Abs(v2v3->GetParameter(3)) / (baseLine + diffMinParam0));
+// 	Float_t v1E = 0.5 * v1 * TMath::Sqrt(v2v3->GetParError(3) * v2v3->GetParError(3) / v2v3->GetParameter(3) / v2v3->GetParameter(3) + baseLineE * baseLineE / baseLine / baseLine);
+// 	if (v2v3->GetParameter(3) < 0)
+// 	  v1 = -v1;
+
+	Float_t v1 = TMath::Abs(v2v3->GetParameter(3)) / (baseLine + diffMinParam0);
+	Float_t v1E = v1 * TMath::Sqrt(v2v3->GetParError(3) * v2v3->GetParError(3) / v2v3->GetParameter(3) / v2v3->GetParameter(3) + baseLineE * baseLineE / baseLine / baseLine);
+
+	if (symmetricpT)
+	  AddPoint(graph[12], xValue2vn, v1, 0, v1E);
+// 	Printf("v1: %f %f", v1, v1E);
   }
   
   if (v2value > 0 && v3 > 0 && symmetricpT)
@@ -1713,16 +1808,24 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 
   if (!silent)
     {
+      TF1* v2v3_v1 = new TF1("func", "[0]+2*[1]*cos(x)", -5, 5);
+      v2v3_v1->SetParameters(v2v3->GetParameter(0), v2v3->GetParameter(3));
+      v2v3_v1->SetLineStyle(3);
+      v2v3_v1->SetLineColor(4);
+//       v2v3_v1->SetLineWidth(1);
+      v2v3_v1->Draw("SAME");
       TF1* v2v3_v2 = new TF1("func", "[0]+2*[1]*cos(2*x)", -5, 5);
       v2v3_v2->SetParameters(v2v3->GetParameter(0), v2v3->GetParameter(1));
-      v2v3_v2->SetLineStyle(3);
+      v2v3_v2->SetLineStyle(2);
       v2v3_v2->SetLineColor(2);
-      //     v2v3_v2->Draw("SAME");
+//       v2v3_v2->SetLineWidth(1);
+      v2v3_v2->Draw("SAME");
       TF1* v2v3_v3 = new TF1("func", "[0]+2*[1]*cos(3*x)", -5, 5);
       v2v3_v3->SetParameters(v2v3->GetParameter(0), v2v3->GetParameter(2));
       v2v3_v3->SetLineStyle(4);
-      v2v3_v3->SetLineColor(2);
-      //     v2v3_v3->Draw("SAME");
+      v2v3_v3->SetLineColor(6);
+//       v2v3_v3->SetLineWidth(1);
+      v2v3_v3->Draw("SAME");
     
       line = new TLine(-0.5 * TMath::Pi(), min, 1.5 * TMath::Pi(), min);
       line->SetLineWidth(2);
@@ -1825,7 +1928,7 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
   ReadGraphs(graphFiles[0]);
   TGraphErrors*** base = graphs;
 
-  Float_t yMax[] = { 0.1, 0.1, 2, 2, 0.25, 0.25, 4, 1.5, 50, 50, 4, 4 };
+  Float_t yMax[] = { 0.1, 0.1, 2, 2, 0.25, 0.25, 4, 1.5, 50, 50, 4, 4, 0.5 };
   Int_t markers[] = { 20, 21, 22, 23, 24, 25, 26 };
 
   TString baseName(graphFiles[0]);
@@ -1834,7 +1937,7 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
   //   Printf("%p", canvas);
   gPad->SetGridx();
   gPad->SetGridy();
-  dummy = new TH2F(Form("hist_%s_%d", graphFiles[0], id), Form(";%s;%s", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 60, 100, 0, yMax[id]);
+  dummy = new TH2F(Form("hist_%s_%d", graphFiles[0], id), Form(";%s;%s", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 60, 100, (yMax[id] > 0) ? 0 : yMax[id], (yMax[id] > 0) ? yMax[id] : 0);
   dummy->SetStats(0);
   dummy->DrawCopy();
   
@@ -1858,7 +1961,7 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
     
 	  canvas->cd();
 	  //       Printf("%p", canvas);
-	  graphs[i][id]->SetMarkerStyle(markers[i]);
+	  graphs[i][id]->SetMarkerStyle(markers[i%8]);
 	  graphs[i][id]->SetMarkerColor(colors[fc]);
 	  graphs[i][id]->SetLineColor(colors[fc]);
 	  GraphShiftX((TGraphErrors*) graphs[i][id]->DrawClone("PSAME"), 0.5 / n * fc);
@@ -2641,11 +2744,11 @@ void CompareATLAS()
   alice->Draw("PSAME");
 }
 
-Double_t CalculateVnAnalytically(TH1* proj,Int_t n, Float_t BaseLineShift){
+Double_t CalculateVnAnalyticallyRaw(TH1* proj,Int_t n, Float_t BaseLineShift){
   //proj->Print("all");
   Double_t num=0;
   Double_t den=0;
-  //Printf("BaseLineShift %f",BaseLineShift);
+  Printf("BaseLineShift %f",BaseLineShift);
   for(Int_t ibin=1;ibin<=proj->GetNbinsX();ibin++){
     if(proj->GetBinContent(ibin)==0)continue;
     num+=TMath::Cos(n*proj->GetBinCenter(ibin))*(proj->GetBinContent(ibin)+BaseLineShift);
@@ -2653,6 +2756,13 @@ Double_t CalculateVnAnalytically(TH1* proj,Int_t n, Float_t BaseLineShift){
     //Printf("num %f   den %f BaselineShift %f",num,den,BaseLineShift);
   }
   Double_t vn=num/den;
+  return vn;
+}
+
+Double_t CalculateVnAnalytically(TH1* proj,Int_t n, Float_t BaseLineShift){
+  Double_t vn=CalculateVnAnalyticallyRaw(proj, n, BaseLineShift);
+  if (vn < 0)
+    return 0;
   Printf("v2 Value: %f",TMath::Sqrt(vn));
   return TMath::Sqrt(vn);
 }
@@ -2660,6 +2770,8 @@ Double_t CalculateVnAnalytically(TH1* proj,Int_t n, Float_t BaseLineShift){
 Double_t CalculateVnErrAnalytically(TH1* proj,Int_t n, Float_t BaseLineShift, Double_t BaseLineShiftError){  
   Double_t I=0;
   Double_t v2=CalculateVnAnalytically(proj,n,BaseLineShift);
+  if (v2 <= 0)
+    return 0;
   
   for(Int_t ibin=1;ibin<=proj->GetNbinsX();ibin++){
     if(proj->GetBinContent(ibin)==0)continue;
@@ -2738,4 +2850,116 @@ void UnfoldUsingVnHadrons(TGraphErrors*** Inputgraphs,const char* graphFileHadro
   delete graphsHadrons;
   fileHadrons->Close();
   delete fileHadrons;
+}
+
+TString gReferenceFile;
+void DivideOutReferenceParticle(const char* graphFile, const char* outputFile = "graphs.root")
+{
+  ReadGraphs(gReferenceFile);
+  TGraphErrors*** graphsHadrons = graphs;
+  
+  ReadGraphs(graphFile);
+
+  for (Int_t graphID = 4; graphID <= 4; graphID++) //v2 + v3
+  {
+    const Int_t posFullPt = 7; // position where vn for unfolding is located (i.e. full pT,a and pT,t range)
+    Bool_t allPt = TString(graphFile).Contains("allpt");
+    Int_t maxPt = (allPt) ? posFullPt : NGraphs;
+    for (Int_t i=0; i<maxPt; i++)
+    {
+      Int_t referencePos = (allPt) ? posFullPt : i;
+      for (Int_t j=0; j<graphs[i][graphID]->GetN(); j++)
+      {
+	printf("%d %d: %f %f ", i, j, graphs[i][graphID]->GetY()[j], graphsHadrons[referencePos][graphID]->GetY()[j]);
+	if (graphs[i][graphID]->GetY()[j] <= 1e-6)
+	{
+	  Printf("");
+	  continue;
+	}
+	if (graphsHadrons[referencePos][graphID]->GetY()[j] <= 1e-6)
+	{
+	  graphs[i][graphID]->GetY()[j] = 0;
+	  graphs[i][graphID]->GetEY()[j] = 0;
+	  Printf("");
+	  continue;
+	}
+	Float_t relError = graphs[i][graphID]->GetEY()[j] / graphs[i][graphID]->GetY()[j];
+	graphs[i][graphID]->GetY()[j] = graphs[i][graphID]->GetY()[j] * graphs[i][graphID]->GetY()[j] / graphsHadrons[referencePos][graphID]->GetY()[j];
+	graphs[i][graphID]->GetEY()[j] = graphs[i][graphID]->GetY()[j] * TMath::Sqrt(TMath::Power(2.0 * relError, 2) + TMath::Power(graphsHadrons[referencePos][graphID]->GetEY()[j] / graphsHadrons[referencePos][graphID]->GetY()[j], 2));
+	Printf("%f +- %f", graphs[i][graphID]->GetY()[j], graphs[i][graphID]->GetEY()[j]);
+      }
+    }
+  }
+
+  WriteGraphs(outputFile);
+}
+
+void ExtractForSkalarProductComparison(TString inputFileNameBase, TString outputFileNameBase, Bool_t divideOut)
+{
+//   gDoSubtraction = 1;
+  gDoSubtraction = 0; //gUseAnalyticalVn = 1;
+
+  if (1)
+  {
+    gDoEtaGap = 1; 
+//     gDoEtaGapAS = 1;
+    CorrelationSubtractionHistogram(inputFileNameBase + ".root", kTRUE, outputFileNameBase + ".root", 0);
+    if (divideOut)
+      DivideOutReferenceParticle(outputFileNameBase + ".root", outputFileNameBase + "_unfolded.root");
+  }
+  else
+  {
+    gDoEtaGap = 0; 
+  //   gDoEtaGapAS = 0;
+    CorrelationSubtractionHistogram(inputFileNameBase + ".root", kTRUE, outputFileNameBase + "_nogap.root", 0);
+    if (divideOut)
+      DivideOutReferenceParticle(outputFileNameBase + "_nogap.root", outputFileNameBase + "_nogap_unfolded.root");
+  }
+}
+
+void ExtractForSkalarProductComparisonAllSpecies()
+{
+  gROOT->SetBatch(kTRUE);
+
+  TString baseInput("dphi_corr_130515");
+  TString baseOutput("graphs_130515b");
+  baseOutput += "_nosub";
+//   TString postfix("_wingremoved");
+  TString postfix;
+  
+  if (1)
+  {
+    gBinning = 4;
+    gReferenceFile = baseOutput + ".root";
+    ExtractForSkalarProductComparison(baseInput + "_Hadrons" + postfix, baseOutput, kTRUE); 
+    ExtractForSkalarProductComparison(baseInput + "_Pions" + postfix, baseOutput + "_pions", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_Protons" + postfix, baseOutput + "_protons", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_Kaons" + postfix, baseOutput + "_kaons", kTRUE);
+  }
+  
+  if (0)
+  {
+    gBinning = 1;
+    baseInput = "dphi_corr_130506";
+    baseInput += "_allpt";
+    baseOutput += "_allpt";
+    gReferenceFile = baseOutput + ".root";
+    ExtractForSkalarProductComparison(baseInput + "_Hadrons" + postfix, baseOutput, kTRUE); 
+    ExtractForSkalarProductComparison(baseInput + "_Pions" + postfix, baseOutput + "_pions", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_Protons" + postfix, baseOutput + "_protons", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_Kaons" + postfix, baseOutput + "_kaons", kTRUE);
+  }
+}
+
+void Test()
+{
+  TString baseOutput("graphs_130503");
+  const char* arr[] = { "", "_pions", "_protons", "_kaons"};
+  
+  for (Int_t i=1; i<4; i++)
+  {
+    ReadGraphs(baseOutput + arr[i] + ".root");
+    UnfoldUsingVnHadrons(graphs, baseOutput + ".root", 4);
+    WriteGraphs(baseOutput + arr[i] + "_unfolded2.root");
+  }
 }

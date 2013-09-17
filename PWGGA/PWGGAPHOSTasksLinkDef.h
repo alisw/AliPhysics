@@ -11,7 +11,11 @@
 //PHOS_PbPb
 #pragma link C++ class AliAnalysisTaskPi0Flow+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMC+;
+#pragma link C++ class AliAnalysisTaskPi0FlowMCHijing+;
 #pragma link C++ class AliPHOSTenderTask+;
+
+//PHOS_EpRatio
+#pragma link C++ class AliAnalysisTaskEpRatio+;
 
 //PHOS_PbPb_MC
 #pragma link C++ class AliPHOSHijingEfficiency+;
@@ -23,6 +27,9 @@
 
 // PHOS_PbPbQA
 #pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;
+
+// PHOS_Tagging
+#pragma link C++ class AliAnalysisTaskTaggedPhotons+;
 
 // PHOS_TriggerQA
 #pragma link C++ class AliAnalysisTaskPHOSTriggerQA+;

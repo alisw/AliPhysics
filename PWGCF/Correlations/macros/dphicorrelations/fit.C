@@ -2038,9 +2038,10 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
 */    
 /*    DrawCentrality("norm_phi(1D)", nHists, graphs[35], 0, 1, "N (a.u.)", (graphsWingRemoved) ? graphsWingRemoved[0+offset] : 0);
     DrawCentrality("norm_eta(1D)", nHists, graphs[39], 0, 1, "N (a.u.)", (graphsWingRemoved) ? graphsWingRemoved[0+offset] : 0);
-*/    DrawCentrality("width_phi1_centrality(1D)", nHists, graphs[37], 0, 0.8, "#sigma_{#Delta#varphi, 1} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0);
+*/    
+//     DrawCentrality("width_phi1_centrality(1D)", nHists, graphs[37], 0, 0.8, "#sigma_{#Delta#varphi, 1} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0);
 //    DrawCentrality("width_phi2_centrality(1D)", nHists, graphs[38], 0, 0.8, "#sigma_{#Delta#varphi, 2} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[4+offset] : 0);
-    DrawCentrality("width_eta1_centrality(1D)", nHists, graphs[41], 0, 0.8, "#sigma_{#Delta#eta, 1} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0);
+//     DrawCentrality("width_eta1_centrality(1D)", nHists, graphs[41], 0, 0.8, "#sigma_{#Delta#eta, 1} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0);
 //    DrawCentrality("width_eta2_centrality(1D)", nHists, graphs[42], 0, 0.8, "#sigma_{#Delta#eta, 2} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[5+offset] : 0);
 //    DrawCentrality("norm2phi(1D)", nHists, graphs[36], 0, 1.5, "N (a.u.)", (graphsWingRemoved) ? graphsWingRemoved[0+offset] : 0);
 //    DrawCentrality("norm2eta(1D)", nHists, graphs[40], 0, 1.5, "N (a.u.)", (graphsWingRemoved) ? graphsWingRemoved[0+offset] : 0);
@@ -2048,17 +2049,17 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
     CalculateRMSSigma();
     if (graphsWingRemoved)
       CalculateRMSSigma(graphsWingRemoved);
-/*
+
     DrawCentrality("phi_rms_centrality", nHists, graphs[1+offset], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0, 0, 0, 0, 0, 1);
 
     DrawCentrality("eta_rms_centrality", nHists, graphs[2+offset], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0, 0, 0, 0, 0, 1);
-*/
-//     return;
-  DrawCentrality("phi_rms_centrality(1D)", nHists, graphs[37], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0, 0, 0, 0, 0, 1);
 
-  DrawCentrality("eta_rms_centrality(1D)", nHists, graphs[41], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0, 0, 0, 0, 0, 1);
-  DrawCentrality("chi2_phi(1D)", nHists, graphs[43], 0, 150, "#chi^{2}/ndf");
-  DrawCentrality("chi2_eta(1D)", nHists, graphs[44], 0, 150, "#chi^{2}/ndf");
+//     return;
+//   DrawCentrality("phi_rms_centrality(1D)", nHists, graphs[37], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0, 0, 0, 0, 0, 1);
+
+//   DrawCentrality("eta_rms_centrality(1D)", nHists, graphs[41], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0, 0, 0, 0, 0, 1);
+//   DrawCentrality("chi2_phi(1D)", nHists, graphs[43], 0, 150, "#chi^{2}/ndf");
+//   DrawCentrality("chi2_eta(1D)", nHists, graphs[44], 0, 150, "#chi^{2}/ndf");
 /*    
     DrawCentrality("chi2_1", nHists, graphs[6+offset], 0.5, 5, "#chi^{2}/ndf (full region)");
     DrawCentrality("chi2_2", nHists, graphs[7+offset], 0.5, 5, "#chi^{2}/ndf (peak region)");
@@ -4577,6 +4578,7 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
     cout << "Hist1 does not exist." << endl;
     return;
   }
+
   TH2* hist2 = (TH2*) input2->Get(Form("dphi_%d_%d_%d", i, j+1, histId));
   if (!hist2)
   {
@@ -4593,6 +4595,8 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
   
 //   hist1->Rebin2D(2, 2); hist1->Scale(0.25);
 //   hist2->Rebin2D(2, 2); hist2->Scale(0.25);
+  
+  Printf("Integrals: %f %f", hist1->Integral(1, hist1->GetNbinsX(), hist1->GetYaxis()->FindBin(-1.19), hist1->GetYaxis()->FindBin(1.19)), hist2->Integral(1, hist1->GetNbinsX(), hist1->GetYaxis()->FindBin(-1.19), hist1->GetYaxis()->FindBin(1.19)));
 
   TCanvas *c = new TCanvas(Form("c%d", canvasCount), Form("c%d", canvasCount), 600, 900);
   c->Divide(1,3);
@@ -5447,25 +5451,25 @@ void Convolute()
   TH1* conv = (TH1*) phi->Clone("conv");
   conv->Reset();
   
-  for (Int_t x=1; x<=phi->GetNbinsX(); x++)
+  for (Int_t delta=0; delta<phi->GetNbinsX(); delta++)
   {
     Double_t value = 0;
-    for (Int_t y=1; y<=phi->GetNbinsX(); y++)
+    for (Int_t x=1; x<=phi->GetNbinsX(); x++)
     {
-      Int_t bin = x - y;
-      if (bin < 1)
-	bin += phi->GetNbinsX();
-      if (bin > phi->GetNbinsX())
-	bin -= phi->GetNbinsX();
-      value += phi->GetBinContent(y) * phi->GetBinContent(bin);
+      Int_t y = x + delta;
+      if (y < 1)
+	y += phi->GetNbinsX();
+      if (y > phi->GetNbinsX())
+	y -= phi->GetNbinsX();
+      value += phi->GetBinContent(x) * phi->GetBinContent(y);
     }
-    conv->SetBinContent(x, value);
+    conv->SetBinContent(delta+1, value);
   }
   
   conv->Scale(1.0 / conv->Integral());
   new TCanvas; conv->Draw();
   
-  return;
+//   return;
   
   // random approach
   
@@ -5492,4 +5496,233 @@ void Convolute()
   rand->Scale(1.0 / rand->Integral());
   rand->SetLineColor(2);
   rand->Draw("SAME");
+}
+
+void TwoPlusOneCorrelations_Draw(TH2* hist)
+{
+  // get rid of triangle
+  for (Int_t i=1; i<=hist->GetNbinsX(); i++)
+  {
+    Float_t weight = 1.0 / (1.0 - TMath::Abs(hist->GetXaxis()->GetBinCenter(i)) / 2.0);
+    for (Int_t j=1; j<=hist->GetNbinsY(); j++)
+      hist->SetBinContent(i, j, hist->GetBinContent(i, j) * weight);
+  }
+
+  TCanvas* c = new TCanvas(Form("%s_c", hist->GetName()), Form("%s_c", hist->GetName()), 600, 1000);
+  c->Divide(1, 3);
+  
+  c->cd(1);
+  hist->Draw("SURF1");
+  hist->GetXaxis()->SetRangeUser(-1.59, 1.59);
+  
+  Int_t eta1 = hist->GetXaxis()->FindBin(-1.59);
+  Int_t eta2 = hist->GetXaxis()->FindBin(-1.01);
+  Int_t eta3 = eta2+1;
+  Int_t eta4 = hist->GetXaxis()->FindBin(0.99);
+  Int_t eta5 = eta4+1;
+  Int_t eta6 = hist->GetXaxis()->FindBin(1.59);
+  
+  TH1* nsProj1 = hist->ProjectionY(Form("%s_Proj1", hist->GetName()), eta1, eta2);
+  TH1* nsProj2 = hist->ProjectionY(Form("%s_Proj2", hist->GetName()), eta3, eta4);
+  TH1* nsProj3 = hist->ProjectionY(Form("%s_Proj3", hist->GetName()), eta5, eta6);
+  
+  nsProj1->Add(nsProj3);
+  nsProj1->Scale(1.0 / (eta2 - eta1 + 1 + eta6 - eta5 + 1));
+  nsProj2->Scale(1.0 / (eta4 - eta3 + 1));
+  
+  c->cd(2);
+  nsProj2->DrawCopy(); 
+  nsProj1->SetLineColor(2); 
+  nsProj1->Draw("SAME");
+  
+  c->cd(3);
+  nsProj2->Add(nsProj1, -1);
+  nsProj2->DrawCopy(); 
+}
+
+void TwoPlusOneCorrelations()
+{
+  // Check 2 plus 1 correlations for NS and AS and eta gap flow subtraction
+
+  Int_t bins = 40;
+  TH2D* ns =  new TH2D("ns", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+  TH2D* ns2 = new TH2D("ns2", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+  TH2D* as2 = new TH2D("as2", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+  TH2D* ns2Same = new TH2D("ns2Same", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+  TH2D* as2Same = new TH2D("as2Same", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+  TH2D* as2AllSame = new TH2D("as2AllSame", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+  TH2D* ns2Diff = new TH2D("ns2Diff", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+  TH2D* as2Diff = new TH2D("as2Diff", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+
+  Float_t v2 = 0.2;
+  
+  const Double_t kPi = TMath::Pi();
+  const Double_t kTwoPi = 2 * kPi;
+  
+  // event loop
+  for (Int_t i=0; i<500; i++)
+  {
+    if (i % 10 == 0)
+      Printf("%d", i);
+    Float_t rpangle = gRandom->Uniform(-kPi, kPi);
+    
+    const Int_t nParticles = 500;
+    Float_t etas[nParticles];
+    Float_t phis[nParticles];
+    Float_t weights[nParticles];
+    Int_t   ids[nParticles];
+    Int_t nP = 0;
+    
+    // some particles from the continuum
+    if (0)
+    {
+      for (Int_t j=0; j<nParticles/2; j++)
+      {
+	etas[nP] = gRandom->Uniform(-1, 1);
+	phis[nP] = gRandom->Uniform(-kPi, kPi);
+	ids[nP] = -1;
+	if (TMath::Abs(etas[nP]) < 1.0)
+	  nP++;
+      }
+    }
+    
+    // jets
+    if (1)
+    {
+      Float_t width = 0.15;
+      Float_t width2 = 0.3;
+      for (Int_t j=0; j<20; j++)
+      {
+	Float_t jetEta = gRandom->Uniform(-1.5, 1.5);
+	Float_t jetPhi = gRandom->Uniform(-kPi, kPi);
+	
+	Float_t jetASEta = gRandom->Uniform(-1.5, 1.5);
+	Float_t jetASPhi = jetPhi + kPi;
+	
+	// kt
+// 	jetASPhi += gRandom->Uniform(-0.2, 0.2);
+	
+	for (Int_t k=0; k<5; k++)
+	{
+	  etas[nP] = gRandom->Gaus(jetEta, width);
+	  phis[nP] = gRandom->Gaus(jetPhi, width);
+	  ids[nP] = j;
+	  if (TMath::Abs(etas[nP]) < 1.0)
+	    nP++;
+	}
+	  
+	for (Int_t k=0; k<5; k++)
+	{
+	  etas[nP] = gRandom->Gaus(jetASEta, width2);
+	  phis[nP] = gRandom->Gaus(jetASPhi, width2);
+	  ids[nP] = j;
+	  if (TMath::Abs(etas[nP]) < 1.0)
+	    nP++;
+	}
+      }
+    }
+    
+    // calculate flow weights
+    for (Int_t j=0; j<nP; j++)
+      weights[j] = 1.0 + v2 * TMath::Cos(2*(rpangle - phis[j]));
+    
+    // fill, two particle correlation
+    for (Int_t j=0; j<nP; j++)
+    {
+      for (Int_t k=0; k<nP; k++)
+      {
+	if (j == k)
+	  continue;
+	Float_t deltaPhi = phis[j] - phis[k];
+	while (deltaPhi > 1.5 * kPi)
+	  deltaPhi -= kTwoPi;
+	while (deltaPhi < -0.5 * kPi)
+	  deltaPhi += kTwoPi;
+	
+	Float_t deltaEta = etas[j] - etas[k];
+
+	Float_t weight = 1;
+	// apply flow
+// 	weight *= weights[j] * weights[k];
+	
+	ns->Fill(deltaEta, deltaPhi, weight);
+      }
+    }
+    
+    // fill, two plus one particle correlation
+    Float_t alpha = 0.2;
+    for (Int_t j=0; j<nP; j++)
+    {
+      for (Int_t k=0; k<nP; k++)
+      {
+	if (j == k)
+	  continue;
+	Float_t deltaPhi = phis[j] - phis[k];
+	while (deltaPhi > 1.5 * kPi)
+	  deltaPhi -= kTwoPi;
+	while (deltaPhi < -0.5 * kPi)
+	  deltaPhi += kTwoPi;
+
+	// back to back trigger
+	if (TMath::Abs(deltaPhi - kPi) < alpha)
+	{
+	  for (Int_t l=0; l<nP; l++)
+	  {
+	    if (j == l || k == l)
+	      continue;
+	    
+	    // NS
+	    deltaPhi = phis[j] - phis[l];
+	    while (deltaPhi > 1.5 * kPi)
+	      deltaPhi -= kTwoPi;
+	    while (deltaPhi < -0.5 * kPi)
+	      deltaPhi += kTwoPi;
+	    
+	    Float_t deltaEta = etas[j] - etas[l];
+
+	    Float_t weight = 1;
+	    // apply flow
+// 	    weight *= weights[j] * weights[k] * weights[l];
+	    
+	    ns2->Fill(deltaEta, deltaPhi, weight);
+	    if (ids[j] == ids[l] && ids[j] == ids[k])
+	      ns2Same->Fill(deltaEta, deltaPhi, weight);
+	    else
+	      ns2Diff->Fill(deltaEta, deltaPhi, weight);
+	    
+	    // AS
+	    deltaPhi = phis[k] - phis[l];
+	    while (deltaPhi > 1.5 * kPi)
+	      deltaPhi -= kTwoPi;
+	    while (deltaPhi < -0.5 * kPi)
+	      deltaPhi += kTwoPi;
+	    
+	    deltaEta = etas[k] - etas[l];
+
+	    weight = 1;
+	    // apply flow
+// 	    weight *= weights[j] * weights[k] * weights[l];
+	    
+	    as2->Fill(deltaEta, deltaPhi, weight);
+	    if (ids[j] == ids[l] && ids[j] == ids[k])
+	      as2Same->Fill(deltaEta, deltaPhi, weight);
+	    else
+	      as2Diff->Fill(deltaEta, deltaPhi, weight);
+
+/*	    if (ids[k] == ids[l] && ids[j] == ids[l])
+	      as2AllSame->Fill(deltaEta, deltaPhi, weight);*/
+	  }
+	}
+      }
+    }
+  }
+  
+  TwoPlusOneCorrelations_Draw(ns);
+  TwoPlusOneCorrelations_Draw(ns2);
+  TwoPlusOneCorrelations_Draw(as2);
+  TwoPlusOneCorrelations_Draw(ns2Same);
+  TwoPlusOneCorrelations_Draw(as2Same);
+//   TwoPlusOneCorrelations_Draw(as2AllSame);
+  TwoPlusOneCorrelations_Draw(ns2Diff);
+  TwoPlusOneCorrelations_Draw(as2Diff);
 }

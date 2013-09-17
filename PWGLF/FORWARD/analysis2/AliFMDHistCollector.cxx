@@ -18,12 +18,14 @@
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
+#include "AliFMDCorrSecondaryMap.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TH3D.h>
 #include <TH1I.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
+#include <TObjArray.h>
 #include <TArrayI.h>
 #include <TROOT.h>
 #include <iostream>
@@ -38,8 +40,6 @@ ClassImp(AliFMDHistCollector)
 AliFMDHistCollector::AliFMDHistCollector()
   : fNCutBins(0), 
     fCorrectionCut(0), 
-    fFirstBins(), 
-    fLastBins(), 
     fDebug(0),
     fList(0),
     fSumRings(0),
@@ -47,7 +47,10 @@ AliFMDHistCollector::AliFMDHistCollector()
     fMergeMethod(kStraightMean),
     fFiducialMethod(kByCut),
     fSkipFMDRings(0),
-    fBgAndHitMaps(false)
+    fBgAndHitMaps(false),
+    fVtxList(0), 
+    fByCent(0),
+    fDoByCent(false)
 {
   DGUARD(fDebug, 3, "Default CTOR of AliFMDHistCollector");
 }
@@ -57,8 +60,6 @@ AliFMDHistCollector::AliFMDHistCollector(const char* title)
   : TNamed("fmdHistCollector", title), 
     fNCutBins(2), 
     fCorrectionCut(0.5), 
-    fFirstBins(1), 
-    fLastBins(1), 
     fDebug(0),
     fList(0),
     fSumRings(0),
@@ -66,7 +67,10 @@ AliFMDHistCollector::AliFMDHistCollector(const char* title)
     fMergeMethod(kStraightMean),
     fFiducialMethod(kByCut),
     fSkipFMDRings(0),
-    fBgAndHitMaps(false)
+    fBgAndHitMaps(false),
+    fVtxList(0), 
+    fByCent(0),
+    fDoByCent(false)
 {
   DGUARD(fDebug, 3, "Named CTOR of AliFMDHistCollector: %s", title);
 }
@@ -75,8 +79,6 @@ AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
   : TNamed(o), 
     fNCutBins(o.fNCutBins), 
     fCorrectionCut(o.fCorrectionCut),
-    fFirstBins(o.fFirstBins), 
-    fLastBins(o.fLastBins), 
     fDebug(o.fDebug),
     fList(o.fList),
     fSumRings(o.fSumRings),
@@ -84,7 +86,10 @@ AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
     fMergeMethod(o.fMergeMethod),
     fFiducialMethod(o.fFiducialMethod),
     fSkipFMDRings(o.fSkipFMDRings),
-    fBgAndHitMaps(o.fBgAndHitMaps)
+    fBgAndHitMaps(o.fBgAndHitMaps),
+    fVtxList(o.fVtxList), 
+    fByCent(o.fByCent),
+    fDoByCent(o.fDoByCent)
 {
   DGUARD(fDebug, 3, "Copy CTOR of AliFMDHistCollector");
 }
@@ -114,8 +119,6 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
 
   fNCutBins       = o.fNCutBins;
   fCorrectionCut  = o.fCorrectionCut;
-  fFirstBins      = o.fFirstBins;
-  fLastBins       = o.fLastBins;
   fDebug          = o.fDebug;
   fList           = o.fList;
   fSumRings       = o.fSumRings;
@@ -124,14 +127,16 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
   fFiducialMethod = o.fFiducialMethod;
   fSkipFMDRings   = o.fSkipFMDRings;
   fBgAndHitMaps   = o.fBgAndHitMaps;
-  
+  fVtxList        = o.fVtxList; 
+  fByCent         = o.fByCent;  
+  fDoByCent       = o.fDoByCent;
   return *this;
 }
 
 //____________________________________________________________________
 void
 AliFMDHistCollector::SetupForData(const TAxis& vtxAxis,
-			  const TAxis& etaAxis)
+				  const TAxis& etaAxis)
 {
   // 
   // Intialise 
@@ -141,7 +146,7 @@ AliFMDHistCollector::SetupForData(const TAxis& vtxAxis,
   //  
   DGUARD(fDebug, 1, "Initialization of AliFMDHistCollector");
 
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  // AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
   fSumRings = new TH2D("sumRings", "Sum in individual rings",
 		       etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax(),
@@ -165,9 +170,6 @@ AliFMDHistCollector::SetupForData(const TAxis& vtxAxis,
   fCoverage->SetZTitle("n_{bins}");
   fList->Add(fCoverage);
 		       
-  UShort_t nVz = vtxAxis.GetNbins();
-  fFirstBins.Set(5*nVz);
-  fLastBins.Set(5*nVz);
 
   // --- Add parameters to output ------------------------------------
   fList->Add(AliForwardUtil::MakeParameter("nCutBins",fNCutBins));
@@ -177,93 +179,58 @@ AliFMDHistCollector::SetupForData(const TAxis& vtxAxis,
   fList->Add(AliForwardUtil::MakeParameter("fiducialCut",fCorrectionCut));
   fList->Add(AliForwardUtil::MakeParameter("merge",Int_t(fMergeMethod)));
 
+  UShort_t nVz = vtxAxis.GetNbins();
+  fVtxList = new TObjArray(nVz, 1);
+  fVtxList->SetName("histCollectorVtxBins");
+  fVtxList->SetOwner();
+  
   // Find the eta bin ranges 
   for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
-    
     Double_t vMin    = vtxAxis.GetBinLowEdge(iVz);
     Double_t vMax    = vtxAxis.GetBinUpEdge(iVz);
-    TList*   vtxList=0;
-    if(fBgAndHitMaps) {
-      vtxList = new TList;
-      vtxList->SetName(Form("%c%02d_%c%02d", 
-			    vMin < 0 ? 'm' : 'p', int(TMath::Abs(vMin)),
-			    vMax < 0 ? 'm' : 'p', int(TMath::Abs(vMax))));
-      fList->Add(vtxList);
-    }
-    // Find the first and last eta bin to use for each ring for 
-    // each vertex bin.   This is instead of using the methods 
-    // provided by AliFMDAnaParameters 
-    for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
-      UShort_t d = 0;
-      Char_t   r = 0;
-      GetDetRing(iIdx, d, r);
-      
-      // Skipping selected FMD rings 
-      if(d==1 && r=='I' && (fSkipFMDRings & kFMD1I)) continue;
-      if(d==2 && r=='I' && (fSkipFMDRings & kFMD2I)) continue;
-      if(d==2 && r=='O' && (fSkipFMDRings & kFMD2O)) continue;
-      if(d==3 && r=='I' && (fSkipFMDRings & kFMD3I)) continue;
-      if(d==3 && r=='O' && (fSkipFMDRings & kFMD3O)) continue;
-      
-      // Get the background object 
-      // TH2F* bg    = pars->GetBackgroundCorrection(d,r,iVz);
-      TH2D* bg    = fcm.GetSecondaryMap()->GetCorrection(d,r,iVz);
-      Int_t nEta  = bg->GetNbinsX();
-      Int_t first = nEta+1;
-      Int_t last  = 0;
+    VtxBin*  bin     = new VtxBin(iVz, vMin, vMax, fNCutBins);
+    fVtxList->AddAt(bin, iVz);
 
-      // Loop over the eta bins 
-      for (Int_t ie = 1; ie <= nEta; ie++) { 
-	// Loop over the phi bins to make sure that we 
-	// do not have holes in the coverage 
-	bool ok = true;
-	for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) { 
-	  if (!CheckCorrection(bg, ie, ip)) {
-	    ok = false;
-	    continue;
-	  }
-	}
-	if (!ok) continue;
+    bin->SetupForData(fCoverage, fSkipFMDRings, fFiducialMethod, 
+		      fCorrectionCut, fList, etaAxis, 
+		      fBgAndHitMaps, fBgAndHitMaps);
+  }
 
-	first = TMath::Min(ie, first);
-	last  = TMath::Max(ie, last);
-      }
-      
-      // Store the result for later use 
-      fFirstBins[(iVz-1)*5+iIdx] = first;
-      fLastBins[(iVz-1)*5+iIdx]  = last;
-      TH2D* obg=0;
-      if(fBgAndHitMaps) {
-	obg = static_cast<TH2D*>(bg->Clone(Form("secMapFMD%d%c", d, r)));
-	obg->SetDirectory(0);
-	obg->Reset();
-	vtxList->Add(obg);
-	
-	TH2D* hitmap = static_cast<TH2D*>(bg->Clone(Form("hitMapFMD%d%c", d, r)));
-	if(r == 'O') hitmap->RebinY(2);
-	hitmap->SetDirectory(0);
-	hitmap->GetZaxis()->SetTitle("");
-	hitmap->Reset();
-	vtxList->Add(hitmap);
-      }
-      // Fill diagnostics histograms 
-      for (Int_t ie = first+fNCutBins; ie <= last-fNCutBins; ie++) {
-	Double_t old = fCoverage->GetBinContent(ie, iVz);
-	fCoverage->SetBinContent(ie, iVz, old+1);
-	if(fBgAndHitMaps) {
-	  for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) {
-	    obg->SetBinContent(ie, ip, bg->GetBinContent(ie, ip));
-	    obg->SetBinError(ie, ip, bg->GetBinError(ie, ip));
-	  }
-	}
-      }
-    } // for j 
+  if (!fDoByCent) return;
+
+  fByCent = new TList;
+  fByCent->SetName("byCentrality");
+  fByCent->SetOwner();
+  fList->Add(fByCent);
+
+  Int_t    nCent   = 101;
+  Double_t minCent = -.5;
+  Double_t maxCent = 100.5;
+  for (Int_t i = 0; i < 5; i++) { 
+    UShort_t d;
+    Char_t   r;
+    GetDetRing(i, d, r);
+    
+    TH3* h = new TH3D(Form("FMD%d%c", d, r),
+		      Form("dN/d#eta per centrality for FMD%d%c", d, r),
+		      etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax(), 
+		      nCent, minCent, maxCent, 1, 0, 1);
+    h->SetXTitle("#eta");
+    h->SetYTitle("Centrality [%]");
+    h->SetZTitle("dN/d#eta");
+    h->SetDirectory(0);
+    h->SetMarkerColor(AliForwardUtil::RingColor(d, r));
+    h->SetMarkerStyle(20);
+    fByCent->Add(h);
   }
 }
-
 //____________________________________________________________________
 Bool_t
-AliFMDHistCollector::CheckCorrection(const TH2D* bg, Int_t ie, Int_t ip) const
+AliFMDHistCollector::CheckCorrection(FiducialMethod m, 
+				     Double_t       cut, 
+				     const TH2D*    bg, 
+				     Int_t          ie, 
+				     Int_t          ip) 
 {
   // 
   // Check if we should include the bin in the data range 
@@ -277,15 +244,15 @@ AliFMDHistCollector::CheckCorrection(const TH2D* bg, Int_t ie, Int_t ip) const
   //    True if to be used
   //
   Double_t c = bg->GetBinContent(ie,ip);
-  switch (fFiducialMethod) { 
+  switch (m) { 
   case kByCut:
-    return c >= fCorrectionCut;
+    return c >= cut;
   case kDistance: 
     if (2 * c < bg->GetBinContent(ie+1,ip) ||
 	2 * c < bg->GetBinContent(ie-1,ip)) return false;
     return true;
   default: 
-    AliError("No fiducal cut method defined");
+    AliErrorClass("No fiducal cut method defined");
   }
   return false;
 }
@@ -308,10 +275,20 @@ AliFMDHistCollector::CreateOutputObjects(TList* dir)
 
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDHistCollector::CheckSkip(UShort_t d, Char_t r, UShort_t skips) 
+{
+  UShort_t q  = (r == 'I' || r == 'i' ? 0 : 1);
+  UShort_t c = 1 << (d-1);
+  UShort_t t = 1 << (c+q-1);
+
+  return (t & skips) == t;
+}
 
 //____________________________________________________________________
 Int_t
-AliFMDHistCollector::GetIdx(UShort_t d, Char_t r) const
+AliFMDHistCollector::GetIdx(UShort_t d, Char_t r)
 {
   // 
   // Get the ring index from detector number and ring identifier 
@@ -333,7 +310,7 @@ AliFMDHistCollector::GetIdx(UShort_t d, Char_t r) const
 }
 //____________________________________________________________________
 void
-AliFMDHistCollector::GetDetRing(Int_t idx, UShort_t& d, Char_t& r) const
+AliFMDHistCollector::GetDetRing(Int_t idx, UShort_t& d, Char_t& r)
 {
   // 
   // Get the detector and ring from the ring index 
@@ -355,140 +332,34 @@ AliFMDHistCollector::GetDetRing(Int_t idx, UShort_t& d, Char_t& r) const
 }
 
 //____________________________________________________________________
-void
-AliFMDHistCollector::GetFirstAndLast(Int_t idx, UShort_t vtxbin, 
-				     Int_t& first, Int_t& last) const
+AliFMDHistCollector::VtxBin*
+AliFMDHistCollector::GetVtxBin(Int_t ivtx)
 {
-  // 
-  // Get the first and last eta bin to use for a given ring and vertex 
-  // 
   // Parameters:
-  //    idx      Ring index as given by GetIdx
   //    vtxBin   Vertex bin (1 based) 
-  //    first    On return, the first eta bin to use 
-  //    last     On return, the last eta bin to use 
-  //
-  first = 0; 
-  last  = 0;
-  
-  if (idx    <  0) return;
-  if (vtxbin <= 0) return;
-  idx += (vtxbin-1) * 5;
-      
-  if (idx < 0 || idx >= fFirstBins.GetSize()) return;
-  
-  first = fFirstBins.At(idx)+fNCutBins;  
-  last  = fLastBins.At(idx)-fNCutBins;
-}
-
-//____________________________________________________________________
-Int_t
-AliFMDHistCollector::GetFirst(Int_t idx, UShort_t v) const 
-{
-  // 
-  // Get the first eta bin to use for a given ring and vertex 
-  // 
-  // Parameters:
-  //    idx Ring index as given by GetIdx
-  //    v vertex bin (1 based)
-  // 
-  // Return:
-  //    First eta bin to use, or -1 in case of problems 
-  //  
-  Int_t f, l;
-  GetFirstAndLast(idx,v,f,l);
-  return f;
-}
-
-
-//____________________________________________________________________
-Int_t
-AliFMDHistCollector::GetLast(Int_t idx, UShort_t v) const 
-{
-  // 
-  // Get the last eta bin to use for a given ring and vertex 
-  // 
-  // Parameters:
-  //    idx Ring index as given by GetIdx
-  //    v vertex bin (1 based)
-  // 
-  // Return:
-  //    Last eta bin to use, or -1 in case of problems 
-  //  
-  Int_t f, l;
-  GetFirstAndLast(idx,v,f,l);
-  return l;
-}
-
-//____________________________________________________________________
-Int_t 
-AliFMDHistCollector::GetOverlap(UShort_t d, Char_t r, 
-				Int_t bin,  UShort_t vtxbin) const
-{
-  // 
-  // Get the possibly overlapping histogram of eta bin @a e in 
-  // detector and ring 
-  // 
-  // Parameters:
-  //    d Detector
-  //    r Ring 
-  //    e Eta bin
-  //    v Vertex bin (1 based)
-  //
-  // Return:
-  //    Overlapping histogram index or -1
-  //
-
-  Int_t other = -1;
-  if (d == 1) {
-    if (bin <= GetLast(2,'I',vtxbin)) other = GetIdx(2,'I');
-  }
-  else if (d == 2 && r == 'I') {
-    if      (bin <= GetLast(2,  'O', vtxbin)) other = GetIdx(2, 'O');
-    else if (bin >= GetFirst(1, 'I', vtxbin)) other = GetIdx(1, 'I');
-  }
-  else if (d == 2 && r == 'O') {
-    if (bin >= GetFirst(2, 'I', vtxbin)) other = GetIdx(2,'I');
-  }
-  else if (d == 3 && r == 'O') {
-    if (bin <= GetLast(3, 'I', vtxbin)) other = GetIdx(3, 'I');
-  }
-  else if (d == 3 && r == 'I') {
-    if (bin >= GetFirst(3, 'O', vtxbin)) other = GetIdx(3, 'O');
-  }
-  // AliInfo(Form("FMD%d%c (%d) -> %d", d, r, GetIdx(d,r), other));
-  return other;
+  if (!fVtxList) return 0;
+  if (ivtx < 1 || ivtx > fVtxList->GetEntriesFast()) return 0;
+  VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(ivtx));
+  return bin;
 }
 //____________________________________________________________________
-Int_t
-AliFMDHistCollector::GetOverlap(Int_t idx, Int_t bin, UShort_t vtxbin) const
+const AliFMDHistCollector::VtxBin*
+AliFMDHistCollector::GetVtxBin(Int_t ivtx) const
 {
-  // 
-  // Get the possibly overlapping histogram of eta bin @a e in 
-  // detector and ring 
-  // 
   // Parameters:
-  //    i Ring index
-  //    e Eta bin
-  //    v Vertex bin (1 based)
-  //
-  // Return:
-  //    Overlapping histogram index or -1
-  //
-  UShort_t d = 0; 
-  Char_t   r = '\0';
-  GetDetRing(idx, d, r);
-  if (d == 0 || r == '\0') return 0;
-
-  return GetOverlap(d, r, bin, vtxbin);
+  //    vtxBin   Vertex bin (1 based) 
+  if (!fVtxList) return 0;
+  if (ivtx < 1 || ivtx > fVtxList->GetEntriesFast()) return 0;
+  VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(ivtx));
+  return bin;
 }
-  
-  
+
 //____________________________________________________________________
 void
-AliFMDHistCollector::MergeBins(Double_t c,   Double_t e, 
+AliFMDHistCollector::MergeBins(MergeMethod   m,
+			       Double_t c,   Double_t e, 
 			       Double_t oc,  Double_t oe,
-			       Double_t& rc, Double_t& re) const
+			       Double_t& rc, Double_t& re)
 {
   // 
   // Merge bins accoring to set method
@@ -502,8 +373,10 @@ AliFMDHistCollector::MergeBins(Double_t c,   Double_t e,
   //    re  On return, tne new error
   //
   rc = re = 0;
-  switch (fMergeMethod) { 
+  switch (m) { 
   case kStraightMean:
+  case kPreferInner:  // We only get these two when there's an overlap
+  case kPreferOuter:  // between like rings, and we should do a straight mean 
     // calculate the average of old value (half the original), 
     // and this value, as well as the summed squared errors 
     // of the existing content (sqrt((e_1/2)^2=sqrt(e_1^2/4)=e_1/2) 
@@ -569,7 +442,7 @@ AliFMDHistCollector::MergeBins(Double_t c,   Double_t e,
     re = TMath::Sqrt(oe * oe + e * e);//Add in quadarature 
     break;
   default:
-    AliError("No method for defining content of overlapping bins defined");
+    AliErrorClass("No method for defining content of overlapping bins defined");
     return;
   }
 }
@@ -580,9 +453,7 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 			     AliForwardUtil::Histos& sums,
 			     UShort_t                vtxbin, 
 			     TH2D&                   out,
-			     TList* 		     lout,
-			     Double_t 		     cent,
-			     TList*      sumsv)
+			     Double_t 		     cent)
 {
   // 
   // Do the calculations 
@@ -596,167 +467,17 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   //    true on successs 
   //
   DGUARD(fDebug, 1, "Collect final histogram of AliFMDHistCollector");
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  const TAxis* vtxAxis = fcm.GetVertexAxis();
-  Double_t vMin    = vtxAxis->GetBinLowEdge(vtxbin);
-  Double_t vMax    = vtxAxis->GetBinUpEdge(vtxbin);
-  TList* vtxList 
-    = static_cast<TList*>(fList->FindObject(Form("%c%02d_%c%02d", 
-						vMin < 0 ? 'm' : 'p', 
-						int(TMath::Abs(vMin)), 
-						vMax < 0 ? 'm' : 'p', 
-						int(TMath::Abs(vMax)))));
-  
-  for (UShort_t d=1; d<=3; d++) { 
-    UShort_t nr = (d == 1 ? 1 : 2);
-    for (UShort_t q=0; q<nr; q++) { 
-      Char_t      r = (q == 0 ? 'I' : 'O');
-      // Skipping selected FMD rings 
-      if(d==1 && r=='I' && (fSkipFMDRings & kFMD1I)) continue; 
-      if(d==2 && r=='I' && (fSkipFMDRings & kFMD2I)) continue; 
-      if(d==2 && r=='O' && (fSkipFMDRings & kFMD2O)) continue; 
-      if(d==3 && r=='I' && (fSkipFMDRings & kFMD3I)) continue; 
-      if(d==3 && r=='O' && (fSkipFMDRings & kFMD3O)) continue; 
+  // AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  // const TAxis* vtxAxis = fcm.GetVertexAxis();
+  // Double_t vMin    = vtxAxis->GetBinLowEdge(vtxbin);
+  // Double_t vMax    = vtxAxis->GetBinUpEdge(vtxbin);
+  VtxBin*  bin     = GetVtxBin(vtxbin);
+  if (!bin) return false;
+  Bool_t   ret     = bin->Collect(hists, sums, out, fSumRings, cent, 
+				  fMergeMethod, fSkipFMDRings,
+				  fByCent);
 
-      TH2D*       h = hists.Get(d,r);
-      TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
-      Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
-      TH2D*       o = sums.Get(d, r);
-      TH2D* 	  ovrt=0x0;
-      if(sumsv)
-      {	
-	AliForwardUtil::Histos* sumsvhistos=static_cast<AliForwardUtil::Histos*>(sumsv->At(vtxbin-1));
-	if(sumsvhistos)
-	{
-		ovrt=sumsvhistos->Get(d, r);
-	}	
-      }	
-      TH3D* detavcent=0x0;
-      if(lout)
-      {
-      	 detavcent=static_cast<TH3D*>(lout->FindObject(Form("FMD%d%cetavcent",d,r)));	      
-      }	
- 
-      // Get valid range 
-      Int_t first = 0;
-      Int_t last  = 0;
-      GetFirstAndLast(d, r, vtxbin, first, last);
-      
-      // Zero outside valid range 
-      Int_t nY = t->GetNbinsY();
-      for (Int_t iPhi = 0; iPhi <= nY+1; iPhi++) { 
-	// Lower range 
-	for (Int_t iEta = 1; iEta < first; iEta++) { 
-	  t->SetBinContent(iEta,iPhi,0);
-	  t->SetBinError(iEta,iPhi,0);
-	}
-	for (Int_t iEta = last+1; iEta <= t->GetNbinsX(); iEta++) {
-	  t->SetBinContent(iEta,iPhi,0);
-	  t->SetBinError(iEta,iPhi,0);
-	}
-      }
-      for (Int_t iEta = first; iEta <= last; iEta++) {
-	// Double_t phiAcc = t->GetBinContent(iEta, nY+1);
-	// if (phiAcc > 1e-12 && phiAcc < 1)
-	//   Info("", "FMD%d%c %3d phi acceptance: %f",d,r,iEta,phiAcc);
-	t->SetBinContent(iEta,0,1);
-      }
-      // Add to our per-ring sum 
-      o->Add(t);
-      if(ovrt)	
-      	ovrt->Add(t);	
-      // fillinig the deta v cent histo
-      if(cent>0&&detavcent)
-      {
-		Int_t nYbins=t->GetYaxis()->GetNbins();
-		Int_t nXbins=t->GetXaxis()->GetNbins();
-		Int_t cenbin=detavcent->GetYaxis()->FindBin(cent);
-		if(cenbin>0&&cenbin<=detavcent->GetYaxis()->GetNbins())	
-		{
-			TH1D* projectionX=(TH1D*)t->ProjectionX("tmp",1,nYbins);
-			for (int ibineta=1;ibineta<nXbins;ibineta++) 
-			{
-				Double_t v1=projectionX->GetBinContent(ibineta);
-				Double_t e1=projectionX->GetBinError(ibineta);
-				Double_t v2=detavcent->GetBinContent(ibineta,cenbin,1);
-				Double_t e2=detavcent->GetBinError(ibineta,cenbin,1);
-				detavcent->SetBinContent(ibineta,cenbin,1,v1+v2);
-				detavcent->SetBinError(ibineta,cenbin,1,TMath::Sqrt(e1*e1+e2*e2));
-				if (t->GetBinContent(ibineta,0)>0.0)
-					detavcent->SetBinContent(ibineta,cenbin,0,detavcent->GetBinContent(ibineta,cenbin,0)+t->GetBinContent(ibineta,0));
-				if (t->GetBinContent(ibineta,nYbins+1)>0.0)
-					detavcent->SetBinContent(ibineta,cenbin,2,detavcent->GetBinContent(ibineta,cenbin,2)+t->GetBinContent(ibineta,nYbins+1));	  
-			}
-		}	
-      }			      
-
-
-      // Outer rings have better phi segmentation - rebin to same as inner. 
-      if (q == 1) t->RebinY(2);
-
-      nY = t->GetNbinsY();
-      // Now update profile output 
-      for (Int_t iEta = first; iEta <= last; iEta++) { 
-
-	// Get the possibly overlapping histogram 
-	Int_t overlap = GetOverlap(d,r,iEta,vtxbin);
-
-	// Get factor 
-	Float_t fac      = (fMergeMethod != kSum && overlap >= 0 ? .5 : 1); 
-
-	// Fill eta acceptance for this event into the phi underflow bin
-	Float_t ooc      = out.GetBinContent(iEta,0);
-	out.SetBinContent(iEta, 0, ooc + fac);
-
-	// Fill phi acceptance for this event into the phi overflow bin
-	Float_t oop      = out.GetBinContent(iEta,nY+1);
-	Float_t nop      = t->GetBinContent(iEta,nY+1);
-#if 0
-	Info("", "etaBin=%3d Setting phi acceptance to %f(%f+%f)=%f", 
-	     iEta, fac, oop, nop, fac*(oop+nop));
-#endif
-	out.SetBinContent(iEta, nY+1, fac * nop + oop);
-
-	// Should we loop over h or t Y bins - I think it's t
-	for (Int_t iPhi = 1; iPhi <= nY; iPhi++) { 
-	  Double_t c  = t->GetBinContent(iEta,iPhi);
-	  Double_t e  = t->GetBinError(iEta,iPhi);
-	  Double_t ee = t->GetXaxis()->GetBinCenter(iEta);
-	  fSumRings->Fill(ee, i, c);
-
-	  // If there's no signal, continue 
-	  // if (e <= 0) continue;
-	  if (c <= 0 || e <= 0)     continue;
-	  
-	  // If there's no overlapping histogram (ring), then 
-	  // fill in data and continue to the next phi bin 
-	  if (overlap < 0) { 
-	    out.SetBinContent(iEta,iPhi,c);
-	    out.SetBinError(iEta,iPhi,e);
-	    continue;
-	  }
-
-	  // Get the current bin content and error 
-	  Double_t oc = out.GetBinContent(iEta,iPhi);
-	  Double_t oe = out.GetBinError(iEta,iPhi);
-
-	  Double_t rc, re;
-	  MergeBins(c, e, oc, oe, rc, re);
-	  out.SetBinContent(iEta,iPhi, rc);
-	  out.SetBinError(iEta,iPhi, re);
-	}
-      }
-      if(fBgAndHitMaps) {
-	TH2D* hRingSumVtx 
-	  = static_cast<TH2D*>(vtxList->FindObject(Form("hitMapFMD%d%c", 
-							d, r)));
-	hRingSumVtx->Add(t);
-      }
-      // Remove temporary histogram 
-      delete t;
-    } // for r
-  } // for d 
- return kTRUE;
+  return ret;
 }
 
 //____________________________________________________________________
@@ -784,36 +505,434 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
   case kWeightedMean:       std::cout << "weighted mean\n"; break;
   case kLeastError:         std::cout << "least error\n"; break;
   case kSum:                std::cout << "straight sum\n"; break;
+  case kPreferInner:        std::cout << "prefer inners\n"; break;
+  case kPreferOuter:        std::cout << "prefer outers\n"; break;
   }
     
-  std::cout << ind << " Bin ranges:\n" << ind << "  rings  ";
-  Int_t nVz = fFirstBins.fN / 5;
+  if (!fVtxList) return;
+
+  std::cout << ind << " Bin ranges:\n" << ind << "  rings   |   Range  ";
+  Int_t nVz = fVtxList->GetEntriesFast();
   for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
     UShort_t d = 0;
     Char_t   r = 0;
     GetDetRing(iIdx, d, r);
     std::cout << ind << " | FMD" << d << r << " ";
   }
-  std::cout << '\n' << ind << "  /vz_bin ";
+  std::cout << '\n' << ind << "  /vz_bin |-----------";
   for (Int_t iIdx = 0; iIdx < 5; iIdx++) 
     std::cout << "-+--------";
   std::cout << std::endl;
 
   for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
-    std::cout << " " << std::setw(7) << iVz << "   ";
+    const VtxBin* bin = GetVtxBin(iVz);
+    if (!bin) continue;
+    std::cout << "    " << std::right << std::setw(6) << iVz << " | "
+	      << std::setw(3) << bin->fLow << " - " << std::left 
+	      << std::setw(3) << bin->fHigh << " ";
     for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
-      UShort_t d = 0;
-      Char_t   r = 0;
-      GetDetRing(iIdx, d, r);
-    
       Int_t first, last;
-      GetFirstAndLast(iIdx, iVz, first, last);
+      bin->GetFirstAndLast(iIdx, first, last);
       std::cout << " | " << std::setw(3) << first << "-" 
 		<< std::setw(3) << last;
     }
     std::cout << std::endl;
   }
 }
+
+//____________________________________________________________________
+AliFMDHistCollector::VtxBin::VtxBin(Int_t idx, Double_t minIpZ, Double_t maxIpZ,
+				    Int_t nCutBins)
+  : fIndex(idx), 
+    fLow(minIpZ), 
+    fHigh(maxIpZ),
+    fHitMap(0), 
+    fFirstBin(1), 
+    fLastBin(1), 
+    fNCutBins(nCutBins)
+{
+}
+//____________________________________________________________________
+AliFMDHistCollector::VtxBin::VtxBin(const VtxBin& o)
+  : TObject(o), 
+    fIndex(o.fIndex), 
+    fLow(o.fLow), 
+    fHigh(o.fHigh),
+    fHitMap(o.fHitMap), 
+    fFirstBin(o.fFirstBin), 
+    fLastBin(o.fLastBin),
+    fNCutBins(o.fNCutBins)
+{
+}
+//____________________________________________________________________
+AliFMDHistCollector::VtxBin&
+AliFMDHistCollector::VtxBin::operator=(const VtxBin& o)
+{
+  if (&o == this) return *this;
+  fIndex    = o.fIndex;
+  fLow      = o.fLow;
+  fHigh     = o.fHigh;
+  fHitMap   = o.fHitMap;
+  fFirstBin = o.fFirstBin;
+  fLastBin  = o.fLastBin;
+  fNCutBins = o.fNCutBins;
+  return *this;
+}
+//____________________________________________________________________
+const Char_t*
+AliFMDHistCollector::VtxBin::GetName() const
+{
+  return Form("%c%03d_%c%03d", 
+	      (fLow >= 0 ? 'p' : 'm'), Int_t(TMath::Abs(fLow)), 
+	      (fHigh >= 0 ? 'p' : 'm'), Int_t(TMath::Abs(fHigh)));
+}
+//____________________________________________________________________
+void
+AliFMDHistCollector::VtxBin::SetupForData(TH2*           coverage,
+					  UShort_t       skips,
+					  FiducialMethod fiducial, 
+					  Double_t       cut,
+					  TList*         l,
+					  const TAxis&   etaAxis,
+					  Bool_t         doHitMaps, 
+					  Bool_t         storeSecMap)
+{
+  TList* out = 0;
+  if (doHitMaps || storeSecMap) {
+    out = new TList;
+    out->SetName(GetName());
+    out->SetOwner();
+    l->Add(out);
+  }
+  if (doHitMaps) { 
+    fHitMap = new AliForwardUtil::Histos();
+    fHitMap->Init(etaAxis);
+  }
+  fFirstBin.Set(5);
+  fLastBin.Set(5);
+
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  
+  for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
+    UShort_t d = 0;
+    Char_t   r = 0;
+    GetDetRing(iIdx, d, r);
+    
+    // Skipping selected FMD rings 
+    if (CheckSkip(d, r, skips)) continue;
+
+    // Get the background object 
+    TH2D* bg    = fcm.GetSecondaryMap()->GetCorrection(d,r,UShort_t(fIndex));
+    Int_t nEta  = bg->GetNbinsX();
+    Int_t first = nEta+1;
+    Int_t last  = 0;
+    
+    // Loop over the eta bins 
+    for (Int_t ie = 1; ie <= nEta; ie++) { 
+      // Loop over the phi bins to make sure that we 
+      // do not have holes in the coverage 
+      bool ok = true;
+      for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) { 
+	if (!CheckCorrection(fiducial, cut, bg, ie, ip)) {
+	  ok = false;
+	  continue;
+	}
+      }
+      if (!ok) continue;
+      
+      first = TMath::Min(ie, first);
+      last  = TMath::Max(ie, last);      
+    }
+    // Store result of first/last bin for this ring
+    fFirstBin[iIdx] = first;
+    fLastBin[iIdx]  = last;
+
+    if (fHitMap) { 
+      TH2* h = fHitMap->Get(d, r);
+      h->SetDirectory(0);
+      h->SetName(Form("hitMapFMD%d%c", d, r));
+      // if (r == 'O') h->RebinY(2);
+      out->Add(h);
+    }
+
+    TH2D* obg=0;
+    if(storeSecMap) {
+      obg = static_cast<TH2D*>(bg->Clone(Form("secMapFMD%d%c", d, r)));
+      obg->SetDirectory(0);
+      obg->Reset();
+      out->Add(obg);
+    }
+    // Fill diagnostics histograms 
+    for (Int_t ie = first+fNCutBins; ie <= last-fNCutBins; ie++) {
+      Double_t old = coverage->GetBinContent(ie, fIndex);
+      coverage->SetBinContent(ie, fIndex, old+1);
+      if(obg) {
+	for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) {
+	  obg->SetBinContent(ie, ip, bg->GetBinContent(ie, ip));
+	  obg->SetBinError(ie, ip, bg->GetBinError(ie, ip));
+	} // for (ip)
+      } // if (doSecHits)
+    } // for (ie)
+  } // for (iIdx)  
+}
+  
+//____________________________________________________________________
+void
+AliFMDHistCollector::VtxBin::GetFirstAndLast(Int_t  idx, 
+					     Int_t& first, 
+					     Int_t& last) const
+{
+  // Get the first and last eta bin to use for a given ring and vertex 
+  // 
+  // Parameters:
+  //    idx      Ring index as given by GetIdx
+  //    first    On return, the first eta bin to use 
+  //    last     On return, the last eta bin to use 
+  //
+  first = 0; 
+  last  = 0;
+  
+  if (idx < 0 || idx >= fFirstBin.GetSize()) return;
+  
+  first = fFirstBin.At(idx)+fNCutBins;  
+  last  = fLastBin.At(idx)-fNCutBins;
+}
+//____________________________________________________________________
+Int_t
+AliFMDHistCollector::VtxBin::GetFirst(Int_t  idx) const
+{
+  Int_t first, last;
+  GetFirstAndLast(idx, first , last);
+  return first;
+}
+//____________________________________________________________________
+Int_t
+AliFMDHistCollector::VtxBin::GetLast(Int_t  idx) const
+{
+  Int_t first, last;
+  GetFirstAndLast(idx, first , last);
+  return last;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists, 
+				     AliForwardUtil::Histos&       sums, 
+				     TH2D&                         out,
+				     TH2D*                         sumRings,
+				     Double_t                      cent,
+				     MergeMethod                   m,
+				     UShort_t                      skips,
+				     TList*                        byCent)
+{
+  for (UShort_t d=1; d<=3; d++) { 
+    UShort_t nr = (d == 1 ? 1 : 2);
+    for (UShort_t q=0; q<nr; q++) { 
+      Char_t      r = (q == 0 ? 'I' : 'O');
+      if (CheckSkip(d, r, skips)) continue;
+
+      TH2D*       h = hists.Get(d,r);
+      TH2D*       o = sums.Get(d, r);
+      TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
+      Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
+      
+      // Get valid range 
+      Int_t first = 0;
+      Int_t last  = 0;
+      GetFirstAndLast(d, r, first, last);
+      
+      // Zero outside valid range 
+      Int_t nY = t->GetNbinsY();
+      Int_t nX = t->GetNbinsX();
+      for (Int_t iPhi = 0; iPhi <= nY+1; iPhi++) { 
+	// Lower range 
+	for (Int_t iEta = 1; iEta < first; iEta++) { 
+	  t->SetBinContent(iEta,iPhi,0);
+	  t->SetBinError(iEta,iPhi,0);
+	}
+	for (Int_t iEta = last+1; iEta <= nX; iEta++) {
+	  t->SetBinContent(iEta,iPhi,0);
+	  t->SetBinError(iEta,iPhi,0);
+	}
+      }
+      // Fill under-flow bins with eta coverage 
+      for (Int_t iEta = first; iEta <= last; iEta++) 
+	t->SetBinContent(iEta,0,1);
+      
+      // Add to our per-ring sum 
+      o->Add(t);
+
+      // If we store hit maps, update here 
+      if (fHitMap) fHitMap->Get(d, r)->Add(t);
+
+      if (byCent) { 
+	TH3* dNdetaCent = static_cast<TH3*>(byCent->At(i-1));
+	if (cent >= 0 && dNdetaCent) { 
+	  Int_t iCent = dNdetaCent->GetYaxis()->FindBin(cent);
+	  
+	  if (iCent > 0 && iCent <= dNdetaCent->GetNbinsY()) { 
+	    // Make a projection of data 
+	    TH1* proj = static_cast<TH1*>(t->ProjectionX("tmp", 1, nY));
+	    proj->SetDirectory(0);
+	    for (Int_t iEta = 1; iEta <= nX; iEta++) {
+	      Double_t v1 = proj->GetBinContent(iEta);
+	      Double_t e1 = proj->GetBinError(iEta);
+	      Double_t v2 = dNdetaCent->GetBinContent(iEta, iCent, 1);
+	      Double_t e2 = dNdetaCent->GetBinError(iEta, iCent, 1);
+	      dNdetaCent->SetBinContent(iEta,iCent,1, v1+v2);
+	      dNdetaCent->SetBinError(iEta,iCent,1, TMath::Sqrt(e1*e1+e2*e2));
+	      
+	      // Check under-/overflow bins
+	      Double_t uF = t->GetBinContent(iEta, 0);
+	      Double_t oF = t->GetBinContent(iEta, nY+1);
+	      if (uF > 0) {
+		Double_t old = dNdetaCent->GetBinContent(iEta, iCent, 0);
+		dNdetaCent->SetBinContent(iEta, iCent, 0, old + uF);
+	      }
+	      if (oF > 0) {
+		Double_t old = dNdetaCent->GetBinContent(iEta, iCent, 2);
+		dNdetaCent->SetBinContent(iEta, iCent, 2, old + oF);
+	      }
+	    } // for(iEta)
+	    delete proj;
+	  } // if(iCent)
+	} // if (cent)
+      } // if (byCent)
+
+      // Outer rings have better phi segmentation - rebin to same as inner. 
+      if (q == 1) t->RebinY(2);
+
+      nY = t->GetNbinsY();
+
+      // Now update profile output 
+      for (Int_t iEta = first; iEta <= last; iEta++) { 
+
+	// Get the possibly overlapping histogram 
+	Int_t overlap = GetOverlap(d,r,iEta);
+
+	// Get factor 
+	MergeMethod mm  = m; // Possibly override method locally
+	Float_t     fac = 1;
+	if (m != kSum && overlap >= 0) {
+	  // Default is to average 
+	  fac = 0.5;
+	  if (m == kPreferInner) {
+	    // Current one is an outer overlapping an inner 
+	    if ((r == 'o' || r == 'O') && 
+		(overlap == 0 || overlap == 1 || overlap == 3))
+	      // Do not use this signal 
+	      fac = 0;
+	    // Current one is inner overlapping an outer
+	    else if ((r == 'i' || r == 'I') && (overlap == 2 || overlap == 4))
+	      // Prefer this one 
+	      fac = 1;
+	    else 
+	      // In case of two overlapping inners 
+	      mm = kStraightMean;
+	  }
+	  else if (m == kPreferOuter) {
+	    // Current one is an inner overlapping an outer 
+	    if ((r == 'i' || r == 'I') && (overlap == 2 || overlap == 4))
+	      // Do not use this signal 
+	      fac = 0;
+	    else if ((r == 'O' || r == 'o') && 
+		     (overlap == 0 || overlap == 1 || overlap == 3))
+	      fac = 1;
+	    else 
+	      // In case of two overlapping outers
+	      mm = kStraightMean;
+	  }
+	}
+
+	// Fill eta acceptance for this event into the phi underflow bin
+	Float_t ooc      = out.GetBinContent(iEta,0);
+	out.SetBinContent(iEta, 0, ooc + fac);
+
+	// Fill phi acceptance for this event into the phi overflow bin
+	Float_t oop      = out.GetBinContent(iEta,nY+1);
+	Float_t nop      = t->GetBinContent(iEta,nY+1);
+#if 0
+	Info("", "etaBin=%3d Setting phi acceptance to %f(%f+%f)=%f", 
+	     iEta, fac, oop, nop, fac*(oop+nop));
+#endif
+	out.SetBinContent(iEta, nY+1, fac * nop + oop);
+
+	// Should we loop over h or t Y bins - I think it's t
+	for (Int_t iPhi = 1; iPhi <= nY; iPhi++) { 
+	  Double_t c  = t->GetBinContent(iEta,iPhi);
+	  Double_t e  = t->GetBinError(iEta,iPhi);
+	  Double_t ee = t->GetXaxis()->GetBinCenter(iEta);
+	  sumRings->Fill(ee, i, c);
+
+	  // If there's no signal or the signal was ignored because we
+	  // prefer the inners/outers, continue if (e <= 0) continue;
+	  if (fac <= 0 || c <= 0 || e <= 0)     continue;
+	  
+	  // If there's no overlapping histogram (ring) or if we
+	  // prefer inner/outer, then fill in data and continue to the
+	  // next phi bin
+	  if (overlap < 0 || fac >= 1) { 
+	    out.SetBinContent(iEta,iPhi,c);
+	    out.SetBinError(iEta,iPhi,e);
+	    continue;
+	  }
+
+	  // Get the current bin content and error 
+	  Double_t oc = out.GetBinContent(iEta,iPhi);
+	  Double_t oe = out.GetBinError(iEta,iPhi);
+
+	  Double_t rc, re;
+	  MergeBins(mm, c, e, oc, oe, rc, re);
+	  out.SetBinContent(iEta,iPhi, rc);
+	  out.SetBinError(iEta,iPhi, re);
+	}
+      }
+      // Remove temporary histogram 
+      delete t;
+    } // for r
+  } // for d 
+  return true;
+}
+//____________________________________________________________________
+Int_t 
+AliFMDHistCollector::VtxBin::GetOverlap(UShort_t d, Char_t r, 
+					Int_t bin) const
+{
+  // 
+  // Get the possibly overlapping histogram of eta bin @a e in 
+  // detector and ring 
+  // 
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  //    e Eta bin
+  //    v Vertex bin (1 based)
+  //
+  // Return:
+  //    Overlapping histogram index or -1
+  //
+
+  Int_t other = -1;
+  if (d == 1) {
+    if (bin <= GetLast(2,'I')) other = GetIdx(2,'I');
+  }
+  else if (d == 2 && r == 'I') {
+    if      (bin <= GetLast(2,  'O')) other = GetIdx(2, 'O');
+    else if (bin >= GetFirst(1, 'I')) other = GetIdx(1, 'I');
+  }
+  else if (d == 2 && r == 'O') {
+    if (bin >= GetFirst(2, 'I'))      other = GetIdx(2,'I');
+  }
+  else if (d == 3 && r == 'O') {
+    if (bin <= GetLast(3, 'I'))       other = GetIdx(3, 'I');
+  }
+  else if (d == 3 && r == 'I') {
+    if (bin >= GetFirst(3, 'O'))      other = GetIdx(3, 'O');
+  }
+  // AliInfo(Form("FMD%d%c (%d) -> %d", d, r, GetIdx(d,r), other));
+  return other;
+}
+  
 
 //____________________________________________________________________
 //

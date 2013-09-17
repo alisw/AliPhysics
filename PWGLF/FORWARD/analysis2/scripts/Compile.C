@@ -33,7 +33,7 @@ Compile(const char* script, Option_t* option="g")
 			  "-I${ALICE_ROOT} " 
 			  "-I${ALICE_ROOT}/include " 
 			  "-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2 "
-			  "-I${ALICE_ROOT}/../trunk/PWGLF/FORWARD/analysis2 ");
+			  "-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2 ");
   Long_t ret = gROOT->ProcessLine(Form(".L %s+%s", script, option));
   return ret == 0;
 }

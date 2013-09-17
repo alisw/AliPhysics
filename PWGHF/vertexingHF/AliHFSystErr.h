@@ -45,13 +45,16 @@ class AliHFSystErr : public TNamed
     fRunNumber = number; 
     AliInfo(Form(" Settings for run year 20%2d",fRunNumber));
   }
+  Int_t GetRunNumber() const { return fRunNumber; }
   // Setting the collision type
-  //  0 is pp, 1 is PbPb
+  //  0 is pp, 1 is PbPb, 2 is pPb
   void SetCollisionType(Int_t type) { 
     fCollisionType = type; 
     if (fCollisionType==0) { AliInfo(" Settings for p-p collisions"); }
     else if(fCollisionType==1) { AliInfo(" Settings for Pb-Pb collisions"); }
+    else if(fCollisionType==2) { AliInfo(" Settings for p-Pb collisions"); }
   }
+  Int_t GetCollisionType() const { return fCollisionType; }
   // Setting for the centrality class
   //  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
   void SetCentrality(TString centrality) { 
@@ -91,6 +94,26 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2010PbPb4060CentScan();
   void InitDstartoD0pi2010PbPb6080CentScan();
 
+  void InitD0toKpi2011PbPb010CentScan();
+  void InitD0toKpi2011PbPb1020CentScan();
+  void InitD0toKpi2011PbPb2030CentScan();
+  void InitD0toKpi2011PbPb3040CentScan();
+  void InitD0toKpi2011PbPb4050CentScan();
+  void InitD0toKpi2010PbPb5080CentScan();
+
+  void InitDplustoKpipi2011PbPb010CentScan();
+  void InitDplustoKpipi2011PbPb1020CentScan();
+  void InitDplustoKpipi2011PbPb2030CentScan();
+  void InitDplustoKpipi2011PbPb3040CentScan();
+  void InitDplustoKpipi2011PbPb4050CentScan();
+  void InitDplustoKpipi2010PbPb5080CentScan();
+
+  void InitDstartoD0pi2011PbPb010CentScan();
+  void InitDstartoD0pi2011PbPb1020CentScan();
+  void InitDstartoD0pi2011PbPb2030CentScan();
+  void InitDstartoD0pi2011PbPb3040CentScan();
+  void InitDstartoD0pi2011PbPb4050CentScan();
+  void InitDstartoD0pi2010PbPb5080CentScan();
 
  private:
 
@@ -120,6 +143,11 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2011PbPb07half();
 
   void InitLctopKpi2010pp();
+
+  void InitD0toKpi2013pPb0100();
+  void InitDplustoKpipi2013pPb0100();
+  void InitDstartoD0pi2013pPb0100();
+  void InitDstoKKpi2013pPb0100();
 
 
   TH1F* ReflectHisto(TH1F *hin) const;

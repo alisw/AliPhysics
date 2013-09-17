@@ -16,6 +16,10 @@ ifeq ($(PACKAGE),PWGLFresonancesdev)
   ALICEINC      += -IRESONANCES_DEV
 endif
 
+ifeq ($(PACKAGE),PWGLFforward2)
+  ALICEINC      += -IFORWARD/analysis2
+endif
+
 ### define include dir for local case and par case
 ifneq ($(STEERBase_INCLUDE),)
    ALICEINC += -I../$(STEERBase_INCLUDE)

@@ -101,8 +101,10 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID():
 	fLvsEta(0x0),
 	fLvsEtaProjections(0x0),	
 	fMakeTOFcorrelations(kTRUE),
-	fMakeTOFTPCcorrelations(kFALSE)
-	//fDebug(0)
+	fMakeTOFTPCcorrelationsPi(kFALSE),
+	fMakeTOFTPCcorrelationsKa(kFALSE),
+	fMakeTOFTPCcorrelationsPr(kFALSE),	
+	fTOFIntervalFactorTOFTPC(1.)
 
 {
 
@@ -150,8 +152,10 @@ AliAnalysisTaskDiHadronPID::AliAnalysisTaskDiHadronPID(const char* name):
 	fLvsEta(0x0),
 	fLvsEtaProjections(0x0),
 	fMakeTOFcorrelations(kTRUE),
-	fMakeTOFTPCcorrelations(kFALSE)							
-	//fDebug(0) 
+	fMakeTOFTPCcorrelationsPi(kFALSE),
+	fMakeTOFTPCcorrelationsKa(kFALSE),
+	fMakeTOFTPCcorrelationsPr(kFALSE),	
+	fTOFIntervalFactorTOFTPC(1.)
 
 {
 
@@ -191,28 +195,30 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 
 	// --- BEGIN: Initialization on the worker nodes ---
 	AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
+	if (!manager) {AliFatal("Could not obtain analysis manager.");}	
 	AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*> (manager->GetInputEventHandler());
+	if (!inputHandler) {AliFatal("Could not obtain input handler.");}	
 
 	// Getting the pointer to the PID response object.
 	fPIDResponse = inputHandler->GetPIDResponse();	
+	if (!fPIDResponse) {AliFatal("Could not obtain PID response.");}
 
 	// For now we don't bin in multiplicity for pp.
-	Int_t nCentralityBins = -1;
-	Double_t* centralityBins = 0x0;
+	TArrayD* centralityBins = 0x0;
 	if (fEventCuts->GetIsPbPb()) {
-		nCentralityBins = 15;
 		Double_t tmp[] = {0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
-		centralityBins = tmp;
+		centralityBins = new TArrayD(15, tmp);
 	} else {
-		nCentralityBins = 1;
 		Double_t tmp[] = {0.,1.};
-		centralityBins = tmp;
+		centralityBins = new TArrayD(2, tmp);
 	}
 
 	Int_t nZvtxBins  = 7;
 	Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
 
-	fPoolMgr = new AliEventPoolManager(fPoolSize, fPoolTrackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
+	fPoolMgr = new AliEventPoolManager(fPoolSize, fPoolTrackDepth, centralityBins->GetSize(), centralityBins->GetArray(), nZvtxBins, (Double_t*) vertexBins);
+    
+	delete centralityBins;
     // --- END ---
 
 	// Create the output list.
@@ -288,6 +294,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 			for (Int_t iBinPt = 1; iBinPt < (fTOFPtAxis->GetNbins() + 1); iBinPt++) {
 
 				Int_t iPtClass = fTrackCutsAssociated->GetPtClass(iBinPt);
+				if (iPtClass == -1) {AliFatal("Not valid pT class."); continue;}
 
 				Int_t NBinsTOF = fTrackCutsAssociated->GetNTOFbins(iPtClass,iSpecies);
 				Double_t TOFmin = fTrackCutsAssociated->GetTOFmin(iPtClass,iSpecies);
@@ -326,7 +333,7 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 	}
 
 	// Create TOF/TPC correlation histograms. (DPhi,DEta,TOF,TPC).
-	if (fMakeTOFTPCcorrelations) {
+	if (fMakeTOFTPCcorrelationsPi || fMakeTOFTPCcorrelationsKa || fMakeTOFTPCcorrelationsPr) {
 
 		Double_t ptarrayTOFTPC[16] = {2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 
 									  2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 
@@ -354,13 +361,6 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 			nptbins, ptarrayTOFTPC);
 		fOutputList->Add(fMixedEventsTOFTPCbins);
 
-		Int_t NBinsTOFTPC[4] = {32, 32, 60, 40};
-		Double_t minTOFTPC[4] = {-TMath::Pi()/2., -1.6, -1., -1.};
-		Double_t maxTOFTPC[4] = {3.*TMath::Pi()/2., 1.6, -1., -1.};
-
-		Double_t sTOFest = 110.;
-		Double_t sTPCest = 4.5;
-
 		fTOFTPChistos = new TObjArray(3);
 		fTOFTPChistos->SetOwner(kTRUE);
 		fTOFTPChistos->SetName("CorrelationsTOFTPC");
@@ -373,6 +373,8 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 
+			// Create the directory structure Pion, Kaon, Proton, regardless
+			// of wether the histograms are created (to keep the order.)
 			TObjArray* TOFTPChistosTmp = new TObjArray(fTOFTPCPtAxis->GetNbins());
 			TOFTPChistosTmp->SetOwner(kTRUE);
 			TOFTPChistosTmp->SetName(speciesname[iSpecies].Data());
@@ -384,67 +386,80 @@ void AliAnalysisTaskDiHadronPID::UserCreateOutputObjects() {
 				TOFTPCmismatchTmp->SetName(speciesname[iSpecies].Data());	
 			}
 
-			for (Int_t iBinPt = 1; iBinPt < (fTOFTPCPtAxis->GetNbins() + 1); iBinPt++) {
-		
-				// Determine PID ranges.
+			// Only Create the TOF/TPC histograms when requested.
+			Bool_t MakeTOFTPCcorrelations[3] = {fMakeTOFTPCcorrelationsPi, fMakeTOFTPCcorrelationsKa, fMakeTOFTPCcorrelationsPr};
+			if (MakeTOFTPCcorrelations[iSpecies]) {
+				for (Int_t iBinPt = 1; iBinPt < (fTOFTPCPtAxis->GetNbins() + 1); iBinPt++) {
+			
+					// Approximate resolutions of TOF and TPC detector.
+					const Double_t sTOFest = 110.;
+					const Double_t sTPCest = 4.5;
+					
+					// Set range +/- 5 sigma of main peak. (+ 10 sigma for TOF max, for mismatches.)
+					Double_t TOFmin = -5. * sTOFest;
+					Double_t TOFmax = 10. * sTOFest;
+					Double_t TPCmin = -4. * sTPCest;
+					Double_t TPCmax = 4. * sTPCest;
 
-				// Set range +/- 5 sigma of main peak. (+ 10 sigma for TOF max, for mismatches.)
-				Double_t TOFmin = -5. * sTOFest;
-				Double_t TOFmax = 10. * sTOFest;
-				Double_t TPCmin = -4. * sTPCest;
-				Double_t TPCmax = 4. * sTPCest;
+					Double_t TOFexp = AliFunctionsDiHadronPID::TOFExpTime(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(iSpecies));
+					Double_t TPCexp = AliFunctionsDiHadronPID::TPCExpdEdX(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(iSpecies));
 
-				Double_t TOFexp = AliFunctionsDiHadronPID::TOFExpTime(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(iSpecies));
-				Double_t TPCexp = AliFunctionsDiHadronPID::TPCExpdEdX(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(iSpecies));
+					for (Int_t jSpecies = 0; jSpecies < 3; jSpecies++) {
 
-				for (Int_t jSpecies = 0; jSpecies < 3; jSpecies++) {
+						if (iSpecies == jSpecies) {continue;}
 
-					if (iSpecies == jSpecies) {continue;}
+						Double_t TOFexpOther = AliFunctionsDiHadronPID::TOFExpTime(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(jSpecies));
+						Double_t TPCexpOther = AliFunctionsDiHadronPID::TPCExpdEdX(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(jSpecies));
+					
+						// If any peak is within +/- 7 sigma, then also add this peak.
+						if ( (TMath::Abs(TOFexp - TOFexpOther) < 7. * sTOFest) ||
+							 (TMath::Abs(TPCexp - TPCexpOther) < 7. * sTPCest) ) {
 
-					Double_t TOFexpOther = AliFunctionsDiHadronPID::TOFExpTime(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(jSpecies));
-					Double_t TPCexpOther = AliFunctionsDiHadronPID::TPCExpdEdX(fTOFTPCPtAxis->GetBinLowEdge(iBinPt), 0.4,  AliFunctionsDiHadronPID::M(jSpecies));
-				
-					// If any peak is within +/- 7 sigma, then also add this peak.
-					if ( (TMath::Abs(TOFexp - TOFexpOther) < 7. * sTOFest) ||
-						 (TMath::Abs(TPCexp - TPCexpOther) < 7. * sTPCest) ) {
+							TOFmin = TMath::Min(TOFmin, (TOFexpOther - TOFexp - 2. * sTOFest) );
+							TOFmax = TMath::Max(TOFmax, (TOFexpOther - TOFexp + 10. * sTOFest) );
+							TPCmin = TMath::Min(TPCmin, (TPCexpOther - TPCexp - 2. * sTPCest) );
+							TPCmax = TMath::Max(TPCmax, (TPCexpOther - TPCexp + 2. * sTPCest) );						
 
-						TOFmin = TMath::Min(TOFmin, (TOFexpOther - TOFexp - 2. * sTOFest) );
-						TOFmax = TMath::Max(TOFmax, (TOFexpOther - TOFexp + 10. * sTOFest) );
-						TPCmin = TMath::Min(TPCmin, (TPCexpOther - TPCexp - 2. * sTPCest) );
-						TPCmax = TMath::Max(TPCmax, (TPCexpOther - TPCexp + 2. * sTPCest) );						
+						}
 
 					}
 
-				}
+					// With the standard TOF range, fitting the deuterons and the TOF mismatches is
+					// hard. This flag doubles the range of the TOF axis in the TOF/TPC histograms,
+					// while leaving the resolution the same. Turning on this flag will greatly increase
+					// the memory consumption of the task, to the point that it's probably too much 
+					// to save a Buffer with all three species included.
+					Double_t TOFreach = TOFmax - TOFmin;
+					TOFmax += (TOFreach * (fTOFIntervalFactorTOFTPC - 1.));
+					Int_t TOFbins = (60. * fTOFIntervalFactorTOFTPC);
 
-				minTOFTPC[2] = TOFmin;
-				maxTOFTPC[2] = TOFmax;
-				minTOFTPC[3] = TPCmin;
-				maxTOFTPC[3] = TPCmax;
+					Int_t NBinsTOFTPC[4] = {32, 32, TOFbins, 40};
+					Double_t minTOFTPC[4] = {-TMath::Pi()/2., -1.6, TOFmin, TPCmin};
+					Double_t maxTOFTPC[4] = {3.*TMath::Pi()/2., 1.6, TOFmax, TPCmax};
 
-				THnF* htmp = new THnF(Form("fCorrelationsTOFTPC_%i",iBinPt),
-					Form("%5.3f < p_{T} < %5.3f", fTOFTPCPtAxis->GetBinLowEdge(iBinPt), fTOFTPCPtAxis->GetBinUpEdge(iBinPt)), 
-					4, NBinsTOFTPC, minTOFTPC, maxTOFTPC);
+					THnF* htmp = new THnF(Form("fCorrelationsTOFTPC_%i",iBinPt),
+						Form("%5.3f < p_{T} < %5.3f", fTOFTPCPtAxis->GetBinLowEdge(iBinPt), fTOFTPCPtAxis->GetBinUpEdge(iBinPt)), 
+						4, NBinsTOFTPC, minTOFTPC, maxTOFTPC);
 
-				(htmp->GetAxis(0))->SetTitle("#Delta#phi");
-				(htmp->GetAxis(1))->SetTitle("#Delta#eta");
-				(htmp->GetAxis(2))->SetTitle("t_{TOF} (ps)");
-				(htmp->GetAxis(3))->SetTitle("dE/dx (a.u.)");
+					(htmp->GetAxis(0))->SetTitle("#Delta#phi");
+					(htmp->GetAxis(1))->SetTitle("#Delta#eta");
+					(htmp->GetAxis(2))->SetTitle("t_{TOF} (ps)");
+					(htmp->GetAxis(3))->SetTitle("dE/dx (a.u.)");
 
-				TOFTPChistosTmp->Add(htmp);
+					TOFTPChistosTmp->Add(htmp);
 
-				if (fCalculateMismatch) { 
-					// Mismatch histogram.
-					TH2F* htmp2 = new TH2F(Form("fMismatchTOFTPC_%i",iBinPt),
-						Form("%5.3f < p_{T} < %5.3f; t_{TOF} (ps); dE/dx (a.u.)", fTOFTPCPtAxis->GetBinLowEdge(iBinPt), fTOFTPCPtAxis->GetBinUpEdge(iBinPt)), 
-						NBinsTOFTPC[2], TOFmin, TOFmax, NBinsTOFTPC[3], TPCmin, TPCmax);
-					htmp2->SetDirectory(0);
+					if (fCalculateMismatch) { 
+						// Mismatch histogram.
+						TH2F* htmp2 = new TH2F(Form("fMismatchTOFTPC_%i",iBinPt),
+							Form("%5.3f < p_{T} < %5.3f; t_{TOF} (ps); dE/dx (a.u.)", fTOFTPCPtAxis->GetBinLowEdge(iBinPt), fTOFTPCPtAxis->GetBinUpEdge(iBinPt)), 
+							NBinsTOFTPC[2], TOFmin, TOFmax, NBinsTOFTPC[3], TPCmin, TPCmax);
+						htmp2->SetDirectory(0);
 
-					TOFTPCmismatchTmp->Add(htmp2);
-	
-				}
-
-			}
+						TOFTPCmismatchTmp->Add(htmp2);
+		
+					}
+				} // End loop over pT bins.
+			} // End species if.
 
 			fTOFTPChistos->Add(TOFTPChistosTmp);
 			if (fCalculateMismatch) {fTOFTPCmismatch->Add(TOFTPCmismatchTmp);}
@@ -545,9 +560,12 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 					}
 				}
 
-				if (fMakeTOFTPCcorrelations) { 
+				Bool_t MakeTOFTPCcorrelations[3] = {fMakeTOFTPCcorrelationsPi, fMakeTOFTPCcorrelationsKa, fMakeTOFTPCcorrelationsPr};
+				if (fMakeTOFTPCcorrelationsPi || fMakeTOFTPCcorrelationsKa || fMakeTOFTPCcorrelationsPr) { 
 
 					for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+
+						if (!MakeTOFTPCcorrelations[iSpecies]) {continue;}
 
 						TObjArray* atmp = (TObjArray*)fTOFTPCmismatch->At(iSpecies);
 						Int_t ptbin = fTOFTPCPtAxis->FindBin(apt);
@@ -584,13 +602,13 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 			if (fCorrelationsTOFbins) fCorrelationsTOFbins->Fill(DPhi,DEta,associatedtrack->Pt());
 			if (fCorrelationsTOFTPCbins) fCorrelationsTOFTPCbins->Fill(DPhi,DEta,associatedtrack->Pt());
 
-			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+			Double_t apt = associatedtrack->Pt();
 
-				Double_t apt = associatedtrack->Pt();
-
-				// Fill TOF correlations.
-				if (fMakeTOFcorrelations) {
+			// Fill TOF correlations.
+			if (fMakeTOFcorrelations) {
 				
+				for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+
 					TObjArray* atmp = (TObjArray*)fTOFhistos->At(iSpecies);
 					Int_t ptbin = fTOFPtAxis->FindBin(apt);
 
@@ -602,9 +620,15 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 
 					}
 				}
+			}
 
-				// Fill TOF/ TPC Correlations.
-				if (fMakeTOFTPCcorrelations) {
+			// Fill TOF/ TPC Correlations.
+			Bool_t MakeTOFTPCcorrelations[3] = {fMakeTOFTPCcorrelationsPi, fMakeTOFTPCcorrelationsKa, fMakeTOFTPCcorrelationsPr};
+			if (fMakeTOFTPCcorrelationsPi || fMakeTOFTPCcorrelationsKa || fMakeTOFTPCcorrelationsPr) { 
+
+				for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+
+					if (!MakeTOFTPCcorrelations[iSpecies]) {continue;}
 
 					TObjArray* atmp = (TObjArray*)fTOFTPChistos->At(iSpecies);
 					Int_t ptbin = fTOFTPCPtAxis->FindBin(apt);
@@ -619,8 +643,8 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 						htmp->Fill(TOFTPCfill);
 
 					}				
-				}
-			}
+				}	
+			}		
 		}
 	}
 

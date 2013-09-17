@@ -138,6 +138,14 @@ AliFlowTrackCuts::AliFlowTrackCuts():
 {
   //io constructor 
   SetPriors(); //init arrays
+  
+  // New PID procedure (Bayesian Combined PID)
+  // allocating here is necessary because we don't 
+  // stream this member
+  // TODO: fix streaming problems AliFlowBayesianPID
+  fBayesianResponse = new AliFlowBayesianPID();
+  fBayesianResponse->SetNewTrackParam();
+
 }
 
 //-----------------------------------------------------------------------
@@ -403,10 +411,6 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutRejectElectronsWithTPCpid=that.fCutRejectElectronsWithTPCpid;
   fProbBayes = that.fProbBayes;
   fCurrCentr = that.fCurrCentr;
-
-  // New PID procedure (Bayesian Combined PID)
-  fBayesianResponse = new AliFlowBayesianPID();
-  fBayesianResponse->SetNewTrackParam();
 
   return *this;
 }

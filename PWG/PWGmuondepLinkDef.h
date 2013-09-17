@@ -10,11 +10,16 @@
 
 #pragma link C++ class AliAnalysisMuMu+;
 #pragma link C++ class AliAnalysisMuMuResult+;
+#pragma link C++ class AliAnalysisMuMuJpsiResult+;
+#pragma link C++ class AliAnalysisMuMuFnorm+;
+#pragma link C++ class AliAnalysisMuMuGraphUtil+;
 #pragma link C++ class AliAnalysisMuMuSpectra+;
 #pragma link C++ class AliAnalysisTriggerScalers+;
 #pragma link C++ class AliAnalysisTriggerScalerItem+;
 
+#pragma link C++ class AliMuonGridSubmitter+;
 #pragma link C++ class AliMuonAccEffSubmitter+;
+#pragma link C++ class AliMuonQAMergeSubmitter+;
 
 #endif
 

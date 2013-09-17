@@ -52,6 +52,8 @@ public:
   void SetMoveToSameVertex(Bool_t move) { fMoveToSameVertex=move; }
   Bool_t GetMoveToSameVertex() const { return fMoveToSameVertex; }
 
+  void SetSkipFirstEvent(Bool_t skip) { fSkipFirstEvt=skip; }
+
   Int_t GetNumberOfBins() const;
   Int_t FindBin(const Double_t values[], TString *dim=0x0);
   void Fill(const AliVEvent *ev, AliDielectron *diele);
@@ -72,7 +74,8 @@ private:
 
   Bool_t fMixIncomplete;  // whether to mix uncomplete bins at the end of the processing
   Bool_t fMoveToSameVertex; //whether to move the mixed tracks to the same vertex position
-  
+  Bool_t fSkipFirstEvt;   //whether to skip the first event in the pool
+
   TProcessID *fPID;             //! internal PID for references to buffered objects
   
   void DoMixing(TClonesArray &pool, AliDielectron *diele);

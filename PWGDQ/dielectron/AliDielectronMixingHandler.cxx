@@ -49,6 +49,7 @@ AliDielectronMixingHandler::AliDielectronMixingHandler() :
   fMixType(kOSonly),
   fMixIncomplete(kTRUE),
   fMoveToSameVertex(kFALSE),
+  fSkipFirstEvt(kFALSE),
   fPID(0x0)
 {
   //
@@ -69,6 +70,7 @@ AliDielectronMixingHandler::AliDielectronMixingHandler(const char* name, const c
   fMixType(kOSonly),
   fMixIncomplete(kTRUE),
   fMoveToSameVertex(kFALSE),
+  fSkipFirstEvt(kFALSE),
   fPID(0x0)
 {
   //
@@ -200,11 +202,21 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
   for (Int_t i=AliDielectronVarManager::kPairMax; i<AliDielectronVarManager::kNMaxValues; ++i)
     values[i]=AliDielectronVarManager::GetValue((AliDielectronVarManager::ValueTypes)i);
 
-  for (Int_t i1=0; i1<pool.GetEntriesFast(); ++i1){
+
+  // use event data from the first event
+  // all events are in the same mixing bin anyhow...
+  // optionally use only the event data from the first event and no tracks of it,
+  // by this you should get ride of event plane - leg correlations in the mixing
+  // but you loose the 1st event in the mixing statistics
+  AliDielectronEvent *ev0=static_cast<AliDielectronEvent*>(pool.At(0));
+  AliDielectronVarManager::SetEventData(ev0->GetEventData());
+  Int_t firstEvt=(fSkipFirstEvt ? 1 : 0);
+
+  for (Int_t i1=firstEvt; i1<pool.GetEntriesFast(); ++i1){
     AliDielectronEvent *ev1=static_cast<AliDielectronEvent*>(pool.At(i1));
     //use event data from the first event
     //both events are in the same mixing bin anyhow...
-    AliDielectronVarManager::SetEventData(ev1->GetEventData());
+    if( !fSkipFirstEvt ) AliDielectronVarManager::SetEventData(ev1->GetEventData());
 
     TObject *o=0x0;
     TIter ev1P(ev1->GetTrackArrayP());

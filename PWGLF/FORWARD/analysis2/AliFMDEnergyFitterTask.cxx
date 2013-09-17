@@ -18,7 +18,6 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliAODForwardMult.h"
-#include "AliForwardCorrectionManager.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
@@ -26,6 +25,7 @@
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TFile.h>
+#include <TROOT.h>
 #include "AliMCEvent.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliHeader.h"
@@ -156,16 +156,11 @@ AliFMDEnergyFitterTask::SetupForData()
   // 
   //
   DGUARD(fDebug,1,"Initialize subs of AliFMDEnergyFitterTask");
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  UShort_t sys = fEventInspector.GetCollisionSystem();
-  UShort_t sNN = fEventInspector.GetEnergy();
-  Short_t  fld = fEventInspector.GetField();
-  fcm.Init(sys, sNN, fld, 0);
-  TAxis eAxis(0,0,0);
-  TAxis vAxis(10,-10,10);
+  TAxis eAxis(0,0,0); // Default only 
+  TAxis vAxis(10,-10,10); // Default only 
   fEnergyFitter.SetupForData(eAxis);
   fEventInspector.SetupForData(vAxis);
-
+  Print();
 }
 
 //____________________________________________________________________
@@ -200,21 +195,7 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // cnt++;
   // Get the input data 
   DGUARD(fDebug,3,"Analyse event of AliFMDEnergyFitterTask");
-  
-  AliMCEvent* mcevent = MCEvent();
-  if(mcevent) {
-    AliHeader* header            = mcevent->Header();
-    AliGenHijingEventHeader* hijingHeader = 
-      dynamic_cast<AliGenHijingEventHeader*>(header->GenEventHeader());
-    if(hijingHeader) {
-      Float_t b = hijingHeader->ImpactParameter();
-      if(b<fbLow || b>fbHigh) return;
-      else
-	std::cout<<"Selecting event with impact parameter "<<b<<std::endl;
-    }
     
-  }
-  
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   // AliInfo(Form("Event # %6d (esd=%p)", cnt, esd));
   if (!esd) { 
@@ -227,6 +208,7 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
 
   // On the first event, initialize the parameters 
   if (fFirstEvent && esd->GetESDRun()) { 
+    fEventInspector.SetMC(MCEvent());
     fEventInspector.ReadRunDetails(esd);
     
     AliInfo(Form("Initializing with parameters from the ESD:\n"
@@ -264,7 +246,16 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   if (found & AliFMDEventInspector::kNoFMD)     return;
   if (found & AliFMDEventInspector::kNoVertex)  return;
   if (found & AliFMDEventInspector::kBadVertex) return;
+
+  // do not process pile-up, A, C, and E events 
+  if (triggers & AliAODForwardMult::kPileUp) return;
+  if (triggers & AliAODForwardMult::kA)      return;
+  if (triggers & AliAODForwardMult::kC)      return;
+  if (triggers & AliAODForwardMult::kE)      return;
   
+  // We want only the events found by off-line 
+  if (!(triggers & AliAODForwardMult::kOffline)) return;
+
   //  if(cent > 0) {
   //  if( cent < 40 || cent >50 ) return;
   //  else std::cout<<"selecting event with cent "<<cent<<std::endl;
@@ -327,7 +318,7 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitterTask::Print(Option_t*) const
+AliFMDEnergyFitterTask::Print(Option_t* option) const
 {
   // 
   // Print information 
@@ -335,6 +326,13 @@ AliFMDEnergyFitterTask::Print(Option_t*) const
   // Parameters:
   //    option Not used
   //
+  std::cout << ClassName() << ": " << GetName() << std::endl; 
+  gROOT->IncreaseDirLevel();
+
+  fEventInspector.Print(option);
+  fEnergyFitter.Print(option);
+
+  gROOT->DecreaseDirLevel();
 }
 
 //

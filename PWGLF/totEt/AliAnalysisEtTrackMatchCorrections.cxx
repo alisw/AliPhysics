@@ -71,10 +71,11 @@ AliAnalysisEtTrackMatchCorrections& AliAnalysisEtTrackMatchCorrections::operator
     return *this;
 }
 
-Double_t AliAnalysisEtTrackMatchCorrections::TrackMatchingEfficiency(Float_t pT, Int_t mult) const{
+Double_t AliAnalysisEtTrackMatchCorrections::TrackMatchingEfficiency(Float_t pT, Int_t cent) const{
   Double_t eff = 1.0;
-  if(fRecoEff) eff =  fRecoEff->GetBinContent(fRecoEff->GetXaxis()->FindBin(pT),fRecoEff->GetXaxis()->FindBin(mult));
+  if(fRecoEff) eff =  fRecoEff->GetBinContent(fRecoEff->GetXaxis()->FindBin(pT),fRecoEff->GetYaxis()->FindBin(cent));
   //cout <<"eff "<<eff<<endl;
+  //cout <<"eff "<<eff<<" bin pT "<<fRecoEff->GetXaxis()->FindBin(pT)<<" bin centrality "<<fRecoEff->GetYaxis()->FindBin(cent)<<endl;
   if(eff>1e-5){return eff;}
   else{return 1.0;}
 }

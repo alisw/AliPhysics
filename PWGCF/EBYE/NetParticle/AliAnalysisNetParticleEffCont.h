@@ -42,7 +42,7 @@ class AliAnalysisNetParticleEffCont : public TNamed {
    */
 
   /** Initialize */
-  void Initialize(AliESDtrackCuts *cuts, AliAnalysisNetParticleHelper* helper, Int_t trackCutBit);
+  void Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts *cuts, Int_t trackCutBit);
 
   /** Setup Event */
   Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent); 

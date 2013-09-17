@@ -15,6 +15,9 @@
 ///////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
+#include "AliAODTrack.h"
+#include "AliAODRecoDecay.h"
+#include "AliAODRecoDecayHF.h"
 
 class AliAODMCParticle;
 class AliAODMCHeader;
@@ -66,6 +69,9 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
   static TString  GetGenerator(Int_t label, AliAODMCHeader* header); 
+  Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
+  void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+  Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   // Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
     fMinEtaForTracklets=mineta; 
@@ -80,7 +86,7 @@ class AliVertexingHFUtils : public TObject{
   static Int_t GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
 
   // Functions for computing average pt 
-  static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Int_t rebin=4);
+  static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
 
   // Functions for computing true impact parameter of D meson
   static Double_t GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);

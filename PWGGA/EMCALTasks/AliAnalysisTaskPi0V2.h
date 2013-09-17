@@ -58,6 +58,8 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void		FillEPQA();
     void		SetIsV1Clus(Bool_t e)		{ isV1Clus     =e  ;}
     void		SetIsPHOSCali(Bool_t e)		{ isPhosCali   =e  ;}
+    void		SetIsCentFlat(Bool_t e)		{ isCentFlat   =e  ;}
+    void		SetIsFullHist(Bool_t e)		{ isFullHist   =e  ;}
     void 		SetFlatteningData(); // phos flattening
     Double_t		ApplyFlattening(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
     Double_t		ApplyFlatteningV0A(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
@@ -87,6 +89,8 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t			fPi0AsyCut;		// pion Asymetry cut 0=off 1=on
     Bool_t			isV1Clus;		// pion Asymetry cut 0=off 1=on
     Bool_t			isPhosCali;		// use Phos flattening
+    Bool_t			isCentFlat;		// use the centrality flatten
+    Bool_t			isFullHist;		// remove some histo to save memory 
     Double_t			fCentrality;	  	//! Centrality
     Double_t			fEPTPC;			//! Evt plane TPC
     Double_t			fEPTPCreso;		//! resolution of TPC method
@@ -106,6 +110,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fEPV0CR3;		//! EP V0C ring3 only	
 
     TH1F			*hEvtCount;		//!
+    TH1F			*hCent;			//!
   
     TProfile			*h2DcosV0A;		//!
     TProfile			*h2DsinV0A;		//!

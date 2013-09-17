@@ -28,6 +28,10 @@
 #include "AliAnalysisHadEt.h"
 #include "AliCentrality.h"
 #include "AliLog.h"
+#include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h" 
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 #include "AliPWG0Helper.h"
 
 using namespace std;
@@ -159,20 +163,31 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	else{
 	  if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
 	  Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
-	  pID->MakeTPCPID(track);
-	  pID->MakeITSPID(track);
+// 	  pID->MakeTPCPID(track);
+// 	  pID->MakeITSPID(track);
+	  //if(!fPIDResponse) cout<<"Uh-oh!  No PID Response!"<<endl;
 	  if(cutset!=1){
-	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
-	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
-	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kKaon));
-	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kElectron));
+	    nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion)); 
+	    nSigmaProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)); 
+	    nSigmaKaon =TMath::Abs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon)); 
+	    nSigmaElectron =TMath::Abs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron)); 
+
+// 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
+// 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
+// 	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kKaon));
+// 	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kElectron));
 	  }
 	  else{
-	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kPion));
-	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kProton));
-	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kKaon));
-	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kElectron));
+	    nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kPion)); 
+	    nSigmaProton = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton)); 
+	    nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kKaon)); 
+	    nSigmaElectron = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron)); 
+// 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kPion));
+// 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kProton));
+// 	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kKaon));
+// 	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kElectron));
 	  }
+	  //cout<<"Nsigma pion "<<nSigmaPion<<" proton "<<nSigmaProton<<" kaon "<<nSigmaKaon<<" electron "<<nSigmaElectron<<endl;
 	  // 	    bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
 	  // 	    bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
 	  // 	    bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
@@ -588,6 +603,22 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
   }
 }
 void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
+
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if (!man) {
+    AliFatal("Analysis manager needed");
+    return;
+  }
+  AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
+  if (!inputHandler) {
+    AliFatal("Input handler needed");
+    return;
+  }
+
+  //pid response object
+  fPIDResponse=inputHandler->GetPIDResponse();
+  if (!fPIDResponse) AliError("PIDResponse object was not created");
+
 
   if(kDoTriggerChecksOnly){return;}//In this case we are just after trigger efficiencies and don't care about the ET reconstructed.
   //TString *strTPC = new TString("TPC");

@@ -41,78 +41,20 @@ public:
    Double_t        PtRatio(Bool_t mc)        const;
    Double_t        DipAngle(Bool_t mc)       const;
    Double_t        CosThetaStar(Bool_t mc);
-
-private:
-
+   Double_t        DaughterPt(Int_t daughterId, Bool_t mc); 
+   void            DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz); 
+      
+ private:
+   
    TLorentzVector fP1 [2];    // 1st daughter momentum
    TLorentzVector fP2 [2];    // 2nd daughter momentum
    TLorentzVector fSum[2];    // sum of momenta
    TLorentzVector fRef[2];    // same as 'fSum' but with nominal resonance mass
-
+   
    Int_t          fMother;    // label of mothers (when common)
    Int_t          fMotherPDG; // PDG code of mother (when common)
-
+   
    ClassDef(AliRsnMiniPair,1)
-};
-
-inline void AliRsnMiniPair::FillRef(Double_t mass)
-{
-//
-// Fill ref 4-vectors using the passed mass and the values in 'sum'
-//
-
-   Int_t i;
-   for (i = 0; i < 2; i++) {
-      fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), mass);
-   }
-}
-
-inline Double_t AliRsnMiniPair::InvMassRes() const
-{
-//
-// Return invariant mass resolution
-//
-
-   if (fSum[1].M() <= 0.0) return 1E20;
-
-   return (fSum[0].M() - fSum[1].M()) / fSum[1].M();
-}
-
-inline Double_t AliRsnMiniPair::InvMassDiff() const
-{
-//
-// Return invariant mass resolution
-//
-
-   if (fSum[1].M() <= 0.0) return 1E20;
-
-   return (fSum[0].M() - fSum[1].M());
-}
-
-inline Double_t AliRsnMiniPair::PtRatio(Bool_t mc) const
-{
-//
-// Return ratio of transverse momenta of daughters
-//
-
-   Double_t num = TMath::Abs(fP1[ID(mc)].Perp() - fP2[ID(mc)].Perp());
-   Double_t den = TMath::Abs(fP1[ID(mc)].Perp() + fP2[ID(mc)].Perp());
-
-   if (den <= 0.0) return 1E20;
-
-   return num / den;
-}
-
-inline Double_t AliRsnMiniPair::DipAngle(Bool_t mc) const
-{
-//
-// Opening angle in a Z-T space
-//
-
-   const TLorentzVector &p1 = fP1[ID(mc)];
-   const TLorentzVector &p2 = fP2[ID(mc)];
-
-   return ((p1.Perp() * p2.Perp() + p1.Z() * p2.Z()) / p1.Mag() / p2.Mag());
-}
+     };
 
 #endif

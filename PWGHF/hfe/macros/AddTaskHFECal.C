@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFECal(Bool_t MassConst)
+AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -23,13 +23,15 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst)
     MCthere=kTRUE;
   }
   
-  
+  Bool_t MassCal = kTRUE;
+  Double_t masscut = 0.05;
+  if(!MassConst)masscut = 0.1;
   //analysis task 
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECal.C");
 
-  AliAnalysisTaskHFECal *hfetaskCent = ConfigHFECal(MCthere,MassConst);
-  AliAnalysisTaskHFECal *hfetaskTrig= ConfigHFECal(MCthere,MassConst);
-  AliAnalysisTaskHFECal *hfetaskTrig2= ConfigHFECal(MCthere,MassConst);
+  AliAnalysisTaskHFECal *hfetaskCent = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,0.5,0.1,masscut,-5);
+  AliAnalysisTaskHFECal *hfetaskTrig= ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,0.5,0.1,masscut,-5);
+  AliAnalysisTaskHFECal *hfetaskTrig2= ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,0.5,0.1,masscut,-5);
  
   mgr->AddTask(hfetaskCent);
   mgr->AddTask(hfetaskTrig);
@@ -74,7 +76,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst)
   //if(MCthere)
     //{
     //MB trigger
-    AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst);
+    AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,0.5,0.1,masscut,-5);
     mgr->AddTask(hfetaskMB);
     hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
 

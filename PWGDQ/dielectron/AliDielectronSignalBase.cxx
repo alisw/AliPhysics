@@ -30,10 +30,19 @@ resulting from single and mixed events, as defined in AliDielectron.cxx
 
 #include <TVectorT.h>
 #include <TPaveText.h>
-#include <TH1F.h>
+#include <TF1.h>
+#include <TH1.h>
+#include <TDatabasePDG.h>
+
+#include "AliDielectronSignalFunc.h"
 #include "AliDielectronSignalBase.h"
 
 ClassImp(AliDielectronSignalBase)
+
+TH1F* AliDielectronSignalBase::fgHistSimPM=0x0;
+TObject* AliDielectronSignalBase::fgPeakShape=0x0;
+const char* AliDielectronSignalBase::fgkValueNames[6] = {
+  "Signal","Background","Significance","Signal/Background","Mass","MassWidth"};
 
 AliDielectronSignalBase::AliDielectronSignalBase() :
   TNamed(),
@@ -58,7 +67,9 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fScaleMax2(0.),
   fScaleFactor(1.),
   fMixingCorr(kFALSE),
-  fProcessed(kFALSE)
+  fPeakMethod(kBinCounting),
+  fProcessed(kFALSE),
+  fPOIpdg(443)
 {
   //
   // Default Constructor
@@ -89,7 +100,9 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fScaleMax2(0.),
   fScaleFactor(1.),
   fMixingCorr(kFALSE),
-  fProcessed(kFALSE)
+  fPeakMethod(kBinCounting),
+  fProcessed(kFALSE),
+  fPOIpdg(443)
 {
   //
   // Named Constructor
@@ -133,10 +146,10 @@ TPaveText* AliDielectronSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=
   t->AddText(Form("Backgnd: %.1f #pm %.1f", fValues(1), fErrors(1)));
   t->AddText(Form("Signif.: %.2f #pm %.2f", fValues(2), fErrors(2)));
   t->AddText(Form("S/B    : %.2f #pm %.2f", fValues(3), fErrors(3)));
-  if(fValues(4)>0) {
+  if(fValues(4)>0)
     t->AddText(Form("Mass: %.2f #pm %.2f GeV/c^{2}", fValues(4), fErrors(4)));
+  if(fValues(5)>0)
     t->AddText(Form("Mass res.: %.1f #pm %.1f MeV/c^{2}", 1000*fValues(5), 1000*fErrors(5)));
-  }
   t->Draw();
 
   return t;
@@ -152,10 +165,10 @@ void AliDielectronSignalBase::Print(Option_t */*option*/) const
   printf("Backgnd: %.5g #pm %.5g\n",fValues(1), fErrors(1));
   printf("Signif.: %.5g #pm %.5g\n",fValues(2), fErrors(2));
   printf("SoB    : %.5g #pm %.5g\n",fValues(3), fErrors(3));
-  if(fValues(4)>0){
+  if(fValues(4)>0)
     printf("Mass: %.5g #pm %.5g\n", fValues(4), fErrors(4));
+  if(fValues(5)>0)
     printf("Mass res.: %.5g #pm %.5g\n", fValues(5), fErrors(5));
-  }
 }
 
 //______________________________________________
@@ -164,7 +177,7 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax
   //
-  printf("scale %f %f \n",intMin,intMax);
+
   //protect using over and underflow bins in normalisation calculation
   if (intMin<histRaw->GetXaxis()->GetXmin()) intMin=histRaw->GetXaxis()->GetXmin();
   if (intMin<histBackground->GetXaxis()->GetXmin()) intMin=histBackground->GetXaxis()->GetXmin();
@@ -190,7 +203,7 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax and intMin2, intMax2
   //
-  printf("scale %f %f %f %f\n",intMin,intMax, intMin2, intMax2);
+
   if(intMin2==intMax2) return (ScaleHistograms(histRaw, histBackground, intMin, intMax));
 
   //protect using over and underflow bins in normalisation calculation
@@ -214,4 +227,135 @@ Double_t AliDielectronSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgro
   }
 
   return scaleFactor;
+}
+
+TObject* AliDielectronSignalBase::DescribePeakShape(ESignalExtractionMethod method, Bool_t replaceValErr,  TH1F *mcShape) {
+  //
+  // Describe the extracted peak by the selected method and overwrite signal etc if needed
+  //
+
+  fPeakMethod=method;
+  Double_t data=0.;
+  Double_t mc=0.;
+  Double_t massPOI=TDatabasePDG::Instance()->GetParticle(fPOIpdg)->Mass();
+  Double_t nPOI     = fHistSignal->GetBinContent(fHistSignal->FindBin(massPOI));
+  Double_t binWidth = fHistSignal->GetBinWidth(  fHistSignal->FindBin(massPOI));
+  TF1 *fit=0x0;
+  Int_t parMass =-1;
+  Int_t parSigma=-1;
+
+  // do the scaling/fitting
+  switch(fPeakMethod) {
+  case kBinCounting: /*nothing needs to be done*/ 
+    break;
+
+  case kMCScaledMax:
+    if(!mcShape) { printf(" ERROR: No MC histogram passed. Returning. \n"); return 0x0; }
+    data = fHistSignal->GetBinContent(fHistSignal->FindBin(massPOI));
+    mc   = mcShape->GetBinContent(fHistSignal->FindBin(massPOI));
+    mcShape->Scale(data / mc );
+    break;
+
+  case kMCScaledInt:
+    if(!mcShape) { printf(" ERROR: No MC histogram passed. Returning. \n"); return 0x0; }
+    if(mcShape->GetBinWidth(1)!=fHistSignal->GetBinWidth(1)) 
+      printf(" WARNING: MC and signal histogram have different bin widths. \n");
+    data = fHistSignal->Integral(fHistSignal->FindBin(fIntMin),fHistSignal->FindBin(fIntMax));
+    mc   = mcShape->Integral(mcShape->FindBin(fIntMin),mcShape->FindBin(fIntMax));
+    mcShape->Scale(data / mc );
+    break;
+
+  case kMCFitted:
+    if(!mcShape && !fgHistSimPM) { printf(" ERROR: No MC histogram passed or set. Returning. \n"); return 0x0; }
+    if(!fgHistSimPM) fgHistSimPM=mcShape;
+    fit = new TF1("fitMC",AliDielectronSignalFunc::PeakFunMC,fFitMin,fFitMax,1);
+    fit->SetParNames("N");
+    fHistSignal->Fit(fit,"RNI0");
+    break;
+
+  case kCrystalBall:
+    fit = new TF1("fitCB",AliDielectronSignalFunc::PeakFunCB,fFitMin,fFitMax,5);
+    fit->SetParNames("alpha","n","meanx","sigma","N");
+    //  fit->SetParameters(-.2,5.,gMjpsi,.06,20);
+    //  fit->SetParameters(1.,3.6,gMjpsi,.08,700);
+    fit->SetParameters(0.4, 4.0, massPOI, 0.025, 1.3*nPOI);
+    fit->SetParLimits(0, 0.0,           1.           );
+    fit->SetParLimits(1, 0.01,          10.          );
+    fit->SetParLimits(2, massPOI-0.02,  massPOI+0.02 );
+    fit->SetParLimits(3, 0.001,          0.2         );
+    fit->SetParLimits(4, 0.2*nPOI,      2.0*nPOI     );
+    parMass=2;
+    parSigma=3;
+    fHistSignal->Fit(fit,"RNI0");
+    break;
+
+  case kGaus:
+    fit = new TF1("fitGaus",AliDielectronSignalFunc::PeakFunGaus,fFitMin,fFitMax,3);
+    //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
+    fit->SetParNames("N","meanx","sigma");
+    fit->SetParameters(1.3*nPOI, massPOI, 0.025);
+    fit->SetParLimits(0, 0.2*nPOI,      2.0*nPOI     );
+    fit->SetParLimits(1, massPOI-0.02, massPOI+0.02);
+    fit->SetParLimits(2, 0.001,         1.           );
+    parMass=1;
+    parSigma=2;
+    fHistSignal->Fit(fit,"RNI0");
+    break;
+
+  }
+
+  // overwrite values and errors if requested
+  if(replaceValErr) {
+    switch(fPeakMethod) {
+    case kBinCounting:
+      fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin), fHistSignal->FindBin(fIntMax), fErrors(0));
+      SetSignificanceAndSOB();
+      break;
+    case kMCScaledMax:
+    case kMCScaledInt:
+      fValues(0) = mcShape->IntegralAndError(mcShape->FindBin(fIntMin), mcShape->FindBin(fIntMax), fErrors(0));
+      SetSignificanceAndSOB();
+      break;
+
+    case kMCFitted:
+    case kCrystalBall:
+    case kGaus:
+      fValues(0) = fit->Integral(fIntMin, fIntMax)/binWidth;
+      fErrors(0) = fit->IntegralError(fIntMin, fIntMax)/binWidth;
+      SetSignificanceAndSOB();
+      break;
+    }
+    // set mass position and width
+    if(parMass>=0) {
+      fValues(4) = fit->GetParameter(parMass);
+      fErrors(4) = fit->GetParError(parMass);
+    }
+    if(parSigma>=0) {
+      fValues(5) = fit->GetParameter(parSigma);
+      fErrors(5) = fit->GetParError(parSigma);
+    }
+    else {
+      // calculate FWHM
+      SetFWHM();
+    }
+  }
+
+  // set the peak method obj
+  switch(fPeakMethod) {
+  case kBinCounting:
+    fgPeakShape=(TH1F*)fHistSignal->Clone("BinCount");
+    break;
+  case kMCScaledMax:
+  case kMCScaledInt:
+    fgPeakShape=mcShape;
+    break;
+  case kMCFitted:
+  case kCrystalBall:
+  case kGaus:
+    fgPeakShape=fit;
+    break;
+  }
+
+  return fgPeakShape;
+
 }

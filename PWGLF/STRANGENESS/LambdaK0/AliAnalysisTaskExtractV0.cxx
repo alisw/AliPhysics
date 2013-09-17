@@ -104,8 +104,8 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
   fkRejectPileup  ( kTRUE ),
   fkSpecialExecution( kFALSE ),
   fkSkipTrigger   ( kFALSE ),
-  fExtraDCAHeavyToPrimVertex(0),
-  fExtraDCALightToPrimVertex(0),
+  fTPCdEdxSelection ( kTRUE ),
+  fEtaRefMult ( 0.5 ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -231,9 +231,7 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    fHistPVxAnalysis(0),
    fHistPVyAnalysis(0),
    fHistPVzAnalysis(0),
-   fHistSwappedV0Counter(0),
-  f2dHistdEdxPos(0),
-  f2dHistdEdxNeg(0)
+   fHistSwappedV0Counter(0)
 {
   // Dummy Constructor
   for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0Sels          [iV0selIdx   ] = -1.; }
@@ -253,8 +251,8 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
   fkRejectPileup  ( kTRUE ),
   fkSpecialExecution( kFALSE ),
   fkSkipTrigger   ( kFALSE ),
-  fExtraDCAHeavyToPrimVertex(0),
-  fExtraDCALightToPrimVertex(0),
+  fTPCdEdxSelection ( kTRUE ),
+  fEtaRefMult ( 0.5 ),
 //------------------------------------------------
 // Initialize 
 	fTreeVariableChi2V0(0),
@@ -380,9 +378,7 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    fHistPVxAnalysis(0),
    fHistPVyAnalysis(0),
    fHistPVzAnalysis(0),
-   fHistSwappedV0Counter(0),
-  f2dHistdEdxPos(0),
-  f2dHistdEdxNeg(0)
+   fHistSwappedV0Counter(0)
 {
   // Constructor
   // Set Loose cuts or not here...
@@ -493,20 +489,7 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
         fTree->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
         fTree->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
   }
-  if( fkSpecialExecution == kTRUE ){
-    fTree->Branch("fTreeVariablePosTPCSignal",&fTreeVariablePosTPCSignal,"fTreeVariablePosTPCSignal/F");
-    fTree->Branch("fTreeVariableNegTPCSignal",&fTreeVariableNegTPCSignal,"fTreeVariableNegTPCSignal/F");
-    fTree->Branch("fTreeVariablePosInnerP",&fTreeVariablePosInnerP,"fTreeVariablePosInnerP/F");
-    fTree->Branch("fTreeVariableNegInnerP",&fTreeVariableNegInnerP,"fTreeVariableNegInnerP/F");
-    
-    fTree->Branch("fTreeVariablePosPx",&fTreeVariablePosPx,"fTreeVariablePosPx/F");
-    fTree->Branch("fTreeVariablePosPy",&fTreeVariablePosPy,"fTreeVariablePosPy/F");
-    fTree->Branch("fTreeVariablePosPz",&fTreeVariablePosPz,"fTreeVariablePosPz/F");
-    fTree->Branch("fTreeVariableNegPx",&fTreeVariableNegPx,"fTreeVariableNegPx/F");
-    fTree->Branch("fTreeVariableNegPy",&fTreeVariableNegPy,"fTreeVariableNegPy/F");
-    fTree->Branch("fTreeVariableNegPz",&fTreeVariableNegPz,"fTreeVariableNegPz/F");
-  }
-  
+
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -812,18 +795,6 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
       fListHistV0->Add(fHistSwappedV0Counter);
    }
   
-  //Create dE/dx histograms
-  if(! f2dHistdEdxPos ){
-    f2dHistdEdxPos = new TH2F("f2dHistdEdxPos","Pos. Daughter dE/dx;p (GeV/c);TPC Signal",
-                              200,0,10,500,0,1000);
-    if (fkSpecialExecution) fListHistV0->Add(f2dHistdEdxPos);
-  }
-  if(! f2dHistdEdxNeg ){
-    f2dHistdEdxNeg = new TH2F("f2dHistdEdxNeg","Neg. Daughter dE/dx;p (GeV/c);TPC Signal",
-                              200,0,10,500,0,1000);
-    if (fkSpecialExecution) fListHistV0->Add(f2dHistdEdxNeg);
-  }
-  
    //Regular output: Histograms
    PostData(1, fListHistV0);
    //TTree Object: Saved to base directory. Should cache to disk while saving. 
@@ -883,7 +854,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
    Int_t lMultiplicityTRK = -100;
    Int_t lMultiplicitySPD = -100;  
 
-   if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+   if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,fEtaRefMult);
 
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
    //---> Warning: Experimental
@@ -1184,24 +1155,6 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       //Daughter Eta for Eta selection, afterwards
       fTreeVariableNegEta = nTrack->Eta();
       fTreeVariablePosEta = pTrack->Eta();
-     
-     if( fkSpecialExecution ){
-       fTreeVariableNegPx = lMomNeg[0]; fTreeVariableNegPy = lMomNeg[1]; fTreeVariableNegPz = lMomNeg[2];
-       fTreeVariablePosPx = lMomPos[0]; fTreeVariablePosPy = lMomPos[1]; fTreeVariablePosPz = lMomPos[2];
-       //Need to acquire info to do dEdx cut afterwards...
-       fTreeVariablePosTPCSignal = pTrack->GetTPCsignal();
-       fTreeVariableNegTPCSignal = nTrack->GetTPCsignal();
-       //Get Inner momentum if possible
-       fTreeVariableNegInnerP = nTrack->GetP();
-       fTreeVariablePosInnerP = pTrack->GetP();
-       const AliExternalTrackParam *innerpos=pTrack->GetInnerParam();
-       const AliExternalTrackParam *innerneg=nTrack->GetInnerParam();
-       if(innerpos) { fTreeVariablePosInnerP = innerpos->GetP(); }
-       if(innerneg) { fTreeVariableNegInnerP = innerneg->GetP(); }
-       
-       f2dHistdEdxPos->Fill( fTreeVariablePosInnerP , fTreeVariablePosdEdxSig );
-       f2dHistdEdxNeg->Fill( fTreeVariableNegInnerP , fTreeVariableNegdEdxSig );
-     }
 
       // Filter like-sign V0 (next: add counter and distribution)
       if ( pTrack->GetSign() == nTrack->GetSign()){
@@ -1329,25 +1282,15 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
            //If this is a nuclear collision___________________
            // ... pre-filter with TPC, daughter eta selection
            if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda
-                /*&& TMath::Abs(fTreeVariableNSigmasPosProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasNegPion) < 6.0*/ ) ||
+                && ( fTPCdEdxSelection==kFALSE ||( fTPCdEdxSelection==kTRUE && TMath::Abs(fTreeVariableNSigmasPosProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasNegPion) < 6.0 ) ) ) ||
               (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda
-               /*&& TMath::Abs(fTreeVariableNSigmasNegProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0*/ ) ||
+                && ( fTPCdEdxSelection==kFALSE ||( fTPCdEdxSelection==kTRUE && TMath::Abs(fTreeVariableNSigmasNegProton) < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0 ) ) ) ||
               (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short
-               /*&& TMath::Abs(fTreeVariableNSigmasNegPion)   < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0*/ ) ){
+                && ( fTPCdEdxSelection==kFALSE ||( fTPCdEdxSelection==kTRUE && TMath::Abs(fTreeVariableNSigmasNegPion)   < 6.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 6.0 ) ) ) ){
                 //insane test
-                if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && !fkSpecialExecution) fTree->Fill();
+                if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8) fTree->Fill();
               }
          }//end nuclear_____________________________________
-       }
-     }
-     
-     if(lOnFlyStatus == 0 && fkSpecialExecution){
-       if(
-          (fTreeVariableNSigmasPosProton > 6 && TMath::Abs(fTreeVariableNSigmasNegPion)< 6
-           && fTreeVariableDcaPosToPrimVertex > fExtraDCAHeavyToPrimVertex && fTreeVariableDcaNegToPrimVertex > fExtraDCALightToPrimVertex ) ||
-          (fTreeVariableNSigmasNegProton > 6 && TMath::Abs(fTreeVariableNSigmasPosPion)< 6
-           && fTreeVariableDcaPosToPrimVertex > fExtraDCALightToPrimVertex && fTreeVariableDcaNegToPrimVertex > fExtraDCAHeavyToPrimVertex ) ){
-         fTree->Fill();
        }
      }
 

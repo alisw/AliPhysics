@@ -16,11 +16,9 @@
 /////////////////////////////////////////////////////
 // AliAnalysisTaskFlowStrange:
 // Analysis task to select K0/Lambda candidates for flow analysis.
-// Uses one AliESDtrackCuts object for both daughters and
-// QA histograms to monitor the reconstruction.
 // Authors: Cristian Ivan (civan@cern.ch)
-//          Carlos Perez (cperez@cern.ch)
-//          Pawel Debski (pdebski@cern.ch)
+//          Carlos Perez  (cperez@cern.ch)
+//          Pawel Debski  (pdebski@cern.ch)
 //////////////////////////////////////////////////////
 
 #include "TChain.h"
@@ -28,11 +26,20 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
+#include "TF1.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "TVector3.h"
+#include "TStopwatch.h"
+#include "TFile.h"
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+
+#include "AliVVertex.h"
+#include "AliVVZERO.h"
+#include "AliStack.h"
+#include "AliMCEvent.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -44,7 +51,10 @@
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
 #include "AliAODv0.h"
+#include "AliAODTracklets.h"
+#include "AliAODHeader.h"
 
+#include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "TClonesArray.h"
 #include "TDatabasePDG.h"
@@ -69,883 +79,1258 @@ ClassImp(AliAnalysisTaskFlowStrange)
 AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   AliAnalysisTaskSE(),
   fPIDResponse(NULL),
-  fBayesianPID(NULL),
-  fDebug(kFALSE),
-  fUseEventSelection(kTRUE),
-  fDoQA(kFALSE),
-  fDoExtraQA(kFALSE),
+  fFB1(NULL),
+  fFB1024(NULL),
+  fTPCevent(NULL),
+  fVZEevent(NULL),
+  fCandidates(NULL),
+  fList(NULL),
+  fRunNumber(-1),
+  fDebug(0),
+  fQAlevel(0),
+  fReadESD(kFALSE),
+  fReadMC(kFALSE),
+  fAvoidExec(kFALSE),
+  fSkipSelection(kFALSE),
+  fSkipFlow(kFALSE),
+  fSkipDHcorr(kTRUE),
+  fUseFP(kFALSE),
   fRunOnpA(kFALSE),
   fRunOnpp(kFALSE),
-  fCalib(NULL),
-  fPsi2(0.0),
+  fExtraEventRejection(kFALSE),
+  fCentMethod("V0MTRK"),
+  fCentPerMin(0),
+  fCentPerMax(100),
+  fThisCent(-1.0),
+  fExcludeTPCEdges(kFALSE),
   fSpecie(0),
-  fMCmatch(-1),
+  fOnline(kFALSE),
+  fHomemade(kFALSE),
+  fWhichPsi(1),
+  fVZEsave(kFALSE),
+  fVZEload(NULL),
+  fVZEResponse(NULL),
+  fVZEmb(kFALSE),
+  fVZEByDisk(kTRUE),
+  fVZEQA(NULL),
+  fPsi2(0.0),
+  fMCEP(0.0),
   fMassBins(0),
   fMinMass(0.0),
   fMaxMass(0.0),
-  fCutsEvent(NULL),
-  fCutsRFPTPC(NULL),
-  fCutsRFPVZE(NULL),
-  fCutsPOI(NULL),
-  fCutsDau(NULL),
-  fFlowEventTPC(NULL),
-  fFlowEventVZE(NULL),
-  fCandidates(NULL),
-  fQAList(NULL)
-{
+  fRFPFilterBit(1),
+  fRFPminPt(0.2),
+  fRFPmaxPt(5.0),
+  fRFPminEta(-0.8),
+  fRFPmaxEta(+0.8),
+  fRFPTPCsignal(10.0),
+  fRFPmaxIPxy(2.4),
+  fRFPmaxIPz(3.2),
+  fRFPTPCncls(70),
+  fDecayMass(0.0),
+  fDecayPhi(0.0),
+  fDecayEta(0.0),
+  fDecayPt(0.0),
+  fDecayDCAdaughters(0.0),
+  fDecayCosinePointingAngleXY(0.0),
+  fDecayRadXY(0.0),
+  fDecayDecayLength(0.0),
+  fDecayQt(0.0),
+  fDecayAlpha(0.0),
+  fDecayRapidity(0.0),
+  fDecayProductIPXY(0.0),
+  fDecayIDneg(-1),
+  fDecayIDpos(-1),
+  fDecayID(-1),
+  fDecayMinEta(0.0),
+  fDecayMaxEta(0.0),
+  fDecayMinPt(0.0),
+  fDecayMaxDCAdaughters(0.0),
+  fDecayMinCosinePointingAngleXY(0.0),
+  fDecayMinQt(0.0),
+  fDecayAPCutPie(kTRUE),
+  fDecayMinRadXY(0.0),
+  fDecayMaxDecayLength(0.0),
+  fDecayMaxProductIPXY(0.0),
+  fDecayMaxRapidity(0.0),
+  fDaughterPhi(0.0),
+  fDaughterEta(0.0),
+  fDaughterPt(0.0),
+  fDaughterNClsTPC(0),
+  fDaughterCharge(0),
+  fDaughterNFClsTPC(0),
+  fDaughterNSClsTPC(0),
+  fDaughterChi2PerNClsTPC(0.0),
+  fDaughterXRows(0.0),
+  fDaughterImpactParameterXY(0.0),
+  fDaughterImpactParameterZ(0.0),
+  fDaughterStatus(0),
+  fDaughterNSigmaPID(0.0),
+  fDaughterKinkIndex(0),
+  fDaughterMinEta(0.0),
+  fDaughterMaxEta(0.0),
+  fDaughterMinPt(0.0),
+  fDaughterMinNClsTPC(0),
+  fDaughterMinXRows(0),
+  fDaughterMaxChi2PerNClsTPC(0.0),
+  fDaughterMinXRowsOverNClsFTPC(0.0),
+  fDaughterMinImpactParameterXY(0.0),
+  fDaughterMaxNSigmaPID(0.0) {
   //ctor
-  for (Int_t i=0; i!=11; ++i)
-    fV0Cuts[i] = 0;
 }
 //=======================================================================
-AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name,
-						       AliFlowEventCuts *cutsEvent,
-						       AliFlowTrackCuts *cutsRFPTPC,
-						       AliFlowTrackCuts *cutsRFPVZE,
-						       AliESDtrackCuts *cutsDau) :
+AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   AliAnalysisTaskSE(name),
   fPIDResponse(NULL),
-  fBayesianPID(NULL),
-  fDebug(kFALSE),
-  fUseEventSelection(kTRUE),
-  fDoQA(kFALSE),
-  fDoExtraQA(kFALSE),
+  fFB1(NULL),
+  fFB1024(NULL),
+  fTPCevent(NULL),
+  fVZEevent(NULL),
+  fCandidates(NULL),
+  fList(NULL),
+  fRunNumber(-1),
+  fDebug(0),
+  fQAlevel(0),
+  fReadESD(kFALSE),
+  fReadMC(kFALSE),
+  fAvoidExec(kFALSE),
+  fSkipSelection(kFALSE),
+  fSkipFlow(kFALSE),
+  fSkipDHcorr(kTRUE),
+  fUseFP(kFALSE),
   fRunOnpA(kFALSE),
   fRunOnpp(kFALSE),
-  fCalib(NULL),
-  fPsi2(0.0),
+  fExtraEventRejection(kFALSE),
+  fCentMethod("V0MTRK"),
+  fCentPerMin(0),
+  fCentPerMax(100),
+  fThisCent(-1.0),
+  fExcludeTPCEdges(kFALSE),
   fSpecie(0),
-  fMCmatch(-1),
+  fOnline(kFALSE),
+  fHomemade(kFALSE),
+  fWhichPsi(1),
+  fVZEsave(kFALSE),
+  fVZEload(NULL),
+  fVZEResponse(NULL),
+  fVZEmb(kFALSE),
+  fVZEByDisk(kTRUE),
+  fVZEQA(NULL),
+  fPsi2(0.0),
+  fMCEP(0.0),
   fMassBins(0),
   fMinMass(0.0),
   fMaxMass(0.0),
-  fCutsEvent(cutsEvent),
-  fCutsRFPTPC(cutsRFPTPC),
-  fCutsRFPVZE(cutsRFPVZE),
-  fCutsPOI(NULL),
-  fCutsDau(cutsDau),
-  fFlowEventTPC(NULL),
-  fFlowEventVZE(NULL),
-  fCandidates(NULL),
-  fQAList(NULL)
-{
+  fRFPFilterBit(1),
+  fRFPminPt(0.2),
+  fRFPmaxPt(5.0),
+  fRFPminEta(-0.8),
+  fRFPmaxEta(+0.8),
+  fRFPTPCsignal(10.0),
+  fRFPmaxIPxy(2.4),
+  fRFPmaxIPz(3.2),
+  fRFPTPCncls(70),
+  fDecayMass(0.0),
+  fDecayPhi(0.0),
+  fDecayEta(0.0),
+  fDecayPt(0.0),
+  fDecayDCAdaughters(0.0),
+  fDecayCosinePointingAngleXY(0.0),
+  fDecayRadXY(0.0),
+  fDecayDecayLength(0.0),
+  fDecayQt(0.0),
+  fDecayAlpha(0.0),
+  fDecayRapidity(0.0),
+  fDecayProductIPXY(0.0),
+  fDecayIDneg(-1),
+  fDecayIDpos(-1),
+  fDecayID(-1),
+  fDecayMinEta(0.0),
+  fDecayMaxEta(0.0),
+  fDecayMinPt(0.0),
+  fDecayMaxDCAdaughters(0.0),
+  fDecayMinCosinePointingAngleXY(0.0),
+  fDecayMinQt(0.0),
+  fDecayAPCutPie(kTRUE),
+  fDecayMinRadXY(0.0),
+  fDecayMaxDecayLength(0.0),
+  fDecayMaxProductIPXY(0.0),
+  fDecayMaxRapidity(0.0),
+  fDaughterPhi(0.0),
+  fDaughterEta(0.0),
+  fDaughterPt(0.0),
+  fDaughterNClsTPC(0),
+  fDaughterCharge(0),
+  fDaughterNFClsTPC(0),
+  fDaughterNSClsTPC(0),
+  fDaughterChi2PerNClsTPC(0.0),
+  fDaughterXRows(0.0),
+  fDaughterImpactParameterXY(0.0),
+  fDaughterImpactParameterZ(0.0),
+  fDaughterStatus(0),
+  fDaughterNSigmaPID(0.0),
+  fDaughterKinkIndex(0),
+  fDaughterMinEta(0.0),
+  fDaughterMaxEta(0.0),
+  fDaughterMinPt(0.0),
+  fDaughterMinNClsTPC(0),
+  fDaughterMinXRows(0),
+  fDaughterMaxChi2PerNClsTPC(0.0),
+  fDaughterMinXRowsOverNClsFTPC(0.0),
+  fDaughterMinImpactParameterXY(0.0),
+  fDaughterMaxNSigmaPID(0.0) {
   //ctor
-  for (Int_t i=0; i!=11; ++i)
-    fV0Cuts[i] = 0;
-
   DefineInput( 0,TChain::Class());
-  DefineOutput(1,AliFlowEventSimple::Class()); // TPC object
-  DefineOutput(2,AliFlowEventSimple::Class()); // VZE object
-  DefineOutput(3,TList::Class());
+  DefineOutput(1,TList::Class());
+  DefineOutput(2,AliFlowEventSimple::Class()); // TPC object
+  DefineOutput(3,AliFlowEventSimple::Class()); // VZE object
 }
 //=======================================================================
-AliAnalysisTaskFlowStrange::~AliAnalysisTaskFlowStrange()
-{
+AliAnalysisTaskFlowStrange::~AliAnalysisTaskFlowStrange() {
   //dtor
-  if (fQAList)       delete fQAList;
-  if (fFlowEventTPC) delete fFlowEventTPC;
-  if (fFlowEventVZE) delete fFlowEventVZE;
-  if (fCandidates)   delete fCandidates;
-  if (fCutsDau)      delete fCutsDau;
-  if (fCutsPOI)      delete fCutsPOI;
-  if (fCutsRFPTPC)   delete fCutsRFPTPC;
-  if (fCutsRFPVZE)   delete fCutsRFPVZE;
-  if (fCalib)        delete fCalib;
+  if (fCandidates) delete fCandidates;
+  if (fTPCevent)   delete fTPCevent;
+  if (fVZEevent)   delete fVZEevent;
+  if (fList)       delete fList;
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::UserCreateOutputObjects()
-{
+void AliAnalysisTaskFlowStrange::UserCreateOutputObjects() {
   //UserCreateOutputObjects
-  fQAList=new TList();
-  fQAList->SetOwner();
+  fList=new TList();
+  fList->SetOwner();
   AddQAEvents();
   AddQACandidates();
 
+  if(fReadESD) MakeFilterBits();
+
   AliFlowCommonConstants *cc = AliFlowCommonConstants::GetMaster();
-  cc->SetNbinsMult(1); cc->SetMultMin(0);   cc->SetMultMax(1);
-  cc->SetNbinsPt(120); cc->SetPtMin(0.0);   cc->SetPtMax(12.0);
-  cc->SetNbinsPhi(1);  cc->SetPhiMin(0.0);  cc->SetPhiMax(TMath::TwoPi());
-  cc->SetNbinsEta(18);  cc->SetEtaMin(-0.9); cc->SetEtaMax(+0.9);
-  cc->SetNbinsQ(1);    cc->SetQMin(0.0);    cc->SetQMax(1.0);
+  cc->SetNbinsMult(3000); cc->SetMultMin(0);   cc->SetMultMax(30000);
+  cc->SetNbinsPt(200); cc->SetPtMin(0.0);   cc->SetPtMax(20.0);
+  cc->SetNbinsPhi(100);  cc->SetPhiMin(0.0);  cc->SetPhiMax(TMath::TwoPi());
+  cc->SetNbinsEta(100);  cc->SetEtaMin(-5.0); cc->SetEtaMax(+5.0);
+  cc->SetNbinsQ(100);    cc->SetQMin(0.0);    cc->SetQMax(3.0);
   cc->SetNbinsMass(fMassBins);
   cc->SetMassMin(fMinMass);
   cc->SetMassMax(fMaxMass);
 
-  fCutsPOI = new AliFlowTrackCuts("dumb_cuts");
-  fCutsPOI->SetParamType( fCutsRFPTPC->GetParamType() );
-  fCutsPOI->SetPtRange(+1.0,-1.0);
-  fCutsPOI->SetEtaRange(+1.0,-1.0);
-
-  fBayesianPID = new AliFlowBayesianPID();
-  fBayesianPID->SetNewTrackParam();
-  fFlowEventTPC = new AliFlowEvent(3000);
-  fFlowEventVZE = new AliFlowEvent(500);
-  fCandidates = new TObjArray(100);
-  fCandidates->SetOwner();
-
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  //loading pid response
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
-  PostData(1,fFlowEventTPC);
-  PostData(2,fFlowEventVZE);
-  PostData(3,fQAList);
+  fTPCevent = new AliFlowEvent(100);
+  fVZEevent = new AliFlowEvent(100);
 
-}
-//=======================================================================
-void AliAnalysisTaskFlowStrange::Exec(Option_t* option)
-{
-  //bypassing ::exec (needed because of AMPT)
-  if(fMCmatch==-1) // executes EVENT in data analysis
-    AliAnalysisTaskSE::Exec(option);
-  else // executes EVENT in monteCarlo
-    AliAnalysisTaskFlowStrange::MyUserExec(option);
-}
-//=======================================================================
-void AliAnalysisTaskFlowStrange::UserExec(Option_t *option)
-{
-  // dummy user exec
-  if(fRunOnpA) { // temporal extra cuts for pA (2BE REMOVED!)
-    AliAODEvent *aod=dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!aod) return;
-    if(aod->GetHeader()->GetEventNumberESDFile() == 0) return; //rejecting first chunk
-     // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies
-    const AliAODVertex* trkVtx = aod->GetPrimaryVertex();
-    if (!trkVtx || trkVtx->GetNContributors()<=0) return;
-    TString vtxTtl = trkVtx->GetTitle();
-    if (!vtxTtl.Contains("VertexerTracks")) return;
-    Float_t zvtx = trkVtx->GetZ();
-    const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
-    if (spdVtx->GetNContributors()<=0) return;
-    TString vtxTyp = spdVtx->GetTitle();
-    Double_t cov[6]={0};
-    spdVtx->GetCovarianceMatrix(cov);
-    Double_t zRes = TMath::Sqrt(cov[5]);
-    if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-    if (TMath::Abs(zvtx) > 10) return;
+  //array of candidates
+  fCandidates = new TObjArray(100);
+  fCandidates->SetOwner();
+
+  PostData(1,fList);
+  if(fUseFP) { // for connection to the flow package
+    PostData(2,fTPCevent);
+    PostData(3,fVZEevent);
   }
-
-  AliAnalysisTaskFlowStrange::MyUserExec(option);
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::AddQAEvents()
-{
+void AliAnalysisTaskFlowStrange::AddQAEvents() {
   // function to add event qa
+  TH1D *tH1D;
+  TProfile *tProfile;
   TList *tQAEvents=new TList();
   tQAEvents->SetName("Event");
   tQAEvents->SetOwner();
+  tH1D = new TH1D("Events","Number of Events",6,0,6); tQAEvents->Add(tH1D);
+  tH1D->GetXaxis()->SetBinLabel(1,"exec");
+  tH1D->GetXaxis()->SetBinLabel(2,"userexec");
+  tH1D->GetXaxis()->SetBinLabel(3,"reached");
+  tH1D->GetXaxis()->SetBinLabel(4,"selected");
+  tH1D->GetXaxis()->SetBinLabel(5,"rejectedByLowQw");
+  tH1D->GetXaxis()->SetBinLabel(6,"rejectedByErrorLoadVZEcal");
+  tProfile = new TProfile("Configuration","Configuration",20,0,20); tQAEvents->Add(tProfile);
+  tProfile->Fill( 0.5,fCentPerMin,1); tProfile->GetXaxis()->SetBinLabel( 1,"fCentPerMin");
+  tProfile->Fill( 1.5,fCentPerMax,1); tProfile->GetXaxis()->SetBinLabel( 2,"fCentPerMax");
+  tProfile->Fill( 2.5,fDaughterMinEta,1);               tProfile->GetXaxis()->SetBinLabel( 3,"fDaughterMinEta");
+  tProfile->Fill( 3.5,fDaughterMaxEta,1);               tProfile->GetXaxis()->SetBinLabel( 4,"fDaughterMaxEta");
+  tProfile->Fill( 4.5,fDaughterMinPt,1);                tProfile->GetXaxis()->SetBinLabel( 5,"fDaughterMinPt");
+  tProfile->Fill( 5.5,fDaughterMinNClsTPC,1);           tProfile->GetXaxis()->SetBinLabel( 6,"fDaughterMinNClsTPC");
+  tProfile->Fill( 6.5,fDaughterMaxChi2PerNClsTPC,1);    tProfile->GetXaxis()->SetBinLabel( 7,"fDaughterMaxChi2PerNClsTPC");
+  tProfile->Fill( 7.5,fDaughterMinXRowsOverNClsFTPC,1); tProfile->GetXaxis()->SetBinLabel( 8,"fDaughterMinXRowsOverNClsFTPC");
+  tProfile->Fill( 8.5,fDaughterMinImpactParameterXY,1); tProfile->GetXaxis()->SetBinLabel( 9,"fDaughterMinImpactParameterXY");
+  tProfile->Fill( 9.5,fDaughterMaxNSigmaPID,1);         tProfile->GetXaxis()->SetBinLabel(10,"fDaughterMaxNSigmaPID");
+  tProfile->Fill(10.5,fDecayMaxDCAdaughters,1);          tProfile->GetXaxis()->SetBinLabel(11,"fDecayMaxDCAdaughters");
+  tProfile->Fill(11.5,fDecayMinCosinePointingAngleXY,1); tProfile->GetXaxis()->SetBinLabel(12,"fDecayMinCosinePointingAngleXY");
+  tProfile->Fill(12.5,fDecayMinQt,1);                    tProfile->GetXaxis()->SetBinLabel(13,"fDecayMinQt");
+  tProfile->Fill(13.5,fDecayMinRadXY,1);                 tProfile->GetXaxis()->SetBinLabel(14,"fDecayMinRadXY");
+  tProfile->Fill(14.5,fDecayMaxDecayLength,1);           tProfile->GetXaxis()->SetBinLabel(15,"fDecayMaxDecayLength");
+  tProfile->Fill(15.5,fDecayMaxProductIPXY,1);           tProfile->GetXaxis()->SetBinLabel(16,"fDecayMaxProductIPXY");
+  tProfile->Fill(16.5,fDecayMaxRapidity,1);              tProfile->GetXaxis()->SetBinLabel(17,"fDecayMaxRapidity");
+  tProfile->Fill(17.5,fDecayMinEta,1);                   tProfile->GetXaxis()->SetBinLabel(18,"fDecayMinEta");
+  tProfile->Fill(18.5,fDecayMaxEta,1);                   tProfile->GetXaxis()->SetBinLabel(19,"fDecayMaxEta");
+  tProfile->Fill(19.5,fDecayMinPt,1);                    tProfile->GetXaxis()->SetBinLabel(20,"fDecayMinPt");
 
-  TH1D *tEvent = new TH1D("Events","Number of Events",3,0,3); tQAEvents->Add(tEvent);
-  tEvent->GetXaxis()->SetBinLabel(1,"reached");
-  tEvent->GetXaxis()->SetBinLabel(2,"selected");
-  tEvent->GetXaxis()->SetBinLabel(3,"unexpected");
-
-  TH2D *tH2D;
-  TH1D *tTPCRFP = new TH1D("RFPTPC","TPC Reference Flow Particles;multiplicity",3000,0,3000); tQAEvents->Add(tTPCRFP);
-  TH1D *tVZERFP = new TH1D("RFPVZE","VZERO Reference Flow Particles;multiplicity",3000,0,30000); tQAEvents->Add(tVZERFP);
-  tH2D = new TH2D("TPCPhiEta","TPC RFP;Phi;Eta",100,0,TMath::TwoPi(),100,-1.0,+1.0); tQAEvents->Add( tH2D );
-  tH2D = new TH2D("VZEPhiEta","VZE RFP;Phi;Eta",20,0,TMath::TwoPi(),40,-4.0,+6.0); tQAEvents->Add( tH2D );
-  TH1D *tPOI = new TH1D("POI","POIs;multiplicity",500,0,500); tQAEvents->Add( tPOI );
-  if(fDoQA) {
-    printf("QA enabled\n");
-    tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-25,+25,60,-25,+25); tQAEvents->Add( tH2D );
-    TH3D *tH3D = new TH3D("EVPLANE","EVPLANE;TPC;V0A;V0C",72,0,TMath::Pi(),72,0,TMath::Pi(),72,0,TMath::Pi()); tQAEvents->Add( tH3D );
-    tH2D = new TH2D("VTXZSEL","VTXZ SEL;Global||SPD;SPD",40,-10,+10,40,-10,+10); tQAEvents->Add( tH2D );
-    tH3D = new TH3D("PRIMVERTEX","PRIMVERTEX;#sigma_{x};#sigma_{y};#sigma_{z}",100,0,5e-3,100,0,5e-3,100,0,8e-3); tQAEvents->Add( tH3D );
-    double dArrayPt[25] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-			   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
-			   2.5, 3.0, 3.5, 4.0, 5.0 };
-    tH2D = new TH2D("TPCPtQx","TPCPtQx;pT;Qx/M",24,dArrayPt,100,-0.2,+0.2); tQAEvents->Add( tH2D );
-    tH2D = new TH2D("TPCPtQy","TPCPtQy;pT;Qy/M",24,dArrayPt,100,-0.2,+0.2); tQAEvents->Add( tH2D );
-    tH2D = new TH2D("TPCPtEta","TPCPtEta;pT;Eta/M",24,dArrayPt,100,-0.3,+0.3); tQAEvents->Add( tH2D );
-    tH2D = new TH2D("TPCQxQy","TPCQxQy;Qx/M;Qy/M",100,-0.3,+0.3,100,-0.3,+0.3); tQAEvents->Add( tH2D );
-    tH2D = new TH2D("VZEQxQy","VZEQxQy;Qx/M;Qy/M",100,-0.3,+0.3,100,-0.3,+0.3); tQAEvents->Add( tH2D );
-  }
-  TProfile *tCuts = new TProfile("Cuts","Analysis Cuts",11,0,11);
-  tCuts->Fill(0.5,fV0Cuts[0],1); tCuts->GetXaxis()->SetBinLabel(1,"dl");
-  tCuts->Fill(1.5,fV0Cuts[1],1); tCuts->GetXaxis()->SetBinLabel(2,"dca");
-  tCuts->Fill(2.5,fV0Cuts[2],1); tCuts->GetXaxis()->SetBinLabel(3,"ctp");
-  tCuts->Fill(3.5,fV0Cuts[3],1); tCuts->GetXaxis()->SetBinLabel(4,"d0");
-  tCuts->Fill(4.5,fV0Cuts[4],1); tCuts->GetXaxis()->SetBinLabel(5,"d0xd0");
-  tCuts->Fill(5.5,fV0Cuts[5],1); tCuts->GetXaxis()->SetBinLabel(6,"qt");
-  tCuts->Fill(6.5,fV0Cuts[6],1); tCuts->GetXaxis()->SetBinLabel(7,"min eta");
-  tCuts->Fill(7.5,fV0Cuts[7],1); tCuts->GetXaxis()->SetBinLabel(8,"max eta");
-  tCuts->Fill(8.5,fV0Cuts[8],1); tCuts->GetXaxis()->SetBinLabel(9,"PID sigmas");
-  tCuts->Fill(9.5,fV0Cuts[9],1); tCuts->GetXaxis()->SetBinLabel(10,"ctau");
-  tCuts->Fill(10.5,fV0Cuts[10],1); tCuts->GetXaxis()->SetBinLabel(11,"dlxy");
-  tQAEvents->Add(tCuts);
-  fQAList->Add(tQAEvents);
+  tH1D = new TH1D("POI","POIs;multiplicity",800,0,800);         tQAEvents->Add(tH1D);
+  tH1D = new TH1D("UNTAG","UNTAG;Untagged Daughters",800,0,800);tQAEvents->Add(tH1D);
+  tH1D = new TH1D("RealTime","RealTime;LogT sec",2000,-10,+10); tQAEvents->Add(tH1D);
+  fList->Add(tQAEvents);
+  AddEventSpy();
+  AddMakeQSpy();
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::AddQACandidates()
-{
+void AliAnalysisTaskFlowStrange::AddEventSpy() {
+  TH1D *tH1D;
+  TH2D *tH2D;
+  TList *tList=new TList();
+  tList->SetName("EventSpy");
+  tList->SetOwner();
+  if(fQAlevel>0) {
+    tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-25,+25,60,-25,+25); tList->Add( tH2D );
+    tH2D = new TH2D("CCCC","CCCC;V0M;TRK",60,-10,110,60,-10,110);         tList->Add( tH2D );
+    tH2D = new TH2D("REFM","REFM;TPC;GLOBAL",100,0,3000,100,0,3000);      tList->Add( tH2D );
+    if(fReadMC) {
+      tH1D = new TH1D("MCCC","MCCC;Xsection",100,-10,110); tList->Add( tH1D );
+      tH1D = new TH1D("MCEP","MCEP;MCEP",100,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
+    }
+  }
+  fList->Add(tList);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddMakeQSpy() {
+  if(fSkipFlow) return;
+  TH1D *tH1D;
+  TH2D *tH2D;
+  TProfile *tPF1;
+  TList *tList=new TList();
+  tList->SetName("MakeQSpy");
+  tList->SetOwner();
+  tH1D = new TH1D("RFPTPC","TPC Refrence Multiplicity;multiplicity",3000,0,3000);     tList->Add( tH1D );
+  tH1D = new TH1D("RFPVZE","VZERO Reference Multiplicity;multiplicity",3000,0,30000); tList->Add( tH1D );
+  tH2D = new TH2D("TPCAllPhiEta","TPCall;Phi;Eta",180,0,TMath::TwoPi(),80,-0.9,+0.9); tList->Add( tH2D );
+  tH2D = new TH2D("VZEAllPhiEta","VZEall;Phi;Eta",20,0,TMath::TwoPi(),40,-4.0,+6.0);  tList->Add( tH2D );
+  tH1D = new TH1D("TPCPSI","TPCPSI;PSI",72,0,TMath::Pi()); tList->Add( tH1D );
+  tH1D = new TH1D("TPCPSIA","TPCPSIA;PSIA",72,0,TMath::Pi()); tList->Add( tH1D );
+  tH1D = new TH1D("TPCPSIB","TPCPSIB;PSIB",72,0,TMath::Pi()); tList->Add( tH1D );
+  tH1D = new TH1D("VZEPSI","VZEPSI;PSI",72,0,TMath::Pi()); tList->Add( tH1D );
+  tH1D = new TH1D("VZEPSIA","VZEPSIA;PSIA",72,0,TMath::Pi()); tList->Add( tH1D );
+  tH1D = new TH1D("VZEPSIB","VZEPSIB;PSIB",72,0,TMath::Pi()); tList->Add( tH1D );
+  tPF1 = new TProfile("TPCQ","TPCQ",6,0.5,6.5,"s");
+  tPF1->GetXaxis()->SetBinLabel(1,"Qay"); tPF1->GetXaxis()->SetBinLabel(2,"Qax");
+  tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
+  tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
+  tList->Add( tPF1 );
+  tPF1 = new TProfile("VZEQ","VZEQ",6,0.5,6.5,"s");
+  tPF1->GetXaxis()->SetBinLabel(1,"Qay"); tPF1->GetXaxis()->SetBinLabel(2,"Qax");
+  tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
+  tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
+  tList->Add( tPF1 );
+  
+  fList->Add(tList);
+  if(!fSkipFlow) {
+    tList=new TList(); tList->SetName("TPCRFPall"); tList->SetOwner(); AddTPCRFPSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("TPCRFPsel"); tList->SetOwner(); AddTPCRFPSpy(tList); fList->Add(tList);
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddQACandidates() {
   // function to add histogramming for candidates
+  if(fSkipSelection) return;
+
   TList *tList;
   TH1D *tH1D;
   TH2D *tH2D;
   TH3D *tH3D;
 
-  Int_t nMass = 88;
-  Double_t dMinMass = 0.412, dMaxMass=0.588;
-  switch(fSpecie) {
-  case(1):
-    nMass = 92;
-    dMinMass = 1.075;
-    dMaxMass = 1.167;
-    break;
-  case(90):
-    nMass = 100;
-    dMinMass = 0.0;
-    dMaxMass = 1.0;
-    break;
+  //reconstruction
+  if(fReadESD) {
+    tList=new TList(); tList->SetName("TrkAll"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("TrkSel"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
+    tH2D = new TH2D("NPAIR", "NPAIR;NPOS;NNEG",1000,0,5000,1000,0,5000); tList->Add(tH2D);
+    tH2D = new TH2D("PtIPXY","PtIPXY;Pt;IPxy", 100,0,10,200,-10,+10); tList->Add(tH2D);
   }
-  double dArrayPt[29] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-			 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
-			 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10., 12. };
-  tList=new TList();
-  tList->SetName("Candidates");
-  tList->SetOwner();
-  tH2D = new TH2D("V0MASS","V0MASS;pT;Mass",28,dArrayPt,nMass,dMinMass,dMaxMass); tList->Add(tH2D);
-  tH2D = new TH2D("V0PhiEta","V0PhiEta;Phi;Eta",100,0,TMath::TwoPi(),100,-1.0,+1.0); tList->Add(tH2D);
-  fQAList->Add(tList);
-
-  if(fDoExtraQA) {
-    printf("Extra QA enabled\n");
-    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsBefore_IP");
-    tH3D = new TH3D("BefVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
-    tH3D = new TH3D("BefRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefCTP", "CTP;;Pt [GeV]",                 80,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
-    fQAList->Add(tList);
-    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsBefore_OP");
-    tH3D = new TH3D("BefVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
-    tH3D = new TH3D("BefRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefCTP", "CTP;;Pt [GeV]",                 50,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("BefAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
-    fQAList->Add(tList);
-    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsAfter_IP");
-    tH3D = new TH3D("AftVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
-    tH3D = new TH3D("AftRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftCTP", "CTP;;Pt [GeV]",                 50,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
-    fQAList->Add(tList);
-    tList = new TList(); tList->SetOwner(); tList->SetName("QACutsAfter_OP");
-    tH3D = new TH3D("AftVOL", "VOLUME;Phi;Eta;Pt [GeV]",       63, 0.0,+6.3, 40,-1.0,+1.0, 60,0,12); tList->Add( tH3D );
-    tH3D = new TH3D("AftRAP", "RAPIDITY;y;Pt [GeV]",           40,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftDLZ", "DLZ;[cm];Pt [GeV]",             50,-5.0,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftDLXY","DLXY;[cm];Pt [GeV]",           100,0.00,100., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftCTau","CTau;[cm];Pt [GeV]",           250,0.00,250., 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftDCA", "DCA;[cm];Pt [GeV]",             50,0.00,+5.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftCTP", "CTP;;Pt [GeV]",                 50,0.99,1.00, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftD0",  "D0;[cm];Pt [GeV]",              50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftD0D0","D0D0;[cm^{2}];Pt [GeV]",        50,-1.0,+1.0, 60,0,12, nMass, dMinMass, dMaxMass); tList->Add( tH3D );
-    tH3D = new TH3D("AftAP",  "AP;#alpha;q_{t}[GeV];Pt [GeV]", 80,-1.0,+1.0, 90,0,0.3, 60,0,12); tList->Add( tH3D );
-    fQAList->Add(tList);
+  //candidates
+  tList=new TList(); tList->SetName("RecAll"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+  tH2D = new TH2D("V0SADC","V0S AFTER DAUGHTER CUTS;V0ALL;V0IMW",100,0,1000,100,0,1000); tList->Add(tH2D);
+  tList=new TList(); tList->SetName("RecSel"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+  //daughters
+  tList=new TList(); tList->SetName("TrkDau"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
+  if(!fSkipDHcorr) {
+    //corr
+    tList=new TList(); tList->SetName("DHCORR"); tList->SetOwner(); 
+    tH3D = new TH3D("DPHI","DPHI;dPT;dPHI;dETA", 20, -1, +1, 120, -TMath::TwoPi(), TMath::TwoPi(), 16, -1.6, +1.6 ); tList->Add(tH3D);
+    fList->Add(tList);
   }
+  if(fQAlevel>1) {
+    // IN-OUT
+    tList=new TList(); tList->SetName("RecAllIP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("RecAllOP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("RecSelIP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("RecSelOP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+  }
+  //match
+  if(fReadMC) {
+    tList=new TList(); tList->SetName("RecMth"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tH1D = new TH1D("MCOrigin", "MCOrigin;Rad2",1000,0,100); tList->Add(tH1D);
+    tH2D = new TH2D("PTRes", "PTRes;MCPt;DAT-MC/MC",  100,   0,  20,100,-0.2,+0.2); tList->Add(tH2D);
+    tH2D = new TH2D("ETARes","ETARes;MCETA;DAT-MC/MC", 16,   0, 0.8,100,-0.5,+0.5); tList->Add(tH2D);
+    tH2D = new TH2D("RXYRes","RXYRes;MCRXY;DAT-MC/MC",100,   0,  20,100,-1,1);      tList->Add(tH2D);
+    tH2D = new TH2D("DLERes","DLERes;MCDLE;DAT-MC/MC",100,   0,  20,100,-1,1);      tList->Add(tH2D);
+    tH2D = new TH2D("RAPRes","RAPRes;MCRAP;DAT-MC/MC", 10,   0, 0.5,100,-0.5,+0.5); tList->Add(tH2D);
+    tH2D = new TH2D("APARes","APARes;MCAPA;DAT-MC/MC", 24,-1.2, 1.2,100,-0.5,+0.5); tList->Add(tH2D);
+    tH2D = new TH2D("APQRes","APQRes;MCAPQ;DAT-MC/MC", 25,   0,0.25,100,-0.3,+0.3); tList->Add(tH2D);
 
-  if(fMCmatch>0) { // only for MCanalysis
-    printf("MC mode enabled\n");
-    tList = new TList(); tList->SetOwner(); tList->SetName("QAMC");
-    tH3D = new TH3D("MCPDG","MC PDGm;p_{T} (GeV);Mass [GeV]",24,0,12,nMass,dMinMass,dMaxMass,30,0,30); tList->Add( tH3D );
-    tH3D->GetZaxis()->SetBinLabel( 1,"NONE");
-    tH3D->GetZaxis()->SetBinLabel( 2,"NONE chked");
-    tH3D->GetZaxis()->SetBinLabel( 3,"NONPDG");
-    tH3D->GetZaxis()->SetBinLabel( 4,"NONPDG chked"); // 3
-    tH3D->GetZaxis()->SetBinLabel( 5,"Truths");
-    tH3D->GetZaxis()->SetBinLabel( 6,"Truths chked"); // 1
-    tH3D->GetZaxis()->SetBinLabel( 7,"K_L0 chked");
-    tH3D->GetZaxis()->SetBinLabel( 8,"K_S0 chked");
-    tH3D->GetZaxis()->SetBinLabel( 9,"Lambda0 chked");
-    tH3D->GetZaxis()->SetBinLabel(10,"Lambda0_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(11,"phi chked");
-    tH3D->GetZaxis()->SetBinLabel(12,"rho0 chked");
-    tH3D->GetZaxis()->SetBinLabel(13,"omega chked");
-    tH3D->GetZaxis()->SetBinLabel(14,"f_0 chked");
-    tH3D->GetZaxis()->SetBinLabel(15,"e- chked");
-    tH3D->GetZaxis()->SetBinLabel(16,"e+ chked");
-    tH3D->GetZaxis()->SetBinLabel(17,"pi+ chked");
-    tH3D->GetZaxis()->SetBinLabel(18,"pi- chked");
-    tH3D->GetZaxis()->SetBinLabel(19,"mu+ chked");
-    tH3D->GetZaxis()->SetBinLabel(20,"mu- chked");
-    tH3D->GetZaxis()->SetBinLabel(21,"K+ chked");
-    tH3D->GetZaxis()->SetBinLabel(22,"K- chked");
-    tH3D->GetZaxis()->SetBinLabel(23,"proton chked");
-    tH3D->GetZaxis()->SetBinLabel(24,"antiproton chked");
-  
-    tH3D = new TH3D("MCMOTHER","MC MOTHER;truth p_{T} (GeV); mother p_{T} (GeV)",60,0,12,60,0,12,50,0,50); tList->Add( tH3D );
-    tH3D->GetZaxis()->SetBinLabel( 1,"NONPDG chked");
-    tH3D->GetZaxis()->SetBinLabel( 2,"PRIMARY chked");
-    tH3D->GetZaxis()->SetBinLabel( 3,"Xi0 chked");
-    tH3D->GetZaxis()->SetBinLabel( 4,"Xi0_bar chked");
-    tH3D->GetZaxis()->SetBinLabel( 5,"Xi- chked");
-    tH3D->GetZaxis()->SetBinLabel( 6,"Xi-_bar chked");
-    tH3D->GetZaxis()->SetBinLabel( 7,"Omega- chked");
-    tH3D->GetZaxis()->SetBinLabel( 8,"Omega+ chked");
-    tH3D->GetZaxis()->SetBinLabel( 9,"K+ chked");
-    tH3D->GetZaxis()->SetBinLabel(10,"K- chked");
-    tH3D->GetZaxis()->SetBinLabel(11,"Lambda0 chked");
-    tH3D->GetZaxis()->SetBinLabel(12,"Lambda0_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(13,"K0 chked");
-    tH3D->GetZaxis()->SetBinLabel(14,"K0_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(15,"K_S0 chked");
-    tH3D->GetZaxis()->SetBinLabel(16,"K_L0 chked");
-    tH3D->GetZaxis()->SetBinLabel(17,"phi chked");
-    tH3D->GetZaxis()->SetBinLabel(18,"D+ chked");
-    tH3D->GetZaxis()->SetBinLabel(19,"D- chked");
-    tH3D->GetZaxis()->SetBinLabel(20,"D0 chked");
-    tH3D->GetZaxis()->SetBinLabel(21,"D0_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(22,"D_s+ chked");
-    tH3D->GetZaxis()->SetBinLabel(23,"D_s- chked");
-    tH3D->GetZaxis()->SetBinLabel(24,"Lambda_c+ chked");
-    tH3D->GetZaxis()->SetBinLabel(25,"Lambda_c- chked");
-    tH3D->GetZaxis()->SetBinLabel(26,"Sigma*- chked");
-    tH3D->GetZaxis()->SetBinLabel(27,"Sigma*-_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(28,"Sigma*+ chked");
-    tH3D->GetZaxis()->SetBinLabel(29,"Sigma*+_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(30,"Sigma*0 chked");
-    tH3D->GetZaxis()->SetBinLabel(31,"Sigma*0_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(32,"Sigma- chked");
-    tH3D->GetZaxis()->SetBinLabel(33,"Sigma+_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(34,"Sigma0 chked");
-    tH3D->GetZaxis()->SetBinLabel(35,"Sigma0_bar chked");
-    tH3D->GetZaxis()->SetBinLabel(36,"NONE chked");
-    tH1D = new TH1D("MCDAUGHTERS","MC DAUGHTERS",10,0,10); tList->Add( tH1D );
-    tH2D = new TH2D("MCRADS","MC RADS",2,0,2,200,0,10); tList->Add( tH2D );
-    fQAList->Add(tList);
-  } // only for MCanalysis
-
+    tList=new TList(); tList->SetName("TrkMth"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MthFDW"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tH1D = new TH1D("MCOrigin", "MCOrigin;Rad2",1000,0,100); tList->Add(tH1D);
+  }
+  //stack
+  if(fReadMC) {
+    tList=new TList(); tList->SetName("GenTru"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTK0sGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTLdaGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTPhiGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTXiGenAcc");  tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTK0s"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTLda"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+  }
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *)
-{
-  // user exec
-  AliAODEvent *tAOD=dynamic_cast<AliAODEvent*>(InputEvent());
-  Bool_t acceptEvent=kFALSE;
+void AliAnalysisTaskFlowStrange::Exec(Option_t* option) {
+  // bypassing ::exec (needed because of AMPT)
+  ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(0);
+  if(fAvoidExec) {
+    AliAnalysisTaskFlowStrange::UserExec(option);
+  } else {
+    AliAnalysisTaskSE::Exec(option);
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::UserExec(Option_t *option) {
+  // bridge
+  ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(1);
+  AliAnalysisTaskFlowStrange::MyUserExec(option);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MyNotifyRun() {
+  if(fQAlevel>5 && !fReadESD) AddVZEQA();
+  if(fVZEsave) AddVZEROResponse();
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::CalibrateEvent() {
+  if(fVZEsave) SaveVZEROResponse();
+  if(fQAlevel>5 && !fReadESD) SaveVZEROQA(); // 2BIMPROVED
+  Bool_t okay=kTRUE;
+  if(fVZEload) {
+    LoadVZEROResponse();
+    if(!fVZEResponse) okay = kFALSE;
+  }
+  return okay;
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent *tESD) {
+  Double_t acceptEvent=kTRUE;
+  Double_t tTPCVtxZ = tESD->GetPrimaryVertexTPC()->GetZ();
+  if(tESD->GetPrimaryVertexTPC()->GetNContributors()<=0) return kFALSE;
+  Double_t tSPDVtxZ = tESD->GetPrimaryVertexSPD()->GetZ();
+  if(tESD->GetPrimaryVertexSPD()->GetNContributors()<=0) return kFALSE;
+  // EventCuts
+  AliCentrality *cent = tESD->GetCentrality();
+  Double_t cc1, cc2;
+  cc1 = cent->GetCentralityPercentile("V0M");
+  cc2 = cent->GetCentralityPercentile("TRK");
+  TString mycent = fCentMethod;
+  if(fCentMethod.Contains("V0MTRK")) {
+    acceptEvent = TMath::Abs(cc1-cc2)>5.0?kFALSE:acceptEvent; // a la Alex
+    mycent = "V0M";
+  }
+  fThisCent = cent->GetCentralityPercentile( mycent );
+  acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(tTPCVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(tTPCVtxZ)>10.0?kFALSE:acceptEvent;
+  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
+  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  // EndOfCuts
+  return acceptEvent;
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliAODEvent *tAOD) {
+  Double_t acceptEvent=kTRUE;
+  //=>Pile-up rejection (hardcoded)
+  Double_t tVtxZ = tAOD->GetPrimaryVertex()->GetZ();
+  if(tAOD->GetPrimaryVertex()->GetNContributors()<=0) return kFALSE;
+  Double_t tSPDVtxZ = tAOD->GetPrimaryVertexSPD()->GetZ();
+  if(tAOD->GetPrimaryVertexSPD()->GetNContributors()<=0) return kFALSE;
+  Int_t tpc = RefMultTPC();
+  Int_t glo = RefMultGlobal();
+  if(fExtraEventRejection) {
+    TString name = tAOD->GetPrimaryVertex()->GetTitle();
+    if( !name.Contains("VertexerTracks") ) return kFALSE;
+    if( ( Float_t(tpc) < -40.3+1.22*glo ) || ( Float_t(tpc)>(32.1+1.59*glo) ) ) return kFALSE;
+  }
+  // EventCuts
+  AliCentrality *cent = tAOD->GetHeader()->GetCentralityP();
+  Double_t cc1, cc2;
+  cc1 = cent->GetCentralityPercentile("V0M");
+  cc2 = cent->GetCentralityPercentile("TRK");
+  TString mycent = fCentMethod;
+  if(fCentMethod.Contains("V0MTRK")) {
+    acceptEvent = TMath::Abs(cc1-cc2)>5.0?kFALSE:acceptEvent;
+    mycent = "V0M";
+  }
+  fThisCent = cent->GetCentralityPercentile( mycent );
+
+  Double_t xsec=0;
+  if(fReadMC) {
+    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(tAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!mcHeader) {
+      return kFALSE;
+    }
+    xsec = mcHeader->GetCrossSection();
+    fMCEP = mcHeader->GetReactionPlaneAngle();
+  }
+
+  acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(tVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(tVtxZ)>10.0?kFALSE:acceptEvent;
+  if(fQAlevel>0) {
+    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("REFM"))->Fill( tpc, glo );
+    if(fReadMC) {
+      ((TH1D*)((TList*)fList->FindObject("EventSpy"))->FindObject("MCCC"))->Fill( xsec );
+      ((TH1D*)((TList*)fList->FindObject("EventSpy"))->FindObject("MCEP"))->Fill( fMCEP );
+    }
+  }
+  // EndOfCuts
+  return acceptEvent;
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::AcceptPPEvent(AliAODEvent *tAOD) {
+  Double_t acceptEvent=kTRUE;
+  Double_t tVtxZ = tAOD->GetPrimaryVertex()->GetZ();
+  if(tAOD->GetPrimaryVertex()->GetNContributors()<=0) return kFALSE;
+  Double_t tSPDVtxZ = tAOD->GetPrimaryVertexSPD()->GetZ();
+  if(tAOD->GetPrimaryVertexSPD()->GetNContributors()<=0) return kFALSE;
+  // EventCuts
+  AliCentrality *cent = tAOD->GetHeader()->GetCentralityP();
+  Double_t cc1, cc2;
+  cc1 = cent->GetCentralityPercentile("V0M");
+  cc2 = cent->GetCentralityPercentile("TRK");
+  fThisCent = GetReferenceMultiplicity();
+  //for pp i use fCentPerXXX to select on multiplicity
+  acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(tVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(tVtxZ)>10.0?kFALSE:acceptEvent;
+  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  // EndOfCuts
+  return acceptEvent;
+}
+//=======================================================================
+Int_t AliAnalysisTaskFlowStrange::GetReferenceMultiplicity() { //toberefined
+  AliAODEvent *tAOD = (AliAODEvent *) InputEvent();
+  if(!tAOD) return -1;
+  AliAODTrack *track;
+  Int_t rawN = tAOD->GetNumberOfTracks();
+  Int_t ref=0;
+  for(Int_t id=0; id!=rawN; ++id) {
+    track = tAOD->GetTrack(id);
+    if(!track->TestFilterBit(fRFPFilterBit)) continue;
+    ++ref;
+  }
+  return ref;
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::AcceptPAEvent(AliAODEvent *tAOD) {
+  //if(aod->GetHeader()->GetEventNumberESDFile() == 0) return; //rejecting first chunk NOT NEEDED ANYMORE
+  Int_t bc2 = tAOD->GetHeader()->GetIRInt2ClosestInteractionMap();
+  if(bc2!=0) return kFALSE;
+  Int_t bc1 = tAOD->GetHeader()->GetIRInt1ClosestInteractionMap();
+  if(bc1!=0) return kFALSE;
+  Short_t isPileup = tAOD->IsPileupFromSPD(5);
+  if(isPileup!=0) return kFALSE;
+  if(tAOD->GetHeader()->GetRefMultiplicityComb08()<0) return kFALSE;
+
+  const AliAODVertex* spdVtx = tAOD->GetPrimaryVertexSPD();
+  if(!spdVtx) return kFALSE;
+  if(spdVtx->GetNContributors()<=0) return kFALSE;
+
+  const AliAODVertex* tpcVtx=NULL;
+  Int_t nVertices = tAOD->GetNumberOfVertices();
+  for(Int_t iVertices = 0; iVertices < nVertices; iVertices++){
+    const AliAODVertex* vertex = tAOD->GetVertex(iVertices);
+    if (vertex->GetType() != AliAODVertex::kMainTPC) continue;
+    tpcVtx = vertex;
+  }
+  if(!tpcVtx) return kFALSE;
+  if(tpcVtx->GetNContributors()<=0) return kFALSE;
+  Double_t tTPCVtxZ = tpcVtx->GetZ();
+  Double_t tSPDVtxZ = spdVtx->GetZ();
+  if (TMath::Abs(tSPDVtxZ - tTPCVtxZ)>2.0) return kFALSE;
+  if(plpMV(tAOD)) return kFALSE;
+
+  Double_t acceptEvent=kTRUE;
+  // EventCuts
+  AliCentrality *cent = tAOD->GetHeader()->GetCentralityP();
+  Double_t cc1, cc2;
+  cc1 = cent->GetCentralityPercentile("V0M");
+  cc2 = cent->GetCentralityPercentile("TRK");
+  if(fCentMethod.Contains("V0MTRK")) fCentMethod = "V0M";
+  fThisCent = cent->GetCentralityPercentile( fCentMethod );
+  acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(tTPCVtxZ)>10.0?kFALSE:acceptEvent;
+  // EndOfCuts
+  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
+  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  return acceptEvent;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
+  // MAIN ROUTINE
+  TStopwatch tTime;
+  tTime.Start();
   fCandidates->SetLast(-1);
-  if(tAOD) {
-    ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("Events"))->Fill(0);
-    Double_t tVtxZ = tAOD->GetPrimaryVertex()->GetZ();
-    Double_t tSPDVtxZ = tAOD->GetPrimaryVertexSPD()->GetZ();
-    if( fDoQA )
-      ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
-    Bool_t tESelection = TMath::Abs(tVtxZ-tSPDVtxZ) < 0.5;
-    Bool_t tDSelection = kTRUE;
-    if(fUseEventSelection) {
-      tDSelection = fCutsEvent->IsSelected(tAOD);
+  AliESDEvent *tESD=dynamic_cast<AliESDEvent*>(InputEvent());
+  AliAODEvent *tAOD=dynamic_cast<AliAODEvent*>(InputEvent());
+  Int_t thisRun = fRunNumber;
+  //=>check event
+  Bool_t acceptEvent=kFALSE;
+  if(fReadESD) {
+    if(!tESD) {ResetContainers(); Publish(); return;}
+    acceptEvent = fRunOnpp?kFALSE:fRunOnpA?kFALSE:AcceptAAEvent(tESD);
+    thisRun = tESD->GetRunNumber();
+  } else {
+    if(!tAOD) {ResetContainers(); Publish(); return;}
+    acceptEvent = fRunOnpp?AcceptPPEvent(tAOD):fRunOnpA?AcceptPAEvent(tAOD):AcceptAAEvent(tAOD);
+    thisRun = tAOD->GetRunNumber();
+  }
+  if(thisRun!=fRunNumber) {
+    fRunNumber = thisRun;
+    MyNotifyRun();
+  }
+  ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(2);
+  //=>does the event clear?
+  if(!acceptEvent) {ResetContainers(); Publish(); return;}
+  // healthy event incomming
+  if( !CalibrateEvent() ) { // saves/retrieves/qas VZEROCAL
+    ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(5);
+    ResetContainers(); Publish(); return; // issue retrieving callibration
+  }
+  if(!fSkipFlow) {
+    MakeQVectors();
+    if(fPsi2<-0.1) {
+      ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(4);
+      ResetContainers(); Publish(); return;
+    }
+  }
+  //=>great, lets do our stuff!
+  ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(3);
+  //=>load candidates
+  if(!fSkipSelection) {
+    if(fReadESD) {
+      ReadFromESD(tESD);
     } else {
-      if(TMath::Abs(tVtxZ)>10.0) tDSelection = kFALSE; // Cut on VtxZ mandatory!
+      if(fSpecie<10) ReadFromAODv0(tAOD);
+      else ChargeParticles(tAOD);
     }
-    if(tDSelection&&tESelection) {
-      acceptEvent=kTRUE;
-      ReadFromAODv0(tAOD);
-      if( fDoQA )
-	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VTXZSEL"))->Fill( tVtxZ, tSPDVtxZ );
+    if(fUseFP) {
+      if(!fSkipDHcorr) MakeDHcorr();
+      AddCandidates();
     }
+    //=>flow
+    //=>done
   }
-  if(!acceptEvent) return;
-  // QA filling
-  ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("Events"))->Fill(1);
-  ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("RFPTPC"))->Fill( fFlowEventTPC->GetNumberOfRPs() );
-  Double_t mult=0;
-  for(Int_t i=0;i!=fFlowEventVZE->GetNumberOfRPs();++i) {
-    AliFlowTrackSimple *pTrack = fFlowEventVZE->GetTrack(i);
-    mult += pTrack->Weight();
-  }
-  ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("RFPVZE"))->Fill( mult );
-  ((TH1D*)((TList*)fQAList->FindObject("Event"))->FindObject("POI"))->Fill( fCandidates->GetEntriesFast() );
-  AddCandidates();
-
-  PostData(1,fFlowEventTPC);
-  PostData(2,fFlowEventVZE);
-  PostData(3,fQAList);
-  return;
+  tTime.Stop();
+  ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("RealTime"))->Fill( TMath::Log( tTime.RealTime() ) );
+  Publish();
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::AddCandidates()
-{
-  // adds candidates to flow events (untaging if necessary)
-  if(fDebug) printf("I received %d candidates\n",fCandidates->GetEntriesFast());
-  for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
-    AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
-    if(!cand) continue;
-    if(fDebug) printf(" >Checking at candidate %d with %d daughters: mass %f\n",
-		      iCand,cand->GetNDaughters(),cand->Mass());
-    // untagging ===>
-    for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
-      if(fDebug) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
-      for(int iRPs=0; iRPs!=fFlowEventTPC->NumberOfTracks(); ++iRPs ) {
-        AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEventTPC->GetTrack( iRPs ));
-        if (!iRP) continue;
-        if( !iRP->InRPSelection() ) continue;
-        if( cand->GetIDDaughter(iDau) == iRP->GetID() ) {
-          if(fDebug) printf(" was in RP set");
-          iRP->SetForRPSelection(kFALSE);
-          fFlowEventTPC->SetNumberOfRPs( fFlowEventTPC->GetNumberOfRPs() -1 );
+void AliAnalysisTaskFlowStrange::Publish() {
+  PostData(1,fList);
+  if(fUseFP) {
+    PostData(2,fTPCevent);
+    PostData(3,fVZEevent);
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::ReadFromESD(AliESDEvent *tESD) {
+  AliStack *stack=NULL;
+  if(fReadMC) {
+    AliMCEvent *mcevent=NULL;
+    mcevent = MCEvent();
+    if(mcevent) stack = mcevent->Stack();
+  }
+
+  Int_t num = tESD->GetNumberOfTracks();
+  AliESDtrack *myTrack;
+  Int_t plist[3000], nlist[3000], np=0, nn=0;
+  Double_t pd0[3000], nd0[3000];
+  for (Int_t i=0; i!=num; ++i) {
+    myTrack = (AliESDtrack*) tESD->GetTrack(i);
+    if(!myTrack) continue;
+    LoadTrack(myTrack);
+    FillTrackSpy("TrkAll");
+    if(!AcceptDaughter()) continue;
+    FillTrackSpy("TrkSel");
+    ((TH2D*)((TList*)fList->FindObject("TrkSel"))->FindObject("PtIPXY" ))->Fill( myTrack->Pt(), fDaughterImpactParameterXY );
+    if( myTrack->Charge()>0 ) {
+      pd0[np] = fDaughterImpactParameterXY;
+      plist[np++] = i;
+    } else {
+      nd0[nn] = fDaughterImpactParameterXY;
+      nlist[nn++] = i;
+    }
+  }
+  ((TH1D*)((TList*)fList->FindObject("TrkSel"))->FindObject("NPAIR" ))->Fill( np,nn );
+  const AliESDVertex *vtx = tESD->GetPrimaryVertex();
+  AliESDtrack *pT, *nT;
+  for(int p=0; p!=np; ++p) {
+    pT = (AliESDtrack*) tESD->GetTrack( plist[p] );
+    for(int n=0; n!=nn; ++n) {
+      nT = (AliESDtrack*) tESD->GetTrack( nlist[n] );
+      fDecayProductIPXY = pd0[p]*nd0[n];
+      AliExternalTrackParam pETP(*pT), nETP(*nT);
+      Double_t xa, xb;
+      pETP.GetDCA(&nETP,tESD->GetMagneticField(),xa,xb);
+      fDecayDCAdaughters = pETP.PropagateToDCA(&nETP,tESD->GetMagneticField());
+      AliESDv0 vertex( nETP,nlist[n], pETP,plist[p] );
+      fDecayCosinePointingAngleXY = CosThetaPointXY( &vertex, vtx );
+      fDecayRadXY = DecayLengthXY( &vertex, vtx );
+      fDecayPt = vertex.Pt();
+      fDecayPhi = vertex.Phi();
+      fDecayEta = vertex.Eta();
+      Double_t pmx, pmy, pmz, nmx, nmy, nmz;
+      vertex.GetNPxPyPz(nmx,nmy,nmz);
+      vertex.GetPPxPyPz(pmx,pmy,pmz);
+      TVector3 mom1(pmx,pmy,pmz), mom2(nmx,nmy,nmz), mom(vertex.Px(),vertex.Py(),vertex.Pz());
+      Double_t qlpos = mom1.Dot(mom)/mom.Mag();
+      Double_t qlneg = mom2.Dot(mom)/mom.Mag();
+      fDecayQt = mom1.Perp(mom);
+      fDecayAlpha = (qlpos-qlneg)/(qlpos+qlneg);
+      Double_t mpi = 0.13957018;
+      if(fSpecie==0) {
+        Double_t eppi = TMath::Sqrt( mpi*mpi + pmx*pmx + pmy*pmy + pmz*pmz );
+        Double_t enpi = TMath::Sqrt( mpi*mpi + nmx*nmx + nmy*nmy + nmz*nmz );
+        fDecayMass = TMath::Sqrt( mpi*mpi + mpi*mpi + 2*(eppi*enpi - pmx*nmx - pmy*nmy - pmz*nmz ) );
+        fDecayRapidity = vertex.RapK0Short();
+      } else {
+        Double_t mpr = 0.938272013;
+        Double_t epi, epr;
+        if(fDecayAlpha>0) {
+          epr = TMath::Sqrt( mpr*mpr + pmx*pmx + pmy*pmy + pmz*pmz );
+          epi = TMath::Sqrt( mpi*mpi + nmx*nmx + nmy*nmy + nmz*nmz );
+        } else {
+          epi = TMath::Sqrt( mpi*mpi + pmx*pmx + pmy*pmy + pmz*pmz );
+          epr = TMath::Sqrt( mpr*mpr + nmx*nmx + nmy*nmy + nmz*nmz );
         }
+        fDecayMass = TMath::Sqrt( mpi*mpi + mpr*mpr + 2*(epi*epr - pmx*nmx - pmy*nmy - pmz*nmz ) );
+        fDecayRapidity = vertex.RapLambda();
       }
-      if(fDebug) printf("\n");
-    }
-    // <=== untagging
-    cand->SetForPOISelection(kTRUE);
-    fFlowEventTPC->InsertTrack( ((AliFlowTrack*) cand) );
-    fFlowEventVZE->InsertTrack( ((AliFlowTrack*) cand) );
-  }
-  if(fDebug) printf("TPCevent %d | VZEevent %d\n",
-		    fFlowEventTPC->NumberOfTracks(),
-		    fFlowEventVZE->NumberOfTracks() );
-}
+      Double_t energy = TMath::Sqrt( fDecayMass*fDecayMass + vertex.Px()*vertex.Px() + vertex.Py()*vertex.Py() + vertex.Pz()*vertex.Pz() );
+      Double_t gamma = energy/fDecayMass;
+      fDecayDecayLength = DecayLength( &vertex, vtx )/gamma;
+      Double_t dPHI = fDecayPhi;
+      Double_t dDPHI = dPHI - fPsi2;
+      if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
+      if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
+      if(fQAlevel>1) {
+        if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecAllOP");
+        else FillCandidateSpy("RecAllIP");
+      }
+      FillCandidateSpy("RecAll");
+      ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
+      ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+      if(!AcceptCandidate()) continue;
+      if(fDecayMass<fMinMass) continue;
+      if(fDecayMass>fMaxMass) continue;
+      // PID missing
+      if(fQAlevel>1) {
+        if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecSelOP");
+        else FillCandidateSpy("RecSelIP");
+      }
+      FillCandidateSpy("RecSel");
+      ((TH2D*)((TList*)fList->FindObject("RecSel"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
+      ((TH2D*)((TList*)fList->FindObject("RecSel"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
 
-//=======================================================================
-void AliAnalysisTaskFlowStrange::ChargedParticleAnalysis(AliAODEvent *tAOD)
-{
-  if(fMCmatch>0) fBayesianPID->SetMC(kTRUE);
-  fBayesianPID->SetDetResponse(tAOD,999);
-  for(int iRPs=0; iRPs!=fFlowEventTPC->NumberOfTracks(); ++iRPs ) {
-    AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEventTPC->GetTrack( iRPs ));
-    if(!iRP) continue;
-    Int_t ntracks = tAOD->GetNTracks();
-    AliAODTrack *iT = NULL;
-    for(Int_t it=0; it!=ntracks; ++it) {
-      iT = (AliAODTrack*) tAOD->GetTrack(it);
-      if(iT->GetID() == iRP->GetID()) break;
-      iT = NULL;
-    }
-    if(!iT) continue;
-    fBayesianPID->ComputeProb(iT,tAOD);
-    Float_t *prob = fBayesianPID->GetProb();
-    Float_t tofMismProb = fBayesianPID->GetTOFMismProb();
-    if( fBayesianPID->GetCurrentMask(1) && tofMismProb<0.5 ) {
-      iRP->SetMass( prob[3] );
-      iRP->SetForPOISelection(kTRUE);
-      iRP->SetForRPSelection(kFALSE);
-      fFlowEventVZE->InsertTrack( ((AliFlowTrack*) iRP) );
-      iRP->SetForRPSelection(kTRUE);
-      // === MATCHED TO MC ===>>
-      if(fMCmatch>0) {
-      	TClonesArray* mcArray = dynamic_cast<TClonesArray*>(tAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-      	if(mcArray) {
-      	  TString sPDG="NONE";
-      	  TString sMOTHER = "NONE";
-      	  Double_t ptTruth=-1, ptMom=-1;
-      	  AliAODMCParticle *iTMC = dynamic_cast<AliAODMCParticle*>(mcArray->At( TMath::Abs(iT->GetLabel()) ));
-          if(iTMC) {
-            sPDG="NONPDG";
-            ptTruth = iTMC->Pt();
-      	    Int_t iPDG = iTMC->GetPdgCode();
-            TDatabasePDG *pdgDatabase = TDatabasePDG::Instance();
-            if(pdgDatabase->GetParticle(iPDG))
-              sPDG = (pdgDatabase->GetParticle(iPDG))->GetName();
-            if(iTMC->GetMother()>=0) {
-              AliAODMCParticle *iTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMC->GetMother()));
-              if(iTMom) {
-                ptMom = iTMom->Pt();
-                sMOTHER="NONPDG";
-                Int_t iMomPDG = iTMom->GetPdgCode();
-                pdgDatabase = TDatabasePDG::Instance();
-                if(pdgDatabase->GetParticle(iMomPDG))
-                sMOTHER = (pdgDatabase->GetParticle(iMomPDG))->GetName();
+      fDecayIDneg = nT->GetID();
+      fDecayIDpos = pT->GetID();
+      MakeTrack();
+      LoadTrack(pT); FillTrackSpy("TrkDau");
+      LoadTrack(nT); FillTrackSpy("TrkDau");
+
+      //===== BEGIN OF MCMATCH
+      if(stack) {
+        bool matched = false;
+        Int_t labelpos = pT->GetLabel();
+        Int_t labelneg = nT->GetLabel();
+        Double_t rOri=-1;
+        if( labelpos>0 && labelneg>0 ) {
+          TParticle *mcpos = stack->Particle( labelpos );
+          TParticle *mcneg = stack->Particle( labelneg );
+          Int_t pdgRecPos = mcpos->GetPdgCode();
+          Int_t pdgRecNeg = mcneg->GetPdgCode();
+          if( pdgRecPos==211&&pdgRecNeg==-211 ) if(mcpos->GetMother(0)>0) {
+            if( mcpos->GetMother(0)==mcneg->GetMother(0) ) {
+              TParticle *mcmot = stack->Particle( mcpos->GetMother(0) );
+              rOri = TMath::Sqrt( mcmot->Vx()*mcmot->Vx() + mcmot->Vy()*mcmot->Vy() );
+              if( TMath::Abs(mcmot->GetPdgCode())==310) {
+                if(mcmot->GetNDaughters()==2) matched=true;
               }
-            } else {
-              sMOTHER="PRIMARY";
             }
           }
-          Double_t dMASS=prob[3];
-          if(dMASS>1) dMASS=1;
-          if(dMASS<0) dMASS=0;
-          if(iT->GetLabel()>=0) {
-            sPDG = Form("%s chked",sPDG.Data());
-            sMOTHER = Form("%s chked",sMOTHER.Data());
-          }
-          ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCPDG"))->Fill(iT->Pt(),dMASS,sPDG.Data(),1);
-          if(dMASS>=0.90)
-            ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCMOTHER"))->Fill(ptTruth,ptMom,sMOTHER.Data(),1);
+        }
+        if(matched) {
+          FillCandidateSpy("RecMth");
+          ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
+          ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+          ((TH1D*)((TList*)fList->FindObject("RecMth"))->FindObject("MCOrigin"))->Fill( rOri );
+          LoadTrack(pT); FillTrackSpy("TrkMth");
+          LoadTrack(nT); FillTrackSpy("TrkMth");
         }
       }
-      // <<=== MATCHED TO MC ===
+      //===== END OF MCMATCH
     }
   }
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD)
-{
-  fCutsRFPTPC->SetEvent(tAOD,MCEvent());
-  fCutsRFPVZE->SetEvent(tAOD,MCEvent());
-  fCutsPOI->SetEvent(tAOD,MCEvent());
-  fFlowEventTPC->Fill(fCutsRFPTPC,fCutsPOI);
-  fFlowEventVZE->Fill(fCutsRFPVZE,fCutsPOI);
-  fPsi2 = (fFlowEventVZE->GetQ()).Phi()/2;
-
-  for(Int_t i=0; i!=fFlowEventTPC->NumberOfTracks(); i++) {
-    AliFlowTrackSimple *pTrack = (AliFlowTrackSimple*) fFlowEventTPC->GetTrack(i);
-    if(!pTrack) continue;
-    if(!pTrack->InRPSelection()) continue;
-    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPhiEta"))->Fill( pTrack->Phi(), pTrack->Eta(), pTrack->Weight() );
-  }
-  for(Int_t i=0; i!=fFlowEventVZE->NumberOfTracks(); i++) {
-    AliFlowTrackSimple *pTrack = (AliFlowTrackSimple*) fFlowEventVZE->GetTrack(i);
-    if(!pTrack) continue;
-    if(!pTrack->InRPSelection()) continue;
-    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VZEPhiEta"))->Fill( pTrack->Phi(), pTrack->Eta(), pTrack->Weight() );
-  }
-
-  if(fDoQA) {
-    AliFlowVector Qs[2];
-    fFlowEventVZE->TagSubeventsInEta(-5,1,1,+5);
-    fFlowEventVZE->Get2Qsub(Qs,2);
-    Double_t dEPV0C = Qs[1].Phi()/2;
-    Double_t dEPV0A = Qs[0].Phi()/2;
-    Double_t dEPTPC = (fFlowEventTPC->GetQ()).Phi()/2;
-    ((TH3D*)((TList*)fQAList->FindObject("Event"))->FindObject("EVPLANE"))->Fill( dEPTPC, dEPV0A, dEPV0C );
-    Double_t dVZEQx = (fFlowEventVZE->GetQ(2)).Px() / (fFlowEventVZE->GetQ(2)).GetMult();
-    Double_t dVZEQy = (fFlowEventVZE->GetQ(2)).Py() / (fFlowEventVZE->GetQ(2)).GetMult();
-    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("VZEQxQy"))->Fill( dVZEQx, dVZEQy );
-    ((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCQxQy"))->Fill( (fFlowEventTPC->GetQ(2)).Px() / (fFlowEventTPC->GetQ(2)).GetMult(),
-										  (fFlowEventTPC->GetQ(2)).Py() / (fFlowEventTPC->GetQ(2)).GetMult() );
-    // TPC Q
-    const int ngr=24;
-    double dArrayPt[25] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-			   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
-			   2.5, 3.0, 3.5, 4.0, 5.0 };
-    double dTPCPt[ngr];
-    double dTPCQx[ngr];
-    double dTPCQy[ngr];
-    double dTPCEta[ngr];
-    double dTPCM[ngr];
-    for(int i=0; i!=ngr; ++i) {
-      dTPCPt[i] = 0;
-      dTPCQx[i] = 0;
-      dTPCQy[i] = 0;
-      dTPCEta[i] = 0;
-      dTPCM[i] = 0;
+void AliAnalysisTaskFlowStrange::ReadStack(TClonesArray* mcArray) {
+  if(!mcArray) return;
+  AliAODMCParticle *myMCTrack, *iMCDau, *jMCDau;
+  for(int i=0; i!=mcArray->GetEntriesFast(); ++i) {
+    myMCTrack = dynamic_cast<AliAODMCParticle*>(mcArray->At( i ));
+    if(!myMCTrack) continue;
+    int tPDG=310;
+    if(fSpecie>0) tPDG = 3122;
+    if( TMath::Abs(myMCTrack->PdgCode())==tPDG )
+      if( myMCTrack->GetNDaughters() == 2 ) {
+        Int_t iDau = myMCTrack->GetDaughter(0);
+        Int_t jDau = myMCTrack->GetDaughter(1);
+        AliAODMCParticle *posDau=NULL;
+        AliAODMCParticle *negDau=NULL;
+        if(iDau>0&&jDau>0) {
+          iMCDau = dynamic_cast<AliAODMCParticle*>(mcArray->At( iDau ));
+          jMCDau = dynamic_cast<AliAODMCParticle*>(mcArray->At( jDau ));
+          if(iMCDau) {
+            if(iMCDau->Charge()>0) posDau=iMCDau;
+            else negDau=iMCDau;
+          }
+          if(jMCDau) {
+            if(jMCDau->Charge()>0) posDau=jMCDau;
+            else negDau=jMCDau;
+          }
+        } //got two daughters
+        if(posDau&&negDau) {
+          Double_t dx = myMCTrack->Xv() - posDau->Xv();
+          Double_t dy = myMCTrack->Yv() - posDau->Yv();
+          Double_t dz = myMCTrack->Zv() - posDau->Zv();
+          fDecayRadXY = TMath::Sqrt( dx*dx + dy*dy );
+          TVector3 momPos(posDau->Px(),posDau->Py(),posDau->Pz());
+          TVector3 momNeg(negDau->Px(),negDau->Py(),negDau->Pz());
+          TVector3 momTot(myMCTrack->Px(),myMCTrack->Py(),myMCTrack->Pz());
+          Double_t qlpos = momPos.Dot(momTot)/momTot.Mag();
+          Double_t qlneg = momNeg.Dot(momTot)/momTot.Mag();
+          fDecayQt = momPos.Perp(momTot);
+          fDecayAlpha = 1.-2./(1.+qlpos/qlneg);
+          fDecayMass = myMCTrack->GetCalcMass();
+          Double_t energy = myMCTrack->E();
+          Double_t gamma = energy/fDecayMass;
+          fDecayDecayLength = TMath::Sqrt(dx*dx+dy*dy+dz*dz)/gamma;
+          fDecayPt = myMCTrack->Pt();
+          fDecayPhi = myMCTrack->Phi();
+          fDecayEta = myMCTrack->Eta();
+          fDecayRapidity = myMCTrack->Y();
+          fDecayDCAdaughters = 0;
+          fDecayCosinePointingAngleXY = 1;
+          fDecayProductIPXY = -1;
+          if(AcceptCandidate()) FillCandidateSpy("GenTru");
+        }
+      } // k0/lda with two daughters
+    //==== BEGIN TRACK CUTS
+    if(myMCTrack->Eta()<-0.8) continue;
+    if(myMCTrack->Eta()>+0.8) continue;
+    //==== END TRACK CUTS
+    switch( TMath::Abs(myMCTrack->PdgCode()) ) {
+    case (310): //k0s
+      FillMCParticleSpy( "MCTK0s", myMCTrack );
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTK0sGenAcc", myMCTrack );
+      break;
+    case (3122): //lda
+      FillMCParticleSpy( "MCTLda", myMCTrack );
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTLdaGenAcc", myMCTrack );
+      break;
+    case (333): //phi
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTPhiGenAcc", myMCTrack );
+      break;
+    case (3312): //xi
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTXiGenAcc", myMCTrack );
+      break;
     }
-    for(Int_t i=0; i!=fFlowEventTPC->NumberOfTracks(); i++) {
-      AliFlowTrackSimple *pTrack = (AliFlowTrackSimple*) fFlowEventTPC->GetTrack(i);
-      if(!pTrack) continue;
-      if(!pTrack->InRPSelection()) continue;
-      Double_t dPt  = pTrack->Pt();
-      int npt=-1;
-      for(int pt=0; pt!=ngr; ++pt)
-	if( (dPt > dArrayPt[pt])&&(dPt < dArrayPt[pt+1]) ) {
-	  npt = pt;
-	  break;
-	}
-      if(npt<0) continue;
-      Double_t dPhi = pTrack->Phi();
-      Double_t dWeight = pTrack->Weight();
-      dTPCPt[npt] += dWeight*dPt;
-      dTPCQx[npt] += dWeight*TMath::Cos(2*dPhi);
-      dTPCQy[npt] += dWeight*TMath::Sin(2*dPhi);
-      dTPCEta[npt] += dWeight*pTrack->Eta();
-      dTPCM[npt] += dWeight;
-    }
-    for(int i=0; i!=ngr; ++i)
-      if( dTPCM[i]>0 ) {
-	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPtQx"))->Fill( dTPCPt[i]/dTPCM[i], dTPCQx[i]/dTPCM[i] );
-	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPtQy"))->Fill( dTPCPt[i]/dTPCM[i], dTPCQy[i]/dTPCM[i] );
-	((TH2D*)((TList*)fQAList->FindObject("Event"))->FindObject("TPCPtEta"))->Fill( dTPCPt[i]/dTPCM[i], dTPCEta[i]/dTPCM[i] );
-      }
-    // End of TPC Q
-    const AliAODVertex* trkVtx = tAOD->GetPrimaryVertex();
-    Double_t cov[6]={0};
-    trkVtx->GetCovarianceMatrix(cov);
-    ((TH3D*)((TList*)fQAList->FindObject("Event"))->FindObject("PRIMVERTEX"))->Fill( TMath::Sqrt( cov[0] ),
-										     TMath::Sqrt( cov[2] ),
-										     TMath::Sqrt( cov[5] ) );
+    
+  }
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::CosThetaPointXY(AliESDv0 *me, const AliVVertex *vtx) {
+  TVector3 mom( me->Px(), me->Py(), 0 );
+  TVector3 fli( me->Xv()-vtx->GetX(), me->Yv()-vtx->GetY(), 0 );
+  Double_t ctp = mom.Dot(fli) / mom.Mag() / fli.Mag();
+  return ctp;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::CosThetaPointXY(AliAODv0 *me, const AliVVertex *vtx) {
+  TVector3 mom( me->Px(), me->Py(), 0 );
+  TVector3 fli( me->Xv()-vtx->GetX(), me->Yv()-vtx->GetY(), 0 );
+  Double_t ctp = mom.Dot(fli) / mom.Mag() / fli.Mag();
+  return ctp;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::DecayLengthXY(AliESDv0 *me, const AliVVertex *vtx) {
+  Double_t dx = me->Xv()-vtx->GetX();
+  Double_t dy = me->Yv()-vtx->GetY();
+  Double_t dxy = TMath::Sqrt( dx*dx + dy*dy );
+  return dxy;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::DecayLengthXY(AliAODv0 *me, const AliVVertex *vtx) {
+  Double_t dx = me->Xv()-vtx->GetX();
+  Double_t dy = me->Yv()-vtx->GetY();
+  Double_t dxy = TMath::Sqrt( dx*dx + dy*dy );
+  return dxy;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::DecayLength(AliESDv0 *me, const AliVVertex *vtx) {
+  Double_t dx = me->Xv()-vtx->GetX();
+  Double_t dy = me->Yv()-vtx->GetY();
+  Double_t dz = me->Zv()-vtx->GetZ();
+  Double_t dxy = TMath::Sqrt( dx*dx + dy*dy + dz*dz );
+  return dxy;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::DecayLength(AliAODv0 *me, const AliVVertex *vtx) {
+  Double_t dx = me->Xv()-vtx->GetX();
+  Double_t dy = me->Yv()-vtx->GetY();
+  Double_t dz = me->Zv()-vtx->GetZ();
+  Double_t dxy = TMath::Sqrt( dx*dx + dy*dy + dz*dz );
+  return dxy;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
+  TClonesArray* mcArray=NULL;
+  if(fReadMC) {
+    mcArray = dynamic_cast<TClonesArray*>(tAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    ReadStack(mcArray);
   }
 
-  if(fSpecie>80) {
-    ChargedParticleAnalysis(tAOD);
-    return;
-  }
   Int_t nV0s = tAOD->GetNumberOfV0s();
   AliAODv0 *myV0;
-  Double_t dMASS=0.0;
+  Int_t v0all=0, v0imw=0;
   for (Int_t i=0; i!=nV0s; ++i) {
     myV0 = (AliAODv0*) tAOD->GetV0(i);
     if(!myV0) continue;
-    if(myV0->Pt()<0.1) continue; // skipping low momentum
-    Int_t pass = PassesAODCuts(myV0,tAOD);
-    if(pass==0) continue;
-    if(fSpecie==0) {
-      dMASS = myV0->MassK0Short();
+    if(!fOnline) if(myV0->GetOnFlyStatus() ) continue;
+    if(fOnline) if(!myV0->GetOnFlyStatus() ) continue;
+    AliAODTrack *iT, *jT;
+    AliAODVertex *vtx = tAOD->GetPrimaryVertex();
+    Double_t pos[3],cov[6];
+    vtx->GetXYZ(pos);
+    vtx->GetCovarianceMatrix(cov);
+    const AliESDVertex vESD(pos,cov,100.,100);
+    // TESTING CHARGE
+    int iPos, iNeg;
+    iT=(AliAODTrack*) myV0->GetDaughter(0);
+    if(iT->Charge()>0) {
+      iPos = 0; iNeg = 1;
     } else {
-      dMASS = myV0->MassLambda();
-      if(pass==2) dMASS = myV0->MassAntiLambda();
+      iPos = 1; iNeg = 0;
     }
-    MakeTrack(dMASS, myV0->Pt(), myV0->Phi(), myV0->Eta(),
-              ((AliAODTrack*) myV0->GetDaughter(0))->GetID(),
-              ((AliAODTrack*) myV0->GetDaughter(1))->GetID());
+    // END OF TEST
+
+    iT=(AliAODTrack*) myV0->GetDaughter(iPos); // positive
+    AliESDtrack ieT( iT );
+    ieT.SetTPCClusterMap( iT->GetTPCClusterMap() );
+    ieT.SetTPCSharedMap( iT->GetTPCSharedMap() );
+    ieT.SetTPCPointsF( iT->GetTPCNclsF() );
+    ieT.PropagateToDCA(&vESD, tAOD->GetMagneticField(), 100);
+    LoadTrack(&ieT,iT->Chi2perNDF());
+    Float_t ip[2];
+    ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+    fDaughterImpactParameterXY = ip[0];
+    fDaughterImpactParameterZ = ip[1];
+    Double_t dD0P = fDaughterImpactParameterXY; //ieT.GetD(pos[0], pos[1], tAOD->GetMagneticField());
+    if(!AcceptDaughter()) continue;
+
+    jT=(AliAODTrack*) myV0->GetDaughter(iNeg); // negative
+    AliESDtrack jeT( jT );
+    jeT.SetTPCClusterMap( jT->GetTPCClusterMap() );
+    jeT.SetTPCSharedMap( jT->GetTPCSharedMap() );
+    jeT.SetTPCPointsF( jT->GetTPCNclsF() );
+    jeT.PropagateToDCA(&vESD, tAOD->GetMagneticField(), 100);
+    LoadTrack(&jeT,jT->Chi2perNDF());
+    jeT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+    fDaughterImpactParameterXY = ip[0];
+    fDaughterImpactParameterZ = ip[1];
+    Double_t dD0N = fDaughterImpactParameterXY; //jeT.GetD(pos[0], pos[1], tAOD->GetMagneticField());
+    if(!AcceptDaughter()) continue;
+    if( fExcludeTPCEdges ) {
+      if( IsAtTPCEdge(iT->Phi(),iT->Pt(),+1,tAOD->GetMagneticField()) ) continue;
+      if( IsAtTPCEdge(jT->Phi(),jT->Pt(),-1,tAOD->GetMagneticField()) ) continue;
+    }
+    Double_t xa, xb;
+    ieT.GetDCA(&jeT,tAOD->GetMagneticField(),xa,xb);
+    /*
+    // cutting out population close to TPC edges :: strange excess saw in 2010
+    if( fExcludeTPCEdges ) {
+    Double_t phimod = myV0->Phi();
+    int sectors[6] = {5,6,9,10,11,12};
+    for(int ii=0; ii!=6; ++ii)
+    if( (phimod<(sectors[ii]+1)*TMath::Pi()/9.0) && (phimod>sectors[ii]*TMath::Pi()/9.0) )
+    return 0;
+    }
+    */
+    if(fSpecie==0)
+      fDecayRapidity = myV0->RapK0Short();
+    else
+      fDecayRapidity = myV0->RapLambda();
+    fDecayDCAdaughters = myV0->DcaV0Daughters();
+    fDecayCosinePointingAngleXY = CosThetaPointXY( myV0, vtx );
+    fDecayRadXY = DecayLengthXY( myV0, vtx );
+    fDecayPt = myV0->Pt();
+    fDecayPhi = myV0->Phi();
+    fDecayEta = myV0->Eta();
+    fDecayProductIPXY = dD0P*dD0N;
+    fDecayQt = myV0->PtArmV0();
+    fDecayAlpha = myV0->AlphaV0(); // AlphaV0 -> AODRecoDecat::Alpha -> return 1.-2./(1.+QlProng(0)/QlProng(1));
+    if(myV0->ChargeProng(iPos)<0) fDecayAlpha = -fDecayAlpha; // protects for a change in convention
+    fDecayPt = myV0->Pt();
+    fDecayEta = myV0->Eta();
+    if( fSpecie==0 ) {
+      fDecayMass = myV0->MassK0Short();
+    } else {
+      if(fDecayAlpha>0) fDecayMass = myV0->MassLambda();
+      else fDecayMass = myV0->MassAntiLambda();
+    }
+    v0all++;
+    if(fDecayMass<fMinMass) continue;
+    if(fDecayMass>fMaxMass) continue;
+    v0imw++;
+    Double_t energy = TMath::Sqrt( fDecayMass*fDecayMass + myV0->Px()*myV0->Px() + myV0->Py()*myV0->Py() + myV0->Pz()*myV0->Pz() );
+    Double_t gamma = energy/fDecayMass;
+    fDecayDecayLength = DecayLength( myV0, vtx )/gamma;
+    Double_t dPHI = fDecayPhi;
+    Double_t dDPHI = dPHI - fPsi2;
+    if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
+    if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
+    if(fQAlevel>1) {
+      if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecAllOP");
+      else FillCandidateSpy("RecAllIP");
+    }
+    FillCandidateSpy("RecAll");
+    ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("D0PD0N"))->Fill( dD0P, dD0N );
+    ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+    if(!AcceptCandidate()) continue;
+    //PID for lambda::proton
+    if( fSpecie>0 )
+      if(fDecayPt<1.2) {
+        if(fDecayAlpha>0) {
+          if( !PassesPIDCuts(&ieT) ) continue; //positive track
+        } else {
+          if( !PassesPIDCuts(&jeT) ) continue; //negative track
+        }
+      }
+    if(fQAlevel>1) {
+      if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecSelOP");
+      else FillCandidateSpy("RecSelIP");
+    }
+    FillCandidateSpy("RecSel");
+    ((TH2D*)((TList*)fList->FindObject("RecSel"))->FindObject("D0PD0N"))->Fill( dD0P, dD0N );
+    ((TH2D*)((TList*)fList->FindObject("RecSel"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+    fDecayIDneg = iT->GetID();
+    fDecayIDpos = jT->GetID();
+    MakeTrack();
+    LoadTrack(&ieT,iT->Chi2perNDF());
+    ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+    fDaughterImpactParameterXY = ip[0];
+    fDaughterImpactParameterZ = ip[1];
+    FillTrackSpy("TrkDau");
+    LoadTrack(&jeT,jT->Chi2perNDF()); 
+    jeT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+    fDaughterImpactParameterXY = ip[0];
+    fDaughterImpactParameterZ = ip[1];
+    FillTrackSpy("TrkDau");
+    //===== BEGIN OF MCMATCH                                                                                                                         
+    if(mcArray) {
+      bool matched = false;
+      bool feeddown = false;
+      Int_t labelpos = iT->GetLabel();
+      Int_t labelneg = jT->GetLabel();
+      Double_t rOri=-1;
+      Double_t mcPt=-1, mcEta=-1, mcRap=-1, mcRxy=-1, mcDle=-1, mcApa=-100, mcApq=-1;
+      Double_t resPt=-1, resEta=-1, resRap=-1, resRxy=-1, resDle=-1, resApa=-1, resApq=-1;
+      if( labelpos>0 && labelneg>0 ) {
+        AliAODMCParticle *mcpos = (AliAODMCParticle*) mcArray->At( labelpos );
+        AliAODMCParticle *mcneg = (AliAODMCParticle*) mcArray->At( labelneg );
+        Int_t pdgRecPos = mcpos->GetPdgCode();
+        Int_t pdgRecNeg = mcneg->GetPdgCode();
+        int pospdg=211, negpdg=211;
+        int mompdg=310, fdwpdg=333;
+        if(fSpecie>0) {
+          mompdg=3122;
+          fdwpdg=3312;
+          if(fDecayAlpha>0) {
+            pospdg=2212; negpdg=211;
+          } else {
+            negpdg=2212; pospdg=211;
+          }
+        }
+        if( TMath::Abs(pdgRecPos)==pospdg&&TMath::Abs(pdgRecNeg)==negpdg )
+          if(mcpos->GetMother()>0)
+            if( mcpos->GetMother()==mcneg->GetMother() ) {
+              AliAODMCParticle *mcmot = (AliAODMCParticle*) mcArray->At( mcpos->GetMother() );
+              rOri = TMath::Sqrt( mcmot->Xv()*mcmot->Xv() + mcmot->Yv()*mcmot->Yv() );
+              mcPt = mcmot->Pt();
+              mcEta = TMath::Abs( mcmot->Eta() );
+              mcRap = TMath::Abs( mcmot->Y() );
+              if(!TMath::AreEqualAbs(mcPt,0,1e-6))  resPt = (fDecayPt - mcPt) / mcPt;
+              if(!TMath::AreEqualAbs(mcEta,0,1e-6)) resEta = (fDecayEta - mcEta) / mcEta;
+              if(!TMath::AreEqualAbs(mcRap,0,1e-6)) resRap = (fDecayRapidity - mcRap) / mcRap;
+              if( TMath::Abs(mcmot->GetPdgCode())==mompdg) {
+                if(mcmot->GetNDaughters()==2) {
+                  matched=true;
+                  Double_t dx = mcmot->Xv() - mcpos->Xv();
+                  Double_t dy = mcmot->Yv() - mcpos->Yv();
+                  Double_t dz = mcmot->Zv() - mcpos->Zv();
+                  Double_t mcGamma = mcmot->E() / mcmot->GetCalcMass();
+                  mcRxy = TMath::Sqrt( dx*dx + dy*dy );
+                  mcDle = TMath::Sqrt(dx*dx+dy*dy+dz*dz)/mcGamma;
+                  if(!TMath::AreEqualAbs(mcRxy,0,1e-6)) resRxy = (fDecayRadXY - mcRxy) / mcRxy;
+                  if(!TMath::AreEqualAbs(mcDle,0,1e-6)) resDle = (fDecayDecayLength - mcDle) / mcDle;
+                  TVector3 momPos(mcpos->Px(),mcpos->Py(),mcpos->Pz());
+                  TVector3 momNeg(mcneg->Px(),mcneg->Py(),mcneg->Pz());
+                  TVector3 momTot(mcmot->Px(),mcmot->Py(),mcmot->Pz());
+                  Double_t qlpos = momPos.Dot(momTot)/momTot.Mag();
+                  Double_t qlneg = momNeg.Dot(momTot)/momTot.Mag();
+                  mcApq = momPos.Perp(momTot);
+                  mcApa = 1.-2./(1.+qlpos/qlneg);
+                  if(!TMath::AreEqualAbs(mcApq,0,1e-6)) resApq = (fDecayQt - mcApq) / mcApq;
+                  if(!TMath::AreEqualAbs(mcApa,0,1e-6)) resApa = (fDecayAlpha - mcApa) / mcApa;
+                }
+                if(mcmot->GetMother()>0) {
+                  AliAODMCParticle *mcfdw = (AliAODMCParticle*) mcArray->At( mcmot->GetMother() );
+                  if( TMath::Abs(mcfdw->GetPdgCode())==fdwpdg)
+                    feeddown=true;
+                } // k0/lda have mother
+              } // mother matches k0/lda
+            } // both have same mother
+      } // match to MCparticles
+      if(matched) {
+        FillCandidateSpy("RecMth");
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("D0PD0N"))->Fill( dD0P,dD0N );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+        ((TH1D*)((TList*)fList->FindObject("RecMth"))->FindObject("MCOrigin"))->Fill( rOri );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("PTRes"))->Fill( mcPt, resPt );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("ETARes"))->Fill( mcEta, resEta );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("RAPRes"))->Fill( mcRap, resRap );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("RXYRes"))->Fill( mcRxy, resRxy );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("DLERes"))->Fill( mcDle, resDle );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("APARes"))->Fill( mcApa, resApa );
+        ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("APQRes"))->Fill( mcApq, resApq );
+        LoadTrack(&ieT,iT->Chi2perNDF());
+        ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+        fDaughterImpactParameterXY = ip[0];
+        fDaughterImpactParameterZ = ip[1];
+        FillTrackSpy("TrkMth");
+        LoadTrack(&jeT,jT->Chi2perNDF());
+        jeT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+        fDaughterImpactParameterXY = ip[0];
+        fDaughterImpactParameterZ = ip[1];
+        FillTrackSpy("TrkMth");
+      }
+      if(feeddown) {
+        FillCandidateSpy("MthFDW");
+        ((TH2D*)((TList*)fList->FindObject("MthFDW"))->FindObject("D0PD0N"))->Fill( dD0P,dD0N );
+        ((TH1D*)((TList*)fList->FindObject("MthFDW"))->FindObject("MCOrigin"))->Fill( rOri );
+      }
+    }
+    //===== END OF MCMATCH
+  }
+  ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("V0SADC"))->Fill( v0all,v0imw );
+  return;
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::PassesPIDCuts(AliESDtrack *myTrack, AliPID::EParticleType pid) {
+  Bool_t pass=kTRUE;
+  if(fPIDResponse) {
+    fDaughterNSigmaPID = fPIDResponse->NumberOfSigmasTPC(myTrack,pid);
+    if( TMath::Abs(fDaughterNSigmaPID) > fDaughterMaxNSigmaPID )
+      pass = kFALSE;
+  }
+  return pass;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::ChargeParticles(AliAODEvent *tAOD) {
+  //benchmark purposes (for the ultimate measurement for LHC10h see Alex, Francesco)
+  if(!tAOD) return;
+  // (for the moment) only compatible with SPVZE (no untagging)
+  for(int i=0; i!=tAOD->GetNumberOfTracks(); ++i) {
+    AliAODTrack *t = tAOD->GetTrack( i );
+    if(!t) continue;
+    if( !t->TestFilterBit(1024) ) continue;
+    fDecayMass=0.0; // using mass as nsigmas control plot
+    if(fPIDResponse) { // PID
+      switch(fSpecie) { // TPC PID only
+      case(kPION):
+        fDecayMass = fPIDResponse->NumberOfSigmasTPC(t,AliPID::kPion);
+        break;
+      case(kKAON):
+        fDecayMass = fPIDResponse->NumberOfSigmasTPC(t,AliPID::kKaon);
+        break;
+      case(kPROTON):
+        fDecayMass = fPIDResponse->NumberOfSigmasTPC(t,AliPID::kProton);
+        break;
+      }
+    }
+    Bool_t pass = kTRUE;
+    if( TMath::Abs(fDecayMass) > 3.0 ) pass=kFALSE;
+    if( t->Eta()<-0.8 || t->Eta()>+0.8 ) pass=kFALSE;
+    if( t->Pt()<0.2 || t->Pt()>20.0 ) pass=kFALSE;
+    if( t->GetTPCsignal()<10.0 ) pass=kFALSE;
+    fDecayPt=t->Pt();
+    fDecayPhi=t->Phi();
+    fDecayEta=t->Eta();
+    fDecayID=t->GetID();
+
+    FillCandidateSpy("RecAll");
+    if(!pass) continue;
+
+    AliESDtrack et( t );
+    et.SetTPCClusterMap( t->GetTPCClusterMap() );
+    et.SetTPCSharedMap( t->GetTPCSharedMap() );
+    et.SetTPCPointsF( t->GetTPCNclsF() );
+    Float_t ip[2];
+    LoadTrack(&et,t->Chi2perNDF()); 
+    AliAODVertex *vtx = tAOD->GetPrimaryVertex();
+    Double_t pos[3];
+    vtx->GetXYZ(pos);
+    et.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+    fDaughterImpactParameterXY = ip[0];
+    fDaughterImpactParameterZ = ip[1];
+    FillTrackSpy("TrkDau");
+    FillCandidateSpy("RecSel");
+
+    MakeTrack();
   }
   return;
 }
 //=======================================================================
-Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD)
-{
-  if (myV0->GetOnFlyStatus() ) return 0;
-  //the following is needed in order to evualuate track-quality
-  AliAODTrack *iT, *jT;
-  AliAODVertex *vV0s = myV0->GetSecondaryVtx();
-  Double_t pos[3],cov[6];
-  vV0s->GetXYZ(pos);
-  vV0s->GetCovarianceMatrix(cov);
-  const AliESDVertex vESD(pos,cov,100.,100);
-  // TESTING CHARGE
-  int iPos, iNeg;
-  iT=(AliAODTrack*) myV0->GetDaughter(0);
-  if(iT->Charge()>0) {
-    iPos = 0; iNeg = 1;
-  } else {
-    iPos = 1; iNeg = 0;
-  }
-  // END OF TEST
-
-  iT=(AliAODTrack*) myV0->GetDaughter(iPos); // positive
-  AliESDtrack ieT( iT );
-  ieT.SetTPCClusterMap( iT->GetTPCClusterMap() );
-  ieT.SetTPCSharedMap( iT->GetTPCSharedMap() );
-  ieT.SetTPCPointsF( iT->GetTPCNclsF() );
-  ieT.RelateToVertex(&vESD, tAOD->GetMagneticField(), 100);
-  if (!fCutsDau->IsSelected( &ieT ) ) return 0;
-
-  jT=(AliAODTrack*) myV0->GetDaughter(iNeg); // negative
-  AliESDtrack jeT( jT );
-  jeT.SetTPCClusterMap( jT->GetTPCClusterMap() );
-  jeT.SetTPCSharedMap( jT->GetTPCSharedMap() );
-  jeT.SetTPCPointsF( jT->GetTPCNclsF() );
-  jeT.RelateToVertex(&vESD, tAOD->GetMagneticField(), 100);
-  if (!fCutsDau->IsSelected( &jeT ) ) return 0;
-
-  Double_t pvertex[3];
-  pvertex[0]=tAOD->GetPrimaryVertex()->GetX();
-  pvertex[1]=tAOD->GetPrimaryVertex()->GetY();
-  pvertex[2]=tAOD->GetPrimaryVertex()->GetZ();
-  Double_t dRAP;
-  if(fSpecie==0)
-    dRAP=myV0->RapK0Short();
-  else
-    dRAP=myV0->RapLambda();
-  Double_t dDL=myV0->DecayLengthV0( pvertex );
-  Double_t dDLZ=myV0->DecayVertexV0Z()-pvertex[2];
-  Double_t dDLXY=myV0->RadiusV0();
-  Double_t dDCA=myV0->DcaV0Daughters();
-  Double_t dCTP=myV0->CosPointingAngle( pvertex );
-  Double_t dD0P=ieT.GetD(pvertex[0],pvertex[1],tAOD->GetMagneticField());
-  Double_t dD0M=jeT.GetD(pvertex[0],pvertex[1],tAOD->GetMagneticField());
-  Double_t dD0D0=dD0P*dD0M;
-  Double_t dQT=myV0->PtArmV0();
-  Double_t dALPHA=myV0->AlphaV0(); // AlphaV0 -> AODRecoDecat::Alpha -> return 1.-2./(1.+QlProng(0)/QlProng(1));
-  if(myV0->ChargeProng(iPos)<0) dALPHA = -dALPHA; // protects for a change in convention
-  Double_t dPT=myV0->Pt();
-  Double_t dETA=myV0->Eta();
-  Int_t passes = 1;
-  if(fSpecie==1&&dALPHA<0) passes = 2; // antilambda
-  Double_t dMASS = myV0->MassK0Short();
-  if(fSpecie==1) {
-    if(passes==2) dMASS = myV0->MassAntiLambda();
-    else dMASS = myV0->MassLambda();
-  }
-  Double_t dCT = dDL*dMASS/myV0->P();
-  Double_t ctaucut = 2.68;
-  if(fSpecie==1) ctaucut = 7.89;
-  ctaucut *= fV0Cuts[9];
-  if(dDL<fV0Cuts[0]) passes = 0;
-  if(dDCA >fV0Cuts[1]) passes = 0;
-  if(dCTP <fV0Cuts[2]) passes = 0;
-  if(TMath::Abs(dD0P) <fV0Cuts[3]) passes = 0;
-  if(TMath::Abs(dD0M) <fV0Cuts[3]) passes = 0;
-  if(dD0D0>fV0Cuts[4]) passes = 0;
-  if(dETA <fV0Cuts[6]) passes = 0;
-  if(dETA >fV0Cuts[7]) passes = 0;
-  if(fSpecie==0) if(dQT<+fV0Cuts[5]*dALPHA) passes = 0;
-  if(fSpecie==0) if(dQT<-fV0Cuts[5]*dALPHA) passes = 0;
-  if(dCT>ctaucut) passes = 0;
-  if(dDLXY<fV0Cuts[10]) passes = 0;
-
-  Double_t dPHI = myV0->Phi();
-  Double_t dDPHI = dPHI - fPsi2;
-  if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
-  if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
-  TString sIPOP = "IP";
-  if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) )
-    sIPOP = "OP";
-  if(fDoExtraQA) {
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefRAP")) ->Fill(dRAP,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDLZ")) ->Fill(dDLZ,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDLXY"))->Fill(dDLXY, dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefCTau"))->Fill(dCT,   dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefDCA")) ->Fill(dDCA,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefCTP")) ->Fill(dCTP,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefD0"))  ->Fill(dD0M,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefD0"))  ->Fill(dD0P,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefD0D0"))->Fill(dD0D0, dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefAP"))  ->Fill(dALPHA,dQT,dPT);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsBefore_%s",sIPOP.Data())))->FindObject("BefVOL")) ->Fill(dPHI, dETA,dPT);
-  }
-
-  if(passes&&fV0Cuts[8]) {
-    switch(fSpecie) {
-    case 0: // K0 PID
-      if( (jT->GetTPCmomentum()<15) &&
-        (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>fV0Cuts[8]) )
-        passes = 0;
-      if( (iT->GetTPCmomentum()<15) &&
-        (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>fV0Cuts[8]) )
-        passes = 0;
-      break;
-    case 1: // Lambda PID  i==pos j ==neg
-      if(passes==1) {
-        if( (iT->GetTPCmomentum()<15) &&
-          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kProton))>fV0Cuts[8]) )
-          passes = 0;
-        if( (jT->GetTPCmomentum()<15) &&
-          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>fV0Cuts[8]) )
-          passes = 0;
-      }
-      if(passes==2) {
-        if( (iT->GetTPCmomentum()<15) &&
-          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>fV0Cuts[8]) )
-          passes = 0;
-        if( (jT->GetTPCmomentum()<15) &&
-          (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kProton))>fV0Cuts[8]) )
-          passes = 0;
-      }
-      break;
-    }
-  }
-  // === MATCHED TO MC ===>>
-  // AliAODRecoDecay::MatchToMC()
-  if((passes>0)&&(fMCmatch>0)) {
-    TClonesArray* mcArray = dynamic_cast<TClonesArray*>(tAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-    Int_t mcpasses=0;
-    if(mcArray) {
-      TString sPDG="NONE";
-      TString sMOTHER = "NONE";
-      Double_t ptTruth=-1, ptMom=-1;
-      Int_t abc=4; // 0:reject   1:truth   2:another decay   3:nonv0 t2   4:nonv0 t1
-      AliAODMCParticle *iTMC = dynamic_cast<AliAODMCParticle*>(mcArray->At( TMath::Abs(iT->GetLabel()) ));
-      AliAODMCParticle *jTMC = dynamic_cast<AliAODMCParticle*>(mcArray->At( TMath::Abs(jT->GetLabel()) ));
-      if((iTMC)&&(jTMC)) {
-        if((iTMC->GetMother()>=0)&&(jTMC->GetMother()>=0)) {
-          AliAODMCParticle *iTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMC->GetMother()));
-          AliAODMCParticle *jTMom = dynamic_cast<AliAODMCParticle*>(mcArray->At(jTMC->GetMother()));
-          if((iTMom)&&(jTMom)) {
-            sPDG="NONPDG";
-            abc=3;
-            if(iTMC->GetMother()==jTMC->GetMother()) {
-              Int_t iMomPDG = iTMom->GetPdgCode();
-              abc=2;
-              TDatabasePDG *pdgDatabase = TDatabasePDG::Instance();
-              if(pdgDatabase->GetParticle(iMomPDG))
-                sPDG = (pdgDatabase->GetParticle(iMomPDG))->GetName();
-              Int_t pdgcode;
-              if(fSpecie) pdgcode = 3122; else pdgcode = 310;
-              if(TMath::Abs(iMomPDG)==pdgcode) {
-                Double_t pxSumDgs = iTMC->Px()+jTMC->Px();
-                Double_t pySumDgs = iTMC->Py()+jTMC->Py();
-                Double_t pzSumDgs = iTMC->Pz()+jTMC->Pz();
-                Double_t pxMother = iTMom->Px();
-                Double_t pyMother = iTMom->Py();
-                Double_t pzMother = iTMom->Pz();
-                sPDG = "Truths";
-                Double_t rads = TMath::Sqrt( iTMC->Xv()*iTMC->Xv() + iTMC->Yv()*iTMC->Yv() );
-                ((TH1D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCDAUGHTERS"))->Fill(iTMom->GetNDaughters());
-                if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) < 0.00001 &&
-                  (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) < 0.00001 &&
-                  (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) < 0.00001) {
-                  ((TH2D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCRADS"))->Fill(1.0,rads);
-		  abc=1;
-		  if(iTMom->GetMother()>=0) {
-		    AliAODMCParticle *iGrandMa = dynamic_cast<AliAODMCParticle*>(mcArray->At(iTMom->GetMother()));
-		    if(iGrandMa) {
-		      Int_t iGrandMaPDG = iGrandMa->GetPdgCode();
-		      ptMom = iGrandMa->Pt();
-		      ptTruth = iTMom->Pt();
-		      if(pdgDatabase->GetParticle(iGrandMaPDG))
-			sMOTHER = (pdgDatabase->GetParticle(iGrandMaPDG))->GetName();
-		    }
-                  } else {
-                    sMOTHER = "PRIMARY";
-                  }
-                } else {
-                  ((TH2D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCRADS"))->Fill(0.0,rads);
-                }
-              }
-            }
-          }
-        }
-      }
-      Double_t dMCMASS;
-      if(fSpecie==0) {
-        dMCMASS = myV0->MassK0Short();
-        if(dMCMASS>0.588) dMCMASS=0.587999;
-        if(dMCMASS<0.412) dMCMASS=0.412001;
-      } else {
-        dMCMASS = myV0->MassLambda();
-        if(passes==2) dMCMASS = myV0->MassAntiLambda();
-        if(dMCMASS>1.167) dMCMASS=1.1669;
-        if(dMCMASS<1.075) dMCMASS=1.0751;
-      }
-      if((iT->GetLabel()>=0)&&(jT->GetLabel()>=0)) {
-        sPDG = Form("%s chked",sPDG.Data());
-        sMOTHER = Form("%s chked",sMOTHER.Data());
-        if(fMCmatch==abc) mcpasses=1;
-      }
-      ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCPDG"))->Fill(dPT,dMCMASS,sPDG.Data(),1);
-      ((TH3D*)((TList*)fQAList->FindObject("QAMC"))->FindObject("MCMOTHER"))->Fill(ptTruth,ptMom,sMOTHER.Data(),1);
-    }//mcArray
-    passes=mcpasses;
-  }
-  // <<=== MATCHED TO MC ===
-  if(passes&&fDoExtraQA) {
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftRAP")) ->Fill(dRAP,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDLZ")) ->Fill(dDLZ,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDLXY"))->Fill(dDLXY, dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftCTau"))->Fill(dCT,   dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftDCA")) ->Fill(dDCA,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftCTP")) ->Fill(dCTP,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftD0"))  ->Fill(dD0M,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftD0"))  ->Fill(dD0P,  dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftD0D0"))->Fill(dD0D0, dPT, dMASS);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftAP"))  ->Fill(dALPHA,dQT,dPT);
-    ((TH3D*)((TList*)fQAList->FindObject(Form("QACutsAfter_%s",sIPOP.Data())))->FindObject("AftVOL")) ->Fill(dPHI, dETA,dPT);
-  }
-  if(passes&&fDoQA) {
-    ((TH2D*)((TList*)fQAList->FindObject("Candidates"))->FindObject("V0MASS"))->Fill( dPT, dMASS );
-    ((TH2D*)((TList*)fQAList->FindObject("Candidates"))->FindObject("V0PhiEta"))->Fill( dPHI, dETA );
-  }
-  return passes;
-}
-//=======================================================================
-void AliAnalysisTaskFlowStrange::Terminate(Option_t *)
-{
+void AliAnalysisTaskFlowStrange::Terminate(Option_t *) {
   //terminate
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::MakeTrack( Double_t mass, Double_t pt, Double_t phi,
-					    Double_t eta, Int_t iid, Int_t jid )
-{
+void AliAnalysisTaskFlowStrange::MakeTrack() {
   // create track for flow tasks
-  if(fCandidates->GetLast()+1>=fCandidates->GetSize()) {
-    fCandidates->Expand( 2*fCandidates->GetSize() );
+  if(fCandidates->GetLast()+5>fCandidates->GetSize()) {
+    fCandidates->Expand( fCandidates->GetSize()+20 );
   }
   Bool_t overwrite = kTRUE;
   AliFlowCandidateTrack *oTrack = (static_cast<AliFlowCandidateTrack*> (fCandidates->At( fCandidates->GetLast()+1 )));
@@ -955,12 +1340,16 @@ void AliAnalysisTaskFlowStrange::MakeTrack( Double_t mass, Double_t pt, Double_t
   } else { // overwrites
     oTrack->ClearMe();
   }
-  oTrack->SetMass(mass);
-  oTrack->SetPt(pt);
-  oTrack->SetPhi(phi);
-  oTrack->SetEta(eta);
-  oTrack->AddDaughter(iid);
-  oTrack->AddDaughter(jid);
+  oTrack->SetMass(fDecayMass);
+  oTrack->SetPt(fDecayPt);
+  oTrack->SetPhi(fDecayPhi);
+  oTrack->SetEta(fDecayEta);
+  if(fSpecie<10) {
+    oTrack->AddDaughter(fDecayIDpos);
+    oTrack->AddDaughter(fDecayIDneg);
+  } else {
+    oTrack->SetID( fDecayID );
+  }
   oTrack->SetForPOISelection(kTRUE);
   oTrack->SetForRPSelection(kFALSE);
   if(overwrite) {
@@ -971,17 +1360,798 @@ void AliAnalysisTaskFlowStrange::MakeTrack( Double_t mass, Double_t pt, Double_t
   return;
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass)
-{
-  // setter for mass bins
-  fMassBins = massBins;
-  fMinMass = minMass;
-  fMaxMass = maxMass;
+void AliAnalysisTaskFlowStrange::AddCandidates() {
+  // adds candidates to flow events (untaging if necessary)
+  if(fDebug) printf("FlowEventTPC %d tracks | %d RFP | %d POI\n",fTPCevent->NumberOfTracks(),fTPCevent->GetNumberOfRPs(),fTPCevent->GetNumberOfPOIs());
+  if(fDebug) printf("FlowEventVZE %d tracks | %d RFP | %d POI\n",fVZEevent->NumberOfTracks(),fVZEevent->GetNumberOfRPs(),fVZEevent->GetNumberOfPOIs());
+  if(fDebug) printf("I received %d candidates\n",fCandidates->GetEntriesFast());
+  Int_t untagged=0;
+  Int_t poi=0;
+  for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
+    AliFlowCandidateTrack *cand = static_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
+    if(!cand) continue;
+    cand->SetForPOISelection(kTRUE);
+    cand->SetForRPSelection(kFALSE);
+    poi++;
+    if(fDebug) printf(" >Checking at candidate %d with %d daughters: mass %f\n",
+                      iCand,cand->GetNDaughters(),cand->Mass());
+    if(fSpecie<10) { // DECAYS
+      // untagging ===>
+      for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
+        if(fDebug) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
+        for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
+          AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
+          if(!iRP) continue;
+          if(!iRP->InRPSelection()) continue;
+          if(cand->GetIDDaughter(iDau) == iRP->GetID()) {
+            if(fDebug) printf(" was in RP set");
+            ++untagged;
+            iRP->SetForRPSelection(kFALSE);
+            fTPCevent->SetNumberOfRPs( fTPCevent->GetNumberOfRPs() -1 );
+          }
+        }
+        if(fDebug) printf("\n");
+      }
+      // <=== untagging 
+      fTPCevent->InsertTrack( ((AliFlowTrack*) cand) );
+    } else {  // CHARGED
+      // adding only new tracks and tagging accordingly ===>
+      Bool_t found=kFALSE;
+      for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
+        AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
+        if(!iRP) continue;
+        if(!iRP->InRPSelection()) continue;
+        if(cand->GetID() == iRP->GetID()) {
+          if(fDebug) printf("  >charged track (%d) was also found in RP set (adding poi tag)\n",cand->GetID());
+          iRP->SetForPOISelection(kTRUE);
+          found = kTRUE;
+        }
+      }
+      if(!found) // not found adding track
+        fTPCevent->InsertTrack( ((AliFlowTrack*) cand) );
+    }
+    fVZEevent->InsertTrack( ((AliFlowTrack*) cand) );
+  } //END OF LOOP
+  fTPCevent->SetNumberOfPOIs( poi );
+  fVZEevent->SetNumberOfPOIs( poi );
+  ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("POI"))->Fill( poi );
+  ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("UNTAG"))->Fill( untagged );
+  if(fDebug) printf("FlowEventTPC %d tracks | %d RFP | %d POI\n",fTPCevent->NumberOfTracks(),fTPCevent->GetNumberOfRPs(),fTPCevent->GetNumberOfPOIs());
+  if(fDebug) printf("FlowEventVZE %d tracks | %d RFP | %d POI\n",fVZEevent->NumberOfTracks(),fVZEevent->GetNumberOfRPs(),fVZEevent->GetNumberOfPOIs());
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::SetCuts(Double_t cuts[11]) {
-  // defines cuts to be used
-  // fV0Cuts[11] dl3d dca ctp d0 d0d0 qt minEta maxEta PID ct dlxy
-  for(int i=0; i!=11; ++i) fV0Cuts[i] = cuts[i];
+void AliAnalysisTaskFlowStrange::PushBackFlowTrack(AliFlowEvent *flowevent, Double_t pt, Double_t phi, Double_t eta, Double_t w, Int_t id) {
+  AliFlowTrack rfp;
+  rfp.SetPt(pt);
+  rfp.SetPhi(phi);
+  rfp.SetEta(eta);
+  rfp.SetWeight(w);
+  rfp.SetForRPSelection(kTRUE);
+  rfp.SetForPOISelection(kFALSE);
+  rfp.SetID(id);
+  flowevent->InsertTrack( &rfp );
 }
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::IsAtTPCEdge(Double_t phi,Double_t pt,Int_t charge,Double_t b) {
+  // Origin: Alex Dobrin
+  // Implemented by Carlos Perez
+  TF1 cutLo("cutLo", "-0.01/x+pi/18.0-0.015", 0, 100);
+  TF1 cutHi("cutHi", "0.55/x/x+pi/18.0+0.03", 0, 100);
+  Double_t phimod = phi;
+  if(b<0) phimod = TMath::TwoPi()-phimod;  //for negatve polarity field
+  if(charge<0) phimod = TMath::TwoPi()-phimod; //for negatve charge
+  phimod += TMath::Pi()/18.0;
+  phimod = fmod(phimod, TMath::Pi()/9.0);
+  if( phimod<cutHi.Eval(pt) && phimod>cutLo.Eval(pt) )
+    return kTRUE;
 
+  return kFALSE;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeQVectors() {
+  //computes event plane and updates fPsi2
+  //if there is a problem fPsi->-1
+  fPsi2=-1;
+  Double_t vzeqax, vzeqay, vzeqaw, vzeqbx, vzeqby, vzeqbw;
+  Double_t tpcqax, tpcqay, tpcqaw, tpcqbx, tpcqby, tpcqbw;
+  //=>loading event
+  MakeQVZE(InputEvent(),vzeqax,vzeqay,vzeqaw,vzeqbx,vzeqby,vzeqbw);
+  MakeQTPC(InputEvent(),tpcqax,tpcqay,tpcqaw,tpcqbx,tpcqby,tpcqbw);
+  //=>computing psi
+  //VZERO
+  Double_t vqx, vqy;
+  vqx=vqy=0;
+  Double_t psivzea,psivzeb,psivze,vzew;
+  psivzea = ( TMath::Pi()+TMath::ATan2(-vzeqay,-vzeqax) )/2.0;
+  psivzeb = ( TMath::Pi()+TMath::ATan2(-vzeqby,-vzeqbx) )/2.0;
+  vqx = vzeqax + vzeqbx;
+  vqy = vzeqay + vzeqby;
+  vzew = vzeqaw + vzeqbw;
+  psivze = ( TMath::Pi()+TMath::ATan2(-vqy,-vqx) )/2.0;
+  //TPC
+  Double_t tqx, tqy;
+  tqx=tqy=0;
+  Double_t psitpca,psitpcb,psitpc,tpcw;
+  psitpca = ( TMath::Pi()+TMath::ATan2(-tpcqay,-tpcqax) )/2.0;
+  psitpcb = ( TMath::Pi()+TMath::ATan2(-tpcqby,-tpcqbx) )/2.0;
+  tqx = tpcqax + tpcqbx;
+  tqy = tpcqay + tpcqby;
+  tpcw = tpcqaw + tpcqbw;
+  psitpc = ( TMath::Pi()+TMath::ATan2(-tqy,-tqx) )/2.0;
+  //=>does the event clear?
+  switch(fWhichPsi) {
+  case(1): //VZERO
+    if( (vzeqaw<2)||(vzeqbw<2) ) return;
+    fPsi2 = psivze;
+    break;
+  case(2): //TPC
+    if( (tpcqaw<2)||(tpcqbw<2) ) return;
+    fPsi2 = psitpc;
+    break;
+  }
+  //=>great! recording
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSI"))->Fill( psivze );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSIA"))->Fill( psivzea );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSIB"))->Fill( psivzeb );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPVZE"))->Fill( vzew );
+  //------
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSI"))->Fill( psitpc );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIA"))->Fill( psitpca );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIB"))->Fill( psitpcb );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPTPC"))->Fill( tpcw );
+  //------
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 1., tpcqay/tpcqaw, tpcqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 2., tpcqax/tpcqaw, tpcqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 3., tpcqby/tpcqbw, tpcqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 4., tpcqbx/tpcqbw, tpcqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 5., tqy/tpcw, tpcw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 6., tqx/tpcw, tpcw );
+  //------
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 1., vzeqay/vzeqaw, vzeqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 2., vzeqax/vzeqaw, vzeqaw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 3., vzeqby/vzeqbw, vzeqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 4., vzeqbx/vzeqbw, vzeqbw );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 5., vqy/vzew, vzew );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 6., vqx/vzew, vzew );
+
+  return;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
+                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
+                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+  //=>cleaning
+  if(fUseFP) fVZEevent->ClearFast();
+  //=>external weights
+  Double_t extW[64];
+  for(int i=0;i!=64;++i) extW[i]=1;
+  if((!fVZEsave)&&(fVZEResponse)) {
+    Double_t minC = fCentPerMin, maxC = fCentPerMax;
+    if(fVZEmb) {
+      minC = 0;
+      maxC = 80;
+    }
+    Int_t ybinmin = fVZEResponse->GetYaxis()->FindBin(minC+1e-6);
+    Int_t ybinmax = fVZEResponse->GetYaxis()->FindBin(maxC-1e-6);
+    for(int i=0;i!=64;++i) extW[i] = fVZEResponse->Integral(i+1,i+1,ybinmin,ybinmax)/(maxC-minC);
+    Double_t ring[8];
+    for(int j=0; j!=8; ++j) {
+      ring[j]=0;
+      for(int i=0;i!=8;++i) ring[j] += extW[j*8+i];
+    }
+    Double_t disk[2];
+    disk[0] = fVZEResponse->Integral(1,32,ybinmin,ybinmax)/(maxC-minC);
+    disk[1] = fVZEResponse->Integral(33,64,ybinmin,ybinmax)/(maxC-minC);
+    //for(int i=0;i!=64;++i) printf("CELL %d -> W = %f ||",i,extW[i]);
+    if(fVZEByDisk) {
+      for(int i=0;i!=64;++i) extW[i] = disk[i/32]/extW[i]/8.0;
+    } else {
+      for(int i=0;i!=64;++i) extW[i] = ring[i/8]/extW[i]/8.0;
+    }
+    //for(int i=0;i!=64;++i) printf(" W = %f \n",extW[i]);
+  }
+  //=>computing
+  qxa=qya=qwa=qxb=qyb=qwb=0;
+  Int_t rfp=0;
+  Double_t eta, phi, w;
+  //v0c -> qa
+  for(int id=0;id!=32;++id) {
+    eta = -3.45+0.5*(id/8);
+    phi = TMath::PiOver4()*(0.5+id%8);
+    w = tevent->GetVZEROEqMultiplicity(id)*extW[id];
+    qxa += w*TMath::Cos(2*phi);
+    qya += w*TMath::Sin(2*phi);
+    qwa += w;
+    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEAllPhiEta"))->Fill( phi, eta, w );
+    rfp++;
+    if(fUseFP) PushBackFlowTrack(fVZEevent,0,phi,eta,w,0);
+  }
+  //v0a -> qb
+  for(int id=32;id!=64;++id) {
+    eta = +4.8-0.6*((id/8)-4);
+    phi = TMath::PiOver4()*(0.5+id%8);
+    w = tevent->GetVZEROEqMultiplicity(id)*extW[id];
+    qxb += w*TMath::Cos(2*phi);
+    qyb += w*TMath::Sin(2*phi);
+    qwb += w;
+    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEAllPhiEta"))->Fill( phi, eta, w );
+    rfp++;
+    if(fUseFP) PushBackFlowTrack(fVZEevent,0,phi,eta,w,0);
+  }
+  if(fUseFP) fVZEevent->SetNumberOfRPs(rfp);
+  if(fDebug>0&&fUseFP) printf("Inserted tracks in FlowEventVZE %d ==> %.1f\n",fVZEevent->NumberOfTracks(),qwa+qwb);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddTPCRFPSpy(TList *me) {
+  TH1D *tH1D;
+  tH1D = new TH1D("PT",   "PT",           50,0,5);     me->Add(tH1D);
+  tH1D = new TH1D("PHI",  "PHI", 90,0,TMath::TwoPi()); me->Add(tH1D);
+  tH1D = new TH1D("ETA",  "ETA",          40,-1,+1);   me->Add(tH1D);
+  tH1D = new TH1D("TPCS", "TPC Signal",   100,0,500);  me->Add(tH1D);
+  tH1D = new TH1D("IPXY", "IPXY",         100,-2,+2);  me->Add(tH1D);
+  tH1D = new TH1D("IPZ",  "IPZ",          100,-2,+2);  me->Add(tH1D);
+  // TPC
+  tH1D = new TH1D("TPCNCLS", "NCLS", 170,-0.5,+169.5);   me->Add(tH1D);
+  tH1D = new TH1D("TPCSHCL", "NSCLS / NCLS", 100,0,1);   me->Add(tH1D);
+  tH1D = new TH1D("TPCFICL", "NCLS1I / NCLS",100,0,1);   me->Add(tH1D);
+  tH1D = new TH1D("TPCXRNF", "XROW / NFCLS", 100,0,1.5); me->Add(tH1D);
+  tH1D = new TH1D("TPCRCHI", "CHI2 / NCLS",  50,0,5);    me->Add(tH1D);
+  // ITS
+  tH1D = new TH1D("ITSNCLS", "NCLS",   7,-0.5,+6.5); me->Add(tH1D);
+  tH1D = new TH1D("ITSRCHI", "CHI2 / NCLS", 50,0,5); me->Add(tH1D);
+
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::PassesRFPTPCCuts(AliESDtrack *track, Double_t aodchi2cls, Float_t aodipxy, Float_t aodipz) {
+  if(track->GetKinkIndex(0)>0) return kFALSE;
+  if( (track->GetStatus()&AliESDtrack::kTPCrefit)==0 ) return kFALSE;
+  Double_t pt = track->Pt();
+  Double_t phi = track->Phi();
+  Double_t eta = track->Eta();
+  Double_t tpcs = track->GetTPCsignal();
+  Float_t ipxy, ipz;
+  track->GetImpactParameters(ipxy,ipz);
+  Int_t cls = track->GetTPCclusters(0);
+  Double_t xrows, findcls, chi2;
+  findcls = track->GetTPCNclsF();
+  xrows = track->GetTPCCrossedRows();
+  chi2 = track->GetTPCchi2();
+  Double_t rchi2 = chi2/cls;
+  if(!fReadESD) {
+    rchi2 = aodchi2cls;
+    ipxy = aodipxy;
+    ipz = aodipz;
+  }
+  Double_t xrnfcls = xrows/findcls;
+  Double_t scls, cls1i, itschi2;
+  Int_t itscls;
+  cls1i = track->GetTPCNclsIter1();
+  scls = track->GetTPCnclsS();
+  itscls = track->GetITSclusters(0);
+  itschi2 = track->GetITSchi2();
+  Double_t shcl = scls/cls;
+  Double_t ficl = cls1i/cls;
+  Double_t itsrchi2 = itscls/itschi2;
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("PT"))->Fill( pt );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("PHI"))->Fill( phi );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("ETA"))->Fill( eta );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("TPCS"))->Fill( tpcs );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("IPXY"))->Fill( ipxy );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("IPZ"))->Fill( ipz );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("TPCNCLS"))->Fill( cls );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("TPCSHCL"))->Fill( shcl );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("TPCFICL"))->Fill( ficl );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("TPCXRNF"))->Fill( xrnfcls );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("TPCRCHI"))->Fill( rchi2 );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("ITSNCLS"))->Fill( itscls );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("ITSRCHI"))->Fill( itsrchi2 );
+  if(pt<fRFPminPt) return kFALSE; //0.2
+  if(pt>fRFPmaxPt) return kFALSE; //5.0
+  if(eta<fRFPminEta) return kFALSE; //-0.8
+  if(eta>fRFPmaxEta) return kFALSE; //+0.8
+  if(tpcs<fRFPTPCsignal) return kFALSE; //10.0
+  if( TMath::Sqrt(ipxy*ipxy/fRFPmaxIPxy/fRFPmaxIPxy+ipz*ipz/fRFPmaxIPz/fRFPmaxIPz)>1 ) return kFALSE; //2.4 3.2
+  if(cls<fRFPTPCncls) return kFALSE; //70
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("PT"))->Fill( pt );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("PHI"))->Fill( phi );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("ETA"))->Fill( eta );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("TPCS"))->Fill( tpcs );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("IPXY"))->Fill( ipxy );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("IPZ"))->Fill( ipz );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("TPCNCLS"))->Fill( cls );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("TPCSHCL"))->Fill( shcl );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("TPCFICL"))->Fill( ficl );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("TPCXRNF"))->Fill( xrnfcls );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("TPCRCHI"))->Fill( rchi2 );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("ITSNCLS"))->Fill( itscls );
+  ((TH1D*)((TList*)fList->FindObject("TPCRFPsel"))->FindObject("ITSRCHI"))->Fill( itsrchi2 );
+  return kTRUE;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeQTPC(AliVEvent *tevent,
+                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
+                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+  AliESDEvent *tESD = (AliESDEvent*) (tevent);
+  AliAODEvent *tAOD = (AliAODEvent*) (tevent);
+  if(fReadESD) {
+    if(!tESD) return;
+    MakeQTPC(tESD,qxa,qya,qwa,qxb,qyb,qwb);
+  } else {
+    if(!tAOD) return;
+    MakeQTPC(tAOD,qxa,qya,qwa,qxb,qyb,qwb);
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeQTPC(AliAODEvent *tAOD,
+                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
+                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+  //=>cleaning
+  if(fUseFP) fTPCevent->ClearFast();
+  qxa=qya=qwa=qxb=qyb=qwb=0;
+  Int_t rfp=0;
+  Double_t eta, phi, w;
+  //=>aod stuff
+  AliAODVertex *vtx = tAOD->GetPrimaryVertex();
+  Double_t pos[3],cov[6];
+  vtx->GetXYZ(pos);
+  vtx->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+  AliAODTrack *track;
+  //=>looping
+  Int_t rawN = tAOD->GetNumberOfTracks();
+  for(Int_t id=0; id!=rawN; ++id) {
+    track = tAOD->GetTrack(id);
+    //=>cuts
+    if(!track->TestFilterBit(fRFPFilterBit)) continue;
+    if( fExcludeTPCEdges )
+      if( IsAtTPCEdge( track->Phi(), track->Pt(), track->Charge(), tAOD->GetMagneticField() ) )	continue;
+    AliESDtrack etrack( track );
+    etrack.SetTPCClusterMap( track->GetTPCClusterMap() );
+    etrack.SetTPCSharedMap( track->GetTPCSharedMap() );
+    etrack.SetTPCPointsF( track->GetTPCNclsF() );
+    Float_t ip[2];
+    etrack.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
+    if(!PassesRFPTPCCuts(&etrack,track->Chi2perNDF(),ip[0],ip[1])) continue;
+    //=>collecting info
+    phi = track->Phi();
+    eta = track->Eta();
+    w = 1;
+    //=>subevents
+    if(eta<0) {
+      qxa += w*TMath::Cos(2*phi);
+      qya += w*TMath::Sin(2*phi);
+      qwa += w;
+    } else {
+      qxb += w*TMath::Cos(2*phi);
+      qyb += w*TMath::Sin(2*phi);
+      qwb += w;
+    }
+    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCAllPhiEta"))->Fill( phi, eta, w );
+    rfp++;
+    if(fUseFP) PushBackFlowTrack(fTPCevent,track->Pt(),phi,eta,w,track->GetID());
+  }
+  if(fUseFP) fTPCevent->SetNumberOfRPs(rfp);
+  if(fDebug) printf("Inserted tracks in FlowEventTPC %d ==> %.1f\n",fTPCevent->NumberOfTracks(),qwa+qwb);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeQTPC(AliESDEvent *tESD,
+                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
+                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+  //=>cleaning
+  if(fUseFP) fTPCevent->ClearFast();
+  qxa=qya=qwa=qxb=qyb=qwb=0;
+  Int_t rfp=0;
+  Double_t eta, phi, w;
+  //=>looping
+  AliESDtrack *track;
+  Int_t rawN = tESD->GetNumberOfTracks();
+  for(Int_t id=0; id!=rawN; ++id) {
+    track = tESD->GetTrack(id);
+    //=>cuts
+    if( fExcludeTPCEdges )
+      if( IsAtTPCEdge( track->Phi(), track->Pt(), track->Charge(), tESD->GetMagneticField() ) )	continue;
+    if(!PassesFilterBit(track)) continue;
+    if(!PassesRFPTPCCuts(track)) continue;
+    //=>collecting info
+    phi = track->Phi();
+    eta = track->Eta();
+    w = 1;
+    //=>subevents
+    if(eta<0) {
+      qxa += w*TMath::Cos(2*phi);
+      qya += w*TMath::Sin(2*phi);
+      qwa += w;
+    } else {
+      qxb += w*TMath::Cos(2*phi);
+      qyb += w*TMath::Sin(2*phi);
+      qwb += w;
+    }
+    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCAllPhiEta"))->Fill( phi, eta, w );
+    rfp++;
+    if(fUseFP) PushBackFlowTrack(fTPCevent,track->Pt(),phi,eta,w,track->GetID());
+  }
+  if(fUseFP) fTPCevent->SetNumberOfRPs(rfp);
+  if(fDebug) printf("Inserted tracks in FlowEventTPC %d ==> %.1f\n",fTPCevent->NumberOfTracks(),qwa+qwb);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddMCParticleSpy(TList *me) {
+  TH1D *tH1D;
+  TH2D *tH2D;
+  tH1D = new TH1D("Pt",   "Pt",   100,0.0,20);  me->Add(tH1D);
+  tH1D = new TH1D("Phi",  "Phi",  100,0,TMath::TwoPi()); me->Add(tH1D);
+  tH1D = new TH1D("Eta",  "Eta",  100,-1,+1);   me->Add(tH1D);
+  tH1D = new TH1D("Rad2", "Rad2", 1000,0,+100); me->Add(tH1D);
+  tH2D = new TH2D("Dphi", "phi-MCEP;pt;dphi",100,0,20, 72,0,TMath::Pi()); me->Add(tH2D);
+  return;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::FillMCParticleSpy(TString listName, AliAODMCParticle *p) {
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Pt" ))->Fill( p->Pt() );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Eta" ))->Fill( p->Eta() );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Phi" ))->Fill( p->Phi() );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Rad2" ))->Fill( TMath::Sqrt( p->Xv()*p->Xv() +
+												 p->Yv()*p->Yv() ) );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Dphi" ))->Fill( p->Pt(), GetMCDPHI(p->Phi()) );
+  return;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::GetMCDPHI(Double_t phi) {
+  Double_t dDPHI = phi - fMCEP;
+  if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
+  if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
+  return dDPHI;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::FillMCParticleSpy(TString listName, TParticle *p) {
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Pt" ))->Fill( p->Pt() );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Eta" ))->Fill( p->Eta() );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Phi" ))->Fill( p->Phi() );
+  ((TH1D*)((TList*)fList->FindObject(listName.Data()))->FindObject("Rad2" ))->Fill( TMath::Sqrt( p->Vx()*p->Vx() +
+												 p->Vy()*p->Vy() ) );
+  return;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddCandidatesSpy(TList *me) {
+  TH2D *tH2D;
+  tH2D = new TH2D("PhiEta",  "PhiEta;Phi;Eta", 100,0,TMath::TwoPi(),100,-1,+1); me->Add(tH2D);
+  tH2D = new TH2D("PtRAP",   "PtRAP;Pt;Y",          100,0,20,100,-2.0,+2.0);  me->Add(tH2D);
+  tH2D = new TH2D("PtDCA",   "PtDCA;Pt;DCA",        100,0,20,100,0,10);       me->Add(tH2D);
+  tH2D = new TH2D("PtCTP",   "PtCTP;Pt;CTP",        100,0,20,100,-1,+1);      me->Add(tH2D);
+  //tH2D = new TH2D("PtCTP",   "PtCTP;Pt;CTP",        100,0,10,100,0.90,+1);    me->Add(tH2D);
+  tH2D = new TH2D("PtD0D0",  "PtD0D0;Pt;D0D0",      100,0,20,100,-5,+5);      me->Add(tH2D);
+  tH2D = new TH2D("PtRad2",  "PtRad2;Pt;RadXY",     100,0,20,100,0,+50);      me->Add(tH2D);
+  tH2D = new TH2D("PtDL",    "PtDL;Pt;DL",          100,0,20,100,0,+50);      me->Add(tH2D);
+  tH2D = new TH2D("PtMASS",  "PtMASS;Pt;MASS", 100,0,20,fMassBins,fMinMass,fMaxMass); me->Add(tH2D);
+  tH2D = new TH2D("APPOS",   "APPOS;alphaPOS;QtPOS",100,-2,+2,100,0,0.3);     me->Add(tH2D);
+  tH2D = new TH2D("D0PD0N",  "D0PD0N;D0P;D0N",      200,-10,+10,200,-10,+10); me->Add(tH2D);
+  tH2D = new TH2D("XPOSXNEG","XPOSXNEG;XPOS;XNEG",  200,-50,+50,200,-50,+50); me->Add(tH2D);
+  tH2D = new TH2D("PTDPHIMC","PtDPHIMC;Pt;PHI-MCEP",100,0,20,72,0,TMath::Pi()); me->Add(tH2D);
+  return;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::FillCandidateSpy(TString listName) {
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PhiEta"))->Fill( fDecayPhi, fDecayEta );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtRAP" ))->Fill( fDecayPt, fDecayRapidity );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtDCA" ))->Fill( fDecayPt, fDecayDCAdaughters );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtCTP" ))->Fill( fDecayPt, fDecayCosinePointingAngleXY );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtD0D0"))->Fill( fDecayPt, fDecayProductIPXY );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtRad2"))->Fill( fDecayPt, fDecayRadXY );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtDL"  ))->Fill( fDecayPt, fDecayDecayLength );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PtMASS"))->Fill( fDecayPt, fDecayMass );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("APPOS" ))->Fill( fDecayAlpha, fDecayQt );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PTDPHIMC" ))->Fill( fDecayPt, GetMCDPHI( fDecayPhi ) );
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::AcceptCandidate() {
+  if(fDecayEta<fDecayMinEta) return kFALSE;
+  if(fDecayEta>fDecayMaxEta) return kFALSE;
+  if(fDecayPt<fDecayMinPt) return kFALSE;
+  if(fDecayProductIPXY>fDecayMaxProductIPXY) return kFALSE;
+  if(fDecayDCAdaughters>fDecayMaxDCAdaughters) return kFALSE;
+  if(fDecayCosinePointingAngleXY<fDecayMinCosinePointingAngleXY) return kFALSE;
+  if(fDecayRadXY<fDecayMinRadXY) return kFALSE;
+  if(fDecayDecayLength>fDecayMaxDecayLength*2.6842) return kFALSE;
+  if(TMath::Abs(fDecayRapidity)>fDecayMaxRapidity) return kFALSE;
+  if(fSpecie==0) {
+    if(fDecayAPCutPie) {
+      if(fDecayQt/TMath::Abs(fDecayAlpha)<fDecayMinQt) return kFALSE;
+    } else {
+      if(fDecayQt<fDecayMinQt) return kFALSE;
+    }
+  }
+  if(fSpecie==1) if(fDecayAlpha>0) return kFALSE;
+  if(fSpecie==2) if(fDecayAlpha<0) return kFALSE;
+  return kTRUE;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddTracksSpy(TList *me) {
+  TH2D *tH2D;
+  tH2D = new TH2D("PHIETA",       "PHIETA;PHI;ETA",               100,0,TMath::TwoPi(),100,-2,2); me->Add(tH2D);
+  tH2D = new TH2D("IPXYIPZ",      "IPXYIPZ;IPXY;IPZ",             1000,-20,+20,1000,-20,+20); me->Add(tH2D);
+  tH2D = new TH2D("PTTPCNCLS",    "PTTPCNCLS;PT;NCLS",            100,0,20,170,0,170);  me->Add(tH2D);
+  tH2D = new TH2D("POSTPCNCLCHI2","POSTPCNCLCHI2;NCLS;CHI2/NCLS", 170,0,170,100,0,8);   me->Add(tH2D);
+  tH2D = new TH2D("POSTPCNFCLNXR","POSTPCNFCLNXR;NFCLS;NXR",      170,0,170,170,0,170); me->Add(tH2D);
+  tH2D = new TH2D("POSTPCNCLNFCL","POSTPCNCLNFCL;NCLS;NFCLS",     170,0,170,170,0,170); me->Add(tH2D);
+  tH2D = new TH2D("POSTPCNCLNSCL","POSTPCNCLNSCL;NCLS;NSCLS",     170,0,170,170,0,170); me->Add(tH2D);
+  tH2D = new TH2D("NEGTPCNCLCHI2","NEGTPCNCLCHI2;NCLS;CHI2/NCLS", 170,0,170,100,0,8);   me->Add(tH2D);
+  tH2D = new TH2D("NEGTPCNFCLNXR","NEGTPCNFCLNXR;NFCLS;NXR",      170,0,170,170,0,170); me->Add(tH2D);
+  tH2D = new TH2D("NEGTPCNCLNFCL","NEGTPCNCLNFCL;NCLS;NFCLS",     170,0,170,170,0,170); me->Add(tH2D);
+  tH2D = new TH2D("NEGTPCNCLNSCL","NEGTPCNCLNSCL;NCLS;NSCLS",     170,0,170,170,0,170); me->Add(tH2D);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::FillTrackSpy(TString listName) {
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( "PHIETA" ))->Fill( fDaughterPhi, fDaughterEta );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( "IPXYIPZ" ))->Fill( fDaughterImpactParameterXY, fDaughterImpactParameterZ );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( "PTTPCNCLS" ))->Fill( fDaughterPt, fDaughterNClsTPC );
+  TString ch="NEG";
+  if(fDaughterCharge>0) ch="POS";
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( Form("%sTPCNCLCHI2",ch.Data()) ))->Fill( fDaughterNClsTPC, fDaughterChi2PerNClsTPC );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( Form("%sTPCNFCLNXR",ch.Data()) ))->Fill( fDaughterNFClsTPC, fDaughterXRows );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( Form("%sTPCNCLNFCL",ch.Data()) ))->Fill( fDaughterNClsTPC, fDaughterNFClsTPC );
+  ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( Form("%sTPCNCLNSCL",ch.Data()) ))->Fill( fDaughterNClsTPC, fDaughterNSClsTPC );
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::LoadTrack(AliESDtrack *myTrack, Double_t aodChi2NDF) {
+  fDaughterCharge = myTrack->Charge();
+  fDaughterXRows = myTrack->GetTPCCrossedRows();
+  fDaughterNFClsTPC = myTrack->GetTPCNclsF();
+  fDaughterNSClsTPC = myTrack->GetTPCnclsS();
+  fDaughterNClsTPC = myTrack->GetTPCclusters(0);
+  if(fReadESD) {
+    if(fDaughterNClsTPC>0) fDaughterChi2PerNClsTPC = myTrack->GetTPCchi2()/fDaughterNClsTPC;
+  } else {
+    fDaughterChi2PerNClsTPC = aodChi2NDF;
+  }
+  myTrack->GetImpactParameters(fDaughterImpactParameterXY,fDaughterImpactParameterZ);
+  fDaughterStatus = myTrack->GetStatus();
+  fDaughterPhi = myTrack->Phi();
+  fDaughterEta = myTrack->Eta();
+  fDaughterPt = myTrack->Pt();
+  fDaughterKinkIndex = myTrack->GetKinkIndex(0);
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::AcceptDaughter() {
+  if(fDaughterKinkIndex>0) return kFALSE;
+  if( (fDaughterStatus&AliESDtrack::kTPCrefit)==0 ) return kFALSE;
+  if(fDaughterNFClsTPC<1) return kFALSE;
+  if(fDaughterPt<fDaughterMinPt) return kFALSE;
+  if(fDaughterEta<fDaughterMinEta) return kFALSE;
+  if(fDaughterEta>fDaughterMaxEta) return kFALSE;
+  if(fDaughterNClsTPC<fDaughterMinNClsTPC) return kFALSE;
+  if(fDaughterChi2PerNClsTPC>fDaughterMaxChi2PerNClsTPC) return kFALSE;
+  if(TMath::Abs(fDaughterImpactParameterXY)<fDaughterMinImpactParameterXY) return kFALSE;
+  if(fDaughterXRows<fDaughterMinXRowsOverNClsFTPC*fDaughterNFClsTPC) return kFALSE;
+  return kTRUE;
+}
+//=======================================================================
+Double_t AliAnalysisTaskFlowStrange::GetWDist(const AliVVertex* v0, const AliVVertex* v1) {
+  // calculate sqrt of weighted distance to other vertex
+  if (!v0 || !v1) {
+    printf("One of vertices is not valid\n");
+    return 0;
+  }
+  static TMatrixDSym vVb(3);
+  double dist = -1;
+  double dx = v0->GetX()-v1->GetX();
+  double dy = v0->GetY()-v1->GetY();
+  double dz = v0->GetZ()-v1->GetZ();
+  double cov0[6],cov1[6];
+  v0->GetCovarianceMatrix(cov0);
+  v1->GetCovarianceMatrix(cov1);
+  vVb(0,0) = cov0[0]+cov1[0];
+  vVb(1,1) = cov0[2]+cov1[2];
+  vVb(2,2) = cov0[5]+cov1[5];
+  vVb(1,0) = vVb(0,1) = cov0[1]+cov1[1];
+  vVb(0,2) = vVb(1,2) = vVb(2,0) = vVb(2,1) = 0.;
+  vVb.InvertFast();
+  if (!vVb.IsValid()) {printf("Singular Matrix\n"); return dist;}
+  dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
+    +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
+  return dist>0 ? TMath::Sqrt(dist) : -1;
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::plpMV(const AliVEvent *event) {
+  // check for multi-vertexer pile-up
+  const AliAODEvent *aod = (const AliAODEvent*)event;
+  const AliESDEvent *esd = (const AliESDEvent*)event;
+  //
+  const int    kMinPlpContrib = 5;
+  const double kMaxPlpChi2 = 5.0;
+  const double kMinWDist = 15;
+  //
+  if (!aod && !esd) {
+    printf("Event is neither of AOD nor ESD\n");
+    exit(1);
+  }
+  //
+  const AliVVertex* vtPrm = 0;
+  const AliVVertex* vtPlp = 0;
+  int nPlp = 0;
+  //
+  if (aod) {
+    if ( !(nPlp=aod->GetNumberOfPileupVerticesTracks()) ) return kFALSE;
+    vtPrm = aod->GetPrimaryVertex();
+    if (vtPrm == aod->GetPrimaryVertexSPD()) return kTRUE; // there are pile-up vertices but no primary
+  }
+  else {
+    if ( !(nPlp=esd->GetNumberOfPileupVerticesTracks())) return kFALSE;
+    vtPrm = esd->GetPrimaryVertexTracks();
+    if (((AliESDVertex*)vtPrm)->GetStatus()!=1) return kTRUE; // there are pile-up vertices but no primary
+  }
+  //int bcPrim = vtPrm->GetBC();
+  //
+  for (int ipl=0;ipl<nPlp;ipl++) {
+    vtPlp = aod ? (const AliVVertex*)aod->GetPileupVertexTracks(ipl) : (const AliVVertex*)esd->GetPileupVertexTracks(ipl);
+    //
+    if (vtPlp->GetNContributors() < kMinPlpContrib) continue;
+    if (vtPlp->GetChi2perNDF() > kMaxPlpChi2) continue;
+    //  int bcPlp = vtPlp->GetBC();
+    //  if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2) return kTRUE; // pile-up from other BC
+    //
+    double wDst = GetWDist(vtPrm,vtPlp);
+    if (wDst<kMinWDist) continue;
+    //
+    return kTRUE; // pile-up: well separated vertices
+  }
+  //
+  return kFALSE;
+  //
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeFilterBits() {
+  //FilterBit 1
+  fFB1 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  //FilterBit1024
+  fFB1024 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
+  fFB1024->SetMinNCrossedRowsTPC(120);
+  fFB1024->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fFB1024->SetMaxChi2PerClusterITS(36);
+  fFB1024->SetMaxFractionSharedTPCClusters(0.4);
+  fFB1024->SetMaxChi2TPCConstrainedGlobal(36);
+  fFB1024->SetEtaRange(-0.9,0.9);
+  fFB1024->SetPtRange(0.15, 1e10);
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::PassesFilterBit(AliESDtrack *track) {
+  Bool_t ret=kFALSE;
+  switch(fRFPFilterBit) {
+    case(1024):
+      ret = fFB1024->AcceptTrack(track);
+      break;
+    default:
+      ret = fFB1->AcceptTrack(track);
+  }
+  return ret;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::LoadVZEROResponse() {
+  if(fVZEResponse) {
+    TString run = fVZEResponse->GetTitle();
+    if( run.Atoi() == fRunNumber ) return;
+    fVZEResponse = NULL;
+  }
+  //==>loading
+  fVZEResponse = dynamic_cast<TH2D*> (fVZEload->FindObject( Form("%d",fRunNumber) ));
+  if(fVZEResponse) {
+    printf("New VZE calibration: run %d || %s -> Entries %.0f\n",fRunNumber, fVZEResponse->GetTitle(),fVZEResponse->GetEntries());
+  } else {
+    printf("VZE calibration: request but not found!!!\n");
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddVZEQA() {
+  fVZEQA = new TList();
+  fVZEQA->SetName( Form("VZEQA%d",fRunNumber) );
+  fVZEQA->SetOwner();
+  if(fQAlevel>0) {
+    TProfile2D *prof = new TProfile2D("LINP","LINP;VZEcell;VZEmult;SPDtrkl", 64,0,64,500,0,700,0,10000); fVZEQA->Add( prof );
+    prof = new TProfile2D("MULP","MULP;VZEcell;CENTR;VZEmult", 64,0,64,100,0,100,0,10000); fVZEQA->Add( prof );
+    TH3D *tH3D = new TH3D("EQU","EQU;VZEeqmult;VZEmult",100,0,700,100,0,700,64,0,64); fVZEQA->Add( tH3D );
+  }
+  fList->Add(fVZEQA);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::SaveVZEROQA() {
+  AliAODEvent *event = dynamic_cast<AliAODEvent*> (InputEvent());
+  if(!event) return;
+  AliVVZERO *vzero = event->GetVZEROData();
+  AliAODTracklets *tracklets = event->GetTracklets();
+  if(!vzero) return;
+  if(!tracklets) return;
+  Double_t mult, eqmult;
+  Int_t trkl;
+  for(int id=0; id!=64; ++id) {
+    trkl = tracklets->GetNumberOfTracklets();
+    mult = vzero->GetMultiplicity(id);
+    eqmult = event->GetVZEROEqMultiplicity(id);
+    ((TProfile2D*) fVZEQA->FindObject( "LINP" ))->Fill(id,mult,trkl,1);
+    ((TProfile2D*) fVZEQA->FindObject( "MULP" ))->Fill(id,fThisCent,mult,1);
+    ((TH3D*) fVZEQA->FindObject("EQU"))->Fill(eqmult,mult,id);
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddVZEROResponse() {
+  fVZEResponse = NULL;
+  AliVEvent *event = InputEvent();
+  if(!event) return;
+  Int_t thisrun = event->GetRunNumber();
+  fVZEResponse = new TH2D( Form("%d",thisrun), Form("%d;cell;CC",thisrun), 64,0,64, 100, 0, 100);
+  fList->Add(fVZEResponse);
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::SaveVZEROResponse() {
+  if(!fVZEResponse) return;
+  AliVEvent *event = InputEvent();
+  if(!event) return;
+  Double_t w;
+  for(int id=0; id!=64; ++id) {
+    w = event->GetVZEROEqMultiplicity(id);
+    fVZEResponse->Fill(id,fThisCent,w);
+  }
+}
+//=======================================================================
+Int_t AliAnalysisTaskFlowStrange::RefMultTPC() {
+  AliAODEvent *ev = dynamic_cast<AliAODEvent*> (InputEvent());
+  if(!ev) return -1;
+  Int_t found = 0;
+  for(int i=0; i!=ev->GetNumberOfTracks(); ++i) {
+    AliAODTrack *t = ev->GetTrack( i );
+    if(!t) continue;
+    if( !t->TestFilterBit(1) ) continue;
+    if( t->Eta()<-0.8 || t->Eta()>+0.8 ) continue;
+    if( t->Pt()<0.2 || t->Pt()>5.0 ) continue;
+    if( t->GetTPCNcls()<70 ) continue;
+    if( t->GetTPCsignal()<10.0 ) continue;
+    if( t->Chi2perNDF()<0.2 ) continue;    
+    ++found;
+  }
+  return found;
+}
+//=======================================================================
+Int_t AliAnalysisTaskFlowStrange::RefMultGlobal() {
+  AliAODEvent *ev = dynamic_cast<AliAODEvent*> (InputEvent());
+  if(!ev) return -1;
+  Int_t found = 0;
+  for(int i=0; i!=ev->GetNumberOfTracks(); ++i) {
+    AliAODTrack *t = ev->GetTrack( i );
+    if(!t) continue;
+    if( !t->TestFilterBit(16) ) continue;
+    if( t->Eta()<-0.8 || t->Eta()>+0.8 ) continue;
+    if( t->Pt()<0.2 || t->Pt()>5.0 ) continue;
+    if( t->GetTPCNcls()<70 ) continue;
+    if( t->GetTPCsignal()<10.0 ) continue;
+    if( t->Chi2perNDF()<0.1 ) continue;    
+    Double_t b[3], bcov[3];
+    if( !t->PropagateToDCA(ev->GetPrimaryVertex(),ev->GetMagneticField(),100,b,bcov) ) continue;
+    if( b[0]>+0.3 || b[0]<-0.3 || b[1]>+0.3 || b[1]<-0.3) continue;
+    ++found;
+  }
+  return found;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::MakeDHcorr() {
+  // Adds DH corr
+  for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
+    AliFlowCandidateTrack *cand = static_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
+    if(!cand) continue;
+    for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
+      AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
+      if(!iRP) continue;
+      if(!iRP->InRPSelection()) continue;
+      if(cand->GetID() == iRP->GetID()) continue; //avoid autocorr
+      for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) //if it is a decay
+        if(cand->GetIDDaughter(iDau) == iRP->GetID()) continue;
+      //corr
+      Double_t dDPHI = iRP->Phi() - cand->Phi();
+      Double_t dDETA = iRP->Eta() - cand->Eta();
+      Double_t dDPT  = iRP->Pt()  - cand->Pt();
+      ((TH3D*)((TList*)fList->FindObject("DHCORR"))->FindObject("DPHI"))->Fill( dDPT, dDPHI, dDETA );
+      //end of corr
+    }
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::ResetContainers() {
+  fTPCevent->ClearFast();
+  fVZEevent->ClearFast();
+}

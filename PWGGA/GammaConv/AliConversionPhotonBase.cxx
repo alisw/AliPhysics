@@ -10,7 +10,8 @@ fV0Index(-1),
   fChi2perNDF(-1),
   fTagged(kFALSE),
   fIMass(-999),
-  fPsiPair(-999)
+  fPsiPair(-999),
+  fQuality(0)
 {
   //Default constructor
   fLabel[0] = -1;
@@ -34,7 +35,8 @@ fV0Index(original.fV0Index),
 fChi2perNDF(original.fChi2perNDF),
 fTagged(original.fTagged),
 fIMass(original.fIMass),
-fPsiPair(original.fPsiPair)
+fPsiPair(original.fPsiPair),
+fQuality(original.fQuality)
   {
   //Copy constructor
   fLabel[0] = original.fLabel[0];
@@ -113,4 +115,33 @@ TParticle *AliConversionPhotonBase::GetMCDaughter(AliStack *fMCStack,Int_t label
 	TParticle *fMCDaughter=fMCStack->Particle(fMCLabel[label]);
 	return fMCDaughter;}
     else return 0x0;
+}
+
+///________________________________________________________________________
+void AliConversionPhotonBase::DeterminePhotonQuality(AliVTrack* negTrack, AliVTrack* posTrack){
+
+   
+   if(!negTrack || !posTrack) {
+        fQuality = 0;
+        return;
+   }
+   if(negTrack->Charge() == posTrack->Charge()){
+        fQuality = 0;
+        return;
+   }   
+   Int_t nClusterITSneg = negTrack->GetNcls(0);
+   Int_t nClusterITSpos = posTrack->GetNcls(0);
+   
+   if (nClusterITSneg > 1 && nClusterITSpos > 1){
+      fQuality = 3;
+      return;
+   } else if (nClusterITSneg > 1 || nClusterITSpos > 1){
+      fQuality = 2;
+      return;
+   } else {
+      fQuality = 1;
+      return;
+   }
+   return;
+   
 }

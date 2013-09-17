@@ -878,12 +878,12 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       c->SaveAs(Form("%s%s.eps",c->GetName(),textleg.Data()));
     }
     if(tpname=="TH2F"){
-      TH2F* h=(TH2F*)list->At(i);
-      if(!h){
+      TH2F* hhh=(TH2F*)list->At(i);
+      if(!hhh){
 	cout<<"Histogram "<<i<<" not found"<<endl;
 	continue;
       }
-      TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
+      TCanvas* c=new TCanvas(Form("c%s",hhh->GetName()),hhh->GetName());
       TPaveText *pvtxt3=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
       pvtxt3->SetBorderSize(0);
       pvtxt3->SetFillStyle(0);
@@ -892,7 +892,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       c->SetGrid();
       Int_t entries=h->Integral();
       pvtxt3->AddText(Form("%.1f %s of the events",(Double_t)entries/(Double_t)nevents*100,"%"));
-      h->Draw("colz");
+      hhh->Draw("colz");
       c->SetLogz();
       pvtxt3->Draw();
       c->SaveAs(Form("%s%s.pdf",c->GetName(),textleg.Data()));

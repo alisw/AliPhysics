@@ -5,23 +5,18 @@
  *
  * @ingroup pwglf_forward_scripts_corr
  */
-/** 
- * Clear canvas 
- * 
- * @param c Canvas to clear 
- *
- * @ingroup pwglf_forward_scripts_corr
- */
-void
-ClearCanvas(TCanvas* c)
+void Setup(Bool_t compile)
 {
-  c->SetLeftMargin(.1);
-  c->SetRightMargin(.05);
-  c->SetBottomMargin(.1);
-  c->SetTopMargin(.05);
-  c->Clear();
-}
+  const char* post = (compile ? "++g" : "");
+  const char* fwd  = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  if (!gROOT->GetClass("AliFMDCorrELossFit"))
+    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  gSystem->AddIncludePath(Form("-I%s/scripts -I%s/corrs -I%s "
+			       "-I$ALICE_ROOT/include", fwd, fwd, fwd));
+  gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C%s", fwd, post));
+  gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C%s", fwd, post));
 
+}
 /** 
  * Draw energy loss fits to a multi-page PDF. 
  *
@@ -40,157 +35,68 @@ ClearCanvas(TCanvas* c)
  * @ingroup pwglf_forward_scripts_corr
  */
 void
-DrawCorrELoss(const char* fname, const char* option="summary error")
+DrawCorrELoss(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
+	      Bool_t mc=false, Bool_t sat=false, 
+	      const char* fname=0, Bool_t details=true)
 {
   //__________________________________________________________________
   // Load libraries and object 
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  // const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  Setup(false);
 
-  TFile* file = TFile::Open(fname, "READ");
-  if (!file) { 
-    Error("DrawCorrELoss", "Failed to open %s", fname);
+  CorrDrawer d;
+  d.Summarize(AliForwardCorrectionManager::kELossFits, runNo, sys, sNN, field, 
+	      mc, sat, "", fname);
+}
+void
+DrawCorrELoss(Bool_t      mc, 
+	      const char* file="forward_eloss.root", 
+	      const char* local="fmd_corrections.root")
+{
+  Setup(true);
+
+  CorrDrawer::Summarize(AliForwardCorrectionManager::kELossFits, 
+			mc, file, local);
+}
+
+void 
+DrawCorrELoss(Bool_t mc, Bool_t dummy, 
+	      const char* file="forward_eloss_rerun.root")
+{
+  Setup(true);
+
+  Printf("Drawing fit results from %s", file);
+  TFile* hist = TFile::Open(file, "READ");
+  if (!hist) { 
+    Error("DrawCorrELoss", "Failed to open %s", file);
     return;
   }
-  TString pname(gSystem->BaseName(fname));
-  pname.ReplaceAll(".root", ".pdf");
+  TList* res = static_cast<TList*>(hist->Get("ForwardResults"));
+  if (!res) { 
+    Error("DrawCorrEloss", "Failed to get ForwardResults from %s", file);
+    return;
+  }
+  TList* ef = static_cast<TList*>(res->FindObject("fmdEnergyFitter"));
+  if (!ef) { 
+    Error("DrawCorrEloss", "Failed to get fmdEnergyFitter from %s:/%s", 
+	  file, res->GetName());
+    return;
+  }
 
   AliFMDCorrELossFit* fits = 
-    static_cast<AliFMDCorrELossFit*>(file->Get("elossfits"));
-  if (!fits) { 
-    Error("DrawCorrELoss", "Object 'elossfits' not found in %s", fname);
+    static_cast<AliFMDCorrELossFit*>(ef->FindObject("AliFMDCorrELossFit"));
+  if (!fits) {
+    Error("DrawCorrEloss", "Failed to get AliFMDCorrELossFit from %s:/%s/%s", 
+	  file, res->GetName(), ef->GetName());
     return;
   }
-
-  //__________________________________________________________________
-  TString opts(option);
-  opts.ToLower();
-  Bool_t summary = opts.Contains("summary");
-  if (summary) opts.ReplaceAll("summary", "");
-
-  //__________________________________________________________________
-  // Create a canvas
-  Int_t h = 800;
-  Int_t w = h / TMath::Sqrt(2);
-  if (summary) w = h;
-  TCanvas* c = new TCanvas("c", "c", w, h);
-  c->SetFillColor(0);
-  c->SetBorderSize(0);
-  c->SetBorderMode(0);
-  c->Print(Form("%s[", pname.Data()));
   
-  gStyle->SetOptStat(0);
-  gStyle->SetTitleFillColor(0);
-  gStyle->SetTitleStyle(0);
-  gStyle->SetTitleBorderSize(0);
-  gStyle->SetTitleX(.7);
-  gStyle->SetTitleY(1);
-  gStyle->SetTitleW(.3);
-  gStyle->SetTitleH(.1);
-  gStyle->SetFrameFillColor(kWhite);
-  gStyle->SetFrameBorderSize(1);
-  gStyle->SetFrameBorderMode(1);
-
-  ClearCanvas(c);
-  //__________________________________________________________________
-  if (!summary) {
-    // Create a title page 
-    TLatex* ll = new TLatex(.5,.8, fname);
-    ll->SetTextAlign(22);
-    ll->SetTextSize(0.05);
-    ll->SetNDC();
-    ll->Draw();
-    
-    TLatex* l = new TLatex(.5,.8, fname);
-    l->SetNDC();
-    l->SetTextSize(0.03);
-    l->SetTextFont(132);
-    l->SetTextAlign(12);
-    l->DrawLatex(0.2, 0.70, "1^{st} page is a summary of fit parameters");
-    l->DrawLatex(0.2, 0.67, "2^{nd} page is a summary of relative errors");
-    l->DrawLatex(0.2, 0.64, "Subsequent pages shows the fitted functions");
-    l->DrawLatex(0.3, 0.60, "Black line is the full fitted function");
-    l->DrawLatex(0.3, 0.57, "Coloured lines are the individual N-mip comp.");
-    l->DrawLatex(0.3, 0.54, "Full drawn lines correspond to used components");
-    l->DrawLatex(0.3, 0.51, "Dashed lines correspond to ignored components");
-    l->DrawLatex(0.2, 0.47, "Each component has the form");
-    l->DrawLatex(0.3, 0.42, "f_{n}(x; #Delta, #xi, #sigma') = "
-		 "#int_{-#infty}^{+#infty}d#Delta' "
-		 "landau(x; #Delta, #xi)gaus(x; #Delta', #sigma')");
-    l->DrawLatex(0.2, 0.37, "The full function is given by");
-    l->DrawLatex(0.3, 0.32, "f_{N}(x; #Delta, #xi, #sigma', #bf{a}) = "
-		 "#sum_{i=1}^{N} a_{i} "
-		 "f_{i}(x; #Delta_{i}, #xi_{i}, #sigma_{i}')");
-    l->DrawLatex(0.3, 0.26, "#Delta_{i} = i (#Delta_{1} + #xi_{1} log(i))");
-    l->DrawLatex(0.3, 0.23, "#xi_{i} = i #xi_{1}");
-    l->DrawLatex(0.3, 0.20, "#sigma_{i} = #sqrt{i} #sigma_{1}");
-    l->DrawLatex(0.3, 0.17, "#sigma_{n} #dot{=} 0");
-    l->DrawLatex(0.3, 0.14, "#sigma'^{2} = #sigma^{2}_{n} + #sigma^{2}");
-    l->DrawLatex(0.3, 0.11, "a_{1} = 1");
-    c->Print(pname.Data(), "Title:Title page");
-    
-    ClearCanvas(c);
-  }
-
-  //__________________________________________________________________
-  // Draw overview page 
-  fits->Draw(opts.Data());
-  c->Print(pname.Data(), "Title:Fit overview");
-
-  if (summary) {
-    c->Print(Form("%s]", pname.Data()));
-    TString pngName(pname.Data());		
-    pngName.ReplaceAll(".pdf", ".png");
-    c->Print(pngName.Data());
-    return;
-  }
-  ClearCanvas(c);
-  
-  //__________________________________________________________________
-  // Draw relative parameter errors 
-  fits->Draw("relative");
-  c->Print(pname.Data(), "Title:Relative parameter errors");
-
-  //__________________________________________________________________
-  // Draw all fits individually
-  Int_t nPad = 6;
-  for (UShort_t d=1; d<=3; d++) { 
-    UShort_t nQ = (d == 1 ? 1 : 2);
-    for (UShort_t q = 0; q < nQ; q++) { 
-      Char_t r = (q == 0 ? 'I' : 'O');
-
-      TObjArray*  ra = fits->GetRingArray(d, r);
-      if (!ra) continue;
-
-      AliFMDCorrELossFit::ELossFit* fit = 0;
-      TIter next(ra);
-      Int_t i = 0;
-      while ((fit = static_cast<AliFMDCorrELossFit::ELossFit*>(next()))) {
-	if ((i % nPad) == 0) { 
-	  ClearCanvas(c);
-	  c->Divide(2,nPad/2,0,0);
-	}
-	TVirtualPad* p = c->cd((i % nPad) + 1);
-	p->SetLogy();
-	p->SetGridx();
-	p->SetGridy();
-	p->SetFillColor(kWhite);
-	fit->Draw("comp");
-
-	if ((i % nPad) == (nPad-1)) 
-	  c->Print(pname.Data(), 
-		   Form("Title:FMD%d%c page %d", d, r, (i/nPad)+1));
-	i++;
-      }
-      if (i % nPad != 0) 
-	c->Print(pname.Data(), 
-		 Form("Title:FMD%d%c page %d", d, r, (i/nPad)+1));
-    }
-  }
-
-  //__________________________________________________________________
-  // Close output file 
-  c->Print(Form("%s]", pname.Data()));
+  CorrDrawer* cd = new CorrDrawer;
+  cd->fELossExtra = file;
+  cd->fMinQuality = 8;
+  cd->Summarize(const_cast<const AliFMDCorrELossFit*>(fits), true);
 }
+
 //
 // EOF
 //

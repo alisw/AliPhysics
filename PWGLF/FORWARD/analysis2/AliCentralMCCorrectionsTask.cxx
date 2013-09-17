@@ -57,7 +57,9 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask()
     fEtaAxis(),
     fList(),
     fNPhiBins(20),
-    fEffectiveCorr(true)
+    fEffectiveCorr(true),
+    fEtaCut(1.9),
+    fCorrCut(0.6)
 {
   // 
   // Constructor 
@@ -82,7 +84,9 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const char* name)
     fEtaAxis(200,-4,6),
     fList(),
     fNPhiBins(20),
-    fEffectiveCorr(true)
+    fEffectiveCorr(true),
+    fEtaCut(1.9),
+    fCorrCut(0.6)
 {
   // 
   // Constructor 
@@ -112,7 +116,9 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const AliCentralMCCorre
     fEtaAxis(200,-4,6),
     fList(o.fList),
     fNPhiBins(o.fNPhiBins),
-    fEffectiveCorr(o.fEffectiveCorr)
+    fEffectiveCorr(o.fEffectiveCorr),
+    fEtaCut(o.fEtaCut),
+    fCorrCut(o.fCorrCut)
 {
   // 
   // Copy constructor 
@@ -149,6 +155,8 @@ AliCentralMCCorrectionsTask::operator=(const AliCentralMCCorrectionsTask& o)
   SetEtaAxis(o.fEtaAxis);
   fNPhiBins          = o.fNPhiBins;
   fEffectiveCorr     = o.fEffectiveCorr;
+  fEtaCut            = o.fEtaCut;
+  fCorrCut           = o.fCorrCut;
 
   return *this;
 }
@@ -322,6 +330,10 @@ AliCentralMCCorrectionsTask::UserCreateOutputObjects()
   fList->Add(vtxAxis);
   fList->Add(etaAxis);
 
+  fList->Add(AliForwardUtil::MakeParameter("effective", fEffectiveCorr));
+  fList->Add(AliForwardUtil::MakeParameter("maxEta", fEtaCut));
+  fList->Add(AliForwardUtil::MakeParameter("accCut", fCorrCut));
+
   AliInfo(Form("Initialising sub-routines: %p, %p", 
 	       &fInspector, &fTrackDensity));
   fInspector.CreateOutputObjects(fList);
@@ -472,7 +484,8 @@ AliCentralMCCorrectionsTask::Terminate(Option_t*)
   VtxBin*   bin = 0;
   UShort_t  iVz = 1;
   while ((bin = static_cast<VtxBin*>(next()))) 
-    bin->Terminate(fList, output, iVz++, fEffectiveCorr, corr,acorr);
+    bin->Terminate(fList, output, iVz++, fEffectiveCorr, 
+		   fEtaCut, fCorrCut, corr,acorr);
 
   output->Add(corr);
   output->Add(acorr);
@@ -491,7 +504,10 @@ AliCentralMCCorrectionsTask::Print(Option_t* option) const
 	    << "  Eta bins:         " << fEtaAxis.GetNbins() << '\n'
 	    << "  Eta range:        [" << fEtaAxis.GetXmin() 
 	    << "," << fEtaAxis.GetXmax() << "]\n"
-	    << "  # of phi bins:    " << fNPhiBins 
+	    << "  # of phi bins:    " << fNPhiBins << "\n"
+	    << "  Effective corr.:  " << fEffectiveCorr << "\n"
+	    << "  Eta cut-off:      " << fEtaCut << "\n"
+	    << "  Acceptance cut:   " << fCorrCut 
 	    << std::endl;
   gROOT->IncreaseDirLevel();
   fInspector.Print(option);
@@ -627,24 +643,26 @@ AliCentralMCCorrectionsTask::VtxBin::CreateOutputObjects(TList* l)
 //____________________________________________________________________
 void
 AliCentralMCCorrectionsTask::VtxBin::Terminate(const TList* input, 
-					    TList* output, 
-					    UShort_t iVz, 
-					    Bool_t effectiveCorr,
-					    AliCentralCorrSecondaryMap* map,
-					    AliCentralCorrAcceptance* acorr)
+					       TList* output, 
+					       UShort_t iVz, 
+					       Bool_t effectiveCorr,
+					       Double_t etaCut,
+					       Double_t accCut,
+					       AliCentralCorrSecondaryMap* map,
+					       AliCentralCorrAcceptance* acorr)
 {
   TList* out = new TList;
   out->SetName(GetName());
   out->SetOwner();
   output->Add(out);
-  
+
   TList* l = static_cast<TList*>(input->FindObject(GetName()));
   if (!l) { 
     AliError(Form("List %s not found in %s", GetName(), input->GetName()));
     return;
   }
 
-
+  // Get the sums 
   TH2D*   hits  = static_cast<TH2D*>(l->FindObject("hits"));
   TH2D*   clus  = static_cast<TH2D*>(l->FindObject("clusters"));
   TH2D*   prim  = static_cast<TH2D*>(l->FindObject("primary"));
@@ -653,40 +671,108 @@ AliCentralMCCorrectionsTask::VtxBin::Terminate(const TList* input,
     return;
   }
 
-  TH2D* h = 0;
-  if (effectiveCorr) h = static_cast<TH2D*>(clus->Clone("bgCorr"));
-  else               h = static_cast<TH2D*>(hits->Clone("bgCorr"));
-  h->SetDirectory(0);
-  h->Divide(prim);
+  // Clone cluster and hit map
+  TH2D* secMapEff = static_cast<TH2D*>(clus->Clone("secMapEff"));
+  TH2D* secMapHit = static_cast<TH2D*>(hits->Clone("secMapHit"));
+  secMapEff->SetTitle("2^{nd} map from clusters");
+  secMapEff->SetDirectory(0);
+  secMapHit->SetTitle("2^{nd} map from MC hits");
+  secMapHit->SetDirectory(0);
 
-  TH1D* acc = new TH1D(Form("SPDacc_vrtbin_%d",iVz),
-		       "Acceptance correction for SPD" ,
-		       fPrimary->GetXaxis()->GetNbins(), 
-		       fPrimary->GetXaxis()->GetXmin(), 
-		       fPrimary->GetXaxis()->GetXmax());
-  TH1F* accden = static_cast<TH1F*>(acc->Clone(Form("%s_den",acc->GetName())));
+  // Divide cluster and hit map with number of primaries 
+  secMapEff->Divide(prim);
+  secMapHit->Divide(prim);
 
-  for(Int_t xx = 1; xx <=h->GetNbinsX(); xx++) {
-    for(Int_t yy = 1; yy <=h->GetNbinsY(); yy++) {
-      if(TMath::Abs(h->GetXaxis()->GetBinCenter(xx)) > 1.9) {
-	h->SetBinContent(xx,yy,0.); 
-	h->SetBinError(xx,yy,0.); 
+  // Create acceptance histograms 
+  TH1D* accEff = new TH1D("accEff",
+			  "Acceptance correction for SPD (from 2^{nd} map)" ,
+			  fPrimary->GetXaxis()->GetNbins(), 
+			  fPrimary->GetXaxis()->GetXmin(), 
+			  fPrimary->GetXaxis()->GetXmax());
+  TH1D* accHit = static_cast<TH1D*>(accEff->Clone("accHit"));
+  accHit->SetTitle("Acceptance correction for SPD (from clusters)");
+
+  // Diagnostics histogra, 
+  TH2*  dia    = static_cast<TH2D*>(clus->Clone("diagnostics"));
+  dia->SetTitle("Scaled cluster density");
+
+  // Total number of channels along phi and # of eta bins
+  Int_t nTotal = secMapHit->GetNbinsY();
+  Int_t nEta   = secMapHit->GetNbinsX();
+
+  for(Int_t xx = 1; xx <= nEta; xx++) {
+    Double_t eta = secMapHit->GetXaxis()->GetBinCenter(xx);
+    Bool_t   ins = TMath::Abs(eta) <= etaCut;
+    Double_t mm  = 0;
+    if (ins) {
+      // Find the maximum cluster signal in this phi range 
+      for (Int_t yy = 1; yy <= nTotal; yy++) { 
+	Double_t c = clus->GetBinContent(xx,yy);
+	mm         = TMath::Max(mm, c);
       }
-      if(h->GetBinContent(xx,yy) > 0.9) 
-	acc->Fill(h->GetXaxis()->GetBinCenter(xx));
-      else {
-	h->SetBinContent(xx,yy,0.); 
-	h->SetBinError(xx,yy,0.); 
-      }
-      accden->Fill(h->GetXaxis()->GetBinCenter(xx));
     }
-  }
-  acc->Divide(accden);
+    // Count number of phi bins with enough clusters or high enough
+    // correction.
+    Int_t nOKEff    = 0;
+    Int_t nOKHit    = 0;
+    for(Int_t yy = 1; yy <=nTotal; yy++) {
+      if (!ins) { // Not inside Eta cut
+	secMapEff->SetBinContent(xx,yy,0.); 
+	secMapEff->SetBinError(xx,yy,0.); 
+	secMapHit->SetBinContent(xx,yy,0.); 
+	secMapHit->SetBinError(xx,yy,0.); 
+	dia->SetBinContent(xx,yy,0);
+	continue;
+      }
 
-  map->SetCorrection(iVz, h);
+      // Check if the background correction is large enough, or zero map
+      if(secMapEff->GetBinContent(xx,yy) > 0.9) {
+	// acc->Fill(h->GetXaxis()->GetBinCenter(xx));
+	nOKEff++;
+      }
+      else {
+	secMapEff->SetBinContent(xx,yy,0.); 
+	secMapEff->SetBinError(xx,yy,0.); 
+      }
+
+      // Check if the number of cluster is large enough, or zero map
+      Double_t c = clus->GetBinContent(xx,yy);
+      Double_t s = (mm < 1e-6) ? 0 : c / mm;
+      dia->SetBinContent(xx,yy,s);
+      if (s >= accCut) {
+	nOKHit++;
+      }
+      else {
+	secMapHit->SetBinContent(xx,yy,0);
+	secMapHit->SetBinError(xx,yy,0);
+      }
+    }
+
+    // Calculate acceptance as ratio of bins with enough clusters and
+    // total number of phi bins.
+    Double_t accXX = float(nOKHit) / nTotal;
+    if (accXX < 0.2) accXX = 0;
+    accHit->SetBinContent(xx, accXX);
+
+    // Calculate acceptance as ratio of bins with large enough
+    // correction and total number of phi bins.
+    accXX = float(nOKEff) / nTotal;
+    if (accXX < 0.2) accXX = 0;
+    accEff->SetBinContent(xx, accXX);
+  }
+
+  TH2D* secMap    = (effectiveCorr ? secMapEff : secMapHit);
+  TH2D* secMapAlt = (effectiveCorr ? secMapHit : secMapEff);
+  TH1D* acc       = (effectiveCorr ? accEff    : accHit);
+  TH1D* accAlt    = (effectiveCorr ? accHit    : accEff);
+  out->Add(secMap->Clone("secMap"));
+  out->Add(secMapAlt->Clone());
+  out->Add(acc->Clone("acc"));
+  out->Add(accAlt->Clone());
+  out->Add(dia->Clone());
+
+  map->SetCorrection(iVz, secMap);
   acorr->SetCorrection(iVz, acc);
-  out->Add(h);
-  out->Add(acc);
 }
 
 //

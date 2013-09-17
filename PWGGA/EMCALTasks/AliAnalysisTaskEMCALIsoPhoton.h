@@ -14,10 +14,13 @@ class AliESDCaloCells;
 class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
+class AliAODEvent;
+class AliAODCaloCells;
 class AliVCluster;
 class AliMCEvent;
 class AliStack;
 class TParticle;
+class TGeoHMatrix;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -52,12 +55,17 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetDebugOn(Bool_t d)                   { fDebug              = d;       }
   void                   SetPathStringSelect(char *p)           { fPathStrOpt         = p;       }
   void                   SetEtCut(Double_t ec)                  { fECut               = ec;      }
+  void                   SetImportGeometryFromFile(Bool_t  im, 
+                                           TString pa = "")     { fImportGeometryFromFile = im ; 
+                                                                  fImportGeometryFilePath = pa ; }    
   
  protected:
-  TRefArray             *fCaloClusters;          //!pointer to EMCal clusters
+  TObjArray             *fESDClusters;           //!pointer to EMCal clusters
+  TObjArray             *fAODClusters;           //!pointer to EMCal clusters
   TObjArray             *fSelPrimTracks;         //!pointer to ESD primary tracks
   TClonesArray          *fTracks;                //!track input array
-  AliESDCaloCells       *fEMCalCells;            //!pointer to EMCal cells
+  AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
+  AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
@@ -76,13 +84,16 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNClusForDirPho;        // number of clusters from prompt photon per event
   Float_t                fDirPhoPt;              // prompt photon pt (assumes only one per event)
   Float_t                fHigherPtCone;          // higher pt inside the cone around the candidate
+  Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
+  TString                fImportGeometryFilePath;  // path fo geometry.root file
 
   
  private:
   AliESDEvent *fESD;      //! ESD object
+  AliAODEvent *fAOD;      //! AOD object
   AliMCEvent  *fMCEvent;  //! MC event object
   AliStack    *fStack;    //!MC particles stack object
-
+  TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
   TList       *fOutputList; //! Output list
   //histograms for events with 1+ track pt>1
   TH1F        *fEvtSel;                    //!evt selection counter: 0=all trg, 1=pv cut 

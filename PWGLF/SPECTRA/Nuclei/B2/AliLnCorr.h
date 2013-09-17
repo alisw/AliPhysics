@@ -10,7 +10,6 @@
 #include <TObject.h>
 #include <TString.h>
 
-class AliLnUnfolding;
 class AliLnSecondaries;
 class AliLnEfficiency;
 
@@ -23,7 +22,6 @@ class AliLnCorr: public TObject
 	
 	Int_t Exec();
 	
-	AliLnUnfolding*   GetLnUnfolding() { return fUnfolding; }
 	AliLnSecondaries* GetLnSecondaries() { return fSecondaries; }
 	AliLnEfficiency*  GetLnEfficiency() { return fEfficiency; }
 	
@@ -36,7 +34,6 @@ class AliLnCorr: public TObject
  
 	TString fOutputFilename; // output filename
 	
-	AliLnUnfolding*   fUnfolding; // unfolding correction
 	AliLnSecondaries* fSecondaries; // secondaries correction
 	AliLnEfficiency*  fEfficiency; // eficiency correction
 	

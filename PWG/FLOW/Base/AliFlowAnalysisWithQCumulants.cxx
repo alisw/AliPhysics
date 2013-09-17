@@ -366,6 +366,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  if(fExactNoRPs > 0 && fNumberOfRPsEBE<fExactNoRPs){return;}
  fNumberOfPOIsEBE = anEvent->GetNumberOfPOIs(); // number of POIs (i.e. number of particles of interest)
  fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
+ //Printf("Reference multiplicity (QC): %.1f",fReferenceMultiplicityEBE);
  Double_t ptEta[2] = {0.,0.}; // 0 = dPt, 1 = dEta
   
  // c) Fill the common control histograms and call the method to fill fAvMultiplicity:

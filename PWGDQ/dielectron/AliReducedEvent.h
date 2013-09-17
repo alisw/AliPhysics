@@ -15,6 +15,7 @@
 
 
 const Int_t fgkNMaxHarmonics = 10;
+const Float_t gZdcNalpha= 1.0;
 
 //_____________________________________________________________________
 class AliReducedTrack : public TObject {
@@ -49,12 +50,14 @@ class AliReducedTrack : public TObject {
   Float_t  Pin()                         const {return fMomentumInner;}
   Float_t  DCAxy()                       const {return fDCA[0];}
   Float_t  DCAz()                        const {return fDCA[1];}
+  Float_t  TrackLength()                 const {return fTrackLength;}
   
   UShort_t ITSncls()                const;
   UChar_t  ITSclusterMap()          const {return fITSclusterMap;}
   Bool_t   ITSLayerHit(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSclusterMap&(1<<layer)) : kFALSE);};
   Float_t  ITSsignal()              const {return fITSsignal;}
   Float_t  ITSnSig(Int_t specie)    const {return (specie>=0 && specie<=3 ? fITSnSig[specie] : -999.);}
+  Float_t  ITSchi2()                const {return fITSchi2;}
   
   UChar_t TPCncls()                        const {return fTPCNcls;}
   UChar_t TPCFindableNcls()                const {return fTPCNclsF;}
@@ -64,13 +67,18 @@ class AliReducedTrack : public TObject {
   Int_t   TPCClusterMapBitsFired()         const;
   Bool_t  TPCClusterMapBitFired(Int_t bit) const {return (bit>=0 && bit<8 ? (fTPCClusterMap&(1<<bit)) : kFALSE);};
   Float_t TPCsignal()                      const {return fTPCsignal;}
+  UChar_t TPCsignalN()                     const {return fTPCsignalN;}
   Float_t TPCnSig(Int_t specie)            const {return (specie>=0 && specie<=3 ? fTPCnSig[specie] : -999.);}
+  Float_t TPCchi2()                        const {return fTPCchi2;}
   
   Float_t  TOFbeta()             const {return fTOFbeta;}    
   Float_t  TOFnSig(Int_t specie) const {return (specie>=0 && specie<=3 ? fTOFnSig[specie] : -999.);}
+  Short_t  TOFdeltaBC()          const {return fTOFdeltaBC;}
   
   Int_t    TRDntracklets(Int_t type)  const {return (type==0 || type==1 ? fTRDntracklets[type] : -1);}
   Float_t  TRDpid(Int_t specie)       const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
+  Float_t  TRDpidLQ1D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
+  Float_t  TRDpidLQ2D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpidLQ2D[specie] : -999.);}
   
   Int_t    CaloClusterId() const {return fCaloClusterId;}
     
@@ -80,9 +88,13 @@ class AliReducedTrack : public TObject {
   Bool_t TestFlag(UShort_t iflag)     const {return (iflag<8*sizeof(UShort_t) ? fFlags&(UShort_t(1)<<iflag) : kFALSE);}
   Bool_t SetFlag(UShort_t iflag)            {if (iflag>=8*sizeof(UShort_t)) return kFALSE; fFlags|=(UShort_t(1)<<iflag); return kTRUE;}
   Bool_t IsGammaLeg()                 const {return fFlags&(UShort_t(1)<<1);}
+  Bool_t IsPureGammaLeg()             const {return fFlags&(UShort_t(1)<<8);}
   Bool_t IsK0sLeg()                   const {return fFlags&(UShort_t(1)<<2);}
+  Bool_t IsPureK0sLeg()               const {return fFlags&(UShort_t(1)<<9);}
   Bool_t IsLambdaLeg()                const {return fFlags&(UShort_t(1)<<3);}
+  Bool_t IsPureLambdaLeg()            const {return fFlags&(UShort_t(1)<<10);}
   Bool_t IsALambdaLeg()               const {return fFlags&(UShort_t(1)<<4);}
+  Bool_t IsPureALambdaLeg()           const {return fFlags&(UShort_t(1)<<11);}
   Bool_t IsKink(Int_t i=0)            const {return (i>=0 && i<3 ? fFlags&(UShort_t(1)<<(5+i)) : kFALSE);}
   Bool_t TestFlagMore(UShort_t iflag) const {return (iflag<8*sizeof(ULong_t) ? fMoreFlags&(ULong_t(1)<<iflag) : kFALSE);}
   Bool_t SetFlagMore(UShort_t iflag)        {if(iflag>=8*sizeof(ULong_t)) return kFALSE; fMoreFlags|=(ULong_t(1)<<iflag); return kTRUE;}
@@ -100,11 +112,13 @@ class AliReducedTrack : public TObject {
   Float_t fTPCEta;              // eta at the vertex from TPC alone tracking 
   Float_t fMomentumInner;       // inner param momentum (only the magnitude)
   Float_t fDCA[2];              // DCA xy,z
+  Float_t fTrackLength;         // track length
   
   // ITS
   UChar_t  fITSclusterMap;      // ITS cluster map
   Float_t  fITSsignal;          // ITS signal
   Float_t  fITSnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
+  Float_t  fITSchi2;            // ITS chi2 / cls
   
   // TPC
   UChar_t fTPCNcls;            // TPC ncls                          
@@ -113,15 +127,19 @@ class AliReducedTrack : public TObject {
   UChar_t fTPCNclsIter1;       // TPC no clusters after first iteration
   UChar_t fTPCClusterMap;      // TPC cluster distribution map
   Float_t fTPCsignal;          // TPC de/dx
+  UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
+  Float_t fTPCchi2;            // TPC chi2 / cls
     
   // TOF
   Float_t fTOFbeta;             // TOF pid info
   Float_t fTOFnSig[4];          // TOF n-sigma deviation from expected signal
+  Short_t fTOFdeltaBC;          // BC(event) - BC(track) estimated by TOF
   
   // TRD
   UChar_t fTRDntracklets[2];       // 0 - AliESDtrack::GetTRDntracklets(); 1 - AliESDtrack::GetTRDntrackletsPID()   TODO: use only 1 char
-  Float_t fTRDpid[2];              // TRD electron probabilities, [0]- 1D likelihood, [1]- 2D likelihood
+  Float_t fTRDpid[2];              // TRD pid 1D likelihoods, [0]-electron , [1]- pion
+  Float_t fTRDpidLQ2D[2];          // TRD pid 2D likelihoods, [0]-electron , [1]- pion
   
   // EMCAL/PHOS
   Int_t  fCaloClusterId;          // ID for the calorimeter cluster (if any)
@@ -137,12 +155,16 @@ class AliReducedTrack : public TObject {
                                   // BIT5 toggled if the track has kink0 index > 0
                                   // BIT6 toggled if the track has kink1 index > 0
                                   // BIT7 toggled if the track has kink2 index > 0
+                                  // BIT8 toggled if track belongs to a pure gamma conversion
+                                  // BIT9 toggled if track belongs to a pure K0s
+                                  // BIT10 toggled if track belongs to a pure Lambda
+                                  // BIT11 toggled if track belongs to a pure ALambda
   ULong_t  fMoreFlags;            // Space reserved for more information which might be needed later for analysis
     
   AliReducedTrack(const AliReducedTrack &c);
   AliReducedTrack& operator= (const AliReducedTrack &c);
 
-  ClassDef(AliReducedTrack, 3);
+  ClassDef(AliReducedTrack, 4);
 };
 
 
@@ -182,7 +204,7 @@ class AliReducedPair : public TObject {
   Float_t  Rapidity()            const;
   Float_t  Theta()               const {return TMath::ACos(TMath::TanH(fEta));}
   Float_t  Lxy()                 const {return fLxy;}
-  Float_t  Radius()              const {return fLxy;}
+  Float_t  DecayRadius()         const {return fLxy;}
   Float_t  LxyErr()              const {return fLxyErr;}
   Float_t  PointingAngle()       const {return fPointingAngle;}
   Float_t  Chi2()                const {return fChisquare;}
@@ -212,6 +234,36 @@ class AliReducedPair : public TObject {
   AliReducedPair& operator= (const AliReducedPair &c);
 
   ClassDef(AliReducedPair, 3);
+};
+
+
+//_____________________________________________________________________
+class AliReducedFMD : public TObject {
+
+  friend class AliAnalysisTaskReducedTree;  // friend analysis task which fills the object
+
+ public:
+  AliReducedFMD();
+  ~AliReducedFMD();
+
+  // getters
+  UShort_t Multiplicity()	    const {return fMultiplicity;}
+  //Float_t Eta()	 		          const {return fEta;}
+  UShort_t Id()	    	        const {return fId;}
+
+  //void SetIgnoreSteamer();
+  
+ private:
+
+  UShort_t fMultiplicity;        
+  //Float_t fEta;            
+  UShort_t fId;           
+
+    
+  AliReducedFMD(const AliReducedFMD &c);
+  AliReducedFMD& operator= (const AliReducedFMD &c);
+
+  ClassDef(AliReducedFMD, 1);
 };
 
 
@@ -247,7 +299,7 @@ class AliReducedEventFriend : public TObject {
   Double_t Qx(Int_t det, Int_t harmonic)  const {return (det>=0 && det<kNdetectors && harmonic>0 && harmonic<=fgkNMaxHarmonics ? fQvector[det][harmonic-1][0] : -999.);}
   Double_t Qy(Int_t det, Int_t harmonic)  const {return (det>=0 && det<kNdetectors && harmonic>0 && harmonic<=fgkNMaxHarmonics ? fQvector[det][harmonic-1][1] : -999.);}
   Double_t EventPlane(Int_t det, Int_t h) const;
-  UChar_t GetEventPlaneStatus(Int_t det, Int_t h) const {return (det>=0 && det<kNdetectors && h>0 && h<=fgkNMaxHarmonics ? fEventPlaneStatus[det][h-1] : 999);} 
+  UChar_t GetEventPlaneStatus(Int_t det, Int_t h) const {return (det>=0 && det<kNdetectors && h>0 && h<=fgkNMaxHarmonics ? fEventPlaneStatus[det][h-1] : UChar_t(255));} 
   Bool_t  CheckEventPlaneStatus(Int_t det, Int_t h, EventPlaneStatus flag) const;
   void    CopyEvent(const AliReducedEventFriend* event);
 
@@ -284,11 +336,14 @@ class AliReducedCaloCluster : public TObject {
   AliReducedCaloCluster();
   ~AliReducedCaloCluster();
   
-  Bool_t  IsEMCAL() const {return (fType==kEMCAL ? kTRUE : kFALSE);}
-  Bool_t  IsPHOS()  const {return (fType==kPHOS ? kTRUE : kFALSE);}
-  Float_t Energy()  const {return fEnergy;}
-  Float_t Dx()      const {return fTrackDx;}
-  Float_t Dz()      const {return fTrackDz;}
+  Bool_t  IsEMCAL()    const {return (fType==kEMCAL ? kTRUE : kFALSE);}
+  Bool_t  IsPHOS()     const {return (fType==kPHOS ? kTRUE : kFALSE);}
+  Float_t Energy()     const {return fEnergy;}
+  Float_t Dx()         const {return fTrackDx;}
+  Float_t Dz()         const {return fTrackDz;}
+  Float_t M20()        const {return fM20;}
+  Float_t M02()        const {return fM02;}
+  Float_t Dispersion() const {return fDispersion;}
   
  private:
   Char_t  fType;         // cluster type (EMCAL/PHOS)
@@ -317,6 +372,15 @@ class AliReducedEvent : public TObject {
   ~AliReducedEvent();
 
   // getters
+  ULong64_t EventTag()                        const {return fEventTag;}
+  Bool_t    EventTag(UShort_t bit)            const {return (bit<8*sizeof(ULong64_t) ? (fEventTag&(ULong64_t(1)<<bit)) : kFALSE);}
+  Int_t     EventNumberInFile()               const {return fEventNumberInFile;}
+  UInt_t    L0TriggerInputs()                 const {return fL0TriggerInputs;}
+  Bool_t    L0TriggerInput(UShort_t bit)         const {return (bit<8*sizeof(UInt_t) ? (fL0TriggerInputs&(UInt_t(1)<<bit)) : kFALSE);}
+  UInt_t    L1TriggerInputs()                 const {return fL1TriggerInputs;}
+  Bool_t    L1TriggerInput(UShort_t bit)         const {return (bit<8*sizeof(UInt_t) ? (fL1TriggerInputs&(UInt_t(1)<<bit)) : kFALSE);}
+  UShort_t  L2TriggerInputs()                 const {return fL2TriggerInputs;}
+  Bool_t    L2TriggerInput(UShort_t bit)         const {return (bit<8*sizeof(UShort_t) ? (fL2TriggerInputs&(UShort_t(1)<<bit)) : kFALSE);}
   Int_t     RunNo()                           const {return fRunNo;}
   UShort_t  BC()                              const {return fBC;}
   UInt_t    TimeStamp()                       const {return fTimeStamp;}
@@ -324,10 +388,14 @@ class AliReducedEvent : public TObject {
   ULong64_t TriggerMask()                     const {return fTriggerMask;}
   Bool_t    IsPhysicsSelection()              const {return fIsPhysicsSelection;}
   Bool_t    IsSPDPileup()                     const {return fIsSPDPileup;}
+  Bool_t    IsSPDPileupMultBins()             const {return fIsSPDPileupMultBins;}
+  Int_t     IRIntClosestIntMap(Int_t id)      const {return (id>=0 && id<2 ? fIRIntClosestIntMap[id] : -999);}
+  Bool_t    IsFMDReduced()                    const {return fIsFMDReduced;}
   Float_t   Vertex(Int_t axis)                const {return (axis>=0 && axis<=2 ? fVtx[axis] : 0);}
   Int_t     VertexNContributors()             const {return fNVtxContributors;}
   Float_t   VertexTPC(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxTPC[axis] : 0);}
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
+  Float_t   VertexTZERO()                     const {return fT0zVertex;}
   Int_t     NpileupSPD()                      const {return fNpileupSPD;}
   Int_t     NpileupTracks()                   const {return fNpileupTracks;}
   Int_t     NPMDtracks()                      const {return fNPMDtracks;}
@@ -344,8 +412,10 @@ class AliReducedEvent : public TObject {
   Int_t     NTracksTotal()                    const {return fNtracks[0];}
   Int_t     NTracks()                         const {return fNtracks[1];}
   Int_t     SPDntracklets()                   const {return fSPDntracklets;}
-  Int_t     SPDntracklets(Int_t bin)          const {return (bin>=0 && bin<16 ? fSPDntrackletsEta[bin] : -999);}
+  Int_t     SPDntracklets(Int_t bin)          const {return (bin>=0 && bin<32 ? fSPDntrackletsEta[bin] : -999);}
   Int_t     TracksPerTrackingFlag(Int_t flag) const {return (flag>=0 && flag<32 ? fNtracksPerTrackingFlag[flag] : -999);}
+  UShort_t  NFMDchannels(Int_t det)	      const {return (det>=0 && det<5 ? fNFMDchannels[det] : 0);}
+  UShort_t  FMDtotalMult(Int_t det)           const {return (det>=0 && det<5 ? fFMDtotalMult[det] : 0);}
   
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
   Float_t   MultVZEROA()                      const;
@@ -354,9 +424,25 @@ class AliReducedEvent : public TObject {
   Float_t   MultRingVZEROA(Int_t ring)        const;
   Float_t   MultRingVZEROC(Int_t ring)        const;
   
-  Float_t   EnergyZDC(Int_t channel)   const {return (channel>=0 && channel<8 ? fZDCnEnergy[channel] : -999.);}
-  Float_t   EnergyZDCnA(Int_t channel) const {return (channel>=0 && channel<4 ? fZDCnEnergy[channel+4] : -999.);}
-  Float_t   EnergyZDCnC(Int_t channel) const {return (channel>=0 && channel<4 ? fZDCnEnergy[channel] : -999.);}
+  Float_t   AmplitudeTZEROA()                       const;
+  Float_t   AmplitudeTZEROC()                       const;
+  Float_t   AmplitudeTZERO()                        const;
+  Float_t   AmplitudeTZEROch(Int_t ch)              const {return (ch>=0 && ch<=25 ? fT0amplitude[ch] : -999.);}
+  Float_t   EventTZEROStartTime()                   const {return fT0start;}
+  Float_t   EventTZEROStartTimeTOFfirst(Int_t side) const {return (side>=0 && side<3 ? fT0TOF[side] : -999.);}
+  Float_t   EventTZEROStartTimeTOFbest(Int_t side)  const {return (side>=0 && side<3 ? fT0TOFbest[side] : -999.);}
+  Bool_t    IsPileupTZERO()                         const {return fT0pileup;}
+  Bool_t    IsSatteliteCollisionTZERO()             const {return fT0sattelite;}
+  
+  Float_t   EnergyZDCnTree(UShort_t channel)  const {return (channel<10 ? fZDCnEnergy[channel] : -999.);};
+  Float_t   EnergyZDCpTree(UShort_t channel)  const {return (channel<10 ? fZDCpEnergy[channel] : -999.);};
+  Float_t   EnergyZDCn(Int_t channel)  const;
+  Float_t   EnergyZDCA() const;
+  Float_t   EnergyZDCC() const;
+  Float_t   EnergyZDC() const;
+  
+  Bool_t    TestEventTag(UShort_t iflag)  const {return (iflag<8*sizeof(ULong64_t) ? fEventTag&(ULong64_t(1)<<iflag) : kFALSE);}
+  Bool_t    SetEventTag(UShort_t iflag)         {if (iflag>=8*sizeof(ULong64_t)) return kFALSE; fEventTag|=(ULong64_t(1)<<iflag); return kTRUE;}
   
   AliReducedTrack* GetTrack(Int_t i)         const 
     {return (i<fNtracks[1] ? (AliReducedTrack*)fTracks->At(i) : 0x0);}
@@ -366,7 +452,23 @@ class AliReducedEvent : public TObject {
     {return (i>=0 && i<fNDielectronCandidates ? (AliReducedPair*)fCandidates->At(i+fNV0candidates[1]) : 0x0);}
   TClonesArray* GetPairs()                              const {return fCandidates;}
   TClonesArray* GetTracks()                             const {return fTracks;}
-
+  TClonesArray* GetFMD(Int_t det)                       const {return (det==0 ? fFMD1 :
+                                                                 (det==1 ? fFMD2I :
+                                                                  (det==2 ? fFMD2O :
+                                                                   (det==3 ? fFMD3I :
+                                                                    (det==4 ? fFMD3O :
+                                                                     0)))));}
+  TClonesArray* GetFMD1()                                const {return fFMD1;}
+  TClonesArray* GetFMD2I()                                const {return fFMD2I;}
+  TClonesArray* GetFMD2O()                                const {return fFMD2O;}
+  TClonesArray* GetFMD3I()                                const {return fFMD3I;}
+  TClonesArray* GetFMD3O()                                const {return fFMD3O;}
+  AliReducedFMD* GetFMD1Channel(UShort_t ch) const {return (ch<fNFMDchannels[0] ? (AliReducedFMD*)fFMD1->At(ch) : 0x0);}
+  AliReducedFMD* GetFMD2IChannel(UShort_t ch) const {return (ch<fNFMDchannels[1] ? (AliReducedFMD*)fFMD2I->At(ch) : 0x0);}
+  AliReducedFMD* GetFMD2OChannel(UShort_t ch) const {return (ch<fNFMDchannels[2] ? (AliReducedFMD*)fFMD2O->At(ch) : 0x0);}
+  AliReducedFMD* GetFMD3IChannel(UShort_t ch) const {return (ch<fNFMDchannels[3] ? (AliReducedFMD*)fFMD3I->At(ch) : 0x0);}
+  AliReducedFMD* GetFMD3OChannel(UShort_t ch) const {return (ch<fNFMDchannels[4] ? (AliReducedFMD*)fFMD3O->At(ch) : 0x0);}
+  
   Int_t GetNCaloClusters() const {return fNCaloClusters;}
   AliReducedCaloCluster* GetCaloCluster(Int_t i) const 
     {return (i>=0 && i<fNCaloClusters ? (AliReducedCaloCluster*)fCaloClusters->At(i) : 0x0);}
@@ -376,11 +478,17 @@ class AliReducedEvent : public TObject {
   void  GetVZEROQvector(Double_t Qvec[][2], Int_t det) ;
   void  GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vzeroMult);
   void  GetZDCQvector(Double_t Qvec[][2], Int_t det) const;
+  void  GetZDCQvector(Double_t Qvec[][2], Int_t det, const Float_t* zdcEnergy) const;
   void  SubtractParticleFromQvector(AliReducedTrack* particle, Double_t Qvec[][2], Int_t det,
                                     Float_t etaMin=-0.8, Float_t etaMax=+0.8,
 	 			    Bool_t (*IsTrackSelected)(AliReducedTrack*)=NULL);
 
  private:
+  ULong64_t fEventTag;              // Event tags to be used either during analysis or to filter events
+  Int_t     fEventNumberInFile;     // Event number in ESD file
+  UInt_t    fL0TriggerInputs;       // L0 trigger inputs
+  UInt_t    fL1TriggerInputs;       // L1 trigger inputs
+  UShort_t  fL2TriggerInputs;       // L2 trigger inputs
   Int_t     fRunNo;                 // run number
   UShort_t  fBC;                    // bunch crossing
   UInt_t    fTimeStamp;             // time stamp of the event                (NEW)
@@ -388,6 +496,9 @@ class AliReducedEvent : public TObject {
   ULong64_t fTriggerMask;           // trigger mask
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
+  Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins
+  Int_t     fIRIntClosestIntMap[2]; // out of bunch interactions, [0]-Int1, [1]-Int2 
+  Bool_t    fIsFMDReduced;          // FMD info, if present, is reduced       (NEW)
   Float_t   fVtx[3];                // global event vertex vector in cm
   Int_t     fNVtxContributors;      // global event vertex contributors
   Float_t   fVtxTPC[3];             // TPC only event vertex           
@@ -403,17 +514,38 @@ class AliReducedEvent : public TObject {
   Int_t     fNDielectronCandidates; // number of pairs selected as dielectrons
   Int_t     fNtracks[2];            // number of tracks, [0]-total, [1]-selected for the tree
   Int_t     fSPDntracklets;         // number of SPD tracklets in |eta|<1.0 
-  Int_t     fSPDntrackletsEta[16];  // number of SPD tracklets in equal eta bins between -1.6 --> +1.6    (NEW)
-  Int_t     fNtracksPerTrackingFlag[32];  // number of tracks for each tracking status bit                (NEW)
+  Int_t     fSPDntrackletsEta[32];  // number of SPD tracklets in equal eta bins between -1.6 --> +1.6    
+  Int_t     fNtracksPerTrackingFlag[32];  // number of tracks for each tracking status bit                
   
   Float_t   fVZEROMult[64];         // VZERO multiplicity in all 64 channels
-  Float_t   fZDCnEnergy[8];         // neutron ZDC energy in all 8 channels
+  Float_t   fZDCnEnergy[10];         // neutron ZDC energy in all 8 channels
+  Float_t   fZDCpEnergy[10];         // neutron ZDC energy in all 8 channels
+  Float_t   fT0amplitude[26];         // T0 amplitude in all 24 channels
+  Float_t   fT0TOF[3];               // T0 timing for A&C, A, and C (first time)
+  Float_t   fT0TOFbest[3];           // T0 timing for A&C, A, and C (best time)
+  Float_t   fT0zVertex;                // T0 z vertex estimation
+  Float_t   fT0start;                // T0 timing
+  Bool_t    fT0pileup;               // TZERO pileup flag
+  Bool_t    fT0sattelite;            // TZERO flag for collisions from sattelite bunches
     
   TClonesArray* fTracks;            //->   array containing global tracks
   static TClonesArray* fgTracks;    //       global tracks
   
   TClonesArray* fCandidates;        //->   array containing pair candidates
   static TClonesArray* fgCandidates;  // pair candidates
+  
+  UShort_t   fNFMDchannels[5];           // number of FMD channels read out 	      (NEW)
+  UShort_t   fFMDtotalMult[5];           // number of FMD channels read out 	      (NEW)
+  TClonesArray* fFMD1;            //->   array containing fmd readout          (NEW)
+  static TClonesArray* fgFMD1;    //       fmd readout			      (NEW)
+  TClonesArray* fFMD2I;            //->   array containing fmd readout          (NEW)
+  static TClonesArray* fgFMD2I;    //       fmd readout			      (NEW)
+  TClonesArray* fFMD2O;            //->   array containing fmd readout          (NEW)
+  static TClonesArray* fgFMD2O;    //       fmd readout			      (NEW)
+  TClonesArray* fFMD3I;            //->   array containing fmd readout          (NEW)
+  static TClonesArray* fgFMD3I;    //       fmd readout			      (NEW)
+  TClonesArray* fFMD3O;            //->   array containing fmd readout          (NEW)
+  static TClonesArray* fgFMD3O;    //       fmd readout			      (NEW)
   
   Int_t     fNCaloClusters;         // number of calorimeter clusters  
   TClonesArray* fCaloClusters;        //->   array containing calorimeter clusters
@@ -423,7 +555,7 @@ class AliReducedEvent : public TObject {
   AliReducedEvent(const AliReducedEvent &c);
   AliReducedEvent& operator= (const AliReducedEvent &c);
 
-  ClassDef(AliReducedEvent, 4);
+  ClassDef(AliReducedEvent, 5);
 };
 
 //_______________________________________________________________________________

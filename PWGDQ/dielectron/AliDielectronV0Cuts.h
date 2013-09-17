@@ -27,6 +27,11 @@
 
 class AliDielectronV0Cuts : public AliDielectronVarCuts {
 public:
+  enum EV0finder {
+    kAll = 0,
+    kOffline,
+    kOnTheFly
+  };
 
   AliDielectronV0Cuts();
   AliDielectronV0Cuts(const char* name, const char* title);
@@ -40,6 +45,7 @@ public:
   Bool_t IsNewEvent(const AliVEvent *ev);
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
+  void SetV0finder(EV0finder finder) {fV0finder=finder;}
   void SetPdgCodes(Int_t mother, Int_t negDaughter, Int_t posDaughter) {fMotherPdg=mother; fNegPdg=negDaughter; fPosPdg=posDaughter;}
   void SetExcludeTracks(Bool_t exclude) {fExcludeTracks=exclude;}
   void SetDefaultPID(Int_t def) {fPID=def;}
@@ -49,6 +55,7 @@ private:
 
   TBits fV0TrackArr;                        // array with booleans where TrackID corresponds to bitnumber
   Bool_t fExcludeTracks;                       // cut logic: exclude or include tracks corresponding to a V0 candidate
+  EV0finder fV0finder;                      // which v0 finder
 
   Int_t fMotherPdg;                         // target pdg code of the mother
   Int_t fNegPdg;                            // target pdg code of the negative daughter
@@ -63,7 +70,7 @@ private:
   AliDielectronV0Cuts(const AliDielectronV0Cuts &c);
   AliDielectronV0Cuts &operator=(const AliDielectronV0Cuts &c);
 
-  ClassDef(AliDielectronV0Cuts,1)
+  ClassDef(AliDielectronV0Cuts,2)          // cut class for V0 candidates
 };
 
 #endif

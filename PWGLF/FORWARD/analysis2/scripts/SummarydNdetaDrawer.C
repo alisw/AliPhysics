@@ -1,15 +1,26 @@
 #include "SummaryDrawer.C"
 #include <TPaveText.h>
+#include <TMultiGraph.h>
 
 class SummarydNdetaDrawer : public SummaryDrawer
 {
 public:
+  enum { 
+    kForward   = 0x01,
+    kCentral   = 0x02, 
+    kSums      = 0x04, 
+    kResults   = 0x08, 
+    kMinBias   = 0x10, 
+    kLandscape = 0x20,
+    kPause     = 0x40,
+    kMC        = 0x80,
+    kNormal    = 0xF
+  };
   SummarydNdetaDrawer() 
     : SummaryDrawer()
   {}
   //____________________________________________________________________
-  void Run(const char* fname="forward_dndeta.root",
-	   UShort_t flags=0xf)
+  void Run(const char* fname="forward_dndeta.root", UShort_t flags=kNormal)
   {
     // --- Open the file -----------------------------------------------
     TString filename(fname);
@@ -19,18 +30,34 @@ public:
       return;
     }
     // Options 
-    Bool_t forward = flags & 0x1;
-    Bool_t central = flags & 0x2;
-    Bool_t sums    = flags & 0x4;
-    Bool_t results = flags & 0x8;
-    Bool_t onlyMB  = flags & 0x10;
-    fPause         = flags & 0x40;
+    Bool_t forward = flags & kForward;
+    Bool_t central = flags & kCentral;
+    Bool_t sums    = flags & kSums;
+    Bool_t results = flags & kResults;
+    Bool_t onlyMB  = flags & kMinBias;
+    Bool_t mc      = flags & kMC;
+    fPause         = flags & kPause;
     
-    
+    // --- Force MB for pp ---------------------------------------------
+    UShort_t     sys = 0;
+    TCollection* c   = GetCollection(file, "ForwardSums");
+    GetParameter(c, "sys", sys); 
+    if (sys == 1) onlyMB = true;
+
+    // --- Test of MC --------------------------------------------------
+    TCollection* mcC = GetCollection(file, "MCTruthSums");
+    if (mcC) { 
+      TCollection* mcAll = GetCollection(mcC, "all");
+      if (mcAll && GetObject(mcAll, "MCTruth"))
+	mc = true;
+    }
     // --- Make our canvas ---------------------------------------------
     TString pdfName(filename);
     pdfName.ReplaceAll(".root", ".pdf");
-    CreateCanvas(pdfName, flags & 0x20);
+    CreateCanvas(pdfName, flags & kLandscape);
+
+    // --- Make a Title page -------------------------------------------
+    DrawTitlePage(file, mc, onlyMB);
 
     // --- Do each sub-algorithm ---------------------------------------
     THStack* rF = 0;
@@ -41,11 +68,83 @@ public:
     if (central && sums)    DrawSums(file, "Central", onlyMB);
     if (central && results) rC = DrawRes(file, "Central", onlyMB);
 
-    if (!(rC && rF) || !results) {
-      CloseCanvas();
-      return;
-    }
+    THStack* rM = 0;
+    if (mc && sums)    DrawSums(file, "MCTruth", onlyMB);
+    if (mc && results) rM = DrawRes(file, "MCTruth", onlyMB);
 
+    if (rC && rF && results) DrawBoth(rC, rF, rM, file, onlyMB);
+  
+    CloseCanvas();
+  }
+
+protected:
+  //____________________________________________________________________
+  TCollection* GetCentCollection(const TCollection* sums, 
+				 const TString&     base, 
+				 Int_t              cLow, 
+				 Int_t              cHigh,
+				 TString&           title)
+  {
+    TString folder; 
+    title = TString::Format("%s %s: ", base.Data(), title.Data());
+    if (cLow < 0 || cHigh < 0 || cLow >= cHigh) {
+      folder = "all";
+      title.Append("All selected events");
+      cHigh  *= -1;
+    }
+    else {
+      folder.Form("cent%03d_%03d", cLow, cHigh);
+      title.Append(Form("%3d%% - %3d%%", cLow, cHigh));
+    }
+    
+    return GetCollection(sums, folder);
+    
+  }
+  //____________________________________________________________________
+  void DrawTitlePage(TFile* file, Bool_t mc, Bool_t onlyMB)
+  {
+    TCollection* c   = GetCollection(file, "ForwardResults");
+
+    fBody->cd();
+    
+    Double_t y = .9;
+    TLatex* ltx = new TLatex(.5, y, 
+			     "#frac{1}{#it{N}}#kern[.1]"
+			     "{#frac{d#it{N_{ch}}}{d#it{#eta}}}");
+    ltx->SetTextSize(0.07);
+    ltx->SetTextFont(42);
+    ltx->SetTextAlign(22);
+    ltx->SetNDC();
+    ltx->Draw();
+    y -= .075;
+    
+    if (mc) {
+      ltx = new TLatex(.5, y, "Simulation input");
+      ltx->SetNDC();
+      ltx->SetTextAlign(23);
+      ltx->SetTextFont(42);
+      ltx->SetTextSize(.03);
+      ltx->Draw();
+      y -= .035;
+    }
+    if (onlyMB) {
+      ltx = new TLatex(.5, y, "No centrality");
+      ltx->SetNDC();
+      ltx->SetTextAlign(23);
+      ltx->SetTextFont(42);
+      ltx->SetTextSize(.03);
+      ltx->Draw();
+      y -= .035;
+    }
+    
+    DrawResTitle(c, y, onlyMB);
+
+    PrintCanvas("1/N dN/d#eta");
+  }
+  //____________________________________________________________________
+  void DrawBoth(THStack* rC, THStack* rF, THStack* rM, 
+		TFile* file, Bool_t onlyMB)
+  {
     fBody->cd();
     Double_t y1 = fLandscape ? 0  : .3;
     Double_t x2 = fLandscape ? .7 : 1;
@@ -58,32 +157,76 @@ public:
     p1->Draw();
     p1->cd();
 
-    TIter next(rF->GetHists());
     TH1*  h  = 0;
+    if (rM) { 
+      TIter nextM(rM->GetHists());
+      while ((h = static_cast<TH1*>(nextM()))) rC->Add(h);
+    }
+
+    TIter next(rF->GetHists());
     while ((h = static_cast<TH1*>(next()))) rC->Add(h);
-    
+
+
     rC->Draw("nostack");
+
+    TCollection* fS = GetCollection(file, "ForwardSums");
+    Int_t sys, sNN, trigger;
+    GetParameter(fS, "sNN",     sNN); 
+    GetParameter(fS, "sys",     sys); 
+    GetParameter(fS, "trigger", trigger); 
+    TAxis* centAxis = 
+      static_cast<TAxis*>(GetObject(fS, "centAxis"));
+    UShort_t cLow  = centAxis && !onlyMB ? centAxis->GetXmin() : 0;
+    UShort_t cHigh = centAxis && !onlyMB ? centAxis->GetXmax() : 100;
+
+    TString savPath(gROOT->GetMacroPath());
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+			     gROOT->GetMacroPath()));
+    // Always recompile 
+    if (!gROOT->GetClass("RefData"))
+      gROOT->LoadMacro("OtherData.C++");
+    gROOT->SetMacroPath(savPath);
+
+    // If we have V0AND trigger, get NSD other data
+    Int_t   oT = (trigger == 0x2000) ? 0x4 : trigger;
+    TString oC = Form("RefData::GetData(%hu,%hu,%hu,%hu,%hu,0xF)", 
+		      sys, sNN, oT, cLow, cHigh);
+    TMultiGraph* other = 
+      reinterpret_cast<TMultiGraph*>(gROOT->ProcessLine(oC));
+    if (other) {
+      // p1->Clear();
+      // other->Draw("ap");
+      // Double_t oMax = other->GetHistogram()->GetMaximum();
+      // Double_t rMax = rC->GetMaximum("nostack");
+      // other->SetMaximum(1.2*TMath::Max(oMax, rMax));
+      // rC->Draw("same nostack");
+      TObject* g = 0;
+      TIter    nextG(other->GetListOfGraphs());
+      while ((g = nextG()))
+        g->DrawClone("same p");
+    }
 
     fBody->cd();
     p2->Draw();
     p2->cd();
 
-    TLegend* l = new TLegend(0.01, 0.1, 0.99, 0.99, "Centralities");
+
+    TLegend* l = new TLegend(0.01, 0.1, 0.99, 0.99, 
+			     onlyMB || !centAxis ? "" : "Centralities");
     l->SetNColumns(fLandscape ? 1 : 2);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
-    TAxis* centAxis = 
-      static_cast<TAxis*>(GetObject(GetCollection(file, "ForwardSums"), 
-				    "centAxis"));
-    CleanStack(rC, l, centAxis);
+    CleanStack(rC, l, onlyMB ? 0 : centAxis);
+    if (other) { 
+      TIter nextG(other->GetListOfGraphs());
+      TObject* g = 0;
+      while ((g = nextG())) 
+	l->AddEntry(g, g->GetTitle(), "p");
+    }
     l->Draw();
 
     PrintCanvas("Both");
-  
-    CloseCanvas();
   }
-
-protected:
   //____________________________________________________________________
   void DrawSums(TDirectory* top, const TString& base, bool onlyMB)
   {
@@ -91,50 +234,85 @@ protected:
     if (!c) return;
     
     TAxis* centAxis = static_cast<TAxis*>(GetObject(c, "centAxis"));
-    
-    fBody->Divide(1, 2);
-    
-    fBody->cd(1);
+
+    Int_t   txtPad = 0;
     Double_t save  = fParName->GetTextSize();
     Double_t xSave = fParVal->GetX();
     fParName->SetTextSize(0.03);
     fParVal->SetTextSize(0.03);
-    fParVal->SetX(.4);
+    fParVal->SetX(.45);
     Double_t y = .8;
-    for (Int_t i = 1; i <= centAxis->GetNbins(); i++) { 
-      DrawParameter(y, (i == 1 ? "Centrality classes" : ""),
-		    Form("%3d%% - %3d%%", 
-			 Int_t(centAxis->GetBinLowEdge(i)), 
-			 Int_t(centAxis->GetBinUpEdge(i))));
+    
+    if (!onlyMB && centAxis) {
+      fBody->Divide(1, 2);
+      txtPad = 1;
+    
+      fBody->cd(1);
+      for (Int_t i = 1; i <= centAxis->GetNbins(); i++) { 
+	DrawParameter(y, (i == 1 ? "Centrality classes" : ""),
+		      Form("%3d%% - %3d%%", 
+			   Int_t(centAxis->GetBinLowEdge(i)), 
+			   Int_t(centAxis->GetBinUpEdge(i))));
+      }
+    
+      TH1* cent = GetH1(c, "cent");
+      cent->SetFillColor(kRed+1);
+      cent->SetFillStyle(3001);
+      cent->SetXTitle("Centrality [%]");
+      cent->SetYTitle("Events");
+      
+      DrawInPad(fBody, 2, cent);
     }
+    fBody->cd(txtPad);
+    
     Int_t sys, sNN, scheme, trigger;
     GetParameter(c, "sNN",     sNN); 
     GetParameter(c, "sys",     sys); 
     GetParameter(c, "scheme",  scheme); 
     GetParameter(c, "trigger", trigger); 
+
+    TString schemeString;
+    if (scheme == 0)   schemeString = "1/N_{accepted}";
+    if (scheme & 0x1)  schemeString.Append("1/#epsilon_{V}1/#epsilon_{T}");
+    if (scheme & 0x2)  schemeString.Append("Shape ");
+    if (scheme & 0x4)  schemeString.Append("A+C-E ");
+    if (scheme & 0x8)  schemeString.Append("#epsilon_{T,MC} ");
+    if (scheme & 0x10) schemeString.Append("0-bin");
+
+    TString trigString;
+    if (trigger & 0x0001)     trigString.Append("INEL ");
+    if (trigger & 0x0002)     trigString.Append("INEL>0 ");
+    if (trigger & 0x0004)     trigString.Append("NSD ");
+    if (trigger & 0x0008)     trigString.Append("Empty ");
+    if (trigger & 0x0010)     trigString.Append("A ");
+    if (trigger & 0x0020)     trigString.Append("B ");
+    if (trigger & 0x0080)     trigString.Append("C ");
+    if (trigger & 0x0100)     trigString.Append("E ");
+    if (trigger & 0x0200)     trigString.Append("Pile-up ");
+    if (trigger & 0x0400)     trigString.Append("NSD(MC) ");
+    if (trigger & 0x0800)     trigString.Append("Off-line ");
+    if (trigger & 0x1000)     trigString.Append("N_{cluster}>0 ");
+    if (trigger & 0x2000)     trigString.Append("V0-AND ");
+    if (trigger & 0x4000)     trigString.Append("Satellite ");
+
     DrawParameter(y, "Collision system", (sys == 1 ? "pp" : 
 					  (sys == 2 ? "PbPb" : 
 					   (sys == 3 ? "pPb" : 
 					    "unknown"))));
-    DrawParameter(y, "#sqrt{s_{NN}}", Form("%4dGeV", sNN));
-    DrawParameter(y, "Normalization scheme", Form("0x%x", scheme));
-    DrawParameter(y, "Triggers",      Form("0x%x", trigger));
-  
-    TH1* cent = GetH1(c, "cent");
-    cent->SetFillColor(kRed+1);
-    cent->SetFillStyle(3001);
-    cent->SetXTitle("Centrality [%]");
-    cent->SetYTitle("Events");
-
-    DrawInPad(fBody, 2, cent);
+    DrawParameter(y, "#sqrt{s_{NN}}",        Form("%4dGeV", sNN));
+    DrawParameter(y, "Normalization scheme", schemeString);
+    DrawParameter(y, "Triggers",             trigString);
+    
     fParName->SetTextSize(save);
     fParVal->SetTextSize(save);
     fParVal->SetX(xSave);
 
     PrintCanvas(Form("%s sums", base.Data()));
 
-    DrawCentSum(c, base, centAxis->GetXmin(), -centAxis->GetXmax());
-    if (onlyMB) return;
+    Int_t cLow = centAxis  ?  centAxis->GetXmin() : 0;
+    Int_t cHigh = centAxis ? -centAxis->GetXmax() : -100;
+    DrawCentSum(c, base, cLow, cHigh);
+    if (onlyMB || !centAxis) return;
 
     for (Int_t i = 1; i <= centAxis->GetNbins(); i++) 
       DrawCentSum(c, base, centAxis->GetBinLowEdge(i), 
@@ -144,27 +322,25 @@ protected:
   void DrawCentSum(const TCollection* sums, const TString& base, 
 		   Int_t cLow, Int_t cHigh)
   {
-    TString folder; 
-    if (cLow < 0 || cHigh < 0 || cLow >= cHigh) {
-      folder = "all";
-      cHigh  *= -1;
-    }
-    else folder.Form("cent%03d_%03d", cLow, cHigh);
-    
-    TCollection* c = GetCollection(sums, folder);
+    TString title("sums");
+    TCollection* c = GetCentCollection(sums, base, cLow, cHigh, title);
     if (!c) return;
     
-    fBody->Divide(2, 2);
-
     TH1* type = GetH1(c, Form("%sEvents",base.Data()));
+    TH2* bin0 = GetH2(c, Form("%s0", base.Data()));
+    TH1* trig = GetH1(c, "triggers");
+    TH2* bin  = GetH2(c, base.Data());
+    if (!bin0 || !bin || !trig || !type) return;
+
     type->SetFillStyle(3001);
     type->SetFillColor(kGreen+1);
-    TH2* bin0 = GetH2(c, Form("%s0", base.Data()));
-    
-    DrawInPad(fBody, 1, GetH1(c, "triggers"), "HIST TEXT");
-    DrawInPad(fBody, 2, type,                 "HIST TEXT");
-    DrawInPad(fBody, 3, GetH2(c, base.Data()),"colz");
-    DrawInPad(fBody, 4, bin0,                 "colz");
+
+    fBody->Divide(2, 2);
+
+    DrawInPad(fBody, 1, trig, "HIST TEXT");
+    DrawInPad(fBody, 2, type, "HIST TEXT");
+    DrawInPad(fBody, 3, bin,  "colz");
+    DrawInPad(fBody, 4, bin0, "colz");
     
     if (bin0->GetEntries() <= 0) {
       fBody->cd(4);
@@ -173,68 +349,111 @@ protected:
       l->SetTextAlign(22);
       l->Draw();
     }
-    PrintCanvas(Form("%s sums: %3d%% - %3d%%", base.Data(), cLow, cHigh));
+    PrintCanvas(title);
   }
+  //____________________________________________________________________
+  void DrawResTitle(TCollection* c, Double_t& y, Bool_t onlyMB)
+  {
+    Double_t save  = fParName->GetTextSize();
+    Double_t xSave = fParVal->GetX();
+    fParName->SetTextSize(0.03);
+    fParVal->SetTextSize(0.03);
+    fParVal->SetX(.5);
+    // Double_t y = .9;
+    TAxis*   centAxis = static_cast<TAxis*>(GetObject(c, "centAxis"));
+    if (!onlyMB && centAxis) {
+      for (Int_t i = 1; i <= centAxis->GetNbins(); i++) { 
+	DrawParameter(y, (i == 1 ? "Centrality classes" : ""),
+		      Form("%3d%% - %3d%%", 
+			   Int_t(centAxis->GetBinLowEdge(i)), 
+			   Int_t(centAxis->GetBinUpEdge(i))));
+      }
+    }
+    TObject* oSNN  = GetObject(c,"sNN");
+    TString  tSNN  = "";
+    UShort_t sNN   = oSNN->GetUniqueID(); 
+    if (sNN > 1000) {
+      if ((sNN % 1000) == 0) 
+	tSNN = TString::Format("%dTeV", sNN/1000);
+      else 
+	tSNN = TString::Format("%-5.2fTeV", float(sNN) / 1000);
+    }
+    else 
+      tSNN = TString::Format("%dGeV", sNN);
+
+    DrawParameter(y, "Collision system", GetObject(c, "sys")->GetTitle());
+    DrawParameter(y, "#sqrt{s_{NN}}",tSNN);
+    DrawParameter(y, "Trigger",GetObject(c,"trigger")->GetTitle());
+    TObject* oscheme = GetObject(c,"scheme");
+    TString  scheme  = oscheme->GetTitle();
+    if (scheme.IsNull()) scheme = "1/N_{accepted}";
+    DrawParameter(y, "Normalization scheme", scheme);
+    
+    Double_t epsT, epsT0;
+    GetParameter(c, "triggerEff",  epsT);
+    GetParameter(c, "triggerEff0", epsT0);
+    DrawParameter(y, "#epsilon_{T}", Form("%5.3f", epsT));
+    DrawParameter(y, "#epsilon_{T,zero bin}", Form("%5.3f", epsT0));
+
+    TObject*    options = GetObject(c, "options");
+    TString     opts(options->GetTitle());
+    TObjArray*  tokens = opts.Tokenize(",");
+    TObjString* opt = 0;;
+    TIter       oNext(tokens);
+    Bool_t      first  = true;
+    while ((opt = static_cast<TObjString*>(oNext()))) { 
+      DrawParameter(y, (first ? "options" : ""), 
+		    opt->String().Strip(TString::kBoth));
+      first = false;
+    }
+    fParName->SetTextSize(save);
+    fParVal->SetTextSize(save);
+    fParVal->SetX(xSave);      
+  }
+
   //____________________________________________________________________
   THStack* DrawRes(TDirectory* top, const TString& base, Bool_t onlyMB)
   {
     TCollection* c = GetCollection(top, Form("%sResults", base.Data()));
     if (!c) return 0;
 
-    TAxis* centAxis = static_cast<TAxis*>(GetObject(c, "centAxis"));
-    
     fBody->cd();
-
-    Double_t save = fParName->GetTextSize();
-    Double_t xSave = fParVal->GetX();
-    fParName->SetTextSize(0.03);
-    fParVal->SetTextSize(0.03);
-    fParVal->SetX(.4);
     Double_t y = .9;
-    for (Int_t i = 1; i <= centAxis->GetNbins(); i++) { 
-      DrawParameter(y, (i == 1 ? "Centrality classes" : ""),
-		  Form("%3d%% - %3d%%", 
-		       Int_t(centAxis->GetBinLowEdge(i)), 
-		       Int_t(centAxis->GetBinUpEdge(i))));
-    }
-    
-    DrawParameter(y, "Collision system", GetObject(c, "sys")->GetTitle());
-    DrawParameter(y, "#sqrt{s_{NN}}",GetObject(c,"sNN")->GetTitle());
-    DrawParameter(y, "trigger",GetObject(c,"trigger")->GetTitle());
-    DrawParameter(y, "scheme", GetObject(c,"scheme")->GetTitle());
-
-    Double_t epsT, epsT0;
-    GetParameter(c, "triggerEff",  epsT);
-    GetParameter(c, "triggerEff0", epsT0);
-    DrawParameter(y, "#epsilon_{T}", Form("%f", epsT));
-    DrawParameter(y, "#epsilon_{T,zero bin}", Form("%f", epsT0));
-    fParName->SetTextSize(save);
-    fParVal->SetTextSize(save);
-    fParVal->SetX(xSave);
-
+    DrawResTitle(c, y, onlyMB);
     PrintCanvas(Form("%s results", base.Data()));
-  
-    fBody->Divide(1, 3, 0, 0);
 
-    TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, "Centralities");
+    TAxis*   centAxis = static_cast<TAxis*>(GetObject(c, "centAxis"));
+    TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, 
+			     onlyMB || !centAxis? "" : "Centralities");
     l->SetNColumns(2);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
-    THStack* dndeta_  = GetStack(c, "dndeta");
-    THStack* dndeta   = CleanStack(dndeta_, l, centAxis);
-    THStack* dndeta5_ = GetStack(c, "dndeta_rebin05");
-    THStack* dndeta5  = CleanStack(dndeta5_, 0, 0);
-    
-    DrawInPad(fBody, 1, l, "");
-    DrawInPad(fBody, 2, dndeta,  "nostack");
-    DrawInPad(fBody, 3, dndeta5, "nostack");
-    fBody->GetPad(2)->SetGridx();
-    fBody->GetPad(3)->SetGridx();
 
-    PrintCanvas(Form("%s results - stacks", base.Data()));
-  
-    DrawCentRes(c, base, centAxis->GetXmin(), -centAxis->GetXmax());
-    if (onlyMB) return dndeta;
+    THStack* dndeta_  = GetStack(c, "dndeta");
+    THStack* dndeta5_ = GetStack(c, "dndeta_rebin05");
+    THStack* dndeta   = CleanStack(dndeta_, l, centAxis);
+    THStack* dndeta5  = CleanStack(dndeta5_, 0, 0);
+
+    if (!onlyMB) {
+      fBody->Divide(1, 3, 0, 0);
+      
+      DrawInPad(fBody, 1, l, "");
+      DrawInPad(fBody, 2, dndeta,  "nostack");
+      DrawInPad(fBody, 3, dndeta5, "nostack");
+      fBody->GetPad(2)->SetGridx();
+      fBody->GetPad(3)->SetGridx();
+      
+      PrintCanvas(Form("%s results - stacks", base.Data()));
+    }
+
+    Int_t cLow = centAxis  ?  centAxis->GetXmin() : 0;
+    Int_t cHigh = centAxis ? -centAxis->GetXmax() : -100;
+    DrawCentRes(c, base, cLow, cHigh);
+    if (onlyMB || !centAxis) {
+      Info("", "Returning dndeta for MB");
+      dndeta = MakeMBStack(c, base);
+      return dndeta;
+    }
 
     for (Int_t i = 1; i <= centAxis->GetNbins(); i++) 
       DrawCentRes(c, base, centAxis->GetBinLowEdge(i), 
@@ -242,20 +461,43 @@ protected:
     
     return dndeta;
   }
+  //____________________________________________________________________
+  THStack* MakeMBStack(const TCollection* sums, const TString& base)
+  {
+    TString title("results");
+    TCollection* c = GetCentCollection(sums, base, 0, -1, title);
+    if (!c) return 0;
 
+    TH1* dndeta      = GetH1(c, Form("dndeta%s",base.Data()));
+    if (!dndeta) return 0;
+
+    THStack* ret = new THStack("dndetaMB", title);
+    ret->Add(dndeta);
+
+    if (base.EqualTo("MCTruth")) {
+      dndeta      = GetH1(c, "dndetaTruth");
+      if (dndeta) ret->Add(dndeta);
+    }
+    return ret;
+  }
+      
   //____________________________________________________________________
   void DrawCentRes(const TCollection* sums, const TString& base, 
 		   Int_t cLow, Int_t cHigh)
   {
-    TString folder; 
-    if (cLow < 0 || cHigh < 0 || cLow >= cHigh) {
-      folder =  "all";
-      cHigh  *= -1;
-    }
-    else folder.Form("cent%03d_%03d", cLow, cHigh);
-  
-    TCollection* c = GetCollection(sums, folder);
+    TString title("results");
+    TCollection* c = GetCentCollection(sums, base, cLow, cHigh, title);
     if (!c) return;
+
+
+    TH1* trig        = GetH1(c, "triggers");
+    TH1* norm        = GetH1(c, Form("norm%s",base.Data()));
+    TH1* dndeta      = GetH1(c, Form("dndeta%s",base.Data()));
+    TH2* d2ndetadphi = GetH2(c, Form("d2Ndetadphi%s", base.Data()));
+    if (!trig || !norm || !dndeta || !d2ndetadphi) return;
+
+    norm->SetFillColor(kGreen+1);
+    norm->SetFillStyle(3001);
 
     fBody->Divide(2, 3, 0.05, 0);
 
@@ -264,35 +506,112 @@ protected:
     p->SetBottomMargin(0.15);
     p->SetLeftMargin(0.15);
     if (trP > 2) p->SetTopMargin(0.05);
-  
-    TH1* norm = GetH1(c, Form("norm%s",base.Data()));
-    norm->SetFillColor(kGreen+1);
-    norm->SetFillStyle(3001);
     
-    DrawInPad(fBody, trP, GetH1(c, "triggers"), "HIST TEXT");
+    DrawInPad(fBody, trP, trig, "HIST TEXT");
     DrawInPad(fBody, 2,   norm);
-    DrawInPad(fBody, 4,   GetH1(c, Form("dndeta%s",base.Data())));
+    DrawInPad(fBody, 4,   dndeta);
     DrawInPad(fBody, 6,   GetH1(c, Form("dndeta%s_rebin05",base.Data())));
-    DrawInPad(fBody, 5,   GetH2(c, Form("d2Ndetadphi%s", base.Data())),"colz");
+    DrawInPad(fBody, 5,   d2ndetadphi, "colz");
   
     fBody->GetPad(2)->SetGridx(); fBody->GetPad(2)->SetLeftMargin(0.15);
     fBody->GetPad(4)->SetGridx(); fBody->GetPad(4)->SetLeftMargin(0.15);
     fBody->GetPad(6)->SetGridx(); fBody->GetPad(6)->SetLeftMargin(0.15);
 
     TObject*   normCalc = GetObject(c, "normCalc");
-    TString    calc     = normCalc->GetTitle();
-    TObjArray* lines    = calc.Tokenize("\n");
-    TPaveText* disp     = new TPaveText(.1,.1,.9,.9, "NDC");
-    TIter      next(lines);
-    TObject*   line     = 0;
-    while ((line = next())) disp->AddText(line->GetName());
-    disp->SetBorderSize(0);
-    disp->SetBorderSize(0);
-    disp->SetFillStyle(0);
-    DrawInPad(fBody, 3, disp);
+    TString    calc     = normCalc ? normCalc->GetTitle() : "?";
 
-    PrintCanvas(Form("%s result: %3d%% - %3d%%", base.Data(), cLow, cHigh));
+    // Beautify the text
+    calc.ReplaceAll("beta", "#beta");
+    calc.ReplaceAll("eps", "#epsilon");
+    const char* sufs[] = { "all", "acc", "trg", "vtx", "B", "A", "C", "E", 
+			   "V", "T", 0 };
+    const char** suf = sufs;
+    while (*suf) { 
+      calc.ReplaceAll(Form("_%s", *suf), Form("_{%s}", *suf));
+      suf++;
+    }
+
+    fBody->cd(3);
+    TObjArray* lines    = calc.Tokenize("\n");
+    // TPaveText* disp     = new TPaveText(.1,.1,.9,.9, "NDC");
+    TIter       next(lines);
+    TObjString* sline     = 0;
+    Double_t y = .95;
+    Double_t xSave = fParName->GetX();
+    Int_t    aSave = fParName->GetTextAlign();
+    fParName->SetTextAlign(33);
+    fParName->SetX(fParVal->GetX()-.05);
+    while ((sline = static_cast<TObjString*>(next()))) {
+      // disp->AddText(line->GetName());
+      TString& line = sline->String();
+      Ssiz_t   eq   = line.Last('=');
+      if (eq == kNPOS) { 
+	DrawParameter(y, line, "");
+	continue;
+      }
+      TString name = line(0, eq);
+      TString val  = line(eq+1,line.Length()-eq-1);
+      DrawParameter(y, name.Strip(TString::kBoth), 
+		    val.Strip(TString::kBoth));
+      
+    }
+    fParName->SetTextAlign(aSave);
+    fParName->SetX(xSave);
+    // disp->SetBorderSize(0);
+    // disp->SetBorderSize(0);
+    // disp->SetFillStyle(0);
+    // DrawInPad(fBody, 3, disp);
+    // fBody->cd();
+
+    PrintCanvas(title);
+
+    DrawCentResDetails(c, title);
   }  
+  //____________________________________________________________________
+  void DrawCentResDetails(const TCollection* sums, const TString& base)
+  {
+    TString title = TString::Format("%s - details: ", base.Data());
+
+    TCollection* c = GetCollection(sums, "partial");
+    if (!c) {
+      Warning("", "Collection partical not found in %s", sums->GetName());
+      sums->ls();
+      return;
+    }
+
+    fBody->Divide(3, 1, 0.05, 0);
+    
+    const char* typs[] = { "", "0", "All" };
+    const char* tits[] = { "Non-zero events", "Zero events", "Weighted sum" };
+    for (Int_t i = 1; i <= 3; i++) {
+      const char* suf = typs[i-1];
+      TVirtualPad* p   = fBody->cd(i);
+      p->SetTopMargin(0.10);
+
+      TLatex* ltx = new TLatex(0.5, .99, tits[i-1]);
+      ltx->SetNDC();
+      ltx->SetTextAlign(23);
+      ltx->SetTextSize(0.05);
+      ltx->Draw();
+
+      TH1* sum  = GetH2(c, Form("sum%s",     suf));
+      TH1* norm = GetH1(c, Form("norm%s", suf));
+      TH1* phi  = GetH1(c, Form("phi%s",  suf));
+    
+      norm->SetFillColor(kGreen+1);
+      norm->SetFillStyle(3002);
+      phi->SetFillColor(kBlue+1);
+      phi->SetFillStyle(3001);
+      
+      p->Divide(1, 3, 0, 0);
+      DrawInPad(p, 1, sum, sum->Integral()>0 ? "col" : "");
+      DrawInPad(p, 2, GetH1(c, Form("average%s", suf)), "");
+      DrawInPad(p, 3, norm);
+      DrawInPad(p, 3, phi, "same", 0x10);      
+    }
+    PrintCanvas(title);
+  }
+
   //____________________________________________________________________
   THStack* CleanStack(const THStack* stack, TLegend* l, const TAxis* axis)
   {
@@ -303,14 +622,15 @@ protected:
     Int_t    j     = 0;
     Bool_t   ok    = false;
     while ((h = static_cast<TH1*>(next()))) {
-      TString name(h->GetName());
+      TString name(h->GetTitle());
       if (name.Contains("_mirror")) continue;
       if (l && !ok) { 
 	j++;
-	name.Form("%3d%% - %3d%%", 
-		  Int_t(axis->GetBinLowEdge(j)), 
-		  Int_t(axis->GetBinUpEdge(j)));
-	ok = axis->GetBinUpEdge(j) > 100;
+	if (axis) 
+	  name.Form("%3d%% - %3d%%", 
+		    Int_t(axis->GetBinLowEdge(j)), 
+		    Int_t(axis->GetBinUpEdge(j)));
+	ok = axis && axis->GetBinUpEdge(j) > 100;
 	TLegendEntry* e = l->AddEntry("dummy", name, "f");
 	e->SetFillStyle(1001);
 	e->SetFillColor(h->GetMarkerColor());

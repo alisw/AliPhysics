@@ -12,8 +12,8 @@ void PlotGammaEfficiency(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbP
   TH1F  *fHistGammasGenerated = l->FindObject("fHistGammasGenerated");
   TH1F  *fHistGammasFound = l->FindObject("fHistGammasFound");
   TH1F *hEfficiency = bayneseffdiv(fHistGammasFound,fHistGammasGenerated,"Efficiency");
-  TH2F  *fHistGammasGeneratedMult = l->FindObject("fHistGammasGeneratedMult");
-  TH2F  *fHistGammasFoundMult = l->FindObject("fHistGammasFoundMult");
+  TH2F  *fHistGammasGeneratedMult = l->FindObject("fHistGammasGeneratedCent");
+  TH2F  *fHistGammasFoundMult = l->FindObject("fHistGammasFoundCent");
   hEfficiency->GetXaxis()->SetTitle("Energy");
   hEfficiency->GetYaxis()->SetTitle("efficiency");
   hEfficiency->GetXaxis()->SetRange(1,hEfficiency->FindBin(3));
@@ -40,25 +40,27 @@ void PlotGammaEfficiency(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbP
   c1->SetBorderMode(0);
   c1->SetFrameFillColor(0);
   c1->SetFrameBorderMode(0);
-  TH1D *fHistGammasGeneratedCent[11] = {NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL};
-  TH1D *fHistGammasFoundCent[11] = {NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL};
-  TH1D *fEff[11] = {NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL};
+  TH1D *fHistGammasGeneratedCent[22] = {NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL};
+  TH1D *fHistGammasFoundCent[22] = {NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL};
+  TH1D *fEff[22] = {NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL,NULL, NULL,NULL,NULL,NULL,NULL, NULL};
   int colors[] = {TColor::kRed,TColor::kRed, TColor::kOrange-3, TColor::kOrange-3, TColor::kGreen+3,
                   TColor::kGreen+3, TColor::kBlue, TColor::kBlue, TColor::kViolet, TColor::kViolet,
+                  TColor::kMagenta+3,TColor::kRed,TColor::kRed, TColor::kOrange-3, TColor::kOrange-3, TColor::kGreen+3,
+                  TColor::kGreen+3, TColor::kBlue, TColor::kBlue, TColor::kViolet, TColor::kViolet,
                   TColor::kMagenta+3};
-  int markers[] = {20,24,21,25,22, 26,23,32,33,27, 29};
+  int markers[] = {20,24,21,25,22, 26,23,32,33,27, 29,20,24,21,25,22, 26,23,32,33,27, 29};
   TLegend *leg1 = new TLegend(0.224832,0.153226,0.39094,0.647849);
   leg1->SetFillStyle(0);
   leg1->SetFillColor(0);
   leg1->SetBorderSize(0);
   leg1->SetTextSize(0.03);
   leg1->SetTextSize(0.0456989);
-  for(int i=0;i<10;i++){
+  for(int i=0;i<20;i+=4){
     fHistGammasGeneratedCent[i] = fHistGammasGeneratedMult->ProjectionX(Form("All%i",i),i+1,i+2);
     fHistGammasFoundCent[i] = fHistGammasFoundMult->ProjectionX(Form("Reco%i",i),i+1,i+2);
     fEff[i] = (TH1D*) bayneseffdiv(fHistGammasFoundCent[i],fHistGammasGeneratedCent[i],Form("eff%i",i));
     SetStyles(fEff[i],markers[i],colors[i],"energy","efficiency",1.0);
-    leg1->AddEntry(fEff[i],Form("%i<N_{cluster}<%i",i*10,(i+1)*10));
+    leg1->AddEntry(fEff[i],Form("centbin %i",i));
     if(i==0){ 
       fEff[i]->SetMaximum(0.8);
       fEff[i]->GetXaxis()->SetRange(1,fEff[i]->FindBin(3.0));
@@ -67,7 +69,7 @@ void PlotGammaEfficiency(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbP
     else{ fEff[i]->Draw("same");}
 
   }
-  //leg1->Draw();
+  leg1->Draw();
 //   fHistGammasFound->Draw();
 
 }

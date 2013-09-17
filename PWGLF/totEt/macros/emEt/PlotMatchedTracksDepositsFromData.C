@@ -24,6 +24,7 @@ void PlotMatchedTracksDepositsFromData(TString datafilename="rootFiles/LHC10hPas
   TObjArray ratios(nbins+1);
   TObjArray simulationEffCorr(nbins+1);
   TObjArray dataEffCorr(nbins+1);
+  TObjArray dataEffCorr500MeV(nbins+1);
   TObjArray ratiosEffCorr(nbins+1);
   TObjArray trackHit(nbins+1);
   TObjArray trackDep(nbins+1);
@@ -125,7 +126,9 @@ void PlotMatchedTracksDepositsFromData(TString datafilename="rootFiles/LHC10hPas
   int lowbin = fHistMatchedTracksEvspTvsCent->GetXaxis()->FindBin(energycut);
   int highbin = fHistMatchedTracksEvspTvsCent->GetXaxis()->GetNbins();
   fHistMatchedTracksEvspTvsCent->GetXaxis()->SetRange(lowbin,highbin);
-  TH3F  *fHistMatchedTracksEvspTvsCentEffCorr = l->FindObject("fHistMatchedTracksEvspTvsCentEffCorr");
+  // TH3F  *fHistMatchedTracksEvspTvsCentEffCorr = l->FindObject("fHistMatchedTracksEvspTvsCentEffCorr");
+  TH3F  *fHistMatchedTracksEvspTvsCentEffCorr = l->FindObject("fHistMatchedTracksEvspTvsCentEffTMCorr");
+  TH3F  *fHistMatchedTracksEvspTvsCentEffCorr500MeV = l->FindObject("fHistMatchedTracksEvspTvsCentEffTMCorr500MeV");
   int lowbin = fHistMatchedTracksEvspTvsCentEffCorr->GetXaxis()->FindBin(energycut);
   int highbin = fHistMatchedTracksEvspTvsCentEffCorr->GetXaxis()->GetNbins();
   fHistMatchedTracksEvspTvsCentEffCorr->GetXaxis()->SetRange(lowbin,highbin);
@@ -139,8 +142,11 @@ void PlotMatchedTracksDepositsFromData(TString datafilename="rootFiles/LHC10hPas
     ((TH1D*)data[bin])->SetName(Form("Sim%i",bin));
     fHistMatchedTracksEvspTvsCentEffCorr->GetZaxis()->SetRange(bin,bin);
     dataEffCorr[bin] = fHistMatchedTracksEvspTvsCentEffCorr->Project3D("y");
+    fHistMatchedTracksEvspTvsCentEffCorr500MeV->GetZaxis()->SetRange(bin,bin);
+    dataEffCorr500MeV[bin] = fHistMatchedTracksEvspTvsCentEffCorr500MeV->Project3D("y");
     SetStyles((TH1D*)dataEffCorr[bin],markersData[bin-1],colors[bin-1]);
-    ((TH1D*)dataEffCorr[bin])->SetName(Form("Sim%i",bin));
+    ((TH1D*)dataEffCorr[bin])->SetName(Form("DataEffCorr%i",bin));
+    ((TH1D*)dataEffCorr500MeV[bin])->SetName(Form("DataEffCorr500MeV%i",bin));
     nFound[bin] = fHistFoundHadronsvsCent->ProjectionX(Form("Found%i",bin),bin,bin);
     nNotFound[bin] = fHistNotFoundHadronsvsCent->ProjectionX(Form("NotFound%i",bin),bin,bin);
     found[bin] = ((TH1D*)nFound[bin])->GetMean();//fHistFoundHadronsvsCent->GetBinContent(bin);
@@ -155,6 +161,8 @@ void PlotMatchedTracksDepositsFromData(TString datafilename="rootFiles/LHC10hPas
     ((TH1D*)ratios[bin])->Divide((TH1D*)simulation[bin]);
     scale = ((TH1D*)dataEffCorr[bin])->Integral();
     ((TH1D*)dataEffCorr[bin])->Scale(1.0/scale);
+    scale = ((TH1D*)dataEffCorr500MeV[bin])->Integral();
+    ((TH1D*)dataEffCorr500MeV[bin])->Scale(1.0/scale);
     scale = ((TH1D*)simulationEffCorr[bin])->Integral();
     ((TH1D*)simulationEffCorr[bin])->Scale(1.0/scale);
     ratiosEffCorr[bin] = dataEffCorr[bin]->Clone(Form("ratio%i",bin));
@@ -351,9 +359,11 @@ void PlotMatchedTracksDepositsFromData(TString datafilename="rootFiles/LHC10hPas
   texfilename+=".tex";
   myfile3.open (texfilename.Data());
   float low = ((TH1D *)dataEffCorr[1])->GetMean();
+  float low500MeV = ((TH1D *)dataEffCorr500MeV[1])->GetMean();
   for(int bin = 2; bin<=nbins;bin++){
     if(((TH1D *)dataEffCorr[bin])->GetMean()<low){
       low = ((TH1D *)dataEffCorr[bin])->GetMean();
+      low500MeV = ((TH1D *)dataEffCorr500MeV[bin])->GetMean();
     }
   }
   float  factor = 1-0.04;
@@ -367,10 +377,17 @@ void PlotMatchedTracksDepositsFromData(TString datafilename="rootFiles/LHC10hPas
   low = factor*low;
   float lowEffCorr = ((TH1D *)simulationEffCorr[1])->GetMean();
   myfile3<<"Simulation & "<<Form("%2.3f",((TH1D *)simulation[1])->GetMean())<<" & "<<Form("%2.3f",((TH1D *)simulationEffCorr[1])->GetMean())<<"\\\\ \\hline"<<endl;//simulation[1]<<" & "<<simulationEffCorr[1]<<"\\\\"<<endl;
+  Float_t hadError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+  Float_t hadCorr[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+  Float_t had500MeVError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+  Float_t had500MeVCorr[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
   for(int bin = 1; bin<=nbins;bin++){
     float high = ((TH1D *)dataEffCorr[bin])->GetMean();
+    float high500MeV = ((TH1D *)dataEffCorr500MeV[bin])->GetMean();
     float avg = (high+low)/2.0;//average energy deposited by the mean hadron (E)
     float err = TMath::Abs((high-low)/2.0);
+    float avg500MeV = (high500MeV+low500MeV)/2.0;//average energy deposited by the mean hadron (E)
+    float err500MeV = TMath::Abs((high500MeV-low500MeV)/2.0);
     //hadronic correction:  y = f N1 E + N2 E
     //N1 = total number of hadrons
     //N2 = number of hadrons not found
@@ -384,19 +401,49 @@ void PlotMatchedTracksDepositsFromData(TString datafilename="rootFiles/LHC10hPas
     float eNotFoundErr = TMath::Sqrt(TMath::Power(err*notfound[bin],2)+TMath::Power(percentEfficiencyError*eNotFound,2));//error on the hadronic correction
     //cout<<"y = ("<<corrfac <<"*"<<(found[bin]+notfound[bin])<<"+"<<notfound[bin]<<")*"<<avg<<endl;
     float y = (corrfac * (found[bin]+notfound[bin]) +notfound[bin])*avg;
+    float y500MeV =  notfound[bin]*avg500MeV;
     //float y = found[bin]+notfound[bin];
     //ey^2 = ef^2 N1^2 E^2 + eE^2 *(  f^2 N1^2 + N2^2)
     float finalerr = TMath::Sqrt(TMath::Power(corrfacerr*(found[bin]+notfound[bin])*avg,2)+err*err*(TMath::Power(corrfac* (found[bin]+notfound[bin]),2)+notfound[bin]*notfound[bin])+TMath::Power(percentEfficiencyError*y,2));//error on the hadronic correction
+    float finalerr500MeV = TMath::Sqrt(TMath::Power(corrfacerr*(found[bin]+notfound[bin])*avg,2)+err500MeV*err500MeV*notfound[bin]*notfound[bin]+TMath::Power(percentEfficiencyError*y,2));//error on the hadronic correction
     //if(avg>0 && corrfac>0) finalerr = avg*corrfac*TMath::Sqrt(TMath::Power(corrfacerr/corrfac,2)+TMath::Power(err/avg,2));
     myfile3<<Form("%i-%i",(bin-1)*5,bin*5)<<"\\% & "<<Form("%2.3f",((TH1D *)data[bin])->GetMean())<<" & "<<Form("%2.3f",((TH1D *)dataEffCorr[bin])->GetMean())<<Form("& %2.3f $\\pm$ %2.3f",avg,err);
     myfile3<<" & "<< Form("%2.1f $\\pm$ %2.1f",eLow,eLowErr);
     myfile3<<" & "<< Form("%2.2f $\\pm$ %2.2f",eNotFound,eNotFoundErr);
     myfile3<<"& "<< Form("%2.2f $\\pm$ %2.2f",y,finalerr);
     myfile3<<" & "<< Form("%2.3f $\\pm$ %2.3f",y/npart[bin-1],finalerr/npart[bin-1]) <<"\\\\"<<endl;
+    hadError[bin-1] = finalerr;
+    hadCorr[bin-1] = y;
+    had500MeVError[bin-1] = finalerr500MeV;
+    had500MeVCorr[bin-1] = y500MeV;
     //<<Form("& %2.3f $\\pm$ %2.3f",avg*corrfac,finalerr)
   }
   myfile3.close();
 
+  cout<<"Float_t hadError[20] = {";
+  for(int i=0;i<19;i++){
+    cout<<hadError[i];
+    if(i!=19) cout<<",";
+  }
+  cout<<"};"<<endl;
+  cout<<"Float_t hadCorr[20] = {";
+  for(int i=0;i<19;i++){
+    cout<<hadCorr[i];
+    if(i!=19) cout<<",";
+  }
+  cout<<"};"<<endl;
+  cout<<"Float_t hadError500MeV[20] = {";
+  for(int i=0;i<19;i++){
+    cout<<had500MeVError[i];
+    if(i!=19) cout<<",";
+  }
+  cout<<"};"<<endl;
+  cout<<"Float_t hadCorr500MeV[20] = {";
+  for(int i=0;i<19;i++){
+    cout<<had500MeVCorr[i];
+    if(i!=19) cout<<",";
+  }
+  cout<<"};"<<endl;
 
 
   TCanvas *c8 = new TCanvas("c8","c8",600,400);

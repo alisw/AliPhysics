@@ -2,7 +2,7 @@
 #define ALICONVERSIONCUTS_H
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
-// Authors: Svein Lindal, Daniel Lohner												*
+// Authors: Svein Lindal, Daniel Lohner                                    *
 
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
@@ -14,6 +14,7 @@
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 
@@ -23,46 +24,50 @@ class AliConversionPhotonBase;
 class AliKFVertex;
 class TH1F;
 class TH2F;
+class TF1;
 class AliPIDResponse;
 class AliAnalysisCuts;
 class iostream;
 class TList;
 class AliAnalysisManager;
+class AliAODMCParticle;
 
 using namespace std;
 
 class AliConversionCuts : public AliAnalysisCuts {
-	
+   
  public: 
    
 
   enum cutIds {
-	kisHeavyIon,                  
-	kCentralityMin,               
-	kCentralityMax,               
-	kselectV0AND,                 
-	kmultiplicityMethod,             
-	kremovePileUp,                
-	kExtraSignals,	
-	kv0FinderType,                
-	ketaCut,                                     
-	kRCut,                     
-	ksinglePtCut,                 
-	kclsTPCCut,                   
-	kededxSigmaCut,               
-	kpidedxSigmaCut,              
-	kpiMomdedxSigmaCut,        
-	kpiMaxMomdedxSigmaCut,        
-	kLowPRejectionSigmaCut,       
-	kTOFelectronPID,              
-	kQtMaxCut,                    
-	kchi2GammaCut,                
-	kPsiPair, 
-	kdoPhotonAsymmetryCut,
-	kCosPAngle,
-	kElecShare,
-	kToCloseV0s,
-	kNCuts
+   kisHeavyIon,                  
+   kCentralityMin,               
+   kCentralityMax,               
+   kselectV0AND,                 
+   kmultiplicityMethod,             
+   kremovePileUp,                
+   kExtraSignals, 
+   kv0FinderType,                
+   ketaCut,                                     
+   kRCut,                     
+   ksinglePtCut,                 
+   kclsTPCCut,                   
+   kededxSigmaCut,               
+   kpidedxSigmaCut,              
+   kpiMomdedxSigmaCut,        
+   kpiMaxMomdedxSigmaCut,        
+   kLowPRejectionSigmaCut,       
+   kTOFelectronPID,              
+   kQtMaxCut,                    
+   kchi2GammaCut,                
+   kPsiPair, 
+   kdoPhotonAsymmetryCut,
+   kCosPAngle,
+   kElecShare,
+   kToCloseV0s,
+        kDcaRPrimVtx,
+        kDcaZPrimVtx,
+   kNCuts
   };
 
   enum photonCuts {
@@ -89,9 +94,19 @@ class AliConversionCuts : public AliAnalysisCuts {
 
 
   Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
-  void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
+  void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
+     fOfflineTriggerMask = offlineTriggerMask;
+     fTriggerSelectedManually = kTRUE;
+  }
+  void SelectSpecialTrigger(UInt_t offlineTriggerMask = AliVEvent::kAny, TString TriggerClassName = "AliVEvent::kAny" ) {
+     fOfflineTriggerMask = offlineTriggerMask;
+     fSpecialTriggerName = TriggerClassName;
+     cout << fSpecialTriggerName.Data() << endl;
+     
+  }   
   void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
   void SetAcceptedHeader(TList *HeaderList){fHeaderList = HeaderList;}   
+  void SetPreSelectionCutFlag(Bool_t preSelFlag){fPreSelCut = preSelFlag;}   
   TString *GetFoundHeader(){return fGeneratorNames;}
 
   Int_t GetEventQuality(){return fEventQuality;}
@@ -118,6 +133,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Bool_t isHeavyIon);
   Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
   Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);
+  Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
   Bool_t ElectronIsSelectedMC(TParticle *particle,AliStack *fMCStack);
   Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
   Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
@@ -178,18 +194,35 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
-  Int_t IsParticleFromBGEvent(Int_t index, AliStack *MCStack);
-  void GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliMCEvent *MCEvent);
-
+  Int_t IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
+  void GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent);
+  void SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE, Bool_t etareweight=kFALSE, Bool_t k0sreweight=kFALSE, TString path="$ALICE_ROOT/PWGGA/GammaConv/MCSpectraInput.root", 
+                                               TString histoNamePi0 = "", TString histoNameEta = "", TString histoNameK0s = "",
+                                               TString fitNamePi0 = "", TString fitNameEta = "", TString fitNameK0s ="" ) {
+     AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
+     fDoReweightHistoMCPi0 = pi0reweight; 
+     fDoReweightHistoMCEta = etareweight; 
+     fDoReweightHistoMCK0s = k0sreweight; 
+     fPathTrFReweighting=path;
+     fNameHistoReweightingPi0 =histoNamePi0;
+     fNameHistoReweightingEta =histoNameEta;
+     fNameHistoReweightingK0s =histoNameK0s; 
+     fNameFitDataPi0 =fitNamePi0;
+     fNameFitDataEta =fitNameEta;
+     fNameFitDataK0s =fitNameK0s; 
+     
+  }
+  void  LoadReweightingHistosMCFromFile ();
   // Event Cuts
   Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
   Double_t GetCentrality(AliVEvent *event);
   Int_t GetNumberOfContributorsVtx(AliVEvent *event);
   Bool_t VertexZCut(AliVEvent *fInputEvent);
-  Bool_t IsTriggerSelected();
+  Bool_t IsTriggerSelected(AliVEvent *fInputEvent);
   Bool_t HasV0AND(){return fHasV0AND;}
   Bool_t IsSDDFired(){return fIsSDDFired;}
   Int_t IsSpecialTrigger(){return fSpecialTrigger;}
+  TString GetSpecialTriggerName(){return fSpecialTriggerName;}
 
   // Set Individual Cuts
   Bool_t SetRCut(Int_t RCut);
@@ -218,13 +251,14 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
   Bool_t SetRejectExtraSignalsCut(Int_t extraSignal);
-
-
+  Bool_t SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx);
+  Bool_t SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx);
+   
   // Request Flags
 
   Int_t IsHeavyIon(){return fIsHeavyIon;}
   Int_t GetFirstTPCRow(Double_t radius);
-  Float_t GetWeightForMeson(TString period, Int_t index, AliStack *MCStack);
+  Float_t GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
 
   Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
   Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
@@ -298,7 +332,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Double_t fMinPPhotonAsymmetryCut; // Min Momentum for Asymmetry Cut
   Double_t fMinPhotonAsymmetry;  // Asymmetry Cut
   Int_t  fIsHeavyIon;               // flag for heavy ion
-  Int_t fDetectorCentrality;	// centrality detecotor V0M or CL1
+  Int_t fDetectorCentrality;  // centrality detecotor V0M or CL1
   Int_t fModCentralityClass; // allows to select smaller centrality classes
   Double_t fMaxVertexZ;    // max z offset of vertex
   Int_t fCentralityMin;  // centrality selection lower bin value
@@ -321,6 +355,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   TRandom3 fRandom; //
   Int_t fElectronArraySize; // Size of electron array
   Int_t *fElectronLabelArray; //[fElectronArraySize]
+  Double_t fDCAZPrimVtxCut; // cut value for the maximum distance in Z between the photon & the primary vertex [cm]
+  Double_t fDCARPrimVtxCut; // cut value for the maximum distance in R between the photon & the primary vertex [cm]
   Float_t fConversionPointXArray; // Array with conversion Point x
   Float_t fConversionPointYArray; // Array with conversion Point y
   Float_t fConversionPointZArray; // Array with conversion Point z
@@ -331,8 +367,17 @@ class AliConversionCuts : public AliAnalysisCuts {
   TObjString *fCutString; // cut number used for analysis
   AliAnalysisUtils *fUtils;
   Double_t fEtaShift;
-  Bool_t fDoEtaShift;
-
+  Bool_t fDoEtaShift;            // Flag for Etashift
+  Bool_t fDoReweightHistoMCPi0; // Flag for reweighting Pi0 input with histogram
+  Bool_t fDoReweightHistoMCEta; // Flag for reweighting Eta input with histogram
+  Bool_t fDoReweightHistoMCK0s; // Flag for reweighting K0s input with histogram
+  TString fPathTrFReweighting; // Path for file used in reweighting
+  TString fNameHistoReweightingPi0; //Histogram name for reweighting Pi0
+  TString fNameHistoReweightingEta; //Histogram name for reweighting Eta
+  TString fNameHistoReweightingK0s; //Histogram name for reweighting K0s
+  TString fNameFitDataPi0; //Fit name for fit to spectrum of pi0s in Data
+  TString fNameFitDataEta; //Fit name for fit to spectrum of etas in Data
+  TString fNameFitDataK0s; //Fit name for fit to spectrum of k0s in Data
   // Histograms
   TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts
   TH2F *hTPCdEdxbefore; // TPC dEdx before cuts
@@ -352,12 +397,22 @@ class AliConversionCuts : public AliAnalysisCuts {
   TH1F *hCutIndex; // bookkeeping for cuts
   TH1F *hV0EventCuts; // bookkeeping for event selection cuts
   TH1F *hCentrality; // centrality distribution for selected events
+  TH2F *hCentralityVsNumberOfPrimaryTracks; // centrality distribution for selected events
   TH1F *hVertexZ; // vertex z distribution for selected events
   TH1F *hTriggerClass; //fired offline trigger class
   TH1F *hTriggerClassSelected; //selected fired offline trigger class
+  TH1D *hReweightMCHistPi0; //histogram input for reweighting Pi0
+  TH1D *hReweightMCHistEta; //histogram input for reweighting Eta
+  TH1D *hReweightMCHistK0s; //histogram input for reweighting K0s
+  TF1  *fFitDataPi0; //fit to pi0 spectrum in Data
+  TF1  *fFitDataEta; //fit to eta spectrum in Data
+  TF1  *fFitDataK0s; //fit to K0s spectrum in Data
+  Bool_t fPreSelCut; // Flag for preselection cut used in V0Reader
+  Bool_t fTriggerSelectedManually; // Flag for manual trigger selection
+  TString fSpecialTriggerName; // Name of the Special Triggers
 private:
 
-  ClassDef(AliConversionCuts,3)
+  ClassDef(AliConversionCuts,5)
 };
 
 

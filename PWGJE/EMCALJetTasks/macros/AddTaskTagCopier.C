@@ -1,4 +1,4 @@
-// $Id: AddTaskSAQA.C 60163 2013-01-03 09:37:04Z loizides $
+// $Id$
 
 AliJetConstituentTagCopier* AddTaskTagCopier(
   const char *ntracks            = "Tracks",
@@ -6,7 +6,6 @@ AliJetConstituentTagCopier* AddTaskTagCopier(
   const char *nmcparticles       = "MCParticles",
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   const char *taskname           = "AliJetConstituentTagCopier"
 )
 {  
@@ -44,20 +43,18 @@ AliJetConstituentTagCopier* AddTaskTagCopier(
     name += "_";
     name += nmcparticles;
   }
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "_USER";
 
   AliJetConstituentTagCopier* task = new AliJetConstituentTagCopier(name);
-  task->SetTracksName(ntracks);
-  task->SetClusName(nclusters);
-  task->SetMCParticlesName(nmcparticles);
-  task->SetTrackPtCut(trackptcut);
-  task->SetClusPtCut(clusptcut);
-  task->SetAnaType(type);
+
+  AliParticleContainer *trackCont = jetTask->AddParticleContainer(ntracks);
+  if (trackCont) trackCont->SetParticlePtCut(trackptcut);
+
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
+  if (clusterCont) clusterCont->SetClusPtCut(clusptcut);
+
+  AliParticleContainer *mcPartCont = jetTask->AddParticleContainer(nmcparticles);
+
+  task->ConnectMCParticleContainerID(mcPartCont);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

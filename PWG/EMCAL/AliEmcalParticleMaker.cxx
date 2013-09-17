@@ -17,7 +17,7 @@ ClassImp(AliEmcalParticleMaker)
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker() : 
-  AliAnalysisTaskEmcal("AliEmcalParticleMaker",kFALSE),
+  AliAnalysisTaskEmcalDev("AliEmcalParticleMaker",kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -28,7 +28,7 @@ AliEmcalParticleMaker::AliEmcalParticleMaker() :
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker(const char *name) : 
-  AliAnalysisTaskEmcal(name,kFALSE),
+  AliAnalysisTaskEmcalDev(name,kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -49,7 +49,7 @@ void AliEmcalParticleMaker::ExecOnce()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcal::ExecOnce();
+  AliAnalysisTaskEmcalDev::ExecOnce();
 
   if (!fInitialized)
     return;
@@ -97,7 +97,7 @@ Bool_t AliEmcalParticleMaker::Run()
     const Int_t Ntracks = fTracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
       
-      AliVTrack *track = dynamic_cast<AliVTrack*>(fTracks->At(iTracks));
+      AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
       new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
     }
   }
@@ -109,7 +109,7 @@ Bool_t AliEmcalParticleMaker::Run()
     // loop over clusters
     const Int_t Nclusters = fCaloClusters->GetEntries();
     for (Int_t iClusters = 0; iClusters < Nclusters; ++iClusters) {
-      AliVCluster *cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(iClusters));
+      AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
       new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
     }
   }

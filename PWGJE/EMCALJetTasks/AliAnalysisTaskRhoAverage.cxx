@@ -13,6 +13,7 @@
 #include "AliRhoParameter.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
+#include "AliParticleContainer.h"
 
 ClassImp(AliAnalysisTaskRhoAverage)
 
@@ -21,7 +22,8 @@ AliAnalysisTaskRhoAverage::AliAnalysisTaskRhoAverage() :
   AliAnalysisTaskRhoBase("AliAnalysisTaskRhoAverage"),
   fRhoType(0),
   fNExclLeadPart(0),
-  fUseMedian(kFALSE)
+  fUseMedian(kFALSE),
+  fTotalArea(1)
 {
   // Default constructor.
 }
@@ -31,7 +33,8 @@ AliAnalysisTaskRhoAverage::AliAnalysisTaskRhoAverage(const char *name, Bool_t hi
   AliAnalysisTaskRhoBase(name, histo),
   fRhoType(0),
   fNExclLeadPart(0),
-  fUseMedian(kFALSE)
+  fUseMedian(kFALSE),
+  fTotalArea(1)
 {
   // Constructor.
 }
@@ -184,31 +187,43 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
     else
       rho = TMath::Mean(NpartAcc, rhovec);
     
-    Float_t maxEta = fTrackMaxEta;
-    Float_t minEta = fTrackMinEta;
-    Float_t maxPhi = fTrackMaxPhi;
-    Float_t minPhi = fTrackMinPhi;
-    
-    if (maxPhi > TMath::Pi() * 2) maxPhi = TMath::Pi() * 2;
-    if (minPhi < 0) minPhi = 0;
-    
-    Double_t area = (maxEta - minEta) * (maxPhi - minPhi);
-    
-    if (area > 0) {
-      rho *= NpartAcc / area;
-    } 
-    else {
-      AliError(Form("%s: Area <= 0 %f", GetName(), area));
-      return kFALSE;
-    }
+    rho *= NpartAcc / fTotalArea;
   }
 
-  fRho->SetVal(rho);
+  fOutRho->SetVal(rho);
 
   if (fScaleFunction) {
     Double_t rhoScaled = rho * GetScaleFactor(fCent);
-    fRhoScaled->SetVal(rhoScaled);
+    fOutRhoScaled->SetVal(rhoScaled);
   }
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskRhoAverage::ExecOnce() 
+{
+  AliAnalysisTaskRhoBase::ExecOnce();
+
+  AliParticleContainer *partCont = GetParticleContainer(0);
+  if (!partCont) {
+    AliError(Form("%s: No particle container found! Assuming area = 1...",GetName()));
+    fTotalArea = 1;
+    return;
+  }
+
+  Float_t maxEta = partCont->GetParticleEtaMax();
+  Float_t minEta = partCont->GetParticleEtaMin();
+  Float_t maxPhi = partCont->GetParticlePhiMax();
+  Float_t minPhi = partCont->GetParticlePhiMin();
+  
+  if (maxPhi > TMath::Pi() * 2) maxPhi = TMath::Pi() * 2;
+  if (minPhi < 0) minPhi = 0;
+  
+  fTotalArea = (maxEta - minEta) * (maxPhi - minPhi);
+
+  if (fTotalArea < 1e-6) {
+    AliError(Form("%s: Area = %f < 1e-6, assuming area = 1", GetName(), fTotalArea));
+    fTotalArea = 1;
+  }
 }

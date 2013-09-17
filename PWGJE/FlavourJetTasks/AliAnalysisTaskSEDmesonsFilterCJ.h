@@ -1,6 +1,5 @@
 #ifndef ALIANALYSISTASKSEDMESONSFILTERCJ_H
 #define ALIANALYSISTASKSEDMESONSFILTERCJ_H
-// $Id$
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -86,7 +85,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   TList  *fOutput;                 //! user output
 //TList *fOutputCandidates;        //! output of array of candidates (kExchange)
 
-  AliRDHFCuts *fCuts;              //! Cuts 
+  AliRDHFCuts *fCuts;              // Cuts 
   Double_t fMinMass;               //  mass lower limit histogram
   Double_t fMaxMass;               //  mass upper limit histogram
 

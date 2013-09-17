@@ -5,15 +5,14 @@
 // Author: S.Aiola
 
 #include <TClonesArray.h>
-#include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THnSparse.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
 #include "AliVCluster.h"
 #include "AliVParticle.h"
-#include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
@@ -24,35 +23,34 @@ ClassImp(AliAnalysisTaskSAJF)
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
-  fIsEmbedded(kFALSE),
-  fNjetsVsCent(0)
+  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskSAJF", kTRUE),
+  fHistoType(1),
+  fHistJetObservables(0)
 
 {
   // Default constructor.
 
   for (Int_t i = 0; i < 4; i++) {
-    fHistEvents[i] = 0;
-    fHistLeadingJetPhiEta[i] = 0;
-    fHistLeadingJetPtArea[i] = 0;
-    fHistLeadingJetCorrPtArea[i] = 0;
-    fHistLeadingJetMCPtArea[i] = 0;
-    fHistRhoVSleadJetPt[i] = 0;
-    fHistJetPhiEta[i] = 0;
-    fHistJetsPtArea[i] = 0;
-    fHistJetsCorrPtArea[i] = 0;
-    fHistJetPtvsJetCorrPt[i] = 0;
-    fHistJetsMCPtArea[i] = 0;
-    fHistJetPtvsJetMCPt[i] = 0;
-    fHistJetsNEFvsPt[i] = 0;
-    fHistJetsCEFvsCEFPt[i] = 0;
-    fHistJetsZvsPt[i] = 0;
-    fHistConstituents[i] = 0;
     fHistTracksJetPt[i] = 0;
     fHistClustersJetPt[i] = 0;
     fHistTracksPtDist[i] = 0;
     fHistClustersPtDist[i] = 0;
-    fHistJetNconstVsPt[i] = 0;
+
+    fHistJetPtEtaPhi[i] = 0;
+    fHistJetPtArea[i] = 0;
+    fHistJetPtEP[i] = 0;
+    fHistJetPtNEF[i] = 0;
+    fHistJetPtZ[i] = 0;
+    fHistJetPtLeadingPartPt[i] = 0;
+    fHistJetCorrPtEtaPhi[i] = 0;
+    fHistJetCorrPtArea[i] = 0;
+    fHistJetCorrPtEP[i] = 0;
+    fHistJetCorrPtNEF[i] = 0;
+    fHistJetCorrPtZ[i] = 0;
+    fHistJetCorrPtLeadingPartPt[i] = 0;
+    fHistJetPtCorrPt[i] = 0;
+    fHistJetPtMCPt[i] = 0;
+    fHistJetMCPtCorrPt[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -60,43 +58,263 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
-  fIsEmbedded(kFALSE),
-  fNjetsVsCent(0)
+  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  fHistoType(1),
+  fHistJetObservables(0)
 {
   // Standard constructor.
 
   for (Int_t i = 0; i < 4; i++) {
-    fHistEvents[i] = 0;
-    fHistLeadingJetPhiEta[i] = 0;
-    fHistLeadingJetPtArea[i] = 0;
-    fHistLeadingJetCorrPtArea[i] = 0;
-    fHistLeadingJetMCPtArea[i] = 0;
-    fHistRhoVSleadJetPt[i] = 0;
-    fHistJetPhiEta[i] = 0;
-    fHistJetsPtArea[i] = 0;
-    fHistJetsCorrPtArea[i] = 0;
-    fHistJetPtvsJetCorrPt[i] = 0;
-    fHistJetsMCPtArea[i] = 0;
-    fHistJetPtvsJetMCPt[i] = 0;
-    fHistJetsNEFvsPt[i] = 0;
-    fHistJetsCEFvsCEFPt[i] = 0;
-    fHistJetsZvsPt[i] = 0;
-    fHistConstituents[i] = 0;
     fHistTracksJetPt[i] = 0;
     fHistClustersJetPt[i] = 0;
     fHistTracksPtDist[i] = 0;
     fHistClustersPtDist[i] = 0;
-    fHistJetNconstVsPt[i] = 0;
+
+    fHistJetPtEtaPhi[i] = 0;
+    fHistJetPtArea[i] = 0;
+    fHistJetPtEP[i] = 0;
+    fHistJetPtNEF[i] = 0;
+    fHistJetPtZ[i] = 0;
+    fHistJetPtLeadingPartPt[i] = 0;
+    fHistJetCorrPtEtaPhi[i] = 0;
+    fHistJetCorrPtArea[i] = 0;
+    fHistJetCorrPtEP[i] = 0;
+    fHistJetCorrPtNEF[i] = 0;
+    fHistJetCorrPtZ[i] = 0;
+    fHistJetCorrPtLeadingPartPt[i] = 0;
+    fHistJetPtCorrPt[i] = 0;
+    fHistJetPtMCPt[i] = 0;
+    fHistJetMCPtCorrPt[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSAJF::~AliAnalysisTaskSAJF()
+void AliAnalysisTaskSAJF::AllocateTHnSparse()
 {
-  // Destructor.
+    TString title[20]= {""};
+  Int_t nbins[20]  = {0};
+  Double_t min[20] = {0.};
+  Double_t max[20] = {0.};
+  Int_t dim = 0;
+
+  if (fForceBeamType != kpp) {
+    title[dim] = "Centrality (%)";
+    nbins[dim] = 22;
+    min[dim] = -5;
+    max[dim] = 105;
+    dim++;
+    
+    title[dim] = "#phi_{jet} - #psi_{RP}";
+    nbins[dim] = 100;
+    min[dim] = 0;
+    max[dim] = TMath::Pi();
+    dim++;
+  }
+
+  title[dim] = "#eta";
+  nbins[dim] = 100;
+  min[dim] = -1;
+  max[dim] = 1;
+  dim++;
+
+  title[dim] = "#phi_{jet} (rad)";
+  nbins[dim] = 201;
+  min[dim] = 0;
+  max[dim] = 2*TMath::Pi()*nbins[dim]/(nbins[dim]-1);
+  dim++;
+
+  title[dim] = "p_{T} (GeV/c)";
+  nbins[dim] = fNbins;
+  min[dim] = fMinBinPt;
+  max[dim] = fMaxBinPt;
+  dim++;
+
+  if (fIsEmbedded) {
+    title[dim] = "p_{T}^{MC} (GeV/c)";
+    nbins[dim] = fNbins;
+    min[dim] = fMinBinPt;
+    max[dim] = fMaxBinPt;
+    dim++;
+  }
+
+  if (!GetRhoName().IsNull()) {
+    title[dim] = "p_{T}^{corr} (GeV/c)";
+    nbins[dim] = fNbins*2;
+    min[dim] = -fMaxBinPt;
+    max[dim] = fMaxBinPt;
+    dim++;
+  }
+
+  title[dim] = "A_{jet}";
+  nbins[dim] = 150;
+  min[dim] = 0;
+  max[dim] = 1.5;
+  dim++;
+
+  title[dim] = "NEF";
+  nbins[dim] = 102;
+  min[dim] = 0;
+  max[dim] = 1.02;
+  dim++;
+
+  title[dim] = "Z";
+  nbins[dim] = 102;
+  min[dim] = 0;
+  max[dim] = 1.02;
+  dim++;
+
+  title[dim] = "No. of constituents";
+  nbins[dim] = 250;
+  min[dim] = -0.5;
+  max[dim] = 249.5;
+  dim++;
+
+  title[dim] = "p_{T,particle}^{leading} (GeV/c)";
+  nbins[dim] = 120;
+  min[dim] = 0;
+  max[dim] = 120;
+  dim++;
+
+  fHistJetObservables = new THnSparseD("fHistJetObservables","fHistJetObservables",dim,nbins,min,max);
+  fOutput->Add(fHistJetObservables);
+  for (Int_t i = 0; i < dim; i++)
+    fHistJetObservables->GetAxis(i)->SetTitle(title[i]);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSAJF::AllocateTHX()
+{
+  for (Int_t i = 0; i < 4; i++) {
+    TString histname;
+
+    histname = "fHistJetPtEtaPhi_";
+    histname += i;
+    fHistJetPtEtaPhi[i] = new TH3F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 20, -1, 1, 41, 0, 2*TMath::Pi()*41/40);
+    fHistJetPtEtaPhi[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistJetPtEtaPhi[i]->GetYaxis()->SetTitle("#eta");
+    fHistJetPtEtaPhi[i]->GetZaxis()->SetTitle("#phi_{jet} (rad)");
+    fOutput->Add(fHistJetPtEtaPhi[i]);
+      
+    histname = "fHistJetPtArea_";
+    histname += i;
+    fHistJetPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 150, 0, 1.5);
+    fHistJetPtArea[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistJetPtArea[i]->GetYaxis()->SetTitle("A_{jet}");
+    fHistJetPtArea[i]->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetPtArea[i]);
+
+    histname = "fHistJetPtEP_";
+    histname += i;
+    fHistJetPtEP[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());
+    fHistJetPtEP[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistJetPtEP[i]->GetYaxis()->SetTitle("#phi_{jet} - #psi_{RP}");
+    fHistJetPtEP[i]->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetPtEP[i]);
+
+    histname = "fHistJetPtNEF_";
+    histname += i;
+    fHistJetPtNEF[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 102, 0, 1.02);
+    fHistJetPtNEF[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistJetPtNEF[i]->GetYaxis()->SetTitle("NEF");
+    fHistJetPtNEF[i]->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetPtNEF[i]);
+
+    histname = "fHistJetPtZ_";
+    histname += i;
+    fHistJetPtZ[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 102, 0, 1.02);
+    fHistJetPtZ[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistJetPtZ[i]->GetYaxis()->SetTitle("z");
+    fHistJetPtZ[i]->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetPtZ[i]);
+
+    histname = "fHistJetPtLeadingPartPt_";
+    histname += i;
+    fHistJetPtLeadingPartPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 120, 0, 120);
+    fHistJetPtLeadingPartPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistJetPtLeadingPartPt[i]->GetYaxis()->SetTitle("p_{T,particle}^{leading} (GeV/c)");
+    fHistJetPtLeadingPartPt[i]->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetPtLeadingPartPt[i]);
+
+    if (!GetRhoName().IsNull()) {
+      histname = "fHistJetCorrPtEtaPhi_";
+      histname += i;
+      fHistJetCorrPtEtaPhi[i] = new TH3F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 20, -1, 1, 41, 0, 2*TMath::Pi()*201/200);
+      fHistJetCorrPtEtaPhi[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistJetCorrPtEtaPhi[i]->GetYaxis()->SetTitle("#eta");
+      fHistJetCorrPtEtaPhi[i]->GetZaxis()->SetTitle("#phi_{jet} (rad)");
+      fOutput->Add(fHistJetCorrPtEtaPhi[i]);
+      
+      histname = "fHistJetCorrPtArea_";
+      histname += i;
+      fHistJetCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 150, 0, 1.5);
+      fHistJetCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+      fHistJetCorrPtArea[i]->GetYaxis()->SetTitle("A_{jet}");
+      fHistJetCorrPtArea[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetCorrPtArea[i]);
+
+      histname = "fHistJetCorrPtEP_";
+      histname += i;
+      fHistJetCorrPtEP[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 100, 0, TMath::Pi());
+      fHistJetCorrPtEP[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+      fHistJetCorrPtEP[i]->GetYaxis()->SetTitle("#phi_{jet} - #psi_{RP}");
+      fHistJetCorrPtEP[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetCorrPtEP[i]);
+
+      histname = "fHistJetCorrPtNEF_";
+      histname += i;
+      fHistJetCorrPtNEF[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 102, 0, 1.02);
+      fHistJetCorrPtNEF[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+      fHistJetCorrPtNEF[i]->GetYaxis()->SetTitle("NEF");
+      fHistJetCorrPtNEF[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetCorrPtNEF[i]);
+
+      histname = "fHistJetCorrPtZ_";
+      histname += i;
+      fHistJetCorrPtZ[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 102, 0, 1.02);
+      fHistJetCorrPtZ[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+      fHistJetCorrPtZ[i]->GetYaxis()->SetTitle("z");
+      fHistJetCorrPtZ[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetCorrPtZ[i]);
+
+      histname = "fHistJetCorrPtLeadingPartPt_";
+      histname += i;
+      fHistJetCorrPtLeadingPartPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 120, 0, 120);
+      fHistJetCorrPtLeadingPartPt[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+      fHistJetCorrPtLeadingPartPt[i]->GetYaxis()->SetTitle("p_{T,particle}^{leading} (GeV/c)");
+      fHistJetCorrPtLeadingPartPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetCorrPtLeadingPartPt[i]);
+
+      histname = "fHistJetPtCorrPt_";
+      histname += i;
+      fHistJetPtCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+      fHistJetPtCorrPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistJetPtCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+      fHistJetPtCorrPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetPtCorrPt[i]);
+
+      if (fIsEmbedded) {
+	histname = "fHistJetMCPtCorrPt_";
+	histname += i;
+	fHistJetMCPtCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+	fHistJetMCPtCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{MC} (GeV/c)");
+	fHistJetMCPtCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+	fHistJetMCPtCorrPt[i]->GetZaxis()->SetTitle("counts");
+	fOutput->Add(fHistJetMCPtCorrPt[i]);
+      }
+    }
+
+    if (fIsEmbedded) {
+      histname = "fHistJetPtMCPt_";
+      histname += i;
+      fHistJetPtMCPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistJetPtMCPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistJetPtMCPt[i]->GetYaxis()->SetTitle("p_{T}^{MC} (GeV/c)");
+      fHistJetPtMCPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetPtMCPt[i]);
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -104,220 +322,35 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 {
   // Create user output.
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
-  fNjetsVsCent = new TH2F("fNjetsVsCent","fNjetsVsCent", 100, 0, 100, 150, -0.5, 149.5);
-  fNjetsVsCent->GetXaxis()->SetTitle("Centrality (%)");
-  fNjetsVsCent->GetYaxis()->SetTitle("# of jets");
-  fOutput->Add(fNjetsVsCent);
-
-  const Int_t nbinsZ = 12;
-  Float_t binsZ[nbinsZ+1] = {0,1,2,3,4,5,6,7,8,9,10,20,1000};
-
-  Float_t *binsPt       = GenerateFixedBinArray(fNbins, fMinBinPt, fMaxBinPt);
-  Float_t *binsCorrPt   = GenerateFixedBinArray(fNbins*2, -fMaxBinPt, fMaxBinPt);
-  Float_t *binsArea     = GenerateFixedBinArray(50, 0, 2);
-  Float_t *binsEta      = GenerateFixedBinArray(50,-1, 1);
-  Float_t *binsPhi      = GenerateFixedBinArray(101, 0, TMath::Pi() * 2.02);
-  Float_t *bins120      = GenerateFixedBinArray(120, 0, 1.2);
-  Float_t *bins150      = GenerateFixedBinArray(150, -0.5, 149.5);
-
-  TString histname;
+  if (fHistoType == 0)
+    AllocateTHX();
+  else
+    AllocateTHnSparse();
 
   for (Int_t i = 0; i < 4; i++) {
-    histname = "fHistEvents_";
-    histname += i;
-    fHistEvents[i] = new TH1F(histname,histname, 6, 0, 6);
-    fHistEvents[i]->GetXaxis()->SetTitle("Event state");
-    fHistEvents[i]->GetYaxis()->SetTitle("counts");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(1, "No jets");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(2, "Max jet not found");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(3, "Rho == 0");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(4, "Max jet <= 0");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(5, "OK");
-    fOutput->Add(fHistEvents[i]);
+    TString histname;
 
-    histname = "fHistLeadingJetPhiEta_";
-    histname += i;
-    fHistLeadingJetPhiEta[i] = new TH3F(histname.Data(), histname.Data(), 
-				 50, binsEta, 
-				 101, binsPhi, 
-				 nbinsZ, binsZ);
-    fHistLeadingJetPhiEta[i]->GetXaxis()->SetTitle("#eta");
-    fHistLeadingJetPhiEta[i]->GetYaxis()->SetTitle("#phi");
-    fHistLeadingJetPhiEta[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistLeadingJetPhiEta[i]);
-
-    histname = "fHistLeadingJetPtArea_";
-    histname += i;
-    fHistLeadingJetPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
-					fNbins, binsPt, 
-					50, binsArea,
-					nbinsZ, binsZ);
-    fHistLeadingJetPtArea[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
-    fHistLeadingJetPtArea[i]->GetYaxis()->SetTitle("area");
-    fHistLeadingJetPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistLeadingJetPtArea[i]);
-
-    if (fIsEmbedded) {
-      histname = "fHistLeadingJetMCPtArea_";
+    if (fParticleCollArray.GetEntriesFast()>0) {
+      histname = "fHistTracksJetPt_";
       histname += i;
-      fHistLeadingJetMCPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
-					    fNbins, binsPt, 
-					    50, binsArea,
-					    nbinsZ, binsZ);
-      fHistLeadingJetMCPtArea[i]->GetXaxis()->SetTitle("p_{T,MC} (GeV/c)");
-      fHistLeadingJetMCPtArea[i]->GetYaxis()->SetTitle("area");
-      fHistLeadingJetMCPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-      fOutput->Add(fHistLeadingJetMCPtArea[i]);
-    }
-
-    if (!fRhoName.IsNull()) {
-      histname = "fHistLeadingJetCorrPtArea_";
-      histname += i;
-      fHistLeadingJetCorrPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
-					      fNbins * 2, binsCorrPt, 
-					      50, binsArea,
-					      nbinsZ, binsZ);
-      fHistLeadingJetCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
-      fHistLeadingJetCorrPtArea[i]->GetYaxis()->SetTitle("area");
-      fHistLeadingJetCorrPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-      fOutput->Add(fHistLeadingJetCorrPtArea[i]);
+      fHistTracksJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
+      fHistTracksJetPt[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
+      fHistTracksJetPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+      fHistTracksJetPt[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistTracksJetPt[i]);
       
-      histname = "fHistRhoVSleadJetPt_";
+      histname = "fHistTracksPtDist_";
       histname += i;
-      fHistRhoVSleadJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
-      fHistRhoVSleadJetPt[i]->GetXaxis()->SetTitle("#rho * area (GeV/c)");
-      fHistRhoVSleadJetPt[i]->GetYaxis()->SetTitle("Leading jet p_{T} (GeV/c)");
-      fOutput->Add(fHistRhoVSleadJetPt[i]);
+      fHistTracksPtDist[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, 100, 0, 5);
+      fHistTracksPtDist[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
+      fHistTracksPtDist[i]->GetYaxis()->SetTitle("d");
+      fHistTracksPtDist[i]->GetZaxis()->SetTitle("counts");
+      fOutput->Add(fHistTracksPtDist[i]);
     }
 
-    histname = "fHistJetPhiEta_";
-    histname += i;
-    fHistJetPhiEta[i] = new TH3F(histname.Data(), histname.Data(), 
-				 50, binsEta, 
-				 101, binsPhi, 
-				 nbinsZ, binsZ);
-    fHistJetPhiEta[i]->GetXaxis()->SetTitle("#eta");
-    fHistJetPhiEta[i]->GetYaxis()->SetTitle("#phi");
-    fHistJetPhiEta[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistJetPhiEta[i]);
-    
-    histname = "fHistJetsPtArea_";
-    histname += i;
-    fHistJetsPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
-				  fNbins, binsPt, 
-				  50, binsArea,
-				  nbinsZ, binsZ);
-    fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
-    fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
-    fHistJetsPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistJetsPtArea[i]);
-
-    if (!fRhoName.IsNull()) {
-      histname = "fHistJetsCorrPtArea_";
-      histname += i;
-      fHistJetsCorrPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
-					fNbins * 2, binsCorrPt, 
-					50, binsArea,
-					nbinsZ, binsZ);
-      fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
-      fHistJetsCorrPtArea[i]->GetYaxis()->SetTitle("area");
-      fHistJetsCorrPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-      fOutput->Add(fHistJetsCorrPtArea[i]);
-
-      histname = "fHistJetPtvsJetCorrPt_";
-      histname += i;
-      fHistJetPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(),
-					  fNbins, fMinBinPt, fMaxBinPt, 
-					  fNbins * 2, -fMaxBinPt, fMaxBinPt);
-      fHistJetPtvsJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
-      fHistJetPtvsJetCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
-      fHistJetPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
-      fOutput->Add(fHistJetPtvsJetCorrPt[i]);
-    }
-
-    if (fIsEmbedded) {
-      histname = "fHistJetsMCPtArea_";
-      histname += i;
-      fHistJetsMCPtArea[i] = new TH3F(histname.Data(), histname.Data(), 
-				      fNbins, binsPt, 
-				      50, binsArea,
-				      nbinsZ, binsZ);
-      fHistJetsMCPtArea[i]->GetXaxis()->SetTitle("p_{T,MC} (GeV/c)");
-      fHistJetsMCPtArea[i]->GetYaxis()->SetTitle("area");
-      fHistJetsMCPtArea[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-      fOutput->Add(fHistJetsMCPtArea[i]);
-
-      histname = "fHistJetPtvsJetMCPt_";
-      histname += i;
-      fHistJetPtvsJetMCPt[i] = new TH2F(histname.Data(), histname.Data(),
-					fNbins, fMinBinPt, fMaxBinPt, 
-					fNbins, fMinBinPt, fMaxBinPt);
-      fHistJetPtvsJetMCPt[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
-      fHistJetPtvsJetMCPt[i]->GetYaxis()->SetTitle("p_{T,MC} (GeV/c)");
-      fHistJetPtvsJetMCPt[i]->GetZaxis()->SetTitle("counts");
-      fOutput->Add(fHistJetPtvsJetMCPt[i]);
-    }
-
-    histname = "fHistJetsZvsPt_";
-    histname += i;
-    fHistJetsZvsPt[i] = new TH3F(histname.Data(), histname.Data(), 
-				 120, bins120, 
-				 fNbins, binsPt,
-				 nbinsZ, binsZ);
-    fHistJetsZvsPt[i]->GetXaxis()->SetTitle("Z");
-    fHistJetsZvsPt[i]->GetYaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
-    fHistJetsZvsPt[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistJetsZvsPt[i]);
-
-    histname = "fHistJetsNEFvsPt_";
-    histname += i;
-    fHistJetsNEFvsPt[i] = new TH3F(histname.Data(), histname.Data(), 
-				   120, bins120, 
-				   fNbins, binsPt,
-				   nbinsZ, binsZ);
-    fHistJetsNEFvsPt[i]->GetXaxis()->SetTitle("NEF");
-    fHistJetsNEFvsPt[i]->GetYaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
-    fHistJetsNEFvsPt[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistJetsNEFvsPt[i]);
-    
-    histname = "fHistJetsCEFvsCEFPt_";
-    histname += i;
-    fHistJetsCEFvsCEFPt[i] = new TH3F(histname.Data(), histname.Data(), 
-				      120, bins120, 
-				      fNbins, binsPt,
-				      nbinsZ, binsZ);
-    fHistJetsCEFvsCEFPt[i]->GetXaxis()->SetTitle("1-NEF");
-    fHistJetsCEFvsCEFPt[i]->GetYaxis()->SetTitle("(1-NEF)*p_{T}^{raw} (GeV/c)");
-    fHistJetsCEFvsCEFPt[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistJetsCEFvsCEFPt[i]);
-
-    histname = "fHistConstituents_";
-    histname += i;
-    fHistConstituents[i] = new TH2F(histname.Data(), histname.Data(), 100, 1, 101, 100, -0.5, 99.5);
-    fHistConstituents[i]->GetXaxis()->SetTitle("p_{T,part} (GeV/c)");
-    fHistConstituents[i]->GetYaxis()->SetTitle("no. of particles");
-    fHistConstituents[i]->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistConstituents[i]);
-
-    histname = "fHistTracksJetPt_";
-    histname += i;
-    fHistTracksJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
-    fHistTracksJetPt[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
-    fHistTracksJetPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
-    fHistTracksJetPt[i]->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistTracksJetPt[i]);
-
-    histname = "fHistTracksPtDist_";
-    histname += i;
-    fHistTracksPtDist[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, 100, 0, 5);
-    fHistTracksPtDist[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
-    fHistTracksPtDist[i]->GetYaxis()->SetTitle("d");
-    fHistTracksPtDist[i]->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistTracksPtDist[i]);
-
-    if (!fCaloName.IsNull()) {
+    if (fClusterCollArray.GetEntriesFast()>0) {
       histname = "fHistClustersJetPt_";
       histname += i;
       fHistClustersJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
@@ -334,24 +367,10 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistClustersPtDist[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistClustersPtDist[i]);
     }
-
-    histname = "fHistJetNconstVsPt_";
-    histname += i;
-    fHistJetNconstVsPt[i] = new TH3F(histname.Data(), histname.Data(), 150, bins150, fNbins, binsPt, nbinsZ, binsZ);
-    fHistJetNconstVsPt[i]->GetXaxis()->SetTitle("# of constituents");
-    fHistJetNconstVsPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
-    fHistJetNconstVsPt[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
-    fOutput->Add(fHistJetNconstVsPt[i]);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 
-  delete[] binsPt;
-  delete[] binsCorrPt;
-  delete[] binsArea;
-  delete[] binsEta;
-  delete[] binsPhi;
-  delete[] bins120;
 }
 
 //________________________________________________________________________
@@ -364,113 +383,33 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     return kFALSE;
   }
 
-  if (fJets->GetEntriesFast() < 1) { // no jets in array, skipping
-    fHistEvents[fCentBin]->Fill("No jets", 1);
-    return kTRUE;
-  }
-
-  static Int_t sortedJets[9999] = {-1};
-  GetSortedArray(sortedJets, fJets, fRhoVal);
-  
-  if (sortedJets[0] < 0) { // no accepted jets, skipping
-    fHistEvents[fCentBin]->Fill("No jets", 1);
-    return kTRUE;
-  }
-
-  // OK, event accepted
-
-  if (fRhoVal == 0) 
-    fHistEvents[fCentBin]->Fill("Rho == 0", 1);
-  else
-    fHistEvents[fCentBin]->Fill("OK", 1);
-
-  for (Int_t i = 0; i < fNLeadingJets && i < fJets->GetEntriesFast(); i++) {
-    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[i]));
-
-    if (!jet) {
-      AliError(Form("Could not receive jet %d", sortedJets[i]));
-      continue;
-    }  
-
-    if (!AcceptJet(jet))
-      continue;
-
-    Float_t ptLeading = GetLeadingHadronPt(jet);
-
-    fHistLeadingJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi(), ptLeading);
-    fHistLeadingJetPtArea[fCentBin]->Fill(jet->Pt(), jet->Area(), ptLeading);
-
-    if (fIsEmbedded) 
-      fHistLeadingJetMCPtArea[fCentBin]->Fill(jet->MCPt(), jet->Area(), ptLeading);      
-
-    Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
-
-    if (fHistLeadingJetCorrPtArea[fCentBin])
-      fHistLeadingJetCorrPtArea[fCentBin]->Fill(corrPt, jet->Area(), ptLeading);
-
-    if (i==0 && fHistRhoVSleadJetPt[fCentBin]) 
-      fHistRhoVSleadJetPt[fCentBin]->Fill(fRhoVal, jet->Pt());
-  }
-
-  Int_t njets = DoJetLoop();
-
-  fNjetsVsCent->Fill(fCent, njets);
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisTaskSAJF::DoJetLoop()
-{
-  // Do the jet loop.
-
-  if (!fJets)
-    return 0;
-
-  const Int_t njets = fJets->GetEntriesFast();
-  Int_t nAccJets = 0;
-
-  TH1F constituents("constituents", "constituents", 
-		    fHistConstituents[0]->GetNbinsX(), fHistConstituents[0]->GetXaxis()->GetXmin(), fHistConstituents[0]->GetXaxis()->GetXmax()); 
-
-  for (Int_t ij = 0; ij < njets; ij++) {
+  for (Int_t ij = 0; ij < fJets->GetEntriesFast(); ij++) {
 
     AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
 
     if (!jet) {
       AliError(Form("Could not receive jet %d", ij));
       continue;
-    }  
+    }
 
     if (!AcceptJet(jet))
       continue;
 
+    Float_t ptLeading = GetLeadingHadronPt(jet);
     Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
 
-    Float_t ptLeading = GetLeadingHadronPt(jet);
+    // Fill THnSparse
+    Double_t ep = jet->Phi() - fEPV0;
+    while (ep < 0) ep += TMath::Pi();
+    while (ep >= TMath::Pi()) ep -= TMath::Pi();
 
-    fHistJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi(), ptLeading);
-    fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area(), ptLeading);
-    if (fHistJetsCorrPtArea[fCentBin])
-      fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area(), ptLeading);
-    if (fHistJetPtvsJetCorrPt[fCentBin])
-      fHistJetPtvsJetCorrPt[fCentBin]->Fill(jet->Pt(), corrPt);
-    fHistJetNconstVsPt[fCentBin]->Fill(jet->GetNumberOfConstituents(), jet->Pt(), ptLeading);
-
-    if (fIsEmbedded) {
-      fHistJetsMCPtArea[fCentBin]->Fill(jet->MCPt(), jet->Area(), ptLeading);
-      fHistJetPtvsJetMCPt[fCentBin]->Fill(jet->Pt(), jet->MCPt());
-    }
-
-    fHistJetsNEFvsPt[fCentBin]->Fill(jet->NEF(), jet->Pt(), ptLeading);
-    fHistJetsCEFvsCEFPt[fCentBin]->Fill(1-jet->NEF(), (1-jet->NEF())*jet->Pt(), ptLeading);
+    FillJetHisto(fCent, ep, jet->Eta(), jet->Phi(), jet->Pt(), jet->MCPt(), corrPt, jet->Area(), 
+		 jet->NEF(), ptLeading/jet->Pt(), jet->GetNumberOfConstituents(), ptLeading);
 
     if (fTracks) {
       for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
 	AliVParticle *track = jet->TrackAt(it, fTracks);
 	if (track) {
-	  fHistJetsZvsPt[fCentBin]->Fill(track->Pt() / jet->Pt(), jet->Pt(), ptLeading);
-	  constituents.Fill(track->Pt());
 	  fHistTracksJetPt[fCentBin]->Fill(track->Pt(), jet->Pt());
 	  Double_t dist = TMath::Sqrt((track->Eta() - jet->Eta()) * (track->Eta() - jet->Eta()) + (track->Phi() - jet->Phi()) * (track->Phi() - jet->Phi()));
 	  fHistTracksPtDist[fCentBin]->Fill(track->Pt(), dist);
@@ -485,28 +424,77 @@ Int_t AliAnalysisTaskSAJF::DoJetLoop()
 	if (cluster) {
 	  TLorentzVector nPart;
 	  cluster->GetMomentum(nPart, fVertex);
-	  fHistJetsZvsPt[fCentBin]->Fill(nPart.Et() / jet->Pt(), jet->Pt(), ptLeading);
-	  constituents.Fill(nPart.Pt());
+
 	  fHistClustersJetPt[fCentBin]->Fill(nPart.Pt(), jet->Pt());
 	  Double_t dist = TMath::Sqrt((nPart.Eta() - jet->Eta()) * (nPart.Eta() - jet->Eta()) + (nPart.Phi() - jet->Phi()) * (nPart.Phi() - jet->Phi()));
 	  fHistClustersPtDist[fCentBin]->Fill(nPart.Pt(), dist);
 	}
       }
     }
-
-    for (Int_t i = 1; i <= constituents.GetNbinsX(); i++) {
-      fHistConstituents[fCentBin]->Fill(constituents.GetBinCenter(i), constituents.GetBinContent(i));
-    }
-
-    constituents.Reset();
-    nAccJets++;
   } //jet loop 
 
-  return nAccJets;
+  return kTRUE;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAJF::Terminate(Option_t *) 
+void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
+				       Double_t NEF, Double_t z, Int_t n, Double_t leadingpt)
 {
-  // Called once at the end of the analysis.
+  if (fHistoType == 0) {
+    fHistJetPtEtaPhi[fCentBin]->Fill(pt,eta,phi);
+    fHistJetPtArea[fCentBin]->Fill(pt,area);
+    fHistJetPtEP[fCentBin]->Fill(pt,ep);
+    fHistJetPtNEF[fCentBin]->Fill(pt,NEF);
+    fHistJetPtZ[fCentBin]->Fill(pt,z);
+    fHistJetPtLeadingPartPt[fCentBin]->Fill(pt,leadingpt);
+    if (fHistJetCorrPtEtaPhi[fCentBin]) {
+      fHistJetCorrPtEtaPhi[fCentBin]->Fill(corrpt,eta,phi);
+      fHistJetCorrPtArea[fCentBin]->Fill(corrpt,area);
+      fHistJetCorrPtEP[fCentBin]->Fill(corrpt,ep);
+      fHistJetCorrPtNEF[fCentBin]->Fill(corrpt,NEF);
+      fHistJetCorrPtZ[fCentBin]->Fill(corrpt,z);
+      fHistJetCorrPtLeadingPartPt[fCentBin]->Fill(corrpt,leadingpt);
+      fHistJetPtCorrPt[fCentBin]->Fill(pt,corrpt);
+      if (fIsEmbedded)
+	fHistJetMCPtCorrPt[fCentBin]->Fill(MCpt,corrpt);
+    }
+    if (fIsEmbedded)
+      fHistJetPtMCPt[fCentBin]->Fill(pt,MCpt);
+  }
+  else {
+ 
+    Double_t contents[20]={0};
+
+    for (Int_t i = 0; i < fHistJetObservables->GetNdimensions(); i++) {
+      TString title(fHistJetObservables->GetAxis(i)->GetTitle());
+      if (title=="Centrality (%)")
+	contents[i] = cent;
+      else if (title=="#phi_{jet} - #psi_{RP}")
+	contents[i] = ep;
+      else if (title=="#eta")
+	contents[i] = eta;
+      else if (title=="#phi_{jet} (rad)")
+	contents[i] = phi;
+      else if (title=="p_{T} (GeV/c)")
+	contents[i] = pt;
+      else if (title=="p_{T}^{MC} (GeV/c)")
+	contents[i] = MCpt;
+      else if (title=="p_{T}^{corr} (GeV/c)")
+	contents[i] = corrpt;
+      else if (title=="A_{jet}")
+	contents[i] = area;
+      else if (title=="NEF")
+	contents[i] = NEF;
+      else if (title=="Z")
+	contents[i] = z;
+      else if (title=="No. of constituents")
+	contents[i] = n;
+      else if (title=="p_{T,particle}^{leading} (GeV/c)")
+	contents[i] = leadingpt;
+      else 
+	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+    }
+
+    fHistJetObservables->Fill(contents);
+  }
 }

@@ -78,6 +78,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	
 	Int_t GetNofMCEventType() const {return fNofMCEventType;}
 	Int_t *GetMCEventType() const {return fMCEventType;}
+    Int_t GetPoolBin(Double_t multorcent, Double_t zVtx) const;
 	
 	Int_t GetNTrackCuts() const {return fNTrackCuts;}
 	Float_t* GetAODTrackCuts() const {return fAODTrackCuts;}
@@ -88,6 +89,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Int_t GetFilterBit() const {return fBit;}
 	Short_t GetCharge() const {return fCharge;}
 	TString GetDescription() const {return fDescription;}
+    
+
 	
 	
 	
@@ -132,7 +135,25 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	void SetCharge(Short_t charge) {fCharge = charge;}
 	void SetFilterBit(Int_t bit) {fBit = bit;}
 	void SetEfficiencyWeightMap(TH3D *hMap){if(fEffWeights)delete fEffWeights;fEffWeights=(TH3D*)hMap->Clone();}
+    
+    void SetTriggerEffWeightMapvspt(TH1D* hTrigMap) {if(fTrigEffWeightsvspt) delete fTrigEffWeightsvspt; fTrigEffWeightsvspt=(TH1D*)hTrigMap->Clone();}
+	void SetTriggerEffWeightMapvsptB(TH1D* hTrigMapB) {if(fTrigEffWeightsvsptB) delete fTrigEffWeightsvsptB; fTrigEffWeightsvsptB=(TH1D*)hTrigMapB->Clone();}
+    
+    void SetTriggerEffWeightMap(TH2D* hTrigMap) {if(fTrigEffWeights) delete fTrigEffWeights; fTrigEffWeights=(TH2D*)hTrigMap->Clone();}
+	void SetTriggerEffWeightMapB(TH2D* hTrigMapB) {if(fTrigEffWeightsB) delete fTrigEffWeightsB; fTrigEffWeightsB=(TH2D*)hTrigMapB->Clone();}
+    
+    
 	Double_t GetTrackWeight(Double_t pt, Double_t eta,Double_t zvtx);
+    Double_t GetTrigWeight(Double_t pt, Double_t mult=0);
+	Double_t GetTrigWeightB(Double_t pt, Double_t mult=0);
+    
+    Bool_t IsTrackEffMap(){if(fEffWeights) return kTRUE; else return kFALSE;}
+    Bool_t IsTrigEffMap1D(){ if(fTrigEffWeightsvspt) return kTRUE; else return kFALSE;}
+    Bool_t IsTrigEffMap1DB(){ if(fTrigEffWeightsvsptB) return kTRUE; else return kFALSE;}
+    Bool_t IsTrigEffMap2D(){ if(fTrigEffWeights) return kTRUE; else return kFALSE;}
+    Bool_t IsTrigEffMap2DB(){ if(fTrigEffWeightsB) return kTRUE; else return kFALSE;}
+    
+    
 	void Print(Option_t *option) const;
 	virtual void PrintAll() const;
 	virtual void PrintPoolParameters() const;
@@ -149,7 +170,11 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 private:
 	AliESDtrackCuts *fESDTrackCuts; // track cut object
 	AliAODPidHF * fPidObj;     /// PID object
-	TH3D *fEffWeights;     // weight map (pt,eta,zvtx) to account for single track efficiency  
+	TH3D *fEffWeights;     // weight map (pt,eta,zvtx) to account for single track efficiency
+    TH1D *fTrigEffWeightsvspt;     // weight map (pt,mult) to account for trigger efficiency (on data, from c)
+	TH1D *fTrigEffWeightsvsptB;     // weight map (pt,mult) to account for trigger efficiency (from b)
+    TH2D *fTrigEffWeights;     // weight map (pt,mult) to account for trigger efficiency (on data, from c)
+	TH2D *fTrigEffWeightsB;     // weight map (pt,mult) to account for trigger efficiency (from b)
 	Int_t fPoolMaxNEvents; // set maximum number of events in the pool
 	Int_t fPoolMinNTracks; // se minimum number of tracks in the pool
 	Int_t fMinEventsToMix; // set the minimum number of events you wanna mix
@@ -177,7 +202,7 @@ private:
 	TString fDescription; // additional description to the cuts
 	
 	
-	ClassDef(AliHFAssociatedTrackCuts,5);
+	ClassDef(AliHFAssociatedTrackCuts,6);
 };
 
 

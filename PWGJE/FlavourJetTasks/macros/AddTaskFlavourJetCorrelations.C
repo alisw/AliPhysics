@@ -1,7 +1,5 @@
-// $Id$
-
 AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
-  AliAnalysisTaskRecoJetCorrelations::ECandidateType cand = AliAnalysisTaskRecoJetCorrelations::kDstartoKpipi,
+  AliAnalysisTaskFlavourJetCorrelations::ECandidateType cand = AliAnalysisTaskFlavourJetCorrelations::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
   TString jetArrname = "",
@@ -59,6 +57,7 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   task->SetTriggerOnLeadingJet(triggerOnLeadingJet);
 
   //jet settings
+ 
   task->SetJetRadius(R);
   task->SetJetPtCut(jptcut);
 
@@ -71,11 +70,13 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
 
   Float_t minPhi = 0.;
   Float_t maxPhi = 2.*TMath::Pi();
-//if (acceptance==2) { /*80-180 degree*/ }
+ 
+  if (acceptance==2) { /*80-180 degree*/ }
   if (acceptance) task->SetJetPhiLimits(minPhi, maxPhi);
 
   //Float_t area=0.6*TMath::Pi()*R*R;
   task->SetJetAreaCut(areaCut);
+  
   mgr->AddTask(task);
 
   // Create and connect containers for input/output
@@ -83,24 +84,28 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   outputfile += ":PWG3_D2H_DEmcalJet";
   outputfile += suffix;
 
-  TString nameContainer0="histogramsCorrelations";
-  TString nameContainer1="cuts";
+  TString candname="DStar"; 
+  if(cand==0)  candname="D0";
 
-  nameContainer0 += suffix;
+  TString nameContainer1="hCor";
+  TString nameContainer2="cutsJ";
+
+  nameContainer1 += candname;
+  nameContainer2 += candname;
+  
   nameContainer1 += suffix;
-
+  nameContainer2 += suffix;
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
 
   // ----- output data -----
-
-  // output TH1I for event counting
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(nameContainer0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(nameContainer1, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(nameContainer1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(nameContainer2, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
+
 
   Printf("Input and Output connected to the manager");
   return task ;

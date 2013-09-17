@@ -27,6 +27,10 @@
 #include "AliAnalysisEtRecEffCorrection.h"
 #include "TFile.h"
 #include "TVector3.h"
+#include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h" 
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 
 using namespace std;
 ClassImp(AliAnalysisEt);
@@ -156,6 +160,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fMakeSparse(kFALSE)
 			       ,fCutFlow(0)
 			       ,fSelector(0)
+			       ,fPIDResponse(0)
 	       
 {}
 
@@ -184,6 +189,7 @@ AliAnalysisEt::~AliAnalysisEt()
   //delete fCentrality;//this code does not actually own AliCentrality so we don't have to worry about deleting it...  we just borrow it...
   delete fCutFlow;
   delete fSelector;
+  delete fPIDResponse;
 }
 
 void AliAnalysisEt::FillOutputList(TList *list)
@@ -206,6 +212,22 @@ void AliAnalysisEt::FillOutputList(TList *list)
     
     list->Add(fCutFlow);
 
+    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+    if (!man) {
+      AliFatal("Analysis manager needed");
+      return;
+    }
+
+    AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
+    if (!inputHandler) {
+      AliFatal("Input handler needed");
+      return;
+    }
+
+    //pid response object
+    fPIDResponse=inputHandler->GetPIDResponse();
+    if (!fPIDResponse) AliError("PIDResponse object was not created");
+
 }
 
 void AliAnalysisEt::Init()
@@ -217,6 +239,7 @@ void AliAnalysisEt::Init()
     exit(-1);
   }
   ResetEventValues();
+
 }
 
 void AliAnalysisEt::CreateHistograms()
@@ -701,12 +724,12 @@ Int_t AliAnalysisEt::ReadCorrections(TString filename)
  return -1; 
 }
 
-Double_t AliAnalysisEt::CorrectForReconstructionEfficiency(const AliESDCaloCluster& cluster, Int_t mult)
+Double_t AliAnalysisEt::CorrectForReconstructionEfficiency(const AliESDCaloCluster& cluster, Int_t cent)
 {
   Float_t pos[3];
   cluster.GetPosition(pos);
   TVector3 cp(pos);
-  Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E(), mult);
+  Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E(), cent);
   
   //std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
   return TMath::Sin(cp.Theta())*corrEnergy;

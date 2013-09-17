@@ -136,6 +136,13 @@ public:
 		fDemandedFlags = demandedflags;
 		fTestFlags = kTRUE;
 	}
+	void SetMinimumNumberOfTPCClusters(Int_t minimumnumberoftpcclusters) {
+		fMinimumNumberOfTPCClusters = minimumnumberoftpcclusters;
+		fTestNumberOfTPCClusters = kTRUE;
+	}
+	void SetDemandSPDCluster() {
+		fTestSPDAny = kTRUE;
+	}
 	void SetPtDeptDCACut(TFormula* DCAxyCutFormula, Double_t DCAzCut, UInt_t MinSPDHits = 1) {
 		fPtDeptDCAxyCutFormula = DCAxyCutFormula;
 		fDCAzCut = DCAzCut;
@@ -207,6 +214,11 @@ private:
 		if ((flags & fDemandedFlags) == fDemandedFlags) return kTRUE;
 		return kFALSE;
 	}
+	Bool_t CheckNclsTPC(Int_t ncls) const {
+		if (!fTestNumberOfTPCClusters) return kTRUE;
+		if (ncls > fMinimumNumberOfTPCClusters) return kTRUE;
+		return kFALSE;
+	}
 	Bool_t CheckTOFmismatch(Bool_t ismismatch) const {
 		if (!fTestTOFmismatch) return kTRUE; // if we're not cutting on mismatch, then it's accepted.
 		if (!ismismatch) return kTRUE; 		// so if the track is not a mismatch, then it is accepted.
@@ -255,6 +267,7 @@ private:
 	UInt_t 					fFilterMask;					// FilterMask to-be-checked.
 	Double_t 				fMaxEta;						// Max Eta of the track.
 	Double_t				fMaxRapidity;					// Rapidity cut (only done for PID plots!!)
+	Int_t					fMinimumNumberOfTPCClusters; 	// NCls of TPC detector.
 	ULong_t 				fDemandedFlags;					// Flags demanded on the track.
 	UInt_t 					fMinSPDHitsForPtDeptDCAcut;		// Required number of SPD hits for performing Pt-Dept DCA cut.
 	TFormula* 				fPtDeptDCAxyCutFormula;			// Formula for the Pt-Dept DCA cut.
@@ -274,6 +287,8 @@ private:
 	Bool_t 					fTestMaxEta;					//
 	Bool_t					fTestMaxRapidity;				//
 	Bool_t 					fTestFlags;						//
+	Bool_t					fTestNumberOfTPCClusters;					//
+	Bool_t					fTestSPDAny;					//
 	Bool_t 					fTestTOFmismatch;				//
 	Bool_t 					fTestPtDeptDCAcut;				//
 

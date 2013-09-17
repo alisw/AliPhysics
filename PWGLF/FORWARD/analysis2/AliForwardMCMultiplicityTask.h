@@ -14,14 +14,11 @@
  * @ingroup pwglf_forward_aod
  */
 #include "AliForwardMultiplicityBase.h"
-#include "AliForwardUtil.h"
 #include "AliFMDMCEventInspector.h"
 #include "AliFMDMCSharingFilter.h"
 #include "AliFMDMCDensityCalculator.h"
 #include "AliFMDMCCorrector.h"
 #include "AliFMDHistCollector.h"
-#include "AliAODForwardMult.h"
-#include "AliAODForwardEP.h"
 #include "AliFMDEnergyFitter.h"
 #include "AliFMDEventPlaneFinder.h"
 #include <AliESDFMD.h>
@@ -82,22 +79,11 @@ public:
    * @name Interface methods 
    */
   /** 
-   * Create output objects 
-   * 
-   */
-  virtual void UserCreateOutputObjects();
-  /** 
    * Process each event 
    *
    * @param option Not used
    */  
   virtual void UserExec(Option_t* option);
-  /** 
-   * End of job
-   * 
-   * @param option Not used 
-   */
-  virtual void Terminate(Option_t* option);
   /** 
    * @} 
    */
@@ -186,29 +172,31 @@ public:
   /** 
    * @} 
    */
-  /** 
-   * Set debug level 
-   * 
-   * @param dbg debug level
-   */
-  void SetDebug(Int_t dbg);
 protected: 
   /** 
-   * Initialise the sub objects and stuff.  Called on first event 
+   * Initialize members based on eta and vertex axis - only available
+   * after first event - called from SetupForData.
    * 
-   * @return false on errors
+   * @param pe @f$\eta@f$ axis
+   * @param pv Interaction point Z-coordinate axis 
    */
-  virtual Bool_t SetupForData();
+  virtual void InitMembers(const TAxis* pe, const TAxis* pv);
+  /**
+   * Create output branches - called from UserCreateOutputObjects
+   */
+  virtual void CreateBranches(AliAODHandler* ah);
+  /** 
+   * Do estimates of @f$dN/d\eta@f$ - called at Terminate
+   * 
+   * @param input  Input list
+   * @param output Output list
+   */
+  virtual void EstimatedNdeta(const TList* input, TList* output) const;
 
-  TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
-  AliForwardUtil::Histos fHistos;       // Cache histograms 
-  AliAODForwardMult      fAODFMD;       // Output object
-  AliAODForwardEP        fAODEP;       // Output object
   AliESDFMD              fMCESDFMD;     // MC 'Sharing corrected' ESD object
   AliForwardUtil::Histos fMCHistos;     // MC Cache histograms 
   AliAODForwardMult      fMCAODFMD;     // MC Output object
-  AliForwardUtil::Histos fRingSums;     // Cache histograms 
   AliForwardUtil::Histos fMCRingSums;   // Cache histograms 
   TH2D*                  fPrimary;      // Per event primary particles 
 
@@ -219,10 +207,7 @@ protected:
   AliFMDHistCollector       fHistCollector;     // Algorithm
   AliFMDEventPlaneFinder    fEventPlaneFinder;  // Algorithm
 
-  TList* fList; // Output list 
-  TList* fListVertexBins; // list of the signal  in vertex bin	
-
-  ClassDef(AliForwardMCMultiplicityTask,3) // Forward multiplicity class
+  ClassDef(AliForwardMCMultiplicityTask,4) // Forward multiplicity class
 };
 
 #endif

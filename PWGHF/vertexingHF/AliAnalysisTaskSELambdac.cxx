@@ -1123,7 +1123,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
     
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
-      printf("AliAnalysisTaskSELambdac::UserExec: MC particles branch not found!\n");
+      AliError("AliAnalysisTaskSELambdac::UserExec: MC particles branch not found!\n");
       return;
     }
  
@@ -1131,7 +1131,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
     // load MC header
     mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
-      printf("AliAnalysisTaskSELambdac::UserExec: MC header branch not found!\n");
+      AliError("AliAnalysisTaskSELambdac::UserExec: MC header branch not found!\n");
       return;
     }
   }
@@ -1157,11 +1157,11 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   }
 
   if(!array3Prong || !aod) {
-    printf("AliAnalysisTaskSELambdac::UserExec: Charm3Prong branch not found!\n");
+    AliError("AliAnalysisTaskSELambdac::UserExec: Charm3Prong branch not found!\n");
     return;
   }
   if(!arrayLikeSign) {
-    printf("AliAnalysisTaskSELambdac::UserExec: LikeSign3Prong branch not found!\n");
+    AliDebug(2,"AliAnalysisTaskSELambdac::UserExec: LikeSign3Prong branch not found!\n");
     //  return;
   }
 
@@ -1308,7 +1308,7 @@ void AliAnalysisTaskSELambdac::Terminate(Option_t */*option*/)
 
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {     
-    printf("ERROR: fOutput not available\n");
+    AliError("ERROR: fOutput not available\n");
     return;
   }
   //fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));

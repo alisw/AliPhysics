@@ -12,8 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
-//-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 // base class for Jet Reader Header 
 // Author: jgcn@mda.cinvestav.mx
@@ -22,65 +23,96 @@
 #include <TMath.h>
 
 #include "AliJetReaderHeader.h"
+#include "AliEMCALRecoUtils.h"
 
 ClassImp(AliJetReaderHeader)
 
 ////////////////////////////////////////////////////////////////////////
 
 AliJetReaderHeader::AliJetReaderHeader():  
- TNamed("AliJetReaderHeader", "Jet Reader Header"),
- fFirst(0),
- fLast(-1),
- fOption(0),
- fCluster(0),
- fDebug(0),
- fDZ(0),
- fSignalPerBg(0),
- fFiducialEtaMin(-0.9),
- fFiducialEtaMax(0.9),
- fFiducialPhiMin(0.),
- fFiducialPhiMax(2*TMath::Pi()),
- fPtCut(2.0),
- fComment("No comment"),
- fDir(""),
- fBgDir(""),
- fPattern(""),
- fMatricesEMCAL("survey11"),
- fGeomEMCAL("EMCAL_COMPLETEV1"),
- fMyOADBfile("")
+  TNamed("AliJetReaderHeader", "Jet Reader Header"),
+  fOption(0),
+  fCluster(0),
+  fDebug(0),
+  fFiducialEtaMin(-0.9),
+  fFiducialEtaMax(0.9),
+  fFiducialPhiMin(0.),
+  fFiducialPhiMax(2*TMath::Pi()),
+  fPtCut(2.0),
+  fEtCellCut(0.0),
+  fComment("No comment"),
+  fDir(""),
+  fMatricesEMCAL("survey11"),
+  fGeomEMCAL("EMCAL_COMPLETEV1"),
+  fMyOADBfile(""),
+  fTestFilterMask(0),
+  fFilterType(0),
+  fReadSignalOnly(kFALSE),
+  fReadBkgdOnly(kFALSE),
+  fDataType(""),
+  fIsHighMult(kFALSE)
 {
   // Default constructor
 }
 
-////////////////////////////////////////////////////////////////////////
-
-AliJetReaderHeader::AliJetReaderHeader(const char * name):  
- TNamed(name, "Jet Reader Header"),
- fFirst(0),
- fLast(-1),
- fOption(0),
- fCluster(0),
- fDebug(0),
- fDZ(0),
- fSignalPerBg(0),
- fFiducialEtaMin(-0.9),
- fFiducialEtaMax(0.9),
- fFiducialPhiMin(0.),
- fFiducialPhiMax(2*TMath::Pi()),
- fPtCut(2.0),
- fComment("No comment"),
- fDir(""),
- fBgDir(""),
- fPattern(""),
- fMatricesEMCAL("survey11"),
- fGeomEMCAL("EMCAL_COMPLETEV1"),
- fMyOADBfile("")
+//-----------------------------------------------------------------------
+AliJetReaderHeader::AliJetReaderHeader(Int_t det):
+  TNamed("AliJetReaderHeader", "Jet Reader Header"),
+  fOption(det),
+  fCluster(0),
+  fDebug(0),
+  fFiducialEtaMin(-0.9),
+  fFiducialEtaMax(0.9),
+  fFiducialPhiMin(0.),
+  fFiducialPhiMax(2*TMath::Pi()),
+  fPtCut(2.0),
+  fEtCellCut(0.0),
+  fComment("No comment"),
+  fDir(""),
+  fMatricesEMCAL("survey11"),
+  fGeomEMCAL("EMCAL_COMPLETEV1"),
+  fMyOADBfile(""),
+  fTestFilterMask(0),
+  fFilterType(0),
+  fReadSignalOnly(kFALSE),
+  fReadBkgdOnly(kFALSE),
+  fDataType(""),
+  fIsHighMult(kFALSE)
 {
-  // Constructor
+  // Constructor 
+
 }
 
-////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
+AliJetReaderHeader::AliJetReaderHeader(const char * name):
+  TNamed(name, "Jet Reader Header"),
+  fOption(0),
+  fCluster(0),
+  fDebug(0),
+  fFiducialEtaMin(-0.9),
+  fFiducialEtaMax(0.9),
+  fFiducialPhiMin(0.),
+  fFiducialPhiMax(2*TMath::Pi()),
+  fPtCut(2.0),
+  fEtCellCut(0.0),
+  fComment("No comment"),
+  fDir(""),
+  fMatricesEMCAL("survey11"),
+  fGeomEMCAL("EMCAL_COMPLETEV1"),
+  fMyOADBfile(""),
+  fTestFilterMask(0),
+  fFilterType(0),
+  fReadSignalOnly(kFALSE),
+  fReadBkgdOnly(kFALSE),
+  fDataType(""),
+  fIsHighMult(kFALSE)
+{
+  // Constructor 2
 
+}
+
+
+//-----------------------------------------------------------------------
 AliJetReaderHeader::~AliJetReaderHeader()
 {
   // destructor

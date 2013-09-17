@@ -21,6 +21,7 @@ class AliESDEvent;
 class AliESDInputHandler;
 class AliMCEvent;
 class AliStack;
+class AliAODInputHandler;
 
 class AliAnalysisNetParticleDCA : public TNamed {
 
@@ -42,10 +43,10 @@ class AliAnalysisNetParticleDCA : public TNamed {
    */
 
   /** Initialize */
-  void Initialize(AliESDtrackCuts *cuts, AliESDtrackCuts *cutsBkg, AliAnalysisNetParticleHelper* helper);
+  void Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts *cuts, AliESDtrackCuts *cutsBkg);
 
   /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliMCEvent *mcEvent);
+  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
 
   /** Reset Event */
   void ResetEvent();

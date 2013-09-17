@@ -39,8 +39,10 @@ set ( SRCS
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskPerformanceStrange.cxx
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskV0ForRAA.cxx
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractV0.cxx
+  STRANGENESS/LambdaK0/AliAnalysisTaskExtractV0pPb.cxx
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractV0AOD.cxx
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
+  STRANGENESS/LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
   STRANGENESS/Cascades/AliAnalysisTaskExtractCascade.cxx
   STRANGENESS/Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
@@ -50,6 +52,8 @@ set ( SRCS
   STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadepp276.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskLambdaNAOD.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskHdibaryonLPpi.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskHelium3Pi.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskHelium3PiMC.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -58,7 +62,7 @@ set ( DHDR PWGLFSTRANGENESSLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGLF/STRANGENESS/Cascades PWGLF/STRANGENESS/LambdaK0PbPb PWGLF/STRANGENESS/Correlations PWGLF/STRANGENESS/Hypernuclei STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGLF/STRANGENESS/Cascades PWGLF/STRANGENESS/LambdaK0 PWGLF/STRANGENESS/LambdaK0PbPb PWGLF/STRANGENESS/Correlations PWGLF/STRANGENESS/Hypernuclei STEER/ESD STEER/STEERBase)
 
 #install (DIRECTORY PWGLF/STRANGENESS/Cascades/macros
 #         DESTINATION PWGLF/STRANGENESS 

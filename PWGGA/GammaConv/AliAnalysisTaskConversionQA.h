@@ -21,7 +21,8 @@ using namespace std;
 class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
 
  public:
-
+   
+   AliAnalysisTaskConversionQA();
    AliAnalysisTaskConversionQA(const char *name);
    virtual ~AliAnalysisTaskConversionQA();
 
@@ -39,7 +40,8 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
       ffillTree = fillTree;
       ffillHistograms = fillHistorams;
    }
-    
+   void SetIsMC(Bool_t isMC){fIsMC = isMC;}
+   
  private:
     
    AliAnalysisTaskConversionQA(const AliAnalysisTaskConversionQA&); // Prevent copy-construction
@@ -47,9 +49,13 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
 
    void ProcessQATree(AliAODConversionPhoton *gamma);
    void ProcessQA(AliAODConversionPhoton *gamma);
-   void ProcessTrueQA(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi);
-   Bool_t IsTruePhoton(AliAODConversionPhoton *TruePhotonCandidate);
-   void CountESDTracks();
+   void RelabelAODPhotonCandidates(Bool_t mode);
+   void ProcessTrueQAESD(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi);
+   void ProcessTrueQAAOD(AliAODConversionPhoton *TruePhotonCandidate, AliAODTrack *elec, AliAODTrack *posi);
+   UInt_t IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate);
+   UInt_t IsTruePhotonAOD(AliAODConversionPhoton *TruePhotonCandidate);
+   void CountTracks();
+   
 	
    AliV0ReaderV1 *fV0Reader;    
    TClonesArray *fConversionGammas;
@@ -83,10 +89,11 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH2F *hElecPhi;
    TH1F *hElecNfindableClsTPC;
    TH1F *hPosiNfindableClsTPC;
+   TH2F *hElecAsymP;
    TList *fTrueList;
-   TH2F *hTrueResoulutionR;
-   TH2F *hTrueResoulutionZ;
-   TH2F *hTrueResoulutionPhi;
+   TH2F *hTrueResolutionR;
+   TH2F *hTrueResolutionZ;
+   TH2F *hTrueResolutionPhi;
    TH1F *hTrueGammaPt;
    TH1F *hTrueGammaPhi;
    TH1F *hTrueGammaEta;
@@ -102,8 +109,12 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH2F *hTrueElecPhi;
    TH1F *hTrueElecNfindableClsTPC;
    TH1F *hTruePosiNfindableClsTPC;
-    
-   ClassDef(AliAnalysisTaskConversionQA, 1);
+   TH2F *hTrueElecAsymP;
+   Bool_t fIsMC;
+   Int_t fnGammaCandidates;
+   Int_t *fMCStackPos;     //[fnGammaCandidates]
+   Int_t *fMCStackNeg;     //[fnGammaCandidates]
+   ClassDef(AliAnalysisTaskConversionQA, 2);
 };
 
 #endif

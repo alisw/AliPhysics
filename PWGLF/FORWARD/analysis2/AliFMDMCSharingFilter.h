@@ -58,8 +58,8 @@ public:
     fFMD2i(0),
     fFMD2o(0),
     fFMD3i(0),
-    fFMD3o(0), 
-    fOperComp(0)
+    fFMD3o(0) /*, 
+		fOperComp(0) */
   {}
   /** 
    * Constructor 
@@ -152,8 +152,8 @@ protected:
   TH2D* fFMD2o;      // ESD-MC correlation 
   TH2D* fFMD3i;      // ESD-MC correlation 
   TH2D* fFMD3o;      // ESD-MC correlation 
-  TH2I* fOperComp;   // Operation vs # trackrefs
-  ClassDef(AliFMDMCSharingFilter,2); //
+  // TH2I* fOperComp;   // Operation vs # trackrefs
+  ClassDef(AliFMDMCSharingFilter,3); //
 };
 
 #endif

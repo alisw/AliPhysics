@@ -21,6 +21,7 @@
 #include <TList.h>
 #include "AliForwardUtil.h"
 #include "AliFMDMultCuts.h"
+#include <TBits.h>
 class AliESDFMD;
 class TAxis;
 class TList;
@@ -55,7 +56,10 @@ class AliFMDFloatMap;
 class AliFMDSharingFilter : public TNamed
 {
 public: 
-  /** Status of a strip */
+  /** 
+   * Status of a strip 
+   * @deprecated Not used
+   */
   enum Status { 
     /** Nothing yet */
     kNone             = 1, 
@@ -146,6 +150,13 @@ public:
    * 
    */
   void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
+  /** 
+   * Set whether to consider invalid multiplicities as null (or empty)
+   * signal. 
+   * 
+   * @param flag If true, count invalids as empty
+   */
+  void SetInvalidIsEmpty(Bool_t flag) { fInvalidIsEmpty = flag; }
   
   /** 
    * Filter the input AliESDFMD object
@@ -221,10 +232,43 @@ public:
    * @param c Cuts object
    */  
   void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
-
+  /** 
+   * Add a dead strip
+   * 
+   * @param d  Detector
+   * @param r  Ring 
+   * @param s  Sector 
+   * @param t  Strip
+   */
   void AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t);
+  /** 
+   * Add a dead region in a detector ring
+   * 
+   * @param d   Detector
+   * @param r   Ring
+   * @param s1  First sector (inclusive)
+   * @param s2  Last sector (inclusive)
+   * @param t1  First strip (inclusive)
+   * @param t2  Last strip (inclusive)
+   */
   void AddDeadRegion(UShort_t d, Char_t r, UShort_t s1, UShort_t s2, 
 		     UShort_t t1, UShort_t t2);
+  /** 
+   * Add dead strips from a script.  The script is supposed to accept
+   * a pointer to this object (AliFMDSharingFilter) and then call
+   * AddDead or AddDeadRegion as needed.
+   * 
+   * @code 
+   * void deadstrips(AliFMDSharingFilter* filter)
+   * { 
+   *   filter->AddDead(...);
+   *   // ... and so on 
+   * }
+   * @endcode 
+   *
+   * @param script The script to read dead strips from. 
+   */
+  void AddDead(const Char_t* script);
 protected:
   /** 
    * Internal data structure to keep track of the histograms
@@ -263,17 +307,17 @@ protected:
     /** 
      * Clear this object
      */
-    void Clear(const Option_t* ="") { fNHits = 0; } 
+    // void Clear(const Option_t* ="") { fNHits = 0; } 
     /** 
      * Increase number of hits 
      * 
      */
-    void Incr() { fNHits++; } 
+    // void Incr() { fNHits++; } 
     /** 
      * Finish off 
      * 
      */
-    void Finish(); 
+    // void Finish(); 
     /** 
      * Make output 
      * 
@@ -293,15 +337,15 @@ protected:
     TH1D*     fDouble;       // Distribution of 2 signals after filter
     TH1D*     fTriple;       // Distribution of 3 signals after filter
     TH2D*     fSinglePerStrip;       // Distribution of 1 signal per strip
-    TH1D*     fDistanceBefore; //Distance between signals before sharing
-    TH1D*     fDistanceAfter; //Distance between signals after sharing    
+    // TH1D*     fDistanceBefore; //Distance between signals before sharing
+    // TH1D*     fDistanceAfter; //Distance between signals after sharing    
     TH2D*     fBeforeAfter;  // Correlation of before and after 
     TH2D*     fNeighborsBefore; // Correlation of neighbors 
     TH2D*     fNeighborsAfter; // Correlation of neighbors 
     TH2D*     fSum;          // Summed signal 
-    TH1D*     fHits;         // Distribution of hit strips. 
-    Int_t     fNHits;        // Number of hit strips per event
-    ClassDef(RingHistos,2);
+    // TH1D*     fHits;         // Distribution of hit strips. 
+    // Int_t     fNHits;        // Number of hit strips per event
+    ClassDef(RingHistos,3);
   };
   /** 
    * Get the ring histogram container 
@@ -328,64 +372,6 @@ protected:
 			 Char_t   r,
 			 UShort_t s,
 			 UShort_t t) const;
-  /** 
-   * The actual algorithm 
-   * 
-   * @param mult      The unfiltered signal in the strip
-   * @param eta       Psuedo rapidity 
-   * @param prevE     Previous strip signal (or 0)
-   * @param nextE     Next strip signal (or 0) 
-   * @param lowFlux   Whether this is a low flux event 
-   * @param d         Detector
-   * @param r         Ring 
-   * @param s         Sector 
-   * @param t         Strip
-   * @param usedPrev  Whether the previous strip was used in sharing or not
-   * @param usedThis  Wether this strip was used in sharing or not. 
-   * 
-   * @return The filtered signal in the strip
-   */
-  Double_t MultiplicityOfStrip(Double_t mult,
-			       Double_t eta,
-			       Double_t prevE,
-			       Double_t nextE,
-			       Bool_t   lowFlux,
-			       UShort_t d,
-			       Char_t   r,
-			       UShort_t s,
-			       UShort_t t,
-			       Bool_t&  usedPrev, 
-			       Bool_t&  usedThis) const;
-  /** 
-   * The actual algorithm 
-   * 
-   * @param thisE      This strips energy 
-   * @param prevE      Previous strip enery 
-   * @param nextE      Next strip energy 
-   * @param eta        Psuedo-rapidity
-   * @param lowFlux    Whether to use low flux settings
-   * @param d          Detector
-   * @param r          Ring 
-   * @param s          Sector 
-   * @param t          Strip
-   * @param prevStatus Previous status
-   * @param thisStatus This status 
-   * @param nextStatus Next status
-   * 
-   * @return The filtered signal in the strip
-   */
-  Double_t MultiplicityOfStrip(Double_t thisE,
-			       Double_t prevE,
-			       Double_t nextE,
-			       Double_t eta,
-			       Bool_t   lowFlux,
-			       UShort_t d,
-			       Char_t   r,
-			       UShort_t s,
-			       UShort_t t,
-			       Status&  prevStatus, 
-			       Status&  thisStatus, 
-			       Status&  nextStatus) const;
   /** 
    * Angle correct the signal 
    * 
@@ -436,10 +422,10 @@ protected:
   TList    fRingHistos;    // List of histogram containers
   // Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
-  TH2*     fSummed;        // Operations histogram 
+  // TH2*     fSummed;        // Operations histogram 
   TH2*     fHighCuts;      // High cuts used
   TH2*     fLowCuts;       // High cuts used
-  AliFMDFloatMap* fOper;   // Operation done per strip 
+  // AliFMDFloatMap* fOper;   // Operation done per strip 
   Int_t    fDebug;         // Debug level 
   Bool_t   fZeroSharedHitsBelowThreshold; //Whether to zero shared strip below cut
   AliFMDMultCuts fLCuts;    //Cuts object for low cuts
@@ -447,8 +433,11 @@ protected:
   Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
   Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
-  TArrayI  fExtraDead;      // List of extra dead channels
-  ClassDef(AliFMDSharingFilter,6); //
+  // TArrayI  fExtraDead;      // List of extra dead channels
+  TBits    fXtraDead;
+  Bool_t   fInvalidIsEmpty;  // Consider kInvalidMult as zero 
+
+  ClassDef(AliFMDSharingFilter,8); //
 };
 
 #endif

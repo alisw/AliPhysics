@@ -1,5 +1,3 @@
-// $Id$
-
 // runEMCalJetAnalysis.C
 // =====================
 // This macro can be used to run a jet analysis within the EMCal Jet Framework.
@@ -34,7 +32,7 @@ void AnalysisTrainCorrJetsLocal (
          Bool_t         useGrid             = kTRUE,                      // local or grid
 	 TString localfilename = "file_aodlhc10d.txt",
          const char*    gridMode            = "test",                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
-         const char*    pattern             = "*ESDs/pass2/AOD099/*AliAOD.root", //"*/*/AliAOD.root" "*ESDs/pass1/AOD106/*AliAOD.root",    // file pattern (here one can specify subdirs like passX etc.) (used on grid)
+         const char*    pattern             = "*ESDs/pass2/AOD135/*AliAOD.root", //"*/*/AliAOD.root" "*ESDs/pass1/AOD106/*AliAOD.root",    // file pattern (here one can specify subdirs like passX etc.) (used on grid)
          const char*    gridDir             = "/alice/data/2010/LHC10d",   // /alice/data/2011/LHC11d /alice/sim/2012/LHC12f2b   dir on alien, where the files live (used on grid)
          const char*    runNumbers          = /*126437*/" 126432 126425 126424 126422 126409 126408 126407 126406 126405 126404 126403 126359 126352 126351 126350 126285 126284 126283 126168 126167 126160 126158 126097 126090 126088 126082 126081 126078 126073 126008 126007 126004 125855 125851 125850 125849 125848 125847 125844 125843 125842 125633 125632 125630 125296 125134 125101 125100 125097 125085 125023 124751 122375 122374",             // considered run numbers (used on grid) /*LHC12g 188359 188362, LHC11a 146860 146859*/ /*LHC12f2b 158285 159582 */
 	 const Int_t nrunspermaster= 100,
@@ -46,8 +44,8 @@ void AnalysisTrainCorrJetsLocal (
          Bool_t         isMC                = kFALSE,                      // trigger, if MC handler should be used
 
          // Here you have to specify additional code files you want to use but that are not in aliroot
-         const char*    addCXXs             = "AliAnalysisTaskRecoJetCorrelations.cxx AliAnalysisTaskSEDmesonsForJetCorrelations.cxx",
-         const char*    addHs               = "AliAnalysisTaskRecoJetCorrelations.h AliAnalysisTaskSEDmesonsForJetCorrelations.h",
+         const char*    addCXXs             = "AliAnalysisTaskSEDmesonsFilterCJ.cxx AliAnalysisTaskFlavourJetCorrelations.cxx",
+         const char*    addHs               = "AliAnalysisTaskSEDmesonsFilterCJ.h AliAnalysisTaskFlavourJetCorrelations.h",
 
          // These two settings depend on the dataset and your quotas on the AliEN services
          Int_t          maxFilesPerWorker   = 20,
@@ -113,7 +111,7 @@ void AnalysisTrainCorrJetsLocal (
   if(!useGrid)
     cout << "Using " << localFiles.Data() << " as input file list.\n";
 
-  gROOT->LoadMacro("AddTasksCorrJets.C");
+  gROOT->LoadMacro("AddTasksFlavourJet.C");
   //List of arguments:
 
 // const Int_t iCandtype=1 /*0 = D0, 1=Dstar...*/,
@@ -127,7 +125,7 @@ void AnalysisTrainCorrJetsLocal (
 // const Bool_t bIsMC=kFALSE,
 // TString sText=""/*completes the name of the candidate task lists*/
 
-     AddTasksCorrJets(1,"/data/Work/jets/testEMCalJetFramework/CutFilesMB/DStartoKpipiCuts_new.root",10.,0.,1,runPeriod,0,pSel,isMC,"");
+  AddTasksFlavourJet(1,"/data/Work/jets/testEMCalJetFramework/CutFilesMB/DStartoKpipiCuts_new.root",10.,0.,1,runPeriod,0,pSel,isMC,"");
 
   // Set the physics selection for all given tasks
   TObjArray *toptasks = mgr->GetTasks();
@@ -259,7 +257,7 @@ void LoadLibs()
 
   // include paths
   gSystem->AddIncludePath("-Wno-deprecated");
-  gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/EMCAL");
+  gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/PWG/EMCAL -I$ALICE_ROOT/PWGJE/EMCALJetTasks");
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron -I$ALICE_ROOT/PWGHF/hfe");
   gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
 }

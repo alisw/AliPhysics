@@ -12,7 +12,7 @@
 #include "AliAnalysisTaskSingleMu.h"
 #endif
 
-AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t isMC = kFALSE)
+AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t isMC = kFALSE, TString changeName = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -27,19 +27,21 @@ AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t isMC = kFALSE)
   }
 
   // Create container
-  TString currName = "";
   TString outputfile = mgr->GetCommonFileName();
-  if ( ! outputfile.IsNull() ) outputfile += ":PWG3_SingleMu";
-  else outputfile = "SingleMuAnalysis.root";
+  if ( ! outputfile.IsNull() ) outputfile += ":PWG3_SingleMu" + changeName;
+  else outputfile = "SingleMuAnalysis" + changeName + ".root";
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SingleMuOut",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  TString containerName = "SingleMuOut" + changeName;
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName.Data(),TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
   // Create cuts
-  AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("TestStandardMuonTrackCuts", "TestStandardMuonTrackCuts");
+  TString cutsName = "StdMuonTrackCuts" + changeName;
+  AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts(cutsName.Data(), cutsName.Data());
   muonTrackCuts->SetIsMC(isMC);
 
   // Create task
-  AliAnalysisTaskSingleMu *singleMuAnalysisTask = new AliAnalysisTaskSingleMu("SingleMuTask", *muonTrackCuts);
+  TString taskName = "SingleMuTask" + changeName;
+  AliAnalysisTaskSingleMu *singleMuAnalysisTask = new AliAnalysisTaskSingleMu(taskName.Data(), *muonTrackCuts);
   if ( isMC ) singleMuAnalysisTask->SetTrigClassPatterns("ANY");
   mgr->AddTask(singleMuAnalysisTask);
 

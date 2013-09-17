@@ -13,12 +13,12 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   Double_t    jetradius2         = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
-  Double_t    jetBiasTrack       = 5,
-  Double_t    jetBiasClus        = 1000,
+  Double_t    jetBias            = 5,
+  Int_t       biasType           = 0,   //  0 = charged, 1 = neutral, 2 = both
   UInt_t      matching           = AliJetResponseMaker::kGeometrical,
   Double_t    maxDistance1       = 0.25,
   Double_t    maxDistance2       = 0.25,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *cutType            = "TPC",
   Int_t       ptHardBin          = -999,
   Double_t    minCent            = -999,
   Double_t    maxCent            = -999,
@@ -48,14 +48,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_%s_Track%d_Clus%d_",taskname,njets1,njets2,(Int_t)floor(jetBiasTrack),(Int_t)floor(jetBiasClus)));
-
-  if (type == AliAnalysisTaskEmcal::kTPC)
-    name += "TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "USER";
+  TString name(Form("%s_%s_%s_Bias%d_BiasType%d_%s",taskname,njets1,njets2,(Int_t)floor(jetBias),biasType,cutType));
 
   if (minCent != -999 && maxCent != -999) 
     name += Form("_Cent%d_%d", (Int_t)floor(minCent), (Int_t)floor(maxCent));
@@ -69,23 +62,35 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   else
     jetTask = new AliJetResponseMaker(name);
 
-  jetTask->SetAnaType(type);
-  jetTask->SetTracksName(ntracks1);
-  jetTask->SetClusName(nclusters1);
-  jetTask->SetJetsName(njets1);
-  jetTask->SetRhoName(nrho1);
-  jetTask->SetJetRadius(jetradius1);
-  jetTask->SetTracks2Name(ntracks2);
-  jetTask->SetClus2Name(nclusters2);
-  jetTask->SetJets2Name(njets2);
-  jetTask->SetRho2Name(nrho2);
-  jetTask->SetJet2Radius(jetradius2);
-  jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetPercAreaCut(jetareacut);
-  jetTask->SetPtBiasJetTrack(jetBiasTrack);
-  jetTask->SetPtBiasJetClus(jetBiasClus);
+  AliParticleContainer *trackCont1 = jetTask->AddParticleContainer(ntracks1);
+  AliClusterContainer *clusCont1 = jetTask->AddClusterContainer(nclusters1);
+  AliJetContainer *jetCont1 = jetTask->AddJetContainer(njets1, cutType, jetradius1);
+  jetCont1->SetRhoName(nrho1);
+  jetCont1->SetLeadingHadronType(biasType);
+  jetCont1->SetPtBiasJetTrack(jetBias);
+  jetCont1->SetPtBiasJetClus(jetBias);
+  jetCont1->SetJetPtCut(jetptcut);
+  jetCont1->SetPercAreaCut(jetareacut);
+  jetCont1->SetIsParticleLevel(kFALSE);
+  jetCont1->ConnectParticleContainer(trackCont1);
+  jetCont1->ConnectClusterContainer(clusCont1);
+
+  AliParticleContainer *trackCont2 = jetTask->AddParticleContainer(ntracks2);
+  AliClusterContainer *clusCont2 = jetTask->AddClusterContainer(nclusters2);
+  AliJetContainer *jetCont2 = jetTask->AddJetContainer(njets2, cutType, jetradius2);
+  jetCont2->SetRhoName(nrho2);
+  jetCont2->SetLeadingHadronType(biasType);
+  jetCont2->SetPtBiasJetTrack(jetBias);
+  jetCont2->SetPtBiasJetClus(jetBias);
+  jetCont2->SetJetPtCut(jetptcut);
+  jetCont2->SetPercAreaCut(jetareacut);
+  jetCont2->SetIsParticleLevel(kTRUE);
+  jetCont2->ConnectParticleContainer(trackCont2);
+  jetCont2->ConnectClusterContainer(clusCont2);
+
   jetTask->SetMatching(matching, maxDistance1, maxDistance2);
   jetTask->SetVzRange(-10,10);
+  jetTask->SetIsPythia(kTRUE);
   jetTask->SetPtHardBin(ptHardBin);
   jetTask->SetCentRange(minCent,maxCent);
 

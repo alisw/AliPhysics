@@ -28,7 +28,8 @@
  * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*
-AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0)
+AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
+		const Char_t* residuals="")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -74,19 +75,34 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0)
   // Set the maximum number of landaus to try to fit (max 5)
   task->GetEnergyFitter().SetNParticles(5);
   // Set the minimum number of entries in the distribution before
-  // trying to fit to the data
-  task->GetEnergyFitter().SetMinEntries(1000);
+  // trying to fit to the data - 10K seems the absolute minimum
+  task->GetEnergyFitter().SetMinEntries(10000);
   // Debug 
   task->SetDebug(debug);
 
+  TString resi(residuals);
+  resi.ToUpper();
+  AliFMDEnergyFitter::EResidualMethod rm = AliFMDEnergyFitter::kNoResiduals;
+  if (!resi.IsNull() && !resi.BeginsWith("no")) {
+    if (resi.BeginsWith("square")) 
+      rm = AliFMDEnergyFitter::kResidualSquareDifference;
+    else if (resi.BeginsWith("scale")) 
+      rm = AliFMDEnergyFitter::kResidualScaledDifference;
+    else // Anything else gives plain difference and errors in errors
+      rm = AliFMDEnergyFitter::kResidualDifference;
+  }
+  Printf("Got residual: \"%s\" -> %d", resi.Data(), rm);
+  task->GetEnergyFitter().SetStoreResiduals(rm);
+
   // --- Set limits on fits the energy -------------------------------
+  // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
   // Maximum relative error on parameters 
-  AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
+  // AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
   // Least weight to use 
-  AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+  // AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
   // Maximum value of reduced chi^2 
-  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
-    
+  // AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
+  
   // --- Make the output container and connect it --------------------
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 

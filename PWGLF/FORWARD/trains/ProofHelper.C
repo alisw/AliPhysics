@@ -24,6 +24,11 @@
 # include <AliAnalysisManager.h>
 # include <TEnv.h>
 # include <TChain.h>
+// For SendFile
+# include <TSystem.h>
+# include <TSlave.h>
+# include <TSocket.h>
+# include <cerrno>
 #else
 class TUrl;
 class TChain;
@@ -93,7 +98,8 @@ struct ProofHelper : public Helper
       fExtraPars(""),
       fExtraSrcs(""),
       fUsePars(false), 
-      fBasePars(false)
+      fBasePars(false),
+      fAuxFiles()
   {
     fOptions.Add("workers",  "N[x]", "Number of workers to use", 0);
     fOptions.Add("dsname",   "NAME", "Make output dataset", "");
@@ -105,6 +111,28 @@ struct ProofHelper : public Helper
     fOptions.Add("reset",    "soft|hard", "Reset cluster", "hard");
     if (!fUrl.GetUser() || fUrl.GetUser()[0] == '\0') 
       fUrl.SetUser(gSystem->GetUserInfo()->fUser);
+    fAuxFiles.SetOwner();
+  }
+  ProofHelper(const ProofHelper& o) 
+    : Helper(o),
+      fExtraLibs(""),
+      fExtraPars(""),
+      fExtraSrcs(""),
+      fUsePars(false), 
+      fBasePars(false),
+      fAuxFiles()
+  {}
+  ProofHelper& operator=(const ProofHelper& o) 
+  {
+    if (&o == this) return *this;
+    Helper::operator=(o);
+    fExtraLibs = o.fExtraLibs;
+    fExtraPars = o.fExtraPars;
+    fExtraSrcs = o.fExtraSrcs;
+    fUsePars   = o.fUsePars;
+    fBasePars  = o.fBasePars;
+    // fAuxFiles;
+    return *this;
   }
   /** 
    * Destructor 
@@ -121,7 +149,19 @@ struct ProofHelper : public Helper
   virtual Bool_t LoadLibrary(const TString& name, 
 			     Bool_t slaves=true)
   {
-    if (!fUsePars) {
+    Bool_t isBase = false;
+    if (!fBasePars) { 
+      if (name.EqualTo("STEERBase")      || 
+	  name.EqualTo("ESD")            || 
+	  name.EqualTo("AOD")            || 
+	  name.EqualTo("ANALYSIS")       || 
+	  name.EqualTo("OADB")           || 
+	  name.EqualTo("ANALYSISalice")  ||
+	  name.EqualTo("PWGLFforward2"))
+	isBase = true;
+    }
+	  
+    if (!fUsePars || isBase) {
       Int_t ret = gSystem->Load(MakeLibraryName(name));
       if (ret < 0) return false;
       if (slaves) fExtraLibs.Append(Form(":%s", name.Data()));
@@ -502,6 +542,18 @@ struct ProofHelper : public Helper
 	return false;
       }
     }
+
+    // --- Make PAR file of Aux Files --------------------------------
+    if (fAuxFiles.GetEntries() > 0) { 
+      TString name = TString::Format("%s_auxfiles", mgr->GetName());
+      ParUtilities::MakeAuxFilePAR(fAuxFiles, name);
+
+      if (gProof->UploadPackage(name.Data(), TProof::kRemoveOld) < 0) 
+	Error("ProofHelper::PostSetup", "Failed to upload PAR file %s", 
+	      name.Data());
+      else 
+	fExtraPars.Append(Form(":%s", name.Data()));
+    }
     
     // --- Load par files --------------------------------------------
     TString    tmp  = fExtraPars.Strip(TString::kBoth,':');
@@ -576,6 +628,88 @@ struct ProofHelper : public Helper
 	      << std::noboolalpha << std::endl;
   }
   /** 
+   * Link an auxilary file to working directory 
+   * 
+   * @param name Name of the file
+   * @param copy Copy rather than link
+   *
+   * @return true on success
+   */
+  virtual Bool_t AuxFile(const TString& name, bool copy=false)
+  {
+    Bool_t ret = Helper::AuxFile(name, copy);
+    if (!name.BeginsWith("/")) {
+      fAuxFiles.Add(new TObjString(name));
+    }
+#if 0
+    if (ret && name.EndsWith(".root")) { 
+      TFile* file = TFile::Open(name, "READ");
+      if (file) {
+	Info("AuxFile", "Adding input file %s", name.Data());
+	gProof->AddInputData(file, true);
+      }
+    }
+#endif
+    return ret;
+  }
+  Int_t SendFile(const TString& fileName) 
+  {
+    Int_t    bufSize = 32768;
+    Char_t   buf[bufSize];
+    Long64_t size = 0;
+    Long_t   id = 0, flags = 0, modtime = 0;
+    if (gSystem->GetPathInfo(fileName.Data(), &id, &size, &flags, &modtime)==1 
+	|| size <= 0) {
+      Error("SendFile", "Cannot stat %s", fileName.Data());
+      return -1;
+    }
+    TString fn(gSystem->BaseName(fileName.Data()));
+    TList*  slaves = 0; // gProof->GetListOfActiveSlaves(); - protected
+    TIter   next(slaves);
+    TSlave* sl   = 0;
+    Int_t   ret  = 0;
+    Int_t   fd = open(fileName.Data(), O_RDONLY);
+    while ((sl = static_cast<TSlave*>(next()))) {
+      if (!sl->IsValid()) continue;
+      if (sl->GetSlaveType() != TSlave::kSlave) continue;
+      
+      // Always binary (first 1), never forward (last 0).
+      snprintf(buf,bufSize,"%s %d %lld %d", fn.Data(), 1, size, 0);
+      if (sl->GetSocket()->Send(buf, kPROOF_SENDFILE) == -1) {
+	Warning("SendFile", "Could not send kPROOF_SENDFILE request");
+	continue;
+      }
+
+      // Go to the beginning of the file 
+      lseek(fd, 0, SEEK_SET);
+      Int_t len = 0;
+      do { 
+	while ((len = read(fd, buf, bufSize)) < 0 && 
+	       TSystem::GetErrno() == EINTR)
+	  TSystem::ResetErrno();
+	if (len < 0) { 
+	  Error("SendFile", "error reading input");
+	  close(fd);
+	  return -1;
+	}
+	if (len > 0 && sl->GetSocket()->SendRaw(buf, len) == -1) {
+	  Error("SendFile", "error writing to slave");
+	  sl = 0;
+	  break;
+	}
+      } while (len > 0);
+      ret ++;
+
+      // Wait for slave - private
+      // if (sl) gProof->Collect(sl,gEnv->GetValue("Proof.CollectTimeout",-1));
+    }
+
+    // Close the file 
+    close(fd);
+
+    return ret;
+  }
+  /** 
    * Path of output 
    * 
    * @return Path to output - possibly a data set
@@ -605,6 +739,7 @@ struct ProofHelper : public Helper
   TString fExtraSrcs;
   Bool_t  fUsePars;
   Bool_t  fBasePars;
+  TList   fAuxFiles;
 };
 #endif
 //

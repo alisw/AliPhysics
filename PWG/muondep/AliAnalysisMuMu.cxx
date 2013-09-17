@@ -19,7 +19,9 @@
 #include "AliAnalysisMuMu.h"
 
 #include "AliAnalysisMuMuBinning.h"
-#include "AliAnalysisMuMuResult.h"
+#include "AliAnalysisMuMuFnorm.h"
+#include "AliAnalysisMuMuGraphUtil.h"
+#include "AliAnalysisMuMuJpsiResult.h"
 #include "AliAnalysisMuMuSpectra.h"
 #include "AliAnalysisTriggerScalers.h"
 #include "AliCounterCollection.h"
@@ -38,6 +40,7 @@
 #include "TGrid.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "THashList.h"
 #include "TKey.h"
 #include "TLegend.h"
 #include "TLegendEntry.h"
@@ -173,16 +176,20 @@ fAssociatedSimulation(0x0)
   
   GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
   
-  if (IsSimulation())
+  if ( fCounterCollection )
   {
-    SetEventSelectionList("ALL");
-    SetDimuonTriggerList("CMULLO-B-NOPF-MUON");
-    SetFitTypeList("PSI1:1,COUNTJPSI:1");
-  }
+    if (IsSimulation())
+    {
+      SetEventSelectionList("ALL");
+      SetDimuonTriggerList("CMULLO-B-NOPF-MUON");
+      SetFitTypeList("COUNTJPSI:1");
+//    SetFitTypeList("PSI1:1,COUNTJPSI:1");
+    }
   
-  if ( strlen(associatedSimFileName) )
-  {
-    fAssociatedSimulation = new AliAnalysisMuMu(associatedSimFileName);
+    if ( strlen(associatedSimFileName) )
+    {
+      fAssociatedSimulation = new AliAnalysisMuMu(associatedSimFileName);
+    }
   }
 }
 
@@ -190,6 +197,14 @@ fAssociatedSimulation(0x0)
 AliAnalysisMuMu::~AliAnalysisMuMu()
 {
   // dtor
+  
+  if ( fAssociatedSimulation )
+  {
+    fAssociatedSimulation->Update();
+  }
+  
+  Update();
+  
   delete fCounterCollection;
   delete fBinning;
   delete fMergeableCollection;
@@ -410,43 +425,6 @@ void AliAnalysisMuMu::CleanAllSpectra()
 
   MC()->RemoveByType("AliAnalysisMuMuSpectra");
   Update();
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMu::Compact(TGraph& g)
-{
-  /// Compact (i.e. get the equivalent of 1 bin = 1 run number for an histogram)
-  /// the graph.
-  /// Only works if the x content of this graph represents run numbers. Otherwise
-  /// result is unpredictable ;-)
-  
-  if ( !g.GetN() ) return;
-  
-  TGraph* newgraph = static_cast<TGraph*>(g.Clone());
-  Double_t x,xerr,y,yerr;
-  TGraphErrors* ge = dynamic_cast<TGraphErrors*>(newgraph);
-  
-  TAxis* axis = g.GetXaxis();
-  
-  for ( Int_t i = 0; i < newgraph->GetN(); ++i )
-  {
-    g.GetPoint(i,x,y);
-    if (ge)
-    {
-      xerr = ge->GetErrorX(i);
-      yerr = ge->GetErrorY(i);
-    }
-    
-    g.SetPoint(i,i+0.5,y);
-    if (ge)
-    {
-      static_cast<TGraphErrors&>(g).SetPointError(i,0.5,yerr);
-    }
-    
-    axis->SetBinLabel(i,Form("%d",TMath::Nint(x)));
-  }
-  
-  
 }
 
 
@@ -939,6 +917,8 @@ Bool_t AliAnalysisMuMu::DecodeFileName(const char* filename,
                                              int& aodtrain,
                                              int& runnumber)
 {
+  // tries to extract period and pass numbers from a file name.
+  
   esdpass=aodtrain=runnumber=-1;
   period="";
   
@@ -946,6 +926,29 @@ Bool_t AliAnalysisMuMu::DecodeFileName(const char* filename,
   
   if (!sfile.BeginsWith("LHC") && !sfile.BeginsWith("SIM") ) 
   {
+    // does not look nice but let's try at least to get the period
+    
+    TObjArray* tmp = sfile.Tokenize(".");
+    
+    for ( Int_t j = 0; j < tmp->GetEntries(); ++j )
+    {
+      TString s = static_cast<TObjString*>(tmp->At(j))->String();
+      s.ToLower();
+      if ( s.BeginsWith("lhc") )
+      {
+        period = s;
+        period.ReplaceAll("lhc","LHC");
+        break;
+      }
+    }
+
+    delete tmp;
+    
+    if ( period.Length() )
+    {
+      return kTRUE;
+    }
+
     std::cerr << Form("filename %s does not start with LHC or SIM",filename) << std::endl;
     return kFALSE;
   }
@@ -1077,7 +1080,13 @@ void AliAnalysisMuMu::DrawMinv(const char* type,
   TString stype(type);
   stype.ToUpper();
   
-  TString spectraName(Form("/%s/%s/%s/%s/%s-%s-%s",eventType,trigger,centrality,pairCut,particle,stype.Data(),flavour));
+  TString spectraName(Form("/%s/%s/%s/%s/%s-%s",eventType,trigger,centrality,pairCut,particle,stype.Data()));
+  
+  if ( strlen(flavour))
+  {
+    spectraName += "-";
+    spectraName += flavour;
+  }
   
   AliAnalysisMuMuSpectra* spectra = static_cast<AliAnalysisMuMuSpectra*>(MC()->GetObject(spectraName.Data()));
   
@@ -1086,7 +1095,7 @@ void AliAnalysisMuMu::DrawMinv(const char* type,
   TObjArray* spectraBins(0x0);
   if ( spectra )
   {
-    spectraBins = spectra->Bins();
+    spectraBins = spectra->BinContentArray();
   }
   
   TCanvas* c = new TCanvas;
@@ -1108,13 +1117,13 @@ void AliAnalysisMuMu::DrawMinv(const char* type,
 
     AliDebug(1,name.Data());
     
-    AliAnalysisMuMuResult* spectraBin(0x0);
+    AliAnalysisMuMuJpsiResult* spectraBin(0x0);
     
     if ( spectraBins )
     {
       AliAnalysisMuMuResult* sr = static_cast<AliAnalysisMuMuResult*>(spectraBins->At(ci));
       
-      spectraBin = sr->SubResult(subresultname);
+      spectraBin = static_cast<AliAnalysisMuMuJpsiResult*>(sr->SubResult(subresultname));
       
       AliDebug(1,Form("spectraBin(%s)=%p",subresultname,spectraBin));
     }
@@ -1246,6 +1255,229 @@ AliAnalysisMuMu::ExpandPathName(const char* file)
 }
 
 //_____________________________________________________________________________
+void AliAnalysisMuMu::TwikiOutputFnorm(const char* series) const
+{
+  // make a twiki-compatible output of the Fnorm factor(s)
+  TObjArray* what = TString(series).Tokenize(",");
+  TObjString* s;
+  TObjArray graphs;
+  TIter next(what);
+
+  std::cout << "| *Run* |";
+  while ( ( s = static_cast<TObjString*>(next())) )
+  {
+    TGraph* g = static_cast<TGraph*>(MC()->GetObject(Form("/FNORM/GRAPHS/%s",s->String().Data())));
+    if (!g)
+    {
+      AliError(Form("Could not find graph for %s",s->String().Data()));
+      continue;
+    }
+    std::cout << " *" << s->String().Data();
+    if ( s->String().BeginsWith("RelDif") ) std::cout << " %";
+    std::cout << "*|";
+    graphs.Add(g);
+  }
+  
+  std::cout << endl;
+  
+  TGraphErrors* g0 = static_cast<TGraphErrors*>(graphs.First());
+  if (!g0) return;
+  
+  for ( Int_t i = 0; i < g0->GetN(); ++i )
+  {
+    TString msg;
+    
+    msg.Form("|%6d|",TMath::Nint(g0->GetX()[i]));
+    
+    for ( Int_t j = 0; j < graphs.GetEntries(); ++j )
+    {
+      TGraphErrors* g = static_cast<TGraphErrors*>(graphs.At(j));
+      
+      msg += TString::Format(" %6.2f +- %6.2f |",g->GetY()[i],g->GetEY()[i]);
+    }
+    
+    std::cout << msg.Data() << std::endl;
+  }
+  
+  next.Reset();
+  
+  std::cout << "|*Weigthed mean (*)*|";
+
+  AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(MC()->GetObject("/FNORM/RESULTS/Fnorm"));
+  
+  if (!r)
+  {
+    AliError("Could not find Fnorm result !");
+    return;
+  }
+
+  
+  while ( ( s = static_cast<TObjString*>(next())) )
+  {
+    TString var("Fnorm");
+    TString unit;
+    
+    if ( s->String().BeginsWith("Fnorm") )
+    {
+      r = static_cast<AliAnalysisMuMuResult*>(MC()->GetObject("/FNORM/RESULTS/Fnorm"));
+    }
+    else if ( s->String().BeginsWith("RelDif") )
+    {
+      r = static_cast<AliAnalysisMuMuResult*>(MC()->GetObject("/FNORM/RESULTS/RelDif"));
+      unit = "%";
+    }
+      
+    r->Exclude("*");
+    r->Include(s->String().Data());
+
+    std::cout << Form(" * %5.2f +- %5.2f %s * |",
+                      r->GetValue(var.Data()),
+                      r->GetErrorStat(var.Data()),
+                      unit.Data());
+  }
+  
+  next.Reset();
+  
+  std::cout << std::endl;
+
+  std::cout << "|*RMS*|";
+
+  while ( ( s = static_cast<TObjString*>(next())) )
+  {
+    TString var("Fnorm");
+    
+    if ( s->String().BeginsWith("Fnorm") )
+    {
+      r = static_cast<AliAnalysisMuMuResult*>(MC()->GetObject("/FNORM/RESULTS/Fnorm"));
+    }
+    else if ( s->String().BeginsWith("RelDif") )
+    {
+      r = static_cast<AliAnalysisMuMuResult*>(MC()->GetObject("/FNORM/RESULTS/RelDif"));
+    }
+    
+    r->Exclude("*");
+    r->Include(s->String().Data());
+    
+    Double_t d = 100.0*r->GetRMS(var.Data())/r->GetValue(var.Data());
+    
+    std::cout << Form(" * %5.2f (%5.2f %%) * |",
+                      r->GetRMS(var.Data()),d);
+  }
+  
+  std::cout << std::endl;
+  std::cout << "(*) weight is the number of CMUL7-B-NOPF-MUON triggers (physics-selected and pile-up corrected) in each run" << std::endl;
+  
+  delete what;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::FigureOutputFnorm(const char* filelist)
+{
+  /// Make some figure of the Fnorm factors for files in filelist
+  
+  TObjArray* periods = ReadFileList(filelist);
+  
+  if (!periods || periods->IsEmpty() ) return;
+  
+  TIter next(periods);
+  
+  TObjArray fnormoffline1;
+  TObjArray fnormoffline2;
+  TObjArray reldif;
+  TObjArray correctionPSMUL;
+  TObjArray correctionPSMB;
+  TObjArray correctionPUPS;
+  TObjArray correctionPSRatio;
+  
+  fnormoffline1.SetOwner(kTRUE);
+  fnormoffline2.SetOwner(kTRUE);
+  reldif.SetOwner(kTRUE);
+  correctionPUPS.SetOwner(kTRUE);
+  correctionPSMUL.SetOwner(kTRUE);
+  correctionPSMB.SetOwner(kTRUE);
+  correctionPSRatio.SetOwner(kTRUE);
+  
+  for ( Int_t i = 0; i <= periods->GetLast(); ++i )
+  {
+    TString period("unknown");
+    
+    TString filename(static_cast<TObjString*>(periods->At(i))->String());
+    
+    Int_t dummy(0);
+    
+    if (!DecodeFileName(filename,period,dummy,dummy,dummy))
+    {
+      continue;
+    }
+    
+    if ( gSystem->AccessPathName(filename) )
+    {
+      AliErrorClass(Form("Could not find file %s. Skipping it.",filename.Data()));
+      continue;
+      
+    }
+    
+    AliAnalysisMuMu m(filename.Data());
+    
+    fnormoffline1.Add(m.MC()->GetObject("/FNORM/GRAPHS/FnormOffline1PUPS")->Clone());
+    fnormoffline2.Add(m.MC()->GetObject("/FNORM/GRAPHS/FnormOffline2PUPS")->Clone());
+    
+    
+    correctionPSMUL.Add(m.MC()->GetObject("/FNORM/GRAPHS/CorrectionPSMUL")->Clone());
+    correctionPSMB.Add(m.MC()->GetObject("/FNORM/GRAPHS/CorrectionPSMB")->Clone());
+    correctionPUPS.Add(m.MC()->GetObject("/FNORM/GRAPHS/CorrectionPUPSMB")->Clone());
+    
+    correctionPSRatio.Add(m.MC()->GetObject("/FNORM/GRAPHS/CorrectionPSRatio")->Clone());
+    
+    
+    reldif.Add(m.MC()->GetObject("/FNORM/GRAPHS/RelDifFnormScalersPUPSvsFnormOffline2PUPS")->Clone());
+
+  }
+
+  AliAnalysisMuMuGraphUtil gu(fgOCDBPath);
+  
+  gu.ShouldDrawPeriods(kTRUE);
+  
+  TObjArray a;
+  
+  a.Add(gu.Combine(fnormoffline1,fgIsCompactGraphs));
+  a.Add(gu.Combine(fnormoffline2,fgIsCompactGraphs));
+
+  Double_t ymin(0.0);
+  Double_t ymax(3000.0);
+  
+  new TCanvas("fnormoffline","fnormoffline");
+  
+  gu.PlotSameWithLegend(a,ymin,ymax);
+  
+  new TCanvas("corrections","corrections");
+  
+  a.Clear();
+  
+  a.Add(gu.Combine(correctionPSMB,fgIsCompactGraphs));
+  a.Add(gu.Combine(correctionPSMUL,fgIsCompactGraphs));
+  a.Add(gu.Combine(correctionPUPS,fgIsCompactGraphs));
+  
+  gu.PlotSameWithLegend(a,0.8,1.2);
+
+  new TCanvas("psratio","psratio");
+  
+  a.Clear();
+  
+  a.Add(gu.Combine(correctionPSRatio,fgIsCompactGraphs));
+  
+  gu.PlotSameWithLegend(a,0.8,1.2);
+  
+  new TCanvas("offlinevsscalers","fig:offlinevsscalers");
+  
+  a.Clear();
+  
+  a.Add(gu.Combine(reldif,fgIsCompactGraphs));
+
+  gu.PlotSameWithLegend(a,-15,15);
+}
+
+//_____________________________________________________________________________
 TFile* 
 AliAnalysisMuMu::FileOpen(const char* file)
 {
@@ -1316,7 +1548,12 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     delete bins;
     return 0x0;
   }
-  
+
+  TObjArray* runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
+  Int_t nruns = runs->GetEntries();
+  delete runs;
+                            
+
 //  binning.Print();
   
   AliAnalysisMuMuSpectra* spectra(0x0);
@@ -1353,14 +1590,15 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     hminv = static_cast<TH1*>(hminv->Clone(Form("minv%d",n++)));
     
     
-    AliAnalysisMuMuResult* r = new AliAnalysisMuMuResult(*hminv,
-                                                         trigger,
-                                                         eventType,
-                                                         pairCut,
-                                                         centrality,
-                                                         *bin);
+    AliAnalysisMuMuJpsiResult* r = new AliAnalysisMuMuJpsiResult(*hminv,
+                                                                 trigger,
+                                                                 eventType,
+                                                                 pairCut,
+                                                                 centrality,
+                                                                 *bin);
     
     r->SetNofTriggers(ntrigger);
+    r->SetNofRuns(nruns);
     
     nextFitType.Reset();
     
@@ -1444,7 +1682,7 @@ AliAnalysisMuMu::GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const
   
   if ( r )
   {
-    AliAnalysisMuMuResult* r1 = r->SubResult("JPSI:1");
+    AliAnalysisMuMuJpsiResult* r1 = dynamic_cast<AliAnalysisMuMuJpsiResult*>(r->SubResult("JPSI:1"));
     if  (r1)
     {
       TF1* func = static_cast<TF1*>(r1->Minv()->GetListOfFunctions()->FindObject("fitTotal"));
@@ -1498,8 +1736,8 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetSpectra(const char* what, const char
   sflavour.ToUpper();
   
   TString spectraName(Form("/PSALL/%s/PP/%s/PSI-%s",
-                           First(fgDefaultDimuonTriggers).Data(),
-                           First(fgDefaultPairSelectionList).Data(),
+                           First(fDimuonTriggers).Data(),
+                           First(fPairSelectionList).Data(),
                            swhat.Data()));
 
   if (sflavour.Length()>0)
@@ -1623,6 +1861,8 @@ Bool_t AliAnalysisMuMu::IsSimulation() const
 {
   // whether or not we have MC information
   
+  if (!fMergeableCollection) return kFALSE;
+  
   return ( fMergeableCollection->Histo(Form("/INPUT/%s/MinvUS",fgDefaultEventSelectionForSimulations.Data())) != 0x0 );
 }
 
@@ -1675,14 +1915,15 @@ AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour)
       binning->AddBin("psi",swhat->String().Data());
     }
     
-    std::cout << "++++++++++++ swhat=" << swhat->String().Data() << std::endl;
+    StdoutToAliDebug(1,std::cout << "++++++++++++ swhat=" << swhat->String().Data() << std::endl;);
     
     if (!binning)
     {
       AliError("oups. binning is NULL");
       continue;
     }
-    binning->Print();
+    
+    StdoutToAliDebug(1,binning->Print(););
     
     nextTrigger.Reset();
     
@@ -1733,7 +1974,7 @@ AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour)
           
             fMergeableCollection->Adopt(id.Data(),spectra);
             
-            spectra->Print();
+            StdoutToAliDebug(1,spectra->Print(););
           }
         }
       }
@@ -1745,7 +1986,7 @@ AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour)
   delete eventTypeArray;
   delete pairCutArray;
 
-  timer.Print();
+  StdoutToAliDebug(1,timer.Print(););
 
   if (nfits)
   {
@@ -1758,6 +1999,144 @@ AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour)
   
   return nfits;
   
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::LatexOutputFnorm(const char* filelist, const char* subresultnames, Bool_t rms)
+{
+  /// Make a LaTeX output of the Fnorm factors for each file in filelist
+  
+  TObjArray* periods = ReadFileList(filelist);
+  
+  if (!periods || periods->IsEmpty() ) return;
+  
+  TIter next(periods);
+  
+  TObjArray* subresults = TString(subresultnames).Tokenize(",");
+  TIter nextSub(subresults);
+
+  Int_t ic(0);
+  Int_t iclast = subresults->GetLast();
+  
+
+  std::cout << "\\begin{tabular}{l|r|r|r|r}" << std::endl;
+  
+  std::cout << "Period & ";
+  
+  TObjString* rname;
+
+  
+  while ( ( rname = static_cast<TObjString*>(nextSub())) )
+  {
+    std::cout << rname->String().Data();
+    
+    if ( ic != iclast )
+    {
+      std::cout << " & ";
+    }
+    ++ic;
+  }
+  
+  std::cout << "\\\\" << std::endl << "\\hline" << std::endl;
+
+  for ( Int_t i = 0; i <= periods->GetLast(); ++i )
+  {
+    TString period("unknown");
+    
+    TString filename(static_cast<TObjString*>(periods->At(i))->String());
+    
+    Int_t dummy(0);
+    
+    if (!DecodeFileName(filename,period,dummy,dummy,dummy))
+    {
+      continue;
+    }
+
+    if ( gSystem->AccessPathName(filename) )
+    {
+      AliErrorClass(Form("Could not find file %s. Skipping it.",filename.Data()));
+      continue;
+      
+    }
+    
+    AliAnalysisMuMu m(filename.Data());
+    
+    AliMergeableCollection* norm = m.MC()->Project("/FNORM/RESULTS/");
+  
+    AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(norm->GetObject("Fnorm")->Clone());
+  
+    nextSub.Reset();
+    
+    if (!r)
+    {
+      AliErrorClass(Form("Could not get result for file %s.",filename.Data()));
+      continue;    
+    }
+
+    std::cout << period << " & ";
+    
+    next.Reset();
+    
+    ic = 0;
+    
+    while ( ( rname = static_cast<TObjString*>(nextSub())) )
+    {
+      TString name(rname->String());
+      TString var("Fnorm");
+      
+      if ( name.BeginsWith("RelDif"))
+      {
+        r = static_cast<AliAnalysisMuMuResult*>(norm->GetObject("RelDif"));
+        
+      }
+      else if ( name.BeginsWith("Correction"))
+      {
+        r = static_cast<AliAnalysisMuMuResult*>(norm->GetObject("Correction"));
+      }
+      else
+      {
+        r = static_cast<AliAnalysisMuMuResult*>(norm->GetObject("Fnorm"));
+      }
+      r->Exclude("*");
+      r->Include(name.Data());
+
+      if ( rms )
+      {
+        std::cout << Form(" $%7.2f (%5.2f \%%)$ ",
+                          r->GetRMS(var.Data()),
+                          100.0*r->GetRMS(var.Data())/r->GetValue(var.Data()));
+        
+      }
+      else
+      {
+        std::cout << Form(" $%7.2f \\pm %5.3f$  ",r->GetValue(var.Data()),
+                          r->GetErrorStat(var.Data()));
+      }
+      
+      if ( ic != iclast )
+      {
+        std::cout << "&";
+      }
+      
+      ++ic;
+    }
+
+    if ( i != periods->GetLast() )
+    {
+      std::cout << "\\\\";
+    }
+
+    std::cout << std::endl;
+
+    delete norm;
+  }
+  
+
+  std::cout << "\\end{tabular}" << std::endl;
+  
+  
+  
+  delete periods;
 }
 
 //_____________________________________________________________________________
@@ -1942,7 +2321,7 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
     {
       TObjArray* a = static_cast<TObjArray*>(m->GetValue(str->String().Data()));
       if (!a) continue;
-      AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(a->FindObject(triggerClass.Data()));
+      AliAnalysisMuMuJpsiResult* r = static_cast<AliAnalysisMuMuJpsiResult*>(a->FindObject(triggerClass.Data()));
       if (!r) continue;
 
       TString period;
@@ -2080,7 +2459,7 @@ AliAnalysisMuMu::PlotJpsiEvolution(const char* resultFile, const char* triggerLi
     
     if ( CompactGraphs() )
     {
-      Compact(*g);
+      AliAnalysisMuMuGraphUtil::Compact(*g);
     }
     
     g->Draw("P");
@@ -2293,7 +2672,7 @@ TObjArray*
 AliAnalysisMuMu::ReadFileList(const char* filelist)
 {
   //
-  // read the filelist and try to order it by runnumber
+  // read the filelist and try to order it by runnumber (or periods)
   //
   // filelist can either be a real filelist (i.e. a text file containing
   // root filenames) or a root file itself.
@@ -2312,8 +2691,8 @@ AliAnalysisMuMu::ReadFileList(const char* filelist)
     return files;
   }
   
-  std::set<int> runnumbers;
-  std::map<int,std::string> filemap;
+  std::set<std::string> sorting;
+  std::map<std::string,std::string> filemap;
   
   std::ifstream in(sfilelist.Data());
   
@@ -2322,24 +2701,32 @@ AliAnalysisMuMu::ReadFileList(const char* filelist)
   
   while ( in.getline(line,1022,'\n') )
   {
+    TString sline(line);
+    if (sline.BeginsWith("#")) continue;
+    
     DecodeFileName(line,period,esdpass,aodtrain,runnumber);
     
     AliDebugClass(1,Form("line %s => period %s esdpass %d aodtrain %d runnumber %09d",
                          line,period.Data(),esdpass,aodtrain,runnumber));
     
-    filemap.insert(std::make_pair<int,std::string>(runnumber,line));
-    runnumbers.insert(runnumber);
+    TString key(Form("%d",runnumber));
+    
+    if ( runnumber <= 0 )
+    {
+      key = period;
+    }
+    sorting.insert(key.Data());
+    filemap.insert(std::make_pair<std::string,std::string>(key.Data(),line));
   }
   
   in.close();
   
-  std::set<int>::const_iterator it;
-  
-  for ( it = runnumbers.begin(); it != runnumbers.end(); ++it )
+  std::set<std::string>::const_iterator it;
+    
+  for ( it = sorting.begin(); it != sorting.end(); ++it )
   {
     files->Add(new TObjString(filemap[*it].c_str()));
   }
-  
   return files;
 }
 
@@ -2449,7 +2836,7 @@ Bool_t AliAnalysisMuMu::SetCorrectionPerRun(const TGraph& corr, const char* form
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMu::SetNofInputParticles(AliAnalysisMuMuResult& r)
+void AliAnalysisMuMu::SetNofInputParticles(AliAnalysisMuMuJpsiResult& r)
 {
   /// Set the "NofInput" variable(s) of one result
   
@@ -2599,11 +2986,18 @@ void AliAnalysisMuMu::Update()
 {
   /// update the current file with memory
  
+  if (!CC() || !MC()) return;
+  
   ReOpen(fFilename,"UPDATE");
 
-  MC()->Write("MC",TObject::kSingleKey);
+  if (MC())
+  {
+    MC()->Write("MC",TObject::kSingleKey|TObject::kOverwrite);
+  }
 
   ReOpen(fFilename,"READ");
+  
+  GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
 }
 
 //_____________________________________________________________________________
@@ -2668,6 +3062,26 @@ Bool_t AliAnalysisMuMu::Upgrade()
   delete f;
   
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::ComputeFnorm()
+{
+  /// Compute the CMUL to CINT ratio(s)
+  
+  if (!CC()) return;
+  
+  MC()->Prune("/FNORM");
+  
+  AliAnalysisMuMuFnorm computer(*(CC()),AliAnalysisMuMuFnorm::kMUL,fgOCDBPath.Data(),fgIsCompactGraphs);
+  
+  computer.ComputeFnorm();
+
+  AliMergeableCollection* fnorm = computer.DetachMC();
+  
+  MC()->Attach(fnorm,"/FNORM/");
+  
+  Update();
 }
 
 //_____________________________________________________________________________
@@ -2750,22 +3164,22 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* type, const ch
   TIter nextBin(bins);
   AliAnalysisMuMuBinning::Range* bin;
   Int_t i(0);
-  AliAnalysisMuMuResult* r;
+  AliAnalysisMuMuJpsiResult* r;
   
   while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
   {
-    r = static_cast<AliAnalysisMuMuResult*>(realSpectra->Bins()->At(i));
+    r = static_cast<AliAnalysisMuMuJpsiResult*>(realSpectra->BinContentArray()->At(i));
    
     StdoutToAliDebug(1,std::cout << "bin=";r->Print(););
     
-    AliAnalysisMuMuResult* rsim = static_cast<AliAnalysisMuMuResult*>(simSpectra->Bins()->At(i));
+    AliAnalysisMuMuJpsiResult* rsim = static_cast<AliAnalysisMuMuJpsiResult*>(simSpectra->BinContentArray()->At(i));
     
     Double_t mbeq = nofCINT7w0MUL / ( nofCINT7 * nofCMUL7);
     Double_t mbeqError = mbeq * AliAnalysisMuMuResult::ErrorABC( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
                                                                 nofCINT7,TMath::Sqrt(nofCINT7),
                                                                 nofCMUL7,TMath::Sqrt(nofCMUL7));
     
-    r->Set("MBR",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+    r->Set("Fnorm",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
                                                                                                 nofCINT7,TMath::Sqrt(nofCINT7)));
     
     Double_t yield =  r->GetValue("CorrNofJpsi") * mbeq;
@@ -2787,77 +3201,6 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* type, const ch
   
   return realSpectra;
 }
-
-////_____________________________________________________________________________
-//AliAnalysisMuMuSpectra* AliAnalysisMuMu::ComputeYield(const char* realFile, const char* simFile,
-//                                                      const  char* type)
-//{
-//  const char* accEffSubResultName="COUNTJPSI-1";
-//
-//  AliAnalysisMuMu real(realFile);
-//  AliAnalysisMuMu sim(simFile);
-//  
-//  
-//  AliAnalysisMuMuSpectra* realSpectra = static_cast<AliAnalysisMuMuSpectra*>(real.MC()->GetObject(Form("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
-//  AliAnalysisMuMuSpectra* simSpectra = static_cast<AliAnalysisMuMuSpectra*>(sim.MC()->GetObject(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",type)));
-//  
-//  if ( !realSpectra )
-//  {
-//    AliErrorClass("could not get real spectra");
-//    return 0x0;
-//  }
-//  
-//  if ( !simSpectra)
-//  {
-//    AliErrorClass("could not get sim spectra");
-//    return 0x0;
-//  }
-//  
-//  AliAnalysisMuMuSpectra* corrSpectra = static_cast<AliAnalysisMuMuSpectra*>(realSpectra->Clone());
-//  corrSpectra->Correct(*simSpectra,"Jpsi",accEffSubResultName);
-//  
-//  Double_t nofCMUL7 = real.CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL"));
-//  Double_t nofCINT7 = real.CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:PSALL"));
-//  Double_t nofCINT7w0MUL = real.CC()->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:PSALL"));
-//  
-//  AliAnalysisMuMuBinning* binning = corrSpectra->Binning();
-//  TObjArray* bins = binning->CreateBinObjArray();
-//  TIter nextBin(bins);
-//  AliAnalysisMuMuBinning::Range* bin;
-//  Int_t i(0);
-//  AliAnalysisMuMuResult* r;
-//  
-//  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
-//  {
-//    r = static_cast<AliAnalysisMuMuResult*>(corrSpectra->Bins()->At(i));
-//
-//    AliAnalysisMuMuResult* rsim = static_cast<AliAnalysisMuMuResult*>(simSpectra->Bins()->At(i));
-//    
-//    Double_t mbeq = nofCINT7w0MUL / ( nofCINT7 * nofCMUL7);
-//    Double_t mbeqError = mbeq * AliAnalysisMuMuResult::ErrorABC( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
-//                                                                nofCINT7,TMath::Sqrt(nofCINT7),
-//                                                                nofCMUL7,TMath::Sqrt(nofCMUL7));
-//    
-//    r->Set("MBR",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
-//                                                                                                nofCINT7,TMath::Sqrt(nofCINT7)));
-//    
-//    Double_t yield =  r->GetValue("CorrNofJpsi") * mbeq;
-//    
-//    Double_t yieldError = yield * AliAnalysisMuMuResult::ErrorAB( r->GetValue("CorrNofJpsi"), r->GetErrorStat("CorrNofJpsi"),
-//                                                                 mbeq,mbeqError);
-//    
-//    r->Set("YJpsi",yield,yieldError);
-//        
-//    r->Set("NofInputJpsi",rsim->GetValue("NofInputJpsi",accEffSubResultName),rsim->GetErrorStat("NofInputJpsi",accEffSubResultName));
-//    r->Set("AccEffJpsi",rsim->GetValue("AccEffJpsi",accEffSubResultName),rsim->GetErrorStat("AccEffJpsi",accEffSubResultName));
-//    
-//    ++i;
-//  }
-//
-//  delete bins;
-//  
-//  return corrSpectra;
-//}
 
 //_____________________________________________________________________________
 AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* simFile, const char* type,
@@ -2913,7 +3256,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
   TIter nextBin(bins);
   AliAnalysisMuMuBinning::Range* bin;
   Int_t i(0);
-  AliAnalysisMuMuResult* r;
+  AliAnalysisMuMuJpsiResult* r;
   
   Int_t n = bins->GetLast();
   
@@ -2959,16 +3302,16 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
     AliInfoClass(Form("y range : LAB %f ; %f CMS %f ; %f -> ynorm : %f ; %f -> BR x sigmapp = %f",
                       ylowlab,yhighlab,ylowcms,yhighcms,ylownorm,yhighnorm,brsigmapp));
     
-    r = static_cast<AliAnalysisMuMuResult*>(corrSpectra->Bins()->At(i)->Clone());
+    r = static_cast<AliAnalysisMuMuJpsiResult*>(corrSpectra->BinContentArray()->At(i)->Clone());
 
-    AliAnalysisMuMuResult* rsim = static_cast<AliAnalysisMuMuResult*>(simSpectra->Bins()->At(i));
+    AliAnalysisMuMuJpsiResult* rsim = static_cast<AliAnalysisMuMuJpsiResult*>(simSpectra->BinContentArray()->At(i));
     
     Double_t mbeq = nofCINT7w0MUL / ( nofCINT7 * nofCMUL7);
     Double_t mbeqError = mbeq * AliAnalysisMuMuResult::ErrorABC( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
                                          nofCINT7,TMath::Sqrt(nofCINT7),
                                          nofCMUL7,TMath::Sqrt(nofCMUL7));
     
-    r->Set("MBR",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
+    r->Set("Fnorm",nofCINT7/nofCINT7w0MUL,(nofCINT7/nofCINT7w0MUL)*AliAnalysisMuMuResult::ErrorAB( nofCINT7w0MUL, TMath::Sqrt(nofCINT7w0MUL),
                                                                       nofCINT7,TMath::Sqrt(nofCINT7)));
     
     Double_t yield =  r->GetValue("CorrNofJpsi") * mbeq;
@@ -3009,7 +3352,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
       j = n-i;
     }
     
-    r = static_cast<AliAnalysisMuMuResult*>(finalResults.At(j));
+    r = static_cast<AliAnalysisMuMuJpsiResult*>(finalResults.At(j));
 
     bin = static_cast<AliAnalysisMuMuBinning::Range*>(finalBins.At(j));
     
@@ -3023,7 +3366,141 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
 }
 
 //_____________________________________________________________________________
-TGraph* AliAnalysisMuMu::ResultEvolution(const char* runlist, const char* period, const char* what, Bool_t forceRecomputation)
+void AliAnalysisMuMu::ComputeJpsi(const char* runlist, const char* prefix, const char* what, const char* binningFlavour)
+{
+  /// Call the Jpsi method for each file
+  
+  std::vector<int> runs;
+  AliAnalysisTriggerScalers::ReadIntegers(runlist,runs);
+  
+  for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i )
+  {
+    Int_t runNumber = runs[i];
+    
+    TString filename(Form("RUNBYRUN/%s_%09d.saf.root",prefix,runNumber));
+    
+    if ( gSystem->AccessPathName(filename.Data())==kTRUE ) continue;
+    
+    AliAnalysisMuMu m(filename.Data());
+    m.Jpsi(what,binningFlavour);
+  }
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuSpectra*
+AliAnalysisMuMu::CombineSpectra(const char* runlist,
+                                const char* realPrefix,
+                                const char* simPrefix,
+                                const char* quantity,
+                                const char* variable,
+                                const char* binningFlavour)
+{
+  std::vector<int> runs;
+  AliAnalysisTriggerScalers::ReadIntegers(runlist,runs);
+
+  std::vector<double> vw;
+  std::vector<AliAnalysisMuMuSpectra*> vspectra;
+  
+  for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i )
+  {
+    Int_t runNumber = runs[i];
+
+    TString filename(Form("RUNBYRUN/%s_%09d.saf.root",realPrefix,runNumber));
+  
+    AliAnalysisMuMu mreal(filename.Data());
+
+    std::cout << filename.Data() << std::flush << std::endl;
+    
+    if ( !mreal.CC() || !mreal.MC() )
+    {
+      AliErrorClass(Form("Have to skip %s CC=%p MC=%p",filename.Data(),mreal.CC(),mreal.MC()));
+      continue;
+    }
+
+    TGraph* g = static_cast<TGraph*>(mreal.MC()->GetObject("/FNORM/GRAPHS/NMBeqBest2"));
+      
+    if (!g)
+    {
+      mreal.ComputeFnorm();
+      g  = static_cast<TGraph*>(mreal.MC()->GetObject("/FNORM/GRAPHS/NMBeqBest2"));
+    }
+
+    if (!g) continue;
+    
+    if ( TMath::Nint(g->GetX()[0]) != runNumber )
+    {
+      AliErrorClass("Wrong run number in NMBeqBest2 graph !");
+      continue;
+    }
+    
+    filename.Form("RUNBYRUN/%s_%09d.saf.root",simPrefix,runNumber);
+
+    AliAnalysisMuMu msim(filename.Data());
+
+    TString spectraName(Form("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-%s",variable));
+    if (strlen(binningFlavour))
+    {
+      spectraName += "-";
+      spectraName += binningFlavour;
+    }
+    
+    AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject(spectraName.Data()));
+    
+    if (!s)
+    {
+      msim.Jpsi(quantity,binningFlavour);
+
+      s = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject(spectraName.Data()));
+    }
+    
+    if (!s)
+    {
+      AliErrorClass(Form("Could not find spectra for sim %s",filename.Data()));
+      continue;
+    }
+    
+    vw.push_back(g->GetY()[0]);
+    vspectra.push_back(static_cast<AliAnalysisMuMuSpectra*>(s->Clone()));
+  }
+  
+  Double_t sumw(0.0);
+  
+  for ( std::vector<int>::size_type i = 0; i < vw.size(); ++i )
+  {
+    sumw += vw[i];
+    vspectra[i]->Print();
+  }
+  
+  // normalize the weights
+  TList list;
+  list.SetOwner(kTRUE);
+  
+  for ( std::vector<int>::size_type i = 0; i < vw.size(); ++i )
+  {
+    vw[i] /= sumw;
+    
+    vspectra[i]->SetWeight(vw[i]);
+
+    if ( i > 0 ) list.Add(vspectra[i]);
+  }
+
+  std::cout << "before merging" << std::endl;
+  for ( std::vector<int>::size_type i = 0; i < vw.size(); ++i )
+  {
+    std::cout << " ---------------- " << i << std::endl;
+    
+    vspectra[i]->Print();
+  }
+
+  vspectra[0]->Merge(&list);
+  
+
+  return vspectra[0];
+}
+
+
+//_____________________________________________________________________________
+TGraph* AliAnalysisMuMu::ResultEvolution(const char* runlist, const char* realPrefix, const char* simPrefix, const char* what, Bool_t forceRecomputation)
 {
   std::vector<int> runs;
   AliAnalysisTriggerScalers::ReadIntegers(runlist,runs);
@@ -3031,104 +3508,139 @@ TGraph* AliAnalysisMuMu::ResultEvolution(const char* runlist, const char* period
   TGraphErrors* g = new TGraphErrors(runs.size());
   
   TString direction("Pbp");
+  TString check(realPrefix);
+  check.ToUpper();
   
-  if (TString(period) == "LHC13b" ||
-    TString(period) == "LHC13c" ||
-      TString(period) == "LHC13d" ||
-      TString(period) == "LHC13e"
+  if (check.Contains("LHC13B") ||
+    check.Contains("LHC13C") ||
+      check.Contains("LHC13D") ||
+      check.Contains("LHC13E")
       )
   {
     direction = "pPb";
   }
   
-  AliInfoClass(Form("period %s direction %s",period,direction.Data()));
+  AliInfoClass(Form("direction %s",direction.Data()));
   
-  Double_t weightedMean(0.0);
-  Double_t sumOfWeights(0.0);
-
   Double_t mean(0.0);
+  Double_t v1(0.0);
+  
   TString subResultName("");
+  
   TString swhat(what);
-    
+  
+  TObjArray* parts = swhat.Tokenize(":");
+  
+  if ( parts->GetEntries() > 1 )
+  {
+    subResultName = static_cast<TObjString*>(parts->At(1))->String();
+  }
+
+  delete parts;
+  
   for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i )
   {
     Int_t runNumber = runs[i];
     
-    AliInfoClass(Form("RUN %09d",runNumber));
+    AliDebugClass(1,Form("RUN %09d",runNumber));
     
-    TString realFile(Form("RUNBYRUN/%s_muon_calo_AODMUON000_%09d.saf.root",period,runNumber));
+    TString realFile(Form("RUNBYRUN/%s_%09d.saf.root",realPrefix,runNumber));
     
-    TString simFileName(Form("RUNBYRUN/SIM_JPSI_%s_pp503_newalign_%09d.saf.root",period,runNumber));
-    if ( direction == "pPb" )
-    {
-      simFileName = Form("RUNBYRUN/SIM_JPSI_%s_pp503_%09d.saf.root",period,runNumber);
-    }
-
+    TString simFileName(Form("RUNBYRUN/%s_%09d.saf.root",simPrefix,runNumber));
+        
     TString simFile(simFileName);
 
     TString resultName(Form("%s%sJpsi",what,direction.Data()));
     
-    if ( swhat == "MBR")
+    if ( swhat == "Fnorm")
     {
-      resultName = "MBR";
+      resultName = "Fnorm";
     }
     else if ( swhat.Contains("Acc") )
     {
       resultName.ReplaceAll(direction,"");
     }
     
-    AliAnalysisMuMu mreal(realFile);
+    AliAnalysisMuMu* mreal(0x0);
     
-    AliAnalysisMuMuSpectra* real = static_cast<AliAnalysisMuMuSpectra*>(mreal.MC()->GetObject("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
-
-    if (!real || forceRecomputation)
+    if ( !swhat.Contains("Acc"))
     {
-      mreal.Jpsi();
-      real = static_cast<AliAnalysisMuMuSpectra*>(mreal.MC()->GetObject("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
-      if (!real)
+        mreal = new AliAnalysisMuMu(realFile);      
+    }
+    
+    AliAnalysisMuMuSpectra* real(0x0);
+    
+    if ( mreal )
+    {
+      real = static_cast<AliAnalysisMuMuSpectra*>(mreal->MC()->GetObject("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-INTEGRATED"));
+
+      if (!real || forceRecomputation)
       {
-        AliErrorClass(Form("Could not get real spectra for run %d",runNumber));
-        return 0x0;
+        mreal->Jpsi();
+        real = static_cast<AliAnalysisMuMuSpectra*>(mreal->MC()->GetObject("/PSALL/CMUL7-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-INTEGRATED"));
+        if (!real)
+        {
+          AliErrorClass(Form("Could not get real spectra for run %d",runNumber));
+          delete mreal;
+          return 0x0;
+        }
       }
     }
     
     AliAnalysisMuMu msim(simFile);
     
-    AliAnalysisMuMuSpectra* sim = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
+    AliAnalysisMuMuSpectra* sim = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-INTEGRATED"));
 
     if (!sim || forceRecomputation)
     {
       msim.SetEventSelectionList("ALL");
       msim.Jpsi();
-      sim = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-"));
+      sim = static_cast<AliAnalysisMuMuSpectra*>(msim.MC()->GetObject("/ALL/CMULLO-B-NOPF-MUON/PP/pMATCHLOWRABSBOTH/PSI-INTEGRATED"));
       if (!sim)
       {
         AliErrorClass(Form("Could not get sim spectra for run %d",runNumber));
+        delete mreal;
         return 0x0;
       }
     }
     
-    AliAnalysisMuMuSpectra* corrected = AliAnalysisMuMu::RABy(realFile.Data(),simFile.Data(),"",direction.Data());
+    AliAnalysisMuMuSpectra* corrected = 0x0;
+    
+    if ( real )
+    {
+        corrected = AliAnalysisMuMu::RABy(realFile.Data(),simFile.Data(),"",direction.Data());
+    }
+    else
+    {
+      corrected = sim;
+    }
 
-    AliAnalysisMuMuResult* result = static_cast<AliAnalysisMuMuResult*>(corrected->Bins()->First());
+    AliAnalysisMuMuResult* result = static_cast<AliAnalysisMuMuResult*>(corrected->BinContentArray()->First());
 
-    result->Print();
+//    result->Print();
 
-    Double_t value = result->GetValue(resultName.Data());
-    Double_t error = result->GetErrorStat(resultName.Data());
+    Double_t value = result->GetValue(resultName.Data(),subResultName.Data());
+    Double_t error = result->GetErrorStat(resultName.Data(),subResultName.Data());
     
     g->SetPoint(i,runNumber,value);
     g->SetPointError(i,1,error);
     
-    Double_t n = mreal.CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL/run:%d",runNumber));
+    Double_t n = 1.0;
     
-    weightedMean += n*result->GetValue(resultName.Data());
-    sumOfWeights += n;
+    if ( mreal )
+    {
+      n = mreal->CC()->GetSum(Form("trigger:CMUL7-B-NOPF-MUON/event:PSALL/run:%d",runNumber));
+    }
+
+    Double_t w(0.0);
+    if ( error > 0 ) w = 1.0/error/error;
     
-    mean += result->GetValue(resultName.Data());
+    mean += value*w;
+    v1 += w;
     
 //    std::cout << result->SubResults() << " " << result->GetError(resultName.Data()) << std::endl;
 
+    delete mreal;
   }
   
   gStyle->SetOptFit(1);
@@ -3149,91 +3661,20 @@ TGraph* AliAnalysisMuMu::ResultEvolution(const char* runlist, const char* period
   {
     g->GetYaxis()->SetTitle("Acc#timesEff_{J/#psi}");    
   }
-  else if ( TString(what).Contains("MBR") )
+  else if ( TString(what).Contains("Fnorm") )
   {
     g->GetYaxis()->SetTitle("CINT7 / CINT7&0MUL");
   }
   
   if (CompactGraphs())
   {
-    Compact(*g);
+    AliAnalysisMuMuGraphUtil::Compact(*g);
   }
   
-  mean /= runs.size();
-  weightedMean /= sumOfWeights;
+  mean /= v1;
   
-  AliInfoClass(Form("Mean %e Weighted Mean %e",mean,weightedMean));
+  AliInfoClass(Form("Weighted Mean %e",mean));
   
   return g;
 }
-
-//______________________________________________________________________________
-void AliAnalysisMuMu::GetMBR(Int_t runNumber, const char* eventSelection, Double_t& value, Double_t& error) const
-{
-   // Get the scaling factor to go from CMUL to CINT7 for a given event selection
-  value = 0.0;
-  error = 0.0;
-  if ( strlen(eventSelection) > 0 )
-  {
-    ULong64_t a = TMath::Nint(fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD/event:%s/run:%d",
-                                                  eventSelection,runNumber)));
-    
-    ULong64_t b = TMath::Nint(fCounterCollection->GetSum(Form("trigger:CINT7-B-NOPF-ALLNOTRD&0MUL/event:%s/run:%d",
-                                                  eventSelection,runNumber)));
-    
-    value = b > 0 ? a/b : 0;
-    error = value*AliAnalysisMuMuResult::ErrorAB(a,TMath::Sqrt(a),b,TMath::Sqrt(b));
-  }
-}
-
-//______________________________________________________________________________
-TGraph* AliAnalysisMuMu::MBREvolution(const char* eventSelection1, const char* eventSelection2) const
-{
-  if (!fCounterCollection) return 0x0;
-  
-  TObjArray* runs = fCounterCollection->GetKeyWords("run").Tokenize(",");
-  runs->Sort();
-  TIter nextRun(runs);
-  TObjString* srun;
-  
-  std::set<int> runnumbers;
-  
-  TGraphErrors* g = new TGraphErrors(runs->GetEntries());
-  Int_t i(0);
-  
-  while ( ( srun = static_cast<TObjString*>(nextRun()) ) )
-  {
-    Int_t runNumber = srun->String().Atoi();
-    
-    runnumbers.insert(runNumber);
-    
-    Double_t mbr1,mbrError1;
-    Double_t mbr2,mbrError2;
-    
-    GetMBR(runNumber,eventSelection1,mbr1,mbrError1);
-    
-    GetMBR(runNumber,eventSelection2,mbr2,mbrError2);
-
-    Double_t mbr = mbr1;
-    
-    if ( mbr2 > 0 ) mbr /= mbr2;
-
-    Double_t mbrError = mbr*AliAnalysisMuMuResult::ErrorAB(mbr1,mbrError1,mbr2,mbrError2);
-
-    g->SetPoint(i,runNumber,mbr);
-    g->SetPointError(i,0.5,mbrError);
-    
-    ++i;
-  }
-  
-  g->GetXaxis()->SetNoExponent();
-  
-  AliAnalysisTriggerScalers ts(RunNumbers(),fgOCDBPath.Data());
-  ts.DrawFills(0,1000);
-
-  return g;
-}
-
-
-
 

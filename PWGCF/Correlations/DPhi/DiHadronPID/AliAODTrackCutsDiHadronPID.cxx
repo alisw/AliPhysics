@@ -56,6 +56,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 	fFilterMask(0),
 	fMaxEta(-999.),
 	fMaxRapidity(-999.),
+	fMinimumNumberOfTPCClusters(-999),
 	fDemandedFlags(0),
 	fMinSPDHitsForPtDeptDCAcut(0),
 	fPtDeptDCAxyCutFormula(0x0),
@@ -66,6 +67,8 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 	fTestMaxEta(kFALSE),
 	fTestMaxRapidity(kFALSE),
 	fTestFlags(kFALSE),
+	fTestNumberOfTPCClusters(kFALSE),
+	fTestSPDAny(kFALSE),
 	fTestTOFmismatch(kFALSE),
 	fTestPtDeptDCAcut(kFALSE),
 	fDataTrackQAHistos(0x0),
@@ -147,6 +150,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 	fFilterMask(0),
 	fMaxEta(-999.),
 	fMaxRapidity(-999.),
+	fMinimumNumberOfTPCClusters(-999),
 	fDemandedFlags(0),
 	fMinSPDHitsForPtDeptDCAcut(0),
 	fPtDeptDCAxyCutFormula(0x0),
@@ -157,6 +161,8 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 	fTestMaxEta(kFALSE),
 	fTestMaxRapidity(kFALSE),
 	fTestFlags(kFALSE),
+	fTestNumberOfTPCClusters(kFALSE),
+	fTestSPDAny(kFALSE),
 	fTestTOFmismatch(kFALSE),
 	fTestPtDeptDCAcut(kFALSE),
 	fDataTrackQAHistos(0x0),
@@ -422,8 +428,8 @@ TList* AliAODTrackCutsDiHadronPID::GetListOfDataQAHistos() const {
 	// Returns the list of data histograms.
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
 
-	if (fPrimRecMCTrackQAHistos) {
-		return fPrimRecMCTrackQAHistos;
+	if (fDataTrackQAHistos) {
+		return fDataTrackQAHistos;
 	} else {
 		return 0x0;
 	}
@@ -648,10 +654,10 @@ TH2F* AliAODTrackCutsDiHadronPID::GetHistDataTPCTOFMismatch(Int_t charge, Int_t 
 	htmp_proj->SetTitle(Form("%5.3f < p_{T} < %5.3f",GetPtMinPID(ptbin),GetPtMaxPID(ptbin)));
 	htmp_proj->Sumw2();
 
-	return htmp_proj;
-
 	// Putting back the range on the p_T axis.
 	ptaxis->SetRange(1, NbinsPt);
+
+	return htmp_proj;
 
 }
 
@@ -963,12 +969,14 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedData(AliTrackDiHadronPID* track, Do
 	if (!CheckMaxEta(track->Eta())) return kFALSE;
 	if (!CheckFilterMask(track->GetFilterMap())) return kFALSE;
 	if (!CheckFlags(track->GetFlags())) return kFALSE;
+	if (!CheckNclsTPC(track->GetNclsTPC())) return kFALSE;
 	if (!CheckTOFmismatch(track->IsTOFmismatch())) return kFALSE;
 
 	Int_t NSPDhits = 0;
 	if (track->HasPointOnITSLayer(0)) NSPDhits++;
 	if (track->HasPointOnITSLayer(1)) NSPDhits++;
 	if (!CheckPtDeptDCACut(track->GetZAtDCA(),track->GetXYAtDCA(),track->Pt(),NSPDhits)) return kFALSE;
+	if (fTestSPDAny) {if (NSPDhits < 1) return kFALSE;}
 
 	// Track has passed the cuts, fill QA histograms.
 	for (Int_t iHistoClass = 0; iHistoClass < 3; iHistoClass++) {
@@ -1068,11 +1076,13 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedReconstructedMC(AliTrackDiHadronPID
 	if (!CheckRapidity(track->MCY())) return kFALSE;			// NEW: rapidity cut.
 	if (!CheckFilterMask(track->GetFilterMap())) return kFALSE;
 	if (!CheckFlags(track->GetFlags())) return kFALSE;
+	if (!CheckNclsTPC(track->GetNclsTPC())) return kFALSE;
 
 	Int_t NSPDhits = 0;
 	if (track->HasPointOnITSLayer(0)) NSPDhits++;
 	if (track->HasPointOnITSLayer(1)) NSPDhits++;
 	if (!CheckPtDeptDCACut(track->GetZAtDCA(),track->GetXYAtDCA(),track->Pt(),NSPDhits)) return kFALSE;
+	if (fTestSPDAny) {if (NSPDhits < 1) return kFALSE;}
 
 	// Track has passed the cuts, fill QA histograms.
 	for (Int_t iHistoClass = 0; iHistoClass < 12; iHistoClass++) {
@@ -1158,6 +1168,11 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 
 	// Fill DCA_{xy} one sigma histograms.
 	Int_t checkSum = 0;
+
+	/* Philip: 
+		Introduced a separate selection mechanism here as the TPC is off for low pt for 
+		in particular protons and kaons. Therefor use only the TOF for identifying under 1.8 GeV
+	*/
 	// histoclass = 0: all charges; histoclass = 1: positive; histoclass = 2: negative;
 	if (TMath::Sqrt(track->GetNumberOfSigmasTOF(0) * track->GetNumberOfSigmasTOF(0) + 
 					track->GetNumberOfSigmasTPC(0) * track->GetNumberOfSigmasTPC(0)) < 1.) {
@@ -1165,18 +1180,44 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 		fHistDataDCAxyOneSigma[3 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Pions.
 	//	checkSum++;	cout<<"Pion found: nSigTOF: "<<track->GetNumberOfSigmasTOF(0)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(0)<<endl;
 	}
-	if (TMath::Sqrt(track->GetNumberOfSigmasTOF(1) * track->GetNumberOfSigmasTOF(1) + 
-					track->GetNumberOfSigmasTPC(1) * track->GetNumberOfSigmasTPC(1)) < 1.) {
-		fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
-		fHistDataDCAxyOneSigma[6 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Kaons.
-	//	checkSum++;	cout<<"Kaon found: nSigTOF: "<<track->GetNumberOfSigmasTOF(1)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(1)<<endl;
+	// if (TMath::Sqrt(track->GetNumberOfSigmasTOF(1) * track->GetNumberOfSigmasTOF(1) + 
+	// 				track->GetNumberOfSigmasTPC(1) * track->GetNumberOfSigmasTPC(1)) < 1.) {
+	// 	fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
+	// 	fHistDataDCAxyOneSigma[6 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Kaons.
+	// //	checkSum++;	cout<<"Kaon found: nSigTOF: "<<track->GetNumberOfSigmasTOF(1)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(1)<<endl;
+	// }
+	// if (TMath::Sqrt(track->GetNumberOfSigmasTOF(2) * track->GetNumberOfSigmasTOF(2) + 
+	// 				track->GetNumberOfSigmasTPC(2) * track->GetNumberOfSigmasTPC(2)) < 1.) {		
+	// 	fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
+	// 	fHistDataDCAxyOneSigma[9 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Protons.
+	// //	checkSum++;	cout<<"Proton found: nSigTOF: "<<track->GetNumberOfSigmasTOF(2)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(2)<<endl;
+	// }
+	// for protons and low pt:
+	if (TMath::Abs(track->Pt()) < 1.8 ) {
+		if (TMath::Abs(track->GetNumberOfSigmasTOF(1)) < 1.) {		
+			fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
+			fHistDataDCAxyOneSigma[6 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Kaons.
+		}
+		if (TMath::Abs(track->GetNumberOfSigmasTOF(2)) < 1.) {		
+			fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
+			fHistDataDCAxyOneSigma[9 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Protons.
+		//	checkSum++;	cout<<"Proton found: nSigTOF: "<<track->GetNumberOfSigmasTOF(2)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(2)<<endl;
+		}
+	} else {
+		if (TMath::Sqrt(track->GetNumberOfSigmasTOF(1) * track->GetNumberOfSigmasTOF(1) + 
+						track->GetNumberOfSigmasTPC(1) * track->GetNumberOfSigmasTPC(1)) < 1.) {
+			fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
+			fHistDataDCAxyOneSigma[6 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Kaons.
+		//	checkSum++;	cout<<"Kaon found: nSigTOF: "<<track->GetNumberOfSigmasTOF(1)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(1)<<endl;
+		}
+		if (TMath::Sqrt(track->GetNumberOfSigmasTOF(2) * track->GetNumberOfSigmasTOF(2) + 
+						track->GetNumberOfSigmasTPC(2) * track->GetNumberOfSigmasTPC(2)) < 1.) {		
+			fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
+			fHistDataDCAxyOneSigma[9 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Protons.
+		//	checkSum++;	cout<<"Proton found: nSigTOF: "<<track->GetNumberOfSigmasTOF(2)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(2)<<endl;
+		}
 	}
-	if (TMath::Sqrt(track->GetNumberOfSigmasTOF(2) * track->GetNumberOfSigmasTOF(2) + 
-					track->GetNumberOfSigmasTPC(2) * track->GetNumberOfSigmasTPC(2)) < 1.) {		
-		fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
-		fHistDataDCAxyOneSigma[9 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Protons.
-	//	checkSum++;	cout<<"Proton found: nSigTOF: "<<track->GetNumberOfSigmasTOF(2)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(2)<<endl;
-	}
+
 
 	// check for double identification (or triple..)
 	if(checkSum > 1) {AliError("More than one particle identified for the same track!"); }

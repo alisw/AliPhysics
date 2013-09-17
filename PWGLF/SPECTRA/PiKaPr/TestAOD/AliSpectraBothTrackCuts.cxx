@@ -24,6 +24,7 @@
 #include "TH1F.h"
 #include "TH1I.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "TCanvas.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -60,9 +61,14 @@ ClassImp(AliSpectraBothTrackCuts)
 
 AliSpectraBothTrackCuts::AliSpectraBothTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCutMax(0),fYCutMin(0),
   fPtCutTOFMatching(0),fAODtrack(kotherobject), fHashitinSPD1(0),fusedadditionalcuts(kTRUE),
-fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0)
+fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),
+fHistoDCAzQA(0),fHistoNclustersQA(0),fHistochi2perNDFQA(0),
+fTrack(0),fCuts(0)
   
 {
+/*
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);	
   // Constructor
   fHistoCuts = new TH1I("fTrkCuts", "Track Cuts", kNTrkCuts, -0.5, kNTrkCuts - 0.5);
   for(Int_t ibin=1;ibin<=kNTrkCuts;ibin++)fHistoCuts->GetXaxis()->SetBinLabel(ibin,kBinLabel[ibin-1]);
@@ -82,7 +88,7 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
   fHistoEtaPhiHighPt->SetXTitle("eta");
   fHistoEtaPhiHighPt->SetYTitle("phi");
   fHistoNclustersITS=new TH1F("fHistoNclustersITS","fHistoNclustersITS;N;ITSLayer",6,-0.5,5.5);
-  
+  */
   fEtaCutMin = -100000.0; // default value of eta cut ~ no cut
   fEtaCutMax = 100000.0; // default value of eta cut ~ no cut
   fDCACut = 100000.0; // default value of dca cut ~ no cut
@@ -92,8 +98,86 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
   fYCutMax       = 100000.0; // default value of y cut ~ no cut 
   fYCutMin       = -100000.0; // default value of y cut ~ no cut 
   fMinTPCcls=70; // ncls in TPC
+ //  TH1::AddDirectory(oldStatus);
+	
 }
+//__________________________________________________________________
+void AliSpectraBothTrackCuts::InitHisto()
+{
+	Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);	
+ 
+  fHistoCuts = new TH1I("fTrkCuts", "Track Cuts", kNTrkCuts, -0.5, kNTrkCuts - 0.5);
+  for(Int_t ibin=1;ibin<=kNTrkCuts;ibin++)fHistoCuts->GetXaxis()->SetBinLabel(ibin,kBinLabel[ibin-1]);
+  //standard histo
+  const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
+  Int_t nbinsTempl=52;
+  const  Double_t parBins[]={-0.5,0.5,1.5,2.5};
+  Int_t nbinsnpar=3;
+  const  Double_t dcazBins[] ={-4.0,-3.8,-3.6,-3.4,-3.2,-3.0,-2.8,-2.6,-2.4,-2.2,-2.0,-1.8,-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0}; 		  	
+  Int_t nbinsdcaz=40;
+  const  Double_t nclsBins[]={45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160}; 	 
+  Int_t nbinsncls=23;
+  const  Double_t chindfBins[]={0.0,0.4,0.8,1.2,1.6,2.0,2.4,2.8,3.2,3.6,4.0,4.4,4.8,5.2,5.6,6.0,6.4,6.8,7.2,7.6,8.0}; 	
+  Int_t nbinchindf=20;
 
+  if(!fHistoNSelectedPos)
+  	fHistoNSelectedPos=new TH1F("fHistoNSelectedPos","fHistoNSelectedPos",nbinsTempl,templBins);
+  fHistoNSelectedPos->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  if(!fHistoNSelectedNeg)
+  	fHistoNSelectedNeg=new TH1F("fHistoNSelectedNeg","fHistoNSelectedNeg",nbinsTempl,templBins);
+  fHistoNSelectedNeg->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  if(!fHistoNMatchedPos)
+  	fHistoNMatchedPos=new TH1F("fHistoNMatchedPos","fHistoNMatchedPos",nbinsTempl,templBins);
+  fHistoNMatchedPos->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  if(!fHistoNMatchedNeg)
+  	fHistoNMatchedNeg=new TH1F("fHistoNMatchedNeg","fHistoNMatchedNeg",nbinsTempl,templBins);
+  fHistoNMatchedNeg->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  if(!fHistoEtaPhiHighPt)
+  	fHistoEtaPhiHighPt=new TH2F("fHistoEtaPhiHighPt","fHistoEtaPhiHighPt",200,-1,1,400,0,7);
+  fHistoEtaPhiHighPt->SetXTitle("eta");
+  fHistoEtaPhiHighPt->SetYTitle("phi");
+  if(!fHistoNclustersITS)
+  	fHistoNclustersITS=new TH1F("fHistoNclustersITS","fHistoNclustersITS;N;ITSLayer",6,-0.5,5.5);
+   if(!fHistoDCAzQA)
+	fHistoDCAzQA=new TH3F("fHistoDCAzQA","QA of DCA z;par type; P_{T} (GeV/C);dcaz",nbinsnpar,parBins,nbinsTempl,templBins,nbinsdcaz,dcazBins);
+   if(!fHistoNclustersQA)
+	fHistoNclustersQA=new TH3F("fHistoNclustersQA","QA of Ncls ;par type ; P_{T} (GeV/C);ncls",nbinsnpar,parBins,nbinsTempl,templBins,nbinsncls,nclsBins);
+   if(!fHistochi2perNDFQA) 
+	fHistochi2perNDFQA=new TH3F("fHistochi2perNDFQA","QA of chi2/ndf ;par type; P_{T} (GeV/C);chi2ndf",nbinsnpar,parBins,nbinsTempl,templBins,nbinchindf,chindfBins);
+
+ TH1::AddDirectory(oldStatus);
+
+
+
+}
+//_______________________________________________________
+AliSpectraBothTrackCuts::~AliSpectraBothTrackCuts()
+{
+	if(fHistoCuts)
+		delete fHistoCuts;
+	if(fHistoNSelectedPos)
+		delete fHistoNSelectedPos;
+	if(fHistoNSelectedNeg)
+		delete fHistoNSelectedNeg;
+	if(fHistoNMatchedPos)
+		delete fHistoNMatchedPos;
+	if(fHistoNMatchedNeg)
+		delete fHistoNMatchedNeg;
+	if(fHistoEtaPhiHighPt)
+		delete fHistoEtaPhiHighPt;
+	if(fHistoNclustersITS)
+		delete fHistoNclustersITS;
+	if(fHistoDCAzQA)
+		delete fHistoDCAzQA;
+	if(fHistoNclustersQA)
+		delete fHistoNclustersQA;
+	if(fHistochi2perNDFQA)
+		delete fHistochi2perNDFQA;
+
+
+
+}
 //_______________________________________________________
 Bool_t AliSpectraBothTrackCuts::IsSelected(AliVTrack * track,Bool_t FillHistStat)
 {
@@ -381,7 +465,10 @@ Long64_t AliSpectraBothTrackCuts::Merge(TCollection* list)
   TList collections_histoNMatchedPos;
   TList collections_histoNMatchedNeg;
   TList collections_histoEtaPhiHighPt;
-
+  TList collections_histoDCAzQA;
+  TList collections_histoNclustersQA;	
+  TList collections_histochi2perNDFQA;
+	
   Int_t count = 0;
 
   while ((obj = iter->Next())) {
@@ -401,6 +488,15 @@ Long64_t AliSpectraBothTrackCuts::Merge(TCollection* list)
     collections_histoNMatchedNeg.Add(histoNMatchedNeg);
     TH2F * histoEtaPhiHighPt = entry->GetHistoEtaPhiHighPt();      
     collections_histoEtaPhiHighPt.Add(histoEtaPhiHighPt);
+    TH3F* histoDCAzQA=entry->GetHistoDCAzQA(); 	
+    collections_histoDCAzQA.Add(histoDCAzQA);
+     TH3F* histoNclustersQA=entry->GetHistoNclustersQA(); 	
+    collections_histoNclustersQA.Add(histoNclustersQA);
+    TH3F* histochi2perNDFQA=entry->GetHistochi2perNDFQA(); 	
+    collections_histochi2perNDFQA.Add(histochi2perNDFQA);
+	
+
+
     count++;
   }
   
@@ -410,7 +506,10 @@ Long64_t AliSpectraBothTrackCuts::Merge(TCollection* list)
   fHistoNMatchedPos->Merge(&collections_histoNMatchedPos);
   fHistoNMatchedNeg->Merge(&collections_histoNMatchedNeg);
   fHistoEtaPhiHighPt->Merge(&collections_histoEtaPhiHighPt);
-  
+  fHistoDCAzQA->Merge(&collections_histoDCAzQA);
+  fHistoNclustersQA->Merge(&collections_histoNclustersQA);
+  fHistochi2perNDFQA->Merge(&collections_histochi2perNDFQA);
+
   delete iter;
 
   return count+1;

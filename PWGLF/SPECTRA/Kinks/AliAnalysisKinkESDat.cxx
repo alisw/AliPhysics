@@ -58,8 +58,8 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
     fradPtRpDt(0), fInvMuNuAll(0), fQtInvM(0), 
          fDCAkink(0), fPosiKink(0),  fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0), fPosiKinKBg(0), fQtMothP(0), fTPCSgnlPtpc(0),
        fTPCMomNSgnl(0),  fMothKinkMomSgnl(0), fNSigmTPC(0),  fTPCSgnlKinkDau(0), fPtKinkPos(0), fPtKinkNeg(0),  fRadNclCln(0),
-       fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fPtCut1(0), fPtCut2(0), fPtCut3(0),
-      fAngMomKKinks(0),
+       fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fInvMassMuNuPtAll(0),fPtCut1(0), fPtCut2(0), 
+      fPtCut3(0), fAngMomKKinks(0),
  f1(0), f2(0),
       fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200), fKinkRadLow(130), fLowCluster(20), fLowQt(.12), fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
 {
@@ -147,7 +147,8 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi",300, 0.0,15.0); 
   fKinKRbn= new TH1F("fKinKRbn", "p_{t}Kaon kinks identi[GeV/c],Entries",46,gPt7TOF); 
   fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",300, 0.0,15.0); 
-  fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.10, 1.0); 
+  //fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.10, 1.0); 
+  fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",600,0.10, 0.7); //  23/8/2013
   fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
   fptKink= new TH1F("fptKink", "P_{T}Kaon Kink  bution",300, 0.0,15.0); 
   fAngMomK= new TH2F("fAngMomK","Decay angle vrs Mother Mom,K",100,0.0,5.0,80,0.,80.);
@@ -178,7 +179,8 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   flifetime= new TH1F("flifetime", "ct study of K-kinks",100,0.,1000.); 
   fradLK= new TH1F("fradLK", "Length of   K generated",100,0.,1000.); 
   fradPtRpDt=new TH3F("fradPtRpDt","rad pt rap dat",28,100.,240., 20, 0., 5., 20, -1., 1. );
-  fInvMuNuAll= new TH1F("fInvMuNuAll", " Inv Mass MuNu all kink",180,0.1,1.0); 
+  //fInvMuNuAll= new TH1F("fInvMuNuAll", " Inv Mass MuNu all kink",180,0.1,1.0); 
+  fInvMuNuAll= new TH1F("fInvMuNuAll", " Inv Mass MuNu all kink",600,0.1,0.7); //  23/8/2013
   fQtInvM= new TH2F("fQtInvM", "Q_{T} Versus Inv MuNu ",80, 0., 0.80 , 100 , 0., 0.300); 
     fDCAkink = new TH1F("fDCAkink ", "DCA kink vetrex ",50, 0.0,1.0);
   fPosiKink= new TH2F("fPosiKink", "Y vrx kink Vrex ",100, -300.0,300.0,100, -300, 300.);
@@ -199,7 +201,9 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   fRatioCrossedRowsKink = new TH1F("fRatioCrossedRowsKink","Ratio crossed rows  in TPC for kinks",20,0.0,1.0);
   fRadiusPt =new TH2F("fRadiusPt","radius vs pt  ",80, 90.,250.,100, 0.,10.              );
   fRadiusPtcln =new TH2F("fRadiusPtcln","radius vs pt clean ",80, 90.,250.,100, 0.,10.              );
-  fInvMassMuNuPt =new TH2F("fInvMassMuNuPt","Invariant mass-munu  vs pt  ",180, 0.10, 1.00, 100, 0.0, 10.0  );
+  //fInvMassMuNuPt =new TH2F("fInvMassMuNuPt","Invariant mass-munu  vs pt  ",180, 0.10, 1.00, 100, 0.0, 10.0  );
+  fInvMassMuNuPt =new TH2F("fInvMassMuNuPt","Invariant mass-munu  vs pt  ",600, 0.10, 0.7, 100, 0.0, 10.0  );// 23/8/2013
+  fInvMassMuNuPtAll =new TH2F("fInvMassMuNuPtAll","Invariant mass-munu  vs pt  ",600, 0.10, 0.7, 100, 0.0, 10.0  );// 23/8/2013
   fPtCut1 = new TH1F("fPtCut1", "P_{T}Kaon distribution",300, 0.0,15.0); 
   fPtCut2 = new TH1F("fPtCut2", "P_{T}Kaon distribution",300, 0.0,15.0); 
   fPtCut3 = new TH1F("fPtCut3", "P_{T}Kaon distribution",300, 0.0,15.0); 
@@ -277,6 +281,7 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
    fListOfHistos->Add(fRadiusPt);
    fListOfHistos->Add(fRadiusPtcln);
    fListOfHistos->Add(fInvMassMuNuPt);
+   fListOfHistos->Add(fInvMassMuNuPtAll);
    fListOfHistos->Add(fPtCut1);
    fListOfHistos->Add(fPtCut2);
    fListOfHistos->Add(fPtCut3);
@@ -577,6 +582,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
          Double_t invariantMassKmu= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
            fQtInvM -> Fill ( invariantMassKmu,  qT);
            fInvMuNuAll->Fill(invariantMassKmu);
+           fInvMassMuNuPtAll ->Fill(invariantMassKmu,  trackPt);
 //
          fRadiusPt->Fill( kink->GetR(), trackPt); // 
  //  radius and Minv selection 

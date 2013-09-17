@@ -10,10 +10,18 @@
 
 #include  "AliAnalysisTaskSE.h"
 #include  "THnSparse.h" // cannot forward declare ThnSparseF
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
-#include "fastjet/PseudoJet.hh"
+#ifndef __CINT__
+# include "fastjet/ClusterSequenceArea.hh"
+# include "fastjet/AreaDefinition.hh"
+# include "fastjet/JetDefinition.hh"
+#else
+namespace fastjet {
+  enum JetAlgorithm;
+  enum Strategy;
+  enum RecombinationScheme;
+  enum AreaType;
+}
+#endif
 
 ////////////////
 class AliJetHeader;
@@ -54,6 +62,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetEventSelection(Bool_t b){fEventSelection = b;}
+    virtual void SetRequireITSRefit(Int_t i){fRequireITSRefit=i;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetTrackEtaWindow(Float_t f){fTrackEtaWindow = f;}
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
@@ -89,7 +98,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void LoadTrPtResolutionRootFileFromOADB();
     virtual void SetChangeEfficiencyFraction(Double_t p) {fChangeEfficiencyFraction = p;}
     virtual void SetSmearResolution(Bool_t b){fUseTrPtResolutionSmearing = b;} 
-    virtual void SetDiceEfficiency(Bool_t b){fUseDiceEfficiency = b;} 
+    virtual void SetDiceEfficiency(Int_t b){fUseDiceEfficiency = b;} 
     virtual void SetDiceEfficiencyMinPt(Double_t pt) {fDiceEfficiencyMinPt = pt;}
     virtual void SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3);
     virtual void SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3);
@@ -108,7 +117,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     fastjet::AreaType            GetAreaType()          const {return fAreaType;}
     // Setters
     void SetRparam(Double_t f)                           {fRparam = f;}
-    void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}
+    // Temporary change to integer; problem with dictionary generation?
+    //void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}
+    void SetAlgorithm(Int_t f)           {fAlgorithm = (fastjet::JetAlgorithm) f;}
     void SetStrategy(fastjet::Strategy f)                {fStrategy = f;}
     void SetRecombScheme(fastjet::RecombinationScheme f) {fRecombScheme = f;}
     void SetAreaType(fastjet::AreaType f)                {fAreaType = f;}
@@ -169,6 +180,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fTrackEtaWindow;        // eta window used for corraltion plots between rec and gen 
+    Int_t         fRequireITSRefit;       // to select hybrids with ITS refit only
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
@@ -198,7 +210,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1      *fhEffH2;        // Efficiency for Spectra Hybrid Category 2
     TH1      *fhEffH3;        // Efficiency for Spectra Hybrid Category 3
     Bool_t    fUseTrPtResolutionSmearing;  // Apply momentum smearing on track level
-    Bool_t    fUseDiceEfficiency;          // Apply efficiency on track level by dicing
+    Int_t    fUseDiceEfficiency;           // Flag to apply efficiency on track level by dicing 0: no dicing; 1: dicing wrt to accepted; 2: dicing wrt to generated
     Double_t  fDiceEfficiencyMinPt;        // Only do efficiency dicing for tracks above this pt
     Bool_t fUseTrPtResolutionFromOADB;     // Load track pt resolution root file from OADB path
     Bool_t fUseTrEfficiencyFromOADB;       // Load tracking efficiency root file from OADB path
@@ -332,7 +344,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 24) 
+    ClassDef(AliAnalysisTaskJetCluster, 25) 
 };
  
 #endif

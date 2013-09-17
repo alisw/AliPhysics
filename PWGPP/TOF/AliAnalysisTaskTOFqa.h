@@ -40,7 +40,7 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   AliAnalysisFilter *fTrackFilter; //track filter object
   AliESDVertex *fVertex; //pointer to the vertex object
   AliESDpid *fESDpid; //pointer to the PID object
-  AliTOFT0v1 *fTOFT0v1; // TOF-T0 v1
+  //  AliTOFT0v1 *fTOFT0v1; // TOF-T0 v1
   Int_t fNTOFtracks; //number of tracks matching with TOF
   //Int_t fNPrimaryTracks; //number of primary tracks
   Float_t fT0[3]; //event time
@@ -62,7 +62,7 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   TList *fHneg;  //list of general histos for negative tracks
   
 
-  ClassDef(AliAnalysisTaskTOFqa, 4); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqa, 5); // example of analysis
 };
 
 #endif

@@ -3,63 +3,63 @@
 
 // $Id$
 
-class TClonesArray;
-class TString;
-class TH1F;
-class TH2F;
-class TH3F;
-class AliRhoParameter;
-#include <TH3F.h>
-#include "AliAnalysisTaskEmcalJet.h"
+class TH2;
+class THnSparse;
 
-class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
+#include <TH3F.h>
+
+#include "AliAnalysisTaskEmcalJetDev.h"
+
+class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJetDev {
  public:
 
   AliAnalysisTaskSAJF();
   AliAnalysisTaskSAJF(const char *name);
-  virtual ~AliAnalysisTaskSAJF();
+  virtual ~AliAnalysisTaskSAJF() {;}
 
   void                        UserCreateOutputObjects();
-  void                        Terminate(Option_t *option);
 
-  void                        SetIsEmbedded(Bool_t i)      { fIsEmbedded        = i         ; }
+  void                        SetHistoType(Int_t t) { fHistoType = t; }
 
  protected:
-  Bool_t                      FillHistograms()                                              ;
-  Int_t                       DoJetLoop()                                                   ;
+  void                        AllocateTHX();
+  void                        AllocateTHnSparse();
 
-  Bool_t                      fIsEmbedded;                 // trigger, embedded signal
+  Bool_t                      FillHistograms();
+  void                        FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
+					   Double_t NEF, Double_t z, Int_t n, Double_t leadingpt);
 
-  // General histograms
-  TH1F                       *fHistEvents[4];              //!Events accepted/rejected
-  TH3F                       *fHistLeadingJetPhiEta[4];    //!Leading jet phi-eta
-  TH3F                       *fHistLeadingJetPtArea[4];    //!Leading jet pt spectrum vs. area
-  TH3F                       *fHistLeadingJetCorrPtArea[4];//!Corrected leading jet pt spectrum vs. area
-  TH3F                       *fHistLeadingJetMCPtArea[4];  //!Leading jet MC pt spectrum vs. area
-  TH2F                       *fHistRhoVSleadJetPt[4];      //!Area(leadjet) * rho vs. leading jet pt
-  TH2F                       *fNjetsVsCent;                //!No. of jets vs. centrality
+  Int_t                       fHistoType;                      // histogram type (0=TH2, 1=THnSparse)
 
   // Inclusive jets histograms
-  TH3F                       *fHistJetPhiEta[4];           //!Phi-Eta distribution of jets
-  TH3F                       *fHistJetsPtArea[4];          //!Jet pt vs. area
-  TH3F                       *fHistJetsCorrPtArea[4];      //!Jet corr pt vs. area
-  TH2F                       *fHistJetPtvsJetCorrPt[4];    //!Jet pt vs jet corr pt
-  TH3F                       *fHistJetsMCPtArea[4];        //!Jet pt vs. area
-  TH2F                       *fHistJetPtvsJetMCPt[4];      //!Jet pt vs jet corr pt
-  TH3F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
-  TH3F                       *fHistJetsCEFvsCEFPt[4];      //!Jet charged energy fraction vs. charged jet pt
-  TH3F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio vs. jet pt
-  TH2F                       *fHistConstituents[4];        //!x axis = constituents pt; y axis = no. of constituents
-  TH2F                       *fHistTracksJetPt[4];         //!Track pt vs. jet pt
-  TH2F                       *fHistClustersJetPt[4];       //!Cluster pt vs. jet pt
-  TH2F                       *fHistTracksPtDist[4];        //!Track pt vs. distance form jet axis
-  TH2F                       *fHistClustersPtDist[4];      //!Cluster pt vs. distance form jet axis
-  TH3F                       *fHistJetNconstVsPt[4];       //!Jet no. of constituents vs. pt
+  THnSparse                  *fHistJetObservables;             //!Jet-wise observables
+
+  // TH2/TH3 versions
+  TH3                        *fHistJetPtEtaPhi[4];             //!Jet Pt vs. Eta vs. Phi
+  TH2                        *fHistJetPtArea[4];               //!Jet Pt vs. Area
+  TH2                        *fHistJetPtEP[4];                 //!Jet Pt vs. event plane
+  TH2                        *fHistJetPtNEF[4];                //!Jet Pt vs. neutral energy fraction
+  TH2                        *fHistJetPtZ[4];                  //!Jet Pt vs. z
+  TH2                        *fHistJetPtLeadingPartPt[4];      //!Jet Pt vs. leading particle pt
+  TH3                        *fHistJetCorrPtEtaPhi[4];         //!Jet corrPt vs. Eta vs. Phi
+  TH2                        *fHistJetCorrPtArea[4];           //!Jet corrPt vs. Area
+  TH2                        *fHistJetCorrPtEP[4];             //!Jet corrPt vs. event plane
+  TH2                        *fHistJetCorrPtNEF[4];            //!Jet corrPt vs. neutral energy fraction
+  TH2                        *fHistJetCorrPtZ[4];              //!Jet corrPt vs. z
+  TH2                        *fHistJetCorrPtLeadingPartPt[4];  //!Jet corrPt vs. leading particle pt
+  TH2                        *fHistJetPtCorrPt[4];             //!Jet Pt vs. corrPt
+  TH2                        *fHistJetPtMCPt[4];               //!Jet Pt vs. MCPt
+  TH2                        *fHistJetMCPtCorrPt[4];           //!Jet MCPt vs. corrPt
+
+  TH2                        *fHistTracksJetPt[4];             //!Track pt vs. jet pt
+  TH2                        *fHistClustersJetPt[4];           //!Cluster pt vs. jet pt
+  TH2                        *fHistTracksPtDist[4];            //!Track pt vs. distance form jet axis
+  TH2                        *fHistClustersPtDist[4];          //!Cluster pt vs. distance form jet axis
 
  private:
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 15) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 17) // jet analysis task
 };
 #endif

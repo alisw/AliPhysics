@@ -27,6 +27,7 @@
 #include "TH1F.h"
 #include "TH1.h"
 #include "TH2D.h"
+#include "TH3F.h"
 #include "TCanvas.h"
 #include "TParticle.h"
 #include "TNtuple.h"
@@ -130,7 +131,9 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi() : AliAnalysisTaskSE
   fHistMCdecayAngleReso(0),
   fHistMCpointingAngleReso(0),
   fHistMCapReso(0),
-  fHistNdim(0), 
+  fHistCentrality(0),
+  fHistCentralityAC(0), 
+  fHistMultiplicity(0),
   fHistHilf1(0),
   fHistHilf2(0), 
   fHistHilf3(0),
@@ -143,41 +146,14 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi() : AliAnalysisTaskSE
   fHistPtvsYAso(0), 
   fHistRap(0),
   fHistCount(0),
-  fPIDtpcESD(0) 
-
+  fPIDtpcESD(0),
+  fHistTriggerStat(0),
+  fHistTriggerStatAfterEventSelection(0), 
+  fHistMassHcentMult(0),
+  fHistNdim(0)
 {
-  // Constructor
+  // DefaultConstructor
 
-  // Define input and output slots here
-  // Input from a TChain
-  DefineInput(0, TChain::Class());
-  // Output to TList container
-  DefineOutput(1, TList::Class()); //full
-
-  //MC info contol
-  if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())SetHasMC();
-
-  //V0 cuts
-
-  fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
-  fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCutsV0->SetMinNClustersTPC(80);
-  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
-  fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
-  fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
-
-  fESDCutsV0 = new AliESDv0Cuts("AliESDCutsV0","AliESDCutsV0");
-  fESDCutsV0->SetMaxDcaV0Daughters(2.0);
-  fESDCutsV0->SetMinDcaNegToVertex(1.0);
-  fESDCutsV0->SetMinDcaPosToVertex(1.0);
-
-  //ESD Track cuts
-  fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");    
-  fEsdTrackCuts->SetMinNClustersTPC(80);
-  fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fEsdTrackCuts->SetMaxChi2PerClusterTPC(5);
-  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
-  fEsdTrackCuts->SetEtaRange(-0.9,0.9);
 }
 
 //________________________________________________________________________
@@ -236,7 +212,9 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fHistMCdecayAngleReso(0),
   fHistMCpointingAngleReso(0),
   fHistMCapReso(0),
-  fHistNdim(0), 
+  fHistCentrality(0),
+  fHistCentralityAC(0), 
+  fHistMultiplicity(0), 
   fHistHilf1(0),
   fHistHilf2(0), 
   fHistHilf3(0),
@@ -249,7 +227,11 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fHistPtvsYAso(0), 
   fHistRap(0),
   fHistCount(0),
-  fPIDtpcESD(0) 
+  fPIDtpcESD(0),
+  fHistTriggerStat(0),
+  fHistTriggerStatAfterEventSelection(0),
+  fHistMassHcentMult(0),
+  fHistNdim(0)
 
 {
   // Constructor
@@ -271,11 +253,14 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
   fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
   fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
+  fESDtrackCutsV0->SetPtRange(0.2,1.5);
+  fESDtrackCutsV0->SetMinDCAToVertexXY(3);
+  fESDtrackCutsV0->SetMinDCAToVertexZ(3);
 
   fESDCutsV0 = new AliESDv0Cuts("AliESDCutsV0","AliESDCutsV0");
-  fESDCutsV0->SetMaxDcaV0Daughters(2.0);
-  fESDCutsV0->SetMinDcaNegToVertex(1.0);
-  fESDCutsV0->SetMinDcaPosToVertex(1.0);
+  fESDCutsV0->SetMaxDcaV0Daughters(1.0);
+  fESDCutsV0->SetMinDcaNegToVertex(2.0);
+  fESDCutsV0->SetMinDcaPosToVertex(2.0);
 
   //ESD Track cuts
   fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");    
@@ -554,6 +539,18 @@ void AliAnalysisTaskHdibaryonLPpi::UserCreateOutputObjects()
  fHistMCapReso->SetOption("scat");
  fHistMCapReso->SetMarkerStyle(kFullCircle);
 
+ fHistCentrality = new TH1F("Centrality ", "Centrality", 11, -0.5, 10.5);
+ fHistCentrality ->GetXaxis()->SetTitle("Centrality");
+ fHistCentrality ->GetYaxis()->SetTitle("Entries");
+
+ fHistCentralityAC = new TH1F("CentralityAC ", "CentralityAC", 11, -0.5, 10.5);
+ fHistCentralityAC ->GetXaxis()->SetTitle("Centrality");
+ fHistCentralityAC ->GetYaxis()->SetTitle("Entries");
+
+ fHistMultiplicity = new TH1F("Multiplicity ", "Multiplicity", 100, 0, 20000);
+ fHistMultiplicity ->GetXaxis()->SetTitle("Centrality");
+ fHistMultiplicity ->GetYaxis()->SetTitle("Entries");
+
  fHistList->Add(fHistMassDPi);
  fHistList->Add(fHistMassLPi);
  fHistList->Add(fHistMassLambdaPi);
@@ -603,6 +600,9 @@ void AliAnalysisTaskHdibaryonLPpi::UserCreateOutputObjects()
  fHistList->Add(fHistMCdecayAngleReso);
  fHistList->Add(fHistMCpointingAngleReso);
  fHistList->Add(fHistMCapReso);
+ fHistList->Add(fHistCentrality);
+ fHistList->Add(fHistCentralityAC);
+ fHistList->Add(fHistMultiplicity);
  
  fHistHilf1= new TH1F("fHistHilf1", "HD", 300, 0., 10);
  fHistHilf1->GetXaxis()->SetTitle("");
@@ -668,7 +668,6 @@ void AliAnalysisTaskHdibaryonLPpi::UserCreateOutputObjects()
  fHistList->Add(fHistPtvsYGen);
  fHistList->Add(fHistPtvsYAso);
  fHistList->Add(fHistRap);
- fHistList->Add(fHistPtvsEtaAso);
 
  fHistCount = new TH1F("fHistCount","test",17,0,17);
  fHistCount->GetXaxis()->SetBinLabel(1,"Events");
@@ -691,6 +690,34 @@ void AliAnalysisTaskHdibaryonLPpi::UserCreateOutputObjects()
  fHistCount->SetStats(0);
  fHistCount->SetFillColor(38);
  fHistList->Add(fHistCount);
+
+ //trigger statistics histogram
+  fHistTriggerStat = new TH1F("fHistTriggerStat","Trigger statistics", 4,-0.5, 3.5);
+  const Char_t* aTriggerNames[] = { "kMB", "kCentral", "kSemiCentral" };
+  for ( Int_t ii=0; ii < 3; ii++ )
+    fHistTriggerStat->GetXaxis()->SetBinLabel(ii+1, aTriggerNames[ii]);
+
+  fHistTriggerStatAfterEventSelection = new TH1F("fHistTriggerStatAfterEventSelection","Trigger statistics after event selection", 4,-0.5, 3.5);
+  for ( Int_t ii=0; ii < 3; ii++ )
+    fHistTriggerStatAfterEventSelection->GetXaxis()->SetBinLabel(ii+1, aTriggerNames[ii]);
+  fHistList->Add(fHistTriggerStat);
+  fHistList->Add(fHistTriggerStatAfterEventSelection);
+
+  fHistMassHcentMult =  new TH3F("fHistMassHcentMult", "Inv. Mass vs. centrality vs. multiplicity", 100, 2.2, 2.3, 5, 0, 4, 300, 0, 6000);
+  fHistMassHcentMult->GetXaxis()->SetTitle("Invariant mass #Lambdap#pi^{-} (GeV/c^{2})"); // inv. mass
+  fHistMassHcentMult->GetYaxis()->SetTitle("Centrality"); // triggertype
+  fHistMassHcentMult->GetZaxis()->SetTitle("Multiplicity"); // refTPC
+  fHistList->Add(fHistMassHcentMult);
+
+  
+  const Double_t kz = 2*TMath::Pi();
+  Int_t binsD01[16]={  300, 200, 100, 100, 100, 100, 100, 100, 200, 200, 200, 200, 400, 200, 200, 3};
+  Double_t xminD01[16]={2.0, 1.0, 0., -1, 0., 0., 0., 0., 0., 0., 0., 0., -1, 0.,  0., 0};
+  Double_t xmaxD01[16]={2.3, 1.2, kz, 1, 1, 10, 10, 5, 5, 5, 5, 100, 1, 100,  4000, 1};
+  
+
+  fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
+  fHistList->Add(fHistNdim);
 }
 
  //________________________________________________________________________
@@ -755,15 +782,51 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
     }
   if (TMath::Abs(vertex->GetZv()) > 10) return;
   
-  Int_t centrality = 0;
-  
+  Int_t centrality = -5;
+  Double_t centrPerc = -5;
+
   if (fESD->GetEventSpecie() == 4) 
     { // PbPb
       AliCentrality *esdCentrality = fESD->GetCentrality();
       centrality = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
-      if (centrality > 8) return; //0 bis 80 %
+      centrPerc = esdCentrality->GetCentralityPercentile("V0M");
+      if (centrality < 0. || centrality > 8.) return; //0 bis 80 %
+      //  cout<<"Centrality: "<< centrality << endl;
     }
-   
+
+  fHistCentrality->Fill(centrality);   
+
+  //*****************//  
+  //*   Centrality  *//
+  //*****************//
+ 
+  //  Float_t percentile=centrality->GetCentralityPercentile("V0M");
+
+  Bool_t isSelectedCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
+  Bool_t isSelectedSemiCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
+  Bool_t isSelectedMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+ 
+  Int_t triggertype = 17;
+
+  if(isSelectedCentral){
+    fHistTriggerStat->Fill(1);
+    triggertype=1;
+  }
+
+  if(isSelectedSemiCentral){
+    fHistTriggerStat->Fill(2);
+    triggertype=2;
+  }
+
+  if(isSelectedMB){
+    fHistTriggerStat->Fill(0);
+    triggertype=3;
+  }
+
+  //  if(isSelectedCentral || isSelectedSemiCentral || isSelectedMB){
+
+  //*******************************
+
   Int_t runNumber = 0;
   //  itrk = 0;
   runNumber = fESD->GetRunNumber();
@@ -791,6 +854,10 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
   AliKFParticle::SetField(fESD->GetMagneticField());
  	
   AliKFVertex primVtx(*(fESD->GetPrimaryVertex()));
+
+  Int_t refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESD, kTRUE);
+  //cout<<"Multiplicity: "<< refMultTpc << endl;
+  fHistMultiplicity->Fill(refMultTpc);
   
   Double_t mn[3] = {0,0,0};
   Double_t mp[3] = {0,0,0}; 
@@ -823,16 +890,25 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
     TLorentzVector photon;
 
     if (lOnFlyStatus){
-      onl=1;
+      onl=1; 
+      //      return;
     }
     if (!lOnFlyStatus){
       offl=1;
+      //return;
     }
 
+    //    fHistMultiplicity->Fill(refMultTpc); 
+    fHistCentralityAC->Fill(centrality);
     fHistCheck->Fill(offl,onl);
 
     AliESDtrack* trackPosTest = fESD->GetTrack(fV0MIs->GetPindex());
     AliESDtrack* trackNegTest = fESD->GetTrack(fV0MIs->GetNindex());
+
+    //    if (!
+    if (!fEsdTrackCuts->AcceptTrack(trackPosTest)) continue;
+    if (!fESDtrackCutsV0->AcceptTrack(trackNegTest)) continue;
+
 
       //PID via specific energy loss in the TPC
       //define the arrays for the Bethe-Bloch-Parameters
@@ -1035,11 +1111,13 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
     TVector3 h;
     TVector3 h1;
 
+    Int_t mcStatus=0;
+
     h.SetXYZ(-dd[0],-dd[1],-dd[2]);
 
     if (onl==1)fHistMassDPi->Fill(lInvMassLambda);
 
-    if (offl==1){
+    if (offl==1||onl==1){
       fHistMassLPi->Fill(lInvMassLambda);
       
       negE.SetXYZM(mn[0],mn[1],mn[2],cElectronMass);
@@ -1159,6 +1237,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    if (trackN->GetSign()>0) continue;
 	  
 	    if (!fEsdTrackCuts->AcceptTrack(trackN)) continue;
+	    if (!fESDtrackCutsV0->AcceptTrack(trackN)) continue;
 	    
 	    negPi.SetXYZM(mn[0],mn[1],mn[2],cPionMass);
 	    posP.SetXYZM(mp[0],mp[1],mp[2],cProtonMass);
@@ -1205,7 +1284,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    if (decayVertex1) delete decayVertex1;
 	    h1.SetXYZ(-dd1[0],-dd1[1],-dd1[2]);
 
-	    if (dca>1) continue;
+	    //	    if (dca>1) continue;
+	    if (dca>0.1) continue;
 
 	    fourSum=threeSum+posProt;
 
@@ -1219,11 +1299,17 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    fHistMassLambdaPPi->Fill(hDibaryon.M());
 	    fHistHPointingAngle->Fill(pointingAngleH);
 
+            fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
+
 	    Double_t rapidity = hDibaryon.Rapidity();
 	    if(rapidity > 1.0 || rapidity < -1.0) continue;
 
+	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+            fHistNdim->Fill(vec);
+
 	    fHistRap->Fill(rapidity);
-	    if (pointingAngleH > 0.1) continue;
+	    //if (pointingAngleH > 0.1) continue;
+	    if (pointingAngleH > 0.05) continue;
 
 	    ///////////////////////////
 	    //MC part for Associated H
@@ -1281,14 +1367,23 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 		    fHistHilf6->Fill(dca);
 		    fHistPtvsYAso->Fill(hDibaryon.Pt(),hDibaryon.Rapidity());
 		    fHistPtvsEtaAso->Fill(hDibaryon.Pt(),hDibaryon.Eta());
+		    mcStatus=1;
 		  }//end check for third daughter PDG
 		}//end check second daughter PDG
 	      }//end H-Dibaryon
 	    }//end MC
 	    
+	    //	    cout<<"Trigger: "<<triggertype<<endl;
 	    fHistMassH->Fill(hDibaryon.M());
+	    fHistMassHcentMult->Fill(hDibaryon.M(),triggertype,refMultTpc);
 	    ppK=lambdaH+posProt;
 	    fHistMassLambdaP->Fill(ppK.M());
+
+	    //  fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
+
+	    //	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+	    //	    fHistNdim->Fill(vec);
+
 	  }
 	}
       }

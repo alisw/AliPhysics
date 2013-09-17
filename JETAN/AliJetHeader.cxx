@@ -12,16 +12,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
 //---------------------------------------------------------------------
 // Jet header base class 
 // Stores a comment which describes the jet analysis
 // Author: jgcn@mda.cinvestav.mx
 //---------------------------------------------------------------------
-
-#include "AliJetHeader.h"
-ClassImp(AliJetHeader)
  
+#include "AliJetHeader.h"
+
+ClassImp(AliJetHeader)
  
 ////////////////////////////////////////////////////////////////////////
 
@@ -32,16 +34,14 @@ AliJetHeader::AliJetHeader():
   fJetEtaMin(-0.5),
   fJetPhiMax(2*TMath::Pi()),
   fJetPhiMin(0.),
-  fDebug(0)
+  fDebug(0),
+  fBGMode(kFALSE),
+  fRadius(0.4)
 {
-  //
   // Default constructor
-  //
-
 }
  
-////////////////////////////////////////////////////////////////////////
-
+//-----------------------------------------------------------------------
 AliJetHeader::AliJetHeader(const char * name):
   TNamed(name, "Jet Header"),
   fComment("No comment"),
@@ -49,14 +49,12 @@ AliJetHeader::AliJetHeader(const char * name):
   fJetEtaMin(-0.5),
   fJetPhiMax(2*TMath::Pi()),
   fJetPhiMin(0.),
-  fDebug(0)
+  fDebug(0),
+  fBGMode(kFALSE),
+  fRadius(0.4)
 {
-  //
   // Constructor
-  //
-
 }
 
-////////////////////////////////////////////////////////////////////////
 
  

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 // AliFemtoESDTrackCut: A basic track cut that used information from     //
-// ALICE ESD to accept or reject the track.                              //  
+// ALICE ESD to accept or reject the track.                              //
 // Enables the selection on charge, transverse momentum, rapidity,       //
 // pid probabilities, number of ITS and TPC clusters                     //
 // Author: Marek Chojnacki (WUT), mchojnacki@knf.pw.edu.pl               //
@@ -20,12 +20,12 @@
 #include "AliFemtoTrackCut.h"
 
 
-class AliFemtoESDTrackCut : public AliFemtoTrackCut 
+class AliFemtoESDTrackCut : public AliFemtoTrackCut
 {
   public:
 
   enum PIDMethodType {knSigma=0, kContour=1};
-  typedef enum PIDMethodType ReadPIDMethodType; 
+  typedef enum PIDMethodType ReadPIDMethodType;
 
   AliFemtoESDTrackCut();
   virtual ~AliFemtoESDTrackCut();
@@ -62,9 +62,12 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
-  void SetNoMostProbable(); 
+  void SetLeastProbableProton();
+  void SetNoMostProbable();
   void SetPIDMethod(ReadPIDMethodType newMethod);
   void SetNsigmaTPCTOF(Bool_t);
+  void SetNsigmaTPConly(Bool_t);
+  void SetNsigma(Double_t);
   void SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff);
 
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
@@ -81,17 +84,19 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   float             fPidProbPion[2];     // bounds for pion probability
   float             fPidProbKaon[2];     // bounds for kaon probability
   float             fPidProbProton[2];   // bounds for proton probability
-  float             fPidProbMuon[2];     // bounds for muon probability 
+  float             fPidProbMuon[2];     // bounds for muon probability
 
   AliESDtrackCuts::ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD) - from AliESDtrackcuts!
-  bool              fLabel;              // if true label<0 will not pass throught 
+  bool              fLabel;              // if true label<0 will not pass throught
   long              fStatus;             // staus flag
-  ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour 
+  ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour
   Bool_t            fNsigmaTPCTOF;       // true if squared nsigma from TPC and TOF, false if separately from TPC and TOF
+  Bool_t            fNsigmaTPConly;       // true if nsigma from TPC only
+  Double_t            fNsigma;       // number of sigmas - 3 by default
 
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC
-  int               fminITScls;          // min number of clusters assigned in the ITS 
+  int               fminITScls;          // min number of clusters assigned in the ITS
   float             fMaxITSchiNdof;      // maximum allowed chi2/ndof for ITS clusters
   float             fMaxTPCchiNdof;      // maximum allowed chi2/ndof for TPC clusters
   float             fMaxSigmaToVertex;   // maximum allowed sigma to primary vertex
@@ -138,7 +143,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
 
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
   ClassDef(AliFemtoESDTrackCut, 1)
 #endif
     };
@@ -161,6 +166,7 @@ inline void AliFemtoESDTrackCut::SetminITScls(const int& minITScls){fminITScls=m
 inline void AliFemtoESDTrackCut::SetMostProbablePion() { fMostProbable = 2; }
 inline void AliFemtoESDTrackCut::SetMostProbableKaon() { fMostProbable = 3; }
 inline void AliFemtoESDTrackCut::SetMostProbableProton() { fMostProbable = 4; }
+inline void AliFemtoESDTrackCut::SetLeastProbableProton() { fMostProbable = 5; }
 inline void AliFemtoESDTrackCut::SetNoMostProbable() { fMostProbable = 0; }
 inline void AliFemtoESDTrackCut::SetMaxITSChiNdof(const float& maxchi) { fMaxITSchiNdof = maxchi; }
 inline void AliFemtoESDTrackCut::SetMaxTPCChiNdof(const float& maxchi) { fMaxTPCchiNdof = maxchi; }

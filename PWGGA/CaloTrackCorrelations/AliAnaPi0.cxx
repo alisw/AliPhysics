@@ -1135,7 +1135,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
     AliStack * stack = GetMCStack();
     if(stack)
     {
-      for(Int_t i=0 ; i<stack->GetNtrack(); i++){
+      for(Int_t i=0 ; i<stack->GetNtrack(); i++)
+      {
+        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+        
         TParticle * prim = stack->Particle(i) ;
         Int_t pdg = prim->GetPdgCode();
         //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
@@ -1175,38 +1178,39 @@ void AliAnaPi0::FillAcceptanceHistograms()
           //Origin of meson
           if(fFillOriginHisto)
           {
-          Int_t momindex  = prim->GetFirstMother();
-          if(momindex >= 0)
-          {
-            TParticle* mother = stack->Particle(momindex);
-            Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
-            Int_t momstatus = mother->GetStatusCode();
-            if(pdg == 111)
+            Int_t momindex  = prim->GetFirstMother();
+            if(momindex >= 0)
             {
-              if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
-              else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
-              else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
-              else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
-              else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
-              else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
-              else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
-              else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
-              else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
-              else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
-              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
-            }//pi0
-            else
-            {
-              if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
-              else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
-              else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
-              else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
-              else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
-              else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
-              //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
-            }
-          } // pi0 has mother
+              TParticle* mother = stack->Particle(momindex);
+              Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
+              Int_t momstatus = mother->GetStatusCode();
+              if(pdg == 111)
+              {
+                if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
+                else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
+                else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
+                else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
+                else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
+                else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
+                else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
+                else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
+                else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances
+                else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
+              }//pi0
+              else
+              {
+                if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
+                else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
+                else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
+                else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
+                else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
+                //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+              }
+            } // pi0 has mother
           }
+          
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) continue; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetFirstDaughter() ;
@@ -1271,7 +1275,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
               {
                 Float_t  asym  = TMath::Abs((lv1.E()-lv2.E()) / (lv1.E()+lv2.E()));
                 Double_t angle = lv1.Angle(lv2.Vect());
-
+                
                 if(pdg==111)
                 {
                   fhPrimPi0AccE  ->Fill(pi0E) ;
@@ -1296,7 +1300,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
                   fhPrimEtaAccPtCentrality->Fill(pi0Pt,cen) ;
                   fhPrimEtaAccPtEventPlane->Fill(pi0Pt,ep ) ;
-
+                  
                   if(fFillAngleHisto)
                   {
                     fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);
@@ -1320,6 +1324,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
       
       for(Int_t i=0; i < nprim; i++)
       {
+        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+        
         AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);   
         
         // Only generator particles, when they come from PYTHIA, PHOJET, HERWIG ...
@@ -1458,7 +1464,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
               {
                 Float_t  asym  = TMath::Abs((lv1.E()-lv2.E()) / (lv1.E()+lv2.E()));
                 Double_t angle = lv1.Angle(lv2.Vect());
-
+                
                 if(pdg==111)
                 {
                   //                printf("ACCEPTED pi0: pt %2.2f, phi %3.2f, eta %1.2f\n",pi0Pt,phi,pi0Y);
@@ -1468,7 +1474,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   fhPrimPi0AccPtCentrality->Fill(pi0Pt,cen) ;
                   fhPrimPi0AccPtEventPlane->Fill(pi0Pt,ep ) ;
-
+                  
                   if(fFillAngleHisto)
                   {
                     fhPrimPi0OpeningAngle    ->Fill(pi0Pt,angle);
@@ -1484,7 +1490,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
                   fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
                   fhPrimEtaAccPtCentrality->Fill(pi0Pt,cen) ;
                   fhPrimEtaAccPtEventPlane->Fill(pi0Pt,ep ) ;
-
+                  
                   if(fFillAngleHisto)
                   {
                     fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);
@@ -2155,6 +2161,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if(eventbin < 0) return ;
     
     TList * evMixList=fEventsList[eventbin] ;
+    
+    if(!evMixList)
+    {
+      printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mix event list not available, bin %d \n",eventbin);
+      return;
+    }
+    
     Int_t nMixed = evMixList->GetSize() ;
     for(Int_t ii=0; ii<nMixed; ii++)
     {  

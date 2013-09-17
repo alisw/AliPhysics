@@ -69,6 +69,25 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   
   void SetWeight ( TObject* wgtObj );
   TObject* GetWeight ( const char* wgtName );
+  
+  enum {
+    kPhysSelPass,    ///< Physics selected events
+    kPhysSelReject,  ///< Events non-passing selection
+    kNselections     ///< Number of selections
+  };
+  
+  enum {
+    kCharmMu,       ///< Mu from charm
+    kBeautyMu,      ///< Mu from beauty
+    kQuarkoniumMu,  ///< Mu from resonance
+    kWbosonMu,      ///< Mu from W
+    kDecayMu,       ///< Decay mu
+    kSecondaryMu,   ///< Secondary mu
+    kRecoHadron,    ///< Reconstructed hadron
+    kUnidentified,  ///< Particle that fails matching kine
+    kNtrackSources  ///< Total number of track sources
+  };
+
 
  protected:
   
@@ -93,32 +112,15 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   /////////////////////
     
   // Methods for MC
-  Int_t GetParticleType(AliVParticle* track);
-  Int_t RecoTrackMother(AliVParticle* mcParticle);
+  Int_t GetParticleType ( AliVParticle* track , Bool_t forceReachFirstAncestor = kFALSE);
+  Int_t RecoTrackMother (AliVParticle* mcParticle, Bool_t forceReachFirstAncestor = kFALSE );
   
   // Methods for mergeable object collections
   Bool_t AddObjectToCollection(TObject* object, Int_t index = -1);
   TObject* GetMergeableObject(TString physSel, TString trigClassName, TString centrality, TString objectName);
   TObject* GetSum(TString physSel, TString trigClassNames, TString centrality, TString objectPattern);
   
-  enum {
-    kPhysSelPass,    ///< Physics selected events
-    kPhysSelReject,  ///< Events non-passing selection
-    kNselections     ///< Number of selections
-  };
-  
-  enum {
-    kCharmMu,       ///< Mu from charm
-    kBeautyMu,      ///< Mu from beauty
-    kQuarkoniumMu,  ///< Mu from resonance
-    kWbosonMu,      ///< Mu from W
-    kDecayMu,       ///< Decay mu
-    kSecondaryMu,   ///< Secondary mu
-    kRecoHadron,    ///< Reconstructed hadron
-    kUnidentified,  ///< Particle that fails matching kine
-    kNtrackSources  ///< Total number of track sources
-  };
-  
+    
   AliMuonEventCuts* fMuonEventCuts; ///< Muon event cuts
   AliMuonTrackCuts* fMuonTrackCuts; ///< Muon track cuts
   AliMuonPairCuts* fMuonPairCuts;   ///< Muon pair track cuts

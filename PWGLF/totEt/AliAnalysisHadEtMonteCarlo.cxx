@@ -29,6 +29,10 @@
 #include "AliCentrality.h"
 #include "AliLog.h"
 #include "AliPWG0Helper.h"
+#include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h" 
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 //class AliPWG0Helper;
 //#include "$ALICE_ROOT/PWG0/AliPWG0Helper.h"
 
@@ -166,19 +170,27 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  }
 	else{
 	  Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
-	  pID->MakeTPCPID(track);
-	  pID->MakeITSPID(track);
+// 	  pID->MakeTPCPID(track);
+// 	  pID->MakeITSPID(track);
 	  if(cutset!=1){
-	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
-	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
-	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kKaon));
-	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kElectron));
+	    nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion)); 
+	    nSigmaProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)); 
+	    nSigmaKaon =TMath::Abs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon)); 
+	    nSigmaElectron =TMath::Abs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron)); 
+// 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
+// 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
+// 	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kKaon));
+// 	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kElectron));
 	  }
 	  else{
-	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kPion));
-	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kProton));
-	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kKaon));
-	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kElectron));
+	    nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kPion)); 
+	    nSigmaProton = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton)); 
+	    nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kKaon)); 
+	    nSigmaElectron = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron)); 
+// 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kPion));
+// 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kProton));
+// 	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kKaon));
+// 	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kElectron));
 	  }
 // 	  bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
 // 	  bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
@@ -232,21 +244,21 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      //for calculating et as it's done in the reconstructed data
 	      Float_t corrBkgd=0.0;
 	      Float_t corrNotID=0.0;
-	      Float_t corrNoID=0.0;// = fHadEtReco->GetCorrections()->GetNotIDCorrectionNoPID(track->Pt());
+	      //Float_t corrNoID=0.0;// = fHadEtReco->GetCorrections()->GetNotIDCorrectionNoPID(track->Pt());
 	      Float_t corrEff = 0.0;
-	      Float_t corrEffNoID = 0.0;
+	      //Float_t corrEffNoID = 0.0;
 	      Float_t et = 0.0;
 	      if(cutset==2){//TPC
 		corrBkgd = fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
-		corrEffNoID = fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
+		//corrEffNoID = fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
 		corrNotID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionTPC();
-		corrNoID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionTPCNoID();
+		//corrNoID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionTPCNoID();
 	      }
 	      if(cutset==1){//ITS
 		corrBkgd = fHadEtReco->GetCorrections()->GetBackgroundCorrectionITS(track->Pt());
-		corrEffNoID = fHadEtReco->GetCorrections()->GetITSEfficiencyCorrectionHadron(track->Pt(),fCentBin);
+		//corrEffNoID = fHadEtReco->GetCorrections()->GetITSEfficiencyCorrectionHadron(track->Pt(),fCentBin);
 		corrNotID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionITS();
-		corrNoID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionITSNoID();
+		//corrNoID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionITSNoID();
 	      }
 	      
 	      
@@ -315,7 +327,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		if(pdgCode==fgAntiProtonCode) mypid = 2;
 		if(pdgCode==fgKMinusCode) mypid = 3;
 		if(pdgCode==fgEMinusCode) mypid = 4;
-		bool filled = false;      
+		//bool filled = false;      
 		//for smearing investigations
 		if(fInvestigateSmearing && cutset==2){
 		  pTtotalReco += simPart->Pt();
@@ -474,7 +486,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sPiPlusAssumingKaon",cutName->Data()),pT,eta,myEtK);
 		    FillHisto2D(Form("EtReconstructed%sPiPlusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  }
-		  filled = true;
+		  //filled = true;
 		}
 		if(pdgCode == fgPiMinusCode){
 		  float myEt = Et(simPart);
@@ -507,7 +519,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sPiMinusAssumingKaon",cutName->Data()),pT,eta,myEtK);
 		    FillHisto2D(Form("EtReconstructed%sPiMinusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  }
-		  filled = true;
+		  //filled = true;
 		}
 		if(pdgCode == fgKPlusCode){
 		  float myEt = Et(simPart);
@@ -541,7 +553,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
 		    FillHisto2D(Form("EtReconstructed%sKPlusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  }
-		  filled = true;
+		  //filled = true;
 		}
 		if(pdgCode == fgKMinusCode){
 		  float myEt = Et(simPart);
@@ -575,7 +587,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
 		    FillHisto2D(Form("EtReconstructed%sKMinusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  }
-		  filled = true;
+		  //filled = true;
 		}
 		if(pdgCode == fgProtonCode){
 		  float myEt = Et(simPart);
@@ -609,7 +621,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEt);
 		    FillHisto2D(Form("EtReconstructed%sProtonAssumingProton",cutName->Data()),pT,eta,myEt);
 		  }
-		  filled = true;
+		  //filled = true;
 
 		  if( !fRunLightweight){
 		    if(fBaryonEnhancement){
@@ -653,7 +665,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEt);
 		    FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingProton",cutName->Data()),pT,eta,myEt);
 		  }
-		  filled = true;
+		  //filled = true;
 		  if( !fRunLightweight){
 		    if(fBaryonEnhancement){
 		      float enhancement = ProtonBaryonEnhancement(track->Pt());
@@ -672,7 +684,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      FillHisto2D(Form("EtReconstructed%sMisidentifiedElectrons",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
 		    }
 		  }
-		  filled = true;
+		  //filled = true;
 		}
 		if(pdgCode == fgEMinusCode){
 		  if( !fRunLightweight){
@@ -683,7 +695,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    float myEt = Et(simPart);
 		    FillHisto2D(Form("EtReconstructed%sEMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  }
-		  filled = true;
+		  //filled = true;
 		}
 		if( !fRunLightweight){
 		  if(myEtReco>0.0){FillHisto2D(Form("ETresolution%s",cutName->Data()),myEtReco,(myEtSim-myEtReco)/myEtReco,1.0);}
@@ -1750,6 +1762,22 @@ void AliAnalysisHadEtMonteCarlo::Init()
 }
 void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   //for simulated Et only (no reconstruction)
+
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if (!man) {
+    AliFatal("Analysis manager needed");
+    return;
+  }
+  AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
+  if (!inputHandler) {
+    AliFatal("Input handler needed");
+    return;
+  }
+
+  //pid response object
+  fPIDResponse=inputHandler->GetPIDResponse();
+  if (!fPIDResponse) AliError("PIDResponse object was not created");
+
   if( !fRunLightweight){
     CreateEtaPtHisto2D(TString("EtSimulatedPiPlus"),TString("Simulated E_{T} from #pi^{+}"));
     CreateEtaPtHisto2D("EtSimulatedPiMinus","Simulated E_{T} from #pi^{-}");

@@ -64,7 +64,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
-  static const Int_t fEDbins   = 1;
+  static const Int_t fEDbins   = 2;
   static const Int_t fCentBins = 10;// 0-50%
   static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
 
@@ -75,7 +75,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Int_t GetNumEDBins() const {return AliChaoticity::fEDbins;}
   void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliChaoticity::fKbinsT][AliChaoticity::fCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
-  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2DGaus[2]=0x0, TH2D *temp2DTherm[6]=0x0, TH3D *temp3Dos[6]=0x0, TH3D *temp3Dss[6]=0x0);
+  void SetFSICorrelations(Bool_t legoCase=kTRUE, TH2D *temp2DTherm[6]=0x0, TH3D *temp3Dos[6]=0x0, TH3D *temp3Dss[6]=0x0);
   //
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
@@ -111,10 +111,8 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void ArrangeQs(Short_t, Short_t, Short_t, Short_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Short_t, Short_t, Float_t&, Float_t&, Float_t&);
   Float_t GetQinv(Short_t, Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
-  //void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
-  void GetWeight(Float_t[], Float_t[], Float_t[], Float_t[], Float_t&, Float_t&);
+  void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
   void FourVectProdTerms(Float_t [], Float_t [], Float_t [], Float_t&, Float_t&, Float_t&, Float_t&, Float_t&);
-  Float_t FSICorrelationGaus2(Int_t, Int_t, Int_t, Float_t);
   Float_t FSICorrelationTherm2(Int_t, Int_t, Float_t);
   Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
   Float_t MCWeightOSL(Int_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Float_t);
@@ -314,11 +312,11 @@ class AliChaoticity : public AliAnalysisTaskSE {
   AliChaoticityNormPairStruct *fNormPairs[3];//!
   
  public:
-  TH2D *fFSI2SS[2];
-  TH2D *fFSI2OS[2];
+  TH2D *fMomResC2;
+  TH2D *fFSI2SS;
+  TH2D *fFSI2OS;
   TH3D *fFSIOmega0SS[6];
   TH3D *fFSIOmega0OS[6];
-  TH2D *fMomResC2;
   TH3F *fNormWeight[fKbinsT][fCentBins];
   
 

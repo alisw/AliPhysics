@@ -15,7 +15,6 @@
 
 //#define kNumberOfParentParticleClassesInMC 8
 
-
 //class AliLRCProcess;
 class AliLRCBase;
 class AliESDtrackCuts;
@@ -46,7 +45,7 @@ public:
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
-//    virtual void   UserExecLoop( Double_t phiAdditional = 0 );//Option_t *option);
+    //    virtual void   UserExecLoop( Double_t phiAdditional = 0 );//Option_t *option);
     virtual void   Terminate(Option_t *);
     //----------------------------------
 
@@ -56,10 +55,11 @@ public:
     void SetMinNumberOfSPDtracklets( Int_t MinSPDtracklets );   //Sets  min number of SPD tracklets
     void SetMaxPtLimit(Double_t MaxPtLimit);   //Sets  Max Pt filter
     void SetMinPtLimit(Double_t MinPtLimit);   //Sets  Min Pt filter
+    void SetKineLowPtCut(Double_t MinKineParticlePtLimit);   //Sets  Min Pt filter for kine particles
     void SetCheckForkVtx(Bool_t CheckForkVtx){fCheckForkVtx=CheckForkVtx;} // Accept only events with veretex
     void SetCheckForVtxPosition(Bool_t CheckForVtxPosition ){fCheckForVtxPosition=CheckForVtxPosition;} //Accept only events with veretex in slected range
     void SetTrackCuts(AliESDtrackCuts* const cuts)  { fEsdTrackCuts = cuts; }
-    void SetAODtrackCutBit(Int_t bit){ fAODtrackCutBit = bit;  } //AOD track cut bit
+    void SetAODtrackCutBit(UInt_t bit){ fAODtrackCutBit = bit;  } //AOD track cut bit
     void SetShowEventStats(Bool_t ShowEventStats)  {fShowEventStats= ShowEventStats;}
     void SetShowPerTrackStats(Bool_t ShowPerTrackStats) {fShowPerTrackStats=ShowPerTrackStats;}
     void SetVtxDiamond(Double_t Vx, Double_t Vy, Double_t Vz) {fVxMax = Vx;fVyMax =Vy;fVzMax = Vz;}
@@ -72,6 +72,7 @@ public:
     void SetEtAnalysis(Bool_t isEtAnalysisFlag ){ fEtInsteadOfPt = isEtAnalysisFlag; }
     void SetUsePhiShufflingByHand(Bool_t usePhiShufflingByHand ){ fUsePhiShufflingByHand = usePhiShufflingByHand; }
     void SetUseToyEvents(Bool_t useToyEvents ){ fUseToyEvents = useToyEvents; }
+    void SetNumberOfToyEvents(Int_t nEvents ){ fNumberOfToyEvents = nEvents; }
     void SetArtificialInefficiencyCoeff( Double_t artificialInefficiencyCoeff ) { fArtificialInefficiency = artificialInefficiencyCoeff; }   //Sets coeff for artificial inefficiency
 
     //void SetNumberOfPhiSectorsByHand( Int_t numberOfPhiSectorsByHand ) { fNumberOfPhiSectorsByHand = numberOfPhiSectorsByHand; }
@@ -81,9 +82,9 @@ public:
     AliESDtrackCuts* GetTrackCuts() const                         { return fEsdTrackCuts; }
     AliLRCBase * Proc(Int_t index);// Get Processor i
 
-    void SetParticleTypeForTask( char* strF, char* strB );
-//    void SetMCparticleClassForFillingLRC( TString strParticleType ) { fStrMCparticleClassForFillingLRC = strParticleType; }
-//    void SetEtaCutsForSpecMCanalysis( double etaMin, double etaMax  ) { fEtaMCanalysisCutMin = etaMin; fEtaMCanalysisCutMax = etaMax; }
+    void SetParticleTypeForTask( TString strF, TString strB );  //( char* strF, char* strB );
+    //    void SetMCparticleClassForFillingLRC( TString strParticleType ) { fStrMCparticleClassForFillingLRC = strParticleType; }
+    //    void SetEtaCutsForSpecMCanalysis( double etaMin, double etaMax  ) { fEtaMCanalysisCutMin = etaMin; fEtaMCanalysisCutMax = etaMax; }
 
     void SetV0ACMultThreshold( int minMult ) { fThresholdOnV0mult = minMult; }
 
@@ -102,7 +103,10 @@ public:
     Int_t GetNumberOfTrackCutForBits() const                         { return fArrTrackCuts.GetEntries();/*fNumberOfCutsToRemember*/; }
 
     void SetAnalysisLevel(const char* analysisLevel) {  fAnalysisLevel = analysisLevel;}
-    const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
+    const char* GetAnalysisLevel() { return fAnalysisLevel.Data(); }
+
+    void SetMCESD( Bool_t flagMCESD ) { fAnalyseMCESD = flagMCESD; }
+    Bool_t GetMCESD() const { return fAnalyseMCESD; }
 
     void SetFlagWatchZDC( Bool_t flagWatchZDC) {  fFlagWatchZDC = flagWatchZDC;}
     void SetFlagWatchV0 ( Bool_t flagWatchV0 ) {  fFlagWatchV0  = flagWatchV0 ;}
@@ -113,7 +117,13 @@ public:
 
     void FillLRCProcessors( int nTracks, Double_t eventCentrality );
     void ProfilePhiByHand( int numberOfAcceptedTracksForLRC );
+    void UseToyEvents();
 
+    void SetEtaRegionForTests( Double_t etaRegionForTests ) {  fEtaRegionForTests = etaRegionForTests; }
+    Double_t GetEtaRegionForTests() {  return fEtaRegionForTests; }
+
+    void SetMultCutInEtaRegion( Double_t multCutInEtaRegion ) {  fMultCutInEtaRegion = multCutInEtaRegion; }
+    Double_t GetMultCutInEtaRegion() {  return fMultCutInEtaRegion; }
 
     inline void FixAngleInTwoPi( Double_t &lPhi )
     {
@@ -123,22 +133,21 @@ public:
             lPhi += 2 * TMath::Pi();
     }
 
+    void SetFlagSuppressAddingSomeHistos( Bool_t flagSuppressAddingSomeHistos ) {  fFlagSuppressAddingSomeHistos = flagSuppressAddingSomeHistos; }
 
-    enum enTaskObjectParameters { kMaxParticlesNumber = 1000, kMaxLRCprocArrayPointers = 10000 }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)
+    enum enTaskObjectParameters { kMaxParticlesNumber = 15000, kMaxLRCprocArrayPointers = 10000 }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)
 
 protected:
-    void SetParticleTypeToProcessors( int windowId, char* strPid );
+    void SetParticleTypeToProcessors( int windowId, TString strPid );
     
+    Int_t fNumberOfPhiSectors; // n of phi rotations
+    Bool_t fFlagSuppressAddingSomeHistos; //flag to include in output list some histos or not include
+    //    AliLRCBase *fLRCprocArrayPointers[kMaxLRCprocArrayPointers];
+
     // Track cuts
     TString fAnalysisLevel; //ESD, AOD or MC
-
     AliESDtrackCuts *fEsdTrackCuts;               // esd track cuts
-    Int_t fAODtrackCutBit;//track cut bit from track selection (only used for AODs)
-
-    Int_t fNumberOfPhiSectors; // n of phi rotations
-//    AliLRCBase *fLRCprocArrayPointers[kMaxLRCprocArrayPointers];
-
-
+    UInt_t fAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
     // Array with different track cuts to remember in simple event Tree
     TObjArray fArrTrackCuts;    //AliESDtrackCuts*  [100];     // Arr with different track cuts
@@ -155,6 +164,7 @@ protected:
     // Acceptance cuts
     Double_t fMaxPtLimit;  //Max Pt filter
     Double_t fMinPtLimit;  // Min Pt filter
+    Double_t fKineLowPtCut;  // Min Pt for Kine tracks
 
     // Nch cuts
     Int_t fMinAcceptedTracksCut;   //Minimum number of accepted tracks in event
@@ -172,10 +182,13 @@ protected:
     TList* fOutList;      //! Task Output data container
 
     Bool_t fRunKine;      // ESD/AOD  - KINE switch
+    Bool_t fAnalyseMCESD;     // MCESD switch
     Bool_t fShowEventStats; //  Allows per event debug output (trigger Nch, cuts etc)
     Bool_t fShowPerTrackStats; // Allows per track debug output
 
 
+    Double_t fEtaRegionForTests; //eta region to tests
+    Double_t fMultCutInEtaRegion;	// cut on mult in eta region
 
     // QA histos
 
@@ -188,6 +201,10 @@ protected:
     TH1D *fHistVy;  //! Vy hist
     TH1D *fHistVz;  //! Vz hist
 
+    TH1D *fHistVxMCrecoDiff;  //! Vx hist MC-reco diff
+    TH1D *fHistVyMCrecoDiff;  //! Vy hist MC-reco diff
+    TH1D *fHistVzMCrecoDiff;  //! Vz hist MC-reco diff
+
     TH1I *fHistVertexNconributors;  //! vertex contributors number
     TH1I *fHistNumberOfPileupVerticesTracks;  //! number of pileup verteces in event (ESD or AOD) by tracks
     TH1I *fHistNumberOfPileupVerticesSPD;  //! number of pileup verteces in event (ESD or AOD) by SPD
@@ -197,6 +214,7 @@ protected:
 
     TH1F *fHistPt; //! Overal Pt spectrum
     TH1F *fHistEta; //! Overal Eta spectrum
+    TH1F *fHistEtaAODpure; //! Overal Eta spectrum aod pure before cuts
     TH1F *fHistPhi; //! Overal Phi spectrum
     TH2D *fHistEtaPhi;       //! 2D plot for checking acceptance
     TH1F *fHistPhiLRCrotationsCheck; //! Overal Phi spectrum for LRC rotations
@@ -210,7 +228,9 @@ protected:
     TH1D *fHistMultBeforeCuts;   //! Histo: Number of tracks before applying cuts
     TH1D *fHistAcceptedMult;   //! Number of accepted tracks histo
     TH1D *fHistAcceptedTracks;   //! Number of tracks accepted for filling LRC processors, histo
-    TH1D *fHistMultiplicityInEtaRegion; //! Number of tracks in |eta|<1
+    TH1D *fHistMultiplicityInEtaRegion; //! Number of tracks in |eta| region
+    TH1D *fHistMultiplicityInEtaRegionAfterPtCuts; //! Number of tracks in |eta| region after Pt Cuts
+    TH2D *fHist2DMultiplicityMCESDInEtaRegion; //! Number of tracks in |eta| region (MC vs ESD)
     TH1D *fHistAcceptedTracksAfterPtCuts;   //! Number of tracks accepted for filling LRC processors, histo
     TH1D *fHistAcceptedTPCtracks;   //! Number of accepted tracks with TPC inner param
     TH1D *fHistClustersTPC;   //! Number of TPC clusters distribution
@@ -275,6 +295,7 @@ protected:
     Int_t fThresholdOnV0mult; //min V0AC mult to analyse this event (default is 0)
 
 
+    //centrality class
     Float_t fMinCentralityClass;    // min bound on centrality percentile
     Float_t fMaxCentralityClass;    // max bound on centrality percentile
 
@@ -284,6 +305,7 @@ protected:
 
     Bool_t fUsePhiShufflingByHand; //flag for manual suffling of tracks phi
     Bool_t fUseToyEvents; //flag for manual suffling of tracks phi
+    Int_t fNumberOfToyEvents; //number of toy events
 
     Int_t fTmpCounter; //! TMP
 
@@ -297,8 +319,8 @@ protected:
     TH1D *fHistPidMaxProbability;  //!hist of max probabilities for arrays PID species
     TH1D *fHistPidPureMaxProbability;  //!hist of max probabilities for arrays PID species (when detId is TPC+TOF)
 
-    char fStrPIDforFwd[20];		//PID name for FWD win
-    char fStrPIDforBwd[20];		//PID name for BWD win
+    TString fStrPIDforFwd;		//PID name for FWD win
+    TString fStrPIDforBwd;		//PID name for BWD win
     Bool_t fPIDsensingFlag; 		//flag that we sense PID in processors
 
 
@@ -331,37 +353,37 @@ protected:
 
 
     //test MC particles
-//    TH1D *fHistMCvertexRdeltaFromParent;  //!MC R hist
-//    TH1F *fHistMCparentsStat;  //! MC parent ratios for different partile classes
-//    TH1F *fHistMCparentsEta[kNumberOfParentParticleClassesInMC];  //! MC parents eta distributions for different particle classes
-//    TH1F *fHistMCchildsEta[kNumberOfParentParticleClassesInMC];  //! MC childs eta distributions for different partile classes
-//    TH1F *fHistMCdeltaEtaChildParent[kNumberOfParentParticleClassesInMC];  //! MC delta eta b/n parent and child
-//    TH1F *fHistMCdeltaPhiChildParent[kNumberOfParentParticleClassesInMC];  //! MC delta phi b/n parent and child
-//    TH2D *fHist2DMCchildrenPhiChildParent[kNumberOfParentParticleClassesInMC];  //! MC delta b/n parent and child in eta-phi
+    //    TH1D *fHistMCvertexRdeltaFromParent;  //!MC R hist
+    //    TH1F *fHistMCparentsStat;  //! MC parent ratios for different partile classes
+    //    TH1F *fHistMCparentsEta[kNumberOfParentParticleClassesInMC];  //! MC parents eta distributions for different particle classes
+    //    TH1F *fHistMCchildsEta[kNumberOfParentParticleClassesInMC];  //! MC childs eta distributions for different partile classes
+    //    TH1F *fHistMCdeltaEtaChildParent[kNumberOfParentParticleClassesInMC];  //! MC delta eta b/n parent and child
+    //    TH1F *fHistMCdeltaPhiChildParent[kNumberOfParentParticleClassesInMC];  //! MC delta phi b/n parent and child
+    //    TH2D *fHist2DMCchildrenPhiChildParent[kNumberOfParentParticleClassesInMC];  //! MC delta b/n parent and child in eta-phi
 
-//    TH1F *fHistMCNumberOfChildren[kNumberOfParentParticleClassesInMC]; //! Number of children for fathers in MC (for different father classes)
-//    TH1D *fHistMCchildrenEtaDeviationsFromAverage[kNumberOfParentParticleClassesInMC];  //! MC delta b/n av. eta and each child's eta for each father (for different father classes)
-//    TH1D *fHistMCchildrenPhiDeviationsFromAverage[kNumberOfParentParticleClassesInMC];  //! MC delta b/n av. phi and each child's phi for each father (for different father classes)
-//    TH2D *fHist2DMCchildrenPhiDeviationsFromAverage[kNumberOfParentParticleClassesInMC];  //! MC delta b/n av. eta-phi and each child's eta and phi for each father (for different father classes)
+    //    TH1F *fHistMCNumberOfChildren[kNumberOfParentParticleClassesInMC]; //! Number of children for fathers in MC (for different father classes)
+    //    TH1D *fHistMCchildrenEtaDeviationsFromAverage[kNumberOfParentParticleClassesInMC];  //! MC delta b/n av. eta and each child's eta for each father (for different father classes)
+    //    TH1D *fHistMCchildrenPhiDeviationsFromAverage[kNumberOfParentParticleClassesInMC];  //! MC delta b/n av. phi and each child's phi for each father (for different father classes)
+    //    TH2D *fHist2DMCchildrenPhiDeviationsFromAverage[kNumberOfParentParticleClassesInMC];  //! MC delta b/n av. eta-phi and each child's eta and phi for each father (for different father classes)
 
-//    TString fStrMCparticleClassForFillingLRC; // name of particle class for LRC filling (default is All)
-//    Double_t fEtaMCanalysisCutMin; // spec MC analysis: cut on eta
-//    Double_t fEtaMCanalysisCutMax; // spec MC analysis: cut on eta
+    //    TString fStrMCparticleClassForFillingLRC; // name of particle class for LRC filling (default is All)
+    //    Double_t fEtaMCanalysisCutMin; // spec MC analysis: cut on eta
+    //    Double_t fEtaMCanalysisCutMax; // spec MC analysis: cut on eta
 
-//    TH1F *fHistMCparentDeepness;  //! MC deepness of parent tree from "physical primary" children
-//    TH1F *fHistMCparentsInitialStat;  //! MC initial papa particle class distr
+    //    TH1F *fHistMCparentDeepness;  //! MC deepness of parent tree from "physical primary" children
+    //    TH1F *fHistMCparentsInitialStat;  //! MC initial papa particle class distr
 
-//    TH1F *fHistMCEtaInitialQuark;  //! MC eta distr of "initial" quarks
-//    TH1F *fHistMCEtaInitialGluon;  //! MC eta distr of "initial" gluons
-//    TH1F *fHistMCEtaInitialProton;  //! MC eta distr of "initial" protons
+    //    TH1F *fHistMCEtaInitialQuark;  //! MC eta distr of "initial" quarks
+    //    TH1F *fHistMCEtaInitialGluon;  //! MC eta distr of "initial" gluons
+    //    TH1F *fHistMCEtaInitialProton;  //! MC eta distr of "initial" protons
 
-//    TH1F *fHistMCnumberInitialQuarksInEvent;  //! MC initial quarks number distr
-//    TH1F *fHistMCnumberInitialGluonsInEvent;  //! MC initial gluons number distr
-//    TH1F *fHistMCnumberInitialProtonInEvent;  //! MC initial proton number distr (check that there are 2)
+    //    TH1F *fHistMCnumberInitialQuarksInEvent;  //! MC initial quarks number distr
+    //    TH1F *fHistMCnumberInitialGluonsInEvent;  //! MC initial gluons number distr
+    //    TH1F *fHistMCnumberInitialProtonInEvent;  //! MC initial proton number distr (check that there are 2)
 
-//    TH1F *fHistMCnumberChildrenFromInitialQuarksInEvent;  //! MC children number from initial quarks distr
-//    TH1F *fHistMCnumberChildrenFromInitialGluonsInEvent;  //! MC children number from initial gluons distr
-//    TH1F *fHistMCnumberChildrenFromInitialProtonInEvent;  //! MC children number from initial proton distr (check that there are 2)
+    //    TH1F *fHistMCnumberChildrenFromInitialQuarksInEvent;  //! MC children number from initial quarks distr
+    //    TH1F *fHistMCnumberChildrenFromInitialGluonsInEvent;  //! MC children number from initial gluons distr
+    //    TH1F *fHistMCnumberChildrenFromInitialProtonInEvent;  //! MC children number from initial proton distr (check that there are 2)
 
 
     // 4.01.2012: MyTree stuff

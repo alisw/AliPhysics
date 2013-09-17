@@ -1,11 +1,11 @@
 void SETUP()
 {
    // Load some ROOT libraries
-   gSystem->Load("libFASTJETAN");
+   gSystem->Load("libFASTJETANdev");
 
    // Set the Inlucde paths
-   gROOT->ProcessLine(".include FASTJETAN");
+   gROOT->ProcessLine(".include FASTJETANdev/DEV");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("FASTJETAN_INCLUDE", "FASTJETAN");
+   gSystem->Setenv("FASTJETANDEV_INCLUDE", "FASTJETANdev/DEV");
 }

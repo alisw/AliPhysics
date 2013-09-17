@@ -4,13 +4,13 @@
 // $Id$
 
 class TClonesArray;
-class TH1I;
 class AliEMCALGeometry;
 class AliVCluster;
 class AliPicoTrack;
 class AliVCaloCells;
 class AliAODMCParticle;
 class AliNamedArrayI;
+class TF2;
 
 #include <TH1F.h>
 #include <TF1.h>
@@ -28,10 +28,14 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
 
   void                   SetEtaRange(Float_t min, Float_t max) { fEtaMin       = min;  fEtaMax = max; }
   void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
-  void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max;  }
+  void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max; }
   void                   SetPtSpectrum(TH1 *f)                 { fPtSpectrum   = f;    }
-  void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",250,f->GetXmin(),f->GetXmax()); 
+  void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",1000,f->GetXmin(),f->GetXmax()); 
                                                                  fPtSpectrum->Add(f); }
+  void                   SetPtPhiEvPlDistribution(TF2 *f)      { fPtPhiEvPlDistribution   = f;    }
+  void                   SetDensitySpectrum(TH1 *f)            { fDensitySpectrum = f;    }
+  void                   SetDensitySpectrum(TF1 *f)            { fDensitySpectrum = new TH1F("densitypectrum","densitypectrum",1000,f->GetXmin(),f->GetXmax()); 
+                                                                 fDensitySpectrum->Add(f); }
 
   void                   SetMC(Bool_t a)                       { fIsMC         = a   ; }
 
@@ -68,6 +72,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Double_t               GetRandomEta(Bool_t emcal=kFALSE);                                     // generate a random eta value in the given range
   Double_t               GetRandomPhi(Bool_t emcal=kFALSE);                                     // generate a random phi value in the given range
   Double_t               GetRandomPt();                                                         // generate a random pt value in the given range
+  void                   GetRandomParticle(Double_t &pt, Double_t &eta, Double_t &phi, Bool_t emcal=kFALSE);  // generate a particle with random eta,phi,pt values
   virtual Bool_t         ExecOnce();                                                            // intialize task
   virtual void           Run();                                                                 // do jet model action
 
@@ -93,8 +98,11 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fNCells;                 // how many cells are being processed
   Int_t                  fNTracks;                // how many tracks are being processed
   Int_t                  fMarkMC;                 // which MC label is to be used (default=100)
-  TH1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
+  TH1                   *fPtSpectrum;             // pt spectrum to extract random pt values
+  TF2                   *fPtPhiEvPlDistribution;  // pt vs. (phi-psi) distribution to extract random pt/phi values
+  TH1                   *fDensitySpectrum;        // particle density spectrum to extract random density values
   Bool_t                 fQAhistos;               // draw QA histograms
+  Double_t               fPsi;                    //!simmetry plane for the elliptic flow
   Bool_t                 fIsInit;                 //!=true if initialized
   AliEMCALGeometry      *fGeom;                   //!pointer to EMCal geometry
   Double_t               fVertex[3];              //!event vertex
@@ -117,6 +125,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 8) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 10) // Jet modelling task
 };
 #endif

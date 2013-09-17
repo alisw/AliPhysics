@@ -55,6 +55,9 @@ public:
 		fMaxVertexZ = maxVertexZ;
 		fTestVertexZ = kTRUE;
 	}
+	void SetDemandContributorsOrSPDVertex() {
+		fTestContributorsOrSPDVertex = kTRUE;
+	}
 	void SetMinReferenceMultiplicity(Int_t minrefmult) {
 		fMinRefMult = minrefmult;
 		fTestMinRefMult = kTRUE;
@@ -105,6 +108,7 @@ private:
 // Which cuts to be checked.
 	Bool_t fTestTrigger;
 	Bool_t fTestCentrality;
+	Bool_t fTestContributorsOrSPDVertex;
 	Bool_t fTestVertexZ;
 	Bool_t fTestMinRefMult;
 
@@ -119,7 +123,7 @@ private:
 
 	Int_t fDebug;								// Debug flag.
 
-	ClassDef(AliAODEventCutsDiHadronPID,2);
+	ClassDef(AliAODEventCutsDiHadronPID,3);
 
 };
 

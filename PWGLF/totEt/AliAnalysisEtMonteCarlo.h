@@ -313,8 +313,9 @@ protected:
     Bool_t fCalcTrackMatchVsMult;
     TH1F *fHistGammasFound;
     TH1F *fHistGammasGenerated;
-    TH2F *fHistGammasFoundMult;
-    TH2F *fHistGammasGeneratedMult;
+    TH2F *fHistGammasFoundCent;
+    TH2F *fHistGammasFoundOutOfAccCent;
+    TH2F *fHistGammasGeneratedCent;
     TH1F *fHistChargedTracksCut;
     TH1F *fHistChargedTracksAccepted;
     TH1F *fHistGammasCut;
@@ -322,6 +323,7 @@ protected:
     TH2F *fHistChargedTracksCutMult;
     TH2F *fHistChargedTracksAcceptedMult;
     TH2F *fHistChargedTracksAcceptedLowPtCent;
+    TH2F *fHistChargedTracksAcceptedLowPtCent500MeV;
     TH2F *fHistChargedTracksAcceptedLowPtCentNoAntiProtons;
     TH2F *fHistChargedTracksAcceptedLowPtCentAntiProtons;
     TH2F *fHistGammasCutMult;
@@ -344,9 +346,41 @@ protected:
     TH1F *fHistHadronDepositsAll;
     TH1F *fHistHadronDepositsReco;
     TH2F *fHistHadronDepositsAllCent;
+    TH2F *fHistHadronDepositsAllCent500MeV;
     TH2F *fHistHadronDepositsRecoCent;
     TH2F *fHistHadronsAllCent;
     TH3F *fHistMultChVsSignalVsMult;
+    TH2F *fHistNeutralRemovedSecondaryEtVsCent;
+    TH2F *fHistChargedRemovedSecondaryEtVsCent;
+    TH2F *fHistNeutralNotRemovedSecondaryEtVsCent;
+    TH2F *fHistChargedNotRemovedSecondaryEtVsCent;
+    TH2F *fHistNeutralRemovedSecondaryNumVsNCluster;
+    TH2F *fHistChargedRemovedSecondaryNumVsNCluster;
+    TH2F *fHistNeutralNotRemovedSecondaryNumVsNCluster;
+    TH2F *fHistChargedNotRemovedSecondaryNumVsNCluster;
+    TH2F *fHistNeutralRemovedSecondaryNumVsCent;
+    TH2F *fHistChargedRemovedSecondaryNumVsCent;
+    TH2F *fHistNeutralNotRemovedSecondaryNumVsCent;
+    TH2F *fHistChargedNotRemovedSecondaryNumVsCent;
+    TH2F *fHistNeutronsEtVsCent;
+    TH2F *fHistNeutronsNumVsCent;
+    TH2F *fHistNotNeutronsNumVsCent;
+    TH2F *fHistPiKPDepositedVsNch;
+    TH2F *fHistPiKPNotTrackMatchedDepositedVsNch;
+    TH2F *fHistNeutronsDepositedVsNch;
+    TH2F *fHistAntiNeutronsDepositedVsNch;
+    TH2F *fHistProtonsDepositedVsNch;
+    TH2F *fHistAntiProtonsDepositedVsNch;
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNch;
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNch;
+    TH2F *fHistSecondariesVsNch;
+    TH2F *fHistSecondariesVsNcl;
+    TH2F *fHistSecondariesEffCorrVsNch;
+    TH2F *fHistSecondariesEffCorrVsNcl;
+    TH3F *fHistCentVsNchVsNcl;
+    TH3F *fHistSecondaryPositionInDetector;
+    TH2F *fClusterPositionWeird;
+    TH3F *fHistSecondaryPositionInDetectorMultiple;
 
 
 private:

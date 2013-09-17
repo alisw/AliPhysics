@@ -1371,10 +1371,10 @@ Int_t AliDielectronHistos::GetPrecision(Double_t value) {
 
   Bool_t bfnd     = kFALSE;
   Int_t precision = 0;
-
+  value*=1e6;
   while(!bfnd) {
     //    printf(" value %f precision %d bfnd %d \n",TMath::Abs(value*TMath::Power(10,precision)), precision, bfnd);
-    bfnd = (TMath::Abs(value*TMath::Power(10,precision))  -  TMath::Floor(TMath::Abs(value*TMath::Power(10,precision))) != 0.0
+    bfnd = ((TMath::Abs(value*TMath::Power(10,precision))/1e6  -  TMath::Floor(TMath::Abs(value*TMath::Power(10,precision))/1e6)) != 0.0
 	    ? kFALSE
 	    : kTRUE);
     if(!bfnd) precision++;

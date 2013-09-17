@@ -13,6 +13,9 @@
 //   
 // Corrections used 
 #include "AliCentralMultiplicityTask.h"
+#include "AliCentralCorrectionManager.h"
+#include "AliCentralCorrAcceptance.h"
+#include "AliCentralCorrSecondaryMap.h"
 #include "AliAODForwardMult.h"
 #include "AliForwardUtil.h"
 #include "AliLog.h"
@@ -25,6 +28,7 @@
 #include <TFile.h>
 #include <TError.h>
 #include <TSystem.h>
+#include <TObjArray.h>
 #include <iostream>
 #include <iomanip>
 
@@ -32,27 +36,29 @@
 AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name) 
   : AliAnalysisTaskSE(name),
     fInspector("centralEventInspector"),
-    fData(0),
     fList(0),
-    fHits(0),
     fAODCentral(kFALSE),
-    fManager(),
     fUseSecondary(true),
     fUseAcceptance(true),
     fFirstEventSeen(false), 
-    fIvz(0),
-    fNClusterTracklet(0),
+  fIvz(0),
+  fNClusterTracklet(0),
     fClusterPerTracklet(0),
     fNCluster(0),
-    fNTracklet(0),
-    fEtaMin(0),
-    fEtaMax(0)
+  fNTracklet(0),
+    fVtxList(0),
+    fStore(false),
+    fHData(0),
+    fCorrManager(0)
 {
   // 
   // Constructor 
   //   
   DGUARD(fDebug, 3,"Named CTOR of AliCentralMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+
+  fCorrManager = &(AliCentralCorrectionManager::Instance());
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
     "SPDVertex.,PrimaryVertex.";
@@ -61,21 +67,20 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
 AliCentralMultiplicityTask::AliCentralMultiplicityTask() 
   : AliAnalysisTaskSE(),
     fInspector(),
-    fData(0),
     fList(0),
-    fHits(0),
     fAODCentral(),
-    fManager(),
     fUseSecondary(true),
     fUseAcceptance(true),
     fFirstEventSeen(false), 
-    fIvz(0),
+  fIvz(0),
     fNClusterTracklet(0),
     fClusterPerTracklet(0),
     fNCluster(0),
     fNTracklet(0),
-    fEtaMin(0),
-    fEtaMax(0)
+    fVtxList(0),
+    fStore(false),
+    fHData(0),
+    fCorrManager(0)
 {
   // 
   // Constructor 
@@ -86,21 +91,20 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
 AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o)
   : AliAnalysisTaskSE(o),
     fInspector(o.fInspector),
-    fData(o.fData),
     fList(o.fList),
-    fHits(o.fHits),
     fAODCentral(o.fAODCentral),
-    fManager(o.fManager),
     fUseSecondary(o.fUseSecondary),
     fUseAcceptance(o.fUseAcceptance),
     fFirstEventSeen(o.fFirstEventSeen), 
-    fIvz(0),
+  fIvz(o.fIvz),
     fNClusterTracklet(o.fNClusterTracklet),
     fClusterPerTracklet(o.fClusterPerTracklet),
     fNCluster(o.fNCluster),
     fNTracklet(o.fNTracklet),
-    fEtaMin(o.fEtaMin),
-    fEtaMax(o.fEtaMax)      
+    fVtxList(o.fVtxList),
+    fStore(o.fStore),
+    fHData(o.fHData),
+    fCorrManager(o.fCorrManager)
 {
   //
   // Copy constructor 
@@ -118,21 +122,20 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   DGUARD(fDebug,3,"Assignment of AliCentralMultiplicityTask");
   if (&o == this) return *this; 
   fInspector         = o.fInspector;
-  fData              = o.fData;
   fList              = o.fList;
-  fHits              = o.fHits;
   fAODCentral        = o.fAODCentral;
-  fManager           = o.fManager;
   fUseSecondary      = o.fUseSecondary;
   fUseAcceptance     = o.fUseAcceptance;
   fFirstEventSeen    = o.fFirstEventSeen;
-  fIvz               = 0; 
+  fIvz               = o.fIvz;
   fNClusterTracklet  = o.fNClusterTracklet;
   fClusterPerTracklet= o.fClusterPerTracklet;
   fNCluster          = o.fNCluster;
   fNTracklet         = o.fNTracklet;
-  fEtaMin            = o.fEtaMin;
-  fEtaMax            = o.fEtaMax;
+  fVtxList           = o.fVtxList;
+  fCorrManager       = o.fCorrManager;
+  fStore             = o.fStore;
+  fHData             = o.fHData;
   return *this;
 }
 //____________________________________________________________________
@@ -145,7 +148,11 @@ AliCentralMultiplicityTask::Configure(const char* macro)
     macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
     gROOT->SetMacroPath(macroPath);
   }
-  const char* config = gSystem->Which(gROOT->GetMacroPath(),macro);
+  TString mac(macro);
+  if (mac.EqualTo("-default-")) 
+    mac = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/CentralAODConfig.C";
+  
+  const char* config = gSystem->Which(gROOT->GetMacroPath(),mac.Data());
   if (!config) {
     AliWarningF("%s not found in %s", macro, gROOT->GetMacroPath());
     return false;
@@ -170,13 +177,11 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah) 
-{
-   //AliFatal("No AOD output handler set in analysis manager");
-  	TObject* obj = &fAODCentral;
-  	ah->AddBranch("AliAODCentralMult", &obj);
- } 
-  
+  if (ah) {
+    //AliFatal("No AOD output handler set in analysis manager");
+    TObject* obj = &fAODCentral;
+    ah->AddBranch("AliAODCentralMult", &obj);
+  } 
     
   fList = new TList();
   fList->SetOwner();
@@ -211,18 +216,22 @@ AliCentralMultiplicityTask::GetESDEvent()
   fInspector.ReadRunDetails(esd);
 
   // If we weren't initialised before (i.e., in the setup), do so now. 
-  if (!GetManager().IsInit()) {
-    GetManager().Init(fInspector.GetCollisionSystem(),
-		      fInspector.GetEnergy(),
-		      fInspector.GetField());
-    //AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
+  AliCentralCorrectionManager& ccm = 
+    AliCentralCorrectionManager::Instance();
+
+  if (!ccm.Init(fInspector.GetRunNumber(),
+		fInspector.GetCollisionSystem(),
+		fInspector.GetEnergy(),
+		fInspector.GetField())) {
+    AliWarning("Failed  to intialize correction mananger");
   }
+  //AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
   Bool_t ok = true;
-  if (/*fUseSecondary &&*/ !GetManager().HasSecondaryCorrection()) {
+  if (/*fUseSecondary &&*/ !ccm.GetSecondaryMap()) {
     ok = false;
     AliError("No secondary correction defined!");
   }
-  if (/*fUseAcceptance &&*/ !GetManager().HasAcceptanceCorrection()) {
+  if (/*fUseAcceptance &&*/ !ccm.GetAcceptance()) {
     ok = false;
     AliError("No acceptance correction defined!");
   }
@@ -237,7 +246,7 @@ AliCentralMultiplicityTask::GetESDEvent()
   }
 
   // Check for existence and get secondary map 
-  AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
+  const AliCentralCorrSecondaryMap* secMap = ccm.GetSecondaryMap(); 
   const TAxis& vaxis = secMap->GetVertexAxis();
 
   FindEtaLimits();
@@ -271,12 +280,23 @@ AliCentralMultiplicityTask::GetESDEvent()
   fNTracklet->SetDirectory(0);
   fNTracklet->Sumw2();
 
+  fList->Add(AliForwardUtil::MakeParameter("secondary",  fUseSecondary));
+  fList->Add(AliForwardUtil::MakeParameter("acceptance", fUseAcceptance));
+
+  fHData = static_cast<TH2D*>(fAODCentral.GetHistogram().Clone("d2Ndetadphi"));
+  fHData->SetStats(0);
+  fHData->SetDirectory(0);
+  fList->Add(fHData);
+
   // Initialize the inspecto 
   fInspector.SetupForData(vaxis);
   fFirstEventSeen = kTRUE;
 
+  fAODCentral.SetBit(AliAODCentralMult::kSecondary,  fUseSecondary);
+  fAODCentral.SetBit(AliAODCentralMult::kAcceptance, fUseAcceptance);
+  
   // Print some information 
-  Print();
+  Print("R");
 
   return esd;
 }
@@ -289,11 +309,10 @@ AliCentralMultiplicityTask::MarkEventForStore() const
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah)
- {  
+  if (ah) {  
     //AliFatal("No AOD output handler set in analysis manager");
-	ah->SetFillAOD(kTRUE);
- }
+    ah->SetFillAOD(kTRUE);
+  }
 }
 
 //____________________________________________________________________
@@ -303,22 +322,11 @@ void AliCentralMultiplicityTask::FindEtaLimits()
   // 
   // Uses the secondary map to do so.
   DGUARD(fDebug,1,"Find eta limits in AliCentralMultiplicityTask");
-  AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
+  AliCentralCorrectionManager& ccm = 
+    AliCentralCorrectionManager::Instance();
+  const AliCentralCorrSecondaryMap* secMap = ccm.GetSecondaryMap();
+  const TAxis&                      vaxis  = secMap->GetVertexAxis();
 
-  const TAxis& vaxis = secMap->GetVertexAxis();
-  
-  fEtaMin.Set(vaxis.GetNbins());
-  fEtaMax.Set(vaxis.GetNbins());
-  
-  fHits = new TList;
-  fHits->SetOwner();
-  fHits->SetName("hitMaps");
-  fList->Add(fHits);
-  
-  TList* secs = new TList;
-  secs->SetOwner();
-  secs->SetName("secondaryMaps");
-  fList->Add(secs);
   unsigned short s = 1;
   TH2D* hCoverage = new TH2D("coverage", "#eta coverage per v_{z}", 
 			     secMap->GetCorrection(s)->GetXaxis()->GetNbins(),
@@ -329,79 +337,21 @@ void AliCentralMultiplicityTask::FindEtaLimits()
   hCoverage->SetXTitle("#eta");
   hCoverage->SetYTitle("v_{z} [cm]");
   hCoverage->SetZTitle("n_{bins}");
-  fList->Add(hCoverage);
   
   fAODCentral.Init(*(secMap->GetCorrection(s)->GetXaxis()));
   
-  for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
-    TH2D* corr = secMap->GetCorrection(UShort_t(v));
-    TH1D* proj = corr->ProjectionX(Form("secCor%02d", v));
-    proj->Scale(1. / corr->GetNbinsY());
-    proj->SetTitle(Form("Projection of secondary correction "
-			"for %+5.1f<v_{z}<%+5.1f",
-			vaxis.GetBinLowEdge(v), vaxis.GetBinUpEdge(v)));
-    proj->SetYTitle("#LT 2^{nd} correction#GT");
-    proj->SetDirectory(0);
-    proj->SetMarkerStyle(20);
-    proj->SetMarkerColor(kBlue+1);
-    secs->Add(proj);
-    
-    TH2D* obg = static_cast<TH2D*>(corr->Clone(Form("secCor2DFiducial%02d",v)));
-    obg->SetDirectory(0);
-    secs->Add(obg);
-    
-    TH1D* after = static_cast<TH1D*>(proj->Clone(Form("secCorFiducial%02d",v)));
-    after->SetDirectory(0);
-    after->SetMarkerColor(kRed+1);
-    secs->Add(after);
-    
-    TH2D* data = static_cast<TH2D*>(corr->Clone(Form("hitMap%02d",v)));
-    //d->SetTitle(Form("hitMap%02d",v));
-    data->SetTitle(Form("d^{2}N/d#eta d#phi "
-			"for %+5.1f<v_{z}<%+5.1f",
-			vaxis.GetBinLowEdge(v), vaxis.GetBinUpEdge(v)));
-    data->GetZaxis()->SetTitle("");
-    data->SetMarkerColor(kBlack);
-    data->SetMarkerStyle(1);
-    fHits->Add(data);
-    
-    TH1D* hAcceptance = fManager.GetAcceptanceCorrection(v);
-    TH1D* accClone   = static_cast<TH1D*>(hAcceptance->Clone(Form("acceptance%02d",v)));
-    secs->Add(accClone);
-    
-    // Double_t prev = 0;
-    for (Int_t e = 1; e <= proj->GetNbinsX(); e++) { 
-      Double_t c = proj->GetBinContent(e);
-      if (c > .5 /*&& TMath::Abs(c - prev) < .1*c*/) {
-	fEtaMin[v-1] = e;
-	break;
-      }
-      // prev = c;
-      after->SetBinContent(e, 0);
-      after->SetBinError(e, 0);
-      for(Int_t nn =1; nn <=obg->GetNbinsY();nn++)
-	obg->SetBinContent(e,nn,0);
-      
-    }
-    for (Int_t e = proj->GetNbinsX(); e >= 1; e--) { 
-      Double_t c = proj->GetBinContent(e);
-      if (c > .5 /*&& TMath::Abs(c - prev) < .1*c*/) {
-	fEtaMax[v-1] = e;
-	break;
-      }
-      // prev = c;
-      after->SetBinContent(e, 0);
-      after->SetBinError(e, 0);
-      for(Int_t nn =1; nn <=obg->GetNbinsY();nn++)
-	obg->SetBinContent(e,nn,0);
-      
-    }
-    
-    for (Int_t nn = fEtaMin[v-1]; nn<=fEtaMax[v-1]; nn++) { 
-      hCoverage->SetBinContent(nn,v,1);
-    }
-    
+  UShort_t nVz = vaxis.GetNbins();
+  fVtxList     = new TObjArray(nVz, 1);
+  fVtxList->SetName("centMultVtxBins");
+  fVtxList->SetOwner();
+  
+  // Bool_t store = false;
+  for (Int_t v = 1; v <= nVz; v++) { 
+    VtxBin* bin = new VtxBin(v, vaxis.GetBinLowEdge(v), vaxis.GetBinUpEdge(v));
+    bin->SetupForData(fList, hCoverage, fStore);
+    fVtxList->AddAt(bin, v);
   }
+  fList->Add(hCoverage);
 }
 
 //____________________________________________________________________
@@ -415,11 +365,11 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   //  
   DGUARD(fDebug,1,"Process event in AliCentralMultiplicityTask");
   fAODCentral.Clear("");
-  fIvz = 0;
 
   AliESDEvent* esd = GetESDEvent();
   if (!esd) return;
 
+  fIvz               = 0;
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
@@ -442,18 +392,19 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   if (found == AliFMDEventInspector::kBadVertex)  return; // Out of range
   
   //Doing analysis
-  fIvz = ivz;
   const AliMultiplicity* spdmult = esd->GetMultiplicity();
 
   TH2D& aodHist = fAODCentral.GetHistogram();
 
+  VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(ivz));
+  if (!bin) return;
+
   ProcessESD(aodHist, spdmult);
-  CorrectData(aodHist, ivz);
-  //Producing hit maps
-  // TList* hitList = static_cast<TList*>(fList->FindObject("hitMaps"));
-  TH2D* data  = static_cast<TH2D*>(fHits->At(ivz-1));
-  if(data) data->Add(&aodHist);
+  bin->Correct(aodHist, fUseSecondary, fUseAcceptance);
   
+  if (triggers & AliAODForwardMult::kInel) 
+    fHData->Add(&(fAODCentral.GetHistogram()));
+
   PostData(1,fList);
 }
 //____________________________________________________________________
@@ -489,73 +440,6 @@ AliCentralMultiplicityTask::ProcessESD(TH2D& aodHist,
 }
 
 //____________________________________________________________________
-void 
-AliCentralMultiplicityTask::CorrectData(TH2D& aodHist, UShort_t vtxbin) const
-{  
-  // Corrections
-  DGUARD(fDebug,1,"Correct data in AliCentralMultiplicityTask");
-  TH1D* hAcceptance = fManager.GetAcceptanceCorrection(vtxbin);
-  TH2D* hSecMap     = fManager.GetSecMapCorrection(vtxbin);
-  
-  if (!hSecMap)     AliFatal("No secondary map!");
-  if (!hAcceptance) AliFatal("No acceptance!");
-    
-  if (fUseSecondary && hSecMap) aodHist.Divide(hSecMap);
-
-  Int_t nY = aodHist.GetNbinsY();
-  for(Int_t ix = 1; ix <= aodHist.GetNbinsX(); ix++) {
-    Float_t accCor = hAcceptance->GetBinContent(ix);
-    Float_t accErr = hAcceptance->GetBinError(ix);
-
-    Bool_t fiducial = true;
-    if (ix < fEtaMin[vtxbin-1] || ix > fEtaMax[vtxbin-1]) 
-      fiducial = false;
-    //  Bool_t etabinSeen = kFALSE;  
-    for(Int_t iy = 1; iy <= nY; iy++) {
-#if 1
-      if (!fiducial) { 
-	aodHist.SetBinContent(ix, iy, 0);
-	aodHist.SetBinError(ix, iy, 0);
-	continue;
-      }
-#endif	
-      // Get currrent value 
-      Float_t aodValue = aodHist.GetBinContent(ix,iy);
-      Float_t aodErr   = aodHist.GetBinError(ix,iy);
-
-#if 0 // This is done once in the FindEtaBins function
-      // Set underflow bin
-      Float_t secCor   = 0;
-      if(hSecMap)       secCor     = hSecMap->GetBinContent(ix,iy);
-      if (secCor > 0.5) etabinSeen = kTRUE;
-#endif
-      if (aodValue < 0.000001) { 
-	aodHist.SetBinContent(ix,iy, 0); 
-	aodHist.SetBinError(ix,iy, 0); 
-	continue; 
-      }
-      if (!fUseAcceptance) continue; 
-
-      // Acceptance correction 
-      if (accCor   < 0.000001) accCor = 1;
-      Float_t aodNew   = aodValue / accCor ;
-      Float_t error    = aodNew*TMath::Sqrt(TMath::Power(aodErr/aodValue,2) +
-					    TMath::Power(accErr/accCor,2) );
-      aodHist.SetBinContent(ix,iy, aodNew);
-      //test
-      aodHist.SetBinError(ix,iy,error);
-      aodHist.SetBinError(ix,iy,aodErr);
-    }
-    //Filling underflow bin if we eta bin is in range
-    if (fiducial) {
-      aodHist.SetBinContent(ix,0, 1.);
-      aodHist.SetBinContent(ix,nY+1, 1.);
-    }
-    // if (etabinSeen) aodHist.SetBinContent(ix,0, 1.);
-  }  
-}
-
-//____________________________________________________________________
 void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/) 
 {
   // 
@@ -565,7 +449,117 @@ void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/)
   //    option Not used 
   //
   DGUARD(fDebug,1,"Process merged output in AliCentralMultiplicityTask");
+
+  TList* list = dynamic_cast<TList*>(GetOutputData(1));
+  if (!list) {
+    AliError(Form("No output list defined (%p)", GetOutputData(1)));
+    if (GetOutputData(1)) GetOutputData(1)->Print();
+    return;
+  }
+  TList* output = new TList;
+  output->SetName(Form("%sResults", GetName()));
+  output->SetOwner();
+
+  Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
+  MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
+  AliInfoF("\n"
+	   "\t# events w/trigger:                 %f\n"
+	   "\t# events w/trigger+vertex:          %f\n"
+	   "\t# events accepted y cuts:           %f", 
+	   nTr, nTrVtx, nAcc);
+
+  PostData(2, output);
 }
+
+//____________________________________________________________________
+Bool_t
+AliCentralMultiplicityTask::MakeSimpledNdeta(const TList* input, 
+					     TList*       output,
+					     Double_t&    nTr, 
+					     Double_t&    nTrVtx, 
+					     Double_t&    nAcc)
+{
+  // Get our histograms from the container 
+  TH1I* hEventsTr    = 0;
+  TH1I* hEventsTrVtx = 0;
+  TH1I* hEventsAcc   = 0;
+  TH1I* hTriggers    = 0;
+  if (!GetEventInspector().FetchHistograms(input, 
+					   hEventsTr, 
+					   hEventsTrVtx, 
+					   hEventsAcc,
+					   hTriggers)) { 
+    AliError(Form("Didn't get histograms from event selector "
+		  "(hEventsTr=%p,hEventsTrVtx=%p,hEventsAcc=%p,hTriggers=%p)", 
+		  hEventsTr, hEventsTrVtx, hEventsAcc, hTriggers));
+    input->ls();
+    return false;
+  }
+  nTr             = hEventsTr->Integral();
+  nTrVtx          = hEventsTrVtx->Integral();
+  nAcc            = hEventsAcc->Integral();
+  Double_t vtxEff = nTrVtx / nTr;
+  TH2D*   hData   = static_cast<TH2D*>(input->FindObject("d2Ndetadphi"));
+  if (!hData) { 
+    AliError(Form("Couldn't get our summed histogram from output "
+		  "list %s (d2Ndetadphi=%p)", input->GetName(), hData));
+    input->ls();
+    return false;
+  }
+
+  Int_t nY      = hData->GetNbinsY();
+  TH1D* dNdeta  = hData->ProjectionX("dNdeta",  1,     nY, "e");
+  TH1D* dNdeta_ = hData->ProjectionX("dNdeta_", 1,     nY, "e");
+  TH1D* norm    = hData->ProjectionX("norm",    0,     0,  "");
+  TH1D* phi     = hData->ProjectionX("phi",     nY+1,  nY+1,  "");
+  dNdeta->SetTitle("dN_{ch}/d#eta in the forward regions");
+  dNdeta->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
+  dNdeta->SetMarkerColor(kRed+1);
+  dNdeta->SetMarkerStyle(20);
+  dNdeta->SetDirectory(0);
+
+  dNdeta_->SetTitle("dN_{ch}/d#eta in the forward regions");
+  dNdeta_->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
+  dNdeta_->SetMarkerColor(kMagenta+1);
+  dNdeta_->SetMarkerStyle(21);
+  dNdeta_->SetDirectory(0);
+
+  norm->SetTitle("Normalization to  #eta coverage");
+  norm->SetYTitle("#eta coverage");
+  norm->SetLineColor(kBlue+1);
+  norm->SetMarkerColor(kBlue+1);
+  norm->SetMarkerStyle(21);
+  norm->SetFillColor(kBlue+1);
+  norm->SetFillStyle(3005);
+  norm->SetDirectory(0);
+
+  phi->SetTitle("Normalization to  #phi acceptance");
+  phi->SetYTitle("#phi acceptance");
+  phi->SetLineColor(kGreen+1);
+  phi->SetMarkerColor(kGreen+1);
+  phi->SetMarkerStyle(20);
+  phi->SetFillColor(kGreen+1);
+  phi->SetFillStyle(3004);
+  // phi->Scale(1. / nAcc);
+  phi->SetDirectory(0);
+
+  // dNdeta->Divide(norm);
+  dNdeta->Divide(phi);
+  dNdeta->SetStats(0);
+  dNdeta->Scale(vtxEff,	"width");
+
+  dNdeta_->Divide(norm);
+  dNdeta_->SetStats(0);
+  dNdeta_->Scale(vtxEff, "width");
+
+  output->Add(dNdeta);
+  output->Add(dNdeta_);
+  output->Add(norm);
+  output->Add(phi);
+
+  return true;
+}
+
 //____________________________________________________________________
 void
 AliCentralMultiplicityTask::Print(Option_t* option) const
@@ -576,6 +570,7 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
   // Parameters:
   //    option Not used
   //
+
   std::cout << ClassName() << ": " << GetName() << "\n" 
 	    << std::boolalpha
 	    << "  Use secondary correction:  " << fUseSecondary << '\n'
@@ -585,314 +580,282 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
 	    << std::setw (8) << fOfflineTriggerMask 
 	    << std::dec     << std::setfill (' ') 
 	    << std::noboolalpha << std::endl;
-  AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
-  if (secMap) {
-    const TAxis& vaxis = secMap->GetVertexAxis();
-    std::cout << "  Eta ranges:\n"
-	    << "     Vertex        | Eta bins\n"
-	      << "   bin     range   | \n"
-	      << "   ----------------+-----------" << std::endl;
-    for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
-      std::cout << "   " << std::setw(2) << v << "  " 
-		<< std::setw(5) << vaxis.GetBinLowEdge(v) << "-"
-		<< std::setw(5) << vaxis.GetBinUpEdge(v) << " | ";
-      if (fEtaMin.GetSize() <= 0) 
-	std::cout << " ? -   ?";
-      else 
-	std::cout << std::setw(3) << fEtaMin[v-1] << "-" 
-		  << std::setw(3) << fEtaMax[v-1];
-      std::cout << std::endl;
+  
+  AliCentralCorrectionManager& ccm = 
+    AliCentralCorrectionManager::Instance();
+  if (ccm.IsInit()) {
+    const AliCentralCorrSecondaryMap* secMap = ccm.GetSecondaryMap();
+    if (secMap) {
+      const TAxis& vaxis = secMap->GetVertexAxis();
+      fVtxList->ls();
+      std::cout << "  Eta ranges:\n"
+		<< "     Vertex        | Eta bins\n"
+		<< "   bin     range   | \n"
+		<< "   ----------------+-----------" << std::endl;
+      for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
+	VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(v));
+	if (!bin) continue;
+	bin->Print();
+      }
     }
   }
 
   gROOT->IncreaseDirLevel();
-  fManager.Print(option);
+  ccm.Print(option);
   fInspector.Print(option);
   gROOT->DecreaseDirLevel();
   
 }
+
 //====================================================================
-AliCentralMultiplicityTask::Manager::Manager() :
-  fAcceptancePath("$ALICE_ROOT/PWGLF/FORWARD/corrections/CentralAcceptance"),
-  fSecMapPath("$ALICE_ROOT/PWGLF/FORWARD/corrections/CentralSecMap"),
-  fAcceptance(),
-  fSecmap(),
-  fAcceptanceName("centralacceptance"),
-  fSecMapName("centralsecmap"),
-  fIsInit(kFALSE)
+AliCentralMultiplicityTask::VtxBin::VtxBin(Int_t iVz, 
+					   Double_t minIpZ, 
+					   Double_t maxIpZ) 
+  : fId(iVz), 
+    fMinIpZ(minIpZ), 
+    fMaxIpZ(maxIpZ),
+    fEtaMin(999), 
+    fEtaMax(0),
+    fSec(0),
+    fAcc(0),
+    fHits(0)
 {
-  //
-  // Constructor 
-  // 
 }
 //____________________________________________________________________
-AliCentralMultiplicityTask::Manager::Manager(const Manager& o) 
-  :fAcceptancePath(o.fAcceptancePath),
-   fSecMapPath(o.fSecMapPath),
-   fAcceptance(o.fAcceptance),
-   fSecmap(o.fSecmap),
-   fAcceptanceName(o.fAcceptanceName),
-   fSecMapName(o.fSecMapName),
-   fIsInit(o.fIsInit)
+AliCentralMultiplicityTask::VtxBin::VtxBin(const VtxBin& o) 
+  : TObject(o),
+    fId(o.fId), 
+    fMinIpZ(o.fMinIpZ), 
+    fMaxIpZ(o.fMaxIpZ),
+    fEtaMin(o.fEtaMin), 
+    fEtaMax(o.fEtaMax),
+    fSec(o.fSec),
+    fAcc(o.fAcc),
+    fHits(o.fHits)
 {
-  //
-  // Copy Constructor 
-  // 
 }
 //____________________________________________________________________
-AliCentralMultiplicityTask::Manager&
-AliCentralMultiplicityTask::Manager::operator=(const Manager& o)
+AliCentralMultiplicityTask::VtxBin&
+AliCentralMultiplicityTask::VtxBin::operator=(const VtxBin& o) 
 {
-  //
-  // Assignment operator  
-  // 
-  if (&o == this) return *this; 
-  fAcceptancePath = o.fAcceptancePath;
-  fSecMapPath     = o.fSecMapPath;
-  fAcceptance     = o.fAcceptance;
-  fSecmap         = o.fSecmap;
-  fAcceptanceName = o.fAcceptanceName;
-  fSecMapName     = o.fSecMapName;
-  fIsInit         = o.fIsInit;
+  if (&o == this) return *this;
+  fId		= o.fId; 
+  fMinIpZ	= o.fMinIpZ; 
+  fMaxIpZ	= o.fMaxIpZ;
+  fEtaMin	= o.fEtaMin; 
+  fEtaMax	= o.fEtaMax;
+  fSec		= o.fSec;
+  fAcc		= o.fAcc;
+  fHits		= o.fHits;
+
   return *this;
 }
 
 //____________________________________________________________________
-const char* 
-AliCentralMultiplicityTask::Manager::GetFullFileName(UShort_t what, 
-						     UShort_t sys, 
-						     UShort_t sNN,  
-						     Short_t  field) const
+const char*
+AliCentralMultiplicityTask::VtxBin::GetName() const
 {
-  // 
-  // Get full path name to object file 
-  // 
-  // Parameters:
-  //    what   What to get 
-  //    sys    Collision system
-  //    sNN    Center of mass energy 
-  //    field  Magnetic field 
-  // 
-  // Return:
-  //    
-  //
-  return Form("%s/%s",
-	      what == 0 ? GetSecMapPath() : GetAcceptancePath(), 
-	      GetFileName(what, sys, sNN, field));
+  return Form("%c%03d_%c%03d", 
+	      (fMinIpZ >= 0 ? 'p' : 'm'), Int_t(TMath::Abs(fMinIpZ)), 
+	      (fMaxIpZ >= 0 ? 'p' : 'm'), Int_t(TMath::Abs(fMaxIpZ)));
 }
 
 //____________________________________________________________________
-const char* 
-AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
-						 UShort_t  sys, 
-						 UShort_t  sNN,
-						 Short_t   field) const
+void
+AliCentralMultiplicityTask::VtxBin::SetupForData(TList* l, 
+						 TH2* coverage, 
+						 Bool_t store)
 {
-  // 
-  // Get the full path name 
-  // 
-  // Parameters:
-  //    what   What to get
-  //    sys    Collision system
-  //    sNN    Center of mass energy 
-  //    field  Magnetic field 
-  // 
-  // Return:
-  //    
-  //
-  // Must be static - otherwise the data may disappear on return from
-  // this member function
-  static TString fname = "";
-  
-  switch(what) {
-  case 0:  fname = fSecMapName;     break;
-  case 1:  fname = fAcceptanceName; break;
-  default:
-    ::Error("GetFileName", 
-	    "Invalid indentifier %d for central object, must be 0 or 1!", what);
-    break;
+  TList* out = 0;
+  if (store) { 
+    out = new TList;
+    out->SetName(GetName());
+    out->SetOwner();
+    l->Add(out);
   }
-  fname.Append(Form("_%s_%04dGeV_%c%1dkG.root",
-		    AliForwardUtil::CollisionSystemString(sys), 
-		    sNN, (field < 0 ? 'm' : 'p'), TMath::Abs(field)));
-  
-  return fname.Data();
-}
 
-//____________________________________________________________________
-TH2D* 
-AliCentralMultiplicityTask::Manager::GetSecMapCorrection(UShort_t vtxbin) const
-{
-  // 
-  // Get the secondary map
-  // 
-  // Parameters:
-  //    vtxbin 
-  // 
-  // Return:
-  //    
-  //
-  if (!fSecmap) { 
-    ::Warning("GetSecMapCorrection","No secondary map defined");
-    return 0;
-  }
-  return fSecmap->GetCorrection(vtxbin);
-}
-//____________________________________________________________________
-TH1D* 
-AliCentralMultiplicityTask::Manager::GetAcceptanceCorrection(UShort_t vtxbin) 
-  const 
-{
-  // 
-  // Get the acceptance correction 
-  // 
-  // Parameters:
-  //    vtxbin 
-  // 
-  // Return:
-  //    
-  //
-  if (!fAcceptance) { 
-    ::Warning("GetAcceptanceCorrection","No acceptance map defined");
-    return 0;
-  }
-  return fAcceptance->GetCorrection(vtxbin);
-}
+  AliCentralCorrectionManager& ccm = 
+    AliCentralCorrectionManager::Instance();
 
-//____________________________________________________________________
-void 
-AliCentralMultiplicityTask::Manager::Init(UShort_t  sys, 
-					  UShort_t  sNN,
-					  Short_t   field) 
-{
-  // 
-  // Initialize 
-  // 
-  // Parameters:
-  //    sys    Collision system (1: pp, 2: PbPb, 3: pPb)
-  //    sNN    Center of mass energy per nucleon pair [GeV]
-  //    field  Magnetic field [kG]
-  //
-  if(fIsInit) ::Warning("Init","Already initialised - overriding...");
+  // Clean-up 
+  if (fSec) { 
+    // delete fSec;
+    fSec = 0;
+  }
+  if (fAcc) { 
+    // delete fAcc;
+    fAcc = 0;
+  }
+  // Get secondary correction and make a projection onto eta
+  TH2* sec = ccm.GetSecondaryMap()->GetCorrection(UShort_t(fId));
+  TH1* acc = ccm.GetAcceptance()->GetCorrection(UShort_t(fId));
+  fSec = static_cast<TH2*>(sec->Clone());
+  fAcc = static_cast<TH1*>(acc->Clone());
+  fSec->SetDirectory(0);
+  fAcc->SetDirectory(0);
+
+  TH1D* proj = fSec->ProjectionX("secondary");
+  proj->SetDirectory(0);
+  proj->Scale(1. / fSec->GetNbinsY());
+
+  // Find lower bound on eta 
+  fEtaMin = proj->GetNbinsX();
+  for (Int_t e = 1; e <= proj->GetNbinsX(); e++) { 
+    Double_t c = proj->GetBinContent(e);
+    if (c > .5 /*&& TMath::Abs(c - prev) < .1*c*/) {
+      fEtaMin = e;
+      break;
+    }
+  }
+  // Find upper bound on eta 
+  fEtaMax = 1;
+  for (Int_t e = proj->GetNbinsX(); e >= 1; e--) { 
+    Double_t c = proj->GetBinContent(e);
+    if (c > .5 /*&& TMath::Abs(c - prev) < .1*c*/) {
+      fEtaMax = e;
+      break;
+    }
+  }
+  // Fill our coverage histogram
+  for (Int_t nn = fEtaMin; nn<=fEtaMax; nn++) { 
+    coverage->SetBinContent(nn,fId,1);
+  }
   
-  TFile fsec(GetFullFileName(0,sys,sNN,field));
-  fSecmap = 
-    dynamic_cast<AliCentralCorrSecondaryMap*>(fsec.Get(fSecMapName.Data()));  
-  if(!fSecmap) {
-    ::Error("Init", "no central Secondary Map found!") ;
+  if (!store) {
+    // If we're not asked to store anything, clean-up, and get out
+    delete proj;
     return;
   }
-  TFile facc(GetFullFileName(1,sys,sNN,field));
-  fAcceptance = 
-    dynamic_cast<AliCentralCorrAcceptance*>(facc.Get(fAcceptanceName.Data()));
-  if(!fAcceptance) {
-    ::Error("Init", "no central Acceptance found!") ;
-    return;
+
+  // Modify the title of the projection 
+  proj->SetTitle(Form("Projection of secondary correction "
+		      "for %+5.1f<v_{z}<%+5.1f",fMinIpZ, fMaxIpZ));
+  proj->SetYTitle("#LT 2^{nd} correction#GT");
+  proj->SetMarkerStyle(20);
+  proj->SetMarkerColor(kBlue+1);
+  out->Add(proj);
+
+  // Make some histograms to store diagnostics 
+  TH2D* obg = static_cast<TH2D*>(fSec->Clone("secondaryMapFiducial"));
+  obg->SetTitle(Form("%s - fiducial volume", obg->GetTitle()));
+  obg->GetYaxis()->SetTitle("#varphi");
+  obg->SetDirectory(0);
+  out->Add(obg);
+    
+  TH1D* after = static_cast<TH1D*>(proj->Clone("secondaryFiducial"));
+  after->SetDirectory(0);
+  after->GetYaxis()->SetTitle("#LT 2^{nd} correction#GT");
+  after->SetTitle(Form("%s - fiducial volume", after->GetTitle()));
+  after->SetMarkerColor(kRed+1);
+  out->Add(after);
+
+  if (fHits) { 
+    // delete fHits;
+    fHits = 0;
   }
-  
-  if(fSecmap && fAcceptance) {
-    fIsInit = kTRUE;
-    ::Info("Init", 
-	   "Central Manager initialised for %s, energy %dGeV, field %dkG",
-	   sys == 1 ? "pp" : sys == 2 ? "PbPb" : sys == 3 ? "pPb" : "unknown", sNN,field);
-  }  
+  fHits = static_cast<TH2D*>(fSec->Clone("hitMap"));
+  fHits->SetDirectory(0);
+  fHits->SetTitle(Form("d^{2}N/d#eta d#phi for %+5.1f<v_{z}<%+5.1f",
+		      fMinIpZ, fMaxIpZ));
+  fHits->GetYaxis()->SetTitle("#varphi");
+  fHits->GetZaxis()->SetTitle("d^{2}N/d#eta d#varphi");
+  fHits->SetMarkerColor(kBlack);
+  fHits->SetMarkerStyle(1);
+  out->Add(fHits);
+    
+  // Get the acceptance, and store that 
+  TH1D* accClone   = static_cast<TH1D*>(fAcc->Clone("acceptance"));
+  accClone->SetTitle(Form("Acceptance for %+5.1f<v_{z}<%+5.1f",
+			  fMinIpZ, fMaxIpZ));
+  accClone->SetDirectory(0);
+  out->Add(accClone);
+    
+  // Now zero content outside our eta range 
+  for (Int_t e = 1; e < fEtaMin; e++) { 
+    after->SetBinContent(e, 0);
+    after->SetBinError(e, 0);
+    for(Int_t nn =1; nn <=obg->GetNbinsY();nn++) 
+      obg->SetBinContent(e,nn,0);
+  }
+
+  for (Int_t e = fEtaMax+1; e <= proj->GetNbinsX(); e++) { 
+    after->SetBinContent(e, 0);
+    after->SetBinError(e, 0);
+    for(Int_t nn =1; nn <=obg->GetNbinsY();nn++)
+      obg->SetBinContent(e,nn,0);
+  }
 }
 //____________________________________________________________________
-Bool_t
-AliCentralMultiplicityTask::Manager::WriteFile(UShort_t what, 
-					       UShort_t sys, 
-					       UShort_t sNN, 
-					       Short_t  fld, 
-					       TObject* obj, 
-					       Bool_t   full) const
+void
+AliCentralMultiplicityTask::VtxBin::Correct(TH2D&  aodHist,
+					    Bool_t useSecondary,
+					    Bool_t useAcceptance,
+					    Bool_t  sum) const
 {
-  // 
-  // Write correction output to (a temporary) file 
-  // 
-  // Parameters: 
-  //   What     What to write 
-  //   sys      Collision system (1: pp, 2: PbPb, 3: pPb)
-  //   sNN      Center of mass energy per nucleon (GeV)
-  //   fld      Field (kG)
-  //   obj      Object to write 
-  //   full     if true, write to full path, otherwise locally
-  // 
-  // Return: 
-  //   true on success. 
-  TString ofName;
-  if (!full)
-    ofName = GetFileName(what, sys, sNN, fld);
-  else 
-    ofName = GetFullFileName(what, sys, sNN, fld);
-  if (ofName.IsNull()) { 
-    AliErrorGeneral("Manager",Form("Unknown object type %d", what));
-    return false;
-  }
-  TFile* output = TFile::Open(ofName, "RECREATE");
-  if (!output) { 
-    AliErrorGeneral("Manager",Form("Failed to open file %s", ofName.Data()));
-    return false;
-  }
-  
-  TString oName(GetObjectName(what));
-  Int_t ret = obj->Write(oName);
-  if (ret <= 0) { 
-    AliErrorGeneral("Manager",Form("Failed to write %p to %s/%s (%d)", 
-				   obj, ofName.Data(), oName.Data(), ret));
-    return false;
-  }
+  if (useSecondary && fSec) aodHist.Divide(fSec);
 
-  ret = output->Write();
-  if (ret < 0) { 
-    AliErrorGeneral("Manager",
-		    Form("Failed to write %s to disk (%d)", ofName.Data(),ret));
-    return false;
-  }
-  // output->ls();
-  output->Close();
-  
-#if 0
-  TString cName(obj->IsA()->GetName());
-  AliInfoGeneral("Manager",
-		 Form("Wrote %s object %s to %s\n",
-		      cName.Data(),oName.Data(), ofName.Data()));
-  if (!full) { 
-    TString dName(GetFileDir(what));
-    AliInfoGeneral("Manager",
-		   Form("\n  %s should be copied to %s\n"
-			"Do for example\n\t"
-			"aliroot $ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/"
-			"MoveCorrections.C\\(%d\\)\nor\n\t"
-			"cp %s %s/", 
-			ofName.Data(),dName.Data(), 
-			what, ofName.Data(), 
-			gSystem->ExpandPathName(dName.Data())));
+  Int_t nY = aodHist.GetNbinsY();
+  for(Int_t ix = 1; ix <= aodHist.GetNbinsX(); ix++) {
+    Bool_t fiducial = true;
+    if (ix < fEtaMin || ix > fEtaMax) fiducial = false;
+    //  Bool_t etabinSeen = kFALSE;  
 
+    Double_t eta    = aodHist.GetXaxis()->GetBinCenter(ix);
+    Int_t    iax    = fAcc->GetXaxis()->FindBin(eta);
+    Float_t  accCor = fAcc->GetBinContent(iax);
+    // For test
+    // Float_t accErr = fAcc->GetBinError(ix);
 
-  }
-#endif
-  return true;
+    // Loop over phi 
+    for(Int_t iy = 1; iy <= nY; iy++) {
+      // If outside our fiducial volume, zero content 
+      if (!fiducial) { 
+	aodHist.SetBinContent(ix, iy, 0);
+	aodHist.SetBinError(ix, iy, 0);
+	continue;
+      }
+      // Get currrent value 
+      Float_t aodValue = aodHist.GetBinContent(ix,iy);
+      Float_t aodErr   = aodHist.GetBinError(ix,iy);
+
+      // Ignore very small values
+      if (aodValue < 0.000001) { 
+	aodHist.SetBinContent(ix,iy, 0); 
+	aodHist.SetBinError(ix,iy, 0); 
+	continue; 
+      }
+      if (!useAcceptance) continue; 
+
+      // Acceptance correction 
+      Float_t accTmp = accCor;
+      if (accTmp   < 0.000001) accTmp = 1;
+      Float_t aodNew   = aodValue / accTmp ;
+      aodHist.SetBinContent(ix,iy, aodNew);
+      aodHist.SetBinError(ix,iy,aodErr);
+      // - Test - 
+      // Float_t error    = aodNew*TMath::Sqrt(TMath::Power(aodErr/aodValue,2) +
+      // TMath::Power(accErr/accCor,2) );
+      // test - aodHist.SetBinError(ix,iy,error);
+    } // for (iy)
+    //Filling underflow bin if we eta bin is in range
+    if (fiducial) {
+      aodHist.SetBinContent(ix,0, 1.);
+      aodHist.SetBinContent(ix,nY+1, accCor);
+    }
+  } // for (ix)
+  if (sum && fHits) fHits->Add(&aodHist);
 }
-
+    
 //____________________________________________________________________
-void 
-AliCentralMultiplicityTask::Manager::Print(Option_t* option) const
+void
+AliCentralMultiplicityTask::VtxBin::Print(Option_t* /*option*/) const
 {
-  // 
-  // Print information to standard output 
-  //
-  std::cout << " AliCentralMultiplicityTask::Manager\n" 
-	    << std::boolalpha 
-	    << "  Initialized:     " << fIsInit << '\n'
-	    << "  Acceptance path: " << fAcceptancePath << '\n'
-	    << "  Acceptance name: " << fAcceptanceName << '\n'
-	    << "  Acceptance:      " << fAcceptance << '\n'
-	    << "  Secondary path:  " << fSecMapPath << '\n'
-	    << "  Secondary name:  " << fSecMapName << '\n'
-	    << "  Secondary map:   " << fSecmap 
-	    << std::noboolalpha << std::endl;
-  if (fAcceptance) fAcceptance->Print(option);
-  if (fSecmap)     fSecmap->Print(option);
+  std::cout << "   " 
+	    << std::setw(2) << fId << "  " 
+	    << std::setw(5) << fMinIpZ << "-"
+	    << std::setw(5) << fMaxIpZ << " | "
+	    << std::setw(3) << fEtaMin << "-" 
+	    << std::setw(3) << fEtaMax << std::endl;
 }
 
 //

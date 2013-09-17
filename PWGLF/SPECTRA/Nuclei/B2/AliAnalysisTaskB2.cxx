@@ -49,6 +49,7 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TList.h>
+#include <TProfile.h>
 
 #include "AliLnID.h"
 #include "AliLnHistoMap.h"
@@ -62,13 +63,14 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 , fPartCode(AliPID::kProton)
 , fHeavyIons(0)
 , fSimulation(0)
-, fMultTrigger(0)
-, fCentTrigger(0)
+, fMultTriggerFired(0)
+, fCentTriggerFired(0)
 , fTriggerFired(0)
 , fGoodVertex(0)
 , fPileUpEvent(0)
 , fV0AND(0)
 , fNoFastOnly(0)
+, fNtrkMultTrigger(0)
 , fMinKNOmult(-10)
 , fMaxKNOmult(100000)
 , fMinCentrality(0)
@@ -108,6 +110,8 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 , fTOFmatch(0)
 , fMinM2(2.)
 , fMaxM2(6.)
+, fMomentumCorrection(0)
+, fMoCpfx(0)
 
 {
 //
@@ -124,13 +128,14 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 , fPartCode(AliPID::kProton)
 , fHeavyIons(0)
 , fSimulation(0)
-, fMultTrigger(0)
-, fCentTrigger(0)
+, fMultTriggerFired(0)
+, fCentTriggerFired(0)
 , fTriggerFired(0)
 , fGoodVertex(0)
 , fPileUpEvent(0)
 , fV0AND(0)
 , fNoFastOnly(0)
+, fNtrkMultTrigger(0)
 , fMinKNOmult(-10)
 , fMaxKNOmult(100000)
 , fMinCentrality(-1)
@@ -170,6 +175,8 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 , fTOFmatch(0)
 , fMinM2(2.)
 , fMaxM2(6.)
+, fMomentumCorrection(0)
+, fMoCpfx(0)
 
 {
 //
@@ -224,22 +231,6 @@ void AliAnalysisTaskB2::ConnectInputData(Option_t *)
 		fESDpid = new AliESDpid();
 		fIsPidOwner = kTRUE;
 	}
-	
-	if(!fSimulation) return;
-	
-	AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*> (mgr->GetMCtruthEventHandler());
-	if (!mcH)
-	{
-		this->Error("ConnectInputData", "could not get AliMCEventHandler");
-		return;
-	}
-	
-	fMCevent = mcH->MCEvent();
-	if (!fMCevent)
-	{
-		this->Error("ConnectInputData", "could not get MC fLnEvent");
-		return;
-	}
 }
 
 void AliAnalysisTaskB2::CreateOutputObjects()
@@ -272,6 +263,8 @@ AliAnalysisTaskB2::~AliAnalysisTaskB2()
 	delete fTrigAna;
 	
 	if(fIsPidOwner) delete fESDpid;
+	
+	delete fMoCpfx;
 }
 
 void AliAnalysisTaskB2::SetParticleSpecies(const TString& species)
@@ -306,11 +299,16 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		return;
 	}
 	
-	fMultTrigger  = kFALSE;
-	fCentTrigger  = kFALSE;
-	fTriggerFired = kFALSE;
-	fGoodVertex   = kFALSE;
-	fPileUpEvent  = kFALSE;
+	if(fSimulation)
+	{
+		AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+		
+		if(mcH == 0) return;
+		
+		fMCevent = mcH->MCEvent();
+		
+		if(fMCevent == 0) return;
+	}
 	
 	// --------- multiplicity and centrality ------------------
 	
@@ -322,7 +320,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Ntrk"))->Fill(fNtrk);
 	((TH1D*)fHistoMap->Get(fSpecies + "_Event_Zmult"))->Fill(fKNOmult);
 	
-	if( (fKNOmult >= fMinKNOmult) && (fKNOmult < fMaxKNOmult) ) fMultTrigger = kTRUE;
+	fMultTriggerFired = (fNtrk > 0) && (fKNOmult >= fMinKNOmult) && (fKNOmult < fMaxKNOmult);
 	
 	if(fHeavyIons)
 	{
@@ -330,7 +328,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		
 		Float_t centrality = esdCent->GetCentralityPercentile("V0M");
 		
-		if((centrality >= fMinCentrality) && (centrality < fMaxCentrality)) fCentTrigger = kTRUE;
+		fCentTriggerFired = (centrality >= fMinCentrality) && (centrality < fMaxCentrality);
 		
 		Float_t v0ScaMult;
 		Float_t v0Mult = AliESDUtils::GetCorrV0(fESDevent,v0ScaMult);
@@ -352,18 +350,19 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	
 	if(fHeavyIons)
 	{
-		fTriggerFired = ( this->IsMB(triggerBits) && fCentTrigger );
+		fTriggerFired = ( this->IsMB(triggerBits) && fCentTriggerFired );
 	}
 	else
 	{
 		fTriggerFired = this->IsMB(triggerBits);
-		if(fNoFastOnly) fTriggerFired = ( fTriggerFired && !this->IsFastOnly(triggerBits) );
-		if(fV0AND) fTriggerFired = ( fTriggerFired && this->IsV0AND() );
-		
-		fTriggerFired = ( fTriggerFired && fMultTrigger );
+		if(fNoFastOnly)      fTriggerFired = ( fTriggerFired && !this->IsFastOnly(triggerBits) );
+		if(fV0AND)           fTriggerFired = ( fTriggerFired && this->IsV0AND() );
+		if(fNtrkMultTrigger) fTriggerFired = ( fTriggerFired && fMultTriggerFired );
 	}
 	
 	// --------------------- vertex --------------
+	
+	fGoodVertex  = kFALSE;
 	
 	const AliESDVertex* vtx = fESDevent->GetPrimaryVertex(); // best primary vertex
 	
@@ -388,7 +387,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	
 	// -------------------- pile up ------------------
 	
-	if(fESDevent->IsPileupFromSPDInMultBins()) fPileUpEvent = kTRUE;
+	fPileUpEvent = fESDevent->IsPileupFromSPDInMultBins();
 	
 	// ---------------- event stats ----------------
 	
@@ -478,8 +477,8 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		
 		// ------- multiplicity and centrality -------------
 		
-		if( fHeavyIons && !fCentTrigger) continue;
-		if(!fHeavyIons && !fMultTrigger) continue;
+		if( fHeavyIons && !fCentTriggerFired) continue;
+		if( fNtrkMultTrigger && !fMultTriggerFired) continue;
 		
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Prim_P"))->Fill(genP);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Prim_Pt"))->Fill(genPt);
@@ -611,6 +610,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		Double_t z = 1;
 		if(fPartCode>AliPID::kTriton)  z = 2;
+		
 		// impact parameters
 		
 		Float_t dcaxy, dcaz;
@@ -623,6 +623,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		// momentum
 		
+		Double_t p       = iTrack->GetP()*z; // p at DCA
 		Double_t pt      = iTrack->Pt()*z; // pt at DCA
 		Double_t y       = this->GetRapidity(iTrack, fPartCode);
 		Double_t pITS    = this->GetITSmomentum(iTrack);
@@ -633,9 +634,19 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		Int_t nPointsITS = this->GetITSnPointsPID(iTrack);
 		Int_t nPointsTPC = iTrack->GetTPCsignalN();
 		
+		if(fMomentumCorrection)
+		{
+			pt += this->GetMomentumCorrection(pt);
+			p   = TMath::Sqrt(pt*pt + iTrack->Pz()*iTrack->Pz());
+			y   = this->GetRapidity(p, iTrack->Pz(), fPartCode);
+		}
+		
 		Double_t beta = 0;
 		Double_t mass = 0;
 		Double_t m2   = 0;
+		Double_t dm2  = -100;
+		Double_t t    = 0;
+		Double_t dt   = -1000;
 		
 		Double_t simPt  = 0;
 		Double_t simPhi = 0;
@@ -650,7 +661,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_ITSchi2PerCls"))->Fill(this->GetITSchi2PerCluster(iTrack));
 		
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCncls"))->Fill(iTrack->GetTPCNcls());
-		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCclsOverF"))->Fill((Double_t)iTrack->GetTPCNcls()/(Double_t)iTrack->GetTPCNclsF());
+		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCxRowsOverF"))->Fill(static_cast<Double_t>(iTrack->GetTPCCrossedRows())/static_cast<Double_t>(iTrack->GetTPCNclsF()));
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCxRows"))->Fill(iTrack->GetTPCCrossedRows());
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2PerCls"))->Fill(iTrack->GetTPCchi2()/iTrack->GetTPCNcls());
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2Global"))->Fill(iTrack->GetChi2TPCConstrainedVsGlobal(fESDevent->GetPrimaryVertex()));
@@ -663,8 +674,11 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		if(this->TOFmatch(iTrack))
 		{
 			beta = this->GetBeta(iTrack);
-			m2   = this->GetMassSquare(iTrack);
+			m2   = this->GetMassSquared(iTrack);
 			mass = TMath::Sqrt(TMath::Abs(m2));
+			dm2  = this->GetM2Difference(beta, pTOF, AliPID::ParticleMass(fPartCode));
+			t    = this->GetTimeOfFlight(iTrack)*1.e-3; // ns
+			dt   = t - 1.e-3*this->GetExpectedTime(iTrack, AliPID::ParticleMass(fPartCode));
 			
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Beta_P"))->Fill(pTOF, beta);
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Mass_P"))->Fill(pTOF, mass);
@@ -801,8 +815,8 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			goodPid = ( simpid == pid );
 		}
 		
-		((TH1D*)fHistoMap->Get(particle + "_PID_Ntrk_pTPC"))->Fill(pTPC,fNtrk);
-		((TH1D*)fHistoMap->Get(particle + "_PID_Zmult_pTPC"))->Fill(pTPC,fKNOmult);
+		((TH2D*)fHistoMap->Get(particle + "_PID_Ntrk_pTPC"))->Fill(pTPC,fNtrk);
+		((TH2D*)fHistoMap->Get(particle + "_PID_Zmult_pTPC"))->Fill(pTPC,fKNOmult);
 		
 		// pid performance
 		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(pITS, dEdxITS);
@@ -848,6 +862,9 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		if( this->TOFmatch(iTrack) )
 		{
 			((TH2D*)fHistoMap->Get(particle + "_PID_M2_Pt"))->Fill(pt, m2);
+			((TH2D*)fHistoMap->Get(particle + "_PID_DM2_Pt"))->Fill(pt, dm2);
+			((TH2D*)fHistoMap->Get(particle + "_PID_Time_Pt"))->Fill(pt, t);
+			((TH2D*)fHistoMap->Get(particle + "_PID_DTime_Pt"))->Fill(pt, dt);
 			((TH1D*)fHistoMap->Get(particle + "_PID_TOFmatch_Pt"))->Fill(pt);
 		}
 		
@@ -857,7 +874,14 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		if( fTOFmatch && (fLnID->GetPidProcedure() > AliLnID::kMaxLikelihood))
 		{
-			if((m2 < fMinM2) || (m2 >= fMaxM2)) m2match = kFALSE;
+			if( pt < 1.8 )
+			{
+				if ((m2 < fMinM2) || (m2 >= fMaxM2)) m2match = kFALSE;
+			}
+			else
+			{
+				if((dt < -0.6) || (dt >= 1)) m2match = kFALSE;
+			}
 		}
 		
 		if(m2match)
@@ -1106,12 +1130,12 @@ Double_t AliAnalysisTaskB2::GetTOFmomentum(const AliESDtrack* trk) const
 //
 // Momentum for TOF pid
 //
-	Double_t pDCA = trk->GetP();
+	Double_t pIn = trk->GetTPCmomentum();
 	
 	const AliExternalTrackParam* param = trk->GetOuterParam();
 	Double_t pOut = param ? param->GetP() : trk->GetP();
 	
-	return (pDCA+pOut)/2.;
+	return (pIn+pOut)/2.;
 }
 
 Double_t AliAnalysisTaskB2::GetBeta(const AliESDtrack* trk) const
@@ -1127,15 +1151,38 @@ Double_t AliAnalysisTaskB2::GetBeta(const AliESDtrack* trk) const
 	return (l/t)/2.99792458e-2;
 }
 
-Double_t AliAnalysisTaskB2::GetMassSquare(const AliESDtrack* trk) const
+Double_t AliAnalysisTaskB2::GetExpectedTime(const AliESDtrack* trk, Double_t m) const
 {
 //
-// Square mass
+// Expected time (ps) for the given mass hypothesis
+//
+	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*this->GetTOFmomentum(trk) : this->GetTOFmomentum(trk);
+	Double_t beta = p/TMath::Sqrt(p*p + m*m);
+	Double_t l = trk->GetIntegratedLength();
+	
+	return l/beta/2.99792458e-2;
+}
+
+Double_t AliAnalysisTaskB2::GetMassSquared(const AliESDtrack* trk) const
+{
+//
+// Mass squared
 //
 	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*this->GetTOFmomentum(trk) : this->GetTOFmomentum(trk);
 	Double_t beta = this->GetBeta(trk);
 	
 	return p*p*(1./(beta*beta) - 1.);
+}
+
+Double_t AliAnalysisTaskB2::GetM2Difference(Double_t beta, Double_t momentum, Double_t m) const
+{
+//
+// Mass squared difference
+//
+	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*momentum : momentum;
+	Double_t expBeta2 = p*p/(p*p+m*m);
+	
+	return p*p*(1./(beta*beta)-1./expBeta2);
 }
 
 Int_t AliAnalysisTaskB2::GetChargedMultiplicity(Double_t etaMax) const
@@ -1253,4 +1300,27 @@ Int_t AliAnalysisTaskB2::GetPidCode(const TString& species) const
 	if(name == "alpha")    return AliPID::kAlpha;
 	
 	return -1;
+}
+
+Double_t AliAnalysisTaskB2::GetMomentumCorrection(Double_t ptrec) const
+{
+//
+// momentum correction for low pt
+//
+	if(fMoCpfx == 0) return 0;
+	
+	return fMoCpfx->Interpolate(ptrec);
+}
+
+Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Int_t pid) const
+{
+//
+// Rapidity (for momentum correction)
+//
+	Double_t m  = AliPID::ParticleMass(pid);
+	Double_t e  = TMath::Sqrt(p*p + m*m);
+	
+	if(e <= pz) return 1.e+16;
+	
+	return 0.5*TMath::Log( (e+pz)/(e-pz) );
 }

@@ -47,7 +47,7 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    */
 
   /** Initialize */
-  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Float_t *ptRange, Float_t etaMax, Int_t trackCutBit);
+  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Int_t trackCutBit);
 
   /** Add histograms to outlist */
   void CreateHistograms(TList *outList);
@@ -73,11 +73,8 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    *                           Process - Private
    * ---------------------------------------------------------------------------------
    */
-   /** Process ESD tracks and fill histograms */
-  Int_t ProcessESDTracks();
-
-   /** Process AOD tracks and fill histograms */
-  Int_t ProcessAODTracks();
+   /** Process ESD/AOD tracks and fill histograms */
+  Int_t ProcessTracks();
 
   /** Process primary particles from the stack and fill histograms */
   Int_t ProcessParticles();
@@ -92,10 +89,7 @@ class AliAnalysisNetParticleDistribution : public TNamed {
   void AddHistSet(const Char_t *name, const Char_t *title);
 
   /** Fill set of histograms */
-  void FillHistSet(const Char_t *name, Float_t *np);
-
-  /** Calculate ingredient for faktorial moment */
-  Double_t GetF(Int_t ii, Int_t kk, Float_t *np);
+  void FillHistSet(const Char_t *name, Double_t *np);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -104,36 +98,36 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    */
 
   AliAnalysisNetParticleHelper *fHelper;        //! Ptr to helper class
-
+  // =======================================================================
+  Int_t                 fPdgCode;               // PDG code of particle to be found 
+  // =======================================================================
   TList                *fOutList;               //! Output data container
-  // -----------------------------------------------------------------------
-  AliESDInputHandler   *fESDHandler;            //! Ptr to ESD handler 
-  AliPIDResponse       *fPIDResponse;           //! Ptr to PID response Object
+  // =======================================================================
   AliESDEvent          *fESD;                   //! Ptr to ESD event
-
-  AliAODInputHandler   *fAODHandler;            //! Ptr to AOD handler 
-  AliAODEvent          *fAOD;                   //! Ptr to AOD event
-
-  Bool_t                fIsMC;                  //  Is MC event
-
-  AliMCEvent           *fMCEvent;               //! Ptr to MC event
-  AliStack             *fStack;                 //! Ptr to stack
-
   AliESDtrackCuts      *fESDTrackCuts;          //! ESD cuts  
+  AliPIDResponse       *fPIDResponse;           //! Ptr to PID response Object
   // -----------------------------------------------------------------------
-  Float_t               fEtaMax;                //  Max, absolut eta
-  Float_t              *fPtRange;               //  Array of pt [min,max]
-
-  Int_t                 fOrder;                 //  Max order of higher order distributions
-
+  AliAODEvent          *fAOD;                   //! Ptr to AOD event
+  TClonesArray         *fArrayMC;               //! array of MC particles
   Int_t                 fAODtrackCutBit;        //  Track filter bit for AOD tracks
   // -----------------------------------------------------------------------
+  Bool_t                fIsMC;                  //  Is MC event
+  AliMCEvent           *fMCEvent;               //! Ptr to MC event
+  AliStack             *fStack;                 //! Ptr to stack
+  // =======================================================================
+  Int_t                 fOrder;                 //  Max order of higher order distributions
+  // -----------------------------------------------------------------------
   Int_t                 fNNp;                   //  N sets of arrays of particle/anti-particle counts
-  Float_t             **fNp;                    //  Array of particle/anti-particle counts
+  Double_t            **fNp;                    //  Array of particle/anti-particle counts
 
   Int_t                 fNMCNp;                 //  N sets of arrays of MC particle/anti-particle counts
-  Float_t             **fMCNp;                  //  Array of MC particle/anti-particle counts
+  Double_t            **fMCNp;                  //  Array of MC particle/anti-particle counts
   // -----------------------------------------------------------------------
+  Double_t            **fFactp;                 //  Array of particle/anti-particle factorial
+  // =======================================================================
+  Float_t               fCentralityBin;         //  Centrality of current event  
+  Int_t                 fNTracks;               //  N Tracks in the current event
+  // =======================================================================
   THnSparseF           *fHnTrackUnCorr;         //  THnSparseF : uncorrected probe particles
   // -----------------------------------------------------------------------
 

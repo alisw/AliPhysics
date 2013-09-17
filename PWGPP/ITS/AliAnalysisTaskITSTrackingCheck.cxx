@@ -2584,8 +2584,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	  if(track->HasSharedPointOnITSLayer(1)) fHistPtITSMISPD2InAccShared->Fill(track->Pt());
 
 
-	  Float_t chi2redITS = 0;
-	  if(track->GetNcls(0)>0) chi2redITS = track->GetITSchi2()/track->GetNcls(0);
+	  Float_t chi2redITS = 0.;
+	  if(track->GetNcls(0)>0) chi2redITS = track->GetITSchi2()/(Float_t)track->GetNcls(0);
 
 	  if(track->Pt()>0.18 && track->Pt()<0.25)  fHistITSRedChi2NonFakePt02->Fill(chi2redITS);
 	  if(track->Pt()>0.4 && track->Pt()<0.6)  fHistITSRedChi2NonFakePt05->Fill(chi2redITS);

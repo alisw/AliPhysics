@@ -12,7 +12,7 @@
 
 ClassImp(AliSpectraBothPID)
 
-AliSpectraBothPID::AliSpectraBothPID() : TNamed("PID", "PID object"), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fPIDResponse(0),fshiftTPC(0),fshiftTOF(0) 
+AliSpectraBothPID::AliSpectraBothPID() : TNamed("PID", "PID object"), fPIDType(kNSigmacircleTPCTOF), fNSigmaPID(3), fPIDResponse(0),fshiftTPC(0),fshiftTOF(0) 
 {
 
 }
@@ -96,9 +96,9 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
 		}
 	
     
-   		 nsigmaTPCTOFkProton = TMath::Sqrt((nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton)/2);
-    		nsigmaTPCTOFkKaon = TMath::Sqrt((nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon)/2);
-    		nsigmaTPCTOFkPion = TMath::Sqrt((nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion)/2);
+   		 nsigmaTPCTOFkProton = TMath::Sqrt((nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton)/2.0);
+    		nsigmaTPCTOFkKaon = TMath::Sqrt((nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon)/2.0);
+    		nsigmaTPCTOFkPion = TMath::Sqrt((nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion)/2.0);
   
   	}
 
@@ -199,7 +199,9 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
   
  
 
-	Double_t nsigmaTOFkProton=100.0,nsigmaTOFkKaon=100.0,nsigmaTOFkPion=100.0;
+	Double_t nsigmaTOFkProton=0.0,nsigmaTOFkKaon=0.0,nsigmaTOFkPion=0.0;
+
+
 
   	Double_t nsigmaTPCTOFkProton = TMath::Abs(nsigmaTPCkProton);
   	Double_t nsigmaTPCTOFkKaon   = TMath::Abs(nsigmaTPCkKaon);
@@ -209,6 +211,9 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
 		nsigmaTPCTOFkProton = 100.0;
   		nsigmaTPCTOFkKaon   = 100.0;
   		nsigmaTPCTOFkPion   =100.0;
+		nsigmaTOFkProton = 100.0;
+  		nsigmaTOFkKaon   = 100.0;
+  		nsigmaTOFkPion   =100.0;
 
 	}
 	
@@ -248,11 +253,17 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
     		nsigmaKaon	  =  nsigmaTOFkKaon  ;
     		nsigmaPion    =  nsigmaTOFkPion  ;
     		break;
-  		case kNSigmaTPCTOF:
+  		case kNSigmacircleTPCTOF:
     		nsigmaProton  =  nsigmaTPCTOFkProton;
     		nsigmaKaon	  =  nsigmaTPCTOFkKaon  ;
     		nsigmaPion    =  nsigmaTPCTOFkPion  ;
     		break;
+		case kNSigmasquareTPCTOF:
+		nsigmaProton  =  TMath::Max(nsigmaTPCkProton,nsigmaTOFkProton);
+    		nsigmaKaon	  =  TMath::Max(nsigmaTPCkKaon,nsigmaTOFkKaon);
+    		nsigmaPion    =  TMath::Max(nsigmaTPCkPion,nsigmaTOFkPion)  ;
+    		break;
+
   	}	
   
   	if(nsigmaPion   < fNSigmaPID)

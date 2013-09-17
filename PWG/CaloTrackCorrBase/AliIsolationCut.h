@@ -31,7 +31,7 @@ class AliIsolationCut : public TObject {
  
   // Enums 
   
-  enum type       { kPtThresIC, kSumPtIC, kPtFracIC, kSumPtFracIC, kSumDensityIC } ;
+  enum type       { kPtThresIC, kSumPtIC, kPtFracIC, kSumPtFracIC, kSumDensityIC, kSumBkgSubIC } ;
   
   enum partInCone { kNeutralAndCharged=0, kOnlyNeutral=1, kOnlyCharged=2 } ;
 	
@@ -41,18 +41,39 @@ class AliIsolationCut : public TObject {
   
   TString    GetICParametersList() ; 
   
-  Float_t    GetCellDensity(  const AliAODPWG4ParticleCorrelation * pCandidate, 
-                              const AliCaloTrackReader * reader) const ;
+  Float_t    GetCellDensity(  AliAODPWG4ParticleCorrelation * pCandidate, 
+                              AliCaloTrackReader * reader) const ;
 
-  void       MakeIsolationCut(const TObjArray * plCTS, const TObjArray * plNe, 
-                              const AliCaloTrackReader * reader, 
-                              const AliCaloPID * pid, 
-                              const Bool_t bFillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString &aodObjArrayName,
+  void       MakeIsolationCut(TObjArray * plCTS, TObjArray * plNe, 
+                              AliCaloTrackReader * reader, 
+                              AliCaloPID * pid, 
+                              const Bool_t bFillAOD,
+                              AliAODPWG4ParticleCorrelation  * pCandidate, const TString &aodObjArrayName,
                               Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
   
   void       Print(const Option_t * opt) const ;
   
   Float_t    Radius(const Float_t etaCandidate, const Float_t phiCandidate, const Float_t eta, const Float_t phi) const ; 
+  
+  // Cone background studies medthods
+  
+  Float_t  CalculateExcessAreaFraction(const Float_t excess) const ;
+
+  void     CalculateUEBandClusterNormalization(AliCaloTrackReader * reader,          const Float_t   etaC, const Float_t phiC,
+                                               const Float_t   phiUEptsumCluster,    const Float_t   etaUEptsumCluster,
+                                                     Float_t & phiUEptsumClusterNorm,      Float_t & etaUEptsumClusterNorm,
+                                                     Float_t & excessFracEta,              Float_t & excessFracPhi              ) const ;
+  
+  void     CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,          const Float_t   etaC, const Float_t phiC,
+                                               const Float_t   phiUEptsumTrack,      const Float_t   etaUEptsumTrack,
+                                                     Float_t & phiUEptsumTrackNorm,        Float_t & etaUEptsumTrackNorm,
+                                                     Float_t & excessFracEta,              Float_t & excessFracPhi              )   const ;
+
+  void 	   GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
+                               AliCaloTrackReader * reader, 
+                               Float_t & coneBadCellsCoeff,
+                               Float_t & etaBandBadCellsCoeff  , Float_t & phiBandBadCellsCoeff) ;
+
   
   // Parameter setters and getters
   

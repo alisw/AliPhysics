@@ -54,7 +54,7 @@ class AliHFEreducedMCParticle : public TObject{
   void SetEta(Double_t eta) { fEta = eta; }
   void SetPhi(Double_t phi) { fPhi = phi; }
   void SetPdg(Int_t pdg) { fPdg = pdg; }
-  void SetMotherPdg(Int_t pdg) { fPdg = pdg; }
+  void SetMotherPdg(Int_t pdg) { fMotherPdg = pdg; }
   void SetSource(Int_t source) { fSource = static_cast<Char_t>(source); }
   void SetSignal() { fSignal = kTRUE; }
   void SetProductionVertex(Double_t vx, Double_t vy, Double_t vz) {

@@ -1,4 +1,4 @@
-AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName, const char * pluginRunMode)
+AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName, const char * pluginRunMode, int production, Bool_t isPHOS, Bool_t ispp,Bool_t isData, Int_t runnum)
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -16,8 +16,8 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 
   // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-34-02-1");
-   plugin->SetAliROOTVersion("v5-04-13-AN");
+   plugin->SetROOTVersion("v5-34-08");
+   plugin->SetAliROOTVersion("v5-05-02-AN");
   // Declare input data to be processed.
 
   // Method 1: Create automatically XML collections using alien 'find' command.
@@ -32,12 +32,126 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   //   plugin->AddRunNumber(125020);    // simulated
   //   plugin->AddRunNumber(104065);  // real data
 
+
+   plugin->SetDataPattern("*ESDs.root");
    //plugin->SetGridDataDir("/alice/sim/LHC10d4");
    //plugin->AddRunNumber("120741");//smallest of the above
-   plugin->SetGridDataDir("/alice/sim/LHC11a4_bis");
-    plugin->AddRunNumber(137366);
-    plugin->AddRunNumber(137161);
-   plugin->SetDataPattern("*ESDs.root");
+   if(ispp){
+     if( production==0){
+       //pp
+       plugin->SetGridDataDir("/alice/sim/2012/LHC12a15e/");
+       plugin->AddRunNumber(169838);
+     }
+     if( production==1 || production==2 || production==3){
+       cout<<"I am here! "<<endl;
+       //pp
+       if(production==1){
+	 plugin->SetGridDataDir(" /alice/sim/LHC11b1a/");//nominal
+	 outputDir = outputDir + "NominalLHC11b1a";
+       }
+       if(production==2){
+	 plugin->SetGridDataDir(" /alice/sim/LHC11b1b/");//high material budget
+	 outputDir = outputDir + "HighLHC11b1b";
+       }
+       if(production==3){
+	 plugin->SetGridDataDir(" /alice/sim/LHC11b1c/");//low material budget
+	 outputDir = outputDir + "LowLHC11b1c";
+       }
+       plugin->AddRunNumber(121040);//all runs in these productions with good EMC and PHOS and global status
+       plugin->AddRunNumber(121039);//
+       plugin->AddRunNumber(118558);
+       plugin->AddRunNumber(118518);
+       plugin->AddRunNumber(118506);
+       //Additional runs which may be used 118561, 118560, 118556 emc bad parts
+       //118512, 118507 status unknown
+     }
+   }
+   else{
+    if(isData){//185 jobs
+	 cout<<"Running over data"<<endl;
+       if(production==1){
+	 plugin->SetGridDataDir("/alice/data/2010/LHC10h");//PbPb data
+	 plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
+	 plugin->SetRunPrefix("000");   // real data
+	 outputDir = outputDir + "LHC10hPass2";
+	 if(runnum==0){
+	   plugin->AddRunNumber(139465);
+	   outputDir = outputDir + "Run139465";
+	 }
+	 if(runnum==1){
+	   plugin->AddRunNumber(138442);
+	   outputDir = outputDir + "Run138442";
+	 }
+	 if(runnum==2){
+	   plugin->AddRunNumber(138364);
+	   outputDir = outputDir + "Run138364";
+	 }
+	 if(runnum==3){
+	   plugin->AddRunNumber(138534);
+	   outputDir = outputDir + "Run138534";
+	 }
+	 if(runnum==4){
+	   plugin->AddRunNumber(138275);
+	   outputDir = outputDir + "Run138275";
+	 }
+       }
+       if(production==2){
+	 plugin->SetGridDataDir("/alice/data/2011/LHC11h_2");//PbPb data
+	 plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
+	 plugin->SetRunPrefix("000");   // real data
+	 plugin->AddRunNumber(169099);
+	 outputDir = outputDir + "LHC11hPass2";
+       }
+    }
+    else{
+      if(production==0){
+	//Standard
+	if(isPHOS){
+	  plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");
+	}
+	else{
+	  outputDir = outputDir + "LHC11a4_bis";
+	  plugin->SetGridDataDir("/alice/sim/LHC11a4_bis");
+	  plugin->SetGridDataDir("/alice/sim/LHC11a4_bis");
+	}
+	plugin->AddRunNumber(139465);
+	plugin->AddRunNumber(139470);
+	plugin->AddRunNumber(137366);
+	plugin->AddRunNumber(137161);
+      }
+      if(production==1){
+       cout<<"I am here! Line 93 "<<endl;
+	//if(!isPHOS){
+	  outputDir = outputDir + "LHC11a10a_bis";
+	  plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");
+	  //}
+// 	        plugin->AddRunNumber(137366);
+// 	        plugin->AddRunNumber(137161);
+// 	        plugin->AddRunNumber(139470);
+		plugin->AddRunNumber(139465);//probably our focus now
+// 	 plugin->AddRunNumber(138442);
+// 	 plugin->AddRunNumber(138364);
+// 	 plugin->AddRunNumber(138534);
+// 	 plugin->AddRunNumber(138275);
+      }
+      if(production==2){
+	if(!isPHOS){
+	  outputDir = outputDir + "LHC11b7";
+	  plugin->SetGridDataDir("/alice/sim/LHC11b7");
+	}
+	plugin->AddRunNumber(137549);
+	plugin->AddRunNumber(138200);
+      }
+      if(production==3){
+	if(!isPHOS){
+	  outputDir = outputDir + "LHC11a10a";
+	  plugin->SetGridDataDir("/alice/sim/LHC11a10a");
+	}
+	plugin->AddRunNumber(139470);
+      }
+    }
+   }
+
   // Method 2: Declare existing data files (raw collections, xml collections, root file)
   // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
   // XML collections added via this method can be combined with the first method if
@@ -74,7 +188,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   // is correlated with the run time - count few hours TTL per job, not minutes !
   plugin->SetSplitMaxInputFileNumber(100);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
-  plugin->SetMaxInitFailed(5);
+  //plugin->SetMaxInitFailed(50);
   // Optionally resubmit threshold.
   //plugin->SetMasterResubmitThreshold(90);
   // Optionally set time to live (default 30000 sec)
@@ -87,6 +201,9 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->SetPrice(1); 
   // Optionally modify split mode (default 'se')    
   plugin->SetSplitMode("se");
+
+
+  plugin->SetMergeViaJDL();
 
   return plugin;
 } 

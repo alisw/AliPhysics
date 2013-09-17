@@ -24,6 +24,7 @@
 #include <TMath.h>
 #include <TError.h>
 #include <TROOT.h>
+#define FIT_OPTIONS "RNQS"
 
 //====================================================================
 ULong_t AliForwardUtil::AliROOTRevision()
@@ -179,9 +180,11 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t beam)
   // if (sys == AliForwardUtil::kPbPb) energy = energy / 208 * 82;
   if (sys == AliForwardUtil::kPPb) 
     energy = CenterOfMassEnergy(beam, 82, 208, 1, 1);
+  else if (sys == AliForwardUtil::kPbPb) 
+    energy = CenterOfMassEnergy(beam, 82, 208, 82, 208);
   if (TMath::Abs(energy - 900.)   < 10)  return 900;
   if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
-  if (TMath::Abs(energy - 2750.)  < 20)  return 2750;
+  if (TMath::Abs(energy - 2760.)  < 20)  return 2760;
   if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
   if (TMath::Abs(energy - 5022.)  < 10)  return 5023;
   if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
@@ -306,6 +309,7 @@ Bool_t AliForwardUtil::CheckForTask(const char* clsOrName, Bool_t cls)
 TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
 {
   TParameter<int>* ret = new TParameter<int>(name, value);
+  ret->SetMergeMode('f');
   ret->SetUniqueID(value);
   return ret;
 }
@@ -313,6 +317,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
 TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
 {
   TParameter<int>* ret = new TParameter<int>(name, value);
+  ret->SetMergeMode('f');
   ret->SetUniqueID(value);
   return ret;
 }
@@ -320,6 +325,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
 TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
 {
   TParameter<Long_t>* ret = new TParameter<Long_t>(name, value);
+  ret->SetMergeMode('f');
   ret->SetUniqueID(value);
   return ret;
 }
@@ -327,15 +333,17 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
 TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
 {
   TParameter<double>* ret = new TParameter<double>(name, value);
-  Float_t v = value;
-  UInt_t* tmp = reinterpret_cast<UInt_t*>(&v);
-  ret->SetUniqueID(*tmp);
+  // Float_t v = value;
+  // UInt_t* tmp = reinterpret_cast<UInt_t*>(&v);
+  ret->SetMergeMode('f');
+  // ret->SetUniqueID(*tmp);
   return ret;
 }
 //_____________________________________________________________________
 TObject* AliForwardUtil::MakeParameter(const Char_t* name, Bool_t value)
 {
   TParameter<bool>* ret = new TParameter<bool>(name, value);
+  ret->SetMergeMode('f');
   ret->SetUniqueID(value);
   return ret;
 }
@@ -344,54 +352,134 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Bool_t value)
 void AliForwardUtil::GetParameter(TObject* o, UShort_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<int>* p = static_cast<TParameter<int>*>(o);
+  if (p->TestBit(BIT(19)))
+    value = p->GetVal(); 
+  else
+    value = o->GetUniqueID();
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, Int_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<int>* p = static_cast<TParameter<int>*>(o);
+  if (p->TestBit(BIT(19)))
+    value = p->GetVal(); 
+  else
+    value = o->GetUniqueID();
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, ULong_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<Long_t>* p = static_cast<TParameter<Long_t>*>(o);
+  if (p->TestBit(BIT(19)))
+    value = p->GetVal(); 
+  else
+    value = o->GetUniqueID();
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, Double_t& value)
 {
   if (!o) return;
-  UInt_t  i = o->GetUniqueID();
-  Float_t v = *reinterpret_cast<Float_t*>(&i);
-  value = v;
+  TParameter<double>* p = static_cast<TParameter<double>*>(o);
+  if (p->TestBit(BIT(19)))
+    value = p->GetVal(); // o->GetUniqueID();
+  else {
+    UInt_t  i = o->GetUniqueID();
+    Float_t v = *reinterpret_cast<Float_t*>(&i);
+    value = v;
+  }
 }
 //_____________________________________________________________________
 void AliForwardUtil::GetParameter(TObject* o, Bool_t& value)
 {
   if (!o) return;
-  value = o->GetUniqueID();
+  TParameter<bool>* p = static_cast<TParameter<bool>*>(o);
+  if (p->TestBit(BIT(19)))
+    value = p->GetVal(); // o->GetUniqueID();
+  else
+    value = o->GetUniqueID();
 }
   
+#if 0
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
 {
-  //Get max R of ring
-  const Double_t iMinR = 4.5213;
-  const Double_t iMaxR = 17.2;
-  const Double_t oMinR = 15.4;
-  const Double_t oMaxR = 28.0;
-  
-  Double_t   minR    = (ring == 'I' || ring == 'i') ? iMinR : oMinR;
-  Double_t   maxR    = (ring == 'I' || ring == 'i') ? iMaxR : oMaxR;
-  Double_t   nStrips = (ring == 'I' || ring == 'i') ? 512   : 256;
-  Double_t   rad     =  maxR - minR;
-  Double_t   segment = rad / nStrips;
-  Double_t   r       =  minR + segment*strip;
+  // Get max R of ring
+  // 
+  // Optimized version that has a cache 
+  static TArrayD inner;
+  static TArrayD outer; 
+  if (inner.GetSize() <= 0 || outer.GetSize() <= 0) {
+    const Double_t minR[] = {  4.5213, 15.4 };
+    const Double_t maxR[] = { 17.2,    28.0 };
+    const Int_t    nStr[] = { 512,     256  };
+    for (Int_t q = 0; q < 2; q++) { 
+      TArrayD& a = (q == 0 ? inner : outer);
+      a.Set(nStr[q]);
+
+      for (Int_t it = 0; it < nStr[q]; it++) {
+	Double_t   rad     = maxR[q] - minR[q];
+	Double_t   segment = rad / nStr[q];
+	Double_t   r       = minR[q] + segment*strip;
+	a[it]              = r;
+      }
+    }
+  }
+  if (ring == 'I' || ring == 'i') return inner.At(strip);
+  return outer.At(strip);
+}
+#else
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
+{
+  // Get max R of ring
+  // 
+  // New implementation has only one branch
+  const Double_t minR[] = {  4.5213, 15.4 };
+  const Double_t maxR[] = { 17.2,    28.0 };
+  const Int_t    nStr[] = { 512,     256  };
+
+  Int_t      q       = (ring == 'I' || ring == 'i') ? 0 : 1;  
+  Double_t   rad     = maxR[q] - minR[q];
+  Double_t   segment = rad / nStr[q];
+  Double_t   r       = minR[q] + segment*strip;
 
   return r;
 }
+#endif
 
+#if 1
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
+					 UShort_t sec, UShort_t strip, 
+					 Double_t zvtx)
+{
+  // Calculate eta from strip with vertex (redundant with
+  // AliESDFMD::Eta but support displaced vertices)
+  //
+  // Slightly more optimized version that uses less branching 
+  
+  // Get R of the strip
+  Double_t   r         = GetStripR(ring, strip);
+  Int_t      hybrid    = sec / 2;
+  Int_t      q        = (ring == 'I' || ring == 'i') ? 0 : 1;
+
+  const Double_t zs[][2] = { { 320.266, -999999 }, 
+			    {  83.666,  74.966 },
+			    { -63.066, -74.966 } };
+  if (det > 3 || zs[det-1][q] == -999999) return -999999;
+
+  Double_t z = zs[det-1][q];
+  if ((hybrid % 2) == 0) z -= .5;
+  
+  Double_t   theta = TMath::ATan2(r,z-zvtx);
+  Double_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+  
+  return eta;
+}
+#else
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
 					 UShort_t sec, UShort_t strip, 
@@ -405,6 +493,8 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
   Int_t      hybrid    = sec / 2;
   Bool_t     inner     = (ring == 'I' || ring == 'i');
   Double_t   z         = 0;
+
+
   switch (det) { 
   case 1: z = 320.266;                     break;
   case 2: z = (inner ?  83.666 :  74.966); break;
@@ -418,6 +508,7 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
   
   return eta;
 }
+#endif
 
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip, 
@@ -882,7 +973,7 @@ AliForwardUtil::ELossFitter::ELossFitter(Double_t lowCut,
 					 Double_t maxRange, 
 					 UShort_t minusBins) 
   : fLowCut(lowCut), fMaxRange(maxRange), fMinusBins(minusBins), 
-    fFitResults(0), fFunctions(0)
+    fFitResults(0), fFunctions(0), fDebug(false)
 {
   // 
   // Constructor 
@@ -939,14 +1030,19 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   Clear();
   
   // Find the fit range 
-  dist->GetXaxis()->SetRangeUser(fLowCut, fMaxRange);
+  // Find the fit range 
+  Int_t    cutBin  = TMath::Max(dist->GetXaxis()->FindBin(fLowCut),3);
+  Int_t    maxBin  = TMath::Min(dist->GetXaxis()->FindBin(fMaxRange),
+				dist->GetNbinsX());
+  dist->GetXaxis()->SetRange(cutBin, maxBin);
+  // dist->GetXaxis()->SetRangeUser(fLowCut, fMaxRange);
   
   // Get the bin with maximum 
   Int_t    peakBin = dist->GetMaximumBin();
   Double_t peakE   = dist->GetBinLowEdge(peakBin);
   
   // Get the low edge 
-  dist->GetXaxis()->SetRangeUser(fLowCut, peakE);
+  // dist->GetXaxis()->SetRangeUser(fLowCut, peakE);
   Int_t    minBin = peakBin - fMinusBins; // dist->GetMinimumBin();
   Double_t minE   = TMath::Max(dist->GetBinCenter(minBin),fLowCut);
   Double_t maxE   = dist->GetBinCenter(peakBin+2*fMinusBins);
@@ -962,7 +1058,7 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   }
     
   // Restore the range 
-  dist->GetXaxis()->SetRangeUser(0, fMaxRange);
+  dist->GetXaxis()->SetRange(1, maxBin);
   
   // Define the function to fit 
   TF1* landau1 = new TF1("landau1", landauGaus1, minE,maxE,kSigmaN+1);
@@ -971,15 +1067,28 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   landau1->SetParameters(1,peakE,peakE/10,peakE/5,sigman);
   landau1->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
   landau1->SetNpx(500);
-  landau1->SetParLimits(kDelta, minE, fMaxRange);
-  landau1->SetParLimits(kXi,    0.00, fMaxRange);
-  landau1->SetParLimits(kSigma, 1e-5, fMaxRange);
+  if (peakE >= minE && peakE <= fMaxRange) {
+    // printf("Fit1: Set par limits on Delta: %f, %f\n", minE, fMaxRange);
+    landau1->SetParLimits(kDelta, minE, fMaxRange);
+  }
+  if (peakE/10 >= 0 && peakE <= 0.1) {
+    // printf("Fit1: Set par limits on xi: %f, %f\n", 0., 0.1);
+    landau1->SetParLimits(kXi,    0.00, 0.1); // Was fMaxRange - too wide
+  }
+  if (peakE/5 >= 0 && peakE/5 <= 0.1) {
+    // printf("Fit1: Set par limits on sigma: %f, %f\n", 0., 0.1);
+    landau1->SetParLimits(kSigma, 1e-5, 0.1); // Was fMaxRange - too wide
+  }
   if (sigman <= 0)  landau1->FixParameter(kSigmaN, 0);
-  else              landau1->SetParLimits(kSigmaN, 0, fMaxRange);
+  else {
+    // printf("Fit1: Set par limits on sigmaN: %f, %f\n", 0., fMaxRange);
+    landau1->SetParLimits(kSigmaN, 0, fMaxRange);
+  }
 
   // Do the fit, getting the result object 
-  ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
-  TFitResultPtr r = dist->Fit(landau1, "RNQS", "", minE, maxE);
+  if (fDebug) 
+    ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
+  TFitResultPtr r = dist->Fit(landau1, FIT_OPTIONS, "", minE, maxE);
   // landau1->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*r), 0);
   fFunctions.AddAtAndExpand(landau1, 0);
@@ -1046,21 +1155,39 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
 				 r->Parameter(kSigma),
 				 r->Parameter(kSigmaN),
 				 n, a.fArray, minE, maxEi);
-  landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
-  landaun->SetParLimits(kXi,     0.00, fMaxRange);       // xi
-  landaun->SetParLimits(kSigma,  1e-5, fMaxRange);       // sigma
+  if (minE      <= r->Parameter(kDelta) &&
+      fMaxRange >= r->Parameter(kDelta)) {
+    // Protect against warning from ParameterSettings
+    // printf("FitN: Set par limits on Delta: %f, %f\n", minE, fMaxRange);
+    landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
+  }
+  if (r->Parameter(kXi) >= 0 && r->Parameter(kXi) <= 0.1) {
+    // printf("FitN: Set par limits on xi: %f, %f\n", 0., 0.1);
+    landaun->SetParLimits(kXi,     0.00, 0.1);  // was fMaxRange - too wide
+  }
+  if (r->Parameter(kSigma) >= 1e-5 && r->Parameter(kSigma) <= 0.1) {
+    // printf("FitN: Set par limits on sigma: %f, %f\n", 1e-5, 0.1);
+    landaun->SetParLimits(kSigma,  1e-5, 0.1);  // was fMaxRange - too wide
+  }
   // Check if we're using the noise sigma 
   if (sigman <= 0)  landaun->FixParameter(kSigmaN, 0);
-  else              landaun->SetParLimits(kSigmaN, 0, fMaxRange);
+  else {
+    // printf("FitN: Set par limits on sigmaN: %f, %f\n", 0., fMaxRange);
+    landaun->SetParLimits(kSigmaN, 0, fMaxRange);
+  }
 
   // Set the range and name of the scale parameters 
   for (UShort_t i = 2; i <= n; i++) {// Take parameters from last fit 
-    landaun->SetParLimits(kA+i-2, 0,1);
+    if (a[i-2] >= 0 && a[i-2] <= 1) {
+      // printf("FitN: Set par limits on a_%d: %f, %f\n", i, 0., 1.);
+      landaun->SetParLimits(kA+i-2, 0,1);
+    }
   }
 
   // Do the fit 
-  ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxEi);
-  TFitResultPtr tr = dist->Fit(landaun, "RSQN", "", minE, maxEi);
+  if (fDebug) 
+    ::Info("FitNParticle", "Fitting in the range %f,%f (%d)", minE, maxEi, n);
+  TFitResultPtr tr = dist->Fit(landaun, FIT_OPTIONS, "", minE, maxEi);
   
   // landaun->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*tr), n-1);
@@ -1087,14 +1214,17 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   //
 
   // Find the fit range 
-  dist->GetXaxis()->SetRangeUser(fLowCut, fMaxRange);
+  Int_t    cutBin  = TMath::Max(dist->GetXaxis()->FindBin(fLowCut),3);
+  Int_t    maxBin  = TMath::Min(dist->GetXaxis()->FindBin(fMaxRange),
+				dist->GetNbinsX());
+  dist->GetXaxis()->SetRange(cutBin, maxBin);
   
   // Get the bin with maximum 
   Int_t    peakBin = dist->GetMaximumBin();
   Double_t peakE   = dist->GetBinLowEdge(peakBin);
   
   // Get the low edge 
-  dist->GetXaxis()->SetRangeUser(fLowCut, peakE);
+  // dist->GetXaxis()->SetRangeUser(fLowCut, peakE);
   Int_t    minBin = peakBin - fMinusBins; // dist->GetMinimumBin();
   Double_t minE   = TMath::Max(dist->GetBinCenter(minBin),fLowCut);
   Double_t maxE   = dist->GetBinCenter(peakBin+2*fMinusBins);
@@ -1111,7 +1241,7 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   }
     
   // Restore the range 
-  dist->GetXaxis()->SetRangeUser(0, fMaxRange);
+  dist->GetXaxis()->SetRange(1, maxBin);
   
   // Define the function to fit 
   TF1* seed = new TF1("landauSeed", landauGaus1, minE,maxE,kSigmaN+1);
@@ -1121,14 +1251,15 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   seed->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
   seed->SetNpx(500);
   seed->SetParLimits(kDelta, minE, fMaxRange);
-  seed->SetParLimits(kXi,    0.00, fMaxRange);
-  seed->SetParLimits(kSigma, 1e-5, fMaxRange);
+  seed->SetParLimits(kXi,    0.00, 0.1); // Was fMaxRange - too wide
+  seed->SetParLimits(kSigma, 1e-5, 0.1); // Was fMaxRange - too wide
   if (sigman <= 0)  seed->FixParameter(kSigmaN, 0);
   else              seed->SetParLimits(kSigmaN, 0, fMaxRange);
 
   // Do the fit, getting the result object 
-  ::Info("FitComposite", "Fitting seed in the range %f,%f", minE, maxE);
-  /* TFitResultPtr r = */ dist->Fit(seed, "RNQS", "", minE, maxE);
+  if (fDebug) 
+    ::Info("FitComposite", "Fitting seed in the range %f,%f", minE, maxE);
+  /* TFitResultPtr r = */ dist->Fit(seed, FIT_OPTIONS, "", minE, maxE);
 
   maxE = dist->GetXaxis()->GetXmax();
   TF1* comp = new TF1("composite", landauGausComposite, 
@@ -1156,8 +1287,9 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   comp->SetLineWidth(3);
   
   // Do the fit, getting the result object 
-  ::Info("FitComposite", "Fitting composite in the range %f,%f", minE, maxE);
-  /* TFitResultPtr r = */ dist->Fit(comp, "RNQS", "", minE, maxE);
+  if (fDebug) 
+    ::Info("FitComposite", "Fitting composite in the range %f,%f", minE, maxE);
+  /* TFitResultPtr r = */ dist->Fit(comp, FIT_OPTIONS, "", minE, maxE);
 
 #if 0
   TF1* part1 = static_cast<TF1*>(seed->Clone("part1"));
@@ -1214,8 +1346,7 @@ AliForwardUtil::Histos::Delete(Option_t* opt)
 
 //____________________________________________________________________
 TH2D*
-AliForwardUtil::Histos::Make(UShort_t d, Char_t r, 
-			     const TAxis& etaAxis) const
+AliForwardUtil::Histos::Make(UShort_t d, Char_t r, const TAxis& etaAxis)
 {
   // 
   // Make a histogram 
@@ -1229,10 +1360,17 @@ AliForwardUtil::Histos::Make(UShort_t d, Char_t r,
   //    Newly allocated histogram 
   //
   Int_t ns = (r == 'I' || r == 'i') ? 20 : 40;
-  TH2D* hist = new TH2D(Form("FMD%d%c_cache", d, r), 
-			Form("FMD%d%c cache", d, r),
-			etaAxis.GetNbins(), etaAxis.GetXmin(), 
-			etaAxis.GetXmax(), ns, 0, 2*TMath::Pi());
+  TH2D* hist = 0;
+  if (etaAxis.GetXbins() && etaAxis.GetXbins()->GetArray())
+    hist = new TH2D(Form("FMD%d%c_cache", d, r), 
+		    Form("FMD%d%c cache", d, r),
+		    etaAxis.GetNbins(), etaAxis.GetXbins()->GetArray(), 
+		    ns, 0, TMath::TwoPi());
+  else
+    hist = new TH2D(Form("FMD%d%c_cache", d, r), 
+		    Form("FMD%d%c cache", d, r),
+		    etaAxis.GetNbins(), etaAxis.GetXmin(), 
+		    etaAxis.GetXmax(), ns, 0, TMath::TwoPi());
   hist->SetXTitle("#eta");
   hist->SetYTitle("#phi [radians]");
   hist->SetZTitle("d^{2}N_{ch}/d#etad#phi");
@@ -1241,6 +1379,19 @@ AliForwardUtil::Histos::Make(UShort_t d, Char_t r,
 
   return hist;
 }
+//____________________________________________________________________
+void
+AliForwardUtil::Histos::RebinEta(TH2D* hist, const TAxis& etaAxis)
+{
+  TAxis* xAxis = hist->GetXaxis();
+  if (etaAxis.GetXbins() && etaAxis.GetXbins()->GetArray())
+    xAxis->Set(etaAxis.GetNbins(), etaAxis.GetXbins()->GetArray());
+  else
+    xAxis->Set(etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax());
+  hist->Rebuild();
+}
+  
+
 //____________________________________________________________________
 void
 AliForwardUtil::Histos::Init(const TAxis& etaAxis)
@@ -1257,6 +1408,23 @@ AliForwardUtil::Histos::Init(const TAxis& etaAxis)
   fFMD3i = Make(3, 'I', etaAxis);
   fFMD3o = Make(3, 'O', etaAxis);
 }
+//____________________________________________________________________
+void
+AliForwardUtil::Histos::ReInit(const TAxis& etaAxis)
+{
+  // 
+  // Initialize the object 
+  // 
+  // Parameters:
+  //    etaAxis Eta axis to use 
+  //
+  RebinEta(fFMD1i, etaAxis);
+  RebinEta(fFMD2i, etaAxis);
+  RebinEta(fFMD2o, etaAxis);
+  RebinEta(fFMD3i, etaAxis);
+  RebinEta(fFMD3o, etaAxis);
+}
+
 //____________________________________________________________________
 void
 AliForwardUtil::Histos::Clear(Option_t* option)

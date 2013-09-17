@@ -16,12 +16,13 @@
 // coalescence parameter
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TFileMerger.h>
 #include <TString.h>
-
 #include "AliLnB2.h"
+#endif
 
 Int_t B2(  const TString& pSpectra   = "~/alice/output/Proton-lhc10d-Spectra.root"
          , const TString& dSpectra   = "~/alice/output/Deuteron-lhc10d-Spectra.root"

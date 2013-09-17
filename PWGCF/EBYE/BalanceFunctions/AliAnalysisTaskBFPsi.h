@@ -97,6 +97,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseFlowAfterBurner = kTRUE;
   }
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
+  void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
 
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
@@ -123,7 +124,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fNumberOfAcceptedTracksMin = min;
     fNumberOfAcceptedTracksMax = max;}
   
+  // additional event cuts (default = kFALSE)
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
+  void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
+  void CheckPileUp() {fCheckPileUp = kTRUE;}
+  void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
   
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
@@ -155,6 +160,17 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
       fElectronRejectionNSigma = gMaxNSigma;
     }
 
+    void SetElectronOnlyRejection(Double_t gMaxNSigma){
+      fElectronRejection       = kTRUE;
+      fElectronOnlyRejection   = kTRUE;
+      fElectronRejectionNSigma = gMaxNSigma;
+    }
+
+    void SetElectronRejectionPt(Double_t minPt,Double_t maxPt){
+      fElectronRejectionMinPt  = minPt;
+      fElectronRejectionMaxPt  = maxPt;
+    }
+
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
@@ -169,7 +185,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   //===============================correction
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
-  
+ 
+  TClonesArray* fArrayMC; //! AOD object  //+++++++++++++++++++++
   AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
@@ -187,6 +204,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TH2F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
+  TH2F *fHistCentStatsUsed; //centrality stats USED +++++++++++++++++++++++
   TH1F *fHistTriggerStats; //trigger stats
   TH1F *fHistTrackStats; //Track filter bit stats
   TH1F *fHistVx; //x coordinate of the primary vertex
@@ -245,7 +263,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
 
   Bool_t   fElectronRejection;//flag to use electron rejection
+  Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
   Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
+  Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
+  Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
 
   //============PID============//
 
@@ -264,6 +285,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
+  Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
+  Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
+  Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
@@ -298,7 +322,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TF1 *fDifferentialV2;//pt-differential v2 (from real data)
   Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
 
-  Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products from the MC analysis
+  Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
+  Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"

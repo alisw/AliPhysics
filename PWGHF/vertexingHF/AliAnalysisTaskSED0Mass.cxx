@@ -65,6 +65,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
 AliAnalysisTaskSE(),
   fOutputMass(0),
   fOutputMassPt(0),
+  fOutputMassY(0),
   fDistr(0),
   fNentries(0), 
   fCuts(0),
@@ -82,6 +83,7 @@ AliAnalysisTaskSE(),
   fSys(0),
   fIsRejectSDDClusters(0),
   fFillPtHist(kTRUE),
+  fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
   fUseSelectionBit(kTRUE),
   fWriteVariableTree(kFALSE),
@@ -101,6 +103,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   AliAnalysisTaskSE(name),
   fOutputMass(0),
   fOutputMassPt(0),
+  fOutputMassY(0),
   fDistr(0),
   fNentries(0),
   fCuts(0),
@@ -118,6 +121,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fSys(0),
   fIsRejectSDDClusters(0),
   fFillPtHist(kTRUE),
+  fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
   fUseSelectionBit(kTRUE),
   fWriteVariableTree(kFALSE),
@@ -150,6 +154,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   DefineOutput(7,TTree::Class());  //My private outpu
   // Output slot #8 writes into a TList container (Detector signals)
   DefineOutput(8, TList::Class()); //My private output
+  // Output slot #9 stores the mass vs rapidity (y) distributions
+  DefineOutput(9, TList::Class()); //My private output
 }
 
 //________________________________________________________________________
@@ -162,6 +168,10 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
   if (fOutputMassPt) {
     delete fOutputMassPt;
     fOutputMassPt = 0;
+  }
+  if (fOutputMassY) {
+    delete fOutputMassY;
+    fOutputMassY = 0;
   }
   if (fDistr) {
     delete fDistr;
@@ -228,6 +238,10 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fOutputMassPt->SetOwner();
   fOutputMassPt->SetName("listMassPt");
 
+  fOutputMassY = new TList();
+  fOutputMassY->SetOwner();
+  fOutputMassY->SetName("listMassY");
+
   fDistr = new TList();
   fDistr->SetOwner();
   fDistr->SetName("distributionslist");
@@ -238,7 +252,9 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   TString nameMass=" ",nameSgn27=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassNocutsS =" ",nameMassNocutsB =" ", namedistr=" ";
   TString nameMassPt="", nameSgnPt="", nameBkgPt="", nameRflPt="";
+  TString nameMassY="", nameSgnY="", nameBkgY="", nameRflY="";
   Int_t nbins2dPt=60; Float_t binInPt=0., binFinPt=30.;
+  Int_t nbins2dY=60; Float_t binInY=-1.5, binFinY=1.5;
 
   for(Int_t i=0;i<fCuts->GetNPtBins();i++){
 
@@ -835,6 +851,39 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   }
 
   if(fFillImpParHist) CreateImpactParameterHistos();
+  
+  // 2D Y distributions
+  
+  if(fFillYHist) {
+    for(Int_t i=0;i<fCuts->GetNPtBins();i++){
+      nameMassY="histMassY_";
+      nameMassY+=i;
+      nameSgnY="histSgnY_";
+      nameSgnY+=i;
+      nameBkgY="histBkgY_";
+      nameBkgY+=i;
+      nameRflY="histRflY_";
+      nameRflY+=i;
+      //MC signal
+      if(fReadMC){
+	TH2F* tmpStY = new TH2F(nameSgnY.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; y",200,1.5648,2.16484,nbins2dY,binInY,binFinY);
+	tmpStY->Sumw2();
+	//Reflection: histo filled with D0MassV1 which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
+	TH2F* tmpRtY = new TH2F(nameRflY.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; y",200,1.5648,2.1648,nbins2dY,binInY,binFinY);
+	TH2F* tmpBtY = new TH2F(nameBkgY.Data(), "Background invariant mass - MC; M [GeV]; Entries; y",200,1.5648,2.1648,nbins2dY,binInY,binFinY);
+	tmpBtY->Sumw2();
+	tmpRtY->Sumw2();
+      
+	fOutputMassY->Add(tmpStY);
+	fOutputMassY->Add(tmpRtY);
+	fOutputMassY->Add(tmpBtY);
+      }
+      TH2F* tmpMtY = new TH2F(nameMassY.Data(),"D^{0} invariant mass; M [GeV]; Entries; y",200,1.5648,2.1648,nbins2dY,binInY,binFinY);
+      tmpMtY->Sumw2();      
+      fOutputMassY->Add(tmpMtY);
+    }
+  }
+
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
@@ -919,6 +968,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   PostData(6,fOutputMassPt);
   PostData(7,fVariablesTree);
   PostData(8, fDetSignal);
+  PostData(9,fOutputMassY);
 
   return;
 }
@@ -1965,6 +2015,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //printf("SELECTED\n");
   Int_t ptbin=cuts->PtBin(part->Pt());
   Double_t pt = part->Pt();
+  Double_t y = part->YD0();
   
   Double_t impparXY=part->ImpParXY()*10000.;
   Double_t trueImpParXY=0.;
@@ -1998,7 +2049,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //   }
   // }
  
-  TString fillthis="", fillthispt="", fillthismasspt="";
+  TString fillthis="", fillthispt="", fillthismasspt="", fillthismassy="";
   Int_t pdgDgD0toKpi[2]={321,211};
   Int_t labD0=-1;
   Bool_t isPrimary=kTRUE;
@@ -2055,6 +2106,12 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	    }
 	  }
 
+	  if(fFillYHist){ 
+	    fillthismassy="histSgnY_";
+	    fillthismassy+=ptbin;
+	    ((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0,y,weigD0);
+	  }
+
 	  if(fSys==0){
 	    if(TMath::Abs(invmassD0 - mPDG) < 0.027 && fFillVarHists){
 	      fillthis="histSgn27_";
@@ -2073,6 +2130,13 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt,weigD0);
 	  }
 
+	  if(fFillYHist){ 
+	    fillthismassy="histRflY_";
+	    fillthismassy+=ptbin;
+	    //	    cout << " Filling "<<fillthismassy<<" D0bar"<<endl;	    
+	    ((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0,y,weigD0);
+	  }
+
 	}
       } else {//background
 	fillthis="histBkg_";
@@ -2085,6 +2149,13 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt,weigD0);
 	}
 	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse,weigD0);
+
+	if(fFillYHist){ 
+	  fillthismassy="histBkgY_";
+	  fillthismassy+=ptbin;
+	  //	  cout << " Filling "<<fillthismassy<<" D0bar"<<endl;
+	  ((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0,y,weigD0);
+	}
 
       }
 
@@ -2105,6 +2176,13 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
       if(fFillImpParHist) {
 	//	cout << "Filling fHistMassPtImpParTC[0]"<<endl;
 	fHistMassPtImpParTC[0]->Fill(arrayForSparse,weigD0);
+      }
+
+      if(fFillYHist){ 
+	fillthismassy="histMassY_";
+	fillthismassy+=ptbin;
+	//	cout<<"Filling "<<fillthismassy<<endl;
+	((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0,y,weigD0);
       }
 
     }
@@ -2149,6 +2227,13 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	      fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue,weigD0bar);
 	    }
 	  }
+
+	  if(fFillYHist){ 
+	    fillthismassy="histSgnY_";
+	    fillthismassy+=ptbin;
+	    //	    cout<<" Filling "<< fillthismassy << endl;
+	    ((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0bar,y,weigD0bar);
+	  }
 	  
 	} else{
 	  fillthis="histRfl_";
@@ -2158,6 +2243,12 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	    fillthismasspt="histRflPt";
 	    //	    cout << " Filling "<<fillthismasspt<<endl;
 	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt,weigD0bar);
+	  }
+	  if(fFillYHist){ 
+	    fillthismassy="histRflY_";
+	    fillthismassy+=ptbin;
+	    //	    cout << " Filling "<<fillthismassy<<endl;
+	    ((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0bar,y,weigD0bar);
 	  }
 	}
       } else {//background or LS
@@ -2171,7 +2262,12 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt,weigD0bar);
 	}
 	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse,weigD0bar);
-
+	if(fFillYHist){ 
+	  fillthismassy="histBkgY_";
+	  fillthismassy+=ptbin;
+	  //	  cout<<" Filling "<< fillthismassy << endl;
+	  ((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0bar,y,weigD0bar);
+	}
       }
     }else{
       fillthis="histMass_";
@@ -2187,7 +2283,12 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt,weigD0bar);
       }
       if(fFillImpParHist) fHistMassPtImpParTC[0]->Fill(arrayForSparse,weigD0bar);
-
+      if(fFillYHist){ 
+	fillthismassy="histMassY_";
+	fillthismassy+=ptbin;
+	//	cout<<" Filling "<< fillthismassy << endl;
+	((TH2F*)(fOutputMassY->FindObject(fillthismassy)))->Fill(invmassD0bar,y,weigD0bar);
+      }
     }
   }
 
@@ -2294,6 +2395,14 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
       return;
     }
   }
+  if(fFillYHist){
+    fOutputMassY = dynamic_cast<TList*> (GetOutputData(9));
+    if (fFillYHist && !fOutputMassY) {
+      printf("ERROR: fOutputMassY not available\n");
+      return;
+    }
+  }
+
   Int_t nptbins=fCuts->GetNPtBins();
   for(Int_t ipt=0;ipt<nptbins;ipt++){ 
 

@@ -16,14 +16,13 @@
 // Draw differential yields
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <Riostream.h>
-#include <TROOT.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TStyle.h>
 #include <TFile.h>
 #include <TString.h>
 #include <TCanvas.h>
 #include <TGraphErrors.h>
-#include <TF1.h>
+#endif
 
 #include "B2.h"
 
@@ -32,65 +31,43 @@ void DrawSpectra(const TString& inputFile="spectra.root", const TString& tag="lh
 //
 // Draw differential yields
 //
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetPadGridX(1);
+	gStyle->SetPadGridY(1);
 	gStyle->SetOptLogy(1);
 	
 	TFile* finput = new TFile(inputFile.Data());
 	if (finput->IsZombie()) exit(1);
 	
 	TCanvas* c0 = new TCanvas(Form("%s.Spectra", particle.Data()), Form("Spectra for %ss", particle.Data()));
-	c0->Divide(2,2);
+	c0->Divide(2,1);
 	
-	// differential yields
+	// differential yield
 	
 	c0->cd(1);
 	
-	TGraphErrors* grDYieldPt = (TGraphErrors*)FindObj(finput, tag, particle + "_DiffYield_Pt");
-	TGraphErrors* grSysErrDYieldPt = (TGraphErrors*)FindObj(finput, tag, particle + "_SysErr_DiffYield_Pt");
-	
-	grSysErrDYieldPt->SetLineColor(kRed);
-	grSysErrDYieldPt->SetFillStyle(0);
-	grSysErrDYieldPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	grSysErrDYieldPt->GetYaxis()->SetTitle("#frac{1}{N_{inel}} #frac{d^{2}N}{dp_{T}dy} (GeV^{-1}c^{2})");
-	grSysErrDYieldPt->Draw("A5");
+	TGraphErrors* grDYieldPt = FindObj<TGraphErrors>(finput, tag, particle + "_DiffYield_Pt");
 	
 	grDYieldPt->SetMarkerStyle(kFullCircle);
 	grDYieldPt->SetMarkerColor(kRed);
 	grDYieldPt->SetLineColor(kRed);
-	grDYieldPt->Draw("P");
+	grDYieldPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+	grDYieldPt->GetYaxis()->SetTitle("1/#it{N}_{ev} d^{2}#it{N}/(d#it{p}_{T}d#it{y}) (GeV^{-1}#it{c}^{2})");
+	grDYieldPt->GetYaxis()->SetTitleOffset(1.30);
+	grDYieldPt->Draw("zAP");
 	
-	// invariant differential yields
+	// invariant differential yield
 	
 	c0->cd(2);
 	
-	TGraphErrors* grInvDYieldPt = (TGraphErrors*)FindObj(finput, tag, particle + "_InvDiffYield_Pt");
-	TGraphErrors* grSysErrInvDYieldPt = (TGraphErrors*)FindObj(finput, tag, particle + "_SysErr_InvDiffYield_Pt");
-	
-	grSysErrInvDYieldPt->SetLineColor(kRed);
-	grSysErrInvDYieldPt->SetFillStyle(0);
-	grSysErrInvDYieldPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	grSysErrInvDYieldPt->GetYaxis()->SetTitle("#frac{1}{2#piN_{inel}} #frac{d^{2}N}{p_{T}dp_{T}dy} (GeV^{-2}c^{3})");
-	grSysErrInvDYieldPt->Draw("A5");
+	TGraphErrors* grInvDYieldPt = FindObj<TGraphErrors>(finput, tag, particle + "_InvDiffYield_Pt");
 	
 	grInvDYieldPt->SetMarkerStyle(kFullCircle);
 	grInvDYieldPt->SetMarkerColor(kRed);
 	grInvDYieldPt->SetLineColor(kRed);
-	grInvDYieldPt->Draw("P");
-	
-	// invariant differential cross section
-	
-	c0->cd(3);
-	
-	TGraphErrors* grInvDXsectPt = (TGraphErrors*)FindObj(finput, tag, particle + "_InvDiffXSection_Pt");
-	TGraphErrors* grSysErrInvDXsectPt = (TGraphErrors*)FindObj(finput, tag, particle + "_SysErr_InvDiffXSection_Pt");
-	
-	grSysErrInvDXsectPt->SetLineColor(kRed);
-	grSysErrInvDXsectPt->SetFillStyle(0);
-	grSysErrInvDXsectPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	grSysErrInvDXsectPt->GetYaxis()->SetTitle("E #frac{d^{3}#sigma}{dp^{3}} (mb GeV^{-2}c^{3})");
-	grSysErrInvDXsectPt->Draw("A5");
-	
-	grInvDXsectPt->SetMarkerStyle(kFullCircle);
-	grInvDXsectPt->SetMarkerColor(kRed);
-	grInvDXsectPt->SetLineColor(kRed);
-	grInvDXsectPt->Draw("P");
+	grInvDYieldPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+	grInvDYieldPt->GetYaxis()->SetTitle("1/(2#pi#it{N}_{ev}) d^{2}#it{N}/(#it{p}_{T}d#it{p}_{T}d#it{y}) (GeV^{-2}#it{c}^{3})");
+	grInvDYieldPt->GetYaxis()->SetTitleOffset(1.30);
+	grInvDYieldPt->Draw("zAP");
 }
