@@ -299,10 +299,16 @@ protected:
       << "    return;\n"
       << "  }\n\n"
       << "  Int_t n = r->GetEntries();\n"
+      << "  Printf(\"=== Got a total of %d AOD files\",n);\n"
       << "  for (Int_t i = 0; i < n; i++) {\n"
       << "     TString path(r->GetKey(i, \"turl\"));\n"
-      << "     TString sub(gSystem->BaseName(gSystem->DirName(path)));\n"
-      << "     TString out = TString::Format(\"AliAOD_%s.root\",sub.Data());\n"
+      << "     TString dir(gSystem->DirName(path));\n"
+      << "     TString sub(gSystem->BaseName(dir));\n"
+      << "     TString subsub(gSystem->BaseName(gSystem->DirName(dir)));\n"
+      << "     TString out = TString::Format(\"AliAOD_%s_%s.root\",\n"
+      << "                                   subsub.Data(),sub.Data());\n"
+      << "     Printf(\"=== Getting %s %s (%3d/%3d)\",\n"
+      << "            subsub.Data(),sub.Data(),i,n);\n"
       << "     if (!TFile::Cp(path, out)) {\n"
       << "       Warning(\"DownloadAODs\",\"Failed to copy %s -> %s\",\n"
       << "               path.Data(), out.Data());\n"
@@ -314,6 +320,12 @@ protected:
       << std::endl;
     f.close();
   }   
+  void PostShellCode(std::ostream& f)
+  {
+    f << "  echo \"=== Summarizing results ...\"\n"
+      << "  aliroot -l -b -q ${prefix}Summarize.C\n"
+      << std::endl;
+  }
 };
 //
 // EOF

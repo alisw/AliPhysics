@@ -138,12 +138,18 @@ protected:
       << "//   0x010     Only min-bias (no centrality)\n"
       << "//   0x020     Landscape\n"
       << "//   0x040     Pause\n"
+      << "//   0x100     Also draw single result canvas\n"
       << "//\n"
       << "void Summarize(const char* filename=\"forward_dndeta.root\",\n"
-      << "               UShort_t what=0xF)\n"
+      << "               UShort_t what=0x0F)\n"
       << "{\n"
-      << "  gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/DrawdNdetaSummary.C\");\n"
-      << "  DrawdNdetaSummary(filename,what);\n"
+      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdetaSummary.C\",fwd));\n"
+      << "  DrawdNdetaSummary(filename,what & 0xFF);\n"
+      << "\n"
+      << "  if (!(what & 0x100)) return;\n"
+      << "  gROOT->SetMacroPath(Form(\"../:%s\",gROOT->GetMacroPath()));\n"
+      << "  gROOT->Macro(\"Draw.C\");\n"
       << "}\n"
       << "// EOF" << std::endl;
     f.close();
@@ -224,8 +230,8 @@ protected:
       << "          Float_t        vzMin=999,\n"
       << "          Float_t        vzMax=-999)\n"
       << "{\n"
-      << "   gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/"
-      << "DrawdNdeta.C++\");\n\n"
+      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C++\",fwd));\n"
       << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
       << "    DrawdNdeta(\"help\"); // Get the help\n"
       << "    return;\n"
@@ -247,6 +253,14 @@ protected:
       << "// EOF\n"
       << "//" << std::endl;
     o.close();
+  }
+  void PostShellCode(std::ostream& f)
+  {
+    f << "  echo \"=== Summarizing results ...\"\n"
+      << "  aliroot -l -b -q ${prefix}Summarize.C\n"
+      << "  echo \"=== Draw results ...\"\n"
+      << "  aliroot -l -b -q ${prefix}Draw.C\n"
+      << std::endl;
   }
 };
 //
