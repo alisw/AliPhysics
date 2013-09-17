@@ -29,22 +29,27 @@ class TString;
  * 
  * @return true on success 
  */
-Bool_t GetOne(const TString& base, const TString& dir)
+Bool_t GetOne(const TString& base, const TString& dir, Bool_t unpack)
 {
   TString src(gSystem->ConcatFileName(base,dir));
   src = gSystem->ConcatFileName(src,"root_archive.zip");
+  TString name;
+  name.Form("root_archive_%s",dir.Data());
   TString dest;
-  dest.Form("root_archive_%s.zip",dir.Data());
+  dest.Form("%s.zip",name.Data());
 
   if (!TFile::Cp(src, dest)) {
     Error("GetOne","Failed to download %s -> %s",
           src.Data(), dest.Data());
     return false;
   }
+  if (!unpack) return true;
+  gSystem->Exec(Form("mkdir -p %s && (cd %s && unzip ../%s)", 
+		     name.Data(), name.Data(), dest.Data()));
   return true;
 }
 
-void GridDownload(const TString& base, const TString& runs)
+void GridDownload(const TString& base, const TString& runs, Bool_t unpack)
 {
   gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   if (!TGrid::Connect("alien://")) {
@@ -56,7 +61,7 @@ void GridDownload(const TString& base, const TString& runs)
   TObjString* run      = 0;
   TIter       next(runArray);
   while ((run = static_cast<TObjString*>(next()))) {
-    GetOne(base, run->String());
+    GetOne(base, run->String(), unpack);
   }
 }
 // EOF
