@@ -45,7 +45,7 @@
 #pragma link C++ class AliAnalysisTaskPIDqa+;
 #pragma link C++ class AliAnalysisTaskBaseLine+;
 #pragma link C++ class AliAnalysisTaskPIDCombined+;
-
+#pragma link C++ class AliAODv0KineCuts;
 #pragma link C++ class AliEventPool+;
 #pragma link C++ class AliEventPoolManager+;
 #pragma link C++ class AliUnfolding+;

@@ -46,8 +46,9 @@ fRecoPass(0),
 fIsTunedOnData(kFALSE),
 fTunedOnDataMask(0),
 fRecoPassTuned(0),
-fUseTPCEtaCorrection(kFALSE),//TODO: In future, default kTRUE 
-fUseTPCMultiplicityCorrection(kFALSE)//TODO: In future, default kTRUE  
+fUseTPCEtaCorrection(kFALSE),                 //TODO: In future, default kTRUE 
+fUseTPCMultiplicityCorrection(kFALSE),        //TODO: In future, default kTRUE  
+fUserDataRecoPass(-1)
 {
   //
   // Dummy constructor
@@ -69,7 +70,8 @@ fIsTunedOnData(kFALSE),
 fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kFALSE),//TODO: In future, default kTRUE
-fUseTPCMultiplicityCorrection(kFALSE)//TODO: In future, default kTRUE  
+fUseTPCMultiplicityCorrection(kFALSE),//TODO: In future, default kTRUE  
+fUserDataRecoPass(-1)
 {
   //
   // Default constructor
@@ -186,26 +188,35 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
   
   if (prodInfo.IsMC() == kTRUE) fIsMC=kTRUE;         // protection if user didn't use macro switch
   if ( (prodInfo.IsMC() == kFALSE) && (fIsMC == kFALSE) ) {      // reco pass is needed only for data
-    fRecoPass = prodInfo.GetRecoPass();
-    if (fRecoPass < 0) {   // as last resort we find pass from file name (UGLY, but not stored in ESDs/AODs before LHC12d )
-      TString fileName(file->GetName());
-      if (fileName.Contains("pass1") ) {
-	fRecoPass=1;
-      } else if (fileName.Contains("pass2") ) {
-	fRecoPass=2;
-      } else if (fileName.Contains("pass3") ) {
-	fRecoPass=3;
-      } else if (fileName.Contains("pass4") ) {
-	fRecoPass=4;
-      } else if (fileName.Contains("pass5") ) {
-	fRecoPass=5;
-      }
+
+    if (fUserDataRecoPass > -1) {
+      AliInfo(Form("Data reconstruction pass is user specified. Setting pass #: %d",fUserDataRecoPass));
+      fRecoPass = fUserDataRecoPass;
+    } else {
+      fRecoPass = prodInfo.GetRecoPass();
+      if (fRecoPass < 0) {   // as last resort we find pass from file name (UGLY, but not stored in ESDs/AODs before LHC12d )
+	TString fileName(file->GetName());
+	if (fileName.Contains("pass1") ) {
+	  fRecoPass=1;
+	} else if (fileName.Contains("pass2") ) {
+	  fRecoPass=2;
+	} else if (fileName.Contains("pass3") ) {
+	  fRecoPass=3;
+	} else if (fileName.Contains("pass4") ) {
+	  fRecoPass=4;
+	} else if (fileName.Contains("pass5") ) {
+	  fRecoPass=5;
+	}
     } 
+    }
     if (fRecoPass <= 0) {
       AliError(" ******** Failed to find reconstruction pass number *********");
       AliError(" ******** PID information loaded for 'pass 0': parameters unreliable ******");
       AliError("      --> If these are MC data: please set kTRUE first argument of AddTaskPIDResponse");
-      AliError("      --> If these are real data: please insert pass number inside the path of your local file ******");
+      AliError("      --> If these are real data: ");
+      AliError("          (a) please insert pass number inside the path of your local file  OR");
+      AliError("          (b) specify reconstruction pass number when adding PIDResponse task");
+      AliFatal(" no pass number specified for this data file, abort. Asserting AliFatal");
     }
   }
 

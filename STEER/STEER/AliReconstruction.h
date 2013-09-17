@@ -91,6 +91,7 @@ public:
   void           SetLoadAlignData(const char* detectors) 
     {fLoadAlignData = detectors;};
 
+  void           SetTreeBuffSize(Long64_t sz=30000000) {fTreeBuffSize = sz;}
   //*** Global reconstruction flag setters
   void SetRunMultFinder(Bool_t flag=kTRUE) {fRunMultFinder=flag;};
   void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};
@@ -374,6 +375,12 @@ private:
   Int_t fNhighPt; //! Number of events, selected by IsHighPt 
   Int_t fShighPt; //! Number of events, sampled from fNhighPt
  
+  // Counters for SetAutoFlush configuration
+  Long64_t fTreeBuffSize;   //  allowed uncompressed buffer size per tree
+  Long64_t fMemCountESD;    //! accumulated ESD size before AutoSave 
+  Long64_t fMemCountESDF;   //! accumulated ESD size before AutoSave 
+  Long64_t fMemCountESDHLT; //! accumulated ESD size before AutoSave 
+  //
   // Upgrade detector reconstruction
   TString fUpgradeModule;
   Bool_t  fUpgradeMask[kNDetectors];
@@ -388,7 +395,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 45)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 46)      // class for running the reconstruction
 };
 
 #endif

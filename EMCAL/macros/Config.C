@@ -146,7 +146,9 @@ void Config()
   }
   
   AliGenBox *gener = new AliGenBox(nParticles);
-  gener->SetMomentumRange(1.,10.);
+  gener->SetMomentumRange(10.,10.);
+  
+  gener->SetPart(22);
   
   if     (year == 2010)
     gener->SetPhiRange(80.0,120.0);

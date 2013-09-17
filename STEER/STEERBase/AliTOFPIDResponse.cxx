@@ -23,12 +23,18 @@
 #include "TMath.h"
 #include "AliLog.h"
 #include "TF1.h"
+#include "TH1F.h"
+#include "TH1D.h"
+#include "TFile.h"
+#include "TRandom.h"
 
 #include "AliTOFPIDResponse.h"
 
 ClassImp(AliTOFPIDResponse)
 
 TF1 *AliTOFPIDResponse::fTOFtailResponse = NULL; // function to generate a TOF tail
+TH1F *AliTOFPIDResponse::fHmismTOF = NULL; // TOF mismatch distribution
+TH1D *AliTOFPIDResponse::fHchannelTOFdistr=NULL;  // TOF channel distance distribution
 
 //_________________________________________________________________________
 AliTOFPIDResponse::AliTOFPIDResponse(): 
@@ -42,11 +48,11 @@ AliTOFPIDResponse::AliTOFPIDResponse():
   fPar[3] = 40.0;
 
   if(!fTOFtailResponse){
-    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.01818",-1000,1000);
+    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
     fTOFtailResponse->SetParameter(0,1);
-    fTOFtailResponse->SetParameter(1,-25);
+    fTOFtailResponse->SetParameter(1,-26);
     fTOFtailResponse->SetParameter(2,1);
-    fTOFtailResponse->SetParameter(3,1.1);
+    fTOFtailResponse->SetParameter(3,0.89);
     fTOFtailResponse->SetNpx(10000);
   }
     
@@ -72,6 +78,15 @@ AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
   fPar[1] = 0.008;
   fPar[2] = 0.002;
   fPar[3] = 40.0;
+
+  if(!fTOFtailResponse){
+    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
+    fTOFtailResponse->SetParameter(0,1);
+    fTOFtailResponse->SetParameter(1,-26);
+    fTOFtailResponse->SetParameter(2,1);
+    fTOFtailResponse->SetParameter(3,0.89);
+    fTOFtailResponse->SetNpx(10000);
+  }
 
   // Reset T0 info
   ResetT0info();
@@ -208,10 +223,55 @@ Int_t AliTOFPIDResponse::GetStartTimeMask(Float_t mom) const {
 
 }
 //_________________________________________________________________________
-Double_t AliTOFPIDResponse::GetTailRandomValue() const // generate a random value to add a tail to TOF time (for MC analyses)
+Double_t AliTOFPIDResponse::GetTailRandomValue(Float_t pt,Float_t eta,Float_t time,Float_t addmism) // generate a random value to add a tail to TOF time (for MC analyses)
 {
+
+  // To add mismatch
+  Float_t mismAdd = addmism*0.01;
+  if(pt>1.0) mismAdd /= pt;
+
+  if(mismAdd > 0.01){ // apply additional mismatch
+    if(gRandom->Rndm() < mismAdd){
+      return GetMismatchRandomValue(eta)-time;
+    }
+  }
+
   if(fTOFtailResponse)
     return fTOFtailResponse->GetRandom();
   else
     return 0.0;
+}
+//_________________________________________________________________________
+Double_t AliTOFPIDResponse::GetMismatchRandomValue(Float_t eta) // generate a random value for mismatched tracks (for MC analyses)
+{
+  if(!fHmismTOF){
+    TFile *fmism = new TFile("$ALICE_ROOT/TOF/data/TOFmismatchDistr.root");
+    if(fmism) fHmismTOF = (TH1F *) fmism->Get("TOFmismDistr");
+    if(!fHmismTOF){
+      printf("I cannot retrive TOF mismatch histos... skipped!");
+      return -10000.;
+    }
+
+    TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
+    if(fchDist) fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+    if(!fHchannelTOFdistr){
+      printf("I cannot retrive TOF channel distance distribution... skipped!");
+      return -10000.;
+    }
+  }
+
+  Float_t etaAbs = TMath::Abs(eta);
+  Int_t channel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs);
+  if(channel < 1 || etaAbs > 1) channel = 1; 
+  Float_t distIP = fHchannelTOFdistr->GetBinContent(channel);
+	   
+  return fHmismTOF->GetRandom() + distIP*3.35655419905265973e+01;
+}
+//_________________________________________________________________________
+Int_t AliTOFPIDResponse::GetTOFchannel(AliVParticle *trk) const{
+  Float_t etaAbs = TMath::Abs(trk->Eta());
+  Int_t channel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs);
+  if(channel < 1 || etaAbs > 1) channel = 1; 
+  
+  return channel;
 }

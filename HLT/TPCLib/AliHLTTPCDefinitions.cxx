@@ -42,7 +42,8 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = AliHLTCo
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = AliHLTComponentDataTypeInitializer("TRAKSEGS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataType = AliHLTComponentDataTypeInitializer("CLSTRKMD", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDataCompressionDescriptorDataType = AliHLTComponentDataTypeInitializer("COMPDESC", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataType = AliHLTComponentDataTypeInitializer("CLSTRKMD", kAliHLTDataOriginTPC); 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersModelDataType = AliHLTComponentDataTypeInitializer("REMCLSMD", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDataType = AliHLTComponentDataTypeInitializer("CLSTRKCM", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
@@ -87,7 +88,10 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::TracksDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
   return dt;
 }
-
+const AliHLTComponentDataType& AliHLTTPCDefinitions::DataCompressionDescriptorDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("COMPDESC", kAliHLTDataOriginTPC);
+  return dt;
+}
 const AliHLTComponentDataType& AliHLTTPCDefinitions::ClusterTracksModelDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLSTRKMD", kAliHLTDataOriginTPC);
   return dt;
@@ -102,6 +106,10 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::ClusterTracksCompressedData
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::ClusterIdTracksDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLIDSTRK", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::CompressedClusterIdDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("COMPCLID", kAliHLTDataOriginTPC);
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RemainingClustersCompressedDataType() {

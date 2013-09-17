@@ -54,6 +54,44 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliITSUTrackHyp &src)
   }
   //
 }
+
+//__________________________________________________________________
+AliITSUTrackHyp::AliITSUTrackHyp(const AliKalmanTrack &src)
+  : AliKalmanTrack(src)
+  , fNLayers(0)
+  , fITSLabel(0)
+  , fESDTrack(0)
+  , fWinner(0)
+  , fTPCSeed(0)
+  , fLayerSeeds(0)
+{
+  // copy c-tor. from KalmanTrack
+  //
+}
+
+//__________________________________________________________________
+AliITSUTrackHyp::AliITSUTrackHyp(const AliESDtrack &src)
+  : AliKalmanTrack()
+  , fNLayers(0)
+  , fITSLabel(0)
+  , fESDTrack(0)
+  , fWinner(0)
+  , fTPCSeed(0)
+  , fLayerSeeds(0)
+{
+  // copy c-tor. from ESD track: take only kinematics, mass and time integral
+  AliExternalTrackParam::operator=((const AliExternalTrackParam&)src);
+  SetMass(src.GetMass());
+  if (src.IsOn(AliESDtrack::kTIME)) {
+    StartTimeIntegral();
+    SetIntegratedLength(src.GetIntegratedLength());
+    double times[AliPID::kSPECIES];
+    src.GetIntegratedTimes(times);
+    SetIntegratedTimes(times);
+  }
+  //
+}
+
 //__________________________________________________________________
 void AliITSUTrackHyp::InitFrom(const AliITSUTrackHyp *src)
 {
@@ -76,6 +114,34 @@ AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliITSUTrackHyp &src)
   return *this;
   //
 }
+
+//__________________________________________________________________
+AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliKalmanTrack &src)
+{ 
+  // copy kinematics only
+  if (this == &src) return *this;
+  AliKalmanTrack::operator=(src);
+  return *this;
+  //
+}
+
+//__________________________________________________________________
+AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliESDtrack &src)
+{
+  // copy oparator from ESD track: take only kinematics, mass and time integral
+  AliExternalTrackParam::operator=((const AliExternalTrackParam&)src);
+  SetMass(src.GetMass());
+  if (src.IsOn(AliESDtrack::kTIME)) {
+    StartTimeIntegral();
+    SetIntegratedLength(src.GetIntegratedLength());
+    double times[AliPID::kSPECIES];
+    src.GetIntegratedTimes(times);
+    SetIntegratedTimes(times);
+  }
+  //
+  return *this;
+}
+
 
 //__________________________________________________________________
 void AliITSUTrackHyp::Print(Option_t* opt) const

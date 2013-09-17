@@ -241,6 +241,7 @@ void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
     default: AliError("Wrong pileup algorithm"); break;
     }
     if(fNoVertices==1){
+      delete[] fVertArray;
       fVertArray = new AliESDVertex[1];
       fVertArray[0]=(*fCurrentVertex);	  
     }

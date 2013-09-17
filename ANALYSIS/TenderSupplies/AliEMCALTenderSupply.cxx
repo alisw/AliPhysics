@@ -69,6 +69,7 @@ AliTenderSupply()
 ,fUpdateCell(kFALSE)  
 ,fCalibrateEnergy(kFALSE)
 ,fCalibrateTime(kFALSE)
+,fCalibrateTimeParamAvailable(kFALSE)
 ,fDoNonLinearity(kFALSE)
 ,fBadCellRemove(kFALSE)
 ,fRejectExoticCells(kFALSE)
@@ -132,6 +133,7 @@ AliTenderSupply(name,tender)
 ,fUpdateCell(kFALSE)  
 ,fCalibrateEnergy(kFALSE)
 ,fCalibrateTime(kFALSE)
+,fCalibrateTimeParamAvailable(kFALSE)
 ,fDoNonLinearity(kFALSE)
 ,fBadCellRemove(kFALSE)
 ,fRejectExoticCells(kFALSE)
@@ -195,6 +197,7 @@ AliTenderSupply(name)
 ,fUpdateCell(kFALSE)  
 ,fCalibrateEnergy(kFALSE)
 ,fCalibrateTime(kFALSE)
+,fCalibrateTimeParamAvailable(kFALSE)
 ,fDoNonLinearity(kFALSE)
 ,fBadCellRemove(kFALSE)
 ,fRejectExoticCells(kFALSE)
@@ -245,17 +248,24 @@ AliTenderSupply(name)
 AliEMCALTenderSupply::~AliEMCALTenderSupply()
 {
   //Destructor
-  
+
+  if (!AliAnalysisManager::GetAnalysisManager())  return;  
+
   if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
   {
     delete fEMCALRecoUtils;
     delete fRecParam;
     delete fUnfolder;
+    
     if (!fClusterizer) 
     {
-      fDigitsArr->Clear("C");
-      delete fDigitsArr; 
-    } else 
+      if (fDigitsArr) 
+      { 
+     	fDigitsArr->Clear("C");
+      	delete fDigitsArr; 
+      }
+    } 
+    else 
     {
       delete fClusterizer;
       fDigitsArr = 0;
@@ -309,6 +319,7 @@ void AliEMCALTenderSupply::Init()
     fRecalClusPos           = tender->fRecalClusPos;
     fCalibrateEnergy        = tender->fCalibrateEnergy;
     fCalibrateTime          = tender->fCalibrateTime;
+    fCalibrateTimeParamAvailable = tender->fCalibrateTimeParamAvailable;
     fFiducial               = tender->fFiducial;
     fNCellsFromEMCALBorder  = tender->fNCellsFromEMCALBorder;
     fRecalDistToBadChannels = tender->fRecalDistToBadChannels;    
@@ -495,17 +506,6 @@ void AliEMCALTenderSupply::ProcessEvent()
     Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
     Bool_t needClusterizer = fReClusterize;
 
-    // initiate reco params with some defaults 
-    // will not overwrite, if those have been provided by user
-    if( needRecoParam ){
-      Int_t initRC = InitRecParam();
-      
-      if( initRC == 0 )
-        AliInfo("Defaults reco params loaded.");
-      if( initRC > 1 )
-        AliWarning("User defined reco params.");
-    }
-
     // init bad channels
     if( needBadChannels ){
       Int_t fInitBC = InitBadChannels();
@@ -538,15 +538,15 @@ void AliEMCALTenderSupply::ProcessEvent()
       
     }
     
-    
-    
     // init time calibration
-    if( needTimecalib ){
+    if( needTimecalib ) {
       Int_t initTC = InitTimeCalibration();
       if ( !initTC ) 
         AliError("InitTimeCalibration returned false, returning");
-      if (initTC==1)
+      if (initTC==1) {
+        fCalibrateTimeParamAvailable = kTRUE;
         AliWarning("InitTimeCalib OK");
+      }
       if( initTC > 1 )
         AliWarning(Form("No external time calibration set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
     }
@@ -557,6 +557,17 @@ void AliEMCALTenderSupply::ProcessEvent()
         AliError("InitMisalignmentMatrix returned false, returning");
       else
         AliWarning("InitMisalignMatrix OK");
+    }
+    
+    // initiate reco params with some defaults
+    // will not overwrite, if those have been provided by user
+    if( needRecoParam ) {
+      Int_t initRC = InitRecParam();
+      
+      if( initRC == 0 )
+        AliInfo("Defaults reco params loaded.");
+      if( initRC > 1 )
+        AliWarning("User defined reco params.");
     }
     
     // init clusterizer
@@ -1347,9 +1358,18 @@ Int_t AliEMCALTenderSupply::InitRecParam()
   fRecParam = new AliEMCALRecParam();
   fRecParam->SetClusteringThreshold(0.100);
   fRecParam->SetMinECut(0.050);
-  fRecParam->SetTimeCut(250);
-  fRecParam->SetTimeMin(425);
-  fRecParam->SetTimeMax(825);
+  
+  if(!fCalibrateTimeParamAvailable){
+    fRecParam->SetTimeCut(250*1.e-9);
+    fRecParam->SetTimeMin(425*1.e-9);
+    fRecParam->SetTimeMax(825*1.e-9);
+  }
+  else {
+    fRecParam->SetTimeCut(100*1.e-9);
+    fRecParam->SetTimeMin(-50*1.e-9);
+    fRecParam->SetTimeMax( 50*1.e-9);
+  }
+  
   if ( beamType == "A-A") {
     fRecParam->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
   } 

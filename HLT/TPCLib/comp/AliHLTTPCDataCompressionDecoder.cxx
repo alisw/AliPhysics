@@ -21,6 +21,7 @@
 ///         class implementation which fills the actual target data struct
 
 #include "AliHLTTPCDataCompressionDecoder.h"
+#include "AliHLTTPCDataCompressionDescriptor.h"
 #include "AliHLTDataInflaterSimple.h"
 #include "AliHLTDataInflaterHuffman.h"
 #include "TList.h"
@@ -31,6 +32,7 @@ ClassImp(AliHLTTPCDataCompressionDecoder)
 AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
   : fPadShift(0.)
   , fVerbosity(0)
+  , fUseClusterMerger(kTRUE)
   , fpDataInflaterPartition(NULL)
   , fpDataInflaterTrack(NULL)
   , fpClusterMerger(NULL)
@@ -153,6 +155,21 @@ int AliHLTTPCDataCompressionDecoder::InitTrackModelClusterClusterDecoding()
   return 0;
 }
 
+int AliHLTTPCDataCompressionDecoder::AddCompressionDescriptor(const AliHLTComponentBlockData* pDesc)
+{
+  /// read descriptor
+  if (!pDesc) return -EINVAL;
+  if (pDesc->fDataType!=AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) return -ENODATA;
+  const AliHLTTPCDataCompressionDescriptor* pHeader=reinterpret_cast<const AliHLTTPCDataCompressionDescriptor*>(pDesc->fPtr);
+  if (! pHeader->CheckSize( pDesc->fSize ) ) return -EINVAL;
+  if( pHeader->GetMergedClustersFlag() == 0 ){
+    fUseClusterMerger = kTRUE;
+  } else if( pHeader->GetMergedClustersFlag() == 1 ){
+    fUseClusterMerger = kFALSE;
+  } else return -EINVAL;
+  return 0;
+}
+
 int AliHLTTPCDataCompressionDecoder::AddClusterMCData(const AliHLTComponentBlockData* pDesc)
 {
   /// add cluster mc data block
@@ -249,4 +266,5 @@ void AliHLTTPCDataCompressionDecoder::Clear(const char* option)
   fPartitionClusterIds.clear();
   fTrackModelClusterIds.Clear();
   fClusterMCData.clear();
+  fUseClusterMerger = kTRUE;
 }

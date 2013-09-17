@@ -16,6 +16,8 @@
 
 class AliTOFPIDParams;
 class TF1;
+class TH1F;
+class TH1D;
 
 class AliTOFPIDResponse : public TObject {
 public:
@@ -37,7 +39,8 @@ public:
 
   Double_t GetMismatchProbability(Double_t p,Double_t mass) const;
 
-  Double_t GetTailRandomValue() const; // generate a random value to add a tail to TOF time (for MC analyses)
+  static Double_t GetTailRandomValue(Float_t pt=1.0,Float_t eta=0.0,Float_t time=0.0,Float_t addmism=0.0); // generate a random value to add a tail to TOF time (for MC analyses), addmism = additional mismatch in percentile
+  static Double_t GetMismatchRandomValue(Float_t eta); // generate a random value for mismatched tracks (for MC analyses)
 
   void     SetT0event(Float_t *t0event){for(Int_t i=0;i < fNmomBins;i++) fT0event[i] = t0event[i];};
   void     SetT0resolution(Float_t *t0resolution){for(Int_t i=0;i < fNmomBins;i++) fT0resolution[i] = t0resolution[i];};
@@ -62,6 +65,7 @@ public:
   // Tracking resolution for expected times
   void SetTrackParameter(Int_t ip,Float_t value){if(ip>=0 && ip < 4) fPar[ip] = value;};
   Float_t GetTrackParameter(Int_t ip){if(ip>=0 && ip < 4) return fPar[ip]; else return -1.0;};
+  Int_t GetTOFchannel(AliVParticle *trk) const;
 
  private:
   Double_t fSigma;        // intrinsic TOF resolution
@@ -80,6 +84,8 @@ public:
   Float_t fPar[4]; // parameter for expected times resolution
 
   static TF1 *fTOFtailResponse; // function to generate a TOF tail
+  static TH1F *fHmismTOF; // TOF mismatch distribution
+  static TH1D *fHchannelTOFdistr;// TOF channel distance distribution
 
   ClassDef(AliTOFPIDResponse,5)   // TOF PID class
 };

@@ -35,7 +35,6 @@ set ADD_BINDIR=
 set ADD_BINDIR="$bindir         $ADD_BINDIR"
 set ADD_BINDIR="@ALIROOTBINDIR@ $ADD_BINDIR"
 set ADD_BINDIR="@ROOTBINDIR@    $ADD_BINDIR"
-set ADD_BINDIR="@HOMER_BINDIR@  $ADD_BINDIR"
 if ( $?PATH == 0 ) setenv PATH ""
 foreach i ($ADD_BINDIR)
   setenv PATH "${i}:$PATH"

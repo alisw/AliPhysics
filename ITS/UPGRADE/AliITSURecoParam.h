@@ -19,6 +19,8 @@ class AliITSUTrackCond;
 class AliITSURecoParam : public AliDetectorRecoParam
 {
  public: 
+  enum {kClus2Tracks,kPropBack,kRefitInw,kNTrackingPhases};   // tracking phases
+  //
   AliITSURecoParam();
   AliITSURecoParam(Int_t nLr);
   virtual ~AliITSURecoParam();
@@ -43,6 +45,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   TObjArray*  GetTrackingConditions()            const {return (TObjArray*)&fTrackingConditions;}
   Int_t       GetNTrackingConditions()           const {return fTrackingConditions.GetEntriesFast();}
   AliITSUTrackCond* GetTrackingCondition(Int_t i) const {return (AliITSUTrackCond*)fTrackingConditions[i];}
+  Bool_t      GetUseMatLUT(Int_t step)           const {return (step<0||step>=kNTrackingPhases) ? kFALSE:fUseMatLUT[step];}
   //
   void        SetNLayers(Int_t n);
   void        SetTanLorentzAngle(Int_t lr, Double_t v);
@@ -60,6 +63,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   void        SetTPCITSWallZSpanH(double v)                           {fTPCITSWallZSpanH = v;}
   void        SetTPCITSWallMaxStep(double v)                          {fTPCITSWallMaxStep = v;}
   //
+  void        SetUseMatLUT(Int_t step, Bool_t v)                      {if (step>=0&&step<kNTrackingPhases) fUseMatLUT[step]=v;}
   void        AddTrackingCondition(AliITSUTrackCond* cond);
   virtual void Print(Option_t *opt="")  const;
   //
@@ -76,6 +80,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Double_t       fTPCITSWallZSpanH;     // half Z span
   Double_t       fTPCITSWallMaxStep;    // max tracking step
   //
+  Bool_t         fUseMatLUT[kNTrackingPhases]; // allow usage of material lookup table at given tracking step
   Bool_t*        fAllowDiagonalClusterization; //[fNLayers] allow clusters of pixels with common corners only
   Double_t*      fTanLorentzAngle;  //[fNLayers] Optional Lorentz angle for each layer
   Double_t*      fSigmaY2;          //[fNLayers] addition to road width^2
@@ -97,13 +102,14 @@ class AliITSURecoParam : public AliDetectorRecoParam
   static const Double_t fgkTPCITSWallZSpanH;                   // half Z span
   static const Double_t fgkTPCITSWallMaxStep;                  // max tracking step
   //
+  static const Bool_t   fgkUseMatLUT[kNTrackingPhases];        // def. mat. LUT usage 
   static const Bool_t   fgkAllowDiagonalClusterization;        // clusters of pixels with common corners
   //
  private:
   AliITSURecoParam(const AliITSURecoParam & param);
   AliITSURecoParam & operator=(const AliITSURecoParam &param);
 
-  ClassDef(AliITSURecoParam,4) // ITS reco parameters
+  ClassDef(AliITSURecoParam,5) // ITS reco parameters
 };
 
 //_____________________________________________________________________________

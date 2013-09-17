@@ -100,7 +100,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fExtraFiles(),
                     fFileInfoLog(),
                     fAutoBranchHandling(kTRUE), 
-                    fAsyncReading(kTRUE), // default prefetching on
+                    fAsyncReading(kFALSE), // default prefetching on
                     fTable(),
                     fRunFromPath(0),
                     fNcalls(0),
@@ -293,9 +293,9 @@ void AliAnalysisManager::CreateReadCache()
       if (fDebug) Info("CreateReadCache","=== Read caching disabled ===");
       return;
    }
-//   gEnv->SetValue("TFile.AsyncPrefetching",(Int_t)fAsyncReading);
-//   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
-//   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
+   gEnv->SetValue("TFile.AsyncPrefetching",(Int_t)fAsyncReading);
+   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
+   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
    fTree->SetCacheSize(fCacheSize);
    TTreeCache::SetLearnEntries(1);  //<<< we can take the decision after 1 entry
    fTree->AddBranchToCache("*",kTRUE);    //<<< add all branches to the cache

@@ -60,7 +60,9 @@
 #include "../ITS/UPGRADE/AliITSUGeomTGeo.h"
 #include "../ITS/UPGRADE/AliITSUClusterPix.h"
 #include "../ITS/UPGRADE/AliITSUTrackCond.h"
+#include "../ITS/UPGRADE/AliITSUAux.h"
 #include <TGeoManager.h>
+#include <TTree.h>
 
 
 ClassImp(AliTaskITSUPerf)
@@ -74,6 +76,35 @@ const char* AliTaskITSUPerf::fgkLabelTypes[AliTaskITSUPerf::kNLabelTypes] = {
   ,"ITSTPCmismatch"
   ,"ITSTPCnoMatch"
 };
+
+
+typedef struct {
+  Bool_t  prim;  
+  Bool_t  rcbl;
+  Char_t  nClITS;
+  Char_t  nClTPC;
+  Char_t  nClITSMC;
+  Char_t  mcCl[7];
+  Char_t  rcCl[7];
+  Char_t  fcCl[7];
+  Float_t qCl[7];
+  Char_t  charge;
+  Float_t ptMC;
+  Float_t etaMC;
+  Float_t pt;
+  Float_t eta;
+  Float_t dcaR;
+  Float_t dcaZ;
+  Float_t dcaRE;
+  Float_t dcaZE;
+  Float_t ptE;
+  Float_t phi;
+  Int_t   pdg;
+  Int_t   lbl;
+  Int_t   spl;
+} trInfo_t;
+
+trInfo_t trackInfo;
 
 //________________________________________________________________________
 /*//Default constructor
@@ -120,6 +151,7 @@ AliTaskITSUPerf::AliTaskITSUPerf(const char *name)
   ,fNCentBins(1)
   ,fUseCentralityVar(0)
   ,fTPCCut(0)
+  ,fTree(0)
 {
   // Constructor
 
@@ -181,11 +213,38 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
     ((TH1*)hst)->Sumw2();
   }
   //
+  fTree = new TTree("trinfo","trinfo");
+  fTree->Branch("prim",&trackInfo.prim,"prim/O");
+  fTree->Branch("rcbl",&trackInfo.rcbl,"rcbl/O");
+  fTree->Branch("nClITS",&trackInfo.nClITS,"nClITS/b");
+  fTree->Branch("nClTPC",&trackInfo.nClTPC,"nClTPC/b");
+  fTree->Branch("nClITSMC",&trackInfo.nClITSMC,"nClITSMC/b");
+  fTree->Branch("mcCl",&trackInfo.mcCl,"mcCl[7]/b");
+  fTree->Branch("rcCl",&trackInfo.rcCl,"rcCl[7]/b");
+  fTree->Branch("fcCl",&trackInfo.fcCl,"fcCl[7]/b");
+  fTree->Branch("qCl" ,&trackInfo.qCl,  "qCl[7]/F");
+  fTree->Branch("charge",&trackInfo.charge,"charge/B");
+  fTree->Branch("ptMC",  &trackInfo.ptMC,"ptMC/F");
+  fTree->Branch("etaMC", &trackInfo.etaMC,"etaMC/F");
+  fTree->Branch("pt",  &trackInfo.pt,"pt/F");
+  fTree->Branch("eta", &trackInfo.eta,"eta/F");
+  fTree->Branch("dcaR", &trackInfo.dcaR,"dcaR/F");
+  fTree->Branch("dcaZ", &trackInfo.dcaZ,"dcaZ/F");
+  fTree->Branch("dcaRE", &trackInfo.dcaRE,"dcaRE/F");
+  fTree->Branch("dcaZE", &trackInfo.dcaZE,"dcaZE/F");
+  fTree->Branch("ptE",  &trackInfo.ptE,"ptE/F");
+  fTree->Branch("phi",  &trackInfo.phi,"phi/F");
+  fTree->Branch("pdf",  &trackInfo.pdg,"pdg/I");
+  fTree->Branch("lbl",  &trackInfo.lbl,"lbl/I");
+  fTree->Branch("spl",  &trackInfo.spl,"spl/I");
+  fOutput->Add(fTree);
+  //
   fTPCCut = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   fTPCCut->SetEtaRange(fEtaMin,fEtaMax);
   fTPCCut->SetPtRange(fPtMin,fPtMax);
   fTPCCut->SetPtRange(fPtMin,fPtMax);
   fTPCCut->SetMinNClustersTPC(fMinTPCclusters);
+  printf("Cuts: Eta: %f %f  | Pt: %f %f\n",fEtaMin,fEtaMax,fPtMin,fPtMax);
   //
 #ifdef _CLUS_LIST_
   fClLists.SetOwner();
@@ -204,13 +263,13 @@ void AliTaskITSUPerf::UserExec(Option_t *)
   AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
   fRPTree = 0;
   AliESDInputHandlerRP *handRP = (AliESDInputHandlerRP*)anMan->GetInputEventHandler();
-  if (!handRP) { AliFatal("No RP handler"); return; }
+  if (!handRP) { AliFatal("No Input handler"); return; }
   //
   fESDEvent  = handRP->GetEvent();
   if (!fESDEvent) { AliFatal("No AliESDEvent"); return; }
   //
   fRPTree = handRP->GetTreeR("ITS");
-  if (!fRPTree) { AliFatal("Invalid ITS cluster tree"); return; }
+  if (!fRPTree) { AliWarning("No ITS cluster tree"); /*return;*/ }
   //
   AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
   if (!eventHandler) { AliFatal("Could not retrieve MC event handler"); return; }
@@ -308,8 +367,17 @@ void AliTaskITSUPerf::BookStandardHistosCent(Int_t bin)
 		fNPtBins,fPtMin,fPtMax,kNLabelTypes,-0.5,kNLabelTypes-0.5);
   AddHisto(&fHistosCent,h2, GetHistoID(kHMatchStatusNRcblSec,-1,bin) );
   for (int i=0;i<kNLabelTypes;i++) h2->GetYaxis()->SetBinLabel(i+1,fgkLabelTypes[i]);
-
-
+  //
+  h2 = new TH2F(Form("B%d_MCLr_Prim",bin),
+		Form("B%d MCLr Prim vs pt",bin),
+		fNPtBins,fPtMin,fPtMax, 7,-0.5,6.5);
+  AddHisto(&fHistosCent,h2, GetHistoID(kHMCLrPresPrim,-1,bin) );
+  //
+  h2 = new TH2F(Form("B%d_MCLr_Sec",bin),
+		Form("B%d MCLr Sec vs pt",bin),
+		fNPtBins,fPtMin,fPtMax, 7,-0.5,6.5);
+  AddHisto(&fHistosCent,h2, GetHistoID(kHMCLrPresSec,-1,bin) );
+  //
 }
 
 //_________________________________________________________________________
@@ -338,7 +406,7 @@ Int_t AliTaskITSUPerf::GetHistoID(Int_t htype, Int_t mcStat, Int_t centBin) cons
 {
   // generate ID for the histo. htype must be <100, mcStat<kNLabelTypes
   //
-  if (mcStat>=kNLabelTypes) AliFatal(Form("MCStatus ID=%d > max.allowed %d",mcStat,kNLabelTypes));
+  //  if (mcStat>=kNLabelTypes) AliFatal(Form("MCStatus ID=%d > max.allowed %d",mcStat,kNLabelTypes));
   if (centBin>=fNCentBins)  AliFatal(Form("CentBin  ID=%d > max.allowed %d",centBin,fNCentBins));
   //
   if (centBin>=0) {
@@ -361,6 +429,7 @@ void AliTaskITSUPerf::CheckTracks()
 {
   // build mc truth info for tracks 
   Bool_t dump = kFALSE;
+  Bool_t dump1 = kFALSE;
   //
   int ntr = fESDEvent->GetNumberOfTracks();
   int ntrMC = fStack->GetNtrack();
@@ -374,7 +443,9 @@ void AliTaskITSUPerf::CheckTracks()
     // at the moment we consider only TPC/ITS tracks
     //if (!trc->IsOn(AliESDtrack::kTPCin)) continue;
     if (!fTPCCut->IsSelected(trc)) continue;
-
+    //
+    trc->GetDZ(fVtxMC[0],fVtxMC[1],fVtxMC[2], fldBz, dcaRZ);
+    //
     Int_t labMC    = trc->GetLabel();
     Int_t labMCabs = TMath::Abs(labMC);
     Int_t labMCTPC = trc->GetTPCLabel();
@@ -386,14 +457,75 @@ void AliTaskITSUPerf::CheckTracks()
     double pt  = trc->Pt();
     double eta = trc->Eta();
     //
+    TH2* hlr = (TH2*)( (mcStatus&BIT(kMCPrimBit)) ? GetHisto(&fHistosCent,kHMCLrPresPrim) : GetHisto(&fHistosCent,kHMCLrPresSec));
+    if (hlr) {
+      for (int il=0;il<7;il++) {
+	if (mcStatus&(0x1<<(il+kITSHitBits))) hlr->Fill(pt,il);
+      }      
+      hlr->Fill(pt,-99); // count tracks
+    }
+    // 
+
     Bool_t reject = mcStatus & BIT(kTrCondFail);
     //
     int mcLabType = GetMCLabType(labMCTPC,labMCITS,nClTPC,nClITS);
     //
     //    if (eta>fEtaMax || eta<fEtaMin) continue;
     //    if (nClTPC<fMinTPCclusters) continue;
-    //    printf("#%3d pt:%5.2f eta:%+5.2f | Lb:%+6d LbTPC:%+6d LbITS:%+6d MCTp:%d | Ntpc:%3d Nits:%3d\n",itr,pt,eta,labMC,labMCTPC,labMCITS,mcLabType, nClTPC,nClITS);
+    //    printf("#%3d pt:%5.2f eta:%+5.2f | Lb:%+6d LbTPC:%+6d LbITS:%+6d MCTp:%d | Ntpc:%3d Nits:%3d | Rej:%d\n",
+    //	   itr,pt,eta,labMC,labMCTPC,labMCITS,mcLabType, nClTPC,nClITS,reject);
+    AliMCParticle *part  = 0;
+    if (labMCabs>=ntrMC) continue;
+    part = (AliMCParticle*)fMCEvent->GetTrack(labMCabs);
+    double ptMC = part->Pt();
+    double etaMC = part->Eta();
     //
+    if (fTree) {
+      trackInfo.lbl = labMC;
+      trackInfo.prim = (mcStatus&BIT(kMCPrimBit)) != 0;
+      trackInfo.rcbl = !reject;
+      trackInfo.nClITS = trc->GetNcls(0);
+      trackInfo.nClTPC = trc->GetNcls(1);
+      trackInfo.ptMC = ptMC;
+      trackInfo.etaMC = etaMC;
+      trackInfo.charge = trc->Charge();
+      trackInfo.pt = trc->Pt();
+      trackInfo.eta = trc->Eta();
+      trackInfo.spl = trc->GetITSModuleIndex(10);
+      trackInfo.phi = part->Phi();    
+      trackInfo.pdg = part->PdgCode();
+      trackInfo.dcaR = dcaRZ[0];
+      trackInfo.dcaZ = dcaRZ[1];
+      trackInfo.dcaRE = TMath::Sqrt(trc->GetSigmaY2());
+      trackInfo.dcaZE = TMath::Sqrt(trc->GetSigmaZ2());
+      trackInfo.ptE   = TMath::Sqrt(trc->GetSigma1Pt2())*trackInfo.pt*trackInfo.pt;
+      //
+      trackInfo.nClITSMC = 0;
+      for (int il=0;il<7;il++) {
+	trackInfo.mcCl[il] = (mcStatus & (0x1<<(il+kITSHitBits))) != 0;
+	if (trackInfo.mcCl[il]) trackInfo.nClITSMC++;
+	trackInfo.rcCl[il] = (fRPTree) ? 0 : trc->HasPointOnITSLayer(il); // when clusters are available, fill in the cl. loop
+	trackInfo.qCl[il]  = 0;
+	trackInfo.fcCl[il] = trc->HasSharedPointOnITSLayer(il);
+      }
+      int htc = 0,clID,lrID;
+      Int_t lrclID = 0;
+      // here we access clusters really attached to the track
+      if (fRPTree) {
+	while ( (lrclID=trc->GetITSModuleIndex(htc++))>=0 ) { // in principle, one can have >1 attached cluster/layer
+	  clID = AliITSUAux::UnpackCluster(lrclID,lrID);
+	  AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
+	  //	printf("cl%d on Lr%d id=%d: pack=%d Cl=%p Q=%d\n",htc,lrID,clID,lrclID,cl,cl ? cl->GetQ():0);
+	  if (cl) {
+	  trackInfo.rcCl[lrID]++;
+	  trackInfo.qCl[lrID] += (Float_t)cl->GetQ();
+	  }
+	  else printf("Failed to fetch cluster: cl%d on Lr%d id=%d: pack=%d\n",htc,lrID,clID,lrclID);
+	}
+      }
+      //
+      fTree->Fill();
+    }
     if (reject) {
       GetHisto(&fHistosCent,(mcStatus & BIT(kMCPrimBit)) ? kHMatchStatusNRcblPrim:kHMatchStatusNRcblSec)->Fill(pt,mcLabType);  // matching status
       if (dump) {
@@ -405,12 +537,15 @@ void AliTaskITSUPerf::CheckTracks()
     }
     GetHisto(&fHistosCent,kHMatchStatusRcbl)->Fill(pt,mcLabType);  // matching status
     //
-    AliMCParticle *part  = 0;
     TObjArray* clList = 0;
     //
+    if (part) {
+      /*
+      int pdg = part->PdgCode();
+      if (TMath::Abs(pdg)!=211) continue;
+      if (nClITS<7) continue;
+      */
 #ifdef _CLUS_LIST_
-    if (labMCabs<ntrMC) {
-      part = (AliMCParticle*)fMCEvent->GetTrack(labMCabs);
       //
       clList = (TObjArray*)fClLists.At(labMCabs);
       if (clList) {
@@ -420,13 +555,11 @@ void AliTaskITSUPerf::CheckTracks()
 	  cl->Print();
 	}
       }
-    }
 #endif
+    }
 
     if (part) {
       //
-      double ptMC = part->Pt();
-      double etaMC = part->Eta();
       //
       if (dump) {
 	printf("  #%4d Pt:%5.2f Eta:%5.2f |",itr,ptMC,etaMC);
@@ -435,15 +568,15 @@ void AliTaskITSUPerf::CheckTracks()
       }
       //
       if ( (mcStatus&BIT(kMCPrimBit)) ) {
-	//	printf("#%4d Pt:%5.2f Eta:%5.2f |",itr,ptMC,etaMC);
-	//	for (int k=0;k<32;k++) printf("%d", (mcStatus&(0x1<<k)) ? 1:0);
-	//	printf("| %+5d %+5d %+5d |%3d %d -> %d\n",labMC,labMCTPC,labMCITS,nClTPC,nClITS,mcLabType);
-
+	if (dump1 && TMath::Abs(ptMC-0.5)<0.1) {
+	  printf("#%4d Pt:%5.2f Eta:%5.2f | ",itr,ptMC,etaMC);
+	  for (int k=0;k<7;k++) printf("(%d/%d)", (mcStatus&(0x1<<k)) ? 1:0, trc->HasPointOnITSLayer(k));
+	  printf("| %+5d %+5d %+5d |%3d %d -> %d\n",labMC,labMCTPC,labMCITS,nClTPC,nClITS,mcLabType);
+	}
 	// compare MC vs reco track params
 	if (ptMC>0) GetHisto(&fHistosCentMCLb,kHResPTvsPTMC, mcLabType)->Fill(ptMC, (ptMC-pt)/ptMC);
 	//
 	// DCA resolution
-	trc->GetDZ(fVtxMC[0],fVtxMC[1],fVtxMC[2], fldBz, dcaRZ);
 	GetHisto(&fHistosCentMCLb,kHResDCARvsPTMC, mcLabType)->Fill(ptMC, dcaRZ[0]);
 	GetHisto(&fHistosCentMCLb,kHResDCAZvsPTMC, mcLabType)->Fill(ptMC, dcaRZ[1]);
 	//
@@ -535,6 +668,22 @@ void AliTaskITSUPerf::BuildMCInfo()
 	  if (cnd->CheckPattern(patt)) {fail=kFALSE; break;}
 	}
 	if (fail) mcStatus |= BIT(kTrCondFail);
+	//
+	/*
+	int nlr = AliITSUAux::NumberOfBitsSet(patt);	
+	AliMCParticle *part  = (AliMCParticle*)fMCEvent->GetTrack(itr);
+	double etaMC = part->Eta();
+	if (etaMC>=fEtaMin && etaMC<=fEtaMax && nlr) {
+	  TH2* hlr = (TH2*)( (mcStatus&BIT(kMCPrimBit)) ? GetHisto(&fHistosCent,kHMCLrPresPrim) : GetHisto(&fHistosCent,kHMCLrPresSec));
+	  if (hlr) {
+	    double ptMC = part->Pt();
+	    for (int il=0;il<7;il++) {
+	      if (mcStatus&(0x1<<(il+kITSHitBits))) hlr->Fill(ptMC,il);
+	    }      
+	    hlr->Fill(ptMC,-99); // count tracks
+	  }
+	}
+	*/
       }
     }
     //

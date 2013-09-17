@@ -51,7 +51,7 @@ class AliITSUTrackCond : public TObject
   virtual void  Print(Option_t* option = "")           const;
 
   void        SetMaxITSTPCMatchChi2(Float_t v)               {fMaxITSTPCMatchChi2 = v;}
-  void        SetMaxITSSAChi2(Float_t v)                     {fMaxITSSAChi2 = v;}
+  void        SetMaxITSSAChi2(Int_t ncl, Float_t v)          {if (ncl>0&&ncl<=2*fNLayers) fMaxITSSAChi2[ncl-1] = v;}
   void        SetMaxTr2ClChi2(Int_t lr, Float_t v)           {fMaxTr2ClChi2[lr] = v;}
   void        SetMaxChi2GloNrm(Int_t lr, Float_t v)          {fMaxChi2GloNrm[lr] = v;}
   void        SetMissPenalty(Int_t lr,  Float_t v)           {fMissPenalty[lr] = v;}
@@ -60,7 +60,7 @@ class AliITSUTrackCond : public TObject
   void        ExcludeLayer(Int_t lr)                         {fAllowLayers &= ~(0x1<<lr);}
   //
   Float_t     GetMaxITSTPCMatchChi2()                  const {return fMaxITSTPCMatchChi2;}
-  Float_t     GetMaxITSSAChi2()                        const {return fMaxITSSAChi2;}
+  Float_t     GetMaxITSSAChi2(Int_t ncl)               const {return fMaxITSSAChi2[ncl-1];}
   Char_t      GetClSharing(Int_t lr)                   const {return fClSharing[lr];}
   Float_t     GetMissPenalty(Int_t lr)                 const {return fMissPenalty[lr];}
   Float_t     GetMaxTr2ClChi2(Int_t lr)                const {return fMaxTr2ClChi2[lr];}
@@ -82,11 +82,12 @@ class AliITSUTrackCond : public TObject
   Char_t      fActiveLrOuter;            // outermose active layer to consider
   UShort_t    fAllowLayers;              // pattern of active layers to be checked
   Int_t       fNLayers;                  // total number of layers
+  Int_t       fMaxClus;                  // max number of clusters in track (by default, 2*fNLayers)
   Float_t     fMaxITSTPCMatchChi2;       // max chi2 for ITS/TPC matching
-  Float_t     fMaxITSSAChi2;             // max chi2 for ITS standalone fit (backward)
   Char_t*     fClSharing;                // [fNLayers] is cluster sharing allowed
   Short_t*    fMaxBranches;              // [fNLayers] max allowed branches per seed on each layer
   Short_t*    fMaxCandidates;            // [fNLayers] max allowed candidates per TPC seed on each layer
+  Float_t*    fMaxITSSAChi2;             // [fMaxClus] max chi2 for ITS standalone fit (backward) vs N cl
   Float_t*    fMaxTr2ClChi2;             // [fNLayers] max track-to-cluster chi2
   Float_t*    fMaxChi2GloNrm;            // [fNLayers] max norm global chi2
   Float_t*    fMissPenalty;              // [fNLayers] chi2 penalty for missing hit on the layer
@@ -106,7 +107,7 @@ class AliITSUTrackCond : public TObject
   static Float_t fgkMaxMatchChi2;         // max acceptable matching chi2
   static Float_t fgkMaxITSSAChi2;         // max acceptable standalone ITS backward fit chi2
   //
-  ClassDef(AliITSUTrackCond,8)           // set of requirements on track hits pattern
+  ClassDef(AliITSUTrackCond,10)           // set of requirements on track hits pattern
 };
 
 

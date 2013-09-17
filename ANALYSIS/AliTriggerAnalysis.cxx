@@ -221,7 +221,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux)
   Int_t nBinsY = isLowFlux ? 500  : 1000;
   Float_t xMax = isLowFlux ? 400  : 2999.5;
   Float_t yMax = isLowFlux ? 4000 : 9999.5;
-  fHistSPDClsVsTrk = new TH2F("fHistSPDClsVsTrk", "SPD Clusters vs Tracklets", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
+  fHistSPDClsVsTrk = new TH2F("fHistSPDClsVsTrk", "SPD Clusters vs Tracklets; n tracklets; n clusters", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
   //
   fHistV0A = new TH1F("fHistV0A", "V0A;leading time (ns);events", 400, -100, 100);
   fHistV0C = new TH1F("fHistV0C", "V0C;leading time (ns);events", 400, -100, 100);
@@ -718,6 +718,7 @@ Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliESDEvent* esd)
   // Check whether the event is incomplete 
   // (due to DAQ-HLT issues, it could be only part of the event was saved)
   //
+  if (fMC) return kFALSE; // there are no incomplete events on MC
   if ((esd->GetEventType() == 7) &&
       (esd->GetDAQDetectorPattern() & (1<<4)) &&
      !(esd->GetDAQAttributes() & (1<<7))) return kTRUE;

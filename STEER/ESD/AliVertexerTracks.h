@@ -183,8 +183,8 @@ class AliVertexerTracks : public TObject {
   Double_t  fNominalPos[3];   // initial knowledge on vertex position
   Double_t  fNominalCov[6];   // initial knowledge on vertex position
   TObjArray fTrkArraySel;     // array with tracks to be processed
-  UShort_t  *fIdSel;          // IDs of the tracks (AliESDtrack::GetID())
-  Int_t     *fTrksToSkip;     // track IDs to be skipped for find and fit 
+  UShort_t  *fIdSel;          //! IDs of the tracks (AliESDtrack::GetID())
+  Int_t     *fTrksToSkip;     //! track IDs to be skipped for find and fit 
   Int_t     fNTrksToSkip;     // number of tracks to be skipped 
   Bool_t    fConstraint;      // true when "mean vertex" was set in 
                               // fNominal ... and must be used in the fit
@@ -246,7 +246,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,16) // 3D Vertexing with tracks 
+  ClassDef(AliVertexerTracks,17) // 3D Vertexing with tracks 
 };
 
 #endif

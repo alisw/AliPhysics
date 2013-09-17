@@ -154,7 +154,8 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fRequiredEvents(0),
   fCurrentEvent(0), 
   fRunno(0),
-  fSummaries(0)
+  fSummaries(0),
+  fAll(false)
 {
   //Constructor
   for(Int_t i = 0; i< 3;i++) {
@@ -179,7 +180,8 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   fRequiredEvents(baseDA.fRequiredEvents),
   fCurrentEvent(baseDA.fCurrentEvent),
   fRunno(baseDA.fRunno),
-  fSummaries(0)
+  fSummaries(0),
+  fAll(baseDA.fAll)
 {
   //Copy constructor
   for(Int_t i = 0; i< 3;i++) {
@@ -200,12 +202,32 @@ AliFMDBaseDA::~AliFMDBaseDA()
 //_____________________________________________________________________
 Bool_t AliFMDBaseDA::HaveEnough(Int_t nEvents) const
 {
-  return nEvents > GetRequiredEvents();
+  // if (!fAll) return nEvents > GetRequiredEvents();
+  if (nEvents <= 1) return false;
+
+  Bool_t ret = true; // Assume we have it 
+  for (Int_t i = 0; i < 3; i++) { 
+    if (!fSeenDetectors[i]) continue;
+    if (Int_t(fNEventsPerDetector[i]) <= GetRequiredEvents()) ret = false;
+  }
+  return ret;
 }
 //_____________________________________________________________________
 UShort_t AliFMDBaseDA::GetProgress(Int_t nEvents) const
 {
-  return UShort_t((nEvents *100)/ GetRequiredEvents());
+  // if (!fAll) 
+  //  return UShort_t((nEvents *100)/ GetRequiredEvents());
+
+  if (nEvents <= 1) return 0;
+
+  Int_t got = 0;
+  Int_t total = 0;
+  for (Int_t i = 0; i < 3; i++) {
+    if (!fSeenDetectors[i]) continue;
+    got   += fNEventsPerDetector[i];
+    total += GetRequiredEvents();
+  }
+  return UShort_t(total > 0 ? (got * 100.) / total : 0);
 }
 
 //_____________________________________________________________________
@@ -256,7 +278,12 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   for(Int_t i = 0; i< 3;i++) fNEventsPerDetector[i] = 0;
 
   for(Int_t n = 1; !HaveEnough(n); n++) {
+    AliInfoF("Get the next event %d", n);
     if(!reader->NextEvent()) { n--; continue; }
+    UInt_t eventType = reader->GetType();
+    AliInfoF("Event type is %d", eventType);
+    if(eventType != AliRawEventHeaderBase::kPhysicsEvent) { n--; continue; }
+
     SetCurrentEvent(n);
     digitArray->Clear();
     fmdReader->ReadAdcs(digitArray);
@@ -267,7 +294,10 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
       UShort_t det = digit->Detector();
       fSeenDetectors[det-1] = true;
       seen[det-1]           = true;
-      FillChannels(digit);
+
+      // Only fill if we do not have enough for this detector 
+      if (Int_t(fNEventsPerDetector[det-1]) < GetRequiredEvents()) 
+	FillChannels(digit);
     }
     
     for(Int_t i = 0; i< 3;i++) 
@@ -275,10 +305,19 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
       
     FinishEvent();
     
+    Int_t nReq = GetRequiredEvents();
+    AliInfoF("%9d: %6d/%6d %6d/%6d %6d/%6d", n, 
+	     fNEventsPerDetector[0], nReq,
+	     fNEventsPerDetector[1], nReq,
+	     fNEventsPerDetector[2], nReq);
+
     int progress = GetProgress(n);
     if (progress <= lastProgress) continue;
     lastProgress = progress;
     std::cout << "Progress: " << lastProgress << " / 100 " << std::endl;
+
+    if (AliLog::GetDebugLevel("FMD","") >= 0) { 
+    }
     
   }
   
@@ -611,7 +650,8 @@ AliFMDBaseDA::GetStripArray(UShort_t det, Char_t ring,
 AliFMDBaseDA::Runner::Runner()
   : fReader(0),
     fDiagFile(""), 
-    fDiag(false)
+    fDiag(false),
+    fAll(false)
 {}
 
 //_____________________________________________________________________ 
@@ -660,7 +700,8 @@ AliFMDBaseDA::Runner::ShowUsage(std::ostream& o, const char* progname)
     << "Options:\n"
     << "   -h,--help                Show this help\n"
     << "   -d,--diagnostics[=FILE]  Write diagnostics to file\n"
-    << "   -D,--debug=LEVEL         Set the debug level\n\n"
+    << "   -D,--debug=LEVEL         Set the debug level\n"
+    << "   -A,--all                 Try to get data from all detectors\n\n"
     << "SOURCE is one of\n"
     << " * FILE.raw                Raw data file\n"
     << " * FILE.root               ROOT'ified raw data file\n"
@@ -694,7 +735,7 @@ AliFMDBaseDA::Runner::Init(int argc, char** argv)
   TString source;
   Int_t   debugLevel  = 0;
   Bool_t  help        = false;
-  
+
   for (int i = 1; i < argc; i++) { 
     TString arg(argv[i]);
     Bool_t  badOption   = false;
@@ -712,6 +753,7 @@ AliFMDBaseDA::Runner::Init(int argc, char** argv)
 	  if (ExtractValue(arg, val)) 
 	    fDiagFile = val;
 	}
+	else if (arg.EqualTo("--all"))  fAll = true;
 	else badOption = true;
       }
       else { // Short option 
@@ -730,6 +772,7 @@ AliFMDBaseDA::Runner::Init(int argc, char** argv)
 	    i++;
 	  }
 	  break;
+	case 'A': fAll = true ; break ;
 	default: badOption = true;
 	}
       } // End of options
@@ -794,6 +837,7 @@ AliFMDBaseDA::Runner::Exec(AliFMDBaseDA& da)
   timer.Start();
 
   da.SetSaveDiagnostics(fDiag || !fDiagFile.IsNull());
+  da.SetTryAll(fAll);
   if (!fDiagFile.IsNull()) da.SetDiagnosticsFilename(fDiagFile);
 
   da.Run(fReader);

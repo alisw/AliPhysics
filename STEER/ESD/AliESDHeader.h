@@ -63,13 +63,12 @@ public:
   TString     GetFiredTriggerInputs() const;
   Bool_t      IsTriggerInputFired(const char *name) const;
   const AliTriggerConfiguration*  GetCTPConfig() const { return fCTPConfig;}
-  void   SetIRInteractionMap();
-  Int_t  FindIRIntInteractionsBXMap(Int_t difference);
-  TBits  GetIRInt2InteractionMap() { SetIRInteractionMap(); return fIRInt2InteractionsMap; }
-  TBits  GetIRInt1InteractionMap() { SetIRInteractionMap(); return fIRInt1InteractionsMap; }
-  Int_t  GetIRInt2ClosestInteractionMap();
-  Int_t  GetIRInt1ClosestInteractionMap(Int_t gap = 3);
-  Int_t  GetIRInt2LastInteractionMap();
+  Int_t  FindIRIntInteractionsBXMap(Int_t difference) const;
+  TBits  GetIRInt2InteractionMap() const { SetIRInteractionMap(); return fIRInt2InteractionsMap; }
+  TBits  GetIRInt1InteractionMap() const { SetIRInteractionMap(); return fIRInt1InteractionsMap; }
+  Int_t  GetIRInt2ClosestInteractionMap() const;
+  Int_t  GetIRInt1ClosestInteractionMap(Int_t gap = 3) const;
+  Int_t  GetIRInt2LastInteractionMap() const;
 //**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
@@ -88,6 +87,9 @@ public:
   void      Print(const Option_t *opt=0) const;
 
   enum {kNTriggerInputs = 60};   //24 L0, 24 L1 and 12 L2 inputs
+
+private:
+  void   SetIRInteractionMap() const;
 
 private:
 
@@ -112,8 +114,8 @@ private:
   TObjArray    fTriggerInputsNames;// Array of TNamed of the active trigger inputs (L0,L1 and L2)
   AliTriggerConfiguration*  fCTPConfig; // Trigger configuration for the run
   TObjArray    fIRBufferArray;// Array with interaction records before and after triggered event
-  TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId within -90 +90 BXs
-  TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId within -90 +90 BXs
+  mutable TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId within -90 +90 BXs
+  mutable TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId within -90 +90 BXs
 
 
   ClassDef(AliESDHeader,11)

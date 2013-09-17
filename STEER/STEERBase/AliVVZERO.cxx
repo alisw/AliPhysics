@@ -51,3 +51,21 @@ Bool_t AliVVZERO::OutOfRange(Int_t i, const char* s, Int_t upper) const
   }
   return kFALSE;
 }
+
+//__________________________________________________________________________
+Float_t AliVVZERO::GetVZEROEtaMin(Int_t channel)
+{
+  // The method returns
+  // the lower eta limit of a given channel
+  Float_t eta[8] = {-3.7,-3.2,-2.7,-2.2,2.8,3.4,3.9,4.5};
+  return eta[channel/8];
+}
+
+//__________________________________________________________________________
+Float_t AliVVZERO::GetVZEROEtaMax(Int_t channel)
+{
+  // The method returns
+  // the upper eta limit of a given channel
+  Float_t eta[8] = {-3.2,-2.7,-2.2,-1.7,3.4,3.9,4.5,5.1};
+  return eta[channel/8];
+}

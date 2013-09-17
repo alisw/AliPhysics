@@ -73,9 +73,7 @@ if EN_HLT_VZERO
 VZERO_DIR=VZERO
 endif
 
-if EN_HLT_QA
 QA_DIR=QA
-endif
 
 SUBDIRS 		= BASE \
 			  $(ALIROOT_DEP) \

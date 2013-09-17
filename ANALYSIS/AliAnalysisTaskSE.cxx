@@ -760,13 +760,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
 
 // Call the user analysis    
-    if (!fMCEventHandler) {
-	if (isSelected) 
-	    UserExec(option);
-    } else {
-	if (isSelected && (fMCEventHandler->InitOk())) 
-	    UserExec(option);
-    }
+	if (isSelected) UserExec(option);
     
 // Added protection in case the derived task is not an AOD producer.
     AliAnalysisDataSlot *out0 = GetOutputSlot(0);

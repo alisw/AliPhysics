@@ -71,6 +71,9 @@ public:
 protected:
   void UpdateEntryList();
   Bool_t CheckOtherSelection(AliESDEvent* ESD);
+
+  Bool_t FindNextInTree(TTree* tree, Int_t& i);
+  Bool_t FindPrevInTree(TTree* tree, Int_t& i);
   
 private:
   AliEveEventSelector(const AliEveEventSelector&);

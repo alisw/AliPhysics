@@ -52,6 +52,8 @@ public:
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
 
   void SetSpecialDetectorResponse(const char* det) { fSpecialDetResponse=det; }
+  void SetUserDataRecoPass(Int_t pass){fUserDataRecoPass=pass;};
+
 
 private:
   Bool_t fIsMC;                        // If we run on MC data
@@ -70,6 +72,7 @@ private:
   
   Bool_t fUseTPCEtaCorrection;          // Use TPC eta correction
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
+  Int_t  fUserDataRecoPass;            //! forced DATA reco pass
   
   //
   void SetRecoInfo();
@@ -77,6 +80,6 @@ private:
   AliAnalysisTaskPIDResponse(const AliAnalysisTaskPIDResponse &other);
   AliAnalysisTaskPIDResponse& operator=(const AliAnalysisTaskPIDResponse &other);
   
-  ClassDef(AliAnalysisTaskPIDResponse,6)  // Task to properly set the PID response functions of all detectors
+  ClassDef(AliAnalysisTaskPIDResponse,7)  // Task to properly set the PID response functions of all detectors
 };
 #endif

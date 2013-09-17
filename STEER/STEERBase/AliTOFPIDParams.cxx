@@ -28,9 +28,13 @@ ClassImp(AliTOFPIDParams)
 
 //_____________________________________________________________________________
 AliTOFPIDParams::AliTOFPIDParams():
-TNamed("default",""),
+  TNamed("default",""),
   fStartTime(AliPIDResponse::kBest_T0),
-  fTOFresolution(100)
+  fTOFresolution(90),
+  fTOFtail(0.95),                                 
+  fTOFmatchingLossMC(0),                      
+  fTOFadditionalMismForMC(0),                  
+  fTOFtimeOffset(0) 
 {
   for (Int_t i=0;i<kSigPparams;i++) fSigPparams[i]=0;
 }
@@ -39,7 +43,11 @@ TNamed("default",""),
 AliTOFPIDParams::AliTOFPIDParams(Char_t *name):
   TNamed(name,""),
   fStartTime(AliPIDResponse::kBest_T0),
-  fTOFresolution(100)
+  fTOFresolution(90),
+  fTOFtail(0.95),                                 
+  fTOFmatchingLossMC(0),                      
+  fTOFadditionalMismForMC(0),                  
+  fTOFtimeOffset(0)                           
 {
   for (Int_t i=0;i<kSigPparams;i++) fSigPparams[i]=0;
 }

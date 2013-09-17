@@ -1,3 +1,29 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TObjArray.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1F.h"
+#include "../ITS/UPGRADE/AliITSUClusterPix.h"
+#include "../ITS/UPGRADE/AliITSURecoLayer.h"
+#include "../ITS/UPGRADE/AliITSURecoDet.h"
+#include "../ITS/UPGRADE/AliITSUHit.h"
+#include "../ITS/UPGRADE/AliITSUGeomTGeo.h"
+#include "AliITSsegmentation.h"
+#include "AliGeomManager.h"
+#include "AliStack.h"
+#include "AliLoader.h"
+#include "AliCDBManager.h"
+
+#include "TROOT.h"
+#include "TStyle.h"
+#include "TGeoMatrix.h"
+#include "TParticle.h"
+#include "TCanvas.h"
+#include "TPaveStats.h"
+#include "TClonesArray.h"
+
+#endif
+
 TObjArray histoArr;
 enum {kNPixAll=0,kNPixSPL=1,kDR=0,kDTXodd,kDTXeven,kDTZ, kDTXoddSPL,kDTXevenSPL,kDTZSPL};
 
@@ -16,8 +42,10 @@ typedef struct {
   Int_t nPix;
   Int_t nX;
   Int_t nZ;
+  Int_t q;
   Float_t pt;
   Float_t eta;
+  Float_t phi;
   Float_t xyz[3];
   Float_t dX;
   Float_t dZ;  
@@ -37,6 +65,17 @@ void compClusHits(int nev=-1)
   gSystem->Load("libITSUpgradeRec");
   gROOT->SetStyle("Plain");
 
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetSpecificStorage("GRP/GRP/Data",
+			  Form("local://%s",gSystem->pwd()));
+  man->SetSpecificStorage("ITS/Align/Data",
+			  Form("local://%s",gSystem->pwd()));
+  man->SetSpecificStorage("ITS/Calib/RecoParam",
+			  Form("local://%s",gSystem->pwd()));
+  man->SetRun(0);
+
+
   gAlice=NULL;
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
   runLoader->LoadgAlice();
@@ -52,8 +91,11 @@ void compClusHits(int nev=-1)
   AliLoader *dl = runLoader->GetDetectorLoader("ITS");
 
   AliGeomManager::LoadGeometry("geometry.root");
+  TObjArray algITS;
+  AliGeomManager::LoadAlignObjsFromCDBSingleDet("ITS",algITS);
+  AliGeomManager::ApplyAlignObjsToGeom(algITS);
+  //
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
-  Int_t nLayers = gm->GetNLayers();
   AliITSUClusterPix::SetGeom(gm);
   //
   AliITSURecoDet *its = new AliITSURecoDet(gm, "ITSinterface");
@@ -87,8 +129,10 @@ void compClusHits(int nev=-1)
   trOut->Branch("nPix", &cSum.nPix ,"nPix/I");
   trOut->Branch("nX"  , &cSum.nX   ,"nX/I");
   trOut->Branch("nZ"  , &cSum.nZ   ,"nZ/I");
+  trOut->Branch("q"   , &cSum.q    ,"q/I");
   trOut->Branch("pt"  , &cSum.pt   ,"pt/F");  
   trOut->Branch("eta"  ,&cSum.eta  ,"eta/F");  
+  trOut->Branch("phi"  , &cSum.phi  ,"phi/F");  
   trOut->Branch("xyz",   cSum.xyz,  "xyz[3]/F");  
   trOut->Branch("dX"  , &cSum.dX   ,"dX/F");
   trOut->Branch("dZ"  , &cSum.dZ   ,"dZ/F");  
@@ -118,7 +162,7 @@ void compClusHits(int nev=-1)
     for(Int_t iEnt=0;iEnt<hitTree->GetEntries();iEnt++){//entries loop degli hits
       hitTree->GetEntry(iEnt);
       int nh = hitList->GetEntries();      
-      for(Int_t iHit=0; iHit<hitList->GetEntries();iHit++){
+      for(Int_t iHit=0; iHit<nh;iHit++){
 	AliITSUHit *pHit = (AliITSUHit*)hitList->At(iHit);
 	int mcID = pHit->GetTrack();
 	TClonesArray* harr = arrMCTracks.GetEntriesFast()>mcID ? (TClonesArray*)arrMCTracks.At(mcID) : 0;
@@ -133,7 +177,7 @@ void compClusHits(int nev=-1)
     //
     // compare clusters and hits
     //
-    printf(" tree entries: %d\n",cluTree->GetEntries());
+    printf(" tree entries: %lld\n",cluTree->GetEntries());
     //
     for (int ilr=0;ilr<nlr;ilr++) {
       AliITSURecoLayer* lr = its->GetLayerActive(ilr);
@@ -176,12 +220,12 @@ void compClusHits(int nev=-1)
 	  }
 	}
 	//------------
-	AliITSsegmentation* segm = gm->GetSegmentation(ilr);
+	const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
 	//
 	cl->GetGlobalXYZ(xyzClGloF);
 	int clsize = cl->GetNPix();
 	for (int i=3;i--;) xyzClGlo[i] = xyzClGloF[i];
-	TGeoHMatrix* mat = gm->GetMatrixSens(modID);
+	const TGeoHMatrix* mat = gm->GetMatrixSens(modID);
 	if (!mat) {printf("failed to get matrix for module %d\n",cl->GetVolumeId());}
 	mat->MasterToLocal(xyzClGlo,xyzClTr);
 	//
@@ -208,7 +252,7 @@ void compClusHits(int nev=-1)
 	  if (!pHit) {
 	    printf("did not find MChit for label %d on module %d ",il,modID); 
 	    cl->Print(); 
-	    htAtt->Print();
+	    htArr->Print();
 	    continue;
 	  }
 	  //
@@ -239,6 +283,7 @@ void compClusHits(int nev=-1)
 	  cSum.nPix = cl->GetNPix();
 	  cSum.nX   = cl->GetNx();
 	  cSum.nZ   = cl->GetNz();
+	  cSum.q    = cl->GetQ();
 	  cSum.split = cl->TestBit(kSplit);
 	  cSum.dX = (txyzH[0]-xyzClTr[0])*1e4;
 	  cSum.dZ = (txyzH[2]-xyzClTr[2])*1e4;
@@ -248,6 +293,7 @@ void compClusHits(int nev=-1)
 	    cSum.pdg = part->GetPdgCode();
 	    cSum.eta = part->Eta();
 	    cSum.pt  = part->Pt();
+	    cSum.phi = part->Phi();
 	    cSum.prim = stack->IsPhysicalPrimary(label);
 	  }
 	  cSum.ntr = 0;
@@ -349,7 +395,7 @@ TH1* GetHistoClSize(int npix,int id,TObjArray* harr)
     harr->AddAtAndExpand(h, kNPixSPL);
     //
     h = (TH1*)harr->At(id);
-    if (!h) {printf("Unknown histo id=%d\n",idh); exit(1);}
+    if (!h) {printf("Unknown histo id=%d\n",id); exit(1);}
     return h;
   }
   //

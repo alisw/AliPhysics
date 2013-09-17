@@ -631,7 +631,9 @@ Bool_t AliGenDPMjet::CheckDiffraction()
        TParticle *  part = (TParticle *) fParticles.At(iPart);
        Double_t E= part->Energy();
        Double_t P= part->P();
-       M= TMath::Sqrt((fEnergyCMS-E-P)*(fEnergyCMS-E+P));
+       Double_t M2 = (fEnergyCMS-E-P)*(fEnergyCMS-E+P);
+       if(M2<0)  return kFALSE;
+       M= TMath::Sqrt(M2);
      }
 
      Double_t Mmin, Mmax, wSD, wDD, wND;

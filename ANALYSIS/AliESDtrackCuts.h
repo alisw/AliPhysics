@@ -88,6 +88,7 @@ public:
   void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS=min;}
   void SetMinNCrossedRowsTPC(Float_t min=-1) { fCutMinNCrossedRowsTPC=min;}
   void SetMinRatioCrossedRowsOverFindableClustersTPC(Float_t min = -1) { fCutMinRatioCrossedRowsOverFindableClustersTPC=min;}
+  void SetMinLengthActiveVolumeTPC(Float_t min = 120.) {fCutMinLengthActiveVolumeTPC=min;}
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   void SetClusterRequirementITS(ITSULayers det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
@@ -125,9 +126,9 @@ public:
   void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
 
 
-  // getters
-
+  // getters  
   Int_t   GetMinNClusterTPC()        const   { return fCutMinNClusterTPC;}
+  Float_t GetMinLengthActiveVolumeTPC() const { return fCutMinLengthActiveVolumeTPC;}
   Int_t   GetMinNClustersITS()       const   { return fCutMinNClusterITS;}
   TFormula *GetMinNClustersTPCPtDep() const  { return f1CutMinNClustersTPCPtDep;}
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
@@ -208,7 +209,7 @@ protected:
   Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
   void SetPtDepDCACuts(Double_t pt);
 
-  enum { kNCuts = 42 }; 
+  enum { kNCuts = 43 }; 
 
   //######################################################
   // esd track quality cuts
@@ -220,7 +221,8 @@ protected:
   Float_t   fCutMinNCrossedRowsTPC;     // min number of tpc crossed rows
   Float_t fCutMinRatioCrossedRowsOverFindableClustersTPC; // min ratio crossed rows / findable clusters
   TFormula *f1CutMinNClustersTPCPtDep; // pt dependent tpc clusters cut
-  Float_t fCutMaxPtDepNClustersTPC;   // maximum pt for pt dependend TPC cluster cut. For pt=>ptmax NClusterMin = f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC).
+  Float_t fCutMaxPtDepNClustersTPC;     // maximum pt for pt dependend TPC cluster cut. For pt=>ptmax NClusterMin = f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC).
+  Float_t fCutMinLengthActiveVolumeTPC; // mininum length (in cm) over which the track is sampled in the active volume of the TPC (outside boundaries)
 
   ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
 
@@ -330,7 +332,7 @@ protected:
 
   TH2F* fhTOFdistance[2];            //-> TOF signal distance dx vs dz
 
-  ClassDef(AliESDtrackCuts, 20)
+  ClassDef(AliESDtrackCuts, 21)
 };
 
 

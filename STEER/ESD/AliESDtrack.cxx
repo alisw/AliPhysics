@@ -129,6 +129,7 @@
 #include "AliTrackerBase.h"
 #include "AliTPCdEdxInfo.h"
 #include "AliDetectorPID.h"
+#include "TTreeStream.h"
 
 ClassImp(AliESDtrack)
 
@@ -2703,4 +2704,90 @@ void AliESDtrack::SetDetectorPID(const AliDetectorPID *pid)
   if (fDetectorPID) delete fDetectorPID;
   fDetectorPID=pid;
   
+}
+
+Double_t AliESDtrack::GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) const {
+  //
+  // Input parameters:
+  //   mode  - type of external track parameters 
+  //   deltaY - user defined "dead region" in cm
+  //   deltaZ - user defined "active region" in cm (250 cm drift lenght - 14 cm L1 delay
+  //   bz     - magnetic field 
+  //   exbPhi - optional rotation due to the ExB effect
+  // return value:
+  //   the length of the track in cm in "active volume" of the TPC
+  //
+  if (mode==0) return GetLengthInActiveZone(this, deltaY,deltaZ,bz, exbPhi,pcstream);
+  if (mode==1) return GetLengthInActiveZone(fIp, deltaY,deltaZ,bz, exbPhi,pcstream);
+  if (mode==2) return GetLengthInActiveZone(fOp, deltaY,deltaZ,bz, exbPhi,pcstream);
+  return 0;
+}
+
+Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) const {
+  //
+  // Numerical code to calculate the length of the track in active region of the TPC
+  // ( can be speed up if somebody wants to invest time - analysical version shoult be possible) 
+  //
+  // Input parameters:
+  //   paramT - external track parameters 
+  //   deltaY - user defined "dead region" in cm
+  //   deltaZ - user defined "active region" in cm (250 cm drift lenght - 14 cm L1 delay
+  //   bz     - magnetic field 
+  //   exbPhi - optional rotation due to the ExB effect
+  // return value:
+  //   the length of the track in cm in "active volume" of the TPC
+  //
+  const Double_t rIn=85;
+  const Double_t rOut=245;
+  Double_t xyz[3], pxyz[3];
+  if (paramT->GetXYZAt(rIn,bz,xyz)){
+    paramT->GetPxPyPzAt(rIn,bz,pxyz);
+  }else{
+    paramT->GetXYZ(xyz);
+    paramT->GetPxPyPz(pxyz);
+  }
+  //
+  Double_t dca   = -paramT->GetD(0,0,bz);  // get impact parameter distance to point (0,0)
+  Double_t radius= TMath::Abs(1/paramT->GetC(bz));  //
+  Double_t sign  = paramT->GetSign();
+  Double_t R0    = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);   // radius at current point
+  Double_t phiR0 = TMath::ATan2(xyz[1],xyz[0]);                // angle of given point
+  Double_t dPhiR0= -TMath::ASin((dca*dca-2*dca*radius*sign+R0*R0)/(2*R0*(dca-radius*sign)));
+  Double_t phi0  = phiR0-(dPhiR0);  // global phi offset to be added
+  //
+  //
+  AliExternalTrackParam paramR=(*paramT);
+  Double_t length=0;
+  for (Double_t R=rIn; R<=rOut; R++){
+    Double_t sinPhi=(dca*dca-2*dca*radius*sign+R*R)/(2*R*(dca-radius*sign));
+    if (TMath::Abs(sinPhi)>=1) continue;
+    Double_t dphi     = -TMath::ASin(sinPhi);
+    Double_t phi      = phi0+dphi;                           // global phi
+    Int_t    sector   = TMath::Nint(9*phi/(TMath::Pi()));
+    Double_t dPhiEdge = phi-(sector*TMath::Pi()/9)+exbPhi;   // distance to sector boundary in rphi
+    Double_t dX   = R*TMath::Cos(phi)-xyz[0];
+    Double_t dY   = R*TMath::Sin(phi)-xyz[1];
+    Double_t deltaPhi = 2*TMath::ASin(0.5*TMath::Sqrt(dX*dX+dY*dY)/radius);
+    Double_t z = xyz[2]+deltaPhi*radius*paramT->GetTgl();
+    if (TMath::Abs(dPhiEdge*R)>deltaY && TMath::Abs(z)<deltaZ){
+      length++;
+    }
+    //    Double_t deltaZ= dphi*radius; 
+    if (pcstream){
+      //should we keep debug possibility ?
+      AliExternalTrackParam paramTcopy=(*paramT);
+      paramR.Rotate(phi);
+      paramR.PropagateTo(R,bz);
+      (*pcstream)<<"debugEdge"<<
+	"R="<<R<<                   // radius
+	"dphiEdge="<<dPhiEdge<<     // distance to edge 
+	"phi0="<<phi0<<	            // phi0 -phi at the track initial position
+	"phi="<<phi<<               // 
+	"z="<<z<<
+	"pT.="<<&paramTcopy<<
+	"pR.="<<&paramR<<
+	"\n";
+    }
+  }
+  return length;
 }

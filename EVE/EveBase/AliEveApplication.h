@@ -17,11 +17,10 @@ public:
 	AliEveApplication(const char* appClassName, Int_t* argc, char** argv, void* options = 0, Int_t numOptions = 0, Bool_t noLogo = kFALSE);
 	virtual ~AliEveApplication();
 	
-	void Init(); // Initialize AliEve & Rint Environment
-	
 private:
 	AliEveApplication(const AliEveApplication&);               // not implemented
 	AliEveApplication& operator=(const AliEveApplication&);    // not implemented
+	void Init(); // Initialize AliEve & Rint Environment
 	
 public:
 

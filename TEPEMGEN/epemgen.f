@@ -264,11 +264,11 @@ C
 CYmY-
       r1 = eernd(0)
       if  (r1.lt.Gaus1) then
- 13      call rnorml(rn1)
+ 13      call rnormlEP(rn1)
          YmY = sgmY1*rn1
          if (dabs(YmY).gt.Ymed1) go to 13
       else if  (r1.lt.Gaus2) then
- 15      call rnorml(rn2)
+ 15      call rnormlEP(rn2)
          YmY = sgmY2*rn2
          if (dabs(YmY).lt.Ymed1) go to 15
          if (dabs(YmY).gt.Ymed2) go to 15
@@ -325,7 +325,7 @@ C
       endif                     ! of Icase 2
 C           
       if (Jcase.eq.1) then      !       Gauss only
- 65      call rnorml(rn1)
+ 65      call rnormlEP(rn1)
          XpX=Sgm1*rn1-parXpX(3)
          if (XpX.lt.XpXmin.or.XpX.gt.Xmed) go to 65
       endif                     ! of Jcase 1	      
@@ -500,7 +500,7 @@ C
       return
       end
 C====================================================================
-      SUBROUTINE rnorml(rnd)
+      SUBROUTINE rnormlEP(rnd)
 *     Random generator of normal distribution
       implicit real*8 (A-H,O-Z)
       PARAMETER (pi=3.141 592 653 589 793 238 462 643d00)

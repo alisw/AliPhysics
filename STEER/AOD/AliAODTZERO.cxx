@@ -38,6 +38,7 @@ AliAODTZERO::AliAODTZERO()
     fT0TOF[j]     = -9999;
     fT0TOFbest[j] = -9999;
   }
+  for (Int_t i=0; i<26; i++) fT0Amp[i]=-1;
 }
 
 //__________________________________________________________________________
@@ -54,6 +55,7 @@ AliAODTZERO::AliAODTZERO(const AliAODTZERO &source)
     fT0TOF[j]     = source.fT0TOF[j];
     fT0TOFbest[j] = source.fT0TOFbest[j];
   }
+  for (Int_t i=0; i<26; i++) fT0Amp[i]=source.fT0Amp[i];
 }
 
 //__________________________________________________________________________
@@ -73,6 +75,7 @@ AliAODTZERO& AliAODTZERO::operator=(const AliAODTZERO& source)
     fT0TOF[j]     = source.fT0TOF[j];
     fT0TOFbest[j] = source.fT0TOFbest[j];
   }
+  for (Int_t i=0; i<26; i++) fT0Amp[i]=source.fT0Amp[i];
   return *this;
 }
 

@@ -90,7 +90,7 @@ void AliPHOSClusterizer::SetInput(TTree * digitsTree)
     AliError("can't get the branch with the PHOS digits !");
     return;
   }
-  fDigitsArr->Clear();
+  fDigitsArr->Clear("C");
   branch->SetAddress(&fDigitsArr);
   branch->GetEntry(0);
 }

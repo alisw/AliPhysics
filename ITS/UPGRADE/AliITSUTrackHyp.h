@@ -16,7 +16,11 @@ class AliITSUTrackHyp: public AliKalmanTrack
   enum {kSkip=BIT(14)};
   AliITSUTrackHyp(Int_t nlr=0);
   AliITSUTrackHyp(const AliITSUTrackHyp& src);
+  AliITSUTrackHyp(const AliKalmanTrack& src);
+  AliITSUTrackHyp(const AliESDtrack& src);
   AliITSUTrackHyp &operator=(const AliITSUTrackHyp &src);
+  AliITSUTrackHyp &operator=(const AliESDtrack &src);
+  AliITSUTrackHyp &operator=(const AliKalmanTrack &src);
   virtual ~AliITSUTrackHyp();
   //
   void               InitFrom(const AliITSUTrackHyp *src);
@@ -37,10 +41,14 @@ class AliITSUTrackHyp: public AliKalmanTrack
   //
   void               SetChi2(Double_t chi2) {fChi2 = chi2;}
   Double_t           Update(const AliCluster* c);
+  Bool_t             Update(Double_t p[2],Double_t cov[3])                  {return AliExternalTrackParam::Update(p,cov);}
+  Double_t           GetPredictedChi2(Double_t p[2],Double_t cov[3])  const {return AliExternalTrackParam::GetPredictedChi2(p,cov);}
+  Double_t           GetPredictedChi2(const AliExternalTrackParam *t) const {return AliExternalTrackParam::GetPredictedChi2(t);}
   AliExternalTrackParam* GetTPCSeed() const {return fTPCSeed;}
   void               SetTPCSeed(AliExternalTrackParam* seed) {fTPCSeed = seed;}
   //
   virtual Double_t   GetPredictedChi2(const AliCluster *c) const;
+  
   virtual Bool_t     PropagateTo(Double_t xr, Double_t x0, Double_t rho);
   virtual Bool_t     Update(const AliCluster* c, Double_t chi2, Int_t index);
   virtual Int_t      GetNumberOfClusters()   const;

@@ -237,7 +237,6 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
   decoder.Clear();
   decoder.SetVerbosity(fVerbosity);
-  decoder.EnableClusterMerger();
 
   bool bNextBlock=false;
   // add cluster id and mc information data blocks
@@ -252,6 +251,12 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     desc.fPtr=(void*)buffer;
     if (pHLTOUT->GetDataBlockDescription(desc.fDataType, desc.fSpecification)<0) {
       continue;
+    }
+    if (desc.fDataType==AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) {
+      // header      
+      if ((iResult=decoder.AddCompressionDescriptor(&desc))<0) {
+	return iResult;
+      }
     }
     if (desc.fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
       // add mc information

@@ -48,7 +48,7 @@ ClassImp(AliMCEventHandler)
 
 AliMCEventHandler::AliMCEventHandler() :
     AliInputEventHandler(),
-    fMCEvent(new AliMCEvent()),
+    fMCEvent(0),
     fFileE(0),
     fFileK(0),
     fFileTR(0),
@@ -69,7 +69,7 @@ AliMCEventHandler::AliMCEventHandler() :
     fInitOk(kFALSE),
     fSubsidiaryHandlers(0),
     fEventsInContainer(0),
-    fPreReadMode(kNoPreRead),
+    fPreReadMode(kLmPreRead), // was kNoPreRead
     fCacheSize(0),
     fCacheTK(0),
     fCacheTR(0)
@@ -83,7 +83,7 @@ AliMCEventHandler::AliMCEventHandler() :
 
 AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     AliInputEventHandler(name, title),
-    fMCEvent(new AliMCEvent()),
+    fMCEvent(),
     fFileE(0),
     fFileK(0),
     fFileTR(0),
@@ -104,7 +104,7 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fInitOk(kFALSE),
     fSubsidiaryHandlers(0),
     fEventsInContainer(0),
-    fPreReadMode(kNoPreRead),
+    fPreReadMode(kLmPreRead), // was kNoPreRead
     fCacheSize(0),
     fCacheTK(0),
     fCacheTR(0)
@@ -135,15 +135,16 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     //
     fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
     if (!fFileE) {
-	AliError(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
-	fInitOk = kFALSE;
-	return kFALSE;
+      AliError(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
+      fInitOk = kFALSE;
+      return kFALSE;
     }
     
     //
     // Tree E
     fFileE->GetObject("TE", fTreeE);
     // Connect Tree E to the MCEvent
+    if (!fMCEvent) fMCEvent = new AliMCEvent();
     fMCEvent->ConnectTreeE(fTreeE);
     fNEvent = fTreeE->GetEntries();
     //
@@ -273,40 +274,39 @@ Bool_t AliMCEventHandler::LoadEvent(Int_t iev)
 Bool_t AliMCEventHandler::OpenFile(Int_t i)
 {
     // Open file i
+    fInitOk = kFALSE;
     if (i > 0) {
-	fkExtension = Form("%d", i);
+      fkExtension = Form("%d", i);
     } else {
-	fkExtension = "";
+      fkExtension = "";
     }
     
     if (fFileK && fCacheTK) fFileK->SetCacheRead(0, fTreeK);
     delete fFileK;
     fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fkExtension));
     if (!fFileK) {
-	AliError(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
-	fInitOk = kFALSE;
-	return kFALSE;
+      AliError(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
+      delete fMCEvent; fMCEvent=0;
+      return fInitOk;
     }
     
+    fInitOk = kTRUE;
     if (fReadTR) {
       if (fFileTR && fCacheTR) fFileTR->SetCacheRead(0, fTreeTR);
       delete fFileTR;
       fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fkExtension));
       if (!fFileTR) {
-        AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
-        fInitOk = kFALSE;
-        return kFALSE;
+        AliError(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fkExtension, fPathName->Data()));
+        return fInitOk;
       }
     }
-    
-    fInitOk = kTRUE;
-
-    return kTRUE;
+    return fInitOk;
 }
 
 Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 { 
     // Begin event
+    if (!fInitOk) return kFALSE;
     fParticleSelected.Delete();
     fLabelMap.Delete();
     // Read the next event
@@ -355,6 +355,7 @@ void AliMCEventHandler::SelectParticle(Int_t i){
   // taking the absolute values here, need to take care 
   // of negative daughter and mother
   // IDs when setting!
+    if (!fInitOk) return;
     if (TMath::Abs(i) >= AliMCEvent::BgLabelOffset()) i =  fMCEvent->BgLabelToIndex(TMath::Abs(i));
     if(!IsParticleSelected(TMath::Abs(i)))fParticleSelected.Add(TMath::Abs(i),1);
 }

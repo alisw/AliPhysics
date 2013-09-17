@@ -138,9 +138,11 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fPackages(0),
                   fModules(0),
                   fProofParam(),
-  fDropToShell(true),
-  fGridJobIDs(""),
-  fGridStages("")
+                  fDropToShell(true),
+                  fGridJobIDs(""),
+                  fGridStages(""),
+                  fFriendLibs(""),
+                  fTreeName()
 {
 // Dummy ctor.
    SetDefaults();
@@ -216,7 +218,9 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fProofParam(),
                   fDropToShell(true),
                   fGridJobIDs(""),
-                  fGridStages("")
+                  fGridStages(""),
+                  fFriendLibs(""),
+                  fTreeName()
 {
 // Default ctor.
    SetDefaults();
@@ -292,7 +296,9 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fProofParam(),
                   fDropToShell(other.fDropToShell),
                   fGridJobIDs(other.fGridJobIDs),
-                  fGridStages(other.fGridStages)
+                  fGridStages(other.fGridStages),
+                  fFriendLibs(other.fFriendLibs),
+                  fTreeName(other.fTreeName)
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
@@ -407,6 +413,8 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fDropToShell             = other.fDropToShell;
       fGridJobIDs              = other.fGridJobIDs;
       fGridStages              = other.fGridStages;
+      fFriendLibs              = other.fFriendLibs;
+      fTreeName                = other.fTreeName;
       if (other.fInputFiles) {
          fInputFiles = new TObjArray();
          TIter next(other.fInputFiles);
@@ -662,6 +670,7 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
          return kFALSE;
       }
       if (!LoadModule(mod)) return kFALSE;
+      if (!LoadFriendLibs()) return kFALSE;
    } else if (!LoadModules()) return kFALSE;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr->InitAnalysis()) return kFALSE;
@@ -724,8 +733,36 @@ Bool_t AliAnalysisAlien::LoadModules()
       mod = (AliAnalysisTaskCfg*)fModules->At(imod);
       if (!LoadModule(mod)) return kFALSE;
    }
-   return kTRUE;
+   // Load additional friend libraries
+   return LoadFriendLibs();
 }      
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::LoadFriendLibs() const
+{
+// Load libraries required for reading friends.
+   if (fFriendLibs.Length()) {
+      TObjArray *list = 0;
+      TString lib;
+      if (fFriendLibs.Contains(",")) list  = fFriendLibs.Tokenize(",");
+      else                           list  = fFriendLibs.Tokenize(" ");
+      for (Int_t ilib=0; ilib<list->GetEntriesFast(); ilib++) {
+         lib = list->At(ilib)->GetName();
+         lib.ReplaceAll(".so","");
+         lib.ReplaceAll(" ","");
+         if (lib.BeginsWith("lib")) lib.Remove(0, 3);
+         lib.Prepend("lib");
+         Int_t loaded = strlen(gSystem->GetLibraries(lib,"",kFALSE));
+         if (!loaded) loaded = gSystem->Load(lib);
+         if (loaded < 0) {
+            Error("LoadModules", "Cannot load library for friends %s", lib.Data());
+            return kFALSE;
+         }
+      }
+      delete list;
+   }
+   return kTRUE;
+}   
 
 //______________________________________________________________________________
 void AliAnalysisAlien::SetRunPrefix(const char *prefix)
@@ -1169,6 +1206,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    // Compose the 'find' command arguments
    TString format;
    TString command;
+   TString delimiter = pattern;
+   delimiter.Strip();
+   if (delimiter.Contains(" ")) delimiter = "";
+   else delimiter = " ";
    TString options = "-x collection ";
    if (TestBit(AliAnalysisGrid::kTest)) options += Form("-l %d ", fNtestFiles);
    else options += Form("-l %d ", gMaxEntries);  // Protection for the find command
@@ -1188,7 +1229,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       if (!DirectoryExists(path)) {
          Error("CreateDataset", "Path to data directory %s not valid",fGridDataDir.Data());
          return kFALSE;
-      }   
+      } 
 //      CdWork();
       if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
       else file = Form("%s.xml", gSystem->BaseName(path));
@@ -1199,7 +1240,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             command = "find ";
             command += Form("%s -o %d ",options.Data(), nstart);
             command += path;
-            command += " ";
+            command += delimiter;
             command += pattern;
             command += conditions;
             printf("command: %s\n", command.Data());
@@ -1275,7 +1316,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       while ((os=(TObjString*)next())) {
          nstart = 0;
          stage = 0;
-         path = Form("%s/%s/ ", fGridDataDir.Data(), os->GetString().Data());
+         path = Form("%s/%s/", fGridDataDir.Data(), os->GetString().Data());
          if (!DirectoryExists(path)) continue;
 //         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
@@ -1288,6 +1329,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                command = "find ";
                command +=  Form("%s -o %d ",options.Data(), nstart);
                command += path;
+               command += delimiter;
                command += pattern;
                command += conditions;
                TGridResult *res = gGrid->Command(command);
@@ -1403,7 +1445,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    } else {
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         format = Form("%%s/%s ", fRunPrefix.Data());
+         format = Form("%%s/%s/", fRunPrefix.Data());
          nstart = 0;
          stage = 0;
          path = Form(format.Data(), fGridDataDir.Data(), irun);
@@ -1427,6 +1469,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                command = "find ";
                command +=  Form("%s -o %d ",options.Data(), nstart);
                command += path;
+               command += delimiter;
                command += pattern;
                command += conditions;
                TGridResult *res = gGrid->Command(command);
@@ -2271,8 +2314,21 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
    TString streeName(treeName);
    if (IsUseMCchain()) streeName = "TE";
    TChain *chain = new TChain(streeName);
-   TChain *chainFriend = 0;
-   if (!fFriendChainName.IsNull()) chainFriend = new TChain(streeName);       
+   TList *friends = new TList();
+   TChain *cfriend = 0;
+   if (!fFriendChainName.IsNull()) {
+      TObjArray *list = fFriendChainName.Tokenize(" ");
+      TIter next(list);
+      TObjString *str;
+      while((str=(TObjString*)next())) {
+         cfriend = new TChain(streeName, str->GetName());
+         friends->Add(cfriend);
+         chain->AddFriend(cfriend);
+      }
+      delete list;
+   } 
+   TString bpath;
+   TIter nextfriend(friends);
    while (in.good())
    {
       in >> line;
@@ -2286,16 +2342,22 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
          if (!fFriendChainName.IsNull()) {
             if (esdFile.Index("#") > -1)
                esdFile.Remove(esdFile.Index("#"));
-            esdFile = gSystem->DirName(esdFile);
-            esdFile += "/" + fFriendChainName;
-            file = TFile::Open(esdFile);
-            if (file && !file->IsZombie()) {
-               file->Close();
-               chainFriend->Add(esdFile);
-            } else {
-               Fatal("GetChainForTestMode", "Cannot open friend file: %s", esdFile.Data());
-               return 0;
-            }   
+            bpath = gSystem->DirName(esdFile);
+            bpath += "/";
+            TString fileFriend;
+            nextfriend.Reset();
+            while ((cfriend=(TChain*)nextfriend())) {
+               fileFriend = bpath;
+               fileFriend += cfriend->GetTitle();
+               file = TFile::Open(fileFriend);
+               if (file && !file->IsZombie()) {
+                  file->Close();
+                  cfriend->Add(fileFriend);
+               } else {
+                  Fatal("GetChainForTestMode", "Cannot open friend file: %s", fileFriend.Data());
+                  return 0;
+               } 
+            }     
          }
       } else {
          Error("GetChainforTestMode", "Skipping un-openable file: %s", esdFile.Data());
@@ -2305,11 +2367,10 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
    if (!chain->GetListOfFiles()->GetEntries()) {
        Error("GetChainForTestMode", "No file from %s could be opened", fFileForTestMode.Data());
        delete chain;
-       delete chainFriend;
+       friends->Delete();
+       delete friends;
        return NULL;
    }
-//    chain->ls();
-   if (!fFriendChainName.IsNull()) chain->AddFriend(chainFriend);
    return chain;
 }    
 
@@ -2428,7 +2489,7 @@ void AliAnalysisAlien::Print(Option_t *) const
             \n*****       To disable, use: plugin->SetOverwriteMode(kFALSE);\n");
    }
    printf("=   Copy files to grid: __________________________ %s\n", (IsUseCopy())?"YES":"NO");
-   printf("=   Check if files can be copied to grid: ________ %s\n", (IsCheckCopy())?"YES":"NO");
+   printf("=   Check if files can be copied to grid: ________ %s\n", (IsCheckCopy())?"YES":"NO:Print");
    printf("=   Production mode:______________________________ %d\n", fProductionMode);
    printf("=   Version of API requested: ____________________ %s\n", fAPIVersion.Data());
    printf("=   Version of ROOT requested: ___________________ %s\n", fROOTVersion.Data());
@@ -2437,8 +2498,17 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   User running the plugin: _____________________ %s\n", fUser.Data());
    printf("=   Grid workdir relative to user $HOME: _________ %s\n", fGridWorkingDir.Data());
    printf("=   Grid output directory relative to workdir: ___ %s\n", fGridOutputDir.Data());
-   printf("=   Data base directory path requested: __________ %s\n", fGridDataDir.Data());
-   printf("=   Data search pattern: _________________________ %s\n", fDataPattern.Data());
+   TString basedatadir = fGridDataDir;
+   TString pattern = fDataPattern;
+   pattern.Strip();
+   Int_t ind = pattern.Index(" ");
+   if (ind>=0) {
+      basedatadir += "/%run%/";
+      basedatadir += pattern(0, ind);
+      pattern = pattern(ind+1, pattern.Length());
+   }   
+   printf("=   Data base directory path requested: __________ %s\n", basedatadir.Data());
+   printf("=   Data search pattern: _________________________ %s\n", pattern.Data());
    printf("=   Input data format: ___________________________ %s\n", fInputFormat.Data());
    if (fRunNumbers.Length()) 
    printf("=   Run numbers to be processed: _________________ %s\n", fRunNumbers.Data());
@@ -2547,6 +2617,26 @@ void AliAnalysisAlien::SetDefaults()
    SetDefaultOutputs(kTRUE);
    fOverwriteMode              = 1;
 }   
+
+//______________________________________________________________________________
+void AliAnalysisAlien::SetFriendChainName(const char *name, const char *libnames)
+{
+   // Set file name for the chain of friends and optionally additional libs to be loaded.
+   // Libs should be separated by blancs.
+   fFriendChainName = name;
+   fFriendChainName.ReplaceAll(",", " ");
+   fFriendChainName.Strip();
+   fFriendChainName.ReplaceAll("  ", " ");
+   
+   fFriendLibs = libnames;
+   if (fFriendLibs.Length()) {
+     if(!fFriendLibs.Contains(".so"))
+       Fatal("SetFriendChainName()", "You should provide explicit library names (with extension)");
+     fFriendLibs.ReplaceAll(",", " ");
+     fFriendLibs.Strip();
+     fFriendLibs.ReplaceAll("  ", " ");
+   }
+}
 
 //______________________________________________________________________________
 void AliAnalysisAlien::SetRootVersionForProof(const char *version)
@@ -3228,7 +3318,12 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:OADB:ANALYSISalice";
          // Parse the extra libs for .so
          if (fAdditionalLibs.Length()) {
-            TObjArray *list = fAdditionalLibs.Tokenize(" ");
+            TString additionalLibs = fAdditionalLibs;
+            additionalLibs.Strip();
+            if (additionalLibs.Length() && fFriendLibs.Length())
+               additionalLibs += " ";
+            additionalLibs += fFriendLibs;
+            TObjArray *list = additionalLibs.Tokenize(" ");
             TIter next(list);
             TObjString *str;
             while((str=(TObjString*)next())) {
@@ -3254,10 +3349,10 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             }
             if (list) delete list;            
          }
-        if (!extraLibs.IsNull()) {
-          Info("StartAnalysis", "Adding extra libs: %s",extraLibs.Data());
-          optionsList.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
-        }
+         if (!extraLibs.IsNull()) {
+           Info("StartAnalysis", "Adding extra libs: %s",extraLibs.Data());
+           optionsList.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
+         }
          // Check extra includes
          if (!fIncludePath.IsNull()) {
             TString includePath = fIncludePath;
@@ -4007,7 +4102,12 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
-         TObjArray *list = fAdditionalLibs.Tokenize(" ");
+         TString additionalLibs = fAdditionalLibs;
+         additionalLibs.Strip();
+         if (additionalLibs.Length() && fFriendLibs.Length())
+            additionalLibs += " ";
+         additionalLibs += fFriendLibs;
+         TObjArray *list = additionalLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {
@@ -4058,7 +4158,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   plugin->SetFileForTestMode(\"" << fFileForTestMode << "\");" << endl;
          out << "   plugin->SetNtestFiles(" << fNtestFiles << ");" << endl;
          if (!fFriendChainName.IsNull()) 
-            out << "   plugin->SetFriendChainName(\"" << fFriendChainName << "\");" << endl;
+            out << "   plugin->SetFriendChainName(\"" << fFriendChainName << "\",\"" << fFriendLibs << "\");" << endl;
          if (IsUseMCchain())
             out << "   plugin->SetUseMCchain();" << endl;
          out << "   mgr->SetGridHandler(plugin);" << endl;
@@ -4100,9 +4200,13 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          if (IsUseMCchain()) {
             out << "   TString treename = \"TE\";" << endl;
          } else {   
-            out << "   TString treename = type;" << endl;
-            out << "   treename.ToLower();" << endl;
-            out << "   treename += \"Tree\";" << endl;
+            if (!fTreeName.IsNull()) {
+               out << "   TString treename = \"" << fTreeName << "\";" << endl;
+            } else {   
+               out << "   TString treename = type;" << endl;
+               out << "   treename.ToLower();" << endl;
+               out << "   treename += \"Tree\";" << endl;
+            }   
          }   
          out << "   printf(\"***************************************\\n\");" << endl;
          out << "   printf(\"    Getting chain of trees %s\\n\", treename.Data());" << endl;
@@ -4114,8 +4218,20 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   }" << endl;
          out << "   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();" << endl;
          out << "   TChain *chain = new TChain(treename);" << endl;
-         if(fFriendChainName!="") {
-            out << "   TChain *chainFriend = new TChain(treename);" << endl;
+         if(!fFriendChainName.IsNull()) {
+            out << "   TList *friends = new TList();" << endl;
+            out << "   TIter nextfriend(friends);" << endl;
+            out << "   TChain *cfriend = 0;" << endl;
+            TObjArray *list = fFriendChainName.Tokenize(" ");
+            TIter next(list);
+            TObjString *str;
+            while((str=(TObjString*)next())) {
+               out << "   cfriend = new TChain(treename, \"" << str->GetName() << "\");" << endl;
+               out << "   friends->Add(cfriend);" << endl;
+               out << "   chain->AddFriend(cfriend);" << endl;
+            }
+            delete list;   
+//            out << "   TChain *chainFriend = new TChain(treename);" << endl;
          }
          out << "   coll->Reset();" << endl;
          out << "   while (coll->Next()) {" << endl;
@@ -4129,19 +4245,24 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "         }" << endl;
          out << "      }" << endl;
          out << "      chain->Add(filename);" << endl;
-         if(fFriendChainName!="") {
-            out << "      TString fileFriend=coll->GetTURL(\"\");" << endl;
-            out << "      if (fileFriend.Index(\"#\") > -1) fileFriend.Remove(fileFriend.Index(\"#\"));" << endl;
-            out << "      fileFriend = gSystem->DirName(fileFriend);" << endl;
-            out << "      fileFriend += \"/\";" << endl;
-            out << "      fileFriend += \"" << fFriendChainName << "\";";
-            out << "      TFile *file = TFile::Open(fileFriend);" << endl;
-            out << "      if (file) {" << endl;
-            out << "         file->Close();" << endl;
-            out << "         chainFriend->Add(fileFriend.Data());" << endl;
-            out << "      } else {" << endl;
-            out << "         ::Fatal(\"CreateChain\", \"Cannot open friend file: %s\", fileFriend.Data());" << endl;
-            out << "         return 0;" << endl;
+         if(!fFriendChainName.IsNull()) {
+            out << "      TString bpath=coll->GetTURL(\"\");" << endl;
+            out << "      if (bpath.Index(\"#\") > -1) bpath.Remove(bpath.Index(\"#\"));" << endl;
+            out << "      bpath = gSystem->DirName(bpath);" << endl;
+            out << "      bpath += \"/\";" << endl;
+            out << "      TString fileFriend;" << endl;
+            out << "      nextfriend.Reset();" << endl;
+            out << "      while ((cfriend=(TChain*)nextfriend())) {" << endl;
+            out << "         fileFriend = bpath;" << endl;
+            out << "         fileFriend += cfriend->GetTitle();" << endl;
+            out << "         TFile *file = TFile::Open(fileFriend);" << endl;
+            out << "         if (file) {" << endl;
+            out << "            file->Close();" << endl;
+            out << "            cfriend->Add(fileFriend.Data());" << endl;
+            out << "         } else {" << endl;
+            out << "            ::Fatal(\"CreateChain\", \"Cannot open friend file: %s\", fileFriend.Data());" << endl;
+            out << "            return 0;" << endl;
+            out << "         }" << endl;
             out << "      }" << endl;
          }
          out << "   }" << endl;
@@ -4149,9 +4270,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      ::Error(\"CreateChain\", \"No tree found from collection %s\", xmlfile);" << endl;
          out << "      return NULL;" << endl;
          out << "   }" << endl;
-         if(fFriendChainName!="") {
-            out << "   chain->AddFriend(chainFriend);" << endl;
-         }
          out << "   return chain;" << endl;
          out << "}" << endl << endl;
       }   
@@ -4357,7 +4475,12 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
-         TObjArray *list = fAdditionalLibs.Tokenize(" ");
+         TString additionalLibs = fAdditionalLibs;
+         additionalLibs.Strip();
+         if (additionalLibs.Length() && fFriendLibs.Length())
+            additionalLibs += " ";
+         additionalLibs += fFriendLibs;
+         TObjArray *list = additionalLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {

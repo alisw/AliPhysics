@@ -179,6 +179,16 @@ AliPHOSDigit::~AliPHOSDigit()
 }
 
 //____________________________________________________________________________
+void AliPHOSDigit::Clear(const Option_t*) 
+{
+  // Delete array of primaries if any
+  delete[] fSamplesHG; fSamplesHG = NULL ;
+  delete[] fSamplesLG; fSamplesLG = NULL ;
+  delete[] fPrimary;   fPrimary   = NULL ;
+
+}
+
+//____________________________________________________________________________
 Int_t AliPHOSDigit::Compare(const TObject * obj) const
 {
   // Compares two digits with respect to its Id

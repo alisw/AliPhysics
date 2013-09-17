@@ -23,9 +23,10 @@
 
 #include "AliHLTTPCDataCompressionComponent.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCDataCompressionDescriptor.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCSpacePointContainer.h"
-#include "AliHLTTPCHWCFSpacePointContainer.h"
+#include "AliHLTTPCRawSpacePointContainer.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTComponentBenchmark.h"
 #include "AliHLTDataDeflaterSimple.h"
@@ -94,7 +95,7 @@ void AliHLTTPCDataCompressionComponent::GetInputDataTypes( AliHLTComponentDataTy
 {
   /// inherited from AliHLTComponent: list of data types in the vector reference
   tgtList.clear();
-  tgtList.push_back(AliHLTTPCDefinitions::HWClustersDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClustersDataType());
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
 }
@@ -109,6 +110,7 @@ int AliHLTTPCDataCompressionComponent::GetOutputDataTypes(AliHLTComponentDataTyp
 {
   /// inherited from AliHLTComponent: multiple output data types of the component.
   tgtList.clear();
+  tgtList.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
@@ -169,6 +171,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   }
 
   // Process an event
+
   // Loop over all input blocks in the event
   bool bHaveMC=(GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC))!=NULL;
   if ((bHaveMC || fVerificationMode>0) && fpWrittenAssociatedClusterIds==NULL) {
@@ -191,6 +194,8 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     GetBenchmarkInstance()->Start(2);
   }
 
+  bool isInputPresent = kFALSE;
+
   // transformed clusters
   // the transformed clusters have not been used yet
   if (false) { // FIXME: condition to be adjusted
@@ -199,6 +204,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       if (GetBenchmarkInstance()) {
 	GetBenchmarkInstance()->AddInput(pDesc->fSize);
       }
+      isInputPresent = kTRUE;
       AliHLTUInt8_t slice = 0;
       AliHLTUInt8_t patch = 0;
       slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
@@ -325,13 +331,13 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   // loop over raw cluster blocks, assign to tracks and write
   // unassigned clusters
-  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkHWClustersDataType);
-       pDesc!=NULL; pDesc=GetNextInputBlock()) {
-    if (pDesc->fSize<=sizeof(AliRawDataHeader)) continue;
+  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkRawClustersDataType);
+       pDesc!=NULL; pDesc=GetNextInputBlock()) {    
     if (GetBenchmarkInstance()) {
       GetBenchmarkInstance()->Start(1);
       GetBenchmarkInstance()->AddInput(pDesc->fSize);
     }
+    isInputPresent = kTRUE;
     AliHLTUInt8_t slice = 0;
     AliHLTUInt8_t patch = 0;
     slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
@@ -484,6 +490,26 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   } while (0);
 
   fRawInputClusters->Clear();
+
+  // Write header block 
+  if( isInputPresent ){
+    AliHLTComponent_BlockData bd;
+    FillBlockData(bd);
+    bd.fOffset        = size;
+    bd.fSize          = sizeof(AliHLTTPCDataCompressionDescriptor);
+    bd.fDataType      = AliHLTTPCDefinitions::DataCompressionDescriptorDataType();
+    if( capacity < size + bd.fSize ){
+      iResult = -ENOMEM;
+      return iResult;
+    }    
+    AliHLTTPCDataCompressionDescriptor desc; 
+    desc.SetMergedClustersFlag(1);
+    *(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = desc;
+    outputBlocks.push_back(bd);
+    size += bd.fSize;
+    outputDataSize+=bd.fSize;
+    HLTBenchmark("header data block of size %d", bd.fSize);
+  }
 
   float compressionFactor=(float)inputRawClusterSize;
   if ((outputDataSize)>0) compressionFactor/=outputDataSize;
@@ -798,13 +824,13 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
   unsigned spacePointContainerMode=0;
   if (fMode==kCompressionModeV1TrackModel || fMode==kCompressionModeV2TrackModel) {
     // initialize map data for cluster access in the track association loop
-    spacePointContainerMode|=AliHLTTPCHWCFSpacePointContainer::kModeCreateMap;
+    spacePointContainerMode|=AliHLTTPCRawSpacePointContainer::kModeCreateMap;
   }
   if (fMode==kCompressionModeV2 || fMode==kCompressionModeV2TrackModel) {
     // optimized storage format: differential pad and time storage
-    spacePointContainerMode|=AliHLTTPCHWCFSpacePointContainer::kModeDifferentialPadTime;
+    spacePointContainerMode|=AliHLTTPCRawSpacePointContainer::kModeDifferentialPadTime;
   }
-  std::auto_ptr<AliHLTTPCHWCFSpacePointContainer> rawInputClusters(new AliHLTTPCHWCFSpacePointContainer(spacePointContainerMode));
+  std::auto_ptr<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode));
   std::auto_ptr<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
 
   std::auto_ptr<TH1F> histoCompFactor(new TH1F("CompressionFactor",
@@ -828,7 +854,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
 
   // track grid: 36 slices, each 6 partitions with max 33 rows
   fTrackGrid=new AliHLTTrackGeometry::AliHLTTrackGrid(36, 1, 6, 1, 33, 1, 20000);
-  fSpacePointGrid=AliHLTTPCHWCFSpacePointContainer::AllocateIndexGrid();
+  fSpacePointGrid=AliHLTTPCRawSpacePointContainer::AllocateIndexGrid();
 
   if (!rawInputClusters.get() ||
       !inputClusters.get() ||

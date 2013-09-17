@@ -1203,6 +1203,11 @@ void AliESDEvent::AddTrdTracklet(const AliESDTrdTracklet *trkl)
   new ((*fTrdTracklets)[fTrdTracklets->GetEntriesFast()]) AliESDTrdTracklet(*trkl);
 }
 
+void AliESDEvent::AddTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label)
+{
+  new ((*fTrdTracklets)[fTrdTracklets->GetEntriesFast()]) AliESDTrdTracklet(trackletWord, hcid, label);
+}
+
 Int_t AliESDEvent::AddKink(const AliESDkink *c) 
 {
     // Add kink

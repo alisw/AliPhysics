@@ -148,6 +148,7 @@
 #include "AliRun.h"
 #include "AliDigitizationInput.h"
 #include "AliRunLoader.h"
+#include "AliStack.h"
 #include "AliSimulation.h"
 #include "AliSysInfo.h"
 #include "AliVertexGenFile.h"
@@ -169,6 +170,7 @@ AliSimulation::AliSimulation(const char* configFileName,
 			     const char* name, const char* title) :
   TNamed(name, title),
 
+  fRunGeneratorOnly(kFALSE),
   fRunGeneration(kTRUE),
   fRunSimulation(kTRUE),
   fLoadAlignFromCDB(kTRUE),
@@ -631,6 +633,17 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   gRandom->SetSeed(fSeed);
    
   if (nEvents > 0) fNEvents = nEvents;
+
+  // Run generator-only code on demand
+  if (fRunGeneratorOnly)
+  {
+    if(!RunGeneratorOnly())
+    {
+      if (fStopOnError) return kFALSE;
+    }
+    else
+      return kTRUE;
+  }
 
   // create and setup the HLT instance
   if (!fRunHLT.IsNull() && !CreateHLT()) {
@@ -1221,6 +1234,75 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   AliSysInfo::AddStamp("Stop_ProcessRun");
   delete runLoader;
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::RunGeneratorOnly()
+{
+  // Execute Config.C
+  TInterpreter::EErrorCode interpreterError=TInterpreter::kNoError;
+  gROOT->LoadMacro(fConfigFileName.Data());
+  Long_t interpreterResult=gInterpreter->ProcessLine(gAlice->GetConfigFunction(), &interpreterError);
+  if (interpreterResult!=0 || interpreterError!=TInterpreter::kNoError) {
+    AliFatal(Form("execution of config file \"%s\" failed with error %d", fConfigFileName.Data(), (int)interpreterError));
+  }
+
+  // Setup the runloader and generator, check if everything is OK
+  AliRunLoader* runLoader = AliRunLoader::Instance();
+  AliGenerator* generator = gAlice->GetMCApp()->Generator();
+  if (!runLoader) {
+    AliError(Form("gAlice has no run loader object. "
+                  "Check your config file: %s", fConfigFileName.Data()));
+    return kFALSE;
+  }
+  if (!generator) {
+    AliError(Form("gAlice has no generator object. "
+                  "Check your config file: %s", fConfigFileName.Data()));
+    return kFALSE;
+  }
+
+  runLoader->LoadKinematics("RECREATE");
+  runLoader->MakeTree("E");
+
+  // Create stack and header
+  runLoader->MakeStack();
+  AliStack*  stack      = runLoader->Stack();
+  AliHeader* header     = runLoader->GetHeader();
+
+  // Intialize generator
+  generator->Init();
+  generator->SetStack(stack);
+
+  // Run main generator loop
+
+  for (Int_t iev=0; iev<fNEvents; iev++)
+  {
+    // Initialize event
+    header->Reset(0,iev);
+    runLoader->SetEventNumber(iev);
+    stack->Reset();
+    runLoader->MakeTree("K");
+
+    // Generate event
+    generator->Generate();
+
+    // Finish event
+    header->SetNprimary(stack->GetNprimary());
+    header->SetNtrack(stack->GetNtrack());
+    stack->FinishEvent();
+    header->SetStack(stack);
+    runLoader->TreeE()->Fill();
+    runLoader->WriteKinematics("OVERWRITE");
+  }
+
+  // Finalize
+  generator->FinishRun();
+  // Write file
+  runLoader->WriteHeader("OVERWRITE");
+  generator->Write();
+  runLoader->Write();
 
   return kTRUE;
 }

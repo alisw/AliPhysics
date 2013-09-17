@@ -819,7 +819,7 @@ void AliITSv11::CreateMaterials()
     Float_t arohac[4] = {12.01,  1.01, 14.010, 16.};
     Float_t zrohac[4] = { 6.,    1.,    7.,     8.};
     Float_t wrohac[4] = { 14.,   10.,    2.,     6.};
-    Float_t drohac    = 0.052;
+    Float_t drohac    = 0.058;
 
     // If he/she means stainless steel (inox) + Aluminium and Zeff=15.3383 then
 //

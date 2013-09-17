@@ -1489,7 +1489,7 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     //start decoding
     if (fDecoder->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE) {
       fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",currentDDL));
-      AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
+      if (verbose) AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
       ResetDataBuffer(currentDDL);
       ResetPackedDataBuffer(currentDDL);
     }
@@ -1558,7 +1558,7 @@ Bool_t AliTOFRawStream::DecodeV2(Int_t verbose = 0) {
   //start decoding
   if (fDecoderV2->Decode((UInt_t *)data, kDataWords) == kTRUE) {
     fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",currentDDL));
-    AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
+    if (verbose) AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
   }
   
   delete [] data;
@@ -1737,12 +1737,12 @@ AliTOFRawStream::LoadRawDataBuffersV2(Int_t indexDDL, Int_t verbose)
 
   /* check error detected/recovered */
   if (decodersd->GetErrorDetected()) {
-    AliWarning(Form("Error detected while decoding DDL %d (errorSlotID mask = %04x)", indexDDL, decodersd->GetErrorSlotID()));
+      AliDebug(2, Form("Error detected while decoding DDL %d (errorSlotID mask = %04x)", indexDDL, decodersd->GetErrorSlotID()));
     if (decodersd->GetRecoveringError()) {
-      AliWarning("Couldn't recover from error");
+      AliDebug(2, "Couldn't recover from error");
     }
     else {
-      AliWarning("Error recovered, anyway something is probably lost");
+      AliDebug(2, "Error recovered, anyway something is probably lost");
     }
   }
   /* check DRM header/trailer */
@@ -1753,10 +1753,10 @@ AliTOFRawStream::LoadRawDataBuffersV2(Int_t indexDDL, Int_t verbose)
   }
   /* check partecipating mask */
   if (drmsd->GetPartecipatingSlotID() != drmsd->GetDecoderSlotEnableMask()) {
-    AliWarning(Form("DRM slot enable mask differs from decoder slot enable mask (%08x != %08x) in DDL %d", drmsd->GetSlotEnableMask(), drmsd->GetDecoderSlotEnableMask(), indexDDL));
+      AliDebug(2, Form("DRM slot enable mask differs from decoder slot enable mask (%08x != %08x) in DDL %d", drmsd->GetSlotEnableMask(), drmsd->GetDecoderSlotEnableMask(), indexDDL));
     for (Int_t ibit = 0; ibit < 11; ibit++)
       if ((drmsd->GetPartecipatingSlotID() & (0x1 << ibit)) && !(drmsd->GetDecoderSlotEnableMask() & (0x1 << ibit)))
-	AliWarning(Form("readout slot %d data is missing in decoder", ibit + 2));
+	 AliDebug(2, Form("readout slot %d data is missing in decoder", ibit + 2));
   }
   
   /* get DRM data */

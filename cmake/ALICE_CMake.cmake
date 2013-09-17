@@ -132,6 +132,7 @@ macro(ALICE_ConfigureCompiler)
   ALICE_RootConfig(RLFLAGS --ldflags)
 
   set(CXXFLAGS "${CXXFLAGS} ${RCFLAGS}")
+  string(REPLACE "-std=c++11" " " RCFLAGS "${RCFLAGS}")
   set(CFLAGS  "${CFLAGS} ${RCFLAGS}")
   set(SOFLAGS "${SOFLAGS} ${RLFLAGS}")
   set(LDFLAGS "${LDFLAGS} ${RLFLAGS}")

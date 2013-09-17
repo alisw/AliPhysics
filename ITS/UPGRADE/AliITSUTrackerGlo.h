@@ -12,6 +12,7 @@
 #include "AliITSUTrackCond.h"
 #include "AliITSUTrackHyp.h"
 #include "AliITSUAux.h"
+#include "AliITSUMatLUT.h"
 #include <TArrayI.h>
 
 class AliITSUReconstructor;
@@ -20,7 +21,6 @@ class AliITSUClusterPix;
 class AliESDtrack;
 class AliITSURecoLayer;
 class TTree;
-
 
 //-------------------------------------------------------------------------
 class AliITSUTrackerGlo : public AliTracker {
@@ -75,7 +75,9 @@ class AliITSUTrackerGlo : public AliTracker {
   Bool_t                 GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
   Bool_t                 PropagateSeed(AliITSUSeed *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
   Bool_t                 PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
-  Double_t               RefitTrack(AliExternalTrackParam* trc, Double_t r, Int_t stopCond=0);
+  Double_t               RefitTrack(AliITSUTrackHyp* trc, Double_t r, Int_t& nclFit, Int_t stopCond=0);
+  Double_t               GetMaterialBudget(const double* pnt0, const double* pnt1, double& x2x0, double& rhol) const;
+
   Int_t                  GetTrackingPhase()                 const {return fTrackPhaseID;}
 
   //
@@ -122,6 +124,7 @@ class AliITSUTrackerGlo : public AliTracker {
  protected:
   AliITSUReconstructor*           fReconstructor;  // ITS global reconstructor 
   AliITSURecoDet*                 fITS;            // interface to ITS, borrowed from reconstructor
+  AliITSUMatLUT*                  fMatLUT;         // material lookup table
   AliESDtrack*                    fCurrESDtrack;   // current esd track in processing
   Int_t                           fCurrESDtrMClb;  // its eventual mc label
   Double_t                        fCurrMass;       // current track mass
@@ -154,6 +157,7 @@ class AliITSUTrackerGlo : public AliTracker {
   AliITSURecoLayer*               fCurrLayer;      //! current layer being processed  (set only when needed, not guaranteed)
   Int_t                           fTrackPhaseID;   //! tracking phase (clusters2tracks, backward, inward)
   Int_t                           fCurrPassID;     //! tracking pass (different tracking conditions)
+  Bool_t                          fUseMatLUT;      //! use material lookup table rather than TGeo
   //
   static const Double_t           fgkToler;        // tracking tolerance
   //
@@ -209,6 +213,24 @@ inline void AliITSUTrackerGlo::AddProlongationHypothesis(AliITSUSeed* seed, Int_
   seed->SetOrdCand(fCurrHyp->GetNSeeds(lr));
 #endif
   fCurrHyp->AddSeed(seed,lr);  
+}
+
+//_________________________________________________________________________
+inline Double_t AliITSUTrackerGlo::GetMaterialBudget(const double* pnt0,const double* pnt1, double& x2x0, double& rhol) const
+{
+  double par[7];
+  if (fUseMatLUT && fMatLUT) {
+    double d = fMatLUT->GetMatBudget(pnt0,pnt1,par);
+    x2x0 = par[AliITSUMatLUT::kParX2X0];
+    rhol = par[AliITSUMatLUT::kParRhoL];    
+    return d;
+  }
+  else {
+    MeanMaterialBudget(pnt0,pnt1,par);
+    x2x0 = par[1];
+    rhol = par[0]*par[4];    
+    return par[4];
+  }
 }
 
 #endif

@@ -121,8 +121,15 @@ AliHMPIDPIDResponse::AliHMPIDPIDResponse(const AliHMPIDPIDResponse& c):
       fgkMaxPcY[i] = c.fgkMaxPcY[i];
      }
    
-   for(Int_t i=0; i<7; i++) fM[i] = c.fM[i];
+   for(Int_t i=0; i<7; i++) fM[i] = c.fM[i] ? new TGeoHMatrix(*c.fM[i]) : 0;
  }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliHMPIDPIDResponse::~AliHMPIDPIDResponse()
+{
+  // d-tor
+  for (int i=7;i--;) delete fM[i];
+}
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDPIDResponse& AliHMPIDPIDResponse::operator=(const AliHMPIDPIDResponse& c) {
 
@@ -147,7 +154,7 @@ AliHMPIDPIDResponse& AliHMPIDPIDResponse::operator=(const AliHMPIDPIDResponse& c
       fgkMaxPcX[i] = c.fgkMaxPcX[i];
       fgkMaxPcY[i] = c.fgkMaxPcY[i];
      }   
-     for(Int_t i=0; i<7; i++) fM[i] = c.fM[i];                 
+     for(Int_t i=0; i<7; i++) fM[i] = c.fM[i] ? new TGeoHMatrix(*c.fM[i]) : 0;
     } 
     
   return *this; 

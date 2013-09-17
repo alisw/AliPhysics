@@ -120,8 +120,10 @@ protected:
   Float_t fDistToBadCrystal;  // Distance to nearest bad crystal
 
   Int_t fDebug;               //! debug level (0 - no output)
-  
-  ClassDef(AliPHOSEmcRecPoint,3)  // EMC RecPoint (cluster)
+   Long64_t fInstCount;
+  static Long64_t fgInstCount;
+ 
+  ClassDef(AliPHOSEmcRecPoint,4)  // EMC RecPoint (cluster)
 
 };
 

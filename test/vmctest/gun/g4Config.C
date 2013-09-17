@@ -47,13 +47,13 @@ void Config()
 //                                "FTFP_BERT_EMV+optical", 
 //                                "specialCuts+specialControls+stackPopper+stepLimiter",
 //                                 true);
-      
+
     geant4 = new TGeant4("TGeant4", 
                          "The Geant4 Monte Carlo : FTFP_BERT_EMV+optical", 
                          runConfiguration);
              // Repeat physics selection in the title; to be removed
              // with new geant4_vmc tag (1.13)            
-                         
+
     cout << "Geant4 has been created." << endl;
   } 
   else {
@@ -66,10 +66,19 @@ void Config()
     geant4->ProcessGeantCommand("/mcVerbose/all 1");  
     geant4->ProcessGeantCommand("/mcVerbose/geometryManager 1");  
     geant4->ProcessGeantCommand("/mcVerbose/opGeometryManager 1");  
-    geant4->ProcessGeantCommand("/mcTracking/loopVerbose 0");     
+    geant4->ProcessGeantCommand("/mcTracking/loopVerbose 1");     
     geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 0.01 mm"); 
     geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
-    geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
+    
+    // Activate step limit defined in low density materials
+    // (the default value is 10 cm)
+    //geant4->ProcessGeantCommand("/mcDet/setIsMaxStepInLowDensityMaterials true");
+    //geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
+
+    // Activate step limit defined in tracking media
+    // (Note: this slows down simulation significantly)
+    //geant4->ProcessGeantCommand("/mcDet/setIsUserMaxStep true");
+   
     // for Geant4 <= 9.4.p03
     //geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
     //geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
@@ -80,7 +89,9 @@ void Config()
     geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
     geant4->ProcessGeantCommand("/optics_engine/selectOpProcess OpMieHG");
     geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
-    
+    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess Cerenkov");
+    geant4->ProcessGeantCommand("/optics_engine/setTrackSecondariesFirst false");   
+
     // Activate saving random engine status
     // (the file per event will be re-written with each new event)
     //gAlice->GetMCApp()->SetSaveRndmStatus(kTRUE);
@@ -91,6 +102,9 @@ void Config()
     //gAlice->GetMCApp()->SetSaveRndmStatusPerEvent(kTRUE);
     //geant4->ProcessGeantCommand("/mcRun/saveRandom true");
     //geant4->ProcessGeantCommand("/mcEvent/saveRandom true");
+    
+    // Activate printing size of used memory per event
+    geant4->ProcessGeantCommand("/mcEvent/printMemory true");
 
   // Uncomment this line to get a detail info from each step 
   //geant4->ProcessGeantCommand("/tracking/verbose 1");  

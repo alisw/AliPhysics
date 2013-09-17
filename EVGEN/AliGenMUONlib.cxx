@@ -1612,6 +1612,14 @@ Double_t AliGenMUONlib::PtUpsilonPP7000(const Double_t *px, const Double_t */*du
   return PtUpsilonPPdummy(*px,7000);
 }
 
+Double_t AliGenMUONlib::PtUpsilonPP8000(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon pT
+// pp 8 TeV
+//
+  return PtUpsilonPPdummy(*px,8000);
+}
+
 Double_t AliGenMUONlib::PtUpsilonPP2760(const Double_t *px, const Double_t */*dummy*/)
 {
 // Upsilon pT
@@ -2242,6 +2250,14 @@ Double_t AliGenMUONlib::YUpsilonPP7000(const Double_t *px, const Double_t */*dum
 // pp 7 TeV
 //
   return YUpsilonPPdummy(*px, 7000);
+}
+
+Double_t AliGenMUONlib::YUpsilonPP8000(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pp 7 TeV
+//
+  return YUpsilonPPdummy(*px, 8000);
 }
 
 Double_t AliGenMUONlib::YUpsilonPP2760(const Double_t *px, const Double_t */*dummy*/)
@@ -3994,6 +4010,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonPP;
 	} else if (sname == "pp 7") {
 	    func=PtUpsilonPP7000;
+       } else if (sname == "pp 8") {
+           func=PtUpsilonPP8000;
 	} else if (sname == "pp 2.76") {
 	    func=PtUpsilonPP2760;
 	} else if (sname == "pp 4.4") {
@@ -4212,7 +4230,7 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiPP;
 	} else if (sname == "pp 7") {
 	    func=YJpsiPP7000;
-	} else if (sname == "pp 7") {
+	} else if (sname == "pp 8") {
 	    func=YJpsiPP8000;
 	} else if (sname == "pp 2.76") {
 	    func=YJpsiPP2760;
@@ -4331,6 +4349,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func = YUpsilonPP;
 	} else if (sname == "pp 7") {
 	    func=YUpsilonPP7000;
+	} else if (sname == "pp 8") {
+	    func=YUpsilonPP8000;
 	} else if (sname == "pp 2.76") {
 	    func=YUpsilonPP2760;
 	} else if (sname == "pp 4.4") {

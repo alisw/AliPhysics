@@ -50,6 +50,7 @@ public:
   void                 SelectEvent(Bool_t flag=kTRUE)  {fSelected = flag;}
   void                 SetEvent(AliAODEvent* event);
   void                 SetOutputFileName(const char* fname) {TNamed::SetName(fname);}
+  void                 SetTreeBuffSize(Long64_t sz=30000000) {fTreeBuffSize = sz;}
   Bool_t               TerminateIO();
   
   void Print(Option_t* opt="") const;
@@ -70,6 +71,7 @@ public:
   void EnableReferences() { fEnableReferences=kTRUE; }
   
   void AddAODtoTreeUserInfo();
+  void FillTree();
   
 private:
   AliAODExtension(const AliAODExtension&);             // Not implemented
@@ -82,14 +84,16 @@ private:
   Int_t                    fNtotal;                 //! Number of processed events
   Int_t                    fNpassed;                //! Number of events that passed the filter
   Bool_t                   fSelected;               //! Select current event for filtered AOD's. Made false at event start.
+  Long64_t                 fTreeBuffSize;            // Requested buffer size for AOD tree
+  Long64_t                 fMemCountAOD;             // Number of bytes filled in tree (accumulates until requested bytes reached)
   
   TMap*                    fRepFiMap; // which branch(es) to filter out / and or replicate
   TList*                   fRepFiList; // list of unique filter/replicator
   
   Bool_t                   fEnableReferences; // whether or not to enable the TRefTable branch
   TList*                   fObjectList; //! internal list of which objects to keep 
-  
-  ClassDef(AliAODExtension, 2) // Support for extra AOD branches in a separate AOD file
+
+  ClassDef(AliAODExtension, 3) // Support for extra AOD branches in a separate AOD file
 };
 
 #endif

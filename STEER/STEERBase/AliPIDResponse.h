@@ -118,6 +118,7 @@ public:
   // pid status
   EDetPidStatus CheckPIDStatus(EDetector detCode, const AliVTrack *track)  const;
 
+  AliTOFPIDParams *GetTOFPIDParams() const {return fTOFPIDParams;}
   Float_t GetTOFMismatchProbability(const AliVTrack *track) const;
   
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
@@ -148,7 +149,7 @@ public:
 
   // event info
   Float_t GetCurrentCentrality() const {return fCurrCentrality;};
-
+  void SetCurrentCentrality(Float_t centrality) {fCurrCentrality=centrality;fEMCALResponse.SetCentrality(fCurrCentrality);};
   // TPC setting
   void SetUseTPCEtaCorrection(Bool_t useEtaCorrection = kTRUE) { fUseTPCEtaCorrection = useEtaCorrection; };
   Bool_t UseTPCEtaCorrection() const { return fUseTPCEtaCorrection; };
@@ -157,7 +158,7 @@ public:
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
   
   // TOF setting
-  void SetTOFtail(Float_t tail=1.1){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
+  void SetTOFtail(Float_t tail=0.9){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
   virtual Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const {return t->GetTPCsignal();};
@@ -167,10 +168,13 @@ public:
   Int_t GetTunedOnDataMask() const {return fTuneMConDataMask;};
   void SetTunedOnDataMask(Int_t detMask) {fTuneMConDataMask = detMask;}
 
+  // Utilities
+  TString GetChecksum(const TObject* obj) const;
+    
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 
-  
+
 protected:
   AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
   AliTPCPIDResponse   fTPCResponse;    //PID response function of the TPC

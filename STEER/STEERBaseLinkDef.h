@@ -127,6 +127,7 @@
 
 #pragma link C++ class AliVTrdTrack+;
 #pragma link C++ class AliVTrdTracklet+;
+#pragma link C++ class AliGenEventHeaderTunedPbPb+;
 
 #endif
 

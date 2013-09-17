@@ -29,6 +29,7 @@
 #include "TH2F.h"
 #include "TGeoManager.h"
 #include "AliPDG.h"
+#include "TVirtualMC.h"
 
 ClassImp(AliTransportMonitor)
 ClassImp(AliTransportMonitor::AliTransportMonitorVol)
@@ -86,6 +87,20 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
 
   // The object could have been retrieved from file, in which case we have to 
   // build the map.
+  //
+  // unknown heavy fragment ?
+  //  TParticlePDG* pdgP = (TDatabasePDG::Instance())->GetParticle(pdg);
+  Int_t apdg = abs(pdg);
+  if ((apdg > 10000) 
+      && (apdg != 1000010020)
+      && (apdg != 1000010030)
+      && (apdg != 1000020030)
+      && (apdg != 1000020040)
+      && (apdg != 50000050)
+      && (apdg != 50000051)
+      ) 
+    pdg = 1111111111; 
+
   PMonData *data;
   if (fNtypes) {
     if (fParticles.empty()) {
@@ -106,12 +121,35 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
      TDatabasePDG *pdgDB = TDatabasePDG::Instance();
      if (!pdgDB->ParticleList()) AliPDG::AddParticlesToPdgDataBase();
      Int_t size = pdgDB->ParticleList()->GetSize();
-     fPData = new PMonData[size];
+     // account for heavy fragments coded as "1111111111"
+     //
+     fPData = new PMonData[size+10];
      data = &fPData[fNtypes];
      data->fPDG = pdg;
      fParticles[pdg] = fNtypes++;
   }
   return *data;
+}
+
+void AliTransportMonitor::AliTransportMonitorVol::Merge(AliTransportMonitorVol* volM) 
+{
+  //
+  // Merging
+  //
+  fTotalTime = (fTotalTime + volM->GetTotalTime());
+  if (fTimeRZ && volM->GetHistogram()) {
+    fTimeRZ->Add(volM->GetHistogram()); 
+  } else if (volM->GetHistogram()) {
+    fTimeRZ = (TH2F*)(volM->GetHistogram()->Clone());
+  }
+
+  Int_t ntypes = volM->GetNtypes();
+  for (Int_t i = 0; i < ntypes; i++) {
+    Int_t pdg = volM->GetPDG(i);
+     PMonData &data  = GetPMonData(pdg);
+     data.fEdt  += (volM->GetEmed(i) * volM->GetTotalTime());
+     data.fTime += (volM->GetTime(i));
+  }
 }
 
 ClassImp(AliTransportMonitor)
@@ -138,7 +176,7 @@ AliTransportMonitor::AliTransportMonitor(Int_t nvolumes)
   fVolumeMon->SetOwner();
   for (Int_t i=0; i<nvolumes; i++) {
     AliTransportMonitorVol *volMon = new AliTransportMonitorVol();
-    if (gGeoManager) volMon->SetName(gGeoManager->GetListOfUVolumes()->At(i)->GetName());
+    if (TVirtualMC::GetMC()) volMon->SetName(TVirtualMC::GetMC()->VolName(i));
     fVolumeMon->Add(volMon);
   }   
 }
@@ -182,14 +220,20 @@ void AliTransportMonitor::Print(Option_t *volName) const
       timeperpart[i] = volMon->GetTime(i); 
       timepervol += timeperpart[i];
     }
-    printf("Volume %s: Transport time: %g%% of %g [s]\n", volMon->GetName(), 100.*timepervol/fTotalTime, fTotalTime);
+    printf("Volume %s: Transport time: %g%% of %g %g [s]\n", volMon->GetName(), 100.*timepervol/fTotalTime, fTotalTime,
+	   volMon->GetTotalTime());
     TMath::Sort(ntypes, timeperpart, isort, kTRUE);
     TString particle;
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();    
     if (!pdgDB->ParticleList()) AliPDG::AddParticlesToPdgDataBase();
     for (i=0; i<ntypes; i++)  {
        timeperpart[i] /=  timepervol;
-       particle = pdgDB->GetParticle(volMon->GetPDG(isort[i]))->GetName();
+       TParticlePDG* pdgP =  pdgDB->GetParticle(volMon->GetPDG(isort[i]));
+       if (pdgP) {
+	 particle = pdgDB->GetParticle(volMon->GetPDG(isort[i]))->GetName();
+       } else {
+	 particle = Form("pdg code not in DB: %d", volMon->GetPDG(isort[i]));
+       }
        printf("   %s: %g%%  mean energy: %g\n", particle.Data(), 100.*timeperpart[i], volMon->GetEmed(i));
     }
     if (volMon->GetHistogram()) {
@@ -283,7 +327,36 @@ void AliTransportMonitor::Export(const char *fname)
   file->Write();
   file->Close();
 }  
+//______________________________________________________________________________
+void AliTransportMonitor::Merge(AliTransportMonitor* mergeMon)
+{
 
+  // merge with monitor 
+  if (!fVolumeMon) 
+    {
+      TObjArray* arr = mergeMon->GetVolumes();
+      Int_t nvol = arr->GetEntriesFast();
+      fVolumeMon = new TObjArray(nvol);
+      fVolumeMon->SetOwner();
+      for (Int_t i = 0; i < nvol; i++) {
+	AliTransportMonitorVol *volMon = new AliTransportMonitorVol();
+	volMon->SetName(arr->At(i)->GetName());
+	fVolumeMon->Add(volMon);
+      }
+    } // first time
+
+
+  Int_t n = fVolumeMon->GetEntriesFast();
+  TObjArray* mergeVols = mergeMon->GetVolumes();
+  fTotalTime = 0;
+  for (Int_t i = 0; i < n; i++)
+    {
+      AliTransportMonitorVol *volMon1 = (AliTransportMonitorVol*)fVolumeMon->At(i);      
+      AliTransportMonitorVol *volMon2 = (AliTransportMonitorVol*)mergeVols->At(i);      
+      volMon1->Merge(volMon2);
+      fTotalTime += (volMon1->GetTotalTime());
+    }
+}
 //______________________________________________________________________________
 AliTransportMonitor *AliTransportMonitor::Import(const char *fname)
 {

@@ -44,7 +44,7 @@ class AliAODTrdTrack : public AliVTrdTrack {
   }
   virtual AliAODTrdTracklet* GetTracklet(Int_t idx) const { return (AliAODTrdTracklet*) fTracklets[idx]; }
 
-  virtual AliVTrack* GetTrackMatch() const { return 0x0; }
+  virtual AliVTrack* GetTrackMatch() const { return (AliVTrack*) fTrackMatch.GetObject(); }
 
   virtual void SetA(Int_t a) { fA = a; }
   virtual void SetLayerMask(Int_t mask) { fLayerMask = mask; }

@@ -74,7 +74,7 @@ extern "C" {
     string tmp = sharedir + "/lhapdf/PDFsets";
     string test1 = tmp + "/cteq6.LHpdf";
     if (access(test1.c_str(), R_OK) != 0) {
-      tmp = string(DEFAULTLHAPATH) + "/lhapdf/PDFsets";
+      tmp = string(DEFAULTLHAPATH);
     }
     assert(tmp.length() <= (unsigned) length);
     strncpy(datapath, tmp.c_str(), length);

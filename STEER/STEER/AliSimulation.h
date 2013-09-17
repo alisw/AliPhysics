@@ -42,6 +42,7 @@ public:
   void           SetEventsPerFile(const char* detector, const char* type, 
 				  Int_t nEvents);
 
+  void           SetRunGeneratorOnly(Bool_t val) {fRunGeneratorOnly = val;};
   void           SetRunGeneration(Bool_t run) {fRunGeneration = run;};
   void           SetRunSimulation(Bool_t run) {fRunSimulation = run;};
   void           SetLoadAlignFromCDB(Bool_t load)  {fLoadAlignFromCDB = load;};
@@ -90,6 +91,7 @@ public:
 			 Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL, Int_t nev = -1);
 
   virtual Bool_t RunSimulation(Int_t nEvents = 0);
+  virtual Bool_t RunGeneratorOnly();
   virtual Bool_t RunSDigitization(const char* detectors = "ALL");
   virtual Bool_t RunTrigger(const char* descriptors ="", const char* detectors = "ALL");
   virtual Bool_t WriteTriggerRawData();
@@ -156,6 +158,7 @@ private:
 
   static AliSimulation *fgInstance;    // Static pointer to object
 
+  Bool_t         fRunGeneratorOnly;   // run code for a generator only production
   Bool_t         fRunGeneration;      // generate prim. particles or not
   Bool_t         fRunSimulation;      // simulate detectors (hits) or not
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not

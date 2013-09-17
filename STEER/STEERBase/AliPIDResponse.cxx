@@ -33,6 +33,8 @@
 #include <TArrayI.h>
 #include <TArrayF.h>
 #include <TLinearFitter.h>
+#include <TSystem.h>
+#include <TMD5.h>
 
 #include <AliVEvent.h>
 #include <AliVTrack.h>
@@ -85,7 +87,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(kFALSE),
 fUseTPCMultiplicityCorrection(kFALSE),
 fTRDPIDResponseObject(NULL),
-fTOFtail(1.1),
+fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
@@ -148,7 +150,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
 fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
 fTRDPIDResponseObject(NULL),
-fTOFtail(1.1),
+fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
@@ -203,7 +205,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fUseTPCMultiplicityCorrection=other.fUseTPCMultiplicityCorrection;
     fTRDPIDResponseObject=NULL;
     fEMCALPIDParams=NULL;
-    fTOFtail=1.1;
+    fTOFtail=0.9;
     fTOFPIDParams=NULL;
     fHMPIDPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
@@ -580,6 +582,17 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   // Set centrality percentile for EMCAL
   fEMCALResponse.SetCentrality(fCurrCentrality);
 
+  // switch off some TOF channel according to OADB to match data TOF matching eff 
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) && fTOFPIDParams->GetTOFmatchingLossMC() > 0.01){
+    Int_t ntrk = event->GetNumberOfTracks();
+    for(Int_t i=0;i < ntrk;i++){
+      AliVParticle *trk = event->GetTrack(i);
+      Int_t channel = GetTOFResponse().GetTOFchannel(trk);
+      Int_t swoffEachOfThem = Int_t(100./fTOFPIDParams->GetTOFmatchingLossMC() + 0.5);
+      if(!(channel%swoffEachOfThem)) ((AliVTrack *) trk)->ResetStatus(AliVTrack::kTOFout);
+    }
+  }
+
 }
 
 //______________________________________________________________________________
@@ -643,8 +656,11 @@ void AliPIDResponse::SetRecoInfo()
   fBeamType="";
     
   fBeamType="PP";
+
+  Bool_t hasProdInfo=(fCurrentFile.BeginsWith("LHC"));
   
-  TPRegexp reg(".*(LHC1[1-2][a-z]+[0-9]+[a-z_]*)/.*");
+  TPRegexp reg(".*(LHC1[1-3][a-z]+[0-9]+[a-z_]*)/.*");
+  if (hasProdInfo) reg=TPRegexp("LHC1[1-2][a-z]+[0-9]+[a-z_]*");
   TPRegexp reg12a17("LHC1[2-3][a-z]");
 
   //find the period by run number (UGLY, but not stored in ESD and AOD... )
@@ -658,6 +674,8 @@ void AliPIDResponse::SetRecoInfo()
     fLHCperiod="LHC10H";
     fMCperiodTPC="LHC10H8";
     if (reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11A10";
+    // exception for 13d2 and later
+    if (fCurrentAliRootRev >= 62714) fMCperiodTPC="LHC13D2";
     fBeamType="PBPB";
   }
   else if (fRun>=139847&&fRun<=146974) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
@@ -691,22 +709,29 @@ void AliPIDResponse::SetRecoInfo()
   if (fRun >= 194480) { 
     fLHCperiod="LHC13B"; 
     fBeamType="PPB";
+    fMCperiodTPC="LHC12G";
   
     if (fCurrentAliRootRev >= 61605)
       fMCperiodTPC="LHC13B2_FIX";
-    else
-      fMCperiodTPC="LHC12G";
+    if (fCurrentAliRootRev >= 62714)
+      fMCperiodTPC="LHC13B2_FIXn1";
+    
+    // High luminosity pPb runs require different parametrisations
+    if (fRun >= 195875 && fRun <= 197411) {
+      fLHCperiod="LHC13F"; 
+    }
   }
 
-  //exception new pp MC productions from 2011
-  if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
+  //exception new pp MC productions from 2011 (11a periods have 10f6a splines!)
+  if (fBeamType=="PP" && reg.MatchB(fCurrentFile) && !fCurrentFile.Contains("LHC11a")) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
   // exception for 11f1
-  if (fCurrentFile.Contains("LHC11f1/")) fMCperiodTPC="LHC11F1";
+  if (fCurrentFile.Contains("LHC11f1")) fMCperiodTPC="LHC11F1";
   // exception for 12f1a, 12f1b and 12i3
-  if (fCurrentFile.Contains("LHC12f1a/") || fCurrentFile.Contains("LHC12f1b/")
-      || fCurrentFile.Contains("LHC12i3/")) fMCperiodTPC="LHC12F1";
+  if (fCurrentFile.Contains("LHC12f1") || fCurrentFile.Contains("LHC12i3")) fMCperiodTPC="LHC12F1";
   // exception for 12c4
-  if (fCurrentFile.Contains("LHC12c4/")) fMCperiodTPC="LHC12C4";
+  if (fCurrentFile.Contains("LHC12c4")) fMCperiodTPC="LHC12C4";
+	// exception for 12d and 13d pp periods
+	if (fBeamType=="PP" && fCurrentAliRootRev >= 61605) fMCperiodTPC="LHC13D1";
 }
 
 //______________________________________________________________________________
@@ -980,8 +1005,9 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fUseTPCEtaCorrection = kFALSE;
         }
         else {
-          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s", 
-                       refineFactorMapX, refineFactorMapY, fOADBPath.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle()));
+          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s)", 
+                       refineFactorMapX, refineFactorMapY, fOADBPath.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
+                       GetChecksum(fTPCResponse.GetEtaCorrMap()).Data()));
         }
         
         delete etaMapRefined;
@@ -1050,8 +1076,9 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fTPCResponse.SetSigmaParams(0x0, 0);
         }
         else {
-          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s", 
-                       refineFactorSigmaMapX, refineFactorSigmaMapY, fOADBPath.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle()));
+          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s, sigmaPar0 = %f)", 
+                       refineFactorSigmaMapX, refineFactorSigmaMapY, fOADBPath.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
+                       GetChecksum(fTPCResponse.GetSigmaPar1Map()).Data(), sigmaPar0));
         }
         
         delete etaSigmaPar1MapRefined;
@@ -1195,7 +1222,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunction->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunction->GetName(),
+                           GetChecksum((TSpline3*)responseFunction).Data()));
               found=kTRUE;
               break;
             }
@@ -1222,7 +1250,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunctionPion->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionPion->GetName(),
+                           GetChecksum((TSpline3*)responseFunctionPion).Data()));
               found=kTRUE;  
             }
             else if (grAll) {
@@ -1230,7 +1259,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,grAll->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,grAll->GetName(),
+                           GetChecksum((TSpline3*)grAll).Data()));
               found=kTRUE;
             }
             //else
@@ -1242,7 +1272,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunctionProton->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionProton->GetName(),
+                           GetChecksum((TSpline3*)responseFunctionProton).Data()));
               found=kTRUE;  
             }
             else if (grAll) {
@@ -1250,7 +1281,8 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliPID::EParticleType)ispec,
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
-              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,grAll->GetName()));
+              AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,grAll->GetName(),
+                           GetChecksum((TSpline3*)grAll).Data()));
               found=kTRUE;
             }
             //else
@@ -1271,10 +1303,11 @@ void AliPIDResponse::SetTPCParametrisation()
   //
   // Setup multiplicity correction
   //
-  if (fUseTPCMultiplicityCorrection && (fBeamType.CompareTo("PBPB") == 0 || fBeamType.CompareTo("AA") == 0)) {
+  if (fUseTPCMultiplicityCorrection && !(fBeamType.CompareTo("PP") == 0)) {
     AliInfo("Multiplicity correction enabled!");
     
     //TODO After testing, load parameters from outside       
+    /*TODO now correction for MC
     if (period.Contains("LHC11A10"))  {//LHC11A10A
       AliInfo("Using multiplicity correction parameters for 11a10!");
       fTPCResponse.SetParameterMultiplicityCorrection(0, 6.90133e-06);
@@ -1291,6 +1324,41 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 1.37023e-02);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -6.36337e-01);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.13479e-02);
+    }
+    else*/ if (period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D"))  {// 2013 pPb data taking at low luminosity
+      AliInfo("Using multiplicity correction parameters for 13b.pass2!");
+      
+      fTPCResponse.SetParameterMultiplicityCorrection(0, -5.906e-06);
+      fTPCResponse.SetParameterMultiplicityCorrection(1, -5.064e-04);
+      fTPCResponse.SetParameterMultiplicityCorrection(2, -3.521e-02);
+      fTPCResponse.SetParameterMultiplicityCorrection(3, 2.469e-02);
+      fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
+      
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -5.32e-06);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 1.177e-05);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
+      
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, 0.);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, 0.);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, 0.);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 0.);
+      
+      /* Not too bad, but far from perfect in the details
+      fTPCResponse.SetParameterMultiplicityCorrection(0, -6.27187e-06);
+      fTPCResponse.SetParameterMultiplicityCorrection(1, -4.60649e-04);
+      fTPCResponse.SetParameterMultiplicityCorrection(2, -4.26450e-02);
+      fTPCResponse.SetParameterMultiplicityCorrection(3, 2.40590e-02);
+      fTPCResponse.SetParameterMultiplicityCorrection(4, 0);
+      
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(0, -5.338e-06);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(1, 1.220e-05);
+      fTPCResponse.SetParameterMultiplicityCorrectionTanTheta(2, -0.5);
+      
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(0, 7.89237e-05);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(1, -1.30662e-02);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, 8.91548e-01);
+      fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.47931e-02);
+      */
     }
     else if (period.Contains("LHC10H") && recopass == 2) {    
       AliInfo("Using multiplicity correction parameters for 10h.pass2!");
@@ -1324,7 +1392,7 @@ void AliPIDResponse::SetTPCParametrisation()
     // the multiplicity correction is explicitely enabled in such expert calls.
     
     AliInfo(Form("Multiplicity correction %sdisabled (%s)!", fUseTPCMultiplicityCorrection ? "automatically " : "",
-                 fUseTPCMultiplicityCorrection ? "no PbPb or AA" : "requested by user"));
+                 fUseTPCMultiplicityCorrection ? "pp collisions" : "requested by user"));
     
     fUseTPCMultiplicityCorrection = kFALSE;
     fTPCResponse.ResetMultiplicityCorrectionFunctions();
@@ -1364,7 +1432,8 @@ void AliPIDResponse::SetTPCParametrisation()
   if (fArrPidResponseMaster)
   fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
   
-  if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s",fResolutionCorrection->GetName()));
+  if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s  (MD5(corr function) = %s)",
+                                          fResolutionCorrection->GetName(), GetChecksum(fResolutionCorrection).Data()));
 
   //read in the voltage map
   TVectorF* gsm = 0x0;
@@ -1470,7 +1539,11 @@ void AliPIDResponse::InitializeTOFResponse(){
   AliInfo(Form("  StartTime method %d",fTOFPIDParams->GetStartTimeMethod()));
   AliInfo(Form("  TOF res. mom. params: %5.2f %5.2f %5.2f %5.2f",
                fTOFPIDParams->GetSigParams(0),fTOFPIDParams->GetSigParams(1),fTOFPIDParams->GetSigParams(2),fTOFPIDParams->GetSigParams(3)));
-  
+  AliInfo(Form("  Fraction of tracks within gaussian behaviour: %6.4f",fTOFPIDParams->GetTOFtail()));
+  AliInfo(Form("  MC: Fraction of tracks (percentage) to cut to fit matching in data: %6.2f%%",fTOFPIDParams->GetTOFmatchingLossMC()));
+  AliInfo(Form("  MC: Fraction of random hits (percentage) to add to fit mismatch in data: %6.2f%%",fTOFPIDParams->GetTOFadditionalMismForMC()));
+  AliInfo(Form("  Start Time Offset %6.2f ps",fTOFPIDParams->GetTOFtimeOffset()));
+
   for (Int_t i=0;i<4;i++) {
     fTOFResponse.SetTrackParameter(i,fTOFPIDParams->GetSigParams(i));
   }
@@ -1659,12 +1732,16 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
   // Set TOF response function
   // Input option for event_time used
   //
-  
+
     Float_t t0spread = 0.; //vevent->GetEventTimeSpread();
     if(t0spread < 10) t0spread = 80;
 
-    // T0 from TOF algorithm
+    // T0-FILL and T0-TO offset (because of TOF misallignment
+    Float_t starttimeoffset = 0;
+    if(fTOFPIDParams && !(fIsMC)) starttimeoffset=fTOFPIDParams->GetTOFtimeOffset();
 
+
+    // T0 from TOF algorithm
     Bool_t flagT0TOF=kFALSE;
     Bool_t flagT0T0=kFALSE;
     Float_t *startTime = new Float_t[fTOFResponse.GetNmomBins()];
@@ -1700,6 +1777,8 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	startTime[i]=tofHeader->GetDefaultEventTimeVal();
 	startTimeRes[i]=tofHeader->GetDefaultEventTimeRes();
 	if(startTimeRes[i] < 1.e-5) startTimeRes[i] = t0spread;
+
+	if(startTimeRes[i] > t0spread - 10 && TMath::Abs(startTime[i]) < 0.001) startTime[i] = -starttimeoffset; // apply offset for T0-fill
       }
 
       TArrayI *ibin=(TArrayI*)tofHeader->GetNvalues();
@@ -1710,6 +1789,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	startTime[icurrent]=t0Bin->GetAt(j);
 	startTimeRes[icurrent]=t0ResBin->GetAt(j);
 	if(startTimeRes[icurrent] < 1.e-5) startTimeRes[icurrent] = t0spread;
+	if(startTimeRes[icurrent] > t0spread - 10 && TMath::Abs(startTime[icurrent]) < 0.001) startTime[icurrent] = -starttimeoffset; // apply offset for T0-fill
       }
     }
 
@@ -1719,7 +1799,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 
     if(option == kFILL_T0){ // T0-FILL is used
 	for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
-	  estimatedT0event[i]=0.0;
+	  estimatedT0event[i]=0.0-starttimeoffset;
 	  estimatedT0resolution[i]=t0spread;
 	}
 	fTOFResponse.SetT0event(estimatedT0event);
@@ -1737,7 +1817,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	}
 	else{
 	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
-	      estimatedT0event[i]=0.0;
+	      estimatedT0event[i]=0.0-starttimeoffset;
 	      estimatedT0resolution[i]=t0spread;
 	      fTOFResponse.SetT0binMask(i,startTimeMask[i]);
 	    }
@@ -1750,12 +1830,12 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	Float_t t0A=-10000;
 	Float_t t0C=-10000;
 	if(flagT0T0){
-	    t0A= vevent->GetT0TOF()[1];
-	    t0C= vevent->GetT0TOF()[2];
+	    t0A= vevent->GetT0TOF()[1] - starttimeoffset;
+	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
-        t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-        resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-        t0AC /= resT0AC*resT0AC;
+	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC /= resT0AC*resT0AC;
 	}
 
 	Float_t t0t0Best = 0;
@@ -1811,7 +1891,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 		estimatedT0resolution[i]=t0t0BestRes;
 	      }
 	      else{
-		estimatedT0event[i]=0.0;
+		estimatedT0event[i]=0.0-starttimeoffset;
 		estimatedT0resolution[i]=t0spread;
 	      }
 	    }
@@ -1825,12 +1905,12 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	Float_t t0A=-10000;
 	Float_t t0C=-10000;
 	if(flagT0T0){
-	    t0A= vevent->GetT0TOF()[1];
-	    t0C= vevent->GetT0TOF()[2];
+	    t0A= vevent->GetT0TOF()[1] - starttimeoffset;
+	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
-        t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-        resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-        t0AC /= resT0AC*resT0AC;
+	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC /= resT0AC*resT0AC;
 	}
 
 	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
@@ -1856,7 +1936,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	}
 	else{
 	    for(Int_t i=0;i<fTOFResponse.GetNmomBins();i++){
-	      estimatedT0event[i]=0.0;
+	      estimatedT0event[i]= 0.0 - starttimeoffset;
 	      estimatedT0resolution[i]=t0spread;
 	      fTOFResponse.SetT0binMask(i,0);
 	    }
@@ -1864,6 +1944,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	fTOFResponse.SetT0event(estimatedT0event);
 	fTOFResponse.SetT0resolution(estimatedT0resolution);
     }
+
     delete [] startTime;
     delete [] startTimeRes;
     delete [] startTimeMask;
@@ -2167,7 +2248,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   const EDetPidStatus pidStatus=GetTOFPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
 
-  const Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
+  const Double_t meanCorrFactor = 0.07/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
   
   for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
@@ -2436,4 +2517,53 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetPIDStatus(EDetector detector, c
   }
   return kDetNoSignal;
   
+}
+
+//______________________________________________________________________________
+TString AliPIDResponse::GetChecksum(const TObject* obj) const
+{
+  // Return the checksum for an object obj (tested to work properly at least for histograms and TSplines).
+  
+  TString fileName = Form("tempChecksum.C"); // File name must be fixed for data type "TSpline3", since the file name will end up in the file content!
+  
+  // For parallel processing, a unique file pathname is required. Uniqueness can be guaranteed by using a unique directory name
+  UInt_t index = 0;
+  TString uniquePathName = Form("tempChecksum_%u", index);
+  
+  // To get a unique path name, increase the index until no directory
+  // of such a name exists.
+  // NOTE: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
+  while (!gSystem->AccessPathName(uniquePathName.Data()))
+    uniquePathName = Form("tempChecksum_%u", ++index);
+  
+  if (gSystem->mkdir(uniquePathName.Data()) < 0) {
+    AliError("Could not create temporary directory to store temp file for checksum determination!");
+    return "ERROR";
+  }
+  
+  TString option = "";
+  
+  // Save object as a macro, which will be deleted immediately after the checksum has been computed
+  // (does not work for desired data types if saved as *.root for some reason) - one only wants to compare the content, not
+  // the modification time etc. ...
+  if (dynamic_cast<const TH1*>(obj))
+    option = "colz"; // Histos need this option, since w/o this option, a counter is added to the filename
+  
+  
+  // SaveAs must be called with the fixed fileName only, since the first argument goes into the file content
+  // for some object types. Thus, change the directory, save the file and then go back
+  TString oldDir = gSystem->pwd();
+  gSystem->cd(uniquePathName.Data());
+  obj->SaveAs(fileName.Data(), option.Data());
+  gSystem->cd(oldDir.Data());
+  
+  // Use the file to calculate the MD5 checksum
+  TMD5* md5 = TMD5::FileChecksum(Form("%s/%s", uniquePathName.Data(), fileName.Data()));
+  TString checksum = md5->AsString();
+  
+  // Clean up
+  delete md5;
+  gSystem->Exec(Form("rm -rf %s", uniquePathName.Data()));
+  
+  return checksum;
 }

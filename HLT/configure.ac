@@ -4,19 +4,17 @@ dnl $Id$
 dnl template for the configuration script for the Alice HLT 
 dnl framework and components
 dnl 
+dnl Note: the autoconf build system is deprecated and not maintained
+dnl since AliRoot was converted to cmake
+dnl 2013-03-06: most of checks for AliRoot features have been removed
+dnl in order to run the existing doxygen setup until this has been
+dnl converted to cmake as well
+dnl
 dnl ------------------------------------------------------------------
 
 dnl Take either the AliRoot tag as version id or the current revision
 AC_INIT([Alice High Level Trigger] , 
-	m4_esyscmd([url=`svn info 2> /dev/null | grep "URL:" | cut -d: -f3 | sed -e 's|[/]*HLT[/]*$||' | sed -e 's|^[/]*||g' | cut -d '/' -f 4`; \
-	            revision=`svn info 2> /dev/null | grep "Revision:" | cut -d ' ' -f 2 | cut -d '/' -f 4`; \
-	            if test "x$url" != "x"; then echo -n $url; \
-		    elif test "x$revision" != "x"; then echo -n $revision ; \
-		    elif test -e .revision && test x`cat .revision` != x; then \
-		       cat .revision; \
-		    else \
-		       echo -n invalid-version; \
-		    fi]),
+	[doc],
 	[Matthias.Richter@ift.uib.no], 
 	[alice-hlt])
 
@@ -167,232 +165,6 @@ else
 fi
 AC_MSG_RESULT([$have_aliroot])
 
-if test ! "x$have_aliroot" = "xno" ; then
-  ALIROOT_CPPFLAGS="-I${ALIROOTINCDIR} -I${ALICE_ROOT}/RAW"
-  ALIROOT_LDFLAGS="-L${ALIROOTLIBDIR}"
-  ALIROOT_LIBS="$ADD_ROOTLIBS"
-  save_CPPFLAGS=$CPPFLAGS
-  save_LDFLAGS=$LDFLAGS
-  save_LIBS=$LIBS
-  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
-  LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
-  
-  # check for certain AliRoot libraries/files/features
-  # libSTEERBase present since Aug 7 2007
-  # ###########################################
-  # temporary workaround for circular dependency libSTEERbase libSTEER 	 
-  # https://savannah.cern.ch/bugs/index.php?49914
-  # disable the sequence of checks and load libraries in parallel
-  ALIROOT_LIBS="$ALIROOT_LIBS -lAOD -lCDB -lRAWDatabase -lRAWDatarec -lESD -lSTEER"
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=STEERBase
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=AOD
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
-  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=CDB
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
-  # splitted RAW libraries since AliRoot version v4-04-Rev-07 (09.08.2006)
-  have_alirawdata=no
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=RAWDatabase
-  AC_CHECK_LIB([$CHECKLIB],[_init],
-	[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"
-	 LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lESD -lSTEER"
-	 CHECKLIB=RAWDatarec
-	 AC_CHECK_LIB([$CHECKLIB],[_init],
-               [ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"
-	        have_alirawdata=$CHECKLIB])],
-	[# second pass with -RAWData
-	 CHECKLIB="-lRAWData"
-	 LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $CHECKLIB -lSTEER"
-	 AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRawReaderMemory.h>
- 				       #include <AliRawReaderFile.h>
- 				       #include <AliRawReaderDate.h>
- 				       #include <AliRawReaderRoot.h>], 
-                                     [AliRawReaderMemory mreader;
- 				       AliRawReaderFile freader;
- 				       AliRawReaderDate dreader(NULL,0);
- 				       AliRawReaderRoot rreader(NULL,0);])],
-                                     [ALIROOT_LIBS="$ALIROOT_LIBS $CHECKLIB"
- 				       have_alirawdata=$CHECKLIB], 
- 				      [have_alirawdata=no])
-	]) dnl AC_CHECK_LIB RAWDatabase
-  AC_MSG_CHECKING([for AliRawReader classes in RAWData libraries])
-  AC_MSG_RESULT([$have_alirawdata])
-
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lSTEER"
-  CHECKLIB=ESD
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=STEER
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"],[have_aliroot=no])
-
-  dnl
-  dnl check whether AliLog supports notification callback
-  dnl 2010-03-03: revision 38921 introduces AliLog::GetRootLogger in order to make AliLog
-  dnl a pure sigleton, introduce a 2-level check here
-  dnl
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  have_alilog_notification=no
-  if test ! "x$have_aliroot" = "xno" ; then
-  AC_MSG_CHECKING([whether AliLog supports notification callback])
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
-		                  [AliLog* logger=AliLog::GetRootLogger();])],
-                                  [have_alilog_notification=yes],
-				  [AC_DEFINE(NO_ALILOG_GETROOTLOGGER)
-  				  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
-		                  				  [AliLog::AliLogNotification fct])],
-                                  				  [have_alilog_notification=yes], 
-				  				  [AC_DEFINE(NO_ALILOG_NOTIFICATION)])
-				  ])
-  AC_MSG_RESULT([$have_alilog_notification])
-  fi
-
-  if test "x$have_aliroot" = "xno" ; then
-    # 2007-08-18 dont reset ALIROOT_CPPFLAGS in order to allow compilation
-    # but library dependencies might not be resolved completely
-    #ALIROOT_CPPFLAGS=
-    AC_MSG_WARN([some of the AliRoot library dependencies are not resolved.
-    This can happen from time to time due to development in AliRoot. You can
-    force compilation of detector libs by --enable-<detector>, but be aware
-    of unresolved references at runtime.])
-    AC_MSG_WARN([       ------------------------------------------ ])
-    AC_MSG_WARN([       Report this to $PACKAGE_BUGREPORT ])
-    AC_MSG_WARN([       please include config.log                  ])
-    AC_MSG_WARN([       ------------------------------------------ ])
-    ALIROOT_LDFLAGS=
-    ALIROOT_LIBS=
-  fi
-
-  dnl
-  dnl ESD supports non-std content
-  dnl
-  have_esd_nonstd=no
-  AC_RUN_IFELSE([AC_LANG_PROGRAM([#include <AliESDEvent.h>
-				   #include <AliExternalTrackParam.h>
-				   #include <TTree.h>
-				   #include <TClonesArray.h>],
-				  [AliESDEvent esd;
-				   esd.CreateStdContent();
-				   TTree* tree=new TTree("esdTree", "Tree with HLT ESD objects");
-				   TClonesArray* a=new TClonesArray("AliExternalTrackParam");
-				   a->SetName("SomeObject");
-				   esd.AddObject(a);
-				   esd.WriteToTree(tree);
-				   if (!tree->FindBranch("SomeObject")) return 1;
-				   return 0;])],
-                 [have_esd_nonstd=yes], 
-  		 [AC_DEFINE(HAVE_NOT_ESD_NONSTD)])
-  AC_MSG_CHECKING(whether ESD supports non standard content)
-  AC_MSG_RESULT([$have_esd_nonstd])
-
-  dnl
-  dnl ESD copy function added May 9 2008 rev 25667
-  dnl
-  if test "x$have_esd_nonstd" != "xyes"; then
-  have_esd_copy=no
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliESDEvent.h>],
-				  [AliESDEvent esd1;
-				   AliESDEvent esd2;
-				   esd2=esd1;])],
-                 [have_esd_copy=yes], 
-  		 [AC_DEFINE(HAVE_NOT_ESD_COPY)])
-  AC_MSG_CHECKING(for ESD assignment operator)
-  AC_MSG_RESULT([$have_esd_copy])
-  fi
-
-  dnl
-  dnl AliRawReaderMemory support for multiple buffers added
-  dnl revision 26829 Jun 2008
-  dnl
-  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/RAW"
-  have_rawreadermemory_multbuffers=no
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRawReaderMemory.h>],
-				  [AliRawReaderMemory rr;
-				   rr.AddBuffer(NULL, 0, 0);])],
-                 [have_rawreadermemory_multbuffers=yes], 
-  		 [AC_DEFINE(HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER)])
-  AC_MSG_CHECKING(AliRawReaderMemory support for multiple buffers)
-  AC_MSG_RESULT([$have_rawreadermemory_multbuffers])
-
-  dnl
-  dnl Changes in the magnetic field implementation
-  dnl revision 30848 Feb 1 2009
-  dnl
-  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/STEER"
-  have_alimagf30848=no
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliMagF.h>],
-				  [int test=AliMagF::k5kG;])],
-                 [have_alimagf30848=yes], 
-  		 [AC_DEFINE(HAVE_NOT_ALIMAGF30848)])
-  AC_MSG_CHECKING(AliMagF contains field definitions)
-  AC_MSG_RESULT([$have_alimagf30848])
-
-  dnl
-  dnl Cleanup of the RunLoader implementation
-  dnl revision 30859 Feb 2 2009
-  dnl
-  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/STEER"
-  have_alirunloader30859=no
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRunLoader.h>],
-				  [AliRunLoader* rl=AliRunLoader::Instance();])],
-                 [have_alirunloader30859=yes], 
-  		 [AC_DEFINE(HAVE_NOT_ALIRUNLOADER30859)])
-  AC_MSG_CHECKING(AliRunLoader::Instance)
-  AC_MSG_RESULT([$have_alirunloader30859])
-
-  have_aliqav1=no
-  AC_CHECK_HEADER([AliQAv1.h], [have_aliqav1=yes], [])
-  AM_CONDITIONAL(EN_HLT_QA, test x$have_aliqav1 = xyes)
-  AC_CHECK_HEADER([AliESDHLTDecision.h], [], [AC_DEFINE(HAVE_NOT_ALIESDHLTDECISION)])
-  AC_CHECK_HEADER([AliVCluster.h], [], [AC_DEFINE(HAVE_NOT_ALIVCLUSTER)])
-
-  dnl
-  dnl required header files and libraries for modules
-  dnl
-
-  dnl
-  dnl Check for the interface of AliExternalTrackParam which has been changed
-  dnl in revision 1.17 of AliExternalTrackParam.h (AliRoot version v4-05-04
-  dnl or higher)
-  externaltrackparam_version=1
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliExternalTrackParam.h>], 
-                                  [AliExternalTrackParam trackparam;
-				   Double_t param[[5]]; Double_t covar[[15]];
- 				   trackparam.Set(0., 0., param, covar);])],
-                                  [externaltrackparam_version=2],
- 				  [AC_DEFINE(EXTERNALTRACKPARAM_V1)])
-  AC_MSG_CHECKING(for version of AliExternalTrackParam)
-  AC_MSG_RESULT($externaltrackparam_version)
-
-  dnl The AliShuttleInterface was changed in rev 29388. Some return types
-  dnl had been const, now changed according to gcc 4.3 warnings 
-  AC_MSG_CHECKING(for version of AliShuttleInterface.h)
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/"
-    LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
-    LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliShuttleInterface.h>],
-                                    [class dummy : public AliShuttleInterface {
-				     public:
-				       const UInt_t GetStartTimeDCSQuery() {;}
-                                     };])],
-                                    [AC_DEFINE(SHUTTLE_PRE_REV29388_INTERFACE)
-				     alishuttleinterface_version=pre.rev.29388],
-  				    [alishuttleinterface_version=up.to.date])
-  AC_MSG_RESULT([$alishuttleinterface_version])
-
-  CPPFLAGS=$save_CPPFLAGS
-  LDFLAGS=$save_LDFLAGS
-  LIBS=$save_LIBS
-fi # if test ! "x$have_aliroot" = "xno"
-
 AC_LANG_POP(C++)
 AC_SUBST([ALICE_ROOT])
 AC_SUBST([ALIROOT_CPPFLAGS])
@@ -408,125 +180,6 @@ HLTBASE_CPPFLAGS='-I${top_srcdir}/BASE'
 HLTBASE_LDFLAGS=
 AC_SUBST([HLTBASE_CPPFLAGS])
 AC_SUBST([HLTBASE_LDFLAGS])
-
-dnl ------------------------------------------------------------------
-dnl check for the HLT PubSub Framework
-dnl namely for the existence of the HOMER library
-dnl from Sep 2007, the HOMER lib has been incorporated into the alice-hlt
-dnl package. It os though possible to choose an external. library
-dnl In order to make the origni of the HOMER lib clear, the one in AliRoot
-dnl got the name libAliHLTHOMER
-AC_MSG_CHECKING([for HLT PubSub Framework])
-AC_ARG_WITH(pubsub, [installation path of the HLT PubSub framework],
-		    [],
-		    [ test -n $ALIHLT_DC_DIR && with_pubsub=$ALIHLT_DC_DIR ])
-if test -z $with_pubsub || ! test -d $with_pubsub ; then
-  with_pubsub=no
-fi
-AC_MSG_RESULT([$with_pubsub])
-HOMER_VERSION=2
-HOMER_LIBS=
-
-AH_TEMPLATE([HAVE_HOMERREADER],[the HLT PubSub Homer Reader interface])
-if test "x$with_pubsub" != "xno" ; then
-  save_CPPFLAGS=$CPPFLAGS
-  save_LDFLAGS=$LDFLAGS
-  save_LIBS=$LIBS
-  # currently the different versions of the HLT PubSub framework have a different
-  # directory layout
-  if test -d ${with_pubsub}/include/HOMER ; then
-    # the 'early' location of the include files with separated HOMER sub dirs
-    HOMER_INCDIRS="${with_pubsub}/include/HOMER ${with_pubsub}/include/HOMER/reader"
-  elif test -d ${with_pubsub}/include/Util/HOMER ; then
-    # location for HLT Framework versions after Sep 2006
-    HOMER_INCDIRS="${with_pubsub}/include/Util/HOMER"
-  elif test -d ${with_pubsub}/src/Util/HOMER/include ; then
-    # fall back if include files were not installed (versions after Sep 06)
-    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/include"
-  else
-    # fall back if include files were not installed (versions before Sep 06)
-    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/reader/include ${with_pubsub}/src/Util/HOMER/data/include"
-  fi
-  HOMER_CPPFLAGS=`for i in ${HOMER_INCDIRS}; do echo -n "-I$i " ; done`
-
-  AC_ARG_ENABLE(pubsub-debug,
-    [AC_HELP_STRING([--disable-pubsub-debug],
-        [force the production version of the PubSub framework])],
-    [],[enable_pubsub_debug=yes])
-  homer_type="none"
-  HOMER_TARGET="`uname -s`-`uname -m`"
-  AC_MSG_CHECKING([for HLT PubSub Framework release type])
-  if test -d "${with_pubsub}/lib/${HOMER_TARGET}-release" ; then
-    homer_type="production"
-    HOMER_TARGET="${HOMER_TARGET}-release"
-  elif test "x$enable_pubsub_debug" = "xyes" && test -d "${with_pubsub}/lib/${HOMER_TARGET}-debug" ; then
-    homer_type="debug"
-    HOMER_TARGET="${HOMER_TARGET}-debug"
-  fi
-  AC_MSG_RESULT([${homer_type}])
-  HOMERREADER_HEADER=HOMERReader.h
-  HOMER_BINDIR="${with_pubsub}/bin/${HOMER_TARGET}"
-  HOMER_LIBDIR="${with_pubsub}/lib/${HOMER_TARGET}"
-  HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
-  CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS"
-  LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS"
-  LIBS="$save_LIBS "
-  with_homer=no
-  AC_LANG_PUSH(C++)
-  AC_CHECK_HEADER([$HOMERREADER_HEADER],
-    [ AC_CHECK_LIB([HOMER],[_init],
-      [with_homer=yes
-       HOMER_LIBS="-lHOMER"],
-      [ AC_CHECK_LIB([HOMERReader],[_init],
-                     [with_homer=yes
-		      HOMER_LIBS="-lHOMERReader"])])
-      LIBS="$LIBS $HOMER_LIBS"
-      AC_MSG_CHECKING([version of HOMER library])
-      dnl The Homer library has no versioning, so we do our own
-      dnl version           description
-      dnl ----------------------------------------------------------------------
-      dnl   1          inintial version
-      dnl   2          GetBlockStatusFlags added to the interface
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <HOMERReader.h>],
-                                      [HOMERReader reader("dummy", 0);
- 				       reader.GetBlockStatusFlags(0);])],
-                                      [],
- 				      [HOMER_VERSION=1])
-      AC_MSG_RESULT([$HOMER_VERSION])
-  ],
-  [HOMERREADER_HEADER=]) #AC_CHECK_HEADER([$HOMERREADER_HEADER])
-  AC_LANG_POP(C++)
-  HOMER_INBUILT_LIB=
-else
-dnl no pubsub version defined, check if the HOMER lib is available in AliRoot
-  topdir=`dirname $0`
-  HOMER_CPPFLAGS="-I`(cd $topdir; pwd)`/BASE/HOMER"
-  HOMERREADER_HEADER=AliHLTHOMERReader.h
-  HOMER_INBUILT_LIB=`pwd`/BASE/HOMER/libAliHLTHOMER.la
-  HOMER_BINDIR=
-  HOMER_LIBDIR=
-  HOMER_LDFLAGS=
-fi
-
-  if test "x$with_homer" = "xno" ; then
-    HOMER_CPPFLAGS=
-    HOMER_LDFLAGS=
-    HOMER_LIBS=
-  else
-    HOMER_CPPFLAGS="$HOMER_CPPFLAGS -DHOMER_VERSION=$HOMER_VERSION"
-    AC_DEFINE(HAVE_HOMERREADER)
-  fi
-  CPPFLAGS="$save_CPPFLAGS"
-  LDFLAGS="$save_LDFLAGS"
-  LIBS="$save_LIBS"  
-
-AC_SUBST([HOMERREADER_HEADER])
-AC_SUBST([HOMER_INBUILT_LIB])
-AC_SUBST([HOMER_CPPFLAGS])
-AC_SUBST([HOMER_LDFLAGS])
-AC_SUBST([HOMER_LIBDIR])
-AC_SUBST([HOMER_BINDIR])
-AC_SUBST([HOMER_LIBS])
 
 dnl ------------------------------------------------------------------
 AC_ARG_ENABLE(all,
@@ -610,10 +263,10 @@ AH_TEMPLATE([HLT_UTIL],[HLT utility library])
 ALIUTIL_LIBS=
 CHECK_HLTMODULE([util],
 		[], 
-		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/RAW -I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/ANALYSIS],
-		[ANALYSIS ANALYSISalice], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
@@ -637,11 +290,11 @@ AH_TEMPLATE([HLT_TPC],[hlt tpc library])
 
 ALITPC_LIBS=
 CHECK_HLTMODULE([tpc],
-		[AliTPCRawStream.h], 
-		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/TPC],
-		[Gui ANALYSIS STAT], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
-		[TPCbase TPCrec TPCcalib], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], 
+		[],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
@@ -723,11 +376,11 @@ dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_RCU],[hlt rcu library])
 
 CHECK_HLTMODULE([rcu],
-		[AliAltroDecoder.h], 
-		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/RAW],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], 
+		[],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
@@ -735,20 +388,7 @@ if test "x$enable_module" = "xmissheader"; then
 elif test "x$enable_module" = "xforce"; then
   enable_rcu="yes"
 else
-  AC_LANG_PUSH(C++)
-  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
-  LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliAltroDecoder.h>], 
-                                  [AliAltroDecoder decoder;
-				  decoder.CopyBackward(NULL, 0);])],
-                                  [enable_rcu=$enable_module], 
-				  [enable_module="no...requires.AliRoot>v4-10-Release"
-				   enable_rcu="no...requires.AliRoot>v4-10-Release"])
-  CPPFLAGS=$save_CPPFLAGS
-  LDFLAGS=$save_LDFLAGS
-  LIBS=$save_LIBS
-  AC_LANG_POP(C++)
+  enable_rcu=$enable_module
 fi
 
 if test "x$enable_rcu" = "xyes" ; then 
@@ -766,10 +406,10 @@ AH_TEMPLATE([HLT_CALO],[hlt calo(rimeter) library])
   
 ALICALO_LIBS=
 CHECK_HLTMODULE([calo],
-		[], [$ALIROOT_CPPFLAGS],
-		[RAWDatasim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
-		[EMCALUtils PHOSUtils PHOSbase PHOSrec PHOSsim PHOSshuttle], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
@@ -777,39 +417,7 @@ if test "x$enable_module" = "xmissheader"; then
 elif test "x$enable_module" = "xforce"; then
   enable_calo="yes"
 else
-  have_alicalorawstream=no
-  if test ! "x$have_aliroot" = "xno" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
-    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/PHOS"
-    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
-  				        #include <AliCaloRawStream.h>], 
-                                       [int i])],
-                                       [AC_DEFINE(HAVE_ALICALORAWSTREAM)
-				        have_alicalorawstream=yes], 
-  				       [])
-    AC_MSG_RESULT([$have_alicalorawstream])
-
-    have_aliesdcalocluster_r38477=no
-    AC_MSG_CHECKING([for AliESDCaloCluster r38477])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliESDCaloCluster.h>], 
-                                       [AliESDCaloCluster cluster;
-    				        cluster.SetTrackDistance(0.0, 0.0)]);],
-                                       [have_aliesdcalocluster_r38477=yes],
-    				         [AC_DEFINE(HAVE_NOT_ALIESDCALOCLUSTER_r38477)])
-    AC_MSG_RESULT([$have_aliesdcalocluster_r38477])
-
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
-  if test "x$have_alicalorawstream" != "xyes"; then
-    enable_calo="no...requires.AliRoot>v4-05-07"
-  else
     enable_calo=$enable_module
-  fi
 fi
 
 if test "x$enable_calo" = "xyes" ; then 
@@ -828,10 +436,10 @@ AH_TEMPLATE([HLT_PHOS],[hlt phos library])
   
 ALIPHOS_LIBS=
 CHECK_HLTMODULE([phos],
-		[], [$ALIROOT_CPPFLAGS],
-		[RAWDatasim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
-		[PHOSUtils PHOSbase PHOSrec PHOSsim PHOSshuttle], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...requires.AliRoot>v4-05-07"
@@ -839,47 +447,7 @@ if test "x$enable_module" = "xmissheader"; then
 elif test "x$enable_module" = "xforce"; then
   enable_phos="yes"
 else
-  have_alicalorawstream=no
-  if test ! "x$have_aliroot" = "xno" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
-    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/PHOS"
-    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
-  				        #include <AliCaloRawStream.h>], 
-                                       [int i])],
-                                       [AC_DEFINE(HAVE_ALICALORAWSTREAM)
-				        have_alicalorawstream=yes], 
-  				       [])
-    AC_MSG_RESULT([$have_alicalorawstream])
-    have_aliphosrecoparamemc=no
-    AC_MSG_CHECKING([for required EMC functionality in AliPHOSRecoParam.h ])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliPHOSRecoParam.h>], 
-                                       [AliPHOSRecoParam param;
-				        param.GetEMCClusteringThreshold()])],
-                                       [have_aliphosrecoparamemc=yes], 
-  				       [AC_DEFINE(HAVE_NOT_PHOSRECOPARAMEMC)])
-    AC_MSG_RESULT([$have_aliphosrecoparamemc])
-
-    have_aliphosreconstructor_r44091=no
-    AC_MSG_CHECKING([for AliPHOSReconstructor r44091 ])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliPHOSReconstructor.h>], 
-                                       [float e=0.0;
-				        AliPHOSReconstructor::CorrectNonlinearity(e)])],
-                                       [have_aliphosreconstructor_r44091=yes], 
-  				       [AC_DEFINE(HAVE_NOT_ALIPHOSRECONSTRUCTOR_r44091)])
-    AC_MSG_RESULT([$have_aliphosreconstructor_r44091])
-
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
-  if test "x$have_alicalorawstream" != "xyes"; then
-    enable_phos="no...requires.AliRoot>v4-05-07"
-  else
     enable_phos=$enable_module
-  fi
 fi
 
 if test "x$enable_phos" = "xyes" ; then 
@@ -898,10 +466,10 @@ AH_TEMPLATE([HLT_EMCAL],[hlt emcal library])
 
 ALIEMCAL_LIBS=
 CHECK_HLTMODULE([emcal],
-		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/VZERO],
-		[RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[EMCALrec EMCALsim EMCALbase EMCALUtils VZERObase], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
@@ -929,9 +497,9 @@ AH_TEMPLATE([HLT_TRD],[hlt trd library])
 ALITRD_LIBS=
 CHECK_HLTMODULE([trd],
 		[], [],
-		[MLP XMLParser], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[STAT TRDbase TRDrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...requires.AliRoot>v4-07-Release"
@@ -940,63 +508,6 @@ elif test "x$enable_module" = "xforce"; then
   enable_trd="yes"
 else
   enable_trd=$enable_module
-  if test "x$enable_trd" = "xyes" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/TRD"
-    # AliTRDclusterizer::SetRawVersion() requires >v4-07-Release
-    # changed to AliTRDrecoParam::SetSeedingOn() due to revision 26327, Mon Jun 2 2008
-    # changed to AliTRDReconstructor::SetStreamLevel() due to revision 27797, Tue Aug 5 2008
-    # changed to AliTRDReconstructor::SetClusters() according to revision 28069, Mon Aug 18 2008
-    # changed to AliTRDCluster according to revision 30461, Thu Dec 18 2008
-    # changed to AliTRDclusterizer::GetAddedClusters according to revision 31299, Wed Mar 4 2009
-    # changed to AliTRDclusterizer::GetNTimeBins according to revision 37102 Sun Nov 22 2009
-    AC_MSG_CHECKING([for required functions in AliTRDclusterizer])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
-                                       [AliTRDclusterizer c;
-				       c.GetNTimeBins()])],
-                                       [], 
-  				       [enable_trd="no...requires.AliRoot>v4-18-Release"])
-    AC_MSG_RESULT([$enable_trd])       
-
-    if test "x$enable_trd" = "xyes" ; then
-      have_alitrdseedv1_r39693=no
-      AC_MSG_CHECKING([checking for AliTRDseedV1 r39693])
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDseedV1.h>], 
-                                         [AliTRDseedV1 seed;
-      				          seed.SetC(0.0, 1)]);],
-                                         [have_alitrdseedv1_r39693=yes],
-      				         [AC_DEFINE(HAVE_NOT_ALITRD_SEEDV1_r39693)])
-      AC_MSG_RESULT([$have_alitrdseedv1_r39693])
-
-      have_alitrdrawstream_r39608=no
-      AC_MSG_CHECKING([checking for AliTRDrawStream r39608])
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrawStreamBase.h>], 
-                                         [AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDdefaultStream)]);],
-                                         [have_alitrdrawstream_r39608=yes],
-                                         [AC_DEFINE(HAVE_NOT_ALITRD_RAWSTREAM_r39608)])
-      AC_MSG_RESULT([$have_alitrdrawstream_r39608])
-
-      have_alitrdrecoparam_r41621=no
-      AC_MSG_CHECKING([checking for AliTRDrecoParam r41621])
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrecoParam.h>], 
-                                         [AliTRDrecoParam::GetLowFluxHLTParam()]);],
-                                         [have_alitrdrecoparam_r41621=yes],
-                                         [AC_DEFINE(HAVE_NOT_ALITRD_RECOPARAM_r41621)])
-      AC_MSG_RESULT([$have_alitrdrecoparam_r41621])
-
-      have_alitrdclusterizer_r42837=no
-      AC_MSG_CHECKING([checking for AliTRDclusterizer r42837])
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
-                                         [AliTRDclusterizer o; o.SetSkipTransform()]);],
-                                         [have_alitrdclusterizer_r42837=yes],
-                                         [AC_DEFINE(HAVE_NOT_ALITRD_CLUSTERIZER_r42837)])
-      AC_MSG_RESULT([$have_alitrdclusterizer_r42837])
-    fi
-
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
 fi
 
 if test "x$enable_trd" = "xyes" ; then 
@@ -1016,9 +527,9 @@ AH_TEMPLATE([HLT_FMD],[hlt fmd library])
 ALIFMD_LIBS=$ALIHLTMODULE_LIBS
 CHECK_HLTMODULE([fmd],
 		[], [],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[FMDbase FMDrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS],
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [], [],
+		[], [],
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
@@ -1045,10 +556,10 @@ AH_TEMPLATE([HLT_ZDC],[hlt zdc library])
 
 ALIZDC_LIBS=$ALIHLTMODULE_LIBS
 CHECK_HLTMODULE([zdc],
-		[], [$ALIROOT_CPPFLAGS],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[ZDCbase ZDCrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS],
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [],
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...missing.headers"
@@ -1057,30 +568,6 @@ elif test "x$enable_module" = "xforce"; then
   enable_zdc="yes"
 else
   enable_zdc=$enable_module
-
-  if test "x$enable_zdc" = "xyes" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/ZDC"
-
-
-    # AliZDCReconstructor::GetZDCESDData() is needed, requires revision 43770, Wed Sep 22 2010
-    have_alizdcreconstructor_r43770=no
-    AC_MSG_CHECKING([checking for  AliZDCReconstructor::GetZDCESDData() r43770])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliZDCReconstructor.h>], 
-                                       [AliZDCReconstructor rec;
-				        rec.GetZDCESDData()])],
-                                       [have_alizdcreconstructor_r43770=yes], 
-  				       [AC_DEFINE(HAVE_NOT_ALIZDCRECONSTRUCTOR_r43770)])
-    if test "x$have_alizdcreconstructor_r43770"	!= "xyes"; then
-       enable_zdc="no...requires.r43770"
-    fi
-    AC_MSG_RESULT([$have_alizdcreconstructor_r43770])       
-
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
-
 fi
 
 if test "x$enable_zdc" = "xyes" ; then
@@ -1099,11 +586,11 @@ AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 
 ALIMUON_LIBS=
 CHECK_HLTMODULE([dimuon],
-		[AliMpExMap.h AliMUONTriggerIO.h], 
-		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/MUON -I$ALICE_ROOT/MUON/mapping],
-		[Gui RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[MUONcore MUONraw MUONbase MUONgeometry MUONmapping MUONcalib MUONsim MUONtrigger MUONevaluation MUONrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], 
+		[],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...requires.AliRoot>=v4-08-Release"
@@ -1170,10 +657,10 @@ AH_TEMPLATE([HLT_TRIGGER],[hlt trigger library])
 
 ALITRIGGER_LIBS=
 CHECK_HLTMODULE([trigger],
-		[], [$ALIROOT_CPPFLAGS],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
@@ -1200,10 +687,10 @@ AH_TEMPLATE([HLT_GLOBAL],[hlt global library])
 
 ALIGLOBAL_LIBS=
 CHECK_HLTMODULE([global],
-		[], [$ALIROOT_CPPFLAGS],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[PHOSUtils ], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
@@ -1212,20 +699,6 @@ elif test "x$enable_module" = "xforce"; then
   enable_global="yes"
 else
   enable_global=$enable_module
-  if test "x$enable_global" = "xyes" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
-    AC_MSG_CHECKING([for required functions in AliESDtrack])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliESDtrack.h>], 
-                                       [AliESDtrack t;
-				       t.SetGlobalChi2(0)])],
-                                       [], 
-  				       [enable_global="no...requires.AliRoot>v4-17-Release"])
-    AC_MSG_RESULT([$enable_global])       
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
 fi
 
 if test "x$enable_global" = "xyes" ; then 
@@ -1260,11 +733,11 @@ else
 fi
 
 CHECK_HLTMODULE([jet],
-	[$ALIFASTJET_HEADER], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/JETAN $ALIFASTJET_INCFLAGS],
-	[$ALIFASTJET_LIBS], [-L$ROOTLIBDIR $ALIFASTJET_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS],
-	[AOD ESD ANALYSIS ANALYSISalice JETAN], 
-	[-L$ROOTLIBDIR $ALIROOT_LDFLAGS $ALIFASTJET_LDFLAGS -L$ALICE_ROOT/lib/tgt_$ALICE_TARGET],
-	[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+	[], [],
+	[], [], [],
+	[], 
+	[],
+	[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
@@ -1301,10 +774,10 @@ AH_TEMPLATE([HLT_VZERO],[hlt vzero library])
 
 ALIVZERO_LIBS=
 CHECK_HLTMODULE([vzero],
-		[], [$ALIROOT_CPPFLAGS],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
@@ -1313,24 +786,6 @@ elif test "x$enable_module" = "xforce"; then
   enable_vzero="yes"
 else
   enable_vzero=$enable_module
-
-  if test "x$enable_vzero" = "xyes" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/VZERO"
-
-    # AliVZEROReconstructor::GetESDVZERO() is needed, requires revision 43718, Tue Sep 21 2010
-    AC_MSG_CHECKING([checking for AliVZEROReconstructor::GetESDVZERO() r43718])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliVZEROReconstructor.h>], 
-                                       [AliVZEROReconstructor rec;
-				        rec.GetESDVZERO()])],
-                                       [], 
-  				       [enable_vzero="no...requires.r43718"])
-    AC_MSG_RESULT([$enable_vzero])       
-
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
 fi
 
 if test "x$enable_vzero" = "xyes" ; then 
@@ -1349,10 +804,10 @@ AH_TEMPLATE([HLT_ITS],[hlt its library])
 
 ALIITS_LIBS=
 CHECK_HLTMODULE([its],
-		[AliITSCompressRawDataSDD.h], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/ITS],
-		[Gui RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[ITSbase ITSrec ITSsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"
@@ -1361,22 +816,6 @@ elif test "x$enable_module" = "xforce"; then
   enable_its="yes"
 else
   enable_its=$enable_module
-  if test "x$enable_its" = "xyes" ; then
-    AC_LANG_PUSH(C++)
-    save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/ITS"
-    # changes in the AliVertexer base class revision 26414, Thu Jun 5 15:36:18 2008
-    # require AliVertexer::GetNominalPos()
-    AC_MSG_CHECKING([for required functions in AliITSVertexer])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliITSVertexerZ.h>], 
-                                       [AliITSVertexerZ v;
-				       v.GetNominalPos()])],
-                                       [], 
-  				       [enable_its="no...requires.AliRoot>v4-13-Release"])
-    AC_MSG_RESULT([$enable_its])       
-    AC_LANG_POP(C++)
-    CPPFLAGS="$save_CPPFLAGS"
-  fi
 fi
 
 if test "x$enable_its" = "xyes" ; then 
@@ -1395,10 +834,10 @@ AH_TEMPLATE([HLT_COMP],[hlt comp library])
 
 ALICOMP_LIBS=
 CHECK_HLTMODULE([comp],
-		[], [$ALIROOT_CPPFLAGS],
-		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+		[], [],
+		[], [], [],
+		[], [], 
+		[])
 
 if test "x$enable_module" = "xmissheader"; then
   enable_module="no...header.missing"

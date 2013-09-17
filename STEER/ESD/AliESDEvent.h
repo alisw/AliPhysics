@@ -394,6 +394,7 @@ public:
   }
 
   void AddTrdTracklet(const AliESDTrdTracklet *trkl);
+  void AddTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label = -1);
 
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)(fV0s?fV0s->At(i):0x0);
@@ -448,6 +449,7 @@ public:
     return (fTrkPileupVertices?fTrkPileupVertices->GetEntriesFast():0);
   }
   Int_t GetNumberOfTracks()     const {return fTracks?fTracks->GetEntriesFast():0;}
+  Int_t GetNumberOfESDTracks()  const { return GetNumberOfTracks(); }
   Int_t GetNumberOfHLTConfMapTracks()     const {return 0;} 
   // fHLTConfMapTracks->GetEntriesFast();}
   Int_t GetNumberOfHLTHoughTracks()     const {return  0;  }

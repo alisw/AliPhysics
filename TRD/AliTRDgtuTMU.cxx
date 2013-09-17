@@ -268,7 +268,7 @@ Bool_t AliTRDgtuTMU::RunInputUnit(Int_t layer)
     alpha = ( 2 * trk->GetdY() - (alpha >> fGtuParam->GetBitExcessAlpha()) + 1 ) >> 1;
     // wrapping projected alpha as in hardware
     if ((alpha < -64) || (alpha > 63))
-      AliError(Form("alpha out of range: %i", alpha));
+      AliDebug(1, Form("alpha out of range: %i", alpha));
     alpha = alpha & 0x7f;
     if (alpha & 0x40)
       trk->SetAlpha(0xffffffc0 | alpha);

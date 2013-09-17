@@ -44,7 +44,7 @@ class AliESDTrdTracklet : public AliVTrdTracklet
 				// pppp : pppp : zzzz : dddd : dddy : yyyy : yyyy : yyyy
   Int_t  fLabel;		// MC label
 
-  ClassDef(AliESDTrdTracklet, 1);
+  ClassDef(AliESDTrdTracklet, 2);
 };
 
 #endif

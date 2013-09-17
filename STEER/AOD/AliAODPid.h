@@ -30,6 +30,7 @@ class AliAODPid : public TObject {
   void      SetTPCsignal(Double_t tpc)                         {fTPCsignal=tpc;}
   void      SetTPCsignalN(UShort_t tpcN)                       {fTPCsignalN=(UChar_t)((tpcN<160)?tpcN:160);}
   void      SetTPCmomentum(Double_t tpcMom)                    {fTPCmomentum=tpcMom;}
+  void      SetTPCTgl(Double_t tpcTgl)                         {fTPCTgl=tpcTgl;}
   void      SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo);
   void      SetTRDslices(Int_t nslices, const Double_t * const trdslices);  
   void      SetTRDsignal(Double_t sig)                         {fTRDsignal = sig;}
@@ -52,6 +53,7 @@ class AliAODPid : public TObject {
   AliTPCdEdxInfo * GetTPCdEdxInfo()const{return fTPCdEdxInfo;}
 
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
+  Double_t  GetTPCTgl()          const {return  fTPCTgl;}
   Int_t     GetTRDnSlices()      const {return  fTRDnSlices/6;}
   Double_t  GetTRDsignal()       const {return  fTRDsignal;}
   Double_t* GetTRDslices()       const {return  fTRDslices;}
@@ -72,7 +74,8 @@ class AliAODPid : public TObject {
   Double32_t  fTPCsignal;        //[0.,0.,10] detector raw signal
   UChar_t     fTPCsignalN;       // number of points used for TPC dE/dx
   Double32_t  fTPCmomentum;      //[0.,0.,20] momentum at the inner wall of TPC;
-
+  Double32_t  fTPCTgl;           //[0.,0.,10] track momentum dip angle at the inner wall of TPC;
+  
   Int_t       fTRDnSlices;       // N slices used for PID in the TRD (as number of slices per tracklet * number of layers)
   UChar_t     fTRDntls;          // number of tracklets used for PID calculation
   UChar_t     fTRDncls[6];       // number of clusters used for dE/dx calculation
@@ -87,7 +90,7 @@ class AliAODPid : public TObject {
  
   AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
 
-  ClassDef(AliAODPid, 14);
+  ClassDef(AliAODPid, 15);
 };
 
 //_____________________________________________________________

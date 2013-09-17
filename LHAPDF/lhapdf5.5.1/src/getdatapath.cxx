@@ -71,10 +71,10 @@ extern "C" {
     BrInitError error;
     br_init_lib(&error);
     string sharedir = br_find_data_dir(DEFAULTLHAPATH);
-    string tmp = sharedir + "/lhapdf/PDFsets";
+    string tmp = sharedir;
     string test1 = tmp + "/cteq6.LHpdf";
     if (access(test1.c_str(), R_OK) != 0) {
-      tmp = string(DEFAULTLHAPATH) + "/lhapdf/PDFsets";
+      tmp = string(DEFAULTLHAPATH);
     }
     assert(tmp.length() <= (unsigned) length);
     strncpy(datapath, tmp.c_str(), length);

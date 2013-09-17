@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #define _ITSU_TUNING_MODE_
+//#define _ITSU_DEBUG_
 
 class AliITSUGeomTGeo;
 class AliITSsegmentation;

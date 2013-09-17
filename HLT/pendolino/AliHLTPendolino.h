@@ -22,12 +22,6 @@
 
 //#include "AliHLTPredictionProcessorInterface.h"
 
-#ifdef SHUTTLE_PRE_REV29388_INTERFACE
-#define CONST_PROPERTY const
-#else
-#define CONST_PROPERTY
-#endif
-
 class AliHLTPendolinoLogger;
 
 /**
@@ -381,11 +375,7 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * implementation in the Offline Shuttle - there the initial start time
 		 * is set to the start-of-data for the complete run.)
 		 */
-#ifdef SHUTTLE_PRE_REV29388_INTERFACE
-		virtual const UInt_t GetStartTimeDCSQuery();
-#else
 		virtual UInt_t GetStartTimeDCSQuery();
-#endif
 
 		/**
 		 * Function to get the end time of the DCS Archive DB request; in HLT
@@ -394,11 +384,7 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * implementation in the Offline Shuttle - there the initial end time
 		 * is set to the end-of-data for the complete run.)
 		 */
-#ifdef SHUTTLE_PRE_REV29388_INTERFACE
-		virtual const UInt_t GetEndTimeDCSQuery();
-#else
 		virtual UInt_t GetEndTimeDCSQuery();
-#endif
 				
   /**
    * method introduced as pure virtual in r43691

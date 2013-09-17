@@ -17,12 +17,9 @@
 class TVector3;
 class AliPHOSGeometry;
 class AliPHOSCalibData ;
-class AliPHOSEsdCluster ;
-class AliPHOSAodCluster ;
-class AliAODCaloCells;
-class AliESDCaloCells; 
 class TH2I ;
 class AliVCluster ;
+class AliVCaloCells ;
 class AliAnalysisTaskSE ;
 
 class AliPHOSTenderSupply: public AliTenderSupply {
@@ -43,6 +40,11 @@ public:
             for(Int_t i=0;i<n;i++)fNonlinearityParams[i]=par[i]; }
   void  SetReconstructionPass(Int_t ipass=2){fRecoPass=ipass;}
   
+  //Use this function to let tender know that it works with MC production
+  //should read calibration from PHOSMCCalibration file and use object for specified production
+  //By defaul real data is assumed.
+  void SetMCProduction(const char * name ="LHC13_b2"){fIsMC=kTRUE ; fMCProduction=name ;}
+  
   //If you want to override automatic choise of bad maps and calibration
   void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
   void ForceUsingCalibration(const char * filename="alien:///alice/cern.ch/user/p/prsnko/Recalibrations/LHC10b_pass1.root") ;
@@ -58,9 +60,10 @@ protected:
   Bool_t IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   void   CorrectPHOSMisalignment(TVector3 & globalPos, Int_t module);
   void   EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t &m20) ;
-  Double_t EvalTOFaod(AliPHOSAodCluster * clu, AliAODCaloCells * cells); 
-  Double_t EvalTOFesd(AliPHOSEsdCluster * clu, AliESDCaloCells * cells); 
+  Double_t EvalTOF(AliVCluster * clu,AliVCaloCells * cells); 
   Double_t CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG); 
+  void DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist) ;
+
  
 private:
 
@@ -76,6 +79,8 @@ private:
   AliPHOSCalibData *fPHOSCalibData;          // PHOS calibration object
   AliAnalysisTaskSE     *fTask;              // analysis task
 
+  Bool_t fIsMC;                              //True if work with MC data
+  TString fMCProduction ;                    //Name of MC production
  
   ClassDef(AliPHOSTenderSupply, 2); // PHOS tender task
 };

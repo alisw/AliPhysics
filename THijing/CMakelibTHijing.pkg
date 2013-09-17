@@ -28,6 +28,8 @@
 
 set ( SRCS  THijing.cxx AliGenHijing.cxx AliGenBeamGasNew.cxx)
 
+set ( FSRCS  openDecayTableHijing.F)
+
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
 set ( DHDR THijingLinkDef.h)

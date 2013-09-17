@@ -353,6 +353,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   
   header->SetRunNumber(esd.GetRunNumber());
   header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
+  header->SetNumberOfESDTracks(esd.GetNumberOfTracks());
 
   TTree* tree = fInputHandler->GetTree();
   if (tree) {
@@ -2056,6 +2057,14 @@ void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
   }
 
   aodTzero->SetT0zVertex(esdTzero->GetT0zVertex());
+  //amplitude
+
+  const Double32_t *amp=esdTzero->GetT0amplitude();
+  for(int ipmt=0;  ipmt<24; ipmt++)
+    aodTzero->SetAmp(ipmt, amp[ipmt]);
+  aodTzero->SetAmp(24,esdTzero->GetMultC() );
+  aodTzero->SetAmp(25,esdTzero->GetMultA() );
+
 }
 
 
@@ -2394,12 +2403,14 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
  return;
  }
  // TPC momentum
- const AliExternalTrackParam *in=track->GetInnerParam();
- if (in) {
-   aodpid->SetTPCmomentum(in->GetP());
- }else{
-   aodpid->SetTPCmomentum(-1.);
- }
+ aodpid->SetTPCmomentum(track->GetTPCmomentum());
+ aodpid->SetTPCTgl(track->GetTPCTgl());
+//  const AliExternalTrackParam *in=track->GetInnerParam();
+//  if (in) {
+//    aodpid->SetTPCmomentum(in->GetP());
+//  }else{
+//    aodpid->SetTPCmomentum(-1.);
+//  }
 
 
  aodpid->SetITSsignal(track->GetITSsignal());

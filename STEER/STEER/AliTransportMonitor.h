@@ -13,12 +13,15 @@
 #include "TStopwatch.h"
 #endif
 
+#ifndef ROOT_TH2F
+#include "TH2F.h"
+#endif
+
 // Class that can be plugged in the simulation to monitor transport timing per 
 // particle for each geometry volume.
 //
 //  andrei.gheata@cern.ch 
 
-class TH2F;
 
 
 //______________________________________________________________________________
@@ -51,6 +54,8 @@ public:
     Double_t        GetEmed(Int_t itype) const {return (fTotalTime>0)?fPData[itype].fEdt/fTotalTime : 0.;}
     Int_t           GetPDG(Int_t itype)  const {return fPData[itype].fPDG;}
     TH2F           *GetHistogram() const {return fTimeRZ;}
+    AliPMonData    *GetPMonData(Int_t itype) const {AliPMonData obj = fPData[itype]; return &obj;} 
+    void            Merge(AliTransportMonitorVol* volM);
     private:
       AliPMonData  &GetPMonData(Int_t pdg);
       AliTransportMonitorVol(const AliTransportMonitorVol& other) : TNamed(other), fNtypes(0), fTotalTime(0), fPData(0), fTimeRZ(0), fParticles() {}
@@ -84,6 +89,8 @@ public:
   void              Start();
   void              Stop();
   void              Export(const char *fname);
+  TObjArray*        GetVolumes() const {return fVolumeMon;}
+  void              Merge(AliTransportMonitor* mergeMon);
   static AliTransportMonitor *Import(const char *fname);
 private:
   Double_t          fTotalTime;  // Total simulation time

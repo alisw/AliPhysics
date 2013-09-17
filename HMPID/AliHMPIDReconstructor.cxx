@@ -28,8 +28,8 @@
 #include <AliRawReader.h>          //Reconstruct() for raw digits
 #include <AliLog.h>                //
 #include "AliHMPIDRawStream.h"     //ConvertDigits()
-#include "AliHMPIDRecoParamV1.h"   //ctor
-
+#include "AliHMPIDRecoParamV1.h"     //ctor
+#include <TVirtualFitter.h> 
 ClassImp(AliHMPIDReconstructor)
 
 Int_t AliHMPIDReconstructor::fgStreamLevel = 0;        // stream (debug) level
@@ -68,6 +68,7 @@ void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Int_t 
 //            pCluAll     - list of clusters for all chambers
 //            isTryUnfold - flag to choose between CoG and Mathieson fitting  
 //  Returns: none    
+
   TMatrixF padMap(AliHMPIDParam::kMinPx,AliHMPIDParam::kMaxPcx,AliHMPIDParam::kMinPy,AliHMPIDParam::kMaxPcy);  //pads map for single chamber 0..159 x 0..143 
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
@@ -139,11 +140,13 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
       AliDebug(1,Form("Cannot get AliHMPIDRecoParamV1!"));
       }
     }  
-  
+  TVirtualFitter* fitter = TVirtualFitter::GetFitter();
+  delete fitter;
+  fitter = TVirtualFitter::Fitter(0,3*6); // create a new fitter to avoid interferrence with others
   pDigTree->GetEntry(0);
   Dig2Clu(fDig,fClu,pUserCut);     //cluster finder 
   pCluTree->Fill();                //fill tree for current event
-  
+  delete fitter;
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
     fDig->At(iCh)->Clear();
     fClu->At(iCh)->Clear();

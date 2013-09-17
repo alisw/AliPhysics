@@ -8,6 +8,7 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
+#include "TMath.h"
 
 class AliVVZERO : public TObject 
 {
@@ -74,6 +75,11 @@ public:
   virtual UShort_t GetTriggerChargeA() const = 0;
   virtual UShort_t GetTriggerChargeC() const = 0;
   virtual UShort_t GetTriggerBits() const = 0;
+
+  static Float_t GetVZEROAvgPhi(Int_t channel)
+  { return TMath::Pi() / 8 + TMath::Pi() / 4 * (channel%8); }
+  static Float_t GetVZEROEtaMin(Int_t channel);
+  static Float_t GetVZEROEtaMax(Int_t channel);
 
 protected:  
 

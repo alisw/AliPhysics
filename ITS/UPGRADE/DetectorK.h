@@ -58,13 +58,13 @@ class DetectorK : public TNamed {
 
   enum {kNptBins = 100}; // less then 400 !!
  
-  void AddLayer(char *name, Float_t radius, Float_t radL, Float_t phiRes=999999, Float_t zRes=999999, Float_t eff=0.99);
+  void AddLayer(char *name, Float_t radius, Float_t radL, Float_t phiRes=999999, Float_t zRes=999999, Float_t eff=0.95);
 
   void KillLayer(char *name);
   void SetRadius(char *name, Float_t radius);
   void SetRadiationLength(char *name, Float_t radL);
   void SetResolution(char *name, Float_t phiRes=999999, Float_t zRes=999999);
-  void SetLayerEfficiency(char *name, Float_t eff=1.0);
+  void SetLayerEfficiency(char *name, Float_t eff=0.95);
   void RemoveLayer(char *name);
 
   Float_t GetRadius(char *name);
@@ -99,15 +99,23 @@ class DetectorK : public TNamed {
   void SetAtLeastFake(Int_t atLeastFake ) {fAtLeastFake = atLeastFake; }
   Int_t GetAtLeastFake() const { return fAtLeastFake; }
 
+  void SetMaxSeedRadius(Double_t maxSeedRadius ) {fMaxSeedRadius = maxSeedRadius; }
+  Int_t GetMaxSeedRadius() const { return fMaxSeedRadius; }
+
+  void SetptScale(Double_t ptScale ) {fptScale = ptScale; }
+  Int_t GetptScale() const { return fptScale; }
+
+
+
   void SetdNdEtaCent(Int_t dNdEtaCent ) {fdNdEtaCent = dNdEtaCent; }
   Float_t GetdNdEtaCent() const { return fdNdEtaCent; }
-
+  
+  
   
   Float_t GetNumberOfActiveLayers() const {return fNumberOfActiveLayers; }
   Float_t GetNumberOfActiveITSLayers() const {return fNumberOfActiveITSLayers; }
 
-  void SolveViaBilloir(Int_t flagD0=1,Int_t print=1, Bool_t allPt=1, Double_t meanPt =0.750);
-  void SolveDOFminusOneAverage();
+  void SolveViaBilloir(Int_t flagD0=1,Int_t print=1, Bool_t allPt=1, Double_t meanPt =0.250, char* detLayer=((char*)""));
 
   // Helper functions
   Double_t ThetaMCS                 ( Double_t mass, Double_t RadLength, Double_t momentum ) const;
@@ -127,6 +135,7 @@ class DetectorK : public TNamed {
   TGraph* GetGraphMomentumResolution(Int_t color, Int_t linewidth=1);
   TGraph* GetGraphPointingResolution(Int_t axis,Int_t color, Int_t linewidth=1);
   TGraph* GetGraphPointingResolutionTeleEqu(Int_t axis,Int_t color, Int_t linewidth=1);
+  TGraph* GetGraphLayerInfo(Int_t plot, Int_t color, Int_t linewidth=1);
 
   TGraph* GetGraphImpactParam(Int_t mode, Int_t axis, Int_t color, Int_t linewidth=1);
 
@@ -139,8 +148,8 @@ class DetectorK : public TNamed {
   void MakeStandardPlots(Bool_t add =0, Int_t color=1, Int_t linewidth=1,Bool_t onlyPionEff=0);
 
   // method to extend AliExternalTrackParam functionality
-  Bool_t GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, Double_t bz, Int_t dir=0) const;
-
+  static Bool_t GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, Double_t bz, Int_t dir=0);
+  static Bool_t PropagateToR(AliExternalTrackParam* trc, double r, double b, int dir=0);
   Double_t* PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay);
 
  protected:
@@ -160,6 +169,9 @@ class DetectorK : public TNamed {
   Int_t fAtLeastCorr;     // min. number of correct hits for the track to be "good"
   Int_t fAtLeastFake;     // min. number of fake hits for the track to be "fake"
 
+  Double_t fMaxSeedRadius; // max seeding radius, e.g. to exclude TRD
+  Double_t fptScale;      // used for maxPt
+
   Int_t fdNdEtaCent;       // Multiplicity
 
   enum {kMaxNumberOfDetectors = 200};
@@ -172,6 +184,11 @@ class DetectorK : public TNamed {
   Double_t fDetPointZRes[kMaxNumberOfDetectors][kNptBins];   // array of z resolution per layer
   Double_t fEfficiency[3][kNptBins];                         // efficiency for different particles
   Double_t fFake[3][kNptBins];                               // fake prob for different particles
+
+  Int_t kDetLayer;                              // layer for which a few more details are extracted
+  Double_t fResolutionRPhiLay[kNptBins];                        // array of rphi resolution
+  Double_t fResolutionZLay[kNptBins];                           // array of z resolution
+  Double_t fEfficProlongLay[kNptBins];                           // array of z resolution
 
   ClassDef(DetectorK,1);
 };

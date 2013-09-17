@@ -11,7 +11,7 @@
 #ifndef ALITRDTRIGGERANALYSIS_H
 #define ALITRDTRIGGERANALYSIS_H
 
-class AliESDEvent;
+class AliVEvent;
 
 class AliTRDTriggerAnalysis : public TObject
 {
@@ -22,7 +22,7 @@ public:
   enum TRDTrigger_t { kHCO = 0, kHJT, kHSE, kHQU, kHEE };
 
   void ResetTriggers() { fTriggerFlags = fTriggerInputs = fTriggerClasses = 0; }
-  Bool_t CalcTriggers(const AliESDEvent* esdEvent);
+  Bool_t CalcTriggers(const AliVEvent* event);
 
   Bool_t IsFired(TRDTrigger_t trg) const { return (fTriggerFlags & (1 << trg)); }
 

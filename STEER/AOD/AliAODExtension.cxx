@@ -29,7 +29,8 @@ ClassImp(AliAODExtension)
 //______________________________________________________________________________
 AliAODExtension::AliAODExtension() : TNamed(), 
 fAODEvent(0), fTreeE(0), fFileE(0), fNtotal(0), fNpassed(0), 
-fSelected(kFALSE), fRepFiMap(0x0), fRepFiList(0x0), fEnableReferences(kTRUE), fObjectList(0x0)
+fSelected(kFALSE), fTreeBuffSize(30000000), fMemCountAOD(0),
+fRepFiMap(0x0), fRepFiList(0x0), fEnableReferences(kTRUE), fObjectList(0)
 {
   // default ctor
 }
@@ -43,6 +44,8 @@ fFileE(0),
 fNtotal(0), 
 fNpassed(0),
 fSelected(kFALSE),
+fTreeBuffSize(30000000),
+fMemCountAOD(0),
 fRepFiMap(0x0),
 fRepFiList(0x0),
 fEnableReferences(kTRUE),
@@ -139,7 +142,7 @@ Bool_t AliAODExtension::FinishEvent()
   fNtotal++;
   if (!IsFilteredAOD()) {
     fAODEvent->MakeEntriesReferencable();
-    fTreeE->Fill();
+    FillTree();
     return kTRUE;
   }  
   // Filtered AOD. Fill only if event is selected.
@@ -154,10 +157,32 @@ Bool_t AliAODExtension::FinishEvent()
     repfi->ReplicateAndFilter(*fAODEvent);
   }
   fNpassed++;
-  fTreeE->Fill();
+  FillTree();
   fSelected = kFALSE; // so that next event will not be selected unless demanded
   return kTRUE;
 }  
+
+//______________________________________________________________________________
+void AliAODExtension::FillTree() 
+{
+  //
+  //   Fill AOD extension tree and check AutoFlush settings
+  //
+  
+  Long64_t nbf = fTreeE->Fill();
+  
+  // Check buffer size and set autoflush if fTreeBuffSize is reached
+  if (fTreeBuffSize>0 && fTreeE->GetAutoFlush()<0 && 
+      (fMemCountAOD += nbf)>fTreeBuffSize ) { // default limit is still not reached
+    nbf = fTreeE->GetZipBytes();
+    if (nbf>0) nbf = -nbf;
+    else       nbf = fTreeE->GetEntries();
+    fTreeE->SetAutoFlush(nbf);
+    AliInfo(Form("Calling fTreeE->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld", 
+		 nbf,fMemCountAOD,fTreeE->GetTotBytes(),fTreeE->GetZipBytes()));  
+    
+  }
+}
 
 //______________________________________________________________________________
 Bool_t AliAODExtension::Init(Option_t *option)

@@ -48,6 +48,9 @@ public:
     // Added by Chiara to take into account angular distribution 4 gray tracks
     virtual void   SetThetaDist(Int_t flag=0) {fThetaDistribution = flag;}
     //
+    virtual void   SetBeamCrossingAngle(Float_t crossAngle) {fBeamCrossingAngle = crossAngle;}
+    virtual void   SetBeamDivergence(Float_t divergence) {fBeamDivergence = divergence;}
+    //
     virtual Int_t  GetNGrayProtons()   {return fNgp;}
     virtual Int_t  GetNGrayNeutrons()  {return fNgn;}
     virtual Int_t  GetNBlackProtons()  {return fNbp;}
@@ -57,6 +60,10 @@ public:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q, Float_t &theta);
     Double_t Maxwell(Double_t m, Double_t p, Double_t t);
     void     Lorentz(Double_t m, Double_t beta, Float_t* q);
+    void     BeamCrossDivergence(Int_t iwhat, Float_t *pLab);;
+    void     AddAngle(Double_t theta1, Double_t phi1, Double_t theta2,
+  	        	Double_t phi2, Double_t *angle);
+    void     SetProcessID(Int_t nt, UInt_t process);
  protected:
     Float_t  fCMS;             // Center of mass energy
     Double_t fMomentum;        // Target nucleus momentum
@@ -79,15 +86,20 @@ public:
     Int_t    fThetaDistribution;// 0 -> flat dist., 1 -> fwd. peaked distribution
     TH1F*    fCosThetaGrayHist; // Histogram for debugging
     TF1*     fCosTheta;         // Function for non-uniform cos(theta) distribution
-    
+    //
+    Float_t  fBeamCrossingAngle; // beam crossing angle (in radians)
+    Float_t  fBeamDivergence;    // beam divergence	(in radians)
+    Float_t  fBeamDivEvent;      // beam divergence	(in radians)
     //
     AliSlowNucleonModel* fSlowNucleonModel; // The slow nucleon model
+
+    enum {kGrayProcess = 200, kBlackProcess = 300};
 
  private:
     AliGenSlowNucleons(const AliGenSlowNucleons &sn);
     AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
 
-    ClassDef(AliGenSlowNucleons,2) // Slow Nucleon Generator
+    ClassDef(AliGenSlowNucleons,3) // Slow Nucleon Generator
 };
 #endif
 

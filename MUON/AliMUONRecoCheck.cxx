@@ -300,11 +300,12 @@ AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
   
   if (fTrackRefStore != 0x0) return fTrackRefStore;
   else {
-    if (!fMCEventHandler->LoadEvent(event)) {
+    if (!fMCEventHandler->BeginEvent(event)) {
       AliError(Form("fails to read MC objects for event %d", event));
       return 0x0;
     }
     MakeTrackRefs();
+    fMCEventHandler->FinishEvent();
     return fTrackRefStore;
   }
 }
@@ -327,11 +328,12 @@ AliMUONVTriggerTrackStore* AliMUONRecoCheck::TriggerableTracks(Int_t event)
 	
   if (fRecoTriggerRefStore != 0x0) return fRecoTriggerRefStore;
   else {
-    if (!fMCEventHandler->LoadEvent(event)) {
+    if (!fMCEventHandler->BeginEvent(event)) {
       AliError(Form("fails to read MC objects for event %d", event));
       return 0x0;
     }
     MakeTriggerableTracks();
+    fMCEventHandler->FinishEvent();
     return fRecoTriggerRefStore;
   }
 }

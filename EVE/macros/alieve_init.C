@@ -11,7 +11,7 @@
 /// \file alieve_init.C
 
 void alieve_init(const TString& cdburi = "",
-		 const TString& path   = ".", Int_t event=0,
+		 const TString& path   = ".", Int_t event=0,Bool_t showHLTESDTree=kFALSE,
                  const Text_t* esdfile = 0,
                  const Text_t* aodfile = 0,
                  const Text_t* rawfile = 0,
@@ -35,7 +35,16 @@ void alieve_init(const TString& cdburi = "",
 
   gSystem->ProcessEvents();
 
-  AliEveEventManager::SetESDFileName(esdfile);
+  AliEveEventManager::SetFilesPath(path);
+  
+  if(showHLTESDTree){
+   AliEveEventManager::SetESDFileName(esdfile, AliEveEventManager::kHLTTree);
+  }
+  else
+  {
+   AliEveEventManager::SetESDFileName(esdfile, AliEveEventManager::kOfflineTree);
+  }
+  
   AliEveEventManager::SetRawFileName(rawfile);
   AliEveEventManager::SetCdbUri(cdburi);
   AliEveEventManager::SetAssertElements(assert_runloader, assert_esd,
@@ -53,20 +62,20 @@ void alieve_init(const TString& cdburi = "",
       Info("alieve_init", "AliEn requested - connecting.");
       if (gSystem->Getenv("GSHELL_ROOT") == 0)
       {
-	Error("alieve_init", "AliEn environment not initialized. Aborting.");
-	gSystem->Exit(1);
+	      Error("alieve_init", "AliEn environment not initialized. Aborting.");
+	      gSystem->Exit(1);
       }
       if (TGrid::Connect("alien") == 0)
       {
-	Error("alieve_init", "TGrid::Connect() failed. Aborting.");
-	gSystem->Exit(1);
+	      Error("alieve_init", "TGrid::Connect() failed. Aborting.");
+	      gSystem->Exit(1);
       }
     }
   }
 
   Info("alieve_init", "Opening event %d from '%s' ...", event, path.Data());
   TString name("Event"); // CINT has trouble with direct "Event".
-  new AliEveEventManager(name, path, event);
+  new AliEveEventManager(name, event);
   gEve->AddEvent(AliEveEventManager::GetMaster());
 }
 

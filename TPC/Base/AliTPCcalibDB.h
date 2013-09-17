@@ -28,6 +28,7 @@ class AliCDBEntry;
 class AliTPCParam;
 class AliTPCAltroMapping;
 class AliTPCClusterParam;
+class AliTPCRecoParam;
 class AliDCSSensor;
 class AliDCSSensorArray;
 class AliTPCCalibVdrift;
@@ -120,6 +121,8 @@ class AliTPCcalibDB : public TObject
   AliTPCClusterParam *GetClusterParam() const { return fClusterParam;}
   TObjArray *GetTimeGainSplines() const { return fTimeGainSplines;}  
   //
+  //Reco param getter
+  AliTPCRecoParam *GetRecoParam(Int_t i) const;
   //GRP information
   static AliGRPObject * GetGRP(Int_t run);
   static TMap *  GetGRPMap(Int_t run);
@@ -230,9 +233,10 @@ protected:
   AliTPCAltroMapping **fMapping;   // Altro mapping   
   //
   //
-  AliTPCParam * fParam;           // TPC parameters
+  AliTPCParam * fParam;                // TPC parameters
   AliTPCClusterParam * fClusterParam;  // TPC cluster error, shape and Q parameterization
-  TObjArray * fTimeGainSplines; // Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
+  TObjArray * fRecoParamList;          // List of TPC reco param objects
+  TObjArray * fTimeGainSplines;        // Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
   //
   // Get the corssrun information
   //
@@ -260,7 +264,7 @@ protected:
    AliTPCcalibDB (const AliTPCcalibDB& );
    AliTPCcalibDB& operator= (const AliTPCcalibDB& );
   
-   ClassDef(AliTPCcalibDB, 0)
+   ClassDef(AliTPCcalibDB, 1)
 };
 
 #endif

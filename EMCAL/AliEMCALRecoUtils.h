@@ -49,7 +49,7 @@ public:
   void     Print(const Option_t*) const;
 
   //enums
-  enum     NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5,kPi0MCv2=6,kPi0MCv3=7};
+  enum     NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5,kPi0MCv2=6,kPi0MCv3=7,kBeamTestCorrectedv2=8};
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   enum     { kNCuts = 12 }; //track matching Marcel
@@ -108,12 +108,12 @@ public:
 
   Float_t  CorrectClusterEnergyLinearity(AliVCluster* clu) ;
   
-  Float_t  GetNonLinearityParam(const Int_t i)     const { if(i < 7 ){ return fNonLinearityParams[i] ; }
-                                                          else      { AliInfo(Form("Index %d larger than 7, do nothing\n",i)) ; 
+  Float_t  GetNonLinearityParam(const Int_t i)     const { if(i < 7 && i >=0 ){ return fNonLinearityParams[i]  ; }
+                                                   else  { AliInfo(Form("Index %d larger than 6 or negative, do nothing\n",i)) ;
                                                                        return 0.                     ; } }
   void     SetNonLinearityParam(const Int_t i, const Float_t param) {
-                                                          if(i < 7 ){fNonLinearityParams[i] = param ; }
-                                                          else { AliInfo(Form("Index %d larger than 7, do nothing\n",i)) ; } }
+                                                           if(i < 7 && i >=0 ){ fNonLinearityParams[i] = param ; }
+                                                           else { AliInfo(Form("Index %d larger than 6 or negative, do nothing\n",i)) ; } }
   void     InitNonLinearityParam();
 
   Int_t    GetNonLinearityFunction() const               { return fNonLinearityFunction    ; }

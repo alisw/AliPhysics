@@ -104,7 +104,7 @@ class AliAODHandler : public AliVEventHandler {
     void                 SetInputTree(TTree* /*tree*/) {;}
     void                 SetMCEventHandler(AliMCEventHandler* mcH) {fMCEventH = mcH;} // For internal use
     void StoreMCParticles(); // Store MC particles, only to be called from AliAnalyisTaskMCParticleFilter
-
+    void                 SetTreeBuffSize(Long64_t sz=30000000) {fTreeBuffSize = sz;}
   Bool_t HasExtensions() const;
   
   void Print(Option_t* opt="") const;
@@ -137,6 +137,9 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fNeedsDimuonsBranchReplication;      // Flag for Dimuons replication
     Bool_t                   fNeedsHMPIDBranchReplication;        // Flag for HMPID replication
     Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed
+    // Counters for SetAutoFlush configuration
+    Long64_t                 fTreeBuffSize;           //  allowed uncompressed buffer size per tree
+    Long64_t                 fMemCountAOD;            //! accumulated AOD size before AutoSave 
     AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
     AliMCEventHandler       *fMCEventH;               //! Pointer to mc event handler needed not to depend on the manager
     TTree                   *fTreeA;                  //! tree for AOD persistency
@@ -145,7 +148,7 @@ class AliAODHandler : public AliVEventHandler {
     TObjArray               *fExtensions;             //  List of extensions
     TObjArray               *fFilters;                //  List of filtered AOD's
 
-  ClassDef(AliAODHandler, 7)
+  ClassDef(AliAODHandler, 8)
 };
 
 #endif

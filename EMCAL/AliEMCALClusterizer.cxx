@@ -510,12 +510,15 @@ void AliEMCALClusterizer::SetInput(TTree *digitsTree)
   // Read the digits from the input tree
 
   TBranch *branch = digitsTree->GetBranch("EMCAL");
-  if (!branch) { 
+  if (!branch)
+  {
     AliError("can't get the branch with the EMCAL digits !");
     return;
   }
-  if (!fDigitsArr)
-    fDigitsArr = new TClonesArray("AliEMCALDigit",100);
+  
+  if (!fDigitsArr) fDigitsArr = new TClonesArray("AliEMCALDigit",100);
+  else             fDigitsArr->Clear("C"); // avoid leak
+    
   branch->SetAddress(&fDigitsArr);
   branch->GetEntry(0);
 }

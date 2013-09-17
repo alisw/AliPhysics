@@ -72,7 +72,7 @@ public:
    virtual void        SetGridWorkingDir(const char *name="workdir")     {fGridWorkingDir = name;}
    virtual void        SetGridDataDir(const char *name)                  {fGridDataDir = name;}
    virtual void        SetDataPattern(const char *pattern="*AliESDs.root") {fDataPattern = pattern;}
-   virtual void        SetFriendChainName(const char *name="")           {fFriendChainName = name;}
+   virtual void        SetFriendChainName(const char *name="", const char *libnames="");
    virtual void        SetDefaultOutputs(Bool_t flag);
    virtual void        SetGridOutputDir(const char *name="output")       {fGridOutputDir = name;}
    virtual void        SetOutputArchive(const char *list="log_archive.zip:std*@disk=1 root_archive.zip:*.root@disk=2");
@@ -96,6 +96,7 @@ public:
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
    virtual void        SetOverwriteMode(Bool_t on=kTRUE)                 {fOverwriteMode = on ? 1 : 0;}
    virtual void        SetDropToShell(Bool_t drop=true)                  {fDropToShell = drop;}
+   virtual void        SetTreeName(const char *name)                     {fTreeName = name;}
 
    TGridJDL           *GetGridJDL() const {return fGridJDL;}
    TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
@@ -107,6 +108,7 @@ public:
    Int_t               GetNmodules() const;
    AliAnalysisTaskCfg *GetModule(const char *name);
    Bool_t              LoadModules();
+   Bool_t              LoadFriendLibs() const;
    Bool_t              GenerateTest(const char *name, const char *modname="");
    Bool_t              GenerateTrain(const char *name);
    virtual Bool_t      CreateDataset(const char *pattern);
@@ -240,7 +242,9 @@ private:
    Bool_t           fDropToShell;     // If true, execute aliensh on start
    TString          fGridJobIDs;      // List of last committed jobs
    TString          fGridStages;      // List of last committed jobs
+   TString          fFriendLibs;      // List of libs (separated by blacs) needed for friends processing
+   TString          fTreeName;        // Name of the tree to be analyzed
 
-   ClassDef(AliAnalysisAlien, 23)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 25)   // Class providing some AliEn utilities
 };
 #endif

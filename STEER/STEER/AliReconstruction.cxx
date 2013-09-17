@@ -317,6 +317,12 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fSspecie(0),
   fNhighPt(0),
   fShighPt(0),
+  //
+  fTreeBuffSize(30000000),
+  fMemCountESD(0),
+  fMemCountESDF(0),
+  fMemCountESDHLT(0),
+  //
   fUpgradeModule(""),
   fAnalysisMacro(),
   fAnalysis(0),
@@ -442,6 +448,12 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fSspecie(0),
   fNhighPt(0),
   fShighPt(0),
+  //
+  fTreeBuffSize(rec.fTreeBuffSize),
+  fMemCountESD(0),
+  fMemCountESDF(0),
+  fMemCountESDHLT(0),
+  //
   fUpgradeModule(""),
   fAnalysisMacro(rec.fAnalysisMacro),
   fAnalysis(0),
@@ -615,6 +627,12 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fSspecie = 0;
   fNhighPt = 0;
   fShighPt = 0;
+  //
+  fTreeBuffSize = rec.fTreeBuffSize;
+  fMemCountESD = 0;
+  fMemCountESDF = 0;
+  fMemCountESDHLT = 0;
+  //
   fUpgradeModule="";
   fAnalysisMacro = rec.fAnalysisMacro;
   fAnalysis = 0;
@@ -2358,7 +2376,16 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   
   }
   //
-  ftree->Fill();
+  Long64_t nbf;
+  nbf = ftree->Fill();
+  if (fTreeBuffSize>0 && ftree->GetAutoFlush()<0 && (fMemCountESD += nbf)>fTreeBuffSize ) { // default limit is still not reached
+    nbf = ftree->GetZipBytes();
+    if (nbf>0) nbf = -nbf;
+    else       nbf = ftree->GetEntries();
+    ftree->SetAutoFlush(nbf);
+    AliInfo(Form("Calling ftree->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
+		 nbf,fMemCountESD,ftree->GetTotBytes(),ftree->GetZipBytes()));        
+  }
   AliSysInfo::AddStamp(Form("ESDFill_%d",iEvent), 0,0,iEvent);     
   //
   if (fWriteESDfriend) {
@@ -2372,8 +2399,18 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     ftree->AutoSave("SaveSelf");
     if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
   }
-    // write HLT ESD
-    fhlttree->Fill();
+  // write HLT ESD
+  
+  nbf = fhlttree->Fill();
+  if (fTreeBuffSize>0 && fhlttree->GetAutoFlush()<0 && (fMemCountESDHLT += nbf)>fTreeBuffSize ) { // default limit is still not reached
+    nbf = fhlttree->GetZipBytes();
+    if (nbf>0) nbf = -nbf;
+    else       nbf = fhlttree->GetEntries();
+    fhlttree->SetAutoFlush(nbf);
+    AliInfo(Form("Calling fhlttree->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
+		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
+  }
+    
 
     // call AliEVE
     if (fRunAliEVE) RunAliEVE();
@@ -2477,7 +2514,11 @@ void AliReconstruction::SlaveTerminate()
    sVersion += ":";
    sVersion += ALIROOT_SVN_REVISION;
    sVersion += "; root ";
+#ifdef ROOT_SVN_BRANCH
    sVersion += ROOT_SVN_BRANCH;
+#else
+   sVersion += ROOT_GIT_BRANCH;
+#endif
    sVersion += ":";
    sVersion += ROOT_SVN_REVISION;
    sVersion += "; metadata ";
@@ -4355,7 +4396,16 @@ void AliReconstruction::WriteESDfriend() {
     fesdf->SetSkipBit(kTRUE);
   }
   //
-  ftreeF->Fill();
+  Long64_t nbf = ftreeF->Fill();
+  if (fTreeBuffSize>0 && ftreeF->GetAutoFlush()<0 && (fMemCountESDF += nbf)>fTreeBuffSize ) { // default limit is still not reached
+    nbf = ftreeF->GetZipBytes();
+    if (nbf>0) nbf = -nbf;
+    else       nbf = ftreeF->GetEntries();
+    ftreeF->SetAutoFlush(nbf);
+    AliInfo(Form("Calling ftreeF->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
+		 nbf,fMemCountESDF,ftreeF->GetTotBytes(),ftreeF->GetZipBytes()));        
+  }
+  
 }
 
 //_________________________________________________________________

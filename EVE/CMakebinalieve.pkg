@@ -66,7 +66,6 @@ install (DIRECTORY macros
 	 PATTERN ".svn" EXCLUDE 
 	 PATTERN "*.d" EXCLUDE 
 	 PATTERN "*_C.so" EXCLUDE)
-
 	 
 install (DIRECTORY alice-macros 
 	 DESTINATION EVE/ 
@@ -86,4 +85,9 @@ install (DIRECTORY hlt-macros
 	 PATTERN "*.d" EXCLUDE 
 	 PATTERN "*_C.so" EXCLUDE)
 
-	 
+install (DIRECTORY icons 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)	 
+

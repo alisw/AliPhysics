@@ -41,6 +41,7 @@ class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
 class AliDetectorPID;
+class TTreeSRedirector;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -230,6 +231,7 @@ public:
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}
   UShort_t GetTPCsignalN() const {return fTPCsignalN;}
   Double_t GetTPCmomentum() const {return fIp?fIp->GetP():GetP();}
+  Double_t GetTPCTgl()      const {return fIp?fIp->GetTgl():GetTgl();}
   Double_t GetTPCchi2() const {return fTPCchi2;}
   Double_t GetTPCchi2Iter1() const {return fTPCchi2Iter1;}
   UShort_t GetTPCclusters(Int_t *idx) const;
@@ -421,6 +423,8 @@ public:
   // - set lengt of bit fields fTPCClusterMap and fTPCSharedMap to 0
   static void OnlineMode(bool mode) {fgkOnlineMode=mode;}
   static bool OnlineMode() {return fgkOnlineMode;}
+  Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
+  Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex

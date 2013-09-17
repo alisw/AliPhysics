@@ -661,7 +661,14 @@ Int_t AliTRDonlineTrackMatching::EstimateTrackDistance(AliESDtrack *esd_track, A
       }
       Double_t n[3] = {n0[0]/n_len, n0[1]/n_len, n0[2]/n_len}; // normal vector of plane
 
-      AliExternalTrackParam *outerTPC = new AliExternalTrackParam(*(esd_track->GetOuterParam()));
+      const AliExternalTrackParam *trackParam = esd_track->GetOuterParam();
+      if (!trackParam) {
+	trackParam = esd_track->GetInnerParam();
+	if (!trackParam)
+	  trackParam = esd_track;
+      }
+
+      AliExternalTrackParam *outerTPC = new AliExternalTrackParam(*trackParam);
       Bool_t isects = TrackPlaneIntersect(outerTPC, layer_ref_global2, n, mag); // find intersection point between track and TRD layer
       delete outerTPC;
       outerTPC = NULL;

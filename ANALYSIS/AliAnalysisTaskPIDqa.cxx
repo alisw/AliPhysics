@@ -454,23 +454,25 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
       h->Fill(mom,nSigma);
     }
     // the "hybrid" scenario
-    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
-      TH2 *h=(TH2*)fListQAtpc->At(ispecie+AliPID::kSPECIESC);
-      if (!h) continue;
-      Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxHybrid);
-      h->Fill(mom,nSigma);
-    }
-    
-    // the "OROC" scenario
-    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
-      TH2 *h=(TH2*)fListQAtpc->At(ispecie+2*AliPID::kSPECIESC);
-      if (!h) continue;
-      Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxOROC);
-      //TSpline3* spline = fPIDResponse->GetTPCResponse().GetCurrentResponseFunction();
-      //std::cout<<ispecie<<" "<<nSigma<<" phi:"<<track->Phi()<<". "<<std::endl;
-      //if (spline) {cout<<spline->GetName()<<endl;}
-      //else {cout<<"NULL spline"<<endl;}
-      h->Fill(mom,nSigma);
+    if (track->GetTPCdEdxInfo()){
+      for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+        TH2 *h=(TH2*)fListQAtpc->At(ispecie+AliPID::kSPECIESC);
+        if (!h) continue;
+        Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxHybrid);
+        h->Fill(mom,nSigma);
+      }
+
+      // the "OROC" scenario
+      for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+        TH2 *h=(TH2*)fListQAtpc->At(ispecie+2*AliPID::kSPECIESC);
+        if (!h) continue;
+        Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxOROC);
+        //TSpline3* spline = fPIDResponse->GetTPCResponse().GetCurrentResponseFunction();
+        //std::cout<<ispecie<<" "<<nSigma<<" phi:"<<track->Phi()<<". "<<std::endl;
+        //if (spline) {cout<<spline->GetName()<<endl;}
+        //else {cout<<"NULL spline"<<endl;}
+        h->Fill(mom,nSigma);
+        }
     }
     
     TH2 *h=(TH2*)fListQAtpc->At(3*AliPID::kSPECIESC);
@@ -852,7 +854,7 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    const ULong_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit +
     // TOF out + TOFpid +
@@ -860,7 +862,7 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
     if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
         !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ) continue;
 
-    Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+    const Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
     if (track->GetTPCNclsF()>0) {
       ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
@@ -868,12 +870,22 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
 
     if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
     
-    Double_t mom = track->P();
-    Double_t ckovAngle = track->GetHMPIDsignal();
+    const Double_t mom = track->P();
+    const Double_t ckovAngle = track->GetHMPIDsignal();
+
+    Int_t nhists=0;
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+      if (ispecie==AliPID::kElectron || ispecie==AliPID::kMuon) continue;
+      TH2 *h=(TH2*)fListQAhmpid->At(nhists);
+      if (!h) {++nhists; continue;}
+      const Double_t nSigma=fPIDResponse->NumberOfSigmasHMPID(track, (AliPID::EParticleType)ispecie);
+      h->Fill(mom,nSigma);
+      ++nhists;
+    }
     
-    TH1F *hThetavsMom = (TH1F*)fListQAhmpid->At(0);;
+    TH1F *hThetavsMom = (TH1F*)fListQAhmpid->At(AliPID::kSPECIESC);
     
-    hThetavsMom->Fill(mom,ckovAngle);    
+    if (hThetavsMom) hThetavsMom->Fill(mom,ckovAngle);
   
   }
 }
@@ -1171,7 +1183,7 @@ void AliAnalysisTaskPIDqa::SetupTPCqa()
   TH2F *hSig = new TH2F("hSigP_TPC",
                         "TPC signal vs. p;p [GeV]; TPC signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
-                        300,0,300);
+                        500,0,1000);
   fListQAtpc->Add(hSig); //3*AliPID::kSPECIESC
 
   delete vX;  
@@ -1331,10 +1343,28 @@ void AliAnalysisTaskPIDqa::SetupHMPIDqa()
   //
   // Create the HMPID qa objects
   //
+
+  TVectorD *vX=MakeLogBinning(200,.1,30);
+
+  // nSigmas
+  Int_t nhists=0;
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    if (ispecie==AliPID::kElectron || ispecie==AliPID::kMuon) continue;
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_HMPID_%s",AliPID::ParticleName(ispecie)),
+                              Form("HMPID n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              200,-10,10);
+    fListQAhmpid->AddAt(hNsigmaP, nhists);
+    ++nhists;
+  }
   
-  TH2F *hCkovAnglevsMom   = new TH2F("hCkovAnglevsMom",  "Cherenkov angle vs momnetum",500,0,5.,500,0,1);
-  fListQAhmpid->Add(hCkovAnglevsMom);
+  // cherenkov angle
+  TH2F *hCkovAnglevsMom   = new TH2F("hCkovAnglevsMom",  "Cherenkov angle vs momentum",
+                                     vX->GetNrows()-1,vX->GetMatrixArray(),
+                                     500,0,1);
+  fListQAhmpid->AddAt(hCkovAnglevsMom,nhists);
   
+  delete vX;
 }
 
 //______________________________________________________________________________
@@ -1344,13 +1374,13 @@ void AliAnalysisTaskPIDqa::SetupTOFHMPIDqa()
   // Create the HMPID qa objects
   //
   
-  TH2F *hCkovAnglevsMomPion   = new TH2F("hCkovAnglevsMom_pion",  "Cherenkov angle vs momnetum for pions",500,0,5.,500,0,1);
+  TH2F *hCkovAnglevsMomPion   = new TH2F("hCkovAnglevsMom_pion",  "Cherenkov angle vs momentum for pions",500,0,5.,500,0,1);
   fListQAtofhmpid->Add(hCkovAnglevsMomPion);
   
-  TH2F *hCkovAnglevsMomKaon   = new TH2F("hCkovAnglevsMom_kaon",  "Cherenkov angle vs momnetum for kaons",500,0,5.,500,0,1);
+  TH2F *hCkovAnglevsMomKaon   = new TH2F("hCkovAnglevsMom_kaon",  "Cherenkov angle vs momentum for kaons",500,0,5.,500,0,1);
   fListQAtofhmpid->Add(hCkovAnglevsMomKaon);
   
-  TH2F *hCkovAnglevsMomProton = new TH2F("hCkovAnglevsMom_proton","Cherenkov angle vs momnetum for protons",500,0,5.,500,0,1);
+  TH2F *hCkovAnglevsMomProton = new TH2F("hCkovAnglevsMom_proton","Cherenkov angle vs momentum for protons",500,0,5.,500,0,1);
   fListQAtofhmpid->Add(hCkovAnglevsMomProton);
   
   

@@ -60,6 +60,9 @@ AliOADBContainer::AliOADBContainer(const char* name) :
 AliOADBContainer::~AliOADBContainer() 
 {
   // destructor
+  if (fArray)       delete fArray;
+  if (fDefaultList) delete fDefaultList;
+
 }
 
 //______________________________________________________________________________

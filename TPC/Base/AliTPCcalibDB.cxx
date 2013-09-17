@@ -200,6 +200,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fMapping(0),
   fParam(0),
   fClusterParam(0),
+  fRecoParamList(0),
   fTimeGainSplines(0),
   fTimeGainSplinesArray(1),
   fGRPArray(1),            //! array of GRPs  -  per run  - JUST for calibration studies
@@ -263,6 +264,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fMapping(0),
   fParam(0),
   fClusterParam(0),
+  fRecoParamList(0),
   fTimeGainSplines(0),
   fTimeGainSplinesArray(1),
   fGRPArray(0),          //! array of GRPs  -  per run  - JUST for calibration studies
@@ -324,6 +326,10 @@ AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
   // get distortion map - due E field distortions
   //
   return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;
+}
+
+AliTPCRecoParam* AliTPCcalibDB::GetRecoParam(Int_t i) const {
+  return (fRecoParamList) ? (AliTPCRecoParam*)fRecoParamList->At(i):0;
 }
 
 //_____________________________________________________________________________
@@ -457,6 +463,16 @@ void AliTPCcalibDB::Update(){
   }else{
     AliFatal("TPC - Missing calibration entry");
   }
+
+  entry          = GetCDBEntry("TPC/Calib/RecoParam");
+  if (entry){
+    //PH    entry->SetOwner(kTRUE);
+    fRecoParamList = dynamic_cast<TObjArray*>(entry->GetObject());
+
+  }else{
+    AliFatal("TPC - Missing calibration entry TPC/Calib/RecoParam");
+  }
+
 
   //ALTRO configuration data
   entry          = GetCDBEntry("TPC/Calib/AltroConfig");

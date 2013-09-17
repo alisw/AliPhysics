@@ -196,6 +196,7 @@ public:
    virtual void         Rluget(Int_t lfn, Int_t move=0);
    virtual void         Rluset(Int_t lfn, Int_t move=0);   
    virtual void         Pylist(Int_t flag);
+   virtual void         Luupda(Int_t mupda, Int_t lfn);
    protected:
 
     Float_t      fEfrm;     // Energy in the centre of mass (CMS) or lab-frame (LAB)

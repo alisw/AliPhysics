@@ -88,6 +88,7 @@ void alieve_loadlibs ()
   gSystem->Load("libTPCbase");
   gSystem->Load("libTPCrec");
   gSystem->Load("libTPCsim");
+  gSystem->Load("libTPCfast");
   gSystem->Load("libITSbase");
   gSystem->Load("libITSsim");
   gSystem->Load("libITSrec");

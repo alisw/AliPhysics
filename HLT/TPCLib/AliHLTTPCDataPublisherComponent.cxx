@@ -190,8 +190,7 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
 
   AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
   decoder.Clear();
-  decoder.SetVerbosity(GetVerbosity());
-  decoder.EnableClusterMerger();
+  decoder.SetVerbosity(GetVerbosity());  
 
   bool bNextBlock=false;
   // add cluster id and mc information data blocks
@@ -200,6 +199,12 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
     AliHLTComponentBlockData desc;
     if ((iResult=pHLTOUT->GetDataBuffer(desc))<0) {
       continue;
+    }
+    if (desc.fDataType==AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) {
+      // header      
+      if ((iResult=decoder.AddCompressionDescriptor(&desc))<0) {
+	return iResult;
+      }
     }
     if (desc.fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
       // add mc information

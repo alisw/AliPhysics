@@ -477,8 +477,6 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 // get AliCDBEntry from the database
 
-        Printf("Entering AliCDBGrid::GetEntry");
-
 	AliCDBId* dataId = GetEntryId(queryId);
 
 	if (!dataId){

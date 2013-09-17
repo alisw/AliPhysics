@@ -67,8 +67,8 @@ class AliAODMCParticle: public AliVParticle {
     // 
     virtual Double_t GetCalcMass() const;
     virtual void SetDaughter(Int_t i,Int_t id){if(i<2)fDaughter[i] = id;}
-    virtual Int_t GetDaughter(Int_t i) const {return fDaughter[i];}
-    virtual Int_t GetNDaughters  () const { return fDaughter[1]>0 ? fDaughter[1]-fDaughter[0]+1 : 0;}
+    virtual Int_t GetDaughter(Int_t i) const {if(i<2)return fDaughter[i];else return -1;}
+    virtual Int_t GetNDaughters  () const { return fDaughter[1]>0 ? fDaughter[1]-fDaughter[0]+1 : (fDaughter[0]>0 ? 1:0 ) ;}
     virtual void SetMother(Int_t im){fMother = im;}
     virtual Int_t GetMother() const {return fMother;}
     virtual void Print(const Option_t *opt = "") const;
@@ -124,7 +124,7 @@ class AliAODMCParticle: public AliVParticle {
     }
 
     UInt_t GetMCProcessCode(){
-      return (fFlag&0xff00); // just return bits 9-16
+      return ((fFlag&0xff00)>>8); // just return bit shifted bits 9-16 
     }
     
 
@@ -170,7 +170,7 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
-  ClassDef(AliAODMCParticle,6)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,7)  // AliVParticle realisation for AODMCParticles
 
 };
 

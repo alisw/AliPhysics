@@ -248,7 +248,6 @@ int CheckRawReaderMemory(TArrayC* ddlArray, int* ddlidArray, int nofDDLs)
     return -1;
   }
 
-#ifndef HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER
   /////////////////////////////////////////////////////////////////////////////////////////
   if (gbVerbose) cout << "checking AliRawReaderMemory with multiple buffers ..." << endl;
   pRawReaderMemory->RewindEvents();
@@ -304,7 +303,6 @@ int CheckRawReaderMemory(TArrayC* ddlArray, int* ddlidArray, int nofDDLs)
     cerr << "error: RawReaderMemory::NextEvent returns true, while no more events should be there" << endl;
     return -1;
   }
-#endif //HAVE_NOT_ALIRAWREADERMEMORY_ADDBUFFER
 
   delete pRawReaderMemory;
   pRawReaderMemory=NULL;

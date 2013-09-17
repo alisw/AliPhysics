@@ -247,7 +247,9 @@ Bool_t AliESDpidCuts::AcceptTrack(const AliESDtrack *track, const AliESDEvent *e
   // Check whether the tracks survived the cuts
   //
   if(!fPIDresponse){
-    AliError("PID Response not available");
+    Init();
+    if (!fPIDresponse)
+      AliError("PID Response not available");
     return 0;
   }
   enum{

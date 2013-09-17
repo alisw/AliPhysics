@@ -75,6 +75,8 @@ AliAODHandler::AliAODHandler() :
     fNeedsDimuonsBranchReplication(kFALSE),
     fNeedsHMPIDBranchReplication(kFALSE),
     fAODIsReplicated(kFALSE),
+    fTreeBuffSize(30000000),
+    fMemCountAOD(0),
     fAODEvent(NULL),
     fMCEventH(NULL),
     fTreeA(NULL),
@@ -110,6 +112,8 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fNeedsDimuonsBranchReplication(kFALSE),
     fNeedsHMPIDBranchReplication(kFALSE),
     fAODIsReplicated(kFALSE),
+    fTreeBuffSize(30000000),
+    fMemCountAOD(0),
     fAODEvent(NULL),
     fMCEventH(NULL),
     fTreeA(NULL),
@@ -599,6 +603,7 @@ void AliAODHandler::CreateTree(Int_t flag)
     fTreeA = new TTree("aodTree", "AliAOD tree");
     fTreeA->Branch(fAODEvent->GetList());
     if (flag == 0) fTreeA->SetDirectory(0);
+    fMemCountAOD = 0;
 }
 
 //______________________________________________________________________________
@@ -606,7 +611,16 @@ void AliAODHandler::FillTree()
 {
  
     // Fill the AOD Tree
-    fTreeA->Fill();
+   Long64_t nbf = fTreeA->Fill();
+   if (fTreeBuffSize>0 && fTreeA->GetAutoFlush()<0 && (fMemCountAOD += nbf)>fTreeBuffSize ) { // default limit is still not reached
+    nbf = fTreeA->GetZipBytes();
+    if (nbf>0) nbf = -nbf;
+    else       nbf = fTreeA->GetEntries();
+    fTreeA->SetAutoFlush(nbf);
+    AliInfo(Form("Calling fTreeA->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
+		 nbf,fMemCountAOD,fTreeA->GetTotBytes(),fTreeA->GetZipBytes()));        
+  }
+ 
 }
 
 //______________________________________________________________________________

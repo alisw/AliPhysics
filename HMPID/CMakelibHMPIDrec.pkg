@@ -31,7 +31,6 @@ set ( SRCS
     AliHMPIDtrack.cxx 
     AliHMPIDTracker.cxx 
     AliHMPIDRecon.cxx 
-    AliHMPIDRecoParam.cxx 
     AliHMPIDRecoParamV1.cxx 
     AliHMPIDReconHTA.cxx 
     AliHMPIDPid.cxx 

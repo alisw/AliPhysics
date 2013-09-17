@@ -38,15 +38,20 @@ AliSlowNucleonModelExp::AliSlowNucleonModelExp():
     fAlphaBlack(3.6),
     fApplySaturation(kTRUE),
     fnGraySaturation(15),
-    fnBlackSaturation(28)
+    fnBlackSaturation(28),
+    fLCPparam(0.585)
 {
   //
   // Default constructor
   //
   //
-  printf("\n\nInitializing slow nucleon model with parameters:\n");
+  fSlownparam[0] = 60.;
+  fSlownparam[1] = 469.2;
+  fSlownparam[2] = 8.762;
+  printf("\n\n ******** Initializing slow nucleon model with parameters:\n");
   printf(" \t alpha_{gray} %1.2f  alpha_{black} %1.2f\n",fAlphaGray, fAlphaBlack);
-  //printf(" \t SATURATION %d w. %d (gray) %d (black) \n\n",fApplySaturation,fnGraySaturation,fnBlackSaturation);
+  printf(" \t SATURATION %d w. %d (gray) %d (black) \n\n",fApplySaturation,fnGraySaturation,fnBlackSaturation);
+  printf(" \t LCP parameter %f   Slown parameters = {%f, %f, %f}\n\n",fLCPparam,fSlownparam[0],fSlownparam[1],fSlownparam[2]); 
 }
 
 
@@ -134,20 +139,21 @@ void AliSlowNucleonModelExp::GetNumberOfSlowNucleons2(AliCollisionGeometry* geo,
       nBlackp  = blackovergray*nGrayp; 
     }
     
+    //printf(" \t Using LCP parameter %f   Slown parameters = {%f, %f, %f}\n\n",fLCPparam,fSlownparam[0],fSlownparam[1],fSlownparam[2]); 
     Float_t nGrayNeutrons = 0.;
     Float_t nBlackNeutrons = 0.;
-    Float_t cp = (nGrayp+nBlackp)/0.24;
+    Float_t cp = (nGrayp+nBlackp)/fLCPparam;
     
     if(cp>0.){
-      Float_t nSlow  = 51.5+469.2/(-8.762-cp);
-      //if(cp<2.5) nSlow = 1+(9.9-1)/(2.5-0)*(cp-0);
-      if(cp<3.) nSlow = 0.+(11.6-0.)/(3.-0.)*(cp-0.);
+      Float_t nSlow      = fSlownparam[0]+fSlownparam[1]/(-fSlownparam[2]-cp);
+      Float_t paramRetta = fSlownparam[0]+fSlownparam[1]/(-fSlownparam[2]-3);
+      if(cp<3.) nSlow = 0.+(paramRetta-0.)/(3.-0.)*(cp-0.);
     
       nGrayNeutrons = nSlow * 0.1; 
       nBlackNeutrons = nSlow - nGrayNeutrons;
     }
     else{
-      // Sikler "pasturato"
+      // Sikler "pasturato" (qui non entra mai!!!!)
       nGrayNeutrons = 0.47 * fAlphaGray *  nu; 
       nBlackNeutrons = 0.88 * fAlphaBlack * nu;      
       printf("nslowp=0 -> ncoll = %1.0f -> ngrayn = %1.0f  nblackn = %1.0f \n", nu, nGrayNeutrons, nBlackNeutrons);

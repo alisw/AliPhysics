@@ -58,6 +58,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
+  ,fIsMC(kFALSE)
+  ,fMCProduction("")  
 {
 	//
 	// default ctor
@@ -77,6 +79,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
+  ,fIsMC(kFALSE)
+  ,fMCProduction("")  
 {
 	//
 	// named ctor
@@ -121,7 +125,11 @@ void AliPHOSTenderSupply::InitTender()
       }
     }   
   }
-    
+
+  //In MC always reco pass 1
+  if(fIsMC)
+    fRecoPass=1 ;
+  
   if(fRecoPass<0){ //not defined yet
     // read if from filename.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -138,6 +146,9 @@ void AliPHOSTenderSupply::InitTender()
           else 
 	    if(fname.Contains("pass3")) 
   	      fRecoPass=3;
+            else 
+	      if(fname.Contains("pass4")) 
+  	        fRecoPass=4;
       }
     }
     if(fRecoPass<0){
@@ -179,18 +190,44 @@ void AliPHOSTenderSupply::InitTender()
   } 
 
   if(!fUsePrivateCalib){
-    //Init recalibration
-    //Check the pass1-pass2-pass3 reconstruction
-    AliOADBContainer calibContainer("phosRecalibration");
-    calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
-    TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
-    if(!recalib){
-      AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+    if(fIsMC){ //re/de-calibration for MC productions
+      //Init recalibration
+      AliOADBContainer calibContainer("phosRecalibration");
+      calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSMCCalibrations.root","phosRecalibration");
+      
+      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
+      if(!recalib){
+        AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+      }
+      else{
+	//Now try to find object with proper name
+	for(Int_t i=0; i<recalib->GetEntriesFast(); i++){
+	  AliPHOSCalibData * tmp = (AliPHOSCalibData*)recalib->At(i) ;
+	  if(fMCProduction.CompareTo(tmp->GetName())==0){
+            fPHOSCalibData = tmp ;
+	    break ;
+	  }
+	}
+        if(!fPHOSCalibData) {
+          AliFatal(Form("Can not find calibration for run %d, and name %s \n",runNumber, fMCProduction.Data())) ;
+        }
+      }
+      
     }
-    else{
-      fPHOSCalibData = (AliPHOSCalibData*)recalib->At(fRecoPass-1) ;
-      if(!fPHOSCalibData) {
-        AliFatal(Form("Can not find calibration for run %d, pass %d \n",runNumber, fRecoPass)) ;
+    else{ //real data
+      //Init recalibration
+      //Check the pass1-pass2-pass3 reconstruction
+      AliOADBContainer calibContainer("phosRecalibration");
+      calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
+      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
+      if(!recalib){
+        AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+      }
+      else{
+        fPHOSCalibData = (AliPHOSCalibData*)recalib->At(fRecoPass-1) ;
+        if(!fPHOSCalibData) {
+          AliFatal(Form("Can not find calibration for run %d, pass %d \n",runNumber, fRecoPass)) ;
+        }
       }
     }
   }
@@ -304,7 +341,10 @@ void AliPHOSTenderSupply::ProcessEvent()
      
       clu->SetEmcCpvDistance(r);    
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(EvalTOFesd(&cluPHOS,cells));       
+      clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
+      DistanceToBadChannel(mod,&locPos,minDist);
+      clu->SetDistanceToBadChannel(minDist) ;
 
     }
   }
@@ -354,9 +394,9 @@ void AliPHOSTenderSupply::ProcessEvent()
       //correct distance to track
       Double_t dx=clu->GetTrackDx() ;
       Double_t dz=clu->GetTrackDz() ;
+      TVector3 locPos;
+      fPHOSGeo->Global2Local(locPos,global,mod) ;
       if(dx!=-999.){ //there is matched track
-        TVector3 locPos;
-        fPHOSGeo->Global2Local(locPos,global,mod) ;
         dx+=locPos.X()-locPosOld.X() ;
         dz+=locPos.Z()-locPosOld.Z() ;      
         clu->SetTrackDistance(dx,dz);
@@ -374,7 +414,10 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetEmcCpvDistance(r); //Distance in sigmas
      
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(EvalTOFaod(&cluPHOS,cells));       
+      clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
+      DistanceToBadChannel(mod,&locPos,minDist);
+      clu->SetDistanceToBadChannel(minDist) ;
     }
   }
 
@@ -705,9 +748,13 @@ void AliPHOSTenderSupply::EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t
 
 }
 //________________________________________________________________________
-Double_t AliPHOSTenderSupply::EvalTOFesd(AliPHOSEsdCluster * clu,AliESDCaloCells * cells){ 
-  //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
-
+Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){ 
+  //Evaluate TOF of the cluster after re-calibration
+  //TOF here is weighted average of digits
+  // -within 50ns from the most energetic cell
+  // -not too soft.
+  
+  
   Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
   Int_t mulDigit=clu->GetNCells() ;
 
@@ -715,28 +762,30 @@ Double_t AliPHOSTenderSupply::EvalTOFesd(AliPHOSEsdCluster * clu,AliESDCaloCells
   Float_t eMax=0. ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
+    Bool_t isHG=kTRUE ;
     if(cells->GetCellMCLabel(absId)==-2) //This is LG digit. No statistics to calibrate LG timing, remove them from TOF calculation
-      continue ;
+      isHG=kFALSE ;
     if( elist[iDigit]>eMax){
-      tMax=CalibrateTOF(cells->GetCellTime(absId),absId,kTRUE) ;
+      tMax=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
       eMax=elist[iDigit] ;
     }
   }
- 
-  //Try to improve accuracy 
+
+  
+   //Try to improve accuracy 
   //Do not account time of soft cells:
-//  const Double_t part=0.5 ;
-  Double_t eMin=TMath::Max(0.5,0.5*eMax) ;
-  if(eMin>0.9*eMax)eMin=0.9*eMax ; //At least eMax should remain
+  //  const Double_t part=0.5 ;
+  Double_t eMin=TMath::Min(0.5,0.2*eMax) ;
   Float_t wtot = 0.;
   Double_t t = 0. ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
+    Bool_t isHG=kTRUE ;
     if(cells->GetCellMCLabel(absId)==-2) //This is LG digit. No statistics to calibrate LG timing, remove them from TOF calculation
-      continue ;
+      isHG=kFALSE ;
     
-    Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,kTRUE) ;
-    if(TMath::Abs(ti-tMax)>25.e-8) //remove soft cells with wrong time
+    Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
+    if(TMath::Abs(ti-tMax)>50.e-9) //remove soft cells with wrong time
       continue ;
     
     //Remove too soft cells
@@ -746,7 +795,11 @@ Double_t AliPHOSTenderSupply::EvalTOFesd(AliPHOSEsdCluster * clu,AliESDCaloCells
     if(elist[iDigit]>0){ 
       //weight = 1./sigma^2
       //Sigma is parameterization of TOF resolution 16.05.2013
-      Double_t wi2=1./(2.4e-9 + 3.9e-9/elist[iDigit]) ;
+      Double_t wi2=0.;
+      if(isHG)
+	wi2=1./(2.4e-9 + 3.9e-9/elist[iDigit]) ;
+      else
+	wi2=1./(2.4e-9 + 3.9e-9/(0.1*elist[iDigit])) ; //E of LG digit is 1/16 of correcponding HG  
       t+=ti*wi2 ;
       wtot+=wi2 ;
     }
@@ -757,33 +810,6 @@ Double_t AliPHOSTenderSupply::EvalTOFesd(AliPHOSEsdCluster * clu,AliESDCaloCells
   
   return t ;
      
-} 
-//________________________________________________________________________
-Double_t AliPHOSTenderSupply::EvalTOFaod(AliPHOSAodCluster * clu,AliAODCaloCells * cells){ 
-  //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
-      
-  Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
-  Float_t wtot = 0.;
-  Double_t t = 0. ;
-  Int_t mulDigit=clu->GetNCells() ;
-  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
-    Int_t absId=clu->GetCellAbsId(iDigit) ;
-    Bool_t isHG=kTRUE ;
-    if(cells->GetCellMCLabel(absId)==-2) //This is LG digit. No statistics to calibrate LG timing, remove them from TOF calculation
-      continue ;
-    if(elist[iDigit]>0){ 
-      //weight = 1./sigma^2
-      //Sigma is parameterization of TOF resolution 16.05.2013
-      Double_t wi2=1./(2.4e-9 + 3.9e-9/elist[iDigit]) ;
-      Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
-      t+=ti*wi2 ;
-      wtot+=wi2 ;
-    }
-  }
-  if(wtot>0){
-    t=t/wtot ;
-  }
-  return t ;
 } 
 //________________________________________________________________________
 Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG){
@@ -803,3 +829,29 @@ Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isH
   return tof ;
   
 }
+//________________________________________________________________________
+void AliPHOSTenderSupply::DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist){
+  //Check if distance to bad channel was reduced
+  Int_t range = minDist/2.2 +1 ; //Distance at which bad channels should be serached
+  
+  Int_t relid[4]={0,0,0,0} ;
+  fPHOSGeo->RelPosToRelId(mod, locPos->X(), locPos->Z(), relid) ; 
+  Int_t xmin=TMath::Max(1,relid[2]-range) ;
+  Int_t xmax=TMath::Min(64,relid[2]+range) ;
+  Int_t zmin=TMath::Max(1,relid[3]-range) ;
+  Int_t zmax=TMath::Min(56,relid[3]+range) ;
+  
+  Float_t x=0.,z=0.;
+  for(Int_t ix=xmin;ix<=xmax;ix++){
+    for(Int_t iz=zmin;iz<=zmax;iz++){
+      if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0){ //Bad channel
+        Int_t relidBC[4]={mod,0,ix,iz} ;
+        fPHOSGeo->RelPosInModule(relidBC,x,z); 
+        Double_t dist = TMath::Sqrt((x-locPos->X())*(x-locPos->X()) + (z-locPos->Z())*(z-locPos->Z()));
+        if(dist<minDist) minDist = dist;
+      }
+    }  
+  }
+  
+}
+

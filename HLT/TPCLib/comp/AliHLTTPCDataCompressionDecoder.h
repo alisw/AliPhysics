@@ -54,10 +54,10 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   void SetPadShift(float padShift) {fPadShift=padShift;}
   float PadShift() const {return fPadShift;}
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
-  void EnableClusterMerger() {if (!fpClusterMerger) fpClusterMerger=new AliHLTTPCHWClusterMerger;}
 
   int InitPartitionClusterDecoding(AliHLTUInt32_t specification);
   int InitTrackModelClusterClusterDecoding();
+  int AddCompressionDescriptor(const AliHLTComponentBlockData* pDesc);
   int AddClusterMCData(const AliHLTComponentBlockData* pDesc);
   int AddClusterIds(const AliHLTComponentBlockData* pDesc);
   AliHLTUInt32_t GetClusterId(int clusterNo) const;
@@ -80,6 +80,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
 
   float fPadShift; //! pad shift
   int fVerbosity; //! verbosity level
+  Bool_t fUseClusterMerger; // flag to run the cluster merger
   AliHLTDataInflater* fpDataInflaterPartition; //! instance of inflater for partition clusters
   AliHLTDataInflater* fpDataInflaterTrack; //! instance of inflater for track clusters
   AliHLTTPCHWClusterMerger* fpClusterMerger; //! merger instance
@@ -173,6 +174,11 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   bool bNextCluster=true;
   bool bReadSuccess=true;
   AliHLTTPCRawCluster rawCluster;
+
+  if( fUseClusterMerger && !fpClusterMerger ){
+    fpClusterMerger = new AliHLTTPCHWClusterMerger;
+  }
+
   if (fpClusterMerger)
     fpClusterMerger->Clear();
 
@@ -239,7 +245,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
     if (parameterId>=AliHLTTPCDefinitions::kLast) {
       AliHLTUInt32_t id=GetClusterId(decodedClusterCnt);
       const AliHLTTPCClusterMCLabel* pMC=GetMCLabel(id);
-      if (fpClusterMerger && fpClusterMerger->CheckCandidate(slice, partition, rawCluster)) {
+      if (fUseClusterMerger && fpClusterMerger && fpClusterMerger->CheckCandidate(slice, partition, rawCluster)) {
 	fpClusterMerger->AddCandidate(slice, partition, id, rawCluster, pMC);
       } else {
       c.Next(slice, partition);
@@ -271,7 +277,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   }
   pInflater->CloseBitDataInput();
   int mergedClusterCnt=0;
-  if (fpClusterMerger) {
+  if (fUseClusterMerger && fpClusterMerger) {
     mergedClusterCnt=fpClusterMerger->Merge();
     int remainingCnt=0;
     if (mergedClusterCnt>=0) {

@@ -254,8 +254,8 @@ void AliTOFTenderSupply::Init()
   AliInfo(Form("|    LHC10d patch                   :  %d               |",fLHC10dPatch));
   AliInfo(Form("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFPIDParams->GetTOFresolution()));
   AliInfo(Form("|    MC flag                        :  %d               |",fIsMC));
-  AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
-  AliInfo(Form("|    TOF/T0 intecalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
+  //  AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
+  //  AliInfo(Form("|    TOF/T0 intercalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
   AliInfo("|******************************************************|");
 
 
