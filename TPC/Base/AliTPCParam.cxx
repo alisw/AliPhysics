@@ -36,6 +36,7 @@
 #include "AliAlignObj.h"
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
+#include "TGraphErrors.h"
 
 ClassImp(AliTPCParam)
 
@@ -103,6 +104,8 @@ AliTPCParam::AliTPCParam()
 	     fOmegaTau(0.),
 	     fAttCoef(0.),
 	     fOxyCont(0.),
+	     fGainSlopesHV(0),   // graph with the gain slope as function of HV - per chamber
+	     fGainSlopesPT(0),   // graph with the gain slope as function of P/T - per chamber
 	     fPadCoupling(0.),
 	     fZeroSup(0),
 	     fNoise(0.),
@@ -851,3 +854,21 @@ Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
   }
 }
 
+void AliTPCParam::SetNominalGainSlopes(){
+  //
+  // Setting the nominal TPC gain slopes 
+  // Nominal values were obtained as a mena values foe 2010,2011, and 2012 data
+  // Differntial values can be provided per year
+  //
+  Float_t sector[72]={0};
+  Float_t gainHV[72]={0};
+  Float_t gainPT[72]={0};
+  //
+  for (Int_t isec=0; isec<72; isec++){
+    sector[isec]=isec;
+    gainHV[isec]=0.0115;  // change of the Gain dG/G  per 1 Volt  of voltage change(1/V) - it is roughly the same for IROC and OROC
+    gainPT[isec]=2.2;     // change of the Gains dG/G per P/T change ()
+  }
+  fGainSlopesHV = new TGraphErrors(72,sector,gainHV,0,0);
+  fGainSlopesPT = new TGraphErrors(72,sector,gainPT,0,0);
+}

@@ -2264,6 +2264,35 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   return -result/250.; //normalized before
 }
 
+
+Double_t AliTPCcalibDB::GetVDriftCorrectionDeltaZ(Int_t /*timeStamp*/, Int_t run, Int_t /*side*/, Int_t /*mode*/){
+  //
+  // Get deltaZ run/by/run  correction - as fitted together with drift velocity
+  // Value extracted  form the TPC-ITS, mean value is used
+  
+  // Arguments:
+  // mode determines the algorith how to combine the Laser Track, LaserCE or TPC-ITS
+  // timestamp - timestamp
+  // run       - run number
+  // side      - the drift velocity gy correction per side (CE and Laser tracks)
+  //
+  if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
+  UpdateRunInformations(run,kFALSE);
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) return 0;
+  Double_t result=0;
+
+  // use TPC-ITS if present
+  TGraphErrors *gr= (TGraphErrors*)array->FindObject("ALIGN_ITSB_TPC_DELTAZ");
+  if(gr) { 
+    result = TMath::Mean(gr->GetN(), gr->GetY());
+  }
+  return result;
+}
+
+
+
+
 AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMappingFile) {
 //
 //   Read list of active DDLs from OCDB entry
@@ -2382,3 +2411,36 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
   return (AliTPCCorrection *)fComposedCorrectionArray->At(4);  //
 }
 
+Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int_t sector, Int_t deltaCache){
+  //
+  // Correction for  changes of gain caused by change of the HV and by relative change of the gas density
+  // Function is slow some kind of caching needed
+  // Cache implemented using the static TVectorD
+  //
+  // Input paremeters:
+  //  deltaCache - maximal time differnce above which the cache is recaclulated
+  // 
+  static TVectorD gGainCorrection(72);
+  static Int_t gTimeStamp=0;
+  if ( TMath::Abs(timeStamp-gTimeStamp)> deltaCache){    
+    //
+    TGraphErrors * graphGHV = 0;
+    TGraphErrors * graphGPT = 0;
+    TObjArray *timeGainSplines = GetTimeGainSplinesRun(run);
+    graphGHV  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesHV");
+    graphGPT  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesPT");
+    if (!graphGHV) graphGHV = fParam->GetGainSlopesHV();
+    if (!graphGPT) graphGPT = fParam->GetGainSlopesPT();
+    //
+    for (Int_t isec=0; isec<72; isec++){
+      Double_t deltaHV= GetChamberHighVoltage(run,isec, timeStamp) - fParam->GetNominalVoltage(isec);
+      Double_t deltaGHV=0;
+      Double_t deltaGPT=0;
+      if (graphGHV) deltaGHV = graphGHV->GetY()[isec]*deltaHV;
+      if (graphGPT) deltaGPT = graphGPT->GetY()[isec]*GetPTRelative(timeStamp,run,0);
+      gGainCorrection[isec]=deltaGHV+deltaGPT;
+    }    
+    gTimeStamp=timeStamp;
+  }
+  return gGainCorrection[sector];
+}

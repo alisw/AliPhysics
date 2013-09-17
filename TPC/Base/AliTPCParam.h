@@ -15,6 +15,7 @@
 #include <TGeoMatrix.h>
 
 class TString;
+class TGraphErrors;
 
 class AliTPCParam : public AliDetectorParam {
   //////////////////////////////////////////////////////
@@ -181,6 +182,9 @@ public:
   void  SetOmegaTau(Float_t OmegaTau){  fOmegaTau=OmegaTau;}
   void  SetAttCoef(Float_t AttCoef){  fAttCoef=AttCoef;}
   void  SetOxyCont(Float_t OxyCont){  fOxyCont=OxyCont;}
+  void  SetGainSlopesHV(TGraphErrors * gainSlopesHV){ fGainSlopesHV=gainSlopesHV;}
+  void  SetGainSlopesPT(TGraphErrors * gainSlopesPT){ fGainSlopesPT=gainSlopesPT;}
+  void  SetNominalGainSlopes();
   //
   //set electronivc parameters  
   //
@@ -307,7 +311,10 @@ public:
   Float_t  GetDriftV() const {return fDriftV;}
   Float_t  GetOmegaTau() const {return fOmegaTau;}
   Float_t  GetAttCoef() const {return fAttCoef;}
-  Float_t  GetOxyCont() const {return fOxyCont;}
+  Float_t  GetOxyCont() const {return fOxyCont;} 
+  TGraphErrors * GetGainSlopesHV() const { return fGainSlopesHV;}
+  TGraphErrors * GetGainSlopesPT() const { return fGainSlopesPT;}
+
   //
   //get Electronic parameters
   //
@@ -440,6 +447,8 @@ protected :
   Float_t  fOmegaTau;       //omega tau ExB coeficient
   Float_t  fAttCoef;        //attachment coefitients
   Float_t  fOxyCont;        //oxygen content
+  TGraphErrors * fGainSlopesHV;   // graph with the gain slope as function of HV - per chamber
+  TGraphErrors * fGainSlopesPT;   // graph with the gain slope as function of P/T - per chamber
   //---------------------------------------------------------------------
   //   ALICE TPC  Electronics Parameters
   //--------------------------------------------------------------------
@@ -489,7 +498,7 @@ private:
 
   void CleanGeoMatrices();
 
-  ClassDef(AliTPCParam,5)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,6)  //parameter  object for set:TPC
 };
 
  
