@@ -121,11 +121,11 @@
 
 #include "AliTPCRecoParam.h"
 #include "TLinearFitter.h"
-
+#include <AliSysInfo.h>
 
 ClassImp(AliTPCCorrection)
 
-
+ 
 TObjArray *AliTPCCorrection::fgVisualCorrection=0;
 // instance of correction for visualization
 
@@ -146,7 +146,7 @@ const Double_t AliTPCCorrection::fgke0 = 8.854187817e-12;                 // vac
  
 
 AliTPCCorrection::AliTPCCorrection() 
-  : TNamed("correction_unity","unity"),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1)
+  : TNamed("correction_unity","unity"),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1), fIsLocal(kFALSE)
 {
   //
   // default constructor
@@ -158,7 +158,7 @@ AliTPCCorrection::AliTPCCorrection()
 }
 
 AliTPCCorrection::AliTPCCorrection(const char *name,const char *title)
-: TNamed(name,title),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1)
+  : TNamed(name,title),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1), fIsLocal(kFALSE)
 {
   //
   // default constructor, that set the name and title
@@ -288,6 +288,11 @@ void AliTPCCorrection::GetCorrectionDz(const Float_t x[],const Short_t roc,Float
   // Output parameter:
   //   dx[] - array {dx'/dz,  dy'/dz ,  dz'/dz }
 
+  //   if (fIsLocal){  //standard implemenation provides the correction/distortion integrated over full drift length
+  //    
+  //
+  //     GetCorrection(xyz,roc,dxyz);  
+  //   }
   static TLinearFitter fitx(2,"pol1"); 
   static TLinearFitter fity(2,"pol1");
   static TLinearFitter fitz(2,"pol1");
@@ -1384,8 +1389,10 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
   TMatrixD* arrayofSumChargeDensities[1000] ;    // Create temporary arrays to store low resolution charge arrays
 
   for ( Int_t i = 0 ; i < phislices ; i++ ) { arrayofSumChargeDensities[i] = new TMatrixD(rows,columns) ; }
+  AliSysInfo::AddStamp("3DInit", 10,0,0);
 
   for ( Int_t count = 0 ; count < loops ; count++ ) {      // START the master loop and do the binary expansion
+    AliSysInfo::AddStamp("3Diter", 20,count,0);
    
     Float_t  tempgridSizeR   =  gridSizeR  * ione ;
     Float_t  tempratioPhi    =  ratioPhi * ione * ione ; // Used tobe divided by ( m_one * m_one ) when m_one was != 1
@@ -1465,19 +1472,54 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
 	TMatrixD& arrayVP   =  *arrayofArrayV[mplus] ;
 	TMatrixD& arrayVM   =  *arrayofArrayV[mminus] ;
 	TMatrixD& sumChargeDensity =  *arrayofSumChargeDensities[m] ;
+	Double_t *arrayVfast = arrayV.GetMatrixArray();
+	Double_t *arrayVPfast = arrayVP.GetMatrixArray();
+	Double_t *arrayVMfast = arrayVM.GetMatrixArray();
+	Double_t *sumChargeDensityFast=sumChargeDensity.GetMatrixArray();
 
-	for ( Int_t i = ione ; i < rows-1 ; i+=ione )  {
-	  for ( Int_t j = jone ; j < columns-1 ; j+=jone ) {
-
-            arrayV(i,j) = (   coef2[i]          *   arrayV(i-ione,j)
-			    + tempratioZ        * ( arrayV(i,j-jone)  +  arrayV(i,j+jone) )
-			    - overRelaxcoef5[i] *   arrayV(i,j) 
-			    + coef1[i]          *   arrayV(i+ione,j)  
-			    + coef3[i]          * ( signplus*arrayVP(i,j)       +  signminus*arrayVM(i,j) )
-			    + sumChargeDensity(i,j) 
-			  ) * overRelaxcoef4[i] ;     
-	    // Note: over-relax the solution at each step.  This speeds up the convergance.
-
+	if (0){
+	  // slow implementation
+	  for ( Int_t i = ione ; i < rows-1 ; i+=ione )  {
+	    for ( Int_t j = jone ; j < columns-1 ; j+=jone ) {
+	      
+	      arrayV(i,j) = (   coef2[i]          *   arrayV(i-ione,j)
+				+ tempratioZ        * ( arrayV(i,j-jone)  +  arrayV(i,j+jone) )
+				- overRelaxcoef5[i] *   arrayV(i,j) 
+				+ coef1[i]          *   arrayV(i+ione,j)  
+				+ coef3[i]          * ( signplus*arrayVP(i,j)       +  signminus*arrayVM(i,j) )
+				+ sumChargeDensity(i,j) 
+				) * overRelaxcoef4[i] ;     
+	      // Note: over-relax the solution at each step.  This speeds up the convergance.	      
+	    }
+	  }
+	}else{
+	  for ( Int_t i = ione ; i < rows-1 ; i+=ione )  {
+	    Double_t *arrayVfastI = &(arrayVfast[i*columns]);
+	    Double_t *arrayVPfastI = &(arrayVPfast[i*columns]);
+	    Double_t *arrayVMfastI = &(arrayVMfast[i*columns]);
+	    Double_t *sumChargeDensityFastI=&(sumChargeDensityFast[i*columns]);
+	    for ( Int_t j = jone ; j < columns-1 ; j+=jone ) {
+	      Double_t resSlow,resFast;
+// 	      resSlow  = (   coef2[i]          *   arrayV(i-ione,j)
+// 				+ tempratioZ        * ( arrayV(i,j-jone)  +  arrayV(i,j+jone) )
+// 				- overRelaxcoef5[i] *   arrayV(i,j) 
+// 				+ coef1[i]          *   arrayV(i+ione,j)  
+// 				+ coef3[i]          * ( signplus*arrayVP(i,j)       +  signminus*arrayVM(i,j) )
+// 				+ sumChargeDensity(i,j) 
+// 				) * overRelaxcoef4[i] ;     
+	      resFast   = (   coef2[i]          *   arrayVfastI[j-columns*ione]
+			      + tempratioZ        * ( arrayVfastI[j-jone]  +  arrayVfastI[j+jone] )
+			      - overRelaxcoef5[i] *   arrayVfastI[j] 
+			      + coef1[i]          * arrayVfastI[j+columns*ione]    
+			      + coef3[i]          * ( signplus* arrayVPfastI[j]      +  signminus*arrayVMfastI[j])
+			      + sumChargeDensityFastI[j] 
+			      ) * overRelaxcoef4[i] ;     
+// 	      if (resSlow!=resFast){
+// 		printf("problem\t%d\t%d\t%f\t%f\t%f\n",i,j,resFast,resSlow,resFast-resSlow);
+// 	      }
+	      arrayVfastI[j]=resFast;
+	      // Note: over-relax the solution at each step.  This speeds up the convergance.	      
+	    }
 	  }
 	}
 
@@ -1513,6 +1555,7 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
   
   //Differentiate V(r) and solve for E(r) using special equations for the first and last row
   //Integrate E(r)/E(z) from point of origin to pad plane
+  AliSysInfo::AddStamp("CalcField", 100,0,0);
 
   for ( Int_t m = 0 ; m < phislices ; m++ ) {
     TMatrixD& arrayV    =  *arrayofArrayV[m] ;
@@ -1544,6 +1587,7 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
     // if ( m == 0 ) { TCanvas*  c1 =  new TCanvas("erOverEz","erOverEz",50,50,840,600) ;  c1 -> cd() ;
     // eroverEz.Draw("surf") ; } // JT test
   }
+  AliSysInfo::AddStamp("IntegrateEr", 120,0,0);
   
   //Differentiate V(r) and solve for E(phi) 
   //Integrate E(phi)/E(z) from point of origin to pad plane
@@ -1593,6 +1637,7 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
     // if ( m == 5 ) { TCanvas* c2 =  new TCanvas("arrayE","arrayE",50,50,840,600) ;  c2 -> cd() ;
     // arrayE.Draw("surf") ; } // JT test
   }
+  AliSysInfo::AddStamp("IntegrateEphi", 130,0,0);
   
 
   // Differentiate V(r) and solve for E(z) using special equations for the first and last row
@@ -1626,6 +1671,7 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
 	if ( j == columns-1 ) deltaEz(i,j) =  0.0 ;
       }
     }
+
     // if ( m == 0 ) { TCanvas*  c1 =  new TCanvas("erOverEz","erOverEz",50,50,840,600) ;  c1 -> cd() ;
     // eroverEz.Draw("surf") ; } // JT test
     
@@ -1645,8 +1691,8 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
       }
     }
 
-  } // end loop over phi
-  
+  } // end loop over phi  
+  AliSysInfo::AddStamp("IntegrateEz", 140,0,0);
  
 
   for ( Int_t k = 0 ; k < phislices ; k++ )

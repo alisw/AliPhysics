@@ -166,10 +166,12 @@ protected:
 			    const Int_t rows, const Int_t columns,  const Int_t phislices, 
 			    const Float_t deltaphi, const Int_t iterations, const Int_t summetry,
 			    const Bool_t rocDisplacement = kTRUE); 
-    
+  void   SetIsLocal(Bool_t isLocal){fIsLocal=isLocal;}
+  Bool_t IsLocal() const  { return fIsLocal;}
 protected:
   Double_t fT1;         // tensor term of wt - T1
   Double_t fT2;         // tensor term of wt - T2
+  Bool_t fIsLocal;      // switch to indicate that the distortion is a local vector drphi/dz, dr/dz
   static TObjArray *fgVisualCorrection;  // array of orrection for visualization
 private:
   AliTPCCorrection(const AliTPCCorrection &);               // not implemented
