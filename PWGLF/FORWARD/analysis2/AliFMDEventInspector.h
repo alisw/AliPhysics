@@ -478,6 +478,14 @@ protected:
    */
   virtual Bool_t CheckPileup(const AliESDEvent& esd, UInt_t& triggers) const;
   /** 
+   * Check for multi-vertex pile-up 
+   * 
+   * @param esd ESD event 
+   * 
+   * @return true if multiple vertices found 
+   */
+  virtual Bool_t CheckMultiVertex(const AliESDEvent& esd) const;
+  /** 
    * Check if we have a cosmic trigger.  These should be filtered out. 
    * 
    * @param trigStri Trigger string 
