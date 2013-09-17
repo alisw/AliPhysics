@@ -32,6 +32,7 @@
 #include <TDirectory.h>
 #include <TROOT.h>
 #include <TParameter.h>
+#include <TMatrixDSym.h>
 #include <iostream>
 #include <iomanip>
 #include "AliMCEvent.h"
@@ -947,8 +948,9 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 
   DMSG(fDebug,2,"Event is %striggered by off-line", offline ? "" : "NOT ");
 
-  if (offline) {
-    triggers |= AliAODForwardMult::kOffline;
+  if (offline)  triggers |= AliAODForwardMult::kOffline;
+  // Only flag as in-elastic if a min-bias trigger is here
+  if (trgMask & AliVEvent::kMB) {
     triggers |= AliAODForwardMult::kInel;
     CheckINELGT0(esd, nClusters, triggers);
   }
@@ -1051,11 +1053,12 @@ AliFMDEventInspector::CheckINELGT0(const AliESDEvent& esd,
   // Also count tracklets as a single cluster 
   Int_t n = spdmult->GetNumberOfTracklets();
   for (Int_t j = 0; j < n; j++) { 
-    if(TMath::Abs(spdmult->GetEta(j)) < 1) { 
-      triggers |= AliAODForwardMult::kInelGt0;
-      nClusters++;
-    }
+    if(TMath::Abs(spdmult->GetEta(j)) < 1) nClusters++;
   }
+  // If we at this point had non-zero nClusters, it's INEL>0
+  if (nClusters > 0) triggers |= AliAODForwardMult::kInelGt0;
+
+  // Loop over single clusters 
   n = spdmult->GetNumberOfSingleClusters();
   for (Int_t j = 0; j < n; j++) { 
     Double_t eta = -TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.));
@@ -1088,11 +1091,95 @@ AliFMDEventInspector::CheckPileup(const AliESDEvent& esd,
 {
   // Check for multiple vertices (pile-up) with at least 3
   // contributors and at least 0.8cm from the primary vertex
-  if(fCollisionSystem != AliForwardUtil::kPP) return false;
+  // if(fCollisionSystem != AliForwardUtil::kPP) return false;
 
-  Bool_t pileup =  esd.IsPileupFromSPD(fMinPileupContrib,fMinPileupDistance);
+  // Check for standard SPD pile-up
+  Bool_t spdPileup = esd.IsPileupFromSPD(fMinPileupContrib,fMinPileupDistance);
+
+  // Check for multi-vertex pileup 
+  Bool_t mvPileup  = false; // CheckMultiVertex(esd);
+
+  // Check for out-of-bunch pileup
+  Bool_t outPileup = (esd.GetHeader()->GetIRInt2ClosestInteractionMap() != 0 ||
+		      esd.GetHeader()->GetIRInt1ClosestInteractionMap() != 0);
+
+  // Our result
+  Bool_t pileup    = spdPileup || mvPileup || outPileup;
   if (pileup) triggers |= AliAODForwardMult::kPileUp;
   return pileup;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckMultiVertex(const AliESDEvent& esd) const
+{
+  // Adapted from AliAnalysisUtils 
+  // 
+  // Parameters 
+  const Double_t maxChi2nu    = 5;
+  Bool_t         checkOtherBC = false;
+  
+  // Number of vertices 
+  Int_t n = esd.GetNumberOfPileupVerticesTracks();
+  if (n < 1) 
+    // No additional vertices from tracks -> no pileup 
+    return false;
+  
+  // Primary vertex 
+  const AliESDVertex* primary = esd.GetPrimaryVertexTracks();
+  if (primary->GetStatus() != 1) 
+    // No good primary vertex, but many candidates -> pileup
+    return true;
+  
+  // Bunch crossing number 
+  Int_t bcPrimary = primary->GetBC();
+  
+  for (Int_t i = 0; i < n; i++) { 
+    const AliESDVertex* other = esd.GetPileupVertexTracks(i);
+    
+    if (other->GetNContributors() < fMinPileupContrib) 
+      // Not enough contributors to this vertex 
+      continue;
+    
+    if (other->GetChi2perNDF() > maxChi2nu) 
+      // Poorly determined vertex 
+      continue;
+    if (checkOtherBC) {
+      Int_t bcOther = other->GetBC();
+      if (bcOther != AliVTrack::kTOFBCNA && TMath::Abs(bcOther-bcPrimary) > 2) 
+	// Pile-up from other BC 
+	return true;      
+    }
+    // Calculate the distance 
+    Double_t d  = -1;
+    Double_t dx = primary->GetX() - other->GetX();
+    Double_t dy = primary->GetY() - other->GetY();
+    Double_t dz = primary->GetZ() - other->GetZ();
+    Double_t covPrimary[6], covOther[6];
+    primary->GetCovarianceMatrix(covPrimary); 
+    other->GetCovarianceMatrix(covOther);
+    TMatrixDSym v(3);
+    v(0,0) = covPrimary[0] + covOther[0]; // diagonal
+    v(1,1) = covPrimary[2] + covOther[2]; // diagonal
+    v(2,2) = covPrimary[5] + covOther[5]; // diagonal
+    v(1,0) = v(0,1) = covPrimary[1]+covOther[1]; // Band
+    v(0,2) = v(1,2) = v(2,0) = v(2,1) = 0; // Off-diagonal+band
+    // Try to invert 
+    v.InvertFast();
+    if (!v.IsValid()) 
+      // Question if kStatus bit is every set after InvertFast?
+      continue;
+    d = (v(0,0) * dx * dx + v(1,1) * dy * dy + v(2,2) * dz * dz + 
+	 2 * (v(0,1) * dx * dy + v(0,2) * dx * dz + v(1,2) * dy * dz));
+    
+    if (d < 0 || TMath::Sqrt(d) < fMinPileupDistance) 
+      // Bad distance, or not fare enough from each other 
+      continue;
+    
+    // Well separated vertices -> pileup
+    return true;
+  }
+  return false;
 }
 
 //____________________________________________________________________

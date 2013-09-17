@@ -295,6 +295,13 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
     AliWarning("MC Sharing filter failed!");
     return;
   }
+
+  // Store some MC parameters in corners of histogram :-)
+  fPrimary->SetBinContent(0,                      0,                    vzMC);
+  fPrimary->SetBinContent(fPrimary->GetNbinsX()+1,0,                    phiR);
+  fPrimary->SetBinContent(fPrimary->GetNbinsX()+1,fPrimary->GetNbinsY(),cMC);
+  
+
   if (!isAccepted) return; // Exit on MC event w/o trigger, vertex, data
   // HHD if (!isAccepted) return; // Exit on MC event w/o trigger, vertex, data
   
