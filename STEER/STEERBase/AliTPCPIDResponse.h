@@ -120,14 +120,25 @@ public:
   void SetCurrentEventMultiplicity(Int_t value) { fCurrentEventMultiplicity = value;  };
   Int_t GetCurrentEventMultiplicity() const { return fCurrentEventMultiplicity; };
 
-  Double_t GetMultiplicityCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource) const;
+  Double_t GetMultiplicityCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
   
-  Double_t GetMultiplicitySigmaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource) const;
+  Double_t GetMultiplicitySigmaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
 
   Double_t GetMultiplicityCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
   
   Double_t GetEtaAndMultiplicityCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species,
                                                    ETPCdEdxSource dedxSource = kdEdxDefault) const;
+  
+  // Fast functions for expert use only
+  Double_t GetEtaCorrectionFast(const AliVTrack *track, Double_t dEdxSplines) const;
+  
+  Double_t GetMultiplicityCorrectionFast(const AliVTrack *track, const Double_t dEdxExpected, const Int_t multiplicity) const;
+  
+  Double_t GetMultiplicitySigmaCorrectionFast(const Double_t dEdxExpected, const Int_t multiplicity) const;
+  
+  Double_t GetSigmaPar1Fast(const AliVTrack *track, AliPID::EParticleType species,
+                            Double_t dEdx, const TSpline3* responseFunction) const;
+  
   //NEW
   void SetSigma(Float_t res0, Float_t resN2, ETPCgainScenario gainScenario );
   Double_t GetExpectedSignal( const AliVTrack* track,
@@ -173,7 +184,7 @@ public:
   AliTPCPIDResponse::EChamberStatus TrackStatus(const AliVTrack* track, Int_t layer) const;
   Float_t MaxClusterRadius(const AliVTrack* track) const;
   Bool_t TrackApex(const AliVTrack* track, Float_t magField, Double_t position[3]) const;
-  static const char* GainScenarioName(Int_t n) {return fgkGainScenarioName[(n>fgkNumberOfdEdxSourceScenarios)?fgkNumberOfdEdxSourceScenarios+1:n];}
+  static const char* GainScenarioName(Int_t n) {return fgkGainScenarioName[(n>fgkNumberOfGainScenarios)?fgkNumberOfGainScenarios:n];}
   Int_t ResponseFunctionIndex( AliPID::EParticleType species,
                                ETPCgainScenario gainScenario ) const;
   void ResetSplines();
@@ -225,8 +236,6 @@ protected:
                             const TSpline3* responseFunction,
                             Bool_t correctEta,
                             Bool_t correctMultiplicity) const;
-                             
-  Double_t GetEtaCorrection(const AliVTrack *track, Double_t dEdxSplines) const;
   
   Double_t GetMultiplicityCorrection(const AliVTrack *track, const Double_t dEdxExpected, const Int_t multiplicity) const;
   
