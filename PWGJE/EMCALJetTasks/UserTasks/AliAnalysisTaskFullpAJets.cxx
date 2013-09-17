@@ -153,6 +153,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fNColl(7),
     fTrackMinPt(0.15),
     fClusterMinPt(0.3),
+    fNEFSignalJetCut(0.9),
     fCentralityTag("V0A"),
     fCentralityBins(10),
     fCentralityLow(0),
@@ -331,6 +332,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fNColl(7),
     fTrackMinPt(0.15),
     fClusterMinPt(0.3),
+    fNEFSignalJetCut(0.9),
     fCentralityTag("V0A"),
     fCentralityBins(10),
     fCentralityLow(0),
@@ -1237,12 +1239,15 @@ void AliAnalysisTaskFullpAJets::InitChargedJets()
     fTPCJet->SetSignalCut(fTPCJetThreshold);
     fTPCJet->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCJet->SetJetR(fJetR);
+    fTPCJet->SetNEF(fNEFSignalJetCut);
     fTPCFullJet->SetSignalCut(fTPCJetThreshold);
     fTPCFullJet->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCFullJet->SetJetR(fJetR);
+    fTPCFullJet->SetNEF(fNEFSignalJetCut);
     fTPCOnlyJet->SetSignalCut(fTPCJetThreshold);
     fTPCOnlyJet->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCOnlyJet->SetJetR(fJetR);
+    fTPCOnlyJet->SetNEF(fNEFSignalJetCut);
     
     // Initialize Jet Data
     for (i=0;i<fnAKTChargedJets;i++)
@@ -1262,6 +1267,7 @@ void AliAnalysisTaskFullpAJets::InitChargedJets()
     fTPCkTFullJet->SetSignalCut(fTPCJetThreshold);
     fTPCkTFullJet->SetAreaCutFraction(0.25*fJetAreaCutFrac);
     fTPCkTFullJet->SetJetR(fJetR);
+    fTPCkTFullJet->SetNEF(fNEFSignalJetCut);
 
     for (i=0;i<fnKTChargedJets;i++)
     {
@@ -1289,12 +1295,15 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
     fEMCalJet->SetSignalCut(fEMCalJetThreshold);
     fEMCalJet->SetAreaCutFraction(fJetAreaCutFrac);
     fEMCalJet->SetJetR(fJetR);
+    fEMCalJet->SetNEF(fNEFSignalJetCut);
     fEMCalFullJet->SetSignalCut(fEMCalJetThreshold);
     fEMCalFullJet->SetAreaCutFraction(fJetAreaCutFrac);
     fEMCalFullJet->SetJetR(fJetR);
+    fEMCalFullJet->SetNEF(fNEFSignalJetCut);
     fEMCalPartJet->SetSignalCut(fEMCalJetThreshold);
     fEMCalPartJet->SetAreaCutFraction(fJetAreaCutFrac);
     fEMCalPartJet->SetJetR(fJetR);
+    fEMCalPartJet->SetNEF(fNEFSignalJetCut);
     
     // Initialize Jet Data
     for (i=0;i<fnAKTFullJets;i++)
@@ -1314,6 +1323,7 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
     fEMCalkTFullJet->SetSignalCut(fEMCalJetThreshold);
     fEMCalkTFullJet->SetAreaCutFraction(0.25*fJetAreaCutFrac);
     fEMCalkTFullJet->SetJetR(fJetR);
+    fEMCalkTFullJet->SetNEF(fNEFSignalJetCut);
     
     for (i=0;i<fnKTFullJets;i++)
     {
@@ -3335,6 +3345,7 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData() :
     fJetR(0),
     fSignalPt(0),
     fAreaCutFrac(0.6),
+    fNEF(0.9),
     fPtMaxIndex(0),
     fPtMax(0),
     fPtSubLeadingIndex(0),
@@ -3358,6 +3369,7 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t i
     fJetR(0),
     fSignalPt(0),
     fAreaCutFrac(0.6),
+    fNEF(0.9),
     fPtMaxIndex(0),
     fPtMax(0),
     fPtSubLeadingIndex(0),
@@ -3392,6 +3404,7 @@ AliAnalysisTaskFullpAJets::AlipAJetData::~AlipAJetData()
         SetSignalCut(0);
         SetAreaCutFraction(0);
         SetJetR(0);
+        SetNEF(0);
         
         delete [] fJetsIndex;
         delete [] fJetsSCIndex;
@@ -3425,9 +3438,9 @@ void AliAnalysisTaskFullpAJets::AlipAJetData::InitializeJetData(TClonesArray *je
             {
                 SetSubLeading(i,myJet->Pt()); 
             }
-            // require leading charged constituent to have a pT greater then the signal threshold
+            // require leading charged constituent to have a pT greater then the signal threshold & Jet NEF to be less then the Signal Jet NEF cut
             fJetMaxChargedPt[i] = myJet->MaxTrackPt();
-            if (fJetMaxChargedPt[i]>=fSignalPt)
+            if (fJetMaxChargedPt[i]>=fSignalPt && myJet->NEF()<=fNEF)
             {
                 SetSignalJetIndex(i,l);
                 l++;
@@ -3511,6 +3524,11 @@ void AliAnalysisTaskFullpAJets::AlipAJetData::SetJetR(Double_t jetR)
     fJetR = jetR;
 }
 
+void AliAnalysisTaskFullpAJets::AlipAJetData::SetNEF(Double_t nef)
+{
+    fNEF = nef;
+}
+
 // Getters
 Int_t AliAnalysisTaskFullpAJets::AlipAJetData::GetTotalEntries()
 {
@@ -3572,6 +3590,11 @@ Double_t AliAnalysisTaskFullpAJets::AlipAJetData::GetJetMaxChargedPt(Int_t At)
     return fJetMaxChargedPt[At];
 }
 
+Double_t AliAnalysisTaskFullpAJets::AlipAJetData::GetNEF()
+{
+    return fNEF;
+}
+
 // AlipAJetHistos Class Member Defs
 // Constructors
 AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
@@ -3607,6 +3630,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fh80100BckgFlucPt(0),
     fhBckgFlucPt(0),
     fhBckgFlucPtCen(0),
+    fhNEF(0),
+    fhNEFSignal(0),
 
     fpRho(0),
     fpLJetRho(0),
@@ -3634,7 +3659,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fRhoValue(0),
     fLChargedTrackPtBins(0),
     fLChargedTrackPtLow(0),
-    fLChargedTrackPtUp(0)
+    fLChargedTrackPtUp(0),
+    fNEFBins(0),
+    fNEFLow(0),
+    fNEFUp(0)
 {
     // Dummy constructor ALWAYS needed for I/O.
 }
@@ -3672,6 +3700,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fh80100BckgFlucPt(0),
     fhBckgFlucPt(0),
     fhBckgFlucPtCen(0),
+    fhNEF(0),
+    fhNEFSignal(0),
 
     fpRho(0),
     fpLJetRho(0),
@@ -3699,7 +3729,11 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fRhoValue(0),
     fLChargedTrackPtBins(0),
     fLChargedTrackPtLow(0),
-    fLChargedTrackPtUp(0)
+    fLChargedTrackPtUp(0),
+    fNEFBins(0),
+    fNEFLow(0),
+    fNEFUp(0)
+
 {
     SetName(name);
     SetCentralityTag("V0A");
@@ -3710,6 +3744,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     SetBackgroundFluctuationsPtRange(100,0,100);
     SetLeadingJetPtRange(200,0,200);
     SetLeadingChargedTrackPtRange(100,0,100);
+    SetNEFRange(100,0,1);
     
     Init();
 }
@@ -3747,6 +3782,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fh80100BckgFlucPt(0),
     fhBckgFlucPt(0),
     fhBckgFlucPtCen(0),
+    fhNEF(0),
+    fhNEFSignal(0),
 
     fpRho(0),
     fpLJetRho(0),
@@ -3774,7 +3811,11 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fRhoValue(0),
     fLChargedTrackPtBins(0),
     fLChargedTrackPtLow(0),
-    fLChargedTrackPtUp(0)
+    fLChargedTrackPtUp(0),
+    fNEFBins(0),
+    fNEFLow(0),
+    fNEFUp(0)
+
 {
     SetName(name);
     SetCentralityTag(centag);
@@ -3785,7 +3826,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     SetBackgroundFluctuationsPtRange(100,0,100);
     SetLeadingJetPtRange(200,0,200);
     SetLeadingChargedTrackPtRange(100,0,100);
-
+    SetNEFRange(100,0,1);
+    
     Init();
 }
 
@@ -3999,6 +4041,17 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fhBckgFlucPtCen->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#phi");
     fhBckgFlucPtCen->Sumw2();
     
+    // Neutral Energy Fraction Histograms
+    fhNEF = new TH1D("fhNEF","Neutral Energy Fraction of All Jets",fNEFBins,fNEFLow,fNEFUp);
+    fhNEF->GetXaxis()->SetTitle("NEF");
+    fhNEF->GetYaxis()->SetTitle("1/N_{Events} dN/dNEF");
+    fhNEF->Sumw2();
+
+    fhNEFSignal = new TH1D("fhNEFSignal","Neutral Energy Fraction of Signal Jets",fNEFBins,fNEFLow,fNEFUp);
+    fhNEFSignal->GetXaxis()->SetTitle("NEF");
+    fhNEFSignal->GetYaxis()->SetTitle("1/N_{Events} dN/dNEF");
+    fhNEFSignal->Sumw2();
+
     // Background Density vs Centrality Profile
     RhoString = "Background Density vs Centrality";
     fpRho = new TProfile("fpRho",RhoString,fCentralityBins,fCentralityLow,fCentralityUp);
@@ -4040,6 +4093,8 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fOutput->Add(fh80100BckgFlucPt);
     fOutput->Add(fhBckgFlucPt);
     fOutput->Add(fhBckgFlucPtCen);
+    fOutput->Add(fhNEF);
+    fOutput->Add(fhNEFSignal);
     fOutput->Add(fpRho);
     fOutput->Add(fpLJetRho);
 }
@@ -4103,6 +4158,13 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetLeadingChargedTrackPtRange(In
     fLChargedTrackPtUp=up;
 }
 
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetNEFRange(Int_t bins, Double_t low, Double_t up)
+{
+    fNEFBins=bins;
+    fNEFLow=low;
+    fNEFUp=up;
+}
+
 TList* AliAnalysisTaskFullpAJets::AlipAJetHistos::GetOutputHistos()
 {
     return fOutput;
@@ -4131,15 +4193,18 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBSJS(Double_t eventCentralit
     Int_t i;
     Double_t tempPt=0.0;
     Double_t tempChargedHighPt=0.0;
+    Double_t nef=0.0;
     
     for (i=0;i<nIndexJetList;i++)
     {
         AliEmcalJet *myJet = (AliEmcalJet*) jetList->At(indexJetList[i]);
         tempPt=myJet->Pt()-rho*myJet->Area();
         tempChargedHighPt = myJet->MaxTrackPt();
-
+        nef=myJet->NEF();
+        
         fhBSPt->Fill(tempPt);
         fhBSPtCen->Fill(tempPt,eventCentrality);
+        fhNEF->Fill(nef);
         //fhBSPtCenLCT->Fill(tempPt,eventCentrality,tempChargedHighPt);
         if (eventCentrality<=20)
         {
@@ -4153,6 +4218,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBSJS(Double_t eventCentralit
         {
             fhBSPtSignal->Fill(tempPt);
             fhBSPtCenSignal->Fill(tempPt,eventCentrality);
+            fhNEFSignal->Fill(nef);
             if (eventCentrality<=20)
             {
                 fh020BSPtSignal->Fill(tempPt);
