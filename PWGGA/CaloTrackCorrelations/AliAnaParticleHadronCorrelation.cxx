@@ -90,9 +90,9 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhDeltaPhiCharged(0),           fhDeltaEtaCharged(0), 
     fhDeltaPhiChargedPt(0),         fhDeltaPhiUeChargedPt(0), 
     fhUePart(0),
-    fhXECharged(0),                 fhXEUeCharged(0),
+    fhXECharged(0),                 fhXECharged_Cone2(0),            fhXEUeCharged(0),
     fhXEPosCharged(0),              fhXENegCharged(0),
-    fhPtHbpXECharged(0),            fhPtHbpXEUeCharged(0),
+    fhPtHbpXECharged(0),            fhPtHbpXECharged_Cone2(0),             fhPtHbpXEUeCharged(0),
     fhZTCharged(0),                 fhZTUeCharged(0),
     fhZTPosCharged(0),              fhZTNegCharged(0),
     fhPtHbpZTCharged(0),            fhPtHbpZTUeCharged(0),
@@ -472,7 +472,7 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
 void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Float_t ptTrig,   Float_t ptAssoc, 
                                                                              Float_t xE,       Float_t hbpXE, 
                                                                              Float_t zT,       Float_t hbpZT, 
-                                                                             Float_t pout,
+                                                                             Float_t pout,     Float_t deltaPhi,
                                                                              Int_t   nTracks,  Int_t   charge,
                                                                              Int_t   bin,      Bool_t  decay,
                                                                              Int_t   outTOF,   Int_t   mcTag)
@@ -480,12 +480,16 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
 {
   // Fill mostly momentum imbalance related histograms
   
-  fhXECharged         ->Fill(ptTrig , xE); 
+  fhXECharged         ->Fill(ptTrig , xE);
   fhPtHbpXECharged    ->Fill(ptTrig , hbpXE);
   fhZTCharged         ->Fill(ptTrig , zT); 
   fhPtHbpZTCharged    ->Fill(ptTrig , hbpZT);
   fhPtTrigPout        ->Fill(ptTrig , pout) ;
   fhPtTrigCharged     ->Fill(ptTrig , ptAssoc) ;
+  if((deltaPhi > 5*TMath::Pi()/6.)   && (deltaPhi < 7*TMath::Pi()/6.)) {
+    fhXECharged_Cone2         ->Fill(ptTrig , xE);
+    fhPtHbpXECharged_Cone2    ->Fill(ptTrig , hbpXE);
+  }
   
   // Pile up studies
   if(fFillPileUpHistograms) 
@@ -1220,6 +1224,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
              nptbins,ptmin,ptmax,200,0.,2.); 
     fhXECharged->SetYTitle("x_{E}");
     fhXECharged->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhXECharged_Cone2  = 
+    new TH2F("hXECharged_Cone2","x_{E} for charged tracks in cone 2 (5#pi/6-7#pi/6)",
+             nptbins,ptmin,ptmax,200,0.,2.); 
+    fhXECharged_Cone2->SetYTitle("x_{E}");
+    fhXECharged_Cone2->SetXTitle("p_{T trigger} (GeV/c)");
     
     fhXEUeCharged  = 
     new TH2F("hXEUeCharged","x_{E} for Underlying Event",
@@ -1244,6 +1254,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
              nptbins,ptmin,ptmax,200,0.,10.); 
     fhPtHbpXECharged->SetYTitle("ln(1/x_{E})");
     fhPtHbpXECharged->SetXTitle("p_{T trigger} (GeV/c)");
+
+    fhPtHbpXECharged_Cone2  = 
+    new TH2F("hHbpXECharged_Cone2","#xi = ln(1/x_{E}) with charged hadrons in cone 2 (5#pi/6-7#pi/6)",
+             nptbins,ptmin,ptmax,200,0.,10.); 
+    fhPtHbpXECharged_Cone2->SetYTitle("ln(1/x_{E})");
+    fhPtHbpXECharged_Cone2->SetXTitle("p_{T trigger} (GeV/c)");
     
     fhPtHbpXEUeCharged  = 
     new TH2F("hHbpXEUeCharged","#xi = ln(1/x_{E}) with charged hadrons,Underlying Event",
@@ -1312,7 +1328,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhUePart);
 
     outputContainer->Add(fhXECharged) ;
-  
+    outputContainer->Add(fhXECharged_Cone2) ;
     if(IsDataMC())
     {
       for(Int_t i=0; i < 7; i++)
@@ -1338,6 +1354,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhXENegCharged) ;
     outputContainer->Add(fhXEUeCharged) ;
     outputContainer->Add(fhPtHbpXECharged) ;
+    outputContainer->Add(fhPtHbpXECharged_Cone2) ;
     outputContainer->Add(fhPtHbpXEUeCharged) ;
 
     outputContainer->Add(fhZTCharged) ;
@@ -3013,7 +3030,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       if  ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
       {
         
-        FillChargedMomentumImbalanceHistograms(ptTrig, pt, xE, hbpXE, zT, hbpZT, pout, 
+        FillChargedMomentumImbalanceHistograms(ptTrig, pt, xE, hbpXE, zT, hbpZT, pout, deltaPhi, 
                                                nTracks, track->Charge(), bin, decay,outTOF,mcTag);
         
       }

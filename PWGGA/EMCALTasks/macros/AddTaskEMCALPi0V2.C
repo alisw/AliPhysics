@@ -10,6 +10,8 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   TString V2ClusName = "caloClusters", 
   TString trigClass  = "",
   Bool_t IsPhosCali  = kFALSE,
+  Bool_t IsCentFlat  = kTRUE,
+  Bool_t IsFullHist  = kFALSE,
   Int_t EvtType      = 5 
 )
 {
@@ -51,12 +53,16 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   taskMB->SetV2ClusName(V2ClusName);
   taskMB->SetTrigClass(trigClass);
   taskMB->SetIsPHOSCali(IsPhosCali);
+  taskMB->SetIsCentFlat(IsCentFlat);
+  taskMB->SetIsFullHist(IsFullHist);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGGA_EMCalpi0v2";
 
   if(IsPhosCali) 
-    Input += "EPCaliON";
+    Input += "_EPON_";
+  if(IsCentFlat)
+    Input += "centOn";
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(

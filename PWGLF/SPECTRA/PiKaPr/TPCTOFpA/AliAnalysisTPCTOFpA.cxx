@@ -880,8 +880,8 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
 	TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
 	Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
 	//
-	if (pdg != assumedPdg && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 2;
-	if (pdg != assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 5;
+	if (pdg != assumedPdg) code = 2;
+	//if (pdg != assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) code = 5;
 	if (pdg == assumedPdg && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) code = 1;
 	if (pdg == assumedPdg && stack->IsSecondaryFromWeakDecay(TMath::Abs(track->GetLabel()))) {
 	  code = 3;
@@ -892,8 +892,17 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
 	    if (trackMother->GetPdgCode() == 3222) motherCode = 8; //Sigma+
 	  }
 	}
-	if (pdg == assumedPdg && stack->IsSecondaryFromMaterial(TMath::Abs(track->GetLabel()))) code = 4;
-	
+
+
+	//FILL MATERIAL TEMPLATE FOR KAONS WITH ELECTRONS
+	if (iPart != 1){
+	  if (pdg == assumedPdg && stack->IsSecondaryFromMaterial(TMath::Abs(track->GetLabel()))) code = 4;
+	}	
+	else {
+	  if (pdg == 11) code = 4;
+	  //cout << "got an electron for  kaons!" << endl;
+	}
+
 	//
 	// muons need special treatment, because they are indistinguishable from pions
 	//

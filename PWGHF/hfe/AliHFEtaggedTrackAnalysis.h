@@ -51,6 +51,7 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     Bool_t  GetClean() const { return fClean; }; 
     Bool_t IsPbPb() const { return fIsPbPb; }
     Bool_t IsPP() const { return !fIsPbPb; }
+    Bool_t IspPb() const { return fIspPb; }
     Double_t GetMagneticField() const { return fMagneticField; };
     AliHFEvarManager *GetVarManager() const { return fVarManager; }
 
@@ -59,6 +60,7 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     void SetCentrality(Int_t centrality) { fCentralityF = centrality; };
     void SetPbPb(){ fIsPbPb = kTRUE; }
     void SetPP() { fIsPbPb = kFALSE; }
+    void SetpPb() { fIsPbPb = kFALSE; fIspPb=kTRUE; }
     void SetClean(Bool_t clean) { fClean = clean; };
     void SetMagneticField(Double_t magneticField) { fMagneticField = magneticField; };
     void SetVariablesTRD(Bool_t variablesTRD) { fVariablesTRD = variablesTRD; };
@@ -79,7 +81,8 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     Bool_t               fClean;        // Clean
     Double_t             fMagneticField; // Magnetic field
     Bool_t               fVariablesTRD;  //  Use phi angle at the first plane of the TRD
-    Bool_t               fIsPbPb;        // Analysis Type: pp or PbPb 
+    Bool_t               fIsPbPb;        // Analysis Type: PbPb or no PbPb
+    Bool_t               fIspPb;        // Analysis Type: pPb or no pPb
     
   ClassDef(AliHFEtaggedTrackAnalysis, 0)
 };

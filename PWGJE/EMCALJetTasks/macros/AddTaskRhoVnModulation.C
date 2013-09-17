@@ -20,7 +20,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   const char *taskname           = "AliAnalysisTaskRhoVnModulation",
   UInt_t     runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
   Bool_t     fillQA             = kTRUE,
-  TString    fitOpts            = "LWQIM",
+  TString    fitOpts            = "WLQI",
   UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
   TArrayI    *centralities      = 0x0,
   TRandom3   *randomizer        = 0x0
@@ -65,10 +65,10 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
 
   AliAnalysisTaskRhoVnModulation* jetTask = new AliAnalysisTaskRhoVnModulation(name, runMode);
   // inherited setters
+  jetTask->SetJetsName(njets);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
   jetTask->SetRhoName(nrho);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
@@ -79,7 +79,8 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetDebugMode(-1);
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
-  jetTask->SetModulationFitMinMaxP(.05, 1);
+  jetTask->SetModulationFitMinMaxP(.001, 1);
+  jetTask->SetRandomConeRadius(jetradius);
   // if centralities haven't been specified use defaults
   if(!centralities) {
      Int_t c[] = {0, 10, 30, 50, 70, 90};
@@ -100,7 +101,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   TString contname(name);
-  contname += "_histos";
+  contname+="_PWGJE";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));

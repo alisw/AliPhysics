@@ -39,14 +39,18 @@ enum {kCorr=0, kUnCorr, kNoPid};
 
 
 // Common variables: to be configured by the user
+// const Int_t nPtBins=6;
+// Double_t ptlims[nPtBins+1]={1., 2.,4.,6.,8.,12.,24.};
+// Int_t rebin[nPtBins]={4,4,6,6,8,8};
+// Double_t sigmapt[nPtBins]={ 0.008, 0.010, 0.012, 0.016, 0.018, 0.020 };
 const Int_t nPtBins=5;
-Double_t ptlims[nPtBins+1]={2.,4.,6.,8.,12.,24.};
-Int_t rebin[nPtBins]={4,4,6,6,8};
-Double_t sigmapt[nPtBins]={ 0.010, 0.012, 0.016, 0.018, 0.20 };
-Bool_t fixPeakSigma = kFALSE;
+Double_t ptlims[nPtBins+1]={1.,2.,4.,8.,12.,24.};
+Int_t rebin[nPtBins]={4,4,6,8,8};
+Double_t sigmapt[nPtBins]={ 0.008, 0.014, 0.019, 0.027, 0.033 };
+Bool_t fixPeakSigma = kTRUE;
 //
-const Int_t nMultbins=6;
-Double_t multlims[nMultbins+1]={1.,9.,14.,20.,31.,49.,100.};
+const Int_t nMultbins=7;
+Double_t multlims[nMultbins+1]={1.,9.,14.,20.,31.,50.,81.,100.};
 // const Int_t nMultbins=1;
 // Double_t multlims[nMultbins+1]={0.,500.};
 //
@@ -57,17 +61,15 @@ Int_t typeb=kExpo;
 Int_t types=kGaus;
 Int_t optPartAntiPart=kBoth;
 Int_t factor4refl=0;
-Float_t massRangeForCounting=0.05; // GeV
+Float_t massRangeForCounting=0.05; // GeV --> it is 3 sigmapt[binpt]
+Float_t nSigmaRangeForCounting=3.0; //  3 sigmapt[binpt]
 TH2F* hPtMass=0x0;
 TString suffix="StdPid";
-//for D0only
-const Int_t nsamples=2;//3;
-Int_t nevents[nsamples]={1.18860695e+08 /*LHC10dnewTPCpid*/,9.0374946e+07 /*LHC10b+c*/};
+
 
 // Functions
 Bool_t LoadDplusHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, const char *CutsType, Int_t Option);
-Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, AliNormalizationCounter *counter,
-			 const char *CutsType, Int_t Option);
+Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, AliNormalizationCounter *counter, const char *CutsType, Int_t Option);
 Bool_t CheckNtrVsZvtx(TH2F** hNtrZvtx, TH2F** hNtrZvtxCorr, Int_t nFiles);
 TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
 
@@ -84,6 +86,8 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
 
   // gInterpreter->ExecuteMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
   gStyle->SetOptTitle(1);
+
+  //  for(int j=0; j<=nMultbins; j++) multlims[j] *= (68./8.8);
 
   Int_t nFiles=0;
   TObjArray* listFiles=new TObjArray();
@@ -167,14 +171,12 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   Int_t nMassBins=hmassaxis->GetNbinsX();
   Double_t hmin=hmassaxis->GetBinLowEdge(3);
   Double_t hmax=hmassaxis->GetBinLowEdge(nMassBins-2) + hmassaxis->GetBinWidth(nMassBins-2);
-  Float_t minBinSum=hmassaxis->FindBin(massD-massRangeForCounting);
-  Float_t maxBinSum=hmassaxis->FindBin(massD+massRangeForCounting);
   Int_t iPad=1;
   
   printf("Now initializing the fit functions\n");
-  TF1* funBckStore1=0x0;
-  TF1* funBckStore2=0x0;
-  TF1* funBckStore3=0x0;
+  // TF1* funBckStore1=0x0;
+  // TF1* funBckStore2=0x0;
+  // TF1* funBckStore3=0x0;
 
   Int_t nPtMultbins = nPtBins*nMultbins;
   AliHFMassFitter** fitter=new AliHFMassFitter*[nPtMultbins];
@@ -218,8 +220,8 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   // Loop on multiplicity bins
   //
   Int_t massBin=0;
-  Double_t sig,errsig,s,errs,b,errb;
   for(Int_t j=0; j<nMultbins; j++){
+    Double_t sig,errsig,s,errs,b,errb;
     //    printf(" Studying multiplicity bin %d\n",j);
     Int_t multbinlow = hmultaxis->FindBin(multlims[j]);
     Int_t multbinhigh = hmultaxis->FindBin(multlims[j+1])-1;
@@ -278,9 +280,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       TF1* fB1=fitter[massBin]->GetBackgroundFullRangeFunc();
       TF1* fB2=fitter[massBin]->GetBackgroundRecalcFunc();
       TF1* fM=fitter[massBin]->GetMassFunc();
-      if(iBin==0 && fB1) funBckStore1=new TF1(*fB1);
-      if(iBin==0 && fB2) funBckStore2=new TF1(*fB2);
-      if(iBin==0 && fM) funBckStore3=new TF1(*fM);
+      // if(iBin==0 && fB1) funBckStore1=new TF1(*fB1);
+      // if(iBin==0 && fB2) funBckStore2=new TF1(*fB2);
+      // if(iBin==0 && fM) funBckStore3=new TF1(*fM);
 
       fitter[massBin]->DrawHere(gPad);
       fitter[massBin]->Signal(3,s,errs);
@@ -294,6 +296,10 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       Float_t cntSig1=0.;
       Float_t cntSig2=0.;
       Float_t cntErr=0.;
+      massRangeForCounting = nSigmaRangeForCounting*sigmapt[iBin];
+      //      cout << " pt bin "<< iBin << " mass range = "<< massRangeForCounting<<endl;
+      Float_t minBinSum=hmassaxis->FindBin(massD-massRangeForCounting);
+      Float_t maxBinSum=hmassaxis->FindBin(massD+massRangeForCounting);
       for(Int_t iMB=minBinSum; iMB<=maxBinSum; iMB++){
 	Float_t bkg1=fB1 ? fB1->Eval(hmass[massBin]->GetBinCenter(iMB))/rebinItem : 0;
 	Float_t bkg2=fB2 ? fB2->Eval(hmass[massBin]->GetBinCenter(iMB))/rebinItem : 0;
@@ -316,7 +322,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       hInvSignif[j]->SetBinError(iBin+1,errsig/(sig*sig));
       hBackground[j]->SetBinContent(iBin+1,b); //consider sigma
       hBackground[j]->SetBinError(iBin+1,errb);
-      hBackgroundNormSigma[j]->SetBinContent(iBin+1,b/(3*fitter[iBin]->GetSigma())*(3*0.012)); //consider sigma
+      hBackgroundNormSigma[j]->SetBinContent(iBin+1,b/(3*fitter[massBin]->GetSigma())*(3*0.012)); //consider sigma
       hBackgroundNormSigma[j]->SetBinError(iBin+1,errb);
       hSignificance[j]->SetBinContent(iBin+1,sig);
       hSignificance[j]->SetBinError(iBin+1,errsig);
@@ -331,6 +337,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
 
     canvas[j]->Update();
     canvas[j]->SaveAs(Form("hMass%s_%d_%d.eps",CutsType,typeb,j));
+    //    canvas[j]->SaveAs(Form("hMass%s_%d_%d_MultInt.eps",CutsType,typeb,j));
     
   }// end loop on multiplicity bins
 
@@ -496,7 +503,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   }
 
   TString outfilename = Form("RawYield_Mult_%s_%s",partname.Data(),CutsType);
+  //  outfilename += "_MultInt";
   if(fixPeakSigma) outfilename += "_SigmaFixed";
+  outfilename += Form("_BCin%1.1fSigma",nSigmaRangeForCounting);
   if(typeb==0) outfilename += "_Expo.root";
   else if(typeb==1) outfilename += "_Linear.root";
   else if(typeb==2) outfilename += "_Pol2.root";

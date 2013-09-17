@@ -23,7 +23,8 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
 				Int_t rebinEta = 1,
 				Int_t rebinPhi = 1,
 				TString eventClass = "EventPlane", //Can be "EventPlane", "Centrality", "Multiplicity"
-				Bool_t bToy = kFALSE)
+				Bool_t bToy = kFALSE,
+				TString listNameAdd = "")
 { 
   //Macro that draws the correlation functions from the balance function
   //analysis vs the reaction plane
@@ -51,11 +52,11 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
 
   //Prepare the objects and return them
   TList *listQA = NULL;
-  TList *list = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0,bToy);
+  TList *list = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,0,bToy,listNameAdd);
   TList *listShuffled = NULL;
-  if(kShowShuffled) listShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1,bToy);
+  if(kShowShuffled) listShuffled = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,1,bToy,listNameAdd);
   TList *listMixed = NULL;
-  if(kShowMixed) listMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2,bToy);
+  if(kShowMixed) listMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2,bToy,listNameAdd);
 
   // else  get the QA histograms (for convolution)
   else{    
@@ -78,10 +79,12 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
       listQAName += "_Bit"; listQAName += gBit; }
     if(gCentralityEstimator) {
       listQAName += "_"; listQAName += gCentralityEstimator;}
+    listQAName += listNameAdd;
+  
 
     listQA = (TList*)dir->Get(Form("%s",listQAName.Data()));
     if(!listQA) {
-      Printf("TList QA not found!!!");
+      Printf("TList %s not found!!!",listQAName.Data());
     }
   }
 
@@ -101,7 +104,8 @@ TList *GetListOfObjects(const char* filename,
 			Int_t gBit,
 			const char *gCentralityEstimator,
 			Int_t kData = 1,
-			Bool_t bToy = kFALSE) {
+			Bool_t bToy = kFALSE,
+			TString listNameAdd = "") {
   //Get the TList objects (QA, bf, bf shuffled)
   TList *listBF = 0x0;
   
@@ -146,6 +150,7 @@ TList *GetListOfObjects(const char* filename,
   else{
     listBFName.ReplaceAll("Psi","");
   }
+  listBFName += listNameAdd;
 
   // histograms were already retrieved (in first iteration)
   if(dir->Get(Form("%s_histograms",listBFName.Data()))){
@@ -156,6 +161,7 @@ TList *GetListOfObjects(const char* filename,
   else{
 
     listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
+    if(!listBF) dir->ls();
     cout<<"======================================================="<<endl;
     cout<<"List name (control): "<<listBFName.Data()<<endl;
     cout<<"List name: "<<listBF->GetName()<<endl;

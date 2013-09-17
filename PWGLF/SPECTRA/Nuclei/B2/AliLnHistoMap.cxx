@@ -120,6 +120,17 @@ TH1D* AliLnHistoMap::Add(const TString& name, Int_t nbins, Double_t xmin, Double
 	return value;
 }
 
+TH1D* AliLnHistoMap::Add(const TString& name, Int_t nbins, Double_t* xbins, const TString& title, const TString& xlabel, const TString& ylabel)
+{
+//
+// Add a TH1D histogram with variable bin size
+//
+	TH1D* h = this->Add(name,nbins,xbins[0],xbins[nbins],title,xlabel,ylabel);
+	h->GetXaxis()->Set(nbins, xbins);
+	
+	return h;
+}
+
 TH2D* AliLnHistoMap::Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title, const TString& xlabel, const TString& ylabel, Bool_t logx, Bool_t logy)
 {
 //
@@ -145,6 +156,40 @@ TH2D* AliLnHistoMap::Add(const TString& name, Int_t xbins, Double_t xmin, Double
 	}
 	
 	return value;
+}
+
+TH2D* AliLnHistoMap::Add(const TString& name, Int_t nbinsx, Double_t* xbins, Int_t nbinsy, Double_t* ybins, const TString& title, const TString& xlabel, const TString& ylabel)
+{
+//
+// Add a TH2D histogram with variable bin size
+//
+	TH2D* h = this->Add(name, nbinsx, xbins[0], xbins[nbinsx], nbinsy, ybins[0], ybins[nbinsy], title, xlabel, ylabel);
+	h->GetXaxis()->Set(nbinsx, xbins);
+	h->GetYaxis()->Set(nbinsy, ybins);
+	
+	return h;
+}
+
+TH2D* AliLnHistoMap::Add(const TString& name, Int_t nbins, Double_t* xbins, Int_t ybins, Double_t ymin, Double_t ymax, const TString& title, const TString& xlabel, const TString& ylabel)
+{
+//
+// Add a TH2D histogram with variable bin size
+//
+	TH2D* h = this->Add(name, nbins, xbins[0], xbins[nbins], ybins, ymin, ymax, title, xlabel, ylabel);
+	h->GetXaxis()->Set(nbins, xbins);
+	
+	return h;
+}
+
+TH2D* AliLnHistoMap::Add(const TString& name, Int_t xbins, Double_t xmin, Double_t xmax, Int_t nbins, Double_t* ybins, const TString& title, const TString& xlabel, const TString& ylabel)
+{
+//
+// Add a TH2D histogram with variable bin size
+//
+	TH2D* h = this->Add(name, xbins, xmin, xmax, nbins, ybins[0], ybins[nbins], title, xlabel, ylabel);
+	h->GetYaxis()->Set(nbins, ybins);
+	
+	return h;
 }
 
 Bool_t AliLnHistoMap::SetLogXaxis(TH1* h)

@@ -81,9 +81,8 @@ Bool_t AliDielectronCutGroup::IsSelected(TObject* track)
     }
     else { //kCompAND
       selectionResult = (selectionResult && thisCut->IsSelected(track));
-      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
+      //      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
     }
-    
   }
   return selectionResult;
 }

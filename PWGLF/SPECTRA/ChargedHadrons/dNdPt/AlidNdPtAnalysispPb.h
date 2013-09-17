@@ -6,7 +6,7 @@
 // based on AlidNdPtAnalysis class
 // 
 // Author: J.Otwinowski 04/11/2008 
-// last change: 2013-02-05 by M.Knichel
+// last change: 2013-06-19 by M.Knichel
 //------------------------------------------------------------------------------
 
 class iostream;
@@ -25,6 +25,7 @@ class AliESD;
 class AliESDfriend;
 class AliESDfriendTrack;
 class AlidNdPtHelper;
+class AliAnalysisUtils;
 
 #include "AlidNdPt.h"
 #include "TObjString.h"
@@ -67,6 +68,7 @@ public :
   
   // Set binning for Histograms (if not set default binning is used)
   void SetBinsMult(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbins = nbins; fBinsMult = CloneArray(fMultNedges = nbins+1,edges); } }
+  void SetBinsMultTE(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbinsTE = nbins; fBinsMultTE = CloneArray(fMultNedgesTE = nbins+1,edges); } }
   void SetBinsPt(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtNbins = nbins; fBinsPt = CloneArray(fPtNedges = nbins+1,edges); } }
   void SetBinsPtCorr(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(fPtCorrNedges = nbins+1,edges); } }
   void SetBinsEta(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fEtaNbins = nbins; fBinsEta = CloneArray(fEtaNedges = nbins+1,edges); } }
@@ -80,6 +82,7 @@ public :
   // Getters
   THnSparseF *GetEventMultCorrelationMatrix() const {return fEventMultCorrelationMatrix;}
   THnSparseF *GetTrackPtCorrelationMatrix()   const {return fTrackPtCorrelationMatrix;}
+  
 
   //NOTE: for now in p-Pb ND and NSD are the same, DD is empty!
   //kNSD would have to be added to PWG0Helper, now kND is used to signal NSD!
@@ -177,6 +180,14 @@ public :
   Int_t GetNCentralityEstimators() {return fDimensionsCentralityEstimators;}
   void SetBinsCentrality(Int_t nbins, Double_t* edges) { if (CanChangeBins()) { fCentralityNbins = nbins; fBinsCentrality = CloneArray(fCentralityNedges = nbins+1,edges); } }
   void SetCentralityEstimators(const char* estimators);
+  
+  //rapidity shift getter+setter
+  void SetRapidityShift(Double_t yShift) { fRapidityShift = yShift;}
+  Double_t GetRapidityShift() { return fRapidityShift; }
+  
+  void Set2013pA(Bool_t is2013 = kTRUE) { fIs2013pA = is2013; }
+  Double_t Get2013pA() { return fIs2013pA; }  
+
 
 private:
 
@@ -189,7 +200,7 @@ private:
   //
 
   // event rec. track vs true track multiplicity correlation matrix 
-  THnSparseF *fEventMultCorrelationMatrix; //-> mult:mult_true_tracks:multMB
+  THnSparseF *fEventMultCorrelationMatrix; //-> multRecMult:multTrueMC:multMB
 
   // rec. track pt vs true track pt correlation matrix for given eta
   THnSparseF *fTrackPtCorrelationMatrix; //-> Pt:mcPt:mcEta
@@ -199,50 +210,49 @@ private:
   //
 
   // all genertated
-  THnSparseF *fGenEventMatrix; //-> mcZv:multMB (inelastic)
-  THnSparseF *fGenSDEventMatrix; //-> mcZv:multMB (single diffractive)
-  THnSparseF *fGenDDEventMatrix; //-> mcZv:multMB (single diffractive)
-  THnSparseF *fGenNDEventMatrix; //-> mcZv:multMB (non diffractive)
-  THnSparseF *fGenNSDEventMatrix; //-> mcZv:multMB (non single diffractive)
+  THnSparseF *fGenEventMatrix; //-> mcZv:multTrueMC (inelastic)
+  THnSparseF *fGenSDEventMatrix; //-> mcZv:multTrueMC (single diffractive)
+  THnSparseF *fGenDDEventMatrix; //-> mcZv:multTrueMC (single diffractive)
+  THnSparseF *fGenNDEventMatrix; //-> mcZv:multTrueMC (non diffractive)
+  THnSparseF *fGenNSDEventMatrix; //-> mcZv:multTrueMC (non single diffractive)
 
   // trigger bias corrections (fTriggerEventMatrix / fGenEventMatrix)
-  THnSparseF *fTriggerEventMatrix; //-> mcZv:multMB
-  THnSparseF *fTriggerSDEventMatrix; //-> mcZv:multMB
-  THnSparseF *fTriggerDDEventMatrix; //-> mcZv:multMB
-  THnSparseF *fTriggerNDEventMatrix; //-> mcZv:multMB
-  THnSparseF *fTriggerNSDEventMatrix; //-> mcZv:multMB
+  THnSparseF *fTriggerEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fTriggerSDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fTriggerDDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fTriggerNDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fTriggerNSDEventMatrix; //-> mcZv:multTrueMC
 
   // event vertex rec. eff correction (fRecEventMatrix / fTriggerEventMatrix)
-  THnSparseF *fRecEventMatrix; //-> mcZv:multMB 
-  THnSparseF *fRecSDEventMatrix; //-> mcZv:multMB
-  THnSparseF *fRecDDEventMatrix; //-> mcZv:multMB
-  THnSparseF *fRecNDEventMatrix; //-> mcZv:multMB
-  THnSparseF *fRecNSDEventMatrix; //-> mcZv:multMB
-
+  THnSparseF *fRecEventMatrix; //-> mcZv:multTrueMC:Centrality 
+  THnSparseF *fRecSDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fRecDDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fRecNDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fRecNSDEventMatrix; //-> mcZv:multTrueMC
 
   //
-  // track-event level correction 
+  // track-event level correction
   //
 
-  THnSparseF *fGenTrackEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fGenTrackSDEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fGenTrackDDEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fGenTrackNDEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fGenTrackNSDEventMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fGenTrackEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fGenTrackSDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fGenTrackDDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fGenTrackNDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fGenTrackNSDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
 
   // trigger bias corrections (fTriggerTrackEventMatrix / fGenTrackEventMatrix)
-  THnSparseF *fTriggerTrackEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fTriggerTrackSDEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fTriggerTrackDDEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fTriggerTrackNDEventMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fTriggerTrackNSDEventMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fTriggerTrackEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fTriggerTrackSDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fTriggerTrackDDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fTriggerTrackNDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fTriggerTrackNSDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
 
   // event vertex rec. corrections (fRecTrackEventMatrix / fTriggerTrackEventMatrix)
-  THnSparseF *fRecTrackEventMatrix; //-> mcZv:Pt:mcEta
-  THnSparseF *fRecTrackSDEventMatrix; //-> mcZv:Pt:mcEta
-  THnSparseF *fRecTrackDDEventMatrix; //-> mcZv:Pt:mcEta
-  THnSparseF *fRecTrackNDEventMatrix; //-> mcZv:Pt:mcEta
-  THnSparseF *fRecTrackNSDEventMatrix; //-> mcZv:Pt:mcEta
+  THnSparseF *fRecTrackEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
+  THnSparseF *fRecTrackSDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
+  THnSparseF *fRecTrackDDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
+  THnSparseF *fRecTrackNDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
+  THnSparseF *fRecTrackNSDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
 
   //
   // track level correction 
@@ -250,12 +260,12 @@ private:
 
   // track rec. efficiency correction (fRecPrimTrackMatrix / fGenPrimTrackMatrix)
   THnSparseF *fGenTrackMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fGenPrimTrackMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fRecPrimTrackMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fGenPrimTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality 
+  THnSparseF *fRecPrimTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality 
 
   // secondary track contamination correction (fRecSecTrackMatrix / fRecTrackMatrix)
-  THnSparseF *fRecTrackMatrix;    //-> mcZv:mcPt:mcEta
-  THnSparseF *fRecSecTrackMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fRecTrackMatrix;    //-> mcZv:mcPt:mcEta:Centrality 
+  THnSparseF *fRecSecTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality 
 
   // multiple rec. track corrections (fRecMultTrackMatrix / fRecTrackMatrix)
   THnSparseF *fRecMultTrackMatrix; //-> mcZv:Pt:mcEta
@@ -267,10 +277,10 @@ private:
   // THnSparse event histograms
   THnSparseF *fMCEventHist1;  //-> mcXv:mcYv:mcZv
   THnSparseF *fRecEventHist1; //-> Xv:Yv:Zv
-  THnSparseF *fRecEventHist2; //-> Zv:multMB:mult
+  THnSparseF *fRecEventHist2; //-> Zv:multMB:multRecMult
   THnSparseF *fRecMCEventHist1; //-> Xv-mcXv:Yv-mcYv:Zv-mcZv
-  THnSparseF *fRecMCEventHist2; //-> Xv-mcXv:Zv-mcZv:mult
-  THnSparseF *fRecMCEventHist3; //-> mult:EventType (ND, DD, SD)
+  THnSparseF *fRecMCEventHist2; //-> Xv-mcXv:Zv-mcZv:multMB
+  THnSparseF *fRecMCEventHist3; //-> multRec:EventType (ND, DD, SD)
 
   // THnSparse track histograms
   // [0] - after charged track selection, [1] - after acceptance cuts, [2] - after esd track cuts
@@ -295,10 +305,10 @@ private:
   // Generic histograms to be corrected
   //
   THnSparseF *fRecEventHist;    //-> Zv:multMB  
-  THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRec  
+  THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRecMult  
   THnSparseF *fEventCount; //-> trig, trig + vertex, selected event
-  THnSparseF *fEventMultHist; // event multiplicities multMB:multRecTemp:multRec
-  THnSparseF *fMCPrimTrackHist; //-> Zv:mcpT:mceta:multtrue
+  THnSparseF *fEventMultHist; // event multiplicities multMB:multRecMult:multRec
+  THnSparseF *fMCPrimTrackHist; //-> Zv:mcpT:mceta:multTrueMC
 
   //
   // candle events track corrections
@@ -306,8 +316,8 @@ private:
   THnSparseF *fRecCandleEventMatrix; // Zv:multMB
 
   // centrality test histograms  
-  THnSparseF *fCentralityEventHist; // rec event hist with centrality zv:multRec:multMB:cent:...
-  THnSparseF *fCentralityTrackHist; // rec track hist with centrality zv:pt:eta:multRec:multMB:cent:...  
+  THnSparseF *fCentralityEventHist; // rec event hist with centrality zv:multRecMult:multMB:cent:...
+  THnSparseF *fCentralityTrackHist; // rec track hist with centrality zv:pt:eta:multRecMult:multMB:cent:...  
   TObjArray *fCentralityEstimatorsList; // TObjArray with TObjStrings containing cent. estimators
   Int_t fDimensionsCentralityEstimators;  // number of centrality estimators: if 0 hists are not filled
   Int_t fCentralityNbins;  // number of centrality bins (common for all estimators)
@@ -321,30 +331,37 @@ private:
 
   //binning for THNsparse
   Int_t fMultNbins;
+  Int_t fMultNbinsTE;
   Int_t fPtNbins;
   Int_t fPtCorrNbins; 
   Int_t fEtaNbins;
   Int_t fZvNbins;
   Int_t fMultNedges;   // fMultNbins+1 uses for streaming dynamic array
+  Int_t fMultNedgesTE; // fMultNbinsTE+1 uses for streaming dynamic array
   Int_t fPtNedges;     // fPtNbins+1 uses for streaming dynamic array  
   Int_t fPtCorrNedges; // fCentralityNbins+1 uses for streaming dynamic array  
   Int_t fEtaNedges;    // fEtaNbins+1 uses for streaming dynamic array
   Int_t fZvNedges;     // fZvNbins+1 uses for streaming dynamic array    
   Double_t *fBinsMult;   //[fMultNedges]
+  Double_t *fBinsMultTE; //[fMultNedgesTE]
   Double_t *fBinsPt;     //[fPtNedges]
   Double_t *fBinsPtCorr; //[fPtCorrNedges]
   Double_t *fBinsEta;    //[fEtaNedges]
   Double_t *fBinsZv;     //[fZvNedges]
   
-  Bool_t fIsInit;
+  Double_t fRapidityShift; //y shift CMS vs. LAB
+  AliAnalysisUtils* fUtils;
+  Bool_t fIs2013pA; 
   
+  Bool_t fIsInit;
+    
   // generic function to change binning
   Bool_t CanChangeBins();
 
   AlidNdPtAnalysispPb(const AlidNdPtAnalysispPb&); // not implemented
   AlidNdPtAnalysispPb& operator=(const AlidNdPtAnalysispPb&); // not implemented
 
-  ClassDef(AlidNdPtAnalysispPb,3);
+  ClassDef(AlidNdPtAnalysispPb,6);
 };
 
 #endif

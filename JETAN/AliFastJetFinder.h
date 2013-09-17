@@ -4,37 +4,39 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
+/* $Id$ */
 
 //---------------------------------------------------------------------
 // FastJet v2.3.4 finder algorithm interface
 //
 // Author: Rafael.Diaz.Valdes@cern.ch
-//  
+//
+// ** 2011 magali.estienne@subatech.in2p3.fr &  alexandre.shabetai@cern.ch
+// new implementation of background subtraction
+// allowing to subtract bkg using a different algo than the one used for signal jets  
 //---------------------------------------------------------------------
 
-//FastJet classes 
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
-// get info on how fastjet was configured
-#include "fastjet/config.h"
-#ifdef ENABLE_PLUGIN_SISCONE
-#include "fastjet/SISConePlugin.hh"
+// FastJet classes 
+#ifndef __CINT__
+# include "fastjet/PseudoJet.hh"
+# include "fastjet/ClusterSequenceArea.hh"
+# include "fastjet/AreaDefinition.hh"
+# include "fastjet/JetDefinition.hh"
+#else
+namespace fastjet {
+  class PseudoJet;
+  class ClusterSequenceArea;
+  class AreaDefinition;
+  class JetDefinition;
+}
 #endif
 
-
-#include<sstream>  // needed for internal io
-#include <vector> 
-#include <cmath> 
-
 #include "AliJetFinder.h"
-#include "AliFastJetHeaderV1.h"
+
+class AliFastJetInput;
+class AliFastJetBkg;
 
 using namespace std;
-class AliFastJetInput;
-class AliJetBkg;
 
 class AliFastJetFinder : public AliJetFinder
 {
@@ -43,21 +45,19 @@ class AliFastJetFinder : public AliJetFinder
   AliFastJetFinder();
   ~AliFastJetFinder();
 
-  virtual void    FindJets(); 
-  void    RunTest(const char* datafile); // a simple test
-  virtual void    WriteJHeaderToFile() const;
-  Float_t EtaToTheta(Float_t arg);
-  void    InitTask(TChain* tree);
-  virtual Bool_t ProcessEvent();
-  virtual Bool_t  ProcessEvent2();
-  
+  virtual void      FindJets(); 
+  void              RunTest(const char* datafile); // a simple test
+  virtual void      WriteJHeaderToFile() const;
+  virtual Bool_t    ProcessEvent();
       
   protected:
   AliFastJetFinder(const AliFastJetFinder& rfj);
   AliFastJetFinder& operator = (const AliFastJetFinder& rsfj);
-  AliFastJetInput*                fInputFJ;     //! input particles array
-  AliJetBkg*                      fJetBkg;      //! pointer to bkg class
-  ClassDef(AliFastJetFinder,2)
+  AliFastJetInput*  fInputFJ;  //! input particles array
+  AliFastJetBkg*    fJetBkg;   //! pointer to bkg class
+
+  ClassDef(AliFastJetFinder,3) //  Fastjet analysis class
+
 };
 
 #endif

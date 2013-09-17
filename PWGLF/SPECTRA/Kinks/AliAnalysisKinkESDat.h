@@ -113,6 +113,7 @@ class AliAnalysisKinkESDat : public AliAnalysisTaskSE {
    TH2F        *fRadiusPt;//kinks,  Radius      vs Pt                                        
    TH2F        *fRadiusPtcln;//kinks,  Radius      vs Pt    for clean kaons                                     
    TH2F        *fInvMassMuNuPt;//kinks,Invariant Mass MuNu     vs Pt                                         
+   TH2F        *fInvMassMuNuPtAll;//kinks,Invariant Mass MuNu     vs Pt                                         
    TH1F        *fPtCut1; //K Pt  spectrum   of all kinks  from track bank, K0 bins
    TH1F        *fPtCut2; //K Pt  spectrum   of all kinks  from track bank, K0 bins
    TH1F        *fPtCut3; //K Pt  spectrum   of all kinks  from track bank, K0 bins

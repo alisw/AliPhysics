@@ -61,10 +61,10 @@ struct ParUtilities
 	  src = aliParFile;
       }
       if (src.IsNull()) {
-	  Error("ParUtilities::Find", 
-		"PAR file %s not found in current or parent "
-		"directory nor in $(ALICE_ROOT)", parFile.Data());
-	  return false;
+	Error("ParUtilities::Find", 
+	      "PAR file %s not found in current or parent "
+	      "directory nor in $(ALICE_ROOT)", parFile.Data());
+	return false;
       }
       // Copy to current directory 
       // TFile::Copy(aliParFile, parFile);
@@ -218,6 +218,7 @@ struct ParUtilities
 	helper->LoadLibrary(dep->GetName());
       
       // AcLic and load 
+      Info("", "Loading macro %s", script.Data());
       if (gROOT->LoadMacro(Form("%s++g", script.Data())) < 0) {
 	Error("ParUtilities::MakeScriptPAR", 
 	      "Failed to build local library %s", script.Data());
@@ -261,6 +262,7 @@ struct ParUtilities
 	    templ);
       return false;
     }
+    Info("", "Building PAR in %s", templ);
 
     Bool_t retVal = false;
     try {
@@ -272,7 +274,8 @@ struct ParUtilities
       if (gSystem->MakeDirectory(Form("%s/PROOF-INF", dir.Data()))) 
 	throw TString::Format("Could not make directory %s/PROOF-INF", 
 			      base.Data());
-      
+      Info("", "Made directory %s", dir.Data());
+
       // --- Copy the script to the setup directory --------------------
       TString dest = TString::Format("%s/%s.%s", dir.Data(),
 				     base.Data(), ext.Data());
@@ -284,13 +287,13 @@ struct ParUtilities
       }
       
       // --- Make scripts, etc. ----------------------------------------
-      if (!MakeBuildScript(dir, base)) 
+      if (!MakeScriptBuildScript(dir, base)) 
 	throw TString::Format("Failed to make build script");
-      if (!MakeUtilityScript(dir)) 
+      if (!MakeScriptUtilityScript(dir)) 
 	throw TString::Format("Failed to make utility script");
-      if (!MakeBuildMacro(dir, base, ext, depList)) 
+      if (!MakeScriptBuildMacro(dir, base, ext, depList)) 
 	throw TString::Format("Failed to make build macro");
-      if (!MakeSetupMacro(dir, base, ext, depList)) 
+      if (!MakeScriptSetupMacro(dir, base, ext, depList)) 
 	throw TString::Format("Failed to setup macro");
 
       // --- Pack up the archive ---------------------------------------
@@ -299,7 +302,9 @@ struct ParUtilities
       if (ret != 0) 
 	throw TString::Format("Failed to create PAR file %s.PAR from %s", 
 			      base.Data(), dir.Data());
-
+      
+      Info("", "Made par archive %s/%s.par - moving here", 
+	   templ, base.Data());
       // --- Move PAR file to here -------------------------------------
       ret = gSystem->Exec(Form("mv -f %s/%s.par %s.par", templ, base.Data(), 
 			       base.Data()));
@@ -327,13 +332,14 @@ struct ParUtilities
    * 
    * @return true on success
    */
-  static Bool_t MakeBuildScript(const TString& dir, 
-				const TString& base)
+  static Bool_t MakeScriptBuildScript(const TString& dir, 
+				      const TString& base)
   {
     // Make our build file 
     std::ofstream out(Form("%s/PROOF-INF/BUILD.sh", dir.Data()));
     if (!out) {
-      Error("ParUtilities::MakeBuildScript", "Failed to open out shell script");
+      Error("ParUtilities::MakeScriptBuildScript", 
+	    "Failed to open out shell script");
       return false;
     }
     out << "#!/bin/sh\n"
@@ -351,7 +357,7 @@ struct ParUtilities
 	<< std::endl;
     out.close();
     if (gSystem->Chmod(Form("%s/PROOF-INF/BUILD.sh", dir.Data()), 0755) != 0) {
-      Error("ParUtilities::MakeBuildScript", 
+      Error("ParUtilities::MakeScriptBuildScript", 
 	    "Failed to set exectuable flags on %s/PROOF-INF/BUILD.sh", 
 	    dir.Data());
       return false;
@@ -368,13 +374,13 @@ struct ParUtilities
    * 
    * @return true on success
    */
-  static Bool_t MakeBuildMacro(const TString& dir, 
-			       const TString& base, 
-			       const TString& ext,
-			       const TCollection* deps)  {
+  static Bool_t MakeScriptBuildMacro(const TString& dir, 
+				     const TString& base, 
+				     const TString& ext,
+				     const TCollection* deps)  {
     std::ofstream out(Form("%s/PROOF-INF/BUILD.C", dir.Data()));
     if (!out) {
-      Error("ParUtilities::MakeBuildMacro", "Failed to open build script");
+      Error("ParUtilities::MakeScriptBuildMacro","Failed to open build script");
       return false;
     }
     out << "void BUILD() {\n"
@@ -408,11 +414,12 @@ struct ParUtilities
    * 
    * @return true on success
    */
-  static Bool_t MakeUtilityScript(const TString& dir)
+  static Bool_t MakeScriptUtilityScript(const TString& dir)
   {
     std::ofstream out(Form("%s/PROOF-INF/UTIL.C", dir.Data()));
     if (!out) {
-      Error("ParUtilities::MakeUtilityScript", "Failed to open utility script");
+      Error("ParUtilities::MakeScriptUtilityScript", 
+	    "Failed to open utility script");
       return false;
     }
     out << "void LoadROOTLibs() {\n"
@@ -464,15 +471,16 @@ struct ParUtilities
    * 
    * @return true on success
    */
-  static Bool_t MakeSetupMacro(const TString& dir, 
-			       const TString& base, 
-			       const TString& ext,
-			       const TCollection* deps)
+  static Bool_t MakeScriptSetupMacro(const TString& dir, 
+				     const TString& base, 
+				     const TString& ext,
+				     const TCollection* deps)
   {
     // Make our set-up script 
     std::ofstream out(Form("%s/PROOF-INF/SETUP.C", dir.Data()));
     if (!out) {
-      Error("ParUtilities::MakeSetupMacro", "Failed to open setup script");
+      Error("ParUtilities::MakeScriptSetupMacro", 
+	    "Failed to open setup script");
       return false;
     }
     out << "void SETUP() {\n"
@@ -499,6 +507,209 @@ struct ParUtilities
     return true;
   }
   /* @} */
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name PAR generation from aux file list
+   */
+  static Bool_t MakeAuxFilePAR(const TList& files, 
+			       const TString& name,
+			       Bool_t verbose=false)
+  {
+    // --- Check input -----------------------------------------------
+    if (files.GetEntries() <= 0) return true;
+
+    // --- Create our temporary directory ----------------------------
+    Bool_t  retval = true;
+    TString tmpdir(gSystem->TempDirectory());
+    int     ltempl = tmpdir.Length() + 1 + 5 + 6 + 1;
+    char*   templ  = new char[ltempl];
+    snprintf(templ, ltempl, "%s/trainXXXXXX", tmpdir.Data());
+    if (!mkdtemp(templ)) {
+      Error("ParUtilities::MakeAuxFilePAR", 
+	    "Failed to generate temporary directory from template %s", 
+	    templ);
+      return false;
+    }
+    if (verbose) Printf("Preparing PAR file in %s", templ);
+    
+    try {
+      // --- Make directories for package ------------------------------
+      TString dir = TString::Format("%s/%s", templ, name.Data());
+      // Set-up directories 
+      if (gSystem->MakeDirectory(dir) < 0) 
+	throw TString::Format("Could not make directory '%s'", name.Data());
+      if (gSystem->MakeDirectory(Form("%s/PROOF-INF", dir.Data()))) 
+	throw TString::Format("Could not make directory %s/PROOF-INF", 
+			      name.Data());
+
+      TIter next(&files);
+      TObject* o = 0;
+      while ((o = next())) { 
+	TString fn(o->GetName());
+	if (verbose) Printf("Got %s", fn.Data());
+	if (fn.BeginsWith("/")) {
+	  Warning("MakeAuxFilePAR", "Will not include absolute path %s",
+		  fn.Data());
+	  continue; // absolute path 
+	}
+	
+	if (gSystem->AccessPathName(fn.Data())) {
+	  Warning("MakeAuxFilePAR", "Cannot access %s", fn.Data());
+	  continue; // non-exist
+	}
+	// Loop over path components and make directories as needed 
+	TObjArray*  comps = fn.Tokenize("/");
+	TString     cur   = dir;
+	Int_t       n     = comps->GetEntriesFast();
+	if (verbose) Printf("Got %d path components in %s", n-1, fn.Data());
+	Int_t       lvl   = 0;
+	for (Int_t i = 0; i < n-1; i++) {
+	  TObjString* comp = static_cast<TObjString*>(comps->At(i));
+	  TString&    c    = comp->String();
+	  if (c.IsNull()) continue;
+	  if (c.EqualTo(".")) continue;
+	  
+	  Bool_t doMake = true;
+	  if (c.EqualTo("..")) { doMake = false; lvl--; }
+	  
+	  cur = gSystem->ConcatFileName(cur, c);
+	  if (lvl < 0) {
+	    Warning("MakeAuxFilePAR", "Path %s points outside archive, ignored",
+		    cur.Data());
+	    break;
+	  }
+
+	  if (doMake) { 
+	    lvl++;
+	    if (!gSystem->AccessPathName(cur)) continue;
+	    if (verbose) Printf("Making directory %s", cur.Data());
+	    gSystem->MakeDirectory(cur);
+	  }
+	} // for(i)
+	if (verbose) Printf("cur=%s for %s lvl=%d", cur.Data(), fn.Data(), lvl);
+	comps->Delete();
+	if (lvl < 0) continue;
+
+	TString dest = TString::Format("%s/%s", cur.Data(), 
+				       gSystem->BaseName(fn.Data()));
+	if (verbose) Printf("%s -> %s", fn.Data(), dest.Data());
+	Int_t ret = gSystem->CopyFile(fn, dest, true);
+	switch (ret) { 
+	case -1: throw TString::Format("Couldn't open %s for copy", fn.Data());
+	case -2: throw TString::Format("File %s exists", dest.Data());
+	case -3: throw TString::Format("Error while copying %s", fn.Data());
+	}
+      }
+
+      {
+	// Make our build file 
+	if (verbose) Printf("Making build script");
+	std::ofstream out(Form("%s/PROOF-INF/BUILD.sh", dir.Data()));
+	if (!out) {
+	  Error("ParUtilities::MakeAuxFilePAR", 
+		"Failed to open out shell script");
+	  return false;
+	}
+	out << "#!/bin/sh\n\n"
+	    << "echo \"Nothing to be done\"\n\n"
+	    << "# EOF" << std::endl;
+	out.close();
+	if (gSystem->Chmod(Form("%s/PROOF-INF/BUILD.sh", dir.Data()), 0755)) {
+	  Error("ParUtilities::MakeAuxFilePAR", 
+		"Failed to set exectuable flags on %s/PROOF-INF/BUILD.sh", 
+		dir.Data());
+	  return false;
+	}
+      }
+      {
+	if (verbose) Printf("Making setup script");
+	// Make our setup file 
+	std::ofstream out(Form("%s/PROOF-INF/SETUP.C", dir.Data()));
+	if (!out) {
+	  Error("ParUtilities::MakeAuxFilePAR", 
+		"Failed to open out ROOT script");
+	  return false;
+	}
+	// The SETUP script is executed in the package's directory in
+	// the package cache - not in the session directory.  Hence,
+	// we take special care to get a link to the session directory
+	// from the package cache directory
+	out << "void SETUP()\n"
+	    << "{\n"
+	    << "  TString oldDir(gSystem->WorkingDirectory());\n"
+	    << "  TSystemDirectory* dir = new TSystemDirectory(\".\",\".\");\n"
+	    << "  TList*  files = dir->GetListOfFiles();\n"
+	    << "  if (!gSystem->ChangeDirectory(oldDir)) {\n"
+	    << "    Error(\"SETUP\", \"Failed to go back to %s\",\n"
+	    << "          oldDir.Data());\n"
+	    << "    return;\n"
+	    << "  }\n"
+	    << "  if (!files) {\n"
+	    << "    Warning(\"SETUP\", \"No files\");\n"
+	    << "    gSystem->Exec(\"pwd; ls -al\");\n"
+	    << "    return;\n"
+	    << "  }\n"
+	    << "  files->Sort();\n"
+	    << "  TString pkgDir = gSystem->WorkingDirectory();\n"
+	    << "  TString sesDir = gProofServ->GetSessionDir();\n"
+	    << "  Info(\"\",\"Session dir: %s\",sesDir);\n"
+	    << "  TIter next(files);\n"
+	    << "  TSystemFile* file = 0;\n"
+	    << "  while ((file = static_cast<TSystemFile*>(next()))) {\n"
+	    << "    TString name(file->GetName());\n"
+	    << "    if (name == \".\" || name == \"..\") continue;\n"
+	    << "    TString title(file->GetTitle());\n"
+	    << "    TString full(gSystem->ConcatFileName(pkgDir.Data(),\n"
+	    << "                                         name.Data()));\n"
+	    << "    TString tgt(gSystem->ConcatFileName(sesDir.Data(),\n"
+	    << "                                        name.Data()));\n"
+	    << "    if (file->IsA()->InheritsFrom(TSystemDirectory::Class())){\n"
+	    << "      gSystem->mkdir(tgt.Data(), true);\n"
+	    << "      continue;\n"
+	    << "    }\n"
+	    << "    Info(\"\",\"Linking %s to %s\",full.Data(),tgt.Data());\n"
+	    << "    gSystem->Symlink(full, tgt);\n"
+	    << "  }\n"
+	    << "}\n"
+	    << "// EOF " << std::endl;
+	out.close();
+      }
+      if (verbose) Printf("Packing up");
+      Int_t ret = 0;
+      ret = gSystem->Exec(Form("(cd %s && tar -c%szf %s.par %s)", 
+			       templ, (verbose ? "v" : ""), 
+			       name.Data(),name.Data()));
+      if (ret != 0) 
+	throw TString::Format("Failed to create PAR file %s.PAR from %s", 
+			      name.Data(), name.Data());
+
+      // --- Move PAR file to here -------------------------------------
+      if (verbose) Printf("Move here");
+      ret = gSystem->Exec(Form("mv -f %s/%s.par %s.par", templ, name.Data(), 
+			       name.Data()));
+      if (ret != 0) 
+	throw TString::Format("Failed to rename %s/%s.par to %s.par: %s", 
+			      templ, name.Data(), name.Data(), 
+			      gSystem->GetError());
+
+
+      if (verbose) {
+	Printf("List content");
+	gSystem->Exec(Form("tar tzf %s.par", name.Data()));
+      }
+      retval = true;
+    }
+    catch (TString& e) {
+      Error("ParUtilities::MakeAuxFilePAR", "%s", e.Data());
+      retval = false;
+    }
+    
+    // --- Remove temporary directory --------------------------------
+    gSystem->Exec(Form("rm -rf %s", templ));
+    
+    return retval;
+  }
 };
 #endif
 // 

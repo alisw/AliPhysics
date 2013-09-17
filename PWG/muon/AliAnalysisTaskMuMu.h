@@ -73,7 +73,9 @@ public:
     kEventZ10=BIT(10),
     kEventOFFLINEMUL2=BIT(11),
     kEventSD2=BIT(16),
-    kEventMSL=BIT(17)
+    kEventMSL=BIT(17),
+    kEventREJECTED=BIT(18),
+    kEventPSTS=BIT(19)
   };
   
   AliAnalysisTaskMuMu();
@@ -126,6 +128,10 @@ public:
   void UserCreateOutputObjects();
 
   virtual void UserExec(Option_t* opt);
+  
+  AliMuonTrackCuts* MuonTrackCuts();
+  
+  void SetMuonTrackCuts(const AliMuonTrackCuts& trackCuts);
   
   class PairCut : public TObject {
   public:
@@ -238,6 +244,8 @@ private:
   void EAComputeTrackMasks();
 
   Int_t EAGetNumberOfMuonTracks() const;
+
+  Int_t EAGetNumberOfSelectMuonTracks() const;
 
   Double_t EAGetTrackDCA(const AliVParticle& particle) const;
 

@@ -34,6 +34,7 @@
 #include "AliLnDriver.h"
 #include "B2.h"
 
+
 ClassImp(AliLnDriver)
 
 AliLnDriver::AliLnDriver()
@@ -48,14 +49,12 @@ AliLnDriver::AliLnDriver()
 , fMakeRatio(1)
 , fMakeSpectra(1)
 , fMakeStats(1)
-, fLowPtBin(3)
-, fHiPtBin(15)
-, fLowM2Bin(9)
-, fHighM2Bin(17)
-, fUnfolding(0)
-, fNIter(4)
+, fPtMin(3)
+, fPtMax(15)
+, fPid(0.4)
+, fPidPt(1.)
 , fSecondaries(1)
-, fSecProd(AliLnSecondaries::kTFractionFitter)
+, fSecProc(AliLnSecondaries::kTFractionFitter)
 , fMatDCAxyMod(AliLnSecondaries::kGeantDCAxy)
 , fANucTemplate(0)
 , fNbin(1)
@@ -63,16 +62,14 @@ AliLnDriver::AliLnDriver()
 , fYMax(0.5)
 , fMinDCAxy(-1.5)
 , fMaxDCAxy(1.5)
-, fMinM2Bkg(2.2)
-, fMaxM2Bkg(5.)
-, fMinM2tpc(2.)
-, fMaxM2tpc(6.5)
+, fBkgMin(2.2)
+, fBkgMax(5.)
+, fIntMin(2.)
+, fIntMax(6.5)
 , fEfficiency(1)
 , fG3Fluka(0)
 , fScMat(1)
 , fScFd(1)
-, fSysPos(1)
-, fSysNeg(1)
 , fInputData()
 , fInputSimu()
 , fInputSimuFix()
@@ -87,6 +84,9 @@ AliLnDriver::AliLnDriver()
 , fSameFdwn(0)
 , fMCtoINEL(0)
 , fAddFakeTracks(1)
+, fPidProc(AliLnPt::kMassSquared)
+, fPidEff(1)
+, fDebugLevel(0)
 {
 //
 // constructor
@@ -94,7 +94,6 @@ AliLnDriver::AliLnDriver()
 	for(Int_t i=0; i<3; ++i)
 	{
 		fTrigEff[i] = 1;
-		fXsec[i] = 1;
 	}
 	
 	gErrorIgnoreLevel = kWarning;
@@ -135,28 +134,6 @@ void AliLnDriver::SetOutputFilenames(const TString& pt, const TString& ratio, co
 	fOutputPtDebug.Replace(pt.Length()-5,5,"-debug.root");
 }
 
-void AliLnDriver::PrintFilenames() const
-{
-//
-// print filenames to stdout
-//
-	using namespace std;
-	
-	cout << endl;
-	cout << "input data        : " << fInputData << endl;
-	cout << "input simulation  : " << fInputSimu << endl;
-	cout << "input simu. fix   : " << fInputSimuFix << endl;
-	
-	cout << "corrections       : " << fOutputPtCorr << endl;
-	cout << "corrections debug : " << fOutputPtCorrDebug << endl;
-	
-	cout << "output pt         : " << fOutputPt << endl;
-	cout << "output pt debug   : " << fOutputPtDebug << endl;
-	cout << "output ratio      : " << fOutputRatio << endl;
-	cout << "output spectra    : " << fOutputSpectra << endl;
-	cout << endl;
-}
-
 void AliLnDriver::SetTriggerEfficiency(Double_t eff[3])
 {
 //
@@ -165,26 +142,80 @@ void AliLnDriver::SetTriggerEfficiency(Double_t eff[3])
 	for(Int_t i=0; i<3; ++i) fTrigEff[i] = eff[i];
 }
 
-void AliLnDriver::SetInelXSection(Double_t xsec[3])
-{
-//
-// set total cross section, stat. and syst. errors
-//
-	for(Int_t i=0; i<3; ++i) fXsec[i] = xsec[i];
-}
-
 Int_t AliLnDriver::Run() const
 {
 //
 // run script
 //
-	if(!fIsOnlyGen && fMakeCorr) this->MakePtCorr();
+	using namespace std;
 	
-	if(fMakePt) this->MakePt();
+	if(!fIsOnlyGen && fMakeCorr)
+	{
+		if(fDebugLevel > 0 )
+		{
+			cout << endl;
+			cout << "********* Rebuild corrections ***********" << endl;
+			cout << "Species               : " << fSpecies << endl;
+			cout << "Simulation file       : " << fInputSimu << endl;
+			cout << "Simulation file (fix) : " << fInputSimuFix << endl;
+			cout << "Output file           : " << fOutputPtCorr << endl;
+			cout << "Output file (debug)   : " << fOutputPtCorrDebug << endl;
+			cout << endl;
+		}
+		
+		this->MakePtCorr();
+	}
 	
-	if(fMakeRatio) this->MakeRatio();
+	if(fMakePt)
+	{
+		if(fDebugLevel > 0 )
+		{
+			cout << endl;
+			cout << "********* Make pt ***********" << endl;
+			cout << "Species             : " << fSpecies << endl;
+			cout << "pt interval (GeV/c) : (" << fPtMin << ", " << fPtMax << ")" << endl;
+			cout << "pid pt (GeV/c)      : " << fPidPt <<  endl;
+			cout << "Input file          : " << fInputData << endl;
+			cout << "Correction file     : " << fOutputPtCorr << endl;
+			cout << "Output file         : " << fOutputPt << endl;
+			cout << "Output file (debug) : " << fOutputPtDebug << endl;
+			cout << endl;
+		}
+		
+		this->MakePt();
+	}
 	
-	if(fMakeSpectra) this->MakeSpectra();
+	if(fMakeRatio)
+	{
+		if(fDebugLevel > 0 )
+		{
+			cout << endl;
+			cout << "********* Make ratio ***********" << endl;
+			cout << "Species             : " << fSpecies << endl;
+			cout << "Input file          : " << fOutputPt << endl;
+			cout << "Output file         : " << fOutputRatio << endl;
+			cout << endl;
+		}
+		
+		this->MakeRatio();
+	}
+	
+	if(fMakeSpectra)
+	{
+		if(fDebugLevel > 0 )
+		{
+			cout << endl;
+			cout << "********* Make spectra ***********" << endl;
+			cout << "Species             : " << fSpecies << endl;
+			cout << "INEL extrapolation  : " << fINEL << endl;
+			cout << "Rapidity interval   : (" << fYMin << ", " << fYMax << ")" << endl;
+			cout << "Input file          : " << fOutputPt << endl;
+			cout << "Output file         : " << fOutputSpectra << endl;
+			cout << endl;
+		}
+		
+		this->MakeSpectra();
+	}
 	
 	return 0;
 }
@@ -206,8 +237,8 @@ void AliLnDriver::MakePtCorr() const
 		
 		AliLnCorr lncorr(kParticle[i], fInputData, fInputSimu, fInputSimuFix, outputfile1, fOutputCorTag);
 		
-		lncorr.GetLnSecondaries()->SetCorBins(fLowPtBin, fHiPtBin);
-		lncorr.GetLnSecondaries()->SetProcedure(fSecProd);
+		lncorr.GetLnSecondaries()->SetCorBins(fPtMin, fPtMax);
+		lncorr.GetLnSecondaries()->SetProcedure(fSecProc);
 		lncorr.GetLnSecondaries()->SetMatDCAxyModel(fMatDCAxyMod);
 		lncorr.GetLnSecondaries()->SetAntiNucleusAsTemplate(fANucTemplate);
 		lncorr.GetLnSecondaries()->SetDCAxyInterval(fMinDCAxy, fMaxDCAxy);
@@ -255,14 +286,13 @@ void AliLnDriver::MakePt() const
 		AliLnPt lnpt(kParticle[i], fTrigEff[0], fInputData, ptfile, fOutputTag, fOutputPtCorr, fOutputCorTag);
 		
 		lnpt.SetOnlyGeneration(fIsOnlyGen);
-		lnpt.SetRapidityInterval(fYMin, fYMax);
 		
-		lnpt.SetPtBinInterval(fLowPtBin, fHiPtBin);
-		lnpt.SetM2BinInterval(fLowM2Bin, fHighM2Bin);
-		lnpt.SetM2BkgInterval(fMinM2Bkg, fMaxM2Bkg);
-		lnpt.SetM2TPCInterval(fMinM2tpc, fMaxM2tpc);
-		lnpt.SetPidM2(fPidM2);
-		lnpt.SetUnfolding(fUnfolding, fNIter);
+		lnpt.SetPtInterval(fPtMin, fPtMax);
+		lnpt.SetPid(fPid);
+		lnpt.SetPidProcedure(fPidProc);
+		lnpt.SetPidPt(fPidPt);
+		lnpt.SetBkgInterval(fBkgMin, fBkgMax);
+		lnpt.SetPidInterval(fIntMin, fIntMax);
 		lnpt.SetSecondaries(fSecondaries);
 		lnpt.SetEfficiency(fEfficiency);
 		lnpt.SetMakeStats(fMakeStats);
@@ -270,6 +300,8 @@ void AliLnDriver::MakePt() const
 		lnpt.SetFitFractionCorr(fFitFrac);
 		lnpt.SetFeedDownCorr(fFdwnCorr);
 		lnpt.SetSameFeedDownCorr(fSameFdwn);
+		lnpt.SetPidEfficiency(fPidEff);
+		lnpt.SetDebugLevel(fDebugLevel);
 		
 		lnpt.Exec();
 		
@@ -310,19 +342,16 @@ void AliLnDriver::MakeSpectra() const
 //
 	TFileMerger m;
 	
-	const TString kParticle[]  = { fSpecies, Form("Anti%s",fSpecies.Data())};
-	const Double_t kSysErr[] = { fSysPos, fSysNeg };
+	const TString kParticle[2] = { fSpecies, Form("Anti%s",fSpecies.Data())};
 	
 	for(Int_t i=0; i<2; ++i)
 	{
 		TString spectrafile = kParticle[i] + "-Spectra.root";
 		
-		AliLnSpectra lnspectra(kParticle[i], fOutputPt, fOutputTag, spectrafile, fOutputTag, fXsec);
+		AliLnSpectra lnspectra(kParticle[i], fOutputPt, fOutputTag, spectrafile, fOutputTag);
 		
 		lnspectra.SetRapidityInterval(fYMin, fYMax);
 		lnspectra.SetExtrapolateToINEL(fINEL);
-		lnspectra.SetOnlyGeneration(fIsOnlyGen);
-		lnspectra.SetScalingFactor(kSysErr[i]);
 		
 		lnspectra.Exec();
 		

@@ -57,6 +57,11 @@ class AliDxHFEParticleSelection : public TNamed {
     kNTrackPropertyLabels
   };
 
+  enum {
+    kHistoEvent=0,
+    kHistoNrTracksPrEvent
+  };
+
   /// set options
   void SetOption(const char* opt) { fOption = opt; }
   /// overloaded from TObject: get option
@@ -81,8 +86,11 @@ class AliDxHFEParticleSelection : public TNamed {
   const TList* GetControlObjects() const {return fControlObjects;}
 
   /// histogram event properties
-  virtual int HistogramEventProperties(int bin);
-
+  virtual int HistogramEventProperties(int histonr, int bin);
+  virtual int HistogramEventProperties(int bin){
+    return HistogramEventProperties(kHistoEvent,bin);
+  }
+  
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
   virtual AliVParticle* CreateParticle(AliVParticle* track);
 
@@ -193,6 +201,7 @@ class AliDxHFEParticleSelection : public TNamed {
   TList* fControlObjects; // list of control objects
   TH1* fhEventControl; //! event control histogram
   TH1* fhTrackControl; //! track control histogram
+  TH1* fhNrTracksPerEvent; //! Control histo for nr particles pr event
   bool fUseMC;         // specific implementation for MC selection
   int fVerbosity;      //! verbosity
   int fDimThn;         //  dim of thnsparse
@@ -202,7 +211,7 @@ class AliDxHFEParticleSelection : public TNamed {
   static const char* fgkEventControlBinNames[]; //! bin labels for event control histogram
   static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
 
-  ClassDef(AliDxHFEParticleSelection, 4);
+  ClassDef(AliDxHFEParticleSelection, 5);
 
 };
 

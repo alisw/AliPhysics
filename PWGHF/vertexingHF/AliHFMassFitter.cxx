@@ -955,7 +955,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     Double_t diffUnderBands=(intUnderHisto-intUnderFunc);
     Double_t relDiff=diffUnderPick/diffUnderBands;
     cout<<"Relative difference = "<<relDiff<<endl;
-    if(TMath::Abs(relDiff) < 1) isBkgOnly=kTRUE;
+    if(TMath::Abs(relDiff) < 0.25) isBkgOnly=kTRUE;
     else{
       cout<<"Relative difference = "<<relDiff<<": I suppose there is some signal, continue with total fit!"<<endl;
     }

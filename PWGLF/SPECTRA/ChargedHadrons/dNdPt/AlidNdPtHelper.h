@@ -6,7 +6,7 @@
 //
 // Origin: Jan Fiete Grosse-Oetringhaus
 // Modified and Extended: Jacek Otwinowski 19/11/2009
-// last change: 2013-02-05 by M.Knichel
+// last change: 2013-06-13 by M.Knichel
 //
 
 #include <TObject.h>
@@ -80,7 +80,8 @@ class AlidNdPtHelper : public TObject
 
     static Int_t GetSPDMBTrackMult(const AliESDEvent* const esdEvent, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
     static Int_t GetSPDMBPrimTrackMult(const AliESDEvent* const esdEvent, AliStack *const  stack, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
-    static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);
+    static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);    
+    static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, Double_t yShift);    
 
     static AliESDtrack* GetTPCOnlyTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
     static AliESDtrack* GetTPCOnlyTrackTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
@@ -123,7 +124,7 @@ class AlidNdPtHelper : public TObject
     static AliPWG0Helper::MCProcessType GetEventProcessTypePA(AliHeader* aHeader, Bool_t adebug = kFALSE);
     static AliPWG0Helper::MCProcessType GetDPMjetEventProcessTypePA(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
 
-    ClassDef(AlidNdPtHelper, 2);
+    ClassDef(AlidNdPtHelper, 3);
 
   private:
     AlidNdPtHelper(const AlidNdPtHelper&);

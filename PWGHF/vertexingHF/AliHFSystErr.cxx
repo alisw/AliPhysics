@@ -92,7 +92,7 @@ void AliHFSystErr::Init(Int_t decay){
   // Variables/histos initialization
   //
 
-  if (fRunNumber!=10 && fIsLowEnergy==false) { 
+  if ((fRunNumber>11) && fIsLowEnergy==false) { 
     AliFatal("Only settings for 2010 and the low energy runs are implemented so far");
   }
 
@@ -101,59 +101,110 @@ void AliHFSystErr::Init(Int_t decay){
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
       else InitD0toKpi2010pp();
-    } else if (fCollisionType==1) {
-      if (fCentralityClass=="07half") InitD0toKpi2011PbPb07half();
-      else if (fCentralityClass=="010") InitD0toKpi2010PbPb010CentScan();
-      else if (fCentralityClass=="1020") InitD0toKpi2010PbPb1020CentScan();
-      else if (fCentralityClass=="020") InitD0toKpi2010PbPb020();
-      else if (fCentralityClass=="2040") InitD0toKpi2010PbPb2040CentScan();
-      else if (fCentralityClass=="3050InPlane") InitD0toKpi2011PbPb3050InPlane();
-      else if (fCentralityClass=="3050OutOfPlane") InitD0toKpi2011PbPb3050OutOfPlane();
-      else if (fCentralityClass=="4060") InitD0toKpi2010PbPb4060CentScan();
-      else if (fCentralityClass=="6080") InitD0toKpi2010PbPb6080CentScan();
-      else if (fCentralityClass=="4080") InitD0toKpi2010PbPb4080();
-      else AliFatal("Not yet implemented");
+    } 
+    else if (fCollisionType==1) {
+      if (fRunNumber == 10){
+	if (fCentralityClass=="010") InitD0toKpi2010PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitD0toKpi2010PbPb1020CentScan();
+	else if (fCentralityClass=="020")  InitD0toKpi2010PbPb020();
+	else if (fCentralityClass=="2040") InitD0toKpi2010PbPb2040CentScan();
+	else if (fCentralityClass=="4060") InitD0toKpi2010PbPb4060CentScan();
+	else if (fCentralityClass=="6080") InitD0toKpi2010PbPb6080CentScan();
+	else if (fCentralityClass=="4080") InitD0toKpi2010PbPb4080();
+	else AliFatal("Not yet implemented");
+      }
+      else if (fRunNumber == 11){
+	if (fCentralityClass=="07half") InitD0toKpi2011PbPb07half();
+	else if (fCentralityClass=="3050InPlane") InitD0toKpi2011PbPb3050InPlane();
+	else if (fCentralityClass=="3050OutOfPlane") InitD0toKpi2011PbPb3050OutOfPlane();
+	else if (fCentralityClass=="010") InitD0toKpi2011PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitD0toKpi2011PbPb1020CentScan();
+	else if (fCentralityClass=="2030") InitD0toKpi2011PbPb2030CentScan();
+	else if (fCentralityClass=="3040") InitD0toKpi2011PbPb3040CentScan();
+	else if (fCentralityClass=="4050") InitD0toKpi2011PbPb4050CentScan();
+	else if (fCentralityClass=="5080") InitD0toKpi2010PbPb5080CentScan();
+	else AliFatal("Not yet implemented");
+      }
+    } 
+    else if (fCollisionType==2) { 
+      if (fCentralityClass=="0100") InitD0toKpi2013pPb0100();
     }
-    //    else if (fCollisionType==2) InitD0toKpi2010ppLowEn();
+    else AliFatal("Not yet implemented");
     break;
+    
   case 2: // D+->Kpipi
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
       else InitDplustoKpipi2010pp();
-    } else if (fCollisionType==1) {
-      if (fCentralityClass=="07half") InitDplustoKpipi2011PbPb07half();
-      else if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
-      else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
-      else if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
-      else if (fCentralityClass=="2040") InitDplustoKpipi2010PbPb2040CentScan();
-      else if (fCentralityClass=="4060") InitDplustoKpipi2010PbPb4060CentScan();
-      else if (fCentralityClass=="6080") InitDplustoKpipi2010PbPb6080CentScan();
-      else if (fCentralityClass=="4080") InitDplustoKpipi2010PbPb4080();
-      else AliFatal("Not yet implemented");
-    }
+    } 
+    else if (fCollisionType==1) {
+      if (fRunNumber == 10){
+	if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
+	else if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
+	else if (fCentralityClass=="2040") InitDplustoKpipi2010PbPb2040CentScan();
+	else if (fCentralityClass=="4060") InitDplustoKpipi2010PbPb4060CentScan();
+	else if (fCentralityClass=="6080") InitDplustoKpipi2010PbPb6080CentScan();
+	else if (fCentralityClass=="4080") InitDplustoKpipi2010PbPb4080();
+	else AliFatal("Not yet implemented");
+      }
+      if(fRunNumber == 11){
+	if (fCentralityClass=="07half") InitDplustoKpipi2011PbPb07half();
+	else if (fCentralityClass=="010") InitDplustoKpipi2011PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDplustoKpipi2011PbPb1020CentScan();
+	else if (fCentralityClass=="2030") InitDplustoKpipi2011PbPb2030CentScan();
+	else if (fCentralityClass=="3040") InitDplustoKpipi2011PbPb3040CentScan();
+	else if (fCentralityClass=="4050") InitDplustoKpipi2011PbPb4050CentScan();
+	else if (fCentralityClass=="5080") InitDplustoKpipi2010PbPb5080CentScan();
+	else AliFatal("Not yet implemented");
+      }
+    } 
+    else if (fCollisionType==2) { 
+      if (fCentralityClass=="0100") InitDplustoKpipi2013pPb0100();
+    } 
+    else AliFatal("Not yet implemented");
     break;
   case 3: // D*->D0pi
     if (fCollisionType==0) {
       if(fIsLowEnergy)  InitDstartoD0pi2010ppLowEn();
       else InitDstartoD0pi2010pp();
-    }else if (fCollisionType==1) {
-      if (fCentralityClass=="010") InitDstartoD0pi2010PbPb010CentScan();
-      else if (fCentralityClass=="07half") InitDstartoD0pi2011PbPb07half();
-      else if (fCentralityClass=="1020") InitDstartoD0pi2010PbPb1020CentScan();
-      else if (fCentralityClass=="020") InitDstartoD0pi2010PbPb020();
-      else if (fCentralityClass=="2040" && fIsCentScan) InitDstartoD0pi2010PbPb2040CentScan();
-      else if (fCentralityClass=="2040") InitDstartoD0pi2010PbPb2040();
-      else if (fCentralityClass=="4060") InitDstartoD0pi2010PbPb4060CentScan();
-      else if (fCentralityClass=="6080") InitDstartoD0pi2010PbPb6080CentScan();
-      else if (fCentralityClass=="4080") InitDstartoD0pi2010PbPb4080();
-      else AliFatal("Not yet implemented");
     }
+    else if (fCollisionType==1) {
+      if (fRunNumber == 10){
+	if (fCentralityClass=="010") InitDstartoD0pi2010PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDstartoD0pi2010PbPb1020CentScan();
+	else if (fCentralityClass=="020") InitDstartoD0pi2010PbPb020();
+	else if (fCentralityClass=="2040" && fIsCentScan) InitDstartoD0pi2010PbPb2040CentScan();
+	else if (fCentralityClass=="2040") InitDstartoD0pi2010PbPb2040();
+	else if (fCentralityClass=="4060") InitDstartoD0pi2010PbPb4060CentScan();
+	else if (fCentralityClass=="6080") InitDstartoD0pi2010PbPb6080CentScan();
+	else if (fCentralityClass=="4080") InitDstartoD0pi2010PbPb4080();
+	else AliFatal("Not yet implemented");
+      }
+      if (fRunNumber == 11){
+	if (fCentralityClass=="07half") InitDstartoD0pi2011PbPb07half();
+	else if (fCentralityClass=="010") InitDstartoD0pi2011PbPb010CentScan();
+	else if (fCentralityClass=="1020") InitDstartoD0pi2011PbPb1020CentScan();
+	else if (fCentralityClass=="2030") InitDstartoD0pi2011PbPb2030CentScan();
+	else if (fCentralityClass=="3040") InitDstartoD0pi2011PbPb3040CentScan();
+	else if (fCentralityClass=="4050") InitDstartoD0pi2011PbPb4050CentScan();
+	else if (fCentralityClass=="5080") InitDstartoD0pi2010PbPb5080CentScan();
+	else AliFatal("Not yet implemented");
+      }
+    }
+    else if (fCollisionType==2) { 
+      if (fCentralityClass=="0100") InitDstartoD0pi2013pPb0100();
+    }
+    else AliFatal("Not yet implemented");
     break;
   case 4: // D+s->KKpi
     if (fCollisionType==0) InitDstoKKpi2010pp();
     else if (fCollisionType==1) {
       if (fCentralityClass=="07half") InitDstoKKpi2011PbPb07half();
       else AliFatal("Not yet implemented");
+    }
+    else if (fCollisionType==2) { 
+      if (fCentralityClass=="0100") InitDstoKKpi2013pPb0100();
     }
     else AliFatal("Not yet implemented");
     break;
@@ -515,6 +566,64 @@ void AliHFSystErr::InitD0toKpi2010ppLowEn() {
   
   return;
 }
+//_________________________________________________________________________
+void AliHFSystErr::InitD0toKpi2013pPb0100(){
+  //
+  // D0->Kpi syst errors. p-Pb data sample
+  //
+  AliInfo(" Settings for D0 --> K pi, p-Pb collisions at 5.023 TeV"); 
+
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.02); // 
+  
+  // Branching ratio 
+  fBR = new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.013); // 1.2% PDG2010
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.06); // 3% per track
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,0.0);
+  fRawYield->SetBinContent(2,0.08);
+  fRawYield->SetBinContent(3,0.02);
+  fRawYield->SetBinContent(4,0.05);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.02);
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.08);
+  
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  fCutsEff->SetBinContent(1,0.0);
+  fCutsEff->SetBinContent(2,0.10);
+  for(Int_t i=3;i<=24;i++) fCutsEff->SetBinContent(i,0.05);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  fPIDEff->SetBinContent(1,0.0);
+  fPIDEff->SetBinContent(2,0.05);
+  for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.00);
+  for(Int_t i=13;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt  
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  fMCPtShape->SetBinContent(1,0.0);
+  fMCPtShape->SetBinContent(2,0.02);
+  fMCPtShape->SetBinContent(3,0.02);
+  for(Int_t i=4;i<=6;i++) fMCPtShape->SetBinContent(i,0.0);
+  for(Int_t i=7;i<=24;i++) fMCPtShape->SetBinContent(i,0.02);
+
+  // particle-antiparticle
+  /*
+  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
+  for(Int_t i=1;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+  */
+  return;
+
+
+}
 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010pp() {
@@ -759,6 +868,56 @@ void AliHFSystErr::InitDstoKKpi2011PbPb07half() {
   return;
 }
 
+//_________________________________________________________________________
+void AliHFSystErr::InitDstoKKpi2013pPb0100(){
+  //
+  // Dstar syst
+  AliInfo(" Settings for Ds --> K K pi, p-Pb collisions at 5.023 TeV"); 
+  
+  //Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=3;i<=12;i++) fNorm->SetBinContent(i,0.00); // 
+  
+ // Branching ratio 
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=3;i<=12;i++) fBR->SetBinContent(i,0.053); // 0.12/2.28 PDG2012
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  for(Int_t i=3;i<=12;i++) fTrackingEff->SetBinContent(i,0.09); // 3% per track
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  for(Int_t i=3; i<=4; i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=5; i<=6; i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=7; i<=8; i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=9; i<=12; i++) fRawYield->SetBinContent(i,0.08);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  for(Int_t i=3;i<=12;i++) fCutsEff->SetBinContent(i,0.15); //
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=3;i<=4;i++) fPIDEff->SetBinContent(i,0.10); 
+  for(Int_t i=5;i<=12;i++) fPIDEff->SetBinContent(i,0.05); 
+
+  // MC dN/dpt  
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  for(Int_t i=3;i<=12;i++) fMCPtShape->SetBinContent(i,0.04);
+
+  // particle-antiparticle
+  /*
+  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
+  fPartAntipart->SetBinContent(1,1);
+  fPartAntipart->SetBinContent(2,1);
+  fPartAntipart->SetBinContent(3,0.12);
+  for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+  */
+  return;
+}
+
+
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
   // 
@@ -928,6 +1087,75 @@ void AliHFSystErr::InitDplustoKpipi2010ppLowEn() {
   fMCPtShape->SetBinContent(2,0.03);
 
   return;
+}
+
+//_________________________________________________________________________
+void AliHFSystErr::InitDplustoKpipi2013pPb0100(){
+  //
+  // Dplus syst 
+  AliInfo(" Settings for D+ --> K pi pi, p-Pb collisions at 5.023 TeV"); 
+
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.00); // 
+  
+  fBR = new TH1F("fBR","fBR",20,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.09); // 3% per track
+  
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,1);
+  fRawYield->SetBinContent(2,1);
+  fRawYield->SetBinContent(3,0.06);
+  fRawYield->SetBinContent(4,0.12);
+  fRawYield->SetBinContent(5,0.05);
+  fRawYield->SetBinContent(6,0.04);
+  fRawYield->SetBinContent(7,0.04);
+  fRawYield->SetBinContent(8,0.04);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.07);
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.17);
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.14);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  fCutsEff->SetBinContent(1,1);
+  fCutsEff->SetBinContent(2,1);
+  fCutsEff->SetBinContent(3,0.07);
+  fCutsEff->SetBinContent(4,0.04);
+  fCutsEff->SetBinContent(5,0.04);
+  fCutsEff->SetBinContent(6,0.08);
+  fCutsEff->SetBinContent(7,0.08);
+  fCutsEff->SetBinContent(8,0.08);
+  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.08);
+  for(Int_t i=13;i<=16;i++) fCutsEff->SetBinContent(i,0.08);
+  for(Int_t i=17;i<=24;i++) fCutsEff->SetBinContent(i,0.1); 
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  fPIDEff->SetBinContent(1,1);
+  fPIDEff->SetBinContent(2,1);
+  for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.0); //
+  for(Int_t i=13;i<=24;i++) fPIDEff->SetBinContent(i,0.05); // 5%
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  for(Int_t i=1;i<=12;i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=13;i<=24;i++) fMCPtShape->SetBinContent(i,0.04);
+
+  // particle-antiparticle
+  /*
+  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
+  fPartAntipart->SetBinContent(1,1);
+  fPartAntipart->SetBinContent(2,1);
+  fPartAntipart->SetBinContent(3,0.12);
+  for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+  */
+  return;
+
+
 }
 
 //--------------------------------------------------------------------------
@@ -1281,6 +1509,70 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb4080() {
 
 }
 
+//_________________________________________________________________________
+void AliHFSystErr::InitDstartoD0pi2013pPb0100(){
+  // Dstar syst in pPb 2013 MB
+  //
+  AliInfo(" Settings for D* --> D0 pi, p-Pb collisions at 5.023 TeV"); 
+
+  //Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.00); // 
+  
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.015); // 1.5% PDG2010
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.09); // 3% per track
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,1.0);
+  fRawYield->SetBinContent(2,0.08);
+  fRawYield->SetBinContent(3,0.02);
+  fRawYield->SetBinContent(4,0.02);
+  fRawYield->SetBinContent(5,0.05);
+  fRawYield->SetBinContent(6,0.02);
+  fRawYield->SetBinContent(7,0.04);
+  fRawYield->SetBinContent(8,0.04);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05); 
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.06);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  fCutsEff->SetBinContent(1,0.);
+  fCutsEff->SetBinContent(2,0.10);
+  for(Int_t i=3;i<=24;i++) fCutsEff->SetBinContent(i,0.05);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  fPIDEff->SetBinContent(1,0.0);
+  fPIDEff->SetBinContent(2,0.05);
+  for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.00);
+  for(Int_t i=12;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt  
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  for(Int_t i=1;i<=3;i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=4;i<=6;i++) fMCPtShape->SetBinContent(i,0.);
+  for(Int_t i=7;i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+
+  // particle-antiparticle
+  /*
+  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
+  fPartAntipart->SetBinContent(1,1);
+  fPartAntipart->SetBinContent(2,1);
+  fPartAntipart->SetBinContent(3,0.12);
+  for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+  */
+  return;
+
+
+}
+
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitD0toKpi2010PbPb010CentScan(){
   // define errors for RAA vs. centrality
@@ -1393,6 +1685,186 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb6080CentScan(){
   for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.10); 
   for(Int_t i=7;i<=12;i++) fMCPtShape->SetBinContent(i,0.045);
 }
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb010CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb1020CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb2030CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb3040CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2011PbPb4050CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2010PbPb5080CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitD0toKpi2011PbPb07half();
+  
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb010CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.15);
+  for(Int_t i=5;i<=8;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=17;i++) fRawYield->SetBinContent(i,0.15);
+
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=17;i++) fMCPtShape->SetBinContent(i,0.05);
+
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=5;i<=8;i++) fCutsEff->SetBinContent(i,0.20);
+  for(Int_t i=9;i<=17;i++) fCutsEff->SetBinContent(i,0.10);
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb1020CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=9;i<=17;i++)fRawYield->SetBinContent(i,0.15);
+
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=17;i++) fMCPtShape->SetBinContent(i,0.05);
+  
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=5;i<=8;i++) fCutsEff->SetBinContent(i,0.20);
+  for(Int_t i=9;i<=17;i++) fCutsEff->SetBinContent(i,0.15);
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb2030CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+  
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=9;i<=17;i++) fRawYield->SetBinContent(i,0.08);
+
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=17;i++) fMCPtShape->SetBinContent(i,0.05);
+  
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.20);
+  for(Int_t i=5;i<=8;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=9;i<=17;i++) fCutsEff->SetBinContent(i,0.20);
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb3040CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.20);
+  for(Int_t i=5;i<=8;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=9;i<=17;i++) fRawYield->SetBinContent(i,0.20);
+
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=17;i++) fMCPtShape->SetBinContent(i,0.05);
+
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.20);
+  for(Int_t i=5;i<=8;i++) fCutsEff->SetBinContent(i,0.20);
+  for(Int_t i=9;i<=17;i++) fCutsEff->SetBinContent(i,0.20);
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb4050CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2011PbPb07half();
+
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=9;i<=17;i++) fRawYield->SetBinContent(i,0.05);
+
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=17;i++) fMCPtShape->SetBinContent(i,0.05);
+
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.20);
+  for(Int_t i=5;i<=8;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=9;i<=17;i++) fCutsEff->SetBinContent(i,0.20);
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2010PbPb5080CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDplustoKpipi2010PbPb4080();
+
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=5;i<=8;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=17;i++) fRawYield->SetBinContent(i,0.10);
+
+  for(Int_t i=1;i<=17;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.20); // 10%
+  for(Int_t i=5;i<=8;i++) fCutsEff->SetBinContent(i,0.10); // 10%
+  for(Int_t i=9;i<=17;i++) fCutsEff->SetBinContent(i,0.20); // 10%
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb010CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb1020CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb2030CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb3040CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2011PbPb4050CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2010PbPb5080CentScan(){
+  // define errors for RAA vs. centrality 2011
+  InitDstartoD0pi2011PbPb07half();
+  
+}
+
 
 
 //--------------------------------------------------------------------------

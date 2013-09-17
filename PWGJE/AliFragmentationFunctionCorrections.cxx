@@ -2871,21 +2871,21 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
 
 //________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteBgrJetSecCorr(TString strInfile, TString strBgrID, TString strID, TString strOutfile, 
-							     Bool_t updateOutfile, TString strOutDir)
+							     Bool_t updateOutfile, TString strOutDir,Double_t scaleFacBgrRec)
 { 
   // read task ouput from MC and write secondary correction - standard dir/list 
      
   TString strdir  = "PWGJE_FragmentationFunction_" + strID;
   TString strlist = "fracfunc_" + strID;
     
-  WriteJetSecCorr(strInfile,strdir,strlist,strOutfile,updateOutfile, strOutDir,kTRUE,strBgrID);
+  WriteJetSecCorr(strInfile,strdir,strlist,strOutfile,updateOutfile, strOutDir,kTRUE,strBgrID,scaleFacBgrRec);
 }
 
 
 //___________________________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TString strdir, TString strlist, 
 							  TString strOutfile, Bool_t updateOutfile, TString strOutDir,
-							  Bool_t writeBgr, TString strBgrID)
+							  Bool_t writeBgr, TString strBgrID,Double_t scaleFacBgrRec)
 {
   // read task output from MC and write secondary correction in jet pt slices as function of pt, z, xi
   // argument strlist optional - read from directory strdir if not specified
@@ -3160,8 +3160,11 @@ void AliFragmentationFunctionCorrections::WriteJetSecCorr(TString strInfile, TSt
     hdNdzMCSecRecSsc[i]->SetNameTitle(strNameFFZSecRecSsc,"");
     hdNdxiMCSecRecSsc[i]->SetNameTitle(strNameFFXiSecRecSsc,"");
     
-    // normalize
+    // normalize 
     Double_t nJetsBin = fh1FFJetPtRecEffRec->Integral(binLo,binUp);
+
+    // scale fac for perp2 bgr
+    if(writeBgr && scaleFacBgrRec && (scaleFacBgrRec != 1)) nJetsBin /= scaleFacBgrRec;
 
     NormalizeTH1(hdNdptTracksMCPrimRec[i],nJetsBin); 
     NormalizeTH1(hdNdzMCPrimRec[i],nJetsBin); 
@@ -4597,7 +4600,7 @@ void AliFragmentationFunctionCorrections::dNdz2dNdxi()
 //________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteBinShiftCorr(TString strInfile, TString strIDGen,  TString strIDRec,  
 							    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
-							    TString strOutDir)
+							    TString strOutDir,Double_t scaleFacBgrRec)
 { 
   TString strdirGen  = "PWGJE_FragmentationFunction_" + strIDGen;
   TString strlistGen = "fracfunc_" + strIDGen;
@@ -4605,13 +4608,13 @@ void AliFragmentationFunctionCorrections::WriteBinShiftCorr(TString strInfile, T
   TString strdirRec  = "PWGJE_FragmentationFunction_" + strIDRec;
   TString strlistRec = "fracfunc_" + strIDRec;
   
-  WriteBinShiftCorr(strInfile,strdirGen,strlistGen,strdirRec,strlistRec,strOutfile,updateOutfile,useRecPrim, strOutDir, kFALSE, "");
+  WriteBinShiftCorr(strInfile,strdirGen,strlistGen,strdirRec,strlistRec,strOutfile,updateOutfile,useRecPrim, strOutDir, kFALSE, "",scaleFacBgrRec);
 }
 
 //________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteBgrBinShiftCorr(TString strInfile, TString strBgrID, TString strIDGen,  TString strIDRec,  
 							       TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
-							       TString strOutDir)
+							       TString strOutDir,Double_t scaleFacBgrRec)
 { 
   TString strdirGen  = "PWGJE_FragmentationFunction_" + strIDGen;
   TString strlistGen = "fracfunc_" + strIDGen;
@@ -4619,14 +4622,14 @@ void AliFragmentationFunctionCorrections::WriteBgrBinShiftCorr(TString strInfile
   TString strdirRec  = "PWGJE_FragmentationFunction_" + strIDRec;
   TString strlistRec = "fracfunc_" + strIDRec;
   
-  WriteBinShiftCorr(strInfile,strdirGen,strlistGen,strdirRec,strlistRec,strOutfile,updateOutfile,useRecPrim, strOutDir, kTRUE, strBgrID);
+  WriteBinShiftCorr(strInfile,strdirGen,strlistGen,strdirRec,strlistRec,strOutfile,updateOutfile,useRecPrim, strOutDir, kTRUE, strBgrID,scaleFacBgrRec);
 }
 
 //___________________________________________________________________________________________________________________________________
 void AliFragmentationFunctionCorrections::WriteBinShiftCorr(TString strInfile, TString strdirGen, TString strlistGen, 
 							    TString strdirRec, TString strlistRec, 
 							    TString strOutfile, Bool_t updateOutfile, Bool_t useRecPrim, 
-							    TString strOutDir,  Bool_t writeBgr, TString strBgrID)
+							    TString strOutDir,  Bool_t writeBgr, TString strBgrID, Double_t scaleFacBgrRec)
 {
  
   if((writeBgr && strBgrID.Length() == 0) || (!writeBgr && strBgrID.Length()>0) ){
@@ -4873,6 +4876,9 @@ void AliFragmentationFunctionCorrections::WriteBinShiftCorr(TString strInfile, T
     
     Double_t nJetsBinGen = fh1FFJetPtMCGen->Integral(binLo,binUp);
     Double_t nJetsBinRec = fh1FFJetPtMCRec->Integral(binLo,binUp);
+
+    // scale fac for perp2 bgr
+     if(useRecPrim && writeBgr && scaleFacBgrRec && (scaleFacBgrRec != 1)) nJetsBinRec /= scaleFacBgrRec;
 
     NormalizeTH1(hdNdptTracksMCGen[i],nJetsBinGen); 
     NormalizeTH1(hdNdzMCGen[i],nJetsBinGen); 

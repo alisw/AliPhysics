@@ -12,6 +12,7 @@ class AliVHeader;
 class TH2;
 class TH1;
 class TLorentzVector;
+class AliNamedString;
 
 #include "AliJetModelBaseTask.h"
 
@@ -50,6 +51,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetJetAlgo(Byte_t t)                              { fJetAlgo            = t     ; }
   void           SetZVertexCut(Double_t z)                         { fZVertexCut         = z     ; }
   void           SetMaxVertexDist(Double_t d)                      { fMaxVertexDist      = d     ; }
+  void           SetParticlePtRange(Double_t min, Double_t max, Byte_t t=1) { fParticleMinPt = min; fParticleMaxPt = max; fParticleSelection = t; }
 
  protected:
   Bool_t          ExecOnce()            ;// intialize task
@@ -59,6 +61,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   virtual Bool_t  GetNextEntry()        ;// get next entry in current tree
   virtual Bool_t  IsAODEventSelected()  ;// AOD event trigger/centrality selection
   TLorentzVector  GetLeadingJet(TClonesArray *tracks, TClonesArray *clusters=0);  // get the leading jet
+  Bool_t          FindParticleInRange(TClonesArray *array);// Find particle in array within range (fParticleMinPt, fParticleMaxPt)
 
   TObjArray     *fFileList            ;//  List of AOD files 
   Bool_t         fRandomAccess        ;//  Random access to file number and event
@@ -84,6 +87,9 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Byte_t         fJetType             ;//  Jet type (0=full, 1=charged, 2=neutral)
   Byte_t         fJetAlgo             ;//  Jet algorithm (0=kT, 1=anti-kT)
   Bool_t         fJetParticleLevel    ;//  Trigger, look at particle level jets
+  Double_t       fParticleMinPt       ;//  Select events with a particle pt between fParticleMinPt and fParticleMaxPt (see fParticleSelection)
+  Double_t       fParticleMaxPt       ;//  Select events with a particle pt between fParticleMinPt and fParticleMaxPt (see fParticleSelection)
+  Byte_t         fParticleSelection   ;//  Particles used to select events (def=0=none, 1=tracks, 2=clusters, 3=MC particles)
   Int_t          fAODfilterBits[2]    ;//  AOD track filter bit map
   Bool_t         fIncludeNoITS        ;//  True = includes tracks with failed ITS refit
   Double_t       fCutMaxFractionSharedTPCClusters;  // max fraction of shared TPC clusters
@@ -105,6 +111,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliVCaloCells *fAODCaloCells        ;//! AOD cell collection
   TClonesArray  *fAODMCParticles      ;//! AOD MC particles collection
   Int_t          fCurrentAODEntry     ;//! Current entry in the AOD tree
+  AliNamedString *fAODFilePath        ;//! Current AOD file path being embedded
   TH2           *fHistFileMatching    ;//! Current file ID vs. AOD file ID (to be embedded)
   TH1           *fHistAODFileError    ;//! AOD file ID (to be embedded) error
   TH1           *fHistNotEmbedded     ;//! File ID not embedded
@@ -115,6 +122,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 10) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 11) // Jet embedding from AOD task
 };
 #endif

@@ -9,12 +9,10 @@ Int_t run(const TString& config)
 	
 	gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/", gROOT->GetMacroPath()));
 	
-	// Install RooUnfold and uncomment and edit AliLnPt.{h,cxx}
-	//gSystem->Load("$ALICE_ROOT/../RooUnfold/libRooUnfold.so");
-	
 	gSystem->AddIncludePath("-I\"$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/\"");
 	
-	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnUnfolding.cxx+g");
+	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnM2.cxx+g");
+	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnGaussianExpTail.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnSecondaries.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnEfficiency.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnCorr.cxx+g");
@@ -23,6 +21,7 @@ Int_t run(const TString& config)
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnSpectra.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnB2.cxx+g");
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/AliLnDriver.cxx+g");
+	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/RatioMult.C+g");
 	
 	gROOT->ProcessLine(Form(".x %s", config.Data()));
 	

@@ -27,8 +27,9 @@ public:
     virtual Bool_t PassMinEnergyCut(const TParticle& part) const;
     virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t PassTrackMatchingCut(const AliESDCaloCluster& cluster) const;
-    virtual Bool_t CutGeometricalAcceptance(const TParticle& part) const;    
-    virtual Bool_t CutGeometricalAcceptance(const AliVTrack& part) const;    
+    virtual Bool_t CutGeometricalAcceptance(const TParticle& part);    
+    virtual Bool_t CutGeometricalAcceptance(const AliVTrack& part);        
+    virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster& cluster);    
     virtual void Init();
     virtual Int_t Init(const AliESDEvent *ev);
     

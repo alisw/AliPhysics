@@ -95,11 +95,18 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD()
   fESDpid(0),
   fPIDResponse(0),
   fTreeV0(0),
-  fHistNumberOfEvents(0),  
+  fHistCentralityClass10(0),
+  fHistCentralityPercentile(0),  
   fHistTriggerStat(0),
   fHistTriggerStatAfterEventSelection(0),
   fHistLambdaNeutronPtGen(0),
-  fHistAntiLambdaNeutronPtGen(0),
+  fHistLambdaNeutronPtGenMinBias(0),
+  fHistLambdaNeutronPtGenCentral(0),
+  fHistLambdaNeutronPtGenSemiCentral(0),
+  fHistAntiLambdaNeutronPtGen(0),  
+  fHistAntiLambdaNeutronPtGenMinBias(0),
+  fHistAntiLambdaNeutronPtGenCentral(0),
+  fHistAntiLambdaNeutronPtGenSemiCentral(0),
   fHistLambdaNeutronInvaMassGen(0),
   fHistAntiLambdaNeutronInvaMassGen(0),
   fHistLambdaNeutronDecayLengthGen(0),
@@ -139,11 +146,18 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD(const char *name)
     fESDpid(0),
     fPIDResponse(0),
     fTreeV0(0),
-    fHistNumberOfEvents(0),
+    fHistCentralityClass10(0),
+    fHistCentralityPercentile(0),
     fHistTriggerStat(0),
     fHistTriggerStatAfterEventSelection(0),
-    fHistLambdaNeutronPtGen(0),
+    fHistLambdaNeutronPtGen(0),    
+    fHistLambdaNeutronPtGenMinBias(0),
+    fHistLambdaNeutronPtGenCentral(0),
+    fHistLambdaNeutronPtGenSemiCentral(0),
     fHistAntiLambdaNeutronPtGen(0),
+    fHistAntiLambdaNeutronPtGenMinBias(0),
+    fHistAntiLambdaNeutronPtGenCentral(0),
+    fHistAntiLambdaNeutronPtGenSemiCentral(0),
     fHistLambdaNeutronInvaMassGen(0),
     fHistAntiLambdaNeutronInvaMassGen(0),
     fHistLambdaNeutronDecayLengthGen(0),
@@ -182,7 +196,8 @@ AliAnalysisTaskLambdaNAOD::AliAnalysisTaskLambdaNAOD(const char *name)
   fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
   fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
   fESDtrackCutsV0->SetMinNClustersTPC(60);
-  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
+  fESDtrackCutsV0->SetMaxChi2PerClusterTPC(6); //set to 6 for sytematics
+  //fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
   fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
   //  fESDtrackCutsV0->SetMinNClustersITS(1); // to be tested if this cut is not too strong
   fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
@@ -240,13 +255,37 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   
   // Create histograms for MC
   //generated histogramms
-  fHistLambdaNeutronPtGen = new TH1F("fHistLambdaNeutronPtGen", "Generated  #Lambdan", 201, 0., 10.1);
+  fHistLambdaNeutronPtGen = new TH1F("fHistLambdaNeutronPtGen", "Generated  Lambdan", 201, 0., 10.1);
   fHistLambdaNeutronPtGen->GetYaxis()->SetTitle("Counts");
-  fHistLambdaNeutronPtGen->GetXaxis()->SetTitle("#it{p}_{T}  (GeV/#it{c})");
+  fHistLambdaNeutronPtGen->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
+
+  fHistLambdaNeutronPtGenMinBias = new TH1F("fHistLambdaNeutronPtGenMinBias", "Generated  Lambdan", 201, 0., 10.1);
+  fHistLambdaNeutronPtGenMinBias->GetYaxis()->SetTitle("Counts");
+  fHistLambdaNeutronPtGenMinBias->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
+
+  fHistLambdaNeutronPtGenCentral = new TH1F("fHistLambdaNeutronPtGenCentral", "Generated  Lambdan", 201, 0., 10.1);
+  fHistLambdaNeutronPtGenCentral->GetYaxis()->SetTitle("Counts");
+  fHistLambdaNeutronPtGenCentral->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
+
+  fHistLambdaNeutronPtGenSemiCentral = new TH1F("fHistLambdaNeutronPtGenSemiCentral", "Generated  Lambdan", 201, 0., 10.1);
+  fHistLambdaNeutronPtGenSemiCentral->GetYaxis()->SetTitle("Counts");
+  fHistLambdaNeutronPtGenSemiCentral->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
 
   fHistAntiLambdaNeutronPtGen = new TH1F("fHistAntiLambdaNeutronPtGen", "Generated  #bar{#Lambdan}", 201, 0., 10.1);
   fHistAntiLambdaNeutronPtGen->GetYaxis()->SetTitle("Counts");
   fHistAntiLambdaNeutronPtGen->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
+
+  fHistAntiLambdaNeutronPtGenMinBias = new TH1F("fHistAntiLambdaNeutronPtGenMinBias", "Generated  #bar{#Lambdan}", 201, 0., 10.1);
+  fHistAntiLambdaNeutronPtGenMinBias->GetYaxis()->SetTitle("Counts");
+  fHistAntiLambdaNeutronPtGenMinBias->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
+
+  fHistAntiLambdaNeutronPtGenCentral = new TH1F("fHistAntiLambdaNeutronPtGenCentral", "Generated  #bar{#Lambdan}", 201, 0., 10.1);
+  fHistAntiLambdaNeutronPtGenCentral->GetYaxis()->SetTitle("Counts");
+  fHistAntiLambdaNeutronPtGenCentral->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
+
+  fHistAntiLambdaNeutronPtGenSemiCentral = new TH1F("fHistAntiLambdaNeutronPtGenSemiCentral", "Generated  #bar{#Lambdan}", 201, 0., 10.1);
+  fHistAntiLambdaNeutronPtGenSemiCentral->GetYaxis()->SetTitle("Counts");
+  fHistAntiLambdaNeutronPtGenSemiCentral->GetXaxis()->SetTitle("#it{p}_{T}   (GeV/#it{c})");
 
   fHistLambdaNeutronInvaMassGen = new TH1F("fHistLambdaNeutronInvaMassGen", "Generated #Lambdan ", 100, 2.0, 2.1); 
   fHistLambdaNeutronInvaMassGen->GetYaxis()->SetTitle("Counts");
@@ -297,9 +336,9 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fHistAntiLambdaNeutronDecayLengthAso->GetYaxis()->SetTitle("Counts");
   fHistAntiLambdaNeutronDecayLengthAso->GetXaxis()->SetTitle("#it{decay length}  (cm)");
 
-  fHistLambdaNeutronPtAso = new TH1F("fHistLambdaNeutronPtAso", "Associated   #Lambdan", 201, 0., 10.1);
-  fHistLambdaNeutronPtAso->GetYaxis()->SetTitle("Counts");
-  fHistLambdaNeutronPtAso->GetXaxis()->SetTitle("#it{p}_{T}  (GeV/#it{c})");
+  //fHistLambdaNeutronPtAso = new TH1F("fHistLambdaNeutronPtAso", "Associated   #Lambdan", 201, 0., 10.1);
+  //fHistLambdaNeutronPtAso->GetYaxis()->SetTitle("Counts");
+  //Fhistlambdaneutronptaso->GetXaxis()->SetTitle("#it{p}_{T}  (GeV/#it{c})");
 
   //Tree
   //------------ Tree and branch definitions ----------------//
@@ -313,7 +352,12 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fkSemiCentral",fkSemiCentral,"fkSemiCentral[fItrk]/I");
   fTreeV0->Branch("fkEMCEJE",fkEMCEJE,"fkEMCEJE[fItrk]/I");
   fTreeV0->Branch("fkEMCEGA",fkEMCEGA,"fkEMCEGA[fItrk]/I");
- 
+
+  fTreeV0->Branch("fCentralityClass10",fCentralityClass10,"fCentralityClass10[fItrk]/I");
+  fTreeV0->Branch("fCentralityPercentile",fCentralityPercentile,"fCentralityPercentile[fItrk]/I");
+  fTreeV0->Branch("fMultiplicity",fMultiplicity,"fMultipicity[fItrk]/I");
+  fTreeV0->Branch("fRefMultiplicity",fRefMultiplicity,"fRefMultipicity[fItrk]/I");
+  
   fTreeV0->Branch("fPtotN",fPtotN,"fPtotN[fItrk]/D");
   fTreeV0->Branch("fPtotP",fPtotP,"fPtotP[fItrk]/D");
   fTreeV0->Branch("fMotherPt",fMotherPt,"fMotherPt[fItrk]/D");
@@ -321,6 +365,9 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fdEdxP",fdEdxP,"fdEdxP[fItrk]/D");
   fTreeV0->Branch("fSignN",fSignN,"fSignN[fItrk]/D");
   fTreeV0->Branch("fSignP",fSignP,"fSignP[fItrk]/D");
+
+  fTreeV0->Branch("fSigmadEdxPionPos",fSigmadEdxPionPos,"fSigmadEdxPionPos[fItrk]/I");
+  fTreeV0->Branch("fSigmadEdxPionNeg",fSigmadEdxPionNeg,"fSigmadEdxPionNeg[fItrk]/I");
 
   fTreeV0->Branch("fDCAv0",fDCAv0,"fDCAv0[fItrk]/F"); //Dca v0 Daughters
   fTreeV0->Branch("fCosinePAv0",fCosinePAv0,"fCosinePAv0[fItrk]/F"); //Cosine of Pionting Angle
@@ -334,6 +381,22 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fAmenterosAlphaTree",fAmenterosAlphaTree,"fAmenterosAlphaTree[fItrk]/D");
   fTreeV0->Branch("fAmenterosQtTree",fAmenterosQtTree,"fAmenterosQtTree[fItrk]/D");
   fTreeV0->Branch("fRotationTree",fRotationTree,"fRotationTree[fItrk]/I");
+
+  fTreeV0->Branch("fImpactParameterDeuteronPos",fImpactParameterDeuteronPos,"fImpactParameterDeuteronPos[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterDeuteronNeg",fImpactParameterDeuteronNeg,"fImpactParameterDeuteronNeg[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionPos",fImpactParameterPionPos,"fImpactParameterPionPos[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionNeg",fImpactParameterPionNeg,"fImpactParameterPionNeg[fItrk]/D");
+
+  fTreeV0->Branch("fImpactParameterDeuteronPosAliKF",fImpactParameterDeuteronPosAliKF,"fImpactParameterDeuteronPosAliKF[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterDeuteronNegAliKF",fImpactParameterDeuteronNegAliKF,"fImpactParameterDeuteronNegAliKF[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionPosAliKF",fImpactParameterPionPosAliKF,"fImpactParameterPionPosAliKF[fItrk]/D");
+  fTreeV0->Branch("fImpactParameterPionNegAliKF",fImpactParameterPionNegAliKF,"fImpactParameterPionNegAliKF[fItrk]/D");
+
+  fTreeV0->Branch("fMinNClustersTPCPos",fMinNClustersTPCPos,"fMinNClustersTPCPos[fItrk]/s");
+  fTreeV0->Branch("fMinNClustersTPCNeg",fMinNClustersTPCNeg,"fMinNClustersTPCNeg[fItrk]/s");
+
+  fTreeV0->Branch("fMaxChi2PerClusterTPCPos",fMaxChi2PerClusterTPCPos,"fMaxChi2PerClusterTPCPos[fItrk]/D");
+  fTreeV0->Branch("fMaxChi2PerClusterTPCNeg",fMaxChi2PerClusterTPCNeg,"fMaxChi2PerClusterTPCNeg[fItrk]/D");
    
   //Armenteros-Podolanski
   fHistArmenterosPodolanskiDeuteronPion= new TH2F("fHistArmenterosPodolanskiDeuteronPion", "Armenteros-Podolanski d #pi^{-}", 200,-1.0,1.0, 500,0,1);
@@ -359,10 +422,14 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   //fof->SetMarkerStyle(kFullCircle);
   
   //histogram to count number of events
-  fHistNumberOfEvents = new TH1F("fHistNumberOfEvents", "Number of events", 11, -0.5, 10.5);
-  fHistNumberOfEvents ->GetXaxis()->SetTitle("Centrality");
-  fHistNumberOfEvents ->GetYaxis()->SetTitle("Entries");
+  fHistCentralityClass10  = new TH1F("fHistCentralityClass10", "centrality with class10", 11, -0.5, 10.5);
+  fHistCentralityClass10->GetXaxis()->SetTitle("Centrality");
+  fHistCentralityClass10->GetYaxis()->SetTitle("Entries");
   
+  fHistCentralityPercentile  = new TH1F("fHistCentralityPercentile", "centrality with percentile", 101, -0.1, 100.1);
+  fHistCentralityPercentile->GetXaxis()->SetTitle("Centrality");
+  fHistCentralityPercentile->GetYaxis()->SetTitle("Entries");
+
   //trigger statitics histogram
   fHistTriggerStat = new TH1F("fHistTriggerStat","Trigger statistics", fNTriggers,-0.5,fNTriggers-0.5);
   const Char_t* aTriggerNames[] = { "kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" };
@@ -395,11 +462,18 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fOutputContainer->Add(fHistArmenterosPodolanskiAntiDeuteronPion);
   fOutputContainer->Add(fof);
   fOutputContainer->Add(fHistDeDxQA);
-  fOutputContainer->Add(fHistNumberOfEvents);
+  fOutputContainer->Add(fHistCentralityClass10);
+  fOutputContainer->Add(fHistCentralityPercentile);
   fOutputContainer->Add(fHistTriggerStat);
   fOutputContainer->Add(fHistTriggerStatAfterEventSelection);
   fOutputContainer->Add(fHistLambdaNeutronPtGen);
+  fOutputContainer->Add(fHistLambdaNeutronPtGenMinBias);
+  fOutputContainer->Add(fHistLambdaNeutronPtGenCentral);
+  fOutputContainer->Add(fHistLambdaNeutronPtGenSemiCentral);
   fOutputContainer->Add(fHistAntiLambdaNeutronPtGen);
+  fOutputContainer->Add(fHistAntiLambdaNeutronPtGenMinBias);
+  fOutputContainer->Add(fHistAntiLambdaNeutronPtGenCentral);
+  fOutputContainer->Add(fHistAntiLambdaNeutronPtGenSemiCentral);
   fOutputContainer->Add(fHistLambdaNeutronInvaMassGen);
   fOutputContainer->Add(fHistAntiLambdaNeutronInvaMassGen); 
   fOutputContainer->Add(fHistLambdaNeutronDecayLengthGen);
@@ -419,6 +493,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 
   // Main loop
   // Called for each event
+
+  //cout << "katze1" << endl;
 
   //Data
   //get Event-Handler for the trigger information
@@ -450,9 +526,9 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
   }
   
   //look for the generated particles
-  MCGenerated(stack);
+  //MCGenerated(stack);
   
-  
+  //cout << "katze2" << endl;
   if (SetupEvent() < 0) {
     PostData(1, fOutputContainer);
     return;
@@ -470,8 +546,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     }
   }
  
-
-  Int_t centrality = -1;
+  Int_t centralityClass10 = -1;
+  Int_t centralityPercentile = -1;
   Double_t vertex[3]          = {-100.0, -100.0, -100.0};
 
   //Initialisation of the event and basic event cuts:
@@ -486,7 +562,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     
     //Basic event cuts: 
     //1.) vertex existence
-    const AliESDVertex *vertexESD = fESDevent->GetPrimaryVertexTracks();
+    /*const AliESDVertex *vertexESD = fESDevent->GetPrimaryVertexTracks();
     if (vertexESD->GetNContributors()<1) 
       {
 	// SPD vertex
@@ -500,22 +576,41 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     vertexESD->GetXYZ(vertex);
 
     //2. vertex position within 10 cm
-    if (TMath::Abs(vertexESD->GetZv()) > 10) return;
+    if (TMath::Abs(vertexESD->GetZv()) > 10) return;*/
+
+    const AliESDVertex *vertexTracks = fESDevent->GetPrimaryVertexTracks();
+    if (vertexTracks->GetNContributors()<1) vertexTracks = 0x0;
     
+    const AliESDVertex *vertexSPD    = fESDevent->GetPrimaryVertexSPD();
+    if (vertexSPD->GetNContributors()<1) vertexSPD = 0x0;
+
+    //cout << "before" << endl;    
+    if(!fMCtrue){
+      if(!vertexTracks || !vertexSPD) return;
+       //cout << "after" <<endl;
+
+      //if (vertexTracks && vertexSPD){
+      //cout << "Vertex: " << TMath::Abs(vertexTracks->GetZv()) << endl;
+      if (TMath::Abs(vertexTracks->GetZv()) > 10 || TMath::Abs(vertexSPD->GetZv()) > 10) return;
+      //}
+    }
+
     //centrality selection in PbPb
     if (fESDevent->GetEventSpecie() == 4) //species == 4 == PbPb
       { // PbPb
 	AliCentrality *esdCentrality = fESDevent->GetCentrality();
-	centrality = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+	centralityClass10 = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+        centralityPercentile = esdCentrality->GetCentralityPercentile("V0M"); // centrality percentile determined with V0                
 	//cout << "************************************EventSpecie " << fESDevent->GetEventSpecie() << " centrality "<< centrality << endl;
 	if(!fMCtrue){
-	  if (centrality < 0. || centrality > 8. ) return; //select only events with centralities between 0 and 80 %
+	  if (centralityPercentile < 0. || centralityPercentile > 80. ) return; //select only events with centralities between 0 and 80 %
 	}
       }
 
     //cout << "EventSpecie " << fESDevent->GetEventSpecie() << " centrality "<< centrality << endl;
-    // count number of events
-    fHistNumberOfEvents->Fill(centrality);
+    //count centrality classes
+    fHistCentralityClass10->Fill(centralityClass10);
+    fHistCentralityPercentile->Fill(centralityPercentile);
     
     if(fTriggerFired[0] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(0);
     if(fTriggerFired[1] == kTRUE)fHistTriggerStatAfterEventSelection->Fill(1);
@@ -551,12 +646,13 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    
     //centrality selection
    AliCentrality *aodCentrality = fAODevent->GetCentrality();
-   centrality = aodCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
-   if (centrality < 0 || centrality > 8) return; //select only events with centralities between 0 and 80 %
+   centralityClass10 = aodCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
+   centralityPercentile = aodCentrality->GetCentralityPercentile("V0M");
+   if (centralityPercentile < 0. || centralityPercentile > 80.) return; //select only events with centralities between 0 and 80 %
     
    // count number of events
-   fHistNumberOfEvents->Fill(centrality);
-
+   fHistCentralityClass10->Fill(centralityClass10);
+   
  } else {
    
    Printf("Analysis type (ESD or AOD) not specified \n");
@@ -565,17 +661,39 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
  }
  
   
-//v0 loop
+ //v0 loop
 
 
- fItrk = 0;
+  fItrk = 0;
 
  Int_t runNumber = 0;
  runNumber = (InputEvent())->GetRunNumber();
  
  Int_t    nTrackMultiplicity             = -1;
  nTrackMultiplicity = (InputEvent())->GetNumberOfTracks();
-  
+ //const AliMulitiplicity *spdMultiplicity = 0x0;
+ //if (fAnalysisType == "ESD")spdMultiplicity= fESDevent->GetMultiplicity();
+ Int_t refMultTpc = -1;
+ //const AliMulitiplicity *spdMultiplicity = 0x0;
+ Int_t multi1 =-1;
+ Int_t multi2 =-1;
+ Int_t multi3 =-1;
+
+ // EstimateMultiplicity(&multi1,&multi2,&multi3, 0.9,kTRUE, kTRUE);
+ 
+ if (fAnalysisType == "ESD"){
+   fESDevent->EstimateMultiplicity(multi1,multi2,multi3,0.9,kTRUE,kTRUE);
+   refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, kTRUE);
+   //   const AliMultiplicity *spdMultiplicity = fESDevent->GetMultiplicity();
+   //cout << "nTrackMultiplicity: " << nTrackMultiplicity << " multi1: " << multi1 << " multi2: " << multi2 << " multi3: " << multi3 << " refMultTpc: " << refMultTpc << endl;
+ }
+
+ //look for the generated particles
+ MCGenerated(stack,refMultTpc);
+
+ //AliKFParticle settings
+ AliKFParticle::SetField(fInputEvent->GetMagneticField());
+ AliKFVertex primVtx(*(fInputEvent->GetPrimaryVertex()));
 
  for (Int_t ivertex=0; ivertex<(InputEvent()->GetNumberOfV0s()); ivertex++) { //beginn v0 loop
          
@@ -644,7 +762,12 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fkSemiCentral[fItrk]     = -1;
    fkEMCEJE[fItrk]          = -1;
    fkEMCEGA[fItrk]          = -1;
-   
+
+   fCentralityClass10[fItrk]  = -1;
+   fCentralityPercentile[fItrk]  = -1;
+   fMultiplicity[fItrk]     = -1;
+   fRefMultiplicity[fItrk]     = -1;
+
    fPtotN[fItrk]            = -1000;
    fPtotP[fItrk]            = -1000;
    fMotherPt[fItrk]         = -1000;
@@ -653,6 +776,9 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fdEdxP[fItrk]            = -1;
    fSignN[fItrk]            = 0;
    fSignP[fItrk]            = 0;
+  
+   fSigmadEdxPionPos[fItrk] = -1;
+   fSigmadEdxPionNeg[fItrk] = -1;
    
    fDCAv0[fItrk]            = -1;
    fCosinePAv0[fItrk]       = -2;
@@ -664,6 +790,24 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
    fAmenterosAlphaTree[fItrk] = 2;
    fAmenterosQtTree[fItrk] = -1;
    
+   fImpactParameterDeuteronPos[fItrk]            = -1; 
+   fImpactParameterDeuteronNeg[fItrk]            = -1;
+
+   fImpactParameterPionPos[fItrk]            = -1; 
+   fImpactParameterPionNeg[fItrk]            = -1;
+
+   fImpactParameterDeuteronPosAliKF[fItrk]            = -1;
+   fImpactParameterDeuteronNegAliKF[fItrk]            = -1;
+
+   fImpactParameterPionPosAliKF[fItrk]            = -1;
+   fImpactParameterPionNegAliKF[fItrk]            = -1;
+
+   fMinNClustersTPCPos[fItrk]            = 0;
+   fMinNClustersTPCNeg[fItrk]            = 0;
+
+   fMaxChi2PerClusterTPCPos[fItrk]            = -1;
+   fMaxChi2PerClusterTPCNeg[fItrk]            = -1; 
+
    //Get v0 object
    if(fAnalysisType == "ESD")v0ESD = fESDevent->GetV0(ivertex);
    if(fAnalysisType == "AOD")v0AOD = fAODevent->GetV0(ivertex);
@@ -1218,14 +1362,127 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	    fHistArmenterosPodolanskiAntiDeuteronPion->Fill(alpha,qt);
 	  }
 
+	UShort_t numberOfTPCclustersPos = 0;
+        UShort_t numberOfTPCclustersNeg = 0;
+
+	numberOfTPCclustersPos = TPCclusters(trackP,numberOfTPCclustersPos);
+	numberOfTPCclustersNeg = TPCclusters(trackN,numberOfTPCclustersNeg);
+
+	Double_t numberOfChi2clustersTPCPos = 10.;
+        Double_t numberOfChi2clustersTPCNeg = 10.;
+
+	numberOfChi2clustersTPCPos = TPCchi2(trackP,numberOfChi2clustersTPCPos,numberOfTPCclustersPos);
+	numberOfChi2clustersTPCNeg = TPCchi2(trackN,numberOfChi2clustersTPCNeg,numberOfTPCclustersNeg);
+
+        //ImpactParameters
+	Double_t dcaPosToVertex = 0;
+	Double_t dcaNegToVertex =  0;
+
+	dcaPosToVertex = ImpactParameter(trackP,dcaPosToVertex);	
+        dcaNegToVertex = ImpactParameter(trackN,dcaNegToVertex);
+
+	//ImpactParameter with AliKF 
+	//Get the primary vertex from the ITS for the following calculations, because it is the most precise determination of the primary vertex  
+        Double_t itsVertex[3]={0.,0.,0.};
+
+        if(fAnalysisType == "ESD"){
+          itsVertex[0]=fESDevent->GetPrimaryVertexSPD()->GetX();
+          itsVertex[1]=fESDevent->GetPrimaryVertexSPD()->GetY();
+          itsVertex[2]=fESDevent->GetPrimaryVertexSPD()->GetZ();
+        }
+
+        Double_t impactParameterPionPos = -1;
+        Double_t impactParameterPionNeg = -1;
+
+        Double_t impactParameterDeuteronPos = -1;
+        Double_t impactParameterDeuteronNeg = -1;
+
+	Double_t impactParameterPionPosAliKF = -1;
+        Double_t impactParameterPionNegAliKF = -1;
+
+        Double_t impactParameterDeuteronPosAliKF = -1;
+        Double_t impactParameterDeuteronNegAliKF = -1;
+
+	AliKFParticle* negPionKF;
+	AliKFParticle* posPionKF;
+	AliKFParticle* negDeuteronKF;
+	AliKFParticle* posDeuteronKF;
+
+	if(chargeComboDeuteronPion==0){ //anti-deuteron (isDeuteron[1]==kTRUE), positives pion (isPion[0]==kTRUE), trackN corresponds to anti-deuteron, tackP corresponds to pion
+	
+	  posPionKF = new AliKFParticle (*(trackP),fgkPdgCode[kPDGPionPlus]);
+	  impactParameterPionPosAliKF = posPionKF->GetDistanceFromVertex(itsVertex);
+	  impactParameterPionPos = dcaPosToVertex;
+	  negDeuteronKF = new AliKFParticle (*(trackN),fgkPdgCode[kPDGPionMinus]);
+	  impactParameterDeuteronNegAliKF = negDeuteronKF->GetDistanceFromVertex(itsVertex);
+	  impactParameterDeuteronNeg = dcaNegToVertex;
+	}
+
+	if(chargeComboDeuteronPion==2){ //deuteron (isDeuteron[0]==kTRUE), negative pion (isPion[1]==kTRUE), trackP corresponds to deuteron, tackN corresponds to pion           
+
+	  negPionKF = new AliKFParticle (*(trackN),fgkPdgCode[kPDGPionMinus]);
+          impactParameterPionNegAliKF = negPionKF->GetDistanceFromVertex(itsVertex);
+	  impactParameterPionNeg = dcaNegToVertex;	  
+	  posDeuteronKF = new AliKFParticle (*(trackP),fgkPdgCode[kPDGPionPlus]);
+	  impactParameterDeuteronPosAliKF = posDeuteronKF->GetDistanceFromVertex(itsVertex);
+	  impactParameterDeuteronPos = dcaPosToVertex;
+	}
+
+	if(chargeComboDeuteronPion==1){ //trackN corresponds to deuteron or pion, trackP corresponds to deuteron or pion                           
+	  if(isDeuteron[2]==kTRUE){ //trackN corresponds to deuteron, trackP corresponds to pion                                                                                 
+
+	    negPionKF = new AliKFParticle (*(trackP),fgkPdgCode[kPDGPionPlus]);
+	    impactParameterPionNegAliKF = negPionKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterPionNeg = dcaPosToVertex;
+	    negDeuteronKF = new AliKFParticle (*(trackN),fgkPdgCode[kPDGPionMinus]);
+	    impactParameterDeuteronNegAliKF = negDeuteronKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterDeuteronNeg = dcaNegToVertex;
+	  }
+	  if(isDeuteron[2]==kFALSE){ //trackP corresponds tp deuteron, trackN corresponds to pion                                                                                
+
+	    negPionKF = new AliKFParticle (*(trackN),fgkPdgCode[kPDGPionPlus]);
+            impactParameterPionNegAliKF = negPionKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterPionNeg = dcaNegToVertex;
+	    negDeuteronKF = new AliKFParticle (*(trackP),fgkPdgCode[kPDGPionPlus]);
+	    impactParameterDeuteronNegAliKF = negDeuteronKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterDeuteronNeg = dcaPosToVertex;
+	  }
+	}
+
+	if(chargeComboDeuteronPion==3){ //trackN corresponds to deuteron or pion, trackP corresponds to deuteron or pion                                                       
+          if(isDeuteron[2]==kTRUE){ //trackN corresponds to deuteron, trackP corresponds to pion                                                                                 
+
+            posPionKF = new AliKFParticle (*(trackP),fgkPdgCode[kPDGPionPlus]);
+            impactParameterPionPosAliKF = posPionKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterPionPos = dcaPosToVertex;
+            posDeuteronKF = new AliKFParticle (*(trackN),fgkPdgCode[kPDGPionMinus]);
+            impactParameterDeuteronPosAliKF = posDeuteronKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterDeuteronPos  = dcaNegToVertex;
+          }
+          if(isDeuteron[2]==kFALSE){ //trackP corresponds tp deuteron, trackN corresponds to pion                                                                               
+
+            posPionKF = new AliKFParticle (*(trackN),fgkPdgCode[kPDGPionPlus]);
+            impactParameterPionPosAliKF = posPionKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterPionPos  = dcaNegToVertex;
+            posDeuteronKF = new AliKFParticle (*(trackP),fgkPdgCode[kPDGPionPlus]);
+            impactParameterDeuteronPosAliKF = posDeuteronKF->GetDistanceFromVertex(itsVertex);
+	    impactParameterDeuteronPos = dcaPosToVertex;
+          }
+        }
+
 	if((isDeuteron[0] == kTRUE) || (isDeuteron[1] == kTRUE)){
-	  //tree variables which are independent of the particle-species                                                                                                               
+	  //tree variables which are independent of the particle-species
 	  fV0finder[fItrk]         = onFlyStatus;
 	  fkMB[fItrk]              = fTriggerFired[0];
 	  fkCentral[fItrk]         = fTriggerFired[1];
 	  fkSemiCentral[fItrk]     = fTriggerFired[2];
 	  fkEMCEJE[fItrk]          = fTriggerFired[3];
 	  fkEMCEGA[fItrk]          = fTriggerFired[4];
+
+	  fCentralityClass10[fItrk]= centralityClass10;
+          fCentralityPercentile[fItrk]= centralityPercentile;
+	  fMultiplicity[fItrk]     = multi1;
+          fRefMultiplicity[fItrk]  = refMultTpc;
 	  
 	  fPtotN[fItrk]            = ptotN;
 	  fPtotP[fItrk]            = ptotP;
@@ -1236,6 +1493,9 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  fSignN[fItrk]            = trackN->Charge();
 	  fSignP[fItrk]            = trackP->Charge();
 	  
+	  fSigmadEdxPionPos[fItrk] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion));
+	  fSigmadEdxPionNeg[fItrk] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion));
+	       
 	  fDCAv0[fItrk]            = dcaV0;
 	  fCosinePAv0[fItrk]       = cosPointing;
 	  fDecayRadiusTree[fItrk]  = decayRadius;
@@ -1246,9 +1506,30 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
 	  
 	  fInvaMassDeuteronPionTree[fItrk] = invaMassDeuteronPion;
 	  fChargeComboDeuteronPionTree[fItrk] = chargeComboDeuteronPion;
-	  
+	 
+	  fImpactParameterDeuteronPos[fItrk] = impactParameterDeuteronPos;
+          fImpactParameterDeuteronNeg[fItrk] = impactParameterDeuteronNeg;
+
+          fImpactParameterPionPos[fItrk] = impactParameterPionPos;
+          fImpactParameterPionNeg[fItrk] = impactParameterPionNeg;
+
+	  fImpactParameterDeuteronPosAliKF[fItrk] = impactParameterDeuteronPosAliKF;
+          fImpactParameterDeuteronNegAliKF[fItrk] = impactParameterDeuteronNegAliKF;
+
+          fImpactParameterPionPosAliKF[fItrk] = impactParameterPionPosAliKF;
+          fImpactParameterPionNegAliKF[fItrk] = impactParameterPionNegAliKF;
+
+	  fMinNClustersTPCPos[fItrk]            = numberOfTPCclustersPos;
+	  fMinNClustersTPCNeg[fItrk]            = numberOfTPCclustersNeg;
+
+	  //  cout << "numberOfTPCclustersPos: " << numberOfTPCclustersPos << " fMinNClustersTPCPos[fItrk]: "  << fMinNClustersTPCPos[fItrk] << endl;
+
+	  fMaxChi2PerClusterTPCPos[fItrk]            = numberOfChi2clustersTPCPos;
+	  fMaxChi2PerClusterTPCNeg[fItrk]            = numberOfChi2clustersTPCNeg;
+
 	  fItrk++;
 	}
+	//cout << "fItrk: " << fItrk-1 << " fChargeComboDeuteronPionTree[fItrk]: " << fChargeComboDeuteronPionTree[fItrk-1] << " fV0finder[fItrk]: " << fV0finder[fItrk-1] << " fInvaMassDeuteronPionTree[fItrk]: " << fInvaMassDeuteronPionTree[fItrk-1] << " fMaxChi2PerClusterTPCPos[fItrk]: " << fMaxChi2PerClusterTPCPos[fItrk-1] << " numberOfTPCclustersPos: " << numberOfTPCclustersPos << " fMinNClustersTPCPos[fItrk]: "  << fMinNClustersTPCPos[fItrk-1] << " fCentralityPercentile[fItrk]: " << fCentralityPercentile[fItrk-1]  << " fMotherPt[fItrk]: " << fMotherPt[fItrk-1] << endl;
 
       }//end rotation loop
       
@@ -1375,7 +1656,15 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	  parDeuteron[3] = 2.72969 ;
 	  parDeuteron[4] = 9.15038; 
 	}
- 
+
+      if(fMCtrue && runNumber > 166500){ //LHC11h MC (local production)
+        parDeuteron[0] = 4.449; // ALEPH parameters for deuterons (pass2)                                                                                                        
+	parDeuteron[1] = 6.91865;
+	parDeuteron[2] = 0.0183501;
+	parDeuteron[3] = 2.49437;
+	parDeuteron[4] = 2.62616;
+      }
+
 
       //define expected signals for the various species
       Double_t expSignalDeuteronN = 0;
@@ -1391,18 +1680,18 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	expSignalDeuteronN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	expSignalDeuteronP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
 	
-	if(trackP->GetTPCsignal() >= 110 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
+	if(trackP->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies; standard value 110, variation for systematics
 	   trackP->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.2 &&
+	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.3 && //for systemactics -- normal value 0.2
 	   ptotP > 0.2 ){
 	  
 	  if(trackP->Charge() >0)	 	isDeuteron[0] = kTRUE; //pos deuteron
 	  if(trackP->Charge() <0)	 	isDeuteron[1] = kTRUE; //neg deuteron
 	}
 	
-	if(trackN->GetTPCsignal() >= 110 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
+	if(trackN->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
 	   trackN->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.2 &&
+	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.3 && //for systemactics -- normal value 0.2
 	   ptotN > 0.2){ 
 	  
 	  isDeuteron[2] = kTRUE;
@@ -1422,8 +1711,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	    }
 	  if(runNumber > 166500) //2011
 	    { 
-	      expSignalDeuteronN = 0.8*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
-	      expSignalDeuteronP = 0.8*AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]); 
+	      expSignalDeuteronN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]);
+	      expSignalDeuteronP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassDeuteron]),parDeuteron[0],parDeuteron[1],parDeuteron[2],parDeuteron[3],parDeuteron[4]); 
 	    }
 	 
 	  if(trackP->GetTPCsignal() < 1200 && 
@@ -1474,6 +1763,13 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
         parPion[4]   = 9.15038; 
     }
 
+    if(fMCtrue && runNumber > 166500){ //LHC11h MC (local production)                                                                                                              
+      parPion[0] = 1.064; // ALEPH parameters for deuterons (pass2)                                                                                                            
+      parPion[1] = 26.3;
+      parPion[2] = 4.00313e-15;
+      parPion[3] = 2.703 ;
+      parPion[4] = 9.967;
+    }
 
     Double_t expSignalPionP = 0;
     Double_t expSignalPionN = 0;
@@ -1485,8 +1781,8 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
 	expSignalPionN = 0.7*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
       }
       if(runNumber > 166500){ //2011
-	expSignalPionP = AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
-	expSignalPionN = AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
+	expSignalPionP = 1.1*AliExternalTrackParam::BetheBlochAleph(ptotP/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
+	expSignalPionN = 1.1*AliExternalTrackParam::BetheBlochAleph(ptotN/(fgkMass[kMassPion]),parPion[0],parPion[1],parPion[2],parPion[3],parPion[4]);
       }
       
     }
@@ -1495,12 +1791,12 @@ Bool_t AliAnalysisTaskLambdaNAOD::PionPID(AliVTrack *trackP, AliVTrack *trackN, 
     isPion[1] = kFALSE;
     //data
     if(!fMCtrue){
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion))<3){
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kPion))<4){ //for systematics -- normal value 3
 
 	if(trackP->Charge()>0 )	isPion[0] = kTRUE; //pos pion
 	if(trackP->Charge()<0 )	isPion[1] = kTRUE; //neg pion
      }
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion))<3){
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kPion))<4){ //for systematics -- normal value 3
 
 	if(trackN->Charge()>0 )	isPion[0] = kTRUE; //pos pion
 	if(trackN->Charge()<0 )	isPion[1] = kTRUE; //neg pion
@@ -1551,7 +1847,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::TrackCuts(AliVTrack *track, Bool_t testTrackCu
   return testFilterBit;
   }*/
 //______________________________________________________________________
-void AliAnalysisTaskLambdaNAOD::MCGenerated(AliStack* stack) 
+void AliAnalysisTaskLambdaNAOD::MCGenerated(AliStack* stack, Int_t multiplicity) 
 { 
 
   // Monte Carlo for genenerated particles
@@ -1571,13 +1867,13 @@ void AliAnalysisTaskLambdaNAOD::MCGenerated(AliStack* stack)
 	  //LambdaNeutron
 	  if(pdgCodeMother == fgkPdgCode[kPDGLambdaNeutron]) //check mother PDG 
 	    {
-	      MCTwoBodyDecay(stack,tparticleMother,pdgCodeMother,fgkPdgCode[kPDGDeuteron],fgkPdgCode[kPDGPionMinus],fgkMass[kMassDeuteron],fgkMass[kMassPion]);
+	      MCTwoBodyDecay(stack,tparticleMother,pdgCodeMother,fgkPdgCode[kPDGDeuteron],fgkPdgCode[kPDGPionMinus],fgkMass[kMassDeuteron],fgkMass[kMassPion],multiplicity);
 	    }
 
 	  //Anti-LambdaNeutron
 	  if(pdgCodeMother == fgkPdgCode[kPDGAntiLambdaNeutron]) //check mother PDG 
 	    {
-	      MCTwoBodyDecay(stack,tparticleMother,pdgCodeMother,fgkPdgCode[kPDGAntiDeuteron],fgkPdgCode[kPDGPionPlus],fgkMass[kMassDeuteron],fgkMass[kMassPion]);
+	      MCTwoBodyDecay(stack,tparticleMother,pdgCodeMother,fgkPdgCode[kPDGAntiDeuteron],fgkPdgCode[kPDGPionPlus],fgkMass[kMassDeuteron],fgkMass[kMassPion],multiplicity);
 	    }
 
   	      
@@ -1587,7 +1883,7 @@ void AliAnalysisTaskLambdaNAOD::MCGenerated(AliStack* stack)
     }//end MC
 }
 //_____________________________________________
-void AliAnalysisTaskLambdaNAOD::MCTwoBodyDecay(AliStack* stack, const TParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter){ //function that calculates the invariant mass and the transverse momentum for MC
+void AliAnalysisTaskLambdaNAOD::MCTwoBodyDecay(AliStack* stack, const TParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter, Int_t multiplicity){ //function that calculates the invariant mass and the transverse momentum for MC
 
   Double_t momentumFirstDaughterGen[3]={0,0,0};
   Double_t momentumSecondDaughterGen[3]={0,0,0};
@@ -1665,16 +1961,22 @@ void AliAnalysisTaskLambdaNAOD::MCTwoBodyDecay(AliStack* stack, const TParticle 
 #if 0
 
 							      switch(PDGMother) {
-							      case fgkPdgCode[kPDGLambdaNeutron] : 
-  							       fHistLambdaNeutronPtGen->Fill(transversMomentumMotherGen);
-							       fHistLambdaNeutronInvaMassGen->Fill(invaMass);
-							       break;
+							      case fgkPdgCode[kPDGLambdaNeutron] :
+								fHistLambdaNeutronPtGen->Fill(transversMomentumMotherGen); 
+								if(multiplicity < 2500)fHistLambdaNeutronPtGenMinBias->Fill(transversMomentumMotherGen);
+                                                                if(multiplicity > 1500 && multiplicity < 2750)fHistLambdaNeutronPtGenCentral->Fill(transversMomentumMotherGen);
+                                                                if(multiplicity > 300 && multiplicity < 2000)fHistLambdaNeutronPtGenSemiCentral->Fill(transversMomentumMotherGen);
+								fHistLambdaNeutronInvaMassGen->Fill(invaMass);
+								break;
 							      case fgkPdgCode[kPDGAntiLambdaNeutron] :
-							       fHistAntiLambdaNeutronPtGen->Fill(transversMomentumMotherGen);
-							       fHistAntiLambdaNeutronInvaMassGen->Fill(invaMass);
-							       break;
+								fHistAntiLambdaNeutronPtGen->Fill(transversMomentumMotherGen);
+								if(multiplicity < 2500)fHistAntiLambdaNeutronPtGenMinBias->Fill(transversMomentumMotherGen);
+								if(multiplicity > 1500 && multiplicity < 2750)fHistAntiLambdaNeutronPtGenCentral->Fill(transversMomentumMotherGen);
+								if(multiplicity > 300 && multiplicity < 2000)fHistAntiLambdaNeutronPtGenSemiCentral->Fill(transversMomentumMotherGen);								
+								fHistAntiLambdaNeutronInvaMassGen->Fill(invaMass);
+								break;
 							      default :
-							      printf("should not happen!!!! \n");
+								printf("should not happen!!!! \n");
 							      }
 
 
@@ -1683,6 +1985,9 @@ void AliAnalysisTaskLambdaNAOD::MCTwoBodyDecay(AliStack* stack, const TParticle 
 	  if(PDGMother == fgkPdgCode[kPDGLambdaNeutron])
 	    {  
 	      fHistLambdaNeutronPtGen->Fill(transversMomentumMotherGen);
+              if(multiplicity < 2500)fHistLambdaNeutronPtGenMinBias->Fill(transversMomentumMotherGen);
+              if(multiplicity > 1500 && multiplicity < 2750)fHistLambdaNeutronPtGenCentral->Fill(transversMomentumMotherGen);
+              if(multiplicity > 300 && multiplicity < 2000)fHistLambdaNeutronPtGenSemiCentral->Fill(transversMomentumMotherGen);
 	      fHistLambdaNeutronInvaMassGen->Fill(invaMass);
 	      fHistLambdaNeutronDecayLengthGen->Fill(((tparticleFirstDaughter->Rho())*2.054)/(tparticleMother->P()));
 	    }
@@ -1690,6 +1995,9 @@ void AliAnalysisTaskLambdaNAOD::MCTwoBodyDecay(AliStack* stack, const TParticle 
 	  if(PDGMother == fgkPdgCode[kPDGAntiLambdaNeutron])
 	    {
 	      fHistAntiLambdaNeutronPtGen->Fill(transversMomentumMotherGen);
+	      if(multiplicity < 2500)fHistAntiLambdaNeutronPtGenMinBias->Fill(transversMomentumMotherGen);
+	      if(multiplicity > 1500 && multiplicity < 2750)fHistAntiLambdaNeutronPtGenCentral->Fill(transversMomentumMotherGen);
+	      if(multiplicity > 300 && multiplicity < 2000)fHistAntiLambdaNeutronPtGenSemiCentral->Fill(transversMomentumMotherGen);
 	      fHistAntiLambdaNeutronInvaMassGen->Fill(invaMass);
 	      fHistAntiLambdaNeutronDecayLengthGen->Fill(((tparticleFirstDaughter->Rho())*2.054)/(tparticleMother->P()));
 	    }	      
@@ -1706,7 +2014,34 @@ Double_t AliAnalysisTaskLambdaNAOD::MomentumInnerParam(AliVTrack *track, Double_
   ptot = esdtrack->GetInnerParam()->GetP();
 
   return ptot;
+}
+//_____________________________________________
+UShort_t AliAnalysisTaskLambdaNAOD::TPCclusters(AliVTrack *track, UShort_t numberOfTPCclusters){ //function to get the number of clusters used for each track
+
+  AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+  numberOfTPCclusters = esdtrack->GetTPCNcls();
+
+  return numberOfTPCclusters;
+}
+//_____________________________________________ 
+Double_t AliAnalysisTaskLambdaNAOD::TPCchi2(AliVTrack *track, Double_t numberOfChi2clustersTPC, UShort_t numberOfTPCclusters){ //function to get the chi2 per clusters used for each track
+
+  AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+  numberOfChi2clustersTPC = esdtrack->GetTPCchi2()/numberOfTPCclusters;
+
+  return numberOfChi2clustersTPC;
 } 
+//_____________________________________________                                                                                
+Double_t AliAnalysisTaskLambdaNAOD::ImpactParameter(AliVTrack *track, Double_t dcaToVertex){ //function to get the number of clusters used for each track
+
+  Float_t tdcaToVertex[2] = {-1,-1};
+
+  AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+  esdtrack->GetImpactParameters(tdcaToVertex[0],tdcaToVertex[1]);
+  dcaToVertex = TMath::Sqrt(tdcaToVertex[0]*tdcaToVertex[0]+tdcaToVertex[1]*tdcaToVertex[1]);
+
+  return dcaToVertex;
+}
 //________________________________________________________________________
 /*void AliAnalysisTaskLambdaNAOD::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev){
 

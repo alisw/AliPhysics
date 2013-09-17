@@ -51,6 +51,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetMinJetPt(Double_t j)          { fMinJetPt      = j     ; }
   void                   SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min   ; }
   void                   SetRadius(Double_t r)            { fRadius        = r     ; if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet)."); }
+  void                   SetTrackEfficiency(Double_t t)   { fTrackEfficiency = t   ; }
   void                   SetTracksName(const char *n)     { fTracksName    = n     ; }
   void                   SetType(Int_t t)                 { if (t==0) fJetType |= kFullJet; 
                                                             else if (t==1) fJetType |= kChargedJet; 
@@ -61,7 +62,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetJetPhiRange(Double_t pmi, Double_t pma) {fJetPhiMin = pmi; fJetPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
   void                   SetMinMCLabel(Int_t s)           { fMinMCLabel     = s     ;  }
-  void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) 
+  void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB)
   {
     if(!fIsPSelSet)
     {
@@ -104,6 +105,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fJetEtaMax;              // maximum eta to keep jet in output
   Double_t               fGhostArea;              // ghost area
   Int_t                  fMinMCLabel;             // minimum MC label value for the tracks/clusters being considered MC particles
+  Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
@@ -117,6 +119,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 9) // Jet producing task
+  ClassDef(AliEmcalJetTask, 10) // Jet producing task
 };
 #endif

@@ -5,11 +5,12 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Int_t               ptHardBin               = -1,
   Double_t            randomConeR             = 0.4,
   Double_t            trackBgrdConeR          = 0.6,
+  const char*         containerSuffix         = "",
   const char*         usedTracks              = "PicoTracks",
   const char*         centralityType          = "V0A",
   Double_t            trackEtaWindow          = 0.9,
   Double_t            minJetPt                = 5.0, // signal jet min pt
-  Double_t            minBackgroundJetPt      = -1.0, // background jet min pt
+  Double_t            minBackgroundJetPt      = 0.0, // background jet min pt
   Double_t            dijetLeadingMinPt       = 10.0,
   Double_t            dijetMaxAngleDev        = 10.0,
   Int_t               numberOfPtHardBins      = 0,
@@ -18,7 +19,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Bool_t              usePileUpCut            = kTRUE,
   Bool_t              isEMCalTrain            = kFALSE,
   Bool_t              calculateExternalRho    = kFALSE,
-  Bool_t              analyzeDeprecatedBackgrounds = kTRUE
+  Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
+  Int_t               numberOfCentralityBins  = 20
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -46,20 +48,35 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   }
 
   TString stringPtHard("");
+  TString containerNameSuffix("");
+
   if (ptHardBin!=-1)
     stringPtHard = Form("_PtHard_%d",ptHardBin);
+  if (strcmp(containerSuffix,""))
+    containerNameSuffix = Form("_%s", containerSuffix);
+
   TString myContName("");
   if(isMC)
-    myContName = Form("AnalysisR0%2.0f_%s_MC%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
+    myContName = Form("AnalysisR0%2.0f_%s_MC%s%s", jetRadius*100, triggerName.Data(), stringPtHard.Data(), containerNameSuffix.Data());
   else
-    myContName = Form("AnalysisR0%2.0f_%s%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
+    myContName = Form("AnalysisR0%2.0f_%s%s%s", jetRadius*100, triggerName.Data(), stringPtHard.Data(), containerNameSuffix.Data());
 
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
+  
+  if(jetRadius < 0.1)
+  {
+    jetFinderTask->SetMinJetArea(0.0);
+    jetFinderTaskKT->SetMinJetArea(0.0);
+    jetFinderTask->SetMinJetPt(0.15);
+    jetFinderTaskKT->SetMinJetPt(0.15);
+    jetFinderTask->SetGhostArea(0.001);
+    jetFinderTaskKT->SetGhostArea(0.001);
+  }
 
-  if(minBackgroundJetPt<0)
+  if(minBackgroundJetPt == -1.0)
   {
     if(analyzeDeprecatedBackgrounds)
       minBackgroundJetPt = 0.0;
@@ -118,6 +135,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetTRBackgroundConeRadius(trackBgrdConeR);
   task->SelectCollisionCandidates(trigger);
   task->SetCentralityType(centralityType);
+  task->SetNumberOfCentralityBins(numberOfCentralityBins);
   task->SetUsePtHardBin(ptHardBin);
   if(calculateExternalRho)
     task->SetExternalRhoTaskName(myRhoName.Data());

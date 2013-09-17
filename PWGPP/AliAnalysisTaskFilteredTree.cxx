@@ -14,6 +14,7 @@
 **************************************************************************/
 
 #include "iostream"
+#include "TSystem.h"
 
 #include <TPDGCode.h>
 #include <TDatabasePDG.h>
@@ -22,6 +23,7 @@
 #include "TTreeStream.h"
 #include "TTree.h"
 #include "TH1F.h"
+#include "TH3.h"
 #include "TCanvas.h"
 #include "TList.h"
 #include "TObjArray.h"
@@ -75,6 +77,7 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
   , fUseMCInfo(kFALSE)
   , fUseESDfriends(kFALSE)
   , fReducePileUp(kTRUE)
+  , fFillTree(kTRUE)
   , fFilteredTreeEventCuts(0)
   , fFilteredTreeAcceptanceCuts(0)
   , fFilteredTreeRecAcceptanceCuts(0)
@@ -93,6 +96,15 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
   , fLaserTree(0)
   , fMCEffTree(0)
   , fCosmicPairsTree(0)
+  , fPtResPhiPtTPC(0)
+  , fPtResPhiPtTPCc(0)
+  , fPtResPhiPtTPCITS(0)
+  , fPtResEtaPtTPC(0)
+  , fPtResEtaPtTPCc(0)
+  , fPtResEtaPtTPCITS(0)
+  , fPtResCentPtTPC(0)
+  , fPtResCentPtTPCc(0)
+  , fPtResCentPtTPCITS(0)
 {
   // Constructor
 
@@ -103,6 +115,7 @@ AliAnalysisTaskFilteredTree::AliAnalysisTaskFilteredTree(const char *name)
   DefineOutput(4, TTree::Class());
   DefineOutput(5, TTree::Class());
   DefineOutput(6, TTree::Class());
+  DefineOutput(7, TList::Class());
 }
 
 //_____________________________________________________________________________
@@ -158,12 +171,97 @@ void AliAnalysisTaskFilteredTree::UserCreateOutputObjects()
   fMCEffTree = ((*fTreeSRedirector)<<"MCEffTree").GetTree();
   fCosmicPairsTree = ((*fTreeSRedirector)<<"CosmicPairs").GetTree();
 
+
+
+
+  // histogram booking
+
+  Double_t minPt = 0.1; 
+  Double_t maxPt = 100.; 
+  Int_t nbinsPt = 30; 
+
+  Double_t logminPt = TMath::Log10(minPt);
+  Double_t logmaxPt = TMath::Log10(maxPt);
+  Double_t binwidth = (logmaxPt-logminPt)/nbinsPt;
+  Double_t *binsPt =  new Double_t[nbinsPt+1];
+  binsPt[0] = minPt;
+  for (Int_t i=1;i<=nbinsPt;i++) {
+    binsPt[i] = minPt + TMath::Power(10,logminPt+i*binwidth);
+  }
+
+  // 1pT resol cov matrix bins
+  Double_t min1PtRes = 0.; 
+  Double_t max1PtRes = 0.3; 
+  Int_t nbins1PtRes = 300; 
+  Double_t bins1PtRes[301];
+  for (Int_t i=0;i<=nbins1PtRes;i++) {
+    bins1PtRes[i] = min1PtRes + i*(max1PtRes-min1PtRes)/nbins1PtRes;
+  }
+
+  // phi bins
+  Double_t minPhi = 0.; 
+  Double_t maxPhi = 6.5; 
+  Int_t nbinsPhi = 100; 
+  Double_t binsPhi[101];
+    for (Int_t i=0;i<=nbinsPhi;i++) {
+    binsPhi[i] = minPhi + i*(maxPhi-minPhi)/nbinsPhi;
+  }
+
+  // eta bins
+  Double_t minEta = -1.;
+  Double_t maxEta = 1.;
+  Int_t nbinsEta = 20;
+  Double_t binsEta[21];
+  for (Int_t i=0;i<=nbinsEta;i++) {
+    binsEta[i] = minEta + i*(maxEta-minEta)/nbinsEta;
+  }
+
+  // mult bins
+  Double_t minCent = 0.;
+  Double_t maxCent = 100;
+  Int_t nbinsCent = 20;
+  Double_t binsCent[101];
+  for (Int_t i=0;i<=nbinsCent;i++) {
+    binsCent[i] = minCent + i*(maxCent-minCent)/nbinsCent;
+  }
+  
+  fPtResPhiPtTPC = new TH3D("fPtResPhiPtTPC","pt rel. resolution from cov. matrix TPC tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
+  fPtResPhiPtTPCc = new TH3D("fPtResPhiPtTPCc","pt rel. resolution from cov. matrix TPC constrained tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
+  fPtResPhiPtTPCITS = new TH3D("fPtResPhiPtTPCITS","pt rel. resolution from cov. matrix TPC+ITS tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
+  
+fPtResEtaPtTPC = new TH3D("fPtResEtaPtTPC","pt rel. resolution from cov. matrix TPC tracks",nbinsPt,binsPt,nbinsEta,binsEta,nbins1PtRes,bins1PtRes);
+  fPtResEtaPtTPCc = new TH3D("fPtResEtaPtTPCc","pt rel. resolution from cov. matrix TPC constrained tracks",nbinsPt,binsPt,nbinsEta,binsEta,nbins1PtRes,bins1PtRes);
+  fPtResEtaPtTPCITS = new TH3D("fPtResEtaPtTPCITS","pt rel. resolution from cov. matrix TPC+ITS tracks",nbinsPt,binsPt,nbinsEta,binsEta,nbins1PtRes,bins1PtRes);
+ 
+fPtResCentPtTPC = new TH3D("fPtResCentPtTPC","pt rel. resolution from cov. matrix TPC tracks",nbinsPt,binsPt,nbinsCent,binsCent,nbins1PtRes,bins1PtRes);
+  fPtResCentPtTPCc = new TH3D("fPtResCentPtTPCc","pt rel. resolution from cov. matrix TPC constrained tracks",nbinsPt,binsPt,nbinsCent,binsCent,nbins1PtRes,bins1PtRes);
+  fPtResCentPtTPCITS = new TH3D("fPtResCentPtTPCITS","pt rel. resolution from cov. matrix TPC+ITS tracks",nbinsPt,binsPt,nbinsCent,binsCent,nbins1PtRes,bins1PtRes);
+
+  
+  fOutput = new TList; 
+  if(!fOutput) return;
+  fOutput->SetOwner();
+
+  fOutput->Add(fPtResPhiPtTPC);
+  fOutput->Add(fPtResPhiPtTPCc);
+  fOutput->Add(fPtResPhiPtTPCITS);
+  fOutput->Add(fPtResEtaPtTPC);
+  fOutput->Add(fPtResEtaPtTPCc);
+  fOutput->Add(fPtResEtaPtTPCITS);
+  fOutput->Add(fPtResCentPtTPC);
+  fOutput->Add(fPtResCentPtTPCc);
+  fOutput->Add(fPtResCentPtTPCITS);
+
+  // post data to outputs
+
   PostData(1,fV0Tree);
   PostData(2,fHighPtTree);
   PostData(3,fdEdxTree);
   PostData(4,fLaserTree);
   PostData(5,fMCEffTree);
   PostData(6,fCosmicPairsTree);
+
+  PostData(7,fOutput);
 }
 
 //_____________________________________________________________________________
@@ -197,6 +295,23 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
       if(!fESDfriend) {
         Printf("ERROR: ESD friends not available");
     }
+  }
+
+  //if set, use the environment variables to set the downscaling factors
+  //AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
+  //AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
+  TString env;
+  env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF");
+  if (!env.IsNull())
+  {
+    fLowPtTrackDownscaligF=env.Atof();
+    AliInfo(Form("fLowPtTrackDownscaligF=%f",fLowPtTrackDownscaligF));
+  }
+  env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF");
+  if (!env.IsNull())
+  {
+    fLowPtV0DownscaligF=env.Atof();
+    AliInfo(Form("fLowPtV0DownscaligF=%f",fLowPtTrackDownscaligF));
   }
 
   //
@@ -352,6 +467,7 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event)
       //
       //fCosmicPairsTree->Fill();
 
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
 	  (*fTreeSRedirector)<<"CosmicPairs"<<
 	    "fileName.="<<&fileName<<         // file name
@@ -570,6 +686,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       //Double_t vtxX=vtxESD->GetX();
       //Double_t vtxY=vtxESD->GetY();
       //Double_t vtxZ=vtxESD->GetZ();
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"highPt"<<
         "fileName.="<<&fileName<<            
@@ -645,6 +762,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
 
       //fLaserTree->Fill();
 
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"Laser"<<
         "fileName.="<<&fileName<<
@@ -741,6 +859,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
   TArrayF vtxMC(3);
+  Int_t mcStackSize=0;
 
   Int_t multMCTrueTracks = 0;
   if(mcEvent)
@@ -757,6 +876,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliDebug(AliLog::kError, "Stack not available");
       return;
     }
+    mcStackSize=stack->GetNtrack();
 
     // get MC vertex
     genHeader = header->GenEventHeader();
@@ -1007,7 +1127,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Bool_t isFromMaterial=kFALSE, isFromMaterialTPC=kFALSE, isFromMaterialITS=kFALSE;
 
       AliTrackReference *refTPCIn = NULL;
+      AliTrackReference *refTPCOut = NULL;
       AliTrackReference *refITS = NULL;
+      AliTrackReference *refTRD = NULL;
+      AliTrackReference *refTOF = NULL;
+      AliTrackReference *refEMCAL = NULL;
+      AliTrackReference *refPHOS = NULL;
+      Int_t nrefTPC=0, nrefTRD=0, nrefTOF=0, nrefITS=0, nrefEMCAL=0, nrefPHOS=0;
 
       Bool_t isOKtrackInnerC3 = kFALSE;
       AliExternalTrackParam *trackInnerC3 = new AliExternalTrackParam(*(track->GetInnerParam()));
@@ -1020,7 +1146,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         // global track
 	//
         Int_t label = TMath::Abs(track->GetLabel()); 
+        if (label >= mcStackSize) continue;
         particle = stack->Particle(label);
+        if (!particle) continue;
         if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0.)
 	{
 	  particleMother = GetMother(particle,stack);
@@ -1035,7 +1163,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	// TPC track
 	//
 	Int_t labelTPC = TMath::Abs(track->GetTPCLabel()); 
+        if (labelTPC >= mcStackSize) continue;
         particleTPC = stack->Particle(labelTPC);
+        if (!particleTPC) continue;
         if(particleTPC && particleTPC->GetPDG() && particleTPC->GetPDG()->Charge()!=0.)
 	{
 	  particleMotherTPC = GetMother(particleTPC,stack);
@@ -1052,7 +1182,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	//
         TParticle *part=0;
         TClonesArray *trefs=0;
-        Int_t status = mcEvent->GetParticleAndTR(track->GetTPCLabel(), part, trefs);
+        Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(labelTPC), part, trefs);
 
 	if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.) 
 	{
@@ -1065,8 +1195,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             AliTrackReference *ref = (AliTrackReference *)trefs->At(iref);
 
              // Ref. in the middle ITS 
-            if(ref && ref->DetectorId()==AliTrackReference::kITS)
+            if(ref && ref->Label()==label && ref->DetectorId()==AliTrackReference::kITS)
             {
+	      nrefITS++;
 	      if(!refITS && countITS==2) {
 	        refITS = ref;
 	        //printf("refITS %p \n",refITS);
@@ -1075,14 +1206,48 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             }
 
             // TPC
-            if(ref && ref->DetectorId()==AliTrackReference::kTPC)
+            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kTPC)
             {
+	      nrefTPC++;
+	      refTPCOut=ref;
 	      if(!refTPCIn) {
 	        refTPCIn = ref;
 	        //printf("refTPCIn %p \n",refTPCIn);
 	        //break;
 	      }
             }
+            // TRD
+            if(ref && ref->Label()==label && ref->DetectorId()==AliTrackReference::kTRD)
+            {
+	      nrefTRD++;
+	      if(!refTRD) {
+	        refTRD = ref;
+	      }
+            }
+            // TOF
+            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kTOF)
+            {
+	      nrefTOF++;
+	      if(!refTOF) {
+	        refTOF = ref;
+	      }
+            }
+            // EMCAL
+            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kEMCAL)
+            {
+	      nrefEMCAL++;
+	      if(!refEMCAL) {
+	        refEMCAL = ref;
+	      }
+            }
+            // PHOS
+ //            if(ref && ref->Label()==label  && ref->DetectorId()==AliTrackReference::kPHOS)
+//             {
+// 	      nrefPHOS++;
+// 	      if(!refPHOS) {
+// 	        refPHOS = ref;
+// 	      }
+//             }
 	  }
 
           // transform inner params to TrackRef
@@ -1099,7 +1264,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	// ITS track
 	//
 	Int_t labelITS = TMath::Abs(track->GetITSLabel()); 
+        if (labelITS >= mcStackSize) continue;
         particleITS = stack->Particle(labelITS);
+        if (!particleITS) continue;
         if(particleITS && particleITS->GetPDG() && particleITS->GetPDG()->Charge()!=0.)
 	{
 	  particleMotherITS = GetMother(particleITS,stack);
@@ -1197,7 +1364,10 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliExternalTrackParam* ptrackInnerC3 = (AliExternalTrackParam*)trackInnerC3->Clone();
       Int_t ntracks = esdEvent->GetNumberOfTracks();
       
-      if(fTreeSRedirector && dumpToTree) 
+      // fill histograms
+      FillHistograms(ptrack, ptpcInnerC, centralityF, (Double_t)chi2(0,0));
+
+      if(fTreeSRedirector && dumpToTree && fFillTree) 
       {
 
         (*fTreeSRedirector)<<"highPt"<<
@@ -1227,30 +1397,47 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  "centralityF="<<centralityF;
         if (mcEvent)
         {
-          (*fTreeSRedirector)<<"highPt"<<
-          "refTPCIn.="<<refTPCIn<<
-          "refITS.="<<refITS<<
-          "particle.="<<particle<<
-          "particleMother.="<<particleMother<<
-          "mech="<<mech<<
-          "isPrim="<<isPrim<<
-          "isFromStrangess="<<isFromStrangess<<
-          "isFromConversion="<<isFromConversion<<
-          "isFromMaterial="<<isFromMaterial<<
-          "particleTPC.="<<particleTPC<<
-          "particleMotherTPC.="<<particleMotherTPC<<
-          "mechTPC="<<mechTPC<<
-          "isPrimTPC="<<isPrimTPC<<
-          "isFromStrangessTPC="<<isFromStrangessTPC<<
-          "isFromConversionTPC="<<isFromConversionTPC<<
-          "isFromMaterialTPC="<<isFromMaterialTPC<<
-          "particleITS.="<<particleITS<<
-          "particleMotherITS.="<<particleMotherITS<<
-          "mechITS="<<mechITS<<
-          "isPrimITS="<<isPrimITS<<
-          "isFromStrangessITS="<<isFromStrangessITS<<
-          "isFromConversionITS="<<isFromConversionITS<<
-          "isFromMaterialITS="<<isFromMaterialITS;
+	  AliTrackReference refDummy;
+	  if (!refITS) refITS = &refDummy;
+	  if (!refTRD) refTRD = &refDummy;
+	  if (!refTOF) refTOF = &refDummy;
+	  if (!refEMCAL) refEMCAL = &refDummy;
+	  if (!refPHOS) refPHOS = &refDummy;
+          (*fTreeSRedirector)<<"highPt"<<	
+	    "nrefITS="<<nrefITS<<              // number of track references in the ITS
+	    "nrefTPC="<<nrefTPC<<              // number of track references in the TPC
+	    "nrefTRD="<<nrefTRD<<              // number of track references in the TRD
+	    "nrefTOF="<<nrefTOF<<              // number of track references in the TOF
+	    "nrefEMCAL="<<nrefEMCAL<<              // number of track references in the TOF
+	    "nrefPHOS="<<nrefPHOS<<              // number of track references in the TOF
+	    "refTPCIn.="<<refTPCIn<<
+	    "refTPCOut.="<<refTPCOut<<
+	    "refITS.="<<refITS<<	    
+	    "refTRD.="<<refTRD<<	    
+	    "refTOF.="<<refTOF<<	    
+	    "refEMCAL.="<<refEMCAL<<	    
+	    "refPHOS.="<<refPHOS<<	    
+	    "particle.="<<particle<<
+	    "particleMother.="<<particleMother<<
+	    "mech="<<mech<<
+	    "isPrim="<<isPrim<<
+	    "isFromStrangess="<<isFromStrangess<<
+	    "isFromConversion="<<isFromConversion<<
+	    "isFromMaterial="<<isFromMaterial<<
+	    "particleTPC.="<<particleTPC<<
+	    "particleMotherTPC.="<<particleMotherTPC<<
+	    "mechTPC="<<mechTPC<<
+	    "isPrimTPC="<<isPrimTPC<<
+	    "isFromStrangessTPC="<<isFromStrangessTPC<<
+	    "isFromConversionTPC="<<isFromConversionTPC<<
+	    "isFromMaterialTPC="<<isFromMaterialTPC<<
+	    "particleITS.="<<particleITS<<
+	    "particleMotherITS.="<<particleMotherITS<<
+	    "mechITS="<<mechITS<<
+	    "isPrimITS="<<isPrimITS<<
+	    "isFromStrangessITS="<<isFromStrangessITS<<
+	    "isFromConversionITS="<<isFromConversionITS<<
+	    "isFromMaterialITS="<<isFromMaterialITS;
         }
         //finish writing the entry
         AliInfo("writing tree highPt");
@@ -1369,6 +1556,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
+  Int_t mcStackSize=0;
   TArrayF vtxMC(3);
 
   Int_t multMCTrueTracks = 0;
@@ -1389,6 +1577,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     AliDebug(AliLog::kError, "Stack not available");
     return;
   }
+  mcStackSize=stack->GetNtrack();
 
   // get MC vertex
   genHeader = header->GenEventHeader();
@@ -1427,7 +1616,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
-    if(!stack) return;
+    //if(!stack) return;
 
     //
     // MC info
@@ -1446,9 +1635,8 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     Double_t runNumber = esdEvent->GetRunNumber();
     Double_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
-    // loop over MC stack
-    for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
+      // loop over MC stack
+    for (Int_t iMc = 0; iMc < mcStackSize; ++iMc) 
     {
       particle = stack->Particle(iMc);
       if (!particle)
@@ -1475,26 +1663,35 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
       // check if particle reconstructed
       Bool_t isRec = kFALSE;
-      Int_t  trackIndex = -1;
+      Int_t  trackIndex = -1;  
+      Int_t isESDtrackCut= 0;
+      Int_t isAccCuts    = 0;
+      AliESDtrack *recTrack = NULL; 
+
       for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
       {
-
         AliESDtrack *track = esdEvent->GetTrack(iTrack);
         if(!track) continue;
         if(track->Charge()==0) continue;
-        if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) 
-        {
-          Int_t label =  TMath::Abs(track->GetLabel());
-          if(label == iMc) {
-            isRec = kTRUE;
-            trackIndex = iTrack;
-            break;
-          }
-        } 
+	//
+	Int_t label =  TMath::Abs(track->GetLabel());
+	if (label >= mcStackSize) continue;
+	if(label == iMc) {	  
+	  Bool_t isAcc=esdTrackCuts->AcceptTrack(track);
+	  if (isAcc) isESDtrackCut=1;
+	  if (accCuts->AcceptTrack(track)) isAccCuts=1;
+	  isRec = kTRUE;
+	  if (recTrack){
+	    if (track->GetTPCncls()<recTrack->GetTPCncls()) continue; // in case looper tracks use longer track
+	    if (!isAcc) continue;
+	    trackIndex = iTrack;
+	  }
+	  recTrack = esdEvent->GetTrack(trackIndex); 
+	  continue;
+	}        
       }
-
+      
       // Store information in the output tree
-      AliESDtrack *recTrack = NULL; 
       if(trackIndex>-1)  { 
         recTrack = esdEvent->GetTrack(trackIndex); 
       } else {
@@ -1514,20 +1711,24 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
 
       //
-      if(fTreeSRedirector) {
+      if(fTreeSRedirector && fFillTree) {
         (*fTreeSRedirector)<<"MCEffTree"<<
           "fileName.="<<&fileName<<
           "triggerClass.="<<&triggerClass<<
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<
-          "evtNumberInFile="<<evtNumberInFile<<
-          "Bz="<<bz<<
-          "vtxESD.="<<vtxESD<<
-          "mult="<<mult<<
+          "evtNumberInFile="<<evtNumberInFile<<     // 
+          "Bz="<<bz<<                               // magnetic field
+          "vtxESD.="<<vtxESD<<                      // vertex info
+          "mult="<<mult<<                           // primary vertex 9whatewe found) multiplicity
+	  "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
+	  //
+	  "isAcc0="<<isESDtrackCut<<                // track accepted by ESD track cuts
+	  "isAcc1="<<isAccCuts<<                    // track accepted by acceptance cuts flag
           "esdTrack.="<<recTrack<<
           "isRec="<<isRec<<
-          "tpcTrackLength="<<tpcTrackLength<<
-          "particle.="<<particle<<
+          "tpcTrackLength="<<tpcTrackLength<<       // track length in the TPC r projection
+          "particle.="<<particle<<                  // particle properties
           "particleMother.="<<particleMother<<
           "mech="<<mech<<
           "\n";
@@ -1675,6 +1876,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
     if (type==0) continue;   
     TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
+    if(!fFillTree) return;
     if(!fTreeSRedirector) return;
     (*fTreeSRedirector)<<"V0s"<<
       "isDownscaled="<<isDownscaled<<
@@ -1797,6 +1999,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
       if(!IsHighDeDxParticle(track)) continue;
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
+      if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"dEdx"<<
       "fileName.="<<&fileName<<
@@ -2043,6 +2246,8 @@ TParticle *AliAnalysisTaskFilteredTree::GetMother(TParticle *const particle, Ali
 
   Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
   TParticle* mother = NULL; 
+  Int_t mcStackSize=stack->GetNtrack();
+  if (motherLabel>=mcStackSize) return NULL;
   mother = stack->Particle(motherLabel); 
 
 return mother;
@@ -2054,7 +2259,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack
   Bool_t isFromConversion = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2062,6 +2270,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           Int_t motherPdg = mother->GetPdgCode();
@@ -2082,7 +2291,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *
   Bool_t isFromMaterial = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2090,6 +2302,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           if(!isPrim && mech==13) { 
@@ -2108,7 +2321,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(const Int_t label, AliStac
   Bool_t isFromStrangeness = kFALSE;
 
   if(stack) {
+    Int_t mcStackSize=stack->GetNtrack();
+    if (label>=mcStackSize) return kFALSE;
     TParticle* particle = stack->Particle(label);
+    if (!particle) return kFALSE;
 
     if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0) 
     {
@@ -2116,6 +2332,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(const Int_t label, AliStac
        Bool_t isPrim = stack->IsPhysicalPrimary(label);
 
        Int_t motherLabel = TMath::Abs(particle->GetMother(0));  
+       if (motherLabel>=mcStackSize) return kFALSE;
        TParticle* mother = stack->Particle(motherLabel); 
        if(mother) {
           Int_t motherPdg = mother->GetPdgCode();
@@ -2297,4 +2514,74 @@ Int_t AliAnalysisTaskFilteredTree::GetMCTrueTrackMult(AliMCEvent *const mcEvent,
 return mult;  
 }
 
+//_____________________________________________________________________________
+void AliAnalysisTaskFilteredTree::FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, const Double_t centralityF, const Double_t chi2TPCInnerC) 
+{
+//
+// Fill pT relative resolution histograms for 
+// TPC only, TPC only constrained to vertex and TPC+ITS tracking
+//
+   if(!ptrack) return;    
+   if(!ptpcInnerC) return;    
 
+   const AliExternalTrackParam * innerParam = (AliExternalTrackParam *) ptrack->GetInnerParam();
+   if(!innerParam) return;
+
+   Float_t dxy, dz;
+   ptrack->GetImpactParameters(dxy,dz);
+
+// TPC+ITS primary tracks 
+if( abs(ptrack->Eta())<0.8 && 
+    ptrack->GetTPCClusterInfo(3,1)>120 && 
+    ptrack->IsOn(0x40) && 
+    ptrack->GetTPCclusters(0)>0.0 &&  
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.4 && 
+    //abs(innerParam->GetX())>0.0 && 
+    //abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    //abs(innerParam->GetTgl())<0.85 && 
+    ptrack->IsOn(0x0004) && 
+    ptrack->GetNcls(0)>0 &&
+    ptrack->GetITSchi2()>0 && 
+    sqrt(ptrack->GetITSchi2()/ptrack->GetNcls(0))<6 &&
+    sqrt(chi2TPCInnerC)<6 &&
+    (ptrack->HasPointOnITSLayer(0) || ptrack->HasPointOnITSLayer(1)) &&
+    abs(dz)<2.0 && 
+    abs(dxy)<(0.018+0.035*abs(ptrack->GetSigned1Pt())) )
+    {
+      fPtResPhiPtTPCITS->Fill(ptrack->Pt(),ptrack->Phi(),1./abs(ptrack->GetSigned1Pt())*TMath::Sqrt(ptrack->GetSigma1Pt2()));
+      fPtResEtaPtTPCITS->Fill(ptrack->Pt(),ptrack->Eta(),1./abs(ptrack->GetSigned1Pt())*TMath::Sqrt(ptrack->GetSigma1Pt2()));
+      fPtResCentPtTPCITS->Fill(ptrack->Pt(),centralityF,1./abs(ptrack->GetSigned1Pt())*TMath::Sqrt(ptrack->GetSigma1Pt2()));
+    }
+
+// TPC primary tracks 
+// and TPC constrained primary tracks 
+
+    AliExternalTrackParam *ptpcInner  = (AliExternalTrackParam *) ptrack->GetTPCInnerParam(); 
+    if(!ptpcInner) return;
+
+
+   Float_t dxyTPC, dzTPC;
+   ptrack->GetImpactParametersTPC(dxyTPC,dzTPC);
+
+if( abs(ptrack->Eta())<0.8 && 
+    ptrack->GetTPCClusterInfo(3,1)>120 && 
+    ptrack->IsOn(0x40)&& 
+    ptrack->GetTPCclusters(0)>0.0 &&  
+    ptrack->GetTPCnclsS()/ptrack->GetTPCclusters(0)<0.4 && 
+    //abs(innerParam->GetX())>0.0 && 
+    //abs(innerParam->GetY()/innerParam->GetX())<0.14 && 
+    //abs(innerParam->GetTgl())<0.85 && 
+    abs(dzTPC)<3.2 && 
+    abs(dxyTPC)<2.4 )
+    {
+      // TPC only
+      fPtResPhiPtTPC->Fill(ptpcInner->Pt(),ptpcInner->Phi(),1./abs(ptpcInner->GetSigned1Pt())*TMath::Sqrt(ptpcInner->GetSigma1Pt2()));
+      fPtResEtaPtTPC->Fill(ptpcInner->Pt(),ptpcInner->Eta(),1./abs(ptpcInner->GetSigned1Pt())*TMath::Sqrt(ptpcInner->GetSigma1Pt2()));
+      fPtResCentPtTPC->Fill(ptpcInner->Pt(),centralityF,1./abs(ptpcInner->GetSigned1Pt())*TMath::Sqrt(ptpcInner->GetSigma1Pt2()));
+
+      // TPC constrained to vertex 
+      fPtResPhiPtTPCc->Fill(ptpcInnerC->Pt(),ptpcInnerC->Phi(),1./abs(ptpcInnerC->GetSigned1Pt())*TMath::Sqrt(ptpcInnerC->GetSigma1Pt2()));
+      fPtResEtaPtTPCc->Fill(ptpcInnerC->Pt(),ptpcInnerC->Eta(),1./abs(ptpcInnerC->GetSigned1Pt())*TMath::Sqrt(ptpcInnerC->GetSigma1Pt2()));
+      fPtResCentPtTPCc->Fill(ptpcInnerC->Pt(),centralityF,1./abs(ptpcInnerC->GetSigned1Pt())*TMath::Sqrt(ptpcInnerC->GetSigma1Pt2()));
+    }
+}

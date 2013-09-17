@@ -43,9 +43,10 @@ class AliAnalyseLeadingTrackUE : public TObject {
   virtual ~AliAnalyseLeadingTrackUE();                                          //virtual destructor
 
   // Setters
-  void  SetParticleSelectionCriteria(Int_t filterbit, Bool_t onlyhadrons, Double_t etacut, Double_t ptMin = 0) { fFilterBit   = filterbit;
+  void  SetParticleSelectionCriteria(Int_t filterbit, Bool_t onlyhadrons, Double_t etacut, Double_t etacutMin=-1., Double_t ptMin = 0) { fFilterBit   = filterbit;
   											     fOnlyHadrons = onlyhadrons;
 										             fTrackEtaCut = etacut;     
+										             fTrackEtaCutMin = etacutMin;     
 										             fTrackPtMin = ptMin;}
 
   void SetEventSelection(UInt_t bits) { fEventSelection = bits; }
@@ -83,6 +84,7 @@ private:
   Bool_t         fOnlyHadrons;       // consider only charged Pions, Protons and Kaons 
   Bool_t         fCheckMotherPDG;     // Check the PDG code of mother for secondaries 
   Double_t       fTrackEtaCut;       // pseudo-rapidity limit of transverse regions     
+  Double_t       fTrackEtaCutMin;       // minimum of the pseudo-rapidity limit of transverse regions     
   Double_t       fTrackPtMin;        // pt limit for selecting particles
   UInt_t         fEventSelection;    // bit for physics selection
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)

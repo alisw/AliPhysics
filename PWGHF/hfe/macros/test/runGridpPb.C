@@ -130,10 +130,12 @@ void Generate_Sample_Lookup(TMap &lookup){
         AddSample(lookup, "LHC13b.pass2", "/alice/data/2013/LHC13b", "pass2/*/AliESDs.root", "Data", "ESD");
         AddSample(lookup, "LHC13b.pass3", "/alice/data/2013/LHC13b", "pass3/*/AliESDs.root", "Data", "ESD");
         AddSample(lookup, "LHC13b.pass2.AOD", "/alice/data/2013/LHC13b", "pass2/AOD/*/AliAOD.root", "Data", "AOD"); 
+        AddSample(lookup, "LHC13b.pass3.AOD", "/alice/data/2013/LHC13b", "pass3/AOD/*/AliAOD.root", "Data", "AOD"); 
         AddSample(lookup, "LHC13b.pass2.AOD126", "/alice/data/2013/LHC13b", "*/pass2/AOD126/*/AliAOD.root", "Data", "AOD"); 
         AddSample(lookup, "LHC13c.pass1", "/alice/data/2013/LHC13c/", "pass1/*/AliESDs.root", "Data", "ESD");
         AddSample(lookup, "LHC13c.pass2", "/alice/data/2013/LHC13c/", "pass2/*/AliESDs.root", "Data", "ESD");
         AddSample(lookup, "LHC13c.pass1.AOD", "/alice/data/2013/LHC13c/", "*/pass1/AOD/*/AliAOD.root", "Data", "AOD");
+        AddSample(lookup, "LHC13c.pass2.AOD", "/alice/data/2013/LHC13c/", "*/pass2/AOD/*/AliAOD.root", "Data", "AOD");
         AddSample(lookup, "LHC13c.pass1.AOD126", "/alice/data/2013/LHC13c/", "*/pass1/AOD126/*/AliAOD.root", "Data", "AOD");
         AddSample(lookup, "LHC13b2", "/alice/sim/2013/LHC13b2", "*/*/AliESDs.root", "MC", "ESD");
         AddSample(lookup, "LHC13b2.AOD", "/alice/sim/2013/LHC13b2", "*/AliAOD.root", "MC", "AOD");
@@ -300,10 +302,8 @@ void SetupHandlers(bool isMC, bool isAOD){
 void SetupHFEtask(bool isMC, bool isAOD){
         gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEpPb.C");
         AddTaskHFEpPb(isMC, isAOD);
-        if(!isAOD){
-                gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpepPb.C");
-                AddTaskHFEnpepPb(isMC, isAOD);
-        }
+        gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpepPb.C");
+        AddTaskHFEnpepPb(isMC, isAOD);
 }
 
 void SetupTrain(const TMap &lookup){

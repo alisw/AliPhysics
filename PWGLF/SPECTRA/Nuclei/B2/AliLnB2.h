@@ -19,10 +19,10 @@ class AliLnB2: public TObject
 	
 	virtual ~AliLnB2();
 	
-	TGraphErrors* GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGraphErrors* grNucInvDYieldPt, const TString& name, Double_t errPt=0) const;
+	TGraphErrors* GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGraphErrors* grNucInvDYieldPt, const TString& name) const;
 	
 	Double_t Rside2Rlong(Double_t pt, Double_t B2, Double_t Cd) const;
-	TGraphErrors* Rside2Rlong(const TGraphErrors* grB2, const TString& name, Double_t Cd, Double_t errPt=0) const;
+	TGraphErrors* Rside2Rlong(const TGraphErrors* grB2, const TString& name, Double_t Cd) const;
 	
 	Int_t Run();
 	
@@ -33,6 +33,8 @@ class AliLnB2: public TObject
  
 	AliLnB2(const AliLnB2& other);
 	AliLnB2& operator=(const AliLnB2& other);
+	
+	Double_t GetErrorY(const TGraphErrors* gr, Double_t x0) const;
 	
   private:
  

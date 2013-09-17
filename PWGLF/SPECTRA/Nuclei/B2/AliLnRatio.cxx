@@ -65,7 +65,7 @@ Int_t AliLnRatio::Exec()
 	
 	for(Int_t i=0; i<2; ++i)
 	{
-		hPt[i] = (TH1D*)FindObj(finput, kPrefix[i] + fSpecies + "_Pt");
+		hPt[i] = FindObj<TH1D>(finput, kPrefix[i] + fSpecies + "_Pt");
 	}
 	
 	TH1D* hRatioPt = Divide(hPt[1],hPt[0],Form("Anti%s%s_Ratio_Pt",fSpecies.Data(),fSpecies.Data()));

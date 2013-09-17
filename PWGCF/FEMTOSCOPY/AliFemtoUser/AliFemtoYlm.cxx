@@ -19,7 +19,11 @@ AliFemtoYlm::AliFemtoYlm() {
   InitializeYlms();
 }
 
-AliFemtoYlm::~AliFemtoYlm() {}
+AliFemtoYlm::~AliFemtoYlm() {
+  free(fgPrefactors);
+  free(fgPrefshift);
+  free(fgPlmshift);
+}
 
 
 AliFemtoYlm::AliFemtoYlm(const AliFemtoYlm& aYlm){
@@ -94,6 +98,13 @@ void AliFemtoYlm::InitializeYlms()
   // Calculate prefactors for fast Ylm calculation
 
   double oneoversqrtpi = 1.0/TMath::Sqrt(TMath::Pi());
+
+  if(fgPrefactors!=NULL)
+    free(fgPrefactors);
+  if(fgPrefshift!=NULL)
+    free(fgPrefshift);
+  if(fgPlmshift!=NULL)
+    free(fgPlmshift);
 
   fgPrefactors = (double *) malloc(sizeof(double) * 36);
   fgPrefshift  = (int *) malloc(sizeof(int) * 6);

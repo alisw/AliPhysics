@@ -20,8 +20,6 @@
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
 #include "AliFMDHistCollector.h"
-#include "AliAODForwardMult.h"
-#include "AliAODForwardEP.h"
 #include "AliFMDEnergyFitter.h"
 #include "AliFMDEventPlaneFinder.h"
 #include <AliESDFMD.h>
@@ -79,11 +77,6 @@ public:
    * @name Interface methods 
    */
   /** 
-   * Create output objects 
-   * 
-   */
-  virtual void UserCreateOutputObjects();
-  /** 
    * Process each event 
    *
    * @param option Not used
@@ -94,12 +87,6 @@ public:
    * 
    */
   virtual void FinishTaskOutput();
-  /** 
-   * End of job
-   * 
-   * @param option Not used 
-   */
-  virtual void Terminate(Option_t* option);
   /** 
    * @} 
    */
@@ -182,28 +169,9 @@ public:
   /** 
    * @} 
    */
-
-  /** 
-   * Set debug level 
-   * 
-   * @param dbg Debug level
-   */
-  void SetDebug(Int_t dbg);
 protected: 
-  /** 
-   * Initialise the sub objects and stuff.  Called on first event 
-   * 
-   * @return false on errors 
-   */
-  virtual Bool_t SetupForData();
 
-  TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
-  AliESDFMD              fESDFMD;       // Sharing corrected ESD object
-  AliForwardUtil::Histos fHistos;       // Cache histograms 
-  AliAODForwardMult      fAODFMD;       // Output object
-  AliAODForwardEP        fAODEP;        // Output object
-  AliForwardUtil::Histos fRingSums;     // Cache histograms 
-
+  AliESDFMD               fESDFMD;            // Sharing corrected ESD object
   AliFMDEventInspector    fEventInspector;    // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
@@ -211,18 +179,7 @@ protected:
   AliFMDHistCollector     fHistCollector;     // Algorithm
   AliFMDEventPlaneFinder  fEventPlaneFinder;  // Algorithm
 
-  TH3D* fFMD1icent; // Histogram for dndeta FMD1i vs centrality 
-  TH3D* fFMD2icent; // Histogram for dndeta FMD2i vs centrality
-  TH3D* fFMD2ocent; // Histogram for dndeta FMD2o vs centrality
-  TH3D* fFMD3icent; // Histogram for dndeta FMD3i vs centrality
-  TH3D* fFMD3ocent; // Histogram for dndeta FMD3o vs centrality
-
- 
-  TList* fList; // Output list 
-  TList* fListVertexBins; // list of the signal  in vertex bin	
-	
-
-  ClassDef(AliForwardMultiplicityTask,4) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityTask,6) // Forward multiplicity class
 };
 
 #endif

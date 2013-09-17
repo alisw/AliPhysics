@@ -171,6 +171,7 @@ class AliHFEcuts : public TNamed{
     inline void SetUseSPDVertex(Bool_t useSPDVertex);
     void SetUseCorrelationVertex() { fUseCorrelationVertex = kTRUE;};
     void SetSPDVtxResolutionCut() {fSPDVtxResolution = kTRUE;}
+    void SetpApileupCut() { fPApileupCut = kTRUE; }
     void SetFractionOfSharedTPCClusters(Double_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { fMaxImpactParameterRpar = maxImpactParameterRpar; };
     
@@ -253,6 +254,7 @@ class AliHFEcuts : public TNamed{
     Bool_t   fUseSPDVertex;           // Use primary SPD vertex 
     Bool_t   fUseCorrelationVertex;   // Use the correlation of the vertex in z
     Bool_t   fSPDVtxResolution;       // Check resolution of the SPD vertex
+    Bool_t   fPApileupCut;            // Apply pA pileup cut
     Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
     Bool_t   fIsIPSigmacut;           // if IP cut or IP sigma cut 
     Bool_t   fIsIPcharge;             // if cut on IP * charge (cut using only positive side of distribution, to eliminate conversions)
@@ -369,7 +371,7 @@ void AliHFEcuts::CreateStandardCuts(){
   fMaxChi2clusterTPC = 4.;
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;
-  fPtRange[1] = 20.;
+  fPtRange[1] = 100.;
   SetRequireKineMCCuts();
 }
 #endif

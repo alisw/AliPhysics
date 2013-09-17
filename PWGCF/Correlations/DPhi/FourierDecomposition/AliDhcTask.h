@@ -43,6 +43,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
+  void         SetEtaARange(Double_t eL, Double_t eH) { fEtaALo=eL; fEtaAHi=eH;   }
   void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
   void         SetHEffA(THnF *h)                      { fHEffA=h;                 }
   void         SetHEffT(THnF *h)                      { fHEffT=h;                 }

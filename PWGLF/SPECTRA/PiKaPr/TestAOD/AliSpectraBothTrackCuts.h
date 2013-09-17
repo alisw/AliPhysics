@@ -15,6 +15,7 @@
 class AliAODEvent;
 //class AliSpectraBothHistoManager;
 class TH1I;
+class TH3F;	
 class AliAODMCParticle;
 class AliAODTrack;
 class  AliESDtrackCuts;
@@ -32,10 +33,12 @@ class AliSpectraBothTrackCuts : public TNamed
   enum {kAODobject=0,kESDobject,kotherobject};
   
  AliSpectraBothTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0) ,fPCut(0), fPtCut(0),fYCutMax(0),fYCutMin(0), fPtCutTOFMatching(0),fAODtrack(0), fHashitinSPD1(0),fusedadditionalcuts(kTRUE),
-fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),fTrack(0),fCuts(0) {}
+fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),
+fHistoDCAzQA(0),fHistoNclustersQA(0),fHistochi2perNDFQA(0),
+fTrack(0),fCuts(0) {}
   
   AliSpectraBothTrackCuts(const char *name);
-  virtual  ~AliSpectraBothTrackCuts() {} // To be implemented
+  virtual  ~AliSpectraBothTrackCuts(); 
   
   Bool_t IsSelected(AliVTrack * track,Bool_t FillHistStat);
   
@@ -57,7 +60,11 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
    TH1F * GetHistoNMatchedPos()      { return fHistoNMatchedPos; }
    TH1F * GetHistoNMatchedNeg()      { return fHistoNMatchedNeg; }
    TH2F * GetHistoEtaPhiHighPt()      { return fHistoEtaPhiHighPt; }
-   TH1F * GetHistoNclustersITS()  {return fHistoNclustersITS;}  
+   TH1F * GetHistoNclustersITS()  {return fHistoNclustersITS;} 
+   TH3F * GetHistoDCAzQA() {return fHistoDCAzQA;}
+   TH3F * GetHistoNclustersQA() {return fHistoNclustersQA ;}
+   TH3F * GetHistochi2perNDFQA() {return fHistochi2perNDFQA; }
+		 
    void SetEta(Float_t etamin,Float_t etamax)   { fEtaCutMin = etamin;fEtaCutMax = etamax; }
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
@@ -79,7 +86,7 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
    Float_t GetPtTOFMatching()        const    { return fPtCutTOFMatching; } 
    Long64_t Merge(TCollection* list);
    void SetAliESDtrackCuts(AliESDtrackCuts*  cuts ){fCuts=cuts;}
-   
+   void InitHisto();	 
  private:
    
    Bool_t           fIsSelected;      // True if cuts are selected
@@ -103,7 +110,10 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
    TH1F             *fHistoNMatchedNeg;       // Matched negative tracks
    TH2F             *fHistoEtaPhiHighPt;       // EtaPhi distr at high pt (>1.5 GeV/c)
    TH1F            *fHistoNclustersITS;      // Number of clusters in ITS 
-       	 
+   TH3F 	   *fHistoDCAzQA;    //QA histo for DCZ monitoring histo
+   TH3F 	   *fHistoNclustersQA;    //QA histo for N clusters QA monitoring histo
+   TH3F 	   *fHistochi2perNDFQA;    //QA histo for  chi2/ndf 
+		    				 
  		
    AliVTrack      *fTrack;           //! Track pointer
    AliESDtrackCuts *fCuts;      //! cuts  
@@ -113,7 +123,7 @@ fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0
    AliSpectraBothTrackCuts(const AliSpectraBothTrackCuts&);
    AliSpectraBothTrackCuts& operator=(const AliSpectraBothTrackCuts&);
    
-   ClassDef(AliSpectraBothTrackCuts, 5);
+   ClassDef(AliSpectraBothTrackCuts, 6);
 };
 #endif
 

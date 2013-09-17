@@ -1,9 +1,9 @@
 // -*- c++ -*-
-// $Id: AddTaskLongRangeCorrelations.C 217 2012-11-06 10:19:42Z cmayer $
+// $Id: AddTaskLongRangeCorrelations.C 232 2012-11-28 17:27:59Z cmayer $
 
 AliAnalysisTaskLongRangeCorrelations*
 AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
-			     Bool_t runMixing    = kTRUE,
+			     Bool_t runMixing    = !kTRUE,
 			     Int_t  mixingTracks = 50000,
 			     Double_t centMin = 0, Double_t centMax = 20,
 			     Double_t ptMin   = 0.2, 
@@ -31,13 +31,14 @@ AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
   taskLRC->SetCentralityRange(centMin, centMax);
   taskLRC->SetPtRange(ptMin, 1e20);
   taskLRC->SetPhiRange(phiMin, phiMax);
+  taskLRC->SelectCollisionCandidates(AliVEvent::kMB);
   mgr->AddTask(taskLRC);
 
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCFEbyE.outputLongRangeCorrelations.root";
   AliAnalysisDataContainer *listLRC = mgr->CreateContainer(taskLRC->GetOutputListName(), TList::Class(),
-							  AliAnalysisManager::kOutputContainer,
-							  outputFileName.Data());
+							   AliAnalysisManager::kOutputContainer,
+							   outputFileName.Data());
   mgr->ConnectInput(taskLRC,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskLRC, 1, listLRC);
   return taskLRC;

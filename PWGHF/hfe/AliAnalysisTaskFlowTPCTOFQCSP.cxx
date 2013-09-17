@@ -96,6 +96,7 @@
 #include "AliAODPid.h"
 #include "AliFlowTrack.h"
 #include "AliAnalysisTaskVnV0.h"
+#include "AliSelectNonHFE.h"
 
 
 class AliFlowTrackCuts;
@@ -123,6 +124,7 @@ ClassImp(AliAnalysisTaskFlowTPCTOFQCSP)
 ,fCentralityMin(0)
 ,fCentralityMax(0)
 ,fInvmassCut(0)
+,fpTCut(0)
 ,fTrigger(0)
 ,fPhi(0)
 ,fEta(0)
@@ -168,6 +170,8 @@ ClassImp(AliAnalysisTaskFlowTPCTOFQCSP)
 ,fOP_angle(0)
 ,fOpeningAngleLS(0)
 ,fOpeningAngleULS(0)
+,fNonHFE(new AliSelectNonHFE)
+,fDCA(0)
 {
   //Named constructor
 
@@ -202,6 +206,7 @@ AliAnalysisTaskFlowTPCTOFQCSP::AliAnalysisTaskFlowTPCTOFQCSP()
 ,fCentralityMin(0)
 ,fCentralityMax(0)
 ,fInvmassCut(0)
+,fpTCut(0)
 ,fTrigger(0)
 ,fPhi(0)
 ,fEta(0)
@@ -247,6 +252,8 @@ AliAnalysisTaskFlowTPCTOFQCSP::AliAnalysisTaskFlowTPCTOFQCSP()
 ,fOP_angle(0)
 ,fOpeningAngleLS(0)
 ,fOpeningAngleULS(0)
+,fNonHFE(new AliSelectNonHFE)
+,fDCA(0)
 {
   //Default constructor
 //  fPID = new AliHFEpid("hfePid");
@@ -274,7 +281,7 @@ AliAnalysisTaskFlowTPCTOFQCSP::~AliAnalysisTaskFlowTPCTOFQCSP()
 //  delete fPIDqa;
   if (fOutputList) delete fOutputList;
   if (fFlowEvent) delete fFlowEvent;
-
+    delete fNonHFE;
 }
 //_________________________________________
 
@@ -286,6 +293,8 @@ void AliAnalysisTaskFlowTPCTOFQCSP::UserExec(Option_t*)
   // create pointer to event
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    
+     
   if (!fAOD)
   {
     printf("ERROR: fAOD not available\n");
@@ -418,8 +427,11 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
 // Track loop 
  for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) 
  {
+     
+     
+       
    track = fAOD->GetTrack(iTracks);
-   if (!track) 
+   if (!track)
    {
      printf("ERROR: Could not receive track %d\n", iTracks);
      continue;
@@ -455,7 +467,7 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
      Double_t eta = track->Eta();
      Double_t phi = track->Phi();
      Double_t pt = track->Pt();         //pt track after cuts
-     if(pt<1.) continue;
+     if(pt<fpTCut) continue;
 //==========================================================================================================
 //=========================================PID==============================================================
      if(track->GetTPCsignalN() < fTPCS) continue;
@@ -544,13 +556,53 @@ if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInput
         }
       } //end of for loop on RPs
    fFlowEvent->InsertTrack(((AliFlowTrack*) sTrack));
-//=========================================================================================================
-//----------------------Selection and Flow of Photonic Electrons-----------------------------
-   Bool_t fFlagPhotonicElec = kFALSE;
-   SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+
+     
+     if(fDCA){
+     fNonHFE = new AliSelectNonHFE();
+     fNonHFE->SetAODanalysis(kTRUE);
+     fNonHFE->SetInvariantMassCut(fInvmassCut);
+     if(fOP_angle) fNonHFE->SetOpeningAngleCut(fOpeningAngleCut);
+     //fNonHFE->SetChi2OverNDFCut(fChi2Cut);
+     //if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
+     fNonHFE->SetAlgorithm("DCA"); //KF
+     fNonHFE->SetPIDresponse(fPIDResponse);
+     fNonHFE->SetTrackCuts(-3,3);
+     
+     fNonHFE->SetHistAngleBack(fOpeningAngleLS);
+     fNonHFE->SetHistAngle(fOpeningAngleULS);
+     //fNonHFE->SetHistDCABack(fDCABack);
+     //fNonHFE->SetHistDCA(fDCA);
+     fNonHFE->SetHistMassBack(fInvmassLS1);
+     fNonHFE->SetHistMass(fInvmassULS1);
+     
+     fNonHFE->FindNonHFE(iTracks,track,fAOD);
+     
+     // Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
+     // Int_t *fLsPartner = fNonHFE->GetPartnersLS();
+     // Bool_t fUlsIsPartner = kFALSE;
+     // Bool_t fLsIsPartner = kFALSE;
+     if(fNonHFE->IsULS()){
+     for(Int_t kULS =0; kULS < fNonHFE->GetNULS(); kULS++){
+   fULSElecPt->Fill(track->Pt());
+     }
+         }
+     
+     if(fNonHFE->IsLS()){
+         for(Int_t kLS =0; kLS < fNonHFE->GetNLS(); kLS++){
+             fLSElecPt->Fill(track->Pt());
+         }
+     }
+     }
+     if(!fDCA){
+     //=========================================================================================================
+     //----------------------Selection and Flow of Photonic Electrons-----------------------------
+      Bool_t fFlagPhotonicElec = kFALSE;
+        SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
    if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
    // Semi inclusive electron 
    if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
+     }
 //-------------------------------------------------------------------------------------------
 
  }//end loop on track
@@ -586,7 +638,6 @@ void AliAnalysisTaskFlowTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const Al
     ptAsso = trackAsso->Pt();
     Short_t chargeAsso = trackAsso->Charge();
     Short_t charge = track->Charge();
-   // nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
       nsigma = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
     if(trackAsso->GetTPCNcls() < 80) continue;
@@ -600,7 +651,8 @@ void AliAnalysisTaskFlowTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const Al
 
     if(charge == chargeAsso) fFlagLS = kTRUE;
     if(charge != chargeAsso) fFlagULS = kTRUE;
-
+      
+    AliKFParticle::SetField(fAOD->GetMagneticField());
     AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
     AliKFParticle ge2 = AliKFParticle(*trackAsso, fPDGe2);
     AliKFParticle recg(ge1, ge2);
@@ -610,14 +662,10 @@ void AliAnalysisTaskFlowTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const Al
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
     recg.GetMass(mass,width);
 
-      if(fOP_angle){
-    openingAngle = ge1.GetAngle(ge2);
-    if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
-    if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
-      
-    if(openingAngle > fOpeningAngleCut) continue;
-
-      }
+      openingAngle = ge1.GetAngle(ge2);
+      if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
+      if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
+      if(fOP_angle){if(openingAngle > fOpeningAngleCut) continue;}
       
       
     if(fFlagLS) fInvmassLS1->Fill(mass);
@@ -632,8 +680,9 @@ void AliAnalysisTaskFlowTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const Al
       flagPhotonicElec = kTRUE;
     }
   }//track loop
+    
   fFlagPhotonicElec = flagPhotonicElec;
-}
+} 
 //___________________________________________
 void AliAnalysisTaskFlowTPCTOFQCSP::UserCreateOutputObjects()
 {
@@ -647,15 +696,15 @@ void AliAnalysisTaskFlowTPCTOFQCSP::UserCreateOutputObjects()
   cc->SetMultMin(0);
   cc->SetMultMax(10000);
 
-  cc->SetNbinsPt(100);
+  cc->SetNbinsPt(20);
   cc->SetPtMin(0);
-  cc->SetPtMax(50);
+  cc->SetPtMax(10);
 
   cc->SetNbinsPhi(180);
   cc->SetPhiMin(0.0);
   cc->SetPhiMax(TMath::TwoPi());
 
-  cc->SetNbinsEta(200);
+  cc->SetNbinsEta(30);
   cc->SetEtaMin(-8.0);
   cc->SetEtaMax(+8.0);
 

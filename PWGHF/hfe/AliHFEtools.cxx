@@ -490,6 +490,34 @@ TList *AliHFEtools::GetHFEResultList(const TString str){
     return returnlist;
 }
 
+
+//_________________________________________________________________________
+//Function  AliHFEtools::GetHFEQAList() - opens file from argument and returns TList Object containing String "QA"
+//_________________________________________________________________________
+TList *AliHFEtools::GetHFEQAList(const TString str){
+
+    TFile *f = TFile::Open(str.Data());
+    if(!f || f->IsZombie()){
+        printf("Could not read file %s\n",str.Data()); 
+        return NULL ;
+    }
+    gROOT->cd();
+    TKey *k;
+    TIter next(f->GetListOfKeys());
+    while ((k = dynamic_cast<TKey *>(next()))){
+        TString s(k->GetName());
+        if(s.Contains("QA")) break;
+    }
+    if(!k){
+        printf("Output container not found\n");
+        f->Close(); delete f;
+        return NULL;
+    } 
+    TList *returnlist = dynamic_cast<TList *>(k->ReadObj());
+    f->Close(); delete f;
+    return returnlist;
+}
+
 //__________________________________________
 void AliHFEtools::NormaliseBinWidth(TH1 *histo){
   //

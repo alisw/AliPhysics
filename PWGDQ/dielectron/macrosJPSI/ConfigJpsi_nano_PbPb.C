@@ -38,16 +38,16 @@ AliDielectron* ConfigJpsi_nano_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE)
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   SetupEventCuts(die,cutDefinition);
   SetupTrackCuts(die,cutDefinition);
-  SetupV0Cuts(die,cutDefinition);
+  SetupV0Cuts(die,cutDefinition);   // switch off for nanoAODs??
   SetupPairCuts(die,cutDefinition);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MISC vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // PID eta correction
-  SetEtaCorrection(die);
+  //SetEtaCorrection(die); //no eta corrction
   // prefilter settings
-  die->SetPreFilterUnlikeOnly();
+  if(hasMC) die->SetNoPairing();
+  else die->SetPreFilterUnlikeOnly();
   //die->SetPreFilterAllSigns();
-  //die->SetNoPairing();
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv OUTPUT vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // histogram setup
@@ -80,6 +80,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //
   // Setup the track cuts
   //
+
+  Bool_t hasMC=die->GetHasMC();
 
   // Quality cuts
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
@@ -114,12 +116,18 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
   // TOF inclusion
   //  pidVarCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
-  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,
-		  AliDielectronPID::kIfAvailable);
+  //  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
   // TPC inclusion
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.); // when eta correction ON
+  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MC PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *pidCutsMC = new AliDielectronVarCuts("PIDCutsMC","PIDCutsMC");
+  pidCutsMC->SetCutType(AliDielectronVarCuts::kAny);
+  pidCutsMC->SetCutOnMCtruth(kTRUE);
+  pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, -11., -11.);
+  pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +11., +11.);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TENDER CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // exclude conversion electrons selected by the tender
@@ -127,12 +135,17 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
 
   // activate the cut sets (order might be CPU timewise important)
-  //if(!isESD) cuts->AddCut(trkFilter);
-  cuts->AddCut(varCuts);
-  cuts->AddCut(trkCuts);
-  cuts->AddCut(pidCuts);
-  //cuts->AddCut(pidVarCuts);
-  //cuts->AddCut(noconv);
+  if(hasMC) {
+    //    cuts->AddCut(pidCutsMC);
+  }
+  else {
+    //if(!isESD) cuts->AddCut(trkFilter);
+    cuts->AddCut(varCuts);
+    cuts->AddCut(trkCuts);
+    cuts->AddCut(pidCuts);
+    //cuts->AddCut(pidVarCuts);
+    //cuts->AddCut(noconv);
+  }
   cuts->Print();
 
 }
@@ -224,11 +237,15 @@ void SetEtaCorrection(AliDielectron *die) {
   if( !die->GetHasMC() ) {
     // 2-dimensional eta correction for the centroid of electron sigmas
     fCntrdCorr = new TF2("fCntrdCorr", "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*TMath::Power(y,6) + [7]*x",
-			      0.0, 3000.0, -0.9, +0.9);
-    fCntrdCorr->SetParameters(0.723106, 0.23958, -6.31221, -0.687976, 15.912, 0.579609, -11.6901, -0.000354381);
+			 //0.0, 3000.0, -0.9, +0.9); // Nacc
+			 0.0,   90.0, -0.9, +0.9); // centrality
+    //  fCntrdCorr->SetParameters(0.723106, 0.23958, -6.31221, -0.687976, 15.912, 0.579609, -11.6901, -0.000354381); // Nacc
+    fCntrdCorr->SetParameters(+0.149002, +0.214644 , -6.034930, -0.529588, +14.97902, +0.402640, -10.890027, +0.011248); // centrality
     // 1-dimensional eta correction for the width of electron sigmas
-    fWdthCorr = new TF1("fWdthCorr", "pol2", 0.0, 3000.0);
-    fWdthCorr->SetParameters(1.06108, 0.000217804,-5.80291e-08);
+    // fWdthCorr = new TF1("fWdthCorr", "pol2", 0.0, 3000.0);     // Nacc
+    // fWdthCorr->SetParameters(1.06108, 0.000217804,-5.80291e-08);
+    fWdthCorr = new TF1("fWdthCorr", "pol2", 0.0, 90.0);       // centrality
+    fWdthCorr->SetParameters(+1.290755, -0.005261, +0.000021);
   }
   else  {
     /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MONTE CARLO vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -236,13 +253,16 @@ void SetEtaCorrection(AliDielectron *die) {
     fCntrdCorr = new TF2("fCntrdCorr", "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*TMath::Power(y,6) + [7]*x",
 			      0.0, 3000.0, -0.9, +0.9);
     fCntrdCorr->SetParameters(+0.378611, -0.070831, -3.076778, +0.121977, +8.576097, +0.113009, -5.001368, -0.000181);
+
     // 1-dimensional eta correction for the width of electron sigmas
     fWdthCorr = new TF1("fWdthCorr", "pol1", 0.0, 3000.0);
     fWdthCorr->SetParameters(+0.881894, +0.000053);
   }
 
   // apply corrections
-  AliDielectronPID::SetCentroidCorrFunction(fCntrdCorr,AliDielectronVarManager::kNacc,AliDielectronVarManager::kEta);
-  AliDielectronPID::SetWidthCorrFunction(fWdthCorr,AliDielectronVarManager::kNacc);
+  // AliDielectronPID::SetCentroidCorrFunction(fCntrdCorr,AliDielectronVarManager::kNacc,AliDielectronVarManager::kEta);
+  // AliDielectronPID::SetWidthCorrFunction(fWdthCorr,AliDielectronVarManager::kNacc);
+  AliDielectronPID::SetCentroidCorrFunction(fCntrdCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
+  AliDielectronPID::SetWidthCorrFunction(fWdthCorr,AliDielectronVarManager::kCentrality);
 
 }

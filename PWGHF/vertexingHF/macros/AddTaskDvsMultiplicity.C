@@ -9,7 +9,9 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 Double_t refMult=9.26,
 							 Bool_t subtractDau=kFALSE,
 							 Bool_t NchWeight=kFALSE,
-							 Int_t configuration = AliAnalysisTaskSEDvsMultiplicity::kNtrk10)
+							 Int_t recoEstimator = AliAnalysisTaskSEDvsMultiplicity::kNtrk10,
+							 Int_t MCEstimator = AliAnalysisTaskSEDvsMultiplicity::kEta10,
+							 Bool_t isPPbData=kFALSE)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D+ candidates
@@ -73,7 +75,10 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   dMultTask->SetUseBit(kTRUE);
   dMultTask->SetDoImpactParameterHistos(kFALSE);
   dMultTask->SetSubtractTrackletsFromDaughters(subtractDau);
-  dMultTask->SetMultiplicityEstimator(configuration);
+  dMultTask->SetMultiplicityEstimator(recoEstimator);
+  dMultTask->SetMCPrimariesEstimator(MCEstimator);
+  dMultTask->SetMCOption(MCOption);
+  if(isPPbData) dMultTask->SetIsPPbData();
 
   if(NchWeight){
     TH1F *hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");

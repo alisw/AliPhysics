@@ -22,8 +22,10 @@ class AliESDtrackCuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliMCEvent;
+class AliKFVertex;
 class AliVEvent;
 class AliVParticle;
+class AliVTrack;
 class THnSparse;
 class TClonesArray;
 class TList;
@@ -57,8 +59,6 @@ class AliHFENonPhotonicElectron : public TNamed {
   void SetAOD    		(Bool_t isAOD)     		{ fIsAOD = isAOD; };
   void SetMCEvent		(AliMCEvent *mcEvent)		{ fMCEvent = mcEvent; };
   void SetAODArrayMCInfo	(TClonesArray *aodArrayMCInfo) { fAODArrayMCInfo = aodArrayMCInfo; };
-  void SetUseFilterAOD		(Bool_t useFilterAOD)		{ fUseFilterAOD = useFilterAOD; };
-  void SetFilter		(UInt_t filter)			{ fFilter = filter; };
   void SetHFEBackgroundCuts	(AliHFEcuts * const cuts)	{ fHFEBackgroundCuts = cuts; };
 
   AliHFEpid		*GetPIDBackground()		const	{ return fPIDBackground; };
@@ -70,6 +70,9 @@ class AliHFENonPhotonicElectron : public TNamed {
 //  void  SetMaxOpeningPhi	(Double_t MaxOpeningPhi)	{ fMaxOpeningPhi	= MaxOpeningPhi; };
   void  SetAlgorithmMA		(Bool_t algorithmMA)	 	{ fAlgorithmMA		= algorithmMA; };
   void  SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
+
+  void SelectCategory1Tracks(Bool_t doSelect = kTRUE) { fSelectCategory1tracks = doSelect; }
+  void SelectCategory2Tracks(Bool_t doSelect = kTRUE) { fSelectCategory2tracks = doSelect; }
 
   TList      *GetListOutput()		const	{ return fListOutput; };
   THnSparseF *GetAssElectronHisto()	const	{ return fAssElectron; };
@@ -85,16 +88,22 @@ class AliHFENonPhotonicElectron : public TNamed {
   Int_t    CountPoolAssociated		(AliVEvent *inputEvent, Int_t binct=-1);
   Int_t    LookAtNonHFE			(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight=1., Int_t binct=-1, Double_t deltaphi=-1, Int_t source=-1, Int_t indexmother=-1);
 
-  Int_t    FindMother		(Int_t tr, Int_t &indexmother);
-  Int_t    CheckPdg		(Int_t tr);
-  Int_t    IsMotherGamma	(Int_t tr);
-  Int_t    IsMotherPi0		(Int_t tr);
-  Int_t    IsMotherC		(Int_t tr);
-  Int_t    IsMotherB		(Int_t tr);
-  Int_t    IsMotherEta		(Int_t tr);
+  Int_t    FindMother		(Int_t tr, Int_t &indexmother) const;
 
 
  private:
+  Int_t    GetMotherPDG(Int_t tr, Int_t &motherIndex) const;
+  Int_t    CheckPdg		(Int_t tr) const;
+  Int_t    IsMotherGamma	(Int_t tr) const;
+  Int_t    IsMotherPi0		(Int_t tr) const;
+  Int_t    IsMotherC		(Int_t tr) const;
+  Int_t    IsMotherB		(Int_t tr) const;
+  Int_t    IsMotherEta		(Int_t tr) const;
+  Bool_t MakePairDCA(const AliVTrack *inclusive, const AliVTrack *associated, AliVEvent *vEvent, Bool_t isAOD, Double_t &invMass, Double_t &angle) const;
+  Bool_t MakePairKF(const AliVTrack *inclusive, const AliVTrack *associated, AliKFVertex &primV, Double_t &invMass, Double_t &angle) const;
+  Bool_t FilterCategory1Track(const AliVTrack * const track, Bool_t isAOD, Int_t binct);
+  Bool_t FilterCategory2Track(const AliVTrack * const track, Bool_t isAOD);
+
   Bool_t		 fIsAOD;			// Is AOD
   AliMCEvent		*fMCEvent;			//! MC event ESD
   TClonesArray		*fAODArrayMCInfo;		//! MC info particle AOD
@@ -103,8 +112,6 @@ class AliHFENonPhotonicElectron : public TNamed {
   AliHFEpidQAmanager	*fPIDBackgroundQA;		// QA Manager Background
   const AliPIDResponse	*fkPIDRespons;			// PID response
   Bool_t		 fAlgorithmMA;			// algorithm MA
-  Bool_t		 fUseFilterAOD;			// Use the preselected AOD track
-  UInt_t		 fFilter;			// filter AOD status
   Double_t		 fChi2OverNDFCut;		// Limit chi2
   Double_t		 fMaxDCA;			// Limit dca
 //  Double_t		 fMaxOpeningTheta;		// Limit opening angle in theta
@@ -112,6 +119,8 @@ class AliHFENonPhotonicElectron : public TNamed {
   Double_t		 fMaxOpening3D;			// Limit opening 3D
   Double_t		 fMaxInvMass;			// Limit invariant mass
   Bool_t		 fSetMassConstraint;		// Set mass constraint
+  Bool_t     fSelectCategory1tracks;    // Category 1 tracks: Standard track cuts
+  Bool_t     fSelectCategory2tracks;    // Category 2 tracks: tracks below 300 MeV/c
   TArrayI		*fArraytrack;			//! list of associated tracks
   Int_t			 fCounterPoolBackground;	// number of associated electrons
   Int_t			 fnumberfound;			// number of inclusive  electrons
@@ -122,6 +131,7 @@ class AliHFENonPhotonicElectron : public TNamed {
   THnSparseF		*fLSign;			//! delta phi, c, pt, inv, source
   THnSparseF    *fUSmatches;  //! number of matched tracks with oposite sign per inclusive track after inv mass cut
   THnSparseF    *fLSmatches;  //! number of matched tracks with same sign per inclusive track after inv mass cut
+  TH2F* fHnsigmaITS;  //! Control histogram for ITS pid of category 2 tracks
 //  THnSparseF		*fUSignAngle;			//! angle, c, source
 //  THnSparseF		*fLSignAngle;			//! angle, c, source
 

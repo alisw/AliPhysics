@@ -88,10 +88,16 @@ void AliMeanVertexCalibTask::UserCreateOutputObjects()
   fOutput->Add(hTRKVertexY);
   TH1F* hTRKVertexZ = new TH1F("hTRKVertexZ","TRKVertex z; z vertex [cm]; events",200,-20,20);
   fOutput->Add(hTRKVertexZ);
+
+  TH2F *hTRKVertexXvsMult = new TH2F("hTRKVertexXvsMult", "TRKVertex X vs mult", 200, -1, 1, 300, 0, 3000);
+  fOutput->Add(hTRKVertexXvsMult);
+  
+  TH2F *hTRKVertexYvsMult = new TH2F("hTRKVertexYvsMult", "TRKVertex Y vs mult", 200, -1, 1, 300, 0, 3000);
+  fOutput->Add(hTRKVertexYvsMult);
   
   TH2F *hTRKVertexXZ = new TH2F("hTRKVertexXZ", "TRKVertex XZ corr", 200, -1, 1, 200, -20, 20);
   fOutput->Add(hTRKVertexXZ);
-
+  
   TH2F *hTRKVertexYZ = new TH2F("hTRKVertexYZ", "TRKVertex YZ corr", 200, -1, 1, 200, -20, 20);
   fOutput->Add(hTRKVertexYZ);
   
@@ -100,12 +106,11 @@ void AliMeanVertexCalibTask::UserCreateOutputObjects()
   TH1F* hTRKVertexYdefMult = new TH1F("hTRKVertexYdefMult","TRKVertex y Mult; y vertex [cm] 30<Mult<45; events",500,-1,1);
   fOutput->Add(hTRKVertexYdefMult);
 	
-	TH1F* hTRKVertexXHighMult = new TH1F("hTRKVertexXHighMult","TRKVertex x High Mult; x vertex [cm] Mult>1500; events",500,-0.5,0.5);  
-	fOutput->Add(hTRKVertexXHighMult);
-	TH1F* hTRKVertexYHighMult = new TH1F("hTRKVertexYHighMult","TRKVertex y High Mult; y vertex [cm] Mult>1500; events",500,-0.5,0.5);
-	fOutput->Add(hTRKVertexYHighMult);	
-	
-
+  TH1F* hTRKVertexXHighMult = new TH1F("hTRKVertexXHighMult","TRKVertex x High Mult; x vertex [cm] Mult>1500; events",500,-0.5,0.5);  
+  fOutput->Add(hTRKVertexXHighMult);
+  TH1F* hTRKVertexYHighMult = new TH1F("hTRKVertexYHighMult","TRKVertex y High Mult; y vertex [cm] Mult>1500; events",500,-0.5,0.5);
+  fOutput->Add(hTRKVertexYHighMult);	
+  
   TH1F* hITSSAVertexX = new TH1F("hITSSAVertexX","ITSSAVertex x; x vertex [cm]; events",200,-1,1);
   fOutput->Add(hITSSAVertexX);
   TH1F* hITSSAVertexY = new TH1F("hITSSAVertexY","ITSSAVertex y; y vertex [cm]; events",200,-1,1);
@@ -118,20 +123,24 @@ void AliMeanVertexCalibTask::UserCreateOutputObjects()
 
   TH2F *hITSSAVertexYZ = new TH2F("hITSSAVertexYZ", "ITSSAVertex YZ corr", 200, -1, 1, 200, -20, 20);
   fOutput->Add(hITSSAVertexYZ);
+
+  TH2F *hITSSAVertexXvsMult = new TH2F("hITSSAVertexXvsMult", "ITSSAVertex X vs mult", 200, -1, 1, 300, 0, 3000);
+  fOutput->Add(hITSSAVertexXvsMult);
+  
+  TH2F *hITSSAVertexYvsMult = new TH2F("hITSSAVertexYvsMult", "ITSSAVertex Y vs mult", 200, -1, 1, 300, 0, 3000);
+  fOutput->Add(hITSSAVertexYvsMult);
   
   TH1F* hITSSAVertexXdefMult = new TH1F("hITSSAVertexXdefMult","ITSSAVertex x Mult; x vertex [cm] 30<Mult<45; events",500,-1,1);  
   fOutput->Add(hITSSAVertexXdefMult);
   TH1F* hITSSAVertexYdefMult = new TH1F("hITSSAVertexYdefMult","ITSSAVertex y Mult; y vertex [cm] 30<Mult<45; events",500,-1,1);
   fOutput->Add(hITSSAVertexYdefMult);
 
-	
-   TH1F* hITSSAVertexXHighMult = new TH1F("hITSSAVertexXHighMult","ITSSAVertex x High Mult; x vertex [cm] Mult>1500; events",500,-0.5,0.5);  
-   fOutput->Add(hITSSAVertexXHighMult);
-   TH1F* hITSSAVertexYHighMult = new TH1F("hITSSAVertexYHighMult","ITSSAVertex y High Mult; y vertex [cm] Mult>1500; events",500,-0.5,0.5);
-   fOutput->Add(hITSSAVertexYHighMult);
-	
-	
-
+  
+  TH1F* hITSSAVertexXHighMult = new TH1F("hITSSAVertexXHighMult","ITSSAVertex x High Mult; x vertex [cm] Mult>1500; events",500,-0.5,0.5);  
+  fOutput->Add(hITSSAVertexXHighMult);
+  TH1F* hITSSAVertexYHighMult = new TH1F("hITSSAVertexYHighMult","ITSSAVertex y High Mult; y vertex [cm] Mult>1500; events",500,-0.5,0.5);
+  fOutput->Add(hITSSAVertexYHighMult);
+  
   PostData(1, fOutput);
   
   return;
@@ -172,20 +181,26 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
   AliCDBManager* man = AliCDBManager::Instance();
   //man->SetDefaultStorage("raw://");
   Int_t runNb = esdE->GetRunNumber();
-  man->SetRun(runNb);
-  Printf("runNb = %d", runNb);
+  if (runNb > 0) {
+    man->SetRun(runNb);
+    Printf("runNb = %d", runNb);
+  }
+  
   AliCDBEntry *entry = (AliCDBEntry*)man->Get("GRP/Calib/RecoParam/");
   Printf("entry = %p", entry);
-
-  TObjArray *arrayRecoParam = (TObjArray*)entry->GetObject();
-  Printf("arrayRecoParam = %p", arrayRecoParam);
-  
+  TObjArray *arrayRecoParam=0x0;
+  if (entry) {
+    arrayRecoParam = (TObjArray*)entry->GetObject();
+    Printf("arrayRecoParam = %p", arrayRecoParam);
+  }
+  else { 
+    Printf("CDBEntry not found");
+    return;
+  }
   AliGRPRecoParam *grpRecoParam=0x0;
   if (kLowFlux) grpRecoParam= (AliGRPRecoParam*)arrayRecoParam->At(1);
   else if (kHighFlux) grpRecoParam = (AliGRPRecoParam*)arrayRecoParam->At(2);
   
-  grpRecoParam->Dump();
-
   AliVertexerTracks *vertexer= new AliVertexerTracks(esdE->GetMagneticField());
   vertexer->SetITSMode();
   vertexer->SetConstraintOff();
@@ -229,6 +244,9 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
       ((TH1F*)fOutput->FindObject("hTRKVertexX"))->Fill(trkv->GetXv());
       ((TH1F*)fOutput->FindObject("hTRKVertexY"))->Fill(trkv->GetYv());
       ((TH1F*)fOutput->FindObject("hTRKVertexZ"))->Fill(trkv->GetZv());
+
+      ((TH2F*)fOutput->FindObject("hTRKVertexXvsMult"))->Fill(trkv->GetXv(), ntrklets);
+      ((TH2F*)fOutput->FindObject("hTRKVertexYvsMult"))->Fill(trkv->GetYv(), ntrklets);
       
       if (ntrklets>30 && ntrklets<45){
 	((TH1F*)fOutput->FindObject("hTRKVertexXdefMult"))->Fill(trkv->GetXv());
@@ -252,6 +270,9 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
       ((TH1F*)fOutput->FindObject("hITSSAVertexX"))->Fill(itsSAv->GetXv());
       ((TH1F*)fOutput->FindObject("hITSSAVertexY"))->Fill(itsSAv->GetYv());
       ((TH1F*)fOutput->FindObject("hITSSAVertexZ"))->Fill(itsSAv->GetZv());
+
+      ((TH2F*)fOutput->FindObject("hITSSAVertexXvsMult"))->Fill(itsSAv->GetXv(), ntrklets);
+      ((TH2F*)fOutput->FindObject("hITSSAVertexYvsMult"))->Fill(itsSAv->GetYv(), ntrklets);
       
       if (ntrklets>30 && ntrklets<45){
 	((TH1F*)fOutput->FindObject("hITSSAVertexXdefMult"))->Fill(itsSAv->GetXv());

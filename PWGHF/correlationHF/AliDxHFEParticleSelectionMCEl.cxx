@@ -46,12 +46,14 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   : AliDxHFEParticleSelectionEl(opt)
   , fMCTools()
   , fPDGnotMCElectron(NULL)
+  , fPDGNotHFMother(NULL)
   , fOriginMother(0)
   , fResultMC(0)
   , fUseKine(kFALSE)
   , fMotherPDGs(0)
   , fUseMCReco(kFALSE)
   , fSelectionStep(AliDxHFEParticleSelectionEl::kNoCuts)
+  , fStoreCutStepInfo(kFALSE)
 {
   // constructor
   // 
@@ -133,7 +135,9 @@ int AliDxHFEParticleSelectionMCEl::Init()
   // Histo containing PDG of track which was not MC truth electron
   // TODO: Add to list in baseclass
   fPDGnotMCElectron=CreateControlHistogram("fPDGnotMCElectron","PDG of track not MC truth electron",AliDxHFEToolsMC::kNofPDGLabels,fgkPDGBinLabels);  
+  fPDGNotHFMother=CreateControlHistogram("fPDGNotHFMother","PDG of mother not HF",5000);  
   AddControlObject(fPDGnotMCElectron);
+  AddControlObject(fPDGNotHFMother);
   return 0;
 }
 
@@ -142,43 +146,77 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
   //
   // Defines the THnSparse. 
 
-  const int thnSize = 4;
-  InitTHnSparseArray(thnSize);
   const double Pi=TMath::Pi();
   TString name;
+  THnSparse* thn=NULL;
   name.Form("%s info", GetName());
 
-  //     		       0    1      2     3     
-  // 	 	               Pt   Phi   Eta   mother 
-  int    thnBins[thnSize] = { 1000,  200, 500,    15  };
-  double thnMin [thnSize] = {    0,    0, -1.,  -1.5  };
-  double thnMax [thnSize] = {  100, 2*Pi,  1.,  13.5  };
-  const char* thnNames[thnSize]={
-    "Pt",
-    "Phi",
-    "Eta", 
-    "Mother", //bin==-1: Not MC truth electron
-  };
- 
-  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
+  if(fStoreCutStepInfo){
+    const int thnSizeExt =5;
+
+    InitTHnSparseArray(thnSizeExt);
+
+    // TODO: Redo binning of distributions more?
+    //     		       0    1      2     3     
+    // 	 	               Pt   Phi   Eta   mother 
+    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,    15, kNCutLabels };
+    double thnMinExt [thnSizeExt] = {   0,    0, -1.,  -1.5, kRecKineITSTPC };
+    double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,  13.5, kSelected };
+    const char* thnNamesExt[thnSizeExt]={
+      "Pt",
+      "Phi",
+      "Eta", 
+      "Mother", //bin==-1: Not MC truth electron
+      "Last survived cut step"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,thnSizeExt,thnBinsExt,thnMinExt,thnMaxExt,thnNamesExt);
+  }
+  else{
+
+    const int thnSize =4;
+    InitTHnSparseArray(thnSize);
+
+    // TODO: Redo binning of distributions more?
+    //     		       0    1      2     3     
+    // 	 	               Pt   Phi   Eta   mother 
+    int    thnBins[thnSize] = { 100,  100, 100,    15  };
+    double thnMin [thnSize] = {   0,    0, -1.,  -1.5  };
+    double thnMax [thnSize] = {  10, 2*Pi,  1.,  13.5  };
+    const char* thnNames[thnSize]={
+      "Pt",
+      "Phi",
+      "Eta", 
+      "Mother", //bin==-1: Not MC truth electron
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
+
+  }
+  return thn;
 }
 
 int AliDxHFEParticleSelectionMCEl::FillParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
 {
   // fill the data array from the particle data
   if (!data) return -EINVAL;
-  AliAODTrack *track=(AliAODTrack*)p;
-  if (!track) return -ENODATA;
+  if (!p) return -ENODATA;
+  // handle different types of tracks, can be extended
+  AliReducedParticle *trRP=dynamic_cast<AliReducedParticle*>(p);
   int i=0;
   if (dimension!=GetDimTHnSparse()) {
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
-  data[i++]=track->Pt();
-  data[i++]=track->Phi();
-  data[i++]=track->Eta();
-  data[i++]=fOriginMother; 
-  
+  memset(data, 0, dimension*sizeof(data[0]));
+  data[i++]=p->Pt();
+  data[i++]=p->Phi();
+  data[i++]=p->Eta();
+  if (trRP) data[i]=trRP->GetOriginMother();
+  else data[i]=fOriginMother;
+  i++; // take out of conditionals to be save
+  if (i<dimension) {
+    if(fStoreCutStepInfo) data[i]=GetLastSurvivedCutsStep();
+    i++; // take out of conditionals to be save
+  }
   return i;
 }
 
@@ -224,9 +262,10 @@ int AliDxHFEParticleSelectionMCEl::IsSelected(AliVParticle* p, const AliVEvent* 
   // maybe do the track selection first (which means could call AliDxHFEParticleSelectionEl::IsSelected()
   // and don't do PID
   
-  if(fUseMCReco && ( fSelectionStep > AliDxHFEParticleSelectionEl::kNoCuts )){
+  if(fUseMCReco) {// && ( fSelectionStep > AliDxHFEParticleSelectionEl::kNoCuts )){
+    // always check the base class method in mode fUseMCReco
     iResult=AliDxHFEParticleSelectionEl::IsSelected(p, pEvent);
-    if(iResult ==0) return iResult;
+    if(iResult == 0) return iResult;
   }
   fResultMC=CheckMC(p, pEvent);
   
@@ -300,6 +339,8 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
       fOriginMother=fMCTools.GetOriginMother();
     }
     else{
+      //NotHFmother
+      fPDGNotHFMother->Fill(pdgMother);
       fOriginMother=AliDxHFEToolsMC::kNrOrginMother+4;
     }
 
@@ -343,13 +384,26 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       fUseMCReco=kTRUE;
       if(argument.BeginsWith("elmcreco=")){
 	argument.ReplaceAll("elmcreco=", "");
+	if(argument.CompareTo("alltracks")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kNoCuts;
+	if(argument.CompareTo("afterreckineitstpc")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRecKineITSTPC;
+	if(argument.CompareTo("afterrecprim")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRecPrim;
+	if(argument.CompareTo("afterhfeits")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsITS;
+	if(argument.CompareTo("afterhfetof")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTOF;
+	if(argument.CompareTo("afterhfetpc")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTPC;
 	if(argument.CompareTo("aftertrackcuts")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kHFEcutsTPC;
 	if(argument.CompareTo("aftertofpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOF;
+	if(argument.CompareTo("aftertpcpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTPC;
 	if(argument.CompareTo("afterfullpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOFTPC;
 
 	AliDxHFEParticleSelectionEl::SetFinalCutStep(fSelectionStep);
-    
       }
+	continue;
+    }
+    if(argument.BeginsWith("storelastcutstep")){
+      AliInfo("Stores the last cut step");
+      fUseMCReco=kTRUE;
+      fStoreCutStepInfo=kTRUE;
+      AliDxHFEParticleSelectionEl::SetStoreLastCutStep(kTRUE);
       continue;
     }
     // forwarding of single argument works, unless key-option pairs separated

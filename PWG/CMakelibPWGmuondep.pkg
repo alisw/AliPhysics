@@ -33,8 +33,13 @@ set ( SRCS
     muondep/AliAnalysisTriggerScalers.cxx
     muondep/AliAnalysisMuMu.cxx
     muondep/AliAnalysisMuMuResult.cxx
+    muondep/AliAnalysisMuMuJpsiResult.cxx
+    muondep/AliAnalysisMuMuFnorm.cxx
+    muondep/AliAnalysisMuMuGraphUtil.cxx
     muondep/AliAnalysisMuMuSpectra.cxx
+    muondep/AliMuonGridSubmitter.cxx
     muondep/AliMuonAccEffSubmitter.cxx
+    muondep/AliMuonQAMergeSubmitter.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

@@ -16,7 +16,7 @@
 // Draw histograms/graphs with same name located in different directories
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <TROOT.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
 #include <TString.h>
 #include <TMath.h>
@@ -28,6 +28,7 @@
 #include <TKey.h>
 #include <TLine.h>
 #include <TStyle.h>
+#endif
 
 TGraphErrors* Divide(const TGraphErrors* grX1, const TGraphErrors* grX2, const TString& name);
 
@@ -54,7 +55,7 @@ void DrawDir(const TString& inputFile,
 	
 	const Int_t kColor[kMax]  = { kRed, kBlue, kOrange+1, kGreen-2, kGreen+2, kAzure, kViolet+10, kAzure+2, kOrange+2, kSpring-7 };
 	
-	const Int_t kMarker[kMax] = { kFullCircle, kFullCircle, kFullCircle, kFullCircle, kOpenCircle, kOpenSquare, kOpenTriangleUp, kOpenDiamond, kOpenCross, kFullStar };
+	const Int_t kMarker[kMax] = { kFullCircle, kFullTriangleUp, kFullSquare, kFullTriangleDown, kOpenCircle, kOpenSquare, kOpenTriangleUp, kOpenDiamond, kOpenCross, kFullStar };
 	
 	TFile* finput = new TFile(inputFile.Data());
 	if (finput->IsZombie()) exit(1);
@@ -152,25 +153,10 @@ void DrawDir(const TString& inputFile,
 	
 	// draw
 	
-	TStyle* st = new TStyle();
-	
-	st->SetOptTitle(0);
-	st->SetOptStat(0);
-	
-	st->SetPadTickX(1);
-	st->SetPadTickY(1);
-	st->SetPadGridX(1);
-	st->SetPadGridY(1);
-	
-	st->SetCanvasColor(0);
-	st->SetFrameBorderMode(0);
-	st->SetFrameFillColor(0);
-	st->SetTitleFillColor(0);
-	st->SetLabelFont(62,"XYZ");
-	st->SetTitleFont(62,"XYZ");
-	
-	st->cd();
-	gROOT->ForceStyle();
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetOptTitle(0);
+	gStyle->SetOptStat(0);
 	
 	TCanvas* c0 = new TCanvas(canvasName.Data(), canvasTitle.Data());
 	
@@ -202,7 +188,7 @@ void DrawDir(const TString& inputFile,
 		}
 		else if(obj[i]->InheritsFrom("TGraph"))
 		{
-			obj[i]->Draw("PZ");
+			obj[i]->Draw("zP");
 		}
 	}
 	
@@ -248,21 +234,23 @@ void DrawDir(const TString& inputFile,
 		TH1F* frm = c1->DrawFrame(xmin, 0.5 ,xmax, 1.5);
 		frm->GetXaxis()->SetTitle(xtitle);
 		frm->GetYaxis()->SetTitle("Ratio");
+		frm->GetYaxis()->SetTitleOffset(1.20);
 	}
 	
 	// draw comparison
 	if(nDir>0 && option > 0)
 	{
-		for(Int_t i=1; i<nDir; ++i)
-		{
-			grDiv[i]->Draw("PZ");
-		}
-		
 		// draw a red line for the reference
 		TLine* ref = new TLine(xmin,1,xmax,1);
 		ref->SetLineWidth(1);
 		ref->SetLineColor(kColor[0]);
+		ref->SetLineStyle(2);
 		ref->Draw();
+		
+		for(Int_t i=1; i<nDir; ++i)
+		{
+			grDiv[i]->Draw("zP");
+		}
 		
 		if(option == 2)
 		{
@@ -277,6 +265,7 @@ void DrawDir(const TString& inputFile,
 				legendRatio->AddEntry(grDiv[i], subdir[i]->Data(), "lp");
 			}
 			
+			legendRatio->SetTextFont(42);
 			legendRatio->Draw();
 		}
 	}

@@ -1079,7 +1079,7 @@ void AliPerformanceRes::Analyse() {
       aFolderObj->Add(h);
 
       fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
-      fResolHisto->GetAxis(9)->SetRangeUser(0.1,20.);
+      fResolHisto->GetAxis(9)->SetRangeUser(0.1,100.);
 
       //
       if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window

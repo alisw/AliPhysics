@@ -22,12 +22,14 @@
 #include "RQ_OBJECT.h"
 
 class AliAnalysisMuMuResult;
+class AliAnalysisMuMuJpsiResult;
 class AliAnalysisMuMuSpectra;
 class AliCounterCollection;
 class AliMergeableCollection;
 class TF1;
 class TFile;
 class TGraph;
+class TGraphErrors;
 class TH1;
 class TMap;
 
@@ -85,8 +87,16 @@ public:
 
   AliAnalysisMuMuSpectra* CorrectSpectra(const char* type, const char* flavour="");
 
-  AliAnalysisMuMuSpectra* ComputeYield(const char* type, const char* flavour="");
+  void ComputeFnorm();
+
+  void TwikiOutputFnorm(const char* series="FnormOffline2PUPS,FnormScalersPUPS,FnormBest2,RelDifFnormScalersPUPSvsFnormOffline2PUPS") const;
+
+  static void FigureOutputFnorm(const char* filelist);
   
+  static void LatexOutputFnorm(const char* filelist, const char* subresultnames="FnormOffline2PUPS,FnormScalersPUPS,FnormBest2,RelDifFnormScalersPUPSvsFnormOffline2PUPS", Bool_t rms=kFALSE);
+  
+  AliAnalysisMuMuSpectra* ComputeYield(const char* type, const char* flavour="");
+
   void CleanAllSpectra();
   
   ///------
@@ -97,9 +107,20 @@ public:
 
   static AliAnalysisMuMuSpectra* RABy(const char* realFile="ds.list.saf.root", const char* simFile="ds.sim.list.saf.root", const char* type="", const char* direction="pPb");
 
-  static TGraph* ResultEvolution(const char* runlist, const char* period="LHC13f", const char* what="Y",
+  static TGraph* ResultEvolution(const char* runlist,
+                                 const char* realPrefix="LHC13f_muon_calo_AODMUON127",
+                                 const char* simPrefix="SIM_JPSI_LHC13f_CynthiaTuneWithRejectList",
+                                 const char* what="Y",
                                  Bool_t forceRecomputation=kFALSE);
   
+  static void ComputeJpsi(const char* runlist, const char* prefix="SIM_JPSI_LHC13f_CynthiaTuneWithRejectList", const char* what="integrated", const char* binningFlavour="");
+  
+  static AliAnalysisMuMuSpectra* CombineSpectra(const char* runlist,
+                                                const char* realPrefix="LHC13f_muon_calo_AODMUON127",
+                                                const char* simPrefix="SIM_JPSI_LHC13f_CynthiaTuneWithRejectList",
+                                                const char* quantity="AccEff",
+                                                const char* variable="INTEGRATED",
+                                                const char* binningFlavour="");
   ///-------
   
   TGraph* PlotEventSelectionEvolution(const char* trigger1="CINT7-B-NOPF-MUON", const char* event1="PSALL",
@@ -189,14 +210,8 @@ public:
   
   static Bool_t CompactGraphs() { return fgIsCompactGraphs; }
   
-  static void Compact(TGraph& g);
-  
   void Print(Option_t* opt="") const;
   
-  void GetMBR(Int_t runNumber, const char* eventSelection, Double_t& value, Double_t& error) const;
-
-  TGraph* MBREvolution(const char* eventSelection1="PSALLNOTZEROPILEUP", const char* eventSelection2="PSALL") const;
-
   const std::set<int>& RunNumbers() const { return fRunNumbers; }
   
   void DrawMinv(const char* type,
@@ -234,7 +249,7 @@ private:
   
 private:
 
-  void SetNofInputParticles(AliAnalysisMuMuResult& r);
+  void SetNofInputParticles(AliAnalysisMuMuJpsiResult& r);
 
   static TString ExpandPathName(const char* file);
   

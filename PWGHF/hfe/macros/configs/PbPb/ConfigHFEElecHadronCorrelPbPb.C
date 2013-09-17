@@ -19,6 +19,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
                                                                Int_t TPCNClsEle = 100,
                                                                Int_t TPCNClsHad = 80,
                                                                Bool_t AssoEleITSref=kTRUE,
+                                                               Int_t AssoElecTPCNCls=80,
                                                                TString ContNameExt = "Central",
                                                                TString TaskName="hfeCorrl"){
 
@@ -60,6 +61,7 @@ AliAnalysisTaskElecHadronCorrel* ConfigHFEElecHadronCorrelPbPb(Bool_t useMC,
   task->SetTriggerSelection(TrigSelCen);
   task->SetCentralityParameters(CentMin, CentMax, CentralityMet);
   task->SetInvariantMassCut(InvM);
+  task->SetAssoElecTPCNCls(AssoElecTPCNCls);
   task->SetTPCnsigmaCutsElecSelection(TPCNsigMinE,TPCNsigMaxE);
   task->SetTPCnsigmaCutsHadSelection(TPCNsigMinH,TPCNsigMaxH);
   task->SetShowerShapeCutsM02(SSM02Min,SSM02Max);

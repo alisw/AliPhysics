@@ -76,7 +76,9 @@ AliBalancePsi::AliBalancePsi() :
   fDeltaEtaMax(2.0),
   fResonancesCut(kFALSE),
   fHBTCut(kFALSE),
+  fHBTCutValue(0.02),
   fConversionCut(kFALSE),
+  fInvMassCutConversion(0.04),
   fQCut(kFALSE),
   fDeltaPtMin(0.0),
   fVertexBinning(kFALSE),
@@ -113,7 +115,9 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fDeltaEtaMax(balance.fDeltaEtaMax),
   fResonancesCut(balance.fResonancesCut),
   fHBTCut(balance.fHBTCut),
+  fHBTCutValue(balance.fHBTCutValue),
   fConversionCut(balance.fConversionCut),
+  fInvMassCutConversion(balance.fInvMassCutConversion),
   fQCut(balance.fQCut),
   fDeltaPtMin(balance.fDeltaPtMin),
   fVertexBinning(balance.fVertexBinning),
@@ -392,8 +396,8 @@ void AliBalancePsi::InitHistograms() {
   // QA histograms
   fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,0,2,200,0,2.*TMath::Pi());
   fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,2.*TMath::Pi());
-  fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,2.*TMath::Pi());
-  fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,2.*TMath::Pi());
+  fHistConversionbefore = new TH3D("fHistConversionbefore","before Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
+  fHistConversionafter  = new TH3D("fHistConversionafter","after Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistPsiMinusPhi      = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
   fHistResonancesBefore = new TH3D("fHistResonancesBefore","before resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistResonancesRho    = new TH3D("fHistResonancesRho","after #rho resonance cut;#Delta#eta;#Delta#phi;M_{inv}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
@@ -594,7 +598,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	fHistHBTbefore->Fill(deta,dphi);
 	
 	// optimization
-	if (TMath::Abs(deta) < 0.02 * 2.5 * 3) //twoTrackEfficiencyCutValue = 0.02 [default for dphicorrelations]
+	if (TMath::Abs(deta) < fHBTCutValue * 2.5 * 3) //fHBTCutValue = 0.02 [default for dphicorrelations]
 	  {
 	    // phi in rad
 	    //Float_t phi1rad = firstPhi*TMath::DegToRad();
@@ -636,7 +640,6 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	if (charge1 * charge2 < 0) {
 	  Double_t deta = firstEta - secondEta[j];
 	  Double_t dphi = firstPhi - secondPhi[j];
-	  fHistConversionbefore->Fill(deta,dphi);
 	  
 	  Float_t m0 = 0.510e-3;
 	  Float_t tantheta1 = 1e10;
@@ -658,12 +661,14 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	  Float_t e2squ = m0 * m0 + secondPt[j] * secondPt[j] * (1.0 + 1.0 / tantheta2 / tantheta2);
 	  
 	  Float_t masssqu = 2 * m0 * m0 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( firstPt * secondPt[j] * ( TMath::Cos(phi1rad - phi2rad) + 1.0 / tantheta1 / tantheta2 ) ) );
+
+	  fHistConversionbefore->Fill(deta,dphi,masssqu);
 	  
-	  if (masssqu < 0.04*0.04){
+	  if (masssqu < fInvMassCutConversion*fInvMassCutConversion){
 	    //AliInfo(Form("Conversion: Removed track pair %d %d with [[%f %f] %f %f] %d %d <- %f %f  %f %f   %f %f ", i, j, deta, dphi, masssqu, charge1, charge2,eta1,eta2,phi1,phi2,pt1,pt2));
 	    continue;
 	  }
-	  fHistConversionafter->Fill(deta,dphi);
+	  fHistConversionafter->Fill(deta,dphi,masssqu);
 	}
       }//conversion cut
 
@@ -1786,7 +1791,7 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       }
       else if(type=="PP"){
 	fSame  = GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-    fMixed = bMixed->GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+	fMixed = bMixed->GetCorrelationFunctionPP(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
       }
       else if(type=="NN"){
 	fSame  = GetCorrelationFunctionNN(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
@@ -1801,6 +1806,15 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	// then get the correlation function (divide fSame/fmixed)
 	fSame->Divide(fMixed);
 	
+	// NEW averaging:
+	// average over number of triggers in each sub-bin
+	Double_t NTrigSubBin = 0;
+	if(type=="PN" || type=="PP")
+	  NTrigSubBin = (Double_t)(fHistP->Project(0,1)->GetEntries());
+	else if(type=="NP" || type=="NN")
+	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->GetEntries());
+	fSame->Scale(NTrigSubBin);
+	
 	// for the first: clone
 	if( (iBinPsi == binPsiMin && iBinVertex == binVertexMin) || !gHist ){
 	  gHist = (TH2D*)fSame->Clone();
@@ -1813,8 +1827,29 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   }
 
   if(gHist){
+    
+    // OLD averaging:
     // average over number of bins nbinsVertex * nbinsPsi
-    gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+    // gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
+
+    // NEW averaging:
+    // average over number of triggers in each sub-bin
+    // first set to full range and then obtain number of all triggers 
+    Double_t NTrigAll = 0;
+    if(type=="PN" || type=="PP"){
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistP->Project(0,1)->GetEntries());
+    }
+    else if(type=="NP" || type=="NN"){
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistN->Project(0,1)->GetEntries());
+    }
+    gHist->Scale(1./NTrigAll);
+    
   }
   
   return gHist;
@@ -2213,7 +2248,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
 
 //____________________________________________________________________//
 
-Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
+Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist, Bool_t kUseZYAM,
 					   Double_t &mean, Double_t &meanError,
 					   Double_t &sigma, Double_t &sigmaError,
 					   Double_t &skewness, Double_t &skewnessError,
@@ -2242,7 +2277,20 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     Int_t fNumberOfBins = gHist->GetNbinsX();
     //    Int_t fBinWidth     = gHist->GetBinWidth(1); // assume equal binning
 
-    
+
+    // ----------------------------------------------------------------------
+    // ZYAM (for partially negative distributions)
+    // --> we subtract always the minimum value
+    Double_t zeroYield    = 0.;
+    Double_t zeroYieldCur = -FLT_MAX;
+    if(kUseZYAM){
+      for(Int_t iMin = 0; iMin<2; iMin++){
+	zeroYieldCur = gHist->GetMinimum(zeroYieldCur);
+	zeroYield   += zeroYieldCur;
+      }
+      zeroYield /= 2.;
+      //zeroYield = gHist->GetMinimum();
+    }
     // ----------------------------------------------------------------------
     // first calculate the mean
 
@@ -2258,8 +2306,8 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 	continue;
       }
 
-      fWeightedAverage   += gHist->GetBinContent(i) * gHist->GetBinCenter(i);
-      fNormalization     += gHist->GetBinContent(i);
+      fWeightedAverage   += (gHist->GetBinContent(i)-zeroYield) * gHist->GetBinCenter(i);
+      fNormalization     += (gHist->GetBinContent(i)-zeroYield);
     }  
     
     mean = fWeightedAverage / fNormalization;
@@ -2285,14 +2333,14 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 	continue;
       }
 
-      fMu  += gHist->GetBinContent(i) * (gHist->GetBinCenter(i) - mean);
-      fMu2 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
-      fMu3 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
-      fMu4 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),4);
-      fMu5 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),5);
-      fMu6 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),6);
-      fMu7 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),7);
-      fMu8 += gHist->GetBinContent(i) * TMath::Power((gHist->GetBinCenter(i) - mean),8);
+      fMu  += (gHist->GetBinContent(i)-zeroYield) * (gHist->GetBinCenter(i) - mean);
+      fMu2 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),2);
+      fMu3 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),3);
+      fMu4 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),4);
+      fMu5 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),5);
+      fMu6 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),6);
+      fMu7 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),7);
+      fMu8 += (gHist->GetBinContent(i)-zeroYield) * TMath::Power((gHist->GetBinCenter(i) - mean),8);
     }
 
     // normalize to bin entries!
@@ -2318,7 +2366,7 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
     fMu6 /= TMath::Power(sigma,6);    
     fMu7 /= TMath::Power(sigma,7);    
     fMu8 /= TMath::Power(sigma,8);    
-
+  
     // ----------------------------------------------------------------------
     // then calculate the higher moment errors
     // cout<<fNormalization<<" "<<gHist->GetEffectiveEntries()<<" "<<gHist->Integral()<<endl;
@@ -2346,17 +2394,16 @@ Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist,
 
     if (TMath::Sqrt(normError) != 0){
       meanError        = sigma / TMath::Sqrt(normError); 
+      sigmaError       = TMath::Sqrt(Lambda11);
+      skewnessError    = TMath::Sqrt(Lambda22);
+      kurtosisError    = TMath::Sqrt(Lambda33);
+
+      success = kTRUE;    
+	  
     }
-    else return -999;
-    sigmaError       = TMath::Sqrt(Lambda11);
-    skewnessError    = TMath::Sqrt(Lambda22);
-    kurtosisError    = TMath::Sqrt(Lambda33);
-    
-    
-    success = kTRUE;    
+    else success = kFALSE;
+  
   }
-
-
   return success;
 }
 

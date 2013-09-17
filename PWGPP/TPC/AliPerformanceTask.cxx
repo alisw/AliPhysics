@@ -249,6 +249,7 @@ void AliPerformanceTask::UserExec(Option_t *)
     AliPerformanceObject *pObj=0;
     fPitList->Reset();
     while(( pObj = (AliPerformanceObject *)fPitList->Next()) != NULL) {
+          AliInfo(pObj->GetName());
           pObj->Exec(fMC,fESD,fESDfriend,fUseMCInfo,fUseESDfriend);
     }
   }

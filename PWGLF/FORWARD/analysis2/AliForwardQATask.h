@@ -181,7 +181,8 @@ protected:
    */
   virtual Bool_t ReadCorrections(const TAxis*& pe, 
 				 const TAxis*& pv,
-				 Bool_t mc=false);
+				 Bool_t mc=false,
+				 Bool_t sat=false);
   /**
    * Get the ESD event. IF this is the first event, initialise.  If
    * initialisation failes, return a null pointer. 

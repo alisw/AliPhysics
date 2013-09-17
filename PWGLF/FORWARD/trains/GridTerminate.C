@@ -69,7 +69,8 @@ Bool_t LoadPar(const char* parName)
 Bool_t GridTerminate(const TString& name, 
 		     const TString& libs, 
 		     const TString& pars, 
-		     const TString& srcs)
+		     const TString& srcs,
+		     Bool_t         local=false)
 {
   // Load basic ROOT libraries
   gSystem->AddDynamicPath("/usr/lib");
@@ -88,46 +89,60 @@ Bool_t GridTerminate(const TString& name,
   if (gSystem->Load("libANALYSISalice") < 0) return false;
 
   // Load libraries
-  TObjArray*  libsArray = libs.Tokenize(" ");
-  TObjString* lib       = 0;
-  TIter       nextLib(libsArray);
-  while ((lib = static_cast<TObjString*>(nextLib()))) {
-    const TString& libName = lib->String();
-    if (libName.Contains("libSTEERBase") ||
-	libName.Contains("libESD")       ||
-	libName.Contains("libAOD")       ||
-	libName.Contains("libANALYSIS")  ||
-	libName.Contains("libOADB")      ||
-	libName.Contains("libANALYSISalice")) continue;
-    if (!libName.Contains(".so")) continue;
-    if (!LoadLib(libName.Data())) return false;
+  if (!libs.IsNull()) {
+    TObjArray*  libsArray = libs.Tokenize(" ");
+    TObjString* lib       = 0;
+    TIter       nextLib(libsArray);
+    while ((lib = static_cast<TObjString*>(nextLib()))) {
+      const TString& libName = lib->String();
+      if (libName.Contains("libSTEERBase") ||
+	  libName.Contains("libESD")       ||
+	  libName.Contains("libAOD")       ||
+	  libName.Contains("libANALYSIS")  ||
+	  libName.Contains("libOADB")      ||
+	  libName.Contains("libANALYSISalice")) continue;
+      if (!libName.Contains(".so")) continue;
+      if (!LoadLib(libName.Data())) return false;
+    }
+    libsArray->Delete();
   }
-  libsArray->Delete();
   
   // Load packages
-  TObjArray*  parArray = pars.Tokenize(" ");
-  TObjString* par      = 0;
-  TIter       nextPar(parArray);
-  while ((par = static_cast<TObjString*>(nextPar()))) { 
-    TString parName(par->String());
-    if (parName.EndsWith(".par")) parName.ReplaceAll(".par", "");
-    if (parName.Contains("STEERBase") ||
-	parName.Contains("ESD")       ||
-	parName.Contains("AOD")       ||
-	parName.Contains("ANALYSIS")  ||
-	parName.Contains("OADB")      ||
-	parName.Contains("ANALYSISalice")) continue;
-    if (!LoadPar(parName.Data())) return false;
+  if (!pars.IsNull()) {
+    TObjArray*  parArray = pars.Tokenize(" ");
+    TObjString* par      = 0;
+    TIter       nextPar(parArray);
+    while ((par = static_cast<TObjString*>(nextPar()))) { 
+      TString parName(par->String());
+      if (parName.EndsWith(".par")) parName.ReplaceAll(".par", "");
+      if (parName.Contains("STEERBase") ||
+	  parName.Contains("ESD")       ||
+	  parName.Contains("AOD")       ||
+	  parName.Contains("ANALYSIS")  ||
+	  parName.Contains("OADB")      ||
+	  parName.Contains("ANALYSISalice")) continue;
+      if (!LoadPar(parName.Data())) return false;
+    }
   }
 
   // Load sources
-  TObjArray*  srcArray = srcs.Tokenize(" ");
-  TObjString* src      = 0;
-  TIter       nextSrc(srcArray);
-  while ((src = static_cast<TObjString*>(nextSrc()))) { 
-    const TString& srcName = src->String();
-    gROOT->ProcessLine(Form(".L %s+g", srcName.Data()));
+  if (!srcs.IsNull()) {
+    TObjArray*  srcArray = srcs.Tokenize(" ");
+    TObjString* src      = 0;
+    TIter       nextSrc(srcArray);
+    while ((src = static_cast<TObjString*>(nextSrc()))) { 
+      const TString& srcName = src->String();
+      gROOT->ProcessLine(Form(".L %s+g", srcName.Data()));
+    }
   }
+
+  // Connect to the grid
+  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+  // TGrid::Connect("alien://");
+  // if (!gGrid) {
+  //   Error("GridTerminate", "Failed to connect to AliEn");
+  //   return false;
+  // }
 
   // Load the analysis manager from file
   TString base(name);
@@ -141,7 +156,6 @@ Bool_t GridTerminate(const TString& name,
     }
     base = sub;
   }
-  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   AliAnalysisManager* mgr= AliAnalysisAlien::LoadAnalysisManager(base);
   if (!mgr) {
     Error("GridTerminate", "Failed to load manager from %s",base.Data());
@@ -170,6 +184,7 @@ Bool_t GridTerminate(const TString& name,
   }
   Info("GridTerminate","Setting grid handler");
   handler->SetRunMode("terminate");
+  if (local) handler->SetMergeViaJDL(false);
   mgr->SetGridHandler(handler);
 
   // Run the terminate job

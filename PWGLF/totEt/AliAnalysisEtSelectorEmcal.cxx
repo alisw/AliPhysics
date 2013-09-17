@@ -104,18 +104,34 @@ Bool_t AliAnalysisEtSelectorEmcal::PassTrackMatchingCut(const AliESDCaloCluster&
     //return distance > fCuts->GetEmcalTrackDistanceCut();
 }
 
-Bool_t AliAnalysisEtSelectorEmcal::CutGeometricalAcceptance(const TParticle& part) const
+Bool_t AliAnalysisEtSelectorEmcal::CutGeometricalAcceptance(const TParticle& part)
 {
+  float myphi = part.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
     return TMath::Abs(part.Eta()) < fCuts->GetGeometryEmcalEtaAccCut()
-           && part.Phi() < fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180.
-           && part.Phi() > fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.;
+    && myphi < fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.;
 }
 
-Bool_t AliAnalysisEtSelectorEmcal::CutGeometricalAcceptance(const AliVTrack& part) const
+Bool_t AliAnalysisEtSelectorEmcal::CutGeometricalAcceptance(const AliVTrack& part)
 {
-    return TMath::Abs(part.Eta()) < fCuts->GetGeometryEmcalEtaAccCut()
-           && part.Phi() < fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180.
-           && part.Phi() > fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.;
+  float myphi = part.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
+  return TMath::Abs(part.Eta()) < fCuts->GetGeometryEmcalEtaAccCut()
+    && myphi < fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.;
+}
+
+Bool_t AliAnalysisEtSelectorEmcal::CutGeometricalAcceptance(const AliESDCaloCluster& cluster)
+{
+  Float_t pos[3];
+  cluster.GetPosition(pos);
+  TVector3 cp(pos);
+  float myphi = cp.Phi();
+  myphi = AliAnalysisEtSelector::ShiftAngle(myphi);
+  return TMath::Abs(cp.Eta()) < fCuts->GetGeometryEmcalEtaAccCut()
+    && myphi < fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180.
+    && myphi > fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.;
 }
 
 

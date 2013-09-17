@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 233 2012-12-02 14:46:41Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 313 2013-06-28 16:43:30Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -29,6 +29,7 @@ class TObjArray;
 class AliAODEvent;
 class AliAODHeader;
 class AliEventPoolManager;
+class AliTHn;
 
 #include <TObject.h>
 #include "AliAnalysisTaskSE.h"
@@ -82,7 +83,8 @@ protected:
   void SetupForMixing();
 
   THnSparse* MakeHistSparsePhiEta(const char* name) const;
-  THnSparse* MakeHistSparsePhiEtaPhiEta(const char* name) const;
+  AliTHn* MakeHistPhiEta(const char* name) const;
+  AliTHn* MakeHistPhiEtaPhiEta(const char* name) const; 
 
 private:
   TList*               fOutputList;         //! Output list

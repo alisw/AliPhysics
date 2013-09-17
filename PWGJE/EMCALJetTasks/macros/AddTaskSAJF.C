@@ -8,7 +8,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *cutType            = "TPC",
   Int_t       leadhadtype        = 0,
   const char *taskname           = "AliAnalysisTaskSAJF"
 )
@@ -43,24 +43,24 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
     name += "_";
     name += nrho;
   }
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "_USER";
+  name += "_";
+  name += cutType;
 
   AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
-  jetTask->SetAnaType(type);
-  jetTask->SetTracksName(ntracks);
-  jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
-  jetTask->SetRhoName(nrho);
-  jetTask->SetJetRadius(jetradius);
-  jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetPercAreaCut(jetareacut);
-  jetTask->SetLeadingHadronType(leadhadtype);
-  
+
+  AliParticleContainer *trackCont = jetTask->AddParticleContainer(ntracks);
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
+
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,cutType,jetradius);
+  if (jetCont) {
+    jetCont->SetRhoName(nrho);
+    jetCont->SetPercAreaCut(jetareacut);
+    jetCont->SetJetPtCut(jetptcut);
+    jetCont->ConnectParticleContainer(trackCont);
+    jetCont->ConnectClusterContainer(clusterCont);
+    jetCont->SetLeadingHadronType(leadhadtype);
+  }
+
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

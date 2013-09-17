@@ -13,44 +13,27 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
+//--------------------------------------------------
+// Method implementation for background studies and background subtraction with UA1 algorithms
+//
+// Author: magali.estienne@subatech.in2p3.fr
+//-------------------------------------------------
+
 #include <Riostream.h> 
-#include <TChain.h>
-#include <TFile.h>
 #include <TList.h>
-#include <TArrayF.h>
 #include <TClonesArray.h>
-#include <TF1.h>
-#include <TString.h>
+#include <TH1F.h>
+#include <TH2F.h>
 
-#include "AliJetHeader.h"
-#include "AliJetReader.h"
-#include "AliJetReaderHeader.h"
-#include "AliFastJetFinder.h"
-#include "AliFastJetHeaderV1.h"
-#include "AliJetReaderHeader.h"
-#include "AliJetReader.h"
-#include "AliJetUnitArray.h"
-#include "AliFastJetInput.h"
-#include "AliESDEvent.h"
+#include "AliAODJetEventBackground.h"
+#include "AliUA1JetHeaderV1.h"
+#include "AliJetCalTrk.h"
+#include "AliJetBkg.h"
 
-
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/JetDefinition.hh"
-// get info on how fastjet was configured
-#include "fastjet/config.h"
-
-#ifdef ENABLE_PLUGIN_SISCONE
-#include "fastjet/SISConePlugin.hh"
-#endif
-
-#include<sstream>  // needed for internal io
-#include<vector> 
-#include <cmath> 
 
 using namespace std;
-#include "AliJetBkg.h"
 
 ClassImp(AliJetBkg)
 
@@ -58,549 +41,525 @@ ClassImp(AliJetBkg)
 
 AliJetBkg::AliJetBkg():
   TObject(),
-  fReader(0),
-  fHeader(0),
-  fInputFJ(0)
+  fEvent(0x0),
+  fHeader(0x0),
+  fDebug(0),
+  fhEtBackg(0x0),
+  fhAreaBackg(0x0)
 {
   // Default constructor
-
+  for(int i = 0;i < kMaxJets;i++){
+    fhAreaJet[i] = fhEtJet[i] = 0;
+  }
 }
-//______________________________________________________________________
+
+//----------------------------------------------------------------
 AliJetBkg::AliJetBkg(const AliJetBkg& input):
   TObject(input),
-    fReader(input.fReader),
-    fHeader(input.fHeader),
-    fInputFJ(input.fInputFJ)
+  fEvent(input.fEvent),
+  fHeader(input.fHeader),
+  fDebug(input.fDebug),
+  fhEtBackg(input.fhEtBackg),
+  fhAreaBackg(input.fhAreaBackg)
 {
   // copy constructor
-
-}
-//______________________________________________________________________
-AliJetBkg& AliJetBkg::operator=(const AliJetBkg& source){
-    // Assignment operator. 
-    this->~AliJetBkg();
-    new(this) AliJetBkg(source);
-    return *this;
-
-}
-
-
-//___________________________________________________________________
-  void AliJetBkg::BkgFastJetb(Double_t& rho,Double_t& sigma, 
-Double_t& meanarea){
-
-    AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader; 
-    Bool_t debug  = header->GetDebug();     // debug option 
-    if(debug)cout<<"===============  AliJetBkg::BkgFastJetb()  =========== "<<endl;
-  vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
-  
-  //cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
-  
-
-   
-
-  double rParamBkg = header->GetRparamBkg(); //Radius for background calculation
-
-  Double_t medianb,sigmab,meanareab;
-  CalcRhob(medianb,sigmab,meanareab,inputParticles,rParamBkg,"All");
-  rho=medianb;
-  sigma=sigmab;
-  meanarea=meanareab;
- 
-}
-//_________________________________________________________________
-
-  void AliJetBkg::BkgFastJetWoHardest(Double_t& rho,Double_t& sigma, 
-Double_t& meanarea){
-    AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader; 
-    Bool_t debug  = header->GetDebug();     // debug option 
-    if(debug)cout<<"===============  AliJetBkg::BkgWoHardest()  =========== "<<endl;
-  vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
-  
-  //cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;   
-  double rParamBkg = header->GetRparamBkg(); //Radius for background calculation  
-  Double_t medianb,sigmab,meanareab;
-  CalcRhoWoHardest(medianb,sigmab,meanareab,inputParticles,rParamBkg,"All");
-  rho=medianb;
-  sigma=sigmab;
-  meanarea=meanareab;
-
+  for(int i = 0;i < kMaxJets;i++){
+    fhAreaJet[i] = input.fhAreaJet[i];
+    fhEtJet[i] = input.fhEtJet[i];
   }
 
-//____________________________________________________________________
-
- void AliJetBkg::CalcRhob(Double_t& median,Double_t& 
-			  sigma,Double_t& 
-			  meanarea,vector<fastjet::PseudoJet> inputParticles,Double_t 
-			  rParamBkg,TString method){
-  //calculate rho using the fastjet method
-
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
-
-  fastjet::Strategy strategy = header->GetStrategy();
-  fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
-  fastjet::JetAlgorithm algorithm = header->GetAlgorithm(); 
-  fastjet::JetDefinition jetDef(algorithm, rParamBkg, recombScheme, strategy);
-
-  // create an object that specifies how we to define the area
-  fastjet::AreaDefinition areaDef;
-  double ghostEtamax = header->GetGhostEtaMax(); 
-  double ghostArea   = header->GetGhostArea(); 
-  int    activeAreaRepeats = header->GetActiveAreaRepeats(); 
-
-  // now create the object that holds info about ghosts
-
-  
-
-  fastjet::GhostedAreaSpec ghost_spec(ghostEtamax, activeAreaRepeats, ghostArea);
-  // and from that get an area definition
-  fastjet::AreaType areaType = header->GetAreaType();
-  areaDef = fastjet::AreaDefinition(areaType,ghost_spec);
-  
-  //fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef);
-  fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef,areaDef);
-  TString comment = "Running FastJet algorithm for BKG calculation with the following setup. ";
-  comment+= "Jet definition: ";
-  comment+= TString(jetDef.description());
-  //  comment+= ". Area definition: ";
-  //comment+= TString(areaDef.description());
-  comment+= ". Strategy adopted by FastJet: ";
-  comment+= TString(clust_seq.strategy_string());
-  comment+= Form("Method: %s",method.Data());
-  header->SetComment(comment);
-  if(debug){
-    cout << "--------------------------------------------------------" << endl;
-    cout << comment << endl;
-    cout << "--------------------------------------------------------" << endl;
-  }
-
-  vector<fastjet::PseudoJet> inclusiveJets = clust_seq.inclusive_jets(0.);
-  vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); 
-
- 
-  //cout<<"# of BKG jets = "<<jets.size()<<endl;
-      //  for (size_t j = 0; j < jets.size(); j++) { // loop for jets   
-      //printf("BKG Jet found %5d %9.5f %8.5f %10.3f %4.4f 
-      //\n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(),
-      //clust_seq.area(jets[j]));
-      // }
-  
-  
-  double phiMin = 0, phiMax = 0, rapMin = 0, rapMax = 0;
-
- 
-    phiMin = 0;
-    phiMax = 2*TMath::Pi();
- 
-  rapMax = ghostEtamax - rParamBkg;
-  rapMin = - ghostEtamax + rParamBkg;
-
-
-  fastjet::RangeDefinition range(rapMin, rapMax, phiMin, phiMax);
-
-
-  double medianb, sigmab, meanareab;
-  clust_seq.get_median_rho_and_sigma(inclusiveJets, range, false, medianb, sigmab, meanareab, false);
-  median=medianb;
-  sigma=sigmab;
-  meanarea=meanareab; 
-
- 
- }
-
-//____________________________________________________________________
-
-
- void AliJetBkg::CalcRhoWoHardest(Double_t& median,Double_t& 
-sigma,Double_t& 
-meanarea,vector<fastjet::PseudoJet> inputParticles,Double_t 
-rParamBkg,TString method){
-  //calculate rho using the fastjet method
-
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
-
-  fastjet::Strategy strategy = header->GetStrategy();
-  fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
-  fastjet::JetAlgorithm algorithm = header->GetAlgorithm(); 
-  fastjet::JetDefinition jetDef(algorithm, rParamBkg, recombScheme, strategy);
-
-  // create an object that specifies how we to define the area
-  fastjet::AreaDefinition areaDef;
-  double ghostEtamax = header->GetGhostEtaMax(); 
-  double ghostArea   = header->GetGhostArea(); 
-  int    activeAreaRepeats = header->GetActiveAreaRepeats(); 
-
-  // now create the object that holds info about ghosts
-
- 
-
-  fastjet::GhostedAreaSpec ghost_spec(ghostEtamax, activeAreaRepeats, ghostArea);
-  // and from that get an area definition
-  fastjet::AreaType areaType = header->GetAreaType();
-  areaDef = fastjet::AreaDefinition(areaType,ghost_spec);
-  //cout<<"rParamBkg="<<rParamBkg<<"  ghostEtamax="<<ghostEtamax<<"  ghostArea="<<ghostArea<<" areadef="<<TString(areaDef.description())<<endl;
-  //fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef);
-  fastjet::ClusterSequenceArea clust_seq(inputParticles,jetDef,areaDef);
-  TString comment = "Running FastJet algorithm for BKG calculation with the following setup. ";
-  comment+= "Jet definition: ";
-  comment+= TString(jetDef.description());
-  //  comment+= ". Area definition: ";
-  //comment+= TString(areaDef.description());
-  comment+= ". Strategy adopted by FastJet: ";
-  comment+= TString(clust_seq.strategy_string());
-  comment+= Form("Method: %s",method.Data());
-  header->SetComment(comment);
-  if(debug){
-    cout << "--------------------------------------------------------" << endl;
-    cout << comment << endl;
-    cout << "--------------------------------------------------------" << endl;
-  }
-
-  vector<fastjet::PseudoJet> inclusiveJets = clust_seq.inclusive_jets(0.);
-  vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); 
-  vector<fastjet::PseudoJet> jets2=sorted_by_pt(inclusiveJets);
-  if(jets2.size()>=2) jets2.erase(jets2.begin(),jets2.begin()+1);
-  
-   
-  
-  double phiMin = 0, phiMax = 0, rapMin = 0, rapMax = 0;
-
- 
-    phiMin = 0;
-    phiMax = 2*TMath::Pi();
- 
-  rapMax = ghostEtamax - rParamBkg;
-  rapMin = - ghostEtamax + rParamBkg;
-
-
-  fastjet::RangeDefinition range(rapMin, rapMax, phiMin, phiMax);
-
-
-  double medianb, sigmab, meanareab;
-  clust_seq.get_median_rho_and_sigma(jets2, range, false, medianb, sigmab, 
-meanareab, false);
-  median=medianb;
-  sigma=sigmab;
-  meanarea=meanareab; 
-
-  
- }
-
-
-//___________________________________________________________________
-Float_t AliJetBkg::BkgFastJet(){
-// Return background  
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
-
-  if(debug)cout<<"===============  AliJetBkg::BkgFastJet()  =========== "<<endl;
-  vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
-  
-  if(debug)cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
-  
-  for(UInt_t i=0;i<inputParticles.size();i++){
-    //  cout<<"                "<<inputParticles[i].px()<<" "<<inputParticles[i].py()<<" "<<inputParticles[i].pz()<<endl;
-    
-  }
-   
-  double rParamBkg = header->GetRparamBkg(); //Radius for background calculation
-  Double_t rho=CalcRho(inputParticles,rParamBkg,"All");
-  if(debug)cout<<"-------- rho (from all part)="<<rho<<endl; 
-  return rho;
- 
-}
-//___________________________________________________________________
-Float_t  AliJetBkg::BkgChargedFastJet(){
-// Background for charged jets
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
-
-  if(debug)cout<<"===============  AliJetBkg::BkgChargedFastJet()  =========== "<<endl;
-
-  vector<fastjet::PseudoJet> inputParticlesCharged=fInputFJ->GetInputParticlesCh();
-  
-  if(debug)cout<<"printing CHARGED inputParticles for BKG "<<inputParticlesCharged.size()<<endl;
-
-  for(UInt_t i=0;i<inputParticlesCharged.size();i++){
-    // cout<<"                "<<inputParticlesCharged[i].px()<<" "<<inputParticlesCharged[i].py()<<" "<<inputParticlesCharged[i].pz()<<endl;
-
-  } 
-
-  double rParam = header->GetRparam();
-
-  Double_t rho=CalcRho(inputParticlesCharged,rParam,"Charg");
-
-  if(debug)cout<<"-------- rho (from CHARGED part)="<<rho<<endl; 
-  return rho;
 }
 
-
-
-Float_t AliJetBkg::BkgStat()
+//----------------------------------------------------------------
+AliJetBkg::~AliJetBkg()
 {
-  //background subtraction using statistical method
- 
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
-
-  if(debug)cout<<"==============AliJetBkg::BkgStat()============="<<endl;
-  //TO BE IMPLEMENTED 
-  // Int_t nTracks= fReader->GetESD()->GetNumberOfTracks();
-  Int_t nTracks= 0;
-  TF1 fun("fun",BkgFunction,0,800,1);
-  Double_t enTot=fun.Eval(nTracks);
-  Double_t accEMCal=2*0.7*110./180*TMath::Pi();//2.68 area of EMCal
-  return enTot/accEMCal;
+  // Destructor
+  if(fhEtBackg) delete  fhEtBackg;
+  if(fhAreaBackg) delete  fhAreaBackg;
+   for(int i = 0;i < kMaxJets;i++){
+     if(fhAreaJet[i]) delete fhAreaJet[i];
+     if(fhEtJet[i])  delete fhEtJet[i];
+   }
 
 }
 
-////////////////////////////////////////////////////////////////////////
-Float_t AliJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
+//----------------------------------------------------------------
+Bool_t AliJetBkg::PtCutPass(Int_t id, Int_t nTracks)
 {
+  // Check if track or cell passes the cut flag
+  if(id < nTracks && fEvent->GetCalTrkTrack(id)->GetCutFlag() == 1) 
+   return kTRUE;
+  else return kFALSE;
 
-  // Cone background subtraction method applied on the fastjet: REmove the particles of the
-  // two largest jets with the given R from the estimation of new rho. 
-
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
-
-  if(debug)cout<<"==============AliJetBkg::SubtractFastJetBackgCone()============="<<endl;
-
-  Float_t rc= header->GetRparam();
-
-  //Hard wired Calorimeter area (get it later from the AliJetReaderHeader.h)
-  Double_t accEMCal=2*0.7*110./180*TMath::Pi();//2.68 area of EMCal
-
-  Int_t nJ=fAODJets->GetEntries(); //this must be the # of jets... 
-  if(debug)cout<<"nJets:  "<<nJ<<endl;
-  
-
-  //begin unit array 
-  TClonesArray* fUnit = fReader->GetUnitArray();
-  if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return -99; }
-
-  Int_t nIn = fUnit->GetEntries();
-  if(nIn == 0) { cout << "entries = 0 ; Event empty !!!" << endl ; return -99; }
-  
-  // Information extracted from fUnitArray
-  // load input vectors and calculate total energy in array
-  Float_t pt,eta,phi;
-  Float_t jeteta = 0,jetphi = 0,jeteta1 = 0, jetphi1 = 0;
-  Float_t rhoback=0.0;
-
-  Float_t ptallback=0.0; //particles without the jet
-  Float_t restarea=accEMCal; //initial area set 
-  Bool_t acc=0;
-  Bool_t acc1=0;
-  Float_t rCone=0.4;
-  
-  if(nJ==1) { 
-    AliAODJet *jettmp = (AliAODJet*)(fAODJets->At(0));
-    jeteta=jettmp->Eta();
-    jetphi=jettmp->Phi();
-    acc=EmcalAcceptance(jeteta,jetphi,rCone);
-    if(acc==1)restarea= accEMCal-TMath::Pi()*rc*rc;
-    if(debug)cout<<" acc  "<<acc<<endl;
-  }
-
-  
-  if(nJ>=2) { 
-    AliAODJet *jettmp = (AliAODJet*)(fAODJets->At(0));
-    AliAODJet *jettmp1 = (AliAODJet*)(fAODJets->At(1));
-    jeteta=jettmp->Eta();
-    jetphi=jettmp->Phi();
-    jeteta1=jettmp1->Eta();
-    jetphi1=jettmp1->Phi(); 
-    acc=EmcalAcceptance(jeteta,jetphi,rCone);
-    acc1=EmcalAcceptance(jeteta1,jetphi1,rCone);
-    if(acc1==1 && acc==1)restarea= accEMCal-2*TMath::Pi()*rc*rc;
-    if(acc1==1 && acc==0)restarea= accEMCal-TMath::Pi()*rc*rc;
-    if(acc1==0 && acc==1)restarea= accEMCal-TMath::Pi()*rc*rc;
-
-    if(debug)cout<<" acc1="<<acc<<"  acc2="<<acc1<<"  restarea="<<restarea<<endl;
-
-  }
-  
-  // cout<<" nIn = "<<nIn<<endl;
-  Float_t sumpt=0;
-  for(Int_t i=0; i<nIn; i++) 
-    { //Unit Array Loop
-      AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(i);
-      if(uArray->GetUnitEnergy()>0.){
-	
-	pt    = uArray->GetUnitEnergy();
-       	eta   = uArray->GetUnitEta();
-	phi   = uArray->GetUnitPhi();
-
-	//cout<<"test emcal acceptance for particles "<<EmcalAcceptance(eta,phi,0.)<<endl;
-	
-	Float_t deta=0.0, dphi=0.0, dr=100.0;
-	Float_t deta1=0.0, dphi1=0.0, dr1=100.0;
-	
-	//cout<<i<<"  pt="<<pt<<"  eta="<<eta<<"  phi="<<phi<<endl;
-	if(phi>1.396 && phi<3.316 && eta>-0.7 && eta<0.7){
-	  sumpt+=pt;
-	  //if(i<30)cout<<i<<" pt unit = "<<pt<<endl;
-
-	  if(nJ==1 && acc==1) { 
-	    deta = eta - jeteta;
-	    dphi = phi - jetphi;
-	    if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
-	    if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
-	    dr = TMath::Sqrt(deta * deta + dphi * dphi);
-	    if(dr<=rc)sumpt-=pt;
-	  }
-	
-	  if(nJ>=2) { 
-	    if(acc==1){
-	      deta = eta - jeteta;
-	      dphi = phi - jetphi;
-	      if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
-	      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
-	      dr = TMath::Sqrt(deta * deta + dphi * dphi);
-	      if(dr<=rc)sumpt-=pt;
-	    }
-	    if(acc1==1){
-	      deta1 = eta - jeteta1;
-	      dphi1 = phi - jetphi1;
-	      if (dphi1 < -TMath::Pi()) dphi1= -dphi1 - 2.0 * TMath::Pi();
-	      if (dphi1 > TMath::Pi()) dphi1 = 2.0 * TMath::Pi() - dphi1;
-	      dr1 = TMath::Sqrt(deta1 * deta1 + dphi1 * dphi1);
-	      if(dr1<=rc)sumpt-=pt;
-	    }
-
-	  }
-
-	  if(dr >= rc && dr1 >=rc) { 
-	    // particles outside both cones
-	  
-	    //cout<<" out of the cone  "<<dr<<"    "<<deta<<"  deltaeta  "<<dphi<<"  dphi "<<i<<"  particle  "<<endl;
-	    //cout<<" out of the cone  "<<dr1<<"    "<<deta1<<"  deltaeta1  "<<dphi1<<"  dphi1 "<<i<<"  particle  "<<endl;
-	    ptallback+=pt;
-	  }
-	}
-	//cout<<"  ipart  "<<ipart<<"  rhointegral  "<<rhoback <<endl;
-      }		
-    } // End loop on UnitArray 
-  
-  if(debug)cout<<"total area left "<<restarea<<endl;
-  if(debug)cout<<"sumpt="<<sumpt<<endl;
-  // if(acc==1 || acc1==1) rhoback= ptallback/restarea;
-  //else rhoback=ptallback;
-
-  rhoback= ptallback/restarea;
-  if(debug)cout<<"rhoback    "<<rhoback<<"     "<<nJ<<"   "<<endl;
-
-  return rhoback;
-   
 }
 
+//----------------------------------------------------------------
+Bool_t AliJetBkg::SignalCutPass(Int_t id, Int_t nTracks)
+{
+  // Check if track or cell passes the cut flag
+  if(id < nTracks && fEvent->GetCalTrkTrack(id)->GetSignalFlag() == 1)
+    return kTRUE;
+  else return kFALSE;
 
-Double_t AliJetBkg::CalcRho(vector<fastjet::PseudoJet> inputParticles,Double_t rParamBkg,TString method){
-  //calculate rho using the fastjet method
+}
 
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
-
-  fastjet::Strategy strategy = header->GetStrategy();
-  fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
-  fastjet::JetAlgorithm algorithm = header->GetAlgorithm(); 
-  fastjet::JetDefinition jetDef(algorithm, rParamBkg, recombScheme, strategy);
-
-  // create an object that specifies how we to define the area
-  fastjet::AreaDefinition areaDef;
-  double ghostEtamax = header->GetGhostEtaMax(); 
-  double ghostArea   = header->GetGhostArea(); 
-  int    activeAreaRepeats = header->GetActiveAreaRepeats(); 
+//----------------------------------------------------------------
+Float_t AliJetBkg::CalcJetAreaEtaCut(Float_t radius, const Float_t etaJet)
+{
+  // Calculate jet area taking into account an acceptance cut in eta
+  AliUA1JetHeader* header = (AliUA1JetHeader*) fHeader;
+  Float_t detamax = etaJet + radius;
+  Float_t detamin = etaJet - radius;
+  Float_t accmax = 0.0; Float_t accmin = 0.0;
+  if(detamax > header->GetLegoEtaMax()){ // sector outside etamax
+    Float_t h = header->GetLegoEtaMax() - etaJet;
+    accmax = radius*radius*TMath::ACos(h/radius) - h*TMath::Sqrt(radius*radius - h*h);
+  }
+  if(detamin < header->GetLegoEtaMin()){ // sector outside etamin
+    Float_t h = header->GetLegoEtaMax() + etaJet;
+    accmin = radius*radius*TMath::ACos(h/radius) - h*TMath::Sqrt(radius*radius - h*h);
+  }
   
-  // now create the object that holds info about ghosts
+  return radius*radius*TMath::Pi() - accmax - accmin;
 
-  if (method.Contains("Charg"))ghostEtamax=0.9;
+}
 
-  fastjet::GhostedAreaSpec ghost_spec(ghostEtamax, activeAreaRepeats, ghostArea);
-  // and from that get an area definition
-  fastjet::AreaType areaType = header->GetAreaType();
-  areaDef = fastjet::AreaDefinition(areaType,ghost_spec);
-  if(debug)cout<<"rParamBkg="<<rParamBkg<<"  ghostEtamax="<<ghostEtamax<<"  ghostArea="<<ghostArea<<" areadef="<<TString(areaDef.description())<<endl;
-  //fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef);
-  fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef,areaDef);
-  TString comment = "Running FastJet algorithm for BKG calculation with the following setup. ";
-  comment+= "Jet definition: ";
-  comment+= TString(jetDef.description());
-  //  comment+= ". Area definition: ";
-  //comment+= TString(areaDef.description());
-  comment+= ". Strategy adopted by FastJet: ";
-  comment+= TString(clust_seq.strategy_string());
-  header->SetComment(comment);
-  if(debug){
-    cout << "--------------------------------------------------------" << endl;
-    cout << comment << endl;
-    cout << "--------------------------------------------------------" << endl;
+//----------------------------------------------------------------
+void AliJetBkg::CalcJetAndBckgAreaEtaCut(Bool_t calcOutsideArea, Float_t radius, const Int_t nJets, const Float_t* etaJet, Float_t* &areaJet, Float_t &areaOut)
+{
+  // Calculate jet and bacground areas taking into account an acceptance cut in eta
+
+  AliUA1JetHeader* header = (AliUA1JetHeader*) fHeader;
+  areaOut = (header->GetLegoEtaMax()-header->GetLegoEtaMin())*(header->GetLegoPhiMax() - header->GetLegoPhiMin());
+  for(Int_t k=0; k<nJets; k++){
+    areaJet[k] = CalcJetAreaEtaCut(radius, etaJet[k]);
+    if(calcOutsideArea) areaOut = areaOut - areaJet[k];
   }
 
-  double ptmin = header->GetPtMin(); 
-  vector<fastjet::PseudoJet> inclusiveJets = clust_seq.inclusive_jets(ptmin);
-  vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); 
+}
 
-  if (debug) {
-      cout<<"# of BKG jets = "<<jets.size()<<endl;
-      for (size_t j = 0; j < jets.size(); j++) { // loop for jets   
-	  printf("BKG Jet found %5d %9.5f %8.5f %10.3f %4.4f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(),clust_seq.area(jets[j]));
+//----------------------------------------------------------------
+void AliJetBkg::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&etbgTotalN, Float_t&sigmaN,
+                              const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+                              Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet,
+                              Float_t* etsigJet, Int_t* multJetT, Int_t* multJetC, Int_t* multJet,
+                              Int_t* injet, Float_t* &areaJet)
+{
+  //
+  // Background subtraction using cone method but without correction in dE/deta distribution
+  // Cases to take into account the EMCal geometry are included
+  //
+  
+  AliUA1JetHeader* header = (AliUA1JetHeader*) fHeader;
+  //calculate energy inside and outside cones
+  fDebug = header->GetDebug();
+  Float_t rc = header->GetRadius();
+  Float_t etOut = 0;
+  // Get number of tracks from EventCalTrk
+  Int_t nTracks = fEvent->GetNCalTrkTracks();
+
+  Float_t etIn[kMaxJets] = {0};
+  Float_t areaOut = 0.;
+
+  for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
+
+    for(Int_t ijet=0; ijet<nJ; ijet++){
+      Float_t deta = etaT[jpart] - etaJet[ijet];
+      Float_t dphi = phiT[jpart] - phiJet[ijet];
+      if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+      if(dr <= rc){ // particles inside this cone
+        if(jpart < nTracks) multJetT[ijet]++;
+        else multJetC[ijet]++;
+        multJet[ijet]++;
+        injet[jpart] = ijet;
+        if(PtCutPass(jpart,nTracks)){ // pt cut
+          etIn[ijet] += ptT[jpart];
+          if(SignalCutPass(jpart,nTracks))
+            etsigJet[ijet]+= ptT[jpart];
+        }
+        break;
       }
+    }// end jets loop
+
+    if((injet[jpart] == -1) &&
+       (PtCutPass(jpart,nTracks))){
+      etOut += ptT[jpart]; // particle outside cones and pt cut
+    }
+  } //end particle loop
+
+  // Calculate jet and background areas
+  Bool_t calcAreaOut = kTRUE;
+  CalcJetAndBckgAreaEtaCut(calcAreaOut,rc, nJ, etaJet, areaJet, areaOut);
+
+  //subtract background using area method
+  for(Int_t ljet=0; ljet<nJ; ljet++){
+    Float_t areaRatio = areaJet[ljet]/areaOut;
+    etJet[ljet] = etIn[ljet]-etOut*areaRatio; // subtraction
   }
-  
-  double phiMin = 0, phiMax = 0, rapMin = 0, rapMax = 0;
 
-  if (method.Contains("All")){
-    phiMin = 80.*TMath::Pi()/180+rParamBkg;
-    phiMax = 190.*TMath::Pi()/180-rParamBkg;
+  // estimate new total background
+  Float_t areaT = 0;
+  areaT = (header->GetLegoEtaMax()-header->GetLegoEtaMin())*(header->GetLegoPhiMax()-header->GetLegoPhiMin());
+  etbgTotalN = etOut*areaT/areaOut;
+
+  // estimate standard deviation of background
+  Int_t count = 0;
+  for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
+    if((injet[jpart] == -1) &&
+       (PtCutPass(jpart,nTracks))){
+      sigmaN += etbgTotalN/areaT - ptT[jpart];
+      // To be checked (Division by jet area to obtain standard deviation of rho ?)
+
+      count=count+1;
+    }
   }
-  if (method.Contains("Charg")){
-    phiMin = 0;
-    phiMax = 2*TMath::Pi();
-  }
-  rapMax = ghostEtamax - rParamBkg;
-  rapMin = - ghostEtamax + rParamBkg;
+  if (count>0)
+    sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
 
-
-  fastjet::RangeDefinition range(rapMin, rapMax, phiMin, phiMax);
-
-
-  Double_t rho=clust_seq.median_pt_per_unit_area(range);
-  //    double median, sigma, meanArea;
-  //clust_seq.get_median_rho_and_sigma(inclusiveJets, range, false, median, sigma, meanArea, true);
-  //fastjet::ActiveAreaSpec area_spec(ghostEtamax,activeAreaRepeats,ghostArea);
-
-  // fastjet::ClusterSequenceActiveArea clust_seq_bkg(inputParticles, jetDef,area_spec);
-
-
-  if(debug)cout<<"bkg in R="<<rParamBkg<<"  : "<<rho<<" range: Rap="<<rapMin<<","<<rapMax<<" --  phi="<<phiMin<<","<<phiMax<<endl;
-  return rho;
 }
 
-Float_t  AliJetBkg::EtaToTheta(Float_t arg)
+//----------------------------------------------------------------
+void AliJetBkg::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float_t&etbgTotalN, Float_t&sigmaN,
+                                  const Float_t* ptT, const Float_t* etaT, const Float_t* phiT,
+                                  Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet,
+                                  Float_t* etsigJet, Int_t* multJetT, Int_t* multJetC, Int_t* multJet,
+                                  Int_t* injet, Float_t* &areaJet)
 {
-  //  return (180./TMath::Pi())*2.*atan(exp(-arg));
-  return 2.*atan(exp(-arg));
+  //
+  //background subtraction using statistical method
+  // Cases to take into account the EMCal geometry are included
+  //
+
+  AliUA1JetHeader* header = (AliUA1JetHeader*) fHeader;
+  Float_t etbgStat = header->GetBackgStat(); // pre-calculated background
+  
+  //calculate energy inside
+  Float_t rc= header->GetRadius();
+  Float_t etIn[kMaxJets] = {0.0};
+  // Get number of tracks from EventCalTrk
+  Int_t nTracks = fEvent->GetNCalTrkTracks();
+  Float_t areaOut = 0.;
+
+  for(Int_t jpart = 0; jpart < nIn; jpart++)
+    { // loop for all particles in array
+      
+      for(Int_t ijet=0; ijet<nJ; ijet++)
+	{
+	  Float_t deta = etaT[jpart] - etaJet[ijet];
+	  Float_t dphi = phiT[jpart] - phiJet[ijet];
+	  if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+	  if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+	  Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+          if(dr <= rc){ // particles inside this cone
+            if(jpart < nTracks) multJetT[ijet]++;
+            else multJetC[ijet]++;
+            multJet[ijet]++;
+            injet[jpart] = ijet;
+
+            if(PtCutPass(jpart,nTracks)){ // pt cut
+              etIn[ijet] += ptT[jpart];
+	      if(SignalCutPass(jpart,nTracks))
+		etsigJet[ijet]+= ptT[jpart];
+            }
+            break;
+          }
+	}// end jets loop
+    } //end particle loop
+  
+  // Calculate jet and background areas
+  Bool_t calcAreaOut = kFALSE;
+  CalcJetAndBckgAreaEtaCut(calcAreaOut,rc, nJ, etaJet, areaJet, areaOut);
+
+  //subtract background using area method
+  for(Int_t ljet=0; ljet<nJ; ljet++){
+    Float_t areaRatio = areaJet[ljet]/areaOut;
+    etJet[ljet] = etIn[ljet]-etbgStat*areaRatio; // subtraction
+  }
+  Int_t count=0;
+  etbgTotalN = etbgStat;
+
+  // estimate standard deviation of background
+  Float_t areaT = 0;
+  areaT = (header->GetLegoEtaMax()-header->GetLegoEtaMin())*(header->GetLegoPhiMax()-header->GetLegoPhiMin());
+  for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
+    if((injet[jpart] == -1) &&
+       (PtCutPass(jpart,nTracks))){
+      sigmaN += etbgTotalN/areaT - ptT[jpart];
+      count=count+1;
+    }
+  }
+  if(count>0)sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
+
 }
 
+//----------------------------------------------------------------
+void AliJetBkg::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float_t& etbgTotalN, Float_t&sigmaN,
+                                  const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, Float_t* etJet,
+                                  const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
+                                  Int_t* multJetT, Int_t* multJetC, Int_t* multJet, Int_t* injet, Float_t* &/*areaJet*/)
+{
+  //
+  // Cone background subtraction method taking into acount dEt/deta distribution
+  // Cases to take into account the EMCal geometry are not included
+  //
 
-Double_t  AliJetBkg::BkgFunction(Double_t */*x*/,Double_t */*par*/){
-  //to be implemented--- (pT + Energy in EMCal Acceptance vs Multiplicity)
-  return 1;
+  AliUA1JetHeader* header = (AliUA1JetHeader*) fHeader;
+  //general
+  Float_t rc= header->GetRadius();
+  Float_t etamax = header->GetLegoEtaMax();
+  Float_t etamin = header->GetLegoEtaMin();
+  Int_t ndiv = 100;
+  // Get number of tracks from EventCalTrk
+  Int_t nTracks = fEvent->GetNCalTrkTracks();
+ 
+  // jet energy and area arrays
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  for(Int_t mjet=0; mjet<nJ; mjet++){
+    if(!fhEtJet[mjet]){
+      fhEtJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"et dist in eta ",ndiv,etamin,etamax);
+    }
+    if(!fhAreaJet[mjet]){
+      fhAreaJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"area dist in eta ",ndiv,etamin,etamax);
+    }
+    fhEtJet[mjet]->Reset();
+    fhAreaJet[mjet]->Reset();
+  }
+  // background energy and area
+  if(!fhEtBackg)fhEtBackg = new TH1F("hEtBackg"," backg et dist in eta ",ndiv,etamin,etamax);
+  fhEtBackg->Reset();
+  if(!fhAreaBackg) fhAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);
+  fhAreaBackg->Reset();
+  TH1::AddDirectory(oldStatus);
+
+  //fill energies
+  for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
+    for(Int_t ijet=0; ijet<nJ; ijet++){  // loop for all jets
+      Float_t deta = etaT[jpart] - etaJet[ijet];
+      Float_t dphi = phiT[jpart] - phiJet[ijet];
+      if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+      if(dr <= rc){ // particles inside this cone
+        if(jpart < nTracks) multJetT[ijet]++;
+        else multJetC[ijet]++;
+        multJet[ijet]++;
+        injet[jpart] = ijet;
+
+        if(PtCutPass(jpart,nTracks)){ // pt cut
+          fhEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone
+          if(SignalCutPass(jpart,nTracks))
+            etsigJet[ijet]+= ptT[jpart];
+        }
+        break;
+      }
+    }// end jets loop
+
+    if((injet[jpart] == -1)  &&
+       (PtCutPass(jpart,nTracks) == 1))
+      fhEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
+  } //end particle loop
+
+  //calc areas
+  Float_t eta0 = etamin;
+  Float_t etaw = (etamax - etamin)/((Float_t)ndiv);
+  Float_t eta1 = eta0 + etaw;
+  for(Int_t etabin = 0; etabin< ndiv; etabin++){ // loop for all eta bins
+    Float_t etac = eta0 + etaw/2.0;
+    Float_t areabg = etaw*2.0*TMath::Pi();
+    for(Int_t ijet=0; ijet<nJ; ijet++){  // loop for all jets
+      Float_t deta0 = TMath::Abs(eta0 - etaJet[ijet]);
+      Float_t deta1 = TMath::Abs(eta1 - etaJet[ijet]);
+      Float_t acc0 = 0.0; Float_t acc1 = 0.0;
+      Float_t areaj = 0.0;
+      if(deta0 > rc && deta1 < rc){
+	acc1 = rc*rc*TMath::ACos(deta1/rc) - deta1*TMath::Sqrt(rc*rc - deta1*deta1);
+	areaj = acc1;
+      }
+      if(deta0 < rc && deta1 > rc){
+	acc0 = rc*rc*TMath::ACos(deta0/rc) - deta0*TMath::Sqrt(rc*rc - deta0*deta0);
+	areaj = acc0;
+      }
+      if(deta0 < rc && deta1 < rc){
+	acc0 = rc*rc*TMath::ACos(deta0/rc) - deta0*TMath::Sqrt(rc*rc - deta0*deta0);
+	acc1 = rc*rc*TMath::ACos(deta1/rc) - deta1*TMath::Sqrt(rc*rc - deta1*deta1);
+	if(eta1<etaJet[ijet]) areaj = acc1-acc0;  // case 1
+	if((eta0 < etaJet[ijet]) && (etaJet[ijet]<eta1)) areaj = rc*rc*TMath::Pi() - acc1 -acc0; // case 2
+	if(etaJet[ijet] < eta0) areaj = acc0 -acc1; // case 3
+      }
+      fhAreaJet[ijet]->Fill(etac,areaj);
+      areabg = areabg - areaj;
+    } // end jets loop
+    fhAreaBackg->Fill(etac,areabg);
+    eta0 = eta1;
+    eta1 = eta1 + etaw;
+  } // end loop for all eta bins
+
+  //subtract background
+  for(Int_t kjet=0; kjet<nJ; kjet++){
+    etJet[kjet] = 0.0; // first  clear etJet for this jet
+    for(Int_t bin = 0; bin< ndiv; bin++){
+      if(fhAreaJet[kjet]->GetBinContent(bin)){
+	Float_t areab = fhAreaBackg->GetBinContent(bin);
+	Float_t etb = fhEtBackg->GetBinContent(bin);
+	Float_t areaR = (fhAreaJet[kjet]->GetBinContent(bin))/areab;
+	etJet[kjet] = etJet[kjet] + ((fhEtJet[kjet]->GetBinContent(bin)) - etb*areaR); //subtraction
+      }
+    }
+  }
+
+  // calc background total
+  Double_t etOut = fhEtBackg->Integral();
+  Double_t areaOut = fhAreaBackg->Integral();
+  Float_t areaT = (header->GetLegoEtaMax()-header->GetLegoEtaMin())*(header->GetLegoPhiMax()-header->GetLegoPhiMin());
+  etbgTotalN = etOut*areaT/areaOut;
+
+  Int_t count=0;
+  for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
+    if((injet[jpart] == -1) &&
+       (PtCutPass(jpart,nTracks))){
+      sigmaN += etbgTotalN/areaT - ptT[jpart];
+      count=count+1;
+    }
+  }
+  sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
+  
 }
 
+//----------------------------------------------------------------
+void AliJetBkg::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ,Float_t& etbgTotalN, Float_t&sigmaN,
+                                   const Float_t* ptT,const Float_t* etaT, const Float_t* phiT,
+                                   Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet,
+                                   Float_t* etsigJet, Int_t* multJetT, Int_t* multJetC, Int_t* multJet,
+                                   Int_t* injet,  Float_t* &/*areaJet*/)
+{
+  // Ratio background subtraction method taking into acount dEt/deta distribution
+  // Cases to take into account the EMCal geometry are not included
 
-Bool_t AliJetBkg::EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius) const{
-// Apply emcal acceptance cuts
-  Float_t meanPhi=190./180.*TMath::Pi()-110./180.*TMath::Pi()/2;
-  Float_t deltaphi=110./180.*TMath::Pi();
-  Float_t phicut=deltaphi/2.-radius;
-  Float_t etacut=0.7-radius;
-  //cout<<"  eta    "<<eta<<"  phi    "<<phi<<endl;
-  //cout<<etacut<<"    "<<phicut<<"    "<<meanPhi<<"    "<<endl;
-  if(TMath::Abs(eta)<etacut && TMath::Abs(phi-meanPhi)<phicut) return 1;
-  else return 0; 
+  AliUA1JetHeader* header = (AliUA1JetHeader*) fHeader;
+  //factor F calc before
+  Float_t bgRatioCut = header->GetBackgCutRatio();
+  
+  //general
+  Float_t rc= header->GetRadius();
+  Float_t etamax = header->GetLegoEtaMax();
+  Float_t etamin = header->GetLegoEtaMin();
+  Int_t ndiv = 100;
+  // Get number of tracks from EventCalTrk
+  Int_t nTracks = fEvent->GetNCalTrkTracks();
+  
+  // jet energy and area arrays
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  for(Int_t mjet=0; mjet<nJ; mjet++){
+    if(!fhEtJet[mjet]){
+      fhEtJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"et dist in eta ",ndiv,etamin,etamax);
+    }
+    if(!fhAreaJet[mjet]){
+      fhAreaJet[mjet] = new TH1F(Form("hAreaJet%d", mjet),"area dist in eta ",ndiv,etamin,etamax);
+    }
+    fhEtJet[mjet]->Reset();
+    fhAreaJet[mjet]->Reset();
+  }
+  // background energy and area
+  if(!fhEtBackg)fhEtBackg = new TH1F("hEtBackg"," backg et dist in eta ",ndiv,etamin,etamax);
+  fhEtBackg->Reset();
+  if(!fhAreaBackg) fhAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);
+  fhAreaBackg->Reset();
+  TH1::AddDirectory(oldStatus);
+
+  //fill energies
+  for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
+    for(Int_t ijet=0; ijet<nJ; ijet++){  // loop for all jets
+      Float_t deta = etaT[jpart] - etaJet[ijet];
+      Float_t dphi = phiT[jpart] - phiJet[ijet];
+      if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+      if(dr <= rc){ // particles inside this cone
+        if(jpart < nTracks) multJetT[ijet]++;
+        else multJetC[ijet]++;
+        multJet[ijet]++;
+        injet[jpart] = ijet;
+
+        if(PtCutPass(jpart,nTracks)){ // pt cut
+          fhEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone
+	  if(SignalCutPass(jpart,nTracks))
+	    etsigJet[ijet]+= ptT[jpart];
+        }
+        break;
+      }
+    }// end jets loop
+    if(injet[jpart] == -1) fhEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
+  } //end particle loop
+
+  //calc areas
+  Float_t eta0 = etamin;
+  Float_t etaw = (etamax - etamin)/((Float_t)ndiv);
+  Float_t eta1 = eta0 + etaw;
+  for(Int_t etabin = 0; etabin< ndiv; etabin++){ // loop for all eta bins
+    Float_t etac = eta0 + etaw/2.0;
+    Float_t areabg = etaw*2.0*TMath::Pi();
+    for(Int_t ijet=0; ijet<nJ; ijet++){  // loop for all jets
+      Float_t deta0 = TMath::Abs(eta0 - etaJet[ijet]);
+      Float_t deta1 = TMath::Abs(eta1 - etaJet[ijet]);
+      Float_t acc0 = 0.0; Float_t acc1 = 0.0;
+      Float_t areaj = 0.0;
+      if(deta0 > rc && deta1 < rc){
+	acc1 = rc*rc*TMath::ACos(deta1/rc) - deta1*TMath::Sqrt(rc*rc - deta1*deta1);
+	areaj = acc1;
+      }
+      if(deta0 < rc && deta1 > rc){
+	acc0 = rc*rc*TMath::ACos(deta0/rc) - deta0*TMath::Sqrt(rc*rc - deta0*deta0);
+	areaj = acc0;
+      }
+      if(deta0 < rc && deta1 < rc){
+	acc0 = rc*rc*TMath::ACos(deta0/rc) - deta0*TMath::Sqrt(rc*rc - deta0*deta0);
+	acc1 = rc*rc*TMath::ACos(deta1/rc) - deta1*TMath::Sqrt(rc*rc - deta1*deta1);
+	if(eta1<etaJet[ijet]) areaj = acc1-acc0;  // case 1
+	if((eta0 < etaJet[ijet]) && (etaJet[ijet]<eta1)) areaj = rc*rc*TMath::Pi() - acc1 -acc0; // case 2
+	if(etaJet[ijet] < eta0) areaj = acc0 -acc1; // case 3
+      }
+      fhAreaJet[ijet]->Fill(etac,areaj);
+      areabg = areabg - areaj;
+    } // end jets loop
+    fhAreaBackg->Fill(etac,areabg);
+    eta0 = eta1;
+    eta1 = eta1 + etaw;
+  } // end loop for all eta bins
+
+  //subtract background
+  for(Int_t kjet=0; kjet<nJ; kjet++){
+    etJet[kjet] = 0.0; // first  clear etJet for this jet
+    for(Int_t bin = 0; bin< ndiv; bin++){
+      if(fhAreaJet[kjet]->GetBinContent(bin)){
+	Float_t areab = fhAreaBackg->GetBinContent(bin);
+	Float_t etb = fhEtBackg->GetBinContent(bin);
+	Float_t areaR = (fhAreaJet[kjet]->GetBinContent(bin))/areab;
+	etJet[kjet] = etJet[kjet] + ((fhEtJet[kjet]->GetBinContent(bin)) - etb*areaR*bgRatioCut); //subtraction
+      }
+    }
+  }
+
+  // calc background total
+  Double_t etOut = fhEtBackg->Integral();
+  Double_t areaOut = fhAreaBackg->Integral();
+  Float_t areaT = (header->GetLegoEtaMax()-header->GetLegoEtaMin())*(header->GetLegoPhiMax()-header->GetLegoPhiMin());
+  etbgTotalN = etOut*areaT/areaOut;
+ 
+  Int_t count=0;
+    
+  for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
+    if((injet[jpart] == -1) &&
+       (PtCutPass(jpart,nTracks))){
+      sigmaN += etbgTotalN/areaT - ptT[jpart];
+      count=count+1;
+    }
+  }
+  sigmaN=TMath::Sqrt(TMath::Abs(sigmaN)/count);
+
 }
+

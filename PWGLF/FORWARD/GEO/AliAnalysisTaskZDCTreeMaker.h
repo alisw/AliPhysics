@@ -31,9 +31,9 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
 
   virtual void  SetDebugLevel(Int_t level) {fDebug = level;}
-  void SetInput(const char* input) {fAnalysisInput = input;}
+  void SetInput(int input) {fAnalysisInput = input;}
   void SetMCInput() {fIsMCInput = kTRUE;}
-   void SetUseSpecialOutput(Bool_t v=kTRUE) {fUseSpecialOutput = v;}
+  void SetUseSpecialOutput(Bool_t v=kTRUE) {fUseSpecialOutput = v;}
 
  private:
 
@@ -81,12 +81,13 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   Float_t  fZNAtowerLG[5];	//  ZNA 5 tower signals
   Float_t  fZPAtowerLG[5];	//  ZPA 5 tower signals
   //
-  Int_t    fTDCZNC[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  /*Int_t    fTDCZNC[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
   Int_t    fTDCZPC[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
   Int_t    fTDCZNA[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
   Int_t    fTDCZPA[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
-//  Int_t    fTDCZEM1;	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
-//  Int_t    fTDCZEM2;	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Int_t    fTDCZEM1[4];	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Int_t    fTDCZEM2[4];*/	     // TDC raw values !ONLY FOR ESDs ANALYSIS!
+  Int_t   fTDCvalues[32][4];   // TDC raw values !ONLY FOR ESDs ANALYSIS!
   
   Float_t fCentralityV0M;       // Centrality from V0A+V0C
   Float_t fCentralityV0A;       // Centrality from V0A
@@ -100,7 +101,7 @@ class AliAnalysisTaskZDCTreeMaker : public AliAnalysisTaskSE {
   AliAnalysisTaskZDCTreeMaker& operator= (const AliAnalysisTaskZDCTreeMaker& ana);
   AliAnalysisTaskZDCTreeMaker(const AliAnalysisTaskZDCTreeMaker& c);
   //
-  ClassDef(AliAnalysisTaskZDCTreeMaker,3); 
+  ClassDef(AliAnalysisTaskZDCTreeMaker, 6); 
 
 };
 

@@ -13,6 +13,7 @@ class AliAnalysisEtMonteCarlo;
 class AliESDtrackCuts;
 class TH2F;
 class TList;
+class AliPIDResponse;
 
 #include "AliAnalysisTaskTransverseEnergy.h"
 
@@ -26,6 +27,7 @@ public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  AliPIDResponse *fPIDResponse;
     
 private:
   

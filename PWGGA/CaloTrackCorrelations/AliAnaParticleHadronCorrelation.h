@@ -74,7 +74,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t xE,       Float_t hbpXE, 
                                                          Float_t zT,       Float_t hbpZT, 
-                                                         Float_t pout,     Int_t   nTracks,  Int_t charge,
+                                                         Float_t pout,     Float_t deltaPhi, Int_t   nTracks,  Int_t charge,
                                                          Int_t   assocBin, Bool_t  decay,
                                                          Int_t outTOF,    Int_t mcTag );
   
@@ -255,10 +255,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhDeltaPhiUeChargedPt ;         //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
   TH1F *       fhUePart;                       //! UE particles distribution vs pt trig
   TH2F *       fhXECharged  ;                  //! Trigger particle -charged hadron momentum imbalance histogram
+  TH2F *       fhXECharged_Cone2  ;            //! Trigger particle -charged hadron momentum imbalance histogram in cone2 (5pi/6-7pi/6)
   TH2F *       fhXEUeCharged  ;                //! Trigger particle -underlying charged hadron momentum imbalance histogram  
   TH2F *       fhXEPosCharged  ;               //! Trigger particle -positive charged hadron momentum imbalance histogram
   TH2F *       fhXENegCharged  ;               //! Trigger particle -negative charged hadron momentum imbalance histogram 
   TH2F *       fhPtHbpXECharged  ;             //! Trigger particle -charged hadron momentum HBP histogram
+  TH2F *       fhPtHbpXECharged_Cone2  ;       //! Trigger particle -charged hadron momentum HBP histogram in cone2 (5pi/6-7pi/6)
   TH2F *       fhPtHbpXEUeCharged  ;           //! Trigger particle -underlying charged hadron momentum HBP histogram  
   TH2F *       fhZTCharged  ;                  //! Trigger particle -charged hadron momentum imbalance histogram
   TH2F *       fhZTUeCharged  ;                //! Trigger particle -underlying charged hadron momentum imbalance histogram  

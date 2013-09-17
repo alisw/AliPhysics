@@ -21,6 +21,7 @@
 #include <TNtuple.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 #include <TArrayD.h>
 
@@ -122,8 +123,8 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   THnSparseF *fHistMassPtImpParTC[5];//! histograms for impact paramter studies
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
   TH2F *fPtVsMassTC;  //! hist. of pt vs. mass (analysis cuts)
-  TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
-  TH2F *fYVsPtTC;     //! hist. of Y vs. Pt (analysis cuts)
+  TH3F *fYVsPt;       //! hist. of Y vs. Pt vs. Mass(prod. cuts)
+  TH3F *fYVsPtTC;     //! hist. of Y vs. Pt vs. Mass (analysis cuts)
   TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
   TH2F *fYVsPtSigTC;    //! hist. of Y vs. Pt (MC, only sig, analysis cuts)
   TH2F *fPhiEtaCand;      //! hist. with eta/phi distribution of candidates

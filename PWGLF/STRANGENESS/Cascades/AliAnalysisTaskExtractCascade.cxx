@@ -102,6 +102,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fkSwitchINT7  ( kFALSE ),
    fCentralityEstimator("V0M"),
    fkpAVertexSelection( kFALSE ),
+   fEtaRefMult ( 0.5 ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -209,6 +210,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fkSwitchINT7  ( kFALSE ),
    fCentralityEstimator("V0M"),
    fkpAVertexSelection( kFALSE ),
+   fEtaRefMult ( 0.5 ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -741,7 +743,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
   Int_t lMultiplicitySPD = -100;
 
    //testing purposes
-   if(fkIsNuclear == kFALSE) lMultiplicity =  fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+   if(fkIsNuclear == kFALSE) lMultiplicity =  fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,  fEtaRefMult );
 
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
    //---> Warning: Experimental

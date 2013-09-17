@@ -107,6 +107,8 @@ class AliHFEextraCuts: public AliCFCutBase{
     Bool_t CheckITSstatus(Int_t itsStatus) const;
     Bool_t CheckITSpattern(const AliVTrack *const track) const;
     Bool_t IsKinkDaughter(AliVTrack *track);
+    Bool_t IsKinkMother(AliVTrack *track);
+
 
     void UnSetRejectKinkDaughter() { CLRBIT(fRequirements, kRejectKinkDaughter);}; 
     void UnSetRejectKinkMother() { CLRBIT(fRequirements, kRejectKinkMother);}; 
@@ -132,7 +134,6 @@ class AliHFEextraCuts: public AliCFCutBase{
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
     Float_t GetTRDchi(AliVTrack *track);
     Int_t GetITSNbOfcls(AliVTrack *track);
-    Bool_t IsKinkMother(AliVTrack *track);
 
   private:
     typedef enum{

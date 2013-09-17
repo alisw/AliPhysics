@@ -31,7 +31,6 @@ public:
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
    void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
-   void           SetDCARPtFormula(const char *formula)    {fDCARptFormula = formula;}
    
    void           SetPIDCutProton(Double_t value)          {fPIDCutProton = value;}
    void           SetPIDCutPion(Double_t value)            {fPIDCutPion = value;}
@@ -58,12 +57,11 @@ protected:
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
-   TString          fDCARptFormula;    // min DCAR pt dependent formula
    
    AliPID::EParticleType fPID;         // PID for track
    AliPID::EParticleType fPID2;        // PID for track
 
-   Double_t         fPIDCutProton;          // nsigmas for protons
+   Double_t         fPIDCutProton;        // nsigmas for protons
    Double_t         fPIDCutPion;          // nsigmas for pions
    
    AliESDtrackCuts *fESDtrackCuts;     // quality cuts for v0 daughters

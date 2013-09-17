@@ -30,11 +30,16 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
                              , Double_t maxDCAz          = 2
                              , Double_t maxEta           = 0.8
                              , Double_t maxY             = 0.5
+                             , Bool_t ntrkMultTrigger    = 0
                              , Double_t minKNOmult       = -10
                              , Double_t maxKNOmult       = 10000
                              , Bool_t   V0AND            = kFALSE
                              , const TString& ztag       = ""
                              , Double_t maxVz            = 10
+                             , Bool_t momentumCorr       = kFALSE
+                             , const TString& binSize    = ""
+                             , Bool_t xRowsTPC           = 0
+                             , Int_t minTPCnClsOrXRows   = 70
                              , Double_t minCentrality    = 0
                              , Double_t maxCentrality    = 20
                              , Double_t minM2            = 2.
@@ -55,7 +60,6 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	const Int_t kMaxNSigmaITS = 3;
 	const Int_t kMaxNSigmaTPC = 3;
 	const Int_t kMaxNSigmaTOF = 3;
-	const Int_t kMinTPCnCls   = 70;
 	
 	TString period = periodname;
 	period.ToLower();
@@ -88,6 +92,8 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	task->SetMaxNSigmaTPC(kMaxNSigmaTPC);
 	task->SetMaxNSigmaTOF(kMaxNSigmaTOF);
 	
+	task->SetNtrkMultTrigger(ntrkMultTrigger);
+	
 	Double_t meanNtrk = V0AND ? GetNSDMeanNtrk(period, maxEta) : GetMeanNtrk(period, maxEta);
 	
 	task->SetMeanNtrk(meanNtrk);
@@ -107,11 +113,22 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 		task->SetNoFastOnlyTrigger();
 	}
 	
+	// momentum correction
+	
+	if(momentumCorr && species=="Deuteron")
+	{
+		gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/MomentumCorrection.C");
+		
+		TProfile* pfx = MomentumCorrection(species);
+		task->SetMomentumCorrectionProfile(pfx);
+		if(pfx != 0) task->SetMomentumCorrection();
+	}
+	
 	// histograms
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/CreateHistograms.C");
 	
-	AliLnHistoMap* hMap = CreateHistograms(species, simulation, maxDCAxy, maxEta, maxY, meanNtrk, heavyIons);
+	AliLnHistoMap* hMap = CreateHistograms(species, binSize, simulation, maxDCAxy, maxEta, maxY, heavyIons);
 	
 	task->SetHistogramMap(hMap);
 	
@@ -119,7 +136,7 @@ AliAnalysisTaskB2* AddTaskB2(  const TString& species
 	
 	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/Nuclei/B2/macros/TrackCuts.C");
 	
-	AliESDtrackCuts* trkCuts = TrackCuts(task, trksel, maxDCAxy, maxDCAz, kMaxNSigma, kMinTPCnCls, maxEta);
+	AliESDtrackCuts* trkCuts = TrackCuts(task, trksel, maxDCAxy, maxDCAz, kMaxNSigma, xRowsTPC, minTPCnClsOrXRows, maxEta);
 	task->SetESDtrackCuts(trkCuts);
 	
 	// PID
@@ -166,12 +183,13 @@ Double_t GetMeanNtrk(const TString& period, Double_t eta)
 	if(TMath::Abs(eta) > 0.51) // |eta|<0.8
 	{
 		if(period =="lhc10b")       return 9.68887; // pass3
+		if(period =="lhc10c")       return 9.66970; // pass3
 		if(period =="lhc10d")       return 9.47466; // pass2
 		if(period =="lhc10e")       return 9.55678; // pass2
 		
 		// MC
-		if(period =="lhc10f6a")            return 7.15259;
-		if(period =="lhc10e21")            return 7.69483;
+		if(period =="lhc10f6a")     return 7.15259;
+		if(period =="lhc10e21")     return 7.69483;
 	}
 	else // |eta|<0.5
 	{
@@ -214,12 +232,13 @@ Double_t GetNSDMeanNtrk(const TString& period, Double_t eta)
 	if(TMath::Abs(eta) > 0.51) // |eta|<0.8
 	{
 		if(period =="lhc10b")       return 10.0630; // pass3
+		if(period =="lhc10c")       return 10.0292; // pass3
 		if(period =="lhc10d")       return 9.77129; // pass2
 		if(period =="lhc10e")       return 9.90511; // pass2
 		
 		// MC
-		if(period =="lhc10f6a")            return 7.5087;
-		if(period =="lhc10e21")            return 7.91423;
+		if(period =="lhc10f6a")     return 7.5087;
+		if(period =="lhc10e21")     return 7.91423;
 	}
 	else // |eta|<0.5
 	{

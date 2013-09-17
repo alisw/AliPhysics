@@ -1,23 +1,26 @@
 // $Id$
 
 AliEMCALTenderSupply* ConfigEmcalTenderSupply(
-  Bool_t timeCut       = kFALSE,
-  Bool_t distBC        = kTRUE, 
-  Bool_t recalibClus   = kTRUE, 
-  Bool_t recalcClusPos = kTRUE, 
-  Bool_t nonLinearCorr = kTRUE, 
-  Bool_t remExotic     = kTRUE,
-  Bool_t fidRegion     = kFALSE,
-  Bool_t calibEnergy   = kTRUE,
-  Bool_t calibTime     = kTRUE,
-  Bool_t remBC         = kTRUE,
-  UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
-  Bool_t reclusterize  = kFALSE,
-  Float_t seedthresh   = 0.1, // 100 MeV
-  Float_t cellthresh   = 0.05, // 50 MeV 
-  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
-  Bool_t trackMatch    = kFALSE,
-  Bool_t updateCellOnly= kFALSE)
+  Bool_t distBC         = kTRUE, 
+  Bool_t recalibClus    = kTRUE, 
+  Bool_t recalcClusPos  = kTRUE, 
+  Bool_t nonLinearCorr  = kTRUE, 
+  Bool_t remExotic      = kTRUE,
+  Bool_t fidRegion      = kFALSE,
+  Bool_t calibEnergy    = kTRUE,
+  Bool_t calibTime      = kTRUE,
+  Bool_t remBC          = kTRUE,
+  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,
+  Bool_t reclusterize   = kFALSE,
+  Float_t seedthresh    = 0.1, // 100 MeV
+  Float_t cellthresh    = 0.05, // 50 MeV 
+  UInt_t clusterizer    = AliEMCALRecParam::kClusterizerNxN,
+  Bool_t trackMatch     = kFALSE,
+  Bool_t updateCellOnly = kFALSE,
+  Float_t timeMin       = -1,   // minimum time of physical signal in a cell/digit
+  Float_t timeMax       = 1e6,  // maximum time of physical signal in a cell/digit
+  Float_t timeCut       = 1e6   // maximum time difference between the digits inside EMC cluster
+)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
   EMCALSupply->SetDebugLevel(2);
@@ -31,12 +34,10 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     if (clusterizer == AliEMCALRecParam::kClusterizerNxN)
       params->SetNxM(3,3);
   }
-  //if (timeCut) {
-  // No time cut
-  params->SetTimeCut(1e6);
-  params->SetTimeMin(-1);
-  params->SetTimeMax(1e6);
-  //}
+  params->SetTimeMin(timeMin);
+  params->SetTimeMax(timeMax);
+  params->SetTimeCut(timeCut);
+
   EMCALSupply->SetRecParam(params);
 
   if (reclusterize) {

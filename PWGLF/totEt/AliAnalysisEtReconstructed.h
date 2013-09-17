@@ -45,7 +45,7 @@ protected:
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
-    virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+    virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t cent);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
 
     AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
@@ -64,8 +64,14 @@ protected:
     
     Double_t fRecEffCorrection; // Eff correction
     
-    TH2D *fClusterPosition; // Position of clusters
+    TH2D *fClusterPositionAccepted; // Position of clusters
+    TH2D *fClusterPositionAll; // Position of clusters
+    TH2D *fClusterPositionAcceptedEnergy; // Position of clusters
+    TH2D *fClusterPositionAllEnergy; // Position of clusters
     TH1F *fClusterEnergy; // Distribution of cluster energies
+    TH2F *fClusterEnergyCent; // Distribution of cluster energies vs centrality bin
+    TH2F *fClusterEnergyCentMatched; // Distribution of cluster energies vs centrality bin
+    TH2F *fClusterEnergyCentNotMatched; // Distribution of cluster energies vs centrality bin
     TH1F *fClusterEt; // Distribution of cluster energies
     
     TH2D *fHistChargedEnergyRemoved; // Charged energy removed
@@ -75,17 +81,39 @@ protected:
     TH3F *fHistMatchedTracksEvspTvsCent;   //For measuring hadron deposits
     TH3F *fHistMatchedTracksEvspTvsCentEffCorr;   //For measuring hadron deposits
     TH3F *fHistMatchedTracksEvspTvsCentEffTMCorr;   //For measuring hadron deposits
+    TH3F *fHistMatchedTracksEvspTvsCentEffTMCorr500MeV;   //For measuring hadron deposits
     TH2F *fHistFoundHadronsvsCent;   //For measuring hadron deposits
     TH2F *fHistNotFoundHadronsvsCent;   //For measuring hadron deposits
     TH2F *fHistFoundHadronsEtvsCent;   //For measuring hadron deposits
     TH2F *fHistNotFoundHadronsEtvsCent;   //For measuring hadron deposits
+    TH2F *fHistFoundHadronsvsCent500MeV;   //For measuring hadron deposits
+    TH2F *fHistNotFoundHadronsvsCent500MeV;   //For measuring hadron deposits
+    TH2F *fHistFoundHadronsEtvsCent500MeV;   //For measuring hadron deposits
+    TH2F *fHistNotFoundHadronsEtvsCent500MeV;   //For measuring hadron deposits
     TH2D *fHistNominalRawEt;//Total ET from clusters with nominal reconstruction efficiency and nonlinearity correction vs centrality
     TH2D *fHistNominalNonLinHighEt;//Total ET from clusters with nominal reconstruction efficiency and high bound of nonlinearity correction vs centrality
     TH2D *fHistNominalNonLinLowEt;//Total ET from clusters with nominal reconstruction efficiency and low bound of nonlinearity correction vs centrality
     TH2D *fHistNominalEffHighEt;//Total ET from clusters with high bound on reconstruction efficiency and nominal nonlinearity correction vs centrality
     TH2D *fHistNominalEffLowEt;//Total ET from clusters with low bound on reconstruction efficiency and nominal nonlinearity correction vs centrality
 
-    Double_t ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+    TH2F *fHistTotRawEtEffCorr; // gamma efficiency applied
+    TH2F *fHistTotRawEt; //no  gamma efficiency applied
+    TH2F *fHistTotRawEtEffCorr500MeV;//Total ET from clusters with nominal reconstruction efficiency and nonlinearity correction vs centrality
+    TH2F *fHistTotAllRawEt; // all clusters no reco eff
+    TH2F *fHistTotAllRawEtEffCorr; // all clusters reco eff applied
+    Double_t ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t cent);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+
+    TH3F *fHistNClustersPhosVsEmcal; // all clusters no reco eff
+    TH2F *fHistClusterSizeVsCent; // all clusters no reco eff
+    TH2F *fHistMatchedClusterSizeVsCent; // all clusters no reco eff
+    TH2F *fHistTotAllRawEtVsTotalPt; // all clusters no reco eff
+    //fHistTotAllRawEtVsTotalPtCent
+    TH3F *fHistTotAllRawEtVsTotalPtVsCent; // all clusters no reco eff
+    TH3F *fHistTotMatchedRawEtVsTotalPtVsCent; // all clusters no reco eff
+    TH2F *fHistPIDProtonsTrackMatchedDepositedVsNch;
+    TH2F *fHistPIDAntiProtonsTrackMatchedDepositedVsNch;
+    TH2F *fHistPiKPTrackMatchedDepositedVsNch;
+    TH3F *fHistCentVsNchVsNclReco;
 
 private:
 

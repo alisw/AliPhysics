@@ -481,6 +481,7 @@ TH1F* AliTreeDraw::CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bo
  
   // create the fit function
   TF1 * fitFunc = new TF1("G","[0]*exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))",-3,3);
+  fitFunc->SetParLimits(2,0.0001,100.);
   
   fitFunc->SetLineWidth(2);
   fitFunc->SetFillStyle(0);

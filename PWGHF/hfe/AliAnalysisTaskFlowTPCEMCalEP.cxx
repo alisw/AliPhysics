@@ -129,9 +129,26 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fGammaWeight(0)
   ,fPi0Weight(0)
   ,fEtaWeight(0)
+  ,fD0Weight(0)
+  ,fDplusWeight(0)
+  ,fDminusWeight(0)
+  ,fD0_e(0)
+  ,fTot_pi0e(0)
+  ,fPhot_pi0e(0)
+  ,fPhotBCG_pi0e(0)
+  ,fTot_etae(0)
+  ,fPhot_etae(0)
+  ,fPhotBCG_etae(0)
 {
   //Named constructor
-  
+
+  for(Int_t k = 0; k < 6; k++) {
+    fDe[k]= NULL;
+    fD0e[k]= NULL;
+    fDpluse[k]= NULL;
+    fDminuse[k]= NULL;
+  }
+
   fPID = new AliHFEpid("hfePid");
   fTrackCuts = new AliESDtrackCuts();
   
@@ -193,8 +210,26 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fGammaWeight(0)
   ,fPi0Weight(0)
   ,fEtaWeight(0)
+  ,fD0Weight(0)
+  ,fDplusWeight(0)
+  ,fDminusWeight(0)
+  ,fD0_e(0)
+  ,fTot_pi0e(0)
+  ,fPhot_pi0e(0)
+  ,fPhotBCG_pi0e(0)
+  ,fTot_etae(0)
+  ,fPhot_etae(0)
+  ,fPhotBCG_etae(0)
 {
 	//Default constructor
+
+	for(Int_t k = 0; k < 6; k++) {
+	  fDe[k]= NULL;
+	  fD0e[k]= NULL;
+	  fDpluse[k]= NULL;
+	  fDminuse[k]= NULL;
+	}
+
 	fPID = new AliHFEpid("hfePid");
 
 	fTrackCuts = new AliESDtrackCuts();
@@ -313,9 +348,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t evPlaneRes[4]={GetCos2DeltaPhi(evPlaneV0A,evPlaneV0C),GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC),GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC),cent};
   fEPres->Fill(evPlaneRes);
   
-  // Pi0, eta and gamma weights
-  
-  if(fIsMC && fMC && stack && cent>20 && cent<40){
+  if(fIsMC && fMC && stack && cent>30 && cent<50){
    Int_t nParticles = stack->GetNtrack();
    for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
       TParticle* particle = stack->Particle(iParticle);
@@ -330,7 +363,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
       
       if(fPDG==111)fPi0Weight->Fill(pTMC,iHijing);//pi0
       if(fPDG==221)fEtaWeight->Fill(pTMC,iHijing);//eta
-    
+      if(fPDG==421)fD0Weight->Fill(pTMC,iHijing);//D0
+      if(fPDG==411)fDplusWeight->Fill(pTMC,iHijing);//D+
+      if(fPDG==-411)fDminusWeight->Fill(pTMC,iHijing);//D-
+	
+
       Int_t idMother = particle->GetFirstMother();
       if (idMother>0){
 	TParticle *mother = stack->Particle(idMother);
@@ -368,7 +405,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
-    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999., wclsE = -999., wEovP = -999.;//, m02= -999., m20= -999.;
+    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999., wclsE = -999., wEovP = -999., m02= -999., m20= -999.;
    
     pt = track->Pt();
     if(pt<2) continue;
@@ -379,8 +416,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
       AliESDCaloCluster *cluster = fESD->GetCaloCluster(clsId);
       if(cluster && cluster->IsEMCAL()){
 	clsE = cluster->E();
-// 	m20 = cluster->M20();
-// 	m02 = cluster->M02();
+	m20 = cluster->GetM20();
+	m02 = cluster->GetM02();
       }
     }
     
@@ -408,15 +445,20 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             
     SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG);
            
-    Double_t corr[10]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneCorrTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagPhotonicElecBCG};
+    Double_t corr[12]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneCorrTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagPhotonicElecBCG,m02,m20};
     fCorr->Fill(corr);
     
     
     Int_t whichFirstMother = 0, whichSecondMother = 0, whichThirdMother = 0; 
     Int_t whichPart = -99;
     Int_t partPDG = -99, motherPDG = -99, secondMotherPDG = -99, thirdMotherPDG = -99;
-    Double_t partPt = -99. , motherPt = -99., secondMotherPt = -99.,thirdMotherPt = -99.; 
+    Double_t partPt = -99. , motherPt = -99., secondMotherPt = -99.,thirdMotherPt = -99.;
+    Double_t weight = 1.; 
+    Double_t Dweight = 1.; 
     Bool_t MChijing; 
+    
+    Bool_t pi0Decay= kFALSE;
+    Bool_t etaDecay= kFALSE;
     
     if(fIsMC && fMC && stack){
       Int_t label = track->GetLabel();
@@ -464,10 +506,113 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 		  if (thirdMotherPDG==221) whichThirdMother = 1; //eta
 		}
 	      }
+
+  
+	      if (cent>30 && cent<50 && TMath::Abs(partPDG)==11){
+
+		if (motherPDG==421 || TMath::Abs(motherPDG)==411){ // D
+		  Double_t phi_D = -99., Deltaphi_De=-99.;
+		  phi_D = mother->Phi();
+		  Deltaphi_De = phi_D - phi;
+		  
+		  fD0_e->Fill(pt,Deltaphi_De);
+		  
+		  Dweight  = GetDweight(0,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+ 
+		  if (motherPt>=2 && motherPt<3) fDe[0]->Fill(pt,Dweight);
+		  if (motherPt>=3 && motherPt<4) fDe[1]->Fill(pt,Dweight);
+		  if (motherPt>=4 && motherPt<6) fDe[2]->Fill(pt,Dweight);
+		  if (motherPt>=6 && motherPt<8) fDe[3]->Fill(pt,Dweight);
+		  if (motherPt>=8 && motherPt<12) fDe[4]->Fill(pt,Dweight);
+		  if (motherPt>=12 && motherPt<16) fDe[5]->Fill(pt,Dweight);
+		}
+		if (motherPDG==421){ // D0
+		    
+		  Dweight  = GetDweight(1,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+
+		  if (motherPt>=2 && motherPt<3) fD0e[0]->Fill(pt,Dweight);
+		  if (motherPt>=3 && motherPt<4) fD0e[1]->Fill(pt,Dweight);
+		  if (motherPt>=4 && motherPt<6) fD0e[2]->Fill(pt,Dweight);
+		  if (motherPt>=6 && motherPt<8) fD0e[3]->Fill(pt,Dweight);
+		  if (motherPt>=8 && motherPt<12) fD0e[4]->Fill(pt,Dweight);
+		  if (motherPt>=12 && motherPt<16) fD0e[5]->Fill(pt,Dweight);
+		}
+		if (motherPDG==411){ // D+
+		  Dweight  = GetDweight(2,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+
+		  if (motherPt>=2 && motherPt<3) fDpluse[0]->Fill(pt,Dweight);
+		  if (motherPt>=3 && motherPt<4) fDpluse[1]->Fill(pt,Dweight);
+		  if (motherPt>=4 && motherPt<6) fDpluse[2]->Fill(pt,Dweight);
+		  if (motherPt>=6 && motherPt<8) fDpluse[3]->Fill(pt,Dweight);
+		  if (motherPt>=8 && motherPt<12) fDpluse[4]->Fill(pt,Dweight);
+		  if (motherPt>=12 && motherPt<16) fDpluse[5]->Fill(pt,Dweight);
+  		}
+		if (motherPDG==-411){ //D-
+		  Dweight  = GetDweight(3,motherPt);	
+		  if(iHijing==1) Dweight = 1.0;
+
+		  if (motherPt>=2 && motherPt<3) fDminuse[0]->Fill(pt,Dweight); 
+		  if (motherPt>=3 && motherPt<4) fDminuse[1]->Fill(pt,Dweight); 
+		  if (motherPt>=4 && motherPt<6) fDminuse[2]->Fill(pt,Dweight); 
+		  if (motherPt>=6 && motherPt<8) fDminuse[3]->Fill(pt,Dweight); 
+		  if (motherPt>=8 && motherPt<12) fDminuse[4]->Fill(pt,Dweight); 
+		  if (motherPt>=12 && motherPt<16) fDminuse[5]->Fill(pt,Dweight); 
+		}	
+	      }
+	   
+	      //pi0 decay 
+	      if (TMath::Abs(partPDG)==11 && motherPDG==111 && secondMotherPDG!=221){ //not eta -> pi0 -> e
+		weight = GetPi0weight(motherPt);
+		pi0Decay = kTRUE;		
+	      }
+	      if (TMath::Abs(partPDG)==11 && motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG!=221){ //not eta -> pi0 -> gamma -> e
+	      	weight = GetPi0weight(secondMotherPt);
+	      	pi0Decay = kTRUE;
+	      }
 	      
+	      //eta decay
+	      if (TMath::Abs(partPDG)==11 && motherPDG==221){ //eta -> e
+		weight = GetEtaweight(motherPt);
+		etaDecay = kTRUE;
+	      }
+	      if (TMath::Abs(partPDG)==11 && motherPDG==111 && secondMotherPDG==221){ //eta -> pi0 -> e
+		weight = GetEtaweight(secondMotherPt);
+		etaDecay = kTRUE;
+	      }
+	      if (TMath::Abs(partPDG)==11 && motherPDG==22 && secondMotherPDG==221){ //eta -> gamma -> e
+		weight = GetEtaweight(secondMotherPt);
+		etaDecay = kTRUE;
+	      }
+	      if (TMath::Abs(partPDG)==11 && motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG==221){ //eta -> pi0 -> gamma -> e
+		weight = GetEtaweight(thirdMotherPt);
+		etaDecay = kTRUE;
+	      }
+	      
+	      if (cent>30 && cent<50 && fTPCnSigma>-1 && fTPCnSigma<3 && EovP>1 && EovP<1.3 && (motherPDG==22 || motherPDG==111 || motherPDG==221)){
+		  if(iHijing==1) weight = 1.0;
+		  
+		  if (pi0Decay){
+		      fTot_pi0e->Fill(partPt,weight);
+		      if(fFlagPhotonicElec) fPhot_pi0e->Fill(partPt,weight);
+		      if(fFlagPhotonicElecBCG) fPhotBCG_pi0e->Fill(partPt,weight);
+	  	  }
+	  	  
+		  if (etaDecay){
+		      fTot_etae->Fill(partPt,weight);
+		      if(fFlagPhotonicElec) fPhot_etae->Fill(partPt,weight);
+		      if(fFlagPhotonicElecBCG) fPhotBCG_etae->Fill(partPt,weight);
+	  	  }
+
+	      }
+	      
+    
 	      Double_t mc[15]={EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,whichPart,cent,pt,whichFirstMother,whichSecondMother,whichThirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt};
-	      fMCphotoElecPt->Fill(mc);
-// 	      if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// mother = gamma, pi0, eta
+ 
+// 	      fMCphotoElecPt->Fill(mc);
+	      if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// mother = gamma, pi0, eta
 	  }
 	}
       }
@@ -618,10 +763,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fOutputList->Add(fEPres);
 	
   //phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagPhotonicElecBCG,m20,m02
-  Int_t binsv2[10]={100,100,90,100,100,100,100,100,3,3}; 
-  Double_t xminv2[10]={0,-3.5,0,0,0,0,0,0,-1,-1};
-  Double_t xmaxv2[10]={2*TMath::Pi(),3.5,90,50,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),2,2}; 
-  fCorr = new THnSparseD ("fCorr","Correlations",10,binsv2,xminv2,xmaxv2);
+  Int_t binsv2[12]={100,100,90,100,100,100,100,100,3,3,100,100}; 
+  Double_t xminv2[12]={0,-3.5,0,0,0,0,0,0,-1,-1,0,0};
+  Double_t xmaxv2[12]={2*TMath::Pi(),3.5,90,50,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),2,2,1,1}; 
+  fCorr = new THnSparseD ("fCorr","Correlations",12,binsv2,xminv2,xmaxv2);
   fOutputList->Add(fCorr);
     
   Int_t binsv3[5]={90,100,100,100,100}; // cent, pt, TPCcos2DeltaPhi, V0Acos2DeltaPhi, V0Ccos2DeltaPhi
@@ -663,7 +808,59 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   
   fEtaWeight = new TH2F("fEtaWeight", "Eta weight",100,0,50,3,-1,2);
   fOutputList->Add(fEtaWeight);
+
+  fD0Weight = new TH2F("fD0Weight", "D0 weight",100,0,50,3,-1,2);
+  fOutputList->Add(fD0Weight);
+
+  fDplusWeight = new TH2F("fDplusWeight", "D+ weight",100,0,50,3,-1,2);
+  fOutputList->Add(fDplusWeight);
+
+  fDminusWeight = new TH2F("fDminusWeight", "D- weight",100,0,50,3,-1,2);
+  fOutputList->Add(fDminusWeight);
+
+  fD0_e = new TH2F("fD0_e", "D0 vs e",100,0,50,200,-6.3,6.3);
+  fOutputList->Add(fD0_e);
   
+  for(Int_t k = 0; k < 6; k++) {
+    
+    TString De_name = Form("fDe%d",k);
+    TString D0e_name = Form("fD0e%d",k);
+    TString Dpluse_name = Form("fDpluse%d",k);
+    TString Dminuse_name = Form("fDminuse%d",k);
+       
+    fDe[k] = new TH1F((const char*)De_name,"",100,0,50);
+    fD0e[k] = new TH1F((const char*)D0e_name,"",100,0,50);
+    fDpluse[k] = new TH1F((const char*)Dpluse_name,"",100,0,50);
+    fDminuse[k] = new TH1F((const char*)Dminuse_name,"",100,0,50);
+    
+    fOutputList->Add(fDe[k]);
+    fOutputList->Add(fD0e[k]);
+    fOutputList->Add(fDpluse[k]);
+    fOutputList->Add(fDminuse[k]);
+    
+  }
+  
+  int nbin_v2 = 8;
+  double bin_v2[9] = {2,2.5,3,4,6,8,10,13,18};
+  
+  fTot_pi0e = new TH1F("fTot_pi0e","fTot_pi0e",nbin_v2,bin_v2);
+  fOutputList->Add(fTot_pi0e);
+  
+  fPhot_pi0e = new TH1F("fPhot_pi0e","fPhot_pi0e",nbin_v2,bin_v2);
+  fOutputList->Add(fPhot_pi0e);
+  
+  fPhotBCG_pi0e = new TH1F("fPhotBCG_pi0e","fPhotBCG_pi0e",nbin_v2,bin_v2);
+  fOutputList->Add(fPhotBCG_pi0e);
+    
+  fTot_etae = new TH1F("fTot_etae","fTot_etae",nbin_v2,bin_v2);
+  fOutputList->Add(fTot_etae);
+  
+  fPhot_etae = new TH1F("fPhot_etae","fPhot_etae",nbin_v2,bin_v2);
+  fOutputList->Add(fPhot_etae);
+  
+  fPhotBCG_etae = new TH1F("fPhotBCG_etae","fPhotBCG_etae",nbin_v2,bin_v2);  
+  fOutputList->Add(fPhotBCG_etae);
+    
   PostData(1,fOutputList);
 }
 
@@ -773,7 +970,6 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetCos2DeltaPhi(Double_t phiA,Double_t p
   
   return cos2DeltaPhi;
 }
-
 //_________________________________________
 Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDeltaPhi(Double_t phiA,Double_t phiB) const
 {
@@ -782,4 +978,47 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDeltaPhi(Double_t phiA,Double_t phiB)
   if(dPhi > TMath::Pi()) dPhi = dPhi - TMath::Pi();
   
   return dPhi;
+}
+//_________________________________________
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT) const
+{
+	//Get Pi0 weight
+        double weight = 1.0;
+
+        if(mcPi0pT>0.0 && mcPi0pT<5.0)
+        {
+	  
+// 		weight = (2.877091*mcPi0pT)/(TMath::Power(0.706963+mcPi0pT/3.179309,17.336628)*exp(-mcPi0pT));
+		weight = (2.392024*mcPi0pT)/(TMath::Power(0.688810+mcPi0pT/3.005145,16.811845)*exp(-mcPi0pT));
+        }
+        else
+        {
+// 		weight = (0.0004*mcPi0pT)/TMath::Power(-0.176181+mcPi0pT/3.989747,5.629235);
+		weight = (0.000186*mcPi0pT)/TMath::Power(-0.606279+mcPi0pT/3.158642,4.365540);
+        }
+  return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT) const
+{
+  //Get eta weight
+  double weight = 1.0;
+
+//   weight = (0.818052*mcEtapT)/(TMath::Power(0.358651+mcEtapT/2.878631,9.494043));
+  weight = (0.622703*mcEtapT)/(TMath::Power(0.323045+mcEtapT/2.736407,9.180356));
+    
+  return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDweight(Int_t whichD, Double_t mcDpT) const
+{
+    //get D weights
+    double weight = 1.0;
+    
+    if (whichD == 0) weight = 0.271583*TMath::Landau(mcDpT,3.807103,1.536753,0); // D
+    if (whichD == 1) weight = 0.300771*TMath::Landau(mcDpT,3.725771,1.496980,0); // D0
+    if (whichD == 2) weight = 0.247280*TMath::Landau(mcDpT,3.746811,1.607551,0); // D+
+    if (whichD == 3) weight = 0.249410*TMath::Landau(mcDpT,3.611508,1.632196,0); //D-
+    
+  return weight;
 }

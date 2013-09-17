@@ -127,6 +127,7 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
 	AnalyzeChargeOverPt(pTPC,pcstream); 
 	AnalyzeQAPosNegDpT(pTPC,pcstream);
 	AnalyzeQADCAFitParameter(pTPC,pcstream);
+	AnalyzeOcc(pTPC,pcstream);
 
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
         pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
@@ -485,14 +486,18 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     SaveGraph(tree,"dcar_negC_0_Err","run",condition);
     SaveGraph(tree,"dcar_negC_1_Err","run",condition);
     SaveGraph(tree,"dcar_negC_2_Err","run",condition);
-    
 
+    SaveGraph(tree,"iroc_A_side","run",condition);    
+    SaveGraph(tree,"iroc_C_side","run",condition);    
+    SaveGraph(tree,"oroc_A_side","run",condition);    
+    SaveGraph(tree,"oroc_C_side","run",condition);    
 
+    //A/C side IROC                                                                                                                                                           
+    SaveGraph(tree,"TPC_Occ_IROC.","run",condition);
+    SaveGraph(tree,"TPC_Occ_OROC.","run",condition);
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-tree->Write();
-    
+    tree->Write();
     out->Close();   
     if (tree) { delete tree; tree=0; }
     if (out) { delete out; out=0; }
@@ -690,25 +695,25 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     // dump values
     //
     (*pcstream)<<"tpcQA"<<
-      "offsetdRA="<< offsetdRA<<                       // mean r-phi distortion fit A side (DCA_rphi=[0]+[1]*tgl(theta)) - parameter [0] offset
-      "slopedRA="<< slopedRA<<                         // mean r-phi distortion fit A side (DCA_rphi=[0]+[1]*tgl(theta)) - parameter [1] slope
-      "offsetdRC="<< offsetdRC<<                       // 
-      "slopedRC="<<slopedRC<<
-      //
-      "offsetdRAErr="<< offsetdRAErr<<
-      "slopedRAErr="<< slopedRAErr<<
-      "offsetdRCErr="<< offsetdRCErr<<
-      "slopedRCErr="<<slopedRCErr<<
-      //
-      "offsetdRAchi2="<< offsetdRAchi2<<
-      "slopedRAchi2="<< slopedRAchi2<<
-      "offsetdRCchi2="<< offsetdRCchi2<<
-      "slopedRCchi2="<<slopedRCchi2<<
-      //
-      "dcarAP0="<<dcarAP0<<
-      "dcarAP1="<<dcarAP1<<
-      "dcarCP0="<<dcarCP0<<
-      "dcarCP1="<<dcarCP1;
+        "offsetdRA="<< offsetdRA<<
+        "slopedRA="<< slopedRA<<
+        "offsetdRC="<< offsetdRC<<
+        "slopedRC="<<slopedRC<<
+        //
+        "offsetdRAErr="<< offsetdRAErr<<
+        "slopedRAErr="<< slopedRAErr<<
+        "offsetdRCErr="<< offsetdRCErr<<
+        "slopedRCErr="<<slopedRCErr<<
+        //
+        "offsetdRAchi2="<< offsetdRAchi2<<
+        "slopedRAchi2="<< slopedRAchi2<<
+        "offsetdRCchi2="<< offsetdRCchi2<<
+        "slopedRCchi2="<<slopedRCchi2<<
+        //
+        "dcarAP0="<<dcarAP0<<
+        "dcarAP1="<<dcarAP1<<
+        "dcarCP0="<<dcarCP0<<
+        "dcarCP1="<<dcarCP1;
         
     return 0;
 }
@@ -786,20 +791,20 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC,
     // dump values
     //
     (*pcstream)<<"tpcQA"<<
-      "offsetdRAPos="<< offsetdRAPos<<
-      "slopedRAPos="<< slopedRAPos<<
-      "offsetdRCPos="<< offsetdRCPos<<
-      "slopedRCPos="<<slopedRCPos<<
-      //
-      "offsetdRAErrPos="<< offsetdRAErrPos<<
-      "slopedRAErrPos="<< slopedRAErrPos<<
-      "offsetdRCErrPos="<< offsetdRCErrPos<<
-      "slopedRCErrPos="<<slopedRCErrPos<<
-      //
-      "offsetdRAchi2Pos="<< offsetdRAchi2Pos<<
-      "slopedRAchi2Pos="<< slopedRAchi2Pos<<
-      "offsetdRCchi2Pos="<< offsetdRCchi2Pos<<
-      "slopedRCchi2Pos="<<slopedRCchi2Pos;
+        "offsetdRAPos="<< offsetdRAPos<<
+        "slopedRAPos="<< slopedRAPos<<
+        "offsetdRCPos="<< offsetdRCPos<<
+        "slopedRCPos="<<slopedRCPos<<
+        //
+        "offsetdRAErrPos="<< offsetdRAErrPos<<
+        "slopedRAErrPos="<< slopedRAErrPos<<
+        "offsetdRCErrPos="<< offsetdRCErrPos<<
+        "slopedRCErrPos="<<slopedRCErrPos<<
+        //
+        "offsetdRAchi2Pos="<< offsetdRAchi2Pos<<
+        "slopedRAchi2Pos="<< slopedRAchi2Pos<<
+        "offsetdRCchi2Pos="<< offsetdRCchi2Pos<<
+        "slopedRCchi2Pos="<<slopedRCchi2Pos;
         
     return 0;
 }
@@ -906,8 +911,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
  
     // variables:
     static Double_t meanTPCnclF=0;
-    static Double_t meanTPCnclFStat=0;
-    static Double_t meanTPCnclFErr=0;
     static Double_t rmsTPCnclF=0;
     static Double_t meanTPCChi2=0;
     static Double_t rmsTPCChi2=0;  
@@ -916,8 +919,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     static Double_t slopeATPCnclFErr=0;
     static Double_t slopeCTPCnclFErr=0;
     static Double_t meanTPCncl=0;
-    static Double_t meanTPCnclStat=0;
-    static Double_t meanTPCnclErr=0;
     static Double_t rmsTPCncl=0;
     static Double_t slopeATPCncl=0;
     static Double_t slopeCTPCncl=0;
@@ -966,10 +967,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     }
  
     meanTPCncl= his1D->GetMean();
-    meanTPCnclStat= his1D->GetEntries();
-    meanTPCnclErr= his1D->GetMeanError();
     rmsTPCncl= his1D->GetRMS();
-    
     delete his1D;
     
     if (his3D1 && !fgForceTHnSparse) {
@@ -1009,8 +1007,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     }    
         
     meanTPCnclF= his1D->GetMean();
-    meanTPCnclFStat= his1D->GetEntries();
-    meanTPCnclFErr= his1D->GetMeanError();
     rmsTPCnclF= his1D->GetRMS();
     delete his1D;
     
@@ -1047,24 +1043,20 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     // dump results to the tree
     //
     (*pcstream)<<"tpcQA"<<
-      "meanTPCnclF="<<meanTPCnclF <<   // mean number of cluster/number of findable cluster   
-      "meanTPCnclFStat="<<meanTPCnclFStat <<   // number of cluster/number of findable cluster   - number of etries
-      "meanTPCnclFErr="<<meanTPCnclFErr <<   // error of mean number of cluster/number of findable cluster   
-      "rmsTPCnclF="<<rmsTPCnclF <<     //  RMS of distribution of number of cluster/number of findable cluster   
-      "meanTPCChi2="<<meanTPCChi2 <<   // ????
-      "rmsTPCChi2="<<rmsTPCChi2 <<     // ????
-      "slopeATPCnclF="<< slopeATPCnclF<<  // A side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope 
-      "slopeCTPCnclF="<< slopeCTPCnclF<<  // C side- fit of number of clusters/findable   (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope 
-      "slopeATPCnclFErr="<< slopeATPCnclFErr<<  // A side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - error of parameter [1] slope
-      "slopeCTPCnclFErr="<< slopeCTPCnclFErr<< // C side- fit of number of clusters/findable  (Ncl=[0]+[1]*tan(\theta)) - error of parameter [1] slope
-      "meanTPCncl="<<meanTPCncl <<   // mean number of cluster
-      "meanTPCnclStat="<<meanTPCnclStat <<   // number of cluster   - number of etries in histogram
-      "meanTPCnclErr="<<meanTPCnclErr <<   // error of mean number of cluster   
-      "rmsTPCncl="<< rmsTPCncl<<     // rms of mean number of cluster                     
-      "slopeATPCncl="<< slopeATPCncl<< // A side- fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - parameter [1] slope  
-      "slopeCTPCncl="<< slopeCTPCncl<< // C  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - parameter 1 - slope
-      "slopeATPCnclErr="<< slopeATPCnclErr<<  // A  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - error of parameter 1 - slope
-      "slopeCTPCnclErr="<< slopeCTPCnclErr; // C  side -  fit of number of clusters  (Ncl=[0]+[1]*tan(\theta)) - error of parameter 1 - slope
+      "meanTPCnclF="<<meanTPCnclF <<   
+      "rmsTPCnclF="<<rmsTPCnclF <<
+      "meanTPCChi2="<<meanTPCChi2 <<
+      "rmsTPCChi2="<<rmsTPCChi2 <<
+      "slopeATPCnclF="<< slopeATPCnclF<<
+      "slopeCTPCnclF="<< slopeCTPCnclF<<
+      "slopeATPCnclFErr="<< slopeATPCnclFErr<<
+      "slopeCTPCnclFErr="<< slopeCTPCnclFErr<<
+      "meanTPCncl="<<meanTPCncl <<
+      "rmsTPCncl="<< rmsTPCncl<<
+      "slopeATPCncl="<< slopeATPCncl<<
+      "slopeCTPCncl="<< slopeCTPCncl<<
+      "slopeATPCnclErr="<< slopeATPCnclErr<<
+      "slopeCTPCnclErr="<< slopeCTPCnclErr;
     
     return 0;
 }
@@ -1140,7 +1132,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDrift(const AliPerformanceTPC* pTPC, TTre
     // dump drift QA values
     //
     (*pcstream)<<"tpcQA"<<
-      "offsetdZA="<< offsetdZA<<   //
+        "offsetdZA="<< offsetdZA<<
         "slopedZA="<< slopedZA<<
         "offsetdZC="<< offsetdZC<<
         "slopedZC="<<slopedZC<<
@@ -1354,12 +1346,14 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     static Float_t resolutionMIP = 0;
     static Float_t attachSlopeC = 0;
     static Float_t attachSlopeA = 0;
-
+    static Float_t meanMIPele = 0;
+    static Float_t resolutionMIPele = 0;
+    static Float_t electroMIPSeparation = 0;
+    
     TH1 * his1D = 0;
     //TH1 * hisProj1D=0;
     TH2* his2D=0;
      
-
     meanMIPvsSector.Zero();
     //
     // select MIP particles
@@ -1385,6 +1379,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     resolutionMIP = 0;
     if (meanMIP!=0) resolutionMIP = gausFit.GetParameter(2)/meanMIP;
     //removedtotest// delete his1D;
+    
     //
     // MIP position vs. dip angle (attachment)
     //    
@@ -1402,8 +1397,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     his1D = (TH1*) arrayFit.At(1);
     his1D->Fit(fpol,"QNROB=0.8","QNR",-1,0);
     attachSlopeC = fpol->GetParameter(1);
-     //removedtotest// delete his2D;
-     //removedtotest// delete his1D;
+    //removedtotest// delete his2D;
+    //removedtotest// delete his1D;
     //
     pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
     if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_5") && !fgForceTHnSparse) {    
@@ -1415,7 +1410,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
 
     TF1 * fpolA = new TF1("fpolA","pol1");
     TObjArray arrayFitA;
-    his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);    
+    //FitSlicesY(TF1* f1 = 0, Int_t firstxbin = 0, Int_t lastxbin = -1, Int_t cut = 0, Option_t* option = "QNR", TObjArray* arr = 0)   
+    his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit); 
     his1D = (TH1*) arrayFit.At(1);
     his1D->Fit(fpolA,"QNROB=0.8","QN",0,1);
     attachSlopeA = fpolA->GetParameter(1);
@@ -1471,22 +1467,61 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
         //removedtotest// delete his1D;
     }
      //removedtotest// delete his2D;
-    //
+
+     //                                                         
+    //  
+    // select electrons                                                                                                               
+    //                                                                                                                                                                           
+    pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.32,0.38); // momenta
+    pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(70,100); // dedx
+    pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160); // nr clusters
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1); // eta
+
+    TF1 gausFitEle("gausFitEle","gaus");
+
+    if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mipsele_0") && !fgForceTHnSparse) {
+      his1D = dynamic_cast<TH1*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mipsele_0")->Clone());
+    } else {
+      his1D =  pTPCgain->GetDeDxHisto()->Projection(0);
+    }
+    if(!his1D) return 4;
+    his1D->Fit(&gausFitEle,"QN","QN");
+
+    meanMIPele = gausFitEle.GetParameter(1);
+    resolutionMIPele = 0;
+    if (meanMIPele!=0) resolutionMIPele = gausFitEle.GetParameter(2)/meanMIPele;
+    
+    //restore cuts as before
+    pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.4,0.55);
+    pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(35,60);
+    pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160);
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
+
+    //                                                                                                                                                                        
+    // separation between electrons and MIPs                                                                                                                                  
+    // 
+    electroMIPSeparation = TMath::Abs((meanMIP-meanMIPele));
+
     printf("Gain QA report\n");
     printf("MIP mean\t%f\n",meanMIP);
     printf("MIP resolution\t%f\n",resolutionMIP);
     printf("MIPslopeA\t%f\n",attachSlopeA);
     printf("MIPslopeC\t%f\n",attachSlopeC);
+    printf("Electons energy loss MIP mean\t%f\n",meanMIPele);
+    printf("Electons MIP resolution\t%f\n",resolutionMIPele);
     // 
     
     (*pcstream)<<"tpcQA"<<
-        "MIPattachSlopeC="<<attachSlopeC<<
-        "MIPattachSlopeA="<<attachSlopeA<<
-        "resolutionMIP="<<resolutionMIP<<
-        "meanMIPvsSector.="<<&meanMIPvsSector<<
-        "sector.="<<&sector<<
-        "meanMIP="<<meanMIP;
-
+      "MIPattachSlopeC="<<attachSlopeC<<
+      "MIPattachSlopeA="<<attachSlopeA<<
+      "resolutionMIP="<<resolutionMIP<<
+      "meanMIPvsSector.="<<&meanMIPvsSector<<
+      "sector.="<<&sector<<
+      "meanMIP="<<meanMIP<<
+      "meanMIPele="<<meanMIPele<<
+      "resolutionMIPele="<<resolutionMIPele<<
+      "electroMIPSeparation="<<electroMIPSeparation;
+    
     return 0;
 }
 
@@ -2051,6 +2086,12 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     negA = neg3->ProjectionZ("negA",71,-1,16,25);
 }
 
+if(!pos) return 512; 
+if(!neg) return 512; 
+if(!posA) return 512; 
+if(!negA) return 512; 
+if(!posC) return 512; 
+if(!negC) return 512; 
 
 pos->Sumw2();
 neg->Sumw2();
@@ -2070,10 +2111,8 @@ negC->Scale(1.,"width");
 
 TF1 fpt("fpt","[1]*exp(-1/((1/x))*[0])",0.1,10);
 TF1 fpt2("fpt2","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fpt.SetParLimits(0,0.1,2.0);
-fpt2.SetParLimits(0,0.1,2.0);
-fpt.SetParameters(0.5,1.0);
-fpt2.SetParameters(0.5,1.0);
+fpt.SetParameters(1,0.5);
+fpt2.SetParameters(1,0.5);
 pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4);
 neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4);
 
@@ -2084,9 +2123,7 @@ ratio->Divide(neg);
 
 ratio->Draw();
 TF1 fptRatio("fptratio","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatio.SetParLimits(0,0.1,2.0);
-fptRatio.SetParLimits(1,-0.1,0.1);
-fptRatio.SetParameters(0.5,0.006,1.0);
+fptRatio.SetParameters(0.5,0.006,1);
 fptRatio.FixParameter(0,slope);
 fptRatio.Draw();
 ratio->Fit(&fptRatio,"","",1,4); ratio->Fit(&fptRatio,"","",1,4); 
@@ -2103,10 +2140,8 @@ deltaPt_Err = fptRatio.GetParError(1);
 
 TF1 fptA("fptA","[1]*exp(-1/((1/x))*[0])",0.1,10);
 TF1 fpt2A("fpt2A","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fptA.SetParLimits(0,0.1,2.0);
-fpt2A.SetParLimits(0,0.1,2.0);
-fptA.SetParameters(0.5,1.0);
-fpt2A.SetParameters(0.5,1.0);
+fptA.SetParameters(1,0.5);
+fpt2A.SetParameters(1,0.5);
 posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4);
 negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4);
 
@@ -2117,8 +2152,6 @@ ratioA->Divide(negA);
 
 ratioA->Draw();
 TF1 fptRatioA("fptratioA","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatioA.SetParLimits(0,0.1,2.0);
-fptRatioA.SetParLimits(1,-0.1,0.1);
 fptRatioA.SetParameters(0.5,0.006,1);
 fptRatioA.FixParameter(0,slopeA);
 fptRatioA.Draw();
@@ -2139,10 +2172,8 @@ deltaPtA_Err = fptRatioA.GetParError(1);
 //C side
 TF1 fptC("fptC","[1]*exp(-1/((1/x))*[0])",0.1,10);
 TF1 fpt2C("fpt2C","[1]*exp(-1/((1/x))*[0])",0.1,10);
-fptC.SetParLimits(0,0.1,2.0);
-fpt2C.SetParLimits(0,0.1,2.0);
-fptC.SetParameters(0.5,1.0);
-fpt2C.SetParameters(0.5,1.0);
+fptC.SetParameters(1,0.5);
+fpt2C.SetParameters(1,0.5);
 posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4);
 negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4);
 
@@ -2153,9 +2184,7 @@ ratioC->Divide(negC);
 
 ratioC->Draw();
 TF1 fptRatioC("fptratioC","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
-fptRatioC.SetParLimits(0,0.1,2.0);
-fptRatioC.SetParLimits(1,-0.1,0.1);
-fptRatioC.SetParameters(0.5,0.006,1.0);
+fptRatioC.SetParameters(0.5,0.006,1);
 fptRatioC.FixParameter(0,slopeC);
 fptRatioC.Draw();
 ratioC->Fit(&fptRatioC,"","",1,4); ratio->Fit(&fptRatioC,"","",1,4); 
@@ -2452,3 +2481,259 @@ deltaPtC_Err = fptRatioC.GetParError(1);
       
       return 0;
 }
+
+//_____________________________________________________________________________                                                                                                  
+Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
+{
+  //                                                                                                                                                                      
+  //function which make trending of occupany per side and IROC-OROC                                     
+  //                                                                                                                                                                            
+
+  if (!pcstream) return 16;
+  if (!pTPC) return 16;
+
+  TH3* h3D_1=0;
+  TH2* his2D=0;
+  TH1* his1D=0;
+
+  static Double_t norm=0; 
+  static Double_t mean_occ_chamber=0;                                                                                                                                         
+  static Double_t rms_mean_occ_chamber=0;   
+  static Float_t occ_chamber=0;
+  static Double_t rmsNr   = 3.0;
+  static Int_t n_chamber_lowOcc = 0;  
+  static Double_t minOcc= 0;  
+  
+  //nr of chamber within the thresholds
+  static Int_t iroc_A_side =0;
+  static Int_t oroc_A_side=0;
+  static Int_t iroc_C_side =0;
+  static Int_t oroc_C_side =0;
+  
+  //occupancy for each chamber, normalized to the total occupancy  
+  static TVectorF meanOccArray_iroc(36);
+  static TVectorF meanOccArray_oroc(36);
+
+ if (pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2")) {  
+    h3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2"));
+  }
+  
+  //////////////////////////////////////////
+  // normalization
+  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A side
+  h3D_1->GetXaxis()->SetRangeUser(0,160); //IROC + OROC
+  his2D  = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_norm"));
+  if(!his2D) return 4;
+  his1D = his2D->ProjectionX();
+  norm = his1D->Integral();
+  printf("normalization:  \t%f\n",norm);
+  if (norm < 0.001) norm=0.00001;
+  delete his2D;
+  
+  //////////////////////////////////////////
+  // A_side IROC
+  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A_side
+  h3D_1->GetXaxis()->SetRangeUser(0,63); //IROC    
+
+  his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_side_IROC"));
+  if(!his2D) return 4;
+
+  printf("-------------- A_IROC occupancy \t\n");
+
+  for(Int_t i = 0; i < 18; i++) { //fill IROC A_side         
+    Float_t phiLow = i*(20./360.)*(2*TMath::Pi());
+    Float_t phiUp  = (i+1)*(20./360.)*(2*TMath::Pi());
+    his2D->GetXaxis()->SetRangeUser(phiLow,phiUp); 
+    his1D = his2D->ProjectionX();
+    occ_chamber = (his1D->Integral()) / norm;    
+    printf("%d occ_chamber \t%f \t phiLow phiUp  \t%f  %f \n",i, occ_chamber, phiLow, phiUp);
+    meanOccArray_iroc[i]= occ_chamber;//fill array with occupancy for each chamber
+    mean_occ_chamber += occ_chamber;//compute the average occupancy        
+    rms_mean_occ_chamber  += occ_chamber*occ_chamber;
+    delete his1D;
+  }
+  delete his2D;
+
+  mean_occ_chamber /= 18; //nr of sectors                                                                                                                              
+  rms_mean_occ_chamber  /= 18; //nr of sectors                                            
+  
+  rms_mean_occ_chamber   =  TMath::Sqrt( TMath::Abs(rms_mean_occ_chamber - (mean_occ_chamber*mean_occ_chamber)) );                                         
+  minOcc    = mean_occ_chamber - rmsNr*rms_mean_occ_chamber;  
+
+  printf("mean_occ_chamber +- rms_mean_occ_chamber \t%f\t%f \n", mean_occ_chamber, rms_mean_occ_chamber);
+  printf("min Occ allowed (threshold) \t%f \n", minOcc);
+
+  for (Int_t i = 0; i<18; i++) {
+    if (meanOccArray_iroc[i] < minOcc) {n_chamber_lowOcc++;}
+  }
+  iroc_A_side = (18 - n_chamber_lowOcc); //nr of iroc above the thr
+  printf("Nr of iroc_A_side \t%i \n \n ",iroc_A_side);
+
+  mean_occ_chamber=0;
+  rms_mean_occ_chamber=0;
+  occ_chamber=0.;
+  n_chamber_lowOcc=0;
+  minOcc=0.;
+  ////////////////////////////////////////////
+  // A_side OROC
+  h3D_1->GetZaxis()->SetRangeUser(0,0.99); //A_side
+  h3D_1->GetXaxis()->SetRangeUser(64,160); //OROC    
+
+  his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_A_side_OROC"));
+  if(!his2D) return 4;
+
+  printf("-------------- A_OROC occupancy \t\n");
+
+  for(Int_t i = 0; i < 18; i++) {          
+    Float_t phiLow = i*(20./360.)*(2*TMath::Pi());
+    Float_t phiUp  = (i+1)*(20./360.)*(2*TMath::Pi());
+    his2D->GetXaxis()->SetRangeUser(phiLow,phiUp); 
+    his1D = his2D->ProjectionX();
+    occ_chamber = (his1D->Integral()) / norm;    
+    printf("%d occ_chamber \t%f \t phiLow phiUp  \t%f  %f \n",i, occ_chamber, phiLow, phiUp);
+    meanOccArray_oroc[i]= occ_chamber;//fill array with occupancy for each chamber
+    mean_occ_chamber += occ_chamber;//compute the average occupancy        
+    rms_mean_occ_chamber  += occ_chamber*occ_chamber;
+    delete his1D;
+  }
+  delete his2D;
+
+  mean_occ_chamber /= 18; //nr of sectors                                                                                                                              
+  rms_mean_occ_chamber  /= 18; //nr of sectors                                            
+  
+  rms_mean_occ_chamber   =  TMath::Sqrt( TMath::Abs(rms_mean_occ_chamber - (mean_occ_chamber*mean_occ_chamber)) );                                         
+  minOcc    = mean_occ_chamber - rmsNr*rms_mean_occ_chamber;  
+
+  printf("mean_occ_chamber +- rms_mean_occ_chamber \t%f\t%f \n", mean_occ_chamber, rms_mean_occ_chamber);
+  printf("min Occ allowed (threshold) \t%f \n", minOcc);
+
+  for (Int_t i = 0; i<18; i++) {
+    if (meanOccArray_oroc[i] < minOcc) {n_chamber_lowOcc++;}
+  }
+  oroc_A_side = (18 - n_chamber_lowOcc); //variable stored in the trending
+  printf("Nr of oroc_A_side \t%i \n \n ",oroc_A_side);
+
+  mean_occ_chamber=0;
+  rms_mean_occ_chamber=0;
+  occ_chamber=0.;
+  n_chamber_lowOcc=0;
+  minOcc=0.;
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // C side
+  //////////////////////////////////////////
+  
+  // normalization
+  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C side
+  h3D_1->GetXaxis()->SetRangeUser(0,160); //IROC + OROC
+  his2D  = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_norm"));
+  if(!his2D) return 4;
+  his1D = his2D->ProjectionX();
+  norm = his1D->Integral();
+  printf("normalization:  \t%f\n",norm);
+  if (norm < 0.001) norm=0.00001;
+  delete his2D;
+  
+  //////////////////////////////////////////
+  // C_side IROC
+  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C_side
+  h3D_1->GetXaxis()->SetRangeUser(0,63); //IROC    
+
+  his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_IROC"));
+  if(!his2D) return 4;
+
+  printf("-------------- C_IROC occupancy \t\n");
+
+  for(Int_t i = 0; i < 18; i++) {          
+    Float_t phiLow = i*(20./360.)*(2*TMath::Pi());
+    Float_t phiUp  = (i+1)*(20./360.)*(2*TMath::Pi());
+    his2D->GetXaxis()->SetRangeUser(phiLow,phiUp); 
+    his1D = his2D->ProjectionX();
+    occ_chamber = (his1D->Integral()) / norm;    
+    printf("%d occ_chamber \t%f \t phiLow phiUp  \t%f  %f \n",i, occ_chamber, phiLow, phiUp);
+    meanOccArray_iroc[18+i]= occ_chamber;//fill array with occupancy for each chamber, C side, therefore index 18+i
+    mean_occ_chamber += occ_chamber;//compute the average occupancy        
+    rms_mean_occ_chamber  += occ_chamber*occ_chamber;
+    delete his1D;
+  }
+  delete his2D;
+
+  mean_occ_chamber /= 18; //nr of sectors                                                                                                                              
+  rms_mean_occ_chamber  /= 18; //nr of sectors                                            
+  
+  rms_mean_occ_chamber   =  TMath::Sqrt( TMath::Abs(rms_mean_occ_chamber - (mean_occ_chamber*mean_occ_chamber)) );                                         
+  minOcc    = mean_occ_chamber - rmsNr*rms_mean_occ_chamber;  
+
+  printf("mean_occ_chamber +- rms_mean_occ_chamber \t%f\t%f \n", mean_occ_chamber, rms_mean_occ_chamber);
+  printf("min Occ allowed (threshold) \t%f \n", minOcc);
+
+  for (Int_t i = 18; i<36; i++) {
+    if (meanOccArray_iroc[i] < minOcc) {n_chamber_lowOcc++;}
+  }
+  iroc_C_side = (18 - n_chamber_lowOcc); //variable stored in the trending
+  printf("Nr of iroc_C_side \t%i \n \n ",iroc_C_side);
+
+  mean_occ_chamber=0;
+  rms_mean_occ_chamber=0;
+  occ_chamber=0.;
+  n_chamber_lowOcc=0;
+  minOcc=0.;
+
+  ////////////////////////////////////////////
+  // C_side OROC
+  h3D_1->GetZaxis()->SetRangeUser(-1,-0.001); //C_side
+  h3D_1->GetXaxis()->SetRangeUser(64,160); //OROC    
+
+  his2D = dynamic_cast<TH2*>(h3D_1->Project3D("xy_C_side_OROC"));
+  if(!his2D) return 4;
+
+  printf("-------------- C_OROC occupancy \t\n");
+
+  for(Int_t i = 0; i < 18; i++) {          
+    Float_t phiLow = i*(20./360.)*(2*TMath::Pi());
+    Float_t phiUp  = (i+1)*(20./360.)*(2*TMath::Pi());
+    his2D->GetXaxis()->SetRangeUser(phiLow,phiUp); 
+    his1D = his2D->ProjectionX();
+    occ_chamber = (his1D->Integral()) / norm;    
+    printf("%d occ_chamber \t%f \t phiLow phiUp  \t%f  %f \n",i, occ_chamber, phiLow, phiUp);
+    meanOccArray_oroc[18+i]= occ_chamber;//fill array with occupancy for each chamber
+    mean_occ_chamber += occ_chamber;//compute the average occupancy        
+    rms_mean_occ_chamber  += occ_chamber*occ_chamber;
+    delete his1D;
+  }
+  delete his2D;
+
+  mean_occ_chamber /= 18; //nr of sectors                                                                                                                              
+  rms_mean_occ_chamber  /= 18; //nr of sectors                                            
+  
+  rms_mean_occ_chamber   =  TMath::Sqrt( TMath::Abs(rms_mean_occ_chamber - (mean_occ_chamber*mean_occ_chamber)) );                                         
+  minOcc    = mean_occ_chamber - rmsNr*rms_mean_occ_chamber;  
+
+  printf("mean_occ_chamber +- rms_mean_occ_chamber \t%f\t%f \n", mean_occ_chamber, rms_mean_occ_chamber);
+  printf("min Occ allowed (threshold) \t%f \n", minOcc);
+
+  for (Int_t i = 18; i<36; i++) {
+    if (meanOccArray_oroc[i] < minOcc) {n_chamber_lowOcc++;}
+  }
+  oroc_C_side = (18 - n_chamber_lowOcc); //variable stored in the trending
+  printf("Nr of oroc_C_side \t%i \n \n ",oroc_C_side);
+
+  mean_occ_chamber=0;
+  rms_mean_occ_chamber=0;
+  occ_chamber=0.;
+  n_chamber_lowOcc=0;
+  minOcc=0.;
+
+  (*pcstream)<<"tpcQA"<<      
+   "iroc_A_side="<< iroc_A_side<<
+   "oroc_A_side="<< oroc_A_side<<
+   "iroc_C_side="<< iroc_C_side<<
+   "oroc_C_side="<< oroc_C_side<<
+   //A/C side IROC 
+   "TPC_Occ_IROC.="<< &meanOccArray_iroc<< 
+   //A/C side OROC
+   "TPC_Occ_OROC.="<< &meanOccArray_oroc;   
+
+ return 0;
+  }
+

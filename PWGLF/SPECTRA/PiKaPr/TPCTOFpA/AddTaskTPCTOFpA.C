@@ -1,6 +1,6 @@
 
 
-AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t useEvenDcaBinning = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.5, Double_t rapidityHigh = 0.5, Bool_t ispA=kTRUE, Bool_t rapCMS = kFALSE, TString multEst = "V0M",  Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
+AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t useEvenDcaBinning = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.5, Double_t rapidityHigh = 0.5, Bool_t ispA=kTRUE, Bool_t rapCMS = kFALSE, TString multEst = "V0A", Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
 
 
   //get the current analysis manager
@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskTPCTOFpA(Int_t identifier = 0, Bool_t isMC = kFALSE, Boo
 
   //normal tracks
   AliAnalysisTPCTOFpA *task = new AliAnalysisTPCTOFpA("janielskTaskTPCTOFpA");
-  task->SelectCollisionCandidates(AliVEvent::kCINT5);
+  //task->SelectCollisionCandidates(trigger.Data());
 
   //switches
   if (isMC) task->SetIsMCtrue(isMC);

@@ -56,7 +56,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom, Int_t nMaxima) ;
   
   void         FillShowerShapeHistograms( AliVCluster* cluster, const Int_t mcTag , const Int_t pidTag) ;
   
@@ -94,7 +94,12 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
 	
   void         SetNCellCut(Int_t n)                   { fNCellsCut = n             ; }
   Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
-    
+  
+  void         SetNLMCut(Int_t min, Int_t max)        { fNLMCutMin = min;
+                                                        fNLMCutMax = max                ; }
+  Int_t        GetNLMCutMin()                   const { return fNLMCutMin               ; }
+  Int_t        GetNLMCutMax()                   const { return fNLMCutMax               ; }
+  
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
                                                         if(n > 10) fNOriginHistograms = 10; }
 
@@ -124,8 +129,10 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   Double_t fTimeCutMin  ;                      // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                      // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                        // Accept for the analysis clusters with more than fNCellsCut cells
+  Int_t    fNLMCutMin  ;                       // Remove clusters/cells with number of local maxima smaller than this value
+  Int_t    fNLMCutMax  ;                       // Remove clusters/cells with number of local maxima larger than this value
   Bool_t   fFillSSHistograms ;                 // Fill shower shape histograms
-  Bool_t   fFillOnlySimpleSSHisto;   // Fill selected cluster histograms, selected SS histograms
+  Bool_t   fFillOnlySimpleSSHisto;             // Fill selected cluster histograms, selected SS histograms
   Bool_t   fFillWeightHistograms ;             // Fill weigth histograms
   Int_t    fNOriginHistograms;                 // Fill only NOriginHistograms of the 14 defined types
 
@@ -136,13 +143,29 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
 
   Int_t    fAODParticle;                       // Select the type of particle to put in AODs for other analysis
   
-  //Histograms 
+  //Histograms
   TH2F * fhdEdxvsE;                            //! matched track dEdx vs cluster E 
   TH2F * fhdEdxvsP;                            //! matched track dEdx vs track P
   TH2F * fhEOverPvsE;                          //! matched track E cluster over P track vs cluster E, after dEdx cut 
   TH2F * fhEOverPvsP;                          //! matched track E cluster over P track vs track P, after dEdx cut 
 
-  TH2F * fhNCellsE[2];                         //! number of cells in cluster vs E 
+  TH2F * fhdEdxvsECutM02;                      //! matched track dEdx vs cluster E, mild M02 cut
+  TH2F * fhdEdxvsPCutM02;                      //! matched track dEdx vs track P, mild M02 cut
+  TH2F * fhEOverPvsECutM02;                    //! matched track E cluster over P track vs cluster E, after dEdx cut, mild M02 cut
+  TH2F * fhEOverPvsPCutM02;                    //! matched track E cluster over P track vs track P, after dEdx cut, mild M02 cut
+  
+  TH2F * fhdEdxvsECutEOverP;                   //! matched track dEdx vs cluster E , cut on EOverP
+  TH2F * fhdEdxvsPCutEOverP;                   //! matched track dEdx vs track P, cut on EOverP
+  TH2F * fhEOverPvsECutM02CutdEdx;             //! matched track E cluster over P track vs cluster E, after dEdx cut and mild M02 cut
+  TH2F * fhEOverPvsPCutM02CutdEdx;             //! matched track E cluster over P track vs track P, after dEdx cut and mild M02 cut
+
+  TH2F * fhMCdEdxvsE[10];                       //! matched track dEdx vs cluster E, coming from MC particle
+  TH2F * fhMCdEdxvsP[10];                       //! matched track dEdx vs track P, coming from MC particle
+  TH2F * fhMCEOverPvsE[10];                     //! matched track E cluster over P track vs cluster E, after dEdx cut, coming from MC particle
+  TH2F * fhMCEOverPvsP[10];                     //! matched track E cluster over P track vs track P, after dEdx cut, coming from MC particle
+  
+  TH2F * fhNCellsE[2];                         //! number of cells in cluster vs E
+  TH2F * fhNLME[2];                            //! number of local maxima in cluster vs E
   TH2F * fhMaxCellDiffClusterE[2];             //! Fraction of energy carried by cell with maximum energy
   TH2F * fhTimeE[2];                           //! E vs Time of selected cluster 
 
@@ -224,7 +247,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   AliAnaElectron(              const AliAnaElectron & el) ; // cpy ctor  
   AliAnaElectron & operator = (const AliAnaElectron & el) ; // cpy assignment
   
-  ClassDef(AliAnaElectron,4)
+  ClassDef(AliAnaElectron,5)
 
 } ;
  

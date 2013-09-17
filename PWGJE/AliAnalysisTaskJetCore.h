@@ -78,6 +78,7 @@ public:
    virtual void     SetCentMax(Float_t cent) { fCentMax = cent; }
    virtual void     SetNInputTracksMin(Int_t nTr) { fNInputTracksMin = nTr; }
    virtual void     SetNInputTracksMax(Int_t nTr) { fNInputTracksMax = nTr; }
+   virtual void     SetRequireITSRefit(Int_t nref) {fRequireITSRefit=nref;}
    virtual void     SetAngStructCloseTracks(Int_t yesno){fAngStructCloseTracks=yesno;}
    virtual void     SetCheckMethods(Int_t yesno){fCheckMethods=yesno;}
    virtual void     SetEventMixing(Int_t yesno){fDoEventMixing=yesno;}
@@ -116,7 +117,7 @@ private:
     AliAODEvent *fAODOut;    //! AOD event 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
     Int_t   GetListOfTracks(TList *list);
-   Int_t   SelectTrigger(TList *list,Double_t minT,Double_t maxT);
+   Int_t   SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
    // jets to compare
@@ -142,6 +143,7 @@ private:
    Float_t fCentMax;	  // upper bound on centrality
    Int_t   fNInputTracksMin;  // lower bound of nb. of input tracks
    Int_t   fNInputTracksMax;  // upper bound of nb. of input tracks
+   Int_t   fRequireITSRefit;
    Int_t   fAngStructCloseTracks;//only constituents or all tracks with R<0.8 for the angular structure
    Int_t   fCheckMethods;     //to look into more detail into the core
    Int_t   fDoEventMixing;
@@ -215,6 +217,8 @@ private:
      TH2F*      fh2AngStructpt3C60;         //C60 pt3
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
   
+     TH1D*      fh1TrigRef;                 //ref multiple triggers
+     TH1D*      fh1TrigSig;                 //sig multiple triggers    
      TH2F*      fh2Ntriggers;              //triggers
      TH2F*      fh2Ntriggers2C10;             //centrality bias of triggers 
      TH2F*      fh2Ntriggers2C20;             //centrality bias of triggers 

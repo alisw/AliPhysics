@@ -51,12 +51,17 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   
   void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
   void SetOpeningAngleCut (Double_t openingAngle) {fOpeningAngleCut = openingAngle;};
+  void SetMimpTassCut (Double_t MimpTassCut) {fMimpTassCut = MimpTassCut;};
+  void SetMimNsigassCut (Double_t MimNsigassCut) {fMimNsigassCut = MimNsigassCut;};
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   void SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
+  void SetMassWidthCut  	(Bool_t MassWidthCut)		{ fSetMassWidthCut	= MassWidthCut; };
+  void SetMassCalMethod  	(Bool_t KFpart)		{ fSetKFpart = KFpart; };
   void SetQAHist (int qahist) {fqahist = qahist;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta);
+  void SelectPhotonicElectron2(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta);
   double SumpT(Int_t itrack, AliESDtrack *track);
   void FindMother(TParticle* part, int &label, int &pid);
   double GetMCweight(double mcPi0pT);
@@ -87,8 +92,12 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   AliHFEpid 		*fPID;                  //! PID
   AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
   Double_t 		fOpeningAngleCut;	//openingAngle cut value
+  Double_t 		fMimpTassCut;	//openingAngle cut value
+  Double_t 		fMimNsigassCut;	//openingAngle cut value
   Double_t		fInvmassCut;		//invariant mass cut value
   Bool_t		 fSetMassConstraint;		// Set mass constraint
+  Bool_t		 fSetMassWidthCut;		// Set mass constraint
+  Bool_t		 fSetKFpart;		// Set mass constraint
  
   int ftriggers[48][60];//!
   int ftriggersCut[48][60];//!

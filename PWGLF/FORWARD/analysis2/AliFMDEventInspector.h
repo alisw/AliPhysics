@@ -85,6 +85,7 @@ public:
     kE,
     kPileUp,
     kMCNSD,
+    kSatellite,
     kOffline
   };
   /** 
@@ -114,6 +115,29 @@ public:
     kUnknown,
     kPP, 
     kPbPb
+  };
+  enum EVtxStatus { 
+    kVtxOK = 1, 
+    kNoVtx, 
+    kNoSPDVtx, 
+    kFewContrib, 
+    kUncertain,
+    kNotVtxZ
+  }; 
+  enum ETrgStatus {
+    kNoTrgWords=1,
+    kPP2760Fast, 
+    kMUON,
+    kTriggered,
+    kMinBias,
+    kMinBiasNoSPD,
+    kV0AndTrg,
+    kHighMult,
+    kCentral, 
+    kSemiCentral, 
+    kDiffractive,
+    kUser,
+    kOther
   };
   /** 
    * Folder name 
@@ -244,16 +268,23 @@ public:
   {
     fUseDisplacedVertices = use;
   }  
-  // Settter for fmincentrality 
-  void SetMinCentrality(Double_t mincent=-1.0)
-  {	 		
-  	fminCent=mincent;
-  }
-  // Settter for fmincentrality 
-  void SetMaxCentrality(Double_t maxcent=-1.0)
-  {	 		
-  	fmaxCent=maxcent;
-  }
+  Bool_t IsUseDisplacedVertices() const { return fUseDisplacedVertices; }
+  /** 
+   * Set the lower centrality cut - if negative, do not use 
+   *
+   * @deprecated We should accept all events in the AOD pass
+   * 
+   * @param mincent Lower cut on centrality
+   */
+  void SetMinCentrality(Double_t mincent=-1.0);
+  /** 
+   * Set the upper centrality cut - if negative, do not use 
+   *
+   * @deprecated We should accept all events in the AOD pass
+   * 
+   * @param mincent Upper cut on centrality
+   */
+  void SetMaxCentrality(Double_t maxcent=-1.0);
   /** 
    * Set the centrality method to use.  Possible values are 
    *
@@ -275,6 +306,11 @@ public:
    * @param m 
    */
   void SetCentralityMethod(const TString& m) { fCentMethod = m; }
+  /** 
+   * Set the centrality method
+   * 
+   * @param m Method identifier 
+   */
   void SetCentralityMethod(ECentMethod m);
   /** 
    * Set the debug level.  The higher the value the more output 
@@ -282,6 +318,15 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  /** 
+   * Set whether this is MC or not.  Needed by energy loss fitter task
+   * that never instantices AliFMDMCEventInspector.  In particular, we
+   * need this to make sure we ignore the FAST partition flag in MC
+   * for 2.76TeV pp.
+   * 
+   * @param isMC If true, assume MC input 
+   */
+  void SetMC(Bool_t isMC=true) { fMC = isMC; }
   /** 
    * Fetch our histograms from the passed list 
    * 
@@ -326,18 +371,21 @@ public:
    */
   Short_t  GetField() const { return fField; }
   /** 
+   * Get the current run number 
+   * 
+   * @return The current run number 
+   */
+  ULong_t GetRunNumber() const { return fRunNumber; }
+  /** 
    * Print information
    * 
    * @param option Not used 
    */
-  // getter for fmincentrality
-  Double_t GetMinCentrality() const { return fminCent;}
-  // gettter for fmaxcentrality 
- Double_t GetMaxCentrality() const { return fmaxCent;}
-
-
-
   void Print(Option_t* option="") const;
+  // getter for fmincentrality
+  // Double_t GetMinCentrality() const { return fMinCent;}
+  // gettter for fmaxcentrality 
+  // Double_t GetMaxCentrality() const { return fMaxCent;}
   /** 
    * Store information about running conditions in output list 
    * 
@@ -350,9 +398,8 @@ public:
    * - field Contains the L3 magnetic field (kG)
    * - run   Contains the run number
    * 
-   * @param runNo Run number - read off from ESD event
    */
-  virtual void StoreInformation(Int_t runNo);
+  virtual void StoreInformation();
   /** 
    * Return a string representing the return code 
    * 
@@ -383,6 +430,13 @@ protected:
    */
   Bool_t ReadTriggers(const AliESDEvent& esd, UInt_t& triggers, 
 		      UShort_t& nClusters);
+  /** 
+   * Possible extra check for p-Pb from 2012/13 - require V0AND.
+   * 
+   * @param esd Event structure 
+   * 
+   * @return true on success
+   */
   Bool_t CheckpAExtraV0(const AliESDEvent& esd) const;
   /** 
    * Check, for the @f$\sqrt{s}=2.76GeV@f$ pp run wether this event
@@ -423,6 +477,14 @@ protected:
    * @return true if this is a pile-up event
    */
   virtual Bool_t CheckPileup(const AliESDEvent& esd, UInt_t& triggers) const;
+  /** 
+   * Check for multi-vertex pile-up 
+   * 
+   * @param esd ESD event 
+   * 
+   * @return true if multiple vertices found 
+   */
+  virtual Bool_t CheckMultiVertex(const AliESDEvent& esd) const;
   /** 
    * Check if we have a cosmic trigger.  These should be filtered out. 
    * 
@@ -469,10 +531,10 @@ protected:
    * @param esd Data 
    * @param ip  On return, the coordinates of the IP
    * 
-   * @return true if the vertex was found and met the requirements
+   * @return status
    */
-  virtual Bool_t CheckPWGUDVertex(const AliESDEvent& esd, 
-				  TVector3& ip) const;
+  virtual EVtxStatus CheckPWGUDVertex(const AliESDEvent& esd, 
+				      TVector3& ip) const;
   /** 
    * Check the vertex. That is
    *
@@ -483,10 +545,10 @@ protected:
    * @param esd Data 
    * @param ip  On return, the coordinates of the IP
    * 
-   * @return true if the vertex was found and met the requirements
+   * @return status
    */
- virtual Bool_t CheckpA2012Vertex(const AliESDEvent& esd, 
-				  TVector3& ip) const;
+  virtual EVtxStatus CheckpA2012Vertex(const AliESDEvent& esd, 
+				     TVector3& ip) const;
   /** 
    * Check the vertex for pA 2012 settings. That is
    *
@@ -500,7 +562,7 @@ protected:
 
 
 
-  virtual Bool_t CheckVertex(const AliESDEvent& esd, TVector3& ip) const;
+  virtual EVtxStatus CheckVertex(const AliESDEvent& esd, TVector3& ip) const;
   /** 
    * Read centrality from event 
    * 
@@ -524,6 +586,8 @@ protected:
   TH1F*    fHCent;        //! Centrality 
   TH2F*    fHCentVsQual;  //! Centrality vs quality 
   TH1I*    fHStatus;      //! Event processing status 
+  TH1I*    fHVtxStatus;   //! Vertex processing status 
+  TH1I*    fHTrgStatus;   //! Trigger processing status 
   Int_t    fLowFluxCut;   //  Low flux cut
   Double_t fMaxVzErr;     //  Maximum error on v_z
   TList*   fList;         //! Histogram container 
@@ -544,11 +608,12 @@ protected:
   TList    fCollWords;     //! Configured collision words 
   TList    fBgWords;       //! Configured background words 
   TString  fCentMethod;
-  Double_t fminCent;  //min centrality
-  Double_t fmaxCent;  //max centrailty
-  Bool_t   fUsepA2012Vertex;// flag to use pA2012 Veretx selection 	  	  	
-
-  ClassDef(AliFMDEventInspector,9); // Inspect the event 
+  Double_t fMinCent;  //min centrality
+  Double_t fMaxCent;  //max centrailty
+  Bool_t   fUsepA2012Vertex;// flag to use pA2012 Veretx selection
+  ULong_t  fRunNumber; // Current run number 
+  Bool_t   fMC;        // Is this MC input
+  ClassDef(AliFMDEventInspector,11); // Inspect the event 
 };
 
 #endif

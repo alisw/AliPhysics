@@ -29,6 +29,7 @@ class TH1F;
 class TBits;
 class AliVVertex;
 class AliVEvent;
+class AliAnalysisUtils;
 //_____________________________________________________________________________
 class AliHFEextraEventCuts: public AliCFCutBase 
 {
@@ -49,6 +50,7 @@ class AliHFEextraEventCuts: public AliCFCutBase
   void SetUseSPDVertex() {fVtxSPD=kTRUE; fVtxMixed=kFALSE;} //default is vertex from tracks
   void SetCheckCorrelationSPDVtx() {fCheckCorrelationSPDVtx=kTRUE;} // check the correlation between z of different vertices
   void SetCheckSPDResolution() {fVtxResolution = kTRUE;} // check resolution on the SPD vertex
+  void SetpAPileupCut() { fPApileupCut = kTRUE; } 
  
   Bool_t   GetRequireVtxCuts() const {return fRequireVtxCuts;} // cut value getter
   Double_t GetVertexZMax() const {return fVtxZMax;} // cut values getter
@@ -62,6 +64,7 @@ class AliHFEextraEventCuts: public AliCFCutBase
        kVtxNCtrb,
        kCorrelation,
        kResolution,
+       kpApileup,
        kNCuts,
        kNStepQA=2
   };
@@ -75,14 +78,16 @@ class AliHFEextraEventCuts: public AliCFCutBase
   const AliVVertex *GetPrimaryVertexSPD(const AliVEvent * const inputEvent);
   const AliVVertex *GetPrimaryVertexTracks(const AliVEvent *const inputEvent);
 
-  Bool_t fRequireVtxCuts ; //The type of trigger to be checked
-  Double_t fVtxZMax ; //Z vertex position, maximum value
-  Double_t fVtxZMin ; //Z vertex position, minimum value
-  Int_t    fVtxNCtrbMin; //Min number of contributors to vertex
-  Bool_t   fVtxMixed;  //Flag for use of mixed vertex (primary vertex with track, if not SPD vertex)
-  Bool_t   fVtxSPD;    //Flag for use of SPD vertex 
-  Bool_t   fCheckCorrelationSPDVtx;   //Check the correlation SPD, track vertex
-  Bool_t   fVtxResolution;            //Check vertex resolution cut
+  AliAnalysisUtils *fAnalysisUtils;     // Analysis Utils for pA pileup cut
+  Bool_t fRequireVtxCuts ;              // The type of trigger to be checked
+  Double_t fVtxZMax ;                   // Z vertex position, maximum value
+  Double_t fVtxZMin ;                   // Z vertex position, minimum value
+  Int_t    fVtxNCtrbMin;                // Min number of contributors to vertex
+  Bool_t   fVtxMixed;                   // Flag for use of mixed vertex (primary vertex with track, if not SPD vertex)
+  Bool_t   fVtxSPD;                     // Flag for use of SPD vertex 
+  Bool_t   fCheckCorrelationSPDVtx;     // Check the correlation SPD, track vertex
+  Bool_t   fVtxResolution;              // Check vertex resolution cut
+  Bool_t   fPApileupCut;                // Apply pA-pileup cut
  
   TBits *fBitMap ; //cut mask
 

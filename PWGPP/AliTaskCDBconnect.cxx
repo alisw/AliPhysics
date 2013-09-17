@@ -99,7 +99,7 @@ void AliTaskCDBconnect::InitGRP()
     // geometry
     if (!gGeoManager) {
       printf("AliCDBconnect: #### Loading geometry...\n");
-      AliGeomManager::LoadGeometry();
+      AliGeomManager::LoadGeometry("geometry.root");
       if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD") ) {
         AliError("Problem with align objects"); 
       }

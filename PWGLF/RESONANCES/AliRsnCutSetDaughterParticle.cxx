@@ -34,31 +34,20 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
    AliRsnCutSet(name, AliRsnTarget::kDaughter),
    fPID(pid),
    fAppliedCutSetID(cutSetID),
-   fNsigmaTPC(1E20),
-   fNsigmaTOF(1E20),
+   fNsigmaTPC(nSigmaFast),
+   fNsigmaTOF(nSigmaFast),
    fCutQuality(new AliRsnCutTrackQuality("CutQuality")),
    fAODTrkCutFilterBit(AODfilterBit)
 {
    //
    // Constructor
    //
-   if ( (nSigmaFast<=0) &&
-        ((cutSetID == AliRsnCutSetDaughterParticle::kFastTPCpidNsigma) || (cutSetID == AliRsnCutSetDaughterParticle::kFastTOFpidNsigma) || (cutSetID == AliRsnCutSetDaughterParticle::kTOFMatchTPCpidNsigma)) ) {
-      AliError("Requested fast n-sigma PID with invalid value for n. Setting n = 1E20");
-   } else {
-      if (cutSetID == AliRsnCutSetDaughterParticle::kFastTPCpidNsigma) {
-         fNsigmaTPC = nSigmaFast;
-      }
-      if (cutSetID == AliRsnCutSetDaughterParticle::kTOFMatchTPCpidNsigma) {
-	fNsigmaTPC = nSigmaFast;
-      }
-      if ( (cutSetID == AliRsnCutSetDaughterParticle::kFastTOFpidNsigma) ||
-           (cutSetID == AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010) ) {
-         fNsigmaTOF = nSigmaFast;
-      }
-   }
-
-   Init();
+  if (nSigmaFast<=0){
+    fNsigmaTPC=1e20;
+    fNsigmaTOF=1e20;
+    AliWarning("Requested fast n-sigma PID with negative value for n. --> Setting n = 1E20");
+  } 
+  Init();
 }
 
 //__________________________________________________________________________________________________
@@ -112,16 +101,14 @@ void AliRsnCutSetDaughterParticle::Init()
        (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kTOFMatchPPB2011) || //pA analysis
        (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kTPCpidKstarPPB2011) ||
        (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kTOFpidKstarPPB2011) ||
-       (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPPB2011) ) 
+       (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPPB2011) ||
+       (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kTPCpidTOFvetoKStarPPB2011) ||
+       (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kTPCpidMatchPPB2011) ) 
     {
       fCutQuality->SetDefaults2011();
       fCutQuality->SetAODTestFilterBit(fAODTrkCutFilterBit);
-      fCutQuality->SetPtRange(0.15, 20.0);
-      fCutQuality->SetEtaRange(-0.8, 0.8);
     } else {
     fCutQuality->SetDefaults2010();
-    fCutQuality->SetPtRange(0.15, 20.0);
-    fCutQuality->SetEtaRange(-0.8, 0.8);
     fCutQuality->SetDCARPtFormula("0.0182+0.0350/pt^1.01");
     fCutQuality->SetDCAZmax(2.0);
     fCutQuality->SetSPDminNClusters(1);
@@ -133,8 +120,11 @@ void AliRsnCutSetDaughterParticle::Init()
     fCutQuality->SetAODTestFilterBit(fAODTrkCutFilterBit);
     //fCutQuality->SetITSmaxChi2(36);
     //fCutQuality->SetMaxChi2TPCConstrainedGlobal(36);
-  }\
-   AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
+  }
+  fCutQuality->SetPtRange(0.15, 20.0);
+  fCutQuality->SetEtaRange(-0.8, 0.8);
+  
+  AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
    AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
    AliRsnCutPIDNSigma *iCutTPCTOFNSigma = new AliRsnCutPIDNSigma("CutTPCTOFNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
    AliRsnCutPIDNSigma *iCutTOFNSigma    = new AliRsnCutPIDNSigma("CutTOFNSigma", fPID, AliRsnCutPIDNSigma::kTOF);//, AliRsnCutPIDNSigma::kP );
@@ -240,64 +230,64 @@ void AliRsnCutSetDaughterParticle::Init()
          AddCut(iCutTPCTOFNSigma);
          SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTOFMatch->GetName(), iCutTPCTOFNSigma->GetName()) );
          break;
-
+           
    case AliRsnCutSetDaughterParticle::kTOFMatchTRD2010 :
-         AddCut(fCutQuality);
-         AddCut(iCutTOFMatch);
-	 AddCut(iCutPhiTRD2010);
-	 SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTOFMatch->GetName(), iCutPhiTRD2010->GetName()) );
-         break;
+     AddCut(fCutQuality);
+     AddCut(iCutTOFMatch);
+     AddCut(iCutPhiTRD2010);
+     SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTOFMatch->GetName(), iCutPhiTRD2010->GetName()) );
+     break;
 	 
    case AliRsnCutSetDaughterParticle::kTOFMatchNoTRD2010 :
-         AddCut(fCutQuality);
-         AddCut(iCutTOFMatch);
-	 AddCut(iCutPhiNoTRD2010);
-	 SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTOFMatch->GetName(), iCutPhiNoTRD2010->GetName()) );
-         break;
+     AddCut(fCutQuality);
+     AddCut(iCutTOFMatch);
+     AddCut(iCutPhiNoTRD2010);
+     SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTOFMatch->GetName(), iCutPhiNoTRD2010->GetName()) );
+     break;
 
-      case AliRsnCutSetDaughterParticle::kTOFpidKstarPbPbTRD2010:
-         if (fNsigmaTOF <= 0.0) {
-            AliWarning(Form("Invalid number of sigmas required for %s. Setting default nSigma = 10",iCutTOFNSigma->GetName()));
-            SetNsigmaForFastTOFpid(10.0);
-         }
-         iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
-         //iCutTOFNSigma->AddPIDRange(3.0, 0.35, 1E20);
-         iCutTPCTOFNSigma->SinglePIDRange(5.0); //5-sigma veto on tpc signal
+   case AliRsnCutSetDaughterParticle::kTOFpidKstarPbPbTRD2010:
+     if (fNsigmaTOF <= 0.0) {
+       AliWarning(Form("Invalid number of sigmas required for %s. Setting default nSigma = 10",iCutTOFNSigma->GetName()));
+       SetNsigmaForFastTOFpid(10.0);
+     }
+     iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+     //iCutTOFNSigma->AddPIDRange(3.0, 0.35, 1E20);
+     iCutTPCTOFNSigma->SinglePIDRange(5.0); //5-sigma veto on tpc signal
 
-         AddCut(fCutQuality);
-         AddCut(iCutTOFNSigma);
-         AddCut(iCutTPCTOFNSigma);
-	 AddCut(iCutPhiTRD2010);
-         SetCutScheme( Form("%s&%s&%s&%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiTRD2010->GetName()) );
-         break;
+     AddCut(fCutQuality);
+     AddCut(iCutTOFNSigma);
+     AddCut(iCutTPCTOFNSigma);
+     AddCut(iCutPhiTRD2010);
+     SetCutScheme( Form("%s&%s&%s&%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiTRD2010->GetName()) );
+     break;
 
- case AliRsnCutSetDaughterParticle::kTOFpidKstarPbPbNoTRD2010:
-         if (fNsigmaTOF <= 0.0) {
-            AliWarning(Form("Invalid number of sigmas required for %s. Setting default nSigma = 10",iCutTOFNSigma->GetName()));
-            SetNsigmaForFastTOFpid(10.0);
-         }
-         iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
-         //iCutTOFNSigma->AddPIDRange(3.0, 0.35, 1E20);
-         iCutTPCTOFNSigma->SinglePIDRange(5.0); //5-sigma veto on tpc signal
+   case AliRsnCutSetDaughterParticle::kTOFpidKstarPbPbNoTRD2010:
+     if (fNsigmaTOF <= 0.0) {
+       AliWarning(Form("Invalid number of sigmas required for %s. Setting default nSigma = 10",iCutTOFNSigma->GetName()));
+       SetNsigmaForFastTOFpid(10.0);
+     }
+     iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+     //iCutTOFNSigma->AddPIDRange(3.0, 0.35, 1E20);
+     iCutTPCTOFNSigma->SinglePIDRange(5.0); //5-sigma veto on tpc signal
 
-         AddCut(fCutQuality);
-         AddCut(iCutTOFNSigma);
-         AddCut(iCutTPCTOFNSigma);
-	 AddCut(iCutPhiNoTRD2010);
-         SetCutScheme( Form("%s&%s&%s&%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiNoTRD2010->GetName()) );
-         break;
+     AddCut(fCutQuality);
+     AddCut(iCutTOFNSigma);
+     AddCut(iCutTPCTOFNSigma);
+     AddCut(iCutPhiNoTRD2010);
+     SetCutScheme( Form("%s&%s&%s&%s",fCutQuality->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),iCutPhiNoTRD2010->GetName()) );
+     break;
 
    case AliRsnCutSetDaughterParticle::kTOFMatchTPCpidNsigma :
-         if (fNsigmaTPC <= 0.0) {
-            AliWarning(Form("Invalid number of sigmas required for %s. Setting default nSigma = 10",iCutTPCNSigma->GetName()));
-            SetNsigmaForFastTPCpid(10.0);
-         }
-         iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
-         AddCut(fCutQuality);
-         AddCut(iCutTPCNSigma);
-	 AddCut(iCutTOFMatch);	
-         SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName()) );
-         break;
+     if (fNsigmaTPC <= 0.0) {
+       AliWarning(Form("Invalid number of sigmas required for %s. Setting default nSigma = 10",iCutTPCNSigma->GetName()));
+       SetNsigmaForFastTPCpid(10.0);
+     }
+     iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+     AddCut(fCutQuality);
+     AddCut(iCutTPCNSigma);
+     AddCut(iCutTOFMatch);	
+     SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName()) );
+     break;
 
    case AliRsnCutSetDaughterParticle::kQualityStd2010TRD:
      AddCut(fCutQuality);
@@ -373,9 +363,43 @@ void AliRsnCutSetDaughterParticle::Init()
      // quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
      SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
      break;
+        
+           
+   case AliRsnCutSetDaughterParticle::kTPCpidTOFvetoKStarPPB2011:
+     if (fNsigmaTPC <= 0.0) {
+       AliWarning(Form("Invalid number of sigmas required for %s. Setting nSigma = 5.0",iCutTPCNSigma->GetName()));
+       SetNsigmaForFastTPCpid(5.0);
+     }
+     iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+     
+     if(fNsigmaTPC==3.0)
+       iCutTOFNSigma->SinglePIDRange(5.0);
+     if(fNsigmaTPC==2.0)
+       iCutTOFNSigma->SinglePIDRange(3.0);
+     
+     AddCut(fCutQuality);
+     AddCut(iCutTPCNSigma);
+     AddCut(iCutTOFNSigma);
+     
+     // scheme:
+     // quality & [ (TPCsigma & TOFsigma-2) ]
+     SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(),iCutTPCNSigma->GetName(),iCutTOFNSigma->GetName()) ) ;
+     break;
+     
+   case AliRsnCutSetDaughterParticle::kTPCpidMatchPPB2011:
+     if (fNsigmaTPC <= 0.0) {
+       AliWarning(Form("Invalid number of sigmas required for %s. Setting nSigma = 5.0",iCutTPCNSigma->GetName()));
+       SetNsigmaForFastTPCpid(5.0);
+     }
+     iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+     AddCut(fCutQuality);
+     AddCut(iCutTPCNSigma);
+     AddCut(iCutTOFMatch);
+     SetCutScheme( Form("%s&%s&%s",fCutQuality->GetName(), iCutTPCNSigma->GetName(),iCutTOFMatch->GetName()) );
+     break;
 
-    default :
-         break;
+   default :
+     break;
    }
 
 }

@@ -40,8 +40,10 @@ public:
   void CrossSectionUnit(const char* unit="ub") { fCrossSectionUnit=unit; fCrossSectionUnit.ToUpper(); }
   TString CrossSectionUnit() const { return fCrossSectionUnit; }
   
-  void DrawFills(Double_t ymin, Double_t ymax);
-  void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label);
+  void DrawFills(Double_t ymin, Double_t ymax, Int_t color=5);
+  void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label,Int_t color=5);
+
+  void DrawPeriods(Double_t ymin, Double_t ymax, Int_t color=5);
 
   void GetCTPObjects(Int_t runNumber, AliTriggerConfiguration*& tc, AliTriggerRunScalers*& trs, AliLHCData*& lhc) const;
 
@@ -62,6 +64,8 @@ public:
   
   Float_t GetPauseAndConfigCorrection(Int_t runNumber, const char* triggerClassName);
 
+  void GetPileUpFactor(Int_t runNumber, const char* triggerClassName, Double_t purity, Double_t& value, Double_t& error);
+  
   const std::vector<int>& GetRunList() const { return fRunList; }
 
   Int_t GetTriggerInput(Int_t runNumber, const char* inputname);
@@ -82,7 +86,9 @@ public:
   TGraph* MakeGraph(const std::vector<int>& vx, const std::vector<int>& vex,
                     const std::vector<double>& vy, const std::vector<double>& vey);
 
-  Int_t NumberOfInteractingBunches(const AliLHCData& lhc) const;
+  static Double_t Mu(Double_t L0B, Double_t Nb);
+
+  Int_t NumberOfInteractingBunches(const AliLHCData& lhc, Int_t runNumber) const;
 
   TGraph* PlotTrigger(const char* triggerClassName, const char* what);
   

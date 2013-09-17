@@ -38,8 +38,14 @@
 // Author: Gustavo Conesa Balbastre (LPSC)
 //         
 //_________________________________________________________________________
-
-#include "TH2F.h"
+#include <TSystem.h>
+#include <TFile.h>
+#include <TKey.h>
+#include <TH2F.h>
+#include <TProfile.h>
+#include <TProfile2D.h>
+#include <TList.h>
+#include <TClonesArray.h>
 #include "AliAODHeader.h"
 #include "AliTriggerAnalysis.h"
 #include "AliESDEvent.h"
@@ -57,14 +63,16 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fAcceptFastCluster(kTRUE),
   fZVertexCut(10.), 
   fTrackMultEtaCut(0.8),
-  fCaloFilterPatch(kFALSE),
-  fOutputContainer(0x0), 
+  fAvgTrials(-1),
+  fOutputContainer(0x0),
   fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
   fTriggerAnalysis (new AliTriggerAnalysis),
-  fhNEvents(0),
+  fCurrFileName(0),
+  fhNEvents(0),   
   fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
   fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
-  fhCentrality(0), fhEventPlaneAngle(0)
+  fhCentrality(0), fhEventPlaneAngle(0),
+  fh1Xsec(0),      fh1Trials(0)
 {
   //ctor
   DefineOutput(1, TList::Class());
@@ -76,14 +84,16 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fAcceptFastCluster(kTRUE),
     fZVertexCut(10.),
     fTrackMultEtaCut(0.8),
-    fCaloFilterPatch(kFALSE),
-    fOutputContainer(0x0), 
+    fAvgTrials(-1),
+    fOutputContainer(0x0),
     fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
     fTriggerAnalysis (new AliTriggerAnalysis),
+    fCurrFileName(0),
     fhNEvents(0),
     fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
     fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
-    fhCentrality(0), fhEventPlaneAngle(0)
+    fhCentrality(0), fhEventPlaneAngle(0),
+    fh1Xsec(0),      fh1Trials(0)
 {
   // ctor
   DefineOutput(1, TList::Class());
@@ -115,6 +125,14 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   
   fOutputContainer = new TList();
   
+  fh1Xsec = new TH1F("hXsec","xsec from pyxsec.root",1,0,1);
+  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+  fOutputContainer->Add(fh1Xsec);
+  
+  fh1Trials = new TH1F("hTrials","trials root file",1,0,1);
+  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+  fOutputContainer->Add(fh1Trials);
+
   fhZVertex     = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
@@ -181,6 +199,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   
 }
 
+
 //_______________________________________________
 void AliAnalysisTaskCounter::UserExec(Option_t *) 
 {
@@ -189,22 +208,18 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   
   //printf("___ Event __ %d __\n",(Int_t)Entry());
   
+  Notify();
+  
   fhNEvents->Fill(0.5);  
   
   AliVEvent * event = InputEvent();
-  if (!event) 
-  {
-    printf("AliAnalysisTaskCounter::UserExec() - ERROR: event not available \n");
-    return;
-  }
-  
   AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (event);
   
-  TString triggerclasses = "";
-  if(esdevent) triggerclasses = esdevent->GetFiredTriggerClasses();
-  if(aodevent) triggerclasses = aodevent->GetFiredTriggerClasses();
+  TString triggerclasses = event->GetFiredTriggerClasses();
 
+  //printf("Trigger class fired: %s \n",event->GetFiredTriggerClasses().Data());
+  
   if (triggerclasses.Contains("FAST") && !triggerclasses.Contains("ALL") && !fAcceptFastCluster) 
   {
     //printf("Do not count events from fast cluster, trigger name %s\n",triggerclasses.Data());
@@ -237,55 +252,22 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   }
   //else printf("Vertex out %f \n",v[2]);
   
-
   //--------------------------------------------------
-  //Tweak for calorimeter only productions
+  //Count tracks, cut on number of tracks in eta < 0.8
   //--------------------------------------------------
-  if(fCaloFilterPatch && !esdevent)
-  { 
-    if(event->GetNumberOfCaloClusters() > 0) 
-    {
-      AliVCluster * calo = event->GetCaloCluster(0);
-      if(calo->GetNLabels() == 4){
-        Int_t * selection = calo->GetLabels();
-        bPileup   = selection[0];
-        bGoodV    = selection[1]; 
-        bV0AND    = selection[2]; 
-        trackMult = selection[3];
-        //if(selection[0] || selection[1] || selection[2])
-        //printf(" pu %d, gv %d, v0 %d, track mult %d\n ", selection[0], selection[1], selection[2], selection[3]);
-        if(trackMult > 0 )  
-          bSelectTrack = kFALSE;
-      } 
-      else 
-      {
-        //First filtered AODs, track multiplicity stored there.  
-        trackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
-      }
-    }
-    else
-    {   //at least one cluster
-
-        //First filtered AODs, track multiplicity stored there.  
-        trackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
-    }
-  }
-  else 
-  {
-    //--------------------------------------------------
-    //Count tracks, cut on number of tracks in eta < 0.8
-    //--------------------------------------------------
-    Int_t nTracks   = event->GetNumberOfTracks() ;
-    for (Int_t itrack =  0; itrack <  nTracks; itrack++) 
-    {////////////// track loop
-      AliVTrack * track = (AliVTrack*)event->GetTrack(itrack) ; // retrieve track from esd
-      
-      //Only for ESDs
-      if(esdevent && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
-      
-      //Do not count tracks out of acceptance cut
-      if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
-    }
+  Int_t nTracks   = event->GetNumberOfTracks() ;
+  for (Int_t itrack =  0; itrack <  nTracks; itrack++)
+  {////////////// track loop
+    AliVTrack * track = (AliVTrack*)event->GetTrack(itrack) ; // retrieve track from esd
+    
+    //ESDs
+    if(esdevent && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
+    
+    //AODs
+    if(aodevent && !((AliAODTrack*)track)->IsHybridGlobalConstrainedGlobal()) continue ;
+    
+    //Do not count tracks out of acceptance cut
+    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
   }
   
   //printf("AliAnalysisTaskCounter::UserExec() - Track Mult %d \n",trackMult);
@@ -303,8 +285,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //---------------------------------
   // V0AND
   //---------------------------------
-  if(esdevent && !fCaloFilterPatch) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
-  //else if(aodevent  && !fCaloFilterPatch) bV0AND = //FIXME FOR AODs
+  
+  if(esdevent) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
   
   if(bV0AND)
   {
@@ -317,9 +299,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //---------------------------------
   // Pileup
   //---------------------------------
-  if(!fCaloFilterPatch)
-    bPileup = event->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
-  //bPileup = event->IsPileupFromSPD(); 
+  bPileup = event->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
+  //bPileup = event->IsPileupFromSPD();
   
   if (!bPileup)
   {
@@ -330,7 +311,7 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //---------------------------------
   // Good vertex
   //---------------------------------
-  if(!fCaloFilterPatch) bGoodV = CheckForPrimaryVertex();
+  bGoodV = CheckForPrimaryVertex();
   
   //Remove events with  vertex (0,0,0), bad vertex reconstruction
   if(TMath::Abs(v[0]) < 1.e-6 && 
@@ -419,6 +400,7 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
 
 }
 
+
 //____________________________________________________
 Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
 {
@@ -454,7 +436,6 @@ Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
 }
 
 
-
 //_____________________________________________________
 void AliAnalysisTaskCounter::FinishTaskOutput()
 {
@@ -475,3 +456,136 @@ void AliAnalysisTaskCounter::FinishTaskOutput()
     fOutputContainer->Add(histBin0); 
   
 }
+
+
+//_____________________________________
+Bool_t AliAnalysisTaskCounter::Notify()
+{
+  //
+  // Implemented Notify() to read the cross sections
+  // and number of trials from pyxsec.root
+  //
+  
+  // Fetch the aod also from the input in,
+  // have todo it in notify
+  
+  Float_t xsection = 0;
+  Float_t trials   = 1;
+  fAvgTrials = -1;
+  
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  if(!tree) return kFALSE;
+  
+  TFile *curfile = tree->GetCurrentFile();
+  
+  if(!curfile) return kFALSE;
+  
+  if(fCurrFileName == curfile->GetName()) return kFALSE;
+  
+  fCurrFileName = TString(curfile->GetName());
+  
+  if(!fh1Xsec||!fh1Trials)
+  {
+    Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+    return kFALSE;
+  }
+  
+  Bool_t ok = PythiaInfoFromFile(fCurrFileName,xsection,trials);
+  
+  if(!ok) return kFALSE;
+  
+  fh1Xsec->Fill("<#sigma>",xsection);
+  
+  // construct a poor man average trials
+  Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+  
+  if(trials >= nEntries && nEntries > 0.) fAvgTrials = trials/nEntries;
+  
+  fh1Trials->Fill("#sum{ntrials}",trials);
+  
+  printf("AliAnalysisTaskCounter::Notify() - xs %f, trial %f, avg trials %f\n",xsection,trials, fAvgTrials);
+  
+  if(fDebug) Printf("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName());
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________________________________
+Bool_t AliAnalysisTaskCounter::PythiaInfoFromFile(TString file,Float_t & xsec,Float_t & trials)
+{
+  //
+  // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+  // This is to called in Notify and should provide the path to the AOD/ESD file
+  
+  xsec   = 0;
+  trials = 1;
+  
+  if(file.Contains("root_archive.zip#"))
+  {
+    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+    Ssiz_t pos  = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  }
+  else
+  {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  
+  //Printf("%s",file.Data());
+  
+  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
+  if(!fxsec)
+  {
+    // next trial fetch the histgram file
+    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+    if(!fxsec)
+    {
+      // not a severe condition but inciate that we have no information
+      return kFALSE;
+    }
+    else
+    {
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
+      if(!key)
+      {
+        fxsec->Close();
+        return kFALSE;
+      }
+      
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if(!list)
+      {
+        fxsec->Close();
+        return kFALSE;
+      }
+      
+      xsec    = ((TProfile*)list->FindObject("h1Xsec"))  ->GetBinContent(1);
+      trials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
+      fxsec->Close();
+    }
+  } // no tree pyxsec.root
+  else
+  {
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree)
+    {
+      fxsec->Close();
+      return kFALSE;
+    }
+    
+    UInt_t   ntrials  = 0;
+    Double_t  xsection  = 0;
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    trials = ntrials;
+    xsec = xsection;
+    fxsec->Close();
+  }
+  
+  return kTRUE;
+}
+

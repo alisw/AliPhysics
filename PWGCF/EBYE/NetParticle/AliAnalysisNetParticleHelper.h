@@ -55,10 +55,8 @@ class AliAnalysisNetParticleHelper : public TNamed {
   void SetMinTrackLengthMC(Float_t f)                {fMinTrackLengthMC    = f;}
   void SetNSigmaMaxCdd(Float_t f)                    {fNSigmaMaxCdd        = f;}
   void SetNSigmaMaxCzz(Float_t f)                    {fNSigmaMaxCzz        = f;}
-  void SetPhiRange(Float_t f1, Float_t f2) {
-    fPhiMin = f1; 
-    fPhiMax = (f1 < f2) ? f2 : f2+TMath::TwoPi();
-  }
+
+  void SetPhiRange(Float_t f1, Float_t f2);
 
   void SetParticleSpecies(AliPID::EParticleType pid);
 
@@ -241,16 +239,14 @@ class AliAnalysisNetParticleHelper : public TNamed {
    * ---------------------------------------------------------------------------------
    */
   Int_t                 fModeDistCreation;         //  Dist creation mode       : 1 = on | 0 = off 
-
+  // =======================================================================
   AliInputEventHandler *fInputEventHandler;        //! Ptr to input event handler (ESD or AOD)
   AliPIDResponse       *fPIDResponse;              //! Ptr to PID response Object
   AliESDEvent          *fESD;                      //! Ptr to ESD event
   AliAODEvent          *fAOD;                      //! Ptr to AOD event
   AliMCEvent           *fMCEvent;                  //! Ptr to MC event
   AliStack             *fStack;                    //! Ptr to stack
-
   // =======================================================================
-
   Int_t                 fCentralityBin;            //  Centrality bin of current event within max centrality bin
   Float_t               fCentralityPercentile;     //  Centrality percentile of current event
   // ----------------------------------------------------------------------
@@ -266,15 +262,13 @@ class AliAnalysisNetParticleHelper : public TNamed {
   AliPID::EParticleType fParticleSpecies;          //  Particle species on basis of AliPID
   TString               fPartName[2];              //  Particle name (short) - particle/antiparticle 
   TString               fPartTitle[2];             //  Particle name (long)  - particle/antiparticle 
-  TString               fPartTitleLatex[2];        //  Particle name (LATEX) - particle/antiparticle 
+  TString               fPartTitleLatex[2];        //  Particle title (LATEX) - particle/antiparticle
   // -----------------------------------------------------------------------
   Bool_t                fUsePID;                   //  Use PID, default is on
   Float_t               fNSigmaMaxTPC;             //  N Sigma for TPC PID
   Float_t               fNSigmaMaxTOF;             //  N Sigma for TOF PID
   Float_t               fMinPtForTOFRequired;      //  Min pt from where TOF is required
-
   // =======================================================================
-
   TH1F                 *fHEventStat0;              //  Event cut statistics
   TH1F                 *fHEventStat1;              //  Event cut statistics - incremental
   Int_t                 fHEventStatMax;            //  Max N cuts to be included in HEventStat
@@ -284,11 +278,8 @@ class AliAnalysisNetParticleHelper : public TNamed {
   // -----------------------------------------------------------------------
   TH1F                 *fHCentralityStat;          //  Centrality statistics
   Int_t                 fNCentralityBins;          //  N centrality bins used
-
   // =======================================================================
-
   TF1                  *fEtaCorrFunc;              //! Eta correction function for TPC dE/dx  
-
   // -----------------------------------------------------------------------
 
   ClassDef(AliAnalysisNetParticleHelper, 1);

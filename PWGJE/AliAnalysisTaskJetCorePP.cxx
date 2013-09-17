@@ -127,7 +127,7 @@ fIsMC(0),
 faGenIndex(0),
 faRecIndex(0),
 fkAcceptance(2.0*TMath::Pi()*1.8),
-fkDeltaPhiCut(TMath::Pi()-0.6),
+fkDeltaPhiCut(TMath::Pi()-0.8),
 fh1Xsec(0x0),
 fh1Trials(0x0),
 fh1AvgTrials(0x0),
@@ -204,7 +204,7 @@ fIsMC(0),
 faGenIndex(0),
 faRecIndex(0),
 fkAcceptance(2.0*TMath::Pi()*1.8),
-fkDeltaPhiCut(TMath::Pi()-0.6),
+fkDeltaPhiCut(TMath::Pi()-0.8),
 fh1Xsec(0x0),
 fh1Trials(0x0), 
 fh1AvgTrials(0x0),
@@ -382,14 +382,12 @@ void AliAnalysisTaskJetCorePP::Init()
    if(!strlen(fJetBranchName.Data())){
       AliError("Jet branch name not set.");
    }
-
 }
 
 //--------------------------------------------------------------
 
 void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 {
-
   // Create histograms
    // Called once
    fListJets = new TList();  //reconstructed level
@@ -422,13 +420,13 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
                              nBinsCentrality,0.0,100.0,50,0.0,50.0);
    fOutputList->Add(fh2Ntriggers);
 
-   //Centrality, A, pTjet, pTtrigg
-   const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality, 100,   100,  50};
-   const Double_t lowBinSpec[dimSpec] = {0.0,             0.0,     0, 0.0};
-   const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0, 200.0,50.0};
+   //Centrality, A, pTjet, pTtrigg, dphi
+   const Int_t dimSpec   = 5;
+   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality, 100,   100,  50, TMath::Nint(10*(TMath::Pi()-fkDeltaPhiCut))};
+   const Double_t lowBinSpec[dimSpec] = {0.0,             0.0,     0, 0.0, fkDeltaPhiCut};
+   const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0, 200.0,50.0, TMath::Pi()};
    fHJetSpec = new THnSparseF("fHJetSpec",
-                   "Recoil jet spectrum [cent,A,pTjet,pTtrig]",
+                   "Recoil jet spectrum [cent,A,pTjet,pTtrig,dphi]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
    fOutputList->Add(fHJetSpec);  
 
@@ -453,11 +451,11 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fhJetPhi = new TH2D("fhJetPhi","Azim dist jets vs pTjet",
                         50, 0, 100, 50,-TMath::Pi(),TMath::Pi());
    fhTriggerPhi= new TH2D("fhTriggerPhi","azim dist trig had vs pTtrigg",
-                        25, 0, 50, 50,-TMath::Pi(),TMath::Pi());
+                        50, 0, 50, 50,-TMath::Pi(),TMath::Pi());
    fhJetEta = new TH2D("fhJetEta","Eta dist jets vs pTjet",
                         50,0, 100, 40,-0.9,0.9);
    fhTriggerEta = new TH2D("fhTriggerEta","Eta dist trig had vs pTtrigg",
-                        25, 0, 50, 40,-0.9,0.9);
+                        50, 0, 50, 40,-0.9,0.9);
 
    fhVertexZ = new TH1D("fhVertexZ","z vertex",40,-20,20);  
    fhVertexZAccept = new TH1D("fhVertexZAccept","z vertex after cut",40,-20,20);  
@@ -875,7 +873,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          if(!triggerGen) continue;
  
          if(fHardest >= 2){ 
-            if(triggerGen->Pt() < 10.0) continue; //all hadrons pt>10  
+            if(triggerGen->Pt() < 6.0) continue; //all hadrons pt>6  
          }
          if(TMath::Abs((Float_t) triggerGen->Eta()) > fTriggerEtaCut) continue;
 
@@ -898,7 +896,8 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
                Double_t fillspecgen[] = { centValue,
                                           jet->EffectiveAreaCharged(),
                                           jet->Pt(),
-                                          ptTriggGen
+                                          ptTriggGen,
+                                          TMath::Abs((Double_t) dphi)
                                         };
               fHJetSpecGen->Fill(fillspecgen);
             }//back to back jet-trigger pair
@@ -1032,7 +1031,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          return;
       }
       if(fHardest >= 2){ 
-         if(triggerHadron->Pt() < 10.0) continue; //all hadrons pt>10  
+         if(triggerHadron->Pt() < 6.0) continue; //all hadrons pt>6  
       }
       if(TMath::Abs((Float_t) triggerHadron->Eta())> fTriggerEtaCut) continue;
  
@@ -1080,7 +1079,8 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          Double_t fillspec[] = { centValue,
                                  areaJet,
                                  pTJet,
-                                 triggerHadron->Pt()
+                                 triggerHadron->Pt(),
+                                 TMath::Abs((Double_t) dphi)
                                };
          fHJetSpec->Fill(fillspec);
       }//jet loop

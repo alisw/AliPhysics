@@ -38,12 +38,16 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillPileUpHistograms()     { fFillPileUpHistograms    = kTRUE  ; }
   void    SwitchOffFillPileUpHistograms()    { fFillPileUpHistograms    = kFALSE ; }
   
+  void    SwitchOnFillTrackBCHistograms()    { fFillVertexBC0Histograms = kTRUE  ; }
+  void    SwitchOffFillTrackBCHistograms()   { fFillVertexBC0Histograms = kFALSE ; }
+
   void    SwitchOnFillVertexBC0Histograms()  { fFillVertexBC0Histograms = kTRUE  ; }
   void    SwitchOffFillVertexBC0Histograms() { fFillVertexBC0Histograms = kFALSE ; }
 
  private:
   
   Bool_t  fFillPileUpHistograms;    // Fill pile-up related histograms
+  Bool_t  fFillTrackBCHistograms;   // Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms; // Fill histograms for tracks with vertex BC=0 or not related histograms
   
   //Histograms
@@ -98,7 +102,12 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtUnknown;   //! pT distribution
   TH2F * fhPhiUnknown;  //! phi distribution vs pT
   TH2F * fhEtaUnknown;  //! eta distribution vs pT
-  
+
+  TH1F * fhMCPt; //! Number of generated charged hadrons vs pT coming from MC particle
+  TH2F * fhMCPhi; //! Number of generated charged hadrons vs phi coming from MC particle
+  TH2F * fhMCEta; //! Number of generated charged hadrons vs eta coming from MC particle
+  TH1F * fhMCRecPt; //! Number of reconstructed charged hadrons vs pT coming from MC particle
+
   // TOF
   TH1F * fhTOFSignal;                    //! TOF signal
   TH1F * fhTOFSignalPtCut;               //! TOF signal pt and acceptance cut
@@ -145,11 +154,15 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtDCAVtxOutBC0PileUpNoTOFHit[3]; //! DCA (xy,z,constrained) of all tracks, vertex BC!=0, SPD pile-up, no hit in TOF
   TH2F * fhPtDCAVtxInBC0PileUpNoTOFHit[3];  //! DCA (xy,z,constrained) of all tracks, vertex BC=0, SPD pile-up, no hit in TOF
   
-  
+  TH2F * fhPtNPileUpSPDVtx;	              //! cluster pt vs number of spd pile-up vertices
+  TH2F * fhPtNPileUpTrkVtx;               //! cluster pt vs number of track pile-up vertices
+  TH2F * fhPtNPileUpSPDVtxBC0;	          //! cluster pt vs number of spd pile-up vertices, track in BC=0
+  TH2F * fhPtNPileUpTrkVtxBC0;            //! cluster pt vs number of track pile-up vertices, track in BC=0
+
   AliAnaChargedParticles(              const AliAnaChargedParticles & ch) ; // cpy ctor
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ; // cpy assignment
   
-  ClassDef(AliAnaChargedParticles,7)
+  ClassDef(AliAnaChargedParticles,9)
 
 } ;
 

@@ -10,6 +10,7 @@ AliAnalysisTaskHJetEmbed *AddTaskHJetEmbedPYTHIA(const TString period      = "lh
 						 const TString jetArrayDL  = "",
 						 const TString jetArray    = "",
 						 const TString rhoName     = "",
+						 const Double_t minTTPt    = 19,   const Double_t maxTTPt   = 25,
 						 const Double_t minTrkPt   = 0.15, const Double_t maxTrkPt = 1e4,
 						 const Double_t minTrkEta  = -0.9, const Double_t maxTrkEta = 0.9,
 						 const Double_t minTrkPhi  = 0,    const Double_t maxTrkPhi = 2*TMath::Pi()
@@ -34,11 +35,12 @@ AliAnalysisTaskHJetEmbed *AddTaskHJetEmbedPYTHIA(const TString period      = "lh
   }
   
   //Analyze
-  AliAnalysisTaskHJetEmbed *taskEmbed = new AliAnalysisTaskHJetEmbed("AnaEmbedPYTHIA");
+  AliAnalysisTaskHJetEmbed *taskEmbed = new AliAnalysisTaskHJetEmbed(Form("AnaEmbedPYTHIA_TT%1.0f%1.0f",minTTPt,maxTTPt));
   taskEmbed->SetRunPeriod(period.Data());
   taskEmbed->SetTrkPtRange(minTrkPt, maxTrkPt);
   taskEmbed->SetTrkPhiRange(minTrkPhi, maxTrkPhi);
   taskEmbed->SetTrkEtaRange(minTrkEta, maxTrkEta);
+  taskEmbed->SetTTRange(minTTPt,maxTTPt);
   taskEmbed->SetRadius(jetRadius);
   taskEmbed->SetTrackArrName(trackName.Data());
   taskEmbed->SetMCParticleArrName(mcName.Data());
@@ -53,13 +55,13 @@ AliAnalysisTaskHJetEmbed *AddTaskHJetEmbedPYTHIA(const TString period      = "lh
     taskEmbed->SetCollisionSystem("PbPb");
   else
     taskEmbed->SetCollisionSystem("pp");
-
+  
   if(period.Contains("lhc11h",TString::kIgnoreCase))
     taskEmbed->SelectCollisionCandidates(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("EmbedPYTHIA",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s",  AliAnalysisManager::GetCommonFileName()));
+  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("EmbedPYTHIA_TT%1.0f%1.0f",minTTPt,maxTTPt),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s",  AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput(taskEmbed,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskEmbed,1,coutput);
-
+      
   return taskEmbed;
 }

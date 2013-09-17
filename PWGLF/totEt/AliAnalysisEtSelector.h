@@ -42,6 +42,8 @@ public:
     
     // Return CaloClusters for the detector
     virtual TRefArray* GetClusters() { return 0; }
+
+    virtual Float_t ShiftAngle(Float_t phi);//Always returns an angle in radians between -pi<phi<pi
     
     // Return true if cluster has energy > cut
     virtual Bool_t PassMinEnergyCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
@@ -68,16 +70,22 @@ public:
     Int_t GetPrimary(const Int_t partIdx, AliStack &stack) const;
     
     // Cut on geometrical acceptance 
-    virtual Bool_t CutGeometricalAcceptance(const TParticle &/*part*/) const { return true; }
+    virtual Bool_t CutGeometricalAcceptance(const TParticle &/*part*/) { return true; }
     
     // Cut on geometrical acceptance 
-    virtual Bool_t CutGeometricalAcceptance(const AliVTrack &/*part*/) const { return true; }
+    virtual Bool_t CutGeometricalAcceptance(const AliVTrack &/*part*/) { return true; }
+    
+    // Cut on geometrical acceptance 
+    virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster &/*part*/) { return true; }
     
     // From secondary vertex?
     virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
     
     // Cluster is in correct detector
     virtual Bool_t IsDetectorCluster(const AliESDCaloCluster &cluster) const = 0;
+
+    // Get correct cluster label - PHOS needs different method
+    virtual UInt_t GetLabel(const AliESDCaloCluster *cluster, AliStack *stack){if(!stack){return 0;}else{return TMath::Abs(cluster->GetLabel());}}
     
 protected:
   
@@ -87,7 +95,7 @@ protected:
 
     AliAnalysisEtCuts *fCuts; // Pointer to the cuts object; DS: also in base class?
     
-    Bool_t SuspeciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
+    Bool_t SuspiciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
     
     Int_t fRunNumber;
 

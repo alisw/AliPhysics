@@ -16,6 +16,10 @@
 // macro for Bethe-Bloch parameters
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TString.h>
+#endif
+
 void SetParameters(Double_t* param, Double_t c0, Double_t c1, Double_t c2, Double_t c3, Double_t c4)
 {
 //

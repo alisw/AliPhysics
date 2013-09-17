@@ -12,6 +12,7 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
+#include <TRandom3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -55,6 +56,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
+  fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
   fIsMcPart(0),
@@ -92,6 +94,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
+  fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
   fIsMcPart(0),
@@ -224,6 +227,15 @@ void AliEmcalJetTask::FindJets()
       if ((eta<fEtaMin) || (eta>fEtaMax) ||
           (phi<fPhiMin) || (phi>fPhiMax))
         continue;
+
+      // artificial inefficiency
+      if (fTrackEfficiency < 1.) {
+	Double_t rnd = gRandom->Rndm();
+	if (fTrackEfficiency < rnd) {
+	  AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", iTracks));
+	  continue;
+	}
+      }
 
       // offset of 100 for consistency with cluster ids
       AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", iTracks, t->GetLabel(), t->Pt()));
@@ -455,7 +467,7 @@ void AliEmcalJetTask::FindJets()
           maxNe = cPt;
 
         if (c->GetLabel() > fMinMCLabel) // MC particle
-          mcpt += cPt * c->GetMCEnergyFraction();
+          mcpt += c->GetMCEnergyFraction() > 1e-6 ? cPt * c->GetMCEnergyFraction() : cPt;
 
         if (cPhi<0) 
           cPhi += TMath::TwoPi();
@@ -531,6 +543,11 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
 Bool_t AliEmcalJetTask::DoInit()
 {
   // Init. Return true if successful.
+
+  if (fTrackEfficiency < 1.) {
+    if (gRandom) delete gRandom;
+    gRandom = new TRandom3(0);
+  }
 
   // get input collections
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();

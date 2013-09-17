@@ -74,6 +74,8 @@ public:
           kKstar = 3,  // Lc --> K* + pi
           kDelta = 4   // Lc --> Delta + K
         };
+
+	enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; // multiplicity estimators
 	
 	AliCFTaskVertexingHF();
 	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func = 0x0);
@@ -123,6 +125,12 @@ public:
 	}
 	void CreateMeasuredNchHisto();
 	Double_t GetNchWeight(Int_t nch);
+	void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
+	Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
+	void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
+
+	void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; }
+	Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
 
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	UShort_t GetDselection (){return fOriginDselection;}
@@ -160,6 +168,9 @@ public:
 	TF1* GetWeightFunction() const {return fFuncWeight;}
 	void SetPtWeightsFromFONLL276overLHC12a17a();
 	void SetPtWeightsFromDataPbPb276overLHC12a17a();
+	void SetPtWeightsFromFONLL276overLHC12a17b();
+	void SetPtWeightsFromFONLL276andBAMPSoverLHC12a17b();
+	void SetPtWeightsFromFONLL5overLHC13d3();
 
         void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
         UInt_t GetResonantDecay() const {return fResonantDecay;}
@@ -201,7 +212,8 @@ protected:
 	Bool_t fUseFlatPtWeight;       // flag to decide to use a flat pt shape
 	Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
 	Bool_t fUseNchWeight;         // flag to decide whether to use Ncharged weights != 1 when filling the container or not
-	Int_t fNvar;                   // number of variables for the container
+	Bool_t fUseTrackletsWeight;   // flag to decide whether to use Ncharged weights != 1 when filling the container or not
+	Int_t fNvar;                  // number of variables for the container
 	TString fPartName;    // D meson name
 	TString fDauNames;    // daughter in fin state
 	Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
@@ -221,7 +233,10 @@ protected:
 	Bool_t fUseSelectionBit;     // flag to use selection bit
 	UInt_t fPDGcode; // PDG code
 
-	ClassDef(AliCFTaskVertexingHF,15); // class for HF corrections as a function of many variables
+	Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+	Bool_t fIsPPData; // flag for pp data (not checking centrality)
+
+	ClassDef(AliCFTaskVertexingHF,17); // class for HF corrections as a function of many variables
 };
 
 #endif

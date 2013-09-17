@@ -24,7 +24,7 @@ AliChaoticity *AddTaskChaoticity(
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskBF", "No analysis manager to connect to.");
+    ::Error("AddTaskChaoticity", "No analysis manager to connect to.");
     return NULL;
   }
  
@@ -119,12 +119,9 @@ AliChaoticity *AddTaskChaoticity(
     cout << "Requested file:" << inputFileFSI << " was not opened. ABORT." << endl;
     return NULL;
   }  
-  TH2D *FSI2gaus[2];
   TH2D *FSI2therm[2];
   TH3D *FSI3ss[6];
   TH3D *FSI3os[6];
-  FSI2gaus[0] = (TH2D*)inputFileFSI->Get("K2ssG");
-  FSI2gaus[1] = (TH2D*)inputFileFSI->Get("K2osG");
   FSI2therm[0] = (TH2D*)inputFileFSI->Get("K2ssT");
   FSI2therm[1] = (TH2D*)inputFileFSI->Get("K2osT");
   for(Int_t CB=0; CB<6; CB++) {
@@ -136,15 +133,13 @@ AliChaoticity *AddTaskChaoticity(
     FSI3os[CB] = (TH3D*)inputFileFSI->Get(nameOS->Data());
   }
   //
-  FSI2gaus[0]->SetDirectory(0);
-  FSI2gaus[1]->SetDirectory(0);
   FSI2therm[0]->SetDirectory(0);
   FSI2therm[1]->SetDirectory(0);
   for(Int_t CB=0; CB<6; CB++) {
     FSI3ss[CB]->SetDirectory(0);
     FSI3os[CB]->SetDirectory(0);
   }
-  ChaoticityTask->SetFSICorrelations( kTRUE, FSI2gaus, FSI2therm , FSI3os, FSI3ss);
+  ChaoticityTask->SetFSICorrelations( kTRUE, FSI2therm , FSI3os, FSI3ss);
   ////////////////////////////////////////////////////
   
   

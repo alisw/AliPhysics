@@ -22,6 +22,8 @@
 #include "TChain.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDVertex.h"
+#include "AliEventplane.h"
+#include "TProfile2D.h"
 
 // STL includes
 //#include <iostream>
@@ -54,6 +56,7 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0():
   fV3(kTRUE),
   fIsMC(kFALSE),
   fQAsw(kFALSE),
+  fIsAfter2011(kFALSE),
   fRun(-1),
   fNcluster(70),
   fList(new TList()),
@@ -104,6 +107,17 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0():
   fFillDCA(kFALSE),
   fContQApid(NULL),
   fModulationDEDx(kFALSE),
+  fZvtx(0.),
+  fNK0s(0),
+  fNpiPos(0),
+  fNpiNeg(0),
+  fHKsPhi(NULL),
+  fHKsPhiEP(NULL),
+  fHK0sMass(NULL),
+  fHK0sMass2(NULL),
+  fHK0vsLambda(NULL),
+  fHctauPtEP(NULL),
+  fHctauAt1EP(NULL),
   fCutsDaughter(NULL)
 {
   // Default constructor (should not be used)
@@ -118,6 +132,13 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0():
   fList4->SetOwner(kTRUE); 
 
   fPID->SetNewTrackParam(); // Better tuning for TOF PID tracking effect in LHC10h
+
+  for(Int_t i=0;i < 1000;i++){
+    fPhiK0s[i] = 0.0;
+    fPtK0s[i] = 0.0;
+    fIPiPos[i] = 0;
+    fIPiNeg[i] = 0;
+  }
 }
 
 //______________________________________________________________________________
@@ -132,6 +153,7 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0(const char *name):
   fV3(kTRUE),
   fIsMC(kFALSE),
   fQAsw(kFALSE),
+  fIsAfter2011(kFALSE),
   fRun(-1),
   fNcluster(70),
   fList(new TList()),
@@ -182,6 +204,17 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0(const char *name):
   fFillDCA(kFALSE),
   fContQApid(NULL),
   fModulationDEDx(kFALSE),
+  fZvtx(0.),
+  fNK0s(0),
+  fNpiPos(0),
+  fNpiNeg(0),
+  fHKsPhi(NULL),
+  fHKsPhiEP(NULL),
+  fHK0sMass(NULL),
+  fHK0sMass2(NULL),
+  fHK0vsLambda(NULL),
+  fHctauPtEP(NULL),
+  fHctauAt1EP(NULL),
   fCutsDaughter(NULL)
 {
 
@@ -202,6 +235,13 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0(const char *name):
   fList4->SetOwner(kTRUE); 
 
   fPID->SetNewTrackParam(); // Better tuning for TOF PID tracking effect in LHC10h
+
+  for(Int_t i=0;i < 1000;i++){
+    fPhiK0s[i] = 0.0;
+    fPtK0s[i] = 0.0;
+    fIPiPos[i] = 0;
+    fIPiNeg[i] = 0;
+  }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskVnV0::~AliAnalysisTaskVnV0()
@@ -278,6 +318,7 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   if(fV2) fContAllChargesV0A->AddSpecies("Ks",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0A->AddSpecies("Lambda",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0A->AddSpecies("pFromLambda",nPtBinsTOF,binsPtTOF);
+  if(fV2) fContAllChargesV0A->AddSpecies("piFromK",nPtBinsTOF,binsPtTOF);
 
   fContAllChargesV0C = new AliFlowVZEROResults("v2C",6,binsTOF);
   fContAllChargesV0C->SetVarRange(0,-0.5,nCentrBin-0.5); // centrality
@@ -304,9 +345,14 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   if(fV2) fContAllChargesV0C->AddSpecies("Ks",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0C->AddSpecies("Lambda",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0C->AddSpecies("pFromLambda",nPtBinsTOF,binsPtTOF);
+  if(fV2) fContAllChargesV0C->AddSpecies("piFromK",nPtBinsTOF,binsPtTOF);
 
   fList->Add(fContAllChargesV0A);
   fList->Add(fContAllChargesV0C);
+
+  fHctauPtEP = new TProfile2D("hctauPtEP","K^{0}_{s} decay length;p_{T} (GeV/#it{c});#Delta#phi (rad)",40,0,5,10,-TMath::Pi(),TMath::Pi());
+  fHctauAt1EP = new TH2F("hctauAt1EP","K^{0}_{s} decay length at 1 GeV/#it{c};c#tau (cm);#Delta#phi (rad)",50,0,50,10,-TMath::Pi(),TMath::Pi());
+  // added at the end
 
   if(fIsMC && fV2){
     fContAllChargesMC = new AliFlowVZEROResults("v2mc",5,binsTOFmc);
@@ -393,6 +439,7 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   if(fV3) fContAllChargesV0Av3->AddSpecies("Ks",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Av3->AddSpecies("Lambda",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Av3->AddSpecies("pFromLambda",nPtBinsTOF,binsPtTOF);
+  if(fV3) fContAllChargesV0Av3->AddSpecies("piFromK",nPtBinsTOF,binsPtTOF);
 
   fContAllChargesV0Cv3 = new AliFlowVZEROResults("v3C",6,binsTOF);
   fContAllChargesV0Cv3->SetVarRange(0,-0.5,nCentrBin-0.5); // centrality
@@ -419,6 +466,7 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   if(fV3) fContAllChargesV0Cv3->AddSpecies("Ks",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Cv3->AddSpecies("Lambda",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Cv3->AddSpecies("pFromLambda",nPtBinsTOF,binsPtTOF);
+  if(fV3) fContAllChargesV0Cv3->AddSpecies("piFromK",nPtBinsTOF,binsPtTOF);
 
   fList2->Add(fContAllChargesV0Av3);
   fList2->Add(fContAllChargesV0Cv3);
@@ -701,6 +749,22 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   
   printf("Output creation ok!!\n\n\n\n");
 
+  fList->Add(fHctauPtEP);
+  fList->Add(fHctauAt1EP);
+
+  fHKsPhi = new TH2D("hKsPhi","K^{0}_{s} #phi distributuion;v_{z} (cm);#phi (rad)",20,-10,10,20,0,2*TMath::Pi());
+  fList->Add(fHKsPhi);
+  fHKsPhiEP = new TH2D("hKsPhiEP","EP V0C #phi distributuion;v_{z} (cm);#phi (rad)",20,-10,10,20,0,2*TMath::Pi());
+  fList->Add(fHKsPhiEP);
+
+  fHK0sMass = new TH2D("hK0sMass","K^{0}_{s} mass;p_{T} (GeV/#it{c});mass (GeV/#it{c}^{2})",20,0,5,400,0,1);
+  fList->Add(fHK0sMass);
+  fHK0sMass2 = new TH2D("hK0sMass2","K^{0}_{s} mass using secondary vertex;p_{T} (GeV/#it{c});mass (GeV/#it{c}^{2})",20,0,5,400,0,1);
+  fList->Add(fHK0sMass2);
+
+  fHK0vsLambda= new TH2D("hK0vsLambda",";K^{0} mass;#Lambda mass",100,0,1,100,0.5,1.5);
+  fList->Add(fHK0vsLambda);
+
   // Post output data.
   if(fV2) PostData(1, fList);
   if(fV3) PostData(2, fList2);
@@ -740,11 +804,11 @@ void AliAnalysisTaskVnV0::UserExec(Option_t *)
 
     if(run != fRun){
 	// Load the calibrations run dependent
-	OpenInfoCalbration(run);
-	fRun=run;
+      if(! fIsAfter2011) OpenInfoCalbration(run);
+      fRun=run;
     }
 
-    Float_t zvtx = GetVertex(fOutputAOD);
+    fZvtx = GetVertex(fOutputAOD);
 
 
 
@@ -777,19 +841,19 @@ void AliAnalysisTaskVnV0::UserExec(Option_t *)
 
 */
 
-    //    printf("vertex = %f\n",zvtx);
-    if (TMath::Abs(zvtx) < fVtxCut) {
+    if (TMath::Abs(fZvtx) < fVtxCut) {
       //Centrality
       Float_t v0Centr  = -10.;
       Float_t trkCentr  = -10.;
       AliCentrality *centrality = fOutputAOD->GetCentrality();
       if (centrality){
 //	printf("v0centr = %f -- tpccnetr%f\n",centrality->GetCentralityPercentile("V0M"),centrality->GetCentralityPercentile("TRK"));
-	v0Centr  = centrality->GetCentralityPercentile("V0M");
-	trkCentr = centrality->GetCentralityPercentile("TRK"); 
+ 	v0Centr  = centrality->GetCentralityPercentile("V0M");
+ 	trkCentr = centrality->GetCentralityPercentile("TRK"); 
+	//changed
       }
 
-      if(TMath::Abs(v0Centr - trkCentr) < 5.0){ // consistency cut on centrality selection
+      if(TMath::Abs(v0Centr - trkCentr) < 5.0 && v0Centr > 0){ // consistency cut on centrality selection
 	fPID->SetDetResponse(fOutputAOD, v0Centr); // Set the PID object for each event!!!!
 	Analyze(fOutputAOD,v0Centr); // Do analysis!!!!
 
@@ -803,6 +867,11 @@ void AliAnalysisTaskVnV0::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 {      
+
+  Int_t nusedForK0s=0;
+  AliAODTrack *usedForK0s1[1000];
+  AliAODTrack *usedForK0s2[1000];
+
   Float_t mass[8] = {5.10998909999999971e-04, 1.05658000000000002e-01, 1.39570000000000000e-01, 4.93676999999999977e-01, 9.38271999999999995e-01,1.87783699999999998,2.81740199999999996,1.40805449999999999};
   
   // Event plane resolution for v2
@@ -810,8 +879,9 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 			 0.446480,0.612705,0.712222,0.736200,0.697907,0.610114,0.481009,0.327402,0.182277};// V0C vs. centrality
   
   Int_t iC = -1;    
-  if (v0Centr >0 && v0Centr < 80){ // analysis only for 0-80% centrality classes
-
+  if (v0Centr < 80){ // analysis only for 0-80% centrality classes
+    //  if (v0Centr >0 && v0Centr < 80){ // analysis only for 0-80% centrality classes
+    // changed
     fgIsPsiComputed = kTRUE;
 
     // centrality bins
@@ -827,11 +897,34 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
     Int_t iCcal = iC;
 
+/*
     if(nCentrBin==16){
-      iC = Int_t(v0Centr/5);
+       iC = v0Centr/5;
        if(iC >= nCentrBin) iC = nCentrBin-1;
     }
-    
+
+    // centrality bins
+    // changed
+    if(v0Centr < 10 + 10./9) iC = 0;
+    else if(v0Centr < 10 + 20./9) iC = 1;
+    else if(v0Centr < 10 + 30./9) iC = 2;
+    else if(v0Centr < 10 + 40./9) iC = 3;
+    else if(v0Centr < 10 + 50./9) iC = 4;
+    else if(v0Centr < 10 + 60./9) iC = 5;
+    else if(v0Centr < 10 + 70./9) iC = 6;
+    else if(v0Centr < 10 + 90./9) iC = 7;
+    else if(v0Centr < 10 + 100./9) iC = 8;
+    else if(v0Centr < 10 + 110./9) iC = 9;
+    else if(v0Centr < 10 + 120./9) iC = 10;
+    else if(v0Centr < 10 + 130./9) iC = 11;
+    else if(v0Centr < 10 + 140./9) iC = 12;
+    else if(v0Centr < 10 + 150./9) iC = 13;
+    else if(v0Centr < 10 + 160./9) iC = 14;
+    else if(v0Centr < 10 + 170./9) iC = 15;
+    else iC = 16;
+    if(iC >= nCentrBin) iC= nCentrBin - 1;
+*/
+
     //reset Q vector info	
     Double_t Qxa2 = 0, Qya2 = 0;
     Double_t Qxc2 = 0, Qyc2 = 0;
@@ -907,10 +1000,10 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  }
 
 	  // flow A and C side
-	  Float_t xMCepAv2[5] = {Float_t(iC),0/*charge*/,1,EvPlaneMCV2[0],1};
-	  Float_t xMCepCv2[5] = {Float_t(iC),0/*charge*/,1,EvPlaneMCV2[1],1};
-	  Float_t xMCepAv3[5] = {Float_t(iC),0/*charge*/,1,EvPlaneMCV3[0],1};
-	  Float_t xMCepCv3[5] = {Float_t(iC),0/*charge*/,1,EvPlaneMCV3[1],1};
+	  Float_t xMCepAv2[5] = {iC,0/*charge*/,1,EvPlaneMCV2[0],1};
+	  Float_t xMCepCv2[5] = {iC,0/*charge*/,1,EvPlaneMCV2[1],1};
+	  Float_t xMCepAv3[5] = {iC,0/*charge*/,1,EvPlaneMCV3[0],1};
+	  Float_t xMCepCv3[5] = {iC,0/*charge*/,1,EvPlaneMCV3[1],1};
 	  
 	  for(Int_t iT=0;iT < nMCtrack;iT++){
 	    AliAODMCParticle *mctr = (AliAODMCParticle*) mcArray->At(iT);
@@ -973,22 +1066,80 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       }
     }
 
+    // TPC EP needed for resolution studies (TPC subevent)
+    Double_t Qx2 = 0, Qy2 = 0;
+    Double_t Qx3 = 0, Qy3 = 0;
+
+    for(Int_t iT = 0; iT < nAODTracks; iT++) {
+      
+      AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
+      
+      if (!aodTrack){
+	continue;
+      }
+      
+      Bool_t trkFlag = aodTrack->TestFilterBit(1);
+
+      if ((TMath::Abs(aodTrack->Eta()) > 0.8) || (aodTrack->Pt() < 0.2) || (aodTrack->GetTPCNcls() < fNcluster)  || !trkFlag) 
+	continue;
+	
+      Double_t b[2] = {-99., -99.};
+      Double_t bCov[3] = {-99., -99., -99.};
+      if (!aodTrack->PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov))
+	continue;
+	    
+      if ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4))
+	continue;
+      
+      Qx2 += TMath::Cos(2*aodTrack->Phi()); 
+      Qy2 += TMath::Sin(2*aodTrack->Phi());
+      Qx3 += TMath::Cos(3*aodTrack->Phi()); 
+      Qy3 += TMath::Sin(3*aodTrack->Phi());
+      
+    }
+    
+    evPlAng2 = TMath::ATan2(Qy2, Qx2)/2.;
+    evPlAng3 = TMath::ATan2(Qy3, Qx3)/3.;
+
+    fgPsi2tpc = evPlAng2;
+    fgPsi3tpc = evPlAng3;
+
+    SelectK0s();
+
     //V0 info    
     AliAODVZERO* aodV0 = aodEvent->GetVZEROData();
 
     for (Int_t iv0 = 0; iv0 < 64; iv0++) {
       Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
       Float_t multv0 = aodV0->GetMultiplicity(iv0);
-      if (iv0 < 32){ // V0C
-	Qxc2 += TMath::Cos(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-	Qyc2 += TMath::Sin(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-	Qxc3 += TMath::Cos(3*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-	Qyc3 += TMath::Sin(3*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-      } else {       // V0A
-	Qxa2 += TMath::Cos(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
-	Qya2 += TMath::Sin(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
-	Qxa3 += TMath::Cos(3*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
-	Qya3 += TMath::Sin(3*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+
+      if(! fIsAfter2011){
+	if(! fIsMC){
+	  if (iv0 < 32){ // V0C
+	    Qxc2 += TMath::Cos(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc2 += TMath::Sin(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qxc3 += TMath::Cos(3*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc3 += TMath::Sin(3*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	  } else {       // V0A
+	    Qxa2 += TMath::Cos(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya2 += TMath::Sin(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qxa3 += TMath::Cos(3*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya3 += TMath::Sin(3*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	  }
+	}
+	else{
+	  if (iv0 < 32){ // V0C
+	    Qxc2 += TMath::Cos(2*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc2 += TMath::Sin(2*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qxc3 += TMath::Cos(3*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc3 += TMath::Sin(3*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	  } else {       // V0A
+	    Qxa2 += TMath::Cos(2*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya2 += TMath::Sin(2*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qxa3 += TMath::Cos(3*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya3 += TMath::Sin(3*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	  }
+	}
       }
     }
 
@@ -1020,27 +1171,46 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     Double_t QxcCor3 = (Qxc3 - Qxcmean3)/Qxcrms3;
     Double_t QycCor3 = (Qyc3 - Qycmean3)/Qycrms3;
 	
-    evPlAngV0ACor2 = TMath::ATan2(QyaCor2, QxaCor2)/2.;
-    evPlAngV0CCor2 = TMath::ATan2(QycCor2, QxcCor2)/2.;
-    evPlAngV0ACor3 = TMath::ATan2(QyaCor3, QxaCor3)/3.;
-    evPlAngV0CCor3 = TMath::ATan2(QycCor3, QxcCor3)/3.;
+    if(! fIsAfter2011){
+      if(! fIsMC){
+	evPlAngV0ACor2 = TMath::ATan2(QyaCor2, QxaCor2)/2.;
+	evPlAngV0CCor2 = TMath::ATan2(QycCor2, QxcCor2)/2.;
+	evPlAngV0ACor3 = TMath::ATan2(QyaCor3, QxaCor3)/3.;
+	evPlAngV0CCor3 = TMath::ATan2(QycCor3, QxcCor3)/3.;
+      }
+      else{
+	evPlAngV0ACor2 = TMath::ATan2(Qya2, Qxa2)/2.;
+	evPlAngV0CCor2 = TMath::ATan2(Qyc2, Qxc2)/2.;
+	evPlAngV0ACor3 = TMath::ATan2(Qya3, Qxa3)/3.;
+	evPlAngV0CCor3 = TMath::ATan2(Qyc3, Qxc3)/3.;
+      }
+    }
+    else{
+      AliEventplane *ep =  aodEvent->GetEventplane();
+      evPlAngV0ACor2 = ep->GetEventplane("V0A", aodEvent, 2);
+      evPlAngV0CCor2 = ep->GetEventplane("V0C", aodEvent, 2);
+      evPlAngV0ACor3 = ep->GetEventplane("V0A", aodEvent, 3);
+      evPlAngV0CCor3 = ep->GetEventplane("V0C", aodEvent, 3);
+    }
+
 
     fgPsi2v0a = evPlAngV0ACor2;
     fgPsi2v0c = evPlAngV0CCor2;
     fgPsi3v0a = evPlAngV0ACor3;
     fgPsi3v0c = evPlAngV0CCor3;
-				 
+
+    fHKsPhiEP->Fill(fZvtx,fgPsi2v0c);				 
     //loop track and get pid
     for(Int_t iT = 0; iT < nAODTracks; iT++) { // loop on the tracks
       AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
 	
       if (!aodTrack){
-	aodTrack->Delete();
 	continue;
       }
       
       Bool_t trkFlag = aodTrack->TestFilterBit(1); // TPC only tracks
-      if(fFillDCA) trkFlag = aodTrack->TestFilterBit(4); // Global track, DCA loose cut
+      if(fFillDCA) 
+	trkFlag = aodTrack->TestFilterBit(4); // Global track, DCA loose cut
 
       if ((TMath::Abs(aodTrack->Eta()) > fEtaCut) || (aodTrack->Pt() < fMinPt) || (aodTrack->GetTPCNcls() < fNcluster) || !trkFlag){
 	continue;
@@ -1053,9 +1223,9 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	    
       if (!fFillDCA && ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4)))
 	continue;
- 	    
-      if(fFillDCA && TMath::Abs(b[0]) > 3.0 && TMath::Abs(b[1]) > 3)
-	continue;
+      
+      if(fFillDCA && (TMath::Abs(b[0]) > 3.0 || TMath::Abs(b[1]) > 3))
+ 	continue;
       
       // re-map the container in an array to do the analysis for V0A and V0C within a loop
       Float_t evPlAngV0[2] = {evPlAngV0ACor2,evPlAngV0CCor2};
@@ -1071,7 +1241,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	fPID->ComputeProb(aodTrack,fOutputAOD); // compute Bayesian probabilities
 	Float_t tofMismProbMC = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
 
-	Float_t xMC[5] = {Float_t(iC),Float_t(aodTrack->Charge()),1,evplaneMC,Float_t(fPID->GetCurrentMask(1)&&tofMismProbMC < 0.5)}; // to fill analysis v2 container
+	Float_t xMC[5] = {iC,aodTrack->Charge(),1,evplaneMC,fPID->GetCurrentMask(1)&&tofMismProbMC < 0.5}; // to fill analysis v2 container
 
 	Float_t v2mc = TMath::Cos(2*(aodTrack->Phi() - evplaneMC));
 
@@ -1101,14 +1271,14 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
 	Float_t v2V0 = TMath::Cos(2*(aodTrack->Phi() - evPlAngV0[iV0]));
 	Float_t v3V0 = TMath::Cos(3*(aodTrack->Phi() - evPlAngV0v3[iV0]));
-	    
+
 	fPID->ComputeProb(aodTrack,fOutputAOD); // compute Bayesian probabilities
 	Float_t dedx = fPID->GetDeDx();//aodTrack->GetTPCsignal();
 	Float_t *probRead = fPID->GetProb();
 	Float_t prob[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
 	Float_t tofMismProb = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
-	Float_t x[6] = {Float_t(iC),Float_t(aodTrack->Charge()),1,evPlAngV0[iV0],Float_t(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v2 container
-	Float_t x3[6] = {Float_t(iC),Float_t(aodTrack->Charge()),1,evPlAngV0v3[iV0],Float_t(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v3 container
+	Float_t x[6] = {iC,aodTrack->Charge(),1,evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v2 container
+	Float_t x3[6] = {iC,aodTrack->Charge(),1,evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v3 container
 
 	// in case fill DCA info
 	if(fFillDCA){
@@ -1177,12 +1347,12 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(deltaPhiV0v3 < -TMath::Pi()) deltaPhiV0v3 += 2*TMath::Pi();
 
 	// variable to fill QA container
-	Float_t xQA[5] = {Float_t(iC),Float_t(aodTrack->Pt()), 0.0,deltaPhiV0,x[4]}; // v2
-	Float_t xQA3[5] = {Float_t(iC),Float_t(aodTrack->Pt()), 0.0,deltaPhiV0v3,x[4]}; // v3
+	Float_t xQA[5] = {iC,aodTrack->Pt(), 0.0,deltaPhiV0,x[4]}; // v2
+	Float_t xQA3[5] = {iC,aodTrack->Pt(), 0.0,deltaPhiV0v3,x[4]}; // v3
 
 	// extra QA TProfiles
 	if(iV0==1 && aodTrack->Pt() < 20 && fPID->GetCurrentMask(0) && fPID->GetCurrentMask(1)){
-	  Float_t xQApid[2] = {Float_t(iC),Float_t(aodTrack->Pt())};
+	  Float_t xQApid[2] = {iC,aodTrack->Pt()};
 	  fContQApid->Fill(0,nsigmaTPC[2],v2V0,xQApid); // v2 TPC (V0C) w.r.t pions
 	  fContQApid->Fill(1,nsigmaTOF[2],v2V0,xQApid); // v2 TOF (V0C) w.r.t. pions
 	  fContQApid->Fill(2,nsigmaTPC[3],v2V0,xQApid); // v2 TPC (V0C) w.r.t kaons
@@ -1197,44 +1367,44 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[2])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[2])<5))){ //pi
 	    xQA[2] = prob[2];
 	    xQA3[2] = xQA[2];
-	    if(fV2) QA[iV0]->Fill(0,nsigmaTPC[2],nsigmaTOF[2],xQA);
- 	    if(fV3) QAv3[iV0]->Fill(0,nsigmaTPC[2],nsigmaTOF[2],xQA3);
+	    if(fQAsw && fV2) QA[iV0]->Fill(0,nsigmaTPC[2],nsigmaTOF[2],xQA);
+ 	    if(fQAsw && fV3) QAv3[iV0]->Fill(0,nsigmaTPC[2],nsigmaTOF[2],xQA3);
 	  }
 	  if(TMath::Abs(nsigmaTPC[3])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[3])<5))){ //K
 	    xQA[2] = prob[3];
 	    xQA3[2] = xQA[2];
-	    if(fV2) QA[iV0]->Fill(1,nsigmaTPC[3],nsigmaTOF[3],xQA);
-// 	    if(fV3) QAv3[iV0]->Fill(1,nsigmaTPC[3],nsigmaTOF[3],xQA3);	  
+	    if(fQAsw && fV2) QA[iV0]->Fill(1,nsigmaTPC[3],nsigmaTOF[3],xQA);
+// 	    if(fQAsw && fV3) QAv3[iV0]->Fill(1,nsigmaTPC[3],nsigmaTOF[3],xQA3);	  
 	  }
 	  if(TMath::Abs(nsigmaTPC[4])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[4])<5))){//p
 	    xQA[2] = prob[4];
 	    xQA3[2] = xQA[2];
-	    if(fV2) QA[iV0]->Fill(2,nsigmaTPC[4],nsigmaTOF[4],xQA);
-// 	    if(fV3) QAv3[iV0]->Fill(2,nsigmaTPC[4],nsigmaTOF[4],xQA3);	  
+	    if(fQAsw && fV2) QA[iV0]->Fill(2,nsigmaTPC[4],nsigmaTOF[4],xQA);
+// 	    if(fQAsw && fV3) QAv3[iV0]->Fill(2,nsigmaTPC[4],nsigmaTOF[4],xQA3);	  
 	  }
 	  if(TMath::Abs(nsigmaTPC[0])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[0])<5))){//e
 	    xQA[2] = prob[0];
 	    xQA3[2] = xQA[2];
-// 	    if(fV2) QA[iV0]->Fill(3,nsigmaTPC[0],nsigmaTOF[0],xQA);
-// 	    if(fV3) QAv3[iV0]->Fill(3,nsigmaTPC[0],nsigmaTOF[0],xQA3);	  
+// 	    if(fQAsw && fV2) QA[iV0]->Fill(3,nsigmaTPC[0],nsigmaTOF[0],xQA);
+// 	    if(fQAsw && fV3) QAv3[iV0]->Fill(3,nsigmaTPC[0],nsigmaTOF[0],xQA3);	  
 	  }
 	  if(TMath::Abs(nsigmaTPC[5])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[5])<5))){//d
 	    xQA[2] = prob[5];
 	    xQA3[2] = xQA[2];
-	    // 	  if(fV2) QA[iV0]->Fill(4,nsigmaTPC[5],nsigmaTOF[5],xQA);
-	    // 	  if(fV3) QAv3[iV0]->Fill(4,nsigmaTPC[5],nsigmaTOF[5],xQA3);	  
+	    // 	  if(fQAsw && fV2) QA[iV0]->Fill(4,nsigmaTPC[5],nsigmaTOF[5],xQA);
+	    // 	  if(fQAsw && fV3) QAv3[iV0]->Fill(4,nsigmaTPC[5],nsigmaTOF[5],xQA3);	  
 	  }
 	  if(TMath::Abs(nsigmaTPC[6])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[6])<5))){//t
 	    xQA[2] = prob[6];
 	    xQA3[2] = xQA[2];
-	    // 	  if(fV2) QA[iV0]->Fill(5,nsigmaTPC[6],nsigmaTOF[6],xQA);
-	    // 	  if(fV3) QAv3[iV0]->Fill(5,nsigmaTPC[6],nsigmaTOF[6],xQA3);	  
+	    // 	  if(fQAsw && fV2) QA[iV0]->Fill(5,nsigmaTPC[6],nsigmaTOF[6],xQA);
+	    // 	  if(fQAsw && fV3) QAv3[iV0]->Fill(5,nsigmaTPC[6],nsigmaTOF[6],xQA3);	  
 	  }
 	  if(TMath::Abs(nsigmaTPC[7])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[7])<5))){//He3
 	    xQA[2] = prob[7];
 	    xQA3[2] = xQA[2];
-	    // 	  if(fV2) QA[iV0]->Fill(6,nsigmaTPC[7],nsigmaTOF[7],xQA);
-	    // 	  if(fV3) QAv3[iV0]->Fill(6,nsigmaTPC[7],nsigmaTOF[7],xQA3);	  
+	    // 	  if(fQAsw && fV2) QA[iV0]->Fill(6,nsigmaTPC[7],nsigmaTOF[7],xQA);
+	    // 	  if(fQAsw && fV3) QAv3[iV0]->Fill(6,nsigmaTPC[7],nsigmaTOF[7],xQA3);	  
 	  }
 	}
 
@@ -1401,12 +1571,29 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       } // end side loop
     } // end track loop
 
+    // my V0 loop
+    for(Int_t imy=0;imy<fNK0s;imy++){
+      Float_t evPlAngV0[2] = {evPlAngV0ACor2,evPlAngV0CCor2};
+      Float_t evPlAngV0v3[2] = {evPlAngV0ACor3,evPlAngV0CCor3};
+      
+      AliFlowVZEROResults *contV0[2] = {fContAllChargesV0A,fContAllChargesV0C};	
+      AliFlowVZEROResults *contV0v3[2] = {fContAllChargesV0Av3,fContAllChargesV0Cv3};
+     
+      for(Int_t iV0=0;iV0<2;iV0++){ // loop on A and C side
+	Float_t x[6] = {iC,-1/*my K0s are negative for convention*/,1,evPlAngV0[iV0],1,0}; // to fill analysis v2 container
+	Float_t x3[6] = {iC,-1,1,evPlAngV0v3[iV0],1,0}; // to fill analysis v3 container
+
+	Float_t v2V0 = TMath::Cos(2*(fPhiK0s[imy] - evPlAngV0[iV0]));
+	Float_t v3V0 = TMath::Cos(3*(fPhiK0s[imy] - evPlAngV0v3[iV0]));
+	if(fV2) contV0[iV0]->Fill(9,fPtK0s[imy],v2V0,x);
+	if(fV3) contV0v3[iV0]->Fill(9,fPtK0s[imy],v3V0,x3);
+      }
+    }
+
     // V0 loop
     Int_t nV0s = fOutputAOD->GetNumberOfV0s();
     AliAODv0 *myV0;
-    //    Double_t dQT, dPT, dALPHA,
-    Double_t dMASS=0.0;
-
+    Double_t dQT, dALPHA, dPT, dMASS=0.0;
     for (Int_t i=0; i!=nV0s; ++i) {
       myV0 = (AliAODv0*) fOutputAOD->GetV0(i);
       if(!myV0) continue;
@@ -1415,16 +1602,18 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       if(pass) {
 	dMASS = myV0->MassK0Short();
 	pass = 3;
+	fHK0sMass2->Fill(myV0->Pt(),dMASS);
       }
-      else {
+      if(TMath::Abs(dMASS-0.497)/0.005 > 3){
 	pass = PassesAODCuts(myV0,fOutputAOD,1);
 	if(pass) dMASS = myV0->MassLambda();
 	if(pass==2) dMASS = myV0->MassAntiLambda();
       }
+
       if(pass){// 1 lambda, 2 antilambda, 3=K0s
-	// dPT=myV0->Pt();
-	// dQT=myV0->PtArmV0();
-	// dALPHA=myV0->AlphaV0();
+	dPT=myV0->Pt();
+	dQT=myV0->PtArmV0();
+	dALPHA=myV0->AlphaV0();
 
 	Int_t iPos, iNeg;
 	AliAODTrack *iT=(AliAODTrack*) myV0->GetDaughter(0);
@@ -1433,6 +1622,31 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	} else {
 	  iPos = 1; iNeg = 0;
 	}
+
+	// check if one of the daugthers was already used
+	if(pass == 3 && TMath::Abs(dMASS-0.497)/0.005 < 1){
+	  fHKsPhi->Fill(fZvtx, myV0->Phi());
+	}
+
+	if(pass == 1000){ // disable
+	  Bool_t used = kFALSE;
+	  for(Int_t ii=0;ii<nusedForK0s;ii++){
+	    if(myV0->GetDaughter(iNeg) == usedForK0s1[ii] || myV0->GetDaughter(iPos) == usedForK0s2[ii]){
+	      used = kTRUE;
+	    }
+	  }
+	  if((!used) && nusedForK0s < 1000){
+	    nusedForK0s++;
+	    usedForK0s1[nusedForK0s] = (AliAODTrack *) myV0->GetDaughter(iNeg);
+	    usedForK0s2[nusedForK0s] = (AliAODTrack *) myV0->GetDaughter(iPos);
+ 	    printf("accepted\n");
+	  }
+	  else{
+	    dMASS = 0;
+	    printf("rejected\n");
+	  }
+	}
+
 	iT=(AliAODTrack*) myV0->GetDaughter(iPos); // positive
 	AliAODTrack *jT=(AliAODTrack*) myV0->GetDaughter(iNeg); // negative
 
@@ -1445,11 +1659,17 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
 	for(Int_t iV0=0;iV0<2;iV0++){ // loop on A and C side
 	 
+	  if(fModulationDEDx) fPID->SetPsiCorrectionDeDx(evPlAngV0[iV0],evPlRes[iV0*8+iC]); // set the PID dE/dx correction as a function of the v2-EP (resolution is needed)
+
 	  Float_t v2V0 = TMath::Cos(2*(myV0->Phi() - evPlAngV0[iV0]));
 	  Float_t v3V0 = TMath::Cos(3*(myV0->Phi() - evPlAngV0v3[iV0]));
 	  
-	  Float_t x[6] = {Float_t(iC),1,1,evPlAngV0[iV0],1,0}; // to fill analysis v2 container
-	  Float_t x3[6] = {Float_t(iC),1,1,evPlAngV0v3[iV0],1,0}; // to fill analysis v3 container
+	  Float_t deltaphi = myV0->Phi()- evPlAngV0[iV0];
+	  if(deltaphi > TMath::Pi()) deltaphi -= 2*TMath::Pi();
+	  if(deltaphi < -TMath::Pi()) deltaphi += 2*TMath::Pi();
+
+	  Float_t x[6] = {iC,1,1,evPlAngV0[iV0],1,0}; // to fill analysis v2 container
+	  Float_t x3[6] = {iC,1,1,evPlAngV0v3[iV0],1,0}; // to fill analysis v3 container
 	  
 	  Float_t decaylength = myV0->DecayLengthXY(fOutputAOD->GetPrimaryVertex());
 	  //	  printf("decay length = %f\n",decaylength);
@@ -1482,7 +1702,11 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  x3[2] = x[2];
 
 	  // Fill Container for lambda and Ks
-	  if(fV2 && pass == 3 && x[2] > 0.6) contV0[iV0]->Fill(9,myV0->Pt(),v2V0,x);
+	  if(fV2 && pass == 3 && x[2] > 0.6){
+	    contV0[iV0]->Fill(9,myV0->Pt(),v2V0,x);
+	    fHctauPtEP->Fill(myV0->Pt(),deltaphi,decaylength);//ciao
+	    if(myV0->Pt() < 1.1 && myV0->Pt() > 0.9) fHctauAt1EP->Fill(decaylength,deltaphi);
+	  }
 	  if(fV3 && pass == 3 && x[2] > 0.6) contV0v3[iV0]->Fill(9,myV0->Pt(),v3V0,x3);
 	  if(fV2 && pass < 3 && x[2] > 0.6) contV0[iV0]->Fill(10,myV0->Pt(),v2V0,x);
 	  if(fV3 && pass < 3 && x[2] > 0.6) contV0v3[iV0]->Fill(10,myV0->Pt(),v3V0,x3);
@@ -1498,16 +1722,58 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	    Float_t *probRead = fPID->GetProb();
 	    Float_t prob[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
 	    Float_t tofMismProb = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
+
+            if(prob[4] < 0.61) prob[4] = 0.61;
 	    
-	    Float_t xdec[6] = {Float_t(iC),Float_t(aodTrack->Charge()),prob[4],evPlAngV0[iV0],Float_t(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v2 container
-	    Float_t xdec3[6] = {Float_t(iC),Float_t(aodTrack->Charge()),prob[4],evPlAngV0v3[iV0],Float_t(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v3 container
+	    Float_t xdec[6] = {iC,aodTrack->Charge(),prob[4],evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v2 container
+	    Float_t xdec3[6] = {iC,aodTrack->Charge(),prob[4],evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v3 container
 
 	    // Fill Container for (anti)proton from lambda
-	    if(nsigma < 2 && xdec[2] > 0.6){
+	    if(nsigma < 2 && xdec[2] > 0.6 && TMath::Abs(aodTrack->Eta()) < 0.8){
 	      if(fV2) contV0[iV0]->Fill(11,aodTrack->Pt(),v2V0,xdec);
 	      if(fV3) contV0v3[iV0]->Fill(11,aodTrack->Pt(),v3V0,xdec3);
 	    }
 	  }
+          else if(pass == 3){
+            AliAODTrack* aodTrack = iT;
+
+            v2V0 = TMath::Cos(2*(aodTrack->Phi() - evPlAngV0[iV0]));
+            v3V0 = TMath::Cos(3*(aodTrack->Phi() - evPlAngV0v3[iV0]));
+
+            fPID->ComputeProb(aodTrack,fOutputAOD); // compute Bayesian probabilities
+            Float_t *probRead = fPID->GetProb();
+            Float_t prob[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
+            Float_t tofMismProb = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis
+
+            if(prob[2] < 0.61) prob[2] = 0.61;
+
+            Float_t xdec[6] = {iC,aodTrack->Charge(),prob[2],evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to 
+            Float_t xdec3[6] = {iC,aodTrack->Charge(),prob[2],evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to 
+
+            if(nsigma < 2 && xdec[2] > 0.6 && TMath::Abs(aodTrack->Eta()) < 0.8){
+              if(fV2) contV0[iV0]->Fill(12,aodTrack->Pt(),v2V0,xdec);
+              if(fV3) contV0v3[iV0]->Fill(12,aodTrack->Pt(),v3V0,xdec3);
+            }
+           
+            aodTrack = jT;
+            v2V0 = TMath::Cos(2*(aodTrack->Phi() - evPlAngV0[iV0]));
+            v3V0 = TMath::Cos(3*(aodTrack->Phi() - evPlAngV0v3[iV0]));
+
+            fPID->ComputeProb(aodTrack,fOutputAOD); // compute Bayesian probabilities
+            Float_t *probRead2 = fPID->GetProb();
+            Float_t prob2[8] = {probRead2[0],probRead2[1],probRead2[2],probRead2[3],probRead2[4],probRead2[5],probRead2[6],probRead2[7]};
+            Float_t tofMismProb2 = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis
+
+            if(prob2[2] < 0.61) prob2[2] = 0.61;
+
+            Float_t xdecB[6] = {iC,aodTrack->Charge(),prob2[2],evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb2 < 0.5,0}; // to
+            Float_t xdecB3[6] = {iC,aodTrack->Charge(),prob2[2],evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb2 < 0.5,0}; // to
+
+            if(nsigma < 2 && xdecB[2] > 0.6  && TMath::Abs(aodTrack->Eta()) < 0.8){
+              if(fV2) contV0[iV0]->Fill(12,aodTrack->Pt(),v2V0,xdecB);
+              if(fV3) contV0v3[iV0]->Fill(12,aodTrack->Pt(),v3V0,xdecB3);
+            }
+          }
 	}
 	
       }
@@ -1521,45 +1787,6 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     if(fV3) fPhiRPv0Av3->Fill(iC,evPlAngV0ACor3);
     if(fV3) fPhiRPv0Cv3->Fill(iC,evPlAngV0CCor3);
 
-    // TPC EP needed for resolution studies (TPC subevent)
-    Double_t Qx2 = 0, Qy2 = 0;
-    Double_t Qx3 = 0, Qy3 = 0;
-
-    for(Int_t iT = 0; iT < nAODTracks; iT++) {
-      
-      AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
-      
-      if (!aodTrack){
-	aodTrack->Delete();
-	continue;
-      }
-      
-      Bool_t trkFlag = aodTrack->TestFilterBit(1);
-
-      if ((TMath::Abs(aodTrack->Eta()) > 0.8) || (aodTrack->Pt() < 0.2) || (aodTrack->GetTPCNcls() < fNcluster)  || !trkFlag) 
-	continue;
-	
-      Double_t b[2] = {-99., -99.};
-      Double_t bCov[3] = {-99., -99., -99.};
-      if (!aodTrack->PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov))
-	continue;
-	    
-      if ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4))
-	continue;
-      
-      Qx2 += TMath::Cos(2*aodTrack->Phi()); 
-      Qy2 += TMath::Sin(2*aodTrack->Phi());
-      Qx3 += TMath::Cos(3*aodTrack->Phi()); 
-      Qy3 += TMath::Sin(3*aodTrack->Phi());
-      
-    }
-    
-    evPlAng2 = TMath::ATan2(Qy2, Qx2)/2.;
-    evPlAng3 = TMath::ATan2(Qy3, Qx3)/3.;
-
-    fgPsi2tpc = evPlAng2;
-    fgPsi3tpc = evPlAng3;
-
     // Fill histograms needed for resolution evaluation
     if(fV2) fHResTPCv0A2->Fill(Double_t(iC), TMath::Cos(2*(evPlAng2 - evPlAngV0ACor2)));
     if(fV2) fHResTPCv0C2->Fill(Double_t(iC), TMath::Cos(2*(evPlAng2 - evPlAngV0CCor2)));
@@ -1570,6 +1797,13 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     if(fV3) fHResv0Cv0A3->Fill(Double_t(iC), TMath::Cos(3*(evPlAngV0ACor3 - evPlAngV0CCor3)));
   }
   
+
+
+  // clean track array
+  for(Int_t i=0;i < nusedForK0s;i++){
+    usedForK0s1[i] = NULL;
+    usedForK0s2[i] = NULL;
+  }
 }
 
 //_____________________________________________________________________________
@@ -1676,7 +1910,7 @@ void AliAnalysisTaskVnV0::OpenInfoCalbration(Int_t run){
 //=======================================================================
 Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t specie)
 {
-  Int_t set = 2;
+  Int_t set = 0;
   Float_t fV0Cuts[9];
   // defines cuts to be used
   // fV0Cuts[9] dl dca ctp d0 d0d0 qt minEta maxEta PID
@@ -1774,11 +2008,36 @@ Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t
   if(dETA >fV0Cuts[7]) passes = 0;
   if(specie==0) if(dQT<fV0Cuts[5]) passes = 0;
   if(specie==1&&passes==1&&dALPHA<0) passes = 2; // antilambda
+
+
+//   if(jT->Pt() < 0.5*myV0->Pt() || iT->Pt() < 0.5*myV0->Pt()) passes = 0;
+
+
+  // additional cut
+//   if(!(iT->GetStatus() & AliAODTrack::kTPCrefit)) passes = 0;
+//   if(!(jT->GetStatus() & AliAODTrack::kTPCrefit)) passes = 0;
+
+//   if(!(iT->GetStatus() & AliAODTrack::kITSrefit)) passes = 0;
+//   if(!(jT->GetStatus() & AliAODTrack::kITSrefit)) passes = 0;
+
+//  if(!(iT->GetStatus() & AliAODTrack::kTOFout)) passes = 0;
+//  if(!(jT->GetStatus() & AliAODTrack::kTOFout)) passes = 0;
+
+  Bool_t trkFlag = iT->TestFilterBit(1); // TPC only tracks (4,global track)
+  Bool_t trkFlag2 = jT->TestFilterBit(1); // TPC only tracks (4,global track)
+
+  if(!trkFlag) passes = 0;
+  if(!trkFlag2) passes = 0;
+
   if(passes&&fV0Cuts[8]) {
 
     Double_t dedxExp[8];
     fPID->ComputeProb(iT,tAOD); // compute Bayesian probabilities
     Float_t nsigmaTPC[8];
+
+    Int_t tofMatch=0;
+    Int_t tofMatch2=0;
+
     if(iT->GetDetPid()){ // check the PID object is available
       for(Int_t iS=0;iS < 8;iS++){
 	dedxExp[iS] = fPID->GetExpDeDx(iT,iS);
@@ -1789,6 +2048,15 @@ Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t
       for(Int_t iS=0;iS < 8;iS++)
 	nsigmaTPC[iS] = 10;
     }
+
+
+    if(fPID->GetCurrentMask(1)) // if TOF is present
+      tofMatch = 1;
+
+//     Float_t tofMismProbMC = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
+
+    Float_t *probRead = fPID->GetProb();
+    Float_t prob[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
 
     fPID->ComputeProb(jT,tAOD); // compute Bayesian probabilities
     Float_t nsigmaTPC2[8];
@@ -1803,17 +2071,35 @@ Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t
 	nsigmaTPC2[iS] = 10;
     }
 
+    if(fPID->GetCurrentMask(1)) // if TOF is present
+      tofMatch2 = 1;
+
+//     Float_t tofMismProbMC2 = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
+
+    probRead = fPID->GetProb();
+    Float_t prob2[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
+    
     if(jT->GetTPCNcls() < fNcluster) passes = 0;
     else if(iT->GetTPCNcls() < fNcluster) passes = 0;
 
+//     if(! (tofMatch && tofMatch2)) passes = 0; 
+
+    /*
+    Float_t dMASS = myV0->MassK0Short();
+    Float_t nsigmaMass = TMath::Abs(dMASS-0.497)/0.005;
+    if(specie == 0 && TMath::Abs(nsigmaMass) < 1 && myV0->Pt() > 1) printf("candidate i=(pt=%f-phi=%f-tof=%i) j=(pt=%f-phi=%f-tof=%i) \n",iT->Pt(),iT->Phi(),tofMatch,jT->Pt(),jT->Phi(),tofMatch2);
+    */
+
     switch(specie) {
     case 0: // K0 PID
-      if( (jT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(nsigmaTPC2[2])>3.) )
-	passes = 0;
-      if( (iT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(nsigmaTPC[2])>3.) )
-	passes = 0;
+      if(0){
+	if( ((jT->GetTPCmomentum()<15) &&
+	     (TMath::Abs(nsigmaTPC2[2])>3.)) || prob2[2] < 0.9)
+	  passes = 0;
+	if( ((iT->GetTPCmomentum()<15) &&
+	     (TMath::Abs(nsigmaTPC[2])>3.))|| prob[2] < 0.9 )
+	  passes = 0;
+      }
       break;
     case 1: // Lambda PID  i==pos j ==neg
       if(passes==1) {
@@ -1836,4 +2122,101 @@ Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t
     }
   }
   return passes;
+}
+//=======================================================================
+void AliAnalysisTaskVnV0::SelectK0s(){
+  fNK0s=0;
+  fNpiPos=0;
+  fNpiNeg=0;
+
+  if(fModulationDEDx) fPID->SetPsiCorrectionDeDx(evPlAng2,1.0); // set the PID dE/dx correction as a function of the v2-EP (resolution is needed)
+
+  // fill pion stacks
+  Int_t nAODTracks = fOutputAOD->GetNumberOfTracks();
+  for(Int_t iT = 0; iT < nAODTracks; iT++) { // loop on the tracks
+    AliAODTrack* aodTrack = fOutputAOD->GetTrack(iT);
+    
+    if (!aodTrack){
+      continue;
+    }
+    
+    Bool_t trkFlag = aodTrack->TestFilterBit(1); // TPC only tracks
+//    trkFlag = aodTrack->TestFilterBit(4); // Global track, DCA loose cut
+
+    if ((TMath::Abs(aodTrack->Eta()) > fEtaCut) || (aodTrack->Pt() < fMinPt) || (aodTrack->GetTPCNcls() < fNcluster) || !trkFlag){
+      continue;
+    }
+
+    Double_t b[2] = {-99., -99.};
+    Double_t bCov[3] = {-99., -99., -99.};
+    if (!aodTrack->PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov))
+      continue;
+    
+    if(TMath::Abs(b[0]) < 0.5/aodTrack->Pt()) continue;
+
+    fPID->ComputeProb(aodTrack,fOutputAOD); // compute Bayesian probabilities
+    Float_t *probRead = fPID->GetProb();
+    Float_t prob[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
+ //    Float_t tofMismProb = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
+
+    Int_t charge = aodTrack->Charge();
+    if(prob[2] > 0.9){
+      if(charge > 0){
+	fIPiPos[fNpiPos] = iT;
+	fNpiPos++;
+      }
+      else{
+	fIPiNeg[fNpiNeg] = iT;
+	fNpiNeg++;
+      }	    
+    }
+  }
+
+  for(Int_t i=0;i < fNpiPos;i++){
+    AliAODTrack *pip = fOutputAOD->GetTrack(fIPiPos[i]);
+    AliESDtrack pipE(pip);
+
+    for(Int_t j=0;j < fNpiNeg;j++){
+      AliAODTrack *pin = fOutputAOD->GetTrack(fIPiNeg[j]);
+      AliESDtrack pinE(pin);
+
+      Double_t xn, xp, mindist=pinE.GetDCA(&pipE,fOutputAOD->GetMagneticField(),xn,xp);
+
+      Double_t pPos[3];
+      Double_t pNeg[3];
+      pipE.GetPxPyPzAt(xp,fOutputAOD->GetMagneticField(),pPos);
+      pinE.GetPxPyPzAt(xn,fOutputAOD->GetMagneticField(),pNeg);
+
+      Float_t length = (xp+xn)*0.5;
+
+      Float_t pxs = pPos[0] + pNeg[0];
+      Float_t pys = pPos[1] + pNeg[1];
+      Float_t pzs = pPos[2] + pNeg[2];
+      Float_t es = TMath::Sqrt(pPos[0]*pPos[0] + pPos[1]*pPos[1] + pPos[2]*pPos[2] + 0.13957*0.13957) + TMath::Sqrt(pNeg[0]*pNeg[0] + pNeg[1]*pNeg[1] + pNeg[2]*pNeg[2] + 0.13957*0.13957);
+
+      Float_t pt = TMath::Sqrt(pxs*pxs + pys*pys);
+      Float_t phi = TMath::ATan2(pys,pxs);
+      Float_t mass = TMath::Sqrt(es*es - pt*pt - pzs*pzs);
+      
+      //      if(length > 1) printf("length = %f - distance = %f - mass= %f\n",length,mindist,mass);
+
+      if(mindist < 0.2&& length > 1 && length < 25){
+	fHK0sMass->Fill(pt,mass);
+	
+	Float_t esL = TMath::Sqrt(pPos[0]*pPos[0] + pPos[1]*pPos[1] + pPos[2]*pPos[2] + 0.938*0.938) + TMath::Sqrt(pNeg[0]*pNeg[0] + pNeg[1]*pNeg[1] + pNeg[2]*pNeg[2] + 0.13957*0.13957);
+	Float_t esAL = TMath::Sqrt(pPos[0]*pPos[0] + pPos[1]*pPos[1] + pPos[2]*pPos[2] + 0.13957*0.13957) + TMath::Sqrt(pNeg[0]*pNeg[0] + pNeg[1]*pNeg[1] + pNeg[2]*pNeg[2] + 0.938*0.938);
+
+	Float_t massaL = TMath::Sqrt(esL*esL - pt*pt - pzs*pzs);
+	Float_t massaAL = TMath::Sqrt(esAL*esAL - pt*pt - pzs*pzs);
+
+	fHK0vsLambda->Fill(mass,TMath::Min(massaL,massaAL));
+
+	if(TMath::Abs(mass-0.497)/0.005 < 1 && massaL > 1.15 && massaAL > 1.15){
+	  fPhiK0s[fNK0s] = phi;
+	  fPtK0s[fNK0s] = pt;
+	  fNK0s++;
+	}
+      }
+    }
+  }
 }

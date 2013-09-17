@@ -73,6 +73,16 @@ protected:
    */
   virtual Int_t GetColor() const { return kRed+2; }
   /** 
+   * Massage data histograms for certain vertices in the satellite analysis 
+   * 
+   * @param vtx 
+   * @param data 
+   * @param mcData 
+   */
+  virtual void CheckEventData(Double_t vtx, 
+			      TH2*     data, 
+			      TH2*     mcData);
+  /** 
    * Make a new centrality bin
    * 
    * @param name   Histogram names

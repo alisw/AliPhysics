@@ -55,6 +55,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kRejectSharedElecGamma,
         kBackgroundScheme,
         kNumberOfRotations,
+        kptCut,
+        kDCACut,
+        kmassCut,
 	kNCuts
   };
 
@@ -113,6 +116,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t PIDProbabilityCut(AliConversionPhotonBase *photon, AliVEvent * event);
   Bool_t RejectSharedElecGamma(TList *photons, Int_t indexEle);
   Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi );
+  Bool_t MassCut(Double_t pi0CandidatePt,Double_t vphotonCandidateMass);
 
   // Event Cuts
 
@@ -126,6 +130,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetITSClusterCut(Int_t clsITSCut);
   Bool_t SetTPCClusterCut(Int_t clsTPCCut);
   Bool_t SetEtaCut(Int_t etaCut);
+  Bool_t SetPtCut(Int_t ptCut);
+  Bool_t SetDCACut(Int_t dcaCut);
+  void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
   Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
   Bool_t SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut);
   Bool_t SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut);
@@ -134,6 +141,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetRejectSharedElecGamma(Int_t RCut);
   Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
   Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
+  Bool_t SetMassCut(Int_t massCut);
   
   // Request Flags
 
@@ -141,9 +149,14 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetPsiPairCut(){ return fPsiPairCut; }
   Double_t DoRejectSharedElecGamma(){ return fDoRejectSharedElecGamma;}
   Double_t DoPsiPairCut(){return fDoPsiPairCut;}
+  Double_t GetNFindableClustersTPC(AliESDtrack* lTrack);
   Bool_t   UseTrackMultiplicity(){ return fUseTrackMultiplicityForBG;}
   Int_t    GetBKGMethod(){ return fBKGMethod; }
   Int_t    NumberOfRotationEvents(){return fnumberOfRotationEventsForBG;}
+  Bool_t   DoMassCut(){return  fDoMassCut;}
+  Double_t GetMassCutLowPt(){return fMassCutLowPt;}
+  Double_t GetMassCutHighPt(){return fMassCutHighPt;}
+  Double_t GetPtMinMassCut(){return fMassCutPtMin;}
   
 
   
@@ -154,6 +167,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   AliESDtrackCuts *fesdTrackCuts;
 
   Double_t fEtaCut; //eta cutç
+  Double_t fEtaShift;
+  Bool_t   fDoEtaCut;
+  Double_t fPtCut;
   Double_t fRadiusCut; // radius cut
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
@@ -191,6 +207,10 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   fUseTrackMultiplicityForBG; // use multiplicity
   Int_t    fBKGMethod;
   Int_t    fnumberOfRotationEventsForBG;
+  Bool_t   fDoMassCut;
+  Double_t fMassCutLowPt;
+  Double_t fMassCutHighPt;
+  Double_t fMassCutPtMin;
 
 
   // Histograms
@@ -205,6 +225,13 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH2F *hTPCdEdxSignalafter; //TPC dEdx signal  after
   TH2F *hTOFbefore; // TOF after cuts
   TH2F *hTOFafter; // TOF after cuts
+  TH2F *hTrackDCAxyPtbefore;
+  TH2F *hTrackDCAxyPtafter;
+  TH2F *hTrackDCAzPtbefore;
+  TH2F *hTrackDCAzPtafter;
+  TH2F *hTrackNFindClsPtTPCbefore;
+  TH2F *hTrackNFindClsPtTPCafter;
+  
   
 
 private:

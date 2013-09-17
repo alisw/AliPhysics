@@ -15,12 +15,16 @@
  * @ingroup pwglf_forward_aod
  */
 #include <AliAnalysisTaskSE.h>
+#include "AliForwardUtil.h"
+#include "AliAODForwardMult.h"
+#include "AliAODForwardEP.h"
 class AliFMDEventInspector;
 class AliFMDEnergyFitter;
 class AliFMDSharingFilter;
 class AliFMDDensityCalculator;
 class AliFMDCorrector;
 class AliFMDHistCollector;
+class AliAODHandler;
 class AliForwardCorrectionManager;
 class AliFMDEventPlaneFinder;
 class AliESDEvent;
@@ -28,6 +32,7 @@ class TH2D;
 class TList;
 class TTree;
 class TAxis;
+class TProfile;
 
 /** 
  * @defgroup pwglf_forward PWGLF Forward analysis
@@ -77,6 +82,15 @@ class TAxis;
 class AliForwardMultiplicityBase : public AliAnalysisTaskSE
 {
 public:
+  enum { 
+    kTimingEventInspector    = 1,
+    kTimingSharingFilter     = 2, 
+    kTimingDensityCalculator = 3, 
+    kTimingCorrections       = 4, 
+    kTimingHistCollector     = 5, 
+    kTimingEventPlaneFinder  = 6, 
+    kTimingTotal             = 7
+  };
   /** 
    * @{ 
    * @name Interface methods 
@@ -90,7 +104,7 @@ public:
    * Create output objects 
    * 
    */
-  virtual void UserCreateOutputObjects() = 0;
+  virtual void UserCreateOutputObjects();
   /** 
    * Process each event 
    *
@@ -102,7 +116,7 @@ public:
    * 
    * @param option Not used 
    */
-  virtual void Terminate(Option_t* option) = 0;
+  virtual void Terminate(Option_t* option);
   /** 
    * @} 
    */
@@ -120,6 +134,12 @@ public:
    * @param option Not used
    */
   virtual void Print(Option_t* option="") const;
+  /** 
+   * Set whether to make a timing histogram 
+   * 
+   * @param enable 
+   */
+  virtual void SetDoTiming(Bool_t enable=true) { fDoTiming = enable; }
   /** 
    * Whether to enable low-flux code 
    * 
@@ -209,7 +229,7 @@ public:
    * 
    * @param dbg 
    */
-  virtual void SetDebug(Int_t dbg) = 0;
+  virtual void SetDebug(Int_t dbg);
   /** 
    * Overload super class method for setting debug level to call our
    * SetDebug member function.
@@ -221,6 +241,15 @@ public:
     AliAnalysisTaskSE::SetDebugLevel(dbg); 
     SetDebug(dbg);
   }
+  /** 
+   * Set whether to make separate branches for each ring.  If enabled
+   * there will be 5 additional branches on the AOD tree - each
+   * holding a TH2D object of the charged particle multiplicity in
+   * @f$(\eta,\varphi)@f$ bins for that event.
+   * 
+   * @param use If true, make separate branches for each ring. 
+   */
+  void SetStorePerRing(Bool_t use) { fStorePerRing = use; }
 protected: 
   /** 
    * Constructor 
@@ -235,6 +264,15 @@ protected:
   : AliAnalysisTaskSE(), 
     fEnableLowFlux(true), 
     fFirstEvent(true),
+    fStorePerRing(false),
+    fList(0),
+    fHData(0),
+    fHistos(),
+    fAODFMD(),
+    fAODEP(),
+    fRingSums(),
+    fDoTiming(false), 
+    fHTiming(0),
     fCorrManager(0)
   {}
   /** 
@@ -246,8 +284,20 @@ protected:
     : AliAnalysisTaskSE(o),
       fEnableLowFlux(o.fEnableLowFlux), 
       fFirstEvent(o.fFirstEvent),
+      fStorePerRing(o.fStorePerRing),
+      fList(o.fList),
+      fHData(o.fHData),
+      fHistos(o.fHistos),
+      fAODFMD(o.fAODFMD),
+      fAODEP(o.fAODEP),
+      fRingSums(o.fRingSums),
+      fDoTiming(o.fDoTiming), 
+      fHTiming(o.fHTiming),
       fCorrManager(o.fCorrManager)
-  {}
+  {
+    DefineOutput(1, TList::Class());
+    DefineOutput(2, TList::Class());
+  }
   /** 
    * Assignment operator 
    * 
@@ -277,7 +327,8 @@ protected:
    */
   virtual Bool_t ReadCorrections(const TAxis*& pe, 
 				 const TAxis*& pv,
-				 Bool_t mc=false);
+				 Bool_t mc=false,
+				 Bool_t sat=false);
   /**
    * Get the ESD event. IF this is the first event, initialise
    *
@@ -289,12 +340,31 @@ protected:
    *
    * @return false on errors 
    */
-  virtual Bool_t SetupForData() = 0;
+  virtual Bool_t SetupForData();
+  /** 
+   * Initialize members based on eta and vertex axis - only available
+   * after first event - called from SetupForData.
+   * 
+   * @param pe @f$\eta@f$ axis
+   * @param pv Interaction point Z-coordinate axis 
+   */
+  virtual void InitMembers(const TAxis* pe, const TAxis* pv);
+  /**
+   * Create output branches - called from UserCreateOutputObjects
+   */
+  virtual void CreateBranches(AliAODHandler* ah);
   /**
    * Mark this event as one to store in the AOD 
    * 
    */
   virtual void MarkEventForStore() const;
+  /** 
+   * Do estimates of @f$dN/d\eta@f$  - called at Terminate
+   * 
+   * @param input  Input list
+   * @param output Output list
+   */
+  virtual void EstimatedNdeta(const TList* input, TList* output) const;
   /** 
    * Calculate a simple dN/deta from all accepted events 
    * 
@@ -325,8 +395,17 @@ protected:
 			      TList*       output,
 			      const char*  outName,
 			      Int_t        style=20) const;
-  Bool_t fEnableLowFlux;// Whether to use low-flux specific code
-  Bool_t fFirstEvent;   // Whether the event is the first seen 
+  Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
+  Bool_t                 fFirstEvent;   // Whether the event is the first seen 
+  Bool_t                 fStorePerRing; // Store each ring on separate branch
+  TList*                 fList;         // Output list
+  TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
+  AliForwardUtil::Histos fHistos;       // Cache histograms 
+  AliAODForwardMult      fAODFMD;       // Output object
+  AliAODForwardEP        fAODEP;        // Output object
+  AliForwardUtil::Histos fRingSums;     // Cache histograms 
+  Bool_t                 fDoTiming;     // Whether to do timing or not
+  TProfile*              fHTiming;
 private:
   /**
    * A pointer to the corrections manager.  This is here to make the
@@ -337,7 +416,7 @@ private:
    */
   AliForwardCorrectionManager* fCorrManager; // Pointer to corrections manager
 
-  ClassDef(AliForwardMultiplicityBase,3) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityBase,4) // Forward multiplicity class
 };
 
 #endif

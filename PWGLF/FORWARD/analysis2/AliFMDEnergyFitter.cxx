@@ -2,7 +2,7 @@
 // Class to do the energy correction of FMD ESD data
 //
 #include "AliFMDEnergyFitter.h"
-#include "AliForwardCorrectionManager.h"
+#include "AliForwardUtil.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
@@ -41,10 +41,13 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
-    fMaxRelParError(.25),
-    fMaxChi2PerNDF(20), 
-    fMinWeight(1e-7),
-    fDebug(0)
+    fMaxRelParError(AliFMDCorrELossFit::ELossFit::fgMaxRelError),
+    fMaxChi2PerNDF(AliFMDCorrELossFit::ELossFit::fgMaxChi2nu), 
+    fMinWeight(AliFMDCorrELossFit::ELossFit::fgLeastWeight),
+    fDebug(0),
+    fResidualMethod(kNoResiduals),
+    fSkips(0),
+    fRegularizationCut(3e6)
 {
   // 
   // Default Constructor - do not use 
@@ -68,10 +71,13 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
-    fMaxRelParError(.25),
-    fMaxChi2PerNDF(20),  
-    fMinWeight(1e-7),
-    fDebug(3)
+    fMaxRelParError(AliFMDCorrELossFit::ELossFit::fgMaxRelError),
+    fMaxChi2PerNDF(AliFMDCorrELossFit::ELossFit::fgMaxChi2nu), 
+    fMinWeight(AliFMDCorrELossFit::ELossFit::fgLeastWeight),
+    fDebug(3),
+    fResidualMethod(kNoResiduals),
+    fSkips(0),
+    fRegularizationCut(3e6)
 {
   // 
   // Constructor 
@@ -109,7 +115,10 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const AliFMDEnergyFitter& o)
     fMaxRelParError(o.fMaxRelParError),
     fMaxChi2PerNDF(o.fMaxChi2PerNDF), 
     fMinWeight(o.fMinWeight),
-    fDebug(o.fDebug)
+    fDebug(o.fDebug),
+    fResidualMethod(o.fResidualMethod),
+    fSkips(o.fSkips),
+    fRegularizationCut(o.fRegularizationCut)
 {
   // 
   // Copy constructor 
@@ -168,10 +177,13 @@ AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
     fCentralityAxis.Set(o.fCentralityAxis.GetNbins(),
 			o.fCentralityAxis.GetXmin(),
 			o.fCentralityAxis.GetXmax());
-  fDebug         = o.fDebug;
-  fMaxRelParError= o.fMaxRelParError;
-  fMaxChi2PerNDF = o.fMaxChi2PerNDF;
-  fMinWeight     = o.fMinWeight;
+  fDebug             = o.fDebug;
+  fMaxRelParError    = o.fMaxRelParError;
+  fMaxChi2PerNDF     = o.fMaxChi2PerNDF;
+  fMinWeight         = o.fMinWeight;
+  fResidualMethod    = o.fResidualMethod;
+  fSkips             = o.fSkips;
+  fRegularizationCut = o.fRegularizationCut;
 
   fRingHistos.Clear();
   TIter    next(&o.fRingHistos);
@@ -231,7 +243,8 @@ AliFMDEnergyFitter::SetupForData(const TAxis& eAxis)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next())))
-    o->SetupForData(fEtaAxis, fCentralityAxis, fMaxE, fNEbins, fUseIncreasingBins);
+    o->SetupForData(fEtaAxis, fCentralityAxis, fMaxE, 
+		    fNEbins, fUseIncreasingBins);
 }  
 //____________________________________________________________________
 void
@@ -370,11 +383,18 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
+    if (CheckSkip(o->fDet, o->fRing, fSkips)) {
+      AliWarningF("Skipping FMD%d%c for fitting", o->fDet, o->fRing);
+      continue;
+    }
+    
     TObjArray* l = o->Fit(d, fEtaAxis, fLowCut, fNParticles,
 			  fMinEntries, fFitRangeBinWidth,
-			  fMaxRelParError, fMaxChi2PerNDF);
+			  fMaxRelParError, fMaxChi2PerNDF,
+			  fMinWeight, fRegularizationCut,
+			  fResidualMethod);
     if (!l) continue;
-    for (Int_t i = 0; i < l->GetEntriesFast(); i++) { 
+    for (Int_t i = 0; i < l->GetEntriesFast()-1; i++) { // Last is status 
       stack[i % nStack]->Add(static_cast<TH1*>(l->At(i))); 
     }
   }
@@ -395,7 +415,6 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
   //    dir List to analyse 
   //
   DGUARD(fDebug, 1, "Make the correction objec in AliFMDEnergyFitter");
-  AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
     
   AliFMDCorrELossFit* obj = new AliFMDCorrELossFit;
   obj->SetEtaAxis(fEtaAxis);
@@ -404,16 +423,15 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
+    if (CheckSkip(o->fDet, o->fRing, fSkips)) {
+      AliWarningF("Skipping FMD%d%c for correction object", o->fDet, o->fRing);
+      continue;
+    }
+    
     o->FindBestFits(d, *obj, fEtaAxis, fMaxRelParError, 
 		    fMaxChi2PerNDF, fMinWeight);
   }
-  
-  TString oName(mgr.GetObjectName(AliForwardCorrectionManager::kELossFits));
-  TString fileName(mgr.GetFilePath(AliForwardCorrectionManager::kELossFits));
-  AliInfo(Form("Object %s created in output - should be extracted and copied "
-	       "to %s", oName.Data(), fileName.Data()));
-  d->Add(new TNamed("filename", fileName.Data()));
-  d->Add(obj, oName.Data());
+  d->Add(obj, "elossFits");
 }
 
 //____________________________________________________________________
@@ -431,11 +449,24 @@ AliFMDEnergyFitter::CreateOutputObjects(TList* dir)
   DGUARD(fDebug, 1, "Define output in AliFMDEnergyFitter");
   TList* d = new TList;
   d->SetName(GetName());
-  d->SetOwner();
+  d->SetOwner(true);
   dir->Add(d);
   
   d->Add(&fEtaAxis);
-  d->SetOwner(true);
+  d->Add(AliForwardUtil::MakeParameter("lowCut",        fLowCut));
+  d->Add(AliForwardUtil::MakeParameter("nParticles",    fNParticles));
+  d->Add(AliForwardUtil::MakeParameter("minEntries",    fMinEntries));
+  d->Add(AliForwardUtil::MakeParameter("subtractBins",  fFitRangeBinWidth));
+  d->Add(AliForwardUtil::MakeParameter("doFits",        fDoFits));
+  d->Add(AliForwardUtil::MakeParameter("doObject",      fDoMakeObject));
+  d->Add(AliForwardUtil::MakeParameter("maxE",          fMaxE));
+  d->Add(AliForwardUtil::MakeParameter("nEbins",        fNEbins));
+  d->Add(AliForwardUtil::MakeParameter("increasingBins",fUseIncreasingBins));
+  d->Add(AliForwardUtil::MakeParameter("maxRelPerError",fMaxRelParError));
+  d->Add(AliForwardUtil::MakeParameter("maxChi2PerNDF", fMaxChi2PerNDF));
+  d->Add(AliForwardUtil::MakeParameter("minWeight",     fMinWeight));
+  d->Add(AliForwardUtil::MakeParameter("regCut",        fRegularizationCut));
+  
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
@@ -458,6 +489,69 @@ AliFMDEnergyFitter::SetDebug(Int_t dbg)
   while ((o = static_cast<RingHistos*>(next())))
     o->fDebug = dbg;
 }  
+
+//____________________________________________________________________
+namespace {
+  template <typename T>
+  void GetParam(Bool_t& ret, const TCollection* col, 
+		const TString& name, T& var)
+  {
+    TObject* o = col->FindObject(name);	      
+    if (o) AliForwardUtil::GetParameter(o,var); 
+    else   ret = false;				
+  }
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEnergyFitter::ReadParameters(const TCollection* col)
+{
+  // Read parameters of this object from a collection
+  //
+  // Parameters:
+  //    col   Collection to read parameters from 
+  // 
+  // Return value:
+  //   true on success, false otherwise 
+  //
+  if (!col) return false;
+  Bool_t ret = true;
+  TAxis* axis = static_cast<TAxis*>(col->FindObject("etaAxis"));
+  if (!axis) ret = false;
+  else {
+    if (axis->GetXbins()->GetArray()) 
+      fEtaAxis.Set(axis->GetNbins(), axis->GetXbins()->GetArray());
+    else 
+      fEtaAxis.Set(axis->GetNbins(), axis->GetXmin(), axis->GetXmax());
+  } 
+  GetParam(ret,col,"lowCut",        fLowCut);
+  GetParam(ret,col,"nParticles",    fNParticles);
+  GetParam(ret,col,"minEntries",    fMinEntries);
+  GetParam(ret,col,"subtractBins",  fFitRangeBinWidth);
+  GetParam(ret,col,"doFits",        fDoFits);
+  GetParam(ret,col,"doObject",      fDoMakeObject);
+  GetParam(ret,col,"maxE",          fMaxE);
+  GetParam(ret,col,"nEbins",        fNEbins);
+  GetParam(ret,col,"increasingBins",fUseIncreasingBins);
+  GetParam(ret,col,"maxRelPerError",fMaxRelParError);
+  GetParam(ret,col,"maxChi2PerNDF", fMaxChi2PerNDF);
+  GetParam(ret,col,"minWeight",     fMinWeight);
+  Bool_t dummy;
+  GetParam(dummy,col,"regCut",      fRegularizationCut);
+
+  return ret;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEnergyFitter::CheckSkip(UShort_t d, Char_t r, UShort_t skips) 
+{
+  UShort_t q  = (r == 'I' || r == 'i' ? 0 : 1);
+  UShort_t c = 1 << (d-1);
+  UShort_t t = 1 << (c+q-1);
+
+  return (t & skips) == t;
+}
 
 //____________________________________________________________________
 void
@@ -488,7 +582,15 @@ AliFMDEnergyFitter::Print(Option_t*) const
 	    << (fUseIncreasingBins ?"yes\n" : "no\n")
 	    << ind << " max(delta p/p):         " << fMaxRelParError << '\n'
 	    << ind << " max(chi^2/nu):          " << fMaxChi2PerNDF << '\n'
-	    << ind << " min(a_i):               " << fMinWeight << std::endl;
+	    << ind << " min(a_i):               " << fMinWeight << '\n'
+	    << ind << " Residuals:              "; 
+  switch (fResidualMethod) { 
+  case kNoResiduals: std::cout << "None"; break;
+  case kResidualDifference: std::cout << "Difference"; break;
+  case kResidualScaledDifference: std::cout << "Scaled difference"; break;
+  case kResidualSquareDifference: std::cout << "Square difference"; break;
+  }
+  std::cout << std::endl;
 }
   
 //====================================================================
@@ -498,13 +600,15 @@ AliFMDEnergyFitter::RingHistos::RingHistos()
     fEmpty(0),
     fEtaEDists(0), 
     fList(0),
-    fFits("AliFMDCorrELossFit::ELossFit"),
+    fBest(0),
+    fFits("AliFMDCorrELossFit::ELossFit", 200),
     fDebug(0)
 {
   // 
   // Default CTOR
   //
   DGUARD(fDebug, 3, "Default CTOR AliFMDEnergyFitter::RingHistos");
+  fBest.Expand(0);
 }
 
 //____________________________________________________________________
@@ -514,7 +618,8 @@ AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
     fEmpty(0),
     fEtaEDists(0), 
     fList(0),
-    fFits("AliFMDCorrELossFit::ELossFit"),
+    fBest(0),
+    fFits("AliFMDCorrELossFit::ELossFit", 200),
     fDebug(0)
 {
   // 
@@ -526,6 +631,7 @@ AliFMDEnergyFitter::RingHistos::RingHistos(UShort_t d, Char_t r)
   //
   DGUARD(fDebug, 3, "Named CTOR AliFMDEnergyFitter::RingHistos: FMD%d%c",
 	 d, r);
+  fBest.Expand(0);
 }
 //____________________________________________________________________
 AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
@@ -534,7 +640,8 @@ AliFMDEnergyFitter::RingHistos::RingHistos(const RingHistos& o)
     fEmpty(o.fEmpty),
     fEtaEDists(0), 
     fList(0),
-    fFits("AliFMDCorrELossFit::ELossFit"),
+    fBest(0),
+    fFits("AliFMDCorrELossFit::ELossFit", 200),
     fDebug(0)
 {
   // 
@@ -911,7 +1018,10 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
 				    UShort_t         minEntries,
 				    UShort_t         minusBins, 
 				    Double_t         relErrorCut, 
-				    Double_t         chi2nuCut) const
+				    Double_t         chi2nuCut,
+				    Double_t         minWeight,
+				    Double_t         regCut,
+				    EResidualMethod  residuals) const
 {
   // 
   // Fit each histogram to up to @a nParticles particle responses.
@@ -945,6 +1055,15 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     return 0;
   }
 
+  // Optional container for residuals 
+  TList* resi = 0;
+  if (residuals != kNoResiduals) {
+    resi = new TList();
+    resi->SetName("residuals");
+    resi->SetOwner();
+    l->Add(resi);
+  }
+
   // Container of the fit results histograms 
   TObjArray* pars  = new TObjArray(3+nParticles+1);
   pars->SetName("FitResults");
@@ -976,6 +1095,9 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
   Int_t nEmpty = 0;
   Int_t nLow   = 0;
   Int_t nFitted= 0;
+  fBest.Expand(nDists+1);
+  fBest.Clear();
+  fBest.SetOwner(false);
   for (Int_t i = 0; i < nDists; i++) { 
     TH1D* dist = static_cast<TH1D*>(dists->At(i));
     // Ignore empty histograms altoghether 
@@ -987,8 +1109,18 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     // Scale to the bin-width
     dist->Scale(1., "width");
     
+    // Narrow search window for the peak 
+    Int_t    cutBin  = TMath::Max(dist->GetXaxis()->FindBin(lowCut),3);
+    Int_t    maxBin  = TMath::Min(dist->GetXaxis()->FindBin(10),
+				  dist->GetNbinsX());
+    dist->GetXaxis()->SetRange(cutBin, maxBin);
+    
+    // Get the bin with maximum 
+    Int_t    peakBin = dist->GetMaximumBin();
+    
     // Normalize peak to 1 
-    Double_t max = dist->GetMaximum(); 
+    // Double_t max = dist->GetMaximum(); 
+    Double_t max = dist->GetBinContent(peakBin); // Maximum(); 
     if (max <= 0) continue;
     dist->Scale(1/max);
     
@@ -1002,45 +1134,87 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     }
 
     // Now fit 
-    TF1* res = FitHist(dist,lowCut,nParticles,minusBins,
-		       relErrorCut,chi2nuCut);
+    ELossFit_t* res = FitHist(dist,i+1,lowCut, nParticles,minusBins,
+			      relErrorCut,chi2nuCut,minWeight,regCut);
     if (!res) continue;
     nFitted++;
+    fBest.AddAt(res, i+1);
     // dist->GetListOfFunctions()->Add(res);
+    
+    if (residuals != kNoResiduals && resi) 
+      CalculateResiduals(residuals, lowCut, dist, res, resi);
 
     // Store eta limits 
     low   = TMath::Min(low,i+1);
     high  = TMath::Max(high,i+1);
 
     // Get the reduced chi square
-    Double_t chi2 = res->GetChisquare();
-    Int_t    ndf  = res->GetNDF();
+    Double_t chi2 = res->fChi2; // GetChisquare();
+    Int_t    ndf  = res->fNu;   // GetNDF();
     
     // Store results of best fit in output histograms 
-    res->SetLineWidth(4);
+    // res->SetLineWidth(4);
     hChi2   ->SetBinContent(i+1, ndf > 0 ? chi2 / ndf : 0);
-    hC      ->SetBinContent(i+1, res->GetParameter(kC));   
-    hDelta  ->SetBinContent(i+1, res->GetParameter(kDelta)); 
-    hXi     ->SetBinContent(i+1, res->GetParameter(kXi));   
-    hSigma  ->SetBinContent(i+1, res->GetParameter(kSigma));   
-    hSigmaN ->SetBinContent(i+1, res->GetParameter(kSigmaN));   
-    hN      ->SetBinContent(i+1, res->GetParameter(kN));   
+    hC      ->SetBinContent(i+1, res->fC); // GetParameter(kC));   
+    hDelta  ->SetBinContent(i+1, res->fDelta); // GetParameter(kDelta)); 
+    hXi     ->SetBinContent(i+1, res->fXi); // GetParameter(kXi));   
+    hSigma  ->SetBinContent(i+1, res->fSigma); // GetParameter(kSigma));   
+    hSigmaN ->SetBinContent(i+1, res->fSigmaN); // GetParameter(kSigmaN));   
+    hN      ->SetBinContent(i+1, res->fN); // GetParameter(kN));   
 
-    hC     ->SetBinError(i+1, res->GetParError(kC));
-    hDelta ->SetBinError(i+1, res->GetParError(kDelta));
-    hXi    ->SetBinError(i+1, res->GetParError(kXi));
-    hSigma ->SetBinError(i+1, res->GetParError(kSigma));
-    hSigmaN->SetBinError(i+1, res->GetParError(kSigmaN));
-    hN     ->SetBinError(i+1, res->GetParError(kN));
+    hC     ->SetBinError(i+1, res->fEC); // GetParError(kC));
+    hDelta ->SetBinError(i+1, res->fEDelta); // GetParError(kDelta));
+    hXi    ->SetBinError(i+1, res->fEXi); // GetParError(kXi));
+    hSigma ->SetBinError(i+1, res->fESigma); // GetParError(kSigma));
+    hSigmaN->SetBinError(i+1, res->fESigmaN); // GetParError(kSigmaN));
+    // hN     ->SetBinError(i+1, res->fGetParError(kN));
 
     for (UShort_t j = 0; j < nParticles-1; j++) {
-      hA[j]->SetBinContent(i+1, res->GetParameter(kA+j));
-      hA[j]->SetBinError(i+1, res->GetParError(kA+j));
+      hA[j]->SetBinContent(i+1, res->fA[j]); // GetParameter(kA+j));
+      hA[j]->SetBinError(i+1, res->fEA[j]); // GetParError(kA+j));
     }
   }
   printf("%s: Out of %d histograms, %d where empty, %d had too little data,"
 	 "leaving %d to be fitted, of which %d succeeded\n",  
 	 GetName(), nDists, nEmpty, nLow, nDists-nEmpty-nLow, nFitted);
+
+  // Fit the full-ring histogram 
+  TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));
+  if (total && total->GetEntries() >= minEntries) { 
+
+    // Scale to the bin-width
+    total->Scale(1., "width");
+    
+    // Normalize peak to 1 
+    Double_t max = total->GetMaximum(); 
+    if (max > 0) total->Scale(1/max);
+    
+    ELossFit_t* resT = FitHist(total,nDists+1,lowCut, nParticles,minusBins,
+			       relErrorCut,chi2nuCut,minWeight,regCut);
+    if (resT) { 
+      // Make histograms for the result of this fit 
+      Double_t chi2 = resT->GetChi2();
+      Int_t    ndf  = resT->GetNu();
+      pars->Add(MakeTotal("t_chi2",   "#chi^{2}/#nu", eta, low, high,
+			  ndf > 0 ? chi2/ndf : 0, 0));
+      pars->Add(MakeTotal("t_c",      "Constant",     eta, low, high,
+			  resT->GetC(), resT->GetEC()));
+      pars->Add(MakeTotal("t_delta",  "#Delta_{p}",   eta, low, high,
+			  resT->GetDelta(), resT->GetEDelta()));
+      pars->Add(MakeTotal("t_xi",     "#xi",          eta, low, high,
+			  resT->GetXi(), resT->GetEXi()));
+      pars->Add(MakeTotal("t_sigma",  "#sigma",       eta, low, high,
+			  resT->GetSigma(), resT->GetESigma()));
+      pars->Add(MakeTotal("t_sigman", "#sigma_{n}",   eta, low, high,
+			  resT->GetSigmaN(), resT->GetESigmaN()));
+      pars->Add(MakeTotal("t_n",    "N",              eta, low, high,
+			  resT->GetN(), 0));
+      for (UShort_t j = 0; j < nParticles-1; j++) 
+	pars->Add(MakeTotal(Form("t_a%d",j+2), 
+			    Form("a_{%d}",j+2), eta, low, high,
+			    resT->GetA(j), resT->GetEA(j)));
+    }
+  }
 
   TH1* status = new TH1I("status", "Status of Fits", 5, 0, 5);
   status->GetXaxis()->SetBinLabel(1, "Total");
@@ -1061,50 +1235,6 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
   status->SetDirectory(0);
   status->SetStats(0);
   pars->Add(status);
-
-  // Fit the full-ring histogram 
-  TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));
-  if (total && total->GetEntries() >= minEntries) { 
-
-    // Scale to the bin-width
-    total->Scale(1., "width");
-    
-    // Normalize peak to 1 
-    Double_t max = total->GetMaximum(); 
-    if (max > 0) total->Scale(1/max);
-
-    TF1* res = FitHist(total,lowCut,nParticles,minusBins,
-		       relErrorCut,chi2nuCut);
-    if (res) { 
-      // Make histograms for the result of this fit 
-      Double_t chi2 = res->GetChisquare();
-      Int_t    ndf  = res->GetNDF();
-      pars->Add(MakeTotal("t_chi2",   "#chi^{2}/#nu", eta, low, high,
-			  ndf > 0 ? chi2/ndf : 0, 0));
-      pars->Add(MakeTotal("t_c",      "Constant",     eta, low, high,
-			  res->GetParameter(kC),
-			  res->GetParError(kC)));
-      pars->Add(MakeTotal("t_delta",  "#Delta_{p}",   eta, low, high,
-			  res->GetParameter(kDelta),
-			  res->GetParError(kDelta)));
-      pars->Add(MakeTotal("t_xi",     "#xi",          eta, low, high,
-			  res->GetParameter(kXi),
-			  res->GetParError(kXi)));
-      pars->Add(MakeTotal("t_sigma",  "#sigma",       eta, low, high,
-			  res->GetParameter(kSigma),
-			  res->GetParError(kSigma)));
-      pars->Add(MakeTotal("t_sigman", "#sigma_{n}",   eta, low, high,
-			  res->GetParameter(kSigmaN),
-			  res->GetParError(kSigmaN)));
-      pars->Add(MakeTotal("t_n",    "N",              eta, low, high,
-			  res->GetParameter(kN),0));
-      for (UShort_t j = 0; j < nParticles-1; j++) 
-	pars->Add(MakeTotal(Form("t_a%d",j+2), 
-			    Form("a_{%d}",j+2), eta, low, high,
-			    res->GetParameter(kA+j), 
-			    res->GetParError(kA+j)));
-    }
-  }
     
   // Clean up list of histogram.  Histograms with no entries or 
   // no functions are deleted.  We have to do this using the TObjLink 
@@ -1137,13 +1267,16 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
 }
 
 //____________________________________________________________________
-TF1*
+AliFMDEnergyFitter::RingHistos::ELossFit_t*
 AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
+					UShort_t bin, 
 					Double_t lowCut, 
 					UShort_t nParticles, 
 					UShort_t minusBins, 
 					Double_t relErrorCut, 
-					Double_t chi2nuCut) const
+					Double_t chi2nuCut,
+					Double_t minWeight,
+					Double_t regCut) const
 {
   // 
   // Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
@@ -1177,149 +1310,54 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
   // Create a fitter object 
   AliForwardUtil::ELossFitter f(lowCut, maxRange, minusBins); 
   f.Clear();
-  
-  
+  f.SetDebug(fDebug > 2); 
+
+  // regularization cut - should be a parameter of the class 
+  if (dist->GetEntries() > regCut) { 
+    // We should rescale the errors 
+    Double_t s = TMath::Sqrt(dist->GetEntries() / regCut);
+    if (fDebug > 0) printf("Error scale: %f ", s);
+    for (Int_t i = 1; i <= dist->GetNbinsX(); i++) {
+      Double_t e = dist->GetBinError(i);
+      dist->SetBinError(i, e * s);
+    }
+  }
   // If we are only asked to fit a single particle, return this fit, 
   // no matter what. 
   if (nParticles == 1) {
     TF1* r = f.Fit1Particle(dist, 0);
     if (!r) return 0;
-    TF1* ret = new TF1(*r);
-    dist->GetListOfFunctions()->Add(ret);
+    TF1* ff = new TF1(*r);
+    dist->GetListOfFunctions()->Add(ff);
+    ELossFit_t* ret = new ELossFit_t(0, *ff);
+    ret->CalculateQuality(chi2nuCut, relErrorCut, minWeight);
     return ret;
   }
 
   // Fit from 2 upto n particles  
   for (Int_t i = 2; i <= nParticles; i++) f.FitNParticle(dist, i, 0);
-
-
   // Now, we need to select the best fit 
   Int_t nFits = f.GetFitResults().GetEntriesFast();
-  TF1*  good[nFits];
   for (Int_t i = nFits-1; i >= 0; i--) { 
-    good[i] = 0;
     TF1* ff = static_cast<TF1*>(f.GetFunctions().At(i));
-    // ff->SetLineColor(Color());
-    ff->SetRange(0, maxRange);
+    // ff->SetRange(0, maxRange);
     dist->GetListOfFunctions()->Add(new TF1(*ff));
-    if (CheckResult(static_cast<TFitResult*>(f.GetFitResults().At(i)),
-		    relErrorCut, chi2nuCut)) {
-      good[i] = ff;
-      ff->SetLineWidth(2);
-      // f.fFitResults.At(i)->Print("V");
-    }
-  }
-  // If all else fails, use the 1 particle fit 
-  TF1* ret = static_cast<TF1*>(f.GetFunctions().At(0));
-
-  // Find the fit with the most valid particles 
-  for (Int_t i = nFits-1; i > 0; i--) {
-    if (!good[i]) continue;
-    if (fDebug > 1) {
-      AliInfo(Form("Choosing fit with n=%d", i+1));
-      f.GetFitResults().At(i)->Print();
-    }
-    ret = good[i];
-    break;
-  }
-  // Give a warning if we're using fall-back 
-  if (ret == f.GetFunctions().At(0)) {
-    AliWarning("Choosing fall-back 1 particle fit");
-  }
-  // Copy our result and return (the functions are owned by the fitter)
-  TF1* fret = new TF1(*ret);
-  return fret;
-}
-
-//____________________________________________________________________
-Bool_t
-AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r,
-					    Double_t relErrorCut, 
-					    Double_t chi2nuCut) const
-{
-  // 
-  // Check the result of the fit. Returns true if 
-  // - @f$ \chi^2/\nu < \max{\chi^2/\nu}@f$
-  // - @f$ \Delta p_i/p_i < \delta_e@f$ for all parameters.  Note, 
-  //   for multi-particle fits, this requirement is relaxed by a 
-  //   factor of 2
-  // - @f$ a_{n} > 10^{-7}@f$ when fitting to an @f$ n@f$ 
-  //   particle response 
-  // 
-  // Parameters:
-  //    r           Result to check
-  //    relErrorCut Cut @f$ \delta_e@f$ applied to relative error 
-  //                    of parameter.  
-  //    chi2nuCut   Cut @f$ \max{\chi^2/\nu}@f$ 
-  // 
-  // Return:
-  //    true if fit is good. 
-  //
-  if (fDebug > 10) r->Print();
-  TString  n    = r->GetName();
-  n.ReplaceAll("TFitResult-", "");
-  Double_t chi2 = r->Chi2();
-  Int_t    ndf  = r->Ndf();
-  // Double_t prob = r.Prob();
-  Bool_t ret = kTRUE;
-  
-  // Check that the reduced chi square isn't larger than 5
-  if (ndf <= 0 || chi2 / ndf > chi2nuCut) { 
-    if (fDebug > 2) {
-      AliWarning(Form("%s: chi^2/ndf=%12.5f/%3d=%12.5f>%12.5f", 
-		      n.Data(), chi2, ndf, (ndf<0 ? 0 : chi2/ndf),
-		      chi2nuCut)); }
-    ret = kFALSE;
-  }
-    
-  // Check each parameter 
-  UShort_t nPar = r->NPar();
-  for (UShort_t i = 0; i < nPar; i++) { 
-    if (i == kN) continue;  // Skip the number parameter 
-    
-    // Get value and error and check value 
-    Double_t v  = r->Parameter(i);
-    Double_t e  = r->ParError(i);
-    if (v == 0) continue;
-
-    // Calculate the relative error and check it 
-    Double_t re  = e / v;
-    Double_t cut = relErrorCut * (i < kN ? 1 : 2);
-    if (re > cut) { 
-      if (fDebug > 2) {
-	AliWarning(Form("%s: Delta %s/%s=%9.5f/%9.5f=%5.1f%%>%5.1f%%",
-			n.Data(), r->ParName(i).c_str(), 
-			r->ParName(i).c_str(), e, v, 
-			100*(v == 0 ? 0 : e/v),
-			100*(cut))); }
-      ret = kFALSE;
-    }
   }
 
-  // Check if we have scale parameters 
-  if (nPar > kN) { 
-    
-    // Check that the last particle has a significant contribution 
-    Double_t lastScale = r->Parameter(nPar-1);
-    if (lastScale <= 1e-7) { 
-      if (fDebug) {
-	AliWarning(Form("%s: %s=%9.6f<1e-7", 
-			n.Data(), r->ParName(nPar-1).c_str(), lastScale)); }
-      ret = kFALSE;
-    }
-  }
+  // Here, we use the real quality assesor instead of the old
+  // `CheckResult' to ensure consitency in all output.
+  ELossFit_t* ret = FindBestFit(bin, dist, relErrorCut, chi2nuCut, minWeight);
   return ret;
 }
-
 
 //__________________________________________________________________
 void
 AliFMDEnergyFitter::RingHistos::FindBestFits(const TList*        d, 
 					     AliFMDCorrELossFit& obj,
 					     const TAxis&        eta,     
-					     Double_t            relErrorCut, 
-					     Double_t            chi2nuCut,
-					     Double_t            minWeightCut)
+					     Double_t           ,//relErrorCut, 
+					     Double_t           ,//chi2nuCut,
+					     Double_t           )//minWeightCut)
 {
   // 
   // Find the best fits 
@@ -1349,31 +1387,43 @@ AliFMDEnergyFitter::RingHistos::FindBestFits(const TList*        d,
     return;
   }
   Int_t nBin = eta.GetNbins();
-
+  if (fBest.GetEntriesFast() <= 0) { 
+    AliWarningF("No fits found for %s", GetName());
+    return;
+  }
+  
   for (Int_t b = 1; b <= nBin; b++) { 
     TString n(Form(fgkEDistFormat, fName.Data(), b));
     TH1D*   dist = static_cast<TH1D*>(dists->FindObject(n));
     // Ignore empty histograms altoghether 
     if (!dist || dist->GetEntries() <= 0) continue; 
     
-    AliFMDCorrELossFit::ELossFit* best = FindBestFit(dist,
-						     relErrorCut,
-						     chi2nuCut,  
-						     minWeightCut);
+    ELossFit_t* best = static_cast<ELossFit_t*>(fBest.At(b));
+    if (!best) { 
+      AliErrorF("No best fit found @ %d for %s", b, GetName());
+      continue;
+    }
+    // FindBestFit(b, dist, relErrorCut, chi2nuCut, minWeightCut);
     best->fDet  = fDet; 
     best->fRing = fRing;
     best->fBin  = b; // 
+    if (fDebug > 0) {
+      printf("Bin # %3d: ", b); 
+      best->Print("s");
+    }
     // Double_t eta = fAxis->GetBinCenter(b);
-    obj.SetFit(fDet, fRing, b, new AliFMDCorrELossFit::ELossFit(*best));
+    obj.SetFit(fDet, fRing, b, best); 
+    // new ELossFit_t(*best));
   }
 }
 
 //__________________________________________________________________
-AliFMDCorrELossFit::ELossFit* 
-AliFMDEnergyFitter::RingHistos::FindBestFit(const TH1* dist,
+AliFMDEnergyFitter::RingHistos::ELossFit_t* 
+AliFMDEnergyFitter::RingHistos::FindBestFit(UShort_t b, 
+					    const TH1* dist,
 					    Double_t relErrorCut, 
 					    Double_t chi2nuCut,
-					    Double_t minWeightCut) 
+					    Double_t minWeightCut)  const
 {
   // 
   // Find the best fit 
@@ -1395,17 +1445,107 @@ AliFMDEnergyFitter::RingHistos::FindBestFit(const TH1* dist,
   TF1*   func = 0;
   fFits.Clear();
   Int_t  i = 0;
+  if (fDebug) 
+    printf("Find best fit for %s ... ", dist->GetName());
   // Info("FindBestFit", "%s", dist->GetName());
   while ((func = static_cast<TF1*>(next()))) { 
-    AliFMDCorrELossFit::ELossFit* fit = 
-      new(fFits[i++]) AliFMDCorrELossFit::ELossFit(0,*func);
+    ELossFit_t* fit = new(fFits[i++]) ELossFit_t(0,*func);
+    fit->fDet  = fDet;
+    fit->fRing = fRing;
+    fit->fBin  = b;
     fit->CalculateQuality(chi2nuCut, relErrorCut, minWeightCut);
+    if (fDebug > 2) 
+      Printf("%10s: %3d (chi^2/nu: %6.3f)", 
+	     func->GetName(), fit->fQuality, 
+	     (fit->fNu > 0 ? fit->fChi2 / fit->fNu : 999));
   }
-  fFits.Sort(false);
-  // fFits.Print();
-  return static_cast<AliFMDCorrELossFit::ELossFit*>(fFits.At(0));
+  fFits.Sort();
+  if (fDebug > 1) fFits.Print("s");
+  ELossFit_t* ret = static_cast<ELossFit_t*>(fFits.At(i-1));
+  if (!ret) {
+    AliWarningF("No fit found for %s, bin %3d", GetName(), b);
+    return 0;
+  }
+  if (ret && fDebug > 0) {
+    if (fDebug > 1)
+      printf(" %d: ", i-1);
+    ret->Print("s");
+  }
+  // We have to make a copy here, because other wise the clones array
+  // will overwrite the address
+  return new ELossFit_t(*ret);
 }
 
+//____________________________________________________________________
+void
+AliFMDEnergyFitter::RingHistos::CalculateResiduals(EResidualMethod mode, 
+						   Double_t        lowCut,
+						   TH1*            dist, 
+						   ELossFit_t*     fit, 
+						   TCollection*    out) const
+{
+
+  // Clone the input, and reset
+  TH1*    resi = static_cast<TH1*>(dist->Clone());
+  TString tit(resi->GetTitle());
+  tit.ReplaceAll("#DeltaE/#DeltaE_{mip}", "Residuals");
+  resi->SetTitle(tit);
+  resi->SetDirectory(0);
+
+  // Set title on Y axis
+  switch (mode) { 
+  case kResidualDifference:       
+    resi->SetYTitle("h_{i}-f(#Delta_{i}) #pm #delta_{i}");
+    break;
+  case kResidualScaledDifference:  
+    resi->SetYTitle("[h_{i}-f(#Delta_{i})]/#delta_{i}"); break;
+  case kResidualSquareDifference:  
+    resi->SetYTitle("#chi_{i}^{2}=[h_{i}-f(#Delta_{i})]^{2}/#delta^{2}_{i}");
+    break;
+  default: 
+    resi->SetYTitle("Unknown");
+    break;
+  }
+  out->Add(resi);
+
+  // Try to find the function 
+  Double_t highCut = dist->GetXaxis()->GetXmax();
+  TString funcName("landau1");
+  if (fit->GetN() > 1) 
+    funcName = Form("nlandau%d", fit->GetN());
+  TF1* func = dist->GetFunction(funcName);
+  if (func) func->GetRange(lowCut, highCut);
+  resi->Reset("ICES");
+  resi->GetListOfFunctions()->Clear();
+  resi->SetUniqueID(mode);
+
+    // Reset histogram
+  Int_t nX = resi->GetNbinsX();
+  for (Int_t i  = 1; i <= nX; i++) { 
+    Double_t x  = dist->GetBinCenter(i);
+    if (x < lowCut)  continue;
+    if (x > highCut) break;
+
+    Double_t h  = dist->GetBinContent(i);
+    Double_t e  = dist->GetBinError(i);
+    Double_t r  = 0;
+    Double_t er = 0;
+    if (h > 0 && e > 0) { 
+      Double_t f = fit->GetC() * fit->Evaluate(x);
+      if (f > 0) { 
+	r  = h-f;
+	switch (mode) { 
+	case kResidualDifference: er = e; break;
+	case kResidualScaledDifference:  r /= e; break;
+	case kResidualSquareDifference:  r *= r; r /= (e*e); break;
+	default: r = 0; break;
+	}
+      }
+    }
+    resi->SetBinContent(i, r);
+    resi->SetBinError(i, er);
+  }  
+}
 
 //____________________________________________________________________
 void

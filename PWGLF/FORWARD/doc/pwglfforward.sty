@@ -1,0 +1,73 @@
+\ProvidesPackage{pwglfforward}
+
+\renewcommand{\rmdefault}{ptm}
+\RequirePackage{mathptmx}
+\RequirePackage[margin=2cm,twoside,a4paper]{geometry}
+\RequirePackage{amstext}
+\RequirePackage{amsmath}
+\RequirePackage[ruled,vlined,linesnumbered]{algorithm2e}
+\RequirePackage{graphicx}
+\RequirePackage{color}
+\RequirePackage{url}
+\RequirePackage{units}
+\RequirePackage{listings}
+\RequirePackage[colorlinks,urlcolor=black,hyperindex,%
+            linktocpage,a4paper,bookmarks=true,%
+            bookmarksopen=true,bookmarksopenlevel=2,%
+            bookmarksnumbered=true]{hyperref}
+%% \RequirePackage{bookmark}
+\def\AlwaysText#1{\ifmmode\relax\text{#1}\else #1\fi}
+\newcommand{\AbbrName}[1]{\AlwaysText{{\scshape #1}}}
+\newcommand{\CERN}{\AbbrName{cern}}
+\newcommand{\ALICE}{\AbbrName{alice}}
+\newcommand{\SPD}{\AbbrName{spd}}
+\newcommand{\ESD}{\AbbrName{esd}}
+\newcommand{\AOD}{\AbbrName{aod}}
+\newcommand{\INEL}{\AbbrName{inel}}
+\newcommand{\INELONE}{$\AbbrName{inel}>0$}
+\newcommand{\NSD}{\AbbrName{nsd}}
+\newcommand{\FMD}[1][]{\AbbrName{fmd\ifx|#1|\else#1\fi}}
+\newcommand{\OCDB}{\AbbrName{ocdb}}
+\newcommand{\mult}[1][]{\ensuremath N_{\text{ch}#1}}
+\newcommand{\dndetadphi}[1][]{{\ensuremath% 
+    \ifx|#1|\else\left.\fi%
+    \frac{d^2\mult{}}{d\eta\,d\varphi}%
+    \ifx|#1|\else\right|_{#1}\fi%
+}}
+\newcommand{\landau}[1]{{\ensuremath% 
+    \text{landau}\left(#1\right)}}
+\newcommand{\dndeta}[1][]{{\ensuremath% 
+    \ifx|#1|\else\left.\fi%
+    \frac{1}{N}\frac{d\mult{}}{d\eta}%
+    \ifx|#1|\else\right|_{#1}\fi%
+}}
+\newcommand{\dndphi}[1][]{{\ensuremath% 
+    \ifx|#1|\else\left.\fi%
+    \frac{1}{N}\frac{d\mult{}}{d\varphi}%
+    \ifx|#1|\else\right|_{#1}\fi%
+}}
+\newcommand{\MC}{\AlwaysText{MC}}
+\newcommand{\N}[2]{{\ensuremath N_{#1#2}}}
+\newcommand{\NV}[1][]{\N{\text{V}}{#1}}
+\newcommand{\NnotV}{\N{\not{\text{V}}}}
+\newcommand{\NT}{\N{\text{T}}{}}
+\newcommand{\NA}{\N{\text{A}}{}}
+\newcommand{\Ngood}{{\ensuremath N_{\text{good}}}}
+\newcommand{\GeV}[1]{\unit[#1]{\AlwaysText{GeV}}}
+\newcommand{\TeV}[1]{\unit[#1]{\AlwaysText{TeV}}}
+\newcommand{\cm}[1]{\unit[#1]{\AlwaysText{cm}}}
+\newcommand{\secref}[1]{Section~\ref{#1}}
+\newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcommand{\etaphi}{\ensuremath(\eta,\varphi)}
+% Azimuthal acceptance
+\newcommand{\Corners}{\ensuremath A^{\varphi}_{t}} 
+% Acceptance due to dead strips
+\newcommand{\DeadCh}{\ensuremath A^{\eta}_{v,i}\etaphi} 
+\newcommand{\SecMap}{\ensuremath S_v\etaphi}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0em}
+
+\newcommand\figinput[2][\textwidth]{% 
+  \includegraphics[keepaspectratio,width=#1]{\jobname-#2}}
+
+\endinput

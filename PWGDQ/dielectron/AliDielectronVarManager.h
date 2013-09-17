@@ -24,6 +24,7 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TH3D.h>
+#include <THnBase.h>
 #include <TFile.h>
 #include <TDatabasePDG.h>
 #include <TKey.h>
@@ -161,6 +162,7 @@ public:
     kTOFPIDBit,              // TOF PID bit (1:set, 0:TOF not available)a
     kTOFmismProb, 	         // and mismatchPorbability as explain in TOF-twiki
 	
+    kTPCnSigmaEleRaw,        // raw number of sigmas to the dE/dx electron line in the TPC
     kTPCnSigmaEle,           // number of sigmas to the dE/dx electron line in the TPC
     kTPCnSigmaPio,           // number of sigmas to the dE/dx pion line in the TPC
     kTPCnSigmaMuo,           // number of sigmas to the dE/dx muon line in the TPC
@@ -181,6 +183,7 @@ public:
     kEMCALM20,               // M20 showershape parameter
     kEMCALDispersion,        // Dispersion paramter
     
+    kLegEff,                 // single electron efficiency
     kV0Index0,               // v0 index 0
     kKinkIndex0,             // kink index 0
       
@@ -213,6 +216,8 @@ public:
 	kRotPairz,               //ee plane vector
 	kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
+    kCosPhiH2,               // cosine of pair phi for 2nd harmonic
+    kSinPhiH2,               // sinus  of pair phi for 2nd harmonic
     kDeltaPhiV0ArpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
     kDeltaPhiV0CrpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
     kDeltaPhiV0ACrpH2,       // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A + V0-C
@@ -227,6 +232,7 @@ public:
     kv0CrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-C
     kv0ACrpH2FlowV2,         // v2 coefficient with respect to the 2nd order reaction plane from V0-A + V0-C
     kTPCrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from TPC
+    kTPCrpH2FlowV2Sin,       // sinus of v2 coefficient with respect to the 2nd order reaction plane from TPC
 
     kLegDist,                // distance of the legs
     kLegDistXY,              // distance of the legs in XY
@@ -242,6 +248,7 @@ public:
     kTRDpidEffPair,          // TRD pid efficieny from conversion electrons
     kMomAsymDau1,            // momentum fraction of daughter1
     kMomAsymDau2,            // momentum fraction of daughter2
+    kPairEff,                 // pair efficiency
     kPairMax,                 //
   // Event specific variables
     kXvPrim=kPairMax,        // prim vertex
@@ -314,6 +321,8 @@ public:
     kTPCyH2,                  // TPC y-component of the Q vector for 2nd harmonic (corrected)
     kTPCmagH2,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (corrected)
     kTPCrpH2,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
+    kCosTPCrpH2,              // cosine of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
+    kSinTPCrpH2,              // sinus of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
     kTPCsub1xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 1) 
     kTPCsub1yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 1)
     kTPCsub1rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 1)
@@ -391,6 +400,7 @@ public:
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
   static void InitTRDpidEffHistograms(const Char_t* filename);
+  static void InitEffMap(const Char_t* filename);
   static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   
   static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
@@ -405,6 +415,7 @@ public:
 
   static TProfile* GetEstimatorHistogram(Int_t period, Int_t type) {return fgMultEstimatorAvg[period][type];}
   static Double_t GetTRDpidEfficiency(Int_t runNo, Double_t centrality, Double_t eta, Double_t trdPhi, Double_t pout, Double_t& effErr);
+  static Double_t GetSingleLegEff(Double_t * const values);
 
   static const AliKFVertex* GetKFVertex() {return fgKFVertex;}
   
@@ -446,6 +457,7 @@ private:
   static TProfile        *fgMultEstimatorAvg[4][9];  // multiplicity estimator averages (4 periods x 9 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
+  static THnBase         *fgEffMap;             // single electron efficiencies
   static TString          fgVZEROCalibrationFile;  // file with VZERO channel-by-channel calibrations
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
   static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
@@ -694,7 +706,9 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   // nsigma to Electron band
   // TODO: for the moment we set the bethe bloch parameters manually
   //       this should be changed in future!
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
   values[AliDielectronVarManager::kTPCnSigmaEle]=(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCorrVal()-AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
+
   values[AliDielectronVarManager::kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
   values[AliDielectronVarManager::kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
   values[AliDielectronVarManager::kTPCnSigmaKao]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
@@ -723,8 +737,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kEMCALM02]        = showershape[1];
   values[AliDielectronVarManager::kEMCALM20]        = showershape[2];
   values[AliDielectronVarManager::kEMCALDispersion] = showershape[3];
-  
-  
+
+  values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
   //restore TPC signal if it was changed
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 }
@@ -808,6 +822,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTOFsignal]=0;
   //values[AliDielectronVarManager::kTOFbeta]=0;
 
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]=0;
   values[AliDielectronVarManager::kTPCnSigmaEle]=0;
   values[AliDielectronVarManager::kTPCnSigmaPio]=0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]=0;
@@ -848,7 +863,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     
     values[AliDielectronVarManager::kPIn]=mom;
     values[AliDielectronVarManager::kTPCsignal]=pid->GetTPCsignal();
-
+    values[AliDielectronVarManager::kTPCnSigmaEleRaw]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
     values[AliDielectronVarManager::kTPCnSigmaEle]=tpcNsigmaEle;
     values[AliDielectronVarManager::kTPCnSigmaPio]=tpcNsigmaPio;
     values[AliDielectronVarManager::kTPCnSigmaMuo]=tpcNsigmaMuo;
@@ -943,6 +958,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   } //if(mc->HasMC())
   
   values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
+  values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
 }
 
 inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *particle, Double_t * const values)
@@ -978,6 +994,7 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kTPCsignal]     = 0;
   values[AliDielectronVarManager::kTOFsignal]     = 0;
   values[AliDielectronVarManager::kTOFbeta]       = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
@@ -1046,6 +1063,7 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
@@ -1146,6 +1164,7 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
@@ -1346,7 +1365,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	 */
   }
   //common, regardless of calculation method 
-   // Flow quantities
+
+  // Flow quantities
+  values[AliDielectronVarManager::kCosPhiH2] = TMath::Cos(2*values[AliDielectronVarManager::kPhi]);
+  values[AliDielectronVarManager::kSinPhiH2] = TMath::Sin(2*values[AliDielectronVarManager::kPhi]);
   Double_t delta=0.0;
   // v2 with respect to VZERO-A event plane
   delta = values[AliDielectronVarManager::kPhi] - fgData[AliDielectronVarManager::kV0ArpH2];
@@ -1377,6 +1399,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kv0ArpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2]) );
   values[AliDielectronVarManager::kv0CrpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2]) );
   values[AliDielectronVarManager::kTPCrpH2FlowV2]    = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kTPCrpH2]) );
+  values[AliDielectronVarManager::kTPCrpH2FlowV2Sin] = TMath::Sin( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kTPCrpH2]) );
+
 
   // keep the interval [-pi,+pi]
   if ( values[AliDielectronVarManager::kDeltaPhiv0ArpH2] > TMath::Pi() ) 
@@ -1458,13 +1482,21 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   AliVParticle* leg1 = pair->GetFirstDaughter();
   AliVParticle* leg2 = pair->GetSecondDaughter();
   if (leg1)
-	values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? leg1->P()  / values[AliDielectronVarManager::kP]: 0;
+    values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? leg1->P()  / values[AliDielectronVarManager::kP]: 0;
   else 
-	values[AliDielectronVarManager::kMomAsymDau1] = -9999.;
+    values[AliDielectronVarManager::kMomAsymDau1] = -9999.;
   if (leg2)
-	values[AliDielectronVarManager::kMomAsymDau2] = (values[AliDielectronVarManager::kP] != 0)? leg2->P()  / values[AliDielectronVarManager::kP]: 0;
+    values[AliDielectronVarManager::kMomAsymDau2] = (values[AliDielectronVarManager::kP] != 0)? leg2->P()  / values[AliDielectronVarManager::kP]: 0;
   else 
-	values[AliDielectronVarManager::kMomAsymDau2] = -9999.;
+    values[AliDielectronVarManager::kMomAsymDau2] = -9999.;
+
+  Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
+  Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+  if (leg1 && leg2 && fgEffMap) {
+    Fill(leg1, valuesLeg1);
+    Fill(leg2, valuesLeg2);
+    values[AliDielectronVarManager::kPairEff] = valuesLeg1[AliDielectronVarManager::kLegEff] *valuesLeg2[AliDielectronVarManager::kLegEff];
+  }
 }
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
@@ -1517,6 +1549,7 @@ inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *part
   values[AliDielectronVarManager::kTPCsignal]     = 0;
   values[AliDielectronVarManager::kTOFsignal]     = 0;
   values[AliDielectronVarManager::kTOFbeta]       = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
@@ -1920,6 +1953,10 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
       values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
       values[AliDielectronVarManager::kTPCmagH2] = qcorr->Mod();
       values[AliDielectronVarManager::kTPCrpH2]  = ((TMath::Abs(qcorr->X())>1.0e-10) ? TMath::ATan2(qcorr->Y(),qcorr->X())/2.0 : 0.0);
+      // detector effects
+      values[AliDielectronVarManager::kCosTPCrpH2]     = TMath::Cos( 2.* values[AliDielectronVarManager::kTPCrpH2] );
+      values[AliDielectronVarManager::kSinTPCrpH2]     = TMath::Sin( 2.* values[AliDielectronVarManager::kTPCrpH2] );
+
       // correlations for event plane resoultion
       values[AliDielectronVarManager::kv0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] - 
 									 values[AliDielectronVarManager::kTPCrpH2]) ); 
@@ -2093,6 +2130,37 @@ inline void AliDielectronVarManager::InitTRDpidEffHistograms(const Char_t* filen
       ++idxn;
     }
   }
+}
+
+inline void AliDielectronVarManager::InitEffMap(const Char_t* filename) {
+  //
+  // init an efficiency object for on-the-fly correction calculations
+  //
+  fgEffMap=0x0;
+  TFile* file=TFile::Open(filename);
+  THnBase *hGen = (THnBase*) file->Get("hGenerated");
+  THnBase *hFnd = (THnBase*) file->Get("hFound");
+  if(!hFnd || !hGen) return;
+
+  fgEffMap  = (THnBase*) hFnd->Clone("effMap");
+  fgEffMap->Divide(hFnd, hGen, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
+  if(fgEffMap) printf("[I] AliDielectronVarManager::InitEffMap eff map loaded! \n");
+}
+
+inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values) {
+  //
+  // get the single leg efficiency for a given particle
+  //
+  if(!fgEffMap) return -1.;
+
+  Int_t dim=fgEffMap->GetNdimensions();
+  Int_t idx[dim];
+  for(Int_t idim=0; idim<dim; idim++) {
+    UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
+    idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
+  }
+  /* printf("bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx)); */
+  return (fgEffMap->GetBinContent(idx));
 }
 
 

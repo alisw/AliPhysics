@@ -109,7 +109,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   AliESDtrackCuts *fTrackCutsITSLoose; // Loose ITS track cuts
   AliESDtrackCuts *fTrackCutsTPConly;  // TPC track cuts
   Int_t   fTrackType;                  // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
-  UInt_t fFilterMask;                  //! Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
+  UInt_t fFilterMask;                  // Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
 
   Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
   Float_t fPtMax;                 // Maximum pT for histograms
@@ -236,7 +236,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TList *fHistList; //! List of Histograms
   
  
-  ClassDef(AliPWG4HighPtTrackQA,2) 
+  ClassDef(AliPWG4HighPtTrackQA,3) 
   
 };
 #endif

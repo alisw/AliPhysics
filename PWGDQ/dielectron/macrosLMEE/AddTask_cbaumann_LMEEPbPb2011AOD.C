@@ -13,12 +13,13 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
 //  create task and add it to the manager
 //	gSystem->AddIncludePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE");
 
-
   TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
   if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
 
 
+
+  //Load updated macros from private ALIEN path
   if (getFromAlien &&
       (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/ConfigLMEEPbPb2011AOD.C .")) &&
       (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/LMEECutLibAOD.C ."))
@@ -47,8 +48,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0)
 	hasMC=kTRUE;
 
-
-
+  //load dielectron configuration files
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
 	gROOT->LoadMacro(configLMEECutLibPath.Data());
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
@@ -59,38 +59,28 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(triggerNames);
-//  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-//  task->SetRejectPileup();
   task->SelectCollisionCandidates(collCands);  
+  //Basic Event cuts on z-Vertex,...
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 	
 
-  //load dielectron configuration file
 
-  //add dielectron analysis with different cuts to the task
 
 if (rejOnly) {
-
-  AliDielectron *lowmass1=ConfigLMEEPbPb2011AOD(1,hasMC,bESDANA);
-  task->AddDielectron(lowmass1);
-  printf("add: %s\n",lowmass1->GetName());
-
+   //obsolete variable, kept not to break existing trains
 }
-else {
-  AliDielectron *lowmass4=ConfigLMEEPbPb2011AOD(4,hasMC,bESDANA);
-  task->AddDielectron(lowmass4);
-  printf("add: %s\n",lowmass4->GetName());
-
-  AliDielectron *lowmass1=ConfigLMEEPbPb2011AOD(1,hasMC,bESDANA);
-  task->AddDielectron(lowmass1);
-  printf("add: %s\n",lowmass1->GetName());
-
 if (PIDbaseline) {
-	AliDielectron *lowmass8=ConfigLMEEPbPb2011AOD(8,hasMC,bESDANA);
-	task->AddDielectron(lowmass8);
-	printf("add: %s\n",lowmass8->GetName());
+   //obsolete variable, kept not to break existing trains
 }
-}
+
+//add dielectron analysis with different cuts to the task
+AliDielectron *lowmass1=ConfigLMEEPbPb2011AOD(1,hasMC,bESDANA);
+task->AddDielectron(lowmass1);
+printf("add: %s\n",lowmass1->GetName());
+
+AliDielectron *lowmass3=ConfigLMEEPbPb2011AOD(3,hasMC,bESDANA);
+task->AddDielectron(lowmass3);
+printf("add: %s\n",lowmass3->GetName());
 
   mgr->AddTask(task);
 
@@ -118,7 +108,6 @@ if (PIDbaseline) {
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);
-
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );

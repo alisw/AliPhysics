@@ -323,7 +323,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   if (fAnalysisType == "AUTOMATIC")
   {
     //check event cuts
-    if (InputEvent() && !fCutsEvent->IsSelected(InputEvent())) return;
+    if (InputEvent() && !fCutsEvent->IsSelected(InputEvent(),MCEvent())) 
+      return;
 
     //first attach all possible information to the cuts
     fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event

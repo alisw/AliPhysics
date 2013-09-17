@@ -17,11 +17,13 @@ class AliAnalysisTaskRhoAverage : public AliAnalysisTaskRhoBase {
   void             SetUseMedian(Bool_t b=kTRUE)    { fUseMedian     = b    ; }
   
  protected:
+  void             ExecOnce();
   Bool_t           Run();
 
   Int_t            fRhoType       ;// rho type: 0 = charged+neutral, 1 = charged, 2 = neutral
   UInt_t           fNExclLeadPart ;// number of leading particles to be excluded from the median calculation
   Bool_t           fUseMedian     ;// whether or not use the median to calculate rho (mean is used if false)
+  Double_t         fTotalArea     ;//!total area
 
   AliAnalysisTaskRhoAverage(const AliAnalysisTaskRhoAverage&);             // not implemented
   AliAnalysisTaskRhoAverage& operator=(const AliAnalysisTaskRhoAverage&);  // not implemented

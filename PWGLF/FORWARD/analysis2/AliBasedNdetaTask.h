@@ -184,6 +184,12 @@ public:
    * @param h Correction
    */
   void SetShapeCorrection(const TH2F* h);
+  /**
+    * Set satellite vertex flag
+    *
+    * @param satVtx
+    */
+  void SetSatelliteVertices(Bool_t satVtx) { fSatelliteVertices = satVtx; }
   /** 
    * Get a string representing the normalization scheme 
    * 
@@ -416,6 +422,16 @@ protected:
    */
   virtual Int_t GetMarker() const { return GetMarkerStyle(kCircle); }
   /** 
+   * Massage data histograms if needed
+   * 
+   * @param vtx 
+   * @param data 
+   * @param mcData 
+   */
+  virtual void CheckEventData(Double_t vtx, 
+			      TH2*     data, 
+			      TH2*     mcData);
+  /** 
    * Add a centrality bin 
    * 
    * @param at   Where in the list to add this bin 
@@ -485,7 +501,9 @@ protected:
      * 
      * @return Reference to this object 
      */
-    Sum& operator=(const Sum& o) {
+    Sum& operator=(const Sum& o) 
+    {
+      if (&o == this) return *this;
       SetName(o.GetName()); fSum = o.fSum; fSum0 = o.fSum0; fEvents=o.fEvents;
       return *this;
     }
@@ -543,6 +561,8 @@ protected:
     TH2D* CalcSum(TList* o, Double_t& ntotal,
 		  Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
 		  Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
+
+    ClassDef(Sum,1); // Summed histograms
   };
     
   //==================================================================
@@ -553,7 +573,7 @@ protected:
   class CentralityBin : public TNamed
   {
   public:
-    /** dN
+    /** 
      * Constructor 
      */
     CentralityBin();
@@ -612,14 +632,16 @@ protected:
      * @param vzMax       Maximum IP z coordinate
      * @param data        Data histogram 
      * @param mc          MC histogram
+     *
+     * @return true if the event was selected
      */
-    virtual void ProcessEvent(const AliAODForwardMult* forward, 
-			      Int_t                    triggerMask,
-			      Bool_t                   isZero,
-			      Double_t                 vzMin, 
-			      Double_t                 vzMax, 
-			      const TH2D*              data, 
-			      const TH2D*              mc);
+    virtual Bool_t ProcessEvent(const AliAODForwardMult* forward, 
+				Int_t                    triggerMask,
+				Bool_t                   isZero,
+				Double_t                 vzMin, 
+				Double_t                 vzMax, 
+				const TH2D*              data, 
+				const TH2D*              mc);
     /** 
      * Calculate the Event-Level normalization. 
      * 
@@ -780,7 +802,19 @@ protected:
      * 
      * @return Trigger histogram 
      */
-    TH1I* GetTrigggers() { return fTriggers; }
+    TH1I* GetTriggers() { return fTriggers; }
+    /** 
+     * Get trigger histogram
+     * 
+     * @return Trigger histogram
+     */
+    const TH1I* GetStatus() const { return fStatus; } 
+    /** 
+     * Get trigger histogram
+     * 
+     * @return Trigger histogram 
+     */
+    TH1I* GetStatus() { return fStatus; }
     /** @} */
 
     /** 
@@ -826,6 +860,12 @@ protected:
      * @param lvl Debug level
      */
     void SetDebugLevel(Int_t lvl);
+    /**
+     * Set satellite vertex flag
+     *
+     * @param satVtx
+     */
+    void SetSatelliteVertices(Bool_t satVtx) { fSatelliteVertices = satVtx; }
   protected:
     /** 
      * Read in sum hisotgram from list 
@@ -862,9 +902,11 @@ protected:
     Sum*     fSum;       // Sum histogram
     Sum*     fSumMC;     // MC sum histogram
     TH1I*    fTriggers;  // Trigger histogram 
+    TH1I*    fStatus;    // Trigger histogram 
     UShort_t fLow;       // Lower limit (inclusive)
     UShort_t fHigh;      // Upper limit (exclusive)
     Bool_t   fDoFinalMCCorrection; //Do final MC correction
+    Bool_t   fSatelliteVertices; // Satellite vertex flag
     Int_t    fDebug;    // Debug level 
 
     ClassDef(CentralityBin,3); // A centrality bin 
@@ -887,13 +929,15 @@ protected:
   TObject*        fSysString;    // Collision system string 
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
+  TH1D*           fVtx;          // Vertex hist
   UShort_t        fNormalizationScheme; // Normalization scheme
   TObject*        fSchemeString;    // Normalization scheme string
   TObject*        fTriggerString;    // Trigger string 
   TString         fFinalMCCorrFile; //Filename for final MC corr
+  Bool_t          fSatelliteVertices; // satellite vertex flag
   TH2D*           fglobalempiricalcorrection; // the ratio of PbPb analysis normal displace vertex
   TH2D* 	  fmeabsignalvscentr; //mean signal per event vs cent	 	  
-  ClassDef(AliBasedNdetaTask,12); // Determine charged particle density
+  ClassDef(AliBasedNdetaTask,13); // Determine charged particle density
 };
 
 #endif

@@ -90,6 +90,8 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskExtractPerformanceV0.h"
+#include "AliHeader.h"
+#include "AliGenDPMjetEventHeader.h"
 
 using std::cout;
 using std::endl;
@@ -113,6 +115,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
   fkSkipTrigger(kFALSE),
   fkSaveAssociatedOnly (kFALSE),
   fkDoNotCallTPCdEdx( kFALSE ),
+  fDiffractiveOnly(kFALSE),
+  fEtaRefMult(0.5),
 //------------------------------------------------
 // Tree Variables 
 
@@ -123,6 +127,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
 	fTreeVariableDcaV0ToPrimVertex(0),
 	fTreeVariableDcaPosToPrimVertex(0),
 	fTreeVariableDcaNegToPrimVertex(0),
+  fTreeVariableDCAV0ToPrimVertex(0),
 	fTreeVariableV0CosineOfPointingAngle(0),
 	fTreeVariableV0Radius(0),
 	fTreeVariablePt(0),
@@ -306,6 +311,12 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
   f3dHistPrimAnalysisPtVsYCMSVsMultV0AAntiLambda(0),
   f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short(0),
 
+//Added for cross-check
+  f3dHistPrimRawPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimRawPtVsYCMSVsMultV0AKMinus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus(0),
+
 //ZNA
   f3dHistPrimAnalysisPtVsYVsMultZNALambda(0),
   f3dHistPrimAnalysisPtVsYVsMultZNAAntiLambda(0),
@@ -468,6 +479,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
   fkSkipTrigger(kFALSE),
   fkSaveAssociatedOnly (kFALSE),
   fkDoNotCallTPCdEdx( kFALSE ),
+  fDiffractiveOnly(kFALSE),
+  fEtaRefMult (0.5),
 //------------------------------------------------
 // Tree Variables 
 
@@ -478,6 +491,7 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
 	fTreeVariableDcaV0ToPrimVertex(0),
 	fTreeVariableDcaPosToPrimVertex(0),
 	fTreeVariableDcaNegToPrimVertex(0),
+  fTreeVariableDCAV0ToPrimVertex(0),
 	fTreeVariableV0CosineOfPointingAngle(0),
 	fTreeVariableV0Radius(0),
 	fTreeVariablePt(0),
@@ -659,6 +673,12 @@ f3dHistPrimAnalysisPtVsYVsMultV0AK0Short(0),
 f3dHistPrimAnalysisPtVsYCMSVsMultV0ALambda(0),
 f3dHistPrimAnalysisPtVsYCMSVsMultV0AAntiLambda(0),
 f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short(0),
+
+//Added for cross-check
+  f3dHistPrimRawPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimRawPtVsYCMSVsMultV0AKMinus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus(0),
+  f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus(0),
 
 //ZNA
 f3dHistPrimAnalysisPtVsYVsMultZNALambda(0),
@@ -887,7 +907,9 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 /*24*/   fTree->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative,"fTreeVariablePIDNegative/I");
 /*25*/   fTree->Branch("fTreeVariablePIDMother",&fTreeVariablePIDMother,"fTreeVariablePIDMother/I");
 /*26*/   fTree->Branch("fTreeVariablePtXiMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
-/*27*/   fTree->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F");
+/*27*/   fTree->Branch("fTreeVariableDCAV0ToPrimVertex",&fTreeVariableDCAV0ToPrimVertex,"fTreeVariableDCAV0ToPrimVertex/F"); //  fTreeVariableDCAV0ToPrimVertex(0),
+/*27*/   fTree->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F"); //  fTreeVariableDCAV0ToPrimVertex(0),
+
 //-----------MULTIPLICITY-INFO--------------------
 /*28*/   fTree->Branch("fTreeVariableMultiplicity",&fTreeVariableMultiplicity,"fTreeVariableMultiplicity/I");
 /*28*/   fTree->Branch("fTreeVariableMultiplicityMC",&fTreeVariableMultiplicityMC,"fTreeVariableMultiplicityMC/I");
@@ -1364,6 +1386,16 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
   if(! f3dHistPrimRawPtVsYCMSVsMultV0AK0Short) {
     f3dHistPrimRawPtVsYCMSVsMultV0AK0Short = new TH3F( "f3dHistPrimRawPtVsYCMSVsMultV0AK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
     if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimRawPtVsYCMSVsMultV0AK0Short);
+  }
+
+  //Cross-check at Raw Level 
+  if(! f3dHistPrimRawPtVsYCMSVsMultV0AKPlus) {
+    f3dHistPrimRawPtVsYCMSVsMultV0AKPlus = new TH3F( "f3dHistPrimRawPtVsYCMSVsMultV0AKPlus", "Pt_{K+} Vs Y_{K+} Vs Multiplicity; Pt_{K+} (GeV/c); Y_{K+} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimRawPtVsYCMSVsMultV0AKPlus);
+  }
+  if(! f3dHistPrimRawPtVsYCMSVsMultV0AKMinus) {
+    f3dHistPrimRawPtVsYCMSVsMultV0AKMinus = new TH3F( "f3dHistPrimRawPtVsYCMSVsMultV0AKMinus", "Pt_{K-} Vs Y_{K-} Vs Multiplicity; Pt_{K-} (GeV/c); Y_{K-} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimRawPtVsYCMSVsMultV0AKMinus);
   }
   
   //--- 3D Histo (Pt, Y, Multiplicity), ZNA Version
@@ -1858,6 +1890,18 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
     f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short = new TH3F( "f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
     if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short);
   }
+
+	//Cross-check at Analysis Level
+  if(! f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus) {
+    f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus = new TH3F( "f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus", "Pt_{K+} Vs Y_{K+} Vs Multiplicity; Pt_{K+} (GeV/c); Y_{K+} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus);
+  }
+	//Cross-check at Analysis Level
+  if(! f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus) {
+    f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus = new TH3F( "f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus", "Pt_{K-} Vs Y_{K-} Vs Multiplicity; Pt_{K-} (GeV/c); Y_{K-} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+    if( fkIsNuclear ) fListHistV0->Add(f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus);
+  }
+
   
   //ZNA
   
@@ -2082,6 +2126,20 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    if(!mcHeader) return;
    mcHeader->PrimaryVertex(mcPrimaryVtx);
         
+  //Code Snippet from Alexander for looking at diffractive Events from DPMJet
+  Int_t nPart = 0; 
+  if(fDiffractiveOnly){
+    AliHeader * header = lMCevent->Header();
+    AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(header->GenEventHeader());
+    if (dpmHeader) nPart = dpmHeader->ProjectileParticipants() + dpmHeader->TargetParticipants();
+    //
+    Int_t nsdiffrac1 = 0;
+    Int_t nsdiffrac2 = 0;
+    Int_t nddiffrac  = 0;
+    if (dpmHeader) dpmHeader->GetNDiffractive(nsdiffrac1, nsdiffrac2, nddiffrac);
+    if (nsdiffrac1 + nsdiffrac2 != nPart) return;
+  }
+
 //------------------------------------------------
 // Multiplicity Information Acquistion
 //------------------------------------------------
@@ -2094,7 +2152,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
     Int_t lMultiplicitySPD = -100;
   
    //testing purposes
-   if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+   if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,fEtaRefMult);
 
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
    //---> Warning: Experimental
@@ -2601,7 +2659,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       lPdgcodeCurrentPart = p0->GetPdgCode();
 
       // Keep only K0s, Lambda and AntiLambda:
-      if ( (lPdgcodeCurrentPart != 310 ) && (lPdgcodeCurrentPart != 3122 ) && (lPdgcodeCurrentPart != -3122 ) ) continue;
+      if ( (lPdgcodeCurrentPart != 310 ) && (lPdgcodeCurrentPart != 3122 ) && (lPdgcodeCurrentPart != -3122 ) && (TMath::Abs(lPdgcodeCurrentPart) != 321 ) ) continue;
 	
       lRapCurrentPart   = MyRapidity(p0->Energy(),p0->Pz());
       lPtCurrentPart    = p0->Pt();
@@ -2661,6 +2719,16 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
         f3dHistPrimAnalysisPtVsYVsMultSPDK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicitySPD);
         f3dHistPrimAnalysisPtVsYCMSVsMultSPDK0Short->Fill(lPtCurrentPart, lRapCurrentPart+fpArapidityShift, lMultiplicitySPD);
       }
+      //Cross-check with Charged Kaons... 
+      if( lPdgcodeCurrentPart == 321 ){
+        //V0A
+        f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus->Fill(lPtCurrentPart, lRapCurrentPart+fpArapidityShift, lMultiplicityV0A);
+      }
+      if( lPdgcodeCurrentPart == -321 ){
+        //V0A
+        f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus->Fill(lPtCurrentPart, lRapCurrentPart+fpArapidityShift, lMultiplicityV0A);
+      }
+
    }
 
 //----- Loop on primary Xi, Omega --------------------------------------------------------------
@@ -2848,6 +2916,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       lDcaV0Daughters = v0->GetDcaV0Daughters();
       lDcaV0ToPrimVertex = v0->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
       lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
+      fTreeVariableDCAV0ToPrimVertex = lDcaV0ToPrimVertex;
       fTreeVariableV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
 
       // Getting invariant mass infos directly from ESD

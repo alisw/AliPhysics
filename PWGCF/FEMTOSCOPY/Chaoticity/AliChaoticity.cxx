@@ -131,8 +131,9 @@ AliAnalysisTaskSE(),
   fNormPairSwitch(),
   fPairSplitCut(),
   fNormPairs(),
-  fMomResC2(0x0)
-  
+  fMomResC2(0x0),
+  fFSI2SS(0x0),
+  fFSI2OS(0x0)
 {
   // Default constructor
   for(Int_t mb=0; mb<fMbins; mb++){
@@ -187,11 +188,7 @@ AliAnalysisTaskSE(),
     }// ED
   }// Mbin
   
-  // Initialize FSI histograms
-  for(Int_t i=0; i<2; i++){
-    fFSI2SS[i]=0x0; 
-    fFSI2OS[i]=0x0;
-  }
+  // Initialize 3-pion FSI histograms
   for(Int_t i=0; i<6; i++){
     fFSIOmega0SS[i]=0x0; 
     fFSIOmega0OS[i]=0x0;
@@ -297,8 +294,9 @@ AliChaoticity::AliChaoticity(const Char_t *name)
   fNormPairSwitch(),
   fPairSplitCut(),
   fNormPairs(),
-  fMomResC2(0x0)
-
+  fMomResC2(0x0),
+  fFSI2SS(0x0),
+  fFSI2OS(0x0)
 {
   // Main constructor
   fAODcase=kTRUE;
@@ -358,11 +356,7 @@ AliChaoticity::AliChaoticity(const Char_t *name)
     }// ED
   }// Mbin
   
-  // Initialize FSI histograms
-  for(Int_t i=0; i<2; i++){
-    fFSI2SS[i]=0x0; 
-    fFSI2OS[i]=0x0;
-  }
+  // Initialize 3-pion FSI histograms
   for(Int_t i=0; i<6; i++){
     fFSIOmega0SS[i]=0x0; 
     fFSIOmega0OS[i]=0x0;
@@ -469,13 +463,12 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
     fNormPairSwitch(),
     fPairSplitCut(),
     fNormPairs(),
-    fMomResC2(obj.fMomResC2)
+    fMomResC2(obj.fMomResC2),
+    fFSI2SS(obj.fFSI2SS),
+    fFSI2OS(obj.fFSI2OS)
 {
-  // Copy constructor  
-  for(Int_t i=0; i<2; i++){
-    fFSI2SS[i]=obj.fFSI2SS[i]; 
-    fFSI2OS[i]=obj.fFSI2OS[i];
-  }
+  // Copy Constructor
+  
   for(Int_t i=0; i<6; i++){
     fFSIOmega0SS[i]=obj.fFSIOmega0SS[i]; 
     fFSIOmega0OS[i]=obj.fFSIOmega0OS[i];
@@ -561,11 +554,9 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
   fQlIndexH = obj.fQlIndexH;
   fDummyB = obj.fDummyB;
   fMomResC2 = obj.fMomResC2;
-
-  for(Int_t i=0; i<2; i++){
-    fFSI2SS[i]=obj.fFSI2SS[i]; 
-    fFSI2OS[i]=obj.fFSI2OS[i];
-  }
+  fFSI2SS = obj.fFSI2SS; 
+  fFSI2OS = obj.fFSI2OS;
+ 
   for(Int_t i=0; i<6; i++){
     fFSIOmega0SS[i]=obj.fFSIOmega0SS[i]; 
     fFSIOmega0OS[i]=obj.fFSIOmega0OS[i];
@@ -591,7 +582,8 @@ AliChaoticity::~AliChaoticity()
   if(fTempStruct) delete [] fTempStruct;
   if(fRandomNumber) delete fRandomNumber;
   if(fMomResC2) delete fMomResC2;
-  
+  if(fFSI2SS) delete fFSI2SS;
+  if(fFSI2OS) delete fFSI2OS;
 
   for(Int_t i=0; i<fMultLimit; i++){
     if(fPairLocationSE[i]) delete [] fPairLocationSE[i];
@@ -682,12 +674,7 @@ AliChaoticity::~AliChaoticity()
     }// ED
   }// Mbin
   
-  if(fMomResC2) delete fMomResC2;
- 
-  for(Int_t i=0; i<2; i++){
-    if(fFSI2SS[i]) delete fFSI2SS[i]; 
-    if(fFSI2OS[i]) delete fFSI2OS[i];
-  }
+   
   for(Int_t i=0; i<6; i++){
     if(fFSIOmega0SS[i]) delete fFSIOmega0SS[i]; 
     if(fFSIOmega0OS[i]) delete fFSIOmega0OS[i];
@@ -736,8 +723,8 @@ void AliChaoticity::ParInit()
     fQcut[0]=0.1;//pi-pi, pi-k, pi-p
     fQcut[1]=0.1;//k-k
     fQcut[2]=0.6;//the rest
-    fNormQcutLow[0] = 0.15;//0.15
-    fNormQcutHigh[0] = 0.175;//0.175
+    fNormQcutLow[0] = 0.15;// 0.15 or 1.06
+    fNormQcutHigh[0] = 0.175;// 0.175 or 1.1
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
@@ -850,7 +837,6 @@ void AliChaoticity::ParInit()
     SetFSICorrelations(fLEGO);// Read in 2-particle and 3-particle FSI correlations
     if(!fTabulatePairs) SetWeightArrays(fLEGO);// Set Weight Array
     if(!fMCcase && !fTabulatePairs) SetMomResCorrections(fLEGO);// Read Momentum resolution file
-    //if(!fTabulatePairs) SetMomResCorrections(fLEGO);// Read Momentum resolution file
   }
   
   /////////////////////////////////////////////
@@ -1160,7 +1146,7 @@ void AliChaoticity::UserCreateOutputObjects()
 		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH3D(name3DQ->Data(),"", kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
 		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3);
 		      //
-		      
+		      /*
 		      const int NEdgesPos=16;
 		      double lowEdges4vectPos[NEdgesPos]={0};
 		      lowEdges4vectPos[0]=0.0;
@@ -1177,22 +1163,6 @@ void AliChaoticity::UserCreateOutputObjects()
 			//if(c1==c2 && c1==c3) cout<<lowEdges4vect[edge]<<endl;
 		      }
 		      
-		      /*
-		      const int NEdgesPos=16;
-		      double lowEdges4vectPos[NEdgesPos]={0};
-		      lowEdges4vectPos[0]=0.0;
-		      lowEdges4vectPos[1]=0.0002;// was 0.0005, then 0.0002
-		      for(int edge=2; edge<NEdgesPos; edge++){
-			lowEdges4vectPos[edge] = lowEdges4vectPos[edge-1] + lowEdges4vectPos[1];
-		      }
-		      const int NEdges=2*NEdgesPos-1;
-		      double lowEdges4vect[NEdges]={0};
-		      for(int edge=0; edge<NEdges; edge++){
-			if(edge<NEdgesPos-1) lowEdges4vect[edge] = -lowEdges4vectPos[NEdgesPos-1-edge];
-			else if(edge==NEdgesPos-1) lowEdges4vect[edge] = 0;
-			else lowEdges4vect[edge] = lowEdges4vectPos[edge-NEdgesPos+1];
-		      }
-		      */
 		      if(c1==c2 && c1==c3 && sc==0 && fMCcase==kFALSE){
 			TString *name4vect1=new TString(namePC3->Data());
 			TString *name4vect2=new TString(namePC3->Data());
@@ -1203,7 +1173,7 @@ void AliChaoticity::UserCreateOutputObjects()
 			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd1Terms);
 			Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2Terms = new TH3D(name4vect2->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
 			fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2Terms);
-		      }
+			}*/
 		      if(sc==0 && fMCcase==kTRUE){
 			TString *name3DMomResIdeal=new TString(namePC3->Data());
 			name3DMomResIdeal->Append("_Ideal");
@@ -1234,7 +1204,7 @@ void AliChaoticity::UserCreateOutputObjects()
 			  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fEnK3);
 			}
 
-			if(c1==c2 && c1==c3){
+			/*if(c1==c2 && c1==c3){
 			  TString *name4vect1Ideal=new TString(namePC3->Data());
 			  TString *name4vect1Smeared=new TString(namePC3->Data());
 			  TString *name4vect2Ideal=new TString(namePC3->Data());
@@ -1301,7 +1271,7 @@ void AliChaoticity::UserCreateOutputObjects()
 			    Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsEnK2 = new TH3D(name4vect2EnK2->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
 			    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].f4VectProd2TermsEnK2);
 			  }// terms 1,2,3
-			}
+			}*/
 		      }// MCcase
 		      //
 		      if(c1==c2 && c1==c3 && term==4 && sc==0){
@@ -1328,7 +1298,7 @@ void AliChaoticity::UserCreateOutputObjects()
 			  //Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].fTwoPartNormErr = new TH3D(nameDenType->Data(),"",kQbins,0,fQupperBound, kQbins,0,fQupperBound, kQbins,0,fQupperBound);
 			  //fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].fTwoPartNormErr);
 			  //
-			  TString *name4vect1TPN=new TString(nameDenType->Data());
+			  /*TString *name4vect1TPN=new TString(nameDenType->Data());
 			  TString *name4vect2TPN=new TString(nameDenType->Data());
 			  name4vect1TPN->Append("_4VectProd1");
 			  name4vect2TPN->Append("_4VectProd2");
@@ -1354,10 +1324,10 @@ void AliChaoticity::UserCreateOutputObjects()
 			    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd1TwoPartNormSmeared);
 			    Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd2TwoPartNormSmeared = new TH3D(name4vect2TPNSmeared->Data(),"",NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect, NEdges-1,lowEdges4vect);
 			    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].DT[dt].f4VectProd2TwoPartNormSmeared);
-			  }
-
+			    }*/
+			  
 			}
-					
+			
 		      }// term=4
 		    }// c and sc exclusion
 		  }// PdensityPairCut
@@ -1432,7 +1402,7 @@ void AliChaoticity::Exec(Option_t *)
   // Called for each event
   //cout<<"===========  Event # "<<fEventCounter+1<<"  ==========="<<endl;
   fEventCounter++;
-
+  
   if(!fAODcase) {cout<<"ESDs not supported"<<endl; return;}
   
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -1508,12 +1478,12 @@ void AliChaoticity::Exec(Option_t *)
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
     if(fAOD->IsPileupFromSPD()) {cout<<"PileUpEvent. Skip Event"<<endl; return;} // Reject Pile-up events
-    if(primaryVertexAOD->GetNContributors() < 1) {cout<<"Bad Vertex. Skip Event"<<endl; return;}
+    if(!fMCcase && primaryVertexAOD->GetNContributors() < 1) {cout<<"Bad Vertex. Skip Event"<<endl; return;}
    
     ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fAOD->GetNumberOfTracks());
  
     fBfield = fAOD->GetMagneticField();
-   
+    
     for(Int_t i=0; i<fZvertexBins; i++){
       if( (vertex[2] >= zstart+i*zstep) && (vertex[2] < zstart+(i+1)*zstep) ){
 	zbin=i;
@@ -1521,7 +1491,7 @@ void AliChaoticity::Exec(Option_t *)
       }
     }
     
-    
+   
        
     /////////////////////////////
     // Create Shuffled index list
@@ -1780,7 +1750,7 @@ void AliChaoticity::Exec(Option_t *)
   fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
   //////////////////////////////////////////////////
   
-  
+ 
   
   ((TH1F*)fOutputList->FindObject("fEvents1"))->Fill(fMbin+1);
   ((TProfile*)fOutputList->FindObject("fAvgMult"))->Fill(fMbin+1., pionCount);
@@ -1805,12 +1775,10 @@ void AliChaoticity::Exec(Option_t *)
     }
   }
     
-  
+ 
   
   Float_t qinv12=0, qinv13=0, qinv23=0;
-  Float_t qinv12Flat=0;
   Float_t qout=0, qside=0, qlong=0;
-  Float_t qoutFlat=0, qsideFlat=0, qlongFlat=0;
   Float_t qoutMC=0, qsideMC=0, qlongMC=0;
   Float_t firstQ=0, secondQ=0, thirdQ=0;
   Float_t firstQMC=0, secondQMC=0, thirdQMC=0;
@@ -1826,16 +1794,14 @@ void AliChaoticity::Exec(Option_t *)
   Float_t pVect1MC[4]={0}; 
   Float_t pVect2MC[4]={0};
   Float_t pVect3MC[4]={0};
-  Float_t pVect2Flat[4]={0};
-  Float_t pVect3Flat[4]={0};
   Int_t index1=0, index2=0, index3=0;
   Float_t weight12=0, weight13=0, weight23=0;
   Float_t weight12Err=0, weight13Err=0, weight23Err=0;
   Float_t weight12CC=0, weight13CC=0, weight23CC=0;
   Float_t weightTotal=0;//, weightTotalErr=0;
   Float_t qinv12MC=0, qinv13MC=0, qinv23MC=0; 
-  Float_t Qsum1v1=0, Qsum2=0, Qsum3v1=0, Qsum1v2=0, Qsum3v2=0;
-  Float_t Qsum1v1MC=0, Qsum2MC=0, Qsum3v1MC=0, Qsum1v2MC=0, Qsum3v2MC=0;
+  //Float_t Qsum1v1=0, Qsum2=0, Qsum3v1=0, Qsum1v2=0, Qsum3v2=0;
+  //Float_t Qsum1v1MC=0, Qsum2MC=0, Qsum3v1MC=0, Qsum1v2MC=0, Qsum3v2MC=0;
   //
   AliAODMCParticle *mcParticle1=0x0;
   AliAODMCParticle *mcParticle2=0x0;
@@ -1894,7 +1860,7 @@ void AliChaoticity::Exec(Option_t *)
     // Start the pairing process
     // P11 pairing
     // 1st Particle
-    
+  
     for (Int_t i=0; i<myTracks; i++) {
          
       Int_t en2=0;
@@ -1919,22 +1885,6 @@ void AliChaoticity::Exec(Option_t *)
 	transK12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
 
 
-	if(fGenerateSignal){// Flatten the Q-dist to increase pair population at low-q (testing purposes only)
-	  /*Float_t Qflattened = 0.005 + 0.2*gRandom->Rndm();
-	  Float_t theta12 = PI*gRandom->Rndm();
-	  Float_t phi12 = 2*PI*gRandom->Rndm();
-	  pVect2Flat[1] = pVect1[1] + Qflattened*sin(theta12)*cos(phi12);
-	  pVect2Flat[2] = pVect1[2] + Qflattened*sin(theta12)*sin(phi12);
-	  pVect2Flat[3] = pVect1[3] + Qflattened*cos(theta12);
-	  pVect2Flat[0] = sqrt(pow(pVect2Flat[1],2)+pow(pVect2Flat[2],2)+pow(pVect2Flat[3],2)+pow(fTrueMassPi,2));*/
-	  //
-	  pVect2Flat[0]=pVect2[0]; pVect2Flat[1]=pVect2[1]; pVect2Flat[2]=pVect2[2]; pVect2Flat[3]=pVect2[3]; 
-	  //
-	  qinv12Flat = GetQinv(fillIndex2, pVect1, pVect2Flat);
-	  GetQosl(pVect1, pVect2Flat, qoutFlat, qsideFlat, qlongFlat);
-	}
-	
-	
 	//
 
 	///////////////////////////////
@@ -2002,7 +1952,7 @@ void AliChaoticity::Exec(Option_t *)
 	  
 	  
 	}// MCcase and pair selection
-
+	
 	// Pair Splitting/Merging cut
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
 	if(ch1 == ch2){
@@ -2115,8 +2065,9 @@ void AliChaoticity::Exec(Option_t *)
 	    if((transKbin>=fKbinsT) || (rapKbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
 	    Float_t WInput = 1.0;
 	    if(fGenerateSignal) {
-	      WInput = MCWeight(ch1,ch2, fRMax, fFixedLambdaBinMomRes, qinv12Flat);
-	      KT[transKbin].KY[rapKbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2ThreeD->Fill(fabs(qoutFlat), fabs(qsideFlat), fabs(qlongFlat), WInput);
+	      WInput = MCWeight(ch1,ch2, fRMax, fFixedLambdaBinr3, qinv12);
+	      //WInput = MCWeight(ch1,ch2, fRMax, fFixedLambdaBinr3, qinv12MC);
+	      KT[transKbin].KY[rapKbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
 	    }else KT[transKbin].KY[rapKbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	    
 	    continue;
@@ -2223,7 +2174,7 @@ void AliChaoticity::Exec(Option_t *)
       }// j particle
     }// i particle
     
-    
+  
     
     //////////////////////////////////////////////
     // P12 pairing
@@ -2251,21 +2202,7 @@ void AliChaoticity::Exec(Option_t *)
 	//if(transK12 <= 0.35) fEDbin=0;
 	//else fEDbin=1;
 
-	if(fGenerateSignal){// Flatten the Q-dist to increase pair population at low-q (testing purposes only)
-	  /*Float_t Qflattened = 0.005 + 0.2*gRandom->Rndm();
-	  Float_t theta12 = PI*gRandom->Rndm();
-	  Float_t phi12 = 2*PI*gRandom->Rndm();
-	  pVect2Flat[1] = pVect1[1] + Qflattened*sin(theta12)*cos(phi12);
-	  pVect2Flat[2] = pVect1[2] + Qflattened*sin(theta12)*sin(phi12);
-	  pVect2Flat[3] = pVect1[3] + Qflattened*cos(theta12);
-	  pVect2Flat[0] = sqrt(pow(pVect2Flat[1],2)+pow(pVect2Flat[2],2)+pow(pVect2Flat[3],2)+pow(fTrueMassPi,2));*/
-	  //
-	  pVect2Flat[0]=pVect2[0]; pVect2Flat[1]=pVect2[1]; pVect2Flat[2]=pVect2[2]; pVect2Flat[3]=pVect2[3]; 
-	  //
-	  qinv12Flat = GetQinv(fillIndex2, pVect1, pVect2Flat);
-	  GetQosl(pVect1, pVect2Flat, qoutFlat, qsideFlat, qlongFlat);
-	}
-
+	
 	
 	///////////////////////////////
 	ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
@@ -2404,7 +2341,7 @@ void AliChaoticity::Exec(Option_t *)
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fEnK3->Fill(firstQMC, secondQMC, thirdQMC, WInput);
 		    }
 		    
-		    if(ch1==ch2 && ch1==ch3){
+		    /*if(ch1==ch2 && ch1==ch3){
 		      if(jj==1){
 			FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
 			FourVectProdTerms(pVect1MC, pVect2MC, pVect3MC, Qsum1v1MC, Qsum2MC, Qsum3v1MC, Qsum1v2MC, Qsum3v2MC);// 4-vector product sums
@@ -2451,7 +2388,7 @@ void AliChaoticity::Exec(Option_t *)
 		      }
 		      
 		    }// same charges
-		    
+		    */
 		  }// jj
 		}// MCarray check, 3rd particle
 	      }// 3rd particle
@@ -2571,7 +2508,7 @@ void AliChaoticity::Exec(Option_t *)
 	    if((transKbin<0) || (rapKbin<0)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
 	    if((transKbin>=fKbinsT) || (rapKbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
 	    
-	    if(fGenerateSignal) KT[transKbin].KY[rapKbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2ThreeD->Fill(fabs(qoutFlat), fabs(qsideFlat), fabs(qlongFlat));
+	    if(fGenerateSignal) KT[transKbin].KY[rapKbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	    else KT[transKbin].KY[rapKbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	   
 	    continue;
@@ -2672,7 +2609,7 @@ void AliChaoticity::Exec(Option_t *)
 
       }
     }
-    
+  
  
     ///////////////////////////////////////
     // P13 pairing (just for Norm counting of term5)
@@ -2722,7 +2659,7 @@ void AliChaoticity::Exec(Option_t *)
     }
 
 
-   
+  
     ///////////////////////////////////////
     // P23 pairing (just for Norm counting of term5)
     Int_t en1=1;
@@ -2883,6 +2820,12 @@ void AliChaoticity::Exec(Option_t *)
 	  index1 = (fEvt)->fPairsSE[p1].fIndex1; index2 = (fEvt)->fPairsSE[p1].fIndex2;
 	  key1 = (fEvt)->fPairsSE[p1].fKey1; key2 = (fEvt)->fPairsSE[p1].fKey2;
 	  qinv12 = (fEvt)->fPairsSE[p1].fQinv;
+	  //
+	  pVect1MC[1] = (fEvt)->fPairsSE[p1].fP1MC[0]; pVect2MC[1] = (fEvt)->fPairsSE[p1].fP2MC[0];
+          pVect1MC[2] = (fEvt)->fPairsSE[p1].fP1MC[1]; pVect2MC[2] = (fEvt)->fPairsSE[p1].fP2MC[1];
+          pVect1MC[3] = (fEvt)->fPairsSE[p1].fP1MC[2]; pVect2MC[3] = (fEvt)->fPairsSE[p1].fP2MC[2];
+          pVect1MC[0] = sqrt(pow(pVect1MC[1],2)+pow(pVect1MC[2],2)+pow(pVect1MC[3],2)+pow(fTrueMassPi,2));
+          pVect2MC[0] = sqrt(pow(pVect2MC[1],2)+pow(pVect2MC[2],2)+pow(pVect2MC[3],2)+pow(fTrueMassPi,2));
 	}
 	if(en1case==1){
 	  ch1 = Int_t(((fEvt)->fPairsME[p1].fCharge1 + 1)/2.);
@@ -2894,25 +2837,14 @@ void AliChaoticity::Exec(Option_t *)
 	  index1 = (fEvt)->fPairsME[p1].fIndex1; index2 = (fEvt)->fPairsME[p1].fIndex2;
 	  key1 = (fEvt)->fPairsME[p1].fKey1; key2 = (fEvt)->fPairsME[p1].fKey2;
 	  qinv12 = (fEvt)->fPairsME[p1].fQinv;
+	  //
+	  pVect1MC[1] = (fEvt)->fPairsME[p1].fP1MC[0]; pVect2MC[1] = (fEvt)->fPairsME[p1].fP2MC[0];
+          pVect1MC[2] = (fEvt)->fPairsME[p1].fP1MC[1]; pVect2MC[2] = (fEvt)->fPairsME[p1].fP2MC[1];
+          pVect1MC[3] = (fEvt)->fPairsME[p1].fP1MC[2]; pVect2MC[3] = (fEvt)->fPairsME[p1].fP2MC[2];
+          pVect1MC[0] = sqrt(pow(pVect1MC[1],2)+pow(pVect1MC[2],2)+pow(pVect1MC[3],2)+pow(fTrueMassPi,2));
+          pVect2MC[0] = sqrt(pow(pVect2MC[1],2)+pow(pVect2MC[2],2)+pow(pVect2MC[3],2)+pow(fTrueMassPi,2));
 	}
-
-	/*if(fGenerateSignal){
-	  Bool_t goodFlattenedPair=kFALSE;
-	  while(!goodFlattenedPair){
-	    Float_t Qflattened = fQLowerCut + (fQcut[0]-fQLowerCut)*gRandom->Rndm();
-	    Float_t theta12 = PI*gRandom->Rndm();
-	    Float_t phi12 = 2*PI*gRandom->Rndm();
-	    pVect2Flat[1] = pVect1[1] + Qflattened*sin(theta12)*cos(phi12);
-	    pVect2Flat[2] = pVect1[2] + Qflattened*sin(theta12)*sin(phi12);
-	    pVect2Flat[3] = pVect1[3] + Qflattened*cos(theta12);
-	    pVect2Flat[0] = sqrt(pow(pVect2Flat[1],2)+pow(pVect2Flat[2],2)+pow(pVect2Flat[3],2)+pow(fTrueMassPi,2));
-	    //
-	    //pVect2Flat[0]=pVect2[0]; pVect2Flat[1]=pVect2[1]; pVect2Flat[2]=pVect2[2]; pVect2Flat[3]=pVect2[3];
-	    //
-	    qinv12 = GetQinv(0, pVect1, pVect2Flat);
-	    if(qinv12 < fQcut[0] && qinv12>fQLowerCut) goodFlattenedPair=kTRUE;
-	  }
-	  }*/
+	
 	
 	// en2 buffer
 	for(Int_t en2=0; en2<3; en2++){
@@ -3035,35 +2967,28 @@ void AliChaoticity::Exec(Option_t *)
 	    if(qinv13 > fQcut[qCutBin13]) continue;
 	    if(qinv23 > fQcut[qCutBin23]) continue;
 
-	    /*if(fGenerateSignal){
-	      Bool_t goodFlattenedTriplet=kFALSE;
-	      while(!goodFlattenedTriplet){
-		Float_t Qflattened = fQLowerCut + (fQcut[0]-fQLowerCut)*gRandom->Rndm();
-		Float_t theta13 = PI*gRandom->Rndm();
-		Float_t phi13 = 2*PI*gRandom->Rndm();
-		pVect3Flat[1] = pVect1[1] + Qflattened*sin(theta13)*cos(phi13);
-		pVect3Flat[2] = pVect1[2] + Qflattened*sin(theta13)*sin(phi13);
-		pVect3Flat[3] = pVect1[3] + Qflattened*cos(theta13);
-		pVect3Flat[0] = sqrt(pow(pVect3Flat[1],2)+pow(pVect3Flat[2],2)+pow(pVect3Flat[3],2)+pow(fTrueMassPi,2));
-		//
-		pVect3Flat[0]=pVect3[0]; pVect3Flat[1]=pVect3[1]; pVect3Flat[2]=pVect3[2]; pVect3Flat[3]=pVect3[3];
-		//
-		qinv13 = GetQinv(0, pVect1, pVect3Flat);
-		qinv23 = GetQinv(0, pVect2Flat, pVect3Flat);
-		if(qinv13 < fQcut[qCutBin13] && qinv23 < fQcut[qCutBin23]) {
-		  if(qinv13>fQLowerCut && qinv23>fQLowerCut) goodFlattenedTriplet=kTRUE;
-		}
-	      }
-	      }*/
+	   
 	    
+	    if(fMCcase){
+              pVect3MC[1] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPx;
+              pVect3MC[2] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPy;
+              pVect3MC[3] = (fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[k].fLabel)].fPz;
+              pVect3MC[0] = sqrt(pow(pVect3MC[1],2)+pow(pVect3MC[2],2)+pow(pVect3MC[3],2)+pow(fTrueMassPi,2));
+              qinv12MC = GetQinv(0, pVect1MC, pVect2MC);
+              qinv13MC = GetQinv(0, pVect1MC, pVect3MC);
+              qinv23MC = GetQinv(0, pVect2MC, pVect3MC);
+            }
+
 	    
 	    
 	    // if all three pair cuts are the same then the case (config=2 && term=2) never reaches here.
 	    
 	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-	    //if(transK3<0.35) fEDbin=0;
-	    //else fEDbin=1;
+	    if(fEDbins>1){
+	      if(transK3<0.3) fEDbin=0;
+	      else fEDbin=1;
+	    }
 	    firstQ=0; secondQ=0; thirdQ=0;
 	    
 	    
@@ -3075,18 +3000,21 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      if(fillIndex3 <= 2){
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, 0, 1, firstQ, secondQ, thirdQ);
+		if(fillIndex3==0 && fMCcase) ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, 0, 1, firstQMC, secondQMC, thirdQMC);
 		Float_t WInput = 1.0;
-		if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, 1, fFixedLambdaBinMomRes, firstQ, secondQ, thirdQ);
+		if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, 1, fFixedLambdaBinr3, firstQ, secondQ, thirdQ);
+		//if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, 1, fFixedLambdaBinr3, firstQMC, secondQMC, thirdQMC);
 		////
 		
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fTerms3->Fill(firstQ, secondQ, thirdQ, WInput);
 		////
 		//
 		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
-		  FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		  ((TH3D*)fOutputList->FindObject("fKt3DistTerm1"))->Fill(fMbin+1, transK3, q3);
+		  /*FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd1Terms->Fill(Qsum1v1, Qsum2, Qsum3v1);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].f4VectProd2Terms->Fill(Qsum1v2, Qsum2, Qsum3v2);
-		  ((TH3D*)fOutputList->FindObject("fKt3DistTerm1"))->Fill(fMbin+1, transK3, q3);
+		  */
 		}		
 		
 	      }
@@ -3104,12 +3032,14 @@ void AliChaoticity::Exec(Option_t *)
 	
 		if(fillIndex3 <= 2){
 		  ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, jj, firstQ, secondQ, thirdQ);
+		  if(fillIndex3==0 && fMCcase) ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12MC, qinv13MC, qinv23MC, part, jj, firstQMC, secondQMC, thirdQMC);
 		  Float_t WInput = 1.0;
-		  if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, jj, fFixedLambdaBinMomRes, firstQ, secondQ, thirdQ);
+		  if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, jj, fFixedLambdaBinr3, firstQ, secondQ, thirdQ);
+		  //if(fGenerateSignal && ch1==ch2 && ch1==ch3) WInput = MCWeight3D(kTRUE, jj, fFixedLambdaBinr3, firstQMC, secondQMC, thirdQMC);
 		  ////
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fTerms3->Fill(firstQ, secondQ, thirdQ, WInput);
 		  ////
-		  if(fillIndex3==0 && ch1==ch2 && ch1==ch3){
+		  /*if(fillIndex3==0 && ch1==ch2 && ch1==ch3){
 		    if(part==1){// P11T2
 		      if(jj==2) {
 			FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
@@ -3131,7 +3061,7 @@ void AliChaoticity::Exec(Option_t *)
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd1Terms->Fill(Qsum1v1, Qsum2, Qsum3v1);
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].f4VectProd2Terms->Fill(Qsum1v2, Qsum2, Qsum3v2);
 		    }
-		  }
+		  }*/
 
 		}
 	      }
@@ -3150,34 +3080,27 @@ void AliChaoticity::Exec(Option_t *)
 	      SetFillBins3(fillIndex3, key1, key2, key3, ch1, ch2, ch3, 3, bin1, bin2, bin3, fDummyB, fDummyB, fDummyB);
 	      
 	      if(ch1==ch2 && ch1==ch3 && fillIndex3==0) {
-		FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
+		//FourVectProdTerms(pVect1, pVect2, pVect3, Qsum1v1, Qsum2, Qsum3v1, Qsum1v2, Qsum3v2);// 4-vector product sums
 		if(!fMCcase) ((TH3D*)fOutputList->FindObject("fKt3DistTerm5"))->Fill(fMbin+1, transK3, q3);
 	      }	      
 	      
 	      if(fillIndex3 <= 2){
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, 5, firstQ, secondQ, thirdQ);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTerms3->Fill(firstQ, secondQ, thirdQ);
-		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
+		/*if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd1Terms->Fill(Qsum1v1, Qsum2, Qsum3v1);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].f4VectProd2Terms->Fill(Qsum1v2, Qsum2, Qsum3v2);
-		}
-	
+		  }*/
 	      }
-	     
+	      
 	      if(fillIndex3 !=0) continue;// only calculate TPN for pi-pi-pi
 	      if(ch1!=ch2 || ch1!=ch3) continue;// only calcualte TPN for ss
 	      
 	      
-	      //if(fMCcase) continue;// only calcualte TPN for real data
-	      if(!fGenerateSignal){
-		GetWeight(pVect1, pVect2, pVect1, pVect2, weight12, weight12Err);
-		GetWeight(pVect1, pVect3, pVect1, pVect3, weight13, weight13Err);
-		GetWeight(pVect2, pVect3, pVect2, pVect3, weight23, weight23Err);
-	      }else {
-		GetWeight(pVect1, pVect2Flat, pVect1, pVect2, weight12, weight12Err);
-		GetWeight(pVect1, pVect3Flat, pVect1, pVect3, weight13, weight13Err);
-		GetWeight(pVect2Flat, pVect3Flat, pVect2, pVect3, weight23, weight23Err);
-	      }
+	      GetWeight(pVect1, pVect2, weight12, weight12Err);
+	      GetWeight(pVect1, pVect3, weight13, weight13Err);
+	      GetWeight(pVect2, pVect3, weight23, weight23Err);
+	      
 	      if(sqrt(fabs(weight12*weight13*weight23)) > 1.0) {
 		if(fMbin==0 && bin1==0) {
 		  ((TH3F*)fOutputList->FindObject("fTPNRejects1"))->Fill(qinv12, qinv13, qinv23, sqrt(fabs(weight12*weight13*weight23)));
@@ -3185,7 +3108,7 @@ void AliChaoticity::Exec(Option_t *)
 		continue;// weight should never be larger than 1
 	      }
 	      	 
-	      
+	    
 	      Float_t myDamp = fDampStart + (fDampStep)*fFixedLambdaBinr3;// lambdabin=0.52 for v1 draft, 0.7 is more realistic
 	      Int_t denIndex = 0;
 	      Int_t momResIndex = rIndexForTPNMomRes*kNDampValues + fFixedLambdaBinMomRes;// lambdabin=0.52 for v1 draft, 0.4 is more realistic
@@ -3235,20 +3158,20 @@ void AliChaoticity::Exec(Option_t *)
 	      /////////////////////////////////////////////////////
 	      weightTotal = sqrt(weight12CC*weight13CC*weight23CC);
 	      /////////////////////////////////////////////////////
-
+	      
 	      if(weightTotal > 1.5) {
 		if(fMbin==0 && bin1==0) {
 		  ((TH3F*)fOutputList->FindObject("fTPNRejects5"))->Fill(qinv12, qinv13, qinv23, weightTotal);
 		}
 		continue;// C2^QS never be greater than 1.0 in theory. Can be slightly larger than 1.0 with fluctuations
 	      }
-
-	    
+	      
+	      
 	      
 	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].fTwoPartNorm->Fill(qinv12, qinv13, qinv23, weightTotal);
 	      
-	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNorm->Fill(Qsum1v1, Qsum2, Qsum3v1, weightTotal);
-	      Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNorm->Fill(Qsum1v2, Qsum2, Qsum3v2, weightTotal);
+	      //Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd1TwoPartNorm->Fill(Qsum1v1, Qsum2, Qsum3v1, weightTotal);
+	      //Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].DT[denIndex].f4VectProd2TwoPartNorm->Fill(Qsum1v2, Qsum2, Qsum3v2, weightTotal);
 	     
 		  
 	      // Save cpu time and memory by skipping r3 denominator calculation below.  den errors are negligible compared to num errors.
@@ -3265,7 +3188,7 @@ void AliChaoticity::Exec(Option_t *)
 	      
 	      
 	      
-	    }
+	    }// config 3
 	  }// end 3rd particle
 	}// en2
 	
@@ -3900,9 +3823,9 @@ void AliChaoticity::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliChaoticity:
   
 }
 //________________________________________________________________________
-void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3[], Float_t track4[], Float_t& wgt, Float_t& wgtErr){
+void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Float_t& wgtErr){
   
-  Float_t kt=sqrt( pow(track3[1]+track4[1],2) + pow(track3[2]+track4[2],2))/2.;
+  Float_t kt=sqrt( pow(track1[1]+track2[1],2) + pow(track1[2]+track2[2],2))/2.;
   //
   Float_t qOut=0,qSide=0,qLong=0;
   GetQosl(track1, track2, qOut, qSide, qLong);
@@ -3910,16 +3833,17 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
   qSide = fabs(qSide);
   qLong = fabs(qLong);
   Float_t wd=0, xd=0, yd=0, zd=0;
+  //Float_t qinv_temp=GetQinv(0,track1, track2);
   //
   
-  if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=1; wd=0;}
-  else if(kt >= fKmeanT[fKbinsT-1]) {fKtIndexL=fKbinsT-2; fKtIndexH=fKbinsT-1; wd=1;}
+  if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=1;}
+  else if(kt >= fKmeanT[fKbinsT-1]) {fKtIndexL=fKbinsT-2; fKtIndexH=fKbinsT-1;}
   else {
     for(Int_t i=0; i<fKbinsT-1; i++){
       if((kt >= fKmeanT[i]) && (kt < fKmeanT[i+1])) {fKtIndexL=i; fKtIndexH=i+1; break;}
     }
-    wd = (kt-fKmeanT[fKtIndexL])/(fKmeanT[fKtIndexH]-fKmeanT[fKtIndexL]);
   }
+  wd = (kt-fKmeanT[fKtIndexL])/(fKmeanT[fKtIndexH]-fKmeanT[fKtIndexL]);
   //
   /////////
   if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
@@ -3989,7 +3913,6 @@ void AliChaoticity::GetWeight(Float_t track1[], Float_t track2[], Float_t track3
   // z interpolation (qLong)
   wgt = (c0*(1-zd) + c1*zd);
   
-
   ////
   
   // Denominator errors negligible compared to numerator so do not waste cpu time below.  
@@ -4076,7 +3999,7 @@ Float_t AliChaoticity::MCWeight3D(Bool_t SameCharge, Int_t term, Int_t dampIndex
       w123 += pow(fc,2)*(1-fc)*(1+exp(-pow(q12*radius,2))*pow(EW12,2))*coulCorr12;
       w123 += pow(fc,2)*(1-fc)*(1+exp(-pow(q13*radius,2))*pow(EW13,2))*coulCorr13;
       w123 += pow(fc,2)*(1-fc)*(1+exp(-pow(q23*radius,2))*pow(EW23,2))*coulCorr23;
-      w123 += pow(fc,3)*c3QS*coulCorr12*coulCorr13*coulCorr23;// was pow(fc,3)*c3QS*FSICorrelationOmega0(kTRUE, q12, q13, q23)
+      w123 += pow(fc,3)*c3QS*coulCorr12*coulCorr13*coulCorr23;
       return w123;
     }else if(term==2){
       return ((1-myDamp) + myDamp*(1 + exp(-pow(q12*radius,2))*pow(EW12,2))*coulCorr12);
@@ -4099,7 +4022,7 @@ Float_t AliChaoticity::MCWeight3D(Bool_t SameCharge, Int_t term, Int_t dampIndex
       w123 += pow(fc,2)*(1-fc)*(1+exp(-pow(q12*radius,2))*pow(EW12,2))*coulCorr12;
       w123 += pow(fc,2)*(1-fc)*coulCorr13;
       w123 += pow(fc,2)*(1-fc)*coulCorr23;
-      w123 += pow(fc,3)*c3QS*coulCorr12*coulCorr13*coulCorr23;// was pow(fc,3)*c3QS*FSICorrelationOmega0(kFALSE, q12, q13, q23)
+      w123 += pow(fc,3)*c3QS*coulCorr12*coulCorr13*coulCorr23;
       return w123;
     }else if(term==2){
       return ((1-myDamp) + myDamp*(1 + exp(-pow(q12*radius,2))*pow(EW12,2))*coulCorr12);
@@ -4147,20 +4070,16 @@ void AliChaoticity::SetMomResCorrections(Bool_t legoCase, TH2D *temp2D){
   cout<<"Done reading momentum resolution file"<<endl;
 }
 //________________________________________________________________________
-void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DGaus[2], TH2D *temp2DTherm[2], TH3D *temp3Dos[6], TH3D *temp3Dss[6]){
+void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DTherm[2], TH3D *temp3Dos[6], TH3D *temp3Dss[6]){
   // read in 2-particle and 3-particle FSI correlations = K2 & K3
   // 2-particle input histo from file is binned in qinv.  3-particle in qinv of each pair
   if(legoCase){
     cout<<"LEGO call to SetFSICorrelations"<<endl;
-    fFSI2SS[0] = (TH2D*)temp2DGaus[0]->Clone();
-    fFSI2OS[0] = (TH2D*)temp2DGaus[1]->Clone();
-    fFSI2SS[1] = (TH2D*)temp2DTherm[0]->Clone();
-    fFSI2OS[1] = (TH2D*)temp2DTherm[1]->Clone();
+    fFSI2SS = (TH2D*)temp2DTherm[0]->Clone();
+    fFSI2OS = (TH2D*)temp2DTherm[1]->Clone();
     //
-    fFSI2SS[0]->SetDirectory(0);
-    fFSI2OS[0]->SetDirectory(0);
-    fFSI2SS[1]->SetDirectory(0);
-    fFSI2OS[1]->SetDirectory(0);
+    fFSI2SS->SetDirectory(0);
+    fFSI2OS->SetDirectory(0);
 
     for(Int_t CB=0; CB<6; CB++) {
       fFSIOmega0OS[CB] = (TH3D*)temp3Dos[CB]->Clone();
@@ -4177,8 +4096,6 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DGaus[2], TH2
       AliFatal("No FSI file found.  Kill process.");
     }else {cout<<"Good FSI File Found!"<<endl;}
     
-    TH2D *temphisto2GausSS = (TH2D*)fsifile->Get("K2ssG");
-    TH2D *temphisto2GausOS = (TH2D*)fsifile->Get("K2osG");
     TH2D *temphisto2ThermSS = (TH2D*)fsifile->Get("K2ssT");
     TH2D *temphisto2ThermOS = (TH2D*)fsifile->Get("K2osT");
     TH3D *temphisto3OS[6];
@@ -4193,15 +4110,11 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DGaus[2], TH2
       temphisto3OS[CB] = (TH3D*)fsifile->Get(nameK3OS->Data());
     }
 
-    fFSI2SS[0] = (TH2D*)temphisto2GausSS->Clone();
-    fFSI2OS[0] = (TH2D*)temphisto2GausOS->Clone();
-    fFSI2SS[1] = (TH2D*)temphisto2ThermSS->Clone();
-    fFSI2OS[1] = (TH2D*)temphisto2ThermOS->Clone();
-    fFSI2SS[0]->SetDirectory(0);
-    fFSI2OS[0]->SetDirectory(0);
-    fFSI2SS[1]->SetDirectory(0);
-    fFSI2OS[1]->SetDirectory(0);
-
+    fFSI2SS = (TH2D*)temphisto2ThermSS->Clone();
+    fFSI2OS = (TH2D*)temphisto2ThermOS->Clone();
+    fFSI2SS->SetDirectory(0);
+    fFSI2OS->SetDirectory(0);
+    
     for(Int_t CB=0; CB<6; CB++) {
       fFSIOmega0SS[CB] = (TH3D*)temphisto3SS[CB]->Clone();
       fFSIOmega0OS[CB] = (TH3D*)temphisto3OS[CB]->Clone();
@@ -4212,104 +4125,40 @@ void AliChaoticity::SetFSICorrelations(Bool_t legoCase, TH2D *temp2DGaus[2], TH2
     
     fsifile->Close();
   }
-  /*
-  // condition FSI histogram for edge effects
-  for(Int_t CB=0; CB<6; CB++){
-    for(Int_t ii=1; ii<=fFSIOmega0SS[CB]->GetNbinsX(); ii++){
-      for(Int_t jj=1; jj<=fFSIOmega0SS[CB]->GetNbinsY(); jj++){
-	for(Int_t kk=1; kk<=fFSIOmega0SS[CB]->GetNbinsZ(); kk++){
-	  
-	  if(fFSIOmega0SS[CB]->GetBinContent(ii,jj,kk) <=0){
-	    Double_t Q12 = fFSIOmega0SS[CB]->GetXaxis()->GetBinCenter(ii);
-	    Double_t Q23 = fFSIOmega0SS[CB]->GetYaxis()->GetBinCenter(jj);
-	    Double_t Q13 = fFSIOmega0SS[CB]->GetZaxis()->GetBinCenter(kk);
-	    //
-	    Int_t Q12bin=ii;
-	    Int_t Q23bin=jj;
-	    Int_t Q13bin=kk;
-	    Int_t AC=0;//Adjust Counter
-	    Int_t AClimit=10;// maximum bin shift
-	    if(Q12 < sqrt(pow(Q13,2)+pow(Q23,2) - 2*Q13*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q12bin++; AC++;}}
-	    if(Q12 > sqrt(pow(Q13,2)+pow(Q23,2) + 2*Q13*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q12bin--; AC++;}}
-	    //
-	    if(Q13 < sqrt(pow(Q12,2)+pow(Q23,2) - 2*Q12*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q13bin++; AC++;}}
-	    if(Q13 > sqrt(pow(Q12,2)+pow(Q23,2) + 2*Q12*Q23)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q13bin--; AC++;}}
-	    //
-	    if(Q23 < sqrt(pow(Q12,2)+pow(Q13,2) - 2*Q12*Q13)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q23bin++; AC++;}}
-	    if(Q23 > sqrt(pow(Q12,2)+pow(Q13,2) + 2*Q12*Q13)) {while(fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin) <=0 && AC<AClimit) {Q23bin--; AC++;}}
-	    
-	    // Save cpu time by setting empty cell contents (edge effects) to nearest non-zero cell (these cells are not used very often anyway.)
-	    if(AC==AClimit) {
-	      fFSIOmega0SS[CB]->SetBinContent(ii,jj,kk, 1.0);
-	      fFSIOmega0OS[CB]->SetBinContent(ii,jj,kk, 1.0);
-	    }else {
-	      fFSIOmega0SS[CB]->SetBinContent(ii,jj,kk, fFSIOmega0SS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin));
-	      fFSIOmega0OS[CB]->SetBinContent(ii,jj,kk, fFSIOmega0OS[CB]->GetBinContent(Q12bin, Q23bin, Q13bin));
-	    }
-	  }
-	  
-	}
-      }
-    }
-  }
-  */
-  // fFSI2SS[1]->GetBinContent(1,2) should be ~0.32
-  if(fFSI2SS[1]->GetBinContent(1,2) > 1.0) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
-  if(fFSI2SS[1]->GetBinContent(1,2) < 0.1) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
 
-  for(Int_t ii=1; ii<=fFSI2SS[0]->GetNbinsX(); ii++){
-      for(Int_t jj=1; jj<=fFSI2SS[0]->GetNbinsY(); jj++){
-	if(fFSI2SS[0]->GetBinContent(ii,jj) > 1.0) fFSI2SS[0]->SetBinContent(ii,jj, 1.0);
-	if(fFSI2SS[1]->GetBinContent(ii,jj) > 1.0) fFSI2SS[1]->SetBinContent(ii,jj, 1.0);
-	if(fFSI2OS[0]->GetBinContent(ii,jj) > 10.0) fFSI2OS[0]->SetBinContent(ii,jj, 10.0);
-	if(fFSI2OS[1]->GetBinContent(ii,jj) > 10.0) fFSI2OS[1]->SetBinContent(ii,jj, 10.0);
+  // fFSI2SS->GetBinContent(1,2) should be ~0.32
+  if(fFSI2SS->GetBinContent(1,2) > 1.0) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
+  if(fFSI2SS->GetBinContent(1,2) < 0.1) AliFatal("AliChaoticity: SetFSICorrelations Problem");// Additional Safety check
+
+  for(Int_t ii=1; ii<=fFSI2SS->GetNbinsX(); ii++){
+      for(Int_t jj=1; jj<=fFSI2SS->GetNbinsY(); jj++){
+	if(fFSI2SS->GetBinContent(ii,jj) > 1.0) fFSI2SS->SetBinContent(ii,jj, 1.0);
+	if(fFSI2OS->GetBinContent(ii,jj) > 10.0) fFSI2OS->SetBinContent(ii,jj, 10.0);
 	//
-	if(fFSI2SS[0]->GetBinContent(ii,jj) < 0.05) fFSI2SS[0]->SetBinContent(ii,jj, 0.05);
-	if(fFSI2SS[1]->GetBinContent(ii,jj) < 0.05) fFSI2SS[1]->SetBinContent(ii,jj, 0.05);
-	if(fFSI2OS[0]->GetBinContent(ii,jj) < 0.9) fFSI2OS[0]->SetBinContent(ii,jj, 0.9);
-	if(fFSI2OS[1]->GetBinContent(ii,jj) < 0.9) fFSI2OS[1]->SetBinContent(ii,jj, 0.9);
+	if(fFSI2SS->GetBinContent(ii,jj) < 0.05) fFSI2SS->SetBinContent(ii,jj, 0.05);
+	if(fFSI2OS->GetBinContent(ii,jj) < 0.9) fFSI2OS->SetBinContent(ii,jj, 0.9);
       }
   }
 
   cout<<"Done reading FSI file"<<endl;
 }
 //________________________________________________________________________
-Float_t AliChaoticity::FSICorrelationGaus2(Int_t charge1, Int_t charge2, Int_t rIndex, Float_t qinv){
-  // returns 2-particle Coulomb correlations = K2
-  if(rIndex >= fRVALUES) return 1.0;
-  Int_t qbinL = fFSI2SS[0]->GetYaxis()->FindBin(qinv-fFSI2SS[0]->GetYaxis()->GetBinWidth(1)/2.);
-  Int_t qbinH = qbinL+1;
-  if(qbinL <= 0) return 1.0;
-  if(qbinH > fFSI2SS[0]->GetNbinsY()) return 1.0;
-  
-  Float_t slope=0;
-  if(charge1==charge2){
-    slope = fFSI2SS[0]->GetBinContent(rIndex+1, qbinL) - fFSI2SS[0]->GetBinContent(rIndex+1, qbinH);
-    slope /= fFSI2SS[0]->GetYaxis()->GetBinCenter(qbinL) - fFSI2SS[0]->GetYaxis()->GetBinCenter(qbinH);
-    return (slope*(qinv - fFSI2SS[0]->GetYaxis()->GetBinCenter(qbinL)) + fFSI2SS[0]->GetBinContent(rIndex+1, qbinL));
-  }else {
-    slope = fFSI2OS[0]->GetBinContent(rIndex+1, qbinL) - fFSI2OS[0]->GetBinContent(rIndex+1, qbinH);
-    slope /= fFSI2OS[0]->GetYaxis()->GetBinCenter(qbinL) - fFSI2OS[0]->GetYaxis()->GetBinCenter(qbinH);
-    return (slope*(qinv - fFSI2OS[0]->GetYaxis()->GetBinCenter(qbinL)) + fFSI2OS[0]->GetBinContent(rIndex+1, qbinL));
-  }
-}
-//________________________________________________________________________
 Float_t AliChaoticity::FSICorrelationTherm2(Int_t charge1, Int_t charge2, Float_t qinv){
   // returns 2-particle Coulomb correlations = K2
-  Int_t qbinL = fFSI2SS[1]->GetYaxis()->FindBin(qinv-fFSI2SS[1]->GetYaxis()->GetBinWidth(1)/2.);
+  Int_t qbinL = fFSI2SS->GetYaxis()->FindBin(qinv-fFSI2SS->GetYaxis()->GetBinWidth(1)/2.);
   Int_t qbinH = qbinL+1;
   if(qbinL <= 0) return 1.0;
-  if(qbinH > fFSI2SS[1]->GetNbinsY()) return 1.0;
+  if(qbinH > fFSI2SS->GetNbinsY()) return 1.0;
   
   Float_t slope=0;
   if(charge1==charge2){
-    slope = fFSI2SS[1]->GetBinContent(fFSIbin+1, qbinL) - fFSI2SS[1]->GetBinContent(fFSIbin+1, qbinH);
-    slope /= fFSI2SS[1]->GetYaxis()->GetBinCenter(qbinL) - fFSI2SS[1]->GetYaxis()->GetBinCenter(qbinH);
-    return (slope*(qinv - fFSI2SS[1]->GetYaxis()->GetBinCenter(qbinL)) + fFSI2SS[1]->GetBinContent(fFSIbin+1, qbinL));
+    slope = fFSI2SS->GetBinContent(fFSIbin+1, qbinL) - fFSI2SS->GetBinContent(fFSIbin+1, qbinH);
+    slope /= fFSI2SS->GetYaxis()->GetBinCenter(qbinL) - fFSI2SS->GetYaxis()->GetBinCenter(qbinH);
+    return (slope*(qinv - fFSI2SS->GetYaxis()->GetBinCenter(qbinL)) + fFSI2SS->GetBinContent(fFSIbin+1, qbinL));
   }else {
-    slope = fFSI2OS[1]->GetBinContent(fFSIbin+1, qbinL) - fFSI2OS[1]->GetBinContent(fFSIbin+1, qbinH);
-    slope /= fFSI2OS[1]->GetYaxis()->GetBinCenter(qbinL) - fFSI2OS[1]->GetYaxis()->GetBinCenter(qbinH);
-    return (slope*(qinv - fFSI2OS[1]->GetYaxis()->GetBinCenter(qbinL)) + fFSI2OS[1]->GetBinContent(fFSIbin+1, qbinL));
+    slope = fFSI2OS->GetBinContent(fFSIbin+1, qbinL) - fFSI2OS->GetBinContent(fFSIbin+1, qbinH);
+    slope /= fFSI2OS->GetYaxis()->GetBinCenter(qbinL) - fFSI2OS->GetYaxis()->GetBinCenter(qbinH);
+    return (slope*(qinv - fFSI2OS->GetYaxis()->GetBinCenter(qbinL)) + fFSI2OS->GetBinContent(fFSIbin+1, qbinL));
   }
 }
 //________________________________________________________________________
@@ -4318,11 +4167,11 @@ Double_t AliChaoticity::FSICorrelationOmega0(Bool_t SameCharge, Double_t Q12, Do
   Int_t Q12bin = fFSIOmega0SS[fFSIbin]->GetXaxis()->FindBin(Q12);
   Int_t Q13bin = fFSIOmega0SS[fFSIbin]->GetZaxis()->FindBin(Q13);
   Int_t Q23bin = fFSIOmega0SS[fFSIbin]->GetYaxis()->FindBin(Q23);
-  Int_t index12L = int(fabs(Q12 - fFSI2SS[1]->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS[1]->GetYaxis()->GetBinWidth(1)));
+  Int_t index12L = int(fabs(Q12 - fFSI2SS->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS->GetYaxis()->GetBinWidth(1)));
   Int_t index12H = index12L+1;
-  Int_t index13L = int(fabs(Q13 - fFSI2SS[1]->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS[1]->GetYaxis()->GetBinWidth(1)));
+  Int_t index13L = int(fabs(Q13 - fFSI2SS->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS->GetYaxis()->GetBinWidth(1)));
   Int_t index13H = index13L+1;
-  Int_t index23L = int(fabs(Q23 - fFSI2SS[1]->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS[1]->GetYaxis()->GetBinWidth(1)));
+  Int_t index23L = int(fabs(Q23 - fFSI2SS->GetYaxis()->GetBinWidth(1)/2.)/(fFSI2SS->GetYaxis()->GetBinWidth(1)));
   Int_t index23H = index23L+1;
 
   if(SameCharge){

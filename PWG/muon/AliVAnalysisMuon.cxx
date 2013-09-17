@@ -39,6 +39,8 @@
 //#include "TMCProcess.h"
 #include "TLorentzVector.h"
 #include "TRegexp.h"
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
 
 // STEER includes
 #include "AliInputEventHandler.h"
@@ -357,7 +359,7 @@ void AliVAnalysisMuon::Terminate(Option_t *)
 
 
 //________________________________________________________________________
-Int_t AliVAnalysisMuon::GetParticleType(AliVParticle* track)
+Int_t AliVAnalysisMuon::GetParticleType ( AliVParticle* track, Bool_t forceReachFirstAncestor )
 {
   //
   /// Get particle type from mathced MC track
@@ -367,17 +369,21 @@ Int_t AliVAnalysisMuon::GetParticleType(AliVParticle* track)
   Int_t trackLabel = track->GetLabel();
   if ( trackLabel >= 0 ) {
     AliVParticle* matchedMCTrack = MCEvent()->GetTrack(trackLabel);
-    if ( matchedMCTrack ) trackSrc = RecoTrackMother(matchedMCTrack);
+    if ( matchedMCTrack ) trackSrc = RecoTrackMother(matchedMCTrack,forceReachFirstAncestor);
   } // track has MC label
   return trackSrc;
 }
 
 
 //________________________________________________________________________
-Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
+Int_t AliVAnalysisMuon::RecoTrackMother ( AliVParticle* mcParticle, Bool_t forceReachFirstAncestor )
 {
   //
   /// Find track mother from kinematics
+  /// The flag forceReachFirstAncestor affects the heavy flavor chains.
+  /// For example the case D -> K -> mu is seen as:
+  /// - kDecayMu if forceReachFirstAncestor = kFALSE
+  /// - kCharmMu if forceReachFirstAncestor = kTRUE
   //
   
   Int_t recoPdg = mcParticle->PdgCode();
@@ -387,11 +393,14 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
   
   Int_t imother = AliAnalysisMuonUtility::GetMotherIndex(mcParticle);
   
-  Int_t den[3] = {100, 1000, 1};
+  //Int_t den[3] = {100, 1000, 1};
+  Int_t den[2] = {100, 1000};
+  
   
   Int_t motherType = kDecayMu;
   while ( imother >= 0 ) {
     AliVParticle* part = MCEvent()->GetTrack(imother);
+    TParticlePDG* partPdg = TDatabasePDG::Instance()->GetParticle(part->PdgCode());
     //if ( ! part ) return motherType;
     
     Int_t absPdg = TMath::Abs(part->PdgCode());
@@ -401,19 +410,25 @@ Int_t AliVAnalysisMuon::RecoTrackMother(AliVParticle* mcParticle)
     if ( isPrimary ) {
       if ( absPdg == 24 ) return kWbosonMu;
       
-      for ( Int_t idec=0; idec<3; idec++ ) {
+      if ( absPdg < 10 ) break; // particle loop
+      
+      // Check heavy flavours
+      for ( Int_t idec=0; idec<2; idec++ ) {
         Int_t flv = (absPdg%100000)/den[idec];
-        if ( flv > 0 && flv < 4 ) return kDecayMu;
+        if ( flv > 0 && flv < 4 ) {
+          if ( ! forceReachFirstAncestor ) return kDecayMu;
+        }
         else if ( flv == 0 || flv > 5 ) continue;
+//        if ( flv < 4 || flv > 5 ) continue;
         else {
-          if ( den[idec] == 100 ) motherType = kQuarkoniumMu;
+          if ( den[idec] == 100 && partPdg && ! partPdg->AntiParticle() ) motherType = kQuarkoniumMu;
           else if ( flv == 4 ) motherType = kCharmMu;
           else motherType = kBeautyMu;
           break; // break loop on pdg code
           // but continue the global loop to find higher mass HF
         }
       } // loop on pdg code
-      if ( absPdg < 10 ) break; // particle loop
+      //if ( absPdg < 10 ) break; // particle loop
     } // is primary
     else {
       if ( part->Zv() < -90. ) {

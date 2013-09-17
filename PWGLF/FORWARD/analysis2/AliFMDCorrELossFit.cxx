@@ -8,6 +8,8 @@
 #include <TBrowser.h>
 #include <TVirtualPad.h>
 #include <THStack.h>
+#include <TLatex.h>
+#include <TLegend.h>
 #include <TH1D.h>
 #include <AliLog.h>
 #include <TMath.h>
@@ -15,8 +17,8 @@
 #include <iostream>
 #include <iomanip>
 
-Double_t AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
-Double_t AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+Double_t AliFMDCorrELossFit::ELossFit::fgMaxRelError = .25;
+Double_t AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-7;
 Double_t AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
 
 //____________________________________________________________________
@@ -39,7 +41,8 @@ AliFMDCorrELossFit::ELossFit::ELossFit()
     fQuality(0), 
     fDet(0), 
     fRing('\0'),
-    fBin(0)
+    fBin(0),
+    fMaxWeight(0)
 {
   //
   // Default constructor 
@@ -68,7 +71,8 @@ AliFMDCorrELossFit::ELossFit::ELossFit(Int_t quality, const TF1& f)
     fQuality(quality),
     fDet(0), 
     fRing('\0'),
-    fBin(0)
+    fBin(0),
+    fMaxWeight(0)
 {
   // 
   // Construct from a function
@@ -115,7 +119,8 @@ AliFMDCorrELossFit::ELossFit::ELossFit(Int_t     quality,UShort_t  n,
     fQuality(quality),
     fDet(0), 
     fRing('\0'),
-    fBin(0)
+    fBin(0),
+    fMaxWeight(0)
 {
   // 
   // Constructor with full parameter set
@@ -171,7 +176,8 @@ AliFMDCorrELossFit::ELossFit::ELossFit(const ELossFit& o)
     fQuality(o.fQuality),
     fDet(o.fDet), 
     fRing(o.fRing),
-    fBin(o.fBin)
+    fBin(o.fBin),
+    fMaxWeight(o.fMaxWeight)
 {
   // 
   // Copy constructor 
@@ -204,23 +210,24 @@ AliFMDCorrELossFit::ELossFit::operator=(const ELossFit& o)
   //    Reference to this object 
   //
   if (&o == this) return *this; 
-  fN	   = o.fN;
-  fNu	   = o.fNu;
-  fChi2	   = o.fChi2;
-  fC	   = o.fC;
-  fDelta   = o.fDelta;
-  fXi	   = o.fXi;
-  fSigma   = o.fSigma;
-  fSigmaN  = o.fSigmaN;
-  fEC	   = o.fEC;
-  fEDelta  = o.fEDelta;
-  fEXi	   = o.fEXi;
-  fESigma  = o.fESigma;
-  fESigmaN = o.fESigmaN;
-  fQuality = o.fQuality;
-  fDet     = o.fDet; 
-  fRing    = o.fRing;
-  fBin     = o.fBin;
+  fN	     = o.fN;
+  fNu	     = o.fNu;
+  fChi2	     = o.fChi2;
+  fC	     = o.fC;
+  fDelta     = o.fDelta;
+  fXi	     = o.fXi;
+  fSigma     = o.fSigma;
+  fSigmaN    = o.fSigmaN;
+  fEC	     = o.fEC;
+  fEDelta    = o.fEDelta;
+  fEXi	     = o.fEXi;
+  fESigma    = o.fESigma;
+  fESigmaN   = o.fESigmaN;
+  fQuality   = o.fQuality;
+  fDet       = o.fDet; 
+  fRing      = o.fRing;
+  fBin       = o.fBin;
+  fMaxWeight = o.fMaxWeight;
   if (fA)  delete [] fA;
   if (fEA) delete [] fEA; 
   fA  = 0;
@@ -268,6 +275,7 @@ AliFMDCorrELossFit::ELossFit::FindMaxWeight(Double_t maxRelError,
   //    The largest index @f$ i@f$ for which the above
   // conditions hold.  Will never return less than 1. 
   //
+  if (fMaxWeight > 0) return fMaxWeight;
   Int_t n = TMath::Min(maxN, UShort_t(fN-1));
   Int_t m = 1;
   // fN is one larger than we have data 
@@ -275,7 +283,7 @@ AliFMDCorrELossFit::ELossFit::FindMaxWeight(Double_t maxRelError,
     if (fA[i] < leastWeight)  break;
     if (fEA[i] / fA[i] > maxRelError) break;
   }
-  return m;
+  return fMaxWeight = m;
 }
 
 //____________________________________________________________________
@@ -384,7 +392,7 @@ AliFMDCorrELossFit::ELossFit::Compare(const TObject* o) const
 
 //____________________________________________________________________
 void
-AliFMDCorrELossFit::ELossFit::Print(Option_t*) const
+AliFMDCorrELossFit::ELossFit::Print(Option_t* option) const
 {
   // 
   // Information to standard output 
@@ -392,6 +400,13 @@ AliFMDCorrELossFit::ELossFit::Print(Option_t*) const
   // Parameters:
   //    option Not used 
   //
+  TString o(option);
+  if (o.Contains("S", TString::kIgnoreCase)) {
+    Printf("%15s: q=%2d n=%1d chi2/nu=%6.3f",
+	   GetName(), fQuality, fN, (fNu <= 0 ? 999 : fChi2 / fNu));
+    return;
+  }
+  
   std::cout << GetName() << ":\n"
 	    << " chi^2/nu = " << fChi2 << "/" << fNu << " = " 
 	    << (fNu == 0 ? 999 : fChi2 / fNu) << "\n"
@@ -430,7 +445,7 @@ AliFMDCorrELossFit::ELossFit::Browse(TBrowser* b)
   // Parameters:
   //    b Browser
   //
-  Draw(b ? b->GetDrawOption() : "comp");
+  Draw(b ? b->GetDrawOption() : "comp values");
   gPad->SetLogy();
   gPad->Update();
 }
@@ -449,38 +464,107 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
   TString opt(option);
   opt.ToUpper();
   bool comp = false;
+  bool good = false;
+  bool vals = false;
+  bool legd = false;
   if (opt.Contains("COMP")) { 
     opt.ReplaceAll("COMP","");
     comp = true;
+  }
+  if (opt.Contains("GOOD")) { 
+    opt.ReplaceAll("GOOD","");
+    good = true;
+  }
+  if (opt.Contains("VALUES")) { 
+    opt.ReplaceAll("VALUES","");
+    vals = true;
+  }
+  if (opt.Contains("LEGEND")) { 
+    opt.ReplaceAll("LEGEND","");
+    legd = comp;
   }
   if (!opt.Contains("SAME")) { 
     gPad->Clear();
   }
 
+  TLegend* l = 0;
+  if (legd) { 
+    l = new TLegend(.3, .5, .59, .94);
+    l->SetBorderSize(0);
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+  }
   TObjArray cleanup;
-  TF1* tot = AliForwardUtil::MakeNLandauGaus(1, 
+  Int_t maxW = FindMaxWeight();
+  TF1* tot = AliForwardUtil::MakeNLandauGaus(fC * 1, 
 					     fDelta, fXi, 
 					     fSigma, fSigmaN, 
-					     fN,     fA, 
+					     maxW/*fN*/,     fA, 
 					     0.01,   10);
   tot->SetLineColor(kBlack);
   tot->SetLineWidth(2);
   tot->SetLineStyle(1);
   tot->SetTitle(GetName());
+  if (l) l->AddEntry(tot, "Total", "l");
   Double_t max = tot->GetMaximum();
 
+  
   if (!opt.Contains("SAME")) {
     TH1* frame = new TH1F(GetName(), 
-			  Form("FMD%d%c, eta bin %d",fDet,fRing,fBin),
-			  100, 0, 10);
+		     Form("FMD%d%c, eta bin %d",fDet,fRing,fBin),
+		     100, 0, 10);
     frame->SetMinimum(max/10000);
     frame->SetMaximum(max*1.4);
     frame->SetXTitle("#Delta / #Delta_{mip}");
     frame->Draw();
     opt.Append(" SAME");
   }
-  tot->DrawCopy(opt.Data());
+  TF1* cpy = tot->DrawCopy(opt.Data());
   cleanup.Add(tot);
+
+  if (vals) { 
+    Double_t x1 = .72;
+    Double_t x2 = .73;
+    Double_t y  = .90;
+    Double_t dy = .05;
+    TLatex* ltx1 = new TLatex(x1, y, "");
+    TLatex* ltx2 = new TLatex(x2, y, "");
+    ltx1->SetNDC();
+    ltx1->SetTextAlign(33);
+    ltx1->SetTextFont(132);
+    ltx1->SetTextSize(dy-.01);
+    ltx2->SetNDC();
+    ltx2->SetTextAlign(13);
+    ltx2->SetTextFont(132);
+    ltx2->SetTextSize(dy-.01);
+
+    ltx1->DrawLatex(x1, y, "Quality");
+    ltx2->DrawLatex(x2, y, Form("%d", fQuality));
+    y -= dy;
+
+    ltx1->DrawLatex(x1, y, "#chi^{2}/#nu");
+    ltx2->DrawLatex(x2, y, Form("%7.3f", (fNu > 0 ? fChi2 / fNu : -1)));
+    y -= dy;
+    
+    const Char_t* pn[] = { "C", "#Delta", "#xi", "#sigma" };
+    Double_t      pv[] = { fC,  fDelta,  fXi,  fSigma };
+    Double_t      pe[] = { fEC, fEDelta, fEXi, fESigma };
+    for (Int_t i = 0; i < 4; i++) { 
+      ltx1->DrawLatex(x1, y, pn[i]);
+      ltx2->DrawLatex(x2, y, Form("%6.4f#pm%6.4f", pv[i], pe[i]));
+      y -= dy;
+    }
+    for (Int_t i=2; i <= fN; i++) { 
+      if (i > maxW) {
+	ltx1->SetTextColor(kRed+3);
+	ltx2->SetTextColor(kRed+3);
+      }
+      ltx1->DrawLatex(x1, y, Form("a_{%d}", i));
+      ltx2->DrawLatex(x2, y, Form("%6.4f#pm%6.4f", fA[i-2], fEA[i-2]));
+      y -= dy;
+    }
+
+  }
 
   if (!comp) { 
     gPad->cd();
@@ -489,9 +573,9 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
 
   Double_t min = max;
   opt.Append(" same");
-  Int_t maxW = FindMaxWeight();
   for (Int_t i=1; i <= fN; i++) { 
-    TF1* f = AliForwardUtil::MakeILandauGaus((i == 1 ? 1 : fA[i-2]), 
+    if (good && i > maxW) break;
+    TF1* f = AliForwardUtil::MakeILandauGaus(fC*(i == 1 ? 1 : fA[i-2]), 
 					     fDelta, fXi, 
 					     fSigma, fSigmaN, 
 					     i,      0.01, 10);
@@ -499,12 +583,19 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
     f->SetLineStyle(i > maxW ? 2 : 1);
     min = TMath::Min(f->GetMaximum(), min);
     f->DrawCopy(opt.Data());
+    if (l) l->AddEntry(f, Form("%d MIP%s", i, (i>1 ? "s" : "")), "l");
+
     cleanup.Add(f);
   }
   min /= 100;
-  tot->GetHistogram()->SetMaximum(max);
-  tot->GetHistogram()->SetMinimum(min);
-  tot->GetHistogram()->GetYaxis()->SetRangeUser(min, max);
+  if (max <= 0) max = 0.1;
+  if (min <= 0) min = 1e-4;
+  cpy->SetMaximum(max);
+  cpy->SetMinimum(min);
+  cpy->GetHistogram()->SetMaximum(max);
+  cpy->GetHistogram()->SetMinimum(min);
+  cpy->GetHistogram()->GetYaxis()->SetRangeUser(min, max);
+  if (l) l->Draw();
 
   gPad->cd();
 }
@@ -542,13 +633,23 @@ AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu,
   // 
   // Calculate the quality 
   //
+  Double_t decline = maxChi2nu;
   Int_t qual = 0;
-  if (fNu > 0 && fChi2 / fNu < maxChi2nu) qual += 4;;
+  if (fNu > 0) {
+    Double_t red = fChi2 / fNu;
+    if (red < maxChi2nu) qual += 4;
+    else {
+      Int_t q = (maxChi2nu+decline - red) / decline * 4;
+      if (q > 0) qual += q;
+    }
+  }
   if (CHECKPAR(fDelta,  fEDelta,  maxRelError)) qual++;
   if (CHECKPAR(fXi,     fEXi,     maxRelError)) qual++;
   if (CHECKPAR(fSigma,  fESigma,  maxRelError)) qual++;
   if (CHECKPAR(fSigmaN, fESigmaN, maxRelError)) qual++;
-  qual += FindMaxWeight(1.5*maxRelError, leastWeight, fN);
+  // Large penalty for large sigma - often a bad fit. 
+  if (fSigma > 10*fXi)                          qual -= 4; 
+  qual += FindMaxWeight(2*maxRelError, leastWeight, fN);
   fQuality = qual;
 }
 
@@ -557,7 +658,8 @@ AliFMDCorrELossFit::AliFMDCorrELossFit()
   : TObject(), 
     fRings(), 
     fEtaAxis(0,0,0), 
-    fLowCut(0)
+    fLowCut(0),
+    fCache(0)
 {
   // 
   // Default constructor 
@@ -573,7 +675,8 @@ AliFMDCorrELossFit::AliFMDCorrELossFit(const AliFMDCorrELossFit& o)
   : TObject(o), 
     fRings(o.fRings),
     fEtaAxis(o.fEtaAxis.GetNbins(),o.fEtaAxis.GetXmin(),o.fEtaAxis.GetXmax()), 
-    fLowCut(0)
+    fLowCut(0),
+    fCache(0)
 {
   // 
   // Copy constructor 
@@ -610,10 +713,84 @@ AliFMDCorrELossFit::operator=(const AliFMDCorrELossFit& o)
   if (&o == this) return *this; 
   fRings = o.fRings;
   fLowCut = o.fLowCut;
+  fCache  = o.fCache;
   SetEtaAxis(o.fEtaAxis.GetNbins(), o.fEtaAxis.GetXmin(), o.fEtaAxis.GetXmax());
 
   return *this;
 }
+#define CACHE(BIN,IDX,OFFSET) fCache[IDX*OFFSET+BIN-1]
+
+//____________________________________________________________________
+void
+AliFMDCorrELossFit::CacheBins(UShort_t minQuality) const
+{
+  if (fCache.GetSize() > 0) return;
+
+  Int_t nRings = fRings.GetEntriesFast();
+  Int_t offset = fEtaAxis.GetNbins();
+
+  fCache.Set(nRings*offset);
+  fCache.Reset(-1);
+  
+  for (Int_t i = 0; i < nRings; i++) { 
+    TObjArray* ringArray  = static_cast<TObjArray*>(fRings.At(i));
+
+    // First loop to find where we actually have fits
+    Int_t nFits      = 0;
+    Int_t nGood      = 0;
+    Int_t minBin     = offset+1;
+    Int_t maxBin     = -1;
+    Int_t realMinBin = offset+1;
+    Int_t realMaxBin = -1;
+    for (Int_t j = 1; j < ringArray->GetEntriesFast(); j++) {
+      ELossFit* fit = static_cast<ELossFit*>(ringArray->At(j));
+      if (!fit) continue;
+      nFits++;
+
+      // Update our range off possible fits 
+      realMinBin = TMath::Min(j, realMinBin);
+      realMaxBin = TMath::Max(j, realMaxBin);
+      
+      // Check the quality of the fit 
+      fit->CalculateQuality(AliFMDCorrELossFit::ELossFit::fgMaxChi2nu, 
+			    AliFMDCorrELossFit::ELossFit::fgMaxRelError, 
+			    AliFMDCorrELossFit::ELossFit::fgLeastWeight);
+      if (minQuality > 0 && fit->fQuality < minQuality) continue;
+      nGood++;
+      
+      // Check this bin 
+      CACHE(j,i,offset) = j;
+      minBin            = TMath::Min(j, minBin);
+      maxBin            = TMath::Max(j, maxBin);
+    }
+    AliInfoF("Out of %d bins, %d had fits, of which %d are good (%5.1f%%)", 
+	     offset, nFits, nGood, (nFits > 0 ? 100*float(nGood)/nFits : 0));
+    
+    // Now loop and set neighbors 
+    realMinBin = TMath::Max(1,      realMinBin-1); // Include one more 
+    realMaxBin = TMath::Min(offset, realMaxBin+1); // Include one more 
+    for (Int_t j = realMinBin; j <= realMaxBin; j++) {
+      if (CACHE(j,i,offset) > 0) continue;
+      
+      Int_t nK    = TMath::Max(realMaxBin - j, j - realMinBin);
+      Int_t found = -1;
+      for (Int_t k = 1; k <= nK; k++) {
+	Int_t left  = j - k;
+	Int_t right = j + k;
+	if      (left  > realMinBin && 
+		 CACHE(left,i,offset)  == left) found = left;
+	else if (right < realMaxBin && 
+		 CACHE(right,i,offset) == right) found = right;
+	if (found > 0) break;
+      }
+      // Now check that we found something 
+      if (found) CACHE(j,i,offset) = CACHE(found,i,offset);
+      else AliWarningF("No fit found for etabin=%d in ring=%d", j, i);
+    }
+  }
+}
+
+
 //____________________________________________________________________
 Int_t
 AliFMDCorrELossFit::FindEtaBin(Double_t eta) const
@@ -807,7 +984,8 @@ AliFMDCorrELossFit::GetFit(UShort_t  d, Char_t r, Double_t eta) const
 
 //____________________________________________________________________
 AliFMDCorrELossFit::ELossFit*
-AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin) const
+AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin,
+			    UShort_t minQ) const
 {
   // 
   // Find the fit corresponding to the specified parameters 
@@ -820,37 +998,30 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin) const
   // Return:
   //    Fit parameters or null in case of problems 
   //
-  TObjArray* ringArray = GetRingArray(d, r);
-  if (!ringArray) { 
-    AliError(Form("Failed to make ring array for FMD%d%c", d, r));
-    return 0;
-  }
   if (etabin <= 0 || etabin >= fEtaAxis.GetNbins()) { 
     // AliError(Form("Eta bin=%3d out of bounds [%d,%d] for FMD%d%c", 
     //  	     etabin, 1, fEtaAxis.GetNbins(), d, r));
     return 0;
   }
-  if (etabin > ringArray->GetEntriesFast()) { 
-    // AliError(Form("Eta bin=%3d out of bounds [%d,%d] for FMD%d%c", 
-    // 		     etabin, 1, ringArray->GetEntriesFast(), d, r));
+
+  TObjArray* ringArray = GetRingArray(d, r);
+  if (!ringArray) { 
+    AliError(Form("Failed to make ring array for FMD%d%c", d, r));
     return 0;
   }
-  else if (etabin >= ringArray->GetEntriesFast()) { 
-    // AliWarning(Form("Eta bin=%3d out of bounds by +1 [%d,%d] for FMD%d%c, " 
-    //		    "trying %3d", etabin, 1, ringArray->GetEntriesFast(), d, r,
-    //		    etabin-1));
-    etabin--;
-  }
-  else if (!ringArray->At(etabin)) { 
-    // AliWarning(Form("Eta bin=%d has no fit for FMD%d%c, trying %03d", 
-    // 		    etabin, d, r, etabin+1));
-    etabin++;
-  }
-  return static_cast<ELossFit*>(ringArray->At(etabin));
+  if (fCache.GetSize() <= 0) CacheBins(minQ);
+  Int_t idx = (d == 1 ? 0 : 
+	       (d - 2) * 2 + 1 + (r=='I' || r=='i' ? 0 : 1));
+  Int_t bin = CACHE(etabin, idx, fEtaAxis.GetNbins());
+  
+  if (bin < 0 || bin > ringArray->GetEntriesFast()) return 0;
+  
+  return static_cast<ELossFit*>(ringArray->At(bin));
 }
 //____________________________________________________________________
 AliFMDCorrELossFit::ELossFit*
-AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Double_t eta) const
+AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Double_t eta,
+			    UShort_t minQ) const
 {
   // 
   // Find the fit corresponding to the specified parameters 
@@ -864,7 +1035,7 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Double_t eta) const
   //    Fit parameters or null in case of problems 
   //
   Int_t etabin = FindEtaBin(eta);
-  return FindFit(d, r, etabin);
+  return FindFit(d, r, etabin, minQ);
 }
 //____________________________________________________________________
 TObjArray*
@@ -925,7 +1096,7 @@ Double_t
 AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
 				  Double_t f) const
 {
-  ELossFit* fit = GetFit(d, r, etabin);
+  ELossFit* fit = FindFit(d, r, etabin, 20);
   if (!fit) return -1024;
   return fit->GetLowerBound(f);
 }
@@ -944,7 +1115,7 @@ AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
 				  Double_t f, Bool_t showErrors, 
 				  Bool_t includeSigma) const
 {
-  ELossFit* fit = GetFit(d, r, etabin);
+  ELossFit* fit = FindFit(d, r, etabin, 20);
   if (!fit) { 
     if (showErrors) {
       AliWarning(Form("No fit for FMD%d%c @ etabin=%d", d, r, etabin));
@@ -994,11 +1165,14 @@ namespace {
 #define IDX2DET(I)  (i == 0 ? 1 : (i == 1 || i == 2 ? 2 : 3))
 //____________________________________________________________________
 TList*
-AliFMDCorrELossFit::GetStacks(Bool_t err, Bool_t rel, UShort_t maxN) const
+AliFMDCorrELossFit::GetStacks(Bool_t   err, 
+			      Bool_t   rel, 
+			      Bool_t   /*good*/, 
+			      UShort_t maxN) const
 {
   // Get a list of THStacks 
   Int_t nRings = fRings.GetEntriesFast();
-  Int_t nPad   = 6+maxN-1; // 7 regular params, and maxN-1 weights
+  // Int_t nPad   = 6+maxN-1; // 7 regular params, and maxN-1 weights
 
   enum { 
     kChi2nu = 0, 
@@ -1023,15 +1197,21 @@ AliFMDCorrELossFit::GetStacks(Bool_t err, Bool_t rel, UShort_t maxN) const
   stacks->AddAt(sXi    = new THStack("xi",     "#xi"),          kXi);
   stacks->AddAt(sSigma = new THStack("sigma",  "#sigma"),       kSigma);
   //stacks->AddAt(sigman= new THStack("sigman", "#sigma_{n}"),   5);
-  stacks->AddAt(n     = new THStack("n",      "N"),            kN);
+  stacks->AddAt(n      = new THStack("n",      "N"),            kN);
+  if (rel) { 
+    sChi2nu->SetName("qual");
+    sChi2nu->SetTitle("Quality");
+    n->SetName("good");
+    n->SetTitle("Bin map");
+  }
   for (Int_t i = 1; i <= maxN; i++) {
     stacks->AddAt(new THStack(Form("a_%02d", i+1), Form("a_{%d}", i+1)), kN+i);
   }
   
-  TArrayD min(nPad);
-  TArrayD max(nPad);
-  min.Reset(100000);
-  max.Reset(-100000);
+  // TArrayD min(nPad);
+  // TArrayD max(nPad);
+  // min.Reset(100000);
+  // max.Reset(-100000);
 
   for (Int_t i = 0; i < nRings; i++) { 
     if (!fRings.At(i)) continue;
@@ -1069,9 +1249,9 @@ AliFMDCorrELossFit::GetStacks(Bool_t err, Bool_t rel, UShort_t maxN) const
       ELossFit* f = static_cast<ELossFit*>(a->At(j));
       if (!f) continue;
 
-      Int_t     b      = f->fBin;
-      Int_t     nW     = f->FindMaxWeight();
-      Double_t  vChi2nu = (f->fNu <= 0 ? 0 : f->fChi2 / f->fNu);
+      Int_t     b       = f->fBin;
+      Double_t  vChi2nu = (rel ? f->fQuality 
+			   : (f->fNu <= 0 ? 0 : f->fChi2 / f->fNu));
       Double_t  vC      = (rel ? (f->fC     >0 ?f->fEC     /f->fC      :0) 
 			   : f->fC);
       Double_t  vDelta  = (rel ? (f->fDelta >0 ?f->fEDelta /f->fDelta  :0) 
@@ -1080,6 +1260,8 @@ AliFMDCorrELossFit::GetStacks(Bool_t err, Bool_t rel, UShort_t maxN) const
 			   : f->fXi);
       Double_t  vSigma  = (rel ? (f->fSigma >0 ?f->fESigma /f->fSigma  :0) 
 			   : f->fSigma);
+      Int_t     nW      = (rel ? CACHE(j,i,fEtaAxis.GetNbins()) : 
+			   f->FindMaxWeight());
       // Double_t  sigman = (rel ? (f->fSigmaN>0 ?f->fESigmaN/f->fSigmaN :0) 
       //                     : f->SigmaN); 
       hChi   ->SetBinContent(b, vChi2nu);
@@ -1088,30 +1270,30 @@ AliFMDCorrELossFit::GetStacks(Bool_t err, Bool_t rel, UShort_t maxN) const
       hDelta ->SetBinContent(b, vDelta);
       hXi    ->SetBinContent(b, vXi);
       hSigma ->SetBinContent(b, vSigma);
-      if (vChi2nu > 1e-12) {
-	min[kChi2nu] = TMath::Min(min[kChi2nu], vChi2nu);
-	max[kChi2nu] = TMath::Max(max[kChi2nu], vChi2nu);
-      }
-      if (vC > 1e-12) {
-	min[kC] = TMath::Min(min[kC], vC);
-	max[kC] = TMath::Max(max[kC], vC);
-      }
-      if (vDelta > 1e-12) {
-	min[kDelta] = TMath::Min(min[kDelta], vDelta);
-	max[kDelta] = TMath::Max(max[kDelta], vDelta);
-      }
-      if (vXi > 1e-12) {
-	min[kXi] = TMath::Min(min[kXi], vXi);
-	max[kXi] = TMath::Max(max[kXi], vXi);
-      }
-      if (vSigma > 1e-12) {
-	min[kSigma] = TMath::Min(min[kSigma], vSigma);
-	max[kSigma] = TMath::Max(max[kSigma], vSigma);
-      }
-      if (nW > 1e-12) { 
-	min[kN] = TMath::Min(min[kN], Double_t(nW));
-	max[kN] = TMath::Max(max[kN], Double_t(nW));
-      }
+      // if (vChi2nu > 1e-12) {
+      // 	min[kChi2nu] = TMath::Min(min[kChi2nu], vChi2nu);
+      // 	max[kChi2nu] = TMath::Max(max[kChi2nu], vChi2nu);
+      // }
+      // if (vC > 1e-12) {
+      // 	min[kC] = TMath::Min(min[kC], vC);
+      // 	max[kC] = TMath::Max(max[kC], vC);
+      // }
+      // if (vDelta > 1e-12) {
+      // 	min[kDelta] = TMath::Min(min[kDelta], vDelta);
+      // 	max[kDelta] = TMath::Max(max[kDelta], vDelta);
+      // }
+      // if (vXi > 1e-12) {
+      // 	min[kXi] = TMath::Min(min[kXi], vXi);
+      // 	max[kXi] = TMath::Max(max[kXi], vXi);
+      // }
+      // if (vSigma > 1e-12) {
+      // 	min[kSigma] = TMath::Min(min[kSigma], vSigma);
+      // 	max[kSigma] = TMath::Max(max[kSigma], vSigma);
+      // }
+      // if (nW > 1e-12) { 
+      // 	min[kN] = TMath::Min(min[kN], Double_t(nW));
+      // 	max[kN] = TMath::Max(max[kN], Double_t(nW));
+      // }
       // hSigmaN->SetBinContent(b,  sigman);
       if (!rel) {
 	hC     ->SetBinError(b, f->fEC);
@@ -1125,10 +1307,10 @@ AliFMDCorrELossFit::GetStacks(Bool_t err, Bool_t rel, UShort_t maxN) const
 		       : f->fA[k]);
 	hA[k]->SetBinContent(b, vA);
 	if (!rel) hA[k]->SetBinError(b, f->fEA[k]);
-	if (vA > 1e-12) {
-	  min[kN+1+k] = TMath::Min(min[kN+1+k], vA);
-	  max[kN+1+k] = TMath::Max(max[kN+1+k], vA);
-	}
+	// if (vA > 1e-12) {
+	//   min[kN+1+k] = TMath::Min(min[kN+1+k], vA);
+	//   max[kN+1+k] = TMath::Max(max[kN+1+k], vA);
+	// }
       }
     }
   }
@@ -1150,8 +1332,12 @@ AliFMDCorrELossFit::Draw(Option_t* option)
   opt.ToLower();
   Bool_t  rel = (opt.Contains("relative"));
   Bool_t  err = (opt.Contains("error"));
+  Bool_t  clr = (opt.Contains("clear"));
+  Bool_t  gdd = (opt.Contains("good"));
   if (rel) opt.ReplaceAll("relative","");
   if (err) opt.ReplaceAll("error","");
+  if (clr) opt.ReplaceAll("clear", "");
+  if (gdd) opt.ReplaceAll("good", "");
 
   UShort_t maxN   = 0;
   Int_t nRings = fRings.GetEntriesFast();
@@ -1169,9 +1355,16 @@ AliFMDCorrELossFit::Draw(Option_t* option)
   // AliInfo(Form("Maximum N is %d", maxN));
   Int_t nPad = 6+maxN-1; // 7 regular params, and maxN-1 weights
   TVirtualPad* pad = gPad;
+  if (clr) { 
+    pad->Clear();
+    pad->SetTopMargin(0.02);
+    pad->SetRightMargin(0.02);
+    pad->SetBottomMargin(0.15);
+    pad->SetLeftMargin(0.10);
+  }
   pad->Divide(2, (nPad+1)/2, 0.1, 0, 0);
 
-  TList* stacks = GetStacks(err, rel, maxN);
+  TList* stacks = GetStacks(err, rel, gdd, maxN);
 
   Int_t nPad2 = (nPad+1) / 2;
   for (Int_t i = 0; i < nPad; i++) {
@@ -1196,7 +1389,7 @@ AliFMDCorrELossFit::Draw(Option_t* option)
     stack->Draw(opt.Data());
 
     TString tit(stack->GetTitle());
-    if (rel && i != 0 && i != 6)
+    if (rel && i != 0 && i != 5)
       tit = Form("#delta %s/%s", tit.Data(), tit.Data());
     TH1*   hist  = stack->GetHistogram();
     TAxis* yaxis = hist->GetYaxis();
@@ -1237,11 +1430,13 @@ AliFMDCorrELossFit::Print(Option_t* option) const
   //
   TString opt(option);
   opt.ToUpper();
-  Int_t nRings = fRings.GetEntriesFast();
-  bool recurse = opt.Contains("R");
+  Int_t nRings  = fRings.GetEntriesFast();
+  bool  recurse = opt.Contains("R");
+  bool  cache   = opt.Contains("C") && fCache.GetSize() > 0;
+  Int_t nBins   = fEtaAxis.GetNbins();
 
   std::cout << "Low cut in fit range: " << fLowCut << "\n"
-	    << "Eta axis:             " << fEtaAxis.GetNbins() 
+	    << "Eta axis:             " << nBins
 	    << " bins, range [" << fEtaAxis.GetXmin() << "," 
 	    << fEtaAxis.GetXmax() << "]" << std::endl;
   
@@ -1271,6 +1466,29 @@ AliFMDCorrELossFit::Print(Option_t* option) const
 		<< "-" << std::setw(3) << max << " " << std::setw(3) 
 		<< (max-min+1) << " bins" << std::endl;
   }
+
+  if (!cache) return;
+
+  std::cout << " eta bin           |           Fit bin              \n"
+	    << " #       range     | FMD1i  FMD2i  FMD2o  FMD3i  FMD3o"
+    // << "----+-----+++------+-----------------------------------"
+	    << std::endl;
+  size_t oldPrec = std::cout.precision();
+  std::cout.precision(3);
+  for (Int_t i = 1; i <= nBins; i++) { 
+    std::cout << std::setw(4) << i << " " 
+	      << std::setw(5) << std::showpos << fEtaAxis.GetBinLowEdge(i)
+	      << " - " << std::setw(5) << fEtaAxis.GetBinUpEdge(i) 
+	      << std::noshowpos << " | ";
+    for (Int_t j = 0; j < 5; j++) {
+      Int_t bin = CACHE(i,j,nBins);
+      if (bin <= 0) std::cout << "       ";
+      else          std::cout << std::setw(5) << bin 
+			      << (bin == i ? ' ' : '*') << ' ';
+    }
+    std::cout << std::endl;
+  }
+  std::cout.precision(oldPrec);
 }
 
 //____________________________________________________________________

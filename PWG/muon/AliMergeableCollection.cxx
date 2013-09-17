@@ -33,6 +33,7 @@ ClassImp(AliMergeableCollection)
 #include "AliLog.h"
 #include "Riostream.h"
 #include "TError.h"
+#include "TGraph.h"
 #include "THashList.h"
 #include "TKey.h"
 #include "TMap.h"
@@ -84,6 +85,49 @@ AliMergeableCollection::Adopt(const char* identifier, TObject* obj)
     if ( ! sidentifier.BeginsWith("/") ) sidentifier.Prepend("/");
   }
   return InternalAdopt(sidentifier.Data(),obj);
+}
+
+//_____________________________________________________________________________
+Bool_t AliMergeableCollection::Attach(AliMergeableCollection* mc, const char* identifier, Bool_t pruneFirstIfAlreadyExists)
+{
+  /// Attach an already existing mergeable collection to this one.
+  /// It is attached at level identifier/
+  /// We take ownership of mc
+  /// If identifier is already existing we kill it if pruneFirstIfAlreadyExists is kTRUE
+  /// (and attach mc) otherwise we return kFALSE (and do *not* attach mc)
+  
+  THashList* hlist = dynamic_cast<THashList*>(Map()->GetValue(identifier));
+  
+  if (hlist)
+  {
+    if (!pruneFirstIfAlreadyExists)
+    {
+      AliError(Form("%s already exist. Will not overwrite it.",identifier));
+      return kFALSE;
+    }
+    else
+    {
+      Int_t n = Prune(identifier);
+      if (!n)
+      {
+        AliError(Form("Could not prune pre-existing %s",identifier));
+        return kFALSE;        
+      }
+    }
+  }
+
+  TIter next(mc->fMap);
+  TObjString* str;
+  
+  while ( ( str = static_cast<TObjString*>(next())) )
+  {
+    THashList* hl = dynamic_cast<THashList*>(mc->Map()->GetValue(str->String()));
+    TString newid(Form("/%s%s",identifier,str->String().Data()));
+    newid.ReplaceAll("//","/");                  
+    Map()->Add(new TObjString(newid.Data()),hl);
+  }
+  
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -403,7 +447,7 @@ AliMergeableCollection::GetObject(const char* identifier,
 }
 
 //_____________________________________________________________________________
-TObject* AliMergeableCollection::GetSum(const char* idPattern)
+TObject* AliMergeableCollection::GetSum(const char* idPattern) const
 {
   /// Sum objects
   /// The pattern must be in the form:
@@ -901,17 +945,43 @@ AliMergeableCollection::Print(Option_t* option) const
       {
         obj = list->FindObject(objName.Data());
         if ( IsEmptyObject(obj) && ! fMustShowEmptyObject ) continue;
+        
         if (!identifierPrinted)
         {
           cout << identifier.Data() << endl;
           identifierPrinted = kTRUE;
         }
-        cout << Form("    (%s) %s", obj->ClassName(), obj->GetName());
-        if ( obj->IsA()->InheritsFrom(TH1::Class()) ) {
+        
+        TString extra;
+        TString warning("   ");
+        
+        if ( obj->IsA()->InheritsFrom(TH1::Class()) )
+        {
+          
           TH1* histo = static_cast<TH1*> (obj);
-          cout << Form(" %s Entries=%d Sum=%g",histo->GetTitle(),Int_t(histo->GetEntries()),histo->GetSumOfWeights());
+          extra.Form("%s | Entries=%d Sum=%g",histo->GetTitle(),Int_t(histo->GetEntries()),histo->GetSumOfWeights());
         }
-        cout << endl;
+        else if ( obj->IsA()->InheritsFrom(TGraph::Class()) )
+        {
+          TGraph* graph = static_cast<TGraph*> (obj);
+          if ( ! TMath::Finite(graph->GetMean(2) ) )
+          {
+            warning = " ! ";
+          }
+          extra.Form("%s | Npts=%d Mean=%g RMS=%g",graph->GetTitle(),graph->GetN(),
+                       graph->GetMean(2),graph->GetRMS(2));
+          
+        }
+        
+        std::cout << Form("    (%s) %s %s", obj->ClassName(),
+                     warning.Data(),
+                          obj->GetName());
+        
+        if ( extra.Length() )
+        {
+          std::cout << " | " << extra.Data();
+        }
+        std::cout << std::endl;
       }
     }
     if (!identifierPrinted && sreObjectName=="-" )
@@ -1026,6 +1096,30 @@ AliMergeableCollection::EstimateSize(Bool_t show) const
   } // loop on objects
 
   return size;
+}
+
+//_____________________________________________________________________________
+Int_t AliMergeableCollection::Prune(const char* identifier)
+{
+  // Delete all objects which match the beginning of the identifier
+  // returns the number of entries removed from the Map()
+  // (not to be confused with the number of leaf objects removed)
+  //
+  
+  TIter next(Map());
+  TObjString* key;
+  Int_t ndeleted(0);
+  
+  while ( ( key = static_cast<TObjString*>(next())) )
+  {
+      if (key->String().BeginsWith(identifier))
+      {
+        Bool_t ok = Map()->DeleteEntry(key);
+        if (ok) ++ndeleted;
+      }
+  }
+  
+  return ndeleted;
 }
 
 //_____________________________________________________________________________

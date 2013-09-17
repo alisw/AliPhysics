@@ -73,7 +73,7 @@ AliAnalysisKinkESDMC::AliAnalysisKinkESDMC(const char *name)
            fPosiKinKBgZX(0), fPosiKinKBgXY(0),  fMinvPi(0),fMinvKa(0),fMinvPr(0),
                         fTPCSgnlPtpc(0),
        fTPCMomNSgnl(0),  fMothKinkMomSgnl(0), fNSigmTPC(0),  fTPCSgnlKinkDau(0),fcodeDau1(0),fcodeDau2(0), fMothKinkMomSgnlD(0), 
-     fInvMassMuNuAll(0),   fInvMassMuNuPt(0), fRatioCrossedRows(0), fRatioCrossedRowsKink(0), fRadiusPt(0), fRadiusPtcln(0),
+     fInvMassMuNuAll(0),   fInvMassMuNuPt(0), fInvMassMuNuPtAll(0), fRatioCrossedRows(0), fRatioCrossedRowsKink(0), fRadiusPt(0), fRadiusPtcln(0),
       fRadiusPtKaon(0), fRadiusPtPion(0), fRadiusPtFake(0), fPtCut1(0), fPtCut2(0), fPtCut3(0),  fAngMomKKinks(0),     
   flengthMCK(0), flifetiMCK(0), flifetim2(0), fLHelESDK(0),flifeInt(0), flifeYuri(0), flenYuri(0), flenTrRef(0),flifeSmall(0), flifetime(0),flifTiESDK(0),  
     flifeKink(), flenHelx(0), fradPtRapMC(0), fradPtRapDC(0), fradPtRapESD(0), fRadNclcln(0),
@@ -157,7 +157,8 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
 	fradMC= new TH1F("fradMC", "radius  K generated",100,0.,1000.); 
 	fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi", 44, gPt7K0  ); 
 	fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",44 , gPt7K0  ); 
-	fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.1, 1.0); 
+	//fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.1, 1.0); 
+	fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",600,0.1, 0.7); 
 	fgenPtEtR= new TH1F("fgenPtEtR", "P_{T}Kaon distribution", 44, gPt7K0  ); 
 	fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution",44, gPt7K0   ); 
 	fcodeH   = new TH2F("fcodeH", "code vrs dcode dist. kinks,K",100,0.,2500.,100,0.,2500.);
@@ -235,8 +236,11 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
 	fcodeDau1   = new TH2F("fcodeDau1", "code vrs dcode dist. kinks,K",100,0.,500.,100,0.,500.);
 	fcodeDau2   = new TH2F("fcodeDau2", "code vrs dcode dist. kinks,K",100,0.,500.,100,0.,500.);
     fMothKinkMomSgnlD = new TH2F("fMothKinkMomSgnlD","TPC signal de/dx Mom TPC,Kink  ",100,0.0,250.,100, 0., 250.    );
-	fInvMassMuNuAll = new TH1F("fInvMassMuNuAll","Invar from kink->mu+netrino decay",180,0.1, 1.0); 
-	fInvMassMuNuPt  = new TH2F("fInvMassMuNuPt","Invar from kink->mu+netrino decay vs Pt",180,0.1, 1.0, 100, 0. , 10.); 
+	//fInvMassMuNuAll = new TH1F("fInvMassMuNuAll","Invar from kink->mu+netrino decay",180,0.1, 1.0); 
+	fInvMassMuNuAll = new TH1F("fInvMassMuNuAll","Invar from kink->mu+netrino decay",600,0.1, 0.7); //  22/8/2013 
+	//fInvMassMuNuPt  = new TH2F("fInvMassMuNuPt","Invar from kink->mu+netrino decay vs Pt",180,0.1, 1.0, 100, 0. , 10.); 
+	fInvMassMuNuPt  = new TH2F("fInvMassMuNuPt","Invar from kink->mu+netrino decay vs Pt",600,0.1, 0.7, 100, 0. , 10.); //  22/8/2013
+	fInvMassMuNuPtAll  = new TH2F("fInvMassMuNuPtAll","Invar from kink->mu+netrino decay vs Pt",600,0.1, 0.7, 100, 0. , 10.); //  22/8/2013
       fRatioCrossedRows = new TH1F("fRatioCrossedRows","Ratio crossed rows  in TPC",20,0.0,1.0);
   fRatioCrossedRowsKink = new TH1F("fRatioCrossedRowsKink","Ratio crossed rows  in TPC for kinks",20,0.0,1.0);
   fRadiusPt =new TH2F("fRadiusPt","radius vs pt  ",80, 90.,250.,100, 0.,10.              );
@@ -367,6 +371,7 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
    fListOfHistos->Add(fMothKinkMomSgnlD);
    fListOfHistos->Add(fInvMassMuNuAll);
    fListOfHistos->Add(fInvMassMuNuPt);
+   fListOfHistos->Add(fInvMassMuNuPtAll);
    fListOfHistos->Add(fRatioCrossedRows);
    fListOfHistos->Add(fRatioCrossedRowsKink);
    fListOfHistos->Add(fRadiusPt);
@@ -1054,6 +1059,7 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
          Double_t invariantMassKpi= TMath::Sqrt((energyDaughterPi+p3Daughter)*(energyDaughterPi+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
          Double_t invariantMassKK = TMath::Sqrt((energyDaughterKa+p3Daughter)*(energyDaughterKa+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
          fInvMassMuNuAll ->Fill(invariantMassKmu);
+         fInvMassMuNuPtAll ->Fill(invariantMassKmu,  trackPt);
            //    20/4 testRadiusPt->Fill( kink->GetR(), track->Pt()); //
   
 

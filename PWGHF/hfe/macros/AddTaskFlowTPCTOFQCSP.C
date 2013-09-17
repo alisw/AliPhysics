@@ -17,9 +17,8 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
                                               Float_t centrMin ,
                                               Float_t centrMax ,
                                               Double_t InvmassCut,
-                                              Bool_t op_ang = kTRUE,
-                                              Double_t op_angle_cut,
                                               Int_t Trigger,
+                                              Double_t pTCut,
                                               Double_t minTPCnsigma,
                                               Double_t maxTPCnsigma,
                                               Double_t minTOFnSigma,
@@ -28,6 +27,7 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
                                               Int_t TPCS,
                                               Int_t Vz,
                                               AliHFEextraCuts::ITSPixel_t pixel,
+                                              Bool_t PhotonicElectronDCA = kTRUE,
                                               Bool_t PhiCut = kFALSE,
                                               Bool_t QaPidSparse = kFALSE,
                                               const char *Cent = "V0M",
@@ -37,7 +37,9 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
                                               Int_t harmonic = 2,
                                               Bool_t shrinkSP = kTRUE,
                                               Bool_t debug = kFALSE,
-                                              Int_t RPFilterBit = 1
+                                              Int_t RPFilterBit = 1,
+                                              Bool_t op_ang = kFALSE,
+                                              Double_t op_angle_cut = 3.
                                               )
 
 {
@@ -71,12 +73,14 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
 // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
   taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
   taskHFE->SetInvariantMassCut(InvmassCut);
+  taskHFE->SetpTCuttrack(pTCut);
   taskHFE->SetTrigger(Trigger);
   taskHFE->SetTPCS(TPCS);
   taskHFE->SetVz(Vz);
   taskHFE->SetIDCuts(minTPCnsigma, maxTPCnsigma, minTOFnSigma, maxTOFnSigma);
   taskHFE->SetQAPIDSparse(QaPidSparse);
   taskHFE->SetPhiCut(PhiCut);
+  taskHFE->SelectPhotonicElectronMethod(PhotonicElectronDCA);
   taskHFE->SetOpeningAngleflag(op_ang);
   taskHFE->SetOpeningAngleCut(op_angle_cut);
     
@@ -151,19 +155,19 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
   mgr->AddTask(taskHFE);
     
     if (QC) {  // add qc tasks
-        TPCTOF::AddQCmethod(Form("QCTPCin_%s",uniqueID.Data()), harmonic, flowEvent,  debug ,uniqueID, -0.8, -0.0, 0.0, 0.8,false,POIfilterVZERO);
+        TPCTOFnew::AddQCmethod(Form("QCTPCin_%s",uniqueID.Data()), harmonic, flowEvent,  debug ,uniqueID, -0.8, -0.0, 0.0, 0.8,false,POIfilterVZERO);
         if(debug) cout << "    --> Hanging QC task ...succes! "<< endl;
     }   
     if (SP_TPC) {  // add sp subevent tasks
-        TPCTOF::AddSPmethod(Form("SPTPCQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, false, POIfilterRight);
+        TPCTOFnew::AddSPmethod(Form("SPTPCQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, false, POIfilterRight);
         if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-        TPCTOF::AddSPmethod(Form("SPTPCQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, false, POIfilterLeft);
+        TPCTOFnew::AddSPmethod(Form("SPTPCQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, false, POIfilterLeft);
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
     if (VZERO_SP) {  // add sp subevent tasks
-        TPCTOF::AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
+        TPCTOFnew::AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
         if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-        TPCTOF::AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent,  false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
+        TPCTOFnew::AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
 
@@ -235,7 +239,7 @@ AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEStandardCuts(Int_t minTPCCulster,AliHFEe
 
 //_____________________________________________________________________________
 
-namespace TPCTOF{
+namespace TPCTOFnew{
     //_____________________________________________________________________________
     void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool bEP, bool shrink = false, bool debug, TString uniqueID,Bool_t VZERO_SP = kFALSE,  AliFlowTrackSimpleCuts* POIfilter)
     {

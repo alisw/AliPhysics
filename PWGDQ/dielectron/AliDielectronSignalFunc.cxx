@@ -18,11 +18,88 @@
 //                                                                       //
 //                                                                       //
 /*
-Dielectron signal extraction class using functions as input.
 
-A function to describe the signal as well as one to describe the background
-has to be deployed by the user. Alternatively on of the default implementaions
-can be used.
+  Class used for extracting the signal from an invariant mass spectrum.
+  It implements the AliDielectronSignalBase and -Ext classes and it uses user provided
+  functions to fit the spectrum with a combined signa+background fit.
+  Used invariant mass spectra are provided via an array of histograms. There are serveral method
+  to estimate the background and to extract the raw yield from the background subtracted spectra.
+
+  Example usage:
+
+  AliDielectronSignalFunc *sig = new AliDielectronSignalFunc();
+
+
+  1) invariant mass input spectra
+
+  1.1) Assuming a AliDielectronCF container as data format (check class for more details)
+  AliDielectronCFdraw *cf = new AliDielectronCFdraw("path/to/the/output/file.root");
+  TObjArray *arrHists = cf->CollectMinvProj(cf->FindStep("Config"));
+
+  1.2) Assuming a AliDielectronHF grid as data format (check class for more details)
+  AliDielectronHFhelper *hf = new AliDielectronHFhelper("path/to/the/output/file.root", "ConfigName");
+  TObjArray *arrHists = hf->CollectHistos(AliDielectronVarManager::kM);
+
+  1.3) Assuming a single histograms
+  TObjArray *histoArray = new TObjArray();
+  arrHists->Add(signalPP);            // add the spectrum histograms to the array
+  arrHists->Add(signalPM);            // the order is important !!!
+  arrHists->Add(signalMM);
+
+
+  2) background estimation
+
+  2.1) set the method for the background estimation (methods can be found in AliDielectronSignalBase)
+  sig->SetMethod(AliDielectronSignalBase::kFitted);
+  2.2) rebin the spectras if needed
+  //  sig->SetRebin(2);
+  2.3) add any background function you like
+  TF1 *fB = new TF1("fitBgrd","pol3",minFit,maxFit);
+
+
+  3) configure the signal extraction
+
+  3.1) chose one of the signal functions (MCshape, CrystalBall, Gauss)
+  TF1 *fS = new TF1("fitSign",AliDielectronSignalFunc::PeakFunCB,minFit,maxFit,5); // has 5 parameters
+  //  TF1 *fS = new TF1("fitSign",AliDielectronSignalFunc::PeakFunGaus,minFit,maxFit,3); // has 3 parameters
+  //  sig->SetMCSignalShape(hMCsign);
+  //  TF1 *fS = new TF1("fitSign",AliDielectronSignalFunc::PeakFunMC,minFit,maxFit,1); // requires a MC shape
+  3.2) set the method for the signal extraction (methods can be found in AliDielectronSignalBase)
+  depending on the method serveral inputs are needed (e.g. MC shape, PDG code of the particle of interest)
+  //  sig->SetParticleOfInterest(443); //default is jpsi
+  //  sig->SetMCSignalShape(signalMC);
+  //  sig->SetIntegralRange(minInt, maxInt);
+  sig->SetExtractionMethod(AliDielectronSignal::BinCounting); // this is the default
+
+
+  4) combined fit of bgrd+signal
+
+  4.1) combine the two functions
+  sig->CombineFunc(fS,fB);
+  4.2) apply fitting ranges and the fit options
+  sig->SetFitRange(minFit, maxFit);
+  sig->SetFitOption("NR");
+
+
+  5) start the processing
+
+  sig->Process(arrHists);
+  sig->Print(""); // print values and errors extracted
+
+
+  6) access the spectra and values created
+
+  6.1) standard spectra as provided filled in AliDielectronSignalExt
+  TH1F *hsign = (TH1F*) sig->GetUnlikeSignHistogram();  // same as the input (rebinned)
+  TH1F *hbgrd = (TH1F*) sig->GetBackgroundHistogram();  // filled histogram with fitBgrd
+  TH1F *hextr = (TH1F*) sig->GetSignalHistogram();      // after backgound extraction (rebinned)
+  TObject *oPeak = (TObject*) sig->GetPeakShape();      // can be a TF1 or TH1 depending on the method
+  6.2) flow spectra
+  TF1 *fFitSign  = sig->GetCombinedFunction();                // combined fit function
+  TF1 *fFitExtr  = sig->GetSignalFunction();                  // signal function
+  TF1 *fFitBgrd  = sig->GetBackgroundFunction();              // background function
+  6.3) access the extracted values and errors
+  sig->GetValues();     or GetErrors();                 // yield extraction
 
 */
 //                                                                       //
@@ -44,7 +121,7 @@ can be used.
 
 ClassImp(AliDielectronSignalFunc)
 
-TH1F* AliDielectronSignalFunc::fgHistSimPM=0x0;
+//TH1F* AliDielectronSignalFunc::fgHistSimPM=0x0;
 TF1*  AliDielectronSignalFunc::fFuncSignal=0x0;
 TF1*  AliDielectronSignalFunc::fFuncBackground=0x0;
 Int_t AliDielectronSignalFunc::fNparPeak=0;
@@ -52,13 +129,12 @@ Int_t AliDielectronSignalFunc::fNparBgnd=0;
 
 
 AliDielectronSignalFunc::AliDielectronSignalFunc() :
-AliDielectronSignalBase(),
+AliDielectronSignalExt(),
 fFuncSigBack(0x0),
 fParMass(1),
 fParMassWidth(2),
 fFitOpt("SMNQE"),
 fUseIntegral(kFALSE),
-fPolDeg(0),
 fDof(0),
 fChi2Dof(0.0)
 {
@@ -70,13 +146,12 @@ fChi2Dof(0.0)
 
 //______________________________________________
 AliDielectronSignalFunc::AliDielectronSignalFunc(const char* name, const char* title) :
-AliDielectronSignalBase(name, title),
+AliDielectronSignalExt(name, title),
 fFuncSigBack(0x0),
 fParMass(1),
 fParMassWidth(2),
 fFitOpt("SMNQE"),
 fUseIntegral(kFALSE),
-fPolDeg(0),
 fDof(0),
 fChi2Dof(0.0)
 {
@@ -105,15 +180,30 @@ void AliDielectronSignalFunc::Process(TObjArray * const arrhist)
   case kFitted :
     ProcessFit(arrhist);
     break;
-    
+
+  case kLikeSignFit :
+    ProcessFitLS(arrhist);
+    break;
+
+  case kEventMixingFit :
+    ProcessFitEM(arrhist);
+    break;
+
   case kLikeSign :
-    ProcessLS(arrhist);
+  case kLikeSignArithm :
+  case kLikeSignRcorr:
+  case kLikeSignArithmRcorr:
+    ProcessLS(arrhist);    // process like-sign subtraction method
     break;
-    
+
   case kEventMixing :
-    ProcessEM(arrhist);
+    ProcessEM(arrhist);    // process event mixing method
     break;
-    
+
+  case kRotation:
+    ProcessRotation(arrhist);
+    break;
+
   default :
     AliError("Background substraction method not known!");
   }
@@ -138,7 +228,7 @@ Double_t AliDielectronSignalFunc::PeakFunMC(const Double_t *x, const Double_t *p
     return 0.0;
   }
   
-  return (par[0+fNparBgnd] * hPeak->GetBinContent(idx));
+  return (par[0] * hPeak->GetBinContent(idx));
   
 }
 
@@ -146,11 +236,11 @@ Double_t AliDielectronSignalFunc::PeakFunMC(const Double_t *x, const Double_t *p
 Double_t AliDielectronSignalFunc::PeakFunCB(const Double_t *x, const Double_t *par) {
   // Crystal Ball fit function
   
-  Double_t alpha = par[0+fNparBgnd];
-  Double_t     n = par[1+fNparBgnd];
-  Double_t meanx = par[2+fNparBgnd];
-  Double_t sigma = par[3+fNparBgnd];
-  Double_t    nn = par[4+fNparBgnd];
+  Double_t alpha = par[0];
+  Double_t     n = par[1];
+  Double_t meanx = par[2];
+  Double_t sigma = par[3];
+  Double_t    nn = par[4];
    
   Double_t a = TMath::Power((n/TMath::Abs(alpha)), n) * TMath::Exp(-.5*alpha*alpha);
   Double_t b = n/TMath::Abs(alpha) - TMath::Abs(alpha);
@@ -170,13 +260,13 @@ Double_t AliDielectronSignalFunc::PeakFunCB(const Double_t *x, const Double_t *p
 //______________________________________________________________________________
 Double_t AliDielectronSignalFunc::PeakFunGaus(const Double_t *x, const Double_t *par) {
   // Gaussian fit function
-
-  Double_t     n = par[0+fNparBgnd];
-  Double_t  mean = par[1+fNparBgnd];
-  Double_t sigma = par[2+fNparBgnd];
+  //printf("fNparBgrd %d \n",fNparBgnd);
+  Double_t     n = par[0];
+  Double_t  mean = par[1];
+  Double_t sigma = par[2];
   Double_t    xx = x[0];
 
-  return ( n*exp(-0.5*TMath::Power((xx-mean)/sigma,2)) );
+  return ( n*TMath::Exp(-0.5*TMath::Power((xx-mean)/sigma,2)) );
 }
 
 //______________________________________________
@@ -204,35 +294,43 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
   fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   TFitResultPtr pmFitPtr = fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   //TFitResult *pmFitResult = pmFitPtr.Get(); // used only with TF1Helper
-  fFuncBackground->SetParameters(fFuncSigBack->GetParameters());
-  fFuncSignal->SetParameters(fFuncSigBack->GetParameters()+fFuncBackground->GetNpar());
-  //  fFuncBackground->SetParameters(fFuncSigBack->GetParameters()+fFuncSignal->GetNpar());
-  
+  //fFuncBackground->SetParameters(fFuncSigBack->GetParameters());
+  fFuncSignal->SetParameters(fFuncSigBack->GetParameters());
+  fFuncBackground->SetParameters(fFuncSigBack->GetParameters()+fFuncSignal->GetNpar());
+
+  // fill the background spectrum
+  fHistBackground->Eval(fFuncBackground);
+  // set the error for the background histogram
+  fHistBackground->Fit(fFuncBackground,"0qR","",fFitMin,fFitMax);
+  Double_t inte  = fFuncBackground->IntegralError(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
+  Double_t binte = inte / TMath::Sqrt((fHistDataPM->FindBin(fIntMax)-fHistDataPM->FindBin(fIntMin))+1);
+  for(Int_t iBin=fHistDataPM->FindBin(fIntMin); iBin<=fHistDataPM->FindBin(fIntMax); iBin++) {
+    fHistBackground->SetBinError(iBin, binte);
+  }
+
   for(Int_t iBin=1; iBin<=fHistDataPM->GetXaxis()->GetNbins(); iBin++) {
-    Double_t m = fHistDataPM->GetBinCenter(iBin);
+    //    Double_t m = fHistDataPM->GetBinCenter(iBin);
     Double_t pm = fHistDataPM->GetBinContent(iBin);
     Double_t epm = fHistDataPM->GetBinError(iBin);
-    Double_t bknd = fFuncBackground->Eval(m);
-    Double_t ebknd = 0;
+    Double_t bknd = fHistBackground->GetBinContent(iBin);
+    Double_t ebknd = fHistBackground->GetBinError(iBin);
     for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
-/* TF1Helper problem on alien compilation
-      for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
-        TF1 gradientIpar("gradientIpar",
-                         ROOT::TF1Helper::TGradientParFunction(iPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
-        TF1 gradientJpar("gradientJpar",
-                         ROOT::TF1Helper::TGradientParFunction(jPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
-        ebknd += pmFitResult->CovMatrix(iPar,jPar)*
-          gradientIpar.Eval(m)*gradientJpar.Eval(m)*
-          (iPar==jPar ? 1.0 : 2.0);
-      }
-*/
+      /* TF1Helper problem on alien compilation
+	 for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
+	 TF1 gradientIpar("gradientIpar",
+	 ROOT::TF1Helper::TGradientParFunction(iPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
+	 TF1 gradientJpar("gradientJpar",
+	 ROOT::TF1Helper::TGradientParFunction(jPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
+	 ebknd += pmFitResult->CovMatrix(iPar,jPar)*
+	 gradientIpar.Eval(m)*gradientJpar.Eval(m)*
+	 (iPar==jPar ? 1.0 : 2.0);
+	 }
+      */
     }
     Double_t signal = pm-bknd;
     Double_t error = TMath::Sqrt(epm*epm+ebknd);
     fHistSignal->SetBinContent(iBin, signal);
     fHistSignal->SetBinError(iBin, error);
-    fHistBackground->SetBinContent(iBin, bknd);
-    fHistBackground->SetBinError(iBin, TMath::Sqrt(ebknd));
   }
   
   if(fUseIntegral) {
@@ -254,7 +352,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
     }
     // background
     fValues(1) = fFuncBackground->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
-    fErrors(1) = 0;
+    fErrors(1) = fFuncBackground->IntegralError(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
     for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
 /* TF1Helper problem on alien compilation
       for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
@@ -275,8 +373,8 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
                                                fHistSignal->FindBin(fIntMax), fErrors(0));
     // background
     fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
-      fHistBackground->FindBin(fIntMax),
-      fErrors(1));
+						   fHistBackground->FindBin(fIntMax),
+						   fErrors(1));
   }
   // S/B and significance
   SetSignificanceAndSOB();
@@ -292,7 +390,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
 }
 
 //______________________________________________
-void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
+void AliDielectronSignalFunc::ProcessFitLS(TObjArray * const arrhist) {
   //
   // Substract background using the like-sign spectrum
   //
@@ -397,7 +495,7 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
 }
 
 //______________________________________________
-void AliDielectronSignalFunc::ProcessEM(TObjArray * const arrhist) {
+void AliDielectronSignalFunc::ProcessFitEM(TObjArray * const arrhist) {
   //
   // Substract background with the event mixing technique
   //
@@ -556,7 +654,7 @@ void AliDielectronSignalFunc::CombineFunc(TF1 * const peak, TF1 * const bgnd) {
   fNparPeak     = fFuncSignal->GetNpar();
   fNparBgnd     = fFuncBackground->GetNpar();
 
-  fFuncSigBack = new TF1("BgndPeak",AliDielectronSignalFunc::PeakBgndFun, 0.,5.,fNparPeak+fNparBgnd);
+  fFuncSigBack = new TF1("BgndPeak",AliDielectronSignalFunc::PeakBgndFun, fFitMin,fFitMax, fNparPeak+fNparBgnd);
   return;
 }
 
@@ -565,6 +663,6 @@ Double_t AliDielectronSignalFunc::PeakBgndFun(const Double_t *x, const Double_t 
   //
   // merge peak and bgnd functions
   //
-  return (fFuncBackground->EvalPar(x,par) + fFuncSignal->EvalPar(x,par));
+  return (fFuncSignal->EvalPar(x,par) + fFuncBackground->EvalPar(x,par+fNparPeak));
 }
 

@@ -6,8 +6,8 @@
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="simPbPb", // "sim" or "real" etc.
-	       const char *pluginRunMode="full", // "test" or "full" or "terminate"
-	       const char *det = "EMCal",int production = 1, Bool_t withtender = kTRUE) // "PHOS" or "EMCAL" or EMCalDetail
+	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
+	       const char *det = "EMCal",int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts==0) // "PHOS" or "EMCAL" or EMCalDetail
 {
   TStopwatch timer;
   timer.Start();
@@ -108,16 +108,25 @@ void runCaloEt(bool submit = false, // true or false
   }
   TString outputName = "Et.ESD." + dataStrName + "." + detStr + ".root";
   TString outputDir = "totEt" + dataStr + detStr+suffix;
-
+  if(!withNonlinearity){
+    outputDir +="NoNonlinearity";
+  }
+  if(withReclusterizing){
+    outputDir +="WithReclusterizing";
+  }
+  if(trackmatchcuts!=0){
+    outputDir +=Form("TrackMatchCut%i",trackmatchcuts);
+  }
 
   cout << " taskName " << taskName
        << " outputName " << outputName 
        << " outputDir (alien) " << outputDir << endl;
   mgr->SetCommonFileName(outputName.Data());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer, outputName);
+  if(!isPb){ cout<<"I am not PbPb!!"<<endl;}
   if (submit) {
     gROOT->LoadMacro("CreateAlienHandlerCaloEtSim.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode, production,detStr.Contains("PHOS"),!isPb,dataStr.Contains("real"));  
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode, production,detStr.Contains("PHOS"),!isPb,dataStr.Contains("real"),runnum);  
     if (!alienHandler) return;
     mgr->SetGridHandler(alienHandler);
   }
@@ -133,13 +142,77 @@ void runCaloEt(bool submit = false, // true or false
       TString fileLocation = "/data/LHC10h8/137161/999/AliESDs.root";//"/home/dsilverm/data/E_T/" + dataStr + "/dir/AliESDs.root";
       cout << "fileLocation " << fileLocation.Data() << endl; 
 //       chain->Add(fileLocation.Data()); // link to local test file
-      chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
-       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
-       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
+//       chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
+//       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
+//       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
+chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
+chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/006/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/007/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/008/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/009/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/011/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/013/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/014/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/015/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/016/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/017/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/018/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/019/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/020/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/021/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/022/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/023/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/024/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/025/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/026/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/027/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/028/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/029/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/030/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/031/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/032/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/033/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/034/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/035/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/036/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/037/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/038/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/039/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/040/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/041/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/042/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/043/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/044/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/045/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/046/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/047/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/048/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/049/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/050/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/051/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/052/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/053/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/054/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/055/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/056/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/057/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/058/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/059/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/060/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/061/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/062/AliESDs.root");
+
     }
     else { // pp
       cout<<"adding pp simulation file"<<endl;
-      chain->Add("/data/LHC10d15/1821/AliESDs.root");
+      chain->Add("/data/LHC11b1b/999/AliESDs.root");
+      //chain->Add("/data/LHC11b1a/999/AliESDs.root");
+      //chain->Add("/data/LHC10d15/1821/AliESDs.root");
       //chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
       //chain->Add("/home/dsilverm/data/E_T/sim/LHC10d1/117222/100/AliESDs.root"); // link to local test file
     }
@@ -179,7 +252,7 @@ void runCaloEt(bool submit = false, // true or false
 //Gets calibration factors from grid if jobs are to be submitted to the grid
 //   	AliEMCALRecParam* pars = GetOCDBRecParam( 137161, "PbPb", submit);
 
-    AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0);
+    AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0,withNonlinearity,withReclusterizing,trackmatchcuts);
     //this also likely needs modification
 //     tender->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kEMCEGA | AliVEvent::kEMC1 | AliVEvent::kEMC7 );
 //     if(submit){tender->SetDefaultCDBStorage("raw://");} //uncomment if you work on grid
@@ -221,7 +294,14 @@ void runCaloEt(bool submit = false, // true or false
    }
   }
 
-
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  //AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
+//                                     Bool_t tuneOnData=kFALSE, Int_t recoPass=2,
+//                                     Bool_t cachePID=kFALSE, TString detResponse="",
+//                                     Bool_t useTPCEtaCorrection = kFALSE);
+  AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(isMc,kTRUE,kTRUE,2);
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+  AddTaskPIDqa();
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
 
@@ -231,6 +311,7 @@ void runCaloEt(bool submit = false, // true or false
 
   AliAnalysisTaskTotEt *task1 = new AliAnalysisTaskTotEt(taskName);
   task1->SetMcData(isMc);//necessary to tell the task to basically accept all MC events.
+  task1->SelectCollisionCandidates(AliVEvent::kMB ) ;
   mgr->AddTask(task1);
 
   

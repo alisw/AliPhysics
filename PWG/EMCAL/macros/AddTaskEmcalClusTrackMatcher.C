@@ -29,10 +29,9 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   //-------------------------------------------------------
   TString name(Form("ClusTrackMatcher_%s_%s",nTracks,nClusters));
   AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name, createHisto);
-  matcher->SetTracksName(nTracks);
-  matcher->SetClusName(nClusters);
+  matcher->AddParticleContainer(nTracks);
+  matcher->AddParticleContainer(nClusters);
   matcher->SetMaxDistance(maxDist);
-  matcher->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

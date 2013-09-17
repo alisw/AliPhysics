@@ -32,13 +32,17 @@ public:
    virtual ~AliAnalysisTaskV0ChCorrelations();
 
    // Setting the global variables
-   void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
-   void SetDcaDToPV(Float_t DcaDToPV = 0.5) {fDcaDToPV = DcaDToPV;}
-   void SetDcaV0D(Float_t DcaV0D = 0.1) {fDcaV0D = DcaV0D;}
+   void SetAnalysisMC(Bool_t AnalysisMC = kTRUE) {fAnalysisMC = AnalysisMC;}
+   void SetDcaDToPV(Float_t DcaDToPV = 0.1) {fDcaDToPV = DcaDToPV;}
+   void SetDcaV0D(Float_t DcaV0D = 1.0) {fDcaV0D = DcaV0D;}
+   void SetWithChCh(Bool_t WithChCh = kTRUE) {fWithChCh = WithChCh;}
+   void SetOStatus(Int_t OStatus = 1) {fOStatus = OStatus;}
 
    // Getting the global variables
    Float_t GetDcaDToPV() { return fDcaDToPV; }
    Float_t GetDcaV0D() { return fDcaV0D; }
+   Bool_t GetWithChCh() { return fWithChCh; }
+   Int_t GetOStatus() { return fOStatus; }
 
    virtual void     UserCreateOutputObjects();
    virtual void     UserExec(Option_t *option);
@@ -46,7 +50,8 @@ public:
 
    Bool_t IsMyGoodPrimaryTrack(const AliAODTrack* aodtrack);
    Bool_t IsMyGoodDaughterTrack(const AliAODTrack* aodtrack);
-   Bool_t IsMyGoodV0(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2);
+   Bool_t IsMyGoodV0(const AliAODEvent* aod, const AliAODv0* aodv0, const AliAODTrack* tr1, const AliAODTrack* tr2, Int_t osta);
+   void RemovingInjectedSignal(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
 
 private:
 
@@ -60,6 +65,8 @@ private:
 
    Float_t         fDcaDToPV;   // DCA of the daughter to primary vertex
    Float_t         fDcaV0D;     // DCA between daughters
+   Bool_t          fWithChCh;   // Also do ChCh correlations - for the cross-check
+   Int_t           fOStatus;   // checks for online and offline V0s 
 
    TList           *fOutput;        // Output list
    AliPIDResponse  *fPIDResponse;   // PID response
@@ -73,13 +80,13 @@ private:
    
    THnSparseF	   *fHistdPhidEtaSib;   // dPhi vs. dEta, same event
    THnSparseF	   *fHistdPhidEtaMix;   // dPhi vs. dEta, mixed events
-   THnSparseF	   *fHistTrigSib;   // pt of trigger particles, same event
-   THnSparseF	   *fHistTrigMix;   // pt of trigger particles involved in mixing
+   THnSparseF	   *fHistNTrigSib;   // pt of trigger particles, same event
 
-   THnSparseF      *fHistMCPtCentTrig;   // pt vs. centrality of MC trigger particles
-   THnSparseF      *fHistRCPtCentTrig;   // pt vs. centrality of reconstructed trigger particles
+   THnSparseF    *fHistMCPtCentTrig;   // pt vs. centrality of MC trigger particles
+   THnSparseF    *fHistRCPtCentTrig;   // pt vs. centrality of reconstructed trigger particles
    TH2D	           *fHistMCPtCentAs;   // pt vs. centrality of MC associated particles
    TH2D	           *fHistRCPtCentAs;   // pt vs. centrality of reconstructed associated particles
+   TH2D	           *fHistRCPtCentAll;   // pt vs. centrality of reconstructed all primary+secondary particles
    
    TH1D			   *fHistTemp;   // temporary histogram for debugging
    TH1D			   *fHistTemp2;   // temporary histogram for debugging

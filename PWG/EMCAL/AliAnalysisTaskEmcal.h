@@ -12,8 +12,11 @@ class AliVCluster;
 class AliVTrack;
 class AliVParticle;
 class AliVCaloCells;
-class TH1F;
+class TH1;
+class TProfile;
 class AliEMCALGeometry;
+class AliGenPythiaEventHeader;
+class AliVCaloTrigger;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -39,11 +42,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   void                        UserExec(Option_t *option);
   void                        UserCreateOutputObjects();
+  Bool_t                      UserNotify();
 
-  void                        SetAnaType(EmcalAnaType type)                         { fAnaType           = type ;                         ; }
+  void                        SetAnaType(EmcalAnaType type)                         { fAnaType           = type                           ; }
+  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }                             
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
   void                        SetClusName(const char *n)                            { fCaloName          = n                              ; }
   void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
+  void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetClusPtCut(Double_t cut)                            { fClusPtCut         = cut                            ; }
   void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow    = min  ; fClusTimeCutUp = max    ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
@@ -68,6 +74,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMCParticleBitMap(UInt_t m)                         { fMCClusterBitMap   = m    ; fMCTrackBitMap     = m  ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
+  void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+  void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus)  const;
@@ -81,6 +89,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
   virtual Bool_t              Run()                                                { return kTRUE                 ; }
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
 
   EmcalAnaType                fAnaType;                    // analysis type
   BeamType                    fForceBeamType;              // forced beam type
@@ -90,6 +99,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TString                     fTracksName;                 // name of track collection
   TString                     fCaloName;                   // name of calo cluster collection
   TString                     fCaloCellsName;              // name of calo cell collection
+  TString                     fCaloTriggersName;           // name of calo triggers collection
   Double_t                    fMinCent;                    // min centrality for event selection
   Double_t                    fMaxCent;                    // max centrality for event selection
   Double_t                    fMinVz;                      // min vertex for event selection
@@ -116,13 +126,17 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   UInt_t                      fClusterBitMap;              // bit map of accepted clusters (non MC)
   UInt_t                      fMCTrackBitMap;              // bit map of accepted MC tracks
   UInt_t                      fMCClusterBitMap;            // bit map of accepted MC clusters
-  Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Bool_t                      fIsEmbedded;                 // trigger, embedded signal
-  Int_t                       fNcentBins;                  //!how many centrality bins
+  Bool_t                      fIsPythia;                   // trigger, if it is a PYTHIA production
+  Int_t                       fSelectPtHardBin;            // select one pt hard bin for analysis
+  Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
+  Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
+  Int_t                       fNcentBins;                  // how many centrality bins
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
   AliVCaloCells              *fCaloCells;                  //!cells
+  AliVCaloTrigger            *fCaloTriggers;               //!calo triggers
   Double_t                    fCent;                       //!event centrality
   Int_t                       fCentBin;                    //!event centrality bin
   Double_t                    fEPV0;                       //!event plane V0
@@ -131,16 +145,33 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fVertex[3];                  //!event vertex
   Int_t                       fNVertCont;                  //!event vertex number of contributors
   BeamType                    fBeamType;                   //!event beam type
+
+  // PYTHIA
+  AliGenPythiaEventHeader    *fPythiaHeader;               //!event Pythia header
+  Double_t                    fPtHard;                     //!event pt hard
+  Int_t                       fPtHardBin;                  //!event pt hard bin
+  Int_t                       fNTrials;                    //!event trials
+
+  // Histograms
   TList                      *fOutput;                     //!output list
 
-  TH1F                       *fHistCentrality;             //!Event centrality distribution
-  TH1F                       *fHistZVertex;                //!Z vertex position
-  TH1F                       *fHistEventPlane;             //!Event plane distribution
+  // PYTHIA
+  TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
+  TH1                        *fHistEventsAfterSel;         //!total number of events per pt hard bin after selection
+  TH1                        *fHistTrials;                 //!trials from pyxsec.root
+  TProfile                   *fHistXsection;               //!x section from pyxsec.root
+  TH1                        *fHistEvents;                 //!total number of events per pt hard bin
+  TH1                        *fHistPtHard;                 //!pt hard distribution
+
+  // General histograms
+  TH1                        *fHistCentrality;             //!Event centrality distribution
+  TH1                        *fHistZVertex;                //!Z vertex position
+  TH1                        *fHistEventPlane;             //!Event plane distribution
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 14) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 17) // EMCAL base analysis task
 };
 #endif

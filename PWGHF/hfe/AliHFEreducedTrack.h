@@ -66,6 +66,8 @@ class AliHFEreducedTrack : public TObject{
   
   Double_t DCAr() const { return fDCA[0]; }
   Double_t DCAz() const { return fDCA[1]; }
+  Double_t HFEImpactParameter() const { return fHFEImpactParam[0]; }
+  Double_t HFEImpactParameterResolution() const { return fHFEImpactParam[1]; }
   
   Bool_t TestFilterBit(Int_t ibit) const { return fFilterBit.TestBitNumber(ibit); }
   Int_t GetTrackID() const { return fTrackID; }
@@ -75,6 +77,8 @@ class AliHFEreducedTrack : public TObject{
   Bool_t IsTOFmismatch() const { return fTrackStatus.TestBitNumber(kTOFmismatch); }
   Bool_t HasEMCALpid() const { return fTrackStatus.TestBitNumber(kEMCALpid); }
   Bool_t IsDoubleCounted() const { return fTrackStatus.TestBitNumber(kDoubleCounted); }
+  Bool_t IsKinkMother() const { return fTrackStatus.TestBitNumber(kKinkMother); }
+  Bool_t IsKinkDaughter() const { return fTrackStatus.TestBitNumber(kKinkDaughter); }
   
   Int_t GetITSnclusters() const { return static_cast<Int_t>(fNclustersITS); }
   Int_t GetTPCnclusters() const { return static_cast<Int_t>(fNclustersTPC); }
@@ -87,6 +91,7 @@ class AliHFEreducedTrack : public TObject{
     if(nly > 5) return kFALSE;
     return fITSstatusMap.TestBitNumber(nly);
   }
+  Double_t GetChi2PerTPCcluster() const { return fChi2PerTPCcluster; }
   Int_t GetTPCnclusterPID() const { return static_cast<Int_t>(fNclustersTPCPID); }
   Int_t GetTPCnclustersAll() const { return static_cast<Int_t>(fNclustersTPCAll); }
   Int_t GetTPCcrossedRows() const { return static_cast<Int_t>(fTPCcrossedRows); }
@@ -107,6 +112,7 @@ class AliHFEreducedTrack : public TObject{
   Double_t GetTPCsigmaElCorrected() const { return fTPCsigmaElCorrected; }
   Double_t GetTOFsigmaEl() const { return fTOFsigmaEl; }
   Float_t GetTOFmismatchProb() const { return fTOFmismatchProb; }
+  Double_t GetITSsigmaEl() const { return fITSsigmaEl; }
   Double_t GetEMCALEoverP() const { return fEoverP; }
   Double_t GetEMCALSigmaEl() const { return fEMCALsigmaEl; }
   void GetEMCALShowerShape(Double_t showershape[4]) const{
@@ -136,10 +142,13 @@ class AliHFEreducedTrack : public TObject{
   void SetTOFmismatch() { fTrackStatus.SetBitNumber(kTOFmismatch); }
   void SetEMCALpid() { fTrackStatus.SetBitNumber(kEMCALpid); }
   void SetDoubleCounted() { fTrackStatus.SetBitNumber(kDoubleCounted); }
+  void SetIsKinkMother() { fTrackStatus.SetBitNumber(kKinkMother); }
+  void SetIsKinkDaughter() { fTrackStatus.SetBitNumber(kKinkDaughter); }
+  
   
   void SetMCSignedPt(Double_t abspt, Bool_t positivecharge){
     Double_t charge = positivecharge ? 1. : -1;
-    fSignedPt = abspt * charge;
+    fMCSignedPt = abspt * charge;
   }
   void SetMCP(Double_t mcp) { fMCP = mcp; }
   void SetMCEta(Double_t mceta) { fMCEta = mceta; }
@@ -158,6 +167,10 @@ class AliHFEreducedTrack : public TObject{
     fDCA[0] = dcaR;
     fDCA[1] = dcaZ;
   }
+  void SetHFEImpactParam(Double_t impactParam, Double_t impactParamResolution){
+    fHFEImpactParam[0] = impactParam;
+    fHFEImpactParam[1] = impactParamResolution;
+  }
   
   void SetITSnclusters(int ncls) { fNclustersITS = ncls; }
   void SetTPCnclusters(int ncls) { fNclustersTPC = ncls; }
@@ -170,6 +183,7 @@ class AliHFEreducedTrack : public TObject{
     if(ly > 5) return;
     fITSstatusMap.SetBitNumber(ly); 
   }
+  void SetChi2PerTPCcluster(Double_t value) { fChi2PerTPCcluster = value; }
   void SetTPCnclustersPID(Int_t ncls) { fNclustersTPCPID = static_cast<UChar_t>(ncls); }
   void SetTPCnclustersAll(Int_t ncls) { fNclustersTPCAll = static_cast<UChar_t>(ncls); }
   void SetTPCcrossedRows(int nrows) { fTPCcrossedRows = static_cast<UChar_t>(nrows); }
@@ -190,6 +204,7 @@ class AliHFEreducedTrack : public TObject{
   void SetTPCsigmaElCorrected(Double_t sigma) { fTPCsigmaElCorrected = sigma; }
   void SetTOFsigmaEl(Double_t sigma) { fTOFsigmaEl = sigma; }
   void SetTOFmismatchProbability(Float_t mismatchProb) { fTOFmismatchProb = mismatchProb; }
+  void SetITSsigmaEl(Double_t sigma) { fITSsigmaEl = sigma; }
   void SetEMCALEoverP(Double_t eop) { fEoverP = eop; }
   void SetEMCALSigmaEl(Double_t sigma) { fEMCALsigmaEl = sigma; }
   void SetEMCALShowerShape(Double_t showershape[4]){
@@ -205,7 +220,8 @@ class AliHFEreducedTrack : public TObject{
     kTOFmismatch = 3,
     kEMCALpid =4,
     kDoubleCounted = 5,
-    kKink = 6
+    kKinkMother = 6,
+    kKinkDaughter = 7
   } TrackStatus_t;
   Double_t fSignedPt;                     // signed pt
   Double_t fP;                            // p
@@ -235,6 +251,7 @@ class AliHFEreducedTrack : public TObject{
   UChar_t  fTPCsharedClusters;            // TPC shared clusters
   Float_t  fTPCclusterRatio;              // TPC cls ratio
   Float_t  fTPCclusterRatioAll;           // TPC cls ratio all
+  Double_t fChi2PerTPCcluster;            // Chi2/TPC cluster
   UChar_t  fTRDtrackletsPID;              // TRD tracklet PID
   UChar_t  fTRDnslices;                   // TRD nslices
   TBits    fTRDlayer;                     // TRD layer
@@ -245,10 +262,12 @@ class AliHFEreducedTrack : public TObject{
   Double_t fTPCsigmaElCorrected;          // TPC sigma el corrected
   Double_t fTOFsigmaEl;                   // TOF sigma el
   Float_t  fTOFmismatchProb;              // TOF mismatch prob
+  Double_t fITSsigmaEl;                   // ITS sigma el
   Double_t fEoverP;                       // Eoverp
   Double_t fEMCALsigmaEl;                 // EMCAl sigmal el
   Double_t fShowerShape[4];               // showershape
   Float_t fDCA[2];                        // dca
+  Double_t fHFEImpactParam[2];            // HFE impact paramter (value, resolution) for beauty analysis
   EV0PID_t fV0PID;                        // V0pid
   
   ClassDef(AliHFEreducedTrack, 1)

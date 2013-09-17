@@ -16,6 +16,7 @@
 #include <TObject.h>
 #include <TAxis.h>
 #include <TObjArray.h>
+#include <TArrayI.h>
 class TF1;
 class TBrowser;
 
@@ -63,6 +64,8 @@ public:
     UShort_t  fDet;    // Detector 
     Char_t    fRing;   // Ring
     UShort_t  fBin;    // Eta bin
+
+    mutable UShort_t fMaxWeight; //!Cached maximum weight
 
     static Double_t fgMaxRelError;  // Global default max relative error
     static Double_t fgLeastWeight;  // Global default least weight 
@@ -367,7 +370,7 @@ public:
 			  Double_t maxRelError=fgMaxRelError, 
 			  Double_t leastWeight=fgLeastWeight);
     /* @} */
-    ClassDef(ELossFit,1); // Result of fit 
+    ClassDef(ELossFit,2); // Result of fit 
   };
 
   /** 
@@ -524,23 +527,27 @@ public:
   /** 
    * Find the fit corresponding to the specified parameters 
    * 
-   * @param d   Detector 
-   * @param r   Ring 
-   * @param eta Eta value 
+   * @param d      Detector 
+   * @param r      Ring 
+   * @param eta    Eta value 
+   * @param minQ   Minimum quality
    * 
    * @return Fit parameters or null in case of problems 
    */
-  ELossFit* FindFit(UShort_t d, Char_t r, Double_t eta) const;
+  ELossFit* FindFit(UShort_t d, Char_t r, Double_t eta,
+		    UShort_t minQ) const;
   /** 
    * Find the fit corresponding to the specified parameters 
    * 
    * @param d      Detector 
    * @param r      Ring 
    * @param etabin Eta bin (1 based)
+   * @param minQ   Minimum quality
    * 
    * @return Fit parameters or null in case of problems 
    */
-  ELossFit* FindFit(UShort_t d, Char_t r, Int_t etabin) const;
+  ELossFit* FindFit(UShort_t d, Char_t r, Int_t etabin,
+		    UShort_t minQ) const;
   /** 
    * Find the fit corresponding to the specified parameters 
    * 
@@ -627,6 +634,7 @@ public:
    * @{ 
    * @name Miscellaneous
    */
+  void CacheBins(UShort_t minQuality) const;
   /** 
    * Get the ring array corresponding to the specified ring
    * 
@@ -669,11 +677,12 @@ public:
    * 
    * @param err  Show errors
    * @param rel  Show relative errors 
+   * @param good Only show good fits
    * @param maxN Maximum weight to use 
    * 
    * @return List of THStack
    */
-  TList* GetStacks(Bool_t err, Bool_t rel, UShort_t maxN=5) const;
+  TList* GetStacks(Bool_t err, Bool_t rel, Bool_t good, UShort_t maxN=5) const;
   /* @} */
 protected:
   /** 
@@ -689,8 +698,9 @@ protected:
   TObjArray  fRings;    // Array of rings
   TAxis      fEtaAxis;  // Eta axis used
   Double_t   fLowCut;   // Low cut used when fitting 
+  mutable TArrayI    fCache;
 
-  ClassDef(AliFMDCorrELossFit,2); 
+  ClassDef(AliFMDCorrELossFit,3); 
 };
 
 //____________________________________________________________________

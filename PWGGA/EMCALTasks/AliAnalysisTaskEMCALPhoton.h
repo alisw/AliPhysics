@@ -12,10 +12,14 @@ class AliStack;
 class AliESDtrack;
 class AliESDtrackCuts;
 class AliESDCaloCells;
+class AliAODEvent;
+class AliAODCaloCells;
 class AliEMCALGeometry;
 class AliVCluster;
+class AliVCaloCells;
 class AliAnalysisTaskEMCALClusterizeFast;
 class TParticle;
+class TGeoHMatrix;
 class AliPhotonHeaderObj;
 class AliPhotonConvObj;
 class AliPhotonClusterObj;
@@ -51,9 +55,9 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   void         FillMyClusters();
   void         FillMyAltClusters();
   void         FillIsoTracks();
-  void         FillMcPart(TParticle *mcP,  Int_t itrack, Int_t label);
+  void         FillMcPart(  Int_t itrack, Int_t label);
   void         GetMcParts();
-  Double_t     GetMcIsolation(TParticle *mcP, Int_t itrack, Double_t radius, Double_t pt)                 const;
+  Double_t     GetMcIsolation( Int_t itrack, Double_t radius, Double_t pt)                 const;
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
   Double_t     GetPhiBandEt(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)            const;
  // Double_t     GetPhiBandEt(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)            const;
@@ -65,6 +69,7 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   AliESDtrackCuts                       *fPrTrCuts;               // primary track cuts
   TObjArray                             *fSelTracks;             //!pointer to selected inclusive tracks
   TObjArray                             *fSelPrimTracks;         //!pointer to selected primary tracks
+  TClonesArray                          *fTracks;                //!track input array
   TClonesArray                          *fPhotConvArray;         //!array of AliPhotonConvObj
   TClonesArray                          *fMyClusts;              //!array of AliPhotonClusterObj
   TClonesArray                          *fMyAltClusts;           //!array of AliPhotonClusterObj from the alternative clusterizer
@@ -72,9 +77,10 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   TClonesArray                          *fMyTracks;              //!array of AliPhotonTrackObj
   TClonesArray                          *fMyMcParts;             //!array of AliPhotonMcPartObj
   AliPhotonHeaderObj                    *fHeader;                //!
-  TRefArray                             *fCaloClusters;          //!pointer to EMCal clusters
+  TClonesArray                             *fCaloClusters;          //!pointer to EMCal clusters
   TClonesArray                          *fCaloClustersNew;       //!pointer to EMCal clusters v2
-  AliESDCaloCells                       *fEMCalCells;            //!pointer to EMCal cells
+  TClonesArray                          *fAODMCParticles;        //!MC particles array for AOD analysis
+  AliVCaloCells                         *fVCells;                //!pointer to EMCal cells      
   AliEMCALGeometry                      *fGeom;                   // geometry utils
   Float_t                                fTimeResTOF;            //TOF time resolution for track PID
   Float_t                                fMipResponseTPC;        //TPC mip response for track pid
@@ -93,8 +99,11 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   
  private:
   AliESDEvent                           *fESD;      //! ESD object
+  AliAODEvent                           *fAOD;      //! AOD object
+  AliVEvent                             *fVev;      //!virtual event obj 
   AliMCEvent                            *fMCEvent;    //! MC event object
   AliStack                              *fStack;     //!MC particles stack object
+  TGeoHMatrix                           *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
   
   TList                                 *fOutputList;            //! Output list
   TTree                                 *fTree;                  //!output tree
@@ -258,7 +267,7 @@ class AliPhotonMcPartObj : public TObject
   public: AliPhotonMcPartObj() :
   TObject(), fLabel(-1), fPdg(0), fPt(0), fEta(0), fPhi(0), 
     fVR(0), fVEta(0), fVPhi(0), fMother(-1), fFirstD(-1),
-    fLastD(-1), fStatus(-1), fIso(-1) {;}
+    fLastD(-1), fStatus(-1), fIso(-1), fIso3(-1) {;}
   public:
   Short_t    fLabel;
   Short_t    fPdg;
@@ -273,8 +282,9 @@ class AliPhotonMcPartObj : public TObject
   Short_t    fLastD;
   Short_t    fStatus;
   Double32_t fIso;
+  Double32_t fIso3; //in cone of radius 0.3
 
-  ClassDef(AliPhotonMcPartObj,2)
+  ClassDef(AliPhotonMcPartObj,3)
 };
 
 #endif

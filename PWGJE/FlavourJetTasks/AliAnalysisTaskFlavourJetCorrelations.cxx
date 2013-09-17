@@ -1,4 +1,3 @@
-// $Id$
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -51,7 +50,7 @@ ClassImp(AliAnalysisTaskFlavourJetCorrelations)
 
 //__________________________________________________________________________
 AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations() :
-  AliAnalysisTaskEmcalJet(),
+  AliAnalysisTaskEmcalJet("",kFALSE),
   fUseMCInfo(kTRUE), 
   fCandidateType(),
   fPDGmother(),
@@ -72,7 +71,7 @@ AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations() :
 }
 //___________________________________________________________________________
 AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations(const Char_t* name, AliRDHFCuts* cuts,ECandidateType candtype, TString jetArrName) :
-  AliAnalysisTaskEmcalJet(name),
+  AliAnalysisTaskEmcalJet(name,kFALSE),
   fUseMCInfo(kTRUE),
   fCandidateType(),
   fPDGmother(),
@@ -133,11 +132,10 @@ AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations(con
   if(fCandidateType==kDstartoKpipi) SetMassLimits(0.015, fPDGmother);
   fJetArrName=jetArrName;
   Printf("Jet read is %s",fJetArrName.Data());
-
-
-
+  
   DefineOutput(1,TList::Class()); // histos
   DefineOutput(2,AliRDHFCuts::Class()); // my cuts
+ 
 }
 //___________________________________________________________________________
 AliAnalysisTaskFlavourJetCorrelations::~AliAnalysisTaskFlavourJetCorrelations() {
@@ -157,6 +155,7 @@ void AliAnalysisTaskFlavourJetCorrelations::Init(){
   //
   // Initialization
   //
+ 
   if(fDebug > 1) printf("AnalysisTaskRecoJetCorrelations::Init() \n");
   switch(fCandidateType){
   case 0:
@@ -178,6 +177,21 @@ void AliAnalysisTaskFlavourJetCorrelations::Init(){
   default:
     return;
   }
+
+  return;
+}
+
+//___________________________________________________________________________
+
+void AliAnalysisTaskFlavourJetCorrelations::UserCreateOutputObjects() { 
+ // output 
+  Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
+  fOutput = new TList();
+  fOutput->SetOwner();
+  fOutput->SetName("fOutputDjet");
+  // define histograms
+  DefineHistoForAnalysis();
+  PostData(1,fOutput);
 
   return;
 }
@@ -358,8 +372,10 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
   //loop over jets and consider only the leading jet in the event
   for (Int_t iJets = 0; iJets<njets; iJets++) {    
     AliEmcalJet* jet = (AliEmcalJet*)jetArr->At(iJets);
-    if(!AcceptJet(jet)) continue;
-
+    if(!AcceptJet(jet)) {
+       hstat->Fill(5);
+       continue;
+    }
     vector<int> DmesonInJetLabels(10);
     //Int_t iD=0;
     //jets variables
@@ -407,7 +423,6 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
   hNJetPerEv->Fill(cntjet);
 
   AliDebug(2, Form("Found %i Reco particles that are D*!!",icountReco));
-  
   PostData(1,fOutput);
 
 }
@@ -428,22 +443,7 @@ void AliAnalysisTaskFlavourJetCorrelations::Terminate(Option_t*)
     return;
   }
 }
-//___________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::UserCreateOutputObjects() { 
- // output 
-  Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
-  
-  //slot #1  
-  OpenFile(1);
-  fOutput = new TList();
-  fOutput->SetOwner();
-  // define histograms
-  DefineHistoForAnalysis();
-
-  PostData(1,fOutput);
-  return;
-}
 //_________________________________________________________________
 void  AliAnalysisTaskFlavourJetCorrelations::SetMassLimits(Double_t range, Int_t pdg){
   Float_t mass=0;
@@ -510,12 +510,13 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
 Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
  
   // Statistics 
-  TH1I* hstat=new TH1I("hstat","Statistics",5,-0.5,4.5);
+  TH1I* hstat=new TH1I("hstat","Statistics",6,-0.5,5.5);
   hstat->GetXaxis()->SetBinLabel(1,"N ev anal");
   hstat->GetXaxis()->SetBinLabel(2,"N ev sel");
   hstat->GetXaxis()->SetBinLabel(3,"N cand sel cuts");
   hstat->GetXaxis()->SetBinLabel(4,"N jets");
   hstat->GetXaxis()->SetBinLabel(5,"N cand in jet");
+  hstat->GetXaxis()->SetBinLabel(6,"N jet rej");
   // if(fUseMCInfo) {
   //   hstat->GetXaxis()->SetBinLabel(7,"N D");
   //   hstat->GetXaxis()->SetBinLabel(8,"N D in jet");
@@ -532,14 +533,14 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
     {
       // TH2F *hDiff = new TH2F("hDiff","M(kpipi)-M(kpi)",500,fMinMass,fMaxMass,100, 0.,30.);
       // hDiff->SetStats(kTRUE);
-      // hDiff->GetXaxis()->SetTitle("M(kpipi)-M(kpi) GeV/c^{2}");
-      // hDiff->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c^{2})");
+      // hDiff->GetXaxis()->SetTitle("M(kpipi)-M(kpi) GeV");
+      // hDiff->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
       // fOutput->Add(hDiff);
   
       TH2F* hDiffSideBand = new TH2F("hDiffSideBand","M(kpipi)-M(kpi) Side Band Background",nbinsmass,fMinMass,fMaxMass,100, 0.,30.);
       hDiffSideBand->SetStats(kTRUE);
-      hDiffSideBand->GetXaxis()->SetTitle("M(kpipi)-M(Kpi) GeV/c^{2}");
-      hDiffSideBand->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c^{2})");
+      hDiffSideBand->GetXaxis()->SetTitle("M(kpipi)-M(Kpi) GeV");
+      hDiffSideBand->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
       fOutput->Add(hDiffSideBand); 
  
       //correlation histograms
@@ -585,14 +586,15 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
   TH1F* hEjetTrks      = new TH1F("hEjetTrks",  "Jet tracks energy distribution;Energy (GeV)",500,0,200);
   TH1F* hPhiJetTrks    = new TH1F("hPhiJetTrks","Jet tracks #phi distribution; #phi (rad)",  200,0,6.30);
   TH1F* hEtaJetTrks    = new TH1F("hEtaJetTrks","Jet tracks #eta distribution; #eta",  100,-1.5,1.5);
-  TH1F* hPtJetTrks     = new TH1F("hPtJetTrks",  "Jet tracks Pt distribution; p_{T} (GeV/c^{2})",500,0,200);
+  TH1F* hPtJetTrks     = new TH1F("hPtJetTrks",  "Jet tracks Pt distribution; p_{T} (GeV/c)",500,0,200);
   
   TH1F* hEjet      = new TH1F("hEjet",  "Jet energy distribution;Energy (GeV)",500,0,200);
   TH1F* hPhiJet    = new TH1F("hPhiJet","Jet #phi distribution; #phi (rad)",  200,0,6.30);
   TH1F* hEtaJet    = new TH1F("hEtaJet","Jet #eta distribution; #eta",  100,-1.5,1.5);
-  TH1F* hPtJet      = new TH1F("hPtJet",  "Jet Pt distribution; p_{T} (GeV/c^{2})",500,0,200);
+  TH1F* hPtJet      = new TH1F("hPtJet",  "Jet Pt distribution; p_{T} (GeV/c)",500,0,200);
 
-  TH1F* hPtJetWithD=new TH1F("hPtJetWithD","D-Jet Pt distribution; p_{T} (GeV/c^{2})",500,0,200);
+  TH2F* hPtJetWithD=new TH2F("hPtJetWithD","D-Jet Pt distribution; p_{T} (GeV/c);inv mass (GeV)",500,0,200,nbinsmass,fMinMass,fMaxMass);
+  TH1F* hPtJetWithDsb=new TH1F("hPtJetWithDsb","D(background)-Jet Pt distribution; p_{T} (GeV/c)",500,0,200);
   TH1F* hdeltaRJetTracks=new TH1F("hdeltaRJetTracks","Delta R of tracks in the jets",200, 0.,10.);
 
   TH1F* hNtrArr= new TH1F("hNtrArr", "Number of tracks in the array of jets; number of tracks",500,0,1000);
@@ -607,6 +609,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
   fOutput->Add(hEtaJet);
   fOutput->Add(hPtJet);
   fOutput->Add(hPtJetWithD);
+  fOutput->Add(hPtJetWithDsb);
   fOutput->Add(hdeltaRJetTracks);
   fOutput->Add(hNtrArr);
   fOutput->Add(hNJetPerEv);
@@ -630,16 +633,16 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
   fOutput->Add(hDeltaRD);
 
   TH3F* hdeltaPhiDja=new TH3F("hdeltaPhiDja", "#Delta#phi D-jet (jet p_{T} > threshold)",nbinsmass,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
-  hdeltaPhiDja->GetXaxis()->SetTitle("mass (GeV/c)");
+  hdeltaPhiDja->GetXaxis()->SetTitle("mass (GeV)");
   hdeltaPhiDja->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   hdeltaPhiDja->GetYaxis()->SetTitle("#Delta#phi (rad)");
-  // TH3F* hdeltaPhiDjl=new TH3F("hdeltaPhiDjl", Form("#Delta#phi D-jet (jet p_{T} < %.0f (GeV/c^{2}))",fJetPtThr),500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
-  // hdeltaPhiDjl->GetXaxis()->SetTitle("mass (GeV/c)");
-  // hdeltaPhiDjl->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c^{2})");
+  // TH3F* hdeltaPhiDjl=new TH3F("hdeltaPhiDjl", Form("#Delta#phi D-jet (jet p_{T} < %.0f (GeV/c))",fJetPtThr),500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
+  // hdeltaPhiDjl->GetXaxis()->SetTitle("mass (GeV)");
+  // hdeltaPhiDjl->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   // hdeltaPhiDjl->GetYaxis()->SetTitle("#Delta#phi (rad)");
-  // TH3F* hdeltaPhiDjh=new TH3F("hdeltaPhiDjh", Form("#Delta#phi D-jet (jet p_{T} > %.0f (GeV/c^{2}))",fJetPtThr),500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
+  // TH3F* hdeltaPhiDjh=new TH3F("hdeltaPhiDjh", Form("#Delta#phi D-jet (jet p_{T} > %.0f (GeV/c))",fJetPtThr),500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
   // hdeltaPhiDjh->GetXaxis()->SetTitle("mass (GeV/c)");
-  // hdeltaPhiDjh->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c^{2})");
+  // hdeltaPhiDjh->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   // hdeltaPhiDjh->GetYaxis()->SetTitle("#Delta#phi (rad)");
   fOutput->Add(hdeltaPhiDja);
   // fOutput->Add(hdeltaPhiDjl);
@@ -648,42 +651,42 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
   //background (side bands for the Dstar and like sign for D0)
 
   TH3F* hdeltaPhiDjaB=new TH3F("hdeltaPhiDjaB", "#Delta#phi D-jet (all jet p_{T})",nbinsmass,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
-  hdeltaPhiDjaB->GetXaxis()->SetTitle("mass (GeV/c)");
+  hdeltaPhiDjaB->GetXaxis()->SetTitle("mass (GeV)");
   hdeltaPhiDjaB->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   hdeltaPhiDjaB->GetYaxis()->SetTitle("#Delta#phi (rad)");
-  // TH3F* hdeltaPhiDjlB=new TH3F("hdeltaPhiDjlB", Form("#Delta#phi D-jet (jet p_{T} < %.0f (GeV/c^{2}))",fJetPtThr),1500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
-  // hdeltaPhiDjlB->GetXaxis()->SetTitle("mass (GeV/c)");
-  // hdeltaPhiDjlB->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c^{2})");
+  // TH3F* hdeltaPhiDjlB=new TH3F("hdeltaPhiDjlB", Form("#Delta#phi D-jet (jet p_{T} < %.0f (GeV/c))",fJetPtThr),1500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
+  // hdeltaPhiDjlB->GetXaxis()->SetTitle("mass (GeV)");
+  // hdeltaPhiDjlB->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   // hdeltaPhiDjlB->GetYaxis()->SetTitle("#Delta#phi (rad)");
-  // TH3F* hdeltaPhiDjhB=new TH3F("hdeltaPhiDjhB", Form("#Delta#phi D-jet (jet p_{T} > %.0f (GeV/c^{2}))",fJetPtThr),1500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
-  // hdeltaPhiDjhB->GetXaxis()->SetTitle("mass (GeV/c)");
-  // hdeltaPhiDjhB->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c^{2})");
+  // TH3F* hdeltaPhiDjhB=new TH3F("hdeltaPhiDjhB", Form("#Delta#phi D-jet (jet p_{T} > %.0f (GeV/c))",fJetPtThr),1500,fMinMass,fMaxMass,100, 0.,30.,50,(-1)*TMath::Pi()/2.,3./2.*TMath::Pi());
+  // hdeltaPhiDjhB->GetXaxis()->SetTitle("mass (GeV)");
+  // hdeltaPhiDjhB->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   // hdeltaPhiDjhB->GetYaxis()->SetTitle("#Delta#phi (rad)");
   fOutput->Add(hdeltaPhiDjaB);
   // fOutput->Add(hdeltaPhiDjlB);
   // fOutput->Add(hdeltaPhiDjhB);
 
-  TH2F* hInvMassptD = new TH2F("hInvMassptD","D (Delta R < 0.4) invariant mass distribution p_{T}^{j} > threshold",nbinsmass,fMinMass,fMaxMass,100,0.,50.);
+  TH2F* hInvMassptD = new TH2F("hInvMassptD",Form("D (Delta R < %f) invariant mass distribution p_{T}^{j} > threshold",fJetRadius),nbinsmass,fMinMass,fMaxMass,100,0.,50.);
   hInvMassptD->SetStats(kTRUE);
-  hInvMassptD->GetXaxis()->SetTitle("mass (GeV/c)");
+  hInvMassptD->GetXaxis()->SetTitle("mass (GeV)");
   hInvMassptD->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
 
   fOutput->Add(hInvMassptD);
-  // fMasspjDeltaR=new TH3F("fMasspjDeltaR","Mass vs p^{jet} vs #Delta R;Mass (Gev/c);p^{jet}(Gev/c^{2});#Delta R",1500,fMinMass,fMaxMass,100,0.,50.,100,0.,1.);
+  // fMasspjDeltaR=new TH3F("fMasspjDeltaR","Mass vs p^{jet} vs #Delta R;Mass (Gev/c);p^{jet}(Gev);#Delta R",1500,fMinMass,fMaxMass,100,0.,50.,100,0.,1.);
   // fMasspjDeltaR->SetStats(kFALSE);
   // fOutput->Add(fMasspjDeltaR);
 
-  TH3F* hzptD=new TH3F("hzptD","Fragmentation function (DeltaR < 0.4)",100,0.,1.2,nbinsmass,fMinMass,fMaxMass,100,0,50);
+  TH3F* hzptD=new TH3F("hzptD",Form("Fragmentation function (DeltaR < %f)",fJetRadius),100,0.,1.2,nbinsmass,fMinMass,fMaxMass,100,0,50);
   hzptD->SetStats(kTRUE);
   hzptD->GetXaxis()->SetTitle("z=p_{D} #cdot p_{j}/|p_{j}|^{2}");
-  hzptD->GetYaxis()->SetTitle("mass (GeV/c)");
+  hzptD->GetYaxis()->SetTitle("mass (GeV)");
   hzptD->GetZaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   fOutput->Add(hzptD);
 
-  TH3F* hzptDB=new TH3F("hzptDB","Fragmentation function (DeltaR < 0.4) - Side Bands",100,0.,1.2,nbinsmass,fMinMass,fMaxMass,100,0.,50.);
+  TH3F* hzptDB=new TH3F("hzptDB",Form("Fragmentation function (DeltaR < %f) - Side Bands",fJetRadius),100,0.,1.2,nbinsmass,fMinMass,fMaxMass,100,0.,50.);
   hzptDB->SetStats(kTRUE);
   hzptDB->GetXaxis()->SetTitle("z=p_{D} #cdot p_{j}/|p_{j}|^{2}");
-  hzptDB->GetYaxis()->SetTitle("mass (GeV/c)");
+  hzptDB->GetYaxis()->SetTitle("mass (GeV)");
   hzptDB->GetZaxis()->SetTitle("p_{t}^{D} (GeV/c)");
   fOutput->Add(hzptDB);
   //TH1F* hResZ      = new TH1F("hResZ","Fragmentation function ",50,0,1);
@@ -691,8 +694,8 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 
   //fOutput->Add(hResZ);
   //fOutput->Add(hResZBkg);
-
-
+  PostData(1, fOutput);
+  
   return kTRUE; 
 }
 
@@ -710,24 +713,22 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliAODReco
   hDeltaRD->Fill(deltaR); 
   TH1I* hstat=(TH1I*)fOutput->FindObject("hstat");
   hstat->Fill(4);
-  TH1F* hPtJetWithD=(TH1F*)fOutput->FindObject("hPtJetWithD");
-  hPtJetWithD->Fill(ptjet);
 
   if(fCandidateType==kD0toKpi) {
 
-    FillHistogramsD0JetCorr(candidate,deltaphi,z,ptD,deltaR, AODEvent());
+    FillHistogramsD0JetCorr(candidate,deltaphi,z,ptD,ptjet,deltaR, AODEvent());
 
   }
 
   if(fCandidateType==kDstartoKpipi) {
     AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)candidate;
-    FillHistogramsDstarJetCorr(dstar,deltaphi,z,ptD,deltaR);
+    FillHistogramsDstarJetCorr(dstar,deltaphi,z,ptD,ptjet,deltaR);
 
   }
 
 }
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t deltaR, AliAODEvent* aodEvent){
+void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR, AliAODEvent* aodEvent){
   Double_t masses[2]={0.,0.};
   Int_t pdgdaughtersD0[2]={211,321};//pi,K 
   Int_t pdgdaughtersD0bar[2]={321,211};//K,pi 
@@ -735,27 +736,35 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
   masses[0]=candidate->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0); //D0
   masses[1]=candidate->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0bar); //D0bar
   
- 
+  TH2F* hPtJetWithD=(TH2F*)fOutput->FindObject("hPtJetWithD");
+
   Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
   if(isselected==1 || isselected==3) {
+     
+     if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,masses[0]);
 
-    FillHistogramsD(masses[0],dPhi,z, ptD, deltaR);
+     FillHistograms(masses[0],dPhi,z, ptD, deltaR);
   }
   if(isselected>=2) {
+     if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,masses[1]);
 
-    FillHistogramsD(masses[1],dPhi,z, ptD, deltaR);
+     FillHistograms(masses[1],dPhi,z, ptD, deltaR);
   }
 
 }
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t deltaR){
+void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t deltaR){
   AliAODTrack *softpi = (AliAODTrack*)dstar->GetBachelor();
   Double_t deltamass= dstar->DeltaInvMass(); 
   Double_t massD0= dstar->InvMassD0();
 
   TH1F* hPtPion=(TH1F*)fOutput->FindObject("hPtPion");
   hPtPion->Fill(softpi->Pt());
-  FillHistogramsD(deltamass,dPhi,z, ptD, deltaR);
+  
+  TH2F* hPtJetWithD=(TH2F*)fOutput->FindObject("hPtJetWithD");
+  if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,deltamass);
+  
+  FillHistograms(deltamass,dPhi,z, ptD, deltaR);
   // evaluate side band background
   TH2F* hDiffSideBand=(TH2F*)fOutput->FindObject("hDiffSideBand");
 
@@ -763,29 +772,32 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
 
   TH3F* hzptDB=(TH3F*)fOutput->FindObject("hzptDB");
 
+  TH1F* hPtJetWithDsb=(TH1F*)fOutput->FindObject("hPtJetWithDsb");
+
   Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
   Int_t bin = fCuts->PtBin(ptD);
   Float_t fourSigmal= mPDGD0-3.5*fSigmaD0[bin] , sixSigmal= mPDGD0-5.*fSigmaD0[bin];
   Float_t fourSigmar= mPDGD0+3.5*fSigmaD0[bin] , sixSigmar= mPDGD0+5.*fSigmaD0[bin];
 
-  if((massD0>sixSigmal && massD0<fourSigmal) || (massD0>fourSigmar && massD0<=sixSigmar)){  
+  if((massD0>sixSigmal && massD0<=fourSigmal) || (massD0>fourSigmar && massD0<=sixSigmar)){  
     hDiffSideBand->Fill(deltamass,ptD); // M(Kpipi)-M(Kpi) side band background    
     hdeltaPhiDjaB->Fill(deltamass,ptD,dPhi);
 
-    if(deltaR<0.4){  // evaluate in the near side	
-      hzptDB->Fill(z,deltamass,ptD);	
+    if(deltaR<fJetRadius){  // evaluate in the near side	
+      hzptDB->Fill(z,deltamass,ptD);
+      hPtJetWithDsb->Fill(ptj);
     }
-
+    
   }  //  SideBandBackground(dstar, dPhi, z, ptD, deltaR);
  
 }
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR){
+void AliAnalysisTaskFlavourJetCorrelations::FillHistograms(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR){
   TH3F* hdeltaPhiDja=((TH3F*)fOutput->FindObject("hdeltaPhiDja"));
   hdeltaPhiDja->Fill(mass,ptD,dphi);
 
-  if(deltaR<0.4) {
+  if(deltaR<fJetRadius) {
     TH3F* hzptD=(TH3F*)fOutput->FindObject("hzptD");
     hzptD->Fill(z,mass,ptD);
 
@@ -825,7 +837,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD(Double_t mass,Double
 //     hDiffSideBand->Fill(deltaM,ptD); // M(Kpipi)-M(Kpi) side band background    
 //     hdeltaPhiDjaB->Fill(deltaM,ptD,dPhi);
 
-//     if(deltaR<0.4){  // evaluate in the near side	
+//     if(deltaR<fJetRadius){  // evaluate in the near side	
 //       hzptDB->Fill(Z(candDstar,jet),deltaM,ptD);	
 //     }
 
@@ -970,9 +982,9 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::FillMCDJetInfo(AliPicoTrack *jetTr
       
       Double_t z=Z(momjetpart,jet);
       
-      if(deltaRD<0.4) {
+      if(deltaRD<fJetRadius) {
 	hstat->Fill(7);
-	//comment if you prefer to ask for DeltaR of the daughters < 0.4 and uncomment below
+	//comment if you prefer to ask for DeltaR of the daughters < fJetRadius and uncomment below
 	fptDinjet04vsptjMC->Fill(ptD,ptjet);
 	fzptDptj->Fill(z,ptD,ptjet);
       }

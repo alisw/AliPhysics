@@ -12,6 +12,10 @@
 #define ALIDISPLACEDVERTEXSELECTION_H
 #include <TObject.h>
 class AliESDEvent;
+class AliMCEvent;
+class TH1D;
+class TH2D;
+class TList;
 
 /** 
  * Selection of events from satellite interactions 
@@ -44,8 +48,9 @@ public:
    * 
    * @param l     List to add output to
    * @param name  Name of the list 
+   * @param mc    True if we're looking at MC data
    */
-  void CreateOutputObjects(TList* l, const char* name=0) const;
+  void SetupForData(TList* l, const char* name=0, Bool_t mc=false);
   /** 
    * Print information 
    * 
@@ -61,6 +66,20 @@ public:
    */
   Bool_t Process(const AliESDEvent* esd);
   /** 
+   * Process an MC event to find true satellite vertex
+   * 
+   * @param mcevent MC event
+   * 
+   * @return true if found or not MC input, false in case of problems
+   */
+  Bool_t ProcessMC(const AliMCEvent* mcevent);
+  /**
+   * Check if this event is marked as a satellite interaction 
+   *
+   * @return true if the found vertex isn't invalid
+   */
+  Bool_t IsSatellite() const { return fVertexZ != kInvalidVtxZ; }
+  /** 
    * Get the interaction point Z-coordinate from ZDC timing. 
    * 
    * 
@@ -74,28 +93,27 @@ public:
    * @return Centrality percentile (ZDC vs ZEM)
    */
   Double_t GetCentralityPercentile() const { return fCent; }
-  /** 
-   * Check for displaced vertices (M.Guilbaud) 
-   * 
-   * @param esd  Event 
-   * 
-   * @return displaced vertex
-   */
-  Double_t CheckDisplacedVertex(const AliESDEvent* esd) const;
-   /** 
-   * Calculate Centrality for displaced vertices (M.Guilbaud) 
-   * 
-   * @param esd  Event 
-   * 
-   * @return displaced vertex centrality
-   */
-  Double_t CalculateDisplacedVertexCent(const AliESDEvent* esd) const;
-  
 protected:
-  Double_t fVertexZ; // Interaction point Z-coordinate
-  Double_t fCent;    // Centrality percentile
+  Bool_t CheckOutlier(Int_t ivtx, const AliESDEvent* esd) const;
+  Float_t GetZemCorr(Int_t k, Bool_t minusminus) const;
   
-  ClassDef(AliDisplacedVertexSelection,2); // Satelitte collisions 
+  enum { 
+    kMaxK        = 10,
+    kInvalidVtxZ = 9999
+  };
+  TH1D*     fDeltaTdc;
+  TH1D*     fSumTdc;
+  TH1D*     fZdcEnergy;
+  TH1D*     fZemEnergy;
+  TH2D*     fCorrelationZemZdc;
+  TH2D*     fCorrelationSumDelta;  
+  Double_t  fVertexZ;  // Interaction point Z-coordinate
+  Double_t  fCent;     // Centrality percentile
+  TH1D*     fHVertexZ; // Histogram of vertices 
+  TH1D*     fHCent;    // Histogram of centrality 
+  Bool_t    fMC; // MC flag
+  
+  ClassDef(AliDisplacedVertexSelection,4); // Satelitte collisions 
 };
 
 #endif

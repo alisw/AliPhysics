@@ -1091,6 +1091,18 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
   //
   for (Int_t ibin=1; ibin<=nbins; ibin++) {
 
+    // Variables initialization
+    correction=1.; theoryRatio=1.; effRatio=1.; 
+    correctionExtremeA=1.; correctionExtremeB=1.;
+    theoryRatioExtremeA=1.; theoryRatioExtremeB=1.;
+    correctionConservativeA=1.; correctionConservativeB=1.;
+    theoryRatioConservativeA=1.; theoryRatioConservativeB=1.;
+    correctionUnc=0.;
+    correctionExtremeAUnc=0.; correctionExtremeBUnc=0.;
+    correctionConservativeAUnc=0.; correctionConservativeBUnc=0.;
+    correctionConservativeAUncStatEffc=0.; correctionConservativeBUncStatEffc=0.;
+    correctionConservativeAUncStatEffb=0.; correctionConservativeBUncStatEffb=0.;
+
     //  theory_ratio = (N_b/N_c) 
     theoryRatio = (fhDirectMCpt->GetBinContent(ibin)>0. && fhFeedDownMCpt->GetBinContent(ibin)>0.) ? 
       fhFeedDownMCpt->GetBinContent(ibin) / fhDirectMCpt->GetBinContent(ibin) : 1.0 ;
@@ -1287,6 +1299,12 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
   // 
   for (Int_t ibin=1; ibin<=nbins; ibin++) {
 
+    // Variables initialization
+    value = 0.; errvalue = 0.; errvalueMax= 0.; errvalueMin= 0.;
+    valueExtremeMax= 0.; valueExtremeMin= 0.;
+    valueConservativeMax= 0.; valueConservativeMin= 0.;
+
+
     // calculate the value 
     //    physics = reco * fc / bin-width
     value = (fhRECpt->GetBinContent(ibin) && fhFc->GetBinContent(ibin)) ? 
@@ -1437,6 +1455,13 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     //
     //
     Double_t frac = 1.0, errfrac =0.;
+
+    // Variables initialization
+    value = 0.; errvalue = 0.; errvalueMax = 0.; errvalueMin = 0.; kfactor = 0.;
+    errvalueExtremeMax = 0.; errvalueExtremeMin = 0.;
+    correction=0; correctionMax=0.; correctionMin=0.;
+    correctionUncStatEffc=0.; correctionUncStatEffb=0.;
+
     if(fPbPbElossHypothesis) {
       frac = fTab[0]*fNevts;
       if(fIsEventPlane) frac = frac/2.0;

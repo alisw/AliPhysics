@@ -104,6 +104,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseFlatPtWeight(kFALSE),
   fUseZWeight(kFALSE),
   fUseNchWeight(kFALSE),
+  fUseTrackletsWeight(kFALSE),
   fNvar(0),
   fPartName(""),
   fDauNames(""),
@@ -122,7 +123,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fLctoV0bachelorOption(1),
   fGenLctoV0bachelorOption(0),
   fUseSelectionBit(kTRUE),
-  fPDGcode(0)
+  fPDGcode(0),
+  fMultiplicityEstimator(kNtrk10),
+  fIsPPData(kFALSE)
 {
   //
   //Default ctor
@@ -154,6 +157,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseFlatPtWeight(kFALSE),
   fUseZWeight(kFALSE),
   fUseNchWeight(kFALSE),
+  fUseTrackletsWeight(kFALSE),
   fNvar(0),
   fPartName(""),
   fDauNames(""),
@@ -172,7 +176,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fLctoV0bachelorOption(1),
   fGenLctoV0bachelorOption(0),
   fUseSelectionBit(kTRUE),
-  fPDGcode(0)
+  fPDGcode(0),
+  fMultiplicityEstimator(kNtrk10),
+  fIsPPData(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -233,6 +239,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseFlatPtWeight(c.fUseFlatPtWeight),
   fUseZWeight(c.fUseZWeight),
   fUseNchWeight(c.fUseNchWeight),
+  fUseTrackletsWeight(c.fUseTrackletsWeight),
   fNvar(c.fNvar),
   fPartName(c.fPartName),
   fDauNames(c.fDauNames),
@@ -251,7 +258,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fLctoV0bachelorOption(c.fLctoV0bachelorOption),
   fGenLctoV0bachelorOption(c.fGenLctoV0bachelorOption),
   fUseSelectionBit(c.fUseSelectionBit),
-  fPDGcode(c.fPDGcode)
+  fPDGcode(c.fPDGcode),
+  fMultiplicityEstimator(c.fMultiplicityEstimator),
+  fIsPPData(c.fIsPPData)
 {
   //
   // Copy Constructor
@@ -602,12 +611,22 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   if(fUseZWeight) fWeight *= GetZWeight(zMCVertex,runnumber);
   if(fUseNchWeight){
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
-    fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
-    AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));	
+    Int_t nTracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
+    if(!fUseTrackletsWeight) fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
+    else fWeight *= GetNchWeight(nTracklets);
+    AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
   }
 
   if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
     AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
+    delete[] containerInput;
+    delete[] containerInputMC;
+    return;
+  }
+
+  if(aodEvent->GetTriggerMask()==0 && 
+     (runnumber>=195344 && runnumber<=195677)){
+    AliDebug(3,"Event rejected because of null trigger mask");
     delete[] containerInput;
     delete[] containerInputMC;
     return;
@@ -660,12 +679,26 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     fCuts->SetMaxCentrality(100.);
   }
 	
-  Float_t centValue = fCuts->GetCentrality(aodEvent);
+  Float_t centValue = 0.;
+  if(!fIsPPData) centValue = fCuts->GetCentrality(aodEvent);
   cfVtxHF->SetCentralityValue(centValue);  
 	
   // number of tracklets - multiplicity estimator
-  Double_t multiplicity = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.)); // casted to double because the CF is filled with doubles
+  Double_t countTr10 = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.)); // casted to double because the CF is filled with doubles
+
+  Double_t countTr16 = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6));
+  Double_t vzeroMult=0;
+  AliAODVZERO *vzeroAOD = (AliAODVZERO*)aodEvent->GetVZEROData();
+  if(vzeroAOD) vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
+
+  Double_t multiplicity = countTr10;
+  if(fMultiplicityEstimator==kNtrk10to16) { multiplicity = countTr16 - countTr10; }
+  if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
+
+
   cfVtxHF->SetMultiplicity(multiplicity);
+
+  //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
 	
   for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
@@ -696,7 +729,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       continue;
     }
     else{
-      AliInfo(Form("Check on the family OK!!! (decaychannel = %d)",fDecayChannel));
+      AliDebug(2,Form("Check on the family OK!!! (decaychannel = %d)",fDecayChannel));
     }
 		
     //Fill the MC container
@@ -1283,6 +1316,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC12a17a(){
   fFuncWeight->SetParameter(0,4.63891e-02);
   fFuncWeight->SetParameter(1,1.51674e+01);
   fFuncWeight->SetParameter(2,4.09941e-01);
+  fUseWeight=kTRUE;
 }
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
@@ -1294,7 +1328,40 @@ void AliCFTaskVertexingHF::SetPtWeightsFromDataPbPb276overLHC12a17a(){
   fFuncWeight->SetParameter(0,1.43116e-02);
   fFuncWeight->SetParameter(1,4.37758e+02);
   fFuncWeight->SetParameter(2,3.08583);
+  fUseWeight=kTRUE;
 }
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC12a17b(){
+  // weight function from the ratio of the LHC12a17b MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,50.);
+  fFuncWeight->SetParameters(1.92381e+01, 5.05055e+00, 1.05314e+01, 2.5, 1.88214e-03, 3.44871e+00, -9.74325e-02, 1.97671e+00, -3.21278e-01);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276andBAMPSoverLHC12a17b(){
+  // weight function from the ratio of the LHC12a17b MC
+  // and FONLL calculations for pp data
+  // corrected by the BAMPS Raa calculation for 30-50% CC
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,50.);
+  fFuncWeight->SetParameters(6.10443e+00, 1.53487e+00, 1.99474e+00, 2.5, 5.51172e-03, 5.86590e+00, -5.46963e-01, 9.41201e-02, -1.64323e-01);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
+  // weight function from the ratio of the LHC12a17b MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
+  fFuncWeight->SetParameters(2.94999e+00,3.47032e+00,2.81278e+00,2.5,1.93370e-02,3.86865e+00,-1.54113e-01,8.86944e-02,2.56267e-02);
+  fUseWeight=kTRUE;
+}
+
 //_________________________________________________________________________
 Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
 {
@@ -1374,29 +1441,41 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
   if(nch<=0) return 0.;
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
-  return pMeas/pMC;
+  Double_t weight = pMC>0 ? pMeas/pMC : 0.;
+  if(fUseTrackletsWeight)  weight = pMC;
+  return weight;
 }
 //__________________________________________________________________________________________________
 void AliCFTaskVertexingHF::CreateMeasuredNchHisto(){
   // creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)
-  Double_t nchbins[66]={0.50,1.50,2.50,3.50,4.50,5.50,6.50,7.50,8.50,9.50,
+  //
+  // for Nch  > 70 the points were obtained with a double NBD distribution fit
+  // TF1 *fit1 = new TF1("fit1","[0]*(TMath::Gamma(x+[1])/(TMath::Gamma(x+1)*TMath::Gamma([1])))*(TMath::Power(([2]/[1]),x))*(TMath::Power((1+([2]/[1])),-x-[1]))"); fit1->SetParameter(0,1.);// normalization constant
+  // fit1->SetParameter(1,1.63); // k parameter
+  // fit1->SetParameter(2,12.8); // mean multiplicity
+  //
+  Double_t nchbins[82]={0.50,1.50,2.50,3.50,4.50,5.50,6.50,7.50,8.50,9.50,
 			10.50,11.50,12.50,13.50,14.50,15.50,16.50,17.50,18.50,19.50,
 			20.50,21.50,22.50,23.50,24.50,25.50,26.50,27.50,28.50,29.50,
 			30.50,31.50,32.50,33.50,34.50,35.50,36.50,37.50,38.50,39.50,
 			40.50,41.50,42.50,43.50,44.50,45.50,46.50,47.50,48.50,49.50,
 			50.50,51.50,52.50,53.50,54.50,55.50,56.50,57.50,58.50,59.50,
-			60.50,62.50,64.50,66.50,68.50,70.50};
-  Double_t pch[65]={0.062011,0.072943,0.070771,0.067245,0.062834,0.057383,0.051499,0.04591,0.041109,0.036954,
+			60.50,62.50,64.50,66.50,68.50,70.50,72.50,74.50,76.50,78.50,
+			80.50,82.50,84.50,86.50,88.50,90.50,92.50,94.50,96.50,98.50, 
+			100.50,102.50};
+  Double_t pch[81]={0.062011,0.072943,0.070771,0.067245,0.062834,0.057383,0.051499,0.04591,0.041109,0.036954,
 		    0.03359,0.030729,0.028539,0.026575,0.024653,0.0229,0.021325,0.019768,0.018561,0.017187,
 		    0.01604,0.014836,0.013726,0.012576,0.011481,0.010393,0.009502,0.008776,0.008024,0.007452,
 		    0.006851,0.006428,0.00594,0.005515,0.005102,0.00469,0.004162,0.003811,0.003389,0.003071,
 		    0.002708,0.002422,0.002184,0.001968,0.00186,0.00165,0.001577,0.001387,0.001254,0.001118,
 		    0.001037,0.000942,0.000823,0.000736,0.000654,0.000579,0.000512,0.00049,0.00045,0.000355,
-		    0.000296,0.000265,0.000193,0.00016,0.000126};
+		    0.000296,0.000265,0.000193,0.00016,0.000126,0.0000851, 0.0000676,0.0000537,0.0000426, 0.0000338,
+		    0.0000268,0.0000213,0.0000166,0.0000133,0.0000106,0.00000837,0.00000662, 0.00000524,0.00000414, 0.00000327,
+		    0.00000258};
 
   if(fHistoMeasNch) delete fHistoMeasNch;
-  fHistoMeasNch=new TH1F("hMeaseNch","",65,nchbins);
-  for(Int_t i=0; i<65; i++){
+  fHistoMeasNch=new TH1F("hMeaseNch","",81,nchbins);
+  for(Int_t i=0; i<81; i++){
     fHistoMeasNch->SetBinContent(i+1,pch[i]);
     fHistoMeasNch->SetBinError(i+1,0.);
   }

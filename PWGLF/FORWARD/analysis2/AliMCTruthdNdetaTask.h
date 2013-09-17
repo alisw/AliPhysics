@@ -151,13 +151,13 @@ protected:
      * @param data        Data histogram 
      * @param mc          MC histogram
      */
-    virtual void ProcessEvent(const AliAODForwardMult* forward, 
-			      Int_t                    triggerMask,
-			      Bool_t                   isZero,
-			      Double_t                 vzMin, 
-			      Double_t                 vzMax, 
-			      const TH2D*              data, 
-			      const TH2D*              mc);
+    virtual Bool_t ProcessEvent(const AliAODForwardMult* forward, 
+				Int_t                    triggerMask,
+				Bool_t                   isZero,
+				Double_t                 vzMin, 
+				Double_t                 vzMax, 
+				const TH2D*              data, 
+				const TH2D*              mc);
     /** 
      * End of processing 
      * 

@@ -17,6 +17,7 @@
 
 class TH2F;
 class AliESDtrackCuts;
+class TProfile2D;
 
 class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
  public:
@@ -50,6 +51,9 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   void SetModulationDEDx(Bool_t flag=kTRUE){fModulationDEDx=flag;};
 
+  void SetAfter2011(Bool_t stat=kTRUE){fIsAfter2011=stat;};
+  Bool_t GetAfter2011() const {return fIsAfter2011;};
+
   void SetTPCclusterN(Int_t ncl){fNcluster=ncl;};
   static Bool_t IsPsiComputed(){return fgIsPsiComputed;};
   static Float_t GetPsi2V0A(){return fgPsi2v0a;};
@@ -68,18 +72,19 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
  private:
   AliAnalysisTaskVnV0(const AliAnalysisTaskVnV0 &old); 
   AliAnalysisTaskVnV0& operator=(const AliAnalysisTaskVnV0 &source); 
- 
+
   Int_t PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t specie);
 
   static Bool_t fgIsPsiComputed; // flag which return if event was processed
   static Float_t fgPsi2v0a,fgPsi2v0c,fgPsi2tpc; // current Psi2
+  static Float_t fgPsi3v0a,fgPsi3v0c,fgPsi3tpc; // current Psi3
   static Float_t fgPsi2v0aMC,fgPsi2v0cMC,fgPsi2tpcMC; // current Psi2
   static Float_t fgPsi3v0aMC,fgPsi3v0cMC,fgPsi3tpcMC; // current Psi3
-  static Float_t fgPsi3v0a,fgPsi3v0c,fgPsi3tpc; // current Psi3
 
   virtual Float_t GetVertex(AliAODEvent* aod) const;
   virtual void Analyze(AliAODEvent* aodEvent, Float_t v0Centr); 
-  
+  virtual void SelectK0s();
+
   Double_t     fVtxCut;             // Vtx cut on z position in cm
   Double_t     fEtaCut;             // Eta cut used to select particles
   Double_t     fMinPt;              // Min pt - for histogram limits
@@ -90,6 +95,7 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   Bool_t fV3; // switch to set the armonics
   Bool_t fIsMC; // if MC
   Bool_t fQAsw;   // if QA
+  Bool_t fIsAfter2011; // switch for 2011 and later runs
 
   static const Int_t nCentrBin = 9;          //! # cenrality bins
 
@@ -169,8 +175,25 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   Bool_t fModulationDEDx; //add a modulation on the dE/dx response w.r.t. EP (kFALSE default)
 
-  AliESDtrackCuts *fCutsDaughter;
-  ClassDef(AliAnalysisTaskVnV0, 7);    //Analysis task v2 and v3 analysis on AOD
+  Float_t fZvtx; //! primary vertex z coordinate
+  Int_t fNK0s; //! number of K0s in my private selection
+  Float_t fPhiK0s[1000]; //! phi of K0s in my private selection
+  Float_t fPtK0s[1000];//! pt of K0s in my private selection
+  Int_t fNpiPos; //! number of positive pions for K0s selection
+  Int_t fNpiNeg; //! number of negative pions for K0s selection
+  Int_t fIPiPos[1000]; //! position in the AOD stack of positive pions for K0s
+  Int_t fIPiNeg[1000]; //! position in the AOD stack of negative pions for K0s
+
+  TH2D *fHKsPhi; //! Ks phi distribution
+  TH2D *fHKsPhiEP; //! EP distribution
+  TH2D *fHK0sMass; //! K0s mass vs. pt (private selection)
+  TH2D *fHK0sMass2; //! K0s mass vs. pt (standard selection)
+  TH2D *fHK0vsLambda; //! K0s vs lambda mass (in private K0s selection)
+  TProfile2D *fHctauPtEP; //! ctau vs DeltaPhi,pt
+  TH2F *fHctauAt1EP;    //! ctau vs. DeltaPhi at 1 GeV/c
+
+  AliESDtrackCuts *fCutsDaughter; // daughter cut for K0s standard selection
+  ClassDef(AliAnalysisTaskVnV0, 8);    //Analysis task v2 and v3 analysis on AOD
 };
 
 #endif

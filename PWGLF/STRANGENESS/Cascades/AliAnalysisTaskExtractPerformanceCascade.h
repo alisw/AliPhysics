@@ -59,6 +59,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   void SetpARapidityShift     (Double_t lRapShift = 0.465 ) { fpArapidityShift = lRapShift; }
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
+  void SetEtaRefMult ( Double_t lEtaRefMult = 0.5 ) { fEtaRefMult = lEtaRefMult; }
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -80,6 +81,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Double_t fpArapidityShift; //pA rapidity shift (should be 0.465, usually)
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
+  Double_t fEtaRefMult; //Reference multiplicity eta
   
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related

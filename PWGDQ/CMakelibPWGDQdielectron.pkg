@@ -49,13 +49,14 @@ set ( SRCS
       dielectron/AliDielectronTrackCuts.cxx
       dielectron/AliDielectronPairLegCuts.cxx
       dielectron/AliDielectronSignalBase.cxx
-      dielectron/AliDielectronSignalFunc.cxx
       dielectron/AliDielectronSignalExt.cxx
+      dielectron/AliDielectronSignalFunc.cxx
       dielectron/AliDielectronSpectrum.cxx
       dielectron/AliDielectronDebugTree.cxx
       dielectron/AliDielectronTrackRotator.cxx
       dielectron/AliDielectronPID.cxx
       dielectron/AliDielectronCutGroup.cxx
+      dielectron/AliDielectronCutQA.cxx
       dielectron/AliDielectronEventCuts.cxx
       dielectron/AliDielectronHelper.cxx
       dielectron/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
@@ -75,4 +76,4 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  PWGDQdielectronLinkDef.h)
 
-set ( EINCLUDE PWG/muon PWG/FLOW/Base PWG/FLOW/Tasks PWGDQ/dielectron STEER CORRFW STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE PWG/muon PWG/FLOW/Base PWG/FLOW/Tasks PWGDQ/dielectron STEER CORRFW STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase )

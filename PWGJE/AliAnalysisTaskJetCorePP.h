@@ -165,7 +165,7 @@ private:
 
    TRandom3* fRandom;           // TRandom3 
 
-   ClassDef(AliAnalysisTaskJetCorePP, 5);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 6);  //has to end with number larger than 0
 };
 
 #endif

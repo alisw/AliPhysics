@@ -45,23 +45,26 @@ ClassImp(AliSpectraBothEventCuts)
 
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
+fMinRun(0),fMaxRun(0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
-,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0)
+,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0)
 {
-  // Constructor
-  fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
-  fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",300,-15,15);
-  fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",300,-15,15);
-  fHistoVtxAftSelwithoutZvertexCut=new TH1F("fHistoVtxAftSelwithoutZvertexcut", "Vtx distr after event selection without Z vertex cut",300,-15,15);
-  fHistoVtxalltriggerEventswithMCz=new TH1F("fHistoVtxalltriggerEventswithMCz", "generated z vertex position",300,-15,15);
-  fHistoVtxAftSelwithoutZvertexCutusingMCz=new TH1F("fHistoVtxAftSelwithoutZvertexCutusingMCz", "Vtx distr after event selection without Z vertex cut using MC z",300,-15,15);
-  fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
-  fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
-  fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
+  // Constructori
+ // Bool_t oldStatus = TH1::AddDirectoryStatus();
+  //TH1::AddDirectory(kFALSE);	
+ // fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
+ // fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",300,-15,15);
+//  fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",300,-15,15);
+//  fHistoVtxAftSelwithoutZvertexCut=new TH1F("fHistoVtxAftSelwithoutZvertexcut", "Vtx distr after event selection without Z vertex cut",300,-15,15);
+//  fHistoVtxalltriggerEventswithMCz=new TH1F("fHistoVtxalltriggerEventswithMCz", "generated z vertex position",300,-15,15);
+//  fHistoVtxAftSelwithoutZvertexCutusingMCz=new TH1F("fHistoVtxAftSelwithoutZvertexCutusingMCz", "Vtx distr after event selection without Z vertex cut using MC z",300,-15,15);
+//  fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
+//  fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
+ // fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
   //fHistoQVectorPos = new TH1F("fHistoQVectorPos", "QVectorPos distribution",100,0,10);
   //fHistoQVectorNeg = new TH1F("fHistoQVectorNeg", "QVectorNeg distribution",100,0,10);
-  fHistoQVector = new TH1F("fHistoQVector", "QVector with VZERO distribution",100,0,10);
-  fHistoEP = new TH1F("fHistoEP", "EP with VZERO distribution",100,-10,10);
+ // fHistoQVector = new TH1F("fHistoQVector", "QVector with VZERO distribution",100,0,10);
+ // fHistoEP = new TH1F("fHistoEP", "EP with VZERO distribution",100,-10,10);
   fCentralityCutMin = 0.0;      // default value of centrality cut minimum, 0 ~ no cut
   fCentralityCutMax = 10000.0;  // default value of centrality cut maximum,  ~ no cut
   // fQVectorPosCutMin=0.0;
@@ -77,8 +80,76 @@ fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEta
   fTrackBits=1;
   fCentEstimator="V0M";
   fMaxChi2perNDFforVertex=-1;
+ // TH1::AddDirectory(oldStatus);	
 }
+//______________________________________________________
 
+AliSpectraBothEventCuts::~AliSpectraBothEventCuts()
+{
+	if(fHistoCuts)
+		delete fHistoCuts;
+	if(fHistoVtxBefSel)
+		delete fHistoVtxBefSel;
+	if(fHistoVtxAftSel)
+		delete fHistoVtxAftSel;
+	if(fHistoVtxAftSelwithoutZvertexCut)
+		delete fHistoVtxAftSelwithoutZvertexCut;
+	if(fHistoVtxalltriggerEventswithMCz)
+		delete fHistoVtxalltriggerEventswithMCz;
+	if(fHistoVtxAftSelwithoutZvertexCutusingMCz)
+		delete fHistoVtxAftSelwithoutZvertexCutusingMCz;
+	if(fHistoEtaBefSel)
+		delete fHistoEtaBefSel;
+	if(fHistoEtaAftSel)
+		delete fHistoEtaAftSel ;
+	if(fHistoNChAftSel)
+		delete fHistoNChAftSel;
+	if(fHistoQVector)
+		delete fHistoQVector;
+	if(fHistoEP)
+		delete fHistoEP;
+	if(fHistoRunNumbers)
+		delete fHistoRunNumbers;
+}
+//______________________________________________________
+void AliSpectraBothEventCuts::InitHisto()
+{
+	Bool_t oldStatus = TH1::AddDirectoryStatus();
+  	TH1::AddDirectory(kFALSE);
+	if(!fHistoCuts)	
+ 		fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
+ 	if(!fHistoVtxBefSel )
+		fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",300,-15,15);
+	if(!fHistoVtxAftSel)
+  		fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",300,-15,15);
+	if(!fHistoVtxAftSelwithoutZvertexCut)
+  		fHistoVtxAftSelwithoutZvertexCut=new TH1F("fHistoVtxAftSelwithoutZvertexcut", "Vtx distr after event selection without Z vertex cut",300,-15,15);
+  	if(!fHistoVtxalltriggerEventswithMCz)
+		fHistoVtxalltriggerEventswithMCz=new TH1F("fHistoVtxalltriggerEventswithMCz", "generated z vertex position",300,-15,15);
+  	if(!fHistoVtxAftSelwithoutZvertexCutusingMCz)
+		fHistoVtxAftSelwithoutZvertexCutusingMCz=new TH1F("fHistoVtxAftSelwithoutZvertexCutusingMCz", "Vtx distr after event selection without Z vertex cut using MC z",300,-15,15);
+  	if(!fHistoEtaBefSel)
+		fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
+  	if(!fHistoEtaAftSel)
+		fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
+  	if(!fHistoNChAftSel)
+		fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
+  //fHistoQVectorPos = new TH1F("fHistoQVectorPos", "QVectorPos distribution",100,0,10);
+  //fHistoQVectorNeg = new TH1F("fHistoQVectorNeg", "QVectorNeg distribution",100,0,10);
+	if(!fHistoQVector)
+		fHistoQVector = new TH1F("fHistoQVector", "QVector with VZERO distribution",100,0,10);
+  	if(!fHistoEP)
+		fHistoEP = new TH1F("fHistoEP", "EP with VZERO distribution",100,-10,10);
+	if(!fHistoRunNumbers)
+	{
+		if(fMaxRun>fMinRun&&fMinRun>=0)
+			fHistoRunNumbers=new TH1F("fHistoRunNumbers","Run numbers",fMaxRun-fMinRun+1,fMinRun-0.5,fMaxRun+0.5);
+		else
+			fHistoRunNumbers=new TH1F("fHistoRunNumbers","Run numbers",1001,120000-.5,121000+0.5);
+
+	}
+	TH1::AddDirectory(oldStatus);		
+}
 //______________________________________________________
 Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts* trackcuts,Bool_t isMC,Double_t mcZ)
 {
@@ -86,13 +157,12 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
   fAOD = aod;
   fTrackCuts = trackcuts;
   fHistoCuts->Fill(kProcessedEvents);
-
+  fHistoRunNumbers->Fill(aod->GetRunNumber());
   Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerSettings);//FIXME we can add the trigger mask here
   if(!IsPhysSel)return IsPhysSel;
 
   if(isMC)	
    	fHistoVtxalltriggerEventswithMCz->Fill(mcZ);
-
    //loop on tracks, before event selection, filling QA histos
  AliESDEvent* esdevent=0x0;
   AliAODEvent* aodevent=0x0;
@@ -129,7 +199,6 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		return false;
      if(fUseSDDPatchforLHC11a==kwithoutSDD&&isSDD==kTRUE)
 		return false;
-
 
     fHistoCuts->Fill(kPhysSelEvents);
 
@@ -177,7 +246,6 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
       Nch++;
     }
   }
-  //Printf("NCHARGED_EvSel : %d",Nch);
   if(fIsSelected)fHistoNChAftSel->Fill(Nch);
   return fIsSelected;
 }
@@ -318,13 +386,16 @@ void AliSpectraBothEventCuts::PrintCuts()
 {
   // print info about event cuts
   cout << "Event Stats" << endl;
-  cout << " > Number of accepted events: " << fHistoCuts->GetBinContent(kAcceptedEvents + 1) << endl;
-  cout << " > Number of processed events: " << fHistoCuts->GetBinContent(kProcessedEvents + 1) << endl;
-  cout << " > Number of PhysSel events: " << fHistoCuts->GetBinContent(kPhysSelEvents + 1) << endl;
-  cout << " > Vertex out of range: " << fHistoCuts->GetBinContent(kVtxRange + 1) << endl;
-  cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
-  cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
-  cout << " > QVector cut: " << fHistoCuts->GetBinContent(kQVector + 1) << endl;
+  if(fHistoCuts)
+  {		
+ 	 cout << " > Number of accepted events: " << fHistoCuts->GetBinContent(kAcceptedEvents + 1) << endl;
+ 	 cout << " > Number of processed events: " << fHistoCuts->GetBinContent(kProcessedEvents + 1) << endl;
+ 	 cout << " > Number of PhysSel events: " << fHistoCuts->GetBinContent(kPhysSelEvents + 1) << endl;
+ 	 cout << " > Vertex out of range: " << fHistoCuts->GetBinContent(kVtxRange + 1) << endl;
+ 	 cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
+ 	 cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
+	  cout << " > QVector cut: " << fHistoCuts->GetBinContent(kQVector + 1) << endl;
+  }	
   cout << " > Track type used for the QVector calculation: " << fTrackBits << endl;
   // cout << " > QPosRange: [" << fQVectorPosCutMin <<"," <<fQVectorPosCutMax<<"]"<< endl;
   // cout << " > QNegRange: [" << fQVectorNegCutMin <<"," <<fQVectorNegCutMax<<"]"<< endl;
@@ -439,7 +510,7 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
   TList collections_histoVtxAftSelwithoutZvertexCut;
   TList collections_histoVtxalltriggerEventswithMCz;
   TList collections_histoVtxAftSelwithoutZvertexCutusingMCz;			
-
+  TList collections_histoRunNumbers;
   Int_t count = 0;
 
   while ((obj = iter->Next())) {
@@ -471,9 +542,12 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
     collections_histoVtxAftSelwithoutZvertexCut.Add(histo_histoVtxAftSelwithoutZvertexCut);
     TH1F* histo_histoVtxalltriggerEventswithMCz=entry->GetHistoVtxGenerated();
     collections_histoVtxalltriggerEventswithMCz.Add(histo_histoVtxalltriggerEventswithMCz);
-    TH1F* histo_histoVtxAftSelwithoutZvertexCutusingMCz=entry->GetHistoVtxAftSelwithoutZvertexCutusingMCz();
+    
+   TH1F* histo_histoVtxAftSelwithoutZvertexCutusingMCz=entry->GetHistoVtxAftSelwithoutZvertexCutusingMCz();
     collections_histoVtxAftSelwithoutZvertexCutusingMCz.Add(histo_histoVtxAftSelwithoutZvertexCutusingMCz);	
-
+    
+    TH1F* histo_histoRunNumbers=entry->GetHistoRunNumbers();
+    collections_histoRunNumbers.Add(histo_histoRunNumbers);
     count++;
   }
   
@@ -491,10 +565,18 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
   fHistoVtxAftSelwithoutZvertexCut->Merge(&collections_histoVtxAftSelwithoutZvertexCut);
   fHistoVtxalltriggerEventswithMCz->Merge(&collections_histoVtxalltriggerEventswithMCz);
   fHistoVtxAftSelwithoutZvertexCutusingMCz->Merge(&collections_histoVtxAftSelwithoutZvertexCutusingMCz);
- 
+  fHistoRunNumbers->Merge(&collections_histoRunNumbers);
 
   delete iter;
 
   return count+1;
 }
-
+//__________________________________________________________________________________________________________
+void AliSpectraBothEventCuts::SetRunNumberRange(Int_t min, Int_t max)
+{
+	if(max>min&&min>=0)
+	{
+		 fMinRun=min; 			 
+  		 fMaxRun=max;
+	}
+}

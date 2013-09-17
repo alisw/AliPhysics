@@ -46,16 +46,64 @@ class TArrayD;
 class AliFMDEnergyFitter : public TNamed
 {
 public: 
-    enum { 
-      kC	= AliForwardUtil::ELossFitter::kC,
-      kDelta	= AliForwardUtil::ELossFitter::kDelta, 
-      kXi	= AliForwardUtil::ELossFitter::kXi, 
-      kSigma	= AliForwardUtil::ELossFitter::kSigma, 
-      kSigmaN	= AliForwardUtil::ELossFitter::kSigmaN,
-      kN	= AliForwardUtil::ELossFitter::kN, 
-      kA	= AliForwardUtil::ELossFitter::kA
-    };
+  /** 
+   * Enumeration of parameters 
+   */
+  enum { 
+    /** Index of pre-constant @f$ C@f$ */
+    kC		= AliForwardUtil::ELossFitter::kC,
+    /** Index of most probable value @f$ \Delta_p@f$ */
+    kDelta	= AliForwardUtil::ELossFitter::kDelta, 
+    /** Index of Landau width @f$ \xi@f$ */
+    kXi		= AliForwardUtil::ELossFitter::kXi, 
+    /** Index of Gaussian width @f$ \sigma@f$ */
+    kSigma	= AliForwardUtil::ELossFitter::kSigma, 
+    /** Index of Gaussian additional width @f$ \sigma_n@f$ */
+    kSigmaN	= AliForwardUtil::ELossFitter::kSigmaN,
+    /** Index of Number of particles @f$ N@f$ */
+    kN		= AliForwardUtil::ELossFitter::kN, 
+    /** Base index of particle strengths @f$ a_i@f$ for 
+	@f$i=2,\ldots,N@f$ */
+    kA		= AliForwardUtil::ELossFitter::kA
+  };
+  /** 
+   * Enumeration of residual methods 
+   */
+  enum EResidualMethod {
+    /** Do not calculate residuals */
+    kNoResiduals = 0, 
+    /** The residuals stored are the difference, and the errors are
+	stored in the error bars of the histogram. */
+    kResidualDifference, 
+    /** The residuals stored are the differences scaled to the error
+	on the data */ 
+    kResidualScaledDifference, 
+    /** The residuals stored are the square difference scale to the
+	square error on the data. */
+    kResidualSquareDifference
+  };
 
+  /**
+   * FMD ring bits for skipping 
+   */
+   enum FMDRingBits { 
+     /** FMD1i */
+     kFMD1I=0x01,
+     /** All of FMD1 */
+     kFMD1 =kFMD1I,
+     /** FMD2i */
+     kFMD2I=0x02,
+     /** FMD2o */
+     kFMD2O=0x04,
+     /** All of FMD2 */
+     kFMD2 =kFMD2I|kFMD2O,
+     /** FMD3i */
+     kFMD3I=0x08,
+     /** FMD3o */
+     kFMD3O=0x10,
+     /** All of FMD3 */
+     kFMD3 =kFMD3I|kFMD3O
+  };
   /** 
    * Destructor
    */
@@ -92,7 +140,7 @@ public:
    * has already been set (using SetEtaAxis), then this parameter will be 
    * ignored
    */
-  void SetupForData(const TAxis& etaAxis);
+ void SetupForData(const TAxis& etaAxis);
   /** 
    * Set the eta axis to use.  This will force the code to use this
    * eta axis definition - irrespective of whatever axis is passed to
@@ -205,6 +253,53 @@ public:
    */
   void SetUseIncreasingBins(Bool_t x) { fUseIncreasingBins = x; }
   /** 
+   * Set whether to make residuals, and in that case how. 
+   *
+   * - Square difference: @f$chi_i^2=(h_i - f(x_i))^2/\delta_i^2@f$ 
+   * - Scaled difference: @f$(h_i - f(x_i))/\delta_i@f$ 
+   * - Difference: @f$(h_i - f(x_i)) \pm\delta_i@f$ 
+   *
+   * where @f$h_i, x_i, \delta_i@f$ is the bin content, bin center,
+   * and bin error for bin @f$i@f$ respectively, and @f$ f@f$ is the
+   * fitted function.
+   * 
+   * @param x Residual method 
+   */
+  void SetStoreResiduals(EResidualMethod x=kResidualDifference) 
+  { 
+    fResidualMethod = x; 
+  }
+  /** 
+   * Set the regularization cut @f$c_{R}@f$.  If a @f$\Delta@f$
+   * distribution has more entries @f$ N_{dist}@f$ than @f$c_{R}@f$,
+   * then we modify the errors of the the distribution with the factor
+   * 
+   * @f[
+   * \sqrt{N_{dist}/c_{R}}
+   * @f]
+   *
+   * to keep the @f$\chi^2/\nu@f$ within resonable limits. 
+   *
+   * The large residuals @f$chi_i^2=(h_i - f(x_i))^2/\delta_i^2@f$
+   * (see also SetStoreResiduals) comes about on the boundary between
+   * the @f$N@f$ and @f$N+1@f$ particle contributions, and seems to
+   * fall off for larger @f$N@f$. This may indicate that there's a
+   * component in the distributions that the function
+   *
+   * @f[
+   *   f(\Delta;\Delta_p,\xi,\sigma,\mathbf{a}) = \sum_i=1^{n} a_i\int
+   *   d\Delta' L(\Delta;\Delta',\xi) G(\Delta';\Delta_p,\sigma)
+   * @f]
+   * 
+   * does not capture.   
+   *
+   * @param cut
+   */
+  void SetRegularizationCut(Double_t cut=3e6) 
+  {
+    fRegularizationCut = cut;
+  }
+  /** 
    * Fitter the input AliESDFMD object
    * 
    * @param input     Input 
@@ -249,12 +344,22 @@ public:
    * @param option Not used 
    */
   void Print(Option_t* option="") const;
+  /** 
+   * Read the parameters from a list - used when re-running the code 
+   * 
+   * @param list Input list 
+   * 
+   * @return true if the parameter where read 
+   */
+  Bool_t ReadParameters(const TCollection* list);
+  void SetSkips(UShort_t skip) { fSkips = skip; }
 protected:
   /** 
    * Internal data structure to keep track of the histograms
    */
   struct RingHistos : public AliForwardUtil::RingHistos
   { 
+    typedef AliFMDCorrELossFit::ELossFit ELossFit_t;
     /** 
      * Default CTOR
      */
@@ -328,17 +433,22 @@ protected:
      *                    is loosend by a factor of 2 
      * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
      *                    the reduced @f$\chi^2@f$ 
+     * @param regCut      Regularization cut-off
+     * @param residuals   Mode for residual plots
      *
      * @return List of fits 
      */
-    TObjArray* Fit(TList* dir, 
-		   const TAxis& eta,
-		   Double_t     lowCut, 
-		   UShort_t     nParticles,
-		   UShort_t     minEntries,
-		   UShort_t     minusBins,
-		   Double_t     relErrorCut, 
-		   Double_t     chi2nuCut) const;
+    TObjArray* Fit(TList*          dir, 
+		   const TAxis&    eta,
+		   Double_t        lowCut, 
+		   UShort_t        nParticles,
+		   UShort_t        minEntries,
+		   UShort_t        minusBins,
+		   Double_t        relErrorCut, 
+		   Double_t        chi2nuCut,
+		   Double_t        minWeight,
+		   Double_t        regCut,
+		   EResidualMethod residuals) const;
     /** 
      * Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
      * maximum bin content in the range @f$ [E_{min},\infty]@f$ is
@@ -359,15 +469,33 @@ protected:
      *                    is loosend by a factor of 2 
      * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
      *                    the reduced @f$\chi^2@f$ 
+     * @param regCut      Regularization cut-off
      * 
      * @return The best fit function 
      */
-    TF1* FitHist(TH1*     dist,
-		 Double_t lowCut, 
-		 UShort_t nParticles,
-		 UShort_t minusBins,
-		 Double_t relErrorCut, 
-		 Double_t chi2nuCut) const;
+    ELossFit_t* FitHist(TH1*     dist,
+			UShort_t bin, 
+			Double_t lowCut, 
+			UShort_t nParticles,
+			UShort_t minusBins,
+			Double_t relErrorCut, 
+			Double_t chi2nuCut,
+			Double_t minWeight,
+			Double_t regCut) const;
+    /** 
+     * Calculate residuals of the fit 
+     * 
+     * @param mode   How to calculate 
+     * @param lowCut Lower cut 
+     * @param dist   Distribution 
+     * @param fit    Function fitted to distribution
+     * @param out    Output list to store residual histogram in
+     */
+    void CalculateResiduals(EResidualMethod   mode,
+			    Double_t         lowCut,
+			    TH1*             dist, 
+			    ELossFit_t*      fit, 
+			    TCollection*     out) const;
     /** 
      * Find the best fits 
      * 
@@ -400,10 +528,12 @@ protected:
      * 
      * @return Best fit 
      */
-    AliFMDCorrELossFit::ELossFit* FindBestFit(const TH1* dist,
-					      Double_t relErrorCut, 
-					      Double_t chi2nuCut,
-					      Double_t minWeightCut);
+    ELossFit_t* FindBestFit(UShort_t b, 
+			    const TH1* dist,
+			    Double_t relErrorCut, 
+			    Double_t chi2nuCut,
+			    Double_t minWeightCut) const;
+#if 0
     /** 
      * Check the result of the fit. Returns true if 
      * - @f$ \chi^2/\nu < \max{\chi^2/\nu}@f$
@@ -422,7 +552,9 @@ protected:
      */
     Bool_t CheckResult(TFitResult* r,
 		       Double_t    relErrorCut, 
-		       Double_t    chi2nuCut) const;
+		       Double_t    chi2nuCut,
+		       Double_t    minWeight) const;
+#endif
     /** 
      * Make an axis with increasing bins 
      * 
@@ -479,7 +611,8 @@ protected:
     TH1D*        fEmpty;        // Ring energy distribution for empty events
     TList*       fEtaEDists;    // Energy distributions per eta bin. 
     TList*       fList;
-    TClonesArray fFits;
+    mutable TObjArray    fBest;
+    mutable TClonesArray fFits;
     Int_t        fDebug;
     ClassDef(RingHistos,3);
   };
@@ -492,6 +625,29 @@ protected:
    * @return Ring histogram container 
    */
   RingHistos* GetRingHistos(UShort_t d, Char_t r) const;
+  /** 
+   * Check if the detector @a d, ring @a r is listed <i>in</i> the @a
+   * skips bit mask.  If the detector/ring is in the mask, return true.
+   * 
+   * That is, use case is 
+   * @code 
+   *  for (UShort_t d=1. d<=3, d++) {
+   *    UShort_t nr = (d == 1 ? 1 : 2);
+   *    for (UShort_t q = 0; q < nr; q++) { 
+   *      Char_t r = (q == 0 ? 'I' : 'O');
+   *      if (CheckSkips(d, r, skips)) continue; 
+   *      // Process detector/ring 
+   *    }
+   *  }
+   * @endcode
+   *
+   * @param d      Detector
+   * @param r      Ring 
+   * @param skips  Mask of detector/rings to skip
+   * 
+   * @return True if detector @a d, ring @a r is in the mask @a skips 
+   */
+  static Bool_t CheckSkip(UShort_t d, Char_t r, UShort_t skips);
 
   TList    fRingHistos;    // List of histogram containers
   Double_t fLowCut;        // Low cut on energy
@@ -509,9 +665,11 @@ protected:
   Double_t fMaxChi2PerNDF; // chi^2/nu cit
   Double_t fMinWeight;     // Minimum weight value 
   Int_t    fDebug;         // Debug level 
-  
+  EResidualMethod fResidualMethod;// Whether to store residuals (debugging)
+  UShort_t        fSkips;         // Rings to skip when fitting 
+  Double_t        fRegularizationCut; // When to regularize the chi^2
 
-  ClassDef(AliFMDEnergyFitter,4); //
+  ClassDef(AliFMDEnergyFitter,5); //
 };
 
 #endif

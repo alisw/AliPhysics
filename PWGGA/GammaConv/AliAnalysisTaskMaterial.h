@@ -40,9 +40,8 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
    void ProcessPhotons();
    void ProcessMCPhotons();
    void FillMCTree(Int_t stackPos);
-   Int_t CountESDTracks14();
-   Int_t CountESDTracks0914();
-   Int_t CountESDTracks09();
+   Int_t CountTracks0914();
+   Int_t CountTracks09();
 
    AliV0ReaderV1 *fV0Reader;
    TClonesArray *fConversionGammas; //Reconstructed Photons;

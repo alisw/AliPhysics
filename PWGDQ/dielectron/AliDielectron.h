@@ -24,6 +24,7 @@
 
 #include "AliDielectronHistos.h"
 #include "AliDielectronHF.h"
+#include "AliDielectronCutQA.h"
 
 class AliEventplane;
 class AliVEvent;
@@ -74,6 +75,7 @@ public:
   Int_t GetLeg1Pdg()   const { return fPdgLeg1;   }
   Int_t GetLeg2Pdg()   const { return fPdgLeg2;   }
 
+  void SetCutQA(Bool_t qa=kTRUE) { fCutQA=qa; }
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
   void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
@@ -83,6 +85,7 @@ public:
   TObjArray** GetPairArraysPointer() { return &fPairCandidates; }
   void SetHistogramArray(AliDielectronHF * const histoarray) { fHistoArray=histoarray; }
   const TObjArray * GetHistogramArray() const { return fHistoArray?fHistoArray->GetHistArray():0x0; }
+  const TObjArray * GetQAHistArray() const { return fQAmonitor?fQAmonitor->GetQAHistArray():0x0; }
 
   void SetHistogramManager(AliDielectronHistos * const histos) { fHistos=histos; }
   AliDielectronHistos* GetHistoManager() const { return fHistos; }
@@ -130,7 +133,9 @@ public:
   void SaveDebugTree();
 
 private:
-  
+
+  Bool_t fCutQA;                    // monitor cuts
+  AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -200,6 +205,7 @@ private:
   
   void  FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly=kFALSE);
   void  FillMCHistograms(const AliVEvent *ev);
+  void  FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal);
   void  FillHistogramsMC(const AliMCEvent *ev,  AliVEvent *ev1);
   void  FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);

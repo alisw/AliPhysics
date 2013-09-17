@@ -1711,8 +1711,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                     // few checks
                     if ((stack->IsPhysicalPrimary(iPart)) || (!fGeoUt->IsInEMCAL(part->Vx(),part->Vy(),part->Vz())))
                     {//Marcelo - ...isn't this redundant?
-                        if (pdgMom)
-                            fHistElectronFirstMother->Fill(pdgMom->PdgCode());
+		      if (pdgMom) {
+			fHistElectronFirstMother->Fill(pdgMom->PdgCode());
+		      }
                         fHistElectronFirstMotherXY->Fill(part->Vx(),part->Vy());					
                         fHistElectronNDaughters->Fill(nPartDaughters);
 						
@@ -1734,7 +1735,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         //if (IsInAcceptance(part,pdg,extParam)) 
                         if (IsInAcceptance(aliPart)) 
                         {//Marcelo - should all three of the lines below be in the if statement?
-                            if (pdgMom) fHistElectronFirstMotherAcc->Fill(pdgMom->PdgCode());
+			  if (pdgMom) { 
+			    fHistElectronFirstMotherAcc->Fill(pdgMom->PdgCode());
+			  }
                             fHistElectronFirstMotherXYAcc->Fill(part->Vx(),part->Vy());					
                             fHistElectronNDaughtersAcc->Fill(nPartDaughters);
 							
@@ -1940,8 +1943,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                     // few checks
                     if ((stack->IsPhysicalPrimary(iPart)) || (!fGeoUt->IsInEMCAL(part->Vx(),part->Vy(),part->Vz())))
                     {
-                        if (pdgMom)
-                            fHistGammaFirstMother->Fill(pdgMom->PdgCode());
+		      if (pdgMom) {
+			fHistGammaFirstMother->Fill(pdgMom->PdgCode());
+		      }
                         fHistGammaFirstMotherXY->Fill(part->Vx(),part->Vy());					
                         fHistGammaNDaughters->Fill(nPartDaughters);
 						
@@ -1975,8 +1979,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         //if (IsInAcceptance(part,pdg)) 
                         if (IsInAcceptance(aliPart)) 
                         {
-                            if (pdgMom)//Marcelo - again, should this be all three?
-                                fHistGammaFirstMotherAcc->Fill(pdgMom->PdgCode());
+			  if (pdgMom) {//Marcelo - again, should this be all three?
+			    fHistGammaFirstMotherAcc->Fill(pdgMom->PdgCode());
+			  }
                             fHistGammaFirstMotherXYAcc->Fill(part->Vx(),part->Vy());					
                             fHistGammaNDaughtersAcc->Fill(nPartDaughters);
 							
@@ -2092,7 +2097,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         }							
 						
                         // few checks
-                        if(pdgMom) fHistNPPElectronFirstMother->Fill(pdgMom->PdgCode());
+                        if(pdgMom) { fHistNPPElectronFirstMother->Fill(pdgMom->PdgCode()); }
                         fHistNPPElectronFirstMotherXY->Fill(part->Vx(),part->Vy());					
                         fHistNPPElectronNDaughters->Fill(nPartDaughters);
 						
@@ -2114,7 +2119,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         //if (IsInAcceptance(part,pdg,extParam)) 
                         if (IsInAcceptance(aliPart)) 
                         {
-                            if(pdgMom) fHistNPPElectronFirstMotherAcc->Fill(pdgMom->PdgCode());
+			  if(pdgMom) { fHistNPPElectronFirstMotherAcc->Fill(pdgMom->PdgCode()); }
                             fHistNPPElectronFirstMotherXYAcc->Fill(part->Vx(),part->Vy());					
                             fHistNPPElectronNDaughtersAcc->Fill(nPartDaughters);
                             
@@ -2168,8 +2173,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         }											
 						
                         // few checks
-                        if (pdgMom)
-                            fHistNPPGammaFirstMother->Fill(pdgMom->PdgCode());
+                        if (pdgMom) {
+			  fHistNPPGammaFirstMother->Fill(pdgMom->PdgCode());
+			}
                         fHistNPPGammaFirstMotherXY->Fill(part->Vx(),part->Vy());					
                         fHistNPPGammaNDaughters->Fill(nPartDaughters);
 						
@@ -2191,7 +2197,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         //if (IsInAcceptance(part,pdg)) 
                         if (IsInAcceptance(aliPart)) 
                         {
-                            fHistNPPGammaFirstMotherAcc->Fill(pdgMom->PdgCode());
+			  if (pdgMom) { 
+			    fHistNPPGammaFirstMotherAcc->Fill(pdgMom->PdgCode());
+			  }
                             fHistNPPGammaFirstMotherXYAcc->Fill(part->Vx(),part->Vy());					
                             fHistNPPGammaNDaughtersAcc->Fill(nPartDaughters);
                             
@@ -2321,7 +2329,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     }
     
     if(!fGeoUt){
-        fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
+        fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
         AliInfo("Creating new AliEMCALGeometry");
     }
     //fGeoUt = new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
@@ -2592,8 +2600,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                 }
 				
                 // few checks
-                if (pdgMom)
-                    fHistGammaFirstMotherRec->Fill(pdgMom->PdgCode());
+                if (pdgMom) {
+		  fHistGammaFirstMotherRec->Fill(pdgMom->PdgCode());
+		}
                 fHistGammaFirstMotherXYRec->Fill(part->Vx(),part->Vy());					
                 fHistGammaNDaughtersRec->Fill(nPartDaughters);
 				
@@ -2658,8 +2667,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                 }
 				
                 // few checks
-                if (pdgMom)
-                    fHistElectronFirstMotherRec->Fill(pdgMom->PdgCode());
+                if (pdgMom) {
+		  fHistElectronFirstMotherRec->Fill(pdgMom->PdgCode());
+		}
                 fHistElectronFirstMotherXYRec->Fill(part->Vx(),part->Vy());					
                 fHistElectronNDaughtersRec->Fill(nPartDaughters);
 				
@@ -2911,7 +2921,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                     fNPPElectronRectotET += et;
 					
                     // few checks
-                    if(pdgMom) fHistNPPElectronFirstMotherRec->Fill(pdgMom->PdgCode());
+                    if(pdgMom) { fHistNPPElectronFirstMotherRec->Fill(pdgMom->PdgCode()); }
                     fHistNPPElectronFirstMotherXYRec->Fill(part->Vx(),part->Vy());					
                     fHistNPPElectronNDaughtersRec->Fill(nPartDaughters);
 					
@@ -2953,8 +2963,9 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                     }
 					
                     // few checks
-                    if (pdgMom)
-                        fHistNPPGammaFirstMotherRec->Fill(pdgMom->PdgCode());
+                    if (pdgMom) {
+		      fHistNPPGammaFirstMotherRec->Fill(pdgMom->PdgCode());
+		    }
                     fHistNPPGammaFirstMotherXYRec->Fill(part->Vx(),part->Vy());					
                     fHistNPPGammaNDaughtersRec->Fill(nPartDaughters);
 					

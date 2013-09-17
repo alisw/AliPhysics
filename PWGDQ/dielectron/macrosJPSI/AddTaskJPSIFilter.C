@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kFALSE){
+AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -33,7 +33,6 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kF
     /*aodHandler->SetNeedsTracksBranchReplication();
     aodHandler->SetNeedsCaloClustersBranchReplication();
     aodHandler->SetNeedsVerticesBranchReplication();
-    aodHandler->SetNeedsV0sBranchReplication();
     aodHandler->SetNeedsCascadesBranchReplication();
     aodHandler->SetNeedsTrackletsBranchReplication();
     aodHandler->SetNeedsPMDClustersBranchReplication();
@@ -41,6 +40,7 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kF
     aodHandler->SetNeedsFMDClustersBranchReplication();
     //aodHandler->SetNeedsMCParticlesBranchReplication();
     aodHandler->SetNeedsDimuonsBranchReplication();*/
+    //    if(hasMC) aodHandler->SetNeedsV0sBranchReplication();
     if(hasMC) aodHandler->SetNeedsMCParticlesBranchReplication();
     jpsi->SetHasMC(hasMC);
   }

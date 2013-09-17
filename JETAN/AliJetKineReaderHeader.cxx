@@ -12,19 +12,20 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
 //---------------------------------------------------------------------
 // Jet Kine Reader Header
-// Header for the MC kinematics reader in the jet analysis
+// Header for the reader in the jet analysis for the Kinematics
 // Author: Andreas Morsch (andreas.morsch@cern.ch)
 //---------------------------------------------------------------------
-
  
 #include "AliJetKineReaderHeader.h"
 
 ClassImp(AliJetKineReaderHeader)
 
-//____________________________________________________________________________
+/////////////////////////////////////////////////////////////////////
 
 AliJetKineReaderHeader::AliJetKineReaderHeader():
   AliJetReaderHeader("AliJetKineReaderHeader"),
@@ -33,11 +34,5 @@ AliJetKineReaderHeader::AliJetKineReaderHeader():
   fChargedOnly(kFALSE)
 {
   // Default constructor
-
 }
 
-//____________________________________________________________________________
-AliJetKineReaderHeader::~AliJetKineReaderHeader()
-{
-  // destructor
-}

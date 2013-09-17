@@ -1215,6 +1215,13 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
     AliAODTrack *aodtrack = aod->GetTrack(iTrack);
+    //    if(aodtrack->GetFilterMap()>128 && aodtrack->GetFilterMap()<1333)
+    //      Printf("filterMask = %d",aodtrack->GetFilterMap());
+    //    if(aodtrack->IsHybridGlobalConstrainedGlobal()) {
+      // Printf("hybrid filterMask = %d",aodtrack->GetFilterMap());
+    //      if(aodtrack->IsGlobalConstrained())
+    //	Printf("global constrained filterMask = %d",aodtrack->GetFilterMap());
+    //    }
     if( !aodtrack->TestFilterMask(fFilterMask) ) {
       fh1NTracksReject->Fill("noHybridTrack",1);
       continue;

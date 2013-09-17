@@ -25,7 +25,7 @@
 
 #include "AliLog.h"
 #include "AliAnalysisMuMuBinning.h"
-#include "AliAnalysisMuMuResult.h"
+#include "AliAnalysisMuMuJpsiResult.h"
 #include "Riostream.h"
 #include "TH1.h"
 #include "TList.h"
@@ -37,7 +37,8 @@ ClassImp(AliAnalysisMuMuSpectra)
 AliAnalysisMuMuSpectra::AliAnalysisMuMuSpectra(const char* name, const char* title) :
 TNamed(name,title),
 fBinning(0x0),
-fBins(0x0)
+fBins(0x0),
+fWeight(1.0)
 {
   // default ctor
 }
@@ -46,7 +47,8 @@ fBins(0x0)
 AliAnalysisMuMuSpectra::AliAnalysisMuMuSpectra(const AliAnalysisMuMuSpectra& rhs)
 : TNamed(rhs.GetName(),rhs.GetTitle()),
 fBinning(0x0),
-fBins(0x0)
+fBins(0x0),
+fWeight(rhs.Weight())
 {
   // copy ctor
 
@@ -56,9 +58,9 @@ fBins(0x0)
   }
 
   TIter next(rhs.fBins);
-  AliAnalysisMuMuBinning::Range* bin;
+  AliAnalysisMuMuResult* bin;
   
-  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  while ( ( bin = static_cast<AliAnalysisMuMuResult*>(next()) ) )
   {
     if (!fBins)
     {
@@ -67,6 +69,8 @@ fBins(0x0)
     }
     fBins->Add(bin);
   }
+  
+  
 }
 
 //______________________________________________________________________________
@@ -88,9 +92,9 @@ AliAnalysisMuMuSpectra::operator=(const AliAnalysisMuMuSpectra& rhs)
   }
   
   TIter next(rhs.fBins);
-  AliAnalysisMuMuBinning::Range* bin;
+  AliAnalysisMuMuResult* bin;
   
-  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  while ( ( bin = static_cast<AliAnalysisMuMuResult*>(next()) ) )
   {
     if (!fBins)
     {
@@ -99,6 +103,8 @@ AliAnalysisMuMuSpectra::operator=(const AliAnalysisMuMuSpectra& rhs)
     }
     fBins->Add(bin);
   }
+  
+  fWeight = rhs.Weight();
   
   return *this;
 }
@@ -155,13 +161,13 @@ Bool_t AliAnalysisMuMuSpectra::Correct(const AliAnalysisMuMuSpectra& accEff, con
     return kFALSE;
   }
   
-  TObjArray* bins = accEff.Bins();
+  TObjArray* bins = accEff.BinContentArray();
 
   
   for ( Int_t i = 0; i < bins->GetEntries(); ++i )
   {
-    AliAnalysisMuMuResult* thisResult = static_cast<AliAnalysisMuMuResult*>(fBins->At(i));
-    AliAnalysisMuMuResult* accResult = static_cast<AliAnalysisMuMuResult*>(bins->At(i));
+    AliAnalysisMuMuJpsiResult* thisResult = static_cast<AliAnalysisMuMuJpsiResult*>(fBins->At(i));
+    AliAnalysisMuMuJpsiResult* accResult = static_cast<AliAnalysisMuMuJpsiResult*>(bins->At(i));
 //    AliInfoClass(Form("i=%d",i ));
 //    StdoutToAliInfoClass(thisResult->Print("full");
 //                         std::cout << "----" << std::endl;
@@ -251,7 +257,15 @@ Long64_t AliAnalysisMuMuSpectra::Merge(TCollection* list)
   
   TList binningList;
   
-  for ( Int_t i = 0; i <= fBins->GetLast(); ++i )
+  // for each bin must do a list of results, and merge that list
+  
+  TObjArray* bins = fBinning->CreateBinObjArray();
+  TIter nextBin(bins);
+  AliAnalysisMuMuBinning::Range* bin;
+
+  Int_t i(0);
+  
+  while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
   {
     next.Reset();
     
@@ -259,35 +273,31 @@ Long64_t AliAnalysisMuMuSpectra::Merge(TCollection* list)
     
     while ( ( currObj = next() ) )
     {
-      AliAnalysisMuMuSpectra* spectra = dynamic_cast<AliAnalysisMuMuSpectra*>(currObj);
-      if (!spectra)
-      {
-        AliFatal(Form("object named \"%s\" is a %s instead of an AliAnalysisMuMuSpectra!", currObj->GetName(), currObj->ClassName()));
-        continue;
-      }
-    
+      AliAnalysisMuMuSpectra* spectra = static_cast<AliAnalysisMuMuSpectra*>(currObj);
+
       if (i==0)
       {
         binningList.Add(spectra->Binning());
   
-        if ( !fBinning->IsEqual(spectra->Binning()) || spectra->Bins()->GetLast() != Bins()->GetLast() )
+        if ( !fBinning->IsEqual(spectra->Binning()) || spectra->BinContentArray()->GetLast() != BinContentArray()->GetLast() )
         {
           AliError("Cannot merge spectra with different binning");
           continue;
         }
-        
         ++count;
       }
       
-      binList.Add(fBins->At(i));
+      binList.Add(spectra->GetResultForBin(*bin));
     }
     
-    AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(fBins->At(i));
+    ++i;
+    
+    AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(GetResultForBin(*bin));
     r->Merge(&binList);
     
   }
-  
-  fBinning->Merge(&binningList);
+
+  delete bins;
   
   return count+1;
 }
@@ -310,13 +320,13 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
   
   for ( Int_t j = 0; j < TMath::Min(binArray->GetEntries(),fBins->GetEntries()); ++j )
   {
-    AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(fBins->At(j));
+    AliAnalysisMuMuJpsiResult* r = static_cast<AliAnalysisMuMuJpsiResult*>(fBins->At(j));
     
     if ( strlen(subresult) > 0 && r->SubResults() )
     {
       TString sub(subresult);
       sub.ToUpper();
-      r = r->SubResult(sub.Data());
+      r = static_cast<AliAnalysisMuMuJpsiResult*>(r->SubResult(sub.Data()));
       if (!r) continue;
     }
     
@@ -337,8 +347,11 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
       yerr /= (b.WidthX());
     }
     
+    if (!TMath::Finite(y)) y = 0.0;
+    if (!TMath::Finite(yerr)) yerr = 0.0;
+
     std::cout << b.AsString();
-    AliAnalysisMuMuResult::PrintValue(swhat.Data(),"",y,yerr);
+    r->PrintValue(swhat.Data(),"",y,yerr);
     
     h->SetBinContent(j+1,y);
     h->SetBinError(j+1,yerr);
@@ -367,5 +380,33 @@ void AliAnalysisMuMuSpectra::Print(Option_t* opt) const
       AliAnalysisMuMuResult* r = static_cast<AliAnalysisMuMuResult*>(fBins->At(i));
       if (r) r->Print(opt);
     }
+  }
+}
+
+//______________________________________________________________________________
+void AliAnalysisMuMuSpectra::Scale(Double_t value)
+{
+  // scale all bins by value
+
+  TIter next(fBins);
+  AliAnalysisMuMuResult* r;
+
+  while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
+  {
+    r->Scale(value);
+  }
+}
+
+//______________________________________________________________________________
+void AliAnalysisMuMuSpectra::SetWeight(Double_t w)
+{
+  // Set the weight of this spectra
+  fWeight = w;
+  TIter next(fBins);
+  AliAnalysisMuMuResult* r;
+  
+  while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
+  {
+    r->SetWeight(Weight());
   }
 }

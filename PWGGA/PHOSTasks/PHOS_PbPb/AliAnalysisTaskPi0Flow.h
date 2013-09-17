@@ -33,6 +33,8 @@ class AliAnalysisUtils;
 class AliAnalysisTaskPi0Flow : public AliAnalysisTaskSE {
 public:
     enum Period { kUndefinedPeriod, kLHC10h, kLHC11h, kLHC13 };
+    enum EventSelection { kTotal, kInternalTriggerMaskSelection, kHasVertex, kHasAbsVertex, kHasCentrality, kCentUnderUpperBinUpperEdge, kCentOverLowerBinLowerEdge, kHasPHOSClusters, kTotalSelected };
+    enum TriggerSelection { kNoSelection, kCentralInclusive, kCentralExclusive, kSemiCentralInclusive, kSemiCentralExclusive, kMBInclusive, kMBExclusive };
 
 public:
     AliAnalysisTaskPi0Flow(const char *name = "AliAnalysisTaskPi0Flow", Period period = kUndefinedPeriod);
@@ -43,9 +45,11 @@ public:
     /* virtual void   Terminate(Option_t *); */
 
     void SetPeriod(Period period) { fPeriod = period;}
+    void EnableTOFCut(Bool_t enable = kTRUE, Double_t TOFCut = 100.e-9, Bool_t fillWide=kFALSE){fTOFCutEnabled=enable; fTOFCut=TOFCut; fFillWideTOF=fillWide;}
     
     void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed);
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
+    void SetInternalTriggerSelection(TriggerSelection selection) { fInternalTriggerSelection = selection; }
     void SetMaxAbsVertexZ(Float_t z) { fMaxAbsVertexZ = z; }
     void SetManualV0EPCalc(Bool_t manCalc = true) {fManualV0EPCalc = manCalc;}
     void SetEnablePHOSModule(int module, Bool_t enable = true);
@@ -62,7 +66,7 @@ protected:
     // Step 0:
     AliVEvent* GetEvent();
 
-    // Step 1:
+    // Step 1 (done once):
     void SetGeometry();
     void SetMisalignment();
     void SetV0Calibration(); //V0 calibration
@@ -71,6 +75,9 @@ protected:
     void SetFlatteningData(); // phos flattening
 
     // Step 2:
+    Bool_t RejectTriggerMaskSelection();
+
+    // Step 3:
     void SetVertex();
     Bool_t RejectEventVertex();
 
@@ -165,9 +172,13 @@ protected:
 
     // Behavior / cuts
     Period fPeriod;
+    TriggerSelection fInternalTriggerSelection;
     Float_t fMaxAbsVertexZ; // in cm
     Bool_t fManualV0EPCalc;
     Bool_t fModuleEnabled[kNMod]; //[kNMod]
+    Bool_t fTOFCutEnabled;
+    Double_t fTOFCut;
+    Bool_t fFillWideTOF;
 
 
     TList * fOutputContainer;        //final histogram container
@@ -200,7 +211,7 @@ protected:
     AliEPFlattener * fV0CFlat ; //Object for flattening of V0C
     
     
-    // Step 2: Vertex
+    // Step 3: Vertex
     Double_t fVertex[3];
     TVector3 fVertexVector;
     Int_t fVtxBin;

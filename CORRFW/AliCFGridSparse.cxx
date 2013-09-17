@@ -232,7 +232,7 @@ Float_t AliCFGridSparse::GetElementError(Long_t index) const
   // Returns the error on the content 
   //
 
-  return fData->GetBinContent(index);
+  return fData->GetBinError(index);
 }
 //____________________________________________________________________
 Float_t AliCFGridSparse::GetElementError(const Int_t *bin) const

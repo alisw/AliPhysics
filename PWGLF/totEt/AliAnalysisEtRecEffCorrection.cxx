@@ -60,19 +60,20 @@ Double_t AliAnalysisEtRecEffCorrection::CorrectedEnergy(Double_t energy)
   return fEnergyCorrection->Eval(energy);
   
 }
-Double_t AliAnalysisEtRecEffCorrection::CorrectedEnergy(Double_t energy, int mult)
+Double_t AliAnalysisEtRecEffCorrection::CorrectedEnergy(Double_t energy, int cent)
 {
   if(fRecoEff){
-    Double_t eff = ReconstructionEfficiency(energy, mult);
-    if(eff>1e-5) return 1.0/eff;
+    Double_t eff = ReconstructionEfficiency(energy, cent);
+    if(eff>1e-5) return 1.0/eff*energy;
   }
+  //cerr<<"Warning:  I should not be here!"<<endl;
   return 1.0;
   
 }
 
-Double_t AliAnalysisEtRecEffCorrection::ReconstructionEfficiency(float energy, int mult) const {
+Double_t AliAnalysisEtRecEffCorrection::ReconstructionEfficiency(float energy, int cent) const {
   Double_t eff = 1.0;
-  if(fRecoEff) eff =  fRecoEff->GetBinContent(fRecoEff->GetXaxis()->FindBin(energy),fRecoEff->GetXaxis()->FindBin(mult));
-  //cout <<"eff "<<eff<<endl;
+  if(fRecoEff) eff =  fRecoEff->GetBinContent(fRecoEff->GetXaxis()->FindBin(energy),fRecoEff->GetYaxis()->FindBin(cent));
+  //cout <<"eff "<<eff<<" bin energy "<<fRecoEff->GetXaxis()->FindBin(energy)<<" bin centrality "<<fRecoEff->GetYaxis()->FindBin(cent)<<endl;
   return eff;
 }

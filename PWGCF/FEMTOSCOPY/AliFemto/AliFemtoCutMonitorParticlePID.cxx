@@ -97,7 +97,7 @@ AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
 AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const AliFemtoCutMonitorParticlePID& aCut)
 {
   // assignment operator
-  if (this == &aCut) 
+  if (this == &aCut)
     return *this;
 
   if (fTPCdEdx) delete fTPCdEdx;
@@ -105,7 +105,7 @@ AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const Al
 
   if (fTOFTime) delete fTOFTime;
   fTOFTime = new TH2D(*aCut.fTOFTime);
-  
+
     if(fTOFNSigma) delete fTOFNSigma;
     fTOFNSigma = new TH2D(*aCut.fTOFNSigma);
 
@@ -118,11 +118,11 @@ AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const Al
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorParticlePID::Report(){ 
+AliFemtoString AliFemtoCutMonitorParticlePID::Report(){
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorParticlePID report"; 
+  string stemp = "*** AliFemtoCutMonitorParticlePID report";
   AliFemtoString returnThis = stemp;
-  return returnThis; 
+  return returnThis;
 }
 
 void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
@@ -155,9 +155,9 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
     if (fTOFParticle == 1) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCK());
     if (fTOFParticle == 2) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCP());
 
-    if (fTOFParticle == 0) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi() )/TMath::Sqrt(2) );
-    if (fTOFParticle == 1) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK() )/TMath::Sqrt(2) );
-    if (fTOFParticle == 2) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP() )/TMath::Sqrt(2) );
+    if (fTOFParticle == 0) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi() ) );
+    if (fTOFParticle == 1) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK() ) );
+    if (fTOFParticle == 2) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP() ) );
 
 }
 

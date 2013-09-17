@@ -36,6 +36,7 @@ class AliEventPoolManager;
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliCentrality.h"
+#include "AliSelectNonHFE.h"
 
 class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
   public:
@@ -55,11 +56,13 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     AliHFEpid *GetPID() const { return fPID; }
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void SelectPhotonicElectronDCAMet(Int_t itrack, AliVTrack *track, AliPIDResponse *pidResponse);
     void ElectronHadCorrel(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
     void ElectronHadCorrelEtaFarSide(Int_t itrack, AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
     void ElectronHadCorrelEtaBins(Int_t itrack, AliVTrack *track, TH2F *DphiPtEta1, TH2F *DphiPtEta11,TH2F *DphiPtEta12,TH2F *DphiPtEta13,TH2F *DphiPtEta14,TH2F *DphiPtEta2, TH2F *DphiPtEta21,TH2F *DphiPtEta22,TH2F *DphiPtEta23,TH2F *DphiPtEta24);	
     // void ElectronHadCorrelEtaBins(Int_t itrack, AliVTrack *track, TH3F *DphiPtEta1, TH3F *DphiPtEta11,TH3F *DphiPtEta12,TH3F *DphiPtEta13,TH3F *DphiPtEta14);	
     void ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtNew,TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4);	
+    void ElectronHadCorrelNoPartnerDCAMet(Int_t itrack,AliVTrack *track,Int_t * AssoList, Int_t NAsso,TH2F *DphiPtNew,TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4);	
     void ElectronHadCorrelEtaBinsNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH2F *DphiPtEta1, TH2F *DphiPtEta11,TH2F *DphiPtEta12,TH2F *DphiPtEta13,TH2F *DphiPtEta14,TH2F *DphiPtEta2, TH2F *DphiPtEta21,TH2F *DphiPtEta22,TH2F *DphiPtEta23,TH2F *DphiPtEta24);	
     // void ElectronHadCorrelEtaBinsNoPartner(Int_t itrack,Int_t jtrack, AliVTrack *track, TH3F *DphiPtEta1, TH3F *DphiPtEta11,TH3F *DphiPtEta12,TH3F *DphiPtEta13,TH3F *DphiPtEta14);	
     void HadronInfo(Int_t itrack);
@@ -80,6 +83,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     void SetEovPCuts(Double_t EovPMin, Double_t EovPMax){fEovPMin=EovPMin;fEovPMax=EovPMax;};
     void SetTPCNClsHad(Int_t TPCNClsHad) {fTPCNClsHad = TPCNClsHad;};
     void SetAssoElecITSrefit(Bool_t AssoEleITSref){fAssoEleITSref = AssoEleITSref;};
+    void SetAssoElecTPCNCls(Int_t AssoElecTPCNCls){fAssoElecTPCNCls = AssoElecTPCNCls;};
     void MixedEvent(AliVTrack *track, TH2F *DphiPt, TH2F *DphiPt1, TH2F *DphiPt2, TH2F *DphiPt3, TH2F *DphiPt4);
     TObjArray* CloneAndReduceTrackList();
 
@@ -95,6 +99,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     AliESDEvent 		   *fESD;			//ESD object
     AliAODEvent 		   *fAOD;			//AOD object
     AliEMCALGeometry  	*fGeom; 		// emcal geometry 
+    AliPIDResponse *fpidResponse; //pid response
 
     TList       	   	*fOutputList;		//output list
 
@@ -129,7 +134,10 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     Bool_t     fTriggerMB;//
     Int_t      fTPCNClsHad;//
     Bool_t     fAssoEleITSref;//
+    Int_t      fAssoElecTPCNCls;//
 
+
+    AliSelectNonHFE *fNonHFE; //!
     AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
     TH1F			*fNoEvents;		//no of events
@@ -182,6 +190,37 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH1F        *fInclusiveElecPt; // Inclusive elec pt
     TH1F        *fULSElecPt; //ULS elec Pt
     TH1F        *fLSElecPt;// LS elec pt 
+
+    //Eleinos method for Inv mass
+    TH2F       *fDCAMetPhotElecDphi;   //Photon elec - had DPhi
+    TH2F       *fDCAMetPhotElecDphi1;     //Photon elec - had DPhi
+    TH2F       *fDCAMetPhotElecDphi2;     //Photon elec - had DPhi
+    TH2F       *fDCAMetPhotElecDphi3;     //Photon elec - had DPhi
+    TH2F       *fDCAMetPhotElecDphi4;     //Photon elec - had DPhi
+    TH2F       *fDCAMetDphiULSMassLow; //Dphi - ULS, mass< mass cut
+    TH2F       *fDCAMetDphiULSMassLow1;   //Dphi - ULS, mass< mass cut
+    TH2F       *fDCAMetDphiULSMassLow2;   //Dphi - ULS, mass< mass cut
+    TH2F       *fDCAMetDphiULSMassLow3;   //Dphi - ULS, mass< mass cut
+    TH2F       *fDCAMetDphiULSMassLow4;   //Dphi - ULS, mass< mass cut
+    TH2F        *fDCAMetDphiLSMassLow;  //Dphi - LS, mass< mass cut
+    TH2F        *fDCAMetDphiLSMassLow1;  //Dphi - LS, mass< mass cut
+    TH2F        *fDCAMetDphiLSMassLow2;  //Dphi - LS, mass< mass cut
+    TH2F        *fDCAMetDphiLSMassLow3;  //Dphi - LS, mass< mass cut
+    TH2F        *fDCAMetDphiLSMassLow4;  //Dphi - LS, mass< mass cut
+    TH2F        *fDCAMetDphiULSMassLowNoPartner; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDCAMetDphiULSMassLowNoPartner1; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDCAMetDphiULSMassLowNoPartner2; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDCAMetDphiULSMassLowNoPartner3; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDCAMetDphiULSMassLowNoPartner4; //Dphi - ULS, mass< mass cut no partner
+    TH2F       *fDCAMetDphiLSMassLowNoPartner;  //Dphi - LS, mass< mass cut
+    TH2F       *fDCAMetDphiLSMassLowNoPartner1; //Dphi - LS, mass< mass cut
+    TH2F       *fDCAMetDphiLSMassLowNoPartner2; //Dphi - LS, mass< mass cut
+    TH2F       *fDCAMetDphiLSMassLowNoPartner3; //Dphi - LS, mass< mass cut
+    TH2F       *fDCAMetDphiLSMassLowNoPartner4; //Dphi - LS, mass< mass cut
+    TH1F       *fDCAMetPhotoElecPt;    //photonic elec pt 
+    TH1F        *fDCAMetULSElecPt; //ULS elec Pt
+    TH1F        *fDCAMetLSElecPt;// LS elec pt 
+
     //Eta bins (Deta < 0.8)
     TH2F       *fSemiIncElecDphiEta1;   //Semi Inclusive elec - had DPhi
     TH2F       *fSemiIncElecDphiEta11;     //Semi Inclusive elec - had DPhi
@@ -268,6 +307,8 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     //   TH1F        *fInvmassLS4; //LS Invmass for all rec par
     //   TH1F        *fInvmassLS5; //LS Invmass for all rec par
     TH1F        *fInvmassULS1;//ULS Invmass for all rec par
+    TH1F        *fDCAMetInvmassLS1; //
+    TH1F        *fDCAMetInvmassULS1;//
     //   TH1F        *fInvmassULS2;//ULS Invmass for all rec par
     //   TH1F        *fInvmassULS3;//ULS Invmass for all rec par
     //   TH1F        *fInvmassULS4;//ULS Invmass for all rec par
@@ -316,6 +357,23 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F        *fMixedDphiLSMassLow2;//
     TH2F        *fMixedDphiLSMassLow3;//
     TH2F        *fMixedDphiLSMassLow4;//
+
+    //Elienos method for inv mass
+    TH2F        *fDCAMetMixedPhotElecDphi; //
+    TH2F        *fDCAMetMixedPhotElecDphi1; //
+    TH2F        *fDCAMetMixedPhotElecDphi2; //
+    TH2F        *fDCAMetMixedPhotElecDphi3; //
+    TH2F        *fDCAMetMixedPhotElecDphi4; //
+    TH2F        *fDCAMetMixedDphiULSMassLow;//
+    TH2F        *fDCAMetMixedDphiULSMassLow1;//
+    TH2F        *fDCAMetMixedDphiULSMassLow2;//
+    TH2F        *fDCAMetMixedDphiULSMassLow3;//
+    TH2F        *fDCAMetMixedDphiULSMassLow4;//
+    TH2F        *fDCAMetMixedDphiLSMassLow;//
+    TH2F        *fDCAMetMixedDphiLSMassLow1;//
+    TH2F        *fDCAMetMixedDphiLSMassLow2;//
+    TH2F        *fDCAMetMixedDphiLSMassLow3;//
+    TH2F        *fDCAMetMixedDphiLSMassLow4;//
 
     TH1F        *fHadronPt;//
     TH1F       *fCentralityPass; // ! QA histogram of events that pass centrality cut
@@ -373,52 +431,52 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     ClassDef(AliAnalysisTaskElecHadronCorrel, 2); //!example of analysis
 };
 
-   class AliehDPhiBasicParticle : public AliVParticle
-   {
-   public:
-   AliehDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
-   : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
-   {
-   }
-   ~AliehDPhiBasicParticle() {}
+class AliehDPhiBasicParticle : public AliVParticle
+{
+  public:
+    AliehDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    {
+    }
+    ~AliehDPhiBasicParticle() {}
 
-// kinematics
-virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
-virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
-virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
-virtual Double_t Pt() const { return fpT; }
-virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
-virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+    // kinematics
+    virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pt() const { return fpT; }
+    virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
 
-virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
-virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
-virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
-virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
 
-virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
-virtual Double_t Phi()        const { return fPhi; }
-virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
 
 
-virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
-virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
 
-virtual Double_t Eta()        const { return fEta; }
-virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
 
-virtual Short_t Charge()      const { return fCharge; }
-virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
-// PID
-virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
-virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+    virtual Short_t Charge()      const { return fCharge; }
+    virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
+    // PID
+    virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
+    virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
 
-private:
-Float_t fEta;      // eta
-Float_t fPhi;      // phi
-Float_t fpT;       // pT
-Short_t fCharge;   // charge
+  private:
+    Float_t fEta;      // eta
+    Float_t fPhi;      // phi
+    Float_t fpT;       // pT
+    Short_t fCharge;   // charge
 
-ClassDef( AliehDPhiBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+    ClassDef( AliehDPhiBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 #endif
 

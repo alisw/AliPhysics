@@ -197,8 +197,9 @@ bool AliDxHFEToolsMC::RejectByPDG(AliVParticle* p, bool doStatistics, int* pdgPa
   // always false if not pdg list is initialized
   if (!p) return false;
   Int_t MClabel = p->GetLabel();
-  if(MClabel<0) return 0;
-
+  if(MClabel<0) {
+    return true;
+  }
   int pdgPart=-1;
   // TODO: there might be more types of particles to be checked
   AliAODMCParticle* aodmcp=0;

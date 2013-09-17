@@ -13,10 +13,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 241 2012-12-19 19:45:59Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 313 2013-06-28 16:43:30Z cmayer $
 
 #include <numeric>
 #include <functional>
+#include <set>
 
 #include <TChain.h>
 #include <THashList.h>
@@ -33,6 +34,7 @@
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliTHn.h"
 
 #include "AliAnalysisTaskLongRangeCorrelations.h"
 
@@ -74,9 +76,12 @@ void AliAnalysisTaskLongRangeCorrelations::UserCreateOutputObjects() {
   const Double_t vertexBins[] = {  // Zvtx bins
     -10., -7., -5., -3., -1., 1., 3., 5., 7., 10.
   };
-  fVertexZ = new TAxis(sizeof(vertexBins)/sizeof(Double_t)-1, vertexBins);
+  const Int_t nVertexBins(sizeof(vertexBins)/sizeof(Double_t)-1);
+  fVertexZ = new TAxis(nVertexBins, vertexBins);
   fVertexZ->SetName("VertexZAxis");
   fOutputList->Add(fVertexZ);
+
+  fOutputList->Add(new TH1D("histVertexZ", ";vertex Z (cm)", nVertexBins, vertexBins));
 
   // Event statistics
   const char* eventStatLabels[] = { 
@@ -93,31 +98,39 @@ void AliAnalysisTaskLongRangeCorrelations::UserCreateOutputObjects() {
   fOutputList->Add(hStats);
 
   // QA histograms
-  fOutputList->Add(new TH1D("histQAVertexZ", ";vertex-z (cm)",
-			    800, -40, 40));
+  fOutputList->Add(new TH2D("histQACentrality", ";centrality V0M(%);selected;",
+			    fnBinsCent,fxMinCent,fxMaxCent, 2, -0.5, 1.5));
+  fOutputList->Add(new TH2D("histQAVertexZ", ";vertex-z (cm);selected;",
+			    800, -40., 40., 2, -0.5, 1.5));
+  fOutputList->Add(new TH1D("histQAMultiplicityBeforeCuts",
+			    ";tracks", 10000, 0, 10000));
+  fOutputList->Add(new TH1D("histQAMultiplicityAfterCuts",
+			    ";selected tracks", 10000, 0, 10000));
   fOutputList->Add(new TH3D("histQACentPt", ";charge;centrality V0M(%);p_{T} (GeV/c)",
 			    2, -0.5, 1.5, fnBinsCent, fxMinCent, fxMaxCent, fnBinsPt, fxMinPt, fxMaxPt));
   fOutputList->Add(new TH3D("histQAPhiEta", ";charge;#phi (rad);#eta",
 			    2, -0.5, 1.5, 200, 0.0, TMath::TwoPi(), 300, -1.5, 1.5));
 
   // N(eta) distributions with different binnings
-  fOutputList->Add(new TH2D("histNEta_300", ";#eta;N", 300, -1.5, 1.5, 1000, 0., 1000.));  // 0.01
-  fOutputList->Add(new TH2D("histNEta_120", ";#eta;N", 120, -1.5, 1.5, 1000, 0., 1000.));  // 0.025
-  fOutputList->Add(new TH2D("histNEta__30", ";#eta;N",  30, -1.5, 1.5, 1000, 0., 1000.));  // 0.1
-  fOutputList->Add(new TH2D("histNEta__15", ";#eta;N",  15, -1.5, 1.5, 1000, 0., 1000.));  // 0.2
+  fOutputList->Add(new TH2D("histNEta_120", ";#eta;N", 120, -1.5, 1.5, 1000, -.5, 1000-.5));  // 0.025
+  fOutputList->Add(new TH2D("histNEta__60", ";#eta;N",  60, -1.5, 1.5, 1000, -.5, 1000-.5));  // 0.05
+  fOutputList->Add(new TH2D("histNEta__30", ";#eta;N",  30, -1.5, 1.5, 1000, -.5, 1000-.5));  // 0.1
+  fOutputList->Add(new TH2D("histNEta__15", ";#eta;N",  15, -1.5, 1.5, 1000, -.5, 1000-.5));  // 0.2
 
   // Moments
-  fOutputList->Add(MakeHistSparsePhiEta("histMoment1PhiEta_1"));
-  fOutputList->Add(MakeHistSparsePhiEta("histMoment1PhiEta_2"));
-  fOutputList->Add(MakeHistSparsePhiEtaPhiEta("histMoment2PhiEtaPhiEta_11"));
-  fOutputList->Add(MakeHistSparsePhiEtaPhiEta("histMoment2PhiEtaPhiEta_12"));
-  fOutputList->Add(MakeHistSparsePhiEtaPhiEta("histMoment2PhiEtaPhiEta_22"));
+  fOutputList->Add(MakeHistPhiEta("histMoment1PhiEta_1"));
+  if (fRunMixing)
+    fOutputList->Add(MakeHistPhiEta("histMoment1PhiEta_2"));
+  fOutputList->Add(MakeHistPhiEtaPhiEta("histMoment2PhiEtaPhiEta_11"));
+  if (fRunMixing) {
+    fOutputList->Add(MakeHistPhiEtaPhiEta("histMoment2PhiEtaPhiEta_12"));
+    fOutputList->Add(MakeHistPhiEtaPhiEta("histMoment2PhiEtaPhiEta_22"));
+  }
   
   // add MC Histograms
   const Int_t N(fOutputList->GetEntries());
   for (Int_t i(0); i<N; ++i)
-    fOutputList->Add(fOutputList->At(i)->Clone(TString("MC_")
-					       + fOutputList->At(i)->GetName()));
+    fOutputList->Add(fOutputList->At(i)->Clone(TString("MC_") + fOutputList->At(i)->GetName()));
 
   if (fRunMixing)
     SetupForMixing();
@@ -151,26 +164,26 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
   if (isMC) {
     Fill("MC_histEventStats", 0.); // all events
     Fill("MC_histEventStats", 1.); // events passing physics selection
-    Fill("MC_histEventStats", 2.); // events passing centrality selection
-    Fill("MC_histQAVertexZ", pAODMCHeader->GetVtxZ());
-
-    // vertex cut in MC
-    if (TMath::Abs(pAODMCHeader->GetVtxZ()) > fMaxAbsVertexZ) return;    
-    Fill("MC_histEventStats", 3.); // events passing vertex selection
   }
 
   // --- event cuts data ---
   Fill("histEventStats", 0.); // all events
 
+  // physics selection
   if (!pInputHandler->IsEventSelected()) return;
   Fill("histEventStats", 1.); // events passing physics selection
 
+  // centrality selection
   const Double_t centrality(pAODHeader->GetCentralityP()->GetCentralityPercentile("V0M"));
   AliDebug(3, Form("centrality=%f", centrality));
-  if (centrality < fCentMin || centrality >= fCentMax) return;
+  const Bool_t centralitySelected(centrality > fCentMin && centrality < fCentMax);
+  Fill("histQACentrality", centrality, centralitySelected);
+  if (!centralitySelected) return;
   Fill("histEventStats", 2.); // events passing centrality selection
+  if (isMC)
+    Fill("MC_histEventStats", 2.); // events passing centrality selection
 
-  // vertex selection
+  // vertex selection -- data
   const Int_t nVertex(pAOD->GetNumberOfVertices());
   if (0 == nVertex) return;
   const AliAODVertex* pVertex(pAOD->GetPrimaryVertex());
@@ -179,14 +192,31 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
   if (nTracksPrimary < 1) return;
 
   const Double_t zVertex(pVertex->GetZ());
-  Fill("histQAVertexZ", zVertex);
-  if (TMath::Abs(zVertex) > fMaxAbsVertexZ) return;
+  const Bool_t vertexSelectedData(TMath::Abs(zVertex) < fMaxAbsVertexZ);
 
-  Fill("histEventStats", 3.); // events passing vertex selection
+  // vertex selection -- MC
+  Bool_t vertexSelectedMC(kTRUE);
+  if (isMC)
+    vertexSelectedMC = (TMath::Abs(pAODMCHeader->GetVtxZ()) < fMaxAbsVertexZ);
 
+  // combined vertex selection (data and MC)
+  const Bool_t vertexSelected(vertexSelectedData && vertexSelectedMC);
+  Fill("histQAVertexZ", zVertex, vertexSelected);
+  if (isMC)
+    Fill("MC_histQAVertexZ", pAODMCHeader->GetVtxZ(), vertexSelected);
+  if (!vertexSelected) return;
+  Fill("histEventStats",    3.); // events passing vertex selection
+  if (isMC)
+    Fill("MC_histEventStats", 3.); // events passing vertex selection
+
+  // ------------------
   // event is accepted
-  TObjArray* tracksMain(GetAcceptedTracks(pAOD, centrality));
+  // ------------------
 
+  TObjArray* tracksMain(GetAcceptedTracks(pAOD, centrality));
+  Fill("histQAMultiplicityBeforeCuts", pAOD->GetNumberOfTracks());
+  Fill("histQAMultiplicityAfterCuts", tracksMain->GetEntriesFast());
+  
   if (fRunMixing) {  
     AliEventPool* pEventPool(fPoolMgr->GetEventPool(centrality, pAOD->GetPrimaryVertex()->GetZ()));
     if (NULL == pEventPool)
@@ -197,6 +227,7 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
 	|| pEventPool->NTracksInPool()     > fMixingTracks/10
 	|| pEventPool->GetCurrentNEvents() >= 5) {
       Fill("histEventStats", 4.); // analyzed events
+      Fill("histVertexZ", zVertex);
       const Int_t nMix(pEventPool->GetCurrentNEvents());
       for (Int_t i(0); i<nMix; ++i) {
  	TObjArray* tracksMixed(pEventPool->GetEvent(i));
@@ -207,13 +238,20 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
     pEventPool->UpdatePool(tracksMain);
   } else { // no mixing
     Fill("histEventStats", 4.); // analyzed events
+    Fill("histVertexZ", zVertex);
     CalculateMoments("", tracksMain, tracksMain, zVertex, 1.);
     delete tracksMain;
   }
   
   if (isMC) {
     TObjArray* tracksMC(GetAcceptedTracks(arrayMC, centrality));
+    const Double_t x[2] = {
+      arrayMC->GetEntriesFast(),
+      tracksMC->GetEntriesFast()
+    };
+    Fill("MC_histQAMultiplicity", x);
     Fill("MC_histEventStats", 4.); // analyzed MC events
+    Fill("MC_histVertexZ", pAOD->GetPrimaryVertex()->GetZ());
     CalculateMoments("MC_", tracksMC, tracksMC, zVertex, 1.);
     delete tracksMC;
   }
@@ -221,6 +259,11 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
 
 void AliAnalysisTaskLongRangeCorrelations::Terminate(Option_t* ) {
   //
+  fOutputList = dynamic_cast<TList*>(GetOutputData(1));
+  if (NULL == fOutputList) {
+    AliFatal("NULL == fOutputList");
+    return; // needed to avoid coverity warning
+  }
 }
 
 TString AliAnalysisTaskLongRangeCorrelations::GetOutputListName() const {
@@ -255,7 +298,21 @@ THnSparse* AliAnalysisTaskLongRangeCorrelations::MakeHistSparsePhiEta(const char
 		      +";#phi;#eta;vertex Z (bin);");
   return new THnSparseD(name, title.Data(), 3, nBinsM1, xMinM1, xMaxM1);
 }
-THnSparse* AliAnalysisTaskLongRangeCorrelations::MakeHistSparsePhiEtaPhiEta(const char* name) const {
+
+AliTHn* AliAnalysisTaskLongRangeCorrelations::MakeHistPhiEta(const char* name) const {
+  const Int_t nVertexZBins=fVertexZ->GetNbins();
+  const Int_t   nBinsM1[] = { fnBinsPhi, fnBinsEta, nVertexZBins     };
+  const Double_t xMinM1[] = {  fxMinPhi,  fxMinEta, 0.5              };
+  const Double_t xMaxM1[] = {  fxMaxPhi,  fxMaxEta, nVertexZBins+0.5 };
+  const TString title(TString(name)
+		      +";#phi;#eta;vertex Z (bin);");
+  AliTHn* h(new AliTHn(name, title.Data(), 1, 3, nBinsM1));
+  for (Int_t i=0; i<3; ++i)
+    h->SetBinLimits(i, xMinM1[i], xMaxM1[i]);
+  return h;
+}
+
+AliTHn* AliAnalysisTaskLongRangeCorrelations::MakeHistPhiEtaPhiEta(const char* name) const {
   const Int_t nVertexZBins=fVertexZ->GetNbins();
   const Int_t   nBinsM2[] = {  fnBinsPhi, fnBinsEta,  fnBinsPhi, fnBinsEta, nVertexZBins     };
   const Double_t xMinM2[] = {  fxMinPhi,  fxMinEta,   fxMinPhi,  fxMinEta,  0.5              };
@@ -263,7 +320,10 @@ THnSparse* AliAnalysisTaskLongRangeCorrelations::MakeHistSparsePhiEtaPhiEta(cons
   const TString title(TString(name)
 		      +";#phi_{1};#eta_{1}"
 		      +";#phi_{2};#eta_{2};vertex Z (bin);");
-  return new THnSparseD(name, title.Data(), 5, nBinsM2, xMinM2, xMaxM2);
+  AliTHn* h(new AliTHn(name, title.Data(), 1, 5, nBinsM2));
+  for (Int_t i=0; i<5; ++i)
+    h->SetBinLimits(i, xMinM2[i], xMaxM2[i]);
+  return h;
 }
 
 TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent* pAOD,
@@ -298,6 +358,9 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent* 
 
 TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray* tracksMC,
 								   Double_t centrality) {
+  // for keeping track of MC labels
+  std::set<Int_t> labelSet;
+
   TObjArray* tracks= new TObjArray;
   tracks->SetOwner(kTRUE);
 
@@ -308,6 +371,12 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray*
     if (NULL == pMCTrack) continue;    
 
     // no track filter selection for MC tracks    
+
+    if (labelSet.find(pMCTrack->Label()) != labelSet.end()) {
+      Printf("Duplicate Label= %3d", pMCTrack->Label());
+      continue;
+    }
+    labelSet.insert(pMCTrack->Label());    
 
     // select only primary tracks
     if (kFALSE == pMCTrack->IsPhysicalPrimary()) continue;
@@ -326,23 +395,41 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray*
   return tracks;
 }
 
+Bool_t AddTHnSparseToAliTHn(AliTHn* h, THnSparse* hs, Double_t weight) {
+  if (h->GetNVar() != hs->GetNdimensions())
+    return kFALSE;
+
+  const size_t nDim(hs->GetNdimensions());
+  
+  Int_t    *coord = new Int_t[nDim];
+  Double_t *x     = new Double_t[nDim];
+
+  const Long64_t N(hs->GetNbins());
+  for (Long64_t i(0); i<N; ++i) {
+    const Double_t n(hs->GetBinContent(i, coord));
+    for (size_t j=0; j<nDim; ++j) 
+      x[j] = hs->GetAxis(j)->GetBinCenter(coord[j]);
+    h->Fill(x, 0, n*weight);
+  }
+
+  delete[] coord;
+  delete[] x;
+
+  return kTRUE;
+}
+
 void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
 							    TObjArray* tracks1,
 							    TObjArray* tracks2,
 							    Double_t vertexZ,
 							    Double_t weight) {
-  THnSparse* hN1(dynamic_cast<THnSparse*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
-  THnSparse* hN2(dynamic_cast<THnSparse*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_2")));
+  AliTHn* hN1(dynamic_cast<AliTHn*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
   if (NULL == hN1) return;
-  if (NULL == hN2) return;
 
   // <n_1>
   THnSparse* hN1ForThisEvent(ComputeNForThisEvent(tracks1, "hN1", vertexZ));
-  hN1->Add(hN1ForThisEvent, weight);
-
-  // <n_2>
-  THnSparse* hN2ForThisEvent(ComputeNForThisEvent(tracks2, "hN2", vertexZ));
-  hN2->Add(hN2ForThisEvent, weight);
+  AddTHnSparseToAliTHn(hN1,hN1ForThisEvent, weight); 
+//   hN1->GetGrid(0)->GetGrid()->Add(hN1ForThisEvent, weight);
 
   // n(eta) distributions
   FillNEtaHist(prefix+"histNEta_300", hN1ForThisEvent, weight);
@@ -355,20 +442,32 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
   // <n_1 n_1>
   hNs->AddAt(hN1ForThisEvent, 0);
   hNs->AddAt(hN1ForThisEvent, 1);
+
   ComputeNXForThisEvent(hNs, prefix+"histMoment2PhiEtaPhiEta_11", vertexZ, weight);
 
-  // <n_1 n_2>
-  hNs->AddAt(hN2ForThisEvent, 1);
-  ComputeNXForThisEvent(hNs, prefix+"histMoment2PhiEtaPhiEta_12", vertexZ, weight);
+  if (fRunMixing) {
+    AliTHn* hN2(dynamic_cast<AliTHn*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_2")));
+    if (NULL == hN2) return;
+    // <n_2>
+    THnSparse* hN2ForThisEvent(ComputeNForThisEvent(tracks2, "hN2", vertexZ));
+    AddTHnSparseToAliTHn(hN2,hN2ForThisEvent, weight); 
+//     hN2->GetGrid(0)->GetGrid()->Add(hN2ForThisEvent, weight);
 
-  // <n_2 n_2>
-  hNs->AddAt(hN2ForThisEvent, 0);
-  ComputeNXForThisEvent(hNs, prefix+"histMoment2PhiEtaPhiEta_22", vertexZ, weight);
+    // <n_1 n_2>
+    hNs->AddAt(hN2ForThisEvent, 1);
+    ComputeNXForThisEvent(hNs, prefix+"histMoment2PhiEtaPhiEta_12", vertexZ, weight);
+    
+    // <n_2 n_2>
+    hNs->AddAt(hN2ForThisEvent, 0);
+    ComputeNXForThisEvent(hNs, prefix+"histMoment2PhiEtaPhiEta_22", vertexZ, weight);
+
+    // clean up
+    delete hN2ForThisEvent;
+  }
 
   // clean up
   delete hNs;
   delete hN1ForThisEvent;
-  delete hN2ForThisEvent;
 }
 
 void AliAnalysisTaskLongRangeCorrelations::FillNEtaHist(TString name,
@@ -382,24 +481,25 @@ void AliAnalysisTaskLongRangeCorrelations::FillNEtaHist(TString name,
   if (NULL == hPerEvent) return;
   hPerEvent->Reset();  
 
-  // fill hPerEvent
+  TH1* h1PerEvent(hPerEvent->ProjectionX());
+
+  // fill h1PerEvent
   const Long64_t N(hs->GetNbins());
   for (Long64_t i(0); i<N; ++i) {
     Int_t coord[2] = { 0, 0 };
     const Double_t n(hs->GetBinContent(i, coord));
     const Double_t eta(hs->GetAxis(1)->GetBinCenter(coord[1]));
-    hPerEvent->Fill(eta, n);
+    h1PerEvent->Fill(eta, n);
   }
-
-  // add zero counts for those eta bins with zero tracks
-  TH1* h(hPerEvent->ProjectionX());
-  for (Int_t i(1); i<=h->GetNbinsX(); ++i)
-    hPerEvent->SetBinContent(i,1, Double_t(h->GetBinContent(i) == 0));
+ 
+  for (Int_t i(1); i<=h1PerEvent->GetNbinsX(); ++i)
+    hPerEvent->Fill(h1PerEvent->GetXaxis()->GetBinCenter(i),
+		    h1PerEvent->GetBinContent(i));
 
   hSum->Add(hPerEvent, weight);
 
-  delete h;
   delete hPerEvent;
+  delete h1PerEvent;
 }
 
 THnSparse* AliAnalysisTaskLongRangeCorrelations::ComputeNForThisEvent(TObjArray* tracks,
@@ -485,11 +585,13 @@ void AliAnalysisTaskLongRangeCorrelations::ComputeNXForThisEvent(TObjArray* hNs,
 								 Double_t weight) {
   if (NULL == fOutputList) return;
 
-  THnSparse* hs(dynamic_cast<THnSparse*>(fOutputList->FindObject(histName)));
+  AliTHn* hs(dynamic_cast<AliTHn*>(fOutputList->FindObject(histName)));
   if (hs == NULL) return;
 
   for (MultiDimIterator mdi(hNs, fVertexZ->FindBin(vertexZ)); !mdi.end(); ++mdi)
-    hs->Fill(mdi.GetX(), mdi.GetN()*weight);
+    hs->Fill(mdi.GetX(), 0, mdi.GetN()*weight);
+
+//   hs->FillParent();
 }
 
 void AliAnalysisTaskLongRangeCorrelations::Fill(const char* histName, Double_t x) {

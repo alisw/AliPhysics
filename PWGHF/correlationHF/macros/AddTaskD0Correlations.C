@@ -1,5 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE, Bool_t effOn=kTRUE, Double_t etacorr=1.5, Int_t system=0/*0=pp,1=PbPb*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_fBit0_woITS.root", TString 
-cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", TString effName = "3D_eff_wo_ITScls2_f0_p8eta.root", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE)
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_fBit0_woITS_EffMap2D.root", TString effD0namec="D0Eff_From_c_2D.root", TString effD0nameb="D0Eff_From_b_2D.root", TString effName = "3D_eff_wo_ITScls2_f0_p8eta_FineBins.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=pp,1=PbPb*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -78,12 +77,12 @@ cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", TString effNa
     //     printf("    d0d0  [cm^2] < %f\n",fD0CorrCuts[7]);
     //     printf("    cosThetaPoint    > %f\n",fD0CorrCuts[8]);
 
-  TFile* filecuts=new TFile(cutsfilename.Data());
+  TFile* filecuts=TFile::Open(cutsfilename.Data());
   if(!filecuts->IsOpen()){
     cout<<"Input file not found for D0 cuts: using std cut object"<<endl;
     stdcuts=kTRUE;
   }
-  TFile* filecuts2=new TFile(cutsfilename2.Data());
+  TFile* filecuts2=TFile::Open(cutsfilename2.Data());
   if(!filecuts2->IsOpen()){
     cout<<"Input file not found for tracks cuts!"<<endl;
     return;
@@ -118,15 +117,33 @@ cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", TString effNa
     } 
   }
 
-  if(effOn) {
-    //Load efficiency map
-    TFile* fileeff=new TFile(effName.Data());
-    if(!fileeff->IsOpen()){
+  //Load efficiency map
+  TFile* fileeff=TFile::Open(effName.Data());
+  if(!fileeff->IsOpen()){
+    cout<<"Input file not found for efficiency! Exiting..."<<endl;
+    return;
+  }  
+  TCanvas *c = (TCanvas*)fileeff->Get("c");
+  TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
+
+  //Load D0 efficiency map
+  TFile* fileeffD0c=TFile::Open(effD0namec.Data());
+  if(!fileeffD0c->IsOpen()){
+    cout<<"Input file not found for efficiency! Exiting..."<<endl;
+    return;
+  }
+  TCanvas *cc = (TCanvas*)fileeffD0c->Get("c1");
+  TH2D *hEffD0c = (TH2D*)cc->FindObject("h_Eff");
+
+  //Load D0 efficiency map from b
+  if(readMC) {
+    TFile* fileeffD0b=TFile::Open(effD0nameb.Data());
+    if(!fileeffD0b->IsOpen()){
       cout<<"Input file not found for efficiency! Exiting..."<<endl;
       return;
-    }  
-    TCanvas *c = (TCanvas*)fileeff->Get("c");
-    TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
+    }
+    TCanvas *cb = (TCanvas*)fileeffD0b->Get("c1");
+    TH2D *hEffD0b = (TH2D*)cb->FindObject("h_Eff");
   }
 
   //Cuts for correlated tracks/K0
@@ -138,7 +155,9 @@ cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", TString effNa
   }
   corrCuts->SetTrackCutsNames();
   corrCuts->SetvZeroCutsNames();
-  corrCuts->SetEfficiencyWeightMap(h3D);
+  if(recoD0MC) corrCuts->SetEfficiencyWeightMap(h3D); //data and MC Reco
+  if(recoD0MC) corrCuts->SetTriggerEffWeightMap(hEffD0c); //data and MC Reco
+  if(recoD0MC && readMC) corrCuts->SetTriggerEffWeightMapB(hEffD0b); //MC Reco
   corrCuts->PrintAll();
 
   TString centr="";
@@ -164,6 +183,8 @@ cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", TString effNa
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
   massD0Task->SetSystem(system); //0=pp, 1=PbPb
   massD0Task->SetEtaForCorrel(etacorr);
+  massD0Task->SetSoftPiFlag(flagsoftpicut);
+  massD0Task->SetMEAxisThresh(MEthresh);
 
 //*********************
 //correlation settings
@@ -182,10 +203,11 @@ cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", TString effNa
   Double_t pttreshup[15] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
   massD0Task->SetPtTreshLow(pttreshlow);
   massD0Task->SetPtTreshUp(pttreshup);
-  massD0Task->PrintBinsAndLimits();
 
   //  massD0Task->SetRejectSDDClusters(kTRUE);
   //  massD0Task->SetWriteVariableTree(kTRUE);
+
+  massD0Task->PrintBinsAndLimits();
 
   mgr->AddTask(massD0Task);
   

@@ -79,6 +79,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fOnlyHadrons(kFALSE),
   fCheckMotherPDG(kTRUE),
   fTrackEtaCut(0.8),
+  fTrackEtaCutMin(-1.),
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fDCAXYCut(0),
@@ -219,7 +220,7 @@ TObjArray*  AliAnalyseLeadingTrackUE::FindLeadingObjects(TObject *obj)
   	AliVParticle* part = ParticleWithCuts( obj, ipart );
         if (!part) continue;
 	// Accept leading-tracks in a limited pseudo-rapidity range	
-  	if( TMath::Abs(part->Eta()) > fTrackEtaCut ) continue;
+  	if( TMath::Abs(part->Eta()) > fTrackEtaCut || TMath::Abs(part->Eta()) < fTrackEtaCutMin ) continue;
   	tracks->AddLast( part );
   	}
   // Order tracks by pT	
@@ -397,7 +398,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
     if (!part) continue;
     
     if (useEtaPtCuts)
-      if (TMath::Abs(part->Eta()) > fTrackEtaCut || part->Pt() < fTrackPtMin)
+      if (TMath::Abs(part->Eta()) > fTrackEtaCut || TMath::Abs(part->Eta()) < fTrackEtaCutMin || part->Pt() < fTrackPtMin)
       {
 	if (hasOwnership)
 	  delete part;
@@ -444,7 +445,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetFakeParticles(TObject* obj, TObject* arr
     if (!partReconstructed) continue;
 
     if (useEtaPtCuts)
-      if (TMath::Abs(partReconstructed->Eta()) > fTrackEtaCut || partReconstructed->Pt() < fTrackPtMin)
+      if (TMath::Abs(partReconstructed->Eta()) > fTrackEtaCut || TMath::Abs(partReconstructed->Eta()) < fTrackEtaCutMin || partReconstructed->Pt() < fTrackPtMin)
       {
         if (hasOwnership)
           delete partReconstructed;
@@ -905,7 +906,7 @@ TObjArray*  AliAnalyseLeadingTrackUE::SortRegions(const AliVParticle* leading, T
   	TVector3 partVect(part->Px(), part->Py(), part->Pz());
  
   	Int_t region = 0;
-  	if( TMath::Abs(partVect.Eta()) > fTrackEtaCut ) continue;
+  	if( TMath::Abs(partVect.Eta()) > fTrackEtaCut || TMath::Abs(partVect.Eta()) < fTrackEtaCutMin) continue;
   	// transverse regions
   	if (leadVect.DeltaPhi(partVect) < -k60rad && leadVect.DeltaPhi(partVect) > -k120rad )region = -1; //left
   	if (leadVect.DeltaPhi(partVect) > k60rad && leadVect.DeltaPhi(partVect) < k120rad ) region = 1;   //right

@@ -60,21 +60,32 @@ if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     exit 4
 fi
 
+runListName="$1"
+qaProdName="$2"
+if [ $isPrivateProd -eq 1 ]; then
+  tmpName=${qaProdName//"private"/""}
+  if [ "$tmpName" == "$qaProdName" ]; then
+    qaProdName="${qaProdName}_private"
+  fi
+fi
+alienBaseDir="$3"
+lhcPeriod=`echo ${alienBaseDir%"/"} | awk -F "/" ' { print $NF } '`
+outFileSuffix="${lhcPeriod}_${qaProdName}"
+outFileSuffix=${outFileSuffix//"__"/"_"}
+
 loadAnalysisLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWGmuon.so\");gSystem->Load(\"libPWGmuondep.so\");"
-includeAliroot="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");"
+includeAliroot="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include -I${ALICE_INSTALL}/include\");"
 includeMuon="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/MUON\");"
+
 
 function mergePerRun()
 {
     echo "Merging each run..."
     cd $baseOutDir
-    runListName="$1"
-    prodDir="$2"
-    alienBaseDir="$3"
 
     aliroot -b <<EOF &> $mergeLog
 .L $qaMacroDir/mergeGridFiles.C+
-completeProd("${runListName}","${prodDir}","${alienBaseDir}","${outTaskName}",50,"MUON_QA MTR_ChamberEffMap MUON.TrigEfficiencyMap MUON.TriggerEfficiencyMap",${mergeFast});
+completeProd("${runListName}","${qaProdName}","${alienBaseDir}","${outTaskName}",50,"MUON_QA MTR_ChamberEffMap MUON.TrigEfficiencyMap MUON.TriggerEfficiencyMap",${mergeFast});
 .q
 EOF
 }
@@ -156,11 +167,9 @@ function runTrackQA() {
     echo "Running tracker QA"
     cd $terminateDir
     physSel="$1"
-    alienBaseDir="$2"
-    lhcPeriod=`echo ${alienBaseDir%"/"} | awk -F "/" ' { print $NF } '`
     aliroot -b <<EOF &> logTrackQA.txt
 ${includeAliroot} ${loadAnalysisLibs}
-.x $qaMacroDir/PlotMuonQA.C+("${terminateDir}",0x0,${inputTriggerList},${physSel},"${lhcPeriod}","${outTaskName}");
+.x $qaMacroDir/PlotMuonQA.C+("${terminateDir}",0x0,${inputTriggerList},${physSel},"${outFileSuffix}","${outTaskName}");
 .q
 EOF
     cd $baseOutDir
@@ -169,22 +178,14 @@ EOF
 # Use absolute path for file inputTriggerList
 if [ "${inputTriggerList}" != "0x0" ]; then
   inputTriggerDir=`dirname ${inputTriggerList}`
-  if [ "${inputTriggerDir}"="." ]; then
+  if [ "${inputTriggerDir}" = "." ]; then
     inputTriggerList="`pwd`/${inputTriggerList}"
   fi
   inputTriggerList="\"${inputTriggerList}\""
 fi
 
-qaProdName="$2"
-if [ $isPrivateProd -eq 1 ]; then
-    tmpName=${qaProdName//"private"/""}
-    if [ "$tmpName" == "$qaProdName" ]; then
-	qaProdName="${qaProdName}_private"
-    fi
-fi
-
 if [ $execMerge -eq 1 ]; then
-    mergePerRun $1 $qaProdName $3
+    mergePerRun
 fi
 mergeOut=`grep -A 1 "Output written" ${mergeLog} | grep -v written`
 mergeOutAll=${mergeOut//".txt"/"_merged.txt"}
@@ -204,16 +205,11 @@ if [ $execTerminate -eq 1 ]; then
 fi
 
 if [ $execTrigQA -eq 1 ]; then
-#    minRun=`echo ${mergeOut} | cut -d "_" -f 2`
-#    maxRun=`echo ${mergeOut} | cut -d "_" -f 3 | cut -d "." -f 1`
-#    trigOutSuffix=`echo ${qaProdName} | awk -F "/" '{ print $NF }'`
-    trigOutSuffix=`echo $3 | awk -F "/" '{ print $NF }'`
-#    outName="trigEffQA_${minRun}_${maxRun}_${trigOutSuffix}.root"
-    outName="trigEffQA_${trigOutSuffix}.root"
+    outName="trigEffQA_${outFileSuffix}.root"
 
     runTrigQA "${mergeOut}" "${outName}"
 fi
 
 if [ $execTrackQA -eq 1 ]; then
-    runTrackQA 1 $3
+    runTrackQA 1
 fi

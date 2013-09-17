@@ -42,14 +42,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster) ;
   void         CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
   void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  ) ;
-  
-  Float_t      CalculateExcessAreaFraction(const Float_t excess, const Float_t conesize);
-  
-  void 	   GetCoeffNormBadCell(const AliAODPWG4ParticleCorrelation * pCandidate, 
-                                        const AliCaloTrackReader * reader,  Float_t &  coneBadCellsCoeff, Float_t &  etaBandBadCellsCoeff, Float_t & phiBandBadCellsCoeff, const Float_t conesize) ;
+
 
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
-                                                   const Float_t coneptsumCluster,const Float_t coneptsumCell, const Float_t coneptsumTrack ) ;
+                                                   const Float_t coneptsumCluster,const Float_t coneptsumCell, const Float_t coneptsumTrack,
+                                                   Float_t &etaBandptsumTrackNorm, Float_t &etaBandptsumClusterNorm ) ;
   
   TObjString * GetAnalysisCuts() ;
   
@@ -71,8 +68,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillPileUpHistograms(Int_t clusterID) ;
   
   void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
-                                                             const AliCaloTrackReader * reader,
-                                                             const AliCaloPID * pid) ;
+                                                             AliCaloPID * pid) ;
   
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph ) ; 
   
@@ -265,19 +261,22 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaBandNormCellvsTrack ;             //! Accumulated pT cell in Eta band to estimate UE in cone, normalized to cone size, clusters vs tracks
   TH2F *   fhPhiBandNormCellvsTrack ;             //! Accumulated pT cell in Phi band to estimate UE in cone, normalized to cone
 
-  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiTrack;  //! Tracks, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiTrack; //! Tracks, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaTrack;  //! Tracks, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaTrack; //! Tracks, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiCluster;  //! Clusters, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiTrack;       //! Tracks, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiTrack;   //! Tracks, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaTrack;       //! Tracks, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaTrack;   //! Tracks, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiCluster;     //! Clusters, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
   TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiCluster; //! Clusters, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCluster;  //! Clusters, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCluster;     //! Clusters, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
   TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaCluster; //! Clusters, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiCell;  //! Cells, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiCell; //! Cells, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCell;  //! Cells, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaCell; //! Cells, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
-
+  TH2F *   fhConeSumPtSubvsConeSumPtTotPhiCell;        //! Cells, phi band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotPhiCell;    //! Cells, phi band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCell;        //! Cells, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtSubNormvsConeSumPtTotEtaCell;    //! Cells, eta band: sum pT in cone after bkg sub normalized by sum pT in cone before bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtVSUETracksEtaBand;               //! fhConeSumPtVSUETracksEtaBand
+  TH2F *   fhConeSumPtVSUETracksPhiBand;               //! fhConeSumPtVSUETracksPhiBand
+  TH2F *   fhConeSumPtVSUEClusterEtaBand;              //! fhConeSumPtVSUEClusterEtaBand
+  TH2F *   fhConeSumPtVSUEClusterPhiBand;              //! fhConeSumPtVSUEClusterPhiBand
   
   //MC
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
@@ -315,19 +314,19 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaIsoOtherDecay;                    //! eta of isolated other decay gamma
   TH1F *   fhPtThresIsolatedOtherDecay[5][5];     //! Isolated OtherDecay gamma with pt threshold 
   TH1F *   fhPtFracIsolatedOtherDecay[5][5];      //! Isolated OtherDecay gamma with pt frac
-  TH2F *   fhPtSumIsolatedOtherDecay[5];          //! Isolated OtherDecay gamma with threshold on cone pt sume	
+  TH2F *   fhPtSumIsolatedOtherDecay[5];          //! Isolated OtherDecay gamma with threshold on cone pt sume
 //  TH1F *   fhPtIsoConversion;                     //! Number of isolated Conversion gamma 
 //  TH2F *   fhPhiIsoConversion;                    //! Phi of isolated Conversion gamma
 //  TH2F *   fhEtaIsoConversion;                    //! eta of isolated Conversion gamma
 //  TH1F *   fhPtThresIsolatedConversion[5][5];     //! Isolated Conversion gamma with pt threshold 
 //  TH1F *   fhPtFracIsolatedConversion[5][5];      //! Isolated Conversion gamma with pt frac
 //  TH2F *   fhPtSumIsolatedConversion[5];          //! Isolated Conversion gamma with threshold on cone pt sume
-  TH1F *   fhPtIsoHadron;                        //! Number of isolated Hadron 
-  TH2F *   fhPhiIsoHadron;                       //! Phi of isolated Hadron
-  TH2F *   fhEtaIsoHadron;                       //! eta of isolated Hadron
-  TH1F *   fhPtThresIsolatedHadron[5][5];        //! Isolated Hadron gamma with pt threshold 
-  TH1F *   fhPtFracIsolatedHadron[5][5];         //! Isolated Hadron gamma with pt frac
-  TH2F *   fhPtSumIsolatedHadron[5];             //! Isolated Hadron gamma with threshold on cone pt sume
+  TH1F *   fhPtIsoHadron;                         //! Number of isolated Hadron
+  TH2F *   fhPhiIsoHadron;                        //! Phi of isolated Hadron
+  TH2F *   fhEtaIsoHadron;                        //! eta of isolated Hadron
+  TH1F *   fhPtThresIsolatedHadron[5][5];         //! Isolated Hadron gamma with pt threshold
+  TH1F *   fhPtFracIsolatedHadron[5][5];          //! Isolated Hadron gamma with pt frac
+  TH2F *   fhPtSumIsolatedHadron[5];              //! Isolated Hadron gamma with threshold on cone pt sume
 
   // Multi Cut analysis Several IC
   TH1F *   fhPtNoIsoPi0;                          //! Number of not isolated leading pi0 (2 gamma)
@@ -339,7 +338,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtNoIsoMCPhoton;                     //! Number of not isolated leading gamma 
 //  TH1F *   fhPtNoIsoConversion;                   //! Number of not isolated leading conversion gamma 
   TH1F *   fhPtNoIsoFragmentation;                //! Number of not isolated leading fragmentation gamma 
-  TH1F *   fhPtNoIsoHadron;                      //! Number of not isolated leading hadrons 
+  TH1F *   fhPtNoIsoHadron;                       //! Number of not isolated leading hadrons 
   
   TH2F *   fhSumPtLeadingPt[5] ;                  //! Sum Pt in the cone
   TH2F *   fhPtLeadingPt[5] ;                     //! Particle Pt in the cone
@@ -381,12 +380,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTrackMatchedMCParticle[2];           //! Trace origin of matched particle
 
   // Shower Shape histograms
-  TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
+  TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)  
+  TH2F *   fhPtLambda0[2];                        //! Shower shape of (non) isolated photons (do not apply SS cut previously)
   TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
   TH2F *   fhELambda0SSBkg;                       //! Shower shape of non isolated photons close to isolation threshold (do not apply SS cut previously)
   TH2F *   fhELambda0TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
+  TH2F *   fhPtLambda0TRD[2];                     //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhELambda0MCPhoton[2];                 //! Shower shape of (non) isolated photon candidates originated by particle photon not decay (do not apply SS cut previously)
+  TH2F *   fhPtLambda0MCPhotonPrompt[2];          //! Shower shape of (non) isolated photon candidates originated by particle photon not decay (do not apply SS cut previously)
+  TH2F *   fhPtLambda0MCPhotonFrag[2];            //! Shower shape of (non) isolated photon candidates originated by particle photon not decay (do not apply SS cut previously)
   TH2F *   fhELambda0MCPi0[2];                    //! Shower shape of (non) isolated photon candidates originated by particle 2 merged pi0 photons (do not apply SS cut previously)
   TH2F *   fhELambda0MCPi0Decay[2];               //! Shower shape of (non) isolated photon candidates originated by particle pi0 decay photon (do not apply SS cut previously)
   TH2F *   fhELambda0MCEtaDecay[2];               //! Shower shape of (non) isolated photon candidates originated by particle eta decay photon (do not apply SS cut previously)
@@ -419,7 +422,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
   Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
-  Float_t  fHistoPtSumMin;	                  // PtSum minimum in histogram
+  Float_t  fHistoPtSumMin;	                      // PtSum minimum in histogram
   Int_t    fHistoNPtInConeBins;                   // Number of bins in PtInCone histogram
   Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
   Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
@@ -427,7 +430,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,23)
+  ClassDef(AliAnaParticleIsolation,24)
 } ;
 
 

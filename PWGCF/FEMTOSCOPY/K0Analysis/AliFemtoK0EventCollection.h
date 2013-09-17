@@ -53,12 +53,10 @@ class AliFemtoK0Particle  // Reconstructed K0s parameters needed for correlation
   double fNegPhi;	//negative daughter phi
 
   //for separation
-  double fXPos[3];      //Positive daughter position
-  double fXNeg[3];      //Negative daughter position
   double fPPos[3];      //Positive daughter momentum
   double fPNeg[3];      //negative daughter momentum
-  double fCovPos[21];   //positive daughter coverity matrix
-  double fCovNeg[21];   //negative daughter coverity matrix
+  float fPosXYZ[9][3];	//corrected daughter TPC positions
+  float fNegXYZ[9][3];	//corrected daughter TPC positions
 
   ClassDef(AliFemtoK0Particle, 1);
 };

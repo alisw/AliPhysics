@@ -57,11 +57,14 @@ AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title)
   ,fTPCnSigmaMax(3)
   ,fMassCut(0.5)
   ,fChi2OverNDFCut(999)
+  ,fPtMin(0.3)
   ,fIsLS(kFALSE)
   ,fIsULS(kFALSE)
   ,fIsAOD(kFALSE)
+  ,fHasPtCut(kFALSE)
   ,fNLS(0)
   ,fNULS(0)
+  ,fTpcNcls(50)
   ,fLSPartner(0)
   ,fULSPartner(0)
   ,fHistMass(0)
@@ -100,11 +103,14 @@ AliSelectNonHFE::AliSelectNonHFE()
   ,fTPCnSigmaMax(3)
   ,fMassCut(0.5)
   ,fChi2OverNDFCut(999)
+  ,fPtMin(0.3)
   ,fIsLS(kFALSE)
   ,fIsULS(kFALSE)
   ,fIsAOD(kFALSE)
+  ,fHasPtCut(kFALSE)
   ,fNLS(0)
   ,fNULS(0)
+  ,fTpcNcls(50)
   ,fLSPartner(0)
   ,fULSPartner(0)
   ,fHistMass(0)
@@ -203,7 +209,7 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
 	{
 	  if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
 	  if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-	  if(atrack2->GetTPCNcls() < 80) continue; 
+	  if(atrack2->GetTPCNcls() < fTpcNcls) continue; 
 	}
       else
 	{   
@@ -214,6 +220,8 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
       Double_t tpcNsigma2 = fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kElectron);
       if(tpcNsigma2<fTPCnSigmaMin || tpcNsigma2>fTPCnSigmaMax) continue;
       
+      //Pt Cut
+      if((track2->Pt() < fPtMin) && (fHasPtCut)) continue;
       
       if(fAlgorithm=="DCA")
 	{
@@ -307,6 +315,7 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
 	  if(fCharge1>0) fPDGtrack1 = -11;
 	  if(fCharge2>0) fPDGtrack2 = -11;
 	  
+	  AliKFParticle::SetField(bfield);
 	  AliKFParticle fKFtrack1(*track1, fPDGtrack1);
 	  AliKFParticle fKFtrack2(*track2, fPDGtrack2);
 	  AliKFParticle fRecoGamma(fKFtrack1, fKFtrack2);

@@ -19,6 +19,7 @@ class AliLnHistoMap;
 class AliLnID;
 class TParticle;
 class TList;
+class TProfile;
 
 class AliAnalysisTaskB2: public AliAnalysisTask
 {
@@ -35,6 +36,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	void SetV0ANDtrigger(Bool_t flag=1) { fV0AND = flag; }
 	void SetNoFastOnlyTrigger(Bool_t flag=1) { fNoFastOnly = flag; }
+	void SetNtrkMultTrigger(Bool_t flag=1) { fNtrkMultTrigger = flag; }
 	void SetKNOmultInterval(Double_t min, Double_t max) { fMinKNOmult = min; fMaxKNOmult = max; }
 	void SetCentralityInterval(Double_t min, Double_t max) { fMinCentrality = min; fMaxCentrality = max; }
 	
@@ -53,6 +55,9 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	void SetSimulation(Bool_t flag = kTRUE) { fSimulation = flag; }
 	void SetHeavyIons(Bool_t flag = kTRUE) { fHeavyIons = flag; }
+	
+	void SetMomentumCorrection(Bool_t flag = kTRUE) { fMomentumCorrection = flag; }
+	void SetMomentumCorrectionProfile(TProfile* pfx) { fMoCpfx = pfx; }
 	
 	void SetHistogramMap(AliLnHistoMap* map) { fHistoMap = map; }
 	
@@ -100,16 +105,22 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Double_t GetPhi(const AliESDtrack* trk) const;
 	Double_t GetTheta(const AliESDtrack* trk) const;
 	Double_t GetRapidity(const AliESDtrack* trk, Int_t pid) const;
+	Double_t GetRapidity(Double_t p, Double_t pz, Int_t pid) const;
 	Double_t GetITSmomentum(const AliESDtrack* trk) const;
 	Double_t GetTOFmomentum(const AliESDtrack* trk) const;
 	Double_t GetBeta(const AliESDtrack* trk) const;
-	Double_t GetMassSquare(const AliESDtrack* trk) const;
+	Double_t GetMassSquared(const AliESDtrack* trk) const;
 	Double_t GetTimeOfFlight(const AliESDtrack* trk) const;
 	Double_t GetITSchi2PerCluster(const AliESDtrack* trk) const;
 	Int_t    GetITSnClusters(const AliESDtrack* trk) const;
 	Int_t    GetITSnPointsPID(const AliESDtrack* trk) const;
 	
 	Int_t GetPidCode(const TString& species) const;
+	
+	Double_t GetMomentumCorrection(Double_t ptrec) const;
+	
+	Double_t GetM2Difference(Double_t beta, Double_t p, Double_t m) const;
+	Double_t GetExpectedTime(const AliESDtrack* trk, Double_t m) const;
 	
   private:
  
@@ -119,14 +130,15 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Bool_t fHeavyIons; // analysis of heavy ions data
 	Bool_t fSimulation; // analysis of MC simulation
 	
-	Bool_t fMultTrigger; //! track multiplicity trigger flag
-	Bool_t fCentTrigger; //! centrality trigger flag
+	Bool_t fMultTriggerFired; //! track multiplicity trigger flag
+	Bool_t fCentTriggerFired; //! centrality trigger flag
 	Bool_t fTriggerFired; //! trigger flag
 	Bool_t fGoodVertex; //! good vertex flag
 	Bool_t fPileUpEvent; //! pile-up flag
 	
 	Bool_t fV0AND; // V0AND trigger flag
 	Bool_t fNoFastOnly; // No kFastOnly trigger flag
+	Bool_t fNtrkMultTrigger; // enable combined multiplicity trigger
 	Double_t fMinKNOmult; // minimum KNO track multiplicity scaling
 	Double_t fMaxKNOmult; // maximum KNO track multiplicity scaling
 	Double_t fMinCentrality; // minimum centrality for HI
@@ -176,6 +188,9 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	Double_t fMinM2; // minimum m2 for TPC+TOF pid
 	Double_t fMaxM2; // maximum m2 for TPC+TOF pid
+	
+	Bool_t fMomentumCorrection; // enable momentum correction
+	TProfile* fMoCpfx; // momentum correction from simulation
 	
 	ClassDef(AliAnalysisTaskB2, 1)
 };

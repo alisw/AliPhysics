@@ -43,12 +43,10 @@ AliFemtoK0Particle::AliFemtoK0Particle() :
  fNegPt(0),
  fPosPhi(0),
  fNegPhi(0),
- fXPos(),
- fXNeg(),
  fPPos(),
  fPNeg(),
- fCovPos(),
- fCovNeg()
+ fPosXYZ(),
+ fNegXYZ()
 {
   //Default constructor
 }
@@ -72,12 +70,11 @@ AliFemtoK0Particle::AliFemtoK0Particle(const AliFemtoK0Particle &obj) :
  fNegPt(obj.fNegPt),
  fPosPhi(obj.fPosPhi),
  fNegPhi(obj.fNegPhi),
- fXPos(),
- fXNeg(),
  fPPos(),
  fPNeg(),
- fCovPos(),
- fCovNeg()
+ fPosXYZ(),
+ fNegXYZ()
+
 {
   // copy constructor
 }
@@ -107,33 +104,14 @@ AliFemtoK0Particle &AliFemtoK0Particle::operator=(const AliFemtoK0Particle &obj)
  fNegPt = obj.fNegPt;
  fPosPhi = obj.fPosPhi;
  fNegPhi = obj.fNegPhi;
- fXPos[0] = obj.fXPos[0];
- fXPos[1] = obj.fXPos[1];
- fXPos[2] = obj.fXPos[2];
- fXNeg[0] = obj.fXNeg[0];
- fXNeg[1] = obj.fXNeg[1];
- fXNeg[2] = obj.fXNeg[2];
- fPPos[0] = obj.fPPos[0];
- fPPos[1] = obj.fPPos[1];
- fPPos[2] = obj.fPPos[2];
- fPNeg[0] = obj.fPNeg[0];
- fPNeg[1] = obj.fPNeg[1];
- fPNeg[2] = obj.fPNeg[2];
- fCovPos[0] = obj.fCovPos[0];  fCovPos[1] = obj.fCovPos[1];  fCovPos[2] = obj.fCovPos[2];
- fCovPos[3] = obj.fCovPos[3];  fCovPos[4] = obj.fCovPos[4];  fCovPos[5] = obj.fCovPos[5];
- fCovPos[6] = obj.fCovPos[6];  fCovPos[7] = obj.fCovPos[7];  fCovPos[8] = obj.fCovPos[8];
- fCovPos[9] = obj.fCovPos[9];  fCovPos[10] = obj.fCovPos[10];  fCovPos[11] = obj.fCovPos[11];
- fCovPos[12] = obj.fCovPos[12];  fCovPos[13] = obj.fCovPos[13];  fCovPos[14] = obj.fCovPos[14];
- fCovPos[17] = obj.fCovPos[17];  fCovPos[17] = obj.fCovPos[17];  fCovPos[17] = obj.fCovPos[17];
- fCovPos[18] = obj.fCovPos[18];  fCovPos[19] = obj.fCovPos[19];  fCovPos[20] = obj.fCovPos[20];
- fCovNeg[0] = obj.fCovNeg[0];  fCovNeg[1] = obj.fCovNeg[1];  fCovNeg[2] = obj.fCovNeg[2];
- fCovNeg[3] = obj.fCovNeg[3];  fCovNeg[4] = obj.fCovNeg[4];  fCovNeg[5] = obj.fCovNeg[5];
- fCovNeg[6] = obj.fCovNeg[6];  fCovNeg[7] = obj.fCovNeg[7];  fCovNeg[8] = obj.fCovNeg[8];
- fCovNeg[9] = obj.fCovNeg[9];  fCovNeg[10] = obj.fCovNeg[10];  fCovNeg[11] = obj.fCovNeg[11];
- fCovNeg[12] = obj.fCovNeg[12];  fCovNeg[13] = obj.fCovNeg[13];  fCovNeg[14] = obj.fCovNeg[14];
- fCovNeg[17] = obj.fCovNeg[17];  fCovNeg[17] = obj.fCovNeg[17];  fCovNeg[17] = obj.fCovNeg[17];
- fCovNeg[18] = obj.fCovNeg[18];  fCovNeg[19] = obj.fCovNeg[19];  fCovNeg[20] = obj.fCovNeg[20];
-
+ for(int i=0;i<3;i++){
+  fPPos[i] = obj.fPPos[i];
+  fPNeg[i] = obj.fPNeg[i];
+  for(int j=0;j<9;j++){
+   fPosXYZ[j][i] = obj.fPosXYZ[j][i];
+   fNegXYZ[j][i] = obj.fNegXYZ[j][i];
+  }
+ }
  return (*this);
 }
 //_____________________________________________________________________________

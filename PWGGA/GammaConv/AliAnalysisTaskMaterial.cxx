@@ -99,9 +99,8 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
    fESDEvent = (AliESDEvent*) InputEvent();
    if (fESDEvent==NULL) return;
    if(fIsHeavyIon && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
-	Int_t nESDtracksEta09 = CountESDTracks09(); // Estimate Event Multiplicity
-	Int_t nESDtracksEta0914 = CountESDTracks0914(); // Estimate Event Multiplicity
-	//	Int_t nESDtracksEta14 = CountESDTracks14(); // Estimate Event Multiplicity
+	Int_t nESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
+	Int_t nESDtracksEta0914 = CountTracks0914(); // Estimate Event Multiplicity
 	Int_t nESDtracksEta14; // Estimate Event Multiplicity
   nESDtracksEta14= nESDtracksEta09 + nESDtracksEta0914;
 	Int_t nContrVtx;
@@ -356,77 +355,84 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMaterial::CountESDTracks09(){
-   
-   // Using standard function for setting Cuts
-   Bool_t selectPrimaries=kTRUE;
-   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-   EsdTrackCuts->SetMaxDCAToVertexZ(2);
-   EsdTrackCuts->SetEtaRange(-0.9, 0.9);
-   EsdTrackCuts->SetPtRange(0.15);
-
+Int_t AliAnalysisTaskMaterial::CountTracks09(){
    Int_t fNumberOfESDTracks = 0;
-   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
-      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
-      if(!curTrack) continue;
-      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+   if(fInputEvent->IsA()==AliESDEvent::Class()){
+   // Using standard function for setting Cuts
+      Bool_t selectPrimaries=kTRUE;
+      AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.9, 0.9);
+      EsdTrackCuts->SetPtRange(0.15);
+      
+      for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+         AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+         if(!curTrack) continue;
+         // if(fMCEvent && ((AliConversionCuts*)fCutArray->At(fiCut))->GetSignalRejection() != 0){
+         //    if(!((AliConversionCuts*)fCutArray->At(fiCut))->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack)) continue;
+         // }
+         if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+      }
+      delete EsdTrackCuts;
+      EsdTrackCuts=0x0;
    }
-   delete EsdTrackCuts;
-   EsdTrackCuts=0x0;
+   else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+         AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+         if(!curTrack->IsPrimaryCandidate()) continue;
+         if(abs(curTrack->Eta())>0.9) continue;
+         if(curTrack->Pt()<0.15) continue;
+         if(abs(curTrack->ZAtDCA())>2) continue;
+         fNumberOfESDTracks++;
+      }
+   }
 
    return fNumberOfESDTracks;
 }
 
-Int_t AliAnalysisTaskMaterial::CountESDTracks0914(){
+Int_t AliAnalysisTaskMaterial::CountTracks0914(){
 
    // Using standard function for setting Cuts ; We use TPCOnlyTracks for outer eta region
    //Bool_t selectPrimaries=kTRUE;
 	 //   EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-	 EsdTrackCuts->SetMaxDCAToVertexXY(5);
-	 //	 EsdTrackCuts->SetMaxDCAToVertexXYPtDep("sqrt(0.15^2+(0.4/pt)^2");
-   EsdTrackCuts->SetEtaRange(0.9, 1.4);
-   EsdTrackCuts->SetPtRange(0.15);
-
-   Int_t fNumberOfESDTracks = 0;
-   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
-      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
-      if(!curTrack) continue;
-      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+    Int_t fNumberOfESDTracks = 0;
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      // Using standard function for setting Cuts
+      AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      EsdTrackCuts->SetMaxDCAToVertexZ(5);
+      EsdTrackCuts->SetEtaRange(0.9, 1.4);
+      EsdTrackCuts->SetPtRange(0.15);
+      
+      for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+         AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+         if(!curTrack) continue;
+         // if(fMCEvent && ((AliConversionCuts*)fCutArray->At(fiCut))->GetSignalRejection() != 0){
+         //    if(!((AliConversionCuts*)fCutArray->At(fiCut))->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack)) continue;
+         // }
+         if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+      }
+      EsdTrackCuts->SetEtaRange(-1.4, -0.9);
+      for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
+         AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
+         if(!curTrack) continue;
+         if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+      }
+      delete EsdTrackCuts;
+      EsdTrackCuts=0x0;
    }
-   EsdTrackCuts->SetEtaRange(-1.4, -0.9);
-   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
-      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
-      if(!curTrack) continue;
-      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+   else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+         AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+//          if(!curTrack->IsPrimaryCandidate()) continue;
+         if(abs(curTrack->Eta())<0.9 || abs(curTrack->Eta())>1.4 ) continue;
+         if(curTrack->Pt()<0.15) continue;
+         if(abs(curTrack->ZAtDCA())>5) continue;
+         fNumberOfESDTracks++;
+      }
    }
-   delete EsdTrackCuts;
-   EsdTrackCuts=0x0;
-
+   
    return fNumberOfESDTracks;
 }
-
-Int_t AliAnalysisTaskMaterial::CountESDTracks14(){
-
-   // Using standard function for setting Cuts
-   Bool_t selectPrimaries=kTRUE;
-   AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-   EsdTrackCuts->SetMaxDCAToVertexZ(2);
-   EsdTrackCuts->SetEtaRange(-1.4, 1.4);
-   EsdTrackCuts->SetPtRange(0.15);
-
-   Int_t fNumberOfESDTracks = 0;
-   for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
-      AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
-      if(!curTrack) continue;
-      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
-   }
-   delete EsdTrackCuts;
-   EsdTrackCuts=0x0;
-
-   return fNumberOfESDTracks;
-}
-
 
 //________________________________________________________________________
 void AliAnalysisTaskMaterial::Terminate(Option_t *)

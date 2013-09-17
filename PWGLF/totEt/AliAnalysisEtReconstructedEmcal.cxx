@@ -53,9 +53,9 @@ void AliAnalysisEtReconstructedEmcal::CreateHistograms()
 }
 
 
-Double_t AliAnalysisEtReconstructedEmcal::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t mult){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+Double_t AliAnalysisEtReconstructedEmcal::GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t cent){//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
   Double_t factor = 1.0;
-  Double_t E = fReCorrections->CorrectedEnergy(cluster.E(),mult);
+  Double_t E = fReCorrections->CorrectedEnergy(cluster.E(),cent);
   if(nonLinCorr!=0){
     Double_t p0 = 9.90780e-01;
     Double_t p1 = 1.61503e-01;

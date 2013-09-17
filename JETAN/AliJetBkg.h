@@ -3,59 +3,73 @@
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- //---------------------------------------------------------------------
-// Class to calculate the background per unit area
-// manages the search for jets 
-// Authors: Elena Bruna elena.bruna@yale.edu
-//          Sevil Salur ssalur@lbl.gov
-//          
-//---------------------------------------------------------------------
 
+/* $Id$ */
 
-class AliJetFinder;
-class AliESDEvent;
-class TTree;
-class TChain;
-class TString;
-class AliAODEvent;
-class AliJetHistos;
-class AliFastJetInput;
+//--------------------------------------------------
+// Method implementation for background studies and background subtraction with UA1 algorithms
+//
+// Author: magali.estienne@subatech.in2p3.fr
+//-------------------------------------------------
+
+class TH1F;
+class TH2F;
+class TList;
+class AliAODJetEventBackground;
 
 class AliJetBkg : public TObject
 {
  public:
-    AliJetBkg();
-    AliJetBkg(const AliJetBkg &input);
-    AliJetBkg& operator=(const AliJetBkg& source);
-    virtual ~AliJetBkg() {;}
-    void SetHeader(AliJetHeader *header)  {fHeader=header;}
-    void SetReader(AliJetReader *reader)  {fReader=reader;}
-    void SetFastJetInput(AliFastJetInput *fjinput)  {fInputFJ=fjinput;}
-    void BkgFastJetb(Double_t& x,Double_t& y, Double_t& z);
-    void BkgFastJetWoHardest(Double_t& x,Double_t& y, Double_t& z);
-    Float_t BkgFastJet();
-    Float_t BkgChargedFastJet();
-    Float_t BkgStat();
-    Float_t BkgFastJetCone(TClonesArray* fAODJets);
-//    Float_t BkgRemoveJetLeading(TClonesArray* fAODJets);
-    Float_t BkgRemoveJetLeadingFromUArray(TClonesArray* fAODJets);
-    Float_t EtaToTheta(Float_t arg);
-    Bool_t EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius) const;
-    static Double_t BkgFunction(Double_t *x,Double_t *par);
-    
- private:
-    Double_t CalcRho(vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString method);
-    void CalcRhob(Double_t& median, Double_t& sigma, Double_t& 
-meanarea,vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString 
-method);
-    void CalcRhoWoHardest(Double_t& median, Double_t& sigma, Double_t& 
-meanarea,vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString 
-method);
-    AliJetReader *fReader;   //! reader
-    AliJetHeader *fHeader;   //! header
-    AliFastJetInput *fInputFJ; //! input particles
+  AliJetBkg();
+  AliJetBkg(const AliJetBkg &input);
+  ~AliJetBkg();
+  AliJetBkg& operator=(const AliJetBkg& source);
+  void    SetHeader(AliJetHeader *header)  {fHeader=header;}
+  void    SetCalTrkEvent(AliJetCalTrkEvent *evt)  {fEvent=evt;}
+  Bool_t  PtCutPass(Int_t id, Int_t nTracks);
+  Bool_t  SignalCutPass(Int_t id, Int_t nTracks);
+  Float_t CalcJetAreaEtaCut(Float_t radius, const Float_t etaJet);
+  void    CalcJetAndBckgAreaEtaCut(Bool_t calcOutsideArea, Float_t rc, const Int_t nJ, const Float_t* etaJet, Float_t* &areaJet, Float_t &areaOut);
+ 
+  void    SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&EtbgTotalN, Float_t&sigmaN, 
+			const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, 
+			Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, 
+			Float_t* etsigJet, Int_t* multJetT, Int_t* multJetC, Int_t* multJet, 
+			Int_t* injet, Float_t* &areaJet);
+  
+  void    SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float_t& EtbgTotalN, Float_t&sigmaN,
+			    const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, Float_t* etJet, 
+			    const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet, 
+			    Int_t* multJetT, Int_t* multJetC, Int_t* multJet, Int_t* injet, Float_t* &/*areaJet*/);
 
-  ClassDef(AliJetBkg, 1); // Analysis task for standard jet analysis
+  void    SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ,Float_t& EtbgTotalN, Float_t&sigmaN,
+			     const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, Float_t* etJet, 
+			     const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet, 
+			     Int_t* multJetT, Int_t* multJetC, Int_t* multJet, Int_t* injet, Float_t* &/*areaJet*/);
+
+  void    SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float_t&EtbgTotalN, Float_t&sigmaN,
+			    const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, Float_t* etJet, 
+			    const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet, 
+			    Int_t* multJetT, Int_t* multJetC, Int_t* multJet, Int_t* injet, Float_t* &areaJet);
+  void    SetDebug(Int_t debug){fDebug = debug;}
+
+  enum {kMaxJets = 60};
+
+ private:
+  //    Double_t CalcRho(vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString method);
+
+  AliJetCalTrkEvent* fEvent;    //! reader
+  AliJetHeader*      fHeader;   //! header
+  Int_t              fDebug;    //  Debug option
+
+  // temporary histos for background, reset for each event, no need to stream
+  TH1F*  fhEtJet[kMaxJets];   //! histogram for background subtraction
+  TH1F*  fhAreaJet[kMaxJets]; //! histogram for background subtraction (store global not to create it with every event
+  TH1F*  fhEtBackg;           //! histogram for background subtraction
+  TH1F*  fhAreaBackg;         //! histogram for background subtraction
+
+  ClassDef(AliJetBkg, 2)      // background jet analysis
+
 };
  
 #endif

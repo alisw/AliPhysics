@@ -877,8 +877,8 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   
   //Trigger  
   header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
-  if      (esdevent) header->SetFiredTriggerClasses(esdevent->GetFiredTriggerClasses());
-  else if (aodevent) header->SetFiredTriggerClasses(aodevent->GetFiredTriggerClasses());
+
+  header->SetFiredTriggerClasses(fEvent->GetFiredTriggerClasses());
   
   header->SetTriggerMask(fEvent->GetTriggerMask()); 
   header->SetTriggerCluster(fEvent->GetTriggerCluster());
@@ -1294,10 +1294,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsExoticEvent()
     if(accept && !fRecoUtils->IsExoticCell(absID,cells,bc)) totCellE += ecell;
   }
   
-  //  TString triggerclasses = "";
-  //  if(esdevent) triggerclasses = esdevent             ->GetFiredTriggerClasses();
-  //  else         triggerclasses = ((AliAODEvent*)event)->GetFiredTriggerClasses();
-  //    //  
+  //  TString triggerclasses = event->GetFiredTriggerClasses();
   //    printf("AliAnalysisTaskEMCALClusterize - reject event %d with cluster  - reject event with ncells in SM3 %d and SM4 %d\n",(Int_t)Entry(),ncellsSM3, ncellsSM4);
   //    if(fFillAODFile) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);;
   //    return;
@@ -1328,11 +1325,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsLEDEvent(const Int_t run)
     if(cells->GetAmplitude(icell) > 0.1 && cells->GetCellNumber(icell)/(24*48)==3) ncellsSM3++;
   }
   
-  TString triggerclasses = "";
-  
-  AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(fEvent);
-  if(esdevent) triggerclasses = esdevent              ->GetFiredTriggerClasses();
-  else         triggerclasses = ((AliAODEvent*)fEvent)->GetFiredTriggerClasses();
+  TString triggerclasses = fEvent->GetFiredTriggerClasses();
   
   Int_t ncellcut = 21;
   if(triggerclasses.Contains("EMC")) ncellcut = 35;

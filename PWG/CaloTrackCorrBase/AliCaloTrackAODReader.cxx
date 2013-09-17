@@ -47,30 +47,6 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
  
 }
 
-//_________________________________________________________
-AliCentrality* AliCaloTrackAODReader::GetCentrality() const 
-{
-  // recover centrality object.
-  AliAODEvent* event    = dynamic_cast<AliAODEvent*> (fInputEvent);
-  AliAODEvent* orgevent = dynamic_cast<AliAODEvent*> (fOrgInputEvent);
-  
-  if(event && !fSelectEmbeddedClusters) 
-  {
-    //Normal AOD event
-    return event->GetHeader()->GetCentralityP() ;
-  }
-  else if(fSelectEmbeddedClusters && orgevent) 
-  {
-    // centrality in AOD from input, not in embedded event
-    // temporary fix until this object is copied to the output event in embedding analysis
-    return orgevent->GetHeader()->GetCentralityP();
-  }
-  else 
-  {
-    return 0x0 ; 
-  }
-}
-
 //_________________________________________________________________
 void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, 
                                                   AliAODEvent* aod, 

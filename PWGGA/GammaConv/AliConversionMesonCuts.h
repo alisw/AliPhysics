@@ -14,6 +14,7 @@
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
+#include "AliAODMCParticle.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -47,6 +48,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 	kElecShare,
 	kToCloseV0s,
 	kuseMCPSmearing,
+   kDcaGammaGamma,
+   kDcaRPrimVtx,
+   kDcaZPrimVtx,
 	kNCuts
   };
 
@@ -74,15 +78,15 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   // Cut Selection
   Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0.);
   Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
-  Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedAODMC(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Double_t fRapidityShift=0.);
+  Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
   Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
   void PrintCuts();
 
-  void InitCutHistograms(TString name="");
+  void InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
   void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
   TList *GetCutHistograms(){return fHistograms;}
   void SmearParticle(AliAODConversionPhoton * photon);
-  
   ///Cut functions
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
@@ -98,7 +102,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Bool_t SetMCPSmearing(Int_t useMCPSmearing);
   Bool_t SetSharedElectronCut(Int_t sharedElec);
   Bool_t SetToCloseV0sCut(Int_t toClose);
-
+  Bool_t SetDCAGammaGammaCut(Int_t DCAGammaGamma);
+  Bool_t SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx);
+  Bool_t SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx);
 
   // Request Flags
   Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
@@ -139,18 +145,26 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   TRandom3 fRandom; //
   Int_t fElectronLabelArraySize;
   Int_t *fElectronLabelArray; //[fElectronLabelArraySize] Array with elec/pos v0 label
+  Double_t fDCAGammaGammaCut; // cut value for the maximum distance between the two photons [cm]
+  Double_t fDCAZMesonPrimVtxCut; // cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
+  Double_t fDCARMesonPrimVtxCut; // cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
   Int_t fBackgroundHandler; //
   
   // Histograms
   TObjString *fCutString; // cut number used for analysis
   TH1F *hMesonCuts; // bookkeeping for meson cuts
   TH1F *hMesonBGCuts; // bookkeeping for meson bg cuts
-
+  TH1F *hDCAGammaGammaMesonBefore;
+  TH1F *hDCAZMesonPrimVtxBefore;
+  TH1F *hDCARMesonPrimVtxBefore;
+  TH1F *hDCAGammaGammaMesonAfter;
+  TH2F *hDCAZMesonPrimVtxAfter;
+  TH1F *hDCARMesonPrimVtxAfter;
 
 private:
 
 
-  ClassDef(AliConversionMesonCuts,3)
+  ClassDef(AliConversionMesonCuts,4)
 };
 
 

@@ -84,11 +84,10 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   TObjArray *fMCArray;                  // MC array
   Int_t fParticleType;                   // Holds which particle to run on
   Int_t fSystem;                        // holds collisions system (0=pp, 1=PbPb(,2=pPb))
-  TString fSelectionParticleOptions;    // String to hold options for the particle selection
   Bool_t fUseKine;                      // Whether or not to run on MC stack
 
 
-  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 4);
+  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 5);
 };
 
 #endif

@@ -81,6 +81,9 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   void SetV0VertexerMinRadius      ( Double_t lParameter ){ fV0Sels[5] = lParameter; }
   void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
   //---------------------------------------------------------------------------------------
+  void SetDiffractiveOnly ( Bool_t lDiffractiveOnly = kTRUE ) { fDiffractiveOnly = lDiffractiveOnly; }
+  void SetEtaRefMult ( Double_t lEtaRefMult = 0.5 ) { fEtaRefMult = lEtaRefMult; }
+
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -115,6 +118,9 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   
   Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 
+  Bool_t fDiffractiveOnly; //Only look at diffractive generated events
+  Bool_t fEtaRefMult; // Ref Mult eta range 
+
 //===========================================================================================
 //   Variables for Tree, V0s
 //===========================================================================================
@@ -125,6 +131,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    Float_t fTreeVariableDcaV0ToPrimVertex; //!
    Float_t fTreeVariableDcaPosToPrimVertex; //!
    Float_t fTreeVariableDcaNegToPrimVertex; //!
+   Float_t fTreeVariableDCAV0ToPrimVertex; //!
    Float_t fTreeVariableV0CosineOfPointingAngle; //!
    Float_t fTreeVariableV0Radius; //!
    Float_t fTreeVariablePt; //!
@@ -314,6 +321,12 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0ALambda;     //! Lambda
   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AAntiLambda; //! AntiLambda
   TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AK0Short;    //! K0Short
+
+//Cross-checking histograms: Charged Kaons (to compare with neutral ones at generator level) 
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultV0AKPlus;     //! Added for cross-check of any bias
+  TH3F      *f3dHistPrimRawPtVsYCMSVsMultV0AKMinus;    //! Added for cross-check of any bias
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AKPlus;     //! Added for cross-check of any bias
+  TH3F      *f3dHistPrimAnalysisPtVsYCMSVsMultV0AKMinus;    //! Added for cross-check of any bias
 
 //ZNA containers
   

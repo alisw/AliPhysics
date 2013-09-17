@@ -6,9 +6,12 @@
 
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class AliAnalysisTaskEmcal+;
+#pragma link C++ class AliAnalysisTaskEmcalDev+;
+#pragma link C++ class AliClusterContainer+;
 #pragma link C++ class AliEMCALClusterParams+;
 #pragma link C++ class AliEmcalClusTrackMatcherTask+;
 #pragma link C++ class AliEmcalCompatTask+;
+#pragma link C++ class AliEmcalContainer+;
 #pragma link C++ class AliEmcalEsdTpcTrackTask+;
 #pragma link C++ class AliEmcalMCTrackSelector+;
 #pragma link C++ class AliEmcalParticle+;
@@ -21,7 +24,11 @@
 #pragma link C++ class AliEmcalTrackPropagatorTask+;
 #pragma link C++ class AliEsdSkimTask+;
 #pragma link C++ class AliEsdTrackExt+;
+#pragma link C++ class AliParticleContainer+;
 #pragma link C++ class AliPicoTrack+;
+#pragma link C++ class AliEmcalTriggerSetupInfo+;
+#pragma link C++ class AliEmcalTriggerPatchInfo+;
+#pragma link C++ class AliEmcalTriggerMaker+;
 
 #endif
 

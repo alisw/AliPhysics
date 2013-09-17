@@ -11,6 +11,7 @@ class THnSparse;
 class TClonesArray;
 class TObject;
 class TString;
+class AliNamedString;
 class AliAODEvent;
 class AliESDEvent;
 class AliMCEvent;
@@ -42,31 +43,44 @@ class AliAnalysisTaskHJetEmbed : public AliAnalysisTaskSE {
   void SetTrkPtRange(Double_t min, Double_t max)  { fMinTrkPt=min; fMaxTrkPt=max;   }
   void SetTrkPhiRange(Double_t min, Double_t max) { fMinTrkPhi=min; fMaxTrkPhi=max; }
   void SetTrkEtaRange(Double_t min, Double_t max) { fMinTrkEta=min; fMaxTrkEta=max; }
+  void SetTTtype(Int_t type)                      { fTTtype=type;                   }
   void SetRadius(Double_t rad)                    { fRadius=rad;                    }
   void SetPLJetArrName(char *s)                   { fPLJetArrName=s;                }
   void SetDLJetArrName(char *s)                   { fDLJetArrName=s;                }
   void SetJetArrName(char *s)                     { fJetArrName=s;                  }
   void SetRhoName(char *s)                        { fRhoName=s;                     }
   void SetRunQA(Bool_t run)                       { fRunQA=run;                     }
+  void SetRunPL(Bool_t run)                       { fRunPL=run;                     }
+  void SetRunDL(Bool_t run)                       { fRunDL=run;                     }
   void SetRunHJet(Bool_t run)                     { fRunHJet=run;                   }
   void SetRunMatch(Bool_t run)                    { fRunMatch=run;                  }
+  void SetTTRanges(Double_t *min, Double_t *max)
+  {
+    for(Int_t i=0; i<kNTT; i++)
+      {
+	fMinTTPt[i] = min[i];
+	fMaxTTPt[i] = max[i];
+      }
+  }
 
 
 
 protected:
   void         RunQA();
-  void         RunHJet();
-  void         RunMatch();
-  void         FillHJetCor(const TClonesArray *tracks, const Int_t leadingIndex, const TClonesArray *jetArray, THnSparse *hn, Bool_t isBkg = kFALSE);
+  void         RunHJet(const Double_t minPt, const Double_t maxPt);
+  void         RunMatch(const TClonesArray *tracks, const Int_t leadingIndex);
+  void         FillHJetCor(const TClonesArray *tracks, const Int_t leadingIndex, const TClonesArray *jetArray, THnSparse *hTT, THnSparse *hn, Bool_t isBkg = kFALSE);
   Int_t        FindGeoMatchedJet(const AliEmcalJet* jet, const TClonesArray *jetArray, Double_t &dR);
-  Int_t        FindEnergyMatchedJet(const AliEmcalJet* jet, const TClonesArray *jetArray, Double_t &dR);
+  Int_t        FindEnergyMatchedJet(const AliEmcalJet* jet, const TClonesArray *jetArray, Double_t &dR, Double_t &fraction);
   Bool_t       AcceptTrack(const AliVParticle *track);
   Bool_t       IsGoodJet(const AliEmcalJet* jet);
   Double_t     GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz);
   Double_t     GetDPhi(const Double_t phi1, const Double_t phi2);
   Double_t     CalculateDPhi(const Double_t phi1, const Double_t phi2);
+  Double_t     GetJetDistance(const AliEmcalJet *jet1, const AliEmcalJet* jet2);
 
   enum { kNTrig = 3  };
+  enum { kNTT = 4 };
 
  private:
   Int_t             fVerbosity;            //! Control output
@@ -88,6 +102,9 @@ protected:
   Double_t          fMaxTrkEta;            //
   Double_t          fMinTrkPhi;            //
   Double_t          fMaxTrkPhi;            //
+  Int_t             fTTtype;               //
+  Double_t          fMinTTPt[kNTT];        //
+  Double_t          fMaxTTPt[kNTT];        //
   Double_t          fRadius;               //  Jet radius
   TString           fJetArrName;           //  Name of the found jet array
   TString           fPLJetArrName;         //  Name of the embedded PYTHIA jet array on particle level
@@ -98,12 +115,15 @@ protected:
   TString           fRhoName;              //  Name of the rho parameter
   AliRhoParameter   *fRho;                 //! Rho parameter
   Double_t          fRhoValue;             //! Value of the rho parameter
-  TParameter<int>   *fPtHardBinParam;      //!Pt hard bin param
-  Int_t             fPtHardBin;            //!            
+  AliNamedString    *fPtHardBinName;       //!Pt hard bin param
+  Int_t             fPtHardBin;            //!        
+  TRandom3          *fRandom;              //!
 
   Bool_t            fRunQA;                //  Flag to run QA
   Bool_t            fRunHJet;              //  Flag to run h+jet 
   Bool_t            fRunMatch;             //  Flag to run matching
+  Bool_t            fRunPL;                //
+  Bool_t            fRunDL;                //
 
   TList             *fOutputList;                //! Output list
   TH1F              *fhEventStat;                //!
@@ -137,7 +157,9 @@ protected:
   AliAnalysisTaskHJetEmbed(const AliAnalysisTaskHJetEmbed&);            // not implemented
   AliAnalysisTaskHJetEmbed &operator=(const AliAnalysisTaskHJetEmbed&); // not implemented
 
-  ClassDef(AliAnalysisTaskHJetEmbed, 1);
+  ClassDef(AliAnalysisTaskHJetEmbed, 3);
 };
 
 #endif
+
+

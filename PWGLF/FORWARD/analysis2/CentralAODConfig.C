@@ -26,8 +26,13 @@ CentralAODConfig(AliCentralMultiplicityTask* task)
   // --- Set options on task -----------------------------------------
   // Whether to do correction for secondaries
   task->SetUseSecondary(true);
-  // Whether to do correction for acceptance
-  task->SetUseAcceptance(true);
+  // Whether to do correction for acceptance - deprecated
+  // The tasks stores the per-event phi acceptance in the overflow bin 
+  // and the eta coverage in the underflow bin.  Use these to correct the 
+  // data for acceptance. 
+  task->SetUseAcceptance(false);
+  // Whether to make diagnostics or not - off by default
+  // task->SetMakeDiagnostics(true);
 
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
@@ -40,14 +45,12 @@ CentralAODConfig(AliCentralMultiplicityTask* task)
   // Least distance from primary to 2nd pile-up vertex (cm)
   task->GetInspector().SetMinPileupDistance(.8);
   // V0-AND triggered events flagged as NSD 
-  task->GetInspector().SetUseV0AndForNSD(false);
+  // task->GetInspector().SetUseV0AndForNSD(false);
   // Use primary vertex selection from 1st physics WG
   // task->GetInspector().SetUseFirstPhysicsVtx(true);
   // Use satellite collisions
   // task->GetInspector().SetUseDisplacedVertices(true);
   // task->GetInspector().SetDebug(4);
-
-  // task->GetManager().SetSecMapPath(".");
 }
 
 //

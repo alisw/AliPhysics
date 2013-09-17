@@ -28,6 +28,7 @@ class TObjArray;
 class TTree;
 class TTreeSRedirector;
 class TParticle;
+class TH3D;
 
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisTaskSE.h"
@@ -100,6 +101,11 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void SetProcessAll(Bool_t proc) { fProcessAll = proc; }
   static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AliFilteredTreeEventCuts *const evtCuts, AliFilteredTreeAcceptanceCuts *const accCuts);
 
+  void SetFillTrees(Bool_t filltree) { fFillTree = filltree ;}
+  Bool_t GetFillTrees() { return fFillTree ;}
+
+  void FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, const Double_t centralityF, const Double_t chi2TPCInnerC);
+
  private:
 
   AliESDEvent *fESD;    //! ESD event
@@ -109,8 +115,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TIterator *fPitList;  //! iterator over the output objetcs  
 
   Bool_t fUseMCInfo;        // use MC information
-  Bool_t fUseESDfriends;        // use esd friends
-  Bool_t fReducePileUp;        // downscale the information for the pile-up TPC tracks
+  Bool_t fUseESDfriends;    // use esd friends
+  Bool_t fReducePileUp;     // downscale the information for the pile-up TPC tracks
+  Bool_t fFillTree;         // do not fill trees
 
   AliFilteredTreeEventCuts      *fFilteredTreeEventCuts;      // event cuts
   AliFilteredTreeAcceptanceCuts *fFilteredTreeAcceptanceCuts; // acceptance cuts  
@@ -135,6 +142,18 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TTree* fLaserTree;        //! list send on output slot 0
   TTree* fMCEffTree;        //! list send on output slot 0
   TTree* fCosmicPairsTree;  //! list send on output slot 0
+
+  TH3D* fPtResPhiPtTPC;    //! sigma(pt)/pt vs Phi vs Pt for prim. TPC tracks
+  TH3D* fPtResPhiPtTPCc;   //! sigma(pt)/pt vs Phi vs Pt for prim. TPC contrained to vertex tracks
+  TH3D* fPtResPhiPtTPCITS; //! sigma(pt)/pt vs Phi vs Pt for prim. TPC+ITS tracks
+
+  TH3D* fPtResEtaPtTPC;    //! sigma(pt)/pt vs Eta vs Pt for prim. TPC tracks
+  TH3D* fPtResEtaPtTPCc;   //! sigma(pt)/pt vs Eta vs Pt for prim. TPC contrained to vertex tracks
+  TH3D* fPtResEtaPtTPCITS; //! sigma(pt)/pt vs Eta vs Pt for prim. TPC+ITS tracks
+
+  TH3D* fPtResCentPtTPC;    //! sigma(pt)/pt vs Cent vs Pt for prim. TPC tracks
+  TH3D* fPtResCentPtTPCc;   //! sigma(pt)/pt vs Cent vs Pt for prim. TPC contrained to vertex tracks
+  TH3D* fPtResCentPtTPCITS; //! sigma(pt)/pt vs Cent vs Pt for prim. TPC+ITS tracks
 
   AliAnalysisTaskFilteredTree(const AliAnalysisTaskFilteredTree&); // not implemented
   AliAnalysisTaskFilteredTree& operator=(const AliAnalysisTaskFilteredTree&); // not implemented

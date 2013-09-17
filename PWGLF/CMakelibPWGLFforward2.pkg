@@ -34,19 +34,41 @@ if((DEFINED ALIROOT_SVN_BRANCH))
 endif((DEFINED ALIROOT_SVN_BRANCH))
 
 set ( SRCS   
+  # ZDC tasks
+  FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
+  FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.cxx
+  FORWARD/GEO/AliAnalysisTaskZDCpAcalib.cxx
+  # AOD objects
   FORWARD/analysis2/AliAODCentralMult.cxx
   FORWARD/analysis2/AliAODForwardEP.cxx
   FORWARD/analysis2/AliAODForwardMult.cxx
-  FORWARD/analysis2/AliBasedNdetaTask.cxx
-  FORWARD/analysis2/AliBaseMCTrackDensity.cxx
+  # Interface to OADB backed by a TTree 
+  FORWARD/analysis2/AliOADBForward.cxx
+  # Correction managers 
+  FORWARD/analysis2/AliCorrectionManagerBase.cxx 
+  FORWARD/analysis2/AliForwardCorrectionManager.cxx
+  FORWARD/analysis2/AliCentralCorrectionManager.cxx
+  # Central (SPD) code 
   FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
   FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
   FORWARD/analysis2/AliCentraldNdetaTask.cxx
   FORWARD/analysis2/AliCentralMCCorrectionsTask.cxx
   FORWARD/analysis2/AliCentralMCMultiplicityTask.cxx
   FORWARD/analysis2/AliCentralMultiplicityTask.cxx
+  FORWARD/analysis2/AliSPDMCTrackDensity.cxx
+  # Aux tasks and code 
   FORWARD/analysis2/AliCopyHeaderTask.cxx
+  FORWARD/analysis2/AliBasedNdetaTask.cxx
+  FORWARD/analysis2/AliBaseMCTrackDensity.cxx
+  FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
   FORWARD/analysis2/AliDisplacedVertexSelection.cxx
+  FORWARD/analysis2/AliPoissonCalculator.cxx
+  FORWARD/analysis2/AliMCAuxHandler.cxx
+  # Forward Aux
+  FORWARD/analysis2/AliForwardFlowWeights.cxx
+  FORWARD/analysis2/AliForwardUtil.cxx
+  FORWARD/analysis2/AliFMDMultCuts.cxx
+  # FMD corrections
   FORWARD/analysis2/AliFMDCorrAcceptance.cxx
   FORWARD/analysis2/AliFMDCorrDoubleHit.cxx
   FORWARD/analysis2/AliFMDCorrector.cxx 
@@ -54,40 +76,35 @@ set ( SRCS
   FORWARD/analysis2/AliFMDCorrMergingEfficiency.cxx
   FORWARD/analysis2/AliFMDCorrSecondaryMap.cxx 
   FORWARD/analysis2/AliFMDCorrVertexBias.cxx
+  # FMD algortithmns 
   FORWARD/analysis2/AliFMDDensityCalculator.cxx
   FORWARD/analysis2/AliFMDEnergyFitter.cxx
-  FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
   FORWARD/analysis2/AliFMDEventInspector.cxx
   FORWARD/analysis2/AliFMDEventPlaneFinder.cxx
-  FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliFMDHistCollector.cxx
+  FORWARD/analysis2/AliFMDSharingFilter.cxx
+  # FMD MC algorithms
   FORWARD/analysis2/AliFMDMCCorrector.cxx
   FORWARD/analysis2/AliFMDMCDensityCalculator.cxx
   FORWARD/analysis2/AliFMDMCEventInspector.cxx
   FORWARD/analysis2/AliFMDMCSharingFilter.cxx
   FORWARD/analysis2/AliFMDMCTrackDensity.cxx
-  FORWARD/analysis2/AliFMDMultCuts.cxx
-  FORWARD/analysis2/AliFMDSharingFilter.cxx
-  FORWARD/analysis2/AliForwardCorrectionManager.cxx
+  # Forward tasks 
+  FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
+  FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliForwarddNdetaTask.cxx
   FORWARD/analysis2/AliForwardFlowTaskQC.cxx
-  FORWARD/analysis2/AliForwardFlowWeights.cxx
   FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
   FORWARD/analysis2/AliForwardMCFlowTaskQC.cxx
   FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
   FORWARD/analysis2/AliForwardMultiplicityBase.cxx
   FORWARD/analysis2/AliForwardMultiplicityTask.cxx
   FORWARD/analysis2/AliForwardQATask.cxx
-  FORWARD/analysis2/AliForwardUtil.cxx
-  FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
-  FORWARD/analysis2/AliMCAuxHandler.cxx
-  FORWARD/analysis2/AliPoissonCalculator.cxx
-  FORWARD/analysis2/AliSPDMCTrackDensity.cxx
-  FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
-  FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.cxx
-  FORWARD/GEO/AliAnalysisTaskZDCpAcalib.cxx
-  FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
   FORWARD/analysis2/AliForwardCreateResponseMatrices.cxx
+  FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
+  FORWARD/analysis2/AliForwardMultDists.cxx
+  FORWARD/photons/AliAnalysisTaskPMD.cxx
+  FORWARD/photons/AliAnalysisTaskPMDSim.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -97,15 +114,23 @@ set ( EINCLUDE
   ANALYSIS 
   PWGLF/FORWARD/analysis2  
   PWGLF/FORWARD/GEO 
+  FORWARD/analysis2  
+  FORWARD/GEO 
   PWG0 
   STEER/ESD 
   STEER/STEERBase)
 
 set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
              FORWARD/analysis2/AliAODCentralMult.h 
+	     FORWARD/analysis2/AliOADBForward.h
              FORWARD/analysis2/AliForwardUtil.h  
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
+	     FORWARD/analysis2/AliForwardCorrectionManager.h
+	     FORWARD/analysis2/AliCorrectionManagerBase.h
+	     FORWARD/analysis2/AliFMDCorrAcceptance.h
+	     FORWARD/analysis2/AliFMDCorrSecondaryMap.h
+	     FORWARD/analysis2/AliFMDCorrELossFit.h
 	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h
 	     FORWARD/GEO/AliAnalysisTaskZDCpAcalib.h
 	     FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.h)
@@ -131,14 +156,14 @@ add_dependencies(runTrain STEERBase ESD AOD OADB ANALYSIS ANALYSISalice)
 # --------------------------------------------------------------------
 # Extra targets 
 #
-add_custom_command( OUTPUT FORWARD/doc/doc.pdf 
-                    COMMAND pdflatex doc
-		    COMMAND pdflatex doc
-		    COMMAND pdflatex doc
+add_custom_command( OUTPUT FORWARD/doc/alice-int-2012-040.pdf 
+                    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
-		    COMMAND mv doc.pdf ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/
+		    COMMAND mv alice-int-2012-040.pdf ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/
 		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc
-		    MAIN_DEPENDENCY FORWARD/doc/doc.tex)
+		    MAIN_DEPENDENCY FORWARD/doc/alice-int-2012-040.tex)
 
 add_custom_command( OUTPUT FORWARD/doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
@@ -146,7 +171,7 @@ add_custom_command( OUTPUT FORWARD/doc/html/index.html
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    DEPENDS ${SRCS} ${HDRS})
 
-add_custom_target( PWGLFforward-doc DEPENDS FORWARD/doc/doc.pdf )
+add_custom_target( PWGLFforward-doc DEPENDS FORWARD/doc/alice-int-2012-040.pdf )
 add_custom_target( PWGLFforward-doxy DEPENDS FORWARD/doc/html/index.html )
 
 add_custom_target( install-PWGLFforward2.par 
@@ -218,13 +243,17 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/AddTaskForwardFlow.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
+                FORWARD/analysis2/AddTaskForwardMultDists.C
                 FORWARD/analysis2/AddTaskForwardQA.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
 		FORWARD/analysis2/AddTaskMCTruthdNdeta.C
 		FORWARD/analysis2/AddTaskMCParticleFilter.C
 		FORWARD/analysis2/DrawdNdeta.C
 		FORWARD/analysis2/DrawdNdetaSummary.C
+		FORWARD/analysis2/DrawMCCorrSummary.C
 		FORWARD/analysis2/DrawAODSummary.C
+		FORWARD/analysis2/DrawMultDistsSummary.C
+		FORWARD/analysis2/DrawUnfoldedSummary.C
 		FORWARD/analysis2/ForwardAODConfig.C
 		FORWARD/analysis2/CentralAODConfig.C
                 FORWARD/analysis2/MakeAOD.C
@@ -236,6 +265,16 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/MakeForwardQA.C
 		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C
+                FORWARD/analysis2/AliFMDCorrAcceptance.h
+                FORWARD/analysis2/AliFMDCorrDoubleHit.h
+                FORWARD/analysis2/AliFMDCorrector.h
+                FORWARD/analysis2/AliFMDCorrELossFit.h
+                FORWARD/analysis2/AliFMDCorrMergingEfficiency.h
+                FORWARD/analysis2/AliFMDCorrSecondaryMap.h
+                FORWARD/analysis2/AliFMDCorrVertexBias.h
+                FORWARD/analysis2/AliForwardUtil.h
+		FORWARD/analysis2/AliForwardCorrectionManager.h
+		FORWARD/analysis2/AliCorrectionManagerBase.h
            DESTINATION PWGLF/FORWARD/analysis2 )
 
 # Install corrections 
@@ -255,6 +294,9 @@ install ( DIRECTORY FORWARD/corrections/DoubleHit
 
 # Install shell script 
 install ( FILES FORWARD/analysis2/Run.sh 
+		FORWARD/analysis2/liteAnalysis.sh
+		FORWARD/analysis2/gridAnalysis.sh
+		FORWARD/analysis2/baseAnalysis.sh
 	  DESTINATION PWGLF/FORWARD/analysis2 
 	  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
                       GROUP_EXECUTE GROUP_READ

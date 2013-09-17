@@ -2,7 +2,6 @@
 
 TFile* file;
 const char* prefixToName = "imgs/";
-const char* appendToName = ".pdf";
 const int kNCents = 1;
 
 void Draw(const char* name, const char* options = "", double yFrom=0., double yTo=-1.)
@@ -46,61 +45,63 @@ void Draw(const char* name, const char* options = "", double yFrom=0., double yT
   hist->DrawCopy(options);
 
 
-  canv->SaveAs(Form("%s%s%s", prefixToName, hist->GetName(), appendToName ));
+  canv->SaveAs(Form("%s%s.pdf", prefixToName, hist->GetName()));
+  canv->SaveAs(Form("%s%s.png", prefixToName, hist->GetName()));
   delete hist;
 }
 
 void DrawPID()
 {
   for(int cent=0; cent<kNCents; ++cent) {
-    TH1* grNPhotAll = (TH1*)file->Get(Form("grNPhotAll_cen%d", cent))->Clone();
-    TH1* grNPhotDisp = (TH1*)file->Get(Form("grNPhotDisp_cen%d", cent))->Clone();
-    TH1* grNPhotDisp2 = (TH1*)file->Get(Form("grNPhotDisp2_cen%d", cent))->Clone();
-    TH1* grNPhotCPV = (TH1*)file->Get(Form("grNPhotCPV_cen%d", cent))->Clone();
-    TH1* grNPhotCPV2 = (TH1*)file->Get(Form("grNPhotCPV2_cen%d", cent))->Clone();
+    TString key = Form("nPhotPID_cen%i", cent);
+    
+    TH1* grNPhotAllcore = (TH1*)file->Get(Form("grNPhotAllcore_cen%d", cent))->Clone();
+    TH1* grNPhotCPVcore = (TH1*)file->Get(Form("grNPhotCPVcore_cen%d", cent))->Clone();
+    TH1* grNPhotDisp2core = (TH1*)file->Get(Form("grNPhotDisp2core_cen%d", cent))->Clone();
+    TH1* grNPhotBoth2core = (TH1*)file->Get(Form("grNPhotBoth2core_cen%d", cent))->Clone();
 
-    grNPhotAll->GetXaxis()->SetLabelSize(0.045);
-    grNPhotAll->GetYaxis()->SetRangeUser(0, 40);
+    grNPhotAllcore->GetXaxis()->SetLabelSize(0.045);
+    grNPhotAllcore->GetYaxis()->SetRangeUser(0, grNPhotAllcore->GetMaximum()*1.2);
 
-    grNPhotAll  ->SetMarkerColor(kBlack);
-    grNPhotDisp ->SetMarkerColor(kCyan+1);
-    grNPhotDisp2->SetMarkerColor(kBlue);
-    grNPhotCPV  ->SetMarkerColor(kOrange+1);
-    grNPhotCPV2 ->SetMarkerColor(kRed);
+    grNPhotAllcore  ->SetMarkerColor(kBlack);
+    grNPhotCPVcore ->SetMarkerColor(kCyan+1);
+    grNPhotDisp2core->SetMarkerColor(kBlue);
+    grNPhotBoth2core  ->SetMarkerColor(kOrange+1);
 
-    TCanvas* canv = new TCanvas;
+    TCanvas* canv = new TCanvas(key.Data(), key.Data(), 1024, 768);
     canv->Divide(1,2);
 
     canv->cd(1);
-    grNPhotAll->SetTitle("#LTN_{clusters}^{PID}#GT");
-    grNPhotAll->GetXaxis()->SetRange(0, kFirstBinTo);
-    grNPhotAll->DrawCopy();
-    grNPhotDisp->DrawCopy("same");
-    grNPhotDisp2->DrawCopy("same");
-    grNPhotCPV->DrawCopy("same");
-    grNPhotCPV2->DrawCopy("same");
+    grNPhotAllcore->SetTitle("#LTN_{clusters}^{PID}#GT");
+    gPad->SetGridy();
+    grNPhotAllcore->GetXaxis()->SetRange(0, 85);
+    grNPhotAllcore->DrawCopy();
+    grNPhotCPVcore->DrawCopy("same");
+    grNPhotDisp2core->DrawCopy("same");
+    grNPhotBoth2core->DrawCopy("same");
 
     canv->cd(2);
-    grNPhotAll->SetTitle("");
-    grNPhotAll->GetXaxis()->SetRange(85, 200);
-    grNPhotAll->DrawCopy();
-    grNPhotDisp->DrawCopy("same");
-    grNPhotDisp2->DrawCopy("same");
-    grNPhotCPV->DrawCopy("same");
-    grNPhotCPV2->DrawCopy("same");
+    gPad->SetGridy();
+    grNPhotAllcore->SetTitle("");
+    grNPhotAllcore->GetXaxis()->SetRange(85, 200);
+    grNPhotAllcore->DrawCopy();
+    grNPhotCPVcore->DrawCopy("same");
+    grNPhotDisp2core->DrawCopy("same");
+    grNPhotBoth2core->DrawCopy("same");
 
     canv->cd(1);
     leg = new TLegend(0.9,0.7,0.99,0.99);
     leg->SetFillColor(kWhite);
     leg->SetBorderSize(1);
-    leg->AddEntry(Form("grNPhotAll_cen%d",cent),"All","lP");
-    leg->AddEntry(Form("grNPhotCPV_cen%d",cent),"CPV","lP");
-    leg->AddEntry(Form("grNPhotCPV2_cen%d",cent),"CPV2","lP");
-    leg->AddEntry(Form("grNPhotDisp_cen%d",cent),"Disp","lP");
-    leg->AddEntry(Form("grNPhotDisp2_cen%d",cent),"Disp2","lP");
+    leg->AddEntry(Form("grNPhotAllcore_cen%d",cent),"All","lP");
+    leg->AddEntry(Form("grNPhotCPVcore_cen%d",cent),"CPVcore","lP");
+    leg->AddEntry(Form("grNPhotDisp2core_cen%d",cent),"Disp2core","lP");
+    leg->AddEntry(Form("grNPhotBoth2core_cen%d",cent),"Both2core","lP");
+    
     leg->Draw();
   
-    canv->SaveAs(Form("%s%s%s", prefixToName, Form("nPhotPID_cen%d", cent), appendToName ));
+    canv->SaveAs(Form("%s%s_squeezed.pdf", prefixToName, key.Data()));
+    canv->SaveAs(Form("%s%s_squeezed.png", prefixToName, key.Data()));
   }
 }
 
@@ -120,7 +121,7 @@ void DrawCPVRatio()
     TCanvas* canv = new TCanvas;
     canv->Divide(1,2);
     canv->cd(1);
-    grNPhotCPV->GetXaxis()->SetRange(0, kFirstBinTo);
+    grNPhotCPV->GetXaxis()->SetRange(0, 85);
     grNPhotCPV->DrawCopy();
 
     canv->cd(2);
@@ -128,7 +129,8 @@ void DrawCPVRatio()
     grNPhotCPV->GetXaxis()->SetRange(85, 200);
     grNPhotCPV->DrawCopy();
   
-    canv->SaveAs(Form("%s%s%s", prefixToName, Form("CPVtoAllRatio_cen%d", cent), appendToName ));
+    canv->SaveAs(Form("%sCPVtoAllRatio_cen%d.pdf", prefixToName, cent));
+    canv->SaveAs(Form("%sCPVtoAllRatio_cen%d.png", prefixToName, cent));
   }
 }
 
@@ -155,7 +157,7 @@ void DrawNPhotAllAndHigh()
   
     canv->cd(1);
     grNPhotAll->SetTitle("#LTN_{clusters}#GT");
-    grNPhotAll->GetXaxis()->SetRange(0, kFirstBinTo);
+    grNPhotAll->GetXaxis()->SetRange(0, 85);
     grNPhotAll->GetYaxis()->SetRange(15, 40);
     //grNPhotAll->GetYaxis()->SetRangeUser(15, 45);
     grNPhotAll->DrawCopy();
@@ -177,7 +179,8 @@ void DrawNPhotAllAndHigh()
     leg->AddEntry(grNPhotAllcoreHigh, Form("AllcoreHigh * %d", scale),"lP");
     leg->Draw();
 
-    canv->SaveAs( Form("%s%s%s", prefixToName, Form("nPhotAllAndHigh_cen%d", cent), appendToName ));
+    canv->SaveAs( Form("%s%s.pdf", prefixToName, Form("nPhotAllAndHigh_cen%d", cent)));
+    canv->SaveAs( Form("%s%s.png", prefixToName, Form("nPhotAllAndHigh_cen%d", cent)));
   }
 }
 
@@ -216,7 +219,7 @@ void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* high)
 
       canv->cd(1);
       hPID->SetTitle( Form("#LTN_{clusters}^{PID}#GT / #LTN_{clusters}^{%s}#GT, cent=%d, %s", pidNames[0], cent, high) );
-      hPID->GetXaxis()->SetRange(0, kFirstBinTo);
+      hPID->GetXaxis()->SetRange(0, 85);
       hPID->DrawCopy(same);
 
       canv->cd(2);
@@ -229,7 +232,9 @@ void DrawPIDRatiosHighCore(const char* pidNames[], int nPids, const char* high)
     canv->cd(1);
     leg->Draw();
     TString fn(Form("CPVtoAllRatio%s_cen%d", high, cent));
-    canv->SaveAs(Form("%s%s%s", prefixToName, fn.Data(), appendToName ));
+
+    canv->SaveAs(Form("%s%s.pdf", prefixToName, fn.Data()));
+    canv->SaveAs(Form("%s%s.png", prefixToName, fn.Data()));
   }
 }
 
@@ -253,55 +258,55 @@ void DrawQA()
 
   file = TFile::Open("outputQA.root", "read");
 
-  // Draw("grVtxZ10Cent", "", 0.7, 1.);
-  // Draw("grNCellsM1", "E");
-  // Draw("grNCellsM2");
-  // Draw("grNCellsM3");
-  // Draw("grECluster", "", 0.5, 0.7);
-  // Draw("grNCluster", "", 0, 40);
-  // Draw("grNTracks0", "", 0 , 12000);
-  // Draw("grNPhotAll_cen0", "", 0, 40);
-  // Draw("grNPhotAllcore_cen0", "", 0, 40);
-  // Draw("grNPhotAllwou_cen0", "", 0, 40);
-  // Draw("grNPhotDisp_cen0", "", 0, 40);
-  // Draw("grNPhotDisp2_cen0", "", 0, 40);
-  // Draw("grNPhotDispwou_cen0", "", 0, 40);
-  // Draw("grNPhotCPV_cen0", "", 0, 40);
-  // Draw("grNPhotCPV2_cen0", "", 0, 40);
-  // Draw("grNPhotBoth_cen0", "", 0, 40);
-  // Draw("grEnAll_cen0", "", 0.4, 0.7);
-  // Draw("grEnAllcore_cen0", "", 0.4, 0.7);
-  // Draw("grEnAllwou_cen0", "", 0.4, 0.7);
-  // Draw("grEnDisp_cen0", "", 0.4, 0.7);
-  // Draw("grEnDisp2_cen0", "", 0.4, 0.7);
-  // Draw("grEnDispcore_cen0", "", 0.4, 0.7);
-  // Draw("grEnDispwou_cen0", "", 0.4, 0.7);
-  // Draw("grEnCPV_cen0", "", 0.4, 0.7);
-  // Draw("grEnCPVcore_cen0", "", 0.4, 0.7);
-  // Draw("grEnCPV2_cen0", "", 0.4, 0.7);
-  // Draw("grEnBoth_cen0", "", 0.4, 0.7);
-  // Draw("grEnBothcore_cen0", "", 0.4, 0.7);
+  Draw("grVtxZ10Cent", "", 0.7, 1.);
+  Draw("grNCellsM1", "E");
+  Draw("grNCellsM2");
+  Draw("grNCellsM3");
+  Draw("grECluster", "", 0.5, 0.7);
+  Draw("grNCluster", "", 0, 40);
+  Draw("grNTracks0", "", 0 , 12000);
+  Draw("grNPhotAll_cen0", "", 0, 40);
+  Draw("grNPhotAllcore_cen0", "", 0, 40);
+  Draw("grNPhotAllwou_cen0", "", 0, 40);
+  Draw("grNPhotDisp_cen0", "", 0, 40);
+  Draw("grNPhotDisp2_cen0", "", 0, 40);
+  Draw("grNPhotDispwou_cen0", "", 0, 40);
+  Draw("grNPhotCPV_cen0", "", 0, 40);
+  Draw("grNPhotCPV2_cen0", "", 0, 40);
+  Draw("grNPhotBoth_cen0", "", 0, 40);
+  Draw("grEnAll_cen0", "", 0.4, 0.7);
+  Draw("grEnAllcore_cen0", "", 0.4, 0.7);
+  Draw("grEnAllwou_cen0", "", 0.4, 0.7);
+  Draw("grEnDisp_cen0", "", 0.4, 0.7);
+  Draw("grEnDisp2_cen0", "", 0.4, 0.7);
+  Draw("grEnDispcore_cen0", "", 0.4, 0.7);
+  Draw("grEnDispwou_cen0", "", 0.4, 0.7);
+  Draw("grEnCPV_cen0", "", 0.4, 0.7);
+  Draw("grEnCPVcore_cen0", "", 0.4, 0.7);
+  Draw("grEnCPV2_cen0", "", 0.4, 0.7);
+  Draw("grEnBoth_cen0", "", 0.4, 0.7);
+  Draw("grEnBothcore_cen0", "", 0.4, 0.7);
 
 
-  // DrawPID();
-  // DrawCPVRatio();
-  //  DrawNPhotAllAndHigh();
-  //DrawPIDRatios();
+  DrawPID();
+  DrawCPVRatio();
+  DrawNPhotAllAndHigh();
+  DrawPIDRatios();
 
-  // Draw("grMPi0", "LINFIT", 0.13, 0.15 );
-  // Draw("grWPi0", "LINFIT");
-  // Draw("grNPi0", "LINFIT");
+  Draw("grMPi0", "LINFIT", 0.13, 0.15 );
+  Draw("grWPi0", "LINFIT");
+  Draw("grNPi0", "LINFIT");
 
-  // Draw("grSERPV0Aflat", "", 0, 0.4);
-  // Draw("grSERPV0Cflat", "", 0, 0.4);
-  // Draw("grSERPTPCflat", "", 0, 0.4);
+  Draw("grSERPV0Aflat", "", 0, 0.4);
+  Draw("grSERPV0Cflat", "", 0, 0.4);
+  Draw("grSERPTPCflat", "", 0, 0.4);
 
-  // Draw("grChi2RPV0A", "", 0.1, 500);
-  // Draw("grChi2RPV0C", "", 0.1, 500);
-  // Draw("grChi2RPTPC", "", 0.1, 500);
-  // Draw("grChi2RPV0Aflat", "", 0.1, 500);
-  // Draw("grChi2RPV0Cflat", "", 0.1, 500);
-  // Draw("grChi2RPTPCflat", "", 0.1, 500);
+  Draw("grChi2RPV0A", "", 0.1, 500);
+  Draw("grChi2RPV0C", "", 0.1, 500);
+  Draw("grChi2RPTPC", "", 0.1, 500);
+  Draw("grChi2RPV0Aflat", "", 0.1, 500);
+  Draw("grChi2RPV0Cflat", "", 0.1, 500);
+  Draw("grChi2RPTPCflat", "", 0.1, 500);
 
   Draw("grSinRPV0A1", "", 0, 0.7);
   Draw("grSinRPV0A2", "", 0, 10);

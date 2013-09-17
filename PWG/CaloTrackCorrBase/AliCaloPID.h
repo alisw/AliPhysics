@@ -77,6 +77,7 @@ class AliCaloPID : public TObject {
 
   Bool_t    IsInPi0SplitMassRange     (const Float_t energy, const Float_t mass, const Int_t nlm);
   
+  Bool_t    IsInM02Range              (const Float_t m02);
   Bool_t    IsInPi0M02Range           (const Float_t energy, const Float_t m02,  const Int_t nlm);
   Bool_t    IsInEtaM02Range           (const Float_t energy, const Float_t m02,  const Int_t nlm);
   Bool_t    IsInConM02Range           (const Float_t energy, const Float_t m02,  const Int_t nlm);
@@ -89,7 +90,9 @@ class AliCaloPID : public TObject {
                                                           Double_t vertex[3], 
                                                           Int_t & nLocMax, Double_t & mass, Double_t & angle,
                                                           TLorentzVector & l1  , TLorentzVector & l2,
-                                                          Int_t & absId1, Int_t & absId2) ;
+                                                          Int_t   & absId1,   Int_t   & absId2,
+                                                          Float_t & distbad1, Float_t & distbad2,
+                                                          Bool_t  & fidcut1,  Bool_t  & fidcut2  ) ;
   
   Int_t     GetIdentifiedParticleType(const AliVCluster * cluster) ;
   
@@ -212,14 +215,17 @@ class AliCaloPID : public TObject {
   
   void    SwitchOnSplitAsymmetryCut()          { fUseSplitAsyCut     = kTRUE  ; }
   void    SwitchOffSplitAsymmetryCut()         { fUseSplitAsyCut     = kFALSE ; }
-  
+  Bool_t  IsSplitAsymmetryCutOn()              { return fUseSplitAsyCut       ; }
+
   void    SwitchOnSplitShowerShapeCut()        { fUseSplitSSCut      = kTRUE  ; }
   void    SwitchOffSplitShowerShapeCut()       { fUseSplitSSCut      = kFALSE ; }
+  Bool_t  IsSplitShowerShapeCutOn()            { return fUseSplitSSCut        ; }
   
   void    SetClusterSplittingM02Cut(Float_t min=0, Float_t max=100) 
   { fSplitM02MinCut   = min ; fSplitM02MaxCut  = max ; }
   
-  void    SetClusterSplittingMinNCells(Int_t cut)   { fSplitMinNCells = cut   ; }
+  void    SetClusterSplittingMinNCells(Int_t c) { fSplitMinNCells = c         ; }
+  Int_t   GetClusterSplittingMinNCells() const  { return fSplitMinNCells      ; }
   
   void    SetSplitEnergyFractionMinimum(Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSplitEFracMin[i]  = min   ; }
   Float_t GetSplitEnergyFractionMinimum(Int_t i) const       { if( i < 3 && i >=0 ) return fSplitEFracMin[i]   ;  else return 0 ; }
@@ -232,13 +238,25 @@ class AliCaloPID : public TObject {
   Float_t GetPhotonMaxMass()             const { return fMassPhoMax           ; }
   
   void    SetSplitWidthSigma(Float_t s)        { fSplitWidthSigma        = s  ; }
-  void    SetPi0MassWidthSelectionParameters    (Int_t iparam, Float_t param) { if(iparam < 7 ) fMassWidthPi0Param[iparam] = param ; }
+
+  void    SetPi0MassShiftHighECell(Float_t s)  { s = fMassShiftHighECell      ; }
+  
+  void    SetPi0MassSelectionParameters    (Int_t inlm, Int_t iparam, Float_t param)
+  { if(iparam < 6 ) fMassPi0Param[inlm][iparam] = param ; }
+
+  void    SetPi0WidthSelectionParameters    (Int_t inlm, Int_t iparam, Float_t param)
+  { if(iparam < 6 ) fWidthPi0Param[inlm][iparam] = param ; }
+  
   void    SetM02MaximumSelectionParameters      (Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 6 && inlm < 2) fM02MaxParam[inlm][iparam] = param ; }
+  { if(iparam < 5 && inlm < 2) fM02MaxParam[inlm][iparam] = param ; }
+  
+  void    SetM02MaximumShiftForNLMN(Int_t shift) { fM02MaxParamShiftNLMN = shift ; }
+  
   void    SetM02MinimumSelectionParameters      (Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 6 && inlm < 2) fM02MinParam[inlm][iparam] = param ; }
+  { if(iparam < 5 && inlm < 2) fM02MinParam[inlm][iparam] = param ; }
+  
   void    SetAsymmetryMinimumSelectionParameters(Int_t inlm, Int_t iparam, Float_t param)
-  { if(iparam < 6 && inlm < 2) fAsyMinParam[inlm][iparam] = param ; }
+  { if(iparam < 4 && inlm < 2) fAsyMinParam[inlm][iparam] = param ; }
 
   void    SetPi0MassRange(Float_t min, Float_t max)    { fMassPi0Min    = min ; fMassPi0Max = max ; } // Simple case
   void    SetEtaMassRange(Float_t min, Float_t max)    { fMassEtaMin    = min ; fMassEtaMax = max ; }
@@ -297,20 +315,21 @@ private:
   Float_t   fMassPi0Max  ;                      // Min Pi0 mass // simple cut case
   Float_t   fMassPhoMin  ;                      // Min Photon mass
   Float_t   fMassPhoMax  ;                      // Min Photon mass
-  Float_t   fMassWidthPi0Param[7] ;             // 3 param for pol2 fit on width, 2 param for mass position NLM=1 and NLM>1 for pi0 selection
-  Float_t   fM02MinParam[2][6] ;                // 4 param for pol3 fit on M02 minimum for pi0 selection (maximum for conversions)
-  Float_t   fM02MaxParam[2][6] ;                // 4 param for pol3 fit on M02 maximum for pi0 selection
-  Float_t   fAsyMinParam[2][6] ;                // 4 param for pol3 fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
+  Float_t   fMassPi0Param [2][6] ;              // mean mass param, 2 regions in energy
+  Float_t   fWidthPi0Param[2][6] ;              // width param, 2 regions in energy
+  Float_t   fM02MinParam[2][5] ;                // 5 param for expo + pol fit on M02 minimum for pi0 selection (maximum for conversions)
+  Float_t   fM02MaxParam[2][5] ;                // 5 param for expo + pol fit on M02 maximum for pi0 selection
+  Float_t   fM02MaxParamShiftNLMN;              // shift of max M02 for NLM>2
+  Float_t   fAsyMinParam[2][4] ;                // 3 param for fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
   Float_t   fSplitEFracMin[3]  ;                // Do not use clusters with too large energy in cluster compared
                                                 // to energy in splitted clusters, depeding on NLM
   Float_t   fSplitWidthSigma;                   // Cut on mass+-width*fSplitWidthSigma
+  Float_t   fMassShiftHighECell;                // Shift cuts 5 MeV for Ecell > 150 MeV, default Ecell > 50 MeV
 
-
-  
   AliCaloPID & operator = (const AliCaloPID & cpid) ; // cpy assignment
   AliCaloPID(              const AliCaloPID & cpid) ; // cpy ctor
   
-  ClassDef(AliCaloPID,17)
+  ClassDef(AliCaloPID,20)
   
 } ;
 

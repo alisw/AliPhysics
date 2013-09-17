@@ -33,6 +33,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
+#include "AliNamedString.h"
 
 #include "AliEmcalJet.h"
 
@@ -54,11 +55,13 @@ AliAnalysisTaskHJetEmbed::AliAnalysisTaskHJetEmbed() :
   fMCParticleArrName(""), fMCParticleArray(0x0), 
   fTrackArrName(""), fTrackArray(0x0), fTriggerTrkIndex(-1), 
   fMinTrkPt(0.15), fMaxTrkPt(1e4), fMinTrkEta(-0.9), fMaxTrkEta(0.9), fMinTrkPhi(0), fMaxTrkPhi(2*pi), 
+  fTTtype(0), 
   fRadius(0.4), fJetArrName(""), fPLJetArrName(""), fDLJetArrName(""),
   fJetArray(0x0), fPLJetArray(0x0), fDLJetArray(0x0),
   fRhoName(""), fRho(0x0), fRhoValue(0), 
-  fPtHardBinParam(0), fPtHardBin(-1), 
+  fPtHardBinName(0x0), fPtHardBin(-1), fRandom(0x0),
   fRunQA(kTRUE), fRunHJet(kTRUE), fRunMatch(kTRUE),
+  fRunPL(kFALSE), fRunDL(kTRUE),
   fOutputList(0x0), fhEventStat(0x0), fhPtHardBins(0x0)
 {
   // Constructor
@@ -91,6 +94,13 @@ AliAnalysisTaskHJetEmbed::AliAnalysisTaskHJetEmbed() :
       fhJetPhiGeoMatch[i]        = 0x0;
       fhJetPhiEnMatch[i]         = 0x0;
     }
+  for(Int_t i=0; i<kNTT; i++)
+    {
+      if(i==0)
+	{ fMinTTPt[i] = 19; fMaxTTPt[i] = 25; }
+      else
+	{ fMinTTPt[i] = -1; fMaxTTPt[i] = -1; }
+    }
 }
 
 //________________________________________________________________________
@@ -101,11 +111,13 @@ AliAnalysisTaskHJetEmbed::AliAnalysisTaskHJetEmbed(const char *name) :
   fMCParticleArrName(""), fMCParticleArray(0x0), 
   fTrackArrName(""), fTrackArray(0x0), fTriggerTrkIndex(-1), 
   fMinTrkPt(0.15), fMaxTrkPt(1e4), fMinTrkEta(-0.9), fMaxTrkEta(0.9), fMinTrkPhi(0), fMaxTrkPhi(2*pi), 
+  fTTtype(0), 
   fRadius(0.4), fJetArrName(""), fPLJetArrName(""), fDLJetArrName(""),
   fJetArray(0x0), fPLJetArray(0x0), fDLJetArray(0x0),
   fRhoName(""), fRho(0x0), fRhoValue(0), 
-  fPtHardBinParam(0), fPtHardBin(-1), 
+  fPtHardBinName(0x0), fPtHardBin(-1), fRandom(0x0),
   fRunQA(kTRUE), fRunHJet(kTRUE), fRunMatch(kTRUE),
+  fRunPL(kFALSE), fRunDL(kTRUE),
   fOutputList(0x0), fhEventStat(0x0), fhPtHardBins(0x0)
 {
   // Constructor
@@ -135,6 +147,13 @@ AliAnalysisTaskHJetEmbed::AliAnalysisTaskHJetEmbed(const char *name) :
       fhJetPhiGeoMatch[i]        = 0x0;
       fhJetPhiEnMatch[i]         = 0x0;
     }
+  for(Int_t i=0; i<kNTT; i++)
+    {
+      if(i==0)
+	{ fMinTTPt[i] = 19; fMaxTTPt[i] = 25; }
+      else
+	{ fMinTTPt[i] = -1; fMaxTTPt[i] = -1; }
+    }
 }
 //________________________________________________________________________
 AliAnalysisTaskHJetEmbed::~AliAnalysisTaskHJetEmbed()
@@ -163,20 +182,15 @@ void AliAnalysisTaskHJetEmbed::UserCreateOutputObjects()
   const Double_t hiBinJetqa[dimJetqa]  = {upJetPtBin,  30, 11};
 
   // h+jet
-  const Int_t dimTTqa = 5;
-  const Int_t nBinsTTqa[dimTTqa]     = {nTrkPtBins, nTrkPtBins, nTrkPtBins, 30, 11};
-  const Double_t lowBinTTqa[dimTTqa] = {lowTrkPtBin,lowTrkPtBin,lowTrkPtBin, 0,  0};
-  const Double_t hiBinTTqa[dimTTqa]  = {upTrkPtBin, upTrkPtBin, upTrkPtBin, 30, 11};  
-
   const Int_t dimTT = 3;
   const Int_t nBinsTT[dimTT]     = {nTrkPtBins,  30, 11};
   const Double_t lowBinTT[dimTT] = {lowTrkPtBin, 0,  0};
   const Double_t hiBinTT[dimTT]  = {upTrkPtBin,  30, 11};  
 
   const Int_t dimHJet = 6;
-  const Int_t nBinsHJet[dimHJet]     = {nTrkPtBins,  nJetPtBins,  144,            8,   30, 11};
-  const Double_t lowBinHJet[dimHJet] = {lowTrkPtBin, lowJetPtBin, -0.5*pi+pi/144, 0,   0,  0};
-  const Double_t hiBinHJet[dimHJet]  = {upTrkPtBin,  upJetPtBin,  1.5*pi+pi/144,  0.8, 30, 11};  
+  const Int_t nBinsHJet[dimHJet]     = {nTrkPtBins,  nJetPtBins,  140,     8,   30, 11};
+  const Double_t lowBinHJet[dimHJet] = {lowTrkPtBin, lowJetPtBin, pi-4.95, 0,   0,  0};
+  const Double_t hiBinHJet[dimHJet]  = {upTrkPtBin,  upJetPtBin,  pi+2.05, 0.8, 30, 11};  
 
   // Match
   const Int_t dimMthPt = 6;
@@ -184,10 +198,10 @@ void AliAnalysisTaskHJetEmbed::UserCreateOutputObjects()
   const Double_t lowBinMthPt[dimMthPt] = {lowJetPtBin, lowJetPtBin, -0.95, 0,  0,  0};
   const Double_t hiBinMthPt[dimMthPt]  = {upJetPtBin,  upJetPtBin,  1.05,  1,  30, 11};
 
-  const Int_t dimMthPhi = 5;
-  const Int_t nBinsMthPhi[dimMthPhi]     = {nJetPtBins,  181,                       20, 30, 11};
-  const Double_t lowBinMthPhi[dimMthPhi] = {lowJetPtBin, -pi/2-TMath::DegToRad()/2, 0,  0,  0};
-  const Double_t hiBinMthPhi[dimMthPhi]  = {upJetPtBin,  pi/2+TMath::DegToRad()/2,  1,  30, 11};
+  const Int_t dimMthPhi = 7;
+  const Int_t nBinsMthPhi[dimMthPhi]     = {nTrkPtBins,  nJetPtBins/2,  70,      70,      10, 1,  11};
+  const Double_t lowBinMthPhi[dimMthPhi] = {lowTrkPtBin, lowJetPtBin,   pi-4.95, pi-4.95, 0,  0,  0};
+  const Double_t hiBinMthPhi[dimMthPhi]  = {upTrkPtBin,  upJetPtBin,    pi+2.05, pi+2.05, 1,  10, 11};
 
   OpenFile(1);
   fOutputList = new TList();
@@ -243,9 +257,6 @@ void AliAnalysisTaskHJetEmbed::UserCreateOutputObjects()
 	  fhTTPt[i] = new THnSparseF(Form("%s_fhTTPt",triggerName[i]),Form("Embedded: TT p_{T} vs centrality vs pT hard bin;p_{T,TT}^{ch} (GeV/c);centrality;pT hard bin"),dimTT,nBinsTT,lowBinTT,hiBinTT);
 	  fOutputList->Add(fhTTPt[i]);
 
-	  fhTTPtQA[i] = new THnSparseF(Form("%s_fhTTPtQA",triggerName[i]),Form("PL p_{T} vs DL p_{T} vs embed p_{T} vs centrality vs pT hard bin;p_{T,TT}^{PL} (GeV/c);p_{T,TT}^{DL} (GeV/c);p_{T,TT}^{embed} (GeV/c);centrality;pT hard bin"),dimTTqa,nBinsTTqa,lowBinTTqa,hiBinTTqa);
-	  fOutputList->Add(fhTTPtQA[i]);
-
 	  fhPLHJet[i] = new THnSparseF(Form("%s_fhPLHJet",triggerName[i]),Form("PYTHIA: TT p_{T} vs jet p_{T} vs #Delta#varphi vs jet area vs centrality vs pT hard bin (particle-level, R=%1.1f);p_{T,TT}^{ch} (GeV/c);p_{T,jet}^{ch} (GeV/c);#Delta#varphi;Area;centrality;pT hard bin",fRadius),dimHJet,nBinsHJet,lowBinHJet,hiBinHJet);
 	  fOutputList->Add(fhPLHJet[i]);
 
@@ -264,10 +275,10 @@ void AliAnalysisTaskHJetEmbed::UserCreateOutputObjects()
 	  fhJetPtEnMatch[i] = new THnSparseF(Form("%s_fhJetPtEnMatch",triggerName[i]),Form("Embed: generated p_{T,jet} vs reconstructed p_{T,jet} vs jet p_{T} difference vs dR vs centrality vs pT hard bin (R=%1.1f);p_{T,jet}^{gen} (GeV/c);p_{T,jet}^{rec} (GeV/c);(p_{T,jet}^{rec}-p_{T,jet}^{gen})/p_{T,jet}^{gen};dR;centrality;pT hard bin",fRadius),dimMthPt,nBinsMthPt,lowBinMthPt,hiBinMthPt);
 	  fOutputList->Add(fhJetPtEnMatch[i]);
 
-	  fhJetPhiGeoMatch[i] = new THnSparseF(Form("%s_fhJetPhiGeoMatch",triggerName[i]),Form("Embed: generated p_{T,jet} vs #Delta#varphi vs dR vs centrality vs pT hard bin (R=%1.1f);p_{T,jet}^{gen} (GeV/c);#Delta#varphi;dR;centrality;pT hard bin",fRadius),dimMthPhi,nBinsMthPhi,lowBinMthPhi,hiBinMthPhi);
+	  fhJetPhiGeoMatch[i] = new THnSparseF(Form("%s_fhJetPhiGeoMatch",triggerName[i]),Form("Embed: p_{T,TT} vs p_{T,jet}^{det} vs #Delta#varphi_{TT} vs #Delta#varphi_{jet} vs dR vs centrality vs pT hard bin (R=%1.1f);p_{T,TT} (GeV/c);p_{T,jet}^{det} (GeV/c);#Delta#varphi_{TT};#Delta#varphi_{jet};dR;centrality;pThard bin",fRadius),dimMthPhi,nBinsMthPhi,lowBinMthPhi,hiBinMthPhi);
 	  fOutputList->Add(fhJetPhiGeoMatch[i]);
 
-	  fhJetPhiEnMatch[i] = new THnSparseF(Form("%s_fhJetPhiEnMatch",triggerName[i]),Form("Embed: generated p_{T,jet} vs #Delta#varphi vs dR vs centrality vs pT hard bin (R=%1.1f);p_{T,jet}^{gen} (GeV/c);#Delta#varphi;dR;centrality;pT hard bin",fRadius),dimMthPhi,nBinsMthPhi,lowBinMthPhi,hiBinMthPhi);
+	  fhJetPhiEnMatch[i] = new THnSparseF(Form("%s_fhJetPhiEnMatch",triggerName[i]),Form("Embed: p_{T,TT} vs p_{T,jet}^{det} vs #Delta#varphi_{TT} vs #Delta#varphi_{jet} vs dR vs centrality vs pT hard bin (R=%1.1f);p_{T,TT} (GeV/c);p_{T,jet}^{det} (GeV/c);#Delta#varphi_{TT};#Delta#varphi_{jet};dR;centrality;pThard bin",fRadius),dimMthPhi,nBinsMthPhi,lowBinMthPhi,hiBinMthPhi);
 	  fOutputList->Add(fhJetPhiEnMatch[i]);
 	}
     }
@@ -284,6 +295,8 @@ void AliAnalysisTaskHJetEmbed::UserCreateOutputObjects()
       	}
     }
 
+  fRandom = new TRandom3();
+
   PrintConfig();
   PostData(1, fOutputList);
 }
@@ -293,31 +306,32 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
 {  
   // Main loop, called for each event.
 
+  AliDebug(5,"Entering UserExec");
   fTriggerType = -1;
-
   fEvent = InputEvent();
   if (!fEvent) 
     {
       AliError("Input event not available");
       return;
     }
-
-  if(!fPtHardBinParam)
+  AliDebug(5,"Got the input event");
+  if(!fPtHardBinName)
     {
       // Get embedded pt hard bin number
-      fPtHardBinParam = static_cast<TParameter<int>*>(fEvent->FindListObject("PYTHIAPtHardBin"));
-      if(!fPtHardBinParam)
-	{
-	  AliError("The object for pt hard bin information is not available!");
-	  return;
-	}
+      fPtHardBinName = static_cast<AliNamedString*>(fEvent->FindListObject("AODEmbeddingFile"));
+      if(!fPtHardBinName)
+  	{
+  	  AliError("The object for pt hard bin information is not available!");
+  	  return;
+  	}
     }
-  fPtHardBin = fPtHardBinParam->GetVal();
-  AliDebug(2,Form("Embed pt hard bin: %d\n",fPtHardBin));
-  if(fPtHardBin<0) return;
-
+  TString fileName = fPtHardBinName->GetString();
+  fileName.Remove(0,50);
+  fileName.Remove(fileName.Index("/"));
+  fPtHardBin = fileName.Atoi();
   fhEventStat->Fill(0.5);
   UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+
   if(fPeriod.Contains("lhc11h",TString::kIgnoreCase))
     {
       if (trigger & AliVEvent::kAnyINT)      { fTriggerType=0; }
@@ -386,17 +400,8 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
 	}
     }
 
-  const Int_t Ntracks = fTrackArray->GetEntries();
-  Int_t nLabel = 0;
-  for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) 
-    {
-      AliVParticle *t = static_cast<AliVParticle*>(fTrackArray->At(iTracks));
-      if (!t) continue;
-      if(t->GetLabel()!=0) nLabel ++;
-    }
-
   // Get MC particle array
-  if (!fMCParticleArray) 
+  if (fRunPL && !fMCParticleArray) 
     {
       fMCParticleArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fMCParticleArrName));
       if (!fMCParticleArray) 
@@ -442,7 +447,7 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
 	}
     }
   // Get particle-level jet array
-  if (!fPLJetArray && !fPLJetArrName.IsNull())
+  if (fRunPL && !fPLJetArray && !fPLJetArrName.IsNull())
     {
       fPLJetArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fPLJetArrName));
       if (!fPLJetArray)
@@ -458,7 +463,7 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
 	}
     }
  // Get detector-level jet array
-  if (!fDLJetArray && !fDLJetArrName.IsNull())
+  if (fRunDL && !fDLJetArray && !fDLJetArrName.IsNull())
     {
       fDLJetArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fDLJetArrName));
       if (!fDLJetArray)
@@ -479,8 +484,11 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
   fhPtHardBins->Fill(fPtHardBin);
 
   if(fRunQA) RunQA();
-  if(fRunHJet) RunHJet();
-  if(fRunMatch) RunMatch();
+  if(fRunHJet) 
+    {
+      for(Int_t i=0; i<kNTT; i++)
+	RunHJet(fMinTTPt[i],fMaxTTPt[i]);
+    }
 
   PostData(1, fOutputList);
   return;
@@ -488,85 +496,131 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisTaskHJetEmbed::RunHJet()
+void AliAnalysisTaskHJetEmbed::RunHJet(const Double_t minPt, const Double_t maxPt)
 {
-  // Find trigger track on particle level
-  const Int_t nParticles = fMCParticleArray->GetEntries();
-  Double_t maxPLPt = -1;
+  TArrayI arr;
+  Int_t counter = 0;
   Int_t indexPL = -1;
-  for(Int_t iPart=0; iPart<nParticles; iPart++)
+
+  if(fRunPL)
     {
-      AliVParticle *t = static_cast<AliVParticle*>(fMCParticleArray->At(iPart));
-      if(!t || t->Charge()==0) continue;
-      if(!AcceptTrack(t)) continue;
-      if(maxPLPt<t->Pt())
+      // Find trigger track on particle level
+      const Int_t nParticles = fMCParticleArray->GetEntries();
+      Double_t maxPLPt = -1;
+      arr.Set(nParticles);
+      counter = 0;
+      for(Int_t iPart=0; iPart<nParticles; iPart++)
 	{
-	  maxPLPt = t->Pt();
-	  indexPL = iPart;
+	  AliVParticle *t = static_cast<AliVParticle*>(fMCParticleArray->At(iPart));
+	  //if(!t || t->Charge()==0) continue;
+	  //if(!AcceptTrack(t)) continue;
+	  Double_t pt = t->Pt();
+	  if(fTTtype==0) // single inclusive triggers
+	    {
+	      if (pt<maxPt && pt>=minPt)
+		{
+		  arr.AddAt(iPart,counter);
+		  counter++;
+		}
+	    }
+	  else if(fTTtype==1) // leading triggers
+	    {
+	      if(maxPLPt<pt)
+		{
+		  maxPLPt = pt;
+		  indexPL = iPart;
+		}
+	    }
 	}
+      arr.Set(counter);
+      if(fTTtype==0)
+	{
+	  if(counter==0) indexPL = -1;
+	  else if(counter==1) indexPL = arr.At(0);
+	  else
+	    {
+	      Double_t pro = fRandom->Uniform() * counter;
+	      indexPL = arr.At(TMath::FloorNint(pro));
+	    }
+	}
+      arr.Reset();
     }
-  Double_t fill[] = {maxPLPt, fCentrality, fPtHardBin };
-  fhPLTT[fTriggerType]->Fill(fill);
-  
+
 
   // Find trigger track on detector level and after embedding
   const Int_t Ntracks = fTrackArray->GetEntries();
-  Double_t maxDLPt = 0, maxEmbPt = 0;
-  Int_t indexDL = -1, indexEmb = -1;
+  Double_t maxDLPt = 0;
+  Int_t indexDL = -1;
+  arr.Set(Ntracks);
+  counter = 0;
   for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) 
     {
       AliVParticle *t = static_cast<AliVParticle*>(fTrackArray->At(iTracks));
       if(!t || t->Charge()==0) continue;
       if(!AcceptTrack(t)) continue;
-
       if(t->GetLabel()!=0) 
 	{
-	  if(maxDLPt<t->Pt())
+	  //cout<<iTracks<<"  "<<t->Pt()<<" "<<t->GetLabel()<<endl;
+	  Double_t pt = t->Pt();
+	  if(fTTtype==0) 
 	    {
-	      maxDLPt = t->Pt();
-	      indexDL = iTracks;
+	      if (pt<maxPt && pt>=minPt)
+		{
+		  arr.AddAt(iTracks,counter);
+		  counter++;
+		}
+	    }
+	  else if(fTTtype==1)
+	    {
+	      if(maxDLPt<pt)
+		{
+		  maxDLPt = pt;
+		  indexDL = iTracks;
+		}
 	    }
 	}
+    }
+  arr.Set(counter);
+  if(fTTtype==0)
+    {
+      if(counter==0) indexDL = -1;
+      else if(counter==1) indexDL = arr.At(0);
       else
 	{
-	  if(maxEmbPt<t->Pt())
-	    {
-	      maxEmbPt = t->Pt();
-	      indexEmb = iTracks;
-	    }
+	  Double_t pro = fRandom->Uniform() * counter;
+	  indexDL = arr.At(TMath::FloorNint(pro));
 	}
     }
-  Double_t fill1[] = {maxDLPt, fCentrality, fPtHardBin };
-  fhDLTT[fTriggerType]->Fill(fill1);
-  Double_t fill2[] = {maxEmbPt, fCentrality, fPtHardBin };
-  fhTTPt[fTriggerType]->Fill(fill2);
-  Double_t fill3[] = {maxPLPt, maxDLPt, maxEmbPt, fCentrality, fPtHardBin };
-  fhTTPtQA[fTriggerType]->Fill(fill3);
-  AliDebug(5,Form("Leading indices: PL=%d, DL=%d, Emb=%d\n",indexPL,indexDL,indexEmb));
+  arr.Reset();
+
+  AliDebug(2,Form("TT indices: PL=%d, DL=%d\n",indexPL,indexDL));
 
   // Run h+jet
-  if(indexPL>-1) FillHJetCor(fMCParticleArray, indexPL, fPLJetArray, fhPLHJet[fTriggerType], kFALSE);
-  if(indexDL>-1) 
-    {
-      FillHJetCor(fTrackArray, indexDL, fDLJetArray, fhDLHJet[fTriggerType], kFALSE);
-      FillHJetCor(fTrackArray, indexDL, fJetArray, fhHJet[fTriggerType], kTRUE);  
-    }
+  if(fRunPL)  FillHJetCor(fMCParticleArray, indexPL, fPLJetArray, fhPLTT[fTriggerType], fhPLHJet[fTriggerType], kFALSE);
+  if(fRunDL)  FillHJetCor(fTrackArray,      indexDL, fDLJetArray, fhDLTT[fTriggerType], fhDLHJet[fTriggerType], kFALSE);
+  FillHJetCor(fTrackArray,      indexDL, fJetArray,   fhTTPt[fTriggerType], fhHJet[fTriggerType],   kTRUE);  
+
+  if(fRunMatch) RunMatch(fTrackArray, indexDL);
 }
 
 //________________________________________________________________________
-void  AliAnalysisTaskHJetEmbed::FillHJetCor(const TClonesArray *tracks, const Int_t leadingIndex, const TClonesArray *jetArray, THnSparse *hn, Bool_t isBkg)
+void  AliAnalysisTaskHJetEmbed::FillHJetCor(const TClonesArray *tracks, const Int_t leadingIndex, const TClonesArray *jetArray, THnSparse *hTT, THnSparse *hn, Bool_t isBkg)
 {
   if(leadingIndex<0) return;
 
   AliVParticle *tt = (AliVParticle*) tracks->At(leadingIndex);
   Double_t triggerPt = tt->Pt();
+  Double_t fill1[] = {triggerPt, fCentrality, fPtHardBin };
+  hTT->Fill(fill1);
+  AliDebug(2,Form("Found a trigger with pt = %2.2f",triggerPt));
+
   Double_t triggerPhi = tt->Phi();
   if(triggerPhi<0) triggerPhi += 2*pi;
-
   Int_t nJets = jetArray->GetEntries();
   for(Int_t ij=0; ij<nJets; ij++)
     {
       AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(jetArray->At(ij));
+      if(!jet) continue;
       if(!IsGoodJet(jet)) continue; // eta cut
       Double_t jetPhi = jet->Phi();
       Double_t jetPt  = jet->Pt();
@@ -574,39 +628,42 @@ void  AliAnalysisTaskHJetEmbed::FillHJetCor(const TClonesArray *tracks, const In
       Double_t dPhi = CalculateDPhi(triggerPhi,jetPhi);
       Double_t fill[] = {triggerPt,jetPt-jetArea*fRhoValue,dPhi,jetArea,fCentrality,fPtHardBin};
       if(!isBkg) fill[1] = jetPt; 
+      AliDebug(10,"Fill the histograms");
       hn->Fill(fill);
     }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskHJetEmbed::RunMatch()
+void AliAnalysisTaskHJetEmbed::RunMatch(const TClonesArray *tracks, const Int_t leadingIndex)
 {
-  if(!fPLJetArray || !fJetArray)
+  if(leadingIndex<0) return;
+
+  if(!fDLJetArray || !fJetArray)
     {
       AliWarning("Jet array is not available.");
       return;
     }
-  Double_t dR = 999;
-  Int_t nJets = fJetArray->GetEntries();
+
+  AliVParticle *tt = (AliVParticle*) tracks->At(leadingIndex);
+  Double_t dR = 999, fraction = -1;
+  Int_t nJets = fDLJetArray->GetEntries();
   for(Int_t ij=0; ij<nJets; ij++)
     {
-      AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJetArray->At(ij));
+      AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fDLJetArray->At(ij));
+      if(!jet) continue;
       if(!IsGoodJet(jet)) continue; // eta cut
       Double_t jetPt = jet->Pt();
+      if(jetPt<10) continue;
       
-      // Geometrial matching
-      Int_t mthJetIndexGeo = FindGeoMatchedJet(jet,fPLJetArray,dR);
-      if(mthJetIndexGeo>-1)
+      // energy matching
+      Int_t mthJetIndexEn = FindEnergyMatchedJet(jet,fJetArray,dR,fraction);
+      if(mthJetIndexEn>-1 && fraction>0.5)
 	{
-	  AliEmcalJet* jetMthGeo = dynamic_cast<AliEmcalJet*>(fPLJetArray->At(mthJetIndexGeo));
-	  Int_t dataJetIndex = FindGeoMatchedJet(jetMthGeo,fJetArray,dR);
-	  if(dataJetIndex==ij) // one-to-one match
+	  AliEmcalJet* jetMthEn = dynamic_cast<AliEmcalJet*>(fJetArray->At(mthJetIndexEn));
+	  if(jetMthEn)
 	    {
-	      Double_t jetPtMthGeo = jetMthGeo->Pt();
-	      Double_t fill1[] = {jetPtMthGeo,jetPt,(jetPtMthGeo-jetPt)/jetPtMthGeo,dR,fCentrality, fPtHardBin};
-	      fhJetPtGeoMatch[fTriggerType]->Fill(fill1);
-	      Double_t fill2[] = {jetPtMthGeo,jetMthGeo->Phi()-jet->Phi(),dR,fCentrality, fPtHardBin};
-	      fhJetPhiGeoMatch[fTriggerType]->Fill(fill2);
+	      Double_t fill[] = {tt->Pt(),jetPt,CalculateDPhi(tt->Phi(),jet->Phi()),CalculateDPhi(jetMthEn->Phi(),jet->Phi()),dR,fCentrality,fPtHardBin};
+	      fhJetPhiEnMatch[fTriggerType]->Fill(fill);
 	    }
 	}
     }
@@ -625,6 +682,7 @@ Int_t AliAnalysisTaskHJetEmbed::FindGeoMatchedJet(const AliEmcalJet* jet, const 
   for(Int_t ij=0; ij<nJets; ij++)
     {
       AliEmcalJet* jetTmp = dynamic_cast<AliEmcalJet*>(jetArray->At(ij)); 
+      if(!jetTmp) continue;
       if(TMath::Abs(jetTmp->Eta())>1) continue; // Generous eta cut
       Double_t dPhi = GetDPhi(jet->Phi(),jetTmp->Phi());
       Double_t dEta = jet->Eta()-jetTmp->Eta();
@@ -640,46 +698,51 @@ Int_t AliAnalysisTaskHJetEmbed::FindGeoMatchedJet(const AliEmcalJet* jet, const 
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskHJetEmbed::FindEnergyMatchedJet(const AliEmcalJet* jet, const TClonesArray *jetArray, Double_t &dR)
+Int_t AliAnalysisTaskHJetEmbed::FindEnergyMatchedJet(const AliEmcalJet* jet, const TClonesArray *jetArray, Double_t &dR, Double_t &fraction)
 {
   dR = 999;
-  if(!jetArray) return -1;
+  fraction=-1;
+  if(!jetArray || !jet) return -1;
   
   Int_t index = -1;
   Int_t nJets = jetArray->GetEntries();
-  Double_t fMin = 0;
+  Double_t maxFrac = 0;
   Int_t nJetC = (Int_t)jet->GetNumberOfConstituents();
+  Double_t jetPt = jet->Pt();
   for(Int_t ij=0; ij<nJets; ij++)
     {
       AliEmcalJet* jetTmp = dynamic_cast<AliEmcalJet*>(jetArray->At(ij)); 
+      if(!jetTmp) continue;
       if(TMath::Abs(jetTmp->Eta())>1) continue; // Generous eta cut
-      Double_t jetPt = jet->Pt();
+      if(GetJetDistance(jet,jetTmp)>1) continue;
+
       Int_t nc = (Int_t)jetTmp->GetNumberOfConstituents();
       Double_t sumPt = 0;
       for(Int_t ic=0; ic<nc; ic++)
 	{
-	  AliVParticle *part = jetTmp->TrackAt(ic, fMCParticleArray);
 	  for(Int_t ijc=0; ijc<nJetC; ijc++)
 	    {
-	      AliVParticle *track = jet->TrackAt(ijc, fTrackArray);
-	      if(track->GetLabel()==part->GetLabel())
-		sumPt += part->Pt();
+	      if(jetTmp->TrackAt(ic)==jet->TrackAt(ijc))
+		{
+		  AliVParticle *part = (AliVParticle*)jet->TrackAt(ijc,fTrackArray);
+		  sumPt += part->Pt();
+		}
 	    }
 	}
       Double_t frac = sumPt/jetPt;
-      if(frac>fMin)
+      if(frac>maxFrac)
 	{
-	  fMin = frac;
+	  maxFrac = frac;
 	  index = ij;
 	}
     }
+  fraction = maxFrac;
 
   if(index>0)
     {
       AliEmcalJet* jetTmp = dynamic_cast<AliEmcalJet*>(jetArray->At(index)); 
-      Double_t dPhi = GetDPhi(jet->Phi(),jetTmp->Phi());
-      Double_t dEta = jet->Eta()-jetTmp->Eta();
-      dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
+      if(jetTmp)
+	dR = GetJetDistance(jet,jetTmp);
     }
   return index;
 }
@@ -705,6 +768,14 @@ Double_t AliAnalysisTaskHJetEmbed::GetDPhi(const Double_t phi1, const Double_t p
 }
 
 //________________________________________________________________________
+Double_t AliAnalysisTaskHJetEmbed::GetJetDistance(const AliEmcalJet *jet1, const AliEmcalJet* jet2)
+{
+  Double_t dPhi = GetDPhi(jet1->Phi(),jet2->Phi());
+  Double_t dEta = jet1->Eta()-jet2->Eta();
+  return TMath::Sqrt(dPhi*dPhi+dEta*dEta);
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskHJetEmbed::RunQA()
 {
   if(!fPLJetArray)
@@ -717,6 +788,7 @@ void AliAnalysisTaskHJetEmbed::RunQA()
       for(Int_t ij=0; ij<nPLJets; ij++)
 	{
 	  AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fPLJetArray->At(ij));
+	  if(!jet) continue;
 	  if(!IsGoodJet(jet)) continue; // eta cut
 	  Double_t jetPt = jet->Pt();
 	  Double_t fill[] = {jetPt, fCentrality, fPtHardBin};
@@ -727,7 +799,7 @@ void AliAnalysisTaskHJetEmbed::RunQA()
 
   if(!fDLJetArray)
     {
-      AliWarning(Form("Particle-level jet array is not available: %s\n",fDLJetArrName.Data()));
+      AliWarning(Form("Detector-level jet array is not available: %s\n",fDLJetArrName.Data()));
     }
   else
     {
@@ -735,6 +807,7 @@ void AliAnalysisTaskHJetEmbed::RunQA()
       for(Int_t ij=0; ij<nDLJets; ij++)
 	{
 	  AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fDLJetArray->At(ij));
+	  if(!jet) continue;
 	  if(!IsGoodJet(jet)) continue; // eta cut
 	  Double_t jetPt = jet->Pt();
 	  Double_t fill[] = {jetPt, fCentrality, fPtHardBin};
@@ -768,12 +841,18 @@ Bool_t AliAnalysisTaskHJetEmbed::IsGoodJet(const AliEmcalJet* jet)
 void AliAnalysisTaskHJetEmbed::PrintConfig()
 {
   const char *decision[2] = {"no","yes"};
+  const char *TTtype[2] = {"Single inclusive","Leading"};
   printf("\n\n===== h-jet analysis configuration =====\n");
   printf("Input event type: %s - %s\n",fCollisionSystem.Data(),fPeriod.Data());
   printf("Track pt range: %2.2f < pt < %2.2f\n",fMinTrkPt, fMaxTrkPt);
   printf("Track eta range: %2.1f < eta < %2.1f\n",fMinTrkEta, fMaxTrkEta);
   printf("Track phi range: %2.0f < phi < %2.0f\n",fMinTrkPhi*TMath::RadToDeg(),fMaxTrkPhi*TMath::RadToDeg());
+  printf("TT type: %s\n", TTtype[fTTtype]);
+  for(Int_t i=0; i<kNTT; i++)
+    printf("TT range %d:  %2.0f < pt < %2.0f\n", i+1, fMinTTPt[i], fMaxTTPt[i]);
   printf("Run QA: %s\n",decision[fRunQA]);
+  printf("Run particle level: %s\n",decision[fRunPL]);
+  printf("Run detector level: %s\n",decision[fRunDL]);
   printf("Run h+jet: %s\n",decision[fRunHJet]);
   printf("Run matching: %s\n",decision[fRunMatch]);
   printf("=======================================\n\n");

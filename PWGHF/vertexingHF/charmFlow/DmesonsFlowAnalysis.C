@@ -495,7 +495,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     Float_t massFromFit=fitter.GetMean();
     Float_t sigmaFromFit=fitter.GetSigma();
     TF1* funcB2=fitter.GetBackgroundRecalcFunc();
-    utils->AveragePt(averagePt[ipt],errorPt[ipt],ptbinsnew[ipt],ptbinsnew[ipt+1],hmasspt,massFromFit,sigmaFromFit,funcB2,2.5,4.5,1);
+    utils->AveragePt(averagePt[ipt],errorPt[ipt],ptbinsnew[ipt],ptbinsnew[ipt+1],hmasspt,massFromFit,sigmaFromFit,funcB2,2.5,4.5,0.,3.,1);
   }
   printf("Average pt\n");
   for(Int_t ipt=0;ipt<nptbinsnew;ipt++) printf("%f +- %f\n",averagePt[ipt],errorPt[ipt]);

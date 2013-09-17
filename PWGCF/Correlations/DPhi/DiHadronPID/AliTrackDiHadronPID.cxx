@@ -60,6 +60,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID():
 	fID(0),
 	fLabel(0),
 	fCharge(0),
+	fNclsTPC(-999),
 	fDCAz(-999.),
 	fDCAxy(-999.),
 	fTOFsignal(-999.),
@@ -122,6 +123,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 	fID(0),
 	fLabel(0),
 	fCharge(0),
+	fNclsTPC(-999),
 	fDCAz(-999.),
 	fDCAxy(-999.),
 	fTOFsignal(-999.),
@@ -231,6 +233,7 @@ Bool_t AliTrackDiHadronPID::CopyBasicTrackInfo() {
 	fLabel = fAODTrack->GetLabel();
 
 	fCharge = fAODTrack->Charge();
+	fNclsTPC = fAODTrack->GetTPCNcls();
 
 	fBasicInfoAvailable = kTRUE;
 	return fBasicInfoAvailable;
@@ -269,6 +272,8 @@ Bool_t AliTrackDiHadronPID::CopyDCAInfo() {
 	//
 
 	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (fAODGlobalTrack->IsMuonTrack()) return kFALSE;
 
 	// Propagate track to DCA.
 	Double_t PosAtDCA[2] = {-999,-999};

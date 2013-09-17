@@ -9,7 +9,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString append
   // HFE task configuration PID2 (TOF-TPC-TRD)
   //
 //  AliLog::SetClassDebugLevel("AliHFEpidTRD", 10);
-  Bool_t kAnalyseTaggedTracks = isAOD ? kFALSE : kTRUE;
+  Bool_t kAnalyseTaggedTracks = kTRUE;
 
 
   // TRD settings
@@ -127,7 +127,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString append
       printf("CONFIGURATION FILE: TOF mismatch rejection is set ON \n");
     }
   }
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(appendix);
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(Form("HFEtask%s",appendix.Data()));
   printf("task %p\n", task);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();
@@ -143,7 +143,8 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString append
     Double_t ptbinning[19] = {0., 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 5., 6., 8., 12., 16., 20.};
   }
   else{
-    Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+      //Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+      Double_t ptbinning[41] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20., 22., 24., 26., 28., 30.};
   }
   //Double_t etabinning[33] = {-0.8, -0.75, -0.7, -0.65, -0.6, -0.55, -0.5, -0.45, -0.4, -0.35, -0.3, -0.25, -0.2, -0.15, -0.1, 0.05, 0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8};
   //Double_t etabinning[17] = {-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
@@ -252,7 +253,7 @@ AliAnalysisTaskHFE* ConfigHFEmbpPbTRD(Bool_t useMC, Bool_t isAOD, TString append
     v0trackCuts->UnsetVertexRequirement();
     //hfecuts->SetSigmaToVertex(10);
     if(usetof) v0trackCuts->SetTOFPIDStep(kTRUE);
-    if(TRDtl>0)v0trackCuts->SetMinNTrackletsTRD(TRDtl); // condition for TRD tracklets
+    if(TRDtl>0)v0trackCuts->SetMinNTrackletsTRD(TRDtl,kTRUE); // condition for TRD tracklets 
     v0trackCuts->SetQAOn();
     task->SwitchOnPlugin(AliAnalysisTaskHFE::kTaggedTrackAnalysis);
     task->SetTaggedTrackCuts(v0trackCuts);

@@ -1,24 +1,27 @@
 // $Id$
 
 AliAnalysisTaskSE *AddTaskEMCALTender(
-  const char*  p       = "lhc11h",
-  Bool_t timeCut       = kFALSE,
-  Bool_t distBC        = kTRUE, 
-  Bool_t recalibClus   = kTRUE, 
-  Bool_t recalibClusPos = kTRUE, 
-  Bool_t nonLinearCorr = kTRUE, 
-  Bool_t remExotic     = kTRUE,
-  Bool_t fidRegion     = kFALSE,
-  Bool_t calibEnergy   = kTRUE,
-  Bool_t calibTime     = kTRUE,
-  Bool_t remBC         = kTRUE,
-  Bool_t reclusterize  = kFALSE,
-  Float_t seedthresh   = 0.1,  // 100 MeV 
-  Float_t cellthresh   = 0.05, // 50 MeV  
-  UInt_t clusterizer   = AliEMCALRecParam::kClusterizerNxN,
-  Bool_t trackMatch    = kFALSE,
-  Bool_t updateCellOnly= kFALSE,
-  const char* pass     = 0)
+  const char *perstr   = "LHC11h",
+  Bool_t distBC         = kTRUE, 
+  Bool_t recalibClus    = kTRUE, 
+  Bool_t recalcClusPos  = kTRUE, 
+  Bool_t nonLinearCorr  = kTRUE, 
+  Bool_t remExotic      = kTRUE,
+  Bool_t fidRegion      = kFALSE,
+  Bool_t calibEnergy    = kTRUE,
+  Bool_t calibTime      = kTRUE,
+  Bool_t remBC          = kTRUE,
+  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,
+  Bool_t reclusterize   = kFALSE,
+  Float_t seedthresh    = 0.1, // 100 MeV
+  Float_t cellthresh    = 0.05, // 50 MeV 
+  UInt_t clusterizer    = AliEMCALRecParam::kClusterizerNxN,
+  Bool_t trackMatch     = kFALSE,
+  Bool_t updateCellOnly = kFALSE,
+  Float_t timeMin       = -1,   // minimum time of physical signal in a cell/digit
+  Float_t timeMax       = 1e6,  // maximum time of physical signal in a cell/digit
+  Float_t timeCut       = 1e6,  // maximum time difference between the digits inside EMC cluster
+  const char *pass      = 0)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -36,9 +39,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   AliAnalysisTaskSE *ana = 0;
   AliAnalysisDataContainer *coutput1 = 0;
 
-  UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
-
-  TString period(p);
+  TString period(perstr);
   period.ToLower();
   if (period == "lhc12a15e")
     nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
@@ -47,9 +48,9 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
-  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(timeCut, distBC, recalibClus, recalibClusPos, nonLinearCorr, remExotic, 
+  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExotic, 
 							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
-							      cellthresh, clusterizer, trackMatch, updateCellOnly);
+							      cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut);
   if (pass) 
     EMCALSupply->SetPass(pass);
 

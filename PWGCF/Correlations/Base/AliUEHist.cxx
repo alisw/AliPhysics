@@ -968,8 +968,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     {
       Double_t finiteBinCorrection = -1.0 / (2*fTrackEtaCut) * binWidthEta / 2 + 1;
       Printf("Finite bin correction: %f", finiteBinCorrection);
-      mixedNorm *= finiteBinCorrection;
-      mixedNormError *= finiteBinCorrection;
+      mixedNorm /= finiteBinCorrection;
+      mixedNormError /= finiteBinCorrection;
     }
     else
     {
@@ -2594,9 +2594,13 @@ void AliUEHist::SymmetrizepTBins()
       // for symmetric bins
       THnSparse* source = (THnSparse*) target->Clone();
       
+      Int_t zVtxBins = 1;
+      if (target->GetNdimensions() > 5)
+	zVtxBins = target->GetAxis(5)->GetNbins();
+      
       // axes: 0 delta eta; 1 pT,a; 2 pT,t; 3 centrality; 4 delta phi; 5 vtx-z
       for (Int_t i3 = 1; i3 <= target->GetAxis(3)->GetNbins(); i3++)
-	for (Int_t i5 = 1; i5 <= target->GetAxis(5)->GetNbins(); i5++)
+	for (Int_t i5 = 1; i5 <= zVtxBins; i5++)
 	{
 	  for (Int_t i1 = 1; i1 <= target->GetAxis(1)->GetNbins(); i1++)
 	    for (Int_t i2 = 1; i2 <= target->GetAxis(2)->GetNbins(); i2++)

@@ -1050,14 +1050,30 @@ TH2* AliAnaChargedJetResponseMaker::GetTransposeResponsMatrix(TH2 *h2RM) {
   // Transpose response matrix
   //
 
-  //Initialize transposed response matrix h2RMTranspose
-  TArrayD *arrayX = (TArrayD*)h2RM->GetXaxis()->GetXbins();
-  for(int i=0; i<arrayX->GetSize(); i++) cout << "i: " << arrayX->At(i) << endl;
-  Double_t *xbinsArray = arrayX->GetArray();
+  Printf("AliAnaChargedJetResponseMaker::GetTransposeResponsMatrix");
 
-  TArrayD *arrayY = (TArrayD*)h2RM->GetYaxis()->GetXbins();
-  for(int i=0; i<arrayY->GetSize(); i++) cout << "i: " << arrayY->At(i) << endl;
-  Double_t *ybinsArray = arrayY->GetArray();
+  //Initialize transposed response matrix h2RMTranspose
+  // TArrayD *arrayX = (TArrayD*)h2RM->GetXaxis()->GetXbins();
+  // for(int i=0; i<arrayX->GetSize(); i++) Printf("i: %d  %f", i,arrayX->At(i));
+  // Double_t *xbinsArray = arrayX->GetArray();
+
+  // TArrayD *arrayY = (TArrayD*)h2RM->GetYaxis()->GetXbins();
+  // for(int i=0; i<arrayY->GetSize(); i++) Printf("i: %d  %f", i,arrayY->At(i));
+  // Double_t *ybinsArray = arrayY->GetArray();
+
+
+  Double_t *ybinsArray = new Double_t[h2RM->GetNbinsY()+1];
+  for(int i=1; i<=h2RM->GetNbinsY(); i++) {
+    ybinsArray[i-1] = h2RM->GetYaxis()->GetBinLowEdge(i);
+    Printf("i=%d  %f   %f",i,ybinsArray[i-1],h2RM->GetYaxis()->GetBinLowEdge(i));
+  }
+  ybinsArray[h2RM->GetNbinsY()] = h2RM->GetYaxis()->GetBinUpEdge(h2RM->GetNbinsY());
+
+  Double_t *xbinsArray = new Double_t[h2RM->GetNbinsX()+1];
+  for(int i=1; i<=h2RM->GetNbinsX(); i++) 
+    xbinsArray[i-1] = h2RM->GetXaxis()->GetBinLowEdge(i);
+  xbinsArray[h2RM->GetNbinsX()] = h2RM->GetXaxis()->GetBinUpEdge(h2RM->GetNbinsX());
+
 
   TH2D *h2RMTranspose = new TH2D("h2RMTranspose","h2RMTranspose",h2RM->GetNbinsY(),ybinsArray,h2RM->GetNbinsX(),xbinsArray);
 

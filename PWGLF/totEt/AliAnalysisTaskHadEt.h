@@ -14,6 +14,7 @@ class AliAnalysisHadEtMonteCarlo;
 class AliESDtrackCuts;
 class TH2F;
 class TList;
+class AliPIDResponse;
 
 #include "AliAnalysisTaskTransverseEnergy.h"
 class AliPWG0Helper;
@@ -28,6 +29,7 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     void IsSim(){fIsSim = kTRUE;}
+    AliPIDResponse *fPIDResponse;
 
 private:
 

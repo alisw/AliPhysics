@@ -36,9 +36,16 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
   virtual Double_t GetPx() const { return AliAODConversionParticle::Px();}
   virtual Double_t GetPy() const { return AliAODConversionParticle::Py();}
   virtual Double_t GetPz() const { return AliAODConversionParticle::Pz();}
+  void CalculateDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex);
   void SetMassToZero() { SetE(P()); }
-
-  ClassDef(AliAODConversionPhoton,1)
+  Float_t GetDCAzToPrimVtx()const {return fDCAzPrimVtx;}
+  Float_t GetDCArToPrimVtx()const {return fDCArPrimVtx;}
+  
+  Float_t fDCArPrimVtx;
+  Float_t fDCAzPrimVtx;
+  
+  
+  ClassDef(AliAODConversionPhoton,2)
 };
 
 

@@ -30,8 +30,11 @@ class AliCaloPhoton :public TLorentzVector{
    Double_t EMCy(void)const {return fY;}
    Double_t EMCz(void)const {return fZ;}
    Int_t    Module(void)const{return fModule;}
+   Int_t    GetBC()const{return fBC;}
    Int_t    DistToBad()const  {return fBadDist ;}
-   Int_t    GetNCells()const { return fNCells ;}
+   Int_t    GetNCells()const { return fNCells ;} 
+   Double_t GetTime(void) const {return fTime ;}
+   void SetTime(Double_t t) {fTime=t ;}
 
    Bool_t   IsDispOK(void)const {return fDisp;}
    Bool_t   IsDisp2OK(void)const {return fDisp2;} //stricter cut
@@ -45,6 +48,7 @@ class AliCaloPhoton :public TLorentzVector{
    Bool_t   IsPhoton()const {return fIsPhoton ;} //check if this particle is indeed photon (this bit is set with MC stack info
    Bool_t   IsntUnfolded()const{return fUnfolded;}
    Int_t    IsConvertedPartner(){ if(fConvertedPartner == 1) return 1; else return 0; }
+   Bool_t   IsTrig(void)const{ return fTrig ; }
    Double_t GetWeight(void){return fWeight;}
 
    //ConvertedPair bit is set for events when photon's FirstMother is not e+/e- but pi0, but after pi0 decayed
@@ -77,6 +81,7 @@ class AliCaloPhoton :public TLorentzVector{
    void SetEMCy(Double_t y){fY = y ;} 
    void SetEMCz(Double_t z){fZ = z ;} 
    void SetModule(Int_t mod){fModule = mod ;} 
+   void SetBC(Int_t bc){fBC = bc;}
    void SetDistToBad(Int_t dist){fBadDist=dist;} 
    void SetTagged(Bool_t bit){fIsTagged=bit;}
    void SetTagged(Bool_t bit,Int_t i,Int_t k){fIsTagged_reg[i][k]=bit;}
@@ -117,7 +122,9 @@ private:
   Double_t  fZ ;        //Cluster coordinates in ALICE ref system
   Double_t  fLambda0 ;  //Short and 
   Double_t  fLambda1 ;  //Long dispersion axis
+  Double_t  fTime ;     //time of the cluster
   Int_t     fModule ;   //Module number
+  Int_t     fBC ;       //Bunch crossing number (BC=0 is main-main collision)
   Int_t     fBadDist ;  //Distance to bad module in module units
   Int_t     fNCells ;   //Number of cells in cluster
   Int_t     fPi0Decayflag; //if this photon is from pi0 decay (from simulation)
@@ -129,7 +136,7 @@ private:
   Int_t     fPrimary;   //Primary label
   AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 
-  ClassDef(AliCaloPhoton,4);
+  ClassDef(AliCaloPhoton,6);
 
 };
 

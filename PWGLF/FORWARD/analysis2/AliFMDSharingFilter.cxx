@@ -42,9 +42,9 @@ ClassImp(AliFMDSharingFilter)
 ; // This is for Emacs
 #endif 
 
-#define DBG(L,M) \
+#define DBG(L,M)							\
   do { if (L>fDebug)break; std::cout << (M) << std::flush;} while(false) 
-#define DBGL(L,M) \
+#define DBGL(L,M)							\
   do { if (L>fDebug)break; std::cout << (M) << std::endl;} while(false) 
 			      
 
@@ -54,10 +54,10 @@ AliFMDSharingFilter::AliFMDSharingFilter()
   : TNamed(), 
     fRingHistos(),
     fCorrectAngles(kFALSE), 
-    fSummed(0),
+    // fSummed(0),
     fHighCuts(0),
     fLowCuts(0),
-    fOper(0),
+    // fOper(0),
     fDebug(0),
     fZeroSharedHitsBelowThreshold(false),
     fLCuts(),
@@ -65,7 +65,9 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fUseSimpleMerging(false),
     fThreeStripSharing(true),
     fRecalculateEta(false),
-    fExtraDead(0)
+    // fExtraDead(0),
+    fXtraDead(0),
+    fInvalidIsEmpty(false)
 {
   // 
   // Default Constructor - do not use 
@@ -78,10 +80,10 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   : TNamed("fmdSharingFilter", title), 
     fRingHistos(), 
     fCorrectAngles(kFALSE), 
-    fSummed(0),
+    // fSummed(0),
     fHighCuts(0),
     fLowCuts(0),
-    fOper(0),
+    // fOper(0),
     fDebug(0),
     fZeroSharedHitsBelowThreshold(false),
     fLCuts(),
@@ -89,7 +91,9 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fUseSimpleMerging(false),
     fThreeStripSharing(true),
     fRecalculateEta(false), 
-    fExtraDead(51200)
+    // fExtraDead(51200),
+    fXtraDead(AliFMDStripIndex::Pack(3,'O',19,511)+1),
+    fInvalidIsEmpty(false)
 {
   // 
   // Constructor 
@@ -111,7 +115,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   fHCuts.SetIncludeSigma(1);
   fLCuts.SetMultCuts(.15);
 
-  fExtraDead.Reset(-1);
+  // fExtraDead.Reset(-1);
 }
 
 //____________________________________________________________________
@@ -119,10 +123,10 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
   : TNamed(o), 
     fRingHistos(), 
     fCorrectAngles(o.fCorrectAngles), 
-    fSummed(o.fSummed),
+    // fSummed(o.fSummed),
     fHighCuts(o.fHighCuts),
     fLowCuts(o.fLowCuts),
-    fOper(o.fOper),
+    // fOper(o.fOper),
     fDebug(o.fDebug),
     fZeroSharedHitsBelowThreshold(o.fZeroSharedHitsBelowThreshold),
     fLCuts(o.fLCuts),
@@ -130,7 +134,9 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fUseSimpleMerging(o.fUseSimpleMerging),
     fThreeStripSharing(o.fThreeStripSharing),
     fRecalculateEta(o.fRecalculateEta), 
-    fExtraDead(o.fExtraDead)
+    //fExtraDead(o.fExtraDead),
+    fXtraDead(o.fXtraDead),
+    fInvalidIsEmpty(o.fInvalidIsEmpty)
 {
   // 
   // Copy constructor 
@@ -173,8 +179,8 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
 
   fCorrectAngles                = o.fCorrectAngles;
   fDebug                        = o.fDebug;
-  fOper                         = o.fOper;
-  fSummed                       = o.fSummed;
+  // fOper                         = o.fOper;
+  // fSummed                       = o.fSummed;
   fHighCuts                     = o.fHighCuts;
   fLowCuts                      = o.fLowCuts;
   fZeroSharedHitsBelowThreshold = o.fZeroSharedHitsBelowThreshold;
@@ -183,6 +189,7 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   fUseSimpleMerging             = o.fUseSimpleMerging;
   fThreeStripSharing            = o.fThreeStripSharing;
   fRecalculateEta               = o.fRecalculateEta;
+  fInvalidIsEmpty               = o.fInvalidIsEmpty;
   
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -240,7 +247,9 @@ AliFMDSharingFilter::AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t)
   }
     
   Int_t id = AliFMDStripIndex::Pack(d, r, s, t);
-  Int_t i  = 0;
+  // Int_t i  = 0;
+  fXtraDead.SetBitNumber(id, true);
+#if 0
   for (i = 0; i < fExtraDead.GetSize(); i++) {
     Int_t j = fExtraDead.At(i);
     if (j == id) return; // Already there 
@@ -252,6 +261,7 @@ AliFMDSharingFilter::AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t)
     return;
   }
   fExtraDead[i] = id;
+#endif
 }
 //____________________________________________________________________
 void
@@ -266,10 +276,21 @@ AliFMDSharingFilter::AddDeadRegion(UShort_t d,  Char_t r,
       AddDead(d, r, s, t);
 }
 //____________________________________________________________________
+void
+AliFMDSharingFilter::AddDead(const Char_t* script)
+{
+  if (!script || script[0] == '\0') return;
+  
+  gROOT->Macro(Form("%s((AliFMDSharingFilter*)%p);", script, this));
+}
+
+//____________________________________________________________________
 Bool_t
 AliFMDSharingFilter::IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const
 {
   Int_t id = AliFMDStripIndex::Pack(d, r, s, t);
+  return fXtraDead.TestBitNumber(id); 
+#if 0
   for (Int_t i = 0; i < fExtraDead.GetSize(); i++) {
     Int_t j = fExtraDead.At(i);
     if (j == id) {
@@ -279,6 +300,7 @@ AliFMDSharingFilter::IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const
     if (j < 0) break; // High water mark 
   }
   return false;
+#endif
 }
 //____________________________________________________________________
 void
@@ -287,8 +309,11 @@ AliFMDSharingFilter::SetupForData(const TAxis& axis)
   // Initialise - called on first event
   DGUARD(fDebug,1, "Initialize for AliFMDSharingFilter");
   AliForwardCorrectionManager& fcm  = AliForwardCorrectionManager::Instance();
-  AliFMDCorrELossFit*          fits = fcm.GetELossFit();
- 
+  const AliFMDCorrELossFit*    fits = fcm.GetELossFit();
+
+  // Compactify the xtra dead bits 
+  fXtraDead.Compact();
+
   // Get the high cut.  The high cut is defined as the 
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
@@ -339,12 +364,12 @@ AliFMDSharingFilter::SetupForData(const TAxis& axis)
 }
 
 //____________________________________________________________________
-#define ETA2COS(ETA) \
+#define ETA2COS(ETA)						\
   TMath::Cos(2*TMath::ATan(TMath::Exp(-TMath::Abs(ETA))))
 
 Bool_t
 AliFMDSharingFilter::Filter(const AliESDFMD& input, 
-			    Bool_t           lowFlux,
+			    Bool_t           /*lowFlux*/,
 			    AliESDFMD&       output, 
 			    Double_t         zvtx)
 {
@@ -363,20 +388,12 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
   output.Clear();
   TIter    next(&fRingHistos);
   RingHistos* o      = 0;
-  while ((o = static_cast<RingHistos*>(next())))
-    o->Clear();
+  while ((o = static_cast<RingHistos*>(next()))) o->Clear();
 
-  if (fOper) fOper->Reset(0);
-  Int_t nNone      = 0;
-  Int_t nCandidate = 0;
-  Int_t nMerged    = 0;
-  Int_t nSummed    = 0;
   Int_t nSingle    = 0;
   Int_t nDouble    = 0;
   Int_t nTriple    = 0;
 
-  Status status[512];
-  
   for(UShort_t d = 1; d <= 3; d++) {
     Int_t nRings = (d == 1 ? 1 : 2);
     for (UShort_t q = 0; q < nRings; q++) {
@@ -385,19 +402,20 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
       UShort_t    nstr   = (q == 0 ? 512 : 256);
       RingHistos* histos = GetRingHistos(d, r);
       
-      for(UShort_t s = 0; s < nsec;  s++) {
-	
-	for (UShort_t t = 0; t < nstr; t++) status[t] = kCandidate;
-	
-	//For simple merging
+      for(UShort_t s = 0; s < nsec;  s++) {	
+	// `used' flags if the _current_ strip was used by _previous_ 
+	// iteration. 
 	Bool_t   used            = kFALSE;
+	// `eTotal' contains the current sum of merged signals so far 
 	Double_t eTotal          = -1;
-	Int_t    nDistanceBefore = -1;
-	Int_t    nDistanceAfter  = -1;
-	Bool_t   twoLow = kFALSE;
+	// Int_t    nDistanceBefore = -1;
+	// Int_t    nDistanceAfter  = -1;
+	// `twoLow' flags if we saw two consequtive strips with a 
+	// signal between the two cuts. 
+	Bool_t   twoLow          = kFALSE;
 	for(UShort_t t = 0; t < nstr; t++) {
-	  nDistanceBefore++;
-	  nDistanceAfter++;
+	  // nDistanceBefore++;
+	  // nDistanceAfter++;
 	  
 	  output.SetMultiplicity(d,r,s,t,0.);
 	  Float_t mult         = SignalInStrip(input,d,r,s,t);
@@ -426,17 +444,35 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	      multNextNext    *= corr;
 	    }
 	  }
-	  
-	  // Keep dead-channel information. 
-	  if(mult == AliESDFMD::kInvalidMult || IsDead(d,r,s,t)) {
+
+	  // Special case for pre revision 43611 AliFMDReconstructor.
+	  // If fInvalidIsEmpty and we get an invalid signal from the
+	  // ESD, then we need to set this signal to zero.  Note, dead
+	  // strips added in the ForwardAODConfig.C file are not
+	  // effected by this, and we can use that to set the proper
+	  // dead strips.
+	  if (mult == AliESDFMD::kInvalidMult && fInvalidIsEmpty) 
+	    mult = 0;
+
+	  // Keep dead-channel information - either from the ESD (but
+	  // see above for older data) or from the settings in the
+	  // ForwardAODConfig.C file.
+	  if (mult == AliESDFMD::kInvalidMult || IsDead(d,r,s,t)) {
 	    output.SetMultiplicity(d,r,s,t,AliESDFMD::kInvalidMult);
+	    histos->fBefore->Fill(-1);
 	    mult = AliESDFMD::kInvalidMult;
 	  }
 	  
 	  // If no signal or dead strip, go on. 
 	  if (mult == AliESDFMD::kInvalidMult || mult == 0) {
 	    if (mult == 0) histos->fSum->Fill(eta,phi,mult);
-	    status[t] = kNone;
+	    // Flush a possible signal 
+	    if (eTotal > 0 && t > 0) 
+	      output.SetMultiplicity(d,r,s,t-1,eTotal);
+	    // Reset states so we do not try to merge over a dead strip. 
+	    eTotal = -1;
+	    used   = false;
+	    twoLow = false;
 	    continue;
 	  }
 
@@ -445,105 +481,100 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  
 	  Double_t mergedEnergy = 0;
 	  
-	  if(fUseSimpleMerging) {
-	    Float_t etot = 0;
-	    if (t < nstr-1) histos->fNeighborsBefore->Fill(mult,multNext);
-	    if(mult > GetHighCut(d, r, eta ,false)) {
-	      histos->fDistanceBefore->Fill(nDistanceBefore);
-	      nDistanceBefore = -1;
-	    }
+	  // The current sum
+	  Float_t etot = 0;
+	  
+	  // Fill in neighbor information
+	  if (t < nstr-1) histos->fNeighborsBefore->Fill(mult,multNext);
+
+	  Bool_t thisValid = mult     > GetLowCut(d, r, eta);
+	  Bool_t nextValid = multNext > GetLowCut(d, r, eta);
+	  Bool_t thisSmall = mult     < GetHighCut(d, r, eta ,false);
+	  Bool_t nextSmall = multNext < GetHighCut(d, r, eta ,false);
+	  
+	  // If this strips signal is above the high cut, reset distance
+	  // if (!thisSmall) {
+	  //    histos->fDistanceBefore->Fill(nDistanceBefore);
+	  //    nDistanceBefore = -1;
+	  // }
+	  
+	  // If the total signal in the past 1 or 2 strips are non-zero
+	  // we need to check 
+	  if (eTotal > 0) {
+	    // Here, we have already flagged one strip as a candidate 
 	    
-	    if(eTotal > 0) {
-	      if(fThreeStripSharing && multNext > GetLowCut(d, r, eta) && 
-		 (multNext < GetHighCut(d, r, eta ,false) || twoLow)) {
-		eTotal = eTotal + multNext;
+	    // If 3-strip merging is enabled, then check the next 
+	    // strip to see that it falls within cut, or if we have 
+	    // two low signals 
+	    if (fThreeStripSharing && nextValid && (nextSmall || twoLow)) {
+	      eTotal = eTotal + multNext;
+	      used = kTRUE;
+	      histos->fTriple->Fill(eTotal);
+	      nTriple++;
+	      twoLow = kFALSE;
+	    }
+	    // Otherwise, we got a double hit before, and that 
+	    // should be stored. 
+	    else {
+	      used = kFALSE;
+	      histos->fDouble->Fill(eTotal);
+	      nDouble++;
+	    }
+	    // Store energy loss and reset sum 
+	    etot   = eTotal;
+	    eTotal = -1;
+	  } // if (eTotal>0)
+	  else {
+	    // If we have no current sum 
+	    
+	    // Check if this is marked as used, and if so, continue
+	    if (used) {used = kFALSE; continue; }
+	    
+	    // If the signal is abvoe the cut, set current
+	    if (thisValid) etot = mult;
+	    
+	    // If the signal is abiove the cut, and so is the next 
+	    // signal and either of them are below the high cut, 
+	    if (thisValid  && nextValid  && (thisSmall || nextSmall)) {
+	      
+	      // If this is below the high cut, and the next is too, then 
+	      // we have two low signals 
+	      if (thisSmall && nextSmall) twoLow = kTRUE;
+	      
+	      // If this signal is bigger than the next, and the 
+	      // one after that is below the low-cut, then update 
+	      // the sum
+	      if (mult>multNext && multNextNext < GetLowCut(d, r, eta)) {
+		etot = mult + multNext;
 		used = kTRUE;
-		histos->fTriple->Fill(eTotal);
-		nTriple++;
-		twoLow = kFALSE;
-	      }
-	      else {
-		used = kFALSE;
-		histos->fDouble->Fill(eTotal);
+		histos->fDouble->Fill(etot);
 		nDouble++;
 	      }
-	      etot   = eTotal;
-	      eTotal = -1;
-	    }
-	    else {
-	      if(used) {used = kFALSE; continue; }
-	      if(mult > GetLowCut(d, r, eta)) etot = mult;
-	      
-	      if(mult > GetLowCut(d, r, eta) && 
-		 multNext > GetLowCut(d, r, eta) && 
-		 (mult < GetHighCut(d, r, eta ,false) ||
-		  multNext < GetHighCut(d, r, eta ,false))) {
-		
-		if(mult < GetHighCut(d, r, eta ,false) &&
-		   multNext < GetHighCut(d, r, eta ,false) )
-		  twoLow = kTRUE;
-		  
-		if(mult>multNext && multNextNext < GetLowCut(d, r, eta))
-		  {
-		    etot = mult + multNext;
-		    used=kTRUE;
-		    histos->fDouble->Fill(etot);
-		    nDouble++;
-		  }
-		else {
-		  etot   = 0;
-		  eTotal = mult + multNext;
-		}
-	      }
+	      // Otherwise, we may need to merge with a third strip
 	      else {
-		if(etot > 0) {
-		  histos->fSingle->Fill(etot);
-		  histos->fSinglePerStrip->Fill(etot,t);
-		  nSingle++;
-		}
+		etot   = 0;
+		eTotal = mult + multNext;
 	      }
 	    }
-	    
-	    mergedEnergy = etot;
-	    if(mergedEnergy > GetHighCut(d, r, eta ,false) ) {
-	      histos->fDistanceAfter->Fill(nDistanceAfter);
-	      nDistanceAfter    = -1;
+	    // This is a signle hit 
+	    else if(etot > 0) {
+	      histos->fSingle->Fill(etot);
+	      histos->fSinglePerStrip->Fill(etot,t);
+	      nSingle++;
 	    }
-	    //if(mult>0 && multNext >0)
-	    //  std::cout<<mult<<"  "<<multNext<<"  "<<mergedEnergy<<std::endl;
-	  } // End of simple merge 
-	  else { // Not simple 
-	    // Get next and previous signal - if any 
-	    Double_t prevE = 0;
-	    Double_t nextE = 0;
-	    Status   prevStatus = (t == 0      ? kNone : status[t-1]);
-	    Status   thisStatus = status[t];
-	    Status   nextStatus = (t == nstr-1 ? kNone : status[t+1]);
-	    if (t != 0) {
-	      prevE = SignalInStrip(input,d,r,s,t-1);
-	      if (prevE == AliESDFMD::kInvalidMult) prevE = 0;
-	    }
-	    if (t != nstr - 1) {
-	      nextE = SignalInStrip(input,d,r,s,t+1);
-	      if (nextE == AliESDFMD::kInvalidMult) nextE = 0;
-	    }
-	    if (t != 0) histos->fNeighborsBefore->Fill(prevE, mult);
-	    
-	    mergedEnergy = MultiplicityOfStrip(mult, prevE, nextE, 
-					       eta, lowFlux, 
-					       d, r, s, t, 
-					       prevStatus, 
-					       thisStatus, 
-					       nextStatus);
-	    if (t != 0)      status[t-1] = prevStatus;
-	    if (t != nstr-1) status[t+1] = nextStatus;
-	    status[t] = thisStatus;	    
-	    // If we're processing on non-angle corrected data, we
-	    // should do the angle correction here
-	  } // End of non-simple
+	  } // else if (etotal >= 0)
+	  
+	  mergedEnergy = etot;
+	  // if (mergedEnergy > GetHighCut(d, r, eta ,false)) {
+	  //   histos->fDistanceAfter->Fill(nDistanceAfter);
+	  //   nDistanceAfter    = -1;
+	  // }
+	  //if(mult>0 && multNext >0)
+	  //  std::cout<<mult<<"  "<<multNext<<"  "<<mergedEnergy<<std::endl;
+	  
 	  if (!fCorrectAngles)
 	    mergedEnergy = AngleCorrect(mergedEnergy, eta);
-	  if (mergedEnergy > 0) histos->Incr();
+	  // if (mergedEnergy > 0) histos->Incr();
 	  
 	  if (t != 0) 
 	    histos->fNeighborsAfter->Fill(output.Multiplicity(d,r,s,t-1), 
@@ -555,28 +586,13 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  
 	  output.SetMultiplicity(d,r,s,t,mergedEnergy);
 	} // for strip
-	for (UShort_t t = 0; t < nstr; t++) {
-	  if (fOper) fOper->operator()(d, r, s, t) = status[t];
-	  switch (status[t]) { 
-	  case kNone:            nNone++;      break;
-	  case kCandidate:       nCandidate++; break;
-	  case kMergedWithOther: nMerged++;    break;
-	  case kMergedInto:      nSummed++;    break;
-	  }
-	}
       } // for sector
     } // for ring 
   } // for detector
-  fSummed->Fill(kNone,            nNone);
-  fSummed->Fill(kCandidate,       nCandidate);
-  fSummed->Fill(kMergedWithOther, nMerged);
-  fSummed->Fill(kMergedInto,      nSummed);
-
   DMSG(fDebug, 3,"single=%9d, double=%9d, triple=%9d", 
        nSingle, nDouble, nTriple);
   next.Reset();
-  while ((o = static_cast<RingHistos*>(next())))
-    o->Finish();
+  // while ((o = static_cast<RingHistos*>(next()))) o->Finish();
 
   return kTRUE;
 }
@@ -631,18 +647,6 @@ AliFMDSharingFilter::GetLowCut(UShort_t d, Char_t r, Double_t eta) const
   // than 0, then that value is used.
   //
   return fLCuts.GetMultCut(d,r,eta,false);
-#if 0
-  if (!fCutAtFractionOfMPV && fLowCut > 0) return fLowCut;
-  
-  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
-  AliFMDCorrELossFit* fits = fcm.GetELossFit();
-  
-  if (fCutAtFractionOfMPV) {
-    AliFMDCorrELossFit::ELossFit* func = fits->GetFit(d,r,eta);
-    return fFractionOfMPV*func->GetDelta() ;
-  }  
-  return fits->GetLowCut();
-#endif
 }
 			
 //_____________________________________________________________________
@@ -658,247 +662,6 @@ AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r,
   return fHCuts.GetMultCut(d,r,eta,errors); 
 }
 
-//_____________________________________________________________________
-namespace { 
-  const char* status2String(AliFMDSharingFilter::Status s)
-  {
-    switch(s) { 
-    case AliFMDSharingFilter::kNone:            return "none     "; 
-    case AliFMDSharingFilter::kCandidate:       return "candidate"; 
-    case AliFMDSharingFilter::kMergedWithOther: return "merged   "; 
-    case AliFMDSharingFilter::kMergedInto:      return "summed   "; 
-    }
-    return "unknown  ";
-  }
-}
-
-//_____________________________________________________________________
-Double_t 
-AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
-					 Double_t prevE,
-					 Double_t nextE,
-					 Double_t eta,
-					 Bool_t   lowFlux,
-					 UShort_t d,
-					 Char_t   r,
-					 UShort_t s,
-					 UShort_t t,
-					 Status&  prevStatus, 
-					 Status&  thisStatus, 
-					 Status&  nextStatus) const
-{
-  Double_t lowCut = GetLowCut(d, r, eta);
-
-  DBG(3,Form("FMD%d%c[%2d,%3d]: this=%9f(%s), prev=%9f(%s), next=%9f(%s)", 
-	     d, r, s, t,
-	     thisE, status2String(thisStatus), 
-	     prevE, status2String(prevStatus), 
-	     nextE, status2String(nextStatus)));
-
-  // If below cut, then modify zero signal and make sure the next
-  // strip is considered a candidate.
-  if (thisE < lowCut || thisE > 20) { 
-    thisStatus = kNone;
-    DBGL(5,Form(" %9f<%9f || %9f>20, 0'ed", thisE, lowCut, thisE));
-    if (prevStatus == kCandidate) prevStatus = kNone;
-    return 0;  
-  }
-  // It this strip was merged with the previous strip, then 
-  // make the next strip a candidate and zero the value in this strip. 
-  if (thisStatus == kMergedWithOther) { 
-    DBGL(5,Form(" Merged with other, 0'ed"));
-    return 0;
-  }
-
-  // Get the upper cut on the sharing 
-  Double_t highCut = GetHighCut(d, r, eta ,false);
-  if (highCut <= 0) {
-    thisStatus = kNone;
-    return 0;
-  }
-
-  // Only for low-flux  events 
-  if (lowFlux) { 
-    // If this is smaller than the next, and the next is larger 
-    // then the cut, mark both as candidates for sharing. 
-    // They should be be merged on the next iteration 
-    if (thisE < nextE && nextE > highCut) { 
-      thisStatus = kCandidate;
-      nextStatus = kCandidate;
-      return 0;
-    }
-  }
-  
-  // Variable to sum signal in 
-  Double_t totalE = thisE;
-
-  // If the previous signal was between the two cuts, and is still
-  // marked as a candidate , then merge it in here.
-  if (prevStatus == kCandidate && prevE > lowCut && prevE < highCut) {
-    totalE     += prevE;
-    prevStatus =  kMergedWithOther;
-    DBG(3, Form(" Prev candidate %9f<%9f<%9f->%9f", 
-		lowCut, prevE, highCut, totalE));
-  }
-
-  // If the next signal is between the two cuts, then merge it here
-  if (nextE > lowCut && nextE < highCut) { 
-    totalE     += nextE;
-    nextStatus =  kMergedWithOther;
-    DBG(3, Form(" Next %9f<%9f<%9f->%9f", lowCut, nextE, highCut,totalE));
-  }
-  
-  // If the signal is bigger than the high-cut, then return the value 
-  if (totalE > highCut) { 
-    if (totalE > thisE) 
-      thisStatus = kMergedInto;
-    else 
-      thisStatus = kNone;
-    DBGL(5, Form(" %9f>%f9 (was %9f) -> %9f %s", 
-		 totalE, highCut, thisE, totalE,status2String(thisStatus)));
-    return totalE;
-  }
-  else {
-    // This is below cut, so flag next as a candidate 
-    DBG(3, Form(" %9f<=%9f, next candidate", totalE, highCut));
-    nextStatus = kCandidate;
-  }
-  
-  // If the total signal is smaller than low cut then zero this and kill this 
-  if (totalE < lowCut)  {
-    DBGL(5, Form(" %9f<%9f (was %9f), zeroed", totalE, lowCut, thisE));
-    thisStatus = kNone;
-    return 0;
-  }
-
-  // If total signal not above high cut or lower than low cut, 
-  // mark this as a candidate for merging into the next, and zero signal 
-  DBGL(5, Form(" %9f<%9f<%9f (was %9f), zeroed, candidate", 
-		   lowCut, totalE, highCut, thisE));
-  thisStatus = kCandidate;
-  return (fZeroSharedHitsBelowThreshold ? 0 : totalE); 
-}
-	   
-//_____________________________________________________________________
-Double_t 
-AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
-					 Double_t eta,
-					 Double_t prevE,
-					 Double_t nextE,
-					 Bool_t   lowFlux,
-					 UShort_t d,
-					 Char_t   r,
-					 UShort_t /*s*/,
-					 UShort_t /*t*/,
-					 Bool_t&  usedPrev, 
-					 Bool_t&  usedThis) const
-{
-  // 
-  // The actual algorithm 
-  // 
-  // Parameters:
-  //    mult      The unfiltered signal in the strip
-  //    eta       Psuedo rapidity 
-  //    prevE     Previous strip signal (or 0)
-  //    nextE     Next strip signal (or 0) 
-  //    lowFlux   Whether this is a low flux event 
-  //    d         Detector
-  //    r         Ring 
-  //    s         Sector 
-  //    t         Strip
-  //    usedPrev  Whether the previous strip was used in sharing or not
-  //    usedThis  Wether this strip was used in sharing or not. 
-  // 
-  // Return:
-  //    The filtered signal in the strip
-  //
-
-  // IF the multiplicity is very large, or below the cut, reject it, and 
-  // flag it as candidate for sharing 
-  Double_t    lowCut = GetLowCut(d,r,eta);
-  if(mult > 12 || mult < lowCut) {
-    usedThis      = kFALSE;
-    usedPrev      = kFALSE;
-    return 0;
-  }
-
-  // If this was shared with the previous signal, return 0 and mark it as 
-  // not a candiate for sharing 
-  if(usedThis) {
-    usedThis      = kFALSE;
-    usedPrev      = kTRUE;
-    return 0.;
-  }
-
-  //analyse and perform sharing on one strip
-  
-  // Get the high cut 
-  Double_t highCut = GetHighCut(d, r, eta, false);
-  if (highCut <= 0) {
-    usedThis = kFALSE;
-    usedPrev = kTRUE;
-    return 0;
-  }
-
-  // If this signal is smaller than the next, and the next signal is smaller 
-  // than then the high cut, and it's a low-flux event, then mark this and 
-  // the next signal as candidates for sharing 
-  // 
-  // This is the test if the signal is the smaller of two possibly
-  // shared signals.   
-  if (mult  < nextE   && 
-      nextE > highCut && 
-      lowFlux) {
-    usedThis      = kFALSE;
-    usedPrev      = kFALSE;
-    return 0;
-  }
-  
-  Double_t totalE  = mult;
-  
-  // If the previous signal was larger than the low cut, and 
-  // the previous was smaller than high cut, and the previous signal 
-  // isn't marked as used, then add it's energy to this signal 
-  if (prevE > lowCut && 
-      prevE < highCut && 
-      !usedPrev) 
-    totalE += prevE;
-
-  // If the next signal is larger than the low cut, and 
-  // the next signal is smaller than the high cut, then add the next signal 
-  // to this, and marked the next signal as used 
-  if(nextE > lowCut && nextE < highCut ) {
-    totalE      += nextE;
-    usedThis =  kTRUE;
-  }
-
-  // If we're processing on non-angle corrected data, we should do the 
-  // angle correction here 
-  // if (!fCorrectAngles) 
-  //   totalE = AngleCorrect(totalE, eta);
-
-  // Fill post processing histogram
-  // if(totalE > fLowCut)
-  //   GetRingHistos(d,r)->fAfter->Fill(totalE);
-
-  // Return value 
-  Double_t mergedEnergy = 0;
-  
-  if(totalE > 0) {
-    // If we have a signal, then this is used (sharedPrev=true) and
-    // the signal is set to the result
-    mergedEnergy = totalE;
-    usedPrev     = kTRUE;
-  }
-  else {
-    // If we do not have a signal (too low), then this is not shared, 
-    // and the next strip is not shared either 
-    usedThis  = kFALSE;
-    usedPrev  = kFALSE;
-  }
-  
-  return mergedEnergy; 
-}
 //____________________________________________________________________
 Double_t
 AliFMDSharingFilter::AngleCorrect(Double_t mult, Double_t eta) const
@@ -955,6 +718,24 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
   TList* out = new TList;
   out->SetName(d->GetName());
   out->SetOwner();
+
+  TParameter<int>* nFiles = 
+    static_cast<TParameter<int>*>(d->FindObject("nFiles"));
+
+  TH2* lowCuts  = static_cast<TH2*>(d->FindObject("lowCuts"));
+  TH2* highCuts = static_cast<TH2*>(d->FindObject("highCuts"));
+  if (lowCuts && nFiles) {
+    lowCuts->Scale(1. / nFiles->GetVal());
+    out->Add(lowCuts->Clone());
+  }
+  else 
+    AliWarning("low cuts histogram not found in input list");
+  if (highCuts && nFiles) {
+    highCuts->Scale(1. / nFiles->GetVal());
+    out->Add(highCuts->Clone());
+  }
+  else 
+    AliWarning("high cuts histogram not found in input list");
   
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -993,6 +774,7 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
   d->SetName(GetName());
   dir->Add(d);
 
+#if 0
   fSummed = new TH2I("operations", "Strip operations", 
 		     kMergedInto, kNone-.5, kMergedInto+.5,
 		     51201, -.5, 51200.5);
@@ -1005,6 +787,7 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
   fSummed->GetXaxis()->SetBinLabel(kMergedInto,      "Merged into");
   fSummed->SetDirectory(0);
   d->Add(fSummed);
+#endif
 
   fHighCuts = new TH2D("highCuts", "High cuts used", 1,0,1, 1,0,1);
   fHighCuts->SetXTitle("#eta");
@@ -1023,10 +806,15 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("lowSignal", 
 				       fZeroSharedHitsBelowThreshold));
   d->Add(AliForwardUtil::MakeParameter("simple", fUseSimpleMerging));
+  d->Add(AliForwardUtil::MakeParameter("sumThree", fThreeStripSharing));
+  TParameter<int>* nFiles = new TParameter<int>("nFiles", 1);
+  nFiles->SetMergeMode('+');
+  d->Add(nFiles);
   
   TObjArray* extraDead = new TObjArray;
   extraDead->SetOwner();
   extraDead->SetName("extraDead");
+#if 0
   for (Int_t i = 0; i < fExtraDead.GetSize(); i++) { 
     if (fExtraDead.At(i) < 0) break;
     UShort_t dd, s, t;
@@ -1036,6 +824,20 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
     extraDead->Add(AliForwardUtil::MakeParameter(Form("FMD%d%c[%02d,%03d]",
 						      dd, r, s, t), id));
   }
+#endif
+  fXtraDead.Compact();
+  UInt_t firstBit = fXtraDead.FirstSetBit();
+  UInt_t nBits    = fXtraDead.GetNbits();
+  for (UInt_t i = firstBit; i < nBits; i++) {
+    if (!fXtraDead.TestBitNumber(i)) continue;
+    UShort_t dd, s, t;
+    Char_t  r;
+    AliFMDStripIndex::Unpack(i, dd, r, s, t);
+    extraDead->Add(AliForwardUtil::MakeParameter(Form("FMD%d%c[%02d,%03d]",
+						      dd, r, s, t), 
+						 UShort_t(i)));
+  }
+  // d->Add(&fXtraDead);
   d->Add(extraDead);
   fLCuts.Output(d,"lCuts");
   fHCuts.Output(d,"hCuts");
@@ -1065,7 +867,9 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
 	    << ind << " Use corrected angles:   " << fCorrectAngles << '\n'
 	    << ind << " Zero below threshold:   " 
 	    << fZeroSharedHitsBelowThreshold << '\n'
-    	    << ind << " Use simple sharing:     " << fUseSimpleMerging << '\n'
+	    << ind << " Use simple sharing:     " << fUseSimpleMerging << '\n'
+	    << ind << " Consider invalid null:  " << fInvalidIsEmpty << '\n'
+	    << ind << " Allow 3 strip merging:  " << fThreeStripSharing
 	    << std::noboolalpha << std::endl;
   std::cout << ind << " Low cuts: " << std::endl;
   fLCuts.Print();
@@ -1082,14 +886,14 @@ AliFMDSharingFilter::RingHistos::RingHistos()
     fDouble(0),
     fTriple(0),
     fSinglePerStrip(0),
-    fDistanceBefore(0),
-    fDistanceAfter(0),
+    // fDistanceBefore(0),
+    // fDistanceAfter(0),
     fBeforeAfter(0),
     fNeighborsBefore(0),
     fNeighborsAfter(0),
-    fSum(0),
-    fHits(0),
-    fNHits(0)
+    fSum(0) // ,
+    // fHits(0),
+    // fNHits(0)
 {
   // 
   // Default CTOR
@@ -1106,14 +910,14 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
     fDouble(0),
     fTriple(0),    
     fSinglePerStrip(0),
-    fDistanceBefore(0),
-    fDistanceAfter(0),
+    // fDistanceBefore(0),
+    // fDistanceAfter(0),
     fBeforeAfter(0),
     fNeighborsBefore(0),
     fNeighborsAfter(0),
-    fSum(0),
-    fHits(0),
-    fNHits(0)
+    fSum(0) //,
+    // fHits(0),
+    // fNHits(0)
 {
   // 
   // Constructor
@@ -1123,7 +927,7 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   //    r ring 
   //
   fBefore = new TH1D("esdEloss", Form("Energy loss in %s (reconstruction)", 
-				      GetName()), 600, 0, 15);
+				      GetName()), 640, -1, 15);
   fBefore->SetXTitle("#Delta E/#Delta E_{mip}");
   fBefore->SetYTitle("P(#Delta E/#Delta E_{mip})");
   fBefore->SetFillColor(Color());
@@ -1169,6 +973,7 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fSinglePerStrip->SetZTitle("Counts");
   fSinglePerStrip->SetDirectory(0);
 
+#if 0
   fDistanceBefore = new TH1D("distanceBefore", "Distance before sharing", 
 			     nStrips , 0,nStrips );
   fDistanceBefore->SetXTitle("Distance");
@@ -1183,6 +988,8 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDistanceAfter->SetTitle("Distance after sharing"); 
   fDistanceAfter->SetFillColor(kGreen+1);
   fDistanceAfter->SetDirectory(0);
+#endif
+
 
   
   Double_t max = 15;
@@ -1215,11 +1022,13 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fSum->SetXTitle("#eta");
   fSum->SetYTitle("#varphi [radians]");
   fSum->SetZTitle("#sum #Delta/#Delta_{mip}(#eta,#varphi) ");
-  
+
+#if 0  
   fHits = new TH1D("hits", "Number of hits", 200, 0, 200000);
   fHits->SetDirectory(0);
   fHits->SetXTitle("# of hits");
   fHits->SetFillColor(kGreen+1);
+#endif
 }
 //____________________________________________________________________
 AliFMDSharingFilter::RingHistos::RingHistos(const RingHistos& o)
@@ -1230,14 +1039,14 @@ AliFMDSharingFilter::RingHistos::RingHistos(const RingHistos& o)
     fDouble(o.fDouble),
     fTriple(o.fTriple),
     fSinglePerStrip(o.fSinglePerStrip),
-    fDistanceBefore(o.fDistanceBefore),
-    fDistanceAfter(o.fDistanceAfter),    
+    // fDistanceBefore(o.fDistanceBefore),
+    // fDistanceAfter(o.fDistanceAfter),    
     fBeforeAfter(o.fBeforeAfter),
     fNeighborsBefore(o.fNeighborsBefore),
     fNeighborsAfter(o.fNeighborsAfter),
-    fSum(o.fSum),
-    fHits(o.fHits),
-    fNHits(o.fNHits)
+    fSum(o.fSum) //,
+    // fHits(o.fHits),
+    // fNHits(o.fNHits)
 {
   // 
   // Copy constructor 
@@ -1271,9 +1080,9 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
   if (fDouble) 	       delete  fDouble;
   if (fTriple)         delete  fTriple;
   if (fSinglePerStrip) delete fSinglePerStrip;
-  if (fDistanceBefore) delete fDistanceBefore;
-  if (fDistanceAfter)  delete fDistanceAfter;
-  if (fHits)   	       delete fHits;
+  // if (fDistanceBefore) delete fDistanceBefore;
+  // if (fDistanceAfter)  delete fDistanceAfter;
+  // if (fHits)   	       delete fHits;
   
   
   fBefore          = static_cast<TH1D*>(o.fBefore->Clone());
@@ -1282,12 +1091,12 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
   fDouble          = static_cast<TH1D*>(o.fDouble->Clone());
   fTriple          = static_cast<TH1D*>(o.fTriple->Clone());
   fSinglePerStrip  = static_cast<TH2D*>(o.fSinglePerStrip->Clone());
-  fDistanceBefore  = static_cast<TH1D*>(o.fDistanceBefore->Clone());
-  fDistanceAfter   = static_cast<TH1D*>(o.fDistanceAfter->Clone());
+  // fDistanceBefore  = static_cast<TH1D*>(o.fDistanceBefore->Clone());
+  // fDistanceAfter   = static_cast<TH1D*>(o.fDistanceAfter->Clone());
   fBeforeAfter     = static_cast<TH2D*>(o.fBeforeAfter->Clone());
   fNeighborsBefore = static_cast<TH2D*>(o.fNeighborsBefore->Clone());
   fNeighborsAfter  = static_cast<TH2D*>(o.fNeighborsAfter->Clone());
-  fHits            = static_cast<TH1D*>(o.fHits->Clone());
+  // fHits            = static_cast<TH1D*>(o.fHits->Clone());
   fSum             = static_cast<TH2D*>(o.fSum->Clone());
 
   return *this;
@@ -1299,6 +1108,7 @@ AliFMDSharingFilter::RingHistos::~RingHistos()
   // Destructor 
   //
 }
+#if 0
 //____________________________________________________________________
 void
 AliFMDSharingFilter::RingHistos::Finish()
@@ -1307,9 +1117,9 @@ AliFMDSharingFilter::RingHistos::Finish()
   // Finish off 
   // 
   //
-  fHits->Fill(fNHits);
+  // fHits->Fill(fNHits);
 }
-
+#endif
 //____________________________________________________________________
 void
 AliFMDSharingFilter::RingHistos::Terminate(const TList* dir, Int_t nEvents)
@@ -1354,14 +1164,14 @@ AliFMDSharingFilter::RingHistos::CreateOutputObjects(TList* dir)
   d->Add(fDouble);
   d->Add(fTriple);
   d->Add(fSinglePerStrip);
-  d->Add(fDistanceBefore);
-  d->Add(fDistanceAfter);
+  // d->Add(fDistanceBefore);
+  // d->Add(fDistanceAfter);
   d->Add(fBeforeAfter);
   d->Add(fNeighborsBefore);
   d->Add(fNeighborsAfter);
-  d->Add(fHits);
+  // d->Add(fHits);
   d->Add(fSum);
-  
+
   // Removed to avoid doubly adding the list which destroys 
   // the merging
   //dir->Add(d);

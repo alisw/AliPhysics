@@ -2,7 +2,7 @@
 //
 // Calculation of rho from a collection of jets.
 // If scale function is given the scaled rho will be exported
-// with the name as "fRhoName".apppend("_Scaled").
+// with the name as "fOutRhoName".Apppend("_Scaled").
 //
 // Authors: R.Reed, S.Aiola
 
@@ -40,9 +40,9 @@ Bool_t AliAnalysisTaskRho::Run()
 {
   // Run the analysis.
 
-  fRho->SetVal(0);
-  if (fRhoScaled)
-    fRhoScaled->SetVal(0);
+  fOutRho->SetVal(0);
+  if (fOutRhoScaled)
+    fOutRhoScaled->SetVal(0);
 
   if (!fJets)
     return kFALSE;
@@ -106,11 +106,11 @@ Bool_t AliAnalysisTaskRho::Run()
   if (NjetAcc > 0) {
     //find median value
     Double_t rho = TMath::Median(NjetAcc, rhovec);
-    fRho->SetVal(rho);
+    fOutRho->SetVal(rho);
 
-    if (fRhoScaled) {
+    if (fOutRhoScaled) {
       Double_t rhoScaled = rho * GetScaleFactor(fCent);
-      fRhoScaled->SetVal(rhoScaled);
+      fOutRhoScaled->SetVal(rhoScaled);
     }
   }
 

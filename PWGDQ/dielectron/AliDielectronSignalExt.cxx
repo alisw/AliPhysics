@@ -18,11 +18,70 @@
 //                      Dielectron SignalExt                             //
 //                                                                       //
 /*
-Dielectron signal extraction class using functions as input.
 
-A function to describe the signal as well as one to describe the background
-has to be deployed by the user. Alternatively on of the default implementaions
-can be used.
+  Class used for extracting the signal from an invariant mass spectrum.
+  Used invariant mass spectra are provided via an array of histograms. There are serveral method
+  to estimate the background and to extract the raw yield from the background subtracted spectra.
+
+  Example usage:
+
+  AliDielectronSignalExt *sig = new AliDielectronSignalExt();
+
+
+  1) invariant mass input spectra
+
+  1.1) Assuming a AliDielectronCF container as data format (check class for more details)
+  AliDielectronCFdraw *cf = new AliDielectronCFdraw("path/to/the/output/file.root");
+  TObjArray *arrHists = cf->CollectMinvProj(cf->FindStep("Config"));
+
+  1.2) Assuming a AliDielectronHF grid as data format (check class for more details)
+  AliDielectronHFhelper *hf = new AliDielectronHFhelper("path/to/the/output/file.root", "ConfigName");
+  TObjArray *arrHists = hf->CollectHistos(AliDielectronVarManager::kM);
+
+  1.3) Assuming a single histograms
+  TObjArray *histoArray = new TObjArray();
+  arrHists->Add(signalPP);            // add the spectrum histograms to the array
+  arrHists->Add(signalPM);            // the order is important !!!
+  arrHists->Add(signalMM);
+
+
+  2) background estimation
+
+  2.1) set the method for the background estimation (methods can be found in AliDielectronSignalBase)
+  sig->SetMethod(AliDielectronSignalBase::kEventMixing);
+  2.2) rebin the spectras if needed
+  //  sig->SetRebin(2);
+  2.3) normalize the backgound spectum to the odd-sign spectrum in the desired range(s)
+  sig->SetScaleRawToBackground(minScale, maxScale);
+  //  sig->SetScaleRawToBackground(minScale, maxScale, minScale2, maxScale2);
+
+
+  3) configure the signal extraction
+
+  3.1) set the method for the signal extraction (methods can be found in AliDielectronSignalBase)
+  depending on the method serveral inputs are needed (e.g. MC shape, PDG code of the particle of interest)
+  //  sig->SetParticleOfInterest(443); //default is jpsi
+  //  sig->SetMCSignalShape(signalMC);
+  sig->SetIntegralRange(minInt, maxInt);  // range for bin counting
+  sig->SetExtractionMethod(AliDielectronSignal::BinCounting); // this is the default
+
+
+  4) start the processing
+
+  sig->Process(arrHists);
+  sig->Print(""); // print values and errors extracted
+
+
+  5) access the spectra and values created
+
+  5.1) standard spectras
+  TH1F *hsign = (TH1F*) sig->GetUnlikeSignHistogram();  // same as the input (rebinned)
+  TH1F *hbgrd = (TH1F*) sig->GetBackgroundHistogram();  // scaled input      (rebinned)
+  TH1F *hextr = (TH1F*) sig->GetSignalHistogram();      // after backgound extraction (rebinned)
+  TObject *oPeak = (TObject*) sig->GetPeakShape();      // can be a TF1 or TH1 depending on the extraction method
+  TH1F *hrfac = (TH1F*) sig->GetRfactorHistogram();     // if like-sign correction was activated, o.w. 0x0
+  5.2) access the extracted values and errors
+  sig->GetValues();     or GetErrors();                 // yield extraction
 
 */
 //                                                                       //
@@ -233,16 +292,16 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   fHistSignal->Add(fHistDataPM);
   fHistSignal->Add(fHistBackground,-1);
   
-  // signal
-  fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
-	  			             fHistSignal->FindBin(fIntMax), fErrors(0));
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
 						 fHistBackground->FindBin(fIntMax), 
 						 fErrors(1));
+
+  // signal depending on peak description method
+  DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
   //printf("%f  %f\n",fValues(0),fValues(1));
   // S/B and significance
-  SetSignificanceAndSOB();
+  //  SetSignificanceAndSOB();
 
   fProcessed = kTRUE;
 }
@@ -296,19 +355,21 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
     fScaleFactor=fScaleMin;
     fHistBackground->Scale(fScaleFactor);
   }
-
   fHistSignal=(TH1*)fHistDataPM->Clone("Signal");
+  fHistSignal->Sumw2();
+  //  printf(" err: %f %f \n",fHistSignal->GetBinError(75),TMath::Sqrt(fHistSignal->GetBinContent(75)));
   fHistSignal->Add(fHistBackground,-1.);
-
-    // signal
-  fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
-                                             fHistSignal->FindBin(fIntMax), fErrors(0));
+  //  printf(" err: %f %f \n",fHistSignal->GetBinError(75),TMath::Sqrt(fHistSignal->GetBinContent(75)));
+//     // signal
+//   fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
+//                                              fHistSignal->FindBin(fIntMax), fErrors(0));
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
                                                  fHistBackground->FindBin(fIntMax),
                                                  fErrors(1));
-  // S/B and significance
-  SetSignificanceAndSOB();
+
+  // signal depending on peak description method
+  DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
 
   fProcessed = kTRUE;
 }
@@ -352,15 +413,15 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
   fHistSignal->Add(fHistBackground,-1.);
   fHistSignal->SetDirectory(0x0);
 
-    // signal
-  fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
-                                             fHistSignal->FindBin(fIntMax), fErrors(0));
+  //     // signal
+  //   fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
+  //                                              fHistSignal->FindBin(fIntMax), fErrors(0));
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
                                                  fHistBackground->FindBin(fIntMax),
                                                  fErrors(1));
-  // S/B and significance
-  SetSignificanceAndSOB();
+  // signal depending on peak description method
+  DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
   
   fProcessed = kTRUE;
   

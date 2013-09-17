@@ -176,9 +176,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 
     if (fCentralityMethod.Length() > 0)
     {
-        nbinsCentr = 100;
+        nbinsCentr = 105;
         minbinCentr=0;
-        maxbinCentr=100;
+        maxbinCentr=105;
     }
     else
     {
@@ -539,9 +539,9 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
     
     
     //number of accepted tracks and tracklets
-    Int_t ntracks = 0;  //return value for reading functions for ESD and AOD
+    Double_t ntracks = 0;  //return value for reading functions for ESD and AOD
     //Int_t ntracksRemove = 0;  //return value for reading functions for ESD and AOD
-    vector<Int_t> nTracksTracklets; // [0]=nAccepted,1=ntracklets,2=nall(also neutral in case of mc,
+    vector<Double_t> nTracksTracklets; // [0]=nAccepted,1=ntracklets,2=nall(also neutral in case of mc,
     //for real nall=ncharged)
     
     if(!fAODEvent && !fESDEvent)return;
@@ -644,7 +644,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                 else AliInfo("Fatal Error");
                 
                 if (fCentralityMethod.Length() > 0)
-                    ntracks = TMath::Nint(centrality);
+                    ntracks = centrality;
                 
                 // analyse
                 if(pt.size()){ //(internally ntracks=fNRecAccept)
@@ -661,11 +661,11 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     else AliInfo("Fatal Error");
                     
                     if (fCentralityMethod.Length() > 0)
-                        ntracks = TMath::Nint(centrality);
+                        ntracks = centrality;
                     
                     // analyse
                     if(pt.size()){ //(internally ntracks=fNRecAccept)
-                        Analyse(pt, eta, phi, charge, strangenessWeight, TMath::Nint(fNRecAcceptStrangeCorr), nTracksTracklets[1], nTracksTracklets[2], 7);//step 7 = TrigVtxRecNrecStrangeCorr
+                        Analyse(pt, eta, phi, charge, strangenessWeight, fNRecAcceptStrangeCorr, nTracksTracklets[1], nTracksTracklets[2], 7);//step 7 = TrigVtxRecNrecStrangeCorr
                     }
                 }
                 
@@ -678,7 +678,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     else AliInfo("Fatal Error");
                     
                     if (fCentralityMethod.Length() > 0)
-                        ntracks = TMath::Nint(centrality);
+                        ntracks = centrality;
                     
                     //analyse
                     if(pt.size()){//(internally ntracks=fNRecAccept)
@@ -695,11 +695,11 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                         else AliInfo("Fatal Error");
                         
                         if (fCentralityMethod.Length() > 0)
-                            ntracks = TMath::Nint(centrality);
+                            ntracks = centrality;
                         
                         //analyse
                         if(pt.size()){//(internally ntracks=fNRecAccept)
-                            Analyse(pt, eta, phi, charge, strangenessWeight, TMath::Nint(fNRecAcceptStrangeCorr), nTracksTracklets[1], nTracksTracklets[2], 6); //step 6 = TrigVtxRecMcPropNrecStrangeCorr
+                            Analyse(pt, eta, phi, charge, strangenessWeight, fNRecAcceptStrangeCorr, nTracksTracklets[1], nTracksTracklets[2], 6); //step 6 = TrigVtxRecMcPropNrecStrangeCorr
                         }
                     }
                     // step 3 = TrigVtxMcNrec
@@ -710,8 +710,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                     else AliInfo("Fatal Error");
                     
                     if (fCentralityMethod.Length() > 0){
-                        fNRecAccept = TMath::Nint(centrality);
-                        fNMcPrimAccept = TMath::Nint(centrality);
+                        fNRecAccept = centrality;
+                        fNMcPrimAccept = centrality;
                     }
                     
                     // analyse
@@ -739,7 +739,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                 else AliInfo("Fatal Error");
                 
                 if (fCentralityMethod.Length() > 0)
-                    fNMcPrimAccept = TMath::Nint(centrality);
+                    fNMcPrimAccept = centrality;
                 
                 
                 // analyse
@@ -764,7 +764,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
                 else AliInfo("Fatal Error");
                 
                 if (fCentralityMethod.Length() > 0)
-                    fNMcPrimAccept = TMath::Nint(centrality);
+                    fNMcPrimAccept = centrality;
                 
                 //analyse
                 if(pt.size()){
@@ -780,7 +780,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
         else if (fMode==1) ntracks  = ReadEventAODMC(pt, eta, phi, charge, strangenessWeight, nTracksTracklets, 0);
         
         if (fCentralityMethod.Length() > 0)
-            fNMcPrimAccept = TMath::Nint(centrality);
+            fNMcPrimAccept = centrality;
         
         // analyse
         if(pt.size()){
@@ -791,10 +791,10 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::ReadEventESD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
+Double_t AliAnalysisTaskMinijet::ReadEventESD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
                                            vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
                                            vector<Float_t> &strangeArray,
-                                           vector<Int_t>   &nTracksTracklets, const Int_t step)
+                                           vector<Double_t>   &nTracksTracklets, const Int_t step)
 {
     // gives back the number of esd tracks and pointer to arrays with track
     // properties (pt, eta, phi)
@@ -816,7 +816,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventESD( vector<Float_t> &ptArray,  vector<Fl
     
     //first loop to check how many tracks are accepted
     //------------------
-    Int_t nAcceptedTracks=0;
+    Double_t nAcceptedTracks=0;
     //Float_t nAcceptedTracksStrange=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         
@@ -898,10 +898,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventESD( vector<Float_t> &ptArray,  vector<Fl
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::ReadEventESDRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
+Double_t AliAnalysisTaskMinijet::ReadEventESDRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
                                                     vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
                                                     vector<Float_t> &strangeArray,
-                                                    vector<Int_t> &nTracksTracklets, const Int_t step)
+                                                    vector<Double_t> &nTracksTracklets, const Int_t step)
 {
     // gives back the number of esd tracks and pointer to arrays with track
     // properties (pt, eta, phi) of mc particles if available
@@ -932,7 +932,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDRecMcProp( vector<Float_t> &ptArray,  
     fVertexZ[step]->Fill(vtxSPD->GetZ());
     
     //track loop
-    Int_t nAcceptedTracks=0;
+    Double_t nAcceptedTracks=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         
         AliVParticle *vtrack = fESDEvent->GetTrack(iTracks);
@@ -1031,10 +1031,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDRecMcProp( vector<Float_t> &ptArray,  
 
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
+Double_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
                                              vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
                                              vector<Float_t> &strangeArray,
-                                             vector<Int_t> &nTracksTracklets, const Int_t step)
+                                             vector<Double_t> &nTracksTracklets, const Int_t step)
 {
     // gives back the number of charged prim MC particle and pointer to arrays
     // with particle properties (pt, eta, phi)
@@ -1075,10 +1075,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<F
     
     //----------------------------------
     //first track loop to check how many chared primary tracks are available
-    Int_t nChargedPrimaries=0;
-    Int_t nAllPrimaries=0;
+    Double_t nChargedPrimaries=0;
+    Double_t nAllPrimaries=0;
     
-    Int_t nPseudoTracklets=0;
+    Double_t nPseudoTracklets=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         AliMCParticle *track = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(iTracks));
         if (!track) {
@@ -1113,8 +1113,8 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<F
     //----------------------------------
     
     if(fDebug>2){
-        Printf("All in acceptance=%d",nAllPrimaries);
-        Printf("Charged in acceptance =%d",nChargedPrimaries);
+        Printf("All in acceptance=%f",nAllPrimaries);
+        Printf("Charged in acceptance =%f",nChargedPrimaries);
     }
     
     fChargedPi0->Fill(nAllPrimaries,nChargedPrimaries);
@@ -1187,10 +1187,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<F
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
+Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
                                            vector<Float_t> &phiArray,  vector<Short_t> &chargeArray,
                                            vector<Float_t> &strangeArray,
-                                           vector<Int_t> &nTracksTracklets, const Int_t step)
+                                           vector<Double_t> &nTracksTracklets, const Int_t step)
 {
     // gives back the number of AOD tracks and pointer to arrays with track
     // properties (pt, eta, phi)
@@ -1217,7 +1217,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Fl
     if(fDebug>1) Printf("AOD tracks: %d", ntracks);
     
     
-    Int_t nAcceptedTracks=0;
+    Double_t nAcceptedTracks=0;
     Float_t nAcceptedTracksStrange=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
@@ -1317,10 +1317,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Fl
 }   
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
+Double_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
                                                     vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
                                                     vector<Float_t> &strangeArray,
-                                                    vector<Int_t> &nTracksTracklets, const Int_t step)
+                                                    vector<Double_t> &nTracksTracklets, const Int_t step)
 {
     // gives back the number of AOD tracks and pointer to arrays with track
     // properties (pt, eta, phi)
@@ -1351,7 +1351,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
     Double_t vzAOD=vtx->GetZ();
     fVertexZ[step]->Fill(vzAOD);
     
-    Int_t nAcceptedTracks=0;
+    Double_t nAcceptedTracks=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
         
@@ -1449,10 +1449,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
 
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
+Double_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<Float_t> &etaArray,
                                              vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
                                              vector<Float_t> &strangeArray,
-                                             vector<Int_t> &nTracksTracklets, const Int_t step)
+                                             vector<Double_t> &nTracksTracklets, const Int_t step)
 {
     // gives back the number of AOD MC particles and pointer to arrays with particle
     // properties (pt, eta, phi)
@@ -1487,9 +1487,9 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<
     
     // Track loop: chek how many particles will be accepted
     //Float_t vzMC=0.;
-    Int_t nChargedPrim=0;
-    Int_t nAllPrim=0;
-    Int_t nPseudoTracklets=0;
+    Double_t nChargedPrim=0;
+    Double_t nAllPrim=0;
+    Double_t nPseudoTracklets=0;
     for (Int_t it = 0; it < ntracks; it++) {
         AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
         if (!track) {
@@ -1587,7 +1587,7 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
                                      const vector<Float_t> &phi,
                                      const vector<Short_t> &charge,
                                      const vector<Float_t> &strangeWeight,
-                                     const Int_t ntracksCharged,
+                                     const Double_t ntracksCharged,
                                      const Int_t ntracklets,
                                      const Int_t nAll,
                                      const Int_t step)
@@ -1602,7 +1602,7 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
         Printf("Analysis Step=%d", step);
         if(fDebug>2){
             Printf("nAll=%d",nAll);
-            Printf("nCharged=%d",ntracksCharged);
+            Printf("nCharged=%f",ntracksCharged);
             for (Int_t i = 0; i < nAll; i++) {
                 Printf("pt[%d]=%f",i,pt[i]);
             }

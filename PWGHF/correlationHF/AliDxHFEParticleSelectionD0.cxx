@@ -99,6 +99,7 @@ const char* AliDxHFEParticleSelectionD0::fgkDgTrackControlBinNames[]={
 const char* AliDxHFEParticleSelectionD0::fgkCutBinNames[]={
   "nDstar->D0",
   "nCandSel(Tr)",
+  "IsInFiducialAcceptance",
   "ptbin-1",
   "No daugthers",
   "Selectioncode 0",
@@ -300,6 +301,8 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
       selectedTracks->Add(CreateParticle(track));
     }    
   }
+
+  HistogramEventProperties(AliDxHFEParticleSelection::kHistoNrTracksPrEvent,selectedTracks->GetEntries());
   return selectedTracks;
 }
 
@@ -368,6 +371,9 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
       AliDebug(1,"at least one daughter not found!");
     
     }
+  }
+  else{
+    ((TH1D*)fHistoList->FindObject("fWhichCutD0"))->Fill(kIsInFinducialAcceptance);
   }
 
   return selectionCode;

@@ -15,14 +15,17 @@
 #include "AliEMCALGeometry.h"
 #include "AliLog.h"
 #include "AliVCluster.h"
-#include "AliVTrack.h"
+#include "AliVParticle.h"
+#include "AliParticleContainer.h"
 
 ClassImp(AliAnalysisTaskScale)
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale() : 
-  AliAnalysisTaskEmcal("AliAnalysisTaskScale", kTRUE), 
+  AliAnalysisTaskEmcalDev("AliAnalysisTaskScale", kTRUE), 
   fScaleFunction(0),
+  fEmcalArea(1),
+  fTpcArea(1),
   fHistPtTPCvsCent(0), 
   fHistPtEMCALvsCent(0), 
   fHistEtvsCent(0),  
@@ -56,8 +59,10 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
-  AliAnalysisTaskEmcal(name, kTRUE), 
+  AliAnalysisTaskEmcalDev(name, kTRUE), 
   fScaleFunction(0),
+  fEmcalArea(1),
+  fTpcArea(1),
   fHistPtTPCvsCent(0), 
   fHistPtEMCALvsCent(0), 
   fHistEtvsCent(0),  
@@ -94,7 +99,7 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
 {
   // Create my user objects.
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
 
   fHistPtTPCvsCent             = new TH2F("PtTPCvsCent","rho vs cent",            101, -1, 100,   500,   0, 1000);
   fHistPtEMCALvsCent           = new TH2F("PtEMCALvsCent","rho vs cent",          101, -1, 100,   500,   0, 1000);
@@ -166,22 +171,10 @@ Double_t AliAnalysisTaskScale::GetScaleFactor(Double_t cent)
 Bool_t AliAnalysisTaskScale::FillHistograms() 
 {
   // Execute on each event.
-  const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
-  const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+
   const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
   const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
   const Double_t EmcalWidth = (EmcalMaxPhi-EmcalMinPhi)/2.0;
-
-  Double_t TpcMinPhi   = fTrackMinPhi;
-  Double_t TpcMaxPhi   = fTrackMaxPhi;
-  if (TpcMaxPhi > TMath::Pi()*2)
-    TpcMaxPhi = TMath::Pi()*2;
-  
-  if (TpcMinPhi < 0)
-    TpcMinPhi = 0;
-
-  const Double_t TpcArea     = (TpcMaxPhi - TpcMinPhi) * (EmcalMinEta - EmcalMaxEta);
-  const Double_t EmcalArea   = (EmcalMaxPhi - EmcalMinPhi) * (EmcalMinEta - EmcalMaxEta);
 
   Double_t ptTPC   = 0;
   Double_t ptEMCAL = 0;
@@ -189,7 +182,7 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
 
   const Int_t Ntracks = fTracks->GetEntries();
   for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
+    AliVParticle *track = static_cast<AliVParticle*>(fTracks->At(iTracks));
 
     if (!track)
       continue;
@@ -203,11 +196,9 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
     fHistTrackPtvsCent->Fill(fCent,track->Pt());
     fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
     ptTPC += track->Pt();
-    if ((track->Phi() > (EmcalMaxPhi+EmcalWidth)) || (track->Phi() < (EmcalMinPhi-EmcalWidth)))
-      continue;
+    if ((track->Phi() > (EmcalMaxPhi+EmcalWidth)) || (track->Phi() < (EmcalMinPhi-EmcalWidth))) continue;
     ptEMCAL2 += track->Pt();
-    if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi))
-      continue;
+    if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi)) continue;
     ptEMCAL += track->Pt();
   }
 
@@ -232,9 +223,10 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
 
     Et += nPart.Pt();
   }
-
  
-  const Double_t scalecalc         = ((Et + ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
+  Double_t scalecalc         = -1;
+  if (ptEMCAL > 0 && Et > 0 && ptTPC > 0)
+    scalecalc         =  ((Et + ptEMCAL) / fEmcalArea) * (fTpcArea / ptTPC);
   const Double_t scale             = GetScaleFactor(fCent);
   Double_t scalecalcemcal          = -1;
   if (ptEMCAL > 0)
@@ -244,7 +236,7 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   if (ptEMCAL2 > 0){
     scalecalcemcal2                = 2*(Et+ptEMCAL)/ptEMCAL2;
     Chscalecalcemcal2              = 2*ptEMCAL/ptEMCAL2;}
-  const Double_t Chscalecalcemcal  = ((ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
+  const Double_t Chscalecalcemcal  = ((ptEMCAL) / fEmcalArea) * (fTpcArea / ptTPC);
 
   fHistScaleEmcalvsCent->Fill(fCent,scalecalcemcal);      
   fHistScale2EmcalvsCent->Fill(fCent,scalecalcemcal2);     
@@ -269,4 +261,33 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   fHistScaleEmcalvsScale2Emcal->Fill(scalecalcemcal,scalecalcemcal2);
 
   return kTRUE;
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskScale::ExecOnce() 
+{
+  AliAnalysisTaskEmcalDev::ExecOnce();
+
+  const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+  const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+  const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+  const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+
+  fEmcalArea  = (EmcalMaxPhi - EmcalMinPhi) * (EmcalMinEta - EmcalMaxEta);
+
+  AliParticleContainer *partCont = GetParticleContainer(0);
+  if (!partCont) {
+    AliError(Form("%s: No particle container found! Assuming tpc area = 1...",GetName()));
+    fTpcArea = 1;
+    return;
+  }
+
+  Float_t TpcMaxPhi = partCont->GetParticlePhiMax();
+  Float_t TpcMinPhi = partCont->GetParticlePhiMin();
+  
+  if (TpcMaxPhi > TMath::Pi()*2) TpcMaxPhi = TMath::Pi()*2;
+  if (TpcMinPhi < 0) TpcMinPhi = 0;
+
+  fTpcArea = (TpcMaxPhi - TpcMinPhi) * (EmcalMinEta - EmcalMaxEta);
 }

@@ -1,6 +1,7 @@
 AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
 					    const char* options = "",
-					    UInt_t offlineTriggerMask = AliVEvent::kCentral )
+					    UInt_t offlineTriggerMask = AliVEvent::kCentral,
+					    AliAnalysisTaskPi0Flow::TriggerSelection internalTriggerSelection = AliAnalysisTaskPi0Flow::kNoSelection )
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train
   //Author: Henrik Qvigstad
@@ -51,6 +52,8 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
   //task->SetEventMixingRPBinning(9);
   //task->SetMixingArraysLength(10);
   task->SelectCollisionCandidates(offlineTriggerMask);
+  task->SetInternalTriggerSelection(internalTriggerSelection);
+  task->EnableTOFCut(true, 100.e-9, true);
   
   if( TString(options).Contains("11h") )
     task->SetPeriod( AliAnalysisTaskPi0Flow::kLHC11h );

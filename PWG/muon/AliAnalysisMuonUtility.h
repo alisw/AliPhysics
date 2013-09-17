@@ -82,6 +82,9 @@ class AliAnalysisMuonUtility : public TObject {
   static TString GetPassName ( const AliInputEventHandler* eventHandler );
   static TString GetPassName ( const char* str );
   
+  // Utilities for MC
+  static TString GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent );
+  
   ClassDef(AliAnalysisMuonUtility, 0);
 };
 

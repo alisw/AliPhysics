@@ -62,6 +62,9 @@ const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = 
 "RejectSharedElecGamma",
 "BackgroundScheme",
 "NumberOfRotations",
+"PtCut",
+"DCAcut",
+"MassCut",
 };
 
 //________________________________________________________________________
@@ -70,6 +73,9 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fPIDResponse(NULL),
     fesdTrackCuts(NULL),
     fEtaCut(0.9),
+    fEtaShift(0.0),
+    fDoEtaCut(kFALSE),
+    fPtCut(0.0),
     fRadiusCut(1000.0),
     fPsiPairCut(0.45),
     fDeltaPhiCutMin(0.),
@@ -106,6 +112,10 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fUseTrackMultiplicityForBG(kFALSE),
     fBKGMethod(0),
     fnumberOfRotationEventsForBG(0),
+    fDoMassCut(kFALSE),
+    fMassCutLowPt(999.),
+    fMassCutHighPt(999.),
+    fMassCutPtMin(-100.0),
     fCutString(NULL),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
@@ -116,7 +126,13 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     hTPCdEdxSignalbefore(NULL),
     hTPCdEdxSignalafter(NULL),
     hTOFbefore(NULL),
-    hTOFafter(NULL)
+    hTOFafter(NULL),
+    hTrackDCAxyPtbefore(NULL),
+    hTrackDCAxyPtafter(NULL),
+    hTrackDCAzPtbefore(NULL),
+    hTrackDCAzPtafter(NULL),
+    hTrackNFindClsPtTPCbefore(NULL),
+    hTrackNFindClsPtTPCafter(NULL)
    {
     InitPIDResponse();
     for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -124,7 +140,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
 
    //fesdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
    // Using standard function for setting Cuts
-    Bool_t selectPrimaries=kTRUE;
+    Bool_t selectPrimaries=kFALSE;
     fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 }
 
@@ -215,10 +231,20 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
        fHistograms->Add(hTPCdEdxSignalbefore);
        AxisBeforedEdxSignal = hTPCdEdxSignalbefore->GetXaxis();
 
-
        hTOFbefore=new TH2F(Form("Electron_TOF_before %s",cutName.Data()),"TOF electron before" ,150,0.05,20,400,-6,10);
        fHistograms->Add(hTOFbefore);
        AxisBeforeTOF = hTOFbefore->GetXaxis();
+       
+       hTrackDCAxyPtbefore = new TH2F(Form("hTrack_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+       fHistograms->Add(hTrackDCAxyPtbefore); 	
+       
+       hTrackDCAzPtbefore  = new TH2F(Form("hTrack_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+       fHistograms->Add(hTrackDCAzPtbefore); 
+       
+       hTrackNFindClsPtTPCbefore = new TH2F(Form("hTrack_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",100,0,1,400,0.,10.);
+       fHistograms->Add(hTrackNFindClsPtTPCbefore); 
+	
+       
 
     }
 
@@ -234,6 +260,17 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
 
     hTOFafter=new TH2F(Form("Electron_TOF_after %s",cutName.Data()),"TOF electron after" ,150,0.05,20,400,-6,10);
     fHistograms->Add(hTOFafter);
+      
+    hTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
+    fHistograms->Add(hTrackDCAxyPtafter); 
+    
+    hTrackDCAzPtafter  = new TH2F(Form("hTrack_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",800,-4.0,4.0,400,0.,10.);
+    fHistograms->Add(hTrackDCAzPtafter); 
+    
+    hTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",100,0,1,400,0.,10.);
+    fHistograms->Add(hTrackNFindClsPtTPCafter); 
+    
+    
 
     TAxis *AxisAfter = hTPCdEdxafter->GetXaxis(); 
     Int_t bins = AxisAfter->GetNbins();
@@ -285,13 +322,18 @@ Bool_t AliDalitzElectronCuts::InitPIDResponse(){
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack)
 {   
-        if( labelParticle < 0 ) return kFALSE;
-        if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;
+        if( labelParticle < 0 || labelParticle >= fMCStack->GetNtrack() ) return kFALSE;
+        if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
 
         TParticle* particle = fMCStack->Particle(labelParticle);
 
-        if( TMath::Abs( particle->GetPdgCode() ) != 11)  return kFALSE;
-        if( TMath::Abs( particle->Eta() ) > fEtaCut   )  return kFALSE;
+        if( TMath::Abs( particle->GetPdgCode() ) != 11 )  return kFALSE;
+        
+        if( fDoEtaCut ){
+	  if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
+	  return kFALSE;
+	}
+        
 
 return kTRUE;
 }
@@ -301,6 +343,28 @@ return kTRUE;
 Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 {
     //Selection of Reconstructed electrons
+    
+    
+    Float_t b[2];
+    Float_t bCov[3];
+    lTrack->GetImpactParameters(b,bCov);
+   
+    if (bCov[0]<=0 || bCov[2]<=0) {
+	AliDebug(1, "Estimated b resolution lower or equal zero!");
+	bCov[0]=0; bCov[2]=0;
+    }
+    
+    
+
+    Float_t dcaToVertexXY = b[0];
+    Float_t dcaToVertexZ  = b[1];
+    Double_t clsToF = GetNFindableClustersTPC(lTrack);
+   
+   if( hTrackDCAxyPtbefore) hTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->Pt());
+   if( hTrackDCAzPtbefore ) hTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->Pt());
+   if( hTrackNFindClsPtTPCbefore ) hTrackNFindClsPtTPCbefore->Fill( clsToF, lTrack->Pt());
+   
+   
 
     if(hCutIndex)hCutIndex->Fill(kElectronIn);
 
@@ -331,6 +395,10 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 
     //Electron passed the cuts
     if(hCutIndex)hCutIndex->Fill(kElectronOut);
+    
+    if( hTrackDCAxyPtafter) 	   hTrackDCAxyPtafter->Fill(dcaToVertexXY,lTrack->Pt());
+    if( hTrackDCAzPtafter ) 	   hTrackDCAzPtafter->Fill(dcaToVertexZ,lTrack->Pt());
+    if( hTrackNFindClsPtTPCafter ) hTrackNFindClsPtTPCafter->Fill( clsToF, lTrack->Pt());
 
 
     return kTRUE;
@@ -339,48 +407,58 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::TrackIsSelected(AliESDtrack* lTrack) {
     // Track Selection for Photon Reconstruction
-
-
+    
+         
+    Double_t clsToF = GetNFindableClustersTPC(lTrack);
+    
 
     if( ! fesdTrackCuts->AcceptTrack(lTrack) ){
 
         return kFALSE;
     }
+    
+    if( fDoEtaCut ) {
+      if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
+        return kFALSE;
+      }
+   }
+   
+   
+   if( lTrack->Pt() < fPtCut ) {
+     
+	return kFALSE;
+	
+   }
 
-   if(  TMath::Abs( lTrack->Eta()) > fEtaCut ) {
+    /*if( lTrack->GetNcls(1) < fMinClsTPC ) {
 
         return kFALSE;
-    }
+    }*/
 
-    if( lTrack->GetNcls(1) < fMinClsTPC ) {
+        //Findable clusters
 
-        return kFALSE;
-    }
-
-    //Findable clusters
-
-    Double_t clsToF=0;
+	/*Double_t clsToF=0;
 
 
-    if (!fUseCorrectedTPCClsInfo ){
-        if(lTrack->GetTPCNclsF()!=0){
+	    if (!fUseCorrectedTPCClsInfo ){
+		if(lTrack->GetTPCNclsF()!=0){
 
-              clsToF = (Double_t)lTrack->GetNcls(1)/(Double_t)lTrack->GetTPCNclsF();
-        }// Ncluster/Nfindablecluster
-    }
-    else {
+		clsToF = (Double_t)lTrack->GetNcls(1)/(Double_t)lTrack->GetTPCNclsF();
+		}// Ncluster/Nfindablecluster
+	    }
+	  else {
 
               //clsToF = lTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(photon->GetConversionRadius()));
               clsToF = lTrack->GetTPCClusterInfo(2,1); //NOTE ask friederike
-                
-    }
+              
+	  }*/
 
 
     if( clsToF < fMinClsTPCToF){
     return kFALSE;
     }
 
-
+    
 
    return kTRUE;
 }
@@ -577,6 +655,50 @@ Bool_t AliDalitzElectronCuts::RejectSharedElecGamma(TList *photons, Int_t indexE
 
    return kTRUE;
 }
+Bool_t AliDalitzElectronCuts::MassCut(Double_t pi0CandidatePt , Double_t vphotonCandidateMass){
+  
+	if( pi0CandidatePt < fMassCutPtMin ){
+	  
+	      if( vphotonCandidateMass < fMassCutLowPt ){
+		    return kTRUE;
+	      }
+		
+	}
+	else{
+	  
+	       if( vphotonCandidateMass < fMassCutHighPt ){
+		    return kTRUE;
+	       }
+	      
+	}
+	
+	return kFALSE;
+	  
+}
+
+Double_t AliDalitzElectronCuts::GetNFindableClustersTPC(AliESDtrack* lTrack){
+  
+  
+  Double_t clsToF=0;
+
+
+    if ( !fUseCorrectedTPCClsInfo ){
+        if(lTrack->GetTPCNclsF()!=0){
+
+              clsToF = (Double_t)lTrack->GetNcls(1)/(Double_t)lTrack->GetTPCNclsF();
+        }// Ncluster/Nfindablecluster
+    }
+    else {
+
+              //clsToF = lTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(photon->GetConversionRadius()));
+              clsToF = lTrack->GetTPCClusterInfo(2,1); //NOTE ask friederike
+                
+    }
+  
+  return clsToF;
+   
+}
+
 /*
 Double_t AliDalitzElectronCuts::GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg )
 {
@@ -638,6 +760,8 @@ Bool_t AliDalitzElectronCuts::InitializeCutsFromCutString(const TString analysis
    // Initialize Cuts from a given Cut string
 
 //   out<<"Set Cut Number: "<<analysisCutSelection.Data()<<endl;
+  AliInfo(Form("Set ElectronCuts Number: %s",analysisCutSelection.Data()));
+  
   if(analysisCutSelection.Length()!=kNCuts) {
 	AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
 	return kFALSE;
@@ -753,6 +877,21 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
 			UpdateCutString(cutID, value);
 			return kTRUE;
 		} else return kFALSE;
+  case kptCut: 	
+		if( SetPtCut(value)) {
+			fCuts[kptCut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+    
+  case kDCACut:
+		if( SetDCACut(value)) {
+			fCuts[kDCACut] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+	      
+	      
 	case kPsiPair:
 		if( SetPsiPairCut(value)) {
 			fCuts[kPsiPair] = value;
@@ -777,6 +916,13 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
   case kNumberOfRotations:
 		if( SetNumberOfRotations(value)) {
 			fCuts[kNumberOfRotations] = value;
+			UpdateCutString(cutID, value);
+			return kTRUE;
+		} else return kFALSE;
+		
+  case kmassCut:
+		if( SetMassCut(value)) {
+			fCuts[kmassCut] = value;
 			UpdateCutString(cutID, value);
 			return kTRUE;
 		} else return kFALSE;
@@ -929,8 +1075,8 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut)
 		fPIDnSigmaAbovePionLineTPCHighPt=-100;
 		break;
 	case 1:  // -10
-		fPIDnSigmaAbovePionLineTPC=-10;
-		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		fPIDnSigmaAbovePionLineTPC=3.0;              //Update Sep-05-2013 from -10 to 3
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;        
 		break;
 	case 2:  // 1
 		fPIDnSigmaAbovePionLineTPC=-1;
@@ -953,12 +1099,12 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut)
 		fPIDnSigmaAbovePionLineTPCHighPt=-10;
 		break;
 	case 7:
-		fPIDnSigmaAbovePionLineTPC=3.0; // We need a bit less tight cut on dE/dx
-		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		fPIDnSigmaAbovePionLineTPC = 2.0; // We need a bit less tight cut on dE/dx //Updated from 3.0 and -10 to +2.0 , +2.0 
+		fPIDnSigmaAbovePionLineTPCHighPt = 2.0;
 		break;
 	case 8:  // 1
-		fPIDnSigmaAbovePionLineTPC=3.5;
-		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		fPIDnSigmaAbovePionLineTPC = 1.5;   // Updated May-16-2013 from 3.5 and -10 to +1.5, +1
+		fPIDnSigmaAbovePionLineTPCHighPt = 1.0;
 		break;
 	case 9:  // 1
 		fPIDnSigmaAbovePionLineTPC=1.5;
@@ -1034,6 +1180,14 @@ Bool_t AliDalitzElectronCuts::SetITSClusterCut(Int_t clsITSCut){
 		fesdTrackCuts->SetMinNClustersITS(3);
 		// 3 hits in total in the ITS. At least 1 hit in any layer of SPD
 		break;
+        case 5: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+                fesdTrackCuts->SetMinNClustersITS(4);
+                // 4 hits in total in the ITS. At least 1 hit in any layer of SPD
+                break;
+        case 6: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+                fesdTrackCuts->SetMinNClustersITS(5);
+                // 5 hits in total in the ITS. At least 1 hit in any layer of SPD
+                break;
 	default:
 		cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
 		return kFALSE;
@@ -1048,32 +1202,50 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 	switch(clsTPCCut){
 	case 0: // 0
 		fMinClsTPC= 0.;
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 1:  // 70
 		fMinClsTPC= 70.;
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 2:  // 80
 		fMinClsTPC= 80.;
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 3:  // 100
 		fMinClsTPC= 100.;
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 4:  // 0% of findable clusters
+	        fMinClsTPC= 70.;  
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.0;
 		fUseCorrectedTPCClsInfo=0;
 		break;
 	case 5:  // 35% of findable clusters
+		fMinClsTPC = 70.;  
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.35;
 		fUseCorrectedTPCClsInfo=0;
 		break;
 	case 6:  // 60% of findable clusters
+		fMinClsTPC= 70.;  
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.6;
 		fUseCorrectedTPCClsInfo=0;
 		break;
 	case 7:  // 70% of findable clusters
+		fMinClsTPC= 70.;  
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.7;
 		fUseCorrectedTPCClsInfo=0;
 		break;
+	case 8: fMinClsTPC = 0.;  
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		fMinClsTPCToF= 0.35;
+		fUseCorrectedTPCClsInfo=0;
+		break;
+	  
 	default:
 		cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
 		return kFALSE;
@@ -1088,21 +1260,38 @@ Bool_t AliDalitzElectronCuts::SetEtaCut(Int_t etaCut)
 	switch(etaCut){
 	case 0: 
 		fEtaCut = 100.;
+		fDoEtaCut = kFALSE;
 		break;
 	case 1:	// 1.4
 		fEtaCut	= 1.4;
+		fDoEtaCut = kTRUE;
 		break;
 	case 2:	// 1.2
 		fEtaCut	= 1.2;
+		fDoEtaCut = kTRUE;
 		break;
 	case 3: // 0.9
 		fEtaCut	= 0.9;
+		fDoEtaCut = kTRUE;
 		break;
 	case 4: // 0.8
 		fEtaCut	= 0.8;
+		fDoEtaCut = kTRUE;
 		break;
 	case 5: // 0.75
 		fEtaCut	= 0.75;
+		fDoEtaCut = kTRUE;
+		break;
+	case 6: //0.6
+		fEtaCut = 0.6; //changed from 0.4 to 0.6 2013.06.10
+		fDoEtaCut = kTRUE;
+		break;
+	case 7: //0.5
+		fEtaCut = 0.5; //changed from 0.3 to 0.5 2013.06.10
+		fDoEtaCut = kTRUE;
+		break;
+	case 8: fEtaCut = 0.4;
+		fDoEtaCut = kTRUE;
 		break;
 	default:
 		cout<<"Warning: EtaCut not defined "<<etaCut<<endl;
@@ -1110,6 +1299,73 @@ Bool_t AliDalitzElectronCuts::SetEtaCut(Int_t etaCut)
 	}
 	return kTRUE;
 }
+
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
+{ 
+	// Set Pt Cut
+	 //0.1GeV, 0.125 GeV, 0.15 GeV
+  
+	switch(ptCut){
+	  
+	case 0: fPtCut = 0.075;		
+		break;
+	case 1:	 // 0.1
+		fPtCut	= 0.1; 	
+		break;
+	case 2:	 // 0.125 GeV
+		fPtCut	= 0.125;		
+		break;
+	case 3: // 0.15 GeV
+		fPtCut	= 0.15;
+		break;
+	default:
+		cout<<"Warning: PtCut not defined "<<ptCut<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
+{ 
+  // Set DCA Cut
+  
+	if( !fesdTrackCuts ) {
+
+		cout<<"Warning: AliESDtrackCut is not initialized "<<endl;
+		return kFALSE;
+	}
+  
+	switch(dcaCut){
+	  
+	case 0: 
+	        //Open cuts//
+		fesdTrackCuts->SetMaxDCAToVertexZ(1000);
+		fesdTrackCuts->SetMaxDCAToVertexXY(1000);
+		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+		break;
+	       
+	case 1: 
+		fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+		
+		break;
+	case 2: fesdTrackCuts->SetMaxDCAToVertexZ(2);
+		fesdTrackCuts->SetMaxDCAToVertexXY(1);
+		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+		break; 
+		
+	default:
+		cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+
+
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetMaxMomPiondEdxTPCCut(Int_t piMaxMomdedxSigmaCut)
@@ -1152,6 +1408,7 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=0;
 		fPIDnSigmaAtLowPAroundProtonLine=0;
 		fPIDnSigmaAtLowPAroundPionLine=0;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 1:  //
 		fDoKaonRejectionLowP=kTRUE;
@@ -1160,14 +1417,16 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=0.5;
 		fPIDnSigmaAtLowPAroundProtonLine=0.5;
 		fPIDnSigmaAtLowPAroundPionLine=0.5;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 2:  //
 		fDoKaonRejectionLowP=kTRUE;
 		fDoProtonRejectionLowP=kTRUE;
 		fDoPionRejectionLowP=kTRUE;
-		fPIDnSigmaAtLowPAroundKaonLine=1;
-		fPIDnSigmaAtLowPAroundProtonLine=1;
-		fPIDnSigmaAtLowPAroundPionLine=1;
+		fPIDnSigmaAtLowPAroundKaonLine=1.0;
+		fPIDnSigmaAtLowPAroundProtonLine=1.0;
+		fPIDnSigmaAtLowPAroundPionLine=1.0;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 3:  //
 		fDoKaonRejectionLowP=kTRUE;
@@ -1176,6 +1435,7 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=1.5;
 		fPIDnSigmaAtLowPAroundProtonLine=1.5;
 		fPIDnSigmaAtLowPAroundPionLine=1.5;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 4:  //
 		fDoKaonRejectionLowP=kTRUE;
@@ -1184,6 +1444,7 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=2.0;
 		fPIDnSigmaAtLowPAroundProtonLine=2.0;
 		fPIDnSigmaAtLowPAroundPionLine=2.0;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 5:  //
 		fDoKaonRejectionLowP=kTRUE;
@@ -1192,6 +1453,7 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=2.0;
 		fPIDnSigmaAtLowPAroundProtonLine=2.0;
 		fPIDnSigmaAtLowPAroundPionLine=2.5;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 6:  //
 		fDoKaonRejectionLowP=kTRUE;
@@ -1200,6 +1462,7 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=0.;
 		fPIDnSigmaAtLowPAroundProtonLine=0.;
 		fPIDnSigmaAtLowPAroundPionLine=2.;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 7: //
 		fDoKaonRejectionLowP=kFALSE;
@@ -1208,6 +1471,7 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=0.0;
 		fPIDnSigmaAtLowPAroundProtonLine=0.0;
 		fPIDnSigmaAtLowPAroundPionLine=1.0;
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;
 	case 8:
 		fDoKaonRejectionLowP=kFALSE;
@@ -1216,6 +1480,7 @@ Bool_t AliDalitzElectronCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut)
 		fPIDnSigmaAtLowPAroundKaonLine=0.;
 		fPIDnSigmaAtLowPAroundProtonLine=0.;
 		fPIDnSigmaAtLowPAroundPionLine=0.5; 
+		fPIDMinPPionRejectionLowP = fPIDMinPnSigmaAbovePionLineTPC;
 		break;	
 	default:
 		cout<<"Warning: LowPRejectionSigmaCut not defined "<<LowPRejectionSigmaCut<<endl;
@@ -1289,6 +1554,13 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
         fDeltaPhiCutMin = 0.;
         fDeltaPhiCutMax = 0.12;
         break;
+  case 2:
+	fDoPsiPairCut = kTRUE;
+        fPsiPairCut = 0.60; 
+        fDeltaPhiCutMin = 0.;
+        fDeltaPhiCutMax = 0.12;
+        break;
+    
   default:
       cout<<"Warning: PsiPairCut not defined "<<fPsiPairCut<<endl;
       return kFALSE;
@@ -1408,6 +1680,74 @@ Bool_t AliDalitzElectronCuts::SetNumberOfRotations(Int_t NumberOfRotations)
     }
     return kTRUE;
 }
+
+
+
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
+{   // Set Cut
+    switch(massCut){
+      
+    case 0:
+			
+			fMassCutPtMin  = -999.;	//GeV
+			fMassCutLowPt  =  999.; //GeV/c^2
+			fMassCutHighPt =  999.; //GeV/c^2
+			fDoMassCut = kFALSE;   
+			break;
+    case 1:
+			//fMassCut = 0.135;      	//GeV/c^2
+			fMassCutPtMin  = -999.;	//GeV
+			fMassCutLowPt  = 0.135; //GeV/c^2
+			fMassCutHighPt = 0.135; //GeV/c^2
+			fDoMassCut = kTRUE;
+			break; 
+    case 2:
+			//fMassCut = 0.100;    	//GeV/c^2
+			fMassCutPtMin  = -999.;	//GeV
+			fMassCutLowPt  = 0.100; //GeV/c^2
+			fMassCutHighPt = 0.100; //GeV/c^2
+			fDoMassCut = kTRUE;
+			break;
+    case 3:
+			//fMassCut = 0.075;    	//GeV/c^2
+			fMassCutPtMin  = -999.;	//GeV
+			fMassCutLowPt  = 0.075; //GeV/c^2
+			fMassCutHighPt = 0.075; //GeV/c^2
+			fDoMassCut = kTRUE;
+			break;
+    case 4:
+			//fMassCut = 0.050; 	//GeV/c^2
+			fMassCutPtMin  = -999.;	//GeV
+			fMassCutLowPt  = 0.050; //GeV/c^2
+			fMassCutHighPt = 0.050; //GeV/c^2
+			fDoMassCut = kTRUE;
+			break;
+    case 5:
+			
+			fMassCutPtMin  = -999.;	//GeV
+			fMassCutLowPt  = 0.035; //GeV/c^2
+			fMassCutHighPt = 0.035; //GeV/c^2
+			fDoMassCut = kTRUE;
+			break;
+    case 6:
+			fMassCutPtMin  = -999.;	//GeV
+			fMassCutLowPt  = 0.015; //GeV/c^2
+			fMassCutHighPt = 0.015; //GeV/c^2
+			fDoMassCut = kTRUE;
+			break;
+    case 7:		fMassCutPtMin  = 1.0;	//GeV
+			fMassCutLowPt  = 0.015; //GeV/c^2
+			fMassCutHighPt = 0.035; //GeV/c^2
+			fDoMassCut = kTRUE;
+			break;
+    default:
+			cout<<"Warning: MassCut not defined "<<massCut<<endl;
+			return kFALSE;
+    }
+    return kTRUE;
+}
+
 ///________________________________________________________________________
 TString AliDalitzElectronCuts::GetCutNumber(){
     // returns TString with current cut number

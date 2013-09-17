@@ -116,11 +116,18 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   
   TTree             *fTreeV0;                          //!
  
-  TH1F              *fHistNumberOfEvents;                      //! histo to count the number of events
+  TH1F              *fHistCentralityClass10;                   //! histo to look at the centrality distribution
+  TH1F              *fHistCentralityPercentile;                //! histo to look at the centrality distribution
   TH1F              *fHistTriggerStat;                         //! Trigger statistics
   TH1F              *fHistTriggerStatAfterEventSelection;      //! Trigger statistics
-  TH1F              *fHistLambdaNeutronPtGen;                  //! for MC
-  TH1F              *fHistAntiLambdaNeutronPtGen;              //! for MC
+  TH1F              *fHistLambdaNeutronPtGen;                  //! for MC 
+  TH1F              *fHistLambdaNeutronPtGenMinBias;           //! for MC
+  TH1F              *fHistLambdaNeutronPtGenCentral;           //! for MC
+  TH1F              *fHistLambdaNeutronPtGenSemiCentral;       //! for MC
+  TH1F              *fHistAntiLambdaNeutronPtGen;              //! for MC                                                                                                           
+  TH1F              *fHistAntiLambdaNeutronPtGenMinBias;       //! for MC
+  TH1F              *fHistAntiLambdaNeutronPtGenCentral;       //! for MC
+  TH1F              *fHistAntiLambdaNeutronPtGenSemiCentral;   //! for MC                                                                                                           
   TH1F              *fHistLambdaNeutronInvaMassGen;            //! for MC
   TH1F              *fHistAntiLambdaNeutronInvaMassGen;        //! for MC
   TH1F              *fHistLambdaNeutronDecayLengthGen;         //! for MC
@@ -159,6 +166,11 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Int_t fkEMCEJE[maxNofTracks];                                //! Tree variable
   Int_t fkEMCEGA[maxNofTracks];                                //! Tree variable 
 
+  Int_t fCentralityClass10[maxNofTracks];                      //! Tree variable 
+  Int_t fCentralityPercentile[maxNofTracks];                   //! Tree variable
+  Int_t fMultiplicity[maxNofTracks];                           //! Tree variable
+  Int_t fRefMultiplicity[maxNofTracks];                        //! Tree variable
+
   Double_t fPtotN[maxNofTracks];                               //! Tree variable
   Double_t fPtotP[maxNofTracks];                               //! Tree variable
   Double_t fMotherPt[maxNofTracks];                            //! Tree variable
@@ -167,6 +179,9 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Double_t fdEdxP[maxNofTracks];                               //! Tree variable
   Double_t fSignN[maxNofTracks];                               //! Tree variable
   Double_t fSignP[maxNofTracks];                               //! Tree variable
+
+  Int_t fSigmadEdxPionPos[maxNofTracks];                       //! Tree variable
+  Int_t fSigmadEdxPionNeg[maxNofTracks];                       //! Tree variable
 
   Float_t fDCAv0[maxNofTracks];                                //! Tree variable
   Float_t fCosinePAv0[maxNofTracks];                           //! Tree variable
@@ -177,10 +192,23 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
 
   Double_t fAmenterosAlphaTree[maxNofTracks];                  //! Tree variable
   Double_t fAmenterosQtTree[maxNofTracks];                     //! Tree variable
-  Int_t fRotationTree[maxNofTracks];                        //! Tree variable
+  Int_t fRotationTree[maxNofTracks];                           //! Tree variable
 
+  Double_t fImpactParameterDeuteronPos[maxNofTracks];          //! Tree variablen
+  Double_t fImpactParameterDeuteronNeg[maxNofTracks];          //! Tree variablen                                                                                     
+  Double_t fImpactParameterPionPos[maxNofTracks];              //! Tree variable
+  Double_t fImpactParameterPionNeg[maxNofTracks];              //! Tree variable                                                                                      
 
-  
+  Double_t fImpactParameterDeuteronPosAliKF[maxNofTracks];     //! Tree variablen                                                              
+  Double_t fImpactParameterDeuteronNegAliKF[maxNofTracks];    //! Tree variablen                                                                
+  Double_t fImpactParameterPionPosAliKF[maxNofTracks];        //! Tree variable                                                                          
+  Double_t fImpactParameterPionNegAliKF[maxNofTracks];        //! Tree variable      
+
+  UShort_t fMinNClustersTPCPos[maxNofTracks];                     //! Tree variable
+  UShort_t fMinNClustersTPCNeg[maxNofTracks];                     //! Tree variable
+
+  Double_t fMaxChi2PerClusterTPCPos[maxNofTracks];              //! Tree variable
+  Double_t fMaxChi2PerClusterTPCNeg[maxNofTracks];              //! Tree variable
   
   TObjArray         *fOutputContainer;         //! output data container for the histogramms
   //
@@ -194,12 +222,16 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Bool_t   TrackCuts(AliVTrack *track, Bool_t testTrackCuts);
   //Bool_t   FilterBit(AliVTrack *track, Bool_t testFilterBit);
   Double_t MomentumInnerParam(AliVTrack *track, Double_t ptot);
+  UShort_t TPCclusters(AliVTrack *track, UShort_t numberOfTPCclusters);
+  Double_t TPCchi2(AliVTrack *track, Double_t numberOfChi2clustersTPC, UShort_t numberOfTPCclusters);
+  Double_t ImpactParameter(AliVTrack *track, Double_t dcaToVertex);
 
  
-  void               MCGenerated(AliStack* stack);             //! function to loop over the genrated particles
+  void               MCGenerated(AliStack* stack, Int_t multiplicity);             //! function to loop over the genrated particles
   
-  void               MCTwoBodyDecay (AliStack* stack, const TParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter);                         //! function to calculate the invariant mass of two daughters and the pt of the mother
+  void               MCTwoBodyDecay (AliStack* stack, const TParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter, Int_t multiplicity);                         //! function to calculate the invariant mass of two daughters and the pt of the mother
   //void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev);
+
 
   AliAnalysisTaskLambdaNAOD(const AliAnalysisTaskLambdaNAOD&); // not implemented
   AliAnalysisTaskLambdaNAOD& operator=(const AliAnalysisTaskLambdaNAOD&); // not implemented

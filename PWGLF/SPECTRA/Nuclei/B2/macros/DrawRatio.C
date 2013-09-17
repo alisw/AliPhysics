@@ -16,12 +16,13 @@
 // Draw antiparticle/particle ratio
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
-#include <Riostream.h>
-#include <TROOT.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <TStyle.h>
 #include <TFile.h>
 #include <TH1D.h>
 #include <TString.h>
 #include <TCanvas.h>
+#endif
 
 #include "B2.h"
 
@@ -35,6 +36,13 @@ void DrawRatio(const TString& inputFile="pt.root", const TString& tag="test", co
 	Double_t ymin = 0.73;
 	Double_t ymax = 1.14;
 	
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetPadGridX(1);
+	gStyle->SetPadGridY(1);
+	gStyle->SetOptTitle(0);
+	gStyle->SetOptStat(0);
+	
 	TFile* finput = new TFile(inputFile.Data());
 	if (finput->IsZombie()) exit(1);
 	
@@ -47,7 +55,7 @@ void DrawRatio(const TString& inputFile="pt.root", const TString& tag="test", co
 	else if(species=="He3")      ytitle = "#bar{He3}/He3";
 	else if(species=="Alpha")    ytitle = "#bar{#alpha}/#alpha";
 	
-	TH1D* hRatioPt = (TH1D*)FindObj(finput, tag, Form("Anti%s%s_Ratio_Pt", species.Data(), species.Data()));
+	TH1D* hRatioPt = FindObj<TH1D>(finput, tag, Form("Anti%s%s_Ratio_Pt", species.Data(), species.Data()));
 	
 	TCanvas* c0 = new TCanvas(Form("c0.Ratio%s",species.Data()), Form("Anti%s/%s ratio", species.Data(), species.Data()));
 	c0->cd();

@@ -104,6 +104,8 @@ AliDielectronHF::~AliDielectronHF()
   // Default Destructor
   //
   fAxes.Delete();
+  fRefObj.Delete();
+  fArrPairType.Delete();
 }
 
 //_____________________________________________________________________________
@@ -317,6 +319,7 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
 
   AliVParticle* part1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label1);
   AliVParticle* part2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label2);
+  if(!part1 || !part2) return;
 
   AliDielectronMC* dieMC = AliDielectronMC::Instance();
   
@@ -486,17 +489,18 @@ void AliDielectronHF::Init()
 
   Int_t sizeAdd  = 1; 
 
-  // fill object array with the histograms
+  // fill object array with the array of bin cells
   TObjArray *histArr = new TObjArray();
   histArr->Expand(size);
 
   //  printf("fRefObj %p \n",fRefObj);
+  // array of histograms to each bin cell
   for(Int_t ihist=0; ihist<size; ihist++) {
     histArr->AddAt(fRefObj.Clone(""), ihist);
     //histArr->AddAt(fRefObj.Clone(Form("h%04d",ihist)), ihist);
   }
 
-  // loop over all cut variables
+  // loop over all cut variables and do the naming according to it bin cell
   Int_t nvars = fAxes.GetEntriesFast();
   for(Int_t ivar=0; ivar<nvars; ivar++) {
     
@@ -505,7 +509,7 @@ void AliDielectronHF::Init()
     Int_t nbins    = bins->GetNrows()-1;
 
 
-    // loop over all histograms an set unique titles
+    // loop over all bin cells an set unique titles
     for(Int_t ihist=0; ihist<size; ihist++) {
 
       // get the lower limit for current ivar bin
@@ -530,9 +534,9 @@ void AliDielectronHF::Init()
       title+=Form("#%.2f#%.2f",lowEdge,upEdge);
       tmp->SetName(title.Data());
       AliDebug(10,title.Data());
-    }
+    } // end: array of bin cell
     sizeAdd*=nbins;
-  }
+  } //end: cut loop
 
   // copy array to the selected pair types/ MC sources
   if(fHasMC) {
@@ -543,13 +547,15 @@ void AliDielectronHF::Init()
 	  title+=" MC truth";
 	  fArrPairType[i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
 	}
-      }
+    } // end: loop over sources
+
    }
    else {
     for(Int_t i=0; i<AliDielectron::kEv1PMRot+1; i++) {
-      if(IsPairTypeSelected(i)) fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i)));
-      else fArrPairType[i]=0x0;
-    }
+      fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i)));
+      if(!IsPairTypeSelected(i))  ((TObjArray*)fArrPairType[i])->Delete();
+    } //end: loop over pair types
+
   }
   
   // clean up
@@ -582,7 +588,7 @@ Bool_t AliDielectronHF::IsPairTypeSelected(Int_t itype)
   Bool_t selected = kFALSE;
 
   // fill all
-  if(fPairType==kAll) selected = kTRUE;
+  if(fPairType==kAll) selected=kTRUE;
 
   switch(itype) {
   case AliDielectron::kEv1PP: 

@@ -23,6 +23,7 @@ class THnSparse;
 class TRandom3;
 class TArrayS;
 class AliAODTrack;
+class AliAODMCParticle;
 
 #include "AliAnalysisTaskSE.h"
 #include "TAxis.h"
@@ -286,6 +287,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 			  AliFragFuncHistos* ffbckghistocuts,AliFragFuncQATrackHistos* qabckghistos,TH1F* fh1Mult = 0); 
  
   Double_t GetMCStrangenessFactor(const Double_t pt);
+  Double_t GetMCStrangenessFactorCMS(AliAODMCParticle* daughter);
+
   void FillJetShape(AliAODJet* jet, TList* list,  TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt=0, Double_t dPhiUE=0, Double_t normUE = 0, Bool_t scaleStrangeness = kFALSE);
 
 
@@ -393,8 +396,13 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncQAJetHistos*  fQAJetHistosRecEffLeading;   //! jet QA: leading jet used for reconstruction efficiency histos  
   
 
-  AliFragFuncHistos*  fFFHistosRecCuts;         //! FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFHistosRecCuts;         //! FF reconstructed tracks after cuts (leading jet) 
+  AliFragFuncHistos*  fFFHistosRecCutsInc;      //! inclusive FF (all jets) 
+  AliFragFuncHistos*  fFFHistosRecLeadingTrack; //! FF reconstructed tracks after cuts: leading track pt / jet pt (all jets)
+
   AliFragFuncHistos*  fFFHistosGen;             //! FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFHistosGenInc;          //! inclusive FF (all jets) 
+  AliFragFuncHistos*  fFFHistosGenLeadingTrack; //! FF reconstructed tracks after cuts: leading track pt / jet pt (all jets)
 
   Float_t  fQATrackHighPtThreshold;       // track QA high transverse momentum threshold
   

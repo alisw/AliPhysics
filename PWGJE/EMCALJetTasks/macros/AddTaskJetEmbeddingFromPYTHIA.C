@@ -1,4 +1,4 @@
-// $Id: AddTaskJetEmbeddingFromPYTHIA.C  $
+// $Id$
 
 THashTable* GenerateFileTable(const char* list);
 

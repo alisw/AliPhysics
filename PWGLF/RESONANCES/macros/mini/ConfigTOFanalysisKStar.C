@@ -27,7 +27,8 @@ Bool_t ConfigTOFanalysisKStar
     Bool_t                 IsMcTrueOnly = kFALSE,
     Bool_t                 useMixLS = 0,
     Int_t                  signedPdg = 313,
-    TString                monitorOpt = ""
+    TString                monitorOpt = "",
+    AliRsnMiniValue::EType yaxisVar = AliRsnMiniValue::kPt                
 )
 {
   // manage suffix
@@ -61,6 +62,10 @@ Bool_t ConfigTOFanalysisKStar
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
+  /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt, kFALSE);
+  /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt, kFALSE);
+  /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP, kFALSE);
+  /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP, kFALSE);
 
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -68,6 +73,7 @@ Bool_t ConfigTOFanalysisKStar
   // [1] = mixing
   // [2] = like ++
   // [3] = like --
+
   Bool_t  use     [12] = { !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly ,  !IsMcTrueOnly, !IsMcTrueOnly,  isMC   ,   isMC   ,  isMC   ,   isMC , useMixLS, useMixLS  };
   Bool_t  useIM   [12] = { 1       ,  1       ,  1       ,  1       ,  1      ,  1      ,  1      ,   1      ,  0      ,   0 , 1    , 1     };
   TString name    [12] = {"UnlikePM", "UnlikeMP", "MixingPM", "MixingMP", "LikePP", "LikeMM", "TruesPM",  "TruesMP", "ResPM"  ,  "ResMP",  "MixingPP",  "MixingMM"  };
@@ -98,39 +104,51 @@ Bool_t ConfigTOFanalysisKStar
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     
-    // axis Y: transverse momentum
-    out->AddAxis(ptID, 100, 0.0, 10.0);
-    
+    // axis Y: transverse momentum of pair as default - else chosen value
+    if (yaxisVar==AliRsnMiniValue::kFirstDaughterPt)
+      out->AddAxis(fdpt, 100, 0.0, 10.0);
+    else
+      if (yaxisVar==AliRsnMiniValue::kSecondDaughterPt)
+	out->AddAxis(sdpt, 100, 0.0, 10.0);
+      else
+	if (yaxisVar==AliRsnMiniValue::kFirstDaughterP)
+	  out->AddAxis(fdp, 100, 0.0, 10.0);
+	else
+	  if (yaxisVar==AliRsnMiniValue::kSecondDaughterP)
+	    out->AddAxis(sdp, 100, 0.0, 10.0);
+	  else 
+	    out->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
+
     // axis Z: centrality-multiplicity
     if (!isPP)
       out->AddAxis(centID, 100, 0.0, 100.0);
     else 
       out->AddAxis(centID, 400, 0.0, 400.0);
-      
+    
     // axis W: pseudorapidity
-    //    out->AddAxis(etaID, 20, -1.0, 1.0);
+    // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
     // out->AddAxis(yID, 10, -0.5, 0.5);
     
   }   
   
   if (isMC){   
-   // create output
+    // create output
     AliRsnMiniOutput *outm = task->CreateOutput(Form("kstar_Mother%s", suffix), "SPARSE", "MOTHER");
-   outm->SetDaughter(0, AliRsnDaughter::kKaon);
-   outm->SetDaughter(1, AliRsnDaughter::kPion);
-   outm->SetMotherPDG(signedPdg);
-   outm->SetMotherMass(0.89594);
-   // pair cuts
-   outm->SetPairCuts(cutsPair);
-   // binnings
-   outm->AddAxis(imID, 90, 0.6, 1.5);
-   outm->AddAxis(ptID, 100, 0.0, 10.0);
-   if (!isPP){
-     outm->AddAxis(centID, 100, 0.0, 100.0);
-   }   else    { 
-     outm->AddAxis(centID, 400, 0.0, 400.0);
-   }
+    outm->SetDaughter(0, AliRsnDaughter::kKaon);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(signedPdg);
+    outm->SetMotherMass(0.89594);
+    // pair cuts
+    outm->SetPairCuts(cutsPair);
+    // binnings
+    outm->AddAxis(imID, 90, 0.6, 1.5);
+    outm->AddAxis(ptID, 100, 0.0, 10.0);
+    if (!isPP){
+      outm->AddAxis(centID, 100, 0.0, 100.0);
+    }   else    { 
+      outm->AddAxis(centID, 400, 0.0, 400.0);
+    }
   }
   return kTRUE;
 }

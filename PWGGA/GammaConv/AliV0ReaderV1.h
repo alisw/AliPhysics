@@ -52,6 +52,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   TList *GetCutHistograms(){if(fConversionCuts){return fConversionCuts->GetCutHistograms();}return NULL;}
   // Set Options
 
+  void CountTracks();
   void SetConversionCuts(const TString cut);
   void SetConversionCuts(AliConversionCuts *cuts){fConversionCuts=cuts;}
   void SetUseOwnXYZCalculation(Bool_t flag){fUseOwnXYZCalculation=flag;}
@@ -60,7 +61,11 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   void SetCreateAODs(Bool_t k=kTRUE){fCreateAOD=k;}
   void SetDeltaAODFilename(TString s){fDeltaAODFilename=s;}
   void SetDeltaAODBranchName(TString string) { fDeltaAODBranchName = string;AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));}
+  void RelabelAODs(Bool_t relabel=kTRUE){fRelabelAODs=relabel;}
+  Bool_t AreAODsRelabeled(){return fRelabelAODs;}
+  void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
   TString GetPeriodName(){return fPeriodName;}
+  Int_t GetNumberOfPrimaryTracks(){return fNumberOfPrimaryTracks;}
   
 protected:
     // Reconstruct Gammas
@@ -93,7 +98,9 @@ protected:
     Bool_t fCreateAOD; // set flag for AOD creation
     TString     fDeltaAODBranchName;// File where Gamma Conv AOD is located, if not in default AOD
     TString fDeltaAODFilename; // set filename for delta/satellite aod
+    Bool_t fRelabelAODs; //
     Bool_t fEventIsSelected;
+    Int_t fNumberOfPrimaryTracks; // Number of Primary Tracks in AOD or ESD
     TString fPeriodName;
     
 private:
@@ -101,7 +108,7 @@ private:
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1,2)
+    ClassDef(AliV0ReaderV1, 3)
 };
 
 inline void AliV0ReaderV1::SetConversionCuts(const TString cut){

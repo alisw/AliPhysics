@@ -82,8 +82,12 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fCentNMixed(10),
   fNEMRPBins(9),
   fPeriod(period),
+  fInternalTriggerSelection(kNoSelection),
   fMaxAbsVertexZ(10.),
   fManualV0EPCalc(false),
+  fTOFCutEnabled(false),
+  fTOFCut(100.e-9),
+  fFillWideTOF(false),
   fOutputContainer(0x0),
   fNonLinCorr(0),
   fEvent(0x0),
@@ -180,8 +184,8 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   //========QA histograms=======
 
   //Event selection
-  fOutputContainer->Add(new TH2F("hSelEvents","Event selection", 12,0.,13.,nRuns,0.,float(nRuns))) ;
-  fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", 12,0.,12.)) ;
+  fOutputContainer->Add(new TH2F("hSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1), nRuns,0.,float(nRuns))) ;
+  fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1))) ;
 
   //vertex distribution
   fOutputContainer->Add(new TH2F("hZvertex","Z vertex position", 50,-25.,25.,nRuns,0.,float(nRuns))) ;
@@ -265,12 +269,14 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hPi0M33","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
   // Histograms for different centralities
-  const int kNPID = 16;
-  const char* pidNames[kNPID] = {"All", "Allcore", "Allwou", "Disp", "Disp2", "Dispcore",  "Disp2core", "Dispwou", "CPV", "CPVcore", "CPV2", "CPV2core", "Both", "Bothcore", "Both2", "Both2core"};
+  const int kNPID = 17;
+  const char* pidNames[kNPID] = {"All", "Allcore", "Allwou", "Disp", "Disp2", "Dispcore",  "Disp2core", "Dispwou", "CPV", "CPVcore", "CPV2", "CPV2core", "Both", "Bothcore", "Both2", "Both2core", "WideTOF"};
   char key[55];
   TString name, title;
   for(Int_t cent=0; cent < fCentEdges.GetSize()-1; cent++){
     for(Int_t ipid=0; ipid < kNPID; ipid++){
+      if( !fFillWideTOF && TString(pidNames[ipid]).EqualTo("WideTOF") ) continue;
+
       name = Form("hPhot%s_cen%i", pidNames[ipid], cent );
       title = Form("%s clusters", pidNames[ipid]);
       fOutputContainer->Add(new TH1F(name.Data(), title.Data(), nPtPhot,0.,ptPhotMax));
@@ -389,10 +395,16 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
     SetFlatteningData();
   }
   LogProgress(1);
-  LogSelection(0, fInternalRunNumber);
+  LogSelection(kTotal, fInternalRunNumber);
 
 
-  // Step 2: Vertex
+  // Step 2: Internal Trigger Selection
+  if( RejectTriggerMaskSelection() ) {
+    PostData(1, fOutputContainer);
+    return; // Reject!
+  }
+  
+  // Step 3: Vertex
   // fVertex, fVertexVector, fVtxBin
   SetVertex();
   if( RejectEventVertex() ) {
@@ -426,27 +438,25 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   fEMRPBin = GetRPBin(); //TODO: uncomment this, or at least deal with it
   LogProgress(5);
 
-
-  // Step 6: MC
-  //  ProcessMC() ;
+  // Step 6: QA PHOS cells
+  FillPHOSCellQAHists();
   LogProgress(6);
 
-
-  // Step 7: QA PHOS cells
-  FillPHOSCellQAHists();
-  LogProgress(7);
-
-
-  // Step 8: Event Photons (PHOS Clusters) selection
+  // Step 7: Event Photons (PHOS Clusters) selection
   this->SelectPhotonClusters();
   this->FillSelectedClusterHistograms();
+  LogProgress(7);
+
+  // Step 8: MC
+  this->ProcessMC() ;
   LogProgress(8);
 
   if( ! fCaloPhotonsPHOS->GetEntriesFast() )
     return;
   else
-    LogSelection(6, fInternalRunNumber);
+    LogSelection(kHasPHOSClusters, fInternalRunNumber);
 
+  LogSelection(kTotalSelected, fInternalRunNumber);
 
   // Step 9: Consider pi0 (photon/cluster) pairs.
   this->ConsiderPi0s();
@@ -456,9 +466,6 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   this->ConsiderPi0sMix();
   LogProgress(10);
   
-  // Step 11: MC
-  this->ProcessMC();
-
   // Step 12: Update lists
   UpdateLists();
   LogProgress(11);
@@ -742,6 +749,9 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     //    ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
     ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolde
 
+    // Time of Flight (TOF)
+    Double_t tof = clu->GetTOF();
+    ph->SetTOFBit( TMath::Abs(tof) < fTOFCut );
   }
   FillHistogram("hCenPHOS",fCentralityV0M, fCaloPhotonsPHOS->GetEntriesFast()) ;
 }
@@ -765,6 +775,16 @@ void AliAnalysisTaskPi0Flow::FillSelectedClusterHistograms()
     
     Double_t pt = ph1->Pt() ;
     Double_t ptcore = ph1->GetMomV2()->Pt() ;
+
+    if( fFillWideTOF ) {
+      FillHistogram(Form("hPhotWideTOF_cen%d",fCentBin),pt) ;
+      FillHistogram(Form("hPhotPhiV0AWideTOF_cen%d",fCentBin),pt,dphiA) ;
+      FillHistogram(Form("hPhotPhiV0CWideTOF_cen%d",fCentBin),pt,dphiC) ;
+      if(fHaveTPCRP)
+	FillHistogram(Form("hPhotPhiTPCWideTOF_cen%d",fCentBin),pt,dphiT) ;
+    }
+    if(fTOFCutEnabled && !ph1->IsTOFOK() )
+      continue;
 
     FillHistogram(Form("hPhotPhiV0AAll_cen%d",fCentBin),pt,dphiA) ;
     FillHistogram(Form("hPhotPhiV0CAll_cen%d",fCentBin),pt,dphiC) ;
@@ -910,6 +930,17 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
       Double_t pt2=ph2->Pt() ;
       Double_t ptcore1=ph1->GetMomV2()->Pt() ;
       Double_t ptcore2=ph2->GetMomV2()->Pt() ;
+
+      if( fFillWideTOF ) {
+	FillHistogram(Form("hPi0WideTOF_cen%d",fCentBin),m,pt) ;
+	FillHistogram(Form("hSingleWideTOF_cen%d",fCentBin),m,pt1) ;
+	FillHistogram(Form("hSingleWideTOF_cen%d",fCentBin),m,pt2) ;
+	if(fHaveTPCRP)
+	  FillHistogram(Form("hMassPtTPCWideTOF_cen%d",fCentBin),m,pt,dphiT) ;
+      }
+
+      if( fTOFCutEnabled && !(ph1->IsTOFOK() && ph2->IsTOFOK()) )
+	continue;
 
       FillHistogram(Form("hMassPtV0AAll_cen%d",fCentBin),m,pt,dphiA) ;
       FillHistogram(Form("hMassPtV0CAll_cen%d",fCentBin),m,pt,dphiC) ;
@@ -1170,8 +1201,18 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0sMix()
         Double_t ptcore1=ph1->GetMomV2()->Pt() ;
         Double_t ptcore2=ph2->GetMomV2()->Pt() ;
 
+	snprintf(key,55,"hMiMassPtAll_cen%d",fCentBin) ; // probably not needed, consider removing this line!
+	if( fFillWideTOF ) {
+	  FillHistogram(Form("hMiPi0WideTOF_cen%d",fCentBin),m,pt) ;
+	  FillHistogram(Form("hMiSingleWideTOF_cen%d",fCentBin),m,pt1) ;
+	  FillHistogram(Form("hMiSingleWideTOF_cen%d",fCentBin),m,pt2) ;
+	  if(fHaveTPCRP)
+	    FillHistogram(Form("hMiMassPtTPCWideTOF_cen%d",fCentBin),m,pt,dphiT) ;
+	}
 
-	snprintf(key,55,"hMiMassPtAll_cen%d",fCentBin) ;
+	if( fTOFCutEnabled && !(ph1->IsTOFOK() && ph2->IsTOFOK()) )
+	  continue;
+
 	FillHistogram(Form("hMiMassPtV0AAll_cen%d",fCentBin),m,pt,dphiA) ;
 	FillHistogram(Form("hMiMassPtV0CAll_cen%d",fCentBin),m,pt,dphiC) ;
 	if(fHaveTPCRP)
@@ -1192,7 +1233,7 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0sMix()
             FillHistogram(Form("hMiMassPtTPCAllwou_cen%d",fCentBin),m,pt,dphiT) ;
 	}
 
-        FillHistogram(Form("hMiSingleAll_cen%d",fCentBin),m,pt1) ;
+	FillHistogram(Form("hMiSingleAll_cen%d",fCentBin),m,pt1) ;
         FillHistogram(Form("hMiSingleAll_cen%d",fCentBin),m,pt2) ;
         FillHistogram(Form("hMiSingleAllcore_cen%d",fCentBin),mcore,ptcore1) ;
         FillHistogram(Form("hMiSingleAllcore_cen%d",fCentBin),mcore,ptcore2) ;
@@ -2521,6 +2562,46 @@ void AliAnalysisTaskPi0Flow::SetPHOSCalibData()
 }
 
 //_____________________________________________________________________________
+Bool_t AliAnalysisTaskPi0Flow::RejectTriggerMaskSelection()
+{
+  const Bool_t REJECT = true;
+  const Bool_t ACCEPT = false;
+
+  // No need to check trigger mask if no selection is done
+  if( kNoSelection == fInternalTriggerSelection )
+    return ACCEPT;
+  
+  Bool_t reject = REJECT;
+  
+  Bool_t isMB = (fEvent->GetTriggerMask() & (ULong64_t(1)<<1));
+  Bool_t isCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<4));
+  Bool_t isSemiCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<7));
+
+  if( kCentralInclusive == fInternalTriggerSelection
+    && isCentral ) reject = ACCEPT; // accept event.
+  else if( kCentralExclusive == fInternalTriggerSelection
+    && isCentral && !isSemiCentral && !isMB ) reject = ACCEPT; // accept event.
+
+  else if( kSemiCentralInclusive == fInternalTriggerSelection
+    && isSemiCentral ) reject = ACCEPT; // accept event
+  else if( kSemiCentralExclusive == fInternalTriggerSelection
+    && isSemiCentral && !isCentral && !isMB ) reject = ACCEPT; // accept event.
+
+  else if( kMBInclusive == fInternalTriggerSelection
+    && isMB ) reject = ACCEPT; // accept event.
+  else if( kMBExclusive == fInternalTriggerSelection
+    && isMB && !isCentral && !isSemiCentral ) reject = ACCEPT; // accept event.
+
+  if( REJECT == reject )
+    return REJECT;
+  else {
+    LogSelection(kInternalTriggerMaskSelection, fInternalRunNumber);
+    return ACCEPT;
+  }
+}
+
+
+//_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetVertex()
 {
   const AliVVertex *primaryVertex = fEvent->GetPrimaryVertex();
@@ -2549,11 +2630,11 @@ Bool_t AliAnalysisTaskPi0Flow::RejectEventVertex()
 {
   if( ! fEvent->GetPrimaryVertex() )
     return true; // reject
-  LogSelection(1, fInternalRunNumber);
+  LogSelection(kHasVertex, fInternalRunNumber);
 
   if ( TMath::Abs(fVertexVector.z()) > fMaxAbsVertexZ )
     return true; // reject
-  LogSelection(2, fInternalRunNumber);
+  LogSelection(kHasAbsVertex, fInternalRunNumber);
 
   if( kLHC13 == fPeriod ) {//pPb vertex and pileup cut
     const bool vertexSelected = GetAnalysisUtils()->IsVertexSelected2013pA(fEvent);
@@ -2588,7 +2669,7 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
 {
   if( ! fEvent->GetCentrality() )
     return true; // reject
-  LogSelection(3, fInternalRunNumber);
+  LogSelection(kHasCentrality, fInternalRunNumber);
 
 //   if( fCentralityV0M <= 0. || fCentralityV0M>80. )
 //     return true; // reject
@@ -2599,14 +2680,14 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
   }
-  LogSelection(4, fInternalRunNumber);
+  LogSelection(kCentUnderUpperBinUpperEdge, fInternalRunNumber);
 
   if( fCentralityV0M < fCentEdges[0] ) {
     if( fDebug )
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
   }
-  LogSelection(5, fInternalRunNumber);
+  LogSelection(kCentOverLowerBinLowerEdge, fInternalRunNumber);
 
   return false;
 }

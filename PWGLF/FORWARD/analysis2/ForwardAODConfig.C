@@ -43,12 +43,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Sharing cut
   AliFMDMultCuts cSharingHigh;
   cSharingHigh.SetMultCuts(-1);
-  cSharingHigh.SetNXi(2);
+  cSharingHigh.SetNXi(0); // Was 2
   cSharingHigh.SetIncludeSigma(false);
+  cSharingHigh.SetMPVFraction(0.6); 
   // Density cut
   AliFMDMultCuts cDensity;
-  cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
-  
+  // cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
+  cDensity.SetMultCuts(-1);
+  cDensity.SetMPVFraction(0.6); // Was .7
   
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
@@ -78,7 +80,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Whether to use simple merging algorithm
   task->GetSharingFilter().SetUseSimpleSharing(true);
   // Whether to allow for 3 strip hits 
-  task->GetSharingFilter().SetAllow3Strips(true);
+  task->GetSharingFilter().SetAllow3Strips(!mc);
   // Do not cut fixed/hard on multiplicity 
   // task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
   // Set the number of xi's (width of landau peak) to stop at 
@@ -89,8 +91,46 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetSharingFilter().SetHCuts(cSharingHigh);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetLCuts(cSharingLow);
+  // If true, consider AliESDFMD::kInvalidMult as a zero signal.  This
+  // has the unfortunate side effect, that we cannot use the
+  // on-the-fly calculation of the phi acceptance.  
+  // 
+  // *IMPORTANT*
+  // 
+  // Before revision 43711 of AliFMDReconstructor, all strips with no
+  // signal where set to kInvalidMult.  From revision 43711 (Release
+  // 4-19-Rev-09) empty strips that are not marked as bad have a
+  // signal of 0 (zero).  That means, that for any reconstruction done
+  // with releases prior to 4-19-Rev-09 this flag _must_ be defined as
+  // true. 
+  // 
+  // The unfortunate side effect mentioned above is especially cruel
+  // in this case, since we would benefit a lot from this setting for
+  // that data.  However, one can add dead strips here using
+  // AliFMDSharingFilter::AddDeadStrip or
+  // AliFMDSharingFilter::AddDeadRegion to remedy the situation, since
+  // strips added explicitly here are always ignored.  In the future,
+  // the acceptance maker script should generate the list
+  // automaticallu.
+  //
+  // LHC10c-900Gev is effected up-to and including pass3 
+  // LHC10c-7TeV is effected up-to and including pass2
+  // LHC10c-CPass0 should be OK, but has limited statistics 
+  // LHC10c_11a_FMD should be OK, but has few runs  
+  task->GetSharingFilter().SetInvalidIsEmpty(false);
   // Dead region in FMD2i
   task->GetSharingFilter().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
+  // One can add extra dead strips from a script like 
+  // 
+  //   void deadstrips(AliFMDSharingFilter* filter)
+  //   {
+  //     filter->AddDead(...);
+  //     // ... and so on 
+  //   }
+  //
+  // and then do here 
+  // 
+  // task->GetSharingFilter().AddDead("deadstrips.C");
    
   // --- Density calculator ------------------------------------------
   // Set the maximum number of particle to try to reconstruct 
@@ -103,6 +143,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetDensityCalculator().SetLumping(32,4);
   // Recalculate phi taking (x,y) offset of IP into account 
   task->GetDensityCalculator().SetRecalculatePhi(true);
+  // Least acceptable quality of ELoss fits
+  task->GetDensityCalculator().SetMinQuality(8);
   // Set whether or not to use the phi acceptance
   //   AliFMDDensityCalculator::kPhiNoCorrect
   //   AliFMDDensityCalculator::kPhiCorrectNch
@@ -113,11 +155,11 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // --- Corrector ---------------------------------------------------
   // Whether to use the secondary map correction
   task->GetCorrections().SetUseSecondaryMap(true);
-  // Whether to use the vertex bias correction
+  // Whether to use the vertex bias correction (deprecated)
   task->GetCorrections().SetUseVertexBias(false);
-  // Whether to use the vertex bias correction
+  // Whether to use the acceptance correction from dead-strips (deprecated)
   task->GetCorrections().SetUseAcceptance(false);
-  // Whether to use the merging efficiency correction 
+  // Whether to use the merging efficiency correction  (deprecated)
   task->GetCorrections().SetUseMergingEfficiency(false);
 
   // --- Histogram Collector -----------------------------------------
@@ -132,29 +174,43 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   //    kStraightMeanNoZero 
   //    kWeightedMean 
   //    kLeastError 
+  //    kSum
+  //    kPreferInner
+  //    kPreferOuter
   task->GetHistCollector().SetMergeMethod(AliFMDHistCollector::kStraightMean);
   // How to find the fiducial area of the secondary maps 
   // Possible values are 
   //   kByCut    Only bins larger that cut are trusted 
   //   kDistance Only bins that are more than half the size of it neighbors
   task->GetHistCollector().SetFiducialMethod(AliFMDHistCollector::kByCut);
+  // Additional diagnostics output - off by default
+  // task->GetHistCollector().SetMakeBGHitMaps(true);
+  // task->GetHistCollector().SetMakeCentralitySums(true);
+
+  // --- Eventplane Finder -------------------------------------------
+  task->GetEventPlaneFinder().SetUsePhiWeights(false);
+
+  // --- Ring AOD output ---------------------------------------------
+  // If set to true, then 5 additional branches will be created on the
+  // output AOD - one for each FMD ring.  The branches each contain a
+  // TH2D object of the (primary) charged particle multiplicity per
+  // (eta,phi)-bin in that event 
+  // task->SetStorePerRing(true);
+
+  // --- Set limits on fits the energy -------------------------------
+  // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
+  // Maximum relative error on parameters 
+  // AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
+  // Least weight to use 
+  // AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+  // Maximum value of reduced chi^2 
+  // AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
 
   // --- Debug -------------------------------------------------------
   // Set the overall debug level (1: some output, 3: a lot of output)
   // task->SetDebug(0);
   // Set the debug level of a single algorithm 
   // task->GetSharingFilter().SetDebug(3);
-
-  // --- Eventplane Finder -------------------------------------------
-  task->GetEventPlaneFinder().SetUsePhiWeights(false);
-
-  // --- Set limits on fits the energy -------------------------------
-  // Maximum relative error on parameters 
-  AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
-  // Least weight to use 
-  AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
-  // Maximum value of reduced chi^2 
-  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
 }
 //
 // EOF

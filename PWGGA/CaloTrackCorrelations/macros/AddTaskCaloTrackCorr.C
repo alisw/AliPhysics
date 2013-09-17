@@ -157,12 +157,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   // Split cluster analysis
   if(kCalorimeter == "EMCAL")
   {
-    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo), n++); // Pi0 event by event selection, cluster splitting   
-    maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", partInCone,thresType,cone, pth), n++);       // Pi0 isolation, cluster splits   
+    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo), n++); // Pi0 event by event selection, cluster splitting
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", partInCone,thresType,cone, pth), n++);       // Pi0 isolation, cluster splits
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kFALSE), n++); // Pi0 hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kTRUE,partInCone,thresType, cone, pth) , n++); // Isolated pi0 hadron correlation
     //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS",  partInCone,thresType,kTRUE), n++); // Pi0 multi isolation, split cluster  
-    //maker->AddAnalysis(ConfigureInClusterIMAnalysis(0.5,3), n++); 
+    maker->AddAnalysis(ConfigureInClusterIMAnalysis(kTRUE , kTRUE ), n++);
   }
   
   // Invariant mass analysis
@@ -211,6 +211,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   else                        maker->SwitchOnAODsMaker()  ;
   
   if(kPrint) maker->Print("");
+  
+  if(kSimulation) maker->SwitchOffDataControlHistograms();
   
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, kCalorimeter.Data());
  
@@ -270,12 +272,15 @@ AliCaloTrackReader * ConfigureReader()
   reader->SetDebug(kDebug);//10 for lots of messages
   
   /*
-   // Event rejection cuts for jet-jet simulations
-   reader->SetPtHardAndJetPtComparison(kTRUE);
-   reader->SetPtHardAndJetPtFactor(4);
+   if(kSimulation)
+   {
+     // Event rejection cuts for jet-jet simulations
+     reader->SetPtHardAndJetPtComparison(kTRUE);
+     reader->SetPtHardAndJetPtFactor(4);
    
-   reader->SetPtHardAndClusterPtComparison(kTRUE);
-   reader->SetPtHardAndClusterPtFactor(1.5);
+     reader->SetPtHardAndClusterPtComparison(kTRUE);
+     reader->SetPtHardAndClusterPtFactor(1.5);
+   }
    */
   
   //Delta AOD?
@@ -312,7 +317,7 @@ AliCaloTrackReader * ConfigureReader()
     reader->SwitchOffUseTrackTimeCut();
     reader->SwitchOffUseParametrizedTimeCut();
     reader->SwitchOffUseEMCALTimeCut();
-    reader->SetEMCALTimeCut(-1000,1000); // Open time cut
+    reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
   }
   else
   {
@@ -323,7 +328,7 @@ AliCaloTrackReader * ConfigureReader()
       reader->SwitchOnUseParametrizedTimeCut();
       
       //Absolute window
-      reader->SetEMCALTimeCut(-20,20);
+      reader->SetEMCALTimeCut(-25,20);
       
       //Parametrization
       if     (kRunNumber >= 151636 && kRunNumber <= 155384 )
@@ -347,7 +352,7 @@ AliCaloTrackReader * ConfigureReader()
     {
       reader->SwitchOffUseParametrizedTimeCut();
       reader->SwitchOffUseEMCALTimeCut();
-      reader->SetEMCALTimeCut(-1000,1000); // Open time cut
+      reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
     }
   }
   
@@ -356,6 +361,19 @@ AliCaloTrackReader * ConfigureReader()
 
   // Tracks
   reader->SwitchOnCTS();
+  reader->SwitchOffRejectNoTrackEvents();
+
+  reader->SwitchOffRecalculateVertexBC();
+  reader->SwitchOffVertexBCEventSelection();
+  
+  reader->SwitchOffUseTrackTimeCut();
+  reader->SetTrackTimeCut(0,50);
+  
+  reader->SwitchOffUseTrackDCACut();
+  //reader->SetTrackDCACut(0,0.0105);
+  //reader->SetTrackDCACut(1,0.035);
+  //reader->SetTrackDCACut(2,1.1);
+  
   if(kInputDataType=="ESD")
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
@@ -403,6 +421,8 @@ AliCaloTrackReader * ConfigureReader()
     reader->SwitchOffClusterRecalculation();
   }  
   
+  if(!kNonLinearity) reader->SwitchOffClusterELinearityCorrection();
+  
   //if(kCalorimeter == "EMCAL") {
     reader->SwitchOnEMCALCells();  
     reader->SwitchOnEMCAL();
@@ -425,6 +445,21 @@ AliCaloTrackReader * ConfigureReader()
   // Event selection
   //-----------------
   
+  //reader->RejectFastClusterEvents()  ;
+
+  // Event triggered selection settings
+  reader->SwitchOnTriggerPatchMatching();
+  reader->SwitchOnBadTriggerEventsRemoval(); // only if SwitchOnTriggerPatchMatching();
+  reader->SwitchOnUnMatchedTriggerEventsRemoval(); // only if SwitchOnBadTriggerEventsRemoval();
+  //reader->SwitchOffTriggerClusterTimeRecal() ;
+
+  reader->SetTriggerPatchTimeWindow(8,9); // L0
+  if     (kRunNumber < 146861) reader->SetEventTriggerThreshold(3.);
+  else if(kRunNumber < 154000) reader->SetEventTriggerThreshold(4.);
+  else if(kRunNumber < 165000) reader->SetEventTriggerThreshold(5.5);
+  else                         reader->SetEventTriggerThreshold(8); // CAREFUL!
+  //redefine for other periods, triggers
+
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
   // For mixing with AliAnaParticleHadronCorrelation switch it off
@@ -432,9 +467,9 @@ AliCaloTrackReader * ConfigureReader()
   {
     reader->SwitchOffEventTriggerAtSE();
     UInt_t mask =  SetTriggerMaskFromName();
-    reader->SetEventTriggerMaks(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
-    //reader->SetMixEventTriggerMaks(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
-    reader->SetMixEventTriggerMaks(AliVEvent::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+    reader->SetEventTriggerMask(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
+    //reader->SetMixEventTriggerMask(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+    reader->SetMixEventTriggerMask(AliVEvent::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
     
     printf("---Trigger selection done in AliCaloTrackReader!!!\n");
   }
@@ -459,7 +494,7 @@ AliCaloTrackReader * ConfigureReader()
   {
     // Centrality
     reader->SetCentralityClass("V0M");
-    reader->SetCentralityOpt(10);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
+    reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
     reader->SetCentralityBin(kMinCen,kMaxCen); // Accept all events, if not select range
     
     // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
@@ -492,6 +527,12 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   {
     cu->SetLocalMaximaCutE(0.1);
     cu->SetLocalMaximaCutEDiff(0.03);
+    if(kName.Contains("150"))
+    {
+      printf("Reclusterize with 150 threshold, set PbPb settings\n");
+      cu->SetLocalMaximaCutE(0.2);
+      cu->SetLocalMaximaCutEDiff(0.03);
+    }
   }
   else 
   {
@@ -523,10 +564,12 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   ConfigureEMCALRecoUtils(recou,
                           kSimulation,                             
                           kExotic,
-                          kNonLinearity,
+                          kTRUE,//kNonLinearity,
                           kCalibE, 
                           kBadMap,
-                          kCalibT);   
+                          kCalibT);
+  //recou->SetExoticCellDiffTimeCut(50.);
+
   
   if( kNonLinearity ) 
   { 
@@ -565,14 +608,14 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
     ana->SetNCellCut(2);// At least 3 cells
     ana->SetMinPt(0.3);
     ana->SetMinDistanceToBadChannel(2, 4, 5);
-    ana->SetTimeCut(-2000,2000); // open cut
+    ana->SetTimeCut(-1e10,1e10); // open cut
   }
   else 
   {//EMCAL
     ana->SetNCellCut(1);// At least 2 cells
     ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
     ana->SetMaxEnergy(1000); 
-    ana->SetTimeCut(-1000,1000); // open cut, usual time window of [425-825] ns if time recalibration is off 
+    ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off 
     // restrict to less than 100 ns when time calibration is on 
     ana->SetMinDistanceToBadChannel(2, 4, 6); 
     
@@ -610,8 +653,9 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
       
   ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
-  ana->SwitchOffFillPileUpHistograms();
-  
+  if(!kSimulation)ana->SwitchOnFillPileUpHistograms();
+  //if(!kSimulation) ana->SwitchOnFillEMCALBCHistograms();
+
   // Input / output delta AOD settings
   
   if(!kData.Contains("delta")) 
@@ -663,15 +707,13 @@ AliAnaElectron* ConfigureElectronAnalysis()
   
   //Electron selection cuts with tracks
   ana->SetEOverP(0.85, 1.2);
+
   // TO DO, find a more suitable way to set this
-  if(kSimulation)
-  { // LHC11a
-    ana->SetdEdxCut(76, 85);
-  }
-  else // LHC11c
-  {
-    ana->SetdEdxCut(56, 64);
-  }
+  if     (kRunNumber < 146861) ana->SetdEdxCut(72, 90);
+  else if(kRunNumber < 154000) ana->SetdEdxCut(54, 70);
+  else                         ana->SetdEdxCut(74, 90);
+  
+  if(kSimulation)  ana->SetdEdxCut(80, 100);
   
   ana->SetCalorimeter(kCalorimeter);
   
@@ -768,45 +810,102 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
 }
 
 //__________________________________________________________________________________________
-AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Float_t l0max)
+AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Bool_t useSS = kTRUE, Bool_t useAsy = kFALSE)
 {
   AliAnaInsideClusterInvariantMass *ana = new AliAnaInsideClusterInvariantMass();
   ana->SetDebug(kDebug); //10 for lots of messages
   
   // selection cuts
   
-  ana->SetMinEnergy(5); 
-  ana->SetMaxEnergy(200.);   
-  ana->SetMinNCells(3);
-  ana->SetM02Cut(l0min,l0max);
-  ana->SetCalorimeter(kCalorimeter);
+  ana->SetMinEnergy(6);
+  ana->SetMaxEnergy(200.);
+  ana->SetMinNCells(6); // check same as in calopid
   
-  //ana->AddToHistogramsName(Form("AnaInClusterIM_%1.2f_%1.2f_",l0min,l0max));
-  ana->AddToHistogramsName("AnaInClusterIM_");
-
-  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
-    
+  ana->SetCalorimeter(kCalorimeter);
+  ana->SwitchOnSplitClusterDistToBad();
+  
+  ana->SwitchOffFillSSWeightHistograms() ;
+  ana->SetNWeightForShowerShape(0);
+  //ana->SetWeightForShowerShape(0, 4.6);
+  
+  ana->SwitchOnFillNCellHistograms();
+  ana->SwitchOffFillEbinHistograms();
+  if(!useSS && !useAsy) ana->SwitchOnFillEbinHistograms();
+  
+  if(!kTM)
+  {
+    ana->SwitchOnFillTMHistograms();
+    ana->SwitchOnFillTMResidualHistograms();
+  }
+  else
+  {
+    ana->SwitchOffFillTMHistograms();
+    ana->SwitchOffFillTMResidualHistograms();
+  }
+  
+  //printf("Set correction slope for SS weight \n");
+  //ana->SetWCorrectionParameter(0.07);
+  //ana->SetNECellCutForShowerShape(0);
+  //ana->SetECellCutForShowerShape(0, 0.07);
+  //ana->SetECellCutForShowerShape(1, 0.1);
+  //ana->SetECellCutForShowerShape(2, 0.2);
+  
+  if(kSimulation)
+  {
+    ana->SwitchOnFillMCPrimaryHistograms() ;
+    ana->SwitchOffFillMCOverlapHistograms() ; // Off when possible
+    if(!useSS && !useAsy) ana->SwitchOnFillMCOverlapHistograms() ;
+  }
+  
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
-  caloPID->SetClusterSplittingM02Cut(0,100); // Do the selection in the analysis class and not in the PID method to fill SS histograms
-
+  caloPID->SetClusterSplittingM02Cut(0,100000); // use parametrized cut, not fixed
+  
   caloPID->SetPi0MassRange(0.11, 0.18);
   caloPID->SetEtaMassRange(0.40, 0.60);
   caloPID->SetPhotonMassRange(0.00, 0.08);
   
-  caloPID->SwitchOnSplitAsymmetryCut() ;
-  if(kCollisions=="PbPb") // pp default
+  caloPID->SetSplitWidthSigma(3.); // cut at 3 sigma of the mean pi0 peak.
+  
+  caloPID->SetClusterSplittingMinNCells(6);
+  
+  if(kCollisions=="PbPb" || kName.Contains("150"))
   {
-    caloPID->SetAsymmetryMinimumSelectionParameters(0,0,-0.66   );
-    caloPID->SetAsymmetryMinimumSelectionParameters(0,1, 0.131  );
-    caloPID->SetAsymmetryMinimumSelectionParameters(0,2,-0.0028 );
-    
-    caloPID->SetAsymmetryMinimumSelectionParameters(1,0,-1.31    );
-    caloPID->SetAsymmetryMinimumSelectionParameters(1,1, 0.26    );
-    caloPID->SetAsymmetryMinimumSelectionParameters(1,2,-0.0079  );
-    caloPID->SetAsymmetryMinimumSelectionParameters(1,3, 0.000038);
+    caloPID->SetClusterSplittingMinNCells(4);
+    ana->SetMinNCells(4);
+    caloPID->SetPi0MassShiftHighECell(0.005);
+    if(kCollisions=="PbPb") ana->SwitchOnFillHighMultHistograms();
   }
+  
+  ana->AddToHistogramsName("AnaInClusterIM_");
+  
+  if(useAsy)
+  {
+    caloPID->SwitchOnSplitAsymmetryCut() ;
+  }
+  else
+  {
+    printf("InClusterIM: Do not apply Asy cut on merged pi0 in cluster analysis \n");
+    caloPID->SwitchOffSplitAsymmetryCut() ;
+    ana->AddToHistogramsName("AnaInClusterIM_OpenAsy_");
+  }
+  
+  if(!useSS)
+  {
+    printf("InClusterIM: Do not apply SS cut on merged pi0 in cluster analysis \n");
+    caloPID->SwitchOffSplitShowerShapeCut() ;
+    ana->AddToHistogramsName("AnaInClusterIM_OpenSS_");
+  }
+  else  caloPID->SwitchOnSplitShowerShapeCut() ;
+  
+  if(!useAsy && !useSS)
+  {
+    printf("InClusterIM: Do not apply SS and Asy cut on merged pi0 in cluster analysis \n");
+    ana->AddToHistogramsName("AnaInClusterIM_OpenSS_OpenAsy_");
+  }
+  
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
   ConfigureMC(ana);
   
@@ -828,98 +927,42 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   ana->SetMinPt(0.5);
   ana->SwitchOnFiducialCut();
   ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ; //more restrictive cut in reader and after in isolation
-  ana->SwitchOffFillPileUpHistograms();
-
+  
+  ana->SwitchOnFillVertexBC0Histograms() ;
+  if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
+  
   // Input / output delta AOD settings
   
-  if(!kData.Contains("delta")) 
+  if(!kData.Contains("delta"))
   {
     ana->SetOutputAODName(Form("Hadron%s",kName.Data()));
     ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
     //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
   }
-  else 
+  else
     ana->SetInputAODName(Form("Hadron%s",kName.Data()));
   printf("Set Hadron%s\n",kName.Data());
+  
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaHadrons_");
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
-
+  
   ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
   ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   
   ConfigureMC(ana);
   
   if(kPrint) ana->Print("");
-   
-  return ana;
-  
-}
-
-
-//_______________________________
-AliAnaPi0* ConfigurePi0Analysis()
-{
-  
-  AliAnaPi0 *ana = new AliAnaPi0();
-  
-  ana->SetDebug(kDebug);//10 for lots of messages
-  
-  // Input delta AOD settings
-  ana->SetInputAODName(Form("Photon%s",kName.Data()));
-  
-  // Calorimeter settings
-  ana->SetCalorimeter(kCalorimeter);
-  if(kCalorimeter=="PHOS") ana->SetNumberOfModules(3); //PHOS first year
-  else 
-  {                   
-    if     (kYears == 2010) ana->SetNumberOfModules( 4); // EMCAL first year
-    else if(kYears == 2011) ana->SetNumberOfModules(10); // Second year
-    else                    ana->SetNumberOfModules(12);
-  }
-  
-  //settings for pp collision mixing
-  ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
-  
-  // Cuts 
-  if(kCalorimeter=="EMCAL") ana->SetPairTimeCut(70);
-  
-  if     (kCollisions=="pp"  ) 
-  {
-    ana->SetNCentrBin(1);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(1);
-    ana->SetNMaxEvMix(100);    
-    ana->SwitchOnSMCombinations();
-  }
-  else if(kCollisions=="PbPb") 
-  {
-    ana->SetNCentrBin(10);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(4);
-    ana->SetNMaxEvMix(10);
-    ana->SwitchOffSMCombinations();
-  }
-
-  ana->SwitchOffMultipleCutAnalysis();
-
-  //Set Histograms name tag, bins and ranges
-  
-  ana->AddToHistogramsName(Form("AnaPi0_TM%d_",kTM));
-  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
-
-  ConfigureMC(ana);
-  
-  if(kPrint) ana->Print("");
   
   return ana;
   
 }
+
 
 //_____________________________________________________
-AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle, 
-                                      Int_t analysis)
+AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
+                                      Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE)
 {
   
   AliAnaPi0EbE *ana = new AliAnaPi0EbE();
@@ -933,23 +976,35 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   if(kCollisions=="pp") ana->SetMinPt(0.5);
   else                  ana->SetMinPt(1.0);
   
-  if(kCalorimeter=="EMCAL")ana->SetPairTimeCut(20); // More strict than in pi0 inv mass analysis
+  if(kCalorimeter=="EMCAL" && !kSimulation) ana->SetPairTimeCut(100);
   
+  ana->SetMinDistanceToBadChannel(2, 4, 6);
+  ana->SwitchOnSplitClusterDistToBad();
+
+  ana->SwitchOnSelectedClusterHistoFill();
+
   ana->SetCalorimeter(kCalorimeter);
+  ana->SetTimeCut(-1e10,1e10); // Open time cut
   
   // Input / output delta AOD settings
   
   ana->SetInputAODName(Form("Photon%s",kName.Data()));
-  if(!kInputDataType.Contains("delta")) 
+  if(!kInputDataType.Contains("delta"))
   {
     ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kName.Data()));
     ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    
   }
-  else  
+  else
     ana->SetInputAODName(Form("%s%s%s",particle.Data(),opt.Data(),kName.Data()));
   
+  
   if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
-    
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),kTM));
+  
   if(analysis!=AliAnaPi0EbE::kSSCalo)
   {
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
@@ -957,12 +1012,15 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     
     // Tighten a bit mass cut with respect to default window
     if(particle=="Pi0") nms->SetInvMassCutRange(0.120,0.150);
-    if(particle=="Eta") nms->SetInvMassCutRange(0.520,0.580);    
+    if(particle=="Eta") nms->SetInvMassCutRange(0.520,0.580);
     
-    nms->SwitchOffAngleSelection(); 
+    //if(!particle.Contains("SideBand")) nms->SwitchOnAngleSelection();
+    //else nms->SwitchOnAngleSelection();
+    
+    nms->SwitchOffAngleSelection();
     if(particle.Contains("Pi0SideBand")) // For pi0, do not consider left band
       nms->SetSideBandCutRanges(-1,0,0.180,0.220);
-
+    
     nms->KeepNeutralMesonSelectionHistos(kTRUE);
     //nms->SetAngleMaxParam(2,0.2);
     nms->SetHistoERangeAndNBins(0, 20, 80) ;
@@ -970,48 +1028,91 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   }
   else
   { // cluster splitting settings
-    ana->SetMinEnergy(5); 
-    ana->SetMaxEnergy(200.);   
-    ana->SetTimeCut(-1000,1000); // Open time cut
+    ana->SetMinEnergy(6);
+    ana->SetMaxEnergy(200.);
+    
+    ana->SetNLMMinEnergy(0, 10);
+    ana->SetNLMMinEnergy(1, 6);
+    ana->SetNLMMinEnergy(2, 6);
     
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     ana->SetNLMCut(1, 2) ;
     
     AliCaloPID* caloPID = ana->GetCaloPID();
+    
+    caloPID->SetSplitWidthSigma(3.); // cut at 3 sigma of the mean pi0 peak.
+    
+    if(!useSS)
+    {
+      printf("Do not apply SS cut on merged pi0 analysis \n");
+      caloPID->SwitchOffSplitShowerShapeCut() ;
+      ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_TM%d_",particle.Data(),opt.Data(),kTM));
+      ana->SetOutputAODName(Form("%s%s%s_OpenSS",particle.Data(), opt.Data(), kName.Data()));
+      caloPID->SetClusterSplittingM02Cut(0.1,10000); 
+    }
+    else
+    {
+      caloPID->SetClusterSplittingM02Cut(0.3,5); // Do the selection in the analysis class and not in the PID method to fill SS histograms
+      caloPID->SwitchOnSplitShowerShapeCut() ;
+    }
+    
+    if(useAsy) caloPID->SwitchOnSplitAsymmetryCut() ;
+    else
+    {
+      caloPID->SwitchOffSplitAsymmetryCut() ;
+      if(!useSS)
+      {
+        ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_OpenAsy_TM%d_",particle.Data(),opt.Data(),kTM));
+        ana->SetOutputAODName(Form("%s%s%s_OpenSS_OpenAsy",particle.Data(), opt.Data(), kName.Data()));
+      }
+      else
+      {
+        ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenAsy_TM%d_",particle.Data(),opt.Data(),kTM));
+        ana->SetOutputAODName(Form("%s%s%s_OpenAsy",particle.Data(), opt.Data(), kName.Data()));
+      }
+    }
+    
+    //For Pi0 only if  SwitchOnSimpleSplitMassCut()
     caloPID->SetPi0MassRange(0.10, 0.18);
     caloPID->SetEtaMassRange(0.40, 0.60);
     caloPID->SetPhotonMassRange(0.00, 0.08);
-    caloPID->SetClusterSplittingM02Cut(0.3,5); // Do the selection in the analysis class and not in the PID method to fill SS histograms
     
-    caloPID->SwitchOnSplitAsymmetryCut() ;
-    if(kCollisions=="PbPb") // pp default
+    caloPID->SetClusterSplittingMinNCells(6);
+    
+    //caloPID->SetSplitEnergyFractionMinimum(0, 0.95);
+    //caloPID->SetSplitEnergyFractionMinimum(1, 0.95);
+    //caloPID->SetSplitEnergyFractionMinimum(2, 0.8);
+    
+    if(kCollisions=="PbPb" || kName.Contains("150"))
     {
-      caloPID->SetAsymmetryMinimumSelectionParameters(0,0,-0.66   );
-      caloPID->SetAsymmetryMinimumSelectionParameters(0,1, 0.131  );
-      caloPID->SetAsymmetryMinimumSelectionParameters(0,2,-0.0028 );
-      
-      caloPID->SetAsymmetryMinimumSelectionParameters(1,0,-1.31    );
-      caloPID->SetAsymmetryMinimumSelectionParameters(1,1, 0.26    );
-      caloPID->SetAsymmetryMinimumSelectionParameters(1,2,-0.0079  );
-      caloPID->SetAsymmetryMinimumSelectionParameters(1,3, 0.000038);
+      caloPID->SetClusterSplittingMinNCells(4);
+      caloPID->SetPi0MassShiftHighECell(0.005);
     }
   }
   
-  ana->SwitchOffSelectedClusterHistoFill();
   ana->SwitchOffFillWeightHistograms();
-  ana->SwitchOffFillPileUpHistograms();
-
-  if(!kTM) ana->SwitchOnTMHistoFill();
-  else     ana->SwitchOffTMHistoFill();
+  if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
   
-  //Set Histograms name tag, bins and ranges
+  if(kTM)
+  {
+    //printf("--->>>REMOVE MATCHED Pi0\n");
+    ana->SwitchOnTrackMatchRejection() ;
+    ana->SwitchOffTMHistoFill() ;
+  }
+  else
+  {
+    //printf("---->>>ACCEPT MATCHED Pi0\n");
+    ana->SwitchOffTrackMatchRejection() ;
+    ana->SwitchOnTMHistoFill() ;
+  }
   
-  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),kTM));
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
-  ConfigureMC(ana);
+  //ana->SwitchOnFillEMCALBCHistograms();
   
   if(kPrint) ana->Print("");
+  
+  ConfigureMC(ana);
   
   return  ana;
   
@@ -1057,7 +1158,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   else      ana->SwitchOffTMHistoFill();
   
   ana->SwitchOffSSHistoFill();
-  ana->SwitchOffFillPileUpHistograms();
+  if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
 
   //Do settings for main isolation cut class
   AliIsolationCut * ic =  ana->GetIsolationCut();	
@@ -1331,7 +1432,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SetDebug(kDebug); //10 for lots of messages
   ana->SetCalorimeter(kCalorimeter);
   
-  ana->SetTimeCut(-1000,1000); // Open time cut
+  ana->SetTimeCut(-1e10,1e10); // Open time cut
   
   // Study inter detector correlation (PHOS, EMCAL, Tracks, V0)
   if(kCalorimeter=="PHOS"  && kTrig=="PHOS")
@@ -1441,14 +1542,14 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,10.,100);
-  histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
+  histoRanges->SetHistoPOverERangeAndNBins(0,  2.5 ,500);
+  histoRanges->SetHistodEdxRangeAndNBins  (0.,250.0,500);
   
   // QA
   histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
   histoRanges->SetHistoRatioRangeAndNBins(0.,2.,100);
   histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  histoRanges->SetHistoNClusterCellRangeAndNBins(0,500,500);
+  histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
   histoRanges->SetHistoZRangeAndNBins(-400,400,200);
   histoRanges->SetHistoRRangeAndNBins(400,450,25);
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
@@ -1513,7 +1614,7 @@ UInt_t SetTriggerMaskFromName()
   else if(kTrig=="Central")
   {
     printf("CaloTrackCorr trigger Central\n");
-    return AliVEvent::kCentral;
+    return (AliVEvent::kCentral  | AliVEvent::kMB);
   }
   else if(kTrig=="CentralEGA")
   {
@@ -1523,12 +1624,12 @@ UInt_t SetTriggerMaskFromName()
   else if(kTrig=="SemiCentral")
   {
     printf("CaloTrackCorr trigger SemiCentral\n");
-    return AliVEvent::kSemiCentral;
+    return (AliVEvent::kSemiCentral | AliVEvent::kMB);
   }
   else if(kTrig=="SemiOrCentral")
   {
     printf("CaloTrackCorr trigger SemiCentral Or Central\n");
-    return (AliVEvent::kSemiCentral | AliVEvent::kCentral);
-  }    
+    return (AliVEvent::kSemiCentral | AliVEvent::kCentral  | AliVEvent::kMB);
+  }
 }
 

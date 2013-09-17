@@ -18,6 +18,7 @@
 #include "AliEmcalJet.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
+#include "AliLocalRhoParameter.h"
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
@@ -30,6 +31,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fJetRadius(0.4),
   fJetsName(),
   fRhoName(),
+  fLocalRhoName(),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -40,13 +42,15 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fJetMaxEta(0.9),
   fJetMinPhi(-10),
   fJetMaxPhi(10),
-  fMaxClusterPt(100),
+  fMaxClusterPt(1000),
   fMaxTrackPt(100),
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
+  fJetTrigger(0),
   fJets(0),
   fRho(0),
+  fLocalRho(0),
   fRhoVal(0)
 {
   // Default constructor.
@@ -58,6 +62,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fJetRadius(0.4),
   fJetsName(),
   fRhoName(),
+  fLocalRhoName(),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -68,13 +73,15 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fJetMaxEta(0.9),
   fJetMinPhi(-10),
   fJetMaxPhi(10),
-  fMaxClusterPt(100),
+  fMaxClusterPt(1000),
   fMaxTrackPt(100),
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fJetBitMap(0),
+  fJetTrigger(0),
   fJets(0),
   fRho(0),
+  fLocalRho(0),
   fRhoVal(0)
 {
   // Standard constructor.
@@ -139,10 +146,10 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
   if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
     return kFALSE;
 
-  if (jet->Pt() <= fJetPtCut) 
+  if (jet->Pt() < fJetPtCut) 
     return kFALSE;
  
-  if (jet->Area() <= fJetAreaCut) 
+  if (jet->Area() < fJetAreaCut) 
     return kFALSE;
 
   if (jet->AreaEmc()<fAreaEmcCut)
@@ -159,6 +166,9 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
   
   if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
     jetPhi -= TMath::Pi() * 2;
+
+  if (fJetTrigger != 0 && !jet->IsTriggerJet(fJetTrigger))
+    return kFALSE;
 
   return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
 }
@@ -179,7 +189,21 @@ AliRhoParameter *AliAnalysisTaskEmcalJet::GetRhoFromEvent(const char *name)
   }
   return rho;
 }
-
+//________________________________________________________________________
+AliLocalRhoParameter *AliAnalysisTaskEmcalJet::GetLocalRhoFromEvent(const char *name)
+{
+  // Get local rho from event.
+  AliLocalRhoParameter *rho = 0;
+  TString sname(name);
+  if (!sname.IsNull()) {
+    rho = dynamic_cast<AliLocalRhoParameter*>(InputEvent()->FindListObject(sname));
+    if (!rho) {
+      AliWarning(Form("%s: Could not retrieve local rho with name %s!", GetName(), name)); 
+      return 0;
+    }
+  }
+  return rho;
+}
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJet::ExecOnce()
 {
@@ -200,14 +224,30 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
     SetJetPhiLimits(-10, 10);
   } 
   else if (fAnaType == kEMCAL && fGeom) {
+
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
-    SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+
+    Int_t runno = InputEvent()->GetRunNumber();
+    if(runno>=177295 && runno<=197470) //small SM masked in 2012 and 2013
+      SetJetPhiLimits(1.4 + fJetRadius, TMath::Pi() - fJetRadius);
+    else 
+      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+    
   }
 
   if (!fRhoName.IsNull() && !fRho) {
     fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
     if (!fRho) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      fInitialized = kFALSE;
+      return;
+    }
+  }
+
+  if (!fLocalRhoName.IsNull() && !fLocalRho) {
+    fLocalRho = dynamic_cast<AliLocalRhoParameter*>(InputEvent()->FindListObject(fLocalRhoName));
+    if (!fLocalRho) {
+      AliError(Form("%s: Could not retrieve local rho %s!", GetName(), fLocalRhoName.Data()));
       fInitialized = kFALSE;
       return;
     }
@@ -230,7 +270,7 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho) const
+Int_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho) const
 {
   // Get the leading jets.
 
@@ -240,6 +280,8 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
     return 0;
 
   const Int_t n = array->GetEntriesFast();
+
+  Int_t nacc = 0;
 
   if (n < 1)
     return kFALSE;
@@ -260,7 +302,8 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
       if (!AcceptJet(jet))
 	continue;
       
-      pt[i] = jet->Pt() - rho * jet->Area();
+      pt[nacc] = jet->Pt() - rho * jet->Area();
+      nacc++;
     }
   }
 
@@ -280,7 +323,8 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
       if (!AcceptTrack(track))
 	continue;
       
-      pt[i] = track->Pt();
+      pt[nacc] = track->Pt();
+      nacc++;
     }
   }
 
@@ -303,16 +347,15 @@ Bool_t AliAnalysisTaskEmcalJet::GetSortedArray(Int_t indexes[], TClonesArray *ar
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
       
-      pt[i] = nPart.Pt();
+      pt[nacc] = nPart.Pt();
+      nacc++;
     }
   }
 
-  TMath::Sort(n, pt, indexes);
+  if (nacc > 0)
+    TMath::Sort(nacc, pt, indexes);
 
-  if (pt[indexes[0]] == -FLT_MAX) 
-    return 0;
-
-  return kTRUE;
+  return nacc;
 }
 
 //________________________________________________________________________

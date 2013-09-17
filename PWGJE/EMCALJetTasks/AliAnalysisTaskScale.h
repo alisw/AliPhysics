@@ -6,9 +6,9 @@
 class TH2F;
 class TF1;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalDev.h"
 
-class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
+class AliAnalysisTaskScale : public AliAnalysisTaskEmcalDev {
  public:
   AliAnalysisTaskScale();
   AliAnalysisTaskScale(const char *name);
@@ -19,11 +19,15 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   void                   SetScaleFunction(TF1* sf)  { fScaleFunction = sf   ; }
   
  protected:
+  void                   ExecOnce();
   Double_t               GetScaleFactor(Double_t cent);
   Bool_t                 FillHistograms();
 
  private:
-  TF1                   *fScaleFunction;          // scale factor as a function of centrality
+  TF1                   *fScaleFunction;               // scale factor as a function of centrality
+
+  Double_t               fEmcalArea;                   //!Emcal area
+  Double_t               fTpcArea;                     //!Tpc area
 
   TH2F                  *fHistPtTPCvsCent;             //!output histogram
   TH2F                  *fHistPtEMCALvsCent;           //!output histogram
@@ -54,6 +58,6 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 9); // Scale task
+  ClassDef(AliAnalysisTaskScale, 10); // Scale task
 };
 #endif

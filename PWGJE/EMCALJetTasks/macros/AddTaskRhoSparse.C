@@ -1,23 +1,24 @@
-// $Id: AddTaskRho_pA.C 58584 2012-09-13 10:37:42Z loizides $
+// $Id$
 
 AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
-   const char    *nJetsBkg    = "JetsBkg",
-   const char    *nJetsSig    = "JetsSig",
-   const char    *nTracks     = "PicoTracks",
-   const char    *nClusters   = "CaloClusters",  
-   const char    *nRho        = "Rho",
-   Double_t       jetradius   = 0.2,
-   UInt_t         type        = AliAnalysisTaskEmcal::kTPC,
-   Double_t       jetareacut  = 0.01,
-   Double_t       jetptcut    = 0.0,
-   Double_t       emcareacut  = 0,
-   TF1           *sfunc       = 0,
-   const UInt_t   exclJets    = 2,
-   const Bool_t   histo       = kFALSE,
-   const char    *taskname    = "Rho",
-   const Bool_t   fRhoCMS      = kTRUE
-)
+					   const char    *nJetsBkg    = "JetsBkg",
+					   const char    *nJetsSig    = "JetsSig",
+					   const char    *nTracks     = "PicoTracks",
+					   const char    *nClusters   = "CaloClusters",  
+					   const char    *nRho        = "Rho",
+					   Double_t       jetradius   = 0.2,
+					   const char    *cutType     = "TPC",
+					   Double_t       jetareacut  = 0.01,
+					   Double_t       jetptcut    = 0.0,
+					   Double_t       emcareacut  = 0,
+					   TF1           *sfunc       = 0x0,
+					   const UInt_t   exclJets    = 2,
+					   const Bool_t   histo       = kFALSE,
+					   const char    *taskname    = "Rho",
+					   const Bool_t   fRhoCMS      = kTRUE
+					   )
 {  
+
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -39,28 +40,37 @@ AliAnalysisTaskRhoSparse* AddTaskRhoSparse(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_", taskname, nJetsBkg));
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "USER";
+  TString name(Form("%s_%s_%s", taskname, nJetsBkg,cutType));
+  AliAnalysisTaskRhoSparse* mgrTask = mgr->GetTask(name.Data());
+  if (mgrTask) return mgrTask;
+
   AliAnalysisTaskRhoSparse *rhotask = new AliAnalysisTaskRhoSparse(name, histo);
   rhotask->SetHistoBins(1000,-0.1,9.9);
-  rhotask->SetAnaType(type);
-  rhotask->SetScaleFunction(sfunc);
-  rhotask->SetJetsName(nJetsBkg);
-  rhotask->SetSigJetsName(nJetsSig);
-  rhotask->SetTracksName(nTracks);
-  rhotask->SetClusName(nClusters);
-  rhotask->SetRhoName(nRho);
-  rhotask->SetJetAreaCut(jetareacut);
-  rhotask->SetAreaEmcCut(emcareacut);
-  rhotask->SetJetPtCut(jetptcut);
-  rhotask->SetJetRadius(jetradius);
-  rhotask->SetExcludeLeadJets(exclJets);
   rhotask->SetRhoCMS(fRhoCMS);
+  rhotask->SetExcludeLeadJets(exclJets);
+  rhotask->SetScaleFunction(sfunc);
+  rhotask->SetOutRhoName(nRho);
+
+  AliParticleContainer *trackCont = rhotask->AddParticleContainer(nTracks);
+  AliClusterContainer *clusterCont = rhotask->AddClusterContainer(nClusters);
+
+  AliJetContainer *bkgJetCont = rhotask->AddJetContainer(nJetsBkg,cutType,jetradius);
+  if (bkgJetCont) {
+    bkgJetCont->SetJetAreaCut(jetareacut);
+    bkgJetCont->SetAreaEmcCut(emcareacut);
+    bkgJetCont->SetJetPtCut(0.);
+    bkgJetCont->ConnectParticleContainer(trackCont);
+    bkgJetCont->ConnectClusterContainer(clusterCont);
+  }
+
+  AliJetContainer *sigJetCont = rhotask->AddJetContainer(nJetsSig,cutType,jetradius);
+  if (sigJetCont) {
+    sigJetCont->SetJetAreaCut(jetareacut);
+    sigJetCont->SetAreaEmcCut(emcareacut);
+    sigJetCont->SetJetPtCut(jetptcut);
+    sigJetCont->ConnectParticleContainer(trackCont);
+    sigJetCont->ConnectClusterContainer(clusterCont);
+  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

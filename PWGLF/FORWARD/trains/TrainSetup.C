@@ -64,6 +64,7 @@ struct TrainSetup
   TrainSetup(const TString& name)
     : fName(name), 
       fEscapedName(name),
+      fDatimeString(""),
       fOptions(),
       fHelper(0)
   {
@@ -77,21 +78,36 @@ struct TrainSetup
     fOptions.Add("type", "ESD|AOD|USER", "Input data stype", "");
     fOptions.Add("setup", "Only do the setup", false);
     fOptions.Add("branches", "Load only requested branches", false);
-    fEscapedName = EscapeName(fName, "");
+    fDatimeString = "";
+    fEscapedName  = EscapeName(fName, fDatimeString);
   }
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
   TrainSetup(const TrainSetup& o) 
     : fName(o.fName), 
       fEscapedName(o.fEscapedName), 
+      fDatimeString(o.fDatimeString),
       fOptions(o.fOptions), 
       fHelper(o.fHelper)
   {}
+  /** 
+   * Assignment operator
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object
+   */
   TrainSetup& operator=(const TrainSetup& o) 
   {
     if (&o == this) return *this;
-    fName        = o.fName;
-    fEscapedName = o.fEscapedName;
-    fOptions     = o.fOptions;
-    fHelper      = o.fHelper;
+    fName         = o.fName;
+    fEscapedName  = o.fEscapedName;
+    fDatimeString = o.fDatimeString;
+    fOptions      = o.fOptions;
+    fHelper       = o.fHelper;
     return *this;
   }
   
@@ -135,8 +151,8 @@ struct TrainSetup
 
     // --- Rewrite the escpaed name ----------------------------------
     if (fOptions.Has("date")) { 
-      TString date = fOptions.Get("date");
-      fEscapedName = EscapeName(fName, date);
+      fDatimeString = fOptions.Get("date");
+      fEscapedName  = EscapeName(fName, fDatimeString);
     }
     
     // --- Get current directory and set-up sub-directory ------------
@@ -229,6 +245,12 @@ struct TrainSetup
     }
     return true;
   }
+  /** 
+   * Print timer information
+   * 
+   * @param timer The timer
+   * @param where Where this was called from 
+   */
   void PrintTimer(TStopwatch& timer, const char* where)
   {
     timer.Stop();
@@ -238,7 +260,11 @@ struct TrainSetup
     if (t < 0) t = 0;
     Info(where, "took %4d:%02d:%06.3f", h, m, t);
   }
-    
+  /** 
+   * Run this train 
+   * 
+   * @return true on success 
+   */    
   Bool_t Run()
   {
     TString cwd = gSystem->WorkingDirectory();
@@ -276,7 +302,8 @@ struct TrainSetup
       else    	  Error("Run", "%s", e.Data());
     }
     if (fOptions.Has("date")) {
-      TString escaped = EscapeName(fName, "");
+      TString tmp     = "";
+      TString escaped = EscapeName(fName, tmp);
       gSystem->Exec(Form("rm -f last_%s", escaped.Data()));
       gSystem->Exec(Form("ln -sf %s last_%s", 
 			 fEscapedName.Data(), escaped.Data()));
@@ -372,7 +399,7 @@ struct TrainSetup
 
       gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"w\");");
       Int_t error = 0;
-      Int_t r1 = gROOT->LoadMacro(Form("%s.C++g", cls.Data()), &error);
+      Int_t r1 = gROOT->LoadMacro(Form("%s.C+g", cls.Data()), &error);
       gROOT->ProcessLine("gSystem->RedirectOutput(0);");
       if (r1 < 0 || error) 
 	throw TString::Format("Failed to load setup %s: %d - see build.log", 
@@ -631,7 +658,7 @@ protected:
    * 
    * @return escaped name 
    */  
-  static TString EscapeName(const char* name, const TString& datimeStr)
+  static TString EscapeName(const char* name, TString& datimeStr)
   {
     TString escaped = name;
     char  c[] = { ' ', '/', '@', 0 };
@@ -676,12 +703,13 @@ protected:
       if (datime.GetYear() <= 1995 ||
 	  datime.GetMonth() == 0 || 
 	  datime.GetDay() == 0) return escaped;
-      escaped.Append(Form("_%04d%02d%02d_%02d%02d", 
-			  datime.GetYear(), 
-			  datime.GetMonth(), 
-			  datime.GetDay(), 
-			  datime.GetHour(), 
-			  datime.GetMinute()));
+      datimeStr = Form("%04d%02d%02d_%02d%02d", 
+		       datime.GetYear(), 
+		       datime.GetMonth(), 
+		       datime.GetDay(), 
+		       datime.GetHour(), 
+		       datime.GetMinute());
+      escaped.Append(Form("_%s", datimeStr.Data()));
     }
     return escaped;
   }    
@@ -748,6 +776,7 @@ protected:
       SaveSetupShell("rerun", ClassName(), fName, tmp, uopts);
     SaveSetupROOT("ReRun", ClassName(), fName, tmp, uopts);
     if (fHelper) fHelper->AuxSave(fEscapedName, asShellScript);
+    SavePostShellScript();
   }
   /** 
    * Save a setup as a shell script 
@@ -842,9 +871,89 @@ protected:
       << "//" << std::endl;
     o.close();
   }    
+  /** 
+   * Write shell code to do post processing after terminate.  This
+   * code should deal with a single run (or run range).  The following
+   * shell variables are available to the code:
+   *
+   * - @c $prefix  Relative path to job directory or empty 
+   * - @c $dest    Destination for output to be stored
+   * 
+   * Note, the code is injected into a shell function, and should
+   * therefor not define new functions or the like.
+   * 
+   * @param o The output stream.  
+   */
+  virtual void PostShellCode(std::ostream& o)
+  {
+    o << "  echo \"Nothing to do for " << ClassName() 
+      << " train\"" << std::endl;
+  }
+  /** 
+   * Save a script to do post processing after terminate on each run
+   * or run-range. 
+   * 
+   * The shell script will execute the train defined code (in
+   * PostShellCode) for each run or run-range.  The train defined code
+   * and call drawing and summarizing macros or the like.
+   *
+   * In case of Grid analysis, this script will download and extract
+   * the appropriate ZIP files to separate directories, and then
+   * change directory to these directories and execute the train
+   * defined shell code there.  In this case, the script defines the
+   * shell variable @c $prefix as the relative path to the job
+   * directory.
+   * 
+   */
+  void SavePostShellScript()
+  {
+    std::ofstream f("post.sh");
+    if (!f) { 
+      Error("SavePostAll", "Failed to open post.sh script");
+      return;
+    }
+    f << "#!/bin/bash\n"
+      << "# Generated by " << ClassName() << "\n"
+      << "set -e\n"
+      << "\n"
+      << "dest=$1\n"
+      << "prefix=\n"
+      << "\n"
+      << "doall() {"
+      << std::endl;
+    PostShellCode(f);
+    f << "}\n"
+      << "\n"
+      << "if test ! -f Download.C ;then\n"
+      << "  doall\n"
+      << "  exit\n"
+      << "fi\n"
+      << "\n"
+      << "if test ! -f .download ; then\n"
+      << "  aliroot -l -b -q Download.C\\(1\\)\n"
+      << "  touch .download\n"
+      << "fi\n"
+      << "prefix=../\n"
+      << "\n"
+      << "for i in root_archive_*.zip ; do\n"
+      << "  d=`basename $i .zip` \n"
+      << "  if test ! -d $d ; then\n"
+      << "    echo \"Directory $d missing\"\n"
+      << "    continue\n"
+      << "  fi\n"
+      << "  \n"
+      << "  (cd $d && doall)\n"
+      << "done\n"
+      << "# EOF"
+      << std::endl;
+    f.close();
+    gSystem->Exec("chmod a+x post.sh");
+  }
+    
   /* @} */
   TString      fName;
   TString      fEscapedName;
+  TString      fDatimeString;
   OptionList   fOptions;
   Helper*      fHelper;
 };

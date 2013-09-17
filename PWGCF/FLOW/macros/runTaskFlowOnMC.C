@@ -15,12 +15,16 @@ enum anaModes {mLocal,mPROOF,mGrid};
 
 TString commonOutputFileName = "output"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
-void runTaskFlowOnMC(Double_t etaMax = 1.3,
+void runTaskFlowOnMC(Int_t harmonic = 2,
+		     Double_t gImpactParameterMin = 0.0,
+		     Double_t gImpactParameterMax = 100.0,
+		     Int_t gRefMultMin = 0,
+		     Int_t gRefMultMax = 100,
+		     Double_t etaMax = 1.3,
 		     Double_t ptMin = 0.05,
 		     Double_t ptMax = 20.0,
 		     Int_t chargePOI = 0,
-		     Int_t harmonic = 2,
-		     Int_t mode = mGrid, 
+		     Int_t mode = mLocal, 
 		     Bool_t useFlowParFiles = kFALSE,
 		     Bool_t useTender = kFALSE) {
   // Time:
@@ -29,6 +33,12 @@ void runTaskFlowOnMC(Double_t etaMax = 1.3,
 
   // Load needed libraries:
   LoadLibraries(mode,useFlowParFiles);
+  
+  //Fix the filename
+  commonOutputFileName += ".etaMax.";
+  commonOutputFileName += etaMax;
+  commonOutputFileName += ".harmonics.";
+  commonOutputFileName += harmonic;
 
   // Create analysis manager:
   AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager");
@@ -67,7 +77,11 @@ void runTaskFlowOnMC(Double_t etaMax = 1.3,
 		  ptMin,
 		  ptMax,
 		  chargePOI,
-		  harmonic);
+		  harmonic,
+		  gImpactParameterMin,
+		  gImpactParameterMax,
+		  gRefMultMin,
+		  gRefMultMax);
 
   // Enable debug printouts:
   mgr->SetDebugLevel(2);

@@ -44,10 +44,10 @@ public:
     }
 
 
-    TH2F ReconstructionEfficiency() const {
-      return *fRecoEff;
+    TH2F *ReconstructionEfficiency() const {
+      return fRecoEff;
     }
-    Double_t ReconstructionEfficiency(float energy, int mult) const;
+    Double_t ReconstructionEfficiency(float energy, int cent) const;
 
     Double_t MaxEnergy() const {
         return fMaxEnergy;
@@ -69,7 +69,7 @@ public:
 
 
     Double_t CorrectedEnergy(Double_t energy); // Calculate corrected cluster E_T 
-    Double_t CorrectedEnergy(Double_t energy, int mult); // Calculate corrected cluster E_T 
+    Double_t CorrectedEnergy(Double_t energy, int cent); // Calculate corrected cluster E_T 
     
 private:
 

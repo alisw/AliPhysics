@@ -22,7 +22,6 @@
 #include <TROOT.h>
 #include <TFileMerger.h>
 
-#include "AliLnUnfolding.h"
 #include "AliLnSecondaries.h"
 #include "AliLnEfficiency.h"
 #include "AliLnCorr.h"
@@ -37,7 +36,6 @@ AliLnCorr::AliLnCorr(const TString& particle, const TString& dataFilename, const
 // constructor
 //
 
-	fUnfolding   = new AliLnUnfolding(particle, simuFilename, Form("Unfolding-%s",outputFilename.Data()), otag);
 	fSecondaries = new AliLnSecondaries(particle, dataFilename, simuFilename, Form("Secondaries-%s",outputFilename.Data()), otag);
 	fEfficiency  = new AliLnEfficiency(particle, simuFixFilename, Form("Efficiency-%s",outputFilename.Data()), otag); // simufix for efficiencies
 }
@@ -47,7 +45,6 @@ AliLnCorr::~AliLnCorr()
 //
 // destructor
 //
-	delete fUnfolding;
 	delete fSecondaries;
 	delete fEfficiency;
 }
@@ -57,19 +54,16 @@ Int_t AliLnCorr::Exec()
 //
 // rebuild correction file
 //
-	fUnfolding->Exec();
 	fSecondaries->Exec();
 	fEfficiency->Exec();
 	
 	// merge the root files
 	
-	TString output1 = *fUnfolding->GetOutputFilename();
 	TString output3 = *fSecondaries->GetOutputFilename();
 	TString output4 = *fEfficiency->GetOutputFilename();
 	
 	TFileMerger m;
 	
-	m.AddFile(output1.Data(),0);
 	m.AddFile(output3.Data(),0);
 	m.AddFile(output4.Data(),0);
 	
@@ -78,7 +72,7 @@ Int_t AliLnCorr::Exec()
 	m.Merge();
 	
 	// remove tmp files
-	gSystem->Exec(Form("rm -f %s %s %s", output1.Data(),  output3.Data(),  output4.Data()));
+	gSystem->Exec(Form("rm -f %s %s",  output3.Data(),  output4.Data()));
 	
 	gSystem->Exec(Form("mv debug-%s debug-%s",output3.Data(),fOutputFilename.Data()));
 	
