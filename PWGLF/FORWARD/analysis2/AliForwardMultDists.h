@@ -17,6 +17,13 @@ public:
   enum { 
     kInvalidEta = 999
   };
+  enum { 
+    kAnalysis = 1, 
+    kMC       = 2, 
+    kTrigger  = 3, 
+    kVertex   = 4, 
+    kTriggerVertex = 5
+  };
   /** 
    * Default constructor
    */
@@ -102,8 +109,10 @@ public:
    * Set the maximum @f$N_{ch}@f$ to consider 
    * 
    * @param maxN Maximum
+   * @param nBins (Optionally) the number of bins per particle number 
    */
-  void SetMaxN(UInt_t maxN) { fMaxN = maxN; }
+  void SetMaxN(UShort_t maxN, UShort_t nBins=-1);
+  void SetNDivisions(UInt_t nDiv) { fNDivisions = nDiv; }
   /** 
    * Set the range of valid interaction points 
    * 
@@ -208,9 +217,11 @@ public:
      * @param list  List to add information to
      * @param hist  Template histogram 
      * @param max   Maximum number of particles 
+     * @param nDiv  Number of divisions per charged particle bin
      * @param useMC Whether to set-up for MC input 
      */
-    void SetupForData(TList* list, const TH2& hist, UShort_t max, Bool_t useMC);
+    void SetupForData(TList* list, const TH2& hist, UShort_t max, 
+		      UShort_t nDiv, Bool_t useMC);
     /** 
      * Process a single event 
      * 
@@ -218,10 +229,12 @@ public:
      * @param sumCentral  Projection of the central data
      * @param forward     The original forward data 
      * @param central     The original central data
+     * @param accepted    True if event is accepted for analysis
+     * @param mc          Distribution of primary particles from MC
      */
     void Process(const TH1& sumForward, const TH1& sumCentral,
 		 const TH2& forward,    const TH2& central,
-		 const TH1* mc);
+		 Bool_t     accepted,   const TH1* mc);
     /** 
      * Called at the end of the final processing of the job on the
      * full data set (merged data)
@@ -232,16 +245,17 @@ public:
      */
     void Terminate(TList* in, TList* out, UShort_t maxN);
       
-    TString  fName;     // Name of this bin
-    Double_t fMinEta;   // Least @f$\eta@f$ to consider
-    Double_t fMaxEta;   // Largest @f$\eta@f$ to consider
-    Int_t    fMinBin;   // Least @f$\eta@f$ bin to consider
-    Int_t    fMaxBin;   // Largest @f$\eta@f$ bin to consider
-    TH1*     fSum;      // Distribution 
-    TH2*     fCorr;     // Correlation between forward and central
-    TH2*     fResponse; // Response matrix (for MC)
-    TH1*     fTruth;    // `true' distribution 
-    TH1*     fCoverage; // How much was covered
+    TString  fName;          // Name of this bin
+    Double_t fMinEta;        // Least @f$\eta@f$ to consider
+    Double_t fMaxEta;        // Largest @f$\eta@f$ to consider
+    Int_t    fMinBin;        // Least @f$\eta@f$ bin to consider
+    Int_t    fMaxBin;        // Largest @f$\eta@f$ bin to consider
+    TH1*     fSum;           // Distribution 
+    TH2*     fCorr;          // Correlation between forward and central
+    TH2*     fResponse;      // Response matrix (for MC)
+    TH1*     fTruth;         // `true' distribution 
+    TH1*     fTruthAccepted; // `true' distribution for accepted events
+    TH1*     fCoverage;      // How much was covered
 
     ClassDef(EtaBin,1);
   };
@@ -252,6 +266,9 @@ public:
   TList*   fList;         // Output 
   TH1*     fTriggers;     // Histogram of triggers
   TH1*     fStatus;       // Histogram of event selection status 
+  TH1*     fVertex;       // Histogram of IpZ
+  TH1*     fMCVertex;     // Histogram of MC IpZ
+  TH2*     fDiag;         // Diagnostics
   UInt_t   fTriggerMask;  // Trigger mask
   Double_t fMinIpZ;       // Least @f$IP_{z}@f$ to consider 
   Double_t fMaxIpZ;       // Largest @f$IP_{z}@f$ to consider 
@@ -259,7 +276,8 @@ public:
   TH1*     fForwardCache; // Projection cache 
   TH1*     fCentralCache; // Projection cache 
   TH1*     fMCCache;      // Projection cache 
-  UInt_t   fMaxN;         // Maximum of @f$N_{ch}@f$ 
+  UShort_t fMaxN;         // Maximum of @f$N_{ch}@f$ 
+  UShort_t fNDivisions;   // Number of particle number sub-divions
   Bool_t   fUsePhiAcc;    // If true, scale by phi acceptance 
 
   ClassDef(AliForwardMultDists,1);

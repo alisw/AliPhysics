@@ -36,9 +36,10 @@ public:
     // --- Force MB for pp ---------------------------------------------
     TCollection* c   = GetCollection(file, "ForwardMultSums");
     
-    fBody->Divide(1,2);
-    DrawInPad(fBody, 1, GetH1(c, "triggers"));
-    DrawInPad(fBody, 2, GetH1(c, "status"));
+    fBody->Divide(1,3);
+    DrawInPad(fBody, 1, GetH1(c, "triggers"),   "hist text30");
+    DrawInPad(fBody, 2, GetH1(c, "status"),     "hist text30");
+    DrawInPad(fBody, 3, GetH1(c, "diagnostics"),"colz text");
     PrintCanvas("Overview");
 
     DrawSumCollection(c, "symmetric");
@@ -108,8 +109,9 @@ protected:
       if (!bin) continue;
 
       fBody->Divide(2,2);
-      DrawInPad(fBody, 1, GetH1(bin, "rawDist"), "",     kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truth"),   "same", kLogy|kLegend);
+      DrawInPad(fBody, 1, GetH1(bin, "rawDist"), "",          kLogy);
+      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted"),"same", kLogy);
+      DrawInPad(fBody, 1, GetH1(bin, "truth"),        "same", kLogy|kLegend);
       DrawInPad(fBody, 2, GetH1(bin, "coverage"));
       DrawInPad(fBody, 3, GetH2(bin, "corr"),     "colz");
       DrawInPad(fBody, 4, GetH2(bin, "response"), "colz", kLogz);
@@ -148,13 +150,16 @@ protected:
       e = l->AddEntry("dummy", "MC truth", "p");
       e->SetMarkerStyle(24);
       e->SetMarkerColor(kBlue+1);
+      e = l->AddEntry("dummy", "MC truth selected", "p");
+      e->SetMarkerStyle(24);
+      e->SetMarkerColor(kOrange+1);
     }
     fBody->cd();
     l->Draw();
     
     PrintCanvas(Form("%s results", name.Data()));
 
-    return;
+    // return;
 
     TIter       nextO(c);
     TObject*    o = 0;
@@ -164,12 +169,14 @@ protected:
       TCollection* bin = GetEtaBin(o, etaMin, etaMax);
       if (!bin) continue;
 
-      fBody->Divide(2,2);
-      DrawInPad(fBody, 1, GetH1(bin, "rawDist"), "",     kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truth"),   "same", kLogy);
+      fBody->Divide(2,3);
+      DrawInPad(fBody, 1, GetH1(bin, "rawDist"),      "",     kLogy);
+      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted"),"same", kLogy);
+      DrawInPad(fBody, 1, GetH1(bin, "truth"),        "same", kLogy|kLegend);
       DrawInPad(fBody, 2, GetH1(bin, "coverage"));
       DrawInPad(fBody, 3, GetH2(bin, "corr"),     "colz");
       DrawInPad(fBody, 4, GetH2(bin, "response"), "colz", kLogz);
+      DrawInPad(fBody, 5, GetH1(bin, "triggerVertex"));
       
       PrintCanvas(Form("%+5.1f < #eta < %+5.1f", etaMin, etaMax));
     }
