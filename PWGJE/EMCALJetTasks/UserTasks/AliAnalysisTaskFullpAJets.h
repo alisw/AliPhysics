@@ -48,6 +48,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetIsJetInArray(Bool_t isInArray, Int_t At);
         void SetAreaCutFraction(Double_t areaFraction);
         void SetJetR(Double_t jetR);
+        void SetNEF(Double_t nef);
         
         // Getters
         Int_t GetTotalEntries();
@@ -62,6 +63,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t GetSignalJetIndex(Int_t At);
         Bool_t GetIsJetInArray(Int_t At);
         Double_t GetJetMaxChargedPt(Int_t At);
+        Double_t GetNEF();
         
         Int_t* GetJets() const {return fJetsIndex;}  //!
         Int_t* GetSignalJets() const {return fJetsSCIndex;}  //!
@@ -78,6 +80,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Double_t fJetR;
         Double_t fSignalPt;
         Double_t fAreaCutFrac;
+        Double_t fNEF;
         
         Int_t fPtMaxIndex;
         Double_t fPtMax;
@@ -119,6 +122,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetBackgroundFluctuationsPtRange(Int_t bins, Double_t low, Double_t up);
         void SetLeadingJetPtRange(Int_t bins, Double_t low, Double_t up);
         void SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up);
+        void SetNEFRange(Int_t bins, Double_t low, Double_t up);
                                            
         // User Defined Functions
         TList* GetOutputHistos();  //!
@@ -171,6 +175,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH1D *fhBckgFlucPt; //!
         TH2D *fhBckgFlucPtCen; //!
         
+        // Histograms for Neutral Energy Fraction
+        TH1D *fhNEF; //!
+        TH1D *fhNEFSignal; //!
+        
         // Profiles
         TProfile *fpRho; //!
         TProfile *fpLJetRho; //!
@@ -208,6 +216,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t fLChargedTrackPtBins;
         Double_t fLChargedTrackPtLow;
         Double_t fLChargedTrackPtUp;
+        
+        Int_t fNEFBins;
+        Double_t fNEFLow;
+        Double_t fNEFUp;
     };
 
     // AliAnalysisTaskFullpAJets
@@ -342,8 +354,13 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     inline void SetNColl(Double_t ncoll)
     {
         fNColl = ncoll;
-    }
+    };
 
+    inline void SetNEFSignalJetCut(Double_t nef)
+    {
+        fNEFSignalJetCut = nef;
+    };
+    
     private:
     TList *fOutput; //! Output list
     
@@ -468,6 +485,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fNColl;  // Used for partial rejection of signal from RC. Obtained via Glauber Calculations
     Double_t fTrackMinPt;
     Double_t fClusterMinPt;
+    Double_t fNEFSignalJetCut;
     
     const char *fCentralityTag;  //!
     Int_t fCentralityBins;
