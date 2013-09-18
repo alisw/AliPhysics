@@ -60,7 +60,8 @@ fVars(0x0),
 fIsValid(kFALSE),
 fShouldOverwriteFiles(kFALSE),
 fTemplateFileList(0x0),
-fLocalFileList(0x0)
+fLocalFileList(0x0),
+fRunList()
 {
   // ctor
   

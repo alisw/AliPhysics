@@ -438,7 +438,7 @@ void AliAnalysisMuMuGraphUtil::UnCompact(TGraph& g)
   //  Int_t run2 = TString(g.GetXaxis()->GetBinLabel(g.GetN())).Atoi();
   
   std::vector<double> runs;
-  Int_t runNumber;
+  Int_t runNumber(-1);
   
   for ( Int_t i = 0; i < g.GetN(); ++i )
   {

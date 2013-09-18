@@ -62,6 +62,7 @@ fCounterCollection(cc),
 fMergeableCollection(0x0),
 fIsOwner(kTRUE),
 fOCDBPath(ocdbpath),
+fResult(0x0),
 fIsCompactGraphs(compactGraphs),
 fReferenceTriggerType(refTriggerType)
 {
@@ -1774,7 +1775,7 @@ AliAnalysisMuMuFnorm::WeightedMeanGraphs(const char* patternOrList, const char* 
   
   for ( Int_t ipoint = 0; ipoint < npts; ++ipoint )
   {
-    Double_t x,xref,xerr;
+    Double_t x,xref(0.0),xerr;
     Double_t sum(0.0);
     Double_t sume2(0.0);
     
