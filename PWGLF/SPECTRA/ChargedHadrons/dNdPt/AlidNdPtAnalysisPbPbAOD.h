@@ -135,6 +135,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	*hEventStatistics; // contains statistics of number of events after each cut
     TH1F	*hEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
     TH1F	*hAllEventStatisticsCentrality; // contains number of events vs centrality, events need to be triggered
+    TH2F	*hEventStatisticsCentralityTrigger; // contains number of events vs centrality in 1% bins vs trigger
     THnSparseF	*hnZvMultCent; // Zv:Mult:Cent
     TH1F	*hTriggerStatistics; // contains number of events per trigger
     TH1F	*hMCTrackPdgCode; // contains statistics of pdg codes of tracks

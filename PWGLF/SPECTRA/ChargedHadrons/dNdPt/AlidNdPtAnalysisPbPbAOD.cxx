@@ -39,6 +39,7 @@ hnMCRecSecZvPtEtaCent(0),
 hEventStatistics(0),
 hEventStatisticsCentrality(0),
 hAllEventStatisticsCentrality(0),
+hEventStatisticsCentralityTrigger(0),
 hnZvMultCent(0),
 hTriggerStatistics(0),
 hMCTrackPdgCode(0),
@@ -122,6 +123,7 @@ hnMCRecSecZvPtEtaCent(0),
 hEventStatistics(0),
 hEventStatisticsCentrality(0),
 hAllEventStatisticsCentrality(0),
+hEventStatisticsCentralityTrigger(0),
 hnZvMultCent(0),
 hTriggerStatistics(0),
 hMCTrackPdgCode(0),
@@ -313,6 +315,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hAllEventStatisticsCentrality = new TH1F("hAllEventStatisticsCentrality","hAllEventStatisticsCentrality",fCentralityNbins-1, fBinsCentrality);
   hAllEventStatisticsCentrality->GetYaxis()->SetTitle("number of events");
   
+  hEventStatisticsCentralityTrigger = new TH2F("hEventStatisticsCentralityTrigger","hEventStatisticsCentralityTrigger;centrality;trigger",100,0,100,3,0,3);
+  hEventStatisticsCentralityTrigger->Sumw2();
+  
   hnZvMultCent = new THnSparseF("hnZvMultCent","Zv:mult:Centrality",3,binsZvMultCent);
   hnZvMultCent->SetBinEdges(0,fBinsZv);
   hnZvMultCent->SetBinEdges(1,fBinsMult);
@@ -355,18 +360,39 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hAccCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track after cut");
   
   Int_t binsDCAxyDCAzPt[3] = { 200,200, fPtNbins-1};
-  Double_t minDCAxyDCAzPt[3] = { -10, -10, 0};
-  Double_t maxDCAxyDCAzPt[3] = { 10., 10., 100};
+  Double_t minDCAxyDCAzPt[3] = { -5, -5, 0};
+  Double_t maxDCAxyDCAzPt[3] = { 5., 5., 100};
   
-  hDCAPtAll = new THnSparseF("hDCAPtAll","hDCAPtAll;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
-  hDCAPtAccepted = new THnSparseF("hDCAPtAccepted","hDCAPtAccepted;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
-  hMCDCAPtSecondary = new THnSparseF("hMCDCAPtSecondary","hMCDCAPtSecondary;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
-  hMCDCAPtPrimary = new THnSparseF("hMCDCAPtPrimary","hMCDCAPtPrimary;p_{T} (GeV/c);DCAz",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hDCAPtAll = new THnSparseF("hDCAPtAll","hDCAPtAll",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hDCAPtAccepted = new THnSparseF("hDCAPtAccepted","hDCAPtAccepted",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hMCDCAPtSecondary = new THnSparseF("hMCDCAPtSecondary","hMCDCAPtSecondary",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hMCDCAPtPrimary = new THnSparseF("hMCDCAPtPrimary","hMCDCAPtPrimary",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
   
   hDCAPtAll->SetBinEdges(2, fBinsPt);
   hDCAPtAccepted->SetBinEdges(2, fBinsPt);
   hMCDCAPtSecondary->SetBinEdges(2, fBinsPt);
   hMCDCAPtPrimary->SetBinEdges(2, fBinsPt);
+  
+  hDCAPtAll->Sumw2();
+  hDCAPtAccepted->Sumw2();
+  hMCDCAPtSecondary->Sumw2();
+  hMCDCAPtPrimary->Sumw2();
+  
+  hDCAPtAll->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
+  hDCAPtAll->GetAxis(1)->SetTitle("DCA_{z} (cm)");
+  hDCAPtAll->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  
+  hDCAPtAccepted->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
+  hDCAPtAccepted->GetAxis(1)->SetTitle("DCA_{z} (cm)");
+  hDCAPtAccepted->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  
+  hMCDCAPtSecondary->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
+  hMCDCAPtSecondary->GetAxis(1)->SetTitle("DCA_{z} (cm)");
+  hMCDCAPtSecondary->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  
+  hMCDCAPtPrimary->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
+  hMCDCAPtPrimary->GetAxis(1)->SetTitle("DCA_{z} (cm)");
+  hMCDCAPtPrimary->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(hnZvPtEtaCent);
@@ -378,6 +404,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hEventStatistics);
   fOutputList->Add(hEventStatisticsCentrality);
   fOutputList->Add(hAllEventStatisticsCentrality);
+  fOutputList->Add(hEventStatisticsCentralityTrigger);
   fOutputList->Add(hnZvMultCent);
   fOutputList->Add(hTriggerStatistics);
   fOutputList->Add(hMCTrackPdgCode);
@@ -392,7 +419,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hDCAPtAccepted);
   fOutputList->Add(hMCDCAPtSecondary);
   fOutputList->Add(hMCDCAPtPrimary);
-  
+
   
   PostData(1, fOutputList);
 }
@@ -666,6 +693,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     hEventStatistics->Fill("events with tracks in range",1); 
     hEventStatisticsCentrality->Fill(dCentrality); 
     bEventHasATrackInRange = kFALSE; 
+    
+    if(bIsEventSelectedMB) hEventStatisticsCentralityTrigger->Fill(dCentrality, 0);
+    if(bIsEventSelectedSemi) hEventStatisticsCentralityTrigger->Fill(dCentrality, 1);
+    if(bIsEventSelectedCentral) hEventStatisticsCentralityTrigger->Fill(dCentrality, 2);
   }
   
   Double_t dEventZvMultCent[3] = {dEventZv, iAcceptedMultiplicity, dCentrality};
@@ -778,12 +809,12 @@ Double_t AlidNdPtAnalysisPbPbAOD::GetDCA(AliAODTrack *tr, AliAODEvent *evt, Bool
       if(bDCAz) return d0z0[1];
       else return d0z0[0];
     }
-    
-    
+       
     AliAODVertex *vtx =(AliAODVertex*)(evt->GetPrimaryVertex());
     Double_t fBzkG = evt->GetMagneticField(); // z componenent of field in kG
     ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
   }
+  
   if(!ok){
     d0z0[0]=-999.;
     d0z0[1]=-999.;
