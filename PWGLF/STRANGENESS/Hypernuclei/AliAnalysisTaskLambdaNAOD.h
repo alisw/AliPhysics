@@ -180,8 +180,8 @@ class AliAnalysisTaskLambdaNAOD : public AliAnalysisTaskSE {
   Double_t fSignN[maxNofTracks];                               //! Tree variable
   Double_t fSignP[maxNofTracks];                               //! Tree variable
 
-  Int_t fSigmadEdxPionPos[maxNofTracks];                       //! Tree variable
-  Int_t fSigmadEdxPionNeg[maxNofTracks];                       //! Tree variable
+  Double_t fSigmadEdxPionPos[maxNofTracks];                       //! Tree variable
+  Double_t fSigmadEdxPionNeg[maxNofTracks];                       //! Tree variable
 
   Float_t fDCAv0[maxNofTracks];                                //! Tree variable
   Float_t fCosinePAv0[maxNofTracks];                           //! Tree variable

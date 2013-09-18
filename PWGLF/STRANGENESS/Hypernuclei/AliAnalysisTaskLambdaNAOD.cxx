@@ -366,8 +366,8 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fSignN",fSignN,"fSignN[fItrk]/D");
   fTreeV0->Branch("fSignP",fSignP,"fSignP[fItrk]/D");
 
-  fTreeV0->Branch("fSigmadEdxPionPos",fSigmadEdxPionPos,"fSigmadEdxPionPos[fItrk]/I");
-  fTreeV0->Branch("fSigmadEdxPionNeg",fSigmadEdxPionNeg,"fSigmadEdxPionNeg[fItrk]/I");
+  fTreeV0->Branch("fSigmadEdxPionPos",fSigmadEdxPionPos,"fSigmadEdxPionPos[fItrk]/D");
+  fTreeV0->Branch("fSigmadEdxPionNeg",fSigmadEdxPionNeg,"fSigmadEdxPionNeg[fItrk]/D");
 
   fTreeV0->Branch("fDCAv0",fDCAv0,"fDCAv0[fItrk]/F"); //Dca v0 Daughters
   fTreeV0->Branch("fCosinePAv0",fCosinePAv0,"fCosinePAv0[fItrk]/F"); //Cosine of Pionting Angle
