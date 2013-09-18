@@ -167,7 +167,7 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
 	  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile((fAna->GetReader())->GetDeltaAODFileName());
   
 	// Selected Trigger
-	fAna->GetReader()->SetEventTriggerMask(GetCollisionCandidates());
+	if(fAna->GetReader()->IsEventTriggerAtSEOn())fAna->GetReader()->SetEventTriggerMask(GetCollisionCandidates());
   if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::Init() - End\n");
   
 }
