@@ -72,7 +72,7 @@ private:
   
   Bool_t fUseTPCEtaCorrection;          // Use TPC eta correction
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
-  Int_t  fUserDataRecoPass;            //! forced DATA reco pass
+  Int_t  fUserDataRecoPass;            // forced DATA reco pass
   
   //
   void SetRecoInfo();
