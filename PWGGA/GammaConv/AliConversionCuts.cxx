@@ -2836,6 +2836,11 @@ Bool_t AliConversionCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut){
       fMinPPhotonAsymmetryCut=3.5;
       fMinPhotonAsymmetry=0.06;
       break;
+   case 3:
+      fDoPhotonAsymmetryCut=1;
+      fMinPPhotonAsymmetryCut=0.0;
+      fMinPhotonAsymmetry=0.05;
+      break; 
    default:
       AliError(Form("PhotonAsymmetryCut not defined %d",doPhotonAsymmetryCut));
       return kFALSE;
