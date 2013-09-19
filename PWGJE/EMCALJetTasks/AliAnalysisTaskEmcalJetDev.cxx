@@ -289,7 +289,7 @@ AliJetContainer* AliAnalysisTaskEmcalJetDev::AddJetContainer(const char *n, TStr
 AliJetContainer* AliAnalysisTaskEmcalJetDev::GetJetContainer(Int_t i) const{
   // Get i^th jet container
 
-  if(i<0 || i>fJetCollArray.GetEntriesFast()) return 0;
+  if(i<0 || i>=fJetCollArray.GetEntriesFast()) return 0;
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
   return cont;
 }
@@ -297,7 +297,7 @@ AliJetContainer* AliAnalysisTaskEmcalJetDev::GetJetContainer(Int_t i) const{
 //________________________________________________________________________
 AliJetContainer* AliAnalysisTaskEmcalJetDev::GetJetContainer(const char* name) const{
   // Get the jet container with name
-
+  
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.FindObject(name));
   return cont;
 }

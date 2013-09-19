@@ -227,7 +227,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets1PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets1PtArea);
  
-  if (!fIsJet1Rho) {
+  if (fIsJet1Rho) {
     fHistJets1CorrPtArea = new TH2F("fHistJets1CorrPtArea", "fHistJets1CorrPtArea", 
 				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets1CorrPtArea->GetXaxis()->SetTitle("area");
@@ -267,7 +267,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets2PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtArea);
 
-  if (!fIsJet2Rho) {
+  if (fIsJet2Rho) {
     fHistJets2CorrPtArea = new TH2F("fHistJets2CorrPtArea", "fHistJets2CorrPtArea", 
 				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtArea->GetXaxis()->SetTitle("area");
@@ -288,7 +288,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtAreaAcceptance);
 
-  if (!fIsJet2Rho) {
+  if (fIsJet2Rho) {
     fHistJets2CorrPtAreaAcceptance = new TH2F("fHistJets2CorrPtAreaAcceptance", "fHistJets2CorrPtAreaAcceptance", 
 					      fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
