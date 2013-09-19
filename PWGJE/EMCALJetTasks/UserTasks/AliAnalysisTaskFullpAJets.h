@@ -49,6 +49,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetAreaCutFraction(Double_t areaFraction);
         void SetJetR(Double_t jetR);
         void SetNEF(Double_t nef);
+        void SetSignalTrackPtBias(Bool_t chargedBias);
         
         // Getters
         Int_t GetTotalEntries();
@@ -81,6 +82,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Double_t fSignalPt;
         Double_t fAreaCutFrac;
         Double_t fNEF;
+        Bool_t fSignalTrackBias;
         
         Int_t fPtMaxIndex;
         Double_t fPtMax;
@@ -99,7 +101,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     public:
         AlipAJetHistos();
         AlipAJetHistos(const char *name);
-        AlipAJetHistos(const char *name, const char *centag);
+        AlipAJetHistos(const char *name, const char *centag, Bool_t doNEF=kFALSE);
+        
         virtual ~AlipAJetHistos();
         
         // User Defined Sub-Routines
@@ -111,6 +114,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void FillDeltaPtNColl(Double_t eventCentrality, Double_t rho, Double_t jetRadius, Double_t *RCArray, Int_t nRC);
         void FillBackgroundFluctuations(Double_t eventCentrality, Double_t rho, Double_t jetRadius);
         void FillLeadingJetPtRho(Double_t jetPt, Double_t rho);
+        void DoNEFQAPlots(Bool_t doNEFAna);
+        void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList);
         
         // Setters
         void SetName(const char *name);
@@ -123,7 +128,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetLeadingJetPtRange(Int_t bins, Double_t low, Double_t up);
         void SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up);
         void SetNEFRange(Int_t bins, Double_t low, Double_t up);
-                                           
+        
         // User Defined Functions
         TList* GetOutputHistos();  //!
         Double_t GetRho();
@@ -175,14 +180,31 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH1D *fhBckgFlucPt; //!
         TH2D *fhBckgFlucPtCen; //!
         
-        // Histograms for Neutral Energy Fraction
-        TH1D *fhNEF; //!
-        TH1D *fhNEFSignal; //!
-        
         // Profiles
         TProfile *fpRho; //!
         TProfile *fpLJetRho; //!
+
+        // Histograms for Neutral Energy Fraction
+        TList *fNEFOutput; //! NEF QA Plots
         
+        TH1D *fhNEF; //!
+        TH1D *fhNEFSignal; //!
+        
+        TH2D *fhNEFEtaPhi; //!
+        TH2D *fhNEFEtaPhiSignal; //!
+        TH2D *fhNEFEtaPhiRejected; //!
+
+        TH2D *fhNEFTotalMult; //!
+        TH2D *fhNEFTotalMultSignal; //!
+        TH2D *fhNEFTotalMultRejected; //!
+
+        TH2D *fhNEFNeutralMult; //!
+        TH2D *fhNEFNeutralMultSignal; //!
+        TH2D *fhNEFNeutralMultRejected; //!
+
+        TH1D *fhClusterShapeAll; //!
+        TH1D *fhClusterShapeRejected; //!
+
         // Variables
         const char *fName;  //!
         const char *fCentralityTag;  //!
@@ -217,9 +239,17 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Double_t fLChargedTrackPtLow;
         Double_t fLChargedTrackPtUp;
         
+        Bool_t fDoNEFQAPlots;
+        
         Int_t fNEFBins;
         Double_t fNEFLow;
         Double_t fNEFUp;
+        
+        // These members are 'sourced' from the base class and are initalized in the constructor
+        Double_t fEMCalPhiMin;
+        Double_t fEMCalPhiMax;
+        Double_t fEMCalEtaMin;
+        Double_t fEMCalEtaMax;
     };
 
     // AliAnalysisTaskFullpAJets
@@ -442,10 +472,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AlipAJetData *fTPCJet;  //!
     AlipAJetData *fTPCFullJet;  //!
     AlipAJetData *fTPCOnlyJet;  //!
+    AlipAJetData *fTPCJetUnbiased;  //!
     AlipAJetData *fTPCkTFullJet;  //!
     AlipAJetData *fEMCalJet;  //!
     AlipAJetData *fEMCalFullJet;  //!
     AlipAJetData *fEMCalPartJet;  //!
+    AlipAJetData *fEMCalPartJetUnbiased;  //!
     AlipAJetData *fEMCalkTFullJet;  //!
 
     // Variables
@@ -475,7 +507,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fParticlePtLow;
     Double_t fParticlePtUp;
     Int_t fParticlePtBins;
-    
+
     Double_t fJetR;
     Double_t fJetRForRho;  // Required distance a track/cluster must be away from a jet for rho calculation
     Double_t fJetAreaCutFrac;  // Fudge factor for selecting on jets with threshold Pt or higher
@@ -525,7 +557,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fTPCJetThreshold;
     Double_t fEMCalJetThreshold;
     
-    Double_t fvertex[3];
+    Double_t fVertex[3];
     Double_t fVertexWindow;
     Double_t fVertexMaxR;
     

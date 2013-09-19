@@ -27,7 +27,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 						   Double_t    ptTrackBias         = 0.,
 						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo,
-						   Float_t     nefCut              = 0.95
+						   Float_t     nefCut              = 0.95,
+						   Int_t       nCentBins           = 5
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -97,7 +98,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   //Configure DiJet task
   AliAnalysisTaskEmcalDiJetAna *taskDiJet = NULL;
   taskDiJet = new AliAnalysisTaskEmcalDiJetAna(wagonName.Data());
- 
+
   taskDiJet->SetTriggerClass(trigClass.Data());
   if(ptminTrack==0.) {
     taskDiJet->SetIsPythiaPtHard(kTRUE);
@@ -134,6 +135,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   }
 
   taskDiJet->SetCentralityEstimator(CentEst);
+  taskDiJet->SetCentRange(0.,100.);
+  taskDiJet->SetNCentBins(nCentBins);
 
   taskDiJet->SelectCollisionCandidates(pSel);
 
@@ -141,8 +144,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 
   taskDiJet->SetDoChargedCharged(kTRUE);
   taskDiJet->SetDoFullCharged(kTRUE);
-  taskDiJet->SetMatchFullCharged(kTRUE);
-
+  taskDiJet->SetMatchFullCharged(kFALSE);
 
   mgr->AddTask(taskDiJet);
 
