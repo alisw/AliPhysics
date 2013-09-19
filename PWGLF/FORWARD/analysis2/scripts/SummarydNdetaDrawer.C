@@ -11,10 +11,8 @@ public:
     kSums      = 0x04, 
     kResults   = 0x08, 
     kMinBias   = 0x10, 
-    kLandscape = 0x20,
-    kPause     = 0x40,
     kMC        = 0x80,
-    kNormal    = 0xF
+    kNormal    = 0x0F
   };
   SummarydNdetaDrawer() 
     : SummaryDrawer()
@@ -45,7 +43,7 @@ public:
     if (sys == 1) onlyMB = true;
 
     // --- Test of MC --------------------------------------------------
-    TCollection* mcC = GetCollection(file, "MCTruthSums");
+    TCollection* mcC = GetCollection(file, "MCTruthSums", false);
     if (mcC) { 
       TCollection* mcAll = GetCollection(mcC, "all");
       if (mcAll && GetObject(mcAll, "MCTruth"))
@@ -175,7 +173,7 @@ protected:
     GetParameter(fS, "sys",     sys); 
     GetParameter(fS, "trigger", trigger); 
     TAxis* centAxis = 
-      static_cast<TAxis*>(GetObject(fS, "centAxis"));
+      static_cast<TAxis*>(GetObject(fS, "centAxis", false));
     UShort_t cLow  = centAxis && !onlyMB ? centAxis->GetXmin() : 0;
     UShort_t cHigh = centAxis && !onlyMB ? centAxis->GetXmax() : 100;
 
@@ -233,7 +231,7 @@ protected:
     TCollection* c = GetCollection(top, Form("%sSums", base.Data()));
     if (!c) return;
     
-    TAxis* centAxis = static_cast<TAxis*>(GetObject(c, "centAxis"));
+    TAxis* centAxis = static_cast<TAxis*>(GetObject(c, "centAxis", false));
 
     Int_t   txtPad = 0;
     Double_t save  = fParName->GetTextSize();
@@ -279,27 +277,12 @@ protected:
     if (scheme & 0x8)  schemeString.Append("#epsilon_{T,MC} ");
     if (scheme & 0x10) schemeString.Append("0-bin");
 
-    TString trigString;
-    if (trigger & 0x0001)     trigString.Append("INEL ");
-    if (trigger & 0x0002)     trigString.Append("INEL>0 ");
-    if (trigger & 0x0004)     trigString.Append("NSD ");
-    if (trigger & 0x0008)     trigString.Append("Empty ");
-    if (trigger & 0x0010)     trigString.Append("A ");
-    if (trigger & 0x0020)     trigString.Append("B ");
-    if (trigger & 0x0080)     trigString.Append("C ");
-    if (trigger & 0x0100)     trigString.Append("E ");
-    if (trigger & 0x0200)     trigString.Append("Pile-up ");
-    if (trigger & 0x0400)     trigString.Append("NSD(MC) ");
-    if (trigger & 0x0800)     trigString.Append("Off-line ");
-    if (trigger & 0x1000)     trigString.Append("N_{cluster}>0 ");
-    if (trigger & 0x2000)     trigString.Append("V0-AND ");
-    if (trigger & 0x4000)     trigString.Append("Satellite ");
-
-    DrawParameter(y, "Collision system", (sys == 1 ? "pp" : 
-					  (sys == 2 ? "PbPb" : 
-					   (sys == 3 ? "pPb" : 
-					    "unknown"))));
-    DrawParameter(y, "#sqrt{s_{NN}}",        Form("%4dGeV", sNN));
+    TString trigString;   TriggerString(trigger, trigString);
+    TString sysString;    SysString(sys, sysString);
+    TString sNNString;    SNNString(sNN, sNNString);
+    
+    DrawParameter(y, "Collision system",     sysString);
+    DrawParameter(y, "#sqrt{s_{NN}}",        sNNString);
     DrawParameter(y, "Normalization scheme", schemeString);
     DrawParameter(y, "Triggers",             trigString);
     
@@ -360,7 +343,7 @@ protected:
     fParVal->SetTextSize(0.03);
     fParVal->SetX(.5);
     // Double_t y = .9;
-    TAxis*   centAxis = static_cast<TAxis*>(GetObject(c, "centAxis"));
+    TAxis*   centAxis = static_cast<TAxis*>(GetObject(c, "centAxis", false));
     if (!onlyMB && centAxis) {
       for (Int_t i = 1; i <= centAxis->GetNbins(); i++) { 
 	DrawParameter(y, (i == 1 ? "Centrality classes" : ""),
@@ -369,17 +352,8 @@ protected:
 			   Int_t(centAxis->GetBinUpEdge(i))));
       }
     }
-    TObject* oSNN  = GetObject(c,"sNN");
-    TString  tSNN  = "";
-    UShort_t sNN   = oSNN->GetUniqueID(); 
-    if (sNN > 1000) {
-      if ((sNN % 1000) == 0) 
-	tSNN = TString::Format("%dTeV", sNN/1000);
-      else 
-	tSNN = TString::Format("%-5.2fTeV", float(sNN) / 1000);
-    }
-    else 
-      tSNN = TString::Format("%dGeV", sNN);
+    TObject* oSNN = GetObject(c, "sNN");
+    TString  tSNN; SNNString(oSNN->GetUniqueID(), tSNN);
 
     DrawParameter(y, "Collision system", GetObject(c, "sys")->GetTitle());
     DrawParameter(y, "#sqrt{s_{NN}}",tSNN);
@@ -422,7 +396,7 @@ protected:
     DrawResTitle(c, y, onlyMB);
     PrintCanvas(Form("%s results", base.Data()));
 
-    TAxis*   centAxis = static_cast<TAxis*>(GetObject(c, "centAxis"));
+    TAxis*   centAxis = static_cast<TAxis*>(GetObject(c, "centAxis", false));
     TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, 
 			     onlyMB || !centAxis? "" : "Centralities");
     l->SetNColumns(2);
@@ -607,7 +581,7 @@ protected:
       DrawInPad(p, 1, sum, sum->Integral()>0 ? "col" : "");
       DrawInPad(p, 2, GetH1(c, Form("average%s", suf)), "");
       DrawInPad(p, 3, norm);
-      DrawInPad(p, 3, phi, "same", 0x10);      
+      DrawInPad(p, 3, phi, "same", kLegend);      
     }
     PrintCanvas(title);
   }
