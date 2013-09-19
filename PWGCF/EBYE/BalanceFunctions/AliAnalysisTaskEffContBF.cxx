@@ -40,8 +40,10 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fHistCentrality(0),
     fHistNMult(0), 
     fHistVz(0), 
-    fHistContaminationSecondaries(0),
-    fHistContaminationPrimaries(0),
+    fHistContaminationSecondariesPlus(0),
+    fHistContaminationSecondariesMinus(0), //
+    fHistContaminationPrimariesPlus(0),
+    fHistContaminationPrimariesMinus(0), //
     fHistGeneratedEtaPtPhiPlus(0), 
     fHistSurvivedEtaPtPhiPlus(0),
     fHistGeneratedEtaPtPhiMinus(0),
@@ -159,12 +161,18 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
   fQAList->Add(fHistVz);
 
   //Contamination for Secondaries 
-  fHistContaminationSecondaries = new TH3D("fHistContaminationSecondaries","Secondaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-  fOutputList->Add(fHistContaminationSecondaries);
+  fHistContaminationSecondariesPlus = new TH3D("fHistContaminationSecondariesPlus","Secondaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationSecondariesPlus);
+
+  fHistContaminationSecondariesMinus = new TH3D("fHistContaminationSecondariesMinus","Secondaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationSecondariesMinus);
 
   //Contamination for Primaries
-  fHistContaminationPrimaries = new TH3D("fHistContaminationPrimaries","Primaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-  fOutputList->Add(fHistContaminationPrimaries);
+  fHistContaminationPrimariesPlus = new TH3D("fHistContaminationPrimariesPlus","Primaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationPrimariesPlus);
+
+  fHistContaminationPrimariesMinus = new TH3D("fHistContaminationPrimariesMinus","Primaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationPrimariesMinus);
   
   //eta vs pt for MC positives
   fHistGeneratedEtaPtPhiPlus = new TH3D("fHistGeneratedEtaPtPhiPlus",
@@ -379,15 +387,26 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    Int_t label = TMath::Abs(track->GetLabel());
 		    if(label > nMCParticles) continue;
 		    AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) mcEvent->GetTrack(label); 
+		    Short_t gAODmcCharge = AODmcTrack->Charge();////
 		    //fHistContaminationPrimaries->Fill(track->Eta(),track->Pt(),phiDeg);
 		    //if (!(AODmcTrack->IsPhysicalPrimary())) {
 		    //fHistContaminationSecondaries->Fill(track->Eta(),track->Pt(),phiDeg);
 		    //}
 		    if (AODmcTrack->IsPhysicalPrimary()) {
-		      fHistContaminationPrimaries->Fill(track->Eta(),track->Pt(),phiDeg);
+		      if(gAODmcCharge > 0){
+			fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiDeg);
+		      }
+		      if(gAODmcCharge < 0){
+			fHistContaminationPrimariesMinus->Fill(track->Eta(),track->Pt(),phiDeg);
+		      }
 		    }
 		    else{
-		      fHistContaminationSecondaries->Fill(track->Eta(),track->Pt(),phiDeg);
+		      if(gAODmcCharge > 0){
+			fHistContaminationSecondariesPlus->Fill(track->Eta(),track->Pt(),phiDeg);
+		      }
+		      if(gAODmcCharge < 0){
+			fHistContaminationSecondariesMinus->Fill(track->Eta(),track->Pt(),phiDeg);
+		      }
 		    }
 		  }
 		  //++++++++++++++++++CONTAMINATION++++++++++++++++++//
