@@ -99,9 +99,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t GetCutMinNCrossedRowsTPC()					{ return dCutMinNumberOfCrossedRows; }
     
     // getter for DCA
-    Double_t GetDCAz(AliAODTrack *track, AliAODEvent *event);
-    Double_t GetDCAxy(AliAODTrack *track, AliAODEvent *event);
-    Double_t GetDCA(AliAODTrack *tr, AliAODEvent *evt, Bool_t bDCAz);
+    Bool_t GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2]);
     
     THnSparseF *GetHistZvPtEtaCent() const { return hnZvPtEtaCent; }
     TH1F *GetHistEventStatistics() const { return hEventStatistics; }
@@ -111,7 +109,6 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AliGenHijingEventHeader* GetHijingEventHeader(AliAODMCHeader *header);
     AliGenPythiaEventHeader* GetPythiaEventHeader(AliAODMCHeader *header);
     
-//     Int_t IsMCSecondary(AliAODMCParticle *part, TClonesArray *arrayMC);
     Bool_t IsTrackAccepted(AliAODTrack *tr);
     Bool_t IsMCTrackAccepted(AliAODMCParticle *part);
     
