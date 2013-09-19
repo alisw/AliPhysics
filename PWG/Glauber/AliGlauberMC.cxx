@@ -31,6 +31,7 @@
 #include <TNtuple.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TF1.h>
 
 #include "AliGlauberNucleon.h"
 #include "AliGlauberNucleus.h"
@@ -164,7 +165,13 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fSxyCom(0.),
   fX(0.13),
   fNpp(8.),
-  fDoPartProd(kFALSE)
+  fDoPartProd(kFALSE),
+  fBNN(0.),
+  fDoFluc(kFALSE),
+  fOmega(0),
+  fSig0(0),
+  fSigFluc(0),
+  fLambda(0)
 {
   //ctor
   for (UInt_t i=0; i<(sizeof(fdNdEtaParam)/sizeof(fdNdEtaParam[0])); i++)
@@ -308,7 +315,13 @@ AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
   fSxyCom(in.fSxyCom),
   fX(in.fX),
   fNpp(in.fNpp),
-  fDoPartProd(kFALSE)
+  fDoPartProd(in.fDoPartProd),
+  fBNN(in.fBNN),
+  fDoFluc(in.fDoFluc),
+  fOmega(in.fOmega),
+  fSig0(in.fSig0),
+  fSigFluc(in.fSigFluc),
+  fLambda(in.fLambda)
 {
   //copy ctor
   memcpy(fdNdEtaParam,in.fdNdEtaParam,sizeof(fdNdEtaParam));
@@ -467,9 +480,19 @@ Bool_t AliGlauberMC::CalcEvent(Double_t bgen)
     nucleonB->SetInNucleusB();
   }
 
+  if (fDoFluc) {
+    if (!fSigFluc) {
+      fSigFluc = new TF1("fSigFluc","[0]*x/[3]/(x/[3]+[1])*exp(-((x/[1]/[3]-1)/[2])^2)",0,250);
+      fSigFluc->SetParameters(1,fSig0,fOmega,fLambda);
+      cout << "Setting fluc: " << fSig0 << " " << fOmega << " " << fLambda << endl;
+    }
+    fXSect = fSigFluc->GetRandom();
+  }
   // "ball" diameter = distance at which two balls interact
   Double_t d2 = (Double_t)fXSect/(TMath::Pi()*10); // in fm^2
 
+  Double_t bNN = 0;
+  Double_t Nco = 0;
   // for each of the A nucleons in nucleus B
   for (Int_t i = 0; i<fBN; i++)
   {
@@ -482,12 +505,17 @@ Bool_t AliGlauberMC::CalcEvent(Double_t bgen)
       Double_t dij = dx*dx+dy*dy;
       if (dij < d2)
       {
+	bNN += dij;
+	++Nco;
         nucleonB->Collide();
         nucleonA->Collide();
       }
     }
   }
-
+  if (Nco>0)
+    fBNN = bNN/Nco;
+  else
+    fBNN = 0.;
   return CalcResults(bgen);
 }
 
@@ -1628,7 +1656,7 @@ void AliGlauberMC::Run(Int_t nevents)
   if (fnt == 0)
   {
     fnt = new TNtuple(name,title,
-                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:Stoa:VarEColl:VarECom:VarEPart:VarEPartColl:VarEPartCom:dNdEta:dNdEtaGBW:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll:E2Com:E3Com:E4Com:E5Com:Psi2:Psi3:Psi4:Psi5");
+                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:Stoa:VarEColl:VarECom:VarEPart:VarEPartColl:VarEPartCom:dNdEta:dNdEtaGBW:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll:E2Com:E3Com:E4Com:E5Com:Psi2:Psi3:Psi4:Psi5:BNN:signn");
     fnt->SetDirectory(0);
   }
   Int_t q = 0;
@@ -1643,8 +1671,7 @@ void AliGlauberMC::Run(Int_t nevents)
     }
 
     q++;
-    //Float_t v[27];
-    Float_t v[45];
+    Float_t v[47];
     v[0]  = GetNpart();
     v[1]  = GetNcoll();
     v[2]  = fBMC;
@@ -1703,6 +1730,8 @@ void AliGlauberMC::Run(Int_t nevents)
     v[42] = GetPsi3();
     v[43] = GetPsi4();
     v[44] = GetPsi5();
+    v[45] = fBNN;
+    v[46] = fXSect;
     //always at the end
     fnt->Fill(v);
 
