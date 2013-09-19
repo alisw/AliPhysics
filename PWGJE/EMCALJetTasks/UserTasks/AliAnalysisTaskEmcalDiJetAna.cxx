@@ -152,17 +152,19 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   const Int_t nBinsDPhi     = 72;
   const Int_t nBinsKt       = 50;
   const Int_t nBinsDiJetEta = 40;
-  const Int_t nBinsCentr    = 5;
+  const Int_t nBinsCentr    = fNcentBins;
   const Int_t nBinsAj       = 50;
   const Int_t nBins0[nBinsSparse0] = {nBinsPtW,nBinsPtW,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr,nBinsAj};
   //pT1, pT2, deltaPhi, kT
   const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, -0.5*TMath::Pi(),   0.,-1.,0.  , 0.};
   const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt,  1.5*TMath::Pi(), 100., 1.,100., 1.};
+  const Double_t centArrayBins[8] = {0.,2.,5.,10.,20.,40.,60.,100.};
 
   if(fDoChargedCharged) {
     fhnDiJetVarsCh = new THnSparseF("fhnDiJetVarsCh",
 				    "fhnDiJetVarsCh;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality;#it{A}_{j}",
 				    nBinsSparse0,nBins0,xmin0,xmax0);
+    if(fNcentBins==7) fhnDiJetVarsCh->SetBinEdges(5,centArrayBins);
     fOutput->Add(fhnDiJetVarsCh);
   }
 
@@ -170,6 +172,7 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
     fhnDiJetVarsFullCharged = new THnSparseF("fhnDiJetVarsFullCharged",
 				"fhnDiJetVarsFullCharged;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality;#it{A}_{j}",
 				nBinsSparse0,nBins0,xmin0,xmax0);
+    if(fNcentBins==7) fhnDiJetVarsFullCharged->SetBinEdges(5,centArrayBins);
     fOutput->Add(fhnDiJetVarsFullCharged);
   }
 
@@ -214,10 +217,11 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   //pTfull, pTch, deltaPhi, deltaEta, deltaR, fraction, jet type (leading,subleading,other)
   const Double_t xminMatch[nBinsSparseMatch]  = { minPt, minPt, -0.5,-0.5, 0.,0.  ,0};
   const Double_t xmaxMatch[nBinsSparseMatch]  = { maxPt, maxPt,  0.5, 0.5, 0.5,1.05,3};
-  fhnMatchingFullCharged = new THnSparseF("fhnMatchingFullCharged","fhnMatchingFullCharged;#it{p}_{T,full} (GeV/#it{c});#it{p}_{T,ch} (GeV/#it{c});#Delta#varphi;#Delta#eta;#Delta R;f_{ch};type",
+  if(fDoMatchFullCharged) {
+    fhnMatchingFullCharged = new THnSparseF("fhnMatchingFullCharged","fhnMatchingFullCharged;#it{p}_{T,full} (GeV/#it{c});#it{p}_{T,ch} (GeV/#it{c});#Delta#varphi;#Delta#eta;#Delta R;f_{ch};type",
 					  nBinsSparseMatch,nBinsMatch,xminMatch,xmaxMatch);
-  fOutput->Add(fhnMatchingFullCharged);
-
+    fOutput->Add(fhnMatchingFullCharged);
+  }
   fh3JetPtFullFractionDR = new TH3F("fh3JetPtFullFractionDR","fh3JetPtFullFractionDR;#it{p}_{T,full} (GeV/#it{c}); #it{f}_{ch};#Delta R",nBinsPt,minPt,maxPt,nBinsFraction,0.,1.05,nBinsDR,0.,1.);
   fOutput->Add(fh3JetPtFullFractionDR);
   
@@ -397,7 +401,6 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
 
     FillDiJetHistos(jetTrig,jetAssoc, type);
     
-
   }
 
 }

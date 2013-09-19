@@ -316,10 +316,10 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Int_t nBinsPt = 120;
   Double_t minPt = -20.;
   Double_t maxPt = 100.;
-  Int_t nBinsEta = 40;
+  Int_t nBinsEta = 100;
   Double_t minEta = -1.;
   Double_t maxEta = 1.;
-  Int_t nBinsPhi = 18*6;
+  Int_t nBinsPhi = 18*8;
   Double_t minPhi = 0.;
   Double_t maxPhi = TMath::TwoPi();
   Int_t nBinsArea = 100;
