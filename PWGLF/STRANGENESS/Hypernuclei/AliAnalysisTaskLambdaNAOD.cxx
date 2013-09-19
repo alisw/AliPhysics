@@ -1650,7 +1650,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
       
       if(runNumber > 166500) //LHC11h
 	{ 
-	  parDeuteron[0] = 1.11243; // ALEPH parameters for deuterons (pass2)
+	  parDeuteron[0] = 1.17; // ALEPH parameters for deuterons (pass2)
 	  parDeuteron[1] = 26.1144;
 	  parDeuteron[2] = 4.00313e-15;
 	  parDeuteron[3] = 2.72969 ;
