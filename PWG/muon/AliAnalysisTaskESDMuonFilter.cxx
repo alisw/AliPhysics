@@ -260,7 +260,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   
   // Access to the AOD container of tracks
   TClonesArray &tracks = *(AODEvent()->GetTracks());
-  Int_t jTracks = header->GetRefMultiplicity();
+  Int_t jTracks = tracks.GetEntriesFast();
   
   // Read primary vertex from AOD event 
   AliAODVertex *primary = AODEvent()->GetPrimaryVertex();
@@ -272,6 +272,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   for (Int_t iTrack=0; iTrack<nMuTracks; ++iTrack) esd->GetMuonTrack(iTrack)->SetESDEvent(esd);
   
   // Update number of positive and negative tracks from AOD event (M.G.)
+  Int_t nTracks    = header->GetRefMultiplicity();
   Int_t nPosTracks = header->GetRefMultiplicityPos();
   Int_t nNegTracks = header->GetRefMultiplicityNeg();
   
@@ -344,6 +345,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     aodTrack->Connected(esdMuTrack->IsConnected());
     primary->AddDaughter(aodTrack);
     
+    ++nTracks;
     if (esdMuTrack->Charge() > 0) nPosTracks++;
     else nNegTracks++;
     
@@ -372,7 +374,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   }
   
   
-  header->SetRefMultiplicity(jTracks); 
+  header->SetRefMultiplicity(nTracks); 
   header->SetRefMultiplicityPos(nPosTracks);
   header->SetRefMultiplicityNeg(nNegTracks);
   header->SetNumberOfMuons(nMuons);
