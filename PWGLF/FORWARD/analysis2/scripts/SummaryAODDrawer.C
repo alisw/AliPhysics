@@ -23,10 +23,8 @@ public:
     kHistCollector     = 0x010,
     kSteps             = 0x020, 
     kResults           = 0x040, 
-    kPause             = 0x080,
-    kLandscape         = 0x100, 
-    kCentral           = 0x200,
-    kNormal            = 0x27F
+    kCentral           = 0x080,
+    kNormal            = 0x0FF
   };
   SummaryAODDrawer() 
     : SummaryDrawer(),
@@ -131,28 +129,23 @@ protected:
       TCollection* ei = GetCollection(fwd, "fmdEventInspector");
       if (ei) { 
 
-	Int_t sys=0, sNN=0, field=0, runNo=0;
+	UShort_t sys=0, sNN=0;
+	Int_t field=0;
+	ULong_t runNo=0;
 	Bool_t mc=false;
-
-	if (GetParameter(ei, "sys", sys))
-	  DrawParameter(y, "System", (sys == 1 ? "pp" : sys == 2 ? "PbPb" : 
-				      sys == 3 ? "pPb" : "unknown"));
-	if (GetParameter(ei, "sNN", sNN)) {
-	  TString tsNN = TString::Format("%dGeV", sNN);
-	  if (sNN >= 10000) 
-	    tsNN = TString::Format("%5.2f", float(sNN)/1000);
-	  else if (sNN >= 1000) 
-	    tsNN = TString::Format("%4.2f", float(sNN)/1000);
-	  DrawParameter(y, "#sqrt{s_{NN}}", tsNN);
-	}
-
-	if (GetParameter(ei, "field", field))
-	  DrawParameter(y, "L3 B field", Form("%+2dkG", field));
-
-	if (GetParameter(ei, "runNo", runNo))
-	  DrawParameter(y, "Run #", Form("%6d", runNo));
+	GetParameter(ei, "sys", sys);
+	GetParameter(ei, "sNN", sNN);
+	GetParameter(ei, "field", field);
+	GetParameter(ei, "runNo", runNo);
+	if (!GetParameter(ei, "mc", mc, false)) mc = false;
 	
-	if (!GetParameter(ei, "mc", mc)) mc = false;
+	TString sysString;    SysString(sys, sysString);
+	TString sNNString;    SNNString(sNN, sNNString);
+	
+	DrawParameter(y, "System", sysString);
+	DrawParameter(y, "#sqrt{s_{NN}}", sNNString);
+	DrawParameter(y, "L3 B field", Form("%+2dkG", field));
+	DrawParameter(y, "Run #", Form("%6lu", runNo));
 	DrawParameter(y, "Simulation", (mc ? "yes" : "no"));	
       }
     }
@@ -221,14 +214,14 @@ protected:
       if (!sc) { ptr++; continue; }
     
       fBody->Divide(2,3);
-      DrawInPad(fBody, 1, GetH1(sc, "esdEloss"),       "",     0x2,
+      DrawInPad(fBody, 1, GetH1(sc, "esdEloss"),       "",     kLogy,
 		"#Delta/#Delta_{mip} reconstructed and merged");
-      DrawInPad(fBody, 1, GetH1(sc, "anaEloss"),       "same", 0x12);
-      DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",     0x2,
+      DrawInPad(fBody, 1, GetH1(sc, "anaEloss"),       "same", kLogy|kLegend);
+      DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",     kLogy,
 		"#Delta/#Delta_{mip} for single, double, and tripple hits");
-      DrawInPad(fBody, 2, GetH1(sc, "doubleEloss"),    "same", 0x2);
-      DrawInPad(fBody, 2, GetH1(sc, "tripleEloss"),    "same", 0x12);  
-      DrawInPad(fBody, 3, GetH2(sc, "singlePerStrip"), "colz", 0x4);
+      DrawInPad(fBody, 2, GetH1(sc, "doubleEloss"),    "same", kLogy);
+      DrawInPad(fBody, 2, GetH1(sc, "tripleEloss"),    "same", kLogy|kLegend);  
+      DrawInPad(fBody, 3, GetH2(sc, "singlePerStrip"), "colz", kLogz);
       // DrawInPad(fBody, 4, GetH1(sc, "distanceBefore"), "",     0x2);
       // DrawInPad(fBody, 4, GetH1(sc, "distanceAfter"),  "same", 0x12);
       DrawInPad(fBody, 4, GetH2(sc, "summed"),         "colz", 0x0);
@@ -238,10 +231,10 @@ protected:
 	nB->GetXaxis()->SetRangeUser(0,8); 
 	nB->GetYaxis()->SetRangeUser(0,8); 
       }
-      DrawInPad(fBody, 5, nB, "colz", 0x4);
-      DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", 0x4,
+      DrawInPad(fBody, 5, nB, "colz", kLogz);
+      DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", kLogz,
 		"Correlation of neighbors before and after merging");
-      DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   0x4);
+      DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
 
       PrintCanvas(Form("Sharing filter - %s", *ptr));
       ptr++;
@@ -252,11 +245,11 @@ protected:
     if (!cc) return; // Not MC 
 
     DivideForRings(false, false);
-    DrawInRingPad(1, 'I', GetH2(cc, "FMD1i_corr"), "colz", 0x4);
-    DrawInRingPad(2, 'I', GetH2(cc, "FMD2i_corr"), "colz", 0x4);
-    DrawInRingPad(2, 'O', GetH2(cc, "FMD2o_corr"), "colz", 0x4);
-    DrawInRingPad(3, 'I', GetH2(cc, "FMD3i_corr"), "colz", 0x4);
-    DrawInRingPad(3, 'O', GetH2(cc, "FMD3o_corr"), "colz", 0x4);
+    DrawInRingPad(1, 'I', GetH2(cc, "FMD1i_corr"), "colz", kLogz);
+    DrawInRingPad(2, 'I', GetH2(cc, "FMD2i_corr"), "colz", kLogz);
+    DrawInRingPad(2, 'O', GetH2(cc, "FMD2o_corr"), "colz", kLogz);
+    DrawInRingPad(3, 'I', GetH2(cc, "FMD3i_corr"), "colz", kLogz);
+    DrawInRingPad(3, 'O', GetH2(cc, "FMD3o_corr"), "colz", kLogz);
 
     PrintCanvas("Sharing filter - MC vs Reco");
 
@@ -330,7 +323,7 @@ protected:
     if (nFiles && lCuts) lCuts->Scale(1. / nFiles->GetVal());
     if (nFiles && maxW)  maxW->Scale(1. / nFiles->GetVal());
     DrawInPad(p, 2, accI); 
-    DrawInPad(p, 2, accO,  "same", 0x10); 
+    DrawInPad(p, 2, accO,  "same", kLegend); 
     DrawInPad(p, 3, lCuts, "colz");
     DrawInPad(p, 4, maxW,  "colz");
   
@@ -344,12 +337,12 @@ protected:
     
       fBody->Divide(2,3);
     
-      DrawInPad(fBody, 1, GetH2(sc, "elossVsPoisson"),   "colz",   0x4);
-      DrawInPad(fBody, 2, GetH1(sc, "diffElossPoisson"), "HIST E", 0x2);
-      DrawInPad(fBody, 3, GetH1(sc, "occupancy"),        "",       0x2);
-      DrawInPad(fBody, 4, GetH1(sc, "eloss"),            "",       0x2,
+      DrawInPad(fBody, 1, GetH2(sc, "elossVsPoisson"),   "colz",   kLogz);
+      DrawInPad(fBody, 2, GetH1(sc, "diffElossPoisson"), "HIST E", kLogy);
+      DrawInPad(fBody, 3, GetH1(sc, "occupancy"),        "",       kLogy);
+      DrawInPad(fBody, 4, GetH1(sc, "eloss"),            "",       kLogy,
 		"#Delta/#Delta_{mip} before and after cuts");
-      DrawInPad(fBody, 4, GetH1(sc, "elossUsed"),        "same",   0x12);
+      DrawInPad(fBody, 4, GetH1(sc, "elossUsed"),        "same",kLogy|kLegend);
       TH1* phiB = GetH1(sc, "phiBefore");
       TH1* phiA = GetH1(sc, "phiAfter");
       if (phiB && phiA) { 
@@ -359,7 +352,7 @@ protected:
 	phiA->SetYTitle("(#phi_{after}-#phi_{before})/#phi_{before}");
       }
       DrawInPad(fBody, 5, phiA);
-      DrawInPad(fBody, 6, GetH2(sc, "phiAcc"), "colz",   0x4);
+      DrawInPad(fBody, 6, GetH2(sc, "phiAcc"), "colz",   kLogz);
     
       PrintCanvas(Form("Density calculator - %s", *ptr));
       ptr++;    
@@ -369,16 +362,16 @@ protected:
     if (!cc) return; // Not MC 
 
     fBody->Divide(2,5);
-    DrawInPad(fBody, 1, GetH2(cc, "FMD1I_corr_mc_esd"), "colz", 0x4);
-    DrawInPad(fBody, 3, GetH2(cc, "FMD2I_corr_mc_esd"), "colz", 0x4);
-    DrawInPad(fBody, 5, GetH2(cc, "FMD2O_corr_mc_esd"), "colz", 0x4);
-    DrawInPad(fBody, 7, GetH2(cc, "FMD3O_corr_mc_esd"), "colz", 0x4);
-    DrawInPad(fBody, 9, GetH2(cc, "FMD3I_corr_mc_esd"), "colz", 0x4);
-    DrawInPad(fBody, 2,  GetH1(cc, "FMD1I_diff_mc_esd"), "", 0x2);
-    DrawInPad(fBody, 4,  GetH1(cc, "FMD2I_diff_mc_esd"), "", 0x2);
-    DrawInPad(fBody, 6,  GetH1(cc, "FMD2O_diff_mc_esd"), "", 0x2);
-    DrawInPad(fBody, 8,  GetH1(cc, "FMD3O_diff_mc_esd"), "", 0x2);
-    DrawInPad(fBody, 10, GetH1(cc, "FMD3I_diff_mc_esd"), "", 0x2);
+    DrawInPad(fBody, 1, GetH2(cc, "FMD1I_corr_mc_esd"), "colz", kLogz);
+    DrawInPad(fBody, 3, GetH2(cc, "FMD2I_corr_mc_esd"), "colz", kLogz);
+    DrawInPad(fBody, 5, GetH2(cc, "FMD2O_corr_mc_esd"), "colz", kLogz);
+    DrawInPad(fBody, 7, GetH2(cc, "FMD3O_corr_mc_esd"), "colz", kLogz);
+    DrawInPad(fBody, 9, GetH2(cc, "FMD3I_corr_mc_esd"), "colz", kLogz);
+    DrawInPad(fBody, 2,  GetH1(cc, "FMD1I_diff_mc_esd"), "", kLogy);
+    DrawInPad(fBody, 4,  GetH1(cc, "FMD2I_diff_mc_esd"), "", kLogy);
+    DrawInPad(fBody, 6,  GetH1(cc, "FMD2O_diff_mc_esd"), "", kLogy);
+    DrawInPad(fBody, 8,  GetH1(cc, "FMD3O_diff_mc_esd"), "", kLogy);
+    DrawInPad(fBody, 10, GetH1(cc, "FMD3I_diff_mc_esd"), "", kLogy);
 
     PrintCanvas("Density calculator - MC vs Reco");
   }
@@ -511,7 +504,7 @@ protected:
     DrawInPad(fBody, GetH3(bc, "FMD2I"), "box same", 0);
     DrawInPad(fBody, GetH3(bc, "FMD2O"), "box same", 0);
     DrawInPad(fBody, GetH3(bc, "FMD3O"), "box same", 0);
-    DrawInPad(fBody, GetH3(bc, "FMD3I"), "box same", 0x10);
+    DrawInPad(fBody, GetH3(bc, "FMD3I"), "box same", kLegend);
   }
 
   //____________________________________________________________________
@@ -527,7 +520,7 @@ protected:
 		 
     DrawInPad(fBody, 1, GetH2(c, "coverage"), "col", 0,
 	      "#eta coverage per v_{z}");
-    DrawInPad(fBody, 2, GetH2(c, "nClusterVsnTracklet"), "colz", 0x03,
+    DrawInPad(fBody, 2, GetH2(c, "nClusterVsnTracklet"), "colz", kLogx|kLogy,
 	      "Correlation of # of tracklets and clusters"); 
     DrawInPad(fBody, 3, GetH2(c, "clusterPerTracklet"), "colz", 0x0,
 	      "# clusters per tracklet vs #eta"); 
@@ -858,18 +851,18 @@ protected:
       }
       pring++;
     }
-    DrawInPad(fBody, 1, GetStack(c, "all"), "nostack", mcRings ? 0 : 0x10,
+    DrawInPad(fBody, 1, GetStack(c, "all"), "nostack", mcRings ? 0 : kLegend,
 	      "Individual ring results");
-    DrawInPad(fBody, 1, mcRings, "nostack same", 0x10);
+    DrawInPad(fBody, 1, mcRings, "nostack same", kLegend);
     DrawInPad(fBody, 2, dndeta_phi, 
 	      "1/#it{N}_{ev} d#it{N}_{ch}/d#it{#eta}");
-    DrawInPad(fBody, 2, dndeta_eta, "Same", 0x10);
-    DrawInPad(fBody, 3, allEta, "nostack hist", 0x10,
+    DrawInPad(fBody, 2, dndeta_eta, "Same", kLegend);
+    DrawInPad(fBody, 3, allEta, "nostack hist", kLegend,
 	      "#phi acceptance and #eta coverage per ring");
     DrawInPad(fBody, 3, allPhi, "nostack hist same", 0x0);
     DrawInPad(fBody, 4, GetH1(fResults, "norm"), "", 0x0, 
 	      "Total #phi acceptance and #eta coverage");
-    DrawInPad(fBody, 4, GetH1(fResults, "phi"), "same", 0x10);
+    DrawInPad(fBody, 4, GetH1(fResults, "phi"), "same", kLegend);
     // DrawInPad(fBody, 4, GetH1(fSums,    "d2Ndetadphi"), "colz");
 
     // fBody->cd(1);

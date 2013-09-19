@@ -61,6 +61,10 @@ public:
     kGridy  = 0x200, 
     kGridz  = 0x400
   };
+  enum { 
+    kLandscape         = 0x100, 
+    kPause             = 0x200
+  };    
   SummaryDrawer() 
     : fCanvas(0), 
       fTop(0), 
@@ -97,39 +101,85 @@ protected:
     return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
 	    + ((r == 'I' || r == 'i') ? 2 : -3));
   }
+  static void SysString(UShort_t sys, TString& str)
+  {
+    str = "?";
+    switch (sys) { 
+    case 1: str = "pp"; break;
+    case 2: str = "PbPb"; break;
+    case 3: str = "pPb"; break;
+    }
+  }
+  static void SNNString(UShort_t sNN, TString& str)
+  {
+    str = "?";
+    if      (sNN < 1000) str = Form("%dGeV", sNN);
+    else if (sNN < 3000) str = Form("%4.2fTeV", 0.001*sNN);
+    else                 str = Form("%dTeV", sNN/1000);
+  }
+  /** 
+   * Append an & to a string and the next term.
+   * 
+   * @param trg  Output string
+   * @param what Term
+   */
+  static void AppendAnd(TString& trg, const TString& what)
+  {
+    if (!trg.IsNull()) trg.Append(" & ");
+    trg.Append(what);
+  }
+  static void TriggerString(ULong_t trigger, TString& str)
+  {
+    str = "";
+        /** 
+     * Bits of the trigger pattern
+     */
+    enum { 
+      /** In-elastic collision */
+      kInel        = 0x0001, 
+      /** In-elastic collision with at least one SPD tracklet */
+      kInelGt0     = 0x0002, 
+      /** Non-single diffractive collision */
+      kNSD         = 0x0004, 
+      /** Empty bunch crossing */
+      kEmpty       = 0x0008, 
+      /** A-side trigger */
+      kA           = 0x0010, 
+      /** B(arrel) trigger */
+      kB           = 0x0020, 
+      /** C-side trigger */
+      kC           = 0x0080,  
+      /** Empty trigger */
+      kE           = 0x0100,
+      /** pileup from SPD */
+      kPileUp      = 0x0200,    
+      /** true NSD from MC */
+      kMCNSD       = 0x0400,    
+      /** Offline MB triggered */
+      kOffline     = 0x0800,
+      /** At least one SPD cluster */ 
+      kNClusterGt0 = 0x1000,
+      /** V0-AND trigger */
+      kV0AND       = 0x2000, 
+      /** Satellite event */
+      kSatellite   = 0x4000
+    };
+    if ((trigger & kInel)        != 0x0) AppendAnd(str, "INEL");
+    if ((trigger & kInelGt0)     != 0x0) AppendAnd(str, "INEL>0");
+    if ((trigger & kNSD)         != 0x0) AppendAnd(str, "NSD");
+    if ((trigger & kV0AND)       != 0x0) AppendAnd(str, "V0AND");
+    if ((trigger & kA)           != 0x0) AppendAnd(str, "A");
+    if ((trigger & kB)           != 0x0) AppendAnd(str, "B");
+    if ((trigger & kC)           != 0x0) AppendAnd(str, "C");
+    if ((trigger & kE)           != 0x0) AppendAnd(str, "E");
+    if ((trigger & kMCNSD)       != 0x0) AppendAnd(str, "MCNSD");
+    if ((trigger & kNClusterGt0) != 0x0) AppendAnd(str, "NCluster>0");
+    if ((trigger & kSatellite)   != 0x0) AppendAnd(str, "Satellite");
+  }
+    
   //__________________________________________________________________
   /** 
    * Find an object in a collection
-   * 
-   * @param parent Parent list
-   * @param name   Name of object
-   * @param verb   Be verbose 
-   * 
-   * @return Pointer to object or null 
-   */
-  static TObject* GetObject(const TCollection* parent, 
-			    const TString&     name,
-			    Bool_t             verb=true)
-  {
-    if (!parent) {
-      if (verb) Warning("GetObject", "No parent list");
-      return 0;
-    }
-    if (name.IsNull()) { 
-      if (verb) Warning("GetObject", "No name specified");
-      return 0;
-    }
-    TObject* o = parent->FindObject(name);
-    if (!o) {
-      if (verb) Warning("GetObject", "Object \"%s\" not found in parent \"%s\"",
-			name.Data(), parent->GetName());
-      return 0;
-    }
-    return o;
-  }
-  //__________________________________________________________________
-  /** 
-   * Find an object in a directory
    * 
    * @param parent Parent directory
    * @param name   Name of object
@@ -137,25 +187,38 @@ protected:
    * 
    * @return Pointer to object or null 
    */
-  static TObject* GetObject(const TDirectory* parent, 
+  static TObject* GetObject(const TObject* parent, 
 			    const TString& name, 
 			    Bool_t verb=true)
   {
     if (!parent) {
-      if (verb) Warning("GetObject", "No parent directory");
+      if (verb) Warning("GetObject", "No parent given");
       return 0;
     }
     if (name.IsNull()) { 
       if (verb) Warning("GetObject", "No name specified");
       return 0;
     }
-    TObject* o = const_cast<TDirectory*>(parent)->Get(name);
+    TObject* o = 0;
+    if (parent->IsA()->InheritsFrom(TCollection::Class())) {
+      const TCollection* p = static_cast<const TCollection*>(parent);
+      o = p->FindObject(name);
+    }
+    else if (parent->IsA()->InheritsFrom(TDirectory::Class())) {
+      const TDirectory* d = static_cast<const TDirectory*>(parent);
+      o = const_cast<TDirectory*>(d)->Get(name);
+    }
+    else 
+      Warning("GetObject", "Do not know how to find an object (%s) in "
+	      "%s (of class %s)", name.Data(), 
+	      parent ? parent->GetName() : "?", 
+	      parent ? parent->ClassName() : "?");
     if (!o) {
       if (verb) Warning("GetObject", "Object \"%s\" not found in parent \"%s\"",
 			name.Data(), parent->GetName());
       return 0;
     }
-    return o;
+    return o;    
   }
   //____________________________________________________________________
   /** 
@@ -179,16 +242,51 @@ protected:
     }
     return true;
   }
+  //__________________________________________________________________
+  /** 
+   * Check a possibly returned object. 
+   * 
+   * @param o  Object found - if any
+   * @param p  Parent of object
+   * 
+   * @return A pointer to the object cast to the right type
+   */
+  template <typename T>
+  static T* DoGetObject(TObject* o, const TObject* p) 
+  {
+    if (!o) return 0;
+    if (!CheckType(o, T::Class(), p->GetName())) return 0;
+    return static_cast<T*>(o);
+  }
+  //__________________________________________________________________
+  /** 
+   * Check a returned parameter from a parent
+   * 
+   * @param o     Possibly found object
+   * @param p     Parent object
+   * @param value Value 
+   * 
+   * @return true on success, false otherwise 
+   */
   template <typename T>
   static Bool_t DoGetParameter(TObject* o, const TObject* p, T& value) 
   {
-    if (!o) return false;
-    if (!CheckType(o, TParameter<T>::Class(), p->GetName())) return false;
-    // TParameter<T>* p = static_cast<TParameter<T>*>(o);
-    // if (p->TestBit(TParameter<T>::kFirst)) 
-    // value = p->GetVal();
-    // else 
-    value = o->GetUniqueID();
+    TParameter<T>* r = DoGetObject<TParameter<T> >(o, p);
+    if (!r) return false;
+    // if (r->TestBit(TParameter<T>::kFirst)) value = r->GetVal();
+    // else                                   value = r->GetUniqueID();
+    value = r->GetVal();
+    if (!r->TestBit(BIT(19))) {
+      TObject* oc = GetObject(p, "count", false);
+      if (oc) {
+	TParameter<int>* pc = static_cast<TParameter<int>*>(oc);
+	int cnt = pc->GetVal();
+	value /= cnt;
+      }
+      else 
+	value = r->GetUniqueID();
+    }
+    // value = r->GetUniqueID();
     return true;
   }
     
@@ -201,23 +299,32 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static Bool_t GetParameter(const TCollection*  c, 
-			     const TString&      name, 
-			     UShort_t&           value,
-			     Bool_t              verb=true)
+  static Bool_t GetParameter(const TObject*  c, 
+			     const TString&  name, 
+			     UShort_t&       value,
+			     Bool_t          verb=true)
   {
     int v;
     Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v); 
     value = v;
     return r;
   }
-  static Bool_t GetParameter(const TDirectory*  c, 
-			     const TString&      name, 
-			     UShort_t&           value,
-			     Bool_t              verb=true)
+  //___________________________________________________________________
+  /** 
+   * Get a UShort_t parameter value 
+   * 
+   * @param c      Parent collection
+   * @param name   Name of parameter
+   * @param value  On return the value
+   * @param verb   If true, complain if not found 
+   */
+  static Bool_t GetParameter(const TObject*  c, 
+			     const TString&  name, 
+			     ULong_t&        value,
+			     Bool_t          verb=true)
   {
-    int v; 
-    Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v);
+    Long_t v;
+    Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v); 
     value = v;
     return r;
   }
@@ -230,17 +337,10 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static Bool_t GetParameter(const TCollection*  c, 
-			     const TString&      name, 
-			     Int_t&              value,
-			     Bool_t              verb=true)
-  {
-    return DoGetParameter(GetObject(c, name, verb), c, value);
-  }
-  static Bool_t GetParameter(const TDirectory*  c, 
-			     const TString&      name, 
-			     Int_t&              value,
-			     Bool_t              verb=true)
+  static Bool_t GetParameter(const TObject*  c, 
+			     const TString&  name, 
+			     Int_t&          value,
+			     Bool_t          verb=true)
   {
     return DoGetParameter(GetObject(c, name, verb), c, value);
   }
@@ -253,11 +353,7 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static Bool_t GetParameter(const TCollection*  c, 
-			     const TString&      name, 
-			     Double_t&           value,
-			     Bool_t              verb=true);
-  static Bool_t GetParameter(const TDirectory*  c, 
+  static Bool_t GetParameter(const TObject*      c, 
 			     const TString&      name, 
 			     Double_t&           value,
 			     Bool_t              verb=true);
@@ -270,14 +366,7 @@ protected:
    * @param value  On return the value
    * @param verb   If true, complain if not found 
    */
-  static Bool_t GetParameter(const TCollection*  c, 
-			   const TString&      name, 
-			   Bool_t&             value,
-			   Bool_t              verb=true)
-  {
-    return DoGetParameter(GetObject(c, name, verb), c, value);
-  }
-  static Bool_t GetParameter(const TDirectory*  c, 
+  static Bool_t GetParameter(const TObject*  c, 
 			     const TString&      name, 
 			     Bool_t&             value,
 			     Bool_t              verb=true)
@@ -294,62 +383,26 @@ protected:
    *
    * @return pointer to collection on success, otherwise null 
    */
-  static TCollection* DoGetCollection(TObject* o, const TObject* p)
-  {
-    if (!o) return 0;
-    if (!CheckType(o, TCollection::Class(), p->GetName())) return 0;
-    return static_cast<TCollection*>(o);
-  }
-  static TCollection* GetCollection(const TCollection* parent, 
+  static TCollection* GetCollection(const TObject*     parent, 
 				    const TString&     name,
 				    Bool_t             verb=true)
   {
-    return DoGetCollection(GetObject(parent, name, verb), parent);
+    return DoGetObject<TCollection>(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
-   * Find a collection in a directory
+   * Check a 1D histogram object from a parent
    * 
-   * @param parent Parent directory
-   * @param name   Name of the collection 
-   * @param verb   If true and not found, complain
-   * 
-   * @return pointer to collection on success, otherwise null 
-   */
-  static TCollection* GetCollection(const TDirectory* parent, 
-				    const TString&    name,
-				    Bool_t            verb=true)
-  {
-    return DoGetCollection(GetObject(parent, name, verb), parent);
-  }
-
-  //____________________________________________________________________
-  /** 
-   * Get a 1D histogram from a collection
-   * 
-   * @param parent Parent collection 
-   * @param name   Name of histogram 
-   * @param verb   If true and not found, complain
+   * @param p Parent collection 
+   * @param o Possibly found object
    * 
    * @return pointer or null
    */
-  static TH1* DoGetH1(TObject* o, const TObject* p) 
-  {
-    if (!o) return 0;
-    if (!CheckType(o, TH1::Class(), p->GetName())) return 0;
-    return static_cast<TH1*>(o);
-  }    
-  static TH1* GetH1(const TCollection* parent, 
+  static TH1* GetH1(const TObject*     parent, 
 		    const TString&     name,
 		    Bool_t             verb=true)
   {
-    return DoGetH1(GetObject(parent, name, verb), parent);
-  }
-  static TH1* GetH1(const TDirectory* parent, 
-		    const TString&    name, 
-		    Bool_t            verb=true)
-  {
-    return DoGetH1(GetObject(parent, name, verb), parent);
+    return DoGetObject<TH1>(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
@@ -361,23 +414,11 @@ protected:
    * 
    * @return pointer or null
    */
-  static TH2* DoGetH2(TObject* o, const TObject* p) 
-  {
-    if (!o) return 0;
-    if (!CheckType(o, TH2::Class(), p->GetName())) return 0;
-    return static_cast<TH2*>(o);
-  }    
-  static TH2* GetH2(const TCollection* parent, 
+  static TH2* GetH2(const TObject*     parent, 
 		    const TString&     name, 
 		    Bool_t             verb=true)
   {
-    return DoGetH2(GetObject(parent, name, verb), parent);
-  }
-  static TH2* GetH2(const TDirectory*  parent, 
-		    const TString&     name, 
-		    Bool_t             verb=true)
-  {
-    return DoGetH2(GetObject(parent, name, verb), parent);
+    return DoGetObject<TH2>(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
@@ -389,19 +430,13 @@ protected:
    * 
    * @return pointer or null
    */
-  static TH3* DoGetH3(TObject* o, const TObject* p) 
-  {
-    if (!o) return 0;
-    if (!CheckType(o, TH3::Class(), p->GetName())) return 0;
-    return static_cast<TH3*>(o);
-  }    
   static TH3* GetH3(const TCollection* parent, 
 		    const TString&     name, 
 		    Bool_t             verb=true)
   {
     // Info("GetH2", "Getting 2D histogram of %s from %p", name.Data(), c);
     // --- Find the object -------------------------------------------
-    return DoGetH3(GetObject(parent, name, verb), parent);
+    return DoGetObject<TH3>(GetObject(parent, name, verb), parent);
   }
   //__________________________________________________________________
   /** 
@@ -409,23 +444,18 @@ protected:
    * 
    * @param parent Parent collection 
    * @param name   Name of histogram 
-   * @param sub    Sub-component 
+   * @param sub    If set, fill from sub-component 
    * @param verb   If true and not found, complain
    * 
    * @return pointer or null
    */
-  static THStack* DoGetStack(TObject* o, const TObject* p)
+  static THStack* GetStack(const TObject*  parent, 
+			   const TString&  name,
+			   const char*     sub=0,
+			   Bool_t          verb=true)
   {
-    if (!o) return 0;
-    if (!CheckType(o, THStack::Class(), p->GetName())) return 0;
-    return static_cast<THStack*>(o);
-  }
-  static THStack* GetStack(const TCollection* parent, 
-			   const TString&     name,
-			   const char*        sub=0,
-			   Bool_t             verb=true)
-  {
-    THStack* stack = DoGetStack(GetObject(parent, name, verb), parent);
+    THStack* stack = DoGetObject<THStack>(GetObject(parent,name,verb),parent);
+    if (!stack) return 0;
     if (sub == 0) return stack;
   
     if (stack->GetHists()->GetEntries() <= 0 ||stack->GetMaximum() < 1) { 
@@ -461,12 +491,6 @@ protected:
     }
     // --- Return the collection -------------------------------------
     return stack;
-  }
-  static THStack* GetStack(const TDirectory* parent, 
-			   const TString&     name,
-			   Bool_t             verb=true)
-  {
-    return DoGetStack(GetObject(parent, name, verb), parent);
   }
   //____________________________________________________________________
   /** 
@@ -1055,8 +1079,11 @@ protected:
     TCollection* c = GetCollection(parent, "fmdEventInspector");
     if (!c) return;
 
-    Int_t sys=0, sNN=0, field=0, runNo=0, lowFlux=0, nPileUp=0;
-    Int_t aliRev=0, aliBra=0;
+    UShort_t sys=0, sNN=0;
+    Int_t field=0;
+    ULong_t runNo=0;
+    Int_t lowFlux=0, nPileUp=0;
+    ULong_t aliRev=0, aliBra=0;
     Bool_t fpVtx=false, v0and=false;
     Double_t dPileUp=0.;
     Double_t y = .8;
@@ -1066,45 +1093,31 @@ protected:
     Double_t save = fParName->GetTextSize();
     fParName->SetTextSize(0.03);
     fParVal->SetTextSize(0.03);
-
-    if (GetParameter(c, "sys", sys))
-      DrawParameter(y, "System", (sys == 1 ? "pp" : sys == 2 ? "PbPb" : 
-				  sys == 3 ? "pPb" : "unknown"));
-    if (GetParameter(c, "sNN", sNN)) {
-      TString tsNN = TString::Format("%dGeV", sNN);
-      if (sNN >= 10000) 
-	tsNN = TString::Format("%5.2fTeV", float(sNN)/1000);
-      else if (sNN >= 1000) 
-	tsNN = TString::Format("%4.2fTeV", float(sNN)/1000);
-      DrawParameter(y, "#sqrt{s_{NN}}", tsNN);
-    }
-
-    if (GetParameter(c, "field", field))
-      DrawParameter(y, "L3 B field", Form("%+2dkG", field));
-
-    if (GetParameter(c, "runNo", runNo))
-      DrawParameter(y, "Run #", Form("%d", runNo));
-
-    if (GetParameter(c, "lowFlux", lowFlux))
-      DrawParameter(y, "Low flux cut", Form("%d", lowFlux));
-
-    if (GetParameter(c, "fpVtx", fpVtx))
-      DrawParameter(y, "Use PWG-UD vertex", (fpVtx ? "yes" : "no"));
-
-    if (GetParameter(c, "v0and", v0and))
-      DrawParameter(y, "Use V0AND for NSD", (v0and ? "yes" : "no"));
-
-    if (GetParameter(c, "nPileUp", nPileUp))
-      DrawParameter(y, "Least # of pile-up vertex", Form("%d", nPileUp));
-      
-    if (GetParameter(c, "dPileup", dPileUp))
-      DrawParameter(y, "Least distance of pile-up vertex",
-		    Form("%fcm", dPileUp));
-
-    if (GetParameter(c, "alirootRev", aliRev) || 
-	GetParameter(c, "alirootBranch", aliBra))
-      DrawParameter(y, "AliROOT", Form("%lu/0x%08lx", ULong_t(aliRev), 
-				       ULong_t(aliBra)));
+    
+    GetParameter(c, "sys", sys);
+    GetParameter(c, "sNN", sNN);
+    GetParameter(c, "field", field);
+    GetParameter(c, "runNo", runNo);
+    GetParameter(c, "lowFlux", lowFlux);
+    GetParameter(c, "fpVtx", fpVtx);
+    GetParameter(c, "v0and", v0and);
+    GetParameter(c, "nPileUp", nPileUp);
+    GetParameter(c, "dPileup", dPileUp);
+    GetParameter(c, "alirootRev", aliRev);
+    GetParameter(c, "alirootBranch", aliBra);
+    
+    TString tS; SysString(sys, tS); DrawParameter(y, "System", tS);
+    TString tE; SNNString(sNN, tE); DrawParameter(y, "#sqrt{s_{NN}}", tE);
+    DrawParameter(y, "L3 B field", Form("%+2dkG", field));
+    DrawParameter(y, "Run #", Form("%lu", runNo));
+    DrawParameter(y, "Low flux cut", Form("%d", lowFlux));
+    DrawParameter(y, "Use PWG-UD vertex", (fpVtx ? "yes" : "no"));
+    DrawParameter(y, "Use V0AND for NSD", (v0and ? "yes" : "no"));
+    DrawParameter(y, "Least # of pile-up vertex", Form("%d", nPileUp));
+    DrawParameter(y, "Least distance of pile-up vertex",
+		  Form("%fcm", dPileUp));
+    DrawParameter(y, "AliROOT", Form("%lu/0x%08lx", ULong_t(aliRev), 
+				     ULong_t(aliBra)));
 
     TH1*    triggers     = GetH1(c, "triggers");
     TH1*    vertex       = GetH1(c, "vertex", false);
@@ -1137,19 +1150,19 @@ protected:
       // vertex->Rebin(2);
       vertex->SetFillColor(kMagenta+2);
     }
-    DrawInPad(fBody, 1, nEventsTr, "", 0x2, 
+    DrawInPad(fBody, 1, nEventsTr, "", kLogy, 
 	      "Events w/trigger, trigger+vertex, accepted");
     if (vertex) DrawInPad(fBody, 1, vertex, "same");
     DrawInPad(fBody, 1, nEventsTrVtx, "same"); 
-    DrawInPad(fBody, 1, nEventsAcc, "same", 0x10);
+    DrawInPad(fBody, 1, nEventsAcc, "same", kLegend);
 
 
-    DrawInPad(fBody, 2, GetH2(c, "nEventsAcceptedXY"), "colz", 0x4);
+    DrawInPad(fBody, 2, GetH2(c, "nEventsAcceptedXY"), "colz", kLogz);
     DrawInPad(fBody, 3, triggers,          "hist text");
     if (GetH1(c, "trgStatus"))
       DrawInPad(fBody, 4, GetH1(c, "trgStatus"),       "hist text");
     else  // Old one 
-      DrawInPad(fBody, 4, GetH2(c, "triggerCorr"),     "colz", 0x4);
+      DrawInPad(fBody, 4, GetH2(c, "triggerCorr"),     "colz", kLogz);
     DrawInPad(fBody, 5, GetH1(c, "status"),            "hist text");
     if (GetH1(c, "vtxStatus"))
       DrawInPad(fBody, 6, GetH1(c, "vtxStatus"),       "hist text");
@@ -1162,7 +1175,7 @@ protected:
       cent->Scale(1, "width");
       centQual->Scale(1, "width");
       DrawInPad(fBody, 7, cent);
-      DrawInPad(fBody, 8, centQual, "colz", 0x4);
+      DrawInPad(fBody, 8, centQual, "colz", kLogz);
     }
     
     PrintCanvas("EventInspector - Histograms");  
@@ -1181,7 +1194,7 @@ protected:
     fBody->Divide(2,3);
 
     DrawInPad(fBody, 1, phiR);
-    DrawInPad(fBody, 2, vzComparison, "colz", 0x4);
+    DrawInPad(fBody, 2, vzComparison, "colz", kLogz);
     DrawInPad(fBody, 3, b);
 
     TProfile* nPartB = bVsNpart->ProfileX("nPartB",1,-1,"s");
@@ -1199,9 +1212,9 @@ protected:
     nBinB->SetMarkerSize(0.7);
     nBinB->SetFillStyle(1001);
 
-    DrawTwoInPad(fBody, 4, nPartB, nBinB, "e3 p", 0x10);
+    DrawTwoInPad(fBody, 4, nPartB, nBinB, "e3 p", kLegend);
 
-    DrawInPad(fBody, 5, bVsCent, "colz", 0x4);
+    DrawInPad(fBody, 5, bVsCent, "colz", kLogz);
 
     TProfile* nPartC = centVsNpart->ProfileY("nPartC",1,-1,"s");
     TProfile* nBinC  = centVsNbin->ProfileY("nBinC",1,-1,"s");
@@ -1218,7 +1231,7 @@ protected:
     nBinC->SetMarkerSize(0.7);
     nBinC->SetFillStyle(1001);
 
-    DrawTwoInPad(fBody, 6, nPartC, nBinC, "e3 p", 0x10);
+    DrawTwoInPad(fBody, 6, nPartC, nBinC, "e3 p", kLegend);
 
     PrintCanvas("EventInspector - Monte-Carlo");  
   }
@@ -1232,15 +1245,15 @@ protected:
     if (!mc) return; // Not MC 
 
     fBody->Divide(2,3);
-    DrawInPad(fBody, 1, GetH2(mc, "binFlow"),    "colz", 0x4);
-    DrawInPad(fBody, 2, GetH2(mc, "binFlowEta"), "colz", 0x4);
-    DrawInPad(fBody, 3, GetH2(mc, "binFlowPhi"), "colz", 0x4);
-    DrawInPad(fBody, 4, GetH1(mc, "nRefs"),       "",    0x2,
+    DrawInPad(fBody, 1, GetH2(mc, "binFlow"),    "colz", kLogz);
+    DrawInPad(fBody, 2, GetH2(mc, "binFlowEta"), "colz", kLogz);
+    DrawInPad(fBody, 3, GetH2(mc, "binFlowPhi"), "colz", kLogz);
+    DrawInPad(fBody, 4, GetH1(mc, "nRefs"),       "",    kLogy,
 	      "# of references");
     DrawInPad(fBody, 4, GetH1(mc, "clusterRefs",   false), "same");
     DrawInPad(fBody, 4, GetH1(mc, "clusterSize",   false), "same");
-    DrawInPad(fBody, 4, GetH1(mc, "nClusters",     false), "same", 0x10);
-    DrawInPad(fBody, 5, GetH2(mc, "clusterVsRefs", false),"colz", 0x4);
+    DrawInPad(fBody, 4, GetH1(mc, "nClusters",     false), "same", kLegend);
+    DrawInPad(fBody, 5, GetH2(mc, "clusterVsRefs", false),"colz", kLogz);
 
     PrintCanvas("Track density");  
   }
@@ -1257,39 +1270,31 @@ protected:
   TVirtualPad** fRingMap;
   Bool_t   fPDF;
 };
-
-  template <> 
-  inline Bool_t 
-  SummaryDrawer::DoGetParameter<Double_t>(TObject* o, const TObject* p, 
-				       Double_t& value)
-  {
-    if (!o) return false;
-    if (!CheckType(o, TParameter<Double_t>::Class(), p->GetName())) 
-      return false;
-    UInt_t  i = o->GetUniqueID();
-    Float_t v = *reinterpret_cast<Float_t*>(&i);
-    value = v;
-    return true;
-    // TParameter<T>* p = static_cast<TParameter<T>*>(o);
-  }
+#if 0
+template <> 
 inline Bool_t 
-SummaryDrawer::GetParameter(const TCollection*  c, 
-			    const TString&      name, 
-			    Double_t&           value,
-			    Bool_t              verb)
-  
+SummaryDrawer::DoGetParameter<Double_t>(TObject* o, const TObject* p, 
+					Double_t& value)
 {
-  return DoGetParameter(GetObject(c, name, verb), c, value);
+  TParameter<Double_t>* r = DoGetObject<TParameter<Double_t>(o, p);
+  UInt_t  i = o->GetUniqueID();
+  Float_t v = *reinterpret_cast<Float_t*>(&i);
+  value = v;
+  return true;
 }
+#endif
 inline Bool_t 
-SummaryDrawer::GetParameter(const TDirectory*  c, 
-			    const TString&      name, 
-			    Double_t&           value,
-			    Bool_t              verb)
+SummaryDrawer::GetParameter(const TObject*   c, 
+			    const TString&   name, 
+			    Double_t&        value,
+			    Bool_t           verb)
   
 {
   return DoGetParameter(GetObject(c, name, verb), c, value);
 }
 
 #endif
+//
+// EOF
+//
 
