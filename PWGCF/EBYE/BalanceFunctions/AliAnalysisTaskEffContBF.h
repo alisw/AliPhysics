@@ -30,8 +30,10 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fHistCentrality(0), 
     fHistNMult(0), 
     fHistVz(0),
-    fHistContaminationSecondaries(0),
-    fHistContaminationPrimaries(0),
+    fHistContaminationSecondariesPlus(0),
+    fHistContaminationSecondariesMinus(0),
+    fHistContaminationPrimariesPlus(0),
+    fHistContaminationPrimariesMinus(0),
     fHistGeneratedEtaPtPhiPlus(0),
     fHistSurvivedEtaPtPhiPlus(0),
     fHistGeneratedEtaPtPhiMinus(0),
@@ -158,8 +160,11 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH1F        *fHistVz;//!
 
   // output histograms
-  TH3D        *fHistContaminationSecondaries;//!
-  TH3D        *fHistContaminationPrimaries;//!
+  TH3D        *fHistContaminationSecondariesPlus;//!
+  TH3D        *fHistContaminationSecondariesMinus;//!
+  TH3D        *fHistContaminationPrimariesPlus;//!
+  TH3D        *fHistContaminationPrimariesMinus;//!
+  
   // output histograms (single particles)
   TH3D        *fHistGeneratedEtaPtPhiPlus;//!correction map for positives (generated)
   TH3D        *fHistSurvivedEtaPtPhiPlus;//!correction map positives (survived)
