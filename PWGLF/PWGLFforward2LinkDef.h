@@ -136,6 +136,7 @@
 #pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
 #pragma link C++ class AliForwardMultDists+;
 #pragma link C++ class AliForwardMultDists::EtaBin+;
+#pragma link C++ class AliForwardMultDists::BinSpec+;
 
 #else
 # error Not for compilation 

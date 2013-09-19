@@ -9,8 +9,59 @@
 #include <TVector2.h>
 #include <THStack.h>
 #include <TParameter.h>
+#include <TError.h>
 #include <iostream>
 #include <iomanip> 
+
+//____________________________________________________________________
+AliForwardMultDists::BinSpec::BinSpec(Double_t etaMin, 
+				      Double_t etaMax, 
+				      Double_t nchLow)
+  : fEtaMin(etaMin), fEtaMax(etaMax), fLow(nchLow), fN(0), fD(0), fAxis(1,0,1)
+{
+}
+//____________________________________________________________________
+void
+AliForwardMultDists::BinSpec::Push(UShort_t n, Double_t d)
+{
+  Int_t l = fN.GetSize();
+  fN.Set(l+1); // Not terribly efficient, but that's ok because we do
+  fD.Set(l+1); // this infrequently 
+  fN[l] = n;
+  fD[l] = d;
+}
+//____________________________________________________________________
+const TAxis&
+AliForwardMultDists::BinSpec::Axis() const
+{
+  if (fAxis.GetNbins() > 1) return fAxis;
+  if (fN.GetSize() <= 0) return fAxis;
+  if (fN.GetSize() == 1) { 
+    // Exactly one spec, 
+    fAxis.Set(fN[0], fLow, fN[0]*fD[0]+fLow);
+  }
+  else { 
+    Int_t n = fN.GetSum();
+    Int_t l = fN.GetSize();
+    Int_t i = 0;
+    TArrayD b(n+1);
+    b[0]    = fLow;
+    for (Int_t j = 0; j < l; j++) { 
+      for (Int_t k = 0; k < fN[j]; k++) {
+	b[i+1] = b[i] + fD[j];
+	i++;
+      }
+    }
+    if (i != n) { 
+      ::Warning("Axis", "Assigned bins, and number of bins not equal");
+      n = TMath::Min(i, n);
+    }
+    fAxis.Set(n, b.GetArray());
+  }
+  return fAxis;
+}
+      
+
 
 //____________________________________________________________________
 AliForwardMultDists::AliForwardMultDists()
@@ -32,8 +83,6 @@ AliForwardMultDists::AliForwardMultDists()
     fForwardCache(0),
     fCentralCache(0),
     fMCCache(0),
-    fMaxN(200),
-    fNDivisions(1),
     fUsePhiAcc(true)
 {}
 
@@ -57,8 +106,6 @@ AliForwardMultDists::AliForwardMultDists(const char* name)
     fForwardCache(0),
     fCentralCache(0),
     fMCCache(0),
-    fMaxN(200),
-    fNDivisions(1),
     fUsePhiAcc(true)
 {
   /** 
@@ -90,8 +137,6 @@ AliForwardMultDists::AliForwardMultDists(const AliForwardMultDists& o)
     fForwardCache(o.fForwardCache),
     fCentralCache(o.fCentralCache),
     fMCCache(o.fMCCache),
-    fMaxN(o.fMaxN),
-    fNDivisions(o.fNDivisions),
     fUsePhiAcc(o.fUsePhiAcc)
 {}
 //____________________________________________________________________
@@ -116,21 +161,9 @@ AliForwardMultDists::operator=(const AliForwardMultDists& o)
   fForwardCache		= o.fForwardCache;
   fCentralCache		= o.fCentralCache;
   fMCCache		= o.fMCCache;
-  fMaxN			= o.fMaxN;
-  fNDivisions           = o.fNDivisions;
   fUsePhiAcc		= o.fUsePhiAcc;
   
   return *this;
-}
-
-//____________________________________________________________________
-void
-AliForwardMultDists::SetMaxN(UShort_t maxN, 
-			     UShort_t nDivisions)
-{
-  const UShort_t one = 1;
-  fMaxN              = maxN;
-  fNDivisions        = TMath::Max(nDivisions, one); 
 }
 
 //____________________________________________________________________
@@ -402,7 +435,7 @@ AliForwardMultDists::Terminate(Option_t* /*option=""*/)
   EtaBin*  bin    = 0;
   TIter    next(&fBins);
   while ((bin = static_cast<EtaBin*>(next()))) {
-    bin->Terminate(in, out, fMaxN);
+    bin->Terminate(in, out);
 
     sta = oth;
     if      (bin->IsSymmetric()) sta = sym;
@@ -451,7 +484,6 @@ AliForwardMultDists::StoreInformation(const AliAODForwardMult* aod)
   fList->Add(AliForwardUtil::MakeParameter("trigger", ULong_t(fTriggerMask)));
   fList->Add(AliForwardUtil::MakeParameter("minIpZ", fMinIpZ));
   fList->Add(AliForwardUtil::MakeParameter("maxIpZ", fMaxIpZ));
-  fList->Add(AliForwardUtil::MakeParameter("maxN", UShort_t(fMaxN)));
   fList->Add(AliForwardUtil::MakeParameter("count", UShort_t(1)));
 }
 
@@ -539,7 +571,7 @@ AliForwardMultDists::SetupForData(const TH2& hist, Bool_t useMC)
   TIter   next(&fBins);
   EtaBin* bin = 0;
   while ((bin = static_cast<EtaBin*>(next()))) {
-    bin->SetupForData(fList, hist, fMaxN, fNDivisions, useMC);
+    bin->SetupForData(fList, hist, useMC);
   }
     
 }
@@ -615,7 +647,15 @@ AliForwardMultDists::ProjectX(const TH2* input, TH1* cache)
 }
 //____________________________________________________________________
 void
-AliForwardMultDists::AddBin(Double_t etaLow, Double_t etaMax) 
+AliForwardMultDists::AddBin(const BinSpec& spec)
+{
+  AddBin(spec.fEtaMin, spec.fEtaMax, spec.Axis());
+}
+
+//____________________________________________________________________
+void
+AliForwardMultDists::AddBin(Double_t etaLow, Double_t etaMax, 
+			    const TAxis& mAxis) 
 {
   /** 
    * Add an @f$\eta@f$ bin
@@ -628,7 +668,28 @@ AliForwardMultDists::AddBin(Double_t etaLow, Double_t etaMax)
     etaLow = -TMath::Abs(etaLow);
     etaMax = +TMath::Abs(etaLow);
   }
-  EtaBin* bin = new EtaBin(etaLow, etaMax);
+  EtaBin* bin = new EtaBin(etaLow, etaMax, mAxis);
+  // AliInfoF("Adding bin %f, %f: %s", etaLow, etaMax, bin->GetName());
+  fBins.Add(bin);
+}
+//____________________________________________________________________
+void
+AliForwardMultDists::AddBin(Double_t etaLow, Double_t etaMax, 
+			    UShort_t nMax, UShort_t nDiv)
+{
+  /** 
+   * Add an @f$\eta@f$ bin
+   * 
+   * @param etaLow Low cut on @f$\eta@f$
+   * @param etaMax High cut on @f$\eta@f$
+   */
+  // Symmetric bin
+  if (etaMax >= kInvalidEta) { 
+    etaLow = -TMath::Abs(etaLow);
+    etaMax = +TMath::Abs(etaLow);
+  }
+  TAxis mAxis((nMax+1)/nDiv, -.5, nMax+.5);
+  EtaBin* bin = new EtaBin(etaLow, etaMax, mAxis);
   // AliInfoF("Adding bin %f, %f: %s", etaLow, etaMax, bin->GetName());
   fBins.Add(bin);
 }
@@ -656,7 +717,6 @@ AliForwardMultDists::Print(Option_t* /*option=""*/) const
 	    << "  Trigger mask:        " 
 	    << AliAODForwardMult::GetTriggerString(fTriggerMask) << "\n"
 	    << "  IpZ range:           " << fMinIpZ <<" - "<< fMaxIpZ << "\n"
-	    << "  Max Nch:             " << fMaxN << "\n"
 	    << "  Use phi acceptance:  " << fUsePhiAcc << "\n"
 	    << "  Bins:" << std::endl;
   TIter   next(&fBins);
@@ -669,6 +729,8 @@ AliForwardMultDists::Print(Option_t* /*option=""*/) const
 //====================================================================
 AliForwardMultDists::EtaBin::EtaBin() 
   : fName(""),
+    fMAxis(1,0,0),
+    fTAxis(1,0,0),
     fMinEta(0),
     fMaxEta(0),
     fMinBin(0), 
@@ -686,8 +748,11 @@ AliForwardMultDists::EtaBin::EtaBin()
 }
 
 //____________________________________________________________________
-AliForwardMultDists::EtaBin::EtaBin(Double_t minEta, Double_t maxEta) 
+AliForwardMultDists::EtaBin::EtaBin(Double_t minEta, Double_t maxEta,
+				    const TAxis& mAxis) 
   : fName(""),
+    fMAxis(1,0,0),
+    fTAxis(1,0,0),
     fMinEta(minEta), 
     fMaxEta(maxEta),
     fMinBin(0), 
@@ -709,11 +774,40 @@ AliForwardMultDists::EtaBin::EtaBin(Double_t minEta, Double_t maxEta)
   fName.ReplaceAll("-", "m");
   fName.ReplaceAll("+", "p");
   fName.ReplaceAll(".", "d");
+
+  // Copy to other our object
+  mAxis.Copy(fMAxis);
+  
+  if (mAxis.GetXbins() && mAxis.GetXbins()->GetArray()) {
+    const TArrayD& mA  = *(mAxis.GetXbins());
+    TArrayD        tA(mA.GetSize());
+    Int_t          j   = 0;
+    Double_t       min = mA[0];
+    tA[0]              = min;
+    for (Int_t i = 1; i < mA.GetSize(); i++) { 
+      Double_t d = mA[i] - min;
+      if (d < 1) 
+	// Not full integer bin
+	continue;  
+      tA[j+1] = tA[j] + Int_t(d);
+      min     = tA[j+1];
+      j++;
+    }
+    fTAxis.Set(j, tA.GetArray());
+  }
+  else {
+    // Rounded down maximum and minimum
+    Int_t max = mAxis.GetXmax(); 
+    Int_t min = mAxis.GetXmin();
+    fTAxis.Set((max-min)+1, min-.5, max+.5);
+  }
 }
 //____________________________________________________________________
 AliForwardMultDists::EtaBin::EtaBin(const EtaBin& o) 
   : TObject(o),
     fName(o.fName),
+    fMAxis(o.fMAxis), 
+    fTAxis(o.fTAxis),
     fMinEta(o.fMinEta),
     fMaxEta(o.fMaxEta),
     fMinBin(o.fMinBin), 
@@ -732,6 +826,8 @@ AliForwardMultDists::EtaBin::operator=(const EtaBin& o)
   if (&o == this) return *this;
   
   fName		 = o.fName;
+  fMAxis         = o.fMAxis;
+  fTAxis         = o.fTAxis;
   fMinEta	 = o.fMinEta;
   fMaxEta	 = o.fMaxEta;
   fMinBin	 = o.fMinBin; 
@@ -803,9 +899,58 @@ AliForwardMultDists::EtaBin::FindParent(TList* l, Bool_t create) const
 }
 
 //____________________________________________________________________
+TH1*
+AliForwardMultDists::EtaBin::CreateH1(const char*  name, 
+				      const char*  title, 
+				      const TAxis& xAxis)
+{
+  TH1* ret = 0;
+  
+  if (xAxis.GetXbins() && xAxis.GetXbins()->GetArray()) 
+    ret = new TH1D(name,title,xAxis.GetNbins(), xAxis.GetXbins()->GetArray());
+  else 
+    ret = new TH1D(name,title,xAxis.GetNbins(),xAxis.GetXmin(),xAxis.GetXmax());
+  return ret;
+}
+//____________________________________________________________________
+TH2*
+AliForwardMultDists::EtaBin::CreateH2(const char*  name, 
+				      const char*  title, 
+				      const TAxis& xAxis,
+				      const TAxis& yAxis)
+{
+  TH2* ret = 0;
+  
+  if (xAxis.GetXbins() && xAxis.GetXbins()->GetArray()) {
+    if (yAxis.GetXbins() && yAxis.GetXbins()->GetArray()) 
+      // Variable variable
+      ret = new TH2D(name,title, 
+		     xAxis.GetNbins(), xAxis.GetXbins()->GetArray(),
+		     yAxis.GetNbins(), yAxis.GetXbins()->GetArray());
+    else 
+      // variable fixed
+      ret = new TH2D(name,title, 
+		     xAxis.GetNbins(), xAxis.GetXbins()->GetArray(),
+		     yAxis.GetNbins(),yAxis.GetXmin(),yAxis.GetXmax());
+  }
+  else {
+    if (yAxis.GetXbins() && yAxis.GetXbins()->GetArray()) 
+      // fixed variable 
+      ret = new TH2D(name,title, 
+		     xAxis.GetNbins(), xAxis.GetXmin(), xAxis.GetXmax(),
+		     yAxis.GetNbins(), yAxis.GetXbins()->GetArray());
+    else 
+      // fixed fixed
+      ret = new TH2D(name,title, 
+		     xAxis.GetNbins(), xAxis.GetXmin(), xAxis.GetXmax(),
+		     yAxis.GetNbins(), yAxis.GetXmin(), yAxis.GetXmax());
+  }
+  return ret;
+}
+
+//____________________________________________________________________
 void
 AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist, 
-					  UShort_t max, UShort_t nDiv, 
 					  Bool_t useMC)
 {
   /** 
@@ -842,9 +987,8 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
   fMinBin = hist.GetXaxis()->FindBin(fMinEta);
   fMaxBin = hist.GetXaxis()->FindBin(fMaxEta-.00001);
 
-  TString eta(Form("%+5.2f<#eta<%+5.2f", fMinEta, fMaxEta));
-  fSum = new TH1D("rawDist", Form("Raw P(#it{N}_{ch}) in %s", eta.Data()), 
-		  (max+1)*nDiv, -.5, max+.5);
+  TString t(Form("%+5.2f<#eta<%+5.2f", fMinEta, fMaxEta));
+  fSum = CreateH1("rawDist",Form("Raw P(#it{N}_{ch}) in %s",t.Data()),fMAxis);
   fSum->SetDirectory(0);
   fSum->GetXaxis()->SetTitle("#it{N}_{ch}");
   fSum->GetYaxis()->SetTitle("Raw P(#it{N}_{ch})");
@@ -857,8 +1001,7 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
   fSum->Sumw2();
   l->Add(fSum);
   
-  fCorr = new TH2D("corr", Form("C_{SPD,FMD} in %s", eta.Data()),
-		   max+2, -1.5, max+.5, max+2, -1.5, max+.5);
+  fCorr = CreateH2("corr",Form("C_{SPD,FMD} in %s", t.Data()),fTAxis,fTAxis);
   fCorr->SetDirectory(0);
   fCorr->GetXaxis()->SetTitle("Forward");
   fCorr->GetYaxis()->SetTitle("Central");
@@ -874,16 +1017,15 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
   l->Add(fCoverage);
 
   if (!useMC) return;
-  fResponse = new TH2D("response", Form("Reponse matrix in %s", eta.Data()),
-		       nDiv*(max+1), -0.5, max+0.5, max+1, -.5, max+.5);
+  fResponse = CreateH2("response", Form("Reponse matrix in %s", t.Data()),
+		       fMAxis, fTAxis);
   fResponse->SetDirectory(0);
   fResponse->SetYTitle("MC");
   fResponse->SetXTitle("Signal");
   fResponse->SetOption("colz");
   l->Add(fResponse);
   
-  fTruth = new TH1D("truth", Form("True P(#it{N}_{ch}) in %s", eta.Data()),
-		    (max+1), -0.5, max+0.5);
+  fTruth = CreateH1("truth",Form("True P(#it{N}_{ch}) in %s",t.Data()),fTAxis);
   fTruth->SetXTitle(fSum->GetXaxis()->GetTitle());
   fTruth->SetYTitle(fSum->GetYaxis()->GetTitle());
   fTruth->SetLineColor(kBlack);
@@ -898,7 +1040,7 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
 
   fTruthAccepted = static_cast<TH1D*>(fTruth->Clone("truthAccepted"));
   fTruthAccepted->SetTitle(Form("True (accepted) P(#it{N}_{ch}) in %s", 
-				eta.Data()));
+				t.Data()));
   fTruthAccepted->SetLineColor(kGray+2);
   fTruthAccepted->SetFillColor(kOrange+2);
   fTruthAccepted->SetDirectory(0);
@@ -996,7 +1138,7 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
     // Fill with weight 
     Double_t w = 1; // e2sum > 0 ? 1/TMath::Sqrt(e2sum) : 1
     fSum->Fill(sum, w);
-    fCorr->Fill(fsum, csum);
+    fCorr->Fill((fsum<0?0:fsum), (csum<0?0:csum));
     
     Int_t nTotal = fMaxBin - fMinBin + 1;
     fCoverage->Fill(100*float(covered) / nTotal);
@@ -1018,7 +1160,7 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
 }
 //____________________________________________________________________
 void
-AliForwardMultDists::EtaBin::Terminate(TList* in, TList* out, UShort_t maxN)
+AliForwardMultDists::EtaBin::Terminate(TList* in, TList* out)
 {
   /** 
    * Called at the end of the final processing of the job on the
@@ -1054,6 +1196,7 @@ AliForwardMultDists::EtaBin::Terminate(TList* in, TList* out, UShort_t maxN)
   while (*phist) { 
     TH1* h = *phist;
     if (h) { 
+      Int_t    maxN = h->GetNbinsX();
       Double_t intg = h->Integral(1, maxN);
       h->Scale(1. / intg, "width");
     }
