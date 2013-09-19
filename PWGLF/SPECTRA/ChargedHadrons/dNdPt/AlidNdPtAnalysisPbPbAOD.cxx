@@ -431,7 +431,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hDCAPtAccepted);
   fOutputList->Add(hMCDCAPtSecondary);
   fOutputList->Add(hMCDCAPtPrimary);
-
+  
   
   PostData(1, fOutputList);
 }
@@ -449,7 +449,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   AliAODMCParticle *mcPart = NULL;
   AliAODMCHeader *mcHdr = NULL;
   AliGenHijingEventHeader *genHijingHeader = NULL;
-  AliGenPythiaEventHeader *genPythiaHeader = NULL;
+  //AliGenPythiaEventHeader *genPythiaHeader = NULL;
   
   Bool_t bIsEventSelectedMB = kFALSE;
   Bool_t bIsEventSelectedSemi = kFALSE;
@@ -457,7 +457,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Bool_t bIsEventSelected = kFALSE;
   Bool_t bIsPrimary = kFALSE;
   Bool_t bIsHijingParticle = kFALSE;
-  Bool_t bIsPythiaParticle = kFALSE;
+  //Bool_t bIsPythiaParticle = kFALSE;
   Bool_t bEventHasATrack = kFALSE;
   Bool_t bEventHasATrackInRange = kFALSE;
   Int_t nTriggerFired = 0;
@@ -465,6 +465,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   Double_t dMCTrackZvPtEtaCent[4] = {0};
   Double_t dTrackZvPtEtaCent[4] = {0};
+  
+  Double_t dDCA[2] = {0};
   
   Double_t dMCEventZv = -100;
   Double_t dEventZv = -100;
@@ -615,7 +617,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     bIsPrimary = kFALSE;
     
-    Double_t dDCAxyDCAzPt[3] = { GetDCAxy(track, eventAOD), GetDCAz(track, eventAOD), track->Pt() };
+    GetDCA(track, eventAOD, dDCA);
+    
+    Double_t dDCAxyDCAzPt[3] = { dDCA[0], dDCA[1], track->Pt() };
     
     hDCAPtAll->Fill(dDCAxyDCAzPt);
     
@@ -714,8 +718,6 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dEventZvMultCent[3] = {dEventZv, iAcceptedMultiplicity, dCentrality};
   hnZvMultCent->Fill(dEventZvMultCent);
   
-  
-  
   PostData(1, fOutputList);
   
 }
@@ -787,59 +789,43 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
     return kTRUE;
 }
 
-Double_t AlidNdPtAnalysisPbPbAOD::GetDCAz(AliAODTrack *track, AliAODEvent *event)
+Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])
 {
- return GetDCA(track, event, kTRUE); 
-}
-
-Double_t AlidNdPtAnalysisPbPbAOD::GetDCAxy(AliAODTrack *track, AliAODEvent *event)
-{
- return GetDCA(track, event, kFALSE); 
-}
-
-Double_t AlidNdPtAnalysisPbPbAOD::GetDCA(AliAODTrack *tr, AliAODEvent *evt, Bool_t bDCAz)
-{
-  if(!tr) return -999.;
+  // function adapted from AliDielectronVarManager.h
   
-  if(tr->TestBit(AliAODTrack::kIsDCA))
-  {
-    if(bDCAz) return tr->ZAtDCA();
-    else return sqrt(tr->XAtDCA()*tr->XAtDCA() + tr->YAtDCA()*tr->YAtDCA());
+  if(track->TestBit(AliAODTrack::kIsDCA)){
+    d0z0[0]=track->DCA();
+    d0z0[1]=track->ZAtDCA();
+    return kTRUE;
   }
   
   Bool_t ok=kFALSE;
-  Double_t d0z0[2];
-  if(evt) 
-  {
+  if(evt) {
     Double_t covd0z0[3];
-    
-    AliExternalTrackParam etp; 
-    etp.CopyFromVTrack(tr);
+    //AliAODTrack copy(*track);
+    AliExternalTrackParam etp; etp.CopyFromVTrack(track);
     
     Float_t xstart = etp.GetX();
-    if(xstart>3.) 
-    {
+    if(xstart>3.) {
       d0z0[0]=-999.;
       d0z0[1]=-999.;
       //printf("This method can be used only for propagation inside the beam pipe \n");
-      if(bDCAz) return d0z0[1];
-      else return d0z0[0];
+      return kFALSE;
     }
-       
+    
+    
     AliAODVertex *vtx =(AliAODVertex*)(evt->GetPrimaryVertex());
     Double_t fBzkG = evt->GetMagneticField(); // z componenent of field in kG
     ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+    //ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
   }
-  
   if(!ok){
     d0z0[0]=-999.;
     d0z0[1]=-999.;
-    if(bDCAz) return d0z0[1];
-    else return d0z0[0];
   }
-  if(bDCAz) return d0z0[1];
-  else return d0z0[0];
+  return ok;
 }
+
 
 Bool_t AlidNdPtAnalysisPbPbAOD::IsMCTrackAccepted(AliAODMCParticle *part)
 {
@@ -918,61 +904,19 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsPythiaParticle(const AliAODMCParticle *part, A
   
   if(part->Label() > (pythiaGenHeader->NProduced()-1)) return kFALSE;
   return kTRUE;
+}    
+
+Double_t* AlidNdPtAnalysisPbPbAOD::GetArrayClone(Int_t n, Double_t* source)
+{
+  if (!source || n==0) return 0;
+  Double_t* dest = new Double_t[n];
+  for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
+  return dest;
 }
 
-// Int_t AlidNdPtAnalysisPbPbAOD::IsMCSecondary(AliAODMCParticle *part, TClonesArray *arrayMC)
-// {
-  //   //
-  //   // adapted from AliAnalysisTaskSpectraAOD.cxx
-  //   //
-  //   // returns
-  //   // -1: no particle
-  //   // 0: is primary
-  //   // 1: is secondary from weak
-  //   // 2: is secondary from material
-  //   
-  //   // usage for studies, currrently not implemented
-  //   
-  //   if(!part) return -1; 
-  //   
-  //   if( part->IsPhysicalPrimary() ) return 0;
-  //   
-  //   Bool_t isSecondaryMaterial = kFALSE; 
-  //   Bool_t isSecondaryWeak     = kFALSE; 
-  //   Int_t mfl = -999;
-  //   Int_t codemoth = -999;
-  //   Int_t indexMoth = part->GetMother(); // FIXME ignore fakes? TO BE CHECKED, on ESD is GetFirstMother()
-  //   if(indexMoth >= 0)
-  //   {
-    //     AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
-    //     codemoth = TMath::Abs(moth->GetPdgCode());
-    //     mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
-    //   } 
-    //   // add if(partMC->GetStatus() & kPDecay)? FIXME
-    //   if(mfl==3) isSecondaryWeak     = kTRUE;     
-    //   else       isSecondaryMaterial = kTRUE; 
-    //   
-    //   if(isSecondaryWeak) return 1;
-    //   if(isSecondaryMaterial) return 2;
-    //   
-    // //   if( isSecondaryMaterial || isSecondaryWeak ) return kTRUE;
-    //   
-    //   // return kFALSE; this line will not be reached, as either isSecondaryMaterial or isSecondaryWeak is true!
-    //   // removed due to coverity
-    // }
-    
-    
-    
-    void AlidNdPtAnalysisPbPbAOD::Terminate(Option_t *)
-    {
-      
-    }
-    
-    Double_t* AlidNdPtAnalysisPbPbAOD::GetArrayClone(Int_t n, Double_t* source)
-    {
-      if (!source || n==0) return 0;
-      Double_t* dest = new Double_t[n];
-      for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
-      return dest;
-    }
-    
+void AlidNdPtAnalysisPbPbAOD::Terminate(Option_t *)
+{
+  
+}
+
+
