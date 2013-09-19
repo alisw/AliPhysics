@@ -24,6 +24,52 @@ public:
     kVertex   = 4, 
     kTriggerVertex = 5
   };
+  /**
+   * Structure to define @f$\eta@f$ bins with an @f$ N_{ch}@f$ axis 
+   * 
+   */
+  struct BinSpec 
+  {
+    /** 
+     * Constructor
+     * 
+     * @param etaMin Low cut on @f$\eta@f$
+     * @param etaMax High cut on @f$\eta@f$
+     * @param nchLow Lowest @f$ N_{ch}@f$ (e.g., -0.5);
+     */
+    BinSpec(Double_t etaMin, Double_t etaMax, Double_t nchLow);
+    /** 
+     * Push @a n bins of with @a d in @f$ N_{ch}@f$ onto the axis 
+     * 
+     * If only a single push is done, then we will get an axis of
+     * equally sized bins (@a d) from @f$ l@f$ edge to @f$ nd+low@f$ -
+     * e.g., if one only does 
+     *
+     * @code
+     * BinSpec b(e1, e2, -.5);
+     * b.Push(10, 1);
+     * @endcode 
+     *
+     * One ends up with 10 bins from -0.5 to 9.5. 
+     *
+     * @param n Number of bins to push
+     * @param d Bin width of each of the bins
+     */
+    void Push(UShort_t n, Double_t d);
+    /** 
+     * Get the axis computed from the setup using Push
+     * 
+     * @return Reference to the axis 
+     */
+    const TAxis& Axis() const;
+    Double_t fEtaMin;
+    Double_t fEtaMax;
+    Double_t fLow;
+    TArrayI  fN;
+    TArrayD  fD;
+    mutable TAxis    fAxis;
+  };
+
   /** 
    * Default constructor
    */
@@ -101,19 +147,27 @@ public:
   /** 
    * Add an @f$\eta@f$ bin
    * 
+   * @param spec Bin specification 
+   */
+  void AddBin(const BinSpec& spec);
+  /** 
+   * Add an @f$\eta@f$ bin
+   * 
    * @param etaLow Low cut on @f$\eta@f$
    * @param etaMax High cut on @f$\eta@f$
+   * @param nAxis  Axis to use for measured @f$ N_{ch}@f$ 
    */
-  void AddBin(Double_t etaLow, Double_t etaMax=kInvalidEta); 
+  void AddBin(Double_t etaLow, Double_t etaMax, const TAxis& nAxis); 
   /** 
-   * Set the maximum @f$N_{ch}@f$ to consider 
+   * Add an @f$\eta@f$ bin
    * 
-   * @param maxN Maximum
-   * @param nBins (Optionally) the number of bins per particle number 
+   * @param etaLow Low cut on @f$\eta@f$
+   * @param etaMax High cut on @f$\eta@f$
+   * @param nMax   Maximum @f$ N_{ch}@f$ 
+   * @param nDiv   Number of subdivisions per @f$ N_{ch}@f$
    */
-  void SetMaxN(UShort_t maxN, UShort_t nBins=-1);
-  void SetNDivisions(UInt_t nDiv) { fNDivisions = nDiv; }
-  /** 
+  void AddBin(Double_t etaLow, Double_t etaMax, UShort_t nMax, UShort_t nDiv); 
+ /** 
    * Set the range of valid interaction points 
    * 
    * @param z1 Least Z coordinate 
@@ -158,8 +212,10 @@ public:
      * 
      * @param minEta Least @f$\eta@f$ to consider 
      * @param maxEta Largest @f$\eta@f$ to consider 
+     * @param mAxis  The @f$ N_{ch}@f$ axis to use for measured data
+     * @param tAxis  The @f$ N_{ch}@f$ axis to use for truth data
      */
-    EtaBin(Double_t minEta, Double_t maxEta); 
+    EtaBin(Double_t minEta, Double_t maxEta, const TAxis& mAxis); 
     /** 
      * Copy constructor
      *
@@ -212,16 +268,36 @@ public:
      */
     TList* FindParent(TList* l, Bool_t create=true) const;
     /** 
+     * Create a 1D histogram with specified axis 
+     * 
+     * @param name  Name of histogram 
+     * @param title Title of histogram 
+     * @param xAxis X-axis to use 
+     * 
+     * @return Created histogram
+     */
+    static TH1* CreateH1(const char* name, const char* title, 
+			 const TAxis& xAxis);
+    /** 
+     * Create a 2D histogram with specified axis 
+     * 
+     * @param name  Name of histogram 
+     * @param title Title of histogram 
+     * @param xAxis X-axis to use 
+     * @param yAxis Y-axis to use 
+     * 
+     * @return Created histogram
+     */
+    static TH2* CreateH2(const char* name, const char* title, 
+			 const TAxis& xAxis, const TAxis& yAxis);
+    /** 
      * Set-up internal structures on first event. 
      * 
      * @param list  List to add information to
      * @param hist  Template histogram 
-     * @param max   Maximum number of particles 
-     * @param nDiv  Number of divisions per charged particle bin
      * @param useMC Whether to set-up for MC input 
      */
-    void SetupForData(TList* list, const TH2& hist, UShort_t max, 
-		      UShort_t nDiv, Bool_t useMC);
+    void SetupForData(TList* list, const TH2& hist, Bool_t useMC);
     /** 
      * Process a single event 
      * 
@@ -241,11 +317,12 @@ public:
      * 
      * @param in    Input list
      * @param out   Output list 
-     * @param maxN  Maximum number of @f$N_{ch}@f$ to consider
      */
-    void Terminate(TList* in, TList* out, UShort_t maxN);
+    void Terminate(TList* in, TList* out);
       
     TString  fName;          // Name of this bin
+    TAxis    fMAxis;         // Axis used for measured Nch
+    TAxis    fTAxis;         // Axis used for true Nch
     Double_t fMinEta;        // Least @f$\eta@f$ to consider
     Double_t fMaxEta;        // Largest @f$\eta@f$ to consider
     Int_t    fMinBin;        // Least @f$\eta@f$ bin to consider
@@ -257,7 +334,7 @@ public:
     TH1*     fTruthAccepted; // `true' distribution for accepted events
     TH1*     fCoverage;      // How much was covered
 
-    ClassDef(EtaBin,1);
+    ClassDef(EtaBin,2);
   };
   TList    fBins;         // List of bins 
   TList*   fSymmetric;    // Bins symmetric around 0
@@ -276,8 +353,6 @@ public:
   TH1*     fForwardCache; // Projection cache 
   TH1*     fCentralCache; // Projection cache 
   TH1*     fMCCache;      // Projection cache 
-  UShort_t fMaxN;         // Maximum of @f$N_{ch}@f$ 
-  UShort_t fNDivisions;   // Number of particle number sub-divions
   Bool_t   fUsePhiAcc;    // If true, scale by phi acceptance 
 
   ClassDef(AliForwardMultDists,1);
