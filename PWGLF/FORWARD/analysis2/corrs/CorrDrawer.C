@@ -184,7 +184,7 @@ public:
     DrawParameter(y, "Run #", Form("%lu", runNo));
     DrawParameter(y, "System", AliForwardUtil::CollisionSystemString(sys));
     DrawParameter(y, "#sqrt{s_{NN}}", 
-		  AliForwardUtil::CenterOfMassEnergyString(sys));
+		  AliForwardUtil::CenterOfMassEnergyString(sNN));
     DrawParameter(y, "L3 field", AliForwardUtil::MagneticFieldString(field));
     DrawParameter(y, "Simulation", Form("%s", mc ? "yes" : "no"));
     DrawParameter(y, "Satellite", Form("%s", sat ? "yes" : "no"));
@@ -449,7 +449,7 @@ public:
 
     UShort_t sys   = 0, sNN = 0;
     Int_t    field = 0;
-    Int_t    runNo; 
+    ULong_t  runNo = 0; 
     Bool_t satellite;
     if (!GetParameter(eventInsp, "sys",       sys))       return;
     if (!GetParameter(eventInsp, "sNN",       sNN))       return;
@@ -839,7 +839,7 @@ protected:
 	    }
 	  }
 	  drawPad->Divide(1,2,0,0);
-	  DrawInPad(drawPad, 2, resi, "HIST", 0x100);
+	  DrawInPad(drawPad, 2, resi, "HIST", kGridx);
 	  subPad = 1;
 	  Double_t red = fit->GetNu() > 0 ? fit->GetChi2() / fit->GetNu() : 0;
 	  if (red > 0) {
@@ -861,14 +861,14 @@ protected:
 	}
 	if (dist) { 
 	  // Info("", "Histogram: %s", dist->GetName());
-	  DrawInPad(drawPad, subPad, dist, "HIST E", (subPad * 0x100) + 0x2);
+	  DrawInPad(drawPad, subPad, dist, "HIST E", (subPad * kGridx) + kLogy);
 	  same = true;	  
 	}
       }
       // if (same)
       DrawInPad(drawPad, subPad, fit, 
 		Form("comp good values legend %s", (same ? "same" : "")),
-		0x2);
+		kLogy);
       if (fit->GetQuality() < fMinQuality) { 
 	TLatex* ltx = new TLatex(.2, .2, "NOT USED");
 	ltx->SetNDC();
@@ -881,7 +881,7 @@ protected:
       }
 
       // else 
-      // DrawInPad(fBody, j+1, fit, "comp good values legend", 0x2);
+      // DrawInPad(fBody, j+1, fit, "comp good values legend", kLogy);
       printf(".");
       
       if (last) 
