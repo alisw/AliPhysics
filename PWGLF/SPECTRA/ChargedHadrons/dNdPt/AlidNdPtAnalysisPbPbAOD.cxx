@@ -49,6 +49,8 @@ hMCCharge(0),
 hMCPdgPt(0),
 hMCHijingPrim(0),
 hAccNclsTPC(0),
+hAllCrossedRowsTPC(0),
+hFilterCrossedRowsTPC(0),
 hAccCrossedRowsTPC(0),
 hDCAPtAll(0),
 hDCAPtAccepted(0),
@@ -133,6 +135,8 @@ hMCCharge(0),
 hMCPdgPt(0),
 hMCHijingPrim(0),
 hAccNclsTPC(0),
+hAllCrossedRowsTPC(0),
+hFilterCrossedRowsTPC(0),
 hAccCrossedRowsTPC(0),
 hDCAPtAll(0),
 hDCAPtAccepted(0),
@@ -356,6 +360,12 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hAccNclsTPC = new TH1F("hAccNclsTPC","hAccNclsTPC",160,0,159);
   hAccNclsTPC->GetXaxis()->SetTitle("number of clusters per track after cut");
   
+  hAllCrossedRowsTPC = new TH1F("hAllCrossedRowsTPC","hAllCrossedRowsTPC",160,0,159);
+  hAllCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track for all tracks");
+  
+  hFilterCrossedRowsTPC = new TH1F("hFilterCrossedRowsTPC","hFilterCrossedRowsTPC",160,0,159);
+  hFilterCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track after filter bit");
+  
   hAccCrossedRowsTPC = new TH1F("hAccCrossedRowsTPC","hAccCrossedRowsTPC",160,0,159);
   hAccCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track after cut");
   
@@ -414,6 +424,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hMCPdgPt);
   fOutputList->Add(hMCHijingPrim);
   fOutputList->Add(hAccNclsTPC);
+  fOutputList->Add(hAllCrossedRowsTPC);
+  fOutputList->Add(hFilterCrossedRowsTPC);
   fOutputList->Add(hAccCrossedRowsTPC);
   fOutputList->Add(hDCAPtAll);
   fOutputList->Add(hDCAPtAccepted);
@@ -714,10 +726,14 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   
   if(tr->Charge()==0) { return kFALSE; }
   
-  if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; }
-  
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
+  
+  hAllCrossedRowsTPC->Fill(dCrossedRowsTPC);
+  
+  if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; }
+  
+  hFilterCrossedRowsTPC->Fill(dCrossedRowsTPC);
   
   if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
   

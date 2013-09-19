@@ -145,6 +145,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F	*hMCPdgPt; // PDGvs PT for MC Particles
     TH1F	*hMCHijingPrim; // number of particles, which are Hijing particles and primaries
     TH1F	*hAccNclsTPC; //control histo: number of clusters in TPC for accepted tracks
+    TH1F	*hAllCrossedRowsTPC; //control histo: number of crossed rows in TPC for all tracks, before Filterbit
+    TH1F	*hFilterCrossedRowsTPC; //control histo: number of crossed rows in TPC for all tracks, after Filterbit
     TH1F	*hAccCrossedRowsTPC; //control histo: number of crossed rows in TPC for accepted tracks
     THnSparseF	*hDCAPtAll; //control histo: DCAz vs DCAxy vs pT for all reconstructed tracks
     THnSparseF	*hDCAPtAccepted; //control histo: DCAz vs DCAxy vs pT for all accepted reco tracks
