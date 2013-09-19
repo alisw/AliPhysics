@@ -430,29 +430,7 @@ Bool_t AliDalitzElectronCuts::TrackIsSelected(AliESDtrack* lTrack) {
 	
    }
 
-    /*if( lTrack->GetNcls(1) < fMinClsTPC ) {
-
-        return kFALSE;
-    }*/
-
-        //Findable clusters
-
-	/*Double_t clsToF=0;
-
-
-	    if (!fUseCorrectedTPCClsInfo ){
-		if(lTrack->GetTPCNclsF()!=0){
-
-		clsToF = (Double_t)lTrack->GetNcls(1)/(Double_t)lTrack->GetTPCNclsF();
-		}// Ncluster/Nfindablecluster
-	    }
-	  else {
-
-              //clsToF = lTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(photon->GetConversionRadius()));
-              clsToF = lTrack->GetTPCClusterInfo(2,1); //NOTE ask friederike
-              
-	  }*/
-
+   
 
     if( clsToF < fMinClsTPCToF){
     return kFALSE;
@@ -691,7 +669,7 @@ Double_t AliDalitzElectronCuts::GetNFindableClustersTPC(AliESDtrack* lTrack){
     else {
 
               //clsToF = lTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(photon->GetConversionRadius()));
-              clsToF = lTrack->GetTPCClusterInfo(2,1); //NOTE ask friederike
+              clsToF = lTrack->GetTPCClusterInfo(2,0); //NOTE ask friederike
                 
     }
   
@@ -1075,16 +1053,16 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut)
 		fPIDnSigmaAbovePionLineTPCHighPt=-100;
 		break;
 	case 1:  // -10
-		fPIDnSigmaAbovePionLineTPC=3.0;              //Update Sep-05-2013 from -10 to 3
-		fPIDnSigmaAbovePionLineTPCHighPt=-10;        
+		fPIDnSigmaAbovePionLineTPC=3.0;            //Update Sep-05-2013 from -10 to 3
+		fPIDnSigmaAbovePionLineTPCHighPt=-10;
 		break;
 	case 2:  // 1
-		fPIDnSigmaAbovePionLineTPC=-1;
-		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		fPIDnSigmaAbovePionLineTPC=2;              //Update Sep-09-2013 from -1  to  2
+		fPIDnSigmaAbovePionLineTPCHighPt=-1;       //Update Sep-09-2013 from -10 to -1
 		break;
 	case 3:   // 0
-		fPIDnSigmaAbovePionLineTPC=0;
-		fPIDnSigmaAbovePionLineTPCHighPt=-10;
+		fPIDnSigmaAbovePionLineTPC=2;              //Update Sep-09-2013 from   0 to   2
+		fPIDnSigmaAbovePionLineTPCHighPt=0;        //Update Sep-09-2013 from -10 to   0
 		break;
 	case 4:  // 1
 		fPIDnSigmaAbovePionLineTPC=1;
@@ -1244,6 +1222,12 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.35;
 		fUseCorrectedTPCClsInfo=0;
+		break;
+	case 9:  // 35% of findable clusters
+		fMinClsTPC = 70.;  
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		fMinClsTPCToF= 0.35;
+		fUseCorrectedTPCClsInfo=1;
 		break;
 	  
 	default:
