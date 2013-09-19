@@ -56,7 +56,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
       // Track propagator to extend track to the TPC boundaries
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
-      AliEmcalTrackPropagatorTask *propTask = AddTaskEmcalTrackPropagator(inputTracks.Data());
+      AliEmcalTrackPropagatorTask *propTask = AddTaskEmcalTrackPropagator(inputTracks.Data(),440.);
       propTask->SelectCollisionCandidates(pSel);
     }
     // Produce PicoTracks 
