@@ -1,5 +1,3 @@
-
-
 #ifndef ALIANALYSISTASKFLOWTPCEMCALQCSP_H
 #define ALIANALYSISTASKFLOWTPCEMCALQCSP_H
 
@@ -78,7 +76,7 @@ public:
     void                                 SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
     Bool_t                               IsEventSelectedForCentrFlattening(Float_t centvalue);
     
-
+    
     
     
     
@@ -164,6 +162,8 @@ private:
     TH2F                 *fMultCorAfterVZTRKComp;//!after cent comp
     TH1F                 *fCentralityBeforePileup;//!cent chneck
     TH1F                 *fCentralityAfterVZTRK;//!cent chneck2
+    TH1F                 *fCentralityAfterCorrCut;//!cent chneck2
+    TH2F                 *fMultCorAfterCorrCut;//!after cent comp
     TH1D                 *EPVz;//v0cep
     TH1D                 *EPTPCp;//tpcep
     TH1D                 *EPTPCn;//!tpcep
@@ -173,7 +173,7 @@ private:
     TH1F                 *fCentralityNoPassForFlattening; //! QA histogram of events that do not pass centrality cut for flattening
     TH1F                 *fInvmassLS1highpt; //LS Invmass for all rec par high pt
     TH1F                 *fInvmassULS1highpt;//ULS Invmass for all rec par high pt
-
+    
     
     
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
@@ -183,6 +183,4 @@ private:
 };
 
 #endif
-
-
 

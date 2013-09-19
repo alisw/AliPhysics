@@ -1,5 +1,3 @@
-
-
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // AddTaskFlowTPCEMCalQCSP macro                                 //
@@ -83,7 +81,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     }
     taskHFE->SetTrigger(Trigger);
     
-    if(Trigger==0){
+    if(Trigger==0 || Trigger==4){
         TFile *fFlat=TFile::Open(histoflatname.Data());
         TCanvas *c=fFlat->Get("cintegral");
         TH1F *hfl=(TH1F*)c->FindObject("hint");
@@ -371,4 +369,3 @@ AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCuls
 }
 
 //_____________________________________________________________________________
-
