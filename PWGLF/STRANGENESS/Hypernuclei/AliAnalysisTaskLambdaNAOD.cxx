@@ -1682,7 +1682,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	
 	if(trackP->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies; standard value 110, variation for systematics
 	   trackP->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.3 && //for systemactics -- normal value 0.2
+	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.32 && //for systemactics -- normal value 0.24
 	   ptotP > 0.2 ){
 	  
 	  if(trackP->Charge() >0)	 	isDeuteron[0] = kTRUE; //pos deuteron
@@ -1691,7 +1691,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	
 	if(trackN->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
 	   trackN->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.3 && //for systemactics -- normal value 0.2
+	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.32 && //for systemactics -- normal value 0.24
 	   ptotN > 0.2){ 
 	  
 	  isDeuteron[2] = kTRUE;
