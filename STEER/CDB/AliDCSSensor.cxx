@@ -90,21 +90,22 @@ void AliDCSSensor::Print(const Option_t* option) const{
 
 }
 
-void AliDCSSensor::Draw(const Option_t* option) const{
+void AliDCSSensor::Draw(Option_t* option) {
   //
   // draw function - to viusalize sensor
   // Unfortuantelly - it  make a memory leak as function Draw does not return the object pointer
   //
-  TCanvas * canvas = new TCanvas(fStringID.Data(), fStringID.Data()); 
+  TCanvas * canvas = new TCanvas((fStringID+option).Data(), (fStringID+option).Data()); 
   if (fGraph){
     // transform points to time in s
     Int_t npoints = fGraph->GetN();
     for (Int_t i=0; i<npoints; i++){
       fGraph->GetX()[i]=fGraph->GetX()[i]*3600+fStartTime;
     }
-    fGraph->Draw(option);
+    fGraph->Draw("alp");
     return;
   }
+  canvas->cd();
   TGraph * graph = MakeGraph(100);  // memory leak - we can not modify the content - const method
   graph->Draw(option);              // 
   //

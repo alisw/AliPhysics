@@ -555,13 +555,18 @@ Double_t AliTrackerBase::MakeTgl(Double_t x1,Double_t y1,
   // Initial approximation of the tangent of the track dip angle
   //-----------------------------------------------------------------
   //
+  const Double_t kEpsilon =0.00001;
   x2-=x1;
   y2-=y1;
   z2-=z1;
   Double_t d  =  TMath::Sqrt(x2*x2+y2*y2);  // distance  straight line
   if (TMath::Abs(d*c*0.5)>1) return 0;
   Double_t   angle2    = TMath::ASin(d*c*0.5); 
-  angle2  = z2*TMath::Abs(c/(angle2*2.));
+  if (TMath::Abs(angle2)>kEpsilon)  {
+    angle2  = z2*TMath::Abs(c/(angle2*2.));
+  }else{
+    angle2=z2/d;
+  }
   return angle2;
 }
 
