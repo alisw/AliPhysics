@@ -11,11 +11,15 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
         Float_t minFrReCon      = .3,
         Float_t minFrReConPt    = .5,
         const char *name        = "AliAnalysisTaskJetMatching",
-        Bool_t cut              = kFALSE,
+        Bool_t cut              = kTRUE,
         UInt_t  sourceType      = AliAnalysisTaskEmcal::kTPC,
         Float_t sourceRadius    = 0.3,
+        Float_t sourceAreaCut   = .557,
+        Float_t sourcePtBias    = 10.,
         UInt_t targetType       = AliAnalysisTaskEmcal::kTPC,
-        Float_t targetRadius    = 0.3
+        Float_t targetRadius    = 0.3,
+        Float_t targetAreaCut   = .557,
+        Float_t targetPtBias    = 10.
   )
 { 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -37,9 +41,13 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
       jetTask->SetJetsName(sourceJets);
       jetTask->SetAnaType(sourceType, 0);
       jetTask->SetJetRadius(sourceRadius, 0);
+      jetTask->SetPercAreaCut(sourceAreaCut, 0);
+      jetTask->SetPtBiasJetTrack(sourcePtBias);
       jetTask->SetJetsName(targetJets);
       jetTask->SetAnaType(targetType, 1);
       jetTask->SetJetRadius(targetRadius, 1);
+      jetTask->SetPercAreaCut(targetAreaCut, 1);
+      jetTask->SetPtBiasJetTrack(targetPtBias);
   }
   
   mgr->AddTask(jetTask);

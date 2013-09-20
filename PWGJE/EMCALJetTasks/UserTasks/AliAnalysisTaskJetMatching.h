@@ -74,6 +74,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         void                    SetMatchEta(Float_t f)                          {fMatchEta = f;}
         void                    SetMatchPhi(Float_t f)                          {fMatchPhi = f;}
         void                    SetMatchR(Float_t f)                            {fMatchR = f;}
+        void                    SetDoDetectorResponse(Bool_t d)                 {fDoDetectorResponse = d;}
         // methods
         void                    DoGeometricMatchingEtaPhi();
         void                    DoGeometricMatchingR();
@@ -82,7 +83,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         void                    PostMatchedJets();
         // fill histogrmas
         void                    FillAnalysisSummaryHistogram() const;
-        void                    FillMatchedJetHistograms() const;
+        void                    FillMatchedJetHistograms();
         // setters - analysis details
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             return (!track || TMath::Abs(track->Eta()) > 0.9 || track->Phi() < 0 || track->Phi() > TMath::TwoPi()) ? kFALSE : kTRUE; }
@@ -121,6 +122,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         TH1F*                   fHistSourceJetPt;       //! pt of source jets
         TH1F*                   fHistTargetJetPt;       //! pt of target jets
         TH1F*                   fHistMatchedJetPt;      //! pt of matched jets
+        TH2F*                   fHistSourceMatchedJetPt;//! pt or source vs matched jets
         TH1F*                   fHistNoConstSourceJet;  //! number of constituents of source jet
         TH1F*                   fHistNoConstTargetJet;  //! number of constituents of target jet
         TH1F*                   fHistNoConstMatchJet;   //! number of constituents of matched jets
@@ -132,11 +134,12 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         TProfile*               fProfQAMatched;         //! QA spreads of matched jets
         TProfile*               fProfQA;                //! QA spreads of source and target jets
         Int_t                   fNoMatchedJets;         //! number of matched jets
-        AliEmcalJet*            fMatchedJetContainer[100][2];   //! pointers to matched jets
+        AliEmcalJet*            fMatchedJetContainer[200][2];   //! pointers to matched jets
         // geometric matching parameters
         Float_t                 fMatchEta;              // max eta distance between centers of matched jets
         Float_t                 fMatchPhi;              // max phi distance between centers of matched jets
         Float_t                 fMatchR;                // max distance between matched jets
+        Bool_t                  fDoDetectorResponse;    // get detector response matrix (not normalized)
         Bool_t                  fMatchConstituents;     // match constituents
         Float_t                 fMinFracRecoveredConstituents;  // minimium fraction of constituents that needs to be found
         Float_t                 fMinFracRecoveredConstituentPt; // minimium fraction of constituent pt that needs to be recovered
