@@ -6,6 +6,9 @@
 
 #include "AliEmcalJet.h"
 
+#include "AliLog.h"
+#include "Riostream.h"
+
 ClassImp(AliEmcalJet)
 
 //__________________________________________________________________________________________________
@@ -227,7 +230,7 @@ void AliEmcalJet::Print(Option_t* /*option*/) const
 {
   // Print jet information.
 
-  printf("Jet pt=%.2f, eta=%.2f, phi=%.2f, area=%.2f, NEF=%.2f\n", fPt, fEta, fPhi, fArea, fNEF);
+  Printf("Jet pt=%.2f, eta=%.2f, phi=%.2f, area=%.2f, NEF=%.2f", fPt, fEta, fPhi, fArea, fNEF);
 }
 
 //__________________________________________________________________________________________________
@@ -256,6 +259,10 @@ AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray *tracks) const
   AliVParticle* maxTrack = 0;
   for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
     AliVParticle *track = TrackAt(i, tracks);
+    if (!track) {
+      AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)",i,tracks->GetName(),TrackAt(i),tracks->GetEntriesFast()));
+      continue;
+    }
     if (!maxTrack || track->Pt() > maxTrack->Pt()) 
       maxTrack = track;
   }
@@ -269,6 +276,10 @@ AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray *clusters) const
   AliVCluster* maxCluster = 0;
   for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
     AliVCluster *cluster = ClusterAt(i, clusters);
+    if (!cluster) {
+      AliError(Form("Unable to find jet cluster %d in collection %s (pos in collection %d, max %d)",i,clusters->GetName(),ClusterAt(i),clusters->GetEntriesFast()));
+      continue;
+    }
     if (!maxCluster || cluster->E() > maxCluster->E()) 
       maxCluster = cluster;
   }
