@@ -1082,9 +1082,10 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       if (type==1) corrNorm=1.;
     }
     //
+    //
     amp[ncl]=charge;
-    amp[ncl]/=gainGG;
-    amp[ncl]/=gainPad;
+    amp[ncl]/=gainGG;                 // normalized gas gain
+    amp[ncl]/=gainPad;                // 
     amp[ncl]/=corrShape;
     amp[ncl]/=corrPadType;
     amp[ncl]/=corrPos;
@@ -1198,14 +1199,15 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
   const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
   //
-  if (recoParam->GetNeighborRowsDedx() == 0) rowThres = 0;
+  if (recoParam->GetNeighborRowsDedx() == 0) rowThres = 0;	
+  UInt_t time = 1;//
   //
   if (trans) {
       runNumber = trans->GetCurrentRunNumber();
       //AliTPCcalibDB::Instance()->SetRun(runNumber);
       timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
       if (timeGainSplines && recoParam->GetUseGainCorrectionTime()>0) {
-	UInt_t time = trans->GetCurrentTimeStamp();
+	time = trans->GetCurrentTimeStamp();
 	AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
 	AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
 	if (fitMIP) {
@@ -1319,9 +1321,14 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     Float_t gainChamber = 1;
     if (grChamberGain[ipad] && recoParam->GetUseGainCorrectionTime()>0) gainChamber = grChamberGain[ipad]->Eval(cluster->GetDetector());
     //
+    //
+    //
+    Double_t correctionHVandPT = AliTPCcalibDB::Instance()->GetGainCorrectionHVandPT(time, runNumber,cluster->GetDetector(), 5 , recoParam->GetGainCorrectionHVandPTMode());
+    //
     amp[ncl]=charge;
-    amp[ncl]/=gainGG;
-    amp[ncl]/=gainPad;
+    amp[ncl]/=gainGG;               // nominal gas gain
+    amp[ncl]/=correctionHVandPT;    // correction for the HV and P/T - time dependent
+    amp[ncl]/=gainPad;              // 
     amp[ncl]/=corrPos;
     amp[ncl]/=gainEqualPadRegion;
     amp[ncl]/=gainChamber;

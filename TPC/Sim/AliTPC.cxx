@@ -55,6 +55,8 @@
 #include <TParameter.h>
 
 #include "AliDigits.h"
+#include "AliHeader.h"
+
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -2053,6 +2055,11 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
   Float_t gasgain = fTPCParam->GetGasGain();
   gasgain = gasgain/fGainFactor;
+  //  const Int_t timeStamp = 1; //where to get it? runloader->GetHeader()->GetTimeStamp(). https://savannah.cern.ch/bugs/?53025
+  const Int_t timeStamp = fLoader->GetRunLoader()->GetHeader()->GetTimeStamp(); //?
+  Double_t correctionHVandPT = calib->GetGainCorrectionHVandPT(timeStamp, calib->GetRun(), isec, 5 ,tpcrecoparam->GetGainCorrectionHVandPTMode());
+  gasgain*=correctionHVandPT;
+
   Int_t i;
   Float_t xyz[5]; 
 

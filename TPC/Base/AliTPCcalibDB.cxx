@@ -2272,9 +2272,9 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionDeltaZ(Int_t /*timeStamp*/, Int_t run
   
   // Arguments:
   // mode determines the algorith how to combine the Laser Track, LaserCE or TPC-ITS
-  // timestamp - timestamp
+  // timestamp - not used
   // run       - run number
-  // side      - the drift velocity gy correction per side (CE and Laser tracks)
+  // side      - common for boith sides
   //
   if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
   UpdateRunInformations(run,kFALSE);
@@ -2411,7 +2411,7 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
   return (AliTPCCorrection *)fComposedCorrectionArray->At(4);  //
 }
 
-Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int_t sector, Int_t deltaCache){
+Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int_t sector, Int_t deltaCache, Int_t mode){
   //
   // Correction for  changes of gain caused by change of the HV and by relative change of the gas density
   // Function is slow some kind of caching needed
@@ -2419,16 +2419,32 @@ Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int
   //
   // Input paremeters:
   //  deltaCache - maximal time differnce above which the cache is recaclulated
-  // 
+  //  mode       - mode==0 by default return combined correction 
+  //                       actual HV and Pt correction has to be present in the run calibration otherwise it is ignored.
+  //                      
+  //               mode==1 return combined correction ( important for calibration pass)
+  //
+  //               mode==2 return HV correction
+  //               mode==3 return P/T correction
+  //  Usage in the simulation/reconstruction
+  //  MC:     Qcorr  = Qorig*GetGainCorrectionHVandPT   ( in AliTPC.cxx ) 
+  //  Rec:    dEdx   = dEdx/GetGainCorrectionHVandPT    ( in aliTPCseed.cxx )
+  //
   static TVectorD gGainCorrection(72);
-  static Int_t gTimeStamp=0;
+  static TVectorD gGainCorrectionPT(72);
+  static TVectorD gGainCorrectionHV(72);
+  static Int_t    gTimeStamp=0;
+  static Bool_t   hasTimeDependent=kFALSE; 
   if ( TMath::Abs(timeStamp-gTimeStamp)> deltaCache){    
     //
     TGraphErrors * graphGHV = 0;
     TGraphErrors * graphGPT = 0;
     TObjArray *timeGainSplines = GetTimeGainSplinesRun(run);
-    graphGHV  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesHV");
-    graphGPT  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesPT");
+    if (timeGainSplines){
+      graphGHV  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesHV");
+      graphGPT  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesPT");
+      if (graphGHV) hasTimeDependent=kTRUE;
+    }
     if (!graphGHV) graphGHV = fParam->GetGainSlopesHV();
     if (!graphGPT) graphGPT = fParam->GetGainSlopesPT();
     //
@@ -2438,9 +2454,18 @@ Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int
       Double_t deltaGPT=0;
       if (graphGHV) deltaGHV = graphGHV->GetY()[isec]*deltaHV;
       if (graphGPT) deltaGPT = graphGPT->GetY()[isec]*GetPTRelative(timeStamp,run,0);
-      gGainCorrection[isec]=deltaGHV+deltaGPT;
+      gGainCorrection[isec]=(1.+deltaGHV)*(1.+deltaGPT);
+      gGainCorrectionPT[isec]=deltaGPT;
+      gGainCorrectionHV[isec]=deltaGHV;
     }    
     gTimeStamp=timeStamp;
   }
-  return gGainCorrection[sector];
+  if (mode==0){
+    if (hasTimeDependent) return gGainCorrection[sector];
+    if (!hasTimeDependent) return 0;
+  }
+  if (mode==1) return gGainCorrection[sector];
+  if (mode==2) return gGainCorrectionPT[sector];
+  if (mode==3) return gGainCorrectionHV[sector];
+  return 0;
 }
