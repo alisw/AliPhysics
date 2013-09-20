@@ -2937,23 +2937,25 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
 	if(type==kTrackAODMCChargedSecNS || type==kTrackAODMCChargedSecS){
 	  Bool_t isFromStrange = kFALSE;
 	  Int_t iMother = part->GetMother();
-	  if(iMother >= 0){
-	    AliAODMCParticle *partM = dynamic_cast<AliAODMCParticle*>(tca->At(iMother));
-	    if(!partM) continue;
 
-	    Int_t codeM =  TMath::Abs(partM->GetPdgCode());
-	    Int_t mfl = Int_t (codeM/ TMath::Power(10, Int_t(TMath::Log10(codeM))));
-	    if  (mfl == 3 && codeM != 3) isFromStrange = kTRUE;
+          if(iMother < 0) continue; // throw out PYTHIA stack partons + incoming protons
+
+	  AliAODMCParticle *partM = dynamic_cast<AliAODMCParticle*>(tca->At(iMother));
+	  if(!partM) continue;
+
+	  Int_t codeM =  TMath::Abs(partM->GetPdgCode());
+	  Int_t mfl = Int_t (codeM/ TMath::Power(10, Int_t(TMath::Log10(codeM))));
+	  if  (mfl == 3 && codeM != 3) isFromStrange = kTRUE;
 	    
-	    // if(mfl ==3){
-	    //   cout<<" mfl "<<mfl<<" codeM "<<partM->GetPdgCode()<<" code this track "<<part->GetPdgCode()<<endl; 
-	    //   cout<<" index this track "<<it<<" index daughter 0 "<<partM->GetDaughter(0)<<" 1 "<<partM->GetDaughter(1)<<endl; 
-	    // }
+	  // if(mfl ==3){
+	  //   cout<<" mfl "<<mfl<<" codeM "<<partM->GetPdgCode()<<" code this track "<<part->GetPdgCode()<<endl; 
+	  //   cout<<" index this track "<<it<<" index daughter 0 "<<partM->GetDaughter(0)<<" 1 "<<partM->GetDaughter(1)<<endl; 
+	  // }
 
-	    if(type==kTrackAODMCChargedSecNS && isFromStrange) continue;
-	    if(type==kTrackAODMCChargedSecS  && !isFromStrange) continue;
-	  }
+	  if(type==kTrackAODMCChargedSecNS && isFromStrange) continue;
+	  if(type==kTrackAODMCChargedSecS  && !isFromStrange) continue;
 	}
+	
 
 	if(type==kTrackAODMCChargedAcceptance && 
 	   (     part->Eta() > fTrackEtaMax
@@ -4691,7 +4693,7 @@ Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactorCMS(AliAODM
 
   Double_t fac = 1;
 
-  if(motherPDG == 310 || TMath::Abs(motherPDG)==321){ // K0s / K+ / K-
+  if(TMath::Abs(motherPDG) == 310 || TMath::Abs(motherPDG)==321){ // K0s / K+ / K-
 
     if(0.00 <= motherPt && motherPt < 0.20) fac = 0.768049;
     else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.732933;
@@ -4719,7 +4721,7 @@ Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactorCMS(AliAODM
     else if(8.00 <= motherPt && motherPt < 10.00) fac = 0.835865;
   }
 
-  if(motherPDG == 3122){ // Lambda
+  if(TMath::Abs(motherPDG) == 3122){ // Lambda
 
     if(0.00 <= motherPt && motherPt < 0.20) fac = 0.645162;
     else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.627431;
@@ -4747,7 +4749,7 @@ Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactorCMS(AliAODM
     else if(8.00 <= motherPt && motherPt < 10.00) fac = 1.020021;
   }	
   
-  if(motherPDG == 3312 || motherPDG == 3322){ // xi 
+  if(TMath::Abs(motherPDG) == 3312 || TMath::Abs(motherPDG) == 3322){ // xi 
 
     if(0.00 <= motherPt && motherPt < 0.20) fac = 0.666620;
     else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.575908;
