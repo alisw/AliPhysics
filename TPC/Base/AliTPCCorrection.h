@@ -179,7 +179,7 @@ private:
 
   void InitLookUpfulcrums();   // to initialize the grid of the look up table
 
-  ClassDef(AliTPCCorrection,4);
+  ClassDef(AliTPCCorrection,5);
 };
 
 #endif
