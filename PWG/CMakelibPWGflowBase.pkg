@@ -56,6 +56,7 @@ set ( SRCS
       FLOW/Base/AliFlowMSPHistograms.cxx
       FLOW/Base/AliFlowAnalysisWithMSP.cxx
       FLOW/Base/AliFlowOnTheFlyEventGenerator.cxx
+      FLOW/Base/AliFlowAnalysisWithMultiparticleCorrelations.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
