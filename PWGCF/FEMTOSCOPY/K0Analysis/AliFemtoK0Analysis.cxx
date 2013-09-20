@@ -41,6 +41,7 @@
 //	- added new boosting prescription, get q out-side-long for LCMS and PRF (6/24/13)
 //		- added histograms and values for LCMS momenta (for simulation)
 //	- added random particle order switch in correlations (9/09/13)
+//	- added more bins for 3D OSL analysis (9/19/13)
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -330,7 +331,7 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   
 
   //3D out-side-long
-  TH3F* fHistOSLCentLowKt = new TH3F("fHistOSLCentLowKt","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+  /*TH3F* fHistOSLCentLowKt = new TH3F("fHistOSLCentLowKt","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
   fOutputList->Add(fHistOSLCentLowKt);
   TH3F* fHistOSLCentLowKtBkg = new TH3F("fHistOSLCentLowKtBkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
   fOutputList->Add(fHistOSLCentLowKtBkg);
@@ -348,7 +349,27 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   TH3F* fHistOSLSemiCentHighKt = new TH3F("fHistOSLSemiCentHighKt","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
   fOutputList->Add(fHistOSLSemiCentHighKt);
   TH3F* fHistOSLSemiCentHighKtBkg = new TH3F("fHistOSLSemiCentHighKtBkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLSemiCentHighKtBkg);
+  fOutputList->Add(fHistOSLSemiCentHighKtBkg);*/
+
+  //3D out-side-long
+  TH3F *fHist3DOSLSignal[10][4];
+  TH3F *fHist3DOSLBkg[10][4];
+  
+  for(int i3D=0;i3D<10;i3D++){
+   for(int j3D=0;j3D<4;j3D++){
+    TString *histname = new TString("fHist3DOSL");
+    *histname += i3D;
+    *histname += j3D;
+    histname->Append("Signal");
+    fHist3DOSLSignal[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+    fOutputList->Add(fHist3DOSLSignal[i3D][j3D]);
+    histname->Replace(12,6,"Bkg");
+    fHist3DOSLBkg[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+    fOutputList->Add(fHist3DOSLBkg[i3D][j3D]);
+   }
+  }
+    
+
 
   //3D Spherical Harmonics
   TH3F* fHistSHCentLowKt = new TH3F("fHistSHCentLowKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
@@ -772,7 +793,8 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   float pairPt, pairMt, pairKt;         		//pair momentum values
   float pairMInv, pairPDotQ;
   float qinv, q0, qx, qy, qz;      			//pair q values
-  float qLength, thetaSH, thetaSHCos, phiSH;            //Spherical Harmonics values
+  //float qLength, thetaSHCos;            //Spherical Harmonics values
+  //float phiSH, thetaSH;
   float am12, epm, h1, p12, p112, ppx, ppy, ppz, ks;	//PRF
   //float qOutLCMS;
   float qOutPRF, qSide, qLong;				//relative momentum in LCMS/PRF frame
@@ -889,12 +911,21 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 		((TH1F*)fOutputList->FindObject("fHistPOutLCMS"))->Fill(p2LCMSOut);
 		((TH1F*)fOutputList->FindObject("fHistPSideLCMS"))->Fill(p2LCMSSide);
 		((TH1F*)fOutputList->FindObject("fHistPLongLCMS"))->Fill(p2LCMSLong);
+		//getting bin numbers and names for 3D histogram
+        TString *histname3D = new TString("fHist3DOSL");
+        int ktBin;
+        if(pairKt < 0.6) ktBin = 0;
+		else if(pairKt < 0.8) ktBin = 1;
+		else if(pairKt < 1.0) ktBin = 2;
+		else ktBin = 3;
+		*histname3D += centBin-6; //centBins: [6,15] -> array bins: [0,9]
+		*histname3D += ktBin;
 
         //Spherical harmonics
-        qLength = sqrt(qLong*qLong + qSide*qSide + qOutPRF*qOutPRF);
-        thetaSHCos = qLong/qLength;
-        thetaSH = acos(thetaSHCos);
-        phiSH = acos(qOutPRF/(qLength*sin(thetaSH)));
+        //qLength = sqrt(qLong*qLong + qSide*qSide + qOutPRF*qOutPRF);
+        //thetaSHCos = qLong/qLength;
+        //thetaSH = acos(thetaSHCos);
+        //phiSH = acos(qOutPRF/(qLength*sin(thetaSH)));
 
         //Finding average separation of daughters throughout TPC - two-track cut
         float posPositions1[9][3] = {{0}};
@@ -982,7 +1013,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
         //Fill Histograms
         bool center1K0   = kFALSE;  //accepted mass K0
-	bool center2K0   = kFALSE;
+	    bool center2K0   = kFALSE;
         if((fEvt)->fK0Particle[i].fK0) center1K0=kTRUE;
         if((fEvt+evnum)->fK0Particle[j].fK0) center2K0=kTRUE;
         //bool CL1 = kFALSE;
@@ -1027,7 +1058,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
            //else ((TH3F*)fOutputList->FindObject("fHistCRCRSignal"))->Fill(centBin+1, pairKt, qinv);
 
            //3D
-           if(pairKt < 1.0){
+           if(pairKt > 0.2 && pairKt < 1.5 && centBin > 5){
+		    histname3D->Append("Signal");
+			((TH3F*)fOutputList->FindObject(histname3D->Data()))->Fill(qOutPRF,qSide,qLong);
+		   }
+             
+           /*if(pairKt < 1.0){
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentLowKt"))->Fill(qOutPRF,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHCentLowKt"))->Fill(qLength,thetaSHCos,phiSH);}
@@ -1040,8 +1076,9 @@ void AliFemtoK0Analysis::Exec(Option_t *)
              ((TH3F*)fOutputList->FindObject("fHistSHCentHighKt"))->Fill(qLength,thetaSHCos, phiSH);}
             else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentHighKt"))->Fill(qOutPRF,qSide,qLong);
-             ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKt"))->Fill(qLength, thetaSHCos, phiSH);}}
-          }
+             ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKt"))->Fill(qLength, thetaSHCos, phiSH);}}*/			
+
+          }//centercenter
 
           //side-side correlations
           //if(!splitK0sides){
@@ -1069,7 +1106,11 @@ void AliFemtoK0Analysis::Exec(Option_t *)
            //else ((TH3F*)fOutputList->FindObject("fHistCRCRBkg"))->Fill(centBin+1, pairKt, qinv);
 
            //3D
-           if(pairKt < 1.0){
+           if(pairKt > 0.2 && pairKt < 1.5 && centBin > 5){
+		    histname3D->Replace(12,6,"Bkg");
+			((TH3F*)fOutputList->FindObject(histname3D->Data()))->Fill(qOutPRF,qSide,qLong);
+		   }
+           /*if(pairKt < 1.0){
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentLowKtBkg"))->Fill(qOutPRF,qSide,qLong);
              ((TH3F*)fOutputList->FindObject("fHistSHCentLowKtBkg"))->Fill(qLength,thetaSHCos,phiSH);}
@@ -1082,7 +1123,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
              ((TH3F*)fOutputList->FindObject("fHistSHCentHighKtBkg"))->Fill(qLength, thetaSHCos, phiSH);}
             else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentHighKtBkg"))->Fill(qOutPRF,qSide,qLong);
-             ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKtBkg"))->Fill(qLength, thetaSHCos, phiSH);}}
+             ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKtBkg"))->Fill(qLength, thetaSHCos, phiSH);}}*/
           }
 
           //side-side correlations
