@@ -59,6 +59,14 @@ public:
   void SetIsCosmic(Bool_t IsCosmic){fIsCosmic = IsCosmic;};
   void SetLowMemoryConsumption(Bool_t LowMemoryConsumption){fLowMemoryConsumption = LowMemoryConsumption;};
   void SetUseCookAnalytical(Bool_t UseCookAnalytical){fUseCookAnalytical = UseCookAnalytical;};
+  //
+  void SetCutMinCrossRows(Int_t crossRows){fCutCrossRows = crossRows;};
+  void SetCutMaxEta(Float_t maxEta){fCutEtaWindow = maxEta;};
+  void SetCutRequireITSrefit(Bool_t requireItsRefit = kFALSE){fCutRequireITSrefit = requireItsRefit;};
+  void SetCutMaxDcaXY(Float_t maxXY){fCutMaxDcaXY = maxXY;}; 
+  void SetCutMaxDcaZ(Float_t maxZ){fCutMaxDcaZ = maxZ;}; 
+  //
+
 
   static void SetMergeEntriesCut(Double_t entriesCut){fgMergeEntriesCut = entriesCut;}
 
@@ -76,6 +84,15 @@ private:
   Float_t fIntegrationTimeDeDx;         // required statistics for each dEdx time bin
   //
   Float_t fMIP;                         // rough MIP position in order to have scaleable histograms
+  //
+  // track cuts
+  //
+  Int_t   fCutCrossRows;                // minimum number of crossed rows 
+  Float_t fCutEtaWindow;                // maximum eta of tracks
+  Bool_t  fCutRequireITSrefit;          // if ITSrefit should be required (dangerous in cpass0)
+  Float_t fCutMaxDcaXY;                 // max dca_xy (only TPConly resolution is guaranteed!)
+  Float_t fCutMaxDcaZ;                  // max dca_z  (dangerous if vDrift is not calibrated)
+  //
   //
   Bool_t  fUseMax;                      // true: use max charge for dE/dx calculation, false: use total charge for dE/dx calculation
   Float_t fLowerTrunc;                  // lower truncation of dE/dx ; at most 5%

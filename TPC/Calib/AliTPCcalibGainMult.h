@@ -57,6 +57,12 @@ public:
   void SetUpperTrunc(Float_t upperTrunc){fUpperTrunc = upperTrunc;};
   void SetUseMax(Bool_t useMax){fUseMax = useMax;};
   //
+  void SetCutMinCrossRows(Int_t crossRows){fCutCrossRows = crossRows;};
+  void SetCutMaxEta(Float_t maxEta){fCutEtaWindow = maxEta;};
+  void SetCutRequireITSrefit(Bool_t requireItsRefit = kFALSE){fCutRequireITSrefit = requireItsRefit;};
+  void SetCutMaxDcaXY(Float_t maxXY){fCutMaxDcaXY = maxXY;}; 
+  void SetCutMaxDcaZ(Float_t maxZ){fCutMaxDcaZ = maxZ;}; 
+  //
   //
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
@@ -82,11 +88,20 @@ private:
   //
   Bool_t fUseMax;                 // flag if Qmax or Qtot should be used
   //
+  // track cuts
+  //
+  Int_t   fCutCrossRows;                // minimum number of crossed rows 
+  Float_t fCutEtaWindow;                // maximum eta of tracks
+  Bool_t  fCutRequireITSrefit;          // if ITSrefit should be required (dangerous in cpass0)
+  Float_t fCutMaxDcaXY;                 // max dca_xy (only TPConly resolution is guaranteed!)
+  Float_t fCutMaxDcaZ;                  // max dca_z  (dangerous if vDrift is not calibrated)
+  //
   // histograms
   //
   TH1F  *fHistNTracks;            //  histogram showing number of ESD tracks per event
   TH1F  *fHistClusterShape;       //  histogram to check the cluster shape
   TH3F  *fHistQA;                 //  dE/dx histogram showing the final spectrum
+  //
   //
   THnSparseF * fHistGainSector;   //  histogram which shows MIP peak for each of the 3x36 sectors (pad region)
   THnSparseF * fHistPadEqual;     //  histogram for the equalization of the gain in the different pad regions -> pass0

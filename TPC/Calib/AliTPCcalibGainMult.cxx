@@ -78,6 +78,11 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
    fLowerTrunc(0),
    fUpperTrunc(0),
    fUseMax(kFALSE),
+   fCutCrossRows(0),
+   fCutEtaWindow(0),
+   fCutRequireITSrefit(0),
+   fCutMaxDcaXY(0),
+   fCutMaxDcaZ(0),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -104,6 +109,11 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
    fLowerTrunc(0),
    fUpperTrunc(0),
    fUseMax(kFALSE),
+   fCutCrossRows(0),
+   fCutEtaWindow(0),
+   fCutRequireITSrefit(0),
+   fCutMaxDcaXY(0),
+   fCutMaxDcaZ(0),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -127,6 +137,15 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   fLowerTrunc = 0.02; // IMPORTANT CHANGE --> REMOVE HARDWIRED TRUNCATION FROM TRACKER
   fUpperTrunc = 0.6;
   fUseMax = kTRUE; // IMPORTANT CHANGE FOR PbPb; standard: kFALSE;
+  //
+  // define track cuts
+  //
+  fCutCrossRows = 80;
+  fCutEtaWindow = 0.8;
+  fCutRequireITSrefit = kFALSE;
+  fCutMaxDcaXY = 3.5;
+  fCutMaxDcaZ  = 25.;
+
   //
   fHistNTracks = new TH1F("ntracks","Number of Tracks per Event; number of tracks per event; number of tracks",1001,-0.5,1000.5);
   fHistClusterShape = new TH1F("fHistClusterShape","cluster shape; rms meas. / rms exp.;",300,0,3);
@@ -251,11 +270,11 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
   //
   // Criteria for the track selection
   //
-  const Int_t kMinNCL=80;     // minimal number of cluster  - tracks accepted for the dedx calibration
-  const Double_t kMaxEta=0.8; // maximal eta fo the track to be accepted
-  const Double_t kMaxDCAR=10; // maximal DCA R of the track
-  const Double_t kMaxDCAZ=5;  // maximal DCA Z of the track
-  const Double_t kMIPPt=0.45; // MIP pt
+  //  const Int_t kMinNCL=80;     // minimal number of cluster  - tracks accepted for the dedx calibration
+  //const Double_t kMaxEta=0.8; // maximal eta fo the track to be accepted
+  //const Double_t kMaxDCAR=10; // maximal DCA R of the track
+  //const Double_t kMaxDCAZ=5;  // maximal DCA Z of the track
+  const Double_t kMIPPt=0.525; // MIP pt
   
   if (!event) {
     Printf("ERROR: ESD not available");
@@ -272,16 +291,16 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
   }
   if (!(esdFriend->TestSkipBit())) fPIDMatrix= new TMatrixD(ntracks,5);
   fHistNTracks->Fill(ntracks);
-  ProcessCosmic(event);  // usually not enogh statistic
+  //  ProcessCosmic(event);  // usually not enogh statistic
 
   if (esdFriend->TestSkipBit()) {
     return;
-  }
+   }
   //
-  ProcessV0s(event);   // 
-  ProcessTOF(event);   //
+  //ProcessV0s(event);   // 
+  //ProcessTOF(event);   //
   //ProcessKinks(event); // not relyable
-  DumpHPT(event);      // 
+  //DumpHPT(event);      // 
   UInt_t runNumber = event->GetRunNumber();
   Int_t nContributors = event->GetNumberOfTracks();
   //
@@ -298,21 +317,22 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     // calculate necessary track parameters
     Double_t meanP = trackIn->GetP();
     Int_t ncls = track->GetTPCNcls();
+    Int_t nCrossedRows = track->GetTPCCrossedRows();
 
-    if (ncls < kMinNCL) continue;     
+    if (nCrossedRows < fCutCrossRows) continue;     
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
-    if (TMath::Abs(trackIn->Eta()) > kMaxEta) continue;
+    if (TMath::Abs(trackIn->Eta()) > fCutEtaWindow) continue;
 
     UInt_t status = track->GetStatus();
     if ((status&AliESDtrack::kTPCrefit)==0) continue;
-    //if (track->GetNcls(0) < 3) continue; // ITS clusters
+    if ((status&AliESDtrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
     Float_t dca[2], cov[3];
     track->GetImpactParameters(dca,cov);
     Float_t primVtxDCA = TMath::Sqrt(dca[0]*dca[0]);
-    if (primVtxDCA > kMaxDCAR || primVtxDCA < 0.00001) continue;
-    if (TMath::Abs(dca[1]) > kMaxDCAZ) continue;
+    if (TMath::Abs(dca[0]) > fCutMaxDcaXY || TMath::Abs(dca[0]) < 0.0000001) continue;  // cut in xy
+    if (((status&AliESDtrack::kITSrefit) == 1 && TMath::Abs(dca[1]) > 3.) || TMath::Abs(dca[1]) > fCutMaxDcaZ ) continue;
     //
-    //
+    //  
     // fill Alexander QA histogram
     //
     if (primVtxDCA < 3 && track->GetNcls(0) > 3 && track->GetKinkIndex(0) == 0 && ncls > 100) fHistQA->Fill(meanP, track->GetTPCsignal(), 5);
@@ -355,8 +375,10 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       Double_t signalShortTot = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,0,62);
       Double_t signalMedTot   = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,63,126);
-      Double_t signalLongTot  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,127,159);
-      Double_t signalTot      = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,row0,row1);
+      Double_t signalLongTot  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,127,159); 
+      //
+      Double_t signalTot      = 0;
+      //
       Double_t signalArrayTot[4] = {signalShortTot, signalMedTot, signalLongTot, signalTot};
       //
       Double_t mipSignalShort = fUseMax ? signalShortMax : signalShortTot;
@@ -377,11 +399,11 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       if (meanMax < 1e-5 || meanTot < 1e-5) continue;
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
 	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, meanDrift};
-	if ( TMath::Abs(meanP-kMIPPt)<0.05 ) fHistPadEqual->Fill(vecPadEqual);
+	if ( TMath::Abs(meanP-kMIPPt)<0.025 ) fHistPadEqual->Fill(vecPadEqual);
       }
       //
       //      if (meanP > 0.4 && meanP < 0.55) {
-      if ( TMath::Abs(meanP-kMIPPt)<0.05 ) {
+      if ( TMath::Abs(meanP-kMIPPt)<0.025 ) {
 	Double_t vecMult[6] = {seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1),
 			       seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,row0,row1),
 			       meanDrift,
@@ -400,7 +422,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       }
       //
       //
-      if ( TMath::Abs(meanP-kMIPPt)>0.05 ) continue;  // only MIP pions
+      if ( TMath::Abs(meanP-kMIPPt)>0.025 ) continue;  // only MIP pions
       //if (meanP > 0.5 || meanP < 0.4) continue; // only MIP pions
       //
       // for each track, we look at the three different pad regions, split it into tracklets, check if the sector does not change and fill the histogram

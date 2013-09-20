@@ -189,6 +189,11 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain()
    fHistDeDxTotal(0),
    fIntegrationTimeDeDx(0),
    fMIP(0),
+   fCutCrossRows(0),
+   fCutEtaWindow(0),
+   fCutRequireITSrefit(0),
+   fCutMaxDcaXY(0),
+   fCutMaxDcaZ(0),
    fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
@@ -213,6 +218,11 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
    fHistDeDxTotal(0),
    fIntegrationTimeDeDx(0),
    fMIP(0),
+   fCutCrossRows(0),
+   fCutEtaWindow(0),
+   fCutRequireITSrefit(0),
+   fCutMaxDcaXY(0),
+   fCutMaxDcaZ(0),
    fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
@@ -247,6 +257,14 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   fHistDeDxTotal = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",250,0.01,100.,1000,0.,8);
   BinLogX(fHistDeDxTotal);
   
+  
+  // default track selection cuts
+  fCutCrossRows = 80;
+  fCutEtaWindow = 0.8;
+  fCutRequireITSrefit = kFALSE;
+  fCutMaxDcaXY = 3.5;
+  fCutMaxDcaZ  = 25.;
+
   // default values for dE/dx
   fMIP = 50.;
   fUseMax = kTRUE;
@@ -395,19 +413,24 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     // calculate necessary track parameters
     Double_t meanP = trackIn->GetP();
     Double_t meanDrift = 250 - 0.5*TMath::Abs(trackIn->GetZ() + trackOut->GetZ());
-    Int_t nclsDeDx = track->GetTPCNcls();
+    Int_t nCrossedRows = track->GetTPCCrossedRows();
 
+    //
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
-    if (nclsDeDx < 60) continue;     
-    //if (TMath::Abs(trackIn->GetTgl()) > 1) continue;
-    //if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
-    if (TMath::Abs(trackIn->Eta()) > 1) continue;
+    // fCutCrossRows = 80, fCutEtaWindow = 0.8, fCutRequireITSrefit, fCutMaxDcaXY = 3.5, fCutMaxDcaZ = 25
+    //
+    if (nCrossedRows < fCutCrossRows) continue;     
+    if (TMath::Abs(trackIn->Eta()) > fCutEtaWindow) continue;
+    //
     UInt_t status = track->GetStatus();
     if ((status&AliESDtrack::kTPCrefit)==0) continue;
-    //if (track->GetNcls(0) < 3) continue; // ITS clusters
+    if ((status&AliESDtrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
+    //
     Float_t dca[2], cov[3];
     track->GetImpactParameters(dca,cov);
-    if (TMath::Abs(dca[0]) > 7 || TMath::Abs(dca[0]) < 0.0000001 || TMath::Abs(dca[1]) > 25 ) continue; // cut in xy
+    if (TMath::Abs(dca[0]) > fCutMaxDcaXY || TMath::Abs(dca[0]) < 0.0000001) continue;  // cut in xy
+    if (((status&AliESDtrack::kITSrefit) == 1 && TMath::Abs(dca[1]) > 3.) || TMath::Abs(dca[1]) > fCutMaxDcaZ ) continue;
+    //
     Double_t eta = trackIn->Eta();
     
     // Get seeds
@@ -419,13 +442,19 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 
     if (seed) {
       Int_t particleCase = 0;
-      if (meanP < 0.5  && meanP > 0.4)  particleCase = 2; // MIP pions
+      if (meanP < 0.55 && meanP > 0.5)  particleCase = 2; // MIP pions
       if (meanP < 0.57 && meanP > 0.56) particleCase = 3; // protons 1
       if (meanP < 0.66 && meanP > 0.65) particleCase = 4; // protons 2
       //
       if (fLowMemoryConsumption && particleCase == 0) continue;
       //
       Double_t tpcSignal = GetTPCdEdx(seed);
+      /*
+      if (particleCalse == 0) {
+	Float_t corrFactor = AliExternalTrackParam::BetheBlochAleph(x/0.13957);
+	  tpcSignal /= corrFactor; 
+      }
+      */
       fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
       //dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 protons), momenta, runNumner, eta
