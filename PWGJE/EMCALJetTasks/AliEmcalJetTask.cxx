@@ -134,6 +134,9 @@ void AliEmcalJetTask::UserExec(Option_t *)
     fIsInit = kTRUE;
   }
 
+  // clear the jet array (normally a null operation)
+  fJets->Delete();
+
   FindJets();
 }
 
@@ -151,7 +154,6 @@ void AliEmcalJetTask::FindJets()
     cout << "WARNING NO TRACKS OR CLUSTERS:"  <<endl;
     return;
   }
-
 
   TString name("kt");
   fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
@@ -560,7 +562,6 @@ Bool_t AliEmcalJetTask::DoInit()
   }
 
   // add jets to event if not yet there
-  fJets->Delete();
   if (!(fEvent->FindListObject(fJetsName)))
     fEvent->AddObject(fJets);
   else {
