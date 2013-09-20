@@ -310,13 +310,16 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
   if (jet->Area() <= fJetAreaCut) 
     return kFALSE;
 
-  if (jet->AreaEmc()<fAreaEmcCut)
+  if (jet->AreaEmc() < fAreaEmcCut)
     return kFALSE;
 
-  if( GetZLeadingCharged(jet)>fZLeadingChCut ||  GetZLeadingEmc(jet)>fZLeadingEmcCut)
+  if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut)
     return kFALSE;
 
-  if(jet->NEF()<fNEFMinCut || jet->NEF()>fNEFMaxCut)
+  if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut)
+    return kFALSE;
+
+  if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut)
     return kFALSE;
 
   if (!AcceptBiasJet(jet))
@@ -388,7 +391,7 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet 
 Double_t AliJetContainer::GetZLeadingEmc(AliEmcalJet *jet) const
 {
 
-  if (fClusterContainer && fClusterContainer->GetArray() ) {
+  if (fClusterContainer && fClusterContainer->GetArray()) {
     TLorentzVector mom;
     
     AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
@@ -430,7 +433,7 @@ Double_t AliJetContainer::GetZ(AliEmcalJet *jet, TLorentzVector mom) const
 
   Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
 
-  if(pJetSq>0.)
+  if(pJetSq>1e-6)
     return (mom.Px()*jet->Px() + mom.Py()*jet->Py() + mom.Pz()*jet->Pz())/pJetSq;
   else {
     AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq));
