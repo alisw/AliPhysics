@@ -990,6 +990,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   //
   if (AliTPCcalibDB::Instance()->GetParameters()){
     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
+    gainGG *= AliTPCcalibDB::Instance()->GetParameters()->GetNtot()/36.82;//correction for the ionisation
   }
 
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
@@ -1189,6 +1190,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   if (AliTPCcalibDB::Instance()->GetParameters()){
     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
+    gainGG *= AliTPCcalibDB::Instance()->GetParameters()->GetNtot()/36.82;//correction for the ionisation
   }
   Double_t timeCut=0;
   if (AliTPCcalibDB::Instance()->IsTrgL0()){
