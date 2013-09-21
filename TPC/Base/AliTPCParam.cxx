@@ -106,6 +106,13 @@ AliTPCParam::AliTPCParam()
 	     fOxyCont(0.),
 	     fGainSlopesHV(0),   // graph with the gain slope as function of HV - per chamber
 	     fGainSlopesPT(0),   // graph with the gain slope as function of P/T - per chamber
+             fFpot(0.),
+             fNprim(0.),
+             fNtot(0.),
+             fWmean(0.),
+             fExp(0.),
+             fEend(0.),
+             fBetheBloch(0x0),
 	     fPadCoupling(0.),
 	     fZeroSup(0),
 	     fNoise(0.),
@@ -402,6 +409,12 @@ void AliTPCParam::SetDefault()
   static const  Float_t  kOmegaTau = 0.145;
   static const  Float_t  kAttCoef = 250.;
   static const  Float_t  kOxyCont = 5.e-6;
+  static const  Float_t  kFpot = 22.77e-9;
+  static const  Float_t  kNprim=14.35;
+  static const  Float_t  kNtot=42.66;
+  static const  Float_t  kWmean = 35.97e-9;
+  static const  Float_t  kExp = 2.2;
+  static const  Float_t  kEend = 10.e-6; 
   //
   //electronic default parameters
   //
@@ -487,6 +500,22 @@ void AliTPCParam::SetDefault()
   SetOmegaTau(kOmegaTau);
   SetAttCoef(kAttCoef);
   SetOxyCont(kOxyCont);
+  SetFpot(kFpot);
+  SetNprim(kNprim);
+  SetNtot(kNtot);
+  SetWmean(kWmean);
+  SetExp(kExp);
+  SetEend(kEend);
+  //
+  SetComposition(0.9,0.,0.1,0.,0.,0.);// Ne-CO2 90/10
+  //
+  TVectorD *v = new TVectorD(5);
+  (*v)(0)=0.76176e-1;
+  (*v)(1)=10.632;
+  (*v)(2)=0.13279e-4;
+  (*v)(3)=1.8631;
+  (*v)(4)=1.9479;
+  SetBetheBloch(v);
   //
   //set electronivc parameters  
   //

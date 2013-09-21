@@ -13,7 +13,7 @@
 #include "TMath.h"
 
 #include <TGeoMatrix.h>
-
+#include <TVectorD.h>
 class TString;
 class TGraphErrors;
 
@@ -185,6 +185,21 @@ public:
   void  SetGainSlopesHV(TGraphErrors * gainSlopesHV){ fGainSlopesHV=gainSlopesHV;}
   void  SetGainSlopesPT(TGraphErrors * gainSlopesPT){ fGainSlopesPT=gainSlopesPT;}
   void  SetNominalGainSlopes();
+  void  SetComposition(Float_t c1, Float_t c2, Float_t c3, Float_t c4, Float_t c5, Float_t c6){fComposition[0]=c1;
+               fComposition[1]=c2;
+               fComposition[2]=c3;
+               fComposition[3]=c4;
+               fComposition[4]=c5;
+               fComposition[5]=c6;}
+  void   SetFpot(Float_t fpot){fFpot=fpot;}
+  void   SetNprim(Float_t prim){fNprim=prim;}
+  void   SetNtot(Float_t ntot){fNtot=ntot;}
+  void   SetWmean(Float_t wmean){fWmean=wmean;}
+  void   SetExp(Float_t exp){fExp=exp;}
+  void   SetEend(Float_t end){fEend=end;}
+  void   SetBetheBloch(TVectorD *v){
+    fBetheBloch=v;
+  }
   //
   //set electronivc parameters  
   //
@@ -314,7 +329,14 @@ public:
   Float_t  GetOxyCont() const {return fOxyCont;} 
   TGraphErrors * GetGainSlopesHV() const { return fGainSlopesHV;}
   TGraphErrors * GetGainSlopesPT() const { return fGainSlopesPT;}
-
+  Float_t* GetComposition() {return fComposition;}
+  Float_t  GetFpot()const {return fFpot;}
+  Float_t  GetNprim() const {return fNprim;}
+  Float_t  GetNtot() const {return fNtot;}
+  Float_t  GetWmean()const {return fWmean;}
+  Float_t  GetExp()const {return fExp;}
+  Float_t  GetEend()const {return fEend;}
+  TVectorD* GetBetheBloch(){return fBetheBloch;} 
   //
   //get Electronic parameters
   //
@@ -447,6 +469,15 @@ protected :
   Float_t  fOmegaTau;       //omega tau ExB coeficient
   Float_t  fAttCoef;        //attachment coefitients
   Float_t  fOxyCont;        //oxygen content
+  Float_t  fFpot;            // first ionisation potential
+  Float_t  fNprim;           // number of primary electrons/cm
+  Float_t  fNtot;            //total number of electrons/c (MIP)
+  Float_t  fWmean;           // mean energy for electron/ion pair
+  Float_t  fExp;             // de = f(E) - energy loss parametrization
+  Float_t  fEend;            // upper cutoff for de generation
+  TVectorD*  fBetheBloch;   // Bethe-Bloch parametrization
+  // gas mixture composition
+  Float_t  fComposition[6]; 
   TGraphErrors * fGainSlopesHV;   // graph with the gain slope as function of HV - per chamber
   TGraphErrors * fGainSlopesPT;   // graph with the gain slope as function of P/T - per chamber
   //---------------------------------------------------------------------
@@ -498,7 +529,7 @@ private:
 
   void CleanGeoMatrices();
 
-  ClassDef(AliTPCParam,6)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,7)  //parameter  object for set:TPC
 };
 
  
