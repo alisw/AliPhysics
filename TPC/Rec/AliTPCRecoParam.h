@@ -72,6 +72,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseAlignmentTime(Bool_t flag) {fUseAlignmentTime = flag;}
   void  SetNeighborRowsDedx(Int_t nRows) {fNeighborRowsDedx = nRows;}
   void SetCorrectionHVandPTMode(Int_t value){ fGainCorrectionHVandPTMode =value;}
+  void SetSkipTimeBins(Double_t value) {fSkipTimeBins=value;}
   //
   Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   Int_t    GetSeedGapPrim()        const  { return fSeedGapPrim;} 
@@ -118,6 +119,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
 
   Bool_t GetUseMultiplicityCorrectionDedx() const {return fUseMultiplicityCorrectionDedx;}
   Int_t  GetGainCorrectionHVandPTMode() const  { return   fGainCorrectionHVandPTMode;}
+  Double_t  GetSkipTimeBins() const {return fSkipTimeBins;}
+
   Bool_t GetUseAlignmentTime() const {return fUseAlignmentTime;}
   //
   Bool_t   GetUseTotCharge() const {return fUseTotCharge;}          // switch use total or max charge
@@ -204,6 +207,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t fMaxFaction;            // truncated mean - upper threshold
   Int_t   fNeighborRowsDedx;      // number of neighboring rows to identify cluster below thres in dEdx calculation 0 -> switch off
   Int_t   fGainCorrectionHVandPTMode; // switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT 
+  Double_t fSkipTimeBins;        // number of time bins to be skiiped (corrupted signal druing gating opening)
 
   Bool_t fUseTOFCorrection;  // switch - kTRUE use TOF correction kFALSE - do not use
   //

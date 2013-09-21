@@ -37,6 +37,7 @@
 #include "AliSplineFit.h"
 #include "AliCDBManager.h"
 #include "AliTPCcalibDButil.h"
+#include <AliCTPTimeParams.h>
 
 
 ClassImp(AliTPCseed)
@@ -1167,6 +1168,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 
   AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
   AliTPCParam * param = AliTPCcalibDB::Instance()->GetParameters();
+  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
+  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
   if (!parcl)  return 0;
   if (!param) return 0;
   Int_t row0 = param->GetNRowLow();
@@ -1187,6 +1190,16 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   if (AliTPCcalibDB::Instance()->GetParameters()){
     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
   }
+  Double_t timeCut=0;
+  if (AliTPCcalibDB::Instance()->IsTrgL0()){
+    // by defualt we assume L1 trigger is used - make a correction in case of  L0
+    AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+    Double_t delay = ctp->GetDelayL1L0()*0.000000025;
+    delay/=param->GetTSample();    
+    timeCut=delay;
+  }
+  timeCut += recoParam->GetSkipTimeBins();
+
   //
   // extract time-dependent correction for pressure and temperature variations
   //
@@ -1196,8 +1209,6 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   TGraphErrors * grPadEqual = 0x0;
   TGraphErrors*  grChamberGain[3]={0x0,0x0,0x0};
   //
-  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
-  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
   //
   if (recoParam->GetNeighborRowsDedx() == 0) rowThres = 0;	
   UInt_t time = 1;//
@@ -1243,6 +1254,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       if (isClBefore && isClAfter) nclBelowThr++;
     }
     if (!cluster) continue;
+    if (cluster->GetTimeBin()<timeCut) continue; //reject  clusters at the gating grid opening
     //
     //
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
