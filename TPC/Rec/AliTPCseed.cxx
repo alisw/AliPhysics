@@ -1319,7 +1319,10 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     // chamber-by-chamber equalization outside gain map
     //
     Float_t gainChamber = 1;
-    if (grChamberGain[ipad] && recoParam->GetUseGainCorrectionTime()>0) gainChamber = grChamberGain[ipad]->Eval(cluster->GetDetector());
+    if (grChamberGain[ipad] && recoParam->GetUseGainCorrectionTime()>0) {
+      gainChamber = grChamberGain[ipad]->Eval(cluster->GetDetector());
+      if (gainChamber==0) gainChamber=1; // in case old calibation was used before use no correction
+    }
     //
     //
     //

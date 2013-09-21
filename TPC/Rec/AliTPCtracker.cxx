@@ -460,7 +460,7 @@ AliTracker(),
   }
 
   if (AliTPCReconstructor::StreamLevel()>0) {
-    fDebugStreamer = new TTreeSRedirector("TPCdebug.root");
+    fDebugStreamer = new TTreeSRedirector("TPCdebug.root","recreate");
   }
   //
   fSeedsPool = new TClonesArray("AliTPCseed",1000);

@@ -2430,9 +2430,9 @@ Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int
   //  MC:     Qcorr  = Qorig*GetGainCorrectionHVandPT   ( in AliTPC.cxx ) 
   //  Rec:    dEdx   = dEdx/GetGainCorrectionHVandPT    ( in aliTPCseed.cxx )
   //
-  static TVectorD gGainCorrection(72);
-  static TVectorD gGainCorrectionPT(72);
-  static TVectorD gGainCorrectionHV(72);
+  static Float_t gGainCorrection[72];
+  static Float_t gGainCorrectionPT[72];
+  static Float_t gGainCorrectionHV[72];
   static Int_t    gTimeStamp=0;
   static Bool_t   hasTimeDependent=kFALSE; 
   if ( TMath::Abs(timeStamp-gTimeStamp)> deltaCache){    
@@ -2455,17 +2455,17 @@ Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int
       if (graphGHV) deltaGHV = graphGHV->GetY()[isec]*deltaHV;
       if (graphGPT) deltaGPT = graphGPT->GetY()[isec]*GetPTRelative(timeStamp,run,0);
       gGainCorrection[isec]=(1.+deltaGHV)*(1.+deltaGPT);
-      gGainCorrectionPT[isec]=deltaGPT;
-      gGainCorrectionHV[isec]=deltaGHV;
+      gGainCorrectionPT[isec]=1+deltaGPT;
+      gGainCorrectionHV[isec]=1+deltaGHV;
     }    
     gTimeStamp=timeStamp;
   }
   if (mode==0){
     if (hasTimeDependent) return gGainCorrection[sector];
-    if (!hasTimeDependent) return 0;
+    if (!hasTimeDependent) return 1;
   }
   if (mode==1) return gGainCorrection[sector];
   if (mode==2) return gGainCorrectionPT[sector];
   if (mode==3) return gGainCorrectionHV[sector];
-  return 0;
+  return 1;
 }
