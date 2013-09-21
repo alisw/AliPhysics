@@ -871,4 +871,6 @@ void AliTPCParam::SetNominalGainSlopes(){
   }
   fGainSlopesHV = new TGraphErrors(72,sector,gainHV,0,0);
   fGainSlopesPT = new TGraphErrors(72,sector,gainPT,0,0);
+  fGainSlopesHV->SetName("GainSlopesHV");
+  fGainSlopesPT->SetName("GainSlopesPT");
 }

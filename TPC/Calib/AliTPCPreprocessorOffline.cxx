@@ -1008,6 +1008,12 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
   // with naming convention and backward compatibility
   fGainArray->AddAt(fGraphMIP,2);
   fGainArray->AddAt(fGraphCosmic,3);
+  //
+  // Add HV and PT correction parameterization
+  //
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  if (param->GetGainSlopesHV())  fGainArray->AddLast(param->GetGainSlopesHV());
+  if (param->GetGainSlopesPT())  fGainArray->AddLast(param->GetGainSlopesPT());
   cout << "fGraphCosmic: " << fGraphCosmic << " fGraphMIP " << fGraphMIP << endl;
   return kTRUE;
 
