@@ -112,6 +112,8 @@ protected:
     TH3F *fHistTotMatchedRawEtVsTotalPtVsCent; // all clusters no reco eff
     TH2F *fHistPIDProtonsTrackMatchedDepositedVsNch;
     TH2F *fHistPIDAntiProtonsTrackMatchedDepositedVsNch;
+    TH2F *fHistPIDProtonsTrackMatchedDepositedVsNcl;
+    TH2F *fHistPIDAntiProtonsTrackMatchedDepositedVsNcl;
     TH2F *fHistPiKPTrackMatchedDepositedVsNch;
     TH3F *fHistCentVsNchVsNclReco;
 
