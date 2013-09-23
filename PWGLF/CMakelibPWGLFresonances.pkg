@@ -38,6 +38,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnValueDaughter.cxx
            RESONANCES/AliRsnValuePair.cxx
            RESONANCES/AliRsnValueEvent.cxx
+           RESONANCES/AliRsnCutEventUtils.cxx
            RESONANCES/AliRsnCutPrimaryVertex.cxx
            RESONANCES/AliRsnCutTrackQuality.cxx
            RESONANCES/AliRsnCutTrue.cxx
