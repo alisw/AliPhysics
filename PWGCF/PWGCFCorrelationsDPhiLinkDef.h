@@ -24,6 +24,7 @@
 #pragma link C++ class AliMiniTrack+;
 #pragma link C++ class AliDhcTask+;
 #pragma link C++ class AliMuonEffMC+;
+#pragma link C++ class AliMCTruthTrackMaker+;
 #pragma link C++ class AliLeadingV0Correlation+;
 #pragma link C++ class V0Correlationparticle+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;

@@ -50,6 +50,7 @@ AliMuonEffMC::AliMuonEffMC() :
   {
     fHMuonDetGen[i] = NULL;
     fHMuonDetRec[i] = NULL;
+    fHMuonDetRecT[i] = NULL;
     fHHadDetRec[i] = NULL;
     fHSecDetRec[i] = NULL;
   }
@@ -110,6 +111,7 @@ AliMuonEffMC::AliMuonEffMC(const char *name) :
   {
     fHMuonDetGen[i] = NULL;
     fHMuonDetRec[i] = NULL;
+    fHMuonDetRecT[i] = NULL;
     fHHadDetRec[i] = NULL;
     fHSecDetRec[i] = NULL;
   }
@@ -311,6 +313,10 @@ void AliMuonEffMC::UserCreateOutputObjects()
 	fHMuonDetRec[i]->Sumw2();
 	fOutputList->Add(fHMuonDetRec[i]);
 	
+	fHMuonDetRecT[i] = (THnF*) fHMuonParGen->Clone(Form("fHMuonDetRecT_%s",cutlabel[i]));
+	fHMuonDetRecT[i]->Sumw2();
+	fOutputList->Add(fHMuonDetRecT[i]);
+
 	fHHadDetRec[i] = (THnF*) fHMuonParGen->Clone(Form("fHHadDetRec_%s",cutlabel[i]));
 	fHHadDetRec[i]->Sumw2();
 	fOutputList->Add(fHHadDetRec[i]);
@@ -329,7 +335,11 @@ void AliMuonEffMC::UserCreateOutputObjects()
       fHMuonDetRec[0] = (THnF*) fHMuonParGen->Clone(Form("fHMuonDetRec"));
       fHMuonDetRec[0]->Sumw2();
       fOutputList->Add(fHMuonDetRec[0]);
-      
+
+      fHMuonDetRecT[0] = (THnF*) fHMuonParGen->Clone(Form("fHMuonDetRecT"));
+      fHMuonDetRecT[0]->Sumw2();
+      fOutputList->Add(fHMuonDetRecT[0]);
+
       fHHadDetRec[0] = (THnF*) fHMuonParGen->Clone(Form("fHHadDetRec"));
       fHHadDetRec[0]->Sumw2();
       fOutputList->Add(fHHadDetRec[0]);
@@ -500,11 +510,27 @@ void AliMuonEffMC::UserCreateOutputObjects()
     fHMuonDetRec[0]->Sumw2();
     fOutputList->Add(fHMuonDetRec[0]);
 
+    fHMuonDetRecT[0] = new THnF(Form("fHMuonDetRecT_%s", cutlabel[0]), "", 6, iTrackBin, 0, 0);
+    for (Int_t i=0; i<6; i++)
+    {
+      fHMuonDetRecT[0]->SetBinEdges(i, trackBins[i]);
+      fHMuonDetRecT[0]->GetAxis(i)->SetTitle(trackAxisTitle[i]);
+    }
+    fHMuonDetRecT[0]->Sumw2();
+    fOutputList->Add(fHMuonDetRecT[0]);
+
     for(Int_t i=1; i<5; i++)
     {
       fHMuonDetRec[i] = (THnF*) fHMuonDetRec[0]->Clone(Form("fHMuonDetRec_%s",cutlabel[i]));
       fHMuonDetRec[i]->Sumw2();
       fOutputList->Add(fHMuonDetRec[i]);
+    }
+
+   for(Int_t i=1; i<5; i++)
+    {
+      fHMuonDetRecT[i] = (THnF*) fHMuonDetRecT[0]->Clone(Form("fHMuonDetRecT_%s",cutlabel[i]));
+      fHMuonDetRecT[i]->Sumw2();
+      fOutputList->Add(fHMuonDetRecT[i]);
     }
 
    fHMuonDetRecP = new THnF("fHMuonDetRecP", "", 6, iTrackBinP, 0, 0);
@@ -736,7 +762,10 @@ void AliMuonEffMC::UserExec(Option_t *)
     Double_t fillArrayDetRec[6] = { tracketa, trackpt, fCentrality, fZVertex, trackphi, trackcharge }; 
     Double_t fillArrayDetRecP[6] = { tracketa, trackp, fCentrality, fZVertex, trackphi, trackcharge };
     if(fIsCutStudy) fHMuonDetRec[cutNum]->Fill(fillArrayDetRec);
-    else { if(cutNum==2 || cutNum==3) fHMuonDetRec[0]->Fill(fillArrayDetRec); }
+    else { 
+      if(cutNum==2 || cutNum==3) fHMuonDetRec[0]->Fill(fillArrayDetRec); 
+      if(cutNum==3) fHMuonDetRecT[0]->Fill(fillArrayDetRec);
+    }
     if(cutNum==2 || cutNum==3) fHMuonDetRecP->Fill(fillArrayDetRecP);
 
     if(fIsMc)
