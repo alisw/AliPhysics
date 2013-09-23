@@ -190,7 +190,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   }
   Bool_t PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *event);
   Bool_t CorrectedTPCClusterCut(AliConversionPhotonBase *photon, AliVEvent * event);
-  Bool_t PsiPairCut(const AliConversionPhotonBase * photon) const;
+  Bool_t PsiPairCut(const AliConversionPhotonBase * photon, Double_t deltaPhi) const;
   Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
@@ -344,6 +344,8 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t fRemovePileUp; //flag
   Float_t fOpeningAngle; // min opening angle for meson
   Float_t fPsiPairCut;
+  Float_t fPsiPairDeltaPhiCut;
+  Bool_t fDo2DPsiPair;
   Float_t fCosPAngleCut;
   Bool_t fDoToCloseV0sCut; //
   Int_t fRejectExtraSignals;//
@@ -387,6 +389,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   TH2F *hTOFbefore; // TOF before cuts
   TH2F *hTOFSigbefore; // TOF Sigma before cuts
   TH2F *hTOFSigafter; // TOF Sigma after cuts
+  TH2F *hPsiPairDeltaPhiafter; // TOF Sigma after cuts
   TH1F *hTrackCuts; // bookkeeping for track cuts
   TH1F *hPhotonCuts; // bookkeeping for photon specific cuts
   TH1F *hInvMassbefore; // e+e- inv mass distribution before cuts

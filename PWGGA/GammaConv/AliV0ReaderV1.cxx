@@ -592,8 +592,8 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
 
    Double_t chipair = TMath::ACos(scalarproduct/(pEle*pPos));//Angle between propagated daughter tracks
 
-   psiPair =  TMath::Abs(TMath::ASin(deltat/chipair));
-
+//    psiPair =  TMath::Abs(TMath::ASin(deltat/chipair));
+   psiPair = TMath::ASin(deltat/chipair);
    return psiPair;
 }
 
