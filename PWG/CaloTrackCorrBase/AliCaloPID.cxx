@@ -123,6 +123,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
+fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 {
   //Ctor
@@ -160,6 +161,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
+fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 
 {
