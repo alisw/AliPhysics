@@ -45,6 +45,7 @@
 #include "AliESDpid.h"
 #include "AliAnalysisTaskGammaConvV1.h"
 #include "AliVParticle.h"
+#include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliKFVertex.h"
 #include "AliV0ReaderV1.h"
@@ -140,6 +141,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
    hESDTrueSecondaryConvGammaPt(NULL),
    hESDTrueSecondaryConvGammaFromXFromK0sPt(NULL),
    hESDTrueSecondaryConvGammaFromXFromLambdaPt(NULL),
+   hESDTrueDalitzPsiPairDeltaPhi(NULL),
+   hESDTrueGammaPsiPairDeltaPhi(NULL),
    hNEvents(NULL),
    hNGoodESDTracks(NULL),
    hNGammaCandidates(NULL),
@@ -261,6 +264,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
    hESDTrueSecondaryConvGammaPt(NULL),
    hESDTrueSecondaryConvGammaFromXFromK0sPt(NULL),
    hESDTrueSecondaryConvGammaFromXFromLambdaPt(NULL),
+   hESDTrueDalitzPsiPairDeltaPhi(NULL),
+   hESDTrueGammaPsiPairDeltaPhi(NULL),
    hNEvents(NULL),
    hNGoodESDTracks(NULL),
    hNGammaCandidates(NULL),
@@ -548,9 +553,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
       hESDTruePrimaryConvGammaESDPtMCPt = new TH2F*[fnCuts];
       hESDTruePrimaryConvGammaRSESDPtMCPt = new TH2F*[fnCuts];
       hESDTrueSecondaryConvGammaPt = new TH1F*[fnCuts];
-
       hESDTrueSecondaryConvGammaFromXFromK0sPt = new TH1F*[fnCuts];
       hESDTrueSecondaryConvGammaFromXFromLambdaPt = new TH1F*[fnCuts];
+
+      hESDTrueDalitzPsiPairDeltaPhi= new TH2F*[fnCuts];
+      hESDTrueGammaPsiPairDeltaPhi= new TH2F*[fnCuts];
 
       if (fDoPhotonQA){
          hMCConvGammaR = new TH1F*[fnCuts];
@@ -708,6 +715,15 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
             = new TH1F("ESD_TrueSecondaryConvGammaFromXFromLambda_Pt", "ESD_TrueSecondaryConvGammaFromXFromLambda_Pt",250,0,25);
          fTrueList[iCut]->Add(hESDTrueSecondaryConvGammaFromXFromLambdaPt[iCut]);
 
+         hESDTrueDalitzPsiPairDeltaPhi[iCut]
+            = new TH2F("ESD_TrueDalitzPsiPairDeltaPhi_Pt", "ESD_TrueDalitzPsiPairDeltaPhi_Pt",400,-2,2,400,-2,2);
+         fTrueList[iCut]->Add(hESDTrueDalitzPsiPairDeltaPhi[iCut]);
+         
+         hESDTrueGammaPsiPairDeltaPhi[iCut]
+            = new TH2F("ESD_TrueGammaPsiPairDeltaPhi_Pt", "ESD_TrueGammaPsiPairDeltaPhi_Pt",200,-2,2,400,-2,2);
+         fTrueList[iCut]->Add(hESDTrueGammaPsiPairDeltaPhi[iCut]);
+
+         
          hESDTruePrimaryConvGammaESDPtMCPt[iCut] = new TH2F("ESD_TruePrimaryConvGammaESD_PtMCPt", "ESD_TruePrimaryConvGammaESD_PtMCPt",250,0,25,250,0,25);
          fTrueList[iCut]->Add(hESDTruePrimaryConvGammaESDPtMCPt[iCut]);
          hESDTruePrimaryConvGammaRSESDPtMCPt[iCut]
@@ -790,12 +806,7 @@ Bool_t AliAnalysisTaskGammaConvV1::Notify()
 {
    for(Int_t iCut = 0; iCut<fnCuts;iCut++){
       if(!((AliConversionCuts*)fCutArray->At(iCut))->GetDoEtaShift()){
-         if (((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift() != 0.){
-            printf("Error: Gamma Conversion Task %s :: Eta Shift not requested but set to %f, reset to 0. \n\n",
-                   (((AliConversionCuts*)fCutArray->At(iCut))->GetCutNumber()).Data(),((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift());
-            ((AliConversionCuts*)fCutArray->At(iCut))->SetEtaShift(0.);
-         }
-         hEtaShift[iCut]->Fill(0.,0.);
+         hEtaShift[iCut]->Fill(0.,(((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift()));
          continue; // No Eta Shift requested, continue
       }
       if(((AliConversionCuts*)fCutArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
@@ -1114,6 +1125,14 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
 {
 
+   Double_t magField = fInputEvent->GetMagneticField();
+   if( magField  < 0.0 ){
+      magField =  1.0;
+   }
+   else {
+      magField =  -1.0;
+   }
+
    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
    AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
    AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
@@ -1142,20 +1161,28 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
       return; // Same Charge
    }
    
+   AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
+   AliVTrack * electronCandidate = ((AliConversionCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelNegative() );
+   AliVTrack * positronCandidate = ((AliConversionCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelPositive() );
+   Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
+
+   if(Photon->GetPdgCode() != 22){
+      hESDTrueDalitzPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair());
+      iPhotonMCInfo = 1;
+      return; // Mother is no Photon
+   }
+   
    if(((posDaughter->GetMCProcessCode())) != 5 || ((negDaughter->GetMCProcessCode())) != 5){
       iPhotonMCInfo = 1;
       return;// check if the daughters come from a conversion 
    }   
    // STILL A BUG IN ALIROOT >>8 HAS TPO BE REMOVED AFTER FIX
    
-   AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
-   if(Photon->GetPdgCode() != 22){
-      iPhotonMCInfo = 1;
-      return; // Mother is no Photon
-   }
+   
+   
    // True Photon
    if(fIsFromMBHeader)hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-
+   hESDTrueGammaPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair());  
    if(Photon->IsPrimary()){ 
       // Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
       if(fIsFromMBHeader){
@@ -1191,6 +1218,15 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
+   
+  Double_t magField = fInputEvent->GetMagneticField();
+   if( magField  < 0.0 ){
+      magField =  1.0;
+   }
+   else {
+      magField =  -1.0;
+   }
+
    // Process True Photons
    TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCStack);
    TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
@@ -1210,17 +1246,28 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
    }
 
    if(pdgCode[0]!=11 || pdgCode[1]!=11) return; //One Particle is not a electron
-
+   
    if(posDaughter->GetPdgCode()==negDaughter->GetPdgCode()) return; // Same Charge
 
+   TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
+   AliVTrack * electronCandidate = ((AliConversionCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelNegative() );
+   AliVTrack * positronCandidate = ((AliConversionCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelPositive() );
+   Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
+   
+   if(Photon->GetPdgCode() != 22){
+      hESDTrueDalitzPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair());
+      return; // Mother is no Photon
+   }
+   
    if(posDaughter->GetUniqueID() != 5 || negDaughter->GetUniqueID() !=5) return;// check if the daughters come from a conversion
 
-   TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
-   if(Photon->GetPdgCode() != 22) return; // Mother is no Photon
-
+   
+   
    // True Photon
-   if(fIsFromMBHeader)hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-
+   if(fIsFromMBHeader){
+      hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+   }
+   hESDTrueGammaPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair());  
    if(posDaughter->GetMother(0) <= fMCStack->GetNprimary()){
       // Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
       if(fIsFromMBHeader){

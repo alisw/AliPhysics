@@ -155,6 +155,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hESDTrueSecondaryConvGammaPt;
    TH1F **hESDTrueSecondaryConvGammaFromXFromK0sPt;
    TH1F **hESDTrueSecondaryConvGammaFromXFromLambdaPt;
+   TH2F **hESDTrueDalitzPsiPairDeltaPhi;
+   TH2F **hESDTrueGammaPsiPairDeltaPhi;
    TH1I **hNEvents;
    TH1I **hNGoodESDTracks;
    TH1I **hNGammaCandidates;

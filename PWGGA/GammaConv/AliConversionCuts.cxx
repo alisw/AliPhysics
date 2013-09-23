@@ -160,6 +160,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fRemovePileUp(kFALSE),
    fOpeningAngle(0.005),
    fPsiPairCut(10000),
+   fPsiPairDeltaPhiCut(10000),
+   fDo2DPsiPair(kFALSE),
    fCosPAngleCut(10000),
    fDoToCloseV0sCut(kFALSE),
    fRejectExtraSignals(0),
@@ -202,6 +204,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    hTOFbefore(NULL),
    hTOFSigbefore(NULL),
    hTOFSigafter(NULL),
+   hPsiPairDeltaPhiafter(NULL),
    hTrackCuts(NULL),
    hPhotonCuts(NULL),
    hInvMassbefore(NULL),
@@ -310,6 +313,8 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fRemovePileUp(ref.fRemovePileUp),
    fOpeningAngle(ref.fOpeningAngle),
    fPsiPairCut(ref.fPsiPairCut),
+   fPsiPairDeltaPhiCut(ref.fPsiPairDeltaPhiCut),
+   fDo2DPsiPair(ref.fDo2DPsiPair),
    fCosPAngleCut(ref.fCosPAngleCut),
    fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
    fRejectExtraSignals(ref.fRejectExtraSignals),
@@ -352,6 +357,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    hTOFbefore(NULL),
    hTOFSigbefore(NULL),
    hTOFSigafter(NULL),
+   hPsiPairDeltaPhiafter(NULL),
    hTrackCuts(NULL),
    hPhotonCuts(NULL),
    hInvMassbefore(NULL),
@@ -565,6 +571,9 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
 
    hTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
    fHistograms->Add(hTOFSigafter);
+
+   hPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
+   fHistograms->Add(hPsiPairDeltaPhiafter);
 
    TAxis *AxisAfter = hTPCdEdxSigafter->GetXaxis();
    Int_t bins = AxisAfter->GetNbins();
@@ -1033,9 +1042,18 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
       return kFALSE;
    }
 
+   Double_t magField = event->GetMagneticField();
+   if( magField  < 0.0 ){
+      magField =  1.0;
+   } else {
+      magField =  -1.0;
+   }
+   AliVTrack * electronCandidate = GetTrack(event,photon->GetTrackLabelNegative() );
+   AliVTrack * positronCandidate = GetTrack(event,photon->GetTrackLabelPositive() );
+   Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
 
    cutIndex++; //7
-   if(!PsiPairCut(photon)) {
+   if(!PsiPairCut(photon,deltaPhi)) {
       if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //7
       return kFALSE;
    }
@@ -1071,7 +1089,7 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
    // Histos after Cuts
    if(hInvMassafter)hInvMassafter->Fill(photon->GetMass());
    if(hArmenterosafter)hArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
-
+   if(hPsiPairDeltaPhiafter)hPsiPairDeltaPhiafter->Fill(deltaPhi,photon->GetPsiPair());
    return kTRUE;
 
 }
@@ -1485,6 +1503,7 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
    if(hTPCdEdxSigafter)hTPCdEdxSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
    if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
+  
    return kTRUE;
 }
 
@@ -2793,19 +2812,27 @@ Bool_t AliConversionCuts::SetPsiPairCut(Int_t psiCut) {
       fPsiPairCut = 0.035; //
       break;
    case 4:
-      fPsiPairCut = 0.15; //
-      break;
-   case 5:
       fPsiPairCut = 0.2; //
+      break;   
+   case 5:
+      fPsiPairCut = 0.1; //
+      fPsiPairDeltaPhiCut = 1;
+      fDo2DPsiPair = kTRUE;
       break;
    case 6:
-      fPsiPairCut = 0.03; //
+      fPsiPairCut = 0.05; //
+      fPsiPairDeltaPhiCut = 1;
+      fDo2DPsiPair = kTRUE;
       break;
    case 7:
-      fPsiPairCut = 0.025; //
+      fPsiPairCut = 0.035; //
+      fPsiPairDeltaPhiCut = 1;
+      fDo2DPsiPair = kTRUE;
       break;
    case 8:
-      fPsiPairCut = 0.01; //
+      fPsiPairCut = 0.2; //
+      fPsiPairDeltaPhiCut = 1;
+      fDo2DPsiPair = kTRUE; //
       break;
    case 9:
       fPsiPairCut = 0.5; //
@@ -3438,12 +3465,20 @@ Double_t AliConversionCuts::GetCosineOfPointingAngle( const AliConversionPhotonB
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::PsiPairCut(const AliConversionPhotonBase * photon) const {
+Bool_t AliConversionCuts::PsiPairCut(const AliConversionPhotonBase * photon, Double_t deltaPhi) const {
 
-   if(photon->GetPsiPair() > fPsiPairCut){
-      return kFALSE;}
-   else{return kTRUE;}
-
+//    cout << fDo2DPsiPair << "\t" << fPsiPairCut << "\t" << fPsiPairDeltaPhiCut << endl;
+   
+   if (fDo2DPsiPair){
+      
+      if ( (deltaPhi > 0  &&  deltaPhi < fPsiPairDeltaPhiCut) &&
+        TMath::Abs(photon->GetPsiPair()) < ( fPsiPairCut - fPsiPairCut/fPsiPairDeltaPhiCut * deltaPhi ) ) return kTRUE;
+      else return kFALSE;
+   } else {
+      if(abs(photon->GetPsiPair()) > fPsiPairCut){
+         return kFALSE;}
+      else{return kTRUE;}
+   } 
 }
 
 ///________________________________________________________________________
@@ -3958,6 +3993,10 @@ void AliConversionCuts::GetCorrectEtaShiftFromPeriod(TString periodName){
       periodName.CompareTo("LHC13c2") == 0 || //MC Starlight, coherent J/Psi, UPC muon anchor LHC13d+e
       periodName.CompareTo("LHC13b4") == 0 || //MC Pythia 6 (Jet-Jet), anchor LHC13b
       periodName.CompareTo("LHC13b2_fix_1") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p1") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p2") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p3") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p4") == 0 || //MC DPMJET, anchr LHC13b+c
       periodName.CompareTo("LHC13b3") == 0 || //MC HIJING, weighted to number of events per run, anchor LHC13b
       periodName.CompareTo("LHC13b2") == 0 ||  // MC DPMJET, wrong energy, anchor LHC13b
       periodName.CompareTo("LHC13b2_plus") == 0 || // MC DPMJET, weighted to number event per run, anchor LHC13b
