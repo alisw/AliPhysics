@@ -120,6 +120,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
         TH1F*                   fHistUnsortedCorrelation;       //! dphi correlation of unsorted jets
         TH1F*                   fHistMatchedCorrelation;        //! dphi correlation of matched jets
         TH1F*                   fHistSourceJetPt;       //! pt of source jets
+        TH1F*                   fHistMatchedSourceJetPt;//! pt of matched source jets
         TH1F*                   fHistTargetJetPt;       //! pt of target jets
         TH1F*                   fHistMatchedJetPt;      //! pt of matched jets
         TH2F*                   fHistSourceMatchedJetPt;//! pt or source vs matched jets

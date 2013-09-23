@@ -42,12 +42,12 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
       jetTask->SetAnaType(sourceType, 0);
       jetTask->SetJetRadius(sourceRadius, 0);
       jetTask->SetPercAreaCut(sourceAreaCut, 0);
-      jetTask->SetPtBiasJetTrack(sourcePtBias);
+      jetTask->SetPtBiasJetTrack(sourcePtBias, 0);
       jetTask->SetJetsName(targetJets);
       jetTask->SetAnaType(targetType, 1);
       jetTask->SetJetRadius(targetRadius, 1);
       jetTask->SetPercAreaCut(targetAreaCut, 1);
-      jetTask->SetPtBiasJetTrack(targetPtBias);
+      jetTask->SetPtBiasJetTrack(targetPtBias, 1);
   }
   
   mgr->AddTask(jetTask);
