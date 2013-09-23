@@ -101,7 +101,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fUseEMCal(kFALSE)
 ,fUseShowerShapeCut(kFALSE)
 ,fFillBackground(kFALSE)
-
+,fAssocWithSPD(kFALSE)
 
 ,fEMCEG1(kFALSE)
 ,fEMCEG2(kFALSE)
@@ -147,6 +147,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtElec_LS(0)
 ,fPtElec_ULS2(0)
 ,fPtElec_LS2(0)
+
+,fPtElec_ULS_weight(0)
+,fPtElec_LS_weight(0)
+,fPtElec_ULS2_weight(0)
+,fPtElec_LS2_weight(0)
+
+,fTOF01(0)
+,fTOF02(0)
+,fTOF03(0)
 ,fpid(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
@@ -241,6 +250,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fDCAcutFlag(kFALSE)
 ,fPtBackgroundBeforeReco(0)
 ,fPtBackgroundBeforeReco2(0)
+,fPtBackgroundBeforeReco_weight(0)
+,fPtBackgroundBeforeReco2_weight(0)
 ,fPtBackgroundAfterReco(0)
 
 ,fPtMinAsso(0.3)
@@ -249,6 +260,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtMCparticleAll(0)
 ,fPtMCparticleAll_nonPrimary(0)
 ,fPtMCparticleAlle_nonPrimary(0)
+,fPtMCparticleAlle_Primary(0)
 ,fPtMCparticleReco(0)
 ,fPtMCparticleReco_nonPrimary(0)
 ,fPtMCparticleAllHfe1(0)
@@ -257,6 +269,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtMCparticleRecoHfe2(0)
 ,fPtMCelectronAfterAll(0)
 ,fPtMCelectronAfterAll_nonPrimary(0)
+,fPtMCelectronAfterAll_Primary(0)
 ,fPtMCpi0(0)
 ,fPtMCeta(0)
 ,fPtMC_EMCal_All(0)
@@ -319,7 +332,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fUseEMCal(kFALSE)
 ,fUseShowerShapeCut(kFALSE)
 ,fFillBackground(kFALSE)
-
+,fAssocWithSPD(kFALSE)
 ,fEMCEG1(kFALSE)
 ,fEMCEG2(kFALSE)
 ,fIsHFE1(kFALSE)
@@ -365,6 +378,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtElec_LS(0)
 ,fPtElec_ULS2(0)
 ,fPtElec_LS2(0)
+
+,fPtElec_ULS_weight(0)
+,fPtElec_LS_weight(0)
+,fPtElec_ULS2_weight(0)
+,fPtElec_LS2_weight(0)
+
+,fTOF01(0)
+,fTOF02(0)
+,fTOF03(0)
 ,fpid(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
@@ -457,6 +479,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fDCAcutFlag(kFALSE)
 ,fPtBackgroundBeforeReco(0)
 ,fPtBackgroundBeforeReco2(0)
+,fPtBackgroundBeforeReco_weight(0)
+,fPtBackgroundBeforeReco2_weight(0)
 ,fPtBackgroundAfterReco(0)
 
 ,fPtMinAsso(0.3)
@@ -466,6 +490,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtMCparticleAll(0)
 ,fPtMCparticleAll_nonPrimary(0)
 ,fPtMCparticleAlle_nonPrimary(0)
+,fPtMCparticleAlle_Primary(0)
 ,fPtMCparticleReco(0)
 ,fPtMCparticleReco_nonPrimary(0)
 
@@ -475,6 +500,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtMCparticleRecoHfe2(0)
 ,fPtMCelectronAfterAll(0)
 ,fPtMCelectronAfterAll_nonPrimary(0)
+,fPtMCelectronAfterAll_Primary(0)
 
 ,fPtMCpi0(0)
 ,fPtMCeta(0)
@@ -600,9 +626,20 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fPtElec_ULS = new TH1F("fPtElec_ULS","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
 	fPtElec_LS = new TH1F("fPtElec_LS","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
 	
+	fPtElec_ULS_weight = new TH1F("fPtElec_ULS_weight","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
+	fPtElec_LS_weight = new TH1F("fPtElec_LS_weight","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
+	
+	fTOF01 = new TH2F("fTOF01","",200,-20,20,200,-20,20);
+	fTOF02 = new TH2F("fTOF02","",200,-20,20,200,-20,20);
+	fTOF03 = new TH2F("fTOF02","",200,-20,20,200,-20,20);
+	
 	if(fFillBackground){
 		fPtElec_ULS2 = new TH1F("fPtElec_ULS2","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
 		fPtElec_LS2 = new TH1F("fPtElec_LS2","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
+		
+		fPtElec_ULS2_weight = new TH1F("fPtElec_ULS2_weight","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS2_weight = new TH1F("fPtElec_LS2_weight","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
+
 	}
 	
 	fPtTrigger_Inc = new TH1F("fPtTrigger_Inc","pT dist for Hadron Contamination; p_{t} (GeV/c); Count",300,0,30);
@@ -632,13 +669,21 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 	}
 	
+	fOutputList->Add(fTOF01);
+	fOutputList->Add(fTOF02);
+	fOutputList->Add(fTOF03);
+	
 	fOutputList->Add(fPtElec_Inc);
 	fOutputList->Add(fPtElec_ULS);
 	fOutputList->Add(fPtElec_LS);
+	fOutputList->Add(fPtElec_ULS_weight);
+	fOutputList->Add(fPtElec_LS_weight);
 	
 	if(fFillBackground){
 		fOutputList->Add(fPtElec_ULS2);
 		fOutputList->Add(fPtElec_LS2);
+		fOutputList->Add(fPtElec_ULS2_weight);
+		fOutputList->Add(fPtElec_LS2_weight);
 	}
 	
 	
@@ -717,50 +762,50 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	}
 	
 		//pt bin
-	Int_t fPtBin[6] = {2,4,6,8,10,15};
+	Int_t fPtBin[7] = {1,2,4,6,8,10,15};
 	
-	fEoverP_tpc = new TH2F *[5];
-	fTPC_pt = new TH1F *[5];
-	fTPCnsigma_pt = new TH1F *[5];
+	fEoverP_tpc = new TH2F *[6];
+	fTPC_pt = new TH1F *[6];
+	fTPCnsigma_pt = new TH1F *[6];
 	
-	fEta=new TH1F *[5];
-	fPhi=new TH1F *[5];
-	fR=new TH1F *[5];
-	fR_EoverP=new TH2F *[5];
-	fNcells=new TH1F *[5];
-	fNcells_EoverP=new TH2F *[5];
-	fM02_EoverP= new TH2F *[5];
-	fM20_EoverP= new TH2F *[5];
-	fEoverP_ptbins=new TH1F *[5];
-	fECluster_ptbins=new TH1F *[5];
-	fEoverP_wSSCut=new TH1F *[5];
-	fNcells_electrons=new TH1F *[5];
-	fNcells_hadrons=new TH1F *[5];
-	fTPCnsigma_eta_electrons=new TH2F *[5];
-	fTPCnsigma_eta_hadrons=new TH2F *[5];
+	fEta=new TH1F *[6];
+	fPhi=new TH1F *[6];
+	fR=new TH1F *[6];
+	fR_EoverP=new TH2F *[6];
+	fNcells=new TH1F *[6];
+	fNcells_EoverP=new TH2F *[6];
+	fM02_EoverP= new TH2F *[6];
+	fM20_EoverP= new TH2F *[6];
+	fEoverP_ptbins=new TH1F *[6];
+	fECluster_ptbins=new TH1F *[6];
+	fEoverP_wSSCut=new TH1F *[6];
+	fNcells_electrons=new TH1F *[6];
+	fNcells_hadrons=new TH1F *[6];
+	fTPCnsigma_eta_electrons=new TH2F *[6];
+	fTPCnsigma_eta_hadrons=new TH2F *[6];
 	
 	if(fCorrelationFlag)
 	{
-		fCEtaPhi_Inc = new TH2F *[5];
-		fCEtaPhi_Inc_DiHadron = new TH2F *[5];
+		fCEtaPhi_Inc = new TH2F *[6];
+		fCEtaPhi_Inc_DiHadron = new TH2F *[6];
 		
-		fCEtaPhi_ULS = new TH2F *[5];
-		fCEtaPhi_LS = new TH2F *[5];
-		fCEtaPhi_ULS_NoP = new TH2F *[5];
-		fCEtaPhi_LS_NoP = new TH2F *[5];
+		fCEtaPhi_ULS = new TH2F *[6];
+		fCEtaPhi_LS = new TH2F *[6];
+		fCEtaPhi_ULS_NoP = new TH2F *[6];
+		fCEtaPhi_LS_NoP = new TH2F *[6];
 		
-		fCEtaPhi_ULS_Weight = new TH2F *[5];
-		fCEtaPhi_LS_Weight = new TH2F *[5];
-		fCEtaPhi_ULS_NoP_Weight = new TH2F *[5];
-		fCEtaPhi_LS_NoP_Weight = new TH2F *[5];
+		fCEtaPhi_ULS_Weight = new TH2F *[6];
+		fCEtaPhi_LS_Weight = new TH2F *[6];
+		fCEtaPhi_ULS_NoP_Weight = new TH2F *[6];
+		fCEtaPhi_LS_NoP_Weight = new TH2F *[6];
 		
-		fCEtaPhi_Inc_EM = new TH2F *[5];
+		fCEtaPhi_Inc_EM = new TH2F *[6];
 		
-		fCEtaPhi_ULS_EM = new TH2F *[5];
-		fCEtaPhi_LS_EM = new TH2F *[5];
+		fCEtaPhi_ULS_EM = new TH2F *[6];
+		fCEtaPhi_LS_EM = new TH2F *[6];
 		
-		fCEtaPhi_ULS_Weight_EM = new TH2F *[5];
-		fCEtaPhi_LS_Weight_EM = new TH2F *[5];
+		fCEtaPhi_ULS_Weight_EM = new TH2F *[6];
+		fCEtaPhi_LS_Weight_EM = new TH2F *[6];
 		
 		fInvMass = new TH1F("fInvMass","",200,0,0.3);
 		fInvMassBack = new TH1F("fInvMassBack","",200,0,0.3);
@@ -810,7 +855,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 	}
 	
-	for(Int_t i = 0; i < 5; i++)
+	for(Int_t i = 0; i < 6; i++)
 	{
 		fEoverP_tpc[i] = new TH2F(Form("fEoverP_tpc%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,0,2);
 		fTPC_pt[i] = new TH1F(Form("fTPC_pt%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Count",fPtBin[i],fPtBin[i+1]),200,20,200);
@@ -934,13 +979,18 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	if(fIsMC)
 	{
 		fPtBackgroundBeforeReco = new TH1F("fPtBackgroundBeforeReco",";p_{T} (GeV/c);Count",300,0,30);
+		fPtBackgroundBeforeReco_weight = new TH1F("fPtBackgroundBeforeReco_weight",";p_{T} (GeV/c);Count",300,0,30);
 		if(fFillBackground)fPtBackgroundBeforeReco2 = new TH1F("fPtBackgroundBeforeReco2",";p_{T} (GeV/c);Count",300,0,30);
+		if(fFillBackground)fPtBackgroundBeforeReco2_weight = new TH1F("fPtBackgroundBeforeReco2_weight",";p_{T} (GeV/c);Count",300,0,30);
+		
 		fPtBackgroundAfterReco = new TH1F("fPtBackgroundAfterReco",";p_{T} (GeV/c);Count",300,0,30);	
 		fPtMCparticleAll = new TH1F("fPtMCparticleAll",";p_{T} (GeV/c);Count",200,0,40);	
 		fPtMCparticleReco = new TH1F("fPtMCparticleReco",";p_{T} (GeV/c);Count",200,0,40);
 		
 		fPtMCparticleAll_nonPrimary = new TH1F("fPtMCparticleAll_nonPrimary",";p_{T} (GeV/c);Count",200,0,40);	
-		fPtMCparticleAlle_nonPrimary = new TH1F("fPtMCparticleAlle_nonPrimary",";p_{T} (GeV/c);Count",200,0,40);	
+		fPtMCparticleAlle_nonPrimary = new TH1F("fPtMCparticleAlle_nonPrimary",";p_{T} (GeV/c);Count",200,0,40);
+		fPtMCparticleAlle_Primary = new TH1F("fPtMCparticleAlle_Primary",";p_{T} (GeV/c);Count",200,0,40);
+		
 		fPtMCparticleReco_nonPrimary = new TH1F("fPtMCparticleReco_nonPrimary",";p_{T} (GeV/c);Count",200,0,40);
 		
 		fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{t} (GeV/c);Count",200,0,40);
@@ -950,7 +1000,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 		fPtMCelectronAfterAll = new TH1F("fPtMCelectronAfterAll",";p_{T} (GeV/c);Count",200,0,40);
 		fPtMCelectronAfterAll_nonPrimary = new TH1F("fPtMCelectronAfterAll_nonPrimary",";p_{T} (GeV/c);Count",200,0,40);
-	
+		fPtMCelectronAfterAll_Primary = new TH1F("fPtMCelectronAfterAll_Primary",";p_{T} (GeV/c);Count",200,0,40);
+		
 
 		
 		fPtMCpi0 = new TH1F("fPtMCpi0",";p_{t} (GeV/c);Count",200,0,30);
@@ -964,13 +1015,18 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fPtIsPhysicaPrimary = new TH1F("fPtIsPhysicaPrimary",";p_{t} (GeV/c);Count",200,0,40);
 		
 		fOutputList->Add(fPtBackgroundBeforeReco);
+		fOutputList->Add(fPtBackgroundBeforeReco_weight);
+		
 		if(fFillBackground) fOutputList->Add(fPtBackgroundBeforeReco2);
+		if(fFillBackground) fOutputList->Add(fPtBackgroundBeforeReco2_weight);
 		fOutputList->Add(fPtBackgroundAfterReco);
 		fOutputList->Add(fPtMCparticleAll);
 		fOutputList->Add(fPtMCparticleReco);
 		
 		fOutputList->Add(fPtMCparticleAll_nonPrimary);
 		fOutputList->Add(fPtMCparticleAlle_nonPrimary);
+		
+		fOutputList->Add(fPtMCparticleAlle_Primary);
 		fOutputList->Add(fPtMCparticleReco_nonPrimary);
 		
 		fOutputList->Add(fPtMCparticleAllHfe1);
@@ -980,6 +1036,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fPtMCelectronAfterAll);
 		
 		fOutputList->Add(fPtMCelectronAfterAll_nonPrimary);
+		fOutputList->Add(fPtMCelectronAfterAll_Primary);
+		
 		
 		
 		fOutputList->Add(fPtMCpi0);
@@ -1220,6 +1278,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
 				{
 					if (TMath::Abs(pdg) == 11) fPtMCparticleAlle_nonPrimary->Fill(fMCparticle->Pt()); //denominator for total efficiency for all electrons, and not primary
+					if (TMath::Abs(pdg) == 11 && fMCparticle->IsPhysicalPrimary()) fPtMCparticleAlle_Primary->Fill(fMCparticle->Pt()); //denominator for total efficiency for all electrons primary
 					
 					if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 ) 
 					{
@@ -1239,7 +1298,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					}
 				}
 				if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCparticle->Pt());
-				if(TMath::Abs(pdg)==211) fPtMCeta->Fill(fMCparticle->Pt());
+				if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCparticle->Pt());
 			}
 		}
 		else
@@ -1265,7 +1324,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				Int_t pdg = fMCtrack->GetPdgCode();
 				
 				if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCtrack->Pt());
-				if(TMath::Abs(pdg)==211) fPtMCeta->Fill(fMCtrack->Pt());
+				if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCtrack->Pt());
 
 				
 								
@@ -1274,6 +1333,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				{
 					
 					if (TMath::Abs(pdg) == 11)  fPtMCparticleAlle_nonPrimary->Fill(fMCtrack->Pt());//denominator for total efficiency for all electrons, and not primary
+					if (TMath::Abs(pdg) == 11 && fMCstack->IsPhysicalPrimary(iMC))  fPtMCparticleAlle_Primary->Fill(fMCtrack->Pt());
 
 					
 					if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 )
@@ -1352,6 +1412,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 		
 		Double_t fTPCnSigma = -999;
+		Double_t fTOFnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
 		Double_t fTPCnSigma_proton = -999;
 		Double_t fTPCnSigma_kaon = -999;
@@ -1366,6 +1427,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		fTPCsignal = track->GetTPCsignal();
 		fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+		fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
 		fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
@@ -1500,8 +1562,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
 			{
 				
-				fPtMCparticleReco_nonPrimary->Fill(fMCparticle->Pt()); //not Primary track
-				
+								
 				if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 ) 
 				{	
 					fPtMCparticleReco_nonPrimary->Fill(fMCparticle->Pt()); //not Primary track
@@ -1558,7 +1619,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		fTPC_p[1]->Fill(fPt,fTPCsignal);
 		fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
-		Double_t fPtBin[6] = {2,4,6,8,10,15};
+		Double_t fPtBin[7] = {1,2,4,6,8,10,15};
 		
 		TPCNcls = track->GetTPCNcls();
 		Float_t pos2[3]={0,0,0};
@@ -1627,7 +1688,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					
 					
 					
-					for(Int_t i = 0; i < 5; i++)
+					for(Int_t i = 0; i < 6; i++)
 					{
 						if(fPt>=fPtBin[i] && fPt<fPtBin[i+1])
 						{
@@ -1677,7 +1738,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			///Histograms for PID Studies
 			//Double_t fPtBin[6] = {2,4,6,8,10,15};
 		
-		for(Int_t i = 0; i < 5; i++)
+		for(Int_t i = 0; i < 6; i++)
 		{
 			if(fPt>=fPtBin[i] && fPt<fPtBin[i+1])
 			{
@@ -1751,6 +1812,10 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			}
 		}
 		
+		
+			if(fPt>1 && fPt<2) fTOF01->Fill(fTOFnSigma,fTPCnSigma);
+			if(fPt>2 && fPt<4) fTOF02->Fill(fTOFnSigma,fTPCnSigma);
+			if(fPt>4 && fPt<6) fTOF03->Fill(fTOFnSigma,fTPCnSigma);
 		
 			///________________________________________________________________________
 			///PID
@@ -1893,7 +1958,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				Double_t Dx = fClus->GetTrackDx();
 				Double_t Dz = fClus->GetTrackDz();
 				Double_t R=TMath::Sqrt(Dx*Dx+Dz*Dz);
-				for(Int_t i = 0; i < 5; i++)
+				for(Int_t i = 0; i < 6; i++)
 				{
 					if(fPt>=fPtBin[i] && fPt<fPtBin[i+1])
 					{
@@ -1954,7 +2019,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					
 					fTPCNcls_EoverP[2]->Fill(TPCNcls, EoverP);
 					
-					for(Int_t i = 0; i < 5; i++)
+					for(Int_t i = 0; i < 6; i++)
 					{
 						if(fPt>=fPtBin[i] && fPt<fPtBin[i+1])
 						{
@@ -2072,6 +2137,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax ){
 									
 								if( TMath::Abs(pdg) == 11) fPtMCelectronAfterAll_nonPrimary->Fill(fMCparticle->Pt()); //numerator for the total efficiency, non Primary track
+								if( TMath::Abs(pdg) == 11 && fMCparticle->IsPhysicalPrimary()) fPtMCelectronAfterAll_Primary->Fill(fMCparticle->Pt()); 
 							}	
 								
 							
@@ -2105,6 +2171,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							
 							if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax){
 								if( TMath::Abs(pdg) == 11) fPtMCelectronAfterAll_nonPrimary->Fill(fMCtrack->Pt()); //numerator for the total efficiency, non Primary track
+								if( TMath::Abs(pdg) == 11 && fMCstack->IsPhysicalPrimary(track->GetLabel())) fPtMCelectronAfterAll_Primary->Fill(fMCtrack->Pt());
 							}
 							
 							if(fMCstack->IsPhysicalPrimary(track->GetLabel()))
@@ -2240,6 +2307,27 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					//Is Background
 				if(!IsTPConly)fPtBackgroundBeforeReco->Fill(track->Pt());
 				if(IsTPConly)fPtBackgroundBeforeReco2->Fill(track->Pt());
+				
+				
+				//new 23 September	//weighted histograms //test
+				if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 ){
+						//Double_t mPt=fMCparticleMother->Pt();
+						//Double_t mweight=3*mPt;
+					Double_t mweight=1;
+					if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), mweight);
+					if(IsTPConly)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), mweight);
+				}
+				else if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111 ){
+						//Double_t gmPt=fMCparticleGMother->Pt();
+						//Double_t gmweight=3*gmPt;
+					Double_t gmweight=1;
+					if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), gmweight);
+					if(IsTPConly)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), gmweight);
+				}
+				else{
+					if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt());
+					if(IsTPConly)fPtBackgroundBeforeReco2_weight->Fill(track->Pt());				
+				}
 			}
 		}
 		else
@@ -2327,13 +2415,81 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				if(!IsTPConly){
 					if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
 					if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
+					
+						//new 22 September	//weighted histograms //test
+					if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 ){
+						Double_t mPt=fMCparticleMother->Pt();
+						
+						Double_t mweight1=0;
+						Double_t mweight2=0;
+							//check this
+						if(fNonHFE->IsULS()) mweight1=3*mPt*(fNonHFE->GetNULS());
+						if(fNonHFE->IsLS())  mweight2=3*mPt*(fNonHFE->GetNLS());
+						
+							//fill histos
+						if(fNonHFE->IsULS())fPtElec_ULS_weight->Fill(fPtE, mweight1);
+						if(fNonHFE->IsLS())fPtElec_LS_weight->Fill(fPtE, mweight2);
+					}
+					else if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111 ){
+						Double_t gmPt=fMCparticleGMother->Pt();
+						
+						Double_t gmweight1=0;
+						Double_t gmweight2=0;
+							//check this
+						if(fNonHFE->IsULS()) gmweight1=3*gmPt*(fNonHFE->GetNULS());
+						if(fNonHFE->IsLS())  gmweight2=3*gmPt*(fNonHFE->GetNLS());
+					
+						//fill histos
+						if(fNonHFE->IsULS())fPtElec_ULS_weight->Fill(fPtE, gmweight1);
+						if(fNonHFE->IsLS())fPtElec_LS_weight->Fill(fPtE, gmweight2);
+					}
+					else{
+						if(fNonHFE->IsULS()) fPtElec_ULS_weight->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS_weight->Fill(fPtE,fNonHFE->GetNLS());				
+					}
+					
+					
 				}
 				
 				if(IsTPConly){
 					if(fNonHFE->IsULS()) fPtElec_ULS2->Fill(fPtE,fNonHFE->GetNULS());
 					if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
+					
+						//new 17 September	//weighted histograms //test
+					if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 ){
+						Double_t mPt=fMCparticleMother->Pt();
+						
+						Double_t mweight1=1;
+						Double_t mweight2=1;
+							//check this
+						if(fNonHFE->IsULS()) mweight1=3*mPt*(fNonHFE->GetNULS());
+						if(fNonHFE->IsLS())  mweight2=3*mPt*(fNonHFE->GetNLS());
+						
+							//fill histos
+						if(fNonHFE->IsULS())fPtElec_ULS2_weight->Fill(fPtE, mweight1);
+						if(fNonHFE->IsLS())fPtElec_LS2_weight->Fill(fPtE, mweight2);
+					}
+					else if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111 ){
+						Double_t gmPt=fMCparticleGMother->Pt();
+						
+						Double_t gmweight1=1;
+						Double_t gmweight2=1;
+							//check this
+						if(fNonHFE->IsULS()) gmweight1=3*gmPt*(fNonHFE->GetNULS());
+						if(fNonHFE->IsLS())  gmweight2=3*gmPt*(fNonHFE->GetNLS());
+						
+							//fill histos
+						if(fNonHFE->IsULS())fPtElec_ULS2_weight->Fill(fPtE, gmweight1);
+						if(fNonHFE->IsLS())fPtElec_LS2_weight->Fill(fPtE, gmweight2);
+					}
+					else{
+						if(fNonHFE->IsULS()) fPtElec_ULS2_weight->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS2_weight->Fill(fPtE,fNonHFE->GetNLS());				
+					}
+					
 				}
-			}
+			
+		}
 		}
 		else 
 		{
@@ -2533,7 +2689,7 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 					fEtaH = MixedTrack->Eta();
 					fPtH = MixedTrack->Pt();
 					
-					if(fPtH>fPtE || fPtH<1) continue;
+					if(fPtH<0.5 || fPtH>2.0) continue;
 					
 					fDphi = fPhiE - fPhiH;
 					
@@ -2542,9 +2698,9 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 					
 					fDeta = fEtaE - fEtaH;
 					
-					Double_t fPtBin[6] = {2,4,6,8,10,15};
+					Double_t fPtBin[7] = {1,2,4,6,8,10,15};
 					
-					for(Int_t i = 0; i < 5; i++)
+					for(Int_t i = 0; i < 6; i++)
 					{
 					    if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
 					    {
@@ -2587,6 +2743,7 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 			if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
 			if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
 			if(atrack2->GetTPCNcls() < 80) continue; 
+			if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
 		}
 		else
 		{   
@@ -2598,7 +2755,7 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 		fEtaH = track2->Eta();
 		fPtH = track2->Pt();
 		
-		if(fPtH>fPtE || fPtH<1) continue;
+		if(fPtH<0.5 || fPtH>2.0) continue;
 		
 		fDphi = fPhiE - fPhiH;
 		
@@ -2607,7 +2764,7 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 		
 		fDeta = fEtaE - fEtaH;
 		
-		Double_t fPtBin[6] = {2,4,6,8,10,15};
+		Double_t fPtBin[7] = {1,2,4,6,8,10,15};
 		
 			//______________________________________________________________
 			//Check if this track is a Non-HFE partner
@@ -2621,7 +2778,7 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 		}
 			//______________________________________________________________
 		
-		for(Int_t i = 0; i < 5; i++)
+		for(Int_t i = 0; i < 6; i++)
 		{
 		    if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
 		    {
@@ -2665,6 +2822,7 @@ TObjArray* AliAnalysisTaskEMCalHFEpA::SelectedHadrons()
 			if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
 			if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
 			if(atrack2->GetTPCNcls() < 80) continue; 
+			if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
 		}
 		else
 		{   
@@ -2732,6 +2890,7 @@ void AliAnalysisTaskEMCalHFEpA::DiHadronCorrelation(AliVTrack *track, Int_t trac
 			if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
 			if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
 			if(atrack2->GetTPCNcls() < 80) continue; 
+			if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
 		}
 		else
 		{   
@@ -2743,7 +2902,7 @@ void AliAnalysisTaskEMCalHFEpA::DiHadronCorrelation(AliVTrack *track, Int_t trac
 		fEtaH = track2->Eta();
 		fPtH = track2->Pt();
 		
-		if(fPtH>fPtE || fPtH<1) continue;
+		if(fPtH<0.5 || fPtH>2.0) continue;
 		
 		fDphi = fPhiE - fPhiH;
 		
@@ -2752,9 +2911,9 @@ void AliAnalysisTaskEMCalHFEpA::DiHadronCorrelation(AliVTrack *track, Int_t trac
 		
 		fDeta = fEtaE - fEtaH;
 		
-		Double_t fPtBin[6] = {2,4,6,8,10,15};
+		Double_t fPtBin[7] = {1,2,4,6,8,10,15};
 		
-		for(Int_t i = 0; i < 5; i++)
+		for(Int_t i = 0; i < 6; i++)
 		{
 		    if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
 		    {
