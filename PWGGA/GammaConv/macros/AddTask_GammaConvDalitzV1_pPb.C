@@ -169,16 +169,12 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
    stringShift = "pPb";
 
    ConvCutarray[0] = "800000008209360300220000000"; ElecCutarray[0] = "904754002582026217"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-   //ConvCutarray[1] = "800000008209360300220000000"; ElecCutarray[1] = "904754002582026217"; MesonCutarray[1] = "01039035000000"; //standard cut Pi0 PbPb 00-100 + No extra smearing
    ConvCutarray[1] = "800000008209360300220000000"; ElecCutarray[1] = "904754002582026117"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.100 GeV
-   //ConvCutarray[3] = "800000008209360300220000000"; ElecCutarray[3] = "904754002582026317"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.150 GeV
    ConvCutarray[2] = "800000008209460300220000000"; ElecCutarray[2] = "904754002582026217"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + dEdx electron gamma   -6 ,7 sigmas
    ConvCutarray[3] = "800000008209360300220300000"; ElecCutarray[3] = "904754002582026217"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100  do Aysemtri cut
-   ConvCutarray[4] = "800000008209460300220000000"; ElecCutarray[4] = "902754002582026217"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100  dEdx electrons primary and secondary -6 7 sigmas
+   ConvCutarray[4] = "800000008209360300220000000"; ElecCutarray[4] = "905154002582026217"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+  
    
-   //ConvCutarray[7] = "800000008249360300220000000"; ElecCutarray[7] = "904754002582026217"; MesonCutarray[7] = "01039035009000"; //standard cut Pi0 PbPb 00-100  Single Pt gamma > 0.075 GeV
-   //ConvCutarray[8] = "800000008219360300220000000"; ElecCutarray[8] = "904754002582026217"; MesonCutarray[8] = "01039035009000"; //standard cut Pi0 PbPb 00-100  Single Pt gamma > 0.100 GeV
-   //ConvCutarray[9] = "800000008209360300220000000"; ElecCutarray[9] = "904854002582026217"; MesonCutarray[9] = "01039035009000"; //standard cut Pi0 PbPb 00-100
  
 
    TList *ConvCutList  = new TList();
@@ -266,7 +262,7 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
    //connect containers
    AliAnalysisDataContainer *coutput =
    mgr->CreateContainer("GammaConvDalitzV1", TList::Class(),
-                           AliAnalysisManager::kOutputContainer,"GammaConvV1.root");
+                           AliAnalysisManager::kOutputContainer,"GammaConvV1Dalitz.root");
 
    mgr->AddTask(task);
    mgr->ConnectInput(task,0,cinput);

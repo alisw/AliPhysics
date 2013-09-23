@@ -1535,13 +1535,19 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
   case 1:
         fDoPsiPairCut = kTRUE;
         fPsiPairCut = 0.45; // Standard
-        fDeltaPhiCutMin = 0.;
+        fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.12;
         break;
   case 2:
 	fDoPsiPairCut = kTRUE;
         fPsiPairCut = 0.60; 
-        fDeltaPhiCutMin = 0.;
+        fDeltaPhiCutMin = 0.0;
+        fDeltaPhiCutMax = 0.12;
+        break;
+  case 3:
+        fDoPsiPairCut = kTRUE;
+        fPsiPairCut = 0.52;
+        fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.12;
         break;
     

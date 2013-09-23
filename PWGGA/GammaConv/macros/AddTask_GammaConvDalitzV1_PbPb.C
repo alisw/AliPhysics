@@ -1,4 +1,5 @@
-void AddTask_GammaConvDalitzV1_PbPb(   Bool_t isMC   = kFALSE, //run MC 
+void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
+                                       Bool_t isMC   = kFALSE, //run MC 
                                        Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                        Bool_t enableDoMesonChic = kFALSE, // enable additional Chic analysis
                                        TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
@@ -35,7 +36,7 @@ void AddTask_GammaConvDalitzV1_PbPb(   Bool_t isMC   = kFALSE, //run MC
    // ================== GetAnalysisManager ===============================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      Error("AddTask_GammaConvDalitzV1_PbPb", "No analysis manager found.");
+      Error(Form("AddTask_GammaConvDalitzV1_PbPb_%i",trainConfig), "No analysis manager found.");
       return ;
    }
 
@@ -100,40 +101,27 @@ void AddTask_GammaConvDalitzV1_PbPb(   Bool_t isMC   = kFALSE, //run MC
 
    if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
 
-   AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
+      AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
 
-   // Set AnalysisCut Number
+      // Set AnalysisCut Number
+      AliDalitzElectronCuts *fElecCuts=0;
+      TString ElecCuts = "900054000000020000";
 
-   AliDalitzElectronCuts *fElecCuts=0;
+      if( ElecCuts!=""){
+         fElecCuts= new AliDalitzElectronCuts(ElecCuts.Data(),ElecCuts.Data());
+         if(fElecCuts->InitializeCutsFromCutString(ElecCuts.Data())){
+            fElectronSelector->SetDalitzElectronCuts(fElecCuts);
+            fElecCuts->SetFillCutHistograms("",kTRUE);
+         }
+      }
 
-   TString ElecCuts = "900054000000020000";
+      fElectronSelector->Init();
+      mgr->AddTask(fElectronSelector);
 
-
-
-    if( ElecCuts!=""){
-
-       fElecCuts= new AliDalitzElectronCuts(ElecCuts.Data(),ElecCuts.Data());
-
-            if(fElecCuts->InitializeCutsFromCutString(ElecCuts.Data())){
-
-                fElectronSelector->SetDalitzElectronCuts(fElecCuts);
-
-                fElecCuts->SetFillCutHistograms("",kTRUE);
-
-            }
-
-    }
-
-    fElectronSelector->Init();
-    mgr->AddTask(fElectronSelector);
-
-    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-
-    //connect input V0Reader
-
-    mgr->ConnectInput (fElectronSelector,0,cinput1);
-
-    }
+      AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+      //connect input V0Reader
+      mgr->ConnectInput (fElectronSelector,0,cinput1);
+   }
 
 
 
@@ -146,35 +134,28 @@ void AddTask_GammaConvDalitzV1_PbPb(   Bool_t isMC   = kFALSE, //run MC
   
  
    AliAnalysisTaskGammaConvDalitzV1 *task=NULL;
-
-   task= new AliAnalysisTaskGammaConvDalitzV1("GammaConvDalitzV1");
-
-   task->SetIsHeavyIon(2);
+   task= new AliAnalysisTaskGammaConvDalitzV1(Form("GammaConvDalitzV1_%i",trainConfig));
+   task->SetIsHeavyIon(1);
    task->SetIsMC(isMC);
 
 
 
    // Cut Numbers to use in Analysis
-   Int_t numberOfCuts = 5;
+   Int_t numberOfCuts = 3;
 
    TString *ConvCutarray    = new TString[numberOfCuts];
-
    TString *ElecCutarray    = new TString[numberOfCuts];
-
    TString *MesonCutarray   = new TString[numberOfCuts];
 
-
-      
-
-
-   ConvCutarray[0]  = "312000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "905162002552021217"; //PbPb  5-10% kAny
-   ConvCutarray[1]  = "112000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "905162002552021217"; //PbPb 10-20% kAny
-   ConvCutarray[2]  = "124000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "905162002552021217"; //PbPb 20-40% kAny
-   ConvCutarray[3]  = "146000104209297100322000000"; MesonCutarray[3] = "01522045009000"; ElecCutarray[3]  = "905162002552021217"; //PbPb 40-60% kAny
-   ConvCutarray[4]  = "168000104209297100322000000"; MesonCutarray[4] = "01522045009000"; ElecCutarray[4]  = "905162002552021217"; //PbPb 60-80% kAny
-
-
-
+   if( trainConfig == 1 ) {
+        ConvCutarray[0]  = "124000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "905162002553025217"; //PbPb 20-40% kAny
+        ConvCutarray[1]  = "146000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "905162002553025217"; //PbPb 40-60% kAny
+        ConvCutarray[2]  = "168000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "905162002553025217"; //PbPb 60-80% kAny
+   } else if ( trainConfig == 2 ) {
+        ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "905162002553025217"; //PbPb 20-40% kAny
+        ConvCutarray[1]  = "546000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "905162002553025217"; //PbPb 40-60% kAny
+        ConvCutarray[2]  = "568000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "905162002553025217"; //PbPb 60-80% kAny
+   }
 
    TList *ConvCutList  = new TList();
    TList *MesonCutList = new TList();
@@ -199,58 +180,43 @@ void AddTask_GammaConvDalitzV1_PbPb(   Bool_t isMC   = kFALSE, //run MC
 
 
    for(Int_t i = 0; i<numberOfCuts; i++){
-
-
       analysisCuts[i] = new AliConversionCuts();
       if( ! analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data()) ) {
             cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
             return 0;
+      } else {
+         ConvCutList->Add(analysisCuts[i]);
+         analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+         if( trainConfig == 1){
+            if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+            if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
+            if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
+         } else if ( trainConfig == 2 ) {
+            if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+            if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
+            if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
+         }
       }
-      else {
-      
-      ConvCutList->Add(analysisCuts[i]);
-      analysisCuts[i]->SetFillCutHistograms("",kFALSE);
- 
-      if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0510V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M");
-      if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_1020V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M");
-      if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
-      if (i == 3 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4060V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
-      if (i == 4 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_6080V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
-
-
-
-      }
-
-
 
       analysisMesonCuts[i] = new AliConversionMesonCuts();
-    
       if( ! analysisMesonCuts[i]->InitializeCutsFromCutString(MesonCutarray[i].Data()) ) {
             cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
             return 0;
-      }
-      else {
+      } else {
         MesonCutList->Add(analysisMesonCuts[i]);
         analysisMesonCuts[i]->SetFillCutHistograms("");
       }
-
-
-       TString cutName( Form("%s_%s_%s",ConvCutarray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
-
-
-       analysisElecCuts[i] = new AliDalitzElectronCuts();
-       if( !analysisElecCuts[i]->InitializeCutsFromCutString(ElecCutarray[i].Data())) {
-
+      
+      TString cutName( Form("%s_%s_%s",ConvCutarray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
+      analysisElecCuts[i] = new AliDalitzElectronCuts();
+      if( !analysisElecCuts[i]->InitializeCutsFromCutString(ElecCutarray[i].Data())) {
             cout<< "ERROR:  analysisElecCuts [ " <<i<<" ] "<<endl;
             return 0;
-       }
-       else { 
-        ElecCutList->Add(analysisElecCuts[i]);
-        analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
-       }
-
-
-        analysisCuts[i]->SetAcceptedHeader(HeaderList);
+      }  else { 
+         ElecCutList->Add(analysisElecCuts[i]);
+         analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
+      }
+      analysisCuts[i]->SetAcceptedHeader(HeaderList);
 
    }
 
@@ -267,8 +233,8 @@ void AddTask_GammaConvDalitzV1_PbPb(   Bool_t isMC   = kFALSE, //run MC
 
    //connect containers
    AliAnalysisDataContainer *coutput =
-   mgr->CreateContainer("GammaConvDalitzV1", TList::Class(),
-                           AliAnalysisManager::kOutputContainer,"GammaConvV1.root");
+   mgr->CreateContainer(Form("GammaConvDalitzV1_%i",trainConfig), TList::Class(),
+                           AliAnalysisManager::kOutputContainer,Form("GammaConvV1Dalitz_%i.root",trainConfig));
 
    mgr->AddTask(task);
    mgr->ConnectInput(task,0,cinput);
