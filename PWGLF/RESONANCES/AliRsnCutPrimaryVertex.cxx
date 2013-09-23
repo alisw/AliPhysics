@@ -9,6 +9,7 @@
 //
 
 #include "AliRsnCutPrimaryVertex.h"
+#include "AliAnalysisUtils.h"
 
 ClassImp(AliRsnCutPrimaryVertex)
 
@@ -41,7 +42,6 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
 //
 // Cut checker
 //
-
    // coherence check
    // which also fills data member objects
    if (!TargetOK(object)) return kFALSE;
@@ -49,13 +49,14 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
    // retrieve ESD event
    AliESDEvent *esd = dynamic_cast<AliESDEvent *>(fEvent->GetRef());
    AliAODEvent *aod = dynamic_cast<AliAODEvent *>(fEvent->GetRef());
-
+   AliVEvent *vevt = dynamic_cast<AliVEvent *>(fEvent->GetRef());
+   // pile-up check
+   if (fCheckPileUp) {
+     AliAnalysisUtils * utils = new AliAnalysisUtils();
+     if (utils->IsPileUpSPD(vevt)) return kFALSE;
+   }
+   
    if (esd) {
-      // pile-up check
-      if (fCheckPileUp) {
-         if (esd->IsPileupFromSPD()) return kFALSE;
-      }
-
       // get the best primary vertex:
       // first try the one with tracks
       const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
@@ -135,4 +136,18 @@ void AliRsnCutPrimaryVertex::Print(const Option_t *) const
    AliInfo(Form("Accepting TPC primary vertex : %s", (fAcceptTPC ? "YES" : "NO")));
    AliInfo(Form("Contributors range (outside) : %d - %d", fMinI, fMaxI));
    AliInfo(Form("Z-vertex     range (inside)  : %f - %f", fMinD, fMaxD));
+}
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnCutPrimaryVertex::CheckVertex(AliVVertex *vertex)
+{
+//
+// Checks if a candidate primary vertex is good,
+// which is true if it is not null and has at
+// least one contributor
+//
+
+   if (!vertex) return kFALSE;
+   if (vertex->GetNContributors() < 1) return kFALSE;
+   return kTRUE;
 }

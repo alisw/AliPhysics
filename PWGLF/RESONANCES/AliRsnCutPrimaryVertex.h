@@ -12,7 +12,6 @@
 #define ALIRSNCUTPRIMARYVERTEX_H
 
 #include "AliRsnCut.h"
-
 class AliVVertex;
 
 class AliRsnCutPrimaryVertex : public AliRsnCut {
@@ -31,22 +30,7 @@ protected:
 
    Bool_t fAcceptTPC;   // if kTRUE, the TPC primary vertexes are accepted
    Bool_t fCheckPileUp; // check and reject pileupped events (pp)
-
    ClassDef(AliRsnCutPrimaryVertex, 1)
 };
-
-//__________________________________________________________________________________________________
-inline Bool_t AliRsnCutPrimaryVertex::CheckVertex(AliVVertex *vertex)
-{
-//
-// Checks if a candidate primary vertex is good,
-// which is true if it is not null and has at
-// least one contributor
-//
-
-   if (!vertex) return kFALSE;
-   if (vertex->GetNContributors() < 1) return kFALSE;
-   return kTRUE;
-}
 
 #endif
