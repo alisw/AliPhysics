@@ -41,6 +41,7 @@
 enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
+enum rapidity{ kdefault, km01to01, k01to04, k04to07, k04to08 };
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
@@ -48,7 +49,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *outfilename="HFPtSpectrum.root",
 		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[pb]
 		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false, 
-		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="") {
+		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="",
+		    Int_t rapiditySlice=kdefault) {
 
 
   gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
@@ -199,6 +201,23 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   hDirectMCptMin->SetNameTitle("hDirectMCptMin","min direct MC spectra");
   hFeedDownMCptMax->SetNameTitle("hFeedDownMCptMax","max feed-down MC spectra");
   hFeedDownMCptMin->SetNameTitle("hFeedDownMCptMin","min feed-down MC spectra");
+  //
+  // Scale FONLL inputs if we do the analysis in y-slices
+  //
+  if(rapiditySlice!=kdefault){
+    Double_t scaleFONLL = 1.0;
+    if(rapiditySlice==km01to01) scaleFONLL = 0.2/1.0;
+    else if (rapiditySlice==k01to04) scaleFONLL = 0.3/1.0;
+    else if (rapiditySlice==k04to07) scaleFONLL = 0.1/1.0;
+    else if (rapiditySlice==k04to08) scaleFONLL = 0.1/1.0;
+    hDirectMCpt->Scale(scaleFONLL);
+    hFeedDownMCpt->Scale(scaleFONLL);
+    hDirectMCptMax->Scale(scaleFONLL);
+    hDirectMCptMin->Scale(scaleFONLL);
+    hFeedDownMCptMax->Scale(scaleFONLL);
+    hFeedDownMCptMin->Scale(scaleFONLL);
+  }
+
   //
   //
   TFile * efffile = new TFile(efffilename,"read");
