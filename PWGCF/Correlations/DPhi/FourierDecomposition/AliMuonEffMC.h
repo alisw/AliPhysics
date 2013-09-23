@@ -103,6 +103,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   THn         *fHMuonParGenFPM;
   THn         *fHMuonDetGen[5];    //! detector level muon track generated eta, p_T, Centrality, Z-vertex, phi, charge
   THn         *fHMuonDetRec[5];    //! reconstructed muon track eta, p_T, Centrality, Z-vertex, phi, charge
+  THn         *fHMuonDetRecT[5];
   THn         *fHHadDetRec[5];     //! particle reconstructed at MUON detector, but not muon
   THn         *fHSecDetRec[5];     //! particle reconstructed at MUON detector, but secondary muon
   THn         *fHMuonParGenV[4];
@@ -149,7 +150,7 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 11);
+  ClassDef(AliMuonEffMC, 12);
 };
 
 #endif
