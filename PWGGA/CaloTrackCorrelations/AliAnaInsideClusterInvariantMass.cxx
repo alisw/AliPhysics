@@ -125,9 +125,6 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassNLocMax1[i][j]  = 0;
       fhMassNLocMax2[i][j]  = 0;
       fhMassNLocMaxN[i][j]  = 0;
-      fhArmNLocMax1[i][j]  = 0;
-      fhArmNLocMax2[i][j]  = 0;
-      fhArmNLocMaxN[i][j]  = 0;
       fhNLocMax[i][j]       = 0;
       fhNLocMaxM02Cut[i][j] = 0;
       fhSplitClusterENLocMax   [i][j] = 0;
@@ -157,10 +154,6 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassPi0NLocMaxN[i][j] = 0;
       fhMassEtaNLocMaxN[i][j] = 0;
       fhMassConNLocMaxN[i][j] = 0;
-
-      fhArmPi0NLocMax1[i][j] = 0;
-      fhArmPi0NLocMax2[i][j] = 0;
-      fhArmPi0NLocMaxN[i][j] = 0;
       
       fhNCellPi0NLocMax1[i][j] = 0;
       fhNCellEtaNLocMax1[i][j] = 0;
@@ -228,9 +221,6 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhMassAfterCutsNLocMax2[i][j] = 0;
       fhMassAfterCutsNLocMaxN[i][j] = 0;
 
-      fhArmAfterCutsNLocMax1[i][j] = 0;
-      fhArmAfterCutsNLocMax2[i][j] = 0;
-      fhArmAfterCutsNLocMaxN[i][j] = 0;
       
       fhSplitEFractionAfterCutsNLocMax1[i][j] = 0 ;
       fhSplitEFractionAfterCutsNLocMax2[i][j] = 0 ;
@@ -444,6 +434,26 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     fhAsyMCGenRecoDiffMCPi0    [nlm] = 0;
     fhAsyMCGenRecoDiffMCPi0Conv[nlm] = 0;
 
+  }
+  
+  for(Int_t i = 0; i < 7; i++)
+  {
+    for(Int_t j = 0; j < 4; j++)
+    {
+      
+      fhArmNLocMax1[i][j]  = 0;
+      fhArmNLocMax2[i][j]  = 0;
+      fhArmNLocMaxN[i][j]  = 0;
+      
+      fhArmPi0NLocMax1[i][j] = 0;
+      fhArmPi0NLocMax2[i][j] = 0;
+      fhArmPi0NLocMaxN[i][j] = 0;
+      
+      fhArmAfterCutsNLocMax1[i][j] = 0;
+      fhArmAfterCutsNLocMax2[i][j] = 0;
+      fhArmAfterCutsNLocMaxN[i][j] = 0;
+      
+    }
   }
   
   InitParameters();
@@ -1285,7 +1295,7 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax
       fhArmPi0NLocMaxN[0][ebin]->Fill(epsilon,alpha);
   }
 
-  if(IsDataMC() && mcIndex >  0 && mcIndex < 5)
+  if(IsDataMC() && mcIndex >  0 && mcIndex < 7)
   {
     if     (nMax==1)
     {
@@ -4946,7 +4956,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   
   if(fFillArmenterosHisto)
   {
-    for(Int_t i = 0; i < 5; i++) // MC bin
+    for(Int_t i = 0; i < 7; i++) // MC bin
     {
       for(Int_t j = 0; j < 4; j++) // E bin
       {
