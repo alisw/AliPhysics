@@ -104,6 +104,21 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	if(configIndex==27) task->SetNonHFEangleCut(0.15);
 	if(configIndex==28) task->SetNonHFEangleCut(0.05);
 	
+	//partner cuts
+	
+	if(configIndex==29) task->SetAdditionalCuts(0,80);
+	if(configIndex==30) task->SetAdditionalCuts(0.5,80);
+	if(configIndex==31) task->SetAdditionalCuts(0.7,80);
+	if(configIndex==32) task->SetAdditionalCuts(0.9,80);
+	
+	if(configIndex==33) task->SetAdditionalCuts(0.3,60);
+	if(configIndex==34) task->SetAdditionalCuts(0.3,70);
+	if(configIndex==35) task->SetAdditionalCuts(0.3,90);
+	if(configIndex==36) task->SetAdditionalCuts(0.3,100);
+	 
+	 task->SetAdditionalCuts(0.3,80);
+	 
+	
 	//eta cuts
 	if(configIndex==40) task->SetEtaCut(-0.6,-0.2);
 	else if (configIndex==41) task->SetEtaCut(-0.5,-0.1);
