@@ -61,13 +61,13 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetMatching)
 
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJetDev("AliAnalysisTaskJetMatching", kTRUE), 
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
     // default constructor
     ClearMatchedJetsCache();
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJetDev(name, kTRUE),
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
     // constructor
     ClearMatchedJetsCache();
     DefineInput(0, TChain::Class());
@@ -124,13 +124,20 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     // add analysis histograms
     fHistUnsortedCorrelation = BookTH1F("fHistUnsortedCorrelation", "#Delta #varphi unsorted", 50, 0, TMath::Pi());
     fHistMatchedCorrelation = BookTH1F("fHistMatchedCorrelation", "#Delta #varphi matched", 50, 0, TMath::Pi());
-    fHistSourceJetPt = BookTH1F("fHistSourceJetPt", "p_{t} [GeV/c]", 150, -50, 250);
+    fHistSourceJetPt = (fDoDetectorResponse) ? BookTH1F("fHistParticleLevelJetPt", "p_{t}^{gen} [GeV/c]", 150, -50, 250) :  BookTH1F("fHistSourceJetPt", "p_{t} [GeV/c]", 150, -50, 250);      
+    fHistMatchedSourceJetPt = (fDoDetectorResponse) ? BookTH1F("fHistMatchedParticleLevelJetPt", "p_{t}^{gen} [GeV/c]", 150, -50, 250) : BookTH1F("fHistMatchedSourceJetPt", "p_{t} [GeV/c]", 150, -50, 250);
     fHistTargetJetPt = BookTH1F("fHistTargetJetPt", "p_{t} [GeV/c]", 150, -50, 250);
-    fHistMatchedJetPt = BookTH1F("fHistMatchedJetPt", "p_{t} [GeV/c]", 150, -50, 250);
-    fHistSourceMatchedJetPt = BookTH2F("fHistSourceMatchedJetPt", "source jet p_{t} [GeV/c]", "matched jet p_{t} [GeV/c]", 150, -50, 250, 150, -50, 250);
+    fHistMatchedJetPt = (fDoDetectorResponse) ? BookTH1F("fHistDetectorLevelJet", "p_{t}^{rec}", 150, -50, 250) : BookTH1F("fHistMatchedJetPt", "p_{t} [GeV/c]", 150, -50, 250);
+    fHistSourceMatchedJetPt = (fDoDetectorResponse) ? BookTH2F("fHistPartDetJetPt", "particle level jet p_{t}^{gen} [GeV/c]", "detector level jet p_{t}^{rec} [GeV/c]", 150, -50, 250, 150, -50, 250) : BookTH2F("fHistSourceMatchedJetPt", "source jet p_{t} [GeV/c]", "matched jet p_{t} [GeV/c]", 150, -50, 250, 150, -50, 250);
     fHistNoConstSourceJet = BookTH1F("fHistNoConstSourceJet", "number of constituents", 50, 0, 50);
     fHistNoConstTargetJet = BookTH1F("fHistNoConstTargetJet", "number of constituents", 50, 0, 50);
     fHistNoConstMatchJet = BookTH1F("fHistNoConstMatchJet", "number of constituents", 50, 0, 50);
+    if(!fDoDetectorResponse) { // these observables cannot be measured in current detector response mode
+        fProfFracPtMatched = new TProfile("fProfFracPtMatched", "fProfFracPtMatched", 15, -50, 250);
+        fOutputList->Add(fProfFracPtMatched);
+        fProfFracNoMatched = new TProfile("fProfFracNoMatched", "fProfFracNoMatched", 15, -50, 250);
+        fOutputList->Add(fProfFracNoMatched);
+    }
     // the analysis summary histo which stores all the analysis flags is always written to file
     fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 51, -0.5, 15.5);
     fProfQAMatched = new TProfile("fProfQAMatched", "fProfQAMatched", 3, 0, 3);
@@ -143,12 +150,8 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     fProfQA->GetXaxis()->SetBinLabel(2, "<#delta #eta>");
     fProfQA->GetXaxis()->SetBinLabel(3, "<#delta #varphi>");
     fOutputList->Add(fProfQA);
-    fProfFracPtMatched = new TProfile("fProfFracPtMatched", "fProfFracPtMatched", 15, -50, 250);
-    fOutputList->Add(fProfFracPtMatched);
     fProfFracPtJets = new TProfile("fProfFracPtJets", "fProfFracPtJets", 15, -50, 250);
     fOutputList->Add(fProfFracPtJets);
-    fProfFracNoMatched = new TProfile("fProfFracNoMatched", "fProfFracNoMatched", 15, -50, 250);
-    fOutputList->Add(fProfFracNoMatched);
     fProfFracNoJets = new TProfile("fProfFracNoJets", "fProfFracNoJets", 15, -50, 250);
     fOutputList->Add(fProfFracNoJets);
     fOutputList->Sort();
@@ -451,12 +454,17 @@ void AliAnalysisTaskJetMatching::FillMatchedJetHistograms()
             if(fSourceRho) sourceRho = fSourceRho->GetLocalVal(fMatchedJetContainer[i][0]->Phi(), fSourceRadius)*fMatchedJetContainer[i][0]->Area();
             if(fTargetRho) targetRho = fTargetRho->GetLocalVal(fMatchedJetContainer[i][1]->Phi(), fTargetRadius)*fMatchedJetContainer[i][1]->Area();
             fHistMatchedCorrelation->Fill(PhaseShift(fMatchedJetContainer[i][0]->Phi()-fMatchedJetContainer[i][1]->Phi(), 2));
+            fHistMatchedSourceJetPt->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho);
             fHistMatchedJetPt->Fill(fMatchedJetContainer[i][1]->Pt()-targetRho);
             fHistNoConstMatchJet->Fill(fMatchedJetContainer[i][1]->Pt()-targetRho);
             fProfQAMatched->Fill(0.5, TMath::Abs((fMatchedJetContainer[i][0]->Pt()-sourceRho)-(fMatchedJetContainer[i][1]->Pt()-targetRho)));
             fProfQAMatched->Fill(1.5, TMath::Abs(fMatchedJetContainer[i][0]->Eta()-fMatchedJetContainer[i][1]->Eta()));
             fProfQAMatched->Fill(2.5, TMath::Abs(fMatchedJetContainer[i][0]->Phi()-fMatchedJetContainer[i][1]->Phi()));
             fHistSourceMatchedJetPt->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho, fMatchedJetContainer[i][1]->Pt()-targetRho);
+            if(fDoDetectorResponse) {
+                fProfFracPtJets->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho, (fMatchedJetContainer[i][1]->Pt()-targetRho) / (fMatchedJetContainer[i][0]->Pt()-sourceRho));
+                fProfFracNoJets->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho, (double)fMatchedJetContainer[i][1]->GetNumberOfTracks() / (double)fMatchedJetContainer[i][0]->GetNumberOfTracks());
+            }
         }
     }
 }
