@@ -223,9 +223,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAsymNLocMax2[7][2]  ;                  //! Asymmetry of 2 cells local maxima vs E,  1-6 for different MC particle types
   TH2F       * fhAsymNLocMaxN[7][2]  ;                  //! Asymmetry of >2 cells local maxima vs E, 1-6 for different MC particle types
   
-  TH2F       * fhArmNLocMax1[5][4]  ;                   //! Armenteros of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types
-  TH2F       * fhArmNLocMax2[5][4]  ;                   //! Armenteros of 2 cells local maxima vs E,  1-6 for different MC particle types
-  TH2F       * fhArmNLocMaxN[5][4]  ;                   //! Armenteros of >2 cells local maxima vs E, 1-6 for different MC particle types
+  TH2F       * fhArmNLocMax1[7][4]  ;                   //! Armenteros of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types
+  TH2F       * fhArmNLocMax2[7][4]  ;                   //! Armenteros of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhArmNLocMaxN[7][4]  ;                   //! Armenteros of >2 cells local maxima vs E, 1-6 for different MC particle types
   
   TH2F       * fhSplitEFractionvsAsyNLocMax1[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1 vs |A|
   TH2F       * fhSplitEFractionvsAsyNLocMax2[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2 vs |A|
@@ -394,9 +394,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassEtaNLocMaxN[7][2] ;                //! Mass for selected around eta, N Local Maxima > 2
   TH2F       * fhMassConNLocMaxN[7][2] ;                //! Mass for selected around close to 0, N Local Maxima > 2
 
-  TH2F       * fhArmPi0NLocMax1[5][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 1
-  TH2F       * fhArmPi0NLocMax2[5][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 2
-  TH2F       * fhArmPi0NLocMaxN[5][4] ;                 //! Armenteros for selected pi0, N Local Maxima > 2
+  TH2F       * fhArmPi0NLocMax1[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 1
+  TH2F       * fhArmPi0NLocMax2[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 2
+  TH2F       * fhArmPi0NLocMaxN[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima > 2
   
   TH2F       * fhNCellPi0NLocMax1[7][2] ;               //! n cells for selected around pi0, N Local Maxima = 1
   TH2F       * fhNCellEtaNLocMax1[7][2] ;               //! n cells for selected around eta, N Local Maxima = 1
@@ -409,9 +409,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassAfterCutsNLocMax2[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2
   TH2F       * fhMassAfterCutsNLocMaxN[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2
 
-  TH2F       * fhArmAfterCutsNLocMax1[5][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 1
-  TH2F       * fhArmAfterCutsNLocMax2[5][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 2
-  TH2F       * fhArmAfterCutsNLocMaxN[5][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima > 2
+  TH2F       * fhArmAfterCutsNLocMax1[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 1
+  TH2F       * fhArmAfterCutsNLocMax2[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 2
+  TH2F       * fhArmAfterCutsNLocMaxN[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima > 2
   
   TH2F       * fhAsyPi0NLocMax1[7][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 1
   TH2F       * fhAsyEtaNLocMax1[7][2] ;                 //! Asy for Mass around eta, N Local Maxima = 1
