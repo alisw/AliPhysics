@@ -119,7 +119,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002322000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002322000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002322000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002322000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002322000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 5){  // Psi pair 0.2 (constant, 4) 
       cutarray[ 0] = "601000104209297002324000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104209297002324000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -143,7 +143,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002324000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002324000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002324000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002324000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002324000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 9){ // Psi pair 0.1 (triangle to 1, 5) 
       cutarray[ 0] = "601000104209297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104209297002325000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -167,7 +167,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002325000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002325000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002325000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002325000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002325000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 13){ // Psi pair 0.05 (triangle to 1, 6) 
       cutarray[ 0] = "601000104209297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104209297002326000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -191,7 +191,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002326000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002326000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002326000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002326000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002326000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 17){ // Psi pair 0.2 (triangle to 1, 8) 
       cutarray[ 0] = "601000104209297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104209297002328000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -215,7 +215,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002328000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002328000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002328000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002328000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002328000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 21){ // Psi pair 0.1 (triangle to 1, 5) without min R
       cutarray[ 0] = "601000104009297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104009297002325000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -239,7 +239,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204009297002325000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204009297002325000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204009297002325000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204009297002325000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204009297002325000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 25){ // Psi pair 0.05 (triangle to 1, 6) without min R
       cutarray[ 0] = "601000104009297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104009297002326000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -263,7 +263,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204009297002326000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204009297002326000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204009297002326000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204009297002326000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204009297002326000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 29){ // Psi pair 0.2 (triangle to 1, 8) without min R
       cutarray[ 0] = "601000104009297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104009297002328000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -287,7 +287,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204009297002328000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204009297002328000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204009297002328000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204009297002328000000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204009297002328000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    }else if (trainConfig == 33){ // Asymmetry 1- 0.04 above 3.5 GeV
       cutarray[ 0] = "601000104209297002322100000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104209297002322100000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -311,7 +311,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002322100000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002322100000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002322100000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002322100000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002322100000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 37){ // Asymmetry 1- 0.06 above 3.5 GeV
       cutarray[ 0] = "601000104209297002322200000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104209297002322200000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -335,7 +335,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002322200000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002322200000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002322200000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002322200000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002322200000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 41){ // Asymmetry 1- 0.05
       cutarray[ 0] = "601000104209297002322300000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "612000104209297002322300000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -359,7 +359,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "546000204209297002322300000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "568000204209297002322300000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
       cutarray[ 3] = "548000204209297002322300000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 5] = "549000204209297002322300000"; mesonCutArray[ 5] = "01522065009000"; // 40-90%
+      cutarray[ 4] = "549000204209297002322300000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
