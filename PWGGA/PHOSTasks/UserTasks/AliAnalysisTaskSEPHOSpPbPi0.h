@@ -61,7 +61,7 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
 
   Bool_t IsGoodCaloCluster(Int_t iMod, Int_t cellX, Int_t cellZ);
 
-  static const Float_t kLogWeight = 4.5;
+  static const Float_t kLogWeight;
 
   static Bool_t        fgRemovePileup;      // flag of remove pileup events
   static Bool_t        fgUseFiducialCut;    // flag of use fiducial cut
