@@ -516,7 +516,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
         TString errMessage(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
 	if (!dataId || !dataId->IsSpecified()){
 		AliError(Form("The data ID is undefined!"));
-                throw std::runtime_error(errMessage.Data());
+                //throw std::runtime_error(errMessage.Data());
                 return NULL;
         }
 
@@ -524,7 +524,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	if (!IdToFilename(*dataId, filename)) {
 		AliError(Form("Bad data ID encountered!"));
 		delete dataId;
-		throw std::runtime_error(errMessage.Data());
+		//throw std::runtime_error(errMessage.Data());
 		return NULL;
 	}
 
@@ -532,7 +532,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	if (!file.IsOpen()) {
 		AliError(Form("Can't open file <%s>!", filename.Data()));
 		delete dataId;
-		throw std::runtime_error(errMessage.Data());
+		//throw std::runtime_error(errMessage.Data());
 		return NULL;
 	}
 
@@ -541,10 +541,10 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 
 	AliCDBEntry* anEntry = dynamic_cast<AliCDBEntry*> (file.Get("AliCDBEntry"));
 	if (!anEntry) {
-		AliError(Form("Bad storage data: No AliCDBEntry in file!"));
+	  AliError(Form("Bad storage data: No AliCDBEntry in file!"));
 		file.Close();
 		delete dataId;
-		throw std::runtime_error(errMessage.Data());
+		//throw std::runtime_error(errMessage.Data());
 		return NULL;
 	}
 

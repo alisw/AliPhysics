@@ -494,12 +494,12 @@ void AliTPCcalibDB::Update(){
   }
   
   //Calibration ION tail data
-  entry          = GetCDBEntry("TPC/Calib/IonTail");
-  if (entry){
-    delete fIonTailArray; fIonTailArray=NULL;
-    entry->SetOwner(kTRUE);
-    fIonTailArray=(TObjArray*)(entry->GetObject());
-  }
+//   entry          = GetCDBEntry("TPC/Calib/IonTail");
+//   if (entry){
+//     delete fIonTailArray; fIonTailArray=NULL;
+//     entry->SetOwner(kTRUE);
+//     fIonTailArray=(TObjArray*)(entry->GetObject());
+//   }
 
   //CE data
   entry          = GetCDBEntry("TPC/Calib/CE");
