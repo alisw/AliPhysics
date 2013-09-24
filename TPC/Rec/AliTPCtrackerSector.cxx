@@ -30,6 +30,7 @@
 #include <TClonesArray.h>
 #include "AliLog.h"
 #include "AliComplexCluster.h"
+//#include "AliTPCcluster.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCParam.h"
@@ -202,6 +203,24 @@ void AliTPCtrackerRow::SetFastCluster(Int_t i, Short_t cl){
     fFastCluster[i]=cl;
   }
 }
+
+Int_t  AliTPCtrackerSector::GetNClInSector(Int_t side) 
+{
+  // return number of all clusters in one sector; side =0 for A side and 1 for C side 
+
+  Int_t nclSector=0;
+  Int_t nrows = GetNRows();
+
+  for (Int_t row=0;row<nrows;row++) {
+    AliTPCtrackerRow&  tpcrow = (*this)[row];
+    Int_t ncl =  (side==0)?(tpcrow.GetN1()):(tpcrow.GetN2());
+    nclSector+=ncl;
+  }
+  
+  return nclSector;
+}
+
+
 
 
 Int_t  AliTPCtrackerSector::GetRowNumber(Double_t x) const 

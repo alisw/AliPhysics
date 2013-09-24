@@ -32,7 +32,7 @@ class TTreeSRedirector;
 class AliTrackPoint;
 class AliDCSSensorArray;
 class AliDCSSensor;
-
+class TGraphErrors;
 
 
 class AliTPCtracker : public AliTracker {
@@ -55,7 +55,8 @@ public:
   Int_t LoadOuterSectors();
   virtual void FillClusterArray(TObjArray* array) const;
   void   Transform(AliTPCclusterMI * cluster);
-  void ApllyTailCancellation();
+  void ApplyTailCancellation();
+  void GetTailValue(const Float_t ampfactor,Double_t &ionTailMax,Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1);
   //
   void FillESD(const TObjArray* arr);
   void DeleteSeeds();
