@@ -51,6 +51,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTrackerBase.h"
 #include "TDatabasePDG.h"
+#include "TROOT.h"
 //
 // constants
 //
@@ -1196,7 +1197,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   //
   Int_t nitteration=100;    // number of itteration in the lookup
   Int_t fullNorm  =10000;  // normalization  fro the full statistic
-
+  gROOT->ProcessLine(".x $ALICE_ROOT/TPC/Upgrade/macros/ConfigOCDB.C");
   //
   // Init magnetic field and OCDB
   //
@@ -1316,7 +1317,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   //
   // Make Z scan corrections
   // 
-  if (0){
+  if (1){
   for (Int_t  ihis=1; ihis<=9; ihis+=2){ 
     TH3 *his3DZ = PermutationHistoZ(his3DReference,16*(ihis));
     AliTPCSpaceCharge3D *spaceChargeZ = new AliTPCSpaceCharge3D;
