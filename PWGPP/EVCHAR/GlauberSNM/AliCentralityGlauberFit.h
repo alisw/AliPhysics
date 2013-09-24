@@ -86,6 +86,7 @@ class AliCentralityGlauberFit : public TObject {
   void      SaveHisto(TH1F *hist1,TH1F *hist2, TFile *outrootfile);
   void      MakeSlowNucleons(Int_t fNcoll, Double_t alpha, Double_t k, Double_t &nbn, Double_t &ngn);
   void      MakeSlowNucleons2(Int_t fNcoll, Double_t alpha, Double_t k, Double_t bog, Double_t CP, Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp);
+  void      MakeSlowNucleons2s(Int_t fNcoll, Double_t alpha, Double_t k, Double_t bog, Double_t CP, Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp);
   //void      MakeSlowNucleons2(Int_t fNcoll, Double_t alpha, Double_t k, Double_t bog, Double_t CP, Double_t &nbn, Double_t &ngn);
   Double_t ConvertToEnergy(Double_t T);
   Double_t Maxwell(Double_t m, Double_t p, Double_t T);
