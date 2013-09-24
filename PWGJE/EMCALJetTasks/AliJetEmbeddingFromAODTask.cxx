@@ -98,7 +98,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fHistAODFileError(0),
   fHistNotEmbedded(0),
   fHistEmbeddingQA(0),
-  fHistRejectedEvents(0)
+  fHistRejectedEvents(0),
+  fEmbeddingCount(0)
 {
   // Default constructor.
   SetSuffix("AODEmbedding");
@@ -167,7 +168,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fHistAODFileError(0),
   fHistNotEmbedded(0),
   fHistEmbeddingQA(0),
-  fHistRejectedEvents(0)
+  fHistRejectedEvents(0),
+  fEmbeddingCount(0)
 {
   // Standard constructor.
   SetSuffix("AODEmbedding");
@@ -336,6 +338,8 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   
   if (fHistFileMatching)
     fHistFileMatching->Fill(fCurrentFileID, fCurrentAODFileID-1);
+
+  fEmbeddingCount = 0;
   
   return kTRUE;
 }
@@ -415,6 +419,8 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
 
   if (!fCurrentAODTree)
     return kFALSE;
+
+  fEmbeddingCount++;
 
   return kTRUE;
 }
