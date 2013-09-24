@@ -1504,6 +1504,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
       Double_t refX1=1.;
       Int_t dir=-1;
       (*pcstreamTrack)<<"trackFit"<<
+	"bsign="<<bsign<<
 	"neventsAll="<<neventsAll<<         // total number of events used for the Q reference
 	"nfiles="<<nfiles<<                 // number of files to define properties
 	"nfilesMerge="<<nfilesMerge<<       // number of files to define propertiesneventsCorr
@@ -1511,6 +1512,12 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
 	"fullNorm="<<fullNorm<<             // in case full statistic used this is the normalization coeficient
 	"itrack="<<nt<<                     //
 	"input.="<<t;                       // 
+      
+      Bool_t isOK0=kTRUE;
+      Bool_t isOK1=kTRUE;
+      Bool_t itsOK=kTRUE;
+      Bool_t itsUpdateOK=kTRUE;
+
       for (Int_t idist=0; idist<ndist; idist++){
 	AliTPCCorrection * corr   = (AliTPCCorrection *)distortionArray->At(idist);
 	// 0. TPC only information at the entrance
@@ -1524,12 +1531,16 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
 	if (td0==0) { // if fit fail use dummy values
 	  ot0= new AliExternalTrackParam(vertex, pxyz, cv, psign);
 	  td0= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  printf("Propagation0 failed: track\t%d\tdistortion\t%d\n",nt,idist);
+	  isOK0=kFALSE;
 	}
 	if (td1==0) {
 	  ot1= new AliExternalTrackParam(vertex, pxyz, cv, psign);
 	  td1= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  printf("Propagation1 failed: track\t%d\tdistortion\t%d\n",nt,idist);
+	  isOK1=kFALSE;
 	}
-	// 2. TPC constrained umulation
+	// 2. TPC constrained emulation
 	AliExternalTrackParam *tdConstrained =  new  AliExternalTrackParam(*td1);
 	tdConstrained->Rotate(ot1->GetAlpha());
 	tdConstrained->PropagateTo(ot1->GetX(), AliTrackerBase::GetBz());
@@ -1539,17 +1550,26 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
 	// 3. TPC+ITS  constrained umulation
 	AliExternalTrackParam *tdITS     =  new  AliExternalTrackParam(*td0); 
 	AliExternalTrackParam *tdITSOrig =  new  AliExternalTrackParam(*ot0); 
-	Bool_t itsOK=kTRUE;
 	//
-	for (Int_t ilayer=6; ilayer<=0; ilayer--){
-	  if (!AliTrackerBase::PropagateTrackTo(tdITSOrig,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) itsOK=kFALSE;
-	  if (!AliTrackerBase::PropagateTrackTo(tdITS,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) itsOK=kFALSE;
-	  //
-	  tdITS->Rotate(tdITSOrig->GetAlpha());
-	  tdITS->PropagateTo(tdITSOrig->GetX(), AliTrackerBase::GetBz());
-	  Double_t itspointPos[2]={tdITS->GetY(),tdITS->GetZ()};  // local y and local z of point
-	  Double_t itspointCov[3]={resITSlayer[ilayer]*resITSlayer[ilayer],0,resITSlayer[ilayer]*resITSlayer[ilayer]};   
-	  tdITS->Update(itspointPos,itspointCov);
+	if ( isOK0 && isOK1 ) {
+	  for (Int_t ilayer=6; ilayer>=0; ilayer--){
+	    if (!AliTrackerBase::PropagateTrackTo(tdITSOrig,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) itsOK=kFALSE;
+	    if (!AliTrackerBase::PropagateTrackTo(tdITS,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) {
+	      itsOK=kFALSE;
+	      printf("PropagationITS failed: track\t%d\tdistortion\t%d\t%d\n",nt,idist,ilayer);
+	    }
+	    //
+	    tdITS->Rotate(tdITSOrig->GetAlpha());
+	    if (tdITS->PropagateTo(tdITSOrig->GetX(), AliTrackerBase::GetBz())){
+	      Double_t itspointPos[2]={tdITSOrig->GetY(),tdITSOrig->GetZ()};  // local y and local z of point
+	      Double_t itspointCov[3]={resITSlayer[ilayer]*resITSlayer[ilayer],0,resITSlayer[ilayer]*resITSlayer[ilayer]};   
+	      if (!tdITS->Update(itspointPos,itspointCov)){
+		itsUpdateOK=kFALSE;
+	      }
+	    }
+	  } 
+	}else{
+	  itsOK=kFALSE;
 	}
 	//
 	trackArray.AddLast(td0);
@@ -1582,7 +1602,12 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
 	  oname1<<ot1;                       // original track at the refX=1 cm (to be used for TPC only and also for the constrained
 	
       }
-      (*pcstreamTrack)<<"trackFit"<<"\n";
+      (*pcstreamTrack)<<"trackFit"<<
+	"isOK0="<<isOK0<<  // propagation good at the inner field cage
+	"isOK1="<<isOK1<<  // god at 1 cm (close to vertex)
+	"itsOK="<<itsOK<<  // 
+	"itsUpdateOK="<<itsOK<<  // 
+	"\n";
     }
   }
   delete pcstreamTrack;
@@ -2001,9 +2026,9 @@ void DrawTrackFluctuation(){
   TCut cutOut="abs(T_DistRef_0.fX-OT_DistRef_0.fX)<0.1&&T_DistRef_0.fX>1&&abs(OT_DistRef_0.fP[4])<4";
   TCut cutOutF="abs(R.T_DistRef_0.fX-R.OT_DistRef_0.fX)<0.1&&R.T_DistRef_0.fX>1&&abs(R.OT_DistRef_0.fP[4])<4";
   TChain * chains[5]={0};
-  TChain * chainR = AliXRDPROOFtoolkit::MakeChain("track0_1.list","trackFit",0,1000);
+  TChain * chainR = AliXRDPROOFtoolkit::MakeChain("track0_1.list","trackFit",0,1000);  // list of the reference data (full stat used)
   chainR->SetCacheSize(1000000000);
-  for (Int_t ichain=0; ichain<5; ichain++){
+  for (Int_t ichain=0; ichain<5; ichain++){ // create the chain for given mulitplicity bin 
     chains[ichain] = AliXRDPROOFtoolkit::MakeChain(Form("track%d_1.list",2*(ichain+1)),"trackFit",0,1000);
     chains[ichain]->AddFriend(chainR,"R");
     chains[ichain]->SetCacheSize(1000000000);
@@ -2258,7 +2283,7 @@ void DrawTrackFluctuationFrame(){
       ftrackFit->Flush();
     }
   }
-
+ 
   for (Int_t ihis=0; ihis<7; ihis++){
     printf("\n\nProcessing frames\t%d\nnn",(ihis+1)*2000);
     hisM = (TH2F*)ftrackFit->Get(Form("hisMean_%d",(ihis+1)*2000));
