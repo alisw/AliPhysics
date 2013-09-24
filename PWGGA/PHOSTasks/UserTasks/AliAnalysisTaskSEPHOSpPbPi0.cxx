@@ -57,6 +57,7 @@
 
 ClassImp(AliAnalysisTaskSEPHOSpPbPi0)
 
+const Float_t AliAnalysisTaskSEPHOSpPbPi0::kLogWeight = 4.5;
 Bool_t   AliAnalysisTaskSEPHOSpPbPi0::fgRemovePileup    = kFALSE;
 Bool_t   AliAnalysisTaskSEPHOSpPbPi0::fgUseFiducialCut  = kFALSE;
 Double_t AliAnalysisTaskSEPHOSpPbPi0::fgDecaliWidth     = 0.055;

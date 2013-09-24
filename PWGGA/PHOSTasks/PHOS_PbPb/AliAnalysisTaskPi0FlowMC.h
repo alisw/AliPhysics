@@ -53,7 +53,7 @@ protected: // member variables:
 
   void FillAllHistograms(const char* particleName, AliCaloPhoton* ph1);
 
-  static const Double_t kRCut = 1.;
+  static const Double_t kRCut;
   enum ParticleID {kEta=221};
 
 
