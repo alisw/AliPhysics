@@ -131,6 +131,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF 	*hnMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
     TH1F	*hEventStatistics; // contains statistics of number of events after each cut
     TH1F	*hEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
+    TH1F	*hMCEventStatisticsCentrality; // contains MC number of events vs centrality, events need to have a track in kinematic range
     TH1F	*hAllEventStatisticsCentrality; // contains number of events vs centrality, events need to be triggered
     TH2F	*hEventStatisticsCentralityTrigger; // contains number of events vs centrality in 1% bins vs trigger
     THnSparseF	*hnZvMultCent; // Zv:Mult:Cent
@@ -141,14 +142,12 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	*hMCCharge; // charge distribution in MC
     TH2F	*hMCPdgPt; // PDGvs PT for MC Particles
     TH1F	*hMCHijingPrim; // number of particles, which are Hijing particles and primaries
-    TH1F	*hAccNclsTPC; //control histo: number of clusters in TPC for accepted tracks
-    TH1F	*hAllCrossedRowsTPC; //control histo: number of crossed rows in TPC for all tracks, before Filterbit
-    TH1F	*hFilterCrossedRowsTPC; //control histo: number of crossed rows in TPC for all tracks, after Filterbit
-    TH1F	*hAccCrossedRowsTPC; //control histo: number of crossed rows in TPC for accepted tracks
-    THnSparseF	*hDCAPtAll; //control histo: DCAz vs DCAxy vs pT for all reconstructed tracks
-    THnSparseF	*hDCAPtAccepted; //control histo: DCAz vs DCAxy vs pT for all accepted reco tracks
-    THnSparseF	*hMCDCAPtSecondary; //control histo: DCAz vs DCAxy vs pT for all accepted reco track, which are secondaries (using MC info)
-    THnSparseF	*hMCDCAPtPrimary; //control histo: DCAz vs DCAxy vs pT for all accepted reco track, which are primaries (using MC info)
+    THnSparseF	*hDCAPtAll; //control histo: DCAz:DCAxy:pT:eta:phi for all reconstructed tracks
+    THnSparseF	*hDCAPtAccepted; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco tracks
+    THnSparseF	*hMCDCAPtSecondary; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco track, which are secondaries (using MC info)
+    THnSparseF	*hMCDCAPtPrimary; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco track, which are primaries (using MC info)
+    THnSparseF	*hnCrossedRowsClustersChiPtEtaPhiAll; // CrossedRows:Cluster:ChiperCluster:pT:Eta:Phi before track cuts
+    THnSparseF	*hnCrossedRowsClustersChiPtEtaPhiAcc; // CrossedRows:Cluster:ChiperCluster:pT:Eta:Phi after track cuts
    
     
     // global variables
@@ -198,7 +197,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,2); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,3); // has to be at least 1, otherwise not streamable...
 };
 
 #endif
