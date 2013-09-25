@@ -1,3 +1,4 @@
+
 #
 # shell scipt to 
 #
@@ -8,10 +9,10 @@
 #                if (mode==1) DoMerge();  
 #                if (mode==2) spaceChargeFluctuationToyMC(arg0,arg1);
 # argument 3 -  according the C++ code
-export flucPath=$HOME/AliRoot/TPCdev/TPC/Upgrade/macros
+#export flucPath=$HOME/AliRoot/TPCdev/TPC/Upgrade/macros
               
 source $1 
-aliroot -b -q $HOME/NimStyle.C $ALICE_ROOT/TPC/Upgrade/macros/spaceChargeFluctuation.C+\($2,$3,$4,$5\)
+aliroot -b -q $flucPath/NimStyle.C $ALICE_ROOT/TPC/Upgrade/macros/spaceChargeFluctuation.C+\($2,$3,$4,$5\)
 exit;
 
 
@@ -21,7 +22,7 @@ exit;
 # jobs to be submitted form the lxsub0x
 export baliceTPC=/hera/alice/miranov/.baliceHera
 export flucPath=$HOME/AliRoot/TPCdev/TPC/Upgrade/macros/
-export batchCommand="qsub -cwd -l h_rt=24:0:0,h_rss=4G  "
+export batchCommand="qsub -cwd -V -l h_rt=24:0:0,h_rss=4G  "
 #
 #
 # Example usage local 
@@ -30,7 +31,7 @@ export batchCommand="qsub -cwd -l h_rt=24:0:0,h_rss=4G  "
 #
 export baliceTPC=/u/miranov/.baliceTPC
 export flucPath=$HOME/AliRoot/TPCdev/TPC/Upgrade/macros/
-export batchCommand="qsub -cwd   "
+export batchCommand="qsub -cwd  -V "
 #
 # 0.) sumbmit jobs to process raw data and accumlate space charge
 #
