@@ -147,24 +147,24 @@ protected:
 
 
 protected:
-    // transiant constants
-    static const Int_t kNMod = 5;
+    // transient constants
+    static const Int_t    kNMod = 5;
 
     // constants:
-    static const Double_t kLogWeight= 4.5 ; // log weight for recalibration.
-    static const Double_t kAlphaCut=0.7 ;
-    static const Bool_t doESDReCalibration = kTRUE;
-    static const Int_t kNCenBins = 9; // see EvalV0ReactionPlane()
+    static const Double_t kLogWeight ; // log weight for recalibration.
+    static const Double_t kAlphaCut ;
+    static const Bool_t   doESDReCalibration;
+    static const Int_t    kNCenBins = 9; // see EvalV0ReactionPlane()
 
     // cluster cut variables:
-    static const Double_t kMinClusterEnergy = 0.3;
-    static const Double_t kMinBCDistance = 2.5;  //distance to nearest bad channel
-    static const Int_t kMinNCells = 3;
-    static const Double_t kMinM02 = 0.2;
+    static const Double_t kMinClusterEnergy;
+    static const Double_t kMinBCDistance;  //distance to nearest bad channel
+    static const Int_t    kMinNCells;
+    static const Double_t kMinM02;
 
     // Binning, [vtx, centrality, reaction-plane]
-    static const Int_t kNVtxZBins = 1;
-    static const Double_t kCentCutoff = 90.; // Ignore Centrality over 90%
+    static const Int_t    kNVtxZBins;
+    static const Double_t kCentCutoff; // Ignore Centrality over 90%
     TArrayD fCentEdges;  // Centrality Bin Lower edges
     TArrayI fCentNMixed; // Number of mixed events for each centrality bin
     UInt_t fNEMRPBins;

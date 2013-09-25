@@ -64,6 +64,16 @@
 
 ClassImp(AliAnalysisTaskPi0Flow);
 
+const Double_t AliAnalysisTaskPi0Flow::kLogWeight         = 4.5 ;
+const Double_t AliAnalysisTaskPi0Flow::kAlphaCut          = 0.7 ;
+const Bool_t   AliAnalysisTaskPi0Flow::doESDReCalibration = kTRUE;
+const Double_t AliAnalysisTaskPi0Flow::kMinClusterEnergy  = 0.3;
+const Double_t AliAnalysisTaskPi0Flow::kMinBCDistance     = 2.5;
+const Int_t    AliAnalysisTaskPi0Flow::kMinNCells         = 3;
+const Double_t AliAnalysisTaskPi0Flow::kMinM02            = 0.2;
+const Int_t    AliAnalysisTaskPi0Flow::kNVtxZBins         = 1;
+const Double_t AliAnalysisTaskPi0Flow::kCentCutoff        = 90.;
+
 //________________________________________________________________________
 Double_t rnlin(Double_t *x, Double_t * /*par*/)
 {
