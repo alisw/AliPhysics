@@ -281,7 +281,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
 {
   // User exec, called once per event.
 
-  Bool_t isSelected = 0;
+  Bool_t isSelected = kTRUE;
   if(fPeriod.Contains("11")){
     if(fPeriod.Contains("11a"))
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
@@ -468,7 +468,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fIsMC)
     GetMcParts();
 
-  if(this->fDebug)
+  if(this->fDebug && fIsMC)
     printf("fMyMcParts nentries=%d",fMyMcParts->GetEntries());
   
   fTree->Fill();
