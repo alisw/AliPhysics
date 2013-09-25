@@ -38,6 +38,7 @@ hnMCGenZvPtEtaCent(0),
 hnMCRecSecZvPtEtaCent(0),
 hEventStatistics(0),
 hEventStatisticsCentrality(0),
+hMCEventStatisticsCentrality(0),
 hAllEventStatisticsCentrality(0),
 hEventStatisticsCentralityTrigger(0),
 hnZvMultCent(0),
@@ -48,14 +49,12 @@ hCharge(0),
 hMCCharge(0),
 hMCPdgPt(0),
 hMCHijingPrim(0),
-hAccNclsTPC(0),
-hAllCrossedRowsTPC(0),
-hFilterCrossedRowsTPC(0),
-hAccCrossedRowsTPC(0),
 hDCAPtAll(0),
 hDCAPtAccepted(0),
 hMCDCAPtSecondary(0),
 hMCDCAPtPrimary(0),
+hnCrossedRowsClustersChiPtEtaPhiAll(0),
+hnCrossedRowsClustersChiPtEtaPhiAcc(0),
 //global
 bIsMonteCarlo(0),
 // event cut variables
@@ -124,6 +123,7 @@ hnMCGenZvPtEtaCent(0),
 hnMCRecSecZvPtEtaCent(0),
 hEventStatistics(0),
 hEventStatisticsCentrality(0),
+hMCEventStatisticsCentrality(0),
 hAllEventStatisticsCentrality(0),
 hEventStatisticsCentralityTrigger(0),
 hnZvMultCent(0),
@@ -134,14 +134,12 @@ hCharge(0),
 hMCCharge(0),
 hMCPdgPt(0),
 hMCHijingPrim(0),
-hAccNclsTPC(0),
-hAllCrossedRowsTPC(0),
-hFilterCrossedRowsTPC(0),
-hAccCrossedRowsTPC(0),
 hDCAPtAll(0),
 hDCAPtAccepted(0),
 hMCDCAPtSecondary(0),
 hMCDCAPtPrimary(0),
+hnCrossedRowsClustersChiPtEtaPhiAll(0),
+hnCrossedRowsClustersChiPtEtaPhiAcc(0),
 //global
 bIsMonteCarlo(0),
 // event cut variables
@@ -202,6 +200,7 @@ fBinsCentrality(0)
 // destructor
 AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
 {
+  
   if(hnZvPtEtaCent) delete hnZvPtEtaCent; hnZvPtEtaCent = 0;
   if(hPt) delete hPt; hPt = 0;
   if(hnMCRecPrimZvPtEtaCent) delete hnMCRecPrimZvPtEtaCent; hnMCRecPrimZvPtEtaCent = 0;
@@ -210,7 +209,9 @@ AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
   if(hMCPt) delete hMCPt; hMCPt = 0;
   if(hEventStatistics) delete hEventStatistics; hEventStatistics = 0;
   if(hEventStatisticsCentrality) delete hEventStatisticsCentrality; hEventStatisticsCentrality = 0;
+  if(hMCEventStatisticsCentrality) delete hMCEventStatisticsCentrality; hMCEventStatisticsCentrality = 0;
   if(hAllEventStatisticsCentrality) delete hAllEventStatisticsCentrality; hAllEventStatisticsCentrality = 0;
+  if(hEventStatisticsCentralityTrigger) delete hEventStatisticsCentralityTrigger; hEventStatisticsCentralityTrigger = 0;
   if(hnZvMultCent) delete hnZvMultCent; hnZvMultCent = 0;
   if(hTriggerStatistics) delete hTriggerStatistics; hTriggerStatistics = 0;
   if(hMCTrackPdgCode) delete hMCTrackPdgCode; hMCTrackPdgCode = 0;
@@ -219,12 +220,14 @@ AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
   if(hMCCharge) delete hMCCharge; hMCCharge = 0;
   if(hMCPdgPt) delete hMCPdgPt; hMCPdgPt = 0;
   if(hMCHijingPrim) delete hMCHijingPrim; hMCHijingPrim = 0;
-  if(hAccNclsTPC) delete hAccNclsTPC; hAccNclsTPC = 0;
-  if(hAccCrossedRowsTPC) delete hAccCrossedRowsTPC; hAccCrossedRowsTPC = 0;
   if(hDCAPtAll) delete hDCAPtAll; hDCAPtAll = 0;
   if(hDCAPtAccepted) delete hDCAPtAccepted; hDCAPtAccepted = 0;
   if(hMCDCAPtSecondary) delete hMCDCAPtSecondary; hMCDCAPtSecondary = 0;
   if(hMCDCAPtPrimary) delete hMCDCAPtPrimary; hMCDCAPtPrimary = 0;
+  if(hMCDCAPtSecondary) delete hMCDCAPtSecondary; hMCDCAPtSecondary = 0;
+  if(hMCDCAPtPrimary) delete hMCDCAPtPrimary; hMCDCAPtPrimary = 0;
+  if(hnCrossedRowsClustersChiPtEtaPhiAll) delete hnCrossedRowsClustersChiPtEtaPhiAll; hnCrossedRowsClustersChiPtEtaPhiAll = 0;
+  if(hnCrossedRowsClustersChiPtEtaPhiAcc) delete hnCrossedRowsClustersChiPtEtaPhiAcc; hnCrossedRowsClustersChiPtEtaPhiAcc = 0;
 }
 
 void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
@@ -316,6 +319,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hEventStatisticsCentrality = new TH1F("hEventStatisticsCentrality","hEventStatisticsCentrality",fCentralityNbins-1, fBinsCentrality);
   hEventStatisticsCentrality->GetYaxis()->SetTitle("number of events");
   
+  hMCEventStatisticsCentrality = new TH1F("hMCEventStatisticsCentrality","hMCEventStatisticsCentrality",fCentralityNbins-1, fBinsCentrality);
+  hMCEventStatisticsCentrality->GetYaxis()->SetTitle("number of MC events");
+  
   hAllEventStatisticsCentrality = new TH1F("hAllEventStatisticsCentrality","hAllEventStatisticsCentrality",fCentralityNbins-1, fBinsCentrality);
   hAllEventStatisticsCentrality->GetYaxis()->SetTitle("number of events");
   
@@ -357,31 +363,31 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hMCHijingPrim = new TH1F("hMCHijingPrim","hMCHijingPrim",2,0,2);
   hMCPdgPt->GetYaxis()->SetTitle("number of particles");
   
-  hAccNclsTPC = new TH1F("hAccNclsTPC","hAccNclsTPC",160,0,159);
-  hAccNclsTPC->GetXaxis()->SetTitle("number of clusters per track after cut");
   
-  hAllCrossedRowsTPC = new TH1F("hAllCrossedRowsTPC","hAllCrossedRowsTPC",160,0,159);
-  hAllCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track for all tracks");
   
-  hFilterCrossedRowsTPC = new TH1F("hFilterCrossedRowsTPC","hFilterCrossedRowsTPC",160,0,159);
-  hFilterCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track after filter bit");
+  Int_t binsDCAxyDCAzPtEtaPhi[6] = { 200,200, fPtNbins-1, fEtaNbins-1, 36, fCentralityNbins-1};
+  Double_t minDCAxyDCAzPtEtaPhi[6] = { -5, -5, 0, -1.5, 0., 0, };
+  Double_t maxDCAxyDCAzPtEtaPhi[6] = { 5., 5., 100, 1.5, 2.*TMath::Pi(), 100};
   
-  hAccCrossedRowsTPC = new TH1F("hAccCrossedRowsTPC","hAccCrossedRowsTPC",160,0,159);
-  hAccCrossedRowsTPC->GetXaxis()->SetTitle("number of crossed rows per track after cut");
-  
-  Int_t binsDCAxyDCAzPt[3] = { 200,200, fPtNbins-1};
-  Double_t minDCAxyDCAzPt[3] = { -5, -5, 0};
-  Double_t maxDCAxyDCAzPt[3] = { 5., 5., 100};
-  
-  hDCAPtAll = new THnSparseF("hDCAPtAll","hDCAPtAll",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
-  hDCAPtAccepted = new THnSparseF("hDCAPtAccepted","hDCAPtAccepted",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
-  hMCDCAPtSecondary = new THnSparseF("hMCDCAPtSecondary","hMCDCAPtSecondary",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
-  hMCDCAPtPrimary = new THnSparseF("hMCDCAPtPrimary","hMCDCAPtPrimary",3, binsDCAxyDCAzPt, minDCAxyDCAzPt, maxDCAxyDCAzPt);
+  hDCAPtAll = new THnSparseF("hDCAPtAll","hDCAPtAll",6, binsDCAxyDCAzPtEtaPhi, minDCAxyDCAzPtEtaPhi, maxDCAxyDCAzPtEtaPhi);
+  hDCAPtAccepted = new THnSparseF("hDCAPtAccepted","hDCAPtAccepted",6, binsDCAxyDCAzPtEtaPhi, minDCAxyDCAzPtEtaPhi, maxDCAxyDCAzPtEtaPhi);
+  hMCDCAPtSecondary = new THnSparseF("hMCDCAPtSecondary","hMCDCAPtSecondary",6, binsDCAxyDCAzPtEtaPhi, minDCAxyDCAzPtEtaPhi, maxDCAxyDCAzPtEtaPhi);
+  hMCDCAPtPrimary = new THnSparseF("hMCDCAPtPrimary","hMCDCAPtPrimary",6, binsDCAxyDCAzPtEtaPhi, minDCAxyDCAzPtEtaPhi, maxDCAxyDCAzPtEtaPhi);
   
   hDCAPtAll->SetBinEdges(2, fBinsPt);
   hDCAPtAccepted->SetBinEdges(2, fBinsPt);
   hMCDCAPtSecondary->SetBinEdges(2, fBinsPt);
   hMCDCAPtPrimary->SetBinEdges(2, fBinsPt);
+  
+  hDCAPtAll->SetBinEdges(3, fBinsEta);
+  hDCAPtAccepted->SetBinEdges(3, fBinsEta);
+  hMCDCAPtSecondary->SetBinEdges(3, fBinsEta);
+  hMCDCAPtPrimary->SetBinEdges(3, fBinsEta);
+  
+  hDCAPtAll->SetBinEdges(5, fBinsCentrality);
+  hDCAPtAccepted->SetBinEdges(5, fBinsCentrality);
+  hMCDCAPtSecondary->SetBinEdges(5, fBinsCentrality);
+  hMCDCAPtPrimary->SetBinEdges(5, fBinsCentrality);
   
   hDCAPtAll->Sumw2();
   hDCAPtAccepted->Sumw2();
@@ -391,18 +397,62 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hDCAPtAll->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
   hDCAPtAll->GetAxis(1)->SetTitle("DCA_{z} (cm)");
   hDCAPtAll->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  hDCAPtAll->GetAxis(3)->SetTitle("#eta");
+  hDCAPtAll->GetAxis(4)->SetTitle("#phi");
+  hDCAPtAll->GetAxis(5)->SetTitle("Centrality");
   
   hDCAPtAccepted->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
   hDCAPtAccepted->GetAxis(1)->SetTitle("DCA_{z} (cm)");
   hDCAPtAccepted->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  hDCAPtAccepted->GetAxis(3)->SetTitle("#eta");
+  hDCAPtAccepted->GetAxis(4)->SetTitle("#phi");
+  hDCAPtAccepted->GetAxis(5)->SetTitle("Centrality");
   
   hMCDCAPtSecondary->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
   hMCDCAPtSecondary->GetAxis(1)->SetTitle("DCA_{z} (cm)");
   hMCDCAPtSecondary->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  hMCDCAPtSecondary->GetAxis(3)->SetTitle("#eta");
+  hMCDCAPtSecondary->GetAxis(4)->SetTitle("#phi");
+  hMCDCAPtSecondary->GetAxis(5)->SetTitle("Centrality");
   
   hMCDCAPtPrimary->GetAxis(0)->SetTitle("DCA_{xy} (cm)");
   hMCDCAPtPrimary->GetAxis(1)->SetTitle("DCA_{z} (cm)");
   hMCDCAPtPrimary->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  hMCDCAPtPrimary->GetAxis(3)->SetTitle("#eta");
+  hMCDCAPtPrimary->GetAxis(4)->SetTitle("#phi");
+  hMCDCAPtPrimary->GetAxis(5)->SetTitle("Centrality");
+  
+  Int_t binsRowsClusterChiPtEtaPhi[7] = { 32,32, 100, fPtNbins-1, fEtaNbins-1, 36, fCentralityNbins-1};
+  Double_t minRowsClusterChiPtEtaPhi[7] = { 0, 0, 0, 0, -1.5, 0., 0.};
+  Double_t maxRowsClusterChiPtEtaPhi[7] = { 159, 159, 10, 100, 1.5, 2.*TMath::Pi(), 100.};
+  
+  hnCrossedRowsClustersChiPtEtaPhiAll = new THnSparseF("hnCrossedRowsClustersChiPtEtaPhiAll","hnCrossedRowsClustersChiPtEtaPhiAll",7,binsRowsClusterChiPtEtaPhi, minRowsClusterChiPtEtaPhi, maxRowsClusterChiPtEtaPhi);
+  
+  hnCrossedRowsClustersChiPtEtaPhiAcc = new THnSparseF("hnCrossedRowsClustersChiPtEtaPhiAcc","hnCrossedRowsClustersChiPtEtaPhiAcc",7,binsRowsClusterChiPtEtaPhi, minRowsClusterChiPtEtaPhi, maxRowsClusterChiPtEtaPhi);
+  
+  hnCrossedRowsClustersChiPtEtaPhiAll->Sumw2();
+  hnCrossedRowsClustersChiPtEtaPhiAll->SetBinEdges(3, fBinsPt);
+  hnCrossedRowsClustersChiPtEtaPhiAll->SetBinEdges(4, fBinsEta);
+  hnCrossedRowsClustersChiPtEtaPhiAll->SetBinEdges(6, fBinsCentrality);
+  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(0)->SetTitle("NcrossedRows before Cut");
+  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(1)->SetTitle("Nclusters before Cut");
+  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(2)->SetTitle("#Chi^{2}/cluster before Cut");
+  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(3)->SetTitle("p_{T} (GeV/c)");
+  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(4)->SetTitle("#eta");
+  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(5)->SetTitle("#phi");
+  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(6)->SetTitle("Centrality");
+  
+  hnCrossedRowsClustersChiPtEtaPhiAcc->Sumw2();
+  hnCrossedRowsClustersChiPtEtaPhiAcc->SetBinEdges(3, fBinsPt);
+  hnCrossedRowsClustersChiPtEtaPhiAcc->SetBinEdges(4, fBinsEta);
+  hnCrossedRowsClustersChiPtEtaPhiAcc->SetBinEdges(6, fBinsCentrality);
+  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(0)->SetTitle("NcrossedRows after Cut");
+  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(1)->SetTitle("Nclusters after Cut");
+  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(2)->SetTitle("#Chi^{2}/cluster after Cut");
+  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(3)->SetTitle("p_{T} (GeV/c)");
+  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(4)->SetTitle("#eta");
+  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(5)->SetTitle("#phi");
+  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(6)->SetTitle("Centrality");
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(hnZvPtEtaCent);
@@ -413,6 +463,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hMCPt);
   fOutputList->Add(hEventStatistics);
   fOutputList->Add(hEventStatisticsCentrality);
+  fOutputList->Add(hMCEventStatisticsCentrality);
   fOutputList->Add(hAllEventStatisticsCentrality);
   fOutputList->Add(hEventStatisticsCentralityTrigger);
   fOutputList->Add(hnZvMultCent);
@@ -423,15 +474,12 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hMCCharge);
   fOutputList->Add(hMCPdgPt);
   fOutputList->Add(hMCHijingPrim);
-  fOutputList->Add(hAccNclsTPC);
-  fOutputList->Add(hAllCrossedRowsTPC);
-  fOutputList->Add(hFilterCrossedRowsTPC);
-  fOutputList->Add(hAccCrossedRowsTPC);
   fOutputList->Add(hDCAPtAll);
   fOutputList->Add(hDCAPtAccepted);
   fOutputList->Add(hMCDCAPtSecondary);
   fOutputList->Add(hMCDCAPtPrimary);
-  
+  fOutputList->Add(hnCrossedRowsClustersChiPtEtaPhiAll);
+  fOutputList->Add(hnCrossedRowsClustersChiPtEtaPhiAcc);
   
   PostData(1, fOutputList);
 }
@@ -457,6 +505,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Bool_t bIsEventSelected = kFALSE;
   Bool_t bIsPrimary = kFALSE;
   Bool_t bIsHijingParticle = kFALSE;
+  Bool_t bMotherIsHijingParticle = kFALSE;
   //Bool_t bIsPythiaParticle = kFALSE;
   Bool_t bEventHasATrack = kFALSE;
   Bool_t bEventHasATrackInRange = kFALSE;
@@ -588,7 +637,11 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     }
   } // isMonteCarlo
   if(bEventHasATrack) { hEventStatistics->Fill("MC events with tracks",1); }
-  if(bEventHasATrackInRange) { hEventStatistics->Fill("MC events with tracks in range",1); }
+  if(bEventHasATrackInRange) 
+  { 
+    hEventStatistics->Fill("MC events with tracks in range",1); 
+    hMCEventStatisticsCentrality->Fill(dCentrality);
+  }
   bEventHasATrack = kFALSE;
   bEventHasATrackInRange = kFALSE;
   
@@ -619,7 +672,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     GetDCA(track, eventAOD, dDCA);
     
-    Double_t dDCAxyDCAzPt[3] = { dDCA[0], dDCA[1], track->Pt() };
+    Double_t dDCAxyDCAzPt[5] = { dDCA[0], dDCA[1], track->Pt(), track->Eta(), track->Phi() };
     
     hDCAPtAll->Fill(dDCAxyDCAzPt);
     
@@ -660,7 +713,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	if(indexMoth >= 0)
 	{
 	  AliAODMCParticle* moth = (AliAODMCParticle*)stack->At(indexMoth);
-	  Bool_t bMotherIsHijingParticle = IsHijingParticle(moth, genHijingHeader);
+	  bMotherIsHijingParticle = IsHijingParticle(moth, genHijingHeader);
 	  
 	  if(bMotherIsHijingParticle) // only store secondaries, which come from a not embedded signal!
 	  {
@@ -678,28 +731,35 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     // ======================== fill histograms ========================
     
-    //     if(bIsMonteCarlo && !bIsHijingParticle) 
-    //     { 
-      //       continue;  //only store reco tracks, which do not come from embedded signal
-      //     }
-      
-      
-      
-      bEventHasATrack = kTRUE;
-      
-      hnZvPtEtaCent->Fill(dTrackZvPtEtaCent);
-      hDCAPtAccepted->Fill(dDCAxyDCAzPt);
-      
-      if( (dTrackZvPtEtaCent[1] > dCutPtMin) &&
-	(dTrackZvPtEtaCent[1] < dCutPtMax) &&
-	(dTrackZvPtEtaCent[2] > dCutEtaMin) &&
-	(dTrackZvPtEtaCent[2] < dCutEtaMax) )
+    // only keep prim and sec from not embedded signal
+    Bool_t bKeepMCTrack = kFALSE;
+    if(bIsMonteCarlo) 
+    {
+      if( (bIsHijingParticle && bIsPrimary) ^ (bMotherIsHijingParticle && !bIsPrimary) )
       {
-	iAcceptedMultiplicity++;
-	bEventHasATrackInRange = kTRUE;
-	hPt->Fill(track->Pt());
-	hCharge->Fill(track->Charge());
+	bKeepMCTrack = kTRUE;
       }
+      else
+      {
+	continue;
+      }
+    }
+    
+    bEventHasATrack = kTRUE;
+    
+    hnZvPtEtaCent->Fill(dTrackZvPtEtaCent);
+    hDCAPtAccepted->Fill(dDCAxyDCAzPt);
+    
+    if( (dTrackZvPtEtaCent[1] > dCutPtMin) &&
+      (dTrackZvPtEtaCent[1] < dCutPtMax) &&
+      (dTrackZvPtEtaCent[2] > dCutEtaMin) &&
+      (dTrackZvPtEtaCent[2] < dCutEtaMax) )
+    {
+      iAcceptedMultiplicity++;
+      bEventHasATrackInRange = kTRUE;
+      hPt->Fill(track->Pt());
+      hCharge->Fill(track->Charge());
+    }
   } // end track loop
   
   if(bEventHasATrack) { hEventStatistics->Fill("events with tracks",1); bEventHasATrack = kFALSE; }
@@ -730,17 +790,27 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
+  Double_t dChi2PerClusterTPC = (dNClustersTPC>0)?tr->Chi2perNDF()*(dNClustersTPC-5)/dNClustersTPC:-1.; // see AliDielectronVarManager.h
   
-  hAllCrossedRowsTPC->Fill(dCrossedRowsTPC);
+  //   hAllCrossedRowsTPC->Fill(dCrossedRowsTPC);
   
-  if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; }
+  Double_t dRowClusterChiPtEtaPhi[6] = {dCrossedRowsTPC, dNClustersTPC, dChi2PerClusterTPC, tr->Pt(), tr->Eta(), tr->Phi() };
+  hnCrossedRowsClustersChiPtEtaPhiAll->Fill(dRowClusterChiPtEtaPhi);
   
-  hFilterCrossedRowsTPC->Fill(dCrossedRowsTPC);
+  // filter bit 5
+  if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; } 
+  
+  // filter bit 4
+  //   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) ) { return kFALSE; }
+  
+  //   hFilterCrossedRowsTPC->Fill(dCrossedRowsTPC);
   
   if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
   
-  hAccNclsTPC->Fill(dNClustersTPC);
-  hAccCrossedRowsTPC->Fill(dCrossedRowsTPC);
+  hnCrossedRowsClustersChiPtEtaPhiAcc->Fill(dRowClusterChiPtEtaPhi);
+  
+  //   hAccNclsTPC->Fill(dNClustersTPC);
+  //   hAccCrossedRowsTPC->Fill(dCrossedRowsTPC);
   //   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
   //   Double_t dChi2PerClusterTPC = (dNClustersTPC>0)?tr->Chi2perNDF()*(dNClustersTPC-5)/dNClustersTPC:-1.; // see AliDielectronVarManager.h
   //   
