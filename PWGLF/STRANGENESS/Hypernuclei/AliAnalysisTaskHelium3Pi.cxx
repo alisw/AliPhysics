@@ -624,7 +624,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       
       fHistMult->Fill(0);
       
-      if((status) & AliESDtrack::kITSrefit!=0){
+      if((status) & (AliESDtrack::kITSrefit!=0)){
 	fHistMult->Fill(1);
 	fhBB->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
       }
@@ -696,7 +696,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  HeTPC[nHeTPC++]=j;
 	  
 	  
-	  Bool_t isHeITSrefit=(status & AliESDtrack::kITSrefit);
+	  Bool_t isHeITSrefit=((status) & (AliESDtrack::kITSrefit));
 	  
 	  esdtrack->GetImpactParameters(impactXY, impactZ);
 	  esdtrack->GetITSdEdxSamples(ITSsample);
@@ -780,8 +780,8 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       PionTrack=lESDevent->GetTrack(PionIdx);
       
       statusPi = (ULong_t)PionTrack->GetStatus();
-      isTOFPi  = (((statusPi & AliESDtrack::kTOFout) != 0) && ((statusPi & AliESDtrack::kTIME) != 0));
-      IsPiITSRefit = (statusPi & AliESDtrack::kITSrefit); 
+      isTOFPi  = ((((statusPi) & (AliESDtrack::kTOFout)) != 0) && (((statusPi) & (AliESDtrack::kTIME)) != 0));
+      IsPiITSRefit = ((statusPi) & (AliESDtrack::kITSrefit)); 
       
       if (PionTrack) 
 	DcaPionToPrimVertex = TMath::Abs(PionTrack->GetD(xPrimaryVertex, yPrimaryVertex,lMagneticField)); //OK
