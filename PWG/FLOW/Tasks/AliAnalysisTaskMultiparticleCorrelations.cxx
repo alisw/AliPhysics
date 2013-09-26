@@ -38,7 +38,18 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  AliAnalysisTaskSE(name), 
  fEvent(NULL),
  fMPC(NULL), 
- fHistList(NULL)
+ fHistList(NULL),
+ fMinNoRPs(-44),
+ fMaxNoRPs(-44),
+ fExactNoRPs(-44),
+ fFillControlHistograms(kTRUE),
+ fPhiWeightsHist(NULL),
+ fPtWeightsHist(NULL),
+ fEtaWeightsHist(NULL),
+ fCalculateCorrelations(kTRUE),
+ fCalculateCumulants(kTRUE),
+ fCrossCheckWithNestedLoops(kFALSE),
+ fCalculateStandardCandles(kFALSE)
  {
   // Constructor.
  
@@ -66,7 +77,18 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  AliAnalysisTaskSE(),
  fEvent(NULL),
  fMPC(NULL),
- fHistList(NULL)
+ fHistList(NULL),
+ fMinNoRPs(-44),
+ fMaxNoRPs(-44),
+ fExactNoRPs(-44),
+ fFillControlHistograms(kFALSE),
+ fPhiWeightsHist(NULL),
+ fPtWeightsHist(NULL),
+ fEtaWeightsHist(NULL),
+ fCalculateCorrelations(kFALSE),
+ fCalculateCumulants(kFALSE),
+ fCrossCheckWithNestedLoops(kFALSE),
+ fCalculateStandardCandles(kFALSE)
  {
   // Dummy constructor.
  
@@ -88,7 +110,17 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  fMPC = new AliFlowAnalysisWithMultiparticleCorrelations();
  
  // Setters:
- // ...
+ fMPC->SetMinNoRPs(fMinNoRPs);
+ fMPC->SetMaxNoRPs(fMaxNoRPs);
+ fMPC->SetExactNoRPs(fExactNoRPs);
+ fMPC->SetFillControlHistograms(fFillControlHistograms);
+ if(fPhiWeightsHist){fMPC->SetPhiWeightsHist(fPhiWeightsHist);} // TBI is this safe enough?
+ if(fPtWeightsHist){fMPC->SetPtWeightsHist(fPtWeightsHist);} // TBI is this safe enough?
+ if(fEtaWeightsHist){fMPC->SetEtaWeightsHist(fEtaWeightsHist);} // TBI is this safe enough?
+ fMPC->SetCalculateCorrelations(fCalculateCorrelations);
+ fMPC->SetCalculateCumulants(fCalculateCumulants);
+ fMPC->SetCrossCheckWithNestedLoops(fCrossCheckWithNestedLoops);
+ fMPC->SetCalculateStandardCandles(fCalculateStandardCandles);
 
  // Initialize:
  fMPC->Init();
