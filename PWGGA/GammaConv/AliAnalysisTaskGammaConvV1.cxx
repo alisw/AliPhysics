@@ -580,6 +580,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
          hESDTrueSecondaryMotherInvMassPt = new TH2F*[fnCuts];
          hESDTrueSecondaryMotherFromK0sInvMassPt = new TH2F*[fnCuts];
          hESDTrueSecondaryMotherFromEtaInvMassPt = new TH2F*[fnCuts];
+         hESDTrueMotherDalitzInvMassPt = new TH2F*[fnCuts];
          if (fDoMesonQA){
             hMCPi0PtY = new TH2F*[fnCuts];
             hMCEtaPtY = new TH2F*[fnCuts];
@@ -592,7 +593,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
             hESDTrueEtaWithPi0DaughterMCPt = new TH1F*[fnCuts];
             hESDTrueBckGGInvMassPt = new TH2F*[fnCuts];
             hESDTrueBckContInvMassPt = new TH2F*[fnCuts];
-            hESDTrueMotherDalitzInvMassPt = new TH2F*[fnCuts];
             fTrueMotherRapList = new TList*[fnCuts];
          }
       }
@@ -756,7 +756,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
             hESDTrueSecondaryMotherFromEtaInvMassPt[iCut]
                = new TH2F("ESD_TrueSecondaryMotherFromEta_InvMass_Pt","ESD_TrueSecondaryMotherFromEta_InvMass_Pt",800,0,0.8,250,0,25);
             fTrueList[iCut]->Add(hESDTrueSecondaryMotherFromEtaInvMassPt[iCut]);
-         
+            hESDTrueMotherDalitzInvMassPt[iCut] = new TH2F("ESD_TrueDalitz_InvMass_Pt","ESD_TrueDalitz_InvMass_Pt",800,0,0.8,250,0,25);
+            fTrueList[iCut]->Add(hESDTrueMotherDalitzInvMassPt[iCut]);         
             if (fDoMesonQA){
                hESDTruePrimaryPi0MCPtResolPt[iCut] = new TH2F("ESD_TruePrimaryPi0_MCPt_ResolPt","ESD_TruePrimaryPi0_ResolPt_MCPt",500,0,25,1000,-1.,1.);
                hESDTruePrimaryPi0MCPtResolPt[iCut]->Sumw2();
@@ -768,8 +769,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
                fTrueList[iCut]->Add(hESDTrueBckGGInvMassPt[iCut]);
                hESDTrueBckContInvMassPt[iCut] = new TH2F("ESD_TrueBckCont_InvMass_Pt","ESD_TrueBckCont_InvMass_Pt",800,0,0.8,250,0,25);
                fTrueList[iCut]->Add(hESDTrueBckContInvMassPt[iCut]);
-               hESDTrueMotherDalitzInvMassPt[iCut] = new TH2F("ESD_TrueDalitz_InvMass_Pt","ESD_TrueDalitz_InvMass_Pt",800,0,0.8,250,0,25);
-               fTrueList[iCut]->Add(hESDTrueMotherDalitzInvMassPt[iCut]);
                hESDTrueK0sWithPi0DaughterMCPt[iCut] = new TH1F("ESD_TrueK0sWithPi0Daughter_MCPt","ESD_TrueK0sWithPi0Daughter_MCPt",250,0,25);
                fTrueList[iCut]->Add(hESDTrueK0sWithPi0DaughterMCPt[iCut]);
                hESDTrueEtaWithPi0DaughterMCPt[iCut] = new TH1F("ESD_TrueEtaWithPi0Daughter_MCPt","ESD_TrueEtaWithPi0Daughter_MCPt",250,0,25);
@@ -1650,6 +1649,10 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
    if(TrueGammaCandidate0->GetV0Index()<fInputEvent->GetNumberOfV0s()){
       Bool_t isTruePi0 = kFALSE;
       Bool_t isTrueEta = kFALSE;
+      Bool_t isTruePi0Dalitz = kFALSE;
+      Bool_t isTrueEtaDalitz = kFALSE;
+      Bool_t gamma0DalitzCand = kFALSE;
+      Bool_t gamma1DalitzCand = kFALSE;
       Int_t gamma0MCLabel = TrueGammaCandidate0->GetMCParticleLabel(MCStack);
       Int_t gamma0MotherLabel = -1;
       if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
@@ -1663,10 +1666,12 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
                   gamma0MotherLabel=gammaMC0->GetFirstMother();
                }
             }
-            if(gammaMC0->GetPdgCode() ==111){ // Conversion but Pi0 Mother
+            if(gammaMC0->GetPdgCode() ==111){ // Dalitz candidate
+               gamma0DalitzCand = kTRUE;
                gamma0MotherLabel=-111;
             }
-            if(gammaMC0->GetPdgCode() ==221){ // Conversion but Eta Mother
+            if(gammaMC0->GetPdgCode() ==221){ // Dalitz candidate
+               gamma0DalitzCand = kTRUE;
                gamma0MotherLabel=-221;
             }
          }
@@ -1685,11 +1690,13 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
                      gamma1MotherLabel=gammaMC1->GetFirstMother();
                   }
                }
-               if(gammaMC1->GetPdgCode() ==111){ // Conversion but Pi0 Mother
-                  gamma1MotherLabel=-111;
+               if(gammaMC1->GetPdgCode() ==111 ){ // Dalitz candidate
+                 gamma1DalitzCand = kTRUE;
+                 gamma1MotherLabel=-111;
                }
-               if(gammaMC1->GetPdgCode() ==221){ // Conversion but Eta Mother
-                  gamma1MotherLabel=-221;
+               if(gammaMC1->GetPdgCode() ==221){ // Dalitz candidate
+                 gamma1DalitzCand = kTRUE;
+                 gamma1MotherLabel=-221;
                }
             }
          }
@@ -1701,6 +1708,20 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
                isTrueEta=kTRUE;
             }
          }
+         
+         //Identify Dalitz candidate
+         if (gamma1DalitzCand || gamma0DalitzCand){
+            if (gamma0DalitzCand && gamma0MCLabel >=0 && gamma0MCLabel==gamma1MotherLabel){
+               if (gamma0MotherLabel == -111) isTruePi0Dalitz = kTRUE;
+               if (gamma0MotherLabel == -221) isTrueEtaDalitz = kTRUE;   
+            }   
+            if (gamma1DalitzCand && gamma1MCLabel >=0 && gamma1MCLabel==gamma0MotherLabel){
+               if (gamma1MotherLabel == -111) isTruePi0Dalitz = kTRUE;
+               if (gamma1MotherLabel == -221) isTrueEtaDalitz = kTRUE;   
+            }
+         }
+         
+         
          if(isTruePi0 || isTrueEta){// True Pion or Eta
             hESDTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt()); 
             if(gamma0MotherLabel >= MCStack->GetNprimary()){ // Secondary Meson
@@ -1747,19 +1768,22 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
                   }
                }
             }
-         }
-         else if(!isTruePi0 && !isTrueEta && fDoMesonQA){ // Background
-            if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
-               hESDTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-               iMesonMCInfo = 1;
-            } else { // No photon or without mother
-               hESDTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+         } else if(!isTruePi0 && !isTrueEta){ // Background
+            if (fDoMesonQA){
+               if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
+                  hESDTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+                  iMesonMCInfo = 1;
+               } else { // No photon or without mother
+                  hESDTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+               }
             }
-            if((gamma0MotherLabel==-111 || gamma1MotherLabel==-111 || gamma0MotherLabel==-221 || gamma1MotherLabel==-221) ){
+            if( isTruePi0Dalitz || isTrueEtaDalitz ){
                // Dalitz
                iMesonMCInfo = 5;
                hESDTrueMotherDalitzInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-            }
+            } else if (gamma0DalitzCand || gamma1DalitzCand){
+               if (fDoMesonQA)hESDTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+            }   
          }
       }
    }
@@ -1772,6 +1796,10 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
    Bool_t isTruePi0 = kFALSE;
    Bool_t isTrueEta = kFALSE;
+   Bool_t isTruePi0Dalitz = kFALSE;
+   Bool_t isTrueEtaDalitz = kFALSE;
+   Bool_t gamma0DalitzCand = kFALSE;
+   Bool_t gamma1DalitzCand = kFALSE;
    
    AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelPositive()));
    AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelNegative()));
@@ -1790,15 +1818,17 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
       // Daughters Gamma 0
       AliAODMCParticle * gammaMC0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MCLabel));
       if(abs(negativeMC->GetPdgCode())==11 && abs(positiveMC->GetPdgCode())==11){  // Electrons ...
-         if(((positiveMC->GetMCProcessCode())) == 5 && ((negativeMC->GetMCProcessCode())) == 5){ // ... From Conversion ...     // STILL A BUG IN ALIROOT >>8 HAS TPO BE REMOVED AFTER FIX
+         if(((positiveMC->GetMCProcessCode())) == 5 && ((negativeMC->GetMCProcessCode())) == 5){ // ... From Conversion ...     
             if(gammaMC0->GetPdgCode() == 22){ // ... with Gamma Mother
                gamma0MotherLabel=gammaMC0->GetMother();
             }
          }
-         if(gammaMC0->GetPdgCode() ==111){ // Conversion but Pi0 Mother
+         if(gammaMC0->GetPdgCode() ==111){ // Dalitz candidate
+            gamma0DalitzCand = kTRUE;
             gamma0MotherLabel=-111;
          }
-         if(gammaMC0->GetPdgCode() ==221){ // Conversion but Eta Mother
+         if(gammaMC0->GetPdgCode() ==221){ // Dalitz candidate
+            gamma0DalitzCand = kTRUE;
             gamma0MotherLabel=-221;
          }
       }
@@ -1818,15 +1848,17 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
       // Daughters Gamma 1
       AliAODMCParticle * gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
       if(abs(negativeMC->GetPdgCode())==11 && abs(positiveMC->GetPdgCode())==11){  // Electrons ...
-         if(((positiveMC->GetMCProcessCode())) == 5 && ((negativeMC->GetMCProcessCode())) == 5){ // ... From Conversion ...     // STILL A BUG IN ALIROOT >>8 HAS TPO BE REMOVED AFTER FIX
+         if(((positiveMC->GetMCProcessCode())) == 5 && ((negativeMC->GetMCProcessCode())) == 5){ // ... From Conversion ...     
             if(gammaMC1->GetPdgCode() == 22){ // ... with Gamma Mother
                gamma1MotherLabel=gammaMC1->GetMother();
             }
          }
-         if(gammaMC1->GetPdgCode() ==111){ // Conversion but Pi0 Mother
-            gamma1MotherLabel=-111;
+         if(gammaMC1->GetPdgCode() ==111 ){ // Dalitz candidate
+                 gamma1DalitzCand = kTRUE;
+                 gamma1MotherLabel=-111;
          }
-         if(gammaMC1->GetPdgCode() ==221){ // Conversion but Eta Mother
+         if(gammaMC1->GetPdgCode() ==221){ // Dalitz candidate
+            gamma1DalitzCand = kTRUE;
             gamma1MotherLabel=-221;
          }
       }
@@ -1839,6 +1871,19 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
          isTrueEta=kTRUE;
       }
    }
+   
+   //Identify Dalitz candidate
+   if (gamma1DalitzCand || gamma0DalitzCand){
+      if (gamma0DalitzCand && gamma0MCLabel >=0 && gamma0MCLabel==gamma1MotherLabel){
+         if (gamma0MotherLabel == -111) isTruePi0Dalitz = kTRUE;
+         if (gamma0MotherLabel == -221) isTrueEtaDalitz = kTRUE;   
+      }   
+      if (gamma1DalitzCand && gamma1MCLabel >=0 && gamma1MCLabel==gamma0MotherLabel){
+         if (gamma1MotherLabel == -111) isTruePi0Dalitz = kTRUE;
+         if (gamma1MotherLabel == -221) isTrueEtaDalitz = kTRUE;   
+      }
+   }
+            
    if(isTruePi0 || isTrueEta){// True Pion or Eta
       hESDTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       
@@ -1889,18 +1934,21 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
             }
          }
       }
-   }
-   else if(!isTruePi0 && !isTrueEta && fDoMesonQA){ // Background
-      if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
-         iMesonMCInfo = 1;
-         hESDTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-      } else { // No photon or without mother
-         hESDTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+   } else if(!isTruePi0 && !isTrueEta) { // Background
+      if (fDoMesonQA){
+         if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
+            hESDTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+            iMesonMCInfo = 1;
+         } else { // No photon or without mother
+            hESDTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+         }
       }
-      if((gamma0MotherLabel==-111 || gamma1MotherLabel==-111 || gamma0MotherLabel==-221 || gamma1MotherLabel==-221) ){
+      if( isTruePi0Dalitz || isTrueEtaDalitz ){
          // Dalitz
          iMesonMCInfo = 5;
          hESDTrueMotherDalitzInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+      } else if (gamma0DalitzCand || gamma1DalitzCand){
+         if (fDoMesonQA)hESDTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       }
    }
 }

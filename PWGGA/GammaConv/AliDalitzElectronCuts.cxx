@@ -65,6 +65,7 @@ const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = 
 "PtCut",
 "DCAcut",
 "MassCut",
+"kWeights"
 };
 
 //________________________________________________________________________
@@ -116,6 +117,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fMassCutLowPt(999.),
     fMassCutHighPt(999.),
     fMassCutPtMin(-100.0),
+    fDoWeights(kFALSE),
     fCutString(NULL),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
@@ -719,7 +721,7 @@ Bool_t AliDalitzElectronCuts::IsFromGammaConversion( Double_t psiPair, Double_t 
 }
 
 ///________________________________________________________________________
-Bool_t AliDalitzElectronCuts::UpdateCutString(cutIds cutID, Int_t value) {
+Bool_t AliDalitzElectronCuts::UpdateCutString() {
 ///Update the cut string (if it has been created yet)
 
   if(fCutString && fCutString->GetString().Length() == kNCuts) {
@@ -790,42 +792,42 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
   case kededxSigmaITSCut:
 	if( SetITSdEdxCutElectronLine(value)) { //NOTE SetITSdEdxCutElectronLine: To be implemented 
 	  fCuts[kededxSigmaITSCut] = value;
-	  UpdateCutString(cutID, value);
+	  UpdateCutString();
 	  return kTRUE;
 	} else return kFALSE;
 
 	case kededxSigmaTPCCut:
 		if( SetTPCdEdxCutElectronLine(value)) { //NOTE SetITSdEdxCutElectronLine: To be implemented 
 			fCuts[kededxSigmaTPCCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
   case kpidedxSigmaTPCCut:
 		if( SetTPCdEdxCutPionLine(value)) { //NOTE SetITSdEdxCutPionLine: To be implemented
 			fCuts[kpidedxSigmaTPCCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
   case kpiMinMomdedxSigmaTPCCut:
 		if( SetMinMomPiondEdxTPCCut(value)) {
 			fCuts[kpiMinMomdedxSigmaTPCCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
   case kpiMaxMomdedxSigmaTPCCut:
 		if( SetMaxMomPiondEdxTPCCut(value)) {
 			fCuts[kpiMaxMomdedxSigmaTPCCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
   case kLowPRejectionSigmaCut:
 		if( SetLowPRejectionCuts(value) ) {
 			fCuts[kLowPRejectionSigmaCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
@@ -833,39 +835,39 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
   case kTOFelectronPID:
 		if( SetTOFElectronPIDCut(value)) {
 			fCuts[kTOFelectronPID] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
   case kclsITSCut:
 		if( SetITSClusterCut(value) ) {
 			fCuts[kclsITSCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;		 	
 		} else return kFALSE;
   case kclsTPCCut:
 		if( SetTPCClusterCut(value)) {
 			fCuts[kclsTPCCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
   case ketaCut:
 		if( SetEtaCut(value)) {
 			fCuts[ketaCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
   case kptCut: 	
 		if( SetPtCut(value)) {
 			fCuts[kptCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
     
   case kDCACut:
 		if( SetDCACut(value)) {
 			fCuts[kDCACut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 	      
@@ -873,37 +875,44 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
 	case kPsiPair:
 		if( SetPsiPairCut(value)) {
 			fCuts[kPsiPair] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
   case kRejectSharedElecGamma:
 		if( SetRejectSharedElecGamma(value)) {
 			fCuts[kRejectSharedElecGamma] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
           return kTRUE;
 		} else return kFALSE;
 		
   case kBackgroundScheme:
 		if( SetBackgroundScheme(value)) {
 			fCuts[kBackgroundScheme] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 
   case kNumberOfRotations:
 		if( SetNumberOfRotations(value)) {
 			fCuts[kNumberOfRotations] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
 		
   case kmassCut:
 		if( SetMassCut(value)) {
 			fCuts[kmassCut] = value;
-			UpdateCutString(cutID, value);
+			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;
+  case kWeights:
+                if( SetDoWeights(value)) {
+                        fCuts[kWeights] = value;
+                        UpdateCutString();
+                        return kTRUE;
+                } else return kFALSE;
+               
 		
   case kNCuts:
 		cout << "Error:: Cut id out of range"<< endl;
@@ -1179,52 +1188,52 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 {   // Set Cut
 	switch(clsTPCCut){
 	case 0: // 0
-		fMinClsTPC= 0.;
+		fMinClsTPC= 0;
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 1:  // 70
-		fMinClsTPC= 70.;
+		fMinClsTPC= 70;
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 2:  // 80
-		fMinClsTPC= 80.;
+		fMinClsTPC= 80;
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 3:  // 100
-		fMinClsTPC= 100.;
+		fMinClsTPC= 100;
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
 	case 4:  // 0% of findable clusters
-	        fMinClsTPC= 70.;  
+	        fMinClsTPC= 70;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.0;
 		fUseCorrectedTPCClsInfo=0;
 		break;
 	case 5:  // 35% of findable clusters
-		fMinClsTPC = 70.;  
+		fMinClsTPC = 70;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.35;
 		fUseCorrectedTPCClsInfo=0;
 		break;
 	case 6:  // 60% of findable clusters
-		fMinClsTPC= 70.;  
+		fMinClsTPC= 70;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.6;
 		fUseCorrectedTPCClsInfo=0;
 		break;
 	case 7:  // 70% of findable clusters
-		fMinClsTPC= 70.;  
+		fMinClsTPC= 70;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.7;
 		fUseCorrectedTPCClsInfo=0;
 		break;
-	case 8: fMinClsTPC = 0.;  
+	case 8: fMinClsTPC = 0;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.35;
 		fUseCorrectedTPCClsInfo=0;
 		break;
 	case 9:  // 35% of findable clusters
-		fMinClsTPC = 70.;  
+		fMinClsTPC = 70;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		fMinClsTPCToF= 0.35;
 		fUseCorrectedTPCClsInfo=1;
@@ -1674,69 +1683,86 @@ Bool_t AliDalitzElectronCuts::SetNumberOfRotations(Int_t NumberOfRotations)
 
 
 ///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetDoWeights(Int_t opc)
+{   // Set Cut
+    switch(opc){
+      
+    case 0:             fDoWeights = kFALSE;
+		        break;
+    case 1:             fDoWeights = kTRUE;
+		        break; 
+    default:
+			cout<<"Warning: Weights option not defined "<<opc<<endl;
+			return kFALSE;
+    }
+    return kTRUE;
+}
+///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
 {   // Set Cut
     switch(massCut){
       
     case 0:
-			
-			fMassCutPtMin  = -999.;	//GeV
-			fMassCutLowPt  =  999.; //GeV/c^2
-			fMassCutHighPt =  999.; //GeV/c^2
-			fDoMassCut = kFALSE;   
-			break;
+                        
+                        fMassCutPtMin  = -999.; //GeV
+                        fMassCutLowPt  =  999.; //GeV/c^2
+                        fMassCutHighPt =  999.; //GeV/c^2
+                        fDoMassCut = kFALSE;   
+                        break;
     case 1:
-			//fMassCut = 0.135;      	//GeV/c^2
-			fMassCutPtMin  = -999.;	//GeV
-			fMassCutLowPt  = 0.135; //GeV/c^2
-			fMassCutHighPt = 0.135; //GeV/c^2
-			fDoMassCut = kTRUE;
-			break; 
+                        //fMassCut = 0.135;             //GeV/c^2
+                        fMassCutPtMin  = -999.; //GeV
+                        fMassCutLowPt  = 0.135; //GeV/c^2
+                        fMassCutHighPt = 0.135; //GeV/c^2
+                        fDoMassCut = kTRUE;
+                        break; 
     case 2:
-			//fMassCut = 0.100;    	//GeV/c^2
-			fMassCutPtMin  = -999.;	//GeV
-			fMassCutLowPt  = 0.100; //GeV/c^2
-			fMassCutHighPt = 0.100; //GeV/c^2
-			fDoMassCut = kTRUE;
-			break;
+                        //fMassCut = 0.100;     //GeV/c^2
+                        fMassCutPtMin  = -999.; //GeV
+                        fMassCutLowPt  = 0.100; //GeV/c^2
+                        fMassCutHighPt = 0.100; //GeV/c^2
+                        fDoMassCut = kTRUE;
+                        break;
     case 3:
-			//fMassCut = 0.075;    	//GeV/c^2
-			fMassCutPtMin  = -999.;	//GeV
-			fMassCutLowPt  = 0.075; //GeV/c^2
-			fMassCutHighPt = 0.075; //GeV/c^2
-			fDoMassCut = kTRUE;
-			break;
+                        //fMassCut = 0.075;     //GeV/c^2
+                        fMassCutPtMin  = -999.; //GeV
+                        fMassCutLowPt  = 0.075; //GeV/c^2
+                        fMassCutHighPt = 0.075; //GeV/c^2
+                        fDoMassCut = kTRUE;
+                        break;
     case 4:
-			//fMassCut = 0.050; 	//GeV/c^2
-			fMassCutPtMin  = -999.;	//GeV
-			fMassCutLowPt  = 0.050; //GeV/c^2
-			fMassCutHighPt = 0.050; //GeV/c^2
-			fDoMassCut = kTRUE;
-			break;
+                        //fMassCut = 0.050;     //GeV/c^2
+                        fMassCutPtMin  = -999.; //GeV
+                        fMassCutLowPt  = 0.050; //GeV/c^2
+                        fMassCutHighPt = 0.050; //GeV/c^2
+                        fDoMassCut = kTRUE;
+                        break;
     case 5:
-			
-			fMassCutPtMin  = -999.;	//GeV
-			fMassCutLowPt  = 0.035; //GeV/c^2
-			fMassCutHighPt = 0.035; //GeV/c^2
-			fDoMassCut = kTRUE;
-			break;
+                        
+                        fMassCutPtMin  = -999.; //GeV
+                        fMassCutLowPt  = 0.035; //GeV/c^2
+                        fMassCutHighPt = 0.035; //GeV/c^2
+                        fDoMassCut = kTRUE;
+                        break;
     case 6:
-			fMassCutPtMin  = -999.;	//GeV
-			fMassCutLowPt  = 0.015; //GeV/c^2
-			fMassCutHighPt = 0.015; //GeV/c^2
-			fDoMassCut = kTRUE;
-			break;
-    case 7:		fMassCutPtMin  = 1.0;	//GeV
-			fMassCutLowPt  = 0.015; //GeV/c^2
-			fMassCutHighPt = 0.035; //GeV/c^2
-			fDoMassCut = kTRUE;
-			break;
+                        fMassCutPtMin  = -999.; //GeV
+                        fMassCutLowPt  = 0.015; //GeV/c^2
+                        fMassCutHighPt = 0.015; //GeV/c^2
+                        fDoMassCut = kTRUE;
+                        break;
+    case 7:             fMassCutPtMin  = 1.0;   //GeV
+                        fMassCutLowPt  = 0.015; //GeV/c^2
+                        fMassCutHighPt = 0.035; //GeV/c^2
+                        fDoMassCut = kTRUE;
+                        break;
     default:
-			cout<<"Warning: MassCut not defined "<<massCut<<endl;
-			return kFALSE;
+                        cout<<"Warning: MassCut not defined "<<massCut<<endl;
+                        return kFALSE;
     }
     return kTRUE;
 }
+
+
 
 ///________________________________________________________________________
 TString AliDalitzElectronCuts::GetCutNumber(){

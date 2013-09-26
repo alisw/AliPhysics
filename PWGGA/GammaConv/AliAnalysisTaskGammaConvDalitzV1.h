@@ -163,7 +163,11 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH2F **hESDTrueMotherInvMassPt;
     TH2F **hESDTrueMotherDalitzInvMassPt;
     TH2F **hESDTrueMotherPi0GGInvMassPt;
+    TH2F **hESDTruePrimaryMotherPi0GGInvMassPt;
+    TH2F **hESDTrueSecondaryMotherPi0GGInvMassPt;
     TH2F **hESDTruePrimaryMotherInvMassMCPt;
+    TH2F **hESDTruePrimaryMotherInvMassPt;
+    TH2F **hESDTruePrimaryMotherW0WeightingInvMassPt;
     TH2F **hESDTruePrimaryPi0DalitzESDPtMCPt;
     TH2F **hESDTrueSecondaryMotherInvMassPt;
     TH2F **hESDTrueSecondaryMotherFromK0sInvMassPt;
