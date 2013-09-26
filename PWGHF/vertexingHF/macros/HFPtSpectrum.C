@@ -207,25 +207,25 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   if(rapiditySlice!=kdefault){
     Double_t scaleFONLL = 1.0;
     switch(rapiditySlice) {
-    case k08to04: scaleFONLL = (0.093+0.280)/1.0;
-    case k07to04: scaleFONLL = 0.280/1.0;
-    case k04to01: scaleFONLL = 0.284/1.0;
-    case k01to01: scaleFONLL = 0.191/1.0;
-    case k01to04: scaleFONLL = 0.288/1.0;
-    case k04to07: scaleFONLL = 0.288/1.0;
-    case k04to08: scaleFONLL = (0.288+0.096)/1.0;
+    case k08to04: scaleFONLL = (0.093+0.280)/1.0; break;
+    case k07to04: scaleFONLL = 0.280/1.0; break;
+    case k04to01: scaleFONLL = 0.284/1.0; break;
+    case k01to01: scaleFONLL = 0.191/1.0; break;
+    case k01to04: scaleFONLL = 0.288/1.0; break;
+    case k04to07: scaleFONLL = 0.288/1.0; break;
+    case k04to08: scaleFONLL = (0.288+0.096)/1.0; break;
     }
     hDirectMCpt->Scale(scaleFONLL);
     hDirectMCptMax->Scale(scaleFONLL);
     hDirectMCptMin->Scale(scaleFONLL);
     switch(rapiditySlice) {
-    case k08to04: scaleFONLL = (0.089+0.274)/1.0;
-    case k07to04: scaleFONLL = 0.274/1.0;
-    case k04to01: scaleFONLL = 0.283/1.0;
-    case k01to01: scaleFONLL = 0.192/1.0;
-    case k01to04: scaleFONLL = 0.290/1.0;
-    case k04to07: scaleFONLL = 0.291/1.0;
-    case k04to08: scaleFONLL = (0.291+0.097)/1.0;
+    case k08to04: scaleFONLL = (0.089+0.274)/1.0; break;
+    case k07to04: scaleFONLL = 0.274/1.0; break;
+    case k04to01: scaleFONLL = 0.283/1.0; break;
+    case k01to01: scaleFONLL = 0.192/1.0; break;
+    case k01to04: scaleFONLL = 0.290/1.0; break;
+    case k04to07: scaleFONLL = 0.291/1.0; break;
+    case k04to08: scaleFONLL = (0.291+0.097)/1.0; break;
     }
     hFeedDownMCpt->Scale(scaleFONLL);
     hFeedDownMCptMax->Scale(scaleFONLL);
