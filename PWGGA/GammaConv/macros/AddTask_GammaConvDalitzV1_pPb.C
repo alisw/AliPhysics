@@ -1,4 +1,5 @@
-void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC 
+void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
+                                       Bool_t isMC       = kFALSE, //run MC 
                                        Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                        Bool_t enableDoMesonChic = kFALSE, // enable additional Chic analysis
                                        TString cutnumberAODBranch = "0000000060084001001500000"
@@ -33,7 +34,7 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
    // ================== GetAnalysisManager ===============================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      Error("AddTask_GammaConvDalitzV1_pPb", "No analysis manager found.");
+      Error(Form("AddTask_GammaConvDalitzV1_pPb_%i",trainConfig), "No analysis manager found.");
       return ;
    }
 
@@ -48,7 +49,7 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
    
    //=========  Set Cutnumber for V0Reader ================================
    TString ConvCutnumber = "800000006008400100150000000";   //Online  V0 finder
-   TString ElecCuts      = "900054000000020000";            //Electron Cuts
+   TString ElecCuts      = "9000540000000200000";            //Electron Cuts
    Bool_t doEtaShift = kFALSE;
 
 
@@ -144,7 +145,7 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
  
    AliAnalysisTaskGammaConvDalitzV1 *task=NULL;
 
-   task= new AliAnalysisTaskGammaConvDalitzV1("GammaConvDalitzV1");
+   task= new AliAnalysisTaskGammaConvDalitzV1(Form("GammaConvDalitzV1_%i",trainConfig));
 
    task->SetIsHeavyIon(2);
    task->SetIsMC(isMC);
@@ -152,7 +153,7 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
 
 
    // Cut Numbers to use in Analysis
-   Int_t numberOfCuts = 5;
+   Int_t numberOfCuts = 6;
 
    TString *ConvCutarray    = new TString[numberOfCuts];
 
@@ -168,14 +169,27 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
    doEtaShiftIndCuts = kTRUE;
    stringShift = "pPb";
 
-   ConvCutarray[0] = "800000008209360300220000000"; ElecCutarray[0] = "904754002582026217"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-   ConvCutarray[1] = "800000008209360300220000000"; ElecCutarray[1] = "904754002582026117"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.100 GeV
-   ConvCutarray[2] = "800000008209460300220000000"; ElecCutarray[2] = "904754002582026217"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + dEdx electron gamma   -6 ,7 sigmas
-   ConvCutarray[3] = "800000008209360300220300000"; ElecCutarray[3] = "904754002582026217"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100  do Aysemtri cut
-   ConvCutarray[4] = "800000008209360300220000000"; ElecCutarray[4] = "905154002582026217"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-  
-   
- 
+
+   if( trainConfig == 1 ) {
+
+        ConvCutarray[0] = "800000008209360300220000000"; ElecCutarray[0] = "9047540025820262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "800000008209360300220000000"; ElecCutarray[1] = "9047540025820261170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.100 GeV
+        ConvCutarray[2] = "800000008209460300220000000"; ElecCutarray[2] = "9047540025820262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + dEdx electron gamma   -6 ,7 sigmas
+        ConvCutarray[3] = "800000008209360300220300000"; ElecCutarray[3] = "9047540025820262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100  do Aysemtri cut
+        ConvCutarray[4] = "800000008209360300220000000"; ElecCutarray[4] = "9051540025820262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[5] = "800000008209360300220000000"; ElecCutarray[5] = "9051540025820262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 00-100 Standard cut + dEdx primary -3, 5 and  3.0  , -10 pion rejection
+
+   } else if( trainConfig == 2 ) {
+
+        ConvCutarray[0] = "800000008209360300220000000"; ElecCutarray[0] = "9047540025820262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "802000008209360300220000000"; ElecCutarray[1] = "9047540025820262170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-20
+        ConvCutarray[2] = "824000008209360300220000000"; ElecCutarray[2] = "9047540025820262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 20-40
+        ConvCutarray[3] = "846000008209360300220000000"; ElecCutarray[3] = "9047540025820262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 40-60
+        ConvCutarray[4] = "868000008209360300220000000"; ElecCutarray[4] = "9047540025820262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 60-80        
+        ConvCutarray[5] = "860000008209360300220000000"; ElecCutarray[5] = "9047540025820262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 60-100
+   }
+
+
 
    TList *ConvCutList  = new TList();
    TList *MesonCutList = new TList();
@@ -261,8 +275,8 @@ void AddTask_GammaConvDalitzV1_pPb(   Bool_t isMC       = kFALSE, //run MC
 
    //connect containers
    AliAnalysisDataContainer *coutput =
-   mgr->CreateContainer("GammaConvDalitzV1", TList::Class(),
-                           AliAnalysisManager::kOutputContainer,"GammaConvV1Dalitz.root");
+   mgr->CreateContainer(Form("GammaConvDalitzV1_%i",trainConfig), TList::Class(),
+                           AliAnalysisManager::kOutputContainer,Form("GammaConvV1Dalitz_%i.root",trainConfig));
 
    mgr->AddTask(task);
    mgr->ConnectInput(task,0,cinput);

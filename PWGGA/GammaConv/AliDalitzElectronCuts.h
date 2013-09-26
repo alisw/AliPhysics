@@ -58,6 +58,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kptCut,
         kDCACut,
         kmassCut,
+        kWeights,
 	kNCuts
   };
 
@@ -74,7 +75,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetCutIds(TString cutString); 
   Int_t fCuts[kNCuts];
   Bool_t SetCut(cutIds cutID, Int_t cut);
-  Bool_t UpdateCutString(cutIds cutID, Int_t value);
+  Bool_t UpdateCutString();
   static const char * fgkCutNames[kNCuts];
 
 
@@ -142,6 +143,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
   Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
   Bool_t SetMassCut(Int_t massCut);
+  Bool_t SetDoWeights(Int_t opc);
   
   // Request Flags
 
@@ -157,6 +159,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetMassCutLowPt(){return fMassCutLowPt;}
   Double_t GetMassCutHighPt(){return fMassCutHighPt;}
   Double_t GetPtMinMassCut(){return fMassCutPtMin;}
+  Bool_t   DoWeights(){return fDoWeights;}
   
 
   
@@ -174,7 +177,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
   Double_t fDeltaPhiCutMax;
-  Double_t fMinClsTPC; // minimum clusters in the TPC
+  Int_t fMinClsTPC; // minimum clusters in the TPC
   Double_t fMinClsTPCToF; // minimum clusters to findable clusters
   Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
   Bool_t   fDodEdxSigmaTPCCut; // flag to use the dEdxCut TPC based on sigmas
@@ -211,6 +214,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fMassCutLowPt;
   Double_t fMassCutHighPt;
   Double_t fMassCutPtMin;
+  Bool_t   fDoWeights;
 
 
   // Histograms

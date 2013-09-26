@@ -1,6 +1,6 @@
 void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
                                        Bool_t isMC   = kFALSE, //run MC 
-                                       Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
+                                       Bool_t enableQAMesonTask = kFALSE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                        Bool_t enableDoMesonChic = kFALSE, // enable additional Chic analysis
                                        TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                        Bool_t doWeighting = kFALSE,  //enable Weighting
@@ -51,7 +51,7 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
    
    //=========  Set Cutnumber for V0Reader ================================
    TString ConvCutnumber = "108000000008400100150000000";   //Online  V0 finder
-   TString ElecCuts      = "903162000550020210";            //Electron Cuts
+   TString ElecCuts      = "9031620005500202100";            //Electron Cuts
                             //903162000550020210
                             //900054000000020000
 
@@ -105,7 +105,6 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
 
       // Set AnalysisCut Number
       AliDalitzElectronCuts *fElecCuts=0;
-      TString ElecCuts = "900054000000020000";
 
       if( ElecCuts!=""){
          fElecCuts= new AliDalitzElectronCuts(ElecCuts.Data(),ElecCuts.Data());
@@ -148,14 +147,19 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
    TString *MesonCutarray   = new TString[numberOfCuts];
 
    if( trainConfig == 1 ) {
-        ConvCutarray[0]  = "124000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "905162002553025217"; //PbPb 20-40% kAny
-        ConvCutarray[1]  = "146000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "905162002553025217"; //PbPb 40-60% kAny
-        ConvCutarray[2]  = "168000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "905162002553025217"; //PbPb 60-80% kAny
+        ConvCutarray[0]  = "124000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025530252170"; //PbPb 20-40% kAny
+        ConvCutarray[1]  = "146000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025530252170"; //PbPb 40-60% kAny
+        ConvCutarray[2]  = "168000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025530252170"; //PbPb 60-80% kAny
    } else if ( trainConfig == 2 ) {
-        ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "905162002553025217"; //PbPb 20-40% kAny
-        ConvCutarray[1]  = "546000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "905162002553025217"; //PbPb 40-60% kAny
-        ConvCutarray[2]  = "568000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "905162002553025217"; //PbPb 60-80% kAny
+        ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025530252170"; //PbPb 20-40% kAny
+        ConvCutarray[1]  = "546000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025530252170"; //PbPb 40-60% kAny
+        ConvCutarray[2]  = "568000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025530252170"; //PbPb 60-80% kAny
+   } else if ( trainConfig == 3 ) {
+        ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025530252171"; //PbPb 20-40% kAny
+        ConvCutarray[1]  = "546000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025530252171"; //PbPb 40-60% kAny
+        ConvCutarray[2]  = "568000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025530252171"; //PbPb 60-80% kAny
    }
+
 
    TList *ConvCutList  = new TList();
    TList *MesonCutList = new TList();
@@ -191,7 +195,7 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
             if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
             if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
             if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
-         } else if ( trainConfig == 2 ) {
+         } else if ( trainConfig == 3 || trainConfig == 2) {
             if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
             if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
             if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
