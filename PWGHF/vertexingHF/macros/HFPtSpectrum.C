@@ -41,7 +41,7 @@
 enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
-enum rapidity{ kdefault, km01to01, k01to04, k04to07, k04to08 };
+enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
@@ -206,14 +206,28 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //
   if(rapiditySlice!=kdefault){
     Double_t scaleFONLL = 1.0;
-    if(rapiditySlice==km01to01) scaleFONLL = 0.2/1.0;
-    else if (rapiditySlice==k01to04) scaleFONLL = 0.3/1.0;
-    else if (rapiditySlice==k04to07) scaleFONLL = 0.1/1.0;
-    else if (rapiditySlice==k04to08) scaleFONLL = 0.1/1.0;
+    switch(rapiditySlice) {
+    case k08to04: scaleFONLL = (0.093+0.280)/1.0;
+    case k07to04: scaleFONLL = 0.280/1.0;
+    case k04to01: scaleFONLL = 0.284/1.0;
+    case k01to01: scaleFONLL = 0.191/1.0;
+    case k01to04: scaleFONLL = 0.288/1.0;
+    case k04to07: scaleFONLL = 0.288/1.0;
+    case k04to08: scaleFONLL = (0.288+0.096)/1.0;
+    }
     hDirectMCpt->Scale(scaleFONLL);
-    hFeedDownMCpt->Scale(scaleFONLL);
     hDirectMCptMax->Scale(scaleFONLL);
     hDirectMCptMin->Scale(scaleFONLL);
+    switch(rapiditySlice) {
+    case k08to04: scaleFONLL = (0.089+0.274)/1.0;
+    case k07to04: scaleFONLL = 0.274/1.0;
+    case k04to01: scaleFONLL = 0.283/1.0;
+    case k01to01: scaleFONLL = 0.192/1.0;
+    case k01to04: scaleFONLL = 0.290/1.0;
+    case k04to07: scaleFONLL = 0.291/1.0;
+    case k04to08: scaleFONLL = (0.291+0.097)/1.0;
+    }
+    hFeedDownMCpt->Scale(scaleFONLL);
     hFeedDownMCptMax->Scale(scaleFONLL);
     hFeedDownMCptMin->Scale(scaleFONLL);
   }
