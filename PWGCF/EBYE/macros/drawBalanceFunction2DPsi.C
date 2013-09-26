@@ -1093,6 +1093,10 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
 
   if(bRootMoments){
+
+    // need to restrict to near side in case of dphi
+    if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
+
     meanLatex = "#mu = "; 
     meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
     meanLatex += " #pm "; 
@@ -1113,12 +1117,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     kurtosisLatex += " #pm "; 
     kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
     
-    Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
-    Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
-    Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
-    Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+    Printf("ROOT Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
+    Printf("ROOT RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
+    Printf("ROOT Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
+    Printf("ROOT Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
 
-
+  
     // store in txt files
     TString meanFileName = filename;
     if(kProjectInEta) 
@@ -1136,7 +1140,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
       rmsFileName = "deltaEtaProjection_Rms.txt";
       //rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
     else              
-      rmsFileName = "deltaPhiProjection_Rms.txt");
+      rmsFileName = "deltaPhiProjection_Rms.txt";
       //rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
     ofstream fileRms(rmsFileName.Data(),ios::app);
     fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
@@ -1163,6 +1167,9 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     ofstream fileKurtosis(kurtosisFileName.Data(),ios::app);
     fileKurtosis << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
     fileKurtosis.close();
+
+    if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,3.*TMath::Pi()/2);
+
   }
   // calculate the moments by hand
   else{
@@ -1310,7 +1317,8 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 					 Double_t ptTriggerMax = -1.,
 					 Double_t ptAssociatedMin = -1.,
 					 Double_t ptAssociatedMax = -1.,
-					 TString eventClass = "Multiplicity"
+					 TString eventClass = "Multiplicity",
+					 Bool_t bRootMoments = kFALSE
 ) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -1444,7 +1452,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 		  ptAssociatedMin,ptAssociatedMax,
 		  kTRUE,
 		  eventClass,
-		  kFALSE);
+		  bRootMoments);
 
   drawProjections(gHistBalanceFunction2D,
   		  kFALSE,
@@ -1455,7 +1463,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   		  ptAssociatedMin,ptAssociatedMax,
   		  kTRUE,
   		  eventClass.Data(),
-  		  kFALSE);
+  		  bRootMoments);
 
   TString outFileName = filename;
   outFileName.ReplaceAll("correlationFunction","balanceFunction2D");
