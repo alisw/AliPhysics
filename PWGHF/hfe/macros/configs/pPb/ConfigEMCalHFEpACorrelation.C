@@ -65,7 +65,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
 	
 	//Additional Cuts
-	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
+	hfecuts->SetPtRange(0.5, 1e6);								                    //Transversal momentum range in GeV/c
 	//hfecuts->SetMaxImpactParam(1,2); 							                    //DCA to vertex
 	
 	//Event Selection

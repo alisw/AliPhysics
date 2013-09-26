@@ -631,7 +631,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fTOF01 = new TH2F("fTOF01","",200,-20,20,200,-20,20);
 	fTOF02 = new TH2F("fTOF02","",200,-20,20,200,-20,20);
-	fTOF03 = new TH2F("fTOF02","",200,-20,20,200,-20,20);
+	fTOF03 = new TH2F("fTOF03","",200,-20,20,200,-20,20);
 	
 	if(fFillBackground){
 		fPtElec_ULS2 = new TH1F("fPtElec_ULS2","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
@@ -1273,11 +1273,29 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
 			{
 				fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
-				
+				fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+								
 				Int_t pdg = fMCparticle->GetPdgCode();
+				Int_t mpdg = fMCparticleMother->GetPdgCode();
+				
+				double proX = fMCparticle->Xv();
+				double proY = fMCparticle->Yv();
+				double proR = sqrt(pow(proX,2)+pow(proY,2));
+				
+				
 				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
 				{
-					if (TMath::Abs(pdg) == 11) fPtMCparticleAlle_nonPrimary->Fill(fMCparticle->Pt()); //denominator for total efficiency for all electrons, and not primary
+						//to correct background
+					if (TMath::Abs(pdg) == 11){
+						if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
+						
+							if(proR<7){
+								fPtMCparticleAlle_nonPrimary->Fill(fMCparticle->Pt()); //denominator for total efficiency for all electrons, and not primary
+						
+							}
+						}
+					}
+					
 					if (TMath::Abs(pdg) == 11 && fMCparticle->IsPhysicalPrimary()) fPtMCparticleAlle_Primary->Fill(fMCparticle->Pt()); //denominator for total efficiency for all electrons primary
 					
 					if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 ) 
@@ -1296,11 +1314,12 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							}
 						}
 					}
-				}
+				}//eta cut
+				
 				if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCparticle->Pt());
 				if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCparticle->Pt());
-			}
-		}
+			}//loop tracks
+		}//AOD
 		else
 		{
 			fEventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -1321,18 +1340,29 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	        {
 				
 				fMCtrack = fMCstack->Particle(iMC);
+				fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
+				TParticle *particle=fMCstack->Particle(iMC);
+				
 				Int_t pdg = fMCtrack->GetPdgCode();
+				Int_t mpdg = fMCtrackMother->GetPdgCode();
 				
 				if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCtrack->Pt());
 				if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCtrack->Pt());
-
-				
-								
+						
 				
 				if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax)
 				{
 					
-					if (TMath::Abs(pdg) == 11)  fPtMCparticleAlle_nonPrimary->Fill(fMCtrack->Pt());//denominator for total efficiency for all electrons, and not primary
+						//to correct background
+					if (TMath::Abs(pdg) == 11){
+						if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
+							Double_t proR=particle->R();
+							if(proR<7){
+								fPtMCparticleAlle_nonPrimary->Fill(fMCtrack->Pt()); //denominator for total efficiency for all electrons, and not primary
+							}
+						}
+					}
+					
 					if (TMath::Abs(pdg) == 11 && fMCstack->IsPhysicalPrimary(iMC))  fPtMCparticleAlle_Primary->Fill(fMCtrack->Pt());
 
 					
@@ -1350,10 +1380,10 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(fIsHFE2) fPtMCparticleAllHfe2->Fill(fMCtrack->Pt());
 						}
 					}	
-				}
-	        }
-		}
-	}
+				}//particle kind
+	        }//loop tracks
+		}//ESD
+	}//Is MC
 	
 		//______________________________________________________________________
 		//EMCal Trigger Selection (Threshould selection)
@@ -2132,11 +2162,19 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(track->Charge()>0)  fCharge_p->Fill(fPt);
 							
 							fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+							fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
 							Int_t pdg = fMCparticle->GetPdgCode();
+							Int_t mpdg = fMCparticleMother->GetPdgCode();
+							
+						
 							
 							if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax ){
 									
-								if( TMath::Abs(pdg) == 11) fPtMCelectronAfterAll_nonPrimary->Fill(fMCparticle->Pt()); //numerator for the total efficiency, non Primary track
+								if( TMath::Abs(pdg) == 11 ){
+									if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
+										fPtMCelectronAfterAll_nonPrimary->Fill(fMCparticle->Pt()); //numerator for the total efficiency, non Primary track
+									}
+								}
 								if( TMath::Abs(pdg) == 11 && fMCparticle->IsPhysicalPrimary()) fPtMCelectronAfterAll_Primary->Fill(fMCparticle->Pt()); 
 							}	
 								
@@ -2328,8 +2366,9 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt());
 					if(IsTPConly)fPtBackgroundBeforeReco2_weight->Fill(track->Pt());				
 				}
-			}
-		}
+			}//particle kind
+		}//IsAOD
+		//ESD
 		else
 		{
 	        fMCtrack = fMCstack->Particle(track->GetLabel());
@@ -2345,7 +2384,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				if(IsTPConly)fPtBackgroundBeforeReco2->Fill(track->Pt());
 			}
 		}
-	}
+	}//IsMC
+
 		///_________________________________________________________________
 	
 		//________________________________________________
@@ -2412,32 +2452,67 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		{
 			if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
 	        {
+				
+				Double_t weight=1;
+				
 				if(!IsTPConly){
 					if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
 					if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
 					
-						//new 22 September	//weighted histograms //test
-					if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 ){
+					
+					
+					//new 26 September	//weighted histograms 
+					if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221){
 						Double_t mPt=fMCparticleMother->Pt();
+						Double_t mweight1=1;
+						Double_t mweight2=1;
 						
-						Double_t mweight1=0;
-						Double_t mweight2=0;
+						
+						//for pions
+						if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
+							Double_t x=mPt;
+							if(mPt<=4.5) weight=x*x*0.089-0.277*x+1.46;
+							if(mPt>4.5)  weight=TMath::Erf((x-0.425)/13.05)*5.94;
+						}
+						//for eta
+						if(TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+							Double_t x=mPt;
+							if(mPt<=4.5)  weight=x*x*0.071-0.295*x+1.36;
+							if(mPt>4.5)  weight=TMath::Erf((x-0.341)/13.31)*4.32;
+								
+						}
+						
 							//check this
-						if(fNonHFE->IsULS()) mweight1=3*mPt*(fNonHFE->GetNULS());
-						if(fNonHFE->IsLS())  mweight2=3*mPt*(fNonHFE->GetNLS());
+						if(fNonHFE->IsULS()) mweight1=(fNonHFE->GetNULS())/weight;
+						if(fNonHFE->IsLS())  mweight2=(fNonHFE->GetNLS())/weight;
 						
 							//fill histos
 						if(fNonHFE->IsULS())fPtElec_ULS_weight->Fill(fPtE, mweight1);
 						if(fNonHFE->IsLS())fPtElec_LS_weight->Fill(fPtE, mweight2);
 					}
-					else if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111 ){
+					else if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111 || TMath::Abs(fMCparticleGMother->GetPdgCode())==221 ){
 						Double_t gmPt=fMCparticleGMother->Pt();
+						Double_t gmweight1=1;
+						Double_t gmweight2=1;
+					
 						
-						Double_t gmweight1=0;
-						Double_t gmweight2=0;
+						//for pions
+						if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
+							Double_t x=gmPt;
+							if(gmPt<=4.5)  weight=x*x*0.089-0.277*x+1.46;
+							if(gmPt>4.5)  weight=TMath::Erf((x-0.425)/13.05)*5.94;
+						}
+						//for eta
+						if(TMath::Abs(fMCparticleGMother->GetPdgCode())==221){
+							Double_t x=gmPt;
+							if(gmPt<=4.5) weight=x*x*0.071-0.295*x+1.36;
+							if(gmPt>4.5)  weight=TMath::Erf((x-0.341)/13.31)*4.32;
+							
+						}
+						
 							//check this
-						if(fNonHFE->IsULS()) gmweight1=3*gmPt*(fNonHFE->GetNULS());
-						if(fNonHFE->IsLS())  gmweight2=3*gmPt*(fNonHFE->GetNLS());
+						if(fNonHFE->IsULS()) gmweight1=(fNonHFE->GetNULS())/weight;
+						if(fNonHFE->IsLS())  gmweight2=(fNonHFE->GetNLS())/weight;
 					
 						//fill histos
 						if(fNonHFE->IsULS())fPtElec_ULS_weight->Fill(fPtE, gmweight1);
@@ -2449,34 +2524,69 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					}
 					
 					
-				}
+				}//!IsTPConly
 				
 				if(IsTPConly){
 					if(fNonHFE->IsULS()) fPtElec_ULS2->Fill(fPtE,fNonHFE->GetNULS());
 					if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
 					
-						//new 17 September	//weighted histograms //test
-					if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 ){
+					
+					
+					
+						//new 26 September	//weighted histograms 
+					if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221){
 						Double_t mPt=fMCparticleMother->Pt();
 						
 						Double_t mweight1=1;
 						Double_t mweight2=1;
-							//check this
-						if(fNonHFE->IsULS()) mweight1=3*mPt*(fNonHFE->GetNULS());
-						if(fNonHFE->IsLS())  mweight2=3*mPt*(fNonHFE->GetNLS());
+						
+						
+							//for pions
+						if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
+							Double_t x=mPt;
+							if(mPt<=4.5)  weight=x*x*0.089-0.277*x+1.46;
+							if(mPt>4.5) weight=TMath::Erf((x-0.425)/13.05)*5.94;
+						}
+							//for eta
+						if(TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+							Double_t x=mPt;
+							if(mPt<=4.5)  weight=x*x*0.071-0.295*x+1.36;
+							if(mPt>4.5)  weight=TMath::Erf((x-0.341)/13.31)*4.32;
+							
+						}
+						
+						
+						//check this
+						if(fNonHFE->IsULS()) mweight1=(fNonHFE->GetNULS())/weight;
+						if(fNonHFE->IsLS())  mweight2=(fNonHFE->GetNLS())/weight;
 						
 							//fill histos
 						if(fNonHFE->IsULS())fPtElec_ULS2_weight->Fill(fPtE, mweight1);
 						if(fNonHFE->IsLS())fPtElec_LS2_weight->Fill(fPtE, mweight2);
 					}
-					else if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111 ){
+					else if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111 || TMath::Abs(fMCparticleGMother->GetPdgCode())==221 ){
 						Double_t gmPt=fMCparticleGMother->Pt();
-						
 						Double_t gmweight1=1;
 						Double_t gmweight2=1;
+						
+						
+						//for pions
+						if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
+							Double_t x=gmPt;
+							if(gmPt<=4.5)  weight=x*x*0.089-0.277*x+1.46;
+							if(gmPt>4.5)  weight=TMath::Erf((x-0.425)/13.05)*5.94;
+						}
+							//for eta
+						if(TMath::Abs(fMCparticleGMother->GetPdgCode())==221){
+							Double_t x=gmPt;
+							if(gmPt<=4.5)  weight=x*x*0.071-0.295*x+1.36;
+							if(gmPt>4.5)  weight=TMath::Erf((x-0.341)/13.31)*4.32;
+							
+						}
+						
 							//check this
-						if(fNonHFE->IsULS()) gmweight1=3*gmPt*(fNonHFE->GetNULS());
-						if(fNonHFE->IsLS())  gmweight2=3*gmPt*(fNonHFE->GetNLS());
+						if(fNonHFE->IsULS()) gmweight1=(fNonHFE->GetNULS())/weight;
+						if(fNonHFE->IsLS())  gmweight2=(fNonHFE->GetNLS())/weight;
 						
 							//fill histos
 						if(fNonHFE->IsULS())fPtElec_ULS2_weight->Fill(fPtE, gmweight1);
@@ -2487,10 +2597,11 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						if(fNonHFE->IsLS()) fPtElec_LS2_weight->Fill(fPtE,fNonHFE->GetNLS());				
 					}
 					
-				}
+				}//IsTPConly
 			
-		}
-		}
+			}//particle kind
+		}//close IsAOD
+		 //It is ESD
 		else 
 		{
 			if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
@@ -2506,8 +2617,9 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				}
 			}
 		}
-	}
-		///_________________________________________________________________
+	}//close IsMC
+	///_________________________________________________________________
+	//not MC
 	else
 	{
 		if(!IsTPConly){
