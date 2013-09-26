@@ -14,7 +14,10 @@ class TObjArray;
 class TLorentzVector;
 class AliESDtrackCuts;
 class AliEmcalJet;
+class AliVEvent;
 class AliEMCALGeometry;
+class AliEMCALRecoUtils;
+class AliVCaloCells;
 class AliPicoTrack;
 
 #ifndef ALIANALYSISTASKSE_H
@@ -115,7 +118,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void FillBackgroundFluctuations(Double_t eventCentrality, Double_t rho, Double_t jetRadius);
         void FillLeadingJetPtRho(Double_t jetPt, Double_t rho);
         void DoNEFQAPlots(Bool_t doNEFAna);
-        void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList);
+        void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList, AliVEvent *event, AliEMCALGeometry *geometry, AliEMCALRecoUtils *recoUtils, AliVCaloCells *cells);
         
         // Setters
         void SetName(const char *name);
@@ -189,21 +192,21 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         
         TH1D *fhNEF; //!
         TH1D *fhNEFSignal; //!
+        TH2D *fhNEFJetPt; //!
         
         TH2D *fhNEFEtaPhi; //!
         TH2D *fhNEFEtaPhiSignal; //!
-        TH2D *fhNEFEtaPhiRejected; //!
-
+        TH3D *fhEtaPhiNEF; //!
+        
         TH2D *fhNEFTotalMult; //!
         TH2D *fhNEFTotalMultSignal; //!
-        TH2D *fhNEFTotalMultRejected; //!
 
         TH2D *fhNEFNeutralMult; //!
         TH2D *fhNEFNeutralMultSignal; //!
-        TH2D *fhNEFNeutralMultRejected; //!
 
         TH1D *fhClusterShapeAll; //!
-        TH1D *fhClusterShapeRejected; //!
+        TH3D *fhNEFJetPtFCross; //!
+        TH3D *fhNEFZLeadingFCross; //!
 
         // Variables
         const char *fName;  //!
@@ -486,6 +489,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Long_t fnEvents;  // Counter for the number of events that made the physics selection with TPC+EMCal
     Long_t fnEventsCharged;  // Counter for the number of events that made the physics selection with TPC only
     Long_t fnDiJetEvents;  // Counter for the number of dijet events
+    AliVEvent *fEvent;  //!
+    AliEMCALRecoUtils *fRecoUtil;  //!
+    AliEMCALGeometry *fEMCALGeometry;  //!
+    AliVCaloCells *fCells;  //!
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;
@@ -548,6 +555,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     // General Global variables
     Int_t fnTracks;
     Int_t fnClusters;
+    Int_t fnCaloClusters;
     Int_t fnAKTFullJets;
     Int_t fnAKTChargedJets;
     Int_t fnKTFullJets;
