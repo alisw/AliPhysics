@@ -182,6 +182,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
+        AliParticleContainer*   fTracksCont;            //!tracks
+        AliJetContainer*        fJetsCont;              //!jets
         // members
         Bool_t                  fUseScaledRho;          // use scaled rho
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
