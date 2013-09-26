@@ -459,9 +459,9 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Double_t  pinTPC=0.,poutTPC=0.,TPCSignal=0.;
   Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
 
-  ULong_t  status;
-  ULong_t  statusT;
-  ULong_t  statusPi;
+  ULong_t  status=0;
+  ULong_t  statusT=0;
+  ULong_t  statusPi=0;
 
   Bool_t   isTPC=kFALSE,isTOF=kFALSE,isTOFHe3=kFALSE,isTOFPi=kFALSE;
 
@@ -922,12 +922,12 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     
     status  = (ULong_t)esdtrack->GetStatus();
     
-    isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
-    isTOF   = (((status & AliESDtrack::kTOFout) != 0) && ((status & AliESDtrack::kTIME) != 0));
+    isTPC   = (((status) & (AliESDtrack::kTPCin))  != 0);
+    isTOF   = ((((status) & (AliESDtrack::kTOFout)) != 0) && (((status) & (AliESDtrack::kTIME)) != 0));
     
     Bool_t IsTrackAcceptedTPC =  esdtrackCutsTPC->AcceptTrack(esdtrack);
     Bool_t IsTrackAcceptedITS =  esdtrackCutsITS->AcceptTrack(esdtrack);
-
+    
     if (!(IsTrackAcceptedTPC && IsTrackAcceptedITS)) continue;
 
     //----------------------------------------------
@@ -1108,7 +1108,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     PionTrack=lESDevent->GetTrack(PionIdx);
     
     statusPi = (ULong_t)PionTrack->GetStatus();
-    IsPiITSRefit = (statusPi & AliESDtrack::kITSrefit); 
+    IsPiITSRefit = ((statusPi) & (AliESDtrack::kITSrefit)); 
     
     Int_t labelPi = TMath::Abs(PionTrack->GetLabel());
     TParticle * partNeg = stack->Particle(labelPi);
@@ -1134,7 +1134,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       HeTrack=lESDevent->GetTrack(HeIdx);
       
       statusT= (ULong_t)HeTrack->GetStatus();
-      IsHeITSRefit = (statusT & AliESDtrack::kITSrefit); 
+      IsHeITSRefit = ((statusT) & (AliESDtrack::kITSrefit)); 
       
       Int_t labelHe = TMath::Abs(HeTrack->GetLabel());
       TParticle * partPos = stack->Particle(labelHe);
