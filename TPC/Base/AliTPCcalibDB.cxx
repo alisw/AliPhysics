@@ -678,7 +678,8 @@ void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graph
     {
       // Apply Voltage scaling
       Int_t voltage       = atoi(voltageString->GetName());
-      Double_t voltageScaled = Double_t(voltage)/Double_t(rocVoltage);
+      Double_t voltageScaled = 1;
+      if (rocVoltage>0)  voltageScaled = Double_t(voltage)/Double_t(rocVoltage); // for jens how it can happen that we have clusters at 0 HV ?
       const Int_t nScaled          = TMath::Nint(voltageScaled*trfObj->GetN())-1; 
       Double_t x;
       Double_t y;
