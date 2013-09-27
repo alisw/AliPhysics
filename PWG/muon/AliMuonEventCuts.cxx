@@ -285,7 +285,8 @@ void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
   while ( ( objString = static_cast<TObjString*>(next()) ) ) {
     TString currPattern = objString->String();
     Bool_t isCombination = ( currPattern.Contains("&") || currPattern.Contains("|") );
-    Bool_t isMatchPattern = currPattern.Contains("*");
+    Bool_t isSingleTrigger = ( ! isCombination && ! currPattern.BeginsWith("0") && ! currPattern.BeginsWith("1") && ! currPattern.BeginsWith("2") );
+    Bool_t isMatchPattern = ( currPattern.Contains("*") || isSingleTrigger );
     Bool_t isRejectPattern = kFALSE;
     if ( currPattern.Contains("!") ) {
       currPattern.ReplaceAll("!","");
@@ -297,11 +298,11 @@ void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
     }
     if ( isRejectPattern ) {
       fRejectedTrigPattern->AddLast(new TObjString(currPattern));
-      AliDebug(2,Form("Adding %s to reject pattern",currPattern.Data()));
+      AliDebug(1,Form("Adding %s to reject pattern",currPattern.Data()));
     }
     else if ( isMatchPattern ) {
       fSelectedTrigPattern->AddLast(new TObjString(currPattern));
-      AliDebug(2,Form("Adding %s to match pattern",currPattern.Data()));
+      AliDebug(1,Form("Adding %s to match pattern",currPattern.Data()));
     }
     else combinationList.Add(objString);
   }
@@ -381,7 +382,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
     delete arr;
     if ( trigCombo) {
       fSelectedTrigCombination->AddLast(trigCombo);
-      AliDebug(2,Form("Adding %s to trigger combination (type %u)",currPattern.Data(),trigCombo->GetUniqueID()));
+      AliDebug(1,Form("Adding %s to trigger combination (type %u)",currPattern.Data(),trigCombo->GetUniqueID()));
     }
   }
   delete fullList;
