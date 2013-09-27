@@ -43,11 +43,11 @@ AliAnalysisTaskEmcalJetSampleDev* AddTaskEmcalJetSampleDev(
     name += "_";
     name += nrho;
   }
-  if (type == AliAnalysisTaskEmcalDev::kTPC) 
+  if (type == AliJetContainer::kTPC) 
     name += "_TPC";
-  else if (type == AliAnalysisTaskEmcalDev::kEMCAL) 
+  else if (type == AliJetContainer::kEMCAL) 
     name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcalDev::kUser) 
+  else if (type == AliJetContainer::kUser) 
     name += "_USER";
 
   Printf("name: %s",name.Data());
