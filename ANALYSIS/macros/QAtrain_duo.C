@@ -147,6 +147,7 @@ void LoadLibraries()
   gSystem->Load("libTENDER");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libPWGTools"); 
 
   if (doEMCAL || doPHOS || doCALO) {
      gSystem->Load("libEMCALUtils");

@@ -104,8 +104,6 @@ AliTPCParam::AliTPCParam()
 	     fOmegaTau(0.),
 	     fAttCoef(0.),
 	     fOxyCont(0.),
-	     fGainSlopesHV(0),   // graph with the gain slope as function of HV - per chamber
-	     fGainSlopesPT(0),   // graph with the gain slope as function of P/T - per chamber
              fFpot(0.),
              fNprim(0.),
              fNtot(0.),
@@ -113,6 +111,8 @@ AliTPCParam::AliTPCParam()
              fExp(0.),
              fEend(0.),
              fBetheBloch(0x0),
+	     fGainSlopesHV(0),   // graph with the gain slope as function of HV - per chamber
+	     fGainSlopesPT(0),   // graph with the gain slope as function of P/T - per chamber
 	     fPadCoupling(0.),
 	     fZeroSup(0),
 	     fNoise(0.),

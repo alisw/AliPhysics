@@ -29,7 +29,7 @@ set(OPT)
 # ------- Setting optimization flags for default configuration -------
 
 if((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
-    set(DEFAULT_CXX_FLAGS "-O -g")
+    set(DEFAULT_CXX_FLAGS "-g -ggdb")
     set(OPT "${DEFAULT_CXX_FLAGS}")
     message("-- Setting compiler flags for default configuration: ${DEFAULT_CXX_FLAGS}")
 endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
@@ -37,7 +37,7 @@ endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
 # --------------------------------------------------------------------
 
 
-set(NOOPT "-g")
+set(NOOPT "-g -ggdb")
 
 set(CXXOPT ${OPT})
 set(CXXNOPT ${NOOPT})

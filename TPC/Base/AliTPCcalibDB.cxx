@@ -237,7 +237,6 @@ AliTPCcalibDB::AliTPCcalibDB():
   fTemperatureArray.SetOwner(); //own the keys
   fVdriftArray.SetOwner(); //own the keys
   fDriftCorrectionArray.SetOwner(); //own the keys
-  fIonTailArray->SetOwner(); //own the keys
 }
 
 AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
@@ -300,7 +299,6 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fTemperatureArray.SetOwner(); //own the keys
   fVdriftArray.SetOwner(); //own the keys
   fDriftCorrectionArray.SetOwner(); //own the keys
-  fIonTailArray->SetOwner(); //own the keys
 }
 
 AliTPCcalibDB& AliTPCcalibDB::operator= (const AliTPCcalibDB& )
@@ -499,6 +497,7 @@ void AliTPCcalibDB::Update(){
     delete fIonTailArray; fIonTailArray=NULL;
     entry->SetOwner(kTRUE);
      fIonTailArray=(TObjArray*)(entry->GetObject());
+     fIonTailArray->SetOwner(); //own the keys
   }
   
   //CE data
@@ -612,7 +611,7 @@ void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graph
   
   Int_t run = fTransform->GetCurrentRunNumber();
   SetRun(run);
-  Float_t rocVoltage = AliTPCcalibDB::GetChamberHighVoltage(run,sector, -1);      // Get the voltage from OCDB with a getter (old function)
+  Float_t rocVoltage = GetChamberHighVoltage(run,sector, -1);      // Get the voltage from OCDB with a getter (old function)
 //   Float_t rocVoltage=GetChamberHighVoltageMedian(sector);                      // Get the voltage from OCDB, new function from Jens
  
   Int_t nominalVoltage = (sector<36) ? 1240 : 1470 ;     // nominal voltage of 2012 when the TRF functions were produced
@@ -633,15 +632,17 @@ void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graph
     
     // read the TRF object name in order to select proper TRF for the given sector
     TString objname(fIonTailArray->At(i)->GetName());
+    if (!objname.Contains(rocType)) continue;
+
     TObjArray *objArr = objname.Tokenize("_");
     
     // select the roc type (IROC or OROC) and the trackAngle
-    if (!objname.Contains(rocType)) {delete objArr; continue;}
-    if ((atoi(static_cast<TObjString*>(objArr->At(3))->GetName())!=trackAngle) ) {delete objArr; continue;}
-	
-    // Create the voltage array for proper voltage value selection
-    voltages[nvoltages]=atoi(static_cast<TObjString*>(objArr->At(2))->GetName());
-    nvoltages++;
+    if ( atoi(static_cast<TObjString*>(objArr->At(3))->GetName())==trackAngle )
+    { 
+      // Create the voltage array for proper voltage value selection
+      voltages[nvoltages]=atoi(static_cast<TObjString*>(objArr->At(2))->GetName());
+      nvoltages++;
+    }
     delete objArr;
   }
     
@@ -649,16 +650,14 @@ void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graph
   Int_t ampIndex     = 0;
   Int_t diffVoltage  = TMath::Abs(rocVoltage - voltages[0]);
   for (Int_t k=0;k<ngraph;k++) {
-    if (diffVoltage > TMath::Abs(rocVoltage-voltages[k]) && voltages[k]!=0)
+    if (diffVoltage >= TMath::Abs(rocVoltage-voltages[k]) && voltages[k]!=0)
       {
         diffVoltage    = TMath::Abs(rocVoltage-voltages[k]);
         ampIndex   = k;
       }     
   }
   tempVoltage = voltages[ampIndex];    // use closest voltage to current voltage
-  //tempVoltage = *std::max_element(voltages, voltages + nvoltages);  // use maximum voltage and apply voltage scaling
   if (run<140000) tempVoltage = nominalVoltage;    // for 2010 data
-  std::cout << " run = "<< run  << " sector = " << sector << " voltage = " << rocVoltage << " tempVolt = " << tempVoltage <<  std::endl;
   
   // assign TGraphErrors   
   Int_t igraph=0;
@@ -667,43 +666,41 @@ void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graph
     // read TRFs for TObjArray and select the roc type (IROC or OROC) and the trackAngle
     TGraphErrors * trfObj = static_cast<TGraphErrors*>(fIonTailArray->At(i));
     TString objname(trfObj->GetName());
+    if (!objname.Contains(rocType)) continue; //choose ROC type
+    
     TObjArray *objArr1 = objname.Tokenize("_");
      
     // TRF eleminations
-    if (!objname.Contains(rocType)) {delete objArr1; continue;}                                                // choose roc type
-    if ((atoi(static_cast<TObjString*>(objArr1->At(3))->GetName())!=trackAngle) ) {delete objArr1; continue;}  // choose angle
-    if ((atoi(static_cast<TObjString*>(objArr1->At(2))->GetName())!=tempVoltage) ) {delete objArr1; continue;} // choose voltage
+    TObjString* angleString = static_cast<TObjString*>(objArr1->At(3));
+    TObjString* voltageString = static_cast<TObjString*>(objArr1->At(2));
+    //choose angle and voltage
+    if ((atoi(angleString->GetName())==trackAngle) && (atoi(voltageString->GetName())==tempVoltage) )
+    {
+      // Apply Voltage scaling
+      Int_t voltage       = atoi(voltageString->GetName());
+      Double_t voltageScaled = Double_t(voltage)/Double_t(rocVoltage);
+      const Int_t nScaled          = TMath::Nint(voltageScaled*trfObj->GetN())-1; 
+      Double_t x;
+      Double_t y;
       
-    // Apply Voltage scaling
-    Int_t objVoltage       = atoi(static_cast<TObjString*>(objArr1->At(2))->GetName());
-    Double_t voltageScaled = Double_t(objVoltage)/Double_t(rocVoltage);
-    const Int_t N          = TMath::Nint(voltageScaled*trfObj->GetN())-1; 
-    Double_t x[1000]    = {0};
-    Double_t y[1000]    = {0};
-    Double_t errx[1000] = {0};
-    Double_t erry[1000] = {0};
-    Int_t k =0;
-    for (Int_t j=0; j<N; j++){
-      k = TMath::Nint(j*(voltageScaled));
-      x[j]=k;
-      if(j<trfObj->GetN()) {
-        y[j]=(1./voltageScaled)*trfObj->GetY()[j];
-      } else {
-        k++;
-        y[j]=0;
+      delete graphRes[igraph];
+      graphRes[igraph]       = new TGraphErrors(nScaled);
+      
+      for (Int_t j=0; j<nScaled; j++){
+        x = TMath::Nint(j*(voltageScaled));
+        y = (j<trfObj->GetN()) ? (1./voltageScaled)*trfObj->GetY()[j] : 0.;
+        graphRes[igraph]->SetPoint(j,x,y);
       }
-    }
 
-    // fill arrays for proper position and amplitude selections
-    indexAmpGraphs[igraph] = (static_cast<TObjString*>(objArr1->At(4))->GetString().Atof())/10.;
-    delete graphRes[igraph];
-    graphRes[igraph]       = new TGraphErrors(1000,x,y,errx,erry);
-    // smooth voltage scaled graph 
-    for (Int_t m=1; m<N;m++){
-      if (graphRes[igraph]->GetY()[m]==0) graphRes[igraph]->GetY()[m] = graphRes[igraph]->GetY()[m-1];
+      // fill arrays for proper position and amplitude selections
+      TObjString* distanceToCenterOfGravity = static_cast<TObjString*>(objArr1->At(4));
+      indexAmpGraphs[igraph] = (distanceToCenterOfGravity->GetString().Atof())/10.;
+      // smooth voltage scaled graph 
+      for (Int_t m=1; m<nScaled;m++){
+        if (graphRes[igraph]->GetY()[m]==0) graphRes[igraph]->GetY()[m] = graphRes[igraph]->GetY()[m-1];
+      }
+      igraph++;
     }
-    igraph++;
-    
   delete objArr1;
   }
 }
