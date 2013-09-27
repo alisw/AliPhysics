@@ -550,6 +550,7 @@ void AliTPCParam::SetDefault()
   SetGateDelay(kGateDelay);
   SetL1Delay(kL1Delay);
   SetNTBinsBeforeL1(kNTBinsBeforeL1);
+  SetNominalGainSlopes();
 }
 
           

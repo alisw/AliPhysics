@@ -1353,7 +1353,7 @@ Int_t  AliTPCtracker::LoadClusters()
   clrow->Clear("C");
   LoadOuterSectors();
   LoadInnerSectors();
-  if(!AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection()) ApplyTailCancellation();
+  if (AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection()) ApplyTailCancellation();
   return 0;
 }
 
