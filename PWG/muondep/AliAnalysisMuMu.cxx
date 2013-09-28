@@ -1278,7 +1278,7 @@ void AliAnalysisMuMu::TwikiOutputFnorm(const char* series) const
     graphs.Add(g);
   }
   
-  std::cout << endl;
+  std::cout << std::endl;
   
   TGraphErrors* g0 = static_cast<TGraphErrors*>(graphs.First());
   if (!g0) return;
