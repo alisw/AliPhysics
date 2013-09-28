@@ -43,6 +43,7 @@ AliTRDgtuParam *AliTRDgtuParam::fgInstance = 0;
 Bool_t AliTRDgtuParam::fgUseGTUconst = kTRUE;
 Bool_t AliTRDgtuParam::fgUseGTUmerge = kTRUE;
 Bool_t AliTRDgtuParam::fgLimitNoTracklets = kTRUE;
+Int_t  AliTRDgtuParam::fgMaxNoTracklets = 62;
 
 // ----- matching windows -----
       Int_t     AliTRDgtuParam::fgDeltaY     = 19;
