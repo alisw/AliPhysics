@@ -512,6 +512,8 @@ class AliTRDtrapConfig : public TNamed
   void PrintMemDatx(ostream &os, TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm) const;
   void PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t rob, Int_t mcm) const;
 
+  void PrintVerify(ostream &os, Int_t det, Int_t rob, Int_t mcm) const;
+
   static const Int_t fgkDmemStartAddress  = 0xc000; // start address in TRAP GIO
   static const Int_t fgkDmemWords = 0x400;          // number of words in DMEM
 
