@@ -1636,6 +1636,24 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetCentralityV0MvsFMD(fCentV0MvsFMD);
     esdCent->SetCentralityTKLvsV0M(fCentTKLvsV0M);
     esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
+
+    esdCent->SetCentralityV0Mtrue(fCentV0Mtrue);
+    esdCent->SetCentralityV0Atrue(fCentV0Atrue);
+    esdCent->SetCentralityV0Ctrue(fCentV0Ctrue);
+    // no setters in AliCentrality for
+    // fCentV0MEqtrue
+    // fCentV0AEqtrue
+    // fCentV0CEqtrue
+    esdCent->SetCentralityFMDtrue(fCentFMDtrue);
+    esdCent->SetCentralityTRKtrue(fCentTRKtrue);
+    esdCent->SetCentralityTKLtrue(fCentTKLtrue);
+    esdCent->SetCentralityCL0true(fCentCL0true);
+    esdCent->SetCentralityCL1true(fCentCL1true);
+    esdCent->SetCentralityCNDtrue(fCentCNDtrue);
+    esdCent->SetCentralityZNAtrue(fCentZNAtrue);
+    esdCent->SetCentralityZNCtrue(fCentZNCtrue);
+    esdCent->SetCentralityZPAtrue(fCentZPAtrue);
+    esdCent->SetCentralityZPCtrue(fCentZPCtrue);
   }
 
   // filling QA histograms
