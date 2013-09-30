@@ -45,7 +45,7 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   AliHFEpid *pid = task->GetPID();
   if(useMC) pid->SetHasMCData(kTRUE);
   pid->AddDetector("TPC", 0);
-  pid->AddDetector("EMCAL", 1);
+  //pid->AddDetector("EMCAL", 1);
 
   Double_t params[4];
   char *cutmodel;

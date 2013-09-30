@@ -1273,11 +1273,11 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
 			{
 				fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
-				fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+				if(fMCparticle->GetMother()>0) fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
 								
 				Int_t pdg = fMCparticle->GetPdgCode();
-				Int_t mpdg = fMCparticleMother->GetPdgCode();
 				
+							
 				double proX = fMCparticle->Xv();
 				double proY = fMCparticle->Yv();
 				double proR = sqrt(pow(proX,2)+pow(proY,2));
@@ -1286,7 +1286,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
 				{
 						//to correct background
-					if (TMath::Abs(pdg) == 11){
+					if (TMath::Abs(pdg) == 11 && fMCparticle->GetMother()>0){
+						Int_t mpdg = fMCparticleMother->GetPdgCode();
+
 						if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
 						
 							if(proR<7){
@@ -1340,11 +1342,11 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	        {
 				
 				fMCtrack = fMCstack->Particle(iMC);
-				fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
+				if(fMCtrack->GetFirstMother()>0) fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
 				TParticle *particle=fMCstack->Particle(iMC);
 				
 				Int_t pdg = fMCtrack->GetPdgCode();
-				Int_t mpdg = fMCtrackMother->GetPdgCode();
+				 
 				
 				if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCtrack->Pt());
 				if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCtrack->Pt());
@@ -1354,7 +1356,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				{
 					
 						//to correct background
-					if (TMath::Abs(pdg) == 11){
+					if (TMath::Abs(pdg) == 11 && fMCtrack->GetFirstMother()>0){
+						Int_t mpdg = fMCtrackMother->GetPdgCode();
 						if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
 							Double_t proR=particle->R();
 							if(proR<7){
@@ -2162,15 +2165,15 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(track->Charge()>0)  fCharge_p->Fill(fPt);
 							
 							fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
-							fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+							if(fMCparticle->GetMother()>0) fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
 							Int_t pdg = fMCparticle->GetPdgCode();
-							Int_t mpdg = fMCparticleMother->GetPdgCode();
-							
+					
 						
 							
 							if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax ){
 									
-								if( TMath::Abs(pdg) == 11 ){
+								if( TMath::Abs(pdg) == 11 && fMCparticle->GetMother()>0 ){
+									Int_t mpdg = fMCparticleMother->GetPdgCode();
 									if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
 										fPtMCelectronAfterAll_nonPrimary->Fill(fMCparticle->Pt()); //numerator for the total efficiency, non Primary track
 									}
@@ -2205,10 +2208,18 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(track->Charge()>0)  fCharge_p->Fill(fPt);
 							
 							fMCtrack = fMCstack->Particle(track->GetLabel());
+							if(fMCtrack->GetFirstMother()>0) fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
+
 							Int_t pdg = fMCtrack->GetPdgCode();
 							
+							
 							if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax){
-								if( TMath::Abs(pdg) == 11) fPtMCelectronAfterAll_nonPrimary->Fill(fMCtrack->Pt()); //numerator for the total efficiency, non Primary track
+								if( TMath::Abs(pdg) == 11 && fMCtrack->GetFirstMother()>0 ){
+									Int_t mpdg = fMCtrackMother->GetPdgCode();
+									if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
+										  fPtMCelectronAfterAll_nonPrimary->Fill(fMCtrack->Pt()); //numerator for the total efficiency, non Primary track
+									}
+								}
 								if( TMath::Abs(pdg) == 11 && fMCstack->IsPhysicalPrimary(track->GetLabel())) fPtMCelectronAfterAll_Primary->Fill(fMCtrack->Pt());
 							}
 							
