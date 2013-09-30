@@ -45,6 +45,7 @@ set ( SRCS
     Correlations/DPhi/FourierDecomposition/AliDhcTask.cxx
     Correlations/DPhi/FourierDecomposition/AliMuonEffMC.cxx
     Correlations/DPhi/FourierDecomposition/AliMCTruthTrackMaker.cxx
+    Correlations/DPhi/FourierDecomposition/AliMCTruthCent.cxx
     Correlations/DPhi/AliLeadingV0Correlation.cxx 
     Correlations/DPhi/AliAnalysisTaskLongRangeCorrelations.cxx 
     Correlations/DPhi/MuonHadron/AliAnalysisTaskMuonHadronCorrelations.cxx 
