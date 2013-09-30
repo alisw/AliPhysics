@@ -78,7 +78,8 @@ AliCentralityGlauberFit::AliCentralityGlauberFit(const char *filename) :
   fOutrootfilename(0),
   fOutntuplename(0),
   fAncfilename("ancestor_hists.root"),
-  fHistnames()
+  fHistnames(),
+  fIsZN(kTRUE)
 {
   // Standard constructor.
   TFile *f = 0;
@@ -167,12 +168,13 @@ void AliCentralityGlauberFit::MakeFits()
   std::vector<TString>::const_iterator hni;
   for(hni=fHistnames.begin(); hni!=fHistnames.end(); hni++) {
     hDATA  = (TH1F*) (inrootfile->Get(*hni)); 
+    std::cout << " ->  Getting histogram " << *hni << std::endl;
     if (!hDATA) {
       TList *list  = (TList*) (inrootfile->Get("CentralityStat")); 
       //TList *list  = (TList*) (inrootfile->Get("VZEROEquaFactorStat")); 
       hDATA  = (TH1F*) (list->FindObject(*hni));
     } 
-    hDATA->Rebin(fRebinFactor);
+    //hDATA->Rebin(fRebinFactor);
     //TH1F *hGLAU = new TH1F("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
 
     Double_t chi2min = 9999999.0;
@@ -214,6 +216,7 @@ void AliCentralityGlauberFit::MakeFits()
 	}
       }
     }
+    thistGlau->Reset();
     thistGlau = GlauberHisto(k_min,alpha_min,sigma_min,bog_min,CP_min, hDATA,kTRUE);
 
     TH1F * hGLAU = 0x0;
@@ -222,13 +225,27 @@ void AliCentralityGlauberFit::MakeFits()
     hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f_%.3f_%.3f",
                                                              k_min,alpha_min,sigma_min,bog_min,CP_min)));
 
-    Double_t mcintegral = hGLAU->Integral(hGLAU->FindBin(fScalemin),hGLAU->GetNbinsX());
-    Double_t scale = (hDATA->Integral(hDATA->FindBin(fScalemin),hDATA->GetNbinsX())/mcintegral);
-    std::cout << hGLAU->FindBin(fScalemin) << " " << hGLAU->Integral(hGLAU->FindBin(fScalemin),hGLAU->GetNbinsX()) << std::endl;
-    std::cout << hDATA->FindBin(fScalemin) << " " << hDATA->Integral(hDATA->FindBin(fScalemin),hDATA->GetNbinsX()) << std::endl;
+    Int_t lastBin=0;
+    if(fIsZN) lastBin = 100;//ZN
+    else lastBin = hDATA->GetNbinsX(); // ZP
+    Double_t mcintegral = hGLAU->Integral(2, lastBin,"width");
+    Double_t dataintegral = hDATA->Integral(2, lastBin,"width");
+    Double_t scale = (dataintegral/mcintegral);
+    //
+    std::cout << "hGLAU -> Integral in bin range:" << "1-" << lastBin << " = " << 
+    	hGLAU->Integral(2, lastBin) << std::endl;
+    std::cout << "hDATA -> Integral in bin range:" << "1-" << lastBin << " = " <<
+    	hDATA->Integral(2, lastBin) << std::endl;
+    //
+    //printf(" binwidth: hGLAU %f  hDATA %f\n", hGLAU->GetBinWidth(100), hDATA->GetBinWidth(100));
+    printf(" scale %f \n", scale);
+    
     hGLAU->Scale(scale);
+    //
+    std::cout << "hGLAU -> Integral (whole range): " << hGLAU->Integral(1, hGLAU->GetNbinsX()) << std::endl;
+    std::cout << "hDATA -> Integral (whole range): " << hDATA->Integral(1, hDATA->GetNbinsX()) << std::endl;
 
-    SaveHisto(hDATA,hGLAU,outrootfile);
+    SaveHisto(hDATA, hGLAU, outrootfile);
     //fclose (fTxt);
 
     printf("\n \t k = %1.2f  alpha = %1.2f  sigma = %1.2f  bog = %1.2f  CP = %1.2f \n\n", k,alpha, sigma, bog, CP);
@@ -251,7 +268,7 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t k, Double_t alpha, Double_t
                                             TH1F *hDATA, Bool_t save) 
 {
   // Get Glauber histogram.
-  static TH1F *h1 = (TH1F*)hDATA->Clone();
+  static TH1F *h1 = (TH1F*)hDATA->Clone("h1");
   h1->Reset();
   h1->SetName(Form("fit_%.3f_%.3f",k,alpha));
 
@@ -260,7 +277,7 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t k, Double_t alpha, Double_t
  
   if (save) {
     outFile = new TFile(fOutntuplename,"RECREATE");
-    ntuple = new TNtuple("gnt", "Glauber ntuple", "Npart:Ncoll:B:tAA:ntot:nbn:ngn");
+    ntuple = new TNtuple("gnt", "Glauber ntuple", "Npart:Ncoll:B:tAA:ntot:nbn:ngn:Etot");
   } 
 
   Int_t nents = 0;
@@ -276,36 +293,15 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t k, Double_t alpha, Double_t
     }
 
     // Slow Nucleon Model from Chiara
-    Double_t n=0.;
-    Double_t ntot=0., nbn=0., ngn=0., nbp=0., ngp=0.;
-    //MakeSlowNucleons2(fNcoll,alpha,k,bog,CP, nbn,ngn,nbp,ngp);
-    MakeSlowNucleons2s(fNcoll,alpha,k,bog,CP, nbn,ngn,nbp,ngp);
-
-
-    //conversion to energy *13.5; // conversion to energy------------------------
-    //Double_t  Engn, Enbn;
-    //Engn = ConvertToEnergy(0.05);
-    //Enbn = ConvertToEnergy(0.005);
-
-    //Engn = 1;//gRandom->Gaus(13.5, TMath::Sqrt(13.5));
-    //Enbn = 1;//gRandom->Gaus(13.5, TMath::Sqrt(13.5));
-
-    //Enbn =(int)nbn*Enbn;
-    //Engn =(int)ngn*Engn;
-
-    //Enbn=0;
-    //for (int i=0; i<(int)nbn; i++){
-    // Enbn += ConvertToEnergy(0.005);
-    //}
-    //for (int i=0; i<(int)ngn; i++){
-    //  Engn += ConvertToEnergy(0.05);
-    // }
-
-    //cout << "GRAY " << Engn << " BLACK " << Enbn << endl;
+    Double_t ntot=0., n=0.;
+    Double_t nbn=0., ngn=0., nbp=0., ngp=0.;
+    MakeSlowNucleons2(fNcoll,alpha,k,bog,CP, nbn,ngn,nbp,ngp);
+    //MakeSlowNucleons2s(fNcoll,alpha,k,bog,CP, nbn,ngn,nbp,ngp);
 
     // acceptance
-    n=alpha*ngn+alpha*nbn; // ZNA
-    //n=alpha*ngp+alpha*nbp; // ZPA
+    //
+    if(fIsZN) n = alpha*ngn+alpha*nbn; // ZNA
+    else n =  alpha*ngp+alpha*nbp; // ZPA
     //----------------------------------------
 
     //------ experimental resolution -> Gaussian smearing ------------------------------------
@@ -313,22 +309,32 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t k, Double_t alpha, Double_t
     //if (n>0) resexp = sigma*gRandom->Gaus(0.0,1.0)/TMath::Sqrt(n);
     //else resexp=0;
     //ntot = n*(1+resexp);
-
-    if(n>0) resexp = sigma*TMath::Sqrt(n);    
-    else resexp=0;
-    ntot = (Int_t)(gRandom->Gaus(n, resexp));
+        
+    //if(n>0) resexp = sigma*TMath::Sqrt(n);    
+    //else resexp=0;
+    ntot = (int) (gRandom->Gaus(n, resexp));
     //----------------------------------------
 
     // non-lineary effect -------------------------------
     //ntot = k*ntot;
-    ntot = ntot + k*ntot*ntot;
+    //ntot = ntot + k*ntot*ntot;
 
     //cout << ngn << " " << nbn << " "  << ntot << endl;
 
-    if (ntot>0) {
-      h1->Fill(ntot);     
+    Double_t nFact = 1.577;
+    Double_t Etot = nFact*ntot;
+    //
+
+    if (n>0)
+    resexp = 1./TMath::Sqrt(n)*sigma*gRandom->Gaus(0.0,1.0);
+    
+    Etot = Etot*(1+resexp);
+    //printf("  ntot %f  Etot %f \n", ntot, Etot);
+    
+    if(ntot>0) {
+      h1->Fill(Etot);     
       if (save) 
-	ntuple->Fill(fNpart,fNcoll,fB,fTaa,ntot,nbn,ngn);
+	ntuple->Fill(fNpart, fNcoll, fB, fTaa, ntot, nbn, ngn, Etot);
     }
   }
 
@@ -348,8 +354,8 @@ Double_t AliCentralityGlauberFit::CalculateChi2(TH1F *hDATA, TH1F *thistGlau)
   Int_t lowchibin =   hDATA->FindBin(fMultmin);
   Int_t highchibin =  hDATA->FindBin(fMultmax);
 
-  Double_t mcintegral = thistGlau->Integral(1,thistGlau->GetNbinsX());
-  Double_t scale = (hDATA->Integral(1,hDATA->GetNbinsX())/mcintegral);
+  Double_t mcintegral = thistGlau->Integral(1, thistGlau->GetNbinsX());
+  Double_t scale = (hDATA->Integral(1, hDATA->GetNbinsX())/mcintegral);
   thistGlau->Scale(scale);
 
   // calculate the chi2 between MC and real data over some range ????
@@ -464,6 +470,8 @@ void AliCentralityGlauberFit::MakeSlowNucleons(Int_t ncoll, Double_t alpha, Doub
   nu = gRandom->Gaus(nu,0.5); 
   if(nu<1.) nu = 1.;
   //
+  //float sdp = gRandom->Rndm();
+  //if(nu==1. && sdp<=0.2) return;
 
   //  gray protons
   Float_t  poverpd = 0.843; 

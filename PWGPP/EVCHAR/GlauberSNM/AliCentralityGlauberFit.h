@@ -40,7 +40,9 @@ class AliCentralityGlauberFit : public TObject {
   void     UseChi2(Bool_t f)  { fUseChi2=f; }
   void     SetSaturation(Bool_t saturation) {fApplySaturation = saturation;}
   void     SetSaturationParams(Int_t ngray=15, Int_t nblack=28) {fnGraySaturation=ngray; fnBlackSaturation=nblack;}
-
+  void     SetIsZN() {fIsZN=kTRUE;}
+  void     SetIsZP() {fIsZN=kFALSE;}
+  
  private:
   Int_t   fNk;            // k points
   Double_t fKlow;         // k low
@@ -73,6 +75,7 @@ class AliCentralityGlauberFit : public TObject {
   Bool_t fApplySaturation;// 
   Int_t fnGraySaturation; //
   Int_t fnBlackSaturation;//
+  Bool_t fIsZN;
 
   TString fInrootfilename;          // input root file
   TString fInntuplename;            // input Gauber ntuple
@@ -94,6 +97,6 @@ class AliCentralityGlauberFit : public TObject {
   AliCentralityGlauberFit(const AliCentralityGlauberFit&);
   AliCentralityGlauberFit &operator=(const AliCentralityGlauberFit&);
 
-  ClassDef(AliCentralityGlauberFit, 1)  
+  ClassDef(AliCentralityGlauberFit, 2)  
 };
 #endif
