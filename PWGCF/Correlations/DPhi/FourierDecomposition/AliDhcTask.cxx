@@ -38,7 +38,7 @@ AliDhcTask::AliDhcTask()
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
-  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
+  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fCheckVertex(kTRUE), fClassName(),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
   fMixBCent(0x0), fMixBZvtx(0x0), fHEffT(0x0), fHEffA(0x0),
@@ -61,7 +61,7 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
-  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
+  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fCheckVertex(kTRUE), fClassName(),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
   fMixBCent(0x0), fMixBZvtx(0x0), fHEffT(0x0), fHEffA(0x0),
@@ -143,6 +143,7 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" fill same event in any case? %d", fDoFillSame));
   AliInfo(Form(" do invariant mass cut? %d", fDoMassCut));
   AliInfo(Form(" omit first event? %d\n", fOmitFirstEv));
+  AliInfo(Form(" check the vertex? %d\n", fCheckVertex));
 }
 
 //________________________________________________________________________
@@ -434,7 +435,7 @@ void AliDhcTask::UserExec(Option_t *)
     if (dType == kESD) {
       const AliESDVertex* vertex = fESD->GetPrimaryVertex();
       fZVertex = vertex->GetZ();
-      if (!VertexOk()) {
+      if (fCheckVertex && !VertexOk()) {
         if (fVerbosity > 1)
           AliInfo(Form("Event REJECTED (ESD vertex not OK). z = %.1f", fZVertex));
         return;
@@ -446,7 +447,7 @@ void AliDhcTask::UserExec(Option_t *)
     } else if (dType == kAOD) {
       const AliAODVertex* vertex = fAOD->GetPrimaryVertex();
       fZVertex = vertex->GetZ();
-      if (!VertexOk()) {
+      if (fCheckVertex && !VertexOk()) {
         if (fVerbosity > 1)
           Info("Exec()", "Event REJECTED (AOD vertex not OK). z = %.1f", fZVertex);
         return;
