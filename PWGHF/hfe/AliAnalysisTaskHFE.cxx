@@ -987,7 +987,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     track->SetESDEvent(fESD);
 
     // fill counts of v0-identified particles
-    AliPID::EParticleType v0pid = fV0Tagger->GetV0Info(track->GetID());
+    AliPID::EParticleType v0pid = fV0Tagger ? fV0Tagger->GetV0Info(track->GetID()) : AliPID::kUnknown;
     // here the tagged track analysis will run
     if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){ 
       AliDebug(1, Form("Track identified as %s", AliPID::ParticleName(v0pid)));
@@ -1443,8 +1443,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     fTaggedTrackAnalysis->SetCentrality(fCentralityF);
     if(IsPbPb()) fTaggedTrackAnalysis->SetPbPb();
     else {
-	    if(IspPb()) fTaggedTrackAnalysis->SetpPb();
-	    else fTaggedTrackAnalysis->SetPP();
+      if(IspPb()) fTaggedTrackAnalysis->SetpPb();
+      else fTaggedTrackAnalysis->SetPP();
     }
   }
   
@@ -1516,7 +1516,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(!track) continue;
 
     // fill counts of v0-identified particles
-    AliPID::EParticleType v0pid = fV0Tagger->GetV0Info(track->GetID());
+    AliPID::EParticleType v0pid = fV0Tagger ? fV0Tagger->GetV0Info(track->GetID()) : AliPID::kUnknown;
     // here the tagged track analysis will run
     if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){ 
       AliDebug(1, Form("Track identified as %s", AliPID::ParticleName(v0pid)));
@@ -1526,7 +1526,6 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     
     signal = kTRUE;
     if(HasMCData()){
-
       Int_t label = TMath::Abs(track->GetLabel());
       if(label && label < fAODArrayMCInfo->GetEntriesFast())
         mctrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(label));
