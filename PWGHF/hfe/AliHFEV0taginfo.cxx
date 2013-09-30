@@ -289,7 +289,7 @@ Int_t AliHFEV0taginfo::AliHFEV0tag::Compare(const TObject *ref) const{
     // Order:
     //   First compare track ID then particle info
     //
-    const AliHFEV0tag *refObj = dynamic_cast<const AliHFEV0tag *>(ref);
+    const AliHFEV0tag *refObj = static_cast<const AliHFEV0tag *>(ref);
     if(fTrackID < refObj->GetTrackID()) return -1;
     else if(fTrackID > refObj->GetTrackID()) return 1;
     else{
