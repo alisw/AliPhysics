@@ -127,7 +127,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TList             *fOutputList;      //! Output list
   TH2               *fHEvt;            //! Cent vs vtx.
   TH2               *fHTrk;            //! Phi vs Eta
-  TH1               *fHPtAss;          //! Pt ass 
+  TH2               *fHPoolReady;      //! Check how many Jobs start mixing
+  TH1               *fHPtAss;          //! Pt ass
   TH1               *fHPtTrg;          //! Pt trg
   TH1               *fHPtTrgEvt;       //! Pt trg per event for weighting
   TH3               *fHPtTrgNorm1S;    //! Pt trg same events in cent. and zvtx bins, method 1
