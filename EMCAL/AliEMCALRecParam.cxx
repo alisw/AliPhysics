@@ -63,7 +63,8 @@ fNPedSamples(5),
 fRemoveBadChannels(kFALSE),
 fFittingAlgorithm(0), 
 fUseFALTRO(kTRUE), 
-fFitLEDEvents(kFALSE)//raw signal
+fFitLEDEvents(kFALSE),//raw signal
+fRejectBelowThreshold(0)
 {
   // default reco values
   
@@ -266,7 +267,8 @@ fNPedSamples(rp.fNPedSamples),
 fRemoveBadChannels(rp.fRemoveBadChannels),
 fFittingAlgorithm(rp.fFittingAlgorithm),  
 fUseFALTRO(rp.fUseFALTRO),
-fFitLEDEvents(rp.fFitLEDEvents) //raw signal
+fFitLEDEvents(rp.fFitLEDEvents), //raw signal
+fRejectBelowThreshold(rp.fRejectBelowThreshold)
 {
   //copy constructor
   
@@ -329,6 +331,7 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fFittingAlgorithm  = rp.fFittingAlgorithm;
     fUseFALTRO         = rp.fUseFALTRO;
     fFitLEDEvents      = rp.fFitLEDEvents;//raw signal
+    fRejectBelowThreshold =rp.fRejectBelowThreshold;//unfolding
 	  
     //PID values
     Int_t i=0, j=0;
@@ -608,6 +611,7 @@ void AliEMCALRecParam::Print(Option_t * opt) const
       printf(" %f, ", fPar6[i]);
     }
     printf("\n");
+    AliInfo(Form("Unfolding fRejectBelowThreshold, 0-split,1-reject: %d\n",fRejectBelowThreshold)); 
   }
   
   if(!strcmp("",opt) || !strcmp("pid",opt)){

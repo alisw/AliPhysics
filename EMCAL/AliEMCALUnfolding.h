@@ -47,7 +47,9 @@ public:
   virtual Float_t GetECALocalMaxCut() const { return fECALocMaxCut; } 
   virtual void SetThreshold(Float_t energy) { fThreshold = energy; } 
   virtual Float_t GetThreshold() const { return fThreshold; } 
- 
+  virtual void SetRejectBelowThreshold(Bool_t reject) { fRejectBelowThreshold = reject; }
+  virtual Bool_t GetRejectBelowThreshold() const { return fRejectBelowThreshold; }
+
   //unfolding main methods 
   virtual void   MakeUnfolding(); 
   static Double_t ShowerShapeV2(Double_t x, Double_t y) ; // Shape of EM shower used in unfolding;  
@@ -60,28 +62,35 @@ public:
   virtual Double_t* GetPar5() const { return fgPar5 ; } 
   virtual void SetPar6(Double_t *pars) ; 
   virtual Double_t* GetPar6() const { return fgPar6 ; } 
- 
-protected: 
-  Int_t   fNumberOfECAClusters ;     // number of clusters found in EC section 
-  Float_t fECALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster 
-  Float_t fThreshold ; //minimum energy for cell to be joined to a cluster 
-  AliEMCALGeometry     * fGeom;       //! pointer to geometry for utilities 
-  TObjArray    *fRecPoints; // Array with EMCAL clusters 
-  TClonesArray *fDigitsArr; // Array with EMCAL digits 
- 
-private: 
-  AliEMCALUnfolding(const AliEMCALUnfolding &); //copy ctor 
-  AliEMCALUnfolding & operator = (const AliEMCALUnfolding &); 
-   
-  Bool_t         UnfoldClusterV2(AliEMCALRecPoint * iniEmc, Int_t Nmax,  
+
+  virtual Int_t UnfoldOneCluster(AliEMCALRecPoint * iniTower, 
+				 Int_t nMax, 
 				 AliEMCALDigit ** maxAt, 
-				 Float_t * maxAtEnergy ); //Unfolds cluster using TMinuit package 
-  Bool_t         UnfoldClusterV2old(AliEMCALRecPoint * iniEmc, Int_t Nmax,  
-				    AliEMCALDigit ** maxAt, 
-				    Float_t * maxAtEnergy ); //Unfolds cluster using TMinuit package 
-  Bool_t  FindFitV2(AliEMCALRecPoint * emcRP, AliEMCALDigit ** MaxAt, const Float_t * maxAtEnergy,  
-		    Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit 
+				 Float_t * maxAtEnergy,
+				 TObjArray *list);//input one cluster -> output list
  
+protected:
+  Int_t              fNumberOfECAClusters ;   // number of clusters found in EC section
+  Float_t            fECALocMaxCut ;          // minimum energy difference to distinguish local maxima in a cluster
+  Float_t            fThreshold ;             // minimum energy for cell to be joined to a cluster
+  Bool_t             fRejectBelowThreshold ;  // split (false) or reject (true) cell energy below threshold after UF
+  AliEMCALGeometry * fGeom;                   //! pointer to geometry for utilities
+  TObjArray        * fRecPoints;              // Array with EMCAL clusters
+  TClonesArray     * fDigitsArr;              // Array with EMCAL digits
+  
+private:
+  AliEMCALUnfolding(const AliEMCALUnfolding &); //copy ctor
+  AliEMCALUnfolding & operator = (const AliEMCALUnfolding &);
+  
+  Bool_t  UnfoldClusterV2(AliEMCALRecPoint * iniEmc, Int_t Nmax,
+                          AliEMCALDigit ** maxAt,
+                          Float_t * maxAtEnergy ); //Unfolds cluster using TMinuit package
+  Bool_t  UnfoldClusterV2old(AliEMCALRecPoint * iniEmc, Int_t Nmax,
+                             AliEMCALDigit ** maxAt,
+                             Float_t * maxAtEnergy ); //Unfolds cluster using TMinuit package
+  Bool_t  FindFitV2(AliEMCALRecPoint * emcRP, AliEMCALDigit ** MaxAt, const Float_t * maxAtEnergy,
+                    Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit 
+  
   static Double_t fgSSPars[8];//! Unfolding shower shape parameters 
   // function: 
   // f(r)=exp(-(p0*r)^p1 * (1/(p2+p3*(p0*r)^p1)+p4/(1+p6*(p0*r)^p5) ) ) 
@@ -93,7 +102,7 @@ private:
   static void EvalPar6(Double_t phi); 
   static void EvalParsPhiDependence(Int_t absId, const AliEMCALGeometry *geom); 
  
-  ClassDef(AliEMCALUnfolding,2)  // Unfolding algorithm class  
+  ClassDef(AliEMCALUnfolding,3)  // Unfolding algorithm class
 } ; 
  
 #endif // AliEMCALUNFOLDING_H 
