@@ -1058,6 +1058,18 @@ AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
   xaxis->SetBinLabel(8, "Total");
   d->Add(fHTiming);
 }
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliFMDDensityCalculator::Print(Option_t* option) const
@@ -1068,56 +1080,59 @@ AliFMDDensityCalculator::Print(Option_t* option) const
   // Parameters:
   //    option Not used
   //
-  char ind[gROOT->GetDirLevel()+3];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << ClassName() << ": " << GetName() << '\n'
-	    << std::boolalpha 
-	    << ind << " Max(particles):         " << fMaxParticles << '\n'
-	    << ind << " Poisson method:         " << fUsePoisson << '\n'
-	    << ind << " Eta lumping:            " << fEtaLumping << '\n'
-	    << ind << " Phi lumping:            " << fPhiLumping << '\n'
-	    << ind << " Recalculate eta:        " << fRecalculateEta << '\n'
-	    << ind << " Recalculate phi:        " << fRecalculatePhi << '\n'
-	    << ind << " Use phi acceptance:     "
-	    << std::noboolalpha
-	    << std::flush;
+  AliForwardUtil::PrintTask(*this);
+  gROOT->IncreaseDirLevel();
+
+  TString phiM("none");
   switch (fUsePhiAcceptance) { 
-  case kPhiNoCorrect:    std::cout << "none\n"; break;
-  case kPhiCorrectNch:   std::cout << "correct Nch\n"; break;
-  case kPhiCorrectELoss: std::cout << "correct energy loss\n"; break;
+  case kPhiNoCorrect:    phiM = "none"; break;
+  case kPhiCorrectNch:   phiM = "correct Nch"; break;
+  case kPhiCorrectELoss: phiM = "correct energy loss"; break;
   }
-  std::cout << ind << " Lower cut:" << std::endl;
+
+  PFV("Max(particles)",		fMaxParticles );
+  PFV("Poisson method",		fUsePoisson );
+  PFV("Eta lumping",		fEtaLumping );
+  PFV("Phi lumping",		fPhiLumping );
+  PFV("Recalculate eta",	fRecalculateEta );
+  PFV("Recalculate phi",	fRecalculatePhi );
+  PFV("Use phi acceptance",     phiM);
+  PFV("Lower cut", "");
   fCuts.Print();
+
   TString opt(option);
   opt.ToLower();
-  if (opt.Contains("nomax")) return;
-  
-  std::cout << ind << " Max weights:\n";
+  if (!opt.Contains("nomax")) {
+    PFV("Max weights", "");
 
-  for (UShort_t d=1; d<=3; d++) { 
-    UShort_t nr = (d == 1 ? 1 : 2);
-    for (UShort_t q=0; q<nr; q++) { 
-      ind[gROOT->GetDirLevel()]   = ' ';
-      ind[gROOT->GetDirLevel()+1] = '\0';
-      Char_t      r = (q == 0 ? 'I' : 'O');
-      std::cout << ind << " FMD" << d << r << ":";
-      ind[gROOT->GetDirLevel()+1] = ' ';
-      ind[gROOT->GetDirLevel()+2] = '\0';
-      
-      const TArrayI& a = (d == 1 ? fFMD1iMax : 
-			  (d == 2 ? (r == 'I' ? fFMD2iMax : fFMD2oMax) : 
-			   (r == 'I' ? fFMD3iMax : fFMD3oMax)));
-      Int_t j = 0;
-      for (Int_t i = 0; i < a.fN; i++) { 
-	if (a.fArray[i] < 1) continue; 
-	if (j % 6 == 0)      std::cout << "\n " << ind;
-	j++;
-	std::cout << "  " << std::setw(3) << i << ": " << a.fArray[i];
+    char ind[64];
+    for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+    ind[gROOT->GetDirLevel()] = '\0';
+    for (UShort_t d=1; d<=3; d++) { 
+      UShort_t nr = (d == 1 ? 1 : 2);
+      for (UShort_t q=0; q<nr; q++) { 
+	ind[gROOT->GetDirLevel()]   = ' ';
+	ind[gROOT->GetDirLevel()+1] = '\0';
+	Char_t      r = (q == 0 ? 'I' : 'O');
+	std::cout << ind << " FMD" << d << r << ":";
+	ind[gROOT->GetDirLevel()+1] = ' ';
+	ind[gROOT->GetDirLevel()+2] = '\0';
+	
+	const TArrayI& a = (d == 1 ? fFMD1iMax : 
+			    (d == 2 ? (r == 'I' ? fFMD2iMax : fFMD2oMax) : 
+			     (r == 'I' ? fFMD3iMax : fFMD3oMax)));
+	Int_t j = 0;
+	for (Int_t i = 0; i < a.fN; i++) { 
+	  if (a.fArray[i] < 1) continue; 
+	  if (j % 6 == 0)      std::cout << "\n " << ind;
+	  j++;
+	  std::cout << "  " << std::setw(3) << i << ": " << a.fArray[i];
+	}
+	std::cout << std::endl;
       }
-      std::cout << std::endl;
     }
   }
+  gROOT->DecreaseDirLevel();
 }
 
 //====================================================================

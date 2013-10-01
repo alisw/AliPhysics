@@ -252,6 +252,12 @@ AliFMDMCCorrector::CreateOutputObjects(TList* dir)
   fComps->SetName("esd_mc_comparison");
   d->Add(fComps);
 }
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+
 //____________________________________________________________________
 void
 AliFMDMCCorrector::Print(Option_t* option) const
@@ -261,13 +267,10 @@ AliFMDMCCorrector::Print(Option_t* option) const
   // Parameters:
   //    option Not used 
   //
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
   AliFMDCorrector::Print(option);
-  std::cout << std::boolalpha
-            << ind << " Use sec. map on MC:     " << fSecondaryForMC 
-            << std::noboolalpha << std::endl;
+  gROOT->IncreaseDirLevel();
+  PFB("Use sec. map on MC", fSecondaryForMC);
+  gROOT->DecreaseDirLevel();
 }
 
 //____________________________________________________________________

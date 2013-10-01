@@ -453,7 +453,8 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 			     AliForwardUtil::Histos& sums,
 			     UShort_t                vtxbin, 
 			     TH2D&                   out,
-			     Double_t 		     cent)
+			     Double_t 		     cent,
+			     Bool_t                  eta2phi)
 {
   // 
   // Do the calculations 
@@ -475,10 +476,22 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   if (!bin) return false;
   Bool_t   ret     = bin->Collect(hists, sums, out, fSumRings, cent, 
 				  fMergeMethod, fSkipFMDRings,
-				  fByCent);
+				  fByCent, eta2phi);
 
   return ret;
 }
+
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
 
 //____________________________________________________________________
 void
@@ -490,28 +503,33 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
   // Parameters:
   //    option Not used
   //
-  char ind[gROOT->GetDirLevel()+1];
+  TString merge("unknown");
+  switch (fMergeMethod) {
+  case kStraightMean:       merge = "straight mean"; break;
+  case kStraightMeanNoZero: merge = "straight mean (no zeros)"; break;
+  case kWeightedMean:       merge = "weighted mean"; break;
+  case kLeastError:         merge = "least error"; break;
+  case kSum:                merge = "straight sum"; break;
+  case kPreferInner:        merge = "prefer inners"; break;
+  case kPreferOuter:        merge = "prefer outers"; break;
+  }
+
+  AliForwardUtil::PrintTask(*this);
+  gROOT->IncreaseDirLevel();
+  PFV("# of cut bins",	fNCutBins );
+  PFV("Fiducal method", (fFiducialMethod == kByCut ? "cut" : "distance"));
+  PFV("Fiducial cut",	fCorrectionCut );
+  PFV("Merge method",   merge);
+    
+  if (!fVtxList) {
+    gROOT->DecreaseDirLevel();
+    return;
+  }
+  char ind[64];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << ClassName() << ": " << GetName() << '\n'
-	    << ind << " # of cut bins:          " << fNCutBins << '\n'
-	    << ind << " Fiducal method:         " 
-	    << (fFiducialMethod == kByCut ? "cut" : "distance") << "\n"
-	    << ind << " Fiducial cut:           " << fCorrectionCut << "\n"
-	    << ind << " Merge method:           ";
-  switch (fMergeMethod) {
-  case kStraightMean:       std::cout << "straight mean\n"; break;
-  case kStraightMeanNoZero: std::cout << "straight mean (no zeros)\n"; break;
-  case kWeightedMean:       std::cout << "weighted mean\n"; break;
-  case kLeastError:         std::cout << "least error\n"; break;
-  case kSum:                std::cout << "straight sum\n"; break;
-  case kPreferInner:        std::cout << "prefer inners\n"; break;
-  case kPreferOuter:        std::cout << "prefer outers\n"; break;
-  }
-    
-  if (!fVtxList) return;
 
-  std::cout << ind << " Bin ranges:\n" << ind << "  rings   |   Range  ";
+  std::cout << ind << "Bin ranges:\n" << ind << "  rings   |   Range  ";
   Int_t nVz = fVtxList->GetEntriesFast();
   for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
     UShort_t d = 0;
@@ -538,6 +556,7 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
     }
     std::cout << std::endl;
   }
+    gROOT->DecreaseDirLevel();
 }
 
 //____________________________________________________________________
@@ -723,7 +742,8 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 				     Double_t                      cent,
 				     MergeMethod                   m,
 				     UShort_t                      skips,
-				     TList*                        byCent)
+				     TList*                        byCent,
+				     Bool_t                        eta2phi)
 {
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
@@ -758,6 +778,10 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
       // Fill under-flow bins with eta coverage 
       for (Int_t iEta = first; iEta <= last; iEta++) 
 	t->SetBinContent(iEta,0,1);
+      if (eta2phi) {
+	for (Int_t iEta = first; iEta <= last; iEta++) 
+	  t->SetBinContent(iEta,nY+1,1);
+      }
       
       // Add to our per-ring sum 
       o->Add(t);

@@ -1,6 +1,6 @@
 #ifndef ALIFORWARDMULTDIST_H
 #define ALIFORWARDMULTDIST_H
-#include <AliAnalysisTaskSE.h>
+#include "AliBaseAODTask.h"
 #include <TList.h>
 #include <TString.h>
 class TH1;
@@ -11,7 +11,7 @@ class AliAODForwardMult;
  * Class to make raw @f$P(N_{ch})@f$ distributions 
  * 
  */
-class AliForwardMultDists : public AliAnalysisTaskSE
+class AliForwardMultDists : public AliBaseAODTask
 {
 public:
   enum { 
@@ -81,69 +81,42 @@ public:
    */
   AliForwardMultDists(const char* name);
   /** 
-   * Copy constructor
-   *
-   * @param o object to copy fron
-   */
-  AliForwardMultDists(const AliForwardMultDists& o);
-  /** 
-   * Assignment operator
-   * 
-   * @param o object to assign from 
-   *
-   * @return Reference to this object
-   */
-  AliForwardMultDists& operator=(const AliForwardMultDists& o);
-  /** 
    * Destructor
    */
   virtual ~AliForwardMultDists() {}
   /** 
    * Create output objects - called at start of job in slave 
    * 
+   * @return true on success
    */
-  void UserCreateOutputObjects();
+  Bool_t Book();
+  /** 
+   * Set-up internal structures on first seen event 
+   * 
+   * @return true on success
+   */
+  Bool_t PreData();
+  /** 
+   * Executed before every event 
+   * 
+   * @return true on success
+   */
+  Bool_t PreEvent() { fIsSelected = false; return true; }
   /** 
    * Analyse a single event 
    * 
-   * @param option Not used
+   * @param aod AOD Event
+   *
+   * @return true on success
    */
-  void UserExec(Option_t* option="");
+  Bool_t Event(AliAODEvent& aod);
   /** 
    * Called at the end of the final processing of the job on the
    * full data set (merged data)
    * 
-   * 
-   * @param option Not used
+   * @return true on success
    */
-  void Terminate(Option_t* option="");
-  /** 
-   * Set-up internal structures on first seen event 
-   * 
-   * @param hist Basic histogram template from AOD object 
-   */
-  void SetupForData(const TH2& hist, Bool_t useMC);
-  void StoreInformation(const AliAODForwardMult* forward);
-  /** 
-   * Project a 2D histogram into a 1D histogram taking care to use
-   * either the @f$\phi2f$ acceptance stored in the overflow bins, or
-   * the @f$\eta@f$ coverage stored in the underflow bins.
-   * 
-   * @param input      2D histogram to project 
-   * @param cache      1D histogram to project into 
-   * @param usePhiAcc  If true, use the @f$\phi2f$ acceptance stored in
-   * the overflow bins, or if false the @f$\eta@f$ coverage stored in
-   * the underflow bins.
-   */
-  static void ProjectX(const TH2& input, TH1& cache, Bool_t usePhiAcc=true);
-  /** 
-   * Project on @f$\eta@f$ axis.  If any of the pointers passed is
-   * zero, do nothing.
-   * 
-   * @param input 
-   * @param cache 
-   */
-  static void ProjectX(const TH2* input, TH1* cache);
+  Bool_t Finalize();
   /** 
    * Add an @f$\eta@f$ bin
    * 
@@ -153,39 +126,22 @@ public:
   /** 
    * Add an @f$\eta@f$ bin
    * 
-   * @param etaLow Low cut on @f$\eta@f$
-   * @param etaMax High cut on @f$\eta@f$
+   * @param etaLow Low cut on @f$\eta@f$  
+   * @param etaMax High cut on @f$\eta@f$ 
    * @param nAxis  Axis to use for measured @f$ N_{ch}@f$ 
+   *
    */
   void AddBin(Double_t etaLow, Double_t etaMax, const TAxis& nAxis); 
   /** 
    * Add an @f$\eta@f$ bin
    * 
-   * @param etaLow Low cut on @f$\eta@f$
-   * @param etaMax High cut on @f$\eta@f$
+   * @param etaLow Low cut on @f$\eta@f$ 
+   * @param etaMax High cut on @f$\eta@f$ 
    * @param nMax   Maximum @f$ N_{ch}@f$ 
    * @param nDiv   Number of subdivisions per @f$ N_{ch}@f$
+   *
    */
   void AddBin(Double_t etaLow, Double_t etaMax, UShort_t nMax, UShort_t nDiv); 
- /** 
-   * Set the range of valid interaction points 
-   * 
-   * @param z1 Least Z coordinate 
-   * @param z2 Largest Z coordinate  
-   */
-  void SetIpZRange(Double_t z1, Double_t z2) { fMinIpZ = z1; fMaxIpZ = z2; }
-  /** 
-   * Set the trigger mask 
-   * 
-   * @param mask Mask 
-   */
-  void SetTriggerMask(UInt_t mask) { fTriggerMask = mask; }
-  /** 
-   * Set the trigger mask 
-   * 
-   * @param mask Mask 
-   */
-  void SetTriggerMask(const char* mask); 
   /** 
    * Whether to use the stored phi acceptance 
    * 
@@ -198,6 +154,27 @@ public:
    * @param option Not used
    */
   void Print(Option_t* option="") const;
+protected:
+  /** 
+   * Project a 2D histogram into a 1D histogram taking care to use
+   * either the @f$\phi@f$ acceptance stored in the overflow bins, or
+   * the @f$\eta@f$ coverage stored in the underflow bins.
+   * 
+   * @param input      2D histogram to project 
+   * @param cache      1D histogram to project into 
+   * @param usePhiAcc  If true, use the @f$\phi@f$ acceptance stored in
+   * the overflow bins, or if false the @f$\eta@f$ coverage stored in
+   * the underflow bins.
+   */
+  static void ProjectX(const TH2& input, TH1& cache, Bool_t usePhiAcc=true);
+  /** 
+   * Project on @f$\eta@f$ axis.  If any of the pointers passed is
+   * zero, do nothing.
+   * 
+   * @param input 
+   * @param cache 
+   */
+  static void ProjectX(const TH2* input, TH1* cache);
   /** 
    * An @f$\eta@f$ bin 
    */
@@ -212,8 +189,7 @@ public:
      * 
      * @param minEta Least @f$\eta@f$ to consider 
      * @param maxEta Largest @f$\eta@f$ to consider 
-     * @param mAxis  The @f$ N_{ch}@f$ axis to use for measured data
-     * @param tAxis  The @f$ N_{ch}@f$ axis to use for truth data
+     * @param mAxis  The @f$ N_{ch}@f$ axis to use for measured data 
      */
     EtaBin(Double_t minEta, Double_t maxEta, const TAxis& mAxis); 
     /** 
@@ -336,24 +312,40 @@ public:
 
     ClassDef(EtaBin,2);
   };
+  /** 
+   * Copy constructor
+   *
+   * @param o object to copy fron
+   */
+  AliForwardMultDists(const AliForwardMultDists& o);
+  /** 
+   * Assignment operator
+   * 
+   * @param o object to assign from 
+   *
+   * @return Reference to this object
+   */
+  AliForwardMultDists& operator=(const AliForwardMultDists& o);
+  /** 
+   * Check the event 
+   * 
+   * @param fwd Forward data structure 
+   * 
+   * @return Always true 
+   */
+  Bool_t CheckEvent(const AliAODForwardMult& fwd);
+
   TList    fBins;         // List of bins 
   TList*   fSymmetric;    // Bins symmetric around 0
   TList*   fNegative;     // Bins on negative side only 
   TList*   fPositive;     // Bins on the positive side only
-  TList*   fList;         // Output 
-  TH1*     fTriggers;     // Histogram of triggers
-  TH1*     fStatus;       // Histogram of event selection status 
-  TH1*     fVertex;       // Histogram of IpZ
   TH1*     fMCVertex;     // Histogram of MC IpZ
   TH2*     fDiag;         // Diagnostics
-  UInt_t   fTriggerMask;  // Trigger mask
-  Double_t fMinIpZ;       // Least @f$IP_{z}@f$ to consider 
-  Double_t fMaxIpZ;       // Largest @f$IP_{z}@f$ to consider 
-  Bool_t   fFirstEvent;   // First-event seen or not 
   TH1*     fForwardCache; // Projection cache 
   TH1*     fCentralCache; // Projection cache 
   TH1*     fMCCache;      // Projection cache 
   Bool_t   fUsePhiAcc;    // If true, scale by phi acceptance 
+  Bool_t   fIsSelected;   // IF the even was selected
 
   ClassDef(AliForwardMultDists,1);
 };

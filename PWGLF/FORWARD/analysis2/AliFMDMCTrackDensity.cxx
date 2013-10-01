@@ -325,17 +325,19 @@ AliFMDMCTrackDensity::Calculate(const AliESDFMD&  input,
 
   return ProcessTracks(event, vz, primary);
 }
+
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
 //____________________________________________________________________
 void
 AliFMDMCTrackDensity::Print(Option_t* option) const 
 {
   AliBaseMCTrackDensity::Print(option);
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << " Max cluster size:       " << fMaxConsequtiveStrips
-	    << std::endl;
-  
+  gROOT->IncreaseDirLevel();
+  PFV("Max cluster size", fMaxConsequtiveStrips);
+  gROOT->DecreaseDirLevel();
 }
 
 //____________________________________________________________________

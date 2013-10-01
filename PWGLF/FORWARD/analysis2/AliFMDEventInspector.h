@@ -282,7 +282,7 @@ public:
    *
    * @deprecated We should accept all events in the AOD pass
    * 
-   * @param mincent Upper cut on centrality
+   * @param maxcent Upper cut on centrality
    */
   void SetMaxCentrality(Double_t maxcent=-1.0);
   /** 
@@ -401,6 +401,11 @@ public:
    */
   virtual void StoreInformation();
   /** 
+   * Store - if possible - production information in a sub-list 
+   * 
+   */
+  virtual void StoreProduction();
+  /** 
    * Return a string representing the return code 
    * 
    * @param mask Code 
@@ -481,10 +486,12 @@ protected:
    * Check for multi-vertex pile-up 
    * 
    * @param esd ESD event 
+   * @param checkOtherBC Also check other BC's 
    * 
    * @return true if multiple vertices found 
    */
-  virtual Bool_t CheckMultiVertex(const AliESDEvent& esd) const;
+  virtual Bool_t CheckMultiVertex(const AliESDEvent& esd, 
+				  Bool_t checkOtherBC=false) const;
   /** 
    * Check if we have a cosmic trigger.  These should be filtered out. 
    * 

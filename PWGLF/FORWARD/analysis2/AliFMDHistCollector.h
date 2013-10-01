@@ -168,6 +168,8 @@ public:
    * @param sums     Cache to sum ring histograms in 
    * @param vtxBin   Vertex bin (1 based)
    * @param out      Output histogram
+   * @param cent     Centrality
+   * @param eta2phi    Copy eta coverage to phi acceptance 
    * 
    * @return true on successs 
    */
@@ -175,7 +177,8 @@ public:
 			 AliForwardUtil::Histos&       sums, 
 			 UShort_t                      vtxBin, 
 			 TH2D&                         out,
-			 Double_t 		       cent=-1.0);
+			 Double_t 		       cent=-1.0,
+			 Bool_t                        eta2phi=false);
   /** 
    * Output diagnostic histograms to directory 
    * 
@@ -299,6 +302,7 @@ protected:
   /** 
    * Merge bins accoring to set method
    * 
+   * @param m   Merging method
    * @param c   Current content
    * @param e   Current error
    * @param oc  Old content
@@ -320,9 +324,10 @@ protected:
     /** 
      * Constructor 
      * 
-     * @param index 
-     * @param minIpZ 
-     * @param maxIpZ 
+     * @param index   Index number
+     * @param minIpZ  Least @f$IP_{z}@f$
+     * @param maxIpZ  Largest @f$IP_{z}@f$
+     * @param nCut    Cut on n
      */
     VtxBin(Int_t index=0, Double_t minIpZ=999, Double_t maxIpZ=-999,
 	   Int_t nCut=0);
@@ -350,6 +355,9 @@ protected:
      * Set up for data
      * 
      * @param coverage    Diagnostics histogram to be filled 
+     * @param skip        Skip flags
+     * @param fiducial    Fiducial cut method
+     * @param cut         Fiducial cut
      * @param l           Parent output list 
      * @param etaAxis     @f$\eta@f$ axis used
      * @param doHitMap    If true, also do a per-ring sum
@@ -364,11 +372,6 @@ protected:
 		      Bool_t         doHitMap,
 		      Bool_t         storeSecMap);
     /** 
-     * Process one event
-     * 
-     * @param cache Cache of data
-     */
-    /** 
      * Process one event in this vertex bin
      * 
      * @param hists      Histograms
@@ -379,7 +382,8 @@ protected:
      * @param m          Merging method
      * @param skips      Which rings to skip
      * @param byCent     List (or null) of per centrality sums
-     * 
+     * @param eta2phi    Copy eta coverage to phi acceptance 
+     *
      * @return true on success
      */
     Bool_t Collect(const AliForwardUtil::Histos& hists, 
@@ -389,7 +393,8 @@ protected:
 		   Double_t                      cent,
 		   MergeMethod                   m,
 		   UShort_t                      skips,
-		   TList*                        byCent);
+		   TList*                        byCent,
+		   Bool_t                        eta2phi);
     /** 
      * Check if there's an overlap between detector @a d, ring @a r
      * and some other ring for the given @f$\eta@f$ @a bin.  If so,

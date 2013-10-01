@@ -15,6 +15,7 @@
 //   - None
 //
 #include "AliFMDEventInspector.h"
+#include "AliProdInfo.h"
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliMultiplicity.h"
@@ -33,6 +34,7 @@
 #include <TROOT.h>
 #include <TParameter.h>
 #include <TMatrixDSym.h>
+#include <TPRegexp.h>
 #include <iostream>
 #include <iomanip>
 #include "AliMCEvent.h"
@@ -686,6 +688,59 @@ AliFMDEventInspector::StoreInformation()
 
 //____________________________________________________________________
 void
+AliFMDEventInspector::StoreProduction()
+{
+  if (!fList) return;
+
+  AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+  if (!inputHandler) {
+    AliWarning("Got no input handler");
+    return;
+  }
+  TList *uiList = inputHandler->GetUserInfo();
+  if (!uiList) {
+    AliWarning("Got no user list from input tree");
+    return;
+  }
+
+  AliProdInfo p(uiList);
+  p.List();
+  if (p.GetAlirootSvnVersion() <= 0) return;
+
+  // Make our output list 
+  TList* out = new TList;
+  out->SetOwner(true);
+  out->SetName("production");
+  // out->SetTitle("ESD production details");
+  fList->Add(out);
+
+  TString period            = p.GetLHCPeriod();
+  // TString aliROOTVersion    = p.GetAlirootVersion();
+  Int_t   aliROOTSVN        = p.GetAlirootSvnVersion();
+  // TString rootVersion       = p.GetRootVersion();
+  Int_t   rootSVN           = p.GetRootSvnVersion();
+  Int_t   pass              = p.GetRecoPass();
+  Bool_t  mc                = p.IsMC();
+
+  TObjArray* pp = TPRegexp("LHC([0-9]+)([a-z]+)").MatchS(period);
+  Int_t      yy = static_cast<TObjString*>(pp->At(1))->String().Atoi();
+  Char_t     ll = static_cast<TObjString*>(pp->At(2))->String()[0];
+  pp->Delete();
+  
+  out->Add(AliForwardUtil::MakeParameter("year", yy));
+  out->Add(AliForwardUtil::MakeParameter("letter", Int_t(ll)));
+  out->Add(AliForwardUtil::MakeParameter("alirootSVN", aliROOTSVN));
+  out->Add(AliForwardUtil::MakeParameter("rootSVN", rootSVN));
+  out->Add(AliForwardUtil::MakeParameter("pass", pass));
+  out->Add(AliForwardUtil::MakeParameter("mc", mc));
+}
+
+  
+  
+
+//____________________________________________________________________
+void
 AliFMDEventInspector::CreateOutputObjects(TList* dir)
 {
   // 
@@ -1111,13 +1166,13 @@ AliFMDEventInspector::CheckPileup(const AliESDEvent& esd,
 
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::CheckMultiVertex(const AliESDEvent& esd) const
+AliFMDEventInspector::CheckMultiVertex(const AliESDEvent& esd,
+				       Bool_t             checkOtherBC) const
 {
   // Adapted from AliAnalysisUtils 
   // 
   // Parameters 
   const Double_t maxChi2nu    = 5;
-  Bool_t         checkOtherBC = false;
   
   // Number of vertices 
   Int_t n = esd.GetNumberOfPileupVerticesTracks();
@@ -1394,6 +1449,7 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
 							     cms);
   fField           = AliForwardUtil::ParseMagneticField(fld);
   fRunNumber       = esd->GetRunNumber();
+  StoreProduction();
   StoreInformation();
   if (fCollisionSystem   == AliForwardUtil::kUnknown) { 
     AliWarningF("Unknown collision system: %s - please check", sys);
@@ -1426,6 +1482,18 @@ AliFMDEventInspector::CodeString(UInt_t code)
   if (code & kBadVertex)  s.Append("BADVERTEX ");
   return s.Data();
 }
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliFMDEventInspector::Print(Option_t*) const
@@ -1435,9 +1503,7 @@ AliFMDEventInspector::Print(Option_t*) const
   // 
   //   option Not used 
   //
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
+  AliForwardUtil::PrintTask(*this);
   TString sNN(AliForwardUtil::CenterOfMassEnergyString(fEnergy));
   sNN.Strip(TString::kBoth, '0');
   sNN.ReplaceAll("GeV", " GeV");
@@ -1445,35 +1511,31 @@ AliFMDEventInspector::Print(Option_t*) const
   field.ReplaceAll("p",  "+");
   field.ReplaceAll("m",  "-");
   field.ReplaceAll("kG", " kG");
-  
-  std::cout << std::boolalpha 
-	    << ind << ClassName() << ": " << GetName() << '\n'
-	    << ind << " Vertex bins:            " << fVtxAxis.GetNbins() << '\n'
-	    << ind << " Vertex range:           [" << fVtxAxis.GetXmin() 
-	    << "," << fVtxAxis.GetXmax() << "]\n"
-	    << ind << " Low flux cut:           " << fLowFluxCut << '\n'
-	    << ind << " Max(delta v_z):         " << fMaxVzErr << " cm\n"
-	    << ind << " Min(nContrib_pileup):   " << fMinPileupContrib << '\n'
-	    << ind << " Min(v-pileup):          " << fMinPileupDistance << '\n'
-	    << ind << " System:                 " 
-	    << AliForwardUtil::CollisionSystemString(fCollisionSystem) << '\n'
-	    << ind << " CMS energy per nucleon: " << sNN << '\n'
-	    << ind << " Field:                  " <<  field << '\n'
-	    << ind << " Satellite events:       " << fUseDisplacedVertices<<'\n'
-	    << ind << " Use 2012 pA vertex:     " << fUsepA2012Vertex << '\n'
-	    << ind << " Use PWG-UD vertex:      " <<fUseFirstPhysicsVertex<<'\n'
-	    << ind << " Simulation input:       " << fMC << '\n'
-	    << ind << " Centrality method:      " << fCentMethod << '\n'
-	    << std::noboolalpha;
-  if (!fCentAxis) { std::cout << std::flush; return; }
+
+  gROOT->IncreaseDirLevel();
+  PFV("Vertex bins", fVtxAxis.GetNbins());
+  PF("Vertex Range", "[%+6.1f,%+6.1f]", fVtxAxis.GetXmin(), fVtxAxis.GetXmax());
+  PFV("Low flux cut",		fLowFluxCut );
+  PFV("Max(delta v_z)",		fMaxVzErr );
+  PFV("Min(nContrib_pileup)",	fMinPileupContrib );
+  PFV("Min(v-pileup)",		fMinPileupDistance );
+  PFV("System", AliForwardUtil::CollisionSystemString(fCollisionSystem));
+  PFV("CMS energy per nucleon",	sNN);
+  PFV("Field",			field);
+  PFB("Satellite events",	fUseDisplacedVertices);
+  PFB("Use 2012 pA vertex",	fUsepA2012Vertex );
+  PFB("Use PWG-UD vertex",	fUseFirstPhysicsVertex);
+  PFB("Simulation input",	fMC );
+  PFV("Centrality method",	fCentMethod);
+  PFV("Centrality axis",        (!fCentAxis ? "none" : ""));
+  if (!fCentAxis) {return; }
   Int_t nBin = fCentAxis->GetNbins();
-  std::cout << ind << " Centrality axis:        " << nBin << " bins"
-	    << std::flush;
   for (Int_t i = 0; i < nBin; i++) { 
-    if ((i % 10) == 0) std::cout << '\n' << ind << "  ";
+    if (i != 0 && (i % 10) == 0) std::cout << '\n' << "    ";
     std::cout << std::setw(5) << fCentAxis->GetBinLowEdge(i+1) << '-';
   }
   std::cout << std::setw(5) << fCentAxis->GetBinUpEdge(nBin) << std::endl;
+  gROOT->DecreaseDirLevel();
 }
 
   

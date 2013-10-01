@@ -179,26 +179,36 @@ AliFMDMultCuts::Input(TList* l, const char* name)
   
   return true;
 }
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
   
 //____________________________________________________________________
 void
 AliFMDMultCuts::Print(Option_t*) const
 {
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << std::boolalpha 
-	    << ind << "  Method used:           " << GetMethodString() << '\n'
-	    << ind << "  Fixed cuts:            "
-	    << "FMD1i=" << GetFixedCut(1,'I') << " "
-	    << "FMD2i=" << GetFixedCut(2,'I') << " "
-	    << "FMD2o=" << GetFixedCut(2,'O') << " "
-	    << "FMD3i=" << GetFixedCut(3,'I') << " "
-	    << "FMD3o=" << GetFixedCut(3,'O') << "\n"
-	    << ind << "  N xi factor:           " << fNXi    << '\n'
-	    << ind << "  Include sigma in cut:  " << fIncludeSigma << '\n'
-	    << ind << "  MPV fraction:          " << fMPVFraction 
-	    << std::noboolalpha << std::endl;
+  gROOT->IncreaseDirLevel();
+  PFV("Method used", GetMethodString());
+  PF("Fixed cuts","");
+  gROOT->IncreaseDirLevel();
+  PFV("FMD1i", GetFixedCut(1,'I'));
+  PFV("FMD2i", GetFixedCut(2,'I'));
+  PFV("FMD2o", GetFixedCut(2,'O'));
+  PFV("FMD3i", GetFixedCut(3,'I'));
+  PFV("FMD3o", GetFixedCut(3,'O'));
+  gROOT->DecreaseDirLevel();
+  PFV("N xi factor",		fNXi);
+  PFB("Include sigma in cut",	fIncludeSigma);
+  PFV("MPV fraction",		fMPVFraction);
+  gROOT->DecreaseDirLevel();
 }
 //____________________________________________________________________
 //

@@ -230,7 +230,7 @@ public:
   /** 
    * Set the minimum quality of the energy loss fits 
    * 
-   * @param cut Cut value 
+   * @return Cut value 
    */
   UShort_t GetMinQuality() const { return fMinQuality; }
   /** 

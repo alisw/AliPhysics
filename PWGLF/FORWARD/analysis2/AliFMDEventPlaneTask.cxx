@@ -36,17 +36,9 @@ ClassImp(AliFMDEventPlaneTask)
 #endif
 
 AliFMDEventPlaneTask::AliFMDEventPlaneTask()
-  : AliAnalysisTaskSE(),
-    fSumList(0),	 // Sum list
-    fOutputList(0),	 // Output list
-    fAOD(0),	         // AOD input event
-    fMC(0),              // MC flag
+  : AliBaseAODTask(),
     fEventPlaneFinder(), // EP finder
-    fZvertex(1111),	 // Z vertex 
-    fCent(-1),		 // Centrality
-    fHistCent(),         // Diagnostics histogram
-    fHistVertexSel(),    // Diagnostics histogram
-    fHistVertexAll()     // Diagnostics histogram
+    fHistVertexSel()     // Diagnostics histogram
 {
   // 
   // Default constructor
@@ -55,18 +47,9 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask()
 }
 //_____________________________________________________________________
 AliFMDEventPlaneTask::AliFMDEventPlaneTask(const char* name) 
-  : AliAnalysisTaskSE(name),
-    fSumList(0),	             // Sum list
-    fOutputList(0),                  // Output list
-    fAOD(0),		             // AOD input event
-    fMC(0),                          // MC flag
+  : AliBaseAODTask(name),
     fEventPlaneFinder("eventPlane"), // EP finder
-    fZvertex(1111),	             // Z vertex 
-    fCent(-1),                       // Centrality
-    fHistCent(0),                    // Diagnostics histogram
-    fHistVertexSel(0),               // Diagnostics histogram
-    fHistVertexAll(0)                // Diagnostics histogram
-
+    fHistVertexSel(0)               // Diagnostics histogram
 {
   // 
   // Constructor
@@ -75,86 +58,28 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask(const char* name)
   //  name: Name of task
   //
   DGUARD(fDebug, 3,"Named CTOR of AliFMDEventPlaneTask: %s", name);
-
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-
 }
 //_____________________________________________________________________
-AliFMDEventPlaneTask::AliFMDEventPlaneTask(const AliFMDEventPlaneTask& o)
-  : AliAnalysisTaskSE(o),
-    fSumList(o.fSumList),                    // Sumlist
-    fOutputList(o.fOutputList),	             // Output list
-    fAOD(o.fAOD),		             // AOD input event
-    fMC(o.fMC),                              // MC flag
-    fEventPlaneFinder(o.fEventPlaneFinder),  // EP finder
-    fZvertex(o.fZvertex),	             // Z vertex 
-    fCent(o.fCent),		             // Centrality
-    fHistCent(o.fHistCent),                  // Diagnostics histogram
-    fHistVertexSel(o.fHistVertexSel),        // Diagnostics histogram
-    fHistVertexAll(o.fHistVertexAll)         // Diagnostics histogram
-{
-  // 
-  // Copy constructor 
-  // 
-  // Parameters:
-  //    o Object to copy from 
-  //
-  DGUARD(fDebug, 3,"Copy CTOR of AliFMDEventPlaneTask");
-}
-//_____________________________________________________________________
-AliFMDEventPlaneTask&
-AliFMDEventPlaneTask::operator=(const AliFMDEventPlaneTask& o)
-{
-  // 
-  // Assignment operator 
-  //
-  DGUARD(fDebug,3,"Assignment of AliFMDEventPlaneTask");
-  if (&o == this) return *this;
-  fSumList           = o.fSumList;
-  fOutputList        = o.fOutputList;
-  fAOD               = o.fAOD;
-  fMC                = o.fMC;
-  fEventPlaneFinder  = o.fEventPlaneFinder;
-  fZvertex           = o.fZvertex;
-  fCent              = o.fCent;
-  fHistCent          = o.fHistCent;
-  fHistVertexSel     = o.fHistVertexSel;
-  fHistVertexAll     = o.fHistVertexAll;
-
-  return *this;
-}
-//_____________________________________________________________________
-void AliFMDEventPlaneTask::UserCreateOutputObjects()
+Bool_t AliFMDEventPlaneTask::Book()
 {
   //
   // Create output objects
   //
   DGUARD(fDebug,1,"Create user objects of AliFMDEventPlaneTask");
-  if (!fSumList)
-    fSumList = new TList();
-  fSumList->SetName("Sums");
-  fSumList->SetOwner();
-
   // Diagnostics histograms
-  fHistCent          = new TH1D("hCent", "Centralities", 100, 0, 100);
-  fHistVertexSel     = new TH1D("hVertexSel", "Selectec vertices", 40, -20, 20);
-  fHistVertexAll     = new TH1D("hVertexAll", "All vertices", 40, -20, 20);
+  fHistVertexSel     = new TH1D("hVertexSel", "Selected vertices", 40, -20, 20);
 
-  fSumList->Add(fHistCent);
-  fSumList->Add(fHistVertexSel);
-  fSumList->Add(fHistVertexAll);
+  fSums->Add(fHistVertexSel);
 
   // Init of EventPlaneFinder
   TAxis* pe = new TAxis(200, -4., 6.);
-  fEventPlaneFinder.CreateOutputObjects(fSumList);
+  fEventPlaneFinder.CreateOutputObjects(fSums);
   fEventPlaneFinder.SetupForData(*pe);
 
-  PostData(1, fSumList);
-
+  return true;
 }
 //_____________________________________________________________________
-void AliFMDEventPlaneTask::UserExec(Option_t */*option*/)
+Bool_t AliFMDEventPlaneTask::Event(AliAODEvent& aod)
 {
   // 
   // Called each event
@@ -165,32 +90,21 @@ void AliFMDEventPlaneTask::UserExec(Option_t */*option*/)
   DGUARD(fDebug,1,"Process an event in AliFMDEventPlaneTask");
 
   // Reset data members
-  fCent = -1;
-  fZvertex = 1111;
+  AliAODForwardMult* aodfmult = GetForward(aod);
+  fHistVertexSel->Fill(aodfmult->GetIpZ());
 
-  // Get input event
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!fAOD) return;
-
-  AliAODForwardMult* aodfmult = 
-    static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
-
-  if (!aodfmult) return;
-  if (!AODCheck(aodfmult)) return;
-
-  if (fAOD->GetRunNumber() != fEventPlaneFinder.GetRunNumber())
-    fEventPlaneFinder.SetRunNumber(fAOD->GetRunNumber());
+  if (aod.GetRunNumber() != fEventPlaneFinder.GetRunNumber())
+    fEventPlaneFinder.SetRunNumber(aod.GetRunNumber());
 
   AliAODForwardEP aodep;
-  TH2D fmdHist = aodfmult->GetHistogram();
+  TH2D& fmdHist = aodfmult->GetHistogram();
 
-  fEventPlaneFinder.FindEventplane(fAOD, aodep, &fmdHist, 0);
+  fEventPlaneFinder.FindEventplane(&aod, aodep, &fmdHist, 0);
 
-  PostData(1, fSumList);
-
+  return true;
 }
 //_____________________________________________________________________
-void AliFMDEventPlaneTask::Terminate(Option_t */*option*/)
+Bool_t AliFMDEventPlaneTask::Finalize()
 {
   //
   // Terminate - Called after all events
@@ -199,48 +113,12 @@ void AliFMDEventPlaneTask::Terminate(Option_t */*option*/)
   //  option: Not used
   //
   DGUARD(fDebug,1,"Process merged output of AliFMDEventPlaneTask");
+  
+  // Calculations can be done here: Currently there are none
+  // Summed histograms can be found in the list fSums
+  // Output should be stored in the output list fResults
 
-  // Reinitiate lists if Terminate is called separately!
-  fSumList = dynamic_cast<TList*> (GetOutputData(1));
-  if(!fSumList) {
-    AliError("Could not retrieve TList fSumList"); 
-    return; 
-  }
- 
-  if (!fOutputList)
-    fOutputList = new TList();
-  fOutputList->SetName("Results");
-  fOutputList->SetOwner();
-
- // Calculations can be done here: Currently there are none
-
-  PostData(2, fOutputList);
-
-}
-// _____________________________________________________________________
-Bool_t AliFMDEventPlaneTask::AODCheck(const AliAODForwardMult* aodfm) 
-{
-  // 
-  // Function to check that and AOD event meets the cuts
-  //
-  // Parameters: 
-  //  AliAODForwardMult: forward mult object with trigger and vertex info
-  //
-  DGUARD(fDebug,2,"Check AOD in AliFMDEventPlaneTask");
-
-  if (!aodfm->IsTriggerBits(AliAODForwardMult::kOffline)) return kFALSE;
-
-  fCent = (Double_t)aodfm->GetCentrality();
-  if (0. >= fCent || fCent >= 80.) return kFALSE;
-  fHistCent->Fill(fCent);
-
-  fZvertex = aodfm->GetIpZ();
-  fHistVertexAll->Fill(fZvertex);
-  if (TMath::Abs(fZvertex) >= 10.) return kFALSE;
-  fHistVertexSel->Fill(fZvertex);
-
-  return kTRUE;
-
+  return true;
 }
 //_____________________________________________________________________
 //

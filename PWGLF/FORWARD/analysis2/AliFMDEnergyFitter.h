@@ -433,6 +433,7 @@ protected:
      *                    is loosend by a factor of 2 
      * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
      *                    the reduced @f$\chi^2@f$ 
+     * @param minWeight   Least weight ot consider
      * @param regCut      Regularization cut-off
      * @param residuals   Mode for residual plots
      *
@@ -460,6 +461,7 @@ protected:
      * @f$ [b_{min}-\Delta b,N(\Delta_1+\xi_1\log(N))+2N\xi@f$
      * 
      * @param dist        Histogram to fit 
+     * @param bin         Bin number
      * @param lowCut      Lower cut @f$ E_{min}@f$ on signal 
      * @param nParticles  Max number @f$ N@f$ of convolved landaus to fit
      * @param minusBins   Number of bins @f$ \Delta b@f$ from peak to 
@@ -469,6 +471,7 @@ protected:
      *                    is loosend by a factor of 2 
      * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
      *                    the reduced @f$\chi^2@f$ 
+     * @param minWeight   Least weight ot consider
      * @param regCut      Regularization cut-off
      * 
      * @return The best fit function 
@@ -518,6 +521,7 @@ protected:
     /** 
      * Find the best fit 
      * 
+     * @param b              Bin number
      * @param dist           Histogram 
      * @param relErrorCut    Cut applied to relative error of parameter. 
      *                       Note, for multi-particle weights, the cut 

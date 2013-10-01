@@ -32,28 +32,18 @@ AliCentraldNdetaTask::AliCentraldNdetaTask(const char*)
   DGUARD(fDebug,3,"Named CTOR of AliCentraldNdetaTask");
   fSymmetrice = false; 
   fCorrEmpty  = false;
-  SetTitle("Central");
+  // SetTitle("Central");
 }
 
 //____________________________________________________________________
 TH2D*
-AliCentraldNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc) 
+AliCentraldNdetaTask::GetHistogram(const AliAODEvent& aod, Bool_t mc) 
 {
   // Get objects from the event structure 
   DGUARD(fDebug,2,"Get our histogram for AliCentraldNdetaTask");
-  TObject* obj = 0;
-  if (mc) obj = aod->FindListObject("CentralClustersMC");
-  else    obj = aod->FindListObject("CentralClusters");
-
-  // We should have a central object at least 
-  if (!obj) { 
-    if (!mc) AliWarning("No Central object found AOD");
-    return 0;
-  }
-
   // Cast to good types 
-  AliAODCentralMult* central   = static_cast<AliAODCentralMult*>(obj);
-
+  AliAODCentralMult* central   = GetCentral(aod, mc, !mc);
+  if (!central) return 0;
   return &(central->GetHistogram());
 }
 

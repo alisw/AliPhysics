@@ -75,6 +75,11 @@ terminate()
 {
     echo "Nothing to do for terminate"  
 }
+ # --- Post processing -----------------------------------------------
+post()
+{
+    ./post.sh $@ 
+}
 # --- Extract corrections --------------------------------------------
 _extract()
 {
@@ -491,7 +496,10 @@ url_opts()
 }
 allAboard()
 {
-    _allAboard $@ 
+    local what=$1 ; shift 
+    local trig=$1 ; shift 
+    echo "=== Running _allAboard '$what' '$trig' $@" 
+    _allAboard "$what" "$trig" $@
 }
 
 # --- Collect PDFs ---------------------------------------------------
@@ -501,6 +509,7 @@ collect()
     rm -rf $out
     mkdir -p ${out}
     dirs="corr eloss aod dndeta dndeta_inel dndeta_nsd dndeta_inelgt0 multdists"
+    # Now loop on dirs
     for d in ${dirs} ; do 
 	for m in "" "mc" ; do 
 	    dir=${name}_${m}${d}_${now}
@@ -542,6 +551,64 @@ collect()
     echo "Made ${name}_summary_${now}.pdf and ${name}_dndeta_${now}.pdf"
     rm -f last_${name}_pdfs
     ln -s ${out} last_${name}_pdfs
+    (cd ${out} && _pres_collect)
+}
+
+_pres_collect()
+{
+    local out=results.tex
+    rm -rf $out
+    local A=`getent passwd $USER | cut -f5 -d: `
+    local D=`echo $now | sed 's,\(....\)\(..\)\(..\)_\(..\)\(..\),\1/\2/\3 \4:\5,'`
+    cat <<-EOF > $out
+	\\documentclass[compress]{beamer}
+	\\usetheme{alice}
+	\\usepackage[english,british]{babel}
+	\\mode<presentation>
+	\\title{Job ${name}}
+	\\author{$A} 
+	\\date{$D}
+	\\begin{document}
+	\\aliceTitlePage{}
+	EOF
+    dirs="dndeta dndeta_inel dndeta_nsd dndeta_inelgt0 multdists"
+    for i in ${dirs} ; do 
+	l=`ls ${i}_real_*.pdf 2>/dev/null` 
+	for r in $l ; do 
+	    m=`echo $r | sed 's/real/simu/'` 
+	    R=`basename $r .pdf | sed "s/${i}_real_0*//"` 
+	    t=`basename $r .pdf | sed 's/dndeta_\(.*\)_real.*/\1/'` 
+	    case x$t in 
+		x) T="All";;
+		xinel)    T="INEL" ;; 
+		xinelgt0) T="INEL\\textgreater0" ;; 
+		xnsd)     T="NSD" ;; 
+		x*)       T="Unknown";;
+	    esac
+	    if test -f $r && test -f $m ; then 
+		cat <<-EOF >> $out
+		\\begin{frame}{Run $R --- $T} 
+		  \\begin{columns}
+		    \\begin{column}{.48\\linewidth}
+		      \\textbf{Real}\\\\
+		      \\includegraphics[keepaspectratio,width=\\linewidth]{%
+		   	$r}
+		    \\end{column}
+		    \\begin{column}{.48\\linewidth}
+		      \\textbf{Simulated}\\\\
+		      \\includegraphics[keepaspectratio,width=\\linewidth]{%
+		   	$m}
+		    \\end{column}
+		  \\end{columns}
+		\\end{frame}
+		EOF
+	    fi
+	done
+    done
+    cat <<-EOF >> $out
+	\\end{document}
+	EOF
+    pdflatex $out
 }
 
 _collect_files()
@@ -551,8 +618,8 @@ _collect_files()
     local M=$1 ; shift 
     local out=$1 ; shift
     local r=$1 ; shift
-    local files="$1"
-    for f in $files ; do 
+    # local files="$1"
+    for f in $@ ; do 
 	ff=$dir/$f
 	tgt=`collect_name "$ff" "$d" "$M"`
 	if test "x$tgt" = "x" ; then 
@@ -631,25 +698,25 @@ corrs_terminate()
     (cd ${name}_mceloss_${now} && terminate)
     (cd ${name}_eloss_${now}   && terminate)
 }
-# This assumes the function extract_upload 
-corrs_upload() 
+# Run post processing 
+corrs_post()
 {
-    if test "X$mc_dir" != "X" ; then 
-	(cd ${name}_mccorr_${now}  && extract_upload)
-	(cd ${name}_mceloss_${now} && extract_upload)
-    fi
-    (cd ${name}_eloss_${now}   && extract_upload)
+    (cd ${name}_mccorr_${now}  && post ../${name}_corrs_${now})
+    (cd ${name}_mceloss_${now} && post ../${name}_corrs_${now} )
+    (cd ${name}_eloss_${now}   && post ../${name}_corrs_${now} )
     rm -f fmd_corrections.root spd_corrections.root 
     ln -s ${name}_corrs_${now}/fmd_corrections.root .
     ln -s ${name}_corrs_${now}/spd_corrections.root .
 }
+
+# This assumes the function extract_upload 
+corrs_upload() 
+{
+    corrs_post
+}
 corrs_draw()
 {
-    if test "X$mc_dir" != "X" ; then 
-	(cd ${name}_mccorr_${now}  && draw ${fwd_dir}/DrawMCCorrSummary.C)
-	(cd ${name}_mceloss_${now} && draw ${fwd_dir}/corrs/DrawCorrELoss.C 1)
-    fi
-    (cd ${name}_eloss_${now}   && draw ${fwd_dir}/corrs/DrawCorrELoss.C 0)
+    corrs_post
 }
 # --- Run all AOD jobs -----------------------------------------------
 aods()
@@ -664,12 +731,16 @@ aods_terminate()
 }
 aods_upload()
 {
-    echo "Upload does not make sense for AOD jobs"
+    aods_post
 }
 aods_draw() 
 {
-    (cd ${name}_mcaod_${now} && draw Summarize.C)
-    (cd ${name}_aod_${now}   && draw Summarize.C)
+    aods_post
+}
+aods_post()
+{
+    (cd ${name}_mcaod_${now} && post)
+    (cd ${name}_aod_${now}   && post)
 }
 # --- Run all dN/deta jobs -------------------------------------------
 dndetas()
@@ -702,19 +773,24 @@ dndetas_terminate()
 }
 dndetas_upload()
 {
-    echo "Upload does not make sense for dN/deta jobs"
+    dndeta_post
 }
 dndetas_draw() 
 {
+    dndeta_post
+}
+dndetas_post() 
+{
     if test $sys -eq 1 ; then 
-	dndeta_draw ${name}_mcdndeta_inel_${now}
-	dndeta_draw ${name}_mcdndeta_nsd_${now}
-	dndeta_draw ${name}_mcdndeta_inelgt0_${now}
-	dndeta_draw ${name}_dndeta_inel_${now} 
-	dndeta_draw ${name}_dndeta_nsd_${now} 
-	dndeta_draw ${name}_dndeta_inelgt0_${now} 
+	(cd ${name}_mcdndeta_inel_${now}    && post)
+	(cd ${name}_mcdndeta_nsd_${now}     && post)
+	(cd ${name}_mcdndeta_inelgt0_${now} && post)
+	(cd ${name}_dndeta_inel_${now}      && post)
+	(cd ${name}_dndeta_nsd_${now}       && post)
+	(cd ${name}_dndeta_inelgt0_${now}   && post)
     else
-	dndeta_draw ${name}_dndeta_${now} 
+	(cd ${name}_mcdndeta_${now} && post)
+	(cd ${name}_dndeta_${now}   && post)
     fi
 }
 # --- Run all MultDists -------------------------------------------
@@ -730,12 +806,12 @@ multdists_terminate()
 }
 multdists_upload()
 {
-    echo "Upload does not make sense for P(Nch) jobs"
+    multdists_posts
 }
-multdists_draw() 
+multdists_post() 
 {
-    (cd ${name}_mcmultdists_${now} && draw Summarize.C)
-    (cd ${name}_multdists_${now}   && draw Summarize.C)
+    (cd ${name}_mcmultdists_${now} && post)
+    (cd ${name}_multdists_${now}   && post ../${name}_mcmultdists_${now})
 }
 
 # === Driver code ====================================================
@@ -837,6 +913,7 @@ runIt()
 	xterm*) func=${func}_terminate ;; 
 	xup*)   func=${func}_upload ;; 
 	xdr*)   func=${func}_draw ;;
+	xpo*)   func=${func}_post ;;
 	*) echo "$0: Unknown step $step" > /dev/stderr ; exit 1 ;;
     esac
     

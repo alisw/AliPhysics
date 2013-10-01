@@ -55,7 +55,7 @@ protected:
    * 
    * @return Reference to this
    */
-  AliForwarddNdetaTask& operator=(const AliForwarddNdetaTask&) { return *this; }
+  AliForwarddNdetaTask& operator=(const AliForwarddNdetaTask&);
 
   /** 
    * Retrieve the histogram 
@@ -65,7 +65,7 @@ protected:
    * 
    * @return Retrieved histogram or null
    */
-  TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc);
+  TH2D* GetHistogram(const AliAODEvent& aod, Bool_t mc);
   /** 
    * Get the colour to use for markers (only pp - in PbPb we use a rainbow)
    * 
@@ -120,9 +120,7 @@ protected:
      * 
      * @param other Object to copy from 
      */
-    CentralityBin(const CentralityBin& other) 
-      : AliBasedNdetaTask::CentralityBin(other)
-    {}
+    CentralityBin(const CentralityBin& other);
     /** 
      * Destructor 
      */
@@ -133,7 +131,7 @@ protected:
      * 
      * @return 
      */
-    CentralityBin& operator=(const CentralityBin&) { return *this; }
+    CentralityBin& operator=(const CentralityBin&);
     /** 
      * End of processing 
      * 

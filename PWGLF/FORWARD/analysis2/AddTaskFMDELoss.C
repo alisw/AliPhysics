@@ -22,6 +22,7 @@
  * @param mc      Assume MC input 
  * @param useCent Use centrality information 
  * @param debug   Debug level
+ * @param residuals If set, also do residuals 
  *
  * @return Newly created task 
  *
@@ -42,10 +43,9 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
   }   
   
   // --- Make the task and add it to the manager ---------------------
-  AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
+  AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("ForwardELoss");
   // task->SetBLow(blow);
   // task->SetBLow(bhigh);
-  mgr->AddTask(task);
   
   // --- Set parameters on the algorithms ----------------------------
   // Set the number of SPD tracklets for which we consider the event a
@@ -104,18 +104,7 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
   // AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
   
   // --- Make the output container and connect it --------------------
-  AliAnalysisDataContainer* histOut = 
-    mgr->CreateContainer("Forward", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("ForwardResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, histOut);
-  mgr->ConnectOutput(task, 2, output);
-
+  task->Connect(0,0);
 
   return task;
 }

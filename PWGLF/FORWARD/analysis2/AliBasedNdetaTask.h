@@ -13,7 +13,7 @@
  * @ingroup pwglf_forward_dndeta
  * 
  */
-#include <AliAnalysisTaskSE.h>
+#include "AliBaseAODTask.h"
 class TAxis;
 class TList;
 class TH2D;
@@ -44,7 +44,7 @@ class TObjArray;
  * @ingroup pwglf_forward_tasks_dndeta
  * @ingroup pwglf_forward_dndeta
  */
-class AliBasedNdetaTask : public AliAnalysisTaskSE
+class AliBasedNdetaTask : public AliBaseAODTask
 {
 public:
   /** 
@@ -110,42 +110,11 @@ public:
    */
   virtual void SetDebugLevel(Int_t level);
   /** 
-   * Set the vertex range to use 
-   * 
-   * @param min Minimum (in centermeter)
-   * @param max Maximum (in centermeter)
-   */  
-  void SetVertexRange(Double_t min, Double_t max) { fVtxMin=min; fVtxMax=max; }
-  /** 
    * Set the rebinning factor 
    * 
    * @param rebin Rebinning factor 
    */
   void SetRebinning(Int_t rebin) { fRebin = rebin; }
-  /** 
-   * Set the trigger maskl 
-   * 
-   * @param mask Trigger mask
-   */
-  void SetTriggerMask(UShort_t mask);
-  /** 
-   * Set the trigger mask 
-   * 
-   * @param mask trigger mask 
-   */
-  void SetTriggerMask(const char* mask);
-  /** 
-   * Set the centrality bins to use. 
-   * 
-   * @code 
-   *   UShort_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
-   *   task->SetCentralityBins(11, bins);
-   * @endcode 
-   * 
-   * @param n     Number of bins (elements in @a bins minus 1)
-   * @param bins  Bin limits 
-   */
-  void SetCentralityAxis(UShort_t n, Short_t* bins);
   /** 
    * Whether to cut edges when merging 
    * 
@@ -245,30 +214,27 @@ public:
    *  @name Task interface 
    */
   /** 
-   * Initialise on master - does nothing
-   * 
-   */
-  virtual void   Init() {}
-  /** 
    * Create output objects.  
    *
    * This is called once per slave process 
+   *
+   * @return true on success
    */
-  virtual void UserCreateOutputObjects();
+  virtual Bool_t Book();
   /** 
    * Process a single event 
    * 
-   * @param option Not used
+   * @return true on success
    */
-  virtual void UserExec(Option_t* option);
+  virtual Bool_t Event(AliAODEvent& aod);
   /** 
    * Called at end of event processing.
    *
    * This is called once in the master 
    * 
-   * @param option Not used 
+   * @return true on success
    */
-  virtual void Terminate(Option_t* option);
+  virtual Bool_t Finalize();
   /* @} */
 
   /** 
@@ -338,7 +304,7 @@ public:
    */
   static void SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker, 
 				     const char* title, 
-				     const char* ytitle="#frac{1}{N} #frac{dN_{ch}}{d#eta}");
+				     const char* ytitle=0);
   /** @} */
 
   /**
@@ -383,18 +349,28 @@ public:
    void SetGlobalEmpiricalcorrection(TH2D* globalempiricalcorrection){fglobalempiricalcorrection=globalempiricalcorrection;}
 protected:
   /** 
-   * Copy contructor
+   * Copy contructor - not defined
    */
   AliBasedNdetaTask(const AliBasedNdetaTask&);
   /** 
-   * Assignment operator 
+   * Assignment operator - not defined
    * 
    * 
    * @return 
    */
-  AliBasedNdetaTask& operator=(const AliBasedNdetaTask&) { return *this; }
+  AliBasedNdetaTask& operator=(const AliBasedNdetaTask&);
   // Forward declaration 
   class CentralityBin;
+  /** 
+   * Check if the event corresponds to the selected trigger(s),
+   * vertex, and centrality.  Derived classes can overload this to
+   * enable event processing - even if the event is not within cuts.
+   * 
+   * @param forward Forward object
+   * 
+   * @return true if the event is within the cuts. 
+   */
+  virtual Bool_t CheckEvent(const AliAODForwardMult& forward);
   /** 
    * Create the CentralityBin objects if not already done.
    * 
@@ -408,7 +384,7 @@ protected:
    * 
    * @return Retrieved histogram or null
    */
-  virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false) = 0;
+  virtual TH2D* GetHistogram(const AliAODEvent& aod, Bool_t mc=false) = 0;
   /** 
    * Get the colour to use for markers (only pp - in PbPb we use a rainbow)
    * 
@@ -562,7 +538,7 @@ protected:
 		  Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
 		  Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
 
-    ClassDef(Sum,1); // Summed histograms
+    ClassDef(Sum,2); // Summed histograms
   };
     
   //==================================================================
@@ -828,16 +804,16 @@ protected:
     /** 
      * Get list of results 
      * 
-     * 
      * @return List of results
      */
     TList* GetResults() const { return fOutput; }
     /** 
-     * Get name of result histogram 
+     * Get name of result histogram. Note, the returned pointer points
+     * to static memory and should be copied/used immediately.
      * 
-     * @param rebin 
-     * @param sym 
-     * @param postfix 
+     * @param rebin    Whether to get rebinned result
+     * @param sym      Whether to get symmetric extension
+     * @param postfix  Possible postfix (e.g., "MC")
      * 
      * @return 
      */
@@ -846,14 +822,17 @@ protected:
     /** 
      * Get a result 
      * 
-     * @param rebin 
-     * @param sym 
-     * @param postfix 
+     * @param rebin    Whether to get rebinned result
+     * @param sym      Whether to get symmetric extension
+     * @param postfix  Possible postfix (e.g., "MC")
+     * @param verbose  If true, complain about missing histogram
      * 
-     * @return 
+     * @return Pointer to histogram or null
      */
-    TH1* GetResult(Int_t rebin, Bool_t sym, 
-		   const char* postfix="") const;
+    TH1* GetResult(Int_t       rebin, 
+		   Bool_t      sym, 
+		   const char* postfix="",
+		   Bool_t      verbose=true) const;
     /** 
      * Set the debug level
      * 
@@ -909,13 +888,8 @@ protected:
     Bool_t   fSatelliteVertices; // Satellite vertex flag
     Int_t    fDebug;    // Debug level 
 
-    ClassDef(CentralityBin,3); // A centrality bin 
+    ClassDef(CentralityBin,4); // A centrality bin 
   };
-  TList*          fSums;         // Container of sums 
-  TList*          fOutput;       // Container of outputs 
-  Double_t        fVtxMin;       // Minimum v_z
-  Double_t        fVtxMax;       // Maximum v_z
-  Int_t           fTriggerMask;  // Trigger mask 
   Int_t           fRebin;        // Rebinning factor 
   Bool_t          fCutEdges;     // Whether to cut edges when rebinning
   Bool_t          fSymmetrice;   // Whether to symmetrice data 
@@ -925,19 +899,12 @@ protected:
   Double_t        fTriggerEff0;  // Bin-0 Trigger efficiency for sel trigger(s)
   TH2F*           fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 
-  TObject*        fSNNString;    // sqrt(s_NN) string 
-  TObject*        fSysString;    // Collision system string 
-  TH1D*           fCent;         // Centrality distribution 
-  TAxis*          fCentAxis;     // Centrality axis
-  TH1D*           fVtx;          // Vertex hist
   UShort_t        fNormalizationScheme; // Normalization scheme
-  TObject*        fSchemeString;    // Normalization scheme string
-  TObject*        fTriggerString;    // Trigger string 
   TString         fFinalMCCorrFile; //Filename for final MC corr
   Bool_t          fSatelliteVertices; // satellite vertex flag
   TH2D*           fglobalempiricalcorrection; // the ratio of PbPb analysis normal displace vertex
   TH2D* 	  fmeabsignalvscentr; //mean signal per event vs cent	 	  
-  ClassDef(AliBasedNdetaTask,13); // Determine charged particle density
+  ClassDef(AliBasedNdetaTask,14); // Determine charged particle density
 };
 
 #endif

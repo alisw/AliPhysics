@@ -37,20 +37,20 @@ CentralAODConfig(AliCentralMultiplicityTask* task)
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
-  task->GetInspector().SetLowFluxCut(1000); 
+  task->GetEventInspector().SetLowFluxCut(1000); 
   // Set the maximum error on v_z [cm]
-  task->GetInspector().SetMaxVzErr(0.2);
+  task->GetEventInspector().SetMaxVzErr(0.2);
   // Least number of constributors to 2nd pile-up vertex
-  task->GetInspector().SetMinPileupContributors(3);
+  task->GetEventInspector().SetMinPileupContributors(3);
   // Least distance from primary to 2nd pile-up vertex (cm)
-  task->GetInspector().SetMinPileupDistance(.8);
+  task->GetEventInspector().SetMinPileupDistance(.8);
   // V0-AND triggered events flagged as NSD 
-  // task->GetInspector().SetUseV0AndForNSD(false);
+  // task->GetEventInspector().SetUseV0AndForNSD(false);
   // Use primary vertex selection from 1st physics WG
-  // task->GetInspector().SetUseFirstPhysicsVtx(true);
+  // task->GetEventInspector().SetUseFirstPhysicsVtx(true);
   // Use satellite collisions
-  // task->GetInspector().SetUseDisplacedVertices(true);
-  // task->GetInspector().SetDebug(4);
+  // task->GetEventInspector().SetUseDisplacedVertices(true);
+  // task->GetEventInspector().SetDebug(4);
 }
 
 //

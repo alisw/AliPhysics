@@ -7,7 +7,7 @@ struct OtherPNch
    * CMS data 
    */
   /**
-   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt0.5@f$
+   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le0.5@f$
    * http://hepdata.cedar.ac.uk/view/p8068/d2
    *
    * @return p8068_d2x1y1
@@ -100,7 +100,7 @@ struct OtherPNch
     return g;
   }
   /**
-   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt1.0@f$
+   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le1.0@f$
    * http://hepdata.cedar.ac.uk/view/p8068/d3
    *
    * @return p8068_d3x1y1
@@ -242,7 +242,7 @@ struct OtherPNch
     return g;
   }
   /**
-   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt1.5@f$
+   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le1.5@f$
    * http://hepdata.cedar.ac.uk/view/p8068/d4
    *
    * @return p8068_d4x1y1
@@ -419,7 +419,7 @@ struct OtherPNch
     return g;
   }
   /**
-   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt2.0@f$
+   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le2.0@f$
    * http://hepdata.cedar.ac.uk/view/p8068/d6
    *
    * @return p8068_d6x1y1
@@ -644,7 +644,7 @@ struct OtherPNch
     return   g;
   }
   /**
-   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt2.4@f$
+   * CMS @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le2.4@f$
    * http://hepdata.cedar.ac.uk/view/p8068/d5
    *
    * @return p8068_d5x1y1
@@ -882,7 +882,7 @@ struct OtherPNch
    * ALICE data 
    */
   /**
-   * ALICE @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt0.5@f$
+   * ALICE @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le0.5@f$
    * http://hepdata.cedar.ac.uk/view/p7742/d8
    *
    * @return p7742_d8x1y1
@@ -975,7 +975,7 @@ struct OtherPNch
     return g;
   }
   /**
-   * ALICE @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt1.0@f$
+   * ALICE @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le1.0@f$
    * http://hepdata.cedar.ac.uk/view/p7742/d9
    *
    * @return p7742_d9x1y1
@@ -1123,7 +1123,7 @@ struct OtherPNch
   }
 
   /**
-   * ALICE @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\lt1.3@f$
+   * ALICE @f$ P(N_{ch})@f$ at @f$\sqrt{s}=900GeV@f$ for @f$|\eta|\le1.3@f$
    * http://hepdata.cedar.ac.uk/view/p7742/d10
    *
    * @return p7742_d10x1y1

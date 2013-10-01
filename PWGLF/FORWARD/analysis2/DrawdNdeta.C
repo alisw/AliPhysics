@@ -370,14 +370,14 @@ struct dNdetaDrawer
     Info("Run", "Drawing results from %s", file->GetName());
 
     // --- Get forward list ------------------------------------------
-    TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
+    TList* forward = static_cast<TList*>(file->Get("ForwarddNdetaResults"));
     if (!forward) { 
-      Error("Run", "Couldn't find list ForwardResults");
+      Error("Run", "Couldn't find list ForwarddNdetaResults");
       return;
     }
-    TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
+    TList* sums = static_cast<TList*>(file->Get("ForwarddNdetaSums"));
     if (!sums) { 
-      Error("Run", "Couldn't find list ForwardSums");
+      Error("Run", "Couldn't find list ForwarddNdetaSums");
       return;
     }
     TParameter<bool>* p = 
@@ -429,12 +429,12 @@ struct dNdetaDrawer
     gROOT->SetMacroPath(savPath);
 
     // --- Get the central results -----------------------------------
-    TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
-    if (!clusters) Warning("Run", "Couldn't find list CentralResults");
+    TList* clusters = static_cast<TList*>(file->Get("CentraldNdetaResults"));
+    if (!clusters) Warning("Run", "Couldn't find list CentraldNdetaResults");
 
     // --- Get the central results -----------------------------------
-    TList* mcTruth = static_cast<TList*>(file->Get("MCTruthResults"));
-    if (!mcTruth) Warning("Run", "Couldn't find list MCTruthResults");
+    TList* mcTruth = static_cast<TList*>(file->Get("MCTruthdNdetaResults"));
+    if (!mcTruth) Warning("Run", "Couldn't find list MCTruthdNdetaResults");
 
     // --- Make our containtes ---------------------------------------
     fResults   = new THStack("results", "Results");
@@ -452,13 +452,13 @@ struct dNdetaDrawer
 		fFinalMC.Data());
       }
       else { 
-	forwardMC = static_cast<TList*>(finalMC->Get("ForwardResults"));
+	forwardMC = static_cast<TList*>(finalMC->Get("ForwarddNdetaResults"));
 	if (!forwardMC) 
-	  Warning("Run", "Couldn't find list ForwardResults for final MC");
+	  Warning("Run","Couldn't find list ForwarddNdetaResults for final MC");
 #if 0
-	centralMC = static_cast<TList*>(finalMC->Get("CentralResults"));
+	centralMC = static_cast<TList*>(finalMC->Get("CentradNdetalResults"));
 	if (!centralMC) 
-	  Warning("Run", "Couldn't find list CentralResults for final MC");
+	  Warning("Run","Couldn't find list CentraldNdetaResults for final MC");
 #endif
       }
     }
@@ -811,9 +811,9 @@ struct dNdetaDrawer
     TString title(h->GetTitle());
     title.ReplaceAll("ALICE ","");
     if (title.Contains("Central")) 
-      title.ReplaceAll("Central", "SPD clusters");
+      title.ReplaceAll("CentraldNdeta", "SPD clusters");
     if (title.Contains("Forward"))
-      title.ReplaceAll("Forward", "FMD");
+      title.ReplaceAll("ForwarddNdeta", "FMD");
     h->SetTitle(title);
     
     
@@ -1910,8 +1910,8 @@ struct dNdetaDrawer
       }
     }
     if (!r) {
-      Warning("Ratio", "Don't know how to divide a %s (%s) with a %s (%s)", 
-	      o1->ClassName(), o1->GetName(), o2->ClassName(), o2->GetName());
+      // Warning("Ratio", "Don't know how to divide a %s (%s) with a %s (%s)", 
+      //         o1->ClassName(),o1->GetName(),o2->ClassName(),o2->GetName());
       return 0;
     }
     // Check that the histogram isn't empty
@@ -1980,7 +1980,23 @@ struct dNdetaDrawer
   TH1* RatioHH(const TH1* h1, const TH1* h2) const
   {
     if (!h1 || !h2) return 0;
+    Bool_t bad = false;
+    if (h1->GetNbinsX() != h2->GetNbinsX()) {
+      Error("RatioHH", "They have differnet number of bins");
+      bad = true;
+    }
+    for (Int_t i = 1; i <= h1->GetNbinsX(); i++) {
+      if (h1->GetXaxis()->GetBinLowEdge(i) != 
+	  h2->GetXaxis()->GetBinLowEdge(i)) {
+	// Error("RatioHH", "They have incompatible variable bins");
+	bad = true;
+	break;
+      }
+    }
+    if (bad) return 0;
+    
     TH1* t1 = static_cast<TH1*>(h1->Clone("tmp"));
+    // Printf("Dividing %s with %s", h1->GetName(), h2->GetName());
     t1->Divide(h2);
     return t1;
   }
@@ -2331,7 +2347,10 @@ struct dNdetaDrawer
    * 
    * @return True if we should do centrality dependent ploting 
    */
-  Bool_t HasCent() const { return fCentAxis && !fForceMB; }
+  Bool_t HasCent() const 
+  { 
+    return fCentAxis && fCentAxis->GetNbins() > 0 && !fForceMB; 
+  }
 
 
 
@@ -2573,8 +2592,11 @@ Usage()
  * @param sNN       (optional) Collision energy [GeV]
  * @param sys       (optional) Collision system (1: pp, 2: PbPb)
  * @param trg       (optional) Trigger (1: INEL, 2: INEL>0, 4: NSD)   
+ * @param eff       (optional) Trigger efficiency 
  * @param vzMin     Least @f$ v_z@f$
  * @param vzMax     Largest @f$ v_z@f$
+ * @param base      Base name 
+ * @param outflg    Output flags 
  *
  * @ingroup pwglf_forward_dndeta
  */
