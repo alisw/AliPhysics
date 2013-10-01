@@ -70,6 +70,11 @@ class AliHFSystErr : public TNamed
     AliInfo(" Settings for the PbPb 2010 energy scan");
   }
 
+  // Settings of rapidity ranges for pPb 0-100% CC
+  void SetRapidity(TString rapidity) {
+    fRapidityRange = rapidity;
+    AliInfo(Form(" Settings for rapidity interval %s",fRapidityRange.Data()));
+  }
   void SetIspPb2011RapidityScan(Bool_t flag){
     fIsRapidityScan = flag; 
     AliInfo("Settings for the pPb vs y measurement");
