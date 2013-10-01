@@ -26,6 +26,7 @@
  * This is the script to include the Forward multiplicity in a train.  
  * 
  * @param mc      Define as true for MC input. 
+ * @param runNo   Pre-set run number
  * @param sys     Collision system (0: deduce, 1: pp, 2: pbpb, 3:pA)
  * @param sNN     Collision energy 
  * @param field   L3 field setting. 
@@ -57,10 +58,9 @@ AddTaskForwardMult(Bool_t   mc,
 
   // --- Make the task and add it to the manager ---------------------
   AliForwardMultiplicityBase* task = 0;
-  if (mc) task = new AliForwardMCMultiplicityTask("FMD");
-  else    task = new AliForwardMultiplicityTask("FMD");
+  if (mc) task = new AliForwardMCMultiplicityTask("Forward");
+  else    task = new AliForwardMultiplicityTask("Forward");
   task->Configure(config);
-  mgr->AddTask(task);
   
   // --- Set alternative corrections path ----------------------------
   AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
@@ -78,18 +78,7 @@ AddTaskForwardMult(Bool_t   mc,
   }
   
   // --- Make the output container and connect it --------------------
-  AliAnalysisDataContainer* histOut = 
-    mgr->CreateContainer("Forward", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("ForwardResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, histOut);
-  mgr->ConnectOutput(task, 2, output);
+  task->Connect(0,0);
 
   return task;
 }

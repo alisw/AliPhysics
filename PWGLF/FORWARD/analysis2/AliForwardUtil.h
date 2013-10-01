@@ -278,6 +278,17 @@ public:
   //==================================================================
   /** 
    * @{ 
+   * @name Axis functions 
+   */
+  static TAxis* MakeFullIpZAxis(Int_t nCenter=20);
+  static void PrintTask(const TObject& o);
+  static void PrintName(const char* name);
+  static void PrintField(const char* name, const char* value, ...);
+  /* @} */
+
+  //==================================================================
+  /** 
+   * @{ 
    * @name Energy stragling functions 
    */
   //__________________________________________________________________

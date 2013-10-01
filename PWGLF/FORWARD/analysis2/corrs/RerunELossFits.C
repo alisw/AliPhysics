@@ -73,6 +73,10 @@ TCollection* GetCollection(const TCollection* parent, const TString& name)
  * @param output If specified, the file the new results are written
  * to.  If this is not specified, it defaults to the name of the input
  * file with "_rerun" attached to the base name
+ *
+ * @param forceSet  Forcibly set things 
+ * @param input     Input file 
+ * @param output    Output file 
  */
 void RerunELossFits(Bool_t forceSet=false, 
 		    const TString& input="forward_eloss.root", 

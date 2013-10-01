@@ -15,7 +15,6 @@
  * @param trig      Trigger to use 
  * @param vzMin     Smallest @f$ v_z@f$
  * @param vzMax     Biggest @f$ v_z@f$
- * @param maxN      Maximum Nch 
  * @param usePhiAcc Use stored phi acceptance 
  * @param useAsymm  Make asymmetric bins 
  *

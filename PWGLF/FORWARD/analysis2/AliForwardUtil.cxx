@@ -273,11 +273,11 @@ UShort_t AliForwardUtil::CheckForAOD()
 {
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   if (dynamic_cast<AliAODInputHandler*>(am->GetInputEventHandler())) {
-    ::Info("CheckForAOD", "Found AOD Input handler");
+    /// ::Info("CheckForAOD", "Found AOD Input handler");
     return 1;
   }
   if (dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler())) {
-    ::Info("CheckForAOD", "Found AOD Output handler");
+    // ::Info("CheckForAOD", "Found AOD Output handler");
     return 2;
   }
 
@@ -541,6 +541,94 @@ Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip,
   if (phi < 0)              phi += TMath::TwoPi();
   if (phi > TMath::TwoPi()) phi -= TMath::TwoPi();
   return phi;
+}
+//====================================================================
+TAxis*
+AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
+{
+  // Custom vertex axis that will include satellite vertices 
+  // Satellite vertices are at k*37.5 where k=-10,-9,...,9,10 
+  // Nominal vertices are usually in -10 to 10 and we should have 
+  // 10 bins in that range.  That gives us a total of 
+  //
+  //   10+10+10=30 bins 
+  // 
+  // or 31 bin boundaries 
+  if (nCenter % 2 == 1) 
+    // Number of central bins is odd - make it even
+    nCenter--;
+  const Double_t mCenter = 20;
+  const Int_t    nSat    = 10;
+  const Int_t    nBins   = 2*nSat + nCenter;
+  const Int_t    mBin    = nBins / 2;
+  Double_t       dCenter = 2*mCenter / nCenter;
+  TArrayD        bins(nBins+1);	
+  bins[mBin] = 0;
+  for (Int_t i = 1; i <= nCenter/2; i++) { 
+    // Assign from the middle out 
+    Double_t  v  = i * dCenter;
+    // Printf("Assigning +/-%7.2f to %3d/%3d", v,mBin-i,mBin+i);
+    bins[mBin-i] = -v;
+    bins[mBin+i] = +v;
+  }
+  for (Int_t i = 1; i <= nSat; i++) { 
+    Double_t v = (i+.5) * 37.5;
+    Int_t    o = nCenter/2+i;
+    // Printf("Assigning +/-%7.2f to %3d/%3d", v,mBin-o,mBin+o);
+    bins[mBin-o] = -v;
+    bins[mBin+o] = +v;
+  }
+  TAxis* a = new TAxis(nBins,bins.GetArray());
+  return a;
+}
+void 
+AliForwardUtil::PrintTask(const TObject& o)
+{
+  Int_t ind = gROOT->GetDirLevel();
+  if (ind > 0) 
+    // Print indention 
+    std::cout << std::setfill(' ') << std::setw(ind) << " " << std::flush;
+
+  TString t = TString::Format("%s %s", o.GetName(), o.ClassName());
+  const Int_t maxN = 75;
+  std::cout << "--- " << t << " " << std::setfill('-') 
+	    << std::setw(maxN-ind-5-t.Length()) << "-" << std::endl;
+}
+void
+AliForwardUtil::PrintName(const char* name)
+{
+  Int_t ind = gROOT->GetDirLevel();
+  if (ind > 0) 
+    // Print indention 
+    std::cout << std::setfill(' ') << std::setw(ind) << " " << std::flush;
+    
+  // Now print field name 
+  const Int_t maxN  = 29;
+  Int_t       width = maxN - ind;
+  TString     n(name);
+  if (n.Length() > width-1) {
+    // Truncate the string, and put in "..."
+    n.Remove(width-4);
+    n.Append("...");
+  }
+  n.Append(":");
+  std::cout << std::setfill(' ') << std::left << std::setw(width) 
+	    << n << std::right << std::flush;
+}
+void
+AliForwardUtil::PrintField(const char* name, const char* value, ...)
+{
+  PrintName(name);
+
+  // Now format the field value 
+  va_list ap;
+  va_start(ap, value);
+  static char buf[512];
+  vsnprintf(buf, 511, value, ap);
+  buf[511] = '\0';
+  va_end(ap);
+
+  std::cout << buf << std::endl;
 }
 
 //====================================================================

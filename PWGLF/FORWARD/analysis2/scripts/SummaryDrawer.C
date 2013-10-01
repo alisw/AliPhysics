@@ -393,8 +393,9 @@ protected:
   /** 
    * Check a 1D histogram object from a parent
    * 
-   * @param p Parent collection 
-   * @param o Possibly found object
+   * @param parent Parent collection 
+   * @param name   Name of histogram
+   * @param verb   Possibly be verbose
    * 
    * @return pointer or null
    */
@@ -529,8 +530,9 @@ protected:
   /** 
    * Create a canvas 
    * 
-   * @param pname Name of PDF file to make 
-   * @param landscape if true, print in landscape 
+   * @param pname     Name of PDF file to make 
+   * @param landscape If true, print in landscape 
+   * @param pdf       Make PDF
    *
    * @return Created canvas 
    */
@@ -691,6 +693,7 @@ protected:
    * @param h       Object to draw 
    * @param opts    Options
    * @param flags   Flags
+   * @param title   Title on plot
    */
   void DrawInPad(TVirtualPad* c, 
 		 Int_t        padNo, 
@@ -706,6 +709,13 @@ protected:
     }
     DrawInPad(p, h, opts, flags, title);
   }
+  /** 
+   * Draw a clone of an object
+   * 
+   * @param o       Object
+   * @param options Draw options
+   * @param title   Title of object
+   */
   virtual void DrawObjClone(TObject* o, Option_t* options, const char* title)
   {
     if (o->IsA()->InheritsFrom(TH1::Class())) 
@@ -715,12 +725,26 @@ protected:
     else 
       o->Draw(options);
   }
+  /** 
+   * Draw an object clone 
+   * 
+   * @param o        Stack object
+   * @param options  Draw options 
+   * @param title    Title on plot
+   */
   virtual void DrawObjClone(THStack* o, Option_t* options, const char* title)
   {
     // THStack* tmp = static_cast<THStack*>(o->Clone());
     o->Draw(options);
     if (title && title[0] != '\0') o->GetHistogram()->SetTitle(title);
   }
+  /** 
+   * Draw an object clone 
+   * 
+   * @param o        Histogram
+   * @param options  Draw options 
+   * @param title    Title on plot 
+   */
   virtual void DrawObjClone(TH1* o, Option_t* options, const char* title)
   {
     TH1* tmp = o->DrawCopy(options);
@@ -734,6 +758,7 @@ protected:
    * @param h       Object to draw 
    * @param opts    Options
    * @param flags   Flags
+   * @param title   Title on plot
    */
   void DrawInPad(TVirtualPad* p, 
 		 TObject*     h, 
@@ -1043,6 +1068,7 @@ protected:
    * @param h       Object to draw 
    * @param opts    Options
    * @param flags   Flags
+   * @param title   Title on plot
    */
   void DrawInRingPad(UShort_t    d, 
 		     Char_t      r, 

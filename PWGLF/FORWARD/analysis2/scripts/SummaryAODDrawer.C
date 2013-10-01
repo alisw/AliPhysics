@@ -51,7 +51,7 @@ public:
    
 
     // --- Get top-level collection ----------------------------------
-    fSums = GetCollection(file, "Forward");
+    fSums = GetCollection(file, "ForwardSums");
     if (!fSums) return;
 
     // --- Do the results ----------------------------------------------
@@ -65,7 +65,7 @@ public:
     DrawTitlePage(file);
 
     // --- Possibly make a chapter here ------------------------------
-    if (what & kCentral && GetCollection(file, "Central")) 
+    if (what & kCentral && GetCollection(file, "CentralSums")) 
       MakeChapter("Forward");
     
     // --- Set pause flag --------------------------------------------
@@ -85,7 +85,7 @@ public:
     // --- SPD clusters ----------------------------------------------
     if (what & kCentral) { 
       // --- Get top-level collection --------------------------------
-      fSums = GetCollection(file, "Central");
+      fSums = GetCollection(file, "CentralSums");
       if (fSums) {
 	MakeChapter("Central");
 	DrawCentral();
@@ -114,8 +114,8 @@ protected:
     ltx->SetTextAlign(22);
     ltx->Draw();
 
-    TCollection* fwd = GetCollection(f, "Forward");
-    TCollection* cen = GetCollection(f, "Central");
+    TCollection* fwd = GetCollection(f, "ForwardSums");
+    TCollection* cen = GetCollection(f, "CentralSums");
     Double_t y = .6;
     
     Double_t save = fParName->GetTextSize();

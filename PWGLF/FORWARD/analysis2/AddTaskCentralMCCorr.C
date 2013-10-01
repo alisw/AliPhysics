@@ -32,8 +32,8 @@ AddTaskCentralMCCorr(Bool_t eff=false)
   }
 
   // --- Add our task ------------------------------------------------
-  AliCentralMCCorrectionsTask* task = new AliCentralMCCorrectionsTask("spd");
-  mgr->AddTask(task);
+  AliCentralMCCorrectionsTask* task = 
+    new AliCentralMCCorrectionsTask("CentralCorr");
   // This has to match the binning used in the AliAODCentralMult
   // class.  Currently, this is set to 20. 
   task->SetNPhiBins(20);
@@ -41,19 +41,7 @@ AddTaskCentralMCCorr(Bool_t eff=false)
 //  task->SetVertexAxis(40, -20., 20.);
   
   // --- create containers for input/output --------------------------
-  AliAnalysisDataContainer *sums = 
-    mgr->CreateContainer("CentralCorrSums", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("CentralCorrResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-
-  // --- connect input/output ----------------------------------------
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, sums);
-  mgr->ConnectOutput(task, 2, output);
+  task->Connect(0,0);
 
   return task;
 }

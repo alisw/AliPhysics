@@ -50,7 +50,7 @@ public:
    * 
    * @param option Not used 
    */
-  virtual void Terminate(Option_t* option);
+  virtual Bool_t Finalize();
 protected:
   /** 
    * Copy constructor 
@@ -63,7 +63,7 @@ protected:
    * 
    * @return Reference to this
    */
-  AliMCTruthdNdetaTask& operator=(const AliMCTruthdNdetaTask&) { return *this; }
+  AliMCTruthdNdetaTask& operator=(const AliMCTruthdNdetaTask&);
 
   /** 
    * Retrieve the histogram 
@@ -73,7 +73,7 @@ protected:
    * 
    * @return Retrieved histogram or null
    */
-  TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc);
+  TH2D* GetHistogram(const AliAODEvent& aod, Bool_t mc);
   /** 
    * Get the marker style 
    * 

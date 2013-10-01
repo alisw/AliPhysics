@@ -13,10 +13,9 @@
  * @ingroup pwglf_forward_eloss
  * 
  */
-#include <AliAnalysisTaskSE.h>
+#include "AliBaseESDTask.h"
 #include "AliFMDEventInspector.h"
 #include "AliFMDEnergyFitter.h"
-#include <AliESDFMD.h>
 class AliESDEvent;
 class TH2D;
 class TList;
@@ -41,7 +40,7 @@ class TTree;
  * @ingroup pwglf_forward_eloss
  * 
  */
-class AliFMDEnergyFitterTask : public AliAnalysisTaskSE
+class AliFMDEnergyFitterTask : public AliBaseESDTask
 {
 public:
   /** 
@@ -55,50 +54,42 @@ public:
    */
   AliFMDEnergyFitterTask();
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  AliFMDEnergyFitterTask& operator=(const AliFMDEnergyFitterTask& o);
-  /** 
    * @{ 
    * @name Interface methods 
    */
   /** 
-   * Initialize the task 
+   * Book output objects. Derived class should define this to book
+   * output objects on the processing output list @c fList before the
+   * actual event processing.  This is called on the master and on
+   * each slave.
    * 
+   * If this member function returns false, the execution is stopped
+   * with a fatal signal.
+   *
+   * @return true on success. 
    */
-  virtual void Init();
+  virtual Bool_t Book();
   /** 
-   * Create output objects 
+   * Called after reading in the first event. Here we can setup stuff
+   * depending on the conditions we're running under.
    * 
+   * @return true on success.  If this returns false, then we turn the
+   * task into a zombie and we do no more processing.
    */
-  virtual void UserCreateOutputObjects();
+  virtual Bool_t PreData(const TAxis& vertex, const TAxis& eta);
   /** 
    * Process each event 
    *
-   * @param option Not used
+   * @param esd Event to analyse
+   * @return true on success
    */  
-  virtual void UserExec(Option_t* option);
+  virtual Bool_t Event(AliESDEvent& esd);
   /** 
    * End of job
    * 
-   * @param option Not used 
+   * @return true on success
    */
-  virtual void Terminate(Option_t* option);
-  /** 
-   * Called on the slaves when the job has finished. 
-   * 
-   */
-  virtual void FinishTaskOutput();
+  virtual Bool_t Finalize();
   /** 
    * @} 
    */
@@ -119,6 +110,12 @@ public:
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
   /**
+   * Get reference to the EventInspector algorithm 
+   * 
+   * @return Reference to AliFMDEventInspector object 
+   */
+  const AliFMDEventInspector& GetEventInspector() const{return fEventInspector;}
+  /**
    * Get reference to the EnergyFitter algorithm 
    * 
    * @return Reference to AliFMDEnergyFitter object 
@@ -126,6 +123,10 @@ public:
   AliFMDEnergyFitter& GetEnergyFitter() { return fEnergyFitter; }
   /** 
    * @} 
+   */
+  /** 
+   * @{ 
+   * @name Settings 
    */
   /** 
    * Set the debug level 
@@ -145,21 +146,52 @@ public:
    * @param b high cut
    */
   void SetBHigh(Float_t b) {fbHigh = b;}
+  /* @} */
+  /** 
+   * @{ 
+   * @name Default axes 
+   */
+  /** 
+   * Set the default eta axis to use in case we didn't get one from
+   * the read-in corretions.  Override this if the sub class should go
+   * on even without a valid eta axis from the corrections (e.g. QA
+   * task)
+   * 
+   * @return null
+   */
+  virtual TAxis* DefaultEtaAxis() const;
+  /** 
+   * Set the default eta axis to use in case we didn't get one from
+   * the read-in corretions.  Override this if the sub class should go
+   * on even without a valid eta axis from the corrections (e.g. QA
+   * task)
+   * 
+   * @return null
+   */
+  virtual TAxis* DefaultVertexAxis() const;
+  /* @} */
 protected: 
   /** 
-   * Initialise the sub objects and stuff.  Called on first event 
+   * Copy constructor 
    * 
+   * @param o Object to copy from 
    */
-  virtual void   SetupForData();
+  AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o);
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object 
+   */
+  AliFMDEnergyFitterTask& operator=(const AliFMDEnergyFitterTask& o);
 
-  Bool_t               fFirstEvent;     // Whether the event is the first seen 
   AliFMDEventInspector fEventInspector; // Algorithm
   AliFMDEnergyFitter   fEnergyFitter;   // Algorithm
-  TList*               fList;           // Output list 
   Float_t              fbLow;           // What's this?
   Float_t              fbHigh;          // What's this? 
   
-  ClassDef(AliFMDEnergyFitterTask,2) // Forward multiplicity class
+  ClassDef(AliFMDEnergyFitterTask,3) // Forward multiplicity class
 };
 
 #endif

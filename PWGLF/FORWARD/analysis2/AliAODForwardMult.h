@@ -425,6 +425,8 @@ public:
    * @param cMin         Minimum centrality (in percent)
    * @param cMax         Maximum centrality (in percent)
    * @param hist         Histogram to fill 
+   * @param status       Histogram to fill 
+   * 
    * 
    * @return @c true if the event meets the requirements 
    */

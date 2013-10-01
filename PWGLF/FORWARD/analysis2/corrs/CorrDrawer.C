@@ -25,8 +25,6 @@ public:
   UShort_t fMinQuality;
   /** 
    * Constructor 
-   * 
-   * @param out Output file name 
    */
   CorrDrawer() 
   {
@@ -52,14 +50,15 @@ public:
    * @param mc     Simulations or not
    * @param sat    Satellite interactions or not 
    */
-  static void MakeFileName(TString&    out,
-			   const TString&  prefix,
+  static void MakeFileName(TString&        out,
+			   const TString&  prefix)
+  /*
 			   ULong_t         runNo, 
 			   UShort_t        sys, 
 			   UShort_t        sNN, 
 			   Short_t         field,
 			   Bool_t          mc=false, 
-			   Bool_t          sat=false)
+			   Bool_t          sat=false) */
   {
     out = TString::Format("forward_%s.pdf", prefix.Data());
 #if 0
@@ -77,8 +76,6 @@ public:
    * Draw corrections using the correction manager to get them 
    *  
    * @param what    What to draw 
-   * @param out     Output file name on return 
-   * @param prefix  Prefix of the file name 
    * @param runNo   Run Number
    * @param sys     Collision system 
    * @param sNN     Center of mass energy 
@@ -120,8 +117,6 @@ public:
    * Draw corrections using the correction manager to get them 
    *  
    * @param what    What to draw 
-   * @param out     Output file name on return 
-   * @param prefix  Prefix of the file name 
    * @param runNo   Run Number
    * @param sys     Collision system 
    * @param sNN     Center of mass energy 
@@ -138,7 +133,7 @@ public:
 	   UShort_t    field,
 	   Bool_t      mc=false, 
 	   Bool_t      sat=false,
-	   Option_t*   options="",
+	   Option_t*   /*options*/="",
 	   const char* local="")
   {
     AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
@@ -176,7 +171,7 @@ public:
     }
 
     TString out;
-    MakeFileName(out, name, runNo, sys, sNN, field, mc, sat);
+    MakeFileName(out, name); // , runNo, sys, sNN, field, mc, sat);
     CreateCanvas(out);
 
     fBody->cd();
@@ -239,7 +234,7 @@ public:
   /** 
    * Draw a single plot summarizing the energy loss fits
    * 
-   * @param sec Energy loss fits
+   * @param fits Energy loss fits
    */
   virtual void Draw(const AliFMDCorrELossFit* fits) { Summarize(fits, false); }
   /** 
@@ -289,7 +284,7 @@ public:
 			 Short_t     field,
 			 Bool_t      mc=false, 
 			 Bool_t      sat=false,
-			 Option_t*   options="",
+			 Option_t*   /*options*/="",
 			 const char* local="")
   {
     AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
@@ -331,7 +326,7 @@ public:
     else 
       prefix = "unknown";
     TString out;
-    MakeFileName(out, prefix, runNo, sys, sNN, field, mc, sat);
+    MakeFileName(out, prefix); // , runNo, sys, sNN, field, mc, sat);
     CreateCanvas(out);
 
     fBody->cd();
@@ -377,8 +372,8 @@ public:
   virtual void Summarize(const TObject* o, Bool_t pdf=true) 
   {
     if (!o) return;
-    Warning("CorrDrawer", "Don't know how to draw a %s object", 
-	    o->ClassName());
+    Warning("CorrDrawer", "Don't know how to draw a %s object (PDF: %s)", 
+	    o->ClassName(), pdf ? "yes" : "no");
   }
   /** 
    * Draw a single summary plot or multiple plots of the acceptance
@@ -400,9 +395,9 @@ public:
    * @param sec Secondary correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  virtual void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf) 
+  virtual void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf=true) 
   { 
-    CreateCanvas("scondarymap.pdf", false, pdf);
+    CreateCanvas("secondarymap.pdf", false, pdf);
     DrawIt(sec, pdf); 
     if (pdf) CloseCanvas();
   }
@@ -410,10 +405,10 @@ public:
    * Draw a single summary plot multiple plots of the energy loss
    * fits.  A new canvas is created for this.
    * 
-   * @param sec Energy loss fits
-   * @param pdf If true, do multiple plots. Otherwise a single summary plot
+   * @param fits Energy loss fits
+   * @param pdf  If true, do multiple plots. Otherwise a single summary plot
    */
-  virtual void Summarize(const AliFMDCorrELossFit* fits, Bool_t pdf) 
+  virtual void Summarize(const AliFMDCorrELossFit* fits, Bool_t pdf=true) 
   { 
     CreateCanvas("elossfits.pdf", false, pdf);
     DrawIt(fits, pdf); 
@@ -441,7 +436,7 @@ public:
 	      output.Data());
       return;
     }
-    TCollection* forward = GetCollection(fout, "Forward");
+    TCollection* forward = GetCollection(fout, "ForwardELossSums");
     if (!forward) return;
     
     TCollection* eventInsp = GetCollection(forward, "fmdEventInspector");
@@ -701,7 +696,7 @@ protected:
 	// Info("", "Opened forward_eloss.root -> %p", hists);
       }
       if (hists) {
-	TList* fr = static_cast<TList*>(hists->Get("ForwardResults"));
+	TList* fr = static_cast<TList*>(hists->Get("ForwardELossResults"));
 	// Info("", "Got forward results -> %p", fr);
 	if (fr) { 
 	  fitter = static_cast<TList*>(fr->FindObject("fmdEnergyFitter"));
@@ -796,9 +791,11 @@ protected:
    * CINT does too much when optimizing on a loop, so we take this out
    * to force CINT to not optimize the third nested loop.
    * 
-   * @param d 
-   * @param r 
-   * @param ra 
+   * @param d     Detector
+   * @param r     Ring 
+   * @param ra    Ring array 
+   * @param dists Distributions (optional)
+   * @param resis Residuals (optional)   
    */
   void DrawELossFits(UShort_t d, Char_t r, TObjArray* ra, 
 		     TList* dists, TList* resis)

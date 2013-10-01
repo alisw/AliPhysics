@@ -17,6 +17,10 @@ public:
   SummarydNdetaDrawer() 
     : SummaryDrawer()
   {}
+  const char* ColName(const char* prefix, bool results=false)
+  {
+    return Form("%sdNdeta%s", prefix, results ? "Results" : "Sums");
+  }
   //____________________________________________________________________
   void Run(const char* fname="forward_dndeta.root", UShort_t flags=kNormal)
   {
@@ -38,16 +42,21 @@ public:
     
     // --- Force MB for pp ---------------------------------------------
     UShort_t     sys = 0;
-    TCollection* c   = GetCollection(file, "ForwardSums");
+    TCollection* c   = GetCollection(file, ColName("Forward", false));
     GetParameter(c, "sys", sys); 
-    if (sys == 1) onlyMB = true;
+    if (sys == 1) {
+      onlyMB = true;
+      Info("Run", "Found sys==1 -> Forcing MB");
+    }
 
     // --- Test of MC --------------------------------------------------
-    TCollection* mcC = GetCollection(file, "MCTruthSums", false);
+    TCollection* mcC = GetCollection(file, ColName("MCTruth"), false);
     if (mcC) { 
       TCollection* mcAll = GetCollection(mcC, "all");
-      if (mcAll && GetObject(mcAll, "MCTruth"))
+      if (mcAll && GetObject(mcAll, "sum")) {
+	Info("Run", "Found MC truth output");
 	mc = true;
+      }
     }
     // --- Make our canvas ---------------------------------------------
     TString pdfName(filename);
@@ -101,7 +110,7 @@ protected:
   //____________________________________________________________________
   void DrawTitlePage(TFile* file, Bool_t mc, Bool_t onlyMB)
   {
-    TCollection* c   = GetCollection(file, "ForwardResults");
+    TCollection* c   = GetCollection(file, ColName("Forward", true));
 
     fBody->cd();
     
@@ -167,8 +176,9 @@ protected:
 
     rC->Draw("nostack");
 
-    TCollection* fS = GetCollection(file, "ForwardSums");
-    Int_t sys, sNN, trigger;
+    TCollection* fS = GetCollection(file, ColName("Forward", false));
+    UShort_t sys, sNN;
+    ULong_t trigger;
     GetParameter(fS, "sNN",     sNN); 
     GetParameter(fS, "sys",     sys); 
     GetParameter(fS, "trigger", trigger); 
@@ -218,8 +228,7 @@ protected:
     if (other) { 
       TIter nextG(other->GetListOfGraphs());
       TObject* g = 0;
-      while ((g = nextG())) 
-	l->AddEntry(g, g->GetTitle(), "p");
+      while ((g = nextG())) l->AddEntry(g, g->GetTitle(), "p");
     }
     l->Draw();
 
@@ -228,10 +237,11 @@ protected:
   //____________________________________________________________________
   void DrawSums(TDirectory* top, const TString& base, bool onlyMB)
   {
-    TCollection* c = GetCollection(top, Form("%sSums", base.Data()));
+    TCollection* c = GetCollection(top, ColName(base));
     if (!c) return;
     
     TAxis* centAxis = static_cast<TAxis*>(GetObject(c, "centAxis", false));
+    if (centAxis->GetNbins() < 1) centAxis = 0;
 
     Int_t   txtPad = 0;
     Double_t save  = fParName->GetTextSize();
@@ -263,7 +273,8 @@ protected:
     }
     fBody->cd(txtPad);
     
-    Int_t sys, sNN, scheme, trigger;
+    UShort_t sys, sNN, scheme;
+    ULong_t trigger;
     GetParameter(c, "sNN",     sNN); 
     GetParameter(c, "sys",     sys); 
     GetParameter(c, "scheme",  scheme); 
@@ -309,10 +320,10 @@ protected:
     TCollection* c = GetCentCollection(sums, base, cLow, cHigh, title);
     if (!c) return;
     
-    TH1* type = GetH1(c, Form("%sEvents",base.Data()));
-    TH2* bin0 = GetH2(c, Form("%s0", base.Data()));
+    TH2* bin  = GetH2(c, "sum");
+    TH2* bin0 = GetH2(c, "sum0");
+    TH1* type = GetH1(c, "events");
     TH1* trig = GetH1(c, "triggers");
-    TH2* bin  = GetH2(c, base.Data());
     if (!bin0 || !bin || !trig || !type) return;
 
     type->SetFillStyle(3001);
@@ -388,7 +399,7 @@ protected:
   //____________________________________________________________________
   THStack* DrawRes(TDirectory* top, const TString& base, Bool_t onlyMB)
   {
-    TCollection* c = GetCollection(top, Form("%sResults", base.Data()));
+    TCollection* c = GetCollection(top, ColName(base, true));
     if (!c) return 0;
 
     fBody->cd();
@@ -397,6 +408,8 @@ protected:
     PrintCanvas(Form("%s results", base.Data()));
 
     TAxis*   centAxis = static_cast<TAxis*>(GetObject(c, "centAxis", false));
+    if (centAxis->GetNbins() < 1) centAxis = 0;
+
     TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, 
 			     onlyMB || !centAxis? "" : "Centralities");
     l->SetNColumns(2);
@@ -481,10 +494,11 @@ protected:
     p->SetLeftMargin(0.15);
     if (trP > 2) p->SetTopMargin(0.05);
     
-    DrawInPad(fBody, trP, trig, "HIST TEXT");
-    DrawInPad(fBody, 2,   norm);
-    DrawInPad(fBody, 4,   dndeta);
-    DrawInPad(fBody, 6,   GetH1(c, Form("dndeta%s_rebin05",base.Data())));
+    DrawInPad(fBody, trP, trig,   "HIST TEXT");
+    DrawInPad(fBody, 2,   norm,   "", 0, "Normalization");
+    DrawInPad(fBody, 4,   dndeta, "", 0, "d#it{N}_{ch}/d#it{#eta}");
+    DrawInPad(fBody, 6,   GetH1(c, Form("dndeta%s_rebin05",base.Data())),
+	      "", 0, "d#it{N}_{ch}/d#it{#eta} (rebinned by 5)");
     DrawInPad(fBody, 5,   d2ndetadphi, "colz");
   
     fBody->GetPad(2)->SetGridx(); fBody->GetPad(2)->SetLeftMargin(0.15);
@@ -578,9 +592,11 @@ protected:
       phi->SetFillStyle(3001);
       
       p->Divide(1, 3, 0, 0);
-      DrawInPad(p, 1, sum, sum->Integral()>0 ? "col" : "");
-      DrawInPad(p, 2, GetH1(c, Form("average%s", suf)), "");
-      DrawInPad(p, 3, norm);
+      DrawInPad(p, 1, sum, sum->Integral()>0 ? "col" : "", 0, 
+		"d^{2}#it{N}_{ch}/d#it{#varphi}d#it{#eta}");
+      DrawInPad(p, 2, GetH1(c, Form("average%s", suf)), "", 0, 
+		"d#it{N}_{ch}/d#it{#eta}");
+      DrawInPad(p, 3, norm, "", 0, "#eta-coverage/#varphi-acceptance");
       DrawInPad(p, 3, phi, "same", kLegend);      
     }
     PrintCanvas(title);
@@ -604,6 +620,10 @@ protected:
 	  name.Form("%3d%% - %3d%%", 
 		    Int_t(axis->GetBinLowEdge(j)), 
 		    Int_t(axis->GetBinUpEdge(j)));
+	else {
+	  name.ReplaceAll("ALICE", "");
+	  name.ReplaceAll("dNdeta", " - work in progress");
+	}
 	ok = axis && axis->GetBinUpEdge(j) > 100;
 	TLegendEntry* e = l->AddEntry("dummy", name, "f");
 	e->SetFillStyle(1001);

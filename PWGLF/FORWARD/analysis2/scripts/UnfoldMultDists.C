@@ -71,6 +71,7 @@ struct Unfolder
    * @param c    Collection
    * @param name Name of object
    * @param cl   Possible class to check against
+   * @param verbose  Be verbose
    * 
    * @return Pointer to object or null
    */
@@ -94,8 +95,9 @@ struct Unfolder
   /** 
    * Get a collection 
    * 
-   * @param c 
-   * @param name 
+   * @param c        Parent collection
+   * @param name     Name of object to findf
+   * @param verbose  Be verbose
    * 
    * @return 
    */
@@ -112,6 +114,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Nanme of histogram
+   * @param verbose  Be verbose
    * 
    * @return Pointer to object or null
    */
@@ -124,6 +127,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Nanme of histogram
+   * @param verbose  Be verbose
    * 
    * @return Pointer to object or null
    */
@@ -136,6 +140,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Parameter name 
+   * @param v    Value
    * 
    * @return Value 
    */
@@ -149,6 +154,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Parameter name 
+   * @param v    Value
    * 
    * @return Value 
    */
@@ -162,6 +168,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Parameter name 
+   * @param v    Value
    * 
    * @return Value 
    */
@@ -173,9 +180,9 @@ struct Unfolder
   /** 
    * Get the method identifier 
    * 
-   * @param method 
+   * @param method Method 
    * 
-   * @return 
+   * @return Method identifier 
    */    
   static UInt_t MethodId(TString& method) 
   {
@@ -251,12 +258,12 @@ struct Unfolder
    *   [number]       := 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
    * @endverbatim
    *
-   * That is, the bin @f$ -3\lt\eta\gt3@f$ is labeled
-   * <b>m3d00_p3d00</b>, @f$ 0\lt\eta\gt2.5@f$ is <b>p0d00_p2d50</b> 
+   * That is, the bin @f$ -3\le\eta\ge3@f$ is labeled
+   * <b>m3d00_p3d00</b>, @f$ 0\le\eta\ge2.5@f$ is <b>p0d00_p2d50</b> 
    *
    * @a measuredFile and @a corrFile can point to the same file.  If
    * @a corrFile is not specified, it is assumed that @a measuredFile
-   * has the expected @a corrFile <emph>in addition</emph> to the
+   * has the expected @a corrFile @e in @e addition to the
    * expected content of that file.
    * 
    * @param measuredFile Name of file containing measured data
@@ -284,7 +291,7 @@ struct Unfolder
     Double_t minZ; 
     Double_t maxZ;
     GetParameter(mTop, "sys",     sys);	  
-    GetParameter(mTop, "snn",     sNN);	  
+    GetParameter(mTop, "sNN",     sNN);	  
     GetParameter(mTop, "trigger", trig);
     GetParameter(mTop, "minIpZ",  minZ); 
     GetParameter(mTop, "maxIpZ",  maxZ); 
@@ -358,6 +365,7 @@ struct Unfolder
    * @param trigger  Trigger mask 
    * @param minIpZ   Least z coordinate of interaction point
    * @param maxIpZ   Largest z coordinate of interaction point
+   * @param self     Self-consistency check
    */
   void SaveInformation(TDirectory* dir, 
 		       const TString& method,
@@ -478,6 +486,8 @@ struct Unfolder
    * @param method       Unfolding method to use 
    * @param regParam     Regularisation parameter
    * @param out          Output directory. 
+   * @param sys          Collision system
+   * @param sNN          Collision energy 
    */
   void ProcessType(TCollection* measured, 
 		   TCollection* corrections,
@@ -764,6 +774,7 @@ struct Unfolder
    * @param accepted  All MC accepted @f$ P(N_{ch})@f$ 
    * @param unfolded  All unfolded @f$ P(N_{ch})@f$ 
    * @param corrected All corrected @f$ P(N_{ch})@f$ 
+   * @param result    The result in this bin
    */
   void Bin2Stack(const THStack* bin, Int_t i, 
 		 THStack* measured, 
@@ -837,6 +848,8 @@ struct Unfolder
    * @param sNN      Center of mass energy 
    * @param allALICE Stack of ALICE data 
    * @param allCMS   Stack of CMS data 
+   * @param alice    Possible ALICE result on return
+   * @param cms      Possible CMS result on return
    */
   void Other2Stack(const TString& name, Int_t i,
 		   UShort_t sNN, TMultiGraph* allALICE, TMultiGraph* allCMS,
@@ -893,11 +906,11 @@ struct Unfolder
   /** 
    * Create ratios to other data 
    * 
-   * @param i 
-   * @param res 
-   * @param alice 
-   * @param cms 
-   * @param all 
+   * @param ib      Bin number  
+   * @param res     Result
+   * @param alice   ALICE result if any
+   * @param cms     CMS result if any
+   * @param all     Stack to add ratio to 
    */
   void Ratio2Stack(Int_t ib, TH1* res, TGraph* alice, TGraph* cms, THStack* all)
   {

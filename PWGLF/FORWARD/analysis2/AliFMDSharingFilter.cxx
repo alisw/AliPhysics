@@ -848,6 +848,18 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
     o->CreateOutputObjects(d);
   }
 }
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliFMDSharingFilter::Print(Option_t* /*option*/) const
@@ -858,23 +870,19 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
   // Parameters:
   //    option Not used 
   //
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << ClassName() << ": " << GetName() << '\n'
-	    << std::boolalpha 
-	    << ind << " Debug:                  " << fDebug << "\n"
-	    << ind << " Use corrected angles:   " << fCorrectAngles << '\n'
-	    << ind << " Zero below threshold:   " 
-	    << fZeroSharedHitsBelowThreshold << '\n'
-	    << ind << " Use simple sharing:     " << fUseSimpleMerging << '\n'
-	    << ind << " Consider invalid null:  " << fInvalidIsEmpty << '\n'
-	    << ind << " Allow 3 strip merging:  " << fThreeStripSharing
-	    << std::noboolalpha << std::endl;
-  std::cout << ind << " Low cuts: " << std::endl;
+  AliForwardUtil::PrintTask(*this);
+  gROOT->IncreaseDirLevel();
+
+  PFB("Use corrected angles",  fCorrectAngles);
+  PFB("Zero below threshold",  fZeroSharedHitsBelowThreshold);
+  PFB("Use simple sharing",    fUseSimpleMerging);
+  PFB("Consider invalid null", fInvalidIsEmpty);
+  PFB("Allow 3 strip merging", fThreeStripSharing);
+  PF("Low cuts",	"");
   fLCuts.Print();
-  std::cout << ind << " High cuts: " << std::endl;
+  PF("High cuts",	"");
   fHCuts.Print();
+  gROOT->DecreaseDirLevel();
 }
   
 //====================================================================

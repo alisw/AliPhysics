@@ -170,11 +170,11 @@ protected:
 
       fBody->Divide(2,3);
       DrawInPad(fBody, 1, GetH1(bin, "rawDist"),      "",     kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted"),"same", kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truth"),        "same", kLogy|kLegend);
+      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted", false),"same", kLogy);
+      DrawInPad(fBody, 1, GetH1(bin, "truth", false),"same", kLogy|kLegend);
       DrawInPad(fBody, 2, GetH1(bin, "coverage"));
-      DrawInPad(fBody, 3, GetH2(bin, "corr"),     "colz");
-      DrawInPad(fBody, 4, GetH2(bin, "response"), "colz", kLogz);
+      DrawInPad(fBody, 3, GetH2(bin, "corr"),            "colz");
+      DrawInPad(fBody, 4, GetH2(bin, "response", false), "colz", kLogz);
       DrawInPad(fBody, 5, GetH1(bin, "triggerVertex"));
       
       PrintCanvas(Form("%+5.1f < #eta < %+5.1f", etaMin, etaMax));
@@ -215,7 +215,7 @@ protected:
     Double_t minIpZ;
     Double_t maxIpZ;
     GetParameter(c, "sys",     sys);
-    GetParameter(c, "snn",     sNN);
+    GetParameter(c, "sNN",     sNN);
     GetParameter(c, "trigger", trig);
     GetParameter(c, "minIpZ",  minIpZ);
     GetParameter(c, "maxIpZ",  maxIpZ);
