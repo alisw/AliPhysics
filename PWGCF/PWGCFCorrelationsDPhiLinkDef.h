@@ -33,4 +33,6 @@
 #pragma link C++ class AliAnalysisTaskMuonHadronCorrelations+;
 #pragma link C++ class AliAnalysisTaskDiMuonCorrelations+;
 #pragma link C++ class AliAnalysisTaskContMC+;
+#pragma link C++ class AliAnalysisTaskPIDCORR+;
+#pragma link C++ class AliPIDCorrParticle+;
 #endif
