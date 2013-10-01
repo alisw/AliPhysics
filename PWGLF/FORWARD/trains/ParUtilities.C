@@ -196,13 +196,14 @@ struct ParUtilities
    * #endif
    * @endcode
    * 
-   * @param script Script to upload and compile in the PAR
-   * @param deps   Dependency pars 
+   * @param script  Script to upload and compile in the PAR
+   * @param deps    Dependency pars 
    * @param isLocal Local build 
+   * @param helper  Helper 
    * 
    * @return true on success. 
    */
-  static Bool_t MakeScriptPAR(Bool_t isLocal, 
+  static Bool_t MakeScriptPAR(Bool_t         isLocal, 
 			      const TString& script, 
 			      const TString& deps, 
 			      Helper*        helper)
@@ -218,7 +219,7 @@ struct ParUtilities
 	helper->LoadLibrary(dep->GetName());
       
       // AcLic and load 
-      Info("", "Loading macro %s", script.Data());
+      Info("ParUtilities::MakeScriptPAR", "Loading macro %s", script.Data());
       if (gROOT->LoadMacro(Form("%s++g", script.Data())) < 0) {
 	Error("ParUtilities::MakeScriptPAR", 
 	      "Failed to build local library %s", script.Data());

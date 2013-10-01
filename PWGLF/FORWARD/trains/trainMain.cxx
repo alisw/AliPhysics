@@ -141,6 +141,7 @@ int
 main(int argc, char** argv)
 {
   TList optList;
+  TList paths;
   TString name;
   TString cls;
   TString where;
@@ -161,7 +162,8 @@ main(int argc, char** argv)
       if (eq != kNPOS) val = arg(eq+1, arg.Length()-eq-1);
       if      (arg.BeginsWith("--class"))   cls  = val;
       else if (arg.BeginsWith("--name"))    name = val;
-      else if (arg.BeginsWith("--include")) AppendPath(val);
+      else if (arg.BeginsWith("--include")) paths.Add(new TObjString(val)); 
+      // AppendPath(val);
       else if (arg.BeginsWith("--batch"))   batch  = true;
       else if (arg.BeginsWith("--help"))    help   = true;
       else if (arg.BeginsWith("--where"))   where  = val;
@@ -175,6 +177,16 @@ main(int argc, char** argv)
       }
     }
   }
+  // --- Set batch mode early ----------------------------------------
+  // Info("main", "Batch mode is set to %d", batch);
+  gROOT->SetBatch(batch);
+
+  // --- Add to load paths -------------------------------------------
+  // Info("main", "Adding load paths");
+  TIter nextP(&paths);
+  TObject* path = 0;
+  while ((path = nextP())) AppendPath(path->GetName());
+
   // --- Initial check or URI/WHERE ----------------------------------
   if (!where.IsNull()) {
     if (urlSeen) {
@@ -219,7 +231,6 @@ main(int argc, char** argv)
 
   // --- Set-up Application ------------------------------------------
   TApplication* app = 0;
-  gROOT->SetBatch(batch);
   if (spawn) {
     // Info("main", "Creating interpreter application");
     TRint* rint = new TRint("runTrain", 0, 0, 0, 0, true);
@@ -231,7 +242,7 @@ main(int argc, char** argv)
     app = new TGApplication("runTrain", 0, 0);
   }
   if (app && !batch) app->InitializeGraphics();
-  
+
   // --- run, possibly in a timer ------------------------------------
   Bool_t ret = true;
   if (!app) 

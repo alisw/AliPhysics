@@ -117,6 +117,10 @@
 #pragma link C++ class AliFMDMCTrackDensity+;
 
 // Forward (FMD) tasks 
+#pragma link C++ class AliBaseESDTask+;
+#pragma link C++ class AliBaseAODTask+;
+#pragma link C++ class AliBaseMCCorrectionsTask+;
+#pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
 #pragma link C++ class AliFMDEnergyFitterTask+;
 #pragma link C++ class AliFMDEventPlaneTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
