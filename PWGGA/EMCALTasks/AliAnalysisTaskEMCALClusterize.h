@@ -112,7 +112,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnCellEnergySelection()                  { fSelectCell        = kTRUE   ; }
   void           SwitchOffCellEnergySelection()                 { fSelectCell        = kFALSE  ; } 
   void           SetCellCuts(Float_t e, Float_t frac)           { fSelectCellMinE    = e       ; 
-                                                                  fSelectCellMinFrac = frac    ; }  
+                                                                  fSelectCellMinFrac = frac    ; }
+  void           SetRejectBelowThreshold(Bool_t reject)         { fRejectBelowThreshold =reject ; }
   // OADB options settings
   
   void           AccessOADB() ;
@@ -212,6 +213,7 @@ private:
   Bool_t                 fSelectCell;              // Reject cells from cluster if energy is too low and recalculate position/energy and other
   Float_t                fSelectCellMinE;          // Min energy cell threshold, after unfolding
   Float_t                fSelectCellMinFrac;       // Min fraction of cell energy after unfolding cut
+  Bool_t                 fRejectBelowThreshold;    // split (false-default) or reject (true) cell energy below threshold after UF
   Bool_t                 fRemoveLEDEvents;         // Remove LED events, use only for LHC11a 
   Bool_t                 fRemoveExoticEvents;      // Remove exotic events
   
@@ -243,7 +245,7 @@ private:
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterize, 27);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 28);
 
 };
 

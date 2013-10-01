@@ -84,6 +84,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRecalibrateWithClusterTime(0)
 , fMaxEvent(0),           fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
+, fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("") 
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
@@ -124,6 +125,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRecalibrateWithClusterTime(0)
 , fMaxEvent(0),             fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
+, fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
@@ -1061,7 +1063,8 @@ void AliAnalysisTaskEMCALClusterize::Init()
   if(fMaxEvent          <= 0) fMaxEvent          = 1000000000;
   if(fSelectCellMinE    <= 0) fSelectCellMinE    = 0.005;     
   if(fSelectCellMinFrac <= 0) fSelectCellMinFrac = 0.001;
-  
+  fRejectBelowThreshold = kFALSE;
+
   //Centrality
   if(fCentralityClass  == "") fCentralityClass  = "V0M";
   
@@ -1161,7 +1164,7 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
       fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
       fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
     }//end of loop over parameters
-    
+    fClusterizer->SetRejectBelowThreshold(fRejectBelowThreshold);//here we set option of unfolding: split or reject energy
     fClusterizer->InitClusterUnfolding();
     
   }// to unfold
