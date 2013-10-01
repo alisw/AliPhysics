@@ -129,27 +129,7 @@ INLINE_INHERITED_MEMB  = NO
 # path before files name in the file list and in the header files. If set 
 # to NO the shortest path that makes the file name unique will be used.
 
-FULL_PATH_NAMES        = YES
-
-# If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag 
-# can be used to strip a user-defined part of the path. Stripping is 
-# only done if one of the specified strings matches the left-hand part of 
-# the path. The tag can be used to show relative paths in the file list. 
-# If left blank the directory from which doxygen is run is used as the 
-# path to strip.
-
-STRIP_FROM_PATH        = /home/cholm/alice/aliroot.trunk/ \
-                         /home/cholm/alice/aliroot/trunk/
-
-# The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
-# the path mentioned in the documentation of a class, which tells 
-# the reader which header file to include in order to use a class. 
-# If left blank only the name of the header file containing the class 
-# definition is used. Otherwise one should specify the include paths that 
-# are normally passed to the compiler using the -I flag.
-
-STRIP_FROM_INC_PATH    = /home/cholm/alice/aliroot.trunk/ \
-                         /home/cholm/alice/aliroot/trunk/
+FULL_PATH_NAMES        = NO
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter 
 # (but less readable) file names. This can be useful if your file system 
@@ -331,21 +311,6 @@ INLINE_SIMPLE_STRUCTS  = YES
 
 TYPEDEF_HIDES_STRUCT   = YES
 
-# The SYMBOL_CACHE_SIZE determines the size of the internal cache use to 
-# determine which symbols to keep in memory and which to flush to disk. 
-# When the cache is full, less often used symbols will be written to disk. 
-# For small to medium size projects (<1000 input files) the default value is 
-# probably good enough. For larger projects a too small cache size can cause 
-# doxygen to be busy swapping symbols to and from disk most of the time 
-# causing a significant performance penalty. 
-# If the system has enough physical memory increasing the cache will improve the 
-# performance by keeping more symbols in memory. Note that the value works on 
-# a logarithmic scale so increasing the size by one will roughly double the 
-# memory usage. The cache size is given by this formula: 
-# 2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0, 
-# corresponding to a cache size of 2^16 = 65536 symbols.
-
-SYMBOL_CACHE_SIZE      = 0
 
 # Similar to the SYMBOL_CACHE_SIZE the size of the symbol lookup cache can be 
 # set using LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given 

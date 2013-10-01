@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #------------------------------------------------------------------------#
-# Package File for PWGLFforward2                                          #
+# Package File for PWGLFforward2                                         #
 # Author : Christian Holm Christensen (cholm@nbi.dk)                     #
 # Variables Defined :                                                    #
 #                                                                        #
@@ -90,6 +90,9 @@ set ( SRCS
   FORWARD/analysis2/AliFMDMCSharingFilter.cxx
   FORWARD/analysis2/AliFMDMCTrackDensity.cxx
   # Forward tasks 
+  FORWARD/analysis2/AliBaseESDTask.cxx
+  FORWARD/analysis2/AliBaseAODTask.cxx
+  FORWARD/analysis2/AliBaseMCCorrectionsTask.cxx
   FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
   FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliForwarddNdetaTask.cxx
@@ -167,7 +170,7 @@ add_custom_command( OUTPUT FORWARD/doc/alice-int-2012-040.pdf
 
 add_custom_command( OUTPUT FORWARD/doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
-                    COMMAND sed -e 's,../analysis2,${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/analysis2,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
+                    COMMAND sed -e 's,\\.\\./,${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    DEPENDS ${SRCS} ${HDRS})
 
@@ -278,16 +281,8 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
            DESTINATION PWGLF/FORWARD/analysis2 )
 
 # Install corrections 
-install ( DIRECTORY FORWARD/corrections/DoubleHit
-	            FORWARD/corrections/ELossFits
-		    FORWARD/corrections/Empirical
-		    FORWARD/corrections/MergingEfficiency
-		    FORWARD/corrections/SecondaryMap
-		    FORWARD/corrections/VertexBias
-		    FORWARD/corrections/Acceptance
+install ( DIRECTORY FORWARD/corrections/Empirical
 		    FORWARD/corrections/Normalization
-		    FORWARD/corrections/CentralAcceptance
-		    FORWARD/corrections/CentralSecMap
           DESTINATION PWGLF/FORWARD/corrections 
 	  PATTERN "*~"   EXCLUDE
 	  PATTERN ".svn" EXCLUDE)

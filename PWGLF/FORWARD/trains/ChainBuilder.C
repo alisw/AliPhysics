@@ -320,6 +320,12 @@ struct ChainBuilder
     return chain;
   }
   //------------------------------------------------------------------
+  /** 
+   * Create a collection  
+   * 
+   * @param output Output file 
+   * @param url    Input url 
+   */
   static void CreateCollection(const TString& output, 
 			       const TUrl&    url)
   {
@@ -329,6 +335,12 @@ struct ChainBuilder
     CreateCollection(output, chain);
   }
   //------------------------------------------------------------------
+  /** 
+   * Create a collection 
+   * 
+   * @param output Input url 
+   * @param chain  Chain to make collection from 
+   */
   static void CreateCollection(const TString& output, 
 			       const TChain* chain)
   {
@@ -362,6 +374,12 @@ struct ChainBuilder
     out->Close();
   }
   //------------------------------------------------------------------
+  /** 
+   * Exrtact the anchor 
+   * 
+   * @param src    Source url 
+   * @param anchor On return, contains the anchor
+   */
   static void ExtractAnchor(TString& src, TString& anchor)
   {
     anchor         = "";
@@ -379,7 +397,9 @@ struct ChainBuilder
    * Create a chain consiting of a single file 
    * 
    * @param chain The chain
+   * @param anchor Anchor (tree name)
    * @param src File name. 
+   * @param flags       Flags 
    * 
    * @return Chain or null
    */
@@ -494,7 +514,9 @@ struct ChainBuilder
    * Check if we can add a file to the chain 
    * 
    * @param path   Full path to file 
+   * @param anchor Anchor (tree name)
    * @param chain  Chain 
+   * @param flags  Some flags
    * 
    * @return true on success, false otherwise
    */
@@ -584,8 +606,8 @@ struct ChainBuilder
    * @param dir        Directory to scan
    * @param chain      Chain to add to
    * @param pattern    File name pattern 
-   * @param mc         Simulation input 
-   * @param recursive  Scan recursive 
+   * @param anchor     Anchor (tree name)
+   * @param flags      Flags
    *
    * @return true if any files where added 
    */

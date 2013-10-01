@@ -426,6 +426,7 @@ void RefreshAlienToken(UInt_t now, Bool_t force=false)
  * @param jobs    List of jobs
  * @param stages  Stages
  * @param delay   Delay for check
+ * @param batch   If true, do not prompt 
  * 
  * @return true on success, false otherwise
  *
@@ -505,6 +506,7 @@ Bool_t WaitForJobs(TArrayI&   jobs,
  * Watch Grid for termination of main job, and submit merging jobs as needed. 
  * 
  * @param name   Name of the job
+ * @param batch  If true, do not prompt 
  * @param delay  Delay between updates in seconds
  *
  * @ingroup pwglf_forward_trains_helper
