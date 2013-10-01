@@ -56,6 +56,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
+  fRecombScheme(-1),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
@@ -94,6 +95,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
+  fRecombScheme(-1),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
@@ -178,7 +180,9 @@ void AliEmcalJetTask::FindJets()
   fjw.SetAreaType(fastjet::active_area_explicit_ghosts);
   fjw.SetGhostArea(fGhostArea);
   fjw.SetR(fRadius);
-  fjw.SetAlgorithm(jalgo);  
+  fjw.SetAlgorithm(jalgo);
+  if(fRecombScheme>0)
+    fjw.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme)); 
   fjw.SetMaxRap(fEtaMax);
   fjw.Clear();
 

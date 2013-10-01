@@ -62,6 +62,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetJetPhiRange(Double_t pmi, Double_t pma) {fJetPhiMin = pmi; fJetPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
   void                   SetMinMCLabel(Int_t s)           { fMinMCLabel     = s     ;  }
+  void                   SetRecombSheme(Int_t scheme)     { fRecombScheme   = scheme;  }
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB)
   {
     if(!fIsPSelSet)
@@ -105,6 +106,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fJetEtaMax;              // maximum eta to keep jet in output
   Double_t               fGhostArea;              // ghost area
   Int_t                  fMinMCLabel;             // minimum MC label value for the tracks/clusters being considered MC particles
+  Int_t                  fRecombScheme;           // recombination scheme used by fastjet
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
