@@ -376,7 +376,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
        hstat->Fill(5);
        continue;
     }
-    vector<int> DmesonInJetLabels(10);
+    std::vector<int> DmesonInJetLabels(10);
     //Int_t iD=0;
     //jets variables
     ejet   = jet->E();
@@ -456,7 +456,7 @@ void  AliAnalysisTaskFlavourJetCorrelations::SetMassLimits(Double_t range, Int_t
      mass1=TDatabasePDG::Instance()->GetParticle(421)->Mass();
      mass = mass-mass1;
   }
-   cout<<"mass ---------------"<<endl;
+   std::cout<<"mass ---------------"<<std::endl;
   fMinMass = mass-range;
   fMaxMass = mass+range;
   
