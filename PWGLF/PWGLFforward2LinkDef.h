@@ -52,7 +52,7 @@
 
 // Correction managers 
 #pragma link C++ class AliCorrectionManagerBase+;
-#pragma link C++ class AliCorrectionManagerBase::Correction+;
+// #pragma link C++ class AliCorrectionManagerBase::Correction+;
 // Note: custom streamer to ensure singleton consistency!
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliCentralCorrectionManager-;
@@ -62,20 +62,20 @@
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentraldNdetaTask+;
 #pragma link C++ class AliCentralMCCorrectionsTask+;
-#pragma link C++ class AliCentralMCCorrectionsTask::VtxBin+;
+// #pragma link C++ class AliCentralMCCorrectionsTask::VtxBin+;
 #pragma link C++ class AliCentralMCMultiplicityTask+;
 #pragma link C++ class AliCentralMultiplicityTask+;
-#pragma link C++ class AliCentralMultiplicityTask::VtxBin+;
+// #pragma link C++ class AliCentralMultiplicityTask::VtxBin+;
 #pragma link C++ class AliSPDMCTrackDensity+;
 
 // Aux tasks and code 
 #pragma link C++ class AliCopyHeaderTask+;
 #pragma link C++ class AliBasedNdetaTask+;
-#pragma link C++ class AliBasedNdetaTask::CentralityBin+;
-#pragma link C++ class AliBasedNdetaTask::Sum+;
+// #pragma link C++ class AliBasedNdetaTask::CentralityBin+;
+// #pragma link C++ class AliBasedNdetaTask::Sum+;
 #pragma link C++ class AliBaseMCTrackDensity+;
 #pragma link C++ class AliMCTruthdNdetaTask+;
-#pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
+// #pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
 #pragma link C++ class AliDisplacedVertexSelection+;
 #pragma link C++ class AliPoissonCalculator+;
 #pragma link C++ class AliMCAuxHandler+;
@@ -91,7 +91,7 @@
 #pragma link C++ class AliFMDCorrAcceptance+;
 #pragma link C++ class AliFMDCorrDoubleHit+;
 #pragma link C++ class AliFMDCorrector+;
-#pragma link C++ class AliFMDCorrector::RingHistos+;
+// #pragma link C++ class AliFMDCorrector::RingHistos+;
 #pragma link C++ class AliFMDCorrELossFit+;
 #pragma link C++ class AliFMDCorrELossFit::ELossFit+;
 #pragma link C++ class AliFMDCorrMergingEfficiency+;
@@ -100,14 +100,14 @@
 
 // FMD algorithms 
 #pragma link C++ class AliFMDDensityCalculator+;
-#pragma link C++ class AliFMDDensityCalculator::RingHistos+;
+// #pragma link C++ class AliFMDDensityCalculator::RingHistos+;
 #pragma link C++ class AliFMDEnergyFitter+;
-#pragma link C++ class AliFMDEnergyFitter::RingHistos+;
+// #pragma link C++ class AliFMDEnergyFitter::RingHistos+;
 #pragma link C++ class AliFMDEventInspector+;
 #pragma link C++ class AliFMDEventPlaneFinder+;
 #pragma link C++ class AliFMDHistCollector+;
 #pragma link C++ class AliFMDSharingFilter+;
-#pragma link C++ class AliFMDSharingFilter::RingHistos+;
+// #pragma link C++ class AliFMDSharingFilter::RingHistos+;
 
 // FMD MC algorithms
 #pragma link C++ class AliFMDMCCorrector+;
@@ -120,15 +120,15 @@
 #pragma link C++ class AliBaseESDTask+;
 #pragma link C++ class AliBaseAODTask+;
 #pragma link C++ class AliBaseMCCorrectionsTask+;
-#pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
+// #pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
 #pragma link C++ class AliFMDEnergyFitterTask+;
 #pragma link C++ class AliFMDEventPlaneTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
-#pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
+// #pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
 #pragma link C++ class AliForwardFlowTaskQC+;
-#pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
+// #pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
-#pragma link C++ class AliForwardMCCorrectionsTask::VtxBin+;
+// #pragma link C++ class AliForwardMCCorrectionsTask::VtxBin+;
 #pragma link C++ class AliForwardMCFlowTaskQC+;
 #pragma link C++ class AliForwardMCMultiplicityTask+;
 #pragma link C++ class AliForwardMultiplicityBase+;
@@ -139,11 +139,11 @@
 #pragma link C++ class AliForwardMultiplicityDistribution+;
 #pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
 #pragma link C++ class AliForwardMultDists+;
-#pragma link C++ class AliForwardMultDists::EtaBin+;
+// #pragma link C++ class AliForwardMultDists::EtaBin+;
 #pragma link C++ class AliForwardMultDists::BinSpec+;
 
 #else
-# error Not for compilation 
+// # error Not for compilation 
 #endif
 //
 // EOF
