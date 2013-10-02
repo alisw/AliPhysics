@@ -34,7 +34,7 @@
 #pragma link C++ class  AliFMDQADataMakerSim+;
 
 #else
-# error Not for compilation 
+// # error Not for compilation 
 
 #endif
 //

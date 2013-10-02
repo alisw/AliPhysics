@@ -40,7 +40,7 @@
 #pragma link C++ class  AliFMDCalibDrawer+;
 
 #else
-# error Not for compilation 
+// # error Not for compilation 
 #endif
 //
 // EOF
