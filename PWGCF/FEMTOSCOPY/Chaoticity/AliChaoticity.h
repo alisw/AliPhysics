@@ -114,9 +114,9 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void GetWeight(Float_t[], Float_t[], Float_t&, Float_t&);
   void FourVectProdTerms(Float_t [], Float_t [], Float_t [], Float_t&, Float_t&, Float_t&, Float_t&, Float_t&);
   Float_t FSICorrelationTherm2(Int_t, Int_t, Float_t);
-  Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t);
+  Float_t MCWeight(Int_t, Int_t, Int_t, Int_t, Float_t, Float_t);
   Float_t MCWeightOSL(Int_t, Int_t, Int_t, Int_t, Float_t, Float_t, Float_t, Float_t);
-  Float_t MCWeight3D(Bool_t, Int_t, Int_t, Float_t, Float_t, Float_t);
+  Float_t MCWeight3D(Bool_t, Int_t, Int_t, Float_t, Float_t, Float_t, Float_t, Float_t, Float_t);
   Double_t FSICorrelationOmega0(Bool_t, Double_t, Double_t, Double_t);
   //
   
