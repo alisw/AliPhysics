@@ -20,6 +20,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Float_t timeMin       = 100e-9,  //minimum time of physical signal in a cell/digit (s)
   Float_t timeMax       = 900e-9,  //maximum time of physical signal in a cell/digit (s)
   Float_t timeCut       = 50e-9    //maximum time difference between the digits inside EMC cluster (s)
+					      )
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
   EMCALSupply->SetDebugLevel(2);
