@@ -17,9 +17,9 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   UInt_t clusterizer    = AliEMCALRecParam::kClusterizerNxN,
   Bool_t trackMatch     = kFALSE,
   Bool_t updateCellOnly = kFALSE,
-  Float_t timeMin       = -1,   // minimum time of physical signal in a cell/digit
-  Float_t timeMax       = 1e6,  // maximum time of physical signal in a cell/digit
-  Float_t timeCut       = 1e6   // maximum time difference between the digits inside EMC cluster
+  Float_t timeMin       = -1,   // minimum time of physical signal in a cell/digit (s)
+  Float_t timeMax       =  1,   // maximum time of physical signal in a cell/digit (s)
+  Float_t timeCut       =  1    // maximum time difference between the digits inside EMC cluster (s)
 )
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
