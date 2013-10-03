@@ -33,28 +33,27 @@ ClassImp(AliMergeableCollection)
 #include "AliLog.h"
 #include "Riostream.h"
 #include "TError.h"
+#include "TFolder.h"
 #include "TGraph.h"
+#include "TH1.h"
+#include "TH2.h"
 #include "THashList.h"
+#include "THnSparse.h"
 #include "TKey.h"
 #include "TMap.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TProfile.h"
 #include "TRegexp.h"
 #include "TROOT.h"
 #include "TSystem.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TProfile.h"
-#include "THnSparse.h"
 #include <cassert>
 #include <vector>
-//#include "AliCFGridSparse.h"
-//#include "AliCFContainer.h"
-//#include "TH2.h"
+#include "TBrowser.h"
 
 //_____________________________________________________________________________
 AliMergeableCollection::AliMergeableCollection(const char* name, const char* title) 
-: TNamed(name,title), fMap(0x0), fMustShowEmptyObject(0), fMapVersion(0), fMessages()
+: TFolder(name,title), fMap(0x0), fMustShowEmptyObject(0), fMapVersion(0), fMessages()
 {
   /// Ctor
 }
@@ -128,6 +127,69 @@ Bool_t AliMergeableCollection::Attach(AliMergeableCollection* mc, const char* id
   }
   
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliMergeableCollection::Browse(TBrowser* b)
+{
+  /// Create a TFolder structure pointing to our objects, so we
+  /// can be "browsed"
+  
+  if ( !fFolders ) return;
+  
+  TObjArray* ids = SortAllIdentifiers();
+  TIter nextIdentifier(ids);
+  TObjString* str;
+  
+  while ( ( str = static_cast<TObjString*>(nextIdentifier()) ) )
+  {
+    TObjArray* parts = str->String().Tokenize("/");
+    TObjString* s;
+    TIter nextPart(parts);
+    TFolder* base = this;
+    
+    while ( ( s = static_cast<TObjString*>(nextPart())))
+    {
+      TFolder* f = static_cast<TFolder*>(base->TFolder::FindObject(s->String()));
+      if (!f)
+      {
+        f = new TFolder(s->String(),"");
+        base->Add(f);
+      }
+      base = f;
+    }
+    delete parts;
+
+    TList* list = CreateListOfObjectNames(str->String());
+    if (list)
+    {
+      TObjString* oname;
+      TIter nextObject(list);
+      while ( ( oname = static_cast<TObjString*>(nextObject())) )
+      {
+        TObject* o = GetObject(str->String(),oname->String());
+        base->Add(o);
+      }
+    }
+    else
+    {
+      AliError("got list=0x0");
+    }
+    delete list;
+  }
+
+  TList* top = CreateListOfKeys(0);
+  TObjString* stop;
+  TIter nextTop(top);
+  
+  while ( ( stop = static_cast<TObjString*>(nextTop())) )
+  {
+    b->Add(TFolder::FindObject(stop->String()));
+  }
+  
+  delete top;
+  
+  delete ids;
 }
 
 //_____________________________________________________________________________
@@ -570,6 +632,11 @@ Bool_t AliMergeableCollection::InternalAdopt(const char* identifier, TObject* ob
   if ( obj->IsA()->InheritsFrom(TH1::Class()) ) (static_cast<TH1*> ( obj ))->SetDirectory(0);  
   
   hlist->AddLast(obj);
+  
+  // invalidate the TFolder structure, if any, so it will
+  // be recomputed next time Browse() is called
+  delete fFolders;
+  fFolders = 0x0;
   
   return kTRUE;
   
