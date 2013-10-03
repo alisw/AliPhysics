@@ -40,6 +40,7 @@
 #define CorrBinsX 240
 #define CorrBinsY 260
 
+
 Double_t PI =TMath::Pi();
 
 ClassImp(AliLeadingV0Correlation)
@@ -358,9 +359,9 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		
 		if (TMath::Abs(mcZv) >= fpvzcut) return;
 		
-		dimEventviceMC[0]=aodMCheader->GetVtxX();;
-		dimEventviceMC[1]=aodMCheader->GetVtxY();;
-		dimEventviceMC[2]=aodMCheader->GetVtxZ();;
+		dimEventviceMC[0]=aodMCheader->GetVtxX();
+		dimEventviceMC[1]=aodMCheader->GetVtxY();
+		dimEventviceMC[2]=aodMCheader->GetVtxZ();
 		
 		TClonesArray *mcArray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName());
 		if(!mcArray)return;
@@ -689,7 +690,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 				break;
 				
 			default:
-				cout << "No case selected "<<endl;
+				AliInfo(Form("No case selected"));
 				break;
 		}
 		
@@ -794,7 +795,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 					break;
 					
 				default:
-					cout << "No case selected "<<endl;
+					AliInfo(Form("No case selected"));
 					break;
 			}	
     	}
