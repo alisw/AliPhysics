@@ -79,7 +79,7 @@ TGraphErrors* AliAnalysisMuMuGraphUtil::Combine(TObjArray& graphs, Bool_t compac
         quartet.push_back(0.0);
       }
       
-      values.insert( std::make_pair<int, std::vector<double> >(runNumber,quartet));      
+      values.insert( std::make_pair(runNumber,quartet));      
     }
   }
   
