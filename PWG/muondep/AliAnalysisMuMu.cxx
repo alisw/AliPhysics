@@ -2946,7 +2946,7 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
       }
       else
       {
-        messages.insert(std::make_pair(nmax,static_cast<string>(msg.Data())));
+        messages.insert(std::make_pair(nmax,static_cast<std::string>(msg.Data())));
       }
     }
   }
