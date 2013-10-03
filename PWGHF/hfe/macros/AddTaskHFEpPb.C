@@ -256,7 +256,7 @@ AliAnalysisTask *RegisterTaskPID2(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, 
     task->SetHasMCData(kFALSE);
   }
 
-  if(TRDtrigger==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(TRDtrigger<2) task->SelectCollisionCandidates(AliVEvent::kINT7);
   else task->SelectCollisionCandidates(AliVEvent::kTRD);
 
   Int_t idcaxy = (Int_t)(dcaxy*10.);
@@ -267,7 +267,7 @@ AliAnalysisTask *RegisterTaskPID2(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, 
   Int_t ietacorr = 0;
   if(withetacorrection) ietacorr = 1;
   
-  TString appendix(TString::Format("mbTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dtrdtrg%d",tpcCls,
+  TString appendix(TString::Format("mbTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dtrdt%d",tpcCls,
 				   tpcClsPID,itsCls,idcaxy,idcaz,itpcs,itofs,tofm,ipixelany,TRDtrigger));
   printf("Add macro appendix %s\n", appendix.Data());
 
@@ -313,7 +313,7 @@ AliAnalysisTask *RegisterTaskPID2mbTRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=
   Int_t ietacorr = 0;
   if(withetacorrection) ietacorr = 1;
 
-  TString appendix(TString::Format("mbTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dtrdtrg%dtrdl%itrde%iPID%setacut%i",tpcCls,
+  TString appendix(TString::Format("mbTPCc%dp%dITS%dr%dz%dTPCs%dTOFs%dm%ipa%dTRDt%dl%ie%i%se%i",tpcCls,
 				   tpcClsPID,itsCls,idcaxy,idcaz,itpcs,itofs,tofm,ipixelany,TRDtrigger,trdl,trde,detused.Data(),etacut));
   printf("Add macro appendix %s\n", appendix.Data());
 
@@ -334,7 +334,7 @@ AliAnalysisTask *RegisterTaskPID2mbTRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=
     task->SetHasMCData(kFALSE);
   }
 
-  if(TRDtrigger==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(TRDtrigger<2) task->SelectCollisionCandidates(AliVEvent::kINT7);
   else task->SelectCollisionCandidates(AliVEvent::kTRD);
 
   TString containerName = mgr->GetCommonFileName();
@@ -343,7 +343,7 @@ AliAnalysisTask *RegisterTaskPID2mbTRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=
   printf("container name: %s\n", containerName.Data());
 
   //create data containers
-  task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), 
+  task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()),
 					      TList::Class(), AliAnalysisManager::kOutputContainer, 
 					      containerName.Data()));
   task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(), 
@@ -385,7 +385,7 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
   Int_t itofs = (Int_t)(tofs*10.);
   Int_t ipixelany = itshitpixel;
 
-  TString appendix(TString::Format("mbTPCc%dTPCp%dITS%dDCAr%dz%dTPCs%dTOFs%dm%ipa%dtrdtrg%dtrdl%itrde%iPID%scent%s",tpcCls,
+  TString appendix(TString::Format("TPCc%dp%dITS%dr%dz%dTPCs%dTOFs%dm%ipa%dTRDt%dl%ie%i%sc%s",tpcCls,
                    tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,tofm,ipixelany,TRDtrigger,trdl,trde,detused.Data(),cesti.Data()));
   printf("Add macro appendix %s\n", appendix.Data());
 
