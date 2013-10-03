@@ -39,14 +39,24 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fEvent(NULL),
  fMPC(NULL), 
  fHistList(NULL),
+ fUseInternalFlags(kFALSE),
  fMinNoRPs(-44),
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
  fFillControlHistograms(kTRUE),
+ fFillKinematicsHist(kTRUE),
+ fFillMultDistributionsHist(kTRUE),
+ fFillMultCorrelationsHist(kTRUE),
  fPhiWeightsHist(NULL),
  fPtWeightsHist(NULL),
  fEtaWeightsHist(NULL),
- fCalculateCorrelations(kTRUE),
+ fCalculateCorrelations(kFALSE),
+ fCalculateIsotropic(kFALSE),
+ fCalculateSame(kFALSE),
+ fSkipZeroHarmonics(kFALSE),
+ fCalculateSameIsotropic(kFALSE),
+ fCalculateAll(kFALSE),
+ fDontGoBeyond(0),
  fCalculateCumulants(kTRUE),
  fCrossCheckWithNestedLoops(kFALSE),
  fCalculateStandardCandles(kFALSE)
@@ -78,14 +88,24 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fEvent(NULL),
  fMPC(NULL),
  fHistList(NULL),
+ fUseInternalFlags(kFALSE),
  fMinNoRPs(-44),
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
  fFillControlHistograms(kFALSE),
+ fFillKinematicsHist(kTRUE),
+ fFillMultDistributionsHist(kTRUE),
+ fFillMultCorrelationsHist(kTRUE),
  fPhiWeightsHist(NULL),
  fPtWeightsHist(NULL),
  fEtaWeightsHist(NULL),
  fCalculateCorrelations(kFALSE),
+ fCalculateIsotropic(kFALSE),
+ fCalculateSame(kFALSE),
+ fSkipZeroHarmonics(kFALSE),
+ fCalculateSameIsotropic(kFALSE),
+ fCalculateAll(kFALSE),
+ fDontGoBeyond(0),
  fCalculateCumulants(kFALSE),
  fCrossCheckWithNestedLoops(kFALSE),
  fCalculateStandardCandles(kFALSE)
@@ -110,14 +130,23 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  fMPC = new AliFlowAnalysisWithMultiparticleCorrelations();
  
  // Setters:
- fMPC->SetMinNoRPs(fMinNoRPs);
- fMPC->SetMaxNoRPs(fMaxNoRPs);
- fMPC->SetExactNoRPs(fExactNoRPs);
+ if(fUseInternalFlags){fMPC->SetMinNoRPs(fMinNoRPs);}
+ if(fUseInternalFlags){fMPC->SetMaxNoRPs(fMaxNoRPs);}
+ if(fUseInternalFlags){fMPC->SetExactNoRPs(fExactNoRPs);}
  fMPC->SetFillControlHistograms(fFillControlHistograms);
+ fMPC->SetFillKinematicsHist(fFillKinematicsHist);
+ fMPC->SetFillMultDistributionsHist(fFillMultDistributionsHist);
+ fMPC->SetFillMultCorrelationsHist(fFillMultCorrelationsHist);
  if(fPhiWeightsHist){fMPC->SetPhiWeightsHist(fPhiWeightsHist);} // TBI is this safe enough?
  if(fPtWeightsHist){fMPC->SetPtWeightsHist(fPtWeightsHist);} // TBI is this safe enough?
  if(fEtaWeightsHist){fMPC->SetEtaWeightsHist(fEtaWeightsHist);} // TBI is this safe enough?
  fMPC->SetCalculateCorrelations(fCalculateCorrelations);
+ fMPC->SetCalculateIsotropic(fCalculateIsotropic);
+ fMPC->SetCalculateSame(fCalculateSame);
+ fMPC->SetSkipZeroHarmonics(fSkipZeroHarmonics);
+ fMPC->SetCalculateSameIsotropic(fCalculateSameIsotropic);
+ fMPC->SetCalculateAll(fCalculateAll);
+ fMPC->SetDontGoBeyond(fDontGoBeyond);
  fMPC->SetCalculateCumulants(fCalculateCumulants);
  fMPC->SetCrossCheckWithNestedLoops(fCrossCheckWithNestedLoops);
  fMPC->SetCalculateStandardCandles(fCalculateStandardCandles);

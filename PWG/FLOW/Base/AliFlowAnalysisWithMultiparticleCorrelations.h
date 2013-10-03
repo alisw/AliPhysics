@@ -22,6 +22,7 @@
 #include "TComplex.h"
 #include "TDirectoryFile.h"
 #include "Riostream.h"
+#include "TRandom3.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 
@@ -60,14 +61,14 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
    virtual Bool_t CrossCheckInternalFlags(AliFlowEventSimple *anEvent);
    virtual void FillControlHistograms(AliFlowEventSimple *anEvent);
    virtual void FillQvector(AliFlowEventSimple *anEvent);
-   virtual void CalculateCorrelations();
+   virtual void CalculateCorrelations(AliFlowEventSimple *anEvent);
    virtual void CalculateCumulants();
    virtual void ResetQvector();
    virtual void CrossCheckWithNestedLoops(AliFlowEventSimple *anEvent);
 
   // 3.) Method Finish() and methods called in it:
   virtual void Finish();
-   //virtual void CrossCheck... TBI 
+   virtual void CrossCheckPointersUsedInFinish(); 
    virtual void CalculateStandardCandles();
 
   // 4.) Method GetOutputHistograms() and methods called in it: 
@@ -96,6 +97,13 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TProfile* GetControlHistogramsFlagsPro() const {return this->fControlHistogramsFlagsPro;}; 
   void SetFillControlHistograms(Bool_t const fch) {this->fFillControlHistograms = fch;};
   Bool_t GetFillControlHistograms() const {return this->fFillControlHistograms;};
+  void SetFillKinematicsHist(Bool_t const fkh) {this->fFillKinematicsHist = fkh;};
+  Bool_t GetFillKinematicsHist() const {return this->fFillKinematicsHist;};
+  void SetFillMultDistributionsHist(Bool_t const mdh) {this->fFillMultDistributionsHist = mdh;};
+  Bool_t GetFillMultDistributionsHist() const {return this->fFillMultDistributionsHist;};
+  void SetFillMultCorrelationsHist(Bool_t const mch) {this->fFillMultCorrelationsHist = mch;};
+  Bool_t GetFillMultCorrelationsHist() const {return this->fFillMultCorrelationsHist;};
+
   //  5.2.) Q-vector:
   // ...
 
@@ -106,6 +114,18 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TProfile* GetCorrelationsFlagsPro() const {return this->fCorrelationsFlagsPro;}; 
   void SetCalculateCorrelations(Bool_t const cc) {this->fCalculateCorrelations = cc;};
   Bool_t GetCalculateCorrelations() const {return this->fCalculateCorrelations;};
+  void SetCalculateIsotropic(Bool_t const ci) {this->fCalculateIsotropic = ci;};
+  Bool_t GetCalculateIsotropic() const {return this->fCalculateIsotropic;};
+  void SetCalculateSame(Bool_t const cs) {this->fCalculateSame = cs;};
+  Bool_t GetCalculateSame() const {return this->fCalculateSame;};
+  void SetSkipZeroHarmonics(Bool_t const szh) {this->fSkipZeroHarmonics = szh;};
+  Bool_t GetSkipZeroHarmonics() const {return this->fSkipZeroHarmonics;};
+  void SetCalculateSameIsotropic(Bool_t const csi) {this->fCalculateSameIsotropic = csi;};
+  Bool_t GetCalculateSameIsotropic() const {return this->fCalculateSameIsotropic;};
+  void SetCalculateAll(Bool_t const ca) {this->fCalculateAll = ca;};
+  Bool_t GetCalculateAll() const {return this->fCalculateAll;};
+  void SetDontGoBeyond(Int_t const dgb) {this->fDontGoBeyond = dgb;};
+  Int_t GetDontGoBeyond() const {return this->fDontGoBeyond;};
 
   //  5.4.) Cumulants:
   void SetCumulantsList(TList* const cl) {this->fCumulantsList = cl;};
@@ -174,8 +194,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual TComplex Eight(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8);
   virtual Double_t PhiWeight(const Double_t &dPhi);
   virtual Double_t PtWeight(const Double_t &dPt); 
-  virtual Double_t EtaWeight(const Double_t &dEta); 
- 
+  virtual Double_t EtaWeight(const Double_t &dEta);
+
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
   AliFlowAnalysisWithMultiparticleCorrelations& operator=(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc); 
@@ -200,7 +220,10 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   // 1.) Control histograms:  
   TList *fControlHistogramsList;        // list to hold all control histograms
   TProfile *fControlHistogramsFlagsPro; // profile to hold all flags for control histograms
-  Bool_t fFillControlHistograms;        // fill or not control histograms (by default they are filled)
+  Bool_t fFillControlHistograms;        // fill or not control histograms (by default they are all filled)
+  Bool_t fFillKinematicsHist;           // fill or not fKinematicsHist[2][3]
+  Bool_t fFillMultDistributionsHist;    // fill or not TH1D *fMultDistributionsHist[3]    
+  Bool_t fFillMultCorrelationsHist;     // fill or not TH2D *fMultCorrelationsHist[3]  
   TH1D *fKinematicsHist[2][3];          // [RP,POI][phi,pt,eta] distributions
   TH1D *fMultDistributionsHist[3];      // multiplicity distribution [RP,POI,reference multiplicity]
   TH2D *fMultCorrelationsHist[3];       // [RP vs. POI, RP vs. refMult, POI vs. refMult]  
@@ -209,12 +232,18 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TComplex fQvector[49][9]; // Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
 
   // 3.) Correlations:
-  TList *fCorrelationsList;        // list to hold all correlations objects
-  TProfile *fCorrelationsFlagsPro; // profile to hold all flags for correlations
-  TProfile *fCorrelationsPro[8];   // multiparticle correlations 
-  Bool_t fCalculateCorrelations;   // calculate and store correlations, or perhaps not, if the weather is bad...
-  Int_t fMaxHarmonic;              // 6 (not going beyond v6, if you change this value, change also fQvector[49][9]) 
-  Int_t fMaxCorrelator;            // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
+  TList *fCorrelationsList;         // list to hold all correlations objects
+  TProfile *fCorrelationsFlagsPro;  // profile to hold all flags for correlations
+  TProfile *fCorrelationsPro[2][8]; // multiparticle correlations [0=cos,1=sin][1p,2p,...,8p]
+  Bool_t fCalculateCorrelations;    // calculate and store correlations, or perhaps not, if the weather is bad...
+  Int_t fMaxHarmonic;               // 6 (not going beyond v6, if you change this value, change also fQvector[49][9]) 
+  Int_t fMaxCorrelator;             // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
+  Bool_t fCalculateIsotropic;       // calculate only isotropic correlations
+  Bool_t fCalculateSame;            // calculate only isotropic 'same harmonics' correlations
+  Bool_t fSkipZeroHarmonics;        // skip correlations which have some of the harmonicc equal to zero
+  Bool_t fCalculateSameIsotropic;   // calculate only isotropic correlations in 'same harmonics' TBI this can be implemented better
+  Bool_t fCalculateAll;             // calculate all possible correlations 
+  Int_t  fDontGoBeyond;             // do not go beyond fDontGoBeyond-p correlators
 
   // 4.) Cumulants:
   TList *fCumulantsList;        // list to hold all cumulants objects
