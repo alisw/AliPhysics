@@ -64,6 +64,9 @@ set ( SRCS
     muon/AliAnalysisMuonUtility.cxx 
     muon/AliOADBMuonTrackCutsParam.cxx
     muon/AliAnalysisMuMuBinning.cxx
+    muon/AliAnalysisNonMuonTrackCuts.cxx
+    muon/AliAnalysisNonPrimaryVertices.cxx
+    muon/AliAnalysisTaskAOD2MuonAOD.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
