@@ -32,16 +32,22 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   virtual void Terminate(Option_t *);
   
   // Internal flags:
-  void SetMinNoRPs(Int_t const min) {this->fMinNoRPs = min;};
+  void SetMinNoRPs(Int_t const min) {fUseInternalFlags = kTRUE; this->fMinNoRPs = min;};
   Int_t GetMinNoRPs() const {return this->fMinNoRPs;};
-  void SetMaxNoRPs(Int_t const max) {this->fMaxNoRPs = max;};
+  void SetMaxNoRPs(Int_t const max) {fUseInternalFlags = kTRUE; this->fMaxNoRPs = max;};
   Int_t GetMaxNoRPs() const {return this->fMaxNoRPs;};
-  void SetExactNoRPs(Int_t const exact) {this->fExactNoRPs = exact;};
+  void SetExactNoRPs(Int_t const exact) {fUseInternalFlags = kTRUE; this->fExactNoRPs = exact;};
   Int_t GetExactNoRPs() const {return this->fExactNoRPs;};
- 
+
   // Control histograms:
   void SetFillControlHistograms(Bool_t const fch) {this->fFillControlHistograms = fch;};
   Bool_t GetFillControlHistograms() const {return this->fFillControlHistograms;};
+  void SetFillKinematicsHist(Bool_t const fkh) {this->fFillKinematicsHist = fkh;};
+  Bool_t GetFillKinematicsHist() const {return this->fFillKinematicsHist;};
+  void SetFillMultDistributionsHist(Bool_t const mdh) {this->fFillMultDistributionsHist = mdh;};
+  Bool_t GetFillMultDistributionsHist() const {return this->fFillMultDistributionsHist;};
+  void SetFillMultCorrelationsHist(Bool_t const mch) {this->fFillMultCorrelationsHist = mch;};
+  Bool_t GetFillMultCorrelationsHist() const {return this->fFillMultCorrelationsHist;};
 
   // Weights:
   void SetPhiWeightsHist(TH1D* const phwh) {phwh->SetDirectory(0);this->fPhiWeightsHist = (TH1D*)phwh->Clone();}; // TBI
@@ -54,6 +60,18 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Correlations:
   void SetCalculateCorrelations(Bool_t const cc) {this->fCalculateCorrelations = cc;};
   Bool_t GetCalculateCorrelations() const {return this->fCalculateCorrelations;};
+  void SetCalculateIsotropic(Bool_t const ci) {this->fCalculateIsotropic = ci;};
+  Bool_t GetCalculateIsotropic() const {return this->fCalculateIsotropic;};
+  void SetCalculateSame(Bool_t const csh) {this->fCalculateSame = csh;};
+  Bool_t GetCalculateSame() const {return this->fCalculateSame;};
+  void SetSkipZeroHarmonics(Bool_t const szh) {this->fSkipZeroHarmonics = szh;};
+  Bool_t GetSkipZeroHarmonics() const {return this->fSkipZeroHarmonics;};
+  void SetCalculateSameIsotropic(Bool_t const csi) {this->fCalculateSameIsotropic = csi;};
+  Bool_t GetCalculateSameIsotropic() const {return this->fCalculateSameIsotropic;};
+  void SetCalculateAll(Bool_t const ca) {this->fCalculateAll = ca;};
+  Bool_t GetCalculateAll() const {return this->fCalculateAll;};
+  void SetDontGoBeyond(Int_t const dgb) {this->fDontGoBeyond = dgb;};
+  Int_t GetDontGoBeyond() const {return this->fDontGoBeyond;};
 
   // Cumulants:
   void SetCalculateCumulants(Bool_t const cc) {this->fCalculateCumulants = cc;};
@@ -76,12 +94,16 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
 
   // Internal flags:
+  Bool_t fUseInternalFlags; // use internal flags (automatically set if some internal flag is used)
   Int_t fMinNoRPs; // minimum number of RPs required for the analysis 
   Int_t fMaxNoRPs; // maximum number of RPs allowed for the analysis 
   Int_t fExactNoRPs; // exact (randomly shuffled) number of RPs selected for the analysis 
 
   // Control histograms:
-  Bool_t fFillControlHistograms; // fill or not control histograms (by default they are filled)
+  Bool_t fFillControlHistograms;     // fill or not control histograms (by default they are filled)
+  Bool_t fFillKinematicsHist;        // fill or not fKinematicsHist[2][3]
+  Bool_t fFillMultDistributionsHist; // fill or not TH1D *fMultDistributionsHist[3]    
+  Bool_t fFillMultCorrelationsHist;  // fill or not TH2D *fMultCorrelationsHist[3] 
 
   // Weights:
   TH1D *fPhiWeightsHist; // histogram holding phi weights
@@ -89,7 +111,13 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   TH1D *fEtaWeightsHist; // histogram holding eta weights 
 
   // Correlations:
-  Bool_t fCalculateCorrelations; // calculate and store correlations, or perhaps not, if the weather is bad...
+  Bool_t fCalculateCorrelations;  // calculate and store correlations, or perhaps not, if the weather is bad...
+  Bool_t fCalculateIsotropic;     // calculate only isotropic correlations
+  Bool_t fCalculateSame;          // calculate only isotropic 'same harmonics' correlations
+  Bool_t fSkipZeroHarmonics;      // skip correlations which have some of the harmonicc equal to zero
+  Bool_t fCalculateSameIsotropic; // calculate only isotropic correlations in 'same harmonics' TBI this can be implemented better
+  Bool_t fCalculateAll;           // calculate all possible correlations 
+  Int_t  fDontGoBeyond;           // do not go beyond fDontGoBeyond-p correlators
 
   // Cumulants:
   Bool_t fCalculateCumulants; // calculate and store cumulants, or perhaps not, if the weather is bad...

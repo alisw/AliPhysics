@@ -45,14 +45,23 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
  fFillControlHistograms(kTRUE),
+ fFillKinematicsHist(kTRUE),
+ fFillMultDistributionsHist(kTRUE),   
+ fFillMultCorrelationsHist(kTRUE),
  // 2.) Q-vector:
  // ...
  // 3.) Correlations:
  fCorrelationsList(NULL),
  fCorrelationsFlagsPro(NULL),
- fCalculateCorrelations(kTRUE),
- fMaxHarmonic(6),
- fMaxCorrelator(9),
+ fCalculateCorrelations(kFALSE),
+ fMaxHarmonic(6), // TBI this shall not be hardwired in the ideal world...
+ fMaxCorrelator(8),
+ fCalculateIsotropic(kFALSE),
+ fCalculateSame(kFALSE),
+ fSkipZeroHarmonics(kFALSE),
+ fCalculateSameIsotropic(kFALSE),
+ fCalculateAll(kFALSE),
+ fDontGoBeyond(0),
  // 4.) Cumulants:
  fCumulantsList(NULL),
  fCumulantsFlagsPro(NULL),
@@ -166,8 +175,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // c) Fill Q-vector components: // TBI add setter to disable it when needed
  this->FillQvector(anEvent);
 
- // d) Calculate multi-particle correlations from Q-vector components: 
- if(fCalculateCorrelations){this->CalculateCorrelations();}
+ // d) Calculate multi-particle correlations from Q-vector components:
+ if(fCalculateCorrelations){this->CalculateCorrelations(anEvent);}
 
  // e) Calculate e-b-e cumulants: 
  if(fCalculateCumulants){this->CalculateCumulants();}
@@ -186,20 +195,33 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Finish()
 {
  // Closing the curtains. 
 
- // a) Cross-check TBI;
+ // a) Cross-check pointers used in this method;
  // b) Calculate 'standard candles'.
-
- // a) Cross-check TBI:
  // ...
+ 
+ // a) Cross-check pointers used in this method:
+ this->CrossCheckPointersUsedInFinish();
 
  // b) Calculate 'standard candles':
  if(fCalculateStandardCandles){this->CalculateStandardCandles();}
 
-
  // ...
- printf("\n ... Closing the curtains ... \n");
+ printf("\n ... Closing the curtains ... \n\n");
 
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Finish()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinish()
+{
+ // Cross-check all pointers used in method Finish().
+
+ if(fCalculateStandardCandles && !fStandardCandlesHist)
+ {
+  Fatal("AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinish()","fStandardCandlesHist");
+ }
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinish()
 
 //=======================================================================================================================
 
@@ -217,69 +239,200 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForCorrelatio
 {
  // Initialize all arrays for correlations.
 
- for(Int_t c=0;c<8;c++)
+ for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
  {
-  fCorrelationsPro[c] = NULL;
+  for(Int_t c=0;c<8;c++) // [1p,2p,...,8p]
+  {
+   fCorrelationsPro[cs][c] = NULL;
+  }
  }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForCorrelations()
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations()
+void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlowEventSimple *anEvent)
 {
  // Calculate multi-particle correlations from Q-vector components.
 
- // TBI mess
+ // Fill ... TBI this can be implemented better, most likely...
 
- // One-particle stuff;
- // Two-particle correlations;
- // 3-p; TBI
- // 4-p; TBI
- // ...
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations()"; // TBI
+ if(!anEvent){Fatal(sMethodName.Data(),"anEvent is apparently doing crazy things...");} // TBI
+ Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
 
- // One-particle stuff:
- for(Int_t ci=1;ci<=fMaxHarmonic;ci++)
+ Int_t binNo[8]; for(Int_t c=0;c<8;c++){binNo[c]=1;} 
+ // 1-p:
+ for(Int_t n1=-fMaxHarmonic;n1<=fMaxHarmonic;n1++) 
  {
-  Double_t oneNum = One(ci).Re(); // numerator
-  Double_t oneDen = One(0).Re(); // denominator
-  if(TMath::Abs(oneDen)>0) 
+  if(fSkipZeroHarmonics && 0==n1){continue;}
+  if(fCalculateAll)
   {
-   Double_t oneWeight = oneDen; // TBI add choices for the weights
-   fCorrelationsPro[0]->Fill(ci-0.5,oneNum/oneDen,oneWeight); 
-  } // if(TMath::Abs(oneDen)>0) 
- } // for(Int_t ci=1;ci<=fMaxHarmonic;ci++)
- 
- // Two-particle correlations:
- for(Int_t ci=1;ci<=fMaxHarmonic;ci++)
- {
-  Double_t twoNum = Two(ci,-ci).Re(); // numerator
-  Double_t twoDen = Two(0,0).Re(); // denominator
-  if(TMath::Abs(twoDen)>0) 
+   TComplex oneN = One(n1); // numerator
+   Double_t oneD = One(0).Re(); // denominator
+   Double_t oneW = oneD; // weight TBI add other possibilities here for the weight
+   if(oneD>0. && dMultRP>=1) 
+   {
+    fCorrelationsPro[0][0]->Fill(binNo[0]-.5,oneN.Re()/oneD,oneW);
+    fCorrelationsPro[1][0]->Fill(binNo[0]++-.5,oneN.Im()/oneD,oneW);
+   } else {Warning(sMethodName.Data(),"if(oneD>0. && dMultRP>=1) ");}
+  } 
+  if(1==fDontGoBeyond){continue;}
+  // 2-p:
+  for(Int_t n2=n1;n2<=fMaxHarmonic;n2++) 
   {
-   Double_t twoWeight = twoDen; // TBI add choices for the weights
-   fCorrelationsPro[1]->Fill(ci-0.5,twoNum/twoDen,twoWeight); 
-  } // if(TMath::Abs(twoDen)>0)
- } // for(Int_t ci=1;ci<=fMaxHarmonic;ci++)
+   if(fSkipZeroHarmonics && 0==n2){continue;}
+   if(fCalculateAll 
+      || (fCalculateIsotropic && 0==n1+n2) 
+      || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2)) 
+      || (fCalculateSameIsotropic && 0==n1+n2 &&  TMath::Abs(n1)==TMath::Abs(n2)))
+   {
+    TComplex twoN = Two(n1,n2); // numerator
+    Double_t twoD = Two(0,0).Re(); // denominator
+    Double_t twoW = twoD; // weight TBI add other possibilities here for the weight
+    if(twoD>0. && dMultRP>=2) 
+    {
+     fCorrelationsPro[0][1]->Fill(binNo[1]-.5,twoN.Re()/twoD,twoW);;
+     fCorrelationsPro[1][1]->Fill(binNo[1]++-.5,twoN.Im()/twoD,twoW);;
+    } else {Warning(sMethodName.Data(),"twoD>0. &&d MultRP>=2");} 
+   } 
+   if(2==fDontGoBeyond){continue;}
+   // 3-p:
+   for(Int_t n3=n2;n3<=fMaxHarmonic;n3++) 
+   {
+    if(fSkipZeroHarmonics && 0==n3){continue;}
+    if(fCalculateAll 
+       || (fCalculateIsotropic && 0==n1+n2+n3) 
+       || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3))
+       || (fCalculateSameIsotropic && 0==n1+n2+n3 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3)))
+    {
+     TComplex threeN = Three(n1,n2,n3); // numerator
+     Double_t threeD = Three(0,0,0).Re(); // denominator
+     Double_t threeW = threeD; // weight TBI add other possibilities here for the weight
+     if(threeD>0. && dMultRP>=3) 
+     {
+      fCorrelationsPro[0][2]->Fill(binNo[2]-.5,threeN.Re()/threeD,threeW);
+      fCorrelationsPro[1][2]->Fill(binNo[2]++-.5,threeN.Im()/threeD,threeW);
+     } else {Warning(sMethodName.Data(),"threeD>0. && dMultRP>=3");} 
+    }
+    if(3==fDontGoBeyond){continue;}
+    // 4-p:
+    for(Int_t n4=n3;n4<=fMaxHarmonic;n4++) 
+    {
+     if(fSkipZeroHarmonics && 0==n4){continue;}
+     if(fCalculateAll 
+        || (fCalculateIsotropic && 0==n1+n2+n3+n4) 
+        || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) 
+            && TMath::Abs(n1)==TMath::Abs(n4))
+        || (fCalculateSameIsotropic && 0==n1+n2+n3+n4 && TMath::Abs(n1)==TMath::Abs(n2) 
+            && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4)))
+     { 
+      TComplex fourN = Four(n1,n2,n3,n4); // numerator
+      Double_t fourD = Four(0,0,0,0).Re(); // denominator
+      Double_t fourW = fourD; // weight TBI add other possibilities here for the weight
+      if(fourD>0. && dMultRP>=4) 
+      {
+       fCorrelationsPro[0][3]->Fill(binNo[3]-.5,fourN.Re()/fourD,fourW);
+       fCorrelationsPro[1][3]->Fill(binNo[3]++-.5,fourN.Im()/fourD,fourW);
+      } else {Warning(sMethodName.Data(),"fourD>0. && dMultRP>=4");}
+     }
+     if(4==fDontGoBeyond){continue;}
+     // 5-p:
+     for(Int_t n5=n4;n5<=fMaxHarmonic;n5++) 
+     {
+      if(fSkipZeroHarmonics && 0==n5){continue;}
+      if(fCalculateAll 
+         || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5) 
+         || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) 
+             && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5))
+         || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5 && TMath::Abs(n1)==TMath::Abs(n2) 
+             && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5)))
+      { 
+       TComplex fiveN = Five(n1,n2,n3,n4,n5); // numerator
+       Double_t fiveD = Five(0,0,0,0,0).Re(); // denominator
+       Double_t fiveW = fiveD; // weight TBI add other possibilities here for the weight
+       if(fiveD>0. && dMultRP>=5) 
+       {
+        fCorrelationsPro[0][4]->Fill(binNo[4]-.5,fiveN.Re()/fiveD,fiveW);
+        fCorrelationsPro[1][4]->Fill(binNo[4]++-.5,fiveN.Im()/fiveD,fiveW);
+       } else {Warning(sMethodName.Data(),"fiveD>0. && dMultRP>=5");}
+      } 
+      if(5==fDontGoBeyond){continue;}
+      // 6-p:  
+      for(Int_t n6=n5;n6<=fMaxHarmonic;n6++) 
+      {
+       if(fSkipZeroHarmonics && 0==n6){continue;}
+       if(fCalculateAll 
+          || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5+n6)  
+          || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) 
+              && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6))
+          || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5+n6 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) 
+              && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6)))
+       { 
+        TComplex sixN = Six(n1,n2,n3,n4,n5,n6); // numerator
+        Double_t sixD = Six(0,0,0,0,0,0).Re(); // denominator
+        Double_t sixW = sixD; // weight TBI add other possibilities here for the weight
+        if(sixD>0. && dMultRP>=6) 
+        {
+         fCorrelationsPro[0][5]->Fill(binNo[5]-.5,sixN.Re()/sixD,sixW);
+         fCorrelationsPro[1][5]->Fill(binNo[5]++-.5,sixN.Im()/sixD,sixW);
+        } else {Warning(sMethodName.Data(),"sixD>0. && dMultRP>=6");}
+       } 
+       if(6==fDontGoBeyond){continue;}
+       // 7-p:
+       for(Int_t n7=n6;n7<=fMaxHarmonic;n7++) 
+       {
+        if(fSkipZeroHarmonics && 0==n7){continue;}
+        if(fCalculateAll 
+           || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5+n6+n7) 
+           || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) 
+               && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) && TMath::Abs(n1)==TMath::Abs(n7))
+           || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5+n6+n7 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3)
+               && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) 
+               && TMath::Abs(n1)==TMath::Abs(n7)))
+        { 
+         TComplex sevenN = Seven(n1,n2,n3,n4,n5,n6,n7); // numerator
+         Double_t sevenD = Seven(0,0,0,0,0,0,0).Re(); // denominator
+         Double_t sevenW = sevenD; // weight TBI add other possibilities here for the weight
+         if(sevenD>0. && dMultRP>=7) 
+         {
+          fCorrelationsPro[0][6]->Fill(binNo[6]-.5,sevenN.Re()/sevenD,sevenW);
+          fCorrelationsPro[1][6]->Fill(binNo[6]++-.5,sevenN.Im()/sevenD,sevenW);
+         } else {Warning(sMethodName.Data(),"sevenD>0. && dMultRP>=7");}
+        } 
+        if(7==fDontGoBeyond){continue;}
+        // 8-p:
+        for(Int_t n8=n7;n8<=fMaxHarmonic;n8++) 
+        {
+         if(fSkipZeroHarmonics && 0==n8){continue;}
+         if(fCalculateAll 
+            || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5+n6+n7+n8) 
+            || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) 
+                && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) && TMath::Abs(n1)==TMath::Abs(n7) 
+                && TMath::Abs(n1)==TMath::Abs(n8))
+            || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5+n6+n7+n8 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) 
+                && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) 
+                && TMath::Abs(n1)==TMath::Abs(n7) && TMath::Abs(n1)==TMath::Abs(n8)))
+         { 
+          TComplex eightN = Eight(n1,n2,n3,n4,n5,n6,n7,n8); // numerator
+          Double_t eightD = Eight(0,0,0,0,0,0,0,0).Re(); // denominator
+          Double_t eightW = eightD; // weight TBI add other possibilities here for the weight
+          if(eightD>0. && dMultRP>=8) 
+          {
+           fCorrelationsPro[0][7]->Fill(binNo[7]-.5,eightN.Re()/eightD,eightW);
+           fCorrelationsPro[1][7]->Fill(binNo[7]++-.5,eightN.Im()/eightD,eightW);
+          }
+         } 
+        } // for(Int_t n8=n7;n8<=fMaxHarmonic;n8++)
+       } // for(Int_t n7=n6;n7<=fMaxHarmonic;n7++) 
+      } // for(Int_t n6=n5;n6<=fMaxHarmonic;n6++) 
+     } // for(Int_t n5=n4;n5<=fMaxHarmonic;n5++) 
+    } // for(Int_t n4=n3;n4<=fMaxHarmonic;n4++)   
+   } // for(Int_t n3=n2;n3<=fMaxHarmonic;n3++) 
+  } // for(Int_t n2=n1;n2<=fMaxHarmonic;n2++)
+ } // for(Int_t n1=-fMaxHarmonic;n1<=fMaxHarmonic;n1++) 
 
- // 3-p:
- // ...
-
- // 4-p:
- Double_t four3232Num = Four(3,2,-3,-2).Re(); // TBI hardwired stuff
- Double_t four4242Num = Four(4,2,-4,-2).Re(); // TBI hardwired stuff
- Double_t four4343Num = Four(4,3,-4,-3).Re(); // TBI hardwired stuff
- Double_t four5353Num = Four(5,3,-5,-3).Re(); // TBI hardwired stuff
- Double_t fourDen = Four(0,0,0,0).Re(); // TBI
- if(TMath::Abs(fourDen)>0) // protection against zero TBI
- {
-  fCorrelationsPro[3]->Fill(0.5,four3232Num/fourDen,fourDen); // TBI 
-  fCorrelationsPro[3]->Fill(1.5,four4242Num/fourDen,fourDen); // TBI 
-  fCorrelationsPro[3]->Fill(2.5,four4343Num/fourDen,fourDen); // TBI 
-  fCorrelationsPro[3]->Fill(3.5,four5353Num/fourDen,fourDen); // TBI 
- }
-
-} // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations()
+} // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
 
@@ -349,12 +502,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  //fNestedLoopsResultsSinPro->Fill(15.5,Eight(h1,h2,h3,h4,h5,h6,h7,h8).Im()/Eight(0,0,0,0,0,0,0,0).Re(),Eight(0,0,0,0,0,0,0,0).Re()); 
 
  Int_t nPrim = anEvent->NumberOfTracks(); 
+ Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
  AliFlowTrackSimple *aftsTrack = NULL; 
  Double_t dPhi1=0.,dPhi2=0.,dPhi3=0.,dPhi4=0.,dPhi5=0.,dPhi6=0.,dPhi7=0.,dPhi8=0.; 
  Double_t wPhi1=1.,wPhi2=1.,wPhi3=1.,wPhi4=1.,wPhi5=1.,wPhi6=1.,wPhi7=1.,wPhi8=1.; 
 
  // 1-particle stuff: TBI       
- if(nPrim>=1)
+ if(dMultRP>=1)
  {
   for(Int_t i1=0;i1<nPrim;i1++)
   {
@@ -369,7 +523,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  } // end of if(nPrim>=1) 
 
  // 2-particle correlations:       
- if(nPrim>=2)
+ if(dMultRP>=2)
  {
   for(Int_t i1=0;i1<nPrim;i1++)
   {
@@ -392,7 +546,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  } // end of if(nPrim>=2)
 
  // 3-particle correlations:         
- if(nPrim>=3)
+ if(dMultRP>=3)
  {
   for(Int_t i1=0;i1<nPrim;i1++)
   {
@@ -423,7 +577,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  } // end of if(nPrim>=3)
 
  // 4-particle correlations:
- if(nPrim>=4)
+ if(dMultRP>=4)
  {       
   for(Int_t i1=0;i1<nPrim;i1++)
   { 
@@ -462,7 +616,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  } // end of if(nPrim>=)
 
  // 5-particle correlations:      
- if(nPrim>=5)
+ if(dMultRP>=5)
  {
   for(Int_t i1=0;i1<nPrim;i1++)
   {
@@ -509,7 +663,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  } // end of if(nPrim>=5)
   
  // 6-particle correlations:
- if(nPrim>=6)
+ if(dMultRP>=6)
  {
   for(Int_t i1=0;i1<nPrim;i1++)
   {
@@ -564,7 +718,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  } // end of if(nPrim>=6)
   
  // 7-particle correlations:
- if(nPrim>=7)
+ if(dMultRP>=7)
  {
   for(Int_t i1=0;i1<nPrim;i1++)
   { 
@@ -627,7 +781,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  } // end of if(nPrim>=7)
  
  // 8-particle correlations:
- if(nPrim>=8)
+ if(dMultRP>=8)
  {
   for(Int_t i1=0;i1<nPrim;i1++)
   {
@@ -764,14 +918,14 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
    dEta = pTrack->Eta();
    if(fUseEtaWeights){wEta = EtaWeight(dEta);} // corresponding eta weight
    // Calculate Q-vector components:
-   for(Int_t h=0;h<49;h++) // TBI hardwired 49 = maxHarmonic*maxCorrelator+1
+   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
-    for(Int_t p=0;p<9;p++) // TBI hardwired 9 = maxCorrelator+1
+    for(Int_t p=0;p<fMaxCorrelator+1;p++)
     {
      if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights){wToPowerP = pow(wPhi*wPt*wEta,p);} // TBI should I do something with the normalization of the product wPhi*wPt*wEta
      fQvector[h][p] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));
-    } //  for(Int_t p=0;p<9;p++)
-   } // for(Int_t h=0;h<49;h++)
+    } // for(Int_t p=0;p<fMaxCorrelator+1;p++)
+   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
   } // if(pTrack && pTrack->InRPSelection()) // fill Q-vector components only with reference particles
  } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
 
@@ -783,7 +937,21 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
 {
  // Cross-check all initial settings in this method. 
  
- // ...
+ // a) Few cross-checks for control histograms;
+ // b) Few cross-checks for flags for correlations.
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()";
+
+ // a) Few cross-checks for control histograms: TBI the lines below are not really what they are supposed to be...
+ /*
+ if(fFillKinematicsHist && !fFillControlHistograms){Fatal(sMethodName.Data(),"fFillKinematicsHist && !fFillControlHistograms");}
+ if(fFillMultDistributionsHist && !fFillControlHistograms){Fatal(sMethodName.Data(),"fFillMultDistributionsHist && !fFillControlHistograms");}
+ if(fFillMultCorrelationsHist && !fFillControlHistograms){Fatal(sMethodName.Data(),"fFillMultCorrelationsHist && !fFillControlHistograms");}
+ */ 
+
+ // b) Few cross-checks for flags for correlations: // TBI the lines bellow can be civilized
+ Int_t iSum = (Int_t)fCalculateIsotropic + (Int_t)fCalculateSame + (Int_t)fCalculateSameIsotropic;
+ if(iSum>1){Fatal(sMethodName.Data(),"iSum is doing crazy things...");}
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
 
@@ -875,7 +1043,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  //  b2) Book TH2D *fMultCorrelationsHist[3].
 
  // a) Book the profile holding all the flags for control histograms: TBI stil incomplete 
- fControlHistogramsFlagsPro = new TProfile("fControlHistogramsFlagsPro","Flags and settings for control histograms",1,0,1);
+ fControlHistogramsFlagsPro = new TProfile("fControlHistogramsFlagsPro","Flags and settings for control histograms",4,0,4);
  fControlHistogramsFlagsPro->SetTickLength(-0.01,"Y");
  fControlHistogramsFlagsPro->SetMarkerStyle(25);
  fControlHistogramsFlagsPro->SetLabelSize(0.04);
@@ -884,9 +1052,12 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  fControlHistogramsFlagsPro->SetFillColor(kGray);
  fControlHistogramsFlagsPro->SetLineColor(kBlack);
  fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(1,"fFillControlHistograms"); fControlHistogramsFlagsPro->Fill(0.5,fFillControlHistograms);
+ fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(2,"fFillKinematicsHist"); fControlHistogramsFlagsPro->Fill(1.5,fFillKinematicsHist);
+ fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(3,"fFillMultDistributionsHist"); fControlHistogramsFlagsPro->Fill(2.5,fFillMultDistributionsHist);
+ fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(4,"fFillMultCorrelationsHist"); fControlHistogramsFlagsPro->Fill(3.5,fFillMultCorrelationsHist);
  fControlHistogramsList->Add(fControlHistogramsFlagsPro);
 
- if(!fFillControlHistograms){return;} // TBI is this safe? 
+ if(!fFillControlHistograms){return;} // TBI is this safe? Well, perhaps it is if I can't implement it better...
 
  // b) Book all control histograms: // TBI add setters for all these values
  //  b0) Book TH1D *fKinematicsHist[2][3]:
@@ -907,7 +1078,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
    fKinematicsHist[rp][ppe]->SetLineColor(lineColor[rp]);
    fKinematicsHist[rp][ppe]->SetFillColor(fillColor[rp]);
    fKinematicsHist[rp][ppe]->SetMinimum(0.); 
-   fControlHistogramsList->Add(fKinematicsHist[rp][ppe]);
+   if(fFillKinematicsHist){fControlHistogramsList->Add(fKinematicsHist[rp][ppe]);}
   }
  }
 
@@ -926,7 +1097,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
   fMultDistributionsHist[rprm]->GetXaxis()->SetTitle(xAxisTitleMult[rprm].Data());
   fMultDistributionsHist[rprm]->SetLineColor(lineColorMult[rprm]);
   fMultDistributionsHist[rprm]->SetFillColor(fillColorMult[rprm]);
-  fControlHistogramsList->Add(fMultDistributionsHist[rprm]);
+  if(fFillMultDistributionsHist){fControlHistogramsList->Add(fMultDistributionsHist[rprm]);}
  } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
 
  //  b2) Book TH2D *fMultCorrelationsHist[3]: TBI too large objects to store in this way, perhaps,
@@ -934,19 +1105,19 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  fMultCorrelationsHist[0] = new TH2D("Multiplicity (RP vs. POI)","Multiplicity (RP vs. POI)",nBinsMult[0],minMult[0],maxMult[0],nBinsMult[1],minMult[1],maxMult[1]);
  fMultCorrelationsHist[0]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
  fMultCorrelationsHist[0]->GetYaxis()->SetTitle(xAxisTitleMult[1].Data());
- fControlHistogramsList->Add(fMultCorrelationsHist[0]);
+ if(fFillMultCorrelationsHist){fControlHistogramsList->Add(fMultCorrelationsHist[0]);}
 
  // ...
  fMultCorrelationsHist[1] = new TH2D("Multiplicity (RP vs. REF)","Multiplicity (RP vs. REF)",nBinsMult[0],minMult[0],maxMult[0],nBinsMult[2],minMult[2],maxMult[2]);
  fMultCorrelationsHist[1]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
  fMultCorrelationsHist[1]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
- fControlHistogramsList->Add(fMultCorrelationsHist[1]);
+ if(fFillMultCorrelationsHist){fControlHistogramsList->Add(fMultCorrelationsHist[1]);}
 
  // ...
  fMultCorrelationsHist[2] = new TH2D("Multiplicity (POI vs. REF)","Multiplicity (POI vs. REF)",nBinsMult[1],minMult[1],maxMult[1],nBinsMult[2],minMult[2],maxMult[2]);
  fMultCorrelationsHist[2]->GetXaxis()->SetTitle(xAxisTitleMult[1].Data());
  fMultCorrelationsHist[2]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
- fControlHistogramsList->Add(fMultCorrelationsHist[2]);
+ if(fFillMultCorrelationsHist){fControlHistogramsList->Add(fMultCorrelationsHist[2]);}
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHistograms()
 
@@ -955,37 +1126,39 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
 void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlowEventSimple *anEvent)
 {
  // Fill control histograms. 
-
  // a) Fill TH1D *fKinematicsHist[2][3];
  // b) Fill TH1D *fMultDistributionsHist[3]; 
  // c) Fill TH2D *fMultCorrelationsHist[3].  
 
  // a) Fill TH1D *fKinematicsHist[2][3]:
- Int_t nTracks = anEvent->NumberOfTracks(); // TBI shall I promote this to data member?
- for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ if(fFillKinematicsHist)
  {
-  AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
-  if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FCH() !!!!");continue;}
-  if(pTrack)
+  Int_t nTracks = anEvent->NumberOfTracks(); // TBI shall I promote this to data member?
+  for(Int_t t=0;t<nTracks;t++) // loop over all tracks
   {
-   Double_t dPhi = pTrack->Phi(); 
-   //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
-   //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
-   Double_t dPt = pTrack->Pt();
-   Double_t dEta = pTrack->Eta();
-   Double_t dPhiPtEta[3] = {dPhi,dPt,dEta};
-   for(Int_t rp=0;rp<2;rp++) // [RP,POI]
+   AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
+   if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FCH() !!!!");continue;}
+   if(pTrack)
    {
-    for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+    Double_t dPhi = pTrack->Phi(); 
+    //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
+    //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
+    Double_t dPt = pTrack->Pt();
+    Double_t dEta = pTrack->Eta();
+    Double_t dPhiPtEta[3] = {dPhi,dPt,dEta};
+    for(Int_t rp=0;rp<2;rp++) // [RP,POI]
     {
-     if((0==rp && pTrack->InRPSelection()) || (1==rp && pTrack->InPOISelection())) // TBI 
-     { 
-      fKinematicsHist[rp][ppe]->Fill(dPhiPtEta[ppe]);
-     }
-    } // for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
-   } // for(Int_t rp=0;rp<2;rp++) // [RP,POI]
-  } // if(pTrack)  
- } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+     for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+     {
+      if((0==rp && pTrack->InRPSelection()) || (1==rp && pTrack->InPOISelection())) // TBI 
+      { 
+       fKinematicsHist[rp][ppe]->Fill(dPhiPtEta[ppe]);
+      }
+     } // for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+    } // for(Int_t rp=0;rp<2;rp++) // [RP,POI]
+   } // if(pTrack)  
+  } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ } // if(fFillKinematicsHist)
 
  // b) Fill TH1D *fMultDistributionsHist[3]: 
  Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote these 3 variables into data members? 
@@ -994,13 +1167,16 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
  Double_t dMult[3] = {dMultRP,dMultPOI,dMultREF};
  for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
  {
-  fMultDistributionsHist[rprm]->Fill(dMult[rprm]);      
+  if(fFillMultDistributionsHist){fMultDistributionsHist[rprm]->Fill(dMult[rprm]);}      
  } 
 
  // c) Fill TH2D *fMultCorrelationsHist[3]:  
- fMultCorrelationsHist[0]->Fill((Int_t)dMultRP,(Int_t)dMultPOI); // RP vs. POI
- fMultCorrelationsHist[1]->Fill((Int_t)dMultRP,(Int_t)dMultREF); // RP vs. refMult
- fMultCorrelationsHist[2]->Fill((Int_t)dMultPOI,(Int_t)dMultREF); // POI vs. refMult
+ if(fFillMultCorrelationsHist)
+ {
+  fMultCorrelationsHist[0]->Fill((Int_t)dMultRP,(Int_t)dMultPOI); // RP vs. POI
+  fMultCorrelationsHist[1]->Fill((Int_t)dMultRP,(Int_t)dMultREF); // RP vs. refMult
+  fMultCorrelationsHist[2]->Fill((Int_t)dMultPOI,(Int_t)dMultREF); // POI vs. refMult
+ } // if(fFillMultCorrelationsHist)
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlowEventSimple *anEvent)
 
@@ -1046,17 +1222,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
  // TBI this method can be implemented in a much more civilised way. 
 
  // a) Book the profile holding all the flags for correlations;
- // b) 1-p // TBI
- // c) 2-p // TBI
- // d) 3-p // TBI
- // e) 4-p // TBI
- // f) 5-p // TBI
- // g) 6-p // TBI
- // h) 7-p // TBI
- // i) 8-p // TBI
+ // b) Book TProfile *fCorrelationsPro[2][8] ([0=cos,1=sin][1p,2p,...,8p]).
 
  // a) Book the profile holding all the flags for correlations:
- fCorrelationsFlagsPro = new TProfile("fCorrelationsFlagsPro","Flags for correlations",3,0,3);
+ fCorrelationsFlagsPro = new TProfile("fCorrelationsFlagsPro","Flags for correlations",9,0,9);
  fCorrelationsFlagsPro->SetTickLength(-0.01,"Y");
  fCorrelationsFlagsPro->SetMarkerStyle(25);
  fCorrelationsFlagsPro->SetLabelSize(0.03);
@@ -1067,106 +1236,161 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
  fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateCorrelations"); fCorrelationsFlagsPro->Fill(0.5,fCalculateCorrelations); 
  fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(2,"fMaxHarmonic"); fCorrelationsFlagsPro->Fill(1.5,fMaxHarmonic); 
  fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(3,"fMaxCorrelator"); fCorrelationsFlagsPro->Fill(2.5,fMaxCorrelator); 
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(4,"fCalculateIsotropic"); fCorrelationsFlagsPro->Fill(3.5,fCalculateIsotropic); 
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(5,"fCalculateSame"); fCorrelationsFlagsPro->Fill(4.5,fCalculateSame); 
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(6,"fSkipZeroHarmonics"); fCorrelationsFlagsPro->Fill(5.5,fSkipZeroHarmonics); 
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(7,"fCalculateSameIsotropic"); fCorrelationsFlagsPro->Fill(6.5,fCalculateSameIsotropic); 
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(8,"fCalculateAll"); fCorrelationsFlagsPro->Fill(7.5,fCalculateAll); 
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(9,"fDontGoBeyond"); fCorrelationsFlagsPro->Fill(8.5,fDontGoBeyond); 
  fCorrelationsList->Add(fCorrelationsFlagsPro);
 
  if(!fCalculateCorrelations){return;} // TBI is this safe enough? 
 
- // b) 1-p // TBI
- fCorrelationsPro[0] = new TProfile("f1pCorrelationsPro","1-p correlations",6,0.,6.); // TBI better naming 
- fCorrelationsPro[0]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[0]->SetMarkerStyle(25);
- fCorrelationsPro[0]->SetLabelSize(0.04);
- fCorrelationsPro[0]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[0]->SetStats(kFALSE);
- fCorrelationsPro[0]->Sumw2();
- for(Int_t ci=1;ci<=6;ci++) // correlation index
+ // b) Book TProfile *fCorrelationsPro[2][8] ([0=cos,1=sin][1p,2p,...,8p]):
+ TString sCosSin[2] = {"Cos","Sin"};
+ Int_t markerColor[2] = {kBlue,kRed};
+ Int_t markerStyle[2] = {kFullSquare,kFullSquare};
+ Int_t nBins[8] = {1,1,1,1,1,1,1,1}; // TBI hardwired 8, shall be fMaxCorrelator
+ Int_t nBinsTitle[8] = {1,1,1,1,1,1,1,1}; // TBI hardwired 8, shall be fMaxCorrelator
+ Int_t nToBeFilled[8] = {0,0,0,0,0,0,0,0}; // TBI hardwired 8, shall be fMaxCorrelator
+ for(Int_t c=0;c<fMaxCorrelator;c++) // [1p,2p,...,8p]
  {
-  fCorrelationsPro[0]->GetXaxis()->SetBinLabel(ci,Form("#LT#LT1#GT#GT_{%d}",ci));
- } 
- fCorrelationsList->Add(fCorrelationsPro[0]);
-
- // c) 2-p // TBI
- fCorrelationsPro[1] = new TProfile("f2pCorrelationsPro","2-p correlations",6,0.,6.); // TBI better naming 
- fCorrelationsPro[1]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[1]->SetMarkerStyle(25);
- fCorrelationsPro[1]->SetLabelSize(0.04);
- fCorrelationsPro[1]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[1]->SetStats(kFALSE);
- fCorrelationsPro[1]->Sumw2();
- for(Int_t ci=1;ci<=6;ci++) // correlation index
+  // Implementing \binom{n+k-1}{k}, which is the resulting number of sets obtained
+  // after sampling n starting elements into k subsets, repetitions allowed.
+  // In my case, n=2*fMaxHarmonic+1, k=c+1, hence:
+  nBins[c] = TMath::Factorial(2*fMaxHarmonic+1+c+1-1)
+           / (TMath::Factorial(2*fMaxHarmonic+1-1)*TMath::Factorial(c+1));
+  nBinsTitle[c] = nBins[c];
+  if(c==fDontGoBeyond){nBins[c]=1;} // TBI a bit of spaghetti here...
+ } // for(Int_t c=0;c<8;c++) // [1p,2p,...,8p]
+ for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
  {
-  fCorrelationsPro[1]->GetXaxis()->SetBinLabel(ci,Form("#LT#LT2#GT#GT_{%d,%d}",ci,ci));
+  for(Int_t c=0;c<fMaxCorrelator;c++) // [1p,2p,...,8p]
+  {
+   fCorrelationsPro[cs][c] = new TProfile(Form("%dpCorrelations%s",c+1,sCosSin[cs].Data()),"",nBins[c],0.,1.*nBins[c]);
+   fCorrelationsPro[cs][c]->Sumw2();
+   fCorrelationsPro[cs][c]->SetStats(kFALSE);
+   fCorrelationsPro[cs][c]->SetMarkerColor(markerColor[cs]);
+   fCorrelationsPro[cs][c]->SetMarkerStyle(markerStyle[cs]);
+   fCorrelationsList->Add(fCorrelationsPro[cs][c]);
+  } // for(Int_t c=0;c<8;c++) // [1p,2p,...,8p]
+ } // for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
+ // Set all bin labels: TBI this can be implemented better, most likely...
+ Int_t binNo[8]; for(Int_t c=0;c<fMaxCorrelator;c++){binNo[c]=1;} // TBI hardwired 8, shall be fMaxCorrelator
+ for(Int_t n1=-fMaxHarmonic;n1<=fMaxHarmonic;n1++) 
+ {
+  if(fSkipZeroHarmonics && 0==n1){continue;}
+  if(fCalculateAll)
+  {
+   fCorrelationsPro[0][0]->GetXaxis()->SetBinLabel(binNo[0],Form("Cos(%d)",n1));
+   fCorrelationsPro[1][0]->GetXaxis()->SetBinLabel(binNo[0]++,Form("Sin(%d)",n1));
+   nToBeFilled[0]++; 
+  }
+  if(1==fDontGoBeyond){continue;}
+  for(Int_t n2=n1;n2<=fMaxHarmonic;n2++) 
+  {
+   if(fSkipZeroHarmonics && 0==n2){continue;}
+   if(fCalculateAll || (fCalculateIsotropic && 0==n1+n2) || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2)) 
+      || (fCalculateSameIsotropic && 0==n1+n2 &&  TMath::Abs(n1)==TMath::Abs(n2)))
+   {  
+    fCorrelationsPro[0][1]->GetXaxis()->SetBinLabel(binNo[1],Form("Cos(%d,%d)",n1,n2));
+    fCorrelationsPro[1][1]->GetXaxis()->SetBinLabel(binNo[1]++,Form("Sin(%d,%d)",n1,n2));
+    nToBeFilled[1]++; 
+   }
+   if(2==fDontGoBeyond){continue;}
+   for(Int_t n3=n2;n3<=fMaxHarmonic;n3++) 
+   {
+    if(fSkipZeroHarmonics && 0==n3){continue;}
+    if(fCalculateAll || (fCalculateIsotropic && 0==n1+n2+n3) || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3))
+       || (fCalculateSameIsotropic && 0==n1+n2+n3 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3)))
+    {  
+     fCorrelationsPro[0][2]->GetXaxis()->SetBinLabel(binNo[2],Form("Cos(%d,%d,%d)",n1,n2,n3));
+     fCorrelationsPro[1][2]->GetXaxis()->SetBinLabel(binNo[2]++,Form("Sin(%d,%d,%d)",n1,n2,n3));
+     nToBeFilled[2]++; 
+    }
+    if(3==fDontGoBeyond){continue;}
+    for(Int_t n4=n3;n4<=fMaxHarmonic;n4++) 
+    {
+     if(fSkipZeroHarmonics && 0==n4){continue;}
+     if(fCalculateAll || (fCalculateIsotropic && 0==n1+n2+n3+n4) || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4))
+       || (fCalculateSameIsotropic && 0==n1+n2+n3+n4 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4)))
+     {   
+      fCorrelationsPro[0][3]->GetXaxis()->SetBinLabel(binNo[3],Form("Cos(%d,%d,%d,%d)",n1,n2,n3,n4));
+      fCorrelationsPro[1][3]->GetXaxis()->SetBinLabel(binNo[3]++,Form("Sin(%d,%d,%d,%d)",n1,n2,n3,n4)); 
+      nToBeFilled[3]++; 
+     } 
+     if(4==fDontGoBeyond){continue;}
+     for(Int_t n5=n4;n5<=fMaxHarmonic;n5++) 
+     {
+      if(fSkipZeroHarmonics && 0==n5){continue;}
+      if(fCalculateAll || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5) 
+         || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5))
+         || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5)))
+      {   
+       fCorrelationsPro[0][4]->GetXaxis()->SetBinLabel(binNo[4],Form("Cos(%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5));
+       fCorrelationsPro[1][4]->GetXaxis()->SetBinLabel(binNo[4]++,Form("Sin(%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5));
+       nToBeFilled[4]++; 
+      }
+      if(5==fDontGoBeyond){continue;}
+      for(Int_t n6=n5;n6<=fMaxHarmonic;n6++) 
+      {
+       if(fSkipZeroHarmonics && 0==n6){continue;}
+       if(fCalculateAll || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5+n6)  
+          || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) 
+              && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6))
+          || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5+n6 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) 
+              && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6)))
+       {   
+        fCorrelationsPro[0][5]->GetXaxis()->SetBinLabel(binNo[5],Form("Cos(%d,%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5,n6));
+        fCorrelationsPro[1][5]->GetXaxis()->SetBinLabel(binNo[5]++,Form("Sin(%d,%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5,n6));
+        nToBeFilled[5]++; 
+       }
+       if(6==fDontGoBeyond){continue;}
+       for(Int_t n7=n6;n7<=fMaxHarmonic;n7++) 
+       {
+        if(fSkipZeroHarmonics && 0==n7){continue;}
+        if(fCalculateAll || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5+n6+n7) 
+           || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) 
+               && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) && TMath::Abs(n1)==TMath::Abs(n7))
+           || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5+n6+n7 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) 
+               && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) && TMath::Abs(n1)==TMath::Abs(n7)))
+        {   
+         fCorrelationsPro[0][6]->GetXaxis()->SetBinLabel(binNo[6],Form("Cos(%d,%d,%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5,n6,n7));
+         fCorrelationsPro[1][6]->GetXaxis()->SetBinLabel(binNo[6]++,Form("Sin(%d,%d,%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5,n6,n7));
+         nToBeFilled[6]++; 
+        }
+        if(7==fDontGoBeyond){continue;}
+        for(Int_t n8=n7;n8<=fMaxHarmonic;n8++) 
+        {
+         if(fSkipZeroHarmonics && 0==n8){continue;}
+         if(fCalculateAll || (fCalculateIsotropic && 0==n1+n2+n3+n4+n5+n6+n7+n8) 
+            || (fCalculateSame && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) && TMath::Abs(n1)==TMath::Abs(n4) 
+                && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) && TMath::Abs(n1)==TMath::Abs(n7) && TMath::Abs(n1)==TMath::Abs(n8))
+            || (fCalculateSameIsotropic && 0==n1+n2+n3+n4+n5+n6+n7+n8 && TMath::Abs(n1)==TMath::Abs(n2) && TMath::Abs(n1)==TMath::Abs(n3) 
+                && TMath::Abs(n1)==TMath::Abs(n4) && TMath::Abs(n1)==TMath::Abs(n5) && TMath::Abs(n1)==TMath::Abs(n6) && TMath::Abs(n1)==TMath::Abs(n7) 
+                && TMath::Abs(n1)==TMath::Abs(n8)))
+         {    
+          fCorrelationsPro[0][7]->GetXaxis()->SetBinLabel(binNo[7],Form("Cos(%d,%d,%d,%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5,n6,n7,n8));
+          fCorrelationsPro[1][7]->GetXaxis()->SetBinLabel(binNo[7]++,Form("Sin(%d,%d,%d,%d,%d,%d,%d,%d)",n1,n2,n3,n4,n5,n6,n7,n8));
+          nToBeFilled[7]++; 
+         }
+        } // for(Int_t n8=n7;n8<=fMaxHarmonic;n8++)
+       } // for(Int_t n7=n6;n7<=fMaxHarmonic;n7++) 
+      } // for(Int_t n6=n5;n6<=fMaxHarmonic;n6++) 
+     } // for(Int_t n5=n4;n5<=fMaxHarmonic;n5++) 
+    } // for(Int_t n4=n3;n4<=fMaxHarmonic;n4++)   
+   } // for(Int_t n3=n2;n3<=fMaxHarmonic;n3++) 
+  } // for(Int_t n2=n1;n2<=fMaxHarmonic;n2++)
+ } // for(Int_t n1=-fMaxHarmonic;n1<=fMaxHarmonic;n1++) 
+
+ for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
+ {
+  for(Int_t c=0;c<fMaxCorrelator;c++) // [1p,2p,...,8p]
+  {
+   fCorrelationsPro[cs][c]->SetTitle(Form("%d-p correlations, %s terms, %d/%d in total",c+1,sCosSin[cs].Data(),nToBeFilled[c],nBinsTitle[c]));
+   fCorrelationsPro[cs][c]->GetXaxis()->SetRangeUser(0.,fCorrelationsPro[cs][c]->GetBinLowEdge(nToBeFilled[c]+1));
+  }
  } 
- fCorrelationsList->Add(fCorrelationsPro[1]);
-
- // d) 3-p // TBI
- fCorrelationsPro[2] = new TProfile("f3pCorrelationsPro","3-p correlations",1,0.,1.); // TBI better naming 
- fCorrelationsPro[2]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[2]->SetMarkerStyle(25);
- fCorrelationsPro[2]->SetLabelSize(0.04);
- fCorrelationsPro[2]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[2]->SetStats(kFALSE);
- fCorrelationsPro[2]->Sumw2();
- //fCorrelationsPro[2]->GetXaxis()->SetBinLabel(1,"#LT#LT4#GT#GT_{3,2,-3,-2}"); // TBI automatize this
- fCorrelationsList->Add(fCorrelationsPro[2]);
-
- // e) 4-p // TBI
- fCorrelationsPro[3] = new TProfile("f4pCorrelationsPro","4-p correlations",4,0.,4.); // TBI better naming 
- fCorrelationsPro[3]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[3]->SetMarkerStyle(25);
- fCorrelationsPro[3]->SetLabelSize(0.04);
- fCorrelationsPro[3]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[3]->SetStats(kFALSE);
- fCorrelationsPro[3]->Sumw2();
- fCorrelationsPro[3]->GetXaxis()->SetBinLabel(1,"#LT#LT4#GT#GT_{3,2,-3,-2}"); // TBI automatize this
- fCorrelationsPro[3]->GetXaxis()->SetBinLabel(2,"#LT#LT4#GT#GT_{4,2,-4,-2}"); // TBI automatize this
- fCorrelationsPro[3]->GetXaxis()->SetBinLabel(3,"#LT#LT4#GT#GT_{4,3,-4,-3}"); // TBI automatize this
- fCorrelationsPro[3]->GetXaxis()->SetBinLabel(4,"#LT#LT4#GT#GT_{5,3,-5,-3}"); // TBI automatize this
- fCorrelationsList->Add(fCorrelationsPro[3]);
-
- // f) 5-p // TBI
- fCorrelationsPro[4] = new TProfile("f5pCorrelationsPro","5-p correlations",1,0.,1.); // TBI better naming 
- fCorrelationsPro[4]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[4]->SetMarkerStyle(25);
- fCorrelationsPro[4]->SetLabelSize(0.04);
- fCorrelationsPro[4]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[4]->SetStats(kFALSE);
- fCorrelationsPro[4]->Sumw2();
- //fCorrelationsPro[4]->GetXaxis()->SetBinLabel(1,"#LT#LT4#GT#GT_{3,2,-3,-2}"); // TBI automatize this
- fCorrelationsList->Add(fCorrelationsPro[4]);
-
- // g) 6-p // TBI
- fCorrelationsPro[5] = new TProfile("f6pCorrelationsPro","6-p correlations",1,0.,1.); // TBI better naming 
- fCorrelationsPro[5]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[5]->SetMarkerStyle(25);
- fCorrelationsPro[5]->SetLabelSize(0.04);
- fCorrelationsPro[5]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[5]->SetStats(kFALSE);
- fCorrelationsPro[5]->Sumw2();
- //fCorrelationsPro[5]->GetXaxis()->SetBinLabel(1,"#LT#LT4#GT#GT_{3,2,-3,-2}"); // TBI automatize this
- fCorrelationsList->Add(fCorrelationsPro[5]);
-
- // h) 7-p // TBI
- fCorrelationsPro[6] = new TProfile("f7pCorrelationsPro","7-p correlations",1,0.,1.); // TBI better naming 
- fCorrelationsPro[6]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[6]->SetMarkerStyle(25);
- fCorrelationsPro[6]->SetLabelSize(0.04);
- fCorrelationsPro[6]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[6]->SetStats(kFALSE);
- fCorrelationsPro[6]->Sumw2();
- //fCorrelationsPro[6]->GetXaxis()->SetBinLabel(1,"#LT#LT4#GT#GT_{3,2,-3,-2}"); // TBI automatize this
- fCorrelationsList->Add(fCorrelationsPro[6]);
-
- // i) 7-p // TBI
- fCorrelationsPro[7] = new TProfile("f8pCorrelationsPro","8-p correlations",1,0.,1.); // TBI better naming 
- fCorrelationsPro[7]->SetTickLength(-0.01,"Y");
- fCorrelationsPro[7]->SetMarkerStyle(25);
- fCorrelationsPro[7]->SetLabelSize(0.04);
- fCorrelationsPro[7]->SetLabelOffset(0.02,"Y");
- fCorrelationsPro[7]->SetStats(kFALSE);
- fCorrelationsPro[7]->Sumw2();
- //fCorrelationsPro[7]->GetXaxis()->SetBinLabel(1,"#LT#LT4#GT#GT_{3,2,-3,-2}"); // TBI automatize this
- fCorrelationsList->Add(fCorrelationsPro[7]);
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations()
 
@@ -1215,13 +1439,25 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForNestedLoops(
 {
  // Book all the stuff for nested loops.
 
+ // TBI this method is just ugly, who implemented it like this... 
+
  // a) Set default harmonic values; 
  // b) Book the profile holding all the flags for nested loops;
  // c) Book the profile holding all results for nested loops (cosine);
  // d) Book the profile holding all results for nested loops (sinus).
 
- // a) Set default harmonic values:
- Int_t h1=-1,h2=4,h3=-5,h4=6,h5=-6,h6=0,h7=-6,h8=2;
+ // a) Set default harmonic values: 
+ //delete gRandom; // TBI this is not safe here, 
+ //gRandom = new TRandom3(0);
+ Int_t h1 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h2 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h3 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h4 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h5 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h6 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h7 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h8 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+
  // REMARK: This values can be overriden in a steering macro via 
  // mpc->GetNestedLoopsFlagsPro()->SetBinContent(<binNo>,<value>);
 
@@ -1342,13 +1578,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *hi
  // d) Get pointers for correlations;
  // e) Get pointers for 'standard candles'.
 
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *histList)";
+
  // a) Get pointer for base list fHistList and profile holding internal flags;
  fHistList = histList; 
  if(!fHistList){Fatal("AFAWMPC::GOH()","fHistList");}
 
  // b) Get pointer for profile holding internal flags and, well, set again all flags:
  fInternalFlagsPro = dynamic_cast<TProfile*>(fHistList->FindObject("fInternalFlagsPro"));
- if(!fInternalFlagsPro){Fatal("AFAWMPC::GOH()","fInternalFlagsPro");}
+ if(!fInternalFlagsPro){Fatal(sMethodName.Data(),"fInternalFlagsPro");}
  fUseInternalFlags = fInternalFlagsPro->GetBinContent(1);
  fMinNoRPs = fInternalFlagsPro->GetBinContent(2);
  fMaxNoRPs = fInternalFlagsPro->GetBinContent(3);
@@ -1376,13 +1614,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForStandardCandles
  // c) Set again all flags; TBI
  // d) Get pointer TH1D *fStandardCandlesHist; TBI
 
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForStandardCandles()";
+
  // a) Get pointer for fStandardCandlesList: TBI
  fStandardCandlesList = dynamic_cast<TList*>(fHistList->FindObject("Standard Candles"));
- if(!fStandardCandlesList){Fatal("AFAWMPC::GPFSC()","fStandardCandlesList");}
+ if(!fStandardCandlesList){Fatal(sMethodName.Data(),"fStandardCandlesList");}
 
  // b) Get pointer for fStandardCandlesFlagsPro: TBI
  fStandardCandlesFlagsPro = dynamic_cast<TProfile*>(fStandardCandlesList->FindObject("fStandardCandlesFlagsPro"));
- if(!fStandardCandlesFlagsPro){Fatal("AFAWMPC::GPFSC()","fStandardCandlesFlagsPro");}
+ if(!fStandardCandlesFlagsPro){Fatal(sMethodName.Data(),"fStandardCandlesFlagsPro");}
 
  // c) Set again all flags: TBI
  fCalculateStandardCandles = fStandardCandlesFlagsPro->GetBinContent(1);
@@ -1407,16 +1647,21 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
  // e) Get pointers to TH1D *fMultDistributionsHist[3]; TBI
  // f) Get pointers to TH2D *fMultCorrelationsHist[3]. TBI
 
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistograms()";
+
  // a) Get pointer for fControlHistogramsList: TBI
  fControlHistogramsList = dynamic_cast<TList*>(fHistList->FindObject("Control Histograms"));
- if(!fControlHistogramsList){Fatal("AFAWMPC::GPFCH()","fControlHistogramsList");}
+ if(!fControlHistogramsList){Fatal(sMethodName.Data(),"fControlHistogramsList");}
 
  // b) Get pointer for fControlHistogramsFlagsPro: TBI
  fControlHistogramsFlagsPro = dynamic_cast<TProfile*>(fControlHistogramsList->FindObject("fControlHistogramsFlagsPro"));
- if(!fControlHistogramsFlagsPro){Fatal("AFAWMPC::GPFCH()","fControlHistogramsFlagsPro");}
+ if(!fControlHistogramsFlagsPro){Fatal(sMethodName.Data(),"fControlHistogramsFlagsPro");}
 
- // c) Set again all flags: TBI
+ // c) Set again all flags:
  fFillControlHistograms = fControlHistogramsFlagsPro->GetBinContent(1);
+ fFillKinematicsHist = fControlHistogramsFlagsPro->GetBinContent(2);
+ fFillMultDistributionsHist = fControlHistogramsFlagsPro->GetBinContent(3);
+ fFillMultCorrelationsHist = fControlHistogramsFlagsPro->GetBinContent(4);
 
  if(!fFillControlHistograms){return;} // TBI is this safe enough
 
@@ -1427,7 +1672,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
   for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
   {
    fKinematicsHist[rp][ppe] = dynamic_cast<TH1D*>(fControlHistogramsList->FindObject(name[rp][ppe].Data()));
-   if(!fKinematicsHist[rp][ppe]){Fatal("AFAWMPC::GPFCH()","%s",name[rp][ppe].Data());} // TBI 
+   if(!fKinematicsHist[rp][ppe] && fFillKinematicsHist){Fatal(sMethodName.Data(),"%s",name[rp][ppe].Data());} // TBI 
   }
  }
 
@@ -1436,16 +1681,16 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
  for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
  {
   fMultDistributionsHist[rprm] = dynamic_cast<TH1D*>(fControlHistogramsList->FindObject(nameMult[rprm].Data()));
-  if(!fMultDistributionsHist[rprm]){Fatal("AFAWMPC::GPFCH()","%s",nameMult[rprm].Data());} // TBI 
+  if(!fMultDistributionsHist[rprm] && fFillMultDistributionsHist){Fatal(sMethodName.Data(),"%s",nameMult[rprm].Data());} // TBI 
  } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
 
  // f) Get pointers to TH2D *fMultCorrelationsHist[3]: TBI automatize the things here...
  fMultCorrelationsHist[0] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. POI)"));
- if(!fMultCorrelationsHist[0]){Fatal("AFAWMPC::GPFCH()","Multiplicity (RP vs. POI)");} // TBI 
+ if(!fMultCorrelationsHist[0] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. POI)");} // TBI 
  fMultCorrelationsHist[1] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. REF)"));
- if(!fMultCorrelationsHist[1]){Fatal("AFAWMPC::GPFCH()","Multiplicity (RP vs. REF)");} // TBI 
+ if(!fMultCorrelationsHist[1] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. REF)");} // TBI 
  fMultCorrelationsHist[2] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (POI vs. REF)"));
- if(!fMultCorrelationsHist[2]){Fatal("AFAWMPC::GPFCH()","Multiplicity (POI vs. REF)");} // TBI 
+ if(!fMultCorrelationsHist[2] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (POI vs. REF)");} // TBI 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistograms()
 
@@ -1458,31 +1703,37 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForCorrelations()
  // a) Get pointer for fCorrelationsList; TBI
  // b) Get pointer for fCorrelationsFlagsPro; TBI
  // c) Set again all flags; TBI
- // d) Get pointers to TProfile *fCorrelationsPro[8].
+ // d) Get pointers to TProfile *fCorrelationsPro[2][8].
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForCorrelations()";
 
  // a) Get pointer for fCorrelationsList: TBI
  fCorrelationsList = dynamic_cast<TList*>(fHistList->FindObject("Correlations"));
- if(!fCorrelationsList){Fatal("AFAWMPC::GPFC()","fCorrelationsList");}
+ if(!fCorrelationsList){Fatal(sMethodName.Data(),"fCorrelationsList");}
 
  // b) Get pointer for fCorrelationsFlagsPro: TBI
  fCorrelationsFlagsPro = dynamic_cast<TProfile*>(fCorrelationsList->FindObject("fCorrelationsFlagsPro"));
 
- fCorrelationsFlagsPro = NULL;
-
- if(!fCorrelationsFlagsPro){Fatal("AFAWMPC::GPFC()","fCorrelationsFlagsPro");}
+ if(!fCorrelationsFlagsPro){Fatal(sMethodName.Data(),"fCorrelationsFlagsPro");}
 
  // c) Set again all flags: 
  fCalculateCorrelations = fCorrelationsFlagsPro->GetBinContent(1);
  fMaxHarmonic = fCorrelationsFlagsPro->GetBinContent(2);
  fMaxCorrelator = fCorrelationsFlagsPro->GetBinContent(3);
+ fCalculateIsotropic = fCorrelationsFlagsPro->GetBinContent(4);
+ fCalculateSame = fCorrelationsFlagsPro->GetBinContent(5);
+ fSkipZeroHarmonics = fCorrelationsFlagsPro->GetBinContent(6);
+ fCalculateSameIsotropic = fCorrelationsFlagsPro->GetBinContent(7);
+ fCalculateAll = fCorrelationsFlagsPro->GetBinContent(8);
+ fDontGoBeyond = fCorrelationsFlagsPro->GetBinContent(9);
 
- if(!fCalculateCorrelations){return;} // TBI is this safe enough
+ if(!fCalculateCorrelations){return;} // TBI is this safe enough, that is the question...
 
- // d) Get pointers to TProfile *fCorrelationsPro[8]:   
- for(Int_t c=0;c<8;c++)
+ // d) Get pointers to TProfile *fCorrelationsPro[fMaxCorrelator]:   
+ for(Int_t c=0;c<fMaxCorrelator;c++)
  {
-  fCorrelationsPro[c] = dynamic_cast<TProfile*>(fCorrelationsList->FindObject(Form("f%dpCorrelationsPro",c+1)));
-  if(!fCorrelationsPro[c]){Fatal("AFAWMPC::GPFC()","f%dpCorrelationsPro",c+1);} 
+  //fCorrelationsPro[c] = dynamic_cast<TProfile*>(fCorrelationsList->FindObject(Form("f%dpCorrelationsPro",c+1)));
+  //if(!fCorrelationsPro[c]){Fatal(sMethodName.Data(),"f%dpCorrelationsPro",c+1);} 
  }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForCorrelations()
@@ -1493,9 +1744,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForQvector()
 {
  // Initialize all arrays for Q-vector.
 
- for(Int_t h=0;h<49;h++) // harmonic TBI hardwired 49 = maxHarmonic*maxCorrelator+1
+ for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++) 
  {
-  for(Int_t p=0;p<9;p++) // power TBI hardwired 9 = maxCorrelator+1
+  for(Int_t p=0;p<fMaxCorrelator+1;p++) 
   {
    fQvector[h][p] = TComplex(0.,0.);
   }
@@ -1509,13 +1760,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::ResetQvector()
 {
  // Reset all Q-vector components to zero before starting a new event. 
 
- for(Int_t h=0;h<49;h++) // harmonic TBI hardwired 49 = maxHarmonic*maxCorrelator+1
+ for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++) 
  {
-  for(Int_t p=0;p<9;p++) // power TBI hardwired 9 = maxCorrelator+1
+  for(Int_t p=0;p<fMaxCorrelator+1;p++)
   {
    fQvector[h][p] = TComplex(0.,0.);
-  } //  for(Int_t p=0;p<9;p++)
- } // for(Int_t h=0;h<49;h++)
+  } 
+ } 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::ResetQvector()
 
@@ -1739,7 +1990,7 @@ TComplex AliFlowAnalysisWithMultiparticleCorrelations::Seven(Int_t n1, Int_t n2,
 {
  // Generic seven-particle correlation <exp[i(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5+n6*phi6+n7*phi7)]>.
 
- TComplex seven = Q(n1-n2+n2-n3+n4-n5+n6-n7,1); // TBI
+ TComplex seven = 0.*Q(n1-n2+n2-n3+n4-n5+n6-n7,1) + TComplex(1.,1.); // TBI implement the actual Eq. 
 
  return seven;
 
@@ -1751,7 +2002,7 @@ TComplex AliFlowAnalysisWithMultiparticleCorrelations::Eight(Int_t n1, Int_t n2,
 {
  // Generic eight-particle correlation <exp[i(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5+n6*phi6+n7*phi7+n8*phi8)]>.
 
- TComplex eight = Q(n1-n2+n2-n3+n4-n5+n6-n7+n8,1); // TBI
+ TComplex eight = 0.*Q(n1-n2+n2-n3+n4-n5+n6-n7+n8,1) + TComplex(1.,1.); // TBI implement the actual Eq. 
 
  return eight;
 
@@ -1791,7 +2042,7 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::PhiWeight(const Double_t 
 {
  // Determine phi weight for a given phi. 
 
- if(!fPhiWeightsHist){Fatal("AFAWMPC::PhiWeight()","fPhiWeightsHist");}
+ if(!fPhiWeightsHist){Fatal("AliFlowAnalysisWithMultiparticleCorrelations::PhiWeight(const Double_t &dPhi)","fPhiWeightsHist");}
 
  Double_t wPhi = fPhiWeightsHist->GetBinContent(fPhiWeightsHist->FindBin(dPhi));
 
@@ -1805,7 +2056,7 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::PtWeight(const Double_t &
 {
  // Determine pt weight for a given pt. 
 
- if(!fPtWeightsHist){Fatal("AFAWMPC::PtWeight()","fPtWeightsHist");}
+ if(!fPtWeightsHist){Fatal("AliFlowAnalysisWithMultiparticleCorrelations::PtWeight(const Double_t &dPt)","fPtWeightsHist");}
 
  Double_t wPt = fPtWeightsHist->GetBinContent(fPtWeightsHist->FindBin(dPt));
 
@@ -1819,7 +2070,7 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::EtaWeight(const Double_t 
 {
  // Determine eta weight for a given eta. 
 
- if(!fEtaWeightsHist){Fatal("AFAWMPC::EtaWeight()","fEtaWeightsHist");}
+ if(!fEtaWeightsHist){Fatal("AliFlowAnalysisWithMultiparticleCorrelations::EtaWeight(const Double_t &dEta)","fEtaWeightsHist");}
 
  Double_t wEta = fEtaWeightsHist->GetBinContent(fEtaWeightsHist->FindBin(dEta));
 
