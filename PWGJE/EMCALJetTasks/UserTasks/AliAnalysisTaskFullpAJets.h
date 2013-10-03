@@ -205,6 +205,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH2D *fhNEFNeutralMultSignal; //!
 
         TH1D *fhClusterShapeAll; //!
+        TH2D *fhClusterPtCellAll; //!
         TH3D *fhNEFJetPtFCross; //!
         TH3D *fhNEFZLeadingFCross; //!
 
