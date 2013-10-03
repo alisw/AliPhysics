@@ -27,6 +27,9 @@
 #ifndef ROOT_TCollection
 #  include "TCollection.h"
 #endif
+#ifndef ROOT_TFolder
+#  include "TFolder.h"
+#endif
 #include "Riostream.h"
 #include <map>
 #include <string>
@@ -35,7 +38,7 @@ class TMap;
 class AliMergeableCollectionIterator;
 class TH1;
 
-class AliMergeableCollection : public TNamed
+class AliMergeableCollection : public TFolder
 {
   friend class AliMergeableCollectionIterator; // our iterator class
 
@@ -50,7 +53,9 @@ public:
   
   Bool_t Adopt(TObject* obj);
   Bool_t Adopt(const char* identifier, TObject* obj);
-    
+  
+  virtual void Browse(TBrowser* b);
+  
   virtual void Clear(Option_t *option="") { Delete(option); }
   
   virtual TObject* FindObject(const char* fullIdentifier) const;
@@ -74,6 +79,8 @@ public:
   virtual TList* CreateListOfKeys(Int_t index) const;
   
   virtual TList* CreateListOfObjectNames(const char* identifier) const;
+  
+  using TFolder::Remove;
   
   virtual TObject* Remove(const char* fullIdentifier);
   
@@ -136,7 +143,7 @@ private:
   mutable Int_t fMapVersion; /// internal version of map (to avoid custom streamer...)
   mutable std::map<std::string,int> fMessages; //! log messages
   
-  ClassDef(AliMergeableCollection,1) /// A collection of mergeable objects
+  ClassDef(AliMergeableCollection,3) /// A collection of mergeable objects
 };
 
 class AliMergeableCollectionIterator : public TIterator
