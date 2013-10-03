@@ -1147,7 +1147,7 @@ void AliAnalysisTaskFullpAJets::ClusterCuts()
             TLorentzVector *cluster_vec = new TLorentzVector;
             vcluster->GetMomentum(*cluster_vec,fVertex);
             
-            if (cluster_vec->Pt()>=fClusterMinPt)
+            if (cluster_vec->Pt()>=fClusterMinPt && vcluster->IsEMCAL()==kTRUE)
             {
                 fmyClusters->Add(vcluster);
             }
@@ -3706,6 +3706,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fhNEFNeutralMult(0),
     fhNEFNeutralMultSignal(0),
     fhClusterShapeAll(0),
+    fhClusterPtCellAll(0),
     fhNEFJetPtFCross(0),
     fhNEFZLeadingFCross(0),
 
@@ -3795,6 +3796,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fhNEFNeutralMult(0),
     fhNEFNeutralMultSignal(0),
     fhClusterShapeAll(0),
+    fhClusterPtCellAll(0),
     fhNEFJetPtFCross(0),
     fhNEFZLeadingFCross(0),
 
@@ -3896,6 +3898,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fhNEFNeutralMult(0),
     fhNEFNeutralMultSignal(0),
     fhClusterShapeAll(0),
+    fhClusterPtCellAll(0),
     fhNEFJetPtFCross(0),
     fhNEFZLeadingFCross(0),
 
@@ -4248,7 +4251,13 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         fhClusterShapeAll->GetXaxis()->SetTitle("Cells");
         fhClusterShapeAll->GetYaxis()->SetTitle("1/N_{Events} dN/dCells");
         fhClusterShapeAll->Sumw2();
-        
+
+        fhClusterPtCellAll = new TH2D("fhClusterPtCellAll","Cluster p_{T} vs Cluster Shape of all CaloClustersCorr",fPtBins,fPtLow,fPtUp,10*TCBins,0,10*TCBins);
+        fhClusterPtCellAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fhClusterPtCellAll->GetYaxis()->SetTitle("Cells");
+        fhClusterPtCellAll->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}dCells");
+        fhClusterPtCellAll->Sumw2();
+
         fhNEFJetPtFCross = new TH3D("fhNEFJetPtFCross","NEF vs p_{T}^{jet} vs F_{Cross}",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp,TCBins,0,1.0);
         fhNEFJetPtFCross->GetXaxis()->SetTitle("NEF");
         fhNEFJetPtFCross->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
@@ -4272,6 +4281,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         fNEFOutput->Add(fhNEFNeutralMult);
         fNEFOutput->Add(fhNEFNeutralMultSignal);
         fNEFOutput->Add(fhClusterShapeAll);
+        fNEFOutput->Add(fhClusterPtCellAll);
         fNEFOutput->Add(fhNEFJetPtFCross);
         fNEFOutput->Add(fhNEFZLeadingFCross);
         fOutput->Add(fNEFOutput);
@@ -4545,7 +4555,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
     Int_t neutralMult=0;
     Int_t iSupMod = -1, absId = -1, ieta = -1, iphi = -1;
     Bool_t shared = kFALSE;
-
+    
     Double_t zLeading=0.0;
     Double_t eSeed=0.0;
     Double_t tCell=0.0;
@@ -4575,7 +4585,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
         {
             AliVCluster* vcluster = (AliVCluster*) orgClusterList->At(myJet->ClusterAt(j));
             recoUtils->GetMaxEnergyCell(geometry,cells,vcluster,absId,iSupMod,ieta,iphi,shared);
-            eSeed = vcluster->E();
+            eSeed = cells->GetCellAmplitude(absId);
             tCell = cells->GetCellTime(absId);
             eCross = recoUtils->GetECross(absId,tCell,cells,event->GetBunchCrossNumber());
             FCross = 1 - eCross/eSeed;
@@ -4615,6 +4625,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
     {
         AliVCluster *vcluster = (AliVCluster*) clusterList->At(i);
         fhClusterShapeAll->Fill(vcluster->GetNCells());
+        fhClusterPtCellAll->Fill(vcluster->E(),vcluster->GetNCells());
     }
 }
 
