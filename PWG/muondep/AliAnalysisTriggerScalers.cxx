@@ -296,7 +296,7 @@ void AliAnalysisTriggerScalers::GetFillBoundaries(std::map<int, std::pair<int,in
     }
     else
     {
-      fills[fill] = make_pair<int,int>(runnumber,runnumber);
+      fills[fill] = make_pair(runnumber,runnumber);
     }
   }
 }
@@ -453,7 +453,7 @@ void AliAnalysisTriggerScalers::GetLHCPeriodBoundaries(std::map<std::string, std
     }
     else
     {
-      periods[period] = make_pair<int,int>(runnumber,runnumber);
+      periods[period] = make_pair(runnumber,runnumber);
     }
   }
 }
