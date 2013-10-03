@@ -35,4 +35,6 @@
 #pragma link C++ class AliAnalysisTaskContMC+;
 #pragma link C++ class AliAnalysisTaskPIDCORR+;
 #pragma link C++ class AliPIDCorrParticle+;
+#pragma link C++ class AliTwoParticlePIDCorr+;
+#pragma link C++ class LRCParticlePID+;
 #endif
