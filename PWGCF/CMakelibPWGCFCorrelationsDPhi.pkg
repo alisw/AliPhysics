@@ -52,6 +52,7 @@ set ( SRCS
     Correlations/DPhi/MuonHadron/AliAnalysisTaskDiMuonCorrelations.cxx
     Correlations/DPhi/AliAnalysisTaskContMC.cxx
     Correlations/DPhi/TriggerPID/AliAnalysisTaskPIDCORR.cxx
+    Correlations/DPhi/TriggerPID/AliTwoParticlePIDCorr.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
