@@ -47,6 +47,9 @@
 #pragma link C++ class AliOADBMuonTrackCutsParam+;
 #pragma link C++ class AliAnalysisMuMuBinning+;
 #pragma link C++ class AliAnalysisMuMuBinning::Range+;
+#pragma link C++ class AliAnalysisTaskAOD2MuonAOD+;
+#pragma link C++ class AliAnalysisNonMuonTrackCuts+;
+#pragma link C++ class AliAnalysisNonPrimaryVertices+;
 
 #endif
 

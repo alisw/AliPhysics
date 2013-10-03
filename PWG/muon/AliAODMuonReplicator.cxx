@@ -1,5 +1,5 @@
 /**************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
 * Contributors are mentioned in the code where appropriate.              *
@@ -15,25 +15,24 @@
 
 // $Id$
 
-//
-// Implementation of a branch replicator 
-// to produce slim muon and dimuon aods.
-//
-// This replicator is in charge of replicating the tracks,vertices,dimuons
-// (and vzero and tzero) branches of the standard AOD into muon AODs 
-// (AliAOD.Muons.root and AliAOD.Dimuons.root)
-// 
-// The tracks are filtered so that only muon tracks (and only muon tracks
-// that pass the trackCut if present) make it to the output aods
-//
-// The vertices are filtered so that only the primary vertices make it
-// to the output aods.
-//
-// The dimuons are recreated here, according to the set of tracks
-// that pass the trackCut (that set may be the same as the input set,
-// but to be 100% safe, we always recreate the dimuons).
-// 
-// Author: L. Aphecetche (Subatech)
+///
+/// Implementation of an AliAODBranchReplicator to produce slim muon and dimuon aods.
+///
+/// This replicator is in charge of replicating the tracks,vertices,dimuons
+/// (vzero, tzero, zdc, and, optionally, the SPD tracklets) branches
+/// of the standard AOD into muon AODs (AliAOD.Muons.root and AliAOD.Dimuons.root)
+///
+/// The tracks are filtered so that only muon tracks (and only muon tracks
+/// that pass the trackCut if present) make it to the output aods
+///
+/// The vertices are filtered so that only the primary (and pileup) vertices make it
+/// to the output aods.
+///
+/// The dimuons are recreated here, according to the set of tracks
+/// that pass the trackCut (that set may be the same as the input set,
+/// but to be 100% safe, we always recreate the dimuons).
+///
+/// \author L. Aphecetche (Subatech)
 
 #include "AliAODMuonReplicator.h"
 
@@ -47,33 +46,51 @@
 #include "AliAnalysisCuts.h"
 #include <cassert>
 
+/// \cond CLASSIMP
 ClassImp(AliAODMuonReplicator)
+/// \endcond
 
 //_____________________________________________________________________________
 AliAODMuonReplicator::AliAODMuonReplicator(const char* name, const char* title,
                                            AliAnalysisCuts* trackCut,
                                            AliAnalysisCuts* vertexCut,
-                                           Int_t mcMode)
+                                           Int_t mcMode,
+                                           Bool_t replicateHeader,
+                                           Bool_t replicateTracklets)
 :AliAODBranchReplicator(name,title), 
 fTrackCut(trackCut), fTracks(0x0), 
 fVertexCut(vertexCut), fVertices(0x0), 
 fDimuons(0x0),
 fVZERO(0x0),
 fTZERO(0x0),
+fHeader(0x0),
+fTracklets(0x0),
+fZDC(0x0),
 fList(0x0),
 fMCParticles(0x0),
 fMCHeader(0x0),
 fMCMode(mcMode),
 fLabelMap(),
-fParticleSelected()
+fParticleSelected(),
+fReplicateHeader(replicateHeader),
+fReplicateTracklets(replicateTracklets)
 {
-  // default ctor
+  /// default ctor
+  ///
+  /// \param trackCut if present will filter out tracks
+  /// \param vertexCut if present will filter out vertices
+  /// \param mcMode what to do with MC information (0: skip it, 1: copy all,
+  /// 2: copy only for events with at least one muon )
+  /// \param replicateHeader whether or not to handle the replication of the
+  /// AOD header branch
+  /// \param replicateTracklets whether or not to include the SPD tracklets branch
+  ///
 }
 
 //_____________________________________________________________________________
 AliAODMuonReplicator::~AliAODMuonReplicator()
 {
-  // dtor
+  /// dtor
   delete fTrackCut;
   delete fVertexCut;
   delete fList;
@@ -82,9 +99,9 @@ AliAODMuonReplicator::~AliAODMuonReplicator()
 //_____________________________________________________________________________
 void AliAODMuonReplicator::SelectParticle(Int_t i)
 {
-  // taking the absolute values here, need to take care 
-  // of negative daughter and mother
-  // IDs when setting!
+  /// taking the absolute values here, need to take care
+  /// of negative daughter and mother
+  /// IDs when setting!
   
   if (!IsParticleSelected(TMath::Abs(i)))
   {
@@ -95,9 +112,9 @@ void AliAODMuonReplicator::SelectParticle(Int_t i)
 //_____________________________________________________________________________
 Bool_t AliAODMuonReplicator::IsParticleSelected(Int_t i)  
 {
-  // taking the absolute values here, need to take 
-  // care with negative daughter and mother
-  // IDs when setting!
+  /// taking the absolute values here, need to take
+  /// care with negative daughter and mother
+  /// IDs when setting!
   return (fParticleSelected.GetValue(TMath::Abs(i))==1);
 }
 
@@ -131,16 +148,16 @@ void AliAODMuonReplicator::CreateLabelMap(const AliAODEvent& source)
 //_____________________________________________________________________________
 Int_t AliAODMuonReplicator::GetNewLabel(Int_t i) 
 {
-  // Gets the label from the new created Map
-  // Call CreatLabelMap before
-  // otherwise only 0 returned
+  /// Gets the label from the new created Map
+  /// Call CreatLabelMap before
+  /// otherwise only 0 returned
   return fLabelMap.GetValue(TMath::Abs(i));
 }
 
 //_____________________________________________________________________________
 void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
 {
-  // Filter MC information
+  /// Filter MC information
 
   fMCHeader->Reset();
   fMCParticles->Clear("C");
@@ -151,7 +168,7 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
   fParticleSelected.Delete();
   
   if ( fMCMode>=2 && !fTracks->GetEntries() ) return;
-  // for fMCMode==1 we only copy MC information for events where there's at least one muon track
+  // for fMCMode>=2 we only copy MC information for events where there's at least one muon track
     
   mcHeader = static_cast<AliAODMCHeader*>(source.FindListObject(AliAODMCHeader::StdBranchName()));
   
@@ -310,9 +327,20 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
 //_____________________________________________________________________________
 TList* AliAODMuonReplicator::GetList() const
 {
-  // return (and build if not already done) our internal list of managed objects
+  /// return (and build if not already done) our internal list of managed objects
   if (!fList)
   {
+    if ( fReplicateHeader )
+    {
+      fHeader = new AliAODHeader;
+    }
+    
+    if ( fReplicateTracklets )
+    {
+      fTracklets = new AliAODTracklets;
+      fTracklets->SetName("tracklets");
+    }
+
     fTracks = new TClonesArray("AliAODTrack",30);
 		fTracks->SetName("tracks");    
     
@@ -326,14 +354,19 @@ TList* AliAODMuonReplicator::GetList() const
     
     fTZERO = new AliAODTZERO;
     
+    fZDC = new AliAODZDC;
+    
     fList = new TList;
     fList->SetOwner(kTRUE);
     
+    fList->Add(fHeader);
     fList->Add(fTracks);
     fList->Add(fVertices);
+    fList->Add(fTracklets);
     fList->Add(fDimuons);
     fList->Add(fVZERO);
     fList->Add(fTZERO);
+    fList->Add(fZDC);
     
     if ( fMCMode > 0 )
     {
@@ -350,14 +383,27 @@ TList* AliAODMuonReplicator::GetList() const
 //_____________________________________________________________________________
 void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
 {
-  // Replicate (and filter if filters are there) the relevant parts we're interested in AODEvent
+  /// Replicate (and filter if filters are there) the relevant
+  /// parts we're interested in AODEvent
   
   assert(fTracks!=0x0);
+  
+  if (fReplicateHeader)
+  {
+    *fHeader = *(source.GetHeader());
+  }
+
+  if (fReplicateTracklets)
+  {
+    *fTracklets = *(source.GetTracklets());
+  }
   
   *fVZERO = *(source.GetVZEROData());
 
   *fTZERO = *(source.GetTZEROData());
 
+  *fZDC = *(source.GetZDCData());
+  
   fTracks->Clear("C");
   TIter next(source.GetTracks());
   AliAODTrack* t;
@@ -371,7 +417,7 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
       ++input;
     }
     
-    if ( !fTrackCut || fTrackCut->IsSelected(t) ) 
+    if ( !fTrackCut || fTrackCut->IsSelected(t) )
     {
       new((*fTracks)[ntracks++]) AliAODTrack(*t);
     }
