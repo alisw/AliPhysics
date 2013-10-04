@@ -76,6 +76,8 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fTOFsignalDz(1.0),
   fMagField(-10000),
   fAODFilterBit(0),
+  fListKinkMothers(1000),
+  fNumberKinkMothers(0),
   fCheck(kFALSE),
   fQAlist(0x0) ,
   fDebugLevel(0)
@@ -111,6 +113,8 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fTOFsignalDz(c.fTOFsignalDz),
   fMagField(c.fMagField),
   fAODFilterBit(c.fAODFilterBit),
+  fListKinkMothers(c.fListKinkMothers),
+  fNumberKinkMothers(c.fNumberKinkMothers),
   fCheck(c.fCheck),
   fQAlist(0x0),
   fDebugLevel(0)
@@ -155,6 +159,8 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fTOFsignalDz = c.fTOFsignalDz;
     fMagField = c.fMagField;
     fAODFilterBit = c.fAODFilterBit;
+    fListKinkMothers = c.fListKinkMothers;
+    fNumberKinkMothers = c.fNumberKinkMothers;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
@@ -191,7 +197,21 @@ void AliHFEextraCuts::SetRecEventInfo(const TObject *event){
     return ;
   }
   fEvent = (AliVEvent*) event;
-
+  
+  AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fEvent);
+  if(aodevent){
+    // Initialize lookup for kink mother rejection
+    if(aodevent->GetNumberOfVertices() > fListKinkMothers.GetSize()) fListKinkMothers.Set(aodevent->GetNumberOfVertices());
+    fNumberKinkMothers = 0;
+    for(Int_t ivtx = 0; ivtx < aodevent->GetNumberOfVertices(); ivtx++){
+      AliAODVertex *aodvtx = aodevent->GetVertex(ivtx);
+      if(aodvtx->GetType() != AliAODVertex::kKink) continue;
+      AliAODTrack *mother = (AliAODTrack *) aodvtx->GetParent();
+      if(!mother) continue;
+      Int_t idmother = mother->GetID();
+      fListKinkMothers[fNumberKinkMothers++] = idmother;
+    }
+  }
 }
 
 //______________________________________________________
@@ -463,7 +483,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     //printf("test mother\n");
     if(!IsKinkMother(track)) SETBIT(survivedCut, kRejectKinkMother);
     //else printf("Found kink mother\n");
-  }
+  } 
   if(TESTBIT(fRequirements, kTOFsignalDxy)){
     // cut on TOF matching cluster
     if((TMath::Abs(tofsignalDx) <= fTOFsignalDx) && (TMath::Abs(tofsignalDz) <= fTOFsignalDz)) SETBIT(survivedCut, kTOFsignalDxy);
@@ -888,8 +908,7 @@ Bool_t AliHFEextraCuts::IsKinkDaughter(AliVTrack *track){
 //______________________________________________________
 Bool_t AliHFEextraCuts::IsKinkMother(AliVTrack *track){
   //
-  // Is kink Mother: only for ESD since need to loop over vertices for AOD
-  //
+  // Is kink Mother 
   //
 
   TClass *type = track->IsA();
@@ -898,6 +917,11 @@ Bool_t AliHFEextraCuts::IsKinkMother(AliVTrack *track){
     if(!esdtrack) return kFALSE;
     if(esdtrack->GetKinkIndex(0)!=0) return kTRUE;
     else return kFALSE;
+  } else if(type == AliAODTrack::Class()){
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
+    for(int ikink = 0; ikink < fNumberKinkMothers; ikink++){
+      if(fListKinkMothers[ikink] == aodtrack->GetID()) return kTRUE;
+    }
   }
 
   return kFALSE;

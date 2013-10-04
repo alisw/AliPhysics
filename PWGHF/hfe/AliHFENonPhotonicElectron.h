@@ -70,6 +70,7 @@ class AliHFENonPhotonicElectron : public TNamed {
 //  void  SetMaxOpeningPhi	(Double_t MaxOpeningPhi)	{ fMaxOpeningPhi	= MaxOpeningPhi; };
   void  SetAlgorithmMA		(Bool_t algorithmMA)	 	{ fAlgorithmMA		= algorithmMA; };
   void  SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
+  void  SetITSMeanShift(Double_t meanshift) { fITSmeanShift = meanshift; }
 
   void SelectCategory1Tracks(Bool_t doSelect = kTRUE) { fSelectCategory1tracks = doSelect; }
   void SelectCategory2Tracks(Bool_t doSelect = kTRUE) { fSelectCategory2tracks = doSelect; }
@@ -121,6 +122,7 @@ class AliHFENonPhotonicElectron : public TNamed {
   Bool_t		 fSetMassConstraint;		// Set mass constraint
   Bool_t     fSelectCategory1tracks;    // Category 1 tracks: Standard track cuts
   Bool_t     fSelectCategory2tracks;    // Category 2 tracks: tracks below 300 MeV/c
+  Double_t   fITSmeanShift;             // Shift of the mean in the ITS
   TArrayI		*fArraytrack;			//! list of associated tracks
   Int_t			 fCounterPoolBackground;	// number of associated electrons
   Int_t			 fnumberfound;			// number of inclusive  electrons
@@ -138,7 +140,7 @@ class AliHFENonPhotonicElectron : public TNamed {
 
   AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron &ref); 
 
-  ClassDef(AliHFENonPhotonicElectron, 1); //!example of analysis
+  ClassDef(AliHFENonPhotonicElectron, 2); //!example of analysis
 };
 
 #endif

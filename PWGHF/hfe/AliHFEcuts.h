@@ -188,6 +188,10 @@ class AliHFEcuts : public TNamed{
     void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); CLRBIT(fRequirements, kDCAToVertex); };
     void UnsetVertexRequirement() { CLRBIT(fRequirements, kDCAToVertex); CLRBIT(fRequirements, kSigmaToVertex); }
     void SetRequireKineMCCuts() { SETBIT(fRequirements, kKineMCCuts); };
+    void SetRejectKinkDaughters() { fRejectKinkDaughters = kTRUE; }
+    void SetAcceptKinkDaughters() { fRejectKinkDaughters = kFALSE; }
+    void SetRejectKinkMothers() { fRejectKinkMothers = kTRUE; }
+    void SetAcceptKinkMothers() { fRejectKinkMothers = kFALSE; }
 
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
@@ -231,6 +235,7 @@ class AliHFEcuts : public TNamed{
     Double_t fEtaRange[2];               // Eta range
     Double_t fDCAtoVtx[2];	      // DCA to Vertex
     Double_t fProdVtx[4];	        // Production Vertex
+    Double_t fProdVtxZ[2];	        // Production Vertex in Z direction
     Double_t fPtRange[2];	        // pt range
     UChar_t fMinClustersTPC;	    // Min.Number of TPC clusters
     UChar_t fMinClustersTPCPID;	  // Min.Number of TPC clusters
@@ -265,13 +270,15 @@ class AliHFEcuts : public TNamed{
     Double_t fTOFsignaldx;                 // TOF signal Dx
     Double_t fTOFsignaldz;                 // TOF signal Dz
     Int_t    fAODFilterBit;                // AOD Filter Bit Number
+    Bool_t   fRejectKinkDaughters;         // Reject Kink Daughters
+    Bool_t   fRejectKinkMothers;         // Reject Kink Daughters
     
     TList *fHistQA;		            //! QA Histograms
     TObjArray *fCutList;	        //! List of cut objects(Correction Framework Manager)
 
     Int_t fDebugLevel;            // Debug Level
     
-  ClassDef(AliHFEcuts, 5)         // Container for HFE cuts
+  ClassDef(AliHFEcuts, 6)         // Container for HFE cuts
 };
 
 //__________________________________________________________________
@@ -359,6 +366,8 @@ void AliHFEcuts::CreateStandardCuts(){
   fProdVtx[1] = 3;
   fProdVtx[2] = 0;
   fProdVtx[3] = 3;
+  fProdVtxZ[0] = 0;
+  fProdVtxZ[1] = 5;
   //SetRequireDCAToVertex();
   //fDCAtoVtx[0] = 0.5;
   //fDCAtoVtx[1] = 1.5;
@@ -372,6 +381,8 @@ void AliHFEcuts::CreateStandardCuts(){
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;
   fPtRange[1] = 100.;
+  fRejectKinkDaughters = kTRUE;
+  fRejectKinkMothers = kTRUE;
   SetRequireKineMCCuts();
 }
 #endif

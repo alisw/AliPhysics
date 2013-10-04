@@ -25,6 +25,7 @@
 #include "AliCFCutBase.h"
 // #endif
 
+#include <TArrayI.h>
 class TList;
 
 class AliVEvent;
@@ -195,6 +196,8 @@ class AliHFEextraCuts: public AliCFCutBase{
     Double_t fTOFsignalDz;            // TOF signal dz
     Double_t fMagField;               // Magnetic field
     Int_t    fAODFilterBit;           // Require AOD filter bit
+    TArrayI  fListKinkMothers;        // List of Kink Mothers (AOD analysis)
+    Int_t    fNumberKinkMothers;      // Number of Kink mothers
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms
