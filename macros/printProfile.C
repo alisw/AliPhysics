@@ -38,6 +38,8 @@ void printProfile(char* g3 = "geant3/timing_200_woZDC.root", char* g4 ="geant4/t
       vol3 = (AliTransportMonitor::AliTransportMonitorVol*) 
 	volumes3->At(1);
      }
+    TString s(volN);
+    TString s20(s(0,20));
     // Total time
     
     Float_t t4[5]; 
@@ -59,7 +61,7 @@ void printProfile(char* g3 = "geant3/timing_200_woZDC.root", char* g4 ="geant4/t
    
     printf("%5d %20s %6.2f %6.2f %8.3f %8.3f %8.3e %8.3e %8.3e %8.3e %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f\n", 
 	   i,
-	   volN,
+	   s20.Data(),
 	   rt, cumulant, t3[0], t4[0], t3[0]/(1.+vol3->GetNSteps()), 
 	   t4[0]/(1.+vol4->GetNSteps()), vol3->GetNSteps(), vol4->GetNSteps(),
 	   t3[1]/t3[0] * 100., t3[2]/t3[0] * 100., t3[3]/t3[0] * 100.,
