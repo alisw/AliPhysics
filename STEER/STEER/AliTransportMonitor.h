@@ -53,6 +53,7 @@ public:
     Double_t        GetTime(Int_t itype) const {return fPData[itype].fTime;}
     Double_t        GetEmed(Int_t itype) const {return (fTotalTime>0)?fPData[itype].fEdt/fTotalTime : 0.;}
     Int_t           GetPDG(Int_t itype)  const {return fPData[itype].fPDG;}
+    Double_t        GetNSteps() const {return fNSteps;}
     TH2F           *GetHistogram() const {return fTimeRZ;}
     AliPMonData    *GetPMonData(Int_t itype) const {AliPMonData obj = fPData[itype]; return &obj;} 
     void            Merge(AliTransportMonitorVol* volM);
@@ -63,13 +64,14 @@ public:
     private:
       Int_t         fNtypes;     // Number of different particle types
       Double_t      fTotalTime;  // Total time spent in this volume
+      Double_t      fNSteps;     // Total number of steps
       AliPMonData  *fPData;      //[fNtypes] Array of particle data
       TH2F         *fTimeRZ;     // Timing R-Z histogram per volume
       typedef std::map<Int_t, Int_t>         ParticleMap_t;
       typedef ParticleMap_t::iterator        ParticleMapIt_t;
       ParticleMap_t fParticles;  //! Map of stored particla data  
   
-  ClassDef(AliTransportMonitorVol,1)  // Helper to hold particle info per volume
+  ClassDef(AliTransportMonitorVol,2)  // Helper to hold particle info per volume
   };
   //________________________________________________________________
 private:
