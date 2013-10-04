@@ -2947,6 +2947,9 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
 	  Int_t mfl = Int_t (codeM/ TMath::Power(10, Int_t(TMath::Log10(codeM))));
 	  if  (mfl == 3 && codeM != 3) isFromStrange = kTRUE;
 	    
+          if(codeM == 130) isFromStrange = kTRUE; // K0 long
+          if(part->IsSecondaryFromMaterial()) isFromStrange = kFALSE; // strange resonances from hadronic showers ? 
+
 	  // if(mfl ==3){
 	  //   cout<<" mfl "<<mfl<<" codeM "<<partM->GetPdgCode()<<" code this track "<<part->GetPdgCode()<<endl; 
 	  //   cout<<" index this track "<<it<<" index daughter 0 "<<partM->GetDaughter(0)<<" 1 "<<partM->GetDaughter(1)<<endl; 
