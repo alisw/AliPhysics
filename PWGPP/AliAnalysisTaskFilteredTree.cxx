@@ -1663,9 +1663,12 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
       // check if particle reconstructed
       Bool_t isRec = kFALSE;
-      Int_t  trackIndex = -1;  
+      Int_t trackIndex = -1;  
+      Int_t trackLoopIndex = -1;  
       Int_t isESDtrackCut= 0;
       Int_t isAccCuts    = 0;
+      Int_t nRec = 0;    // how many times reconstructed 
+      Int_t nFakes = 0;  // how many times reconstructed as a fake track
       AliESDtrack *recTrack = NULL; 
 
       for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
@@ -1681,18 +1684,25 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 	  if (isAcc) isESDtrackCut=1;
 	  if (accCuts->AcceptTrack(track)) isAccCuts=1;
 	  isRec = kTRUE;
+          trackIndex = iTrack;
+
 	  if (recTrack){
 	    if (track->GetTPCncls()<recTrack->GetTPCncls()) continue; // in case looper tracks use longer track
 	    if (!isAcc) continue;
-	    trackIndex = iTrack;
+	    trackLoopIndex = iTrack;
 	  }
 	  recTrack = esdEvent->GetTrack(trackIndex); 
+          nRec++;
+          if(track->GetLabel()<0) nFakes++;
+
 	  continue;
 	}        
       }
       
       // Store information in the output tree
-      if(trackIndex>-1)  { 
+      if (trackLoopIndex>-1)  { 
+        recTrack = esdEvent->GetTrack(trackLoopIndex); 
+      } else if (trackIndex >-1) {
         recTrack = esdEvent->GetTrack(trackIndex); 
       } else {
         recTrack = new AliESDtrack(); 
@@ -1725,12 +1735,14 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 	  //
 	  "isAcc0="<<isESDtrackCut<<                // track accepted by ESD track cuts
 	  "isAcc1="<<isAccCuts<<                    // track accepted by acceptance cuts flag
-          "esdTrack.="<<recTrack<<
-          "isRec="<<isRec<<
+          "esdTrack.="<<recTrack<<                  // reconstructed track (only the longest from the loopers)
+          "isRec="<<isRec<<                         // track was reconstructed
           "tpcTrackLength="<<tpcTrackLength<<       // track length in the TPC r projection
           "particle.="<<particle<<                  // particle properties
-          "particleMother.="<<particleMother<<
-          "mech="<<mech<<
+          "particleMother.="<<particleMother<<      // particle mother
+          "mech="<<mech<<                           // production mechanizm
+          "nRec="<<nRec<<                           // how many times reconstruted
+          "nFakes="<<nFakes<<                       // how many times reconstructed as a fake track
           "\n";
       }
 
