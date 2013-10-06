@@ -6,9 +6,9 @@ class TH2F;
 class TH3F;
 class THnSparse;
 
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetDev.h"
 
-class AliAnalysisTaskEmcalJetHadCorQA : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetHadCorQA : public AliAnalysisTaskEmcalJetDev {
  public:
   AliAnalysisTaskEmcalJetHadCorQA();
   AliAnalysisTaskEmcalJetHadCorQA(const char *name);

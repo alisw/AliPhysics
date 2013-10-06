@@ -34,7 +34,7 @@ ClassImp(AliAnalysisTaskEmcalJetSpectra)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() : 
-  AliAnalysisTaskEmcalJet("spectra",kFALSE), 
+  AliAnalysisTaskEmcalJetDev("spectra",kFALSE), 
   fHistRhovsCent(0),
   fHistNjetvsCent(0)
 {
@@ -59,7 +59,7 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name) :
-  AliAnalysisTaskEmcalJet(name,kTRUE),
+  AliAnalysisTaskEmcalJetDev(name,kTRUE),
   fHistRhovsCent(0),
   fHistNjetvsCent(0)
  { 
@@ -85,7 +85,7 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
 {
   if (! fCreateHisto)
     return;
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
 
   fHistRhovsCent             = new TH2F("RhovsCent",              "RhovsCent",             100, 0.0, 100.0, 500, 0, 500);
   fHistNjetvsCent            = new TH2F("NjetvsCent",             "NjetvsCent",            100, 0.0, 100.0, 100, 0, 100);

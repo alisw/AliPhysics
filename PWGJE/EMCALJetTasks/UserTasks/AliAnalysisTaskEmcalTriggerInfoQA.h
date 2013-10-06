@@ -8,9 +8,9 @@ class TString;
 class AliEmcalTriggerPatchInfo;
 class AliEmcalTriggerSetupInfo;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalDev.h"
 
-class AliAnalysisTaskEmcalTriggerInfoQA : public AliAnalysisTaskEmcal
+class AliAnalysisTaskEmcalTriggerInfoQA : public AliAnalysisTaskEmcalDev
 {
   public:
     AliAnalysisTaskEmcalTriggerInfoQA();
@@ -42,6 +42,6 @@ class AliAnalysisTaskEmcalTriggerInfoQA : public AliAnalysisTaskEmcal
     AliAnalysisTaskEmcalTriggerInfoQA(const AliAnalysisTaskEmcalTriggerInfoQA&); // not implemented
     AliAnalysisTaskEmcalTriggerInfoQA& operator=(const AliAnalysisTaskEmcalTriggerInfoQA&); // not implemented
     
-    ClassDef(AliAnalysisTaskEmcalTriggerInfoQA, 1); // example of analysis
+    ClassDef(AliAnalysisTaskEmcalTriggerInfoQA, 2); // example of analysis
 };
 #endif

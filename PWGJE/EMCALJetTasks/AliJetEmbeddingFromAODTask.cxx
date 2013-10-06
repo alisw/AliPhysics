@@ -622,7 +622,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	      else {
 		AliDebug(3, "Track not embedded because ITS refit failed.");
 		continue;
-	    }
+	      }
 	    }
 	    else {
 	      type = 1;
@@ -650,6 +650,11 @@ void AliJetEmbeddingFromAODTask::Run()
 	    else
 	      type = ptrack->GetLabel();
 	    isEmc = ptrack->IsEMCAL();
+
+	    if (!fIncludeNoITS && type==2) {
+	      AliDebug(3, "Track not embedded because ITS refit failed.");
+	      continue;
+	    }
 	  }
 	}
 	

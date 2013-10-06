@@ -21,7 +21,7 @@ ClassImp(AliAnalysisTaskEmcalBadCells)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalBadCells::AliAnalysisTaskEmcalBadCells() : 
-  AliAnalysisTaskEmcal("AliAnalysisTaskEmcalBadCells"),
+  AliAnalysisTaskEmcalDev("AliAnalysisTaskEmcalBadCells"),
   fh2AmplitudeCellNumber(0x0)
 
 {
@@ -33,7 +33,7 @@ AliAnalysisTaskEmcalBadCells::AliAnalysisTaskEmcalBadCells() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalBadCells::AliAnalysisTaskEmcalBadCells(const char *name, Bool_t histo) : 
-  AliAnalysisTaskEmcal(name, histo),
+  AliAnalysisTaskEmcalDev(name, histo),
   fh2AmplitudeCellNumber(0x0)
 {
   // Standard constructor.
@@ -52,7 +52,7 @@ void AliAnalysisTaskEmcalBadCells::UserCreateOutputObjects()
 {
   // Create user output.
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
 
   fh2AmplitudeCellNumber = new TH2F("fh2AmplitudeCellNumber","fh2AmplitudeCellNumber",11520,0,11520,100,0,10);
   fOutput->Add(fh2AmplitudeCellNumber);

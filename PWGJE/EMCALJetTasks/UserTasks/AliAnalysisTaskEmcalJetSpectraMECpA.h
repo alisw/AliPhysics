@@ -9,9 +9,9 @@ class TH2F;
 class TH3F;
 class THnSparse;
 
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetDev.h"
 
-class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJetDev {
  public:
   AliAnalysisTaskEmcalJetSpectraMECpA();
   AliAnalysisTaskEmcalJetSpectraMECpA(const char *name);
@@ -50,6 +50,6 @@ class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSpectraMECpA(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   AliAnalysisTaskEmcalJetSpectraMECpA& operator=(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 4); // Emcal jet spectra task
+  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 5); // Emcal jet spectra task
 };
 #endif
