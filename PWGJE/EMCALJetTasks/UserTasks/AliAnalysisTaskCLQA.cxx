@@ -41,7 +41,7 @@ ClassImp(AliAnalysisTaskCLQA)
 
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() : 
-  AliAnalysisTaskEmcal("AliAnalysisTaskCLQA", kTRUE),
+  AliAnalysisTaskEmcalDev("AliAnalysisTaskCLQA", kTRUE),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), 
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
   fCentCL1In(0), fCentV0AIn(0),
@@ -55,7 +55,7 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA(const char *name) : 
-  AliAnalysisTaskEmcal(name, kTRUE),
+  AliAnalysisTaskEmcalDev(name, kTRUE),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), 
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
   fCentCL1In(0), fCentV0AIn(0),
@@ -202,7 +202,7 @@ Bool_t AliAnalysisTaskCLQA::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcalDev::RetrieveEventObjects())
     return kFALSE;
 
   return kTRUE;
@@ -453,7 +453,7 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
 {
   // Create histograms
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
 
   fHists[0] = new TH1D("fTrigBits",";bit",32,-0.5,31.5);
   fOutput->Add(fHists[0]);
