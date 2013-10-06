@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 313 2013-06-28 16:43:30Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 341 2013-09-30 15:59:19Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -59,6 +59,11 @@ public:
   }
   void SetMaxAbsVertexZ(Double_t maxAbsVertexZ) { fMaxAbsVertexZ = maxAbsVertexZ; }
 
+  void SetSelectPrimaryMCParticles(Int_t flagMC, Int_t flagMCData) {
+    fSelectPrimaryMCParticles     = flagMC;
+    fSelectPrimaryMCDataParticles = flagMCData;
+  }
+
   TString GetOutputListName() const;
 
 protected:
@@ -71,7 +76,7 @@ protected:
   THnSparse* ComputeNForThisEvent(TObjArray*, const char*, Double_t) const;
   void       FillNEtaHist(TString, THnSparse*, Double_t);
 
-  TObjArray* GetAcceptedTracks(AliAODEvent*, Double_t);
+  TObjArray* GetAcceptedTracks(AliAODEvent*, TClonesArray*, Double_t);
   TObjArray* GetAcceptedTracks(TClonesArray*, Double_t);
 
   // filling histograms by name
@@ -97,6 +102,8 @@ private:
   Double_t             fPtMin, fPtMax;      // P_{T} range
   Double_t             fPhiMin, fPhiMax;    // #phi range
   Double_t             fMaxAbsVertexZ;      // max abs(zvertex)
+  Int_t                fSelectPrimaryMCParticles;     // 0: no, 1: yes, -1: only non-primary particles
+  Int_t                fSelectPrimaryMCDataParticles; // 0: no, 1: yes, -1: only non-primary particles
   // histogram data
   Int_t    fnBinsCent, fnBinsPt, fnBinsPhi, fnBinsEta;
   Double_t fxMinCent,  fxMinPt,  fxMinPhi,  fxMinEta;
