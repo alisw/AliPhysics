@@ -1,11 +1,14 @@
 // -*- c++ -*-
-// $Id: AddTaskLongRangeCorrelations.C 232 2012-11-28 17:27:59Z cmayer $
+// $Id: AddTaskLongRangeCorrelations.C 341 2013-09-30 15:59:19Z cmayer $
+
+const Double_t centMin[] = {  0,  0, 10, 20, 30, 40, 50, 60, 70,  80 };
+const Double_t centMax[] = {  5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
 
 AliAnalysisTaskLongRangeCorrelations*
 AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
 			     Bool_t runMixing    = !kTRUE,
 			     Int_t  mixingTracks = 50000,
-			     Double_t centMin = 0, Double_t centMax = 20,
+			     Int_t selPrimMC  = 0, Int_t selPrimMCData = 0,
 			     Double_t ptMin   = 0.2, 
 			     Double_t phiMin  = 0, Double_t phiMax  = TMath::TwoPi()) {
 
@@ -24,22 +27,29 @@ AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
     return NULL;
   }
 
-  AliAnalysisTaskLongRangeCorrelations *taskLRC = new AliAnalysisTaskLongRangeCorrelations("TaskLongRangeCorrelations");
-  taskLRC->SetRunMixing(runMixing);
-  taskLRC->SetMixingTracks(mixingTracks);
-  taskLRC->SetTrackFilter(trackFilter);
-  taskLRC->SetCentralityRange(centMin, centMax);
-  taskLRC->SetPtRange(ptMin, 1e20);
-  taskLRC->SetPhiRange(phiMin, phiMax);
-  taskLRC->SelectCollisionCandidates(AliVEvent::kMB);
-  mgr->AddTask(taskLRC);
-
+  AliAnalysisTaskLongRangeCorrelations *taskLRC = NULL;
+  AliAnalysisDataContainer             *listLRC = NULL;
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCFEbyE.outputLongRangeCorrelations.root";
-  AliAnalysisDataContainer *listLRC = mgr->CreateContainer(taskLRC->GetOutputListName(), TList::Class(),
-							   AliAnalysisManager::kOutputContainer,
-							   outputFileName.Data());
-  mgr->ConnectInput(taskLRC,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskLRC, 1, listLRC);
+
+  for (Int_t i=0; i<sizeof(centMin)/sizeof(Double_t); ++i) {
+    taskLRC = new AliAnalysisTaskLongRangeCorrelations("TaskLongRangeCorrelations");
+    taskLRC->SetRunMixing(runMixing);
+    taskLRC->SetMixingTracks(mixingTracks);
+    taskLRC->SetTrackFilter(trackFilter);
+    taskLRC->SetCentralityRange(centMin[i], centMax[i]);
+    taskLRC->SetPtRange(ptMin, 1e20);
+    taskLRC->SetPhiRange(phiMin, phiMax);
+    taskLRC->SelectCollisionCandidates(AliVEvent::kMB);
+    taskLRC->SetSelectPrimaryMCParticles(selPrimMC, selPrimMCData);
+
+    listLRC = mgr->CreateContainer(taskLRC->GetOutputListName(), TList::Class(),
+				   AliAnalysisManager::kOutputContainer,
+				   outputFileName.Data());
+    mgr->AddTask(taskLRC);
+    mgr->ConnectInput(taskLRC,  0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskLRC, 1, listLRC);
+  }
+
   return taskLRC;
 }
