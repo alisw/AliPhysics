@@ -69,27 +69,8 @@ Bool_t AliPerformanceDEdx::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceDEdx::fgUseMergeTHnSparse = kFALSE;
 
 //_____________________________________________________________________________
-AliPerformanceDEdx::AliPerformanceDEdx():
-  AliPerformanceObject("AliPerformanceDEdx"),
-
-  // dEdx 
-  fDeDxHisto(0),
-  fFolderObj(0),
-  
-  // Cuts 
-  fCutsRC(0), 
-  fCutsMC(0),
-
-  // histogram folder 
-  fAnalysisFolder(0)
-{
-  // default constructor	
-  Init();
-}
-
-//_____________________________________________________________________________
-AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
-  AliPerformanceObject(name,title),
+AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):
+ AliPerformanceObject(name,title),
 
   // dEdx 
   fDeDxHisto(0),

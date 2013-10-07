@@ -34,8 +34,7 @@ class AliExternalTrackParam;
 
 class AliPerformanceMatch : public AliPerformanceObject {
 public :
-  AliPerformanceMatch(); 
-  AliPerformanceMatch(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
+  AliPerformanceMatch(const Char_t* name="AliPerformanceMatch", const Char_t* title="AliPerformanceMatch",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE);
   virtual ~AliPerformanceMatch();
 
   // Init data members
