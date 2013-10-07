@@ -20,6 +20,8 @@
 #ifndef VC_AVX_WRITEMASKEDVECTOR_H
 #define VC_AVX_WRITEMASKEDVECTOR_H
 
+#include "macros.h"
+namespace AliRoot {
 namespace Vc
 {
 namespace AVX
@@ -36,43 +38,45 @@ class WriteMaskedVector
     public:
         FREE_STORE_OPERATORS_ALIGNED(32)
         //prefix
-        Vector<T> ALWAYS_INLINE_L &operator++() ALWAYS_INLINE_R;
-        Vector<T> ALWAYS_INLINE_L &operator--() ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE_L &operator++() Vc_ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE_L &operator--() Vc_ALWAYS_INLINE_R;
         //postfix
-        Vector<T> ALWAYS_INLINE_L operator++(int) ALWAYS_INLINE_R;
-        Vector<T> ALWAYS_INLINE_L operator--(int) ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE_L operator++(int) Vc_ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE_L operator--(int) Vc_ALWAYS_INLINE_R;
 
-        Vector<T> ALWAYS_INLINE_L &operator+=(const Vector<T> &x) ALWAYS_INLINE_R;
-        Vector<T> ALWAYS_INLINE_L &operator-=(const Vector<T> &x) ALWAYS_INLINE_R;
-        Vector<T> ALWAYS_INLINE_L &operator*=(const Vector<T> &x) ALWAYS_INLINE_R;
-        Vector<T> ALWAYS_INLINE_L &operator/=(const Vector<T> &x) ALWAYS_INLINE_R;
-        Vector<T> ALWAYS_INLINE &operator+=(EntryType x) { return operator+=(Vector<T>(x)); }
-        Vector<T> ALWAYS_INLINE &operator-=(EntryType x) { return operator-=(Vector<T>(x)); }
-        Vector<T> ALWAYS_INLINE &operator*=(EntryType x) { return operator*=(Vector<T>(x)); }
-        Vector<T> ALWAYS_INLINE &operator/=(EntryType x) { return operator/=(Vector<T>(x)); }
+        Vector<T> Vc_ALWAYS_INLINE_L &operator+=(const Vector<T> &x) Vc_ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE_L &operator-=(const Vector<T> &x) Vc_ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE_L &operator*=(const Vector<T> &x) Vc_ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE_L &operator/=(const Vector<T> &x) Vc_ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE &operator+=(EntryType x) { return operator+=(Vector<T>(x)); }
+        Vector<T> Vc_ALWAYS_INLINE &operator-=(EntryType x) { return operator-=(Vector<T>(x)); }
+        Vector<T> Vc_ALWAYS_INLINE &operator*=(EntryType x) { return operator*=(Vector<T>(x)); }
+        Vector<T> Vc_ALWAYS_INLINE &operator/=(EntryType x) { return operator/=(Vector<T>(x)); }
 
-        Vector<T> ALWAYS_INLINE_L &operator=(const Vector<T> &x) ALWAYS_INLINE_R;
-        Vector<T> ALWAYS_INLINE &operator=(EntryType x) { return operator=(Vector<T>(x)); }
+        Vector<T> Vc_ALWAYS_INLINE_L &operator=(const Vector<T> &x) Vc_ALWAYS_INLINE_R;
+        Vector<T> Vc_ALWAYS_INLINE &operator=(EntryType x) { return operator=(Vector<T>(x)); }
 
-        template<typename F> inline void INTRINSIC call(const F &f) const {
+        template<typename F> Vc_INTRINSIC void call(const F &f) const {
             return vec->call(f, mask);
         }
-        template<typename F> inline void INTRINSIC call(F &f) const {
+        template<typename F> Vc_INTRINSIC void call(F &f) const {
             return vec->call(f, mask);
         }
-        template<typename F> inline Vector<T> INTRINSIC apply(const F &f) const {
+        template<typename F> Vc_INTRINSIC Vector<T> apply(const F &f) const {
             return vec->apply(f, mask);
         }
-        template<typename F> inline Vector<T> INTRINSIC apply(F &f) const {
+        template<typename F> Vc_INTRINSIC Vector<T> apply(F &f) const {
             return vec->apply(f, mask);
         }
     private:
-        inline WriteMaskedVector(Vector<T> *v, const Mask &k) : vec(v), mask(k) {}
+        Vc_ALWAYS_INLINE WriteMaskedVector(Vector<T> *v, const Mask &k) : vec(v), mask(k) {}
         Vector<T> *const vec;
         Mask mask;
 };
 
 } // namespace AVX
 } // namespace Vc
+} // namespace AliRoot
 #include "writemaskedvector.tcc"
+#include "undomacros.h"
 #endif // VC_AVX_WRITEMASKEDVECTOR_H

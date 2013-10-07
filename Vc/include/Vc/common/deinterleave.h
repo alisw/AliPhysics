@@ -20,11 +20,14 @@
 #ifndef VC_COMMON_DEINTERLEAVE_H
 #define VC_COMMON_DEINTERLEAVE_H
 
+#include "macros.h"
+
+namespace AliRoot {
 namespace Vc
 {
 
 /**
- * \ingroup Utilities
+ * \ingroup Vectors
  *
  * Loads two vectors of values from an interleaved array.
  *
@@ -63,18 +66,22 @@ double_v |       |    X   |        |       |      |
 ushort_v |       |        |    X   |       |      |
 \endverbatim
  */
-template<typename V, typename M, typename A> inline void deinterleave(V *a, V *b,
+template<typename V, typename M, typename A> Vc_ALWAYS_INLINE void deinterleave(V *a, V *b,
         const M *memory, A align)
 {
     Internal::Helper::deinterleave(*a, *b, memory, align);
 }
 
 // documented as default for align above
-template<typename V, typename M> inline void deinterleave(V *a, V *b,
+template<typename V, typename M> Vc_ALWAYS_INLINE void deinterleave(V *a, V *b,
         const M *memory)
 {
     Internal::Helper::deinterleave(*a, *b, memory, Aligned);
 }
 
 } // namespace Vc
+} // namespace AliRoot
+
+#include "undomacros.h"
+
 #endif // VC_COMMON_DEINTERLEAVE_H

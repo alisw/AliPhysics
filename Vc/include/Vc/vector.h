@@ -23,13 +23,13 @@
 #include "global.h"
 #include "internal/namespace.h"
 
-#if VC_IMPL_Scalar
+#ifdef VC_IMPL_Scalar
 # include "scalar/vector.h"
 # include "scalar/helperimpl.h"
-#elif VC_IMPL_AVX
+#elif defined(VC_IMPL_AVX)
 # include "avx/vector.h"
 # include "avx/helperimpl.h"
-#elif VC_IMPL_SSE
+#elif defined(VC_IMPL_SSE)
 # include "sse/vector.h"
 # include "sse/helperimpl.h"
 #endif
@@ -41,6 +41,7 @@
 #undef isnan
 #endif
 
+namespace AliRoot {
 namespace Vc
 {
   using VECTOR_NAMESPACE::VectorAlignment;
@@ -58,6 +59,7 @@ namespace Vc
   using VECTOR_NAMESPACE::asin;
   using VECTOR_NAMESPACE::cos;
   using VECTOR_NAMESPACE::sincos;
+  using VECTOR_NAMESPACE::trunc;
   using VECTOR_NAMESPACE::floor;
   using VECTOR_NAMESPACE::ceil;
   using VECTOR_NAMESPACE::exp;
@@ -91,6 +93,9 @@ namespace Vc
   typedef ushort_v::Mask ushort_m;
 
   namespace {
+#if defined(VC_IMPL_SSE) || defined(VC_IMPL_AVX)
+    using VECTOR_NAMESPACE::Const;
+#endif
     VC_STATIC_ASSERT_NC(double_v::Size == VC_DOUBLE_V_SIZE, VC_DOUBLE_V_SIZE_MACRO_WRONG);
     VC_STATIC_ASSERT_NC(float_v::Size  == VC_FLOAT_V_SIZE , VC_FLOAT_V_SIZE_MACRO_WRONG );
     VC_STATIC_ASSERT_NC(sfloat_v::Size == VC_SFLOAT_V_SIZE, VC_SFLOAT_V_SIZE_MACRO_WRONG);
@@ -100,6 +105,14 @@ namespace Vc
     VC_STATIC_ASSERT_NC(ushort_v::Size == VC_USHORT_V_SIZE, VC_USHORT_V_SIZE_MACRO_WRONG);
   }
 } // namespace Vc
+} // namespace AliRoot
+
+#include "common/vectortuple.h"
+#include "common/iif.h"
+
+#ifndef VC_NO_NAMESPACE_ALIAS
+namespace Vc = AliRoot::Vc;
+#endif
 
 #ifndef VC_NO_STD_FUNCTIONS
 namespace std

@@ -24,24 +24,39 @@
 #include <assert.h>
 #include <algorithm>
 #include <cstring>
+#include <cstddef>
 #include "memoryfwd.h"
 #include "macros.h"
 
+namespace AliRoot {
 namespace Vc
 {
 
 /**
- * Allocates memory on the Heap with alignment and padding.
+ * Allocates memory on the Heap with alignment and padding suitable for vectorized access.
  *
  * Memory that was allocated with this function must be released with Vc::free! Other methods might
  * work but are not portable.
  *
- * \param n Specifies the number of scalar values the allocated memory must be able to store.
+ * \param n Specifies the number of objects the allocated memory must be able to store.
+ * \tparam T The type of the allocated memory. Note, that the constructor is not called.
+ * \tparam A Determines the alignment of the memory. See \ref Vc::MallocAlignment.
  *
- * \return Pointer to memory of the requested type and size, or 0 on error.
+ * \return Pointer to memory of the requested type, or 0 on error. The allocated memory is padded at
+ * the end to be a multiple of the requested alignment \p A. Thus if you request memory for 21
+ * int objects, aligned via Vc::AlignOnCacheline, you can safely read a full cacheline until the
+ * end of the array, without generating an out-of-bounds access. For a cacheline size of 64 Bytes
+ * and an int size of 4 Bytes you would thus get an array of 128 Bytes to work with.
  *
- * \warning The standard malloc function specifies the number of Bytes to allocate whereas this
- *          function specifies the number of values, thus differing in a factor of sizeof(T)
+ * \warning
+ * \li The standard malloc function specifies the number of Bytes to allocate whereas this
+ *     function specifies the number of values, thus differing in a factor of sizeof(T).
+ * \li This function is mainly meant for use with builtin types. If you use a custom
+ *     type with a sizeof that is not a multiple of 2 the results might not be what you expect.
+ * \li The constructor of T is not called. You can make up for this:
+ * \code
+ * SomeType *array = new(Vc::malloc<SomeType, Vc::AlignOnCacheline>(N)) SomeType[N];
+ * \endcode
  *
  * \see Vc::free
  *
@@ -49,7 +64,7 @@ namespace Vc
  * \headerfile memory.h <Vc/Memory>
  */
 template<typename T, Vc::MallocAlignment A>
-inline ALWAYS_INLINE_L T *ALWAYS_INLINE_R malloc(size_t n)
+Vc_ALWAYS_INLINE_L T *Vc_ALWAYS_INLINE_R malloc(size_t n)
 {
     return static_cast<T *>(Internal::Helper::malloc<A>(n * sizeof(T)));
 }
@@ -57,11 +72,26 @@ inline ALWAYS_INLINE_L T *ALWAYS_INLINE_R malloc(size_t n)
 /**
  * Frees memory that was allocated with Vc::malloc.
  *
+ * \param p The pointer to the memory to be freed.
+ *
+ * \tparam T The type of the allocated memory.
+ *
+ * \warning The destructor of T is not called. If needed, you can call the destructor before calling
+ * free:
+ * \code
+ * for (int i = 0; i < N; ++i) {
+ *   p[i].~T();
+ * }
+ * Vc::free(p);
+ * \endcode
+ *
  * \ingroup Utilities
  * \headerfile memory.h <Vc/Memory>
+ *
+ * \see Vc::malloc
  */
 template<typename T>
-inline void ALWAYS_INLINE free(T *p)
+Vc_ALWAYS_INLINE void free(T *p)
 {
     Internal::Helper::free(p);
 }
@@ -102,6 +132,11 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
             __declspec(align(__alignof(VectorAlignedBaseT<V>)))
 #elif defined(VC_CLANG)
             __attribute__((aligned(__alignof(VectorAlignedBaseT<V>))))
+#elif defined(VC_MSVC)
+	    VectorAlignedBaseT<V> _force_alignment;
+            // __declspec(align(#)) accepts only numbers not __alignof nor just VectorAlignment
+	    // by putting VectorAlignedBaseT<V> here _force_alignment is aligned correctly.
+	    // the downside is that there's a lot of padding before m_mem (32 Bytes with SSE) :(
 #endif
             EntryType m_mem[Size1][PaddedSize2];
         public:
@@ -116,7 +151,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
              *
              * \note This function can be eliminated by an optimizing compiler.
              */
-            inline size_t rowsCount() const { return RowCount; }
+            _VC_CONSTEXPR size_t rowsCount() const { return RowCount; }
             /**
              * \return the number of scalar entries in the whole array.
              *
@@ -125,13 +160,13 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
              *
              * \note This function can be optimized into a compile-time constant.
              */
-            inline size_t entriesCount() const { return Size1 * Size2; }
+            _VC_CONSTEXPR size_t entriesCount() const { return Size1 * Size2; }
             /**
              * \return the number of vectors in the whole array.
              *
              * \note This function can be optimized into a compile-time constant.
              */
-            inline size_t vectorsCount() const { return VectorsCount * Size1; }
+            _VC_CONSTEXPR size_t vectorsCount() const { return VectorsCount * Size1; }
 
             /**
              * Copies the data from a different object.
@@ -143,7 +178,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
              * \note Both objects must have the exact same vectorsCount().
              */
             template<typename Parent, typename RM>
-            inline Memory &operator=(const MemoryBase<V, Parent, 2, RM> &rhs) {
+            Vc_ALWAYS_INLINE Memory &operator=(const MemoryBase<V, Parent, 2, RM> &rhs) {
                 assert(vectorsCount() == rhs.vectorsCount());
                 std::memcpy(m_mem, rhs.m_mem, vectorsCount() * sizeof(V));
                 return *this;
@@ -225,10 +260,15 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
                 Padding = Alignment - MaskedSize,
                 PaddedSize = MaskedSize == 0 ? Size : Size + Padding
             };
-#if defined(__INTEL_COMPILER) && defined(_WIN32)
+#if defined(VC_ICC) && defined(_WIN32)
             __declspec(align(__alignof(VectorAlignedBaseT<V>)))
 #elif defined(VC_CLANG)
             __attribute__((aligned(__alignof(VectorAlignedBaseT<V>))))
+#elif defined(VC_MSVC)
+	    VectorAlignedBaseT<V> _force_alignment;
+            // __declspec(align(#)) accepts only numbers not __alignof nor just VectorAlignment
+	    // by putting VectorAlignedBaseT<V> here _force_alignment is aligned correctly.
+	    // the downside is that there's a lot of padding before m_mem (32 Bytes with SSE) :(
 #endif
             EntryType m_mem[PaddedSize];
         public:
@@ -239,26 +279,59 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
             };
 
             /**
+             * Wrap existing data with the Memory convenience class.
+             *
+             * This function returns a \em reference to a Memory<V, Size, 0> object that you must
+             * capture to avoid a copy of the whole data:
+             * \code
+             * Memory<float_v, 16> &m = Memory<float_v, 16>::fromRawData(someAlignedPointerToFloat)
+             * \endcode
+             *
+             * \param ptr An aligned pointer to memory of type \p V::EntryType (e.g. \c float for
+             *            Vc::float_v).
+             * \return A Memory object placed at the given location in memory.
+             *
+             * \warning The pointer \p ptr passed to this function must be aligned according to the
+             * alignment restrictions of \p V.
+             * \warning The size of the accessible memory must match \p Size. This includes the
+             * required padding at the end to allow the last entries to be accessed via vectors. If
+             * you know what you are doing you might violate this constraint.
+             * \warning It is your responsibility to ensure that the memory is released correctly
+             * (not too early/not leaked). This function simply adds convenience functions to \em
+             * access the memory.
+             */
+            static Vc_ALWAYS_INLINE Vc_CONST Memory<V, Size, 0u> &fromRawData(EntryType *ptr)
+            {
+                // DANGER! This placement new has to use the right address. If the compiler decides
+                // RowMemory requires padding before the actual data then the address has to be adjusted
+                // accordingly
+                char *addr = reinterpret_cast<char *>(ptr);
+                typedef Memory<V, Size, 0u> MM;
+                addr -= VC_OFFSETOF(MM, m_mem);
+                return *new(addr) MM;
+            }
+
+            /**
              * \return the number of scalar entries in the whole array.
              *
              * \note This function can be optimized into a compile-time constant.
              */
-            inline size_t entriesCount() const { return EntriesCount; }
+            _VC_CONSTEXPR size_t entriesCount() const { return EntriesCount; }
 
             /**
              * \return the number of vectors in the whole array.
              *
              * \note This function can be optimized into a compile-time constant.
              */
-            inline size_t vectorsCount() const { return VectorsCount; }
+            _VC_CONSTEXPR size_t vectorsCount() const { return VectorsCount; }
 
             template<typename Parent, typename RM>
-            inline Memory<V> &operator=(const MemoryBase<V, Parent, 1, RM> &rhs) {
+            Vc_ALWAYS_INLINE Memory<V> &operator=(const MemoryBase<V, Parent, 1, RM> &rhs) {
                 assert(vectorsCount() == rhs.vectorsCount());
                 std::memcpy(m_mem, rhs.m_mem, entriesCount() * sizeof(EntryType));
                 return *this;
             }
-            inline Memory<V> &operator=(const EntryType *rhs) {
+            Vc_ALWAYS_INLINE Memory<V> &operator=(const EntryType *rhs) {
                 std::memcpy(m_mem, rhs, entriesCount() * sizeof(EntryType));
                 return *this;
             }
@@ -344,7 +417,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
          *
          * \param size Determines how many scalar values will fit into the allocated memory.
          */
-        inline Memory(size_t size)
+        Vc_ALWAYS_INLINE Memory(size_t size)
             : m_entriesCount(size),
             m_vectorsCount(calcPaddedEntriesCount(m_entriesCount)),
             m_mem(Vc::malloc<EntryType, Vc::AlignOnVector>(m_vectorsCount))
@@ -360,7 +433,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
          * \param rhs The Memory object to copy from.
          */
         template<typename Parent, typename RM>
-        inline Memory(const MemoryBase<V, Parent, 1, RM> &rhs)
+        Vc_ALWAYS_INLINE Memory(const MemoryBase<V, Parent, 1, RM> &rhs)
             : m_entriesCount(rhs.entriesCount()),
             m_vectorsCount(rhs.vectorsCount()),
             m_mem(Vc::malloc<EntryType, Vc::AlignOnVector>(m_vectorsCount * V::Size))
@@ -375,7 +448,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
          *
          * \param rhs The Memory object to copy from.
          */
-        inline Memory(const Memory<V, 0u> &rhs)
+        Vc_ALWAYS_INLINE Memory(const Memory<V, 0u> &rhs)
             : m_entriesCount(rhs.entriesCount()),
             m_vectorsCount(rhs.vectorsCount()),
             m_mem(Vc::malloc<EntryType, Vc::AlignOnVector>(m_vectorsCount * V::Size))
@@ -386,7 +459,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
         /**
          * Frees the memory which was allocated in the constructor.
          */
-        inline ALWAYS_INLINE ~Memory()
+        Vc_ALWAYS_INLINE ~Memory()
         {
             Vc::free(m_mem);
         }
@@ -405,12 +478,12 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
         /**
          * \return the number of scalar entries in the whole array.
          */
-        inline size_t entriesCount() const { return m_entriesCount; }
+        Vc_ALWAYS_INLINE Vc_PURE size_t entriesCount() const { return m_entriesCount; }
 
         /**
          * \return the number of vectors in the whole array.
          */
-        inline size_t vectorsCount() const { return m_vectorsCount; }
+        Vc_ALWAYS_INLINE Vc_PURE size_t vectorsCount() const { return m_vectorsCount; }
 
         /**
          * Overwrite all entries with the values stored in \p rhs.
@@ -422,7 +495,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
          * \note this function requires the vectorsCount() of both Memory objects to be equal.
          */
         template<typename Parent, typename RM>
-        inline Memory<V> &operator=(const MemoryBase<V, Parent, 1, RM> &rhs) {
+        Vc_ALWAYS_INLINE Memory<V> &operator=(const MemoryBase<V, Parent, 1, RM> &rhs) {
             assert(vectorsCount() == rhs.vectorsCount());
             std::memcpy(m_mem, rhs.m_mem, entriesCount() * sizeof(EntryType));
             return *this;
@@ -437,7 +510,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
          *
          * \note this function requires that there are entriesCount() many values accessible from \p rhs.
          */
-        inline Memory<V> &operator=(const EntryType *rhs) {
+        Vc_ALWAYS_INLINE Memory<V> &operator=(const EntryType *rhs) {
             std::memcpy(m_mem, rhs, entriesCount() * sizeof(EntryType));
             return *this;
         }
@@ -453,7 +526,7 @@ template<typename V, size_t Size1, size_t Size2> class Memory : public VectorAli
  * \ingroup Utilities
  * \headerfile memory.h <Vc/Memory>
  */
-inline void ALWAYS_INLINE prefetchForOneRead(const void *addr)
+Vc_ALWAYS_INLINE void prefetchForOneRead(const void *addr)
 {
     Internal::Helper::prefetchForOneRead(addr);
 }
@@ -470,7 +543,7 @@ inline void ALWAYS_INLINE prefetchForOneRead(const void *addr)
  * \ingroup Utilities
  * \headerfile memory.h <Vc/Memory>
  */
-inline void ALWAYS_INLINE prefetchForModify(const void *addr)
+Vc_ALWAYS_INLINE void prefetchForModify(const void *addr)
 {
     Internal::Helper::prefetchForModify(addr);
 }
@@ -485,7 +558,7 @@ inline void ALWAYS_INLINE prefetchForModify(const void *addr)
  * \ingroup Utilities
  * \headerfile memory.h <Vc/Memory>
  */
-inline void ALWAYS_INLINE prefetchClose(const void *addr)
+Vc_ALWAYS_INLINE void prefetchClose(const void *addr)
 {
     Internal::Helper::prefetchClose(addr);
 }
@@ -500,7 +573,7 @@ inline void ALWAYS_INLINE prefetchClose(const void *addr)
  * \ingroup Utilities
  * \headerfile memory.h <Vc/Memory>
  */
-inline void ALWAYS_INLINE prefetchMid(const void *addr)
+Vc_ALWAYS_INLINE void prefetchMid(const void *addr)
 {
     Internal::Helper::prefetchMid(addr);
 }
@@ -515,16 +588,17 @@ inline void ALWAYS_INLINE prefetchMid(const void *addr)
  * \ingroup Utilities
  * \headerfile memory.h <Vc/Memory>
  */
-inline void ALWAYS_INLINE prefetchFar(const void *addr)
+Vc_ALWAYS_INLINE void prefetchFar(const void *addr)
 {
     Internal::Helper::prefetchFar(addr);
 }
 
 } // namespace Vc
+} // namespace AliRoot
 
 namespace std
 {
-    template<typename V> inline void swap(Vc::Memory<V> &a, Vc::Memory<V> &b) { a.swap(b); }
+    template<typename V> Vc_ALWAYS_INLINE void swap(Vc::Memory<V> &a, Vc::Memory<V> &b) { a.swap(b); }
 } // namespace std
 
 #include "undomacros.h"
