@@ -32,8 +32,7 @@ class AliRecInfoCuts;
 
 class AliPerformanceRes : public AliPerformanceObject {
 public :
-  AliPerformanceRes(); 
-  AliPerformanceRes(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
+  AliPerformanceRes(const Char_t* name="AliPerformanceRes", const Char_t* title="AliPerformanceRes",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE);
   virtual ~AliPerformanceRes();
 
   // Init data members
