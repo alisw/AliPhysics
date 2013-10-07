@@ -13,6 +13,7 @@ AliThreePionRadii *AddTaskThreePionRadii(
 				 Float_t MinSepPairPhi=0.045,
 				 Float_t SigmaCutTPC=2.0,
 				 Float_t SigmaCutTOF=2.0,
+				 Int_t NumKt3bins=1,
 				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_TPR.root"
 				 ) {
   
@@ -41,6 +42,7 @@ AliThreePionRadii *AddTaskThreePionRadii(
   ThreePionRadiiTask->SetPairSeparationCutPhi(MinSepPairPhi);
   ThreePionRadiiTask->SetNsigmaTPC(SigmaCutTPC);
   ThreePionRadiiTask->SetNsigmaTOF(SigmaCutTOF);
+  ThreePionRadiiTask->SetNumKt3Bins(NumKt3bins);
   mgr->AddTask(ThreePionRadiiTask);
 
 
