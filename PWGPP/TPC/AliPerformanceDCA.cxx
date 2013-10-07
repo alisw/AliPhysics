@@ -59,25 +59,7 @@ using namespace std;
 ClassImp(AliPerformanceDCA)
 
 //_____________________________________________________________________________
-AliPerformanceDCA::AliPerformanceDCA():
-  AliPerformanceObject("AliPerformanceDCA"),
-
-  // DCA histograms
-  fDCAHisto(0),
-
-  // Cuts 
-  fCutsRC(0), 
-  fCutsMC(0),  
-
-  // histogram folder 
-  fAnalysisFolder(0)
-{
-  // default constructor	
-  Init();
-}
-
-//_____________________________________________________________________________
-AliPerformanceDCA::AliPerformanceDCA(const Char_t* name="AliPerformanceDCA", const Char_t* title="AliPerformanceDCA",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
+AliPerformanceDCA::AliPerformanceDCA(const Char_t* name, const Char_t* title,Int_t analysisMode, Bool_t hptGenerator):
   AliPerformanceObject(name,title),
 
   // DCA histograms

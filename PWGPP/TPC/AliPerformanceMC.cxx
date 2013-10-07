@@ -62,23 +62,7 @@ using namespace std;
 ClassImp(AliPerformanceMC)
 
 //_____________________________________________________________________________
-AliPerformanceMC::AliPerformanceMC():
-  AliPerformanceObject("AliPerformanceMC"),
-  fResolHisto(0),
-  fPullHisto(0),
-
-  // Cuts 
-  fCutsRC(0),  
-  fCutsMC(0),  
-
-  // histogram folder 
-  fAnalysisFolder(0)
-{
-  Init();
-}
-
-//_____________________________________________________________________________
-AliPerformanceMC::AliPerformanceMC(Char_t* name="AliPerformanceMC", Char_t* title="AliPerformanceMC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE):
+AliPerformanceMC::AliPerformanceMC(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):
   AliPerformanceObject(name,title),
   fResolHisto(0),
   fPullHisto(0),
