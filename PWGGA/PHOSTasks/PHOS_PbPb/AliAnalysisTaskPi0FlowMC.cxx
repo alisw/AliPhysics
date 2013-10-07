@@ -407,7 +407,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0s()
       const Double_t w2 = ph2->GetWeight();
       Double_t w = TMath::Sqrt(w1*w2);
       
-      FillHistogram("hPHOSphi",fCentralityV0M,p12.Pt(),p12.Phi(), w) ;
+      FillHistogram("hPHOSphi",fCentrality,p12.Pt(),p12.Phi(), w) ;
       Double_t dphiA=p12.Phi()-fRPV0A ;
       while(dphiA<0)dphiA+=TMath::Pi() ;
       while(dphiA>TMath::Pi())dphiA-=TMath::Pi() ;
