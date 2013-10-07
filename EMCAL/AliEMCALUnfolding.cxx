@@ -560,14 +560,20 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
     recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
     if(recPoint){//recPoint present -> good
       recPoint->SetNExMax(list->GetEntriesFast()) ;
-      Int_t *digitsList = dynamic_cast<AliEMCALRecPoint *>(list->At(i))->GetDigitsList();
+      Int_t   *digitsList = dynamic_cast<AliEMCALRecPoint *>(list->At(i))->GetDigitsList();
       Float_t *energyList = dynamic_cast<AliEMCALRecPoint *>(list->At(i))->GetEnergiesList();
 
+      if(!digitsList || ! energyList)
+      {
+        AliDebug(-1,"No digits index or energy available");
+        continue;
+      }
+      
       AliDebug(5,Form("cluster %d, digit no %d, energy %f\n",i,digitsList[0],energyList[0]));
 
       for(iDigit = 0 ; iDigit < dynamic_cast<AliEMCALRecPoint *>(list->At(i))->GetMultiplicity(); iDigit ++) {
         digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
-	recPoint->AddDigit( *digit, energyList[iDigit], kFALSE ) ; //FIXME, need to study the shared case
+        recPoint->AddDigit( *digit, energyList[iDigit], kFALSE ) ; //FIXME, need to study the shared case
       }//digit loop
       fNumberOfECAClusters++ ; 
     } else {//recPoint empty -> remove from list
