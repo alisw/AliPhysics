@@ -116,7 +116,8 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fV0CFlat(0x0),
   fVertexVector(),
   fVtxBin(0),
-  fCentralityV0M(0.),
+  fCentralityEstimator("V0M"),
+  fCentrality(0.),
   fCentBin(0),
   fHaveTPCRP(0),
   fRP(0),
@@ -432,7 +433,7 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
 
   // Step 4: Centrality
-  // fCentralityV0M, fCentBin
+  // fCentrality, fCentBin
   SetCentrality();
   if( RejectCentrality() ){
     PostData(1, fOutputContainer);
@@ -566,8 +567,8 @@ void AliAnalysisTaskPi0Flow::FillPHOSCellQAHists()
 
   AliVCaloCells * cells = fEvent->GetPHOSCells();
 
-  FillHistogram("hCenPHOSCells",fCentralityV0M,cells->GetNumberOfCells()) ;
-  FillHistogram("hCenTrack",fCentralityV0M,fEvent->GetNumberOfTracks()) ;
+  FillHistogram("hCenPHOSCells",fCentrality,cells->GetNumberOfCells()) ;
+  FillHistogram("hCenTrack",fCentrality,fEvent->GetNumberOfTracks()) ;
 
 
   Int_t nCellModule[3] = {0,0,0};
@@ -763,7 +764,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     Double_t tof = clu->GetTOF();
     ph->SetTOFBit( TMath::Abs(tof) < fTOFCut );
   }
-  FillHistogram("hCenPHOS",fCentralityV0M, fCaloPhotonsPHOS->GetEntriesFast()) ;
+  FillHistogram("hCenPHOS",fCentrality, fCaloPhotonsPHOS->GetEntriesFast()) ;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::FillSelectedClusterHistograms()
@@ -918,7 +919,7 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
       AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
       TLorentzVector p12  = *ph1  + *ph2;
       TLorentzVector pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
-      FillHistogram("hPHOSphi",fCentralityV0M,p12.Pt(),p12.Phi());
+      FillHistogram("hPHOSphi",fCentrality,p12.Pt(),p12.Phi());
       Double_t dphiA=p12.Phi()-fRPV0A ;
       while(dphiA<0)dphiA+=TMath::Pi() ;
       while(dphiA>TMath::Pi())dphiA-=TMath::Pi() ;
@@ -2661,17 +2662,17 @@ void AliAnalysisTaskPi0Flow::SetCentrality()
 {
   AliCentrality *centrality = fEvent->GetCentrality();
   if( centrality )
-    fCentralityV0M=centrality->GetCentralityPercentile("V0M");
+    fCentrality=centrality->GetCentralityPercentile(fCentralityEstimator);
   else {
     AliError("Event has 0x0 centrality");
-    fCentralityV0M = -1.;
+    fCentrality = -1.;
   }
-  FillHistogram("hCentrality",fCentralityV0M,fInternalRunNumber-0.5) ;
+  FillHistogram("hCentrality",fCentrality,fInternalRunNumber-0.5) ;
 
-  fCentBin = GetCentralityBin(fCentralityV0M);
+  fCentBin = GetCentralityBin(fCentrality);
 
   if ( fDebug >= 2 )
-    AliInfo(Form("Centrality (bin) is: %f (%d)", fCentralityV0M, fCentBin));
+    AliInfo(Form("Centrality (bin) is: %f (%d)", fCentrality, fCentBin));
 }
 
 //_____________________________________________________________________________
@@ -2681,18 +2682,18 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
     return true; // reject
   LogSelection(kHasCentrality, fInternalRunNumber);
 
-//   if( fCentralityV0M <= 0. || fCentralityV0M>80. )
+//   if( fCentrality <= 0. || fCentrality>80. )
 //     return true; // reject
     
   int lastBinUpperIndex = fCentEdges.GetSize() -1;
-  if( fCentralityV0M > fCentEdges[lastBinUpperIndex] ) {
+  if( fCentrality > fCentEdges[lastBinUpperIndex] ) {
     if( fDebug )
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
   }
   LogSelection(kCentUnderUpperBinUpperEdge, fInternalRunNumber);
 
-  if( fCentralityV0M < fCentEdges[0] ) {
+  if( fCentrality < fCentEdges[0] ) {
     if( fDebug )
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
@@ -2713,7 +2714,7 @@ void AliAnalysisTaskPi0Flow::EvalReactionPlane()
   if( ! eventPlane ) { AliError("Event has no event plane"); return; }
   
   Double_t reactionPlaneQ = eventPlane->GetEventplane("Q");
-  FillHistogram("phiRP",reactionPlaneQ,fCentralityV0M) ;
+  FillHistogram("phiRP",reactionPlaneQ,fCentrality) ;
 
   if(reactionPlaneQ==999 || reactionPlaneQ < 0.){ //reaction plain was not defined
     if( fDebug ) AliInfo(Form("No Q Reaction Plane, value is %f", reactionPlaneQ));
@@ -2725,13 +2726,13 @@ void AliAnalysisTaskPi0Flow::EvalReactionPlane()
   }
 
   if(fHaveTPCRP){
-    fRP = ApplyFlattening(reactionPlaneQ, fCentralityV0M) ;
+    fRP = ApplyFlattening(reactionPlaneQ, fCentrality) ;
 
     while(fRP<0)  fRP+=TMath::Pi();
     while(fRP>TMath::Pi())  fRP-=TMath::Pi();
-    FillHistogram("phiRPflat",fRP,fCentralityV0M) ;
+    FillHistogram("phiRPflat",fRP,fCentrality) ;
     Double_t dPsi = eventPlane->GetQsubRes() ;
-    FillHistogram("cos2AC",TMath::Cos(2.*dPsi),fCentralityV0M) ;
+    FillHistogram("cos2AC",TMath::Cos(2.*dPsi),fCentrality) ;
   }
   else
     fRP=0.;
@@ -2766,14 +2767,14 @@ void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
 
       Int_t iC = -1;
       // centrality bins
-      if(fCentralityV0M < 5) iC = 0;
-      else if(fCentralityV0M < 10) iC = 1;
-      else if(fCentralityV0M < 20) iC = 2;
-      else if(fCentralityV0M < 30) iC = 3;
-      else if(fCentralityV0M < 40) iC = 4;
-      else if(fCentralityV0M < 50) iC = 5;
-      else if(fCentralityV0M < 60) iC = 6;
-      else if(fCentralityV0M < 70) iC = 7;
+      if(fCentrality < 5) iC = 0;
+      else if(fCentrality < 10) iC = 1;
+      else if(fCentrality < 20) iC = 2;
+      else if(fCentrality < 30) iC = 3;
+      else if(fCentrality < 40) iC = 4;
+      else if(fCentrality < 50) iC = 5;
+      else if(fCentrality < 60) iC = 6;
+      else if(fCentrality < 70) iC = 7;
       else iC = 8;
 
       //grab for each centrality the proper histo with the Qx and Qy to do the recentering
@@ -2817,33 +2818,33 @@ void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
   if( fDebug >= 2 )
     AliInfo(Form("V0 Reaction Plane before flattening: A side: %f, C side: %f", fRPV0A, fRPV0C));
 
-  FillHistogram("phiRPV0A" ,fRPV0A,fCentralityV0M);
-  FillHistogram("phiRPV0C" ,fRPV0C,fCentralityV0M);
-  FillHistogram("phiRPV0AC",fRPV0A,fRPV0C,fCentralityV0M) ;
+  FillHistogram("phiRPV0A" ,fRPV0A,fCentrality);
+  FillHistogram("phiRPV0C" ,fRPV0C,fCentrality);
+  FillHistogram("phiRPV0AC",fRPV0A,fRPV0C,fCentrality) ;
 
   // Flattening
-  fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentralityV0M) ;
+  fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentrality) ;
   while (fRPV0A<0          ) fRPV0A+=TMath::Pi() ;
   while (fRPV0A>TMath::Pi()) fRPV0A-=TMath::Pi() ;
 
-  fRPV0C=ApplyFlatteningV0C(fRPV0C,fCentralityV0M) ;
+  fRPV0C=ApplyFlatteningV0C(fRPV0C,fCentrality) ;
   while (fRPV0C<0          ) fRPV0C+=TMath::Pi() ;
   while (fRPV0C>TMath::Pi()) fRPV0C-=TMath::Pi() ;
   
   if( fDebug >= 2 )
     AliInfo(Form("V0 Reaction Plane after  flattening: A side: %f, C side: %f", fRPV0A, fRPV0C));
 
-  FillHistogram("phiRPV0Aflat",fRPV0A,fCentralityV0M) ;
-  FillHistogram("cos2V0AC",TMath::Cos(2.*(fRPV0A-fRPV0C)),fCentralityV0M) ;
+  FillHistogram("phiRPV0Aflat",fRPV0A,fCentrality) ;
+  FillHistogram("cos2V0AC",TMath::Cos(2.*(fRPV0A-fRPV0C)),fCentrality) ;
   if(fHaveTPCRP){
-    FillHistogram("phiRPV0ATPC",fRP,fRPV0A,fCentralityV0M) ;
-    FillHistogram("cos2V0ATPC",TMath::Cos(2.*(fRP-fRPV0A)),fCentralityV0M) ;
+    FillHistogram("phiRPV0ATPC",fRP,fRPV0A,fCentrality) ;
+    FillHistogram("cos2V0ATPC",TMath::Cos(2.*(fRP-fRPV0A)),fCentrality) ;
   }
 
-  FillHistogram("phiRPV0Cflat",fRPV0C,fCentralityV0M) ;
+  FillHistogram("phiRPV0Cflat",fRPV0C,fCentrality) ;
   if(fHaveTPCRP){
-    FillHistogram("phiRPV0CTPC",fRP,fRPV0C,fCentralityV0M) ;
-    FillHistogram("cos2V0CTPC",TMath::Cos(2.*(fRP-fRPV0C)),fCentralityV0M) ;
+    FillHistogram("phiRPV0CTPC",fRP,fRPV0C,fCentrality) ;
+    FillHistogram("cos2V0CTPC",TMath::Cos(2.*(fRP-fRPV0C)),fCentrality) ;
   }
 }
 //____________________________________________________________________________

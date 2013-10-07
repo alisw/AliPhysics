@@ -45,6 +45,7 @@ public:
     /* virtual void   Terminate(Option_t *); */
 
     void SetPeriod(Period period) { fPeriod = period;}
+    void SetCentralityEstimator(const char * centr) {fCentralityEstimator = centr;}
     void EnableTOFCut(Bool_t enable = kTRUE, Double_t TOFCut = 100.e-9, Bool_t fillWide=kFALSE){fTOFCutEnabled=enable; fTOFCut=TOFCut; fFillWideTOF=fillWide;}
     
     void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed);
@@ -218,8 +219,9 @@ protected:
 
 
     // Step 4: Centrality
-    Float_t fCentralityV0M ; //!Centrality of the currecnt event
-    Int_t fCentBin ;       //! Current centrality bin
+    TString fCentralityEstimator; //! Centrality estimator ("V0M", "ZNA")
+    Float_t fCentrality ;         //! Centrality of the current event
+    Int_t   fCentBin ;            //! Current centrality bin
 
     // Step 5: Reaction Plane
     Bool_t fHaveTPCRP ; //! Is TPC RP defined?
@@ -235,7 +237,7 @@ protected:
     TObjArray* fCaloPhotonsPHOSLists; //! array of TList, Containers for events with PHOS photons
 
 
-    ClassDef(AliAnalysisTaskPi0Flow, 2); // PHOS analysis task
+    ClassDef(AliAnalysisTaskPi0Flow, 3); // PHOS analysis task
 };
 
 #endif
