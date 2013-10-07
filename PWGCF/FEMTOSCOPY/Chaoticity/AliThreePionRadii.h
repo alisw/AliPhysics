@@ -47,10 +47,10 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
 
   enum {
     kPairLimit = 15000,//15000
-    kNormPairLimit = 45000,
+    kNormPairLimit = 45000,//45000
     kMultLimitPbPb = 2000,//2000
-    kMultLimitPP = 300,
-    kMCarrayLimit = 110000,
+    kMultLimitPP = 300,//300
+    kMCarrayLimit = 110000,//110000
     kQbins = 20,
     kQbinsWeights = 40,
     kQbinsPP = 40,
@@ -62,7 +62,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     kSCLimit3 = 1// 1, 10
   };
 
-  static const Int_t fEDbins   = 1;
+  static const Int_t fEDbins   = 3;
   static const Int_t fCentBins = 20;// 0-100% PbPb, pPb, pp
   static const Int_t fRVALUES  = 10;// 
 
@@ -75,6 +75,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
+  void SetNumKt3Bins(Int_t kt3bins) {fKt3bins = kt3bins;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
   void SetLEGOCase(Bool_t lego) {fLEGO = lego;}
   void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
@@ -183,7 +184,8 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   Int_t fFSIindex;
   Int_t fEDbin;
   Int_t fMbins;
-  Int_t fMultLimit;      
+  Int_t fMultLimit;  
+  Int_t fKt3bins;
   Int_t fCentBinLowLimit;
   Int_t fCentBinHighLimit;
   Int_t fEventCounter;
