@@ -29,7 +29,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPbv2 (const char* name = "PHOSPi0pPb",
 			      50., 55., 60., 65., 70., 75., 80., 85., 90., 95., 100.};
     TArrayD tbin(nbins+1, cbin);
     Int_t    nMixed[nbins] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-			      20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20};
+			      20, 20, 20, 20, 20, 20, 20, 20, 20, 20};
     TArrayI tNMixed(nbins, nMixed);
     task->SetCentralityBinning(tbin, tNMixed);
   }
