@@ -44,12 +44,14 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  // 1.) Control histograms:
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
- fFillControlHistograms(kTRUE),
- fFillKinematicsHist(kTRUE),
- fFillMultDistributionsHist(kTRUE),   
- fFillMultCorrelationsHist(kTRUE),
+ fFillControlHistograms(kFALSE),
+ fFillKinematicsHist(kFALSE),
+ fFillMultDistributionsHist(kFALSE),   
+ fFillMultCorrelationsHist(kFALSE),
  // 2.) Q-vector:
- // ...
+ fQvectorList(NULL),       
+ fQvectorFlagsPro(NULL),
+ fCalculateQvector(kFALSE),
  // 3.) Correlations:
  fCorrelationsList(NULL),
  fCorrelationsFlagsPro(NULL),
@@ -66,7 +68,7 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fCumulantsList(NULL),
  fCumulantsFlagsPro(NULL),
  f2pCumulantsPro(NULL),
- fCalculateCumulants(kTRUE),
+ fCalculateCumulants(kFALSE),
  // 5.) Weights:
  fWeightsList(NULL),
  fWeightsFlagsPro(NULL),
@@ -138,6 +140,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Init()
  this->BookAndNestAllLists();
  this->BookEverythingForBase();
  this->BookEverythingForControlHistograms();
+ this->BookEverythingForQvector();
  this->BookEverythingForWeights();
  this->BookEverythingForCorrelations();
  this->BookEverythingForCumulants();
@@ -172,8 +175,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // b) Fill control histograms:
  if(fFillControlHistograms){this->FillControlHistograms(anEvent);}
  
- // c) Fill Q-vector components: // TBI add setter to disable it when needed
- this->FillQvector(anEvent);
+ // c) Fill Q-vector components:
+ if(fCalculateQvector){this->FillQvector(anEvent);}
 
  // d) Calculate multi-particle correlations from Q-vector components:
  if(fCalculateCorrelations){this->CalculateCorrelations(anEvent);}
@@ -181,8 +184,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // e) Calculate e-b-e cumulants: 
  if(fCalculateCumulants){this->CalculateCumulants();}
 
- // f) Reset Q-vector components: // TBI add setter to disable it when needed
- this->ResetQvector();
+ // f) Reset Q-vector components:
+ if(fCalculateQvector){this->ResetQvector();}
 
  // g) Cross-check results with nested loops:
  if(fCrossCheckWithNestedLoops){this->CrossCheckWithNestedLoops(anEvent);}
@@ -227,7 +230,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinis
 
 void AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()
 {
- // Calculate and store 'standard candles'.
+ // Calculate 'standard candles'.
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()"; 
+
+ // TBC
 
  // ...
 
@@ -472,14 +479,14 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
  // TBI add few comments here, there and over there
  // TBI this method is rather messy :'(
 
- Int_t h1 = fNestedLoopsFlagsPro->GetBinContent(2);
- Int_t h2 = fNestedLoopsFlagsPro->GetBinContent(3);
- Int_t h3 = fNestedLoopsFlagsPro->GetBinContent(4);
- Int_t h4 = fNestedLoopsFlagsPro->GetBinContent(5);
- Int_t h5 = fNestedLoopsFlagsPro->GetBinContent(6);
- Int_t h6 = fNestedLoopsFlagsPro->GetBinContent(7);
- Int_t h7 = fNestedLoopsFlagsPro->GetBinContent(8);
- Int_t h8 = fNestedLoopsFlagsPro->GetBinContent(9);
+ Int_t h1 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(2);
+ Int_t h2 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(3);
+ Int_t h3 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(4);
+ Int_t h4 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(5);
+ Int_t h5 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(6);
+ Int_t h6 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(7);
+ Int_t h7 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(8);
+ Int_t h8 = (Int_t)fNestedLoopsFlagsPro->GetBinContent(9);
 
  this->ResetQvector();
  this->FillQvector(anEvent);
@@ -962,11 +969,12 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
  // Book and nest all lists nested in the base list fHistList.
 
  // a) Book and nest lists for control histograms;
- // b) Book and nest lists for weights;
+ // b) Book and nest lists for Q-vector;
  // c) Book and nest lists for correlations;
  // d) Book and nest lists for cumulants;
- // e) Book and nest lists for nested loops;
- // f) Book and nest lists for 'standard candles'.
+ // e) Book and nest lists for weights;
+ // f) Book and nest lists for nested loops;
+ // g) Book and nest lists for 'standard candles'.
 
  // a) Book and nest lists for control histograms:
  fControlHistogramsList = new TList();
@@ -974,11 +982,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
  fControlHistogramsList->SetOwner(kTRUE);
  fHistList->Add(fControlHistogramsList);
 
- // b) Book and nest lists for weights:
- fWeightsList = new TList();
- fWeightsList->SetName("Weights");
- fWeightsList->SetOwner(kTRUE);
- fHistList->Add(fWeightsList);
+ // b) Book and nest lists for Q-vector:
+ fQvectorList = new TList();
+ fQvectorList->SetName("Q-vector");
+ fQvectorList->SetOwner(kTRUE);
+ fHistList->Add(fQvectorList);
 
  // c) Book and nest lists for correlations:
  fCorrelationsList = new TList();
@@ -992,13 +1000,19 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
  fCumulantsList->SetOwner(kTRUE);
  fHistList->Add(fCumulantsList);
 
- // e) Book and nest lists for nested loops:
+ // e) Book and nest lists for weights:
+ fWeightsList = new TList();
+ fWeightsList->SetName("Weights");
+ fWeightsList->SetOwner(kTRUE);
+ fHistList->Add(fWeightsList);
+
+ // f) Book and nest lists for nested loops:
  fNestedLoopsList = new TList();
  fNestedLoopsList->SetName("Nested Loops");
  fNestedLoopsList->SetOwner(kTRUE);
  fHistList->Add(fNestedLoopsList);
 
- // f) Book and nest lists for 'standard candles':
+ // g) Book and nest lists for 'standard candles':
  fStandardCandlesList = new TList();
  fStandardCandlesList->SetName("Standard Candles");
  fStandardCandlesList->SetOwner(kTRUE);
@@ -1215,6 +1229,33 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
 
 //=======================================================================================================================
 
+void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForQvector()
+{
+ // Book all the stuff for Q-vector.
+
+ // a) Book the profile holding all the flags for Q-vector;
+ // ...
+
+ // a) Book the profile holding all the flags for Q-vector:
+ fQvectorFlagsPro = new TProfile("fQvectorFlagsPro","Flags for Q-vector",1,0,1);
+ fQvectorFlagsPro->SetTickLength(-0.01,"Y");
+ fQvectorFlagsPro->SetMarkerStyle(25);
+ fQvectorFlagsPro->SetLabelSize(0.03);
+ fQvectorFlagsPro->SetLabelOffset(0.02,"Y");
+ fQvectorFlagsPro->SetStats(kFALSE);
+ fQvectorFlagsPro->SetFillColor(kGray);
+ fQvectorFlagsPro->SetLineColor(kBlack);
+ fQvectorFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateQvector"); fQvectorFlagsPro->Fill(0.5,fCalculateQvector); 
+ fQvectorList->Add(fQvectorFlagsPro);
+
+ if(!fCalculateQvector){return;} // TBI is this safe enough? 
+
+ // ...
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForQvector()
+
+//=======================================================================================================================
+
 void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations()
 {
  // Book all the stuff for correlations.
@@ -1258,8 +1299,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
   // Implementing \binom{n+k-1}{k}, which is the resulting number of sets obtained
   // after sampling n starting elements into k subsets, repetitions allowed.
   // In my case, n=2*fMaxHarmonic+1, k=c+1, hence:
-  nBins[c] = TMath::Factorial(2*fMaxHarmonic+1+c+1-1)
-           / (TMath::Factorial(2*fMaxHarmonic+1-1)*TMath::Factorial(c+1));
+  nBins[c] = (Int_t)(TMath::Factorial(2*fMaxHarmonic+1+c+1-1)
+           / (TMath::Factorial(2*fMaxHarmonic+1-1)*TMath::Factorial(c+1)));
   nBinsTitle[c] = nBins[c];
   if(c==fDontGoBeyond){nBins[c]=1;} // TBI a bit of spaghetti here...
  } // for(Int_t c=0;c<8;c++) // [1p,2p,...,8p]
@@ -1449,14 +1490,14 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForNestedLoops(
  // a) Set default harmonic values: 
  //delete gRandom; // TBI this is not safe here, 
  //gRandom = new TRandom3(0);
- Int_t h1 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
- Int_t h2 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
- Int_t h3 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
- Int_t h4 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
- Int_t h5 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
- Int_t h6 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
- Int_t h7 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
- Int_t h8 = pow(-1,gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h1 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1); // TBI reimplement all these lines eventually 
+ Int_t h2 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h3 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h4 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h5 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h6 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h7 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
+ Int_t h8 = (Int_t)pow(-1.,1.*gRandom->Integer(fMaxHarmonic+1))*gRandom->Integer(fMaxHarmonic+1);
 
  // REMARK: This values can be overriden in a steering macro via 
  // mpc->GetNestedLoopsFlagsPro()->SetBinContent(<binNo>,<value>);
@@ -1544,6 +1585,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCand
  // a) Book the profile holding all the flags for 'standard candles';
  // b) Book the histogram holding all results for 'standard candles'.
 
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCandles()";
+
  // a) Book the profile holding all the flags for 'standard candles':
  fStandardCandlesFlagsPro = new TProfile("fStandardCandlesFlagsPro","Flags for standard candles",1,0,1);
  fStandardCandlesFlagsPro->SetTickLength(-0.01,"Y");
@@ -1559,9 +1602,18 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCand
  if(!fCalculateStandardCandles){return;} // TBI is this safe like this? 
 
  // b) Book the histogram holding all results for 'standard candles':
- fStandardCandlesHist = new TH1D("fStandardCandlesHist","Standard candles",1,0.,1.); 
+ Int_t nBins = fMaxHarmonic*(fMaxHarmonic-1)/2;
+ fStandardCandlesHist = new TH1D("fStandardCandlesHist","Standard candles",nBins,0.,1.*nBins); 
  fStandardCandlesHist->SetStats(kFALSE);
- fStandardCandlesHist->GetXaxis()->SetBinLabel(1,"TBI");
+ Int_t binNo = 1;
+ for(Int_t n1=-fMaxHarmonic;n1<=-2;n1++)
+ {
+  for(Int_t n2=n1+1;n2<=-1;n2++)
+  {
+   fStandardCandlesHist->GetXaxis()->SetBinLabel(binNo++,Form("SC(%d,%d,%d,%d)",n1,n2,-1*n2,-1*n1));
+  }
+ }
+ if(binNo-1 != nBins){Fatal(sMethodName.Data(),"Well, binNo-1 != nBins ... :'( ");}
  fStandardCandlesList->Add(fStandardCandlesHist);
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCandles()
@@ -1575,33 +1627,64 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *hi
  // a) Get pointer for base list fHistList;
  // b) Get pointer for profile holding internal flags and, well, set again all flags;
  // c) Get pointers for control histograms;
- // d) Get pointers for correlations;
- // e) Get pointers for 'standard candles'.
+ // d) Get pointers for Q-vector;
+ // e) Get pointers for correlations;
+ // f) Get pointers for 'standard candles'.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *histList)";
 
  // a) Get pointer for base list fHistList and profile holding internal flags;
  fHistList = histList; 
- if(!fHistList){Fatal("AFAWMPC::GOH()","fHistList");}
+ if(!fHistList){Fatal(sMethodName.Data(),"fHistList is malicious today...");}
 
  // b) Get pointer for profile holding internal flags and, well, set again all flags:
  fInternalFlagsPro = dynamic_cast<TProfile*>(fHistList->FindObject("fInternalFlagsPro"));
  if(!fInternalFlagsPro){Fatal(sMethodName.Data(),"fInternalFlagsPro");}
  fUseInternalFlags = fInternalFlagsPro->GetBinContent(1);
- fMinNoRPs = fInternalFlagsPro->GetBinContent(2);
- fMaxNoRPs = fInternalFlagsPro->GetBinContent(3);
- fExactNoRPs = fInternalFlagsPro->GetBinContent(4);
+ fMinNoRPs = (Int_t)fInternalFlagsPro->GetBinContent(2);
+ fMaxNoRPs = (Int_t)fInternalFlagsPro->GetBinContent(3);
+ fExactNoRPs = (Int_t)fInternalFlagsPro->GetBinContent(4);
 
  // c) Get pointers for control histograms:
  this->GetPointersForControlHistograms(); 
 
- // d) Get pointers for correlations:
+ // d) Get pointers for Q-vector:
+ this->GetPointersForQvector(); 
+
+ // e) Get pointers for correlations:
  this->GetPointersForCorrelations(); 
 
- // e) Get pointers for 'standard candles':
+ // f) Get pointers for 'standard candles':
  this->GetPointersForStandardCandles(); 
   
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *histList)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForQvector()
+{
+ // Get pointers for Q-vector objects.
+
+ // a) Get pointer for fQvectorList; TBI
+ // b) Get pointer for fQvectorFlagsPro; TBI
+ // c) Set again all flags; TBI
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForQvector()";
+
+ // a) Get pointer for fQvectorList: TBI
+ fQvectorList = dynamic_cast<TList*>(fHistList->FindObject("Q-vector")); 
+ if(!fQvectorList){Fatal(sMethodName.Data(),"fQvectorList");}
+
+ // b) Get pointer for fQvectorFlagsPro: TBI
+ fQvectorFlagsPro = dynamic_cast<TProfile*>(fQvectorList->FindObject("fQvectorFlagsPro"));
+ if(!fQvectorFlagsPro){Fatal(sMethodName.Data(),"fQvectorFlagsPro");}
+
+ // c) Set again all flags: TBI
+ fCalculateQvector = (Bool_t)fQvectorFlagsPro->GetBinContent(1);
+
+ if(!fCalculateQvector){return;} // TBI is this safe enough
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForQvector()
 
 //=======================================================================================================================
 
@@ -1718,22 +1801,26 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForCorrelations()
 
  // c) Set again all flags: 
  fCalculateCorrelations = fCorrelationsFlagsPro->GetBinContent(1);
- fMaxHarmonic = fCorrelationsFlagsPro->GetBinContent(2);
- fMaxCorrelator = fCorrelationsFlagsPro->GetBinContent(3);
+ fMaxHarmonic = (Int_t)fCorrelationsFlagsPro->GetBinContent(2);
+ fMaxCorrelator = (Int_t)fCorrelationsFlagsPro->GetBinContent(3);
  fCalculateIsotropic = fCorrelationsFlagsPro->GetBinContent(4);
  fCalculateSame = fCorrelationsFlagsPro->GetBinContent(5);
  fSkipZeroHarmonics = fCorrelationsFlagsPro->GetBinContent(6);
  fCalculateSameIsotropic = fCorrelationsFlagsPro->GetBinContent(7);
  fCalculateAll = fCorrelationsFlagsPro->GetBinContent(8);
- fDontGoBeyond = fCorrelationsFlagsPro->GetBinContent(9);
+ fDontGoBeyond = (Int_t)fCorrelationsFlagsPro->GetBinContent(9);
 
  if(!fCalculateCorrelations){return;} // TBI is this safe enough, that is the question...
 
- // d) Get pointers to TProfile *fCorrelationsPro[fMaxCorrelator]:   
- for(Int_t c=0;c<fMaxCorrelator;c++)
+ // d) Get pointers to TProfile *fCorrelationsPro[2][8]:
+ TString sCosSin[2] = {"Cos","Sin"}; 
+ for(Int_t cs=0;cs<2;cs++)
  {
-  //fCorrelationsPro[c] = dynamic_cast<TProfile*>(fCorrelationsList->FindObject(Form("f%dpCorrelationsPro",c+1)));
-  //if(!fCorrelationsPro[c]){Fatal(sMethodName.Data(),"f%dpCorrelationsPro",c+1);} 
+  for(Int_t c=0;c<fMaxCorrelator;c++)
+  {
+   fCorrelationsPro[cs][c] = dynamic_cast<TProfile*>(fCorrelationsList->FindObject(Form("%dpCorrelations%s",c+1,sCosSin[cs].Data())));
+   if(!fCorrelationsPro[cs][c]){Fatal(sMethodName.Data(),"%dpCorrelations%s",c+1,sCosSin[cs].Data());} 
+  }
  }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForCorrelations()

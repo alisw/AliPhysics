@@ -50,6 +50,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
    virtual void BookAndNestAllLists(); 
    virtual void BookEverythingForBase();
    virtual void BookEverythingForControlHistograms();
+   virtual void BookEverythingForQvector();
    virtual void BookEverythingForWeights();
    virtual void BookEverythingForCorrelations();
    virtual void BookEverythingForCumulants();
@@ -74,6 +75,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   // 4.) Method GetOutputHistograms() and methods called in it: 
   virtual void GetOutputHistograms(TList *histList);
    virtual void GetPointersForControlHistograms(); 
+   virtual void GetPointersForQvector(); 
    virtual void GetPointersForCorrelations(); 
    virtual void GetPointersForStandardCandles(); 
 
@@ -105,7 +107,12 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t GetFillMultCorrelationsHist() const {return this->fFillMultCorrelationsHist;};
 
   //  5.2.) Q-vector:
-  // ...
+  void SetQvectorList(TList* const qvl) {this->fQvectorList = qvl;};
+  TList* GetQvectorList() const {return this->fQvectorList;} 
+  void SetQvectorFlagsPro(TProfile* const qvfp) {this->fQvectorFlagsPro = qvfp;};
+  TProfile* GetQvectorFlagsPro() const {return this->fQvectorFlagsPro;}; 
+  void SetCalculateQvector(Bool_t const cqv) {this->fCalculateQvector = cqv;};
+  Bool_t GetCalculateQvector() const {return this->fCalculateQvector;};
 
   //  5.3.) Correlations:
   void SetCorrelationsList(TList* const cl) {this->fCorrelationsList = cl;};
@@ -218,7 +225,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fExactNoRPs; // exact (randomly shuffled) number of RPs selected for the analysis 
 
   // 1.) Control histograms:  
-  TList *fControlHistogramsList;        // list to hold all control histograms
+  TList *fControlHistogramsList;        // list to hold all 'control histograms' objects
   TProfile *fControlHistogramsFlagsPro; // profile to hold all flags for control histograms
   Bool_t fFillControlHistograms;        // fill or not control histograms (by default they are all filled)
   Bool_t fFillKinematicsHist;           // fill or not fKinematicsHist[2][3]
@@ -229,7 +236,10 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TH2D *fMultCorrelationsHist[3];       // [RP vs. POI, RP vs. refMult, POI vs. refMult]  
   
   // 2.) Q-vector:
-  TComplex fQvector[49][9]; // Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
+  TList *fQvectorList;        // list to hold all Q-vector objects       
+  TProfile *fQvectorFlagsPro; // profile to hold all flags for Q-vector
+  Bool_t fCalculateQvector;   // to calculate or not to calculate Q-vector components, that's a Boolean...
+  TComplex fQvector[49][9];   // Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
 
   // 3.) Correlations:
   TList *fCorrelationsList;         // list to hold all correlations objects
@@ -239,9 +249,9 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fMaxHarmonic;               // 6 (not going beyond v6, if you change this value, change also fQvector[49][9]) 
   Int_t fMaxCorrelator;             // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
   Bool_t fCalculateIsotropic;       // calculate only isotropic correlations
-  Bool_t fCalculateSame;            // calculate only isotropic 'same harmonics' correlations
+  Bool_t fCalculateSame;            // calculate only 'same abs harmonics' correlations TBI 
   Bool_t fSkipZeroHarmonics;        // skip correlations which have some of the harmonicc equal to zero
-  Bool_t fCalculateSameIsotropic;   // calculate only isotropic correlations in 'same harmonics' TBI this can be implemented better
+  Bool_t fCalculateSameIsotropic;   // calculate all isotropic correlations in 'same abs harmonic' TBI this can be implemented better
   Bool_t fCalculateAll;             // calculate all possible correlations 
   Int_t  fDontGoBeyond;             // do not go beyond fDontGoBeyond-p correlators
 
@@ -274,7 +284,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t fCalculateStandardCandles;   // calculate and store 'standard candles'
   TH1D *fStandardCandlesHist;         // histogeam to hold results for 'standard candles'
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,0);
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,1);
 
 };
 

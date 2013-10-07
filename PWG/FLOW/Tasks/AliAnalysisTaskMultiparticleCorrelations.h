@@ -49,7 +49,11 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   void SetFillMultCorrelationsHist(Bool_t const mch) {this->fFillMultCorrelationsHist = mch;};
   Bool_t GetFillMultCorrelationsHist() const {return this->fFillMultCorrelationsHist;};
 
-  // Weights:
+  // Q-vector:
+  void SetCalculateQvector(Bool_t const cqv) {this->fCalculateQvector = cqv;};
+  Bool_t GetCalculateQvector() const {return this->fCalculateQvector;};
+
+  // Weights:               // TBI KG
   void SetPhiWeightsHist(TH1D* const phwh) {phwh->SetDirectory(0);this->fPhiWeightsHist = (TH1D*)phwh->Clone();}; // TBI
   TH1D* GetPhiWeightsHist() const {return this->fPhiWeightsHist;};
   void SetPtWeightsHist(TH1D* const ptwh) {ptwh->SetDirectory(0);this->fPtWeightsHist = (TH1D*)ptwh->Clone();}; // TBI
@@ -105,6 +109,9 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Bool_t fFillMultDistributionsHist; // fill or not TH1D *fMultDistributionsHist[3]    
   Bool_t fFillMultCorrelationsHist;  // fill or not TH2D *fMultCorrelationsHist[3] 
 
+  // Q-vector:
+  Bool_t fCalculateQvector; // to calculate or not to calculate Q-vector components, that's a Boolean...
+
   // Weights:
   TH1D *fPhiWeightsHist; // histogram holding phi weights
   TH1D *fPtWeightsHist;  // histogram holding pt weights
@@ -113,9 +120,9 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Correlations:
   Bool_t fCalculateCorrelations;  // calculate and store correlations, or perhaps not, if the weather is bad...
   Bool_t fCalculateIsotropic;     // calculate only isotropic correlations
-  Bool_t fCalculateSame;          // calculate only isotropic 'same harmonics' correlations
+  Bool_t fCalculateSame;          // calculate only 'same abs harmonics' correlations TBI 
   Bool_t fSkipZeroHarmonics;      // skip correlations which have some of the harmonicc equal to zero
-  Bool_t fCalculateSameIsotropic; // calculate only isotropic correlations in 'same harmonics' TBI this can be implemented better
+  Bool_t fCalculateSameIsotropic; // calculate all isotropic correlations in 'same abs harmonic' TBI this can be implemented better
   Bool_t fCalculateAll;           // calculate all possible correlations 
   Int_t  fDontGoBeyond;           // do not go beyond fDontGoBeyond-p correlators
 
@@ -128,7 +135,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // 'Standard candles':
   Bool_t fCalculateStandardCandles; // calculate and store 'standard candles'
   
-  ClassDef(AliAnalysisTaskMultiparticleCorrelations,0); 
+  ClassDef(AliAnalysisTaskMultiparticleCorrelations,1); 
 
 };
 

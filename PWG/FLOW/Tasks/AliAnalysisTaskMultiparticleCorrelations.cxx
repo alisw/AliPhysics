@@ -43,10 +43,11 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fMinNoRPs(-44),
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
- fFillControlHistograms(kTRUE),
- fFillKinematicsHist(kTRUE),
- fFillMultDistributionsHist(kTRUE),
- fFillMultCorrelationsHist(kTRUE),
+ fFillControlHistograms(kFALSE),
+ fFillKinematicsHist(kFALSE),
+ fFillMultDistributionsHist(kFALSE),
+ fFillMultCorrelationsHist(kFALSE),
+ fCalculateQvector(kFALSE),
  fPhiWeightsHist(NULL),
  fPtWeightsHist(NULL),
  fEtaWeightsHist(NULL),
@@ -57,7 +58,7 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fCalculateSameIsotropic(kFALSE),
  fCalculateAll(kFALSE),
  fDontGoBeyond(0),
- fCalculateCumulants(kTRUE),
+ fCalculateCumulants(kFALSE),
  fCrossCheckWithNestedLoops(kFALSE),
  fCalculateStandardCandles(kFALSE)
  {
@@ -93,9 +94,10 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
  fFillControlHistograms(kFALSE),
- fFillKinematicsHist(kTRUE),
- fFillMultDistributionsHist(kTRUE),
- fFillMultCorrelationsHist(kTRUE),
+ fFillKinematicsHist(kFALSE),
+ fFillMultDistributionsHist(kFALSE),
+ fFillMultCorrelationsHist(kFALSE),
+ fCalculateQvector(kFALSE),
  fPhiWeightsHist(NULL),
  fPtWeightsHist(NULL),
  fEtaWeightsHist(NULL),
@@ -137,6 +139,7 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  fMPC->SetFillKinematicsHist(fFillKinematicsHist);
  fMPC->SetFillMultDistributionsHist(fFillMultDistributionsHist);
  fMPC->SetFillMultCorrelationsHist(fFillMultCorrelationsHist);
+ fMPC->SetCalculateQvector(fCalculateQvector);
  if(fPhiWeightsHist){fMPC->SetPhiWeightsHist(fPhiWeightsHist);} // TBI is this safe enough?
  if(fPtWeightsHist){fMPC->SetPtWeightsHist(fPtWeightsHist);} // TBI is this safe enough?
  if(fEtaWeightsHist){fMPC->SetEtaWeightsHist(fEtaWeightsHist);} // TBI is this safe enough?
