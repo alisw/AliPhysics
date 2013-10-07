@@ -153,6 +153,7 @@ fWeightPerEvent(kFALSE),
 fCustomBinning(),
 fPtOrder(kTRUE),
 fTriggersFromDetector(0),
+fMCUseUncheckedCentrality(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -430,6 +431,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fWeightPerEvent", &fWeightPerEvent,"WeightPerEvent/O");
   settingsTree->Branch("fPtOrder", &fPtOrder,"PtOrder/O");
   settingsTree->Branch("fTriggersFromDetector", &fTriggersFromDetector,"TriggersFromDetector/I");
+  settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
   
   //fCustomBinning
   
@@ -457,7 +459,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     
     if (centralityObj)
     {
-      centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+      if (fMCUseUncheckedCentrality)
+	centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+      else
+	centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+      
       AliInfo(Form("Centrality is %f", centrality));
     }
     else

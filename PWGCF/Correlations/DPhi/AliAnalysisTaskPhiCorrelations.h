@@ -116,6 +116,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
     void   SetPtOrder(Bool_t flag) { fPtOrder = flag; }
     void   SetTriggersFromDetector(Int_t flag) { fTriggersFromDetector = flag; }
+    void   SetMCUseUncheckedCentrality(Bool_t flag) { fMCUseUncheckedCentrality = flag; }
     
     AliHelperPID* GetHelperPID() { return fHelperPID; }
     void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -215,10 +216,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
     Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C
+    Bool_t fMCUseUncheckedCentrality; // use unchecked centrality (only applies to MC); default: kFALSE
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 37); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 38); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
