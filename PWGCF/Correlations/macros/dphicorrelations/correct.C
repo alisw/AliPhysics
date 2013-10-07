@@ -7701,6 +7701,22 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = { 0.5, 1.0, 1.5, 2.0, 2.5,  4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 4.0, 8.0, 10.0, 12.0 };
   }
+  else if (0)
+  {
+    //pPb and PbPb with PID, with low pt points TPC only
+    maxLeadingPt = 10;
+    maxAssocPt = 11;
+    Float_t leadingPtArr[] = {   0.2, 0.3, 0.5 , 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3., 4.0};
+    Float_t assocPtArr[] =   { 0.15, 0.2, 0.3, 0.5 , 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3., 4.0 };
+  }
+  else if (1)
+  {
+    //PbPb for comaprison with You
+    maxLeadingPt = 8;
+    maxAssocPt = 9;
+    Float_t leadingPtArr[] = {   0.2, 0.3, 0.5 , 1.0, 1.5, 2.0, 2.5, 3., 4.0};
+    Float_t assocPtArr[] =   { 0.15, 0.2, 0.3, 0.5 , 1.0, 1.5, 2.0, 2.5, 3., 4.0 };
+  }
   else if (1)
   {
     //pA, fine
@@ -8009,6 +8025,13 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
 	GetSumOfRatios(h, hMixed, &hist7,  10,  40, 60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 	GetSumOfRatios(h, hMixed, &hist8,  10,  60, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
       }        
+      else if (1)
+      {
+	// pp, MB
+	Int_t step = 8;
+	
+	GetSumOfRatios(h, hMixed, &hist1,  step,  0, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+      }      
       else if (1)
       {
 	// pA, MC, validation binning, without vertex axis
@@ -12897,7 +12920,7 @@ void PlotCorrections(const char* fileName, const char* tag = "")
 
 void SaveEfficiencyCorrection(const char* fileName, const char* tag = "", Bool_t condenseCentrality = kTRUE, Bool_t extrapolateHighpT = kFALSE, Int_t partSpecies=-1, Int_t icharge=0, Bool_t ApplyGFCorrection=0, Int_t year=2013)
 {
-  // partSpecies= -1 No PID, 0: Pions, 1: Kaons, 2: Hadrons
+  // partSpecies= -1 No PID, 0: Pions, 1: Kaons, 2: Protons
   // icharge is needed because GF correction applies only to negative particles, 0:Positive 1:negative
   // ApplyGFCorrection, for Geant3 version >= v1.14 this correction is not needed anymore for antiprotons
   // the number of TRD modules installed depends on the year
@@ -14412,7 +14435,7 @@ void CheckBin(const char* fileName)
   sparse->Projection(0, 4)->Draw("colz");
 }
 
-void GetCorrectedYields(const char* fileName, const char* correctionFile)
+void GetCorrectedYields(const char* fileName, const char* correctionFile, Int_t partSpecies=-1 )
 {
   loadlibs();
 
@@ -14447,13 +14470,19 @@ void GetCorrectedYields(const char* fileName, const char* correctionFile)
 //   new TCanvas; yieldsUncorr->ProjectionX("x2")->DrawCopy(); return;
   
   AliUEHistograms* hCorr = (AliUEHistograms*) GetUEHistogram(correctionFile);
+  if(partSpecies!=-1){
+    Double_t epsilon=0.001;
+    hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(partSpecies-epsilon,partSpecies+epsilon);
+    hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(4)->GetGrid()->GetAxis(2)->SetRangeUser(partSpecies-epsilon,partSpecies+epsilon);
+  }
   
   hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(-1.9, 1.9);
   hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(2)->GetGrid()->GetAxis(4)->SetRangeUser(-1.9, 1.9);
+  hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(4)->GetGrid()->GetAxis(4)->SetRangeUser(-1.9, 1.9);
   
   // eta, pT
   TH2* generated = hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(0)->GetGrid()->Projection(1, 0);
-  TH2* measured = hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(2)->GetGrid()->Projection(1, 0);
+  TH2* measured = hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid((partSpecies==-1)?2:4)->GetGrid()->Projection(1, 0);
   
   Printf("%f %f", generated->GetEntries(), measured->GetEntries());
 
