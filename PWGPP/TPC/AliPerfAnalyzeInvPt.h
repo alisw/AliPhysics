@@ -29,8 +29,7 @@ class TObjArray;
 class AliPerfAnalyzeInvPt : public TNamed {
 
 public:
-   AliPerfAnalyzeInvPt();
-   AliPerfAnalyzeInvPt(const Char_t* name, const Char_t* title);
+   AliPerfAnalyzeInvPt(const Char_t* name="AliPerfAnalyzeInvPt", const Char_t* title="AliPerfAnalyzeInvPt");
    virtual ~AliPerfAnalyzeInvPt(){;}
    void InitGraphs(Double_t *binsXTheta,Double_t *fitParamTheta,Double_t *errFitParamTheta,Double_t *binsXPhi,Double_t *fitParamPhi,Double_t *errFitParamPhi);
    void InitFitFcn();

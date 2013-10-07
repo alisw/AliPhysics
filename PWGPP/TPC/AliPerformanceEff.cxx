@@ -57,27 +57,7 @@ using namespace std;
 ClassImp(AliPerformanceEff)
 
 //_____________________________________________________________________________
-AliPerformanceEff::AliPerformanceEff():
-  AliPerformanceObject("AliPerformanceEff"),
-
-  // histograms
-  fEffHisto(0),
-  fEffSecHisto(0),
-
-  // Cuts 
-  fCutsRC(0), 
-  fCutsMC(0),
-
-  // histogram folder 
-  fAnalysisFolder(0)
-{
-  // default consttructor	
-  Init();
-}
-
-//_____________________________________________________________________________
-AliPerformanceEff::AliPerformanceEff(Char_t* name="AliPerformanceEff",Char_t*title="AliPerformanceEff",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE):
-  AliPerformanceObject(name,title),
+AliPerformanceEff::AliPerformanceEff(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):  AliPerformanceObject(name,title),
 
   // histograms
   fEffHisto(0),

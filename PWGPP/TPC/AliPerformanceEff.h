@@ -30,9 +30,8 @@ class AliESDVertex;
 
 class AliPerformanceEff : public AliPerformanceObject {
 public :
-  AliPerformanceEff(); 
-  AliPerformanceEff(Char_t* name, Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
-  ~AliPerformanceEff();
+  AliPerformanceEff(const Char_t* name="AliPerformanceEff",const Char_t*title="AliPerformanceEff",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
+  virtual ~AliPerformanceEff();
 
   // Init data members
   virtual void Init();
