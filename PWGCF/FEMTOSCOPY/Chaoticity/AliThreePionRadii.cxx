@@ -69,6 +69,7 @@ AliAnalysisTaskSE(),
   fEDbin(0),
   fMbins(fCentBins),
   fMultLimit(0),
+  fKt3bins(1),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
   fEventCounter(0),
@@ -189,6 +190,7 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
   fEDbin(0),
   fMbins(fCentBins),
   fMultLimit(0),
+  fKt3bins(1),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
   fEventCounter(0),
@@ -314,6 +316,7 @@ AliThreePionRadii::AliThreePionRadii(const AliThreePionRadii &obj)
     fEDbin(obj.fEDbin),
     fMbins(obj.fMbins),
     fMultLimit(obj.fMultLimit),
+    fKt3bins(obj.fKt3bins),
     fCentBinLowLimit(obj.fCentBinLowLimit),
     fCentBinHighLimit(obj.fCentBinHighLimit),
     fEventCounter(obj.fEventCounter),
@@ -398,6 +401,7 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fEDbin = obj.fEDbin;
   fMbins = obj.fMbins;
   fMultLimit = obj.fMultLimit;
+  fKt3bins = obj.fKt3bins;
   fCentBinLowLimit = obj.fCentBinLowLimit;
   fCentBinHighLimit = obj.fCentBinHighLimit;
   fEventCounter = obj.fEventCounter;
@@ -804,9 +808,9 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fOutputList->Add(fMCWeight3DTerm4MCden);
 
   TH2D *fdNchdEtaResponse = new TH2D("fdNchdEtaResponse","",15,0,15, 15,0,15);
-  TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
-  TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
-  TProfile *fAvgRecRate = new TProfile("fAvgRecRate","",2000,0.5,2000.5, 0,2000, "");
+  TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 1500,0.5,3000.5);
+  TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 1500,0.5,3000.5);
+  TProfile *fAvgRecRate = new TProfile("fAvgRecRate","",3000,0.5,3000.5, 0,3000, "");
   if(fMCcase) fOutputList->Add(fdNchdEtaResponse);
   if(fMCcase) fOutputList->Add(fNpionTrueDist);
   if(fMCcase) fOutputList->Add(fNchTrueDist);
@@ -814,13 +818,21 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH2D *fdCentVsNchdEta = new TH2D("fdCentVsNchdEta","",fMbins,.5,fMbins+.5, 15,0,15);
   if(fPbPbcase) fOutputList->Add(fdCentVsNchdEta);
   
-  
+  TH1D *fExtendedQ3Histo_term1 = new TH1D("fExtendedQ3Histo_term1","",50,0,0.5);
+  TH1D *fExtendedQ3Histo_term2 = new TH1D("fExtendedQ3Histo_term2","",50,0,0.5);
+  TH1D *fExtendedQ3Histo_term5 = new TH1D("fExtendedQ3Histo_term5","",50,0,0.5);
+  fOutputList->Add(fExtendedQ3Histo_term1);
+  fOutputList->Add(fExtendedQ3Histo_term2);
+  fOutputList->Add(fExtendedQ3Histo_term5);
+
   if(fPdensityPairCut){
     
     for(Int_t mb=0; mb<fMbins; mb++){
       if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;
       
       for(Int_t edB=0; edB<fEDbins; edB++){
+	if(edB >= fKt3bins) continue;
+	
 	for(Int_t c1=0; c1<2; c1++){
 	  for(Int_t c2=0; c2<2; c2++){
 	    for(Int_t sc=0; sc<kSCLimit2; sc++){
@@ -1134,10 +1146,26 @@ void AliThreePionRadii::Exec(Option_t *)
       if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
     
       status=aodtrack->GetStatus();
+                
+      if(!aodtrack->TestFilterBit(BIT(7))) continue;// AOD filterBit cut
       
-          
-      if(!aodtrack->TestFilterBit(BIT(fFilterBit))) continue;// AOD filterBit cut
+      // FilterBit Overlap Check
+      if(fFilterBit != 7){
+	Bool_t goodTrackOtherFB = kFALSE;
+	if(fMCcase && fAOD->GetRunNumber()<=126437) goodTrackOtherFB=kTRUE;// FB7 to FB5 mapping in 10f6a MC does not work
+	
+	for (Int_t j = 0; j < fAOD->GetNumberOfTracks(); j++) {
+	  AliAODTrack* aodtrack2 = fAOD->GetTrack(randomIndex[j]);
+	  if(!aodtrack2) continue;
+	  if(!aodtrack2->TestFilterBit(BIT(fFilterBit))) continue;
+	  
+	  if(-(aodtrack->GetID()+1)==aodtrack2->GetID()) {goodTrackOtherFB=kTRUE; break;}
+	  
+	}
+	if(!goodTrackOtherFB) continue;
+      }
       
+
       if(aodtrack->Pt() < 0.16) continue;
       if(fabs(aodtrack->Eta()) > 0.8) continue;
       
@@ -1175,17 +1203,7 @@ void AliThreePionRadii::Exec(Option_t *)
       if(fTempStruct[myTracks].fPt > 0.9999) continue;// upper P bound
       if(fTempStruct[myTracks].fP[2] > 0.9999) continue;// upper P bound
 
-      if(fTempStruct[myTracks].fCharge==+1) {
-	((TH2F*)fOutputList->FindObject("fDCAxyDistPlus"))->Fill(fTempStruct[myTracks].fPt, dca2[0]);
-	((TH2F*)fOutputList->FindObject("fDCAzDistPlus"))->Fill(fTempStruct[myTracks].fPt, dca2[1]);
-      }else {
-	((TH2F*)fOutputList->FindObject("fDCAxyDistMinus"))->Fill(fTempStruct[myTracks].fPt, dca2[0]);
-	((TH2F*)fOutputList->FindObject("fDCAzDistMinus"))->Fill(fTempStruct[myTracks].fPt, dca2[1]);
-      }
-     
-      ((TH3F*)fOutputList->FindObject("fPhiPtDist"))->Fill(aodtrack->Charge(), aodtrack->Phi(), aodtrack->Pt());
-      ((TH3F*)fOutputList->FindObject("fPtEtaDist"))->Fill(aodtrack->Charge(), aodtrack->Pt(), aodtrack->Eta());
-
+      
             
       // PID section
       fTempStruct[myTracks].fElectron = kFALSE;
@@ -1201,8 +1219,8 @@ void AliThreePionRadii::Exec(Option_t *)
       Float_t signalTPC=0, signalTOF=0;
       Double_t integratedTimesTOF[10]={0};
 
-      Bool_t DoPIDWorkAround=kFALSE;
-      if(fFilterBit == 7) DoPIDWorkAround=kTRUE;
+      Bool_t DoPIDWorkAround=kTRUE;
+      //if(fFilterBit == 7) DoPIDWorkAround=kTRUE;
       if(fMCcase && !fPbPbcase) DoPIDWorkAround=kFALSE;
       if(DoPIDWorkAround==kFALSE && fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion)) < 900) {
 	nSigmaTPC[0]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron));
@@ -1254,7 +1272,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	}// aodTrack2
       }// FilterBit 7 PID workaround
 
-     
+      //cout<<nSigmaTPC[2]<<endl;
       ///////////////////
       ((TH3F*)fOutputList->FindObject("fTPCResponse"))->Fill(centralityPercentile, fTempStruct[myTracks].fMom, signalTPC);
       if(fTempStruct[myTracks].fTOFhit) {
@@ -1288,7 +1306,19 @@ void AliThreePionRadii::Exec(Option_t *)
 
       if(!fTempStruct[myTracks].fPion) continue;// only pions
       
-          
+
+
+      if(fTempStruct[myTracks].fCharge==+1) {
+	((TH2F*)fOutputList->FindObject("fDCAxyDistPlus"))->Fill(fTempStruct[myTracks].fPt, dca2[0]);
+	((TH2F*)fOutputList->FindObject("fDCAzDistPlus"))->Fill(fTempStruct[myTracks].fPt, dca2[1]);
+      }else {
+	((TH2F*)fOutputList->FindObject("fDCAxyDistMinus"))->Fill(fTempStruct[myTracks].fPt, dca2[0]);
+	((TH2F*)fOutputList->FindObject("fDCAzDistMinus"))->Fill(fTempStruct[myTracks].fPt, dca2[1]);
+      }
+      
+      ((TH3F*)fOutputList->FindObject("fPhiPtDist"))->Fill(aodtrack->Charge(), aodtrack->Phi(), aodtrack->Pt());
+      ((TH3F*)fOutputList->FindObject("fPtEtaDist"))->Fill(aodtrack->Charge(), aodtrack->Pt(), aodtrack->Eta());
+
            
     
       if(fTempStruct[myTracks].fPion) {// pions
@@ -1346,16 +1376,8 @@ void AliThreePionRadii::Exec(Option_t *)
   fMbin=-1;
   for(Int_t i=0; i<fCentBins; i++){
     if( pionCount >= fMultLimits[i] && pionCount < fMultLimits[i+1]) {fMbin = fCentBins-i-1; break;}
-    
-    //if(fPbPbcase){
-    //if(centralityPercentile >= 5*i && centralityPercentile < 5*(i+1)) {fMbin=i; break;}
-    //}else{
-    //if( (pow(trackletMult,1/3.) >= fMultLimits[i]) && (pow(trackletMult,1/3.) < fMultLimits[i+1])) {fMbin=i; break;}
-    //} 
-    //if( ( pionCount > fMultLimits[i]) && ( pionCount <= fMultLimits[i+1]) ) { fMbin=i; break;}// Mbin 0 has 0-5 pions
   }
-
-    
+ 
 
   if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
   if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
@@ -1489,6 +1511,61 @@ void AliThreePionRadii::Exec(Option_t *)
     }
   	      
  
+
+    /////////////////////////////////////////////////////////////////
+    // extended range Q3 baseline
+    /*for(Int_t iter=0; iter<3; iter++){
+      for (Int_t i=0; i<myTracks; i++) {
+	
+	Int_t en2=0;
+	if(iter==2) en2=1;
+	Int_t start2=i+1;
+	if(en2!=0) start2=0;
+	// 2nd particle
+	for (Int_t j=start2; j<(fEvt+en2)->fNtracks; j++) {
+	  if((fEvt)->fTracks[i].fCharge != (fEvt+en2)->fTracks[j].fCharge) continue;
+	  key1 = (fEvt)->fTracks[i].fKey;
+	  key2 = (fEvt+en2)->fTracks[j].fKey;
+	  Short_t fillIndex2 = FillIndex2part(key1+key2);
+	  pVect1[0]=(fEvt)->fTracks[i].fEaccepted; pVect2[0]=(fEvt+en2)->fTracks[j].fEaccepted;
+	  pVect1[1]=(fEvt)->fTracks[i].fP[0];      pVect2[1]=(fEvt+en2)->fTracks[j].fP[0];
+	  pVect1[2]=(fEvt)->fTracks[i].fP[1];      pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
+	  pVect1[3]=(fEvt)->fTracks[i].fP[2];      pVect2[3]=(fEvt+en2)->fTracks[j].fP[2];
+	  qinv12 = GetQinv(fillIndex2, pVect1, pVect2);
+	  
+	  if(qinv12>0.5) continue;
+	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) continue;
+	  
+	  Int_t en3=0;
+	  if(iter==1) en3=1;
+	  if(iter==2) en3=2;
+	  Int_t start3=j+1;
+	  if(iter>0) start3=0;
+	  // 3nd particle
+	  for (Int_t k=start3; k<(fEvt+en3)->fNtracks; k++) {
+	    if((fEvt)->fTracks[i].fCharge != (fEvt+en3)->fTracks[k].fCharge) continue;
+	    pVect3[0]=(fEvt+en3)->fTracks[k].fEaccepted;
+	    pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
+	    pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
+	    pVect3[3]=(fEvt+en3)->fTracks[k].fP[2];
+	    qinv13 = GetQinv(fillIndex2, pVect1, pVect3);
+	    if(qinv13>0.5) continue;
+	    qinv23 = GetQinv(fillIndex2, pVect2, pVect3);
+	    if(qinv23>0.5) continue;
+	    if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en3)->fTracks[k]))) continue;
+	    if(!AcceptPair(&((fEvt+en2)->fTracks[j]), &((fEvt+en3)->fTracks[k]))) continue;
+
+	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
+
+	    if(iter==0) ((TH1D*)fOutputList->FindObject("fExtendedQ3Histo_term1"))->Fill(q3);
+	    if(iter==1) ((TH1D*)fOutputList->FindObject("fExtendedQ3Histo_term2"))->Fill(q3);
+	    if(iter==2) ((TH1D*)fOutputList->FindObject("fExtendedQ3Histo_term5"))->Fill(q3);
+	    
+	  }
+	}
+      }
+    }
+    */
     ///////////////////////////////////////////////////////
     // Start the pairing process
     // P11 pairing
@@ -2494,10 +2571,16 @@ void AliThreePionRadii::Exec(Option_t *)
 	    
 	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-	    if(fEDbins>1){
+	    if(fKt3bins==1) fEDbin=0;
+	    else if(fKt3bins<2){
 	      if(transK3<0.3) fEDbin=0;
 	      else fEDbin=1;
+	    }else{// fKt3bins==3 is the limit set by fEDbins
+	      if(transK3<0.25) fEDbin=0;
+	      else if(transK3<0.35) fEDbin=1;
+	      else fEDbin=2;
 	    }
+	    
 	    firstQ=0; secondQ=0; thirdQ=0;
 	    
 	    
