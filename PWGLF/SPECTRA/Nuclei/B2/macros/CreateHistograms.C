@@ -180,14 +180,14 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 	
 	TH1D* hStatsPid = new TH1D(species + "_Stats_PID", "Stats PID", 9, 0, 9);
 	hStatsPid->GetXaxis()->SetBinLabel(1,"e");
-	hStatsPid->GetXaxis()->SetBinLabel(2,"\\mu");
-	hStatsPid->GetXaxis()->SetBinLabel(3,"\\pi");
+	hStatsPid->GetXaxis()->SetBinLabel(2,"#mu");
+	hStatsPid->GetXaxis()->SetBinLabel(3,"#pi");
 	hStatsPid->GetXaxis()->SetBinLabel(4,"K");
 	hStatsPid->GetXaxis()->SetBinLabel(5,"p");
 	hStatsPid->GetXaxis()->SetBinLabel(6,"d");
 	hStatsPid->GetXaxis()->SetBinLabel(7,"t");
 	hStatsPid->GetXaxis()->SetBinLabel(8,"h");
-	hStatsPid->GetXaxis()->SetBinLabel(9,"\\alpha");
+	hStatsPid->GetXaxis()->SetBinLabel(9,"#alpha");
 	hStatsPid->SetStats(0);
 	hMap->Add( species + "_Stats_PID", (TObject*)hStatsPid);
 	
@@ -294,7 +294,7 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		
 		hMap->Add( particle[i] + "_PID_DCAz_Pt", nptbins, ptbins, dcazBins, dcazMin, dcazMax, particle[i] + " candidates", "p_{T} (GeV/c)", "sign #times DCA_{z} (cm)");
 		
-		hMap->Add( particle[i] + "_PID_NSigma_Pt", nptbins, ptbins, 200, 0., 10., particle[i] + " candidates", "p_{T} (GeV/c)", "N\\sigma");
+		hMap->Add( particle[i] + "_PID_NSigma_Pt", nptbins, ptbins, 200, 0., 10., particle[i] + " candidates", "p_{T} (GeV/c)", "N#sigma");
 		
 		if(simulation)
 		{
@@ -311,21 +311,21 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		
 			hMap->Add( particle[i] + "_Sim_PID_Prim_DCAz_Pt", nptbins, ptbins, dcazBins, dcazMin, dcazMax, Form("Primary %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{z} (cm)");
 		
-			hMap->Add( particle[i] + "_Sim_PID_Prim_NSigma_Pt", nptbins, ptbins, 200, 0., 10., Form("Primary %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "N\\sigma");
+			hMap->Add( particle[i] + "_Sim_PID_Prim_NSigma_Pt", nptbins, ptbins, 200, 0., 10., Form("Primary %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "N#sigma");
 			
 			// feed-down
 			hMap->Add( particle[i] + "_Sim_PID_Fdwn_DCAxy_Pt", nptbins, ptbins, dcaxyBins, dcaxyMin, dcaxyMax, Form("Feed-down %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{xy} (cm)");
 		
 			hMap->Add( particle[i] + "_Sim_PID_Fdwn_DCAz_Pt", nptbins, ptbins, dcazBins, dcazMin, dcazMax, Form("Feed-down %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{z} (cm)");
 		
-			hMap->Add( particle[i] + "_Sim_PID_Fdwn_NSigma_Pt", nptbins, ptbins, 200, 0., 10., Form("Feed-down %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "N\\sigma");
+			hMap->Add( particle[i] + "_Sim_PID_Fdwn_NSigma_Pt", nptbins, ptbins, 200, 0., 10., Form("Feed-down %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "N#sigma");
 			
 			// secondaries from materials
 			hMap->Add( particle[i] + "_Sim_PID_Mat_DCAxy_Pt", nptbins, ptbins, dcaxyBins, dcaxyMin, dcaxyMax, Form("%s from materials after PID", particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{xy} (cm)");
 		
 			hMap->Add( particle[i] + "_Sim_PID_Mat_DCAz_Pt", nptbins, ptbins, dcazBins, dcazMin, dcazMax, Form("%s from materials after PID", particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{z} (cm)");
 		
-			hMap->Add( particle[i] + "_Sim_PID_Mat_NSigma_Pt", nptbins, ptbins, 200, 0., 10., Form("%s from materials after PID", particle[i].Data()), "p_{T} (GeV/c)", "N\\sigma");
+			hMap->Add( particle[i] + "_Sim_PID_Mat_NSigma_Pt", nptbins, ptbins, 200, 0., 10., Form("%s from materials after PID", particle[i].Data()), "p_{T} (GeV/c)", "N#sigma");
 			
 			// fake tracks
 			hMap->Add( particle[i] + "_Sim_PID_Fake_Prim_DCAxy_Pt", nptbins, ptbins, dcaxyBins, dcaxyMin, dcaxyMax, Form("Fake Primary %s after PID", particle[i].Data()), "p_{T} (GeV/c)", "sign #times DCA_{xy} (cm)");
@@ -341,7 +341,7 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		
 		hMap->Add( particle[i] + "_PID_TPCdEdx_P", 1000, 0.001, 10.001, 1500, mindEdx, maxdEdx, particle[i] + " candidates", "p_{TPC}/Z (GeV/c)", "dE/dx",logx,logy);
 		
-		hMap->Add( particle[i] + "_PID_Beta_P", 1000, 0.001, 10.001, 1200, 1.e-3, 1.2, particle[i] + " candidates", "p_{TOF}/Z (GeV/c)", "\\beta",logx,logy);
+		hMap->Add( particle[i] + "_PID_Beta_P", 1000, 0.001, 10.001, 1200, 1.e-3, 1.2, particle[i] + " candidates", "p_{TOF}/Z (GeV/c)", "#beta",logx,logy);
 		
 		hMap->Add( particle[i] + "_PID_Mass_P", 1000, 0.001, 10.001, 500, 0.01, 5., particle[i] + " candidates", "p_{TOF}/Z (GeV/c)", "m (GeV/c^{2})");
 		
@@ -354,39 +354,39 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 		
 		hMap->Add( particle[i] + "_PID_Pt_Y", etaBins, etaMin, etaMax, nptbins, ptbins, particle[i] + " candidates", "y", "p_{T} (GeV/c)");
 		
-		hMap->Add( particle[i] + "_PID_Pt", nptbins, ptbins, Form("%s candidates (|y| < %0.1f, 0 < \\phi < 2\\pi)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
+		hMap->Add( particle[i] + "_PID_Pt", nptbins, ptbins, Form("%s candidates (|y| < %0.1f, 0 < #phi < 2#pi)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		
 		hMap->Add( particle[i] + "_PID_TOFmatch_Pt", nptbins, ptbins, Form("%s candidates (|y| < %0.1f, TOFmatch)", particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		
-		hMap->Add( Form("%s_PID_Y",particle[i].Data()), etaBins, etaMin, etaMax, Form("%s candidates (p_{T} > 0, 0 < \\phi < 2\\pi)",particle[i].Data()), "y");
+		hMap->Add( Form("%s_PID_Y",particle[i].Data()), etaBins, etaMin, etaMax, Form("%s candidates (p_{T} > 0, 0 < #phi < 2#pi)",particle[i].Data()), "y");
 		
-		hMap->Add( particle[i] + "_PID_Phi", phiBins, phiMin, phiMax, Form("%s candidates (p_{T} > 0, |y| < %0.1f)",particle[i].Data(),maxY), "\\phi (rad)");
+		hMap->Add( particle[i] + "_PID_Phi", phiBins, phiMin, phiMax, Form("%s candidates (p_{T} > 0, |y| < %0.1f)",particle[i].Data(),maxY), "#phi (rad)");
 		
 		if(simulation)
 		{
-			hMap->Add( particle[i] + "_Sim_Pt", nptbins, ptbins, Form("%s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Pt", nptbins, ptbins, Form("%s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Prim_Pt", nptbins, ptbins, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Prim_Pt", nptbins, ptbins, Form("Primary %s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Prim_Rec_Pt", nptbins, ptbins, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi, rec. pt)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Prim_Rec_Pt", nptbins, ptbins, Form("Primary %s (|y| < %0.1f, 0 < #phi < 2#pi, rec. pt)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Prim_Phi", phiBins, phiMin, phiMax, Form("Primary %s (p_{T} > 0, |y| < %0.1f)",particle[i].Data(),maxY), "\\phi (rad)");
+			hMap->Add( particle[i] + "_Sim_Prim_Phi", phiBins, phiMin, phiMax, Form("Primary %s (p_{T} > 0, |y| < %0.1f)",particle[i].Data(),maxY), "#phi (rad)");
 			
-			hMap->Add( particle[i] + "_Sim_Prim_Y", etaBins, etaMin, etaMax, Form("Primary %s (p_{T} > 0, 0 < \\phi < 2\\pi)",particle[i].Data()), "y");
+			hMap->Add( particle[i] + "_Sim_Prim_Y", etaBins, etaMin, etaMax, Form("Primary %s (p_{T} > 0, 0 < #phi < 2#pi)",particle[i].Data()), "y");
 			
-			hMap->Add( particle[i] + "_Sim_Fdwn_Pt", nptbins, ptbins, Form("Feed-down %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Fdwn_Pt", nptbins, ptbins, Form("Feed-down %s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Mat_Pt", nptbins, ptbins, Form("%s from materials (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Mat_Pt", nptbins, ptbins, Form("%s from materials (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_PID_Prim_Pt", nptbins, ptbins, Form("Primary %s after PID (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_PID_Prim_Pt", nptbins, ptbins, Form("Primary %s after PID (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		
-			hMap->Add( particle[i] + "_Sim_PID_Pt", nptbins, ptbins, Form("%s after PID (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_PID_Pt", nptbins, ptbins, Form("%s after PID (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		
 			hMap->Add( particle[i] + "_Sim_PtY", etaBins, etaMin, etaMax, nptbins, ptbins, particle[i].Data(), "y", "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Prim_M2_P", nptbins, ptbins, m2Bins, m2Min, m2Max, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
+			hMap->Add( particle[i] + "_Sim_Prim_M2_P", nptbins, ptbins, m2Bins, m2Min, m2Max, Form("Primary %s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
 			
-			hMap->Add( particle[i] + "_Sim_Prim_M2_Pt", nptbins, ptbins, m2Bins, m2Min, m2Max, Form("Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
+			hMap->Add( particle[i] + "_Sim_Prim_M2_Pt", nptbins, ptbins, m2Bins, m2Min, m2Max, Form("Primary %s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)", "m^{2} (GeV^{2}/c^{4})");
 			
 			// unfolding
 			
@@ -397,15 +397,15 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 			hMap->Add( particle[i] + "_Prim_DiffPt_RecPt",  400,0.,10.,  1000, -0.5, 0.5, Form("Primary %s",particle[i].Data()), "p_{T}^{rec} (GeV/c)", "p_{T}^{gen}-p_{T}^{rec} (GeV/c)");
 			
 			// fake tracks
-			hMap->Add( particle[i] + "_Sim_Fake_Pt", nptbins, ptbins, Form("Fake %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Fake_Pt", nptbins, ptbins, Form("Fake %s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Fake_Prim_Pt", nptbins, ptbins, Form("Fake Primary %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Fake_Prim_Pt", nptbins, ptbins, Form("Fake Primary %s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Fake_Fdwn_Pt", nptbins, ptbins, Form("Fake Feed-down %s (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Fake_Fdwn_Pt", nptbins, ptbins, Form("Fake Feed-down %s (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_Fake_Mat_Pt", nptbins, ptbins, Form("Fake %s from materials (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_Fake_Mat_Pt", nptbins, ptbins, Form("Fake %s from materials (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 			
-			hMap->Add( particle[i] + "_Sim_PID_Fake_Pt", nptbins, ptbins, Form("Fake %s after PID (|y| < %0.1f, 0 < \\phi < 2\\pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Sim_PID_Fake_Pt", nptbins, ptbins, Form("Fake %s after PID (|y| < %0.1f, 0 < #phi < 2#pi)",particle[i].Data(),maxY), "p_{T} (GeV/c)");
 		}
 	}
 	
@@ -423,7 +423,7 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 			
 			hMap->Add( particle[i] + "_Gen_Prim_Eta", 600, -12, 12, Form("Primary %s", particle[i].Data()), "#eta");
 			
-			hMap->Add( particle[i] + "_Gen_Prim_Phi", phiBins, phiMin, phiMax, Form("Primary %s", particle[i].Data()), "\\phi (rad)");
+			hMap->Add( particle[i] + "_Gen_Prim_Phi", phiBins, phiMin, phiMax, Form("Primary %s", particle[i].Data()), "#phi (rad)");
 			
 			hMap->Add( particle[i] + "_Gen_Prim_PtY", etaBins, etaMin, etaMax, nptbins, ptbins, Form("Primary %s", particle[i].Data()), "y", "p_{T} (GeV/c)");
 			
@@ -445,13 +445,13 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 			
 			// within the acceptance
 			
-			hMap->Add( particle[i] + "_Gen_Acc_Prim_P", nptbins, ptbins, Form("Primary %s (|y| < %0.1f and |\\eta| < %0.1f)",particle[i].Data(),maxY,maxEta), "p (GeV/c)");
+			hMap->Add( particle[i] + "_Gen_Acc_Prim_P", nptbins, ptbins, Form("Primary %s (|y| < %0.1f and |#eta| < %0.1f)",particle[i].Data(),maxY,maxEta), "p (GeV/c)");
 		
-			hMap->Add( particle[i] + "_Gen_Acc_Prim_Pt", nptbins, ptbins, Form("Primary %s (|y| < %0.1f and |\\eta| < %0.1f)",particle[i].Data(),maxY,maxEta), "p_{T} (GeV/c)");
+			hMap->Add( particle[i] + "_Gen_Acc_Prim_Pt", nptbins, ptbins, Form("Primary %s (|y| < %0.1f and |#eta| < %0.1f)",particle[i].Data(),maxY,maxEta), "p_{T} (GeV/c)");
 		
-			hMap->Add( particle[i] + "_Gen_Acc_Prim_Y", etaBins, etaMin, etaMax, Form("Primary %s (|\\eta| < %0.1f)",particle[i].Data(),maxEta), "y");
+			hMap->Add( particle[i] + "_Gen_Acc_Prim_Y", etaBins, etaMin, etaMax, Form("Primary %s (|#eta| < %0.1f)",particle[i].Data(),maxEta), "y");
 		
-			hMap->Add( particle[i] + "_Gen_Acc_Prim_Phi", phiBins, phiMin, phiMax, Form("Primary %s (|y|< %0.1f and |\\eta| < %0.1f)",particle[i].Data(),maxY,maxEta), "\\phi (rad)");
+			hMap->Add( particle[i] + "_Gen_Acc_Prim_Phi", phiBins, phiMin, phiMax, Form("Primary %s (|y|< %0.1f and |#eta| < %0.1f)",particle[i].Data(),maxY,maxEta), "#phi (rad)");
 			
 			hMap->Add( particle[i] + "_Gen_Acc_Prim_PtY", etaBins, etaMin, etaMax, nptbins, ptbins, Form("Primary %s",particle[i].Data()), "y", "p_{T} (GeV/c)");
 		}
