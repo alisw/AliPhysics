@@ -63,7 +63,9 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
         SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraBoth.cxx
 	SPECTRA/Nuclei/B2/AliLnID.cxx
 	SPECTRA/Nuclei/B2/AliLnHistoMap.cxx
+	SPECTRA/Nuclei/B2/AliLnAODtrackCuts.cxx
 	SPECTRA/Nuclei/B2/AliAnalysisTaskB2.cxx
+	SPECTRA/Nuclei/B2/AliAnalysisTaskB2AOD.cxx
         SPECTRA/Nuclei/masses/AliAnalysisNucleiMass.cxx
 
  )
