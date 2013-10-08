@@ -208,6 +208,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH2D *fhClusterPtCellAll; //!
         TH3D *fhNEFJetPtFCross; //!
         TH3D *fhNEFZLeadingFCross; //!
+        TH3D *fhNEFTimeCellCount; //!
+        TH3D *fhNEFTimeDeltaTime; //!
 
         // Variables
         const char *fName;  //!
@@ -296,9 +298,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     void EstimateFullRhokT();
     void EstimateFullRhoCMS();
     
-    void JetPtFullProfile();
-    void JetPtChargedProfile();
-    void JetPtEtaProfile();
     void DeleteJetData(Bool_t EMCalOn);
     
     // User Defined Functions
@@ -441,16 +440,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TProfile *fpTPCEventMult;  //!
     TProfile *fpRhoScale; //! Scale of rho_total/rho_charged event/event vs centrality
     
-    TProfile **fpJetEtaProfile; //!
-    TProfile **fpJetAbsEtaProfile; //!
-    TProfile **fpChargedJetRProfile; //!
-    TProfile **fpJetRProfile; //!
-
     TProfile2D *fpTrackPtProfile;  //!
     TProfile2D *fpClusterPtProfile;  //!
-    
-    TProfile3D **fpChargedJetEDProfile;  //! Profile of Charged Jet Energy Density as a function of Jet pT, jet Eta, and distance from jet center in bins of 10% centrality cuts. Jet profile must be fully contained within TPC
-    TProfile3D **fpJetEDProfile;  //! Profile of Jet Energy Density as a function of Jet pT, jet Eta, and distance from jet center in bins of 10% centrality cuts. Jet profile must be fully contained within EMCal
     
     AlipAJetHistos *fTPCRawJets;  //!
     AlipAJetHistos *fEMCalRawJets;  //!
@@ -536,23 +527,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fRhoFull;  // From Full Rho 0
     Double_t fRhoCharged;  // From Charged Rho 0
     
-    // Jet profile variables
-    Int_t fEtaProfileBins;
-    Double_t fEtaProfileLow;
-    Double_t fEtaProfileUp;
-
-    Int_t fEDProfileRBins;
-    Double_t fEDProfileRLow;
-    Double_t fEDProfileRUp;
-    
-    Int_t fEDProfilePtBins;
-    Double_t fEDProfilePtLow;
-    Double_t fEDProfilePtUp;
-    
-    Int_t fEDProfileEtaBins;
-    Double_t fEDProfileEtaLow;
-    Double_t fEDProfileEtaUp;
-
     // General Global variables
     Int_t fnTracks;
     Int_t fnClusters;
