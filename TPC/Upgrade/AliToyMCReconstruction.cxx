@@ -47,6 +47,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fTime0(-1)
 , fCreateT0seed(kFALSE)
 , fLongT0seed(kTRUE)
+, fFillClusterRes(kFALSE)
 , fStreamer(0x0)
 , fInputFile(0x0)
 , fTree(0x0)
@@ -116,6 +117,12 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   AliExternalTrackParam trackITS2;
   
   AliExternalTrackParam *dummy;
+
+  //
+  TClonesArray *arrClustRes=0x0;
+  if (fFillClusterRes){
+    arrClustRes=new TClonesArray("AliTPCclusterMI",160);
+  }
   
   Int_t maxev=fTree->GetEntries();
   if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
@@ -208,7 +215,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           // create fitted track
           if (fDoTrackFit){
 //             printf("track\n");
-            dummy = GetFittedTrackFromSeed(tr, &seed);
+            dummy = GetFittedTrackFromSeed(tr, &seed, arrClustRes);
             track = *dummy;
             delete dummy;
           }
@@ -274,7 +281,44 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         
         "trackITS.="   << &trackITS       <<
         "trackITS1.="  << &trackITS1      <<
-        "trackITS2.="  << &trackITS2      <<
+        "trackITS2.="  << &trackITS2;
+
+        if (arrClustRes) {
+          const Int_t nCl=arrClustRes->GetEntriesFast();
+          // fracktion of outliers from track extrapolation
+          // for 1, 1.5, 2, 2.5 and 3 sigma of the cluster resolution (~1mm)
+          Float_t fracY[5]={0.};
+          Float_t fracZ[5]={0.};
+          
+          for (Int_t icl=0; icl<nCl; ++icl) {
+            AliTPCclusterMI *cl=static_cast<AliTPCclusterMI*>(arrClustRes->At(icl));
+            const Float_t sigmaY=TMath::Sqrt(cl->GetSigmaY2());
+            const Float_t sigmaZ=TMath::Sqrt(cl->GetSigmaZ2());
+            for (Int_t inSig=0; inSig<5; ++inSig) {
+              fracY[inSig] += cl->GetY()>(1+inSig*.5)*sigmaY;
+              fracZ[inSig] += cl->GetZ()>(1+inSig*.5)*sigmaZ;
+            }
+          }
+          
+          if (nCl>0) {
+            for (Int_t inSig=0; inSig<5; ++inSig) {
+              fracY[inSig]/=nCl;
+              fracZ[inSig]/=nCl;
+            }
+          }
+          
+          (*fStreamer) << "Tracks" <<
+          "clustRes.=" << arrClustRes;
+          for (Int_t inSig=0; inSig<5; ++inSig) {
+            const char* fracYname=Form("clFracY%02d=", 10+inSig*5);
+            const char* fracZname=Form("clFracZ%02d=", 10+inSig*5);
+            (*fStreamer) << "Tracks" <<
+            fracYname << fracY[inSig] <<
+            fracZname << fracZ[inSig];
+          }
+        }
+        
+        (*fStreamer) << "Tracks" <<
         "\n";
       }
       
@@ -282,6 +326,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
     }
   }
 
+  delete arrClustRes;
   Cleanup();
 }
 
@@ -1164,12 +1209,16 @@ void AliToyMCReconstruction::ClusterToSpacePoint(const AliTPCclusterMI *cl, Floa
 }
 
 //____________________________________________________________________________________
-AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed)
+AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, TClonesArray *arrClustRes)
 {
   //
   //
   //
 
+  if (arrClustRes) {
+    arrClustRes->Clear();
+  }
+  
   // create track
   AliExternalTrackParam *track = new AliExternalTrackParam(*seed);
 
@@ -1245,6 +1294,16 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     if (TMath::Abs(track->GetX())>kMaxR) break;
 //     if (TMath::Abs(track->GetZ())<kZcut)continue;
     //
+
+    // add residuals
+    if (arrClustRes) {
+      TClonesArray &arrDummy=*arrClustRes;
+      AliTPCclusterMI *clRes = new(arrDummy[arrDummy.GetEntriesFast()]) AliTPCclusterMI(*cl);
+      clRes->SetX(prot.GetX());
+      clRes->SetY(track->GetY()-prot.GetY());
+      clRes->SetZ(track->GetZ()-prot.GetZ());
+    }
+    
     Double_t pointPos[2]={0,0};
     Double_t pointCov[3]={0,0,0};
     pointPos[0]=prot.GetY();//local y
@@ -1267,7 +1326,6 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
   
   return track;
 }
-
 
 //____________________________________________________________________________________
 AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus)

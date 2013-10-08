@@ -67,13 +67,18 @@ public:
 
   void   SetIdealTracking(Bool_t tr)    { fIdealTracking = tr;    }
   Bool_t GetIdealTracking()  const      { return fIdealTracking;  }
+
+  void   SetFillClusterRes(Bool_t res)  { fFillClusterRes=res;    }
+  Bool_t GetFillClusterRes()  const     { return fFillClusterRes; }
+
+  
   
   void   SetTree(TTree *tree) { fTree=tree; }
   TTree* GetTree() const { return fTree; }
 
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr, Bool_t forceSeed=kFALSE);
   AliExternalTrackParam* GetSeedFromTrackIdeal(const AliToyMCTrack * const tr, EDet det );
-  AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
+  AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, TClonesArray *arrClustRes=0x0);
   AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus);
   AliExternalTrackParam* GetTrackRefit(const AliToyMCTrack * const tr, EDet det);
 
@@ -156,6 +161,7 @@ public:
   Double_t fTime0;               // current time0 used for reconstruction
   Bool_t   fCreateT0seed;        // if current seed is the T0 seed
   Bool_t   fLongT0seed;          // if we should use a t0 seed including all clusters in the seed range
+  Bool_t   fFillClusterRes;      // fill cluster residuals?
   
   TTreeSRedirector *fStreamer;   // debug streamer
   TFile *fInputFile;             // input file

@@ -11,7 +11,7 @@ void createSCprecal(TString input, Int_t gas=1)
   TString tGas[nOmegaTau] = {"NeCO2","NeCO2_2","ArCO2","NeCF4","NeCF4_2"}; // CF4 is the same as CO2 here, but different omegaTau
   TString sGas[nOmegaTau] = {"Ne-CO_{2} (90-10)","Ne-CO_{2}-N_{2} (90-10-5)","Ar-CO_{2} (90-10)","Ne-CF_{4} (90-10)","Ne-CF_{4} (80-20)"};
 
-  spaceCharge->SetOmegaTauT1T2(omegaTau[iOmegaTau], T1[gas] , T2[gas]);
+  spaceCharge->SetOmegaTauT1T2(omegaTau[gas], T1[gas] , T2[gas]);
   spaceCharge->InitSpaceCharge3DDistortion();
 
   TString outName=input;
