@@ -554,6 +554,9 @@ void AliToyMCEventGenerator::SetSpaceCharge(EEpsilon epsilon, EGasType gasType/*
     case kNeCO2_9010:
       fCorrectionFile.Append("_NeCO2");
       break;
+    case kNeCO2N2_90105:
+      fCorrectionFile.Append("_NeCO2N2");
+      break;
   }
   switch (epsilon) {
     case kEps5:
@@ -564,6 +567,18 @@ void AliToyMCEventGenerator::SetSpaceCharge(EEpsilon epsilon, EGasType gasType/*
       break;
     case kEps20:
       fCorrectionFile.Append("_eps20");
+      break;
+    case kEps25:
+      fCorrectionFile.Append("_eps25");
+      break;
+    case kEps30:
+      fCorrectionFile.Append("_eps30");
+      break;
+    case kEps35:
+      fCorrectionFile.Append("_eps35");
+      break;
+    case kEps40:
+      fCorrectionFile.Append("_eps40");
       break;
   }
   switch (collRate) {

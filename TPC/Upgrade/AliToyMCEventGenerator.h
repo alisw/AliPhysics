@@ -16,13 +16,18 @@ class AliToyMCEvent;
 class AliToyMCEventGenerator : public TObject {
  public:
    enum EGasType {
-     kNeCO2_9010=0
-  };
+     kNeCO2_9010=0,
+     kNeCO2N2_90105
+   };
 
   enum EEpsilon {
     kEps5=0,
     kEps10,
-    kEps20
+    kEps20,
+    kEps25,
+    kEps30,
+    kEps35,
+    kEps40
   };
 
   enum ECollRate {

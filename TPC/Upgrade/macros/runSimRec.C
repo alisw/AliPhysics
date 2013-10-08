@@ -1,4 +1,4 @@
-void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t rate=50)
+void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t rate=50, Int_t gas=0)
 {
   //rate is in kHz
 
@@ -21,19 +21,48 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t 
       outputFile.Append(Form("_train_%dkHz",rate));
       break;
   }
+
+  AliToyMCEventGeneratorSimple::EGasType gasType=AliToyMCEventGeneratorSimple::kNeCO2_9010;
+  
+  switch (gas) {
+    case 0:
+      gasType=AliToyMCEventGeneratorSimple::kNeCO2_9010;
+      outputFile.Appen("_NeCO2");
+      break;
+    case 1:
+      gasType=AliToyMCEventGeneratorSimple::kNeCO2N2_90105;
+      outputFile.Appen("_NeCO2N2");
+      break;
+  }
   
   switch (SCtype) {
     case 0:
-      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps5);
+      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps5, gasType);
       outputFile.Append("_eps05");
       break;
     case 1:
-      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps10);
+      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps10, gasType);
       outputFile.Append("_eps10");
       break;
     case 2:
-      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps20);
+      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps20, gasType);
       outputFile.Append("_eps20");
+      break;
+    case 3:
+      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps25, gasType);
+      outputFile.Append("_eps25");
+      break;
+    case 4:
+      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps30, gasType);
+      outputFile.Append("_eps30");
+      break;
+    case 5:
+      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps35, gasType);
+      outputFile.Append("_eps35");
+      break;
+    case 6:
+      s.SetSpaceCharge(AliToyMCEventGeneratorSimple::kEps40, gasType);
+      outputFile.Append("_eps40");
       break;
   }
 
