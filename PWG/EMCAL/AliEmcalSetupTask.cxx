@@ -65,15 +65,15 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   am->LoadBranch("AliESDHeader.");
 
   Int_t runno = InputEvent()->GetRunNumber();
-  TString geoname("EMCAL_FIRSTYEARV1");
-  Int_t year = 2010;
-  if (runno>139517) {
+  TString geoname("EMCAL_COMPLETE12SMV1");
+  Int_t year = 2012;
+  if (runno<=139517) {
+    year = 2010;
+    geoname = "EMCAL_FIRSTYEARV1";
+  }
+  else if (runno>139517) {
     year = 2011;
     geoname = "EMCAL_COMPLETEV1";
-  } 
-  if (runno>170593) {
-    year = 2012;
-    geoname = "EMCAL_COMPLETE12SMV1";
   }
 
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
