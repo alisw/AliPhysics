@@ -636,7 +636,18 @@ protected:
     TString args;
     return AddSETask(macro, args);
   }
-
+  /** 
+   * Check if we have an MC handler attached 
+   * 
+   * @return True if MC handler is found in a valid manager.  False if
+   * manager is not defined, or has no MC handler.
+   */
+  virtual Bool_t HasMCHandler() const 
+  {
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) return false;
+    return mgr->GetMCtruthEventHandler() != 0;
+  }
   /** 
    * Set the name of the train - should be name of the class.  Must be
    * overloaded.
