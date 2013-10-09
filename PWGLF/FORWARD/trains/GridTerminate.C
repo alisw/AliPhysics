@@ -83,7 +83,7 @@ Bool_t LoadHandler(const TString& name)
   }
   Info("GridTerminate","Setting grid handler");
   handler->SetRunMode("terminate");
-  handler->SetMergeViaJDL(false);
+  handler->SetMergeViaJDL(true);
   AliAnalysisManager::GetAnalysisManager()->SetGridHandler(handler);
 
   return true;
@@ -243,10 +243,16 @@ Bool_t GridTerminate(const TString& name,
   if (!Setup(name, libs, pars, srcs, local, localLibsNotPar)) return false; 
 
   // Run the terminate job
-  Info("GridTerminate","Starting terminate job");
+  Info("GridTerminate","Starting terminate job - %s", local ? "locally" : "on the grid");
 
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!local) {
+
+    AliAnalysisAlien* handler = static_cast<AliAnalysisAlien*>(mgr->GetGridHandler());
+    if (!handler) { 
+      Error("GridTerminate", "Manager does now have an AliEn handler");
+      return false;
+    }
     if (mgr->StartAnalysis("grid") < 0) return false;
 
     std::ofstream outJobs(Form("%s_merge.jobid", mgr->GetName()));
@@ -262,6 +268,7 @@ Bool_t GridTerminate(const TString& name,
   
   // mgr->SetDebugLevel(2);
   mgr->SetSkipTerminate(false);
+  TTree* dummy = 0;
   if (mgr->StartAnalysis("gridterminate", dummy, -1, 0) < 0) return false;
   
   return true;
