@@ -77,7 +77,7 @@ else ()
 
 endif(CCMAJORV STREQUAL "2")
 
-set(CFLAGS	"${OPT} -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors")
+set(CFLAGS	"${OPT} -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi")
 set(FFLAGS "${CLIBFOPT} ${FOPT} -fPIC -fno-second-underscore -fPIC -fno-f2c")
 
 execute_process(COMMAND find /lib64 -name 'libNoVersion*.so' 
