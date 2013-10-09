@@ -50,7 +50,7 @@ set(CLIBCXXOPTS)
 set(CLIBCOPT)
 set(CLIBFOPT ${CLIBDEFS})
 
-set(CXXWARN "-Wall -Wno-long-long -W -Weffc++ -Wshadow -Woverloaded-virtual -ansi")
+set(CXXWARN "-Wall -Wno-long-long -W -Weffc++ -Wshadow -Woverloaded-virtual")
 
 if(CCMAJORV STREQUAL "2")
 
@@ -77,7 +77,7 @@ else ()
 
 endif(CCMAJORV STREQUAL "2")
 
-set(CFLAGS	"${OPT} -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi")
+set(CFLAGS	"${OPT} -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors")
 set(FFLAGS "${CLIBFOPT} ${FOPT} -fPIC -fno-second-underscore -fPIC -fno-f2c")
 
 execute_process(COMMAND find /lib64 -name 'libNoVersion*.so' 
