@@ -34,8 +34,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
   : AliBaseESDTask(),
     fEventInspector(),
     fEnergyFitter(),
-    fbLow(0),
-    fbHigh(100)
+    fOnlyMB(false)
 {
   // 
   // Constructor
@@ -49,8 +48,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
   : AliBaseESDTask(name, "", &(AliForwardCorrectionManager::Instance())), 
     fEventInspector("event"),
     fEnergyFitter("energy"),
-    fbLow(0),
-    fbHigh(100)
+    fOnlyMB(false)
 {
   // 
   // Constructor 
@@ -107,6 +105,7 @@ AliFMDEnergyFitterTask::Book()
 
   fEnergyFitter.CreateOutputObjects(fList);
 
+  fList->Add(AliForwardUtil::MakeParameter("onlyMB", fOnlyMB));
   return true;
 }
 //____________________________________________________________________
@@ -166,6 +165,9 @@ AliFMDEnergyFitterTask::Event(AliESDEvent& esd)
   // We want only the events found by off-line 
   if (!(triggers & AliAODForwardMult::kOffline)) return false;
 
+  // Perhaps we should also insist on MB only 
+  if (fOnlyMB && (!(triggers & AliAODForwardMult::kInel))) return false;
+
   //  if(cent > 0) {
   //  if( cent < 40 || cent >50 ) return;
   //  else std::cout<<"selecting event with cent "<<cent<<std::endl;
@@ -201,6 +203,11 @@ AliFMDEnergyFitterTask::Finalize()
   return true;
 }
 
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
 //____________________________________________________________________
 void
 AliFMDEnergyFitterTask::Print(Option_t* option) const
@@ -213,6 +220,7 @@ AliFMDEnergyFitterTask::Print(Option_t* option) const
   //
   AliBaseESDTask::Print(option);
   gROOT->IncreaseDirLevel();
+  PFB("Only MB", fOnlyMB);
   fEnergyFitter.Print(option);
   gROOT->DecreaseDirLevel();
 }
