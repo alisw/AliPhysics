@@ -16,23 +16,16 @@ project(AliRoot CXX C Fortran)
 
 # Environment variables
 set(ALICE_ROOT $ENV{ALICE_ROOT})
-set(ALICE $ENV{ALICE})
-set(ALICE_INSTALL $ENV{ALICE_INSTALL})
-if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR "Install dir should be different from build dir")
-endif()
-# Environment for SHUTTLE
-set(DIMDIR $ENV{DIMDIR})
-set(ODIR $ENV{ODIR})
-
 if(NOT ALICE)
   message(WARNING "Environment variable ALICE is not set")
 endif(NOT ALICE)
 
+set(ALICE $ENV{ALICE})
 if(NOT ALICE_ROOT)
   message(FATAL_ERROR "Please set ALICE_ROOT to the AliRoot source directory")
 endif(NOT ALICE_ROOT)
 
+set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 # Set AliRoot Installation directory 
 if(NOT ALICE_INSTALL)
   message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You can specify a different location by setting ALICE_INSTALL environment variable")
@@ -40,7 +33,14 @@ if(NOT ALICE_INSTALL)
 else()
   message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
 endif(NOT ALICE_INSTALL)
+if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
+  message(FATAL_ERROR "Install dir should be different from build dir")
+endif()
 set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL})
+
+# Environment for SHUTTLE
+set(DIMDIR $ENV{DIMDIR})
+set(ODIR $ENV{ODIR})
 
 get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" REALPATH)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
