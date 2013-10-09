@@ -1447,6 +1447,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     esdTrack->GetESDpid(pid);
     esdTrack->GetTOFLabel(tofLabel);
     if(fMChandler)fMChandler->SelectParticle(esdTrack->GetLabel());
+    fUsedTrack[nTrack] = kTRUE;
     fPrimaryVertex->AddDaughter(aodTrack =
                          new(Tracks()[fNumberOfTracks++]) AliAODTrack(esdTrack->GetID(),
                                                             esdTrack->GetLabel(),
