@@ -16,6 +16,7 @@
 // AlidNdPtAnalysisPbPbAOD class. 
 // 
 // Author: P. Luettig, 15.05.2013
+// last modified: 08.10.2013
 //------------------------------------------------------------------------------
 
 
@@ -53,8 +54,6 @@ hDCAPtAll(0),
 hDCAPtAccepted(0),
 hMCDCAPtSecondary(0),
 hMCDCAPtPrimary(0),
-hnCrossedRowsClustersChiPtEtaPhiAll(0),
-hnCrossedRowsClustersChiPtEtaPhiAcc(0),
 //global
 bIsMonteCarlo(0),
 // event cut variables
@@ -85,20 +84,32 @@ dCutMaxChi2TPCConstrainedGlobal(36.),
 fMultNbins(0),
 fPtNbins(0),
 fPtCorrNbins(0),
+fPtCheckNbins(0),
 fEtaNbins(0),
+fEtaCheckNbins(0),
 fZvNbins(0),
 fCentralityNbins(0),
+fPhiNbins(0),
 fBinsMult(0),
 fBinsPt(0),
 fBinsPtCorr(0),
+fBinsPtCheck(0),
 fBinsEta(0),
+fBinsEtaCheck(0),
 fBinsZv(0),
-fBinsCentrality(0)
+fBinsCentrality(0),
+fBinsPhi(0)
 {
+  for(Int_t i = 0; i < cqMax; i++)
+  {
+    hCrossCheckAll[i] = 0;
+    hCrossCheckAcc[i] = 0;
+  }
   
   fMultNbins = 0;
   fPtNbins = 0;
   fPtCorrNbins = 0;
+  fPtCheckNbins = 0;
   fEtaNbins = 0;
   fZvNbins = 0;
   fCentralityNbins = 0;
@@ -106,9 +117,10 @@ fBinsCentrality(0)
   fBinsPt = 0;
   fBinsPtCorr = 0;
   fBinsEta = 0;
-  fBinsEta = 0;
+  fBinsEtaCheck = 0;
   fBinsZv = 0;
   fBinsCentrality = 0;
+  fBinsPhi = 0;
   
 }
 
@@ -138,8 +150,6 @@ hDCAPtAll(0),
 hDCAPtAccepted(0),
 hMCDCAPtSecondary(0),
 hMCDCAPtPrimary(0),
-hnCrossedRowsClustersChiPtEtaPhiAll(0),
-hnCrossedRowsClustersChiPtEtaPhiAcc(0),
 //global
 bIsMonteCarlo(0),
 // event cut variables
@@ -170,29 +180,46 @@ dCutMaxChi2TPCConstrainedGlobal(36.),
 fMultNbins(0),
 fPtNbins(0),
 fPtCorrNbins(0),
+fPtCheckNbins(0),
 fEtaNbins(0),
+fEtaCheckNbins(0),
 fZvNbins(0),
 fCentralityNbins(0),
+fPhiNbins(0),
 fBinsMult(0),
 fBinsPt(0),
 fBinsPtCorr(0),
+fBinsPtCheck(0),
 fBinsEta(0),
+fBinsEtaCheck(0),
 fBinsZv(0),
-fBinsCentrality(0)
+fBinsCentrality(0),
+fBinsPhi(0)
 {
+  
+  for(Int_t i = 0; i < cqMax; i++)
+  {
+    hCrossCheckAll[i] = 0;
+    hCrossCheckAcc[i] = 0;
+  }
+  
   fMultNbins = 0;
   fPtNbins = 0;
   fPtCorrNbins = 0;
+  fPtCheckNbins = 0;
   fEtaNbins = 0;
+  fEtaCheckNbins = 0;
   fZvNbins = 0;
   fCentralityNbins = 0;
   fBinsMult = 0;
   fBinsPt = 0;
   fBinsPtCorr = 0;
+  fBinsPtCheck = 0;
   fBinsEta = 0;
-  fBinsEta = 0;
+  fBinsEtaCheck = 0;
   fBinsZv = 0;
   fBinsCentrality = 0;
+  fBinsPhi = 0;
   
   DefineOutput(1, TList::Class());
 }
@@ -226,8 +253,13 @@ AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
   if(hMCDCAPtPrimary) delete hMCDCAPtPrimary; hMCDCAPtPrimary = 0;
   if(hMCDCAPtSecondary) delete hMCDCAPtSecondary; hMCDCAPtSecondary = 0;
   if(hMCDCAPtPrimary) delete hMCDCAPtPrimary; hMCDCAPtPrimary = 0;
-  if(hnCrossedRowsClustersChiPtEtaPhiAll) delete hnCrossedRowsClustersChiPtEtaPhiAll; hnCrossedRowsClustersChiPtEtaPhiAll = 0;
-  if(hnCrossedRowsClustersChiPtEtaPhiAcc) delete hnCrossedRowsClustersChiPtEtaPhiAcc; hnCrossedRowsClustersChiPtEtaPhiAcc = 0;
+  
+  for(Int_t i = 0; i < cqMax; i++)
+  {
+    if(hCrossCheckAll[i]) delete hCrossCheckAll[i]; hCrossCheckAll[i] = 0;
+    if(hCrossCheckAcc[i]) delete hCrossCheckAcc[i]; hCrossCheckAcc[i] = 0;
+  }
+  
 }
 
 void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
@@ -241,18 +273,26 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   //define default binning
   Double_t binsMultDefault[48] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,19.5, 20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5,200.5, 300.5, 400.5, 500.5, 600.5, 700.5, 800.5, 900.5, 1000.5, 2000.5, 3000.5, 4000.5, 5000.5, 6000.5, 7000.5, 8000.5, 9000.5, 10000.5 }; 
   Double_t binsPtDefault[82] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 180.0, 200.0};
-  Double_t binsPtCorrDefault[37] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,200.0};    
+  Double_t binsPtCorrDefault[37] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 3.0, 4.0, 200.0}; 
   Double_t binsEtaDefault[31] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
   Double_t binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
   Double_t binsCentralityDefault[12] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};  
+  
+  Double_t binsPhiDefault[37] = { 0, 0.174533, 0.349066, 0.523599, 0.698132, 0.872665, 1.0472, 1.22173, 1.39626, 1.5708, 1.74533, 1.91986, 2.0944, 2.26893, 2.44346, 2.61799, 2.79253, 2.96706, 3.14159, 3.31613, 3.49066, 3.66519, 3.83972, 4.01426, 4.18879, 4.36332, 4.53786, 4.71239, 4.88692, 5.06145, 5.23599, 5.41052, 5.58505, 5.75959, 5.93412, 6.10865, 2.*TMath::Pi()};
+  
+  Double_t binsPtCheckDefault[20] = {0.,0.15,0.5,1.0,2.0,3.0,4.0, 5.0, 10.0, 13.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 70.0, 100.0, 150.0, 200.0};  
+  Double_t binsEtaCheckDefault[7] = {-1.0,-0.8,-0.4,0.,0.4,0.8,1.0};
   
   // if no binning is set, use the default
   if (!fBinsMult)	{ SetBinsMult(48,binsMultDefault); }
   if (!fBinsPt)		{ SetBinsPt(82,binsPtDefault); }
   if (!fBinsPtCorr)	{ SetBinsPtCorr(37,binsPtCorrDefault); }
+  if (!fBinsPtCheck)	{ SetBinsPtCheck(20,binsPtCheckDefault); }
   if (!fBinsEta)	{ SetBinsEta(31,binsEtaDefault); }
+  if (!fBinsEtaCheck)	{ SetBinsEtaCheck(7,binsEtaCheckDefault); }
   if (!fBinsZv)		{ SetBinsZv(13,binsZvDefault); }  
   if (!fBinsCentrality)	{ SetBinsCentrality(12,binsCentralityDefault); }
+  if (!fBinsPhi)	{ SetBinsPhi(37,binsPhiDefault); }
   
   Int_t binsZvPtEtaCent[4]={fZvNbins-1,fPtNbins-1,fEtaNbins-1,fCentralityNbins-1};
   Int_t binsZvMultCent[3]={fZvNbins-1,fMultNbins-1,fCentralityNbins-1};
@@ -365,7 +405,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   
   
-  Int_t binsDCAxyDCAzPtEtaPhi[6] = { 200,200, fPtNbins-1, fEtaNbins-1, 36, fCentralityNbins-1};
+  Int_t binsDCAxyDCAzPtEtaPhi[6] = { 200,200, fPtCheckNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
   Double_t minDCAxyDCAzPtEtaPhi[6] = { -5, -5, 0, -1.5, 0., 0, };
   Double_t maxDCAxyDCAzPtEtaPhi[6] = { 5., 5., 100, 1.5, 2.*TMath::Pi(), 100};
   
@@ -374,15 +414,15 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hMCDCAPtSecondary = new THnSparseF("hMCDCAPtSecondary","hMCDCAPtSecondary",6, binsDCAxyDCAzPtEtaPhi, minDCAxyDCAzPtEtaPhi, maxDCAxyDCAzPtEtaPhi);
   hMCDCAPtPrimary = new THnSparseF("hMCDCAPtPrimary","hMCDCAPtPrimary",6, binsDCAxyDCAzPtEtaPhi, minDCAxyDCAzPtEtaPhi, maxDCAxyDCAzPtEtaPhi);
   
-  hDCAPtAll->SetBinEdges(2, fBinsPt);
-  hDCAPtAccepted->SetBinEdges(2, fBinsPt);
-  hMCDCAPtSecondary->SetBinEdges(2, fBinsPt);
-  hMCDCAPtPrimary->SetBinEdges(2, fBinsPt);
+  hDCAPtAll->SetBinEdges(2, fBinsPtCheck);
+  hDCAPtAccepted->SetBinEdges(2, fBinsPtCheck);
+  hMCDCAPtSecondary->SetBinEdges(2, fBinsPtCheck);
+  hMCDCAPtPrimary->SetBinEdges(2, fBinsPtCheck);
   
-  hDCAPtAll->SetBinEdges(3, fBinsEta);
-  hDCAPtAccepted->SetBinEdges(3, fBinsEta);
-  hMCDCAPtSecondary->SetBinEdges(3, fBinsEta);
-  hMCDCAPtPrimary->SetBinEdges(3, fBinsEta);
+  hDCAPtAll->SetBinEdges(3, fBinsEtaCheck);
+  hDCAPtAccepted->SetBinEdges(3, fBinsEtaCheck);
+  hMCDCAPtSecondary->SetBinEdges(3, fBinsEtaCheck);
+  hMCDCAPtPrimary->SetBinEdges(3, fBinsEtaCheck);
   
   hDCAPtAll->SetBinEdges(5, fBinsCentrality);
   hDCAPtAccepted->SetBinEdges(5, fBinsCentrality);
@@ -422,37 +462,74 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   hMCDCAPtPrimary->GetAxis(4)->SetTitle("#phi");
   hMCDCAPtPrimary->GetAxis(5)->SetTitle("Centrality");
   
-  Int_t binsRowsClusterChiPtEtaPhi[7] = { 32,32, 100, fPtNbins-1, fEtaNbins-1, 36, fCentralityNbins-1};
-  Double_t minRowsClusterChiPtEtaPhi[7] = { 0, 0, 0, 0, -1.5, 0., 0.};
-  Double_t maxRowsClusterChiPtEtaPhi[7] = { 159, 159, 10, 100, 1.5, 2.*TMath::Pi(), 100.};
   
-  hnCrossedRowsClustersChiPtEtaPhiAll = new THnSparseF("hnCrossedRowsClustersChiPtEtaPhiAll","hnCrossedRowsClustersChiPtEtaPhiAll",7,binsRowsClusterChiPtEtaPhi, minRowsClusterChiPtEtaPhi, maxRowsClusterChiPtEtaPhi);
+  char cFullTempTitle[255];
+  char cTempTitleAxis0All[255];
+  char cTempTitleAxis0Acc[255];
+  //   char cTempTitleAxis1[255];
+  char cFullTempName[255];
+  char cTempNameAxis0[255];
+  //   char cTempNameAxis1[255];
+  const Int_t iNbinRowsClusters = 21;
+  //   Double_t dBinsRowsClusters[iNbinRowsClusters] = {0, 7.95, 15.9, 23.85, 31.8, 39.75, 47.7, 55.65, 63.6, 71.55, 79.5, 87.45, 95.4, 103.35, 111.3, 119.25, 127.2, 135.15, 143.1, 151.05, 159.};
   
-  hnCrossedRowsClustersChiPtEtaPhiAcc = new THnSparseF("hnCrossedRowsClustersChiPtEtaPhiAcc","hnCrossedRowsClustersChiPtEtaPhiAcc",7,binsRowsClusterChiPtEtaPhi, minRowsClusterChiPtEtaPhi, maxRowsClusterChiPtEtaPhi);
+  const Int_t iNbinChi = 51;
+  //   Double_t dBinsChi[iNbinChi] = {0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4, 5.6, 5.8, 6, 6.2, 6.4, 6.6, 6.8, 7, 7.2, 7.4, 7.6, 7.8, 8, 8.2, 8.4, 8.6, 8.8, 9, 9.2, 9.4, 9.6, 9.8,10.};
   
-  hnCrossedRowsClustersChiPtEtaPhiAll->Sumw2();
-  hnCrossedRowsClustersChiPtEtaPhiAll->SetBinEdges(3, fBinsPt);
-  hnCrossedRowsClustersChiPtEtaPhiAll->SetBinEdges(4, fBinsEta);
-  hnCrossedRowsClustersChiPtEtaPhiAll->SetBinEdges(6, fBinsCentrality);
-  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(0)->SetTitle("NcrossedRows before Cut");
-  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(1)->SetTitle("Nclusters before Cut");
-  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(2)->SetTitle("#Chi^{2}/cluster before Cut");
-  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(3)->SetTitle("p_{T} (GeV/c)");
-  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(4)->SetTitle("#eta");
-  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(5)->SetTitle("#phi");
-  hnCrossedRowsClustersChiPtEtaPhiAll->GetAxis(6)->SetTitle("Centrality");
+  Int_t iNbin = 0;
+  //   Double_t *dBins = 0x0;
+  Double_t dBinMin = 0;
+  Double_t dBinMax = 0;
   
-  hnCrossedRowsClustersChiPtEtaPhiAcc->Sumw2();
-  hnCrossedRowsClustersChiPtEtaPhiAcc->SetBinEdges(3, fBinsPt);
-  hnCrossedRowsClustersChiPtEtaPhiAcc->SetBinEdges(4, fBinsEta);
-  hnCrossedRowsClustersChiPtEtaPhiAcc->SetBinEdges(6, fBinsCentrality);
-  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(0)->SetTitle("NcrossedRows after Cut");
-  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(1)->SetTitle("Nclusters after Cut");
-  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(2)->SetTitle("#Chi^{2}/cluster after Cut");
-  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(3)->SetTitle("p_{T} (GeV/c)");
-  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(4)->SetTitle("#eta");
-  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(5)->SetTitle("#phi");
-  hnCrossedRowsClustersChiPtEtaPhiAcc->GetAxis(6)->SetTitle("Centrality");
+  for(Int_t iCheckQuant = 0; iCheckQuant < cqMax; iCheckQuant++)
+  {
+    // iCheckQuant: 0 = CrossedRows, 1 = Nclusters, 2 = Chi^2/clusterTPC
+    if(iCheckQuant == cqCrossedRows) 
+    {
+      sprintf(cTempTitleAxis0All, "NcrossedRows before Cut"); 
+      sprintf(cTempTitleAxis0Acc, "NcrossedRows after Cut"); 
+      sprintf(cTempNameAxis0, "CrossedRows");
+      iNbin = iNbinRowsClusters;
+      dBinMin = 0;
+      dBinMax = 159.;
+    }
+    else if(iCheckQuant == cqNcluster) 
+    {
+      sprintf(cTempTitleAxis0All, "Nclusters before Cut"); 
+      sprintf(cTempTitleAxis0Acc, "Nclusters after Cut"); 
+      sprintf(cTempNameAxis0, "Clusters");
+      iNbin = iNbinRowsClusters;
+      dBinMin = 0;
+      dBinMax = 159.;
+    }
+    else if(iCheckQuant == cqChi) 
+    {
+      sprintf(cTempTitleAxis0All, "#Chi^{2}/cluster before Cut"); 
+      sprintf(cTempTitleAxis0Acc, "#Chi^{2}/cluster after Cut"); 
+      sprintf(cTempNameAxis0, "Chi");
+      iNbin = iNbinChi;
+      dBinMin = 0;
+      dBinMax = 10.;
+    }
+    
+    Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtCheckNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
+    Double_t minCheckPtEtaPhi[5] = { dBinMin,  0, -1.5, 0., 0, };
+    Double_t maxCheckPtEtaPhi[5] = { dBinMax, 100, 1.5, 2.*TMath::Pi(), 100};
+    
+    sprintf(cFullTempName, "h%sPtEtaPhiAll",cTempNameAxis0);
+    sprintf(cFullTempTitle,"%s;%s;p_{T} (GeV/c);#eta;#phi;Centrality", cFullTempName, cTempTitleAxis0All);
+    hCrossCheckAll[iCheckQuant] = new THnF(cFullTempName, cFullTempTitle, 5, binsCheckPtEtaPhi, minCheckPtEtaPhi, maxCheckPtEtaPhi);
+    hCrossCheckAll[iCheckQuant]->SetBinEdges(1, fBinsPtCheck);
+    hCrossCheckAll[iCheckQuant]->SetBinEdges(2, fBinsEtaCheck);
+    hCrossCheckAll[iCheckQuant]->Sumw2();
+    
+    sprintf(cFullTempName, "h%sPtEtaPhiAcc",cTempNameAxis0);
+    sprintf(cFullTempTitle,"%s;%s;p_{T} (GeV/c);#eta;#phi;Centrality", cFullTempName, cTempTitleAxis0Acc);
+    hCrossCheckAcc[iCheckQuant] = new THnF(cFullTempName, cFullTempTitle, 5, binsCheckPtEtaPhi, minCheckPtEtaPhi, maxCheckPtEtaPhi);
+    hCrossCheckAcc[iCheckQuant]->SetBinEdges(1, fBinsPtCheck);
+    hCrossCheckAcc[iCheckQuant]->SetBinEdges(2, fBinsEtaCheck);
+    hCrossCheckAcc[iCheckQuant]->Sumw2();
+  } // end iCheckQuant
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(hnZvPtEtaCent);
@@ -478,8 +555,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(hDCAPtAccepted);
   fOutputList->Add(hMCDCAPtSecondary);
   fOutputList->Add(hMCDCAPtPrimary);
-  fOutputList->Add(hnCrossedRowsClustersChiPtEtaPhiAll);
-  fOutputList->Add(hnCrossedRowsClustersChiPtEtaPhiAcc);
+  for(Int_t i = 0; i < cqMax; i++)
+  {   
+    fOutputList->Add(hCrossCheckAll[i]);
+    fOutputList->Add(hCrossCheckAcc[i]);
+  }
   
   PostData(1, fOutputList);
 }
@@ -676,7 +756,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     hDCAPtAll->Fill(dDCAxyDCAzPt);
     
-    if( !(IsTrackAccepted(track)) ) continue;
+    if( !(IsTrackAccepted(track, dCentrality)) ) continue;
     
     dTrackZvPtEtaCent[1] = track->Pt();
     dTrackZvPtEtaCent[2] = track->Eta();
@@ -782,7 +862,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
 }
 
-Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
+Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentrality)
 {
   if(!tr) return kFALSE;
   
@@ -794,8 +874,19 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   
   //   hAllCrossedRowsTPC->Fill(dCrossedRowsTPC);
   
-  Double_t dRowClusterChiPtEtaPhi[6] = {dCrossedRowsTPC, dNClustersTPC, dChi2PerClusterTPC, tr->Pt(), tr->Eta(), tr->Phi() };
-  hnCrossedRowsClustersChiPtEtaPhiAll->Fill(dRowClusterChiPtEtaPhi);
+  Double_t *dCheck = new Double_t[cqMax];
+  Double_t *dKine = new Double_t[kqMax];
+  dKine[0] = tr->Pt();
+  dKine[1] = tr->Eta();
+  dKine[2] = tr->Phi();
+  
+  dCheck[0] = dCrossedRowsTPC;
+  dCheck[1] = dNClustersTPC;
+  dCheck[2] = dChi2PerClusterTPC;
+  
+  
+  FillDebugHisto(dCheck, dKine, dCentrality, kFALSE);
+  
   
   // filter bit 5
   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; } 
@@ -807,7 +898,19 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
   
   if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
   
-  hnCrossedRowsClustersChiPtEtaPhiAcc->Fill(dRowClusterChiPtEtaPhi);
+  // do a relativ cut in Nclusters, both time at 80% of mean
+//   if(bIsMonteCarlo) 
+//   { 
+//     if(dNClustersTPC < 88) { return kFALSE; }
+//   }
+//   else
+//   {
+//     if(dNClustersTPC < 76) { return kFALSE; }
+//   }
+  
+  
+  FillDebugHisto(dCheck, dKine, dCentrality, kTRUE);
+  
   
   //   hAccNclsTPC->Fill(dNClustersTPC);
   //   hAccCrossedRowsTPC->Fill(dCrossedRowsTPC);
@@ -857,6 +960,29 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr)
     
     
     return kTRUE;
+}
+
+Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_t *dKineVar, Double_t dCentrality, Bool_t bIsAccepted)
+{
+  if(bIsAccepted)
+  {
+    for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+    {
+      Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
+      hCrossCheckAcc[iCrossCheck]->Fill(dFillIt);
+    }
+  }
+  else
+  {
+    for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+    {
+      Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
+      hCrossCheckAll[iCrossCheck]->Fill(dFillIt);
+    }
+  }
+  
+  return kTRUE;
+  
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])

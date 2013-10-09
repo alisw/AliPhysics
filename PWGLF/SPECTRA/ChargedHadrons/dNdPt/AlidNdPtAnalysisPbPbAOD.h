@@ -7,6 +7,7 @@
 // via AODs 
 // 
 // Author: P. Luettig, 15.05.2013
+// last modified: 08.10.2013
 //------------------------------------------------------------------------------
 
 class iostream;
@@ -25,6 +26,7 @@ class THnSparse;
 #include "TH2.h"
 #include "TH3.h"
 #include "THnSparse.h"
+#include "THn.h"
 #include "TClonesArray.h"
 
 #include "TParticlePDG.h"
@@ -50,6 +52,11 @@ class THnSparse;
 
 class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
   public :
+    enum CheckQuantity { cqCrossedRows = 0, cqNcluster = 1, cqChi = 2 };
+    enum KinematicQuantity { kqPt = 0, kqEta = 1, kqPhi = 2 };
+    enum MaxCheckQuantity { cqMax = 3 };
+    enum MaxKinematicQuantity { kqMax = 3 };
+    
     AlidNdPtAnalysisPbPbAOD(); 
     AlidNdPtAnalysisPbPbAOD(const char *name);
     ~AlidNdPtAnalysisPbPbAOD();
@@ -62,10 +69,12 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetBinsMult(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Mult Bins"); fMultNbins = nbins; fBinsMult = GetArrayClone(nbins,edges); }
     void SetBinsPt(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pT Bins"); fPtNbins = nbins; fBinsPt = GetArrayClone(nbins,edges); }
     void SetBinsPtCorr(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcorr Bins"); fPtCorrNbins = nbins; fBinsPtCorr = GetArrayClone(nbins,edges); }
+    void SetBinsPtCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcheck Bins"); fPtCheckNbins = nbins; fBinsPtCheck = GetArrayClone(nbins,edges); }
     void SetBinsEta(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Eta Bins"); fEtaNbins = nbins; fBinsEta = GetArrayClone(nbins,edges); }
+    void SetBinsEtaCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting EtaCheck Bins"); fEtaCheckNbins = nbins; fBinsEtaCheck = GetArrayClone(nbins,edges); }
     void SetBinsZv(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Zv Bins"); fZvNbins = nbins; fBinsZv= GetArrayClone(nbins,edges); }
     void SetBinsCentrality(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting Cent Bins"); fCentralityNbins = nbins; fBinsCentrality = GetArrayClone(nbins,edges); }
-    
+    void SetBinsPhi(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Phi Bins"); fPhiNbins = nbins; fBinsPhi = GetArrayClone(nbins,edges); }
     
     // set event cut variables
     void SetCutMaxZVertex( Double_t d)					{ dCutMaxZVertex = d; }
@@ -98,6 +107,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     // getter for qualtiy track cuts
     Double_t GetCutMinNCrossedRowsTPC()					{ return dCutMinNumberOfCrossedRows; }
     
+    // fill function for cross check histos
+    Bool_t FillDebugHisto(Double_t *dCrossCheckVar, Double_t *dKineVar, Double_t dCentrality, Bool_t bIsAccepted);
+    
     // getter for DCA
     Bool_t GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2]);
     
@@ -109,7 +121,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AliGenHijingEventHeader* GetHijingEventHeader(AliAODMCHeader *header);
     AliGenPythiaEventHeader* GetPythiaEventHeader(AliAODMCHeader *header);
     
-    Bool_t IsTrackAccepted(AliAODTrack *tr);
+    Bool_t IsTrackAccepted(AliAODTrack *tr, Double_t dCentrality);
     Bool_t IsMCTrackAccepted(AliAODMCParticle *part);
     
     Bool_t IsHijingParticle(const AliAODMCParticle *part, AliGenHijingEventHeader* hijingGenHeader);
@@ -146,13 +158,13 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF	*hDCAPtAccepted; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco tracks
     THnSparseF	*hMCDCAPtSecondary; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco track, which are secondaries (using MC info)
     THnSparseF	*hMCDCAPtPrimary; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco track, which are primaries (using MC info)
-    THnSparseF	*hnCrossedRowsClustersChiPtEtaPhiAll; // CrossedRows:Cluster:ChiperCluster:pT:Eta:Phi before track cuts
-    THnSparseF	*hnCrossedRowsClustersChiPtEtaPhiAcc; // CrossedRows:Cluster:ChiperCluster:pT:Eta:Phi after track cuts
-   
+    THnF	*hCrossCheckAll[3]; //control histo: {CrossedRows,Ncluster,Chi} vs pT,eta,phi,Centrality for all tracks
+    THnF	*hCrossCheckAcc[3]; //control histo: {CrossedRows,Ncluster,Chi} vs pT,eta,phi,Centrality after cuts
+    
     
     // global variables
     Bool_t bIsMonteCarlo;
-     
+    
     // event cut variables
     Double_t dCutMaxZVertex;
     
@@ -184,15 +196,21 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Int_t fMultNbins;
     Int_t fPtNbins;
     Int_t fPtCorrNbins;
+    Int_t fPtCheckNbins;
     Int_t fEtaNbins;
+    Int_t fEtaCheckNbins;
     Int_t fZvNbins;
     Int_t fCentralityNbins;
+    Int_t fPhiNbins;
     Double_t* fBinsMult; //[fMultNbins]
     Double_t* fBinsPt; //[fPtNbins]
     Double_t* fBinsPtCorr; //[fPtCorrNbins]
+    Double_t* fBinsPtCheck; //[fPtCheckNbins]
     Double_t* fBinsEta; //[fEtaNbins]
+    Double_t* fBinsEtaCheck; //[fEtaCheckNbins]
     Double_t* fBinsZv; //[fZvNbins]
     Double_t* fBinsCentrality; //[fCentralityNbins]
+    Double_t* fBinsPhi; //[fPhiNbins]
     
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
