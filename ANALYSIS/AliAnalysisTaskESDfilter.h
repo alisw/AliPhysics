@@ -116,7 +116,6 @@ private:
   void ConvertTZERO(const AliESDEvent& esd);
   void ConvertZDC(const AliESDEvent& esd);
   Int_t ConvertHMPID(const AliESDEvent& esd);
-  void ConvertTRD(const AliESDEvent& esd);
   void PropagateTrackToEMCal(AliESDtrack *esdTrack);
 
   TClonesArray& Tracks();
@@ -172,7 +171,6 @@ private:
   Bool_t fAreEMCALTriggerEnabled; // whether or not to fill the emcal trigger (true by default)
   Bool_t fArePHOSTriggerEnabled; // whether or not to fill the phos trigger (true by default)
   Bool_t fAreTrackletsEnabled; // whether or not to fill the tracklets (true by default)
-  Bool_t fIsTRDEnabled; // whether or not to fill on-line tracklets and tracks from TRD (true by default)
   AliESDpid* fESDpid; // esd pid
   Bool_t fIsPidOwner; // whether we own fESDpid
   AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
