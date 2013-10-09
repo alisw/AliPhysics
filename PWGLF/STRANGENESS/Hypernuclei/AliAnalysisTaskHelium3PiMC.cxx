@@ -59,6 +59,8 @@ class AliCascadeVertexer;
 #include "TString.h"
 #include <TDatime.h>
 #include <TRandom3.h>
+using std::endl;
+using std::cout;
 
 const Int_t AliAnalysisTaskHelium3PiMC::fgNrot = 15;
 
