@@ -19,6 +19,9 @@ public:
     virtual void GetNumberOfSlowNucleons2(AliCollisionGeometry* /*geo*/,
 					 Int_t& /*ngp*/, Int_t& /*ngn*/,
 					 Int_t& /*nbp*/, Int_t& /*nbn*/) const {;}
+    virtual void GetNumberOfSlowNucleons2s(AliCollisionGeometry* /*geo*/,
+					 Int_t& /*ngp*/, Int_t& /*ngn*/,
+					 Int_t& /*nbp*/, Int_t& /*nbn*/) const {;}
     
  protected:
   ClassDef(AliSlowNucleonModel,1) // Gray Particle Model

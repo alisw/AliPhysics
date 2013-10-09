@@ -55,6 +55,8 @@ public:
     virtual Int_t  GetNGrayNeutrons()  {return fNgn;}
     virtual Int_t  GetNBlackProtons()  {return fNbp;}
     virtual Int_t  GetNBlackNeutrons() {return fNbn;}    
+    //
+    virtual void   SetModelSmear(Int_t imode) {fSmearMode=imode;}
     
  protected:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q, Float_t &theta);
@@ -91,6 +93,8 @@ public:
     Float_t  fBeamDivergence;    // beam divergence	(in radians)
     Float_t  fBeamDivEvent;      // beam divergence	(in radians)
     //
+    Int_t    fSmearMode;         // 0=Skler (no smear), =1 smearing Ncoll, =2 smearing Nslow
+    //
     AliSlowNucleonModel* fSlowNucleonModel; // The slow nucleon model
 
     enum {kGrayProcess = 200, kBlackProcess = 300};
@@ -99,7 +103,7 @@ public:
     AliGenSlowNucleons(const AliGenSlowNucleons &sn);
     AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
 
-    ClassDef(AliGenSlowNucleons,3) // Slow Nucleon Generator
+    ClassDef(AliGenSlowNucleons,4) // Slow Nucleon Generator
 };
 #endif
 
