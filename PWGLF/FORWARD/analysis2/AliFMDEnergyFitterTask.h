@@ -135,17 +135,12 @@ public:
    */
   void SetDebug(Int_t dbg);
   /** 
-   * Set low cut on B
+   * Set whether to only look at MB (INEL) data, so as to avoid 
+   * bias from different trigger scalars. 
    * 
-   * @param b Low cut
+   * @param onlyMB if true, only analyse MB events
    */
-  void SetBLow(Float_t b) {fbLow = b;}
-  /** 
-   * Set high cut on B
-   * 
-   * @param b high cut
-   */
-  void SetBHigh(Float_t b) {fbHigh = b;}
+  void SetOnlyMB(Bool_t onlyMB) { fOnlyMB = onlyMB; }
   /* @} */
   /** 
    * @{ 
@@ -188,10 +183,9 @@ protected:
 
   AliFMDEventInspector fEventInspector; // Algorithm
   AliFMDEnergyFitter   fEnergyFitter;   // Algorithm
-  Float_t              fbLow;           // What's this?
-  Float_t              fbHigh;          // What's this? 
-  
-  ClassDef(AliFMDEnergyFitterTask,3) // Forward multiplicity class
+  Bool_t               fOnlyMB;         // Only MB flag
+
+  ClassDef(AliFMDEnergyFitterTask,4) // Forward multiplicity class
 };
 
 #endif
