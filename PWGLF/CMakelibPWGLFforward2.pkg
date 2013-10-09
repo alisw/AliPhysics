@@ -149,6 +149,7 @@ set ( DHDR  PWGLFforward2LinkDef.h)
 
 add_executable(runTrain
   FORWARD/trains/trainMain.cxx)
+set(CMAKE_EXE_LINKER_FLAGS "${LDFLAGS}")
 target_link_libraries(runTrain 
   ${BINLIBDIRS} ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS} ${ROOTCLIBS} 
   -lSTEERBase -lESD -lAOD -lOADB -lANALYSIS -lANALYSISalice)

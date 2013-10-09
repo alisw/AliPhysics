@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
-#ifdef __CINT__
+#if defined(__CINT__) && defined(__MAKECINT__)
 /**
  * @file   PWGLFforward2LinkDef.h
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
@@ -52,7 +52,9 @@
 
 // Correction managers 
 #pragma link C++ class AliCorrectionManagerBase+;
-// #pragma link C++ class AliCorrectionManagerBase::Correction+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliCorrectionManagerBase::Correction+;
+#endif
 // Note: custom streamer to ensure singleton consistency!
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliCentralCorrectionManager-;
@@ -62,20 +64,28 @@
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentraldNdetaTask+;
 #pragma link C++ class AliCentralMCCorrectionsTask+;
-// #pragma link C++ class AliCentralMCCorrectionsTask::VtxBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliCentralMCCorrectionsTask::VtxBin+;
+#endif
 #pragma link C++ class AliCentralMCMultiplicityTask+;
 #pragma link C++ class AliCentralMultiplicityTask+;
-// #pragma link C++ class AliCentralMultiplicityTask::VtxBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliCentralMultiplicityTask::VtxBin+;
+#endif
 #pragma link C++ class AliSPDMCTrackDensity+;
 
 // Aux tasks and code 
 #pragma link C++ class AliCopyHeaderTask+;
 #pragma link C++ class AliBasedNdetaTask+;
-// #pragma link C++ class AliBasedNdetaTask::CentralityBin+;
-// #pragma link C++ class AliBasedNdetaTask::Sum+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliBasedNdetaTask::CentralityBin+;
+#pragma link C++ class AliBasedNdetaTask::Sum+;
+#endif
 #pragma link C++ class AliBaseMCTrackDensity+;
 #pragma link C++ class AliMCTruthdNdetaTask+;
-// #pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
+#endif
 #pragma link C++ class AliDisplacedVertexSelection+;
 #pragma link C++ class AliPoissonCalculator+;
 #pragma link C++ class AliMCAuxHandler+;
@@ -91,7 +101,9 @@
 #pragma link C++ class AliFMDCorrAcceptance+;
 #pragma link C++ class AliFMDCorrDoubleHit+;
 #pragma link C++ class AliFMDCorrector+;
-// #pragma link C++ class AliFMDCorrector::RingHistos+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliFMDCorrector::RingHistos+;
+#endif
 #pragma link C++ class AliFMDCorrELossFit+;
 #pragma link C++ class AliFMDCorrELossFit::ELossFit+;
 #pragma link C++ class AliFMDCorrMergingEfficiency+;
@@ -100,14 +112,20 @@
 
 // FMD algorithms 
 #pragma link C++ class AliFMDDensityCalculator+;
-// #pragma link C++ class AliFMDDensityCalculator::RingHistos+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliFMDDensityCalculator::RingHistos+;
+#endif
 #pragma link C++ class AliFMDEnergyFitter+;
-// #pragma link C++ class AliFMDEnergyFitter::RingHistos+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliFMDEnergyFitter::RingHistos+;
+#endif
 #pragma link C++ class AliFMDEventInspector+;
 #pragma link C++ class AliFMDEventPlaneFinder+;
 #pragma link C++ class AliFMDHistCollector+;
 #pragma link C++ class AliFMDSharingFilter+;
-// #pragma link C++ class AliFMDSharingFilter::RingHistos+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliFMDSharingFilter::RingHistos+;
+#endif
 
 // FMD MC algorithms
 #pragma link C++ class AliFMDMCCorrector+;
@@ -120,15 +138,23 @@
 #pragma link C++ class AliBaseESDTask+;
 #pragma link C++ class AliBaseAODTask+;
 #pragma link C++ class AliBaseMCCorrectionsTask+;
-// #pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
+#endif
 #pragma link C++ class AliFMDEnergyFitterTask+;
 #pragma link C++ class AliFMDEventPlaneTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
-// #pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
+#endif
 #pragma link C++ class AliForwardFlowTaskQC+;
-// #pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
+#endif
 #pragma link C++ class AliForwardMCCorrectionsTask+;
-// #pragma link C++ class AliForwardMCCorrectionsTask::VtxBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliForwardMCCorrectionsTask::VtxBin+;
+#endif
 #pragma link C++ class AliForwardMCFlowTaskQC+;
 #pragma link C++ class AliForwardMCMultiplicityTask+;
 #pragma link C++ class AliForwardMultiplicityBase+;
@@ -139,11 +165,13 @@
 #pragma link C++ class AliForwardMultiplicityDistribution+;
 #pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
 #pragma link C++ class AliForwardMultDists+;
-// #pragma link C++ class AliForwardMultDists::EtaBin+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliForwardMultDists::EtaBin+;
+#endif
 #pragma link C++ class AliForwardMultDists::BinSpec+;
 
 #else
-// # error Not for compilation 
+# error Not for compilation 
 #endif
 //
 // EOF
