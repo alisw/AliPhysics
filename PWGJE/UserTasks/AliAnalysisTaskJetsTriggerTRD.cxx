@@ -117,6 +117,8 @@ void AliAnalysisTaskJetsTriggerTRD::UserCreateOutputObjects()
     h->GetYaxis()->SetBinLabel(ID(kTrgInt8WUHJT));
     h->GetYaxis()->SetBinLabel(ID(kTrgEMC7WUHJT));
     h->GetYaxis()->SetBinLabel(ID(kTrgEMC8WUHJT));
+    h->GetYaxis()->SetBinLabel(ID(kTrgEMCEJE));
+    h->GetYaxis()->SetBinLabel(ID(kTrgEMCEGA));
   }
 
   AddHistogram(ID(kHistJetPtNoTracks3),
@@ -397,13 +399,21 @@ Bool_t AliAnalysisTaskJetsTriggerTRD::DetectTriggers()
   if ((physSel & (AliVEvent::kINT8)))
     MarkTrigger(kTrgInt8);
 
-  if ((physSel & (AliVEvent::kEMC7)))
+  if ((physSel & (AliVEvent::kEMC7)) &&
+      trgClasses.Contains("CEMC7"))
     MarkTrigger(kTrgEMC7);
 
-  if ((physSel & (AliVEvent::kEMC8)))
+  if ((physSel & (AliVEvent::kEMC8)) &&
+      trgClasses.Contains("CEMC8"))
     MarkTrigger(kTrgEMC8);
 
-  // for the triggered events we use the classes
+  if ((physSel & (AliVEvent::kEMCEJE)))
+    MarkTrigger(kTrgEMCEJE);
+
+  if ((physSel & (AliVEvent::kEMCEGA)))
+    MarkTrigger(kTrgEMCEGA);
+
+  // for the TRD-triggered events we use the classes
   if (trgClasses.Contains("CINT7WUHJT-"))
     MarkTrigger(kTrgInt7WUHJT);
 

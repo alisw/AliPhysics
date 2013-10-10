@@ -70,6 +70,8 @@ public:
     kTrgInt8WUHJT,
     kTrgEMC7WUHJT,
     kTrgEMC8WUHJT,
+    kTrgEMCEJE,
+    kTrgEMCEGA,
     //
     kTrgLast
   };	   
