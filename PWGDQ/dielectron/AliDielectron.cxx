@@ -681,11 +681,11 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
     TMap mapRemovedTracks;
 
     // eta gap ?
-    Bool_t etagap = kFALSE;
-    for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
-      TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
-      if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
-    }
+    //Bool_t etagap = kFALSE;
+    //for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
+    //  TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
+    //  if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
+    //}
 
     Double_t cQX=0., cQY=0.;
     // apply cuts to the tracks, e.g. etagap

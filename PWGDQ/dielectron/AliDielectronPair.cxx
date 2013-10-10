@@ -653,11 +653,11 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
 }
 
 //______________________________________________
-Double_t AliDielectronPair::PairPlaneAngle(Double_t kv0CrpH2) const
+Double_t AliDielectronPair::PairPlaneAngle() const
 {
 
   // Calculate the angle between electron pair plane and VZERO-C reaction plane for 2nd harmonic
-  // kv0CrpH2 is reaction plane angle
+
 
   Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
@@ -673,7 +673,7 @@ Double_t AliDielectronPair::PairPlaneAngle(Double_t kv0CrpH2) const
   //p1+p2
   Double_t px = px1+px2;
   Double_t py = py1+py2;
-  Double_t pz = pz1+pz2;
+  //Double_t pz = pz1+pz2;
 
   // normal vector of ee plane
   Double_t pnorx = py1*pz2 - pz1*py2;
@@ -692,20 +692,14 @@ Double_t AliDielectronPair::PairPlaneAngle(Double_t kv0CrpH2) const
 	upny= pnory/pnor;
 	upnz= pnorz/pnor;
   } 
-  //  Double_t upnz = pnorz/pnor;
 
   // normal vector of strong magnetic field plane
   //rotation coordinates (x,y,z)->(x',y',z')
-  //x'=(cos(v0CrpH2),sin(v0CrpH2),0);y'=(-sin(v0CrpH2),cos(v0CrpH2),0);z'=(0,0,1)=z
-  //(p1+p2)x'z
-  Double_t rotpx = px*TMath::Cos(kv0CrpH2)+py*TMath::Sin(kv0CrpH2);
-  //Double_t rotpy =;
-  // Double_t rotpz = pz;
+  //(p1+p2),(0,0,1)
+  Double_t ax = py;
+  Double_t ay = -px;
+  Double_t az = 0.0;
 
-  Double_t ax = py*pz;
-  Double_t ay = pz*rotpx-pz*px;
-  Double_t az = -rotpx*py;
-  
   Double_t denomHelper = ax*ax + ay*ay +az*az;
   Double_t uax = -9999.;
   Double_t uay = -9999.;
