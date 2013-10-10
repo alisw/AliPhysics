@@ -83,6 +83,7 @@ void QAtrain_duo(const char *suffix="", Int_t run = 0,
              const char *xmlfile   = "wn.xml",
              Int_t  stage          = 0, /*0 = QA train, 1...n - merging stage*/
              const char *cdb     = "raw://")
+//             const char *cdb     = "local://$ALICE_ROOT/OCDB")
 {
   run_number = run;
   TString ss(suffix);
@@ -155,6 +156,7 @@ void LoadLibraries()
      gSystem->Load("libPWGGACaloTrackCorrelations");
      gSystem->Load("libPWGGACaloTasks");
      gSystem->Load("libPWGGAPHOSTasks");
+     gSystem->Load("libPWGTools");
      gSystem->Load("libPWGEMCAL");
      gSystem->Load("libPWGGAEMCALTasks");
   }  
@@ -183,11 +185,8 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   //
   if (doCDBconnect) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
     if (!taskCDB) return;
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage(cdb_location);
-    taskCDB->SetRunNumber(run_number);
   }    
   
   //
