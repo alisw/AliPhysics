@@ -78,8 +78,10 @@ fAODOut(0x0),
 fAODExtension(0x0),
 fJetBranchName(""),
 fJetBranchNameMC(""),
+fJetBranchNameMCFull(""),
 fListJets(0x0),
 fListJetsGen(0x0),
+fListJetsGenFull(0x0),
 fNonStdFile(""),
 fSystem(0), //pp=0  pPb=1
 fJetParamR(0.4),
@@ -117,7 +119,9 @@ fHJetPtRaw(0x0),
 fHLeadingJetPtRaw(0x0), 
 fHDphiVsJetPtAll(0x0), 
 fhJetPtGenVsJetPtRec(0x0),
-fhJetPtGen(0x0), 
+fhJetPtGen(0x0),
+fhJetPtGenChargVsJetPtGenFull(0x0),
+fhJetPtGenFull(0x0),
 fh2NtriggersGen(0x0),
 fHJetSpecGen(0x0),
 fhPtTrkTruePrimRec(0x0),
@@ -155,8 +159,10 @@ fAODOut(0x0),
 fAODExtension(0x0),
 fJetBranchName(""),
 fJetBranchNameMC(""),
+fJetBranchNameMCFull(""),
 fListJets(0x0),
 fListJetsGen(0x0),
+fListJetsGenFull(0x0),
 fNonStdFile(""),
 fSystem(0),  //pp=0   pPb=1
 fJetParamR(0.4),
@@ -195,6 +201,8 @@ fHLeadingJetPtRaw(0x0),
 fHDphiVsJetPtAll(0x0), 
 fhJetPtGenVsJetPtRec(0x0),
 fhJetPtGen(0x0),
+fhJetPtGenChargVsJetPtGenFull(0x0),
+fhJetPtGenFull(0x0),
 fh2NtriggersGen(0x0),
 fHJetSpecGen(0x0),
 fhPtTrkTruePrimRec(0x0),
@@ -233,8 +241,10 @@ fAODOut(a.fAODOut),
 fAODExtension(a.fAODExtension),
 fJetBranchName(a.fJetBranchName),
 fJetBranchNameMC(a.fJetBranchNameMC),
+fJetBranchNameMCFull(a.fJetBranchNameMCFull),
 fListJets(a.fListJets),
 fListJetsGen(a.fListJetsGen),
+fListJetsGenFull(a.fListJetsGenFull),
 fNonStdFile(a.fNonStdFile),
 fSystem(a.fSystem),  
 fJetParamR(a.fJetParamR),
@@ -273,6 +283,8 @@ fHLeadingJetPtRaw(a.fHLeadingJetPtRaw),
 fHDphiVsJetPtAll(a.fHDphiVsJetPtAll),
 fhJetPtGenVsJetPtRec(a.fhJetPtGenVsJetPtRec),
 fhJetPtGen(a.fhJetPtGen),
+fhJetPtGenChargVsJetPtGenFull(a.fhJetPtGenChargVsJetPtGenFull),
+fhJetPtGenFull(a.fhJetPtGenFull),
 fh2NtriggersGen(a.fh2NtriggersGen),
 fHJetSpecGen(a.fHJetSpecGen),
 fhPtTrkTruePrimRec(a.fhPtTrkTruePrimRec),
@@ -315,6 +327,7 @@ AliAnalysisTaskJetCorePP::~AliAnalysisTaskJetCorePP()
    //Destructor 
    delete fListJets;
    delete fListJetsGen;
+   delete fListJetsGenFull;
    delete fOutputList; // ????
    delete fRandom;
 }
@@ -396,7 +409,11 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
    fRandom = new TRandom3(0);
 
-   if(fIsMC) fListJetsGen = new TList(); //generator level
+   if(fIsMC){
+      fListJetsGen = new TList();     //generator level charged jets
+      if(fJetBranchNameMCFull.Length()>0)
+         fListJetsGenFull = new TList(); //generator level full jets
+   }
    OpenFile(1);
    if(!fOutputList) fOutputList = new TList();
    fOutputList->SetOwner(kTRUE);
@@ -422,7 +439,7 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
    //Centrality, A, pTjet, pTtrigg, dphi
    const Int_t dimSpec   = 5;
-   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality, 100,   100,  50, TMath::Nint(10*(TMath::Pi()-fkDeltaPhiCut))};
+   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality, 100,   200,  50, TMath::Nint(10*(TMath::Pi()-fkDeltaPhiCut))};
    const Double_t lowBinSpec[dimSpec] = {0.0,             0.0,     0, 0.0, fkDeltaPhiCut};
    const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0, 200.0,50.0, TMath::Pi()};
    fHJetSpec = new THnSparseF("fHJetSpec",
@@ -511,11 +528,17 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
    //analyze MC generator level 
    if(fIsMC){    
-      fhJetPtGenVsJetPtRec = new TH2D("fhJetPtGenVsJetPtRec","JetPtGenVsJetPtRec", 100,0,200, 100,0,200); 
+      fhJetPtGenVsJetPtRec = new TH2D("fhJetPtGenVsJetPtRec","JetPtGenVsJetPtRec", 200,0,200, 200,0,200); 
       fOutputList->Add(fhJetPtGenVsJetPtRec); //gen MC jet pt spectrum versus reconstructed pt spectrum
 
-      fhJetPtGen = new TH1D("fhJetPtGen","Jet Pt (MC Gen)",100,0,200); //MC generator jet pt spectrum
+      fhJetPtGen = new TH1D("fhJetPtGen","Jet Pt (MC charged jets Gen)",200,0,200); //MC generator jet pt spectrum
       fOutputList->Add(fhJetPtGen);  
+
+      fhJetPtGenChargVsJetPtGenFull = new TH2D("fhJetPtGenChargVsJetPtGenFull","fhJetPtGenChargVsJetPtGenFull", 200,0,200, 200,0,200); 
+      fOutputList->Add(fhJetPtGenChargVsJetPtGenFull); //gen MC jet pt spectrum versus reconstructed pt spectrum
+
+      fhJetPtGenFull = new TH1D("fhJetPtGenFull","Jet Pt (MC Full jets Gen)",200,0,200); //MC generator jet pt spectrum
+      fOutputList->Add(fhJetPtGenFull);  
 
       fh2NtriggersGen = (TH2F*) fh2Ntriggers->Clone("fh2NtriggersGen");
       fh2NtriggersGen->SetTitle(Form("%s Gen MC",fh2Ntriggers->GetTitle()));
@@ -754,7 +777,9 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    if(fIsMC){ //analyze generator level MC
       // fetch MC generator level jets
       TClonesArray *aodGenJets = NULL;
-      
+      TClonesArray *aodGenJetsFull = NULL;
+     
+      //charged jets 
       if(fAODOut&&!aodGenJets){
          aodGenJets = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchNameMC.Data()));
       }
@@ -773,6 +798,30 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       }
  
       fListJetsGen->Clear();
+
+      //full jets
+      if(fJetBranchNameMCFull.Length()>0){
+ 
+         if(fAODOut&&!aodGenJetsFull){
+            aodGenJetsFull = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fJetBranchNameMCFull.Data()));
+         }
+         if(fAODExtension&&!aodGenJetsFull){
+            aodGenJetsFull = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fJetBranchNameMCFull.Data()));
+         }
+         if(fAODIn&&!aodGenJetsFull){
+            aodGenJetsFull = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fJetBranchNameMCFull.Data()));
+         }
+
+         if(!aodGenJetsFull){
+             Printf("%s:%d no generated Jet array with name %s in AOD",
+                 (char*)__FILE__,__LINE__, fJetBranchNameMCFull.Data());
+             PostData(1, fOutputList);
+             return;
+         }
+ 
+         fListJetsGenFull->Clear();
+      }
+
 
       //serarch for charged trigger at the MC generator level
       Int_t    indexTriggGen = -1;
@@ -852,7 +901,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       }
 
       //================== Fill jet list ===================
-      if(aodGenJets){ 
+      if(aodGenJets){ //charged jets 
          if(fDebug) Printf("########## %s: %d jets",fJetBranchNameMC.Data(), aodGenJets->GetEntriesFast());
 
          for(Int_t igJet = 0; igJet < aodGenJets->GetEntriesFast(); igJet++) {
@@ -860,6 +909,16 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             if(jetGen) fListJetsGen->Add(jetGen);
          }
       }
+
+      if(aodGenJetsFull){ //full jets 
+         if(fDebug) Printf("########## %s: %d jets",fJetBranchNameMCFull.Data(), aodGenJetsFull->GetEntriesFast());
+
+         for(Int_t igJet = 0; igJet < aodGenJetsFull->GetEntriesFast(); igJet++) {
+            AliAODJet *jetGen = dynamic_cast<AliAODJet*>((*aodGenJetsFull)[igJet]);
+            if(jetGen) fListJetsGenFull->Add(jetGen);
+         }
+      }
+
 
       //============  Generator trigger+jet ==================
       Int_t ilowGen  = (fHardest==0 || fHardest==1) ? indexTriggGen : 0;
@@ -957,6 +1016,62 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             }//loop over reconstructed jets
          }// # of  rec jets >0
       }//pointer MC generator jets
+
+      //=========================== Full jet charged jet matrix  ==========================
+      if(aodGenJetsFull){ 
+         //Count full jets and charged-jet pairs at MC  generator level
+         for(Int_t ij=0; ij<fListJetsGenFull->GetEntries(); ij++){
+            AliAODJet* jetFull = (AliAODJet*)(fListJetsGenFull->At(ij));
+            if(!jetFull) continue;
+            Double_t etaJetFull = jetFull->Eta();
+            Double_t ptJetFull  = jetFull->Pt();
+ 
+            if((fJetEtaMin<=etaJetFull) && (etaJetFull<=fJetEtaMax)){ 
+               fhJetPtGenFull->Fill(ptJetFull); // generator level pt spectum of full jets 
+            }
+         }
+         if(fListJetsGen->GetEntries()>0 && fListJetsGenFull->GetEntries()>0){ //at least some reconstructed jets
+            Int_t nful = (Int_t) fListJetsGenFull->GetEntries();
+            Int_t nchr = (Int_t) fListJetsGen->GetEntries();
+
+            //Find closest MC generator full - charged jet
+            if(faGenIndex.GetSize()<nchr) faGenIndex.Set(nchr); //idx of gen FULL jet assoc to gen CHARGED jet
+            if(faRecIndex.GetSize()<nful) faRecIndex.Set(nful); //idx of gen CHARGED jet assoc to gen FULL jet
+
+            if(fDebug){
+               Printf("New Rec List %d gen index Array %d",nchr,faGenIndex.GetSize());
+               Printf("New Gen List %d rec index Array %d",nful,faRecIndex.GetSize());
+            }
+            //matching of MC genrator level and reconstructed jets
+            AliAnalysisHelperJetTasks::GetClosestJets(fListJetsGenFull,nful,fListJetsGen,nchr,faGenIndex,faRecIndex,fDebug); 
+
+            // Fill response matrix
+            for(Int_t ichr = 0; ichr < nchr; ichr++){ //charged jet loop
+               AliAODJet *chJet  = (AliAODJet*) fListJetsGen->At(ichr);
+               Double_t etaJetCh = chJet->Eta();
+               Double_t ptJetCh  = chJet->Pt();
+               //fill response matrix if generator and reconstructed jets are within |eta|<0.9-fiduc
+
+               if((fJetEtaMin <= etaJetCh) && (etaJetCh <= fJetEtaMax)){ 
+                  Int_t iful = faGenIndex[ichr]; //associated generator level jet
+                  if(iful >= 0 && iful < nful){
+                     if(fDebug > 10) Printf("%s:%d iful = %d ichr = %d",(char*)__FILE__,__LINE__,iful,ichr);
+                     AliAODJet *genJetFull  = (AliAODJet*) fListJetsGenFull->At(iful);
+                     Double_t ptJetFull  = genJetFull->Pt();
+                     Double_t etaJetFull = genJetFull->Eta();
+
+                  //fill response matrix if generator and reconstructed jets are within |eta|<0.9-fiduc
+                     if((fJetEtaMin <= etaJetFull) && (etaJetFull <= fJetEtaMax)){
+                        fhJetPtGenChargVsJetPtGenFull->Fill(ptJetFull,ptJetCh);
+                     }
+                  }//iful>=0
+               }//rec jet in eta acceptance
+            }//loop over reconstructed jets
+         }// # of  rec jets >0
+      }//pointer MC generator jets
+
+
+
    } //analyze generator level MC
 
    //=============  RECONSTRUCTED INCLUSIVE JETS ===============

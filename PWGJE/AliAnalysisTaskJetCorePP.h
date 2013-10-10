@@ -45,7 +45,13 @@ public:
    virtual Bool_t Notify();
  
    virtual void  SetBranchName(const TString &name){ fJetBranchName = name; } 
-   virtual void  SetBranchNameMC(const TString &name){ fJetBranchNameMC = name; } 
+   virtual void  SetBranchNameMC(const TString &name){ 
+      fJetBranchNameMC = name;
+      if(fJetBranchNameMC.Contains("MC2")){  
+         fJetBranchNameMCFull = fJetBranchNameMC;
+         fJetBranchNameMCFull.ReplaceAll("MC2","MC");
+      }
+   } 
    virtual void  SetNonStdFile(char* c){fNonStdFile = c;} 
    virtual void  SetSystem(Int_t sys) { fSystem = sys; } 
    virtual void  SetJetR(Float_t jR) { fJetParamR = jR; }
@@ -86,8 +92,10 @@ private:
    // jets to compare
    TString fJetBranchName; //  name of jet branch 
    TString fJetBranchNameMC; //  name of jet branch 
+   TString fJetBranchNameMCFull; //  name of jet branch 
    TList  *fListJets;      //! jet list reconstructed level
-   TList  *fListJetsGen;   //! jet list generator level  
+   TList  *fListJetsGen;   //! jet list generator level  charged jet
+   TList  *fListJetsGenFull; //! jet list generator level full jets 
 
    TString fNonStdFile;    // name of delta aod file to catch the extension
 
@@ -135,7 +143,9 @@ private:
 
    //MC generator level
    TH2D      *fhJetPtGenVsJetPtRec; //jet respose matrix  
-   TH1D      *fhJetPtGen;           //generated pT spectrum of jets  
+   TH1D      *fhJetPtGen;           //generated pT spectrum of charged jets
+   TH2D      *fhJetPtGenChargVsJetPtGenFull; //generated pT spectrum of full jets
+   TH1D      *fhJetPtGenFull; // generated pT spectrum of full jets
    TH2F      *fh2NtriggersGen; //trigger pT versus centrality in generator level
    THnSparse *fHJetSpecGen;    //Recoil jet spectrum in generator level 
    TH2D      *fhPtTrkTruePrimRec; // pt spectrum of true reconstructed primary tracks    
@@ -165,7 +175,7 @@ private:
 
    TRandom3* fRandom;           // TRandom3 
 
-   ClassDef(AliAnalysisTaskJetCorePP, 6);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 7);  //has to end with number larger than 0
 };
 
 #endif
