@@ -1422,7 +1422,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kDeltaPhiTPCrpH2] += TMath::TwoPi(); 
 
   //angle between ee plane and Mag/Reaction plane
-  values[AliDielectronVarManager::kPairPlaneAngle] = pair->PairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2]);
+  values[AliDielectronVarManager::kPairPlaneAngle] = pair->PairPlaneAngle();
   //ee plane vector
   Double_t RotPairx = 0;
   Double_t RotPairy = 0;
