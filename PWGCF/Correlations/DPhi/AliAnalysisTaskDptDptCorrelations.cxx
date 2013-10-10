@@ -716,7 +716,7 @@ AliAnalysisTaskDptDptCorrelations::~AliAnalysisTaskDptDptCorrelations()
 
 void AliAnalysisTaskDptDptCorrelations::UserCreateOutputObjects()
 {
-  cout<< "AliAnalysisTaskDptDptCorrelations::CreateOutputObjects() Starting " << endl;
+  //cout<< "AliAnalysisTaskDptDptCorrelations::CreateOutputObjects() Starting " << endl;
   OpenFile(0);
   _outputHistoList = new TList();
   _outputHistoList->SetOwner();
@@ -766,21 +766,21 @@ void AliAnalysisTaskDptDptCorrelations::UserCreateOutputObjects()
   //_phi_1 = new float[arraySize];  
   //_eta_1 = new float[arraySize];  
   _correction_1 = new float[arraySize];
-  _dedx_1     = new float[arraySize];
+  //_dedx_1     = new float[arraySize];
   
   __n1_1_vsPt              = getDoubleArray(_nBins_pt_1,        0.);
   __n1_1_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_1,    0.);
   __s1pt_1_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_1,    0.);
   __n1_1_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_1,  0.);
   
-  cout << "==========================================================================================" << endl;
-  cout << "=============== Booking for particle 1 done." << endl;
-  cout << "_requestedCharge_1: " << _requestedCharge_1 << endl;
-  cout << "_requestedCharge_2: " << _requestedCharge_2 << endl;
+  //cout << "==========================================================================================" << endl;
+  //cout << "=============== Booking for particle 1 done." << endl;
+  //cout << "_requestedCharge_1: " << _requestedCharge_1 << endl;
+  //cout << "_requestedCharge_2: " << _requestedCharge_2 << endl;
   
   if (_requestedCharge_2!=_requestedCharge_1)
     {
-    cout << " creating arrays for particle 2 with size: " << arraySize << endl;
+      //cout << " creating arrays for particle 2 with size: " << arraySize << endl;
     _sameFilter = 0;
     //particle 2
     _id_2       = new int[arraySize];   
@@ -796,7 +796,7 @@ void AliAnalysisTaskDptDptCorrelations::UserCreateOutputObjects()
     //_phi_2    = new float[arraySize];  
     //_eta_2    = new float[arraySize];  
     _correction_2 = new float[arraySize];
-    _dedx_2       = new float[arraySize];
+    //_dedx_2       = new float[arraySize];
     
     __n1_2_vsPt              = getDoubleArray(_nBins_pt_2,        0.);
     __n1_2_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_2,    0.);
@@ -960,7 +960,7 @@ void AliAnalysisTaskDptDptCorrelations::UserCreateOutputObjects()
   createHistograms();
   PostData(0,_outputHistoList);
   
-  cout<< "AliAnalysisTaskDptDptCorrelations::CreateOutputObjects() DONE " << endl;
+  //cout<< "AliAnalysisTaskDptDptCorrelations::CreateOutputObjects() DONE " << endl;
   
 }
 
@@ -994,11 +994,11 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
   name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
   
-  name = "dedxVsP_1"; _dedxVsP_1  = createHisto2D(name,name,1000,-10.,10.,1000,0.,1000.,"p (GeV/c)", "dedx", "counts");                          
+  /*name = "dedxVsP_1"; _dedxVsP_1  = createHisto2D(name,name,1000,-10.,10.,1000,0.,1000.,"p (GeV/c)", "dedx", "counts");                          
   name = "dedxVsP_2"; _dedxVsP_2  = createHisto2D(name,name,1000,-10.,10.,1000,0.,1000.,"p (GeV/c)", "dedx", "counts");     
   name = "corrDedxVsP_1"; _corrDedxVsP_1 = createHisto2D(name,name,1000,-10.,10.,1000,0.,500,"p (GeV/c)", "dedx", "counts");  
   name = "corrDedxVsP_2"; _corrDedxVsP_2 = createHisto2D(name,name,1000,-10.,10.,1000,0.,500,"p (GeV/c)", "dedx", "counts"); 
-
+  */
   name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
   
@@ -1112,37 +1112,38 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   
   int    k1,k2;
   int    iPhi, iEta, iEtaPhi, iPt, charge;
-  float  q, p, phi, pt, eta, corr, corrPt, dedx, px, py, pz;
+  float  q, phi, pt, eta, corr, corrPt, px, py, pz;
   int    ij;
+  //float p, dedx, dedx_1, dedx_2;
   //double nSigma;
   int    id_1, q_1, iEtaPhi_1, iPt_1;
-  float  pt_1, px_1, py_1, pz_1, corr_1, dedx_1;
+  float  pt_1, px_1, py_1, pz_1, corr_1;
   int    id_2, q_2, iEtaPhi_2, iPt_2;
-  float  pt_2, px_2, py_2, pz_2, corr_2, dedx_2;
+  float  pt_2, px_2, py_2, pz_2, corr_2;
   float  ptpt;
   int    iVertex, iVertexP1, iVertexP2;
   int    iZEtaPhiPt;
   float  massElecSq = 2.5e-7;
   const  AliAODVertex*	vertex;
-  int    nClus;
+  //int    nClus;
   bool   bitOK;
     
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
   if (!manager) {
-    cout<<"ERROR: Analysis manager not found."<<endl;
+    //cout<<"ERROR: Analysis manager not found."<<endl;
     return;
   }
   //coneect to the inputHandler------------                                             
   AliAODInputHandler* inputHandler = dynamic_cast<AliAODInputHandler*> (manager->GetInputEventHandler());
   if (!inputHandler) {
-    cout<<"ERROR: Input handler not found."<<endl;
+    //cout<<"ERROR: Input handler not found."<<endl;
     return;
   }
 
   fAODEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fAODEvent)
     {
-      cout<< "ERROR 01: AOD not found " <<endl;
+      //cout<< "ERROR 01: AOD not found " <<endl;
       return;
     }
   fPIDResponse =inputHandler->GetPIDResponse();
@@ -1185,8 +1186,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float vertexXY = -999;
   //float dcaX     = -999;
   //float dcaY     = -999;
-  float dcaZ     = -999;
-  float dcaXY    = -999;
+  //float dcaZ     = -999;
+  //float dcaXY    = -999;
   float centrality = -999;
   //Double_t nSigma =-999;   
 
@@ -1323,14 +1324,14 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       q      = t->Charge();
       charge = int(q);
       phi    = t->Phi();
-      p      = t->P();
+      //p      = t->P();
       pt     = t->Pt();
       px     = t->Px();
       py     = t->Py();
       pz     = t->Pz();
       eta    = t->Eta();
-      dedx   = t->GetTPCsignal();
-      nClus  = t->GetTPCNcls();
+      //dedx   = t->GetTPCsignal();
+      //nClus  = t->GetTPCNcls();
       //Double_t nclus2 = t->GetTPCClusterInfo(2,1);
       
       
@@ -1448,8 +1449,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           eta      <   _max_eta_2)  
         {
 	  	  
-	  dcaXY = t->DCA(); //new change Prabhat                                        
-	  dcaZ  = t->ZAtDCA(); //new change Prabhat  
+	  //dcaXY = t->DCA(); //new change Prabhat                                        
+	  //dcaZ  = t->ZAtDCA(); //new change Prabhat  
+	  
 	  //if (dcaZ > _dcaZMax) continue;
 	  //cout <<"Prabhat=============="<<"  "<<_dcaZMax<<"    "<<dcaZ<<endl;
 
@@ -1575,7 +1577,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           iPt_1     = _iPt_1[i1];          ////cout << "      iPt_1:" << iPt_1 << endl;
           corr_1    = _correction_1[i1];   ////cout << "     corr_1:" << corr_1 << endl;
           pt_1      = _pt_1[i1];           ////cout << "       pt_1:" << pt_1 << endl;
-          dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
+          //dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
                                            //1 and 2
           for (int i2=i1+1; i2<k1; i2++)
             {        
@@ -1588,7 +1590,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
                 iPt_2     = _iPt_1[i2];        ////cout << "      iPt_1:" << iPt_1 << endl;
                 corr_2    = _correction_1[i2]; ////cout << "     corr_1:" << corr_1 << endl;
                 pt_2      = _pt_1[i2];         ////cout << "       pt_1:" << pt_1 << endl;
-                dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
+                //dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
                 corr      = corr_1*corr_2;
                 if (q_2>q_1 || (q_1>0 && q_2>0 && pt_2<=pt_1) || (q_1<0 && q_2<0 && pt_2>=pt_1))
                   {
@@ -1630,7 +1632,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           iPt_1     = _iPt_1[i1];          ////cout << "      iPt_1:" << iPt_1 << endl;
           corr_1    = _correction_1[i1];   ////cout << "     corr_1:" << corr_1 << endl;
           pt_1      = _pt_1[i1];           ////cout << "       pt_1:" << pt_1 << endl;
-          dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
+          //dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
                                            //1 and 2
           for (int i2=i1+1; i2<k1; i2++)
             {        
@@ -1643,7 +1645,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
                 iPt_2     = _iPt_1[i2];        ////cout << "      iPt_2:" << iPt_2 << endl;
                 corr_2    = _correction_1[i2]; ////cout << "     corr_2:" << corr_2 << endl;
                 pt_2      = _pt_1[i2];         ////cout << "       pt_2:" << pt_2 << endl;
-                dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
+                //dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
                 corr      = corr_1*corr_2;
                 if ( q_2<q_1 || (q_1>0 && q_2>0 && pt_2>=pt_1) || (q_1<0 && q_2<0 && pt_2<=pt_1))
                   {
@@ -1700,7 +1702,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
         px_1      = _px_1[i1];          ////cout << "      px_1:" << px_1 << endl;
         py_1      = _py_1[i1];          ////cout << "      py_1:" << py_1 << endl;
         pz_1      = _pz_1[i1];          ////cout << "      pz_1:" << pz_1 << endl;
-        dedx_1    = _dedx_1[i1];        ////cout << "     dedx_1:" << dedx_1 << endl;
+        //dedx_1    = _dedx_1[i1];        ////cout << "     dedx_1:" << dedx_1 << endl;
         
         //1 and 2
         for (int i2=0; i2<k2; i2++)
@@ -1717,7 +1719,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
               px_2      = _px_2[i2];          ////cout << "      px_2:" << px_2 << endl;
               py_2      = _py_2[i2];          ////cout << "      py_2:" << py_2 << endl;
               pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
-              dedx_2    = _dedx_2[i2];        ////cout << "     dedx_2:" << dedx_2 << endl;
+              //dedx_2    = _dedx_2[i2];        ////cout << "     dedx_2:" << dedx_2 << endl;
               
 
 	      if (_rejectPairConversion)
