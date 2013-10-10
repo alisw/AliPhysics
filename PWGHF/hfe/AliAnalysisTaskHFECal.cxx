@@ -112,6 +112,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
   ,fSetMassWidthCut(kFALSE)
+  ,fSetMassNonlinear(kFALSE)
   ,fSetKFpart(kTRUE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
@@ -186,6 +187,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncpTMCpho_pi0e_TPC(0)	
   ,fPhoElecPtMC_pi0e_TPC(0)
   ,fSameElecPtMC_pi0e_TPC(0)
+  ,fIncpTMCpho_eta_TPC(0)	
+  ,fPhoElecPtMC_eta_TPC(0)
+  ,fSameElecPtMC_eta_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
@@ -251,6 +255,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fInvmassCut(0)	 // no mass
   ,fSetMassConstraint(kTRUE)
   ,fSetMassWidthCut(kFALSE)
+  ,fSetMassNonlinear(kFALSE)
   ,fSetKFpart(kTRUE)
   ,fNoEvents(0)
   ,fEMCAccE(0)
@@ -325,6 +330,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncpTMCpho_pi0e_TPC(0)	
   ,fPhoElecPtMC_pi0e_TPC(0)
   ,fSameElecPtMC_pi0e_TPC(0)
+  ,fIncpTMCpho_eta_TPC(0)	
+  ,fPhoElecPtMC_eta_TPC(0)
+  ,fSameElecPtMC_eta_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
@@ -851,12 +859,22 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     phoval[3] = iHijing;
     phoval[4] = mcMompT;
    
-    if((fTPCnSigma >= -1.0 && fTPCnSigma <= 3) && mcele>-1 && mcPho && mcOrgPi0)
+    //if((fTPCnSigma >= -5.0 && fTPCnSigma <= 5) && mcele>-1 && mcPho && mcOrgPi0)
+    if((fTPCnSigma >= -5.0 && fTPCnSigma <= 5) && (mcOrgPi0 || mcOrgEta))
       {
         if(iHijing==1)mcWeight = 1.0; 
-        fIncpTMCpho_pi0e_TPC->Fill(phoval,mcWeight);    
-        if(fFlagPhotonicElec) fPhoElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
-        if(fFlagConvinatElec) fSameElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
+        if(mcOrgPi0)
+          {
+           fIncpTMCpho_pi0e_TPC->Fill(phoval,mcWeight);    
+           if(fFlagPhotonicElec) fPhoElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
+           if(fFlagConvinatElec) fSameElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
+          }
+        if(mcOrgEta)
+          {
+           fIncpTMCpho_eta_TPC->Fill(phoval,mcWeight);    
+           if(fFlagPhotonicElec) fPhoElecPtMC_eta_TPC->Fill(phoval,mcWeight);
+           if(fFlagConvinatElec) fSameElecPtMC_eta_TPC->Fill(phoval,mcWeight);
+          }
       }
 
     //+++++++  E/p cut ++++++++++++++++   
@@ -1315,6 +1333,20 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSameElecPtMC_pi0e_TPC = new THnSparseD("fSameElecPtMC_pi0e_TPC", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
   fSameElecPtMC_pi0e_TPC->Sumw2();
   fOutputList->Add(fSameElecPtMC_pi0e_TPC);
+
+  fIncpTMCpho_eta_TPC = new THnSparseD("fIncpTMCpho_eta_TPC","MC Pho pi0->e pid electro vs. centrality with M20",5,nBinspho2,minpho2,maxpho2);
+  fIncpTMCpho_eta_TPC->Sumw2();
+  fOutputList->Add(fIncpTMCpho_eta_TPC);
+
+  fPhoElecPtMC_eta_TPC = new THnSparseD("fPhoElecPtMC_eta_TPC", "MC Pho-inclusive electron pt with  pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMC_eta_TPC->Sumw2();
+  fOutputList->Add(fPhoElecPtMC_eta_TPC);
+
+  fSameElecPtMC_eta_TPC = new THnSparseD("fSameElecPtMC_eta_TPC", "MC Same-inclusive electron pt pi0->e",5,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMC_eta_TPC->Sumw2();
+  fOutputList->Add(fSameElecPtMC_eta_TPC);
+
+
   //-------------
 
   CheckNclust = new TH1D("CheckNclust","cluster check",200,0,200);
@@ -1445,6 +1477,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   Double_t bfield = fESD->GetMagneticField();
+  Double_t emass = 0.51*0.001; // (0.51 MeV)
 
   double ptEle = track->Pt();  //add
   if(ibgevent==0 && w > 0.0)
@@ -1522,15 +1555,24 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     AliKFParticle::SetField(bfield);
     AliKFParticle ge1(*track, fPDGe1);
     AliKFParticle ge2(*trackAsso, fPDGe2);
+
+    if(fSetMassNonlinear)
+      {
+       ge1.SetNonlinearMassConstraint(emass);
+       ge2.SetNonlinearMassConstraint(emass);
+      }
+
     AliKFParticle recg(ge1, ge2);
     
+    /* 
     // vertex 
     AliKFVertex primV(*pVtx);
     primV += recg;
     primV -= ge1;
     primV -= ge2;
     recg.SetProductionVertex(primV);
-    
+    */     
+
     // check chi2
     if(recg.GetNDF()<1) continue;
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
