@@ -1316,7 +1316,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       while ((os=(TObjString*)next())) {
          nstart = 0;
          stage = 0;
-         path = Form("%s/%s/", fGridDataDir.Data(), os->GetString().Data());
+         path = Form("%s/%s", fGridDataDir.Data(), os->GetString().Data());
          if (!DirectoryExists(path)) continue;
 //         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
@@ -1445,7 +1445,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    } else {
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         format = Form("%%s/%s/", fRunPrefix.Data());
+         format = Form("%%s/%s", fRunPrefix.Data());
          nstart = 0;
          stage = 0;
          path = Form(format.Data(), fGridDataDir.Data(), irun);
