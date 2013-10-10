@@ -1254,7 +1254,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       {
       vertexZ  = -999;
       vertexXY = -999;
-      cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - No valid vertex object or poor vertex" << endl;
+      AliInfo("AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - No valid vertex object or poor vertex");
       }
     else
       { 
@@ -1773,25 +1773,25 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     }
   
   
-  cout << "AliAnalysisTaskDptDptCorrelations::UserExec()   -----------------Event Done " << endl;
+  AliInfo("AliAnalysisTaskDptDptCorrelations::UserExec()   -----------------Event Done ");
   PostData(0,_outputHistoList);
   
 }
 
 void   AliAnalysisTaskDptDptCorrelations::FinishTaskOutput()
 {
-  cout << "AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Starting." << endl;
-  cout << "= 0 ====================================================================" << endl;
+  AliInfo("AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Starting.");
+  Printf("= 0 ====================================================================");
   finalizeHistograms();
-  cout << "= 1 ====================================================================" << endl;
+  AliInfo("= 1 ====================================================================");
   PostData(0,_outputHistoList);
-  cout << "= 2 ====================================================================" << endl;
-  cout << "AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Done." << endl;
+  AliInfo("= 2 ====================================================================");
+  AliInfo("AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Done.");
 }
 
 void   AliAnalysisTaskDptDptCorrelations::Terminate(Option_t* /*option*/)
 {
-  cout << "AliAnalysisTaskDptDptCorrelations::Terminate() Starting/Done." << endl;
+  AliInfo("AliAnalysisTaskDptDptCorrelations::Terminate() Starting/Done.");
 }
 
 
@@ -2109,7 +2109,7 @@ void   AliAnalysisTaskDptDptCorrelations::addToList(TH1 *h)
     _outputHistoList->Add(h);
     }
   else
-    cout << "addToList(TH1 *h) _outputHistoList is null!!!!! Shoudl abort ship" << endl;
+    AliInfo("addToList(TH1 *h) _outputHistoList is null!!!!! Should abort ship");
 
 }
 
