@@ -53,8 +53,8 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     kMCarrayLimit = 110000,//110000
     kQbins = 20,
     kQbinsWeights = 40,
-    kQbinsPP = 40,
-    kQbinsWeightsPP = 40,
+    kQbinsPP = 50,
+    kQbinsWeightsPP = 50,
     kNDampValues = 16,
     kRmin = 2,// min radii for Momentum resolution calculations
     kDENtypes = 1,// was (kRVALUES)*kNDampValues

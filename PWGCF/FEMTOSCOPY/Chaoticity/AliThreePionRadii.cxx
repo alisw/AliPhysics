@@ -597,7 +597,7 @@ void AliThreePionRadii::ParInit()
     //
     fQlimitC2 = 2.0;
     fQbinsC2 = 200;
-    fQupperBound = 0.4;
+    fQupperBound = 0.5;// was 0.4
     fQbins = kQbinsPP;
     //
     fDampStart = 0.5;// was 0.3
