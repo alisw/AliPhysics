@@ -1162,9 +1162,12 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   Double_t p[3];
   esdTrack->GetPxPyPz(p);
 
-  Float_t momentum = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2) + TMath::Power(p[2],2));
-  Float_t pt       = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2));
-  Float_t energy   = TMath::Sqrt(TMath::Power(esdTrack->GetMass(),2) + TMath::Power(momentum,2));
+  // Changed from float to double to prevent rounding errors leading to negative 
+  // log arguments (M.G.)
+  Double_t momentum = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+  Double_t pt       = TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
+  Double_t mass     = esdTrack->GetMass();
+  Double_t energy   = TMath::Sqrt(mass*mass + momentum*momentum);
 
   //y-eta related calculations
   Float_t eta = -100.;
