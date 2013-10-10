@@ -346,7 +346,7 @@ public:
    */
   static Bool_t IsAvailable(UInt_t alirootRev) 
   {
-    const UInt_t target = 60000;
+    const UInt_t target = 64491;
     return alirootRev >= target;
   }
 private:
