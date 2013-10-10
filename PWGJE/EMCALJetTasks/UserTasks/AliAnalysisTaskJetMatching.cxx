@@ -188,7 +188,7 @@ Bool_t AliAnalysisTaskJetMatching::Run()
 {
     // execute once for each event
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(!(InputEvent() && fSourceJetsName && fTargetJets && IsEventSelected())) return kFALSE;
+    if(!(InputEvent() && fSourceJets && fTargetJets && IsEventSelected())) return kFALSE;
     // step one: do geometric matching 
     switch (fMatchingScheme) {
         case kGeoEtaPhi : {
@@ -390,6 +390,7 @@ void AliAnalysisTaskJetMatching::PostMatchedJets()
 {
     // post matched jets
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    fMatchedJets->Delete();     // should be a NULL operation, but added just in case
     for(Int_t i(0), p(0); i < fNoMatchedJets; i++) {
         if(fMatchedJetContainer[i][1]) {        // duplicate jets will have NULL value here and are skipped
             new((*fMatchedJets)[p]) AliEmcalJet(*fMatchedJetContainer[i][1]);
