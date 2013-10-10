@@ -161,7 +161,7 @@ protected:
     f << "  echo \"=== Extracting Corrections ...\"\n"
       << "  aliroot -l -b -q ${prefix}Extract.C\n"
       << "  echo \"=== Summarizing results ...\"\n"
-      << "  aliroot -l -b -q ${prefix}Summarize.C\c\(" << mc << "\\)\n"
+      << "  aliroot -l -b -q ${prefix}Summarize.C\\(" << mc << "\\)\n"
       << "  if test x$dest = x ; then return ; fi\n"
       << "  echo \"=== Uploading to ${dest} ...\"\n"
       << "  aliroot -l -b -q Upload.C\\(\\\"${dest}\\\"\\);\n"
