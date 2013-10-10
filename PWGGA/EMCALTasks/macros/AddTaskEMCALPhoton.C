@@ -48,12 +48,13 @@ AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(
   cutsp->SetEtaRange(-1.0,1.0);
   ana->SetPrimTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
-  if(period.Contains("11"))
+  /* if(period.Contains("11") || (period.Contains("12") && isMC))
     ana->SetGeoName("EMCAL_COMPLETEV1");
-  else
+  else {
+    if(period.Contains("12"))
     ana->SetGeoName("EMCAL_FIRSTYEARV1");
-
-  
+  }
+  */ 
   mgr->AddTask(ana);
   
   // Create ONLY the output containers for the data produced by the task.
