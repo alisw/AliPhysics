@@ -1,4 +1,4 @@
-AliTaskCDBconnect* AddTaskCDBconnect(Int_t run=0) 
+AliTaskCDBconnect* AddTaskCDBconnect(const char *path, Int_t run=0) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -11,8 +11,7 @@ AliTaskCDBconnect* AddTaskCDBconnect(Int_t run=0)
        return NULL;
     }   
     
-    AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect");
-    if (run) task->SetRunNumber(run);
+    AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect", path, run);
     mgr->AddTask(task);
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();    
     mgr->ConnectInput(task,  0, cinput1);
