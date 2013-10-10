@@ -27,7 +27,7 @@ private:
 
 public:
   AliTaskCDBconnect();
-  AliTaskCDBconnect(const char *name);
+  AliTaskCDBconnect(const char *name, const char *storage="raw://", Int_t run=0);
   virtual ~AliTaskCDBconnect();
   AliESDInputHandler       *GetESDhandler() const {return fESDhandler;}
   AliESDEvent              *GetEvent() const {return fESD;}

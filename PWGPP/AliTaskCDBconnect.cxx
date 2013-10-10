@@ -43,9 +43,9 @@ AliTaskCDBconnect::AliTaskCDBconnect():
 }
 
 //______________________________________________________________________________
-AliTaskCDBconnect::AliTaskCDBconnect(const char* name):
-           AliAnalysisTask(name, "ESD analysis tender car"),
-           fRun(0),
+AliTaskCDBconnect::AliTaskCDBconnect(const char* name, const char *storage, Int_t run)
+          :AliAnalysisTask(name, "ESD analysis tender car"),
+           fRun(run),
            fRunChanged(kFALSE),
            fESDhandler(NULL),
            fESD(NULL),
@@ -53,18 +53,16 @@ AliTaskCDBconnect::AliTaskCDBconnect(const char* name):
 {
 // Default constructor
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdb->SetRun(0);
+  cdb->SetDefaultStorage(storage);
+  cdb->SetRun(run);
   DefineInput (0, TChain::Class());
-//  DefineOutput(0,  AliESDEvent::Class());
 }
 
 //______________________________________________________________________________
 AliTaskCDBconnect::~AliTaskCDBconnect()
 {
 // Destructor
-  if (fGRPManager) delete fGRPManager;
-//  if (gGeoManager) delete gGeoManager;
+  delete fGRPManager;
 }  
 
 //______________________________________________________________________________
@@ -132,9 +130,9 @@ void AliTaskCDBconnect::CreateOutputObjects()
   if (cdb->GetLock()) return;
   // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
   //  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  if (!cdb->GetRaw()) {
-     cdb->SetDefaultStorage("raw://");
-  }   
+//  if (!cdb->GetRaw()) {
+//     cdb->SetDefaultStorage("raw://");
+//  }   
   if (run && (run != fRun)) {
      fRunChanged = kTRUE;
      fRun = run;
