@@ -21,7 +21,7 @@
 ///
 /// Macro extracted from the MUON test script
 ///
-/// \author Laurent Aphecetche
+/// \author Laurent Git Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"
