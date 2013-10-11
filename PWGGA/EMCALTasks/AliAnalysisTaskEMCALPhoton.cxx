@@ -69,6 +69,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton() :
   fMyTracks(0),
   fMyMcParts(0),
   fHeader(0x0),
+  fOADBContainer(0),
   fCaloClusters(0),
   fCaloClustersNew(0),
   fAODMCParticles(0),
@@ -120,6 +121,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
   fMyTracks(0),
   fMyMcParts(0),
   fHeader(0),
+  fOADBContainer(0),
   fCaloClusters(0),
   fCaloClustersNew(0),
   fAODMCParticles(0),
@@ -247,6 +249,8 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   }
   //if(fIsGrid)fOutputList->Add(fTree);
   fGeom = AliEMCALGeometry::GetInstance(fGeoName);
+  fOADBContainer = new AliOADBContainer("AliEMCALgeo");
+  fOADBContainer->InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
   
   
   fNV0sBefAndAftRerun = new TH2F("hNV0sBefAndAftRerun","check if the number of v0s change with rerun;old v0 n;new v0 n",50,0.5,50.5,50,0.5,50.5);
@@ -387,9 +391,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   fHeader->fCl1Cent   = cent->GetCentralityPercentileUnchecked("CL1");
   fHeader->fTrCent    = cent->GetCentralityPercentileUnchecked("TRK");
 
-  AliOADBContainer emcGeoMat("AliEMCALgeo");
-  emcGeoMat.InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
-  TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+  if(fDebug)
+    printf("AliEMCALgeo file found\n");
+  TObjArray *matEMCAL=(TObjArray*)fOADBContainer->GetObject(runnumber,"EmcalMatrices");
   for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
     if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
       break;

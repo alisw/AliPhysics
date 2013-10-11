@@ -15,6 +15,7 @@ class AliESDCaloCells;
 class AliAODEvent;
 class AliAODCaloCells;
 class AliEMCALGeometry;
+class AliOADBContainer;
 class AliVCluster;
 class AliVCaloCells;
 class AliAnalysisTaskEMCALClusterizeFast;
@@ -77,7 +78,8 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   TClonesArray                          *fMyTracks;              //!array of AliPhotonTrackObj
   TClonesArray                          *fMyMcParts;             //!array of AliPhotonMcPartObj
   AliPhotonHeaderObj                    *fHeader;                //!
-  TClonesArray                             *fCaloClusters;          //!pointer to EMCal clusters
+  AliOADBContainer                      *fOADBContainer;         //!OADB container used to load misalignment matrices
+  TClonesArray                          *fCaloClusters;          //!pointer to EMCal clusters
   TClonesArray                          *fCaloClustersNew;       //!pointer to EMCal clusters v2
   TClonesArray                          *fAODMCParticles;        //!MC particles array for AOD analysis
   AliVCaloCells                         *fVCells;                //!pointer to EMCal cells      
