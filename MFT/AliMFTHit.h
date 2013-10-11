@@ -58,13 +58,13 @@ public:
 
   TParticle* GetParticle() const;
 
-  Bool_t IsInside()      const { return (fStatus ==  1); }
-  Bool_t IsEntering()    const { return (fStatus ==  2); }
-  Bool_t IsExiting()     const { return (fStatus ==  4); }
-  Bool_t IsOut()         const { return (fStatus ==  8); }
-  Bool_t IsDisappeared() const { return (fStatus == 16); }
-  Bool_t IsStopped()     const { return (fStatus == 32); }
-  Bool_t IsAlive()       const { return (fStatus == 64); }
+  Bool_t IsInside()      const { return (fStatus & 0x1);    } 
+  Bool_t IsEntering()    const { return (fStatus & 0x1<<1); }
+  Bool_t IsExiting()     const { return (fStatus & 0x1<<2); }
+  Bool_t IsOut()         const { return (fStatus & 0x1<<3); }
+  Bool_t IsDisappeared() const { return (fStatus & 0x1<<4); }
+  Bool_t IsStopped()     const { return (fStatus & 0x1<<5); }
+  Bool_t IsAlive()       const { return (fStatus & 0x1<<6); }
 
 protected:
 
