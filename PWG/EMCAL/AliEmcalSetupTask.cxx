@@ -71,7 +71,7 @@ void AliEmcalSetupTask::UserExec(Option_t *)
     year = 2010;
     geoname = "EMCAL_FIRSTYEARV1";
   }
-  else if (runno>139517) {
+  else if ((runno>139517) && (runno<=170593)) {
     year = 2011;
     geoname = "EMCAL_COMPLETEV1";
   }
