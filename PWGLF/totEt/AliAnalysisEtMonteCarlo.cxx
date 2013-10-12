@@ -1978,7 +1978,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistSecondariesVsNch);
     list->Add(fHistSecondariesVsNcl);
     list->Add(fHistSecondariesEffCorrVsNch);
-    list->Add(fHistSecondariesEffCorrVsNch);
+    list->Add(fHistSecondariesEffCorrVsNcl);
     list->Add(fHistSecondariesOutOfAccEffCorrVsNch);
     list->Add(fHistSecondariesDetectorCoverEffCorrVsNch);
     list->Add(fHistCentVsNchVsNcl);
