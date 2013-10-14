@@ -33,8 +33,8 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
                                        Float_t EtaGap = 0., // eta gap for SPSUB
                                        TString DCA = "pt", // dca mode (see task implementation)
                                        Int_t harm = 2, // harmonic vn
-                                       UInt_t poi_filter = 1024, // aod filterbits
-                                       UInt_t rp_filter = 1024,
+                                       UInt_t poi_filter = 1, // aod filterbits
+                                       UInt_t rp_filter = 1,
                                        Bool_t event_mixing = kFALSE,
                                        Bool_t highPtMode = kFALSE, // use with caution !!! disables invariant mass fit method
                                        Float_t deltaPhiMass = 0.0003, // dM in which to look for phi 
@@ -140,6 +140,8 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    }
    if(VZERO_SP) { // use vzero sub analysis
        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
+       cutsRP->SetV0gainEqualizationPerRing(kTRUE);
+       cutsRP->SetUseVZERORing(7, kFALSE);
        SP = kFALSE; // disable other methods
        SPSUB = kTRUE; // calculate sp_qa and sp_qb
        QC = kFALSE;
@@ -419,7 +421,7 @@ void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, dou
    AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer(Form("Filter_%s", myNameSP.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
    AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), cutsRFP, cutsPOI);
    tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
-   if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
+   if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, -1, 1, 10);
    mgr->AddTask(tskFilter);
    mgr->ConnectInput(tskFilter, 0, flowEvent);
    mgr->ConnectOutput(tskFilter, 1, flowEvent2);

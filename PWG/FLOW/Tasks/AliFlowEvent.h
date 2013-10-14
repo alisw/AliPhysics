@@ -6,6 +6,7 @@
   AliFlowEvent: Event container for flow analysis                  
                                      
   origin:   Mikolaj Krzewicki  (mikolaj.krzewicki@cern.ch)
+  mods:     Redmer A. Bertens (rbertens@cern.ch)
 *****************************************************************/
 
 #ifndef ALIFLOWEVENT_H
@@ -20,6 +21,7 @@ class AliESDEvent;
 class AliAODEvent;
 class AliMultiplicity;
 class AliESDPmdTrack;
+class AliFlowVector;
 class TH2F;
 
 #include "AliFlowEventSimple.h"
@@ -79,10 +81,23 @@ public:
 
   void InsertTrack(AliFlowTrack*);
 
+  virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n = 2, TList *weightsList = 0x0, Bool_t usePhiWeights = 0x0, Bool_t usePtWeights = 0x0, Bool_t useEtaWeights = 0x0);
+  void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
+
 protected:
   AliFlowTrack* ReuseTrack( Int_t i);
 
-  ClassDef(AliFlowEvent,1)
+private:
+  Bool_t        fApplyRecentering;      // apply recentering of q-vectors? should be true for vzero tracks
+  Int_t         fCachedRun;             //! cached calibration info for vzero
+  Int_t         fCurrentCentrality;     //! centrality bin for the current event 
+  Float_t       fMeanQ[9][2][2];        //! recentering
+  Float_t       fWidthQ[9][2][2];       //! recentering
+  Float_t       fMeanQv3[9][2][2];      //! recentering
+  Float_t       fWidthQv3[9][2][2];     //! recentering
+
+
+  ClassDef(AliFlowEvent,2)
 };
 
 #endif
