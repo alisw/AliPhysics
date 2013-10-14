@@ -18,6 +18,7 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "TFile.h"
 #include "TComplex.h"
 #include "TDirectoryFile.h"
@@ -60,9 +61,11 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   // 2.) Method Make() and methods called in it:
   virtual void Make(AliFlowEventSimple *anEvent);
    virtual Bool_t CrossCheckInternalFlags(AliFlowEventSimple *anEvent);
+   virtual void CrossCheckPointersUsedInMake(); 
    virtual void FillControlHistograms(AliFlowEventSimple *anEvent);
    virtual void FillQvector(AliFlowEventSimple *anEvent);
    virtual void CalculateCorrelations(AliFlowEventSimple *anEvent);
+   virtual void CalculateProductsOfCorrelations(AliFlowEventSimple *anEvent);
    virtual void CalculateCumulants();
    virtual void ResetQvector();
    virtual void CrossCheckWithNestedLoops(AliFlowEventSimple *anEvent);
@@ -186,6 +189,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t GetCalculateStandardCandles() const {return this->fCalculateStandardCandles;};
   void SetStandardCandlesHist(TH1D* const sch) {this->fStandardCandlesHist = sch;};
   TH1D* GetStandardCandlesHist() const {return this->fStandardCandlesHist;}; 
+  void SetProductsPro2D(TProfile2D* const pp2d) {this->fProductsPro2D = pp2d;};
+  TProfile2D* GetProductsPro2D() const {return this->fProductsPro2D;}; 
 
   // 6.) The rest:
   virtual void WriteHistograms(TString outputFileName);
@@ -202,6 +207,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual Double_t PhiWeight(const Double_t &dPhi);
   virtual Double_t PtWeight(const Double_t &dPt); 
   virtual Double_t EtaWeight(const Double_t &dEta);
+  virtual Double_t CastStringToCorrelation(const char *string, Bool_t numerator);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
@@ -282,7 +288,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TList *fStandardCandlesList;        // list to hold all 'standard candles' objects
   TProfile *fStandardCandlesFlagsPro; // profile to hold all flags fo 'standard candles'
   Bool_t fCalculateStandardCandles;   // calculate and store 'standard candles'
-  TH1D *fStandardCandlesHist;         // histogeam to hold results for 'standard candles'
+  TH1D *fStandardCandlesHist;         // histogram to hold results for 'standard candles'
+  TProfile2D *fProductsPro2D;         // 2D profile to hold products of correlations (needed for error propagation)
 
   ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,1);
 
