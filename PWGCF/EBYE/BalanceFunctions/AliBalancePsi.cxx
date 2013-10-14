@@ -191,12 +191,15 @@ void AliBalancePsi::InitHistograms() {
     Double_t kMultBinLimits[kMultBins+1]={0,10,20,30,40,50,60,70,80,100,100000};
   //----------------------------------------------------------
     
-  //--- Centrality Bins --------------------------------------
-    const Int_t kNCentralityBins       = 9;
-    const Int_t kNCentralityBinsVertex = 15;
+    //--- Centrality Bins --------------------------------------
+    const Int_t kNCentralityBins       = 9; //9
+    const Int_t kNCentralityBinsVertex = 16; //15
     Double_t centralityBins[kNCentralityBins+1]             = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
-    Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.};
-  //----------------------------------------------------------
+    //// Double_t centralityBins[kNCentralityBins+1]             = {0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.};
+    //Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.};
+    Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.};
+    //----------------------------------------------------------
+    
     
   //--- Event Plane Bins -------------------------------------
     //Psi_2: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (rest)

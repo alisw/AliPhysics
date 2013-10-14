@@ -283,6 +283,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   Double_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
+  TH1F *fHistMultiplicity;//hisot to store the number of accepted tracks //++++++++++++++++++
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
