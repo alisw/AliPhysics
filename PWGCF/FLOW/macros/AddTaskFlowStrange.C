@@ -48,8 +48,10 @@ Bool_t SFT_gbSkipSelection;
 Bool_t SFT_gbSkipFlow;
 Int_t SFT_gbWhichPsi;
 Bool_t SFT_gbFlowPackage;
+Bool_t SFT_gbShrinkFP;
 Bool_t SFT_gbSPVZE;
 Bool_t SFT_gbSPTPC;
+Bool_t SFT_gbSPVZEhalf;
 Bool_t SFT_gbQCTPC;
 Int_t SFT_gbHarmonic;
 TString SFT_gbVZEload;
@@ -228,8 +230,13 @@ void AddTaskFlowStrange() {
       SFT_AddSPmethod( Form("SPTPC4MB%d",mb), exc_TPC, filterhf[mb][1], "Qb", 0.4 ); // SP TPC Qb
     }
     if(SFT_gbSPVZE) {
-      SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qa", 1.0 ); // SP VZE Qa
-      SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qb", 1.0 ); // SP VZE Qa
+      if(SFT_gbSPVZEhalf) {
+	SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filterhf[mb][0], "Qa", 1.0 ); // SP VZE Qa
+	SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filterhf[mb][1], "Qb", 1.0 ); // SP VZE Qa
+      } else {
+	SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qa", 1.0 ); // SP VZE Qa
+	SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qb", 1.0 ); // SP VZE Qa
+      }
     }
   }
 }
@@ -370,6 +377,7 @@ void SFT_PrintConfig() {
   printf("* SKIPFLOW  %3d                   *\n", SFT_gbSkipFlow );
   printf("* USEFP  %3d                      *\n", SFT_gbFlowPackage );
   printf("* SPVZE  %3d                      *\n", SFT_gbSPVZE );
+  printf("* SPVZEHALF  %3d                  *\n", SFT_gbSPVZEhalf );
   printf("* SPTPC  %3d                      *\n", SFT_gbSPTPC );
   printf("* QCTPC  %3d                      *\n", SFT_gbQCTPC );
   printf("* SHRINKFP  %3d                   *\n", SFT_gbShrinkFP );
@@ -477,6 +485,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbSPVZE;
     } else if(!varname.CompareTo("SPTPC")) {
       input >> SFT_gbSPTPC;
+    } else if(!varname.CompareTo("SPVZEHALF")) {      
+      input >> SFT_gbSPVZEhalf;
     } else if(!varname.CompareTo("QCTPC")) {
       input >> SFT_gbQCTPC;
     } else if(!varname.CompareTo("SHRINKFP")) {
@@ -567,6 +577,7 @@ void SFT_ResetVars() {
   SFT_gbWhichPsi=2;
   SFT_gbFlowPackage=0;
   SFT_gbSPVZE=0;
+  SFT_gbSPVZEhalf=kFALSE;
   SFT_gbSPTPC=0;
   SFT_gbQCTPC=0;
   SFT_gbHarmonic=2;
