@@ -45,6 +45,12 @@ AliAnaConvCorrBase("pion_hadron_corr", "Pion dPhi"),
 {
   //consctructor
   InitMassAxis();
+  hTriggerPtvsMass[0] = NULL;
+  hTriggerPtvsMass[1] = NULL;
+  hTriggerPtvsMass[2] = NULL;
+
+
+
 }
 //________________________________________________________________________________
 AliAnaConvCorrPion::AliAnaConvCorrPion(TString name, TString title = "Pion Corr") :
@@ -54,6 +60,11 @@ AliAnaConvCorrPion::AliAnaConvCorrPion(TString name, TString title = "Pion Corr"
 {
   //consctructor
   InitMassAxis();
+  hTriggerPtvsMass[0] = NULL;
+  hTriggerPtvsMass[1] = NULL;
+  hTriggerPtvsMass[2] = NULL;
+
+
 }
 
 
