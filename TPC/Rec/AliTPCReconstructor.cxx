@@ -312,14 +312,16 @@ void AliTPCReconstructor::ParseOptions( AliTPCtracker* tracker ) const
     
     AliInfo(Form("Overide TPC RecoParam with option %s",option.Data()));
     
-    if (!option.Contains("useRAW"))
+    if (option.Contains("useRAW")) {
       useHLTClusters = 1;
-    if (!option.Contains("useRAWorHLT"))
-      useHLTClusters = 2;
-    if (!option.Contains("useHLT"))
+      if (option.Contains("useRAWorHLT"))
+	useHLTClusters = 2;
+    }
+    else if (option.Contains("useHLT")) {
       useHLTClusters = 3;
-    if (!option.Contains("useHLTorRAW"))
-      useHLTClusters = 4;
+      if (option.Contains("useHLTorRAW"))
+	useHLTClusters = 4;
+    }
   }
   else {
     const AliTPCRecoParam* param = GetRecoParam();
