@@ -1781,7 +1781,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 void   AliAnalysisTaskDptDptCorrelations::FinishTaskOutput()
 {
   AliInfo("AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Starting.");
-  Printf("= 0 ====================================================================");
+  AliInfo("= 0 ====================================================================");
   finalizeHistograms();
   AliInfo("= 1 ====================================================================");
   PostData(0,_outputHistoList);
