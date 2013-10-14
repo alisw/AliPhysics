@@ -7,7 +7,9 @@
 //   d2) Enable/diable pt dependence of v2;  
 //  e) Parametrize the pt distribution;
 //  f) Determine how many times each sampled particle will be taken (simulating nonflow);
-//  g) Configure detector's acceptance;
+//  g) Configure detector's:
+//   g1) acceptance;
+//   g2) efficiency;
 //  h) Decide which flow analysis methods you will use;
 //  i) Define simple cuts for Reference Particle (RP) selection;
 //  j) Define simple cuts for Particle of Interest (POI) selection;
@@ -54,7 +56,7 @@ Double_t dTemperature = 0.44; // "temperature" in GeV/c (increase this parameter
 // f) Determine how many times each sampled particle will be taken in the analysis (simulating nonflow):
 Int_t nTimes = 1; // e.g. for nTimes = 2, strong 2-particle nonflow correlations are introduced 
 
-// g) Configure detector's acceptance:
+// g1) Configure detector's acceptance:
 Bool_t uniformAcceptance = kTRUE; // if kTRUE: detectors has uniform azimuthal acceptance.
                                   // if kFALSE: you will simulate detector with non-uniform acceptance in one or 
                                   // two sectors. For each sector you specify phiMin, phiMax and probability p. 
@@ -72,6 +74,15 @@ Double_t phiMin2 = 0.; // first non-uniform sector starts at this azimuth (in de
 Double_t phiMax2 = 0.; // first non-uniform sector ends at this azimuth (in degrees)
 Double_t p2 = 0.; // probablitity that particles emitted in [phiMin2,phiMax2] are taken
 
+// g2) Configure detector's efficiency:
+Bool_t uniformEfficiency = kTRUE; // if kTRUE: detectors has uniform pT efficiency
+                                  // if kFALSE: you will simulate detector with non-uniform pT efficiency. 
+                                  // Then all particles emitted in ptMin <= pt < ptMax will be taken 
+                                  // with probability p, to be specified in lines just below. 
+Double_t ptMin = 0.8; // non-uniform efficiency vs pT starts at pT = fPtMin
+Double_t ptMax = 1.2; // non-uniform efficiency vs pT ends at pT = fPtMax
+Double_t p = 0.5; // probablitity that particles emitted in [ptMin,ptMax> are taken
+
 // h) Decide which flow analysis methods you will use:
 Bool_t MCEP     = kTRUE; // Monte Carlo Event Plane
 Bool_t SP       = kTRUE; // Scalar Product (a.k.a 'flow analysis with eta gaps')
@@ -85,6 +96,7 @@ Bool_t LYZ2PROD = kFALSE; // Lee-Yang Zero (product generating function), second
 Bool_t LYZEP    = kFALSE; // Lee-Yang Zero Event Plane
 Bool_t MH       = kFALSE; // Mixed Harmonics (used for strong parity violation studies) 
 Bool_t NL       = kFALSE; // Nested Loops (neeed for debugging, only for developers)
+Bool_t MPC      = kTRUE; // Multi-particle correlations (NEW!)
 
 // i) Define simple cuts for Reference Particle (RP) selection:
 Double_t ptMinRP = 0.0; // in GeV
@@ -186,6 +198,13 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
   eventMakerOnTheFly->SetSecondSectorPhiMax(phiMax2);
   eventMakerOnTheFly->SetSecondSectorProbability(p2);
  } 
+ if(!uniformEfficiency)
+ {
+  eventMakerOnTheFly->SetUniformEfficiency(kFALSE);
+  eventMakerOnTheFly->SetPtMin(ptMin);
+  eventMakerOnTheFly->SetPtMax(ptMax);
+  eventMakerOnTheFly->SetPtProbability(p);
+ }
  eventMakerOnTheFly->Init();
 
  // c) If enabled, access particle weights from external file: 
@@ -218,6 +237,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
  AliFlowAnalysisWithMixedHarmonics *mh = NULL;
  AliFlowAnalysisWithNestedLoops *nl = NULL;
  AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
+ AliFlowAnalysisWithMultiparticleCorrelations *mpc = NULL;
  // MCEP = monte carlo event plane
  if(MCEP) 
  {
@@ -393,7 +413,29 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
   nl = new AliFlowAnalysisWithNestedLoops();
   nl->Init();
  } // end of if(NL) 
- 
+ // MPC = Multi-particle correlations
+ if(MPC) 
+ {
+  mpc = new AliFlowAnalysisWithMultiparticleCorrelations();
+  // Weights:
+  //TFile *file = TFile::Open("weights.root","READ");
+  //TH1D *weightsHist = (TH1D*) file->FindObjectAny("Phi weights");
+  //mpc->SetPhiWeightsHist(weightsHist); 
+  // Control histograms: 
+  mpc->SetFillControlHistograms(kTRUE);
+  mpc->SetFillKinematicsHist(kTRUE);
+  // Q-vector:
+  mpc->SetCalculateQvector(kTRUE);  
+  // Correlations:
+  mpc->SetCalculateCorrelations(kTRUE);
+  mpc->SetSkipZeroHarmonics(kTRUE);
+  mpc->SetCalculateIsotropic(kTRUE);
+  // Standard candles:
+  mpc->SetCalculateStandardCandles(kTRUE);
+  // Init:
+  mpc->Init();
+ } // end of if(MPC)
+
  // e) Simple cuts for RPs: 
  AliFlowTrackSimpleCuts *cutsRP = new AliFlowTrackSimpleCuts();
  cutsRP->SetPtMax(ptMaxRP);
@@ -432,14 +474,15 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
   if(SP){sp->Make(event);}
   if(MH){mh->Make(event);}
   if(NL){nl->Make(event);}
+  if(MPC){mpc->Make(event);}
   delete event;
  } // end of for(Int_t i=0;i<iNevts;i++)
 
  // h) Create the output file and directory structure for the final results of all methods: 
  TString outputFileName = "AnalysisResults.root";  
  TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
- const Int_t nMethods = 12;
- TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL"};
+ const Int_t nMethods = 13;
+ TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL","MPC"};
  TDirectoryFile *dirFileFinal[nMethods] = {NULL};
  TString fileName[nMethods]; 
  for(Int_t i=0;i<nMethods;i++)
@@ -463,6 +506,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
  if(LYZEP){lyzep->Finish();lyzep->WriteHistograms(dirFileFinal[9]);}
  if(MH){mh->Finish();mh->WriteHistograms(dirFileFinal[10]);}
  if(NL){nl->Finish();nl->WriteHistograms(dirFileFinal[11]);}
+ if(MPC){mpc->Finish();mpc->WriteHistograms(dirFileFinal[12]);}
  
  outputFile->Close();
  delete outputFile;
