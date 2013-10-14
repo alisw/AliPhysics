@@ -5,6 +5,7 @@
 // Authors: (this code is mostly copied from AliRsnTrackQuality) adapted by Svein Lindal 	*
 
 class TH2F;
+class AliESDtrackCuts;
 class TList;
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
@@ -36,10 +37,11 @@ public:
 //  };
   static const char * fgkCutNames[kNCuts];
 
-  Bool_t IsSelected(TObject * object ) { return AcceptTrack(dynamic_cast<AliAODTrack*>(object)); }
+  Bool_t IsSelected(TObject * object ); 
   Bool_t IsSelected(TList * /*list*/) { return kFALSE; }
   Bool_t AcceptTrack(AliAODTrack * track);
-
+  Bool_t AcceptTrack(AliESDtrack * track);
+  void FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack * track);
   AliConversionTrackCuts();
   AliConversionTrackCuts(TString name, TString title);
   ~AliConversionTrackCuts();
@@ -101,11 +103,14 @@ protected :
    Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
   Bool_t      fRequireTPCRefit;        // Require TPC refit
 
+  AliESDtrackCuts * fESDCuts;
+
   TH2F * fhPhi;
   TH2F * fhPt;
   TH2F * fhPhiPt;
   TH2F * fhdcaxyPt;
   TH2F * fhdcazPt;
+  TH2F * fhdca;
   TH2F * fhnclpt;
   TH2F * fhnclsfpt;
   
@@ -118,7 +123,7 @@ protected :
   AliConversionTrackCuts(const AliConversionTrackCuts&); // not implemented
   AliConversionTrackCuts& operator=(const AliConversionTrackCuts&); // not implemented
 
-  ClassDef(AliConversionTrackCuts,1)
+  ClassDef(AliConversionTrackCuts,2)
 
 
 };

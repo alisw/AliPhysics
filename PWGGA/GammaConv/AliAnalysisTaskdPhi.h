@@ -48,8 +48,11 @@ public:
   TAxis& GetAxisPiMass() { return fAxisPiM; }
 
   void SetV0Filter(AliConversionCuts * filter) { fV0Filter = filter; }
+  
   void SetMesonFilter(AliConversionMesonCuts * filter) { fMesonFilter = filter; }
   void SetPhotonFilter(AliConversionCuts * filter) { fPhotonFilter = filter; }
+  void SetV0Reader(AliV0ReaderV1 * reader) { fV0Reader = reader; }
+  void SaveReaderHists(Bool_t save = kTRUE) { fSaveReaderHists = save; }
   AliAnalysisCuts * GetTrackCuts() const { return fTrackCuts; }
   void SetTrackCuts( AliAnalysisCuts * cuts) { if (fTrackCuts) delete fTrackCuts; fTrackCuts = cuts; }
   
@@ -72,6 +75,7 @@ private:
 
 
   AliV0ReaderV1 * fV0Reader; // V0 reader
+  Bool_t fSaveReaderHists;
   AliConversionCuts * fV0Filter; //additional v0 filter on top of v0 reader
   AliConversionCuts * fPhotonFilter; //additional v0 filter for photons only
   AliConversionMesonCuts * fMesonFilter; //additional meson filter behind fv0filter
@@ -84,6 +88,7 @@ private:
   TObjArray * hMEPhotons; //photons
   TObjArray * hMEPions; //pions
   TH2I * hMEvents; //event histrogam
+  TH2I * hTrackCent; //event histrogam
 
   TObjArray * fPhotonCorr; //photon
   TObjArray * fPionCorr; //poin
@@ -102,7 +107,7 @@ private:
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 3); 
+  ClassDef(AliAnalysisTaskdPhi, 4); 
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {

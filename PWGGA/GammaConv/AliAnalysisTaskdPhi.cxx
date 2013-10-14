@@ -53,6 +53,7 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fHistoGamma(NULL),
   fHistoPion(NULL),
   fV0Reader(NULL),
+  fSaveReaderHists(kFALSE),
   fV0Filter(NULL),
   fPhotonFilter(NULL),
   fMesonFilter(NULL),
@@ -63,6 +64,7 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   hMEPhotons(NULL), 
   hMEPions(NULL),
   hMEvents(NULL),
+  hTrackCent(NULL),
   fPhotonCorr(NULL),
   fPionCorr(NULL), 
 //  fIsoAna(NULL),
@@ -127,10 +129,6 @@ AliAnalysisTaskdPhi::~AliAnalysisTaskdPhi(){
 	delete fGammas;
   fGammas = NULL;
   
-  // if(fIsoAna)
-  // 	delete fIsoAna;
-  // fIsoAna = NULL;
-
   if(fV0Filter)
 	delete fV0Filter;
   fV0Filter = NULL;
@@ -147,13 +145,17 @@ AliAnalysisTaskdPhi::~AliAnalysisTaskdPhi(){
 	delete fHistograms;
   fHistograms = NULL;
 
-if(fHistoPion)
-	delete fHistoPion;
+  if(fHistoPion)
+    delete fHistoPion;
   fHistoPion = NULL;
-
+  
   if(fHistoGamma)
-	delete fHistoGamma;
+    delete fHistoGamma;
   fHistoGamma = NULL;
+
+  if(fTrackCuts)
+    delete fTrackCuts;
+  fTrackCuts = NULL;
 
 }
 
@@ -238,28 +240,40 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   fHistoPion->SetName("Pion_histo");
   fHistoPion->SetOwner(kTRUE);
 
+  if(!fV0Reader){
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+  }
+  
+  if(!fV0Reader){
+    printf("Error: No V0 Reader");
+  } // GetV0Reader
 
-   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
-   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
-   AliConversionCuts * v0cuts = fV0Reader->GetConversionCuts();
-   if(v0cuts) {
-     TList * histograms = v0cuts->GetCutHistograms();
-     if(histograms) {
-       fHistograms->Add(histograms);
-     }
-   }
+  if(fSaveReaderHists) {
+    AliConversionCuts * v0cuts = fV0Reader->GetConversionCuts();
+    if(v0cuts) {
+      TList * histograms = v0cuts->GetCutHistograms();
+      if(!histograms) {
+	AliWarning("initializing v0 reader hists");
+	v0cuts->InitCutHistograms("V0Reader", kTRUE);
+      }
+      histograms = v0cuts->GetCutHistograms();
+      if(histograms) {
+	fHistograms->Add(histograms);
+      }
+    }
+  }
 
   if(fV0Filter) {
-    fV0Filter->InitCutHistograms();
+    fV0Filter->InitCutHistograms("V0Filter", kFALSE);
     fHistograms->Add(fV0Filter->GetCutHistograms());
   }
   if(fMesonFilter) {
-    fMesonFilter->InitCutHistograms();
+    fMesonFilter->InitCutHistograms("PionFilter", kFALSE);
     fHistograms->Add(fMesonFilter->GetCutHistograms());
   }
   if(fPhotonFilter) {
-    fPhotonFilter->InitCutHistograms();
+    fPhotonFilter->InitCutHistograms("PhotonFilter", kFALSE);
     fHistograms->Add(fPhotonFilter->GetCutHistograms());
   }
   
@@ -291,11 +305,14 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   // MEHistograms->Add(hMEPhotons);
 
   hMEvents = new TH2I("hMEvents", "Nevents vs centrality vertexz",
-					  fAxisZ.GetNbins(), fAxisZ.GetBinLowEdge(1), fAxisZ.GetBinUpEdge(fAxisZ.GetNbins()),
- 					  fAxisCent.GetNbins(), fAxisCent.GetBinLowEdge(1), fAxisCent.GetBinUpEdge(fAxisCent.GetNbins()));
-  hMEvents->GetYaxis()->Set(fAxisCent.GetNbins(), fAxisCent.GetXbins()->GetArray());
+		      fAxisZ.GetNbins(), fAxisZ.GetXbins()->GetArray(),
+		      fAxisCent.GetNbins(), fAxisCent.GetXbins()->GetArray());
   MEHistograms->Add(hMEvents);
 
+  hTrackCent = new TH2I("hTrackCent", "N accepted tracks vs centrality",
+			fAxisCent.GetNbins() > 2 ? 100 : 1, 0, 100,
+			1500, 0, 1500);
+  MEHistograms->Add(hTrackCent);
 
   // TList axesList;
   // axesList.AddAt(&GetAxisEta(), 0);
@@ -404,8 +421,16 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   ///User exec. 
 
   //if(! fV0Filter->EventIsSelected(fInputEvent)) return;
+  if(!fV0Reader){
+    AliError("Error: No V0 Reader");
+    return;
+  } // GetV0Reader
 
-
+  if(!fV0Reader->IsEventSelected()) {
+	return;
+  }
+   AliDebug(5, "Processing event");
+ 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
   
@@ -457,7 +482,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 
 
   if(centBin < 0 || vertexBin < 0) {
-	AliError("bin out of range");
+    //	AliError("bin out of range");
 	return;
   }
 
@@ -467,20 +492,10 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   //TClonesArray * aodGammas = GetConversionGammas(isAOD);
   TClonesArray * aodGammas = fV0Reader->GetReconstructedGammas();
   if(!aodGammas) {
-	AliError("no aod gammas found!");
-	return;
+    AliError("no aod gammas found!");
+    return;
   }
 
-  // if(aodGammas->GetEntriesFast() > 0) {
-  //   if( static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(0) == fL1 && 
-  // 	static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(1) == fL2 
-  // 	) {
-  //     return;
-  //   }
-  //   fL1 = static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(0);
-  //   fL2 = static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(1);
-  //   //cout << aodGammas->GetEntriesFast() << " " << fInputEvent->GetNumberOfTracks() << "c" << endl;
-  // }
   
   if(DebugLevel() > 1) printf("Number of conversion gammas %d \n", aodGammas->GetEntriesFast());
   for(Int_t ig = 0; ig < aodGammas->GetEntriesFast(); ig++) {
@@ -496,21 +511,23 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   hMEvents->Fill(vertexz, centrality);
   
   
+    cout << "Event not selected" << endl;
+
+
   
   ///create track array
   TObjArray tracks;
   const Double_t etalim[2] = { fAxisEta.GetBinLowEdge(1), fAxisEta.GetBinUpEdge(fAxisEta.GetNbins())};
   for(Int_t iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); iTrack++) {
-
-	AliVTrack * track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
-	if(track->Pt() < fAxiscPt.GetBinLowEdge(1) ) continue;
-	if(track->Eta() < etalim[0] || track->Eta() > etalim[1]) continue;
-
-	
-	if(fTrackCuts && fTrackCuts->IsSelected((track))) {
-	  tracks.Add(track);
-	}
+    AliVTrack * track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
+    if(track->Pt() < fAxiscPt.GetBinLowEdge(1) ) continue;
+    if(track->Eta() < etalim[0] || track->Eta() > etalim[1]) continue;
+    if(!fTrackCuts || fTrackCuts->IsSelected(track)) {
+      tracks.Add(track);
+    }
   }
+
+  hTrackCent->Fill(centrality, tracks.GetEntriesFast());
 
   Process(fGammas, &tracks, vertexBin, centBin);
 
@@ -523,6 +540,12 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 //________________________________________________________________________
 void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t vertexBin, Int_t centBin) {
   ///Process stuff
+
+  const Double_t etalim[2] = { fAxisEta.GetBinLowEdge(1), fAxisEta.GetBinUpEdge(fAxisEta.GetNbins())};
+
+
+  if(DebugLevel() > 5) printf("Eta lims: %f, %f \n", etalim[0], etalim[1]);
+
 
   if(DebugLevel() > 4) printf("Number of accepted gammas, tracks %d  %d \n", gammas->GetEntriesFast(), tracks->GetEntriesFast());
  
@@ -544,8 +567,10 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
     Int_t leading = 0;//fIsoAna->IsLeading(static_cast<AliAODConversionParticle*>(ph1), tracks, tIDs);
     if(!fPhotonFilter || fPhotonFilter->PhotonIsSelected(static_cast<AliConversionPhotonBase*>(ph1), fInputEvent)) {
       if(ph1->Pt() > fAxistPt.GetBinLowEdge(1)) {
-	gCorr->CorrelateWithTracks( static_cast<AliAODConversionParticle*>(ph1), tracks, tIDs, leading);
-	photons.Add(ph1);
+	if(ph1->Eta() > etalim[0] && ph1->Eta() < etalim[1]) {
+	  gCorr->CorrelateWithTracks( static_cast<AliAODConversionParticle*>(ph1), tracks, tIDs, leading);
+	  photons.Add(ph1);
+	}
       }
     }
 
@@ -571,7 +596,8 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 	AliDebug(AliLog::kDebug + 5, "We have a pion");
 	if(pion->Pt() > fAxistPt.GetBinLowEdge(1) && 
 	   pion->M() > fAxisPiM.GetBinLowEdge(1) && 
-	   pion->M() < fAxisPiM.GetBinUpEdge(fAxisPiM.GetNbins())) {
+	   pion->M() < fAxisPiM.GetBinUpEdge(fAxisPiM.GetNbins()) &&
+	   pion->Eta() > etalim[0] && pion->Eta() < etalim[1]) {
 	  piCorr->CorrelateWithTracks(pion, tracks, tIDs, leadingpi);
 	  pions.Add(static_cast<TObject*>(pion));
 	}
