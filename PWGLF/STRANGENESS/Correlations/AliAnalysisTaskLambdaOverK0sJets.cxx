@@ -3202,7 +3202,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     // -----------------------------------------
     // ---------- Strange particles ------------
     // -----------------------------------------
-    fEndOfHijingEvent = -1;
+    //fEndOfHijingEvent = -1;
     for (Int_t iTrkMC = 0; iTrkMC < nTrkMC; iTrkMC++){
       
       AliAODMCParticle *p0 = (AliAODMCParticle*)stack->At(iTrkMC);
@@ -3215,18 +3215,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	   (lPdgcodeCurrentPart != kLambda0) &&
 	   (lPdgcodeCurrentPart != kLambda0Bar) ) continue;
       
-      // ----------------------------------------
-      
-      // For injected MC: it determines where HIJING event ends 
-      if (fEndOfHijingEvent==-1) { 
-        if ( ( p0->GetStatus() == 21 ) ||
-	     ( (p0->GetPdgCode() == 443) &&
-	       (p0->GetMother() == -1)   &&
-	       (p0->GetDaughter(0) ==  (iTrkMC+1))) ) {
-	  fEndOfHijingEvent = iTrkMC; 
-        }
-      }
-
       // ----------------------------------------
 
       Int_t isNaturalPart = 1;
