@@ -324,13 +324,13 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 								<< "chi2ndf=" << gammaChi2NDF
 								<< "\n";
 							}
-						}		
-					} else 	kind = 9; //garbage
+						}
+					} else kind = 9; //garbage
 				} else kind = 9; //garbage
 			}
 // 			cout << gammaPt << "\t" << gammaP<< "\t" << gammaEta<<  "\t" <<gammaChi2NDF << "\t" << gammaX<<  "\t" <<gammaY << "\t" << gammaZ<< "\t" << gammaR<<  "\t" <<  gammaPhi<< "\t" <<kind << endl;
 		
-			if (fStreamMaterial){
+		if (fStreamMaterial){
 				(*fStreamMaterial)<<"ConvPointRec"
 								<< "pt=" << gammaPt
 								<< "theta=" << gammaTheta
