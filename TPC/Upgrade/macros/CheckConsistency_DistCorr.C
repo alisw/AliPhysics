@@ -87,6 +87,17 @@ void makeAllComparisonTrees()
   makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps20_50kHz_precal.lookup.root","LUT_20");
 }
 
+void makeAllComparisonTreesNew()
+{
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps5_50kHz_precal.lookup.root","LUT_05");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps10_50kHz_precal.lookup.root","LUT_10");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_20");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_25");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_30");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_35");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_40");
+}
+
 TCanvas *GetCanvas(TString addToName);
 
 void makeHistos(TString addToName) {
@@ -160,13 +171,21 @@ void makeAllHistos() {
   makeHistos("LUT_05");
   makeHistos("LUT_10");
   makeHistos("LUT_20");
-
+  makeHistos("LUT_25");
+  makeHistos("LUT_30");
+  makeHistos("LUT_35");
+  makeHistos("LUT_40");
+  
 }
 
 void makeAllHistosDist() {
   makeHistosDist("LUT_05");
   makeHistosDist("LUT_10");
   makeHistosDist("LUT_20");
+  makeHistosDist("LUT_25");
+  makeHistosDist("LUT_30");
+  makeHistosDist("LUT_35");
+  makeHistosDist("LUT_40");
   
 }
 

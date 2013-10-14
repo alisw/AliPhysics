@@ -5,6 +5,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TPRegexp.h>
+#include <TVectorF.h>
 
 #include <AliExternalTrackParam.h>
 #include <AliTPCcalibDB.h>
@@ -48,6 +49,8 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fCreateT0seed(kFALSE)
 , fLongT0seed(kTRUE)
 , fFillClusterRes(kFALSE)
+, fUseT0list(kTRUE)
+, fForceAlpha(kFALSE)
 , fStreamer(0x0)
 , fInputFile(0x0)
 , fTree(0x0)
@@ -90,6 +93,9 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   ConnectInputFile(file, nmaxEv);
   if (!fTree) return;
 
+  Int_t maxev=fTree->GetEntries();
+  if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
+  
   InitStreamer(".debug");
   
   gROOT->cd();
@@ -118,15 +124,22 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   
   AliExternalTrackParam *dummy;
 
-  //
+  // prepare list of T0s
+  TVectorF t0list(fTree->GetEntries());
+  if (fUseT0list) {
+    for (Int_t iev=0; iev<maxev; ++iev){
+      fTree->GetEvent(iev);
+      const Float_t t0=fEvent->GetT0();
+      t0list[iev]=t0;
+    }
+  }
+  
+  // array with cluster residuals
   TClonesArray *arrClustRes=0x0;
   if (fFillClusterRes){
     arrClustRes=new TClonesArray("AliTPCclusterMI",160);
   }
   
-  Int_t maxev=fTree->GetEntries();
-  if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
-
   const Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
   const Double_t iFCRadius =  83.5; //radius constants found in AliTPCCorrection.cxx
   const Double_t betweeTPCITS = (lastLayerITS+iFCRadius)/2.; // its track propgated to inner TPC wall
@@ -134,10 +147,15 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   const Double_t kMaxSnp = 0.85;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
+  Double_t lastT0=0;
   
   for (Int_t iev=0; iev<maxev; ++iev){
     printf("==============  Processing Event %6d =================\n",iev);
     fTree->GetEvent(iev);
+    
+    Float_t z0=fEvent->GetZ();
+    Float_t t0=fEvent->GetT0();
+    
     for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
 //       printf(" > ======  Processing Track %6d ========  \n",itr);
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
@@ -179,9 +197,6 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
       trackITS1 = resetParam;
       trackITS2 = resetParam;
       
-      Float_t z0=fEvent->GetZ();
-      Float_t t0=fEvent->GetT0();
-
       Float_t vDrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
@@ -201,10 +216,16 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           t0seed = *dummy;
           delete dummy;
         }
-        
-        // crate real seed using the time 0 from the first seed
-        // set fCreateT0seed now to false to get the seed in z coordinates
+
+        // set the T0 from the seed
+        // in case the match with the real T0 infor is requested, find the
+        //    closes T0 from the list of T0s
         fTime0 = t0seed.GetZ()-zLength/vDrift;
+        if (fUseT0list) {
+          fTime0 = FindClosestT0(t0list, fTime0);
+        }
+        // create real seed using the time 0 from the first seed
+        // set fCreateT0seed now to false to get the seed in z coordinates
         fCreateT0seed = kFALSE;
 //         printf("seed (%.2g)\n",fTime0);
         dummy  = GetSeedFromTrack(tr);
@@ -257,6 +278,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "iev="         << iev             <<
         "z0="          << z0              <<
         "t0="          << t0              <<
+        "lastt0="      << lastT0          <<
         "fTime0="      << fTime0          <<
         "itr="         << itr             <<
         "clsType="     << fClusterType    <<
@@ -324,6 +346,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
       
       
     }
+    lastT0=t0;
   }
 
   delete arrClustRes;
@@ -1055,9 +1078,13 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   if (fCreateT0seed&&!fLongT0seed){
     // only propagate to vertex if we don't create a long seed
     // if fTime0 < 0 we assume that we create a seed for the T0 estimate
-    AliTrackerBase::PropagateTrackTo(seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+    Int_t ret=AliTrackerBase::PropagateTrackTo2(seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
     if (TMath::Abs(seed->GetX())>3) {
-//       printf("Could not propagate track to 0, %.2f, %.2f, %.2f\n",seed->GetX(),seed->GetAlpha(),seed->Pt());
+//       printf("Could not propagate track to 0, x:%.2f, a:%.2f (%.2f), snp:%.2f (%.2f), pt:%.2f (%.2f), %d\n",seed->GetX(),seed->GetAlpha(),tr->GetAlpha(), seed->GetSnp(), tr->GetSnp(), seed->Pt(), tr->Pt(), ret);
+    }
+    if (fForceAlpha) {
+      seed->Rotate(tr->GetAlpha());
+      AliTrackerBase::PropagateTrackTo2(seed,0,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
     }
   }
 
@@ -1317,7 +1344,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
 
   AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 
-  if (!fCreateT0seed){
+  if (!fCreateT0seed || fForceAlpha){
     // rotate fittet track to the frame of the original track and propagate to same reference
     track->Rotate(tr->GetAlpha());
   
@@ -2980,3 +3007,25 @@ void AliToyMCReconstruction::CopyRieman(const AliRieman &from, AliRieman &to)
   for (Int_t i=0;i<from.GetN();++i) to.AddPoint(from.GetX()[i],from.GetY()[i],from.GetZ()[i],from.GetSy()[i],from.GetSz()[i]);
 }
 
+//____________________________________________________________________________________
+Float_t AliToyMCReconstruction::FindClosestT0(const TVectorF &t0list, Float_t t0seed)
+{
+  //
+  // find closes T0 in a list of T0s
+  //
+
+  Long64_t size=t0list.GetNrows();
+  const Float_t *array=t0list.GetMatrixArray();
+
+  Int_t index=0;
+  Float_t minDist=1e20;
+  for (Int_t it0=0; it0<size; ++it0) {
+    const Float_t dist=TMath::Abs(t0list[it0]-t0seed);
+    if (dist<minDist) {
+      index=it0;
+      minDist=dist;
+    }
+  }
+
+  return array[index];
+}

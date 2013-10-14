@@ -83,6 +83,8 @@ void runSimRec(Int_t simtype, Int_t SCtype, Int_t nevents, Int_t ntracks, Int_t 
   //reconstruction part
   AliToyMCReconstruction rec;
   // rec.SetUseMaterialBudget(kTRUE)
+  rec.SetFillClusterRes(kTRUE);
+  rec.SetLongT0seed(kFALSE);
 
   if (recoType==0){
     rec.SetRecoSettings(1,0,AliToyMCReconstruction::kNoCorrection);

@@ -442,8 +442,8 @@ Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, c
 
     fInputIndex = 0;
 
-    return fESDTree->GetEntries();
     gRandom->SetSeed();
+    return fESDTree->GetEntries();
    }
 
  
