@@ -62,6 +62,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
+  fLegacyMode(kFALSE),
   fJets(0),
   fEvent(0),
   fTracks(0),
@@ -101,6 +102,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
+  fLegacyMode(false),
   fJets(0),
   fEvent(0),
   fTracks(0),
@@ -334,7 +336,12 @@ void AliEmcalJetTask::FindJets()
       fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);
     }
   }
-  
+
+  // setting legacy mode
+  if (fLegacyMode) { 
+    fjw.SetLegacyMode(kTRUE);
+  }
+
   // run jet finder
   fjw.Run();
 

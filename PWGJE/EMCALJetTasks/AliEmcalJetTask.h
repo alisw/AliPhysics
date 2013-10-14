@@ -76,8 +76,10 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
       fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
     }
   }
+  void                   SetLegacyMode(Bool_t mode)       { fLegacyMode ^= mode; }
 
   UInt_t                 GetJetType()                     { return fJetType; }
+  Bool_t                 GetLegacyMode()                  { return fLegacyMode; }
 
  protected:
   void                   FindJets();
@@ -112,6 +114,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
+  Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   TClonesArray          *fJets;                   //!jet collection
   AliVEvent             *fEvent;                  //!current event
   TClonesArray          *fTracks;                 //!tracks collection
