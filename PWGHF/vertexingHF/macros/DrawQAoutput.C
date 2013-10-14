@@ -890,7 +890,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 
       c->cd();
       c->SetGrid();
-      Int_t entries=h->Integral();
+      Int_t entries=hhh->Integral();
       pvtxt3->AddText(Form("%.1f %s of the events",(Double_t)entries/(Double_t)nevents*100,"%"));
       hhh->Draw("colz");
       c->SetLogz();
