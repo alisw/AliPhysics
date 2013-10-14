@@ -95,7 +95,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(1) 
+  ,fqahist(0) 
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -238,7 +238,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(1)
+  ,fqahist(0)
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -1205,7 +1205,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t min[16] = {kMinP,  -0.5, 1.0,  -1.0,  -5.0,    0,    0,    0,  0.0, 0.0,  0.0,   0,    0,    0,  80, -1.5};
   Double_t max[16] = {kMaxP,   6.5, 4.0,   1.0,   4.0,  2.0, 0.05,   40,   10, 1.0, 20.0, 100,  100,  2.0, 180,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;clsF;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
-  fOutputList->Add(fEleInfo);
+  if(fqahist==1)fOutputList->Add(fEleInfo);
 
   // Make common binning
   Int_t nBinsEop[3] =  { 10, 50, 100};
@@ -1475,7 +1475,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts->SetMinNClustersTPC(90);
   
-  const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
+  //const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   Double_t bfield = fESD->GetMagneticField();
   Double_t emass = 0.51*0.001; // (0.51 MeV)
 
@@ -1685,7 +1685,6 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron2(Int_t itrack, Double_t cent,
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts->SetMinNClustersTPC(90);
   
-  //const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   Double_t eMass = TDatabasePDG::Instance()->GetParticle(11)->Mass(); //Electron mass in GeV
   Double_t bfield = fESD->GetMagneticField();
   
