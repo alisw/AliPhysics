@@ -133,6 +133,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fNumberOfAcceptedTracksMin(0),
   fNumberOfAcceptedTracksMax(10000),
   fHistNumberOfAcceptedTracks(0),
+  fHistMultiplicity(0),
   fUseOfflineTrigger(kFALSE),
   fCheckFirstEventInChunk(kFALSE),
   fCheckPileUp(kFALSE),
@@ -312,6 +313,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fHistNumberOfAcceptedTracks = new TH2F("fHistNumberOfAcceptedTracks",";N_{acc.};Centrality percentile;Entries",4001,-0.5,4000.5,220,-5,105);
   fList->Add(fHistNumberOfAcceptedTracks);
 
+  fHistMultiplicity = new TH1F("fHistMultiplicity",";N_{ch.};Entries",4001,-0.5,4000);
+  fList->Add(fHistMultiplicity);
+
   // Vertex distributions
   fHistVx = new TH1F("fHistVx","Primary vertex distribution - x coordinate;V_{x} (cm);Entries",100,-0.5,0.5);
   fList->Add(fHistVx);
@@ -422,7 +426,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
     
     // centrality bins
-    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    //Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.};
     Double_t* centbins        = centralityBins;
     Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
 
@@ -1019,13 +1024,23 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       //exclude non stable particles
       if(!(gMCEvent->IsPhysicalPrimary(iParticle))) continue;
       if(track->Pt() < 0.1)  continue;
-      if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
+
+      //++++++++++++++++
+      if (fCentralityEstimator == "V0A"){
+	if(track->Eta() > 3.9 || track->Eta() < 2.5)  continue;
+      }
+      else{
+	if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
+      }
+      //++++++++++++++++
+
       if(track->Charge() == 0) continue;
 
       gMultiplicity += 1;
     }//loop over primaries
+    fHistMultiplicity->Fill(gMultiplicity);
   }//MC mode & multiplicity class
-
+  
   Double_t lReturnVal = -100;
   if(fEventClass=="Multiplicity"){
     lReturnVal = gMultiplicity;
