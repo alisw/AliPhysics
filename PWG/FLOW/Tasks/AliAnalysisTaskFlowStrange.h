@@ -76,7 +76,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void SetRFPMaxIPxy(Double_t val) {fRFPmaxIPxy=val;}
   void SetRFPMaxIPz(Double_t val) {fRFPmaxIPz=val;}
   void SetRFPMinTPCCls(Int_t val) {fRFPTPCncls=val;}
-
+  void SetRFPVZERingRange(Int_t val1, Int_t val2, Int_t val3, Int_t val4)
+    {fVZECa=val1;fVZECb=val2;fVZEAa=val3;fVZEAb=val4;}
   void SetDauMinNClsTPC(Int_t val) {fDaughterMinNClsTPC=val;}
   void SetDauMinXRows(Int_t val) {fDaughterMinXRows=val;}
   void SetDauMaxChi2PerNClsTPC(Double_t val) {fDaughterMaxChi2PerNClsTPC=val;}
@@ -86,6 +87,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void SetDauMinPt(Double_t val) {fDaughterMinPt=val;}
   void SetDauMinImpactParameterXY(Double_t val) {fDaughterMinImpactParameterXY=val;}
   void SetDauMaxNSigmaPID(Double_t val) {fDaughterMaxNSigmaPID=val;}
+  void SetDauUnTagProcedure(Bool_t val) {fDaughterUnTag=val;}
 
   void SetMaxRapidity(Double_t val) {fDecayMaxRapidity=val;}
   void SetMinEta(Double_t val) {fDecayMinEta=val;}
@@ -215,12 +217,18 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Bool_t fHomemade; // homemade v0 finder
 
   Int_t fWhichPsi;  // detector for Psi2
+
   Bool_t  fVZEsave; // make vze response
   TList  *fVZEload; // adress to calibration file
   TH2D   *fVZEResponse; // vze response vs centrality class
   Bool_t  fVZEmb;   // integrate response (linearity)
   Bool_t  fVZEByDisk; // normalized by disk
+  Int_t   fVZECa;   // start of V0C (ring number 0-3)
+  Int_t   fVZECb;   // end of V0C (ring number 0-3)
+  Int_t   fVZEAa;   // start of V0A (ring number 0-3)
+  Int_t   fVZEAb;   // end of V0A (ring number 0-3)
   TList  *fVZEQA;   // adress to qalist
+
   Double_t fPsi2;   // best estimation of Psi2
   Double_t fMCEP;   // stores MC EP (when available)
 
@@ -280,6 +288,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   UInt_t   fDaughterStatus;            // DAUGHTER
   Double_t fDaughterNSigmaPID;         // DAUGHTER
   Int_t    fDaughterKinkIndex;         // DAUGHTER
+
+  Bool_t   fDaughterUnTag;             // UNTAG PROCEDURE
 
   Double_t fDaughterMinEta;               // DAUGHTER CUTS
   Double_t fDaughterMaxEta;               // DAUGHTER CUTS

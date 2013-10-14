@@ -3,7 +3,7 @@ Bool_t SFT_gbReadESD;
 Bool_t SFT_gbReadMC;
 Int_t SFT_gbMatchMC;
 Bool_t SFT_gbAvoidExec;
-Bool_t SFT_gbExtraEventCut=kFALSE;
+Bool_t SFT_gbExtraEventCut;
 TString SFT_gbCentMethod;
 Int_t SFT_gbCentPerMin,SFT_gbCentPerMax;
 Bool_t SFT_gbRunPP;
@@ -24,7 +24,7 @@ Double_t SFT_gbMaxRapidity;
 Double_t SFT_gbMaxDCAdaughters;
 Double_t SFT_gbMinCosinePointingAngleXY;
 Double_t SFT_gbMinQt;
-Bool_t   SFT_gbQtPie=kTRUE;
+Bool_t   SFT_gbQtPie;
 Double_t SFT_gbMinRadXY;
 Double_t SFT_gbMaxDecayLength;
 Double_t SFT_gbMaxProductIPXY;
@@ -55,14 +55,29 @@ Int_t SFT_gbHarmonic;
 TString SFT_gbVZEload;
 Bool_t SFT_gbVZEsave;
 Bool_t SFT_gbVZEmb;
+Bool_t SFT_gbVZEpdisk;
+Int_t SFT_gbV0CRingMin;
+Int_t SFT_gbV0CRingMax;
+Int_t SFT_gbV0ARingMin;
+Int_t SFT_gbV0ARingMax;
 
-void AddTaskFlowStrange(TString configFile, TString alienaddress) {
+Bool_t SFT_gbUntagDaughter;
+
+void AddTaskFlowStrange(TString configFile, TString alienaddress,
+			Int_t VZECm=0, Int_t VZECM=3, Int_t VZEAm=0, Int_t VZEAM=3) {
   Int_t ret = gSystem->Exec( Form("alien_cp %s/%s .",alienaddress.Data(),configFile.Data()) );
   printf("FlowStrange copying from grid %d\n",ret);
-  AddTaskFlowStrange(configFile);
+  AddTaskFlowStrange(configFile,VZECm,VZECM,VZEAm,VZEAM);
 }
-void AddTaskFlowStrange(TString configFile) {
+void AddTaskFlowStrange(TString configFile,
+			Int_t VZECm=0, Int_t VZECM=3, Int_t VZEAm=0, Int_t VZEAM=3) {
   SFT_ReadConfig(configFile);
+  SFT_gbV0CRingMin = VZECm;
+  SFT_gbV0CRingMax = VZECM;
+  SFT_gbV0ARingMin = VZEAm;
+  SFT_gbV0ARingMax = VZEAM;
+  SFT_gbSuffix = Form("%s%d%d%d%d", SFT_gbSuffix.Data(),
+		      SFT_gbV0CRingMin, SFT_gbV0CRingMax, SFT_gbV0ARingMin, SFT_gbV0ARingMax);
   if(SFT_gbAllCC) {
     int centMin[9] = {00,05,10,20,30,40,50,60,70};
     int centMax[9] = {05,10,20,30,40,50,60,70,80};
@@ -131,7 +146,10 @@ void AddTaskFlowStrange() {
   taskSel->SetRFPMaxIPz(SFT_gbRFPmaxIPz);
   taskSel->SetRFPMinTPCCls(SFT_gbRFPTPCncls);
 
+  taskSel->SetDauUnTagProcedure(SFT_gbUntagDaughter);
+
   taskSel->SetDauMinNClsTPC(SFT_gbMinNClsTPC);
+  taskSel->SetDauMinXRows(SFT_gbMinXRows);
   taskSel->SetDauMaxChi2PerNClsTPC(SFT_gbMaxChi2PerNClsTPC);
   taskSel->SetDauMinXRowsOverNClsFTPC(SFT_gbMinXRowsOverNClsFTPC);
   taskSel->SetDauMinEta(SFT_gbMinEta);
@@ -157,13 +175,15 @@ void AddTaskFlowStrange() {
     TFile *ocalib = TFile::Open(SFT_gbVZEload);
     if(ocalib->IsOpen()) {
       TList *vzero = ocalib->Get("VZECALIB");
-      taskSel->LoadVZEResponse(vzero,SFT_gbVZEmb);
+      taskSel->LoadVZEResponse(vzero,SFT_gbVZEmb,SFT_gbVZEpdisk);
     } else {
       printf("ADDTASKFLOWSTRANGE COULD NOT OPEN %s. NO VZE CALIBRATION LOADED!\n",SFT_gbVZEload.Data());
     }
   }
-
+  printf("Loading %d %d %d %d as VZE configuration\n",SFT_gbV0CRingMin, SFT_gbV0CRingMax, SFT_gbV0ARingMin, SFT_gbV0ARingMax);
+  taskSel->SetRFPVZERingRange( SFT_gbV0CRingMin, SFT_gbV0CRingMax, SFT_gbV0ARingMin, SFT_gbV0ARingMax );
   taskSel->SetStoreVZEResponse(SFT_gbVZEsave);
+
   AliAnalysisDataContainer *cOutHist = mgr->CreateContainer(Form("FS_OH_%s",SFT_gbStamp.Data()),
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
@@ -208,8 +228,8 @@ void AddTaskFlowStrange() {
       SFT_AddSPmethod( Form("SPTPC4MB%d",mb), exc_TPC, filterhf[mb][1], "Qb", 0.4 ); // SP TPC Qb
     }
     if(SFT_gbSPVZE) {
-      SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qa" ); // SP VZE Qa
-      SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qb" ); // SP VZE Qa
+      SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qa", 1.0 ); // SP VZE Qa
+      SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filter[mb], "Qb", 1.0 ); // SP VZE Qa
     }
   }
 }
@@ -231,7 +251,7 @@ void SFT_AddQCmethod(char *name, AliAnalysisDataContainer *flowEvent, AliFlowTra
   AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants( Form("TaskQCumulants_%s",myName.Data()),kFALSE );
   tskQC->SetApplyCorrectionForNUA(kTRUE);
   tskQC->SetHarmonic(SFT_gbHarmonic);
-  tskQC->SetBookOnlyBasicCCH(kTRUE);
+  tskQC->SetBookOnlyBasicCCH(SFT_gbShrinkFP);
   mgr->AddTask(tskQC);
   mgr->ConnectInput( tskQC,0,flowEvent2);
   mgr->ConnectOutput(tskQC,1,outQC);
@@ -256,8 +276,7 @@ void SFT_AddSPmethod(char *name, AliAnalysisDataContainer *flowEvent, AliFlowTra
   tskSP->SetApplyCorrectionForNUA(kTRUE);
   tskSP->SetHarmonic(SFT_gbHarmonic);
   tskSP->SetTotalQvector(Qvector);
-  //tskSP->SetBookOnlyBasicCCH(kTRUE);
-  tskSP->SetBookOnlyBasicCCH(kFALSE);
+  tskSP->SetBookOnlyBasicCCH(SFT_gbShrinkFP);
   mgr->AddTask(tskSP);
   mgr->ConnectInput( tskSP,0,flowEvent2);
   mgr->ConnectOutput(tskSP,1,outSP);
@@ -334,6 +353,7 @@ void SFT_PrintConfig() {
   printf("* MINETA  %+9.6f              *\n", SFT_gbMinEta );
   printf("* MAXETA  %+9.6f              *\n", SFT_gbMaxEta );
   printf("* MINPT  %+9.6f               *\n", SFT_gbMinPt );
+  printf("* UNTAG  %+9.6f               *\n", SFT_gbUntagDaughter );
   printf("* MIND0XY  %+9.6f             *\n", SFT_gbMinImpactParameterXY );
   printf("* MAXSIGMAPID  %+9.6f         *\n", SFT_gbMaxNSigmaPID );
   printf("* MAXY  %+9.6f                *\n", SFT_gbMaxRapidity );
@@ -352,6 +372,7 @@ void SFT_PrintConfig() {
   printf("* SPVZE  %3d                      *\n", SFT_gbSPVZE );
   printf("* SPTPC  %3d                      *\n", SFT_gbSPTPC );
   printf("* QCTPC  %3d                      *\n", SFT_gbQCTPC );
+  printf("* SHRINKFP  %3d                   *\n", SFT_gbShrinkFP );
   printf("* RFFILTERBIT  %3d                *\n", SFT_gbRFPFilterBit );
   printf("* RFMINPT  %+9.6f             *\n", SFT_gbRFPminPt );
   printf("* RFMAXPT  %+9.6f             *\n", SFT_gbRFPmaxPt );
@@ -363,6 +384,7 @@ void SFT_PrintConfig() {
   printf("* RFTPCNCLS  %3d                  *\n", SFT_gbRFPTPCncls );
   printf("* VZELOAD  %8s            *\n", SFT_gbVZEload.Data() );
   printf("* VZELINEAR  %3d                  *\n", SFT_gbVZEmb );
+  printf("* VZEPERDISK  %3d                 *\n", SFT_gbVZEpdisk );
   printf("* VZESAVE  %3d                    *\n", SFT_gbVZEsave );
   printf("***********************************\n");
 }
@@ -457,6 +479,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbSPTPC;
     } else if(!varname.CompareTo("QCTPC")) {
       input >> SFT_gbQCTPC;
+    } else if(!varname.CompareTo("SHRINKFP")) {
+      input >> SFT_ShrinkFP;
     } else if(!varname.CompareTo("RFFILTERBIT")) {
       input >> SFT_gbRFPFilterBit;
     } else if(!varname.CompareTo("RFMINPT")) {
@@ -479,10 +503,14 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbVZEload;
     } else if(!varname.CompareTo("VZELINEAR")) {
       input >> SFT_gbVZEmb;
+    } else if(!varname.CompareTo("VZEPERDISK")) {
+      input >> SFT_gbVZEpdisk;
     } else if(!varname.CompareTo("VZESAVE")) {
       input >> SFT_gbVZEsave;
     } else if(!varname.CompareTo("ALLCC")) {
       input >> SFT_gbAllCC;
+    } else if(!varname.CompareTo("UNTAG")) {
+      input >> SFT_gbUntagDaughter;
     } else {
       printf("I dont understand %s\n",varname.Data());
     }
@@ -504,7 +532,7 @@ void SFT_ResetVars() {
   SFT_gbHomemade=0;
   SFT_gbOnline=0;
   SFT_gbMinNClsTPC=70;
-  SFT_gbMinXRows=0;
+  SFT_gbMinXRows=70;
   SFT_gbMaxChi2PerNClsTPC=4.0;
   SFT_gbMinXRowsOverNClsFTPC=0.8;
   SFT_gbMinEta=-0.8;
@@ -523,7 +551,7 @@ void SFT_ResetVars() {
   SFT_gbDebug=0;
   SFT_gbQA=0;
   SFT_gbFolder="FlowStrange";
-  SFT_gbSuffix="kze";
+  SFT_gbSuffix="NOTFOUND";
   SFT_gbRFPFilterBit=1;
   SFT_gbRFPminPt=0.2;
   SFT_gbRFPmaxPt=5.0;
@@ -542,7 +570,10 @@ void SFT_ResetVars() {
   SFT_gbSPTPC=0;
   SFT_gbQCTPC=0;
   SFT_gbHarmonic=2;
-  SFT_gbVZEload="";
+  SFT_gbVZEload="no";
   SFT_gbVZEsave=0;
   SFT_gbVZEmb=0;
+  SFT_gbVZEpdisk=0;
+  SFT_gbUntagDaughter=kTRUE;
+  SFT_gbShrinkFP=kTRUE;
 }
