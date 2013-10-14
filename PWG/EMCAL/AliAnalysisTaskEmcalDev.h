@@ -19,6 +19,7 @@ class AliParticleContainer;
 class AliClusterContainer;
 class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
+class AliAnalysisUtils;
 
 #include "Rtypes.h"
 
@@ -53,6 +54,10 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
+
+  void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
+  void                        SetUseAliAnaUtils(Bool_t b)                           { fUseAliAnaUtils    = b                              ; }
+
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
@@ -116,6 +121,11 @@ class AliAnalysisTaskEmcalDev : public AliAnalysisTaskSE {
   Double_t                    fMaxCent;                    // max centrality for event selection
   Double_t                    fMinVz;                      // min vertex for event selection
   Double_t                    fMaxVz;                      // max vertex for event selection
+  Double_t                    fTrackPtCut;                 // cut on track pt in event selection
+  Int_t                       fMinNTrack;                  // minimum nr of tracks in event with pT>fTrackPtCut
+  Bool_t                      fUseAliAnaUtils;             //  used for LHC13* data
+  AliAnalysisUtils           *fAliAnalysisUtils;           //! vertex selection (optional)
+
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
   Int_t                       fNbins;                      // no. of pt bins

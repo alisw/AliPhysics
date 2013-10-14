@@ -33,6 +33,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
@@ -52,6 +53,10 @@ AliAnalysisTaskEmcalDev::AliAnalysisTaskEmcalDev() :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(-999),
+  fTrackPtCut(0),
+  fMinNTrack(0),
+  fUseAliAnaUtils(kFALSE),
+  fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
   fNbins(500),
@@ -121,6 +126,10 @@ AliAnalysisTaskEmcalDev::AliAnalysisTaskEmcalDev(const char *name, Bool_t histo)
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(-999),
+  fTrackPtCut(0),
+  fMinNTrack(0),
+  fUseAliAnaUtils(kFALSE),
+  fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
   fNbins(500),
@@ -208,6 +217,8 @@ void AliAnalysisTaskEmcalDev::SetTrackPtCut(Double_t cut, Int_t c)
   AliParticleContainer *cont = GetParticleContainer(c);
   if (cont) cont->SetParticlePtCut(cut);
   else AliError(Form("%s in SetTrackPtCut(...): container %d not found",GetName(),c));
+
+  fTrackPtCut = cut;
 }
 
 //________________________________________________________________________
@@ -693,8 +704,16 @@ Bool_t AliAnalysisTaskEmcalDev::IsEventSelected()
       AliVParticle *track = GetAcceptParticleFromArray(i,0);
       if(!track)
 	continue;
-      if (track->Eta() < fGeom->GetArm1EtaMin() || track->Eta() > fGeom->GetArm1EtaMax() ||
-	  track->Phi() < fGeom->GetArm1PhiMin() * TMath::DegToRad() || track->Phi() > fGeom->GetArm1PhiMax() * TMath::DegToRad())
+
+      Double_t phiMin = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+      Double_t phiMax = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+      Int_t runNumber = InputEvent()->GetRunNumber();
+      if(runNumber>=177295 && runNumber<=197470) { //small SM masked in 2012 and 2013
+	phiMin = 1.4;   
+	phiMax = TMath::Pi();
+      }
+
+      if (track->Eta() < fGeom->GetArm1EtaMin() || track->Eta() > fGeom->GetArm1EtaMax() || track->Phi() < phiMin || track->Phi() > phiMax)
 	continue;
       if (track->Pt() > fMinPtTrackInEmcal) {
 	trackInEmcalOk = kTRUE;
@@ -705,6 +724,35 @@ Bool_t AliAnalysisTaskEmcalDev::IsEventSelected()
       return kFALSE;
   }
 
+  if (fMinNTrack > 0 && fTracks) {
+    Int_t nTracksAcc = 0;
+    Int_t ntracks = GetNParticles(0);
+    for (Int_t i = 0; i < ntracks; i++) {
+      AliVParticle *track = GetAcceptParticleFromArray(i,0);
+      if(!track)
+	continue;
+      if (track->Pt() > fTrackPtCut) {
+	nTracksAcc++;
+	if(nTracksAcc>=fMinNTrack)
+	  break;
+      }
+    }
+    if (nTracksAcc<fMinNTrack)
+      return kFALSE;
+  }
+
+  if(fUseAliAnaUtils) {
+    if(!fAliAnalysisUtils)
+      fAliAnalysisUtils = new AliAnalysisUtils();
+    fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMaxVtxZ(10.);
+
+    if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent()))
+      return kFALSE;
+
+    if(fAliAnalysisUtils->IsPileUpEvent(InputEvent()))
+      return kFALSE;
+  }
 
   if (!(fEPV0 > fMinEventPlane && fEPV0 <= fMaxEventPlane) &&
       !(fEPV0 + TMath::Pi() > fMinEventPlane && fEPV0 + TMath::Pi() <= fMaxEventPlane) &&
