@@ -28,12 +28,8 @@
 
 using namespace std;
 
-const int KTBINS = 6;
-int KTINDEX;
-bool ChargeConstraint=kFALSE;
-bool LinkRadii=kFALSE;
-bool TherminatorC2=kTRUE;
-const int BOI_1=9;// centrality bin (0-9)
+bool TherminatorC2=kFALSE;
+const int BOI_1=0;// centrality bin (0-9)
 const int BOI_2=9;// centrality of second bin for C2 fit parameter plot only
 const int ParN=1;// Which C2 fit parameter to plot? 1=lambda, 2=G, 3=Rch, 4=Rcoh,
 const int ChProdBOI=0;// 0=SameCharge, 1=MixedCharge
@@ -43,16 +39,21 @@ const int CoulChoice=0;// 0 for GRS (default), 1 for Omega0
 
 double MIN[10]={0.97, 0.97, 0.97, 0.97, 0.97, 0.97, 0.97, 0.97, 0.97, 0.97};// C2 y-axis min
 double MAX[10]={1.39, 1.38, 1.38, 1.38, 1.38, 1.38, 1.38, 1.38, 1.38, 1.52};// C2 y-axis max
-
 //
-double XLabelSize=0.06;
-double YLabelSize=0.06;
-int PixelSizeLabel=18;
-int PixelSizeLegend=24;
-int PixelSizeTitle=32;
-int PixelSizeSpecif=20;
+const int KTBINS = 6;
+int KTINDEX;
+bool ChargeConstraint=kFALSE;
+bool LinkRadii=kFALSE;
+//
+int TextFont=42;// 63, or 42
+float SizeLabel=0.08;// 20(63 font), 0.08(42 font)
+float SizeLegend=0.08;// 
+float SizeTitle=0.08;// 
+float SizeSpecif=0.075;// 
+float SF1=2/3.*0.95;
+float SF2=1/2.*0.95;
 
-double RightMargin=0.002;
+double RightMargin=0.002;// 0.002
 //
 double Chi2_C2global;
 double NFitPoints_C2global;
@@ -62,6 +63,8 @@ TH1D *C2_ss_MomSys[KTBINS][10];
 TH1D *C2_ss_KSys[KTBINS][10];
 TH1D *C2_os_MomSys[KTBINS][10];
 TH1D *C2_os_KSys[KTBINS][10];
+TH1D *hfitC2ss_noG[KTBINS][10];
+TH1D *hfitC2os_noG[KTBINS][10];
 TF1 *fitC2ss_noG[KTBINS][10];
 TF1 *fitC2os_noG[KTBINS][10];
 TF1 *fitC2ss_yesG[KTBINS][10];
@@ -72,6 +75,8 @@ TF1 *fitC2ss_yesGEWfromTherm[KTBINS][10];
 TF1 *fitC2os_yesGEWfromTherm[KTBINS][10];
 TF1 *fitC2ss_noGEW[KTBINS][10];
 TF1 *fitC2os_noGEW[KTBINS][10];
+TH1D *hfitC2ss_noGEW[KTBINS][10];
+TH1D *hfitC2os_noGEW[KTBINS][10];
 TH1D *K2_ss[KTBINS][10];
 TH1D *K2_os[KTBINS][10];
 TH1D *C2Therm_ss[KTBINS][10];
@@ -309,20 +314,24 @@ void Plot_plots(){
       C2_os_MomSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os_Momsys"); C2_os_MomSys[kt][cb]->SetDirectory(0);
       C2_ss_KSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_ss_Ksys"); C2_ss_KSys[kt][cb]->SetDirectory(0);
       C2_os_KSys[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2_os_Ksys"); C2_os_KSys[kt][cb]->SetDirectory(0);
-      fitC2ss_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2ss"); //fitC2ss_noG[kt][cb]->SetDirectory(0);
-      fitC2os_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2os"); //fitC2os_noG[kt][cb]->SetDirectory(0);
-      fitC2ss_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2ss"); //fitC2ss_yesG[kt][cb]->SetDirectory(0);
-      fitC2os_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2os"); //fitC2os_yesG[kt][cb]->SetDirectory(0);
-      fitC2ss_noGEW[kt][cb] = (TF1*)files_2_noGEW[kt][cb]->Get("fitC2ss"); //fitC2ss_noGEW[kt][cb]->SetDirectory(0);
-      fitC2os_noGEW[kt][cb] = (TF1*)files_2_noGEW[kt][cb]->Get("fitC2os"); //fitC2os_noGEW[kt][cb]->SetDirectory(0);
-      fitC2ss_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ss"); //fitC2ss_noGEWfromTherm[kt][cb]->SetDirectory(0);
-      fitC2os_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2os"); //fitC2os_noGEWfromTherm[kt][cb]->SetDirectory(0);
-      fitC2ss_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2ss"); //fitC2ss_yesGEWfromTherm[kt][cb]->SetDirectory(0);
-      fitC2os_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2os"); //fitC2os_yesGEWfromTherm[kt][cb]->SetDirectory(0);
-      fitC2ss_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssTherm"); //fitC2ss_Therm[kt][cb]->SetDirectory(0);
-      fitC2os_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osTherm"); //fitC2os_Therm[kt][cb]->SetDirectory(0);
-      fitC2ss_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssThermGaus"); //fitC2ss_ThermGaus[kt][cb]->SetDirectory(0);
-      fitC2os_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osThermGaus"); //fitC2os_ThermGaus[kt][cb]->SetDirectory(0);
+      fitC2ss_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2ss");
+      fitC2os_noG[kt][cb] = (TF1*)files_2_noG[kt][cb]->Get("fitC2os");
+      hfitC2ss_noG[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("fitC2ss_h"); hfitC2ss_noG[kt][cb]->SetDirectory(0);
+      hfitC2os_noG[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("fitC2os_h"); hfitC2os_noG[kt][cb]->SetDirectory(0);
+      fitC2ss_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2ss");
+      fitC2os_yesG[kt][cb] = (TF1*)files_2_yesG[kt][cb]->Get("fitC2os");
+      fitC2ss_noGEW[kt][cb] = (TF1*)files_2_noGEW[kt][cb]->Get("fitC2ss");
+      fitC2os_noGEW[kt][cb] = (TF1*)files_2_noGEW[kt][cb]->Get("fitC2os");
+      hfitC2ss_noGEW[kt][cb] = (TH1D*)files_2_noGEW[kt][cb]->Get("fitC2ss_h"); hfitC2ss_noGEW[kt][cb]->SetDirectory(0);
+      hfitC2os_noGEW[kt][cb] = (TH1D*)files_2_noGEW[kt][cb]->Get("fitC2os_h"); hfitC2os_noGEW[kt][cb]->SetDirectory(0);
+      fitC2ss_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ss");
+      fitC2os_noGEWfromTherm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2os");
+      fitC2ss_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2ss");
+      fitC2os_yesGEWfromTherm[kt][cb] = (TF1*)files_2_yesGEWfromTherm[kt][cb]->Get("fitC2os");
+      fitC2ss_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssTherm");
+      fitC2os_Therm[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osTherm");
+      fitC2ss_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2ssThermGaus");
+      fitC2os_ThermGaus[kt][cb] = (TF1*)files_2_noGEWfromTherm[kt][cb]->Get("fitC2osThermGaus");
       K2_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("K2_ss"); K2_ss[kt][cb]->SetDirectory(0);
       K2_os[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("K2_os"); K2_os[kt][cb]->SetDirectory(0);
       C2Therm_ss[kt][cb] = (TH1D*)files_2_noG[kt][cb]->Get("C2Therm_ss"); C2Therm_ss[kt][cb]->SetDirectory(0);
@@ -331,6 +340,7 @@ void Plot_plots(){
       Chi2NDF_noGEWfromTherm[kt][cb] = (TH1D*)files_2_noGEWfromTherm[kt][cb]->Get("ChiSquaredNDF"); Chi2NDF_noGEWfromTherm[kt][cb]->SetDirectory(0);
       Chi2NDF_yesG[kt][cb] = (TH1D*)files_2_yesG[kt][cb]->Get("ChiSquaredNDF"); Chi2NDF_yesG[kt][cb]->SetDirectory(0);
       Chi2NDF_yesGEWfromTherm[kt][cb] = (TH1D*)files_2_yesGEWfromTherm[kt][cb]->Get("ChiSquaredNDF"); Chi2NDF_yesGEWfromTherm[kt][cb]->SetDirectory(0);
+      
       //
       for(int par=1; par<=4; par++){
 	//if(par!=4 && par!=2) 
@@ -446,20 +456,19 @@ void Plot_plots(){
   gPad->SetTicky();
   padK3->SetTopMargin(0.02);//0.05
   padK3->SetRightMargin(0.01);//1e-2
-  padK3->SetBottomMargin(0.06);//0.12
+  padK3->SetBottomMargin(0.07);//0.12
   padK3->Divide(1,2,0,0);
   padK3->Draw();
   padK3->cd(1);
   gPad->SetLeftMargin(0.12);
   gPad->SetRightMargin(0.02);
+  //double Dim1=gPad->GetAbsHNDC();
+  //cout<<gPad->GetAbsHNDC()<<endl;
+  //cout<<gPad->GetAspectRatio()<<endl;
   TLegend *legendK3 = new TLegend(.45,.05,.95,.3,NULL,"brNDC");
-  legendK3->SetBorderSize(1);
-  legendK3->SetTextSize(.06);// small .03; large .06
+  legendK3->SetBorderSize(0);
+  legendK3->SetTextSize(SizeLabel*SF1);// *2/3.*0.96
   legendK3->SetFillColor(0);
-  TLegend *legendK3comp = new TLegend(.5,.8,.95,.95,NULL,"brNDC");
-  legendK3comp->SetBorderSize(1);
-  legendK3comp->SetTextSize(.06);// small .03; large .06
-  legendK3comp->SetFillColor(0);
 
   K3[0][1][KT3Bin][BOI_1]->SetMinimum(0.48);
   K3[0][1][KT3Bin][BOI_1]->SetMaximum(1.33);
@@ -473,8 +482,14 @@ void Plot_plots(){
   K3[1][0][KT3Bin][BOI_1]->SetMarkerStyle(26);
   K3[1][0][KT3Bin][BOI_1]->SetMarkerColor(4);
   //
-  K3[0][1][KT3Bin][BOI_1]->GetXaxis()->SetLabelFont(63); K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetLabelFont(63);
-  K3[0][1][KT3Bin][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel); K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+  K3[0][1][KT3Bin][BOI_1]->GetXaxis()->SetLabelFont(TextFont); K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetLabelFont(TextFont);
+  K3[0][1][KT3Bin][BOI_1]->GetXaxis()->SetLabelSize(SizeLabel*SF1); K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetLabelSize(SizeLabel*SF1);
+  K3[0][1][KT3Bin][BOI_1]->GetXaxis()->SetNdivisions(808); K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetNdivisions(909);
+  TGaxis::SetMaxDigits(3); 
+  K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetTitleFont(TextFont);
+  K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetTitleSize(SizeLabel*SF1);
+  K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetTitle("K_{3}");
+  K3[0][1][KT3Bin][BOI_1]->GetYaxis()->SetTitleOffset(1.1);
   //
   K3[0][1][KT3Bin][BOI_1]->Draw();
   K3[0][0][KT3Bin][BOI_1]->Draw("same");
@@ -486,16 +501,22 @@ void Plot_plots(){
   legendK3->AddEntry(K3[1][1][KT3Bin][BOI_1],"mixed-charge, #Omega_{0}","p");
   legendK3->AddEntry(K3[1][0][KT3Bin][BOI_1],"mixed-charge, GRS","p");
   legendK3->Draw("same");
-  TLatex *K3Label = new TLatex(-0.009,1.2,"K_{3}");// -0.011,0.92 (ss), 1.26 (os)
-  K3Label->SetTextFont(63);
-  K3Label->SetTextSize(PixelSizeTitle);
+  TLatex *K3Label = new TLatex(-0.009,1.25,"K_{3}");// -0.011,0.92 (ss), 1.26 (os)
+  K3Label->SetTextFont(TextFont);
+  K3Label->SetTextSize(SizeTitle*SF1);
   K3Label->SetTextAngle(90);
-  K3Label->Draw();
+  //K3Label->Draw();
   //
   padK3->cd(2);
   gPad->SetLeftMargin(0.12);
   gPad->SetRightMargin(0.02);
-  gPad->SetBottomMargin(0.13);
+  gPad->SetBottomMargin(0.12);
+  //double Dim2=gPad->GetAbsHNDC();
+  TLegend *legendK3comp = new TLegend(.45,.8,.95,.95,NULL,"brNDC");
+  legendK3comp->SetBorderSize(0);
+  legendK3comp->SetTextSize(SizeLabel*SF1);// small .03; large .06
+  legendK3comp->SetFillColor(0);
+
   TH1D *K3sc_compOmega0 = (TH1D*)K3[0][1][KT3Bin][BOI_1]->Clone();
   TH1D *K3sc_compGRS = (TH1D*)K3[0][0][KT3Bin][BOI_1]->Clone();
   TH1D *K3mc_compOmega0 = (TH1D*)K3[1][1][KT3Bin][BOI_1]->Clone();
@@ -519,6 +540,12 @@ void Plot_plots(){
   K3sc_compOmega0->SetMinimum(-0.12);// -0.021
   K3sc_compOmega0->SetMaximum(0.12);// 0.021
   K3sc_compOmega0->SetBinContent(1,-100); K3mc_compOmega0->SetBinContent(1,-100);
+  K3sc_compOmega0->GetYaxis()->SetNdivisions(404);
+  K3sc_compOmega0->GetYaxis()->SetTitleFont(TextFont); K3sc_compOmega0->GetYaxis()->SetTitleSize(SizeTitle*SF1);
+  //K3sc_compOmega0->GetXaxis()->SetTitleFont(TextFont); K3sc_compOmega0->GetXaxis()->SetTitleSize(SizeTitle*2/3.*.96);
+  //K3sc_compOmega0->GetXaxis()->SetTitle("Q_{3} (GeV/c)");
+  K3sc_compOmega0->GetYaxis()->SetTitle("#Delta K_{3}/(K_{3}(#Omega_{0})-1)");
+  K3sc_compOmega0->GetXaxis()->SetTitleOffset(1.2); K3sc_compOmega0->GetYaxis()->SetTitleOffset(1.1);
   K3sc_compOmega0->Draw();
   K3mc_compOmega0->Draw("same");
   TF1 *Zero=new TF1("Zero","0",0,1);
@@ -527,14 +554,15 @@ void Plot_plots(){
   legendK3comp->AddEntry(K3sc_compOmega0,"same-charge","p");
   legendK3comp->AddEntry(K3mc_compOmega0,"mixed-charge","p");
   legendK3comp->Draw("same");
-  TLatex *RatioLabel = new TLatex(-.009,-0.009,"#Delta K_{3}/(K_{3}(#Omega_{0})-1)");// -0.011,0.04
-  RatioLabel->SetTextFont(63);
-  RatioLabel->SetTextSize(PixelSizeTitle);
+  TLatex *RatioLabel = new TLatex(-.011,0.02,"#Delta K_{3}/(K_{3}(#Omega_{0})-1)");// -0.011,0.04
+  RatioLabel->SetTextFont(TextFont);
+  RatioLabel->SetTextSize(SizeTitle*SF1);
   RatioLabel->SetTextAngle(90);
-  RatioLabel->Draw();
-  TLatex *Q3Label = new TLatex(.07,-0.147,"Q_{3} (GeV/c)");//.065,-0.147
-  Q3Label->SetTextFont(63);
-  Q3Label->SetTextSize(PixelSizeTitle);// 0.08
+  //RatioLabel->Draw();
+
+  TLatex *Q3Label = new TLatex(.081,-0.147,"Q_{3} (GeV/c)");//.065,-0.147
+  Q3Label->SetTextFont(TextFont);
+  Q3Label->SetTextSize(SizeTitle*SF1);// 0.08
   Q3Label->Draw();
 
 
@@ -653,7 +681,7 @@ void Plot_plots(){
   */
 
 
-
+  
   /////////////////////////////////////////////
   // Draw C2 in 6 kt bins
   TCanvas *canC2 = new TCanvas("canC2", "canC2",10,0,600,900);// 11,53,700,500
@@ -668,7 +696,7 @@ void Plot_plots(){
   canC2->SetFrameBorderMode(0);
   
   
-  TPad *pad1 = new TPad("pad1","pad1",0.05,0.05,1.,1.);
+  TPad *pad1 = new TPad("pad1","pad1",0.05,0.05,1.,1.);//0.05,0.05,1.,1.
   gPad->SetGridx(0);
   gPad->SetGridy(0);
   gPad->SetTickx();
@@ -676,39 +704,47 @@ void Plot_plots(){
   pad1->SetTopMargin(0.02);//0.05
   pad1->SetLeftMargin(0.12);//
   pad1->SetRightMargin(0.01);//3e-2
-  pad1->SetBottomMargin(0.06);//0.12
+  pad1->SetBottomMargin(0.07);//0.12
   pad1->Divide(2,3,0,0);
   pad1->Draw();
-    
+ 
 
   TLegend *legend1 = new TLegend(.37,.75,.99,.95,NULL,"brNDC");//.45 or .4 for x1
-  legend1->SetBorderSize(1);
-  legend1->SetTextSize(.08);// small .03; large .036 
+  legend1->SetBorderSize(0);
+  //legend1->SetTextSize(.08);// small .03; large .036 
+  legend1->SetTextFont(TextFont);
+  legend1->SetTextSize(SizeLegend);
   legend1->SetFillColor(0);
   //
   TLegend *legend2 = new TLegend(.5,.74, .99,.98,NULL,"brNDC");//.45 or .4 for x1
-  legend2->SetBorderSize(1);
-  legend2->SetTextSize(.08);// small .03; large .036 
+  legend2->SetBorderSize(0);
+  //legend2->SetTextSize(.08);// small .03; large .036 
+  legend2->SetTextFont(TextFont);
+  legend2->SetTextSize(SizeLegend);
   legend2->SetFillColor(0);
 
 
-
+  TGaxis::SetMaxDigits(4);
   /////////////////////
   for(int kt=0; kt<KTBINS; kt++) {
     pad1->cd(kt+1);
     gPad->SetRightMargin(RightMargin);
-    
+    //if(kt==0) Dim1=gPad->GetAbsWNDC()*gPad->GetAbsHNDC();
+    //Dim2=gPad->GetAbsWNDC()*gPad->GetAbsHNDC();
     C2_ss[kt][BOI_1]->SetMinimum(MIN[BOI_1]);
     C2_ss[kt][BOI_1]->SetMaximum(MAX[BOI_1]);
-    C2_ss[kt][BOI_1]->GetXaxis()->SetRangeUser(0,0.06);
+    C2_ss[kt][BOI_1]->GetXaxis()->SetRangeUser(0,0.061);
     C2_ss[kt][BOI_1]->GetXaxis()->SetTitleOffset(0.85);
-    C2_ss[kt][BOI_1]->GetYaxis()->SetTitleOffset(0.85);
+    C2_ss[kt][BOI_1]->GetYaxis()->SetTitleOffset(0.85);// 0.85
     C2_ss[kt][BOI_1]->GetXaxis()->SetTitle(""); C2_ss[kt][BOI_1]->GetYaxis()->SetTitle("");
-    C2_ss[kt][BOI_1]->GetXaxis()->SetLabelFont(63); C2_ss[kt][BOI_1]->GetYaxis()->SetLabelFont(63);
-    C2_ss[kt][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel); C2_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(PixelSizeLabel);
-    if(kt%2==0) C2_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+    C2_ss[kt][BOI_1]->GetXaxis()->SetTitleFont(TextFont); C2_ss[kt][BOI_1]->GetYaxis()->SetTitleFont(TextFont);
+    C2_ss[kt][BOI_1]->GetXaxis()->SetLabelFont(TextFont); C2_ss[kt][BOI_1]->GetYaxis()->SetLabelFont(TextFont);
+    C2_ss[kt][BOI_1]->GetXaxis()->SetLabelSize(SizeLabel); C2_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(SizeLabel);
+    if(kt%2==0) C2_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(SizeLabel);
     else {C2_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(.0);}
     if(kt<KTBINS-2) C2_ss[kt][BOI_1]->GetXaxis()->SetLabelSize(.0);
+    C2_ss[kt][BOI_1]->GetXaxis()->SetNdivisions(606); C2_ss[kt][BOI_1]->GetYaxis()->SetNdivisions(606);
+    
     //
     C2Therm_ss[kt][BOI_1]->SetMinimum(MIN[BOI_1]);
     C2Therm_ss[kt][BOI_1]->SetMaximum(MAX[BOI_1]);
@@ -716,11 +752,12 @@ void Plot_plots(){
     C2Therm_ss[kt][BOI_1]->GetXaxis()->SetTitleOffset(0.85);
     C2Therm_ss[kt][BOI_1]->GetYaxis()->SetTitleOffset(0.85);
     C2Therm_ss[kt][BOI_1]->GetXaxis()->SetTitle(""); C2Therm_ss[kt][BOI_1]->GetYaxis()->SetTitle("");
-    C2Therm_ss[kt][BOI_1]->GetXaxis()->SetLabelFont(63); C2Therm_ss[kt][BOI_1]->GetYaxis()->SetLabelFont(63); 
-    if(kt%2==0) C2Therm_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+    C2Therm_ss[kt][BOI_1]->GetXaxis()->SetLabelFont(TextFont); C2Therm_ss[kt][BOI_1]->GetYaxis()->SetLabelFont(TextFont); 
+    if(kt%2==0) C2Therm_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(SizeLabel);
     else {C2Therm_ss[kt][BOI_1]->GetYaxis()->SetLabelSize(.0);}
     if(kt<KTBINS-2) C2Therm_ss[kt][BOI_1]->GetXaxis()->SetLabelSize(.0);
-    else {C2Therm_ss[kt][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel);}
+    else {C2Therm_ss[kt][BOI_1]->GetXaxis()->SetLabelSize(SizeLabel);}
+    C2Therm_ss[kt][BOI_1]->GetXaxis()->SetNdivisions(606); C2Therm_ss[kt][BOI_1]->GetYaxis()->SetNdivisions(606);
 
     if(BOI_1==9 && kt==5) {// Point with large statistical error
       C2_ss[kt][BOI_1]->SetBinContent(3,-100);
@@ -729,16 +766,17 @@ void Plot_plots(){
 
     if(TherminatorC2==kFALSE){
       C2_ss[kt][BOI_1]->DrawCopy();
+      C2_ss_MomSys[kt][BOI_1]->SetFillColor(kRed-9); C2_os_MomSys[kt][BOI_1]->SetFillColor(kBlue-9);
       C2_ss_MomSys[kt][BOI_1]->DrawCopy("E2 same");
       C2_os_MomSys[kt][BOI_1]->DrawCopy("E2 same");
       C2_ss[kt][BOI_1]->DrawCopy("same");
       C2_os[kt][BOI_1]->DrawCopy("same");
-      fitC2ss_noG[kt][BOI_1]->SetLineStyle(3);
-      fitC2os_noG[kt][BOI_1]->SetLineStyle(3);
-      fitC2ss_noG[kt][BOI_1]->DrawCopy("same");
-      fitC2os_noG[kt][BOI_1]->DrawCopy("same");
-      fitC2ss_noGEW[kt][BOI_1]->DrawCopy("same");
-      fitC2os_noGEW[kt][BOI_1]->DrawCopy("same");
+      hfitC2ss_noG[kt][BOI_1]->SetLineStyle(3); fitC2ss_noG[kt][BOI_1]->SetLineStyle(3); 
+      hfitC2os_noG[kt][BOI_1]->SetLineStyle(3); fitC2os_noG[kt][BOI_1]->SetLineStyle(3);
+      hfitC2ss_noG[kt][BOI_1]->DrawCopy("C same");
+      hfitC2os_noG[kt][BOI_1]->DrawCopy("C same");
+      hfitC2ss_noGEW[kt][BOI_1]->DrawCopy("C same");
+      hfitC2os_noGEW[kt][BOI_1]->DrawCopy("C same");
       //fitC2ss_yesG[kt][BOI_1]->DrawCopy("same");
       //fitC2os_yesG[kt][BOI_1]->DrawCopy("same");
 
@@ -755,19 +793,19 @@ void Plot_plots(){
     //
     if(kt==0){
       TLatex *Specif;
-      if(!TherminatorC2) Specif = new TLatex(0.003,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// ALICE specifications
-      else Specif = new TLatex(0.003,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.91,"Therminator");// Therminator
-      Specif->SetTextFont(63);
-      Specif->SetTextSize(PixelSizeSpecif);
+      if(!TherminatorC2) Specif = new TLatex(0.007,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// ALICE specifications
+      else Specif = new TLatex(0.0015,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.91,"Therminator");// Therminator
+      Specif->SetTextFont(TextFont);
+      Specif->SetTextSize(SizeSpecif*.9);
       TString *CentName;
       if(!TherminatorC2) {CentName = new TString(); *CentName += BOI_1*5; CentName->Append("-"); *CentName += (BOI_1+1)*5; CentName->Append("%");}
       else {
 	if(BOI_1==0) CentName = new TString("0-5%");
 	if(BOI_1==9) CentName = new TString("40-50%");
       }
-      TLatex *Specif2 = new TLatex(0.035,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.8,CentName->Data());
-      Specif2->SetTextFont(63);
-      Specif2->SetTextSize(PixelSizeLegend);
+      TLatex *Specif2 = new TLatex(0.027,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.8,CentName->Data());
+      Specif2->SetTextFont(TextFont);
+      Specif2->SetTextSize(SizeLegend);
       Specif->Draw("same");
       Specif2->Draw("same");
     }
@@ -799,29 +837,27 @@ void Plot_plots(){
     else if(kt==3) KtLabel = new TLatex(0.035,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.6,"0.5<k_{T}<0.6");
     else if(kt==4) KtLabel = new TLatex(0.035,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.6,"0.6<k_{T}<0.7");
     else KtLabel = new TLatex(0.035,MIN[BOI_1]+(MAX[BOI_1]-MIN[BOI_1])*0.6,"0.7<k_{T}<0.8");
-    KtLabel->SetTextFont(63);// 23
-    KtLabel->SetTextSize(PixelSizeSpecif);// 24
+    KtLabel->SetTextFont(TextFont);// 23
+    KtLabel->SetTextSize(SizeSpecif);// 24
     KtLabel->Draw("same");
   }
  
   canC2->cd();
-  //pad1->cd(1);
-  
-  
+    
   TPad *pad1_2 = new TPad("pad1_2","pad1_2",0.0,0.0,1.,1.);
   pad1_2->SetFillStyle(0);
   pad1_2->Draw();
   pad1_2->cd();
-  TLatex *C2Label = new TLatex(.04,.91,"C_{2}");// 0.05,0.9
-  C2Label->SetTextFont(63);
-  C2Label->SetTextSize(PixelSizeTitle);
+  TLatex *C2Label = new TLatex(.04,.97,"C_{2}");// 0.04,.91
+  C2Label->SetTextFont(TextFont);
+  C2Label->SetTextSize(SizeTitle*SF2);
   C2Label->SetTextAngle(90);
   C2Label->Draw();
-  TLatex *Q2Label = new TLatex(.75,.02,"q (GeV/c)");// .7,.02
-  Q2Label->SetTextFont(63);
-  Q2Label->SetTextSize(PixelSizeTitle);
+  TLatex *Q2Label = new TLatex(.84,.015,"q (GeV/c)");// .7,.02
+  Q2Label->SetTextFont(TextFont);
+  Q2Label->SetTextSize(SizeTitle*SF2);
   Q2Label->Draw();
-  TBox *CoverUp = new TBox(0.545,0.05,0.57,.069);
+  TBox *CoverUp = new TBox(0.554,0.05,0.57,.07);
   CoverUp->SetFillColor(10);
   CoverUp->Draw();
   
@@ -850,13 +886,14 @@ void Plot_plots(){
   pad2->SetTopMargin(0.02);
   pad2->SetLeftMargin(0.0);
   pad2->SetRightMargin(0.0);
-  pad2->SetBottomMargin(0.06);
+  pad2->SetBottomMargin(0.07);
   pad2->Divide(1,2,0,0);// 1,3,0,0 with G
   pad2->Draw();
   pad2->cd();
-  TLegend *legend3 = new TLegend(.56,.6, .96,.98,NULL,"brNDC");//.45 or .4 for x1
-  legend3->SetBorderSize(1);
-  legend3->SetTextSize(.06);// small .03; large .036 
+  TLegend *legend3 = new TLegend(.56,.64, .96,.98,NULL,"brNDC");// .56,.6, .96,.98
+  legend3->SetBorderSize(0);
+  legend3->SetTextFont(TextFont);
+  legend3->SetTextSize(SizeLegend*SF1);
   legend3->SetFillColor(0);
     
   double LowerLimits[4]={0.46, 0.32, 4.8, 0.08};// 0.63, 0.32, 5.2, 0.08
@@ -871,38 +908,72 @@ void Plot_plots(){
     // settings applied to ParHisto_coh[par-1][BOI_1] to include G.  
     ParHisto_ch[par-1][BOI_1]->SetMinimum(LowerLimits[par-1]);
     ParHisto_ch[par-1][BOI_1]->SetMaximum(UpperLimits[par-1]);
-    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleFont(63); ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleFont(63);
-    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelFont(63); ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetLabelFont(63);
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleFont(TextFont); ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleFont(TextFont);
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelFont(TextFont); ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetLabelFont(TextFont);
     if(par==3){
-      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel);
-      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleSize(PixelSizeTitle);
-      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(PixelSizeLabel);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(SizeLabel*SF1);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleSize(SizeTitle*SF1);
+      ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(SizeLabel*SF1);
     }else{
       ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(0);
       ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleSize(0);
       ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetLabelSize(0);
     }
-    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleSize(PixelSizeTitle);
-    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleSize(SizeTitle*SF1);
+    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetLabelSize(SizeLabel*SF1);
     ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitle("k_{T} (GeV/c)");
     ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetRangeUser(0.2,0.79);
     if(par==1) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("#lambda");
     if(par==2) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("G");
     if(par==3) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("R_{ch} (fm)");
     if(par==4) ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitle("R_{coh} (fm)");
-    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleOffset(1.5);// 2.0
-    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleOffset(1.4);// 1.4
+    ParHisto_ch[par-1][BOI_1]->GetXaxis()->SetTitleOffset(1.2);// 2.0
+    ParHisto_ch[par-1][BOI_1]->GetYaxis()->SetTitleOffset(1.1);// 1.4
     
    
     // ParN=2 (lambda), 3(G), 4(Rch), 5(Rcoh)
     ParHisto_ch[par-1][BOI_1]->Draw();
-    ParHisto_ch[par-1][BOI_2]->Draw("same");
     
     
-    if(par!=2 && par!=4) {
-      //ParHisto_chEWfromTherm[par-1][BOI_1]->Draw("same"); ParHisto_chEWfromTherm[par-1][BOI_2]->Draw("same");
-      ParHisto_chEW[par-1][BOI_1]->Draw("same"); ParHisto_chEW[par-1][BOI_2]->Draw("same");
+    TH1D *ParHisto1_Sys=(TH1D*)ParHisto_ch[par-1][BOI_1]->Clone();
+    TH1D *ParHisto2_Sys=(TH1D*)ParHisto_ch[par-1][BOI_2]->Clone();
+    TH1D *ParHisto3_Sys=(TH1D*)ParHisto_chEW[par-1][BOI_1]->Clone();
+    TH1D *ParHisto4_Sys=(TH1D*)ParHisto_chEW[par-1][BOI_2]->Clone();
+    TF1 *RSys1=new TF1("RSys1","0.3",0,1);// M0, R Gauss Fit range syst in fm.
+    TF1 *RSys2=new TF1("RSys2","0.2",0,1);// M9, R Gauss Fit range syst in fm.
+    TF1 *RSys3=new TF1("RSys3","0.2",0,1);// M0, R EW Fit range syst in fm.
+    TF1 *RSys4=new TF1("RSys4","0.2",0,1);// M9, R EW Fit range syst in fm.
+    TF1 *LamSys1=new TF1("LamSys1","0.015",0,1);// M0, Lam Gauss Fit range syst in fm.
+    TF1 *LamSys2=new TF1("LamSys2","0.015",0,1);// M9, Lam Gauss Fit range syst in fm.
+    TF1 *LamSys3=new TF1("LamSys3","0.01",0,1);// M0, Lam EW Fit range syst in fm.
+    TF1 *LamSys4=new TF1("LamSys4","0.01",0,1);// M9, Lam EW Fit range syst in fm.
+
+    for(int bin=1; bin<=ParHisto1_Sys->GetNbinsX(); bin++){
+      double ktvalue=ParHisto1_Sys->GetXaxis()->GetBinCenter(bin);
+      if(par==1){// lambda Sys
+	ParHisto1_Sys->SetBinError(bin, LamSys1->Eval(ktvalue));
+	ParHisto2_Sys->SetBinError(bin, LamSys2->Eval(ktvalue));
+	ParHisto3_Sys->SetBinError(bin, LamSys3->Eval(ktvalue));
+	ParHisto4_Sys->SetBinError(bin, LamSys4->Eval(ktvalue));
+      }
+      if(par==3){// R sys
+	ParHisto1_Sys->SetBinError(bin, RSys1->Eval(ktvalue));
+	ParHisto2_Sys->SetBinError(bin, RSys2->Eval(ktvalue));
+	ParHisto3_Sys->SetBinError(bin, RSys3->Eval(ktvalue));
+	ParHisto4_Sys->SetBinError(bin, RSys4->Eval(ktvalue));
+      }
     }
+    ParHisto1_Sys->SetMarkerSize(0); ParHisto1_Sys->SetFillStyle(1000); ParHisto1_Sys->SetFillColor(kGray);
+    ParHisto2_Sys->SetMarkerSize(0); ParHisto2_Sys->SetFillStyle(1000); ParHisto2_Sys->SetFillColor(kGray);
+    ParHisto3_Sys->SetMarkerSize(0); ParHisto3_Sys->SetFillStyle(1000); ParHisto3_Sys->SetFillColor(kBlue-10);
+    ParHisto4_Sys->SetMarkerSize(0); ParHisto4_Sys->SetFillStyle(1000); ParHisto4_Sys->SetFillColor(kBlue-10);
+
+    ParHisto1_Sys->Draw("E2 same"); ParHisto2_Sys->Draw("E2 same"); ParHisto3_Sys->Draw("E2 same"); ParHisto4_Sys->Draw("E2 same");
+    ParHisto_ch[par-1][BOI_1]->Draw("same");
+    ParHisto_ch[par-1][BOI_2]->Draw("same");
+    ParHisto_chEW[par-1][BOI_1]->Draw("same"); 
+    ParHisto_chEW[par-1][BOI_2]->Draw("same");
+    
     if(par==1){
       //legend3->AddEntry(ParHisto_chEWfromTherm[par-1][BOI_1],"E_{w}, 0-5%","p"); legend3->AddEntry(ParHisto_chEWfromTherm[par-1][BOI_2],"E_{w}, 45-50%","p");
       //legend3->AddEntry(ParHisto_coh[par-1][BOI_1],"G#neq0, 0-5%","p"); legend3->AddEntry(ParHisto_coh[par-1][BOI_2],"G#neq0, 45-50%","p");
@@ -912,10 +983,10 @@ void Plot_plots(){
     
     if(par==3) legend3->Draw("same");// par==2 with G
     if(par==1){
-      TLatex *Specif = new TLatex(0.35,LowerLimits[par-1]+(UpperLimits[par-1]-LowerLimits[par-1])*.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
-      Specif->SetTextFont(63);
-      Specif->SetTextSize(PixelSizeSpecif);
-      Specif->Draw();
+      TLatex *Specif_2 = new TLatex(0.35,LowerLimits[par-1]+(UpperLimits[par-1]-LowerLimits[par-1])*.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
+      Specif_2->SetTextFont(TextFont);
+      Specif_2->SetTextSize(SizeSpecif*SF1);
+      Specif_2->Draw();
     }
   }
 
@@ -923,7 +994,7 @@ void Plot_plots(){
   ////////////////////////////////////////////////////
   // C2(+-) Therminator comparisons
 
-  TCanvas *can3 = new TCanvas("can3", "can3",1800,0,600,900);// 11,53,700,500
+  TCanvas *can3 = new TCanvas("can3", "can3",1800,0,600,600);// 11,53,700,500
   can3->SetHighLightColor(2);
   gStyle->SetOptFit(0111);
   can3->SetFillColor(10);//10
@@ -940,22 +1011,23 @@ void Plot_plots(){
   gPad->SetTicky();
   pad3->SetTopMargin(0.02);//0.05
   pad3->SetRightMargin(0.01);//3e-2
-  pad3->SetBottomMargin(0.06);//0.12
-  pad3->Divide(1,2,0,0);
+  pad3->SetBottomMargin(0.07);//0.12
+  //pad3->Divide(1,2,0,0);
   pad3->Draw();
   pad3->cd();
-  TLegend *legend4 = new TLegend(.17,.75, .77,.95,NULL,"brNDC");//.45 or .4 for x1
-  legend4->SetBorderSize(1);
-  legend4->SetTextSize(.07);// small .03; large .036 
+  TLegend *legend4 = new TLegend(.21,.72, .85,.92,NULL,"brNDC");//.45 or .4 for x1
+  legend4->SetBorderSize(0);
   legend4->SetFillColor(0);
- 
+  
+  gPad->SetRightMargin(0.01); gPad->SetLeftMargin(0.12); gPad->SetBottomMargin(0.1); gPad->SetTopMargin(0.01);
+
   TH1D *C2_os_ktcompare[2][KTBINS];
   TH1D *C2Therm_os_ktcompare[2][KTBINS];
-  float MIN_ktcomp=0.92, MAX_ktcomp=2.04;// MIN_ktcomp=0.65, MAX_ktcomp=1.35
+  float MIN_ktcomp=0.985, MAX_ktcomp=1.045;// MIN_ktcomp=0.92, MAX_ktcomp=2.04 (cumulant comparison)
   for(int type=0; type<2; type++){
-    pad3->cd(type+1);
-    gPad->SetRightMargin(RightMargin); gPad->SetLeftMargin(0.12);
-    if(type==1) gPad->SetBottomMargin(0.14);
+    //pad3->cd(type+1);
+    //gPad->SetRightMargin(RightMargin); gPad->SetLeftMargin(0.12);
+    //gPad->SetBottomMargin(0.145);
     for(int kt=0; kt<KTBINS; kt++){
       C2_os_ktcompare[type][kt] = (TH1D*)C2_os[kt][BOI_1]->Clone();
       TH1D *FSIbase;
@@ -967,11 +1039,21 @@ void Plot_plots(){
 	C2Therm_os_ktcompare[type][kt] = (TH1D*)K2_os[kt][BOI_1]->Clone();// undiluted
       }
       //
-      
+
       for(int qbin=2; qbin<=20; qbin++){
 	if(C2_os[0][BOI_1]->GetBinContent(qbin)<=0) continue;
 	if(C2Therm_os[0][BOI_1]->GetBinContent(qbin)<=0) continue;
-	double value = (C2_os_ktcompare[type][kt]->GetBinContent(qbin)-1.)/(C2_os[0][BOI_1]->GetBinContent(qbin)-1.);
+	
+	double value = C2_os_ktcompare[type][kt]->GetBinContent(qbin)/C2_os[0][BOI_1]->GetBinContent(qbin);
+	double value_e = pow(C2_os_ktcompare[type][kt]->GetBinError(qbin)/C2_os[0][BOI_1]->GetBinContent(qbin),2);
+	value_e += pow(C2_os[0][BOI_1]->GetBinError(qbin) * C2_os_ktcompare[type][kt]->GetBinContent(qbin)/pow(C2_os[0][BOI_1]->GetBinContent(qbin),2),2);
+	value_e = sqrt(value_e);
+	double valueC2Therm = C2Therm_os_ktcompare[type][kt]->GetBinContent(qbin)/FSIbase->GetBinContent(qbin);
+	double valueC2Therm_e = pow(C2Therm_os_ktcompare[type][kt]->GetBinError(qbin)/FSIbase->GetBinContent(qbin),2);
+	valueC2Therm_e += pow(FSIbase->GetBinError(qbin) * C2Therm_os_ktcompare[type][kt]->GetBinContent(qbin)/pow(FSIbase->GetBinContent(qbin),2),2);
+	valueC2Therm_e = sqrt(valueC2Therm_e);
+	// cumulant comparison
+	/*double value = (C2_os_ktcompare[type][kt]->GetBinContent(qbin)-1.)/(C2_os[0][BOI_1]->GetBinContent(qbin)-1.);
 	double value_e = pow(C2_os_ktcompare[type][kt]->GetBinError(qbin)/(C2_os[0][BOI_1]->GetBinContent(qbin)-1.),2);
 	value_e += pow(C2_os[0][BOI_1]->GetBinError(qbin) * (C2_os_ktcompare[type][kt]->GetBinContent(qbin)-1.)/pow((C2_os[0][BOI_1]->GetBinContent(qbin)-1.),2),2);
 	value_e = sqrt(value_e);
@@ -979,9 +1061,7 @@ void Plot_plots(){
 	double valueC2Therm_e = pow(C2Therm_os_ktcompare[type][kt]->GetBinError(qbin)/(FSIbase->GetBinContent(qbin)-1.),2);
 	valueC2Therm_e += pow(FSIbase->GetBinError(qbin) * (C2Therm_os_ktcompare[type][kt]->GetBinContent(qbin)-1.)/pow((FSIbase->GetBinContent(qbin)-1.),2),2);
 	valueC2Therm_e = sqrt(valueC2Therm_e);
-	// double ratio
-	//value /= valueC2Therm;
-	//value_e = value_e/valueC2Therm;
+	*/
 	
 	//
 	C2_os_ktcompare[type][kt]->SetBinContent(qbin, value);
@@ -992,8 +1072,8 @@ void Plot_plots(){
 	if(kt==0) {C2_os_ktcompare[type][kt]->SetBinError(qbin, 0);}
       }
       C2_os_ktcompare[type][kt]->SetBinContent(1,-10); C2Therm_os_ktcompare[type][kt]->SetBinContent(1,-10);
-      C2_os_ktcompare[type][kt]->SetMinimum(MIN_ktcomp);//0.5 (Dkt), 0.97 (single ratio)
-      C2_os_ktcompare[type][kt]->SetMaximum(MAX_ktcomp);//1.25 (Dkt), 3.5 (single ratio)
+      C2_os_ktcompare[type][kt]->SetMinimum(MIN_ktcomp);
+      C2_os_ktcompare[type][kt]->SetMaximum(MAX_ktcomp);
       C2_os_ktcompare[type][kt]->GetXaxis()->SetRangeUser(0,0.09);
       int MarkerStyle=20;
       if(kt==1) MarkerStyle=24;
@@ -1004,17 +1084,21 @@ void Plot_plots(){
       C2Therm_os_ktcompare[type][kt]->SetMarkerSize(C2_os_ktcompare[type][kt]->GetMarkerSize());
       C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleOffset(20); C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleOffset(20);
       
+      C2_os_ktcompare[type][kt]->GetXaxis()->SetNdivisions(606);
+
       //if(kt!=5 && kt!=1 ) continue;// old way
       if(kt!=5) continue;
       if(kt==5) {
-	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleFont(63); C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleFont(63);
-	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleSize(PixelSizeTitle); C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleSize(PixelSizeTitle);
+	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleFont(TextFont); C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleFont(TextFont);
+	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitleSize(SizeTitle*SF2); 
+	C2_os_ktcompare[type][kt]->GetYaxis()->SetTitleSize(SizeTitle*SF2);
 	C2_os_ktcompare[type][kt]->GetXaxis()->SetTitle("q (GeV/c)");
-	C2_os_ktcompare[type][kt]->GetYaxis()->SetTitle("D^{+-}_{Th}");
-	C2_os_ktcompare[type][kt]->GetXaxis()->SetLabelFont(63); C2_os_ktcompare[type][kt]->GetYaxis()->SetLabelFont(63);
-	C2_os_ktcompare[type][kt]->GetXaxis()->SetLabelSize(PixelSizeLabel); C2_os_ktcompare[type][kt]->GetYaxis()->SetLabelSize(PixelSizeLabel); 
-	
-	C2_os_ktcompare[type][kt]->DrawCopy(); 
+	C2_os_ktcompare[type][kt]->GetXaxis()->SetLabelFont(TextFont); C2_os_ktcompare[type][kt]->GetYaxis()->SetLabelFont(TextFont);
+	C2_os_ktcompare[type][kt]->GetXaxis()->SetLabelSize(SizeLabel*SF2); 
+	C2_os_ktcompare[type][kt]->GetYaxis()->SetLabelSize(SizeLabel*SF2); 
+	if(type==1) C2Therm_os_ktcompare[type][kt]->SetMarkerStyle(25);
+
+	if(type==0) C2_os_ktcompare[type][kt]->DrawCopy(); 
 	C2Therm_os_ktcompare[type][kt]->DrawCopy("same");
       }
       //else {
@@ -1028,23 +1112,34 @@ void Plot_plots(){
       TString *nameTherm=new TString(ktname->Data());
       nameTherm->Append(", Therminator");
       if(type==0) {
+	nameTherm->Append(" (diluted)");
 	legend4->AddEntry(C2_os_ktcompare[type][kt],nameReal->Data(),"p");
 	legend4->AddEntry(C2Therm_os_ktcompare[type][kt],nameTherm->Data(),"p");
+      }else {
+	TString *nameTherm2=new TString(nameTherm->Data());
+	nameTherm2->Append(", r*<80 fm");
+	nameTherm2->Append(" (undiluted)");
+	legend4->AddEntry(C2Therm_os_ktcompare[type][kt],nameTherm2->Data(),"p");
       }
+      
     }
     
-    if(type==0){
-      TLatex *Specif = new TLatex(0.025,MIN_ktcomp+(MAX_ktcomp-MIN_ktcomp)*.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
-      Specif->SetTextFont(63);
-      Specif->SetTextSize(PixelSizeSpecif);
-      TLatex *Specif2 = new TLatex(0.042,MIN_ktcomp+(MAX_ktcomp-MIN_ktcomp)*0.82,"0-5%");
-      Specif2->SetTextFont(63);
-      Specif2->SetTextSize(PixelSizeLegend);
-      Specif->Draw();
-      Specif2->Draw();
+    if(type==1) {
+      TLatex *Specif_3 = new TLatex(0.45,0.65,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
+      Specif_3->SetNDC();
+      Specif_3->SetTextFont(TextFont);
+      Specif_3->SetTextSize(SizeSpecif*SF2);
+      TLatex *Specif2_3 = new TLatex(0.35,0.65,"0-5%");
+      Specif2_3->SetNDC();
+      Specif2_3->SetTextFont(TextFont);
+      Specif2_3->SetTextSize(SizeLegend*SF2);
+      Specif_3->Draw();
+      Specif2_3->Draw();
+      legend4->SetTextFont(TextFont);
+      legend4->SetTextSize(SizeLegend*SF2);
+      legend4->Draw("same");
     }
-    if(type==1) legend4->Draw("same");
-    
+
     TF1 *Unity = new TF1("Unity","1",0,100);
     Unity->SetLineStyle(2);
     Unity->Draw("same");
@@ -1055,16 +1150,12 @@ void Plot_plots(){
   pad3_2->SetFillStyle(0);
   pad3_2->Draw();
   pad3_2->cd();
-  TLatex *DthLabel = new TLatex(.05,.9,"D^{+-}");// .05,.9, "D^{+-}_{Th}"
-  DthLabel->SetTextFont(63);
-  DthLabel->SetTextSize(PixelSizeTitle);
+  TLatex *DthLabel = new TLatex(.035,.7,"C_{2}^{+-}(k_{T,6}) / C_{2}^{+-}(k_{T,1})");// .04,.96, "D^{+-}_{Th}"
+  DthLabel->SetTextFont(TextFont);
+  DthLabel->SetTextSize(SizeTitle*SF2);
   DthLabel->SetTextAngle(90);
   DthLabel->Draw();
-  TLatex *qinvLabel = new TLatex(.75,.02,"q (GeV/c)");// .72,.02
-  qinvLabel->SetTextFont(63);
-  qinvLabel->SetTextSize(PixelSizeTitle);
-  qinvLabel->Draw();
-  
+  Q2Label->Draw();
 
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
@@ -1090,14 +1181,15 @@ void Plot_plots(){
   pad4->SetTopMargin(0.02);//0.05
   pad4->SetLeftMargin(0.12);
   pad4->SetRightMargin(0.01);//3e-2
-  pad4->SetBottomMargin(0.06);//0.12
+  pad4->SetBottomMargin(0.07);//0.12
   pad4->Divide(2,3,0,0);
   pad4->Draw();
 
 
   TLegend *legend5 = new TLegend(.55,.6,.99,.99,NULL,"brNDC");//.55,.6,.99,.95
-  legend5->SetBorderSize(1);
-  legend5->SetTextSize(.15);// small .03; large .036 
+  legend5->SetBorderSize(0);
+  legend5->SetTextFont(TextFont);
+  legend5->SetTextSize(SizeLegend);
   legend5->SetFillColor(0);
 
 
@@ -1131,6 +1223,8 @@ void Plot_plots(){
   for(int cb=0; cb<6; cb++) {
     pad4->cd(cb+1);
     gPad->SetRightMargin(RightMargin);
+    //if(cb==0) Dim1=gPad->GetAbsWNDC()*gPad->GetAbsHNDC()*gPad->PixeltoX(10)*gPad->PixeltoY(10);
+    //Dim2=gPad->GetAbsWNDC()*gPad->GetAbsHNDC()*gPad->PixeltoX(10)*gPad->PixeltoY(10);
     
     C3merged[0][CoulChoice][KT3Bin][cb]->SetMarkerSize(1.5); C3merged[1][CoulChoice][KT3Bin][cb]->SetMarkerSize(1.5); c3merged[0][CoulChoice][KT3Bin][cb]->SetMarkerSize(1.5); c3merged[1][CoulChoice][KT3Bin][cb]->SetMarkerSize(1.5);
     C3merged[0][CoulChoice][KT3Bin][cb]->SetMarkerStyle(20); C3merged[1][CoulChoice][KT3Bin][cb]->SetMarkerStyle(21);
@@ -1141,13 +1235,13 @@ void Plot_plots(){
     C3merged[0][CoulChoice][KT3Bin][cb]->SetMarkerColor(2); C3merged[0][CoulChoice][KT3Bin][cb]->SetLineColor(2); c3merged[0][CoulChoice][KT3Bin][cb]->SetMarkerColor(2); c3merged[0][CoulChoice][KT3Bin][cb]->SetLineColor(2); 
     C3merged[1][CoulChoice][KT3Bin][cb]->SetMarkerColor(4); C3merged[1][CoulChoice][KT3Bin][cb]->SetLineColor(4); c3merged[1][CoulChoice][KT3Bin][cb]->SetMarkerColor(4); c3merged[1][CoulChoice][KT3Bin][cb]->SetLineColor(4); 
     C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetTitle(""); C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetYaxis()->SetTitle("");
-    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelFont(63);
-    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelFont(63);
-    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelSize(PixelSizeLabel);
-    if(cb%2==0) C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelFont(TextFont);
+    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelFont(TextFont);
+    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelSize(SizeLabel);
+    if(cb%2==0) C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelSize(SizeLabel);
     else {C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelSize(.0);}
     if(cb<4) C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelSize(.0);
-    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetRangeUser(0,0.1);
+    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetRangeUser(0,0.11);
     C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->SetMinimum(0.9);//0.9
     C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->SetMaximum(C3MAX);
     if(ChProdBOI==0) c3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->Fit(GaussFit[cb],"IMEQN","",0.02,0.1);
@@ -1156,6 +1250,8 @@ void Plot_plots(){
       C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->SetBinContent(2,-100);
       c3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->SetBinContent(2,-100);
     }
+    C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->GetXaxis()->SetNdivisions(404);
+    //TGaxis::SetMaxDigits(3);
     C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->DrawCopy();
     c3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->DrawCopy("same");
         
@@ -1174,8 +1270,8 @@ void Plot_plots(){
     }
     C3Sys[cb]->SetMarkerSize(0); c3Sys[cb]->SetMarkerSize(0);
     C3Sys[cb]->SetFillStyle(1000); c3Sys[cb]->SetFillStyle(1000);
-    if(ChProdBOI==0) { C3Sys[cb]->SetFillColor(kRed-10); c3Sys[cb]->SetFillColor(kRed-10);}
-    else {C3Sys[cb]->SetFillColor(kBlue-10); c3Sys[cb]->SetFillColor(kBlue-10);}
+    if(ChProdBOI==0) { C3Sys[cb]->SetFillColor(kRed-9); c3Sys[cb]->SetFillColor(kRed-9);}
+    else {C3Sys[cb]->SetFillColor(kBlue-9); c3Sys[cb]->SetFillColor(kBlue-9);}
     C3Sys[cb]->Draw("E2 same");
     c3Sys[cb]->Draw("E2 same");
     C3merged[ChProdBOI][CoulChoice][KT3Bin][cb]->DrawCopy("same");// redraw
@@ -1194,30 +1290,30 @@ void Plot_plots(){
       }
       legend5->Draw("same");
     }
-    TLatex *Specif = new TLatex(0.005,0.9+(C3MAX-0.9)*0.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// ALICE specifications
-    Specif->SetTextFont(63);
-    Specif->SetTextSize(PixelSizeSpecif);
-    if(cb==3) Specif->Draw("same");
+    TLatex *Specif_3 = new TLatex(0.007,0.9+(C3MAX-0.9)*0.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// ALICE specifications
+    Specif_3->SetTextFont(TextFont);
+    Specif_3->SetTextSize(SizeSpecif);
+    if(cb==3) Specif_3->Draw("same");
 
     TString *KTString = new TString("");
-    if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 (GeV/c)");
-    else KTString->Append("0.3<K_{t,3}<1.0 (GeV/c)");
-    TLatex *Kt3Name = new TLatex(0.016,0.9+(C3MAX-0.9)*0.91,KTString->Data());
-    Kt3Name->SetTextFont(63);
-    Kt3Name->SetTextSize(PixelSizeSpecif);
-    if(cb==1) Kt3Name->Draw("same");
+    if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 GeV/c");
+    else KTString->Append("0.3<K_{t,3}<1.0 GeV/c");
+    TLatex *Kt3Name_1 = new TLatex(0.016,0.9+(C3MAX-0.9)*0.91,KTString->Data());
+    Kt3Name_1->SetTextFont(TextFont);
+    Kt3Name_1->SetTextSize(SizeSpecif);
+    if(cb==1) Kt3Name_1->Draw("same");
 
-    TLatex *CentLabel;
-    if(cb==0) CentLabel = new TLatex(0.07,C3MAX-0.75,"0-5%");// ALICE specifications
-    else if(cb==1) CentLabel = new TLatex(0.07,C3MAX-0.75,"5-10%");
-    else if(cb==2) CentLabel = new TLatex(0.065,C3MAX-0.75,"10-20%");
-    else if(cb==3) CentLabel = new TLatex(0.065,C3MAX-0.75,"20-30%");
-    else if(cb==4) CentLabel = new TLatex(0.065,C3MAX-0.75,"30-40%");
-    else CentLabel = new TLatex(0.07,C3MAX-0.75,"40-50%");
+    TLatex *CentLabel_1;
+    if(cb==0) CentLabel_1 = new TLatex(0.07,C3MAX-0.75,"0-5%");// ALICE specifications
+    else if(cb==1) CentLabel_1 = new TLatex(0.07,C3MAX-0.75,"5-10%");
+    else if(cb==2) CentLabel_1 = new TLatex(0.07,C3MAX-0.75,"10-20%");
+    else if(cb==3) CentLabel_1 = new TLatex(0.07,C3MAX-0.75,"20-30%");
+    else if(cb==4) CentLabel_1 = new TLatex(0.07,C3MAX-0.75,"30-40%");
+    else CentLabel_1 = new TLatex(0.07,C3MAX-0.75,"40-50%");
     
-    CentLabel->SetTextFont(63);
-    CentLabel->SetTextSize(24);//.1
-    CentLabel->Draw("same");
+    CentLabel_1->SetTextFont(TextFont);
+    CentLabel_1->SetTextSize(SizeLabel);//.1
+    CentLabel_1->Draw("same");
 
     if(ChProdBOI==1){
       TF1 *ResidueFit=new TF1("ResidueFit","pol0",0,0.1);
@@ -1236,17 +1332,16 @@ void Plot_plots(){
   pad4_2->SetFillStyle(0);
   pad4_2->Draw();
   pad4_2->cd();
-  TLatex *C3Label = new TLatex(.042,.86,"C_{3} or c_{3}");// 0.05,0.9
-  C3Label->SetTextFont(63);
-  C3Label->SetTextSize(PixelSizeTitle);
+  TLatex *C3Label = new TLatex(.04,.91,"C_{3} or #bf{c}_{3}");// 0.05,0.9
+  C3Label->SetTextFont(TextFont);
+  C3Label->SetTextSize(SizeTitle*SF2);
   C3Label->SetTextAngle(90);
   C3Label->Draw();
-  TLatex *Q3Label = new TLatex(.72,.02,"Q_{3} (GeV/c)");// 0.05,0.9
-  Q3Label->SetTextFont(63);
-  Q3Label->SetTextSize(PixelSizeTitle);
+  TLatex *Q3Label = new TLatex(.82,.015,"Q_{3} (GeV/c)");// 0.05,0.9
+  Q3Label->SetTextFont(TextFont);
+  Q3Label->SetTextSize(SizeTitle*SF2);
   Q3Label->Draw();
   CoverUp->Draw();
-  
 
   if(ChProdBOI==1) return;
 
@@ -1312,13 +1407,14 @@ void Plot_plots(){
   pad5->SetTopMargin(0.02);//0.05
   pad5->SetLeftMargin(0.12);//.14 for wide title, .10 for narrow title, 0.08 for DeltaQ
   pad5->SetRightMargin(0.01);//3e-2
-  pad5->SetBottomMargin(0.06);//0.12
+  pad5->SetBottomMargin(0.07);//0.12
   pad5->Divide(2,3,0,0);
   pad5->Draw();
   
   TLegend *legend6 = new TLegend(.18,.16, .53,.46,NULL,"brNDC");// .25,.16, .6,.46
-  legend6->SetBorderSize(1);
-  legend6->SetTextSize(.07);// small .03; large .036 
+  legend6->SetBorderSize(0);
+  legend6->SetTextFont(TextFont);
+  legend6->SetTextSize(SizeLegend);
   legend6->SetFillColor(0);
   
   
@@ -1335,18 +1431,19 @@ void Plot_plots(){
     r3merged[CoulChoice][KT3Bin][cb]->SetMarkerColor(2); r3merged[CoulChoice][KT3Bin][cb]->SetLineColor(2); 
     r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetTitle(""); 
     r3merged[CoulChoice][KT3Bin][cb]->GetYaxis()->SetTitle(""); 
-    r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelFont(63);
-    r3merged[CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelFont(63);
-    r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelSize(PixelSizeLabel);
-    if(cb%2==0) r3merged[CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+    r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelFont(TextFont);
+    r3merged[CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelFont(TextFont);
+    r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelSize(SizeLabel);
+    if(cb%2==0) r3merged[CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelSize(SizeLabel);
     else {r3merged[CoulChoice][KT3Bin][cb]->GetYaxis()->SetLabelSize(.0);}
     if(cb<4) r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetLabelSize(.0);
-    r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetRangeUser(0,0.1);
+    r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetRangeUser(0,0.11);
     r3merged[CoulChoice][KT3Bin][cb]->SetMinimum(r3MIN);
     r3merged[CoulChoice][KT3Bin][cb]->SetMaximum(r3MAX);
     if(cb>2 || KT3Bin==1) r3merged[CoulChoice][KT3Bin][cb]->SetBinContent(2,-100);// 10-20 MeV bin is insignificant
+    r3merged[CoulChoice][KT3Bin][cb]->GetXaxis()->SetNdivisions(404);
     r3merged[CoulChoice][KT3Bin][cb]->DrawCopy();
-    ChaoticLimit->Draw("same");
+    //ChaoticLimit->Draw("same");
 
     ///////////////
     // Systematics
@@ -1397,15 +1494,15 @@ void Plot_plots(){
       double Q3 = (bin-0.5)*0.01;
       double SysMeth=0;
       if(C3merged[1][CoulChoice][KT3Bin][cb]->GetBinContent(bin)>0) {
-	SysMeth = pow(2 * (ResidueFit->Eval(Q3)-1.0 + 0.002)/(c3merged[0][CoulChoice][KT3Bin][cb]->GetBinContent(bin)-1.0),2);// mixed-charge baseline (new).  Includes 0.002 as allowed variation through lambda powers
-      }
+	SysMeth = pow(2 * (fabs(ResidueFit->Eval(Q3)-1.0) + 0.002)/(c3merged[0][CoulChoice][KT3Bin][cb]->GetBinContent(bin)-1.0),2);// mixed-charge baseline (new).  Includes 0.002 as allowed variation through lambda powers
+	}
       SysMeth += pow(r3LambdaSysFit->Eval(Q3,2)*r3merged[CoulChoice][KT3Bin][cb]->GetBinContent(bin),2);// Lambda 0.7 vs 0.6
       double SysDet = pow(0.01*r3merged[CoulChoice][KT3Bin][cb]->GetBinContent(bin),2);// MRC
       SysDet += pow(0.01*r3merged[CoulChoice][KT3Bin][cb]->GetBinContent(bin),2);// PID
       
       r3MethSys->SetBinError(bin, sqrt(SysMeth));
       r3DetSys->SetBinError(bin, sqrt(SysDet));
-      r3MethDetSys->SetBinError(bin, sqrt(pow(r3merged[CoulChoice][KT3Bin][cb]->GetBinError(bin),2) + SysDet + SysDet));
+      r3MethDetSys->SetBinError(bin, sqrt(pow(r3merged[CoulChoice][KT3Bin][cb]->GetBinError(bin),2) + SysMeth + SysDet));// was SysDet + SysDet by mistake
       r3Coul1->SetBinError(bin, sqrt(pow(r3merged[CoulChoice][KT3Bin][cb]->GetBinError(bin),2) + SysMeth + SysDet));
       r3Coul2->SetBinError(bin, sqrt(pow(r3merged[CoulChoice][KT3Bin][cb]->GetBinError(bin),2) + SysMeth + SysDet));
     }
@@ -1415,17 +1512,18 @@ void Plot_plots(){
     r3CoulSys->Draw("P");
     //
     float MinQ3Fit=0.01;
+    float MaxQ3Fit=0.1;
     if(r3merged[CoulChoice][KT3Bin][cb]->GetBinContent(2)<-10) MinQ3Fit=0.02;
 
-    r3merged[CoulChoice][KT3Bin][cb]->Fit(QuarticFit[0][cb],"IMENQ","",MinQ3Fit,0.1);// Stat only
-    r3MethDetSys->Fit(QuarticFit[1][cb],"IMENQ","",MinQ3Fit,0.1);// Meth + Det Sys
-    r3Coul1->Fit(QuarticFit[2][cb],"IMENQ","",MinQ3Fit,0.1);// GRS
-    r3Coul2->Fit(QuarticFit[3][cb],"IMENQ","",MinQ3Fit,0.1);// Omega0
+    r3merged[CoulChoice][KT3Bin][cb]->Fit(QuarticFit[0][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// Stat only
+    r3MethDetSys->Fit(QuarticFit[1][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// Meth + Det Sys
+    r3Coul1->Fit(QuarticFit[2][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// GRS
+    r3Coul2->Fit(QuarticFit[3][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// Omega0
     //
-    r3merged[CoulChoice][KT3Bin][cb]->Fit(QuadraticFit[0][cb],"IMENQ","",MinQ3Fit,0.1);// Stat only
-    r3MethDetSys->Fit(QuadraticFit[1][cb],"IMENQ","",MinQ3Fit,0.1);// Meth + Det Sys
-    r3Coul1->Fit(QuadraticFit[2][cb],"IMENQ","",MinQ3Fit,0.1);// GRS
-    r3Coul2->Fit(QuadraticFit[3][cb],"IMENQ","",MinQ3Fit,0.1);// Omega0
+    r3merged[CoulChoice][KT3Bin][cb]->Fit(QuadraticFit[0][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// Stat only
+    r3MethDetSys->Fit(QuadraticFit[1][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// Meth + Det Sys
+    r3Coul1->Fit(QuadraticFit[2][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// GRS
+    r3Coul2->Fit(QuadraticFit[3][cb],"IMENQ","",MinQ3Fit,MaxQ3Fit);// Omega0
     //
     
     //
@@ -1436,32 +1534,32 @@ void Plot_plots(){
     //cout<<"Quartic Chi^2/NDF = "<<QuarticFit[cb]->GetChisquare()/QuarticFit[cb]->GetNDF()<<endl;
     //cout<<"Quadratic Chi^2/NDF = "<<QuadraticFit[cb]->GetChisquare()/QuadraticFit[cb]->GetNDF()<<endl;
     
-    TLatex *Specif = new TLatex(0.005,r3MIN+(r3MAX-r3MIN)*0.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// 0.005,2.1
-    Specif->SetTextFont(63);
-    Specif->SetTextSize(PixelSizeSpecif);
-    if(cb==3) Specif->Draw("same");
+    TLatex *Specif_4 = new TLatex(0.007,r3MIN+(r3MAX-r3MIN)*0.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");// 0.005,2.1
+    Specif_4->SetTextFont(TextFont);
+    Specif_4->SetTextSize(SizeSpecif);
+    if(cb==3) Specif_4->Draw("same");
    
     
     TString *KTString = new TString("");
-    if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 (GeV/c)");
-    else KTString->Append("0.3<K_{t,3}<1.0 (GeV/c)");
-    TLatex *Kt3Name = new TLatex(0.012,r3MIN+(r3MAX-r3MIN)*0.91,KTString->Data());//
-    Kt3Name->SetTextFont(63);
-    Kt3Name->SetTextSize(PixelSizeSpecif);
-    if(cb==1) Kt3Name->Draw("same");
+    if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 GeV/c");
+    else KTString->Append("0.3<K_{t,3}<1.0 GeV/c");
+    TLatex *Kt3Name_2 = new TLatex(0.01,r3MIN+(r3MAX-r3MIN)*0.91,KTString->Data());//
+    Kt3Name_2->SetTextFont(TextFont);
+    Kt3Name_2->SetTextSize(SizeSpecif);
+    if(cb==1) Kt3Name_2->Draw("same");
 
-    TLatex *CentLabel;
-    TString *CentLabel2;
-    if(cb==0) {CentLabel = new TLatex(0.04,0.4,"0-5%"); CentLabel2 = new TString("0-5\\%");}
-    else if(cb==1) {CentLabel = new TLatex(0.04,0.4,"5-10%"); CentLabel2 = new TString("5-10\\%");}
-    else if(cb==2) {CentLabel = new TLatex(0.04,0.4,"10-20%"); CentLabel2 = new TString("10-20\\%");}
-    else if(cb==3) {CentLabel = new TLatex(0.04,0.4,"20-30%"); CentLabel2 = new TString("20-30\\%");}
-    else if(cb==4) {CentLabel = new TLatex(0.04,0.4,"30-40%"); CentLabel2 = new TString("30-40\\%");}
-    else {CentLabel = new TLatex(0.04,0.4,"40-50%"); CentLabel2 = new TString("40-50\\%");}
+    TLatex *CentLabel_2;
+    //TString *CentLabel2;
+    if(cb==0) {CentLabel_2 = new TLatex(0.04,0.4,"0-5%"); }//CentLabel2 = new TString("0-5\\%");}
+    else if(cb==1) {CentLabel_2 = new TLatex(0.04,0.4,"5-10%");}// CentLabel2 = new TString("5-10\\%");}
+    else if(cb==2) {CentLabel_2 = new TLatex(0.04,0.4,"10-20%");}// CentLabel2 = new TString("10-20\\%");}
+    else if(cb==3) {CentLabel_2 = new TLatex(0.04,0.4,"20-30%");}// CentLabel2 = new TString("20-30\\%");}
+    else if(cb==4) {CentLabel_2 = new TLatex(0.04,0.4,"30-40%");}// CentLabel2 = new TString("30-40\\%");}
+    else {CentLabel_2 = new TLatex(0.04,0.4,"40-50%");}// CentLabel2 = new TString("40-50\\%");}
     
-    CentLabel->SetTextFont(63);
-    CentLabel->SetTextSize(24);
-    CentLabel->Draw("same");
+    CentLabel_2->SetTextFont(TextFont);
+    CentLabel_2->SetTextSize(SizeLabel);
+    CentLabel_2->Draw("same");
     
     if(cb==0){
       legend6->AddEntry(QuarticFit[1][cb],"Quartic","l");
@@ -1469,14 +1567,16 @@ void Plot_plots(){
       legend6->Draw("same");
     }
 
-  }
+    ChaoticLimit->Draw("same");
+  }// cb bin
   can5->cd();
   TPad *pad5_2 = new TPad("pad5_2","pad5_2",0.0,0.0,1.,1.);
   pad5_2->SetFillStyle(0);
   pad5_2->Draw();
   pad5_2->cd();
-  TLatex *r3Label = new TLatex(.035,.92,"r_{3}");// 0.035,0.88
-  r3Label->SetTextSize(0.06);
+  TLatex *r3Label = new TLatex(.035,.97,"r_{3}");// 0.035,0.88
+  r3Label->SetTextFont(TextFont);
+  r3Label->SetTextSize(SizeLabel*SF2);
   r3Label->SetTextAngle(90);
   r3Label->Draw();
   CoverUp->Draw();
@@ -1511,16 +1611,16 @@ void Plot_plots(){
     double a_SysTotal = sqrt(pow(a_Sys1,2)+pow(a_Sys2,2));
     I_quartic_Avg += QuarticFit[1][cb]->GetParameter(0);// [1] has both Stat+Sys errors
     I_quartic_AvgErr1 += pow(QuarticFit[0][cb]->GetParError(0),2);// [0] has only Stat errors
-    I_quartic_AvgErr2 += pow(I_Sys1,2) + pow(I_Sys2,2);
+    I_quartic_AvgErr2 += sqrt(pow(I_Sys1,2) + pow(I_Sys2,2));
     a_quartic_Avg += QuarticFit[1][cb]->GetParameter(1)/SF;
     a_quartic_AvgErr1 += pow(QuarticFit[0][cb]->GetParError(1)/SF,2);
-    a_quartic_AvgErr2 += pow(a_Sys1,2) + pow(a_Sys2,2);
+    a_quartic_AvgErr2 += sqrt(pow(a_Sys1,2) + pow(a_Sys2,2));
 
     cout.precision(3);
     cout<<"$"<<setprecision(2)<<fixed<<CentLabel2->Data()<<"$ & $"<<QuarticFit[1][cb]->GetParameter(0)<<" \\pm "<<QuarticFit[0][cb]->GetParError(0)<<" \\pm "<<I_SysTotal<<"$ & $"<<setprecision(1)<<fixed<<QuarticFit[1][cb]->GetParameter(1)/SF<<" \\pm "<<QuarticFit[0][cb]->GetParError(1)/SF<<" \\pm "<<a_SysTotal<<"$ \\\\ \\hline"<<endl;
   }
-  I_quartic_Avg /= 6.; I_quartic_AvgErr1 = sqrt(I_quartic_AvgErr1)/6.; I_quartic_AvgErr2 = sqrt(I_quartic_AvgErr2)/6.;
-  a_quartic_Avg /= 6.; a_quartic_AvgErr1 = sqrt(a_quartic_AvgErr1)/6.; a_quartic_AvgErr2 = sqrt(a_quartic_AvgErr2)/6.;
+  I_quartic_Avg /= 6.; I_quartic_AvgErr1 = sqrt(I_quartic_AvgErr1)/6.; I_quartic_AvgErr2 = I_quartic_AvgErr2/6.;
+  a_quartic_Avg /= 6.; a_quartic_AvgErr1 = sqrt(a_quartic_AvgErr1)/6.; a_quartic_AvgErr2 = a_quartic_AvgErr2/6.;
   cout<<"$"<<setprecision(2)<<fixed<<"0-50\\%"<<"$ & $"<<I_quartic_Avg<<" \\pm "<<I_quartic_AvgErr1<<" \\pm "<<I_quartic_AvgErr2<<"$ & $"<<setprecision(1)<<fixed<<a_quartic_Avg<<" \\pm "<<a_quartic_AvgErr1<<" \\pm "<<a_quartic_AvgErr2<<"$ \\\\ \\hline"<<endl;
   
   ////////////////////////////
@@ -1543,15 +1643,15 @@ void Plot_plots(){
     double a_SysTotal = sqrt(pow(a_Sys1,2)+pow(a_Sys2,2));
     I_quadratic_Avg += QuadraticFit[1][cb]->GetParameter(0);
     I_quadratic_AvgErr1 += pow(QuadraticFit[0][cb]->GetParError(0),2);
-    I_quadratic_AvgErr2 += pow(I_Sys1,2) + pow(I_Sys2,2);
+    I_quadratic_AvgErr2 += sqrt(pow(I_Sys1,2) + pow(I_Sys2,2));
     a_quadratic_Avg += QuadraticFit[1][cb]->GetParameter(1)/SF;
     a_quadratic_AvgErr1 += pow(QuadraticFit[0][cb]->GetParError(1)/SF,2);
-    a_quadratic_AvgErr2 += pow(a_Sys1,2) + pow(a_Sys2,2);
+    a_quadratic_AvgErr2 += sqrt(pow(a_Sys1,2) + pow(a_Sys2,2));
     cout.precision(3);
     cout<<"$"<<setprecision(2)<<fixed<<CentLabel2->Data()<<"$ & $"<<QuadraticFit[1][cb]->GetParameter(0)<<" \\pm "<<QuadraticFit[0][cb]->GetParError(0)<<" \\pm "<<I_SysTotal<<"$ & $"<<setprecision(1)<<fixed<<QuadraticFit[1][cb]->GetParameter(1)/SF<<" \\pm "<<QuadraticFit[0][cb]->GetParError(1)/SF<<" \\pm "<<a_SysTotal<<"$ \\\\ \\hline"<<endl;
   }
-  I_quadratic_Avg /= 6.; I_quadratic_AvgErr1 = sqrt(I_quadratic_AvgErr1)/6.; I_quadratic_AvgErr2 = sqrt(I_quadratic_AvgErr2)/6.;
-  a_quadratic_Avg /= 6.; a_quadratic_AvgErr1 = sqrt(a_quadratic_AvgErr1)/6.; a_quadratic_AvgErr2 = sqrt(a_quadratic_AvgErr2)/6.;
+  I_quadratic_Avg /= 6.; I_quadratic_AvgErr1 = sqrt(I_quadratic_AvgErr1)/6.; I_quadratic_AvgErr2 = I_quadratic_AvgErr2/6.;
+  a_quadratic_Avg /= 6.; a_quadratic_AvgErr1 = sqrt(a_quadratic_AvgErr1)/6.; a_quadratic_AvgErr2 = a_quadratic_AvgErr2/6.;
   cout<<"$"<<setprecision(2)<<fixed<<"0-50\\%"<<"$ & $"<<I_quadratic_Avg<<" \\pm "<<I_quadratic_AvgErr1<<" \\pm "<<I_quadratic_AvgErr2<<"$ & $"<<setprecision(1)<<fixed<<a_quadratic_Avg<<" \\pm "<<a_quadratic_AvgErr1<<" \\pm "<<a_quadratic_AvgErr2<<"$ \\\\ \\hline"<<endl;
 
  
@@ -1577,16 +1677,16 @@ void Plot_plots(){
   gPad->SetGridy(0);
   gPad->SetTickx();
   gPad->SetTicky();
-  pad6->SetBottomMargin(0.06);//0.12
+  pad6->SetBottomMargin(0.07);//0.12
   pad6->SetTopMargin(0.02);//0.05
   pad6->SetRightMargin(0.01);//1e-2
   pad6->Divide(1,2,0,0);
   pad6->Draw();
   pad6->cd(1);
   TLegend *legend7 = new TLegend(.75,.7, .95,.85,NULL,"brNDC");//c3
-  legend7->SetBorderSize(1);
-  legend7->SetTextFont(63);
-  legend7->SetTextSize(PixelSizeLegend);
+  legend7->SetBorderSize(0);
+  legend7->SetTextFont(TextFont);
+  legend7->SetTextSize(SizeLegend*SF1);
   legend7->SetFillColor(0);
   
   //
@@ -1596,57 +1696,65 @@ void Plot_plots(){
   c3merged[1][0][KT3Bin][CBOI_SS]->SetMinimum(0.995); c3merged[1][0][KT3Bin][CBOI_SS]->SetMaximum(1.065); 
   //
   gPad->SetRightMargin(RightMargin); gPad->SetLeftMargin(0.12);
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelFont(63); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelFont(63); 
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelSize(0); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelFont(TextFont); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelFont(TextFont); 
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelSize(0); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelSize(SizeLabel*SF1);
   //
-  r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleOffset(1.5);
-  r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleFont(63);
-  r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleSize(PixelSizeTitle);
+  r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleOffset(1.2);
+  r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleFont(TextFont);
+  r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleSize(SizeTitle*SF1);
   r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitle("r_{3}");
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetRangeUser(0,0.1);
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetRangeUser(0,0.11);
   //
   r3merged[0][KT3Bin][CBOI_SS]->SetMinimum(0.3); r3merged[0][KT3Bin][CBOI_SS]->SetMaximum(2.28);
-
+  r3merged[0][KT3Bin][CBOI_SS]->SetMarkerSize(1.5);
+  r3merged[1][KT3Bin][CBOI_SS]->SetMarkerSize(1.7);
   r3merged[0][KT3Bin][CBOI_SS]->DrawCopy();
   r3merged[1][KT3Bin][CBOI_SS]->DrawCopy("same");
   ChaoticLimit->Draw("same");
   legend7->AddEntry(r3merged[0][KT3Bin][CBOI_SS],"GRS","p");
   legend7->AddEntry(r3merged[1][KT3Bin][CBOI_SS],"#Omega_{0}","p");
   legend7->Draw("same");
-  TLatex *Specif = new TLatex(0.03,0.3+(2.28-0.3)*.91,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
-  Specif->SetTextFont(63);
-  Specif->SetTextSize(PixelSizeSpecif);
-  TLatex *Specif2 = new TLatex(0.05,0.3+(2.28-0.3)*.8,"5-10%");
-  Specif2->SetTextFont(63);
-  Specif2->SetTextSize(PixelSizeLegend);
-  Specif->Draw();
-  Specif2->Draw();
+  TLatex *Specif_5 = new TLatex(0.3,0.2,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
+  Specif_5->SetNDC();
+  Specif_5->SetTextFont(TextFont);
+  Specif_5->SetTextSize(SizeSpecif*SF1);
+  TLatex *Specif2_5 = new TLatex(0.17,0.2,"5-10%");
+  Specif2_5->SetNDC();
+  Specif2_5->SetTextFont(TextFont);
+  Specif2_5->SetTextSize(SizeLegend*SF1);
+  Specif_5->Draw();
+  Specif2_5->Draw();
   TString *KTString = new TString("");
-  if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 (GeV/c)");
-  else KTString->Append("0.3<K_{t,3}<1.0 (GeV/c)");
-  TLatex *Kt3Name = new TLatex(0.01,1.0,KTString->Data());
-  Kt3Name->SetTextFont(63);
-  Kt3Name->SetTextSize(PixelSizeSpecif);
-  Kt3Name->Draw("same");
+  if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 GeV/c");
+  else KTString->Append("0.3<K_{t,3}<1.0 GeV/c");
+  TLatex *Kt3Name_3 = new TLatex(0.17,0.3,KTString->Data());
+  Kt3Name_3->SetNDC();
+  Kt3Name_3->SetTextFont(TextFont);
+  Kt3Name_3->SetTextSize(SizeSpecif*SF1);
+  Kt3Name_3->Draw("same");
   
   //
   //
   pad6->cd(2);
   gPad->SetRightMargin(RightMargin); gPad->SetLeftMargin(0.12); gPad->SetBottomMargin(0.13);
-  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelFont(63); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelFont(63);
-  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelSize(PixelSizeLabel); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelFont(TextFont); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelFont(TextFont);
+  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelSize(SizeLabel*SF1); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelSize(SizeLabel*SF1);
+  c3merged[1][0][KT3Bin][CBOI_SS]->SetMarkerStyle(21);
+  c3merged[1][1][KT3Bin][CBOI_SS]->SetMarkerStyle(25);
+  c3merged[1][0][KT3Bin][CBOI_SS]->SetMarkerSize(1.5);
+  c3merged[1][1][KT3Bin][CBOI_SS]->SetMarkerSize(1.7);
   //
-  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleOffset(1.5); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleOffset(1.55);
-  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleFont(63); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleFont(63);
-  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleSize(PixelSizeTitle); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleSize(PixelSizeTitle);
+  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleOffset(1.2); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleOffset(1.2);
+  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleFont(TextFont); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleFont(TextFont);
+  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleSize(SizeTitle*SF1); c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleSize(SizeTitle*SF1);
   c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitle("Q_{3} (GeV/c)"); 
-  c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitle("c_{3}^{#pm#pm#mp}"); 
+  c3merged[1][0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitle("#bf{c}_{3}^{#pm#pm#mp}");
   //
-  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetRangeUser(0,0.1);
+  c3merged[1][0][KT3Bin][CBOI_SS]->GetXaxis()->SetRangeUser(0,0.11);
   TLegend *legend8 = new TLegend(.75,.7, .95,.85,NULL,"brNDC");//c3
-  legend8->SetBorderSize(1);
-  legend8->SetTextFont(63);
-  legend8->SetTextSize(PixelSizeLegend);
+  legend8->SetBorderSize(0);
+  legend8->SetTextFont(TextFont);
+  legend8->SetTextSize(SizeLegend*SF1);
   legend8->SetFillColor(0);
   c3merged[1][0][KT3Bin][CBOI_SS]->DrawCopy();
   c3merged[1][1][KT3Bin][CBOI_SS]->DrawCopy("same");
@@ -1656,8 +1764,7 @@ void Plot_plots(){
   BaseLine->Draw("same");
   
   
-  
-  
+  //can6->SaveAs("SaveFigs/Fig_r3c3_CoulVar.eps");
   ///////////////////////////////////////////////////
 
   
@@ -1674,27 +1781,27 @@ void Plot_plots(){
   TPad *pad7 = new TPad("pad7","pad7",0.0,0.0,1.,1.);
   gPad->SetGridx(0);
   gPad->SetGridy(0);
-  gPad->SetTickx();
-  gPad->SetTicky();
-  pad7->SetBottomMargin(0.06);//0.12
+  //gPad->SetTickx();
+  //gPad->SetTicky();
+  pad7->SetBottomMargin(0.07);//0.12
   pad7->SetTopMargin(0.02);//0.05
   pad7->SetRightMargin(0.01);//1e-2
   pad7->Draw();
   TLegend *legend9 = new TLegend(.75,.7, .95,.85,NULL,"brNDC");//c3
-  legend9->SetBorderSize(1);
-  legend9->SetTextFont(63);
-  legend9->SetTextSize(PixelSizeLegend);
+  legend9->SetBorderSize(0);
+  legend9->SetTextFont(TextFont);
+  legend9->SetTextSize(SizeLegend*SF2);
   legend9->SetFillColor(0);
   
   gPad->SetRightMargin(0.01); gPad->SetLeftMargin(0.12); gPad->SetBottomMargin(0.1); gPad->SetTopMargin(0.01);
   r3merged[0][KT3Bin][CBOI_SS]->SetMinimum(0.3); r3merged[0][KT3Bin][CBOI_SS]->SetMaximum(2.28);
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelFont(63); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelFont(63);
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelSize(PixelSizeLabel); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelSize(PixelSizeLabel);
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelFont(TextFont); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelFont(TextFont);
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetLabelSize(SizeLabel*SF2); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetLabelSize(SizeLabel*SF2);
   //
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleFont(63); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleFont(63); 
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleSize(PixelSizeTitle); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleSize(PixelSizeTitle);
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleFont(TextFont); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleFont(TextFont); 
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleSize(SizeTitle*SF2); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleSize(SizeTitle*SF2);
   r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitle("Q_{3} (GeV/c)"); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitle("r_{3}");
-  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleOffset(0.75); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleOffset(1.); 
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetTitleOffset(1.2); r3merged[0][KT3Bin][CBOI_SS]->GetYaxis()->SetTitleOffset(1.4); 
   TH1D *r3LambdaVaried = (TH1D*)r3merged[0][KT3Bin][CBOI_SS]->Clone();
   r3LambdaVaried->SetMarkerStyle(25);
   TF1 *r3LambdaSysFit = new TF1("r3LambdaSysFit","pol1",0,0.1);
@@ -1704,16 +1811,35 @@ void Plot_plots(){
     double Q3 = (bin-0.5)*0.01;
     r3LambdaVaried->SetBinContent(bin, (1-r3LambdaSysFit->Eval(Q3)) * r3LambdaVaried->GetBinContent(bin));
   }
-  
+  r3merged[0][KT3Bin][CBOI_SS]->GetXaxis()->SetNdivisions(606);
+
   r3merged[0][KT3Bin][CBOI_SS]->DrawCopy();
   r3LambdaVaried->DrawCopy("same");
   ChaoticLimit->Draw("same");
   legend9->AddEntry(r3merged[0][KT3Bin][CBOI_SS],"#lambda=0.7","p");
   legend9->AddEntry(r3LambdaVaried,"#lambda=0.6","p");
   legend9->Draw("same");
-  Kt3Name->Draw("same");
-  Specif->Draw();
-  Specif2->Draw();
+  
+  TLatex *Specif_6 = new TLatex(0.3,0.2,"ALICE Pb-Pb #\sqrt{s_{NN}}=2.76 TeV");
+  Specif_6->SetNDC();
+  Specif_6->SetTextFont(TextFont);
+  Specif_6->SetTextSize(SizeSpecif*SF2);
+  TLatex *Specif2_6 = new TLatex(0.17,0.2,"5-10%");
+  Specif2_6->SetNDC();
+  Specif2_6->SetTextFont(TextFont);
+  Specif2_6->SetTextSize(SizeLegend*SF2);
+  Specif_6->Draw();
+  Specif2_6->Draw();
+  TString *KTString = new TString("");
+  if(KT3Bin==0) KTString->Append("0.16<K_{t,3}<0.3 GeV/c");
+  else KTString->Append("0.3<K_{t,3}<1.0 GeV/c");
+  TLatex *Kt3Name_4 = new TLatex(0.17,0.3,KTString->Data());
+  Kt3Name_4->SetNDC();
+  Kt3Name_4->SetTextFont(TextFont);
+  Kt3Name_4->SetTextSize(SizeSpecif*SF2);
+  Kt3Name_4->Draw("same");
+
+  //can7->SaveAs("SaveFigs/Fig_r3_LamVar.eps");
 
   //TString *OutName=new TString("r3_M");
   //TString *OutName=new TString("c3mc_M");
@@ -1724,7 +1850,6 @@ void Plot_plots(){
  
 
   
-
  
   /*
   // digitized from Wilson's Thesis
@@ -1836,8 +1961,8 @@ void Plot_plots(){
   //legend1->AddEntry(C2noConstraint,"C_{2}^{++} Charge-Unconstrained","l");
   legend1->SetTextSize(.03);
   */
-  /*
-  TF1 *r3noConstraint = new TF1("r3noConstraint","(2-6*pow(x,2)+4*pow(x,3))/pow(1-pow(x,2),1.5)",0,1);
+  
+  /*TF1 *r3noConstraint = new TF1("r3noConstraint","(2-6*pow(x,2)+4*pow(x,3))/pow(1-pow(x,2),1.5)",0,1);
   r3noConstraint->SetLineColor(2);
   r3noConstraint->GetXaxis()->SetTitle("G");
   r3noConstraint->GetYaxis()->SetTitle("r_{3} Intercept");
@@ -1846,7 +1971,7 @@ void Plot_plots(){
   r3noConstraint->GetXaxis()->SetTitleOffset(.8);
   r3noConstraint->GetYaxis()->SetTitleOffset(.7);
   r3noConstraint->SetTitle("");
-  TF1 *r3Constraint = new TF1("r3Constraint","(2+6*pow(x,2)-282/35.*pow(x,3))/pow(1-4/5.*pow(x,2),1.5)",0,1);
+  TF1 *r3Constraint = new TF1("r3Constraint","(2-24/5.*pow(x,2)+96/35.*pow(x,3))/pow(1-4/5.*pow(x,2),1.5)",0,1);
   r3Constraint->SetLineColor(4);
   r3Constraint->GetXaxis()->SetTitle("G");
   r3Constraint->GetYaxis()->SetTitle("r_{3} Intercept");
@@ -1855,10 +1980,11 @@ void Plot_plots(){
   r3Constraint->GetXaxis()->SetTitleOffset(.8);
   r3Constraint->GetYaxis()->SetTitleOffset(.7);
   r3Constraint->SetTitle("");
-  //r3Constraint->Draw();
+  r3Constraint->Draw();
   //legend1->AddEntry(r3Constraint,"Charge-Constrained","l");
-  //r3noConstraint->Draw();
+  r3noConstraint->Draw("same");
   //legend1->AddEntry(r3noConstraint,"Charge-Unconstrained","l");
+  //cout<<setprecision(5)<<r3noConstraint->Eval(0.3)<<"  "<<r3Constraint->Eval(0.3)<<endl;
   */
   //legend1->Draw("same");
 
