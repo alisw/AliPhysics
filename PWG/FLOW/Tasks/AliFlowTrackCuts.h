@@ -49,6 +49,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts();
+  static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2010();
+  static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2011();
   static AliFlowTrackCuts* GetStandardMuonTrackCuts(Bool_t isMC=kFALSE, Int_t passN=2);  // XZhang 20120604
 
   Int_t Count(AliVEvent* event=NULL);

@@ -1186,20 +1186,57 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 //-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 {
+  //returns the lhc10h vzero track cuts, this function
+  //is left here for backward compatibility
+  //if a run is recognized as 11h, the calibration method will
+  //switch to 11h calbiration, which means that the cut 
+  //object is updated but not replaced.
+  //calibratin is only available for PbPb runs
+  return GetStandardVZEROOnlyTrackCuts2010();
+}
+//-----------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010()
+{
   //get standard V0 cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2010");
   cuts->SetParamType(kV0);
   cuts->SetEtaRange( -10, +10 );
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   // options for the reweighting
   cuts->SetV0gainEqualizationPerRing(kFALSE);
-  cuts->SetApplyRecentering(kFALSE);
+  cuts->SetApplyRecentering(kTRUE);
   // to exclude a ring , do e.g.
-//   cuts->SetUseVZERORing(7, kFALSE);
+  // cuts->SetUseVZERORing(7, kFALSE);
   return cuts;
 }
-
+//-----------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
+{
+  //get standard V0 cuts for 2011 data
+  //in this case, the vzero segments will be weighted by
+  //VZEROEqMultiplicity, 
+  //if recentering is enableded, the sub-q vectors
+  //will be taken from the event header, so make sure to run 
+  //the VZERO event plane selection task before this task !
+  //recentering replaces the already evaluated q-vectors, so 
+  //when chosen, additional settings (e.g. excluding rings) 
+  //have no effect. recentering is true by default
+  //
+  //NOTE user is responsible for running the vzero event plane
+  //selection task in advance, e.g. add to your launcher macro
+  //
+  //  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+  //  AddTaskVZEROEPSelection();
+  //
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2011");
+  cuts->SetParamType(kV0);
+  cuts->SetEtaRange( -10, +10 );
+  cuts->SetPhiMin( 0 );
+  cuts->SetPhiMax( TMath::TwoPi() );
+  cuts->SetApplyRecentering(kTRUE);
+  return cuts;
+}
 //-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
 {
@@ -4110,12 +4147,19 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(Int_t id)
   // 10102013 weighting vzero tiles - rbertens@cern.ch
   if(!fV0gainEqualization) {
       // if for some reason the equalization is not initialized (e.g. 2011 data)
-     if(id<32) {    // v0c side
+      // the fV0xpol[] weights are used to enable or disable vzero rings
+    if(id<32) {   // v0c side
       fTrackEta = -3.45+0.5*(id/8);
-      fTrackWeight = fEvent->GetVZEROEqMultiplicity(id);
+      if(id < 8) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[0];
+      else if (id < 16 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[1];
+      else if (id < 24 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[2];
+      else if (id < 32 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[3];
     } else {       // v0a side
       fTrackEta = +4.8-0.6*((id/8)-4);
-      fTrackWeight = fEvent->GetVZEROEqMultiplicity(id);
+      if( id < 40) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[0];
+      else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[1];
+      else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[2];
+      else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[3];
     }
   } else { // the equalization is initialized
      // note that disabled rings have already been excluded on calibration level in 
@@ -4130,7 +4174,7 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(Int_t id)
       fTrackEta = +4.8-0.6*((id/8)-4);
       if( id < 40) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[0]/fV0gainEqualization->GetBinContent(1+id);
       else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[1]/fV0gainEqualization->GetBinContent(1+id);
-      else if ( id < 56) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[2]/fV0gainEqualization->GetBinContent(1+id);
+      else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[2]/fV0gainEqualization->GetBinContent(1+id);
       else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[3]/fV0gainEqualization->GetBinContent(1+id);
     }
     // printf ( " tile %i and weight %.2f \n", id, fTrackWeight);

@@ -106,6 +106,8 @@ public:
    virtual void                         Terminate(Option_t *);
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
+   AliFlowTrackCuts*                    GetPOICuts() const {return fPOICuts;}
+   AliFlowTrackCuts*                    GetRPCuts() const {return fCutsRP;}
    void                                 SetRequireTPCStandAloneKaons() { fRequireTPCStandAlone = kTRUE; }
    void                                 SetOlderThanPbPbPass2() { fOldTrackParam = kTRUE; }
    void                                 SetPIDConfiguration(Double_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
