@@ -1,4 +1,4 @@
-# -*- mode: CMake -*-
+# -*- mode: Makefile -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWGmuon                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -29,7 +29,6 @@
 set ( SRCS 
  EMCAL/AliAnalysisTaskEMCALClusterizeFast.cxx
  EMCAL/AliAnalysisTaskEmcal.cxx
- EMCAL/AliAnalysisTaskEmcalDev.cxx
  EMCAL/AliClusterContainer.cxx
  EMCAL/AliEMCALClusterParams.cxx
  EMCAL/AliEmcalClusTrackMatcherTask.cxx

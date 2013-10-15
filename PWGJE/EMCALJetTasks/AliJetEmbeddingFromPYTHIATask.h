@@ -1,7 +1,7 @@
 #ifndef ALIJETEMBEDDINGFROMPYTHIATASK_H
 #define ALIJETEMBEDDINGFROMPYTHIATASK_H
 
-// $Id: AliJetEmbeddingFromPYTHIATask.h  $
+// $Id$
 
 #include "AliJetEmbeddingFromAODTask.h"
 #include <TArrayD.h>

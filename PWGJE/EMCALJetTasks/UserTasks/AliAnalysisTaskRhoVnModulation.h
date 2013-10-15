@@ -5,7 +5,7 @@
 #ifndef ALIANALYSISTASKRHOVNMODULATION_H
 #define ALIANALYSISTASKRHOVNMODULATION_H
 
-#include <AliAnalysisTaskEmcalJetDev.h>
+#include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
 #include <AliVTrack.h>
@@ -22,7 +22,7 @@ class THF2;
 class TProfile;
 class AliLocalRhoParameter;
 
-class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type

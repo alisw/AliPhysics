@@ -83,7 +83,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
 
   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR);
 
-  void FillHistograms(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR);
+  void FillMassHistograms(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR);
  private:
   
   AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
@@ -116,8 +116,9 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   TString  fJetArrName;          // name of the jet array, taken from the task running the jet finder
   TString fCandArrName;          // string which correspond to the candidate type
   Bool_t fLeadingJetOnly;        // use only the leading jet in the event to make the correlations
+  Double_t fJetRadius;           // jet radius (filled from the JetContainer)
 
-  ClassDef(AliAnalysisTaskFlavourJetCorrelations,1); // class for charm-jet correlations
+  ClassDef(AliAnalysisTaskFlavourJetCorrelations,2); // class for charm-jet correlations
 };
 
 #endif

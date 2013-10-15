@@ -4,9 +4,9 @@
 class TH1;
 class TH2;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliAnalysisTaskEmcalBadCells : public AliAnalysisTaskEmcalDev {
+class AliAnalysisTaskEmcalBadCells : public AliAnalysisTaskEmcal {
  public:
 
   AliAnalysisTaskEmcalBadCells();

@@ -1,5 +1,6 @@
+// $Id$
 //
-// Jet Container
+// Container with name, TClonesArray and cuts for jets
 //
 // Author: M. Verweij
 

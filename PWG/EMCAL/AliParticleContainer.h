@@ -1,9 +1,7 @@
 #ifndef AliParticleContainer_H
 #define AliParticleContainer_H
 
-//
-// container with name, TClonesArray and cuts for particles
-//
+// $Id$
 
 class AliVEvent;
 class AliVParticle;

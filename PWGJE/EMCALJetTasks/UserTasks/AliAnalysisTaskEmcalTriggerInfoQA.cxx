@@ -35,7 +35,7 @@ ClassImp(AliAnalysisTaskEmcalTriggerInfoQA)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalTriggerInfoQA::AliAnalysisTaskEmcalTriggerInfoQA() : 
-    AliAnalysisTaskEmcalDev(),
+    AliAnalysisTaskEmcal(),
     fOutput(0),
     fHistos(0),
     fTriggersInfo(0),
@@ -48,7 +48,7 @@ AliAnalysisTaskEmcalTriggerInfoQA::AliAnalysisTaskEmcalTriggerInfoQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalTriggerInfoQA::AliAnalysisTaskEmcalTriggerInfoQA(const char *name) :
-    AliAnalysisTaskEmcalDev(name),
+    AliAnalysisTaskEmcal(name),
     fOutput(0),
     fHistos(0),
     fTriggersInfo(0),
@@ -203,7 +203,7 @@ void AliAnalysisTaskEmcalTriggerInfoQA::UserCreateOutputObjects()
 
 void AliAnalysisTaskEmcalTriggerInfoQA::UserExecOnce()
 {
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   // Get the event tracks from PicoTracks
   fTriggersInfo =dynamic_cast <TClonesArray*>(InputEvent()->FindListObject( fCaloTriggerPatchInfoName.Data() ));

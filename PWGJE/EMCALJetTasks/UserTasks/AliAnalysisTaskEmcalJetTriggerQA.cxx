@@ -30,7 +30,7 @@ ClassImp(AliAnalysisTaskEmcalJetTriggerQA)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() : 
-  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskEmcalJetTriggerQA", kTRUE),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetTriggerQA", kTRUE),
   fDebug(kFALSE),
   fUseAnaUtils(kTRUE),
   fAnalysisUtils(0),
@@ -74,7 +74,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fDebug(kFALSE),
   fUseAnaUtils(kTRUE),
   fAnalysisUtils(0),
@@ -305,7 +305,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   InitOnce();
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);

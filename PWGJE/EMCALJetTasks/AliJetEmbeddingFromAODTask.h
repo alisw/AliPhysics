@@ -1,7 +1,7 @@
 #ifndef ALIJETEMBEDDINGFROMAODTASK_H
 #define ALIJETEMBEDDINGFROMAODTASK_H
 
-// $Id: AliJetEmbeddingFromAODTask.h  $
+// $Id$
 
 class TFile;
 class TObjArray;

@@ -26,7 +26,7 @@ using namespace std;
 
 //________________________________________________________________________
 AliEmcalTriggerMaker::AliEmcalTriggerMaker() : 
-  AliAnalysisTaskEmcalDev("AliEmcalTriggerMaker",kFALSE),
+  AliAnalysisTaskEmcal("AliEmcalTriggerMaker",kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
@@ -43,7 +43,7 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
 
 //________________________________________________________________________
 AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name) : 
-  AliAnalysisTaskEmcalDev(name,kFALSE),
+  AliAnalysisTaskEmcal(name,kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
@@ -69,7 +69,7 @@ void AliEmcalTriggerMaker::ExecOnce()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
     return;

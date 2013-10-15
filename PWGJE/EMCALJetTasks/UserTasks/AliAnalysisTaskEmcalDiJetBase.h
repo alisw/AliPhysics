@@ -14,9 +14,9 @@ class AliGenPythiaEventHeader;
 
 #include "AliJetContainer.h"
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
  public:
   enum JetFullChargedMatchingType {
     kFraction   = 0,     // match full and charged jets with largest shared charged pt fraction

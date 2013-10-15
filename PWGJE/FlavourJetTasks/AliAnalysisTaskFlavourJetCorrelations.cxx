@@ -45,6 +45,7 @@
 #include "AliPicoTrack.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
+#include "AliJetContainer.h"
 
 ClassImp(AliAnalysisTaskFlavourJetCorrelations)
 
@@ -63,7 +64,8 @@ AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations() :
   fMaxMass(),  
   fJetArrName(0),
   fCandArrName(0),
-  fLeadingJetOnly(kFALSE)
+  fLeadingJetOnly(kFALSE),
+  fJetRadius(0)
 {
   //
   // Default ctor
@@ -84,7 +86,8 @@ AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations(con
   fMaxMass(),  
   fJetArrName(0),
   fCandArrName(0),
-  fLeadingJetOnly(kFALSE)
+  fLeadingJetOnly(kFALSE),
+  fJetRadius(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -206,7 +209,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
  
   TClonesArray *arrayDStartoD0pi=0;
   TClonesArray *trackArr = 0;
-  TClonesArray *clusArr = 0;
+  //TClonesArray *clusArr = 0;  
   TClonesArray *jetArr = 0;
   TClonesArray *candidatesArr = 0;
 //TClonesArray *isselArr = 0;
@@ -246,8 +249,9 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
 
   //retrieve jets
   trackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("PicoTracks"));
-  clusArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("CaloClustersCorr"));
+  //clusArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("CaloClustersCorr"));
   jetArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetArrName));
+  fJetRadius=GetJetContainer()->GetJetRadius();
 
   if(!trackArr){
     AliInfo(Form("Could not find the track array\n"));
@@ -743,12 +747,12 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
      
      if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,masses[0]);
 
-     FillHistograms(masses[0],dPhi,z, ptD, deltaR);
+     FillMassHistograms(masses[0],dPhi,z, ptD, deltaR);
   }
   if(isselected>=2) {
      if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,masses[1]);
 
-     FillHistograms(masses[1],dPhi,z, ptD, deltaR);
+     FillMassHistograms(masses[1],dPhi,z, ptD, deltaR);
   }
 
 }
@@ -764,7 +768,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
   TH2F* hPtJetWithD=(TH2F*)fOutput->FindObject("hPtJetWithD");
   if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,deltamass);
   
-  FillHistograms(deltamass,dPhi,z, ptD, deltaR);
+  FillMassHistograms(deltamass,dPhi,z, ptD, deltaR);
   // evaluate side band background
   TH2F* hDiffSideBand=(TH2F*)fOutput->FindObject("hDiffSideBand");
 
@@ -793,7 +797,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
  
 }
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistograms(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR){
+void AliAnalysisTaskFlavourJetCorrelations::FillMassHistograms(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR){
   TH3F* hdeltaPhiDja=((TH3F*)fOutput->FindObject("hdeltaPhiDja"));
   hdeltaPhiDja->Fill(mass,ptD,dphi);
 

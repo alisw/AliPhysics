@@ -20,7 +20,6 @@
 #include "AliESDMuonTrack.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskCLQA.h"
 #include "AliAnalysisUtils.h"
 #include "AliCentrality.h"
 #include "AliEMCALGeoParams.h"
@@ -36,12 +35,13 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
+#include "AliAnalysisTaskCLQA.h"
 
 ClassImp(AliAnalysisTaskCLQA)
 
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() : 
-  AliAnalysisTaskEmcalDev("AliAnalysisTaskCLQA", kTRUE),
+  AliAnalysisTaskEmcal("AliAnalysisTaskCLQA", kTRUE),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), 
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
   fCentCL1In(0), fCentV0AIn(0),
@@ -55,7 +55,7 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA(const char *name) : 
-  AliAnalysisTaskEmcalDev(name, kTRUE),
+  AliAnalysisTaskEmcal(name, kTRUE),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), 
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
   fCentCL1In(0), fCentV0AIn(0),
@@ -202,7 +202,7 @@ Bool_t AliAnalysisTaskCLQA::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if (!AliAnalysisTaskEmcalDev::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
     return kFALSE;
 
   return kTRUE;
@@ -453,7 +453,7 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
 {
   // Create histograms
 
-  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   fHists[0] = new TH1D("fTrigBits",";bit",32,-0.5,31.5);
   fOutput->Add(fHists[0]);
