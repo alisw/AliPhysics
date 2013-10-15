@@ -68,7 +68,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   //==============AOD analysis==============//
   void SetAODtrackCutBit(Int_t bit){
-    nAODtrackCutBit = bit;
+    fnAODtrackCutBit = bit;
   }
 
   void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax){
@@ -119,6 +119,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   }
 
   //multiplicity
+  void SetMultiplicityEstimator(const char* multiplicityEstimator) {fMultiplicityEstimator = multiplicityEstimator;}
+  const char* GetMultiplicityEstimator(void)  const              {return fMultiplicityEstimator;}
   void SetMultiplicityRange(Double_t min, Double_t max) {
     fUseMultiplicity = kTRUE;
     fNumberOfAcceptedTracksMin = min;
@@ -175,6 +177,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
   Double_t    GetRefMultiOrCentrality(AliVEvent* event);
+  Double_t    GetReferenceMultiplicityFromAOD(AliVEvent* event);
   Double_t    GetEventPlane(AliVEvent* event);
   //===============================correction
   Double_t    GetTrackbyTrackCorrectionMatrix(Double_t vEta, 
@@ -210,6 +213,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
+
+  TH2F *fHistTPCvsVZEROMultiplicity; //VZERO vs TPC reference multiplicity
+  TH2F *fHistVZEROSignal; //VZERO channel vs signal
 
   TH2F *fHistEventPlane; //event plane distribution
 
@@ -279,6 +285,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fImpactParameterMin;//impact parameter min (used for MC)
   Double_t fImpactParameterMax;//impact parameter max (used for MC)
 
+  TString fMultiplicityEstimator;//"V0M","V0A","V0C","TPC"
   Bool_t fUseMultiplicity;//use the multiplicity cuts
   Double_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   Double_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
@@ -294,7 +301,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
 
-  Int_t nAODtrackCutBit;//track cut bit from track selection (only used for AODs)
+  Int_t fnAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
