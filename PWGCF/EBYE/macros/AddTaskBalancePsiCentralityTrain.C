@@ -123,8 +123,10 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
-  if(fArgEventClass == "Multiplicity") 
+  if(fArgEventClass == "Multiplicity") {
     taskBF->SetMultiplicityRange(centrMin,centrMax);
+    taskBF->SetMultiplicityEstimator(centralityEstimator);
+  }
   else if(fArgEventClass == "Centrality") {
     if(analysisType == "MC")
       taskBF->SetImpactParameterRange(centrMin,centrMax);

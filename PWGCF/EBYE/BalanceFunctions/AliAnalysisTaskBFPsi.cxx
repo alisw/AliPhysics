@@ -77,6 +77,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistVx(0),
   fHistVy(0),
   fHistVz(0),
+  fHistTPCvsVZEROMultiplicity(0),
+  fHistVZEROSignal(0),
   fHistEventPlane(0),
   fHistClus(0),
   fHistDCA(0),
@@ -129,6 +131,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fCentralityPercentileMax(5.),
   fImpactParameterMin(0.),
   fImpactParameterMax(20.),
+  fMultiplicityEstimator("V0M"),
   fUseMultiplicity(kFALSE),
   fNumberOfAcceptedTracksMin(0),
   fNumberOfAcceptedTracksMax(10000),
@@ -141,7 +144,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
-  nAODtrackCutBit(128),
+  fnAODtrackCutBit(128),
   fPtMin(0.3),
   fPtMax(1.5),
   fPtMinForCorrections(0.3),//=================================correction
@@ -323,6 +326,19 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistVy);
   fHistVz = new TH2F("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm);Centrality percentile;Entries",100,-20.,20.,220,-5,105);
   fList->Add(fHistVz);
+
+  //TPC vs VZERO multiplicity
+  fHistTPCvsVZEROMultiplicity = new TH2F("fHistTPCvsVZEROMultiplicity","VZERO vs TPC multiplicity",3001,-0.5,30000.5,4001,-0.5,4000.5);
+  if(fMultiplicityEstimator == "V0A") 
+    fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO multiplicity (a.u.)");
+  else if(fMultiplicityEstimator == "V0C") 
+    fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO multiplicity (a.u.)");
+  else 
+    fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO multiplicity (a.u.)");
+  fList->Add(fHistTPCvsVZEROMultiplicity);
+
+  fHistVZEROSignal = new TH2F("fHistVZEROSignal","VZERO signal vs VZERO channel;VZERO channel; Signal (a.u.)",64,0.5,64.5,3001,-0.5,30000.5);
+  fList->Add(fHistVZEROSignal);
 
   //Event plane
   fHistEventPlane = new TH2F("fHistEventPlane",";#Psi_{2} [deg.];Centrality percentile;Counts",100,0,360.,220,-5,105);
@@ -1006,11 +1022,17 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   }
   else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "AOD"){
     AliAODHeader *header = (AliAODHeader*) event->GetHeader();
-    if(header){
-      gMultiplicity = header->GetRefMultiplicity();
-    }//AOD header
+    if ((fMultiplicityEstimator == "V0M")||
+	(fMultiplicityEstimator == "V0A")||
+	(fMultiplicityEstimator == "V0C") ||
+	(fMultiplicityEstimator == "TPC"))
+      gMultiplicity = GetReferenceMultiplicityFromAOD(event);
+    else {
+      if(header)
+	gMultiplicity = header->GetRefMultiplicity();
+    }
   }
-  else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "MC") {
+  else if((fEventClass=="Multiplicity")&&(gAnalysisLevel == "MC")) {
     AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
     //Calculating the multiplicity as the number of charged primaries
     //within \pm 0.8 in eta and pT > 0.1 GeV/c
@@ -1026,9 +1048,15 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       if(track->Pt() < 0.1)  continue;
 
       //++++++++++++++++
-      if (fCentralityEstimator == "V0A"){
-	if(track->Eta() > 3.9 || track->Eta() < 2.5)  continue;
-      }
+      if (fMultiplicityEstimator == "V0M") {
+	if((track->Eta() > 5.1 || track->Eta() < 2.8)&&(track->Eta() < -3.7 || track->Eta() > -1.7)) 
+	continue;}
+      else if (fMultiplicityEstimator == "V0A") {
+	if(track->Eta() > 5.1 || track->Eta() < 2.8)  continue;}
+      else if (fMultiplicityEstimator == "V0C") {
+	if(track->Eta() > -1.7 || track->Eta() < -3.7)  continue;}
+      else if (fMultiplicityEstimator == "TPC") {
+	if(track->Eta() > 0.9 || track->Eta() < -0.9)  continue;}
       else{
 	if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
       }
@@ -1048,6 +1076,77 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     lReturnVal = gCentrality;
   }
   return lReturnVal;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskBFPsi::GetReferenceMultiplicityFromAOD(AliVEvent *event){
+  //Function that returns the reference multiplicity from AODs (data or reco MC)
+  //Different ref. mult. implemented: V0M, V0A, V0C, TPC
+  Double_t gRefMultiplicity = 0.;
+
+  if(fMultiplicityEstimator == "TPC") {
+    // Loop over tracks in event
+    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
+      if (!aodTrack) {
+	AliError(Form("Could not receive track %d", iTracks));
+	continue;
+      }
+      
+      // AOD track cuts
+      if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
+            
+      if(aodTrack->Charge() == 0) continue;
+      // Kinematics cuts from ESD track cuts
+      if( aodTrack->Pt() < fPtMin || aodTrack->Pt() > fPtMax)      continue;
+      if( aodTrack->Eta() < fEtaMin || aodTrack->Eta() > fEtaMax)  continue;
+      
+      //=================PID (so far only for electron rejection)==========================//
+      if(fElectronRejection) {
+	// get the electron nsigma
+	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
+	
+	// check only for given momentum range
+	if( aodTrack->Pt() > fElectronRejectionMinPt && aodTrack->Pt() < fElectronRejectionMaxPt ){
+	  //look only at electron nsigma
+	  if(!fElectronOnlyRejection) {
+	    //Make the decision based on the n-sigma of electrons
+	    if(nSigma < fElectronRejectionNSigma) continue;
+	  }
+	  else {
+	    Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
+	    Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
+	    Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
+	    
+	    //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+	    if(nSigma < fElectronRejectionNSigma
+	       && nSigmaPions   > fElectronRejectionNSigma
+	       && nSigmaKaons   > fElectronRejectionNSigma
+	       && nSigmaProtons > fElectronRejectionNSigma ) continue;
+	  }
+	}
+      }//electron rejection
+      
+      gRefMultiplicity += 1.0;
+    }// track loop
+  }// "TPC" multiplicity estimator
+  else if((fMultiplicityEstimator == "V0M")||
+	  (fMultiplicityEstimator == "V0A")||
+	  (fMultiplicityEstimator == "V0C")) {
+    //VZERO segmentation in two detectors (0-31: VZERO-C, 32-63: VZERO-A)
+    for(Int_t i = 0; i < 64; i++) {
+      fHistVZEROSignal->Fill(i,event->GetVZEROEqMultiplicity(i));
+
+      if(fMultiplicityEstimator == "V0C") {
+	if(i > 31) continue;}
+      else if(fMultiplicityEstimator == "V0A") {
+	if(i < 32) continue;}
+      
+      gRefMultiplicity += event->GetVZEROEqMultiplicity(i);
+    }//loop over PMTs
+  }
+  
+  return gRefMultiplicity;
 }
 
 //________________________________________________________________________
@@ -1196,7 +1295,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       for(Int_t iTrackBit = 0; iTrackBit < 16; iTrackBit++){
 	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       }
-      if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+      if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
       
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
@@ -1412,7 +1511,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       for(Int_t iTrackBit = 0; iTrackBit < 16; iTrackBit++){
 	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       }
-      if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+      if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
       
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
