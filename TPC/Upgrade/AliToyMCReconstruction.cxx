@@ -50,6 +50,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fLongT0seed(kTRUE)
 , fFillClusterRes(kFALSE)
 , fUseT0list(kTRUE)
+, fUseZ0list(kTRUE)
 , fForceAlpha(kFALSE)
 , fStreamer(0x0)
 , fInputFile(0x0)
@@ -125,12 +126,15 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   AliExternalTrackParam *dummy;
 
   // prepare list of T0s
-  TVectorF t0list(fTree->GetEntries());
-  if (fUseT0list) {
+  TVectorF t0list(maxev);
+  TVectorF z0list(maxev);
+  if (fUseT0list || fUseZ0list) {
     for (Int_t iev=0; iev<maxev; ++iev){
       fTree->GetEvent(iev);
       const Float_t t0=fEvent->GetT0();
+      const Float_t z0=fEvent->GetZ();
       t0list[iev]=t0;
+      z0list[iev]=z0;
     }
   }
   
@@ -221,8 +225,8 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         // in case the match with the real T0 infor is requested, find the
         //    closes T0 from the list of T0s
         fTime0 = t0seed.GetZ()-zLength/vDrift;
-        if (fUseT0list) {
-          fTime0 = FindClosestT0(t0list, fTime0);
+        if (fUseT0list || fUseZ0list) {
+          fTime0 = FindClosestT0(t0list, z0list, t0seed);
         }
         // create real seed using the time 0 from the first seed
         // set fCreateT0seed now to false to get the seed in z coordinates
@@ -3008,7 +3012,7 @@ void AliToyMCReconstruction::CopyRieman(const AliRieman &from, AliRieman &to)
 }
 
 //____________________________________________________________________________________
-Float_t AliToyMCReconstruction::FindClosestT0(const TVectorF &t0list, Float_t t0seed)
+Float_t AliToyMCReconstruction::FindClosestT0(const TVectorF &t0list, const TVectorF &z0list, AliExternalTrackParam &t0seed)
 {
   //
   // find closes T0 in a list of T0s
@@ -3017,10 +3021,20 @@ Float_t AliToyMCReconstruction::FindClosestT0(const TVectorF &t0list, Float_t t0
   Long64_t size=t0list.GetNrows();
   const Float_t *array=t0list.GetMatrixArray();
 
+  Float_t vDrift=GetVDrift();
+  Float_t zLength=GetZLength(0);
+
+  Float_t sign=(1-2*(t0seed.GetTgl()>0));
+
+  Float_t vtxCorr=0.;
+  Float_t t0=t0seed.GetZ()-zLength/vDrift;
+  
   Int_t index=0;
   Float_t minDist=1e20;
   for (Int_t it0=0; it0<size; ++it0) {
-    const Float_t dist=TMath::Abs(t0list[it0]-t0seed);
+    if (fUseZ0list) vtxCorr=sign*z0list[it0]/vDrift;
+    printf("vtxcorr %d: %.2g, %.2g\n",it0, vtxCorr, z0list[it0]);
+    const Float_t dist=TMath::Abs(t0list[it0]-t0-vtxCorr);
     if (dist<minDist) {
       index=it0;
       minDist=dist;

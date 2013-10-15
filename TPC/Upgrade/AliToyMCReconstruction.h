@@ -75,6 +75,9 @@ public:
   void   SetUseT0list(Bool_t use)       { fUseT0list=use;    }
   Bool_t GetUseT0list()  const          { return fUseT0list; }
   
+  void   SetUseZ0list(Bool_t use)       { fUseZ0list=use;    }
+  Bool_t GetUseZ0list()  const          { return fUseZ0list; }
+  
   void   SetForceAlpha(Bool_t use)       { fForceAlpha=use;    }
   Bool_t GetForceAlpha()  const          { return fForceAlpha; }
   
@@ -151,7 +154,7 @@ public:
   void MarkClustersUsed(AliTPCseed *seed);
   void ResetClustersZtoTime(AliTPCseed *seed);
 
-  Float_t FindClosestT0(const TVectorF &t0list, Float_t t0seed);
+  Float_t FindClosestT0(const TVectorF &t0list, const TVectorF &z0list, AliExternalTrackParam &t0seed);
   
   // reco settings
   Int_t  fSeedingRow;            // first row used for seeding
@@ -170,6 +173,7 @@ public:
   Bool_t   fLongT0seed;          // if we should use a t0 seed including all clusters in the seed range
   Bool_t   fFillClusterRes;      // fill cluster residuals?
   Bool_t   fUseT0list;           // if the list of T0 information should be used to guess the T0
+  Bool_t   fUseZ0list;           // if the list of Z vertex information should be used to guess the T0
   Bool_t   fForceAlpha;          // force the correct alpha for the t0 seed extrapolation
   
   TTreeSRedirector *fStreamer;   // debug streamer
