@@ -53,7 +53,7 @@ ClassImp(AliFlowEvent)
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent():
-  AliFlowEventSimple(), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -73,7 +73,7 @@ AliFlowEvent::AliFlowEvent():
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent(Int_t n):
-  AliFlowEventSimple(n), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(n), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -199,7 +199,7 @@ void AliFlowEvent::SetMCReactionPlaneAngle(const AliMCEvent* mcEvent)
 AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -257,7 +257,7 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20),  fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20),  fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -317,7 +317,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -401,7 +401,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             KineSource anOption,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -500,7 +500,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const AliMultiplicity* anInputTracklets,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -577,7 +577,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
 			    const AliCFManager* poiCFManager,
                             Bool_t hybrid):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -672,7 +672,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const TH2F* anInputFMDhist,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
 {
     // constructor
     for(Int_t i(0); i < 9; i++) {
@@ -776,10 +776,13 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
       SetVZEROCalibrationForTrackCuts(rpCuts);
 //      for now, recentering is only applied if the user specifically asks for it
 //      by setting the flag to kTRUE in the ali flow track cuts
-      fApplyRecentering = rpCuts->GetApplyRecentering();    
+      if(!rpCuts->GetApplyRecentering()) {
+          // if the user does not want to recenter, switch the flag
+          fApplyRecentering = -1;
+      }
       // note: this flag is used in the overloaded implementation of Get2Qsub()
       // and tells the function to use as Qsub vectors the recentered Q-vectors
-      // from the VZERO aodb file
+      // from the VZERO oadb file or from the event header
   }
   if (sourcePOI ==AliFlowTrackCuts::kV0 || sourcePOI == AliFlowTrackCuts::kVZERO) {
       // probably no-one will choose vzero tracks as poi's ...
@@ -1106,7 +1109,7 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
   // get q vectors for the subevents. if no recentering is necessary, get the guy from the flow event simple
   AliFlowEventSimple::Get2Qsub(Qarray, n, weightsList, usePhiWeights, usePtWeights, useEtaWeights);
   // else get the recentering from the cached info
-  if (fApplyRecentering)        // set by Fill()
+  if (fApplyRecentering == 2010)        // 10h style recentering
   {     
     // first retrieve the q-vectors from the AliFlowEventSimple:: routine
     AliFlowVector vA = Qarray[0];
@@ -1158,6 +1161,34 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     // update the vector
     vA.Set(QxcCor, QycCor);
     vB.Set(QxaCor, QyaCor);
+  } else if (fApplyRecentering == 2011) { // 11h style recentering
+    // in this case, the q-vectors are repaced by the ones from
+    // the event header
+     
+    // first retrieve the q-vectors from the AliFlowEventSimple:: routine
+    AliFlowVector vA = Qarray[0];
+    AliFlowVector vB = Qarray[1];
+
+    Double_t QxaCor = 0.;
+    Double_t QyaCor = 0.;
+    Double_t QxcCor = 0.;
+    Double_t QycCor = 0.;
+
+    // copy the new q-vectors from the cache
+    if(n == 2) {
+       QxaCor = fMeanQ[0][1][0]; 
+       QyaCor = fMeanQ[0][1][1];
+       QxcCor = fMeanQ[0][0][0];
+       QycCor = fMeanQ[0][0][1];
+    } else if (n == 3) {
+       QxaCor = fMeanQv3[0][1][0]; 
+       QyaCor = fMeanQv3[0][1][1];
+       QxcCor = fMeanQv3[0][0][0];
+       QycCor = fMeanQv3[0][0][1];
+    }
+    // set the new q-vectors (which in this case means REPLACING) 
+    vA.Set(QxcCor, QycCor);
+    vB.Set(QxaCor, QyaCor);
   }
 }
 //_____________________________________________________________________________
@@ -1182,7 +1213,9 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     Int_t run(cuts->GetEvent()->GetRunNumber());
 //    printf ( " > run number is %i \n", run);
     if(fCachedRun == run) {
-//        printf(" run number didn't change, using cached values \n");
+        // the runnumber did not change, no need to open the database again
+        // in case of 11h style recentering, update the q-sub vectors
+        if(fApplyRecentering == 2011) SetVZEROCalibrationForTrackCuts2011(cuts); 
         return;
     }
     // set the chached run number
@@ -1201,11 +1234,44 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
 	printf("OADB object hMultV0BefCorr is not available in the file\n");
 	return;	
     }
-
     if(!(cont->GetObject(run))){
+        // if the multiplicity correction cannot be found for the specified run, 
+        // loop over the 11h runs to see if it's 11h data
+        Int_t runs11h[] = {170593, 170572, 170556, 170552, 170546, 170390, 170389, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170267, 170264, 170230, 170228, 170208, 170207, 170205, 170204, 170203, 170195, 170193, 170163, 170162, 170159, 170155, 170152, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170038, 170036, 170027, 169981, 169975, 169969, 169965, 169961, 169956, 169926, 169924, 169923, 169922, 169919, 169918, 169914, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169683, 169628, 169591, 169590, 169588, 169587, 169586, 169584, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169419, 169418, 169417, 169415, 169411, 169238, 169236, 169167, 169160, 169156, 169148, 169145, 169144, 169143, 169138, 169099, 169094, 169091, 169045, 169044, 169040, 169035, 168992, 168988, 168984, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168461, 168460, 168458, 168362, 168361, 168356, 168342, 168341, 168325, 168322, 168318, 168311, 168310, 168213, 168212, 168208, 168207, 168206, 168205, 168204, 168203, 168181, 168177, 168175, 168173, 168172, 168171, 168115, 168108, 168107, 168105, 168104, 168103, 168076, 168069, 168068, 168066, 167988, 167987, 167986, 167985, 167921, 167920, 167915, 167909, 167903, 167902, 167818, 167814, 167813, 167808, 167807, 167806, 167713, 167712, 167711, 167706, 167693};
+        for(Int_t r(0); r < 176; r++) {
+            if(run == runs11h[r]) {
+                printf(" > run has been identified as 11h < \n");
+                if(cuts->GetV0gainEqualizationPerRing()) {
+                    // enable or disable rings through the weights, weight 1. is enabled, 0. is disabled
+                    // start with the vzero c rings (segments 0 through 31)
+                    (cuts->GetUseVZERORing(0)) ? cuts->SetV0Cpol(0, 1.) : cuts->SetV0Cpol(0, 0.);
+                    (cuts->GetUseVZERORing(1)) ? cuts->SetV0Cpol(1, 1.) : cuts->SetV0Cpol(1, 0.);
+                    (cuts->GetUseVZERORing(2)) ? cuts->SetV0Cpol(2, 1.) : cuts->SetV0Cpol(2, 0.);
+                    (cuts->GetUseVZERORing(3)) ? cuts->SetV0Cpol(3, 1.) : cuts->SetV0Cpol(3, 0.);
+                    // same for vzero a
+                    (cuts->GetUseVZERORing(4)) ? cuts->SetV0Apol(0, 1.) : cuts->SetV0Apol(0, 0.);
+                    (cuts->GetUseVZERORing(5)) ? cuts->SetV0Apol(1, 1.) : cuts->SetV0Apol(1, 0.);
+                    (cuts->GetUseVZERORing(6)) ? cuts->SetV0Apol(2, 1.) : cuts->SetV0Apol(2, 0.);
+                    (cuts->GetUseVZERORing(7)) ? cuts->SetV0Apol(3, 1.) : cuts->SetV0Apol(3, 0.);
+                } else {
+                    // else enable all rings
+                    for(Int_t i(0); i < 4; i++) cuts->SetV0Cpol(i, 1.);
+                    for(Int_t i(0); i < 4; i++) cuts->SetV0Apol(i, 1.);
+                }
+                // pass a NULL pointer to the track cuts object
+                // the NULL pointer will identify 11h runs
+                cuts->SetV0gainEqualisation(NULL);
+                // this will identify the recentering style that is required. flight might be changed if recenetering is disabled
+                fApplyRecentering = 2011;
+                SetVZEROCalibrationForTrackCuts2011(cuts); 
+                return; // the rest of the steps are not necessary
+            }
+        }
+        // the run has not been identified as lhc11h data, so we assume a template calibration
 	printf("OADB object hMultV0BefCorr is not available for run %i (used run 137366)\n",run);
 	run = 137366;
     }
+    printf(" > run has been identified as 10h < \n");
     // step 1) get the proper multiplicity weights from the vzero signal
     TProfile* fMultV0 = ((TH2F *) cont->GetObject(run))->ProfileX();
 
@@ -1303,5 +1369,40 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
      	    }
 	}
     }
+    // set the recentering style (might be switched back to -1 if recentering is disabeled)
+    fApplyRecentering = 2010;
 }
+//_____________________________________________________________________________
+void AliFlowEvent::SetVZEROCalibrationForTrackCuts2011(AliFlowTrackCuts* cuts)
+{
+    // load the vzero q-sub vectors
+    if(!cuts->GetEvent() || !cuts->GetEvent()->GetEventplane()) return;       // coverity
+    Double_t qxEPa = 0, qyEPa = 0;
+    Double_t qxEPc = 0, qyEPc = 0;
+    Double_t qxEPa3 = 0, qyEPa3 = 0;
+    Double_t qxEPc3 = 0, qyEPc3 = 0;
+
+    // get the q-vectors from the header 
+    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 8, 2, qxEPa, qyEPa);
+    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 9, 2, qxEPc, qyEPc);
+    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 8, 3, qxEPa3, qyEPa3);
+    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 9, 3, qxEPc3, qyEPc3);
+ 
+    // store the values temporarily. this may seem
+    // inelegant, but we don't want to include
+    // aliflowtrackcuts or alivevnet in get2qsub
+
+    // qx and qy for vzero a, second harmonc
+    fMeanQ[0][1][0] = qxEPa;
+    fMeanQ[0][1][1] = qyEPa;
+    // qx and qx for vzero c, second harmonic
+    fMeanQ[0][0][0] = qxEPc;
+    fMeanQ[0][0][1] = qyEPc;
+    // qx and qy for vzero a, third harmonic
+    fMeanQv3[0][1][0] = qxEPa3;
+    fMeanQv3[0][1][1] = qyEPa3;
+    // qx and qy for vzero c, third harmonic
+    fMeanQv3[0][0][0] = qxEPc3;
+    fMeanQv3[0][0][1] = qyEPc3;
+} 
 //_____________________________________________________________________________

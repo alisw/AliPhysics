@@ -83,12 +83,13 @@ public:
 
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n = 2, TList *weightsList = 0x0, Bool_t usePhiWeights = 0x0, Bool_t usePtWeights = 0x0, Bool_t useEtaWeights = 0x0);
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
+  void SetVZEROCalibrationForTrackCuts2011(AliFlowTrackCuts* cuts);
 
 protected:
   AliFlowTrack* ReuseTrack( Int_t i);
 
 private:
-  Bool_t        fApplyRecentering;      // apply recentering of q-vectors? should be true for vzero tracks
+  Int_t         fApplyRecentering;      // apply recentering of q-vectors? 2010 is 10h style, 2011 is 11h style
   Int_t         fCachedRun;             //! cached calibration info for vzero
   Int_t         fCurrentCentrality;     //! centrality bin for the current event 
   Float_t       fMeanQ[9][2][2];        //! recentering
@@ -97,7 +98,7 @@ private:
   Float_t       fWidthQv3[9][2][2];     //! recentering
 
 
-  ClassDef(AliFlowEvent,2)
+  ClassDef(AliFlowEvent,3)
 };
 
 #endif
