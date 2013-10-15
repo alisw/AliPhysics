@@ -558,20 +558,26 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
     //add recpoint
     (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;//fNumberOfECAClusters-1 is old cluster before unfolding
     recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
-    if(recPoint){//recPoint present -> good
-      recPoint->SetNExMax(list->GetEntriesFast()) ;
-      Int_t   *digitsList = dynamic_cast<AliEMCALRecPoint *>(list->At(i))->GetDigitsList();
-      Float_t *energyList = dynamic_cast<AliEMCALRecPoint *>(list->At(i))->GetEnergiesList();
+		AliEMCALRecPoint * rpUFOne = dynamic_cast<AliEMCALRecPoint *>(list->At(i)) ;
+		
+    if( recPoint && rpUFOne ){//recPoint present -> good
+      
+			recPoint->SetNExMax(list->GetEntriesFast()) ;
+			
+      Int_t   *digitsList = rpUFOne->GetDigitsList();
+      Float_t *energyList = rpUFOne->GetEnergiesList();
 
       if(!digitsList || ! energyList)
       {
         AliDebug(-1,"No digits index or energy available");
+				delete (*fRecPoints)[fNumberOfECAClusters];
+				fRecPoints->RemoveAt(fNumberOfECAClusters);
         continue;
       }
       
       AliDebug(5,Form("cluster %d, digit no %d, energy %f\n",i,digitsList[0],energyList[0]));
 
-      for(iDigit = 0 ; iDigit < dynamic_cast<AliEMCALRecPoint *>(list->At(i))->GetMultiplicity(); iDigit ++) {
+      for(iDigit = 0 ; iDigit < rpUFOne->GetMultiplicity(); iDigit ++) {
         digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
         recPoint->AddDigit( *digit, energyList[iDigit], kFALSE ) ; //FIXME, need to study the shared case
       }//digit loop
