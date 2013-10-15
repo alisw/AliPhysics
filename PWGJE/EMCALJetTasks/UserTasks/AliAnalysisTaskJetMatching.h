@@ -1,7 +1,7 @@
 #ifndef AliAnalysisTaskJetMatching_H
 #define AliAnalysisTaskJetMatching_H
 
-#include <AliAnalysisTaskEmcalJetDev.h>
+#include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVTrack.h>
 #include <TClonesArray.h>
@@ -16,7 +16,7 @@ class AliRhoParameter;
 class AliLocalRhoParameter;
 class TClonesArray;
 
-class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJetDev
+class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
 {
     public:
         // enumerators

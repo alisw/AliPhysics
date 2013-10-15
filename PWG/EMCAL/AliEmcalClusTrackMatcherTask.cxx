@@ -19,7 +19,7 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
-  AliAnalysisTaskEmcalDev("AliEmcalClusTrackMatcherTask",kFALSE),
+  AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
   fMaxDistance(0.06)
 {
   // Constructor.
@@ -36,7 +36,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo) : 
-  AliAnalysisTaskEmcalDev(name,histo),
+  AliAnalysisTaskEmcal(name,histo),
   fMaxDistance(0.06)
 {
   // Standard constructor.
@@ -72,7 +72,7 @@ void AliEmcalClusTrackMatcherTask::ExecOnce()
     cont->SetClassName("AliEmcalParticle");
   }
 
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 }
 
 //________________________________________________________________________
@@ -83,7 +83,7 @@ void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
   if (!fCreateHisto)
     return;
 
-  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   const Int_t nCentChBins = fNcentBins * 2;
 

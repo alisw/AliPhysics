@@ -13,12 +13,12 @@ class TNtuple;
 class TNtupleD;
 class TTree;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
 class AliNtupCumInfo;
 class AliNtupZdcInfo;
 
-class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcalDev {
+class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
  public:
   AliAnalysisTaskCLQA();
   AliAnalysisTaskCLQA(const char *name);

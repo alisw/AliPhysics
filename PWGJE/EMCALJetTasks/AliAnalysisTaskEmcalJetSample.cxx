@@ -15,6 +15,7 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
+#include "AliJetContainer.h"
 
 #include "AliAnalysisTaskEmcalJetSample.h"
 
@@ -46,6 +47,7 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) :
 {
   // Standard constructor.
 
+
   for (Int_t i = 0; i < 4; i++) {
     fHistTracksPt[i] = 0;
     fHistClustersPt[i] = 0;
@@ -75,7 +77,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
   TString histname;
 
   for (Int_t i = 0; i < 4; i++) {
-    if (!fTracksName.IsNull()) {
+    if (fParticleCollArray.GetEntriesFast()>0) {
       histname = "fHistTracksPt_";
       histname += i;
       fHistTracksPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
@@ -84,7 +86,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       fOutput->Add(fHistTracksPt[i]);
     }
 
-    if (!fCaloName.IsNull()) {
+    if (fClusterCollArray.GetEntriesFast()>0) {
       histname = "fHistClustersPt_";
       histname += i;
       fHistClustersPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
@@ -93,7 +95,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       fOutput->Add(fHistClustersPt[i]);
     }
 
-    if (!fJetsName.IsNull()) {
+    if (fJetCollArray.GetEntriesFast()>0) {
       histname = "fHistLeadingJetPt_";
       histname += i;
       fHistLeadingJetPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
@@ -123,7 +125,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       fHistJetsPtLeadHad[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistJetsPtLeadHad[i]);
     
-      if (!fRhoName.IsNull()) {
+      if (!(GetJetContainer()->GetRhoName().IsNull())) {
 	histname = "fHistJetsCorrPtArea_";
 	histname += i;
 	fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 30, 0, 3);
@@ -143,7 +145,6 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
 
   if (fTracks) {
     const Int_t ntracks = fTracks->GetEntriesFast();
-    
     for (Int_t it = 0; it < ntracks; it++) {
       AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(it));
 
@@ -177,18 +178,11 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
   }
 
   if (fJets) {
-    static Int_t sortedJets[9999] = {-1};
-    Bool_t r = GetSortedArray(sortedJets, fJets);
 
-    if (r && sortedJets[0]>=0) {
-      AliEmcalJet* leadJet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
-      if (leadJet)
-	fHistLeadingJetPt[fCentBin]->Fill(leadJet->Pt());
-      else
-	AliError("Could not retrieve leading jet!");
-    }
+    fJets->Sort();
 
     const Int_t njets = fJets->GetEntriesFast();
+    Bool_t leadJet = kFALSE;
     for (Int_t ij = 0; ij < njets; ij++) {
 
       AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
@@ -199,6 +193,11 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
 
       if (!AcceptJet(jet))
 	continue;
+
+      if (!leadJet) {
+	fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
+	leadJet = kTRUE;
+      }
 
       fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
       fHistJetsPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());

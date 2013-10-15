@@ -28,7 +28,7 @@ ClassImp(AliHadCorrTask)
 
 //________________________________________________________________________
 AliHadCorrTask::AliHadCorrTask() : 
-  AliAnalysisTaskEmcalDev("AliHadCorrTask", kFALSE),
+  AliAnalysisTaskEmcal("AliHadCorrTask", kFALSE),
   fOutCaloName(),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
@@ -77,7 +77,7 @@ AliHadCorrTask::AliHadCorrTask() :
 
 //________________________________________________________________________
 AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) : 
-  AliAnalysisTaskEmcalDev(name, histo),
+  AliAnalysisTaskEmcal(name, histo),
   fOutCaloName("CaloClustersCorr"),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
@@ -374,7 +374,7 @@ void AliHadCorrTask::UserCreateOutputObjects()
 
   if (!fCreateHisto) return;
 
-  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   TString name;
 
@@ -491,7 +491,7 @@ void AliHadCorrTask::ExecOnce()
   }
 
   // Do base class initializations and if it fails -> bail out
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
   if (!fInitialized) return;
 
   if (dynamic_cast<AliAODEvent*>(InputEvent())) fEsdMode = kFALSE;

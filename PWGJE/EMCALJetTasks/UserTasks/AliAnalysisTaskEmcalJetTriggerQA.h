@@ -12,9 +12,9 @@ class AliAnalysisUtils;
 #include <TRef.h>
 #include <TBits.h>
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
  public:
 
   AliAnalysisTaskEmcalJetTriggerQA();

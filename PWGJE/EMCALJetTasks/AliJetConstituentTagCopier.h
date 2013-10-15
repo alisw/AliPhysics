@@ -1,16 +1,16 @@
 #ifndef ALIJETCONSTITUENTTAGCOPIER_H
 #define ALIJETCONSTITUENTTAGCOPIER_H
 
-// $Id: AliJetConstituentTagCopier.h  $
+// $Id$
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
 class TString;
 class AliNamedArrayI;
 class AliParticleContainer;
 class AliClusterContainer;
 
-class AliJetConstituentTagCopier : public AliAnalysisTaskEmcalDev {
+class AliJetConstituentTagCopier : public AliAnalysisTaskEmcal {
  public:
   AliJetConstituentTagCopier();
   AliJetConstituentTagCopier(const char *name);

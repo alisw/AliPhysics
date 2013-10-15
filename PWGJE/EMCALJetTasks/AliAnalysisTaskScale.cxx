@@ -22,7 +22,7 @@ ClassImp(AliAnalysisTaskScale)
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale() : 
-  AliAnalysisTaskEmcalDev("AliAnalysisTaskScale", kTRUE), 
+  AliAnalysisTaskEmcal("AliAnalysisTaskScale", kTRUE), 
   fScaleFunction(0),
   fEmcalArea(1),
   fTpcArea(1),
@@ -59,7 +59,7 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
-  AliAnalysisTaskEmcalDev(name, kTRUE), 
+  AliAnalysisTaskEmcal(name, kTRUE), 
   fScaleFunction(0),
   fEmcalArea(1),
   fTpcArea(1),
@@ -99,7 +99,7 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
 {
   // Create my user objects.
 
-  AliAnalysisTaskEmcalDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   fHistPtTPCvsCent             = new TH2F("PtTPCvsCent","rho vs cent",            101, -1, 100,   500,   0, 1000);
   fHistPtEMCALvsCent           = new TH2F("PtEMCALvsCent","rho vs cent",          101, -1, 100,   500,   0, 1000);
@@ -267,7 +267,7 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
 //________________________________________________________________________
 void AliAnalysisTaskScale::ExecOnce() 
 {
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
   const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();

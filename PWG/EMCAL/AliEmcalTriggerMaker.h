@@ -8,9 +8,9 @@ class AliEmcalTriggerSetupInfo;
 class AliAODCaloTrigger;
 class AliVVZERO;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliEmcalTriggerMaker : public AliAnalysisTaskEmcalDev {
+class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
  public:
   AliEmcalTriggerMaker();
   AliEmcalTriggerMaker(const char *name);

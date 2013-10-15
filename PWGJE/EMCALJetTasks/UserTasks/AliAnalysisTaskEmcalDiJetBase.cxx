@@ -36,7 +36,7 @@ ClassImp(AliAnalysisTaskEmcalDiJetBase)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase() : 
-  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskEmcalDiJetBase", kTRUE),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalDiJetBase", kTRUE),
   fDebug(kFALSE),
   fJetCorrelationType(kCorrelateAll),
   fJetFullChargedMatchingType(kFraction),
@@ -78,7 +78,7 @@ AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fDebug(kFALSE),
   fJetCorrelationType(kCorrelateAll),
   fJetFullChargedMatchingType(kFraction),
@@ -185,7 +185,7 @@ void AliAnalysisTaskEmcalDiJetBase::UserCreateOutputObjects()
 
   InitOnce();
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -781,7 +781,7 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::RetrieveEventObjects() {
   // get charged jets
   //
 
-  if (!AliAnalysisTaskEmcalJetDev::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   if(fRhoType==0) {

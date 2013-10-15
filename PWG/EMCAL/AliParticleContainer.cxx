@@ -1,5 +1,6 @@
+// $Id$
 //
-// Particle Container
+// Container with name, TClonesArray and cuts for particles
 //
 // Author: M. Verweij
 

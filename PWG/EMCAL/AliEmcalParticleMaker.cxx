@@ -17,7 +17,7 @@ ClassImp(AliEmcalParticleMaker)
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker() : 
-  AliAnalysisTaskEmcalDev("AliEmcalParticleMaker",kFALSE),
+  AliAnalysisTaskEmcal("AliEmcalParticleMaker",kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -28,7 +28,7 @@ AliEmcalParticleMaker::AliEmcalParticleMaker() :
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker(const char *name) : 
-  AliAnalysisTaskEmcalDev(name,kFALSE),
+  AliAnalysisTaskEmcal(name,kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -49,7 +49,7 @@ void AliEmcalParticleMaker::ExecOnce()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
     return;

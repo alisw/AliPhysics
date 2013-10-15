@@ -60,13 +60,13 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskJetMatching)
 
-AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJetDev("AliAnalysisTaskJetMatching", kTRUE), 
+AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetMatching", kTRUE), 
     fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
     // default constructor
     ClearMatchedJetsCache();
 }
 //_____________________________________________________________________________
-AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJetDev(name, kTRUE),
+AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE),
     fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
     // constructor
     ClearMatchedJetsCache();
@@ -108,7 +108,7 @@ void AliAnalysisTaskJetMatching::ExecOnce()
         } break;
         default : break;
     }
-    AliAnalysisTaskEmcalJetDev::ExecOnce(); // init base class
+    AliAnalysisTaskEmcalJet::ExecOnce(); // init base class
     if(fDoDetectorResponse) fMatchConstituents = kFALSE;
 }
 //_____________________________________________________________________________

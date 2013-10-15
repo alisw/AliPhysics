@@ -1,9 +1,7 @@
 #ifndef AliJetContainer_H
 #define AliJetContainer_H
 
-//
-// container with name, TClonesArray and cuts for jets
-//
+// $Id$
 
 class TClonesArray;
 class TString;
@@ -49,7 +47,8 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
   void                        SetJetPhiLimits(Float_t min, Float_t max)            { fJetMinPhi = min, fJetMaxPhi = max ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
-  void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
+  void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); 
+                                                                                     fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
   void                        SetZLeadingCut(Float_t zemc, Float_t zch)            { fZLeadingEmcCut = zemc; fZLeadingChCut = zch ; }
   void                        SetNEFCut(Float_t min = 0., Float_t max = 1.)        { fNEFMinCut = min; fNEFMaxCut = max;  }
 

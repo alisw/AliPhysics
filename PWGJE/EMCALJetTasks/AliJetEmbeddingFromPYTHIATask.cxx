@@ -1,4 +1,4 @@
-// $Id: AliJetEmbeddingFromPYTHIATask.cxx $
+// $Id$
 //
 // Jet embedding from PYTHIA task.
 //

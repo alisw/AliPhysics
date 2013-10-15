@@ -26,7 +26,7 @@ ClassImp(AliJetResponseMaker)
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker() : 
-  AliAnalysisTaskEmcalJetDev("AliJetResponseMaker", kTRUE),
+  AliAnalysisTaskEmcalJet("AliJetResponseMaker", kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
@@ -116,7 +116,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
@@ -870,7 +870,7 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 {
   // Create user objects.
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
   AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
@@ -1086,7 +1086,7 @@ void AliJetResponseMaker::ExecOnce()
 {
   // Execute once.
 
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+  AliAnalysisTaskEmcalJet::ExecOnce();
 
   AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
   AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
