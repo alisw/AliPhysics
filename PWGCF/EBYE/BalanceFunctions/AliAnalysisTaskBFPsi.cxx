@@ -1082,69 +1082,73 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 Double_t AliAnalysisTaskBFPsi::GetReferenceMultiplicityFromAOD(AliVEvent *event){
   //Function that returns the reference multiplicity from AODs (data or reco MC)
   //Different ref. mult. implemented: V0M, V0A, V0C, TPC
-  Double_t gRefMultiplicity = 0.;
+  Double_t gRefMultiplicity = 0., gRefMultiplicityTPC = 0., gRefMultiplicityVZERO = 0.;
 
-  if(fMultiplicityEstimator == "TPC") {
-    // Loop over tracks in event
-    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
-      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
-      if (!aodTrack) {
-	AliError(Form("Could not receive track %d", iTracks));
-	continue;
-      }
-      
-      // AOD track cuts
-      if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
+  // Loop over tracks in event
+  for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
+    if (!aodTrack) {
+      AliError(Form("Could not receive track %d", iTracks));
+      continue;
+    }
+    
+    // AOD track cuts
+    if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
             
-      if(aodTrack->Charge() == 0) continue;
-      // Kinematics cuts from ESD track cuts
-      if( aodTrack->Pt() < fPtMin || aodTrack->Pt() > fPtMax)      continue;
-      if( aodTrack->Eta() < fEtaMin || aodTrack->Eta() > fEtaMax)  continue;
+    if(aodTrack->Charge() == 0) continue;
+    // Kinematics cuts from ESD track cuts
+    if( aodTrack->Pt() < fPtMin || aodTrack->Pt() > fPtMax)      continue;
+    if( aodTrack->Eta() < fEtaMin || aodTrack->Eta() > fEtaMax)  continue;
+    
+    //=================PID (so far only for electron rejection)==========================//
+    if(fElectronRejection) {
+      // get the electron nsigma
+      Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
       
-      //=================PID (so far only for electron rejection)==========================//
-      if(fElectronRejection) {
-	// get the electron nsigma
-	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
-	
-	// check only for given momentum range
-	if( aodTrack->Pt() > fElectronRejectionMinPt && aodTrack->Pt() < fElectronRejectionMaxPt ){
-	  //look only at electron nsigma
-	  if(!fElectronOnlyRejection) {
-	    //Make the decision based on the n-sigma of electrons
-	    if(nSigma < fElectronRejectionNSigma) continue;
-	  }
-	  else {
-	    Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
-	    Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
-	    Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
-	    
-	    //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
-	    if(nSigma < fElectronRejectionNSigma
-	       && nSigmaPions   > fElectronRejectionNSigma
-	       && nSigmaKaons   > fElectronRejectionNSigma
-	       && nSigmaProtons > fElectronRejectionNSigma ) continue;
-	  }
+      // check only for given momentum range
+      if( aodTrack->Pt() > fElectronRejectionMinPt && aodTrack->Pt() < fElectronRejectionMaxPt ){
+	//look only at electron nsigma
+	if(!fElectronOnlyRejection) {
+	  //Make the decision based on the n-sigma of electrons
+	  if(nSigma < fElectronRejectionNSigma) continue;
 	}
-      }//electron rejection
-      
-      gRefMultiplicity += 1.0;
-    }// track loop
-  }// "TPC" multiplicity estimator
+	else {
+	  Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kPion));
+	  Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kKaon));
+	  Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kProton));
+	  
+	  //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+	  if(nSigma < fElectronRejectionNSigma
+	     && nSigmaPions   > fElectronRejectionNSigma
+	     && nSigmaKaons   > fElectronRejectionNSigma
+	     && nSigmaProtons > fElectronRejectionNSigma ) continue;
+	}
+      }
+    }//electron rejection
+    
+    gRefMultiplicityTPC += 1.0;
+  }// track loop
+  
+  //VZERO segmentation in two detectors (0-31: VZERO-C, 32-63: VZERO-A)
+  for(Int_t i = 0; i < 64; i++) {
+    fHistVZEROSignal->Fill(i,event->GetVZEROEqMultiplicity(i));
+    
+    if(fMultiplicityEstimator == "V0C") {
+      if(i > 31) continue;}
+    else if(fMultiplicityEstimator == "V0A") {
+      if(i < 32) continue;}
+    
+    gRefMultiplicityVZERO += event->GetVZEROEqMultiplicity(i);
+  }//loop over PMTs
+  
+  fHistTPCvsVZEROMultiplicity->Fill(gRefMultiplicityVZERO,gRefMultiplicityTPC);
+
+  if(fMultiplicityEstimator == "TPC") 
+    gRefMultiplicity = gRefMultiplicityTPC;
   else if((fMultiplicityEstimator == "V0M")||
 	  (fMultiplicityEstimator == "V0A")||
-	  (fMultiplicityEstimator == "V0C")) {
-    //VZERO segmentation in two detectors (0-31: VZERO-C, 32-63: VZERO-A)
-    for(Int_t i = 0; i < 64; i++) {
-      fHistVZEROSignal->Fill(i,event->GetVZEROEqMultiplicity(i));
-
-      if(fMultiplicityEstimator == "V0C") {
-	if(i > 31) continue;}
-      else if(fMultiplicityEstimator == "V0A") {
-	if(i < 32) continue;}
-      
-      gRefMultiplicity += event->GetVZEROEqMultiplicity(i);
-    }//loop over PMTs
-  }
+	  (fMultiplicityEstimator == "V0C")) 
+    gRefMultiplicity = gRefMultiplicityVZERO;
   
   return gRefMultiplicity;
 }
