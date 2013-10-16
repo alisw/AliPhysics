@@ -44,6 +44,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 				    Int_t nCentralityBins, 
 				    Double_t *centralityArrayForCorrections);
   //========================correction
+  void SetDebugLevel() {fDebugLevel = kTRUE;}
 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
     fBalance         = analysis;
@@ -189,6 +190,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
  
+  Bool_t fDebugLevel; // debug level
+
   TClonesArray* fArrayMC; //! AOD object  //+++++++++++++++++++++
   AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
