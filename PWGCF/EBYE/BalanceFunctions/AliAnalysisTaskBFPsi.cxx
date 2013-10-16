@@ -317,7 +317,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fHistNumberOfAcceptedTracks = new TH2F("fHistNumberOfAcceptedTracks",";N_{acc.};Centrality percentile;Entries",4001,-0.5,4000.5,220,-5,105);
   fList->Add(fHistNumberOfAcceptedTracks);
 
-  fHistMultiplicity = new TH1F("fHistMultiplicity",";N_{ch.};Entries",4001,-0.5,4000);
+  fHistMultiplicity = new TH1F("fHistMultiplicity",";N_{ch.};Entries",30001,-0.5,30000.5);
   fList->Add(fHistMultiplicity);
 
   // Vertex distributions
@@ -1022,6 +1022,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     AliESDEvent* gESDEvent = dynamic_cast<AliESDEvent*>(event);
     if(gESDEvent){
       gMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(gESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+      fHistMultiplicity->Fill(gMultiplicity);
     }//AliESDevent cast
   }
   else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "AOD"){
@@ -1038,6 +1039,7 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 	gMultiplicity = header->GetRefMultiplicity();
       if(fDebugLevel) Printf("Reference multiplicity (AOD header): %.0f",gMultiplicity);
     }
+    fHistMultiplicity->Fill(gMultiplicity);
   }
   else if((fEventClass=="Multiplicity")&&(gAnalysisLevel == "MC")) {
     AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
