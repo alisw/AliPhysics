@@ -87,6 +87,9 @@ find_package(AMORE)
 
 find_package(CPack)
 
+# ZeroMQ
+# ------------------------------
+find_package(ZeroMQ)
 
 #--------------------------------------------------------------------------------#
 # Environment/Compiler Configuration                                             #
