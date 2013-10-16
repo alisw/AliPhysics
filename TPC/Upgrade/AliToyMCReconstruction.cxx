@@ -312,7 +312,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         if (arrClustRes) {
           const Int_t nCl=arrClustRes->GetEntriesFast();
           // fracktion of outliers from track extrapolation
-          // for 1, 1.5, 2, 2.5 and 3 sigma of the cluster resolution (~1mm)
+          // for 3, 3.5, 4, 4.5 and 5 sigma of the cluster resolution (~1mm)
           Float_t fracY[5]={0.};
           Float_t fracZ[5]={0.};
           
@@ -321,8 +321,8 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
             const Float_t sigmaY=TMath::Sqrt(cl->GetSigmaY2());
             const Float_t sigmaZ=TMath::Sqrt(cl->GetSigmaZ2());
             for (Int_t inSig=0; inSig<5; ++inSig) {
-              fracY[inSig] += cl->GetY()>(1+inSig*.5)*sigmaY;
-              fracZ[inSig] += cl->GetZ()>(1+inSig*.5)*sigmaZ;
+              fracY[inSig] += cl->GetY()>(3+inSig*.5)*sigmaY;
+              fracZ[inSig] += cl->GetZ()>(3+inSig*.5)*sigmaZ;
             }
           }
           
@@ -336,8 +336,8 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           (*fStreamer) << "Tracks" <<
           "clustRes.=" << arrClustRes;
           for (Int_t inSig=0; inSig<5; ++inSig) {
-            const char* fracYname=Form("clFracY%02d=", 10+inSig*5);
-            const char* fracZname=Form("clFracZ%02d=", 10+inSig*5);
+            const char* fracYname=Form("clFracY%02d=", 30+inSig*5);
+            const char* fracZname=Form("clFracZ%02d=", 30+inSig*5);
             (*fStreamer) << "Tracks" <<
             fracYname << fracY[inSig] <<
             fracZname << fracZ[inSig];

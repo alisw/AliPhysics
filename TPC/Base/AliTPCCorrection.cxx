@@ -455,7 +455,8 @@ void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[],const Short_t r
     //  the slopes will be positive.
     // but since we chose deltaZ opposite sign the singn of the corretion should be fine
     
-    GetCorrectionDz(xyz,roc,dxyz,delta);
+    Float_t xyz2[3]={xyz[0],xyz[1],xyz[2]+deltaZ/2.};
+    GetCorrectionDz(xyz2,roc,dxyz,delta/2.);
     xyz[0]+=deltaZ*dxyz[0];
     xyz[1]+=deltaZ*dxyz[1];
     xyz[2]+=deltaZ;           //
@@ -497,7 +498,8 @@ void AliTPCCorrection::GetDistortionIntegralDz(const Float_t x[],const Short_t r
     // and since we are moving towards the read-out plane the deltaZ for
     //   weighting the dK/dz should have the opposite sign
     deltaZ*=sign;
-    GetDistortionDz(xyz,roc,dxyz,delta);
+    Float_t xyz2[3]={xyz[0],xyz[1],xyz[2]+deltaZ/2.};
+    GetDistortionDz(xyz2,roc,dxyz,delta/2.);
     xyz[0]+=-deltaZ*dxyz[0];
     xyz[1]+=-deltaZ*dxyz[1];
     xyz[2]+=deltaZ;           //TODO: Should this also be corrected for the dxyz[2]
