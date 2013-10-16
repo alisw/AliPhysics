@@ -55,6 +55,7 @@ ClassImp(AliAnalysisTaskBFPsi)
 //________________________________________________________________________
 AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name) 
 : AliAnalysisTaskSE(name),
+  fDebugLevel(kFALSE),
   fArrayMC(0), //+++++++++++++
   fBalance(0),
   fRunShuffling(kFALSE),
@@ -936,7 +937,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 		  if(fUseMultiplicity) {
-		    //cout<<"Filling 4 for multiplicity..."<<endl;
+		    //if(fDebugLevel)
+		    //Printf("Filling 4th bin of fHistEventStats for multiplicity %lf",gRefMultiplicity);
 		    fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
 		  }
 		  else if(fUseCentrality) {
@@ -957,7 +959,9 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		  }
 		  // take events only within the same multiplicity class
 		  else if(fUseMultiplicity) {
-		    //cout<<"N(min): "<<fNumberOfAcceptedTracksMin<<" - N(max): "<<fNumberOfAcceptedTracksMax<<" - Nref: "<<gRefMultiplicity<<endl;
+		    //if(fDebugLevel) 
+		    //Printf("N(min): %.0f, N(max): %.0f - N(ref): %.0f",fNumberOfAcceptedTracksMin,
+		    //fNumberOfAcceptedTracksMax,gRefMultiplicity);
 
 		    if((gRefMultiplicity > fNumberOfAcceptedTracksMin)||(gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
 		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
@@ -1025,11 +1029,14 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     if ((fMultiplicityEstimator == "V0M")||
 	(fMultiplicityEstimator == "V0A")||
 	(fMultiplicityEstimator == "V0C") ||
-	(fMultiplicityEstimator == "TPC"))
+	(fMultiplicityEstimator == "TPC")) {
       gMultiplicity = GetReferenceMultiplicityFromAOD(event);
+      if(fDebugLevel) Printf("Reference multiplicity (calculated): %.0f",gMultiplicity);
+    }
     else {
       if(header)
 	gMultiplicity = header->GetRefMultiplicity();
+      if(fDebugLevel) Printf("Reference multiplicity (AOD header): %.0f",gMultiplicity);
     }
   }
   else if((fEventClass=="Multiplicity")&&(gAnalysisLevel == "MC")) {
@@ -1141,6 +1148,9 @@ Double_t AliAnalysisTaskBFPsi::GetReferenceMultiplicityFromAOD(AliVEvent *event)
     gRefMultiplicityVZERO += event->GetVZEROEqMultiplicity(i);
   }//loop over PMTs
   
+  if(fDebugLevel) 
+    Printf("VZERO multiplicity: %.0f - TPC multiplicity: %.0f",gRefMultiplicityVZERO,gRefMultiplicityTPC);
+
   fHistTPCvsVZEROMultiplicity->Fill(gRefMultiplicityVZERO,gRefMultiplicityTPC);
 
   if(fMultiplicityEstimator == "TPC") 

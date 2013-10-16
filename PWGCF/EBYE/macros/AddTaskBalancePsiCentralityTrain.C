@@ -126,6 +126,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   if(fArgEventClass == "Multiplicity") {
     taskBF->SetMultiplicityRange(centrMin,centrMax);
     taskBF->SetMultiplicityEstimator(centralityEstimator);
+    cout<<"Multiplicity estimator "<<centralityEstimator.Data()<<endl;
   }
   else if(fArgEventClass == "Centrality") {
     if(analysisType == "MC")
@@ -134,6 +135,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
       taskBF->SetCentralityPercentileRange(centrMin,centrMax);
       // centrality estimator (default = V0M)
       taskBF->SetCentralityEstimator(centralityEstimator);
+      cout<<"Centrality estimator "<<centralityEstimator.Data()<<endl;
     }
   }
 
