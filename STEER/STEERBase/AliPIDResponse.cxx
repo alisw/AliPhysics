@@ -693,7 +693,7 @@ void AliPIDResponse::SetRecoInfo()
     if (reg12a17.MatchB(fCurrentFile)) fMCperiodTPC="LHC12A17";
   }
   if (fRun>=170719 && fRun<=177311) { fLHCperiod="LHC12A"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-  // for the moment use LHC12b parameters up to LHC12e
+  // for the moment use LHC12b parameters up to LHC12d
   if (fRun>=177312 /*&& fRun<=179356*/) { fLHCperiod="LHC12B"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
 //   if (fRun>=179357 && fRun<=183173) { fLHCperiod="LHC12C"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
 //   if (fRun>=183174 && fRun<=186345) { fLHCperiod="LHC12D"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
@@ -702,8 +702,8 @@ void AliPIDResponse::SetRecoInfo()
 //   if (fRun>=186636 && fRun<=188166) { fLHCperiod="LHC12F"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
 //   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
 //   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
-// for the moment use 12g parametrisation for all full gain runs (LHC12f+)
-  if (fRun >= 186636 && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
+// for the moment use 12g parametrisation for all full gain runs (LHC12e+)
+  if (fRun >= 186346 && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
 
   // New parametrisation for 2013 pPb runs
   if (fRun >= 194480) { 
@@ -1420,12 +1420,19 @@ void AliPIDResponse::SetTPCParametrisation()
   //default
   fTPCResponse.SetSigma(3.79301e-03, 2.21280e+04);
   
-  if (fRun>=122195){
+  if (fRun>=122195){ //LHC10d
     fTPCResponse.SetSigma(2.30176e-02, 5.60422e+02);
   }
-
-  if (fRun>=186636){
-//   if (fRun>=188356){
+  
+  if (fRun>=170719){ // LHC12a
+    fTPCResponse.SetSigma(2.95714e-03, 1.01953e+05);
+  }
+  
+  if (fRun>=177312){ // LHC12b
+    fTPCResponse.SetSigma(3.74633e-03, 7.11829e+04 );
+  }
+  
+  if (fRun>=186346){ // LHC12e
     fTPCResponse.SetSigma(8.62022e-04, 9.08156e+05);
   }
   
