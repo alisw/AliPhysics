@@ -82,6 +82,8 @@ AliBalancePsi::AliBalancePsi() :
   fQCut(kFALSE),
   fDeltaPtMin(0.0),
   fVertexBinning(kFALSE),
+  fCustomBinning(""),
+  fBinningString(""),
   fEventClass("EventPlane"){
   // Default constructor
 }
@@ -121,6 +123,8 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fQCut(balance.fQCut),
   fDeltaPtMin(balance.fDeltaPtMin),
   fVertexBinning(balance.fVertexBinning),
+  fCustomBinning(balance.fCustomBinning),
+  fBinningString(balance.fBinningString),
   fEventClass("EventPlane"){
   //copy constructor
 }
@@ -167,6 +171,52 @@ void AliBalancePsi::InitHistograms() {
   Int_t iBinPair[kTrackVariablesPair];         // binning for track variables
   Double_t* dBinsPair[kTrackVariablesPair];    // bins for track variables  
   TString axisTitlePair[kTrackVariablesPair];  // axis titles for track variables
+
+
+
+  // =========================================================
+  // The default string (from older versions of AliBalancePsi)
+  // =========================================================
+  TString defaultBinningStr;
+  defaultBinningStr = "multiplicity: 0,10,20,30,40,50,60,70,80,100,100000\n"                // Multiplicity Bins
+    "centrality: 0.,5.,10.,20.,30.,40.,50.,60.,70.,80.\n"                                   // Centrality Bins
+    "centralityVertex: 0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.\n" // Centrality Bins (Vertex Binning)
+    "eventPlane: -0.5,0.5,1.5,2.5,3.5\n"                                                    // Event Plane Bins (Psi: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (rest))
+    "deltaEta: -1.6, -1.56, -1.52, -1.48, -1.44, -1.4, -1.36, -1.32, -1.28, -1.24, -1.2, -1.16, -1.12, -1.08, -1.04, -1, -0.96, -0.92, -0.88, -0.84, -0.8, -0.76, -0.72, -0.68, -0.64, -0.6, -0.56, -0.52, -0.48, -0.44, -0.4, -0.36, -0.32, -0.28, -0.24, -0.2, -0.16, -0.12, -0.08, -0.04, 0, 0.04, 0.08, 0.12, 0.16, 0.2, 0.24, 0.28, 0.32, 0.36, 0.4, 0.44, 0.48, 0.52, 0.56, 0.6, 0.64, 0.68, 0.72, 0.76, 0.8, 0.84, 0.88, 0.92, 0.96, 1, 1.04, 1.08, 1.12, 1.16, 1.2, 1.24, 1.28, 1.32, 1.36, 1.4, 1.44, 1.48, 1.52, 1.56, 1.6\n" // Delta Eta Bins
+    "deltaEtaVertex: -1.6, -1.52, -1.44, -1.36, -1.28, -1.2, -1.12, -1.04, -0.96, -0.88, -0.8, -0.72, -0.64, -0.56, -0.48, -0.4, -0.32, -0.24, -0.16, -0.08, 0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.56, 0.64, 0.72, 0.8, 0.88, 0.96, 1.04, 1.12, 1.2, 1.28, 1.36, 1.44, 1.52, 1.6\n" // Delta Eta Bins (Vertex Binning)
+    "deltaPhi: -1.5708, -1.48353, -1.39626, -1.309, -1.22173, -1.13446, -1.0472, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.0872665, 0, 0.0872665, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.0472, 1.13446, 1.22173, 1.309, 1.39626, 1.48353, 1.5708, 1.65806, 1.74533, 1.8326, 1.91986, 2.00713, 2.0944, 2.18166, 2.26893, 2.35619, 2.44346, 2.53073, 2.61799, 2.70526, 2.79253, 2.87979, 2.96706, 3.05433, 3.14159, 3.22886, 3.31613, 3.40339, 3.49066, 3.57792, 3.66519, 3.75246, 3.83972, 3.92699, 4.01426, 4.10152, 4.18879, 4.27606, 4.36332, 4.45059, 4.53786, 4.62512, 4.71239\n" // Delta Phi Bins
+    "pT: 0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.\n"             // pT Bins
+    "pTVertex: 0.2,1.0,2.0,3.0,4.0,8.0,15.0\n"                                              // pT Bins (Vertex Binning)
+    "vertex: -10., 10.\n"                                                                   // Vertex Bins
+    "vertexVertex: -10., -7., -5., -3., -1., 1., 3., 5., 7., 10.\n"                         // Vertex Bins (Vertex Binning)
+    ;
+  
+  
+  // =========================================================
+  // Customization (adopted from AliUEHistograms)
+  // =========================================================
+
+  TObjArray* lines = defaultBinningStr.Tokenize("\n");
+  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
+  {
+    TString line(lines->At(i)->GetName());
+    TString tag = line(0, line.Index(":")+1);
+    if (!fCustomBinning.BeginsWith(tag) && !fCustomBinning.Contains(TString("\n") + tag))
+      fBinningString += line + "\n";
+    else
+      AliInfo(Form("Using custom binning for %s", tag.Data()));
+  }
+  delete lines;
+  fBinningString += fCustomBinning;
+  
+  AliInfo(Form("Used AliTHn Binning:\n%s",fBinningString.Data()));
+
+
+  // =========================================================
+  // Now set the bins
+  // =========================================================
+
+  //Depending on fEventClass Variable, do one thing or the other...
   /**********************************************************
    
   ======> Modification: Change Event Classification Scheme
@@ -184,155 +234,83 @@ void AliBalancePsi::InitHistograms() {
    Work with Centrality Bins
 
   ***********************************************************/
-   
-  //--- Multiplicity Bins ------------------------------------
-    const Int_t kMultBins = 10;
-    //A first rough attempt at four bins
-    Double_t kMultBinLimits[kMultBins+1]={0,10,20,30,40,50,60,70,80,100,100000};
-  //----------------------------------------------------------
-    
-    //--- Centrality Bins --------------------------------------
-    const Int_t kNCentralityBins       = 9; //9
-    const Int_t kNCentralityBinsVertex = 16; //15
-    Double_t centralityBins[kNCentralityBins+1]             = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
-    //// Double_t centralityBins[kNCentralityBins+1]             = {0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.};
-    //Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.};
-    Double_t centralityBinsVertex[kNCentralityBinsVertex+1] = {0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.};
-    //----------------------------------------------------------
-    
-    
-  //--- Event Plane Bins -------------------------------------
-    //Psi_2: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (rest)
-    const Int_t kNPsi2Bins = 4;
-    Double_t psi2Bins[kNPsi2Bins+1] = {-0.5,0.5,1.5,2.5,3.5};
-  //----------------------------------------------------------
-    
-  //Depending on fEventClass Variable, do one thing or the other...
-    if(fEventClass == "Multiplicity"){
-        iBinSingle[0]       = kMultBins;
-        dBinsSingle[0]      = kMultBinLimits;
-        axisTitleSingle[0]  = "kTPCITStracklet multiplicity";
-        iBinPair[0]       = kMultBins;
-        dBinsPair[0]      = kMultBinLimits;
-        axisTitlePair[0]  = "kTPCITStracklet multiplicity";
-    }
-    if(fEventClass == "Centrality"){
-        // fine binning in case of vertex Z binning
-        if(fVertexBinning){
-	  iBinSingle[0]       = kNCentralityBinsVertex;
-	  dBinsSingle[0]      = centralityBinsVertex;
-	  
-	  iBinPair[0]       = kNCentralityBinsVertex;
-	  dBinsPair[0]      = centralityBinsVertex;
-	}
-	else{
-	  iBinSingle[0]       = kNCentralityBins;
-	  dBinsSingle[0]      = centralityBins;
-	  
-	  iBinPair[0]       = kNCentralityBins;
-	  dBinsPair[0]      = centralityBins;
-	}
-        axisTitleSingle[0]  = "Centrality percentile [%]";
-        axisTitlePair[0]  = "Centrality percentile [%]";
-    }
-    if(fEventClass == "EventPlane"){
-        iBinSingle[0]       = kNPsi2Bins;
-        dBinsSingle[0]      = psi2Bins;
-        axisTitleSingle[0]  = "#varphi - #Psi_{2} (a.u.)";
-        iBinPair[0]       = kNPsi2Bins;
-        dBinsPair[0]      = psi2Bins;
-        axisTitlePair[0]  = "#varphi - #Psi_{2} (a.u.)";
-    }
-  
-    // delta eta
-    const Int_t kNDeltaEtaBins       = 80;
-    const Int_t kNDeltaEtaBinsVertex = 40;    
-    Double_t deltaEtaBins[kNDeltaEtaBins+1];
-    Double_t deltaEtaBinsVertex[kNDeltaEtaBinsVertex+1];
-    for(Int_t i = 0; i < kNDeltaEtaBins+1; i++)
-      deltaEtaBins[i] = - fDeltaEtaMax + i * 2 * fDeltaEtaMax / (Double_t)kNDeltaEtaBins;   
-    for(Int_t i = 0; i < kNDeltaEtaBinsVertex+1; i++)
-      deltaEtaBinsVertex[i] = - fDeltaEtaMax + i * 2 * fDeltaEtaMax / (Double_t)kNDeltaEtaBinsVertex;
-    
-    // coarse binning in case of vertex Z binning
+  if(fEventClass == "Multiplicity"){
+    dBinsSingle[0]     = GetBinning(fBinningString, "multiplicity", iBinSingle[0]);
+    dBinsPair[0]       = GetBinning(fBinningString, "multiplicity", iBinPair[0]);
+    axisTitleSingle[0] = "kTPCITStracklet multiplicity";
+    axisTitlePair[0]   = "kTPCITStracklet multiplicity";
+  }
+  if(fEventClass == "Centrality"){
+    // fine binning in case of vertex Z binning
     if(fVertexBinning){
-      iBinPair[1]       = kNDeltaEtaBinsVertex;
-      dBinsPair[1]      = deltaEtaBinsVertex;
+      dBinsSingle[0]     = GetBinning(fBinningString, "centralityVertex", iBinSingle[0]);
+      dBinsPair[0]       = GetBinning(fBinningString, "centralityVertex", iBinPair[0]);
     }
     else{
-      iBinPair[1]       = kNDeltaEtaBins;
-      dBinsPair[1]      = deltaEtaBins;
+      dBinsSingle[0]     = GetBinning(fBinningString, "centrality", iBinSingle[0]);
+      dBinsPair[0]       = GetBinning(fBinningString, "centrality", iBinPair[0]);
     }
-    axisTitlePair[1]  = "#Delta#eta"; 
+    axisTitleSingle[0] = "Centrality percentile [%]";
+    axisTitlePair[0]   = "Centrality percentile [%]";
+  }
+  if(fEventClass == "EventPlane"){
+    dBinsSingle[0]     = GetBinning(fBinningString, "eventPlane", iBinSingle[0]);
+    dBinsPair[0]       = GetBinning(fBinningString, "eventPlane", iBinPair[0]);
+    axisTitleSingle[0] = "#varphi - #Psi_{2} (a.u.)";
+    axisTitlePair[0]   = "#varphi - #Psi_{2} (a.u.)";
+  }
+  
 
-   // delta phi
-  const Int_t kNDeltaPhiBins = 72;
-  Double_t deltaPhiBins[kNDeltaPhiBins+1];
-  for(Int_t i = 0; i < kNDeltaPhiBins+1; i++){
-    //deltaPhiBins[i] = -180.0 + i * 5.;
-    deltaPhiBins[i] = -TMath::Pi()/2. + i * 5.*TMath::Pi()/180.;
-  } 
-  iBinPair[2]       = kNDeltaPhiBins;
-  dBinsPair[2]      = deltaPhiBins;
-  axisTitlePair[2]  = "#Delta#varphi (rad)"; 
-
-  // pt(trigger-associated)
-  const Int_t kNPtBins       = 16;
-  const Int_t kNPtBinsVertex = 6;
-  Double_t ptBins[kNPtBins+1]             = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
-  Double_t ptBinsVertex[kNPtBinsVertex+1] = {0.2,1.0,2.0,3.0,4.0,8.0,15.0};
-
-  // coarse binning in case of vertex Z binning
+  // Delta Eta and Delta Phi
+  // (coarse binning in case of vertex Z binning)
   if(fVertexBinning){
-    iBinSingle[1]     = kNPtBinsVertex;
-    dBinsSingle[1]    = ptBinsVertex;
-    
-    iBinPair[3]       = kNPtBinsVertex;
-    dBinsPair[3]      = ptBinsVertex;
-
-    iBinPair[4]       = kNPtBinsVertex;
-    dBinsPair[4]      = ptBinsVertex;
+    dBinsPair[1]       = GetBinning(fBinningString, "deltaEtaVertex", iBinPair[1]);
   }
   else{
-    iBinSingle[1]     = kNPtBins;
-    dBinsSingle[1]    = ptBins;
-    
-    iBinPair[3]       = kNPtBins;
-    dBinsPair[3]      = ptBins;
+    dBinsPair[1]       = GetBinning(fBinningString, "deltaEta", iBinPair[1]);
+  }
+  axisTitlePair[1]  = "#Delta#eta"; 
+  
+  dBinsPair[2]       = GetBinning(fBinningString, "deltaPhi", iBinPair[2]);
+  axisTitlePair[2]   = "#Delta#varphi (rad)";  
+  
 
-    iBinPair[4]       = kNPtBins;
-    dBinsPair[4]      = ptBins;
+  // pT Trig and pT Assoc
+  // (coarse binning in case of vertex Z binning)
+  if(fVertexBinning){
+    dBinsSingle[1]   = GetBinning(fBinningString, "pTVertex", iBinSingle[1]);
+    dBinsPair[3]     = GetBinning(fBinningString, "pTVertex", iBinPair[3]);
+    dBinsPair[4]     = GetBinning(fBinningString, "pTVertex", iBinPair[4]);
+  }
+  else{
+    dBinsSingle[1]   = GetBinning(fBinningString, "pT", iBinSingle[1]);
+    dBinsPair[3]     = GetBinning(fBinningString, "pT", iBinPair[3]);
+    dBinsPair[4]     = GetBinning(fBinningString, "pT", iBinPair[4]);
   }
   
   axisTitleSingle[1]  = "p_{T,trig.} (GeV/c)"; 
   axisTitlePair[3]    = "p_{T,trig.} (GeV/c)"; 
   axisTitlePair[4]    = "p_{T,assoc.} (GeV/c)";  
  
-  // vertex Z
-  const Int_t kNVertexZBins       = 1;
-  const Int_t kNVertexZBinsVertex = 9;
-  Double_t vertexZBins[kNVertexZBins+1]             = {-10., 10.};
-  Double_t vertexZBinsVertex[kNVertexZBinsVertex+1] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.};
 
   // vertex Z binning or not
   if(fVertexBinning){
-    iBinSingle[2]       = kNVertexZBinsVertex;
-    dBinsSingle[2]      = vertexZBinsVertex;
-
-    iBinPair[5]         = kNVertexZBinsVertex;
-    dBinsPair[5]        = vertexZBinsVertex;
+    dBinsSingle[2]   = GetBinning(fBinningString, "vertexVertex", iBinSingle[2]);
+    dBinsPair[5]     = GetBinning(fBinningString, "vertexVertex", iBinPair[5]);
   }
   else{
-    iBinSingle[2]       = kNVertexZBins;
-    dBinsSingle[2]      = vertexZBins;
-
-    iBinPair[5]         = kNVertexZBins;
-    dBinsPair[5]        = vertexZBins;
+    dBinsSingle[2]   = GetBinning(fBinningString, "vertex", iBinSingle[2]);
+    dBinsPair[5]     = GetBinning(fBinningString, "vertex", iBinPair[5]);
   }
 
   axisTitleSingle[2]  = "v_{Z} (cm)"; 
   axisTitlePair[5]    = "v_{Z} (cm)"; 
 
+
+
+  // =========================================================
+  // Create the Output objects (AliTHn)
+  // =========================================================
 
   TString histName;
   //+ triggered particles
@@ -394,6 +372,7 @@ void AliBalancePsi::InitHistograms() {
     fHistNN->SetBinLimits(j, dBinsPair[j]);
     fHistNN->SetVarTitle(j, axisTitlePair[j]);
   }
+
   AliInfo("Finished setting up the AliTHn");
 
   // QA histograms
@@ -2436,5 +2415,40 @@ Float_t AliBalancePsi::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, F
   return dphistar;
 }
 
+//____________________________________________________________________//
+Double_t* AliBalancePsi::GetBinning(const char* configuration, const char* tag, Int_t& nBins)
+{
+  // This method is a copy from AliUEHist::GetBinning
+  // takes the binning from <configuration> identified by <tag>
+  // configuration syntax example:
+  // eta: 2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4
+  // phi: .....
+  //
+  // returns bin edges which have to be deleted by the caller
+  
+  TString config(configuration);
+  TObjArray* lines = config.Tokenize("\n");
+  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
+  {
+    TString line(lines->At(i)->GetName());
+    if (line.BeginsWith(TString(tag) + ":"))
+    {
+      line.Remove(0, strlen(tag) + 1);
+      line.ReplaceAll(" ", "");
+      TObjArray* binning = line.Tokenize(",");
+      Double_t* bins = new Double_t[binning->GetEntriesFast()];
+      for (Int_t j=0; j<binning->GetEntriesFast(); j++)
+	bins[j] = TString(binning->At(j)->GetName()).Atof();
+      
+      nBins = binning->GetEntriesFast() - 1;
 
-
+      delete binning;
+      delete lines;
+      return bins;
+    }
+  }
+  
+  delete lines;
+  AliFatal(Form("Tag %s not found in %s", tag, configuration));
+  return 0;
+}

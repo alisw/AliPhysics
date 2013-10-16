@@ -156,6 +156,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     void SetEventClass(TString receivedEventClass){
         fEventClass = receivedEventClass;
     }
+    
+  void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
+
 
     // electron rejection
     void SetElectronRejection(Double_t gMaxNSigma){
@@ -338,6 +341,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
+  TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented

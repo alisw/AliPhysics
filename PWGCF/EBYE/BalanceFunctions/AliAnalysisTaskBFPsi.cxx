@@ -172,7 +172,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fExcludeElectronsInMC(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
-  fEventClass("EventPlane") 
+  fEventClass("EventPlane"), 
+  fCustomBinning("") 
 {
   // Constructor
   // Define input and output slots here
@@ -380,6 +381,30 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
 
+  // Balance function histograms
+  // Initialize histograms if not done yet (including the custom binning)
+  if(!fBalance->GetHistNp()){
+    AliInfo("Histograms not yet initialized! --> Will be done now");
+    fBalance->SetCustomBinning(fCustomBinning);
+    fBalance->InitHistograms();
+  }
+
+  if(fRunShuffling) {
+    if(!fShuffledBalance->GetHistNp()) {
+      AliInfo("Histograms (shuffling) not yet initialized! --> Will be done now");
+      fShuffledBalance->SetCustomBinning(fCustomBinning);
+      fShuffledBalance->InitHistograms();
+    }
+  }
+
+  if(fRunMixing) {
+    if(!fMixedBalance->GetHistNp()) {
+      AliInfo("Histograms (mixing) not yet initialized! --> Will be done now");
+      fMixedBalance->SetCustomBinning(fCustomBinning);
+      fMixedBalance->InitHistograms();
+    }
+  }
+
   // QA histograms for different cuts
   fList->Add(fBalance->GetQAHistHBTbefore());
   fList->Add(fBalance->GetQAHistHBTafter());
@@ -392,22 +417,6 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fBalance->GetQAHistResonancesLambda());
   fList->Add(fBalance->GetQAHistQbefore());
   fList->Add(fBalance->GetQAHistQafter());
-
-  // Balance function histograms
-  // Initialize histograms if not done yet
-  if(!fBalance->GetHistNp()){
-    AliWarning("Histograms not yet initialized! --> Will be done now");
-    AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
-    fBalance->InitHistograms();
-  }
-
-  if(fRunShuffling) {
-    if(!fShuffledBalance->GetHistNp()) {
-      AliWarning("Histograms (shuffling) not yet initialized! --> Will be done now");
-      AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
-      fShuffledBalance->InitHistograms();
-    }
-  }
 
   //for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
   fListBF->Add(fBalance->GetHistNp());
@@ -443,25 +452,35 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
     
     // centrality bins
-    //Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,20.,30.,40.,50.,60.,70.,80.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,7.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.};
-    Double_t* centbins        = centralityBins;
-    Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
-
+    Double_t* centbins;
+    Int_t nCentralityBins;
+    if(fBalance->IsUseVertexBinning()){
+      centbins = fBalance->GetBinning(fBalance->GetBinningString(), "centralityVertex", nCentralityBins);
+    }
+    else{
+      centbins = fBalance->GetBinning(fBalance->GetBinningString(), "centrality", nCentralityBins);
+    }
+    
     // multiplicity bins
-    Double_t multiplicityBins[] = {0,10,20,30,40,50,60,70,80,100,100000}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* multbins        = multiplicityBins;
-    Int_t nMultiplicityBins     = sizeof(multiplicityBins) / sizeof(Double_t) - 1;
+    Double_t* multbins;
+    Int_t nMultiplicityBins;
+    multbins = fBalance->GetBinning(fBalance->GetBinningString(), "multiplicity", nMultiplicityBins);
     
     // Zvtx bins
-    Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* vtxbins     = vertexBins;
-    Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
-    
+    Double_t* vtxbins; 
+    Int_t nVertexBins;
+    if(fBalance->IsUseVertexBinning()){
+      vtxbins = fBalance->GetBinning(fBalance->GetBinningString(), "vertexVertex", nVertexBins);
+    }
+    else{
+      vtxbins = fBalance->GetBinning(fBalance->GetBinningString(), "vertex", nVertexBins);
+    }
+
     // Event plane angle (Psi) bins
-    Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-    Double_t* psibins     = psiBins;
-    Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
+    Double_t* psibins;
+    Int_t nPsiBins; 
+    psibins = fBalance->GetBinning(fBalance->GetBinningString(), "eventPlane", nPsiBins);
+
     
     // run the event mixing also in bins of event plane (statistics!)
     if(fRunMixingEventPlane){
@@ -555,6 +574,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   if(fRunShuffling) PostData(3, fListBFS);
   if(fRunMixing) PostData(4, fListBFM);
   if(fUsePID || fElectronRejection) PostData(5, fHistListPIDQA);       //PID
+
+  AliInfo("Finished setting up the Output");
 
   TH1::AddDirectory(oldStatus);
 }
