@@ -5,21 +5,29 @@ AnaEpsScan();
 
 */
 
-void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10")
+void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10", Float_t nSigmas=3.)
 {
   
   TString files=gSystem->GetFromPipe( Form("ls %s/eps*/*%s*.root", dir.Data(), baseFile.Data() ) );
   TObjArray *arr=files.Tokenize("\n");
 
+  TGraph *grFrac01=new TGraph;
   TGraph *grFrac05=new TGraph;
   TGraph *grFrac10=new TGraph;
 
-  grFrac05->SetNameTitle("grFrac05",";#varepsilon;fraction of tracks");
+  grFrac01->SetNameTitle("grFrac01",";#varepsilon;fraction of tracks");
+  grFrac01->SetMarkerStyle(20);
+  grFrac01->SetMarkerSize(1);
+
+//   grFrac05->SetNameTitle("grFrac05",";#varepsilon;fraction of tracks");
+  grFrac05->SetLineColor(kBlue);
+  grFrac05->SetMarkerColor(kBlue);
+  grFrac05->SetMarkerStyle(21);
   grFrac05->SetMarkerSize(1);
   
   grFrac10->SetLineColor(kRed);
   grFrac10->SetMarkerColor(kRed);
-  grFrac10->SetMarkerStyle(21);
+  grFrac10->SetMarkerStyle(22);
   grFrac10->SetMarkerSize(1);
   
   Int_t colors[7]={kBlack, kRed, kBlue, kGreen, kMagenta, kCyan, kYellow};
@@ -31,7 +39,7 @@ void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10")
     TString epsilon=gSystem->GetFromPipe(Form("echo %s | sed 's|.*/eps\\([0-9][0-9]\\)/.*|\\1|'",file.Data()));
 
     printf("%s: %s\n", file.Data(), epsilon.Data());
-    TH1F *h=new TH1F(Form("hResY30_%s",epsilon.Data()), Form("#varepsilon %d;fraction of clusters more than 3#sigma from track;#tracks", epsilon.Atoi()),100,0,1);
+    TH1F *h=new TH1F(Form("hResY%.0f_%s",10*nSigmas, epsilon.Data()), Form("#varepsilon %d;fraction of clusters more than %.1f#sigma from track;#tracks", nSigmas, epsilon.Atoi()),1000,0,1);
     h->SetLineColor(colors[ifile]);
     h->SetMarkerColor(colors[ifile]);
     h->SetMarkerStyle(colors[ifile]);
@@ -47,13 +55,15 @@ void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10")
 //     t->SetBranchStatus("clFracY30",1);
 //     t->SetBranchAddress("clFracY30",&clFracY30);
 
-    t->Draw(Form("clFracY30>>hResY30_%s",epsilon.Data()),"","goff");
+    t->Draw(Form("clFracY%.0f>>hResY%.0f_%s",10*nSigmas,10*nSigmas,epsilon.Data()),"","goff");
 
     printf("entries: %d %d %d\n", grFrac05->GetN(), h->GetEntries(), t->GetEntries());
 
+    Double_t frac01 = h->Integral(h->FindBin(.01),h->GetNbinsX())/h->GetEntries();
     Double_t frac05 = h->Integral(h->FindBin(.05),h->GetNbinsX())/h->GetEntries();
     Double_t frac10 = h->Integral(h->FindBin(.10),h->GetNbinsX())/h->GetEntries();
 
+    grFrac01->SetPoint(grFrac01->GetN(), epsilon.Atoi(), frac01);
     grFrac05->SetPoint(grFrac05->GetN(), epsilon.Atoi(), frac05);
     grFrac10->SetPoint(grFrac10->GetN(), epsilon.Atoi(), frac10);
 
@@ -76,18 +86,27 @@ void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10")
   }
   leg->Draw("same");
 
+  c1->SaveAs(Form("~/tmp/epsScan_clFrac_%.0fsigma.png",10*nSigmas));
+  
   TCanvas *c2=new TCanvas("c2");
   c2->cd();
   
   TLegend *leg2 = new TLegend(.1,.7,.5,.9);
   leg2->SetBorderSize(1);
   leg2->SetFillColor(10);
-  
-  grFrac05->Draw("alp");
+
+  TH1F *hDummy = new TH1F("hDummy",";#varepsilon;fraction of tracks",100,0,45);
+  hDummy->SetMinimum(0);
+  hDummy->SetMaximum(.5);
+  hDummy->Draw();
+  grFrac01->Draw("lp");
+  grFrac05->Draw("lp");
   grFrac10->Draw("lp");
 
-  leg2->AddEntry(grFrac05,"3#sigma deviation >5%","lp");
-  leg2->AddEntry(grFrac10,"3#sigma deviation >10%","lp");
+  leg2->AddEntry(grFrac01,Form("%.1f#sigma deviation >1%%",nSigmas),"lp");
+  leg2->AddEntry(grFrac05,Form("%.1f#sigma deviation >5%%",nSigmas),"lp");
+  leg2->AddEntry(grFrac10,Form("%.1f#sigma deviation >10%%",nSigmas),"lp");
   leg2->Draw("same");
+  c2->SaveAs(Form("~/tmp/epsScan_trFrac_eps_%.0fsigma.png",10*nSigmas));
 }
 
