@@ -67,9 +67,9 @@ class AliESDCaloCells : public AliVCaloCells
   
   Int_t       fNCells;       // Number of cells
   Short_t    *fCellNumber;   //[fNCells] array of cell numbers
-  Double32_t *fAmplitude;    //[fNCells][0.,0.,16] array with cell amplitudes (= energy!)
-  Double32_t *fTime;         //[fNCells][0.,0.,16] array with cell times
-  Double32_t *fEFraction;    //[fNCells][0.,0.,16] array with fraction of MC energy and data - for embedding
+  Double32_t *fAmplitude;    //[fNCells] array with cell amplitudes (= energy!)
+  Double32_t *fTime;         //[fNCells] array with cell times
+  Double32_t *fEFraction;    //[fNCells] array with fraction of MC energy and data - for embedding
   Int_t      *fMCLabel;      //[fNCells] array of MC labels
   Bool_t      fIsSorted;     //! true if cell arrays are sorted by index
   Char_t      fType;         // Cell type

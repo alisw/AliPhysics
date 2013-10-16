@@ -18,7 +18,7 @@ class AliVCaloTrigger : public TNamed
 {
 public:
 
-  AliVCaloTrigger() {;}
+  AliVCaloTrigger(): TNamed() {;}
   AliVCaloTrigger(const char* name, const char* title) : TNamed(name, title) {;}
   AliVCaloTrigger(const AliVCaloTrigger& ctrig);
   virtual ~AliVCaloTrigger() {;}

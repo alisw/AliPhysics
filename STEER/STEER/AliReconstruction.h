@@ -117,6 +117,9 @@ public:
   Float_t GetV0CsPmin() const {return fV0CsPmin;}
   Float_t GetDmax() const {return fDmax;}
   Float_t GetZmax() const {return fZmax;}
+  
+  Bool_t HasNextEventAfter(Int_t eventId);
+  
   //
   Bool_t  IsRunMultFinder()   const {return fRunMultFinder;}
   
@@ -175,6 +178,7 @@ public:
     kNDetectors = 16   // number of detectors    // AU
   };
   static Int_t   GetDetIndex(const char * detector);
+  static const char** GetDetectorNames() { return fgkDetectorName; }
 
   // Upgrade
  void SetUpgradeModule(const char* detectors)  {fUpgradeModule = detectors; MatchUpgradeDetector() ; }
@@ -194,6 +198,13 @@ public:
   void        DeclareTriggerClasses(const char *trClasses) {fDeclTriggerClasses = trClasses;}
   //
   //
+  void 					 CleanProcessedEvent();
+   
+  AliESDEvent* GetESDEvent() const { return fesd; }
+  AliESDfriend* GetESDfriend() const { return fesdf; }
+  AliRunLoader* GetRunLoader() const { return fRunLoader;}
+  AliRawReader* GetRawReader() const { return fRawReader; }
+  
   Bool_t       HasEnoughResources(int ev);
   void         SetStopOnResourcesExcess(int vRSS=3000,int vVMEM=4000);
   //
