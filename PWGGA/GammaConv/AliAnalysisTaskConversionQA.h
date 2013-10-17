@@ -64,11 +64,12 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    Int_t fNumberOfESDTracks;
    AliMCEvent *fMCEvent;
    AliStack *fMCStack;
-   TTreeSRedirector *fStreamQA;
+   TTree *fTreeQA;
    Bool_t fIsHeavyIon;
    Bool_t ffillTree;
    Bool_t ffillHistograms;
    TList *fOutputList;
+   TList *fTreeList;
    TList *fESDList;
    TH1F *hVertexZ;
    TH1I *hNGoodESDTracks;
@@ -110,11 +111,18 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH1F *hTrueElecNfindableClsTPC;
    TH1F *hTruePosiNfindableClsTPC;
    TH2F *hTrueElecAsymP;
+   Float_t fGammaPt;
+   Float_t fGammaTheta;
+   Float_t fGammaChi2NDF;
+   Float_t fGammaPhotonProp[5];
+   Float_t fGammaConvCoord[5];
+   Float_t fDaughterProp[20];
+   UInt_t fKind;
    Bool_t fIsMC;
    Int_t fnGammaCandidates;
    Int_t *fMCStackPos;     //[fnGammaCandidates]
    Int_t *fMCStackNeg;     //[fnGammaCandidates]
-   ClassDef(AliAnalysisTaskConversionQA, 2);
+   ClassDef(AliAnalysisTaskConversionQA, 3);
 };
 
 #endif

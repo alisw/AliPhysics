@@ -2321,11 +2321,11 @@ Bool_t AliConversionCuts::SetRCut(Int_t RCut){
       break;
    case 8:
       fMaxR = 180.;
-      fMinR = 35.;
+      fMinR = 12.5;
       break;
    case 9:
-      fMaxR = 35.;
-      fMinR = 5.;
+      fMaxR = 180.;
+      fMinR = 7.5;
       break;
 
    default:
