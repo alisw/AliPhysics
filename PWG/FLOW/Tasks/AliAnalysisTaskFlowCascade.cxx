@@ -15,9 +15,9 @@
 
 /////////////////////////////////////////////////////
 // AliAnalysisTaskFlowCascade:
-// Analysis task to select K0/Lambda candidates for flow analysis.
+// Analysis task to select Xi and Omega candidates for flow analysis.
 //
-// Author: 
+// Author: Zhong-Bao.Yin@cern.ch
 //////////////////////////////////////////////////////
 
 #include "TChain.h"
@@ -151,7 +151,7 @@ void AliAnalysisTaskFlowCascade::UserCreateOutputObjects()
   fQAList->SetOwner();
   AddQAEvents();
   AddQACandidates();
-  PostData(3,fQAList);
+  //  PostData(3,fQAList);
 
   AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
   cc->SetNbinsMult(1);
@@ -470,9 +470,9 @@ void AliAnalysisTaskFlowCascade::UserExec(Option_t *)
   ((TH1D*)((TList*)fQAList->FindObject("Events"))->FindObject("RFPVZE"))
     ->Fill( mult );
 
-  if(fDebug) printf("TPCevent %d | VZEevent %d\n",
-                    fFlowEventTPC->NumberOfTracks(),
-                    fFlowEventVZE->NumberOfTracks() );
+  //  if(fDebug) printf("TPCevent %d | VZEevent %d\n",
+  //                  fFlowEventTPC->NumberOfTracks(),
+  //                  fFlowEventVZE->NumberOfTracks() );
   AddCandidates();
 
   PostData(1,fFlowEventTPC);
@@ -485,31 +485,32 @@ void AliAnalysisTaskFlowCascade::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowCascade::AddCandidates(){
   
-  if(fDebug) printf("I received %d candidates\n",
-		    fCandidates->GetEntriesFast());
+  //  if(fDebug) printf("I received %d candidates\n",
+  //		    fCandidates->GetEntriesFast());
   for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
     AliFlowCandidateTrack *cand 
       = dynamic_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
     if(!cand) continue;
-    if(fDebug) 
-      printf(" >Checking at candidate %d with %d daughters: mass %f\n",
-	     iCand, cand->GetNDaughters(), cand->Mass());
+    // if(fDebug) 
+    //  printf(" >Checking at candidate %d with %d daughters: mass %f\n",
+    //	     iCand, cand->GetNDaughters(), cand->Mass());
+    
     // untagging ===>                      
     for(int iDau=0; iDau != cand->GetNDaughters(); ++iDau) {
-      if(fDebug) 
-	printf(" >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
+      // if(fDebug) 
+      // printf(" >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
       for(int iRPs=0; iRPs != fFlowEventTPC->NumberOfTracks(); ++iRPs ) {
         AliFlowTrack *iRP 
 	  = dynamic_cast<AliFlowTrack*>(fFlowEventTPC->GetTrack( iRPs ));
         if (!iRP) continue;
         if( !iRP->InRPSelection() ) continue;
         if( cand->GetIDDaughter(iDau) == iRP->GetID() ) {
-          if(fDebug) printf(" was in RP set");
+          //if(fDebug) printf(" was in RP set");
           iRP->SetForRPSelection(kFALSE);
           fFlowEventTPC->SetNumberOfRPs( fFlowEventTPC->GetNumberOfRPs() -1 );
         }
       }
-      if(fDebug) printf("\n");
+      //if(fDebug) printf("\n");
     }
     // <=== untagging
     cand->SetForPOISelection(kTRUE);
@@ -517,9 +518,9 @@ void AliAnalysisTaskFlowCascade::AddCandidates(){
     fFlowEventVZE->InsertTrack( ((AliFlowTrack*) cand) );
   }
 
-  if(fDebug) printf("TPCevent %d | VZEevent %d\n",
-                    fFlowEventTPC->NumberOfTracks(),
-                    fFlowEventVZE->NumberOfTracks() );
+  //  if(fDebug) printf("TPCevent %d | VZEevent %d\n",
+  //                fFlowEventTPC->NumberOfTracks(),
+  //                fFlowEventVZE->NumberOfTracks() );
 
 }
 

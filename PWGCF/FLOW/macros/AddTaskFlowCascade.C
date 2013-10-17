@@ -59,8 +59,8 @@ void AddTaskFlowCascade(int trigger, float centrMin, float centrMax,
   //taskSel->SetDebug();
   taskSel->SetCuts2010(cuts);
   taskSel->SetSpecie(specie);
-  //printf( "CMM %d %f %f\n", MassBins(specie), MinMass(specie), MaxMass(specie) );
-  taskSel->SetCommonConstants( MassBins(specie), MinMass(specie), MaxMass(specie) );
+  //printf( "CMM %d %f %f\n", MassBins(specie), MinMass(specie), MSFT_MaxMass(specie) );
+  taskSel->SetCommonConstants( MSFT_MassBins(specie), MSFT_MinMass(specie), MSFT_MaxMass(specie) );
   AliAnalysisDataContainer *cOutHist 
     = mgr->CreateContainer(Form("OutHistos_%s",suffixName.Data()),
 			   TList::Class(),
@@ -83,47 +83,48 @@ void AddTaskFlowCascade(int trigger, float centrMin, float centrMax,
 
   //-------------------FLOW TASKS----------------------------
   AliFlowTrackSimpleCuts *filter[15], *filterhf[15][2]; // MASS BANDS
-  for(int mb=0; mb!=MassBands(0); ++mb) {
+  for(int mb=0; mb!=MSFT_MassBands(0); ++mb) {
     filter[mb] = new AliFlowTrackSimpleCuts( Form("Filter_MB%d",mb) );
     filter[mb]->SetEtaMin( -0.8 ); 
     filter[mb]->SetEtaMax( +0.8 );
-    filter[mb]->SetMassMin( MassBandLowEdge(specie, mb) ); 
-    filter[mb]->SetMassMax( MassBandLowEdge(specie, mb+1) );
+    filter[mb]->SetMassMin( MSFT_MassBandLowEdge(specie, mb) ); 
+    filter[mb]->SetMassMax( MSFT_MassBandLowEdge(specie, mb+1) );
 
     filterhf[mb][0] = new AliFlowTrackSimpleCuts( Form("Filterhf0_MB%d",mb) );
     filterhf[mb][0]->SetEtaMin( 0.0 ); 
     filterhf[mb][0]->SetEtaMax( +0.8 );
-    filterhf[mb][0]->SetMassMin( MassBandLowEdge(specie, mb) ); 
-    filterhf[mb][0]->SetMassMax( MassBandLowEdge(specie, mb+1) );
+    filterhf[mb][0]->SetMassMin( MSFT_MassBandLowEdge(specie, mb) ); 
+    filterhf[mb][0]->SetMassMax( MSFT_MassBandLowEdge(specie, mb+1) );
 
     filterhf[mb][1] = new AliFlowTrackSimpleCuts( Form("Filterhf1_MB%d",mb) );
     filterhf[mb][1]->SetEtaMin( -0.8 ); 
     filterhf[mb][1]->SetEtaMax( 0.0 );
-    filterhf[mb][1]->SetMassMin( MassBandLowEdge(specie, mb) ); 
-    filterhf[mb][1]->SetMassMax( MassBandLowEdge(specie, mb+1) );
+    filterhf[mb][1]->SetMassMin( MSFT_MassBandLowEdge(specie, mb) ); 
+    filterhf[mb][1]->SetMassMax( MSFT_MassBandLowEdge(specie, mb+1) );
 
     if(method.Contains("QC"))
-      AddQCmethod( Form("QCTPCMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
+      MSFT_AddQCmethod( Form("QCTPCMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
 		   exc_TPC, filter[mb]); // QC TPC
     if(method.Contains("TPCSP")){
-      AddSPmethod( Form("SPTPCMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
+      MSFT_AddSPmethod( Form("SPTPCMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
 		   exc_TPC, filterhf[mb][0], "Qa" ); // SP TPC Qa
-      AddSPmethod( Form("SPTPCMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
+      MSFT_AddSPmethod( Form("SPTPCMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
 		 exc_TPC, filterhf[mb][1], "Qb" ); // SP TPC Qb
     }
     if(method.Contains("VZESP")){
-      AddSPmethod( Form("SPVZEMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
+      MSFT_AddSPmethod( Form("SPVZEMB%d", mb), folderName.Data(), suffixName.Data(), harmonic, 
 		   exc_VZE, filter[mb], "Qa" ); // SP VZE Qa
-      AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, 
+      MSFT_AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, 
 		   exc_VZE, filter[mb], "Qb" ); // SP VZE Qa
-      AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic,
+      MSFT_AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic,
 		   exc_VZE, filter[mb], "QaQb" ); // SP VZE QaQb
     }
   }
 }
 
-void AddQCmethod(char *name, TString myFolder, char *thecuts, int harmonic, 
-		 AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL) {
+void MSFT_AddQCmethod(char *name, TString myFolder, char *thecuts, int harmonic, 
+		      AliAnalysisDataContainer *flowEvent, 
+		      AliFlowTrackSimpleCuts *cutsPOI=NULL) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   myFolder.Append( Form("v%d",harmonic) );
   TString myName = Form("%sv%d_%s", name, harmonic, thecuts);
@@ -153,9 +154,9 @@ void AddQCmethod(char *name, TString myFolder, char *thecuts, int harmonic,
 }
 
 
-void AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
-		 AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL,
-                 char *Qvector) {
+void MSFT_AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
+		      AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL,
+		      char *Qvector) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   myFolder.Append( Form("v%d",harmonic) );
   TString myNameSP = Form("%sv%d%s_%s", name, harmonic, Qvector, thecuts);
@@ -167,7 +168,7 @@ void AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
   AliAnalysisTaskFilterFE *tskFilter 
     = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myNameSP.Data()),
 				   NULL, cutsPOI);
-  tskFilter->SetSubeventEtaRange( -5.0, 0.0, 0.0, +5.0 );
+  tskFilter->SetSubeventEtaRange( -5.0, -1.0, 1.0, +5.0 );
   mgr->AddTask(tskFilter);
   mgr->ConnectInput( tskFilter, 0, flowEvent);
   mgr->ConnectOutput(tskFilter, 1, flowEvent2);
@@ -185,7 +186,7 @@ void AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
   mgr->ConnectOutput(tskSP,1,outSP);
 }
 
-double MassBandLowEdge( int nv0, int mb ) {
+double MSFT_MassBandLowEdge( int nv0, int mb ) {
   if(nv0==0) {
     double lowEdge[15+1]={ 1.282, 1.292, 1.302, 1.312, 1.317, 1.319, 1.321, 1.322, 
 			   1.323, 1.325, 1.327, 1.332, 1.342, 1.352, 1.362, 1.372};
@@ -196,7 +197,7 @@ double MassBandLowEdge( int nv0, int mb ) {
   return lowEdge[mb];
 }
 
-int MassBands( int nv0 ) {
+int MSFT_MassBands( int nv0 ) {
   if(nv0==0) {
     return 15;
   } else if(nv0==1) {
@@ -204,7 +205,7 @@ int MassBands( int nv0 ) {
   }
 }
 
-int MassBins( int nv0 ) {
+int MSFT_MassBins( int nv0 ) {
   if(nv0==0) {
     return 90;
   } else if(nv0==1) {
@@ -212,10 +213,10 @@ int MassBins( int nv0 ) {
   }
 }
 
-double MinMass( int nv0 ) {
-  return MassBandLowEdge( nv0, 0 );
+double MSFT_MinMass( int nv0 ) {
+  return MSFT_MassBandLowEdge( nv0, 0 );
 }
 
-double MaxMass( int nv0 ) {
-  return MassBandLowEdge( nv0, MassBands(nv0) );
+double MSFT_MaxMass( int nv0 ) {
+  return MSFT_MassBandLowEdge( nv0, MSFT_MassBands(nv0) );
 }
