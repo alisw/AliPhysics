@@ -2651,7 +2651,7 @@ Bool_t AliAnalysisTaskPi0Flow::RejectEventVertex()
     const bool vertexSelected = GetAnalysisUtils()->IsVertexSelected2013pA(fEvent);
     if(! vertexSelected ) return true;//reject
     const bool pileupSelected = GetAnalysisUtils()->IsPileUpEvent(fEvent);
-    if(! pileupSelected ) return true;//reject   
+    if( pileupSelected ) return true;//reject   
   }
 
   return false; // accept event.
