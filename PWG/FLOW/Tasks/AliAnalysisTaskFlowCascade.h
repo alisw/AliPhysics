@@ -69,7 +69,7 @@ class AliAnalysisTaskFlowCascade : public AliAnalysisTaskSE {
 			     AliFlowTrackCuts *cutsRPTPC,
 			     AliFlowTrackCuts *cutsRPVZE,
 			     /* AliESDtrackCuts */AliFlowTrackCuts *cutsDau);
-  void SetDebug() {fDebug = true;}
+  //void SetDebug() {fDebug = true;}
   void SetSpecie(int specie){fSpecie = specie;}
   void SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass);
   void SetCuts2010(int setOfCuts);
@@ -79,7 +79,7 @@ class AliAnalysisTaskFlowCascade : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   virtual void NotifyRun();
   
-  ClassDef(AliAnalysisTaskFlowCascade, 1);
+  ClassDef(AliAnalysisTaskFlowCascade, 2);
 };
 
 #endif
