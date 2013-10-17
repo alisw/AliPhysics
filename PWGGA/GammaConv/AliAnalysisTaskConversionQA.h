@@ -114,9 +114,9 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    Float_t fGammaPt;
    Float_t fGammaTheta;
    Float_t fGammaChi2NDF;
-   Float_t fGammaPhotonProp[5];
-   Float_t fGammaConvCoord[5];
-   Float_t fDaughterProp[20];
+   TVectorF fGammaPhotonProp;
+   TVectorF fGammaConvCoord;
+   TVectorF fDaughterProp;
    UInt_t fKind;
    Bool_t fIsMC;
    Int_t fnGammaCandidates;

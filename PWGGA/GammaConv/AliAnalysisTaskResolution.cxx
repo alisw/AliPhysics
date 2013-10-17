@@ -46,8 +46,8 @@ AliAnalysisTaskResolution::AliAnalysisTaskResolution() : AliAnalysisTaskSE(),
    fNESDtracksEta09(0),
    fNESDtracksEta0914(0),
    fNESDtracksEta14(0),
-//    fGammaRecCoords(NULL),
-//    fGammaMCCoords(NULL),
+   fGammaRecCoords(5),
+   fGammaMCCoords(5),
    fChi2ndf(0),
    fIsHeavyIon(kFALSE),
    fOutputList(NULL),
@@ -73,8 +73,8 @@ AliAnalysisTaskResolution::AliAnalysisTaskResolution(const char *name) : AliAnal
    fNESDtracksEta09(0),
    fNESDtracksEta0914(0),
    fNESDtracksEta14(0),
-//    fGammaRecCoords(NULL),
-//    fGammaMCCoords(NULL),
+   fGammaRecCoords(5),
+   fGammaMCCoords(5),
    fChi2ndf(0),
    fIsHeavyIon(kFALSE),
    fOutputList(NULL),
@@ -126,13 +126,10 @@ void AliAnalysisTaskResolution::UserCreateOutputObjects()
    fResolutionList->SetName("ResolutionList");
    fResolutionList->SetOwner(kTRUE);
    fOutputList->Add(fResolutionList);
-
-//    fGammaRecCoords = new Float_t[5];
-//    fGammaMCCoords = new Float_t[5];
                         
    fTreeResolution = new TTree("Resolution","Resolution");   
-   fTreeResolution->Branch("RecCoords",fGammaRecCoords,"fGammaRecCoords[5]/F");
-   fTreeResolution->Branch("MCCoords",fGammaMCCoords,"fGammaMCCoords[5]/F");
+   fTreeResolution->Branch("RecCoords",&fGammaRecCoords);
+   fTreeResolution->Branch("MCCoords",&fGammaMCCoords);
    fTreeResolution->Branch("chi2ndf",&fChi2ndf,"fChi2ndf/F");
    fResolutionList->Add(fTreeResolution);
    // V0 Reader Cuts
@@ -190,11 +187,11 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
       AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
       if (gamma ==NULL) continue;
       if(!fConversionCuts->PhotonIsSelected(gamma,fESDEvent)) continue;
-      fGammaRecCoords[0] = gamma->GetPhotonPt();
-      fGammaRecCoords[1] = gamma->GetPhotonPhi();
-      fGammaRecCoords[2] = gamma->GetPhotonEta();
-      fGammaRecCoords[3] = gamma->GetConversionRadius();
-      fGammaRecCoords[4] = gamma->GetConversionZ();
+      fGammaRecCoords(0) = gamma->GetPhotonPt();
+      fGammaRecCoords(1) = gamma->GetPhotonPhi();
+      fGammaRecCoords(2) = gamma->GetPhotonEta();
+      fGammaRecCoords(3) = gamma->GetConversionRadius();
+      fGammaRecCoords(4) = gamma->GetConversionZ();
       fChi2ndf = gamma->GetChi2perNDF();
 		if(fMCEvent){
 // 			cout << "generating MC stack"<< endl;
@@ -228,11 +225,11 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 						continue;
 					else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
 						if(pdgCode == 22){
-                     fGammaMCCoords[0] = truePhotonCanditate->Pt();
-                     fGammaMCCoords[1] = gamma->GetNegativeMCDaughter(fMCStack)->Phi();
-                     fGammaMCCoords[2] = gamma->GetNegativeMCDaughter(fMCStack)->Eta();
-                     fGammaMCCoords[3] = gamma->GetNegativeMCDaughter(fMCStack)->R();
-                     fGammaMCCoords[4] = gamma->GetNegativeMCDaughter(fMCStack)->Vz();
+                     fGammaMCCoords(0) = truePhotonCanditate->Pt();
+                     fGammaMCCoords(1) = gamma->GetNegativeMCDaughter(fMCStack)->Phi();
+                     fGammaMCCoords(2) = gamma->GetNegativeMCDaughter(fMCStack)->Eta();
+                     fGammaMCCoords(3) = gamma->GetNegativeMCDaughter(fMCStack)->R();
+                     fGammaMCCoords(4) = gamma->GetNegativeMCDaughter(fMCStack)->Vz();
                      
                      if (fTreeResolution){
                         fTreeResolution->Fill();
