@@ -49,6 +49,11 @@
 
 #include "TStatToolkit.h"
 
+
+using std::cout;
+using std::cerr;
+using std::endl;
+
  
 ClassImp(TStatToolkit) // Class implementation to enable ROOT I/O
  
