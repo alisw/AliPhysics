@@ -126,7 +126,7 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
         if(fDoSPFPAnalysis) {
             (fVParticleAnalysis) ? fFlowEvent_VZERO = new AliFlowEvent(10000) : fFlowEvent_VZERO = new AliFlowEvent(100);
         }
-        fFlowEvent_TPC = new AliFlowEvent(10000);
+        if(fDoQCFPAnalysis) fFlowEvent_TPC = new AliFlowEvent(10000);
     }
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
@@ -488,8 +488,8 @@ Bool_t AliAnalysisTaskJetFlow::DoFlowPackageFlowAnalysis()
             }
         }
     }
-    if(fFlowEvent_TPC)      fFlowEvent_TPC->TagSubeventsInEta(-10, 0, 0, 10);
-    if(fFlowEvent_VZERO)    fFlowEvent_VZERO->TagSubeventsInEta(-10, 0, 0, 10);
+    if(fFlowEvent_TPC)      fFlowEvent_TPC->TagSubeventsInEta(-10, -1, 1, 10);
+    if(fFlowEvent_VZERO)    fFlowEvent_VZERO->TagSubeventsInEta(-10, -1, 1, 10);
     return (nAcceptedJets < 1) ? kFALSE : kTRUE;
 }
 //_____________________________________________________________________________
