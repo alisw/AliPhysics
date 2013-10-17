@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskMaterial_cxx
-#define AliAnalysisTaskMaterial_cxx
+#ifndef AliAnalysisTaskResolution_cxx
+#define AliAnalysisTaskResolution_cxx
 
 #include "AliAnalysisTaskSE.h"
 #include "AliConversionPhotonBase.h"
@@ -18,19 +18,17 @@
 using namespace std;
 
 
-class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
+class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 
  public:
-
-   AliAnalysisTaskMaterial();
-   AliAnalysisTaskMaterial(const char *name);
-   virtual ~AliAnalysisTaskMaterial();
+   AliAnalysisTaskResolution();
+   AliAnalysisTaskResolution(const char *name);
+   virtual ~AliAnalysisTaskResolution();
 
    virtual void   UserCreateOutputObjects();
    virtual void   UserExec(Option_t *option);
    virtual void   Terminate(Option_t *);
 
-   void SetIsMC(Bool_t isMC){fIsMC=isMC;}
    void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
    void SetConversionCuts(AliConversionCuts* conversionCuts,Bool_t IsHeavyIon ){
       fConversionCuts=conversionCuts;
@@ -40,52 +38,34 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
  private:
 
    void ProcessPhotons();
-   void ProcessMCPhotons();
-   void FillMCTree(Int_t stackPos);
    Int_t CountTracks0914();
    Int_t CountTracks09();
 
    AliV0ReaderV1 *fV0Reader;
    TClonesArray *fConversionGammas; //Reconstructed Photons;
    AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
-   TList *fOutputList; 
-   TList *fEventList;
-   TList *fRecGammaList;
-   TList *fAllMCGammaList;
-   TList *fAllMCConvGammaList;
-   TTree* fTreeEvent;
-   TTree* fTreeMaterialRec;
-   TTree* fTreeMaterialAllGamma;
-   TTree* fTreeMaterialConvGamma;
+   TTree *fTreeEvent;
+   TTree *fTreeResolution;
    Float_t fPrimVtxZ;
    Int_t fNContrVtx;
    Int_t fNESDtracksEta09;
    Int_t fNESDtracksEta0914;
    Int_t fNESDtracksEta14;
-   Float_t fGammaMCPt;
-   Float_t fGammaMCTheta;
-   Float_t fGammaMCConvPt;
-   Float_t fGammaMCConvTheta;
-   Float_t fMCConvCords[5];
-   Float_t fMCConvDaughterProp[4];
-   Float_t fGammaPt;
-   Float_t fGammaTheta;
-   Float_t fGammaChi2NDF;
-   Float_t fRecCords[5];
-   Float_t fDaughterProp[4];
-   UChar_t fKind;
-  
-   
+   Float_t fGammaRecCoords[5];
+   Float_t fGammaMCCoords[5];
+   Float_t fChi2ndf;
    Bool_t fIsHeavyIon;
-   Bool_t fIsMC;
+   TList *fOutputList;
+   TList *fEventList;
+   TList *fResolutionList;
    AliESDEvent *fESDEvent;
    AliMCEvent *fMCEvent;
 
-   AliAnalysisTaskMaterial(const AliAnalysisTaskMaterial&); // not implemented
-   AliAnalysisTaskMaterial& operator=(const AliAnalysisTaskMaterial&); // not implemented
+   AliAnalysisTaskResolution(const AliAnalysisTaskResolution&); // not implemented
+   AliAnalysisTaskResolution& operator=(const AliAnalysisTaskResolution&); // not implemented
 
 
-   ClassDef(AliAnalysisTaskMaterial, 1);
+   ClassDef(AliAnalysisTaskResolution, 0);
 };
 
 #endif

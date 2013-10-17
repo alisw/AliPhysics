@@ -46,11 +46,12 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    fNumberOfESDTracks(0),
    fMCEvent(NULL),
    fMCStack(NULL),
-   fStreamQA(NULL),
+   fTreeQA(NULL),
    fIsHeavyIon(kFALSE),
    ffillTree(kFALSE),
    ffillHistograms(kFALSE),
    fOutputList(NULL),
+   fTreeList(NULL),
    fESDList(NULL),
    hVertexZ(NULL),
    hNGoodESDTracks(NULL),
@@ -92,6 +93,13 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    hTrueElecNfindableClsTPC(NULL),
    hTruePosiNfindableClsTPC(NULL),
    hTrueElecAsymP(NULL),
+   fGammaPt(0),
+   fGammaTheta(0),
+   fGammaChi2NDF(0),
+//    fGammaPhotonProp(NULL),
+//    fGammaConvCoord(NULL),
+//    fDaughterProp(NULL),
+   fKind(0),
    fIsMC(kFALSE),
    fnGammaCandidates(1),
    fMCStackPos(NULL),
@@ -99,6 +107,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
 {
 
 }
+
 AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : AliAnalysisTaskSE(name),
    fV0Reader(NULL),
    fConversionGammas(NULL),
@@ -107,11 +116,12 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    fNumberOfESDTracks(0),
    fMCEvent(NULL),
    fMCStack(NULL),
-   fStreamQA(NULL),
+   fTreeQA(NULL),
    fIsHeavyIon(kFALSE),
    ffillTree(kFALSE),
    ffillHistograms(kFALSE),
    fOutputList(NULL),
+   fTreeList(NULL),
    fESDList(NULL),
    hVertexZ(NULL),
    hNGoodESDTracks(NULL),
@@ -153,6 +163,13 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    hTrueElecNfindableClsTPC(NULL),
    hTruePosiNfindableClsTPC(NULL),
    hTrueElecAsymP(NULL),
+   fGammaPt(0),
+   fGammaTheta(0),
+   fGammaChi2NDF(0),
+//    fGammaPhotonProp(NULL),
+//    fGammaConvCoord(NULL),
+//    fDaughterProp(NULL),
+   fKind(0),
    fIsMC(kFALSE),
    fnGammaCandidates(1),
    fMCStackPos(NULL),
@@ -168,10 +185,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
 AliAnalysisTaskConversionQA::~AliAnalysisTaskConversionQA()
 {
    // default deconstructor
-   if(fStreamQA){
-      delete fStreamQA;
-      fStreamQA = 0x0;
-   }
+  
 }
 //________________________________________________________________________
 void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
@@ -292,8 +306,28 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
    }
    
    if(ffillTree){
-      TString cutnumber = fConversionCuts->GetCutNumber();
-      fStreamQA = new TTreeSRedirector(Form("GammaConvV1_QATree_%s.root",cutnumber.Data()),"recreate");
+      fTreeList = new TList();
+      fTreeList->SetOwner(kTRUE);
+      fTreeList->SetName("TreeList");
+      fOutputList->Add(fTreeList);
+
+      fTreeQA = new TTree("PhotonQA","PhotonQA");   
+     
+//       fGammaPhotonProp = new Float_t[5]; // 5: fGammaQt, fGammaAlpha, fGammaPsiPair, fGammaCosPoint, fGammaMass;  
+//       fGammaConvCoord = new Float_t[5]; // 5
+//       fDaughterProp = new Float_t[20]; // 5
+      
+      fTreeQA->Branch("pt",&fGammaPt,"fGammaPt/F");
+      fTreeQA->Branch("theta",&fGammaTheta,"fGammaTheta/F");
+      fTreeQA->Branch("chi2ndf",&fGammaChi2NDF,"fGammaChi2NDF/F");
+      fTreeQA->Branch("photonProp",fGammaPhotonProp,"fGammaPhotonProp[5]/F");
+      fTreeQA->Branch("recCords",fGammaConvCoord,"fGammaConvCoord[5]/F");
+      fTreeQA->Branch("daughterProp",fDaughterProp,"fDaughterProp[20]/F");
+      if (fIsMC) {
+         fTreeQA->Branch("kind",&fKind,"fKind/b");
+      }   
+      fTreeList->Add(fTreeQA);
+
    }
 
    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
@@ -396,76 +430,79 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    
    AliPIDResponse* pidResonse = ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
 
-   Float_t gammaPt = gamma->GetPhotonPt();
-   Float_t gammaPhi = gamma->GetPhotonPhi();
-   Float_t gammaTheta = gamma->Theta();
-   Float_t gammaChi2NDF = gamma->GetChi2perNDF();
-   Float_t gammaQt = gamma->GetArmenterosQt();
-   Float_t gammaAlpha = gamma->GetArmenterosAlpha();
-   Float_t gammaPsiPair = gamma->GetPsiPair();
-   Float_t gammaCosPointing = fConversionCuts->GetCosineOfPointingAngle(gamma,event);
-	Float_t gammaMass = gamma->GetMass();
-   TVectorF conversionPoint(3);
-   conversionPoint(0) = gamma->GetConversionX();
-   conversionPoint(1) = gamma->GetConversionY();
-   conversionPoint(2) = gamma->GetConversionZ();
-   TVectorF daughterProp(20);
+   fGammaPt = gamma->GetPhotonPt();
+   
+   fGammaTheta = gamma->Theta();
+   fGammaChi2NDF = gamma->GetChi2perNDF();
+   
+   fGammaPhotonProp[0]  = gamma->GetArmenterosQt();
+   fGammaPhotonProp[1]  = gamma->GetArmenterosAlpha();
+   fGammaPhotonProp[2]  = gamma->GetPsiPair();
+   fGammaPhotonProp[3] = fConversionCuts->GetCosineOfPointingAngle(gamma,event);
+	fGammaPhotonProp[4] = gamma->GetMass();
+   
+   fGammaConvCoord[0] = gamma->GetConversionX();
+   fGammaConvCoord[1] = gamma->GetConversionY();
+   fGammaConvCoord[2] = gamma->GetConversionZ();
+   fGammaConvCoord[3] = gamma->GetConversionRadius();
+   fGammaConvCoord[4] = gamma->GetPhotonPhi();
+   
    AliVTrack * negTrack = fConversionCuts->GetTrack(event, gamma->GetTrackLabelNegative());
    AliVTrack * posTrack = fConversionCuts->GetTrack(event, gamma->GetTrackLabelPositive());
 
    
    if(!negTrack||!posTrack)return;
 
-   UInt_t isTruePhoton = 9;
+   fKind = 9;
    if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
-      isTruePhoton = IsTruePhotonESD(gamma);
+      fKind = IsTruePhotonESD(gamma);
    } else if (fMCEvent && fInputEvent->IsA()==AliAODEvent::Class()){
-      isTruePhoton = IsTruePhotonAOD(gamma);   
+      fKind = IsTruePhotonAOD(gamma);   
    }
 
-   daughterProp(0) = posTrack->Pt();
-   daughterProp(7) = negTrack->Pt();
-   daughterProp(1) = posTrack->Theta();
-   daughterProp(8) = negTrack->Theta();
+   fDaughterProp[0] = posTrack->Pt();
+   fDaughterProp[7] = negTrack->Pt();
+   fDaughterProp[1] = posTrack->Theta();
+   fDaughterProp[8] = negTrack->Theta();
    Double32_t signalPos[4] = {0,0,0,0};
    Char_t nclPos[3];
    Char_t nrowsPos[3];
    if (posTrack->GetTPCdEdxInfo()) {
       posTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalPos,nclPos,nrowsPos);
-      daughterProp(2) = signalPos[0];
-      daughterProp(14) = signalPos[1];
-      daughterProp(16) = signalPos[2];
+      fDaughterProp[2] = signalPos[0];
+      fDaughterProp[14] = signalPos[1];
+      fDaughterProp[16] = signalPos[2];
    } else {
-      daughterProp(2) = posTrack->GetTPCsignal();
-      daughterProp(14) = 0;
-      daughterProp(16) = 0;
+      fDaughterProp[2] = posTrack->GetTPCsignal();
+      fDaughterProp[14] = 0;
+      fDaughterProp[16] = 0;
    }
    Double32_t signalNeg[4] = {0,0,0,0};
    Char_t nclNeg[3];
    Char_t nrowsNeg[3];
    if (negTrack->GetTPCdEdxInfo()) {
       negTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalNeg,nclNeg,nrowsNeg);
-      daughterProp(9) = signalNeg[0];
-      daughterProp(15) = signalNeg[1];
-      daughterProp(17) = signalNeg[2];
+      fDaughterProp[9] = signalNeg[0];
+      fDaughterProp[15] = signalNeg[1];
+      fDaughterProp[17] = signalNeg[2];
    } else {
-      daughterProp(9) = negTrack->GetTPCsignal();
-      daughterProp(15) = 0;
-      daughterProp(17) = 0;
+      fDaughterProp[9] = negTrack->GetTPCsignal();
+      fDaughterProp[15] = 0;
+      fDaughterProp[17] = 0;
    }
-   daughterProp(3) = pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
-   daughterProp(10) = pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+   fDaughterProp[3] = pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+   fDaughterProp[10] = pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
    if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
       Double_t timesPos[5];
       posTrack->GetIntegratedTimes(timesPos);
       Double_t TOFsignalPos =	posTrack->GetTOFsignal();
       Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
-      daughterProp(4) = dTpos;
-      daughterProp(5) = pidResonse->NumberOfSigmasTOF(posTrack, AliPID::kElectron);
+      fDaughterProp[4] = dTpos;
+      fDaughterProp[5] = pidResonse->NumberOfSigmasTOF(posTrack, AliPID::kElectron);
    } else {
-      daughterProp(4) = 20000;
-      daughterProp(5) = -20;
+      fDaughterProp[4] = 20000;
+      fDaughterProp[5] = -20;
    }
    if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
@@ -473,50 +510,20 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
       negTrack->GetIntegratedTimes(timesNeg);
       Double_t TOFsignalNeg =	negTrack->GetTOFsignal();
       Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
-      daughterProp(11) = dTneg;
-      daughterProp(12) = pidResonse->NumberOfSigmasTOF(negTrack, AliPID::kElectron);
+      fDaughterProp[11] = dTneg;
+      fDaughterProp[12] = pidResonse->NumberOfSigmasTOF(negTrack, AliPID::kElectron);
    } else {
-      daughterProp(11) = 20000;
-      daughterProp(12) = -20;
+      fDaughterProp[11] = 20000;
+      fDaughterProp[12] = -20;
    }
 
-   daughterProp(6) = (Float_t)posTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius()));
-   daughterProp(18) = posTrack->GetNcls(1);
-   daughterProp(13) = (Float_t)negTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius()));
-   daughterProp(19) = negTrack->GetNcls(1);
+   fDaughterProp[6] = (Float_t)posTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius()));
+   fDaughterProp[18] = posTrack->GetNcls(1);
+   fDaughterProp[13] = (Float_t)negTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius()));
+   fDaughterProp[19] = negTrack->GetNcls(1);
    
-   if (fStreamQA){
-      if(fMCEvent){
-         (*fStreamQA)<<"PhotonQA"
-                     << "pt=" << gammaPt
-                     << "phi=" << gammaPhi
-                     << "theta=" << gammaTheta
-                     << "chi2ndf=" << gammaChi2NDF
-                     << "qt="<< gammaQt
-                     << "alpha=" << gammaAlpha
-                     << "psipair=" << gammaPsiPair
-                     << "cosPoint=" << gammaCosPointing
-							<< "mass="<< gammaMass
-							<< "TruePhoton=" << isTruePhoton
-                     << "conversionPoint=" << &conversionPoint
-                     << "daugtherProp.=" << &daughterProp
-                     << "\n";
-      }
-      else{
-         (*fStreamQA)<<"PhotonQA"
-                     << "pt=" << gammaPt
-                     << "phi=" << gammaPhi
-                     << "theta=" << gammaTheta
-                     << "chi2ndf=" << gammaChi2NDF
-                     << "qt="<< gammaQt
-                     << "alpha=" << gammaAlpha
-                     << "psipair=" << gammaPsiPair
-                     << "cosPoint=" << gammaCosPointing
-							<< "mass="<< gammaMass
-							<< "conversionPoint=" << &conversionPoint
-                     << "daugtherProp.=" << &daughterProp
-                     << "\n";
-      }
+   if (fTreeQA){
+      fTreeQA->Fill();
    }
 }
 
@@ -714,9 +721,9 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 	TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
 	TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
 	Int_t motherLabelPhoton; 
-	Int_t pdgCodePos; 
-	Int_t pdgCodeNeg; 
-	Int_t pdgCode; 
+	Int_t pdgCodePos = 0; 
+	Int_t pdgCodeNeg = 0; 
+	Int_t pdgCode = 0; 
 
 
 	if(posDaughter == NULL || negDaughter == NULL) {
@@ -771,9 +778,9 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 	AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
 	AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
 	Int_t motherLabelPhoton = Photon->GetMother();
-	Int_t pdgCodePos; 
-	Int_t pdgCodeNeg; 
-	Int_t pdgCode; 
+	Int_t pdgCodePos = 0; 
+	Int_t pdgCodeNeg = 0; 
+	Int_t pdgCode = 0; 
 
 	if(posDaughter == NULL || negDaughter == NULL) {
 		kind = 9;
