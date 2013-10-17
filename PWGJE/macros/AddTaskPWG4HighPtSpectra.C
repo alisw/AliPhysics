@@ -344,8 +344,24 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   manNeg->SetParticleCutsList(kStepReconstructedMC,recMCList);
   manNeg->SetParticleCutsList(kStepMCAcceptance,mcList);
 
+  TString trigName = "";
+  if (triggerMask == AliVEvent::kAnyINT)
+    trigName += "kAnyINT";
+  else if (triggerMask == AliVEvent::kAny)
+    trigName += "kAny";
+  else if(triggerMask == AliVEvent::kINT7)
+    trigName += "kINT7";
+  else if(triggerMask == AliVEvent::kMB)
+    trigName += "kMB";
+  else if(triggerMask == AliVEvent::kEMC7)
+    trigName += "kEMC7";
+  else if(triggerMask == AliVEvent::kEMCEJE)
+    trigName += "kEMCEJE";
+  else if(triggerMask == AliVEvent::kEMCEGA)
+    trigName += "kEMCEGA";
 
-  AliPWG4HighPtSpectra *taskPWG4HighPtSpectra = new AliPWG4HighPtSpectra(Form("AliPWG4HighPtSpectraCent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,triggerMask));
+
+  AliPWG4HighPtSpectra *taskPWG4HighPtSpectra = new AliPWG4HighPtSpectra(Form("AliPWG4HighPtSpectraCent%dTrackType%dCuts%dPSF%s",centClass,trackType,cuts,trigName.Data()));
   taskPWG4HighPtSpectra->SetTrackType(trackType);
   taskPWG4HighPtSpectra->SetCuts(trackCuts);
   taskPWG4HighPtSpectra->SetCutsReject(trackCutsReject);
@@ -367,62 +383,18 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
 
   //------ output containers ------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  if(triggerMask == AliVEvent::kMB)
-    outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%dkMB",centClass,trackType,cuts);
-  else if(triggerMask == AliVEvent::kCentral)
-    outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%dkCentral",centClass,trackType,cuts);
-  else if(triggerMask == AliVEvent::kSemiCentral)
-    outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%dkSemiCentral",centClass,trackType,cuts);
-  else if(triggerMask == AliVEvent::kEMCEJE)
-    outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%dkEMCEJE",centClass,trackType,cuts);
-  else if(triggerMask == AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral)
-    outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%dkMBkCentralkSemiCentral",centClass,trackType,cuts);
-  else
-    outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,triggerMask);
-
+  outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data());
 
   AliAnalysisDataContainer *coutput0 = 0x0;
   AliAnalysisDataContainer *coutput1 = 0x0;
   AliAnalysisDataContainer *coutput2 = 0x0;
   AliAnalysisDataContainer *cout_cuts0 = 0x0; 
 
-  if(triggerMask == AliVEvent::kMB) {
-    coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%dkMB",centClass,trackType,cuts), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%dkMB",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%dkMB",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%dkMB",centClass,trackType,cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  }
-  else if(triggerMask == AliVEvent::kCentral) {
-    coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%dkCentral",centClass,trackType,cuts), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%dkCentral",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%dkCentral",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%dkCentral",centClass,trackType,cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  }
-  else if(triggerMask == AliVEvent::kSemiCentral) {
-    coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%dkSemiCentral",centClass,trackType,cuts), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%dkSemiCentral",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%dkSemiCentral",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%dkSemiCentral",centClass,trackType,cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  }
-  else if(triggerMask == AliVEvent::kEMCEJE) {
-    coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%dkEMCEJE",centClass,trackType,cuts), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%dkEMCEJE",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%dkEMCEJE",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%dkEMCEJE",centClass,trackType,cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  }
-  else if(triggerMask == AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral) {
-    coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%dkMBkCentralkSemiCentral",centClass,trackType,cuts), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%dkMBkCentralkSemiCentral",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%dkMBkCentralkSemiCentral",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%dkMBkCentralkSemiCentral",centClass,trackType,cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  }
-  else {
-    coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,triggerMask), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,triggerMask), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,triggerMask), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,triggerMask), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  }
-
+  coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+  
   mgr->AddTask(taskPWG4HighPtSpectra);
 
   mgr->ConnectInput(taskPWG4HighPtSpectra,0,mgr->GetCommonInputContainer());

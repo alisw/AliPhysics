@@ -64,11 +64,11 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
   fh3PatchEnergyEtaPhiCenter(0),
-  fh2CellEnergyVsTime(0)
+  fh2CellEnergyVsTime(0),
+  fh3EClusELeadingCellVsTime(0)
 {
   // Default constructor.
 
-  
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -108,7 +108,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
   fh3PatchEnergyEtaPhiCenter(0),
-  fh2CellEnergyVsTime(0)
+  fh2CellEnergyVsTime(0),
+  fh3EClusELeadingCellVsTime(0)
 {
   // Standard constructor.
 
@@ -121,18 +122,20 @@ AliAnalysisTaskEmcalJetTriggerQA::~AliAnalysisTaskEmcalJetTriggerQA()
   // Destructor.
 }
 
-//----------------------------------------------------------------------------------------------
-void AliAnalysisTaskEmcalJetTriggerQA::InitOnce() {
-  //
-  // only initialize once
-  //
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJetTriggerQA::ExecOnce()
+{
+  // Init the analysis.
+
+  AliAnalysisTaskEmcalJet::ExecOnce();
 
   // Initialize analysis util class for vertex selection
   if(fUseAnaUtils) {
-    fAnalysisUtils = new AliAnalysisUtils();
+    if(!fAnalysisUtils) fAnalysisUtils = new AliAnalysisUtils();
     fAnalysisUtils->SetMinVtxContr(2);
     fAnalysisUtils->SetMaxVtxZ(10.);
   }
+
 }
 
 //________________________________________________________________________
@@ -154,7 +157,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
   }
   else{
     if(fUseAnaUtils)
-      AliError("fAnalysisUtils not initialized. Call AliAnalysisTaskEmcalJetTriggerQA::InitOnce()");
+      AliError("fAnalysisUtils not initialized. Call AliAnalysisTaskEmcalJetTriggerQA::ExecOnce()");
   }
 
   fhNEvents->Fill(3.5);
@@ -303,8 +306,6 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 {
   // Create user output.
 
-  InitOnce();
-
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -412,6 +413,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",100,0.,100.,700,-400,1000);
   fOutput->Add(fh2CellEnergyVsTime);
 
+  fh3EClusELeadingCellVsTime = new TH3F("fh3EClusELeadingCellVsTime","fh3EClusELeadingCellVsTime;E_{cluster};E_{leading cell};time_{leading cell}",100,0.,100.,100.,0.,100.,700,-400.,1000.);
+  fOutput->Add(fh3EClusELeadingCellVsTime);
+
 
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -443,19 +447,19 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 {
   // Fill histograms.
-  
-  AliClusterContainer  *clusCont = GetClusterContainer(0);
 
+  AliClusterContainer  *clusCont = GetClusterContainer(0);
   if (clusCont) {
     Int_t nclusters = clusCont->GetNClusters();
+    TString arrName = clusCont->GetArrayName();
     for (Int_t ic = 0; ic < nclusters; ic++) {
       AliVCluster *cluster = static_cast<AliVCluster*>(clusCont->GetCluster(ic));
       if (!cluster) {
-	AliError(Form("Could not receive cluster %d", ic));
+	AliDebug(2,Form("Could not receive cluster %d", ic));
 	continue;
       }
       if (!cluster->IsEMCAL()) {
-	AliDebug(11,Form("%s: Cluster is not emcal",GetName()));
+	AliDebug(2,Form("%s: Cluster is not emcal",GetName()));
 	continue;
       }
 
@@ -464,6 +468,12 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       //Fill eta,phi,E of clusters here
       fh3EEtaPhiCluster->Fill(lp.E(),lp.Eta(),lp.Phi());
+
+      if(fCaloCells) {
+	Double_t leadCellE = GetEnergyLeadingCell(cluster);
+	Double_t leadCellT = cluster->GetTOF();//fCaloCells->GetCellTime(absId);
+	fh3EClusELeadingCellVsTime->Fill(lp.E(),leadCellE,leadCellT*1e9);
+      }
     }
   }
 
@@ -477,9 +487,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       AliDebug(2,Form("cell energy = %f  time = %f",cellE,cellT*1e9));
       fh2CellEnergyVsTime->Fill(cellE,cellT*1e9);
-    
     }
-
   }
 
   Double_t ptLeadJet1 = 0.;
@@ -646,4 +654,42 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetZ(const Double_t trkPx, const Doub
     AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq)); 
     return 0;
   }
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalJetTriggerQA::GetLeadingCellId(const AliVCluster *clus) const
+{
+  //Get energy of leading cell in cluster
+
+  if(!fCaloCells)
+    return -1;
+
+  Double_t emax = -1.;
+  Int_t iCellAbsIdMax = -1;
+  Int_t nCells = clus->GetNCells();
+  for(Int_t i = 0; i<nCells; i++) {
+    Int_t absId = clus->GetCellAbsId(i);
+    Double_t cellE = fCaloCells->GetCellAmplitude(absId);
+    if(cellE>emax) {
+      emax = cellE;
+      iCellAbsIdMax = absId;
+    }
+  }
+
+  return iCellAbsIdMax;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetTriggerQA::GetEnergyLeadingCell(const AliVCluster *clus) const
+{
+  //Get energy of leading cell in cluster
+  if(!fCaloCells)
+    return -1.;
+
+  Int_t absID = GetLeadingCellId(clus);
+  if(absID>-1)
+    return fCaloCells->GetCellAmplitude(absID);
+  else 
+    return -1.;
+
 }

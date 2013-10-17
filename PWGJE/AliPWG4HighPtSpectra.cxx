@@ -308,6 +308,15 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   //
   AliDebug(2,Form(">> AliPWG4HighPtSpectra::Exec \n"));  
 
+  if(!fMC) {
+    AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
+    }
+    else
+      fMC = eventHandler->MCEvent();
+  }
+
   // All events without selection
   fNEventAll->Fill(0.);
 
@@ -351,8 +360,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   //Now go to rec level
   for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
     {   
-   
-
       //Get track for analysis
       AliESDtrack *track = 0x0;
       AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
@@ -517,7 +524,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
 	}
       }
-	
 
       if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6 || fTrackType==7) {
 	if(track) delete track;

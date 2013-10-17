@@ -8,7 +8,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 							   TString     kEmcalCellsName     = "",
 							   const char *CentEst             = "V0A",
 							   Int_t       pSel                = AliVEvent::kINT7,
-							   Float_t     nefCut              = 0.95
+							   Float_t     nefCut              = 10.
 							   ) {
 
   enum AlgoType {kKT, kANTIKT};
@@ -81,7 +81,8 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 			       kTRUE
 			       );
     rhoTask->SetCentralityEstimator(CentEst);
-    
+    rhoTask->SetUseAliAnaUtils(kTRUE);
+    rhoTask->SetMinPtTrackInEmcal(0.15); //only use events which have a track pointing to EMCAL
   }
 
   TString wagonName = Form("TriggerQA_%s_%s_TC%s",strJets1.Data(),strJets2.Data(),trigClass.Data());
@@ -115,6 +116,9 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   task->SetCentralityEstimator(CentEst);
 
   task->SelectCollisionCandidates(pSel);
+
+  task->SetUseAliAnaUtils(kTRUE);
+  task->SetMinPtTrackInEmcal(0.15); //only use events which have a track pointing to EMCAL
 
   mgr->AddTask(task);
 

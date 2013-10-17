@@ -147,8 +147,6 @@ void runEMCalJetAnalysis(
   AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
   setupTask->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
   
-  UInt_t tpc = AliAnalysisTaskEmcal::kTPC;
-
   // Tender Supplies
   if (useTender)
   {
