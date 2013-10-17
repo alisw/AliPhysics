@@ -100,6 +100,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtNClustersTPCShared(0x0),
   fPtNClustersTPCSharedFrac(0x0),
   fPtNPointITS(0x0),
+  fPtNPointITSPhi(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
@@ -200,6 +201,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtNClustersTPCShared(0x0),
   fPtNClustersTPCSharedFrac(0x0),
   fPtNPointITS(0x0),
+  fPtNPointITSPhi(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
@@ -554,6 +556,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
  
   fPtNPointITS = new TH2F("fPtNPointITS","fPtNPointITS",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS);
   fHistList->Add(fPtNPointITS);
+
+  fPtNPointITSPhi = new TH3F("fPtNPointITSPhi","fPtNPointITSPhi",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtNPointITSPhi);
  
   fPtChi2C = new TH2F("fPtChi2C","fPtChi2C",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fPtChi2C);
@@ -1302,7 +1307,7 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtDCAZ->Fill(fVariables->At(0),fVariables->At(4));
   fPtNClustersTPC->Fill(fVariables->At(0),fVariables->At(5));
   fPtNPointITS->Fill(fVariables->At(0),fVariables->At(6));
-
+  fPtNPointITSPhi->Fill(fVariables->At(0),fVariables->At(6),fVariables->At(1));
   
   fPtNClustersTPCIter1->Fill(fVariables->At(0),fVariables->At(18));
   fPtNClustersTPCIter1Phi->Fill(fVariables->At(0),fVariables->At(18),fVariables->At(1));
