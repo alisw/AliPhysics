@@ -69,7 +69,8 @@
 
 #include "TStopwatch.h"
 
-
+using std::endl;
+using std::cout;
 
 ClassImp(AliAnalysisTaskLRC)
 
