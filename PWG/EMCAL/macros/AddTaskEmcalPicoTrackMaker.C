@@ -45,7 +45,7 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   TString runPeriod(runperiod);
   Bool_t includeNoITS = kFALSE;
   runPeriod.ToLower();
-  if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || runPeriod == "lhc12g") {
+  if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || runPeriod == "lhc13g" || runPeriod == "lhc12g") {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
     eTask->SetMC(kFALSE);
   } else if (runPeriod == "lhc12a15e" || runPeriod == "lhc13b4" || runPeriod == "lhc13b4_fix" || runPeriod == "lhc12a15f") {
