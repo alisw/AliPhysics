@@ -42,6 +42,9 @@
 //		- added histograms and values for LCMS momenta (for simulation)
 //	- added random particle order switch in correlations (9/09/13)
 //	- added more bins for 3D OSL analysis (9/19/13)
+//	- added merit cut choice, pass as argument (10/16/13)
+//		- 1-mass, 2-v0dca, 3-dddca, 4-combination (used to be v0dca)
+//	- added passable argument for two-track minimum separation (10/16/13)
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -90,6 +93,8 @@ AliAnalysisTaskSE(),
   fOnlineCase(kTRUE),
   fMeritCase(kTRUE),
   fMinDecayLength(0.0),
+  fMeritCutChoice(0),
+  fMinSep(0.0),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -101,12 +106,14 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, bool OnlineCase, bool MeritCase, float MinDL) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, bool OnlineCase, bool MeritCase, float MinDL, int MeritCutChoice, float MinSep) 
 : AliAnalysisTaskSE(name), 
   fFieldPos(FieldPositive),
   fOnlineCase(OnlineCase),
   fMeritCase(MeritCase),
   fMinDecayLength(MinDL),
+  fMeritCutChoice(MeritCutChoice),
+  fMinSep(MinSep),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -121,6 +128,8 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, boo
   fOnlineCase 	= OnlineCase;
   fMeritCase 	= MeritCase;
   fMinDecayLength = MinDL;
+  fMeritCutChoice = MeritCutChoice;
+  fMinSep 		= MinSep;
 
   // Define output slots here 
   // Output slot #1
@@ -134,6 +143,8 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
   fOnlineCase(obj.fOnlineCase),
   fMeritCase(obj.fMeritCase),
   fMinDecayLength(obj.fMinDecayLength),
+  fMeritCutChoice(obj.fMeritCutChoice),
+  fMinSep(obj.fMinSep),
   fEventCount(obj.fEventCount),
   fEC(obj.fEC),
   fEvt(obj.fEvt),
@@ -154,6 +165,8 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  fOnlineCase 	= obj.fOnlineCase;
  fMeritCase 	= obj.fMeritCase;
  fMinDecayLength= obj.fMinDecayLength;
+ fMeritCutChoice= obj.fMeritCutChoice;
+ fMinSep		= obj.fMinSep;
  fEventCount 	= obj.fEventCount;
  fEC 		= obj.fEC;
  fEvt 		= obj.fEvt;
@@ -523,7 +536,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   const float kEtaCut = 0.8;                       //maximum |pseudorapidity|
   const float kMinCosAngle = 0.99;                 //minimum cosine of K0 pointing angle     
   
-  const float kMinSeparation = 5.0;                //minimum daughter (pair) separation
+  const float kMinSeparation = fMinSep;                //minimum daughter (pair) separation
                  
   const float kTOFLow = 0.8;                       //boundary for TOF usage
   const float kMaxTOFSigmaPion = 3.0;              //TOF # of sigmas
@@ -634,17 +647,17 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     }
     
     //K0 cuts
-    if(v0->Eta() > kEtaCut)                                continue;    
-    if(v0->CosPointingAngle(primaryVertex) < kMinCosAngle) continue;
-    if(v0->MassK0Short() < .2 || v0->MassK0Short() > .8)   continue;
-    if(v0->DcaNegToPrimVertex() < kMinDCAPrimaryPion)      continue;
-    if(v0->DcaPosToPrimVertex() < kMinDCAPrimaryPion)      continue;  
-    if(v0->DecayLength(primaryVertex) > kMaxDLK0)          continue;
+    if(v0->Eta() > kEtaCut)                                	continue;    
+    if(v0->CosPointingAngle(primaryVertex) < kMinCosAngle) 	continue;
+    if(v0->MassK0Short() < .2 || v0->MassK0Short() > .8)   	continue;
+    if(v0->DcaNegToPrimVertex() < kMinDCAPrimaryPion)      	continue;
+    if(v0->DcaPosToPrimVertex() < kMinDCAPrimaryPion)      	continue;  
+    if(v0->DecayLength(primaryVertex) > kMaxDLK0)          	continue;
     if(v0->DecayLength(primaryVertex) < kMinDLK0)	   		continue;
-    if(v0->DcaV0Daughters() > kMaxDCADaughtersK0)          continue;
+    if(v0->DcaV0Daughters() > kMaxDCADaughtersK0)          	continue;
     double v0Dca = v0->DcaV0ToPrimVertex();
-    if(v0Dca > kMaxDCAK0) 		                   continue;        
-    if(!goodPiMinus || !goodPiPlus)                        continue; 
+    if(v0Dca > kMaxDCAK0) 		                   			continue;        
+    if(!goodPiMinus || !goodPiPlus)                        	continue; 
     
     //EVERYTHING BELOW HERE PASSES SINGLE PARTICLE CUTS, PION PID, and LOOSE MASS CUT
 
@@ -669,12 +682,16 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     //else continue; //removed, Apr 18
      
     //Check for shared daughters, using v0 DCA to judge
+    bool v0JudgeNew; //true if new v0 beats old
     tempK0[v0Count].fSkipShared = kFALSE;
+    double newV0Pars[3] = {fabs(v0->MassK0Short()-kMassK0Short),v0Dca,v0->DcaV0Daughters()}; //parameters used in merit cut
     if(fMeritCase){
      for(int iID = 0; iID<v0Count; iID++){
       if(tempK0[iID].fSkipShared == kFALSE){		//if old is already skipped, go to next old
        if(tempK0[iID].fDaughterID1 == prongTrackPos->GetID() || tempK0[iID].fDaughterID2 == prongTrackNeg->GetID()){
-        if(tempK0[iID].fV0Dca <= v0Dca){		//if old beats new...
+        double oldV0Pars[3] = {fabs(tempK0[iID].fMass-kMassK0Short), tempK0[iID].fV0Dca, tempK0[iID].fDDDca}; 
+        v0JudgeNew = CheckMeritCutWinner(fMeritCutChoice, oldV0Pars, newV0Pars); //true if new wins
+        if(!v0JudgeNew){		//if old beats new...
          if(!tempK0[iID].fK0 && goodK0) continue;	//if bad old beats new good, do nothing...				
          else{						//but if bad old beats new bad, or good old beats anything, skip new
           tempK0[v0Count].fSkipShared = kTRUE;		//skip new
@@ -684,8 +701,8 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         else{						//if new beats old...
          if(tempK0[iID].fK0 && !goodK0) continue;	//if bad new beats good old, do nothing...
          else{						//but if bad new beats bad old, or good new beats anything, skip old
-	  tempK0[iID].fSkipShared = kTRUE;		//skip old	
-	  if(tempK0[iID].fK0) k0Count--;		//if good old gets skipped, subtract from number of K0s (new one will be added later, if it succeeds)
+	      tempK0[iID].fSkipShared = kTRUE;		//skip old	
+	      if(tempK0[iID].fK0) k0Count--;		//if good old gets skipped, subtract from number of K0s (new one will be added later, if it succeeds)
          }
         }
        }
@@ -707,7 +724,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         //else tempK0[v0Count].fSideLeft = kFALSE;
         //if(v0->MassK0Short() > .515 && v0->MassK0Short() < .545) tempK0[v0Count].fSideRight = kTRUE;
         //else tempK0[v0Count].fSideRight = kFALSE;
-	//if(!goodK0) continue; //no sides, speed up analysis (REDUNDANT RIGHT NOW)
+	    //if(!goodK0) continue; //no sides, speed up analysis (REDUNDANT RIGHT NOW)
 
         tempK0[v0Count].fDaughterID1    = prongTrackPos->GetID();
         tempK0[v0Count].fDaughterID2    = prongTrackNeg->GetID();
@@ -720,23 +737,23 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
         //for hists
         tempK0[v0Count].fDDDca		= v0->DcaV0Daughters();
-	tempK0[v0Count].fDecayLength	= v0->DecayLength(primaryVertex);
+	    tempK0[v0Count].fDecayLength	= v0->DecayLength(primaryVertex);
         tempK0[v0Count].fPosPt		= v0->PtProng(pos0or1);
         tempK0[v0Count].fNegPt		= v0->PtProng(neg0or1);
         tempK0[v0Count].fPosPhi		= v0->PhiProng(pos0or1);
         tempK0[v0Count].fNegPhi		= v0->PhiProng(neg0or1);
-	if(!orderswitch){
+	    if(!orderswitch){
          tempK0[v0Count].fPosDca	= v0->DcaPosToPrimVertex();
          tempK0[v0Count].fNegDca	= v0->DcaNegToPrimVertex();
-	}
+	    }
         else{
          tempK0[v0Count].fPosDca	= v0->DcaNegToPrimVertex();
          tempK0[v0Count].fNegDca	= v0->DcaPosToPrimVertex();
-	} 
+	    } 
         
         //for separation
         GetGlobalPositionAtGlobalRadiiThroughTPC(prongTrackPos, bField, tempK0[v0Count].fPosXYZ, vertex);
-	GetGlobalPositionAtGlobalRadiiThroughTPC(prongTrackNeg, bField, tempK0[v0Count].fNegXYZ, vertex);
+	    GetGlobalPositionAtGlobalRadiiThroughTPC(prongTrackNeg, bField, tempK0[v0Count].fNegXYZ, vertex);
         //for DPC
         prongTrackPos->GetPxPyPz(tempK0[v0Count].fPPos);
         prongTrackNeg->GetPxPyPz(tempK0[v0Count].fPNeg);
@@ -793,8 +810,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   float pairPt, pairMt, pairKt;         		//pair momentum values
   float pairMInv, pairPDotQ;
   float qinv, q0, qx, qy, qz;      			//pair q values
-  //float qLength, thetaSHCos;            //Spherical Harmonics values
-  //float phiSH, thetaSH;
+  float qLength, thetaSH, thetaSHCos, phiSH;            //Spherical Harmonics values
   float am12, epm, h1, p12, p112, ppx, ppy, ppz, ks;	//PRF
   //float qOutLCMS;
   float qOutPRF, qSide, qLong;				//relative momentum in LCMS/PRF frame
@@ -922,10 +938,10 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 		*histname3D += ktBin;
 
         //Spherical harmonics
-        //qLength = sqrt(qLong*qLong + qSide*qSide + qOutPRF*qOutPRF);
-        //thetaSHCos = qLong/qLength;
-        //thetaSH = acos(thetaSHCos);
-        //phiSH = acos(qOutPRF/(qLength*sin(thetaSH)));
+        qLength = sqrt(qLong*qLong + qSide*qSide + qOutPRF*qOutPRF);
+        thetaSHCos = qLong/qLength;
+        thetaSH = acos(thetaSHCos);
+        phiSH = acos(qOutPRF/(qLength*sin(thetaSH)));
 
         //Finding average separation of daughters throughout TPC - two-track cut
         float posPositions1[9][3] = {{0}};
@@ -1076,6 +1092,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
              ((TH3F*)fOutputList->FindObject("fHistSHCentHighKt"))->Fill(qLength,thetaSHCos, phiSH);}
             else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentHighKt"))->Fill(qOutPRF,qSide,qLong);
+
              ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKt"))->Fill(qLength, thetaSHCos, phiSH);}}*/			
 
           }//centercenter
@@ -1221,4 +1238,25 @@ void AliFemtoK0Analysis::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTr
     }
   }
 }
+
+bool AliFemtoK0Analysis::CheckMeritCutWinner(int cutChoice, double oldPars[3], double newPars[3]){
+ //performs "merit cut" judgement check on v0s with shared daughters, using one of three criteria.
+ //if cutChoice = 4, it uses all three criteria, needed 2 of 3 'points'
+
+ bool newV0Wins = kFALSE;
+ double pardiff[3] = {newPars[0]-oldPars[0],
+                      newPars[1]-oldPars[1],
+                      newPars[2]-oldPars[2]};
+ if(cutChoice > 0 && cutChoice < 4){
+  if(pardiff[cutChoice] <= 0.) newV0Wins = kTRUE;
+ }
+ else if(cutChoice == 4){
+  int newWinCount = 0;
+  for(int i=0;i<3;i++){if(pardiff[i+1] <= 0) newWinCount++;}
+  if(newWinCount > 1) newV0Wins = kTRUE;  
+ }
+ else{};
+ return newV0Wins;
+}
+
 
