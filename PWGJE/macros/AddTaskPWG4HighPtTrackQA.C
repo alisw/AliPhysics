@@ -282,7 +282,7 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
       AliPWG4HighPtTrackQA *taskTrackQAMB2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagINT7);
       taskTrackQAMB2->SetFilterMask(512);
 
-      if(strRunPeriod.EqualTo("LHC13d") || strRunPeriod.EqualTo("LHC13e") || strRunPeriod.EqualTo("LHC13f")) {
+      if(strRunPeriod.EqualTo("LHC13d") || strRunPeriod.EqualTo("LHC13e") || strRunPeriod.EqualTo("LHC13f") || strRunPeriod.EqualTo("LHC13g")) {
 	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
 	taskTrackQAEMCEJE->SetFilterMask(768);
 	
