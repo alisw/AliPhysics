@@ -66,13 +66,13 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
    Float_t fGammaMCTheta;
    Float_t fGammaMCConvPt;
    Float_t fGammaMCConvTheta;
-   Float_t fMCConvCords[5];
-   Float_t fMCConvDaughterProp[4];
+   TVectorF fMCConvCords;
+   TVectorF fMCConvDaughterProp;
    Float_t fGammaPt;
    Float_t fGammaTheta;
    Float_t fGammaChi2NDF;
-   Float_t fRecCords[5];
-   Float_t fDaughterProp[4];
+   TVectorF fRecCords;
+   TVectorF fDaughterProp;
    UChar_t fKind;
   
    

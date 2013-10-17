@@ -56,13 +56,13 @@ AliAnalysisTaskMaterial::AliAnalysisTaskMaterial() : AliAnalysisTaskSE(),
    fGammaMCTheta(0.),
    fGammaMCConvPt(0.),
    fGammaMCConvTheta(0.),
-//    fMCConvCords(NULL),
-//    fMCConvDaughterProp(NULL),
+   fMCConvCords(5),
+   fMCConvDaughterProp(4),
    fGammaPt(0.),
    fGammaTheta(0.),
    fGammaChi2NDF(0.),
-//    fRecCords(NULL),
-//    fDaughterProp(NULL),
+   fRecCords(5),
+   fDaughterProp(4),
    fKind(0),      
    fIsHeavyIon(kFALSE),
    fIsMC(kFALSE),
@@ -97,13 +97,13 @@ AliAnalysisTaskMaterial::AliAnalysisTaskMaterial(const char *name) : AliAnalysis
    fGammaMCTheta(0.),
    fGammaMCConvPt(0.),
    fGammaMCConvTheta(0.),
-//    fMCConvCords(NULL),
-//    fMCConvDaughterProp(NULL),
+   fMCConvCords(5),
+   fMCConvDaughterProp(4),
    fGammaPt(0.),
    fGammaTheta(0.),
    fGammaChi2NDF(0.),
-//    fRecCords(NULL),
-//    fDaughterProp(NULL),
+   fRecCords(5),
+   fDaughterProp(4),
    fKind(0),      
    fIsHeavyIon(kFALSE),
    fIsMC(kFALSE),
@@ -154,15 +154,13 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
    fRecGammaList->SetOwner(kTRUE);
    fOutputList->Add(fRecGammaList);
    
-//    fRecCords = new Float_t[5];
-//    fDaughterProp = new Float_t[4];
    
    fTreeMaterialRec = new TTree("ConvPointRec","ConvPointRec");   
+   fTreeMaterialRec->Branch("recCords",&fRecCords);
+   fTreeMaterialRec->Branch("daughterProp",&fDaughterProp);
    fTreeMaterialRec->Branch("pt",&fGammaPt,"fGammaPt/F");
    fTreeMaterialRec->Branch("theta",&fGammaTheta,"fGammaTheta/F");
    fTreeMaterialRec->Branch("chi2ndf",&fGammaChi2NDF,"fGammaChi2NDF/F");
-   fTreeMaterialRec->Branch("recCords",fRecCords,"fRecCords[5]/F");
-   fTreeMaterialRec->Branch("daughterProp",fDaughterProp,"fDaughterProp[4]/F");
    if (fIsMC) {
       fTreeMaterialRec->Branch("kind",&fKind,"fKind/b");
    }   
@@ -189,10 +187,10 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 
       
       fTreeMaterialConvGamma = new TTree("ConvGammaMC","ConvGammaMC");   
+      fTreeMaterialConvGamma->Branch("Cords",&fMCConvCords);
+      fTreeMaterialConvGamma->Branch("daughterProp",&fMCConvDaughterProp);
       fTreeMaterialConvGamma->Branch("Pt",&fGammaMCConvPt,"fGammaMCConvPt/F");
       fTreeMaterialConvGamma->Branch("Theta",&fGammaMCConvTheta,"fGammaMCConvTheta/F");   
-      fTreeMaterialConvGamma->Branch("Cords",fMCConvCords,"fMCConvCords[5]/F");
-      fTreeMaterialConvGamma->Branch("daughterProp",fMCConvDaughterProp,"fMCConvDaughterProp[4]/F");
       fAllMCConvGammaList->Add(fTreeMaterialConvGamma);
    }
    
@@ -261,16 +259,16 @@ void AliAnalysisTaskMaterial::FillMCTree(Int_t stackPos){
 		fGammaMCConvTheta = candidate->Theta();
 		TParticle* daughter1 = (TParticle *)MCStack->Particle(candidate->GetFirstDaughter()); 
 		TParticle* daughter2 = (TParticle *)MCStack->Particle(candidate->GetLastDaughter()); 
-      fMCConvCords[0] = (Float_t)daughter1->Vx();
-      fMCConvCords[1] = (Float_t)daughter1->Vy();
-      fMCConvCords[2] = (Float_t)daughter1->Vz();
-      fMCConvCords[3] = (Float_t)daughter1->R();
-      fMCConvCords[4] = (Float_t)daughter1->Phi();
+      fMCConvCords(0) = (Float_t)daughter1->Vx();
+      fMCConvCords(1) = (Float_t)daughter1->Vy();
+      fMCConvCords(2) = (Float_t)daughter1->Vz();
+      fMCConvCords(3) = (Float_t)daughter1->R();
+      fMCConvCords(4) = (Float_t)daughter1->Phi();
       
-      fMCConvDaughterProp[0] = (Float_t)daughter1->Pt();
-      fMCConvDaughterProp[1] = (Float_t)daughter1->Theta();
-      fMCConvDaughterProp[2] = (Float_t)daughter2->Pt();
-      fMCConvDaughterProp[3] = (Float_t)daughter2->Theta();      
+      fMCConvDaughterProp(0) = (Float_t)daughter1->Pt();
+      fMCConvDaughterProp(1) = (Float_t)daughter1->Theta();
+      fMCConvDaughterProp(2) = (Float_t)daughter2->Pt();
+      fMCConvDaughterProp(3) = (Float_t)daughter2->Theta();      
 		
 		if (fTreeMaterialConvGamma){
 			fTreeMaterialConvGamma->Fill();
@@ -308,18 +306,18 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
       fGammaPt = gamma->GetPhotonPt();
 		fGammaTheta = gamma->GetPhotonTheta();
 		fGammaChi2NDF = gamma->GetChi2perNDF();
-      fRecCords[0] = (Float_t)gamma->GetConversionX();
-      fRecCords[1] = (Float_t)gamma->GetConversionY();
-      fRecCords[2] = (Float_t)gamma->GetConversionZ();
-      fRecCords[3] = (Float_t)gamma->GetConversionRadius();
-      fRecCords[4] = (Float_t)gamma->GetPhotonPhi();
+      fRecCords(0) = (Float_t)gamma->GetConversionX();
+      fRecCords(1) = (Float_t)gamma->GetConversionY();
+      fRecCords(2) = (Float_t)gamma->GetConversionZ();
+      fRecCords(3) = (Float_t)gamma->GetConversionRadius();
+      fRecCords(4) = (Float_t)gamma->GetPhotonPhi();
       
 		AliESDtrack * negTrack = fConversionCuts->GetESDTrack(fESDEvent, gamma->GetTrackLabelNegative());
       AliESDtrack * posTrack = fConversionCuts->GetESDTrack(fESDEvent, gamma->GetTrackLabelPositive());
-      fDaughterProp[0] = (Float_t)posTrack->Pt();
-      fDaughterProp[1] = (Float_t)posTrack->Theta();
-      fDaughterProp[2] = (Float_t)negTrack->Pt();
-      fDaughterProp[3] = (Float_t)negTrack->Theta();
+      fDaughterProp(0) = (Float_t)posTrack->Pt();
+      fDaughterProp(1) = (Float_t)posTrack->Theta();
+      fDaughterProp(2) = (Float_t)negTrack->Pt();
+      fDaughterProp(3) = (Float_t)negTrack->Theta();
 
 		fKind = 9;	
 		

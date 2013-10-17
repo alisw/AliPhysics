@@ -51,8 +51,8 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
    Int_t fNESDtracksEta09;
    Int_t fNESDtracksEta0914;
    Int_t fNESDtracksEta14;
-   Float_t fGammaRecCoords[5];
-   Float_t fGammaMCCoords[5];
+   TVectorF fGammaRecCoords;
+   TVectorF fGammaMCCoords;
    Float_t fChi2ndf;
    Bool_t fIsHeavyIon;
    TList *fOutputList;
