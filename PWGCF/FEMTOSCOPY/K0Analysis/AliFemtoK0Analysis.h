@@ -30,7 +30,7 @@ class AliESDpid;
 class AliFemtoK0Analysis : public AliAnalysisTaskSE {
  public:
   AliFemtoK0Analysis();
-  AliFemtoK0Analysis(const char *name, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, float MinDL = 0.0);
+  AliFemtoK0Analysis(const char *name, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, float MinDL = 0.0, int MeritCutChoice = 2, float MinSep = 5.0);
   virtual ~AliFemtoK0Analysis();
   AliFemtoK0Analysis(const AliFemtoK0Analysis&);
   AliFemtoK0Analysis& operator=(const AliFemtoK0Analysis&);
@@ -43,7 +43,7 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
 
   void MyInit();
   void GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield, Float_t globalPositionsAtRadii[9][3], double PrimaryVertex[3]);
-  void GetGlobalPositionAtGlobalRadiiThroughTPCTEST(const AliAODTrack *track, const Float_t bfield, double PrimaryVertex[3]);
+  bool CheckMeritCutWinner(int cutChoice, double oldPars[3], double newPars[3]);
   
   enum 
   {
@@ -59,7 +59,9 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   bool fFieldPos;
   bool fOnlineCase;
   bool fMeritCase;
-  double fMinDecayLength;
+  float fMinDecayLength;
+  int fMeritCutChoice;
+  float fMinSep;
   int fEventCount;
 
   AliFemtoK0EventCollection ***fEC; //!
