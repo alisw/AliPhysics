@@ -147,17 +147,17 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
   TString *MesonCutarray   = new TString[numberOfCuts];
 
   if( trainConfig == 1 ) {
-       ConvCutarray[0]  = "124000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
-       ConvCutarray[1]  = "146000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
-       ConvCutarray[2]  = "168000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
+       ConvCutarray[0]  = "124000104209297100720000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
+       ConvCutarray[1]  = "146000104209297100720000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
+       ConvCutarray[2]  = "168000104209297100720000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
   } else if ( trainConfig == 2 ) {
-       ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
-       ConvCutarray[1]  = "546000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
-       ConvCutarray[2]  = "568000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
+       ConvCutarray[0]  = "524000104209297100720000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
+       ConvCutarray[1]  = "546000104209297100720000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
+       ConvCutarray[2]  = "568000104209297100720000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
   } else if ( trainConfig == 3 ) {
-       ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny
-       ConvCutarray[1]  = "546000104209297100322000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny
-       ConvCutarray[2]  = "568000104209297100322000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny
+       ConvCutarray[0]  = "524000104209297100720000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny
+       ConvCutarray[1]  = "546000104209297100720000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny
+       ConvCutarray[2]  = "568000104209297100720000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny
   }
 
 
