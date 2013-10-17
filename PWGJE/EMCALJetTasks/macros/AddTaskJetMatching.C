@@ -12,11 +12,11 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
         Float_t minFrReConPt    = .5,
         const char *name        = "AliAnalysisTaskJetMatching",
         Bool_t cut              = kTRUE,
-        UInt_t  sourceType      = AliAnalysisTaskEmcal::kTPC,
+        UInt_t  sourceType      = AliJetContainer::kTPC,
         Float_t sourceRadius    = 0.3,
         Float_t sourceAreaCut   = .557,
         Float_t sourcePtBias    = 10.,
-        UInt_t targetType       = AliAnalysisTaskEmcal::kTPC,
+        UInt_t targetType       = AliJetContainer::kTPC,
         Float_t targetRadius    = 0.3,
         Float_t targetAreaCut   = .557,
         Float_t targetPtBias    = 10.

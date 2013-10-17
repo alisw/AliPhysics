@@ -128,7 +128,7 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     fHistMatchedSourceJetPt = (fDoDetectorResponse) ? BookTH1F("fHistMatchedParticleLevelJetPt", "p_{t}^{gen} [GeV/c]", 150, -50, 250) : BookTH1F("fHistMatchedSourceJetPt", "p_{t} [GeV/c]", 150, -50, 250);
     fHistTargetJetPt = BookTH1F("fHistTargetJetPt", "p_{t} [GeV/c]", 150, -50, 250);
     fHistMatchedJetPt = (fDoDetectorResponse) ? BookTH1F("fHistDetectorLevelJet", "p_{t}^{rec}", 150, -50, 250) : BookTH1F("fHistMatchedJetPt", "p_{t} [GeV/c]", 150, -50, 250);
-    fHistSourceMatchedJetPt = (fDoDetectorResponse) ? BookTH2F("fHistPartDetJetPt", "particle level jet p_{t}^{gen} [GeV/c]", "detector level jet p_{t}^{rec} [GeV/c]", 150, -50, 250, 150, -50, 250) : BookTH2F("fHistSourceMatchedJetPt", "source jet p_{t} [GeV/c]", "matched jet p_{t} [GeV/c]", 150, -50, 250, 150, -50, 250);
+    fHistSourceMatchedJetPt = (fDoDetectorResponse) ? BookTH2F("fHistPartDetJetPt", "particle level jet p_{t}^{gen} [GeV/c]", "detector level jet p_{t}^{rec} [GeV/c]", 300, -50, 250, 300, -50, 250) : BookTH2F("fHistSourceMatchedJetPt", "source jet p_{t} [GeV/c]", "matched jet p_{t} [GeV/c]", 300, -50, 250, 300, -50, 250);
     fHistNoConstSourceJet = BookTH1F("fHistNoConstSourceJet", "number of constituents", 50, 0, 50);
     fHistNoConstTargetJet = BookTH1F("fHistNoConstTargetJet", "number of constituents", 50, 0, 50);
     fHistNoConstMatchJet = BookTH1F("fHistNoConstMatchJet", "number of constituents", 50, 0, 50);
