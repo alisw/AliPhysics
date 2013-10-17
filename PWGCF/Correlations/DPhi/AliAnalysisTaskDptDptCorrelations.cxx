@@ -75,6 +75,8 @@
 #include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
 #include "AliPIDCombined.h"
+using std::endl;
+using std::cout;
 
 
 ClassImp(AliAnalysisTaskDptDptCorrelations)
