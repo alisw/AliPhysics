@@ -667,6 +667,8 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
       continue;
     if(clus->E() < fClusThresh)
       continue;
+    if(fDebug)
+      printf("cluster %d survived\n", ic);
     Float_t pos[3];
     clus->GetPosition(pos);
     TVector3 cpos(pos);
