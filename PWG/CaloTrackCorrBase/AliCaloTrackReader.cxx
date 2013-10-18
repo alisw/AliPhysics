@@ -412,7 +412,7 @@ void AliCaloTrackReader::SetGeneratorMinMaxParticles()
       fNMCProducedMin = fNMCProducedMax;
       fNMCProducedMax+= eventHeader2->NProduced();
       
-      if(name == "Hijing") return ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return ;
     }
         
   }
@@ -435,7 +435,7 @@ void AliCaloTrackReader::SetGeneratorMinMaxParticles()
       fNMCProducedMin = fNMCProducedMax;
       fNMCProducedMax+= eventHeader->NProduced();
       
-      if(name == "Hijing") return ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return ;
     }
         
   }
@@ -472,7 +472,7 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
       
       //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
       
-      if(name == "Hijing") return eventHeader2 ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return eventHeader2 ;
     }
 
     return 0x0;
@@ -494,7 +494,7 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
       
       //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader->ClassName(), name.Data(), eventHeader->GetTitle());
       
-      if(name == "Hijing") return eventHeader ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return eventHeader ;
     }
     
     return 0x0;
