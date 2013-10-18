@@ -2,12 +2,11 @@
 
 AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    const Char_t* branchPrefix="clustersAOD",
-   const Char_t* jetAlgo="ANTIKT",
+   const Char_t* jetAlgo="ANTIKT",   
    Float_t jetParameterR = 0.4,  //jet R 
-   Int_t   bgMode = 0, 
    UInt_t  trkFilterMask = 272, 
    Float_t trackLowPtCut = 0.15,
-   Int_t   skipJet = 0, 
+   const Char_t* jetbgAlgo="KT",    //background jet algo
    Int_t   collisionSystem = 0, //pp=0, pPb=1
    Int_t   offlineTriggerMask=AliVEvent::kMB, //MinBias=0 
    Int_t   minContribVtx = 1,
@@ -18,7 +17,8 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    Float_t triggerEtaCut = 0.9,
    Float_t trackEtaCut = 0.9,
    const Char_t* nonStdFile="",
-   const Char_t* mcflag="",  // real="", MC2 = charged jets, MC = all jets  
+   const Char_t* mcFullFlag="",  // real="", all jets= "MC"    
+   const Char_t* mcChargFlag="",  // real="", charged jets = "MC2" 
    Int_t triggerType=0,  //0=single incl trigger, 1=leading track, 2=hadron pt>10 
    Int_t evtRangeLow=0,   //last digit of range of ESD event number
    Int_t evtRangeHigh=9,  //first digit of range of ESD event number
@@ -42,36 +42,60 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    Float_t jetEtaMax =  0.9 - jetParameterR; 
     
    TString analBranch(branchPrefix);
+   TString analBranchBg(branchPrefix);  // kT bg jets
+   TString analBranchFullMC="";             //full jets MC to be used with charged jets MC 
+   TString analBranchChargMC="";            //charged jets
+   TString analBranchBgChargMC="";          //charged jets kt background 
+
+
    TString stJetAlgo(jetAlgo);
+   TString stJetBgAlgo(jetbgAlgo);
    stJetAlgo.ToUpper();
+   stJetBgAlgo.ToUpper();
 
  
-   TString tail;
-   tail = tail + "_" + stJetAlgo + Form("%02d",(Int_t) (10*jetParameterR));
-   tail = tail + Form("_B%d",(Int_t) bgMode);
-   tail = tail + Form("_Filter%05d",(UInt_t) trkFilterMask);
-   tail = tail + Form("_Cut%05d",(Int_t) (1000*trackLowPtCut));
+   TString jet="";
+   TString jetbg="";
+   TString otherparams="";
+   jet   = jet   + "_" + stJetAlgo + Form("%02d",(Int_t) (10*jetParameterR));
+   jetbg = jetbg + "_" + stJetBgAlgo + Form("%02d",(Int_t) (10*jetParameterR));
+   
+   otherparams = otherparams + "_B0"; //bg mode
+   otherparams = otherparams + Form("_Filter%05d",(UInt_t) trkFilterMask);
+   otherparams = otherparams + Form("_Cut%05d",(Int_t) (1000*trackLowPtCut));
 
    if(analBranch.BeginsWith("clustersAOD"))
-      tail = tail + Form("_Skip%02d",(Int_t) skipJet);
+      otherparams = otherparams + Form("_Skip%02d",0);
    
-   analBranch = analBranch + tail; 
+   analBranch   = analBranch   + jet   + otherparams; //antikt jet 
+   analBranchBg = analBranchBg + jetbg + otherparams; //kt bg jet
+
    //clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00   
    //Skip00 none of the most energetic jets is ommited
    //Cut00150  pT min cut on track
    //Filter00272
 
-   TString mcSuffix(mcflag);  //MC2= charged jets,  MC = all jets
-   TString analBranchMC="";
-   if(mcSuffix.Length()>0 && mcSuffix.Contains("MC")){
-      analBranchMC = branchPrefix + mcSuffix + tail; 
+   TString mcFullSuffix(mcFullFlag);    //MC = all jets
+   TString mcChargSuffix(mcChargFlag);  //MC2= charged jets,  MC = all jets
+
+   if(mcChargSuffix.Length()>0 && mcChargSuffix=="MC2"){  //charged jets generator level
+      analBranchChargMC   = branchPrefix + mcChargSuffix + jet   + otherparams; 
+      analBranchBgChargMC = branchPrefix + mcChargSuffix + jetbg + otherparams; 
    }
 
+   if(mcFullSuffix.Length()>0 && mcFullSuffix=="MC"){ //full jets generator level
+      analBranchFullMC    = branchPrefix + mcFullSuffix  + jet   + otherparams; 
+   }
+
+
  
-   AliAnalysisTaskJetCorePP *task = new AliAnalysisTaskJetCorePP(Form("JetCorePP_%s_%s_%d",analBranch.Data(), mcSuffix.Data(), offlineTriggerMask));
+   AliAnalysisTaskJetCorePP *task = new AliAnalysisTaskJetCorePP(Form("JetCorePP_%s_%s_%d",analBranch.Data(), mcChargSuffix.Data(), offlineTriggerMask));
 
    task->SetBranchName(analBranch.Data());
-   task->SetBranchNameMC(analBranchMC.Data());
+   task->SetBranchNameFullMC(analBranchFullMC.Data());
+   task->SetBranchNameChargMC(analBranchChargMC.Data());
+   task->SetBranchNameBg(analBranchBg.Data()); //kt bg jets
+   task->SetBranchNameBgChargMC(analBranchBgChargMC.Data()); //kt bg jets
    task->SetNonStdFile(nonStdFile);
    task->SetSystem(collisionSystem); 
    task->SetJetR(jetParameterR);
@@ -99,10 +123,10 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    //E=  range of last two decimal numbers in event numbers
    //Ptt range of the cosidered trigger bin
    AliAnalysisDataContainer *coutputJetCorePP = mgr->CreateContainer(
-      Form("pwgjejetcorepp_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",analBranch.Data(),mcSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh), 
+      Form("pwgjejetcorepp_%s_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",analBranch.Data(),jetbgAlgo,mcChargSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh), 
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:PWGJE_jetcorepp_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),mcSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh)
+      Form("%s:PWGJE_jetcorepp_%s_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),jetbgAlgo,mcChargSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh)
    );
 
    mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
