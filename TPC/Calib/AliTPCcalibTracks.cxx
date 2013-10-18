@@ -115,7 +115,9 @@ using namespace std;
 #include <TCanvas.h>
 #include <TGraph2DErrors.h>
 #include "TPostScript.h"
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
 #include "TCint.h"
+#endif
 
 #include <TH2D.h>
 #include <TF2.h>
@@ -321,7 +323,9 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    this->SetTitle(title);
 
    if (GetDebugLevel() > 0) cout << " ***** this is AliTPCcalibTracks' main constructor ***** " << endl;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
    G__SetCatchException(0);     
+#endif
    
    fClusterParam = clusterParam;
    if (fClusterParam){
