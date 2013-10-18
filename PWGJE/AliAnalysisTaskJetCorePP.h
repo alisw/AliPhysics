@@ -45,13 +45,10 @@ public:
    virtual Bool_t Notify();
  
    virtual void  SetBranchName(const TString &name){ fJetBranchName = name; } 
-   virtual void  SetBranchNameMC(const TString &name){ 
-      fJetBranchNameMC = name;
-      if(fJetBranchNameMC.Contains("MC2")){  
-         fJetBranchNameMCFull = fJetBranchNameMC;
-         fJetBranchNameMCFull.ReplaceAll("MC2","MC");
-      }
-   } 
+   virtual void  SetBranchNameChargMC(const TString &name){ fJetBranchNameChargMC = name; } 
+   virtual void  SetBranchNameFullMC(const TString &name){ fJetBranchNameFullMC = name; } 
+   virtual void  SetBranchNameBg(const TString &name){ fJetBranchNameBg = name; } 
+   virtual void  SetBranchNameBgChargMC(const TString &name){ fJetBranchNameBgChargMC = name; } 
    virtual void  SetNonStdFile(char* c){fNonStdFile = c;} 
    virtual void  SetSystem(Int_t sys) { fSystem = sys; } 
    virtual void  SetJetR(Float_t jR) { fJetParamR = jR; }
@@ -82,7 +79,8 @@ private:
    //Double_t GetBackgroundInPerpCone(Float_t jetR, Double_t jetPhi, Double_t jetEta, TList* trkList); //sums pT in the cone perp in phi to jet
    Bool_t SelectMCGenTracks(AliVParticle *trk, TList *trkList, Double_t &ptLeading, Int_t &index, Int_t counter);
    void FillEffHistos(TList *recList, TList *genList);
-
+   void EstimateBgRhoAlaCMS(TList *listJetBg, TList *listJet, Double_t &rhoMedian, Double_t& rhoImprovedCMS);//CMS method to estimate bg
+   void ReadTClonesArray(TString bname, TList *list); //init jets lists
    //private member objects
    AliESDEvent *fESD;    //! ESD object
    AliAODEvent *fAODIn;  //! AOD event for AOD input tracks
@@ -91,11 +89,16 @@ private:
 
    // jets to compare
    TString fJetBranchName; //  name of jet branch 
-   TString fJetBranchNameMC; //  name of jet branch 
-   TString fJetBranchNameMCFull; //  name of jet branch 
+   TString fJetBranchNameChargMC; //  name of jet branch 
+   TString fJetBranchNameFullMC; //  name of jet branch 
+   TString fJetBranchNameBg; //  name of bg (kt) jet branch 
+   TString fJetBranchNameBgChargMC; //  name of bg (kT) jet branch 
    TList  *fListJets;      //! jet list reconstructed level
-   TList  *fListJetsGen;   //! jet list generator level  charged jet
+   TList  *fListJetsGen;   //! jet list generator level 
    TList  *fListJetsGenFull; //! jet list generator level full jets 
+   TList  *fListJetsBg;      //! bg jet list reconstructed level
+   TList  *fListJetsBgGen;   //! bg jet list generator level  
+
 
    TString fNonStdFile;    // name of delta aod file to catch the extension
 
@@ -120,10 +123,15 @@ private:
    TH1I  *fHistEvtSelection;    //! event selection statistic 
    TH2F      *fh2Ntriggers;     //trigger pT versus centrality 
    THnSparse *fHJetSpec;      //Recoil jet spectrum  
+   THnSparse *fHJetSpecSubUeMedian; //Recoil jet spectrum, jet pT corrected by kT median  
+   THnSparse *fHJetSpecSubUeCMS;  //Recoil jet spectrum, jet pT corrected by weighted kT median ala CMS 
    
    //Diagnostics
-   THnSparse *fHJetDensity;       //density of jet with A>0.07  //fk
-   THnSparse *fHJetDensityA4;     //density of jets with A>0.4 //fk
+   THnSparse *fHJetUeMedian;   //UE background from kT median
+   THnSparse *fHJetUeCMS;      //UE background from weighted kT median ala CMS
+   THnSparse *fHRhoUeMedianVsCMS;    //EBE UE from Median vs CMS  
+   //THnSparse *fHJetDensity;       //density of jet with A>0.07  //fk
+   //THnSparse *fHJetDensityA4;     //density of jets with A>0.4 //fk
    TH2D *fhJetPhi;     //Azimuthal distribution of jets
    TH2D *fhTriggerPhi; //Azimuthal distribution of trigger hadron
    TH2D *fhJetEta;     //Pseudorapidity distribution of jets
@@ -137,22 +145,32 @@ private:
    TH1D *fhCentrality;  //Deltaphi between trigger and jet 
    TH1D *fhCentralityAccept;  //Deltaphi between trigger and jet after cut
 
-   THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
-   THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
-   THnSparse *fHDphiVsJetPtAll;   //Dphitrigger-jet  versus jet pt for all jets given pTtrigg  
+   //THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
+   //THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
+   //THnSparse *fHDphiVsJetPtAll;   //Dphitrigger-jet  versus jet pt for all jets given pTtrigg  
 
    //MC generator level
    TH2D      *fhJetPtGenVsJetPtRec; //jet respose matrix  
-   TH1D      *fhJetPtGen;           //generated pT spectrum of charged jets
+   TH2D      *fhJetPtGenVsJetPtRecSubUeMedian; //jet respose matrix both pT with subtracted kT median bg 
+   TH2D      *fhJetPtGenVsJetPtRecSubUeCMS; //jet respose matrix both pT with subtracted weighted kT median bg 
+   TH1D      *fhJetPtGen;           //generated pT spectrum of jets  
+   TH1D      *fhJetPtSubUeMedianGen; //generated pT spectrum of jets with subtracted kT median  
+   TH1D      *fhJetPtSubUeCMSGen;    //generated pT spectrum of jets withe subtr weighted kT median ala CMS
    TH2D      *fhJetPtGenChargVsJetPtGenFull; //generated pT spectrum of full jets
    TH1D      *fhJetPtGenFull; // generated pT spectrum of full jets
    TH2F      *fh2NtriggersGen; //trigger pT versus centrality in generator level
-   THnSparse *fHJetSpecGen;    //Recoil jet spectrum in generator level 
+   THnSparse *fHJetSpecGen;    //Recoil jet spectrum at generator level 
+   THnSparse *fHJetSpecSubUeMedianGen;  //Recoil jet spectrum at gen level, jet pT corrected by kT median 
+   THnSparse *fHJetSpecSubUeCMSGen; //Recoil jet spectrum at gen level, jet pT corrected by weighted kT median ala CMS
+   THnSparse *fHJetUeMedianGen;   //UE background from kT median
+   THnSparse *fHJetUeCMSGen;      //UE background from weighted kT median ala CMS 
    TH2D      *fhPtTrkTruePrimRec; // pt spectrum of true reconstructed primary tracks    
    TH2D      *fhPtTrkTruePrimGen; // pt spectrum of true generated primary track    
    TH2D      *fhPtTrkSecOrFakeRec; // pt spectrum of reconstructed fake or secondary tracks    
+   THnSparse *fHRhoUeMedianVsCMSGen; //EBE UE from Median vs CMS generator level 
    
-   Bool_t fIsMC;   //flag analysis on MC data with true and on the real data false
+   Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real data false
+   Bool_t fIsFullMC;   //flag analysis on MC data with true and on the real data false
    TArrayI faGenIndex;   // labels of particles on MC generator level  
    TArrayI faRecIndex;   // labels of particles on reconstructed track level
    const Double_t fkAcceptance; //eta times phi  Alice coverage  
@@ -175,7 +193,7 @@ private:
 
    TRandom3* fRandom;           // TRandom3 
 
-   ClassDef(AliAnalysisTaskJetCorePP, 7);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 8);  //has to end with number larger than 0
 };
 
 #endif
