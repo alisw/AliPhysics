@@ -8,7 +8,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
 					   const Int_t centEdge2 = 40,
 					   const Int_t centEdge3 = 60,
 					   const Int_t centEdge4 = 80,
-					   const Int_t centEdge4 = 100)
+					   const Int_t centEdge5 = 100)
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train, for LHC13 PbP data
   //Author: Paul Baetzing
