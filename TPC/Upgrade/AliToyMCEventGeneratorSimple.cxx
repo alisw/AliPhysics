@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <TROOT.h>
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TF1.h>
@@ -80,11 +81,14 @@ AliToyMCEventGeneratorSimple& AliToyMCEventGeneratorSimple::operator = (const Al
 void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename/*="files/params.root*/, Double_t vertexMean/*=0*/, Double_t vertexSigma/*=7.*/) {
   fVertexMean = vertexMean;
   fVertexSigma = vertexSigma;
-  fParamFile = new TFile(parfilename, "read");
-  fHPt = (TH1F*) fParamFile->Get("hPt");
-  fHEta = (TH1F*) fParamFile->Get("hEta"); 
-  fHMult = (TH1I*) fParamFile->Get("hMult") ;
+//   fParamFile = new TFile(parfilename, "read");
+  TFile f(parfilename);
+  gROOT->cd();
+  fHPt = (TH1F*) f.Get("hPt");
+  fHEta = (TH1F*) f.Get("hEta");
+  fHMult = (TH1I*) f.Get("hMult") ;
   fHistosSet = kTRUE;
+  f.Close();
  
   
 }

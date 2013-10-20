@@ -3034,7 +3034,7 @@ Float_t AliToyMCReconstruction::FindClosestT0(const TVectorF &t0list, const TVec
   Float_t minDist=1e20;
   for (Int_t it0=0; it0<size; ++it0) {
     if (fUseZ0list) vtxCorr=sign*z0list[it0]/vDrift;
-    printf("vtxcorr %d: %.2g, %.2g\n",it0, vtxCorr, z0list[it0]);
+//     printf("vtxcorr %d: %.2g, %.2g\n",it0, vtxCorr, z0list[it0]);
     const Float_t dist=TMath::Abs(t0list[it0]-t0-vtxCorr);
     if (dist<minDist) {
       index=it0;
