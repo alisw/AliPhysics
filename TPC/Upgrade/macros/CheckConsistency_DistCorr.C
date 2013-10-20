@@ -8,23 +8,29 @@
 #include "TSystem.h"
 #include "TStyle.h"
 #include "AliTPCCorrection.h"
+#include "AliTPCCorrectionLookupTable.h"
 
 void makeComparisonTree(TString filename, TString addToName)
 {
   TFile fn(filename.Data());
   gROOT->cd();
-  AliTPCCorrection *fTPCCorrection=(AliTPCCorrection*)fn.Get("map");
+  AliTPCCorrectionLookupTable *fTPCCorrection=(AliTPCCorrectionLookupTable*)fn.Get("map");
   fn.Close();
+//   fTPCCorrection->BuildExactInverse();
 
+//   TFile f("/tmp/corrTest.Root","recreate");
+//   fTPCCorrection->Write("map");
+//   f.Close();
+  
   TString outFile=addToName;
   outFile.Append(".root");
   TTreeSRedirector *sred=new TTreeSRedirector(outFile.Data());
   
   Float_t dx[3]={0,0,0};
   
-  for (Float_t iz=-240; iz<=240; iz+=20) {
+  for (Float_t iz=-245; iz<=245; iz+=10) {
     Short_t roc=(iz>=0)?0:18;
-    for (Float_t ir=86; ir<250; ir+=20) {
+    for (Float_t ir=86; ir<250; ir+=10) {
       for (Float_t iphi=0; iphi<TMath::TwoPi(); iphi+=10*TMath::DegToRad()){
         Float_t x=ir*(Float_t)TMath::Cos(iphi);
         Float_t y=ir*(Float_t)TMath::Sin(iphi);
@@ -98,6 +104,17 @@ void makeAllComparisonTreesNew()
   makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_40");
 }
 
+void makeAllComparisonTreesOld()
+{
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/old/SC_NeCO2N2_eps5_50kHz_precal.lookup.root","LUT_05");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/old/SC_NeCO2N2_eps10_50kHz_precal.lookup.root","LUT_10");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/old/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_20");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/old/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_25");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/old/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_30");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/old/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_35");
+  makeComparisonTree("$ALICE_ROOT/TPC/Calib/maps/old/SC_NeCO2N2_eps20_50kHz_precal.lookup.root","LUT_40");
+}
+
 TCanvas *GetCanvas(TString addToName);
 
 void makeHistos(TString addToName) {
@@ -123,13 +140,33 @@ void makeHistos(TString addToName) {
   c->SaveAs(Form("%s_rRes.png",addToName.Data()));
   //
   c=GetCanvas(addToName+"_phiRes");
-  t->Draw("phidc-phi:z:r","abs(phidc-phi)<1","colz");
+  t->SetAlias("phiFix","-((phidc-phi)>4)*2*TMath::Pi()+((phidc-phi)<-4)*2*TMath::Pi()");
+  t->Draw("phidc-phi+phiFix:z:r","","colz");
   c->SaveAs(Form("%s_phiRes.png",addToName.Data()));
   //
   c=GetCanvas(addToName+"_rphiRes");
   t->Draw("(phidc*rdc)-(phi*r):z+(r-84)/(254-84)*18:r","abs(phidc-phi)<1","colz");
   c->SaveAs(Form("%s_rphiRes.png",addToName.Data()));
 
+  TCanvas *c2=0x0;
+  c2=GetCanvas(addToName+"_Res_1D");
+  c2->Divide(2,2);
+  
+  c2->cd(1);
+  t->Draw("zdc-z","","");
+  //
+  c2->cd(2);
+  t->Draw("rdc-r","","");
+  //
+  c2->cd(3);
+  t->SetAlias("phiFix","-((phidc-phi)>4)*2*TMath::Pi()+((phidc-phi)<-4)*2*TMath::Pi()");
+  t->Draw("phidc-phi+phiFix","","");
+  //
+  c2->cd(4);
+  t->Draw("(phidc*rdc)-(phi*r)","abs(phidc-phi)<1","");
+
+  c2->SaveAs(Form("%s_Res_1D.png",addToName.Data()));
+  
   f.Close();
 }
 
