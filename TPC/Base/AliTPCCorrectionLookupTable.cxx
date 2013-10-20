@@ -21,6 +21,8 @@
 #include <TObjArray.h>
 #include <TSystem.h>
 #include <THashList.h>
+#include <TVector2.h>
+#include <TLinearFitter.h>
 
 #include <AliLog.h>
 #include <AliTPCROC.h>
@@ -37,6 +39,7 @@ AliTPCCorrectionLookupTable::AliTPCCorrectionLookupTable()
 , fNR(0)
 , fNPhi(0)
 , fNZ(0)
+, fFillCorrection(kTRUE)
 , fLimitsR()
 , fLimitsPhi()
 , fLimitsZ()
@@ -226,15 +229,16 @@ void AliTPCCorrectionLookupTable::CreateLookupTablePhiBin(AliTPCCorrection &tpcC
       mDxDist(ir,iz)=dx[0];
       mDyDist(ir,iz)=dx[1];
       mDzDist(ir,iz)=dx[2];
-      
-      if (delta>0)
-        tpcCorr.GetCorrectionIntegralDz(x,roc,dx,delta);
-      else
-        tpcCorr.GetCorrection(x,roc,dx);
-      mDxCorr(ir,iz)=dx[0];
-      mDyCorr(ir,iz)=dx[1];
-      mDzCorr(ir,iz)=dx[2];
-      
+
+      if (fFillCorrection) {
+        if (delta>0)
+          tpcCorr.GetCorrectionIntegralDz(x,roc,dx,delta);
+        else
+          tpcCorr.GetCorrection(x,roc,dx);
+        mDxCorr(ir,iz)=dx[0];
+        mDyCorr(ir,iz)=dx[1];
+        mDzCorr(ir,iz)=dx[2];
+      }
     }
   }
   
@@ -433,3 +437,286 @@ void AliTPCCorrectionLookupTable::MergePhiTables(const char* files)
   
   delete arrFiles;
 }
+
+//_________________________________________________________________________________________
+void AliTPCCorrectionLookupTable::BuildExactInverse()
+{
+  //
+  // this method build the exact inverse of the standard distortion map
+  // for the the distortion man first needs to be calculated
+  // then the correction map will be overwritten
+  //
+
+  Float_t x[3]    = {0.,0.,0.};
+  Float_t x2[3]   = {0.,0.,0.};
+  Float_t xref[3] = {0.,0.,0.};
+  Float_t xd[3]   = {0.,0.,0.};
+  Float_t dx[3]   = {0.,0.,0.};
+
+  // reset correction matrices
+  for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
+    TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
+    TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
+    TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
+    
+    for (Int_t ir=0; ir<fNR; ++ir){
+      for (Int_t iz=0; iz<fNZ; ++iz){
+        mDxCorr(ir,iz) = -1000.;
+        mDyCorr(ir,iz) = -1000.;
+        mDzCorr(ir,iz) = -1000.;
+      }
+    }
+  }
+  
+  // get interplolated corrections on standard grid
+  for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
+    Double_t phi=fLimitsPhi(iPhi);
+    TMatrixF &mDxDist   = *fLookUpDxDist[iPhi];
+    TMatrixF &mDyDist   = *fLookUpDyDist[iPhi];
+    TMatrixF &mDzDist   = *fLookUpDzDist[iPhi];
+    
+    for (Int_t ir=0; ir<fNR; ++ir){
+      Double_t r=fLimitsR(ir);
+      x[0]=r * TMath::Cos(phi);
+      x[1]=r * TMath::Sin(phi);
+
+      for (Int_t iz=0; iz<fNZ; ++iz){
+        Double_t z=fLimitsZ(iz);
+        x[2]=z;
+        
+        //TODO: change hardcoded value for r>133.?
+        Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
+        if (r>133.) roc+=36;
+        if (z<0)    roc+=18;
+
+        dx[0] = mDxDist(ir,iz);
+        dx[1] = mDyDist(ir,iz);
+        dx[2] = mDzDist(ir,iz);
+
+        xd[0] = x[0]+dx[0];
+        xd[1] = x[1]+dx[1];
+        xd[2] = x[2]+dx[2];
+
+        const Double_t phid = TVector2::Phi_0_2pi(TMath::ATan2(xd[1],xd[0]));
+        const Double_t rd   = TMath::Sqrt(xd[0]*xd[0] + xd[1]*xd[1]);
+        const Double_t zd   = xd[2];
+
+        Int_t ilow = 0, jlow = 0, klow = 0 ;
+        
+        Search( fLimitsR.GetNrows(),   fLimitsR.GetMatrixArray(),   rd,   ilow   ) ;
+        Search( fLimitsZ.GetNrows(),   fLimitsZ.GetMatrixArray(),   zd,   jlow   ) ;
+        Search( fLimitsPhi.GetNrows(), fLimitsPhi.GetMatrixArray(), phid, klow   ) ;
+        
+        if ( ilow < 0 ) ilow = 0 ;   // check if out of range
+        if ( jlow < 0 ) jlow = 0 ;
+        if ( klow < 0 ) klow = 0 ;
+        if ( ilow >= fLimitsR.GetNrows())   ilow = fLimitsR.GetNrows() - 1;
+        if ( jlow >= fLimitsZ.GetNrows())   jlow = fLimitsZ.GetNrows() - 1;
+        if ( klow >= fLimitsPhi.GetNrows()) klow = fLimitsPhi.GetNrows() - 1;
+
+        const Double_t phiRef = fLimitsPhi[klow];
+        const Double_t rRef   = fLimitsR[ilow];
+        const Double_t zRef   = fLimitsZ[jlow];
+        
+        TMatrixF &mDxCorr   = *fLookUpDxCorr[klow];
+        if ( mDxCorr(ilow, jlow) > -1000. ) continue;
+        TMatrixF &mDyCorr   = *fLookUpDyCorr[klow];
+        TMatrixF &mDzCorr   = *fLookUpDzCorr[klow];
+        
+        xref[0]= rRef * TMath::Cos(phiRef);
+        xref[1]= rRef * TMath::Sin(phiRef);
+        xref[2]= zRef;
+        
+        FindClosestPosition(ir,iz,iPhi, xref, x2);
+
+        GetDistortion(x2,roc,dx);
+
+        mDxCorr(ilow, jlow) = -dx[0];
+        mDyCorr(ilow, jlow) = -dx[1];
+        mDzCorr(ilow, jlow) = -dx[2];
+
+        printf("%3d %3d %3d\n",iPhi, ir, iz);
+        printf("%3d %3d %3d\n",klow, ilow, jlow);
+        printf("x2:   %.5f %.5f %.5f\n", x2[0], x2[1], x2[2]);
+        printf("x2d:  %.5f %.5f %.5f\n", x2[0]+dx[0], x2[1]+dx[1], x2[2]+dx[2]);
+        printf("xref: %.5f %.5f %.5f\n", xref[0], xref[1], xref[2]);
+        printf("xrd:  %.5f %.5f %.5f\n", x2[0]+dx[0]-xref[0], x2[1]+dx[1]-xref[1], x2[2]+dx[2]-xref[2]);
+        printf("phid: %.5f %.5f %.5f\n", phid,rd,zd);
+        printf("phir: %.5f %.5f %.5f\n", phiRef,rRef,zRef);
+        printf("\n");
+      }
+    }
+  }
+
+  // fill remaining empty bins
+  // The last ein first phi bin entries must be identical, fill those first
+  {
+  TMatrixF &mDxCorr   = *fLookUpDxCorr[0];
+  TMatrixF &mDyCorr   = *fLookUpDyCorr[0];
+  TMatrixF &mDzCorr   = *fLookUpDzCorr[0];
+  
+  TMatrixF &mDxCorr2  = *fLookUpDxCorr[fNPhi-1];
+  TMatrixF &mDyCorr2  = *fLookUpDyCorr[fNPhi-1];
+  TMatrixF &mDzCorr2  = *fLookUpDzCorr[fNPhi-1];
+  
+  for (Int_t ir=0; ir<fNR; ++ir){
+    for (Int_t iz=0; iz<fNZ; ++iz){
+      mDxCorr2(ir,iz) = mDxCorr(ir,iz);
+      mDyCorr2(ir,iz) = mDyCorr(ir,iz);
+      mDzCorr2(ir,iz) = mDzCorr(ir,iz);
+    }
+  }
+  }
+
+  for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
+    TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
+    TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
+    TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
+    
+    Double_t phi=fLimitsPhi(iPhi);
+    for (Int_t ir=0; ir<fNR; ++ir){
+      Double_t r=fLimitsR(ir);
+      x[0]=r * TMath::Cos(phi);
+      x[1]=r * TMath::Sin(phi);
+
+      for (Int_t iz=0; iz<fNZ; ++iz){
+        if (mDxCorr(ir,iz) > -999.) continue;
+
+        Double_t z=fLimitsZ(iz);
+        x[2]=z;
+        
+        //TODO: change hardcoded value for r>133.?
+        Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
+        if (r>133.) roc+=36;
+        if (z<0)    roc+=18;
+        
+        // get last point
+        dx[0] = mDxCorr(ir,iz-1);
+        dx[1] = mDyCorr(ir,iz-1);
+        dx[2] = mDzCorr(ir,iz-1);
+        
+        xd[0] = x[0]+dx[0];
+        xd[1] = x[1]+dx[1];
+        xd[2] = x[2]+dx[2];
+
+        // get distorted point
+        const Double_t phid = TVector2::Phi_0_2pi(TMath::ATan2(xd[1],xd[0]));
+        const Double_t rd   = TMath::Sqrt(xd[0]*xd[0] + xd[1]*xd[1]);
+        const Double_t zd   = xd[2];
+        
+        Int_t ilow = 0, jlow = 0, klow = 0 ;
+        
+        Search( fLimitsR.GetNrows(),   fLimitsR.GetMatrixArray(),   rd,   ilow   ) ;
+        Search( fLimitsZ.GetNrows(),   fLimitsZ.GetMatrixArray(),   zd,   jlow   ) ;
+        Search( fLimitsPhi.GetNrows(), fLimitsPhi.GetMatrixArray(), phid, klow   ) ;
+        
+        if ( ilow < 0 ) ilow = 0 ;   // check if out of range
+        if ( jlow < 0 ) jlow = 0 ;
+        if ( klow < 0 ) klow = 0 ;
+        if ( ilow >= fLimitsR.GetNrows())   ilow = fLimitsR.GetNrows() - 1;
+        if ( jlow >= fLimitsZ.GetNrows())   jlow = fLimitsZ.GetNrows() - 1;
+        if ( klow >= fLimitsPhi.GetNrows()) klow = fLimitsPhi.GetNrows() - 1;
+        
+        FindClosestPosition(ilow,jlow,klow, x, x2);
+        
+        GetDistortion(x2,roc,dx);
+        
+        mDxCorr(ir, iz) = -dx[0];
+        mDyCorr(ir, iz) = -dx[1];
+        mDzCorr(ir, iz) = -dx[2];
+      }
+    }
+  }
+  
+}
+
+//_________________________________________________________________________________________
+void AliTPCCorrectionLookupTable::FindClosestPosition(const Int_t binR, const Int_t binZ, const Int_t binPhi,
+                                                      const Float_t xref[3], Float_t xret[3])
+{
+  //
+  //
+  //
+
+//   static TLinearFitter fitx(2,"pol2");
+//   static TLinearFitter fity(2,"pol2");
+//   static TLinearFitter fitz(2,"pol2");
+  static TLinearFitter fitx(4,"hyp3");
+  static TLinearFitter fity(4,"hyp3");
+  static TLinearFitter fitz(4,"hyp3");
+  fitx.ClearPoints();
+  fity.ClearPoints();
+  fitz.ClearPoints();
+
+  const Int_t nPoints=3;
+  Int_t counter=0;
+  Int_t rMin=binR;
+  Int_t zMin=binZ;
+  Int_t phiMin=binPhi;
+
+  counter=nPoints/2;
+  while (rMin>0 && counter--) --rMin;
+  counter=nPoints/2;
+  while (zMin>0 && counter--) --zMin;
+  counter=nPoints/2;
+  while (phiMin>0 && counter--) --phiMin;
+
+  Int_t rMax   = rMin  +nPoints;
+  Int_t zMax   = zMin  +nPoints;
+  Int_t phiMax = phiMin+nPoints;
+
+  while (rMax>=fNR) {--rMin; --rMax;}
+  while (zMax>=fNZ) {--zMin; --zMax;}
+  while (phiMax>=fNPhi) {--phiMin; --phiMax;}
+  
+  Float_t  x[3]    = {0.,0.,0.};
+  Double_t xd[3]   = {0.,0.,0.};
+  Float_t  dx[3]   = {0.,0.,0.};
+  
+  for (Int_t iPhi=phiMin; iPhi<phiMax; ++iPhi) {
+    TMatrixF &mDxDist   = *fLookUpDxDist[iPhi];
+    TMatrixF &mDyDist   = *fLookUpDyDist[iPhi];
+    TMatrixF &mDzDist   = *fLookUpDzDist[iPhi];
+    
+    Double_t phi=fLimitsPhi(iPhi);
+    for (Int_t ir=rMin; ir<rMax; ++ir){
+      Double_t r=fLimitsR(ir);
+      x[0]=r * TMath::Cos(phi);
+      x[1]=r * TMath::Sin(phi);
+      
+      for (Int_t iz=zMin; iz<zMax; ++iz){
+        Double_t z=fLimitsZ(iz);
+        x[2]=z;
+        
+        dx[0] = mDxDist(ir,iz);
+        dx[1] = mDyDist(ir,iz);
+        dx[2] = mDzDist(ir,iz);
+        
+        xd[0] = x[0]+dx[0];
+        xd[1] = x[1]+dx[1];
+        xd[2] = x[2]+dx[2];
+
+        fitx.AddPoint(xd,   x[0]);
+        fity.AddPoint(xd, x[1]);
+        fitz.AddPoint(xd, x[2]);
+      }
+    }
+  }
+
+  fitx.Eval();
+  fity.Eval();
+  fitz.Eval();
+  xret[0] = fitx.GetParameter(0) + fitx.GetParameter(1)*xref[0]
+                                 + fitx.GetParameter(2)*xref[1]
+                                 + fitx.GetParameter(3)*xref[2];
+  xret[1] = fity.GetParameter(0) + fity.GetParameter(1)*xref[0]
+                                 + fity.GetParameter(2)*xref[1]
+                                 + fity.GetParameter(3)*xref[2];
+  xret[2] = fitz.GetParameter(0) + fitz.GetParameter(1)*xref[0]
+                                 + fitz.GetParameter(2)*xref[1]
+                                 + fitz.GetParameter(3)*xref[2];
+//   xret[0] = fitx.GetParameter(0) + fitx.GetParameter(1)*xref[0] + fitx.GetParameter(2)*xref[0]*xref[0];
+//   xret[1] = fity.GetParameter(0) + fity.GetParameter(1)*xref[1] + fity.GetParameter(2)*xref[1]*xref[1];
+//   xret[2] = fitz.GetParameter(0) + fitz.GetParameter(1)*xref[2] + fitz.GetParameter(2)*xref[2]*xref[2];
+}
+

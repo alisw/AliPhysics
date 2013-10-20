@@ -25,6 +25,10 @@ public:
 
   void MergePhiTables(const char* files);
 
+  void   SetFillCorrection(Bool_t fill) { fFillCorrection=fill;   }
+  Bool_t GetFillCorrection() const      { return fFillCorrection; }
+  void BuildExactInverse();
+
   Int_t GetNR()   const { return fNR;   }
   Int_t GetNPhi() const { return fNPhi; }
   Int_t GetNZ()   const { return fNZ;   }
@@ -40,6 +44,7 @@ private:
   Int_t     fNR;                   // number of rows (r) used for lookup table
   Int_t     fNPhi;                 // number of phi slices used for lookup table
   Int_t     fNZ;                   // number of columns (z) used for lookup table
+  Bool_t    fFillCorrection;       // whether to also fill the correction tables
   //
   TVectorD  fLimitsR;              // bin limits in row direction
   TVectorD  fLimitsPhi;            // bin limits in phi direction
@@ -65,10 +70,12 @@ private:
                         TMatrixF **mR, TMatrixF **mPhi, TMatrixF **mZ);
 
   void CreateLookupTablePhiBin(AliTPCCorrection &tpcCorr, Int_t iPhi, Float_t stepSize);
-  
+
+  void FindClosestPosition(const Int_t binR, const Int_t binZ, const Int_t binPhi,
+                           const Float_t xref[3], Float_t xret[3]);
   AliTPCCorrectionLookupTable(const AliTPCCorrectionLookupTable &corr);
   AliTPCCorrectionLookupTable& operator= (const AliTPCCorrectionLookupTable &corr);
-  ClassDef(AliTPCCorrectionLookupTable,1);  // TPC corrections dumped into a lookup table
+  ClassDef(AliTPCCorrectionLookupTable,2);  // TPC corrections dumped into a lookup table
 };
 
 
