@@ -318,11 +318,11 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           
           for (Int_t icl=0; icl<nCl; ++icl) {
             AliTPCclusterMI *cl=static_cast<AliTPCclusterMI*>(arrClustRes->At(icl));
-            const Float_t sigmaY=TMath::Sqrt(cl->GetSigmaY2());
-            const Float_t sigmaZ=TMath::Sqrt(cl->GetSigmaZ2());
+//             const Float_t sigmaY=TMath::Sqrt(cl->GetSigmaY2());
+//             const Float_t sigmaZ=TMath::Sqrt(cl->GetSigmaZ2());
             for (Int_t inSig=0; inSig<5; ++inSig) {
-              fracY[inSig] += cl->GetY()>(3+inSig*.5)*sigmaY;
-              fracZ[inSig] += cl->GetZ()>(3+inSig*.5)*sigmaZ;
+              fracY[inSig] += cl->GetY()>(3+inSig*.5)/**sigmaY*/;
+              fracZ[inSig] += cl->GetZ()>(3+inSig*.5)/**sigmaZ*/;
             }
           }
           
@@ -1331,8 +1331,9 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
       TClonesArray &arrDummy=*arrClustRes;
       AliTPCclusterMI *clRes = new(arrDummy[arrDummy.GetEntriesFast()]) AliTPCclusterMI(*cl);
       clRes->SetX(prot.GetX());
-      clRes->SetY(track->GetY()-prot.GetY());
-      clRes->SetZ(track->GetZ()-prot.GetZ());
+      // residuals in terms of sigma cl and track
+      clRes->SetY((track->GetY()-prot.GetY())/( sqrt ( prot.GetCov()[3] + track->GetSigmaY2()) )  );
+      clRes->SetZ((track->GetZ()-prot.GetZ())/( sqrt ( prot.GetCov()[5] + track->GetSigmaZ2()) )  );
     }
     
     Double_t pointPos[2]={0,0};
