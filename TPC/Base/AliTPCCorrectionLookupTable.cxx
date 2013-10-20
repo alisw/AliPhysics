@@ -535,15 +535,15 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
         mDyCorr(ilow, jlow) = -dx[1];
         mDzCorr(ilow, jlow) = -dx[2];
 
-        printf("%3d %3d %3d\n",iPhi, ir, iz);
-        printf("%3d %3d %3d\n",klow, ilow, jlow);
-        printf("x2:   %.5f %.5f %.5f\n", x2[0], x2[1], x2[2]);
-        printf("x2d:  %.5f %.5f %.5f\n", x2[0]+dx[0], x2[1]+dx[1], x2[2]+dx[2]);
-        printf("xref: %.5f %.5f %.5f\n", xref[0], xref[1], xref[2]);
-        printf("xrd:  %.5f %.5f %.5f\n", x2[0]+dx[0]-xref[0], x2[1]+dx[1]-xref[1], x2[2]+dx[2]-xref[2]);
-        printf("phid: %.5f %.5f %.5f\n", phid,rd,zd);
-        printf("phir: %.5f %.5f %.5f\n", phiRef,rRef,zRef);
-        printf("\n");
+//         printf("%3d %3d %3d\n",iPhi, ir, iz);
+//         printf("%3d %3d %3d\n",klow, ilow, jlow);
+//         printf("x2:   %.5f %.5f %.5f\n", x2[0], x2[1], x2[2]);
+//         printf("x2d:  %.5f %.5f %.5f\n", x2[0]+dx[0], x2[1]+dx[1], x2[2]+dx[2]);
+//         printf("xref: %.5f %.5f %.5f\n", xref[0], xref[1], xref[2]);
+//         printf("xrd:  %.5f %.5f %.5f\n", x2[0]+dx[0]-xref[0], x2[1]+dx[1]-xref[1], x2[2]+dx[2]-xref[2]);
+//         printf("phid: %.5f %.5f %.5f\n", phid,rd,zd);
+//         printf("phir: %.5f %.5f %.5f\n", phiRef,rRef,zRef);
+//         printf("\n");
       }
     }
   }
