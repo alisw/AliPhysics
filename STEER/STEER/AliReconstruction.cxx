@@ -2509,11 +2509,19 @@ void AliReconstruction::SlaveTerminate()
    sVersion += "; root ";
 #ifdef ROOT_SVN_BRANCH
    sVersion += ROOT_SVN_BRANCH;
-#else
+#elif defined(ROOT_GIT_BRANCH)
    sVersion += ROOT_GIT_BRANCH;
+#else
+   sVersion += "?";
 #endif
    sVersion += ":";
+#ifdef ROOT_SVN_REVSION
    sVersion += ROOT_SVN_REVISION;
+#elif defined(ROOT_GIT_COMMIT)
+   sVersion += ROOT_GIT_COMMIT;
+#else 
+   sVersion += "?";
+#endif
    sVersion += "; metadata ";
    sVersion += getenv("PRODUCTION_METADATA");
 		    
