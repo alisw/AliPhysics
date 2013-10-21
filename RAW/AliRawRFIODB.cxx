@@ -56,8 +56,9 @@ AliRawRFIODB::AliRawRFIODB(AliRawEventV2 *event,
          Error("AliRawRFIODB", "STAGE_HOST not set");
       init = 1;
    }
-
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
    if (fRawDB) fRawDB->UseCache(50, 0x200000);  //0x100000 = 1MB)
+#endif
 }
 
 //______________________________________________________________________________
