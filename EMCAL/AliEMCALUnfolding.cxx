@@ -579,7 +579,7 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
 
       for(iDigit = 0 ; iDigit < rpUFOne->GetMultiplicity(); iDigit ++) {
         digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
-        recPoint->AddDigit( *digit, energyList[iDigit], kFALSE ) ; //FIXME, need to study the shared case
+        if(digit) recPoint->AddDigit( *digit, energyList[iDigit], kFALSE ) ; //FIXME, need to study the shared case
       }//digit loop
       fNumberOfECAClusters++ ; 
     } else {//recPoint empty -> remove from list
@@ -593,7 +593,8 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   //print energy of new unfolded clusters
   AliDebug(5,Form("  nUnfoldedClusters %d, fNumberOfECAClusters %d",nUnfoldedClusters,fNumberOfECAClusters ));
   for(Int_t inewclus=0; inewclus<nUnfoldedClusters;inewclus++){
-    AliDebug(5,Form("  Unfolded cluster %d E %f",inewclus,dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters-1-inewclus)) ->GetEnergy() ));
+		AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters-1-inewclus));
+    if(rp) AliDebug(5,Form("  Unfolded cluster %d E %f",inewclus, rp->GetEnergy() ));
   }
 
   //clear tables  
