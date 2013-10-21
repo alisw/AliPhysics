@@ -20,6 +20,7 @@ class AliClusterContainer;
 class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
+class AliEmcalTriggerPatchInfo;
 
 #include "Rtypes.h"
 
@@ -65,6 +66,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
   void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
+  void                        SetCaloTriggerPatchInfoName(const char *n)            { fCaloTriggerPatchInfoName = n                       ; }
 
   void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
   void                        SetClusName(const char *n)                            { AddClusterContainer(n)                              ; }
@@ -84,6 +86,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliClusterContainer        *GetClusterContainer(const Int_t i=0)    const;
   AliParticleContainer       *GetParticleContainer(const char* name)  const;
   AliClusterContainer        *GetClusterContainer(const char* name)   const;
+
+  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
 
  protected:
   BeamType                    GetBeamType();
@@ -117,6 +121,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fCreateHisto;                // whether or not create histograms
   TString                     fCaloCellsName;              // name of calo cell collection
   TString                     fCaloTriggersName;           // name of calo triggers collection
+  TString                     fCaloTriggerPatchInfoName;   // trigger patch info array name
   Double_t                    fMinCent;                    // min centrality for event selection
   Double_t                    fMaxCent;                    // max centrality for event selection
   Double_t                    fMinVz;                      // min vertex for event selection
@@ -147,6 +152,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TClonesArray               *fCaloClusters;               //!clusters
   AliVCaloCells              *fCaloCells;                  //!cells
   AliVCaloTrigger            *fCaloTriggers;               //!calo triggers
+  TClonesArray               *fTriggerPatchInfo;           //!trigger patch info array
   Double_t                    fCent;                       //!event centrality
   Int_t                       fCentBin;                    //!event centrality bin
   Double_t                    fEPV0;                       //!event plane V0
@@ -164,6 +170,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
+  AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
 
   // Histograms
   TList                      *fOutput;                     //!output list
@@ -185,6 +192,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 4) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 5) // EMCAL base analysis task
 };
 #endif

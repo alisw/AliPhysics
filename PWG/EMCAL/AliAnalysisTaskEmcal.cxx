@@ -34,6 +34,7 @@
 #include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisUtils.h"
+#include "AliEmcalTriggerPatchInfo.h"
 
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
@@ -49,6 +50,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCreateHisto(kTRUE),
   fCaloCellsName(),
   fCaloTriggersName(),
+  fCaloTriggerPatchInfoName(),
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
@@ -78,6 +80,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCaloClusters(0),
   fCaloCells(0),
   fCaloTriggers(0),
+  fTriggerPatchInfo(0),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -91,6 +94,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fNTrials(0),
   fParticleCollArray(),
   fClusterCollArray(),
+  fMainTriggerPatch(0x0),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -122,6 +126,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCreateHisto(histo),
   fCaloCellsName(),
   fCaloTriggersName(),
+  fCaloTriggerPatchInfoName(),
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
@@ -151,6 +156,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCaloClusters(0),
   fCaloCells(0),
   fCaloTriggers(0),
+  fTriggerPatchInfo(0),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -164,6 +170,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fNTrials(0),
   fParticleCollArray(),
   fClusterCollArray(),
+  fMainTriggerPatch(0x0),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -586,6 +593,16 @@ void AliAnalysisTaskEmcal::ExecOnce()
       AliError(Form("%s: Could not retrieve calo triggers %s!", GetName(), fCaloTriggersName.Data())); 
       return;
     }
+  }
+
+  if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
+    //  fTriggerPatchInfo = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloTriggerPatchInfoName));
+    //    if (!fTriggerPatchInfo) {
+    //      AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
+    //      return;
+    //    }
+    fTriggerPatchInfo = GetArrayFromEvent(fCaloTriggerPatchInfoName.Data(),"AliEmcalTriggerPatchInfo");
+
   }
 
   fInitialized = kTRUE;
@@ -1034,5 +1051,35 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const {
     return 0;
   }
   return cont->GetNEntries();
+}
+
+//________________________________________________________________________
+AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch() {
+  //get main trigger match; if not known yet, look for it and cache
+
+  if(fMainTriggerPatch) 
+    return fMainTriggerPatch;
+
+  if(!fTriggerPatchInfo) {
+    AliError(Form("%s: fTriggerPatchInfo not available",GetName()));
+    return 0;
+  }
+
+  //number of patches in event
+  Int_t nPatch = fTriggerPatchInfo->GetEntries();
+
+  //extract main trigger patch
+  AliEmcalTriggerPatchInfo *patch;
+  for(Int_t iPatch = 0; iPatch < nPatch; iPatch++ ){
+    
+    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    if( patch->IsMainTrigger() ) {
+      fMainTriggerPatch = patch;
+      break;
+    }
+  }
+
+  return fMainTriggerPatch;
+
 }
 
