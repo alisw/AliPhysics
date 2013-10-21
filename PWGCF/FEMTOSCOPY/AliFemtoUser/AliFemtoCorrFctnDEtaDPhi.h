@@ -69,6 +69,9 @@ private:
   THnSparseF *fEtaCorrectionsNum;
   THnSparseF *fEtaCorrectionsDen;
 
+  double fphiL;
+  double fphiT;
+
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhi, 1)
 #endif
