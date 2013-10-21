@@ -7,6 +7,14 @@ AnaEpsScan();
 
 void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10", Float_t nSigmas=3.)
 {
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+  gStyle->SetPadGridX(0);
+  gStyle->SetPadGridY(0);
+  gStyle->SetPadTopMargin(0.05);
+  gStyle->SetPadRightMargin(0.025);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
   
   TString files=gSystem->GetFromPipe( Form("ls %s/eps*/*%s*.root", dir.Data(), baseFile.Data() ) );
   TObjArray *arr=files.Tokenize("\n");
@@ -39,7 +47,7 @@ void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10", Float_t nSigm
     TString epsilon=gSystem->GetFromPipe(Form("echo %s | sed 's|.*/eps\\([0-9][0-9]\\)/.*|\\1|'",file.Data()));
 
     printf("%s: %s\n", file.Data(), epsilon.Data());
-    TH1F *h=new TH1F(Form("hResY%.0f_%s",10*nSigmas, epsilon.Data()), Form("#varepsilon %d;fraction of clusters more than %.1f#sigma from track;#tracks", nSigmas, epsilon.Atoi()),1000,0,1);
+    TH1F *h=new TH1F(Form("hResY%.0f_%s",10*nSigmas, epsilon.Data()), Form("#varepsilon %d;fraction of clusters more than %.1f#sigma from track;#tracks", nSigmas, epsilon.Atoi()),200,0,1);
     h->SetLineColor(colors[ifile]);
     h->SetMarkerColor(colors[ifile]);
     h->SetMarkerStyle(colors[ifile]);
@@ -59,7 +67,7 @@ void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10", Float_t nSigm
 
     printf("entries: %d %d %d\n", grFrac05->GetN(), h->GetEntries(), t->GetEntries());
 
-    Double_t frac01 = h->Integral(h->FindBin(.01),h->GetNbinsX())/h->GetEntries();
+    Double_t frac01 = h->Integral(h->FindBin(.02),h->GetNbinsX())/h->GetEntries();
     Double_t frac05 = h->Integral(h->FindBin(.05),h->GetNbinsX())/h->GetEntries();
     Double_t frac10 = h->Integral(h->FindBin(.10),h->GetNbinsX())/h->GetEntries();
 
@@ -87,26 +95,34 @@ void AnaEpsScan(TString dir=".",TString baseFile="0.0_1_2_130_10", Float_t nSigm
   leg->Draw("same");
 
   c1->SaveAs(Form("~/tmp/epsScan_clFrac_%.0fsigma.png",10*nSigmas));
+  c1->SaveAs(Form("~/tmp/epsScan_clFrac_%.0fsigma.eps",10*nSigmas));
   
   TCanvas *c2=new TCanvas("c2");
   c2->cd();
   
-  TLegend *leg2 = new TLegend(.1,.7,.5,.9);
+  TLegend *leg2 = new TLegend(.1,.75,.6,.95);
   leg2->SetBorderSize(1);
   leg2->SetFillColor(10);
 
-  TH1F *hDummy = new TH1F("hDummy",";#varepsilon;fraction of tracks",100,0,45);
+  TH1F *hDummy = new TH1F("hDummy",";#varepsilon;fraction of tracks",100,0,42.5);
   hDummy->SetMinimum(0);
-  hDummy->SetMaximum(.5);
+  hDummy->SetMaximum(.21);
+  hDummy->GetYaxis()->SetTitleOffset(1.2);
   hDummy->Draw();
   grFrac01->Draw("lp");
   grFrac05->Draw("lp");
   grFrac10->Draw("lp");
 
-  leg2->AddEntry(grFrac01,Form("%.1f#sigma deviation >1%%",nSigmas),"lp");
-  leg2->AddEntry(grFrac05,Form("%.1f#sigma deviation >5%%",nSigmas),"lp");
-  leg2->AddEntry(grFrac10,Form("%.1f#sigma deviation >10%%",nSigmas),"lp");
+  //leg2->AddEntry(grFrac01,Form("%.1f#sigma deviation >2%%",nSigmas),"lp");
+  //leg2->AddEntry(grFrac05,Form("%.1f#sigma deviation >5%%",nSigmas),"lp");
+  //leg2->AddEntry(grFrac10,Form("%.1f#sigma deviation >10%%",nSigmas),"lp");
+  leg2->AddEntry(grFrac01,"fraction of deviating clusters >2%","lp");
+  leg2->AddEntry(grFrac05,"fraction of deviating clusters >5%","lp");
+  leg2->AddEntry(grFrac10,"fraction of deviating clusters >10%","lp");
+  TLatex l;
+  l.DrawLatex(3,.14,Form("cluster deviation > %.1f#sigma",nSigmas));
   leg2->Draw("same");
   c2->SaveAs(Form("~/tmp/epsScan_trFrac_eps_%.0fsigma.png",10*nSigmas));
+  c2->SaveAs(Form("~/tmp/epsScan_trFrac_eps_%.0fsigma.eps",10*nSigmas));
 }
 
