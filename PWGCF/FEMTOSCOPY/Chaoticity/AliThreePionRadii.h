@@ -53,8 +53,8 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     kMCarrayLimit = 110000,//110000
     kQbins = 20,
     kQbinsWeights = 40,
-    kQbinsPP = 50,
-    kQbinsWeightsPP = 50,
+    kQbinsPP = 40,
+    kQbinsWeightsPP = 40,
     kNDampValues = 16,
     kRmin = 2,// min radii for Momentum resolution calculations
     kDENtypes = 1,// was (kRVALUES)*kNDampValues
@@ -76,6 +76,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetNumKt3Bins(Int_t kt3bins) {fKt3bins = kt3bins;}
+  void SetV0Mbinning(Bool_t V0Mbinning) {fV0Mbinning = V0Mbinning;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
   void SetLEGOCase(Bool_t lego) {fLEGO = lego;}
   void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
@@ -186,6 +187,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   Int_t fMbins;
   Int_t fMultLimit;  
   Int_t fKt3bins;
+  Bool_t fV0Mbinning;
   Int_t fCentBinLowLimit;
   Int_t fCentBinHighLimit;
   Int_t fEventCounter;

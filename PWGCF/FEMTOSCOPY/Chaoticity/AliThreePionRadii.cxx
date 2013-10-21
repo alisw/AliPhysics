@@ -70,6 +70,7 @@ AliAnalysisTaskSE(),
   fMbins(fCentBins),
   fMultLimit(0),
   fKt3bins(1),
+  fV0Mbinning(kFALSE),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
   fEventCounter(0),
@@ -191,6 +192,7 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
   fMbins(fCentBins),
   fMultLimit(0),
   fKt3bins(1),
+  fV0Mbinning(kFALSE),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
   fEventCounter(0),
@@ -317,6 +319,7 @@ AliThreePionRadii::AliThreePionRadii(const AliThreePionRadii &obj)
     fMbins(obj.fMbins),
     fMultLimit(obj.fMultLimit),
     fKt3bins(obj.fKt3bins),
+    fV0Mbinning(obj.fV0Mbinning),
     fCentBinLowLimit(obj.fCentBinLowLimit),
     fCentBinHighLimit(obj.fCentBinHighLimit),
     fEventCounter(obj.fEventCounter),
@@ -402,6 +405,7 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fMbins = obj.fMbins;
   fMultLimit = obj.fMultLimit;
   fKt3bins = obj.fKt3bins;
+  fV0Mbinning = obj.fV0Mbinning;
   fCentBinLowLimit = obj.fCentBinLowLimit;
   fCentBinHighLimit = obj.fCentBinHighLimit;
   fEventCounter = obj.fEventCounter;
@@ -560,7 +564,7 @@ void AliThreePionRadii::ParInit()
     fQupperBound = fQcut[0];
     fQbins = kQbins;
     //
-    fDampStart = 0.5;// was 0.3
+    fDampStart = 0.5;
     fDampStep = 0.02;
   }else if(fPbPbcase && fCentBinLowLimit >= 6) {// PbPb 30-100%, was 50-100%
     fMultLimit=kMultLimitPbPb;
@@ -580,7 +584,7 @@ void AliThreePionRadii::ParInit()
     fQupperBound = fQcut[0];
     fQbins = 2*kQbins;
     //
-    fDampStart = 0.5;// was 0.3
+    fDampStart = 0.5;
     fDampStep = 0.02;
   }else {// pp or pPb
     fMultLimit=kMultLimitPP;
@@ -597,14 +601,14 @@ void AliThreePionRadii::ParInit()
     //
     fQlimitC2 = 2.0;
     fQbinsC2 = 200;
-    fQupperBound = 0.5;// was 0.4
+    fQupperBound = 0.4;// was 0.4
     fQbins = kQbinsPP;
     //
-    fDampStart = 0.5;// was 0.3
+    fDampStart = 0.5;
     fDampStep = 0.02;
   }
 
-  fQLowerCut = 0.005;// was 0.005
+  fQLowerCut = 0.005;
   fKupperBound = 1.0;
   //
  
@@ -817,6 +821,9 @@ void AliThreePionRadii::UserCreateOutputObjects()
   if(fMCcase) fOutputList->Add(fAvgRecRate);
   TH2D *fdCentVsNchdEta = new TH2D("fdCentVsNchdEta","",fMbins,.5,fMbins+.5, 15,0,15);
   if(fPbPbcase) fOutputList->Add(fdCentVsNchdEta);
+  
+  TH1D *fV0TotSignal = new TH1D("fV0TotSignal","",3000, 0,30000); 
+  if(fV0Mbinning) fOutputList->Add(fV0TotSignal);
   
   TH1D *fExtendedQ3Histo_term1 = new TH1D("fExtendedQ3Histo_term1","",50,0,0.5);
   TH1D *fExtendedQ3Histo_term2 = new TH1D("fExtendedQ3Histo_term2","",50,0,0.5);
@@ -1037,6 +1044,7 @@ void AliThreePionRadii::Exec(Option_t *)
     }
   }
 
+    
   ///////////////////////////////////////////////////////////
   const AliAODVertex *primaryVertexAOD;
   AliCentrality *centrality;// for AODs and ESDs
@@ -1131,7 +1139,7 @@ void AliThreePionRadii::Exec(Option_t *)
       if(tracklets->GetTheta(trackletN) > 1.0904 && tracklets->GetTheta(trackletN) < 2.0512) trackletMult++;// |eta|<0.5 tracklets
     }
    
-    
+    //cout<<fAOD->GetFiredTriggerClasses()<<endl;
     /////////////////////////////
     // Create Shuffled index list
     Int_t randomIndex[fAOD->GetNumberOfTracks()];
@@ -1377,12 +1385,8 @@ void AliThreePionRadii::Exec(Option_t *)
   for(Int_t i=0; i<fCentBins; i++){
     if( pionCount >= fMultLimits[i] && pionCount < fMultLimits[i+1]) {fMbin = fCentBins-i-1; break;}
   }
- 
-
-  if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
-  if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
   
-
+  
   fFSIindex=0;
   if(fPbPbcase){
     if(fMbin==0) fFSIindex = 0;//0-5%
@@ -1396,6 +1400,27 @@ void AliThreePionRadii::Exec(Option_t *)
     else if(fMbin<=18) fFSIindex = 8;//40-50%
     else fFSIindex = 8;//90-100%
   }else fFSIindex = 9;// pp and pPb
+  
+  if(fV0Mbinning){
+    Bool_t useV0=kFALSE;
+    if(fPbPbcase) useV0=kTRUE;
+    if(!fPbPbcase && fAOD->GetRunNumber() >= 195344 && fAOD->GetRunNumber() <= 195677) useV0=kTRUE;
+    if(useV0){
+      AliAODVZERO *vZero = fAOD->GetVZEROData();
+      Float_t vZeroAmp = vZero->GetMTotV0A() + vZero->GetMTotV0C();
+      centrality = fAOD->GetCentrality();
+      centralityPercentile = centrality->GetCentralityPercentile("V0M");
+      for(Int_t i=0; i<fCentBins; i++){
+	if(vZeroAmp/4.4 >= fMultLimits[i] && vZeroAmp/4.4 < fMultLimits[i+1]) {fMbin = fCentBins-i-1; break;}
+      }
+      ((TH1D*)fOutputList->FindObject("fV0TotSignal"))->Fill(vZeroAmp);
+      //cout<<centralityPercentile<<"  "<<vZeroAmp<<"  "<<fMbin<<endl;
+    }
+    
+  }
+
+  if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
+  if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
   
   //////////////////////////////////////////////////
   fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
