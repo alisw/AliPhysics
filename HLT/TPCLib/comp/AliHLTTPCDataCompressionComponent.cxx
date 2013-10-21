@@ -513,8 +513,9 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 	return iResult;
       }
 
-      AliHLTTPCDataCompressionDescriptor &compDesc = *(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ); 
+      AliHLTTPCDataCompressionDescriptor compDesc;
       compDesc.SetMergedClustersFlag( clDesc.GetMergedClustersFlag() );
+      *(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = compDesc; 
 
       outputBlocks.push_back(bd);
       size += bd.fSize;
