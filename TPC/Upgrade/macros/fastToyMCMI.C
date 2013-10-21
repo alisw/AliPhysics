@@ -3,10 +3,10 @@
   testExtrapolation() - to show track extrapolation errror
   testdEdxGEM();  -to show the dEdx respolution detoraition as function of the electron trasnparency
  
-
+  .x $HOME/NimStyle.C
   .L $ALICE_ROOT/TPC/Upgrade/macros/fastToyMCMI.C+
   testExtrapolation();
-
+ 
 */
 #include "TMath.h"
 #include "TVectorD.h"
@@ -24,8 +24,123 @@
 #include "TAxis.h"
 #include "TLegend.h"
 #include "AliGeomManager.h"
+#include "TCut.h"
+#include "TCanvas.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TStyle.h"
 
-void testdEdxGEM(){
+void testdEdxGEM(const Int_t ntracks=10000, Double_t clNoise=2, Double_t corrNoiseAdd=0.15, Double_t sigmaLandau=0.26){
+  //
+  // test dEdx performance as function of the electron transparency.
+  //
+  // For simulation standard gRandom->Landau() generator with mean 15 is used
+  // Charge between pad-rows are corelated via diffusion - qm = (0.15*q-1+0.7*q0+0.15*q1)
+  // Electrons are randomly absorbed dependending on the transparency parameter
+  // 
+  // Parameters:
+  //   clNoise       - noise integrated by cluster (snoise~1 x 4 bins ~ 2)
+  //   corrNoiseAdd  - additional correlated noise to be added
+  //   sigmaLandau   - relative sigma of Landau distirbution
+  // Setup emulation
+  //   pp   setup testdEdxGEM(20000,2,0.15,0.26)
+  //   PbPb setup testdEdxGEM(20000,4,0.5,0.26)
+  //   PbPb setup testdEdxGEM(20000,4,0.6,0.26)
+  //   PbPb setup testdEdxGEM(20000,4,0.7,0.26)
+  // 
+ 
+  TTreeSRedirector *pcstream = new TTreeSRedirector("testdEdxResolution.root","update");
+  TH2F * phisdEdx = (TH2F*)pcstream->GetFile()->Get("hisdEdx");
+  if (!phisdEdx){
+
+    TVectorD qVector(160);
+    TVectorD qVectorCorr(160);
+    TVectorD qVectorAcc(160);
+    TVectorD qVectorSorted(160);
+    Int_t indexes[160];
+    Int_t ntrans=20;
+    TVectorD vecdEdx(ntrans);
+    TVectorD vecT(ntrans);
+    //
+    
+    for (Int_t itrack=0; itrack<ntracks; itrack++){
+      Double_t meanEl=15*(1.+1*gRandom->Rndm());
+      Double_t sigmaEl=sigmaLandau*meanEl*TMath::Power(15./meanEl,0.25);
+      for (Int_t irow=0; irow<160; irow++){
+	qVector[irow]=gRandom->Landau(meanEl, sigmaEl);      
+      }
+      qVectorCorr[0]=qVector[0];
+      qVectorCorr[158]=qVector[158];
+      for (Int_t irow=1; irow<159; irow++){  //corralte measurement via diffusion
+	qVectorCorr[irow]= 0.15*(qVector[irow-1]+ qVector[irow+1])+0.7*qVector[irow];
+      }
+      
+      for (Int_t itrans=0; itrans<ntrans; itrans++){
+	Double_t transparency=(itrans+1.)/ntrans;
+	vecT[itrans]=transparency;
+	for (Int_t irow=0; irow<160; irow++) {
+	  qVectorAcc[irow]=0;
+	  for (Int_t iel=0; iel<TMath::Nint(qVectorCorr[irow]); iel++) {
+	    if (gRandom->Rndm()<transparency) 	qVectorAcc[irow]+=1./transparency;	
+	  }
+	}      
+	for (Int_t irow=0; irow<160; irow++) {
+	  qVectorAcc[irow]+=gRandom->Gaus(0, clNoise);
+	  if (qVectorAcc[irow]<0) qVectorAcc[irow]=0;
+	}
+	TMath::Sort(160,qVectorAcc.GetMatrixArray(), indexes, kFALSE);
+	for (Int_t irow=0; irow<160; irow++) {
+	  qVectorSorted[irow]=qVectorAcc[indexes[irow]];
+	}
+	vecdEdx[itrans]=TMath::Mean(0.6*160.,	qVectorSorted.GetMatrixArray());    
+	vecdEdx[itrans]+=gRandom->Gaus(0, corrNoiseAdd);
+      }
+      (*pcstream)<<"dEdx"<<
+	"itrack="<<itrack<<              // itrack 
+	"meanEl="<<meanEl<<              // 
+	"sigmaEl="<<sigmaEl<<            //
+	"vecT.="<<&vecT<<                //
+	"vecdEdx.="<<&vecdEdx<<
+	"qVector.="<<&qVector<<
+	"\n";
+    }
+    TTree * tree = (TTree*)(pcstream->GetFile()->Get("dEdx"));
+    tree->Draw("vecdEdx.fElements/(meanEl):vecT.fElements>>hisdEdx(16,0.199,1,100,0.70,1.50)","meanEl<100","colz");    
+    phisdEdx= (TH2F*)tree->GetHistogram()->Clone();    
+    gStyle->SetOptFit(1);
+    gStyle->SetOptStat(0);
+    phisdEdx->Write("hisdEdx");
+  }
+  delete pcstream;
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(1);
+  pcstream = new TTreeSRedirector("testdEdxResolution.root","update"); 
+  phisdEdx = (TH2F*)pcstream->GetFile()->Get("hisdEdx");
+  TObjArray *arrFit = new TObjArray(3);
+  phisdEdx->FitSlicesY(0,0,-1,0,"QNR",arrFit);
+  TH1D * hisRes = (TH1D*)arrFit->At(2);
+  hisRes->Divide((TH1D*)arrFit->At(1)); 
+  hisRes->Scale(100);
+  hisRes->SetTitle("dEdx resolution");
+  hisRes->SetMarkerStyle(21);
+  hisRes->GetXaxis()->SetTitle("Eff. electron  transparency");
+  hisRes->GetYaxis()->SetTitle("#sigma_{dEdx}/dEdx (%)");
+  hisRes->SetMinimum(4);
+  hisRes->SetMaximum(8);
+  //
+  TF1 * ftrans = new TF1("ftrans","[0]*x**(-(abs([1])+0.000001))");
+  ftrans->SetParName(0,"#sigma_{T1}");
+  ftrans->SetParName(1,"#sigma slope");
+  ftrans->SetParameters(0.05,1,0.05);
+  hisRes->SetMarkerStyle(21);
+  hisRes->SetMarkerSize(0.9);
+  TCanvas * canvasTrans = new TCanvas("canvasTrans", "canvasTrans",600,500);
+  canvasTrans->SetTicks(1,1);
+  hisRes->Fit(ftrans,"","",0.2,1);
+  canvasTrans->SaveAs("canvasElTrans.pdf");
+  //TH
+  
+  
 }
 
 void testExtrapolation(const Int_t ntracks=10){
