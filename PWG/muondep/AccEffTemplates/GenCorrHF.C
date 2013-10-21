@@ -4,7 +4,7 @@
 #include "AliGenCorrHF.h"
 #endif
 
-AliGenerator* GenCoRRHF()
+AliGenerator* GenCorrHF()
 {
   AliGenMC* generator = new AliGenCorrHF(1, VAR_GENCORRHF_QUARK, VAR_GENCORRHF_ENERGY);
   
