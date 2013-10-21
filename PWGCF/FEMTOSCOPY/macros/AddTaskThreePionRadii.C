@@ -14,6 +14,7 @@ AliThreePionRadii *AddTaskThreePionRadii(
 				 Float_t SigmaCutTPC=2.0,
 				 Float_t SigmaCutTOF=2.0,
 				 Int_t NumKt3bins=1,
+				 Bool_t V0Mbinning=kFALSE,
 				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_TPR.root"
 				 ) {
   
@@ -43,6 +44,7 @@ AliThreePionRadii *AddTaskThreePionRadii(
   ThreePionRadiiTask->SetNsigmaTPC(SigmaCutTPC);
   ThreePionRadiiTask->SetNsigmaTOF(SigmaCutTOF);
   ThreePionRadiiTask->SetNumKt3Bins(NumKt3bins);
+  ThreePionRadiiTask->SetV0Mbinning(V0Mbinning);
   mgr->AddTask(ThreePionRadiiTask);
 
 
