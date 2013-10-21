@@ -23,6 +23,8 @@
 #include "AliVCaloCells.h"
 #include "AliJetContainer.h"
 #include "AliClusterContainer.h"
+#include "AliEmcalTriggerPatchInfo.h"
+#include "AliAODHeader.h"
 
 #include "AliAnalysisTaskEmcalJetTriggerQA.h"
 
@@ -63,7 +65,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
-  fh3PatchEnergyEtaPhiCenter(0),
+  fh3PatchEnergyEtaPhiCenterJ1(0),
+  fh3PatchEnergyEtaPhiCenterJ2(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0)
 {
@@ -107,7 +110,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
-  fh3PatchEnergyEtaPhiCenter(0),
+  fh3PatchEnergyEtaPhiCenterJ1(0),
+  fh3PatchEnergyEtaPhiCenterJ2(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0)
 {
@@ -162,9 +166,28 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
 
   fhNEvents->Fill(3.5);
 
+  Bool_t check = kFALSE;
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
+    AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch();
+
+    // AliAODHeader *aodH = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
+    // Printf("event nr in ESD: %d  ntracks: %d",aodH->GetEventNumberESDFile(), InputEvent()->GetNumberOfTracks());
+    // Printf("IsJetLow(): %d  IsJetHigh(): %d %s",patch->IsJetLow(),patch->IsJetHigh(),firedTrigClass.Data());
+    // Printf("patch E: %f  eta: %f  phi: %f", patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
+    if(fTriggerClass.Contains("J1")) { //asking for high threshold trigger
+      if(patch->IsJetHigh())
+	check = kTRUE;
+    }
+    if(fTriggerClass.Contains("J2")) { //asking for low threshold trigger
+      if(patch->IsJetLow() && !patch->IsJetHigh())
+	check = kTRUE;
+    }
+
+    if(!check)
+      return kFALSE;
+    
     if(!firedTrigClass.Contains(fTriggerClass))
       return kFALSE;
   }
@@ -180,117 +203,14 @@ void AliAnalysisTaskEmcalJetTriggerQA::FindTriggerPatch() {
 
   //Code to get position of trigger
 
-  if(!fGeom)
-    fGeom = AliEMCALGeometry::GetInstance();
-
-
-  TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
-
-  AliAODCaloTrigger *trg = dynamic_cast<AliAODCaloTrigger*>(InputEvent()->GetCaloTrigger("EMCAL"));
-  trg->Reset();
-
-  int col, row; //FASTOR position
-
-  Int_t nPatchNotEmpty = 0; //counter number of patches which are not empty
-  fMaxPatchEnergy = 0.;
-  while (trg->Next())
-    {
-
-      trg->GetPosition(col, row); //col (0 to 63), row (0 to 47)
-      
-      if (col > -1 && row > -1)
-	{
-	  Int_t id = -1; //FASTOR index
-	  Int_t cellIndex[4] = {-1};
-	  fGeom->GetAbsFastORIndexFromPositionInEMCAL(col,row,id); //phi is column, eta is row
-	  if(id<0) continue;
-
-	  fGeom->GetCellIndexFromFastORIndex(id,cellIndex);
-
-	  Int_t ts = 0;
-	  trg->GetL1TimeSum(ts);
-
-	  Float_t ampTrg = 0.;
-	  trg->GetAmplitude(ampTrg);
-
-	  //L1 analysis
-	  Int_t bit = 0;
-	  trg->GetTriggerBits(bit);
-
-	  Bool_t bTrigJ = TestFilterBit(bit,fBitJ1|fBitJ2);
-	  if(!bTrigJ)
-	    continue;
-
-	  Bool_t bTrigJ1 = TestFilterBit(bit,fBitJ1);	   
-	  Bool_t bTrigJ2 = TestFilterBit(bit,fBitJ2);	   
-
-	  if(bTrigJ1) fTriggerType = 0;
-	  if(bTrigJ2) fTriggerType = 1;
-	  if(!bTrigJ1 && !bTrigJ2) fTriggerType = -1;
-
-	  Double_t minPhiPatch =  10.;
-	  Double_t maxPhiPatch = -10.;
-	  Double_t minEtaPatch =  10.;
-	  Double_t maxEtaPatch = -10.;
-
-	  //Get energy in trigger patch 8x8 FASTOR
-	  Double_t patchEnergy = 0.;
-	  Double_t sumAmp = 0.;
-	  //	  const Int_t nFastOR = 8;//16;
-	  for(Int_t fastrow = 0; fastrow<fNFastOR; fastrow++) {
-	    for(Int_t fastcol = 0; fastcol<fNFastOR; fastcol++) {
-	      Int_t nrow = row+fastrow;
-	      Int_t ncol = col+fastcol;
-	      fGeom->GetAbsFastORIndexFromPositionInEMCAL(ncol,nrow,id);
-
-	      if(id<0) {
-		AliWarning(Form("%s: id smaller than 0 %d",GetName(),id));
-		continue;
-	      }
-	      
-	      fGeom->GetCellIndexFromFastORIndex(id,cellIndex);
-	      for(Int_t icell=0; icell<4; icell++) {
-
-		if(!fGeom->CheckAbsCellId(cellIndex[icell])) continue;
-
-		Double_t amp =0., time = 0., efrac = 0;
-		Int_t mclabel = -1;
-		Short_t absId = -1;
-		Int_t nSupMod = -1, nModule = -1, nIphi = -1, nIeta = -1;
- 
-		fGeom->GetCellIndex(cellIndex[icell], nSupMod, nModule, nIphi, nIeta );
-		
-		fCaloCells->GetCell(cellIndex[icell], absId, amp, time,mclabel,efrac);
-
-		Double_t eta, phi;
-		fGeom->EtaPhiFromIndex(cellIndex[icell], eta, phi);
-
-		if(phi<minPhiPatch) minPhiPatch = phi;
-		if(phi>maxPhiPatch) maxPhiPatch = phi;
-		if(eta<minEtaPatch) minEtaPatch = eta;
-		if(eta>maxEtaPatch) maxEtaPatch = eta;
-
-		sumAmp+=fCaloCells->GetAmplitude(cellIndex[icell]);
-		patchEnergy+=amp;
-
-	      }//cells in fastor loop
-	    }//fastor col loop
-	  }//fastor row loop
-
-	  Double_t etaCent = minEtaPatch + 0.5*(maxEtaPatch-minEtaPatch);
-	  Double_t phiCent = minPhiPatch + 0.5*(maxPhiPatch-minPhiPatch);
-	  fh3PatchEnergyEtaPhiCenter->Fill(patchEnergy,etaCent,phiCent);
-
-	  if(patchEnergy>0)
-	    if(fDebug>2) AliInfo(Form("%s: patch edges eta: %f - %f   phi: %f - %f ampTrg: %f patchEnergy: %f sumAmp: %f",GetName(),minEtaPatch,maxEtaPatch,minPhiPatch,maxPhiPatch,ampTrg,patchEnergy,sumAmp));
-
-	  if(patchEnergy>0) nPatchNotEmpty++;
-	  
-	  if(patchEnergy>fMaxPatchEnergy) fMaxPatchEnergy=patchEnergy;
- 
-	}
-    }
-
+  AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch();
+  if(patch) {
+    fMaxPatchEnergy = patch->GetPatchE();
+    if(patch->IsJetLow() && !patch->IsJetHigh())  
+      fh3PatchEnergyEtaPhiCenterJ2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
+    if(patch->IsJetHigh()) 
+      fh3PatchEnergyEtaPhiCenterJ1->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
+  }
 }
 
 //________________________________________________________________________
@@ -314,106 +234,162 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fhNEvents = new TH1F("fhNEvents","fhNEvents;selection;N_{evt}",5,0,5);
   fOutput->Add(fhNEvents);
 
-  Int_t nBinsPt = 120;
-  Double_t minPt = -20.;
-  Double_t maxPt = 100.;
-  Int_t nBinsEta = 100;
-  Double_t minEta = -1.;
-  Double_t maxEta = 1.;
-  Int_t nBinsPhi = 18*8;
-  Double_t minPhi = 0.;
-  Double_t maxPhi = TMath::TwoPi();
-  Int_t nBinsArea = 100;
-  Double_t minArea = 0.;
-  Double_t maxArea = 1.;
+  Int_t fgkNPtBins = 170;
+  Float_t kMinPt   = -20.;
+  Float_t kMaxPt   = 150.;
+  Double_t *binsPt = new Double_t[fgkNPtBins+1];
+  for(Int_t i=0; i<=fgkNPtBins; i++) binsPt[i]=(Double_t)kMinPt + (kMaxPt-kMinPt)/fgkNPtBins*(Double_t)i ;
 
-  fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",nBinsPt,minPt,maxPt,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  Int_t fgkNPhiBins = 18*8;
+  Float_t kMinPhi   = 0.;
+  Float_t kMaxPhi   = 2.*TMath::Pi();
+  Double_t *binsPhi = new Double_t[fgkNPhiBins+1];
+  for(Int_t i=0; i<=fgkNPhiBins; i++) binsPhi[i]=(Double_t)kMinPhi + (kMaxPhi-kMinPhi)/fgkNPhiBins*(Double_t)i ;
+
+  Int_t fgkNEtaBins = 100;
+  Float_t fgkEtaMin = -1.;
+  Float_t fgkEtaMax =  1.;
+  Double_t *binsEta=new Double_t[fgkNEtaBins+1];
+  for(Int_t i=0; i<=fgkNEtaBins; i++) binsEta[i]=(Double_t)fgkEtaMin + (fgkEtaMax-fgkEtaMin)/fgkNEtaBins*(Double_t)i ;
+
+  Int_t fgkNAreaBins = 100;
+  Float_t kMinArea   = 0.;
+  Float_t kMaxArea   = 1.;
+  Double_t *binsArea = new Double_t[fgkNAreaBins+1];
+  for(Int_t i=0; i<=fgkNAreaBins; i++) binsArea[i]=(Double_t)kMinArea + (kMaxArea-kMinArea)/fgkNAreaBins*(Double_t)i ;
+
+  Int_t fgkNConstBins = 100;
+  Float_t kMinConst   = 0.;
+  Float_t kMaxConst   = 100.;
+  Double_t *binsConst = new Double_t[fgkNConstBins+1];
+  for(Int_t i=0; i<=fgkNConstBins; i++) binsConst[i]=(Double_t)kMinConst + (kMaxConst-kMinConst)/fgkNConstBins*(Double_t)i ;
+
+  Int_t fgkNMeanPtBins = 200;
+  Float_t kMinMeanPt   = 0.;
+  Float_t kMaxMeanPt   = 20.;
+  Double_t *binsMeanPt = new Double_t[fgkNMeanPtBins+1];
+  for(Int_t i=0; i<=fgkNMeanPtBins; i++) binsMeanPt[i]=(Double_t)kMinMeanPt + (kMaxMeanPt-kMinMeanPt)/fgkNMeanPtBins*(Double_t)i ;
+
+  Int_t fgkNNEFBins = 101;
+  Float_t kMinNEF   = 0.;
+  Float_t kMaxNEF   = 1.01;
+  Double_t *binsNEF = new Double_t[fgkNNEFBins+1];
+  for(Int_t i=0; i<=fgkNNEFBins; i++) binsNEF[i]=(Double_t)kMinNEF + (kMaxNEF-kMinNEF)/fgkNNEFBins*(Double_t)i ;
+
+  Int_t fgkNzBins = 101;
+  Float_t kMinz   = 0.;
+  Float_t kMaxz   = 1.01;
+  Double_t *binsz = new Double_t[fgkNzBins+1];
+  for(Int_t i=0; i<=fgkNzBins; i++) binsz[i]=(Double_t)kMinz + (kMaxz-kMinz)/fgkNzBins*(Double_t)i ;
+
+  Int_t fgkNJetTypeBins = 2;
+  Float_t kMinJetType   = -0.5;
+  Float_t kMaxJetType   = 1.5;
+  Double_t *binsJetType = new Double_t[fgkNJetTypeBins+1];
+  for(Int_t i=0; i<=fgkNJetTypeBins; i++) binsJetType[i]=(Double_t)kMinJetType + (kMaxJetType-kMinJetType)/fgkNJetTypeBins*(Double_t)i ;
+
+  Int_t fgkNTimeBins = 700;
+  Float_t kMinTime   = -400.;
+  Float_t kMaxTime   = 1000;
+  Double_t *binsTime = new Double_t[fgkNTimeBins+1];
+  for(Int_t i=0; i<=fgkNTimeBins; i++) binsTime[i]=(Double_t)kMinTime + (kMaxTime-kMinTime)/fgkNTimeBins*(Double_t)i ;
+
+  Double_t enBinEdges[3][2];
+  enBinEdges[0][0] = 1.; //10 bins
+  enBinEdges[0][1] = 0.1;
+  enBinEdges[1][0] = 5.; //8 bins
+  enBinEdges[1][1] = 0.5;
+  enBinEdges[2][0] = 100.;//95 bins
+  enBinEdges[2][1] = 1.;
+
+  const Float_t enmin1 =  0;
+  const Float_t enmax1 =  enBinEdges[0][0];
+  const Float_t enmin2 =  enmax1 ;
+  const Float_t enmax2 =  enBinEdges[1][0];
+  const Float_t enmin3 =  enmax2 ;
+  const Float_t enmax3 =  enBinEdges[2][0];//fgkEnMax;
+  const Int_t nbin11 = (int)((enmax1-enmin1)/enBinEdges[0][1]);
+  const Int_t nbin12 = (int)((enmax2-enmin2)/enBinEdges[1][1])+nbin11;
+  const Int_t nbin13 = (int)((enmax3-enmin3)/enBinEdges[2][1])+nbin12;
+
+  Int_t fgkNEnBins=nbin13;
+  Double_t *binsEn=new Double_t[fgkNEnBins+1];
+  for(Int_t i=0; i<=fgkNEnBins; i++) {
+    if(i<=nbin11) binsEn[i]=(Double_t)enmin1 + (enmax1-enmin1)/nbin11*(Double_t)i ;
+    if(i<=nbin12 && i>nbin11) binsEn[i]=(Double_t)enmin2 + (enmax2-enmin2)/(nbin12-nbin11)*((Double_t)i-(Double_t)nbin11) ;
+    if(i<=nbin13 && i>nbin12) binsEn[i]=(Double_t)enmin3 + (enmax3-enmin3)/(nbin13-nbin12)*((Double_t)i-(Double_t)nbin12) ;
+  }
+
+
+  fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
 
-  fh3PtEtaPhiJetCharged = new TH3F("fh3PtEtaPhiJetCharged","fh3PtEtaPhiJetCharged;#it{p}_{T}^{jet};#eta;#varphi",nBinsPt,minPt,maxPt,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  fh3PtEtaPhiJetCharged = new TH3F("fh3PtEtaPhiJetCharged","fh3PtEtaPhiJetCharged;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetCharged);
 
-  fh2NJetsPtFull = new TH2F("fh2NJetsPtFull","fh2NJetsPtFull;N_{jets};#it{p}_{T}^{jet}",20,-0.5,19.5,nBinsPt,minPt,maxPt);
+  fh2NJetsPtFull = new TH2F("fh2NJetsPtFull","fh2NJetsPtFull;N_{jets};#it{p}_{T}^{jet}",20,-0.5,19.5,fgkNPtBins,binsPt);
   fOutput->Add(fh2NJetsPtFull);
 
-  fh2NJetsPtCharged = new TH2F("fh2NJetsPtCharged","fh2NJetsPtCharged;N_{jets};#it{p}_{T}^{jet}",20,-0.5,19.5,nBinsPt,minPt,maxPt);
+  fh2NJetsPtCharged = new TH2F("fh2NJetsPtCharged","fh2NJetsPtCharged;N_{jets};#it{p}_{T}^{jet}",20,-0.5,19.5,fgkNPtBins,binsPt);
   fOutput->Add(fh2NJetsPtCharged);
 
-  fh3PtEtaAreaJetFull = new TH3F("fh3PtEtaAreaJetFull","fh3PtEtaAreaJetFull;#it{p}_{T}^{jet};#eta;A",nBinsPt,minPt,maxPt,nBinsEta,minEta,maxEta,nBinsArea,minArea,maxArea);
+  fh3PtEtaAreaJetFull = new TH3F("fh3PtEtaAreaJetFull","fh3PtEtaAreaJetFull;#it{p}_{T}^{jet};#eta;A",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNAreaBins,binsArea);
   fOutput->Add(fh3PtEtaAreaJetFull);
 
-  fh3PtEtaAreaJetCharged = new TH3F("fh3PtEtaAreaJetCharged","fh3PtEtaAreaJetCharged;#it{p}_{T}^{jet};#eta;A",nBinsPt,minPt,maxPt,nBinsEta,minEta,maxEta,nBinsArea,minArea,maxArea);
+  fh3PtEtaAreaJetCharged = new TH3F("fh3PtEtaAreaJetCharged","fh3PtEtaAreaJetCharged;#it{p}_{T}^{jet};#eta;A",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNAreaBins,binsArea);
   fOutput->Add(fh3PtEtaAreaJetCharged);
 
-  Int_t nBinsConst =100;
-  Double_t minConst = 0.;
-  Double_t maxConst = 100.;
-
-  Int_t nBinsMeanPt = 200;
-  Double_t minMeanPt = 0.;
-  Double_t maxMeanPt = 20.;
-
-  Int_t nBinsNEF = 101;
-  Double_t minNEF = 0.;
-  Double_t maxNEF = 1.01;
-
-  Int_t nBinsz = 101;
-  Double_t minz = 0.;
-  Double_t maxz = 1.01;
-
-  Int_t nBinsECluster =100;
-  Double_t minECluster = 0.;
-  Double_t maxECluster = 100.;
-
-
-  fh2PtNConstituentsCharged = new TH2F("fh2PtNConstituentsCharged","fh2PtNConstituentsCharged;#it{p}_{T}^{jet};N_{charged constituents}",nBinsPt,minPt,maxPt,nBinsConst,minConst,maxConst);
+  fh2PtNConstituentsCharged = new TH2F("fh2PtNConstituentsCharged","fh2PtNConstituentsCharged;#it{p}_{T}^{jet};N_{charged constituents}",fgkNPtBins,binsPt,fgkNConstBins,binsConst);
   fOutput->Add(fh2PtNConstituentsCharged);
 
-  fh2PtNConstituents = new TH2F("fh2PtNConstituents","fh2PtNConstituents;#it{p}_{T}^{jet};N_{constituents}",nBinsPt,minPt,maxPt,nBinsConst,minConst,maxConst);
+  fh2PtNConstituents = new TH2F("fh2PtNConstituents","fh2PtNConstituents;#it{p}_{T}^{jet};N_{constituents}",fgkNPtBins,binsPt,fgkNConstBins,binsConst);
   fOutput->Add(fh2PtNConstituents);
 
-  fh2PtMeanPtConstituentsCharged = new TH2F("fh2PtMeanPtConstituentsCharged","fh2PtMeanPtConstituentsCharged;#it{p}_{T}^{jet};charged #langle #it{p}_{T} #rangle",nBinsPt,minPt,maxPt,nBinsMeanPt,minMeanPt,maxMeanPt);
+  fh2PtMeanPtConstituentsCharged = new TH2F("fh2PtMeanPtConstituentsCharged","fh2PtMeanPtConstituentsCharged;#it{p}_{T}^{jet};charged #langle #it{p}_{T} #rangle",fgkNPtBins,binsPt,fgkNMeanPtBins,binsMeanPt);
   fOutput->Add(fh2PtMeanPtConstituentsCharged);
 
-  fh2PtMeanPtConstituentsNeutral = new TH2F("fh2PtMeanPtConstituentsNeutral","fh2PtMeanPtConstituentsNeutral;#it{p}_{T}^{jet};neutral langle #it{p}_{T} #rangle",nBinsPt,minPt,maxPt,nBinsMeanPt,minMeanPt,maxMeanPt);
+  fh2PtMeanPtConstituentsNeutral = new TH2F("fh2PtMeanPtConstituentsNeutral","fh2PtMeanPtConstituentsNeutral;#it{p}_{T}^{jet};neutral langle #it{p}_{T} #rangle",fgkNPtBins,binsPt,fgkNMeanPtBins,binsMeanPt);
   fOutput->Add(fh2PtMeanPtConstituentsNeutral);
 
-  fh2PtNEF = new TH2F("fh2PtNEF","fh2PtNEF;#it{p}_{T}^{jet};NEF",nBinsPt,minPt,maxPt,nBinsNEF,minNEF,maxNEF);
+  fh2PtNEF = new TH2F("fh2PtNEF","fh2PtNEF;#it{p}_{T}^{jet};NEF",fgkNPtBins,binsPt,fgkNNEFBins,binsNEF);
   fOutput->Add(fh2PtNEF);
 
-  fh3NEFEtaPhi = new TH3F("fh3NEFEtaPhi","fh3NEFEtaPhi;NEF;#eta;#varphi",nBinsNEF,minNEF,maxNEF,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  fh3NEFEtaPhi = new TH3F("fh3NEFEtaPhi","fh3NEFEtaPhi;NEF;#eta;#varphi",fgkNNEFBins,binsNEF,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3NEFEtaPhi);
 
-  fh2NEFNConstituentsCharged = new TH2F("fh2NEFNConstituentsCharged","fh2NEFNConstituentsCharged;NEF;N_{charged constituents}",nBinsNEF,minNEF,maxNEF,nBinsConst,minConst,maxConst);
+  fh2NEFNConstituentsCharged = new TH2F("fh2NEFNConstituentsCharged","fh2NEFNConstituentsCharged;NEF;N_{charged constituents}",fgkNNEFBins,binsNEF,fgkNConstBins,binsConst);
   fOutput->Add(fh2NEFNConstituentsCharged);
 
-  fh2NEFNConstituentsNeutral = new TH2F("fh2NEFNConstituentsNeutral","fh2NEFNConstituentsNeutral;NEF;N_{clusters}",nBinsNEF,minNEF,maxNEF,nBinsConst,minConst,maxConst);
+  fh2NEFNConstituentsNeutral = new TH2F("fh2NEFNConstituentsNeutral","fh2NEFNConstituentsNeutral;NEF;N_{clusters}",fgkNNEFBins,binsNEF,fgkNConstBins,binsConst);
   fOutput->Add(fh2NEFNConstituentsNeutral);
 
-  fh2Ptz = new TH2F("fh2Ptz","fh2Ptz;#it{p}_{T}^{jet};z=p_{t,trk}^{proj}/p_{jet}",nBinsPt,minPt,maxPt,nBinsz,minz,maxz);
+  fh2Ptz = new TH2F("fh2Ptz","fh2Ptz;#it{p}_{T}^{jet};z=p_{t,trk}^{proj}/p_{jet}",fgkNPtBins,binsPt,fgkNzBins,binsz);
   fOutput->Add(fh2Ptz);
 
-  fh2PtzCharged = new TH2F("fh2PtzCharged","fh2Ptz;#it{p}_{T}^{ch jet};z=p_{t,trk}^{proj}/p_{ch jet}",nBinsPt,minPt,maxPt,nBinsz,minz,maxz);
+  fh2PtzCharged = new TH2F("fh2PtzCharged","fh2Ptz;#it{p}_{T}^{ch jet};z=p_{t,trk}^{proj}/p_{ch jet}",fgkNPtBins,binsPt,fgkNzBins,binsz);
   fOutput->Add(fh2PtzCharged);
 
-  fh2PtLeadJet1VsLeadJet2 = new TH2F("fh2PtLeadJet1VsLeadJet2","fh2PtLeadJet1VsLeadJet2;#it{p}_{T}^{jet 1};#it{p}_{T}^{jet 2}",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
+  fh2PtLeadJet1VsLeadJet2 = new TH2F("fh2PtLeadJet1VsLeadJet2","fh2PtLeadJet1VsLeadJet2;#it{p}_{T}^{jet 1};#it{p}_{T}^{jet 2}",fgkNPtBins,binsPt,fgkNPtBins,binsPt);
   fOutput->Add(fh2PtLeadJet1VsLeadJet2);
 
-  fh3EEtaPhiCluster = new TH3F("fh3EEtaPhiCluster","fh3EEtaPhiCluster;E_{clus};#eta;#phi",nBinsECluster,minECluster,maxECluster,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
+  fh3EEtaPhiCluster = new TH3F("fh3EEtaPhiCluster","fh3EEtaPhiCluster;E_{clus};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3EEtaPhiCluster);
 
-  fh3PtLeadJet1VsPatchEnergy = new TH3F("fh3PtLeadJet1VsPatchEnergy","fh3PtLeadJet1VsPatchEnergy;#it{p}_{T}^{jet 1};Amplitude_{patch};trig type",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,2,-0.5,1.5);
+  fh3PtLeadJet1VsPatchEnergy = new TH3F("fh3PtLeadJet1VsPatchEnergy","fh3PtLeadJet1VsPatchEnergy;#it{p}_{T}^{jet 1};Amplitude_{patch};trig type",fgkNPtBins,binsPt,fgkNPtBins,binsPt,fgkNJetTypeBins,binsJetType);
   fOutput->Add(fh3PtLeadJet1VsPatchEnergy);
-  fh3PtLeadJet2VsPatchEnergy = new TH3F("fh3PtLeadJet2VsPatchEnergy","fh3PtLeadJet2VsPatchEnergy;#it{p}_{T}^{jet 1};Amplitude_{patch};trig type",nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,2,-0.5,1.5);
+  fh3PtLeadJet2VsPatchEnergy = new TH3F("fh3PtLeadJet2VsPatchEnergy","fh3PtLeadJet2VsPatchEnergy;#it{p}_{T}^{jet 1};Amplitude_{patch};trig type",fgkNPtBins,binsPt,fgkNPtBins,binsPt,fgkNJetTypeBins,binsJetType);
   fOutput->Add(fh3PtLeadJet2VsPatchEnergy);
 
-  fh3PatchEnergyEtaPhiCenter = new TH3F("fh3PatchEnergyEtaPhiCenter","fh3PatchEnergyEtaPhiCenter;E_{patch};#eta;#phi",nBinsPt,minPt,maxPt,nBinsEta,minEta,maxEta,nBinsPhi,minPhi,maxPhi);
-  fOutput->Add(fh3PatchEnergyEtaPhiCenter);
+  fh3PatchEnergyEtaPhiCenterJ1 = new TH3F("fh3PatchEnergyEtaPhiCenterJ1","fh3PatchEnergyEtaPhiCenterJ1;E_{patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchEnergyEtaPhiCenterJ1);
 
-  fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",100,0.,100.,700,-400,1000);
+  fh3PatchEnergyEtaPhiCenterJ2 = new TH3F("fh3PatchEnergyEtaPhiCenterJ2","fh3PatchEnergyEtaPhiCenterJ2;E_{patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchEnergyEtaPhiCenterJ2);
+
+  fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh2CellEnergyVsTime);
 
-  fh3EClusELeadingCellVsTime = new TH3F("fh3EClusELeadingCellVsTime","fh3EClusELeadingCellVsTime;E_{cluster};E_{leading cell};time_{leading cell}",100,0.,100.,100.,0.,100.,700,-400.,1000.);
+  fh3EClusELeadingCellVsTime = new TH3F("fh3EClusELeadingCellVsTime","fh3EClusELeadingCellVsTime;E_{cluster};E_{leading cell};time_{leading cell}",fgkNEnBins,binsEn,fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh3EClusELeadingCellVsTime);
 
 
@@ -441,6 +417,19 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   TH1::AddDirectory(oldStatus);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+
+  if(binsEn)                delete [] binsEn;
+  if(binsPt)                delete [] binsPt;
+  if(binsPhi)               delete [] binsPhi;
+  if(binsEta)               delete [] binsEta;
+  if(binsArea)              delete [] binsArea;
+  if(binsConst)             delete [] binsConst; 
+  if(binsMeanPt)            delete [] binsMeanPt;  
+  if(binsNEF)               delete [] binsNEF;
+  if(binsz)                 delete [] binsz;
+  if(binsJetType)           delete [] binsJetType;
+  if(binsTime)              delete [] binsTime;
+
 }
 
 //________________________________________________________________________

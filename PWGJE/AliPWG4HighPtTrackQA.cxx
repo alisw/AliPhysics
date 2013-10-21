@@ -69,6 +69,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fTrackCutsTPConly(0x0), 
   fTrackType(0),
   fFilterMask(0),
+  fIncludeNoITS(kFALSE),
   fSigmaConstrainedMax(-1.),
   fPtMax(100.),
   fIsPbPb(0),
@@ -92,6 +93,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtSel(0),    
   fPtPhi(0x0),
   fPtEta(0x0),
+  fPtEtaPhi(0x0),
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
@@ -170,6 +172,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fTrackCutsTPConly(0x0), 
   fTrackType(0),
   fFilterMask(0),
+  fIncludeNoITS(kFALSE),
   fSigmaConstrainedMax(-1.),
   fPtMax(100.),
   fIsPbPb(0),
@@ -193,6 +196,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtSel(0),
   fPtPhi(0x0),
   fPtEta(0x0),
+  fPtEtaPhi(0x0),
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
@@ -509,6 +513,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 
   fh1NTracksReject = new TH1F("fh1NTracksReject","fh1NTracksReject",1,-0.5,0.5);
   fh1NTracksReject->Fill("noHybridTrack",0);
+  fh1NTracksReject->Fill("noITSrefit",0);
   fh1NTracksReject->Fill("noESDtrack",0);
   fh1NTracksReject->Fill("noTPCInner",0);
   fh1NTracksReject->Fill("FillTPC",0);
@@ -532,6 +537,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
  
   fPtEta = new TH2F("fPtEta","fPtEta",fgkNPtBins,binsPt,fgkNEtaBins,binsEta);
   fHistList->Add(fPtEta);
+
+  fPtEtaPhi = new TH3F("fPtEtaPhi","fPtEtaPhi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtEtaPhi);
  
   fPtDCA2D = new TH2F("fPtDCA2D","fPtDCA2D",fgkNPtBins,binsPt,fgkNDCA2DBins,binsDCA2D);
   fHistList->Add(fPtDCA2D);
@@ -1232,6 +1240,13 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
       continue;
     }
 
+    if(!fIncludeNoITS) {
+      if ((aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0) {
+	fh1NTracksReject->Fill("noITSrefit",1);
+	continue;
+      }
+    }
+
     fVariables->Reset(0.);
 
     fVariables->SetAt(aodtrack->Pt(),0);
@@ -1303,6 +1318,7 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtSel->Fill(fVariables->At(0));
   fPtPhi->Fill(fVariables->At(0),fVariables->At(1));
   fPtEta->Fill(fVariables->At(0),fVariables->At(2));
+  fPtEtaPhi->Fill(fVariables->At(0),fVariables->At(2),fVariables->At(1));
   fPtDCA2D->Fill(fVariables->At(0),fVariables->At(3));
   fPtDCAZ->Fill(fVariables->At(0),fVariables->At(4));
   fPtNClustersTPC->Fill(fVariables->At(0),fVariables->At(5));

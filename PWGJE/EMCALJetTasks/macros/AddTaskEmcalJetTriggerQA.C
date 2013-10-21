@@ -112,6 +112,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 
   task->SetTriggerClass(trigClass.Data());
   task->SetCaloCellsName(kEmcalCellsName.Data());
+  task->SetCaloTriggerPatchInfoName("EmcalTriggers");
 
   task->SetCentralityEstimator(CentEst);
 
