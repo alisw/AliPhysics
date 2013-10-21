@@ -77,6 +77,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
     }
   }
   void                   SetLegacyMode(Bool_t mode)       { fLegacyMode ^= mode; }
+  void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
 
   UInt_t                 GetJetType()                     { return fJetType; }
   Bool_t                 GetLegacyMode()                  { return fLegacyMode; }
@@ -115,6 +116,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
+  Bool_t                 fCodeDebug;              // use nontested code changes 
   TClonesArray          *fJets;                   //!jet collection
   AliVEvent             *fEvent;                  //!current event
   TClonesArray          *fTracks;                 //!tracks collection
