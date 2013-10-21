@@ -20,7 +20,6 @@ ClassImp(AliFemtoCorrFctnDEtaDPhi)
   
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
-#define PIQ 4.71238898038468967
 
 //____________________________
 AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiBins=20, const int& aEtaBins=20):
@@ -46,14 +45,18 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   fEtaCorrectionsNum(0),
   fEtaCorrectionsDen(0)
 {
+
+  fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
+  fphiT = 2*TMath::Pi()+(-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
+
   // set up numerator
   char tTitNumD[101] = "NumDPhiDEta";
   strncat(tTitNumD,title, 100);
-  fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
   // set up denominator
   char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
-  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
   // set up numerator
   char tTitNumDPhi[101] = "NumDPhi";
@@ -222,6 +225,9 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
  else 
    fYtYtDenominator = 0;
 
+  fphiL = aCorrFctn.fphiL;
+  fphiT = aCorrFctn.fphiT;
+
 //  if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
 //    else 
@@ -333,6 +339,9 @@ AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorr
 
  fIfCorrection = kNone;
 
+  fphiL = aCorrFctn.fphiL;
+  fphiT = aCorrFctn.fphiT;
+
 // if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
 //  else 
@@ -389,8 +398,8 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   double eta2 = pair->Track2()->FourMomentum().PseudoRapidity();
 
   double dphi = phi1 - phi2;
-  while (dphi<-PIH) dphi+=PIT;
-  while (dphi>PIQ) dphi-=PIT;
+  while (dphi<fphiL) dphi+=PIT;
+  while (dphi>fphiT) dphi-=PIT;
 
   double deta = eta1 - eta2;
 
@@ -458,8 +467,8 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
   double eta2 = pair->Track2()->FourMomentum().PseudoRapidity();
 
   double dphi = phi1 - phi2;
-  while (dphi<-PIH) dphi+=PIT;
-  while (dphi>PIQ) dphi-=PIT;
+  while (dphi<fphiL) dphi+=PIT;
+  while (dphi>fphiT) dphi-=PIT;
 
   double deta = eta1 - eta2;
 
@@ -582,11 +591,11 @@ void AliFemtoCorrFctnDEtaDPhi::SetDoPtAnalysis(int do2d)
   // set up numerator
   char tTitNumDPhiPt[101] = "NumDPhiPt";
   strncat(tTitNumDPhiPt,title, 100);
-  fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
+  fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),3./2.*TMath::Pi(), 30, 0.0, 3.0);
   // set up denominator
   char tTitDenDPhiPt[101] = "DenDPhiPt";
   strncat(tTitDenDPhiPt,title, 100);
-  fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
+  fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),3./2.*TMath::Pi(), 30, 0.0, 3.0);
 
   // set up numerator
   char tTitNumDCosPt[101] = "NumDCosPt";
