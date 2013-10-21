@@ -929,7 +929,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		}
 		// take events only within the same multiplicity class
 		else if(fUseMultiplicity) {
-		  if((gRefMultiplicity > fNumberOfAcceptedTracksMin)||(gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
+		  if((gRefMultiplicity > fNumberOfAcceptedTracksMin) && (gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
 		    fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
 		    return gRefMultiplicity;
 		  }
@@ -984,7 +984,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		    //Printf("N(min): %.0f, N(max): %.0f - N(ref): %.0f",fNumberOfAcceptedTracksMin,
 		    //fNumberOfAcceptedTracksMax,gRefMultiplicity);
 
-		    if((gRefMultiplicity > fNumberOfAcceptedTracksMin)||(gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
+		    if((gRefMultiplicity > fNumberOfAcceptedTracksMin) && (gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
 		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
 		      return gRefMultiplicity;
 		    }
