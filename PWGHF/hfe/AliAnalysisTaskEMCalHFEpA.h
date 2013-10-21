@@ -294,6 +294,9 @@ private:
 	TH1F				*fPtBackgroundBeforeReco_weight;
 	TH1F				*fPtBackgroundBeforeReco2_weight;
 	
+	TH2F				*fpT_m_electron;
+	TH2F				*fpT_gm_electron;
+	
 	TH1F				*fPtBackgroundAfterReco;
 	
 	Double_t			fPtMinAsso;
