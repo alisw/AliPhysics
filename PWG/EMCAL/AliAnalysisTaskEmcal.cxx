@@ -344,6 +344,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
 {
   // Main loop, called for each event.
 
+  fMainTriggerPatch = NULL;
+
   if (!fInitialized)
     ExecOnce();
 
