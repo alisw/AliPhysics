@@ -13,7 +13,7 @@
 
 class TParticle;
 
-#include <AliAnalysisTaskPi0Flow.h>
+#include "AliAnalysisTaskPi0Flow.h"
 
 
 class AliAnalysisTaskPi0FlowMC : public AliAnalysisTaskPi0Flow
