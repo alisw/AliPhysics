@@ -6,6 +6,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include <RVersion.h>
 #include <stdlib.h>
 
 #include <zmq.hpp>
@@ -108,8 +109,9 @@ void AliRecoServerThread::SendStreamerInfos(TMessage* mess, zmq::socket_t *sock)
          delete minilist;
          if (messinfo.GetStreamerInfos())
             messinfo.GetStreamerInfos()->Clear();
-           
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
            messinfo.SetLength();
+#endif
            
           int bufsize = messinfo.Length();
         	char* buf = (char*) malloc(bufsize * sizeof(char));
@@ -136,8 +138,9 @@ void AliRecoServerThread::SendEvent(AliESDEvent* event, zmq::socket_t* socket)
   TMessage::EnableSchemaEvolutionForAll(kTRUE);
   SendStreamerInfos(&tmess, socket);
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
   tmess.SetLength();
-
+#endif
   int bufsize = tmess.Length();
   char* buf = (char*) malloc(bufsize * sizeof(char));
   memcpy(buf, tmess.Buffer(), bufsize);
