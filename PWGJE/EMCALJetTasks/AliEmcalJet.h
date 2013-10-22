@@ -141,8 +141,8 @@ class AliEmcalJet : public AliVParticle
   Int_t             fNch;                 //           number of charged constituents
   Double32_t        fPtEmc;               //[0,0,12]   pt in EMCAL acceptance
   Int_t             fNEmc;                //           number of constituents in EMCAL acceptance
-  TArrayS           fClusterIDs;          //           array of cluster constituents  
-  TArrayS           fTrackIDs;            //           array of track constituents   
+  TArrayI           fClusterIDs;          //           array of cluster constituents  
+  TArrayI           fTrackIDs;            //           array of track constituents   
   AliEmcalJet      *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
   Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
   UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
@@ -151,6 +151,6 @@ class AliEmcalJet : public AliVParticle
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
-  ClassDef(AliEmcalJet,9) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,10) // Emcal jet class in cylindrical coordinates
 };
 #endif
