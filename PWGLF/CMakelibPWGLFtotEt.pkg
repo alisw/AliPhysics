@@ -58,4 +58,4 @@ set ( DHDR  PWGLFtotEtLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS PWGUD/base PWGLF/totEt STEER/STEERBase)
+set ( EINCLUDE ANALYSIS PWGUD/base PWGLF/totEt STEER/ESD STEER/STEERBase)
