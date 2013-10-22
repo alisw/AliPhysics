@@ -187,8 +187,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     }
   }
   else if(analysisType == "MC") {
-    taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
-    taskBF->SetImpactParameterRange(centrMin,centrMax);
+    taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
   }
   else if(analysisType == "MCAOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
