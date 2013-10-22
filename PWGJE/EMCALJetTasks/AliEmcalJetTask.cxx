@@ -56,7 +56,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
-  fRecombScheme(fastjet::BIpt_scheme),
+  fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
@@ -97,7 +97,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
-  fRecombScheme(fastjet::BIpt_scheme),
+  fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
@@ -248,11 +248,7 @@ void AliEmcalJetTask::FindJets()
 
       // offset of 100 for consistency with cluster ids
       AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", iTracks, t->GetLabel(), t->Pt()));
-      if (fCodeDebug) { 
-        fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->E(), iTracks + 100);
-      } else {
-        fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
-      }
+      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->E(), iTracks + 100);
     }
   }
 
