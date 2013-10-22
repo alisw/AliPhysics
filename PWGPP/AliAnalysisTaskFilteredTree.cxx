@@ -603,7 +603,12 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     	return;
   }
 
+  AliESDVertex* vtxTPC = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
+  AliESDVertex* vtxSPD = (AliESDVertex*)esdEvent->GetPrimaryVertexSPD();
+
   if(!vtxESD) return;
+  if(!vtxTPC) return;
+  if(!vtxSPD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZv());
@@ -633,6 +638,9 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     vert[1] = vtxESD->GetYv();
     vert[2] = vtxESD->GetZv();
     Int_t mult = vtxESD->GetNContributors();
+    Int_t multSPD = vtxSPD->GetNContributors();
+    Int_t multTPC = vtxTPC->GetNContributors();
+
     Float_t bz = esdEvent->GetMagneticField();
     Int_t runNumber = esdEvent->GetRunNumber();
     Int_t evtTimeStamp = esdEvent->GetTimeStamp();
@@ -703,6 +711,8 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
 	"IRtot="<<ir1<<                      // interaction record history info
 	"IRint2="<<ir2<<
         "mult="<<mult<<                      // multiplicity of tracks pointing to the primary vertex
+        "multSPD="<<multSPD<<                // multiplicity of tracks pointing to the SPD primary vertex
+        "multTPC="<<multTPC<<                // multiplicity of tracks pointing to the TPC primary vertex
         "esdTrack.="<<track<<
         "centralityF="<<centralityF<<       
         "\n";
