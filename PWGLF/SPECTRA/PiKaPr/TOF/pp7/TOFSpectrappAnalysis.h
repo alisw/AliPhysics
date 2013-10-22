@@ -1,5 +1,5 @@
 #ifndef TOFSPECTRAPPANALYSIS_H
-#define TOFSPECTRAPOANALYSIS_H
+#define TOFSPECTRAPPANALYSIS_H
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
