@@ -466,10 +466,11 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     fileName = dirname;
     fileName += "/";
     fileName += basename;
+    /*
     if (fileName.BeginsWith("root:")) {
       fileName.Append("?ZIP=");
     }
-
+    */
     *fPathName = fileName;
     AliInfo(Form("Path: -%s-\n", fPathName->Data()));
     
