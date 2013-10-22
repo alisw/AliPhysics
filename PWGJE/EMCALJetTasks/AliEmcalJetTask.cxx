@@ -56,7 +56,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
-  fRecombScheme(-1),
+  fRecombScheme(fastjet::BIpt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
@@ -97,13 +97,13 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
-  fRecombScheme(-1),
+  fRecombScheme(fastjet::BIpt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
-  fLegacyMode(false),
+  fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
   fJets(0),
   fEvent(0),
@@ -185,8 +185,7 @@ void AliEmcalJetTask::FindJets()
   fjw.SetGhostArea(fGhostArea);
   fjw.SetR(fRadius);
   fjw.SetAlgorithm(jalgo);
-  if(fRecombScheme>=0)
-    fjw.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme)); 
+  fjw.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme)); 
   fjw.SetMaxRap(fEtaMax);
   fjw.Clear();
 
@@ -249,10 +248,11 @@ void AliEmcalJetTask::FindJets()
 
       // offset of 100 for consistency with cluster ids
       AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", iTracks, t->GetLabel(), t->Pt()));
-      if(fCodeDebug)
+      if (fCodeDebug) { 
         fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->E(), iTracks + 100);
-      else
+      } else {
         fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
+      }
     }
   }
 
