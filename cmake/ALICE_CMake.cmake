@@ -407,7 +407,7 @@ macro(ALICE_GenerateDictionary)
     # and so that the interpreter can parse the header files. 
     #
     # THIS SHOULD BE A TEMPORARY HACK!
-    ALICE_Format(DINC "-I{PROJECT_SOURCE_DIR}/" "" 
+    ALICE_Format(DINC "-I${PROJECT_SOURCE_DIR}/" "" 
       "${DINC};${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
   else()
   ALICE_Format(DINC "-I" "" "${DINC};${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
