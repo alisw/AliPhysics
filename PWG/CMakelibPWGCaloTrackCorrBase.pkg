@@ -50,6 +50,6 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGCaloTrackCorrBaseLinkDef.h)
 
-set ( EINCLUDE PWG/CaloTrackCorrBase EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE PWG/CaloTrackCorrBase EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )

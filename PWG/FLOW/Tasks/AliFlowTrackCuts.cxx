@@ -448,8 +448,12 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   
   fApplyRecentering = that.fApplyRecentering;
   fV0gainEqualizationPerRing = that.fV0gainEqualizationPerRing;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
   if (that.fV0gainEqualization) fV0gainEqualization = new TH1(*(that.fV0gainEqualization));
-
+#else
+  //PH Lets try Clone, however the result might be wrong
+  if (that.fV0gainEqualization) fV0gainEqualization = (TH1*)that.fV0gainEqualization->Clone();
+#endif
   for(Int_t i(0); i < 4; i++) { // no use to copy these guys since they're only initialized on worked node
       fV0Apol[i] = that.fV0Apol[i];
       fV0Cpol[i] = that.fV0Cpol[i];
