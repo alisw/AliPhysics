@@ -28,6 +28,7 @@
 
 //
 
+#include <RVersion.h>
 #include <Riostream.h>
 #include <TCanvas.h>
 #include <TClass.h>
@@ -324,7 +325,7 @@ void AliTPCRF1D::Update()
   for (Int_t i =0; i<fNRF;i++)  fcharge[i] = 0;
   if ( fGRF == 0 ) return;
   // This form is no longer available 
-#if ROOT_VERISON_CODE < ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
   fInteg  = fGRF->Integral(-5*forigsigma,5*forigsigma,funParam,0.00001);
 #else
   TArrayD savParam(fGRF->GetNpar(), fGRF->GetParameters());
@@ -339,7 +340,7 @@ void AliTPCRF1D::Update()
       Float_t x = (Float_t)(i-fNRF/2)/fDSTEPM1;
       Float_t x1=TMath::Max(x-fpadWidth/2,-5*forigsigma);
       Float_t x2=TMath::Min(x+fpadWidth/2,5*forigsigma);
-#if ROOT_VERISON_CODE < ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
       fcharge[i] = fkNorm*fGRF->Integral(x1,x2,funParam,0.0001)/fInteg;
 #else
       fcharge[i] = fkNorm*fGRF->Integral(x1,x2,0.0001)/fInteg;
@@ -368,7 +369,7 @@ void AliTPCRF1D::Update()
     fSigma = TMath::Sqrt(fSigma/sum-mean*mean);   
   }
   else fSigma=0; 
-#if ROOT_VERISON_CODE >= ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
   fGRF->SetParameters(savParam.GetArray());
 #endif
 }
