@@ -263,8 +263,8 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
     double pt = trSA->Pt();
     //
     Int_t nmatch = 0;
-    for (int i=kMaxMatch;i--;) {fMatchChi[i]=0; fMatchTr[i]=0;}
-    for (int it1=0;it1<ntr;it1++) {
+    for (int i=kMaxMatch;i--;) {fMatchChi[i]=0; fMatchTr[i]=0;} // reset array
+    for (int it1=0;it1<ntr;it1++) { 
       if (it1==it) continue;
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
@@ -284,7 +284,7 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
       if (it1==it) continue;
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
-      Match(trSA,trESD,TMath::Pi(), nmatch);
+      Match(trSA,trESD, nmatch, TMath::Pi());
     }
     //
     hNMatchBg->Fill(pt,nmatch);
@@ -300,7 +300,7 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
 }
 
 
-void AliAnalysisTrackingUncertainties::Match(const AliESDtrack* tr0, const AliESDtrack* tr1,Double_t rotate, Int_t nmatch) {
+void AliAnalysisTrackingUncertainties::Match(const AliESDtrack* tr0, const AliESDtrack* tr1, Int_t &nmatch, Double_t rotate) {
   //
   // check if two tracks are matching, possible rotation for combinatoric backgr.
   // 
@@ -398,14 +398,14 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Float_t maxDcaZ = fESDtrackCuts->GetMaxDCAToVertexZ();
     fESDtrackCuts->SetMaxDCAToVertexZ(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
-      Double_t vecHistDcaZ[kNumberOfAxes] = {dca[1], pT, eta, phi, 0.};
+      Double_t vecHistDcaZ[kNumberOfAxes] = {TMath::Abs(dca[1]), pT, eta, phi, 0.};
       histDcaZ->Fill(vecHistDcaZ);
     }
     fESDtrackCuts->SetMaxDCAToVertexZ(maxDcaZ);
     //
     // (4.) fill hit in SPD histogram
     //
-    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     if (fESDtrackCuts->AcceptTrack(track)) {
       Int_t hasPoint = 0;
       if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) hasPoint = 1;
@@ -533,9 +533,9 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   //
   // (3.) dca_z
   //                               0-dcaZ, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
-  Int_t    binsDcaZ[kNumberOfAxes] = { 10,   50,    20,            18,  6};
+  Int_t    binsDcaZ[kNumberOfAxes] = { 20,   50,    20,            18,  6};
   Double_t minDcaZ[kNumberOfAxes]  = {  0,  0.1,    -1,             0, -0.5};
-  Double_t maxDcaZ[kNumberOfAxes]  = {  5,   20,    +1, 2*TMath::Pi(),  5.5};
+  Double_t maxDcaZ[kNumberOfAxes]  = {  4,   20,    +1, 2*TMath::Pi(),  5.5};
   //
   TString axisNameDcaZ[kNumberOfAxes]  = {"dcaZ","pT","eta","phi","pid"};
   TString axisTitleDcaZ[kNumberOfAxes] = {"dcaZ","pT","eta","phi","pid"};
