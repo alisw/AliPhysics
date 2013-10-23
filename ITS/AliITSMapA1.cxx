@@ -229,17 +229,17 @@ Double_t AliITSMapA1::GetSignal(Int_t iz, Int_t ix) const{
     return signal;
 }
 //______________________________________________________________________
-FlagType AliITSMapA1::TestHit(Int_t iz, Int_t ix)  {
+FlagTypeITS AliITSMapA1::TestHit(Int_t iz, Int_t ix)  {
     // check whether the digit has already been flagged
 
-    if (CheckedIndex(iz, ix) < 0) return kEmpty;
+    if (CheckedIndex(iz, ix) < 0) return kEmptyITS;
     Int_t inf=fHitMap[CheckedIndex(iz, ix)]; 
     if (inf < 0) {
-	return kUsed;
+	return kUsedITS;
     } else if (inf == 0) {
-	return kEmpty;
+	return kEmptyITS;
     } else {
-	return kUnused;
+	return kUnusedITS;
     } // end if inf
 }
 
