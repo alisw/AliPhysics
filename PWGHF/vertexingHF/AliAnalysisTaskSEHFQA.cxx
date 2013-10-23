@@ -1634,7 +1634,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       // Track selection cuts
       if(track->GetID()<0) continue;
       Double_t d0z0[2],covd0z0[3];
-      track->PropagateToDCA(vtx1,aod->GetMagneticField(),99999.,d0z0,covd0z0);
+      if(!track->PropagateToDCA(vtx1,aod->GetMagneticField(),99999.,d0z0,covd0z0)) continue;
       if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
 	((TH1F*)fOutputTrack->FindObject("hd0TracksFilterBit4"))->Fill(d0z0[0]);
       }
@@ -1886,10 +1886,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    ((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
 	    isGoodTrack++;
 	  }
+
+	  if(fCuts->IsDaughterSelected(track,&vESD,fCuts->GetTrackCuts())){
+	    isSelTrack++;
+	  }//select tracks for our analyses
+
 	}
-	if(fCuts->IsDaughterSelected(track,&vESD,fCuts->GetTrackCuts())){
-	  isSelTrack++;
-	}//select tracks for our analyses
       } //fill track histos
     } //end loop on tracks
 
