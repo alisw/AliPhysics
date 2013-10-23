@@ -210,7 +210,7 @@ TMap* AliHLTPredictionProcessorTPC::produceTestData(TString aliasName)
 
     for (Int_t isensor=0; isensor<nentries; isensor++ ){
       fConfTreeTemp->GetEntry(isensor);
-      stringId = Form(kAmandaString.Data(),echa);
+      stringId = Form(kAmandaStringTPC.Data(),echa);
       tempDelta = (random.Rndm()-0.5)*tempVar;
       temp = defTemp + tempDelta;
       AliDCSValue* val = new AliDCSValue(temp, tt.GetTime());
