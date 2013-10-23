@@ -81,7 +81,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR  	AliHLTTriggerLinkDef.h)
 
-set ( EINCLUDE HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD HLT/ITS HLT/MUON MUON HLT/FJWrapper ${FASTJETENV}/include ${FASTJETENV}/include/fastjet ${FASTJETENV}/include/fastjet/internal )
+set ( EINCLUDE HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD HLT/ITS HLT/MUON MUON HLT/FJWrapper ${FASTJETENV}/include ${FASTJETENV}/include/fastjet ${FASTJETENV}/include/fastjet/internal STEER/ESD STEER/STEERBase STEER/STEER)
 
 set ( ELIBS  "HLTbase AliHLTTRD AliHLTMUON AliHLTUtil")
 
