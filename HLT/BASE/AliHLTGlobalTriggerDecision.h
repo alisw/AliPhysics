@@ -240,6 +240,12 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    */
   virtual /*const*/ TObject* FindObject(const TObject* obj) const;
   
+  /**
+   * This method is called in the streamer to mark the entries in
+   * fInputObjects as owned and deletable.  MUST be public for
+   * streamer evolution to work.
+   */
+  void MarkInputObjectsAsOwned();
  private:
   
   /**
@@ -248,11 +254,6 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    */
   void DeleteInputObjects();
   
-  /**
-   * This method is called in the streamer to mark the entries in fInputObjects as
-   * owned and deletable.
-   */
-  void MarkInputObjectsAsOwned();
   
   TClonesArray fContributingTriggers;  /// The list of contributing trigger decisions from all AliHLTTrigger components that were considered.
   TObjArray fInputObjects;  /// The list of other input objects.

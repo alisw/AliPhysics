@@ -338,6 +338,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 	}
 	next.Reset();
 	while((handler = (AliMCEventHandler*)next())) {
+	  if (!handler->MCEvent()) continue;
 	    fMCEvent->AddSubsidiaryEvent(handler->MCEvent());
 	}
 	fMCEvent->InitEvent();

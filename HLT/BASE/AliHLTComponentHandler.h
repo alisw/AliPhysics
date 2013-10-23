@@ -300,8 +300,9 @@ class AliHLTComponentHandler : public AliHLTLogging {
    */
   int ActivateAgents(const char* library=NULL, const char* blackList=NULL);
 
+public:
   /**
-   * Compound descriptor for component libraries
+   * Compound descriptor for component libraries - must be public 
    */
   struct AliHLTLibHandle {
     AliHLTLibHandle() : fHandle(NULL), fName(NULL), fMode(kDynamic) {}
@@ -312,7 +313,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
     /** library mode: kStatic means never unloaded */
     TLibraryMode fMode;                                            //! transient
   };
-
+private:
   /**
    * Find a specific library among the loaded libraries.
    * @param library     library name/path

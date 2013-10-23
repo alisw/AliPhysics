@@ -35,12 +35,12 @@ class AliHLTTPCDataCompressionIDMap: public AliHLTLogging{
   void SetIDMap( const AliHLTUInt8_t *data, AliHLTUInt32_t sizeBytes );
   int  WriteIDMap( AliHLTUInt8_t* output, AliHLTUInt32_t& sizeBytes );  
 
- private:
-
+  // Must be public for dictionary 
   struct AliIDMapEntry{
     AliHLTUInt32_t fHltID; // HLT ID of a cluster
     AliHLTUInt32_t fOfflineID; // offline ID of a cluster
   };
+ private:
   
   static Bool_t CompareIDs( const AliIDMapEntry &a, const AliIDMapEntry &b ){ return a.fHltID < b.fHltID; }
   

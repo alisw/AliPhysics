@@ -168,7 +168,7 @@ const char* AliHLTMUONAgent::GetRequiredComponentLibraries() const
 	static const char* libs[] =
 	{
 		"libCore.so",
-		"libCint.so",
+		// "libCint.so",
 		"libGraf.so",
 		"libRIO.so",
 		"libNet.so",

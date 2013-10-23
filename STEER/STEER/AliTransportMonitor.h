@@ -55,11 +55,11 @@ public:
     Int_t           GetPDG(Int_t itype)  const {return fPData[itype].fPDG;}
     Double_t        GetNSteps() const {return fNSteps;}
     TH2F           *GetHistogram() const {return fTimeRZ;}
-    AliPMonData    *GetPMonData(Int_t itype) const {AliPMonData obj = fPData[itype]; return &obj;} 
+    AliPMonData    *GetPMonData(Int_t itype) const {return &(fPData[itype]);} 
     void            Merge(AliTransportMonitorVol* volM);
     private:
       AliPMonData  &GetPMonData(Int_t pdg);
-      AliTransportMonitorVol(const AliTransportMonitorVol& other) : TNamed(other), fNtypes(0), fTotalTime(0), fPData(0), fTimeRZ(0), fParticles() {}
+  AliTransportMonitorVol(const AliTransportMonitorVol& other) : TNamed(other), fNtypes(0), fTotalTime(0), fNSteps(0), fPData(0), fTimeRZ(0), fParticles() {}
       AliTransportMonitorVol &operator=(const AliTransportMonitorVol&) {return *this;}
     private:
       Int_t         fNtypes;     // Number of different particle types

@@ -118,6 +118,9 @@ public:
 	/// Default destructor.
 	virtual ~AliHLTScalars();
 	
+  /// Needed by schema evolution 
+  const TClonesArray* GetScalars() const { return &fScalars; }
+	
 	/**
 	 * Adds a new scalar to the end of the scalars list.
 	 * If the scalar already exists then its values are updated instead.
