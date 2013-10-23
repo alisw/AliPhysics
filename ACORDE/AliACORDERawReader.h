@@ -67,6 +67,4 @@ enum EACORDERawStreamError {
  ClassDef(AliACORDERawReader,3) //class for reading ACORDE Raw data
 };
 
-typedef AliACORDERawReader AliSTARTRawReader; // for backward compatibility
- 
 #endif
