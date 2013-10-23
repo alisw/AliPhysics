@@ -365,6 +365,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Float_t eta = track->Eta();
     Float_t phi = track->Phi();
     Float_t chi2TPC = track->GetTPCchi2();
+    Double_t pid = Double_t(GetPid(track));
     if (nclsTPC != 0) {
       chi2TPC /= nclsTPC; 
     } else {
@@ -378,7 +379,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Int_t minNclsTPC = fESDtrackCuts->GetMinNClusterTPC();
     fESDtrackCuts->SetMinNClustersTPC(0);
     if (fESDtrackCuts->AcceptTrack(track)) {
-      Double_t vecHistNcl[kNumberOfAxes] = {nclsTPC, pT, eta, phi, 0.};
+      Double_t vecHistNcl[kNumberOfAxes] = {nclsTPC, pT, eta, phi, pid};
       histNcl->Fill(vecHistNcl);
     }
     fESDtrackCuts->SetMinNClustersTPC(minNclsTPC);
@@ -388,7 +389,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Float_t maxChi2 = fESDtrackCuts->GetMaxChi2PerClusterTPC();
     fESDtrackCuts->SetMaxChi2PerClusterTPC(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
-      Double_t vecHistChi2Tpc[kNumberOfAxes] = {chi2TPC, pT, eta, phi, 0.};
+      Double_t vecHistChi2Tpc[kNumberOfAxes] = {chi2TPC, pT, eta, phi, pid};
       histChi2Tpc->Fill(vecHistChi2Tpc);
     }
     fESDtrackCuts->SetMaxChi2PerClusterTPC(maxChi2);
@@ -398,7 +399,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Float_t maxDcaZ = fESDtrackCuts->GetMaxDCAToVertexZ();
     fESDtrackCuts->SetMaxDCAToVertexZ(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
-      Double_t vecHistDcaZ[kNumberOfAxes] = {TMath::Abs(dca[1]), pT, eta, phi, 0.};
+      Double_t vecHistDcaZ[kNumberOfAxes] = {TMath::Abs(dca[1]), pT, eta, phi, pid};
       histDcaZ->Fill(vecHistDcaZ);
     }
     fESDtrackCuts->SetMaxDCAToVertexZ(maxDcaZ);
@@ -409,7 +410,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     if (fESDtrackCuts->AcceptTrack(track)) {
       Int_t hasPoint = 0;
       if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) hasPoint = 1;
-      Double_t vecHistSpd[kNumberOfAxes] = {hasPoint, pT, eta, phi, 0.};
+      Double_t vecHistSpd[kNumberOfAxes] = {hasPoint, pT, eta, phi, pid};
       histSpd->Fill(vecHistSpd);
     }
     fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
@@ -488,6 +489,85 @@ Bool_t AliAnalysisTrackingUncertainties::IsVertexAccepted(AliESDEvent * esd, Flo
 
 }
 
+//________________________________________________________________________
+AliAnalysisTrackingUncertainties::ESpecies_t AliAnalysisTrackingUncertainties::GetPid(const AliESDtrack * const tr, Bool_t useTPCTOF) const {
+    //
+    // Determine particle species for a given track
+    // Two approaches can be used: As default the selection is done using TPC-only, in addition
+    // the TOF usage is optional. In case of TPC-TOF, a valid TOF signal has to be provided for 
+    // the given track. The identification is delegated to helper function for each species. 
+    // Tracks which are selected as more than one species (ambiguous decision) are rejected.
+    //
+    // @Return: Particles species (kUndef in case no identification is possible)
+    //
+    if(!fESDpid) return kUndef;
+    if(useTPCTOF && !(tr->GetStatus() & AliVTrack::kTOFpid)) return kUndef;
+
+    Bool_t isElectron(kFALSE), isPion(kFALSE), isKaon(kFALSE), isProton(kFALSE);
+    Int_t nspec(0);
+    if((isElectron = IsElectron(tr, useTPCTOF))) nspec++;
+    if((isPion = IsPion(tr, useTPCTOF))) nspec++;
+    if((isKaon = IsKaon(tr, useTPCTOF))) nspec++;
+    if((isProton = IsProton(tr,useTPCTOF))) nspec++;
+    if(nspec != 1) return kUndef;   // No decision or ambiguous decision;
+    if(isElectron) return kSpecElectron;
+    if(isPion) return kSpecElectron;
+    if(isProton) return kSpecElectron;
+    if(isKaon) return kSpecElectron;
+    return kUndef;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTrackingUncertainties::IsElectron(const AliESDtrack * const tr, Bool_t useTPCTOF) const {
+    //
+    // Selection of electron candidates using the upper half of the TPC sigma band, starting at 
+    // the mean ignoring its shift, and going up to 3 sigma above the mean. In case TOF information 
+    // is available, tracks which are incompatible with electrons within 3 sigma are rejected. If 
+    // no TOF information is used, the momentum regions where the kaon and the proton line cross 
+    // the electron line are cut out using a 3 sigma cut around the kaon or proton line.
+    //
+
+    Float_t nsigmaElectronTPC = fESDpid->NumberOfSigmasTPC(tr, AliPID::kElectron);
+    if(nsigmaElectronTPC < 0 || nsigmaElectronTPC  > 3) return kFALSE;
+
+    if(useTPCTOF){
+        Float_t nsigmaElectronTOF = fESDpid->NumberOfSigmasTOF(tr, AliPID::kElectron);
+        if(TMath::Abs(nsigmaElectronTOF) > 3) return kFALSE;
+        else return kTRUE;
+    } else {
+        Float_t nsigmaKaonTPC = fESDpid->NumberOfSigmasTPC(tr, AliPID::kKaon),
+                nsigmaProtonTPC =fESDpid->NumberOfSigmasTPC(tr, AliPID::kProton);
+        if(TMath::Abs(nsigmaKaonTPC < 3) || TMath::Abs(nsigmaProtonTPC < 3)) return kFALSE;
+        else return kTRUE;
+    }
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTrackingUncertainties::IsPion(const AliESDtrack * const /*tr*/, Bool_t /*useTPCPTOF*/) const{
+    //
+    // Selectron of pion candidates
+    // @TODO: To be implemented
+    //
+    return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTrackingUncertainties::IsKaon(const AliESDtrack * const /*tr*/, Bool_t /*useTPCPTOF*/) const {
+    //
+    // Selection of kaon candidates
+    // @TODO: To be implemented
+    //
+    return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTrackingUncertainties::IsProton(const AliESDtrack * const /*tr*/, Bool_t /*useTPCPTOF*/) const{
+    // 
+    // Selection of proton candidates
+    // @TODO: To be implemented
+    //
+    return kFALSE;
+}
 
 //________________________________________________________________________
 void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
