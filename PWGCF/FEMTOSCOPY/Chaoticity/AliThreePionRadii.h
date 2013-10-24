@@ -87,6 +87,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
   void SetRMax(Int_t rbin) {fRMax = rbin;}
+  void SetTriggerType(Int_t tt) {fTriggerType = tt;}
   //
 
 
@@ -190,6 +191,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   Bool_t fV0Mbinning;
   Int_t fCentBinLowLimit;
   Int_t fCentBinHighLimit;
+  Int_t fTriggerType;
   Int_t fEventCounter;
   Int_t fEventsToMix;
   Int_t fZvertexBins;
