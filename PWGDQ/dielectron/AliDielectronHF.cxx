@@ -396,7 +396,7 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
   }
 
   // all pair types w/o use of mc information
-  if(fPairType!=kMConly) return;
+  if(fPairType==kMConly) return;
 
   // select correct step if we are looking at signals too
   if(fHasMC && fSignalsMC) pairIndex += ( fSignalsMC->GetEntries() * (fStepGenerated ? 2 : 1) );
