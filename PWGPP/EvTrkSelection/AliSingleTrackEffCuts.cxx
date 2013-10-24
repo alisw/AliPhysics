@@ -19,6 +19,8 @@
 
 #include "AliSingleTrackEffCuts.h"
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliSingleTrackEffCuts)
 
