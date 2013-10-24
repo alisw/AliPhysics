@@ -73,6 +73,7 @@ AliAnalysisTaskSE(),
   fV0Mbinning(kFALSE),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
+  fTriggerType(0),
   fEventCounter(0),
   fEventsToMix(0),
   fZvertexBins(0),
@@ -195,6 +196,7 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
   fV0Mbinning(kFALSE),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
+  fTriggerType(0),
   fEventCounter(0),
   fEventsToMix(0),
   fZvertexBins(0),
@@ -322,6 +324,7 @@ AliThreePionRadii::AliThreePionRadii(const AliThreePionRadii &obj)
     fV0Mbinning(obj.fV0Mbinning),
     fCentBinLowLimit(obj.fCentBinLowLimit),
     fCentBinHighLimit(obj.fCentBinHighLimit),
+    fTriggerType(obj.fTriggerType),
     fEventCounter(obj.fEventCounter),
     fEventsToMix(obj.fEventsToMix),
     fZvertexBins(obj.fZvertexBins),
@@ -408,6 +411,7 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fV0Mbinning = obj.fV0Mbinning;
   fCentBinLowLimit = obj.fCentBinLowLimit;
   fCentBinHighLimit = obj.fCentBinHighLimit;
+  fTriggerType = obj.fTriggerType;
   fEventCounter = obj.fEventCounter;
   fEventsToMix = obj.fEventsToMix;
   fZvertexBins = obj.fZvertexBins;
@@ -1042,9 +1046,16 @@ void AliThreePionRadii::Exec(Option_t *)
       Bool_t isSelected3 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
       if(!isSelected1 && !isSelected2 && !isSelected3 && !fMCcase) {return;}
     }
+  }else{// pp and pPb
+    Bool_t isSelected[4]={kFALSE};
+    isSelected[0] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    isSelected[1] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);
+    isSelected[2] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+    isSelected[3] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMult);
+    if(!isSelected[fTriggerType]) return;
   }
-
-    
+  
+  
   ///////////////////////////////////////////////////////////
   const AliAODVertex *primaryVertexAOD;
   AliCentrality *centrality;// for AODs and ESDs
