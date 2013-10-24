@@ -134,6 +134,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"EMCAL_Dispersion",       "EMCAL dispersion param.",                            ""},
 
   {"EffLeg",                 "A#times#epsilon",                                    ""},
+  {"OneOverEffLeg",          "(A#times#epsilon)^{-1}",                             ""},
   {"V0Index0",               "V0Index0",                                           ""},
   {"KinkIndex0",             "KinkIndex0",                                         ""},
   //
@@ -192,6 +193,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"MomAsymDau1",            "#it{p}^{leg1}/#it{p}^{pair}",                        ""},
   {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
   {"EffPair",                "A#times#epsilon",                                    ""},
+  {"OneOverEffPair",         "(A#times#epsilon)^{-1}",                             ""},
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
