@@ -44,6 +44,7 @@ set ( SRCS
         GammaConv/AliGammaConversionAODBGHandler.cxx
         GammaConv/AliAnalysisTaskConversionQA.cxx
         GammaConv/AliAnalysisTaskMaterial.cxx
+        GammaConv/AliAnalysisTaskResolution.cxx
 	GammaConv/AliAnalysisTaskPi0v2.cxx
         GammaConv/AliAnalysisTaskGammaConvV1.cxx
         GammaConv/AliAnalysisTaskGammaConvDalitzV1.cxx
