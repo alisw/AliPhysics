@@ -126,6 +126,37 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
       cutarray[ 0] = "469000104209297002322000000"; mesonCutArray[ 0] = "01522065009000";
    } else if (trainConfig == 15) { 
       cutarray[ 0] = "589000104209297002322000000"; mesonCutArray[ 0] = "01522065009000";    
+   } else  if (trainConfig == 16){ 
+      cutarray[ 0] = "601000203209297002322000000"; mesonCutArray[ 0] = "01523045009000"; 
+   } else if (trainConfig == 17) { 
+      cutarray[ 0] = "612000103209297002322000000"; mesonCutArray[ 0] = "01523045009000"; 
+   } else if (trainConfig == 18) { 
+      cutarray[ 0] = "501000103209297002322000000"; mesonCutArray[ 0] = "01523045009000"; 
+   } else if (trainConfig == 19) { 
+      cutarray[ 0] = "502000103209297002322000000"; mesonCutArray[ 0] = "01523045009000";    
+   } else if (trainConfig == 20) { 
+      cutarray[ 0] = "512000103209297002322000000"; mesonCutArray[ 0] = "01523045009000";    
+   } else if (trainConfig == 21) { 
+      cutarray[ 0] = "524000103209297002322000000"; mesonCutArray[ 0] = "01523045009000";       
+   } else if (trainConfig == 22) {    
+      cutarray[ 0] = "546000103209297002322000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 23) {    
+      cutarray[ 0] = "548000103209297002322000000"; mesonCutArray[ 0] = "01523065009000";    
+   } else if (trainConfig == 24) {    
+      cutarray[ 0] = "545000103209297002322000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 25) { 
+      cutarray[ 0] = "556000103209297002322000000"; mesonCutArray[ 0] = "01523065009000";
+   } else if (trainConfig == 26) { 
+      cutarray[ 0] = "568000103209297002322000000"; mesonCutArray[ 0] = "01523065009000";    
+   } else if (trainConfig == 27) { 
+      cutarray[ 0] = "567000103209297002322000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 28) { 
+      cutarray[ 0] = "578000103209297002322000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 29) { 
+      cutarray[ 0] = "469000103209297002322000000"; mesonCutArray[ 0] = "01523065009000";
+   } else if (trainConfig == 30) { 
+      cutarray[ 0] = "589000103209297002322000000"; mesonCutArray[ 0] = "01523065009000";    
+
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
