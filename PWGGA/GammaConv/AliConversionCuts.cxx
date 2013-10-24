@@ -2259,7 +2259,7 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
          fEtaCutMin     = -0.1;
          fLineCutZRSlopeMin = 0.;
          break;
-      else {   
+      } else {   
          fEtaCut     = 0.3;
          fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
          fEtaCutMin     = -0.1;
