@@ -15,6 +15,7 @@ AliThreePionRadii *AddTaskThreePionRadii(
 				 Float_t SigmaCutTOF=2.0,
 				 Int_t NumKt3bins=1,
 				 Bool_t V0Mbinning=kFALSE,
+				 Int_t TriggerType=0,
 				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_TPR.root"
 				 ) {
   
@@ -25,7 +26,7 @@ AliThreePionRadii *AddTaskThreePionRadii(
     return NULL;
   }
  
-
+  
   //____________________________________________//
   // Create task
   AliThreePionRadii *ThreePionRadiiTask = new AliThreePionRadii("ThreePionRadiiTask");
@@ -45,6 +46,7 @@ AliThreePionRadii *AddTaskThreePionRadii(
   ThreePionRadiiTask->SetNsigmaTOF(SigmaCutTOF);
   ThreePionRadiiTask->SetNumKt3Bins(NumKt3bins);
   ThreePionRadiiTask->SetV0Mbinning(V0Mbinning);
+  ThreePionRadiiTask->SetTriggerType(TriggerType);
   mgr->AddTask(ThreePionRadiiTask);
 
 
