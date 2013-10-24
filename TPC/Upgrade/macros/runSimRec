@@ -26,4 +26,5 @@ module load $mod
 test -d $outDir || mkdir -p $outDir
 cd $outDir
 
+echo root.exe -l -b -q $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C} $ALICE_ROOT/TPC/Upgrade/macros/runSimRec.C\($simtype,$SCtype,$nevents,$ntracks,$rate,$gas\)
 root.exe -l -b -q $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C} $ALICE_ROOT/TPC/Upgrade/macros/runSimRec.C\($simtype,$SCtype,$nevents,$ntracks,$rate,$gas\)
