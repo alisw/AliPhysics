@@ -111,7 +111,7 @@ AliDielectronHF::~AliDielectronHF()
 //_____________________________________________________________________________
 void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
 				      const TVectorD * const binsX,
-				      UInt_t valTypeX, TString option)
+				      UInt_t valTypeX, TString option, UInt_t valTypeW)
 {
   //
   // Histogram creation 1D case with arbitraty binning X
@@ -119,7 +119,7 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   //
 
   TH1 *hist=0x0;
-  if(valTypeP==999)
+  if(valTypeP==AliDielectronHistos::kNoProfile)
     hist=new TH1F("","",binsX->GetNrows()-1,binsX->GetMatrixArray());
   else {
     TString opt=""; Double_t pmin=0., pmax=0.;
@@ -140,6 +140,7 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   UInt_t valType[4] = {0};
   valType[0]=valTypeX;     valType[1]=valTypeP;
   AliDielectronHistos::StoreVariables(hist, valType);
+  hist->SetUniqueID(valTypeW); // store weighting variable
 
   // adapt the name and title of the histogram in case they are empty
   AliDielectronHistos::AdaptNameTitle(hist, histClass);
@@ -152,7 +153,7 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
 //_____________________________________________________________________________
 void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
 				      const TVectorD * const binsX, const TVectorD * const binsY,
-				      UInt_t valTypeX, UInt_t valTypeY, TString option)
+				      UInt_t valTypeX, UInt_t valTypeY, TString option, UInt_t valTypeW)
 {
   //
   // Histogram creation 2D case with arbitraty binning X and Y
@@ -160,7 +161,7 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   //
 
   TH1 *hist=0x0;
-  if(valTypeP==999) {
+  if(valTypeP==AliDielectronHistos::kNoProfile) {
     hist=new TH2F("","",
 		  binsX->GetNrows()-1,binsX->GetMatrixArray(),
 		  binsY->GetNrows()-1,binsY->GetMatrixArray()); 
@@ -185,6 +186,7 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   UInt_t valType[4] = {0};
   valType[0]=valTypeX;     valType[1]=valTypeY; valType[3]=valTypeP;
   AliDielectronHistos::StoreVariables(hist, valType);
+  hist->SetUniqueID(valTypeW); // store weighting variable
 
   // adapt the name and title of the histogram in case they are empty
   AliDielectronHistos::AdaptNameTitle(hist, histClass);
@@ -198,14 +200,14 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
 //_____________________________________________________________________________
 void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
 				      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-				      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, TString option)
+				      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, TString option, UInt_t valTypeW)
 {
   //
   // Histogram creation 3D case with arbitraty binning X, Y, Z
   // the TVectorD is assumed to be surplus after the creation and will be deleted!!!
   //
   TH1 *hist=0x0;
-  if(valTypeP==999) {
+  if(valTypeP==AliDielectronHistos::kNoProfile) {
     hist=new TH3F("","",
 		  binsX->GetNrows()-1,binsX->GetMatrixArray(),
 		  binsY->GetNrows()-1,binsY->GetMatrixArray(),
@@ -232,6 +234,7 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   UInt_t valType[4] = {0};
   valType[0]=valTypeX;     valType[1]=valTypeY;     valType[2]=valTypeZ;     valType[3]=valTypeP;
   AliDielectronHistos::StoreVariables(hist, valType);
+  hist->SetUniqueID(valTypeW); // store weighting variable
 
   // adapt the name and title of the histogram in case they are empty
   AliDielectronHistos::AdaptNameTitle(hist, histClass);
@@ -367,7 +370,7 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
   //
   
   // only OS pairs in case of MC
-  if(fHasMC && pairIndex!=AliDielectron::kEv1PM) return;
+  //////////////////////////////  if(fHasMC && pairIndex!=AliDielectron::kEv1PM) return;
 
   // only selected pair types in case of data
   if(!IsPairTypeSelected(pairIndex)) return;
@@ -383,26 +386,33 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
   AliDielectronVarManager::Fill(particle->GetSecondDaughter(),valuesLeg2);
 
   // fill
-  if(!fHasMC) { Fill(pairIndex, valuesPair,  valuesLeg1, valuesLeg2); }
-  if(fHasMC && fSignalsMC) {
+
+  // mc source steps (only OS SE pairs)
+  if(fHasMC && fSignalsMC && pairIndex==AliDielectron::kEv1PM) {
     for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
       if(AliDielectronMC::Instance()->IsMCTruth(particle, (AliDielectronSignalMC*)fSignalsMC->At(i))) 
 	Fill(i, valuesPair,  valuesLeg1, valuesLeg2);
     }
   }
-  
+
+  // all pair types w/o use of mc information
+  if(fPairType!=kMConly) return;
+
+  // select correct step if we are looking at signals too
+  if(fHasMC && fSignalsMC) pairIndex += ( fSignalsMC->GetEntries() * (fStepGenerated ? 2 : 1) );
+  Fill(pairIndex, valuesPair,  valuesLeg1, valuesLeg2); 
+
   return;
-  
 }
 
 //______________________________________________
-void AliDielectronHF::Fill(Int_t Index, Double_t * const valuesPair, Double_t * const valuesLeg1, Double_t * const valuesLeg2)
+void AliDielectronHF::Fill(Int_t index, Double_t * const valuesPair, Double_t * const valuesLeg1, Double_t * const valuesLeg2)
 {
   //
   // main fill function using index and values as input
   //
 
-  TObjArray *histArr = static_cast<TObjArray*>(fArrPairType.At(Index));
+  TObjArray *histArr = static_cast<TObjArray*>(fArrPairType.At(index));
   if(!histArr) return;
 
   Int_t size  = GetNumberOfBins();
@@ -481,7 +491,7 @@ void AliDielectronHF::Init()
 
   // init pair type array
   fArrPairType.SetName(Form("%s_HF",GetName()));
-  if(fHasMC) fArrPairType.Expand(steps);
+  if(fHasMC && fPairType!=kMConly) fArrPairType.Expand(steps+(AliDielectron::kEv1PMRot+1));
   else fArrPairType.Expand(AliDielectron::kEv1PMRot+1);
 
   Int_t size  = GetNumberOfBins();
@@ -500,7 +510,7 @@ void AliDielectronHF::Init()
     //histArr->AddAt(fRefObj.Clone(Form("h%04d",ihist)), ihist);
   }
 
-  // loop over all cut variables and do the naming according to it bin cell
+  // loop over all cut variables and do the naming according to its bin cell
   Int_t nvars = fAxes.GetEntriesFast();
   for(Int_t ivar=0; ivar<nvars; ivar++) {
     
@@ -539,25 +549,28 @@ void AliDielectronHF::Init()
   } //end: cut loop
 
   // copy array to the selected pair types/ MC sources
+
+  // mc sources
   if(fHasMC) {
     for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
-	TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetTitle());
-	fArrPairType[i]=(TObjArray*)histArr->Clone(title.Data());
-	if(fStepGenerated)  {
-	  title+=" MC truth";
-	  fArrPairType[i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
-	}
+      TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetTitle());
+      fArrPairType[i]=(TObjArray*)histArr->Clone(title.Data());
+      if(fStepGenerated)  {
+	title+=" MC truth";
+	fArrPairType[i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
+      }
     } // end: loop over sources
-
-   }
-   else {
-    for(Int_t i=0; i<AliDielectron::kEv1PMRot+1; i++) {
-      fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i)));
-      if(!IsPairTypeSelected(i))  ((TObjArray*)fArrPairType[i])->Delete();
-    } //end: loop over pair types
-
   }
-  
+
+  // pair types
+  if(fPairType != kMConly) {
+    for(Int_t i=steps; i<steps+AliDielectron::kEv1PMRot+1; i++) {
+      fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i-steps)));
+      ((TObjArray*)fArrPairType[i])->SetOwner();
+      if(!IsPairTypeSelected(i-steps))  ((TObjArray*)fArrPairType[i])->Delete();
+    } //end: loop over pair types
+  }
+
   // clean up
   if(histArr) {
     delete histArr;
@@ -588,7 +601,7 @@ Bool_t AliDielectronHF::IsPairTypeSelected(Int_t itype)
   Bool_t selected = kFALSE;
 
   // fill all
-  if(fPairType==kAll) selected=kTRUE;
+  if(fPairType==kAll) return kTRUE;
 
   switch(itype) {
   case AliDielectron::kEv1PP: 

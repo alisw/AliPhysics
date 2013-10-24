@@ -115,6 +115,7 @@ void AliDielectronCutGroup::Print(const Option_t* /*option*/) const
   // Print cuts and the range
   //
 
+  // TODO: add compOperator printout
   TIter listIterator(&fCutGroupList);
   while (AliAnalysisCuts *thisCut = (AliAnalysisCuts*) listIterator()) {
     thisCut->Print();

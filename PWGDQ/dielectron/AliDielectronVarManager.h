@@ -184,6 +184,7 @@ public:
     kEMCALDispersion,        // Dispersion paramter
     
     kLegEff,                 // single electron efficiency
+    kOneOverLegEff,          // 1 / single electron efficiency (correction factor)
     kV0Index0,               // v0 index 0
     kKinkIndex0,             // kink index 0
       
@@ -248,7 +249,8 @@ public:
     kTRDpidEffPair,          // TRD pid efficieny from conversion electrons
     kMomAsymDau1,            // momentum fraction of daughter1
     kMomAsymDau2,            // momentum fraction of daughter2
-    kPairEff,                 // pair efficiency
+    kPairEff,                // pair efficiency
+    kOneOverPairEff,         // 1 / pair efficiency (correction factor)
     kPairMax,                 //
   // Event specific variables
     kXvPrim=kPairMax,        // prim vertex
@@ -738,7 +740,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kEMCALM20]        = showershape[2];
   values[AliDielectronVarManager::kEMCALDispersion] = showershape[3];
 
-  values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
+  values[AliDielectronVarManager::kLegEff]        = GetSingleLegEff(values);
+  values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
   //restore TPC signal if it was changed
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 }
@@ -959,6 +962,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   
   values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
   values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
+  values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
+
 }
 
 inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *particle, Double_t * const values)
@@ -1322,7 +1327,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kOpeningAngle] =  lv1.Angle(lv2.Vect());
 
 	values[AliDielectronVarManager::kOneOverPt] = (values[AliDielectronVarManager::kPt]>0. ? 1./values[AliDielectronVarManager::kPt] : -9999.);
-	values[AliDielectronVarManager::kPhi]       = (lv1+lv2).Phi();
+	values[AliDielectronVarManager::kPhi]       = (lv1+lv2).Phi()+TMath::Pi(); // change interval to [0,+2pi]
 	values[AliDielectronVarManager::kEta]       = (lv1+lv2).Eta();
 
 	values[AliDielectronVarManager::kY]       = (lv1+lv2).Rapidity();
@@ -1496,6 +1501,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     Fill(leg1, valuesLeg1);
     Fill(leg2, valuesLeg2);
     values[AliDielectronVarManager::kPairEff] = valuesLeg1[AliDielectronVarManager::kLegEff] *valuesLeg2[AliDielectronVarManager::kLegEff];
+    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 0.0);
+
   }
 }
 
@@ -2143,8 +2150,10 @@ inline void AliDielectronVarManager::InitEffMap(const Char_t* filename) {
   if(!hFnd || !hGen) return;
 
   fgEffMap  = (THnBase*) hFnd->Clone("effMap");
-  fgEffMap->Divide(hFnd, hGen, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
-  if(fgEffMap) printf("[I] AliDielectronVarManager::InitEffMap eff map loaded! \n");
+  fgEffMap->Reset();
+  fgEffMap->Sumw2();
+  fgEffMap->Divide(hFnd, hGen);//, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
+  if(fgEffMap) printf("[I] AliDielectronVarManager::InitEffMap efficiency maps loaded! \n");
 }
 
 inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values) {
@@ -2158,8 +2167,11 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   for(Int_t idim=0; idim<dim; idim++) {
     UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
     idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
+    if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins()) 
+      printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName());
+    //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgEffMap->GetAxis(idim)->GetName());
   }
-  /* printf("bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx)); */
+  //  printf(" bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx));
   return (fgEffMap->GetBinContent(idx));
 }
 

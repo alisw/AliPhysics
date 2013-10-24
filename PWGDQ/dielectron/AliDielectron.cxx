@@ -185,13 +185,13 @@ AliDielectron::~AliDielectron()
   // Default destructor
   //
   if (fQAmonitor) delete fQAmonitor;
-  if (fHistoArray) delete fHistoArray;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
   if (fMixing) delete fMixing;
   if (fSignalsMC) delete fSignalsMC;
   if (fCfManagerPair) delete fCfManagerPair;
+  if (fHistoArray) delete fHistoArray;
 }
 
 //________________________________________________________________
@@ -680,12 +680,6 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
     // track mapping
     TMap mapRemovedTracks;
 
-    // eta gap ?
-    //Bool_t etagap = kFALSE;
-    //for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
-    //  TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
-    //  if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
-    //}
 
     Double_t cQX=0., cQY=0.;
     // apply cuts to the tracks, e.g. etagap
@@ -1056,7 +1050,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
       UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
       
       //apply cut
-      if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);;
+      if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
     }
     arrTracks1.Compress();
     
@@ -1128,11 +1122,10 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
       //pair cuts
       UInt_t cutMask=fPairFilter.IsSelected(candidate);
-      
+
       //CF manager for the pair
       if (fCfManagerPair) fCfManagerPair->Fill(cutMask,candidate);
-      //histogram array for the pair
-      if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
+
       // cut qa
       if(pairIndex==kEv1PM && fCutQA) {
 	fQAmonitor->FillAll(candidate);
@@ -1141,6 +1134,9 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
       //apply cut
       if (cutMask!=selectedMask) continue;
+
+      //histogram array for the pair
+      if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
 
       //add the candidate to the candidate array 
       PairArray(pairIndex)->Add(candidate);
@@ -1173,14 +1169,16 @@ void AliDielectron::FillPairArrayTR()
     
     //CF manager for the pair
     if (fCfManagerPair) fCfManagerPair->Fill(cutMask,&candidate);
-    //histogram array for the pair
-    if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
     
     //apply cut
     if (cutMask==selectedMask) {
-     if(fHistos) FillHistogramsPair(&candidate);
-     if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
-    } 
+
+      //histogram array for the pair
+      if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
+
+      if(fHistos) FillHistogramsPair(&candidate);
+      if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
+    }
   }
 }
 
