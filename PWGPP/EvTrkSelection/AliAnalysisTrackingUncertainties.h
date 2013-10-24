@@ -19,7 +19,7 @@ class AliESDpid;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
-#include "THnSparse.h"
+#include "THn.h"
 
 // ITS->TPC matching constants
 const int kMaxMatch=5;
