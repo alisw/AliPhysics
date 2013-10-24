@@ -94,8 +94,8 @@ void AddTask_Material(TString V0ReaderCutNumber = "000000006008400100150000000",
 
 
    // suitable cuts for the material Task:
-   // PbPb:  TaskCutnumber = "568000009009266374380000000"; TPC mult in MC - 60-80% central
-   //   or:  TaskCutnumber = "168000009009266374380000000"; V0 mult in MC  - 60-80% central
+   // PbPb:  TaskCutnumber = "568000106009266304480300000"; TPC mult in MC - 60-80% central
+   //   or:  TaskCutnumber = "168000106009266304480300000"; V0 mult in MC  - 60-80% central
    //  pPb:  TaskCutnumber = "800000009009266374380000000";
    //   pp:  TaskCutnumber = "000000009009266374380000000";
 

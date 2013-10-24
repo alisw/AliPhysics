@@ -50,8 +50,9 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
   }
 
   //=========  Set Cutnumber for V0Reader ================================
+			   
   TString ConvCutnumber = "108000000008400100150000000";   //Online  V0 finder
-  TString ElecCuts      = "9031620005500202100";            //Electron Cuts
+  TString ElecCuts      = "9000620000000200000";            //Electron Cuts
                            //903162000550020210
                            //900054000000020000
 
@@ -151,14 +152,16 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
        ConvCutarray[1]  = "146000104209297100720000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
        ConvCutarray[2]  = "168000104209297100720000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
   } else if ( trainConfig == 2 ) {
-       ConvCutarray[0]  = "524000104209297100720000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
-       ConvCutarray[1]  = "546000104209297100720000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
-       ConvCutarray[2]  = "568000104209297100720000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
-  } else if ( trainConfig == 3 ) {
-       ConvCutarray[0]  = "524000104209297100720000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny
-       ConvCutarray[1]  = "546000104209297100720000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny
-       ConvCutarray[2]  = "568000104209297100720000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny
-  }
+    
+       ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny Alpha cut 0.75
+       ConvCutarray[1]  = "546000104209297100120000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny Alpha cut 0.80      
+       ConvCutarray[2]  = "568000104209297100120000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny Alpha cut 0.80
+      
+    } else if ( trainConfig == 3 ) {
+       ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Alpha cut 0.75
+       ConvCutarray[1]  = "546000104209297100120000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Alpha cut 0.80      
+       ConvCutarray[2]  = "568000104209297100120000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Alpha cut 0.80
+    }
 
 
   TList *ConvCutList  = new TList();

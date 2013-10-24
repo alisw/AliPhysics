@@ -2216,7 +2216,7 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
       fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
-   case 1:  // 1.2  // changed from 1.2 to 0.6 on 2013.06.10
+   case 1:  // 0.6  // changed from 1.2 to 0.6 on 2013.06.10
       fEtaCut     = 0.6;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
       fEtaCutMin     = -0.1;
@@ -2228,8 +2228,8 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
       fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
-   case 3: // 0.8
-      fEtaCut     = 0.8;
+   case 3: // 0.65
+      fEtaCut     = 0.65;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
       fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
@@ -2253,11 +2253,19 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
       fLineCutZRSlopeMin = 0.;
       break;
    case 7:
-      fEtaCut     = 0.3;
-      fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin     = -0.1;
-      fLineCutZRSlopeMin = 0.;
-      break;
+      if (fIsHeavyIon==1){
+         fEtaCut     = 0.7;
+         fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+         fEtaCutMin     = -0.1;
+         fLineCutZRSlopeMin = 0.;
+         break;
+      else {   
+         fEtaCut     = 0.3;
+         fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+         fEtaCutMin     = -0.1;
+         fLineCutZRSlopeMin = 0.;
+         break;
+      }
    // case 8: // 0.1 - 0.8
    //    fEtaCut     = 0.9;
    //    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
