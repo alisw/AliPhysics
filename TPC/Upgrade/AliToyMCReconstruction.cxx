@@ -1769,14 +1769,15 @@ void AliToyMCReconstruction::InitSpaceCharge()
   // Init the space charge map
   //
 
-  TString filename="$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root";
+//   TString filename="$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root";
+  TString filename;
   if (fTree) {
     TList *l=fTree->GetUserInfo();
     for (Int_t i=0; i<l->GetEntries(); ++i) {
       TObject *o=l->At(i);
       if (o->IsA() == TObjString::Class()){
         TString s(o->GetName());
-        if (s.Contains("SC_")) {
+        if (s.Contains("lookup.root")) {
           filename=s;
           break;
         }
@@ -1784,7 +1785,12 @@ void AliToyMCReconstruction::InitSpaceCharge()
     }
   }
 
-  printf("Initialising the space charge map using the file: '%s'\n",filename.Data());
+  if (filename.IsNull()) {
+    AliFatal("No SC map provided in the Userinfo of the simulation tree");
+    return;
+  }
+  
+  AliInfo(Form("Initialising the space charge map using the file: '%s'\n",filename.Data()));
   TFile f(filename.Data());
   fTPCCorrection=(AliTPCCorrection*)f.Get("map");
   
