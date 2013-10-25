@@ -1773,10 +1773,13 @@ void AliToyMCReconstruction::InitSpaceCharge()
   if (fTree) {
     TList *l=fTree->GetUserInfo();
     for (Int_t i=0; i<l->GetEntries(); ++i) {
-      TString s(l->At(i)->GetName());
-      if (s.Contains("SC_")) {
-        filename=s;
-        break;
+      TObject *o=l->At(i);
+      if (o->IsA() == TObjString::Class()){
+        TString s(o->GetName());
+        if (s.Contains("SC_")) {
+          filename=s;
+          break;
+        }
       }
     }
   }

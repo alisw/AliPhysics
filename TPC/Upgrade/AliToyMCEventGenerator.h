@@ -5,6 +5,7 @@
 
 class TFile;
 class TTree;
+class TObjArray;
 
 class AliTPCParam;
 class AliTPCCorrection;
@@ -74,14 +75,21 @@ class AliToyMCEventGenerator : public TObject {
 
   void SetIsLaser(Bool_t use) { fIsLaser=use;    }
   Bool_t GetIsLaser() const   { return fIsLaser; }
+
+  void   SetSCListFile(const char* file) { fSCListFile=file;          }
+  const char* GetSCListFile() const      { return fSCListFile.Data(); }
+  void   SetPrereadSCList(Bool_t b)      { fPrereadSCList=b;          }
+  Bool_t GetPrereadSCList() const        { return fPrereadSCList;     }
+  Bool_t HasSCList() const               { return  fSCList!=0x0;      }
   
  protected:
-  AliTPCParam *fTPCParam;
-  AliToyMCEvent *fEvent;
+  AliTPCParam *fTPCParam;                //! TPC params
+  AliToyMCEvent *fEvent;                 //! Toy event
   
   Bool_t ConnectOutputFile();
   Bool_t CloseOutputFile();
   void FillTree();
+  void IterateSC(Int_t ipos=-1);
 
   UInt_t fCurrentTrack;                  // unique track id within the current event generation
 
@@ -89,19 +97,24 @@ class AliToyMCEventGenerator : public TObject {
  private:
   AliToyMCEventGenerator& operator= (const AliToyMCEventGenerator& );
    
-  AliTPCCorrection *fTPCCorrection;
+  AliTPCCorrection *fTPCCorrection;      //! distortion correction
 
-  TString fCorrectionFile;
-  TString fOutputFileName;
-  TFile   *fOutFile;
-  TTree   *fOutTree;
+  TObjArray   *fSCList;                  //! list with
+  TString fSCListFile;                   // file with a list of space charge files
+  TString fCorrectionFile;               // name of a sinfle SC file
+  TString fOutputFileName;               // name of the output file
+  TFile   *fOutFile;                     //! output file
+  TTree   *fOutTree;                     //! output tree
 
-  Bool_t fUseStepCorrection;
-  Bool_t fUseMaterialBudget;
-  Bool_t fIsLaser;
+  Bool_t fUseStepCorrection;             // use integralDz method?
+  Bool_t fUseMaterialBudget;             // use material budget in tracking?
+  Bool_t fIsLaser;                       // is a laser event?
+  Bool_t fPrereadSCList;                 // preread all SC files from the SC list
+
+  void InitSpaceChargeList();
   
   ClassDef(AliToyMCEventGenerator, 1)
-     
+  
 };
 
 #endif

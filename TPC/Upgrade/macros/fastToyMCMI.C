@@ -8,6 +8,9 @@
   testExtrapolation();
  
 */
+#include "TStyle.h"
+#include "TCut.h"
+#include "TCanvas.h"
 #include "TMath.h"
 #include "TVectorD.h"
 #include "TLinearFitter.h"
@@ -286,6 +289,8 @@ void testExtrapolation(const Int_t ntracks=10){
     delete pcstream;
   }
   delete f;
+
+  gStyle->SetOptTitle(0);
   f = TFile::Open("testExtrapolationErr.root","update");
   TTree * tree = (TTree*)f->Get("extrapol");
   //
@@ -293,12 +298,13 @@ void testExtrapolation(const Int_t ntracks=10){
   TGraphErrors * grITSTRD0 = TStatToolkit::MakeGraphErrors(tree,"10*vecITSTRDErr0.fElements:vecR.fElements","",21,2,0);
   //
   grITS0->GetXaxis()->SetTitle("radius (cm)");
-  grITS0->GetYaxis()->SetTitle("#sigma_{r#phi} (mm)");
+  grITS0->GetYaxis()->SetTitle("#sigma_{r#varphi} (mm)");
   grITS0->Draw("ap");
   grITSTRD0->Draw("p");
-  TLegend * legend  = new TLegend(0.11,0.6,0.5,0.89,"Track residuals at TPC (q/p_{t}=0)");
+  TLegend * legend  = new TLegend(0.11,0.65,0.55,0.89,"Track residuals at TPC (q/p_{t}=0)");
   legend->AddEntry(grITS0,"ITS extrapolation","p");
   legend->AddEntry(grITSTRD0,"ITS-TRD interpolation","p");
+  legend->SetFillColor(10);
   legend->Draw();
   //
   //

@@ -96,8 +96,11 @@ void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename
 AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 {
   //
+  // Generate an event at 'time'
   //
-  //
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   
   AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetT0(time);
@@ -513,6 +516,9 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD2(Double_t time) {
 
   //test that enough tracks will pass cuts (and that there is tracks at all)
   Bool_t testEvent = kTRUE;
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   while(fESDTree->GetEvent(fInputIndex) && testEvent) {  
     
     Int_t nPassedCuts = 0;
@@ -573,6 +579,9 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
   //
   // Generate an Event with laser tracks
   //
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   
   AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetEventType(AliToyMCEvent::kLaser);

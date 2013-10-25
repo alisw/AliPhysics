@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include <TDatabasePDG.h>
 #include <TRandom.h>
@@ -7,6 +8,8 @@
 #include <TSpline.h>
 #include <TObjString.h>
 #include <TROOT.h>
+#include <TSystem.h>
+#include <TObjArray.h>
 
 #include <AliLog.h>
 #include <AliTPCROC.h>
@@ -35,6 +38,8 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fEvent(0x0)
   ,fCurrentTrack(0)
   ,fTPCCorrection(0x0)
+  ,fSCList(0x0)
+  ,fSCListFile()
   ,fCorrectionFile("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.lookup.root")
   ,fOutputFileName("toyMC.root")
   ,fOutFile(0x0)
@@ -42,6 +47,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fUseStepCorrection(kFALSE)
   ,fUseMaterialBudget(kFALSE)
   ,fIsLaser(kTRUE)
+  ,fPrereadSCList(kFALSE)
 {
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   fTPCParam->ReadGeoMatrices();
@@ -54,6 +60,8 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fEvent(0x0)
   ,fCurrentTrack(0)
   ,fTPCCorrection(gen.fTPCCorrection)
+  ,fSCList(gen.fSCList)
+  ,fSCListFile(gen.fSCListFile)
   ,fCorrectionFile(gen.fCorrectionFile)
   ,fOutputFileName(gen.fOutputFileName)
   ,fOutFile(0x0)
@@ -61,6 +69,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fUseStepCorrection(gen.fUseStepCorrection)
   ,fUseMaterialBudget(gen.fUseMaterialBudget)
   ,fIsLaser(gen.fIsLaser)
+  ,fPrereadSCList(gen.fPrereadSCList)
 {
   //
   gRandom->SetSeed();
@@ -68,7 +77,8 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
 //________________________________________________________________
 AliToyMCEventGenerator::~AliToyMCEventGenerator() 
 {
-  delete fTPCCorrection;
+  if (HasSCList() &&!fPrereadSCList) delete fTPCCorrection;
+  delete fSCList;
 }
 
 //________________________________________________________________
@@ -604,6 +614,11 @@ void AliToyMCEventGenerator::InitSpaceCharge()
   // this should be called after the tree was connected
   //
 
+  if (HasSCList()) {
+    InitSpaceChargeList();
+    return;
+  }
+  
   AliInfo(Form("Using space charge map file: '%s'",fCorrectionFile.Data()));
 
   TString corrName("map");
@@ -625,4 +640,101 @@ void AliToyMCEventGenerator::InitSpaceCharge()
     AliInfo("Attaching space charge map file name to the tree");
     fOutTree->GetUserInfo()->Add(new TObjString(fCorrectionFile.Data()));
   }
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::InitSpaceChargeList()
+{
+  //
+  // init space charge conditions from a list of files
+  // this should be called after the tree was connected
+  //
+
+  std::ifstream file(fSCListFile.Data());
+  TString list;
+  list.ReadFile(file);
+  
+  TObjArray *arr=list.Tokenize("\n");
+  if (!arr->GetEntriesFast()) {
+    delete arr;
+    AliFatal(Form("No SC file initialised. SC list '%s' seems empty",fSCListFile.Data()));
+    return;
+  }
+
+  // it is assumed that in case of an input list
+  // fCorrectionFile contains the name of the average correction
+  // to be then used in the reconstruction
+  if (fOutTree){
+    if (fCorrectionFile.IsNull()) {
+      AliFatal("List of SC files set, but no average map is specified. Use 'SetSpaceChargeFile' to do so");
+      return;
+    }
+    AliInfo("Attaching average space charge map file name to the tree");
+    fOutTree->GetUserInfo()->Add(new TObjString(fCorrectionFile.Data()));
+  }
+  
+  
+  // case of non preread
+  // store the names of the files
+  if (!fPrereadSCList) {
+    if (fSCList) delete fSCList;
+    fSCList=arr;
+    return;
+  }
+
+  // case of preread
+  // load all SC files and set them to the list
+  if (!fSCList) fSCList=new TObjArray;
+  fSCList->SetOwner();
+  fSCList->Delete();
+  
+  for (Int_t ifile=0; ifile<arr->GetEntriesFast(); ++ifile) {
+    TFile f(arr->At(ifile)->GetName());
+    if (!f.IsOpen()||f.IsZombie()) continue;
+    AliTPCSpaceCharge3D *sc=(AliTPCSpaceCharge3D*)f.Get("map");
+    if (!sc) continue;
+    sc->SetName(f.GetName());
+    fSCList->Add(sc);
+  }
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::IterateSC(Int_t ipos)
+{
+  //
+  // In case a list of SC files is set iterate over them
+  //
+
+  if (!HasSCList()) return;
+
+  if (ipos<0) {
+    if (fOutTree) ipos=fOutTree->GetEntries();
+    else ipos=0;
+  }
+
+  TObject *sc=fSCList->At(ipos%fSCList->GetEntriesFast());
+  AliInfo(Form("Event: %d - SC: %s",ipos,sc->GetName()));
+  // case SC files have been preread
+  if (fPrereadSCList) {
+    fTPCCorrection=(AliTPCCorrection*)sc;
+    return;
+  }
+
+  // case no preread was done
+  TString &file=((TObjString*)sc)->String();
+  delete fTPCCorrection;
+  fTPCCorrection=0x0;
+
+  TFile f(file);
+  if (!f.IsOpen()||f.IsZombie()) {
+    AliFatal(Form("Could not open SC file '%s'",file.Data()));
+    return;
+  }
+
+  fTPCCorrection=(AliTPCSpaceCharge3D*)f.Get("map");
+  if (!fTPCCorrection) {
+    AliFatal(Form("Could not read SC map from SC file '%s'",file.Data()));
+    return;
+  }
+  
 }
