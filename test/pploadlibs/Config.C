@@ -2,53 +2,6 @@
 // Configuration for the Physics Data Challenge 2006
 //
 
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"Config_PDC06.C++")
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TRandom.h>
-#include <TDatime.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeant3TGeo.h>
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenParam.h"
-#include "EVGEN/AliGenMUONlib.h"
-#include "STEER/AliRunLoader.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliConfig.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagF.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv3.h"
-#include "STRUCT/AliDIPOv3.h"
-#include "STRUCT/AliHALLv3.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv3.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSgeom.h"
-#include "ITS/AliITSv11.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv3.h"
-#include "ZDC/AliZDCv4.h"
-#include "TRD/AliTRDv1.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv7.h"
-#endif
-
 
 enum PDC06Proc_t 
 {
@@ -149,15 +102,6 @@ void Config()
   gRandom->SetSeed(seed);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
 
-  // libraries required by geant321
-#if defined(__CINT__)
-  gSystem->Load("liblhapdf");
-  gSystem->Load("libEGPythia6");
-  gSystem->Load("libpythia6");
-  gSystem->Load("libAliPythia6");
-  gSystem->Load("libgeant321");
-#endif
-
   new TGeant3TGeo("C++ Interface to Geant3");
 
   //=======================================================================
@@ -190,35 +134,35 @@ void Config()
   // --- All positions are in cm, angles in degrees, and P and E in GeV
 
 
-    gMC->SetProcess("DCAY",1);
-    gMC->SetProcess("PAIR",1);
-    gMC->SetProcess("COMP",1);
-    gMC->SetProcess("PHOT",1);
-    gMC->SetProcess("PFIS",0);
-    gMC->SetProcess("DRAY",0);
-    gMC->SetProcess("ANNI",1);
-    gMC->SetProcess("BREM",1);
-    gMC->SetProcess("MUNU",1);
-    gMC->SetProcess("CKOV",1);
-    gMC->SetProcess("HADR",1);
-    gMC->SetProcess("LOSS",2);
-    gMC->SetProcess("MULS",1);
-    gMC->SetProcess("RAYL",1);
+    TVirtualMC::GetMC()->SetProcess("DCAY",1);
+    TVirtualMC::GetMC()->SetProcess("PAIR",1);
+    TVirtualMC::GetMC()->SetProcess("COMP",1);
+    TVirtualMC::GetMC()->SetProcess("PHOT",1);
+    TVirtualMC::GetMC()->SetProcess("PFIS",0);
+    TVirtualMC::GetMC()->SetProcess("DRAY",0);
+    TVirtualMC::GetMC()->SetProcess("ANNI",1);
+    TVirtualMC::GetMC()->SetProcess("BREM",1);
+    TVirtualMC::GetMC()->SetProcess("MUNU",1);
+    TVirtualMC::GetMC()->SetProcess("CKOV",1);
+    TVirtualMC::GetMC()->SetProcess("HADR",1);
+    TVirtualMC::GetMC()->SetProcess("LOSS",2);
+    TVirtualMC::GetMC()->SetProcess("MULS",1);
+    TVirtualMC::GetMC()->SetProcess("RAYL",1);
 
     Float_t cut = 1.e-3;        // 1MeV cut by default
     Float_t tofmax = 1.e10;
 
-    gMC->SetCut("CUTGAM", cut);
-    gMC->SetCut("CUTELE", cut);
-    gMC->SetCut("CUTNEU", cut);
-    gMC->SetCut("CUTHAD", cut);
-    gMC->SetCut("CUTMUO", cut);
-    gMC->SetCut("BCUTE",  cut); 
-    gMC->SetCut("BCUTM",  cut); 
-    gMC->SetCut("DCUTE",  cut); 
-    gMC->SetCut("DCUTM",  cut); 
-    gMC->SetCut("PPCUTM", cut);
-    gMC->SetCut("TOFMAX", tofmax); 
+    TVirtualMC::GetMC()->SetCut("CUTGAM", cut);
+    TVirtualMC::GetMC()->SetCut("CUTELE", cut);
+    TVirtualMC::GetMC()->SetCut("CUTNEU", cut);
+    TVirtualMC::GetMC()->SetCut("CUTHAD", cut);
+    TVirtualMC::GetMC()->SetCut("CUTMUO", cut);
+    TVirtualMC::GetMC()->SetCut("BCUTE",  cut); 
+    TVirtualMC::GetMC()->SetCut("BCUTM",  cut); 
+    TVirtualMC::GetMC()->SetCut("DCUTE",  cut); 
+    TVirtualMC::GetMC()->SetCut("DCUTM",  cut); 
+    TVirtualMC::GetMC()->SetCut("PPCUTM", cut);
+    TVirtualMC::GetMC()->SetCut("TOFMAX", tofmax); 
 
 
 
@@ -243,7 +187,7 @@ void Config()
     break;
   }
   decayer->Init();
-  gMC->SetExternalDecayer(decayer);
+  TVirtualMC::GetMC()->SetExternalDecayer(decayer);
 
   //=========================//
   // Generator Configuration //
