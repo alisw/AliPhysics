@@ -492,6 +492,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       // (with all AliTriggerAnalysis tokens? Only we the tokens
       // actually used in the selection?) and clean up
 
+      AliESDVZERO *esdV0 = aEsd->GetVZEROData();
+      if(!esdV0) fSkipV0 = kTRUE;
+
       // hardware trigger
       Int_t fastORHW   = triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
       //      Int_t fastORHWL1 = triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kSPDGFOL1); // SPD number of chips from trigger bits in second layer (!)
