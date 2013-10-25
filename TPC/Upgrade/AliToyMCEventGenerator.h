@@ -76,11 +76,11 @@ class AliToyMCEventGenerator : public TObject {
   void SetIsLaser(Bool_t use) { fIsLaser=use;    }
   Bool_t GetIsLaser() const   { return fIsLaser; }
 
-  void   SetSCListFile(const char* file) { fSCListFile=file;          }
-  const char* GetSCListFile() const      { return fSCListFile.Data(); }
-  void   SetPrereadSCList(Bool_t b)      { fPrereadSCList=b;          }
-  Bool_t GetPrereadSCList() const        { return fPrereadSCList;     }
-  Bool_t HasSCList() const               { return  fSCList!=0x0;      }
+  void   SetSCListFile(const char* file) { fSCListFile=file;              }
+  const char* GetSCListFile() const      { return fSCListFile.Data();     }
+  void   SetPrereadSCList(Bool_t b)      { fPrereadSCList=b;              }
+  Bool_t GetPrereadSCList() const        { return fPrereadSCList;         }
+  Bool_t HasSCList() const               { return  !fSCListFile.IsNull(); }
   
  protected:
   AliTPCParam *fTPCParam;                //! TPC params
