@@ -20,7 +20,7 @@ const Int_t minclustersTPC = 70;
 const Int_t minclustersITS = 2;
 const Bool_t TPCRefit = kTRUE;
 const Bool_t ITSRefit = kFALSE;
-const Bool_t charge  = kTRUE;
+const Bool_t ischarged = kTRUE;
 const Int_t  fBit = 0;
 
 //
@@ -176,7 +176,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   AliSingleTrackEffCuts* cuts = new AliSingleTrackEffCuts();
   cuts->SetPtRange(ptmin,ptmax);
   cuts->SetEtaRange(etamin,etamax);
-  cuts->SetIsCharged(charge);
+  cuts->SetIsCharged(ischarged);
   cuts->SetMinVtxContr(1);
   cuts->SetMaxVtxZ(zvtxmax);
   cuts->SetNumberOfClusters(mintrackrefsITS,mintrackrefsTPC,mintrackrefsTOF,mintrackrefsMUON);
