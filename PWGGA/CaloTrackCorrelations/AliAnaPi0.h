@@ -113,6 +113,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillOriginHisto()        { fFillOriginHisto     = kTRUE  ; }
   void         SwitchOffFillOriginHisto()       { fFillOriginHisto     = kFALSE ; }
+
+  void         SwitchOnFillArmenterosHisto()    { fFillArmenteros      = kTRUE  ; }
+  void         SwitchOffFillArmenterosHisto()   { fFillArmenteros      = kFALSE ; }
   
   //MC analysis related methods
     
@@ -128,6 +131,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
                                              const Int_t    ncells1, const Int_t    ncells2, 
                                              const Double_t mass,    const Double_t pt,  const Double_t asym,    
                                              const Double_t deta,    const Double_t dphi);
+  
+  void         FillArmenteros(const Int_t pdg, const TLorentzVector meson,
+                              const TLorentzVector daugh1, const TLorentzVector daugh2);
+
   
   private:
 
@@ -163,7 +170,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillAngleHisto;            // Fill histograms with pair opening angle
   Bool_t   fFillAsymmetryHisto;        // Fill histograms with asymmetry vs pt
   Bool_t   fFillOriginHisto;           // Fill histograms depending on their origin
-
+  Bool_t   fFillArmenteros;            // Fill armenteros histograms
+  
   //Histograms
   
   //Event characterization
@@ -294,10 +302,13 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhReMCFromNotConversion ;   //! Invariant mass of 2 clusters not originated in conversions
   TH2F *   fhReMCFromMixConversion ;   //! Invariant mass of 2 clusters one from conversion and the other not
 
+  TH2F *    fhArmPrimPi0[4];           //! Armenteros plots for primary pi0 in 6 energy bins
+  TH2F *    fhArmPrimEta[4];           //! Armenteros plots for primary eta in 6 energy bins
+  
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
-  ClassDef(AliAnaPi0,24)
+  ClassDef(AliAnaPi0,25)
 } ;
 
 
