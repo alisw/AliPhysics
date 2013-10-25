@@ -76,7 +76,7 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
   Int_t nLimits=0;
   Double_t* newLimits =0;
   if(rebinVar==0) {
-    nLimits = 18;
+    nLimits = 15;
     newLimits = new Double_t[nLimits+1];
     newLimits[0]=0;
     newLimits[1]=0.5;
@@ -90,13 +90,10 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
     newLimits[9]=6;
     newLimits[10]=7;
     newLimits[11]=8;
-    newLimits[12]=9;
-    newLimits[13]=10;
-    newLimits[14]=11;
-    newLimits[15]=12;
-    newLimits[16]=14;
-    newLimits[17]=16;
-    newLimits[18]=24;
+    newLimits[12]=10;
+    newLimits[13]=12;
+    newLimits[14]=14;
+    newLimits[15]=16;
   } else if (rebinVar==1) {
     nLimits = 9;
     newLimits = new Double_t[nLimits+1];
