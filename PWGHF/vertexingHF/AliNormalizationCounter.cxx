@@ -186,7 +186,9 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   //Find V0AND
   AliTriggerAnalysis trAn; /// Trigger Analysis
   AliAODVZERO* aodV0 = (AliAODVZERO*)event->GetVZEROData();
-  if(aodV0){
+  Bool_t isPP2012 = kFALSE;
+  if(runNumber>=176326 && runNumber<=193766) isPP2012=kTRUE;
+  if(aodV0 && !isPP2012){
     v0B = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0C);
     v0A = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0A);
   }
