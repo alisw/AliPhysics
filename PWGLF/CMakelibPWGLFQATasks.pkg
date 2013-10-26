@@ -29,6 +29,7 @@
 set ( SRCS  
   QATasks/AliAnalysisTaskQAHighPtDeDx.cxx
   QATasks/AliQAProdMultistrange.cxx
+  QATasks/AliAnalysisTaskQAV0.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
