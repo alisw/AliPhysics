@@ -6,5 +6,6 @@
 
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDx+;
 #pragma link C++ class AliQAProdMultistrange+;
+#pragma link C++ class AliAnalysisTaskQAV0+;
 
 #endif
