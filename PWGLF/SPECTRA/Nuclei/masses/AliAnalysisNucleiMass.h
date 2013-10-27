@@ -33,142 +33,96 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetCentrality(Float_t *fCt) {fCentrality[0]=fCt[0];fCentrality[1]=fCt[1];};
-  void SetFilterBit(Int_t TestFilterBit) {FilterBit=TestFilterBit;}
-  void SetNTPCcluster(Int_t nTPCcluster) {NminTPCcluster=nTPCcluster;}
-  void SetDCAzCut(Float_t fDCAzCut) {DCAzCUT =fDCAzCut;}
-  void SetDCAxyCut(Float_t fDCAxyCut) {DCAxyCUT=fDCAxyCut;}
-  void SetkTPCcut(Bool_t isTPCcut) {kTPCcut=isTPCcut;}
-  void SetNsigmaTPCCut(Float_t NsigmaTpcCut) {NsigmaTPCCut=NsigmaTpcCut;}
-  void SetisSignalCheck(Bool_t IsSignalCheck) {isSignalCheck=IsSignalCheck;}
-  void SetMomBin(Int_t iMomBin) {MomType=iMomBin;}
-  void SetAbsEtaLimit(Double_t *etaLimit) {EtaLimit[0]=etaLimit[0];EtaLimit[1]=etaLimit[1];}
-  void SetTRDanalysis(Bool_t kTrdAnalysis=kFALSE, Int_t iTrd=1) {kTRDana=kTrdAnalysis;iTRD=iTrd;}
+
+  //Cuts on the events
+  void SetCentrality(Double_t CentMin=0., Double_t CentMax=100.) {Centrality[0]=CentMin; Centrality[1]=CentMax;};
+  //Cuts on the tracks
+  void SetFilterBit(Int_t TestFilterBit=16) {FilterBit=TestFilterBit;}
+   //geometrical cuts
+  void SetAbsEtaLimit(Double_t etaMin=0., Double_t etaMax=0.8) {EtaLimit[0]=etaMin;EtaLimit[1]=etaMax;}
+  void SetDCACut(Double_t DCAxyCUT=0.1, Double_t DCAzCUT=1000.0) {DCAxyCut=DCAxyCUT; DCAzCut=DCAzCUT;}
+   //other cuts 
+  void SetNsigmaTPCCut(Double_t nSigmaTpcCut=2) {NsigmaTpcCut=nSigmaTpcCut;}
+  void SetNminTPCcluster(Int_t nMinTPCcluster=0) {NminTpcCluster=nMinTPCcluster;}
+  void SetTrdCut(Int_t kTRDcut=0) {iTrdCut=kTRDcut;}
+  //Settings
+  void SetisSignalCheck(Int_t IsSignalCheck=2) {kSignalCheck=IsSignalCheck;}
+  void SetMtofMethod(Int_t iMtofMethod=1) {iMtof=iMtofMethod;}
 
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
   AliAnalysisNucleiMass& operator=(const AliAnalysisNucleiMass &source);
     
-  TFile *fmism;                     //! For load the mism time distr
-  TH1F *hmism;                      //! The mism time distr
+  static const Int_t nbin=46;                      // Number of pt bins in Tof Mass distributions
+  static const Int_t nBconf=2;                     // Number of Magnetic field configuration (B++ and B--)
+  static const Int_t nPart=9;                      // Number of particle type: e,mu,pi,K...
+  static const Int_t nSpec=18;                     // Number of particle species: particles: e+,e-,mu+,mu-,...
     
-  TFile *fchDist;                   //! Load the tof chan dist from IP
-  TH1D *hChDist;                    //! The tof chan dist from IP
+  //Variables settings with public methods:
+  Double_t Centrality[2];                          // Centrality bin (min and max)
+  Int_t FilterBit;                                 // Filter Bit to be used
+  Double_t EtaLimit[2];                            // Eta windows in analysis
+  Double_t DCAxyCut;                               // Cut on DCA-xy
+  Double_t DCAzCut;                                // Cut on DCA-z
+  Double_t NsigmaTpcCut;                           // number of sigma Tpc Cut
+  Int_t NminTpcCluster;                            // Number of minimum TPC clusters
+  Int_t iTrdCut;                                   // iTrdCut==0-> No TRD cut; iTrdCut==1-> Yes TRD cut: yes TRD; iTrdCut==2->Yes TRD cut: no TRD; 
+  Int_t kSignalCheck;                              // kSignalCheck==1->Fill all plots ; kSignalCheck==0->Fill only TH1 ; kSignalCheck==2-> Fill TH1 and some TH2 usefull in analysis
+  Int_t iMtof;                                     // iMtof==1->m~pVtx ; iMtof==2->m~pExp ; iMtof==4->m~pExp(MCcorrected) for (d,He2); iMtof==4->m~pExp(MCcorrected) (p,d,He3)
   
-  static const Int_t nbin = 46;     // number of pt bins
+  //other:
+  Int_t iBconf;                                   //! If Magnetic Field configuration is down or up
+  Bool_t kTOF;                                    //! kTOFout and kTIME required
+  
+  AliAODEvent* fAOD;                              //! AOD object
+  AliESDEvent* fESD;                              //! ESD object
+  AliVEvent* fEvent;                              //! general object
+  AliPIDResponse *fPIDResponse;                   //! pointer to PID response
+  TList *fList[nBconf];                           //! lists for slot
+  
+  TH1F *htemp[nBconf];                            //! Temp. plot: avoid a problem with the merge of the output when a TList is empty (of the opposite magnetic field configuration)
+  TH1F *hCentrality[nBconf][2];                   //! Centrality of the selected and analyzed events
+  TH1F *hZvertex[nBconf][2];                      //! z-vertex distribution before and after the cuts on the event
+  
+  TH1F *hEta[nBconf];                             //! Eta distribution of the tracks
+  TH1F *hPhi[nBconf];                             //! Phi particle distribution
+  TH2F *fEtaPhi[nBconf];                          //! Phi vs Eta particle distribution
+  TH1F *hNTpcCluster[nBconf];                     //! # of the TPC clusters after the track cuts
+  TH1F *hNTrdSlices[nBconf];                      //! Number of the TRD slices after the track cuts
 
-  Double_t EtaLimit[2];                 // Eta windows in analysis
+  //TPC info:
+  TH2F *fdEdxVSp[nBconf][2];                      //! dedx vs pTpc
+  TProfile *hDeDxExp[nBconf][9];                  //! TPC spline used
+  TH2F *fNsigmaTpc[nBconf][9];                    //! NsigmaTPC vs. pTpc
+  TH2F *fNsigmaTpc_kTOF[nBconf][18];              //! NsigmaTPC vs. pt when kTOF is required and in DCAxyCut 
+  
+  //TOF info:
+  TH2F *fBetaTofVSp[nBconf][2];                   //! beta vs pVtx
+  TProfile *hBetaExp[nBconf][9];                  //! TOF expected beta
+  TH2F *fNsigmaTof[nBconf][9];                    //! NsigmaTOF vs. pT
+  TH2F *fNsigmaTof_DcaCut[nBconf][18];                    //! NsigmaTOF vs. pT
 
-  Int_t MomType;                    // type of momentum bins in analysis (7 are all ON): (Flag: 001(1)->pT 010(2)->p 100(3)->pTPC)
+  //TPC and TOF conbined
+  TH2F *fM2vsPt_NoTpcCut[nBconf][2][2];           //! M2 vs. Pt w/o the DCAxyCut
+  TH2F *fM2vsPt[nBconf][2][18];                   //! M2 vs. Pt with NsigmaTpcCut for each particle species, w/o the DCAxyCut
+  TH2F *fM2vsZ[nBconf][10];                       //! M2 vs. Z in various pT bins
+
+  //DCA distributions
+  TH1D *hDCAxy[nBconf][18][nbin];                 //! DCAxy distribution with NsigmaTpcCut for each particle species, in pT bins
+  TH1D *hDCAz[nBconf][18][nbin];                  //! DCAz distribution with NsigmaTpcCut for each particle species, in pT bins
+  
+  //TOF mass distributions
+  TH1D *hM2CutDCAxy[nBconf][18][nbin];            //! Tof m2 distribution in DCAxyCut and with NsigmaTpcCut
+  TH1D *hM2CutGroundDCAxy[nBconf][18][nbin];      //! Tof m2 distribution in the background of DCAxyCut (secondary nuclei selection) and with NsigmaTpcCut
  
-  Bool_t kTRDana;                    //TRD analysis: 0->No 1->Yes
-  
-  Int_t iTRD;                        //TRD: 2->No TRD, 4->Yes TRD, 1->indifferent
+  //Parametrizations
+  TF1 *fPmeanVsPexp[3];                           //! Parameterization of (<p>-pExp)/pExp vs pExp for p,d,He3
+
+  //------------------------------Methods----------------------------------------
+  void GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2);
+  void GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, Double_t &Z2);
+  void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr=4);
  
-  Bool_t fMC;                       // if MC
-
-  Float_t fCentrality[2];           // centrality bin (min and max)
-  
-  Int_t FilterBit;                  // filter be to be used
-
-  Int_t NminTPCcluster;             // min TPC cluster number
-
-  Float_t DCAzCUT;                  // cut on DCA-z
-  Float_t DCAxyCUT;                 // cut on DCA-xy
-
-  Bool_t kTPCcut;                   // to apply a TPC 2 sigma cut
-
-  Bool_t kTPC;                      //! is > NminTPCcluster 
-  Bool_t kTOF;                      //! kTOFout and kTIME required
-
-  Int_t iBconf;                      //! if Magnetic Configuration is down or up 
-
-  Bool_t isSignalCheck;               // if write with an appropriate binning the plots of the various signals (QA,...) 
-
-  Float_t NsigmaTPCCut;              // number of sigma Tpc Cut
-
-  AliAODEvent* fAOD;                //! AOD object
-  
-  AliESDEvent* fESD;                //! ESD object
-  
-  AliVEvent* fEvent;                //! general object
- 
-  AliPIDResponse *fPIDResponse;     //! pointer to PID response
-
-  TList *fList1[2];                    //! lists for slot
-
-  TH1F *hNeventSelected[2];            //! selected Event counter  
-
-  TH1F *hNevent[2];                    //! analyzed Event counter
-  
-  TH1F *hZvertex[2];                   //! z-vertex distribution
-
-  TH1F *hEtaDistribution[2][2];          //! Eta distribution of the tracks
-
-  TH2F *fEtaSpecies[2][18];           //! Eta distribution of the each particle identified by the TPC
-  
-  TH1F *hPhi[2][6];                   //! Phi particle distribution
-
-  TH2F *fEtaPhi[2][6];                 //! Phi vs Eta particle distribution
-
-  TH2F *fPhiSpecies[2][18];          //! Phi vs Eta particle distribution identified by the TPC
-
-  TH2F *fdEdxVSp[2][3];                //! dedx vs p plots
-
-  TH2F *fBetaTofVSp[2];                //! beta vs p plots
-
-  TH1F *hTOFSignalPion[2];             //! pion  TOF signal
-
-  TH2F *fM2vsP_NoTpcCut[2][3];         //! M2 vs. P
-  
-  TH2F *fNsigmaTPC[2][9];              //! NsigmaTPC vs. pT
-  
-  TH2F *fNsigmaTOF[2][9];              //! NsigmaTOF vs. pT
-
-  TH2F *fNsigmaTPCvsP_kTOFtrue[2][18]; //! NsigmaTPC vs. p with kTOFout && kTIME for provide TPC different cuts effect
- 
-  TProfile *hDeDxExp[2][9];            //! TPC spline used
-
-  TProfile *hBetaExp[2][9];            //! TOF expected beta
-  
-  TH2F *fM2vsZ[2][15];                 //! M2 vs. Z in different pT range
-
-  TH2F *fM2vsZwithTPC[2][15];          //! M2 vs. Z in different pT range with 2sigmaTPC cut
-
-  TH2F *fM2vsP[2][18];                 //! M2 vs. P with 2 sigma TPC cut for each particle species
-
-  TH1D *hDCAxy[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species, in pT bins
-
-  TH1D *hM2CutDCAxy[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut), in pT bins
-
-  TH1D *hDCAz[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species, in pT bins
-
-  TH1D *hM2CutGroundDCAxy[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut), in pT bins
-
-  TH2F *fM2vsP_NoTpcCut_DCAxyCut[2][3];//! M^{2} vs. P with a DCAxy cut  
-
-  TH2F *fM2vsP_DCAxyCut[2][18];        //! M^{2} vs. P with a DCAxy cut (2sigma TPC cut)
-  
-  TH1D *hDCAxy_pbin[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species, in p bins
-
-  TH1D *hM2CutDCAxy_pbin[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut), in p bins
-
-  TH1D *hDCAz_pbin[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species, in p bins
-
-  TH1D *hM2CutGroundDCAxy_pbin[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut), in p bins
-   
-  TH1D *hDCAxy_pTpcbin[2][18][nbin];           //! DCA distribution in 2 sigma TPC cut for each particle species, in pTPC bins
-
-  TH1D *hM2CutDCAxy_pTpcbin[2][18][nbin];      //! M^{2} IN DCA cut (in 2 sigma TPC cut), in pTPC bins
-
-  TH1D *hDCAz_pTpcbin[2][18][nbin];            //! DCAz distribution in 2 sigma TPC cut for each particle species, in pTPC bins
-
-  TH1D *hM2CutGroundDCAxy_pTpcbin[2][18][nbin];//! M^{2} OUT DCA cut (in 2 sigma TPC cut), in pTPC bins
-
-  TH1D *hM2BkgMism[2][3][nbin];                //! M2 from mismatch background in each momentum bin
-
-  TH1F *hNminTPCcl[2];
-
   ClassDef(AliAnalysisNucleiMass, 1);
 };
 
