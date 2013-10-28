@@ -1400,7 +1400,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     Float_t lengthInActiveZoneTPC = -1;
     if (fCutMinLengthActiveVolumeTPC > 1.) { // do the calculation only if needed to save cpu-time
       if (esdTrack->GetESDEvent()) {
-	lengthInActiveZoneTPC = esdTrack->GetLengthInActiveZone(1, 1.8, 220, esdTrack->GetESDEvent()->GetMagneticField()); 
+	if (esdTrack->GetInnerParam()) lengthInActiveZoneTPC = esdTrack->GetLengthInActiveZone(1, 1.8, 220, esdTrack->GetESDEvent()->GetMagneticField()); 
 	//
 	if (lengthInActiveZoneTPC < fCutMinLengthActiveVolumeTPC ) {
 	  cuts[42] = kTRUE;
