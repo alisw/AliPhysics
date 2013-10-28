@@ -128,6 +128,8 @@ public:
 
   // getters  
   Int_t   GetMinNClusterTPC()        const   { return fCutMinNClusterTPC;}
+  Float_t GetMinNCrossedRowsTPC()    const   { return fCutMinNCrossedRowsTPC;}
+  Float_t GetMinRatioCrossedRowsOverFindableClustersTPC()    const   { return fCutMinRatioCrossedRowsOverFindableClustersTPC;}
   Float_t GetMinLengthActiveVolumeTPC() const { return fCutMinLengthActiveVolumeTPC;}
   Int_t   GetMinNClustersITS()       const   { return fCutMinNClusterITS;}
   TFormula *GetMinNClustersTPCPtDep() const  { return f1CutMinNClustersTPCPtDep;}
