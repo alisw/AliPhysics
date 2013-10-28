@@ -502,6 +502,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
   if(!event && AODEvent() && IsStandardAOD()) {
    event  = dynamic_cast<AliAODEvent*> (AODEvent());
   }
+  if (!event) return;
 
   Double_t containerInput[6] = { 0, 0, 0, 0, 0, 0};   // contains reconstructed quantities
   Double_t containerInputMC[6] = { 0, 0, 0, 0, 0, 0}; // contains generated quantities
@@ -568,6 +569,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
 
     // for filter bit selection
     AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(track);
+    if (!aodTrack) continue;
     if(isAOD && fSetFilterBit) if (!aodTrack->TestFilterMask(BIT(fbit))) continue;
 
     Bool_t isESDtrack = track->IsA()->InheritsFrom("AliESDtrack");
@@ -577,6 +579,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     } else {
       tmptrack = ConvertTrack(aodTrack); // AODs
     }
+    if (!tmptrack) continue;
 
     // exclude global constrained and TPC only tracks (filter bits 128 and 512)
     Int_t id = tmptrack->GetID();
@@ -620,7 +623,7 @@ Int_t AliCFSingleTrackEfficiencyTask::GetNumberOfTrackletsInEtaRange(Double_t mi
   if(!event && AODEvent() && IsStandardAOD()) {
    event  = dynamic_cast<AliAODEvent*> (AODEvent());
   }
-
+  if (!event) return -1;
   Int_t count=0;
 
   if(isAOD) {
@@ -633,6 +636,7 @@ Int_t AliCFSingleTrackEfficiencyTask::GetNumberOfTrackletsInEtaRange(Double_t mi
     }
   } else {  
     AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
+    if (!esdEvent) return -1;
     const AliMultiplicity *mult = esdEvent->GetMultiplicity();
     if (mult) {
       if (mult->GetNumberOfTracklets()>0) {	
