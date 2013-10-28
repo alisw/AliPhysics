@@ -95,7 +95,6 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   //
   // HFE flow task 
   //
-  Bool_t rejectkinkmother = kFALSE;
   Double_t tpcsharedfraction=11;
   Double_t chi2peritscl=36.;
 
@@ -105,7 +104,6 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   printf("TPC ratio clusters %f\n",tpcClsr*0.01);
   printf("TPC number of pid clusters %d\n",tpcClspid);
   printf("Maximal fraction of TPC shared cluster %f\n",tpcsharedfraction*0.01);
-  printf("Reject kink mother %d\n",(Int_t)rejectkinkmother);
   printf("ITS number of clusters %d\n",itsCls);
   printf("Maximal chi2 per ITS cluster %f\n",chi2peritscl);
   printf("Requirement on the pixel layer %d\n",pixellayer);
@@ -143,6 +141,8 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   hfecuts->SetCutITSpixel(pixellayer);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetMaxImpactParam(dcaxy*0.01,dcaz*0.01);
+  hfecuts->SetPtRange(0.1,10.);
+  hfecuts->SetAcceptKinkMothers();
       
   hfecuts->SetVertexRange(10.);
   hfecuts->SetUseSPDVertex(kTRUE);
@@ -172,15 +172,13 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   task->SetDebugLevel(1);
   task->GetPIDQAManager()->SetHighResolutionHistos();
   task->SetHFECuts(hfecuts);
-  task->SetRejectKinkMother(rejectkinkmother);
   task->SetHFEBackgroundCuts(hfeBackgroundCuts);
   if(aodfilter > 0) {
     printf("ON AOD filter %d\n",aodfilter);
-    task->SetUseFilterAOD(kTRUE);
     task->SetFilter(aodfilter);
   }
   else {
-    task->SetUseFilterAOD(kFALSE);
+    printf("Default AOD filter 1<<4\n");
   }
   if(useMC) {
     task->SetMCPID(kTRUE);
@@ -323,7 +321,7 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   AliHFEpid *pidbackground = task->GetPIDBackground();
   if(useMC) pidbackground->SetHasMCData(kTRUE);
   //pidbackground->AddDetector("TOF", 0);
-  pidbackground->AddDetector("TPC", 1);
+  pidbackground->AddDetector("TPC", 0);
   //pidbackground->ConfigureTOF(3.0);
   pidbackground->ConfigureTPCasymmetric(0.0,9999.,minTPCback,maxTPCback);
   task->SetMaxopeningtheta(9999.0);
