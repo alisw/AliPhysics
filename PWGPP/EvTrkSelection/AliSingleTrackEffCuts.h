@@ -9,7 +9,7 @@
 #include "AliAnalysisCuts.h"
 #include "AliPID.h"
 #include "AliAODTrack.h"
-#include "AliSingleTrackEffCuts.h"
+
 
 
 class AliSingleTrackEffCuts : public AliAnalysisCuts 
