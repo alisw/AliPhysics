@@ -1783,8 +1783,9 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistSecondariesVsNcl = new TH2F("fHistSecondariesVsNcl","secondaries deposited in calorimeter vs number of clusters",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
     fHistSecondariesEffCorrVsNch = new TH2F("fHistSecondariesEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
     fHistSecondariesEffCorrVsNcl = new TH2F("fHistSecondariesEffCorrVsNcl","efficiency corrected secondaries deposited in calorimeter vs number of clusters",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
-    fHistSecondariesOutOfAccEffCorrVsNch = new TH2F("fHistSecondariesOutOfAccEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs number of clusters for secondary particles out of detector acceptance",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
-    fHistSecondariesDetectorCoverEffCorrVsNch = new TH2F("fHistSecondariesDetectorCoverEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs number of clusters for secondaries from the detector cover",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
+
+    fHistSecondariesOutOfAccEffCorrVsNch = new TH2F("fHistSecondariesOutOfAccEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs number of clusters for secondary particles out of detector acceptance",nbinsEt,minEtRange,maxEtRangeShort/10.0,nbinsMult,minMult,maxMult);
+    fHistSecondariesDetectorCoverEffCorrVsNch = new TH2F("fHistSecondariesDetectorCoverEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs number of clusters for secondaries from the detector cover",nbinsEt,minEtRange,maxEtRangeShort/10.0,nbinsMult,minMult,maxMult);
     fHistCentVsNchVsNcl = new TH3F("fHistCentVsNchVsNcl","Cent bin vs Nch Vs NCl",20,-0.5,19.5,nbinsMult,minMult,maxMult,nbinsCl,minCl,maxCl);
     //float maxpos = 500;
     // int nbinspos = 200;
