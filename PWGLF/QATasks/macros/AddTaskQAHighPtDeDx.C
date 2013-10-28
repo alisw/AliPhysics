@@ -1,12 +1,12 @@
-AliAnalysisTask* AddTask(Bool_t AnalysisMC = kFALSE, 
-			 Int_t typerun =1, // 0 for pp and 1 for Pb-Pb or pPb
-			 TString  type ="ESD",
-			 UInt_t kTriggerInt = AliVEvent::kINT7, //for pPb kINT7, for pp or PbPb kMB
-			 Float_t minCent = 0,
-			 Float_t maxCent = 80,
-			 char *centralityEstimator = "V0A",//for pPb V0A for PbPb V0M
-			 Bool_t ispileuprej = kFALSE
-			 )
+AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
+			                         Int_t typerun =1, // 0 for pp and 1 for Pb-Pb or pPb
+			                         TString  type ="ESD",
+			                         UInt_t kTriggerInt = AliVEvent::kINT7, //for pPb kINT7, for pp or PbPb kMB
+			                         Float_t minCent = 0.,
+                                     Float_t maxCent = 80.,
+			                         char *centralityEstimator = "V0A",//for pPb V0A for PbPb V0M
+			                         Bool_t ispileuprej = kFALSE
+                                    )
 {
   // Creates a pid task and adds it to the analysis manager
   
