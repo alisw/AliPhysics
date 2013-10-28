@@ -364,7 +364,6 @@ void AliTRDSimParam::ReInit()
   }
   else {
     AliFatal("Not a valid gas mixture!");
-    exit(1);
   }
   fTRFwid = (fTRFhi - fTRFlo) / ((Float_t) fTRFbin);
 

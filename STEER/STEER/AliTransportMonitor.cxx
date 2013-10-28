@@ -92,7 +92,7 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
   //
   // unknown heavy fragment ?
   //  TParticlePDG* pdgP = (TDatabasePDG::Instance())->GetParticle(pdg);
-  Int_t apdg = abs(pdg);
+  Int_t apdg = TMath::Abs(pdg);
   if ((apdg > 10000) 
       && (apdg != 1000010020)
       && (apdg != 1000010030)
