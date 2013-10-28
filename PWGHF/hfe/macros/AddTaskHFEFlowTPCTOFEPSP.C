@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=16,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kFALSE,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=0,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
+AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=16,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kFALSE,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=2,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
 
   //
   // Define TPC cut for 2011 data
@@ -67,8 +67,8 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=
   
 
   //set config file name
-  TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
-  //TString configFile("/d/alice12/bailhache/AliRootInstallations/29_11_2012/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
+  //TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
+  TString configFile("/hera/alice/bailhach/AliRootInstallations/30_09_2013/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
   TString checkconfig="ConfigHFE_FLOW_TOFTPC";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
