@@ -1064,7 +1064,7 @@ Int_t AliHFEsecVtx::GetPairOriginESD(AliESDtrack* trk1, AliESDtrack* trk2)
           if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(label2))))) return 0; 
 	  TParticle* commonmom = mctrack->Particle();
 
-          srcpdg = abs(commonmom->GetPdgCode()); 
+          srcpdg = TMath::Abs(commonmom->GetPdgCode()); 
 
           //check ancester to see if it is originally from beauty 
           for (Int_t k=0; k<10; k++){ //check up to 10 ancesters
@@ -1074,10 +1074,10 @@ Int_t AliHFEsecVtx::GetPairOriginESD(AliESDtrack* trk1, AliESDtrack* trk2)
              if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(ancesterlabel))))) return 0; 
 	     TParticle* commonancester = mctrack->Particle();
 
-             Int_t ancesterpdg = abs(commonancester->GetPdgCode());
+             Int_t ancesterpdg = TMath::Abs(commonancester->GetPdgCode());
 
              for (Int_t l=0; l<fNparents; l++){
-                if (abs(ancesterpdg)==fParentSelect[1][l]){
+                if (TMath::Abs(ancesterpdg)==fParentSelect[1][l]){
                   srcpdg = -1*srcpdg; //multiply -1 for hadron from bottom
                   return srcpdg;
                 }
@@ -1142,7 +1142,7 @@ Int_t AliHFEsecVtx::GetPairOriginAOD(AliAODTrack* trk1, AliAODTrack* trk2)
 
         if (label1 == label2){ //check if two tracks are originated from same mother
           AliAODMCParticle *commonmom = (AliAODMCParticle*)fMCArray->At(label1);
-          srcpdg = abs(commonmom->GetPdgCode()); 
+          srcpdg = TMath::Abs(commonmom->GetPdgCode()); 
 
           //check ancester to see if it is originally from beauty 
           for (Int_t k=0; k<10; k++){ //check up to 10 ancesters
@@ -1150,10 +1150,10 @@ Int_t AliHFEsecVtx::GetPairOriginAOD(AliAODTrack* trk1, AliAODTrack* trk2)
              if (ancesterlabel < 0) return srcpdg; // if there is no more commonancester, return commonmom's pdg  
 
              AliAODMCParticle *commonancester = (AliAODMCParticle*)fMCArray->At(ancesterlabel);
-             Int_t ancesterpdg = abs(commonancester->GetPdgCode());
+             Int_t ancesterpdg = TMath::Abs(commonancester->GetPdgCode());
 
              for (Int_t l=0; l<fNparents; l++){
-                if (abs(ancesterpdg)==fParentSelect[1][l]){
+                if (TMath::Abs(ancesterpdg)==fParentSelect[1][l]){
                   srcpdg = -1*srcpdg; //multiply -1 for charm from bottom
                   return srcpdg;
                 }
@@ -1189,11 +1189,11 @@ Int_t AliHFEsecVtx::GetPairCode(const AliVTrack* const trk1, const AliVTrack* co
 
   if (srcpdg < 0) srccode = kBeautyElse;
   for (Int_t i=0; i<fNparents; i++){
-    if (abs(srcpdg)==fParentSelect[0][i]) {
+    if (TMath::Abs(srcpdg)==fParentSelect[0][i]) {
       if (srcpdg>0) srccode = kDirectCharm;
       if (srcpdg<0) srccode = kBeautyCharm;
     }
-    if (abs(srcpdg)==fParentSelect[1][i]) {
+    if (TMath::Abs(srcpdg)==fParentSelect[1][i]) {
       if (srcpdg>0) srccode = kDirectBeauty;
       if (srcpdg<0)  return kElse;
     }
@@ -1227,9 +1227,9 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
     return -1;
   } 
 
-  if ( abs(mcpart->GetPdgCode()) != 11 ) return kMisID;
+  if ( TMath::Abs(mcpart->GetPdgCode()) != 11 ) return kMisID;
 
-//  if ( abs(mcpart->GetPdgCode()) != 11 ) return -1; // check if it is electron !
+//  if ( TMath::Abs(mcpart->GetPdgCode()) != 11 ) return -1; // check if it is electron !
 
   Int_t iLabel = mcpart->GetFirstMother();
   if (iLabel<0){
@@ -1246,10 +1246,10 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
   Int_t maPdgcode = partMother->GetPdgCode();
 
   // if the mother is charmed hadron  
-  if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+  if ( int(TMath::Abs(maPdgcode)/100.) == kCharm || int(TMath::Abs(maPdgcode)/1000.) == kCharm ) {
 
     for (Int_t i=0; i<fNparents; i++){
-      if (abs(maPdgcode)==fParentSelect[0][i]){
+      if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
         isFinalOpenCharm = kTRUE;
       }
     }
@@ -1275,7 +1275,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
-        if (abs(grandMaPDG)==fParentSelect[1][j]){
+        if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
           origin = kBeautyCharm;
           return origin;
         }
@@ -1284,9 +1284,9 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       partMother = grandMa;
     } // end of iteration 
   } // end of if
-  else if ( int(abs(maPdgcode)/100.) == kBeauty || int(abs(maPdgcode)/1000.) == kBeauty ) {
+  else if ( int(TMath::Abs(maPdgcode)/100.) == kBeauty || int(TMath::Abs(maPdgcode)/1000.) == kBeauty ) {
     for (Int_t i=0; i<fNparents; i++){
-      if (abs(maPdgcode)==fParentSelect[1][i]){
+      if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
         origin = kDirectBeauty;
         return origin;
       }
@@ -1294,7 +1294,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
   } // end of if
 
   //============ gamma ================
-  else if ( abs(maPdgcode) == 22 ) {
+  else if ( TMath::Abs(maPdgcode) == 22 ) {
     origin = kGamma;
 
     // iterate until you find B hadron as a mother or become top ancester 
@@ -1317,7 +1317,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
-        if (abs(grandMaPDG)==fParentSelect[1][j]){
+        if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
           origin = kBeautyGamma;
           return origin;
         }
@@ -1330,7 +1330,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
   } // end of if
 
   //============ pi0 ================
-  else if ( abs(maPdgcode) == 111 ) {
+  else if ( TMath::Abs(maPdgcode) == 111 ) {
     origin = kPi0;
 
     // iterate until you find B hadron as a mother or become top ancester 
@@ -1353,7 +1353,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
-        if (abs(grandMaPDG)==fParentSelect[1][j]){
+        if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
           origin = kBeautyPi0;
           return origin;
         }
@@ -1387,7 +1387,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
-        if (abs(grandMaPDG)==fParentSelect[1][j]){
+        if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
           origin = kBeautyElse;
           return origin;
         }
