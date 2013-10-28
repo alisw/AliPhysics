@@ -12,6 +12,18 @@
 
 void makeComparisonTree(TString filename, TString addToName)
 {
+  
+  AliTPCCorrectionLookupTable *fTPCCorrection2=0x0;
+  
+  if (filename.Contains(":")) {
+    TObjArray *arr=filename.Tokenize(":");
+    TFile f2(arr->At(1)->GetName());
+    gROOT->cd();
+    fTPCCorrection2=(AliTPCCorrectionLookupTable*)fn.Get("map");
+    f2.Close();
+    filename=arr->At(0)->GetName();
+    delete arr;
+  }
   TFile fn(filename.Data());
   gROOT->cd();
   AliTPCCorrectionLookupTable *fTPCCorrection=(AliTPCCorrectionLookupTable*)fn.Get("map");
@@ -59,8 +71,12 @@ void makeComparisonTree(TString filename, TString addToName)
         
         // correct back distorted point
         Float_t xd3[3]={xd,yd,zd};
-        
-        fTPCCorrection->GetCorrection(xd3,roc,dx);
+
+        if (fTPCCorrection2) {
+          fTPCCorrection2->GetCorrection(xd3,roc,dx);
+        } else {
+          fTPCCorrection->GetCorrection(xd3,roc,dx);
+        }
         Float_t xdc   = xd+dx[0];
         Float_t ydc   = yd+dx[1];
         Float_t zdc   = zd+dx[2];
@@ -118,10 +134,10 @@ void makeAllComparisonTreesOld()
 TCanvas *GetCanvas(TString addToName);
 
 void makeHistos(TString addToName) {
-  TString fileName; //("test_");
-  fileName.Append(addToName.Data());
-  fileName.Append(".root");
-  TFile f(fileName.Data());
+  TString filename; //("test_");
+  filename.Append(addToName.Data());
+  filename.Append(".root");
+  TFile f(filename.Data());
   gROOT->cd();
   TTree *t=(TTree*)f.Get("t");
   gStyle->SetTitleX(0.18);
@@ -171,10 +187,10 @@ void makeHistos(TString addToName) {
 }
 
 void makeHistosDist(TString addToName) {
-  TString fileName; //("test_");
-  fileName.Append(addToName.Data());
-  fileName.Append(".root");
-  TFile f(fileName.Data());
+  TString filename; //("test_");
+  filename.Append(addToName.Data());
+  filename.Append(".root");
+  TFile f(filename.Data());
   gROOT->cd();
   TTree *t=(TTree*)f.Get("t");
   gStyle->SetTitleX(0.18);
