@@ -244,6 +244,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Float_t nChargedHadronsEtTotal500MeV = 0.0;
     Float_t fTotAllRawEt = 0.0;
     Float_t fTotRawEt = 0.0;
+    Float_t fTotRawEtEffCorr = 0.0;
     Float_t fTotAllRawEtEffCorr = 0.0;
     Int_t nPhosClusters = 0;
     Int_t nEmcalClusters = 0;
@@ -436,6 +437,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,cent);
 	    //cout<<"cluster energy "<<cluster->E()<<" eff corr Et "<<effCorrEt<<endl;
+	    fTotRawEtEffCorr += effCorrEt;
 	    fTotNeutralEt += effCorrEt;
 	    nominalRawEt += effCorrEt;
 	    if(myuncorrEt>=0.5){
@@ -467,13 +469,15 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistRemovedEnergy->Fill(removedEnergy);
     
     fTotNeutralEtAcc = fTotNeutralEt;
-    fHistTotRawEtEffCorr->Fill(fTotNeutralEt,cent);
+    //fHistTotRawEtEffCorr->Fill(fTotNeutralEt,cent);
+    fHistTotRawEtEffCorr->Fill(fTotRawEtEffCorr,cent);
     fHistTotRawEt->Fill(fTotRawEt,cent);
     fHistTotAllRawEt->Fill(fTotAllRawEt,cent);
     fHistTotAllRawEtVsTotalPt->Fill(fTotAllRawEt,totalPt);
     fHistTotAllRawEtVsTotalPtVsCent->Fill(fTotAllRawEt,totalPt,cent);
     fHistTotMatchedRawEtVsTotalPtVsCent->Fill(fTotAllRawEt,totalMatchedPt,cent);
     fHistTotAllRawEtEffCorr->Fill(fTotAllRawEtEffCorr,cent);
+    //cout<<"fTotAllRawEtEffCorr "<<fTotAllRawEtEffCorr<<" fTotAllRawEt "<<fTotAllRawEt<<" fTotRawEtEffCorr "<<fTotRawEtEffCorr<<"("<<fTotNeutralEt<<")"<<" fTotRawEt "<<fTotRawEt<<endl;
     //cout<<"uncorr "<<uncorrEt<<" raw "<<nominalRawEt<<" tot raw "<<fTotNeutralEt;
     fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
     //cout<<" tot corr "<<fTotNeutralEt<<endl;
