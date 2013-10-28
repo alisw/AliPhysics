@@ -165,8 +165,7 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
     
     if(fRecoUtils->GetParticleType()!=AliEMCALRecoUtils::kPhoton)
     {
-      printf("Wrong particle type for cluster position recalculation! = %d\n", fRecoUtils->GetParticleType());
-      abort();
+      AliFatal(Form("Wrong particle type for cluster position recalculation! = %d\n", fRecoUtils->GetParticleType()));
     }    
     
     if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
