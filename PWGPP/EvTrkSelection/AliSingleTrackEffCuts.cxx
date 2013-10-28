@@ -376,11 +376,22 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleInReconstructable(TObject *obj)
     if(trackRef){
       Int_t detectorId = trackRef->DetectorId();
       switch(detectorId) {
-      case AliTrackReference::kITS  : nHitsITS++  ;
-      case AliTrackReference::kTPC  : nHitsTPC++  ;
-      case AliTrackReference::kTRD  : nHitsTRD++  ; 
-      case AliTrackReference::kTOF  : nHitsTOF++  ;
-      case AliTrackReference::kMUON : nHitsMUON++ ; 
+      case AliTrackReference::kITS  : 
+	nHitsITS++; 
+	break;
+      case AliTrackReference::kTPC  : 
+	nHitsTPC++; 
+	break;
+      case AliTrackReference::kTRD  : 
+	nHitsTRD++; 
+	break;
+      case AliTrackReference::kTOF  : 
+	nHitsTOF++; 
+	break;
+      case AliTrackReference::kMUON : 
+	nHitsMUON++; 
+	break;
+      default : break;
       }
     }
   }
