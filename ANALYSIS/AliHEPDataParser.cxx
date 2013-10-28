@@ -51,7 +51,7 @@ AliHEPDataParser::AliHEPDataParser(TGraph * grStat, TGraph * grSyst): TObject(),
   fHEPDataFileLines = new TObjArray;
 }
 
-AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistStat(0),  fHistSyst(0),  fGraphStat(0),  fGraphSyst(0),  fHEPDataFileLines(0), fValueName("y")
+AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistStat(0),  fHistSyst(0),  fGraphStat(0),  fGraphSyst(0),  fHEPDataFileLines(0), fValueName("y"), fXaxisName(""), fTitle(""), fReaction(""), fEnergy(""), fRapidityRange(""), fPrecision(5)
 {
   //ctor
   // Put results in graphs
@@ -63,6 +63,7 @@ AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistSt
   Int_t ipoints = 0;
   while (line.ReadLine(infile)) {
     TObjArray * tokens = line.Tokenize(" \t");
+    if(!tokens) continue;
     if(! ((TObjString*) tokens->At(0))->String().Atof()) {
       //The first column is not a number: those are the headers: skip!
       delete tokens;
@@ -162,8 +163,6 @@ void AliHEPDataParser::SaveHEPDataFile(const char * hepfileName, Bool_t trueUseG
       // Skip empty bins
       if(!fGraphStat->GetY()[ipoint]) continue;
       TObjString * line = new TObjString;    
-      fGraphStat->Print();
-      fGraphSyst->Print();
       if(fGraphSyst) {
 	if (asym)
 	  line->String().Form("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
