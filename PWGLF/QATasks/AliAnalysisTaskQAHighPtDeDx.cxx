@@ -761,6 +761,11 @@ void AliAnalysisTaskQAHighPtDeDx::ProcessMCTruthAOD()
   for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
     
     AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
+
+    if(!trackMC){
+      AliError("Cannot get MC particle");
+      continue;
+    }   
     
     //Cuts
     if(!(trackMC->IsPhysicalPrimary()))
