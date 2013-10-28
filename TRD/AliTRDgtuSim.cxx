@@ -173,7 +173,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
   return kTRUE;
 }
 
-Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd, Int_t label)
+Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd, Int_t label, Int_t outLabel)
 {
   // run the GTU on tracklets taken from the loader
   // if specified the GTU tracks are written to the ESD event
@@ -220,7 +220,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd, Int_t label)
 	    if(fTMU) {
 		fTMU->SetStack(iStackPrev);
 		fTMU->SetSector(iSecPrev);
-		fTMU->RunTMU(listOfTracks);
+		fTMU->RunTMU(listOfTracks, 0x0, outLabel);
 		WriteTracksToLoader(listOfTracks);
 		WriteTracksToESD(listOfTracks, esd);
 		fTMU->Reset();
@@ -242,7 +242,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd, Int_t label)
     if (fTMU) {
 	fTMU->SetStack(iStackPrev);
 	fTMU->SetSector(iSecPrev);
-	fTMU->RunTMU(listOfTracks);
+	fTMU->RunTMU(listOfTracks, 0x0, outLabel);
 	WriteTracksToLoader(listOfTracks);
 	WriteTracksToESD(listOfTracks, esd);
 	delete fTMU;

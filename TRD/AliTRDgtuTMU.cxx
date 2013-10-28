@@ -162,7 +162,7 @@ Bool_t AliTRDgtuTMU::AddTracklet(AliTRDtrackletGTU *tracklet, Int_t link)
 }
 
 
-Bool_t AliTRDgtuTMU::RunTMU(TList *ListOfTracks, AliESDEvent *esd)
+Bool_t AliTRDgtuTMU::RunTMU(TList *ListOfTracks, AliESDEvent *esd, Int_t outLabel)
 {
   // performs the analysis as in a TMU module of the GTU, i. e.
   // track matching
@@ -215,7 +215,10 @@ Bool_t AliTRDgtuTMU::RunTMU(TList *ListOfTracks, AliESDEvent *esd)
   // ----- label calculation and ESD storage -----
   TIter next(ListOfTracks);
   while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) next()) {
-    trk->CookLabel();
+    if (outLabel == -1)
+      trk->CookLabel();
+    else
+      trk->SetLabel(outLabel);
     if (esd) {
       AliESDTrdTrack *trdtrack = trk->CreateTrdTrack();
       esd->AddTrdTrack(trdtrack);

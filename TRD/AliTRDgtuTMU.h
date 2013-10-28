@@ -32,7 +32,7 @@ class AliTRDgtuTMU : public TObject {
 
   Bool_t AddTracklet(AliTRDtrackletGTU *tracklet, Int_t link);
 
-  Bool_t RunTMU(TList *ListOfTracks = 0x0, AliESDEvent *esd = 0x0);
+  Bool_t RunTMU(TList *ListOfTracks = 0x0, AliESDEvent *esd = 0x0, Int_t outLabel = -1);
   Bool_t Reset();
 
   // ----- successive stages of the processing in the TMU -----

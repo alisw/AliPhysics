@@ -57,6 +57,7 @@ class AliTRDtrackGTU : public TObject {
   void SetStack(Int_t stack) { fStack = stack; }
   void SetSector(Int_t sector) { fSector = sector; }
   void SetPID(Int_t pid) { fPID = pid; }
+  void SetLabel(Int_t label) { fLabel = label; }
 
   void SetZChannel(Int_t zch) { fZChannel = zch; }
   void SetRefLayerIdx(Int_t reflayer) { fRefLayerIdx = reflayer; }
