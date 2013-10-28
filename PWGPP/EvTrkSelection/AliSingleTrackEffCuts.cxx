@@ -308,7 +308,8 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
     AliMCEventHandler* mcinfo = (AliMCEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());  	     
     AliMCEvent* mcevent = mcinfo->MCEvent();
     AliStack* stack = ((AliMCEvent*)mcevent)->Stack();
-    AliMCParticle* mcPart = dynamic_cast<AliMCParticle *>(obj);	     
+    AliMCParticle* mcPart = dynamic_cast<AliMCParticle *>(obj);	
+    if (!mcPart) return kFALSE;
     if(!stack->IsPhysicalPrimary(mcPart->GetLabel())) {
       isSelected = kFALSE;
     }
@@ -440,6 +441,7 @@ Bool_t AliSingleTrackEffCuts::IsRecoParticleKineAcceptance(TObject *obj)
   Bool_t isSelected = kTRUE;
 
   AliVParticle *track = dynamic_cast<AliVParticle*>(obj);
+  if (!track) return kFALSE;
  
   // Cut on eta
   if(track->Eta()<fEtaMin || track->Eta()>fEtaMax) isSelected = kFALSE;
