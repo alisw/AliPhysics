@@ -120,7 +120,7 @@ private:
   ECutsStrategy fCutsStrategy;              // cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
 
-  ClassDef(AliRDHFCutsLctopKpi,6);  // class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,7);  // class for cuts on AOD reconstructed Lc->pKpi
 };
 
 #endif
