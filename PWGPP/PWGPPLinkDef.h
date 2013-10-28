@@ -83,6 +83,8 @@
 #pragma link C++ class AliFilteredTreeEventCuts+;
 #pragma link C++ class AliFilteredTreeAcceptanceCuts+;
 
+#pragma link C++ class AliTaskConfigOCDB+;
+
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
