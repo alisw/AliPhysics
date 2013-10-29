@@ -63,7 +63,7 @@ AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
   //Set Filtesr
   taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
   taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
-  taskHighPtDeDx->SetStoreMcIn(analysisMC);     // def: kFALSE
+  taskHighPtDeDx->SetStoreMcIn(AnalysisMC);     // def: kFALSE
   
   mgr->AddTask(taskHighPtDeDx);
   
