@@ -88,6 +88,52 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=
   //task->SetBinCentralityLess(5,60.0);
   //task->SetBinCentralityLess(7,80.0);
 
+  if(debuglevel==3) {
+    
+    //***************************************//
+    //    test   Configure NPE plugin        //
+    //***************************************//
+    
+    AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(Form("HFEBackGroundSubtractionPID2%s",appendixx.Data()),"Background subtraction");  //appendix
+    //Setting the Cuts for the Associated electron-pool
+    AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendixx.Data()),"Background sub Cuts");
+    //hfeBackgroundCuts->SetEtaRange(assETA);
+    hfeBackgroundCuts->SetEtaRange(-0.8,0.8);
+    hfeBackgroundCuts->SetPtRange(0.1,1e10);
+    hfeBackgroundCuts->SetMaxChi2perClusterTPC(4);
+    hfeBackgroundCuts->SetMinNClustersITS(ITSclustersback);
+    hfeBackgroundCuts->SetMinNClustersTPC(100);
+    hfeBackgroundCuts->SetMinNClustersTPCPID(80);
+    hfeBackgroundCuts->SetMaxImpactParam(1.,2.);
+    hfeBackgroundCuts->SetAODFilterBit(4);
+    //hfeBackgroundCuts->SetQAOn();			        // QA break
+    
+    AliHFEpid *pidbackground = backe->GetPIDBackground();
+    pidbackground->AddDetector("TPC", 0);
+    pidbackground->ConfigureTPCasymmetric(0.0,9999.,minTPCback,maxTPCback);
+    backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+    backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
+    
+    // Selection of associated tracks for the pool
+    backe->SelectCategory1Tracks(kTRUE);
+    /*
+      if(useCat2Tracks){
+      backe->SelectCategory2Tracks(kTRUE);
+      backe-> SetITSMeanShift(-0.5);
+      }
+    */
+    
+    // apply opening angle cut to reduce file size
+    backe->SetMaxInvMass(0.3);
+    
+    task->SetHFEBackgroundSubtraction(backe);
+    //AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlowTPCTOFEPSP",3);
+    /////////////////////////////////////////////
+    /////////////////////////////////////////////
+    
+  }  
+
+
   task->SetHFEVZEROEventPlane(0x0);
   //AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlow",3);
 
