@@ -51,6 +51,9 @@
 
 ClassImp(AliAnalysisTaskUpcPsi2s);
 
+using std::cout;
+using std::endl;
+
 //trees for UPC analysis,
 // michal.broz@cern.ch
 
