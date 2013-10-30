@@ -41,10 +41,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         GetMCIndex(AliVCluster * cluster, Int_t & mcindex, Int_t & mcTag);
   
   void         GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex, const Int_t mcTag, const Bool_t matched,
-                                Float_t & eprim, Float_t & asymGen, Int_t & noverlaps );
+                                Float_t & eprim, Float_t & asymGen, Float_t & angleGen, Int_t & noverlaps );
   
-  void         FillAngleHistograms(const Int_t nMax, const Bool_t matched,
-                                   const Float_t en, const Float_t angle, const Float_t mass);
+  void         FillAngleHistograms(const Int_t nMax, const Bool_t matched, const Int_t mcindex,
+                                   const Float_t en, const Float_t angle, const Float_t mass, const Float_t anglePrim);
   
 
   void         FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcindex,
@@ -437,13 +437,21 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassSplitEFractionNLocMax2Ebin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster = 2, 1-6 for different MC particle types, not track matched
   TH2F       * fhMassSplitEFractionNLocMaxNEbin[7][4] ; //! Mass vs sum of splitted cluster energy / cluster energy for N max in cluster > 2, 1-6 for different MC particle types, not track matched  
     
-  TH2F       * fhAnglePairNLocMax1[2] ;                 //! pair opening angle vs E
-  TH2F       * fhAnglePairNLocMax2[2] ;                 //! pair opening angle vs E
-  TH2F       * fhAnglePairNLocMaxN[2] ;                 //! pair opening angle vs E
+  TH2F       * fhAnglePairNLocMax1[7][2] ;              //! pair opening angle vs E
+  TH2F       * fhAnglePairNLocMax2[7][2] ;              //! pair opening angle vs E
+  TH2F       * fhAnglePairNLocMaxN[7][2] ;              //! pair opening angle vs E
 
-  TH2F       * fhAnglePairMassNLocMax1[2] ;             //! pair opening angle vs Mass for E > 7 GeV
-  TH2F       * fhAnglePairMassNLocMax2[2] ;             //! pair opening angle vs Mass for E > 7 GeV
-  TH2F       * fhAnglePairMassNLocMaxN[2] ;             //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhAnglePairMassNLocMax1[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhAnglePairMassNLocMax2[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
+  TH2F       * fhAnglePairMassNLocMaxN[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
+  
+  TH2F       * fhAnglePairPrimPi0RecoNLocMax1;          //! pair opening angle pi0 generated/reconstructed vs E
+  TH2F       * fhAnglePairPrimPi0RecoNLocMax2;          //! pair opening angle pi0 generated/reconstructed vs E
+  TH2F       * fhAnglePairPrimPi0RecoNLocMaxN;          //! pair opening angle pi0 generated/reconstructed vs E
+
+  TH2F       * fhAnglePairPrimPi0vsRecoNLocMax1;          //! pair opening angle pi0 generated vs reconstructed
+  TH2F       * fhAnglePairPrimPi0vsRecoNLocMax2;          //! pair opening angle pi0 generated vs reconstructed
+  TH2F       * fhAnglePairPrimPi0vsRecoNLocMaxN;          //! pair opening angle pi0 generated vs reconstructed
   
   TH2F       * fhTrackMatchedDEtaNLocMax1[7] ;          //! Eta distance between track and cluster vs cluster E, 1 local maximum
   TH2F       * fhTrackMatchedDPhiNLocMax1[7] ;          //! Phi distance between track and cluster vs cluster E, 1 local maximum
@@ -646,7 +654,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,25)
+  ClassDef(AliAnaInsideClusterInvariantMass,26)
   
 } ;
 
