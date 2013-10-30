@@ -1576,12 +1576,12 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(const Int_t label, const AliCa
   return grandmom;
 }
 
-//_____________________________________________________________________________________
-Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader, Bool_t & ok) 
+//___________________________________________________________________________________________________________________________
+void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader,
+                                                        Float_t & asym, Float_t & angle, Bool_t & ok)
 {
   //In case of an eta or pi0 decay into 2 photons, get the asymmetry  in the energy of the photons
   
-  Float_t asym = -2;
   
   if(reader->ReadStack())
   {
@@ -1591,7 +1591,6 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
       
       ok = kFALSE;
-      return asym;
     }
     if(label >= 0 && label < reader->GetStack()->GetNtrack())
     {
@@ -1618,6 +1617,10 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
         {
           asym = (d1->Energy()-d2->Energy())/grandmomP->Energy();
+          TLorentzVector lvd1, lvd2;
+          d1->Momentum(lvd1);
+          d2->Momentum(lvd2);
+          angle = lvd1.Angle(lvd2.Vect());
         }
       }
       else 
@@ -1637,7 +1640,6 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
-      return asym;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
@@ -1666,6 +1668,10 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
         {
           asym = (d1->E()-d2->E())/grandmomP->E();
+          TLorentzVector lvd1, lvd2;
+          lvd1.SetPxPyPzE(d1->Px(),d1->Py(),d1->Pz(),d1->E());
+          lvd2.SetPxPyPzE(d2->Px(),d2->Py(),d2->Pz(),d2->E());
+          angle = lvd1.Angle(lvd2.Vect());
         }
       }
       else 
@@ -1679,7 +1685,6 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
   
   ok = kTRUE;
   
-  return asym;
 }
 
 

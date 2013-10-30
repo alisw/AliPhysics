@@ -70,7 +70,8 @@ class AliMCAnalysisUtils : public TObject {
 
   TLorentzVector GetMotherWithPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok, Int_t & momLabel);
   
-  Float_t        GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok);
+  void GetMCDecayAsymmetryAngleForPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader,
+                                      Float_t & asy, Float_t & angle, Bool_t & ok);
 
   Int_t          GetNDaughters(const Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
   TLorentzVector GetDaughter  (const Int_t daughter, const Int_t label,const AliCaloTrackReader* reader,
