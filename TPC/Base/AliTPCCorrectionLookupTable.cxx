@@ -39,6 +39,7 @@ AliTPCCorrectionLookupTable::AliTPCCorrectionLookupTable()
 , fNR(0)
 , fNPhi(0)
 , fNZ(0)
+, fCorrScaleFactor(-1)
 , fFillCorrection(kTRUE)
 , fLimitsR()
 , fLimitsPhi()
@@ -79,6 +80,12 @@ void AliTPCCorrectionLookupTable::GetCorrection(const Float_t x[],const Short_t 
   // Get interplolated correction
   //
   GetInterpolation(x,roc,dx,fLookUpDxCorr,fLookUpDyCorr,fLookUpDzCorr);
+
+  if (fCorrScaleFactor>0) {
+    dx[0]*=fCorrScaleFactor;
+    dx[1]*=fCorrScaleFactor;
+    dx[2]*=fCorrScaleFactor;
+  }
 }
 
 //_________________________________________________________________________________________

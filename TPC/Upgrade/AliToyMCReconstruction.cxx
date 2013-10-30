@@ -159,6 +159,9 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
     
     Float_t z0=fEvent->GetZ();
     Float_t t0=fEvent->GetT0();
+
+    // set SC scaling factor
+    fTPCCorrection->SetCorrScaleFactor(fEvent->GetSCscale());
     
     for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
 //       printf(" > ======  Processing Track %6d ========  \n",itr);

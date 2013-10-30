@@ -54,6 +54,10 @@ public:
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);
 
+  // map scaling
+  virtual void    SetCorrScaleFactor(Float_t /*val*/) { ; }
+  virtual Float_t GetCorrScaleFactor() const { return 1.; }
+  
   // convenience functions
   virtual void Print(Option_t* option="") const;
  

@@ -10,6 +10,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TObjArray.h>
+#include <TLinearFitter.h>
 
 #include <AliLog.h>
 #include <AliTPCROC.h>
@@ -38,6 +39,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fEvent(0x0)
   ,fCurrentTrack(0)
   ,fTPCCorrection(0x0)
+  ,fTPCCorrectionAv(0x0)
   ,fSCList(0x0)
   ,fSCListFile()
   ,fCorrectionFile("$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.lookup.root")
@@ -60,6 +62,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fEvent(0x0)
   ,fCurrentTrack(0)
   ,fTPCCorrection(gen.fTPCCorrection)
+  ,fTPCCorrectionAv(0x0)
   ,fSCList(gen.fSCList)
   ,fSCListFile(gen.fSCListFile)
   ,fCorrectionFile(gen.fCorrectionFile)
@@ -621,20 +624,7 @@ void AliToyMCEventGenerator::InitSpaceCharge()
   
   AliInfo(Form("Using space charge map file: '%s'",fCorrectionFile.Data()));
 
-  TString corrName("map");
-
-  // allow for specifying an object name for the AliTPCCorrection in the file name
-  // separated by a ':'
-  TObjArray *arr=fCorrectionFile.Tokenize(":");
-  if (arr->GetEntriesFast()>1) {
-    fCorrectionFile=arr->At(0)->GetName();
-    corrName=arr->At(1)->GetName();
-  }
-  delete arr;
-  
-  
-  TFile f(fCorrectionFile.Data());
-  fTPCCorrection=(AliTPCSpaceCharge3D*)f.Get("map");
+  SetCorrectionFromFile(fCorrectionFile, fTPCCorrection);
 
   if (fOutTree){
     AliInfo("Attaching space charge map file name to the tree");
@@ -673,6 +663,10 @@ void AliToyMCEventGenerator::InitSpaceChargeList()
     fOutTree->GetUserInfo()->Add(new TObjString(fCorrectionFile.Data()));
   }
   
+  // check for an average map
+  if (!fCorrectionFile.IsNull()) {
+    SetCorrectionFromFile(fCorrectionFile, fTPCCorrectionAv);
+  }
   
   // case of non preread
   // store the names of the files
@@ -689,11 +683,10 @@ void AliToyMCEventGenerator::InitSpaceChargeList()
   fSCList->Delete();
   
   for (Int_t ifile=0; ifile<arr->GetEntriesFast(); ++ifile) {
-    TFile f(arr->At(ifile)->GetName());
-    if (!f.IsOpen()||f.IsZombie()) continue;
-    AliTPCSpaceCharge3D *sc=(AliTPCSpaceCharge3D*)f.Get("map");
+    TString scname=arr->At(ifile)->GetName();
+    AliTPCCorrection *sc=0x0;
+    SetCorrectionFromFile(scname, sc);
     if (!sc) continue;
-    sc->SetName(f.GetName());
     fSCList->Add(sc);
   }
 }
@@ -725,16 +718,100 @@ void AliToyMCEventGenerator::IterateSC(Int_t ipos)
   delete fTPCCorrection;
   fTPCCorrection=0x0;
 
-  TFile f(file);
-  if (!f.IsOpen()||f.IsZombie()) {
-    AliFatal(Form("Could not open SC file '%s'",file.Data()));
-    return;
-  }
-
-  fTPCCorrection=(AliTPCSpaceCharge3D*)f.Get("map");
+  SetCorrectionFromFile(file, fTPCCorrection);
+  
   if (!fTPCCorrection) {
     AliFatal(Form("Could not read SC map from SC file '%s'",file.Data()));
     return;
   }
-  
+
+  SetSCScalingFactor();
 }
+
+//________________________________________________________________
+Float_t AliToyMCEventGenerator::GetSCScalingFactor(AliTPCCorrection *corr, AliTPCCorrection *averageCorr, Float_t &chi2)
+{
+  //
+  // calculate the scaling factor
+  // between the fluctuation map and the average map
+  //
+
+  TLinearFitter fitter(2,"pol1");
+  
+  for (Float_t iz=-245; iz<=245; iz+=10) {
+    Short_t roc=(iz>=0)?0:18;
+    for (Float_t ir=86; ir<250; ir+=10) {
+      for (Float_t iphi=0; iphi<TMath::TwoPi(); iphi+=10*TMath::DegToRad()){
+        Float_t x=ir*(Float_t)TMath::Cos(iphi);
+        Float_t y=ir*(Float_t)TMath::Sin(iphi);
+        Float_t x3[3]    = {x,y,iz};
+        Float_t dx3[3]   = {0.,0.,0.};
+        Float_t dx3av[3] = {0.,0.,0.};
+        
+        corr->GetDistortion(x3,roc,dx3);
+        averageCorr->GetDistortion(x3,roc,dx3av);
+
+        Double_t dr   = TMath::Sqrt(dx3[0]*dx3[0]     +  dx3[1]*dx3[1]);
+        Double_t drav = TMath::Sqrt(dx3av[0]*dx3av[0] +  dx3av[1]*dx3av[1]);
+
+        fitter.AddPoint(&drav,dr);
+      }
+    }
+  }
+  
+  fitter.Eval();
+  chi2 = fitter.GetChisquare()/fitter.GetNpoints();
+  return fitter.GetParameter(1);
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::SetSCScalingFactor()
+{
+  //
+  // if running with a SC list calculate the scaling factor
+  // between the fluctuation map and the average map
+  //
+
+  if ( !(fTPCCorrection && fTPCCorrectionAv && fEvent) ) return;
+
+  // loop over several z, r and phi bins and find a factor that minimises
+  // the distortions between the current map and the average map
+
+  Float_t chi2   = 0.;
+  Float_t factor = GetSCScalingFactor(fTPCCorrection, fTPCCorrectionAv, chi2);
+
+  fEvent->SetSCscale(factor);
+  fEvent->SetSCscaleChi2(chi2);
+}
+
+//________________________________________________________________
+void AliToyMCEventGenerator::SetCorrectionFromFile(const TString& file, AliTPCCorrection* &corr)
+{
+  //
+  // read the correction from file and set it to corr
+  //
+
+  corr=0x0;
+  TString corrName("map");
+  
+  // allow for specifying an object name for the AliTPCCorrection in the file name
+  // separated by a ':'
+  TObjArray *arr=fCorrectionFile.Tokenize(":");
+  if (arr->GetEntriesFast()>1) {
+    fCorrectionFile=arr->At(0)->GetName();
+    corrName=arr->At(1)->GetName();
+  }
+  delete arr;
+  
+  
+  TFile f(file.Data());
+  if (!f.IsOpen()||f.IsZombie()) {
+    AliError(Form("Could not open SC file '%s'",file.Data()));
+    return;
+  }
+  
+  corr=(AliTPCSpaceCharge3D*)f.Get(corrName.Data());
+  if (corr) corr->SetName(f.GetName());
+}
+
+

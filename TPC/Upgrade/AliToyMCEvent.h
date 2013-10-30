@@ -39,22 +39,31 @@ class AliToyMCEvent : public TObject {
 
   void SetEventType(EEventType type) { fEventType=type; }
   EEventType GetEventType() const    { return fEventType; }
+
+  void     SetSCscale(Float_t  val)      { fSCscale = val;      }
+  Float_t  GetSCscale() const            { return fSCscale;     }
+
+  void     SetSCscaleChi2(Float_t  val)  { fSCscaleChi2 = val;  }
+  Float_t  GetSCscaleChi2() const        { return fSCscaleChi2; }
   
  private:
-  static Int_t fgEvCounter;
+  static Int_t fgEvCounter;      // static counter
     
-  UInt_t fEventNumber;
+  UInt_t fEventNumber;           // event number
 
-  EEventType fEventType;
+  EEventType fEventType;         // type of the event
     
-  Float_t fT0;
-  Float_t fX;
-  Float_t fY;
-  Float_t fZ;
+  Float_t fT0;                   // Interaction time of the event
+  Float_t fX;                    // x-vertex position
+  Float_t fY;                    // y-vertex position
+  Float_t fZ;                    // z-vertex position
 
-  TClonesArray fTracks;
+  Float_t fSCscale;              // scaling parameter for space charge correction
+  Float_t fSCscaleChi2;          // chi2 of scaling parameter for space charge correction
+  
+  TClonesArray fTracks;          // array of tracks
 
-  ClassDef(AliToyMCEvent, 1);
+  ClassDef(AliToyMCEvent, 2);    // MC event class
 
 };
 

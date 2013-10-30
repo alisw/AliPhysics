@@ -37,6 +37,9 @@ public:
   const TVectorD& GetLimitsPhi() const { return fLimitsPhi; }
   const TVectorD& GetLimitsZ()   const { return fLimitsZ; }
   
+  void SetCorrScaleFactor(Float_t    val) { fCorrScaleFactor = val; }
+  Float_t    GetCorrScaleFactor() const { return fCorrScaleFactor; }
+  
 private:
 
   // sizes of lookup tables
@@ -44,6 +47,9 @@ private:
   Int_t     fNR;                   // number of rows (r) used for lookup table
   Int_t     fNPhi;                 // number of phi slices used for lookup table
   Int_t     fNZ;                   // number of columns (z) used for lookup table
+
+  Float_t   fCorrScaleFactor;      // overall scaling factor for the correction
+  
   Bool_t    fFillCorrection;       // whether to also fill the correction tables
   //
   TVectorD  fLimitsR;              // bin limits in row direction
