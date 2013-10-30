@@ -81,7 +81,8 @@ private:
                            const Float_t xref[3], Float_t xret[3]);
   AliTPCCorrectionLookupTable(const AliTPCCorrectionLookupTable &corr);
   AliTPCCorrectionLookupTable& operator= (const AliTPCCorrectionLookupTable &corr);
-  ClassDef(AliTPCCorrectionLookupTable,2);  // TPC corrections dumped into a lookup table
+  
+  ClassDef(AliTPCCorrectionLookupTable,3);  // TPC corrections dumped into a lookup table
 };
 
 
