@@ -1,4 +1,3 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TChain.h>
 #include <TSystem.h>
 #include "AliAnalysisManager.h"
@@ -6,26 +5,25 @@
 #include "AliAODHandler.h"
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
-#endif
 
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root",
 		      Bool_t bKineFilter = kTRUE) 
 {
   
-    gSystem->Load("libTree");
-    gSystem->Load("libGeom");
-    gSystem->Load("libPhysics");
-    gSystem->Load("libVMC");
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
+    // gSystem->Load("libTree");
+    // gSystem->Load("libGeom");
+    // gSystem->Load("libPhysics");
+    // gSystem->Load("libVMC");
+    // gSystem->Load("libSTEERBase");
+    // gSystem->Load("libESD");
+    // gSystem->Load("libAOD");
     
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gSystem->Load("libCORRFW");
-    gSystem->Load("libPWGHFbase");
-    gSystem->Load("libPWGmuon");
+    // gSystem->Load("libANALYSIS");
+    // gSystem->Load("libANALYSISalice");
+    // gSystem->Load("libCORRFW");
+    // gSystem->Load("libPWGHFbase");
+    // gSystem->Load("libPWGmuon");
 
     TChain *chain = new TChain("esdTree");
     // Steering input chain
