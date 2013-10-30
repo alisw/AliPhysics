@@ -190,6 +190,7 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
   for (Int_t ievent=0; ievent<nevents; ++ievent){
     printf("Generating event %3d (%.3g)\n",ievent,eventTime);
     fEvent = Generate(eventTime);
+    SetSCScalingFactor();
     FillTree();
     delete fEvent;
     fEvent=0x0;
@@ -378,6 +379,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
     if(equalSpacing)  {
       printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
       fEvent = Generate(eventTime);
+      SetSCScalingFactor();
       nGeneratedEvents++;
       FillTree();
       delete fEvent;
@@ -389,6 +391,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
       for(Int_t iColl = 0; iColl<nCollsInCrossing; iColl++){
 	printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
 	fEvent = Generate(eventTime);
+        SetSCScalingFactor();
 	nGeneratedEvents++;
 	FillTree();
 	delete fEvent;

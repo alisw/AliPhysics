@@ -725,7 +725,6 @@ void AliToyMCEventGenerator::IterateSC(Int_t ipos)
     return;
   }
 
-  SetSCScalingFactor();
 }
 
 //________________________________________________________________
@@ -772,7 +771,7 @@ void AliToyMCEventGenerator::SetSCScalingFactor()
   // between the fluctuation map and the average map
   //
 
-  if ( !(fTPCCorrection && fTPCCorrectionAv && fEvent) ) return;
+  if ( !(HasSCList() && fTPCCorrection && fTPCCorrectionAv && fEvent) ) return;
 
   // loop over several z, r and phi bins and find a factor that minimises
   // the distortions between the current map and the average map

@@ -93,7 +93,8 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t CloseOutputFile();
   void FillTree();
   void IterateSC(Int_t ipos=-1);
-
+  void SetSCScalingFactor();
+  
   UInt_t fCurrentTrack;                  // unique track id within the current event generation
 
   
@@ -116,7 +117,6 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t fPrereadSCList;                 // preread all SC files from the SC list
 
   void InitSpaceChargeList();
-  void SetSCScalingFactor();
   
   ClassDef(AliToyMCEventGenerator, 1)
   
