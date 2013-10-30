@@ -2249,7 +2249,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     }
   }
 
-  fBackgroundSubtraction->CountPoolAssociated(fInputEvent,binct);
+  if(fMonitorPhotonic) fBackgroundSubtraction->CountPoolAssociated(fInputEvent,binct);
 
   PostData(1, fListHist);
  
