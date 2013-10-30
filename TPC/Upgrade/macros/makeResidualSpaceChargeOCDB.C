@@ -10,6 +10,7 @@
 .L $ALICE_ROOT/TPC/Upgrade/macros/makeResidualSpaceChargeOCDB.C
 
 Example usage:
+
 ln -sf /hera/alice/wiechula/Upgrade/LUTs_fluctuation/dir1/SpaceChargeFluc10_1.lookup.root current.root
 ln -sf /hera/alice/wiechula/Upgrade/LUTs_fluctuation/average/SpaceChargeFluc0_1.lookup.root  mean.root
 ln -sf $ALICE_ROOT/OCDB/TPC/Calib/Correction/Run0_999999999_v0_s2.root ocdb.root
@@ -82,12 +83,14 @@ void makeResidualSpaceChargeOCDB(const char *ocdbInName="ocdb.root",const char *
   //
   //
   //
-  TF1 fSC("fSC","AliTPCCorrection::GetCorrXYZ(x,0,10,0,4)",85,245);  
-  TF1 fSCW("fSCW","AliTPCCorrection::GetCorrXYZ(x,0,10,0,5)",85,245);
+  TF1 *fSC = new TF1("fSC","AliTPCCorrection::GetCorrXYZ(x,0,10,0,4)",85,245);  
+  TF1 *fSCW = new TF1("fSCW","AliTPCCorrection::GetCorrXYZ(x,0,10,0,5)",85,245);
   fSC->SetLineColor(2);
   fSC->SetLineColor(4);
   fSC->Draw();
   fSCW->Draw("same");
+  gPad->SaveAs("residualMap.pdf");
+  
   //
   //
   //
