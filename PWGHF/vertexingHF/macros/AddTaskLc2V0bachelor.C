@@ -1,7 +1,9 @@
 AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bachelorCuts.root",
 						     Bool_t theMCon=kFALSE,
 						     Bool_t onTheFly=kFALSE,
-						     Bool_t writeVariableTree=kTRUE)
+						     Bool_t writeVariableTree=kTRUE,
+						     Int_t nTour=0,
+						     Bool_t additionalChecks=kFALSE)
 
 {
 
@@ -25,13 +27,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
       }
   }
 
-  AliRDHFCutsLctoV0* RDHFCutsLctoV0prod = new AliRDHFCutsLctoV0();
-  if (stdcuts) RDHFCutsLctoV0prod->SetStandardCutsPP2010();
-  else RDHFCutsLctoV0prod = (AliRDHFCutsLctoV0*)filecuts->Get("LctoV0ProductionCuts");
-  RDHFCutsLctoV0prod->SetName("LctoV0ProductionCuts");
-  RDHFCutsLctoV0prod->SetMinPtCandidate(-1.);
-  RDHFCutsLctoV0prod->SetMaxPtCandidate(10000.);
-
+  cout << " Is it std on not std cut? " << stdcuts << endl;
   AliRDHFCutsLctoV0* RDHFCutsLctoV0anal = new AliRDHFCutsLctoV0();
   if (stdcuts) RDHFCutsLctoV0anal->SetStandardCutsPP2010();
   else RDHFCutsLctoV0anal = (AliRDHFCutsLctoV0*)filecuts->Get("LctoV0AnalysisCuts");
@@ -41,7 +37,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
 
 
   // mm let's see if everything is ok
-  if (!RDHFCutsLctoV0prod || !RDHFCutsLctoV0anal) {
+  if (!RDHFCutsLctoV0anal) {
     cout << "Specific AliRDHFCutsLctoV0 not found\n";
     return;
   }
@@ -50,33 +46,35 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   //CREATE THE TASK
 
   printf("CREATE TASK\n");
-  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0prod,RDHFCutsLctoV0anal,onTheFly,writeVariableTree);
+  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0anal,onTheFly,writeVariableTree);
+  task->SetAdditionalChecks(additionalChecks);
   task->SetMC(theMCon);
-  task->SetK0sAnalysis(kTRUE);
+  task->SetK0SAnalysis(kTRUE);
   task->SetDebugLevel(0);
   mgr->AddTask(task);
 
   // Create and connect containers for input/output  
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += ":PWG3_D2H_Lc2pK0S";
-
+  outputfile += ":PWG3_D2H_Lc2pK0S_";
+  outputfile += nTour;
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
   // ----- output data -----
-  AliAnalysisDataContainer *coutput1   = mgr->CreateContainer("chist1",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // general histos
+  AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(Form("chist%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // general histos
   mgr->ConnectOutput(task,1,coutput1);
-  AliAnalysisDataContainer *coutputLc1 = mgr->CreateContainer("Lc2pK0SAll",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // production histos
-  mgr->ConnectOutput(task,2,coutputLc1);
-  AliAnalysisDataContainer *coutputLc2 = mgr->CreateContainer("Lc2pK0SPIDBach",TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); // analysis histos
-  mgr->ConnectOutput(task,3,coutputLc2);
-  AliAnalysisDataContainer *coutputLc3 = mgr->CreateContainer("Lc2pK0Scounter",AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
-  mgr->ConnectOutput(task,4,coutputLc3);
-  AliAnalysisDataContainer *coutputLc4 = mgr->CreateContainer("Lc2pK0SCuts",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // cuts
-  mgr->ConnectOutput(task,5,coutputLc4);
-  if (writeVariableTree) {
-    AliAnalysisDataContainer *coutputLc5 = mgr->CreateContainer("Lc2pK0Svariables",TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
-    mgr->ConnectOutput(task,6,coutputLc5);
+  AliAnalysisDataContainer *coutputLc2 = mgr->CreateContainer(Form("Lc2pK0Scounter%1d",nTour),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
+  mgr->ConnectOutput(task,2,coutputLc2);
+  AliAnalysisDataContainer *coutputLc3 = mgr->CreateContainer(Form("Lc2pK0SCuts%1d",nTour),AliRDHFCutsLctoV0::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // cuts
+  mgr->ConnectOutput(task,3,coutputLc3);
+  if (!writeVariableTree) {
+    AliAnalysisDataContainer *coutputLc4 = mgr->CreateContainer(Form("Lc2pK0SAll%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // production histos
+    mgr->ConnectOutput(task,4,coutputLc4);
+    AliAnalysisDataContainer *coutputLc5 = mgr->CreateContainer(Form("Lc2pK0SPIDBach%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); // analysis histos
+    mgr->ConnectOutput(task,5,coutputLc5);
+  } else {
+    AliAnalysisDataContainer *coutputLc4 = mgr->CreateContainer(Form("Lc2pK0Svariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+    mgr->ConnectOutput(task,4,coutputLc4);
   }
 
   return task;
