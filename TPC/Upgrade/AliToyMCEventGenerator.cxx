@@ -785,7 +785,7 @@ void AliToyMCEventGenerator::SetSCScalingFactor()
 }
 
 //________________________________________________________________
-void AliToyMCEventGenerator::SetCorrectionFromFile(const TString& file, AliTPCCorrection* &corr)
+void AliToyMCEventGenerator::SetCorrectionFromFile(TString file, AliTPCCorrection* &corr)
 {
   //
   // read the correction from file and set it to corr
@@ -796,9 +796,9 @@ void AliToyMCEventGenerator::SetCorrectionFromFile(const TString& file, AliTPCCo
   
   // allow for specifying an object name for the AliTPCCorrection in the file name
   // separated by a ':'
-  TObjArray *arr=fCorrectionFile.Tokenize(":");
+  TObjArray *arr=file.Tokenize(":");
   if (arr->GetEntriesFast()>1) {
-    fCorrectionFile=arr->At(0)->GetName();
+    file=arr->At(0)->GetName();
     corrName=arr->At(1)->GetName();
   }
   delete arr;
@@ -806,7 +806,7 @@ void AliToyMCEventGenerator::SetCorrectionFromFile(const TString& file, AliTPCCo
   
   TFile f(file.Data());
   if (!f.IsOpen()||f.IsZombie()) {
-    AliError(Form("Could not open SC file '%s'",file.Data()));
+    printf("E-AliToyMCEventGenerator::Could not open SC file '%s'",file.Data());
     return;
   }
   

@@ -83,6 +83,7 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t HasSCList() const               { return  !fSCListFile.IsNull(); }
 
   static Float_t GetSCScalingFactor(AliTPCCorrection *corr, AliTPCCorrection *averageCorr, Float_t &chi2);
+  static void SetCorrectionFromFile(TString file, AliTPCCorrection* &corr);
   
  protected:
   AliTPCParam *fTPCParam;                //! TPC params
@@ -114,7 +115,6 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t fIsLaser;                       // is a laser event?
   Bool_t fPrereadSCList;                 // preread all SC files from the SC list
 
-  void SetCorrectionFromFile(const TString& file, AliTPCCorrection* &corr);
   void InitSpaceChargeList();
   void SetSCScalingFactor();
   
