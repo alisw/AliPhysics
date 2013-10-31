@@ -345,20 +345,14 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
   AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
   AliDielectronVarManager::FillVarMCParticle2(part1,part2,valuesPair);
 
-  if(part1->Charge()*part2->Charge()<0) {
-    //valuesPair[AliDielectronVarManager::kPairType]=1;
-//     for(Int_t i=0; i<fAxes.GetEntriesFast(); i++) {
-//       printf("[D]: %s %f %f %f \n",
-// 	     AliDielectronVarManager::GetValueName(fVarCuts[i]),
-// 	     valuesLeg1[fVarCuts[i]], valuesLeg2[fVarCuts[i]], valuesPair[fVarCuts[i]]); 
-//     }
-    Fill(nSignal+fSignalsMC->GetEntries(), valuesPair,  valuesLeg1, valuesLeg2);
-  }
+  // if pair types are filled, fill mc sources at the end
+  Int_t istep=0;
+  if(fPairType!=kMConly) istep=AliDielectron::kEv1PMRot+1;
+
   // only OS at the moment
-  // else if(part1->Charge()>0)
-  //   valuesPair[AliDielectronVarManager::kPairType]=0;
-  // else
-  //   valuesPair[AliDielectronVarManager::kPairType]=2; // if one of the two particles is neutral, the pair will go here
+  if(part1->Charge()*part2->Charge()<0) {
+    Fill(istep+nSignal+fSignalsMC->GetEntries(), valuesPair,  valuesLeg1, valuesLeg2);
+  }
 
   return;
 }
@@ -387,19 +381,24 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
 
   // fill
 
+  // if pair types are filled, fill mc sources at the end
+  Int_t istep = 0;
+  if(fPairType!=kMConly) istep=AliDielectron::kEv1PMRot+1;
+
   // mc source steps (only OS SE pairs)
   if(fHasMC && fSignalsMC && pairIndex==AliDielectron::kEv1PM) {
     for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
-      if(AliDielectronMC::Instance()->IsMCTruth(particle, (AliDielectronSignalMC*)fSignalsMC->At(i))) 
-	Fill(i, valuesPair,  valuesLeg1, valuesLeg2);
+      if(AliDielectronMC::Instance()->IsMCTruth(particle, (AliDielectronSignalMC*)fSignalsMC->At(i)))
+	Fill(istep+i, valuesPair,  valuesLeg1, valuesLeg2);
     }
   }
 
   // all pair types w/o use of mc information
   if(fPairType==kMConly) return;
 
-  // select correct step if we are looking at signals too
-  if(fHasMC && fSignalsMC) pairIndex += ( fSignalsMC->GetEntries() * (fStepGenerated ? 2 : 1) );
+  // remove comments
+  //// select correct step if we are looking at signals too
+  ////  if(fHasMC && fSignalsMC) pairIndex += ( fSignalsMC->GetEntries() * (fStepGenerated ? 2 : 1) );
   Fill(pairIndex, valuesPair,  valuesLeg1, valuesLeg2); 
 
   return;
@@ -491,8 +490,8 @@ void AliDielectronHF::Init()
 
   // init pair type array
   fArrPairType.SetName(Form("%s_HF",GetName()));
-  if(fHasMC && fPairType!=kMConly) fArrPairType.Expand(steps+(AliDielectron::kEv1PMRot+1));
-  else fArrPairType.Expand(AliDielectron::kEv1PMRot+1);
+  if(fHasMC && fPairType==kMConly) fArrPairType.Expand(steps);
+  else fArrPairType.Expand(AliDielectron::kEv1PMRot+1+steps);
 
   Int_t size  = GetNumberOfBins();
   AliDebug(10,Form("Creating a histo array with size %d \n",size));
@@ -550,26 +549,29 @@ void AliDielectronHF::Init()
 
   // copy array to the selected pair types/ MC sources
 
+  // pair types
+  Int_t istep=0;
+  if(fPairType != kMConly) {
+    for(istep=0; istep<AliDielectron::kEv1PMRot+1; istep++) {
+      //    for(Int_t i=steps; i<steps+AliDielectron::kEv1PMRot+1; i++) {
+      fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
+      ((TObjArray*)fArrPairType[istep])->SetOwner();
+      if(!IsPairTypeSelected(istep))  ((TObjArray*)fArrPairType[istep])->Delete();
+    } //end: loop over pair types
+  }
+
   // mc sources
   if(fHasMC) {
     for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
       TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetTitle());
-      fArrPairType[i]=(TObjArray*)histArr->Clone(title.Data());
+      fArrPairType[istep+i]=(TObjArray*)histArr->Clone(title.Data());
       if(fStepGenerated)  {
 	title+=" MC truth";
-	fArrPairType[i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
+	fArrPairType[istep+i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
       }
     } // end: loop over sources
   }
 
-  // pair types
-  if(fPairType != kMConly) {
-    for(Int_t i=steps; i<steps+AliDielectron::kEv1PMRot+1; i++) {
-      fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i-steps)));
-      ((TObjArray*)fArrPairType[i])->SetOwner();
-      if(!IsPairTypeSelected(i-steps))  ((TObjArray*)fArrPairType[i])->Delete();
-    } //end: loop over pair types
-  }
 
   // clean up
   if(histArr) {
