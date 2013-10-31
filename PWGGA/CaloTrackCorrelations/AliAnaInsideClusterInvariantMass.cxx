@@ -1939,9 +1939,9 @@ void AliAnaInsideClusterInvariantMass::FillIdPi0Histograms(const Float_t en,    
   
   if(IsDataMC() && mcindex > 0 && mcindex < 7)
   {
-    fhNLocMax   [mcindex][matched]->Fill(en,nMax);
-    fhLM1NLocMax[mcindex][matched]->Fill(e1,nMax);
-    fhLM2NLocMax[mcindex][matched]->Fill(e2,nMax);
+    fhNLocMaxIdPi0   [mcindex][matched]->Fill(en,nMax);
+    fhLM1NLocMaxIdPi0[mcindex][matched]->Fill(e1,nMax);
+    fhLM2NLocMaxIdPi0[mcindex][matched]->Fill(e2,nMax);
     
     if     (nMax==1)
     {
@@ -2805,14 +2805,14 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
                                      Form("Number of local maxima in cluster for split cluster 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                      nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
       fhLM1NLocMax[i][j]   ->SetYTitle("N maxima");
-      fhLM1NLocMax[i][j]   ->SetXTitle("E1 (GeV)");
+      fhLM1NLocMax[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhLM1NLocMax[i][j]) ;
 
       fhLM2NLocMax[i][j]     = new TH2F(Form("hLM2NLocMax%s%s",pname[i].Data(),sMatched[j].Data()),
                                         Form("Number of local maxima in cluster for split cluster 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                         nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
       fhLM2NLocMax[i][j]   ->SetYTitle("N maxima");
-      fhLM2NLocMax[i][j]   ->SetXTitle("E1 (GeV)");
+      fhLM2NLocMax[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhLM2NLocMax[i][j]) ;
       
       if(m02On)
@@ -2828,14 +2828,14 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
                                           Form("Number of local maxima in cluster for split cluster 1 %s %s, M02 cut",ptype[i].Data(),sMatched[j].Data()),
                                           nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
         fhLM1NLocMaxM02Cut[i][j]   ->SetYTitle("N maxima");
-        fhLM1NLocMaxM02Cut[i][j]   ->SetXTitle("E1 (GeV)");
+        fhLM1NLocMaxM02Cut[i][j]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhLM1NLocMaxM02Cut[i][j]) ;
         
         fhLM2NLocMaxM02Cut[i][j]     = new TH2F(Form("hLM2NLocMaxM02Cut%s%s",pname[i].Data(),sMatched[j].Data()),
                                           Form("Number of local maxima in cluster for split cluster 2 %s %s, M02 cut",ptype[i].Data(),sMatched[j].Data()),
                                           nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
         fhLM2NLocMaxM02Cut[i][j]   ->SetYTitle("N maxima");
-        fhLM2NLocMaxM02Cut[i][j]   ->SetXTitle("E1 (GeV)");
+        fhLM2NLocMaxM02Cut[i][j]   ->SetXTitle("E (GeV)");
         outputContainer->Add(fhLM2NLocMaxM02Cut[i][j]) ;
 
       }
@@ -2853,14 +2853,14 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
                                         Form("Number of local maxima in cluster for split cluster 1 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                         nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
       fhLM1NLocMaxIdPi0[i][j]   ->SetYTitle("N maxima");
-      fhLM1NLocMaxIdPi0[i][j]   ->SetXTitle("E1 (GeV)");
+      fhLM1NLocMaxIdPi0[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhLM1NLocMaxIdPi0[i][j]) ;
       
       fhLM2NLocMaxIdPi0[i][j]     = new TH2F(Form("hLM2NLocMaxIdPi0%s%s",pname[i].Data(),sMatched[j].Data()),
                                         Form("Number of local maxima in cluster for split cluster 2 %s %s",ptype[i].Data(),sMatched[j].Data()),
                                         nptbins,ptmin,ptmax,nMaxBins,0,nMaxBins);
       fhLM2NLocMaxIdPi0[i][j]   ->SetYTitle("N maxima");
-      fhLM2NLocMaxIdPi0[i][j]   ->SetXTitle("E1 (GeV)");
+      fhLM2NLocMaxIdPi0[i][j]   ->SetXTitle("E (GeV)");
       outputContainer->Add(fhLM2NLocMaxIdPi0[i][j]) ;
       
 
