@@ -45,6 +45,7 @@
 //	- added merit cut choice, pass as argument (10/16/13)
 //		- 1-mass, 2-v0dca, 3-dddca, 4-combination (used to be v0dca)
 //	- added passable argument for two-track minimum separation (10/16/13)
+//	- added boolean to turn off field-sign dependence for train (10/30/13)
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -89,6 +90,7 @@ ClassImp(AliFemtoK0Analysis)
 //________________________________________________________________________
 AliFemtoK0Analysis::AliFemtoK0Analysis():
 AliAnalysisTaskSE(),
+  fSignDep(kFALSE),
   fFieldPos(kTRUE),
   fOnlineCase(kTRUE),
   fMeritCase(kTRUE),
@@ -106,8 +108,9 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, bool OnlineCase, bool MeritCase, float MinDL, int MeritCutChoice, float MinSep) 
-: AliAnalysisTaskSE(name), 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, float MinDL, int MeritCutChoice, float MinSep) 
+: AliAnalysisTaskSE(name),
+  fSignDep(SignDep),
   fFieldPos(FieldPositive),
   fOnlineCase(OnlineCase),
   fMeritCase(MeritCase),
@@ -124,6 +127,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, boo
   fPidAOD(0x0)
 {
   //main constructor
+  fSignDep		= SignDep;
   fFieldPos 	= FieldPositive;
   fOnlineCase 	= OnlineCase;
   fMeritCase 	= MeritCase;
@@ -139,6 +143,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool FieldPositive, boo
 //________________________________________________________________________
 AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
 : AliAnalysisTaskSE(obj.fName),
+  fSignDep(obj.fSignDep),
   fFieldPos(obj.fFieldPos),
   fOnlineCase(obj.fOnlineCase),
   fMeritCase(obj.fMeritCase),
@@ -161,6 +166,7 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  //Assignment operator
  if (this == &obj) return *this;
  
+ fSignDep   = obj.fSignDep;
  fFieldPos 	= obj.fFieldPos;
  fOnlineCase 	= obj.fOnlineCase;
  fMeritCase 	= obj.fMeritCase;
@@ -452,9 +458,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
   float bField=0;
   bField = fAOD->GetMagneticField();
-  if(fFieldPos && bField < 0) return;
-  if(!fFieldPos && bField > 0) return;
   if(bField == 0) return;
+  if(fSignDep){
+   if(fFieldPos && bField < 0) return;
+   if(!fFieldPos && bField > 0) return;
+  }
+
   
   int zBin=0;
   double zStep=2*10/double(kZVertexBins), zstart=-10.;
@@ -810,7 +819,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   float pairPt, pairMt, pairKt;         		//pair momentum values
   float pairMInv, pairPDotQ;
   float qinv, q0, qx, qy, qz;      			//pair q values
-  float qLength, thetaSH, thetaSHCos, phiSH;            //Spherical Harmonics values
+  //float qLength, thetaSH, thetaSHCos, phiSH;            //Spherical Harmonics values
   float am12, epm, h1, p12, p112, ppx, ppy, ppz, ks;	//PRF
   //float qOutLCMS;
   float qOutPRF, qSide, qLong;				//relative momentum in LCMS/PRF frame
@@ -938,10 +947,10 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 		*histname3D += ktBin;
 
         //Spherical harmonics
-        qLength = sqrt(qLong*qLong + qSide*qSide + qOutPRF*qOutPRF);
-        thetaSHCos = qLong/qLength;
-        thetaSH = acos(thetaSHCos);
-        phiSH = acos(qOutPRF/(qLength*sin(thetaSH)));
+        //qLength = sqrt(qLong*qLong + qSide*qSide + qOutPRF*qOutPRF);
+        //thetaSHCos = qLong/qLength;
+        //thetaSH = acos(thetaSHCos);
+        //phiSH = acos(qOutPRF/(qLength*sin(thetaSH)));
 
         //Finding average separation of daughters throughout TPC - two-track cut
         float posPositions1[9][3] = {{0}};
