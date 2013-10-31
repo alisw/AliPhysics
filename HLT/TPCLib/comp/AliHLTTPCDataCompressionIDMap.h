@@ -29,6 +29,10 @@ class AliHLTTPCDataCompressionIDMap: public AliHLTLogging{
   void FillHLTID( AliHLTUInt32_t hltID );
   void EndFilling();
 
+  Int_t GetNumberOfIDs(){
+    return fPatchFirstID[fkNPatchesTotal];
+  }
+
   Bool_t GetOfflineID( AliHLTUInt32_t hltID, Int_t &sector, Int_t &row, UInt_t &ind );
   Bool_t GetOfflineID( AliHLTUInt32_t hltID, AliHLTUInt32_t &offlineID);
 
