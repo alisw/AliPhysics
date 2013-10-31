@@ -98,7 +98,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    fGammaChi2NDF(0),
    fGammaPhotonProp(5),
    fGammaConvCoord(5),
-   fDaughterProp(20),
+   fDaughterProp(22),
    fKind(0),
    fIsMC(kFALSE),
    fnGammaCandidates(1),
@@ -168,7 +168,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    fGammaChi2NDF(0),
    fGammaPhotonProp(5),
    fGammaConvCoord(5),
-   fDaughterProp(20),
+   fDaughterProp(22),
    fKind(0),
    fIsMC(kFALSE),
    fnGammaCandidates(1),
@@ -460,34 +460,68 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    fDaughterProp(7) =  negTrack->Pt();
    fDaughterProp(1) =  posTrack->Theta();
    fDaughterProp(8) =  negTrack->Theta();
-   Double32_t signalPos[4] = {0,0,0,0};
-   Char_t nclPos[3];
-   Char_t nrowsPos[3];
-   if (posTrack->GetTPCdEdxInfo()) {
-      posTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalPos,nclPos,nrowsPos);
-      fDaughterProp(2) =  signalPos[0];
-      fDaughterProp(14) =  signalPos[1];
-      fDaughterProp(16) =  signalPos[2];
-   } else {
-      fDaughterProp(2) =  posTrack->GetTPCsignal();
-      fDaughterProp(14) =  0;
-      fDaughterProp(16) =  0;
-   }
-   Double32_t signalNeg[4] = {0,0,0,0};
-   Char_t nclNeg[3];
-   Char_t nrowsNeg[3];
-   if (negTrack->GetTPCdEdxInfo()) {
-      negTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalNeg,nclNeg,nrowsNeg);
-      fDaughterProp(9) =  signalNeg[0];
-      fDaughterProp(15) =  signalNeg[1];
-      fDaughterProp(17) =  signalNeg[2];
-   } else {
-      fDaughterProp(9) =  negTrack->GetTPCsignal();
-      fDaughterProp(15) =  0;
-      fDaughterProp(17) =  0;
-   }
+//    Double32_t signalPos[4] = {0,0,0,0};
+//    Char_t nclPos[3];
+//    Char_t nrowsPos[3];
+//    if (posTrack->GetTPCdEdxInfo()) {
+//       posTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalPos,nclPos,nrowsPos);
+//       fDaughterProp(2) =  signalPos[0];
+//       fDaughterProp(14) =  signalPos[1];
+//       fDaughterProp(16) =  signalPos[2];
+//    } else {
+//       fDaughterProp(2) =  posTrack->GetTPCsignal();
+//       fDaughterProp(14) =  0;
+//       fDaughterProp(16) =  0;
+//    }
+//    Double32_t signalNeg[4] = {0,0,0,0};
+//    Char_t nclNeg[3];
+//    Char_t nrowsNeg[3];
+//    if (negTrack->GetTPCdEdxInfo()) {
+//       negTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalNeg,nclNeg,nrowsNeg);
+//       fDaughterProp(9) =  signalNeg[0];
+//       fDaughterProp(15) =  signalNeg[1];
+//       fDaughterProp(17) =  signalNeg[2];
+//    } else {
+//       fDaughterProp(9) =  negTrack->GetTPCsignal();
+//       fDaughterProp(15) =  0;
+//       fDaughterProp(17) =  0;
+//    }
+   // dEdx TPC
+   fDaughterProp(2) =  posTrack->GetTPCsignal();
    fDaughterProp(3) =  pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+   fDaughterProp(9) =  negTrack->GetTPCsignal();
    fDaughterProp(10) =  pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+
+   Int_t nPosClusterITS = 0;
+   Int_t nNegClusterITS = 0;
+   for(Int_t itsLayer = 0; itsLayer<6;itsLayer++){
+      if(TESTBIT(negTrack->GetITSClusterMap(),itsLayer)){
+         nNegClusterITS++;
+      }
+      if(TESTBIT(posTrack->GetITSClusterMap(),itsLayer)){
+         nPosClusterITS++;
+      }
+   }
+   
+   // ITS signal
+   fDaughterProp(14) =  (Float_t)nPosClusterITS;
+   fDaughterProp(15) =  (Float_t)nNegClusterITS;
+   if (nPosClusterITS > 0 ){
+      fDaughterProp(16) =  posTrack->GetITSsignal();
+      fDaughterProp(20) =  pidResonse->NumberOfSigmasITS(posTrack,AliPID::kElectron);
+   } else {
+      fDaughterProp(16) =  1000;
+      fDaughterProp(20) =  20;
+   }
+   if (nNegClusterITS > 0 ){
+      fDaughterProp(17) =  negTrack->GetITSsignal();
+      fDaughterProp(21) =  pidResonse->NumberOfSigmasITS(negTrack,AliPID::kElectron);
+   } else {
+      fDaughterProp(17) =  1000;
+      fDaughterProp(21) =  20;
+   }
+
+   // TOF 
    if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
       Double_t timesPos[5];
