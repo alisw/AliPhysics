@@ -4,7 +4,7 @@ class AliAnalysisAlien;
 //_______________________________| Loading Libraries |________________________________
 void Load() {
     
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -g"); 
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGPP -g"); 
 
   //load the required aliroot libraries
   gSystem->Load("libTree.so");
@@ -19,6 +19,7 @@ void Load() {
   gSystem->Load("libOADB.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWGPP.so");
 }
 
 //_______________________________| Running on Grid |________________________________
@@ -78,9 +79,9 @@ void RunCFSingleTrackEfficiencyTask()
 	 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
   AliAnalysisTaskPIDqa *pidQA = AddTaskPIDqa();
-	 
-  gROOT->LoadMacro("AliSingleTrackEffCuts.cxx++g");
-  gROOT->LoadMacro("AliCFSingleTrackEfficiencyTask.cxx++g");
+
+  // gROOT->LoadMacro("AliSingleTrackEffCuts.cxx++g");
+  // gROOT->LoadMacro("AliCFSingleTrackEfficiencyTask.cxx++g");
   gROOT->LoadMacro("AddSingleTrackEfficiencyTask.C");
   AliCFSingleTrackEfficiencyTask *task = AddSingleTrackEfficiencyTask(readAOD,"Nch");
   AliCFSingleTrackEfficiencyTask *taskPi = AddSingleTrackEfficiencyTask(readAOD,"Pion",AliPID::kPion,211);
