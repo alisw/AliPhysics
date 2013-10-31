@@ -156,7 +156,8 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
       cutarray[ 0] = "469000103209297002322000000"; mesonCutArray[ 0] = "01523065009000";
    } else if (trainConfig == 30) { 
       cutarray[ 0] = "589000103209297002322000000"; mesonCutArray[ 0] = "01523065009000";    
-
+   } else if (trainConfig == 31) { 
+      cutarray[ 0] = "508000100209297002322000000"; mesonCutArray[ 0] = "01525065009000";    
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
