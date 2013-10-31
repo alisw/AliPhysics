@@ -394,6 +394,11 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         fNEFSignalJetCut = nef;
     };
     
+    inline void DoNEFCalibration(Bool_t doNEF)
+    {
+        fDoNEF=doNEF;
+    };
+    
     private:
     TList *fOutput; //! Output list
     
@@ -411,8 +416,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fhClusterPhi;  //!
     TH1D *fhCentrality; //!
     TH1D *fhEMCalCellCounts;  //! Plots the distribution of cluster counts in the EMCal. Used to determine which cells are hot (if any...)
-    TH1D *fhDeltaRhoN;  //!
-    TH1D *fhDeltaRhoCMS;  //!
     
     TH2D *fhTrackEtaPhi;  //!
     TH2D *fhTrackPhiPt;  //!
@@ -445,7 +448,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     
     AlipAJetHistos *fTPCRawJets;  //!
     AlipAJetHistos *fEMCalRawJets;  //!
-    
+    /*
     AlipAJetHistos *fRhoFull0;  //!
     AlipAJetHistos *fRhoFull1;  //!
     AlipAJetHistos *fRhoFull2;  //!
@@ -457,11 +460,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AlipAJetHistos *fRhoCharged0;  //!
     AlipAJetHistos *fRhoCharged1;  //!
     AlipAJetHistos *fRhoCharged2;  //!
-    AlipAJetHistos *fRhoChargedN;  //!
     AlipAJetHistos *fRhoChargedScale;  //!
     AlipAJetHistos *fRhoChargedkT;  //!
     AlipAJetHistos *fRhoChargedkTScale;  //!
     AlipAJetHistos *fRhoChargedCMS;  //!
+    */
+    AlipAJetHistos *fRhoChargedN;  //!
     AlipAJetHistos *fRhoChargedCMSScale;  //!
 
     AlipAJetData *fTPCJet;  //!
@@ -485,7 +489,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AliEMCALRecoUtils *fRecoUtil;  //!
     AliEMCALGeometry *fEMCALGeometry;  //!
     AliVCaloCells *fCells;  //!
-    
+    Bool_t fDoNEF;
+
     // Protected Global Variables
     Double_t fEMCalPhiMin;
     Double_t fEMCalPhiMax;

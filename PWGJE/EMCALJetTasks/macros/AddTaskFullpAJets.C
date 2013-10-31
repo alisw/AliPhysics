@@ -1,4 +1,4 @@
-AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A", Double_t scaleFactor = 1.42, Double_t nefJetCut = 0.9)
+AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A", Double_t scaleFactor = 1.42, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE)
 {
     char *usedTracks = track_name;
     char *usedClusters = clus_name;
@@ -93,6 +93,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetNColl(7);
     task->SetNEFSignalJetCut(NEFSignalJetCut);
+    task->DoNEFCalibration(doNEF);
     
     mgr->AddTask(task);
 

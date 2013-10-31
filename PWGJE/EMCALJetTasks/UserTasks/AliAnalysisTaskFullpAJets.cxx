@@ -58,8 +58,6 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fhClusterPhi(0),
     fhCentrality(0),
     fhEMCalCellCounts(0),
-    fhDeltaRhoN(0),
-    fhDeltaRhoCMS(0),
 
     fhTrackEtaPhi(0),
     fhTrackPhiPt(0),
@@ -89,23 +87,23 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fpTrackPtProfile(0),
     fpClusterPtProfile(0),
 
-    fTPCRawJets(0),
-    fEMCalRawJets(0),
-    fRhoFull0(0),
-    fRhoFull1(0),
-    fRhoFull2(0),
-    fRhoFullN(0),
-    fRhoFullDijet(0),
-    fRhoFullkT(0),
-    fRhoFullCMS(0),
-    fRhoCharged0(0),
-    fRhoCharged1(0),
-    fRhoCharged2(0),
+    //fTPCRawJets(0),
+    //fEMCalRawJets(0),
+    //fRhoFull0(0),
+    //fRhoFull1(0),
+    //fRhoFull2(0),
+    //fRhoFullN(0),
+    //fRhoFullDijet(0),
+    //fRhoFullkT(0),
+    //fRhoFullCMS(0),
+    //fRhoCharged0(0),
+    //fRhoCharged1(0),
+    //fRhoCharged2(0),
+    //fRhoChargedScale(0),
+    //fRhoChargedkT(0),
+    //fRhoChargedkTScale(0),
+    //fRhoChargedCMS(0),
     fRhoChargedN(0),
-    fRhoChargedScale(0),
-    fRhoChargedkT(0),
-    fRhoChargedkTScale(0),
-    fRhoChargedCMS(0),
     fRhoChargedCMSScale(0),
 
     fTPCJet(0),
@@ -128,6 +126,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fRecoUtil(0),
     fEMCALGeometry(0),
     fCells(0),
+    fDoNEF(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalPhiTotal(1.86750),
@@ -218,8 +217,6 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fhClusterPhi(0),
     fhCentrality(0),
     fhEMCalCellCounts(0),
-    fhDeltaRhoN(0),
-    fhDeltaRhoCMS(0),
 
     fhTrackEtaPhi(0),
     fhTrackPhiPt(0),
@@ -251,21 +248,21 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
 
     fTPCRawJets(0),
     fEMCalRawJets(0),
-    fRhoFull0(0),
-    fRhoFull1(0),
-    fRhoFull2(0),
-    fRhoFullN(0),
-    fRhoFullDijet(0),
-    fRhoFullkT(0),
-    fRhoFullCMS(0),
-    fRhoCharged0(0),
-    fRhoCharged1(0),
-    fRhoCharged2(0),
+    //fRhoFull0(0),
+    //fRhoFull1(0),
+    //fRhoFull2(0),
+    //fRhoFullN(0),
+    //fRhoFullDijet(0),
+    //fRhoFullkT(0),
+    //fRhoFullCMS(0),
+    //fRhoCharged0(0),
+    //fRhoCharged1(0),
+    //fRhoCharged2(0),
+    //fRhoChargedScale(0),
+    //fRhoChargedkT(0),
+    //fRhoChargedkTScale(0),
+    //fRhoChargedCMS(0),
     fRhoChargedN(0),
-    fRhoChargedScale(0),
-    fRhoChargedkT(0),
-    fRhoChargedkTScale(0),
-    fRhoChargedCMS(0),
     fRhoChargedCMSScale(0),
 
     fTPCJet(0),
@@ -288,6 +285,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fRecoUtil(0),
     fEMCALGeometry(0),
     fCells(0),
+    fDoNEF(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalPhiTotal(1.86750),
@@ -634,21 +632,6 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhEMCalCellCounts->GetYaxis()->SetTitle("Counts per Event");
     fhEMCalCellCounts->Sumw2();
 
-    // Rho QA Plots
-    Int_t RhoBins = 1000;
-    Double_t RhoPtMin = -50.0;
-    Double_t RhoPtMax = 50.0;
-
-    fhDeltaRhoN = new TH1D("fhDeltaRhoN","0-100% #delta#rho_{N} = #rho_{N}^{TPC+EMCal} - #rho_{N}^{TPC+Scale}",RhoBins,RhoPtMin,RhoPtMax);
-    fhDeltaRhoN->GetXaxis()->SetTitle("#delta#rho (GeV)");
-    fhDeltaRhoN->GetYaxis()->SetTitle("Counts");
-    fhDeltaRhoN->Sumw2();
-
-    fhDeltaRhoCMS = new TH1D("fhDeltaRhoCMS","0-100% #delta#rho_{CMS} = #rho_{CMS}^{TPC+EMCal} - #rho_{CMS}^{TPC+Scale}",RhoBins,RhoPtMin,RhoPtMax);
-    fhDeltaRhoCMS->GetXaxis()->SetTitle("#delta#rho (GeV)");
-    fhDeltaRhoCMS->GetYaxis()->SetTitle("Counts");
-    fhDeltaRhoCMS->Sumw2();
-
     // Jet Area vs pT Distribution
     Int_t JetPtAreaBins=200;
     Double_t JetPtAreaLow=0.0;
@@ -697,6 +680,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fTPCRawJets = new AlipAJetHistos("TPCRawJets",fCentralityTag);
     fEMCalRawJets = new AlipAJetHistos("EMCalRawJets",fCentralityTag);
     
+    /*
     fRhoFull0 = new AlipAJetHistos("RhoFull0",fCentralityTag);
     fRhoFull1 = new AlipAJetHistos("RhoFull1",fCentralityTag);
     fRhoFull2 = new AlipAJetHistos("RhoFull2",fCentralityTag);
@@ -704,16 +688,16 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fRhoFullDijet = new AlipAJetHistos("RhoFullDijet",fCentralityTag);
     fRhoFullkT = new AlipAJetHistos("RhoFullkT",fCentralityTag);
     fRhoFullCMS = new AlipAJetHistos("RhoFullCMS",fCentralityTag);
-    
     fRhoCharged0 = new AlipAJetHistos("RhoCharged0",fCentralityTag);
     fRhoCharged1 = new AlipAJetHistos("RhoCharged1",fCentralityTag);
     fRhoCharged2 = new AlipAJetHistos("RhoCharged2",fCentralityTag);
-    fRhoChargedN = new AlipAJetHistos("RhoChargedN",fCentralityTag);
     fRhoChargedkT = new AlipAJetHistos("RhoChargedkT",fCentralityTag);
     fRhoChargedScale = new AlipAJetHistos("RhoChargedScale",fCentralityTag);
     fRhoChargedkTScale = new AlipAJetHistos("RhoChargedkTScale",fCentralityTag);
     fRhoChargedCMS = new AlipAJetHistos("RhoChargedCMS",fCentralityTag);
-    fRhoChargedCMSScale = new AlipAJetHistos("RhoChargedCMSScale",fCentralityTag,kTRUE);
+    */
+    fRhoChargedN = new AlipAJetHistos("RhoChargedN",fCentralityTag);
+    fRhoChargedCMSScale = new AlipAJetHistos("RhoChargedCMSScale",fCentralityTag,fDoNEF);
     
     fOutput->Add(fhTrackPt);
     fOutput->Add(fhTrackEta);
@@ -745,8 +729,6 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fhClusterEtaPhiPt);
     fOutput->Add(fhCentrality);
     fOutput->Add(fhEMCalCellCounts);
-    fOutput->Add(fhDeltaRhoN);
-    fOutput->Add(fhDeltaRhoCMS);
     fOutput->Add(fhJetPtArea);
     fOutput->Add(fhJetConstituentPt);
     fOutput->Add(fhRhoScale);
@@ -761,6 +743,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fTPCRawJets->GetOutputHistos());
     fOutput->Add(fEMCalRawJets->GetOutputHistos());
     
+    /*
     fOutput->Add(fRhoFull0->GetOutputHistos());
     fOutput->Add(fRhoFull1->GetOutputHistos());
     fOutput->Add(fRhoFull2->GetOutputHistos());
@@ -771,11 +754,12 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fRhoCharged0->GetOutputHistos());
     fOutput->Add(fRhoCharged1->GetOutputHistos());
     fOutput->Add(fRhoCharged2->GetOutputHistos());
-    fOutput->Add(fRhoChargedN->GetOutputHistos());
     fOutput->Add(fRhoChargedkT->GetOutputHistos());
     fOutput->Add(fRhoChargedScale->GetOutputHistos());
     fOutput->Add(fRhoChargedkTScale->GetOutputHistos());
     fOutput->Add(fRhoChargedCMS->GetOutputHistos());
+    */
+    fOutput->Add(fRhoChargedN->GetOutputHistos());
     fOutput->Add(fRhoChargedCMSScale->GetOutputHistos());
     
     // Post data for ALL output slots >0 here,
@@ -889,12 +873,14 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         GenerateTPCRandomConesPt();
         
         // Rho's
+        /*
         EstimateChargedRho0();
         EstimateChargedRho1();
         EstimateChargedRho2();
-        EstimateChargedRhoN();
         EstimateChargedRhokT();
         EstimateChargedRhoCMS();
+        */
+        EstimateChargedRhoN();
         
         DeleteJetData(kFALSE);
         
@@ -915,13 +901,16 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     GenerateEMCalRandomConesPt();
     
     // Rho's
+    /*
     EstimateChargedRho0();
     EstimateChargedRho1();
     EstimateChargedRho2();
-    EstimateChargedRhoN();
     EstimateChargedRhokT();
     EstimateChargedRhoCMS();
+    */
+    EstimateChargedRhoN();
     
+    /*
     EstimateFullRho0();
     EstimateFullRho1();
     EstimateFullRho2();
@@ -931,22 +920,13 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     
     EstimateChargedRhoScale();
     EstimateChargedRhokTScale();
+    */
     EstimateChargedRhoCMSScale();
     
     // Dijet
     if (IsDiJetEvent()==kTRUE)
     {
-        EstimateFullRhoDijet();
-    }
-    
-    // Compute differences between TPC+EMCal Rho to TPC&Scaled Rho
-    if (fRhoChargedScale->GetRho()>0 && fRhoFullN->GetRho()>0)
-    {
-        fhDeltaRhoN->Fill(fRhoFullN->GetRho()-fRhoChargedScale->GetRho());
-    }
-    if (fRhoChargedCMSScale->GetRho()>0 && fRhoFullCMS->GetRho()>0)
-    {
-        fhDeltaRhoCMS->Fill(fRhoFullCMS->GetRho()-fRhoChargedCMSScale->GetRho());
+        //EstimateFullRhoDijet();
     }
     
     // Delete Dynamic Arrays
@@ -1488,6 +1468,7 @@ void AliAnalysisTaskFullpAJets::GenerateEMCalRandomConesPt()
     delete temp_jet;
 }
 
+/*
 // Charged Rho's
 void AliAnalysisTaskFullpAJets::EstimateChargedRho0()
 {
@@ -1665,7 +1646,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRho2()
     fRhoCharged2->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoCharged2->FillLeadingJetPtRho(fTPCFullJet->GetLeadingPt(),TPC_rho);
 }
-
+*/
 void AliAnalysisTaskFullpAJets::EstimateChargedRhoN()
 {
     Int_t i,j;
@@ -1738,7 +1719,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoN()
     fRhoChargedN->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoChargedN->FillLeadingJetPtRho(fTPCFullJet->GetLeadingPt(),TPC_rho);
 }
-
+/*
 void AliAnalysisTaskFullpAJets::EstimateChargedRhoScale()
 {
     Int_t i,j;
@@ -1989,7 +1970,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoCMS()
     delete [] RhoArray;
     delete [] pTArray;
 }
-
+*/
 void AliAnalysisTaskFullpAJets::EstimateChargedRhoCMSScale()
 {
     Int_t i,k;
@@ -2108,7 +2089,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoCMSScale()
     delete [] RhoArray;
     delete [] pTArray;
 }
-
+/*
 // Full Rho's
 void AliAnalysisTaskFullpAJets::EstimateFullRho0()
 {
@@ -2651,7 +2632,7 @@ void AliAnalysisTaskFullpAJets::EstimateFullRhoCMS()
     delete [] RhoArray;
     delete [] pTArray;
 }
-
+*/
 void AliAnalysisTaskFullpAJets::DeleteJetData(Bool_t EMCalOn)
 {
     delete fmyTracks;
@@ -3938,13 +3919,13 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         fhNEFZLeadingFCross->GetZaxis()->SetTitle("F_{Cross}");
         fhNEFZLeadingFCross->Sumw2();
 
-        fhNEFTimeCellCount = new TH3D("fhNEFTimeCellCount","NEF vs t_{cell} vs Cell Count",fNEFBins,fNEFLow,fNEFUp,1000,0,1e-06,TCBins,0,100);
+        fhNEFTimeCellCount = new TH3D("fhNEFTimeCellCount","NEF vs t_{cell} vs Cell Count",fNEFBins,fNEFLow,fNEFUp,400,-2e-07,2e-07,TCBins,0,100);
         fhNEFTimeCellCount->GetXaxis()->SetTitle("NEF");
         fhNEFTimeCellCount->GetYaxis()->SetTitle("t_{cell} (s)");
         fhNEFTimeCellCount->GetZaxis()->SetTitle("Cell Count");
         fhNEFTimeCellCount->Sumw2();
 
-        fhNEFTimeDeltaTime = new TH3D("fhNEFTimeDeltaTime","NEF vs t_{cell} vs #Deltat",fNEFBins,fNEFLow,fNEFUp,1000,0,1e-06,TCBins,0,1e-07);
+        fhNEFTimeDeltaTime = new TH3D("fhNEFTimeDeltaTime","NEF vs t_{cell} vs #Deltat",fNEFBins,fNEFLow,fNEFUp,400,-2e-07,2e-06,TCBins,0,1e-07);
         fhNEFTimeDeltaTime->GetXaxis()->SetTitle("NEF");
         fhNEFTimeDeltaTime->GetYaxis()->SetTitle("t_{cell} (s)");
         fhNEFTimeDeltaTime->GetZaxis()->SetTitle("#Deltat");
