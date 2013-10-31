@@ -43,15 +43,19 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex, const Int_t mcTag, const Bool_t matched,
                                 Float_t & eprim, Float_t & asymGen, Float_t & angleGen, Int_t & noverlaps );
   
-  void         FillAngleHistograms(const Int_t nMax, const Bool_t matched, const Int_t mcindex,
-                                   const Float_t en, const Float_t angle, const Float_t mass, const Float_t anglePrim);
+  void         FillAngleHistograms(const Int_t nMax,  const Bool_t matched, const Int_t mcindex,
+                                   const Float_t en,  const Float_t angle,  const Float_t mass, const Float_t anglePrim,
+                                   const Float_t m02, const Float_t asym,   const Int_t pid);
   
 
   void         FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcindex,
-                                        TLorentzVector pi0, TLorentzVector g1, TLorentzVector g2,
+                                        const Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
                                         const Float_t m02, const Int_t pid);
 
-  
+  void         FillThetaStarHistograms(const Int_t nMax, const Bool_t matched, const Int_t mcindex,
+                                       const Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
+                                       const Float_t m02, const Int_t pid);
+
   void         FillEBinHistograms(const Int_t ebin, const Int_t nMax, const Int_t mcindex, const Float_t splitFrac,
                                   const Float_t mass, const Float_t asym, const Float_t l0);
   
@@ -129,6 +133,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillArmenterosHistograms()        { fFillArmenterosHisto = kTRUE  ; }
   void         SwitchOffFillArmenterosHistograms()       { fFillArmenterosHisto = kFALSE ; }
 
+  void         SwitchOnFillThetaStarHistograms()         { fFillThetaStarHisto  = kTRUE  ; }
+  void         SwitchOffFillThetaStarHistograms()        { fFillThetaStarHisto  = kFALSE ; }
+  
   void         SwitchOnFillExtraSSHistograms()           { fFillSSExtraHisto    = kTRUE  ; }
   void         SwitchOffFillExtraSSHistograms()          { fFillSSExtraHisto    = kFALSE ; }
   
@@ -203,6 +210,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillIdEtaHisto ;       // Fill histograms for clusters identified as Eta
   Bool_t       fFillHighMultHisto;     // Fill centrality/event plane histograms
   Bool_t       fFillArmenterosHisto;   // Fill armenteros type histo
+  Bool_t       fFillThetaStarHisto;    // Fill cosThetaStar histos
   
   Float_t      fSSWeight[10];          // List of weights to test
   Int_t        fSSWeightN;             // Total number of weights to test
@@ -222,10 +230,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAsymNLocMax1[7][2]  ;                  //! Asymmetry of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types 
   TH2F       * fhAsymNLocMax2[7][2]  ;                  //! Asymmetry of 2 cells local maxima vs E,  1-6 for different MC particle types
   TH2F       * fhAsymNLocMaxN[7][2]  ;                  //! Asymmetry of >2 cells local maxima vs E, 1-6 for different MC particle types
-  
-  TH2F       * fhArmNLocMax1[7][4]  ;                   //! Armenteros of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types
-  TH2F       * fhArmNLocMax2[7][4]  ;                   //! Armenteros of 2 cells local maxima vs E,  1-6 for different MC particle types
-  TH2F       * fhArmNLocMaxN[7][4]  ;                   //! Armenteros of >2 cells local maxima vs E, 1-6 for different MC particle types
   
   TH2F       * fhSplitEFractionvsAsyNLocMax1[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 1 vs |A|
   TH2F       * fhSplitEFractionvsAsyNLocMax2[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2 vs |A|
@@ -296,9 +300,18 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F       * fhNLocMax      [7][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types
   TH2F       * fhNLocMaxM02Cut[7][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
+  TH2F       * fhNLocMaxIdPi0 [7][2] ;                  //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after pi0 selection
 
   TH2F       * fhSplitClusterENLocMax[7][2] ;           //! Number of maxima in cluster vs E of splitted clusters, 1-6 for different MC particle types
   TH2F       * fhSplitClusterEPi0NLocMax[7][2] ;        //! Number of maxima in cluster vs E of splitted clusters when cluster id as pi0, 1-6 for different MC particle types
+
+  TH2F       * fhLM1NLocMax      [7][2] ;               //! Split cluster 1 E distribution vs Number of maxima in cluster vs E, 1-6 for different MC particle types
+  TH2F       * fhLM1NLocMaxM02Cut[7][2] ;               //! Split cluster 1 E distribution vs Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
+  TH2F       * fhLM1NLocMaxIdPi0 [7][2] ;               //! Split cluster 1 E distribution vs Number of maxima in cluster vs E, 1-6 for different MC particle types, pi0 selection
+
+  TH2F       * fhLM2NLocMax      [7][2] ;               //! Split cluster 2 E distribution vs Number of maxima in cluster vs E, 1-6 for different MC particle types
+  TH2F       * fhLM2NLocMaxM02Cut[7][2] ;               //! Split cluster 2 E distribution vs Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
+  TH2F       * fhLM2NLocMaxIdPi0 [7][2] ;               //! Split cluster 2 E distribution vs Number of maxima in cluster vs E, 1-6 for different MC particle types, pi0 selection
   
   TH2F       * fhM02NLocMax1  [7][2] ;                  //! M02 vs E for N max in cluster = 1, 1-6 for different MC particle types
   TH2F       * fhM02NLocMax2  [7][2] ;                  //! M02 vs E for N max in cluster = 2, 1-6 for different MC particle types
@@ -393,10 +406,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassPi0NLocMaxN[7][2] ;                //! Mass for selected around pi0, N Local Maxima > 2
   TH2F       * fhMassEtaNLocMaxN[7][2] ;                //! Mass for selected around eta, N Local Maxima > 2
   TH2F       * fhMassConNLocMaxN[7][2] ;                //! Mass for selected around close to 0, N Local Maxima > 2
-
-  TH2F       * fhArmPi0NLocMax1[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 1
-  TH2F       * fhArmPi0NLocMax2[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 2
-  TH2F       * fhArmPi0NLocMaxN[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima > 2
   
   TH2F       * fhNCellPi0NLocMax1[7][2] ;               //! n cells for selected around pi0, N Local Maxima = 1
   TH2F       * fhNCellEtaNLocMax1[7][2] ;               //! n cells for selected around eta, N Local Maxima = 1
@@ -408,10 +417,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassAfterCutsNLocMax1[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 1
   TH2F       * fhMassAfterCutsNLocMax2[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima = 2
   TH2F       * fhMassAfterCutsNLocMaxN[7][2] ;          //! Mass after M02, asymmetry cuts for pi0, N Local Maxima > 2
-
-  TH2F       * fhArmAfterCutsNLocMax1[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 1
-  TH2F       * fhArmAfterCutsNLocMax2[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 2
-  TH2F       * fhArmAfterCutsNLocMaxN[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima > 2
   
   TH2F       * fhAsyPi0NLocMax1[7][2] ;                 //! Asy for Mass around pi0, N Local Maxima = 1
   TH2F       * fhAsyEtaNLocMax1[7][2] ;                 //! Asy for Mass around eta, N Local Maxima = 1
@@ -441,6 +446,14 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAnglePairNLocMax2[7][2] ;              //! pair opening angle vs E
   TH2F       * fhAnglePairNLocMaxN[7][2] ;              //! pair opening angle vs E
 
+  TH2F       * fhAnglePairAfterCutsNLocMax1[7][2] ;     //! pair opening angle vs E
+  TH2F       * fhAnglePairAfterCutsNLocMax2[7][2] ;     //! pair opening angle vs E
+  TH2F       * fhAnglePairAfterCutsNLocMaxN[7][2] ;     //! pair opening angle vs E
+
+  TH2F       * fhAnglePairPi0NLocMax1[7][2] ;           //! pair opening angle vs E
+  TH2F       * fhAnglePairPi0NLocMax2[7][2] ;           //! pair opening angle vs E
+  TH2F       * fhAnglePairPi0NLocMaxN[7][2] ;           //! pair opening angle vs E
+  
   TH2F       * fhAnglePairMassNLocMax1[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
   TH2F       * fhAnglePairMassNLocMax2[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
   TH2F       * fhAnglePairMassNLocMaxN[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
@@ -449,9 +462,33 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAnglePairPrimPi0RecoNLocMax2;          //! pair opening angle pi0 generated/reconstructed vs E
   TH2F       * fhAnglePairPrimPi0RecoNLocMaxN;          //! pair opening angle pi0 generated/reconstructed vs E
 
-  TH2F       * fhAnglePairPrimPi0vsRecoNLocMax1;          //! pair opening angle pi0 generated vs reconstructed
-  TH2F       * fhAnglePairPrimPi0vsRecoNLocMax2;          //! pair opening angle pi0 generated vs reconstructed
-  TH2F       * fhAnglePairPrimPi0vsRecoNLocMaxN;          //! pair opening angle pi0 generated vs reconstructed
+  TH2F       * fhAnglePairPrimPi0vsRecoNLocMax1;        //! pair opening angle pi0 generated vs reconstructed
+  TH2F       * fhAnglePairPrimPi0vsRecoNLocMax2;        //! pair opening angle pi0 generated vs reconstructed
+  TH2F       * fhAnglePairPrimPi0vsRecoNLocMaxN;        //! pair opening angle pi0 generated vs reconstructed
+  
+  TH2F       * fhArmNLocMax1[7][4]  ;                   //! Armenteros of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types
+  TH2F       * fhArmNLocMax2[7][4]  ;                   //! Armenteros of 2 cells local maxima vs E,  1-6 for different MC particle types
+  TH2F       * fhArmNLocMaxN[7][4]  ;                   //! Armenteros of >2 cells local maxima vs E, 1-6 for different MC particle types
+
+  TH2F       * fhArmAfterCutsNLocMax1[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 1
+  TH2F       * fhArmAfterCutsNLocMax2[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima = 2
+  TH2F       * fhArmAfterCutsNLocMaxN[7][4] ;           //! Armenteros after M02, asymmetry cuts for pi0, N Local Maxima > 2
+  
+  TH2F       * fhArmPi0NLocMax1[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 1
+  TH2F       * fhArmPi0NLocMax2[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima = 2
+  TH2F       * fhArmPi0NLocMaxN[7][4] ;                 //! Armenteros for selected pi0, N Local Maxima > 2
+
+  TH2F       * fhCosThStarNLocMax1[7][2] ;              //! cos(theta^star) vs E, NLM=1
+  TH2F       * fhCosThStarNLocMax2[7][2] ;              //! cos(theta^star) vs E, NLM=2
+  TH2F       * fhCosThStarNLocMaxN[7][2] ;              //! cos(theta^star) vs E, NLM>2
+  
+  TH2F       * fhCosThStarAfterCutsNLocMax1[7][2] ;     //! cos(theta^star) vs E, after M02, asymmetry cuts, NLM=1
+  TH2F       * fhCosThStarAfterCutsNLocMax2[7][2] ;     //! cos(theta^star) vs E, after M02, asymmetry cuts, NLM=2
+  TH2F       * fhCosThStarAfterCutsNLocMaxN[7][2] ;     //! cos(theta^star) vs E, after M02, asymmetry cuts, NLM>2
+  
+  TH2F       * fhCosThStarPi0NLocMax1[7][2] ;           //! cos(theta^star) vs E, after M02, asymmetry and pi0 mass cuts, NLM=1
+  TH2F       * fhCosThStarPi0NLocMax2[7][2] ;           //! cos(theta^star) vs E, after M02, asymmetry and pi0 mass cuts, NLM=2
+  TH2F       * fhCosThStarPi0NLocMaxN[7][2] ;           //! cos(theta^star) vs E, after M02, asymmetry and pi0 mass cuts, NLM>2
   
   TH2F       * fhTrackMatchedDEtaNLocMax1[7] ;          //! Eta distance between track and cluster vs cluster E, 1 local maximum
   TH2F       * fhTrackMatchedDPhiNLocMax1[7] ;          //! Phi distance between track and cluster vs cluster E, 1 local maximum
@@ -626,6 +663,28 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[3];      //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima, overlap
   TH2F       * fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high, overlap
   TH2F       * fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high, overlap
+
+  
+  TH2F       * fhMCPi0DecayPhotonHitHighLMDiffELM1vsELM1[3];             //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMDiffELM1vsELM1[3];             //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMDiffELM1vsELM1[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMDiffELM1vsELM1[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high
+  
+  TH2F       * fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1vsELM1[3];      //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1vsELM1[3];      //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1vsELM1[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1vsELM1[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high, overlap
+  
+  TH2F       * fhMCPi0DecayPhotonHitHighLMDiffELM2vsELM2[3];             //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMDiffELM2vsELM2[3];             //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMDiffELM2vsELM2[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMDiffELM2vsELM2[3];            //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high
+  
+  TH2F       * fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2vsELM2[3];      //! E vs Ephoton-Esplit cluster when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
+  TH2F       * fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2vsELM2[3];      //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima, overlap
+  TH2F       * fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2vsELM2[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay hit the cell local maximas, not high, overlap
+  TH2F       * fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2vsELM2[3];     //! E vs Ephoton-Esplit when cluster originated in pi0 merging and MC photon decay do not hit the adjacent cell local maximas, not high, overlap
+
   
   TH2F       * fhMCPi0DecayPhotonHitHighLMMass[3];                 //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the cell local maxima
   TH2F       * fhMCPi0DecayPhotonAdjHighLMMass[3];                 //! E vs Mass when cluster originated in pi0 merging and MC photon decay hit the adjacent cell local maxima
@@ -649,7 +708,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhM02BadDistClose[3];                    //! m02 of clusters with second LM close to bad channel
   TH2F       * fhMassOnBorder[3];                       //! split mass of clusters with second LM on EMCAL border
   TH2F       * fhM02OnBorder[3];                        //! m02 of clusters with second LM close to EMCAL border
-
   
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
