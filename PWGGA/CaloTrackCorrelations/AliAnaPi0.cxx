@@ -67,7 +67,7 @@ fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),      
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),              
 fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),  
-fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          fFillArmenteros(0),
+fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          fFillArmenterosThetaStar(0),
 //Histograms
 fhAverTotECluster(0),        fhAverTotECell(0),            fhAverTotECellvsCluster(0),
 fhEDensityCluster(0),        fhEDensityCell(0),            fhEDensityCellvsCluster(0),
@@ -104,7 +104,8 @@ fhMCOrgMass(),               fhMCOrgAsym(),                fhMCOrgDeltaEta(),   
 fhMCPi0MassPtRec(),          fhMCPi0MassPtTrue(),          fhMCPi0PtTruePtRec(),         
 fhMCEtaMassPtRec(),          fhMCEtaMassPtTrue(),          fhMCEtaPtTruePtRec(),
 fhMCPi0PtOrigin(0x0),        fhMCEtaPtOrigin(0x0),
-fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0)
+fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
+fhCosThStarPrimPi0(0),       fhCosThStarPrimEta(0)//,
 {
   //Default Ctor
  
@@ -1080,7 +1081,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }//loop combinations
   } // SM combinations
   
-  if(fFillArmenteros && IsDataMC())
+  if(fFillArmenterosThetaStar && IsDataMC())
   {
     TString ebin[] = {"8 < E < 12 GeV","12 < E < 16 GeV", "16 < E < 20 GeV", "E > 20 GeV" };
     Int_t narmbins = 400;
@@ -1102,7 +1103,22 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhArmPrimEta[i]->SetYTitle("p_{T}^{Arm}");
       fhArmPrimEta[i]->SetXTitle("#alpha^{Arm}");
       outputContainer->Add(fhArmPrimEta[i]) ;
+      
     }
+    
+    // Same as asymmetry ...
+    fhCosThStarPrimPi0  = new TH2F
+    ("hCosThStarPrimPi0","cos(#theta *) for primary #pi^{0}",nptbins,ptmin,ptmax,200,-1,1);
+    fhCosThStarPrimPi0->SetYTitle("cos(#theta *)");
+    fhCosThStarPrimPi0->SetXTitle("E_{ #pi^{0}} (GeV)");
+    outputContainer->Add(fhCosThStarPrimPi0) ;
+    
+    fhCosThStarPrimEta  = new TH2F
+    ("hCosThStarPrimEta","cos(#theta *) for primary #eta",nptbins,ptmin,ptmax,200,-1,1);
+    fhCosThStarPrimEta->SetYTitle("cos(#theta *)");
+    fhCosThStarPrimEta->SetXTitle("E_{ #eta} (GeV)");
+    outputContainer->Add(fhCosThStarPrimEta) ;
+    
   }
   
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
@@ -1263,7 +1279,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
               phot2->Momentum(lv2);
               prim ->Momentum(lvmeson);
               
-              if(fFillArmenteros) FillArmenteros(pdg,lvmeson,lv1,lv2);
+              if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg,lvmeson,lv1,lv2);
               
               Bool_t inacceptance = kFALSE;
               if(fCalorimeter == "PHOS")
@@ -1454,7 +1470,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
               lv2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
               lvmeson.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
               
-               if(fFillArmenteros) FillArmenteros(pdg,lvmeson,lv1,lv2);
+               if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg,lvmeson,lv1,lv2);
 
               Bool_t inacceptance = kFALSE;
               if(fCalorimeter == "PHOS")
@@ -1550,7 +1566,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
 }
 
 //______________________________________________________________________________________
-void AliAnaPi0::FillArmenteros(const Int_t pdg, const TLorentzVector meson,
+void AliAnaPi0::FillArmenterosThetaStar(const Int_t pdg, const TLorentzVector meson,
                                const TLorentzVector daugh1, const TLorentzVector daugh2)
 {
   // Fill armenteros plots
@@ -1577,6 +1593,10 @@ void AliAnaPi0::FillArmenteros(const Int_t pdg, const TLorentzVector meson,
   if(momentumDaughter1AlongMother +momentumDaughter2AlongMother > 0)
     alphaArm = (momentumDaughter1AlongMother -momentumDaughter2AlongMother) / (momentumDaughter1AlongMother + momentumDaughter2AlongMother);
   
+  TLorentzVector daugh1Boost = daugh1;
+  daugh1Boost.Boost(-meson.BoostVector());
+  Float_t  cosThStar=TMath::Cos(daugh1Boost.Vect().Angle(meson.Vect()));
+  
   Float_t en   = meson.Energy();
   Int_t   ebin = -1;
   if(en > 8  && en <= 12) ebin = 0;
@@ -1585,12 +1605,24 @@ void AliAnaPi0::FillArmenteros(const Int_t pdg, const TLorentzVector meson,
   if(en > 20)             ebin = 3;
   if(ebin < 0 || ebin > 3) return ;
   
-  if(pdg==111) fhArmPrimPi0[ebin]->Fill(alphaArm,pTArm);
-  else         fhArmPrimEta[ebin]->Fill(alphaArm,pTArm);
+  Float_t asym = 0;
+  if(daugh1.E()+daugh2.E() > 0) asym = TMath::Abs(daugh1.E()-daugh2.E())/(daugh1.E()+daugh2.E());
   
-  if(GetDebug() > 2 ) printf("AliAnaPi0::FillArmenteros() - E %f, alphaArm %f, pTArm %f\n",en,alphaArm,pTArm);
+  if(pdg==111)
+  {
+    fhCosThStarPrimPi0->Fill(en,cosThStar);
+    fhArmPrimPi0[ebin]->Fill(alphaArm,pTArm);
+  }
+  else
+  {
+    fhCosThStarPrimEta->Fill(en,cosThStar);
+    fhArmPrimEta[ebin]->Fill(alphaArm,pTArm);
+  }
+  
+  if(GetDebug() > 2 ) printf("AliAnaPi0::FillArmenterosThetaStar() - E %f, alphaArm %f, pTArm %f, cos(theta*) %f\n",en,alphaArm,pTArm,cosThStar);
   
 }
+
 
 //_____________________________________________________________
 void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t index2, 
