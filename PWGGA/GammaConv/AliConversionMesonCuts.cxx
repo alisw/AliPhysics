@@ -94,6 +94,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    fPSigSmearingCte(0),
    fBrem(NULL),
    fRandom(0),
+   fFAlphaCut(0),
+   fAlphaPtDepCut(kFALSE),
    fElectronLabelArraySize(500),
    fElectronLabelArray(NULL),
    fDCAGammaGammaCut(1000),
@@ -149,6 +151,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    fPSigSmearingCte(ref.fPSigSmearingCte),
    fBrem(NULL),
    fRandom(ref.fRandom),
+   fFAlphaCut(NULL),
+   fAlphaPtDepCut(ref.fAlphaPtDepCut),
    fElectronLabelArraySize(ref.fElectronLabelArraySize),
    fElectronLabelArray(NULL),
    fDCAGammaGammaCut(ref.fDCAGammaGammaCut),
@@ -505,6 +509,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
    }
    cutIndex++;
 
+   if ( fAlphaPtDepCut == kTRUE ) {
+ 
+	fAlphaCutMeson = fFAlphaCut->Eval( pi0->Pt() );
+   }
+   
+   
    // Alpha Max Cut
    if(pi0->GetAlpha()>fAlphaCutMeson){
       if(hist)hist->Fill(cutIndex);
@@ -796,42 +806,60 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
    case 0:	// 0- 0.7
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 0.7;
+      fAlphaPtDepCut = kFALSE;
       break;
-   case 1:	// 0-0.5
-      fAlphaMinCutMeson	 = 0.0;
-      fAlphaCutMeson	 = 0.5;
+   case 1:	// Updated 31 October 2013 before 0.0 - 0.5
+      if( fFAlphaCut ) delete fFAlphaCut;
+      fFAlphaCut= new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+      fFAlphaCut->SetParameter(0,0.7);
+      fFAlphaCut->SetParameter(1,1.2);
+      fAlphaMinCutMeson	 =  0.0;
+      fAlphaCutMeson	 = -1.0;
+      fAlphaPtDepCut = kTRUE;
       break;
-   case 2:	// 0.5-1
-      fAlphaMinCutMeson	 = 0.5;
-      fAlphaCutMeson	 = 1.;
+   case 2:	// Updated 31 October 2013 before 0.5-1  
+      if( fFAlphaCut ) delete fFAlphaCut;
+      fFAlphaCut= new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+      fFAlphaCut->SetParameter(0,0.8);
+      fFAlphaCut->SetParameter(1,1.2);
+      fAlphaMinCutMeson	 =  0.0;
+      fAlphaCutMeson	 = -1.0;
+      fAlphaPtDepCut = kTRUE;
       break;
    case 3:	// 0.0-1
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 1.;
+      fAlphaPtDepCut = kFALSE;
       break;
    case 4:	// 0-0.65
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 0.65;
+      fAlphaPtDepCut = kFALSE;
       break;
    case 5:	// 0-0.75
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 0.75;
+      fAlphaPtDepCut = kFALSE;
       break;
    case 6:	// 0-0.8
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 0.8;
+      fAlphaPtDepCut = kFALSE;
       break;
    case 7:	// 0.0-0.85
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 0.85;
+      fAlphaPtDepCut = kFALSE;
       break;
    case 8:	// 0.0-0.6
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 0.6;
+      fAlphaPtDepCut = kFALSE;
       break;
    case 9:	// 0.0-0.3
       fAlphaMinCutMeson	 = 0.0;
       fAlphaCutMeson	 = 0.3;
+      fAlphaPtDepCut = kFALSE;
       break;
    default:
       cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;

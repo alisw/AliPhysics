@@ -81,7 +81,7 @@ void AddTask_PhotonQA(  TString V0ReaderCutNumber = "000000006008400100150000000
       
       if(inputHandler->IsA()==AliAODInputHandler::Class()){
          // AOD mode
-         fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+         fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",V0ReaderCutNumberAODBranch.Data()));
       }
       fV0ReaderV1->Init();
 
