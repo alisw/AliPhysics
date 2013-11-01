@@ -86,6 +86,11 @@ class AliCalorimeterUtils : public TObject {
 
   void          AccessGeometry(AliVEvent* inputEvent) ;
 	
+  void          SetImportGeometryFromFile(Bool_t import,
+                                          TString path = ""){
+                                                             fImportGeometryFromFile = import    ;
+                                                             fImportGeometryFilePath = path      ; } // EMCAL
+  
   void          SwitchOnLoadOwnEMCALGeometryMatrices()     { fLoadEMCALMatrices = kTRUE   ; }
   void          SwitchOffLoadOwnEMCALGeometryMatrices()    { fLoadEMCALMatrices = kFALSE  ; }
   void          SetEMCALGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i] = m ; }
@@ -321,11 +326,13 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fOADBForPHOS ;          //  Get calibration from OADB for PHOS
   TString            fOADBFilePathEMCAL ;    //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
   TString            fOADBFilePathPHOS ;     //  Default path $ALICE_ROOT/OADB/PHOS, if needed change
-  
+  Bool_t             fImportGeometryFromFile;// Import geometry settings in geometry.root file
+  TString            fImportGeometryFilePath;// path fo geometry.root file
+
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,14)
+  ClassDef(AliCalorimeterUtils,15)
 } ;
 
 

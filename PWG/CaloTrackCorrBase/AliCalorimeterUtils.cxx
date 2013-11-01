@@ -1214,6 +1214,9 @@ void AliCalorimeterUtils::InitParameters()
   fOADBFilePathEMCAL = "$ALICE_ROOT/OADB/EMCAL" ;          
   fOADBFilePathPHOS  = "$ALICE_ROOT/OADB/PHOS"  ;     
   
+  fImportGeometryFromFile = kTRUE;
+  fImportGeometryFilePath = "";
+  
 }
 
 
@@ -1281,6 +1284,24 @@ void AliCalorimeterUtils::InitEMCALGeometry(Int_t runnumber)
     }
     
 		fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
+    
+    // Init geometry, I do not like much to do it like this ...
+    if(fImportGeometryFromFile && !gGeoManager)
+    {
+      if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
+      {
+        // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
+        if     (runnumber <  140000 &&
+                runnumber >= 100000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2010.root";
+        if     (runnumber >= 140000 &&
+                runnumber <  171000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root";
+        else                         fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+
+      }
+      printf("AliCalorimeterUtils::InitEMCALGeometry() - Import %s\n",fImportGeometryFilePath.Data());
+      TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
+    }
+
     
 		if(fDebug > 0)
     {
