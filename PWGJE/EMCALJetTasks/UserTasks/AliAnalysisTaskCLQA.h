@@ -41,6 +41,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   Bool_t                      fDoTracking;       // if true run tracking analysis
   Bool_t                      fDoMuonTracking;   // if true run muon tracking analysis
   Bool_t                      fDoCumulants;      // if true run cumulant analysis
+  Bool_t                      fDoCumNtuple;      // if true then save cumulant ntuple
   Double_t                    fCumPtMin;         // minimum pt for cumulants
   Double_t                    fCumPtMax;         // maximum pt for cumulants
   Double_t                    fCumEtaMin;        // minimum eta for cumulants
@@ -57,7 +58,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskCLQA(const AliAnalysisTaskCLQA&);            // not implemented
   AliAnalysisTaskCLQA &operator=(const AliAnalysisTaskCLQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskCLQA, 4) // Constantin's Task
+  ClassDef(AliAnalysisTaskCLQA, 5) // Constantin's Task
 };
 
 class AliNtupCumInfo {
