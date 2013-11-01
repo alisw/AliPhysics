@@ -2385,9 +2385,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 {
                   if(a < fAsymCuts[iasym])
                   {
-                    Int_t index = ((GetEventCentralityBin()*fNPIDBits)+ipid)*fNAsymCuts + iasym;
+                    Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                     
-                    if(index < 0 || index >= curCentrBin*fNPIDBits*fNAsymCuts) continue ;
+                    if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
 
                     fhMi1     [index]->Fill(pt,m) ;
                     if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt,m,1./pt) ;
