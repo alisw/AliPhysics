@@ -44,7 +44,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 				    Int_t nCentralityBins, 
 				    Double_t *centralityArrayForCorrections);
   //========================correction
-  void SetDebugLevel() {fDebugLevel = kTRUE;}
+  // void SetDebugLevel() {fDebugLevel = kTRUE;} //hides overloaded virtual function
 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
     fBalance         = analysis;
