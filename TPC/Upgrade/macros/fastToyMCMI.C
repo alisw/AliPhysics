@@ -1,8 +1,11 @@
 /*
-  Fast toy MC for differnt purposes.
-  testExtrapolation() - to show track extrapolation errror
-  testdEdxGEM();  -to show the dEdx respolution detoraition as function of the electron trasnparency
+  Fast toy MC for different purposes. primary goal prepare the motivation figures for the TPC TDR and
+  expalantion internal note.
+  
+  testExtrapolationError() - to show track extrapolation errror
+  testdEdxGEM();  -to show the dEdx respolution detoriation as function of the electron trasnparency
  
+
   .x $HOME/NimStyle.C
   .L $ALICE_ROOT/TPC/Upgrade/macros/fastToyMCMI.C+
   testExtrapolation();
@@ -33,7 +36,15 @@
 #include "TF1.h"
 #include "TStyle.h"
 
-void testdEdxGEM(const Int_t ntracks=10000, Double_t clNoise=2, Double_t corrNoiseAdd=0.15, Double_t sigmaLandau=0.26){
+
+
+void testdEdxGEM(const Int_t ntracks=10000, Double_t clNoise=2, Double_t corrNoiseAdd=0.15, Double_t sigmaLandau=0.26);
+void testExtrapolationError(Int_t ntracks);
+
+
+
+
+void testdEdxGEM(const Int_t ntracks, Double_t clNoise, Double_t corrNoiseAdd, Double_t sigmaLandau){
   //
   // test dEdx performance as function of the electron transparency.
   //
@@ -146,7 +157,7 @@ void testdEdxGEM(const Int_t ntracks=10000, Double_t clNoise=2, Double_t corrNoi
   
 }
 
-void testExtrapolation(const Int_t ntracks=10){
+void testExtrapolationError(Int_t ntracks){
   //
   // check the extrapolation error
   // 2 scenarios 
@@ -179,7 +190,7 @@ void testExtrapolation(const Int_t ntracks=10){
     covarSeed[2]=0.1;
     covarSeed[5]=0.001;
     covarSeed[9]=0.001;
-    covarSeed[14]=0.02;
+    covarSeed[14]=0.03;
     //
     Double_t vertex[3]={0,0,0};
     TTreeSRedirector *pcstream = new TTreeSRedirector("testExtrapolationErr.root","update");
@@ -187,10 +198,11 @@ void testExtrapolation(const Int_t ntracks=10){
     TVectorD vecR(nbins);
     TVectorD vecITSErr0(nbins);
     TVectorD vecITSTRDErr0(nbins);
-    
+    //
     for (Int_t itrack=0; itrack<ntracks; itrack++){
       //
       //Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
+      if (itrack%100==0) printf("processing\t%d\n", itrack);
       Double_t phi = 0;// gRandom->Uniform(0.0, 2*TMath::Pi());
       Double_t eta = gRandom->Uniform(-1, 1);
       Double_t pt = 2./(gRandom->Rndm()+0.00001);   
@@ -202,7 +214,7 @@ void testExtrapolation(const Int_t ntracks=10){
       Short_t psign=(gRandom->Rndm()>0.5)? -1.:1.;
       AliExternalTrackParam *track= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
       //
-      //
+      // 0.) Estimate the error using the ITS extrapolation and ITS+TRD interpolation - neglecting the MS -inf. momanta tracks
       // 
       for (Int_t irbin=0; irbin<nbins; irbin++){
 	Double_t x0 =85+Double_t(irbin)*(245.-85.)/Double_t(nbins);
@@ -227,7 +239,7 @@ void testExtrapolation(const Int_t ntracks=10){
 	vecITSTRDErr0[irbin]=fitterITSTRD.GetParError(0);
       }
       //
-      //  estimate q/pt resolution for the ITS+TPC, ITS+TPC+TRD and ITS+TRD scenario
+      //  1.) estimate q/pt resolution for the ITS+TPC, ITS+TPC+TRD and ITS+TRD scenario
       //
       AliExternalTrackParam * param = new AliExternalTrackParam(*track);
       Double_t *covar = (Double_t*)  param->GetCovariance();
@@ -237,7 +249,7 @@ void testExtrapolation(const Int_t ntracks=10){
       AliExternalTrackParam *trackITSTPC= new AliExternalTrackParam(*param);   
       AliExternalTrackParam *trackITSTPCTRD= new AliExternalTrackParam(*param);   
       AliExternalTrackParam *trackITSTRD= new AliExternalTrackParam(*param);   
-      AliExternalTrackParam *trackTPCTRD= new AliExternalTrackParam(*param);   
+      AliExternalTrackParam *trackTPCTRD= new AliExternalTrackParam(*param); 
       //
       Bool_t tStatus=kTRUE;
       for (Int_t idet=2;idet>=0; idet--){
@@ -270,13 +282,61 @@ void testExtrapolation(const Int_t ntracks=10){
 	  }
 	}
       }
-      
+      //
+      // 2.) Estimate propagation error at given radius
+      //
+      //  2.a) Fit ITS and TRD track (gauss smeared point error 0 not MS used)
+      AliExternalTrackParam *trackITS= new AliExternalTrackParam(*track);
+      AliExternalTrackParam *trackITS0= new AliExternalTrackParam(*track);
+      covar = (Double_t*)  trackITS->GetCovariance();
+      for (Int_t i=0; i<15; i++) covar[i]=covarSeed[i];
+      AliExternalTrackParam *trackTRD= new AliExternalTrackParam(*param);      
+      AliExternalTrackParam *trackTRD0= new AliExternalTrackParam(*param);      
+      {for (Int_t ilayer=0; ilayer<7; ilayer++){ 
+	  AliTrackerBase::PropagateTrackToBxByBz(trackITS, rpoints[ilayer],0.13,1,kFALSE);
+	  AliTrackerBase::PropagateTrackToBxByBz(trackITS0, rpoints[ilayer],0.13,1,kFALSE);
+	  Double_t pointPos[2]={trackITS0->GetY()+gRandom->Gaus(0,spoints[ilayer]),trackITS0->GetZ()+gRandom->Gaus(0,spoints[ilayer])};
+	  Double_t pointCov[3]= {spoints[ilayer]*spoints[ilayer],0,spoints[ilayer]*spoints[ilayer]};
+	  trackITS->Update(pointPos,pointCov);
+	}}
+      {for (Int_t ilayer=5; ilayer>=0; ilayer--){ 
+	  AliTrackerBase::PropagateTrackToBxByBz(trackTRD, rpoints[ilayer+7],0.13,1,kFALSE);
+	  AliTrackerBase::PropagateTrackToBxByBz(trackTRD0, rpoints[ilayer+7],0.13,1,kFALSE);
+	  Double_t pointPos[2]={trackTRD0->GetY()+gRandom->Gaus(0,spoints[ilayer+7]),trackTRD0->GetZ()+gRandom->Gaus(0,spoints[ilayer+7])};
+	  Double_t pointCov[3]= {spoints[ilayer+7]*spoints[ilayer+7],0,spoints[ilayer+7]*spoints[ilayer+7]};
+	  trackTRD->Update(pointPos,pointCov);
+	}}
+      //
+      // 2.b) get ITS extrapolation and TRD interpolation errors at random radisues positions
+      //
+      const Int_t npoints=20;
+      TVectorD vecRKalman(npoints);
+      TVectorD vecITSDeltaY(npoints),    vecITSTRDDeltaY(npoints);
+      TVectorD vecITSErrY(npoints),      vecITSTRDErrY(npoints);
+      for (Int_t ipoint=0; ipoint<npoints; ipoint++){
+	Double_t rLayer= 85.+gRandom->Rndm()*(245.-85.);
+	AliExternalTrackParam *trackITSP= new AliExternalTrackParam(*trackITS);
+	AliExternalTrackParam *trackITSP0= new AliExternalTrackParam(*trackITS0);
+	AliExternalTrackParam *trackTRDP= new AliExternalTrackParam(*trackTRD);
+	AliTrackerBase::PropagateTrackToBxByBz(trackITSP, rLayer,0.13,1,kFALSE);
+	AliTrackerBase::PropagateTrackToBxByBz(trackITSP0, rLayer,0.13,1,kFALSE);
+	AliTrackerBase::PropagateTrackToBxByBz(trackTRDP, rLayer,0.13,1,kFALSE); 
+	vecRKalman[ipoint]=rLayer;
+	trackTRDP->Rotate(trackITSP->GetAlpha());
+	vecITSDeltaY[ipoint]=trackITSP->GetY()-trackITSP0->GetY();
+	vecITSErrY[ipoint]=TMath::Sqrt(trackITSP->GetSigmaY2());
+	AliTrackerBase::UpdateTrack(*trackITSP, *trackTRDP);
+	vecITSTRDDeltaY[ipoint]=trackITSP->GetY()-trackITSP0->GetY();
+	vecITSTRDErrY[ipoint]=TMath::Sqrt(trackITSP->GetSigmaY2());
+      }
+      //
 
       //vecITSErr0.Print();
       (*pcstream)<<"extrapol"<<
 	"itrack="<<itrack<<
 	"track.="<<track<<
 	"vecR.="<<&vecR<<
+	//
 	"vecITSErr0.="<<&vecITSErr0<<
 	"vecITSTRDErr0.="<<&vecITSTRDErr0<<
 	"tStatus="<<tStatus<<
@@ -284,6 +344,14 @@ void testExtrapolation(const Int_t ntracks=10){
 	"trackITSTPCTRD.="<<trackITSTPCTRD<<
 	"trackITSTRD.="<<trackITSTRD<<
 	"trackTPCTRD.="<<trackTPCTRD<<
+	//
+	// kalman extapoltation einterplotaltion studies 
+	// extrapolation and ITSTRDitnerpolation at different radiuses 
+	"verRKalman.="<<&vecRKalman<<            
+	"vecITSDeltaY.="<<&vecITSDeltaY<<
+	"vecITSErrY.="<<&vecITSErrY<<
+	"vecITSTRDDeltaY.="<<&vecITSTRDDeltaY<<
+	"vecITSTRDErrY.="<<&vecITSTRDErrY<<
 	"\n";
     }
     delete pcstream;
@@ -334,5 +402,18 @@ void testExtrapolation(const Int_t ntracks=10){
     legendQpt->AddEntry(grTPCTRDqPt,"TPC+TRD","p");
     legendQpt->Draw();
   }
-
+  //
+  tree->SetMarkerStyle(25);
+  tree->SetMarkerSize(0.4);
+  TCanvas *canvasResolution = new TCanvas("canvasResolution","canvasResolution",800,800);
+  canvasResolution->Divide(1,3);
+  //
+  canvasResolution->cd(1);
+  tree->Draw("vecITSErrY.fElements:verRKalman.fElements:abs(track.fP[4])","","colz");
+  canvasResolution->cd(2);
+  tree->Draw("vecITSTRDErrY.fElements:verRKalman.fElements:abs(track.fP[4])","","colz");
+  canvasResolution->cd(3);
+  tree->Draw("vecITSTRDErrY.fElements/vecITSErrY.fElements:verRKalman.fElements:abs(track.fP[4])","","colz");
+  canvasResolution->SaveAs("canvasResolution.pdf");
+  canvasResolution->SaveAs("canvasResolution.png");
 }
