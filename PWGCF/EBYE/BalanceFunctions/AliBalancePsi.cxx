@@ -227,7 +227,7 @@ void AliBalancePsi::InitHistograms() {
    
   ---> fEventClass == "Multiplicity"
    
-   Work with kTPCITStracklet multiplicity (from GetReferenceMultiplicity)
+   Work with reference multiplicity (from GetReferenceMultiplicity, which one is decided in the configuration)
    
   ---> fEventClass == "Centrality" 
    
@@ -237,8 +237,8 @@ void AliBalancePsi::InitHistograms() {
   if(fEventClass == "Multiplicity"){
     dBinsSingle[0]     = GetBinning(fBinningString, "multiplicity", iBinSingle[0]);
     dBinsPair[0]       = GetBinning(fBinningString, "multiplicity", iBinPair[0]);
-    axisTitleSingle[0] = "kTPCITStracklet multiplicity";
-    axisTitlePair[0]   = "kTPCITStracklet multiplicity";
+    axisTitleSingle[0] = "reference multiplicity";
+    axisTitlePair[0]   = "reference multiplicity";
   }
   if(fEventClass == "Centrality"){
     // fine binning in case of vertex Z binning
