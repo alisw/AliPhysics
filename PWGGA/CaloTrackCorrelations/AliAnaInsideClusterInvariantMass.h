@@ -457,6 +457,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAnglePairMassNLocMax1[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
   TH2F       * fhAnglePairMassNLocMax2[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
   TH2F       * fhAnglePairMassNLocMaxN[7][2] ;          //! pair opening angle vs Mass for E > 7 GeV
+
+  TH2F       * fhAnglePairM02NLocMax1[7][2] ;           //! pair opening angle vs M02 for E > 7 GeV
+  TH2F       * fhAnglePairM02NLocMax2[7][2] ;           //! pair opening angle vs M02 for E > 7 GeV
+  TH2F       * fhAnglePairM02NLocMaxN[7][2] ;           //! pair opening angle vs M02 for E > 7 GeV
   
   TH2F       * fhAnglePairPrimPi0RecoNLocMax1;          //! pair opening angle pi0 generated/reconstructed vs E
   TH2F       * fhAnglePairPrimPi0RecoNLocMax2;          //! pair opening angle pi0 generated/reconstructed vs E
