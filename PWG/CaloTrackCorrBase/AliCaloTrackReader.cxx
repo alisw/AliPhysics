@@ -125,7 +125,7 @@ fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fVertexBC(-200),             fRecalculateVertexBC(0),
 fCentralityClass(""),        fCentralityOpt(0),
-fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath(""),
+fEventPlaneMethod(""),
 fAcceptOnlyHIJINGLabels(0),  fNMCProducedMin(0), fNMCProducedMax(0),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),fInputNonStandardJetBranchName("jets"),
@@ -611,17 +611,7 @@ void AliCaloTrackReader::Init()
     fReadStack          = kFALSE;
     fReadAODMCParticles = kFALSE;
   }
-  
-  // Init geometry, I do not like much to do it like this ...
-  if(fImportGeometryFromFile && !gGeoManager)
-  {
-    if(fImportGeometryFilePath=="") // If not specified, set a default location
-      fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root"; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-    
-    printf("AliCaloTrackReader::Init() - Import %s\n",fImportGeometryFilePath.Data());
-    TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
-  }
-  
+
   if(!fESDtrackCuts)
     fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks
 	
@@ -697,8 +687,6 @@ void AliCaloTrackReader::InitParameters()
   fPHOSClusters    = new TObjArray();
   fTriggerAnalysis = new AliTriggerAnalysis;
   fAODBranchList   = new TList ;
-  
-  fImportGeometryFromFile = kFALSE;
   
   fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
   fPileUpParamSPD[2] = 3.0 ; fPileUpParamSPD[3] = 2.0 ; fPileUpParamSPD[4] = 5.0;
