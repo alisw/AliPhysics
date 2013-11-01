@@ -132,7 +132,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fCentralityPercentileMax(5.),
   fImpactParameterMin(0.),
   fImpactParameterMax(20.),
-  fMultiplicityEstimator("V0M"),
+  fMultiplicityEstimator("V0A"),
   fUseMultiplicity(kFALSE),
   fNumberOfAcceptedTracksMin(0),
   fNumberOfAcceptedTracksMax(10000),
@@ -332,9 +332,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   //TPC vs VZERO multiplicity
   fHistTPCvsVZEROMultiplicity = new TH2F("fHistTPCvsVZEROMultiplicity","VZERO vs TPC multiplicity",3001,-0.5,30000.5,4001,-0.5,4000.5);
   if(fMultiplicityEstimator == "V0A") 
-    fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO multiplicity (a.u.)");
+    fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO-A multiplicity (a.u.)");
   else if(fMultiplicityEstimator == "V0C") 
-    fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO multiplicity (a.u.)");
+    fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO-C multiplicity (a.u.)");
   else 
     fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO multiplicity (a.u.)");
   fList->Add(fHistTPCvsVZEROMultiplicity);
@@ -645,7 +645,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
   Int_t gNumberOfAcceptedTracks = 0;
-  Double_t gCentrality          = -1.;
+  Double_t lMultiplicityVar     = -1.;
   Double_t gReactionPlane       = -1.; 
   Float_t bSign = 0.;
   
@@ -672,13 +672,10 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   }
   
   // check event cuts and fill event histograms
-  if((gCentrality = IsEventAccepted(eventMain)) < 0){
+  if((lMultiplicityVar = IsEventAccepted(eventMain)) < 0){
     return;
   }
   
-  //Compute Multiplicity or Centrality variable
-  Double_t lMultiplicityVar = GetRefMultiOrCentrality( eventMain );
-
   // get the reaction plane
   if(fEventClass != "Multiplicity") {
     gReactionPlane = GetEventPlane(eventMain);
@@ -770,20 +767,19 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   // Fills Event statistics histograms
   
   Bool_t isSelectedMain = kTRUE;
-  Float_t gCentrality = -1.;
   Float_t gRefMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   AliMCEvent *mcevent = dynamic_cast<AliMCEvent*>(event);
 
-  fHistEventStats->Fill(1,gCentrality); //all events
+  fHistEventStats->Fill(1,gRefMultiplicity); //all events
 
   // check first event in chunk (is not needed for new reconstructions)
   if(fCheckFirstEventInChunk){
     AliAnalysisUtils ut;
     if(ut.IsFirstEventInChunk(event)) 
       return -1.;
-    fHistEventStats->Fill(6,gCentrality); 
+    fHistEventStats->Fill(6,gRefMultiplicity); 
   }
 
   // check for pile-up event
@@ -793,7 +789,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     ut.SetUseOutOfBunchPileUp(kTRUE);
     if(ut.IsPileUpEvent(event))
       return -1.;
-    fHistEventStats->Fill(7,gCentrality); 
+    fHistEventStats->Fill(7,gRefMultiplicity); 
   }
 
   // Event trigger bits
@@ -802,93 +798,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     isSelectedMain = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   
   if(isSelectedMain) {
-    fHistEventStats->Fill(2,gCentrality); //triggered events
-
-    //Centrality stuff 
-    if(fUseCentrality) {
-      if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec") { //centrality in AOD header   //+++++++++++
-	AliAODHeader *header = (AliAODHeader*) event->GetHeader();
-	if(header){
-	  gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-
-	  // QA for centrality estimators
-	  fHistCentStats->Fill(0.,header->GetCentralityP()->GetCentralityPercentile("V0M"));
-	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("V0A"));
-	  fHistCentStats->Fill(2.,header->GetCentralityP()->GetCentralityPercentile("V0C"));
-	  fHistCentStats->Fill(3.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
-	  fHistCentStats->Fill(4.,header->GetCentralityP()->GetCentralityPercentile("TRK"));
-	  fHistCentStats->Fill(5.,header->GetCentralityP()->GetCentralityPercentile("TKL")); 
-	  fHistCentStats->Fill(6.,header->GetCentralityP()->GetCentralityPercentile("CL0"));
-	  fHistCentStats->Fill(7.,header->GetCentralityP()->GetCentralityPercentile("CL1"));
-	  fHistCentStats->Fill(8.,header->GetCentralityP()->GetCentralityPercentile("ZNA"));
-	  fHistCentStats->Fill(9.,header->GetCentralityP()->GetCentralityPercentile("ZPA"));
-	  fHistCentStats->Fill(10.,header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
-	  fHistCentStats->Fill(11.,header->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
-	  fHistCentStats->Fill(12.,header->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
-
-	  // Centrality estimator USED   ++++++++++++++++++++++++++++++
-	  fHistCentStatsUsed->Fill(0.,header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data()));
-	  
-	  // centrality QA (V0M)
-	  fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
-	  
-	  // centrality QA (reference tracks)
-	  fHistRefTracks->Fill(0.,header->GetRefMultiplicity());
-	  fHistRefTracks->Fill(1.,header->GetRefMultiplicityPos());
-	  fHistRefTracks->Fill(2.,header->GetRefMultiplicityNeg());
-	  fHistRefTracks->Fill(3.,header->GetTPConlyRefMultiplicity());
-	  fHistRefTracks->Fill(4.,header->GetNumberOfITSClusters(0));
-	  fHistRefTracks->Fill(5.,header->GetNumberOfITSClusters(1));
-	  fHistRefTracks->Fill(6.,header->GetNumberOfITSClusters(2));
-	  fHistRefTracks->Fill(7.,header->GetNumberOfITSClusters(3));
-	  fHistRefTracks->Fill(8.,header->GetNumberOfITSClusters(4));
-	}//AOD header
-      }//AOD
-
-      else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD"){ // centrality class for ESDs or MC-ESDs
- 	AliCentrality *centrality = event->GetCentrality();
-	gCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-
-	// QA for centrality estimators
-	fHistCentStats->Fill(0.,centrality->GetCentralityPercentile("V0M"));
-	fHistCentStats->Fill(1.,centrality->GetCentralityPercentile("V0A"));
-	fHistCentStats->Fill(2.,centrality->GetCentralityPercentile("V0C"));
-	fHistCentStats->Fill(3.,centrality->GetCentralityPercentile("FMD"));
-	fHistCentStats->Fill(4.,centrality->GetCentralityPercentile("TRK"));
-	fHistCentStats->Fill(5.,centrality->GetCentralityPercentile("TKL"));
-	fHistCentStats->Fill(6.,centrality->GetCentralityPercentile("CL0"));
-	fHistCentStats->Fill(7.,centrality->GetCentralityPercentile("CL1"));
-	fHistCentStats->Fill(8.,centrality->GetCentralityPercentile("ZNA"));
-	fHistCentStats->Fill(9.,centrality->GetCentralityPercentile("ZPA"));
-	fHistCentStats->Fill(10.,centrality->GetCentralityPercentile("V0MvsFMD"));
-	fHistCentStats->Fill(11.,centrality->GetCentralityPercentile("TKLvsV0M"));
-	fHistCentStats->Fill(12.,centrality->GetCentralityPercentile("ZEMvsZDC"));
-
-	// Centrality estimator USED   ++++++++++++++++++++++++++++++
-	fHistCentStatsUsed->Fill(0.,centrality->GetCentralityPercentile(fCentralityEstimator.Data()));
-
-	// centrality QA (V0M)
-	fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
-      }//ESD
-      else if(gAnalysisLevel == "MC"){
-	Double_t gImpactParameter = 0.;
-	if(mcevent) {
-	  AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(mcevent)->GenEventHeader());
-	  if(headerH){
-	    gImpactParameter = headerH->ImpactParameter();
-	    gCentrality      = gImpactParameter;
-	  }//MC header
-	}//MC event cast
-      }//MC
-      else{
-	gCentrality = -1.;
-      }
-    }//centrality
-
-    //Multiplicity stuff 
-    if(fUseMultiplicity)
-      gRefMultiplicity = GetRefMultiOrCentrality(event);
-
+    fHistEventStats->Fill(2,gRefMultiplicity); //triggered events
+ 
     // Event Vertex MC
     if(gAnalysisLevel == "MC") {
       if(!event) {
@@ -905,26 +816,24 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	  //gVertexArray.At(0),
 	  //gVertexArray.At(1),
 	  //gVertexArray.At(2));
-	  if(fUseMultiplicity) 
-	    fHistEventStats->Fill(3,gRefMultiplicity); //events with a proper vertex
-	  else 
-	    fHistEventStats->Fill(3,gCentrality); //events with a proper vertex
+	  fHistEventStats->Fill(3,gRefMultiplicity); //events with a proper vertex
 	  if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
 	    if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
 	      if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
-		if(fUseMultiplicity) 
-		  fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
-		else 
-		  fHistEventStats->Fill(4,gCentrality); //analyzed events
+		fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
+
+		// get the reference multiplicty or centrality
+		gRefMultiplicity = GetRefMultiOrCentrality(event);
+
 		fHistVx->Fill(gVertexArray.At(0));
 		fHistVy->Fill(gVertexArray.At(1));
-		fHistVz->Fill(gVertexArray.At(2),gCentrality);
+		fHistVz->Fill(gVertexArray.At(2),gRefMultiplicity);
 		
 		// take only events inside centrality class
 		if(fUseCentrality) {
-		  if((fImpactParameterMin < gCentrality) && (fImpactParameterMax > gCentrality)){
-		    fHistEventStats->Fill(5,gCentrality); //events with correct centrality
-		    return gCentrality;	    
+		  if((fImpactParameterMin < gRefMultiplicity) && (fImpactParameterMax > gRefMultiplicity)){
+		    fHistEventStats->Fill(5,gRefMultiplicity); //events with correct centrality
+		    return gRefMultiplicity;	    
 		  }//centrality class
 		}
 		// take events only within the same multiplicity class
@@ -950,32 +859,24 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	vertex->GetCovarianceMatrix(fCov);
 	if(vertex->GetNContributors() > 0) {
 	  if(fCov[5] != 0) {
-	    if(fUseMultiplicity) 
-	      fHistEventStats->Fill(3,gRefMultiplicity); //proper vertex
-	    else if(fUseCentrality)
-	      fHistEventStats->Fill(3,gCentrality); //proper vertex
+	    fHistEventStats->Fill(3,gRefMultiplicity); //proper vertex
 	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
 	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-		  if(fUseMultiplicity) {
-		    //if(fDebugLevel)
-		    //Printf("Filling 4th bin of fHistEventStats for multiplicity %lf",gRefMultiplicity);
-		    fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
-		  }
-		  else if(fUseCentrality) {
-		    //cout<<"Filling 4 for centrality..."<<endl;
-		    fHistEventStats->Fill(4,gCentrality); //analyzed events
-		  }
+		  fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
+
+		  // get the reference multiplicty or centrality
+		  gRefMultiplicity = GetRefMultiOrCentrality(event);
+		  
 		  fHistVx->Fill(vertex->GetX());
 		  fHistVy->Fill(vertex->GetY());
-		  fHistVz->Fill(vertex->GetZ(),gCentrality);
+		  fHistVz->Fill(vertex->GetZ(),gRefMultiplicity);
 		  
 		  // take only events inside centrality class
 		  if(fUseCentrality) {
-		    //cout<<"Centrality..."<<endl;
-		    if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){
-		      fHistEventStats->Fill(5,gCentrality); //events with correct centrality
-		      return gCentrality;		
+		    if((gRefMultiplicity > fCentralityPercentileMin) && (gRefMultiplicity < fCentralityPercentileMax)){
+		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct centrality
+		      return gRefMultiplicity;		
 		    }//centrality class
 		  }
 		  // take events only within the same multiplicity class
@@ -1009,44 +910,103 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     // Fills Event statistics histograms
   
   Float_t gCentrality = -1.;
-  Double_t gMultiplicity = 0.;
+  Double_t gMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
-  if(fEventClass == "Centrality"){
-    if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec" ) { //centrality in AOD header  //++++++++++++++
-      AliAODHeader *header = (AliAODHeader*) event->GetHeader();
-      if(header){
-        gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-      }//AOD header
-    }//AOD
+
+  // calculate centrality always (not only in centrality mode)
+  if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec" ) { //centrality in AOD header  //++++++++++++++
+    AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+    if(header){
+      gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+
+      // QA for centrality estimators
+      fHistCentStats->Fill(0.,header->GetCentralityP()->GetCentralityPercentile("V0M"));
+      fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("V0A"));
+      fHistCentStats->Fill(2.,header->GetCentralityP()->GetCentralityPercentile("V0C"));
+      fHistCentStats->Fill(3.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
+      fHistCentStats->Fill(4.,header->GetCentralityP()->GetCentralityPercentile("TRK"));
+      fHistCentStats->Fill(5.,header->GetCentralityP()->GetCentralityPercentile("TKL")); 
+      fHistCentStats->Fill(6.,header->GetCentralityP()->GetCentralityPercentile("CL0"));
+      fHistCentStats->Fill(7.,header->GetCentralityP()->GetCentralityPercentile("CL1"));
+      fHistCentStats->Fill(8.,header->GetCentralityP()->GetCentralityPercentile("ZNA"));
+      fHistCentStats->Fill(9.,header->GetCentralityP()->GetCentralityPercentile("ZPA"));
+      fHistCentStats->Fill(10.,header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
+      fHistCentStats->Fill(11.,header->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
+      fHistCentStats->Fill(12.,header->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+      
+      // Centrality estimator USED   ++++++++++++++++++++++++++++++
+      fHistCentStatsUsed->Fill(0.,header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data()));
+      
+      // centrality QA (V0M)
+      fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
+      
+      // centrality QA (reference tracks)
+      fHistRefTracks->Fill(0.,header->GetRefMultiplicity());
+      fHistRefTracks->Fill(1.,header->GetRefMultiplicityPos());
+      fHistRefTracks->Fill(2.,header->GetRefMultiplicityNeg());
+      fHistRefTracks->Fill(3.,header->GetTPConlyRefMultiplicity());
+      fHistRefTracks->Fill(4.,header->GetNumberOfITSClusters(0));
+      fHistRefTracks->Fill(5.,header->GetNumberOfITSClusters(1));
+      fHistRefTracks->Fill(6.,header->GetNumberOfITSClusters(2));
+      fHistRefTracks->Fill(7.,header->GetNumberOfITSClusters(3));
+      fHistRefTracks->Fill(8.,header->GetNumberOfITSClusters(4));
+
+    }//AOD header
+  }//AOD
+  
+  else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD"){ // centrality class for ESDs or MC-ESDs
+    AliCentrality *centrality = event->GetCentrality();
+    gCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+
+    // QA for centrality estimators
+    fHistCentStats->Fill(0.,centrality->GetCentralityPercentile("V0M"));
+    fHistCentStats->Fill(1.,centrality->GetCentralityPercentile("V0A"));
+    fHistCentStats->Fill(2.,centrality->GetCentralityPercentile("V0C"));
+    fHistCentStats->Fill(3.,centrality->GetCentralityPercentile("FMD"));
+    fHistCentStats->Fill(4.,centrality->GetCentralityPercentile("TRK"));
+    fHistCentStats->Fill(5.,centrality->GetCentralityPercentile("TKL"));
+    fHistCentStats->Fill(6.,centrality->GetCentralityPercentile("CL0"));
+    fHistCentStats->Fill(7.,centrality->GetCentralityPercentile("CL1"));
+    fHistCentStats->Fill(8.,centrality->GetCentralityPercentile("ZNA"));
+    fHistCentStats->Fill(9.,centrality->GetCentralityPercentile("ZPA"));
+    fHistCentStats->Fill(10.,centrality->GetCentralityPercentile("V0MvsFMD"));
+    fHistCentStats->Fill(11.,centrality->GetCentralityPercentile("TKLvsV0M"));
+    fHistCentStats->Fill(12.,centrality->GetCentralityPercentile("ZEMvsZDC"));
     
-    else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD"){ // centrality class for ESDs or MC-ESDs
-      AliCentrality *centrality = event->GetCentrality();
-      gCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-    }//ESD
-    else if(gAnalysisLevel == "MC"){
-      Double_t gImpactParameter = 0.;
-      AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
-      if(gMCEvent){
-	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());      
-	if(headerH){
-	  gImpactParameter = headerH->ImpactParameter();
-	  gCentrality      = gImpactParameter;
-	}//MC header
-      }//MC event cast
-    }//MC
-    else{
-      gCentrality = -1.;
-    }
-  }//End if "Centrality"
-  if(fEventClass=="Multiplicity"&&gAnalysisLevel == "ESD"){
+    // Centrality estimator USED   ++++++++++++++++++++++++++++++
+    fHistCentStatsUsed->Fill(0.,centrality->GetCentralityPercentile(fCentralityEstimator.Data()));
+    
+    // centrality QA (V0M)
+    fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
+  }//ESD
+
+  else if(gAnalysisLevel == "MC"){
+    Double_t gImpactParameter = 0.;
+    AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
+    if(gMCEvent){
+      AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());      
+      if(headerH){
+	gImpactParameter = headerH->ImpactParameter();
+	gCentrality      = gImpactParameter;
+      }//MC header
+    }//MC event cast
+  }//MC
+
+  else{
+    gCentrality = -1.;
+  }
+  
+  // calculate reference multiplicity always (not only in multiplicity mode)
+  if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD"){
     AliESDEvent* gESDEvent = dynamic_cast<AliESDEvent*>(event);
     if(gESDEvent){
       gMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(gESDEvent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
       fHistMultiplicity->Fill(gMultiplicity);
     }//AliESDevent cast
-  }
-  else if(fEventClass=="Multiplicity"&&gAnalysisLevel == "AOD"){
+  }//ESD mode
+
+  else if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec" ){
     AliAODHeader *header = (AliAODHeader*) event->GetHeader();
     if ((fMultiplicityEstimator == "V0M")||
 	(fMultiplicityEstimator == "V0A")||
@@ -1061,8 +1021,8 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       if(fDebugLevel) Printf("Reference multiplicity (AOD header): %.0f",gMultiplicity);
     }
     fHistMultiplicity->Fill(gMultiplicity);
-  }
-  else if((fEventClass=="Multiplicity")&&(gAnalysisLevel == "MC")) {
+  }//AOD mode
+  else if(gAnalysisLevel == "MC") {
     AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
     //Calculating the multiplicity as the number of charged primaries
     //within \pm 0.8 in eta and pT > 0.1 GeV/c
@@ -1076,11 +1036,11 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       //exclude non stable particles
       if(!(gMCEvent->IsPhysicalPrimary(iParticle))) continue;
       if(track->Pt() < 0.1)  continue;
-
+      
       //++++++++++++++++
       if (fMultiplicityEstimator == "V0M") {
 	if((track->Eta() > 5.1 || track->Eta() < 2.8)&&(track->Eta() < -3.7 || track->Eta() > -1.7)) 
-	continue;}
+	  continue;}
       else if (fMultiplicityEstimator == "V0A") {
 	if(track->Eta() > 5.1 || track->Eta() < 2.8)  continue;}
       else if (fMultiplicityEstimator == "V0C") {
@@ -1091,14 +1051,19 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 	if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
       }
       //++++++++++++++++
-
+      
       if(track->Charge() == 0) continue;
-
+      
       gMultiplicity += 1;
     }//loop over primaries
     fHistMultiplicity->Fill(gMultiplicity);
-  }//MC mode & multiplicity class
+  }//MC mode
+  else{
+    gMultiplicity = -1;
+  }
   
+
+  // decide what should be returned only here
   Double_t lReturnVal = -100;
   if(fEventClass=="Multiplicity"){
     lReturnVal = gMultiplicity;
